@@ -1,73 +1,128 @@
-Return-Path: <linuxppc-dev+bounces-20443-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20444-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id F2694CD3430
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 May 2026 08:32:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 03CBBCD3430
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 May 2026 08:34:06 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4g8sFK4BXJz2xSF;
-	Tue, 05 May 2026 18:32:05 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777969925;
-	cv=none; b=dtY02+WHjt3vOD2Dy8afqsn2eVyJYsuCXBBMOKQGdEawK3DKYsu605DFD9UqjeF1cfucaElj19vtKVE0L8vuzv1AJC1WoslZcreEcNZGB+cBgmRmxFQA8aeRpjmhire199VoOAmaNcp2l+g/qxmL5dbC1ETTtGYhFoULatNl3Et+tG0eU7jWF2hAegmPyil/OqcbcJbxtQl0hwz2tMOiyfah75eckfOC9dqJwehIFLlhTWrPx44XkBM6gB060SmqRMkPqa8oBKtZL3/mbeIDxubFPxsYkn1CMqdjoXOGXqZzVpq5FpQ4+gA4jC1ly0pLVN3FnW3yLHwSTr8SMSd5ZA==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1777969925; c=relaxed/relaxed;
-	bh=eaJj1ZjQaCtE8Ym/FuUd6FqlOIOFMMoDDBlh+ytlNAc=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=cf34er1DzUrg5qDojfRov0J5oC4LJefeazKI0EpUUxftz6jspc6TLZ7MA1lONBN35Tmc6+qqSrKn1KvkmTUTRyATVYsPZqN8WPe29BaQ6WuyvajWmFu1XfyjceCaMXQpusAoQMJ10TfEivfzTz6ZRB0SndV9ESGNTwufrJ4nLXUlwXDrcrCXD7YMDtykFWV3BdvAhS2T03B0N53akT8BbGR90y+ywwZHh0y5tQ7UgDdleD9rrSbrqighcmvjcuVKiqT4yaHZIAjzJVltLMh2PtAIAu2xK9fifbViSvPvAmAAMI4+nEqDGqnxvfNq0efKVSiANuNhIXoyWjEYGPwjow==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=tX7P9zZs; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=harshpb@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4g8sHd3YkQz2xMV;
+	Tue, 05 May 2026 18:34:05 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c200::5" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777970045;
+	cv=pass; b=TJLb7doaxbyqUHkpf3FuNd+0wUwiG3O/U3PxbG4dCkgNkcC7T6/mRt0nN2f9e917CnEwEKK/3U2YOO7lPELG1sgEoIYhYc2LcDvNTDMzCWDY4r3Arwoar/orriAvDLk69mdEw1Rzm8JMscbswbz2VmdHXnTsdqKokeoLeGRw6eKPT/msQ82c3CgaJlKg3nS60UgYqhSnIGCzqxtEG9B20o56e9/f5qJJ3Ws5PTUAEBbQ0SD+PaDtSRuYNxlZwul7veHpXJBQENmQzjbQi6FhEkDVMwX3RpahSke9xv3UqLsGSo6drkRusn4OgUTgflKO/J1qJKw5NCd37+DGgXniEQ==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1777970045; c=relaxed/relaxed;
+	bh=a9nKivciaRUziGk20N7Bd6TmSicGqlJiKzVSJ033QBg=;
+	h=From:To:CC:Subject:Date:Message-ID:References:In-Reply-To:
+	 Content-Type:MIME-Version; b=An5+DSrhMAHpZzSu+WZx4RLI2o31Cv6UdXEnBIDDT+Yb2mshtloiedoDIsF3w4d3G1DqJpSh/R8sVlsM0EBhZWrNx20sxcxT06BjFKLzbQdfNdaiTTM3QHeLJGkawkpz92MUlxJHWUWFL+p3hVAYQIany8FMcyoKYXYK2ooB6+W+5UI3j+XSj01Nci8jw+T+uw4+f10WyAI2mr7d98KxV3Ngi84un1L3z0i5HyvCJz9N748/jBgkXKUFUKvc6uGuu5mhdcaYVBD3ywZsQ7tvMavT7EI7pNp6sUHZnIa+yyzujn/QAQ41BCgJs72MjawrPNfWgFYwBMFCcYj3Winz+A==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=hitachienergy.com; dkim=pass (2048-bit key; unprotected) header.d=hitachienergy.com header.i=@hitachienergy.com header.a=rsa-sha256 header.s=selector1 header.b=aJmZDI/R; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c200::5; helo=duzpr83cu001.outbound.protection.outlook.com; envelope-from=holger.brunck@hitachienergy.com; receiver=lists.ozlabs.org) smtp.mailfrom=hitachienergy.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=hitachienergy.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=tX7P9zZs;
+	dkim=pass (2048-bit key; unprotected) header.d=hitachienergy.com header.i=@hitachienergy.com header.a=rsa-sha256 header.s=selector1 header.b=aJmZDI/R;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=harshpb@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=hitachienergy.com (client-ip=2a01:111:f403:c200::5; helo=duzpr83cu001.outbound.protection.outlook.com; envelope-from=holger.brunck@hitachienergy.com; receiver=lists.ozlabs.org)
+Received: from DUZPR83CU001.outbound.protection.outlook.com (mail-northeuropeazlp170120005.outbound.protection.outlook.com [IPv6:2a01:111:f403:c200::5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4g8sFJ0frrz2xMV
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 05 May 2026 18:32:03 +1000 (AEST)
-Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 644LUNgU1302390;
-	Tue, 5 May 2026 08:31:52 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=eaJj1Z
-	jQaCtE8Ym/FuUd6FqlOIOFMMoDDBlh+ytlNAc=; b=tX7P9zZsjgsUJ2NG8mhw+R
-	TUgwE1cz+1pYQ64UwJFn8MHG9PxgFq3ULSE+c9TjP34/J6KmYRpVopK2iqa76ba2
-	YQCQ268n+gbCN8z84Uadu/BmzGR1IuZykp6TEEaB44qV9oGnFeXm6GPS82JHpMl+
-	0ggap5HsOfeTAmaRGOI/DGPCmTHarReI5h4UUoNVk0PiujifolKbGwsqnko6ymqG
-	WwBN9QThnx9r1A8JONRnGkhUGmSBiDqi9iFDI2kmxrkPds7/vL5M6DUa0vNbe44b
-	u1Krx/2mmdAulAZER7U5Kj4dCEhOGKOPfD+nvm0oOVrsQqq1EzOFlDfgJJPvdmdQ
-	==
-Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4dw9v7aqpg-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 05 May 2026 08:31:51 +0000 (GMT)
-Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma12.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 6458OSH2018104;
-	Tue, 5 May 2026 08:31:51 GMT
-Received: from smtprelay03.dal12v.mail.ibm.com ([172.16.1.5])
-	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 4dwukq8wb1-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 05 May 2026 08:31:51 +0000 (GMT)
-Received: from smtpav06.wdc07v.mail.ibm.com (smtpav06.wdc07v.mail.ibm.com [10.39.53.233])
-	by smtprelay03.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6458Vns926280564
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 5 May 2026 08:31:50 GMT
-Received: from smtpav06.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id BE81D58055;
-	Tue,  5 May 2026 08:31:49 +0000 (GMT)
-Received: from smtpav06.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 44C525803F;
-	Tue,  5 May 2026 08:31:46 +0000 (GMT)
-Received: from [9.123.0.169] (unknown [9.123.0.169])
-	by smtpav06.wdc07v.mail.ibm.com (Postfix) with ESMTP;
-	Tue,  5 May 2026 08:31:45 +0000 (GMT)
-Message-ID: <8c72bee5-664d-4ecc-b4c5-03f825febc75@linux.ibm.com>
-Date: Tue, 5 May 2026 14:01:44 +0530
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4g8sHX5xX2z2xGc
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 05 May 2026 18:34:00 +1000 (AEST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=xFhdnMyGr2fe6RYG2PqmfgjLgAw5UxY4geib/dvSCmcwO47a/ZFyxzZALj3pHeIXGyk4POSsTidIsLe064hKehk/+UfzJ4MClvyR1ZiVR8gxSpQhLgUHWbLHLO9kLeO+GnazBcZ7e88vZGNo1GvlLy86fzwb/GI/wZ0Y7i9Pz3tlNlagqTe1NPYq3rjcROmXJutibBW0JGpdm8SG8DEn2ybOgEz65gove77sMq7ZkmgGMj5xV0+fb6aVBPR0rlbw7q3o135KxK2QczN85bIRXwLwo9C4GtO2jN2/Thzbu30pdxEIqzWEGpYiFkNmB+HG6780Afv72fpcfaGtQsQ7Tw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=a9nKivciaRUziGk20N7Bd6TmSicGqlJiKzVSJ033QBg=;
+ b=U/4ulPKjNgrS+Tkui8B28vDMDbAeN5VJnPAtygNjumue4kyCHiuy/hzmsVV9wID8ASrKMaBnxggUukIsmdOs+4xaC2kb4SeZdd8//lLF/FDEFL5255vYB2M0ZRzQEaf5gVHXwCN31hWjmwSBzAUyYLVNSe1Pv/Ez1PDUOt1KhvV88xYVSLIZYcVzbGQqBE14s5CMNNib//83V8SYuXctB4IKyN6DRri10gzwO76IGs4LZiaaRD7AmvVnUdrqjHxqilmXFjxJLr/YTvPdGBanjPE9a5HfudW6+H/5l9iEpSx0DMhI+ZVYrwx1EL9WYd/ScyHLIgUtjwiEgFt7XBa3RQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=hitachienergy.com; dmarc=pass action=none
+ header.from=hitachienergy.com; dkim=pass header.d=hitachienergy.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=hitachienergy.com;
+ s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=a9nKivciaRUziGk20N7Bd6TmSicGqlJiKzVSJ033QBg=;
+ b=aJmZDI/RVmUihYCAl8/If1viHdVfognqG2m31swUlp9A+wrNG0s5Lg/T6NwLf/Va+gQd0ufdUvSPgb2db06ifhdBHMjhxFpdDvfyD9RBP1dI9TCUJ4Vs+uAzBGCQo4YXCY469xC75VSfGX5mBAeG3eQzrJESSLP3KBE0f8stbXUOTQ0usfjTw7gvo7DIKvhbacLUZT1moFjtppwNZgmogDRw3cZED02ypJ4pOmVN+yo24cszNGxH5NHIClRoUjim/5zU8bguX+I2Hi5Bhwncrcte21UAtD2D88DkbNM89/gzYhaPihFiZoqw4takxYBiOe+VCx2BGa6On9ZgAVdu4g==
+Received: from AM0PR06MB10396.eurprd06.prod.outlook.com (2603:10a6:20b:6fd::9)
+ by AM9PR06MB7330.eurprd06.prod.outlook.com (2603:10a6:20b:2d0::22) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9870.25; Tue, 5 May
+ 2026 08:33:34 +0000
+Received: from AM0PR06MB10396.eurprd06.prod.outlook.com
+ ([fe80::f64e:6a20:6d85:183f]) by AM0PR06MB10396.eurprd06.prod.outlook.com
+ ([fe80::f64e:6a20:6d85:183f%5]) with mapi id 15.20.9870.023; Tue, 5 May 2026
+ 08:33:34 +0000
+From: Holger Brunck <holger.brunck@hitachienergy.com>
+To: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	"netdev@vger.kernel.org" <netdev@vger.kernel.org>
+CC: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+	"andrew+netdev@lunn.ch" <andrew+netdev@lunn.ch>, "qiang.zhao@nxp.com"
+	<qiang.zhao@nxp.com>, "horms@kernel.org" <horms@kernel.org>
+Subject: RE: [PATCH net] net: wan: fsl_ucc_hdlc: free tx_skbuff in
+ uhdlc_memclean
+Thread-Topic: [PATCH net] net: wan: fsl_ucc_hdlc: free tx_skbuff in
+ uhdlc_memclean
+Thread-Index: AQHc2+C9zkursVznM0ykjVaFtNrz0rX+6qiAgAAws/A=
+Date: Tue, 5 May 2026 08:33:34 +0000
+Message-ID:
+ <AM0PR06MB103966EF99B706158C49CB3EAF73E2@AM0PR06MB10396.eurprd06.prod.outlook.com>
+References: <20260504161145.2217950-1-holger.brunck@hitachienergy.com>
+ <3e1a653b-81bc-4008-8f84-77c823aeef49@kernel.org>
+In-Reply-To: <3e1a653b-81bc-4008-8f84-77c823aeef49@kernel.org>
+Accept-Language: en-GB, en-US
+Content-Language: en-US
+X-MS-Has-Attach:
+X-MS-TNEF-Correlator:
+authentication-results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=hitachienergy.com;
+x-ms-publictraffictype: Email
+x-ms-traffictypediagnostic: AM0PR06MB10396:EE_|AM9PR06MB7330:EE_
+x-ms-office365-filtering-correlation-id: bbc9aa4f-1310-4adf-7ab1-08deaa80ff17
+x-he-o365-outbound: HEO365Out
+x-ms-exchange-senderadcheck: 1
+x-ms-exchange-antispam-relay: 0
+x-microsoft-antispam:
+ BCL:0;ARA:13230040|366016|1800799024|376014|38070700021|56012099003|18002099003|22082099003;
+x-microsoft-antispam-message-info:
+ QLCnHEBj2zJqQsITzzjy47Wm2Wxi4r9NzEx9y9XiAZsCjNjyEeUqY4S9GiBzP1Xo/2LCcMUTJ7d5zbXxxXlOdgbN0U6oBlZTDJNq1A3G8EyMHW105++3GUx4NcIe16vNk+/BWFhwnDlRBlfeF07qucUJWH4Qq7TN7VZs5O2vy2GIaJ3shBtWSMcio6VGzs8mB/973Sx9Phr8lSRucCEKEIHDUWW6eN2LvcvIWmPbNrWGDyZf3mpGMkY/gY6sME5a83gGFoTC/Y7WLYTZhTLLwXG3+b+I4KkqHYt5PFaINZO7GMRKChEZALNSOmCzlX5IOhtzluR1YJ5Q+2kdbsxdJCP7uOMx29sMSHDAq9o4tFifNRHqWIPJqTeMWhT+AhDSqugL0kNI9f+T47bWNGg5Tq++t8epwMuPxNlVIp5VPPSYGCrbernG7wla3wOWdLv7+S2/+iaEGsaR5OURDknsc/43VJ/GXXYs+oanod0YPFlDvjVZjMrcezPR2BwZ1XrOUNPAH2TmWS8RzvrkwyBAACnFr/vcME+JXldmtOoTSpmhh21LICSGI3/w7/g67B7JCR6MpTgk0RavcMEBkSXHo79GvdKo0RFwGs1iNZibZO0HrO4bNjTLGIM6FqG9Vug0AjXxzmTSOwbNzvnwrSdrZEaW9mc7Cx19LY/UDLVnavF0UHuRQ4/9/LmpdW9G7m4Q0XM3IKGGoiWDbGxqN6dbx9D7h30purGgHaxmIUZWsrpaSd3kK26c0FTzVrShrU4g
+x-forefront-antispam-report:
+ CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AM0PR06MB10396.eurprd06.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(1800799024)(376014)(38070700021)(56012099003)(18002099003)(22082099003);DIR:OUT;SFP:1101;
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0:
+ =?iso-8859-1?Q?dyubrUH/WZcCHjraKJ+Ja18ojDUeXAU8EekDVEjpY/lM8EAelHcscvU1y+?=
+ =?iso-8859-1?Q?ijPowqH5WQwPBDA6edEw5y+3Ba4TppuqrUkRpYTLFwdZ6UFAD0x9gqZieC?=
+ =?iso-8859-1?Q?H1yG5uzkWgWSj6eq9p7qtaoiCC2iPIM7dsTea2vQAf4cUQLPU8aux+5oaZ?=
+ =?iso-8859-1?Q?UvNhqUpGAXqa6M4pdpSenESMDpmqnZQ//OrZ59YlRETg4s06tLDMcnxzJr?=
+ =?iso-8859-1?Q?drb/PZ4qlAS9KyB2bJ/f772+jIBuNQepjP/8/duBjmsJo4DRx6GYIEJhlK?=
+ =?iso-8859-1?Q?YBvwgWVuJ6LDXByDLURkjL76CO2vZHCYEIJGcl7WfFbp+SbxgCihFf8XEY?=
+ =?iso-8859-1?Q?F185uIbVWsM82F/Z4DX0Nz+r1hBRbYGv45zSTO1e4g1bcYkRD6Yvp5vP9l?=
+ =?iso-8859-1?Q?y3YOO54zrgGyx8y5z4TgN/KhQB/0lCgSoLTQiRVtSSkgHp5sasBAEzu8+9?=
+ =?iso-8859-1?Q?ieNtUgJs1jjoyX1J1XDuDaqIwBKhANTMuExczbZ4BK2TysK8ou2XLY6QYS?=
+ =?iso-8859-1?Q?pcXfft8DrqEn/LpZdLsd15TdBysvqe2J/+/meJBmOBEb+u9mKqH1yrK47x?=
+ =?iso-8859-1?Q?R1w6NJ58IkGC0Cjxq9osRIAG6V2+49bRVqlDvvGWeggiVFiH8iwXwE9KlX?=
+ =?iso-8859-1?Q?CvW8kbLnNx5K1BQ+T0cKWUyjV6vRhwkl8DguiVN2xUlfYtSH1SoKPrSlLJ?=
+ =?iso-8859-1?Q?gOuF0x5rIicHOd713MIcSO/FqYRK9XZ1Frf5zz58UpQaHuYAVdM5RF9pvu?=
+ =?iso-8859-1?Q?Z0tDCBaoQRMr86goQ68ITE28/G/FWUn82I1xRMrmavruw6Owo4QLYbMEE6?=
+ =?iso-8859-1?Q?nIIJZLt21yGnOed9SM2NpXDdtxCDQTbbCv/mudFEdVGNlfT2d7KfpTtI/j?=
+ =?iso-8859-1?Q?vF0ESevhmdzozrVKUdzoJ9qKVJhdwhGhksMYbxmRt/ucaxMVekqSmzRab/?=
+ =?iso-8859-1?Q?vTIJw7T3I6j2q6WKUjEMlMpabeUjmBpmz6wUvDrakMml5I7wIKgpLoLeDR?=
+ =?iso-8859-1?Q?V4bRTJwJxrMMCFWD9CFjVWM5kgHGQS5gY0oYcILyxNbUH6FcZ6yzyH8Lj/?=
+ =?iso-8859-1?Q?k2G/+Uhc4Pclg/ic+HoCSruSH/nDPU/MNYVhbXpbBiAtNU/u1AoRPvgqsw?=
+ =?iso-8859-1?Q?dFbWKpMph2LxebFl7DmrWPkfCii4ITA7t/S96G9Xw8WQnTSkRH6Z67pjYJ?=
+ =?iso-8859-1?Q?Z2tjLLvZGdQb9aP2VenVMvVoKUxBdt2068vH1f5eBRJC8YS/eQRJjHCKLG?=
+ =?iso-8859-1?Q?pv11Tuqom+habJhVNwRsKYUmcAE+7pbDC/EweG5fAQ0De45CgvcT1Nx665?=
+ =?iso-8859-1?Q?cl7+cR+dk7qNj9kvNTKHZ1dW0Z6BJl5VnM/pxMy09ZN49UzuktcLQMGrlV?=
+ =?iso-8859-1?Q?vFewlZw/RX3KKFujZoqWYiSwQ1zMzzdPRjQQyJmSffzbKPp6bdY2KQpBLP?=
+ =?iso-8859-1?Q?DjBVED4mkQUXIRpX/qPIMHgiwqSE9NfOObMKZLcjVsL/fmSfvgLcTNcjgo?=
+ =?iso-8859-1?Q?WckCKe7R/mrNPrJx368xK8VjbJ/uttdaElsFAud/Ipz7SqzOdBkuX/OL56?=
+ =?iso-8859-1?Q?XV4q90tjXdZx7S+zSRcO3F76nSKPhS+OrWnv02gCDYoebUitxtI60bnA0E?=
+ =?iso-8859-1?Q?CDrcHlLNIpy6BVQ61YApZiQWS0B7Tg2wg+mrDAvH+ZQqck8HJSBUSW7Asq?=
+ =?iso-8859-1?Q?JAKifHBKz+yGuZNFhGNCbu5hAc3e7aL2Y5sUMsiQG9VYveiZ+fsBD1DRd6?=
+ =?iso-8859-1?Q?yTZxEwgz0KTIFGVm7i4ZZNnIYX/Igkkjj+cXsK14wQ4WEc8hE/9QqAu1PC?=
+ =?iso-8859-1?Q?J0sM19V8cUI+BWVGU0HzH/uiacfA9vY=3D?=
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -81,126 +136,60 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 2/6] KVM: PPC: Introduce KVM_CAP_PPC_COMPAT_CAPS and
- KVM_PPC_GET_COMPAT_CAPS
-Content-Language: en-GB
-To: Amit Machhiwal <amachhiw@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
-        Madhavan Srinivasan <maddy@linux.ibm.com>
-Cc: Vaibhav Jain <vaibhav@linux.ibm.com>, Paolo Bonzini
- <pbonzini@redhat.com>,
-        Nicholas Piggin <npiggin@gmail.com>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-        kvm@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20260430054906.94431-1-amachhiw@linux.ibm.com>
- <20260430054906.94431-3-amachhiw@linux.ibm.com>
-From: Harsh Prateek Bora <harshpb@linux.ibm.com>
-In-Reply-To: <20260430054906.94431-3-amachhiw@linux.ibm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTA1MDA3NCBTYWx0ZWRfX9KOC+1u33PMS
- EtXmb47YOTat61uKHygQGBuv720+CIeB/qIXHyBndf1SmZIx/ZS8yoNrUqGp57qZh4KFdFRpDtP
- 6yMq4T8CllduOOaM8070Vb1ep0HJgeh31pQ3NALQcG7nAk0lOC0KAI98caPd1bJC/JVICOC2Em/
- +L7L9ujJbtZGE39yXbtzx+18ND0LzarnF3WdlpaConA36Izdfraew7WsNEhHlP4mc6FWXNDO5xW
- M8auEbhmtq8whCl7wgb++3MesegKci+lFwAV7Ao/oKZfdzuQUhpY26tvXllz7OmcpLGvcjyc6qs
- eCkcO6rID/OKw8fdTENgtn2zPCeUDpBO3gLEzBaLX6paBY6iZoIrbR8rjuNar/cx//RkUyij49O
- 3EzHZOL6/iQLs48Do2gontiBeYZLcWK3WaKv3CPyTmKdzxBOkYDDljzkGAQqACPqmq8/VBqK1SE
- vVA9U06UtcmRwpg/p5g==
-X-Proofpoint-GUID: o59ZPpBlbnUmsti7_Mh6cxhtBfobLzmz
-X-Proofpoint-ORIG-GUID: NvttF5c3fnTZWqALW5T8POHRWbpM_xXn
-X-Authority-Analysis: v=2.4 cv=eu/vCIpX c=1 sm=1 tr=0 ts=69f9aaf8 cx=c_pps
- a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17
- a=IkcTkHD0fZMA:10 a=NGcC8JguVDcA:10 a=f7IdgyKtn90A:10
- a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22 a=iQ6ETzBq9ecOQQE5vZCe:22
- a=VnNF1IyMAAAA:8 a=kGkaLfDY5_2FI7PzZF8A:9 a=QEXdDO2ut3YA:10
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-05-05_02,2026-04-30_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501 phishscore=0 lowpriorityscore=0 clxscore=1015 adultscore=0
- suspectscore=0 malwarescore=0 bulkscore=0 impostorscore=0 spamscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2604200000 definitions=main-2605050074
+X-OriginatorOrg: hitachienergy.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: AM0PR06MB10396.eurprd06.prod.outlook.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: bbc9aa4f-1310-4adf-7ab1-08deaa80ff17
+X-MS-Exchange-CrossTenant-originalarrivaltime: 05 May 2026 08:33:34.4960
+ (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 7831e6d9-dc6c-4cd1-9ec6-1dc2b4133195
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: /ZiMmhLNGh8y+Ag9wugV7lqUMrjdQUmUCLSp5GkHzsikZnjZ6WMPi5TPhEdJL5G2YX0+FalzsXBXmxtRQtBvWRCMTema/u9zyMjsOGjoeCA=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: AM9PR06MB7330
 
+>=20
+> Le 04/05/2026 =E0 18:11, Holger Brunck a =E9crit :
+> > When cleaning up the resources we need to iterate over the tx_skbuf
+> > array to free pending TX messages.
+> >
+> > Fixes: c19b6d246a35 ("drivers/net: support hdlc function for QE-UCC")
+> > Signed-off-by: Holger Brunck <holger.brunck@hitachienergy.com>
+> > ---
+> >   drivers/net/wan/fsl_ucc_hdlc.c | 7 +++++++
+> >   1 file changed, 7 insertions(+)
+> >
+> > diff --git a/drivers/net/wan/fsl_ucc_hdlc.c
+> > b/drivers/net/wan/fsl_ucc_hdlc.c index adf3863463f5..68f78aeabdc3
+> > 100644
+> > --- a/drivers/net/wan/fsl_ucc_hdlc.c
+> > +++ b/drivers/net/wan/fsl_ucc_hdlc.c
+> > @@ -739,6 +739,8 @@ static int uhdlc_open(struct net_device *dev)
+> >
+> >   static void uhdlc_memclean(struct ucc_hdlc_private *priv)
+> >   {
+> > +     int i;
+> > +
+> >       qe_muram_free(ioread16be(&priv->ucc_pram->riptr));
+> >       qe_muram_free(ioread16be(&priv->ucc_pram->tiptr));
+> >
+> > @@ -769,6 +771,11 @@ static void uhdlc_memclean(struct ucc_hdlc_private
+> *priv)
+> >       kfree(priv->rx_skbuff);
+> >       priv->rx_skbuff =3D NULL;
+> >
+> > +     for (i =3D 0; i < TX_BD_RING_LEN) {
+> > +             kfree(priv->tx_skbuff[i]);
+>=20
+> I don't think you can just kfree() an skb like this.
+>=20
+> I think you have to call dev_kfree_skb_any() instead.
+>=20
 
+yes you are right or at least dev_kfree_skb() as the error handling code in
+ucc_hdlc_tx does.
 
-On 30/04/26 11:19 am, Amit Machhiwal wrote:
-> Introduce a new capability and ioctl to expose CPU compatibility modes
-> supported by the host processor for nested guests.
-> 
-> Introduce a new KVM capability, KVM_CAP_PPC_COMPAT_CAPS, and a
-> corresponding vm ioctl, KVM_PPC_GET_COMPAT_CAPS, to expose processor
-> compatibility modes supported by the host.
-> 
-> On IBM POWER systems, newer processor generations (N) can operate in
-> compatibility modes corresponding to earlier generations, like (N-1) and
-> (N-2). This is particularly relevant for nested virtualization, where
-> nested KVM guests may need to run with a specific processor compatibility
-> level.
-> 
-> The new ioctl returns a bitmap describing the compatibility modes
-> supported by the host in respective bit numbers. This allows userspace
-> to select an appropriate compatibility level when configuring nested KVM
-> guests.
-> 
-> Signed-off-by: Amit Machhiwal <amachhiw@linux.ibm.com>
-> ---
->   arch/powerpc/include/uapi/asm/kvm.h | 6 ++++++
->   include/uapi/linux/kvm.h            | 4 ++++
->   2 files changed, 10 insertions(+)
-> 
-> diff --git a/arch/powerpc/include/uapi/asm/kvm.h b/arch/powerpc/include/uapi/asm/kvm.h
-> index 077c5437f521..a38dff7a8aea 100644
-> --- a/arch/powerpc/include/uapi/asm/kvm.h
-> +++ b/arch/powerpc/include/uapi/asm/kvm.h
-> @@ -437,6 +437,12 @@ struct kvm_ppc_cpu_char {
->   	__u64	behaviour_mask;		/* valid bits in behaviour */
->   };
->   
-> +/* For KVM_PPC_GET_COMPAT_CAPS */
-> +struct kvm_ppc_compat_caps {
-> +	__u32	flags;
-
-You may either want flags to be __u64, or rearrange to keep variables in 
-descending order of size or add padding as appropriate.
-Also, if we are not using flags with this series, we need to document 
-comment as /* reserved for future use */
-
-> +	__u64	compat_capabilities;	/* Capabilities supported by the host */
-> +};
-> +
->   /*
->    * Values for character and character_mask.
->    * These are identical to the values used by H_GET_CPU_CHARACTERISTICS.
-> diff --git a/include/uapi/linux/kvm.h b/include/uapi/linux/kvm.h
-> index 6c8afa2047bf..1788a0068662 100644
-> --- a/include/uapi/linux/kvm.h
-> +++ b/include/uapi/linux/kvm.h
-> @@ -996,6 +996,7 @@ struct kvm_enable_cap {
->   #define KVM_CAP_S390_USER_OPEREXEC 246
->   #define KVM_CAP_S390_KEYOP 247
->   #define KVM_CAP_S390_VSIE_ESAMODE 248
-> +#define KVM_CAP_PPC_COMPAT_CAPS 249
->   
->   struct kvm_irq_routing_irqchip {
->   	__u32 irqchip;
-> @@ -1349,6 +1350,9 @@ struct kvm_s390_keyop {
->   #define KVM_GET_DEVICE_ATTR	  _IOW(KVMIO,  0xe2, struct kvm_device_attr)
->   #define KVM_HAS_DEVICE_ATTR	  _IOW(KVMIO,  0xe3, struct kvm_device_attr)
->   
-> +/* Available with KVM_CAP_PPC_COMPAT_CAPS */
-> +#define KVM_PPC_GET_COMPAT_CAPS	_IOR(KVMIO,  0xe4, struct kvm_ppc_compat_caps)
-> +
-
-
-This patch can actually be squashed with next patch where the struct, 
-macros are actually being used.
-
->   /*
->    * ioctls for vcpu fds
->    */
+Thanks
+Holger
 
 
