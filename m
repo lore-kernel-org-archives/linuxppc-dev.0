@@ -1,51 +1,65 @@
-Return-Path: <linuxppc-dev+bounces-20482-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20484-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 315F3CD3427
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 May 2026 16:34:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8C9D5FF8855
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 May 2026 17:15:52 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4g93xd4Rrpz2xmV;
-	Wed, 06 May 2026 02:34:13 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777998853;
-	cv=none; b=CIac45dSaHh74BFT6GvnzpLldb+GQC1vjhU3njQF3XypnjzK/RGZZjcn7XTAHCLd5750cbWy6hZs5e6qRTeQqOC+V3dWfrP5glULhKzxZAz4JCzB+hVu1NmHynWvJcnv+XGMx7C5Xsuec79VOF9BCRiQtQPqhmld3FweSFkvFYDC+3ZlmQWL2fugw4aCaM7UAtpubgFJKm/ywFVKtSRCSSwBnmwlc6BL0pgcrO15R2TcNzF6yq3zocveG71rs7sYjxHL327pGqSmS7nmTkX6upiaE93mF9Ve+/ErwlDTX7nzZekxT6RUFz4g82DBdey+f2KVplCOB6pQYODTlFgefg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4g94sg0K3qz2xSF;
+	Wed, 06 May 2026 03:15:51 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778001350;
+	cv=none; b=nCj7Cut7He/xbVI3Sk9LhLiyxORDxgNkvLk0OesBpw6+HyRYN4W9EH7qXMl6vZ034Tq4WwZ/mJQhljiEzsay8ROimbHHB2zziA8C/uVIbsYUvPZ2guFIR7DoA+5sF76CyW+M2xAkhdVU0UXhkxPIR9eIlh1FHGeUfhy4pk+SEOEWcDCrmlq4wl7sByGRTtEPP/51us82FPiphMXKDRwvkOfT1ZCpYhaTv38zJQ99JSLVcWfvbhHk+s7NmbF0N1BRNBRyuIEYmbuAddCK3KJ/wEYaoXf4n7mveXscLBeU1jFPjWga0AVYGGeORI7abMW+YusvyUpLzMs4wIrGEFitbQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1777998853; c=relaxed/relaxed;
-	bh=aAcP+V5uYvpjXQHHoaBjywU/FE8NEPjZVq64HB6wGUc=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=JESjddAwwdErW7M7E0ea3gjm7sE4wcfeh9Dv22LH2SvFQL3H2EpCZh8kNI3LX/VQRBvAO3ovN4PQuwckMhq/yw4YAvex788dKoSCDRbWGP4kz5pKpGvxdRG08Up9vW/cHwRtZAsBA9QR9kcRi9dsqYUOJ390XJIi85+T84NOL7Vub7Kw8pNPvBDq55D9WAh1PdZ4Vk2p7+zFiSTsRdDcK8U0i0IrHNpD52BDdJ/ZR07VqCgnYZ+C0jYVf4eq3Bu8ky1hvcr5xI+j7yD3g80FGZ6cea9wzXGpekwYHKzhqOmM1PsPlT44xa2yHG8pkqqj1ZvYqTxUhI8nViKG6IEEBA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=jMBNax/a; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1778001350; c=relaxed/relaxed;
+	bh=YXlEWiUVz4WCNvp1+Z5WvUPbQUYHYY0Ab0ojH/g0UZM=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=FjMBF/7TW3FO/btDRhBKlo+2DxY3FqGhlg77q7yOw8+tYGWciMBE1WoF+MmKJh/iCO59paKIj2/MN8Fvis73TpIrrO2Snhcf3A20ShSMgWzGSlzmLXQk1GQEcL+DnS/3f2GHUq/rrz/1Baf7VyjE2ytQHB72KBSy4rR+NvBHn9wSVEi9jHzc9v+bYvLYAS5UMEImizUN/xXHi41e/210SqvByPF0sd0I2IkUPc53HUixZvQ2yFK52r0hg9igk4JRG/0JZJVf03UCXIHXI81xIUnlvqxZOgVhZSHcEQhozwGrYuvqWNNVViRxVDDgBTp7KKz8Ac/zq4bSyTMJEyOpxA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=nwr0MUIZ; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=jMBNax/a;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=nwr0MUIZ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4g93xW4QGNz2xMV
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 06 May 2026 02:34:07 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4g94sZ5DQwz2xMV
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 06 May 2026 03:15:46 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id F23A043E36;
-	Tue,  5 May 2026 16:34:04 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6FEE9C2BCB4;
-	Tue,  5 May 2026 16:34:02 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 3574360181;
+	Tue,  5 May 2026 17:15:44 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 93B93C2BCB4;
+	Tue,  5 May 2026 17:15:43 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1777998844;
-	bh=tN7fwzB7Rvm/u6+2EX9tISVHc7XTHrTV+kwSA1Ez0Zg=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=jMBNax/aPk18eo9Bc84j49KRsEELtbPxD7pgo0d1OndSJao+LiWjXdqk1gtXhPuT1
-	 kuOJhYkMOUktGdjR2E3YJcXUnlpTUhmAW76ndOr7z8+hG68ZJ6+cS1n5q4ENRhocXW
-	 dKAUX/49J6bYEQaXJtvzkmzXbLwHuWxyLnoKMCq9dFepj7F5ny0kkFOOwsZp88NLWg
-	 D2EROoMRaX31/P7PrLsz/8lCYnV41868FvkpN7+3h8iXeCKwyEFQ+W9G3UMv0ECYza
-	 O+jlzCOvjHi7K/N1eVD00eLLDtZaYnTDpjGaSxZK7c79btkRt7HuGjc8hZkSgNiq5r
-	 yKV4u/mrV67Xg==
-Message-ID: <ac6b9bcf-0106-49fd-82ff-20ccc5612fa1@kernel.org>
-Date: Tue, 5 May 2026 18:34:00 +0200
+	s=k20201202; t=1778001343;
+	bh=p+kXkUUsL0EOWDxii9ahd29pn2Z5VfXQoGjhwSebnZc=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=nwr0MUIZdxTY9BNcjP8SAD+u+Pno35zf4VXFMTNrj/LAnQ6IZp+eHfEtnG1V33X2I
+	 00Q83Ml5MKgC3i7mU60vdbaHQQRmN3YoxV53SU4TSBQXVB2C5/oNZ4mXyywIfkio8D
+	 1Af2Sx5+nKb2e5sKMAWSaPySo1FDUxzZipXeaiiqL+SuJxW/tV6pvLKThBsMlYXnmG
+	 9yOjHmPugvqjNBxZ+f/EdlJKOiMeqR9P6Kof7CQWQfZuudVGfbHI1qzg+hvp10VFnR
+	 coQVjVtcau6mdHMYe6sgmiMRkid0wc7FdzThTLAqlIoul+ha4wZvNPhTjW842z0lYt
+	 henTv9pPjUH/A==
+Date: Tue, 5 May 2026 10:14:24 -0700
+From: Eric Biggers <ebiggers@kernel.org>
+To: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+Cc: linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org,
+	Ard Biesheuvel <ardb@kernel.org>,
+	"Jason A . Donenfeld" <Jason@zx2c4.com>,
+	Herbert Xu <herbert@gondor.apana.org.au>,
+	linuxppc-dev@lists.ozlabs.org, Nicholas Piggin <npiggin@gmail.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>
+Subject: Re: [PATCH] lib/crypto: powerpc/md5: Drop powerpc optimized MD5 code
+Message-ID: <20260505171424.GA2291@sol>
+References: <20260504041448.15820-1-ebiggers@kernel.org>
+ <111ea924-fef5-441e-9849-83f938c913a7@kernel.org>
+ <20260504180044.GC2291@sol>
+ <ac6b9bcf-0106-49fd-82ff-20ccc5612fa1@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -59,145 +73,40 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] lib/crypto: powerpc/md5: Drop powerpc optimized MD5 code
-To: Eric Biggers <ebiggers@kernel.org>
-Cc: linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org,
- Ard Biesheuvel <ardb@kernel.org>, "Jason A . Donenfeld" <Jason@zx2c4.com>,
- Herbert Xu <herbert@gondor.apana.org.au>, linuxppc-dev@lists.ozlabs.org,
- Nicholas Piggin <npiggin@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>,
- Madhavan Srinivasan <maddy@linux.ibm.com>
-References: <20260504041448.15820-1-ebiggers@kernel.org>
- <111ea924-fef5-441e-9849-83f938c913a7@kernel.org> <20260504180044.GC2291@sol>
-Content-Language: fr-FR
-From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-In-Reply-To: <20260504180044.GC2291@sol>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <ac6b9bcf-0106-49fd-82ff-20ccc5612fa1@kernel.org>
 
-
-
-Le 04/05/2026 à 20:00, Eric Biggers a écrit :
-> On Mon, May 04, 2026 at 03:28:24PM +0200, Christophe Leroy (CS GROUP) wrote:
->> Hi Eric,
->>
->> Le 04/05/2026 à 06:14, Eric Biggers a écrit :
->>> Earlier the decision was made to keep this code for a while, despite no
->>> other architectures having optimized MD5 code anymore, because of
->>> someone using it via AF_ALG via libkcapi-hasher
->>> (https://eur01.safelinks.protection.outlook.com/?url=https%3A%2F%2Flore.kernel.org%2Fr%2Ff0d771d5-ed70-444c-957a-ad4c16f6c115%40csgroup.eu%2F&data=05%7C02%7Cchristophe.leroy%40csgroup.eu%7C8fce00ee4e5a497f0d8808deaa074073%7C8b87af7d86474dc78df45f69a2011bb5%7C0%7C0%7C639135145289986833%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=cS5krthqFluqLlSXBy4Dv0h34gms0bIYRUVfWetoAdg%3D&reserved=0)
->>>
->>> However, with AF_ALG itself now being on its way out due to its
->>> continuous stream of security vulnerabilities
->>> (https://eur01.safelinks.protection.outlook.com/?url=https%3A%2F%2Flore.kernel.org%2Fr%2F20260430011544.31823-1-ebiggers%40kernel.org%2F&data=05%7C02%7Cchristophe.leroy%40csgroup.eu%7C8fce00ee4e5a497f0d8808deaa074073%7C8b87af7d86474dc78df45f69a2011bb5%7C0%7C0%7C639135145290017177%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=bMbQdEM%2FQYmgz7lelwXuKepC2dZCvKz6Pa6ixwlGtrk%3D&reserved=0),
->>> it's time to be a bit more forceful with nudging people towards
->>> userspace crypto code.  It's always been the better solution anyway, and
->>> it's much more efficient if properly optimized code is used.
->>
->> Ok, why not, but what do you propose as an alternative ? Let me explain the
->> situation.
->>
->> We have two versions of boards:
->> - One with powerpc MPC885E, which embeds a SECURITY Engine called TALITOS
->> for offloading crypto operations
->> - One with powerpc MPC866, which doesn't have the security engine.
->>
->> To use the security engine, our software use the AF_ALG interface (via
->> libkcapi).
->>
->> Our software has to run on both boards, we can't afford two different
->> versions of the software and the software shall have no dead code. Therefore
->> we rely on the capability of the kernel to do the hash by itself when the
->> TALITOS in not available.
->>
->> The kernel has always been the place where we do board specific stuff, not
->> the application. I can't see why the application would have to ask the
->> kernel when the Talitos is there and have to do the hashing by itself when
->> the Talitos is not there.
->>
->> I'm really concerned with the optimised MD5 going away now, and I'm also
->> wondering what will be the way to splice a file into the kernel and get it's
->> MD-5 hash from the TALITOS if AF_ALG goes away in medium-term.
->>
->> What is the way forward ? I'm open to any suggestion as I really can't see
->> where to go for now.
->>
->> But please don't remove powerpc MD5 before we find an alternative solution.
->>
->> Thanks
->> Christophe
+On Tue, May 05, 2026 at 06:34:00PM +0200, Christophe Leroy (CS GROUP) wrote:
+> With userspace MD5:
 > 
-> I think I gave the solution in the commit message already, no?  Take the
-> same MD5 code and run it in userspace.  It will be even faster than
-> invoking that code via AF_ALG.
-> 
-> Yes, the selection of software vs "security" engine (if you actually
-> still need the latter, which in reality you probably don't) would then
-> occur in userspace.  But selecting an implementation in userspace isn't
-> unusual.  It's no different from how different CPU features are handled
-> in userspace.
-> 
-> Anyway, please don't confuse this patch (which only affects performance)
-> with full removal of AF_ALG (which would be a hard break, and won't
-> occur until quite far in the future).  This patch is just a nudge in the
-> right direction, and a cleanup of the kernel's powerpc support to be
-> aligned with all the other architectures.  So I do believe we should
-> proceed with this patch.
+> root@miae:~# time ./busybox md5sum avion.au
+> 6513851d6109d42477b20cd56bf57f28  avion.au
+> real    0m 2.38s
+> user    0m 1.99s
+> sys     0m 0.38s
 
-But this cleanup is a huge performance regression. If it had been a few 
-% why not, but here we are talking about 30% more time. And userspace is 
-even worse, see below. I really doubt that porting the ASM 
-implementation into userspace will make the regression disappear.
+Again, that's an unoptimized md5sum implementation, specifically
+busybox's which is designed for size rather than speed.  You'll just
+need to replace it with a speed-optimized one, if that's what you need.
 
-Lets give a summary on performance:
+As I said, you can even reuse the same asm file, as it doesn't contain
+any privileged instructions.  However, there might be even faster code
+out there (a GitHub search might be worthwhile).  The code that's in the
+kernel often isn't the fastest code that's available/possible.
 
-With the TALITOS security engine embedded on powerpc 885:
+> Now, we are talking about MD5 which is obsolete and being replaced in our
+> systems by SHA256. So a commit message ressembling to the one in commit
+> 23e5c306a207 ("lib/crypto: sparc: Drop optimized MD5 code") would be better
+> as a justification for the removal.
 
-root@miae:~# time md5sum avion.au
-6513851d6109d42477b20cd56bf57f28  avion.au
-real    0m 0.71s
-user    0m 0.00s
-sys     0m 0.38s
+Sure, I'll update the commit message to cover that too.
 
-With kernel PPC MD5:
+> By the way, what are your plans for SHA1 ? I think SHA1 should likely go
+> away as well for the same reason.
 
-root@miae:~# time md5sum avion.au
-6513851d6109d42477b20cd56bf57f28  avion.au
-real    0m 1.01s
-user    0m 0.01s
-sys     0m 1.00s
+Eventually the same thing will happen, but it will be some years in the
+future.
 
-With kernel generic MD5:
-
-root@miae:~# time md5sum avion.au
-6513851d6109d42477b20cd56bf57f28  avion.au
-real    0m 1.31s
-user    0m 0.01s
-sys     0m 1.30s
-
-With userspace MD5:
-
-root@miae:~# time ./busybox md5sum avion.au
-6513851d6109d42477b20cd56bf57f28  avion.au
-real    0m 2.38s
-user    0m 1.99s
-sys     0m 0.38s
-
-
-Now, we are talking about MD5 which is obsolete and being replaced in 
-our systems by SHA256. So a commit message ressembling to the one in 
-commit 23e5c306a207 ("lib/crypto: sparc: Drop optimized MD5 code") would 
-be better as a justification for the removal.
-
-With the commit message modified to explain that MD5 is obsolete and 
-using it is risky as you explained in the Sparc commit message, you can 
-add Acked-by: Christophe Leroy (CS GROUP) <chleroy@kernel.org>
-
-But please consider the above performance comparison when addressing the 
-AF_ALG removal.
-
-By the way, what are your plans for SHA1 ? I think SHA1 should likely go 
-away as well for the same reason.
-
-Christophe
+- Eric
 
