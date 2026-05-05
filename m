@@ -1,67 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-20435-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20436-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1E1D3FF885A
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 May 2026 02:21:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0670FFF885A
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 May 2026 03:53:24 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4g8j1d12DPz2xH7;
-	Tue, 05 May 2026 12:21:25 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777947685;
-	cv=none; b=S7cdhcUEdGb1hcgIXlxEt5CP+ZWEeTRQFmAqJh22Gx4BPXfN7S+Va9TkHhO9PgJuFAFNOhiZa3ZPRJAd8mIHxZnMeW6diuGag+XGTqn8sHzLSPeua8j0JqRQZbuu1zfeFRKjIIuNH92eH7BbOHmn4k0WDL8gPbYmKi84Mw9UBUCIZTsUI/I7f0wtdM73pv7r0nzK4Z3x1SrJkYQhW6xCEzgp43OaCnO6xFbPkFCm9I+1bYwfaEL3ygPX13QLx04AcMZpEd9fdVWVfVT6Kj5SE656tWWArglzxHkH3hwbxyyKLqPWRIp+h3Sfj407jVSpyBzM6rBmf5NSaFLvtX6tJA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4g8l3l3yvZz2xSF;
+	Tue, 05 May 2026 13:53:23 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777953203;
+	cv=none; b=LnwsusPA4DLf5DAA/Q63BxFPVBO9dpyBuafy22m344Yu+lXAf6ZH0Sf4GWpTXq8UR4Sj8/FuUOGfF1uDLKjPblBYEqdCIr8AtbCHFqWU3kf1xDdKRlTIdfJFgc7RaszmLjtnbQ+Zku9KMl+huRrvtnE7wqlIZ2wxSMzqdcqNZuUT5Sxv5KBXTZa4uH6CIBkNM4fsRN4E2T4hbKYOdLmla38+PKGOhksgYXWpnMyspMJquoHuKOR14INAB6BRE95/pcd68acL6u8qaIWKtKSxTo+Z+C2DtZrxjTc5uUrdVODoKGmiZ5F4T+W46GCNlt7HzrFWktxSOEJ+GsuSnoIVMg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1777947685; c=relaxed/relaxed;
-	bh=unmh/NzLauaJRbPvFNyUmXNZp8PhEMfuHX3iK6/vqVY=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=aGZBk7BFIGRQiz+0/eU6Rt4LX2Fg63LlmPUmK5ayfSjjux9yryhNEo/6pmW3LlAHZKZdj0RcSntQ+0ViJSs9njEry+mEQhh+M4fZ8dTZBf37rcZR+2gMZeYV+xVwrjAALbDg4xG5C8WUYy2qsWLVfIa6x9SrMXNNCgj4WzBBrsc9XZ7qFGeRrRVBa6G9cMJ/0NBRPxqSx610SRpC6ea52V1wdTPlCIkEZQuO3K424sGLPVcXFDv8mxo83i15ozgjqfFLo4aTCrxoWYt15pOZQqg4065Vwr3Wzb4HKzlqyElU1ApRbW3myt58vzjCG3u+KmO1/w4i+2FaONnPX8dB3Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=YhViaJCn; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1777953203; c=relaxed/relaxed;
+	bh=AOJeb8lgDgFb35AqyMJaZNyKLOJQn08GV7x7rxUc4Wk=;
+	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
+	 In-Reply-To:Content-Type; b=iBRwhG6997D0em9ml97vaz4Y3vyyr5Db1l4UvBKoMy+7W/gphZtWKwHNQXM6p2ilg9dX6gUxl9j3C6oaTl5ZTvv3an7g+pMd5LZ1soxywoIy5m7xmXnt/9jo35zzi+O+a+XO8dODWBBwaZCbgIKtjnG1NDP3Nj1houShk83zE93pdWuoiF/J5E96Xr0rmWN4fCDJUE30DDRpKo8Y+w4idrjbPfw9Q/xw8jxDECrIuwEj0lTu2+Ay8uNDJMbHCgEQkElk5WyRJBSm2CT/SRkhPZvDEj79gdZ3Hr50IvHTmG1b8is3mD++LtBjUM6jK+G9wYCnREkudA7+PmXfJkL5Vw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=kox+M4Ch; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=YhViaJCn;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=kox+M4Ch;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4g8j1c3Pn1z2xGc
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 05 May 2026 12:21:24 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id C2EBD4451E;
-	Tue,  5 May 2026 02:21:21 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 86AE0C2BCB8;
-	Tue,  5 May 2026 02:21:21 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1777947681;
-	bh=JO2IMv4fsRX0ZcyGTHisLvXxtyNEwmC3NfmP+6npWNk=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=YhViaJCnZ9Iqwy4eVh+l7NLp5EUAgIDkA7qwztzRtOqY3Ju4IaOnqMoidw5NLSn8q
-	 6m6WfGoxc/ZpKHOWKBmFoSq9bV3nbO3t7ikomujp8b+jM8QkXUH9Db16fgn3PTpJ8P
-	 7g4k1zRU0ITLxxrrM1x5rUpU1p6uI68qWt4lZtASPF7ruQUc8Xu7buLCt7kXCXGNQy
-	 tbbHU3DWLoalLFOKt+jB4jn3Tt9L6g/fq+bERDHLb+1IeeFHXDk4r+M2B1jQwCpdmV
-	 ke79exptDwH95rFi/UDlLZS+/+7unvKCTRc8+XmouyppdN0nPVHg+Lum2/drHPxY+N
-	 LYw3CMXgAjU3g==
-Received: by finisterre.sirena.org.uk (Postfix, from userid 1000)
-	id 6D4FE1AC5871; Tue, 05 May 2026 03:21:19 +0100 (BST)
-Date: Tue, 5 May 2026 11:21:19 +0900
-From: Mark Brown <broonie@kernel.org>
-To: Chancel Liu <chancel.liu@nxp.com>
-Cc: lgirdwood@gmail.com, perex@perex.cz, tiwai@suse.com,
-	shengjiu.wang@gmail.com, Xiubo.Lee@gmail.com, festevam@gmail.com,
-	nicoleotsuka@gmail.com, Frank.Li@nxp.com, s.hauer@pengutronix.de,
-	kernel@pengutronix.de, shumingf@realtek.com,
-	rander.wang@linux.intel.com, pierre-louis.bossart@linux.dev,
-	linux-sound@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org, imx@lists.linux.dev,
-	linux-arm-kernel@lists.infradead.org
-Subject: Re: [PATCH v3 1/3] ASoC: dapm: Fix widget lookup with
- snd_soc_dapm_widget_name_cmp()
-Message-ID: <aflUH_mk3i_IDkac@sirena.co.uk>
-References: <20260429021252.691263-1-chancel.liu@nxp.com>
- <20260429021252.691263-2-chancel.liu@nxp.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4g8l3k0XJFz2xMV
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 05 May 2026 13:53:21 +1000 (AEST)
+Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 644EKxd73390293
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 5 May 2026 03:53:17 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=
+	content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=AOJeb8
+	lgDgFb35AqyMJaZNyKLOJQn08GV7x7rxUc4Wk=; b=kox+M4CheAKiOZDV54u2kt
+	RmUwe/PyEgNccX0PEeHYBbRuaoQX1iu9eBEvOP+YRxr82EtvSzsVE+Y89DbreQXI
+	YPJkgR3eS5P3cPHAQnumdcEzyR6DLywRuVnjt7vzSdV9fRh27dw5DyELiPYE0H7Z
+	MJvOd6MPjhU3oxQYMPZJAUgSwa/cYN7/7hkCk0Czpp8SpmRAfH4bBkiiJxjkYhYL
+	cbSbOnnpQ460yTFQlIikrXDTxqOMTzWUd9gO5Njc8rc8Lm19YipvR8hE8o8reEoD
+	BhKv468my6TzZp10qAXpkCl14SQB6MNNqczBKQ1/eQB5Ujfc+DyITTlqnOaTV1SA
+	==
+Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4dw9xxhhd7-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 05 May 2026 03:53:17 +0000 (GMT)
+Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma22.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 6453dkEx012563
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 5 May 2026 03:53:16 GMT
+Received: from smtprelay02.wdc07v.mail.ibm.com ([172.16.1.69])
+	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4dwuyw011s-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 05 May 2026 03:53:16 +0000 (GMT)
+Received: from smtpav03.wdc07v.mail.ibm.com (smtpav03.wdc07v.mail.ibm.com [10.39.53.230])
+	by smtprelay02.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6453rGvL26018454
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK)
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 5 May 2026 03:53:16 GMT
+Received: from smtpav03.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 782E55805C
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 May 2026 03:53:16 +0000 (GMT)
+Received: from smtpav03.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id A3DC658054
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 May 2026 03:53:15 +0000 (GMT)
+Received: from [9.43.56.4] (unknown [9.43.56.4])
+	by smtpav03.wdc07v.mail.ibm.com (Postfix) with ESMTP
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 May 2026 03:53:15 +0000 (GMT)
+Message-ID: <6a79a329-2950-476a-a5ef-b0022e247581@linux.ibm.com>
+Date: Tue, 5 May 2026 09:23:13 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -75,61 +81,58 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="H51FCLIJf4TpdLl7"
-Content-Disposition: inline
-In-Reply-To: <20260429021252.691263-2-chancel.liu@nxp.com>
-X-Cookie: Alex Haley was adopted!
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2] powerpc/powermac: Remove pmac_low_i2c_{lock,unlock}()
+To: linuxppc-dev@lists.ozlabs.org
+References: <20260316174747.3871924-1-bvanassche@acm.org>
+ <5ee49a18-e6cd-4ab8-8430-e1ef64ec353f@acm.org>
+Content-Language: en-US
+From: Madhavan Srinivasan <maddy@linux.ibm.com>
+In-Reply-To: <5ee49a18-e6cd-4ab8-8430-e1ef64ec353f@acm.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTA1MDAzMCBTYWx0ZWRfX+BcQ2dVMqioW
+ kiS/itfxtNMG4MGvbS3gu+iywPFxK0zQ3dkPDHYNWdMtfJI4aStxn8OKM1roDjXykaYosaR38c4
+ /aUcIhU59zjD6g+DdiFbT1CXyD7MBPXeOImvllmqcOx9H6AEwxdxCxFprORZCgHcuVwcz7L7KTq
+ 88Mr42qKUbXBom7aG2zB60k2hxkQr7W36NQ5MH/ofAS1MJL+qh6mGIUfoDRM49aZQx0NXatjmo9
+ MKp+sKR7F4EQB8l+3XAGRAtCCrEsSRAIGb0KwR8J3IUfCodzjO6ROBbYD0t1xxUBUBuhjTKBmK6
+ M7NJ4fOZRuYvrIiHyynpd3cfcnrbfh7tJN/kNj3i2PLJdmUEPw+bKW+xWTaOowEGVX5OKs+xEYF
+ FI79QCBWp3bE328Vd/Z5EDNzO2tqNAf0HE6YSfwRoG79o88z+YTjBaWQDs/1KXXh6m8fKU0950o
+ 3XnbKRsBMUs4yJyfsnQ==
+X-Proofpoint-ORIG-GUID: rfe2EnyJRKfm68T_iLxot1uYF5H8GYPr
+X-Proofpoint-GUID: rfe2EnyJRKfm68T_iLxot1uYF5H8GYPr
+X-Authority-Analysis: v=2.4 cv=ctWrVV4i c=1 sm=1 tr=0 ts=69f969ad cx=c_pps
+ a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
+ a=IkcTkHD0fZMA:10 a=NGcC8JguVDcA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=V8glGbnc2Ofi9Qvn3v5h:22 a=fOfinEUf4hX9KF6QKBEA:9
+ a=QEXdDO2ut3YA:10
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-05-05_01,2026-04-30_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501 lowpriorityscore=0 adultscore=0 clxscore=1015
+ suspectscore=0 impostorscore=0 spamscore=0 malwarescore=0 phishscore=0
+ bulkscore=0 classifier=typeunknown authscore=0 authtc= authcc= route=outbound
+ adjust=0 reason=mlx scancount=1 engine=8.22.0-2604200000
+ definitions=main-2605050030
 
 
---H51FCLIJf4TpdLl7
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On 4/27/26 10:40 PM, Bart Van Assche wrote:
+> On 3/16/26 10:47 AM, Bart Van Assche wrote:
+>> Commit a28d3af2a26c ("[PATCH] 2/5 powerpc: Rework PowerMac i2c part 2")
+>> removed the last calls to the pmac_low_i2c_{lock,unlock}() functions.
+>> Hence, remove these two functions.
+>
+> It seems like this patch hasn't made it into Linux kernel v7.1-rc1. Has
+> it been sent to the right maintainer?
+>
+my bad, missed it. Will pull it in.
+Maddy
 
-On Wed, Apr 29, 2026 at 11:12:50AM +0900, Chancel Liu wrote:
-> Currently dapm_find_widget() manually constructs a prefixed widget name
-> based on the provided DAPM context and compares it using strcmp(). This
-> happens to work in most cases because callers usually know which DAPM
-> context the target widget belongs to and pass in the matching DAPM
-> context.
 
-> -	if (prefix) {
-> -		snprintf(prefixed_pin, sizeof(prefixed_pin), "%s %s",
-> -			 prefix, pin);
-> -		pin_name =3D prefixed_pin;
-> -	} else {
-> -		pin_name =3D pin;
-> -	}
-> =20
->  	for_each_card_widgets(dapm->card, w) {
-> -		if (!strcmp(w->name, pin_name)) {
-> +		if (!snd_soc_dapm_widget_name_cmp(w, pin)) {
->  			if (w->dapm =3D=3D dapm)
->  				return w;
->  			else
-
-This means we can't use the prefix to disambiguate any more -
-snd_soc_dapm_widget_name_cmp() will strip the prefix off.  We want the
-prefix in contexts where the name is specified by the user since the
-prefix is there to provide for disambiguation.  The prefix addition
-logic is a bit weird and I'm not sure it makes sense, but the search
-based on the fully specified name we got is something we want.
-
---H51FCLIJf4TpdLl7
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAmn5VB4ACgkQJNaLcl1U
-h9CupAf+MGqhy9yn/GtWv68HU9M+CSI26hbO/33u6YCfbI8rVD5r3sVvsPny+nIS
-Hjcpp4SW27502ByKDEE/6t2CNSBpJS0Z3YbgVr/nlsyhs9zVFbvBb3W0BTO10USD
-1cZyS1qeifNAglMYVM8zaR0YIHll+5NWVR4kQr2mVyOt6rOlfa6gVQWBpl5QlJbY
-327ly0J96cBfeR/Irzq0/ya89I4HPIJuCRuIpn8MJBWY/cvQl6l87qWAVoDpk0wX
-RTTkhF/PhREqDYMSDame5+VnaEqr2PJXZgu/MJlpOOgAHWaApnmfnVM62sUZXfkg
-POV16q9CbmYfk2lJbW1huCz+h5xygg==
-=YkxC
------END PGP SIGNATURE-----
-
---H51FCLIJf4TpdLl7--
+> Thanks,
+>
+> Bart.
+>
 
