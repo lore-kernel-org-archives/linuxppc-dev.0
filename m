@@ -1,44 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-20470-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20471-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 69D5DFF885A
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 May 2026 09:14:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2BE69FF885A
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 May 2026 09:25:50 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4g8t9H3Kmzz3bh6;
-	Tue, 05 May 2026 19:13:39 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a01:4f8:c010:41de::1"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777972419;
-	cv=none; b=SxUyrjd+ehE5vlrxsq8U2IuR2Kzask6eXMKhL+p7HVhDmu1+sjM55m86R5fbfFPzR26eggs+Z3Y0C0xxA2Nb366WCJIk7FXgGY056lsIql5yLsyqdWxxct2A8DazouFpqKKreaBCn29g7skixHNeMHm+gyNXHmjkTsANTE6NNftBZvltBdr3fCHYVVx6+I9FtQpgXa9oi4ok+vvt15FHLcHqkGhWwqxFeL1ldvBzDmPFhTk1J7Jyk72WDFmyFn2JyQglySJPg8qYxbbZGhlEZyTMHOtwKCvAsPj5+0kcg4krdrEe8FPeN3TBL4jETZJLH1RH6FZmoDL/1uVM+WhvHw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4g8tRJ5793z2xmV;
+	Tue, 05 May 2026 19:25:48 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777973148;
+	cv=none; b=gcKFJ2tjULEoBg1kcK7wgOaL2TNFl08Y+/DxBgW9K8hlZ9XjfPDVlRMC9+u+2gE6KDI3R+v/z5/PNLkjmBPQgM34vazxoFJt0A10niyBWjM/k9THa6UgnTTDdfI2274XnnOJODewgUSlmo/l3UIN4cZ9nZceKt1rwYIlGdCFoOCFsL8aDWuEyeLmT9odLQ/10gklZfo735sxwQemZgdgSckEd1q93Ks2BDq3BSsC2/urWMP+WEqvk2gj18ZNvrU8lKHcLPaMPL2J9azgjNYIaJfkmInL4HI4HpAHKEqSrGhKCNgC2WmHWiYNbuW3HpDQ4rrWWFwDynIbx12EVLd24g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1777972419; c=relaxed/relaxed;
-	bh=q1WKuPixKas8/Na99fAqYUbllmTgdW23TCYIUWSaFbg=;
-	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=ST/Y0K8trGilF1285H3VOFyE8xOdVpu74QY94eNQUdCIPowjI5M2KmWHbgI9a/4WKKH/Y1UUnB7Q2+c1MtaVNEpx6QyclrxUgGAEG9a4UsuVhW5Mo5/jGXkINb0jgslTrM3SEnzdk09AKJ/mrN2yy7uUPDNXZ7GpDeNJ3nVxHHRVC9STNpsLR5A4SQMApbbiPdQP3CjiQwI1Fj3wdZMfzkRU0EC2RJ2D6fY+SqTEiiDnzrlxmm4SGss3/2DnDv9kt+x1fuHCgCq+JZBR12d91le6s1/kt+b59gT6tjJsUNkbZv0x4hmqRrUFxy4bup12nIf80AegTb8gvS335sEXHA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net; dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=LMrZa8UP; dkim-atps=neutral; spf=pass (client-ip=2a01:4f8:c010:41de::1; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org) smtp.mailfrom=weissschuh.net
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net
+	t=1777973148; c=relaxed/relaxed;
+	bh=flgNu318i+smlJGXobfYGEwk3IisKd22Asxn2ovnvPA=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=auR4kI6QT1bQp31rPoYAfTphsetoO7OA+ENztJMlDxLkul/hhNIGUY/lsKutPZ4X/oFhRSssRKkdJluLCF9n1BCN6eA3qS+/yeYJg/wuTtQN+aRvHf7li6euC+BrIIAwMmotI5T5/bZc6skZuoflgRZp2VITltKXTaVKPDkhFYXWQa29bVnhpMWg4hxcVilQYGg+l2ln7mTfrGqiOWcEKfvX2VXp0dnEy8dJPBp7FgXHyZgbiR+H67lUZGKHRKPxyav37doykKVSU9dyCCRIomUEudU5A3cTyL49nUh/3D3MQo/mOFtWmbHZuTC/l5bJpxth8dGOP14+kdoLIdxATw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=JvBYmCnI; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=harshpb@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=LMrZa8UP;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=JvBYmCnI;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=weissschuh.net (client-ip=2a01:4f8:c010:41de::1; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org)
-Received: from todd.t-8ch.de (todd.t-8ch.de [IPv6:2a01:4f8:c010:41de::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=harshpb@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4g8t994Bvsz2xMV
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 05 May 2026 19:13:33 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=weissschuh.net;
-	s=mail; t=1777971922;
-	bh=3+TfV+G2pdtyPon4UoiayN0MzOd9dLRawRkDkEmqgQk=;
-	h=From:Subject:Date:To:Cc:From;
-	b=LMrZa8UPBgDJoGIsTna8H4ZvARP53soQigqMBW1IArgIR1gf6B9u0afV70UvF1Uin
-	 jY7hg4rJog4rDzYGOXybUL/fOAPQdxnme7eKMB1xSTM2jyWQ7Rglh8OxRK5megVbEz
-	 wRQOU4R0TgMW8eukf1MmwueT3G6MQvi+aspNjLe8=
-From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
-Subject: [PATCH v5 00/14] module: Introduce hash-based integrity checking
-Date: Tue, 05 May 2026 11:05:04 +0200
-Message-Id: <20260505-module-hashes-v5-0-e174a5a49fce@weissschuh.net>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4g8tRH49T2z2xSF
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 05 May 2026 19:25:47 +1000 (AEST)
+Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6457Kvrj3486157;
+	Tue, 5 May 2026 09:25:36 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=flgNu3
+	18i+smlJGXobfYGEwk3IisKd22Asxn2ovnvPA=; b=JvBYmCnI4EwH4sfnFeO475
+	bqWqWAe/b5+wCRkD1lZSTzIPaTNw3cprpLWR3gAcoji/zR97PnhXl5Bz7zIy6ysU
+	QM+hj3j4kA+FqWIfGItIvfmIzJF5VHj+s+0Zj4rBosBUKn2kBLV2kVP0FBJPrffY
+	lXlRb90RPEVcXlKbJ8jLuPc+lOzShM1W5fak3052cDtiYe52I7cue6S8XmT3BQJW
+	80dIjocMRmYwwgRUQ5zViwdBj+Ewm0mgnl4SMcQZ7XIGWThn/TgyixwCEZ1LNNym
+	O8Q94c+N3UydjtXo1xpwvsVE0k/3ei56mQd0t9F3+WwEXooQ0RQIiDk3ZRx4vXeQ
+	==
+Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4dw9xxjj2k-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 05 May 2026 09:25:35 +0000 (GMT)
+Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma23.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 6459OgSg013227;
+	Tue, 5 May 2026 09:25:35 GMT
+Received: from smtprelay04.dal12v.mail.ibm.com ([172.16.1.6])
+	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4dww3h0v5b-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 05 May 2026 09:25:35 +0000 (GMT)
+Received: from smtpav03.wdc07v.mail.ibm.com (smtpav03.wdc07v.mail.ibm.com [10.39.53.230])
+	by smtprelay04.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6459PXic55050582
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Tue, 5 May 2026 09:25:33 GMT
+Received: from smtpav03.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 99A525805D;
+	Tue,  5 May 2026 09:25:33 +0000 (GMT)
+Received: from smtpav03.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 0A7005805A;
+	Tue,  5 May 2026 09:25:30 +0000 (GMT)
+Received: from [9.123.0.169] (unknown [9.123.0.169])
+	by smtpav03.wdc07v.mail.ibm.com (Postfix) with ESMTP;
+	Tue,  5 May 2026 09:25:29 +0000 (GMT)
+Message-ID: <52c78fd5-e987-4140-bb37-f358fc25c7e6@linux.ibm.com>
+Date: Tue, 5 May 2026 14:55:28 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -52,222 +81,138 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-X-B4-Tracking: v=1; b=H4sIAAAAAAAC/3XMy2rDMBCF4VcJWldlZiRFUVZ5j9KFLuNIkNrBS
- tyW4HevHAgFN13+B853E5XHwlXsNzcx8lRqGfoW5mUjYvb9kWVJrQUBaSQy8mNI1xPL7GvmKq0
- 34G2M5BWI9jmP3JWvu/f23jqXehnG7zs/4bL+J00oQSaLENl61SU8fHKptcZ8za89X8TCTfQgD
- CDBmqBGBI+400w22O4poX4JTW5NqEYAsCOzS9w5fkroB7EFRLUm9EIEpygFF8w2/CHmef4BycC
- Oj3gBAAA=
-X-Change-ID: 20241225-module-hashes-7a50a7cc2a30
-To: Alexei Starovoitov <ast@kernel.org>, 
- Daniel Borkmann <daniel@iogearbox.net>, Andrii Nakryiko <andrii@kernel.org>, 
- Eduard Zingerman <eddyz87@gmail.com>, 
- Kumar Kartikeya Dwivedi <memxor@gmail.com>, 
- Nathan Chancellor <nathan@kernel.org>, Nicolas Schier <nsc@kernel.org>, 
- Arnd Bergmann <arnd@arndb.de>, Luis Chamberlain <mcgrof@kernel.org>, 
- Petr Pavlu <petr.pavlu@suse.com>, Sami Tolvanen <samitolvanen@google.com>, 
- Daniel Gomez <da.gomez@samsung.com>, Paul Moore <paul@paul-moore.com>, 
- James Morris <jmorris@namei.org>, "Serge E. Hallyn" <serge@hallyn.com>, 
- Jonathan Corbet <corbet@lwn.net>, Madhavan Srinivasan <maddy@linux.ibm.com>, 
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
- Naveen N Rao <naveen@kernel.org>, Mimi Zohar <zohar@linux.ibm.com>, 
- Roberto Sassu <roberto.sassu@huawei.com>, 
- Dmitry Kasatkin <dmitry.kasatkin@gmail.com>, 
- Eric Snowberg <eric.snowberg@oracle.com>, 
- Nicolas Schier <nicolas.schier@linux.dev>, 
- Daniel Gomez <da.gomez@kernel.org>, Aaron Tomlin <atomlin@atomlin.com>, 
- "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, 
- Nicolas Bouchinet <nicolas.bouchinet@oss.cyber.gouv.fr>, 
- Xiu Jianfeng <xiujianfeng@huawei.com>, 
- Christophe Leroy <chleroy@kernel.org>
-Cc: Martin KaFai Lau <martin.lau@linux.dev>, Song Liu <song@kernel.org>, 
- Yonghong Song <yonghong.song@linux.dev>, Jiri Olsa <jolsa@kernel.org>, 
- bpf@vger.kernel.org, 
- =?utf-8?q?Fabian_Gr=C3=BCnbichler?= <f.gruenbichler@proxmox.com>, 
- Arnout Engelen <arnout@bzzt.net>, Mattia Rizzolo <mattia@mapreri.org>, 
- kpcyrd <kpcyrd@archlinux.org>, Christian Heusel <christian@heusel.eu>, 
- =?utf-8?q?C=C3=A2ju_Mihai-Drosi?= <mcaju95@gmail.com>, 
- Eric Biggers <ebiggers@kernel.org>, 
- Sebastian Andrzej Siewior <bigeasy@linutronix.de>, 
- linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org, 
- linux-arch@vger.kernel.org, linux-modules@vger.kernel.org, 
- linux-security-module@vger.kernel.org, linux-doc@vger.kernel.org, 
- linuxppc-dev@lists.ozlabs.org, linux-integrity@vger.kernel.org, 
- debian-kernel@lists.debian.org, 
- =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
-X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1777971921; l=7338;
- i=linux@weissschuh.net; s=20221212; h=from:subject:message-id;
- bh=3+TfV+G2pdtyPon4UoiayN0MzOd9dLRawRkDkEmqgQk=;
- b=B5jNaK8nrebPKZ5DQeOkk+hpzui5ffCiBEg6BGEicy81yoV1XDItYSp0mFpver92Pe1Oxtti+
- zOglNe9yqCQDsVc1y3PKkLJ8f0E9od2X+pmDKCsBbWMM9LZJWIQtHXw
-X-Developer-Key: i=linux@weissschuh.net; a=ed25519;
- pk=KcycQgFPX2wGR5azS7RhpBqedglOZVgRPfdFSPB1LNw=
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 4/6] KVM: PPC: Book3S HV: Implement compat CPU capability
+ retrieval for KVM on PowerVM
+Content-Language: en-GB
+To: Amit Machhiwal <amachhiw@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+        Madhavan Srinivasan <maddy@linux.ibm.com>
+Cc: Vaibhav Jain <vaibhav@linux.ibm.com>, Nicholas Piggin
+ <npiggin@gmail.com>,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+        kvm@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20260430054906.94431-1-amachhiw@linux.ibm.com>
+ <20260430054906.94431-5-amachhiw@linux.ibm.com>
+From: Harsh Prateek Bora <harshpb@linux.ibm.com>
+In-Reply-To: <20260430054906.94431-5-amachhiw@linux.ibm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTA1MDA4NCBTYWx0ZWRfX1EgMEx936yC2
+ 8ClkjSJFYxI8kMNPF9bnVv03Mp7hnAs9Ax5g2UeV6frsbhXCKAPmwz9XNMCCZRKYlKBHgFLAj44
+ 3fOam9CmnSMg6JRkmgm2g5448ds6oIiB7K4MqbKJwNZBQEKzyPzHS7jJc/v4F5jhlsP6sTmaCQg
+ 8iFbvTCDvpH1VouZqhTk6KeT1Szow75eqnbXYzSmqwfygcEAd73t62G8Gk6kSceUcQpNiURog0z
+ +nIQSa4+hkDuwXcRankKZ6mb06i8qbGyD7fReZLjJJPuL8hpSfHK5R1Bl0P81Tz+a8tf+GlXa/t
+ UTb5WjV0QcIMfSYLpLojF185Sa/LKGJ+TSj/YJM5F8qxAeMmgvOggpFOSB1KNkhBbbdLootMNTp
+ sdgAFNedZWfh6F63aWVISYfB7XLxrPWNqVHBogyAl27vw1O/2ykeNoycP7hq5DabT2MvqOHl9dn
+ A07IBcZ0cTZdX8UdBBw==
+X-Proofpoint-ORIG-GUID: zU4OfGpg1IfdjQyCTpgy8kuTLyuWzZUh
+X-Proofpoint-GUID: PGezDrCDj7nHos-a_DldcT35XT0ncSjm
+X-Authority-Analysis: v=2.4 cv=ctWrVV4i c=1 sm=1 tr=0 ts=69f9b790 cx=c_pps
+ a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
+ a=IkcTkHD0fZMA:10 a=NGcC8JguVDcA:10 a=f7IdgyKtn90A:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22 a=V8glGbnc2Ofi9Qvn3v5h:22
+ a=VnNF1IyMAAAA:8 a=3xnOzpcvsEFGoBSC2dMA:9 a=QEXdDO2ut3YA:10
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-05-05_02,2026-04-30_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501 lowpriorityscore=0 adultscore=0 clxscore=1015
+ suspectscore=0 impostorscore=0 spamscore=0 malwarescore=0 phishscore=0
+ bulkscore=0 classifier=typeunknown authscore=0 authtc= authcc= route=outbound
+ adjust=0 reason=mlx scancount=1 engine=8.22.0-2604200000
+ definitions=main-2605050084
 
-The current signature-based module integrity checking has some drawbacks
-in combination with reproducible builds. Either the module signing key
-is generated at build time, which makes the build unreproducible, or a
-static signing key is used, which precludes rebuilds by third parties
-and makes the whole build and packaging process much more complicated.
 
-The goal is to reach bit-for-bit reproducibility. Excluding certain
-parts of the build output from the reproducibility analysis would be
-error-prone and force each downstream consumer to introduce new tooling.
 
-Introduce a new mechanism to ensure only well-known modules are loaded
-by embedding a merkle tree root of all modules built as part of the full
-kernel build into vmlinux.
+On 30/04/26 11:19 am, Amit Machhiwal wrote:
+> On POWER systems, the host CPU may run in a compatibility mode (e.g., a
+> Power11 processor operating in Power10 compatibility mode). In such
+> cases, the effective CPU level exposed to guests differs from the
+> physical processor generation.
+> 
+> When running nested KVM guests, QEMU derives the host CPU type using
+> mfpvr(), which reflects the physical processor version. This can result
+> in a mismatch between the CPU model selected by QEMU and the
+> compatibility mode enforced by the host, leading to guest boot failures.
+> 
+> For example, booting a nested guest on a Power11 LPAR configured in
+> Power10 compatibility mode fails with:
+> 
+>    KVM-NESTEDv2: couldn't set guest wide elements
+>    [..KVM reg dump..]
+> 
+> This occurs because QEMU selects a CPU model corresponding to the
+> physical processor (via mfpvr()), while the host operates in a lower
+> compatibility mode. As a result, KVM rejects the requested compatibility
+> level during guest initialization.
+> 
+> Add support for retrieving host CPU compatibility capabilities for
+> nested guests on PowerVM (PAPR nested API v2). The hypervisor provides
+> the effective compatibility levels via the H_GUEST_GET_CAPABILITIES
+> hcall, which reflects the processor modes negotiated between the Power
+> hypervisor (L0) and the host partition (L1).
+> 
+> On pseries systems, obtain the capability bitmap using
+> plpar_guest_get_capabilities() and return it via struct
+> kvm_ppc_compat_caps. This information is then exposed to userspace
+> through the KVM_PPC_GET_COMPAT_CAPS ioctl.
+> 
+> Hook the implementation into the Book3S HV kvmppc_ops so that it can be
+> invoked by the generic KVM ioctl handling code.
+> 
+> Signed-off-by: Amit Machhiwal <amachhiw@linux.ibm.com>
+> ---
+>   arch/powerpc/kvm/book3s_hv.c | 17 +++++++++++++++++
+>   1 file changed, 17 insertions(+)
+> 
+> diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
+> index 948c6b099a29..d602d90111d1 100644
+> --- a/arch/powerpc/kvm/book3s_hv.c
+> +++ b/arch/powerpc/kvm/book3s_hv.c
+> @@ -6516,6 +6516,22 @@ static bool kvmppc_hash_v3_possible(void)
+>   	return true;
+>   }
+>   
+> +
+> +static int kvmppc_get_compat_cpu_caps(struct kvm_ppc_compat_caps *host_caps)
+> +{
+> +
+> +	unsigned long capabilities = 0;
+> +	long rc = -EINVAL;
+> +
+> +	if (kvmhv_on_pseries()) {
+> +		if (kvmhv_is_nestedv2())
 
-Interest has been proclaimed by Arch Linux, Debian, Proxmox, SUSE, NixOS
-and the general reproducible builds community.
+If this is only intended for nested APIv2, it should reflect in commit 
+log/title, otherwise, we need to return success with capabilities set to 
+0 for non-nestedv2 case.
 
-Compatibility with IMA modsig is not provided yet. It is still unclear
-to me if it should be hooked up transparently without any changes to the
-policy or it should require new policy options.
+Also, better to have combined check for pseries and nestedv2 if we are 
+not handling other cases.
 
-BPF/BTF folks, please take a look at patch 1.
+> +			rc = plpar_guest_get_capabilities(0, &capabilities);
+> +		host_caps->compat_capabilities = capabilities;
 
-Further improvements:
-* Use MODULE_SIG_HASH for configuration
-* UAPI for discovery?
+Do we need to take care of PowerNV case ?
 
-To: Nathan Chancellor <nathan@kernel.org>
-To: Nicolas Schier <nsc@kernel.org>
-To: Arnd Bergmann <arnd@arndb.de>
-To: Luis Chamberlain <mcgrof@kernel.org>
-To: Petr Pavlu <petr.pavlu@suse.com>
-To: Sami Tolvanen <samitolvanen@google.com>
-To: Daniel Gomez <da.gomez@samsung.com>
-To: Paul Moore <paul@paul-moore.com>
-To: James Morris <jmorris@namei.org>
-To: Serge E. Hallyn <serge@hallyn.com>
-To: Jonathan Corbet <corbet@lwn.net>
-To: Madhavan Srinivasan <maddy@linux.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-To: Nicholas Piggin <npiggin@gmail.com>
-To: Christophe Leroy <christophe.leroy@csgroup.eu>
-To: Naveen N Rao <naveen@kernel.org>
-To: Mimi Zohar <zohar@linux.ibm.com>
-To: Roberto Sassu <roberto.sassu@huawei.com>
-To: Dmitry Kasatkin <dmitry.kasatkin@gmail.com>
-To: Eric Snowberg <eric.snowberg@oracle.com>
-To: Nicolas Schier <nicolas.schier@linux.dev>
-To: Daniel Gomez <da.gomez@kernel.org>
-To: Aaron Tomlin <atomlin@atomlin.com>
-To: Christophe Leroy (CS GROUP) <chleroy@kernel.org>
-To: Nicolas Schier <nsc@kernel.org>
-To: Nicolas Bouchinet <nicolas.bouchinet@oss.cyber.gouv.fr>
-To: Xiu Jianfeng <xiujianfeng@huawei.com>
-Cc: Fabian Grünbichler <f.gruenbichler@proxmox.com>
-Cc: Arnout Engelen <arnout@bzzt.net>
-Cc: Mattia Rizzolo <mattia@mapreri.org>
-Cc: kpcyrd <kpcyrd@archlinux.org>
-Cc: Christian Heusel <christian@heusel.eu>
-Cc: Câju Mihai-Drosi <mcaju95@gmail.com>
-Cc: Eric Biggers <ebiggers@kernel.org>
-Cc: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-Cc: linux-kbuild@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Cc: linux-arch@vger.kernel.org
-Cc: linux-modules@vger.kernel.org
-Cc: linux-security-module@vger.kernel.org
-Cc: linux-doc@vger.kernel.org
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: linux-integrity@vger.kernel.org
-Cc: debian-kernel@lists.debian.org
-Signed-off-by: Thomas Weißschuh <linux@weissschuh.net>
-
----
-Changes in v5:
-- Document tree layout.
-- Make scripts/module-merkle-tree more robust.
-- Remove all changes to link-vmlinux.sh, use vmlinux.unstripped instead.
-- Clean up types and logic in modules-merkle-tree.c.
-- Use "auth" over "integrity" naming scheme.
-- Reduce the changes to the existing authentication flow.
-- Explicitly send the series to BTF folks for review of BTF changes.
-- Link to v4: https://patch.msgid.link/20260113-module-hashes-v4-0-0b932db9b56b@weissschuh.net
-
-Changes in v4:
-- Use as Merkle tree over a linera list of hashes.
-- Provide compatibilith with INSTALL_MOD_STRIP
-- Rework commit messages.
-- Use vmlinux.unstripped over plain "vmlinux".
-- Link to v3: https://lore.kernel.org/r/20250429-module-hashes-v3-0-00e9258def9e@weissschuh.net
-
-Changes in v3:
-- Rebase on v6.15-rc1
-- Use openssl to calculate hash
-- Avoid warning if no modules are built
-- Simplify module_integrity_check() a bit
-- Make incompatibility with INSTALL_MOD_STRIP explicit
-- Update docs
-- Add IMA cleanups
-- Link to v2: https://lore.kernel.org/r/20250120-module-hashes-v2-0-ba1184e27b7f@weissschuh.net
-
-Changes in v2:
-- Drop RFC state
-- Mention interested parties in cover letter
-- Expand Kconfig description
-- Add compatibility with CONFIG_MODULE_SIG
-- Parallelize module-hashes.sh
-- Update Documentation/kbuild/reproducible-builds.rst
-- Link to v1: https://lore.kernel.org/r/20241225-module-hashes-v1-0-d710ce7a3fd1@weissschuh.net
-
----
-Thomas Weißschuh (14):
-      kbuild: generate module BTF based on vmlinux.unstripped
-      lockdown: Make the relationship to MODULE_SIG a dependency
-      kbuild: rename the strip_relocs command
-      module: Drop pointless debugging message
-      module: Make mod_verify_sig() static
-      module: Switch load_info::len to size_t
-      module: Make module authentication usable without MODULE_SIG
-      module: Move authentication logic into dedicated new file
-      module: Move signature type check out of mod_check_sig()
-      module: Prepare for additional module authentication mechanisms
-      module: update timestamp of modules.order after modules are built
-      module: Introduce hash-based integrity checking
-      kbuild: move handling of module stripping to Makefile.lib
-      kbuild: make CONFIG_MODULE_HASHES compatible with module stripping
-
- .gitignore                                   |   2 +
- Documentation/kbuild/reproducible-builds.rst |   5 +-
- Makefile                                     |   7 +-
- crypto/algapi.c                              |   4 +-
- include/asm-generic/vmlinux.lds.h            |  11 +
- include/linux/module.h                       |  18 +-
- include/linux/module_hashes.h                |  29 ++
- include/uapi/linux/module_signature.h        |   1 +
- kernel/module/Kconfig                        |  29 +-
- kernel/module/Makefile                       |   2 +
- kernel/module/auth.c                         | 139 +++++++++
- kernel/module/hashes.c                       |  95 ++++++
- kernel/module/hashes_root.c                  |   6 +
- kernel/module/internal.h                     |  18 +-
- kernel/module/main.c                         |  16 +-
- kernel/module/signing.c                      | 113 +-------
- kernel/module_signature.c                    |   8 +-
- scripts/.gitignore                           |   1 +
- scripts/Makefile                             |   4 +
- scripts/Makefile.lib                         |  32 +++
- scripts/Makefile.modfinal                    |  28 +-
- scripts/Makefile.modinst                     |  44 +--
- scripts/Makefile.vmlinux                     |  40 ++-
- scripts/include/xalloc.h                     |  29 ++
- scripts/link-vmlinux.sh                      |   3 +-
- scripts/modules-merkle-tree.c                | 416 +++++++++++++++++++++++++++
- security/integrity/ima/ima_modsig.c          |   5 +
- security/lockdown/Kconfig                    |   2 +-
- tools/include/uapi/linux/module_signature.h  |   1 +
- 29 files changed, 919 insertions(+), 189 deletions(-)
----
-base-commit: 585c2e775b12ef45bdf9cef5f679dcb1220e0d65
-change-id: 20241225-module-hashes-7a50a7cc2a30
-
-Best regards,
---  
-Thomas Weißschuh <linux@weissschuh.net>
+> +	}
+> +
+> +	return rc;
+> +}
+> +
+>   static struct kvmppc_ops kvm_ops_hv = {
+>   	.get_sregs = kvm_arch_vcpu_ioctl_get_sregs_hv,
+>   	.set_sregs = kvm_arch_vcpu_ioctl_set_sregs_hv,
+> @@ -6558,6 +6574,7 @@ static struct kvmppc_ops kvm_ops_hv = {
+>   	.hash_v3_possible = kvmppc_hash_v3_possible,
+>   	.create_vcpu_debugfs = kvmppc_arch_create_vcpu_debugfs_hv,
+>   	.create_vm_debugfs = kvmppc_arch_create_vm_debugfs_hv,
+> +	.get_compat_cpu_ver = kvmppc_get_compat_cpu_caps,
+>   };
+>   
+>   static int kvm_init_subcore_bitmap(void)
 
 
