@@ -1,45 +1,45 @@
-Return-Path: <linuxppc-dev+bounces-20463-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20464-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 578DDFF885A
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 May 2026 09:13:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3F0CFFF885A
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 May 2026 09:13:49 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4g8t976815z30VQ;
-	Tue, 05 May 2026 19:13:31 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a01:4f8:c010:41de::1"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777972411;
-	cv=none; b=fXf9tHHOFlmX88SdQD4iCm4HbB9eH7qW0rHi/Ut+PDiN+gJWb0tmV4abc4f56+qAcniYr4jwNVkvEp5mZpXsfxOVUSJKvoiCpfQuAypKtrscxco9iHxqFJyOxeHGU60qSbvYMTeWv0dr1MkbmwVgUGDs/Y8S/8z2IETe0fzqZpww495H+lwr2ZxtKEPaFEvzBE8RQoQ8u/ksaiDtywAgsWKsC/QBmztpGi5DUoug0b1l1sMG+Xcuc1cXliengsv6C488Dkz30+QP0w7m2xifJ4+jilEq8Z8WW/friYNQK4BbSKpluViiDPWRN4U8VohXblCT6oWqKxipXd+ld9nFFg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4g8t994S74z30YZ;
+	Tue, 05 May 2026 19:13:33 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=159.69.126.157
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777972413;
+	cv=none; b=lmJUM10MbigI6rRcCa1rXNW6bnXJqGUu3QwITT6R5tZPXom3QcwspRLMyxk0j4Mq+yT1eUe1gQtbYPugEd2B4dFET8ta1E10dPQK62XICXl2oyTDAwQEOui2N4wzUJNJJXHJBS9z68Aof36Jp/KO4mIhpwLXp/ZtRm/TWSp3uVL9yteyvEgc/KD8SMLzV/1MSNqJqKAauowsFDEKjxoaY2co4QqmP7XHHdNIpFLFNZ9+zJS9gpmDHf9YJiZFPDt2zXV36fRuOo/eDj2Y9sVeiLWlILwwwD0ysIOoicHZVedFIB2MUKZPbMTeS5XOWmZgSpRUsh8PWOADjqaGqDdxTA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1777972411; c=relaxed/relaxed;
-	bh=Y82T8VMzylTmcLrsO8ACfzTx56zhANVi7d0v+73LV5g=;
+	t=1777972413; c=relaxed/relaxed;
+	bh=1WlkrShLo1yPcOfxX9RV3+PqPx5qMwryzEJF9TCtnhQ=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=nZh0tZhNFNJ47k+21xZcSGdzNkgFeaV75yAS5jdJXIOjCtnp/dFNpXB4741DEGkRZ8u/w+AJF0ApgEjvtEU3BpUDXmlQ7UVF+zI+lyoHuYSEBT3eNOW0Ozz7F3YS7SPwy/hbWptyMF79qR6mHNcjaUM7Fz047/6RHQ00trJtwNFOYPByP+YmXH7YZV7fdBJc6BN+7qyU+IBk+k+v8YTmlV511MIAm194azzojyHHkOC8AgT8gwRGGUaYFGlGI0EO+GUYyZjwcV9ekmFPSoeG2cMMkwhlFPtNUAzwukbvzWol7eZcQUw9yLtFFbOpYjH3iQ21S4j2vG/hz4cgKEtXKg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net; dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=l1HQpg72; dkim-atps=neutral; spf=pass (client-ip=2a01:4f8:c010:41de::1; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org) smtp.mailfrom=weissschuh.net
+	 In-Reply-To:To:Cc; b=iDg3LCE8+vEe5ecofEfseK4/SCqsyU+QIk4Hhh+BHREE2vw8m2pKKpBtaLi/nXYlurBQlazdgML5L/mMt92ij60Q88EdqlJbIuJpT0xJXTOwo18KPPnWDjR98rsSPvcYW7Q/lAOSx3nzGhKAzoPIYqzzHMjzw9bfYiNwkLdcX43KohkMhznIBmj37r66XEqSi3RDf/xC7XZRmBiG6hWIq3JYQJUbkgeqtvW6eLuqLwuWUz6jckBBhy4c1Le199KJvsggvZTQmQT8//tBTxuYmRdi9V/msOA2Vapxipp1hi0EGjTi3EHR1AHuVYddzKAWe2VUXVpoSCVObJZp6ni96g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net; dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=owjODUEx; dkim-atps=neutral; spf=pass (client-ip=159.69.126.157; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org) smtp.mailfrom=weissschuh.net
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=l1HQpg72;
+	dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=owjODUEx;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=weissschuh.net (client-ip=2a01:4f8:c010:41de::1; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org)
-Received: from todd.t-8ch.de (todd.t-8ch.de [IPv6:2a01:4f8:c010:41de::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=weissschuh.net (client-ip=159.69.126.157; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org)
+Received: from todd.t-8ch.de (todd.t-8ch.de [159.69.126.157])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4g8t942bw4z2xqJ
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 05 May 2026 19:13:28 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4g8t973zXKz30VL
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 05 May 2026 19:13:31 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=weissschuh.net;
-	s=mail; t=1777971922;
-	bh=vw8mmyBT43HvPMolq0TpHePOUuR7RTOx6Ud0LgA5MD4=;
+	s=mail; t=1777971923;
+	bh=6VJvYnOHZshtQlmEnWd/K1udWrIwe9dejx/5mZI/Wtg=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=l1HQpg727ayyAew6zE/8+4KeSD9/eY176fqNOl8FGSd4QoDzY74lG9Zoama5m7BhX
-	 5EtXnyLwL1UVaosAa/7pPCSfFDE1zsNRTeOdiXhXg+IHBcSwltBhO7xw0NiiW59OkQ
-	 lXncKpkeqmo/DBlCAVoem3iKRfqI7XoOEL7pTwyk=
+	b=owjODUExCCypec6TKWlnIwzT8DVnXMsfb+ZaEjU0MoKmKL+u/Hgk0XMLanRHlOS5p
+	 MNeyeJ7VYX8n6e4baZNE/ejhPU8IePBOA5zatZB7qfpcaHAbaVKcUT7fN5vxhMYVdb
+	 T5d4nFyczBMUPklVRaKpvkmaSNX/c9tzIRq1bRpM=
 From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
-Date: Tue, 05 May 2026 11:05:05 +0200
-Subject: [PATCH v5 01/14] kbuild: generate module BTF based on
- vmlinux.unstripped
+Date: Tue, 05 May 2026 11:05:13 +0200
+Subject: [PATCH v5 09/14] module: Move signature type check out of
+ mod_check_sig()
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -55,7 +55,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20260505-module-hashes-v5-1-e174a5a49fce@weissschuh.net>
+Message-Id: <20260505-module-hashes-v5-9-e174a5a49fce@weissschuh.net>
 References: <20260505-module-hashes-v5-0-e174a5a49fce@weissschuh.net>
 In-Reply-To: <20260505-module-hashes-v5-0-e174a5a49fce@weissschuh.net>
 To: Alexei Starovoitov <ast@kernel.org>, 
@@ -95,59 +95,83 @@ Cc: Martin KaFai Lau <martin.lau@linux.dev>, Song Liu <song@kernel.org>,
  debian-kernel@lists.debian.org, 
  =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
 X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1777971921; l=2327;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1777971921; l=2558;
  i=linux@weissschuh.net; s=20221212; h=from:subject:message-id;
- bh=vw8mmyBT43HvPMolq0TpHePOUuR7RTOx6Ud0LgA5MD4=;
- b=uljsY9SHiTroukbScuvpJIHxWmUOPKF1Li5N+qi4PForcgFzxPQa9CcWjxWCEGeyur3gDIlFc
- Z0W8p94VZLqAoErAJy3AInjAguaLaf4rBiEebO3HJ/wS/1lChYp5oMo
+ bh=6VJvYnOHZshtQlmEnWd/K1udWrIwe9dejx/5mZI/Wtg=;
+ b=CMdNpxTCGkVu3CYbUQ//Xh1Da5BfQXG6erPbBdP2NTFne3QRqh52DC/9CSjILoKbNrS8gBQHS
+ 8rcJfdzG3nTABuTlKzuzZV5cQk7a/PkWY+ZZAqFMl0YgtXmFbCISOTR
 X-Developer-Key: i=linux@weissschuh.net; a=ed25519;
  pk=KcycQgFPX2wGR5azS7RhpBqedglOZVgRPfdFSPB1LNw=
 
-The upcoming module hashes functionality will build the modules in
-between the generation of the BTF data and the final link of vmlinux.
-At this point vmlinux is not yet built and therefore can't be used for
-module BTF generation. vmlinux.unstripped however is usable and
-sufficient for BTF generation.
+Additional signature types are about to be added.
+As each caller of mod_check_sig() can have different support for these,
+move the type validation into the callers.
 
 Signed-off-by: Thomas Weißschuh <linux@weissschuh.net>
-Reviewed-by: Nicolas Schier <nsc@kernel.org>
 ---
- scripts/Makefile.modfinal | 12 +++++++-----
- 1 file changed, 7 insertions(+), 5 deletions(-)
+ kernel/module/auth.c                | 5 +++++
+ kernel/module_signature.c           | 8 +-------
+ security/integrity/ima/ima_modsig.c | 5 +++++
+ 3 files changed, 11 insertions(+), 7 deletions(-)
 
-diff --git a/scripts/Makefile.modfinal b/scripts/Makefile.modfinal
-index adcbcde16a07..b09040ccddd2 100644
---- a/scripts/Makefile.modfinal
-+++ b/scripts/Makefile.modfinal
-@@ -38,12 +38,14 @@ quiet_cmd_ld_ko_o = LD [M]  $@
- 		$(KBUILD_LDFLAGS_MODULE) $(LDFLAGS_MODULE)		\
- 		-T $(objtree)/scripts/module.lds -o $@ $(filter %.o, $^)
+diff --git a/kernel/module/auth.c b/kernel/module/auth.c
+index 831a13eb0c9b..21e49eb4967c 100644
+--- a/kernel/module/auth.c
++++ b/kernel/module/auth.c
+@@ -48,6 +48,11 @@ static int mod_verify_sig(const void *mod, struct load_info *info)
  
-+btf-vmlinux := $(if $(KBUILD_EXTMOD),vmlinux,vmlinux.unstripped)
+ 	memcpy(&ms, mod + (modlen - sizeof(ms)), sizeof(ms));
+ 
++	if (ms.id_type != MODULE_SIGNATURE_TYPE_PKCS7) {
++		pr_err("module: not signed with expected PKCS#7 message\n");
++		return -ENOPKG;
++	}
 +
- quiet_cmd_btf_ko = BTF [M] $@
-       cmd_btf_ko = 							\
--	if [ ! -f $(objtree)/vmlinux ]; then				\
--		printf "Skipping BTF generation for %s due to unavailability of vmlinux\n" $@ 1>&2; \
-+	if [ ! -f $(objtree)/$(btf-vmlinux) ]; then				\
-+		printf "Skipping BTF generation for %s due to unavailability of $(btf-vmlinux)\n" $@ 1>&2; \
- 	else	\
--		$(CONFIG_SHELL) $(srctree)/scripts/gen-btf.sh --btf_base $(objtree)/vmlinux $@; \
-+		$(CONFIG_SHELL) $(srctree)/scripts/gen-btf.sh --btf_base $(objtree)/$(btf-vmlinux) $@; \
- 	fi;
+ 	ret = mod_check_sig(&ms, modlen, "module");
+ 	if (ret)
+ 		return ret;
+diff --git a/kernel/module_signature.c b/kernel/module_signature.c
+index a0eee2fe4368..4d0476bcdb72 100644
+--- a/kernel/module_signature.c
++++ b/kernel/module_signature.c
+@@ -24,12 +24,6 @@ int mod_check_sig(const struct module_signature *ms, size_t file_len,
+ 	if (be32_to_cpu(ms->sig_len) >= file_len - sizeof(*ms))
+ 		return -EBADMSG;
  
- # Same as newer-prereqs, but allows to exclude specified extra dependencies
-@@ -55,8 +57,8 @@ if_changed_except = $(if $(call newer_prereqs_except,$(2))$(cmd-check),      \
- 	printf '%s\n' 'savedcmd_$@ := $(make-cmd)' > $(dot-target).cmd, @:)
+-	if (ms->id_type != MODULE_SIGNATURE_TYPE_PKCS7) {
+-		pr_err("%s: not signed with expected PKCS#7 message\n",
+-		       name);
+-		return -ENOPKG;
+-	}
+-
+ 	if (ms->algo != 0 ||
+ 	    ms->hash != 0 ||
+ 	    ms->signer_len != 0 ||
+@@ -37,7 +31,7 @@ int mod_check_sig(const struct module_signature *ms, size_t file_len,
+ 	    ms->__pad[0] != 0 ||
+ 	    ms->__pad[1] != 0 ||
+ 	    ms->__pad[2] != 0) {
+-		pr_err("%s: PKCS#7 signature info has unexpected non-zero params\n",
++		pr_err("%s: signature info has unexpected non-zero params\n",
+ 		       name);
+ 		return -EBADMSG;
+ 	}
+diff --git a/security/integrity/ima/ima_modsig.c b/security/integrity/ima/ima_modsig.c
+index 632c746fd81e..ebfcdd368a2a 100644
+--- a/security/integrity/ima/ima_modsig.c
++++ b/security/integrity/ima/ima_modsig.c
+@@ -57,6 +57,11 @@ int ima_read_modsig(enum ima_hooks func, const void *buf, loff_t buf_len,
+ 	buf_len -= marker_len;
+ 	sig = (const struct module_signature *)(p - sizeof(*sig));
  
- # Re-generate module BTFs if either module's .ko or vmlinux changed
--%.ko: %.o %.mod.o .module-common.o $(objtree)/scripts/module.lds $(and $(CONFIG_DEBUG_INFO_BTF_MODULES),$(KBUILD_BUILTIN),$(objtree)/vmlinux) FORCE
--	+$(call if_changed_except,ld_ko_o,$(objtree)/vmlinux)
-+%.ko: %.o %.mod.o .module-common.o $(objtree)/scripts/module.lds $(and $(CONFIG_DEBUG_INFO_BTF_MODULES),$(KBUILD_BUILTIN),$(objtree)/$(btf-vmlinux)) FORCE
-+	+$(call if_changed_except,ld_ko_o,$(objtree)/$(btf-vmlinux))
- ifdef CONFIG_DEBUG_INFO_BTF_MODULES
- 	+$(if $(newer-prereqs),$(call cmd,btf_ko))
- endif
++	if (sig->id_type != MODULE_SIGNATURE_TYPE_PKCS7) {
++		pr_err("%s: not signed with expected PKCS#7 message\n", func_tokens[func]);
++		return -ENOPKG;
++	}
++
+ 	rc = mod_check_sig(sig, buf_len, func_tokens[func]);
+ 	if (rc)
+ 		return rc;
 
 -- 
 2.54.0
