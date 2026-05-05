@@ -1,50 +1,50 @@
-Return-Path: <linuxppc-dev+bounces-20490-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20491-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4F166FF8855
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 May 2026 23:19:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7582ACD3427
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 May 2026 23:42:11 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4g9Dx759z9z2xpn;
-	Wed, 06 May 2026 09:19:23 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778023163;
-	cv=none; b=FV4gNoqXD3KqlRZ5ZZa/XNURMYp3Gt0SCN8rZ409rfUR21V7Kz9Muamgk5ksKUTkk+jrPwVgTZtw3C5/nTU3OeaQjpb70qR5cH4yHL0drBPyrpIAJd3wsGvNgRd3i/Z1+k8EIXfq/w/kyMx2B9cIS4X96GdQH3Bgj/CfKlBJucufqghK2RQtJpGevH0J9WX6+p05uptCct2biRmMFMhQ/eX7F8ZMwKisd3v5c90mVTxUjKI20O+X9Prm1JZ2o3y5Pw3MuTs1D/fmRFau6tMNJnqMeEYDNx6h+ZLRuQE1eBu5eUCVVkabuO8nWHfgpa1kDTqTwCnCR4y0Q/2WV9D0nQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4g9FRQ05jTz2xjd;
+	Wed, 06 May 2026 09:42:10 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778024529;
+	cv=none; b=bcXTTq9ZOKQiSRLvLJ5A0JeDqqbfAk7QlZpZQyzca8U7Q1fnKIITz0u1EISr1r3VflVEYHlLahF0HQK2gISqz2itCw6vYecP35ZLcs10RbrpuRlLH/rMuwQaOuUi1LjD5EP0DDJQspTZcXke+uClJ1ZCdUEFaTi1zyOXxVTgB7RBLnInTYTdGO5WssaQeoBM8x+njuwdlo0a7dA4NtuPtddV0S3LSjcPK7qres72N8Av63o9tDgJuAWlmf3hjQEsaXi+gYszqjHPrzw+3FqP/Jvi6TEHF2SrhCI88qAGIfNm1CJVQuSIlunGkQ4erX2njLP+MVtqSLj/YAZpAC0dNw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1778023163; c=relaxed/relaxed;
-	bh=HZ4gn1rr9AVXjYUoB/X1IpTnMgVFMxfH7FZdMW7qAQQ=;
+	t=1778024529; c=relaxed/relaxed;
+	bh=yd8vC1oAbzwMygF00TDN9cbfZNmNUzU8RXGbs+G91oo=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=f1Ol/Eu2cg75Nu4YhVEMZ8Uf/+LjNFMgM01CbNs2zz51rqZxcmgz5+RLTglM/qJUnvoXyd0Sg1k0siT2Mgg8K/fmzkM1xbE1gVL4gFiVRz7kDgTZLPbBvBN8Uc2qxCGhjlsn34FELZ19MGp07vZZMuIZ+Yan2G0spBUusZb27HSF1bmqa99V8MUGRCSBfNXxcmJo+C23kUHjZhijkDFOM2Y5iUCSbqpdOlhqaX+WccrW/zf3XJwqkB+t/tJDntnl0/aieD0lC+JQrTRd4kpIB/oiTCEyUjeq9v9Wd9r1oa16Jj8aDlHqrQNjF7NntgBarXqKEdaZDecoQsesqRd+5A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=H1irtPcp; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=kwilczynski@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 Content-Type:Content-Disposition:In-Reply-To; b=Qkd+hfIl8I1v0MLfE/O89Fm+w9wWOq2s5QBZe6VxOTU9EvS97+P0VkuiHDJ+7t9wzMrM7qpP1moM0jROtFxDsZ3J/xe3D5QZokSWOSHfiacfegtvP2bQr01O8eKIzQ1NenXHs8uXCUPBE/dB2Q/Ud0Us9D+phGUXU5KuuBpytOwnlHO6OUFV32w48MoiNiCCmIncFeuDrSCI4Ec++lDGvE7Gi7PJ86A3O4+6Y5YUMfIe/ph/Dnp9nur+CKulOJzavboZgC/951UAZCWB5891EsdTj/lu9HxKXP5/hpVfKrqqU158VgDyeD72RfJZ70k26e+AxlyB4llrL9EnczkgPw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=uHV7SKol; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=kwilczynski@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=H1irtPcp;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=uHV7SKol;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=kwilczynski@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=kwilczynski@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4g9Dx63zK3z2xjd
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 06 May 2026 09:19:22 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4g9FRJ4wqBz2xdR
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 06 May 2026 09:42:04 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 4413E60123;
-	Tue,  5 May 2026 23:19:19 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id AF4AAC2BCB4;
-	Tue,  5 May 2026 23:19:18 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 2AAF5403A6;
+	Tue,  5 May 2026 23:42:02 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C1FD8C2BCB4;
+	Tue,  5 May 2026 23:42:01 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1778023159;
-	bh=aSUWwvC/Z4hL7kLLz0uyOBLteb3wXBC4iS5QzbWk3v8=;
+	s=k20201202; t=1778024522;
+	bh=1+LqtftsVIosaHSl04Cer7GCqmGqOkVQufDLaggxVfU=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=H1irtPcpfqHFY1VDM3K8ELysNJFq/zwjdjMpTSwrQSsgIhrG3hD4jfvtldFC0r+B1
-	 Qv32FF7xVtw6QRvptdGazbpcqIAhhypVAB8rtdLVu6PxiwFnf4vjsyV7QJL1J2CRmP
-	 gaGXGGDc/YsWmrSzjTsD9VdsETYnebTmntkloGM1/R9AvdXITa0lDE606YYADj3Y3b
-	 l6G78KuaByZtWVEudnARiWkGJ1SlPCckAQciDPSAjljBHmkz3gabvnVoKik1123AyO
-	 HnhTR4xt3ZxAaSeWmecxnGt13CJqKt+ps/vRL8UBweVmXQNoh0w9tjSKs0/NAH8uX4
-	 nVitbO6Aijv0A==
-Date: Wed, 6 May 2026 08:19:17 +0900
+	b=uHV7SKol0CAsenoLhmkp0r6exuLnPtN/CCCpf7Il98BCLYLj4pi5bt9uxiANXYhb5
+	 GalDzDowOpCKkjApBkyKZB4epvkQUbNVU46MjLDx0OotsQC+WkYsNC7xlJriSRRV1y
+	 uuOto96W9fnc4u9NW80gZneUfNbrcxZtVB5po3VXB+OMmzgYscw4D7Z/BsPvUlE558
+	 6/ms70vHd86rlzdNIlZDuXB2c8oI+sCkIaJ5kaRsdRi9TjNq8nfTp4yzObBh/qvq/7
+	 LofCPMS4PCe3qdGCVLayBL4PuJ5WkN1qW5JMShfnxxzOz4IHRK0qHbr3XPeMwKPmhV
+	 8y7C2hGk4zXWA==
+Date: Wed, 6 May 2026 08:42:00 +0900
 From: Krzysztof =?utf-8?Q?Wilczy=C5=84ski?= <kwilczynski@kernel.org>
 To: Bjorn Helgaas <helgaas@kernel.org>
 Cc: Bjorn Helgaas <bhelgaas@google.com>, 
@@ -58,11 +58,11 @@ Cc: Bjorn Helgaas <bhelgaas@google.com>,
 	Shuan He <heshuan@bytedance.com>, Srivatsa Bhat <srivatsabhat@microsoft.com>, 
 	Ilpo =?utf-8?B?SsOkcnZpbmVu?= <ilpo.jarvinen@linux.intel.com>, linux-pci@vger.kernel.org, linux-alpha@vger.kernel.org, 
 	linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v6 04/24] PCI/sysfs: Use BAR length in
- pci_llseek_resource() when attr->size is zero
-Message-ID: <20260505231700.GA1410272@rocinante>
-References: <20260430232202.GA3577346@rocinante>
- <20260505214659.GA752301@bhelgaas>
+Subject: Re: [PATCH v6 24/24] PCI/sysfs: Limit BAR resize attribute scope to
+ platforms with PCI mmap
+Message-ID: <20260505231945.GB1410272@rocinante>
+References: <20260430020648.GA3923076@rocinante>
+ <20260505220135.GA752411@bhelgaas>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -78,56 +78,86 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20260505214659.GA752301@bhelgaas>
+In-Reply-To: <20260505220135.GA752411@bhelgaas>
 
 Hello,
 
-> > > The alternative would be separate llseek callbacks for both the legacy
-> > > and resource attributes, which we can add if this would be the preference
-> > > here.
+> > > The only platform without these aforementioned defines is Alpha, which is
+> > > conventional PCI only and cannot have ReBAR.  So this guard removes dead
+> > > sysfs code on platforms where it can never be executed.
 > > 
-> > If we were to do this, then it would be as follows:
+> > Having a closer look:
 > > 
-> >   static loff_t pci_llseek_resource(struct file *filep,
-> >                                     struct kobject *kobj,
-> >                                     const struct bin_attribute *attr,
-> >                                     loff_t offset, int whence)
-> >   {
-> >         struct pci_dev *pdev = to_pci_dev(kobj_to_dev(kobj));
-> >         int bar = (unsigned long)attr->private;
+> >   resource_resize_attr_is_visible()
+> >     pci_rebar_get_current_size()      <- returns -ENOTSUPP, so is_visible callback returns 0
+> >       pci_rebar_find_pos()
+> >         pos = pdev->rebar_cap         <- set to 0 on a conventional PCI
+> >         if (!pos)
+> >           return -ENOTSUPP            <- no ReBAR support
 > > 
-> >         return fixed_size_llseek(filep, offset, whence,
-> >                                  pci_resource_len(pdev, bar));
-> >   }
+> > The pdev->rebar_cap is set during PCI enumeration:
 > > 
-> >   static loff_t pci_llseek_resource_legacy(struct file *filep,
-> >					       struct kobject *kobj __always_unused,
-> >                                            const struct bin_attribute *attr,
-> >                                            loff_t offset, int whence)
-> >   {
-> >         return fixed_size_llseek(filep, offset, whence, attr->size);
-> >   }
+> >   pci_init_capabilities()
+> >     pci_rebar_init()
+> >       pdev->rebar_cap = pci_find_ext_capability()
+> >         pci_find_next_ext_capability()
+> >           if (dev->cfg_size <= PCI_CFG_SPACE_SIZE)
+> >             return 0;                 <- dev->cfg_size set to 256 here for conventional PCI
 > > 
-> > Each callback would be placed within the corresponding #ifdef block, so one
-> > for HAVE_PCI_MMAP or ARCH_GENERIC_PCI_MMAP_RESOURCE, and the other for the
-> > legacy attributes, so behind the HAVE_PCI_LEGACY guard.
+> > The PCI_CFG_SPACE_SIZE is 256 here.
 > > 
-> > Note, the names need to be different, as some architectures offer both
-> > type of resource files, like PowerPC, which defines both the HAVE_PCI_LEGACY
-> > and HAVE_PCI_MMAP.
+> > When the platform has support for PCI Express, the dev->cfg_size is then
+> > set to 4096.  On an architecture that supports conventional PCI only (such
+> > as Alpha), the pdev->rebar_cap will be set to 0, the is_visible callback
+> > will then return 0, and the resize sysfs attribute is never created, as
+> > such, the __resource_resize_store() callback will never be executed.
 > > 
-> > With this split, we can also drop the __maybe_unused annotation.
+> > To make the connetion here to the #ifdef guards:
 > > 
-> > While I wanted to keep the changes to only what was needed for the
-> > pci_llseek_resource() to cover both type of resources, it would be
-> > also fine to have two distinct callbacks, too.
+> > For the pci_rebar_get_current_size() to return >= 0, the device needs
+> > PCI Express and extended configuration space support.  As of today,
+> > every architecture with PCI Express support defines HAVE_PCI_MMAP or
+> > ARCH_GENERIC_PCI_MMAP_RESOURCE.
+> > 
+> > I hope the reasoning here works.
 > 
-> Yes, I think this is much more readable than the "if (attr->size)"
-> check.
+> We're talking about this #ifdef:
+> 
+>   +#if defined(HAVE_PCI_MMAP) || defined(ARCH_GENERIC_PCI_MMAP_RESOURCE)
+>    static ssize_t __resource_resize_show(struct device *dev, int n, char *buf)
+>    ...
+>   +#endif
+> 
+> I follow the reasoning now but by next week I won't, so I think it
+> requires too much background knowledge.  Future changes involving
+> HAVE_PCI_MMAP or ARCH_GENERIC_PCI_MMAP_RESOURCE could easily break
+> this.
+> 
+> IIUC it's basically doing what "#ifdef CONFIG_PCI_REBAR" or even
+> "#ifdef CONFIG_PCI_EXPRESS" would do, if we had such a thing.
 
-OK.  I will switch to two llseek callbacks in the next version.
+We don't sadly have such guards at the moment, so using the guards like
+HAVE_PCI_MMAP or ARCH_GENERIC_PCI_MMAP_RESOURCE would be the next best
+thing.  We already rely on these throughout the pci-sysfs.c already, and
+will also rely on either for the static sysfs attributes, so if there was
+some issues with either of these, if these "broke" somehow, then we would
+have other more severe problems.  Note, that architectures rely on these
+macros to let us know about what "feature" is expected to be enabled, so to
+speak, so I would imagine nobody would break this accidentally (famous last
+words) and perhaps with extreme caution would do it on purpose.
 
-Thank you,
+> How terrible would it be if we just accepted this dead code on Alpha?
+
+I would prefer not to build any dead code anywhere if it can be helped,
+especially with as little as two lines of code added.  Plus, most of the
+code setting up resources that are not specific to Alpha, would have been
+disabled using exactly the same guard as the one proposed to be added
+here, not like this sets any precedent or adds something new.
+
+That being said, I will drop this from the next version.
+
+Thank you!
 
 	Krzysztof
+
 
