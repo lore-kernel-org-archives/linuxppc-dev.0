@@ -1,81 +1,128 @@
-Return-Path: <linuxppc-dev+bounces-20513-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20516-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6BF56CD342C
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 May 2026 09:06:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C7CE2CD342C
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 May 2026 09:35:30 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4g9Tyl2DtXz30Sx;
-	Wed, 06 May 2026 19:06:39 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778058399;
-	cv=none; b=I4F3ZKOmlaaFwKJv6ieJEvSTtbunXHrdMYneB02ozjz9P0vECOVvMhDKOyOTOXLZVATfG2dE5DOCizSgtAJ1NBUOo3s0kRo0Tc043e+VyEdagpBJzSD3dEdyy9h1ZbtHevBX8g9Sx5v82hejT481WI+0gAN2E6IwSPT7QNGzpkdeSy0tY5TG//KU5RUS6Osn40pSx9ICU6RmiaMERWvMBaBpn87LxwLNES1LqTxXMKWCt0c4pEnVxd5teQWdmWn6XrdLHeX0sDeypbzs1FORBLDFrzkwKGf/jlbOOnW8+R3/ZmTxR0WMePf4mu2iLTB0kEECdAXD4p8IlOqv3GG+mA==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1778058399; c=relaxed/relaxed;
-	bh=fca4Z87N77h6CF+xskmQZ8FX2ytJtrXFqslQ4+o6snA=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=c2wpUFHrFnWfzuj7wXN9S7X+701mIHO/5QUIFXtkcrf/UdytqijtdCbT14qxPtNqgYoQhxgkqalEYq7KlJTCf760CSFhSCXyaBeW/T8jKOtLlywvO7syxKej0Vi+9CkFhaegoO7yx1NK/QVeHAO91ZgZaSovlMceuNbEx/5G4xemFRBgdl5bcLPXpWZbeCGFo89r6CgPr6vdXG0acv28VxVPgPkSRtJ+FfiR3RYLstJTKp38T1odhZ6Cu2fSmRurFdV5ZSfO+BVBV3sWk+jqr8jwBK53f9XKa44ceTx+JAQ09Td1oJzJ2jxIxpumEhPpB7ReSdW+RfNx8Z1cECDSjQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=hDNNFAMI; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sayalip@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4g9Vc13Wryz30T2;
+	Wed, 06 May 2026 19:35:29 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c20f::7" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778060129;
+	cv=pass; b=fYZBpnKV8qqFH73PKUhiYyz38BErjiyaGFG9EZkURi1c+77IPyffrB82R/csHFujK7vxmDISfmY0EBg0N5nPdd5SpTOWpRWcJLuXgwowMPUhspDND1z/XQaDIMjFJ+u69jI6RsjywwiZ2R4q+ZXaDwhdMf1iqIRHNIL4D6BS5XooXOHe7IHwtXIvjKeHnqpmnowZWLtIm0LR4e93t2XeO5KO2xATzFW7argNohf7M+j/E2fsE7Jt+xIuOcn2AhbIyUOiFAaoqN7CCzLz7Li4Cepwmu5wL6uFKWbQ8MTPtqjFRhgw/6+3YPewzW5JET9lTFs4J8tlSNX0ZIjdb2eweA==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1778060129; c=relaxed/relaxed;
+	bh=T5DFOEgzkajHzrQnOuNsTIpLksQ1yWSUc91YP9MeET8=;
+	h=From:To:CC:Subject:Date:Message-ID:References:In-Reply-To:
+	 Content-Type:MIME-Version; b=mRNinMD3Bltl8KgS3r966bfmEcyYdO95O/WeicXaKdOF0Pm8nXBAjxGvjdNGfku+jwZ6xml0B4wnL8cj8GgWcTLG1BxAcQnTgwAEjCoQ78Ub//vttip3SfcaiF3eS8Nfpvk85oWAvjeYNGXU9x6X6B/utYmr3gy81RXMCZgbFclhBNFulk8pIcTon2O3EqspLzr+1CrUBnRW8fd4Fce+9Uk6lhTSf1evXr3OxeG/m2h+ES/7GkXsIbVJI8HxeTJztdT8QwDKbKYTuQNhD4hEqLWnMJHhGg0FQFBo/hEK0/KsQ2AZUWrbhu/TQB42d6Z1EzoAsXZSutdRHgSP7m9SGA==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=hitachienergy.com; dkim=pass (2048-bit key; unprotected) header.d=hitachienergy.com header.i=@hitachienergy.com header.a=rsa-sha256 header.s=selector1 header.b=kicslCip; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c20f::7; helo=osppr02cu001.outbound.protection.outlook.com; envelope-from=holger.brunck@hitachienergy.com; receiver=lists.ozlabs.org) smtp.mailfrom=hitachienergy.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=hitachienergy.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=hDNNFAMI;
+	dkim=pass (2048-bit key; unprotected) header.d=hitachienergy.com header.i=@hitachienergy.com header.a=rsa-sha256 header.s=selector1 header.b=kicslCip;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sayalip@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=hitachienergy.com (client-ip=2a01:111:f403:c20f::7; helo=osppr02cu001.outbound.protection.outlook.com; envelope-from=holger.brunck@hitachienergy.com; receiver=lists.ozlabs.org)
+Received: from OSPPR02CU001.outbound.protection.outlook.com (mail-norwayeastazlp170130007.outbound.protection.outlook.com [IPv6:2a01:111:f403:c20f::7])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4g9Tyk1l1Dz30Vy
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 06 May 2026 19:06:37 +1000 (AEST)
-Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6464niJu2492757;
-	Wed, 6 May 2026 09:06:33 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=pp1; bh=fca4Z87N77h6CF+xs
-	kmQZ8FX2ytJtrXFqslQ4+o6snA=; b=hDNNFAMIOXJMBkT+dbKosAtXZbkiEm2AU
-	jb4IJO9Zvrdre56WaDGNpiDdkh5trQkllnEjOTM91le0T/5GjwDQNZVuEQwGCsaZ
-	uUuDb7VnhrF1X/h9r1RhT3o8QkS4to6XNp7eBPy1agaAvF3gvcOxdwV8/w9mBN5z
-	7ClGcpqzy49o4s7tF5qPSyQEkmeqiaUslb7hWSOIRp8SCvqV+ji0LXGvgG/XFuqm
-	pK1/H/FQi5m/sHX/QrwJAIyQNzpM1n7XJma/45g/pybRfOGTWhU/WMzKZyXscvec
-	k9r+Hr5JCFqHnN+mleG0e+roJxyzstdx1N1RnZyuOBxoQll9oHyjA==
-Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4dw9w6f7dd-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 06 May 2026 09:06:32 +0000 (GMT)
-Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma11.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 6468sY5I018111;
-	Wed, 6 May 2026 09:06:31 GMT
-Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
-	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4dwx9yd8gy-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 06 May 2026 09:06:31 +0000 (GMT)
-Received: from smtpav07.fra02v.mail.ibm.com (smtpav07.fra02v.mail.ibm.com [10.20.54.106])
-	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 64696Sqg57344388
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 6 May 2026 09:06:28 GMT
-Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 163322004B;
-	Wed,  6 May 2026 09:06:28 +0000 (GMT)
-Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id D47B420040;
-	Wed,  6 May 2026 09:06:24 +0000 (GMT)
-Received: from li-3f69264c-2ce6-11b2-a85c-c3f414d24014.bl1-in.ibm.com (unknown [9.123.3.209])
-	by smtpav07.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Wed,  6 May 2026 09:06:24 +0000 (GMT)
-From: Sayali Patil <sayalip@linux.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, maddy@linux.ibm.com
-Cc: linux-kernel@vger.kernel.org, Ritesh Harjani <ritesh.list@gmail.com>,
-        Mahesh Salgaonkar <mahesh@linux.ibm.com>, sshegde@linux.ibm.com,
-        chleroy@kernel.org
-Subject: [PATCH 3/3] lkdtm/powerpc: add PPC_RADIX_TLBIEL test for radix MCE validation
-Date: Wed,  6 May 2026 14:36:14 +0530
-Message-ID: <335c6213a3620f561983f67332ee39ece927ef0e.1778057685.git.sayalip@linux.ibm.com>
-X-Mailer: git-send-email 2.52.0
-In-Reply-To: <cover.1778057685.git.sayalip@linux.ibm.com>
-References: <cover.1778057685.git.sayalip@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4g9Vbz5rRGz30Sx
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 06 May 2026 19:35:27 +1000 (AEST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=h3rY3/5AMd1E3xtz8ZFD0WlfvfLHI7yckBNDn3uWgDQpIZ4FLjHhp90eE3KkFbBEMkUlQN6NEzswP2iRCzxu9DJ8CS3w+TloWqz36vJH2FiwEvY8uIl4D7KnLf9FWfcvSLCJmx2+FBH3CTvLr6k/NlZRzolGVChbHdbbs4R3HjJSIzyg5KmlXI7DmgDbAPwrnoMpUepeZzw+X3OmdfKYCu6Nf6dO6FQvUs67QNtkTqTxNjcvRJzJJaqP8d+Ya3gOtKXYTfQJDEYX+jFXWvCikEWJwN98QYhGYLtDZEY5Ao3K4jq3pbEeSkIG47UkJ0XaON0JMp1D/uuhr4xOMSM/Ow==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=T5DFOEgzkajHzrQnOuNsTIpLksQ1yWSUc91YP9MeET8=;
+ b=MzxuGL8ruU4CtaffiIrM1V1ZzuZd1sVWRaRHXdwQqIK1jirh4d9AXw+VG/AcQQtePYwRgVeS48VB40LTMXhKeVyoEue7ksxGVOjy9b/fle0YMX/bL+FNVM1YVMKVFMU9tJ7RXehjNz/oBtgIetKtTbievGv52cbRlyVSZKHLC6rFPhHXitcGCcVhahkiTdFBqd4J+8Z/XXuZ3bsAFO2fFb4EQS1GsOvhCSm+mr2UGKetBr2mvp8r2UdnPcwt1XEn6Z49Cvh3jBkeXtaookFi/qhXomeUqfLQQvENNkruPnNlaV2X+cMVm1KK/NBZouO+7md/qFNR/naYtH/K8JWDwg==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=hitachienergy.com; dmarc=pass action=none
+ header.from=hitachienergy.com; dkim=pass header.d=hitachienergy.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=hitachienergy.com;
+ s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=T5DFOEgzkajHzrQnOuNsTIpLksQ1yWSUc91YP9MeET8=;
+ b=kicslCip740HWh/HRbFJzw7g8i3g9bIj5sUbgaM4OqIkpJ+6WrGuS+lcUJT8IVCf34TQ+c3DvBmw0t3qV5f1dM4uAb3iBm8A+UEfPO+SwAilgOV7TVpWLA4fw5tEYF1vOANlPdfgWaVD7cf4+Mu/2Y17FRRMJMQuTbIwhemdVuljbzTJ1uGOLuF71xvwt2Z3N+OUqn8LcONRr5zefa1BawS8YjVEb+IYcCIyj5U+ekwtvN/h9wrx3THAI5Op3flGzL2DjBhVpJeaF/ENfS7YxD7hBOid4SRNtoaKb4j0aqpKnjmJ8JOnMeifxne7K/MnDStHAZFd2xopaL9cCFw2rw==
+Received: from AM0PR06MB10396.eurprd06.prod.outlook.com (2603:10a6:20b:6fd::9)
+ by VE1PR06MB7117.eurprd06.prod.outlook.com (2603:10a6:800:1b3::22) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9870.25; Wed, 6 May
+ 2026 09:35:00 +0000
+Received: from AM0PR06MB10396.eurprd06.prod.outlook.com
+ ([fe80::f64e:6a20:6d85:183f]) by AM0PR06MB10396.eurprd06.prod.outlook.com
+ ([fe80::f64e:6a20:6d85:183f%5]) with mapi id 15.20.9870.023; Wed, 6 May 2026
+ 09:35:00 +0000
+From: Holger Brunck <holger.brunck@hitachienergy.com>
+To: Jakub Kicinski <kuba@kernel.org>
+CC: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+	"andrew+netdev@lunn.ch" <andrew+netdev@lunn.ch>, "chleroy@kernel.org"
+	<chleroy@kernel.org>, "qiang.zhao@nxp.com" <qiang.zhao@nxp.com>,
+	"horms@kernel.org" <horms@kernel.org>
+Subject: RE: [PATCH net] net: wan: fsl_ucc_hdlc: return NETDEV_TX_OK if skb
+ was freed
+Thread-Topic: [PATCH net] net: wan: fsl_ucc_hdlc: return NETDEV_TX_OK if skb
+ was freed
+Thread-Index: AQHc2+2kUJ9y/iAyiU6X8I8cSH4SI7YANbUAgAB26uA=
+Date: Wed, 6 May 2026 09:35:00 +0000
+Message-ID:
+ <AM0PR06MB1039608A8965FE12520901515F73F2@AM0PR06MB10396.eurprd06.prod.outlook.com>
+References: <20260504174406.2229693-1-holger.brunck@hitachienergy.com>
+ <20260505182220.29e5f34e@kernel.org>
+In-Reply-To: <20260505182220.29e5f34e@kernel.org>
+Accept-Language: en-GB, en-US
+Content-Language: en-US
+X-MS-Has-Attach:
+X-MS-TNEF-Correlator:
+authentication-results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=hitachienergy.com;
+x-ms-publictraffictype: Email
+x-ms-traffictypediagnostic: AM0PR06MB10396:EE_|VE1PR06MB7117:EE_
+x-ms-office365-filtering-correlation-id: 00ab12b9-b81a-4fa6-d23b-08deab52be99
+x-he-o365-outbound: HEO365Out
+x-ms-exchange-senderadcheck: 1
+x-ms-exchange-antispam-relay: 0
+x-microsoft-antispam:
+ BCL:0;ARA:13230040|366016|1800799024|376014|38070700021|56012099003|18002099003|22082099003;
+x-microsoft-antispam-message-info:
+ 2tlsVLgTczGoaJWenQjyKnBqwg9+0TTYUlyfyl8pAL9EZUpqYg+Y3jrJPSA7TC4t3burHGTgKnG0UDmgvbCAls17+Cr6IglYtuycucqwuaaGmAdKXbuQKDAr3LstJ1UOaWdo3TFxpJlHlt8ibEcBc6Kj2IUQPQZQaj6+NStsjWoh2UNGNiGrofTVXOCTVhNAXKwTv5BHaHilgvMJcBTz3zyk3ek3ORSQirPN3QNWHZCIi0viGWmsw1Ke+C3B2/otpyd6bFaFXNFIh+/5Rra9snOXd6LGtJ3wHZcgqNnXZfENpWAhxavMwSglcGWRAJzxJiuFsuV/lmCgSJPx66ejMlJvTFotmcobzQ3b41xv7PholWkrsLZlh0/wqrBdPd7YUKhUDkWOvKr+CHzAbfPLKCi3eijLeKYh28hYrTGz1uhZN2VMK8JH0EbeCXfOGdo3YMb1987G/e4lNYQcKDB+GYaD6dgWQPArEN7WV9zzpBXgljftqVqlh5rtf3ErtylckYhfZeksdn9M4np4DPifK6dzoQsxGnJ/bsi+kRHRpeNV81MiYRDVd0I5AtZr+4l8bf5Fjs6tL6hDVAK7+oxICaTncQq9eEPCcdSPiNEQepU3WEjq1JEVrH1EWyHeuqMJToL7ZNYZA3HKmO+aPoutxdip75LP0KkMqSKdLhjCE4cphz6xPrVYHjM1/tIY+MLqnB+iKVy9mqno3LE6M4t6m/A4+zRECY9OEqxI8nAGChloFjNP8v0QEct6Ih+EkQsp
+x-forefront-antispam-report:
+ CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AM0PR06MB10396.eurprd06.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(1800799024)(376014)(38070700021)(56012099003)(18002099003)(22082099003);DIR:OUT;SFP:1101;
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0:
+ =?us-ascii?Q?XjClNRTo/saq44eZGC0FjWZIyUZnjbnIIZpSwgz4IqoDR6C0/Gll5+etFk+g?=
+ =?us-ascii?Q?HzdZFaDxpAWaeYt0UclwFnlno+v6RTUDpPtmNpfZcvJfOM8smVAtFyqpFJoJ?=
+ =?us-ascii?Q?AXq85KyM8yQAGSLNDuR9ylD4vz6kHhl2x0qMzn7WhCxR10EMQaXoiXpXwIBb?=
+ =?us-ascii?Q?xbCvRg+lAFij1NvRSpgyXQWUhQTIAHMAy384UvBtWD4aGYq6By84TOg/uG3H?=
+ =?us-ascii?Q?fniJQvRIHKx8Fl/7kGV48DtTfmZMLm/Xmnfm1/oMJyrA76pNhlgpZNJaDYzV?=
+ =?us-ascii?Q?fAVHwmV5cBbOELNhm374wuCBcWDOgBGqdjzoMJjQt8npfRIkokwN5rNAdl60?=
+ =?us-ascii?Q?kuTyqMFW2jLR9ULrzr7kpW+yWFGWmuBiAsCQXDxQPhOAs2WJ49CUbVtsbl0A?=
+ =?us-ascii?Q?1TnyGA7q20jgVKv57oDSd1qe6+DIg7t5B+VWbNHRccYTdh4r6gaudLUCV+in?=
+ =?us-ascii?Q?JcuiXf19vj8QB5c1FVrUcTxGVlWDkksyJcaxCnroEjpro0lR1ri5OfVlimc/?=
+ =?us-ascii?Q?qrVsVN6dPBKST0DFY63P9WT5xP1rP9M+85AQg6kKztoQtDjugMrb+B31Y294?=
+ =?us-ascii?Q?8wY3SCOA+fUCq4b4elu5IJi88WWtJmcAu+DvGEkBVFY9OBC1HBuv4yAPwKv9?=
+ =?us-ascii?Q?bux8FqnzX80o6//od4eF+za/x7YRH8zt1uEjSIaJ2gWi/6eLq1+Bp2Q79PFb?=
+ =?us-ascii?Q?4uZ68Cxq8pNeQcUzb9HmZ7+mvr48pSb5OJ5ciZX/IiRJE/3gxGxhWlU9iK2J?=
+ =?us-ascii?Q?eBPCqLwmYQRTxI6gXDoOGN908Xac3brh+F6hwqzlNzrjyt5auXcVl3WPlnBh?=
+ =?us-ascii?Q?285CPtWXE6zMv6WRYHBn9SHBOqIsBBOkUgMIccPXQig5uXN0looKsbo8htv3?=
+ =?us-ascii?Q?eLmHHOLjoHAn5mUXpIco3AYgrzYuAqLx+tl/pcYfZrcNDH/9C92ubm9/DB30?=
+ =?us-ascii?Q?iscmE2Y+6oA/f3Qfj2JpzFLhBbOreHxRR+ivQmpDYgupTIn8lHjVTxspLyIj?=
+ =?us-ascii?Q?mNhi2DObYsP0AOr+VHCGW5HtvUW1yDnX9SFZ+OPJ8Fnnw64Paw8CpiLSYmEp?=
+ =?us-ascii?Q?HVQLkSSJJsogiDgbFBy1BBt5qY3VFb6YGCLwAFWFlwZkRgjosMRmZ7AdKHx5?=
+ =?us-ascii?Q?GCmMl7hb/qVvZIZ8BrQjemjF/WZXszCvTJkZ7iT/pPlGDO6GcpRjPX7tGJjH?=
+ =?us-ascii?Q?dpIHiVu1sj7iWwZWijCCN8FLrDPfEVtKEJpbyshuoDqrHv6huvJeyHokiC8I?=
+ =?us-ascii?Q?UR+8rEw2oVfEuCmDpOhZ5sPZRu5itIQAIwdXuRkHEokQN4+MGlitlsBmNca9?=
+ =?us-ascii?Q?RUP9zP83RT1BpRkGaeiVLhaZkxbqN0jtshD4zKA+u4pGZUXAD707zvpHUdrK?=
+ =?us-ascii?Q?13LtmbZKGLMfeH7w9+HxD5qeLgOe1PLRT4A9MDc466rr4Z1aWgwbHU8Are8E?=
+ =?us-ascii?Q?9Jh4Kb3DQlI2T5TZH8Pw01Qu/6NgbzKBySnTrYqBFF7nM9ssuzxnpx4foIMp?=
+ =?us-ascii?Q?BKvJkq37reFQWuD8IQFZg54KDhgFZ2mWd2omIXRvxZSxDqGxkDlzgmU/loQg?=
+ =?us-ascii?Q?rf5rsFmgnBuY+pwKE3S7fmWeK0a7oxRVGn1rC0XX26WBbo+81z1MuM2JHgDg?=
+ =?us-ascii?Q?ebtS7WcdUGXe5upWx6yJrNwMKmZ0uo8g+twjw7MM//D2mOxNjUWokqO7IVB0?=
+ =?us-ascii?Q?Ig3oLcGsO8MF8blGFlYcZUbDDO4uYd5xvPSdZvEm8vl0d3sNJqi10jJ8ycyk?=
+ =?us-ascii?Q?Bvl2Faaqp6PmnwFQEqQC3k3knF29DhM=3D?=
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -89,136 +136,35 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Authority-Analysis: v=2.4 cv=XPQAjwhE c=1 sm=1 tr=0 ts=69fb0498 cx=c_pps
- a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
- a=NGcC8JguVDcA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=Y2IxJ9c9Rs8Kov3niI8_:22 a=pGLkceISAAAA:8 a=VnNF1IyMAAAA:8
- a=3bI6KQ0BwHB4WGLmmHkA:9
-X-Proofpoint-ORIG-GUID: BHIwcIAifCvlQbNFGXRzoW-2LHgaoUFM
-X-Proofpoint-GUID: WPQNHz8BqwQBl0uM_ovwqqcivKUv6RoN
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTA2MDA4OCBTYWx0ZWRfXxqwqQZRzNIKE
- GQSjozyIpYPFcIDo+flANupeEL6VEPNEnZpBD9BWhrUkOkC4U0wOLVMqkITs0ukcjnh5ON+usai
- zHSEq1W49Jp6kCQH1SVFeI5jKb0/oOUjH78dC1Ry8gyfohiRM5blOXfEFefG2P1bkZh9QZQ7A7c
- qkR1M7rFXn2zuegJPL9beiS5Z+JrLIlF6s+gjftyHEFaFJFaRaSn9gfz0H2x6sJsWrgdiThyBAh
- XrqrLhPL5djPKHTavKjQPI3MbgGg7XegYEClXtGamD3RRc7C6tOGsD2frJG65rrKwOQxgXVgQQy
- RBl+G3aNFBSGWpXoOkX1ddfYwp3Q/WOPZHQgaDuvdRLTDv0+rXSgL3buXub8wMGoZnHf3NPhmFf
- lZewsPmq24e24HbnTHbwpHFzGJzsZSHirRrZxYzkoZBE7ll9mJqJZlIWpDDseQmg8RT64r3P9DF
- sf/HRBn54iN8yg826OA==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-05-05_03,2026-04-30_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- bulkscore=0 lowpriorityscore=0 suspectscore=0 adultscore=0 spamscore=0
- priorityscore=1501 impostorscore=0 phishscore=0 malwarescore=0 clxscore=1015
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2604200000 definitions=main-2605060088
+X-OriginatorOrg: hitachienergy.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: AM0PR06MB10396.eurprd06.prod.outlook.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 00ab12b9-b81a-4fa6-d23b-08deab52be99
+X-MS-Exchange-CrossTenant-originalarrivaltime: 06 May 2026 09:35:00.6182
+ (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 7831e6d9-dc6c-4cd1-9ec6-1dc2b4133195
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: /XxWVLtbSPjyd3SDwyVdgSmhOP7miLyy3BLrd0UEZenCLLtjURonFEa4wTeYBWXtNWvHUR/QUHRcaWgoQZIdsUoxpJP3PXEj5yxmSsGXq7A=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: VE1PR06MB7117
 
-Add a new LKDTM trigger (PPC_RADIX_TLBIEL) that executes a process-scoped
-radix TLBIEL instruction to exercise the radix MMU behaviour and
-associated machine check exception (MCE) handling paths.
+>=20
+> On Mon,  4 May 2026 19:44:06 +0200 Holger Brunck wrote:
+> > If the skb was freed in the ucc_hdlc_tx function and the packet marked
+> > as dropped we need to return NETDEV_TX_OK. Otherwise the above layer
+> > will try to requeue an already freed skb.
+>=20
+> Is this really true? I thought negative returns mean drop.
 
-This provides a way to validate MCE handling in radix mode. Currently,
-there is no dedicated LKDTM test that exercises this path or allows
-triggering radix-specific machine check behaviour for validation.
+the API suggest to only use NETDEV_TX_OK or NETDEV_TX_BUSY as return value.
+I checked several drivers and they are usually returning NETDEV_TX_OK if an
+error occurred and the driver consumed the packet. But you are right
+dev_xmit_complete will also return true if the return code is smaller than =
+zero
+and the packet is not requeued. Should I update the commit message or shoul=
+d
+the patch be dropped?
 
-The test is only enabled on ppc64 systems with radix MMU
-support and If radix is not active, the trigger is skipped and reported as
-XFAIL.
-
-Co-developed-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-Signed-off-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-Signed-off-by: Sayali Patil <sayalip@linux.ibm.com>
----
- drivers/misc/lkdtm/Makefile             |  2 +-
- drivers/misc/lkdtm/powerpc.c            | 39 +++++++++++++++++++++++++
- tools/testing/selftests/lkdtm/tests.txt |  1 +
- 3 files changed, 41 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/misc/lkdtm/Makefile b/drivers/misc/lkdtm/Makefile
-index 03ebe33185f9..4e58d16fc01e 100644
---- a/drivers/misc/lkdtm/Makefile
-+++ b/drivers/misc/lkdtm/Makefile
-@@ -11,7 +11,7 @@ lkdtm-$(CONFIG_LKDTM)		+= usercopy.o
- lkdtm-$(CONFIG_LKDTM)		+= kstack_erase.o
- lkdtm-$(CONFIG_LKDTM)		+= cfi.o
- lkdtm-$(CONFIG_LKDTM)		+= fortify.o
--lkdtm-$(CONFIG_PPC_64S_HASH_MMU)	+= powerpc.o
-+lkdtm-$(CONFIG_PPC_BOOK3S_64)	+= powerpc.o
- 
- KASAN_SANITIZE_stackleak.o	:= n
- 
-diff --git a/drivers/misc/lkdtm/powerpc.c b/drivers/misc/lkdtm/powerpc.c
-index ef07e5201edf..3d56b56f5e0c 100644
---- a/drivers/misc/lkdtm/powerpc.c
-+++ b/drivers/misc/lkdtm/powerpc.c
-@@ -105,6 +105,31 @@ static void insert_dup_slb_entry_0(void)
- 	preempt_enable();
- }
- 
-+static void tlbiel_va(unsigned long va,
-+		      unsigned long pid,
-+		      unsigned long ap,
-+		      unsigned long ric)
-+{
-+	unsigned long rb, rs, prs, r;
-+
-+	rb = va & ~(PPC_BITMASK(52, 63));
-+	rb |= ap << PPC_BITLSHIFT(58);
-+	rs = pid << PPC_BITLSHIFT(31);
-+
-+	prs = 1; /* process scoped */
-+	r = 1;   /* radix format */
-+
-+	/*
-+	 * Trigger an MCE by issuing radix tlbiel with an invalid operand combination.
-+	 * Using PRS=1 (process-scoped) with kernel address does not correspond to
-+	 * any valid process-scoped translation.
-+	 * This results in an invalid tlbiel operation, causing hardware to
-+	 * raise a machine check.
-+	 */
-+	asm volatile(PPC_TLBIEL(%0, %4, %3, %2, %1)
-+			: : "r"(rb), "i"(r), "i"(prs), "i"(ric), "r"(rs) : "memory");
-+}
-+
- static void lkdtm_PPC_SLB_MULTIHIT(void)
- {
- 	if (!radix_enabled()) {
-@@ -124,8 +149,22 @@ static void lkdtm_PPC_SLB_MULTIHIT(void)
- 	}
- }
- 
-+static void lkdtm_PPC_RADIX_TLBIEL(void)
-+{
-+	unsigned long addr = PAGE_OFFSET;
-+
-+	if (radix_enabled()) {
-+		pr_info("Injecting Radix TLB invalidation MCE\n");
-+		tlbiel_va(addr, 0, 0, RIC_FLUSH_ALL);
-+		pr_info("Recovered from radix tlbiel attempt\n");
-+	} else {
-+		pr_err("XFAIL: This test is for ppc64 and with radix mode MMU only\n");
-+	}
-+}
-+
- static struct crashtype crashtypes[] = {
- 	CRASHTYPE(PPC_SLB_MULTIHIT),
-+	CRASHTYPE(PPC_RADIX_TLBIEL),
- };
- 
- struct crashtype_category powerpc_crashtypes = {
-diff --git a/tools/testing/selftests/lkdtm/tests.txt b/tools/testing/selftests/lkdtm/tests.txt
-index 3245032db34d..d8180bbe31e8 100644
---- a/tools/testing/selftests/lkdtm/tests.txt
-+++ b/tools/testing/selftests/lkdtm/tests.txt
-@@ -86,3 +86,4 @@ FORTIFY_STR_MEMBER detected buffer overflow
- FORTIFY_MEM_OBJECT detected buffer overflow
- FORTIFY_MEM_MEMBER detected field-spanning write
- PPC_SLB_MULTIHIT Recovered
-+#PPC_RADIX_TLBIEL Triggers unrecoverable MCE
--- 
-2.52.0
-
+Best regards
+Holger
 
