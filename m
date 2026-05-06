@@ -1,51 +1,79 @@
-Return-Path: <linuxppc-dev+bounces-20519-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20520-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C3486CD3436
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 May 2026 11:42:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E4D4BCD342C
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 May 2026 12:09:07 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4g9YQ21tFrz30Pp;
-	Wed, 06 May 2026 21:42:02 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778067722;
-	cv=none; b=K0p6rfaw2/U/OHlruo5hhT9YEOuQHjgeOt8s2UpBLp2owTxgvueQVafuzoFco8+QNCKMNeqi+D7XvQsy2bazsBzmC95lXYGI1QuuUUa5bUXqBY3UHxHrZOHj5OQxX1bT6qFHl6LNqcLJXTm5SCQNqRFJ1KbxS1QoBGKAffsThzhs48ZkVcETy9OwS/AGwsXiV8joOHEcuM11cCndUWK2FAPlENldlIcZ8XBd5vNNfUz3oU4r8dUZaI/5F58jeb//eySjaDhFKSgskz0ZhYHBVv1M9+l3jsa2LI6hxy7sg9uW0tfgH1lbdYw/tNIEyJRLiiYlUBAh0xhpauk1njnRbQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4g9Z1G2dFcz30Pp;
+	Wed, 06 May 2026 22:09:06 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778069346;
+	cv=none; b=ecgrw0yCMQdWYWcfTcP0v67Bg8q/hVMf/O4nD36gYuXy0N3WNcUvcTcLbkxwvrT0/mpTVbosa7SHlIQnS47urnl6asXCdY86iX73jRNs9d33l0tSCHyBzL4sRH11UeckCYwGYxq1i4yiF6Xsf+MVhNqt3FMkzE9SaG6Sj/XyNkI+4hf+a1rO+GFnFQXuT9Neu0Hvyy2greshTMPtG+xjq/vte8n1YcoHu/HKK+aKftBQcmlLvoS1/K7npydLlWF1EdNQAYZQsDF3cizhz9CKB8VAOrHd/OHL7/HY/YNjByot2L7+FP5B4ud7pBeKHAHzY6ZOtuf8fdmB9JdoGp+hvg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1778067722; c=relaxed/relaxed;
-	bh=fcqNOLkyS9X7UmI9KGNzzo3dmL40eCZtHjkXdGy7ctc=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=V3WDvEs8Dv3nYWzoBo6bc/8oSGpy8P6HO0JMhzsogxtXvVRDt7aOuX+Sgf2sXB8jPte/7o7ga8tHSwxMpnukd5JijBBPG2kLrhzLezr0Oba5Pgbil+uXqaY7SdUmHamUdtCq7kg6ZRwCRbxi7Kci8SpSpRoGSbFD5ut4MFQ02TCxZ5dZCmtQhkkjFsq+LEKpQafG381bGDl7ZQTZ9rEREvxZwQPKCfRDRRQ3P1cnInXp9zVG7mrs7Gxyr8LqSy1rBQhqVItbbbvGjijbuZKF/Kwq6uN9qvmPXbS5CUWSIRlKFe9hDo8xTVBvZXivzcuxsw25NwuBLVFTkLDxpw43uQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Y5TsLATe; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=mpe@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1778069346; c=relaxed/relaxed;
+	bh=RWx4nIYLk83UqaFWb1/ukrDvsP7QXx/EDHokPskBwzI=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=VYUDwxgOl7tr7QApWwexbdHeXDbrqzA25zINdVTjZU/7skdb+82L/RWyZRMxb2PzldmBB78gljuiTHWdEzLpWVv+0xY7VNpX8e0f468Rsx9UCoqrf9f2AJWH2UWQP2BiLkf5QIXEVe5qIV9ZMvJOvYvTpq5AoJKlOuOKOAm65evSsE7iAigvl8pXz+pxU0F/Q8Hol7tmwYewlpMtjmOlxdD8uZ5M9EqsjcrnvK5wJyOpWnVudwde2cMfFaZiJp+6ovBronbKDRscsEbLnUca61kcC1eCAEBDm+t4VVZlDioI1VNI3K5/kmVTNLjAtFkvWL9w30vB83Yo12s8t5rd/g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=guFWe4Dh; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=gautam@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Y5TsLATe;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=guFWe4Dh;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=mpe@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=gautam@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4g9YQ12853z30PJ
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 06 May 2026 21:42:01 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id D898A60103;
-	Wed,  6 May 2026 11:41:57 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0FEC4C2BCB8;
-	Wed,  6 May 2026 11:41:55 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1778067717;
-	bh=Wv3zy7aSI+bkDo01+n8ABRrX9w1Ih2MP6pLk5PJnNWM=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=Y5TsLATexthF9+pRod+caVqwnMsKSK68bwwAZDairsJM0SZPCfctQKjd8zqjLkz8Y
-	 ZJeM92szHWKm+aBGw0K+r18jJgpLwsK8kkwQ55TodgdDPPoCswVxroTlqWEIXbz9p6
-	 hrVj9jrMvoLE7cAvmgXDHx97g94QGsnNNw7B/mVtbvG5TicTuqW1E3dTeu3la6KVWC
-	 UM/dY0FMzLRX4ByYq3/keNa2VUpu0Xu64+Q6LYnuCFjDdJ5zB8TE80bwe4/BrH4VKk
-	 RALqoZUTeAn3122yOB5W7tbsflq5y+Qv6SwcZSHxnx1xvEcuX80bhfQpy76LWaGNnS
-	 fJrokj60aNrrQ==
-Message-ID: <5a28c484-5500-4b68-b837-28d30648e592@kernel.org>
-Date: Wed, 6 May 2026 21:41:51 +1000
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4g9Z1F0s8zz30Bd
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 06 May 2026 22:09:04 +1000 (AEST)
+Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 645JOwtb2822130;
+	Wed, 6 May 2026 12:08:46 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-type:date:from:in-reply-to:message-id:mime-version
+	:references:subject:to; s=pp1; bh=RWx4nIYLk83UqaFWb1/ukrDvsP7QXx
+	/EDHokPskBwzI=; b=guFWe4DhPm4x8v6Tg7o5C0fE3Y12C1YKCa0buCEk3LgYTl
+	C3ZHGgsrLYb6JKu8NBpjVEO0bfVHuT2n7xiUyHLa4vr05CvH0YsoSYK+CPcJVOOF
+	LH6hGK9AavEHlQUEZ7n4/kZnPNr3hAmzIUsJLdt7akEGTZ/6/+VeV/iafgtf768J
+	sLZv/MpuogsRbc7AyK0mEgIeUwtOmsGgfFSGt17Tfj+K9t+VcCu/KGdLwx8Oh61C
+	AI0lbK/VTPFGPC3GkX9DDm9lN02tEZqfTfxxTcmvnco0rzrNXZg90fMb7MgTdY8r
+	TYynxF+QN0JJnav6AAmK4nbSZrftMlDLMpcZi7Lw==
+Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4dw9y4qvh4-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 06 May 2026 12:08:45 +0000 (GMT)
+Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma13.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 646C5LAB005155;
+	Wed, 6 May 2026 12:08:44 GMT
+Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
+	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4dwwtgdwv9-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 06 May 2026 12:08:44 +0000 (GMT)
+Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com [10.20.54.104])
+	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 646C8hJ835324196
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Wed, 6 May 2026 12:08:43 GMT
+Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 229C320040;
+	Wed,  6 May 2026 12:08:43 +0000 (GMT)
+Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id C4D242004D;
+	Wed,  6 May 2026 12:08:39 +0000 (GMT)
+Received: from Gautams-MacBook-Pro.local (unknown [9.43.126.83])
+	by smtpav05.fra02v.mail.ibm.com (Postfix) with ESMTPS;
+	Wed,  6 May 2026 12:08:39 +0000 (GMT)
+Date: Wed, 6 May 2026 17:38:31 +0530
+From: Gautam Menghani <gautam@linux.ibm.com>
+To: Julian Braha <julianbraha@gmail.com>
+Cc: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com,
+        chleroy@kernel.org, jniethe5@gmail.com, linuxppc-dev@lists.ozlabs.org,
+        linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] powerpc: fix dead default for GUEST_STATE_BUFFER_TEST
+Message-ID: <afsvP9o5eh_ywGMJ@Gautams-MacBook-Pro.local>
+References: <20260405161545.161006-1-julianbraha@gmail.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -59,76 +87,73 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3] powerpc/g5: Enable all windfarms by default
-To: Linus Walleij <linusw@kernel.org>,
- Madhavan Srinivasan <maddy@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
- "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-References: <20260505-powermac-g5-config-v3-1-7747bf72f874@kernel.org>
-Content-Language: en-US
-From: Michael Ellerman <mpe@kernel.org>
-In-Reply-To: <20260505-powermac-g5-config-v3-1-7747bf72f874@kernel.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260405161545.161006-1-julianbraha@gmail.com>
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTA2MDExOSBTYWx0ZWRfXygrCa4yirrld
+ 5dX9ULVaN3a6A4W3n06KaeYVPoLPTiVMaxTKASLLyuRJnduMQz373uVc80MMxTL/e1QUxFuWKP4
+ tYi6uNm8t9bRenhCh20/fi0/stIj/6r7i6kZmsxL/jQa+wMMam6hQQ4NJjNQCYz+lwzQn7xif8Y
+ oNCNfg4hYxKLglX9TKHLACruZG85+jV10sXTnEh/9GX2acEeFrxJVrWc7mNdYpP1mEg3lE2H8ra
+ eXnLvv0TZK3ruQUN39uL+zwRZo9k+G8TprvogKE/R+c3qQnVzqEQ4664ErE13VrhjD/OENS99oS
+ tP16f7ov5Qube/oFxG0tdyegIeP0zyd2uovlSmznIYlKYe9SMSwcZm8DF4oNCF7G6Y7nex8YaOx
+ JZsQV7UlZZsG9tKDJsEejzykIHo4ExIt1FexwrHqO0JvuLUVNaJgifTxVtc+3783iK3e619pM6U
+ s4bG61VEveCKc9w2CRg==
+X-Authority-Analysis: v=2.4 cv=J4GaKgnS c=1 sm=1 tr=0 ts=69fb2f4d cx=c_pps
+ a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
+ a=kj9zAlcOel0A:10 a=NGcC8JguVDcA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=RzCfie-kr_QcCd8fBx8p:22 a=pGLkceISAAAA:8
+ a=VnNF1IyMAAAA:8 a=kLzKvu1pYhZp0h81DP8A:9 a=CjuIK1q_8ugA:10
+X-Proofpoint-GUID: C5nl0Ur34Ch_vFUSL8u9tIUxDHAMXrEZ
+X-Proofpoint-ORIG-GUID: CUXyK5XE1PeQjUj3lVhKbAB67miRvNgj
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-05-05_03,2026-05-06_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ impostorscore=0 clxscore=1015 malwarescore=0 bulkscore=0 suspectscore=0
+ priorityscore=1501 spamscore=0 phishscore=0 adultscore=0 lowpriorityscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2604200000 definitions=main-2605060119
 
-On 6/5/2026 04:47, Linus Walleij wrote:
-> The G5 defconfig is clearly intended for the G5 Powermac
-> series, and that should enable all the available
-> windfarm drivers, or the machine will overheat a short
-> while after booting and shut itself down, which is
-> annoying.
+On Sun, Apr 05, 2026 at 05:15:45PM +0100, Julian Braha wrote:
+> The GUEST_STATE_BUFFER_TEST config option should default
+> to KUNIT_ALL_TESTS so that if all tests are enabled then
+> it is included, but currently the 'default KUNIT_ALL_TESTS'
+> statement is shadowed by 'def_tristate n',
+> meaning that this second default statement is currently dead code.
 > 
-> Signed-off-by: Linus Walleij <linusw@kernel.org>
+> It looks to me like the commit
+> 6ccbbc33f06a ("KVM: PPC: Add helper library for Guest State Buffers")
+> intended to set the default to KUNIT_ALL_TESTS, but mistakenly
+> missed the def_tristate.
+> 
+> This dead code was found by kconfirm, a static analysis tool for Kconfig.
+> 
+> Fixes: 6ccbbc33f06a ("KVM: PPC: Add helper library for Guest State Buffers")
+> Signed-off-by: Julian Braha <julianbraha@gmail.com>
 > ---
-> I wonder why this never gets applied. Am I doing something wrong?
-> Is the patch stupid? No-one cares?
-
-Sorry it didn't get picked up.
-
-I don't have any G5s anymore, but the ones I did have used the other 
-windfarm drivers so I never hit this.
-
-You might be the last person on earth booting Linux on those :)
-
-> ---
-> Changes in v3:
-> - Rebased on v7.1-rc1
-> - Link to v2: https://lore.kernel.org/r/20260120-powermac-g5-config-v2-1-cd8f1c8bfbae@kernel.org
+>  arch/powerpc/Kconfig.debug | 3 +--
+>  1 file changed, 1 insertion(+), 2 deletions(-)
 > 
-> Changes in v2:
-> - Rebased on v6.19-rc1
-> - Link to v1: https://lore.kernel.org/r/20251205-powermac-g5-config-v1-1-8609aa97c1c0@kernel.org
-> 
-> To: Madhavan Srinivasan <maddy@linux.ibm.com>
-> To: Michael Ellerman <mpe@ellerman.id.au>
-> To: Nicholas Piggin <npiggin@gmail.com>
-> To: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-> Cc: linuxppc-dev@lists.ozlabs.org
-> Cc: linux-kernel@vger.kernel.org
-> ---
->   arch/powerpc/configs/g5_defconfig | 2 ++
->   1 file changed, 2 insertions(+)
-> 
-> diff --git a/arch/powerpc/configs/g5_defconfig b/arch/powerpc/configs/g5_defconfig
-> index 04bbb37f5978..f74ccc06f4c1 100644
-> --- a/arch/powerpc/configs/g5_defconfig
-> +++ b/arch/powerpc/configs/g5_defconfig
-> @@ -85,6 +85,8 @@ CONFIG_PMAC_SMU=y
->   CONFIG_MAC_EMUMOUSEBTN=y
->   CONFIG_WINDFARM=y
->   CONFIG_WINDFARM_PM81=y
-> +CONFIG_WINDFARM_PM72=y
-> +CONFIG_WINDFARM_RM31=y
->   CONFIG_WINDFARM_PM91=y
->   CONFIG_WINDFARM_PM112=y
->   CONFIG_WINDFARM_PM121=y
-> 
+> diff --git a/arch/powerpc/Kconfig.debug b/arch/powerpc/Kconfig.debug
+> index f15e5920080b..e8718bc13eeb 100644
+> --- a/arch/powerpc/Kconfig.debug
+> +++ b/arch/powerpc/Kconfig.debug
+> @@ -83,11 +83,10 @@ config MSI_BITMAP_SELFTEST
+>  	depends on DEBUG_KERNEL
+>  
+>  config GUEST_STATE_BUFFER_TEST
+> -	def_tristate n
+> +	def_tristate KUNIT_ALL_TESTS
+>  	prompt "Enable Guest State Buffer unit tests"
+>  	depends on KUNIT
+>  	depends on KVM_BOOK3S_HV_POSSIBLE
+> -	default KUNIT_ALL_TESTS
+>  	help
+>  	  The Guest State Buffer is a data format specified in the PAPR.
+>  	  It is by hcalls to communicate the state of L2 guests between
+> -- 
 
-Ack, LGTM.
-
-Maddy can you pick this one up for next?
-
-cheers
+Tested-by: Gautam Menghani <gautam@linux.ibm.com>
 
