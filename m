@@ -1,78 +1,81 @@
-Return-Path: <linuxppc-dev+bounces-20511-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20512-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 68A0ACD3439
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 May 2026 09:06:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7CBE5CD3436
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 May 2026 09:06:51 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4g9Tyg3kscz30BC;
-	Wed, 06 May 2026 19:06:35 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4g9Tyj1V9Bz2xdh;
+	Wed, 06 May 2026 19:06:37 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778058395;
-	cv=none; b=AXzDlh0xxpw1NzBB3+SD6QI9/uX/PG/bmtBO1L5syaWvhvX/Gph0X32G4dWPdZyLI2gjnvhkhPtvMVhM6aBQ2gZ02Lmee2MC2t8TtGteMtOisBuqjoY64WcUJG7gKyX6KPa+KjWK75yz1sHJiNYbqaE8VIY/a78XZygAr14S4PB98uP+QcpcFtRPfU9Om6peVYPY9kXJAD5XKUJN0dr1MIa6HzF2Z6/PPspvt5UOv66w6MrlTgIuMDtXGX8b3Zsi9fKoV4khm9ATFHnmuCzhMSuQaX/RS9nchV6aVQV6saJDcVk59eStH9x5xFx54rG0Ir9JEkM5ZMLuqIh/gJ+cbg==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778058397;
+	cv=none; b=WRWIjOGWsIU3onWa8lUnOdp/WsFi+OR1W92Txf+DoSyvCrwnpPMfgPA1a8y1JUBbZCh9d7zwqXVUD/CLvsj1LjMSC0le2W2wGGXL16VGlRzfx/gvIrAO1U+kwfIR8o1FqmPbNBBzSYCjmc0P9MUlI3V4ww03cecpdQXad11dSxEHAkxrGHBH4f91F7NDaZpc5193GKE/Qe3YCsKsxhL+KnkCOdS6NEEBfTF+EJK2DIEB2N4/JbyV0RBb1TH1OqYPuXJed4Tp0uqQbXg+oE7KTwRvmp+L9Z82U8wt2Ugbk/BkM2t850X05E3lEHwc8higB5AO1d0jBX0CZYk94Hl12w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1778058395; c=relaxed/relaxed;
-	bh=YFcTt2pbZMFoTbce5E0y/0SJHipPDV+HRis6c0vyz5Q=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=FNdOseJVAPDa4DVcx+dtLTrbuFgHuOeoV8e9ctVGpYroyEx1EcWqeKPbMPQ41EZxNMf8DJQILMPJcq1JU8K/BVcdn/TmMkLMxU1VSzoXpqYzGTQJjqukXsgdCgiQB5MlflDF/lTUfudQOLR13VnwZ3GbXxLDy6O9uq66P5GhxOgTWsX6CHYc++tdx4ZSm1PcGKpoePAp8XOkLPNzID7P6KDQNyyS5VJBqDK/+RJBaYij9GYBzhR6WZYmuJwteingpySSmLTPJ8cCb1oMTHf+/GeNmHQ9G+ZZh9VEq13TcwvRMwxMtyqLuSCcmkPGAmqRPLYHzB68JRHso0cgeE7Mtg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=KeRsek6q; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sayalip@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	t=1778058397; c=relaxed/relaxed;
+	bh=/OX0YmQ91ZbIkTbD/67h5JVJUVNat8e++/RtzSdSmVI=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=hx1BbiQgQoK9rdsexCpBQay94ja5TJ+cNJJ7BlaUWmifjoCAMtcA9vSbfkRrfsZ4O/EoS3xn5SiacxVDs2T8hTS+xF1wO5j3hcQEu1pvG5RhqnLikUJNniPTkcJPUPfm526qLwvZwb2HpzQonfUUQnv/fY/JR7EcKf0lHXO3zZuLOwDJluAOHRFcxkkTuasuYMylaKox+nzSg2WtDrUOWvMKKStEpDwJw0fKgv8cFVm6o1RXBYWtSy1uhbUCXg5df5OWUVGYnZ1q9sZLaefPzWO4IflFPtVyx4q88k91/3GA797WI/ijMWkahtt9mGeSTU7MCJLuh8DTWSmkEFeZnw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=pBE9z69/; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sayalip@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=KeRsek6q;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=pBE9z69/;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sayalip@linux.ibm.com; receiver=lists.ozlabs.org)
 Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4g9Tyf30QFz2xdh
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 06 May 2026 19:06:33 +1000 (AEST)
-Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 645Iopvv3267730;
-	Wed, 6 May 2026 09:06:23 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4g9Tyh2T68z30Sx
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 06 May 2026 19:06:35 +1000 (AEST)
+Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 645Jkh4a3254680;
+	Wed, 6 May 2026 09:06:26 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:message-id:mime-version
-	:subject:to; s=pp1; bh=YFcTt2pbZMFoTbce5E0y/0SJHipPDV+HRis6c0vyz
-	5Q=; b=KeRsek6qWCH3y4M+DOnwOWf5hbj/tLkoxuy5nyeW24lFfVyxzNYkX3YVP
-	j/Sz98udntKjneyF+PLiLjV/d0b3IXYGd4SRKumGPMIUa5+nLBTn0Sh8dVrfeujR
-	G4+s+bqLYyD3+CkFrVn0pgC5FWSfPbeZKA35Nr7VvWTZXCqhajEHNUIkb9HWM/1M
-	UqEzsQte3wwNYnGRuAcbIYo4OycDZnVP18tJXVW0uP4VAM2yxoFTrpskjYqXCcX6
-	CrMCi/r5Ej4RqiOYty2ad5+xxATcRuv5xxtzE6V5YDWpzBCEk/YhjMAeLF9XbGji
-	jorvoTqkEUedwIVL/Zi5eFIbae15w==
-Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4dw9xxq5qp-1
+	:content-transfer-encoding:date:from:in-reply-to:message-id
+	:mime-version:references:subject:to; s=pp1; bh=/OX0YmQ91ZbIkTbD/
+	67h5JVJUVNat8e++/RtzSdSmVI=; b=pBE9z69/ryRd8l31HNoyCgtZzMk7rrAti
+	QELE0LzqNG/EDjZzMbq47rnhQAZzYhw5cTKGhtTOpFhGO29nauIrojY7bO8BEY6j
+	edqKVb1PkCv/ZUuwKv7uB5KKkk/IgLewzpaiPnXRd6yHRzly0rQWrkvDRZrJP65i
+	a0zhGa3tV0c92lrPyjDC5lwh1ggKWKnqczHw7dmXYdQNvqHDlC6HxedqyCz2MKfN
+	GEceHZADyC+DxZdCMayQFCkmTY7/CcqPS37z5Lz6s1g40XSPOyHAHU/ruZj9TrRp
+	1yrVhP3nXRCnDXCuLPnotzDntJXXiFaXv0iQ5UkUCk9qSeZfj6hwA==
+Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4dw9w6f7cs-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 06 May 2026 09:06:22 +0000 (GMT)
-Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma22.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 6468t1v7025770;
-	Wed, 6 May 2026 09:06:22 GMT
-Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
-	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4dwuyw5ke1-1
+	Wed, 06 May 2026 09:06:25 +0000 (GMT)
+Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma21.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 6468dZoH014266;
+	Wed, 6 May 2026 09:06:25 GMT
+Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
+	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4dwvkjwghd-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 06 May 2026 09:06:22 +0000 (GMT)
+	Wed, 06 May 2026 09:06:25 +0000 (GMT)
 Received: from smtpav07.fra02v.mail.ibm.com (smtpav07.fra02v.mail.ibm.com [10.20.54.106])
-	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 64696ICG40698334
+	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 64696Lwe56230376
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 6 May 2026 09:06:18 GMT
+	Wed, 6 May 2026 09:06:21 GMT
 Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 7178620043;
+	by IMSVA (Postfix) with ESMTP id 50C1920043;
+	Wed,  6 May 2026 09:06:21 +0000 (GMT)
+Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id EEC9620040;
 	Wed,  6 May 2026 09:06:18 +0000 (GMT)
-Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 194702004E;
-	Wed,  6 May 2026 09:06:16 +0000 (GMT)
 Received: from li-3f69264c-2ce6-11b2-a85c-c3f414d24014.bl1-in.ibm.com (unknown [9.123.3.209])
 	by smtpav07.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Wed,  6 May 2026 09:06:15 +0000 (GMT)
+	Wed,  6 May 2026 09:06:18 +0000 (GMT)
 From: Sayali Patil <sayalip@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org, maddy@linux.ibm.com
 Cc: linux-kernel@vger.kernel.org, Ritesh Harjani <ritesh.list@gmail.com>,
         Mahesh Salgaonkar <mahesh@linux.ibm.com>, sshegde@linux.ibm.com,
         chleroy@kernel.org
-Subject: [PATCH 0/3] MCE robustness fixes and LKDTM powerpc enhancements
-Date: Wed,  6 May 2026 14:36:11 +0530
-Message-ID: <cover.1778057685.git.sayalip@linux.ibm.com>
+Subject: [PATCH 1/3] powerpc/time: remove preempt_disable/enable from arch_irq_work_raise()
+Date: Wed,  6 May 2026 14:36:12 +0530
+Message-ID: <a64fa7d86da51f78743bee26e16ae155c43016c7.1778057685.git.sayalip@linux.ibm.com>
 X-Mailer: git-send-email 2.52.0
+In-Reply-To: <cover.1778057685.git.sayalip@linux.ibm.com>
+References: <cover.1778057685.git.sayalip@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -89,55 +92,90 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
 X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTA2MDA4OCBTYWx0ZWRfX+9WRqitIvUOr
- AxbttCeFRLjKT6UkSLLQd80KXV9LKxGr6wMAFhfO/e0xD2ru+Irpsap6ApppkvM1L7GkrEtl8fN
- n1ZQX5Gd8anqXReqZxXM3oSAWupHIhAYPKdndA7rEdpN83dytGYDdhJwgQiBCE5PWSknlowKNJC
- 0QpF78xtBVBNwLXYZgCD5JLymdUxMZ5E3+anf3zJs9B0HPR7PY0cJPn/E36eyL6sQtZFrDs9z6L
- 7w3EGfFgNtSP6B7yUHl52wH4+jkM3Pbw9Ha+RVYZMCg0zcIC4WvKKnk5n1mLWZEwMuCwv7VCwt/
- Bfdc3vbqbs2ffOG/C0GqM8xRFmww5O6oIQL3zTeRCBVhPtf8c6YJ7Rzmi+0hio1dEJPHx77894/
- R3bwJOzKs3LW5gtC2sTKLaaahY0qS63PaIJK/uDXtZ8cKbCKIBOnnaVMotka0751LPW/P4Z0Fpb
- SVyPjcl55pjSt8lFIKg==
-X-Proofpoint-ORIG-GUID: sgZyMQBvrbCHfiM67QmXQG3JSN5tCeeP
-X-Proofpoint-GUID: 0DiLvGPqNPpeJG3St9KNvRBSTFW8mNFC
-X-Authority-Analysis: v=2.4 cv=ctWrVV4i c=1 sm=1 tr=0 ts=69fb048f cx=c_pps
- a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
+X-Authority-Analysis: v=2.4 cv=XPQAjwhE c=1 sm=1 tr=0 ts=69fb0491 cx=c_pps
+ a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
  a=NGcC8JguVDcA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=V8glGbnc2Ofi9Qvn3v5h:22 a=4LFl1V1j6vrMI3_rxnIA:9
+ a=Y2IxJ9c9Rs8Kov3niI8_:22 a=VnNF1IyMAAAA:8 a=ES_PRLIWHEyu4WWh1w8A:9
+X-Proofpoint-ORIG-GUID: 3Wb57npoFTKTbM3wDPzFmvXjkmZgL2UQ
+X-Proofpoint-GUID: dLKAQyOrL7NW9a9Ui_QOPVs6EZvcGSny
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTA2MDA4OCBTYWx0ZWRfXzktigx1BSbPZ
+ IHtLBu/QItIlVMumA4Qy+w3rweontkKbf461YJiWTk6ylknOPLa11FEnwbcSZR3V9WXlkEasQaH
+ Fem+F+v9P7C04YfrngaSvsJ8kYeig0nCjfR88B4lM2uoiyDx6SaY/COEYTkKye2STS8lzla5wq5
+ uD+kLosauHxIdpqPgdiVjhuIWs25QQx7pKJbOAg+m0YlMA9Sz8ovy3JNpQPhdN66OWkKtAv2Eqq
+ NgJiD1HmrcI51L5pIHHWNGvyegTEKB+XzPqISi+Vws6qW5Mw6iFzjaN3cFtORhfDzUEX4juaB4a
+ PmCn9AOVXcwm/ggx/tzxG6KV7K3xD128f2UI7gwYqhdLjBEn3ivo/FIUrWYpi2uhVEv/ul88OP8
+ hdSCg2GjD26PJ3QlWxNvRQ5hvbBnmFhWh3unFuJiOL+cKeZuBDo3RudQ16jlvj+vKbSSKxObKJS
+ Lup+/C+sIIOL9WpBwuQ==
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
  definitions=2026-05-05_03,2026-04-30_02,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501 lowpriorityscore=0 adultscore=0 clxscore=1015
- suspectscore=0 impostorscore=0 spamscore=0 malwarescore=0 phishscore=0
- bulkscore=0 classifier=typeunknown authscore=0 authtc= authcc= route=outbound
- adjust=0 reason=mlx scancount=1 engine=8.22.0-2604200000
- definitions=main-2605060088
+ bulkscore=0 lowpriorityscore=0 suspectscore=0 adultscore=0 spamscore=0
+ priorityscore=1501 impostorscore=0 phishscore=0 malwarescore=0 clxscore=1015
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2604200000 definitions=main-2605060088
 
-Hi all,
+A kernel panic is observed when handling machine check exceptions from
+real mode.
 
-This series fixes a panic observed while handling machine check exceptions
-(MCEs) from real mode. It also improves the reliability of the
-PPC_SLB_MULTIHIT test by adding isync instructions after slbmte operations,
-and introduces a new LKDTM trigger (PPC_RADIX_TLBIEL) to validate MCE
-behavior on radix MMU.
+  BUG: Unable to handle kernel data access on read at 0xc00000006be21300
+  Oops: Kernel access of bad area, sig: 11 [#1]
+  NIP [c000000000029e40] arch_irq_work_raise+0x10/0x70
+  LR [c00000000003ffc8] machine_check_queue_event+0xa8/0x150
+  Call Trace:
+  [c0000000179d3c70] [c00000000003ff64] machine_check_queue_event+0x44/0x150
+  [c0000000179d3d30] [c0000000000084e0] machine_check_early_common+0x1f0/0x2c0
 
-Please review the patches and provide any feedback or suggestions
-for improvement.
+The crash occurs because arch_irq_work_raise() calls preempt_disable()
+from machine check exception (MCE) handlers running in real mode. In
+this context, accessing the preempt_count can fault, leading to the panic.
 
-Thanks,
-Sayali
+The preempt_disable()/preempt_enable() pair in arch_irq_work_raise()
+was originally added by commit 0fe1ac48bef0 ("powerpc/perf_event: Fix
+oops due to perf_event_do_pending call") to avoid races while raising
+irq work from exception context.
 
-Sayali Patil (3):
-  powerpc/time: remove preempt_disable/enable from arch_irq_work_raise()
-  lkdtm/powerpc: add isync after slbmte to enforce SLB update ordering
-  lkdtm/powerpc: add PPC_RADIX_TLBIEL test for radix MCE validation
+Later, commit 471ba0e686cb ("irq_work: Do not raise an IPI when
+queueing work on the local CPU") added preemption protection in
+irq_work_queue() path, while commit 20b876918c06 ("irq_work: Use per
+cpu atomics instead of regular atomics") added equivalent
+protection in irq_work_queue_on() before reaching arch_irq_work_raise():
 
- arch/powerpc/kernel/time.c              |  2 --
- drivers/misc/lkdtm/Makefile             |  2 +-
- drivers/misc/lkdtm/powerpc.c            | 44 +++++++++++++++++++++++++
- tools/testing/selftests/lkdtm/tests.txt |  1 +
- 4 files changed, 46 insertions(+), 3 deletions(-)
+  irq_work_queue() / irq_work_queue_on()
+    -> preempt_disable()
+      -> __irq_work_queue_local()
+        -> irq_work_raise()
+          -> arch_irq_work_raise()
 
+As a result, callers other than mce_irq_work_raise() already execute
+with preemption disabled, making the additional
+preempt_disable()/preempt_enable() pair in arch_irq_work_raise()
+redundant.
+
+Remove it to avoid accessing preempt_count from real mode context.
+
+Fixes: cc15ff327569 ("powerpc/mce: Avoid using irq_work_queue() in realmode")
+Suggested-by: Mahesh Salgaonkar <mahesh@linux.ibm.com>
+Signed-off-by: Sayali Patil <sayalip@linux.ibm.com>
+---
+ arch/powerpc/kernel/time.c | 2 --
+ 1 file changed, 2 deletions(-)
+
+diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
+index 4bbeb8644d3d..a99eb43f6ce9 100644
+--- a/arch/powerpc/kernel/time.c
++++ b/arch/powerpc/kernel/time.c
+@@ -471,10 +471,8 @@ void arch_irq_work_raise(void)
+ 	 * which could get tangled up if we're messing with the same state
+ 	 * here.
+ 	 */
+-	preempt_disable();
+ 	set_irq_work_pending_flag();
+ 	set_dec(1);
+-	preempt_enable();
+ }
+ 
+ static void set_dec_or_work(u64 val)
 -- 
 2.52.0
 
