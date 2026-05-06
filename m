@@ -1,73 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-20498-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20499-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8B5DFCD342C
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 May 2026 04:35:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 84471CD3424
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 May 2026 06:37:30 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4g9MxK6L76z2xdh;
-	Wed, 06 May 2026 14:35:01 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778042101;
-	cv=none; b=K4R8Ei7CtxUqpD54O5h5RPTz8auYSnMb/gNEs//ICfZ2LYsQhvsktGYWT/NLyT3+WcS6JwL6Mzoq0z8JHqns4nz9ZvgO5YKWUXuQa2gnqdXUjvE3Do+gTxpGe6aVYgDt0egINxhfwS7HmZ12044nZLpyKeafkmm6VUNR38BWTm+OPbGIGvYyC3K0DrRRmtLajap0C9WGudOBfnvQxgM3zkkeVgoVTVXjfg4vlbqPH0AjglDH6X8djjahR+WldPj/lxlG0k4AMwxFV1VKT9urnGgfIAOks6QF2HtAs3clv0ryxHMKfFx5DEYs03jjw+ahhmUlOHbn9yp82/D+wAsVdg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4g9Qfc4QMfz2xpp;
+	Wed, 06 May 2026 16:37:28 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778049448;
+	cv=none; b=MsgL60BW9kbpnIp5dQJCbN9KjIIp+VRThggq3L+t3VMpmiqR2hb/YkTTn86ifPXMSrrd3Pa4pnpc36hz4L9jwnC5+Of6//OU7P2+ghk3YmOGwVhuYavAZ15teAX8rIG+MjK4YBi1/9BrJTVR/ejRU/IZR9ry7zZH/3F2yk7TZcxkSJyfXP8K4uKRq7+IDiW8zvJL70qfHcFR5CUv7gHN21UiCtkG85Z0WroUW+Yxi97HX2YuJZVXaYie6D+p1rIM7bJ1KumdmE1iPaZB4XevuUL+9q1cK0kWpl9eZbnSyRxpVCne7giUUpqPhU9IL6ROUmGQqm9NjriDCjjSijtTyQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1778042101; c=relaxed/relaxed;
-	bh=tYeGJnUiR+pJlwKQlOjTGBVTkpn+nHsGOg6LYM+Gjy0=;
+	t=1778049448; c=relaxed/relaxed;
+	bh=k9fto3FsFEWyAp5Mx+drFzCGJlFB6eH6NLZB2Ngp5tU=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=dscTXI/Sw7oYMzWIiTYAI65dI3PlkA3Pio3TUGzKAue7ZjABAXOM/TvKPMRKKK2ZmdHHXK3KbEb7K4I2A0ZsxLqC5fzLCaasNAqkFgoDpWG1yd0SImDO86XmNhSxn5bN993cOukXCE/D+7wtQRKJqgo+nDx5SjeO96/Joj2wso+xI2cXTgyJiQa0BX9JcEFhy4I2zEFrKO9bbfX3JAeYLzlXv57MKKnQ7yzHgDwd21teP1tgEjGReDf/Bcp5cfUMhxInuXM/SYAwny4HefscErIx2QVMR6IJNmJ/0huHGnpEuuoHI7Zp0khzzXGAfb4ajpq18GjXKe35eQojGKWwDw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=rdnZ42K1; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=harshpb@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	 In-Reply-To:Content-Type; b=fjlgbfQlBqRBG75WEke7/94Iey5TvBy/j1BUAdHGEY1MKZ9Cdbht6GidxiIBmIO5bYT6SF2DgGPf8WWEk3TLwS0e2+UKkC/4B34xNLEy4XOQYC9sh5z1f+PSlyuKuB6+SwwqodOz5G6gjj1mgUk2yCMLgbpychXcBjymPK6EikuFC81FOEFZu6O38eR+AEY2Kqfyg9NcL3x9vVK8VJrEfkELKpff/uOYon60OCSucSfvg67zM0y9z1ZlEQyMOS9Rwz+JdA4RwZsbKfbZTM+mFJ9vpa2S3BsPXIvTo+ms6yE0VbVdhZmGV4tqCNoQ+RzM2KHbLKrR80GJVPJb3yW7qw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=YJWTpQr3; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=rdnZ42K1;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=YJWTpQr3;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=harshpb@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4g9MxK0PrBz2xFl
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 06 May 2026 14:35:00 +1000 (AEST)
-Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 645K6qdE2808530;
-	Wed, 6 May 2026 04:34:45 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=tYeGJn
-	UiR+pJlwKQlOjTGBVTkpn+nHsGOg6LYM+Gjy0=; b=rdnZ42K13x26sE1dyRZze9
-	yxjyRcsz9C1ccvndjqImRPEyOx3gstpXX+/YmJA280/ZTxw2SjTFvlNB8UzIp4V8
-	yXZw/+UdWtndRiF1UwG1xUG7tgu4tQN1mt6PZwAyMTYj1IRLFT5r4wF/0eCf/8tE
-	6GShg0l9jYYhH782fnhGGGcNb3SkQhpZ/cnmb1ryeOxck9865EwjpjL6zMC335U2
-	j/4qltk94MRj4BzbuVMkVWYYwFCwVm/okZSLKKezkVeeLA5QJWQ/vVrsUK9E3JJD
-	LIjHywKu20ps4GjC0Ilsmwi176jhlrZExbyVXunKoPBA14PfdN6NnX5kYNxPzYSA
-	==
-Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4dw9y1exba-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 06 May 2026 04:34:44 +0000 (GMT)
-Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma13.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 6464OpXg015802;
-	Wed, 6 May 2026 04:34:43 GMT
-Received: from smtprelay06.wdc07v.mail.ibm.com ([172.16.1.73])
-	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4dwwtgcghc-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 06 May 2026 04:34:43 +0000 (GMT)
-Received: from smtpav02.dal12v.mail.ibm.com (smtpav02.dal12v.mail.ibm.com [10.241.53.101])
-	by smtprelay06.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6464Ygek28574324
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 6 May 2026 04:34:43 GMT
-Received: from smtpav02.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id BB41C5805A;
-	Wed,  6 May 2026 04:34:42 +0000 (GMT)
-Received: from smtpav02.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 5523A58051;
-	Wed,  6 May 2026 04:34:39 +0000 (GMT)
-Received: from [9.124.209.5] (unknown [9.124.209.5])
-	by smtpav02.dal12v.mail.ibm.com (Postfix) with ESMTP;
-	Wed,  6 May 2026 04:34:38 +0000 (GMT)
-Message-ID: <c59f0ef2-efa0-49c1-ac79-0a6e69aeb7af@linux.ibm.com>
-Date: Wed, 6 May 2026 10:04:37 +0530
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4g9QfZ5T4jz2xFl
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 06 May 2026 16:37:26 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by tor.source.kernel.org (Postfix) with ESMTP id 57BEB6024D;
+	Wed,  6 May 2026 06:37:23 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2D5BDC2BCC4;
+	Wed,  6 May 2026 06:37:20 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1778049443;
+	bh=4NVCgsre8Hue6TkSMQx2WGSTptIfhreDDsi2DSmsfK0=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=YJWTpQr3XRNPLLO7qb7d3dSz+seP5/upwyJK7Lo4XioLYb8N6ja3y6HqYUAsVS1/j
+	 AcNEMvYJCDD/Y5PFwSITWMvyiodqXp7MqBF4tQ7Mwytwu8s2DEF7gvp3o2npd0sqpm
+	 lMD9ESkVjQKRHTc7D6EXMJr9ZbqHnA3R3heybjYaW1OSlJJ4wJGDk12G8McgwFEvU2
+	 VSQm6KHZl8Wn/lCyVjGfmczXyiAG+R+wiX3RfZtaOBv4Q/hi2LTrchWuDg/n4G5PkJ
+	 KKCeLqn9h95x/LxYD1z1mbvZSmuUM2uikAZhJ+qMElZbrvV2g+CqfmyhiKdt4pf00I
+	 YEAnLdt2xDamw==
+Message-ID: <8bb836b5-daeb-491c-8588-5cde81580577@kernel.org>
+Date: Wed, 6 May 2026 08:37:19 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -82,87 +60,130 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] powerpc: fix dead default for GUEST_STATE_BUFFER_TEST
-Content-Language: en-GB
-To: Julian Braha <julianbraha@gmail.com>, maddy@linux.ibm.com,
-        mpe@ellerman.id.au, npiggin@gmail.com, chleroy@kernel.org,
-        jniethe5@gmail.com
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-References: <20260405161545.161006-1-julianbraha@gmail.com>
-From: Harsh Prateek Bora <harshpb@linux.ibm.com>
-In-Reply-To: <20260405161545.161006-1-julianbraha@gmail.com>
+Subject: Re: [PATCH V2] powerpc/text-patching: simplify the implementation of
+ ppc_kallsyms_lookup_name()
+To: Xie Yuanbin <xieyuanbin1@huawei.com>, maddy@linux.ibm.com,
+ mpe@ellerman.id.au, npiggin@gmail.com, andriy.shevchenko@intel.com,
+ kees@kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ lilinjie8@huawei.com, liaohua4@huawei.com
+References: <20260506021143.13797-1-xieyuanbin1@huawei.com>
+Content-Language: fr-FR
+From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+In-Reply-To: <20260506021143.13797-1-xieyuanbin1@huawei.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-ORIG-GUID: ggCt4CKrVVX0AWEJauPCYx9o4_NofMXm
-X-Proofpoint-GUID: k8o3kzIb6igVr8HKgZABaI17iwiuwViq
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTA2MDAzNyBTYWx0ZWRfX+Ku9GwQtdbCU
- D3V4+SD2YwkW8B/L16DxHXNIBXc+nMPkY1s+7Qp/GKJRVkcMU67ApHxCzR1HeYcc/KOPMj+EKrO
- j8eU53UWpf0iAp54CLbxxJlbHLfKM3qbWm43mpDvk2iJEWAv+4Li0VbP+bVNLadgcCw57sZSaLg
- tLWQtV8kQwMBi6+F8E4PVnI+hnbv0nEQa8nnx/5tyA/udje1VNNz+lGkBbrfDRJyM7Dv4atbM5p
- RXbdP48vHu6K1ouGNB+KNCel6y0lGKXeQwRj331zGZGhv5LWmSLpQdlHpTi+0nTI1hkaD9/LAKI
- lDDYln1/NCLC/qhBL8dDWcwL6d531S0Y0xDNCTIzCnLJTaZLMDQKfuJEoxZVLdkfUvCf/Kip4qR
- uiLpluuPwIjPTVw1zCa389pP18BICRVu1S64kffxKhOHStz6m7NPaUKBsL2bRy+W8Ds78rCGxrJ
- x+TX2mB0ALhfwZp4DCQ==
-X-Authority-Analysis: v=2.4 cv=UbFhjqSN c=1 sm=1 tr=0 ts=69fac4e5 cx=c_pps
- a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
- a=IkcTkHD0fZMA:10 a=NGcC8JguVDcA:10 a=f7IdgyKtn90A:10
- a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22 a=U7nrCbtTmkRpXpFmAIza:22
- a=pGLkceISAAAA:8 a=VnNF1IyMAAAA:8 a=asDfj_d41YawczLiECMA:9 a=QEXdDO2ut3YA:10
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-05-05_02,2026-04-30_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1015 spamscore=0 lowpriorityscore=0 malwarescore=0 suspectscore=0
- adultscore=0 priorityscore=1501 bulkscore=0 phishscore=0 impostorscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2604200000 definitions=main-2605060037
+Content-Transfer-Encoding: 8bit
 
 
 
-On 05/04/26 9:45 pm, Julian Braha wrote:
-> The GUEST_STATE_BUFFER_TEST config option should default
-> to KUNIT_ALL_TESTS so that if all tests are enabled then
-> it is included, but currently the 'default KUNIT_ALL_TESTS'
-> statement is shadowed by 'def_tristate n',
-> meaning that this second default statement is currently dead code.
+Le 06/05/2026 à 04:11, Xie Yuanbin a écrit :
+> ppc_kallsyms_lookup_name() is called only twice in the kernel code, and
+> the parameters are all constant strings. strnlen(name, KSYM_NAME_LEN) is
+> called inside ppc_kallsyms_lookup_name(), when the compiler detects that
+> KSYM_NAME_LEN is larger then the constant strings,
+> the following error will be triggered:
+> ```log
+>    CC      arch/powerpc/kernel/optprobes.o
+> In file included from ./arch/powerpc/include/asm/kprobes.h:24,
+>                   from ./include/linux/kprobes.h:31,
+>                   from arch/powerpc/kernel/optprobes.c:8:
+> In function 'ppc_kallsyms_lookup_name',
+>      inlined from 'arch_prepare_optimized_kprobe' at arch/powerpc/kernel/optprobes.c:209:21:
+> ./arch/powerpc/include/asm/text-patching.h:232:13: error: 'strnlen' specified bound 512 exceeds source size 19 [-Werror=stringop-overread]
+>    232 |         if (strnlen(name, KSYM_NAME_LEN) >= KSYM_NAME_LEN)
+>        |             ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
+> In function 'ppc_kallsyms_lookup_name',
+>      inlined from 'arch_prepare_optimized_kprobe' at arch/powerpc/kernel/optprobes.c:210:22:
+> ./arch/powerpc/include/asm/text-patching.h:232:13: error: 'strnlen' specified bound 512 exceeds source size 13 [-Werror=stringop-overread]
+>    232 |         if (strnlen(name, KSYM_NAME_LEN) >= KSYM_NAME_LEN)
+>        |             ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
+> cc1: all warnings being treated as errors
+> ```
 > 
-> It looks to me like the commit
-> 6ccbbc33f06a ("KVM: PPC: Add helper library for Guest State Buffers")
-> intended to set the default to KUNIT_ALL_TESTS, but mistakenly
-> missed the def_tristate.
+> The error can be reproduced in the following ways:
+> Use lastest linux-next source, change ppc_kallsyms_lookup_name() to
+> __always_inline, use default ppc64_defconfig, set CONFIG_EXPERT=y,
+> CONFIG_PPC64_BIG_ENDIAN_ELF_ABI_V2=n, CONFIG_CC_OPTIMIZE_FOR_SIZE=y,
+> and use gcc-14 or a later version for compilation.
 > 
-> This dead code was found by kconfirm, a static analysis tool for Kconfig.
+> Since ppc_kallsyms_lookup_name() is called only twice in the kernel,
+> and the parameters are all constant strins, simplify the implementation
+> of ppc_kallsyms_lookup_name() and avoid calling strnlen().
 > 
-> Fixes: 6ccbbc33f06a ("KVM: PPC: Add helper library for Guest State Buffers")
-> Signed-off-by: Julian Braha <julianbraha@gmail.com>
+> Cc: Andy Shevchenko <andriy.shevchenko@intel.com>
+> Cc: Kees Cook <kees@kernel.org>
+> Suggested-by: Christophe Leroy (CS GROUP) <chleroy@kernel.org>
+> Signed-off-by: Xie Yuanbin <xieyuanbin1@huawei.com>
 
-Keeping the commit title as "powerpc: correctly enable KUNIT_ALL_TESTS
-as default for GUEST_STATE_BUFFER_TEST" might look better. Anyways,
-
-Reviewed-by: Harsh Prateek Bora <harshpb@linux.ibm.com>
+Reviewed-by: Christophe Leroy (CS GROUP) <chleroy@kernel.org>
 
 > ---
->   arch/powerpc/Kconfig.debug | 3 +--
->   1 file changed, 1 insertion(+), 2 deletions(-)
+> v1->v2: https://lore.kernel.org/20260205100517.292858-2-xieyuanbin1@huawei.com
+>    - Not use strlen()
 > 
-> diff --git a/arch/powerpc/Kconfig.debug b/arch/powerpc/Kconfig.debug
-> index f15e5920080b..e8718bc13eeb 100644
-> --- a/arch/powerpc/Kconfig.debug
-> +++ b/arch/powerpc/Kconfig.debug
-> @@ -83,11 +83,10 @@ config MSI_BITMAP_SELFTEST
->   	depends on DEBUG_KERNEL
+>   arch/powerpc/include/asm/text-patching.h | 50 ++++++++----------------
+>   1 file changed, 17 insertions(+), 33 deletions(-)
+> 
+> diff --git a/arch/powerpc/include/asm/text-patching.h b/arch/powerpc/include/asm/text-patching.h
+> index e7f14720f630..2d3f698cb4f1 100644
+> --- a/arch/powerpc/include/asm/text-patching.h
+> +++ b/arch/powerpc/include/asm/text-patching.h
+> @@ -221,39 +221,23 @@ static inline unsigned long ppc_global_function_entry(void *func)
+>    * - For ABIv1, we lookup the dot variant.
+>    * - For ABIv2, we return the local entry point.
+>    */
+> -static inline unsigned long ppc_kallsyms_lookup_name(const char *name)
+> -{
+> -	unsigned long addr;
+> -#ifdef CONFIG_PPC64_ELF_ABI_V1
+> -	/* check for dot variant */
+> -	char dot_name[1 + KSYM_NAME_LEN];
+> -	bool dot_appended = false;
+> -
+> -	if (strnlen(name, KSYM_NAME_LEN) >= KSYM_NAME_LEN)
+> -		return 0;
+> -
+> -	if (name[0] != '.') {
+> -		dot_name[0] = '.';
+> -		dot_name[1] = '\0';
+> -		strlcat(dot_name, name, sizeof(dot_name));
+> -		dot_appended = true;
+> -	} else {
+> -		dot_name[0] = '\0';
+> -		strlcat(dot_name, name, sizeof(dot_name));
+> -	}
+> -	addr = kallsyms_lookup_name(dot_name);
+> -	if (!addr && dot_appended)
+> -		/* Let's try the original non-dot symbol lookup	*/
+> -		addr = kallsyms_lookup_name(name);
+> -#elif defined(CONFIG_PPC64_ELF_ABI_V2)
+> -	addr = kallsyms_lookup_name(name);
+> -	if (addr)
+> -		addr = ppc_function_entry((void *)addr);
+> -#else
+> -	addr = kallsyms_lookup_name(name);
+> -#endif
+> -	return addr;
+> -}
+> +static inline unsigned long __ppc_kallsyms_lookup_name(const char *name)
+> +{
+> +	unsigned long addr = kallsyms_lookup_name(name);
+> +
+> +	if (IS_ENABLED(CONFIG_PPC64_ELF_ABI_V1) && !addr)
+> +		addr = kallsyms_lookup_name(name + 1);
+> +	if (IS_ENABLED(CONFIG_PPC64_ELF_ABI_V2) && addr)
+> +		addr = ppc_function_entry((void *)addr);
+> +
+> +	return addr;
+> +}
+> +
+> +#ifdef CONFIG_PPC64_ELF_ABI_V1
+> +#define ppc_kallsyms_lookup_name(x)	__ppc_kallsyms_lookup_name("." x)
+> +#else
+> +#define ppc_kallsyms_lookup_name(x)	__ppc_kallsyms_lookup_name(x)
+> +#endif
 >   
->   config GUEST_STATE_BUFFER_TEST
-> -	def_tristate n
-> +	def_tristate KUNIT_ALL_TESTS
->   	prompt "Enable Guest State Buffer unit tests"
->   	depends on KUNIT
->   	depends on KVM_BOOK3S_HV_POSSIBLE
-> -	default KUNIT_ALL_TESTS
->   	help
->   	  The Guest State Buffer is a data format specified in the PAPR.
->   	  It is by hcalls to communicate the state of L2 guests between
+>   /*
+>    * Some instruction encodings commonly used in dynamic ftracing
 
 
