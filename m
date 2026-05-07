@@ -1,73 +1,62 @@
-Return-Path: <linuxppc-dev+bounces-20556-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20557-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 58304CD3427
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 May 2026 05:48:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 23F7CCD3427
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 May 2026 06:13:52 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gB1WV6NC8z2yrD;
-	Thu, 07 May 2026 15:48:22 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778132902;
-	cv=none; b=gzqaQXVHUaYyJ+xKUsHHoE3Qiv/TN6MmxclUXKXIknA1rabLOZ7k+xDui6s793vTUNdbbIg1Cx8jc9dJebEliO4liV3anqmJYBd/yN2FcmO0ETuzDluopPOxOqicRnvMvCKElUfCyV2f5d5pDW2+5zDyLVNFDjLSXy5FLCHZ3G83C71IpNyiyp+PmMByGnFU6ogDJhSuLIvQlLIg9klg53MRfTjTypX2LCToD8anLdW0zZ+usfoTmDzB//UFu8p82BFjfrYsokEgFeNRO7IkPkrdV83lkTKNRD9w4XGYJ97QgxziIT5uJfh5aJ+0sPLnBrrF4zTVXuLwV8zd/b1Q6g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gB24t4JdTz2yrD;
+	Thu, 07 May 2026 16:13:50 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778134430;
+	cv=none; b=ENeO4HH1ZXVseX/oC6up3pLKiep/nOYu9554qk/5uZzNsdh6ZfxpyS2lp/XE2wHSif8ruLsbfe4SQCzZgj4ekuFrl46C7//bp0P4H2GBADPjOE40TzlOrVgNYap4VFJEtes41HGc80f81q9zn+SAl3WPWFOTzfZ5iEv9/XwAXgeMQ775Xw3kOaq42BngmyVr/FaU536GUXH3YlDrvRa9pPqprYwnx9R/yAK4gBByjjpasYDPT7a4dDLszMLUJ3oqRbYpLvJPAqVYUSY+6N2xYamjpCPXKMKLzM9M/3aEGsLm22YA2/4T96JwO3s8IbJFTResSJfNxGsZqtp+vnaPmA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1778132902; c=relaxed/relaxed;
-	bh=4tWIA8xuaJnClSLpoasW8KjkZq2qvXLMSSpCdK+pegk=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=RNrMWuUi9KcXIZXEeR1IKYpKyh5lXNp6tStW0kiqUNR0Mct8aOyw+OuNGKEcvdewcqInKQeEbiXIZmkjgHg5rrFOtLxUBdAjWYzwHWotw7CyyDRY8rhvEqZPOHhwts/mLr9AvK+VLD2HnhE++w4UH/b+2UrrHfKzSGA9LpBerHuE3zLk5ciuyNE5ufBH46qZVwFmfq7WEvILV5R7gFWlXGZDJcZLSdcv6RMi2G2gWzFNUQvxiMKdz7jPypYzLsPAyG+R/CUiOSV6uVI48nAiEvv++FY/j5HKvscGdc54zf8rAs+CqgZ7F6exkeiR01sWKk0E/sFofHsQBP3Om1bMZw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=LpMlg6TO; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=tyreld@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1778134430; c=relaxed/relaxed;
+	bh=lYGBqr8XFBQ09CkUVdZZNfV9QX8hnb8GjkvbvaHriVw=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=kfzAT1r0kAwKMVLQhVU/touNAOvh4UZzVEvEENYXzQHlA8NoxGvO5ljvEU+p7QfS8575Oj1SIuFP22zmrTTe+Sh38kPOA7EOAAY32U6gECHNe7q9IufcrXbjsg5TxoEvqS6gOmHGqpNeWZse5cC82+fd1xRseJ4+3/Ixirx4B5b/+uF9o9GB2XGYZJYkDXxqT/G5JvWVvQHAcYazxTmHRtXFIIjoBaN9hrJ+QsvjRx9S2tLk7CHSMs+NF31Wzb/1IgZjqc8n5EvTyf7A4jmIRTZOnKhk2idFrr/JqcFUGWDsDmHtQMNHJ6cIDkfylU7rE+1LDAeIPfqabetwsn2V4Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=O1SL7zhc; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=namhyung@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=LpMlg6TO;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=O1SL7zhc;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=tyreld@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=namhyung@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gB1WT71fXz2xZK
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 07 May 2026 15:48:21 +1000 (AEST)
-Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 646MDcvv2830434;
-	Thu, 7 May 2026 05:48:12 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=4tWIA8
-	xuaJnClSLpoasW8KjkZq2qvXLMSSpCdK+pegk=; b=LpMlg6TOz9ovcxeI2qIsHM
-	jrRtyPTCzbWoS3qC0k5/+Yua4tVeHu+P/F1qNAdj8thwgPmHFdFjYx/8hjitXHUZ
-	d8QMB0YItFHYqagqJ/cp1dPbUOknta2Wi1GehTZ405VxNkx44vGrsjpf6uxpPzcm
-	BDmahsiraPadumfdWofAKZ16tvm2qTYq5EtUEVVbjQ31kGJV3GCu2iNdbUXCQbdv
-	tPkIHDC7HC3hh4XQCI54majcKbWT6a3zRf20AZpToUnROyJfBgAq6Hxn1xPLUWEW
-	1DCTuZe/QWVuSMU9Xjm4IolLcP6J3CtOkxdO7L9myHa2vgiLyfpFa15O3dVJ0efA
-	==
-Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4dw9v7meq4-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 07 May 2026 05:48:11 +0000 (GMT)
-Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma22.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 6475dQfc004744;
-	Thu, 7 May 2026 05:48:10 GMT
-Received: from smtprelay05.dal12v.mail.ibm.com ([172.16.1.7])
-	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4dwuyw9q4g-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 07 May 2026 05:48:10 +0000 (GMT)
-Received: from smtpav05.dal12v.mail.ibm.com (smtpav05.dal12v.mail.ibm.com [10.241.53.104])
-	by smtprelay05.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6475m9Rs27067078
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 7 May 2026 05:48:09 GMT
-Received: from smtpav05.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 2C5F25805D;
-	Thu,  7 May 2026 05:48:09 +0000 (GMT)
-Received: from smtpav05.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 62FE258052;
-	Thu,  7 May 2026 05:48:08 +0000 (GMT)
-Received: from [9.61.92.155] (unknown [9.61.92.155])
-	by smtpav05.dal12v.mail.ibm.com (Postfix) with ESMTP;
-	Thu,  7 May 2026 05:48:08 +0000 (GMT)
-Message-ID: <8ac414a6-b4e9-4fd9-b316-3738b3229664@linux.ibm.com>
-Date: Wed, 6 May 2026 22:48:08 -0700
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gB24s4FJgz2xlm
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 07 May 2026 16:13:49 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sea.source.kernel.org (Postfix) with ESMTP id 9325743C96;
+	Thu,  7 May 2026 06:13:45 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id DC05FC2BCB8;
+	Thu,  7 May 2026 06:13:44 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1778134425;
+	bh=/fOGlmO82MYiNksLou9+DYkXXjNNOJOZwge6qWlpEOk=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=O1SL7zhcohHCqXKMWZaPdXcpgQgH1z7X+h9hV9UYekMxS+z1I7N0h0S6dNL17ETII
+	 pU1/MD4NxjxqlqdmtcDQYIWp2Uxj1ppSZpVZzwJIsPEZDVzheL42ggqSC3q/MOg9Fr
+	 2t4ghNTIksaiIb1OG4X/x7EzvYDPRZWg2xOl5YfYGdmK8BPbnrcVdcFazrHsLGIExv
+	 hZeWhlVnqv87dqwf+ycQ71pa0zI5yaerTfmMoteWPpm+u6z9Nf/XSn0mUC5fKo5hsF
+	 9hgbLhVGUspGMJjz4KNalpYCB4+SL7yUGnHYrLwr82EaugvtGv48TGeZ4C9EvB1AJh
+	 7BjDjivXaZJbA==
+Date: Wed, 6 May 2026 23:13:43 -0700
+From: Namhyung Kim <namhyung@kernel.org>
+To: Athira Rajeev <atrajeev@linux.ibm.com>
+Cc: acme@kernel.org, jolsa@kernel.org, adrian.hunter@intel.com,
+	mpetlan@redhat.com, tmricht@linux.ibm.com, maddy@linux.ibm.com,
+	irogers@google.com, linux-perf-users@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org, hbathini@linux.vnet.ibm.com,
+	Tejas.Manhas1@ibm.com, Tanushree.Shah@ibm.com,
+	shivani@linux.ibm.com
+Subject: Re: [PATCH V5 1/2] powerpc tools perf: Initialize error code in
+ auxtrace_record_init function
+Message-ID: <afwtl1zodrSUpK7n@z2>
+References: <20260504151321.12346-1-atrajeev@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -81,364 +70,120 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 5/5] ibmvfc: handle extended FPIN events
-To: davemarq@linux.ibm.com,
-        "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
-        "Martin K. Petersen" <martin.petersen@oracle.com>,
-        Madhavan Srinivasan <maddy@linux.ibm.com>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        Nicholas Piggin <npiggin@gmail.com>,
-        "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-        linuxppc-dev@lists.ozlabs.org, Brian King <brking@linux.ibm.com>,
-        Greg Joyce <gjoyce@linux.ibm.com>,
-        Kyle Mahlkuch <kmahlkuc@linux.ibm.com>
-References: <20260408-ibmvfc-fpin-support-v1-0-52b06c464e03@linux.ibm.com>
- <20260408-ibmvfc-fpin-support-v1-5-52b06c464e03@linux.ibm.com>
-Content-Language: en-US
-From: Tyrel Datwyler <tyreld@linux.ibm.com>
-In-Reply-To: <20260408-ibmvfc-fpin-support-v1-5-52b06c464e03@linux.ibm.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTA3MDA1MiBTYWx0ZWRfX27OO9E9U6ENw
- uLpqPKsBTltXd6jwpIJ1uFx6r5IH6YOH0l3op7D8sS8ZOwF5Dd3bRqz3dgQ4LMhM9jMJRupD1H1
- O9KYJE8gPQ6qdI1zLNnDjJS012Q+v6fkaPweiSkOInG0pfyziyPD4WQ7yTJFRwsorSSNxiqTXAq
- OpJmvSNsL7eAx1ywTFbcyamAW1BN4T4P2dka3QDtnbJE1eK3tqDN9sBXKGl6RhW0pF26CZJ7SCO
- 3ZK7KnS50HUqUQc1weCgAXkaXtlfYE+MU1mVD5ckrXk0NpB+f1YNaPyy9oei1i9zw/aoBfSIH5U
- NPLO8ll4H+84f1sZ4fhejpEFH3OSG/0Z59TKuCVmJDsqHpw0p8FayWl6ihfDEpQVWNX/gToq6Y3
- QN80rDJ4sP79ui/FRypJ70h7VvilIpJRT6xFklMOTyoyX6/7gdY0TAUYpxhVCAFSD42atMg1zjW
- XmfgLrcvXGcztmUeSBg==
-X-Proofpoint-GUID: _dX0RdRjUBecn8PaAQZ4yRLyYCEvdHux
-X-Proofpoint-ORIG-GUID: 62PjvF7sY8nWRLQhetO_yuzPZK8kOPQZ
-X-Authority-Analysis: v=2.4 cv=eu/vCIpX c=1 sm=1 tr=0 ts=69fc279b cx=c_pps
- a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
- a=IkcTkHD0fZMA:10 a=NGcC8JguVDcA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=iQ6ETzBq9ecOQQE5vZCe:22 a=VnNF1IyMAAAA:8
- a=EYKLyQfOhh-CJ0WtqnoA:9 a=QEXdDO2ut3YA:10
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-05-06_02,2026-05-06_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501 phishscore=0 lowpriorityscore=0 clxscore=1015 adultscore=0
- suspectscore=0 malwarescore=0 bulkscore=0 impostorscore=0 spamscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2604200000 definitions=main-2605070052
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20260504151321.12346-1-atrajeev@linux.ibm.com>
 
-On 4/8/26 10:07 AM, Dave Marquardt via B4 Relay wrote:
-> From: Dave Marquardt <davemarq@linux.ibm.com>
+On Mon, May 04, 2026 at 08:43:20PM +0530, Athira Rajeev wrote:
+> perf trace record fails some cases in powerpc
 > 
-> - negotiate use of extended FPIN events with NPIV (VIOS)
-> - add code to parse and handle extended FPIN events
-> - add KUnit test to test extended FPIN event handling
+>  # ./perf test "perf trace record and replay"
+>  128: perf trace record and replay                                    : FAILED!
+> 
+>  # ./perf trace record sleep 1
+>  # echo $?
+>    32
+> 
+> This is happening because of non-zero err value from
+> auxtrace_record__init() function.
+> 
+>  static int record__auxtrace_init(struct record *rec)
+>  {
+>         int err;
+> 
+>         if ((rec->opts.auxtrace_snapshot_opts || rec->opts.auxtrace_sample_opts)
+>             && record__threads_enabled(rec)) {
+>                 pr_err("AUX area tracing options are not available in parallel streaming mode.\n");
+>                 return -EINVAL;
+>         }
+> 
+>         if (!rec->itr) {
+>                 rec->itr = auxtrace_record__init(rec->evlist, &err);
+>                 if (err)
+>                         return err;
+>         }
+> 
+> Here "int err" is not initialised. The code expects "err" to be set
+> from auxtrace_record__init() function.
+> 
+> Update auxtrace_record__init() in arch/powerpc/util/auxtrace.c to clear
+> err value in the beginning.
+> 
+> - Clear err value in beginning of function. Any fail later will
+> set appropriate return code to err.
+> - Even if we haven't found any event for auxtrace, perf record
+> should continue for other events. NULL return
+> will indicate that there is no auxtrace record initialized.
+> - Not having "err" set here will affect monitoring of other events
+> also because perf record will fail seeing random value in err.
+> 
+> Set err to -EINVAL before invoking auxtrace_record__init() in
+> builtin-record.c
+> 
+> With the fix,
+> 
+>  # ./perf trace record sleep 1
+>  [ perf record: Woken up 2 times to write data ]
+>  [ perf record: Captured and wrote 0.033 MB perf.data (228 samples) ]
+> 
+> Fixes: 1dbfaf94cf66 ("perf powerpc: Add basic CONFIG_AUXTRACE support for VPA pmu on powerpc")
+> Reviewed-by: Adrian Hunter <adrian.hunter@intel.com>
+> Signed-off-by: Athira Rajeev <atrajeev@linux.ibm.com>
 
-Same nit here as the previous 4 patches.
+For both patches,
+
+Acked-by: Namhyung Kim <namhyung@kernel.org>
+
+Thanks,
+Namhyung
 
 > ---
->  drivers/scsi/ibmvscsi/ibmvfc.c       | 45 ++++++++++++++---
->  drivers/scsi/ibmvscsi/ibmvfc.h       | 31 ++++++++++++
->  drivers/scsi/ibmvscsi/ibmvfc_kunit.c | 97 +++++++++++++++++++++++++++++++++---
->  3 files changed, 161 insertions(+), 12 deletions(-)
+> Changelog:
+> v4:
+> Added Reviewed-by from Adrian
 > 
-> diff --git a/drivers/scsi/ibmvscsi/ibmvfc.c b/drivers/scsi/ibmvscsi/ibmvfc.c
-> index 26e39b367022..5b2b861a34c2 100644
-> --- a/drivers/scsi/ibmvscsi/ibmvfc.c
-> +++ b/drivers/scsi/ibmvscsi/ibmvfc.c
-> @@ -1472,6 +1472,9 @@ static void ibmvfc_gather_partition_info(struct ibmvfc_host *vhost)
->  }
+> v1 -> v2
+> Addressed review comment from Adrian:
+> - Set err to -EINVAL before invoking auxtrace_record__init() in
+>   builtin-record.c
+> - Added kernel-doc to auxtrace_record__init() in tools/perf/util/auxtrace.c
+> Addressed review comment from Namhyung:
+> - Added fixes tag
+> 
+>  tools/perf/arch/powerpc/util/auxtrace.c | 6 ++++++
+>  tools/perf/builtin-record.c             | 1 +
+>  2 files changed, 7 insertions(+)
+> 
+> diff --git a/tools/perf/arch/powerpc/util/auxtrace.c b/tools/perf/arch/powerpc/util/auxtrace.c
+> index e39deff6c857..4600a1661b4f 100644
+> --- a/tools/perf/arch/powerpc/util/auxtrace.c
+> +++ b/tools/perf/arch/powerpc/util/auxtrace.c
+> @@ -71,6 +71,12 @@ struct auxtrace_record *auxtrace_record__init(struct evlist *evlist,
+>  	struct evsel *pos;
+>  	int found = 0;
 >  
->  static __be64 ibmvfc_npiv_chan_caps[] = {
-> +	cpu_to_be64(IBMVFC_CAN_USE_CHANNELS | IBMVFC_USE_ASYNC_SUBQ |
-> +		    IBMVFC_YES_SCSI | IBMVFC_CAN_HANDLE_FPIN |
-> +		    IBMVFC_CAN_HANDLE_FPIN_EXT),
->  	cpu_to_be64(IBMVFC_CAN_USE_CHANNELS | IBMVFC_USE_ASYNC_SUBQ |
->  		    IBMVFC_YES_SCSI | IBMVFC_CAN_HANDLE_FPIN),
->  	cpu_to_be64(IBMVFC_CAN_USE_CHANNELS),
-> @@ -3370,6 +3373,28 @@ ibmvfc_full_fpin_to_desc(struct ibmvfc_async_subq *ibmvfc_fpin)
->  					  cpu_to_be32(1));
->  }
->  
-> +/**
-> + * ibmvfc_ext_fpin_to_desc(): allocate and populate a struct fc_els_fpin struct
-> + * containing a descriptor.
-> + * @ibmvfc_fpin: Pointer to async subq FPIN data
-> + *
-> + * Allocate a struct fc_els_fpin containing a descriptor and populate
-> + * based on data from *ibmvfc_fpin.
-> + *
-> + * Return:
-> + * NULL     - unable to allocate structure
-> + * non-NULL - pointer to populated struct fc_els_fpin
-> + */
-> +static struct fc_els_fpin *
-> +ibmvfc_ext_fpin_to_desc(struct ibmvfc_async_subq_fpin *ibmvfc_fpin)
-> +{
-> +	return ibmvfc_common_fpin_to_desc(ibmvfc_fpin->fpin_status, ibmvfc_fpin->wwpn,
-> +					  ibmvfc_fpin->fpin_data.event_type_modifier,
-> +					  ibmvfc_fpin->fpin_data.event_threshold,
-> +					  ibmvfc_fpin->fpin_data.event_threshold,
-
-I see mention of threshold and period previously. Why in this case is it just
-the threshold value passed for both?
-
--Tyrel
-
-> +					  ibmvfc_fpin->fpin_data.event_data.event_count);
-> +}
+> +	/*
+> +	 * Set err value to zero here. Any fail later
+> +	 * will set appropriate return code to err.
+> +	 */
+> +	*err = 0;
 > +
->  /**
->   * ibmvfc_handle_async - Handle an async event from the adapter
->   * @crq:	crq to process
-> @@ -3491,10 +3516,12 @@ VISIBLE_IF_KUNIT void ibmvfc_handle_asyncq(struct ibmvfc_crq *crq_instance,
->  					   struct ibmvfc_host *vhost,
->  					   struct list_head *evt_doneq)
->  {
-> +	struct ibmvfc_async_subq_fpin *sqfpin = (struct ibmvfc_async_subq_fpin *)crq_instance;
->  	struct ibmvfc_async_subq *crq = (struct ibmvfc_async_subq *)crq_instance;
->  	const struct ibmvfc_async_desc *desc = ibmvfc_get_ae_desc(be16_to_cpu(crq->event));
->  	struct ibmvfc_target *tgt;
->  	struct fc_els_fpin *fpin;
-> +	u8 fpin_status;
->  
->  	ibmvfc_log(vhost, desc->log_level,
->  		   "%s event received. wwpn: %llx, node_name: %llx%s event 0x%x\n",
-> @@ -3582,7 +3609,17 @@ VISIBLE_IF_KUNIT void ibmvfc_handle_asyncq(struct ibmvfc_crq *crq_instance,
->  				continue;
->  			if (!tgt->rport)
->  				continue;
-> -			fpin = ibmvfc_full_fpin_to_desc(crq);
-> +			if ((crq->flags & IBMVFC_ASYNC_IS_FPIN_EXT) == 0) {
-> +				fpin = ibmvfc_full_fpin_to_desc(crq);
-> +				fpin_status = crq->fpin_status;
-> +			} else if (!(sqfpin->fpin_data.flags & IBMVFC_FPIN_EVENT_TYPE_VALID))
-> +				dev_err(vhost->dev, "Invalid extended FPIN event received");
-> +			else if (!ibmvfc_check_caps(vhost, IBMVFC_SUPPORT_FPIN_EXT))
-> +				dev_err(vhost->dev, "Unexpected extended FPIN event received");
-> +			else {
-> +				fpin = ibmvfc_ext_fpin_to_desc(sqfpin);
-> +				fpin_status = sqfpin->fpin_status;
-> +			}
->  			if (fpin) {
->  				fc_host_fpin_rcv(tgt->vhost->host,
->  						 sizeof(*fpin) + be32_to_cpu(fpin->desc_len),
-> @@ -3591,12 +3628,8 @@ VISIBLE_IF_KUNIT void ibmvfc_handle_asyncq(struct ibmvfc_crq *crq_instance,
->  			} else
->  				dev_err(vhost->dev,
->  					"FPIN event %u received, unable to process\n",
-> -					crq->fpin_status);
-> +					fpin_status);
->  		}
-> -		break;
-> -	default:
-> -		dev_err(vhost->dev, "Unknown async event received: %d\n", crq->event);
-> -		break;
+>  	evlist__for_each_entry(evlist, pos) {
+>  		if (strstarts(pos->name, "vpa_dtl")) {
+>  			found = 1;
+> diff --git a/tools/perf/builtin-record.c b/tools/perf/builtin-record.c
+> index 4a5eba498c02..708825747af5 100644
+> --- a/tools/perf/builtin-record.c
+> +++ b/tools/perf/builtin-record.c
+> @@ -865,6 +865,7 @@ static int record__auxtrace_init(struct record *rec)
 >  	}
->  }
->  EXPORT_SYMBOL_IF_KUNIT(ibmvfc_handle_asyncq);
-> diff --git a/drivers/scsi/ibmvscsi/ibmvfc.h b/drivers/scsi/ibmvscsi/ibmvfc.h
-> index b9f22613d144..c67db8d7b3fc 100644
-> --- a/drivers/scsi/ibmvscsi/ibmvfc.h
-> +++ b/drivers/scsi/ibmvscsi/ibmvfc.h
-> @@ -186,6 +186,7 @@ struct ibmvfc_npiv_login {
->  #define IBMVFC_YES_SCSI			0x40
->  #define IBMVFC_USE_ASYNC_SUBQ		0x100
->  #define IBMVFC_CAN_USE_NOOP_CMD		0x200
-> +#define IBMVFC_CAN_HANDLE_FPIN_EXT	0x800
->  	__be64 node_name;
->  	struct srp_direct_buf async;
->  	u8 partition_name[IBMVFC_MAX_NAME];
-> @@ -236,6 +237,7 @@ struct ibmvfc_npiv_login_resp {
->  #define IBMVFC_SUPPORT_SCSI		0x200
->  #define IBMVFC_SUPPORT_ASYNC_SUBQ	0x800
->  #define IBMVFC_SUPPORT_NOOP_CMD		0x1000
-> +#define IBMVFC_SUPPORT_FPIN_EXT		0x2000
->  	__be32 max_cmds;
->  	__be32 scsi_id_sz;
->  	__be64 max_dma_len;
-> @@ -718,6 +720,7 @@ struct ibmvfc_async_crq {
->  struct ibmvfc_async_subq {
->  	volatile u8 valid;
->  #define IBMVFC_ASYNC_ID_IS_ASSOC_ID	0x01
-> +#define IBMVFC_ASYNC_IS_FPIN_EXT	0x02
->  #define IBMVFC_FC_EEH			0x04
->  #define IBMVFC_FC_FW_UPDATE		0x08
->  #define IBMVFC_FC_FW_DUMP		0x10
-> @@ -734,6 +737,34 @@ struct ibmvfc_async_subq {
->  	} id;
->  } __packed __aligned(8);
 >  
-> +struct ibmvfc_fpin_data {
-> +#define IBMVFC_FPIN_EVENT_TYPE_VALID	0x01
-> +#define IBMVFC_FPIN_MODIFIER_VALID	0x02
-> +#define IBMVFC_FPIN_THRESHOLD_VALID	0x04
-> +#define IBMVFC_FPIN_SEVERITY_VALID	0x08
-> +#define IBMVFC_FPIN_EVENT_COUNT_VALID	0x10
-> +	u8 flags;
-> +	u8 reserved[3];
-> +	__be16 event_type;
-> +	__be16 event_type_modifier;
-> +	__be32 event_threshold;
-> +	union {
-> +		u8 severity;
-> +		__be32 event_count;
-> +	} event_data;
-> +} __packed __aligned(8);
-> +
-> +struct ibmvfc_async_subq_fpin {
-> +	volatile u8 valid;
-> +	u8 flags;
-> +	u8 link_state;
-> +	u8 fpin_status;
-> +	__be16 event;
-> +	__be16 pad;
-> +	volatile __be64 wwpn;
-> +	struct ibmvfc_fpin_data fpin_data;
-> +} __packed __aligned(8);
-> +
->  union ibmvfc_iu {
->  	struct ibmvfc_mad_common mad_common;
->  	struct ibmvfc_npiv_login_mad npiv_login;
-> diff --git a/drivers/scsi/ibmvscsi/ibmvfc_kunit.c b/drivers/scsi/ibmvscsi/ibmvfc_kunit.c
-> index 3a41127c4e81..6c2a7d6f8042 100644
-> --- a/drivers/scsi/ibmvscsi/ibmvfc_kunit.c
-> +++ b/drivers/scsi/ibmvscsi/ibmvfc_kunit.c
-> @@ -3,6 +3,7 @@
->  #include <kunit/visibility.h>
->  #include <scsi/scsi_device.h>
->  #include <scsi/scsi_transport_fc.h>
-> +#include <scsi/fc/fc_els.h>
->  #include <linux/list.h>
->  #include "ibmvfc.h"
->  
-> @@ -71,6 +72,25 @@ static void ibmvfc_handle_fpin_event_test(struct kunit *test)
->  	ibmvfc_handle_asyncq((struct ibmvfc_crq *)&crq, vhost, &evt_doneq);
->  }
->  
-> +/**
-> + * ibmvfc_async_subq_test - unit test for allocating async subqueue
-> + * @test: pointer to kunit structure
-> + *
-> + * Return: void
-> + */
-> +static void ibmvfc_async_subq_test(struct kunit *test)
-> +{
-> +	struct ibmvfc_host *vhost;
-> +	struct list_head *queue;
-> +	struct list_head *headp;
-> +
-> +	headp = ibmvfc_get_headp();
-> +	queue = headp->next;
-> +	vhost = container_of(queue, struct ibmvfc_host, queue);
-> +
-> +	KUNIT_EXPECT_NOT_NULL(test, vhost->scsi_scrqs.async_scrq);
-> +}
-> +
->  /**
->   * ibmvfc_noop_test - unit test for VFC_NOOP command
->   * @test: pointer to kunit structure
-> @@ -97,29 +117,94 @@ static void ibmvfc_noop_test(struct kunit *test)
->  	ibmvfc_handle_crq(&crq, vhost, &evtq);
->  }
->  
-> +#define IBMVFC_TEST_FPIN_EXT(fs, ev, stat) {			\
-> +	crq.valid = 0x80;					\
-> +	crq.flags = IBMVFC_ASYNC_IS_FPIN_EXT;			\
-> +	crq.link_state = IBMVFC_AE_LS_LINK_UP;			\
-> +	crq.fpin_status = (fs);					\
-> +	crq.event = cpu_to_be16(IBMVFC_AE_FPIN);		\
-> +	crq.wwpn = cpu_to_be64(tgt->wwpn);			\
-> +	crq.fpin_data.flags = IBMVFC_FPIN_EVENT_TYPE_VALID;	\
-> +	crq.fpin_data.event_type = cpu_to_be16((ev));		\
-> +	pre = READ_ONCE(tgt->rport->fpin_stats.stat);		\
-> +	ibmvfc_handle_asyncq((struct ibmvfc_crq *)&crq, vhost,	\
-> +			     &evt_doneq);			\
-> +	post = READ_ONCE(tgt->rport->fpin_stats.stat);		\
-> +}
-> +
->  /**
-> - * ibmvfc_async_subq_test - unit test for allocating async subqueue
-> + * ibmvfc_extended_fpin_test - unit test for extended FPIN events
->   * @test: pointer to kunit structure
->   *
-> + * Tests
-> + *
->   * Return: void
->   */
-> -static void ibmvfc_async_subq_test(struct kunit *test)
-> +static void ibmvfc_extended_fpin_test(struct kunit *test)
->  {
-> +	enum ibmvfc_ae_fpin_status fs;
-> +	struct ibmvfc_async_subq_fpin crq;
-> +	struct fc_fpin_stats stats;
-> +	struct ibmvfc_target *tgt;
->  	struct ibmvfc_host *vhost;
-> -	struct list_head *queue;
->  	struct list_head *headp;
-> +	LIST_HEAD(evt_doneq);
-> +	u64 pre, post;
->  
->  	headp = ibmvfc_get_headp();
-> -	queue = headp->next;
-> -	vhost = container_of(queue, struct ibmvfc_host, queue);
-> +	vhost = list_first_entry(headp, struct ibmvfc_host, queue);
-> +	KUNIT_ASSERT_NOT_NULL_MSG(test, vhost, "No vhost");
->  
-> -	KUNIT_EXPECT_NOT_NULL(test, vhost->scsi_scrqs.async_scrq);
-> +	KUNIT_ASSERT_GE(test, vhost->num_targets, 1);
-> +	tgt = list_first_entry(&vhost->targets, struct ibmvfc_target, queue);
-> +	KUNIT_ASSERT_NOT_NULL(test, tgt->rport);
-> +
-> +	stats = tgt->rport->fpin_stats;
-> +
-> +	for (fs = IBMVFC_AE_FPIN_LINK_CONGESTED; fs <= IBMVFC_AE_FPIN_CONGESTION_CLEARED; fs++) {
-> +		switch (fs) {
-> +		case IBMVFC_AE_FPIN_PORT_CLEARED:
-> +		case IBMVFC_AE_FPIN_CONGESTION_CLEARED:
-> +			crq.valid = 0x80;
-> +			crq.flags = IBMVFC_ASYNC_IS_FPIN_EXT;
-> +			crq.link_state = IBMVFC_AE_LS_LINK_UP;
-> +			crq.fpin_status = fs;
-> +			crq.event = cpu_to_be16(IBMVFC_AE_FPIN);
-> +			crq.wwpn = cpu_to_be64(tgt->wwpn);
-> +			crq.fpin_data.flags = IBMVFC_FPIN_EVENT_TYPE_VALID;
-> +			crq.fpin_data.event_type = cpu_to_be16(0);
-> +			pre = READ_ONCE(tgt->rport->fpin_stats.cn_clear);
-> +			ibmvfc_handle_asyncq((struct ibmvfc_crq *)&crq, vhost,
-> +					     &evt_doneq);
-> +			post = READ_ONCE(tgt->rport->fpin_stats.cn_clear);
-> +			break;
-> +		case IBMVFC_AE_FPIN_LINK_CONGESTED:
-> +		case IBMVFC_AE_FPIN_PORT_CONGESTED:
-> +			IBMVFC_TEST_FPIN_EXT(fs, FPIN_CONGN_CLEAR, cn_clear);
-> +			IBMVFC_TEST_FPIN_EXT(fs, FPIN_CONGN_LOST_CREDIT, cn_lost_credit);
-> +			IBMVFC_TEST_FPIN_EXT(fs, FPIN_CONGN_CREDIT_STALL, cn_credit_stall);
-> +			IBMVFC_TEST_FPIN_EXT(fs, FPIN_CONGN_OVERSUBSCRIPTION, cn_oversubscription);
-> +			IBMVFC_TEST_FPIN_EXT(fs, FPIN_CONGN_DEVICE_SPEC, cn_device_specific);
-> +			break;
-> +		case IBMVFC_AE_FPIN_PORT_DEGRADED:
-> +			IBMVFC_TEST_FPIN_EXT(fs, FPIN_LI_UNKNOWN, li_failure_unknown);
-> +			IBMVFC_TEST_FPIN_EXT(fs, FPIN_LI_LINK_FAILURE, li_link_failure_count);
-> +			IBMVFC_TEST_FPIN_EXT(fs, FPIN_LI_LOSS_OF_SYNC, li_loss_of_sync_count);
-> +			IBMVFC_TEST_FPIN_EXT(fs, FPIN_LI_LOSS_OF_SIG, li_loss_of_signals_count);
-> +			IBMVFC_TEST_FPIN_EXT(fs, FPIN_LI_PRIM_SEQ_ERR, li_prim_seq_err_count);
-> +			IBMVFC_TEST_FPIN_EXT(fs, FPIN_LI_INVALID_TX_WD, li_invalid_tx_word_count);
-> +			IBMVFC_TEST_FPIN_EXT(fs, FPIN_LI_INVALID_CRC, li_invalid_crc_count);
-> +			IBMVFC_TEST_FPIN_EXT(fs, FPIN_LI_DEVICE_SPEC, li_device_specific);
-> +			break;
-> +		}
-> +	}
->  }
->  
->  static struct kunit_case ibmvfc_fpin_test_cases[] = {
->  	KUNIT_CASE(ibmvfc_handle_fpin_event_test),
->  	KUNIT_CASE(ibmvfc_noop_test),
->  	KUNIT_CASE(ibmvfc_async_subq_test),
-> +	KUNIT_CASE(ibmvfc_extended_fpin_test),
->  	{},
->  };
->  
+>  	if (!rec->itr) {
+> +		err = -EINVAL;
+>  		rec->itr = auxtrace_record__init(rec->evlist, &err);
+>  		if (err)
+>  			return err;
+> -- 
+> 2.47.3
 > 
-
 
