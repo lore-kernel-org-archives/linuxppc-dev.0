@@ -1,136 +1,93 @@
-Return-Path: <linuxppc-dev+bounces-20546-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20547-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E83BDCD342C
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 May 2026 02:42:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 82002CD342C
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 May 2026 02:52:41 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4g9xNV4mFbz2xm1;
-	Thu, 07 May 2026 12:42:02 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c20f::7" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778121722;
-	cv=pass; b=QIEpcfgKU0hwscDKWPiD8Xvzj6qkObfJ3zhdlaz9N/PVE89sCzQ8E8N7o3da6FnfPyRO17q9xUXR86NGRtdswqhCGf9QwomEzaK6/6i66fDrBAgPEdWTUN13V6LtJDoye3tYo4O1GcQWWUMqlgXbnbuK/pLXm4oQ2KRaK95S2G3YWgOhwTLez4g6TB2D2C1pxZo3IpJbWtEmq2M8UO4PindkbZl/0VviDQhkUGGYcX2KmxE+voVG4/JrDlPWLsjIkQtJcv6uy0ZPDgsk5wV92+sjmtL6n4LBABum8PuTgqgYkSFp3UAudauVSwnYpi1VWnbEBDQQx6X7w9eLrG77tQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4g9xcm1Prmz2xm1;
+	Thu, 07 May 2026 12:52:40 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a00:1450:4864:20::435" arc.chain=google.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778122360;
+	cv=pass; b=N4hWdbAQBGACMB0juds8OADhqY1XTx8fG6oTRUX7pvAkbjQ4bgpMT+nbJKHh2OQHXJ21DPnbRSs+kP6HKPw7dLJfiYhyflTfzq1Tg9C0G27meu9+ae49xIf/Nu/iBd4uRvBS5O0Ix9XZLUh03ISqryFPKHOx1Rf8Zmvoqza6+WaGXbQcwXGd6cXUqyDyrELNKNtvMdgrV2oyGXAoKvQ1C1MyNA1p/Ksvk3UUYQHNbsDMEztfBROT4/MRLvS2mEqqHmKOsG2CDghZyhRYRkkfcsL7P4Z5Kq31Tz6G5zTrk3ORZmKEwAgoiMb8l7wBkFaifElLQXeYpdyQ7o5Y4XAQRQ==
 ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1778121722; c=relaxed/relaxed;
-	bh=gTdJAAz9h9cp89iquOygpaohN+RrKF/eO812+hQBckw=;
-	h=From:To:CC:Subject:Date:Message-ID:References:In-Reply-To:
-	 Content-Type:MIME-Version; b=EWh1WOP47TctfBESquqRYYSBgIDGqsXfxbnmircMdQvCBGrAZzLCwbMv2u4zr94vcxc6W9xcfM/MjrsWwu5g8ANeU4tqWeMkKrtXO7OTpFqfYnYKNJN3T/33OzfRvmYXN0lI08c9OL6UGqyjHqvPMQf8ggaduFcg8atTmRvvEFFnrg+Kz4xVoXy08YoyBJomDAl+jCxdziYDFV5qfmHfo0SJbj63S9u0eb9vScvxbi0e3I0q09frPB0dVwRDENMX4q3r21cO4W1U8cQSJO8hfwLCGWczWRI5iC64r9xtsl8WLlxpjbS1YkEgmDK/AP7DieN7F1NUF1yl9qkXKAswvA==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com; dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=Zs3FgiHb; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c20f::7; helo=osppr02cu001.outbound.protection.outlook.com; envelope-from=wei.fang@nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=nxp.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com
+	t=1778122360; c=relaxed/relaxed;
+	bh=uW6UXusY5B7wnfgwtpuv3i16n+MFEhNRrfK3KAuOPZ0=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=T3Yboymv63zqtwoaQY3fE1arDtm3OmKn4x/Wc9oFzXwfm8mpt9AYamGeMASPxTu8fRjmLfCojqQUNvrOUruDp2msIa70ODQdm+EkZu7XT04oqXfJSi/dJmw0QQIZN97qZZG0W71HLOK6YcwPAgw38Cn7eWVLuAjSvPLNSM6fBhEp3/QxpuUno5J2xZ2rPrUlmB6HwH06kpsxL8UdqhCFvNhi530uWAEtsiLSPf7ztEGe++viLtLCRagQg6twyH7iy8WxPIE8TIFqWbgX38Dg6J14UQQhy66Q8nEJqWLDzMh5EelBDBFXEILHIlHCcUGilfw2q0N63XUW+kEg3+1qvQ==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=gOiI68gL; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::435; helo=mail-wr1-x435.google.com; envelope-from=adri.vero.dev@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=Zs3FgiHb;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=gOiI68gL;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=nxp.com (client-ip=2a01:111:f403:c20f::7; helo=osppr02cu001.outbound.protection.outlook.com; envelope-from=wei.fang@nxp.com; receiver=lists.ozlabs.org)
-Received: from OSPPR02CU001.outbound.protection.outlook.com (mail-norwayeastazlp170130007.outbound.protection.outlook.com [IPv6:2a01:111:f403:c20f::7])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::435; helo=mail-wr1-x435.google.com; envelope-from=adri.vero.dev@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-wr1-x435.google.com (mail-wr1-x435.google.com [IPv6:2a00:1450:4864:20::435])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4g9xNT2gfgz2xlm
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 07 May 2026 12:42:01 +1000 (AEST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=xDMtlPqjVAnuZdYoGAiv8v8htE3s31q2LTf2mBYDjVG84wAiOMJDhAcENYAY/TEtecE9oTUELzT4ehC/0IIeT4M2dEJ/6pyb1q5Qpos92q3ElkDpLnq5yrw55B+P2X009wsrSNkf7xQHwXKsdQ0wEiasFTMb1NVMDYjVDl31T/YGH/qpiv0LzIy0RElg2VSEudArZzLHc01w0l1Hjc+c5BtFSx3oKUaCz5yb3UmjKSG+YqcVZNR7DZJQqiPFvrgQlkTbKTBUPGZ6A0lcGS9hx5skkZ9FDrT6CAvRA1EdedZUoqCit8bsSp4FTcLDvSInh8gDD6BRELwhAuU+zkUseQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=gTdJAAz9h9cp89iquOygpaohN+RrKF/eO812+hQBckw=;
- b=nGG7SSYVv6uK4sUuJuZjwwn//I4tDtpn1aBrUDxMHuJ8GYm1Y5wSNEj/r1O8GZz1h94fH2gBgLXR9NE8TB0JGYxrgbu9E1Z4vRYbO1C69Hf5LC25WVnZSOd6EG6oi4nNLKCFbDy3aZH2OqXqdiYGcMX9B2uVdFGkk14YR8KUKEj++XaFfky36w4FG15wmWfLKomMlQldquVXnLtkWZREf39Xj6veY05Dr3Dy9ilWKf821HzThpRYk/NLYtcZsPZkBIaEj7VglK8AK7MahLbdmFGEJyG0G+1dI5L69CUsfbGAfJY7wf1wdQ3BGQYUxEfvqEAg+SZJufuj528RpwcERg==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
- header.d=nxp.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=gTdJAAz9h9cp89iquOygpaohN+RrKF/eO812+hQBckw=;
- b=Zs3FgiHb/5bko7Di/AgWqoZumja1FKsI8KQKxVTHXaRrdNPWbPzSPgrpWYoW/7adVTO6xSM2pFUv7NZWpxW+d4wYfkkWqv0gqLSh7AkMSfSvEBYlqWrcliNcOcIckjr3JbvdEpyUm4p2BuUCK+kjL9YFcfsPhAe2Hp62j/7mJT2dKXlkFEMVirfOoLe3TdP8e0vLqT4fHj6WwV5oX0SFsgEN5tiNMXtpxfST3+3qqB6GeGndZYTUXO9WV82yUQ8H0AnF/ptrDNGse/xVNkTETnO5RbH/fhhhApIBMtLsQp9gOhyG92+L7Zmtj9a75KUrpeYR5LSOh4o6mynzbpVB7g==
-Received: from DBBPR04MB7500.eurprd04.prod.outlook.com (2603:10a6:10:1f4::16)
- by DU4PR04MB11725.eurprd04.prod.outlook.com (2603:10a6:10:626::13) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9891.15; Thu, 7 May
- 2026 02:41:31 +0000
-Received: from DBBPR04MB7500.eurprd04.prod.outlook.com
- ([fe80::c291:543b:4bde:cee7]) by DBBPR04MB7500.eurprd04.prod.outlook.com
- ([fe80::c291:543b:4bde:cee7%6]) with mapi id 15.20.9891.016; Thu, 7 May 2026
- 02:41:31 +0000
-From: Wei Fang <wei.fang@nxp.com>
-To: Claudiu Manoil <claudiu.manoil@nxp.com>, Vladimir Oltean
-	<vladimir.oltean@nxp.com>, Clark Wang <xiaoning.wang@nxp.com>,
-	"andrew+netdev@lunn.ch" <andrew+netdev@lunn.ch>, "davem@davemloft.net"
-	<davem@davemloft.net>, "edumazet@google.com" <edumazet@google.com>,
-	"kuba@kernel.org" <kuba@kernel.org>, "pabeni@redhat.com" <pabeni@redhat.com>,
-	"robh@kernel.org" <robh@kernel.org>, "krzk+dt@kernel.org"
-	<krzk+dt@kernel.org>, "conor+dt@kernel.org" <conor+dt@kernel.org>,
-	"f.fainelli@gmail.com" <f.fainelli@gmail.com>, Frank Li <frank.li@nxp.com>,
-	"chleroy@kernel.org" <chleroy@kernel.org>, "horms@kernel.org"
-	<horms@kernel.org>, "linux@armlinux.org.uk" <linux@armlinux.org.uk>
-CC: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-	"devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
-	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
-	"linux-arm-kernel@lists.infradead.org"
-	<linux-arm-kernel@lists.infradead.org>, "imx@lists.linux.dev"
-	<imx@lists.linux.dev>
-Subject: RE: [PATCH v5 net-next 14/15] net: dsa: netc: add support for the
- standardized counters
-Thread-Topic: [PATCH v5 net-next 14/15] net: dsa: netc: add support for the
- standardized counters
-Thread-Index: AQHc2Evqr/Y+KyRnR0mgO12vGrKs4LYB4XnQ
-Date: Thu, 7 May 2026 02:41:31 +0000
-Message-ID:
- <DBBPR04MB75001C6850BFBCBD825E9D43883C2@DBBPR04MB7500.eurprd04.prod.outlook.com>
-References: <20260430024945.3413973-1-wei.fang@nxp.com>
- <20260430024945.3413973-15-wei.fang@nxp.com>
-In-Reply-To: <20260430024945.3413973-15-wei.fang@nxp.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach:
-X-MS-TNEF-Correlator:
-authentication-results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=nxp.com;
-x-ms-publictraffictype: Email
-x-ms-traffictypediagnostic: DBBPR04MB7500:EE_|DU4PR04MB11725:EE_
-x-ms-office365-filtering-correlation-id: 4bf6fa01-7488-4a5c-eee2-08deabe225aa
-x-ms-exchange-senderadcheck: 1
-x-ms-exchange-antispam-relay: 0
-x-microsoft-antispam:
- BCL:0;ARA:13230040|19092799006|366016|376014|7416014|1800799024|18002099003|921020|38070700021|22082099003|56012099003;
-x-microsoft-antispam-message-info:
- E/Ih/PmfxRpfwuLcQZBEuRglRx46CSobrxt+ZRVUJJLK3RzC6iJFSEk4+tONJQH4y2OFksPl9Myi45rGA8Fuzk8mmSEp9igfLaRrquZmXCk1mbbn+Xt/hNlLnhfkEnl3BaSw76H95CkUeqoH6lDfFLZakNoOS8Enm2hqkm0bqIP7/mcI0vaNtkb0unacKqv+epebVEI4V/I+NeoDEnrxeRs2aWOfaB1jjXLkjR2SBo7J8oVwyJ+9zF7yMwBmv3DBmBSTKvRItsy7wCDTtOHrYf/PdJeLHLvlqSFccAXPXmS2RtixGKKf01aRwpwOeEeyAhOqPkz1RTPhnMA1gCFQnP4TfMscrEAbX4ExXRREaQWH2LAU2vmb5qukCcbZZEOCiJZzd+xsGqLJMjHoPIicqmJpPD9b0Cbf50CuX4yhlfaY695el92ImKJKRZUgy1BiG+VIHfTV/Wp8MU8H8TziwwiQVBntqDAiRSn2zPGyT7Dg7ckQBZcx0D2Arhp/MgiZXGkZJ5DF+LjNlVaEst2WxrVxExkAiI1b7SxCA2bN/mbSv4n/ouxp4xUWl26TQ9fJpd6UnIwec3ZtnRaxt3mceX8fUNIC0Bg2dsmCrfMw52btC+yK9504CRW9MMQzAjQSIv9HsOfD7gGl/zTDJuEXraKro9UA3NOYlx0Cwf7OqzzAyYjkPFocBnywLcqV5Hwex5G9q2XWR6wYbhf05TGVXApejxLC6b2JBu/IOiOvG7OLkU5Dkny2V3ZfKpE7XS3/eupjN/RbRuq0tpokhVQmFg==
-x-forefront-antispam-report:
- CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DBBPR04MB7500.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(19092799006)(366016)(376014)(7416014)(1800799024)(18002099003)(921020)(38070700021)(22082099003)(56012099003);DIR:OUT;SFP:1101;
-x-ms-exchange-antispam-messagedata-chunkcount: 1
-x-ms-exchange-antispam-messagedata-0:
- =?us-ascii?Q?p/lD97mwG/u0w4DbvZCbNBYzLvoR+UNzbQs7gs5djglkZD16fpFkfgt/g05O?=
- =?us-ascii?Q?1v1WRT+9lPvYTZgAV/exJhmLTqV1hDXe1/DLe06SFU0T29c672h+DpsQc0IH?=
- =?us-ascii?Q?4lS20bLB+HF2tcNjeWSMBI0Q524ASFiYmsDhiNJLWO8mjn42A6Rjf64Z5tIw?=
- =?us-ascii?Q?0utYFdeUgRr/dO3xCRM6DC4oCe2CbCvLuDg71gHO9DoNe3DN5xvFXTwrlx7A?=
- =?us-ascii?Q?o97La6rEkHVsDZMzRl4z8BZ0tSsqHXChNaw/h22R5LdXuv4aTAid5/uq/dMX?=
- =?us-ascii?Q?zLC+bJuboY92fStl4cDnjNPWJ0x+mVeI+5YcjizBl/rhAm2Ih0byCgTs/nV0?=
- =?us-ascii?Q?JG1y42mVka1C8Sj89UiuN4zXwDvxSYeNselmDzr71WbQin4ABY7xW4s6CUFl?=
- =?us-ascii?Q?b4amY65U8lnms+Apkc4hvtn4Q8JS8ytP/RWE7FFGE6puqQgpUzYbO0snI1Is?=
- =?us-ascii?Q?EGBjI/eYMPU7gdY26wHmpDtJr3fGyFe61OheGI6SssjsA0VMc1mxHo9wth5C?=
- =?us-ascii?Q?PMdVVWFVPuQXms/iVvOGo1MPhGqwCdnJZyiCMCI4rkr/UWYKU4tAOR6zA847?=
- =?us-ascii?Q?jeHWTCMOVIWtRp/+YzLv6hQHyi1aL8UOOLGi/3CCTwZT8OEaaf5HUSOFc01c?=
- =?us-ascii?Q?xxjEM63M//+X29/Q64mmtcTejKhkx8QStGPeq5nzaK+AyRPtRe/XThvEVu3T?=
- =?us-ascii?Q?vppMwh/fkKF3wc2BcKtywK+oqKQLUEOuf+wNKmxBEecRYcH86ue6M5lrUuL2?=
- =?us-ascii?Q?HxO7Pa3D2VzsPb6aL9/iL0oyPpTDD1LXdsmRYLWQ86E5cZ7sEtI2Ku2cGiSF?=
- =?us-ascii?Q?UjcbMYeG4eCmZdFARgc/8NOh4oZScruAYbQeFp0dw7pSHCHsWPU/4Dyv+mDA?=
- =?us-ascii?Q?DmjPHL5tihLtI7AxIfCMTUQuDi7/wmO/YGKKDPNHbPbgn/8J59c5Vru8B3P9?=
- =?us-ascii?Q?Nd/U2VhpS7lqSi/z7XeKWJkhhd6YfW0zXBMI5pUwUUpIcGB3rkXiHCj4Gnre?=
- =?us-ascii?Q?jwVX8fhNVDV8+j4qv3/DDDwjigXrlxSxU46q07bw2aQSJeJConl+mzdS+5ik?=
- =?us-ascii?Q?9LR2MpRmTPWFK64RBClk/XADuqHxQof69zriLnzOnMjJIbTKbhxZh3GQfUkl?=
- =?us-ascii?Q?Yzvh1LuQBoPJ3uykCPUyyM2bACcMKGIXlzoRm0dJf34s7UivMPQFdjYZR6W7?=
- =?us-ascii?Q?AOXMxpfefFnC2YT4amDptUHmmphSA2yxwX1Y/R3etOXRIoa4irQrN36WDC7t?=
- =?us-ascii?Q?bB4pmWHOUPz7cG7lhJlqJPm+5pSXbznvZsmvivb+7ZF8RbFdzJQVkoq6Lu3t?=
- =?us-ascii?Q?hU3hA5T3ARSdq5tH1kuI1Apv6ZuZS1eRM0ZcOm3KHWUeAbvfYE+8VcnYa4HV?=
- =?us-ascii?Q?7PPySCwaMzs6NF6U6ENIuiEg52frfEnbMYsC8txXaw4ZOYMBeCRB5BNZOBux?=
- =?us-ascii?Q?6fMtKsyvr6LCnsZmGd5rjHYjCloyiq2gwIdOoc//KfJOtqgT5C7X11syZp7O?=
- =?us-ascii?Q?bG1tmAwoXORiwhdQ9TojuypCp/VAu6XTBFvXppnAyADIdbmyxxpxUVC2DcKV?=
- =?us-ascii?Q?v/pxJvJxUF4pRAgSR5xG2rhvsVAiWUtdMM1jY3YblWPJ6QzrY57YnsDr7MhY?=
- =?us-ascii?Q?5d9NjSLViw1gO1n0Ra+wT9njhfA1T0uAcRI2QXkbqN2NKOBCPuxSFPpdpb11?=
- =?us-ascii?Q?TEu19u18BR0NksT2SU57G1sdotbOf/iFsWRitNcIAC5po9OJ?=
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4g9xck2nwRz2xlm
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 07 May 2026 12:52:37 +1000 (AEST)
+Received: by mail-wr1-x435.google.com with SMTP id ffacd0b85a97d-449d6c68ed8so281289f8f.0
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 06 May 2026 19:52:37 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1778122353; cv=none;
+        d=google.com; s=arc-20240605;
+        b=XxeEjiYYrY7wsRoWZ+B4yY30wlnZ8LoJmJIz/AgpWspSdtgq2vcDjMLrNmworymJLE
+         T2iFDllKbb1aeq57g3U/szfGlGvJmSWU3Y+0qCsdqXbRP3cQOGkrda9ULvvvnpqd7UzU
+         oxjTjmoG4pGWIlftPIj4XfJDOAup7f2aKQYd//P1tRLkWtTnRqWjeSS0RSSSdwWa2Byk
+         JlKU37PUvhKDe4jCPZKKpu10yVUT6WfaD2Hi7dp0Hc+JBhOjLxM5cNsLu+vXPb10c5hb
+         4LyCG1asykYT1mX5HRdUVLtHVO0ITTZmWFwO9YG3f8KqtdeaN+bnVf7T5rn3AJXOSsXf
+         BjaQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=uW6UXusY5B7wnfgwtpuv3i16n+MFEhNRrfK3KAuOPZ0=;
+        fh=UXVajeaYl7jW+1cgTzR5jIC2jiVDjcrO5ah5XAA9hBM=;
+        b=WToH0k9lUnWn6K4SXtOKqlYUovlLYd4WErRIeO3EmH2p7FfHoiT5uuO8W8TcELgF59
+         FTdYToyQyMuipuQpZFMeocTogsgUjlsCjq9zTiEAKloO6/iErMDQPQea5LtXcfWXyrmJ
+         J1Bo344/TLK1kHzD+HRTwljKlAuRNzXiRkVWfqAMbRNnqJPGZ81jjPoMP5t2OxZHzs3Z
+         fVBF3dsg2Pb4S08PeXW7RMXXsAkNXCuqyCzDMrHCgEfqaHoFS0i8m7OnEJUM0k1YHtXM
+         yggIlUbgICsn9hKpm9u3itDOPUjj/vBnXd3Aqig65npKiMQKFRh63LBGh8+OvAgxdlJf
+         n3Wg==;
+        darn=lists.ozlabs.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1778122353; x=1778727153; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=uW6UXusY5B7wnfgwtpuv3i16n+MFEhNRrfK3KAuOPZ0=;
+        b=gOiI68gLWtudNR2bCphGNygNSX5gcXEcuK7h5XSo4cqw/Fldo4ZSEOu79txEcHALD5
+         /xSTlRINJJE8FtQji5hnq6rChOEHdGw+RnyCPqFmNCgwMag9Vb4kfZJIvIQnxfF0W+E0
+         5/5iR3MX00uwvyoqAgcXLlVS0vBu7lQFkPlknPWoAGw4QIVEDoP3UEgqJO3/2oQ1igcK
+         9Hl/MfK+dDX6oERNeMtjjn89PZ+kR0uDFKeVMtEL27mGMqvdsSRNw8+cVuR9IJBC73NK
+         zN4cDTbu/1K3rVJb3Wz1TyQ4ZbO4DDbQCIIbpPwrPUgEeHpWj50MuXeasaQC+1PDk51N
+         AvwQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1778122353; x=1778727153;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=uW6UXusY5B7wnfgwtpuv3i16n+MFEhNRrfK3KAuOPZ0=;
+        b=Im2C1aAc7Jw/o8tS5aBqV/eAUTwbe+IWhqAhXjFrJqb6Z3933tAesNutARYXUVfyHF
+         Yg9bPplbyvVCFpHyzDZdeIFNrpaVjNpoZXUlHlDLBs9ztIy9WkrYM1BZoLjBSxQaCrKx
+         L9jS2/JaLik/XNNxCkJdIy/WgYYxUlpR2aPTnsyGrRaPxNcx1sONUoTvjCjhZQ7aH4s6
+         ZhX6wypAoQ1gWR21V2wjwqEHYYyVNFg+n5hs55fniJPbQP+YWX6oSnelPd7AM4ABXg24
+         3keNTq2pE5wLhFcI5sZuwL2vahrRrEjbIih4Ug6vvtkJdeV2WGqjDOBpY/ToUBUDUYeJ
+         H24g==
+X-Forwarded-Encrypted: i=1; AFNElJ/9BNvkTYhoJyPgD7XKceGfnqQ3yHljzVa4PwYPwSYxBL8QkMdMpwC4JFmTwoKJLyimIBiFW2QFOE4vJR4=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Ywu7XuQ4sze03OOkbPR2EL4cv60mORykeVoOrnKYioZFsZtc6cQ
+	j5vu09eLbiAjZ9mRt2Jtb13hR7OU+9wWYtbQgEYUg7z/lRppQyJQyFN+gzyVeWa5v8OqsIgGEAC
+	BYYf6eRSNrkRviVIDyKXz0zvLFPCgmEM=
+X-Gm-Gg: AeBDietvc4Qa5gBAqyBkA90mFSaIyNq24J6ganzejlEk12jhz6eAu/bjKdkuJfYoXBR
+	gNJRpsPy2W3anzxdSHwUcrtfw1HxO4XuoKPjmrc7EYfdEGM1M3hr9m85cpMNKWGVS56mtyhx8SR
+	Z6W7FKjgf8Y6u5RnvO4A3ogQHLNhBhShfOojo01LjXu5zYXFJe82VZGgsXtvCW3zP8U645Wlg3I
+	Bq32bhMObISz2e2jIZrIJjCpEv1M/PjkxAE4ndFR9ubfaMw6DlN2Xis4fZKDJqLO5yxdWoIX9Sa
+	1Up+MmDZ/5b05Y7lFer+n+3KELg=
+X-Received: by 2002:a05:6000:2310:b0:43d:773d:7908 with SMTP id
+ ffacd0b85a97d-4515d3dc438mr9631396f8f.32.1778122353253; Wed, 06 May 2026
+ 19:52:33 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -144,67 +101,222 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-OriginatorOrg: nxp.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-AuthSource: DBBPR04MB7500.eurprd04.prod.outlook.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 4bf6fa01-7488-4a5c-eee2-08deabe225aa
-X-MS-Exchange-CrossTenant-originalarrivaltime: 07 May 2026 02:41:31.6074
- (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: +X6iLbjTO21IAyUXXnBYcF556ukUC86rEv4/EzuNqOrujBSKMk+QAxtcr4HJHnU6DItgXW7JCRRRlZSRxf9kjg==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: DU4PR04MB11725
+References: <20260406061542.22354-1-litaliano00.contact@gmail.com>
+ <20260419065039.23495-1-adri.vero.dev@gmail.com> <7bef2ce2-1fd3-4648-8c78-d3c5e07a1f9f@linux.ibm.com>
+In-Reply-To: <7bef2ce2-1fd3-4648-8c78-d3c5e07a1f9f@linux.ibm.com>
+From: Adriano Vero <adri.vero.dev@gmail.com>
+Date: Thu, 7 May 2026 04:52:21 +0200
+X-Gm-Features: AVHnY4LgTIvR1AI6EIc-T4r21ztuWBHZNGBeQ7vGohG8sS8W5mspgVlodsa6JrM
+Message-ID: <CAGKWbKuxRCfqZaixqo7L3uT0gtOssDo8-cWWvsVJkKEsaTumcg@mail.gmail.com>
+Subject: Re: [PATCH v2] powerpc/fadump: Add timeout to RTAS busy-wait loops
+To: Sourabh Jain <sourabhjain@linux.ibm.com>
+Cc: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com, 
+	chleroy@kernel.org, linuxppc-dev@lists.ozlabs.org, 
+	linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-> diff --git a/include/linux/fsl/netc_global.h b/include/linux/fsl/netc_glo=
-bal.h
-> index fdecca8c90f0..5b8ff528d369 100644
-> --- a/include/linux/fsl/netc_global.h
-> +++ b/include/linux/fsl/netc_global.h
-> @@ -5,6 +5,7 @@
->  #define __NETC_GLOBAL_H
->=20
->  #include <linux/io.h>
-> +#include <linux/io-64-nonatomic-lo-hi.h>
->=20
->  static inline u32 netc_read(void __iomem *reg)
->  {
-> @@ -16,4 +17,9 @@ static inline void netc_write(void __iomem *reg, u32 va=
-l)
->  	iowrite32(val, reg);
->  }
->=20
-> +static inline u64 netc_read64(void __iomem *reg)
-> +{
-> +	return ioread64(reg);
-> +}
-> +
+Hi Sourabh,
 
-Sashiko says:
+Thank you for the review. v3 with your Reviewed-by tag has been sent.
 
-Will this cause a build failure on 32-bit architectures? I noticed
-ioread64() is used here, but it is strictly gated behind #ifdef CONFIG_64BI=
-T
-in include/asm-generic/io.h. Even though linux/io-64-nonatomic-lo-hi.h is
-included above, ioread64() isn't provided by that header.
+Adriano
 
-If this is updated to use readq() to fix the 32-bit build, could it lead to
-torn reads? On 32-bit systems, readq() falls back to lo_hi_readq(), which
-reads the lower 32 bits and then the upper 32 bits sequentially.=20
 
-Since these are live, continuously incrementing hardware counters, a wrap o=
-f
-the lower 32 bits between reads could result in a spurious counter spike of
-~4.29 billion. Would it be safer to use a read-high, read-low, read-high
-retry loop to ensure atomicity on 32-bit architectures?
-
-First, if CONFIG_64BIT is not selected, then ioread64() is provided by
-linux/io-64-nonatomic-lo-hi.h. Sashiko mistakenly believed that
-linux/io-64-nonatomic-lo-hi.h did not provide ioread64().
-
-i.MX9x and S32N7 and subsequent SoCs are all arm64 architectures,
-netc_read64() is used to read 64-bit registers of NETC.
-
-So this is a false positive.
-
+On Wed, May 6, 2026 at 9:22=E2=80=AFPM Sourabh Jain <sourabhjain@linux.ibm.=
+com> wrote:
+>
+>
+>
+> On 19/04/26 12:20, Adriano Vero wrote:
+> > The ibm,configure-kernel-dump RTAS call sites in
+> > rtas_fadump_register(), rtas_fadump_unregister(), and
+> > rtas_fadump_invalidate() polled indefinitely while firmware returned
+> > a busy status. A misbehaving or hung firmware could stall these paths
+> > forever, blocking fadump registration at boot or preventing clean
+> > teardown.
+> >
+> > Introduce rtas_fadump_call(), a helper that wraps the common
+> > busy-wait pattern shared by all three sites. The helper accumulates
+> > the total delay and returns -ETIMEDOUT if firmware keeps returning a
+> > busy status beyond RTAS_FADUMP_MAX_WAIT_MS (60 seconds). A pr_debug()
+> > message is emitted on each busy iteration to aid diagnosis when the
+> > timeout is hit.
+> >
+> > Signed-off-by: Adriano Vero <adri.vero.dev@gmail.com>
+> > ---
+> >   arch/powerpc/platforms/pseries/rtas-fadump.c | 80 ++++++++++++-------=
+-
+> >   arch/powerpc/platforms/pseries/rtas-fadump.h |  6 ++
+> >   2 files changed, 53 insertions(+), 33 deletions(-)
+> >
+> > diff --git a/arch/powerpc/platforms/pseries/rtas-fadump.c b/arch/powerp=
+c/platforms/pseries/rtas-fadump.c
+> > index eceb32893..3bb4ac2ab 100644
+> > --- a/arch/powerpc/platforms/pseries/rtas-fadump.c
+> > +++ b/arch/powerpc/platforms/pseries/rtas-fadump.c
+> > @@ -179,9 +179,42 @@ static u64 rtas_fadump_get_bootmem_min(void)
+> >       return RTAS_FADUMP_MIN_BOOT_MEM;
+> >   }
+> >
+> > +/*
+> > + * Helper to make an ibm,configure-kernel-dump RTAS call with a bounde=
+d
+> > + * busy-wait loop. Returns the RTAS return code on completion, or
+> > + * -ETIMEDOUT if firmware keeps returning a busy status beyond
+> > + * RTAS_FADUMP_MAX_WAIT_MS milliseconds.
+> > + */
+> > +static int rtas_fadump_call(struct fw_dump *fadump_conf, int operation=
+,
+> > +                         void *fdm_ptr, unsigned int fdm_size,
+> > +                         const char *op_name)
+> > +{
+> > +     unsigned int wait_time, total_wait =3D 0;
+> > +     int rc;
+> > +
+> > +     do {
+> > +             rc =3D rtas_call(fadump_conf->ibm_configure_kernel_dump, =
+3, 1,
+> > +                            NULL, operation, fdm_ptr, fdm_size);
+> > +             wait_time =3D rtas_busy_delay_time(rc);
+> > +             if (wait_time) {
+> > +                     pr_debug("Firmware busy during fadump %s, waiting=
+ %ums (total %ums)\n",
+> > +                              op_name, wait_time, total_wait);
+> > +                     if (total_wait >=3D RTAS_FADUMP_MAX_WAIT_MS) {
+> > +                             pr_err("Timed out waiting for firmware to=
+ complete fadump %s\n",
+> > +                                    op_name);
+> > +                             return -ETIMEDOUT;
+> > +                     }
+> > +                     total_wait +=3D wait_time;
+> > +                     mdelay(wait_time);
+> > +             }
+> > +     } while (wait_time);
+> > +
+> > +     return rc;
+> > +}
+> > +
+> >   static int rtas_fadump_register(struct fw_dump *fadump_conf)
+> >   {
+> > -     unsigned int wait_time, fdm_size;
+> > +     unsigned int fdm_size;
+> >       int rc, err =3D -EIO;
+> >
+> >       /*
+> > @@ -192,16 +225,10 @@ static int rtas_fadump_register(struct fw_dump *f=
+adump_conf)
+> >       fdm_size =3D sizeof(struct rtas_fadump_section_header);
+> >       fdm_size +=3D be16_to_cpu(fdm.header.dump_num_sections) * sizeof(=
+struct rtas_fadump_section);
+> >
+> > -     /* TODO: Add upper time limit for the delay */
+> > -     do {
+> > -             rc =3D  rtas_call(fadump_conf->ibm_configure_kernel_dump,=
+ 3, 1,
+> > -                             NULL, FADUMP_REGISTER, &fdm, fdm_size);
+> > -
+> > -             wait_time =3D rtas_busy_delay_time(rc);
+> > -             if (wait_time)
+> > -                     mdelay(wait_time);
+> > -
+> > -     } while (wait_time);
+> > +     rc =3D rtas_fadump_call(fadump_conf, FADUMP_REGISTER, &fdm, fdm_s=
+ize,
+> > +                           "register");
+> > +     if (rc =3D=3D -ETIMEDOUT)
+> > +             return -ETIMEDOUT;
+> >
+> >       switch (rc) {
+> >       case 0:
+> > @@ -234,19 +261,12 @@ static int rtas_fadump_register(struct fw_dump *f=
+adump_conf)
+> >
+> >   static int rtas_fadump_unregister(struct fw_dump *fadump_conf)
+> >   {
+> > -     unsigned int wait_time;
+> >       int rc;
+> >
+> > -     /* TODO: Add upper time limit for the delay */
+> > -     do {
+> > -             rc =3D  rtas_call(fadump_conf->ibm_configure_kernel_dump,=
+ 3, 1,
+> > -                             NULL, FADUMP_UNREGISTER, &fdm,
+> > -                             sizeof(struct rtas_fadump_mem_struct));
+> > -
+> > -             wait_time =3D rtas_busy_delay_time(rc);
+> > -             if (wait_time)
+> > -                     mdelay(wait_time);
+> > -     } while (wait_time);
+> > +     rc =3D rtas_fadump_call(fadump_conf, FADUMP_UNREGISTER, &fdm,
+> > +                           sizeof(struct rtas_fadump_mem_struct), "unr=
+egister");
+> > +     if (rc =3D=3D -ETIMEDOUT)
+> > +             return -ETIMEDOUT;
+> >
+> >       if (rc) {
+> >               pr_err("Failed to un-register - unexpected error(%d).\n",=
+ rc);
+> > @@ -259,19 +279,13 @@ static int rtas_fadump_unregister(struct fw_dump =
+*fadump_conf)
+> >
+> >   static int rtas_fadump_invalidate(struct fw_dump *fadump_conf)
+> >   {
+> > -     unsigned int wait_time;
+> >       int rc;
+> >
+> > -     /* TODO: Add upper time limit for the delay */
+> > -     do {
+> > -             rc =3D  rtas_call(fadump_conf->ibm_configure_kernel_dump,=
+ 3, 1,
+> > -                             NULL, FADUMP_INVALIDATE, fdm_active,
+> > -                             sizeof(struct rtas_fadump_mem_struct));
+> > -
+> > -             wait_time =3D rtas_busy_delay_time(rc);
+> > -             if (wait_time)
+> > -                     mdelay(wait_time);
+> > -     } while (wait_time);
+> > +     rc =3D rtas_fadump_call(fadump_conf, FADUMP_INVALIDATE,
+> > +                           (void *)fdm_active,
+> > +                           sizeof(struct rtas_fadump_mem_struct), "inv=
+alidate");
+> > +     if (rc =3D=3D -ETIMEDOUT)
+> > +             return -ETIMEDOUT;
+> >
+> >       if (rc) {
+> >               pr_err("Failed to invalidate - unexpected error (%d).\n",=
+ rc);
+> > diff --git a/arch/powerpc/platforms/pseries/rtas-fadump.h b/arch/powerp=
+c/platforms/pseries/rtas-fadump.h
+> > index c109abf6b..65fdab7b5 100644
+> > --- a/arch/powerpc/platforms/pseries/rtas-fadump.h
+> > +++ b/arch/powerpc/platforms/pseries/rtas-fadump.h
+> > @@ -41,6 +41,12 @@
+> >   #define MAX_SECTIONS                                10
+> >   #define RTAS_FADUMP_MAX_BOOT_MEM_REGS               7
+> >
+> > +/*
+> > + * Maximum time to wait for firmware to respond to an
+> > + * ibm,configure-kernel-dump RTAS call before giving up.
+> > + */
+> > +#define RTAS_FADUMP_MAX_WAIT_MS                      60000U
+> > +
+> >   /* Kernel Dump section info */
+> >   struct rtas_fadump_section {
+> >       __be32  request_flag;
+>
+> Changes look good to me.
+>
+> Feel free to add:
+> Reviewed-by: Sourabh Jain <sourabhjain@linux.ibm.com>
+>
+> While testing this patch I realized that fadump prints below message
+> when registered is successfully
+> <rtas/opal> fadump: Registration is successful
+>
+> But there is no message when fadump is unregistered successfully. I
+> think it is good to
+> log that event.  I will send a separate patch for this.
+>
+> - Sourabh Jain
 
