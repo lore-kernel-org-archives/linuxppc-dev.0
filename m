@@ -1,128 +1,82 @@
-Return-Path: <linuxppc-dev+bounces-20516-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20517-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C7CE2CD342C
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 May 2026 09:35:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0254ECD342C
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 May 2026 10:48:29 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4g9Vc13Wryz30T2;
-	Wed, 06 May 2026 19:35:29 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c20f::7" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778060129;
-	cv=pass; b=fYZBpnKV8qqFH73PKUhiYyz38BErjiyaGFG9EZkURi1c+77IPyffrB82R/csHFujK7vxmDISfmY0EBg0N5nPdd5SpTOWpRWcJLuXgwowMPUhspDND1z/XQaDIMjFJ+u69jI6RsjywwiZ2R4q+ZXaDwhdMf1iqIRHNIL4D6BS5XooXOHe7IHwtXIvjKeHnqpmnowZWLtIm0LR4e93t2XeO5KO2xATzFW7argNohf7M+j/E2fsE7Jt+xIuOcn2AhbIyUOiFAaoqN7CCzLz7Li4Cepwmu5wL6uFKWbQ8MTPtqjFRhgw/6+3YPewzW5JET9lTFs4J8tlSNX0ZIjdb2eweA==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1778060129; c=relaxed/relaxed;
-	bh=T5DFOEgzkajHzrQnOuNsTIpLksQ1yWSUc91YP9MeET8=;
-	h=From:To:CC:Subject:Date:Message-ID:References:In-Reply-To:
-	 Content-Type:MIME-Version; b=mRNinMD3Bltl8KgS3r966bfmEcyYdO95O/WeicXaKdOF0Pm8nXBAjxGvjdNGfku+jwZ6xml0B4wnL8cj8GgWcTLG1BxAcQnTgwAEjCoQ78Ub//vttip3SfcaiF3eS8Nfpvk85oWAvjeYNGXU9x6X6B/utYmr3gy81RXMCZgbFclhBNFulk8pIcTon2O3EqspLzr+1CrUBnRW8fd4Fce+9Uk6lhTSf1evXr3OxeG/m2h+ES/7GkXsIbVJI8HxeTJztdT8QwDKbKYTuQNhD4hEqLWnMJHhGg0FQFBo/hEK0/KsQ2AZUWrbhu/TQB42d6Z1EzoAsXZSutdRHgSP7m9SGA==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=hitachienergy.com; dkim=pass (2048-bit key; unprotected) header.d=hitachienergy.com header.i=@hitachienergy.com header.a=rsa-sha256 header.s=selector1 header.b=kicslCip; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c20f::7; helo=osppr02cu001.outbound.protection.outlook.com; envelope-from=holger.brunck@hitachienergy.com; receiver=lists.ozlabs.org) smtp.mailfrom=hitachienergy.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=hitachienergy.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4g9XDD1tltz30TL;
+	Wed, 06 May 2026 20:48:28 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778064508;
+	cv=none; b=ZHYT6+7FyI8G7T4pAM0tBxw2ozTvP2qUzwVQ12lexBqijX0+7WfuJgwwaJv3NjQD3nuWe/Lq/tHRpMHz73/xWBMVSqAKTcdo6RbLhac7PV3M+YvXBUKJkcIUad6Bf29I6mBPwnBGnpShAJzAF8KYMVG4PTIr7AOBp7ZKGw5elBF5b2t4e61G9+N8Rju1ZCL7AMUomzUO84HTaqhxFYtdCh/5xtcrC9ecHb2nY2q4VfEIpMGpCcO/j8jfdk4uVEFuuyXoHnmec9SDITv8NWPsVS2jUlZI8ypxuyu5JSEu9EUQQPN83fFPqw6Q+laFQGruK7Ac3ywA+HFcaKusLY2vFQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1778064508; c=relaxed/relaxed;
+	bh=1SdegPMKrh+nNGNt8RzmVOze7K+yG4TrAT4PqGXeYOE=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=QNpDLa2A0JWWzCV4PuhHqk0Kg0O2l0gZac+EA0jKHq4zXB03LZC89fJnoFjSxVQXQBkAn5oBIWKttWi4FJ8KPufS6xVMp1iRpZCHLJ/HpS2cmC1gqP/6T+3UCRfwktHta5B/fPBeLN+OJw+wH0Tz7fjzrvy/RrD2wn5yOFE1avUA6jluEAXXWGJXQtSoGlrunattku3d/sQ5XifTozdcT4riwlV/SrrCvMBvdRbh677NMHvkzQmOjxIaG0q1nDoX6nwNTVVcAuc/WIrtW74YtKCYI4+dWJuLp+W4rTukiRVdTIaDqDoeqTaNraW/C9ZwR5eYlGn4ceIvvf1YWwiTPw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=FP+Rb0M7; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=hitachienergy.com header.i=@hitachienergy.com header.a=rsa-sha256 header.s=selector1 header.b=kicslCip;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=FP+Rb0M7;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=hitachienergy.com (client-ip=2a01:111:f403:c20f::7; helo=osppr02cu001.outbound.protection.outlook.com; envelope-from=holger.brunck@hitachienergy.com; receiver=lists.ozlabs.org)
-Received: from OSPPR02CU001.outbound.protection.outlook.com (mail-norwayeastazlp170130007.outbound.protection.outlook.com [IPv6:2a01:111:f403:c20f::7])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4g9Vbz5rRGz30Sx
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 06 May 2026 19:35:27 +1000 (AEST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=h3rY3/5AMd1E3xtz8ZFD0WlfvfLHI7yckBNDn3uWgDQpIZ4FLjHhp90eE3KkFbBEMkUlQN6NEzswP2iRCzxu9DJ8CS3w+TloWqz36vJH2FiwEvY8uIl4D7KnLf9FWfcvSLCJmx2+FBH3CTvLr6k/NlZRzolGVChbHdbbs4R3HjJSIzyg5KmlXI7DmgDbAPwrnoMpUepeZzw+X3OmdfKYCu6Nf6dO6FQvUs67QNtkTqTxNjcvRJzJJaqP8d+Ya3gOtKXYTfQJDEYX+jFXWvCikEWJwN98QYhGYLtDZEY5Ao3K4jq3pbEeSkIG47UkJ0XaON0JMp1D/uuhr4xOMSM/Ow==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=T5DFOEgzkajHzrQnOuNsTIpLksQ1yWSUc91YP9MeET8=;
- b=MzxuGL8ruU4CtaffiIrM1V1ZzuZd1sVWRaRHXdwQqIK1jirh4d9AXw+VG/AcQQtePYwRgVeS48VB40LTMXhKeVyoEue7ksxGVOjy9b/fle0YMX/bL+FNVM1YVMKVFMU9tJ7RXehjNz/oBtgIetKtTbievGv52cbRlyVSZKHLC6rFPhHXitcGCcVhahkiTdFBqd4J+8Z/XXuZ3bsAFO2fFb4EQS1GsOvhCSm+mr2UGKetBr2mvp8r2UdnPcwt1XEn6Z49Cvh3jBkeXtaookFi/qhXomeUqfLQQvENNkruPnNlaV2X+cMVm1KK/NBZouO+7md/qFNR/naYtH/K8JWDwg==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=hitachienergy.com; dmarc=pass action=none
- header.from=hitachienergy.com; dkim=pass header.d=hitachienergy.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=hitachienergy.com;
- s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=T5DFOEgzkajHzrQnOuNsTIpLksQ1yWSUc91YP9MeET8=;
- b=kicslCip740HWh/HRbFJzw7g8i3g9bIj5sUbgaM4OqIkpJ+6WrGuS+lcUJT8IVCf34TQ+c3DvBmw0t3qV5f1dM4uAb3iBm8A+UEfPO+SwAilgOV7TVpWLA4fw5tEYF1vOANlPdfgWaVD7cf4+Mu/2Y17FRRMJMQuTbIwhemdVuljbzTJ1uGOLuF71xvwt2Z3N+OUqn8LcONRr5zefa1BawS8YjVEb+IYcCIyj5U+ekwtvN/h9wrx3THAI5Op3flGzL2DjBhVpJeaF/ENfS7YxD7hBOid4SRNtoaKb4j0aqpKnjmJ8JOnMeifxne7K/MnDStHAZFd2xopaL9cCFw2rw==
-Received: from AM0PR06MB10396.eurprd06.prod.outlook.com (2603:10a6:20b:6fd::9)
- by VE1PR06MB7117.eurprd06.prod.outlook.com (2603:10a6:800:1b3::22) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9870.25; Wed, 6 May
- 2026 09:35:00 +0000
-Received: from AM0PR06MB10396.eurprd06.prod.outlook.com
- ([fe80::f64e:6a20:6d85:183f]) by AM0PR06MB10396.eurprd06.prod.outlook.com
- ([fe80::f64e:6a20:6d85:183f%5]) with mapi id 15.20.9870.023; Wed, 6 May 2026
- 09:35:00 +0000
-From: Holger Brunck <holger.brunck@hitachienergy.com>
-To: Jakub Kicinski <kuba@kernel.org>
-CC: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
-	"andrew+netdev@lunn.ch" <andrew+netdev@lunn.ch>, "chleroy@kernel.org"
-	<chleroy@kernel.org>, "qiang.zhao@nxp.com" <qiang.zhao@nxp.com>,
-	"horms@kernel.org" <horms@kernel.org>
-Subject: RE: [PATCH net] net: wan: fsl_ucc_hdlc: return NETDEV_TX_OK if skb
- was freed
-Thread-Topic: [PATCH net] net: wan: fsl_ucc_hdlc: return NETDEV_TX_OK if skb
- was freed
-Thread-Index: AQHc2+2kUJ9y/iAyiU6X8I8cSH4SI7YANbUAgAB26uA=
-Date: Wed, 6 May 2026 09:35:00 +0000
-Message-ID:
- <AM0PR06MB1039608A8965FE12520901515F73F2@AM0PR06MB10396.eurprd06.prod.outlook.com>
-References: <20260504174406.2229693-1-holger.brunck@hitachienergy.com>
- <20260505182220.29e5f34e@kernel.org>
-In-Reply-To: <20260505182220.29e5f34e@kernel.org>
-Accept-Language: en-GB, en-US
-Content-Language: en-US
-X-MS-Has-Attach:
-X-MS-TNEF-Correlator:
-authentication-results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=hitachienergy.com;
-x-ms-publictraffictype: Email
-x-ms-traffictypediagnostic: AM0PR06MB10396:EE_|VE1PR06MB7117:EE_
-x-ms-office365-filtering-correlation-id: 00ab12b9-b81a-4fa6-d23b-08deab52be99
-x-he-o365-outbound: HEO365Out
-x-ms-exchange-senderadcheck: 1
-x-ms-exchange-antispam-relay: 0
-x-microsoft-antispam:
- BCL:0;ARA:13230040|366016|1800799024|376014|38070700021|56012099003|18002099003|22082099003;
-x-microsoft-antispam-message-info:
- 2tlsVLgTczGoaJWenQjyKnBqwg9+0TTYUlyfyl8pAL9EZUpqYg+Y3jrJPSA7TC4t3burHGTgKnG0UDmgvbCAls17+Cr6IglYtuycucqwuaaGmAdKXbuQKDAr3LstJ1UOaWdo3TFxpJlHlt8ibEcBc6Kj2IUQPQZQaj6+NStsjWoh2UNGNiGrofTVXOCTVhNAXKwTv5BHaHilgvMJcBTz3zyk3ek3ORSQirPN3QNWHZCIi0viGWmsw1Ke+C3B2/otpyd6bFaFXNFIh+/5Rra9snOXd6LGtJ3wHZcgqNnXZfENpWAhxavMwSglcGWRAJzxJiuFsuV/lmCgSJPx66ejMlJvTFotmcobzQ3b41xv7PholWkrsLZlh0/wqrBdPd7YUKhUDkWOvKr+CHzAbfPLKCi3eijLeKYh28hYrTGz1uhZN2VMK8JH0EbeCXfOGdo3YMb1987G/e4lNYQcKDB+GYaD6dgWQPArEN7WV9zzpBXgljftqVqlh5rtf3ErtylckYhfZeksdn9M4np4DPifK6dzoQsxGnJ/bsi+kRHRpeNV81MiYRDVd0I5AtZr+4l8bf5Fjs6tL6hDVAK7+oxICaTncQq9eEPCcdSPiNEQepU3WEjq1JEVrH1EWyHeuqMJToL7ZNYZA3HKmO+aPoutxdip75LP0KkMqSKdLhjCE4cphz6xPrVYHjM1/tIY+MLqnB+iKVy9mqno3LE6M4t6m/A4+zRECY9OEqxI8nAGChloFjNP8v0QEct6Ih+EkQsp
-x-forefront-antispam-report:
- CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AM0PR06MB10396.eurprd06.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(1800799024)(376014)(38070700021)(56012099003)(18002099003)(22082099003);DIR:OUT;SFP:1101;
-x-ms-exchange-antispam-messagedata-chunkcount: 1
-x-ms-exchange-antispam-messagedata-0:
- =?us-ascii?Q?XjClNRTo/saq44eZGC0FjWZIyUZnjbnIIZpSwgz4IqoDR6C0/Gll5+etFk+g?=
- =?us-ascii?Q?HzdZFaDxpAWaeYt0UclwFnlno+v6RTUDpPtmNpfZcvJfOM8smVAtFyqpFJoJ?=
- =?us-ascii?Q?AXq85KyM8yQAGSLNDuR9ylD4vz6kHhl2x0qMzn7WhCxR10EMQaXoiXpXwIBb?=
- =?us-ascii?Q?xbCvRg+lAFij1NvRSpgyXQWUhQTIAHMAy384UvBtWD4aGYq6By84TOg/uG3H?=
- =?us-ascii?Q?fniJQvRIHKx8Fl/7kGV48DtTfmZMLm/Xmnfm1/oMJyrA76pNhlgpZNJaDYzV?=
- =?us-ascii?Q?fAVHwmV5cBbOELNhm374wuCBcWDOgBGqdjzoMJjQt8npfRIkokwN5rNAdl60?=
- =?us-ascii?Q?kuTyqMFW2jLR9ULrzr7kpW+yWFGWmuBiAsCQXDxQPhOAs2WJ49CUbVtsbl0A?=
- =?us-ascii?Q?1TnyGA7q20jgVKv57oDSd1qe6+DIg7t5B+VWbNHRccYTdh4r6gaudLUCV+in?=
- =?us-ascii?Q?JcuiXf19vj8QB5c1FVrUcTxGVlWDkksyJcaxCnroEjpro0lR1ri5OfVlimc/?=
- =?us-ascii?Q?qrVsVN6dPBKST0DFY63P9WT5xP1rP9M+85AQg6kKztoQtDjugMrb+B31Y294?=
- =?us-ascii?Q?8wY3SCOA+fUCq4b4elu5IJi88WWtJmcAu+DvGEkBVFY9OBC1HBuv4yAPwKv9?=
- =?us-ascii?Q?bux8FqnzX80o6//od4eF+za/x7YRH8zt1uEjSIaJ2gWi/6eLq1+Bp2Q79PFb?=
- =?us-ascii?Q?4uZ68Cxq8pNeQcUzb9HmZ7+mvr48pSb5OJ5ciZX/IiRJE/3gxGxhWlU9iK2J?=
- =?us-ascii?Q?eBPCqLwmYQRTxI6gXDoOGN908Xac3brh+F6hwqzlNzrjyt5auXcVl3WPlnBh?=
- =?us-ascii?Q?285CPtWXE6zMv6WRYHBn9SHBOqIsBBOkUgMIccPXQig5uXN0looKsbo8htv3?=
- =?us-ascii?Q?eLmHHOLjoHAn5mUXpIco3AYgrzYuAqLx+tl/pcYfZrcNDH/9C92ubm9/DB30?=
- =?us-ascii?Q?iscmE2Y+6oA/f3Qfj2JpzFLhBbOreHxRR+ivQmpDYgupTIn8lHjVTxspLyIj?=
- =?us-ascii?Q?mNhi2DObYsP0AOr+VHCGW5HtvUW1yDnX9SFZ+OPJ8Fnnw64Paw8CpiLSYmEp?=
- =?us-ascii?Q?HVQLkSSJJsogiDgbFBy1BBt5qY3VFb6YGCLwAFWFlwZkRgjosMRmZ7AdKHx5?=
- =?us-ascii?Q?GCmMl7hb/qVvZIZ8BrQjemjF/WZXszCvTJkZ7iT/pPlGDO6GcpRjPX7tGJjH?=
- =?us-ascii?Q?dpIHiVu1sj7iWwZWijCCN8FLrDPfEVtKEJpbyshuoDqrHv6huvJeyHokiC8I?=
- =?us-ascii?Q?UR+8rEw2oVfEuCmDpOhZ5sPZRu5itIQAIwdXuRkHEokQN4+MGlitlsBmNca9?=
- =?us-ascii?Q?RUP9zP83RT1BpRkGaeiVLhaZkxbqN0jtshD4zKA+u4pGZUXAD707zvpHUdrK?=
- =?us-ascii?Q?13LtmbZKGLMfeH7w9+HxD5qeLgOe1PLRT4A9MDc466rr4Z1aWgwbHU8Are8E?=
- =?us-ascii?Q?9Jh4Kb3DQlI2T5TZH8Pw01Qu/6NgbzKBySnTrYqBFF7nM9ssuzxnpx4foIMp?=
- =?us-ascii?Q?BKvJkq37reFQWuD8IQFZg54KDhgFZ2mWd2omIXRvxZSxDqGxkDlzgmU/loQg?=
- =?us-ascii?Q?rf5rsFmgnBuY+pwKE3S7fmWeK0a7oxRVGn1rC0XX26WBbo+81z1MuM2JHgDg?=
- =?us-ascii?Q?ebtS7WcdUGXe5upWx6yJrNwMKmZ0uo8g+twjw7MM//D2mOxNjUWokqO7IVB0?=
- =?us-ascii?Q?Ig3oLcGsO8MF8blGFlYcZUbDDO4uYd5xvPSdZvEm8vl0d3sNJqi10jJ8ycyk?=
- =?us-ascii?Q?Bvl2Faaqp6PmnwFQEqQC3k3knF29DhM=3D?=
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4g9XDC0tbSz30T6
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 06 May 2026 20:48:26 +1000 (AEST)
+Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 645I22Aj2791324;
+	Wed, 6 May 2026 10:48:16 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-type:date:from:in-reply-to:message-id:mime-version
+	:references:subject:to; s=pp1; bh=1SdegPMKrh+nNGNt8RzmVOze7K+yG4
+	TrAT4PqGXeYOE=; b=FP+Rb0M7UHQulsozRvex6HMG0A8kl4+rokxzxyZSMXgIvp
+	bfA1HUjPk/ypOgMszkSWogx8vk/B+EjWWep3UR+Zz3YT0N/enmf70NOCqtbGtBAV
+	ttFcVGWdqt3eIVdTTGhWKWLgV5hyOgLyg6yImCx3Fp5oxkmvvSsUeGO0c2rIyNhW
+	GoRjwlRd0xcfA5zMCaztvspDp52viF774ES/BCvGkJtUpT4w0UZUxuFM1vIsfiqM
+	i9e3Q2NGyLGCxxFfo1zwoXiHDfXNZwGuidcimMev00qRt+9RuKcyKyQG86parh/S
+	mpX/5p9g+VpRwF47YGmgO5Ue7XvLCv4oR0O8kbUQ==
+Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4dw9y1g6d2-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 06 May 2026 10:48:15 +0000 (GMT)
+Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma12.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 646AdX6n012251;
+	Wed, 6 May 2026 10:48:14 GMT
+Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
+	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 4dwukqe12q-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 06 May 2026 10:48:14 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
+	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 646AmDD847972766
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Wed, 6 May 2026 10:48:13 GMT
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id EE68D20040;
+	Wed,  6 May 2026 10:48:12 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 6392820043;
+	Wed,  6 May 2026 10:48:11 +0000 (GMT)
+Received: from fedora (unknown [9.5.7.39])
+	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTPS;
+	Wed,  6 May 2026 10:48:11 +0000 (GMT)
+Date: Thu, 7 May 2026 13:46:21 +0000
+From: Amit Machhiwal <amachhiw@linux.ibm.com>
+To: Julian Braha <julianbraha@gmail.com>
+Cc: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com,
+        chleroy@kernel.org, jniethe5@gmail.com, linuxppc-dev@lists.ozlabs.org,
+        linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] powerpc: fix dead default for GUEST_STATE_BUFFER_TEST
+Message-ID: <20260507133231.7a92aed6-96-amachhiw@linux.ibm.com>
+Mail-Followup-To: Julian Braha <julianbraha@gmail.com>, 
+	maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com, chleroy@kernel.org, 
+	jniethe5@gmail.com, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+References: <20260405161545.161006-1-julianbraha@gmail.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -136,35 +90,91 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-OriginatorOrg: hitachienergy.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-AuthSource: AM0PR06MB10396.eurprd06.prod.outlook.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 00ab12b9-b81a-4fa6-d23b-08deab52be99
-X-MS-Exchange-CrossTenant-originalarrivaltime: 06 May 2026 09:35:00.6182
- (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 7831e6d9-dc6c-4cd1-9ec6-1dc2b4133195
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: /XxWVLtbSPjyd3SDwyVdgSmhOP7miLyy3BLrd0UEZenCLLtjURonFEa4wTeYBWXtNWvHUR/QUHRcaWgoQZIdsUoxpJP3PXEj5yxmSsGXq7A=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: VE1PR06MB7117
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260405161545.161006-1-julianbraha@gmail.com>
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-ORIG-GUID: X8iZ-IcEeqdLZ-Egm_owv3I5mXYqoN8U
+X-Proofpoint-GUID: QskwoA_Lz8FNRfnQaWTAtTD-3lg928w4
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTA2MDEwNCBTYWx0ZWRfX7wBPZKCvuF62
+ fUNlsgzgwq4ljwWhU+Ju9jLdXw0//XkgJzAOq/nDB3x+S3t2NnQHRIXwq9tTZzkU7CfEHCOpGcH
+ QI7rcqoJKr/JbL1SJc8wj8x3vPLknQp1d5iDPuG2y39vCspjhGNprDC1UVy1fIc/iPjlpzSoPOv
+ eqx5wzwhdgxFoboKdhkQWK4Z/emBmTGOtpMdTCccJaajfajouP6ThGLxGBUTZKItKE/WjR+VBAm
+ vXbFn61+hQZ4mad53dpRwp5HVB/u/YIwGl0e6LfSk+n1OBBq44Xy4XDSt9Ue32GipKAZMRfv7/U
+ dMgvdfKQ+f954+GtUxX59joMR3hJvuKgYd9Me5NqhfEU1kCkQm+ErjLjeirXxJqkFdZ5POBOIRk
+ bv9NbSzjyIkyE9tvTCKcdySc/5g5qPmfSE8HQe7cyoPORqYYPrN9nqDfj2jEtBDbjbQoHANfEhb
+ PUQOMhBs2bsxqJM1maw==
+X-Authority-Analysis: v=2.4 cv=UbFhjqSN c=1 sm=1 tr=0 ts=69fb1c70 cx=c_pps
+ a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17
+ a=kj9zAlcOel0A:10 a=NGcC8JguVDcA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=U7nrCbtTmkRpXpFmAIza:22 a=pGLkceISAAAA:8
+ a=VnNF1IyMAAAA:8 a=kLzKvu1pYhZp0h81DP8A:9 a=CjuIK1q_8ugA:10
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-05-05_03,2026-04-30_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ clxscore=1015 spamscore=0 lowpriorityscore=0 malwarescore=0 suspectscore=0
+ adultscore=0 priorityscore=1501 bulkscore=0 phishscore=0 impostorscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2604200000 definitions=main-2605060104
 
->=20
-> On Mon,  4 May 2026 19:44:06 +0200 Holger Brunck wrote:
-> > If the skb was freed in the ucc_hdlc_tx function and the packet marked
-> > as dropped we need to return NETDEV_TX_OK. Otherwise the above layer
-> > will try to requeue an already freed skb.
->=20
-> Is this really true? I thought negative returns mean drop.
+Hi Julian,
 
-the API suggest to only use NETDEV_TX_OK or NETDEV_TX_BUSY as return value.
-I checked several drivers and they are usually returning NETDEV_TX_OK if an
-error occurred and the driver consumed the packet. But you are right
-dev_xmit_complete will also return true if the return code is smaller than =
-zero
-and the packet is not requeued. Should I update the commit message or shoul=
-d
-the patch be dropped?
+Thanks for the patch.
 
-Best regards
-Holger
+On 2026/04/05 05:15 PM, Julian Braha wrote:
+> The GUEST_STATE_BUFFER_TEST config option should default
+> to KUNIT_ALL_TESTS so that if all tests are enabled then
+> it is included, but currently the 'default KUNIT_ALL_TESTS'
+> statement is shadowed by 'def_tristate n',
+> meaning that this second default statement is currently dead code.
+> 
+> It looks to me like the commit
+> 6ccbbc33f06a ("KVM: PPC: Add helper library for Guest State Buffers")
+> intended to set the default to KUNIT_ALL_TESTS, but mistakenly
+> missed the def_tristate.
+> 
+> This dead code was found by kconfirm, a static analysis tool for Kconfig.
+> 
+> Fixes: 6ccbbc33f06a ("KVM: PPC: Add helper library for Guest State Buffers")
+> Signed-off-by: Julian Braha <julianbraha@gmail.com>
+> ---
+>  arch/powerpc/Kconfig.debug | 3 +--
+>  1 file changed, 1 insertion(+), 2 deletions(-)
+
+This test is specific to KVM nested API v2 and is currently opt-in only.
+This patch enables it by default when KUNIT_ALL_TESTS=y.
+
+Since PPC kernels in general are built for both PowerNV and pSeries
+platforms, and the API v2 code is always compiled in. Also, the tests
+operate on guest state buffer in memory and no hcalls are involved,
+enabling the test by default makes sense. Hence:
+
+Reviewed-by: Amit Machhiwal <amachhiw@linux.ibm.com>
+
+Thanks,
+Amit
+
+> 
+> diff --git a/arch/powerpc/Kconfig.debug b/arch/powerpc/Kconfig.debug
+> index f15e5920080b..e8718bc13eeb 100644
+> --- a/arch/powerpc/Kconfig.debug
+> +++ b/arch/powerpc/Kconfig.debug
+> @@ -83,11 +83,10 @@ config MSI_BITMAP_SELFTEST
+>  	depends on DEBUG_KERNEL
+>  
+>  config GUEST_STATE_BUFFER_TEST
+> -	def_tristate n
+> +	def_tristate KUNIT_ALL_TESTS
+>  	prompt "Enable Guest State Buffer unit tests"
+>  	depends on KUNIT
+>  	depends on KVM_BOOK3S_HV_POSSIBLE
+> -	default KUNIT_ALL_TESTS
+>  	help
+>  	  The Guest State Buffer is a data format specified in the PAPR.
+>  	  It is by hcalls to communicate the state of L2 guests between
+> -- 
+> 2.53.0
+> 
 
