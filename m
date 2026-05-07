@@ -1,93 +1,118 @@
-Return-Path: <linuxppc-dev+bounces-20558-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20559-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E13A0CD3442
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 May 2026 08:08:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D70AECD3442
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 May 2026 08:19:20 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gB4dd167lz2yrD;
-	Thu, 07 May 2026 18:08:53 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a00:1450:4864:20::332" arc.chain=google.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778141333;
-	cv=pass; b=oHK91njOGO1eWzFmFtvSFRNb9Pd2ySbp7u1eZbwoe/t3GlVru3P6+RM4NKN0KvrcsxEdWfjHbMW5F9iZ4/HJ5P/WlBPAYnf0ZLG5vY9wonKmEemnhj6g5ThsAaePv69tbma7ASkqBf/g30bTHxC/+CWEfYK6GQmT7FDvIdoSF5YEgaQa2CZPtwG5tkx5WTZSNfIqqjz+EqSirAncaolp2nvhP+pGp3a1dEgPL7JAS9jQT7snKXA0t3aN7wnhMnCoV28Ko5WrpA9Hon6BWsrNdj6EWOiwG2DFq7C61i9L4DZaneV56m1v86UKjTLS5zbJ5fCMnumyWDLUONlE4McVRg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gB4sg1WG6z2yrD;
+	Thu, 07 May 2026 18:19:19 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=fail smtp.remote-ip=198.175.65.19
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778141959;
+	cv=fail; b=ZLzRnFihGctVVHsvvrsFmfnE6rmsmmL+pbULIfyt9f6OM0QWHXxYiayQDosk4Kwr1WKJXjSyWrB/xBYo3VXJhY/rZnMmmXxZHwtJ9Cq9W99n/P1+aMiyRhw+D7ymF/ySPtwxMf/uKkNQ5+3ykTnFHLHQNM4cENxDBXitZS5E8uWZH+qrkORWtG9+ZkRFQX7id0zPT3EeHkKXvCZqFp6cC55AKQCYteZlfZdSeqTbJan0APfj0S/apO6XKnUVR/L+1oRVQeOggtsWXyYbOz4XHOSxZhnAwmNREF4OlJUTGP86GRfu1TV6tc3+Xc9PBiK8yEiyoOH2B3gOY1oGQOPhXw==
 ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1778141333; c=relaxed/relaxed;
-	bh=bH18x2Bwp1QntCq+a0wK+QUNAj3ZgG+unSQ0n2RRfDQ=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=ZypNpc9PFPzDnR7lXdYVnG7tpt8SLGTTDPUvCTMTXIHtcgCaGAtiKawn4ssArsH9cbKv9BU8P1vSdXY9WRnusAKy700xB6pjM0pANi8yI0UyfbJXdkyCLifr9rHesYy0Y0lObzN0qMSBZdTAkUaL3N7IzL4JxeoOuvXPOEEAswsehb22gB2qAW4DHUSIGfi55VEsEY0E+y0L1aY+oA+MAma4fyseG1dRE/f+QzdfmLBsf1zDrper9JAFPkqOPF5LgOnnvq6L6xoLXikt+Fqo/ONGOcXJwA2dyvttq7fKFAUzcEo7CEwR80kIThjXFxuuO7EydsIVA9Tg5mvraZH90w==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=lRUu7/Os; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::332; helo=mail-wm1-x332.google.com; envelope-from=adri.vero.dev@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1778141959; c=relaxed/relaxed;
+	bh=iGOBKxch0Tkkff86YHz6xPUYj0cY/2myl784eB8wNfc=;
+	h=Date:From:To:CC:Subject:Message-ID:References:Content-Type:
+	 Content-Disposition:In-Reply-To:MIME-Version; b=XFQT6W/eUf5XyW+iZ5WcRj6KE9IgzrELbegohfg526BwZNNV4HJxEhZOW0e1nK0gy64H4jMVIucJH7KPbJ3YDVgpgjYx7tKBvub0YO20HNw6EDaE75tziCahwtmzguQ+8bFSY9mQtShSIzjaOwzCa9QHagvhbKjJcjQcV65h63e4GbjuO2XlPy1NKtPU5nNL6O3QUNFVQRnaqSd1spd3bFBAKqBDT6ZTPsCsxOTzF2Lw7ipypRJQjrJWXAxsTrdfUXQBcJc3SnARo49eH9yVsC5nvXKhmHRap3giaBv2FaCug53IjlAiob/hRYViU+wh2VJZ06ORHUn5+B6+knZItA==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=diKE4F24; dkim-atps=neutral; spf=pass (client-ip=198.175.65.19; helo=mgamail.intel.com; envelope-from=peter.fang@intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=intel.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=lRUu7/Os;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=diKE4F24;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::332; helo=mail-wm1-x332.google.com; envelope-from=adri.vero.dev@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-wm1-x332.google.com (mail-wm1-x332.google.com [IPv6:2a00:1450:4864:20::332])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=198.175.65.19; helo=mgamail.intel.com; envelope-from=peter.fang@intel.com; receiver=lists.ozlabs.org)
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.19])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gB4db4DZ9z2xYw
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 07 May 2026 18:08:50 +1000 (AEST)
-Received: by mail-wm1-x332.google.com with SMTP id 5b1f17b1804b1-488ad135063so4736185e9.0
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 07 May 2026 01:08:50 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1778141327; cv=none;
-        d=google.com; s=arc-20240605;
-        b=kqzSKmt3wACD8kTJnYMDqeY14HWtjyJCjpdwPWLSxhheJ+XD3Q8aGZ4029ZnTf85tF
-         s3yRIGMizQu+I9kGNl2Ih6rMRO231DIsleSDXpfEIp4fM+opxcAY5w7qZf5mAaoGn3/5
-         41ECZ69IyLQPbVgXWhncwffAkRwt/DBtxYMUJMprt+qKCw+Keexwr4/dcqQOwHATO48I
-         C4vgLat86JyXSBrLJFrkNje3sDkeF4myMSerk3Ya2cpi4yVg2RgqHbqqjLeDfPYMzBwb
-         J47gZCTZfehx4RWsv+luRgRUa1VaZlc40gW/uf7KNzEwHASJGeFVE+2YkiNuBz9Luw3J
-         RWGg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=bH18x2Bwp1QntCq+a0wK+QUNAj3ZgG+unSQ0n2RRfDQ=;
-        fh=CKRmAZr1pgauo+1kqzpiMxYUbeiyYh2mQo6T2dW0v98=;
-        b=KVDVW/2/+SF0RbbBjPbi43lYPeVRVx9yADM/wMdm+XCPz4XDM5ObowKFZGRLbvOHU5
-         qxdvxzdzCStzCdU/IHhNxSrk8qjla0WSViayzyGk0UB4aC9821TX8dk3bMpf70qrRGj2
-         bfA6hCk99wYgEtBxYZAtEUj3cOvsOTyFso9eZXL8mIjbCV5F1tZcHFR5msIMBlpZ0P0I
-         ztU7OXAZV4KEAerGZZQhvQHHKWhc5nvDewmOXAf7JIl0us3e/krtwKyThFsQxtnNg9QV
-         kqmzwHqopnA6caZhfPVtcW0Qo+9W18psWdmqJky1XfTanS2oW7hnlZVq3VvD8lAwS9Id
-         sqLg==;
-        darn=lists.ozlabs.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1778141327; x=1778746127; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=bH18x2Bwp1QntCq+a0wK+QUNAj3ZgG+unSQ0n2RRfDQ=;
-        b=lRUu7/OsAW9jmhGV2QNkerG8W7+m0mWJ7zNuA6aR/VA79MNwwxyZNgzqRls2PyhrPs
-         /GO7OWyE0QxEeGowzH+VaY9FvJUva+6myg5BB7en47ce6aswt2yxAxPIFnK1Az0Afg37
-         zttwbqOy2gMdJ5kL4LT4lXcGrjVBBSgB64aIfpNhseJ8iLbDm6rhA5G99WoDYb7MBtw5
-         eRxBUt1unq09zoxuantAMdqziHimQZ1Gwqm1K2nzgodHq5y5Frz9RKQNEL1qPGBdL7aW
-         CXqPOvSUa5tRjq/buHkfLGY10rWh3eQCehm9uNmjLc2b7bCn4brjZpZwXO41VDFUQbjo
-         v4TA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1778141327; x=1778746127;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=bH18x2Bwp1QntCq+a0wK+QUNAj3ZgG+unSQ0n2RRfDQ=;
-        b=PAx0GsOhmDLXssX/+kmVA8PfFiPtKobDghzy4gKUpDWrFCHKc8VB0qRdwUQQi7cts4
-         AqdbhdffSpmtyfV4szVuFZKEZ0kCaL2WR5pPBI6JydAnS5XaQUHpUGe0KMfAj7yptfIe
-         PKNYjWx9wtOdWobZ4Mg4EWu+KXI5tTvgiM2EiecZnP0WLqE02XonEbPTu8G3EnfNvkqS
-         fs9B5Qwxgja8yi9ItjKWCZzh+CtDlr+gRYL3tDmOvmK4fzq3RLbhojxmJJTUVdvC2Hfd
-         RE2phqHKKo6EgLxVNJcsad3XKBhmC37vempk4diDzU98i/NG2FFuYCPmkvz9k7X4wt51
-         KS1A==
-X-Forwarded-Encrypted: i=1; AFNElJ9i0PlyJTcZCLfrpKIWaEjD01MSV0cWpqLTh/riv/xcL2dpbuRh28hq4QcLRiRIeide3POeJMyMqdAkrlI=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YyMRfGkEJRkff0f6pzLpWsr1RB5NPKlrOmZfOx4EihQR9iuiXGw
-	LcxlZHB2jbucd5hB4GfNQHXsbP+NoOO7wNjD5nqkL5pabPZOVabfaPHjIZW0VLX85XTdNL/xxyr
-	dcOku3C0IKezYUcTOE85MOk4OMQpGM5A=
-X-Gm-Gg: AeBDievtPR8vAk5jZKf78Mb9IeuANhy7jkSMdmIWTruWhNXKdvVRHVZsFAZ2C0gU0aA
-	CsPrSLxOizRZF2nTJl1XsChd3TYxX6Z6i2sEwOnKjH+kv9DxaQ5ReGdNxr9KQjE8YHZLDObGogH
-	chsjvUOfKOnZ2RsNioZVOVXYuSznrmszQzL1r5w48gLbfHzdrdjhiCh2reVstkd+MVgzYXP+1MK
-	mrb5mpoPHV+SEt5Kmd4IHUJGpPgbr/CUokSWJnIxBEXtufsiGky1H80zWjXb+t14dwARTM094Fi
-	eOuVxsU061ynE3O47PKFt+gq0pc0JTVWCx70bw==
-X-Received: by 2002:a05:600c:46d2:b0:485:364e:9328 with SMTP id
- 5b1f17b1804b1-48e51f32aebmr107126475e9.16.1778141326456; Thu, 07 May 2026
- 01:08:46 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gB4sb6gHBz2xYw
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 07 May 2026 18:19:12 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1778141957; x=1809677957;
+  h=date:from:to:cc:subject:message-id:references:
+   in-reply-to:mime-version;
+  bh=AJo5S+h2nMzL/C/3vDvEJ+2zQ2tWdo0vUvH06UOk1Lo=;
+  b=diKE4F24KcjeiwcjRQKd57UqkA1lm+iPofxuHa1LFVniRvuuMRKJWfNK
+   Abl13Azn/mcdtr7nfTu7tSD/NIkVm7Z9z33cwmO1CWNwlg6eSrhKbMzzW
+   Kc4B8YIAf0lUoO/AXl1eD7BhWsvHJ5qNdNloxnWiLF7jrIaGc3/mXlS5X
+   x4YraLgdzyNS4T9MvvAODyMOVv+liHci1DLFjToacGRs6QS+tp9E34vTj
+   rJCqnAO8Jz6fQSxN85YdIxAuVyrksGlwTlcxViB4qyqnMYoWWMm/btRcB
+   1AvOT1hU/f5d79/e4VD6Zr2LBt49r0VvJ5CthTswFKtQWrOQMmGXTAibu
+   w==;
+X-CSE-ConnectionGUID: 9ZhoNG7GSNSXH8lNVllcEQ==
+X-CSE-MsgGUID: 8iEurTJFQt+Gta8xuhgYLg==
+X-IronPort-AV: E=McAfee;i="6800,10657,11778"; a="79022783"
+X-IronPort-AV: E=Sophos;i="6.23,221,1770624000"; 
+   d="scan'208";a="79022783"
+Received: from fmviesa006.fm.intel.com ([10.60.135.146])
+  by orvoesa111.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 07 May 2026 01:19:10 -0700
+X-CSE-ConnectionGUID: Exe9u4PJQSy18/kanNdkrw==
+X-CSE-MsgGUID: z+3Y/HokRxuQF5I0N5pCkw==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.23,221,1770624000"; 
+   d="scan'208";a="231854054"
+Received: from fmsmsx902.amr.corp.intel.com ([10.18.126.91])
+  by fmviesa006.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 07 May 2026 01:19:09 -0700
+Received: from FMSMSX901.amr.corp.intel.com (10.18.126.90) by
+ fmsmsx902.amr.corp.intel.com (10.18.126.91) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.37; Thu, 7 May 2026 01:19:08 -0700
+Received: from fmsedg903.ED.cps.intel.com (10.1.192.145) by
+ FMSMSX901.amr.corp.intel.com (10.18.126.90) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.37 via Frontend Transport; Thu, 7 May 2026 01:19:08 -0700
+Received: from CH4PR04CU002.outbound.protection.outlook.com (40.107.201.26) by
+ edgegateway.intel.com (192.55.55.83) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.37; Thu, 7 May 2026 01:19:08 -0700
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=W9BNmeezoYEVeclyvLruxjF7fMD7uihiNuBi2lce6doaRa687kD7zgQvme7Kbf99003Ga7cmGARIqplfJJEHU1A5GA1KtpiGeeVNqGgyc7zkyle7uOnS9nWURb0YAyk4QBwKjqEMhMRQOZf4DZgIc/NtZk1Hc4+qyxrpOzuPwMntCwGliuaNi5DWIAKrFE80JBh+h3eJ+1shlIrZ/53TOxPxntOFViVbG8FEIwW3mSQhJj6sNdqSLzgkg3SgW8cijiRKdb4zD1c/MG0iD2bDQ1C9eV5+ZySiGGOp6axhNdXHwprxgFn7NQ0QPVZwP5OgJ5L3pDU0ADAdFfIu3oZbag==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=iGOBKxch0Tkkff86YHz6xPUYj0cY/2myl784eB8wNfc=;
+ b=h/eEGemcoDTp+lHRNUGX3EjeTleUmKXn4YqJHisBeMLxjjc200o96h2kF2Ebdz6an42k2Aiodl398NYSiBly0KHzOVmBHI0Hed4c0r9TNQqHyvqaSOjzR+AYkf6ItXvpa4ZJtAwGsmsFfYwBYb609/K7diA5xvlalDivhfo4gNyYvnF/NrnKrXerGcCrfpNNR0y1oHEdc5N2VUFVddKwEQbNp5ByQThBlBnDJtInodQ0FoT68bf803IEO4nTha9aM2O+jcyxidsagnpzqmkl+dS6G47BPmkxEGdKbnl6PBJUs2kLjrL1+U/iY40mKH5VmAkQH1IdCNNiKx+blOLlWw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
+ dkim=pass header.d=intel.com; arc=none
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=intel.com;
+Received: from SJ0PR11MB5645.namprd11.prod.outlook.com (2603:10b6:a03:3b9::19)
+ by SN7PR11MB6899.namprd11.prod.outlook.com (2603:10b6:806:2a7::14) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9870.25; Thu, 7 May
+ 2026 08:19:00 +0000
+Received: from SJ0PR11MB5645.namprd11.prod.outlook.com
+ ([fe80::fb19:f933:8bb3:b42e]) by SJ0PR11MB5645.namprd11.prod.outlook.com
+ ([fe80::fb19:f933:8bb3:b42e%4]) with mapi id 15.20.9891.016; Thu, 7 May 2026
+ 08:19:00 +0000
+Date: Thu, 7 May 2026 01:18:55 -0700
+From: Peter Fang <peter.fang@intel.com>
+To: Sean Christopherson <seanjc@google.com>
+CC: David Woodhouse <dwmw2@infradead.org>, Paolo Bonzini
+	<pbonzini@redhat.com>, Madhavan Srinivasan <maddy@linux.ibm.com>, "Nicholas
+ Piggin" <npiggin@gmail.com>, Fred Griffoul <fgriffo@amazon.com>, Yosry Ahmed
+	<yosry@kernel.org>, Ritesh Harjani <ritesh.list@gmail.com>, Michael Ellerman
+	<mpe@ellerman.id.au>, "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>, "Borislav
+ Petkov" <bp@alien8.de>, Dave Hansen <dave.hansen@linux.intel.com>,
+	<x86@kernel.org>, "H. Peter Anvin" <hpa@zytor.com>, <kvm@vger.kernel.org>,
+	<linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH v2 0/3] KVM: Fix and clean up kvm_vcpu_map[_readonly]()
+ usages
+Message-ID: <20260507081855.GA362060@pedri>
+References: <20260408001137.3290444-1-peter.fang@intel.com>
+ <c2fad21764d2561469151f5dd5d35833ae8f76e6.camel@infradead.org>
+ <20260427080554.GD1733452@pedri>
+ <afjeahNaSG0zsMgx@google.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <afjeahNaSG0zsMgx@google.com>
+X-ClientProxiedBy: BYAPR07CA0091.namprd07.prod.outlook.com
+ (2603:10b6:a03:12b::32) To SJ0PR11MB5645.namprd11.prod.outlook.com
+ (2603:10b6:a03:3b9::19)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -101,224 +126,77 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20260419065039.23495-1-adri.vero.dev@gmail.com>
- <20260506222024.30352-1-adri.vero.dev@gmail.com> <a582e27b-fb51-473a-802c-6ffb83e7ce63@linux.ibm.com>
-In-Reply-To: <a582e27b-fb51-473a-802c-6ffb83e7ce63@linux.ibm.com>
-From: Adriano Vero <adri.vero.dev@gmail.com>
-Date: Thu, 7 May 2026 10:08:34 +0200
-X-Gm-Features: AVHnY4Kd6NSLwhFQc5XF1aHq5CWYDfsURZw01Tpgb-2OCAv1tKESDDiwS-ZmRo4
-Message-ID: <CAGKWbKsA7-8yiPuYdNXrpXkideqpCtfXFaz62yDqAKizgYT_CQ@mail.gmail.com>
-Subject: Re: [PATCH v3] powerpc/fadump: Add timeout to RTAS busy-wait loops
-To: Sourabh Jain <sourabhjain@linux.ibm.com>
-Cc: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com, 
-	chleroy@kernel.org, linuxppc-dev@lists.ozlabs.org, 
-	linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: SJ0PR11MB5645:EE_|SN7PR11MB6899:EE_
+X-MS-Office365-Filtering-Correlation-Id: cbf33aea-8e61-4f81-ad03-08deac114a86
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;ARA:13230040|366016|7416014|376014|1800799024|22082099003|18002099003|56012099003;
+X-Microsoft-Antispam-Message-Info: 2iVMN/Kkcg4OsaLGPzR67ppUFP+TKvHTVjSPe05C4WJ7l14Y+Kj17QXhvP1rTh0DgL6rGY0S1b+FKH5f1tcRx18f5L16KMM02GmswbpSXUYivql6p04tLBCxavcNGhk/790YQqcq0EKph6TjHbjXhROoPqGVSLOlhoh5YoO7xz/tS1p9XXVC/QbnVCVyU9FQgYVs+qr7g6LvIXh90Q/WqlkUMpIGGdblQYCQUStpJzk87KmgIie7I8lBbpcjmCTocu2aKgnxDMWZEAQ1Onzyr7OfvR0hz7flRH5JQ6ZwHQyHejDoYAidzQ4TUiVIEL1cYDddjxHGDaFOZ/wWFFDhsIlTBrxplCxzLExWYXPenKOQvY/mvkFVTskCrOsuUCQlrMtUD1BsbM6aYideRndA20THXyAOw6XsGRZoy9Cj3F9MQZ1IgzqCGPZ6crQAQvI2uILrXLxf4/ThwXmtEulNAWD7z+MjszHVTfKau9dQEoQLafvGdkBq4o0SUN0wS8Sp1SQ1JHFrnSyJ6/dgwuYBfC0mb5Dqhh0hOeBJKtf7PXrnFEI2aZjsVPnLXSFClzr7NgTSd0Ylq9f/q7imqLvWF15peh1+Y2x6S7ErldO0iiEjaXyc47wbtn1Duii11o88E4FO7HfLh+3jQr/O/49DunbX62nEWSK2aMhsaj/rdXtmxNdJ3BGX+l5ClV7r1MJq
+X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:SJ0PR11MB5645.namprd11.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(7416014)(376014)(1800799024)(22082099003)(18002099003)(56012099003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?us-ascii?Q?AP9zToFeVH6dARFwaYN4j9p6Fy8KQsg3f5Zsmrc28vzC3S8nrhtayxPStqoE?=
+ =?us-ascii?Q?kofv++4sMkZEyeXENhYQ50KBIsWmF8IBcfladXphcToFM+dFR+Xg/bN3mkzJ?=
+ =?us-ascii?Q?3KNsF5EJN0kw6Co/KMtQlAcrMDZnBlIp73GePoVDlkcFJdnk8fTZ9LHe1kig?=
+ =?us-ascii?Q?v8loYesv3V4LTh7ZwUyAA3JKZhHbkMWGM+IGU9YWDFwqdRcWMMOO7d53UNGI?=
+ =?us-ascii?Q?RV9hzSwiV53mnE+YI1U75ceZC0Y/w85fUEoIKxoBYJDQcd+Hv3FGS7qtIiGF?=
+ =?us-ascii?Q?3fxtlEip3WF0goYV8Bp7gtKxYYVqx4yIoyLONUtOa7+wIYdnZk0+z4ssYEoY?=
+ =?us-ascii?Q?Z5Q4B29KqQg3IqBG2MBza+trWLsF76pUa2hjztvnDnA2Gtl2y8I7ZBF6qQby?=
+ =?us-ascii?Q?um6J0ZNqsOijTfvKk04975DZrO54E5b1rXJryNUoPdwfsjIuRt4hLgtC61P2?=
+ =?us-ascii?Q?s0yI+Yj5aJVnF1T/MHBrMZGKdmNG1CeI7zpnIfpgAEflk9ZJTPcUiUiN2GVw?=
+ =?us-ascii?Q?Bd5Qt4FM/Jan1MObR9/b9sbYImEFbUlKW0x7+agZ3HkzqsWOaicJa0s6xpFd?=
+ =?us-ascii?Q?KP/SkmtX1jqRGcxTTo2hln4U2aHlfiUcZY2g5fCRm5uxzq/dqA9SrIqQy3om?=
+ =?us-ascii?Q?66Mah5q3W36+AQr+3cZn0+6AnvnrfWqCV+na7u74G76oL087FuO0jCj9nv+x?=
+ =?us-ascii?Q?ggfrD4j/l9kkpa+HeCwXvqzWxD91OtIMhCqGNZhHh9YULQHws633HTEqilW5?=
+ =?us-ascii?Q?lDdCDtVbiB938zwfyZGjs9c8YTE6NefNA7K7zjmi/ytXDEBPR5dR+XdoIVpL?=
+ =?us-ascii?Q?Iu7oPG9aUAveMfTnVj59woreQPG4SZOyBWrzlvpZKaB1OLiCyDDgY429mNny?=
+ =?us-ascii?Q?o2obX56z7M/Ktlpc1Crj019wRmbwdelCEQWYiO87pSKyojxQQOrmjbaVLcK4?=
+ =?us-ascii?Q?qH8a9YSCX6LPSFRp6zlcKeUR08d5wOViaQfdxbjL8ulpVFzFb5iFwSEYgb40?=
+ =?us-ascii?Q?bNoaaCFwRrI3kMhpGbSE4aWvnj6uXAlbxnkl/JS7V3DOJREJYThT4yhR08Hg?=
+ =?us-ascii?Q?APgf3Q9SVKSyRjyYrLmSH2rPbrQrys9HHm6PfY+L1lM63PpPHObb+7oLOXaf?=
+ =?us-ascii?Q?FUXIIgc7IEqPOuUBqFhhMFk8e7BRzR6FoMYFM2kRc01Lx4RkeetuB//8F/hS?=
+ =?us-ascii?Q?0tyEVp6sfXAeRrss+0cjbvIaTbte3tL1eV16wHckUX7tQUhJePzqoh59ui1F?=
+ =?us-ascii?Q?LIaxEroxA4D2UCdvJUpyKueuv1XQGYS/QBb78nYS2tOST+p6+GuKaG7TfoLc?=
+ =?us-ascii?Q?cK6VjFPVhao96Jh4ZPaJ5kLSh8DEPV62m9t22M7kmxy1J3AJq56P07z1mPx0?=
+ =?us-ascii?Q?WE7aNtMggW4cCrJ9Jvk2e08R5zQZIbh6s+TDFzbzf+mQGDdnAoijRanQgJru?=
+ =?us-ascii?Q?rzRv7m0lDXmdOIQ5JCftdhVbBL0x/43muQbEHN/ZJ5AuoeLAgHKVoMk65cBp?=
+ =?us-ascii?Q?Q+Mmld7Ck0R/8deTFoqkj/aNspy3JxYKsBGjTAje1Q9xES6REC8iPy+tw+cI?=
+ =?us-ascii?Q?FZc1OF68z6SEfWRlQZJbhghTZ2GeNQVtrFROkiwGyDjqA7Jy+PFY/EClaB7R?=
+ =?us-ascii?Q?A9lJmsgAclVcBDD4++XaI+7euUic24cYVpxxO9bQpzLNOfufH5cUry+sgkZL?=
+ =?us-ascii?Q?QjkvKj+GmfS06USxU9W6/C6n3JPTZbXVheuN6aecwkUOcDrRcBYjM+A+/kIg?=
+ =?us-ascii?Q?GkE880WndQ=3D=3D?=
+X-Exchange-RoutingPolicyChecked: EnR8ogN5Y9wl54CTdfm29xhVTBKOvZGSeVWL4K1Kh98WQh0GxKB+m26tdFLh7x6uIjSSaUJ4Eh5PLMrp/j/HwHLn4pbChzkchRAzj4YQC4mKzs2eZxLWfbSixxxzqhPK+YCD9s5zpLNQB9oHgLQ+YfWXlt8ER+kbmnXt2Wus03cvcxwdjF7JQZTLd6FPHXPljs0EDTXzIcXhcasaFqhFBTGr3NJ7JxMqX6VyrVLbggBoQJjJnX/Vaa4lTU+7YDJDpnTOeTW+hVEo2pXhD+jqdguzUiehVKlGytNB7sGYO0ufRlTTqxKlvWjyNVl2/m/ZKbBJJ7WXMUAjDSx4RgH7Sw==
+X-MS-Exchange-CrossTenant-Network-Message-Id: cbf33aea-8e61-4f81-ad03-08deac114a86
+X-MS-Exchange-CrossTenant-AuthSource: SJ0PR11MB5645.namprd11.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 07 May 2026 08:19:00.0803
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 46c98d88-e344-4ed4-8496-4ed7712e255d
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: vkCCmADL5TeZE2WX28mZ2rI8daOwNYReBgZ4ebG3dpGxrrodEOlMgdj40fZLmUbbVD8kCOiF3Z93OdOou10xbg==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SN7PR11MB6899
+X-OriginatorOrg: intel.com
 
-Hi Sourabh,
+On Mon, May 04, 2026 at 10:59:06AM -0700, Sean Christopherson wrote:
+> On Mon, Apr 27, 2026, Peter Fang wrote:
+> 
+> > Thanks David!
+> > 
+> > I think I'd need at least input from the maintainers on this but just by
+> > code inspection, the kvm_vcpu_map() usage in sev.c seems a bit tricky.
+> > Unmapping doesn't happen until right before switching to the guest, so
+> > this might fall into the "keep the mapping around for a longer time"
+> > category [1].
+> 
+> It definitely falls into that category.  But that code is also rather gross, i.e.
+> could use some cleanup no matter what, so I don't think it's a good argument for
+> keeping kvm_vcpu_map() around.
+> 
+> To avoid a bunch of pointless work and churn, let's hold off on hardening and/or
+> renaming kvm_vcpu_map() for now.  I'll take this v2 as-is; even though taking a
+> gpa instead of a gfn will conflict with the nVMX series, it's dead simple and a
+> worthwhile cleanup even if some of the conversions get discarded shortly after.
 
-Understood, I'll keep that in mind for future patches. Thanks for
-the guidance.
-
-Adriano
-
-On Thu, May 7, 2026 at 6:16=E2=80=AFAM Sourabh Jain <sourabhjain@linux.ibm.=
-com> wrote:
->
-> Hello Adriano,
->
-> On 07/05/26 03:50, Adriano Vero wrote:
-> > The ibm,configure-kernel-dump RTAS call sites in
-> > rtas_fadump_register(), rtas_fadump_unregister(), and
-> > rtas_fadump_invalidate() polled indefinitely while firmware returned
-> > a busy status. A misbehaving or hung firmware could stall these paths
-> > forever, blocking fadump registration at boot or preventing clean
-> > teardown.
-> >
-> > Introduce rtas_fadump_call(), a helper that wraps the common
-> > busy-wait pattern shared by all three sites. The helper accumulates
-> > the total delay and returns -ETIMEDOUT if firmware keeps returning a
-> > busy status beyond RTAS_FADUMP_MAX_WAIT_MS (60 seconds). A pr_debug()
-> > message is emitted on each busy iteration to aid diagnosis when the
-> > timeout is hit.
-> >
-> > Signed-off-by: Adriano Vero <adri.vero.dev@gmail.com>
-> >
-> > Reviewed-by: Sourabh Jain <sourabhjain@linux.ibm.com>
->
-> New line between tags is unnecessary.
->
-> Including a Changelog in subsequent versions of the same patch is
-> helpful for the maintainer and reviewers to understand what has changed
-> in this version compared to the previous version.
->
-> For example:
-> https://lore.kernel.org/all/20260407124349.1698552-1-sourabhjain@linux.ib=
-m.com/
->
-> Thanks,
-> Sourabh Jain
->
-> > ---
-> >   arch/powerpc/platforms/pseries/rtas-fadump.c | 80 ++++++++++++-------=
--
-> >   arch/powerpc/platforms/pseries/rtas-fadump.h |  6 ++
-> >   2 files changed, 53 insertions(+), 33 deletions(-)
-> >
-> > diff --git a/arch/powerpc/platforms/pseries/rtas-fadump.c b/arch/powerp=
-c/platforms/pseries/rtas-fadump.c
-> > index eceb3289383e..3bb4ac2ab6cc 100644
-> > --- a/arch/powerpc/platforms/pseries/rtas-fadump.c
-> > +++ b/arch/powerpc/platforms/pseries/rtas-fadump.c
-> > @@ -179,9 +179,42 @@ static u64 rtas_fadump_get_bootmem_min(void)
-> >       return RTAS_FADUMP_MIN_BOOT_MEM;
-> >   }
-> >
-> > +/*
-> > + * Helper to make an ibm,configure-kernel-dump RTAS call with a bounde=
-d
-> > + * busy-wait loop. Returns the RTAS return code on completion, or
-> > + * -ETIMEDOUT if firmware keeps returning a busy status beyond
-> > + * RTAS_FADUMP_MAX_WAIT_MS milliseconds.
-> > + */
-> > +static int rtas_fadump_call(struct fw_dump *fadump_conf, int operation=
-,
-> > +                         void *fdm_ptr, unsigned int fdm_size,
-> > +                         const char *op_name)
-> > +{
-> > +     unsigned int wait_time, total_wait =3D 0;
-> > +     int rc;
-> > +
-> > +     do {
-> > +             rc =3D rtas_call(fadump_conf->ibm_configure_kernel_dump, =
-3, 1,
-> > +                            NULL, operation, fdm_ptr, fdm_size);
-> > +             wait_time =3D rtas_busy_delay_time(rc);
-> > +             if (wait_time) {
-> > +                     pr_debug("Firmware busy during fadump %s, waiting=
- %ums (total %ums)\n",
-> > +                              op_name, wait_time, total_wait);
-> > +                     if (total_wait >=3D RTAS_FADUMP_MAX_WAIT_MS) {
-> > +                             pr_err("Timed out waiting for firmware to=
- complete fadump %s\n",
-> > +                                    op_name);
-> > +                             return -ETIMEDOUT;
-> > +                     }
-> > +                     total_wait +=3D wait_time;
-> > +                     mdelay(wait_time);
-> > +             }
-> > +     } while (wait_time);
-> > +
-> > +     return rc;
-> > +}
-> > +
-> >   static int rtas_fadump_register(struct fw_dump *fadump_conf)
-> >   {
-> > -     unsigned int wait_time, fdm_size;
-> > +     unsigned int fdm_size;
-> >       int rc, err =3D -EIO;
-> >
-> >       /*
-> > @@ -192,16 +225,10 @@ static int rtas_fadump_register(struct fw_dump *f=
-adump_conf)
-> >       fdm_size =3D sizeof(struct rtas_fadump_section_header);
-> >       fdm_size +=3D be16_to_cpu(fdm.header.dump_num_sections) * sizeof(=
-struct rtas_fadump_section);
-> >
-> > -     /* TODO: Add upper time limit for the delay */
-> > -     do {
-> > -             rc =3D  rtas_call(fadump_conf->ibm_configure_kernel_dump,=
- 3, 1,
-> > -                             NULL, FADUMP_REGISTER, &fdm, fdm_size);
-> > -
-> > -             wait_time =3D rtas_busy_delay_time(rc);
-> > -             if (wait_time)
-> > -                     mdelay(wait_time);
-> > -
-> > -     } while (wait_time);
-> > +     rc =3D rtas_fadump_call(fadump_conf, FADUMP_REGISTER, &fdm, fdm_s=
-ize,
-> > +                           "register");
-> > +     if (rc =3D=3D -ETIMEDOUT)
-> > +             return -ETIMEDOUT;
-> >
-> >       switch (rc) {
-> >       case 0:
-> > @@ -234,19 +261,12 @@ static int rtas_fadump_register(struct fw_dump *f=
-adump_conf)
-> >
-> >   static int rtas_fadump_unregister(struct fw_dump *fadump_conf)
-> >   {
-> > -     unsigned int wait_time;
-> >       int rc;
-> >
-> > -     /* TODO: Add upper time limit for the delay */
-> > -     do {
-> > -             rc =3D  rtas_call(fadump_conf->ibm_configure_kernel_dump,=
- 3, 1,
-> > -                             NULL, FADUMP_UNREGISTER, &fdm,
-> > -                             sizeof(struct rtas_fadump_mem_struct));
-> > -
-> > -             wait_time =3D rtas_busy_delay_time(rc);
-> > -             if (wait_time)
-> > -                     mdelay(wait_time);
-> > -     } while (wait_time);
-> > +     rc =3D rtas_fadump_call(fadump_conf, FADUMP_UNREGISTER, &fdm,
-> > +                           sizeof(struct rtas_fadump_mem_struct), "unr=
-egister");
-> > +     if (rc =3D=3D -ETIMEDOUT)
-> > +             return -ETIMEDOUT;
-> >
-> >       if (rc) {
-> >               pr_err("Failed to un-register - unexpected error(%d).\n",=
- rc);
-> > @@ -259,19 +279,13 @@ static int rtas_fadump_unregister(struct fw_dump =
-*fadump_conf)
-> >
-> >   static int rtas_fadump_invalidate(struct fw_dump *fadump_conf)
-> >   {
-> > -     unsigned int wait_time;
-> >       int rc;
-> >
-> > -     /* TODO: Add upper time limit for the delay */
-> > -     do {
-> > -             rc =3D  rtas_call(fadump_conf->ibm_configure_kernel_dump,=
- 3, 1,
-> > -                             NULL, FADUMP_INVALIDATE, fdm_active,
-> > -                             sizeof(struct rtas_fadump_mem_struct));
-> > -
-> > -             wait_time =3D rtas_busy_delay_time(rc);
-> > -             if (wait_time)
-> > -                     mdelay(wait_time);
-> > -     } while (wait_time);
-> > +     rc =3D rtas_fadump_call(fadump_conf, FADUMP_INVALIDATE,
-> > +                           (void *)fdm_active,
-> > +                           sizeof(struct rtas_fadump_mem_struct), "inv=
-alidate");
-> > +     if (rc =3D=3D -ETIMEDOUT)
-> > +             return -ETIMEDOUT;
-> >
-> >       if (rc) {
-> >               pr_err("Failed to invalidate - unexpected error (%d).\n",=
- rc);
-> > diff --git a/arch/powerpc/platforms/pseries/rtas-fadump.h b/arch/powerp=
-c/platforms/pseries/rtas-fadump.h
-> > index c109abf6befd..65fdab7b5b8d 100644
-> > --- a/arch/powerpc/platforms/pseries/rtas-fadump.h
-> > +++ b/arch/powerpc/platforms/pseries/rtas-fadump.h
-> > @@ -41,6 +41,12 @@
-> >   #define MAX_SECTIONS                                10
-> >   #define RTAS_FADUMP_MAX_BOOT_MEM_REGS               7
-> >
-> > +/*
-> > + * Maximum time to wait for firmware to respond to an
-> > + * ibm,configure-kernel-dump RTAS call before giving up.
-> > + */
-> > +#define RTAS_FADUMP_MAX_WAIT_MS                      60000U
-> > +
-> >   /* Kernel Dump section info */
-> >   struct rtas_fadump_section {
-> >       __be32  request_flag;
->
+Makes sense to me. Thanks for the review Sean!
 
