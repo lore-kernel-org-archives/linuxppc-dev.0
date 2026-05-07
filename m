@@ -1,73 +1,136 @@
-Return-Path: <linuxppc-dev+bounces-20545-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20546-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D433ACD342C
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 May 2026 02:41:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E83BDCD342C
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 May 2026 02:42:03 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4g9xMN2mMmz2xm1;
-	Thu, 07 May 2026 12:41:04 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778121664;
-	cv=none; b=Q3FBplZgnMv0zXskXHHBpi33X958RHVX+S9Cv1mgMPVHgXQFoGYXBurpNlG77Sa1MShDAWxIMCPNkYrFnBNIImkn+lERoWee4DAI44KOuOwTnTrN/TQq724FnA02Pd+O0lG/Okgvmm5YFEvlXx48nI7xaRdtMXIyRR7NJPlYlYyhRt/vJlCu8QIvDuEkkTtL6kuQVKVfzmH+igaSsxONd1rXcNvP2G3Sm9wmaNqZ19ggY3Btbo5MhwAoQzpjor7dIYHezcvVBFrHwU+XMlOSCgBNtUWn1LLXM+QceO3+Cf0h5jMzdu52hCHDMxJxg/VmQq3KFOQQqTePcR9hIKyLqQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1778121664; c=relaxed/relaxed;
-	bh=U5VzgVsOh7KJ44Pr3XlHOAiHMWRYvMItvzRoqCBAiNw=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=cuy15VGeO+8EmAbTggrGBQqLY2eb4cms7RFK5yuBC1KXz828gqCa5LafZ3rbUfDHKRxKP1PMRdXjiwEZJZG04R+wZQUumtXXpv6ylF1t1DSvkDweouiRiumCdn+g7HWt9P8QMvZ9PZANWvRd7JFSHm4acEEv9Id+G1G73tEf3/DDyRwCAP8C5n54RARbYR0FXw61DGb+j1W2yUV27TVSqAVYASP+c6hO21I1fDId8ds5p4dC3xwpO5sEUwNd5l/65yKEdnip1tOn5GZFE+/2Jzambl6OZum/R0MRMF3YPgM+YbYjb3deAHluQls/2glGQm9srM82OqZpkQ15G3EmtA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=KxPgcyZQ; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4g9xNV4mFbz2xm1;
+	Thu, 07 May 2026 12:42:02 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c20f::7" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778121722;
+	cv=pass; b=QIEpcfgKU0hwscDKWPiD8Xvzj6qkObfJ3zhdlaz9N/PVE89sCzQ8E8N7o3da6FnfPyRO17q9xUXR86NGRtdswqhCGf9QwomEzaK6/6i66fDrBAgPEdWTUN13V6LtJDoye3tYo4O1GcQWWUMqlgXbnbuK/pLXm4oQ2KRaK95S2G3YWgOhwTLez4g6TB2D2C1pxZo3IpJbWtEmq2M8UO4PindkbZl/0VviDQhkUGGYcX2KmxE+voVG4/JrDlPWLsjIkQtJcv6uy0ZPDgsk5wV92+sjmtL6n4LBABum8PuTgqgYkSFp3UAudauVSwnYpi1VWnbEBDQQx6X7w9eLrG77tQ==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1778121722; c=relaxed/relaxed;
+	bh=gTdJAAz9h9cp89iquOygpaohN+RrKF/eO812+hQBckw=;
+	h=From:To:CC:Subject:Date:Message-ID:References:In-Reply-To:
+	 Content-Type:MIME-Version; b=EWh1WOP47TctfBESquqRYYSBgIDGqsXfxbnmircMdQvCBGrAZzLCwbMv2u4zr94vcxc6W9xcfM/MjrsWwu5g8ANeU4tqWeMkKrtXO7OTpFqfYnYKNJN3T/33OzfRvmYXN0lI08c9OL6UGqyjHqvPMQf8ggaduFcg8atTmRvvEFFnrg+Kz4xVoXy08YoyBJomDAl+jCxdziYDFV5qfmHfo0SJbj63S9u0eb9vScvxbi0e3I0q09frPB0dVwRDENMX4q3r21cO4W1U8cQSJO8hfwLCGWczWRI5iC64r9xtsl8WLlxpjbS1YkEgmDK/AP7DieN7F1NUF1yl9qkXKAswvA==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com; dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=Zs3FgiHb; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c20f::7; helo=osppr02cu001.outbound.protection.outlook.com; envelope-from=wei.fang@nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=nxp.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=KxPgcyZQ;
+	dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=Zs3FgiHb;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=nxp.com (client-ip=2a01:111:f403:c20f::7; helo=osppr02cu001.outbound.protection.outlook.com; envelope-from=wei.fang@nxp.com; receiver=lists.ozlabs.org)
+Received: from OSPPR02CU001.outbound.protection.outlook.com (mail-norwayeastazlp170130007.outbound.protection.outlook.com [IPv6:2a01:111:f403:c20f::7])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4g9xMM3lhCz2xlm
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 07 May 2026 12:41:03 +1000 (AEST)
-Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6471MWl83769724;
-	Thu, 7 May 2026 02:40:51 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=U5VzgV
-	sOh7KJ44Pr3XlHOAiHMWRYvMItvzRoqCBAiNw=; b=KxPgcyZQs5E8p3Dd0i9kPK
-	zWcCoXiQW+SK/pq7ZMkwbEuuYxZIuADLZ+n2fwXELqWHQufRYsanCFFgT5+M70LW
-	cU7utZEh0UCb17TaFQM5ZIGFXzD3Auu+43Y/Giz+C3gjQ7ePQPUllvO6AI670s2D
-	3GwOq5sBBm7szxHU7OMdNu17CnuhPkb1L+UR7E7fEQVs5Xr4fUQ988aKAUzHFu0C
-	3U03vaz1kzEamDQW4UV4P3tW9jirvVue3asBBCTGXEz6GbZi7Satf6ARYyExjdwd
-	9oeT2uC5qvSkXZ65sEInQXoLuWmx+VBRKCQ0qPNT9syoKOGDmZyeXAM6sMuEwWHg
-	==
-Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4dw9w6k0ed-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 07 May 2026 02:40:50 +0000 (GMT)
-Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma22.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 6472dXY8021945;
-	Thu, 7 May 2026 02:40:50 GMT
-Received: from smtprelay03.wdc07v.mail.ibm.com ([172.16.1.70])
-	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4dwuyw97fy-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 07 May 2026 02:40:50 +0000 (GMT)
-Received: from smtpav02.dal12v.mail.ibm.com (smtpav02.dal12v.mail.ibm.com [10.241.53.101])
-	by smtprelay03.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6472eMiD21889688
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 7 May 2026 02:40:22 GMT
-Received: from smtpav02.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 8107D5805F;
-	Thu,  7 May 2026 02:40:49 +0000 (GMT)
-Received: from smtpav02.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 71F5D5805A;
-	Thu,  7 May 2026 02:40:38 +0000 (GMT)
-Received: from [9.43.90.101] (unknown [9.43.90.101])
-	by smtpav02.dal12v.mail.ibm.com (Postfix) with ESMTP;
-	Thu,  7 May 2026 02:40:37 +0000 (GMT)
-Message-ID: <0c06bc14-9459-44d5-9e28-b0b78c0fbe36@linux.ibm.com>
-Date: Thu, 7 May 2026 08:10:35 +0530
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4g9xNT2gfgz2xlm
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 07 May 2026 12:42:01 +1000 (AEST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=xDMtlPqjVAnuZdYoGAiv8v8htE3s31q2LTf2mBYDjVG84wAiOMJDhAcENYAY/TEtecE9oTUELzT4ehC/0IIeT4M2dEJ/6pyb1q5Qpos92q3ElkDpLnq5yrw55B+P2X009wsrSNkf7xQHwXKsdQ0wEiasFTMb1NVMDYjVDl31T/YGH/qpiv0LzIy0RElg2VSEudArZzLHc01w0l1Hjc+c5BtFSx3oKUaCz5yb3UmjKSG+YqcVZNR7DZJQqiPFvrgQlkTbKTBUPGZ6A0lcGS9hx5skkZ9FDrT6CAvRA1EdedZUoqCit8bsSp4FTcLDvSInh8gDD6BRELwhAuU+zkUseQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=gTdJAAz9h9cp89iquOygpaohN+RrKF/eO812+hQBckw=;
+ b=nGG7SSYVv6uK4sUuJuZjwwn//I4tDtpn1aBrUDxMHuJ8GYm1Y5wSNEj/r1O8GZz1h94fH2gBgLXR9NE8TB0JGYxrgbu9E1Z4vRYbO1C69Hf5LC25WVnZSOd6EG6oi4nNLKCFbDy3aZH2OqXqdiYGcMX9B2uVdFGkk14YR8KUKEj++XaFfky36w4FG15wmWfLKomMlQldquVXnLtkWZREf39Xj6veY05Dr3Dy9ilWKf821HzThpRYk/NLYtcZsPZkBIaEj7VglK8AK7MahLbdmFGEJyG0G+1dI5L69CUsfbGAfJY7wf1wdQ3BGQYUxEfvqEAg+SZJufuj528RpwcERg==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
+ header.d=nxp.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=gTdJAAz9h9cp89iquOygpaohN+RrKF/eO812+hQBckw=;
+ b=Zs3FgiHb/5bko7Di/AgWqoZumja1FKsI8KQKxVTHXaRrdNPWbPzSPgrpWYoW/7adVTO6xSM2pFUv7NZWpxW+d4wYfkkWqv0gqLSh7AkMSfSvEBYlqWrcliNcOcIckjr3JbvdEpyUm4p2BuUCK+kjL9YFcfsPhAe2Hp62j/7mJT2dKXlkFEMVirfOoLe3TdP8e0vLqT4fHj6WwV5oX0SFsgEN5tiNMXtpxfST3+3qqB6GeGndZYTUXO9WV82yUQ8H0AnF/ptrDNGse/xVNkTETnO5RbH/fhhhApIBMtLsQp9gOhyG92+L7Zmtj9a75KUrpeYR5LSOh4o6mynzbpVB7g==
+Received: from DBBPR04MB7500.eurprd04.prod.outlook.com (2603:10a6:10:1f4::16)
+ by DU4PR04MB11725.eurprd04.prod.outlook.com (2603:10a6:10:626::13) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9891.15; Thu, 7 May
+ 2026 02:41:31 +0000
+Received: from DBBPR04MB7500.eurprd04.prod.outlook.com
+ ([fe80::c291:543b:4bde:cee7]) by DBBPR04MB7500.eurprd04.prod.outlook.com
+ ([fe80::c291:543b:4bde:cee7%6]) with mapi id 15.20.9891.016; Thu, 7 May 2026
+ 02:41:31 +0000
+From: Wei Fang <wei.fang@nxp.com>
+To: Claudiu Manoil <claudiu.manoil@nxp.com>, Vladimir Oltean
+	<vladimir.oltean@nxp.com>, Clark Wang <xiaoning.wang@nxp.com>,
+	"andrew+netdev@lunn.ch" <andrew+netdev@lunn.ch>, "davem@davemloft.net"
+	<davem@davemloft.net>, "edumazet@google.com" <edumazet@google.com>,
+	"kuba@kernel.org" <kuba@kernel.org>, "pabeni@redhat.com" <pabeni@redhat.com>,
+	"robh@kernel.org" <robh@kernel.org>, "krzk+dt@kernel.org"
+	<krzk+dt@kernel.org>, "conor+dt@kernel.org" <conor+dt@kernel.org>,
+	"f.fainelli@gmail.com" <f.fainelli@gmail.com>, Frank Li <frank.li@nxp.com>,
+	"chleroy@kernel.org" <chleroy@kernel.org>, "horms@kernel.org"
+	<horms@kernel.org>, "linux@armlinux.org.uk" <linux@armlinux.org.uk>
+CC: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+	"devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+	"linux-arm-kernel@lists.infradead.org"
+	<linux-arm-kernel@lists.infradead.org>, "imx@lists.linux.dev"
+	<imx@lists.linux.dev>
+Subject: RE: [PATCH v5 net-next 14/15] net: dsa: netc: add support for the
+ standardized counters
+Thread-Topic: [PATCH v5 net-next 14/15] net: dsa: netc: add support for the
+ standardized counters
+Thread-Index: AQHc2Evqr/Y+KyRnR0mgO12vGrKs4LYB4XnQ
+Date: Thu, 7 May 2026 02:41:31 +0000
+Message-ID:
+ <DBBPR04MB75001C6850BFBCBD825E9D43883C2@DBBPR04MB7500.eurprd04.prod.outlook.com>
+References: <20260430024945.3413973-1-wei.fang@nxp.com>
+ <20260430024945.3413973-15-wei.fang@nxp.com>
+In-Reply-To: <20260430024945.3413973-15-wei.fang@nxp.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach:
+X-MS-TNEF-Correlator:
+authentication-results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=nxp.com;
+x-ms-publictraffictype: Email
+x-ms-traffictypediagnostic: DBBPR04MB7500:EE_|DU4PR04MB11725:EE_
+x-ms-office365-filtering-correlation-id: 4bf6fa01-7488-4a5c-eee2-08deabe225aa
+x-ms-exchange-senderadcheck: 1
+x-ms-exchange-antispam-relay: 0
+x-microsoft-antispam:
+ BCL:0;ARA:13230040|19092799006|366016|376014|7416014|1800799024|18002099003|921020|38070700021|22082099003|56012099003;
+x-microsoft-antispam-message-info:
+ E/Ih/PmfxRpfwuLcQZBEuRglRx46CSobrxt+ZRVUJJLK3RzC6iJFSEk4+tONJQH4y2OFksPl9Myi45rGA8Fuzk8mmSEp9igfLaRrquZmXCk1mbbn+Xt/hNlLnhfkEnl3BaSw76H95CkUeqoH6lDfFLZakNoOS8Enm2hqkm0bqIP7/mcI0vaNtkb0unacKqv+epebVEI4V/I+NeoDEnrxeRs2aWOfaB1jjXLkjR2SBo7J8oVwyJ+9zF7yMwBmv3DBmBSTKvRItsy7wCDTtOHrYf/PdJeLHLvlqSFccAXPXmS2RtixGKKf01aRwpwOeEeyAhOqPkz1RTPhnMA1gCFQnP4TfMscrEAbX4ExXRREaQWH2LAU2vmb5qukCcbZZEOCiJZzd+xsGqLJMjHoPIicqmJpPD9b0Cbf50CuX4yhlfaY695el92ImKJKRZUgy1BiG+VIHfTV/Wp8MU8H8TziwwiQVBntqDAiRSn2zPGyT7Dg7ckQBZcx0D2Arhp/MgiZXGkZJ5DF+LjNlVaEst2WxrVxExkAiI1b7SxCA2bN/mbSv4n/ouxp4xUWl26TQ9fJpd6UnIwec3ZtnRaxt3mceX8fUNIC0Bg2dsmCrfMw52btC+yK9504CRW9MMQzAjQSIv9HsOfD7gGl/zTDJuEXraKro9UA3NOYlx0Cwf7OqzzAyYjkPFocBnywLcqV5Hwex5G9q2XWR6wYbhf05TGVXApejxLC6b2JBu/IOiOvG7OLkU5Dkny2V3ZfKpE7XS3/eupjN/RbRuq0tpokhVQmFg==
+x-forefront-antispam-report:
+ CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DBBPR04MB7500.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(19092799006)(366016)(376014)(7416014)(1800799024)(18002099003)(921020)(38070700021)(22082099003)(56012099003);DIR:OUT;SFP:1101;
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0:
+ =?us-ascii?Q?p/lD97mwG/u0w4DbvZCbNBYzLvoR+UNzbQs7gs5djglkZD16fpFkfgt/g05O?=
+ =?us-ascii?Q?1v1WRT+9lPvYTZgAV/exJhmLTqV1hDXe1/DLe06SFU0T29c672h+DpsQc0IH?=
+ =?us-ascii?Q?4lS20bLB+HF2tcNjeWSMBI0Q524ASFiYmsDhiNJLWO8mjn42A6Rjf64Z5tIw?=
+ =?us-ascii?Q?0utYFdeUgRr/dO3xCRM6DC4oCe2CbCvLuDg71gHO9DoNe3DN5xvFXTwrlx7A?=
+ =?us-ascii?Q?o97La6rEkHVsDZMzRl4z8BZ0tSsqHXChNaw/h22R5LdXuv4aTAid5/uq/dMX?=
+ =?us-ascii?Q?zLC+bJuboY92fStl4cDnjNPWJ0x+mVeI+5YcjizBl/rhAm2Ih0byCgTs/nV0?=
+ =?us-ascii?Q?JG1y42mVka1C8Sj89UiuN4zXwDvxSYeNselmDzr71WbQin4ABY7xW4s6CUFl?=
+ =?us-ascii?Q?b4amY65U8lnms+Apkc4hvtn4Q8JS8ytP/RWE7FFGE6puqQgpUzYbO0snI1Is?=
+ =?us-ascii?Q?EGBjI/eYMPU7gdY26wHmpDtJr3fGyFe61OheGI6SssjsA0VMc1mxHo9wth5C?=
+ =?us-ascii?Q?PMdVVWFVPuQXms/iVvOGo1MPhGqwCdnJZyiCMCI4rkr/UWYKU4tAOR6zA847?=
+ =?us-ascii?Q?jeHWTCMOVIWtRp/+YzLv6hQHyi1aL8UOOLGi/3CCTwZT8OEaaf5HUSOFc01c?=
+ =?us-ascii?Q?xxjEM63M//+X29/Q64mmtcTejKhkx8QStGPeq5nzaK+AyRPtRe/XThvEVu3T?=
+ =?us-ascii?Q?vppMwh/fkKF3wc2BcKtywK+oqKQLUEOuf+wNKmxBEecRYcH86ue6M5lrUuL2?=
+ =?us-ascii?Q?HxO7Pa3D2VzsPb6aL9/iL0oyPpTDD1LXdsmRYLWQ86E5cZ7sEtI2Ku2cGiSF?=
+ =?us-ascii?Q?UjcbMYeG4eCmZdFARgc/8NOh4oZScruAYbQeFp0dw7pSHCHsWPU/4Dyv+mDA?=
+ =?us-ascii?Q?DmjPHL5tihLtI7AxIfCMTUQuDi7/wmO/YGKKDPNHbPbgn/8J59c5Vru8B3P9?=
+ =?us-ascii?Q?Nd/U2VhpS7lqSi/z7XeKWJkhhd6YfW0zXBMI5pUwUUpIcGB3rkXiHCj4Gnre?=
+ =?us-ascii?Q?jwVX8fhNVDV8+j4qv3/DDDwjigXrlxSxU46q07bw2aQSJeJConl+mzdS+5ik?=
+ =?us-ascii?Q?9LR2MpRmTPWFK64RBClk/XADuqHxQof69zriLnzOnMjJIbTKbhxZh3GQfUkl?=
+ =?us-ascii?Q?Yzvh1LuQBoPJ3uykCPUyyM2bACcMKGIXlzoRm0dJf34s7UivMPQFdjYZR6W7?=
+ =?us-ascii?Q?AOXMxpfefFnC2YT4amDptUHmmphSA2yxwX1Y/R3etOXRIoa4irQrN36WDC7t?=
+ =?us-ascii?Q?bB4pmWHOUPz7cG7lhJlqJPm+5pSXbznvZsmvivb+7ZF8RbFdzJQVkoq6Lu3t?=
+ =?us-ascii?Q?hU3hA5T3ARSdq5tH1kuI1Apv6ZuZS1eRM0ZcOm3KHWUeAbvfYE+8VcnYa4HV?=
+ =?us-ascii?Q?7PPySCwaMzs6NF6U6ENIuiEg52frfEnbMYsC8txXaw4ZOYMBeCRB5BNZOBux?=
+ =?us-ascii?Q?6fMtKsyvr6LCnsZmGd5rjHYjCloyiq2gwIdOoc//KfJOtqgT5C7X11syZp7O?=
+ =?us-ascii?Q?bG1tmAwoXORiwhdQ9TojuypCp/VAu6XTBFvXppnAyADIdbmyxxpxUVC2DcKV?=
+ =?us-ascii?Q?v/pxJvJxUF4pRAgSR5xG2rhvsVAiWUtdMM1jY3YblWPJ6QzrY57YnsDr7MhY?=
+ =?us-ascii?Q?5d9NjSLViw1gO1n0Ra+wT9njhfA1T0uAcRI2QXkbqN2NKOBCPuxSFPpdpb11?=
+ =?us-ascii?Q?TEu19u18BR0NksT2SU57G1sdotbOf/iFsWRitNcIAC5po9OJ?=
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -81,256 +144,67 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: powernv_rng_read: Oops: Kernel access of bad area, sig: 11 [#1]
-To: Paul Menzel <pmenzel@molgen.mpg.de>, Olivia Mackall <olivia@selenic.com>,
-        Herbert Xu <herbert@gondor.apana.org.au>,
-        Michael Ellerman <mpe@ellerman.id.au>
-Cc: linux-crypto@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-        LKML <linux-kernel@vger.kernel.org>
-References: <a159e81a-ccfd-440f-af68-6a56cca09cb2@molgen.mpg.de>
-Content-Language: en-US
-From: Madhavan Srinivasan <maddy@linux.ibm.com>
-In-Reply-To: <a159e81a-ccfd-440f-af68-6a56cca09cb2@molgen.mpg.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Authority-Analysis: v=2.4 cv=XPQAjwhE c=1 sm=1 tr=0 ts=69fbfbb2 cx=c_pps
- a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
- a=IkcTkHD0fZMA:10 a=NGcC8JguVDcA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=Y2IxJ9c9Rs8Kov3niI8_:22 a=VnNF1IyMAAAA:8
- a=fnPWOy_s-l-Ne9MUvmsA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
-X-Proofpoint-ORIG-GUID: 6Gb0D3i0IHOugLg_EnMdglSH6maFg_e2
-X-Proofpoint-GUID: 6Gb0D3i0IHOugLg_EnMdglSH6maFg_e2
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTA3MDAyNCBTYWx0ZWRfX0RscZMYeTmlx
- vtxqnFUygAQVRTRCOMEBNCmEIc+BtYObxz/Y4cja0ER4LqlM6y8eC4FgIkI1VbsBGY3d/8IcjbO
- 0VHcSgeWpmEbTjTpZqhBLKaFeJp0GUpnqRcJ0QVFdWA9iaiarsLJ2sir5JxpZ9oUrA3Q+k7hZzZ
- GZEXhc2ztt6mxH6vPQR3JSDQ7GFZu7xfptqOtKQ6ZkVL65dYVGnr5m1cPHs/3rDM4HQneNJo6Ng
- ihmAGUqnkDxaMqe6LqljMh9XNv8NO2cwJ+llYXb3mCfLsDvUioqXDWSNeD2Ut6aXj5+GLGIJZSr
- ygSsYMYK/jdEMyoVT9LnxIxQA+FfoLUufrtP2iBaJnnSrJhC4d+PPBMBnfqMh22xGVwUSaO0b1j
- lc6fYhl77P3ecImyNBqS072kvsImNhkqh++ODaggmaYkgEtKcwf2tVVNNxqyDC3NAbS/ArziTjm
- +J+o6ViIKuICkg2a8mQ==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-05-06_02,2026-05-06_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- bulkscore=0 lowpriorityscore=0 suspectscore=0 adultscore=0 spamscore=0
- priorityscore=1501 impostorscore=0 phishscore=0 malwarescore=0 clxscore=1011
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2604200000 definitions=main-2605070024
+X-OriginatorOrg: nxp.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: DBBPR04MB7500.eurprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 4bf6fa01-7488-4a5c-eee2-08deabe225aa
+X-MS-Exchange-CrossTenant-originalarrivaltime: 07 May 2026 02:41:31.6074
+ (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: +X6iLbjTO21IAyUXXnBYcF556ukUC86rEv4/EzuNqOrujBSKMk+QAxtcr4HJHnU6DItgXW7JCRRRlZSRxf9kjg==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DU4PR04MB11725
 
+> diff --git a/include/linux/fsl/netc_global.h b/include/linux/fsl/netc_glo=
+bal.h
+> index fdecca8c90f0..5b8ff528d369 100644
+> --- a/include/linux/fsl/netc_global.h
+> +++ b/include/linux/fsl/netc_global.h
+> @@ -5,6 +5,7 @@
+>  #define __NETC_GLOBAL_H
+>=20
+>  #include <linux/io.h>
+> +#include <linux/io-64-nonatomic-lo-hi.h>
+>=20
+>  static inline u32 netc_read(void __iomem *reg)
+>  {
+> @@ -16,4 +17,9 @@ static inline void netc_write(void __iomem *reg, u32 va=
+l)
+>  	iowrite32(val, reg);
+>  }
+>=20
+> +static inline u64 netc_read64(void __iomem *reg)
+> +{
+> +	return ioread64(reg);
+> +}
+> +
 
-On 5/6/26 7:31 PM, Paul Menzel wrote:
-> Dear Linux folks,
->
->
-> After a long while, on the 8335-GCA POWER8 (raw) 0x4d0200 
-> opal:skiboot-5.4.8-5787ad3 PowerNV, I built Linux from Linus’ master 
-> branch and rebooted via kexec.
->
-> ```
-> [    0.000000] Linux version 7.1.0-rc2+ 
-> (pmenzel@flughafenberlinbrandenburgwillybrandt.molgen.mpg.de) (gcc 
-> (Ubuntu 11.2.0-7ubuntu2) 11.2.0, GNU ld (GNU Binutils for Ubuntu) 
-> 2.37) #3 SMP PREEMPT Wed May  6 08:50:58 CEST 2026
-> […]
-> [   17.901992] Kernel attempted to read user page (0) - exploit 
-> attempt? (uid: 0)
-> [   17.902011] BUG: Kernel NULL pointer dereference on read at 0x00000000
-> [   17.902018] Faulting instruction address: 0xc0000000000e7138
-> [   17.902027] Oops: Kernel access of bad area, sig: 11 [#1]
-> [   17.902034] LE PAGE_SIZE=64K MMU=Hash  SMP NR_CPUS=2048 NUMA PowerNV
-> [   17.902045] Modules linked in: powernv_rng(+) bnx2x ofpart 
-> ibmpowernv bfq mdio cmdlinepart powernv_flash ipmi_powernv 
-> ipmi_devintf mtd ipmi_msghandler at24(+) vmx_crypto opal_prd 
-> sch_fq_codel nfsd parport_pc ppdev auth_rpcgss nfs_acl lp lockd grace 
-> parport sunrpc autofs4 btrfs xor libblake2b raid6_pq ast 
-> drm_shmem_helper drm_client_lib i2c_algo_bit drm_kms_helper drm ahci 
-> drm_panel_orientation_quirks libahci
-> [   17.902185] CPU: 147 UID: 0 PID: 2626 Comm: hwrng Not tainted 
-> 7.1.0-rc2+ #3 PREEMPTLAZY
-> [   17.902197] Hardware name: 8335-GCA POWER8 (raw) 0x4d0200 
-> opal:skiboot-5.4.8-5787ad3 PowerNV
-> [   17.902204] NIP:  c0000000000e7138 LR: c00800001ec8013c CTR: 
-> c0000000000e70fc
-> [   17.902212] REGS: c000000092913c50 TRAP: 0300   Not tainted 
-> (7.1.0-rc2+)
-> [   17.902222] MSR:  900000000280b033 
-> <SF,HV,VEC,VSX,EE,FP,ME,IR,DR,RI,LE>  CR: 44420220  XER: 20000000
-> [   17.902269] CFAR: c00800001ec8026c DAR: 0000000000000000 DSISR: 
-> 40000000 IRQMASK: 0
->                GPR00: c00800001ec8013c c000000092913ef0 
-> c000000001c18100 c00000002222d900
->                GPR04: c00000002222d900 0000000000000080 
-> 0000000000000001 0000000000000000
->                GPR08: 0000000000000000 c000000002212000 
-> c0000000951e1780 c00800001ec80258
->                GPR12: c0000000000e70fc c00000ffff6fd700 
-> c0000000001d11c0 c00000001b99b9c0
->                GPR16: 0000000000000000 0000000000000000 
-> 0000000000000000 0000000000000000
->                GPR20: 0000000000000000 0000000000000000 
-> 0000000000000000 0000000000000000
->                GPR24: 0000000000000000 c000000002fe6a58 
-> 0000000000000000 0000000000000000
->                GPR28: c000000002fe6a20 0000000000000010 
-> 000000000000000f c00000002222d900
-> [   17.902406] NIP [c0000000000e7138] pnv_get_random_long+0x3c/0x114
-> [   17.902426] LR [c00800001ec8013c] powernv_rng_read+0x78/0xc4 
-> [powernv_rng]
-> [   17.902444] Call Trace:
-> [   17.902448] [c000000092913ef0] [c000000092913f30] 
-> 0xc000000092913f30 (unreliable)
-> [   17.902463] [c000000092913f30] [c000000000decd58] 
-> hwrng_fillfn+0xd4/0x3dc
-> [   17.902484] [c000000092913f90] [c0000000001d1328] kthread+0x170/0x1a4
-> [   17.902498] [c000000092913fe0] [c00000000000d030] 
-> start_kernel_thread+0x14/0x18
-> [   17.902513] Code: 60000000 7d2000a6 71290010 418200bc e94d0908 
-> 812a0000 39290001 912a0000 e90d0030 3d220060 39299f00 7d08482a 
-> <e9280000> 7c0004ac e8e90000 0c070000
-> [   17.902569] ---[ end trace 0000000000000000 ]---
-> [   18.008801] pstore: backend (nvram) writing error (-1)
->
-> [   18.015458] note: hwrng[2626] exited with irqs disabled
-> [   18.015483] note: hwrng[2626] exited with preempt_count 1
-> ```
->
-> Please find the output of `dmesg` attached.
+Sashiko says:
 
-This is from my yesterday's  boot test log in my P8, did not see this fail.
+Will this cause a build failure on 32-bit architectures? I noticed
+ioread64() is used here, but it is strictly gated behind #ifdef CONFIG_64BI=
+T
+in include/asm-generic/io.h. Even though linux/io-64-nonatomic-lo-hi.h is
+included above, ioread64() isn't provided by that header.
 
-root@ltcppm1:~# uname -a
-Linux ltcppm1.ltc.tadn.ibm.com 7.1.0-rc2-00021-gf583bd5f64d4 #1 SMP 
-PREEMPT Wed May  6 00:55:45 EDT 2026 ppc64le GNU/Linux
-root@ltcppm1:~# dmesg
-[    0.000000] [      T0] random: crng init done
-[    0.000000] [      T0] hash-mmu: Page sizes from device-tree:
-[    0.000000] [      T0] hash-mmu: base_shift=12: shift=12, 
-sllp=0x0000, avpnm=0x00000000, tlbiel=1, penc=0
-[    0.000000] [      T0] hash-mmu: base_shift=12: shift=16, 
-sllp=0x0000, avpnm=0x00000000, tlbiel=1, penc=7
-[    0.000000] [      T0] hash-mmu: base_shift=12: shift=24, 
-sllp=0x0000, avpnm=0x00000000, tlbiel=1, penc=56
-[    0.000000] [      T0] hash-mmu: base_shift=16: shift=16, 
-sllp=0x0110, avpnm=0x00000000, tlbiel=1, penc=1
-[    0.000000] [      T0] hash-mmu: base_shift=16: shift=24, 
-sllp=0x0110, avpnm=0x00000000, tlbiel=1, penc=8
-[    0.000000] [      T0] hash-mmu: base_shift=24: shift=24, 
-sllp=0x0100, avpnm=0x00000001, tlbiel=0, penc=0
-[    0.000000] [      T0] hash-mmu: base_shift=34: shift=34, 
-sllp=0x0120, avpnm=0x000007ff, tlbiel=0, penc=3
-[    0.000000] [      T0] Enabling pkeys with max key count 32
-[    0.000000] [      T0] Activating Kernel Userspace Access Prevention
-[    0.000000] [      T0] Activating Kernel Userspace Execution Prevention
-[    0.000000] [      T0] hash-mmu: Page orders: linear mapping = 24, 
-virtual = 16, io = 16, vmemmap = 24
-[    0.000000] [      T0] hash-mmu: Using 1TB segments
-[    0.000000] [      T0] hash-mmu: Initializing hash mmu with SLB
-[    0.000000] [      T0] Linux version 7.1.0-rc2-00021-gf583bd5f64d4 
-(root@ltcppm1.ltc.tadn.ibm.com) (gcc (GCC) 16.1.1 20260501 (Red Hat 
-16.1.1-1), GNU ld version 2.46-1.fc44) #1 SMP PREEMPT Wed May  6 
-00:55:45 EDT 2026
-[    0.000000] [      T0] OF: reserved mem: 
-0x0000000039c00000..0x000000003b6801ff (27136 KiB) map non-reusable 
-ibm,firmware-allocs-memory@39c00000
-[    0.000000] [      T0] OF: reserved mem: 
-0x0000000800000000..0x0000000800e801ff (14848 KiB) map non-reusable 
-ibm,firmware-allocs-memory@800000000
-[    0.000000] [      T0] OF: reserved mem: 
-0x0000001000000000..0x0000001000dc01ff (14080 KiB) map non-reusable 
-ibm,firmware-allocs-memory@1000000000
-[    0.000000] [      T0] OF: reserved mem: 
-0x0000001800000000..0x0000001800e801ff (14848 KiB) map non-reusable 
-ibm,firmware-allocs-memory@1800000000
-[    0.000000] [      T0] OF: reserved mem: 
-0x0000000030000000..0x00000000302fffff (3072 KiB) map non-reusable 
-ibm,firmware-code@30000000
-[    0.000000] [      T0] OF: reserved mem: 
-0x0000000031000000..0x0000000031bfffff (12288 KiB) map non-reusable 
-ibm,firmware-data@31000000
-[    0.000000] [      T0] OF: reserved mem: 
-0x0000000030300000..0x0000000030ffffff (13312 KiB) map non-reusable 
-ibm,firmware-heap@30300000
-[    0.000000] [      T0] OF: reserved mem: 
-0x0000000031c00000..0x0000000033fdffff (36736 KiB) map non-reusable 
-ibm,firmware-stacks@31c00000
-[    0.000000] [      T0] OF: reserved mem: 
-0x0000001ffd510000..0x0000001ffd69ffff (1600 KiB) map non-reusable 
-ibm,hbrt-code-image@1ffd510000
-[    0.000000] [      T0] OF: reserved mem: 
-0x0000001ffd6a0000..0x0000001ffd6fffff (384 KiB) map non-reusable 
-ibm,hbrt-target-image@1ffd6a0000
-[    0.000000] [      T0] OF: reserved mem: 
-0x0000001ffd700000..0x0000001ffd7fffff (1024 KiB) map non-reusable 
-ibm,hbrt-vpd-image@1ffd700000
-[    0.000000] [      T0] OF: reserved mem: 
-0x0000001ffda00000..0x0000001ffdafffff (1024 KiB) map non-reusable 
-ibm,slw-image@1ffda00000
-[    0.000000] [      T0] OF: reserved mem: 
-0x0000001ffde00000..0x0000001ffdefffff (1024 KiB) map non-reusable 
-ibm,slw-image@1ffde00000
-[    0.000000] [      T0] OF: reserved mem: 
-0x0000001ffe200000..0x0000001ffe2fffff (1024 KiB) map non-reusable 
-ibm,slw-image@1ffe200000
-[    0.000000] [      T0] OF: reserved mem: 
-0x0000001ffe600000..0x0000001ffe6fffff (1024 KiB) map non-reusable 
-ibm,slw-image@1ffe600000
-[    0.000000] [      T0] Found initrd at 
-0xc000000006a40000:0xc00000000815ae9e
-[    0.000000] [      T0] Hardware name: 8247-22L POWER8E (raw) 0x4b0201 
-opal:skiboot-v5.4.12 PowerNV
-[    0.000000] [      T0] printk: legacy bootconsole [udbg0] enabled
-[    0.000000] [      T0] CPU maps initialized for 8 threads per core
-[    0.000000] [      T0]  (thread shift is 3)But I my opal version 5.4.12.
+If this is updated to use readq() to fix the 32-bit build, could it lead to
+torn reads? On 32-bit systems, readq() falls back to lo_hi_readq(), which
+reads the lower 32 bits and then the upper 32 bits sequentially.=20
 
-Thanks for reporting the issue, will have an look at it.
+Since these are live, continuously incrementing hardware counters, a wrap o=
+f
+the lower 32 bits between reads could result in a spurious counter spike of
+~4.29 billion. Would it be safer to use a read-high, read-low, read-high
+retry loop to ensure atomicity on 32-bit architectures?
 
+First, if CONFIG_64BIT is not selected, then ioread64() is provided by
+linux/io-64-nonatomic-lo-hi.h. Sashiko mistakenly believed that
+linux/io-64-nonatomic-lo-hi.h did not provide ioread64().
 
-[    0.000000] [      T0] Allocated 4608 bytes for 160 pacas
-[    0.000000] [      T0] 
------------------------------------------------------
+i.MX9x and S32N7 and subsequent SoCs are all arm64 architectures,
+netc_read64() is used to read 64-bit registers of NETC.
 
-.......
+So this is a false positive.
 
-[   37.407674] [    T900] audit: type=1130 audit(1778043621.931:10): 
-pid=1 uid=0 auid=4294967295 ses=4294967295 msg='unit=lvm2-monitor 
-comm="systemd" exe="/usr/lib/systemd/systemd" hostname=? addr=? 
-terminal=? res=success'
-[   37.413015] [    T900] audit: type=1130 audit(1778043621.937:11): 
-pid=1 uid=0 auid=4294967295 ses=4294967295 msg='unit=systemd-sysctl 
-comm="systemd" exe="/usr/lib/systemd/systemd" hostname=? addr=? 
-terminal=? res=success'
-[   38.448156] [   T2286] powernv_rng: Registered powernv hwrng.
-[   38.575227] [   T2264] tg3 0005:09:00.1 enP5p9s0f1: renamed from eth1
-[   38.582176] [   T2223] tg3 0005:09:00.2 enP5p9s0f2: renamed from eth2
-........
-
-////cpuinfo output
-
-processor    : 159
-
-cpu        : POWER8E (raw), altivec supported
-clock        : 2061.000000MHz
-revision    : 2.1 (pvr 004b 0201)
-
-timebase    : 512000000
-platform    : PowerNV
-model        : 8247-22L
-machine        : PowerNV 8247-22L
-firmware    : OPAL
-MMU        : Hash
-
-
-But my system opal version 5.4.12.
-Thanks for reporting the issue, will have an look at it.
-
-Maddy
-
-
->
->
-> Kind regards,
->
-> Paul
 
