@@ -1,73 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-20549-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20550-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7C299CD3427
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 May 2026 04:13:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 32052CD342C
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 May 2026 04:16:13 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4g9zPW72HBz2yrD;
-	Thu, 07 May 2026 14:13:03 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778127183;
-	cv=none; b=fZSSdjMFGk8hAlQah/Z0rvHTKuMc+mFtDHypEaWd/o4D3CCdqk5NEALcz7BBd2qJzuBbQL/JPmNgJr/IDmv/4pENxZB9TMZsfGL61Yuzwr6uV2RzdGM+hMdq7tIkHHO68CuVhxA68r3JsF7aPOkzjbbt3QAvnTAKksslRoInzC90SWhJ77Ghc8Y7RGzHaRpkR5z2mECwh5GJT3rTTeMu5o4lt0ZsFcIvi1pBixMgEo8ajluSSnWV8MCj+rslY7zTYuQZD8RMzyHJMVesNW+s+6CbP22sU80nuY1HlJqAcrI00qtzmPL0S6Gy6SXpVL2fnt6Vjt1iyRvYoPTxg+4wiA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4g9zT75c6jz2yrD;
+	Thu, 07 May 2026 14:16:11 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778127371;
+	cv=none; b=IrCs6eGarYhNVt6zuu+rXkyhwdqJsicMbl28UzUmSPlehAQ2YCBrZxai+PQfVww5D8yI6ZnKHwSBNBFQEi9IfcwPaCf1xckZS1YegPvOV25LgChU7Mxq4twYlsKRfaPaKR60nifsBHaell3x0l50r7m4rLQesHNdUVwuwMBnc0/qwnjbTJJ7Hr2GOGpYkZZrzN4lUGvCOrrhXNJERbnJGSBodIU386zyMxkm8hER7wuk2lBCo8NMauMUoOVh12VQxEjgTVNMZ5QFjTYkJ90GZ/oJ1y56pw5ew7/lIXhqDvW54f8E7F5gBYZ8p+797+gnyba92nA9rB2dBH6nz6CmGA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1778127183; c=relaxed/relaxed;
-	bh=7B3DbYWNPoXFy3w37BRL5KJZgewyDYufre5dH/Hqrl0=;
+	t=1778127371; c=relaxed/relaxed;
+	bh=wwEL7Rmv29TE336O9VGxP41xRd1jP2eVaTq0SDkZBUA=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=lRE2LBO2tKIE7Xq1cIL28iZNpgsuRn3RwUfNGMEB3hWHvgwxv4mCN63Ibz3Lzrev0JpgCBecYbEZpbb4E4CMzPMNUi1gfLWqgeXSDYtfvfDur7K0HrrubJC+3RArC1kNPLv04ItJuO9X42gIi+nbFAKRABiQfAwaGSDewshAB/Ku+5KWAoKJGoqDEW1wcUWqRz96wefjSHMzmbQ5BG5M4mlgYKkcrYqSDrwR2lomh5CeWlkRAIcxUPmrm541l8lEzw9acJVVTNF9MS84j3hyEA1oP+3hI9PkKPnShFWmlDmCfJVts4qQe8KP2I0zNf+TX7EcS2zD4H1aDCMD0lBefQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=FHcxbp83; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=tyreld@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	 In-Reply-To:Content-Type; b=NRiaQnOhxIbmiEeWdYQEIm2nByVHF0FmQBoXWKo8dcZvSeiNEA4GUDE5CGd7/LuJiTBudx05PQicUVN90DVRpct8fj8XYJR053pNa1mD9SA8vY4TBMpQqQn6MVYu4PpFnw+VBXD+3GWlvcphAX6U7NjEWVrkXGQv1hJtvUAo15LmaIy2Zpw896MEy5wtavdhYvJXuaGVJNNnfyhr1xIMUr8X81LmtCy9f7ta2LZMwIu0Y402gC01QN1eIkbexpigYVVBOr/xREIGdC8Rnc1MxVzRXN6NzYBLDYhlm9mhDdCy1hnD6jAor3NAdA/geCu+TKjbvivkjyEKJYv4pfmMVA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=BpkBbzdW; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=FHcxbp83;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=BpkBbzdW;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=tyreld@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4g9zPW07Xwz2xlm
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 07 May 2026 14:13:02 +1000 (AEST)
-Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 646MeBRq3352136;
-	Thu, 7 May 2026 04:12:52 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4g9zT65j2wz2xlm
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 07 May 2026 14:16:10 +1000 (AEST)
+Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 646K1qZF2235166;
+	Thu, 7 May 2026 04:16:01 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
 	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=7B3DbY
-	WNPoXFy3w37BRL5KJZgewyDYufre5dH/Hqrl0=; b=FHcxbp83vOFdr17wTi06EX
-	g8MgdO04ThtLSucGG8pukfdRwafDiH/IURdgDXyxn6EYHhHgr0wZTiPdz/0iRhvF
-	cKZjiVLl7jvl3UQ2jsmGpGoT4c8fynJvKkpydb7N1Nx/ZxSy9gXLC4Bizt+JQVO3
-	3tr8fMKsIAaos+jK/wgJy1EVrrnOBjVNK3ctN+IKjYF8IsV1PgZNpdqZAbJlgiY4
-	iFJ9SfIkKf79hiGlaGwgBjNtT+ReK3kLQ7tUtv6zRYGQcIVHPN8fZpYyI/iDIPS9
-	e160WN+dYe0jhXYac1abMA4zRq2Ym++h6QSDRrlzz9WOEtLOXxXrSnSN4PsAn8qQ
+	:message-id:mime-version:references:subject:to; s=pp1; bh=wwEL7R
+	mv29TE336O9VGxP41xRd1jP2eVaTq0SDkZBUA=; b=BpkBbzdW05D8nNi2gVEl4Y
+	u9CIfEbjz+bT5cMX2xm0CYx+KMOlLufGmGbUCDTKG+OXc0FGD0SRLy8Kh756sE88
+	/MmkwfxmJDb0DS187wjn2QqQVmyugLLc+RPzLQ+v8QW1aV6MN5EO79mbyGYh9844
+	5+7G/rSmDVlXrtI09fGSSsdrY928OEDDoJqMl9p47+GSsN7oQWH1Cs7NdOD9vUZH
+	ieetQZWGGpnHZZm1MiaUByKb5/DXz/tCcLCa4PXnCdJZclzeK0tMLPWJfrqhuEW2
+	wtDdtmfx8PJ8gnJB6RvgfPPwV61X3x70deXdAne5JbfNZErShBBH1b6cFIbiCR5g
 	==
-Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4dw9xxu6hm-1
+Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4dw9y1m3q3-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 07 May 2026 04:12:51 +0000 (GMT)
-Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma23.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 64749SFM029195;
-	Thu, 7 May 2026 04:12:50 GMT
-Received: from smtprelay05.dal12v.mail.ibm.com ([172.16.1.7])
-	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4dww3h9b1m-1
+	Thu, 07 May 2026 04:16:00 +0000 (GMT)
+Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma21.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 64749Y1N019644;
+	Thu, 7 May 2026 04:15:59 GMT
+Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
+	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4dwvkk1cv2-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 07 May 2026 04:12:50 +0000 (GMT)
-Received: from smtpav05.dal12v.mail.ibm.com (smtpav05.dal12v.mail.ibm.com [10.241.53.104])
-	by smtprelay05.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6474Cnvl32703180
+	Thu, 07 May 2026 04:15:59 +0000 (GMT)
+Received: from smtpav06.fra02v.mail.ibm.com (smtpav06.fra02v.mail.ibm.com [10.20.54.105])
+	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6474FvaC51970490
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 7 May 2026 04:12:49 GMT
-Received: from smtpav05.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 9CA6F58052;
-	Thu,  7 May 2026 04:12:49 +0000 (GMT)
-Received: from smtpav05.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id DAA575805D;
-	Thu,  7 May 2026 04:12:48 +0000 (GMT)
-Received: from [9.61.92.155] (unknown [9.61.92.155])
-	by smtpav05.dal12v.mail.ibm.com (Postfix) with ESMTP;
-	Thu,  7 May 2026 04:12:48 +0000 (GMT)
-Message-ID: <291e79ea-d993-45e4-877e-4c25336c3076@linux.ibm.com>
-Date: Wed, 6 May 2026 21:12:48 -0700
+	Thu, 7 May 2026 04:15:57 GMT
+Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 47AB520049;
+	Thu,  7 May 2026 04:15:57 +0000 (GMT)
+Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 0497120040;
+	Thu,  7 May 2026 04:15:55 +0000 (GMT)
+Received: from [9.39.23.70] (unknown [9.39.23.70])
+	by smtpav06.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Thu,  7 May 2026 04:15:54 +0000 (GMT)
+Message-ID: <a582e27b-fb51-473a-802c-6ffb83e7ce63@linux.ibm.com>
+Date: Thu, 7 May 2026 09:45:53 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -82,230 +82,216 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 1/5] ibmvfc: add basic FPIN support
-To: davemarq@linux.ibm.com,
-        "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
-        "Martin K. Petersen" <martin.petersen@oracle.com>,
-        Madhavan Srinivasan <maddy@linux.ibm.com>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        Nicholas Piggin <npiggin@gmail.com>,
-        "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-        linuxppc-dev@lists.ozlabs.org, Brian King <brking@linux.ibm.com>,
-        Greg Joyce <gjoyce@linux.ibm.com>,
-        Kyle Mahlkuch <kmahlkuc@linux.ibm.com>
-References: <20260408-ibmvfc-fpin-support-v1-0-52b06c464e03@linux.ibm.com>
- <20260408-ibmvfc-fpin-support-v1-1-52b06c464e03@linux.ibm.com>
+Subject: Re: [PATCH v3] powerpc/fadump: Add timeout to RTAS busy-wait loops
+To: Adriano Vero <adri.vero.dev@gmail.com>, maddy@linux.ibm.com,
+        mpe@ellerman.id.au
+Cc: npiggin@gmail.com, chleroy@kernel.org, linuxppc-dev@lists.ozlabs.org,
+        linux-kernel@vger.kernel.org
+References: <20260419065039.23495-1-adri.vero.dev@gmail.com>
+ <20260506222024.30352-1-adri.vero.dev@gmail.com>
 Content-Language: en-US
-From: Tyrel Datwyler <tyreld@linux.ibm.com>
-In-Reply-To: <20260408-ibmvfc-fpin-support-v1-1-52b06c464e03@linux.ibm.com>
-Content-Type: text/plain; charset=UTF-8
+From: Sourabh Jain <sourabhjain@linux.ibm.com>
+In-Reply-To: <20260506222024.30352-1-adri.vero.dev@gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 X-TM-AS-GCONF: 00
 X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTA3MDAzNyBTYWx0ZWRfX1vur6aE3kJrb
- kgEFBDuPqKP4HB1IBH0bjjX4CcSPhZ4BJHz4BIOzGg0LEP7zQiSU7aDt8n7QbHVKZ1Am1yB42rn
- gU6gWyahZyskatjsOv/TC2Sxun/8X0wIKEBlyLeT8DxXaut0FM7+6P/WdxfIWJ//kXnbZT5Ysyv
- MB3M909ijFwT5xSuGFAG5rjilb8bsJkyQxby3FvezNuzw3L+e/Aq5vMJW8wpNs6GVoFddZkvxe7
- zuAmiI/QYtI5CtSwKQboHjYDPeMmyhpIlIljPZI6axMGwXMllnzPq6ZV/qPXlpdcDAAvFDaTb9K
- 3xJJp4Jc9MGY2TWmnJ4Qxzpq8hwi0H06uYny/gOAXMh6RrgtO7mxLcUbzhz3a55JSqzrrHM1KUv
- YnndJJI7X7c/mw6pbPXULobLZZ6X6b100s/QC8D/XW+twBZzGRxbZfu9Yhd67TAb1Ew3gwe/qsW
- TKQPCd58gPo5ysvsyBw==
-X-Proofpoint-ORIG-GUID: 4HWgafBYg7Nj5wNM11XgzD3ejXPBtzu1
-X-Proofpoint-GUID: royV7bcXZ64_bUMNXxvc37s8R40m6mNA
-X-Authority-Analysis: v=2.4 cv=ctWrVV4i c=1 sm=1 tr=0 ts=69fc1143 cx=c_pps
- a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
+X-Proofpoint-ORIG-GUID: Ho0tM30KDKkwUpsgHa5Hr2MX9wnHY-4K
+X-Proofpoint-GUID: NimJqW55oNkagq6F5PYdkq-Juda9dKbp
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTA3MDAzNyBTYWx0ZWRfX0Xv4gQIJHsqY
+ IkMUZkEM387ZlItyXd25CC04CO/e0pe9/dQrK0/v/s2jlpI5VznX//6jnQypviavtO8PQtk7k0L
+ 0W7CRggMRsUVcpMRsKTcM5FKTKvap3VjX6SrTRI55V4e8fp89ONKoS2wpJv7+oUO3kfjD/A4uqW
+ titXpiOL+kElBbSOidNcxaH+qeVGaA17+gLea8/6v4HM2ChDU6kjNzpN4Mfhy3WSSXUKpz6wcWk
+ ongWCmVTa2KySsQWLZnUQq08CUfN860uO1q3NyC8r2esBFhE28cPjDyBu9X6J6/Et4hQ9lKHTZ7
+ ueMtxr/5mQKHaOnyuBUwdhIQfn0rBAu+e8mL3r7V+nnVrRE8p5wfERPx+zWxeiBPsY9/IjYU7B0
+ y/PHMjpaiNB8FXiG4vOwOyo1deLHaTsNWR+vhv8de4IyxHM9urmFaS8O0wPBs5xeS0cUbK0G73g
+ 17jlJ0PSSic/plSsGqw==
+X-Authority-Analysis: v=2.4 cv=UbFhjqSN c=1 sm=1 tr=0 ts=69fc1200 cx=c_pps
+ a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
  a=IkcTkHD0fZMA:10 a=NGcC8JguVDcA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=V8glGbnc2Ofi9Qvn3v5h:22 a=VwQbUJbxAAAA:8
- a=VnNF1IyMAAAA:8 a=1ZkcIFJ3KA0uR8dLXY0A:9 a=QEXdDO2ut3YA:10
+ a=RnoormkPH1_aCDwRdu11:22 a=U7nrCbtTmkRpXpFmAIza:22 a=VwQbUJbxAAAA:8
+ a=VnNF1IyMAAAA:8 a=pGLkceISAAAA:8 a=ntDPK0L32HZQNU6beJgA:9 a=QEXdDO2ut3YA:10
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
  definitions=2026-05-06_02,2026-05-06_01,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501 lowpriorityscore=0 adultscore=0 clxscore=1011
- suspectscore=0 impostorscore=0 spamscore=0 malwarescore=0 phishscore=0
- bulkscore=0 classifier=typeunknown authscore=0 authtc= authcc= route=outbound
- adjust=0 reason=mlx scancount=1 engine=8.22.0-2604200000
- definitions=main-2605070037
+ clxscore=1015 spamscore=0 lowpriorityscore=0 malwarescore=0 suspectscore=0
+ adultscore=0 priorityscore=1501 bulkscore=0 phishscore=0 impostorscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2604200000 definitions=main-2605070037
 
-On 4/8/26 10:07 AM, Dave Marquardt via B4 Relay wrote:
-> From: Dave Marquardt <davemarq@linux.ibm.com>
-> 
-> - Add FPIN event descriptor
-> - Add congestion cleared status
-> - Add code to handle basic FPIN async event
-> - Add KUnit tests
+Hello Adriano,
 
-You need a more detailed description of your changes here for the commit log body.
+On 07/05/26 03:50, Adriano Vero wrote:
+> The ibm,configure-kernel-dump RTAS call sites in
+> rtas_fadump_register(), rtas_fadump_unregister(), and
+> rtas_fadump_invalidate() polled indefinitely while firmware returned
+> a busy status. A misbehaving or hung firmware could stall these paths
+> forever, blocking fadump registration at boot or preventing clean
+> teardown.
+>
+> Introduce rtas_fadump_call(), a helper that wraps the common
+> busy-wait pattern shared by all three sites. The helper accumulates
+> the total delay and returns -ETIMEDOUT if firmware keeps returning a
+> busy status beyond RTAS_FADUMP_MAX_WAIT_MS (60 seconds). A pr_debug()
+> message is emitted on each busy iteration to aid diagnosis when the
+> timeout is hit.
+>
+> Signed-off-by: Adriano Vero <adri.vero.dev@gmail.com>
+>
+> Reviewed-by: Sourabh Jain <sourabhjain@linux.ibm.com>
 
-You will also need a signed off tag from yourself for this to even be merged.
+New line between tags is unnecessary.
 
-https://www.kernel.org/doc/html/latest/process/submitting-patches.html
+Including a Changelog in subsequent versions of the same patch is
+helpful for the maintainer and reviewers to understand what has changed
+in this version compared to the previous version.
+
+For example:
+https://lore.kernel.org/all/20260407124349.1698552-1-sourabhjain@linux.ibm.com/
+
+Thanks,
+Sourabh Jain
 
 > ---
->  drivers/scsi/Kconfig                 |  10 ++
->  drivers/scsi/ibmvscsi/Makefile       |   1 +
->  drivers/scsi/ibmvscsi/ibmvfc.c       | 189 ++++++++++++++++++++++++++++++++++-
->  drivers/scsi/ibmvscsi/ibmvfc.h       |   9 ++
->  drivers/scsi/ibmvscsi/ibmvfc_kunit.c |  95 ++++++++++++++++++
->  5 files changed, 302 insertions(+), 2 deletions(-)
-
-<snip>
-
-> +static struct fc_els_fpin *
-> +ibmvfc_common_fpin_to_desc(u8 fpin_status, __be64 wwpn, __be16 modifier,
-> +			   __be32 period, __be32 threshold, __be32 event_count)
-> +{
-> +	struct fc_fn_peer_congn_desc *pdesc;
-> +	struct fc_fn_congn_desc *cdesc;
-> +	struct fc_fn_li_desc *ldesc;
-> +	struct fc_els_fpin *fpin;
-> +	size_t size;
-> +
-> +	size = ibmvfc_fpin_size_helper(fpin_status);
-> +	if (size == 0)
-> +		return NULL;
-> +
-> +	fpin = kzalloc(size, GFP_KERNEL);
-
-This appears to be called by ibmvfc_handle_async() with runs in atomic context
-and cannot therefore sleep. This allocation needs to be GFP_ATOMIC. Although
-there is another issue below that might make this moot.
-
-> +	if (fpin == NULL)
-> +		return NULL;
-> +
-> +	fpin->fpin_cmd = ELS_FPIN;
-> +
-> +	switch (fpin_status) {
-> +	case IBMVFC_AE_FPIN_CONGESTION_CLEARED:
-> +	case IBMVFC_AE_FPIN_LINK_CONGESTED:
-> +		fpin->desc_len = cpu_to_be32(sizeof(struct fc_fn_congn_desc));
-> +		cdesc = (struct fc_fn_congn_desc *)fpin->fpin_desc;
-> +		cdesc->desc_tag = cpu_to_be32(ELS_DTAG_CONGESTION);
-> +		cdesc->desc_len = cpu_to_be32(FC_TLV_DESC_LENGTH_FROM_SZ(*cdesc));
-> +		if (fpin_status == IBMVFC_AE_FPIN_CONGESTION_CLEARED)
-> +			cdesc->event_type = cpu_to_be16(FPIN_CONGN_CLEAR);
-> +		else
-> +			cdesc->event_type = cpu_to_be16(FPIN_CONGN_DEVICE_SPEC);
-> +		cdesc->event_modifier = modifier;
-> +		cdesc->event_period = period;
-> +		cdesc->severity = FPIN_CONGN_SEVERITY_WARNING;
-> +		break;
-> +	case IBMVFC_AE_FPIN_PORT_CONGESTED:
-> +	case IBMVFC_AE_FPIN_PORT_CLEARED:
-> +		fpin->desc_len = cpu_to_be32(sizeof(struct fc_fn_peer_congn_desc));
-> +		pdesc = (struct fc_fn_peer_congn_desc *)fpin->fpin_desc;
-> +		pdesc->desc_tag = cpu_to_be32(ELS_DTAG_PEER_CONGEST);
-> +		pdesc->desc_len = cpu_to_be32(FC_TLV_DESC_LENGTH_FROM_SZ(*pdesc));
-> +		if (fpin_status == IBMVFC_AE_FPIN_PORT_CLEARED)
-> +			pdesc->event_type = cpu_to_be16(FPIN_CONGN_CLEAR);
-> +		else
-> +			pdesc->event_type = cpu_to_be16(FPIN_CONGN_DEVICE_SPEC);
-> +		pdesc->event_modifier = modifier;
-> +		pdesc->event_period = period;
-> +		pdesc->detecting_wwpn = cpu_to_be64(0);
-> +		pdesc->attached_wwpn = wwpn;
-> +		pdesc->pname_count = cpu_to_be32(1);
-> +		pdesc->pname_list[0] = wwpn;
-> +		break;
-> +	case IBMVFC_AE_FPIN_PORT_DEGRADED:
-> +		fpin->desc_len = cpu_to_be32(sizeof(struct fc_fn_li_desc));
-> +		ldesc = (struct fc_fn_li_desc *)fpin->fpin_desc;
-> +		ldesc->desc_tag = cpu_to_be32(ELS_DTAG_LNK_INTEGRITY);
-> +		ldesc->desc_len = cpu_to_be32(FC_TLV_DESC_LENGTH_FROM_SZ(*ldesc));
-> +		ldesc->event_type = cpu_to_be16(FPIN_LI_UNKNOWN);
-> +		ldesc->event_modifier = modifier;
-> +		ldesc->event_threshold = threshold;
-> +		ldesc->event_count = event_count;
-> +		ldesc->detecting_wwpn = cpu_to_be64(0);
-> +		ldesc->attached_wwpn = wwpn;
-> +		ldesc->pname_count = cpu_to_be32(1);
-> +		ldesc->pname_list[0] = wwpn;
-> +		break;
-> +	default:
-> +		/* This should be caught above. */
-> +		kfree(fpin);
-> +		fpin = NULL;
-> +		break;
-> +	}
-> +
-> +	return fpin;
-> +}
-> +
-> +/**
-> + * ibmvfc_basic_fpin_to_desc(): allocate and populate a struct fc_els_fpin struct
-> + * containing a descriptor.
-> + * @ibmvfc_fpin: Pointer to async crq
-> + *
-> + * Allocate a struct fc_els_fpin containing a descriptor and populate
-> + * based on data from *ibmvfc_fpin.
-> + *
-> + * Return:
-> + * NULL     - unable to allocate structure
-> + * non-NULL - pointer to populated struct fc_els_fpin
+>   arch/powerpc/platforms/pseries/rtas-fadump.c | 80 ++++++++++++--------
+>   arch/powerpc/platforms/pseries/rtas-fadump.h |  6 ++
+>   2 files changed, 53 insertions(+), 33 deletions(-)
+>
+> diff --git a/arch/powerpc/platforms/pseries/rtas-fadump.c b/arch/powerpc/platforms/pseries/rtas-fadump.c
+> index eceb3289383e..3bb4ac2ab6cc 100644
+> --- a/arch/powerpc/platforms/pseries/rtas-fadump.c
+> +++ b/arch/powerpc/platforms/pseries/rtas-fadump.c
+> @@ -179,9 +179,42 @@ static u64 rtas_fadump_get_bootmem_min(void)
+>   	return RTAS_FADUMP_MIN_BOOT_MEM;
+>   }
+>   
+> +/*
+> + * Helper to make an ibm,configure-kernel-dump RTAS call with a bounded
+> + * busy-wait loop. Returns the RTAS return code on completion, or
+> + * -ETIMEDOUT if firmware keeps returning a busy status beyond
+> + * RTAS_FADUMP_MAX_WAIT_MS milliseconds.
 > + */
-> +static struct fc_els_fpin *
-> +/*XXX*/ibmvfc_basic_fpin_to_desc(struct ibmvfc_async_crq *crq)
-
-What is with this /*XXX*/? I can't find it once I apply the patchset so I assume
-its removed in a later patch, but it should be removed here.
-
+> +static int rtas_fadump_call(struct fw_dump *fadump_conf, int operation,
+> +			    void *fdm_ptr, unsigned int fdm_size,
+> +			    const char *op_name)
 > +{
-> +	return ibmvfc_common_fpin_to_desc(crq->fpin_status, crq->wwpn,
-> +					  cpu_to_be16(0),
-> +					  cpu_to_be32(IBMVFC_FPIN_DEFAULT_EVENT_PERIOD),
-> +					  cpu_to_be32(IBMVFC_FPIN_DEFAULT_EVENT_THRESHOLD),
-> +					  cpu_to_be32(1));
+> +	unsigned int wait_time, total_wait = 0;
+> +	int rc;
+> +
+> +	do {
+> +		rc = rtas_call(fadump_conf->ibm_configure_kernel_dump, 3, 1,
+> +			       NULL, operation, fdm_ptr, fdm_size);
+> +		wait_time = rtas_busy_delay_time(rc);
+> +		if (wait_time) {
+> +			pr_debug("Firmware busy during fadump %s, waiting %ums (total %ums)\n",
+> +				 op_name, wait_time, total_wait);
+> +			if (total_wait >= RTAS_FADUMP_MAX_WAIT_MS) {
+> +				pr_err("Timed out waiting for firmware to complete fadump %s\n",
+> +				       op_name);
+> +				return -ETIMEDOUT;
+> +			}
+> +			total_wait += wait_time;
+> +			mdelay(wait_time);
+> +		}
+> +	} while (wait_time);
+> +
+> +	return rc;
 > +}
 > +
->  /**
->   * ibmvfc_handle_async - Handle an async event from the adapter
->   * @crq:	crq to process
->   * @vhost:	ibmvfc host struct
->   *
->   **/
-> -static void ibmvfc_handle_async(struct ibmvfc_async_crq *crq,
-> -				struct ibmvfc_host *vhost)
-> +VISIBLE_IF_KUNIT void ibmvfc_handle_async(struct ibmvfc_async_crq *crq,
-> +					  struct ibmvfc_host *vhost)
->  {
->  	const struct ibmvfc_async_desc *desc = ibmvfc_get_ae_desc(be64_to_cpu(crq->event));
->  	struct ibmvfc_target *tgt;
-> +	struct fc_els_fpin *fpin;
->  
->  	ibmvfc_log(vhost, desc->log_level, "%s event received. scsi_id: %llx, wwpn: %llx,"
->  		   " node_name: %llx%s\n", desc->desc, be64_to_cpu(crq->scsi_id),
-> @@ -3269,11 +3422,37 @@ static void ibmvfc_handle_async(struct ibmvfc_async_crq *crq,
->  	case IBMVFC_AE_HALT:
->  		ibmvfc_link_down(vhost, IBMVFC_HALTED);
->  		break;
-> +	case IBMVFC_AE_FPIN:
-> +		if (!crq->scsi_id && !crq->wwpn && !crq->node_name)
-> +			break;
-> +		list_for_each_entry(tgt, &vhost->targets, queue) {
-> +			if (crq->scsi_id && cpu_to_be64(tgt->scsi_id) != crq->scsi_id)
-> +				continue;
-> +			if (crq->wwpn && cpu_to_be64(tgt->ids.port_name) != crq->wwpn)
-> +				continue;
-> +			if (crq->node_name && cpu_to_be64(tgt->ids.node_name) != crq->node_name)
-> +				continue;
-> +			if (!tgt->rport)
-> +				continue;
-> +			fpin = ibmvfc_basic_fpin_to_desc(crq);
-> +			if (fpin) {
-> +				fc_host_fpin_rcv(tgt->vhost->host,
-> +						 sizeof(*fpin) +
-> +						       be32_to_cpu(fpin->desc_len),
-> +						 (char *)fpin, 0);
-
-This call to fc_host_fpin_rcv() appears to be problematic as it assumes no locks
-are held, but ibmvfc_handle_async() is called with the scsi host lock held. We
-already do a lot more work than we probaly should in our interrupt handler. I
-think we maybe need to pass the FPIN work off to a workqueue instead to be
-handled in process context instead.
-
--Tyrel
-
+>   static int rtas_fadump_register(struct fw_dump *fadump_conf)
+>   {
+> -	unsigned int wait_time, fdm_size;
+> +	unsigned int fdm_size;
+>   	int rc, err = -EIO;
+>   
+>   	/*
+> @@ -192,16 +225,10 @@ static int rtas_fadump_register(struct fw_dump *fadump_conf)
+>   	fdm_size = sizeof(struct rtas_fadump_section_header);
+>   	fdm_size += be16_to_cpu(fdm.header.dump_num_sections) * sizeof(struct rtas_fadump_section);
+>   
+> -	/* TODO: Add upper time limit for the delay */
+> -	do {
+> -		rc =  rtas_call(fadump_conf->ibm_configure_kernel_dump, 3, 1,
+> -				NULL, FADUMP_REGISTER, &fdm, fdm_size);
+> -
+> -		wait_time = rtas_busy_delay_time(rc);
+> -		if (wait_time)
+> -			mdelay(wait_time);
+> -
+> -	} while (wait_time);
+> +	rc = rtas_fadump_call(fadump_conf, FADUMP_REGISTER, &fdm, fdm_size,
+> +			      "register");
+> +	if (rc == -ETIMEDOUT)
+> +		return -ETIMEDOUT;
+>   
+>   	switch (rc) {
+>   	case 0:
+> @@ -234,19 +261,12 @@ static int rtas_fadump_register(struct fw_dump *fadump_conf)
+>   
+>   static int rtas_fadump_unregister(struct fw_dump *fadump_conf)
+>   {
+> -	unsigned int wait_time;
+>   	int rc;
+>   
+> -	/* TODO: Add upper time limit for the delay */
+> -	do {
+> -		rc =  rtas_call(fadump_conf->ibm_configure_kernel_dump, 3, 1,
+> -				NULL, FADUMP_UNREGISTER, &fdm,
+> -				sizeof(struct rtas_fadump_mem_struct));
+> -
+> -		wait_time = rtas_busy_delay_time(rc);
+> -		if (wait_time)
+> -			mdelay(wait_time);
+> -	} while (wait_time);
+> +	rc = rtas_fadump_call(fadump_conf, FADUMP_UNREGISTER, &fdm,
+> +			      sizeof(struct rtas_fadump_mem_struct), "unregister");
+> +	if (rc == -ETIMEDOUT)
+> +		return -ETIMEDOUT;
+>   
+>   	if (rc) {
+>   		pr_err("Failed to un-register - unexpected error(%d).\n", rc);
+> @@ -259,19 +279,13 @@ static int rtas_fadump_unregister(struct fw_dump *fadump_conf)
+>   
+>   static int rtas_fadump_invalidate(struct fw_dump *fadump_conf)
+>   {
+> -	unsigned int wait_time;
+>   	int rc;
+>   
+> -	/* TODO: Add upper time limit for the delay */
+> -	do {
+> -		rc =  rtas_call(fadump_conf->ibm_configure_kernel_dump, 3, 1,
+> -				NULL, FADUMP_INVALIDATE, fdm_active,
+> -				sizeof(struct rtas_fadump_mem_struct));
+> -
+> -		wait_time = rtas_busy_delay_time(rc);
+> -		if (wait_time)
+> -			mdelay(wait_time);
+> -	} while (wait_time);
+> +	rc = rtas_fadump_call(fadump_conf, FADUMP_INVALIDATE,
+> +			      (void *)fdm_active,
+> +			      sizeof(struct rtas_fadump_mem_struct), "invalidate");
+> +	if (rc == -ETIMEDOUT)
+> +		return -ETIMEDOUT;
+>   
+>   	if (rc) {
+>   		pr_err("Failed to invalidate - unexpected error (%d).\n", rc);
+> diff --git a/arch/powerpc/platforms/pseries/rtas-fadump.h b/arch/powerpc/platforms/pseries/rtas-fadump.h
+> index c109abf6befd..65fdab7b5b8d 100644
+> --- a/arch/powerpc/platforms/pseries/rtas-fadump.h
+> +++ b/arch/powerpc/platforms/pseries/rtas-fadump.h
+> @@ -41,6 +41,12 @@
+>   #define MAX_SECTIONS				10
+>   #define RTAS_FADUMP_MAX_BOOT_MEM_REGS		7
+>   
+> +/*
+> + * Maximum time to wait for firmware to respond to an
+> + * ibm,configure-kernel-dump RTAS call before giving up.
+> + */
+> +#define RTAS_FADUMP_MAX_WAIT_MS			60000U
+> +
+>   /* Kernel Dump section info */
+>   struct rtas_fadump_section {
+>   	__be32	request_flag;
 
 
