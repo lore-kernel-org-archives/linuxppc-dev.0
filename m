@@ -1,93 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-20547-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20548-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 82002CD342C
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 May 2026 02:52:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5455BCD342C
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 May 2026 04:08:08 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4g9xcm1Prmz2xm1;
-	Thu, 07 May 2026 12:52:40 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a00:1450:4864:20::435" arc.chain=google.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778122360;
-	cv=pass; b=N4hWdbAQBGACMB0juds8OADhqY1XTx8fG6oTRUX7pvAkbjQ4bgpMT+nbJKHh2OQHXJ21DPnbRSs+kP6HKPw7dLJfiYhyflTfzq1Tg9C0G27meu9+ae49xIf/Nu/iBd4uRvBS5O0Ix9XZLUh03ISqryFPKHOx1Rf8Zmvoqza6+WaGXbQcwXGd6cXUqyDyrELNKNtvMdgrV2oyGXAoKvQ1C1MyNA1p/Ksvk3UUYQHNbsDMEztfBROT4/MRLvS2mEqqHmKOsG2CDghZyhRYRkkfcsL7P4Z5Kq31Tz6G5zTrk3ORZmKEwAgoiMb8l7wBkFaifElLQXeYpdyQ7o5Y4XAQRQ==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1778122360; c=relaxed/relaxed;
-	bh=uW6UXusY5B7wnfgwtpuv3i16n+MFEhNRrfK3KAuOPZ0=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=T3Yboymv63zqtwoaQY3fE1arDtm3OmKn4x/Wc9oFzXwfm8mpt9AYamGeMASPxTu8fRjmLfCojqQUNvrOUruDp2msIa70ODQdm+EkZu7XT04oqXfJSi/dJmw0QQIZN97qZZG0W71HLOK6YcwPAgw38Cn7eWVLuAjSvPLNSM6fBhEp3/QxpuUno5J2xZ2rPrUlmB6HwH06kpsxL8UdqhCFvNhi530uWAEtsiLSPf7ztEGe++viLtLCRagQg6twyH7iy8WxPIE8TIFqWbgX38Dg6J14UQQhy66Q8nEJqWLDzMh5EelBDBFXEILHIlHCcUGilfw2q0N63XUW+kEg3+1qvQ==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=gOiI68gL; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::435; helo=mail-wr1-x435.google.com; envelope-from=adri.vero.dev@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4g9zHp5YDYz2yrD;
+	Thu, 07 May 2026 14:08:06 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778126886;
+	cv=none; b=gEjRYCAkJ6AokQ0Gt4zwAFdKi3hqrk2otwiIWEnTcdNz50Z2hIgA7MdMzZpKyVPHQijyt2+L7yfBSfcJSph4cF8GnOPn+WZjqZkSP810q4kVmkGbGW5iy85AexnS5+hd9gyvknLinanNYq7jMnSZHwgFU0koGTxl63w+5gjACtk2BJKS4PIT07MTCq7FBawZy6MBVykL4y5YjaObg0kTxO3skzVU5a2Jhd14LKmtheNE5zKtIj7MIDBVbQyFGmkkpUVi0Pk4oda75syNthOiAXQn8lZeVe5etEOp62xneiAaGjrPW3hy0cgu4hiRLdI0faJ4ruRO4xsSDj4sxLxpCQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1778126886; c=relaxed/relaxed;
+	bh=/VtWyvDOrlAFoS1mn9UFyVXIwWZueSkc6+5pyZTa7/g=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=Fx3u0pyeuRjAPIfRiQKxDNSUWnRDwK3oW3T124rkRa6BbDuEIW2LCHeGnV3dEwd0vh2qnwhAnSiVnpHXrUx7v66uRo4qMIb0vhQU+iKtEQG1fsY2x7qAs0bhZ63XuWFHd+LqxASJ75JQ0jCcbev0xMINkvOHRtfQOqhsAN/ifDpH9j0LQt3tYVvfI363LQ6ETXGqfFsFk3/g8L5MZ6a00tjrMga/jAnjPmeiubkKx3HEj6HWysz89ykepkjaaLoY1Jc5X/Dl+MuWEFDenw0pELDKmXj8Zfg5nTtGLcGLNb7V5WDdte3pL/64o7UU1X9ZiCoB8JC75VCFq4attq+fYQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ByzwSILK; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=gOiI68gL;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ByzwSILK;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::435; helo=mail-wr1-x435.google.com; envelope-from=adri.vero.dev@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-wr1-x435.google.com (mail-wr1-x435.google.com [IPv6:2a00:1450:4864:20::435])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4g9xck2nwRz2xlm
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 07 May 2026 12:52:37 +1000 (AEST)
-Received: by mail-wr1-x435.google.com with SMTP id ffacd0b85a97d-449d6c68ed8so281289f8f.0
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 06 May 2026 19:52:37 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1778122353; cv=none;
-        d=google.com; s=arc-20240605;
-        b=XxeEjiYYrY7wsRoWZ+B4yY30wlnZ8LoJmJIz/AgpWspSdtgq2vcDjMLrNmworymJLE
-         T2iFDllKbb1aeq57g3U/szfGlGvJmSWU3Y+0qCsdqXbRP3cQOGkrda9ULvvvnpqd7UzU
-         oxjTjmoG4pGWIlftPIj4XfJDOAup7f2aKQYd//P1tRLkWtTnRqWjeSS0RSSSdwWa2Byk
-         JlKU37PUvhKDe4jCPZKKpu10yVUT6WfaD2Hi7dp0Hc+JBhOjLxM5cNsLu+vXPb10c5hb
-         4LyCG1asykYT1mX5HRdUVLtHVO0ITTZmWFwO9YG3f8KqtdeaN+bnVf7T5rn3AJXOSsXf
-         BjaQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=uW6UXusY5B7wnfgwtpuv3i16n+MFEhNRrfK3KAuOPZ0=;
-        fh=UXVajeaYl7jW+1cgTzR5jIC2jiVDjcrO5ah5XAA9hBM=;
-        b=WToH0k9lUnWn6K4SXtOKqlYUovlLYd4WErRIeO3EmH2p7FfHoiT5uuO8W8TcELgF59
-         FTdYToyQyMuipuQpZFMeocTogsgUjlsCjq9zTiEAKloO6/iErMDQPQea5LtXcfWXyrmJ
-         J1Bo344/TLK1kHzD+HRTwljKlAuRNzXiRkVWfqAMbRNnqJPGZ81jjPoMP5t2OxZHzs3Z
-         fVBF3dsg2Pb4S08PeXW7RMXXsAkNXCuqyCzDMrHCgEfqaHoFS0i8m7OnEJUM0k1YHtXM
-         yggIlUbgICsn9hKpm9u3itDOPUjj/vBnXd3Aqig65npKiMQKFRh63LBGh8+OvAgxdlJf
-         n3Wg==;
-        darn=lists.ozlabs.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1778122353; x=1778727153; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=uW6UXusY5B7wnfgwtpuv3i16n+MFEhNRrfK3KAuOPZ0=;
-        b=gOiI68gLWtudNR2bCphGNygNSX5gcXEcuK7h5XSo4cqw/Fldo4ZSEOu79txEcHALD5
-         /xSTlRINJJE8FtQji5hnq6rChOEHdGw+RnyCPqFmNCgwMag9Vb4kfZJIvIQnxfF0W+E0
-         5/5iR3MX00uwvyoqAgcXLlVS0vBu7lQFkPlknPWoAGw4QIVEDoP3UEgqJO3/2oQ1igcK
-         9Hl/MfK+dDX6oERNeMtjjn89PZ+kR0uDFKeVMtEL27mGMqvdsSRNw8+cVuR9IJBC73NK
-         zN4cDTbu/1K3rVJb3Wz1TyQ4ZbO4DDbQCIIbpPwrPUgEeHpWj50MuXeasaQC+1PDk51N
-         AvwQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1778122353; x=1778727153;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=uW6UXusY5B7wnfgwtpuv3i16n+MFEhNRrfK3KAuOPZ0=;
-        b=Im2C1aAc7Jw/o8tS5aBqV/eAUTwbe+IWhqAhXjFrJqb6Z3933tAesNutARYXUVfyHF
-         Yg9bPplbyvVCFpHyzDZdeIFNrpaVjNpoZXUlHlDLBs9ztIy9WkrYM1BZoLjBSxQaCrKx
-         L9jS2/JaLik/XNNxCkJdIy/WgYYxUlpR2aPTnsyGrRaPxNcx1sONUoTvjCjhZQ7aH4s6
-         ZhX6wypAoQ1gWR21V2wjwqEHYYyVNFg+n5hs55fniJPbQP+YWX6oSnelPd7AM4ABXg24
-         3keNTq2pE5wLhFcI5sZuwL2vahrRrEjbIih4Ug6vvtkJdeV2WGqjDOBpY/ToUBUDUYeJ
-         H24g==
-X-Forwarded-Encrypted: i=1; AFNElJ/9BNvkTYhoJyPgD7XKceGfnqQ3yHljzVa4PwYPwSYxBL8QkMdMpwC4JFmTwoKJLyimIBiFW2QFOE4vJR4=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Ywu7XuQ4sze03OOkbPR2EL4cv60mORykeVoOrnKYioZFsZtc6cQ
-	j5vu09eLbiAjZ9mRt2Jtb13hR7OU+9wWYtbQgEYUg7z/lRppQyJQyFN+gzyVeWa5v8OqsIgGEAC
-	BYYf6eRSNrkRviVIDyKXz0zvLFPCgmEM=
-X-Gm-Gg: AeBDietvc4Qa5gBAqyBkA90mFSaIyNq24J6ganzejlEk12jhz6eAu/bjKdkuJfYoXBR
-	gNJRpsPy2W3anzxdSHwUcrtfw1HxO4XuoKPjmrc7EYfdEGM1M3hr9m85cpMNKWGVS56mtyhx8SR
-	Z6W7FKjgf8Y6u5RnvO4A3ogQHLNhBhShfOojo01LjXu5zYXFJe82VZGgsXtvCW3zP8U645Wlg3I
-	Bq32bhMObISz2e2jIZrIJjCpEv1M/PjkxAE4ndFR9ubfaMw6DlN2Xis4fZKDJqLO5yxdWoIX9Sa
-	1Up+MmDZ/5b05Y7lFer+n+3KELg=
-X-Received: by 2002:a05:6000:2310:b0:43d:773d:7908 with SMTP id
- ffacd0b85a97d-4515d3dc438mr9631396f8f.32.1778122353253; Wed, 06 May 2026
- 19:52:33 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4g9zHm6t7Kz2xlm
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 07 May 2026 14:08:04 +1000 (AEST)
+Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 646MgS7S3638747;
+	Thu, 7 May 2026 04:07:52 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=/VtWyv
+	DOrlAFoS1mn9UFyVXIwWZueSkc6+5pyZTa7/g=; b=ByzwSILKbQac7UkFiPDOw4
+	LkabSs62zoR8E84PURCKCpEV8HlPRP6JfjeVfiDvaSNicey+FSPrM5a+L2ThuGvS
+	ZHmfHJDbInVt9V3aMhn6i/3e4II23XWfWI+3PTP99zVVG0d7jNlccQnqx7KIVZlK
+	sPbJCx55PBAQnO2R6/+SpOhvyUP6afJCGjxj/gKNrsitKvBpHnZ5w+4CcBnOW2Ow
+	MDIRWleCae2fyTjlM1rhucsNLxxn8xHkceTDRFt2OiPL4jDvLloJmCSShw27q6me
+	NQd3DY8Vt5rX2mdzXhAwes85TB0jA5e9F+d2xHfpTKLRpoqa13dYchze8GY0Htog
+	==
+Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4dw9xxu5t2-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 07 May 2026 04:07:51 +0000 (GMT)
+Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma22.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 6473sa7V029750;
+	Thu, 7 May 2026 04:07:51 GMT
+Received: from smtprelay01.fra02v.mail.ibm.com ([9.218.2.227])
+	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4dwuyw9esh-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 07 May 2026 04:07:50 +0000 (GMT)
+Received: from smtpav06.fra02v.mail.ibm.com (smtpav06.fra02v.mail.ibm.com [10.20.54.105])
+	by smtprelay01.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 64747m3j58196338
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Thu, 7 May 2026 04:07:49 GMT
+Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id D290220049;
+	Thu,  7 May 2026 04:07:48 +0000 (GMT)
+Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id CEF3320040;
+	Thu,  7 May 2026 04:07:45 +0000 (GMT)
+Received: from [9.39.23.70] (unknown [9.39.23.70])
+	by smtpav06.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Thu,  7 May 2026 04:07:45 +0000 (GMT)
+Message-ID: <aade3c40-6d72-46c0-9d52-6f3c3f823a78@linux.ibm.com>
+Date: Thu, 7 May 2026 09:37:43 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -101,222 +81,236 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20260406061542.22354-1-litaliano00.contact@gmail.com>
- <20260419065039.23495-1-adri.vero.dev@gmail.com> <7bef2ce2-1fd3-4648-8c78-d3c5e07a1f9f@linux.ibm.com>
-In-Reply-To: <7bef2ce2-1fd3-4648-8c78-d3c5e07a1f9f@linux.ibm.com>
-From: Adriano Vero <adri.vero.dev@gmail.com>
-Date: Thu, 7 May 2026 04:52:21 +0200
-X-Gm-Features: AVHnY4LgTIvR1AI6EIc-T4r21ztuWBHZNGBeQ7vGohG8sS8W5mspgVlodsa6JrM
-Message-ID: <CAGKWbKuxRCfqZaixqo7L3uT0gtOssDo8-cWWvsVJkKEsaTumcg@mail.gmail.com>
+User-Agent: Mozilla Thunderbird
 Subject: Re: [PATCH v2] powerpc/fadump: Add timeout to RTAS busy-wait loops
-To: Sourabh Jain <sourabhjain@linux.ibm.com>
-Cc: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com, 
-	chleroy@kernel.org, linuxppc-dev@lists.ozlabs.org, 
-	linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+To: Adriano Vero <adri.vero.dev@gmail.com>
+Cc: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com,
+        chleroy@kernel.org, linuxppc-dev@lists.ozlabs.org,
+        linux-kernel@vger.kernel.org
+References: <20260406061542.22354-1-litaliano00.contact@gmail.com>
+ <20260419065039.23495-1-adri.vero.dev@gmail.com>
+ <7bef2ce2-1fd3-4648-8c78-d3c5e07a1f9f@linux.ibm.com>
+ <CAGKWbKuxRCfqZaixqo7L3uT0gtOssDo8-cWWvsVJkKEsaTumcg@mail.gmail.com>
+Content-Language: en-US
+From: Sourabh Jain <sourabhjain@linux.ibm.com>
+In-Reply-To: <CAGKWbKuxRCfqZaixqo7L3uT0gtOssDo8-cWWvsVJkKEsaTumcg@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTA3MDAzNyBTYWx0ZWRfX2DEhk7lVTlbD
+ XNI24U7eLrXgCUngZJRamFXv8K1cLbQa+ernoop3zW++8pBU8K3ExDVLu27H1DyAOZgAmL+0sUm
+ wpipW4h/Mzw8wzB8u621vN0EdeKoU3gNAqPrXYJuC2TGN3bho29lFYWZSMdEd04YkKN9lYXV3nc
+ rVtxohC1efG/qqQsFMpfUyl/esSwuWxm3dVemAaYBq1rWcdBjMsGWwZqk2XtAZNZQTzSYhnqQuW
+ fRc8RQTLcjmsbgCE7u1gXT/zXB4xQzZrJnldtsVzGtfFHQabLeKzc+TqDVpqHoEsOSss8+1oEMH
+ mjRnkYWbfUcvc3s9FHt/eSEmHdpSEf9ljEOsxVOoShwtUZGQFQ0420ohUS1rpNuMImU3tFhTs4g
+ a++byBuACOd2tTI4wvOzTBonJPeUA2aRFo7Pii1g5mIrSYkRy3xNGPwkXUgKCsazFqzjNEoIwLW
+ 5eSYgeOKP4Yv7uV8wqA==
+X-Proofpoint-ORIG-GUID: XYcVxa5NZ05RxsUU_MGodLGMIilCFooS
+X-Proofpoint-GUID: vHqoC4K_Rln9wutAz7d0bPCD_1QkdvVJ
+X-Authority-Analysis: v=2.4 cv=ctWrVV4i c=1 sm=1 tr=0 ts=69fc1018 cx=c_pps
+ a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
+ a=IkcTkHD0fZMA:10 a=NGcC8JguVDcA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=V8glGbnc2Ofi9Qvn3v5h:22 a=VnNF1IyMAAAA:8
+ a=pGLkceISAAAA:8 a=RbH5DiymoCeLN0jEbdAA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-05-06_02,2026-05-06_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501 lowpriorityscore=0 adultscore=0 clxscore=1015
+ suspectscore=0 impostorscore=0 spamscore=0 malwarescore=0 phishscore=0
+ bulkscore=0 classifier=typeunknown authscore=0 authtc= authcc= route=outbound
+ adjust=0 reason=mlx scancount=1 engine=8.22.0-2604200000
+ definitions=main-2605070037
 
-Hi Sourabh,
-
-Thank you for the review. v3 with your Reviewed-by tag has been sent.
-
-Adriano
 
 
-On Wed, May 6, 2026 at 9:22=E2=80=AFPM Sourabh Jain <sourabhjain@linux.ibm.=
-com> wrote:
+On 07/05/26 08:22, Adriano Vero wrote:
+> Hi Sourabh,
+>
+> Thank you for the review. v3 with your Reviewed-by tag has been sent.
+
+Thanks, but a new version just to include tags is not really needed.
+Maintainers generally take care of including them.
+
+- Sourabh Jain
+
+>
+> Adriano
 >
 >
->
-> On 19/04/26 12:20, Adriano Vero wrote:
-> > The ibm,configure-kernel-dump RTAS call sites in
-> > rtas_fadump_register(), rtas_fadump_unregister(), and
-> > rtas_fadump_invalidate() polled indefinitely while firmware returned
-> > a busy status. A misbehaving or hung firmware could stall these paths
-> > forever, blocking fadump registration at boot or preventing clean
-> > teardown.
-> >
-> > Introduce rtas_fadump_call(), a helper that wraps the common
-> > busy-wait pattern shared by all three sites. The helper accumulates
-> > the total delay and returns -ETIMEDOUT if firmware keeps returning a
-> > busy status beyond RTAS_FADUMP_MAX_WAIT_MS (60 seconds). A pr_debug()
-> > message is emitted on each busy iteration to aid diagnosis when the
-> > timeout is hit.
-> >
-> > Signed-off-by: Adriano Vero <adri.vero.dev@gmail.com>
-> > ---
-> >   arch/powerpc/platforms/pseries/rtas-fadump.c | 80 ++++++++++++-------=
--
-> >   arch/powerpc/platforms/pseries/rtas-fadump.h |  6 ++
-> >   2 files changed, 53 insertions(+), 33 deletions(-)
-> >
-> > diff --git a/arch/powerpc/platforms/pseries/rtas-fadump.c b/arch/powerp=
-c/platforms/pseries/rtas-fadump.c
-> > index eceb32893..3bb4ac2ab 100644
-> > --- a/arch/powerpc/platforms/pseries/rtas-fadump.c
-> > +++ b/arch/powerpc/platforms/pseries/rtas-fadump.c
-> > @@ -179,9 +179,42 @@ static u64 rtas_fadump_get_bootmem_min(void)
-> >       return RTAS_FADUMP_MIN_BOOT_MEM;
-> >   }
-> >
-> > +/*
-> > + * Helper to make an ibm,configure-kernel-dump RTAS call with a bounde=
-d
-> > + * busy-wait loop. Returns the RTAS return code on completion, or
-> > + * -ETIMEDOUT if firmware keeps returning a busy status beyond
-> > + * RTAS_FADUMP_MAX_WAIT_MS milliseconds.
-> > + */
-> > +static int rtas_fadump_call(struct fw_dump *fadump_conf, int operation=
-,
-> > +                         void *fdm_ptr, unsigned int fdm_size,
-> > +                         const char *op_name)
-> > +{
-> > +     unsigned int wait_time, total_wait =3D 0;
-> > +     int rc;
-> > +
-> > +     do {
-> > +             rc =3D rtas_call(fadump_conf->ibm_configure_kernel_dump, =
-3, 1,
-> > +                            NULL, operation, fdm_ptr, fdm_size);
-> > +             wait_time =3D rtas_busy_delay_time(rc);
-> > +             if (wait_time) {
-> > +                     pr_debug("Firmware busy during fadump %s, waiting=
- %ums (total %ums)\n",
-> > +                              op_name, wait_time, total_wait);
-> > +                     if (total_wait >=3D RTAS_FADUMP_MAX_WAIT_MS) {
-> > +                             pr_err("Timed out waiting for firmware to=
- complete fadump %s\n",
-> > +                                    op_name);
-> > +                             return -ETIMEDOUT;
-> > +                     }
-> > +                     total_wait +=3D wait_time;
-> > +                     mdelay(wait_time);
-> > +             }
-> > +     } while (wait_time);
-> > +
-> > +     return rc;
-> > +}
-> > +
-> >   static int rtas_fadump_register(struct fw_dump *fadump_conf)
-> >   {
-> > -     unsigned int wait_time, fdm_size;
-> > +     unsigned int fdm_size;
-> >       int rc, err =3D -EIO;
-> >
-> >       /*
-> > @@ -192,16 +225,10 @@ static int rtas_fadump_register(struct fw_dump *f=
-adump_conf)
-> >       fdm_size =3D sizeof(struct rtas_fadump_section_header);
-> >       fdm_size +=3D be16_to_cpu(fdm.header.dump_num_sections) * sizeof(=
-struct rtas_fadump_section);
-> >
-> > -     /* TODO: Add upper time limit for the delay */
-> > -     do {
-> > -             rc =3D  rtas_call(fadump_conf->ibm_configure_kernel_dump,=
- 3, 1,
-> > -                             NULL, FADUMP_REGISTER, &fdm, fdm_size);
-> > -
-> > -             wait_time =3D rtas_busy_delay_time(rc);
-> > -             if (wait_time)
-> > -                     mdelay(wait_time);
-> > -
-> > -     } while (wait_time);
-> > +     rc =3D rtas_fadump_call(fadump_conf, FADUMP_REGISTER, &fdm, fdm_s=
-ize,
-> > +                           "register");
-> > +     if (rc =3D=3D -ETIMEDOUT)
-> > +             return -ETIMEDOUT;
-> >
-> >       switch (rc) {
-> >       case 0:
-> > @@ -234,19 +261,12 @@ static int rtas_fadump_register(struct fw_dump *f=
-adump_conf)
-> >
-> >   static int rtas_fadump_unregister(struct fw_dump *fadump_conf)
-> >   {
-> > -     unsigned int wait_time;
-> >       int rc;
-> >
-> > -     /* TODO: Add upper time limit for the delay */
-> > -     do {
-> > -             rc =3D  rtas_call(fadump_conf->ibm_configure_kernel_dump,=
- 3, 1,
-> > -                             NULL, FADUMP_UNREGISTER, &fdm,
-> > -                             sizeof(struct rtas_fadump_mem_struct));
-> > -
-> > -             wait_time =3D rtas_busy_delay_time(rc);
-> > -             if (wait_time)
-> > -                     mdelay(wait_time);
-> > -     } while (wait_time);
-> > +     rc =3D rtas_fadump_call(fadump_conf, FADUMP_UNREGISTER, &fdm,
-> > +                           sizeof(struct rtas_fadump_mem_struct), "unr=
-egister");
-> > +     if (rc =3D=3D -ETIMEDOUT)
-> > +             return -ETIMEDOUT;
-> >
-> >       if (rc) {
-> >               pr_err("Failed to un-register - unexpected error(%d).\n",=
- rc);
-> > @@ -259,19 +279,13 @@ static int rtas_fadump_unregister(struct fw_dump =
-*fadump_conf)
-> >
-> >   static int rtas_fadump_invalidate(struct fw_dump *fadump_conf)
-> >   {
-> > -     unsigned int wait_time;
-> >       int rc;
-> >
-> > -     /* TODO: Add upper time limit for the delay */
-> > -     do {
-> > -             rc =3D  rtas_call(fadump_conf->ibm_configure_kernel_dump,=
- 3, 1,
-> > -                             NULL, FADUMP_INVALIDATE, fdm_active,
-> > -                             sizeof(struct rtas_fadump_mem_struct));
-> > -
-> > -             wait_time =3D rtas_busy_delay_time(rc);
-> > -             if (wait_time)
-> > -                     mdelay(wait_time);
-> > -     } while (wait_time);
-> > +     rc =3D rtas_fadump_call(fadump_conf, FADUMP_INVALIDATE,
-> > +                           (void *)fdm_active,
-> > +                           sizeof(struct rtas_fadump_mem_struct), "inv=
-alidate");
-> > +     if (rc =3D=3D -ETIMEDOUT)
-> > +             return -ETIMEDOUT;
-> >
-> >       if (rc) {
-> >               pr_err("Failed to invalidate - unexpected error (%d).\n",=
- rc);
-> > diff --git a/arch/powerpc/platforms/pseries/rtas-fadump.h b/arch/powerp=
-c/platforms/pseries/rtas-fadump.h
-> > index c109abf6b..65fdab7b5 100644
-> > --- a/arch/powerpc/platforms/pseries/rtas-fadump.h
-> > +++ b/arch/powerpc/platforms/pseries/rtas-fadump.h
-> > @@ -41,6 +41,12 @@
-> >   #define MAX_SECTIONS                                10
-> >   #define RTAS_FADUMP_MAX_BOOT_MEM_REGS               7
-> >
-> > +/*
-> > + * Maximum time to wait for firmware to respond to an
-> > + * ibm,configure-kernel-dump RTAS call before giving up.
-> > + */
-> > +#define RTAS_FADUMP_MAX_WAIT_MS                      60000U
-> > +
-> >   /* Kernel Dump section info */
-> >   struct rtas_fadump_section {
-> >       __be32  request_flag;
->
-> Changes look good to me.
->
-> Feel free to add:
-> Reviewed-by: Sourabh Jain <sourabhjain@linux.ibm.com>
->
-> While testing this patch I realized that fadump prints below message
-> when registered is successfully
-> <rtas/opal> fadump: Registration is successful
->
-> But there is no message when fadump is unregistered successfully. I
-> think it is good to
-> log that event.  I will send a separate patch for this.
->
-> - Sourabh Jain
+> On Wed, May 6, 2026 at 9:22 PM Sourabh Jain <sourabhjain@linux.ibm.com> wrote:
+>>
+>>
+>> On 19/04/26 12:20, Adriano Vero wrote:
+>>> The ibm,configure-kernel-dump RTAS call sites in
+>>> rtas_fadump_register(), rtas_fadump_unregister(), and
+>>> rtas_fadump_invalidate() polled indefinitely while firmware returned
+>>> a busy status. A misbehaving or hung firmware could stall these paths
+>>> forever, blocking fadump registration at boot or preventing clean
+>>> teardown.
+>>>
+>>> Introduce rtas_fadump_call(), a helper that wraps the common
+>>> busy-wait pattern shared by all three sites. The helper accumulates
+>>> the total delay and returns -ETIMEDOUT if firmware keeps returning a
+>>> busy status beyond RTAS_FADUMP_MAX_WAIT_MS (60 seconds). A pr_debug()
+>>> message is emitted on each busy iteration to aid diagnosis when the
+>>> timeout is hit.
+>>>
+>>> Signed-off-by: Adriano Vero <adri.vero.dev@gmail.com>
+>>> ---
+>>>    arch/powerpc/platforms/pseries/rtas-fadump.c | 80 ++++++++++++--------
+>>>    arch/powerpc/platforms/pseries/rtas-fadump.h |  6 ++
+>>>    2 files changed, 53 insertions(+), 33 deletions(-)
+>>>
+>>> diff --git a/arch/powerpc/platforms/pseries/rtas-fadump.c b/arch/powerpc/platforms/pseries/rtas-fadump.c
+>>> index eceb32893..3bb4ac2ab 100644
+>>> --- a/arch/powerpc/platforms/pseries/rtas-fadump.c
+>>> +++ b/arch/powerpc/platforms/pseries/rtas-fadump.c
+>>> @@ -179,9 +179,42 @@ static u64 rtas_fadump_get_bootmem_min(void)
+>>>        return RTAS_FADUMP_MIN_BOOT_MEM;
+>>>    }
+>>>
+>>> +/*
+>>> + * Helper to make an ibm,configure-kernel-dump RTAS call with a bounded
+>>> + * busy-wait loop. Returns the RTAS return code on completion, or
+>>> + * -ETIMEDOUT if firmware keeps returning a busy status beyond
+>>> + * RTAS_FADUMP_MAX_WAIT_MS milliseconds.
+>>> + */
+>>> +static int rtas_fadump_call(struct fw_dump *fadump_conf, int operation,
+>>> +                         void *fdm_ptr, unsigned int fdm_size,
+>>> +                         const char *op_name)
+>>> +{
+>>> +     unsigned int wait_time, total_wait = 0;
+>>> +     int rc;
+>>> +
+>>> +     do {
+>>> +             rc = rtas_call(fadump_conf->ibm_configure_kernel_dump, 3, 1,
+>>> +                            NULL, operation, fdm_ptr, fdm_size);
+>>> +             wait_time = rtas_busy_delay_time(rc);
+>>> +             if (wait_time) {
+>>> +                     pr_debug("Firmware busy during fadump %s, waiting %ums (total %ums)\n",
+>>> +                              op_name, wait_time, total_wait);
+>>> +                     if (total_wait >= RTAS_FADUMP_MAX_WAIT_MS) {
+>>> +                             pr_err("Timed out waiting for firmware to complete fadump %s\n",
+>>> +                                    op_name);
+>>> +                             return -ETIMEDOUT;
+>>> +                     }
+>>> +                     total_wait += wait_time;
+>>> +                     mdelay(wait_time);
+>>> +             }
+>>> +     } while (wait_time);
+>>> +
+>>> +     return rc;
+>>> +}
+>>> +
+>>>    static int rtas_fadump_register(struct fw_dump *fadump_conf)
+>>>    {
+>>> -     unsigned int wait_time, fdm_size;
+>>> +     unsigned int fdm_size;
+>>>        int rc, err = -EIO;
+>>>
+>>>        /*
+>>> @@ -192,16 +225,10 @@ static int rtas_fadump_register(struct fw_dump *fadump_conf)
+>>>        fdm_size = sizeof(struct rtas_fadump_section_header);
+>>>        fdm_size += be16_to_cpu(fdm.header.dump_num_sections) * sizeof(struct rtas_fadump_section);
+>>>
+>>> -     /* TODO: Add upper time limit for the delay */
+>>> -     do {
+>>> -             rc =  rtas_call(fadump_conf->ibm_configure_kernel_dump, 3, 1,
+>>> -                             NULL, FADUMP_REGISTER, &fdm, fdm_size);
+>>> -
+>>> -             wait_time = rtas_busy_delay_time(rc);
+>>> -             if (wait_time)
+>>> -                     mdelay(wait_time);
+>>> -
+>>> -     } while (wait_time);
+>>> +     rc = rtas_fadump_call(fadump_conf, FADUMP_REGISTER, &fdm, fdm_size,
+>>> +                           "register");
+>>> +     if (rc == -ETIMEDOUT)
+>>> +             return -ETIMEDOUT;
+>>>
+>>>        switch (rc) {
+>>>        case 0:
+>>> @@ -234,19 +261,12 @@ static int rtas_fadump_register(struct fw_dump *fadump_conf)
+>>>
+>>>    static int rtas_fadump_unregister(struct fw_dump *fadump_conf)
+>>>    {
+>>> -     unsigned int wait_time;
+>>>        int rc;
+>>>
+>>> -     /* TODO: Add upper time limit for the delay */
+>>> -     do {
+>>> -             rc =  rtas_call(fadump_conf->ibm_configure_kernel_dump, 3, 1,
+>>> -                             NULL, FADUMP_UNREGISTER, &fdm,
+>>> -                             sizeof(struct rtas_fadump_mem_struct));
+>>> -
+>>> -             wait_time = rtas_busy_delay_time(rc);
+>>> -             if (wait_time)
+>>> -                     mdelay(wait_time);
+>>> -     } while (wait_time);
+>>> +     rc = rtas_fadump_call(fadump_conf, FADUMP_UNREGISTER, &fdm,
+>>> +                           sizeof(struct rtas_fadump_mem_struct), "unregister");
+>>> +     if (rc == -ETIMEDOUT)
+>>> +             return -ETIMEDOUT;
+>>>
+>>>        if (rc) {
+>>>                pr_err("Failed to un-register - unexpected error(%d).\n", rc);
+>>> @@ -259,19 +279,13 @@ static int rtas_fadump_unregister(struct fw_dump *fadump_conf)
+>>>
+>>>    static int rtas_fadump_invalidate(struct fw_dump *fadump_conf)
+>>>    {
+>>> -     unsigned int wait_time;
+>>>        int rc;
+>>>
+>>> -     /* TODO: Add upper time limit for the delay */
+>>> -     do {
+>>> -             rc =  rtas_call(fadump_conf->ibm_configure_kernel_dump, 3, 1,
+>>> -                             NULL, FADUMP_INVALIDATE, fdm_active,
+>>> -                             sizeof(struct rtas_fadump_mem_struct));
+>>> -
+>>> -             wait_time = rtas_busy_delay_time(rc);
+>>> -             if (wait_time)
+>>> -                     mdelay(wait_time);
+>>> -     } while (wait_time);
+>>> +     rc = rtas_fadump_call(fadump_conf, FADUMP_INVALIDATE,
+>>> +                           (void *)fdm_active,
+>>> +                           sizeof(struct rtas_fadump_mem_struct), "invalidate");
+>>> +     if (rc == -ETIMEDOUT)
+>>> +             return -ETIMEDOUT;
+>>>
+>>>        if (rc) {
+>>>                pr_err("Failed to invalidate - unexpected error (%d).\n", rc);
+>>> diff --git a/arch/powerpc/platforms/pseries/rtas-fadump.h b/arch/powerpc/platforms/pseries/rtas-fadump.h
+>>> index c109abf6b..65fdab7b5 100644
+>>> --- a/arch/powerpc/platforms/pseries/rtas-fadump.h
+>>> +++ b/arch/powerpc/platforms/pseries/rtas-fadump.h
+>>> @@ -41,6 +41,12 @@
+>>>    #define MAX_SECTIONS                                10
+>>>    #define RTAS_FADUMP_MAX_BOOT_MEM_REGS               7
+>>>
+>>> +/*
+>>> + * Maximum time to wait for firmware to respond to an
+>>> + * ibm,configure-kernel-dump RTAS call before giving up.
+>>> + */
+>>> +#define RTAS_FADUMP_MAX_WAIT_MS                      60000U
+>>> +
+>>>    /* Kernel Dump section info */
+>>>    struct rtas_fadump_section {
+>>>        __be32  request_flag;
+>> Changes look good to me.
+>>
+>> Feel free to add:
+>> Reviewed-by: Sourabh Jain <sourabhjain@linux.ibm.com>
+>>
+>> While testing this patch I realized that fadump prints below message
+>> when registered is successfully
+>> <rtas/opal> fadump: Registration is successful
+>>
+>> But there is no message when fadump is unregistered successfully. I
+>> think it is good to
+>> log that event.  I will send a separate patch for this.
+>>
+>> - Sourabh Jain
+
 
