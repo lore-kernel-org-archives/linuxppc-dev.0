@@ -1,70 +1,97 @@
-Return-Path: <linuxppc-dev+bounces-20581-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20582-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A56FACD37AA
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 May 2026 22:34:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 14065CD37AA
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 May 2026 22:41:03 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gBRrt1kkBz2xLr;
-	Fri, 08 May 2026 08:34:54 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=192.198.163.8
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778193294;
-	cv=none; b=DNfiFlQ+ji+Bjw+YGz4F53YCI9QB2mlFEGF3OUU+c+aNRHPrksR3TBhHEEA4IIe+p52P7+dRK5UatsE54WTGWs5eOCY7I1hjIcqvLGzU9XwHXhIpj0CcJnPA4KzpMzsN1YAHUupCnysyiB4KIicmr1LiK2QtnAz+ATWZZxjuJ36OzN0cHNMQ5wA4DB9c7u4dMVYhwzi/kRNRvvaQe0hFpKeXcEVBgcGorhaRIXBkk9WqVU76hq2hXZ9bmat6DasZUcn7F8qsZi2LP6TzKJRQZLcLEhkokgvbctFVv/Cy5cjQU2Z0yD7APOyU95Wm9qWkjMHh7L57FfIHlzjuw3FoCQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gBRzx4q5qz2xLr;
+	Fri, 08 May 2026 08:41:01 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778193661;
+	cv=none; b=NW7sRVmrE559E0qqwgrCRXGnGjRHizXct9LgSPnSsWwzM7aWLUB1xTmqUU4BneJzIGHt+/O848ejWCYwVDVBg+DA27/iTx7DDwcPU0cJT/Ps+FsQlnWoXza+ZK6Ev+62z4Mhq3wwIPHW7qcHg8BmvaGibXgjvUuHR+CV15cQa3I9/okh0CUyzo8Bl/vXu/HwN9w6vSdKR6C7PGg8pbYNVKZizXUxtnk2mmOGxvMYhAQhCEdzrRraqj+AtnEwW/eoe+b5VXv7wQWlkF/nUXpcTHIGJ+1z4ZEr/oIuOk8k4AXRUmysUJWv+RwQMZejIG8K79DPB3p0vahtH5OlUpwsGw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1778193294; c=relaxed/relaxed;
-	bh=jrvKFXQms2tz6vQHLZQAvhlajfm5nl38j8Vs+sh76fI=;
-	h=Date:From:To:Cc:Subject:Message-ID; b=NaRPJZ2/IZgG31/aPHElcRq9ZYaRfBSPgQFK0Ev4GTUAzsy4JYIun7STqfSNy7oMh4A/OlFaj8jh2XqJnMqknx/Ey+3fU2AcrmjboViuvPLyBdhoCmCyPhSpVFdGlh6fq9I0m2ThyvN2LpU1GAeQpJUD1+Slr+/owcycJB4HTmTptG8CFm3GvYIPb9CmVVO6l+lFhL0/dG2r6fQTTqxjPD0P0Sx5uZhHyZCIXN0PCQ+qM/4ibZcCCLYZGys0AvPG5jw5zPkmUhXT8Ri9oMCOv7iZcxS+bQSlkf0zeI2sIU1LwjF+ipwe67GIoiKpffMhw4dyVr96PdnaCLK7X1a9bA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=hcLPrpST; dkim-atps=neutral; spf=pass (client-ip=192.198.163.8; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=intel.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com
+	t=1778193661; c=relaxed/relaxed;
+	bh=L0mr9sofZvcYRPXy5sFIxX0oXJ3QsdB+9ux6RqWW0As=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
+	 MIME-Version:Content-Type; b=NS9g6c0oSnEQY0hBTO0Uw0KLoQcnxl0M2d3zIusAzc4aAWzJDY5eK5oDOyw4X7fV44p3Hvb0oXUlZ72IZ2eLFWsTC2j7nk1quKmNBEQr32huqQmvZGfh5wTyXRz5CY1NP6m6Yxm/7X1a3dtuCwyYBUEB2t4HOaBnY0hN5FRon8WNVXpLt0LLl3pkUilTcs3hgUWyo2lndNYwDxRs/U2W/Ef7IXqNEWAdEU5QbZes1+LSRLbenIZwCnRn6moIVcIgc+VuRYjf2GasQTdDoNNRi8nApS4e4YlGOME7TVTtiU1Qf0i+jk5eRDHROM87psyb+oF9yjQYQ9Np4ABNSGG6zw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=P43HVx6O; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=davemarq@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=hcLPrpST;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=P43HVx6O;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=192.198.163.8; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.8])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=davemarq@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gBRrp5TQCz2xK7
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 08 May 2026 08:34:48 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1778193291; x=1809729291;
-  h=date:from:to:cc:subject:message-id;
-  bh=Nda0Jo7oRWGRi8PmhI9ZN6mMmWsIS5YaCVag7WJzCQM=;
-  b=hcLPrpSTykH/1ZBvKG5OQBwatzEZvzvjBr1Kn0Qe2Un5ZOXEcYhHkMvr
-   W0Ir6es7rWKVf00VhlIF2qUn1FeDGppA5hF0CI7LXEXGlnuessX+w4VhR
-   mYALrwq4mTaUdfmiWg3VpMRx/2xFPbfl4FPlzDdSS1lnOPnn2ia1NhMWb
-   +aISiTSVuGsjPNsXK0pygZw2fKGR8g3QwEDC9YVLfR0SjgwrsydiJn/jM
-   ZViYF6JIRzlEW+UFEEZxBUvIF6hf6WKlE91sMI3O9Sc8uBOvFIdrQNNJ/
-   X1esnvaqYDhDv0BOBsdsRNYKG/Y3zhb1Zt3vlJPppW9xWelbXjdCoqmCN
-   Q==;
-X-CSE-ConnectionGUID: 30SBisdvTP6+O0qE7w41Mw==
-X-CSE-MsgGUID: oC/yqG+ISQawvKWhN7JYqg==
-X-IronPort-AV: E=McAfee;i="6800,10657,11779"; a="96726516"
-X-IronPort-AV: E=Sophos;i="6.23,222,1770624000"; 
-   d="scan'208";a="96726516"
-Received: from orviesa010.jf.intel.com ([10.64.159.150])
-  by fmvoesa102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 07 May 2026 15:34:46 -0700
-X-CSE-ConnectionGUID: xb3Kr27NRu2g7wO/kY19ng==
-X-CSE-MsgGUID: +Qtx3HuXRL2d4wcFKNzIFQ==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.23,222,1770624000"; 
-   d="scan'208";a="235762873"
-Received: from lkp-server01.sh.intel.com (HELO d6e19f2f5857) ([10.239.97.150])
-  by orviesa010.jf.intel.com with ESMTP; 07 May 2026 15:34:45 -0700
-Received: from kbuild by d6e19f2f5857 with local (Exim 4.98.2)
-	(envelope-from <lkp@intel.com>)
-	id 1wL7Io-000000000X9-07lQ;
-	Thu, 07 May 2026 22:34:42 +0000
-Date: Fri, 08 May 2026 06:33:55 +0800
-From: kernel test robot <lkp@intel.com>
-To: Madhavan Srinivasan <maddy@linux.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: [powerpc:merge] BUILD SUCCESS
- 2e16485a3286c4e603873c40d13adc73bdbe3845
-Message-ID: <202605080649.dXLL1U08-lkp@intel.com>
-User-Agent: s-nail v14.9.25
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gBRzr6VLHz2xK7
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 08 May 2026 08:40:56 +1000 (AEST)
+Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 647L6Mmm2725335;
+	Thu, 7 May 2026 22:40:44 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-type:date:from:in-reply-to:message-id:mime-version
+	:references:subject:to; s=pp1; bh=L0mr9sofZvcYRPXy5sFIxX0oXJ3Qsd
+	B+9ux6RqWW0As=; b=P43HVx6Oink8QPaz+Hjr5yUdK/DVlD/mUJTalE+jlXKJhB
+	wB0ofD5BqR1y9qQq35Yo7/I6KOrpxc2vn8VUhvy4G/EAd+z947lD1AuiebCC+06J
+	MMO8nvDvKPPq7ynKrMnaQSEC5mFQ57MOC6a7wwr7u5o1qfrN6yA+E26TJlbfEPph
+	uimyWO0BJgbJQUh9luIpZMox2vADD/xi0fpKNTVytv6q8YSTM3N2C6XG3TBQcrnN
+	otmJrv/YmbC5Nm+64xrevO2Wk1YTILltQNcXaZXOxX+qihH7Dh4vun7JQr/rcHa2
+	Qu7pS83GMgLNiGzw+PyPut/UACySXPhb8aXLzhUg==
+Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4dw9y501e4-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 07 May 2026 22:40:44 +0000 (GMT)
+Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma11.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 647MdW06004822;
+	Thu, 7 May 2026 22:40:43 GMT
+Received: from smtprelay02.dal12v.mail.ibm.com ([172.16.1.4])
+	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4dwx9ynjx0-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 07 May 2026 22:40:43 +0000 (GMT)
+Received: from smtpav03.dal12v.mail.ibm.com (smtpav03.dal12v.mail.ibm.com [10.241.53.102])
+	by smtprelay02.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 647MegXf31130146
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Thu, 7 May 2026 22:40:42 GMT
+Received: from smtpav03.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 44D725803F;
+	Thu,  7 May 2026 22:40:42 +0000 (GMT)
+Received: from smtpav03.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id E9BCB5805A;
+	Thu,  7 May 2026 22:40:41 +0000 (GMT)
+Received: from d (unknown [9.61.133.117])
+	by smtpav03.dal12v.mail.ibm.com (Postfix) with ESMTPS;
+	Thu,  7 May 2026 22:40:41 +0000 (GMT)
+From: Dave Marquardt <davemarq@linux.ibm.com>
+To: Tyrel Datwyler <tyreld@linux.ibm.com>
+Cc: "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
+        "Martin
+ K. Petersen" <martin.petersen@oracle.com>,
+        Madhavan Srinivasan
+ <maddy@linux.ibm.com>,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        Nicholas
+ Piggin <npiggin@gmail.com>,
+        "Christophe Leroy (CS GROUP)"
+ <chleroy@kernel.org>,
+        linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+        linuxppc-dev@lists.ozlabs.org, Brian King
+ <brking@linux.ibm.com>,
+        Greg Joyce <gjoyce@linux.ibm.com>,
+        Kyle Mahlkuch
+ <kmahlkuc@linux.ibm.com>
+Subject: Re: [PATCH 4/5] ibmvfc: use async sub-queue for FPIN messages
+In-Reply-To: <e59242e4-f353-44eb-ad48-b76a9101d4fb@linux.ibm.com> (Tyrel
+	Datwyler's message of "Wed, 6 May 2026 22:41:26 -0700")
+References: <20260408-ibmvfc-fpin-support-v1-0-52b06c464e03@linux.ibm.com>
+	<20260408-ibmvfc-fpin-support-v1-4-52b06c464e03@linux.ibm.com>
+	<e59242e4-f353-44eb-ad48-b76a9101d4fb@linux.ibm.com>
+Date: Thu, 07 May 2026 17:40:41 -0500
+Message-ID: <87ecjmetcm.fsf@linux.ibm.com>
+User-Agent: Gnus/5.13 (Gnus v5.13)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -77,254 +104,195 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
+MIME-Version: 1.0
+Content-Type: text/plain
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTA3MDIzMCBTYWx0ZWRfX6XGLpE9CQqdH
+ AFz+SZvSO3mQ911ZDSX09uJrO3CFr5XNiGLkwGakIjBrpQz+pgDS61+jOH2pYxjZA15Ymf/MhSG
+ ZUZGDnQEspLbNjQ2wWA51E6EwHG5HOz6fnB6aNCV0W8NXJTfA2SkhX+0Gc3BtFv6AdMlKB3/pLd
+ LJnBNBBd4LO0T9/VgWn3yhdYTDSwOcLQPuM7YY39g/l4mNeg87todN1jlDFTtqVLpflGCvsj0Ut
+ uoiuroIrXsPxOyJaIG/Zy+QGHUV2t0HtqRWj7DQxTtv0RxAZBKfa4r2fJ+qPSyuSk1SJ9/vDOmx
+ DYV8U9OdrI9LpMMwPzzgVfgf7+R5RE9KvnTu/yGiKCHD+9l/QYVE0Gu3dWAkmhH+LAayi8/ikvS
+ vJJW9lxMldiVI8LkVHQZ7VxZPFColHLyG8K4rN8LV8zl9bPImq2uuAey7Iz0z5Vvn6ni5ZHqnjI
+ rbbBE0i9TVHDvTwySEA==
+X-Authority-Analysis: v=2.4 cv=J4GaKgnS c=1 sm=1 tr=0 ts=69fd14ec cx=c_pps
+ a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
+ a=NGcC8JguVDcA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
+ a=RzCfie-kr_QcCd8fBx8p:22 a=VnNF1IyMAAAA:8 a=POLsQlOSEy6U3WfIj7EA:9
+X-Proofpoint-GUID: dV43-ZDSJ7Av1EtQ41yGi0Aq3JdyXlaB
+X-Proofpoint-ORIG-GUID: mwy1_MVVeNI4wL0crNjR-ibEbh7T3qow
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-05-07_02,2026-05-06_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ impostorscore=0 clxscore=1015 malwarescore=0 bulkscore=0 suspectscore=0
+ priorityscore=1501 spamscore=0 phishscore=0 adultscore=0 lowpriorityscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2604200000 definitions=main-2605070230
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git merge
-branch HEAD: 2e16485a3286c4e603873c40d13adc73bdbe3845  Automatic merge of 'fixes' into merge (2026-05-07 15:41)
+Tyrel Datwyler <tyreld@linux.ibm.com> writes:
 
-elapsed time: 726m
+> On 4/8/26 10:07 AM, Dave Marquardt via B4 Relay wrote:
+>> From: Dave Marquardt <davemarq@linux.ibm.com>
+>> 
+>> - allocate async sub-queue
+>> - allocate interrupt and set up handler
+>> - negotiate use of async sub-queue with NPIV (VIOS)
+>> - refactor ibmvfc_basic_fpin_to_desc() and ibmvfc_full_fpin_to_desc()
+>>   into common routine
+>> - add KUnit test to verify async sub-queue is allocated
+>
+> Again more descriptive commit log message required here. Also, this looks like a
+> lot of things being implmented. Can this be broken into multiple patches? It
+> sure looks like a bunch of functional changes that build on each other.
 
-configs tested: 233
-configs skipped: 9
+Yes, I'll break this up into more patches.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+>> ---
+>>  drivers/scsi/ibmvscsi/ibmvfc.c       | 325 ++++++++++++++++++++++++++++++++---
+>>  drivers/scsi/ibmvscsi/ibmvfc.h       |  29 +++-
+>>  drivers/scsi/ibmvscsi/ibmvfc_kunit.c |  52 +++---
+>>  3 files changed, 363 insertions(+), 43 deletions(-)
+>> 
+>> diff --git a/drivers/scsi/ibmvscsi/ibmvfc.c b/drivers/scsi/ibmvscsi/ibmvfc.c
+>> index 803fc3caa14d..26e39b367022 100644
+>> --- a/drivers/scsi/ibmvscsi/ibmvfc.c
+>> +++ b/drivers/scsi/ibmvscsi/ibmvfc.c
+>> @@ -1471,6 +1471,13 @@ static void ibmvfc_gather_partition_info(struct ibmvfc_host *vhost)
+>>  	of_node_put(rootdn);
+>>  }
+>>  
+>> +static __be64 ibmvfc_npiv_chan_caps[] = {
+>> +	cpu_to_be64(IBMVFC_CAN_USE_CHANNELS | IBMVFC_USE_ASYNC_SUBQ |
+>> +		    IBMVFC_YES_SCSI | IBMVFC_CAN_HANDLE_FPIN),
+>> +	cpu_to_be64(IBMVFC_CAN_USE_CHANNELS),
+>> +};
+>> +#define IBMVFC_NPIV_CHAN_CAPS_SIZE (sizeof(ibmvfc_npiv_chan_caps)/sizeof(__be64))
+>> +
+>
+> I really don't understand what you are doing here? You seem to be definig
+> various sets of capabilities, but how does the driver decide which set to use?
+> As far as I can tell the index is increased and the capabilities decrease each
+> time a transport event is received. This looks like maybe its just a testing hack.
 
-tested configs:
-alpha                             allnoconfig    gcc-15.2.0
-alpha                            allyesconfig    gcc-15.2.0
-alpha                               defconfig    gcc-15.2.0
-arc                              allmodconfig    clang-16
-arc                              allmodconfig    gcc-15.2.0
-arc                               allnoconfig    gcc-15.2.0
-arc                              allyesconfig    clang-23
-arc                              allyesconfig    gcc-15.2.0
-arc                                 defconfig    gcc-15.2.0
-arc                   randconfig-001-20260507    gcc-14.3.0
-arc                   randconfig-002-20260507    gcc-14.3.0
-arm                               allnoconfig    clang-23
-arm                              allyesconfig    clang-16
-arm                              allyesconfig    gcc-15.2.0
-arm                                 defconfig    gcc-15.2.0
-arm                   randconfig-002-20260507    gcc-14.3.0
-arm                   randconfig-004-20260507    gcc-14.3.0
-arm64                            allmodconfig    clang-19
-arm64                            allmodconfig    clang-23
-arm64                             allnoconfig    gcc-15.2.0
-arm64                               defconfig    gcc-15.2.0
-arm64                 randconfig-001-20260507    gcc-15.2.0
-arm64                 randconfig-001-20260508    gcc-14.3.0
-arm64                 randconfig-002-20260507    gcc-15.2.0
-arm64                 randconfig-002-20260508    gcc-14.3.0
-arm64                 randconfig-003-20260507    gcc-15.2.0
-arm64                 randconfig-003-20260508    gcc-14.3.0
-arm64                 randconfig-004-20260507    gcc-15.2.0
-arm64                 randconfig-004-20260508    gcc-14.3.0
-csky                             allmodconfig    gcc-15.2.0
-csky                              allnoconfig    gcc-15.2.0
-csky                                defconfig    gcc-15.2.0
-csky                  randconfig-001-20260507    gcc-15.2.0
-csky                  randconfig-001-20260508    gcc-14.3.0
-csky                  randconfig-002-20260507    gcc-15.2.0
-csky                  randconfig-002-20260508    gcc-14.3.0
-hexagon                          allmodconfig    clang-17
-hexagon                          allmodconfig    gcc-15.2.0
-hexagon                           allnoconfig    clang-23
-hexagon                             defconfig    gcc-15.2.0
-hexagon               randconfig-001-20260507    clang-23
-hexagon               randconfig-002-20260507    clang-23
-i386                             allmodconfig    clang-20
-i386                             allmodconfig    gcc-14
-i386                              allnoconfig    gcc-14
-i386                             allyesconfig    clang-20
-i386                             allyesconfig    gcc-14
-i386        buildonly-randconfig-001-20260507    clang-20
-i386        buildonly-randconfig-001-20260507    gcc-14
-i386        buildonly-randconfig-001-20260508    gcc-14
-i386        buildonly-randconfig-002-20260507    clang-20
-i386        buildonly-randconfig-002-20260507    gcc-14
-i386        buildonly-randconfig-002-20260508    gcc-14
-i386        buildonly-randconfig-003-20260507    clang-20
-i386        buildonly-randconfig-003-20260507    gcc-14
-i386        buildonly-randconfig-003-20260508    gcc-14
-i386        buildonly-randconfig-004-20260507    clang-20
-i386        buildonly-randconfig-004-20260507    gcc-14
-i386        buildonly-randconfig-004-20260508    gcc-14
-i386        buildonly-randconfig-005-20260507    clang-20
-i386        buildonly-randconfig-005-20260508    gcc-14
-i386        buildonly-randconfig-006-20260507    clang-20
-i386        buildonly-randconfig-006-20260507    gcc-14
-i386        buildonly-randconfig-006-20260508    gcc-14
-i386                                defconfig    gcc-15.2.0
-i386                  randconfig-001-20260507    gcc-14
-i386                  randconfig-001-20260508    gcc-14
-i386                  randconfig-002-20260507    gcc-14
-i386                  randconfig-002-20260508    gcc-14
-i386                  randconfig-003-20260507    gcc-14
-i386                  randconfig-003-20260508    gcc-14
-i386                  randconfig-004-20260507    gcc-14
-i386                  randconfig-004-20260508    gcc-14
-i386                  randconfig-005-20260507    gcc-14
-i386                  randconfig-005-20260508    gcc-14
-i386                  randconfig-006-20260507    gcc-14
-i386                  randconfig-006-20260508    gcc-14
-i386                  randconfig-007-20260507    gcc-14
-i386                  randconfig-007-20260508    gcc-14
-i386                  randconfig-011-20260507    clang-20
-i386                  randconfig-011-20260507    gcc-14
-i386                  randconfig-012-20260507    clang-20
-i386                  randconfig-013-20260507    clang-20
-i386                  randconfig-013-20260507    gcc-14
-i386                  randconfig-014-20260507    clang-20
-i386                  randconfig-014-20260507    gcc-14
-i386                  randconfig-015-20260507    clang-20
-i386                  randconfig-016-20260507    clang-20
-i386                  randconfig-016-20260507    gcc-14
-i386                  randconfig-017-20260507    clang-20
-i386                  randconfig-017-20260507    gcc-14
-loongarch                        allmodconfig    clang-19
-loongarch                        allmodconfig    clang-23
-loongarch                         allnoconfig    clang-23
-loongarch                           defconfig    clang-19
-loongarch             randconfig-001-20260507    clang-23
-loongarch             randconfig-002-20260507    clang-23
-m68k                             allmodconfig    gcc-15.2.0
-m68k                              allnoconfig    gcc-15.2.0
-m68k                             allyesconfig    clang-16
-m68k                             allyesconfig    gcc-15.2.0
-m68k                                defconfig    clang-19
-microblaze                        allnoconfig    gcc-15.2.0
-microblaze                       allyesconfig    gcc-15.2.0
-microblaze                          defconfig    clang-19
-mips                             allmodconfig    gcc-15.2.0
-mips                              allnoconfig    gcc-15.2.0
-mips                             allyesconfig    gcc-15.2.0
-nios2                            allmodconfig    clang-23
-nios2                            allmodconfig    gcc-11.5.0
-nios2                             allnoconfig    clang-23
-nios2                             allnoconfig    gcc-11.5.0
-nios2                               defconfig    clang-19
-nios2                 randconfig-001-20260507    clang-23
-nios2                 randconfig-002-20260507    clang-23
-openrisc                         allmodconfig    clang-23
-openrisc                         allmodconfig    gcc-15.2.0
-openrisc                          allnoconfig    clang-23
-openrisc                          allnoconfig    gcc-15.2.0
-openrisc                            defconfig    gcc-15.2.0
-parisc                           allmodconfig    gcc-15.2.0
-parisc                            allnoconfig    clang-23
-parisc                            allnoconfig    gcc-15.2.0
-parisc                           allyesconfig    clang-19
-parisc                           allyesconfig    gcc-15.2.0
-parisc                              defconfig    gcc-15.2.0
-parisc                randconfig-001-20260507    gcc-8.5.0
-parisc                randconfig-001-20260508    gcc-9.5.0
-parisc                randconfig-002-20260507    gcc-8.5.0
-parisc                randconfig-002-20260508    gcc-9.5.0
-parisc64                            defconfig    clang-19
-powerpc                          allmodconfig    gcc-15.2.0
-powerpc                           allnoconfig    clang-23
-powerpc                           allnoconfig    gcc-15.2.0
-powerpc                 mpc837x_rdb_defconfig    gcc-15.2.0
-powerpc               randconfig-001-20260507    gcc-8.5.0
-powerpc               randconfig-001-20260508    gcc-9.5.0
-powerpc               randconfig-002-20260507    gcc-8.5.0
-powerpc               randconfig-002-20260508    gcc-9.5.0
-powerpc64             randconfig-001-20260507    gcc-8.5.0
-powerpc64             randconfig-001-20260508    gcc-9.5.0
-powerpc64             randconfig-002-20260507    gcc-8.5.0
-powerpc64             randconfig-002-20260508    gcc-9.5.0
-riscv                            allmodconfig    clang-23
-riscv                             allnoconfig    clang-23
-riscv                             allnoconfig    gcc-15.2.0
-riscv                            allyesconfig    clang-16
-riscv                               defconfig    gcc-15.2.0
-s390                             allmodconfig    clang-18
-s390                             allmodconfig    clang-19
-s390                              allnoconfig    clang-23
-s390                             allyesconfig    gcc-15.2.0
-s390                                defconfig    gcc-15.2.0
-sh                               allmodconfig    gcc-15.2.0
-sh                                allnoconfig    clang-23
-sh                                allnoconfig    gcc-15.2.0
-sh                               allyesconfig    clang-19
-sh                               allyesconfig    gcc-15.2.0
-sh                                  defconfig    gcc-14
-sparc                             allnoconfig    clang-23
-sparc                             allnoconfig    gcc-15.2.0
-sparc                               defconfig    gcc-15.2.0
-sparc                          randconfig-001    gcc-12.5.0
-sparc                 randconfig-001-20260507    gcc-12.5.0
-sparc                          randconfig-002    gcc-12.5.0
-sparc                 randconfig-002-20260507    gcc-12.5.0
-sparc64                          allmodconfig    clang-23
-sparc64                             defconfig    gcc-14
-sparc64                        randconfig-001    gcc-12.5.0
-sparc64               randconfig-001-20260507    gcc-12.5.0
-sparc64                        randconfig-002    gcc-12.5.0
-sparc64               randconfig-002-20260507    gcc-12.5.0
-um                               allmodconfig    clang-19
-um                                allnoconfig    clang-23
-um                               allyesconfig    gcc-14
-um                               allyesconfig    gcc-15.2.0
-um                                  defconfig    gcc-14
-um                             i386_defconfig    gcc-14
-um                             randconfig-001    gcc-12.5.0
-um                    randconfig-001-20260507    gcc-12.5.0
-um                             randconfig-002    gcc-12.5.0
-um                    randconfig-002-20260507    gcc-12.5.0
-um                           x86_64_defconfig    gcc-14
-x86_64                           allmodconfig    clang-20
-x86_64                            allnoconfig    clang-20
-x86_64                            allnoconfig    clang-23
-x86_64                           allyesconfig    clang-20
-x86_64      buildonly-randconfig-001-20260507    clang-20
-x86_64      buildonly-randconfig-002-20260507    clang-20
-x86_64      buildonly-randconfig-003-20260507    clang-20
-x86_64      buildonly-randconfig-004-20260507    clang-20
-x86_64      buildonly-randconfig-005-20260507    clang-20
-x86_64      buildonly-randconfig-006-20260507    clang-20
-x86_64                              defconfig    gcc-14
-x86_64                                  kexec    clang-20
-x86_64                randconfig-001-20260507    gcc-14
-x86_64                randconfig-001-20260508    clang-20
-x86_64                randconfig-002-20260507    gcc-14
-x86_64                randconfig-002-20260508    clang-20
-x86_64                randconfig-003-20260507    gcc-14
-x86_64                randconfig-003-20260508    clang-20
-x86_64                randconfig-004-20260507    gcc-14
-x86_64                randconfig-004-20260508    clang-20
-x86_64                randconfig-005-20260507    gcc-14
-x86_64                randconfig-005-20260508    clang-20
-x86_64                randconfig-006-20260507    gcc-14
-x86_64                randconfig-006-20260508    clang-20
-x86_64                randconfig-011-20260507    gcc-14
-x86_64                randconfig-012-20260507    gcc-14
-x86_64                randconfig-013-20260507    gcc-14
-x86_64                randconfig-014-20260507    gcc-14
-x86_64                randconfig-015-20260507    gcc-14
-x86_64                randconfig-016-20260507    gcc-14
-x86_64                randconfig-071-20260507    clang-20
-x86_64                randconfig-072-20260507    clang-20
-x86_64                randconfig-073-20260507    clang-20
-x86_64                randconfig-074-20260507    clang-20
-x86_64                randconfig-075-20260507    clang-20
-x86_64                randconfig-076-20260507    clang-20
-x86_64                               rhel-9.4    clang-20
-x86_64                           rhel-9.4-bpf    gcc-14
-x86_64                          rhel-9.4-func    clang-20
-x86_64                    rhel-9.4-kselftests    clang-20
-x86_64                         rhel-9.4-kunit    gcc-14
-x86_64                           rhel-9.4-ltp    gcc-14
-x86_64                          rhel-9.4-rust    clang-20
-xtensa                            allnoconfig    clang-23
-xtensa                            allnoconfig    gcc-15.2.0
-xtensa                           allyesconfig    clang-23
-xtensa                         randconfig-001    gcc-12.5.0
-xtensa                randconfig-001-20260507    gcc-12.5.0
-xtensa                         randconfig-002    gcc-12.5.0
-xtensa                randconfig-002-20260507    gcc-12.5.0
+My thought was to deal with an older VIOS that doesn't support the async
+sub-queue and full FPIN. But I suppose the response should just not set the
+appropriate bits. I'll go re-read the NPIV spec and figure out if this
+is actually needed.
 
---
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+>>  /**
+>>   * ibmvfc_set_login_info - Setup info for NPIV login
+>>   * @vhost:	ibmvfc host struct
+>> @@ -1486,6 +1493,8 @@ static void ibmvfc_set_login_info(struct ibmvfc_host *vhost)
+>>  	const char *location;
+>>  	u16 max_cmds;
+>>  
+>> +	ENTER;
+>> +
+>>  	max_cmds = scsi_qdepth + IBMVFC_NUM_INTERNAL_REQ;
+>>  	if (mq_enabled)
+>>  		max_cmds += (scsi_qdepth + IBMVFC_NUM_INTERNAL_SUBQ_REQ) *
+>> @@ -1509,8 +1518,12 @@ static void ibmvfc_set_login_info(struct ibmvfc_host *vhost)
+>>  		cpu_to_be64(IBMVFC_CAN_MIGRATE | IBMVFC_CAN_SEND_VF_WWPN |
+>>  			    IBMVFC_CAN_USE_NOOP_CMD);
+>>  
+>> -	if (vhost->mq_enabled || vhost->using_channels)
+>> -		login_info->capabilities |= cpu_to_be64(IBMVFC_CAN_USE_CHANNELS);
+>> +	if (vhost->mq_enabled || vhost->using_channels) {
+>> +		if (vhost->login_cap_index >= IBMVFC_NPIV_CHAN_CAPS_SIZE)
+>> +			login_info->capabilities |= cpu_to_be64(IBMVFC_CAN_USE_CHANNELS);
+>> +		else
+>> +			login_info->capabilities |= ibmvfc_npiv_chan_caps[vhost->login_cap_index];
+>> +	}
+>>  
+>>  	login_info->async.va = cpu_to_be64(vhost->async_crq.msg_token);
+>>  	login_info->async.len = cpu_to_be32(async_crq->size *
+>> @@ -1524,6 +1537,8 @@ static void ibmvfc_set_login_info(struct ibmvfc_host *vhost)
+>>  	location = of_get_property(of_node, "ibm,loc-code", NULL);
+>>  	location = location ? location : dev_name(vhost->dev);
+>>  	strscpy(login_info->drc_name, location, sizeof(login_info->drc_name));
+>> +
+>> +	LEAVE;
+>>  }
+>>  
+>>  /**
+>> @@ -3323,7 +3338,7 @@ ibmvfc_common_fpin_to_desc(u8 fpin_status, __be64 wwpn, __be16 modifier,
+>>   * non-NULL - pointer to populated struct fc_els_fpin
+>>   */
+>>  static struct fc_els_fpin *
+>> -/*XXX*/ibmvfc_basic_fpin_to_desc(struct ibmvfc_async_crq *crq)
+>
+> I mentioned this /*XXX*/ in an earlier patch. This needs to be fixed in that patch.
+
+Yes.
+
+>> +ibmvfc_basic_fpin_to_desc(struct ibmvfc_async_crq *crq)
+>>  {
+>>  	return ibmvfc_common_fpin_to_desc(crq->fpin_status, crq->wwpn,
+>>  					  cpu_to_be16(0),
+>> @@ -3332,6 +3347,29 @@ static struct fc_els_fpin *
+>>  					  cpu_to_be32(1));
+>>  }
+>>  
+>> +/**
+>> + * ibmvfc_full_fpin_to_desc(): allocate and populate a struct fc_els_fpin struct
+>> + * containing a descriptor.
+>> + * @ibmvfc_fpin: Pointer to async subq FPIN data
+>> + *
+>> + * Allocate a struct fc_els_fpin containing a descriptor and populate
+>> + * based on data from *ibmvfc_fpin.
+>> + *
+>> + * Return:
+>> + * NULL     - unable to allocate structure
+>> + * non-NULL - pointer to populated struct fc_els_fpin
+>> + */
+>> +static struct fc_els_fpin *
+>> +ibmvfc_full_fpin_to_desc(struct ibmvfc_async_subq *ibmvfc_fpin)
+>> +{
+>> +	return ibmvfc_common_fpin_to_desc(ibmvfc_fpin->fpin_status,
+>> +					  ibmvfc_fpin->wwpn,
+>> +					  cpu_to_be16(0),
+>> +					  cpu_to_be32(IBMVFC_FPIN_DEFAULT_EVENT_PERIOD),
+>> +					  cpu_to_be32(IBMVFC_FPIN_DEFAULT_EVENT_THRESHOLD),
+>> +					  cpu_to_be32(1));
+>> +}
+>> +
+>>  /**
+>>   * ibmvfc_handle_async - Handle an async event from the adapter
+>>   * @crq:	crq to process
+>> @@ -3449,6 +3487,120 @@ VISIBLE_IF_KUNIT void ibmvfc_handle_async(struct ibmvfc_async_crq *crq,
+>>  }
+>>  EXPORT_SYMBOL_IF_KUNIT(ibmvfc_handle_async);
+>>  
+>> +VISIBLE_IF_KUNIT void ibmvfc_handle_asyncq(struct ibmvfc_crq *crq_instance,
+>> +					   struct ibmvfc_host *vhost,
+>> +					   struct list_head *evt_doneq)
+>> +{
+>> +	struct ibmvfc_async_subq *crq = (struct ibmvfc_async_subq *)crq_instance;
+>> +	const struct ibmvfc_async_desc *desc = ibmvfc_get_ae_desc(be16_to_cpu(crq->event));
+>> +	struct ibmvfc_target *tgt;
+>> +	struct fc_els_fpin *fpin;
+>> +
+>> +	ibmvfc_log(vhost, desc->log_level,
+>> +		   "%s event received. wwpn: %llx, node_name: %llx%s event 0x%x\n",
+>> +		   desc->desc, be64_to_cpu(crq->wwpn), be64_to_cpu(crq->id.node_name),
+>> +		   ibmvfc_get_link_state(crq->link_state), be16_to_cpu(crq->event));
+>
+> Was there no way to not copy/paste what looks like basically ibmvfc_handle_async
+> into ibmvfc_handle_asyncq? This is a bunch of unnecessary code bloat. The major
+> difference seems that crq->event is be64 on the standard CRQ and be16 on a
+> sub-crq and accessing certain fields differently.
+
+That's a good idea. I'll see what I can do. Seems like a little
+refactoring should make it work.
+
+> Again I think maybe we need to consider moving all the async work into a workqueue.
+
+My initial thought was to just queue the FPIN processing of
+ibmvfc_handle_asyncq to a work queue to resolve the problem of calling
+fc_host_fpin_rcv from interrupt context, but putting all of this
+processing into a work queue would work too. I'll look into it.
+
+-Dave
 
