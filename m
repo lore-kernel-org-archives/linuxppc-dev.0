@@ -1,62 +1,93 @@
-Return-Path: <linuxppc-dev+bounces-20557-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20558-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 23F7CCD3427
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 May 2026 06:13:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E13A0CD3442
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 May 2026 08:08:54 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gB24t4JdTz2yrD;
-	Thu, 07 May 2026 16:13:50 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778134430;
-	cv=none; b=ENeO4HH1ZXVseX/oC6up3pLKiep/nOYu9554qk/5uZzNsdh6ZfxpyS2lp/XE2wHSif8ruLsbfe4SQCzZgj4ekuFrl46C7//bp0P4H2GBADPjOE40TzlOrVgNYap4VFJEtes41HGc80f81q9zn+SAl3WPWFOTzfZ5iEv9/XwAXgeMQ775Xw3kOaq42BngmyVr/FaU536GUXH3YlDrvRa9pPqprYwnx9R/yAK4gBByjjpasYDPT7a4dDLszMLUJ3oqRbYpLvJPAqVYUSY+6N2xYamjpCPXKMKLzM9M/3aEGsLm22YA2/4T96JwO3s8IbJFTResSJfNxGsZqtp+vnaPmA==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1778134430; c=relaxed/relaxed;
-	bh=lYGBqr8XFBQ09CkUVdZZNfV9QX8hnb8GjkvbvaHriVw=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=kfzAT1r0kAwKMVLQhVU/touNAOvh4UZzVEvEENYXzQHlA8NoxGvO5ljvEU+p7QfS8575Oj1SIuFP22zmrTTe+Sh38kPOA7EOAAY32U6gECHNe7q9IufcrXbjsg5TxoEvqS6gOmHGqpNeWZse5cC82+fd1xRseJ4+3/Ixirx4B5b/+uF9o9GB2XGYZJYkDXxqT/G5JvWVvQHAcYazxTmHRtXFIIjoBaN9hrJ+QsvjRx9S2tLk7CHSMs+NF31Wzb/1IgZjqc8n5EvTyf7A4jmIRTZOnKhk2idFrr/JqcFUGWDsDmHtQMNHJ6cIDkfylU7rE+1LDAeIPfqabetwsn2V4Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=O1SL7zhc; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=namhyung@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gB4dd167lz2yrD;
+	Thu, 07 May 2026 18:08:53 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a00:1450:4864:20::332" arc.chain=google.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778141333;
+	cv=pass; b=oHK91njOGO1eWzFmFtvSFRNb9Pd2ySbp7u1eZbwoe/t3GlVru3P6+RM4NKN0KvrcsxEdWfjHbMW5F9iZ4/HJ5P/WlBPAYnf0ZLG5vY9wonKmEemnhj6g5ThsAaePv69tbma7ASkqBf/g30bTHxC/+CWEfYK6GQmT7FDvIdoSF5YEgaQa2CZPtwG5tkx5WTZSNfIqqjz+EqSirAncaolp2nvhP+pGp3a1dEgPL7JAS9jQT7snKXA0t3aN7wnhMnCoV28Ko5WrpA9Hon6BWsrNdj6EWOiwG2DFq7C61i9L4DZaneV56m1v86UKjTLS5zbJ5fCMnumyWDLUONlE4McVRg==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1778141333; c=relaxed/relaxed;
+	bh=bH18x2Bwp1QntCq+a0wK+QUNAj3ZgG+unSQ0n2RRfDQ=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=ZypNpc9PFPzDnR7lXdYVnG7tpt8SLGTTDPUvCTMTXIHtcgCaGAtiKawn4ssArsH9cbKv9BU8P1vSdXY9WRnusAKy700xB6pjM0pANi8yI0UyfbJXdkyCLifr9rHesYy0Y0lObzN0qMSBZdTAkUaL3N7IzL4JxeoOuvXPOEEAswsehb22gB2qAW4DHUSIGfi55VEsEY0E+y0L1aY+oA+MAma4fyseG1dRE/f+QzdfmLBsf1zDrper9JAFPkqOPF5LgOnnvq6L6xoLXikt+Fqo/ONGOcXJwA2dyvttq7fKFAUzcEo7CEwR80kIThjXFxuuO7EydsIVA9Tg5mvraZH90w==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=lRUu7/Os; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::332; helo=mail-wm1-x332.google.com; envelope-from=adri.vero.dev@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=O1SL7zhc;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=lRUu7/Os;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=namhyung@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::332; helo=mail-wm1-x332.google.com; envelope-from=adri.vero.dev@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-wm1-x332.google.com (mail-wm1-x332.google.com [IPv6:2a00:1450:4864:20::332])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gB24s4FJgz2xlm
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 07 May 2026 16:13:49 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 9325743C96;
-	Thu,  7 May 2026 06:13:45 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id DC05FC2BCB8;
-	Thu,  7 May 2026 06:13:44 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1778134425;
-	bh=/fOGlmO82MYiNksLou9+DYkXXjNNOJOZwge6qWlpEOk=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=O1SL7zhcohHCqXKMWZaPdXcpgQgH1z7X+h9hV9UYekMxS+z1I7N0h0S6dNL17ETII
-	 pU1/MD4NxjxqlqdmtcDQYIWp2Uxj1ppSZpVZzwJIsPEZDVzheL42ggqSC3q/MOg9Fr
-	 2t4ghNTIksaiIb1OG4X/x7EzvYDPRZWg2xOl5YfYGdmK8BPbnrcVdcFazrHsLGIExv
-	 hZeWhlVnqv87dqwf+ycQ71pa0zI5yaerTfmMoteWPpm+u6z9Nf/XSn0mUC5fKo5hsF
-	 9hgbLhVGUspGMJjz4KNalpYCB4+SL7yUGnHYrLwr82EaugvtGv48TGeZ4C9EvB1AJh
-	 7BjDjivXaZJbA==
-Date: Wed, 6 May 2026 23:13:43 -0700
-From: Namhyung Kim <namhyung@kernel.org>
-To: Athira Rajeev <atrajeev@linux.ibm.com>
-Cc: acme@kernel.org, jolsa@kernel.org, adrian.hunter@intel.com,
-	mpetlan@redhat.com, tmricht@linux.ibm.com, maddy@linux.ibm.com,
-	irogers@google.com, linux-perf-users@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org, hbathini@linux.vnet.ibm.com,
-	Tejas.Manhas1@ibm.com, Tanushree.Shah@ibm.com,
-	shivani@linux.ibm.com
-Subject: Re: [PATCH V5 1/2] powerpc tools perf: Initialize error code in
- auxtrace_record_init function
-Message-ID: <afwtl1zodrSUpK7n@z2>
-References: <20260504151321.12346-1-atrajeev@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gB4db4DZ9z2xYw
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 07 May 2026 18:08:50 +1000 (AEST)
+Received: by mail-wm1-x332.google.com with SMTP id 5b1f17b1804b1-488ad135063so4736185e9.0
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 07 May 2026 01:08:50 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1778141327; cv=none;
+        d=google.com; s=arc-20240605;
+        b=kqzSKmt3wACD8kTJnYMDqeY14HWtjyJCjpdwPWLSxhheJ+XD3Q8aGZ4029ZnTf85tF
+         s3yRIGMizQu+I9kGNl2Ih6rMRO231DIsleSDXpfEIp4fM+opxcAY5w7qZf5mAaoGn3/5
+         41ECZ69IyLQPbVgXWhncwffAkRwt/DBtxYMUJMprt+qKCw+Keexwr4/dcqQOwHATO48I
+         C4vgLat86JyXSBrLJFrkNje3sDkeF4myMSerk3Ya2cpi4yVg2RgqHbqqjLeDfPYMzBwb
+         J47gZCTZfehx4RWsv+luRgRUa1VaZlc40gW/uf7KNzEwHASJGeFVE+2YkiNuBz9Luw3J
+         RWGg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=bH18x2Bwp1QntCq+a0wK+QUNAj3ZgG+unSQ0n2RRfDQ=;
+        fh=CKRmAZr1pgauo+1kqzpiMxYUbeiyYh2mQo6T2dW0v98=;
+        b=KVDVW/2/+SF0RbbBjPbi43lYPeVRVx9yADM/wMdm+XCPz4XDM5ObowKFZGRLbvOHU5
+         qxdvxzdzCStzCdU/IHhNxSrk8qjla0WSViayzyGk0UB4aC9821TX8dk3bMpf70qrRGj2
+         bfA6hCk99wYgEtBxYZAtEUj3cOvsOTyFso9eZXL8mIjbCV5F1tZcHFR5msIMBlpZ0P0I
+         ztU7OXAZV4KEAerGZZQhvQHHKWhc5nvDewmOXAf7JIl0us3e/krtwKyThFsQxtnNg9QV
+         kqmzwHqopnA6caZhfPVtcW0Qo+9W18psWdmqJky1XfTanS2oW7hnlZVq3VvD8lAwS9Id
+         sqLg==;
+        darn=lists.ozlabs.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1778141327; x=1778746127; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=bH18x2Bwp1QntCq+a0wK+QUNAj3ZgG+unSQ0n2RRfDQ=;
+        b=lRUu7/OsAW9jmhGV2QNkerG8W7+m0mWJ7zNuA6aR/VA79MNwwxyZNgzqRls2PyhrPs
+         /GO7OWyE0QxEeGowzH+VaY9FvJUva+6myg5BB7en47ce6aswt2yxAxPIFnK1Az0Afg37
+         zttwbqOy2gMdJ5kL4LT4lXcGrjVBBSgB64aIfpNhseJ8iLbDm6rhA5G99WoDYb7MBtw5
+         eRxBUt1unq09zoxuantAMdqziHimQZ1Gwqm1K2nzgodHq5y5Frz9RKQNEL1qPGBdL7aW
+         CXqPOvSUa5tRjq/buHkfLGY10rWh3eQCehm9uNmjLc2b7bCn4brjZpZwXO41VDFUQbjo
+         v4TA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1778141327; x=1778746127;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=bH18x2Bwp1QntCq+a0wK+QUNAj3ZgG+unSQ0n2RRfDQ=;
+        b=PAx0GsOhmDLXssX/+kmVA8PfFiPtKobDghzy4gKUpDWrFCHKc8VB0qRdwUQQi7cts4
+         AqdbhdffSpmtyfV4szVuFZKEZ0kCaL2WR5pPBI6JydAnS5XaQUHpUGe0KMfAj7yptfIe
+         PKNYjWx9wtOdWobZ4Mg4EWu+KXI5tTvgiM2EiecZnP0WLqE02XonEbPTu8G3EnfNvkqS
+         fs9B5Qwxgja8yi9ItjKWCZzh+CtDlr+gRYL3tDmOvmK4fzq3RLbhojxmJJTUVdvC2Hfd
+         RE2phqHKKo6EgLxVNJcsad3XKBhmC37vempk4diDzU98i/NG2FFuYCPmkvz9k7X4wt51
+         KS1A==
+X-Forwarded-Encrypted: i=1; AFNElJ9i0PlyJTcZCLfrpKIWaEjD01MSV0cWpqLTh/riv/xcL2dpbuRh28hq4QcLRiRIeide3POeJMyMqdAkrlI=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YyMRfGkEJRkff0f6pzLpWsr1RB5NPKlrOmZfOx4EihQR9iuiXGw
+	LcxlZHB2jbucd5hB4GfNQHXsbP+NoOO7wNjD5nqkL5pabPZOVabfaPHjIZW0VLX85XTdNL/xxyr
+	dcOku3C0IKezYUcTOE85MOk4OMQpGM5A=
+X-Gm-Gg: AeBDievtPR8vAk5jZKf78Mb9IeuANhy7jkSMdmIWTruWhNXKdvVRHVZsFAZ2C0gU0aA
+	CsPrSLxOizRZF2nTJl1XsChd3TYxX6Z6i2sEwOnKjH+kv9DxaQ5ReGdNxr9KQjE8YHZLDObGogH
+	chsjvUOfKOnZ2RsNioZVOVXYuSznrmszQzL1r5w48gLbfHzdrdjhiCh2reVstkd+MVgzYXP+1MK
+	mrb5mpoPHV+SEt5Kmd4IHUJGpPgbr/CUokSWJnIxBEXtufsiGky1H80zWjXb+t14dwARTM094Fi
+	eOuVxsU061ynE3O47PKFt+gq0pc0JTVWCx70bw==
+X-Received: by 2002:a05:600c:46d2:b0:485:364e:9328 with SMTP id
+ 5b1f17b1804b1-48e51f32aebmr107126475e9.16.1778141326456; Thu, 07 May 2026
+ 01:08:46 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -70,120 +101,224 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20260504151321.12346-1-atrajeev@linux.ibm.com>
+References: <20260419065039.23495-1-adri.vero.dev@gmail.com>
+ <20260506222024.30352-1-adri.vero.dev@gmail.com> <a582e27b-fb51-473a-802c-6ffb83e7ce63@linux.ibm.com>
+In-Reply-To: <a582e27b-fb51-473a-802c-6ffb83e7ce63@linux.ibm.com>
+From: Adriano Vero <adri.vero.dev@gmail.com>
+Date: Thu, 7 May 2026 10:08:34 +0200
+X-Gm-Features: AVHnY4Kd6NSLwhFQc5XF1aHq5CWYDfsURZw01Tpgb-2OCAv1tKESDDiwS-ZmRo4
+Message-ID: <CAGKWbKsA7-8yiPuYdNXrpXkideqpCtfXFaz62yDqAKizgYT_CQ@mail.gmail.com>
+Subject: Re: [PATCH v3] powerpc/fadump: Add timeout to RTAS busy-wait loops
+To: Sourabh Jain <sourabhjain@linux.ibm.com>
+Cc: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com, 
+	chleroy@kernel.org, linuxppc-dev@lists.ozlabs.org, 
+	linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On Mon, May 04, 2026 at 08:43:20PM +0530, Athira Rajeev wrote:
-> perf trace record fails some cases in powerpc
-> 
->  # ./perf test "perf trace record and replay"
->  128: perf trace record and replay                                    : FAILED!
-> 
->  # ./perf trace record sleep 1
->  # echo $?
->    32
-> 
-> This is happening because of non-zero err value from
-> auxtrace_record__init() function.
-> 
->  static int record__auxtrace_init(struct record *rec)
->  {
->         int err;
-> 
->         if ((rec->opts.auxtrace_snapshot_opts || rec->opts.auxtrace_sample_opts)
->             && record__threads_enabled(rec)) {
->                 pr_err("AUX area tracing options are not available in parallel streaming mode.\n");
->                 return -EINVAL;
->         }
-> 
->         if (!rec->itr) {
->                 rec->itr = auxtrace_record__init(rec->evlist, &err);
->                 if (err)
->                         return err;
->         }
-> 
-> Here "int err" is not initialised. The code expects "err" to be set
-> from auxtrace_record__init() function.
-> 
-> Update auxtrace_record__init() in arch/powerpc/util/auxtrace.c to clear
-> err value in the beginning.
-> 
-> - Clear err value in beginning of function. Any fail later will
-> set appropriate return code to err.
-> - Even if we haven't found any event for auxtrace, perf record
-> should continue for other events. NULL return
-> will indicate that there is no auxtrace record initialized.
-> - Not having "err" set here will affect monitoring of other events
-> also because perf record will fail seeing random value in err.
-> 
-> Set err to -EINVAL before invoking auxtrace_record__init() in
-> builtin-record.c
-> 
-> With the fix,
-> 
->  # ./perf trace record sleep 1
->  [ perf record: Woken up 2 times to write data ]
->  [ perf record: Captured and wrote 0.033 MB perf.data (228 samples) ]
-> 
-> Fixes: 1dbfaf94cf66 ("perf powerpc: Add basic CONFIG_AUXTRACE support for VPA pmu on powerpc")
-> Reviewed-by: Adrian Hunter <adrian.hunter@intel.com>
-> Signed-off-by: Athira Rajeev <atrajeev@linux.ibm.com>
+Hi Sourabh,
 
-For both patches,
+Understood, I'll keep that in mind for future patches. Thanks for
+the guidance.
 
-Acked-by: Namhyung Kim <namhyung@kernel.org>
+Adriano
 
-Thanks,
-Namhyung
-
-> ---
-> Changelog:
-> v4:
-> Added Reviewed-by from Adrian
-> 
-> v1 -> v2
-> Addressed review comment from Adrian:
-> - Set err to -EINVAL before invoking auxtrace_record__init() in
->   builtin-record.c
-> - Added kernel-doc to auxtrace_record__init() in tools/perf/util/auxtrace.c
-> Addressed review comment from Namhyung:
-> - Added fixes tag
-> 
->  tools/perf/arch/powerpc/util/auxtrace.c | 6 ++++++
->  tools/perf/builtin-record.c             | 1 +
->  2 files changed, 7 insertions(+)
-> 
-> diff --git a/tools/perf/arch/powerpc/util/auxtrace.c b/tools/perf/arch/powerpc/util/auxtrace.c
-> index e39deff6c857..4600a1661b4f 100644
-> --- a/tools/perf/arch/powerpc/util/auxtrace.c
-> +++ b/tools/perf/arch/powerpc/util/auxtrace.c
-> @@ -71,6 +71,12 @@ struct auxtrace_record *auxtrace_record__init(struct evlist *evlist,
->  	struct evsel *pos;
->  	int found = 0;
->  
-> +	/*
-> +	 * Set err value to zero here. Any fail later
-> +	 * will set appropriate return code to err.
-> +	 */
-> +	*err = 0;
-> +
->  	evlist__for_each_entry(evlist, pos) {
->  		if (strstarts(pos->name, "vpa_dtl")) {
->  			found = 1;
-> diff --git a/tools/perf/builtin-record.c b/tools/perf/builtin-record.c
-> index 4a5eba498c02..708825747af5 100644
-> --- a/tools/perf/builtin-record.c
-> +++ b/tools/perf/builtin-record.c
-> @@ -865,6 +865,7 @@ static int record__auxtrace_init(struct record *rec)
->  	}
->  
->  	if (!rec->itr) {
-> +		err = -EINVAL;
->  		rec->itr = auxtrace_record__init(rec->evlist, &err);
->  		if (err)
->  			return err;
-> -- 
-> 2.47.3
-> 
+On Thu, May 7, 2026 at 6:16=E2=80=AFAM Sourabh Jain <sourabhjain@linux.ibm.=
+com> wrote:
+>
+> Hello Adriano,
+>
+> On 07/05/26 03:50, Adriano Vero wrote:
+> > The ibm,configure-kernel-dump RTAS call sites in
+> > rtas_fadump_register(), rtas_fadump_unregister(), and
+> > rtas_fadump_invalidate() polled indefinitely while firmware returned
+> > a busy status. A misbehaving or hung firmware could stall these paths
+> > forever, blocking fadump registration at boot or preventing clean
+> > teardown.
+> >
+> > Introduce rtas_fadump_call(), a helper that wraps the common
+> > busy-wait pattern shared by all three sites. The helper accumulates
+> > the total delay and returns -ETIMEDOUT if firmware keeps returning a
+> > busy status beyond RTAS_FADUMP_MAX_WAIT_MS (60 seconds). A pr_debug()
+> > message is emitted on each busy iteration to aid diagnosis when the
+> > timeout is hit.
+> >
+> > Signed-off-by: Adriano Vero <adri.vero.dev@gmail.com>
+> >
+> > Reviewed-by: Sourabh Jain <sourabhjain@linux.ibm.com>
+>
+> New line between tags is unnecessary.
+>
+> Including a Changelog in subsequent versions of the same patch is
+> helpful for the maintainer and reviewers to understand what has changed
+> in this version compared to the previous version.
+>
+> For example:
+> https://lore.kernel.org/all/20260407124349.1698552-1-sourabhjain@linux.ib=
+m.com/
+>
+> Thanks,
+> Sourabh Jain
+>
+> > ---
+> >   arch/powerpc/platforms/pseries/rtas-fadump.c | 80 ++++++++++++-------=
+-
+> >   arch/powerpc/platforms/pseries/rtas-fadump.h |  6 ++
+> >   2 files changed, 53 insertions(+), 33 deletions(-)
+> >
+> > diff --git a/arch/powerpc/platforms/pseries/rtas-fadump.c b/arch/powerp=
+c/platforms/pseries/rtas-fadump.c
+> > index eceb3289383e..3bb4ac2ab6cc 100644
+> > --- a/arch/powerpc/platforms/pseries/rtas-fadump.c
+> > +++ b/arch/powerpc/platforms/pseries/rtas-fadump.c
+> > @@ -179,9 +179,42 @@ static u64 rtas_fadump_get_bootmem_min(void)
+> >       return RTAS_FADUMP_MIN_BOOT_MEM;
+> >   }
+> >
+> > +/*
+> > + * Helper to make an ibm,configure-kernel-dump RTAS call with a bounde=
+d
+> > + * busy-wait loop. Returns the RTAS return code on completion, or
+> > + * -ETIMEDOUT if firmware keeps returning a busy status beyond
+> > + * RTAS_FADUMP_MAX_WAIT_MS milliseconds.
+> > + */
+> > +static int rtas_fadump_call(struct fw_dump *fadump_conf, int operation=
+,
+> > +                         void *fdm_ptr, unsigned int fdm_size,
+> > +                         const char *op_name)
+> > +{
+> > +     unsigned int wait_time, total_wait =3D 0;
+> > +     int rc;
+> > +
+> > +     do {
+> > +             rc =3D rtas_call(fadump_conf->ibm_configure_kernel_dump, =
+3, 1,
+> > +                            NULL, operation, fdm_ptr, fdm_size);
+> > +             wait_time =3D rtas_busy_delay_time(rc);
+> > +             if (wait_time) {
+> > +                     pr_debug("Firmware busy during fadump %s, waiting=
+ %ums (total %ums)\n",
+> > +                              op_name, wait_time, total_wait);
+> > +                     if (total_wait >=3D RTAS_FADUMP_MAX_WAIT_MS) {
+> > +                             pr_err("Timed out waiting for firmware to=
+ complete fadump %s\n",
+> > +                                    op_name);
+> > +                             return -ETIMEDOUT;
+> > +                     }
+> > +                     total_wait +=3D wait_time;
+> > +                     mdelay(wait_time);
+> > +             }
+> > +     } while (wait_time);
+> > +
+> > +     return rc;
+> > +}
+> > +
+> >   static int rtas_fadump_register(struct fw_dump *fadump_conf)
+> >   {
+> > -     unsigned int wait_time, fdm_size;
+> > +     unsigned int fdm_size;
+> >       int rc, err =3D -EIO;
+> >
+> >       /*
+> > @@ -192,16 +225,10 @@ static int rtas_fadump_register(struct fw_dump *f=
+adump_conf)
+> >       fdm_size =3D sizeof(struct rtas_fadump_section_header);
+> >       fdm_size +=3D be16_to_cpu(fdm.header.dump_num_sections) * sizeof(=
+struct rtas_fadump_section);
+> >
+> > -     /* TODO: Add upper time limit for the delay */
+> > -     do {
+> > -             rc =3D  rtas_call(fadump_conf->ibm_configure_kernel_dump,=
+ 3, 1,
+> > -                             NULL, FADUMP_REGISTER, &fdm, fdm_size);
+> > -
+> > -             wait_time =3D rtas_busy_delay_time(rc);
+> > -             if (wait_time)
+> > -                     mdelay(wait_time);
+> > -
+> > -     } while (wait_time);
+> > +     rc =3D rtas_fadump_call(fadump_conf, FADUMP_REGISTER, &fdm, fdm_s=
+ize,
+> > +                           "register");
+> > +     if (rc =3D=3D -ETIMEDOUT)
+> > +             return -ETIMEDOUT;
+> >
+> >       switch (rc) {
+> >       case 0:
+> > @@ -234,19 +261,12 @@ static int rtas_fadump_register(struct fw_dump *f=
+adump_conf)
+> >
+> >   static int rtas_fadump_unregister(struct fw_dump *fadump_conf)
+> >   {
+> > -     unsigned int wait_time;
+> >       int rc;
+> >
+> > -     /* TODO: Add upper time limit for the delay */
+> > -     do {
+> > -             rc =3D  rtas_call(fadump_conf->ibm_configure_kernel_dump,=
+ 3, 1,
+> > -                             NULL, FADUMP_UNREGISTER, &fdm,
+> > -                             sizeof(struct rtas_fadump_mem_struct));
+> > -
+> > -             wait_time =3D rtas_busy_delay_time(rc);
+> > -             if (wait_time)
+> > -                     mdelay(wait_time);
+> > -     } while (wait_time);
+> > +     rc =3D rtas_fadump_call(fadump_conf, FADUMP_UNREGISTER, &fdm,
+> > +                           sizeof(struct rtas_fadump_mem_struct), "unr=
+egister");
+> > +     if (rc =3D=3D -ETIMEDOUT)
+> > +             return -ETIMEDOUT;
+> >
+> >       if (rc) {
+> >               pr_err("Failed to un-register - unexpected error(%d).\n",=
+ rc);
+> > @@ -259,19 +279,13 @@ static int rtas_fadump_unregister(struct fw_dump =
+*fadump_conf)
+> >
+> >   static int rtas_fadump_invalidate(struct fw_dump *fadump_conf)
+> >   {
+> > -     unsigned int wait_time;
+> >       int rc;
+> >
+> > -     /* TODO: Add upper time limit for the delay */
+> > -     do {
+> > -             rc =3D  rtas_call(fadump_conf->ibm_configure_kernel_dump,=
+ 3, 1,
+> > -                             NULL, FADUMP_INVALIDATE, fdm_active,
+> > -                             sizeof(struct rtas_fadump_mem_struct));
+> > -
+> > -             wait_time =3D rtas_busy_delay_time(rc);
+> > -             if (wait_time)
+> > -                     mdelay(wait_time);
+> > -     } while (wait_time);
+> > +     rc =3D rtas_fadump_call(fadump_conf, FADUMP_INVALIDATE,
+> > +                           (void *)fdm_active,
+> > +                           sizeof(struct rtas_fadump_mem_struct), "inv=
+alidate");
+> > +     if (rc =3D=3D -ETIMEDOUT)
+> > +             return -ETIMEDOUT;
+> >
+> >       if (rc) {
+> >               pr_err("Failed to invalidate - unexpected error (%d).\n",=
+ rc);
+> > diff --git a/arch/powerpc/platforms/pseries/rtas-fadump.h b/arch/powerp=
+c/platforms/pseries/rtas-fadump.h
+> > index c109abf6befd..65fdab7b5b8d 100644
+> > --- a/arch/powerpc/platforms/pseries/rtas-fadump.h
+> > +++ b/arch/powerpc/platforms/pseries/rtas-fadump.h
+> > @@ -41,6 +41,12 @@
+> >   #define MAX_SECTIONS                                10
+> >   #define RTAS_FADUMP_MAX_BOOT_MEM_REGS               7
+> >
+> > +/*
+> > + * Maximum time to wait for firmware to respond to an
+> > + * ibm,configure-kernel-dump RTAS call before giving up.
+> > + */
+> > +#define RTAS_FADUMP_MAX_WAIT_MS                      60000U
+> > +
+> >   /* Kernel Dump section info */
+> >   struct rtas_fadump_section {
+> >       __be32  request_flag;
+>
 
