@@ -1,87 +1,97 @@
-Return-Path: <linuxppc-dev+bounces-20625-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20626-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 96F5ACD3447
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 May 2026 13:19:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D606ACD3436
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 May 2026 14:38:45 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gBqTH2BzTz3cD1;
-	Fri, 08 May 2026 23:19:15 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778246355;
-	cv=none; b=WP6keJqx7l063GMPWr2vOWVvsowX6r+/mPcDvJoTr8R31r4usv8MWbexDwKz6KwMTV17NX+33wyft3BtgVIgdnI8v5Vkjjg0UeMc7cl4aV3j3TgBMEr2mJwNkByspziFpsfwyNattE+myfqb+GwuKxQVkQFAfDwRx7QF8qOHnB4dbgMI3EtHC2jMeowVGNOndtF1srn+WTS7hmfp35bspW2i004Z/O9oI1vBFae+EU0FWuOLxtMo43Wn/D9X/dbFGwGP3aphwkDOtfDKaiLCYaILkgEKh6Gh+m7uVYirNNK/aCLMQAspUYewnH2b481916snZGvrJcnLfXYK1MT2gg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gBsF00M5Dz2xfR;
+	Sat, 09 May 2026 00:38:44 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778251123;
+	cv=none; b=WEMC2NlqA/s3Ev+++R8y7e4oY0D4AeBsSQ5YeBfRxvg4FHjq25NAJ6BmSebl6EeWD4XZ2k0BPK7EDVouE7wIJnWAhS0H36ZVzEmOLk0hSQMAhTWeL4D00DH7uOtJzpRsWVZ7uu/lEMjd+Jwi8VHBiLCjXsHaPzgMlJE9gnR0YNZj2iGkpJquqJNjE1Xf7cNPAwdDXXbREBdKXzvrQy8QdenQmItzBWfC8G6YiYc5WwkPcVdKccjzIBOOnUAVEXK+Foo0KGad5c9pgV2kooCARkgHxu22c673dbazecCOoPYL9Yq8K36G7OCzvotVdN8IUb6foxWQbmyTsWXAPB5m3w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1778246355; c=relaxed/relaxed;
-	bh=5zDAl5yK04xMRqaDvYQgtU6Zwb3HfqgsIF5xPvu+ifo=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=Uj9IXRsVehm7C9CGoSpRh+DN8zHGUOLK5jtFXzPeWqDE0NlxP0GbT9MqZljr+/LHGMsxqOZ5inzEul/nmmAbgG9cRuhyVik9bRzetJzczKsTfCVmKpNez461BA3cZkmuhsBqIzw0pbf++eYC2xqLzz7PlHB7NyPFYyJdONvFURaWONaa2L0LqEQSs9UN+F2JAb9cs/v0CGNxhMVsa3v14pCQ89NaTsqKLAigWnZsIKdzAqsZt3WLXPJnt2AjKasZ7qLygQauyB9p5Dx5jhNFy8x3dr8a/k8AO4f2i+pLiDxBksQBzvNX7W4GCmqMw2ibCjHGmAfPAsi7hhfXBVa8EA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Ysovb7eN; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=frederic@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1778251123; c=relaxed/relaxed;
+	bh=RXHh4OkTlgVUfYlT8QNRojbDHOMsEuF3j/SgfQCtKj8=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
+	 MIME-Version:Content-Type; b=AYKzY6LTiO4cq/YsJEskoFJ08T4cJ6Mfn/ycc+VoP8JSLZ/2lS+A8GdrJ9PLzUMGdP7euz+4JtKaONkMrL4rheiV1Tp9U4EMbPGIIlSe4T+mCze3xTdfKY3IiA92v6Bblb7iuC29LUtjbt/f7Z3qQsG+Z7fnpq8DofP/qhUaFwvqOgG2ddw019l6xAXJlCmcbZDhPwW+h/pH7QxvCI0roeMIdTHPbQ1Joq/Z+I7kja8cYePpwbQVFUIOdDhr5NvwCaNPEdQYLqFieXegdz3n+ybwQ2LwfEb29l+cWcHP/ok7U1m3TXoYhdrw5aKP4S9hW0cODur/gd9Y/5Nflj+2vw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=SISgIlJV; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=davemarq@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Ysovb7eN;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=SISgIlJV;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=frederic@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=davemarq@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gBqTG38CZz30hC
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 08 May 2026 23:19:14 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 64E0543A49;
-	Fri,  8 May 2026 13:19:12 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 382E1C2BCB0;
-	Fri,  8 May 2026 13:19:04 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1778246352;
-	bh=ZjX/QGQBOtdWF89NEwjI8Sd6Nc6B1+H44Jj11M9iRNo=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=Ysovb7eNkYkPJa7Y4YwjblV8Mxrcy0tbylEObsepug8kgYoUJExyaen1oJu9s0bYa
-	 CgtAR/WpjwWvDrqdJbJ2UR4fHPupCBU4ozlEIHPyDoFlIGdswhk44tFgsQ5aAA1je7
-	 /6QxKhDX8HAcHrbyEhpgYmIplj+Sl395pQp4+xEUYB6QfNrgRyg61UFDrXdrSu4+nl
-	 a21boZPKYWjAneLvHg3aCOVD7Gg9txu50iG7Q6x+Yp9iud4Z/v5dEXYpuJmZU45wFn
-	 Jwd7d7Krwuk3mQwa3bVoESLLXc/HKqcQXhwV9xTgrsrs9pS0thbF/A8lJGlwiDCkeE
-	 vJrFX6lLhP0UA==
-From: Frederic Weisbecker <frederic@kernel.org>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Frederic Weisbecker <frederic@kernel.org>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Alexander Gordeev <agordeev@linux.ibm.com>,
-	Anna-Maria Behnsen <anna-maria@linutronix.de>,
-	Ben Segall <bsegall@google.com>, Boqun Feng <boqun.feng@gmail.com>,
-	Christian Borntraeger <borntraeger@linux.ibm.com>,
-	Dietmar Eggemann <dietmar.eggemann@arm.com>,
-	Heiko Carstens <hca@linux.ibm.com>, Ingo Molnar <mingo@kernel.org>,
-	Ingo Molnar <mingo@redhat.com>, Jan Kiszka <jan.kiszka@siemens.com>,
-	Joel Fernandes <joelagnelf@nvidia.com>,
-	Juri Lelli <juri.lelli@redhat.com>,
-	Kieran Bingham <kbingham@kernel.org>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Mel Gorman <mgorman@suse.de>, Michael Ellerman <mpe@ellerman.id.au>,
-	Neeraj Upadhyay <neeraj.upadhyay@kernel.org>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	"Paul E . McKenney" <paulmck@kernel.org>,
-	Peter Zijlstra <peterz@infradead.org>, Sashiko@lists.ozlabs.org,
-	Shrikanth Hegde <sshegde@linux.ibm.com>,
-	Steven Rostedt <rostedt@goodmis.org>,
-	Sven Schnelle <svens@linux.ibm.com>,
-	Thomas Gleixner <tglx@linutronix.de>,
-	Uladzislau Rezki <urezki@gmail.com>,
-	Valentin Schneider <vschneid@redhat.com>,
-	Vasily Gorbik <gor@linux.ibm.com>,
-	Vincent Guittot <vincent.guittot@linaro.org>,
-	Viresh Kumar <viresh.kumar@linaro.org>,
-	Xin Zhao <jackzxcui1989@163.com>, linux-pm@vger.kernel.org,
-	linux-s390@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 15/15] sched/cputime: Handle dyntick-idle steal time correctly
-Date: Fri,  8 May 2026 15:16:47 +0200
-Message-ID: <20260508131647.43868-16-frederic@kernel.org>
-X-Mailer: git-send-email 2.53.0
-In-Reply-To: <20260508131647.43868-1-frederic@kernel.org>
-References: <20260508131647.43868-1-frederic@kernel.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gBsDy3sGpz2xdb
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 09 May 2026 00:38:41 +1000 (AEST)
+Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6480xjaF2577247;
+	Fri, 8 May 2026 14:38:24 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-type:date:from:in-reply-to:message-id:mime-version
+	:references:subject:to; s=pp1; bh=RXHh4OkTlgVUfYlT8QNRojbDHOMsEu
+	F3j/SgfQCtKj8=; b=SISgIlJVPCq4z3/ByEe/tf8PVKYJDLHDpf2SIs6CcbaJDz
+	JoE1132Vv2OJxRbjZvAZnEBGnEjB0MiyMc9nr9vrKftmMWAsFZ+xZY7uR5htcvzh
+	lXvLgi5aUCCQxU1/XvyDNjKdp6JTn5K93RpS5H8ajpOoiFw0nbCGF99g4WKkSteq
+	yIQrgI9jupnIR8Z2UGO/fx5MJ824qi0kTMpNFYKC2hmqJDmvYR3DSQSMbif2DaxA
+	yXRS6gx7avUeV3uUJbmJAAlNkfvREYPNbccvqd9xCBmJasxlS3vmQ91l1QQ7bl7v
+	eWUOOBGKQdR9FYvjiwFA+xihQPjceA8Nb0bFergQ==
+Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4dw9y52uys-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 08 May 2026 14:38:23 +0000 (GMT)
+Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma12.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 648EOldB003733;
+	Fri, 8 May 2026 14:38:23 GMT
+Received: from smtprelay06.wdc07v.mail.ibm.com ([172.16.1.73])
+	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 4e10073kwq-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 08 May 2026 14:38:23 +0000 (GMT)
+Received: from smtpav06.dal12v.mail.ibm.com (smtpav06.dal12v.mail.ibm.com [10.241.53.105])
+	by smtprelay06.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 648EcLt21704622
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Fri, 8 May 2026 14:38:21 GMT
+Received: from smtpav06.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 29BBD58043;
+	Fri,  8 May 2026 14:38:21 +0000 (GMT)
+Received: from smtpav06.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id E85A758055;
+	Fri,  8 May 2026 14:38:20 +0000 (GMT)
+Received: from d (unknown [9.16.41.19])
+	by smtpav06.dal12v.mail.ibm.com (Postfix) with ESMTPS;
+	Fri,  8 May 2026 14:38:20 +0000 (GMT)
+From: Dave Marquardt <davemarq@linux.ibm.com>
+To: Tyrel Datwyler <tyreld@linux.ibm.com>
+Cc: "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
+        "Martin
+ K. Petersen" <martin.petersen@oracle.com>,
+        Madhavan Srinivasan
+ <maddy@linux.ibm.com>,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        Nicholas
+ Piggin <npiggin@gmail.com>,
+        "Christophe Leroy (CS GROUP)"
+ <chleroy@kernel.org>,
+        linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+        linuxppc-dev@lists.ozlabs.org, Brian King
+ <brking@linux.ibm.com>,
+        Greg Joyce <gjoyce@linux.ibm.com>,
+        Kyle Mahlkuch
+ <kmahlkuc@linux.ibm.com>
+Subject: Re: [PATCH 5/5] ibmvfc: handle extended FPIN events
+In-Reply-To: <8ac414a6-b4e9-4fd9-b316-3738b3229664@linux.ibm.com> (Tyrel
+	Datwyler's message of "Wed, 6 May 2026 22:48:08 -0700")
+References: <20260408-ibmvfc-fpin-support-v1-0-52b06c464e03@linux.ibm.com>
+	<20260408-ibmvfc-fpin-support-v1-5-52b06c464e03@linux.ibm.com>
+	<8ac414a6-b4e9-4fd9-b316-3738b3229664@linux.ibm.com>
+Date: Fri, 08 May 2026 09:38:20 -0500
+Message-ID: <87h5oij7ab.fsf@linux.ibm.com>
+User-Agent: Gnus/5.13 (Gnus v5.13)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -95,110 +105,93 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTA4MDE1MCBTYWx0ZWRfXw2ZMVzT2JGZX
+ 2wQojrRfs9jwp/xnoGTwxfeVBpIHntydW5nhfGZ0v6gL3ssRV97MBwoT0pjvGIGqm7fwJRR0B2w
+ WiJDHdAhzoofwgZ6YMH0TeH8vFmHmFC7uSAWkfrC+JChJ0zOD6VRAarINWZhDXNwF6Jz2v6XVYw
+ NO28JnMR/PsJZAknSNgGO0wWm1UAMaeconmIPVU9qD8ozpiXyFnlzwQh3GoygfNj8Q6XMaa0JLW
+ CRZLZIcT0+WnzZ8zGXP1AaLLKyi11MWo7RVvCj8SeMff2a2z4I6chS/FdZnlQ57FYluGcrEzgfn
+ 1jvKaYeekBU2VrJhtO0XfjGIUS40lpFpt3CVX8G2mtCmlYvJuZF39SPIjme35hsCwgBxb6psf1O
+ KooD+Yl7FEFRUqM/cIIXpoIp28XsoIdXoKYHLZxmbzW/rgadvuh6qDnKNhlbwM5JqYj1m3kurp2
+ g4fiN4sKUn59F+HoKgg==
+X-Authority-Analysis: v=2.4 cv=J4GaKgnS c=1 sm=1 tr=0 ts=69fdf560 cx=c_pps
+ a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17
+ a=NGcC8JguVDcA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
+ a=RzCfie-kr_QcCd8fBx8p:22 a=VnNF1IyMAAAA:8 a=1SDrLXVDyJUjgw-k9W0A:9
+X-Proofpoint-GUID: 3xP5O9r6Any7I7_jUwvY3TDpNxOIcOTm
+X-Proofpoint-ORIG-GUID: w1j5ox_0X6a8GePy_w6rIt8acBAu323x
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-05-07_02,2026-05-08_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ impostorscore=0 clxscore=1015 malwarescore=0 bulkscore=0 suspectscore=0
+ priorityscore=1501 spamscore=0 phishscore=0 adultscore=0 lowpriorityscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2604200000 definitions=main-2605080150
 
-The dyntick-idle steal time is currently accounted when the tick
-restarts but the stolen idle time is not subtracted from the idle time
-that was already accounted. This is to avoid observing the idle time
-going backward as the dyntick-idle cputime accessors can't reliably know
-in advance the stolen idle time.
+Tyrel Datwyler <tyreld@linux.ibm.com> writes:
 
-In order to maintain a forward progressing idle cputime while
-subtracting idle steal time from it, keep track of the previously
-accounted idle stolen time and substract it from _later_ idle cputime
-accounting.
+> On 4/8/26 10:07 AM, Dave Marquardt via B4 Relay wrote:
+>> From: Dave Marquardt <davemarq@linux.ibm.com>
+>> 
+>> - negotiate use of extended FPIN events with NPIV (VIOS)
+>> - add code to parse and handle extended FPIN events
+>> - add KUnit test to test extended FPIN event handling
+>
+> Same nit here as the previous 4 patches.
+>
+>> ---
+>>  drivers/scsi/ibmvscsi/ibmvfc.c       | 45 ++++++++++++++---
+>>  drivers/scsi/ibmvscsi/ibmvfc.h       | 31 ++++++++++++
+>>  drivers/scsi/ibmvscsi/ibmvfc_kunit.c | 97 +++++++++++++++++++++++++++++++++---
+>>  3 files changed, 161 insertions(+), 12 deletions(-)
+>> 
+>> diff --git a/drivers/scsi/ibmvscsi/ibmvfc.c b/drivers/scsi/ibmvscsi/ibmvfc.c
+>> index 26e39b367022..5b2b861a34c2 100644
+>> --- a/drivers/scsi/ibmvscsi/ibmvfc.c
+>> +++ b/drivers/scsi/ibmvscsi/ibmvfc.c
+>> @@ -1472,6 +1472,9 @@ static void ibmvfc_gather_partition_info(struct ibmvfc_host *vhost)
+>>  }
+>>  
+>>  static __be64 ibmvfc_npiv_chan_caps[] = {
+>> +	cpu_to_be64(IBMVFC_CAN_USE_CHANNELS | IBMVFC_USE_ASYNC_SUBQ |
+>> +		    IBMVFC_YES_SCSI | IBMVFC_CAN_HANDLE_FPIN |
+>> +		    IBMVFC_CAN_HANDLE_FPIN_EXT),
+>>  	cpu_to_be64(IBMVFC_CAN_USE_CHANNELS | IBMVFC_USE_ASYNC_SUBQ |
+>>  		    IBMVFC_YES_SCSI | IBMVFC_CAN_HANDLE_FPIN),
+>>  	cpu_to_be64(IBMVFC_CAN_USE_CHANNELS),
+>> @@ -3370,6 +3373,28 @@ ibmvfc_full_fpin_to_desc(struct ibmvfc_async_subq *ibmvfc_fpin)
+>>  					  cpu_to_be32(1));
+>>  }
+>>  
+>> +/**
+>> + * ibmvfc_ext_fpin_to_desc(): allocate and populate a struct fc_els_fpin struct
+>> + * containing a descriptor.
+>> + * @ibmvfc_fpin: Pointer to async subq FPIN data
+>> + *
+>> + * Allocate a struct fc_els_fpin containing a descriptor and populate
+>> + * based on data from *ibmvfc_fpin.
+>> + *
+>> + * Return:
+>> + * NULL     - unable to allocate structure
+>> + * non-NULL - pointer to populated struct fc_els_fpin
+>> + */
+>> +static struct fc_els_fpin *
+>> +ibmvfc_ext_fpin_to_desc(struct ibmvfc_async_subq_fpin *ibmvfc_fpin)
+>> +{
+>> +	return ibmvfc_common_fpin_to_desc(ibmvfc_fpin->fpin_status, ibmvfc_fpin->wwpn,
+>> +					  ibmvfc_fpin->fpin_data.event_type_modifier,
+>> +					  ibmvfc_fpin->fpin_data.event_threshold,
+>> +					  ibmvfc_fpin->fpin_data.event_threshold,
+>
+> I see mention of threshold and period previously. Why in this case is it just
+> the threshold value passed for both?
 
-Signed-off-by: Frederic Weisbecker <frederic@kernel.org>
-Tested-by: Shrikanth Hegde <sshegde@linux.ibm.com>
----
- include/linux/kernel_stat.h |  1 +
- kernel/sched/cputime.c      | 28 +++++++++++++++++++++++-----
- 2 files changed, 24 insertions(+), 5 deletions(-)
+I'll look into this. There's no obvious period here in ibmvfc_fpin or
+ibmvfc_fpin->fpin_data. It may be more appropriate to use a default
+period.
 
-diff --git a/include/linux/kernel_stat.h b/include/linux/kernel_stat.h
-index 512104b0ff49..fce1392e2140 100644
---- a/include/linux/kernel_stat.h
-+++ b/include/linux/kernel_stat.h
-@@ -39,6 +39,7 @@ struct kernel_cpustat {
- 	bool		idle_elapse;
- 	seqcount_t	idle_sleeptime_seq;
- 	u64		idle_entrytime;
-+	u64		idle_stealtime[2];
- #endif
- 	u64		cpustat[NR_STATS];
- };
-diff --git a/kernel/sched/cputime.c b/kernel/sched/cputime.c
-index 94be22aa5cb6..244b57417240 100644
---- a/kernel/sched/cputime.c
-+++ b/kernel/sched/cputime.c
-@@ -425,19 +425,32 @@ static inline void irqtime_account_process_tick(struct task_struct *p, int user_
- static void kcpustat_idle_stop(struct kernel_cpustat *kc, u64 now)
- {
- 	u64 *cpustat = kc->cpustat;
--	u64 delta;
-+	u64 delta, steal, steal_delta;
-+	int iowait;
- 
- 	if (!kc->idle_elapse)
- 		return;
- 
-+	iowait = nr_iowait_cpu(smp_processor_id()) > 0;
- 	delta = now - kc->idle_entrytime;
-+	steal = steal_account_process_time(delta);
- 
-+	/*
-+	 * Record the idle time after substracting the steal time from
-+	 * previous update sequence. Don't substract the steal time from
-+	 * the current update sequence to avoid readers moving backward.
-+	 */
- 	write_seqcount_begin(&kc->idle_sleeptime_seq);
--	if (nr_iowait_cpu(smp_processor_id()) > 0)
-+	steal_delta = min_t(u64, kc->idle_stealtime[iowait], delta);
-+	delta -= steal_delta;
-+	kc->idle_stealtime[iowait] -= steal_delta;
-+
-+	if (iowait)
- 		cpustat[CPUTIME_IOWAIT] += delta;
- 	else
- 		cpustat[CPUTIME_IDLE] += delta;
- 
-+	kc->idle_stealtime[iowait] += steal;
- 	kc->idle_entrytime = now;
- 	kc->idle_elapse = false;
- 	write_seqcount_end(&kc->idle_sleeptime_seq);
-@@ -464,7 +477,6 @@ void kcpustat_dyntick_stop(u64 now)
- 		kcpustat_idle_stop(kc, now);
- 		kc->idle_dyntick = false;
- 		vtime_dyntick_stop();
--		steal_account_process_time(ULONG_MAX);
- 	}
- }
- 
-@@ -508,6 +520,7 @@ static u64 kcpustat_field_dyntick(int cpu, enum cpu_usage_stat idx,
- 				  bool compute_delta, u64 now)
- {
- 	struct kernel_cpustat *kc = &kcpustat_cpu(cpu);
-+	int iowait = idx == CPUTIME_IOWAIT;
- 	u64 *cpustat = kc->cpustat;
- 	unsigned int seq;
- 	u64 idle;
-@@ -516,8 +529,13 @@ static u64 kcpustat_field_dyntick(int cpu, enum cpu_usage_stat idx,
- 		seq = read_seqcount_begin(&kc->idle_sleeptime_seq);
- 
- 		idle = cpustat[idx];
--		if (kc->idle_elapse && compute_delta && now > kc->idle_entrytime)
--			idle += (now - kc->idle_entrytime);
-+
-+		if (kc->idle_elapse && compute_delta && now > kc->idle_entrytime) {
-+			u64 delta = now - kc->idle_entrytime;
-+
-+			delta -= min_t(u64, kc->idle_stealtime[iowait], delta);
-+			idle += delta;
-+		}
- 	} while (read_seqcount_retry(&kc->idle_sleeptime_seq, seq));
- 
- 	return idle;
--- 
-2.53.0
-
+-Dave
 
