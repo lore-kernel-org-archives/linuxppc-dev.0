@@ -1,49 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-20620-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20621-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0BA2FCD3447
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 May 2026 13:18:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8C217CD3447
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 May 2026 13:18:42 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gBqSS5BpZz30Vr;
-	Fri, 08 May 2026 23:18:32 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gBqSd21kVz30W9;
+	Fri, 08 May 2026 23:18:41 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778246312;
-	cv=none; b=B9Fp8SWmgj9Aozy7QK5+FUY4WmL6RPr5CSPea7PSZpJDQ3gBUI3yJknu90YsPKrgms+ouQrn11oiCHUhxn2h38yBnWfpPGNHgFCcJHvi9pT3A7hYSMYSBCWKFx3+cQPMinPnjvMwbEJe+vzMvK0aTweCYmrLNorekvR5CnsZiY+lDdCVHG3JhwmNCKCnjTXIOH9noLiJlReNwnQZOHK/bPGzKBwv/x3TApluTuiB8ExGh65zmifKzvF3H+lObgG057wjzDAeLFzBRvVTpwCoKdhz39Ez4pTlai9w30EvA18z5yR9U1WPiCXqw+SQ9EilphPAnSMNJSVti5XcTiqW9g==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778246321;
+	cv=none; b=LyVqPQpBvv9Dvd8jGmfYUFJyYV+tvX+HlMtdWG6hVgjFtoenA8jxtYVF0bElMqWzHOxuUv85CnL8jCzUVdk0zZou6usLFn4sxH4VzjArwaaNJTdAeng/YhjoPLoOAc5el04KEzr+X4PGNzwNcM6qtHNrNoHIGFQgON+k4MbAnAMxSF/C1ZjdGJHU2g8s0LheAOcjsRovISBuRQ9NaDbjwJXs8LOa3EVsqqJy9DV00WztHwSR2lQOGsPhrwLVp/2ptVKnysXUNG4w7+sA81fgSbiydHHNYaHy0EuBVZcwpTTJKoQFCVVWkWfPdwmmgTARK1rlAiVd+edH/QVsjsPcSg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1778246312; c=relaxed/relaxed;
-	bh=hGJ5gKGP5NBnLBdUkMgJMA16WqiQG0xdyMeEe44o73o=;
+	t=1778246321; c=relaxed/relaxed;
+	bh=RnHLTtopLU7OOOTHRdqqkeIjmjkR2pqhAVPVWaUOnXI=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=TGp2DtggcDSq+fNDKFmbBG/g8Pud5KBPJfQlmtehVuewAHH4gFPS8UvsbpR6Xk24TA5I/+8n6+6Ut11qhezKnwh2hQIYsQdlgKyff78qFCqGfyaZKlODpK2FQr7UYPg9XEm4Ee8RDca29kOwfTaSfgJCQpr4NAqsYfTFM66Ver0e9NUPvuKZ7aJe3cz3GT3Q4j2pUWZqaNAszl4kwv+gzY5Ij5MktfyW91h4fmoyF2HikSpkdkc9UZe4NpuqDdufgANl0bO0yGqBMJDARk1dAHYBazHi0xPjogPMMaaQDK66izdjZUiHdNgtM4DwdVsNNT1jLBaXSCcOJYhQQLRVAg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=st3/qLJS; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=frederic@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=XAP+lj1xBrAgQ0rMg3PToC1mS/uXCT4i+ADgdQiW9j4Ewec5F3IBrPKsQWjYuSFuj7BScexJXyZcle7cwnrWfpyv/XAdBygwuxAiCzV/aUOk/roUZs2Z0fcFUpJvVEU2PTcvdjyKcPb9cQ5RtyA0sUYWZnZ+304kPKmptlFb53Qwz/iFjxz9eWMsmiFb7vhVdwsdTACMj4mVv8dss+KMw+r4MqW4Zfl5yiGuX7k0PsxTqL+c2jhd7yQhZ74zU7KENO8q3qj2PHnyUEZZ+FrOU41WRgeUCDBliE5m+TyUcbIsFfvXY4R+/laG50LQforsfEopjwUt+UOg3YVEOid7cQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=odGALObB; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=frederic@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=st3/qLJS;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=odGALObB;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=frederic@kernel.org; receiver=lists.ozlabs.org)
 Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gBqSS0Fwbz30Vj
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 08 May 2026 23:18:32 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gBqSc46jpz30Vy
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 08 May 2026 23:18:40 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 8292743A49;
+	by sea.source.kernel.org (Postfix) with ESMTP id 139E443A49;
+	Fri,  8 May 2026 13:18:39 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id CBFB0C2BCB0;
 	Fri,  8 May 2026 13:18:30 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A3381C2BCF4;
-	Fri,  8 May 2026 13:18:22 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1778246310;
-	bh=ys77JzOHsGhhBTcp66sZM78DJ9qkVtsl0EVl5+hyt7Y=;
+	s=k20201202; t=1778246319;
+	bh=aDFX0+laRCKARzsRyJXt2dacO4Lp4TbF1nix0/a8GEw=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=st3/qLJS26Zd62YfHNmDD9M+dmAGI2ZGRGPXtUJamNMnvir33lqR4cJFlq9a7A9RW
-	 XqhyxjAYo4Yhj7KJeEWqTGyNc+PeUgf7kqIJsqFqkr0MU5IsE7n3LBRutw/ePjFCIU
-	 EBKlVbF8stCR6y3oMQIto6yXwkq7qjWoK70Y8ODM3OhGdoO94BEbVuU6taqFScqkOq
-	 fagf7qZQWe/3fpZOotu5SgDTVFABbTEGtnOj0vcVCrW4mq/qzJySzCtJvs98Kb6wcr
-	 8Z2dO2zmWaQm7qsWAuFurpZ/hKkSk0ZKuIQxhYq3efFPyYGTDoXPLhZzhOv/pKTpnY
-	 vDQ3drmy5Wo1w==
+	b=odGALObB+8PSkGeU76sOdQvTcd+Ulfgdeu/xmsXvrU3fgW3UPCPEs25FKu5qJqYLe
+	 2qb8WxUYbj0ewXH7rHl5cKQQ7hwYDRuQ6pXRfpsyIyIP3IJ9gPrwA4HKtpqPO+6Srw
+	 /gG7hW7BYDXL01UGMGRLQY5yvhcgVxh7zWqHwIFs5oTc4pIYLalCZ+VOIPkKbORBbO
+	 lqifg1C4C4JxwCvKroFuhd2eVx4aY3W3rIdDomzpOn4F+jD+qeNLiX+2Fy0hUh7g5V
+	 PYTyXhuSF0jSoOYTVyyBZQyTMM+E5cd5gPT8gEVgTXHKqVcbLa5wNfCn2OEpUTdJgO
+	 Cu3YKAwskHevg==
 From: Frederic Weisbecker <frederic@kernel.org>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Frederic Weisbecker <frederic@kernel.org>,
@@ -76,9 +76,9 @@ Cc: Frederic Weisbecker <frederic@kernel.org>,
 	Viresh Kumar <viresh.kumar@linaro.org>,
 	Xin Zhao <jackzxcui1989@163.com>, linux-pm@vger.kernel.org,
 	linux-s390@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 10/15] tick/sched: Remove unused fields
-Date: Fri,  8 May 2026 15:16:42 +0200
-Message-ID: <20260508131647.43868-11-frederic@kernel.org>
+Subject: [PATCH 11/15] tick/sched: Account tickless idle cputime only when tick is stopped
+Date: Fri,  8 May 2026 15:16:43 +0200
+Message-ID: <20260508131647.43868-12-frederic@kernel.org>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20260508131647.43868-1-frederic@kernel.org>
 References: <20260508131647.43868-1-frederic@kernel.org>
@@ -97,113 +97,135 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Remove fields after the dyntick-idle cputime migration to scheduler
-code.
+There is no real point in switching to dyntick-idle cputime accounting
+mode if the tick is not actually stopped. This just adds overhead,
+notably fetching the GTOD, on each idle exit and each idle IRQ entry for
+no reason during short idle trips.
 
 Signed-off-by: Frederic Weisbecker <frederic@kernel.org>
 Tested-by: Shrikanth Hegde <sshegde@linux.ibm.com>
 ---
- kernel/time/tick-sched.h       | 12 ------------
- kernel/time/timer_list.c       |  6 +-----
- scripts/gdb/linux/timerlist.py |  4 ----
- 3 files changed, 1 insertion(+), 21 deletions(-)
+ kernel/time/tick-sched.c | 50 +++++++++++++++++++++-------------------
+ 1 file changed, 26 insertions(+), 24 deletions(-)
 
-diff --git a/kernel/time/tick-sched.h b/kernel/time/tick-sched.h
-index b4a7822f495d..79b9252047b1 100644
---- a/kernel/time/tick-sched.h
-+++ b/kernel/time/tick-sched.h
-@@ -44,9 +44,7 @@ struct tick_device {
-  *			to resume the tick timer operation in the timeline
-  *			when the CPU returns from nohz sleep.
-  * @next_tick:		Next tick to be fired when in dynticks mode.
-- * @idle_jiffies:	jiffies at the entry to idle for idle time accounting
-  * @idle_waketime:	Time when the idle was interrupted
-- * @idle_sleeptime_seq:	sequence counter for data consistency
-  * @idle_entrytime:	Time when the idle call was entered
-  * @last_jiffies:	Base jiffies snapshot when next event was last computed
-  * @timer_expires_base:	Base time clock monotonic for @timer_expires
-@@ -55,9 +53,6 @@ struct tick_device {
-  * @idle_expires:	Next tick in idle, for debugging purpose only
-  * @idle_calls:		Total number of idle calls
-  * @idle_sleeps:	Number of idle calls, where the sched tick was stopped
-- * @idle_exittime:	Time when the idle state was left
-- * @idle_sleeptime:	Sum of the time slept in idle with sched tick stopped
-- * @iowait_sleeptime:	Sum of the time slept in idle with sched tick stopped, with IO outstanding
-  * @tick_dep_mask:	Tick dependency mask - is set, if someone needs the tick
-  * @check_clocks:	Notification mechanism about clocksource changes
-  */
-@@ -73,12 +68,10 @@ struct tick_sched {
- 	struct hrtimer			sched_timer;
- 	ktime_t				last_tick;
- 	ktime_t				next_tick;
--	unsigned long			idle_jiffies;
- 	ktime_t				idle_waketime;
- 	unsigned int			got_idle_tick;
+diff --git a/kernel/time/tick-sched.c b/kernel/time/tick-sched.c
+index fa03cf7b3cec..c1ee0b256445 100644
+--- a/kernel/time/tick-sched.c
++++ b/kernel/time/tick-sched.c
+@@ -1157,8 +1157,10 @@ void tick_nohz_idle_stop_tick(void)
+ 		ts->idle_sleeps++;
+ 		ts->idle_expires = expires;
  
- 	/* Idle entry */
--	seqcount_t			idle_sleeptime_seq;
- 	ktime_t				idle_entrytime;
+-		if (!was_stopped && tick_sched_flag_test(ts, TS_FLAG_STOPPED))
++		if (!was_stopped && tick_sched_flag_test(ts, TS_FLAG_STOPPED)) {
++			kcpustat_dyntick_start(ts->idle_entrytime);
+ 			nohz_balance_enter_idle(cpu);
++		}
+ 	} else {
+ 		tick_nohz_retain_tick(ts);
+ 	}
+@@ -1200,7 +1202,6 @@ void tick_nohz_idle_enter(void)
+ 	WARN_ON_ONCE(ts->timer_expires_base);
+ 	tick_sched_flag_set(ts, TS_FLAG_INIDLE);
+ 	ts->idle_entrytime = ktime_get();
+-	kcpustat_dyntick_start(ts->idle_entrytime);
+ 	tick_nohz_clock_sleep(ts);
  
- 	/* Tick stop */
-@@ -90,11 +83,6 @@ struct tick_sched {
- 	unsigned long			idle_calls;
- 	unsigned long			idle_sleeps;
+ 	local_irq_enable();
+@@ -1230,9 +1231,10 @@ void tick_nohz_irq_exit(void)
+ 	struct tick_sched *ts = this_cpu_ptr(&tick_cpu_sched);
  
--	/* Idle exit */
--	ktime_t				idle_exittime;
--	ktime_t				idle_sleeptime;
--	ktime_t				iowait_sleeptime;
--
- 	/* Full dynticks handling */
- 	atomic_t			tick_dep_mask;
- 
-diff --git a/kernel/time/timer_list.c b/kernel/time/timer_list.c
-index 427d7ddea3af..514802def1e0 100644
---- a/kernel/time/timer_list.c
-+++ b/kernel/time/timer_list.c
-@@ -152,14 +152,10 @@ static void print_cpu(struct seq_file *m, int cpu, u64 now)
- 		P_flag(highres, TS_FLAG_HIGHRES);
- 		P_ns(last_tick);
- 		P_flag(tick_stopped, TS_FLAG_STOPPED);
--		P(idle_jiffies);
- 		P(idle_calls);
- 		P(idle_sleeps);
- 		P_ns(idle_entrytime);
- 		P_ns(idle_waketime);
--		P_ns(idle_exittime);
--		P_ns(idle_sleeptime);
--		P_ns(iowait_sleeptime);
- 		P(last_jiffies);
- 		P(next_timer);
- 		P_ns(idle_expires);
-@@ -256,7 +252,7 @@ static void timer_list_show_tickdevices_header(struct seq_file *m)
- 
- static inline void timer_list_header(struct seq_file *m, u64 now)
+ 	if (tick_sched_flag_test(ts, TS_FLAG_INIDLE)) {
+-		ts->idle_entrytime = ktime_get();
+-		kcpustat_irq_exit(ts->idle_entrytime);
+ 		tick_nohz_clock_sleep(ts);
++		ts->idle_entrytime = ktime_get();
++		if (tick_sched_flag_test(ts, TS_FLAG_STOPPED))
++			kcpustat_irq_exit(ts->idle_entrytime);
+ 	} else {
+ 		tick_nohz_full_update_tick(ts);
+ 	}
+@@ -1333,8 +1335,17 @@ void tick_nohz_idle_restart_tick(void)
  {
--	SEQ_printf(m, "Timer List Version: v0.10\n");
-+	SEQ_printf(m, "Timer List Version: v0.11\n");
- 	SEQ_printf(m, "HRTIMER_MAX_CLOCK_BASES: %d\n", HRTIMER_MAX_CLOCK_BASES);
- 	SEQ_printf(m, "now at %Ld nsecs\n", (unsigned long long)now);
- 	SEQ_printf(m, "\n");
-diff --git a/scripts/gdb/linux/timerlist.py b/scripts/gdb/linux/timerlist.py
-index 9fb3436a217c..744b032e4d38 100644
---- a/scripts/gdb/linux/timerlist.py
-+++ b/scripts/gdb/linux/timerlist.py
-@@ -90,14 +90,10 @@ def print_cpu(hrtimer_bases, cpu, max_clock_bases):
-             text += f"  .{'nohz':15s}: {int(bool(ts['flags'] & TS_FLAG_NOHZ))}\n"
-             text += f"  .{'last_tick':15s}: {ts['last_tick']}\n"
-             text += f"  .{'tick_stopped':15s}: {int(bool(ts['flags'] & TS_FLAG_STOPPED))}\n"
--            text += f"  .{'idle_jiffies':15s}: {ts['idle_jiffies']}\n"
-             text += f"  .{'idle_calls':15s}: {ts['idle_calls']}\n"
-             text += f"  .{'idle_sleeps':15s}: {ts['idle_sleeps']}\n"
-             text += f"  .{'idle_entrytime':15s}: {ts['idle_entrytime']} nsecs\n"
-             text += f"  .{'idle_waketime':15s}: {ts['idle_waketime']} nsecs\n"
--            text += f"  .{'idle_exittime':15s}: {ts['idle_exittime']} nsecs\n"
--            text += f"  .{'idle_sleeptime':15s}: {ts['idle_sleeptime']} nsecs\n"
--            text += f"  .{'iowait_sleeptime':15s}: {ts['iowait_sleeptime']} nsecs\n"
-             text += f"  .{'last_jiffies':15s}: {ts['last_jiffies']}\n"
-             text += f"  .{'next_timer':15s}: {ts['next_timer']}\n"
-             text += f"  .{'idle_expires':15s}: {ts['idle_expires']} nsecs\n"
+ 	struct tick_sched *ts = this_cpu_ptr(&tick_cpu_sched);
+ 
+-	if (tick_sched_flag_test(ts, TS_FLAG_STOPPED))
+-		tick_nohz_restart_sched_tick(ts, ktime_get());
++	if (tick_sched_flag_test(ts, TS_FLAG_STOPPED)) {
++		/*
++		 * Update entrytime here in case the tick restart is due to temporary
++		 * polling on forced broadcast. The tick may be stopped again later within
++		 * the same idle trip. The idle_entrytime was updated recently but make sure
++		 * no tiny amount of idle time is accounted twice.
++		 */
++		ts->idle_entrytime = ktime_get();
++		kcpustat_dyntick_stop(ts->idle_entrytime);
++		tick_nohz_restart_sched_tick(ts, ts->idle_entrytime);
++	}
+ }
+ 
+ static void tick_nohz_idle_update_tick(struct tick_sched *ts, ktime_t now)
+@@ -1364,7 +1375,6 @@ static void tick_nohz_idle_update_tick(struct tick_sched *ts, ktime_t now)
+ void tick_nohz_idle_exit(void)
+ {
+ 	struct tick_sched *ts = this_cpu_ptr(&tick_cpu_sched);
+-	bool idle_active, tick_stopped;
+ 	ktime_t now;
+ 
+ 	local_irq_disable();
+@@ -1373,18 +1383,13 @@ void tick_nohz_idle_exit(void)
+ 	WARN_ON_ONCE(ts->timer_expires_base);
+ 
+ 	tick_sched_flag_clear(ts, TS_FLAG_INIDLE);
+-	idle_active = tick_sched_flag_test(ts, TS_FLAG_IDLE_ACTIVE);
+-	tick_stopped = tick_sched_flag_test(ts, TS_FLAG_STOPPED);
++	tick_nohz_clock_wakeup(ts);
+ 
+-	if (idle_active || tick_stopped)
++	if (tick_sched_flag_test(ts, TS_FLAG_STOPPED)) {
+ 		now = ktime_get();
+-
+-	if (idle_active)
+-		tick_nohz_clock_wakeup(ts);
+-
+-	if (tick_stopped)
++		kcpustat_dyntick_stop(now);
+ 		tick_nohz_idle_update_tick(ts, now);
+-	kcpustat_dyntick_stop(now);
++	}
+ 
+ 	local_irq_enable();
+ }
+@@ -1439,15 +1444,13 @@ static inline void tick_nohz_irq_enter(void)
+ 	struct tick_sched *ts = this_cpu_ptr(&tick_cpu_sched);
+ 	ktime_t now;
+ 
+-	if (!tick_sched_flag_test(ts, TS_FLAG_STOPPED | TS_FLAG_IDLE_ACTIVE))
++	tick_nohz_clock_wakeup(ts);
++
++	if (!tick_sched_flag_test(ts, TS_FLAG_STOPPED))
+ 		return;
+ 
+ 	now = ktime_get();
+-
+-	if (tick_sched_flag_test(ts, TS_FLAG_IDLE_ACTIVE)) {
+-		tick_nohz_clock_wakeup(ts);
+-		kcpustat_irq_enter(now);
+-	}
++	kcpustat_irq_enter(now);
+ 
+ 	/*
+ 	 * If all CPUs are idle we may need to update a stale jiffies value.
+@@ -1456,8 +1459,7 @@ static inline void tick_nohz_irq_enter(void)
+ 	 * rare case (typically stop machine). So we must make sure we have a
+ 	 * last resort.
+ 	 */
+-	if (tick_sched_flag_test(ts, TS_FLAG_STOPPED))
+-		tick_nohz_update_jiffies(now);
++	tick_nohz_update_jiffies(now);
+ }
+ 
+ #else
 -- 
 2.53.0
 
