@@ -1,89 +1,86 @@
-Return-Path: <linuxppc-dev+bounces-20609-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20610-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D502DCD3436
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 May 2026 07:47:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 34512CD3436
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 May 2026 13:17:16 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gBh6723W9z2xdb;
-	Fri, 08 May 2026 17:47:11 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778226431;
-	cv=none; b=jdi4lL40C2uc1V9XWWY2kH/35tfXcEZi1lkdGcb7t0I+SSpsusD4fm8hpzyUvno1yZfQ5Xt1lb7P19tJ061eJtaK93NIcbIfUzCF4Tl6edurQ9ZJh1Osy6NsvtOFom+k+PWV0Y40T6lqLeXsxi5IMG05Mcs/gsqs1+Lp55sw5ipfV1inMRvDok3+vlgSI7Mmj6D0hJRP4LvjLqdmQ9w6Mu+29JIROEeoYsAho8rQ+YtIBjZrM/VUYMJyMEo3u7d/jqbcMFH5xH7qO2ZTDdHGlt1PNZsaPmBwPhs7/lfL7Cd2hsXsMIT8rxHaJppg2Gy6BRsJjcjAhQxzkMcvPeyadg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gBqQy1mqLz2xdb;
+	Fri, 08 May 2026 23:17:14 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778246234;
+	cv=none; b=dKuD0bz89ZCIB+EVYCwRfCG8ITH+1A+J8ZvdkAtrUwaPH/o6CjfN73cUyKLHIV7yj7II20ph2lvULeEscz7hQXg/ms7G15CfUoCA2IFL/4zQU34kqRDKiLrlwAszDZyC2Sd6zXQE4BwpC082p2ZLyqa/VDpKI5HESlfzWJi24RHQkMip/fIZlJmPsBREiE60iTEJhrj2xElWjXnqgobdwN0U7iQ1o82xOdAcsBOKIpThzThTK58JcrVqfHbgzYB2m6UWNNAHU2uu2Cctj4XFrf7UyZZdS66Hd5r9CS5AFCV24kowAJm656fxmuc/wE448X6IVh0FSA+TPsOxpHKNlQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1778226431; c=relaxed/relaxed;
-	bh=0g3+N3AKrm/PzdCAx/bkpUA1zWbORVJCR0Rp88jRS5M=;
-	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=Kc2yob9J5AU7C2sWLGMHscjMlgYYVE7rdBztsU3is0+p+RFOzKwjJgor38Mz1rbO45JLJDKJF1h/72BYv4wSg1nAN4KjCM8N26VTr6iA2ySeVsZNTkoRC0qBg2QVhuft6QD5BVs6ncZPD21I3DyiCgBAZBEEjhfQ4HIjJu/8Ztoe896mCLVeBgESUsaYKE6dlxv3d7++pC8EV/NZqVgajqP0/K8hAkYBoiRonHircJVS4iv0fU1mAohyLKGDUc1Scq2P4mPy9I0Bc1oiYpJ1NqXyFJ1LPCMHR6bQr24dpY9dn/hHLz16hS9M1tg1PXovnXLq2scDceaYP0WxbrK2QQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=j/M3iwLn; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=aboorvad@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1778246234; c=relaxed/relaxed;
+	bh=KSR3buBUoGn7h6QUFUsLNU/EqeWQM09a7paH2USs2Dg=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=FfLLVWFKt9xleLo0U1WKHFmVBkStTYXh+5kpsY/8+aBz0B2Wpo7VFciTMJLKuW5UA4KzjRId32cZ8YUTQtGXwopND0Iplgm5Ov45RAdRmmksBz9hJKYWIwPwQMdW6j3r9KIC5UUm7q2X8q+hukVpTDZ0Y8Gk1FZLYSeSXHf2PTLtw1++nhjDkxp/blIRxUUUOH9bbuZBiCmA48F5/yMW7O/wTsCN0TeiC6/FMPZMBjxWrWUkOzQax9+xmRYPBw0zTnqokCcyQ0enM3juoc0Bh9qZCoksw9on+XUdGLTjcOni31u+CrOAkJ1EfRP2l4bazsiFAvhyPYowMCMQ9aUmSQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=MGP5FK9r; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=frederic@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=j/M3iwLn;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=MGP5FK9r;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=aboorvad@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=frederic@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gBh663Dhqz2xK7
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 08 May 2026 17:47:10 +1000 (AEST)
-Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 647H6AGs2476923;
-	Fri, 8 May 2026 07:47:03 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=0g3+N3
-	AKrm/PzdCAx/bkpUA1zWbORVJCR0Rp88jRS5M=; b=j/M3iwLnlzXrJhZqk6Qk1U
-	AUiPQ2uN6WjtORZ+SkKMq3CjQghP0Gr64LJm5vxIguSbNgU22sxvkmWlQCnd4IuV
-	MypAwVvjKn3Til6jDydQh9SFQdI4s64/x/Lgc8xlKSicyepVU+6XGuzBM+4pZYjh
-	kTsd570jmzEAHIWleyirW9tq7TiiWOiCLuRjtEvzbusVNsD5QCpZbXL6fN3Z8O2Z
-	zbsEz/mh6bQcRqnvTpvQWGN6zHrvMJmE2s3J0ah8PW8ttykrEWwuYewMZjLCfunP
-	VrYQk7jO8JLqD+3yBGwlQSznEHXhcHgAf+J7DaaTf3mgDcdb30NDFE8iWXQjkWIA
-	==
-Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4dw9y51dc4-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 08 May 2026 07:47:02 +0000 (GMT)
-Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma21.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 6487ddYX010205;
-	Fri, 8 May 2026 07:47:02 GMT
-Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
-	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4dwvkk78wp-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 08 May 2026 07:47:02 +0000 (GMT)
-Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com [10.20.54.104])
-	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6487kwLo9044312
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 8 May 2026 07:46:58 GMT
-Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 36B8A2006C;
-	Fri,  8 May 2026 07:46:58 +0000 (GMT)
-Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 9A94E2006A;
-	Fri,  8 May 2026 07:46:56 +0000 (GMT)
-Received: from aboo.ibm.com (unknown [9.123.14.187])
-	by smtpav05.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Fri,  8 May 2026 07:46:56 +0000 (GMT)
-Message-ID: <9dad7c263f8197000d4e56b09532d87a7f7f57e4.camel@linux.ibm.com>
-Subject: Re: [PATCH v3 0/9] pseries/papr-hvpipe: Fix deadlock, races and
- misc cleanups
-From: Aboorva Devarajan <aboorvad@linux.ibm.com>
-To: Madhavan Srinivasan <maddy@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Cc: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
-        Haren Myneni	
- <haren@linux.ibm.com>,
-        Christophe Leroy <chleroy@kernel.org>,
-        Venkat Rao
- Bagalkote <venkat88@linux.ibm.com>,
-        Nicholas Piggin <npiggin@gmail.com>, linux-kernel@vger.kernel.org
-Date: Fri, 08 May 2026 13:16:55 +0530
-In-Reply-To: <cover.1777606826.git.ritesh.list@gmail.com>
-References: <cover.1777606826.git.ritesh.list@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.60.1 (3.60.1-1.fc44) 
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gBqQs1gygz2xQC
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 08 May 2026 23:17:09 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sea.source.kernel.org (Postfix) with ESMTP id DBA24437E8;
+	Fri,  8 May 2026 13:17:06 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id CB1B3C2BCB0;
+	Fri,  8 May 2026 13:16:58 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1778246226;
+	bh=Vta7hllmwFIumsR7obeWKsvWVRLZq990abYtI1WVcNk=;
+	h=From:To:Cc:Subject:Date:From;
+	b=MGP5FK9r9QEOy860Im4ejrteL4FwEhVVu14vipu9Z+cC0I316uNQwgOy0hPfLaVhY
+	 zQhpMRfoyyqaX7J92xkQ+LLBJPltZMpkOyxK8CW1LDab4vsyBS15jl9dAajLFcYQ+d
+	 kK5YF3Hom2fADVLNDaSgsqvXA0DaQeukbeZ8GVvmIZvU7rBkXPEHxGdUBBENsvirza
+	 ARd5MU8U0tleul+fXPjitjj+XOBfZwXLfuLAE6K8/NWnjBl5m1NH7Ymk0sokSPUqTJ
+	 I2DswfY8YWOGs4TB0lt1eaRgSZBvqBl+VOwwXu2m22zdvgatVVuQ0wwR7N55pFdd2N
+	 d+E2RmzRgmsqQ==
+From: Frederic Weisbecker <frederic@kernel.org>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Frederic Weisbecker <frederic@kernel.org>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Peter Zijlstra <peterz@infradead.org>,
+	Jan Kiszka <jan.kiszka@siemens.com>,
+	Dietmar Eggemann <dietmar.eggemann@arm.com>,
+	Shrikanth Hegde <sshegde@linux.ibm.com>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Alexander Gordeev <agordeev@linux.ibm.com>,
+	Ben Segall <bsegall@google.com>,
+	Thomas Gleixner <tglx@linutronix.de>,
+	Vasily Gorbik <gor@linux.ibm.com>,
+	"Rafael J. Wysocki" <rafael@kernel.org>, linux-pm@vger.kernel.org,
+	Sashiko@lists.ozlabs.org, Ingo Molnar <mingo@kernel.org>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Boqun Feng <boqun.feng@gmail.com>,
+	Valentin Schneider <vschneid@redhat.com>,
+	linuxppc-dev@lists.ozlabs.org, Sven Schnelle <svens@linux.ibm.com>,
+	Ingo Molnar <mingo@redhat.com>,
+	Vincent Guittot <vincent.guittot@linaro.org>,
+	Christian Borntraeger <borntraeger@linux.ibm.com>,
+	Mel Gorman <mgorman@suse.de>, Steven Rostedt <rostedt@goodmis.org>,
+	Joel Fernandes <joelagnelf@nvidia.com>,
+	"Paul E . McKenney" <paulmck@kernel.org>,
+	Neeraj Upadhyay <neeraj.upadhyay@kernel.org>,
+	Anna-Maria Behnsen <anna-maria@linutronix.de>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	Juri Lelli <juri.lelli@redhat.com>,
+	Uladzislau Rezki <urezki@gmail.com>,
+	Viresh Kumar <viresh.kumar@linaro.org>,
+	Kieran Bingham <kbingham@kernel.org>,
+	Xin Zhao <jackzxcui1989@163.com>, linux-s390@vger.kernel.org,
+	Heiko Carstens <hca@linux.ibm.com>
+Subject: [PATCH 00/15 v4] tick/sched: Refactor idle cputime accounting
+Date: Fri,  8 May 2026 15:16:32 +0200
+Message-ID: <20260508131647.43868-1-frederic@kernel.org>
+X-Mailer: git-send-email 2.53.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -97,98 +94,167 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTA4MDA3NSBTYWx0ZWRfXw2wwDiwMFIRk
- vBq/GoFmaLwOA5Cv0VDjS9rQHZ/8yGHGnNbq8tJpAVjX4HLy137qsmNKtu9hbxhDWqMBNuqvD5o
- jLLdnd5upXeuqmRzwxitw5vpWf5p5hkGWN834wK+7v2iIMCXhQb8qNCRqy7d4f4zwL+A1g2jtUx
- ti06PEN5Z5vawtQbYysT8/x9cmCobk4G95RIt4D8vnD9WEUEYN7e1Kf60Aa/o2R7Qmx8GOHXdfU
- 2SHuY8cpcpJMY60CQlJV4NjHkBU5SRz1FeyQuK8ZcZiAde8FjmzPcO+EGJruzAwaAngrcM8KtPo
- YcMHoEY2uuv4A1eTlmrCXBbvlxiLWu9AT2+ycQjeEpdoDtw3rIggUdj0gNFwiiV1j9oZqJf2jIx
- POQzzWKkSXHbyA+Z+O7JZ+z/KdNDjzUe+DkcNgiQVYu/zrb8wU1kBcb8okEBpN4ZOK6sFKhfn4+
- FbVIrN83FXoJxnc9v4w==
-X-Authority-Analysis: v=2.4 cv=J4GaKgnS c=1 sm=1 tr=0 ts=69fd94f7 cx=c_pps
- a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
- a=IkcTkHD0fZMA:10 a=NGcC8JguVDcA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=RzCfie-kr_QcCd8fBx8p:22 a=VwQbUJbxAAAA:8
- a=pGLkceISAAAA:8 a=9j7TknyyNkHXIu9f1doA:9 a=QEXdDO2ut3YA:10
-X-Proofpoint-GUID: HUH6lf7a8MXBBbAp3KXY4G5BEBUGweB8
-X-Proofpoint-ORIG-GUID: pdrDXqtkGeCnGu9uwgzPcAVnboZBElJ0
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-05-07_02,2026-05-06_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- impostorscore=0 clxscore=1015 malwarescore=0 bulkscore=0 suspectscore=0
- priorityscore=1501 spamscore=0 phishscore=0 adultscore=0 lowpriorityscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2604200000 definitions=main-2605080075
+Content-Transfer-Encoding: 8bit
 
-On Fri, 2026-05-01 at 09:41 +0530, Ritesh Harjani (IBM) wrote:
-> While going over papr-hvpipe code, there were a few fixes which were iden=
-tified.
-> This patch series is an attempt to fix those along with some misc cleanup=
-s.
-> Me and Haren are trying to get these patches verified on a real HW. The t=
-ests
-> are not straight forward and we are waiting for the results.
-> Will update on the test results once we hear back from the internal test =
-team.
->=20
-> v2->v3:
-> =3D=3D=3D=3D=3D=3D
-> 1. Rearranged the patches in such a way that it is easier to backport the=
- fixes
-> =C2=A0=C2=A0 if required.
-> 2. Clubbed patch-8 and patch-10 (of v2) since they both were changing the=
- same function.
-> 3. Handled ret>=3D0 case in copy_to_user patch, when the user itself may =
-request
-> =C2=A0=C2=A0 for 0 effective bytes (after the HDR_LEN).
+Hi,
 
+After the issue reported here:
 
-Since this is CCed to stable, it is currently being evaluated by RSCT.
-We can merge it once we receive an Acked-by from RSCT.
+        https://lore.kernel.org/all/20251210083135.3993562-1-jackzxcui1989@163.com/
 
+It occurs that the idle cputime accounting is a big mess that
+accumulates within two concurrent statistics, each having their own
+shortcomings:
+
+* The accounting for online CPUs which is based on the delta between
+  tick_nohz_start_idle() and tick_nohz_stop_idle().
+
+  Pros:
+       - Works when the tick is off
+
+       - Has nsecs granularity
+
+  Cons:
+       - Account idle steal time but doesn't substract it from idle
+         cputime.
+
+       - Assumes CONFIG_IRQ_TIME_ACCOUNTING by not accounting IRQs but
+         the IRQ time is simply ignored when
+         CONFIG_IRQ_TIME_ACCOUNTING=n
+
+       - The windows between 1) idle task scheduling and the first call
+         to tick_nohz_start_idle() and 2) idle task between the last
+         tick_nohz_stop_idle() and the rest of the idle time are
+         blindspots wrt. cputime accounting (though mostly insignificant
+         amount)
+
+       - Relies on private fields outside of kernel stats, with specific
+         accessors.
+
+* The accounting for offline CPUs which is based on ticks and the
+  jiffies delta during which the tick was stopped.
+
+  Pros:
+       - Handles steal time correctly
+
+       - Handle CONFIG_IRQ_TIME_ACCOUNTING=y and
+         CONFIG_IRQ_TIME_ACCOUNTING=n correctly.
+
+       - Handles the whole idle task
+
+       - Accounts directly to kernel stats, without midlayer accumulator.
+
+   Cons:
+       - Doesn't elapse when the tick is off, which doesn't make it
+         suitable for online CPUs.
+
+       - Has TICK_NSEC granularity (jiffies)
+
+       - Needs to track the dyntick-idle ticks that were accounted and
+         substract them from the total jiffies time spent while the tick
+         was stopped. This is an ugly workaround.
+
+Having two different accounting for a single context is not the only
+problem: since those accountings are of different natures, it is
+possible to observe the global idle time going backward after a CPU goes
+offline, as reported by Xin Zhao.
+
+Clean up the situation with introducing a hybrid approach that stays
+coherent, fixes the backward jumps and works for both online and offline
+CPUs:
+
+* Tick based or native vtime accounting operate before the tick is
+  stopped and resumes once the tick is restarted.
+
+* When the idle loop starts, switch to dynticks-idle accounting as is
+  done currently, except that the statistics accumulate directly to the
+  relevant kernel stat fields.
+
+* Private dyntick cputime accounting fields are removed.
+
+* Works on both online and offline case.
+
+* Move most of the relevant code to the common sched/cputime subsystem
+
+* Handle CONFIG_IRQ_TIME_ACCOUNTING=n correctly such that the
+  dynticks-idle accounting still elapses while on IRQs.
+
+* Correctly substract idle steal cputime from idle time
+
+Changes since v3 (among which a lot of relevant reviews from Sashiko):
+
+- Add new tags
+
+- Rebase on latest -rc1
+
+- Add "tick/sched: Fix TOCTOU in nohz idle time fetch" (Sashiko)
+
+- Fix buggy state refetch in kcpustat_cpu_fetch_vtime() (Sashiko)
+
+- Fix build issue on powerpc (Christophe Leroy)
+
+- Fix s390 lost steal time occuring on idle IRQs (call vtime_flush() on
+  vtime_account_hardirq() and vtime_account_softirq()) (Sashiko)
+
+- Fix build issue on s390
+
+- Fix uninitialized idle_sleeptime_seq (Sashiko)
+
+- Fix irqtime being disabled or enabled in the middle of an idle IRQ
+  (Sashiko)
+  
+- Fix tick restart and then restop in the same idle loop (Sashiko)
+
+- Fix "sched/cputime: Handle idle irqtime gracefully" changelog (Sashiko)
+
+- Fix idle steal time substracted from the wrong index between idle and
+  iowait kcpustat. (Sashiko)
+
+git://git.kernel.org/pub/scm/linux/kernel/git/frederic/linux-dynticks.git
+	timers/core-v4
+
+HEAD: e64ba052ce04e363ff76d3cb8bedc5f812188acb
 Thanks,
-Aboorva
-
->=20
-> [v2]: https://lore.kernel.org/linuxppc-dev/cover.1775648406.git.ritesh.li=
-st@gmail.com/
->=20
-> v1->v2:
-> =3D=3D=3D=3D=3D=3D=3D=3D
-> 1. Fix a possible deadlock due to use of spin_lock instead of spin_lock_i=
-rqsave.
-> 2. Prevent kernel stack uninit memory leak to userspace
-> 3. Fix the race condition in null-ptr-deref case where there may be an
-> =C2=A0=C2=A0 msg pending to be consumed from the hvpipe.
-> 4. Fixed error handling in init routine in patch-10
->=20
-> [v1]: https://lore.kernel.org/linuxppc-dev/cover.1775569027.git.ritesh.li=
-st@gmail.com/#t
->=20
-> Ritesh Harjani (IBM) (9):
-> =C2=A0 pseries/papr-hvpipe: Fix race with interrupt handler
-> =C2=A0 pseries/papr-hvpipe: Prevent kernel stack memory leak to userspace
-> =C2=A0 pseries/papr-hvpipe: Fix null ptr deref in papr_hvpipe_dev_create_=
-handle()
-> =C2=A0 pseries/papr-hvpipe: Fix & simplify error handling in papr_hvpipe_=
-init()
-> =C2=A0 pseries/papr-hvpipe: Fix the usage of copy_to_user()
-> =C2=A0 pseries/papr-hvpipe: Simplify spin unlock usage in papr_hvpipe_han=
-dle_release()
-> =C2=A0 pseries/papr-hvpipe: Kill task_struct pointer from struct hvpipe_s=
-ource_info
-> =C2=A0 pseries/papr-hvpipe: Refactor and simplify hvpipe_rtas_recv_msg()
-> =C2=A0 pseries/papr-hvpipe: Fix style and checkpatch issues in enable_hvp=
-ipe_IRQ()
->=20
-> =C2=A0arch/powerpc/platforms/pseries/papr-hvpipe.c | 181 ++++++++++------=
+	Frederic
 ---
-> =C2=A0arch/powerpc/platforms/pseries/papr-hvpipe.h |=C2=A0=C2=A0 1 -
-> =C2=A02 files changed, 97 insertions(+), 85 deletions(-)
->=20
-> --
-> 2.39.5
+
+Frederic Weisbecker (15):
+      tick/sched: Fix TOCTOU in nohz idle time fetch
+      sched/idle: Handle offlining first in idle loop
+      sched/cputime: Remove superfluous and error prone kcpustat_field() parameter
+      sched/cputime: Correctly support generic vtime idle time
+      powerpc/time: Prepare to stop elapsing in dynticks-idle
+      s390/time: Prepare to stop elapsing in dynticks-idle
+      tick/sched: Unify idle cputime accounting
+      tick/sched: Remove nohz disabled special case in cputime fetch
+      tick/sched: Move dyntick-idle cputime accounting to cputime code
+      tick/sched: Remove unused fields
+      tick/sched: Account tickless idle cputime only when tick is stopped
+      tick/sched: Consolidate idle time fetching APIs
+      sched/cputime: Provide get_cpu_[idle|iowait]_time_us() off-case
+      sched/cputime: Handle idle irqtime gracefully
+      sched/cputime: Handle dyntick-idle steal time correctly
+
+ arch/powerpc/kernel/time.c         |  41 +++++
+ arch/s390/include/asm/idle.h       |   2 +
+ arch/s390/kernel/idle.c            |   5 +-
+ arch/s390/kernel/vtime.c           |  75 ++++++++-
+ drivers/cpufreq/cpufreq.c          |  29 +---
+ drivers/cpufreq/cpufreq_governor.c |   6 +-
+ drivers/macintosh/rack-meter.c     |   2 +-
+ fs/proc/stat.c                     |  40 +----
+ fs/proc/uptime.c                   |   8 +-
+ include/linux/kernel_stat.h        |  76 +++++++--
+ include/linux/tick.h               |   4 -
+ include/linux/vtime.h              |  22 ++-
+ kernel/rcu/tree.c                  |   9 +-
+ kernel/rcu/tree_stall.h            |   7 +-
+ kernel/sched/core.c                |   6 +-
+ kernel/sched/cputime.c             | 308 +++++++++++++++++++++++++++++++------
+ kernel/sched/idle.c                |  13 +-
+ kernel/time/tick-sched.c           | 212 ++++++-------------------
+ kernel/time/tick-sched.h           |  12 --
+ kernel/time/timer_list.c           |   6 +-
+ scripts/gdb/linux/timerlist.py     |   4 -
+ 21 files changed, 529 insertions(+), 358 deletions(-)
 
