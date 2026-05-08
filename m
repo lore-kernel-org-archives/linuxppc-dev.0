@@ -1,97 +1,80 @@
-Return-Path: <linuxppc-dev+bounces-20582-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20583-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 14065CD37AA
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 May 2026 22:41:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 06A38CD3436
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 May 2026 04:13:16 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gBRzx4q5qz2xLr;
-	Fri, 08 May 2026 08:41:01 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gBbMH2C7Dz2xdb;
+	Fri, 08 May 2026 14:13:15 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778193661;
-	cv=none; b=NW7sRVmrE559E0qqwgrCRXGnGjRHizXct9LgSPnSsWwzM7aWLUB1xTmqUU4BneJzIGHt+/O848ejWCYwVDVBg+DA27/iTx7DDwcPU0cJT/Ps+FsQlnWoXza+ZK6Ev+62z4Mhq3wwIPHW7qcHg8BmvaGibXgjvUuHR+CV15cQa3I9/okh0CUyzo8Bl/vXu/HwN9w6vSdKR6C7PGg8pbYNVKZizXUxtnk2mmOGxvMYhAQhCEdzrRraqj+AtnEwW/eoe+b5VXv7wQWlkF/nUXpcTHIGJ+1z4ZEr/oIuOk8k4AXRUmysUJWv+RwQMZejIG8K79DPB3p0vahtH5OlUpwsGw==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778213595;
+	cv=none; b=EsGniv7jWwAhAU+Q4t5HZKZ8DPoEUtVFZ80CnZxsI4nHqm+Tx4oB8no9Aos+fWioyTEY2xf45c0tylkrAYpMBB8Sw0bECODJ06s/9pxI2oZZROq9WM4v5opUHQ7LZCnbS/lpl8RUZZR6KB6VVbXneG0mDByIEsGB8MBvS/Sju6pQqpVenQPZGaaYuPm8nhBjgrFlftp+a+7giWZlXHNfS3SNx5ZwIT8kwQ7ooSjK6PEXCOWZkHQSztULtjdQhj0uu2cLFD5o1Zadz4No6yokbPRbnI3me4K8fSGnAD/67KfzuJMt9muCYduRhDqizXVqlYtCF9XGJmsdZ+R8/sTxYQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1778193661; c=relaxed/relaxed;
-	bh=L0mr9sofZvcYRPXy5sFIxX0oXJ3QsdB+9ux6RqWW0As=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
-	 MIME-Version:Content-Type; b=NS9g6c0oSnEQY0hBTO0Uw0KLoQcnxl0M2d3zIusAzc4aAWzJDY5eK5oDOyw4X7fV44p3Hvb0oXUlZ72IZ2eLFWsTC2j7nk1quKmNBEQr32huqQmvZGfh5wTyXRz5CY1NP6m6Yxm/7X1a3dtuCwyYBUEB2t4HOaBnY0hN5FRon8WNVXpLt0LLl3pkUilTcs3hgUWyo2lndNYwDxRs/U2W/Ef7IXqNEWAdEU5QbZes1+LSRLbenIZwCnRn6moIVcIgc+VuRYjf2GasQTdDoNNRi8nApS4e4YlGOME7TVTtiU1Qf0i+jk5eRDHROM87psyb+oF9yjQYQ9Np4ABNSGG6zw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=P43HVx6O; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=davemarq@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	t=1778213595; c=relaxed/relaxed;
+	bh=ry5Fzd2b3UKSt84ruefsKE1AD7faRvnE2mG/pnRIvyI=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=iRBnoZECozIzEvRXEDp05DUQ87LLdmwdzqzClDMzBl7P/6IgvJRn1tGdtgcCtGESkavyTxWjBPuYmiS8SH2Kopk5yPnZ16AC3GPAWkzDo155FNIXgXewQVRmzfoXRN63xu/BCL5F6vVBvlCezh2KdersG3yTGmSrJxlI3aSYCWmzaQKRD4PVGIHIQVti5Rp99QGpTaxPlab8kM7m9zlqJCNqfi06zjxrL7N7PVii2SYzfANlszY3ifkwR/n19U82BzYKjhmnociMm1GvYScphNio2wpu+YcaRUvJTUNeQLRROHvLaS0muoS2Dwb7FYTbq/ZXmA3NKsfgc8+zr59t3Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=rumJzu3d; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=aboorvad@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=P43HVx6O;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=rumJzu3d;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=davemarq@linux.ibm.com; receiver=lists.ozlabs.org)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=aboorvad@linux.ibm.com; receiver=lists.ozlabs.org)
 Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gBRzr6VLHz2xK7
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 08 May 2026 08:40:56 +1000 (AEST)
-Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 647L6Mmm2725335;
-	Thu, 7 May 2026 22:40:44 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gBbMF4K2Wz2xPb
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 08 May 2026 14:13:12 +1000 (AEST)
+Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 647HGKYw2771798;
+	Fri, 8 May 2026 04:13:06 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-type:date:from:in-reply-to:message-id:mime-version
-	:references:subject:to; s=pp1; bh=L0mr9sofZvcYRPXy5sFIxX0oXJ3Qsd
-	B+9ux6RqWW0As=; b=P43HVx6Oink8QPaz+Hjr5yUdK/DVlD/mUJTalE+jlXKJhB
-	wB0ofD5BqR1y9qQq35Yo7/I6KOrpxc2vn8VUhvy4G/EAd+z947lD1AuiebCC+06J
-	MMO8nvDvKPPq7ynKrMnaQSEC5mFQ57MOC6a7wwr7u5o1qfrN6yA+E26TJlbfEPph
-	uimyWO0BJgbJQUh9luIpZMox2vADD/xi0fpKNTVytv6q8YSTM3N2C6XG3TBQcrnN
-	otmJrv/YmbC5Nm+64xrevO2Wk1YTILltQNcXaZXOxX+qihH7Dh4vun7JQr/rcHa2
-	Qu7pS83GMgLNiGzw+PyPut/UACySXPhb8aXLzhUg==
-Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4dw9y501e4-1
+	:content-transfer-encoding:date:from:message-id:mime-version
+	:subject:to; s=pp1; bh=ry5Fzd2b3UKSt84ruefsKE1AD7faRvnE2mG/pnRIv
+	yI=; b=rumJzu3do7sJVdSiPV3K95Fy+PlnLlRnOQHpCzeDHC+fUz/0ZnSA7WLBY
+	iC3cFgBltKzcYyv7mvja/56P9lcGgPqT8qwLGrHH9SVp8YH3du3G5duNydBsFg5r
+	AbgSfslHDF6rqLV3eKregOuq3NWxUaXC3y2YrVBdOxWsr+3jBz96XsAw+AUFHGO4
+	LSJWeLhjzBleNqPtlHAzssNolVGl20NOKKIBPVUibLnnjoZ+nFQ/jXW+yQ4kr42v
+	ldb64lIb6qqq5mz2a9OGoxpoMlyRDjs22XO6odbSMZ0XGnXW3J73wFjm0gzMTar6
+	pNr8gT0B5kYB4sJhEz9ik4ik1z0IQ==
+Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4dw9xy0p53-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 07 May 2026 22:40:44 +0000 (GMT)
-Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma11.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 647MdW06004822;
-	Thu, 7 May 2026 22:40:43 GMT
-Received: from smtprelay02.dal12v.mail.ibm.com ([172.16.1.4])
-	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4dwx9ynjx0-1
+	Fri, 08 May 2026 04:13:06 +0000 (GMT)
+Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma21.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 6483self008374;
+	Fri, 8 May 2026 04:13:05 GMT
+Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
+	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4dwvkk6myf-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 07 May 2026 22:40:43 +0000 (GMT)
-Received: from smtpav03.dal12v.mail.ibm.com (smtpav03.dal12v.mail.ibm.com [10.241.53.102])
-	by smtprelay02.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 647MegXf31130146
+	Fri, 08 May 2026 04:13:05 +0000 (GMT)
+Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com [10.20.54.104])
+	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6484D1Ng49021246
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 7 May 2026 22:40:42 GMT
-Received: from smtpav03.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 44D725803F;
-	Thu,  7 May 2026 22:40:42 +0000 (GMT)
-Received: from smtpav03.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id E9BCB5805A;
-	Thu,  7 May 2026 22:40:41 +0000 (GMT)
-Received: from d (unknown [9.61.133.117])
-	by smtpav03.dal12v.mail.ibm.com (Postfix) with ESMTPS;
-	Thu,  7 May 2026 22:40:41 +0000 (GMT)
-From: Dave Marquardt <davemarq@linux.ibm.com>
-To: Tyrel Datwyler <tyreld@linux.ibm.com>
-Cc: "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
-        "Martin
- K. Petersen" <martin.petersen@oracle.com>,
-        Madhavan Srinivasan
- <maddy@linux.ibm.com>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        Nicholas
- Piggin <npiggin@gmail.com>,
-        "Christophe Leroy (CS GROUP)"
- <chleroy@kernel.org>,
-        linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-        linuxppc-dev@lists.ozlabs.org, Brian King
- <brking@linux.ibm.com>,
-        Greg Joyce <gjoyce@linux.ibm.com>,
-        Kyle Mahlkuch
- <kmahlkuc@linux.ibm.com>
-Subject: Re: [PATCH 4/5] ibmvfc: use async sub-queue for FPIN messages
-In-Reply-To: <e59242e4-f353-44eb-ad48-b76a9101d4fb@linux.ibm.com> (Tyrel
-	Datwyler's message of "Wed, 6 May 2026 22:41:26 -0700")
-References: <20260408-ibmvfc-fpin-support-v1-0-52b06c464e03@linux.ibm.com>
-	<20260408-ibmvfc-fpin-support-v1-4-52b06c464e03@linux.ibm.com>
-	<e59242e4-f353-44eb-ad48-b76a9101d4fb@linux.ibm.com>
-Date: Thu, 07 May 2026 17:40:41 -0500
-Message-ID: <87ecjmetcm.fsf@linux.ibm.com>
-User-Agent: Gnus/5.13 (Gnus v5.13)
+	Fri, 8 May 2026 04:13:01 GMT
+Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id BEDE320043;
+	Fri,  8 May 2026 04:13:01 +0000 (GMT)
+Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id E234C20040;
+	Fri,  8 May 2026 04:12:58 +0000 (GMT)
+Received: from aboo.ibm.com.com (unknown [9.124.210.110])
+	by smtpav05.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Fri,  8 May 2026 04:12:58 +0000 (GMT)
+From: Aboorva Devarajan <aboorvad@linux.ibm.com>
+To: Madhavan Srinivasan <maddy@linux.ibm.com>,
+        Athira Rajeev <atrajeev@linux.vnet.ibm.com>,
+        linuxppc-dev@lists.ozlabs.org
+Cc: Aboorva Devarajan <aboorvad@linux.ibm.com>,
+        Christophe Leroy <chleroy@kernel.org>,
+        Kajol Jain <kjain@linux.ibm.com>, linux-kernel@vger.kernel.org
+Subject: [PATCH] powerpc/hv-gpci: fix preempt count leak in sysfs show paths
+Date: Fri,  8 May 2026 09:42:56 +0530
+Message-ID: <20260508041256.3447113-1-aboorvad@linux.ibm.com>
+X-Mailer: git-send-email 2.54.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -105,194 +88,180 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTA3MDIzMCBTYWx0ZWRfX6XGLpE9CQqdH
- AFz+SZvSO3mQ911ZDSX09uJrO3CFr5XNiGLkwGakIjBrpQz+pgDS61+jOH2pYxjZA15Ymf/MhSG
- ZUZGDnQEspLbNjQ2wWA51E6EwHG5HOz6fnB6aNCV0W8NXJTfA2SkhX+0Gc3BtFv6AdMlKB3/pLd
- LJnBNBBd4LO0T9/VgWn3yhdYTDSwOcLQPuM7YY39g/l4mNeg87todN1jlDFTtqVLpflGCvsj0Ut
- uoiuroIrXsPxOyJaIG/Zy+QGHUV2t0HtqRWj7DQxTtv0RxAZBKfa4r2fJ+qPSyuSk1SJ9/vDOmx
- DYV8U9OdrI9LpMMwPzzgVfgf7+R5RE9KvnTu/yGiKCHD+9l/QYVE0Gu3dWAkmhH+LAayi8/ikvS
- vJJW9lxMldiVI8LkVHQZ7VxZPFColHLyG8K4rN8LV8zl9bPImq2uuAey7Iz0z5Vvn6ni5ZHqnjI
- rbbBE0i9TVHDvTwySEA==
-X-Authority-Analysis: v=2.4 cv=J4GaKgnS c=1 sm=1 tr=0 ts=69fd14ec cx=c_pps
- a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTA4MDAzNyBTYWx0ZWRfX3XztpEN77xxy
+ wjQQVl3cPDyEsb/K+nn1DYMyjE1X+VhUJocpuyokCVVc11rMKx62tTZckBYxbGYEB82Tas13iOh
+ E3Pen9YkqyWrrJ+fL+sorE6F91rhdXMNr7xt1HeIo9ZbdfVbAwE5EqI2F28Uk3+Bv/L3w9gXHnx
+ 5PYeq9E/aTxIcfqgp5Akfp6UN07KRhJjxgR5M4qAVIUOqdF5nJ+7DhJHMlc+WwscGBNHbX5Vf2+
+ 3PStbIbtmBdCGu9ajLlLQGgkzBC0ntmvjN5K0pAv8s+KVJ/mME9xkhWiUezpyOWWh0SxU0Kuyne
+ pziAv26Ni7WmRR+sdIW5XWFYo6gE4HAPulkJHhHojN79ZVrOWG/5cvXR2BMYEUYr9pYk7OXft3U
+ leLCzeo7VwlPls14M6fILV1p6AoBqjRiO0r23uiFZ3RaDFh/wgduuXXXbbB2HUEex6udCRnSNWm
+ bPbljYXcJOgHhA7xg9w==
+X-Proofpoint-ORIG-GUID: pJfAMLicPFT8ASpwj32WUG1nLKEl1xzr
+X-Proofpoint-GUID: pJfAMLicPFT8ASpwj32WUG1nLKEl1xzr
+X-Authority-Analysis: v=2.4 cv=ctWrVV4i c=1 sm=1 tr=0 ts=69fd62d2 cx=c_pps
+ a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
  a=NGcC8JguVDcA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=RzCfie-kr_QcCd8fBx8p:22 a=VnNF1IyMAAAA:8 a=POLsQlOSEy6U3WfIj7EA:9
-X-Proofpoint-GUID: dV43-ZDSJ7Av1EtQ41yGi0Aq3JdyXlaB
-X-Proofpoint-ORIG-GUID: mwy1_MVVeNI4wL0crNjR-ibEbh7T3qow
+ a=V8glGbnc2Ofi9Qvn3v5h:22 a=VnNF1IyMAAAA:8 a=T1Q85W7wrbM6iIICI_EA:9
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
  definitions=2026-05-07_02,2026-05-06_01,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- impostorscore=0 clxscore=1015 malwarescore=0 bulkscore=0 suspectscore=0
- priorityscore=1501 spamscore=0 phishscore=0 adultscore=0 lowpriorityscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2604200000 definitions=main-2605070230
+ priorityscore=1501 lowpriorityscore=0 adultscore=0 clxscore=1011
+ suspectscore=0 impostorscore=0 spamscore=0 malwarescore=0 phishscore=0
+ bulkscore=0 classifier=typeunknown authscore=0 authtc= authcc= route=outbound
+ adjust=0 reason=mlx scancount=1 engine=8.22.0-2604200000
+ definitions=main-2605080037
 
-Tyrel Datwyler <tyreld@linux.ibm.com> writes:
+Four sysfs show() callbacks in hv-gpci take get_cpu_var(hv_gpci_reqb)
+(which calls preempt_disable()) but only call the matching put_cpu_var()
+on the error path under the 'out:' label. Every successful read leaks
+one preempt_disable():
 
-> On 4/8/26 10:07 AM, Dave Marquardt via B4 Relay wrote:
->> From: Dave Marquardt <davemarq@linux.ibm.com>
->> 
->> - allocate async sub-queue
->> - allocate interrupt and set up handler
->> - negotiate use of async sub-queue with NPIV (VIOS)
->> - refactor ibmvfc_basic_fpin_to_desc() and ibmvfc_full_fpin_to_desc()
->>   into common routine
->> - add KUnit test to verify async sub-queue is allocated
->
-> Again more descriptive commit log message required here. Also, this looks like a
-> lot of things being implmented. Can this be broken into multiple patches? It
-> sure looks like a bunch of functional changes that build on each other.
+  processor_bus_topology_show()
+  processor_config_show()
+  affinity_domain_via_virtual_processor_show()
+  affinity_domain_via_domain_show()
 
-Yes, I'll break this up into more patches.
+(affinity_domain_via_partition_show() was already correct.)
 
->> ---
->>  drivers/scsi/ibmvscsi/ibmvfc.c       | 325 ++++++++++++++++++++++++++++++++---
->>  drivers/scsi/ibmvscsi/ibmvfc.h       |  29 +++-
->>  drivers/scsi/ibmvscsi/ibmvfc_kunit.c |  52 +++---
->>  3 files changed, 363 insertions(+), 43 deletions(-)
->> 
->> diff --git a/drivers/scsi/ibmvscsi/ibmvfc.c b/drivers/scsi/ibmvscsi/ibmvfc.c
->> index 803fc3caa14d..26e39b367022 100644
->> --- a/drivers/scsi/ibmvscsi/ibmvfc.c
->> +++ b/drivers/scsi/ibmvscsi/ibmvfc.c
->> @@ -1471,6 +1471,13 @@ static void ibmvfc_gather_partition_info(struct ibmvfc_host *vhost)
->>  	of_node_put(rootdn);
->>  }
->>  
->> +static __be64 ibmvfc_npiv_chan_caps[] = {
->> +	cpu_to_be64(IBMVFC_CAN_USE_CHANNELS | IBMVFC_USE_ASYNC_SUBQ |
->> +		    IBMVFC_YES_SCSI | IBMVFC_CAN_HANDLE_FPIN),
->> +	cpu_to_be64(IBMVFC_CAN_USE_CHANNELS),
->> +};
->> +#define IBMVFC_NPIV_CHAN_CAPS_SIZE (sizeof(ibmvfc_npiv_chan_caps)/sizeof(__be64))
->> +
->
-> I really don't understand what you are doing here? You seem to be definig
-> various sets of capabilities, but how does the driver decide which set to use?
-> As far as I can tell the index is increased and the capabilities decrease each
-> time a transport event is received. This looks like maybe its just a testing hack.
+On a CONFIG_PREEMPT=y kernel, repeated reads raise preempt_count and
+eventually return to userspace with preemption still disabled. The
+next user-mode page fault then hits faulthandler_disabled() == 1,
+gets forced to SIGSEGV, and the resulting coredump trips
+'BUG: scheduling while atomic' in call_usermodehelper_exec ->
+wait_for_completion_state -> schedule:
 
-My thought was to deal with an older VIOS that doesn't support the async
-sub-queue and full FPIN. But I suppose the response should just not set the
-appropriate bits. I'll go re-read the NPIV spec and figure out if this
-is actually needed.
+  BUG: scheduling while atomic: <task>/<pid>/0x00000004
+  ...
+  __schedule_bug+0x6c/0x90
+  __schedule+0x58c/0x13a0
+  schedule+0x48/0x1a0
+  schedule_timeout+0x104/0x170
+  wait_for_completion_state+0x16c/0x330
+  call_usermodehelper_exec+0x254/0x2d0
+  vfs_coredump+0x1050/0x2590
+  get_signal+0xb9c/0xc80
+  do_notify_resume+0xf8/0x470
 
->>  /**
->>   * ibmvfc_set_login_info - Setup info for NPIV login
->>   * @vhost:	ibmvfc host struct
->> @@ -1486,6 +1493,8 @@ static void ibmvfc_set_login_info(struct ibmvfc_host *vhost)
->>  	const char *location;
->>  	u16 max_cmds;
->>  
->> +	ENTER;
->> +
->>  	max_cmds = scsi_qdepth + IBMVFC_NUM_INTERNAL_REQ;
->>  	if (mq_enabled)
->>  		max_cmds += (scsi_qdepth + IBMVFC_NUM_INTERNAL_SUBQ_REQ) *
->> @@ -1509,8 +1518,12 @@ static void ibmvfc_set_login_info(struct ibmvfc_host *vhost)
->>  		cpu_to_be64(IBMVFC_CAN_MIGRATE | IBMVFC_CAN_SEND_VF_WWPN |
->>  			    IBMVFC_CAN_USE_NOOP_CMD);
->>  
->> -	if (vhost->mq_enabled || vhost->using_channels)
->> -		login_info->capabilities |= cpu_to_be64(IBMVFC_CAN_USE_CHANNELS);
->> +	if (vhost->mq_enabled || vhost->using_channels) {
->> +		if (vhost->login_cap_index >= IBMVFC_NPIV_CHAN_CAPS_SIZE)
->> +			login_info->capabilities |= cpu_to_be64(IBMVFC_CAN_USE_CHANNELS);
->> +		else
->> +			login_info->capabilities |= ibmvfc_npiv_chan_caps[vhost->login_cap_index];
->> +	}
->>  
->>  	login_info->async.va = cpu_to_be64(vhost->async_crq.msg_token);
->>  	login_info->async.len = cpu_to_be32(async_crq->size *
->> @@ -1524,6 +1537,8 @@ static void ibmvfc_set_login_info(struct ibmvfc_host *vhost)
->>  	location = of_get_property(of_node, "ibm,loc-code", NULL);
->>  	location = location ? location : dev_name(vhost->dev);
->>  	strscpy(login_info->drc_name, location, sizeof(login_info->drc_name));
->> +
->> +	LEAVE;
->>  }
->>  
->>  /**
->> @@ -3323,7 +3338,7 @@ ibmvfc_common_fpin_to_desc(u8 fpin_status, __be64 wwpn, __be16 modifier,
->>   * non-NULL - pointer to populated struct fc_els_fpin
->>   */
->>  static struct fc_els_fpin *
->> -/*XXX*/ibmvfc_basic_fpin_to_desc(struct ibmvfc_async_crq *crq)
->
-> I mentioned this /*XXX*/ in an earlier patch. This needs to be fixed in that patch.
+Add an out_success label that calls put_cpu_var() before returning
+the byte count, mirroring affinity_domain_via_partition_show().
 
-Yes.
+Fixes: 71f1c39647d8 ("powerpc/hv_gpci: Add sysfs file inside hv_gpci device to show processor bus topology information")
+Fixes: 1a160c2a13c6 ("powerpc/hv_gpci: Add sysfs file inside hv_gpci device to show processor config information")
+Fixes: 71a7ccb478fc ("powerpc/hv_gpci: Add sysfs file inside hv_gpci device to show affinity domain via virtual processor information")
+Fixes: a69a57cac1ec ("powerpc/hv_gpci: Add sysfs file inside hv_gpci device to show affinity domain via domain information")
+Signed-off-by: Aboorva Devarajan <aboorvad@linux.ibm.com>
+---
+ arch/powerpc/perf/hv-gpci.c | 24 ++++++++++++++++--------
+ 1 file changed, 16 insertions(+), 8 deletions(-)
 
->> +ibmvfc_basic_fpin_to_desc(struct ibmvfc_async_crq *crq)
->>  {
->>  	return ibmvfc_common_fpin_to_desc(crq->fpin_status, crq->wwpn,
->>  					  cpu_to_be16(0),
->> @@ -3332,6 +3347,29 @@ static struct fc_els_fpin *
->>  					  cpu_to_be32(1));
->>  }
->>  
->> +/**
->> + * ibmvfc_full_fpin_to_desc(): allocate and populate a struct fc_els_fpin struct
->> + * containing a descriptor.
->> + * @ibmvfc_fpin: Pointer to async subq FPIN data
->> + *
->> + * Allocate a struct fc_els_fpin containing a descriptor and populate
->> + * based on data from *ibmvfc_fpin.
->> + *
->> + * Return:
->> + * NULL     - unable to allocate structure
->> + * non-NULL - pointer to populated struct fc_els_fpin
->> + */
->> +static struct fc_els_fpin *
->> +ibmvfc_full_fpin_to_desc(struct ibmvfc_async_subq *ibmvfc_fpin)
->> +{
->> +	return ibmvfc_common_fpin_to_desc(ibmvfc_fpin->fpin_status,
->> +					  ibmvfc_fpin->wwpn,
->> +					  cpu_to_be16(0),
->> +					  cpu_to_be32(IBMVFC_FPIN_DEFAULT_EVENT_PERIOD),
->> +					  cpu_to_be32(IBMVFC_FPIN_DEFAULT_EVENT_THRESHOLD),
->> +					  cpu_to_be32(1));
->> +}
->> +
->>  /**
->>   * ibmvfc_handle_async - Handle an async event from the adapter
->>   * @crq:	crq to process
->> @@ -3449,6 +3487,120 @@ VISIBLE_IF_KUNIT void ibmvfc_handle_async(struct ibmvfc_async_crq *crq,
->>  }
->>  EXPORT_SYMBOL_IF_KUNIT(ibmvfc_handle_async);
->>  
->> +VISIBLE_IF_KUNIT void ibmvfc_handle_asyncq(struct ibmvfc_crq *crq_instance,
->> +					   struct ibmvfc_host *vhost,
->> +					   struct list_head *evt_doneq)
->> +{
->> +	struct ibmvfc_async_subq *crq = (struct ibmvfc_async_subq *)crq_instance;
->> +	const struct ibmvfc_async_desc *desc = ibmvfc_get_ae_desc(be16_to_cpu(crq->event));
->> +	struct ibmvfc_target *tgt;
->> +	struct fc_els_fpin *fpin;
->> +
->> +	ibmvfc_log(vhost, desc->log_level,
->> +		   "%s event received. wwpn: %llx, node_name: %llx%s event 0x%x\n",
->> +		   desc->desc, be64_to_cpu(crq->wwpn), be64_to_cpu(crq->id.node_name),
->> +		   ibmvfc_get_link_state(crq->link_state), be16_to_cpu(crq->event));
->
-> Was there no way to not copy/paste what looks like basically ibmvfc_handle_async
-> into ibmvfc_handle_asyncq? This is a bunch of unnecessary code bloat. The major
-> difference seems that crq->event is be64 on the standard CRQ and be16 on a
-> sub-crq and accessing certain fields differently.
+diff --git a/arch/powerpc/perf/hv-gpci.c b/arch/powerpc/perf/hv-gpci.c
+index 5cac2cf3bd1e5..10c82cf8f5b39 100644
+--- a/arch/powerpc/perf/hv-gpci.c
++++ b/arch/powerpc/perf/hv-gpci.c
+@@ -210,7 +210,7 @@ static ssize_t processor_bus_topology_show(struct device *dev, struct device_att
+ 			0, 0, buf, &n, arg);
+ 
+ 	if (!ret)
+-		return n;
++		goto out_success;
+ 
+ 	if (ret != H_PARAMETER)
+ 		goto out;
+@@ -244,12 +244,14 @@ static ssize_t processor_bus_topology_show(struct device *dev, struct device_att
+ 				starting_index, 0, buf, &n, arg);
+ 
+ 		if (!ret)
+-			return n;
++			goto out_success;
+ 
+ 		if (ret != H_PARAMETER)
+ 			goto out;
+ 	}
+ 
++out_success:
++	put_cpu_var(hv_gpci_reqb);
+ 	return n;
+ 
+ out:
+@@ -278,7 +280,7 @@ static ssize_t processor_config_show(struct device *dev, struct device_attribute
+ 			0, 0, buf, &n, arg);
+ 
+ 	if (!ret)
+-		return n;
++		goto out_success;
+ 
+ 	if (ret != H_PARAMETER)
+ 		goto out;
+@@ -312,12 +314,14 @@ static ssize_t processor_config_show(struct device *dev, struct device_attribute
+ 				starting_index, 0, buf, &n, arg);
+ 
+ 		if (!ret)
+-			return n;
++			goto out_success;
+ 
+ 		if (ret != H_PARAMETER)
+ 			goto out;
+ 	}
+ 
++out_success:
++	put_cpu_var(hv_gpci_reqb);
+ 	return n;
+ 
+ out:
+@@ -346,7 +350,7 @@ static ssize_t affinity_domain_via_virtual_processor_show(struct device *dev,
+ 			0, 0, buf, &n, arg);
+ 
+ 	if (!ret)
+-		return n;
++		goto out_success;
+ 
+ 	if (ret != H_PARAMETER)
+ 		goto out;
+@@ -382,12 +386,14 @@ static ssize_t affinity_domain_via_virtual_processor_show(struct device *dev,
+ 				starting_index, secondary_index, buf, &n, arg);
+ 
+ 		if (!ret)
+-			return n;
++			goto out_success;
+ 
+ 		if (ret != H_PARAMETER)
+ 			goto out;
+ 	}
+ 
++out_success:
++	put_cpu_var(hv_gpci_reqb);
+ 	return n;
+ 
+ out:
+@@ -416,7 +422,7 @@ static ssize_t affinity_domain_via_domain_show(struct device *dev, struct device
+ 			0, 0, buf, &n, arg);
+ 
+ 	if (!ret)
+-		return n;
++		goto out_success;
+ 
+ 	if (ret != H_PARAMETER)
+ 		goto out;
+@@ -448,12 +454,14 @@ static ssize_t affinity_domain_via_domain_show(struct device *dev, struct device
+ 					starting_index, 0, buf, &n, arg);
+ 
+ 		if (!ret)
+-			return n;
++			goto out_success;
+ 
+ 		if (ret != H_PARAMETER)
+ 			goto out;
+ 	}
+ 
++out_success:
++	put_cpu_var(hv_gpci_reqb);
+ 	return n;
+ 
+ out:
+-- 
+2.54.0
 
-That's a good idea. I'll see what I can do. Seems like a little
-refactoring should make it work.
-
-> Again I think maybe we need to consider moving all the async work into a workqueue.
-
-My initial thought was to just queue the FPIN processing of
-ibmvfc_handle_asyncq to a work queue to resolve the problem of calling
-fc_host_fpin_rcv from interrupt context, but putting all of this
-processing into a work queue would work too. I'll look into it.
-
--Dave
 
