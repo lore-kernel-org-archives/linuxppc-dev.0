@@ -1,71 +1,93 @@
-Return-Path: <linuxppc-dev+bounces-20632-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20633-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 83AAECD3447
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 May 2026 05:18:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9C933CD37B2
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 May 2026 10:28:14 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gCDlg4q7nz2yZN;
-	Sat, 09 May 2026 15:18:07 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778303887;
-	cv=none; b=b5s2XibJsMd3qf7qTVQzzmKVKz8y7aKOiyb7hDz1pobOIr5/saV7SG3+ZA+q8h2Elz3JgqCtvyrzw4rB5VQxAN6yeRBqnEThkJ9pK6HNXjQMtWjtZ3Y34jPWqrNM0iZUZEz5PeIH3CvmdjLa44rL/SmmJAUb2C0Sj9Hlee9rFHY+9/BWRSO3xWwdw35F9gpXTXlNRXjp8nLJLRjiBvgI1sRM3lwDebGeAhk/8R+5cduG7urFOBbywQaFyONzeAUDIl44h/kxINF+D1gCdzRuDF3XkudimlslHLtTqtGPXpo2/t05Mt6VWlTIGYk5+6y8/nCgUETypv1B0hAkwvvhiA==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1778303887; c=relaxed/relaxed;
-	bh=DVIK+r2LDB04RtXTmedV57v7uSpDj322jM0xR8dLgGE=;
-	h=Message-ID:Date:MIME-Version:To:Cc:From:Subject:Content-Type; b=WIoQugV77uTHjp0MlKLvx7Z3jp3qmKhwL3IKQy7ku35Eko4NSHjv/8brSjX8FMaZROB796CMmU7VHy2FyIUYi5D8ZCx4ysefsdOhdjIkyWQ7gKQR30iNyx5frLSlPCNxSBVAZLTM8eD7euefiaoG/+hVlbBMSyO6Y0APk8148dkyCGbp2JUfW54L1oMwbXEl75PUI+lagdSggm/foRaeUEejicD51t4H0/pJqde3AREyjfDG+00Ti4vIh88cpeWus84Vu3uJbEc9VIiSPUoQeL2UVHrLqArPonWQc6zdLQYEWuyQWlR8bvlsNZ3npjY9rzvKRLApkskYjg2/U1s4hQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=i4YTOp7C; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gCMdT0gJBz2xqv;
+	Sat, 09 May 2026 20:28:13 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c207::3" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778322493;
+	cv=pass; b=HMZIo644F5HKUn2GAjJ1g7W3Ow8955MU5cmZgB7IDwNJP0HWmf3w893YDnGBToU9qTRs8aa9s3DQn6sBqFmjxxYV5grRlzEfydUJdRlQUYu3hnbqVxvnM1CTS1Fr8QmCNb58ByiD6pw/0c9bQIRh257pWFYXZlAONtXj4cshZT6eQm4ek8Ccad63G2mFAPZT3yWtJBMXMaR9Z+1KxYOW+lTe5UaiKi4v5Xuky8KlJMiWIiPLfXGYQghC3Y5YheKaRiIP/W43dfzPRrO6a1VeCKumfDrNCY93l/3YybkqnJKALMWIzKe1nmLpRyt9IdZdu3mDeUESmF2TArQBYZ/B7g==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1778322493; c=relaxed/relaxed;
+	bh=kE3Wr3Q2BKRWH4rWqJ+I4SkacaFTBbusLh3i8EIa0aU=;
+	h=From:To:Cc:Subject:Date:Message-Id:Content-Type:MIME-Version; b=N6vrSqsth7fBfNZOeCt/1FAUF22F2YTA1AhYiSzqOfiAxQD2DT2DCFBIj2DLThTkDJEs2xxF5AZb9Ij1+dhEzBfVCwY6AM+503Rwx5Ke/cX5AM0PUEifTYNpZDkn0sAYjK6V3kO+/3kgcC8p9VOCXI5B45gmwVqYJKe6jKN4r3hpVPF1gUBpUqIF0FTrfE4jPB/fqQ9Eb0Dp3NlKlQZJqjCW9qRk6kEer8v9SpgOs9xbgO539DNr8+U/Hj6Clx6XUjfHPN9Tam+jbCVnHXSE2y7mtY1kD8KgQO9U1T3OFFOwdVU5ksnXtQ9RJiLzkl8E+mR7oajWOEq30VpKN9Mutw==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com; dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=iUJMM2pO; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c207::3; helo=mrwpr03cu001.outbound.protection.outlook.com; envelope-from=wei.fang@nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=nxp.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=i4YTOp7C;
+	dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=iUJMM2pO;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=nxp.com (client-ip=2a01:111:f403:c207::3; helo=mrwpr03cu001.outbound.protection.outlook.com; envelope-from=wei.fang@nxp.com; receiver=lists.ozlabs.org)
+Received: from MRWPR03CU001.outbound.protection.outlook.com (mail-francesouthazlp170110003.outbound.protection.outlook.com [IPv6:2a01:111:f403:c207::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gCDlf0y8bz2xlV
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 09 May 2026 15:18:05 +1000 (AEST)
-Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 64931Fqb2539714;
-	Sat, 9 May 2026 05:17:42 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:message-id
-	:mime-version:subject:to; s=pp1; bh=DVIK+r2LDB04RtXTmedV57v7uSpD
-	j322jM0xR8dLgGE=; b=i4YTOp7CAHAqi/cNFp81cByGcAAs8IouP1EnjB0pz+dH
-	J9jN9dgm6wnH15bIvnJkIRxEgLXsKECcBYQuAc6VrBDVB+vsk8lHgGfu0c3u/cXu
-	2duEXoGkjJYBJQSGp0rw/EQbM9attTn2Qn/1JrUTjd8XLCORyRQpDwQfSUnNqEIE
-	H3VD77OECKhuK6iF+dU1Bey4l3iTjr1kmhHjPcSh3hCOl8V7zMTmgZ0clcgdGpT3
-	5XdmX4VBw5SkE/zAnKMIvsEeRxaziqM78c3xae3qapPo8t6C4J/ssyDfN3kRyidX
-	B3GliWBmdzlzLbvGLeNiZqeL/QS1m2/EvqliItUBXg==
-Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4e1vn4g9w4-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Sat, 09 May 2026 05:17:41 +0000 (GMT)
-Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma13.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 64959a2b025460;
-	Sat, 9 May 2026 05:17:40 GMT
-Received: from smtprelay02.wdc07v.mail.ibm.com ([172.16.1.69])
-	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4dwwtgtxmb-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Sat, 09 May 2026 05:17:40 +0000 (GMT)
-Received: from smtpav04.wdc07v.mail.ibm.com (smtpav04.wdc07v.mail.ibm.com [10.39.53.231])
-	by smtprelay02.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6495HdPM18612846
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Sat, 9 May 2026 05:17:39 GMT
-Received: from smtpav04.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 251A158045;
-	Sat,  9 May 2026 05:17:39 +0000 (GMT)
-Received: from smtpav04.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id BCEA058050;
-	Sat,  9 May 2026 05:17:32 +0000 (GMT)
-Received: from [9.43.96.227] (unknown [9.43.96.227])
-	by smtpav04.wdc07v.mail.ibm.com (Postfix) with ESMTP;
-	Sat,  9 May 2026 05:17:32 +0000 (GMT)
-Message-ID: <ee1f6b28-44c5-4567-a5a4-273ab31cf56e@linux.ibm.com>
-Date: Sat, 9 May 2026 10:47:30 +0530
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gCMdQ1Fmyz2xf8
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 09 May 2026 20:28:09 +1000 (AEST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=GG1e3ScEDgvFR96gX7ujXGP2eAkrwA6R7Nr+SrYuXwYfGtH4D5QD3JMoIPQZsDgkxWMnpgHD6S77Tw+1f54Gb49/tDb3d0PahuDzEmhK8axboqdDsubgJvPwMR7NVAWkKi9bxZ6jfm89WacUxOE5FngtBe86h5LQ+Dh7X4tKMNcW3LWYfTVGUomHW28TaJBjC2FFCxgpUmomRHYC+o3YBbmXnOGYj1rifx7vK84NuII4wzcb+JM8W9VXTprfq5aHN7Na7BwYlAPtmb1GrRoozSzJOf1EqDnbaT5a87BX1Yala1qyB7IMlcawlIhxXTjRBxU0qjQ4lWBjQ9o9h9hT0A==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=kE3Wr3Q2BKRWH4rWqJ+I4SkacaFTBbusLh3i8EIa0aU=;
+ b=r/OzFm8SaXL9C5n65Q0fEqAYG51R1kS/yAWW1V23ixR/8CmTXOqCu/VsjyU91hOAyQUk1HQ6MMx06JI1RhY4xHPQghfngb/SVavC4Htgc0fkME+Aur4OIu9urBrKjAldvhBq1XuQFG7UTaGuUBOYNJeccvSf27JpuGPP63kqYfJkr/KVQmTWmxmQixs6Rg/mf2f+3J3Z6jU9nn2RLnCHqFT/saWno3AmJOabA34xkofXzUHI8YaDUdyEDwmIyLO+r/5oxe2jpZnLd0ysFMgQk0FxGGHQuXkcv2+zQe3g2bbB34eTfgYaq1hgwhZAs6PaxgR82MPOngNSUpQrMc1xrw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
+ header.d=nxp.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=kE3Wr3Q2BKRWH4rWqJ+I4SkacaFTBbusLh3i8EIa0aU=;
+ b=iUJMM2pOu7wKVDvHBy0VYmCExR10FZg+9mRGWUgFwPyyuYCd6/9vQvhBsT7sdX3FuG1TdD1LqiakDIS5QuowDAm+Mm4ZpscSHm7V3qrMFjFmH63Ek9cUFIeEcfJQ37I7JA8Kk6FO3Fjh82l1UbwAvdbqE0Z3JTm+SZfky+rqF30alZVwqVvOyzt3c4BnBVgfSZuBbRQZQO2XRwszMhV5dYSrpsnIIQpUPKjIsJKwp6vvgLQOy3hN8UcnjfxTz4KdnnMOtOXmQNT7qXyTzuD1oS0o7BRTJz/zx7Bluj52Qy+NzDTjk1RUgrYPgmQyBH3HhuzqE2UE516i0xwckAMOJw==
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=nxp.com;
+Received: from DBBPR04MB7500.eurprd04.prod.outlook.com (2603:10a6:10:1f4::16)
+ by PA1PR04MB10604.eurprd04.prod.outlook.com (2603:10a6:102:48e::19) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9891.20; Sat, 9 May
+ 2026 10:27:41 +0000
+Received: from DBBPR04MB7500.eurprd04.prod.outlook.com
+ ([fe80::c291:543b:4bde:cee7]) by DBBPR04MB7500.eurprd04.prod.outlook.com
+ ([fe80::c291:543b:4bde:cee7%6]) with mapi id 15.20.9891.019; Sat, 9 May 2026
+ 10:27:41 +0000
+From: Wei Fang <wei.fang@nxp.com>
+To: claudiu.manoil@nxp.com,
+	vladimir.oltean@nxp.com,
+	xiaoning.wang@nxp.com,
+	andrew+netdev@lunn.ch,
+	davem@davemloft.net,
+	edumazet@google.com,
+	kuba@kernel.org,
+	pabeni@redhat.com,
+	robh@kernel.org,
+	krzk+dt@kernel.org,
+	conor+dt@kernel.org,
+	f.fainelli@gmail.com,
+	frank.li@nxp.com,
+	chleroy@kernel.org,
+	horms@kernel.org,
+	linux@armlinux.org.uk,
+	maxime.chevallier@bootlin.com,
+	andrew@lunn.ch,
+	olteanv@gmail.com
+Cc: netdev@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	devicetree@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-arm-kernel@lists.infradead.org,
+	imx@lists.linux.dev
+Subject: [PATCH v6 net-next 00/15] Add preliminary NETC switch support for i.MX94
+Date: Sat,  9 May 2026 18:29:39 +0800
+Message-Id: <20260509102954.4116624-1-wei.fang@nxp.com>
+X-Mailer: git-send-email 2.34.1
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-ClientProxiedBy: SI2PR01CA0030.apcprd01.prod.exchangelabs.com
+ (2603:1096:4:192::15) To DBBPR04MB7500.eurprd04.prod.outlook.com
+ (2603:10a6:10:1f4::16)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -79,171 +101,203 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Content-Language: en-US
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: atrajeev@linux.ibm.com, chleroy@kernel.org, christophe.leroy@csgroup.eu,
-        krzysztof.kozlowski@oss.qualcomm.com, linux-kernel@vger.kernel.org,
-        linuxppc-dev@lists.ozlabs.org, mahesh@linux.ibm.com,
-        mpe@ellerman.id.au, nathan@kernel.org, naveen@kernel.org,
-        npiggin@gmail.com, ritesh.list@gmail.com, shivani@linux.ibm.com,
-        sourabhjain@linux.ibm.com, tzimmermann@suse.de,
-        Nicholas Piggin <npiggin@gmail.com>
-From: Madhavan Srinivasan <maddy@linux.ibm.com>
-Subject: [GIT PULL] Please pull powerpc/linux.git powerpc-7.1-2 tag
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Authority-Analysis: v=2.4 cv=BM+DalQG c=1 sm=1 tr=0 ts=69fec376 cx=c_pps
- a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
- a=IkcTkHD0fZMA:10 a=NGcC8JguVDcA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=U7nrCbtTmkRpXpFmAIza:22 a=VwQbUJbxAAAA:8
- a=5f-d5yj9Zm1OtvFmugoA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTA5MDA1MCBTYWx0ZWRfX29K5klJQ8uH0
- tlQmPFsdW8IoKNopRqXiqEhDoHazBHcJoM3a9r1vm/tVJt+BGKdVTeAUSPKTlRbOaKL0cY0kKA0
- PsTG7eLf5yCZoAjJJgndDjs30aQ97omjq62Vxl62hBoRxvkYs4sFkakYuF0U3mw2cXv6dUUkk5s
- vOebrWGYZYJEgddimFSOJnMluRupkxn22jaRmwrWI8+n6S1Bkh418wXNnIb9YfhSiH5bp9KDXwX
- YBGQ5IHmigLS/hLpLUgB4vwQWdJI3Gy6nXti7oTylVwGgNPYMVoY8xkEEPgMMGJ2mh8pIxMESIl
- FxnDpxx1F8wpYRnt1Hn3Ym1QfXJh6KkU7NR26Nx5ljrF/A0GtsoATFpTnbyMPkLxSlyaqrFWTNw
- 9LnU4f/FuCgdYouVAH0tafV1/7QtjQECb+2GZBA/gECLQqmvNvucQG1dkQbt/OCy51Lo1DJdnDj
- KkELnmH6tfPCixU8n8Q==
-X-Proofpoint-GUID: 3mXd5fO-X93Wag0r8U6-24RuKnIKDigS
-X-Proofpoint-ORIG-GUID: bbHljrWxGyMCDteBkGliH2oFAlHI4Hp8
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-05-09_02,2026-05-08_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1011 impostorscore=0 suspectscore=0 bulkscore=0 spamscore=0
- lowpriorityscore=0 priorityscore=1501 adultscore=0 malwarescore=0
- phishscore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2604200000
- definitions=main-2605090050
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: DBBPR04MB7500:EE_|PA1PR04MB10604:EE_
+X-MS-Office365-Filtering-Correlation-Id: 2df4fcb3-55fe-4db1-a501-08deadb59964
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|366016|52116014|1800799024|7416014|376014|19092799006|18002099003|38350700014|921020|56012099003|3023799003;
+X-Microsoft-Antispam-Message-Info:
+	bkM2pfREo70MJ5FjOLGpKqnoBKOgj5rUanJNbohrJAlLMf3SU+WU9iIEG4QNPtKwL7Vj/qW6CIYOLRNEbx+tqCPEf2XS8i1BaboS2Z3Nq0NhUzH+f9oesudowiMfxQZK6RyV1Tt5z7Z6tu/xrJi28TIXa8B2LAmfuKY8Q+3n2vQN1egu2pQxvWCB8y1InaUKjXnDH1QBwaQCEh5DZP6j6ZWPkncqLsIR6TwWk9T3svF1mby/EaRTYTi5abU5u6l8m4HA/XGLQ6/Y2TnrEV2dFIsVBbIGxk0PDiw2xShz6nx2e4t4X1+tSnlJ1CMK3bQS0pu0VMwaNsL/ZvE5XEyKfQAeC33mZvbfLj5u+qiIIxuPiiGNUth6uHlAya+M/VJFHsqPqtqYdjS293tFKEy7GgKIKC6mnGe0E1+eAsISXvPZabwpz5MrXqPwZv4A8u/GD0GolWULzDacsHoNKXVhGJRmqExkG3afDe12UpLp7iopLzRAtUviRs/KrvLEKnpYgWxryA5FRlUZs1EajiSIl+pVo6cVQc7n8chznFACkVawfYqouEsTZaMdD3qX5iGryGQ0UB1oKTS70JChjh5n78AHILfD9T9s4xk9yE6iqSODqJgo9w/ANdkMqAl9v7JcL7x4ohuooiAd08pA4fhutC1z6avfTq9yHsCMu/xE5tnT7VVLNE8WS1Cqp6l1egQzV5TVA09KXDtQutsXGck2YGQWLgb6hSEsxS4A/MproijSZ22BEeQkNnfKbmyRyL101eZAlrCT21g6IcXBygpUHw==
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DBBPR04MB7500.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(52116014)(1800799024)(7416014)(376014)(19092799006)(18002099003)(38350700014)(921020)(56012099003)(3023799003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?us-ascii?Q?RtZS0c/5NblsOVBUBThivVLwLzoBeF01nWpe0ll26cRcSb8vxG2RoxBpAptZ?=
+ =?us-ascii?Q?EOeCO6oMxftzmwlRf3mrUEgnFgSG9LP7YooYm2bo4kwI5zVGDdTiituNLyYA?=
+ =?us-ascii?Q?vfV+3h/KvpzqNxpCCM9QW9APD7ThX563Mr0WiFMtkJNjy/+AcSiR86wfwKu5?=
+ =?us-ascii?Q?BE/ZQC+7Hq9aOxMQs2z/YiSw+NxO0pUISeJhQAeiTrqp16YNRiAb5iuiYbb8?=
+ =?us-ascii?Q?RbyI29vS/nkKG95Evemmqgd5ls3Ma37YMqcs05r6nNeRxHku3K8njUR19WQp?=
+ =?us-ascii?Q?GBOG2Kr5S96BAZsRAsHX1Vw04AmdinSdMwqmfEiOdooJc/CmMXOiLrTHvqeO?=
+ =?us-ascii?Q?njuytul5ULDQu7au0RSvXI8/AOaNxTYAE/9/yr8eSWWnueHjYuutUOgTIXQH?=
+ =?us-ascii?Q?aa54cJLH9LuI9P6kLR+FjF6qxnV6dwLupj/hROUg1S71wJtToISD2V9IqRlx?=
+ =?us-ascii?Q?8/282i6LXhyKFimjjZZlWWtD0Xxw8ISi91p9S8bMIPq0mx3qpa4VMWfakWSH?=
+ =?us-ascii?Q?Y8CTTlKHuW3FQH/zyde/07E0+h2cd6dwnTJK7J73cy+J2sZwEeQ6gvVBNiFd?=
+ =?us-ascii?Q?m7RH/ymMwP/pxxbfBpHx5X7NUAuXQSaVpiSHfPTPzv46aFxVEETjINQMYR1r?=
+ =?us-ascii?Q?gvZg0kcwOPg5QQcKPjr3PCiDhFVgtML+yxnYskliR+ZRBmHqz6mn9kvG+JeE?=
+ =?us-ascii?Q?0+hcpQUiCl15TmHmV0rHaPie09s0LNP5NJMHz0MqGXxOb9v1GnqgZxSZFpEg?=
+ =?us-ascii?Q?9qzv1q7a6nm9wWIKWEB0yHDlrCiu1etAKCEU32eBqa93ULb6FdhGHse7pxc/?=
+ =?us-ascii?Q?0KeBCLG0nkbtjUAKKwvghTR9Ih7be2DUHbh7HxlEJ6xIS4rDS7QNT2gkPJKB?=
+ =?us-ascii?Q?Omv1hej6b/P5qBl17PMcmdD2EBjVcuZT50OobyRc3SSCEuclFnTV2tR5ogOL?=
+ =?us-ascii?Q?dfUVqvzItxYsqTF/3LOPXEDt621Veuo4n8cEV+7BQcCv+HTm3hNr8KYIHlY1?=
+ =?us-ascii?Q?GuIvDGMPQogYzXU//l04R89F37ydV+P+bPtQF0XRH13GaQP8ZN9ipyNGewI7?=
+ =?us-ascii?Q?k73ae0IeumbsLpIp4DgLozbBm/u15dMYiABybIQkO1wr43VN3Zjxd/7oDUuK?=
+ =?us-ascii?Q?0Bf5w9h6MvBjafV3XDMfg9M06KLGq6IwvT09i+fd6GK6kmPA3rrbrJeXAGbq?=
+ =?us-ascii?Q?VWdU1/kBU1GONYmI4VVQSexIL+6nQbooFtBM3GvW/bpcSVnyQwMVG6x13qI1?=
+ =?us-ascii?Q?MS79QK7bwDzc0AapQCywDaISuLlu7mgYphy3wxiz3x0Dr2IwTT6ZBNsR8lYn?=
+ =?us-ascii?Q?KigNUubN3OB2DA3jQBucKdvNkUYtVHDgkp6pmw5sG/aQWZcis6lkyhGNQxng?=
+ =?us-ascii?Q?W+qfEMYfH53Rzjo2G12MKrqtY6If8ylqSxe3/0V8S+ceyHVf8ihBtGxSwClj?=
+ =?us-ascii?Q?GKOUOyApbyM9BWIDEHw8PpTd08ISPMKSVYj+ko8PnttFYKOhAy7O+mfk+NFM?=
+ =?us-ascii?Q?mIznmVHMtQtlzbF9b2KGzqseq5M8ZvdaDuJBn7bhv+V2QZ9bQw9t5csTpyKI?=
+ =?us-ascii?Q?PUgoLx8bGzLyaunJnCHnWSa3Beg/e/PcKzt+rTYFEPdNTMu2UMZHZujniY8K?=
+ =?us-ascii?Q?Q+YJvDbzrcRnullVzqxS6u7N6V9SJlQoi1qmoDY/XgZlMjyOU5lOwG6cJ20j?=
+ =?us-ascii?Q?b+oNmooZukWoIO+ZYjSeqOVO2DoGJu2kDTWtMZBWda3JWCEsgE/6sbobLFy5?=
+ =?us-ascii?Q?qGRPiCkhpA=3D=3D?=
+X-OriginatorOrg: nxp.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 2df4fcb3-55fe-4db1-a501-08deadb59964
+X-MS-Exchange-CrossTenant-AuthSource: DBBPR04MB7500.eurprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 09 May 2026 10:27:40.9387
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: y1JkvF+A6HtRy8jIyKF1r/Wf1wo2FSLctGzK+zInlV3ZXWrLsLZmvbHyi504tDerKn8Swkn6N1VJN2gKSzBlwg==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: PA1PR04MB10604
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA512
+i.MX94 NETC (v4.3) integrates 802.1Q Ethernet switch functionality, the
+switch provides advanced QoS with 8 traffic classes and a full range of
+TSN standards capabilities. It has 3 user ports and 1 CPU port, and the
+CPU port is connected to an internal ENETC through the pseduo link, so
+instead of a back-to-back MAC, the lightweight "pseudo MAC" is used at
+both ends of the pseudo link to transfer Ethernet frames. The pseudo
+link provides a zero-copy interface (no serialization delay) and lower
+power (less logic and memory).
 
-Hi Linus,
+Like most Ethernet switches, the NETC switch also supports a proprietary
+switch tag, is used to carry in-band metadata information about frames.
+This in-band metadata information can include the source port from which
+the frame was received, what was the reason why this frame got forwarded
+to the entity, and for the entity to indicate the precise destination
+port of a frame. The NETC switch tag is added to frames after the source
+MAC address. There are three types of switch tags, and each type has 1
+to 4 subtypes, more details are as follows.
 
-Please pull powerpc fixes for 7.1:
+Forward switch tag (Type = 0): Represents forwarded frames.
+  - SubType = 0 - Normal frame processing.
 
-The following changes since commit 7fd2df204f342fc17d1a0bfcd474b24232fb0f32:
+To_Port switch tag (Type = 1): Represents frames that are to be sent to
+a specific switch port.
+  - SubType = 0. No request to perform timestamping.
+  - SubType = 1. Request to perform one-step timestamping.
+  - SubType = 2. Request to perform two-step timestamping.
+  - SubType = 3. Request to perform both one-step timestamping and
+    two-step timestamping.
 
-   Linux 7.1-rc2 (2026-05-03 14:21:25 -0700)
+To_Host switch tag (Type = 2): Represents frames redirected or copied to
+the switch management port.
+  - SubType = 0. Received frames redirected or copied to the switch
+     management port.
+  - SubType = 1. Received frames redirected or copied to the switch
+    management port with captured timestamp at the switch port where
+    the frame was received.
+  - SubType = 2. Transmit timestamp response (two-step timestamping).
 
-are available in the git repository at:
+Currently, this patch set supports Forward tag, SubType 0 of To_Port tag
+and SubType 0 of To_Host tag. More tags will be supported in the future.
 
-https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git 
-tags/powerpc-7.1-2
+In addition, the switch supports NETC Table Management Protocol (NTMP),
+some switch functionality is controlled using control messages sent to
+the hardware using BD ring interface with 32B descriptors similar to the
+packet Transmit BD ring used on ENETC. This interface is referred to as
+the command BD ring. This is used to configure functionality where the
+underlying resources may be shared between different entities or being
+too large to configure using direct registers.
 
-for you to fetch changes up to f583bd5f64d40e083dde5bb22846c4d93e59d471:
+For this patch set, we have supported the following tables through the
+command BD ring interface.
 
-   powerpc/pasemi: Drop redundant res assignment (2026-05-06 07:49:19 +0530)
+FDB Table: It contains forwarding and/or filtering information about MAC
+addresses. The FDB table is used for MAC learning lookups and MAC
+forwarding lookups.
 
-- ------------------------------------------------------------------
-powerpc fixes for 7.1 #2
+VLAN Filter Table: It contains configuration and control information for
+each VLAN configured on the switch.
 
-  - Fix KASAN sanitization flag for core_$(BITS).o
+Buffer Pool Table: It contains buffer pool configuration and operational
+information. Each entry corresponds to a buffer pool. Currently, we use
+this table to implement flow control feature on each port.
 
-  - Fixes for handling offset values in pseries htmdump
+Ingress Port Filter Table: It contains a set of filters each capable of
+classifying incoming traffic using a mix of L2, L3, and L4 parsed and
+arbitrary field data. We use this table to implement host flood support
+to the switch port.
 
-  - Fix interrupt mask in cpm1_gpiochip_add16()
+The switch also supports other tables, and we will add more advanced
+features through them in the future.
 
-  - ps3/pasemi fixes to drop redundant result assignment
+---
+v6:
+1. Use FIELD_GET() to get switch tag type
+2. Add PCI BAR length check in netc_switch_pci_init()
+3. Remove CPU port check from netc_port_change_mtu()
+4. Move netc_port_get_info_from_dt() from patch 10 to patch 12
+5. Update the comment for NTMP_QA_ENTRY_ID
+6. Collect Reviewed-by tags
+v5 link: https://lore.kernel.org/imx/20260430024945.3413973-1-wei.fang@nxp.com/
+v4 link: https://lore.kernel.org/imx/20260331113025.1566878-1-wei.fang@nxp.com/
+v3 link: https://lore.kernel.org/imx/20260326062917.3552334-1-wei.fang@nxp.com/
+v2 link: https://lore.kernel.org/imx/20260323060752.1157031-1-wei.fang@nxp.com/
+v1 link: https://lore.kernel.org/imx/20260316094152.1558671-1-wei.fang@nxp.com/
+---
 
-  - Fixes in papr-hvpipe code path
+Wei Fang (15):
+  dt-bindings: net: dsa: update the description of 'dsa,member' property
+  dt-bindings: net: dsa: add NETC switch
+  net: enetc: add pre-boot initialization for i.MX94 switch
+  net: enetc: add basic operations to the FDB table
+  net: enetc: add support for the "Add" operation to VLAN filter table
+  net: enetc: add support for the "Update" operation to buffer pool
+    table
+  net: enetc: add support for "Add" and "Delete" operations to IPFT
+  net: enetc: add multiple command BD rings support
+  net: dsa: add NETC switch tag support
+  net: dsa: netc: introduce NXP NETC switch driver for i.MX94
+  net: dsa: netc: add phylink MAC operations
+  net: dsa: netc: add FDB, STP, MTU, port setup and host flooding
+    support
+  net: dsa: netc: initialize buffer pool table and implement
+    flow-control
+  net: dsa: netc: add support for the standardized counters
+  net: dsa: netc: add support for ethtool private statistics
 
-  - powerpc/perf: Update check for PERF_SAMPLE_DATA_SRC marked events
+ .../devicetree/bindings/net/dsa/dsa.yaml      |    6 +-
+ .../bindings/net/dsa/nxp,netc-switch.yaml     |  127 ++
+ MAINTAINERS                                   |   11 +
+ drivers/net/dsa/Kconfig                       |    2 +
+ drivers/net/dsa/Makefile                      |    1 +
+ drivers/net/dsa/netc/Kconfig                  |   14 +
+ drivers/net/dsa/netc/Makefile                 |    3 +
+ drivers/net/dsa/netc/netc_ethtool.c           |  297 ++++
+ drivers/net/dsa/netc/netc_main.c              | 1561 +++++++++++++++++
+ drivers/net/dsa/netc/netc_platform.c          |   87 +
+ drivers/net/dsa/netc/netc_switch.h            |  173 ++
+ drivers/net/dsa/netc/netc_switch_hw.h         |  361 ++++
+ .../ethernet/freescale/enetc/netc_blk_ctrl.c  |  185 +-
+ drivers/net/ethernet/freescale/enetc/ntmp.c   |  383 +++-
+ .../ethernet/freescale/enetc/ntmp_private.h   |  122 +-
+ include/linux/dsa/tag_netc.h                  |   14 +
+ include/linux/fsl/netc_global.h               |    6 +
+ include/linux/fsl/ntmp.h                      |  187 +-
+ include/net/dsa.h                             |    2 +
+ include/uapi/linux/if_ether.h                 |    1 +
+ net/dsa/Kconfig                               |   10 +
+ net/dsa/Makefile                              |    1 +
+ net/dsa/tag_netc.c                            |  193 ++
+ 23 files changed, 3717 insertions(+), 30 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/net/dsa/nxp,netc-switch.yaml
+ create mode 100644 drivers/net/dsa/netc/Kconfig
+ create mode 100644 drivers/net/dsa/netc/Makefile
+ create mode 100644 drivers/net/dsa/netc/netc_ethtool.c
+ create mode 100644 drivers/net/dsa/netc/netc_main.c
+ create mode 100644 drivers/net/dsa/netc/netc_platform.c
+ create mode 100644 drivers/net/dsa/netc/netc_switch.h
+ create mode 100644 drivers/net/dsa/netc/netc_switch_hw.h
+ create mode 100644 include/linux/dsa/tag_netc.h
+ create mode 100644 net/dsa/tag_netc.c
 
-Thanks to:
-Aboorva Devarajan, Athira Rajeev, Christophe Leroy (CS GROUP), Geert
-Uytterhoeven, Haren Myneni, Krzysztof Kozlowski, Mukesh Kumar Chaurasiya 
-(IBM),
-Nathan Chancellor, Ritesh Harjani (IBM), Shivani Nittor, Sourabh Jain, 
-Thomas
-Zimmermann, Venkat Rao Bagalkote
+-- 
+2.34.1
 
-- ------------------------------------------------------------------
-Athira Rajeev (4):
-       powerpc/pseries/htmdump: Free the global buffers in htmdump 
-module exit
-       powerpc/pseries/htmdump: Fix the offset value used in processor 
-configuration dump
-       powerpc/pseries/htmdump: Fix the offset value used in htm status dump
-       powerpc/pseries/htmdump: Add memory configuration dump support to 
-htmdump module
-
-Christophe Leroy (CS GROUP) (1):
-       powerpc/8xx: Fix interrupt mask in cpm1_gpiochip_add16()
-
-Krzysztof Kozlowski (2):
-       powerpc/ps3: Drop redundant result assignment
-       powerpc/pasemi: Drop redundant res assignment
-
-Nathan Chancellor (1):
-       powerpc/vdso: Drop -DCC_USING_PATCHABLE_FUNCTION_ENTRY from 
-32-bit flags with clang
-
-Ritesh Harjani (IBM) (9):
-       pseries/papr-hvpipe: Fix race with interrupt handler
-       pseries/papr-hvpipe: Prevent kernel stack memory leak to userspace
-       pseries/papr-hvpipe: Fix null ptr deref in 
-papr_hvpipe_dev_create_handle()
-       pseries/papr-hvpipe: Fix & simplify error handling in 
-papr_hvpipe_init()
-       pseries/papr-hvpipe: Fix the usage of copy_to_user()
-       pseries/papr-hvpipe: Simplify spin unlock usage in 
-papr_hvpipe_handle_release()
-       pseries/papr-hvpipe: Kill task_struct pointer from struct 
-hvpipe_source_info
-       pseries/papr-hvpipe: Refactor and simplify hvpipe_rtas_recv_msg()
-       pseries/papr-hvpipe: Fix style and checkpatch issues in 
-enable_hvpipe_IRQ()
-
-Shivani Nittor (1):
-       powerpc/perf: Update check for PERF_SAMPLE_DATA_SRC marked events
-
-Sourabh Jain (2):
-       powerpc/kdump: fix KASAN sanitization flag for core_$(BITS).o
-       powerpc/vmx: avoid KASAN instrumentation in enter_vmx_ops() for kexec
-
-Thomas Zimmermann (1):
-       arch/powerpc: Drop CONFIG_FIRMWARE_EDID from defconfig files
-
-
-  arch/powerpc/configs/amigaone_defconfig      |   1 -
-  arch/powerpc/configs/chrp32_defconfig        |   1 -
-  arch/powerpc/configs/g5_defconfig            |   1 -
-  arch/powerpc/configs/pasemi_defconfig        |   1 -
-  arch/powerpc/configs/powernv_defconfig       |   1 -
-  arch/powerpc/configs/ppc64_defconfig         |   1 -
-  arch/powerpc/configs/ppc64e_defconfig        |   1 -
-  arch/powerpc/configs/skiroot_defconfig       |   1 -
-  arch/powerpc/kernel/vdso/Makefile            |   6 +
-  arch/powerpc/kexec/Makefile                  |   2 +-
-  arch/powerpc/lib/vmx-helper.c                |   9 +-
-  arch/powerpc/perf/core-book3s.c              |   5 +-
-  arch/powerpc/platforms/8xx/cpm1.c            |   4 +-
-  arch/powerpc/platforms/pasemi/pci.c          |   3 +-
-  arch/powerpc/platforms/ps3/device-init.c     |   4 +-
-  arch/powerpc/platforms/pseries/htmdump.c     | 133 ++++++++++++--
-  arch/powerpc/platforms/pseries/papr-hvpipe.c | 181 +++++++++++---------
-  arch/powerpc/platforms/pseries/papr-hvpipe.h |   1 -
-  18 files changed, 235 insertions(+), 121 deletions(-)
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCgAdFiEEqX2DNAOgU8sBX3pRpnEsdPSHZJQFAmn+wtYACgkQpnEsdPSH
-ZJSYihAAglGB3V+ICTWx2ic7FHPJp2uiuEhbvwdjrLhloqRVpOrs00TxS3Eso1q+
-ySXqrr2u5qsPUeMr8h4VqiCnc7eGsfmfJaheItVs69Klv4FnexTilJgH8BpRc5z3
-qHVPAZBAv1laCTN5uRm4pXBrv3V/vGWLtHjTkqBnkGGgy82luJlV5nyUvOYfR0IR
-eRYWn2BxqvkFCQn0FzdPktJJuOuTca3u/DwA1s1IwsrBqdIblDUPCdXwlzXaB2p7
-YmlFBjCXkcdu2MlNC1qWx+zJQqFCEXt2l58daW5HIGt/Fw7mNYr6EzoxnSgT2SvQ
-33dzLtxOELEFZrUhZ/IgvMwnv7awS34gzNWXtowkuSdI+W6gFNPu3ahv8xQluF2K
-+3gamy9lVudD1EAUBkr60dJLjYcCualClXh24U9pcZIdehmBFLInRC6gVyPJxAu4
-hcGNNTCYtPzejUFi/8BywnsVZ9uRCwk2iLbYF8EzaJV9m9fciZetnm6IFs48L9zw
-2P+qq9B8FdAmEyd0f1RKymFr4tBA05nrFex4P/5ujEWBOr1sUVIJvbaxPxpFs1vt
-FykuXyzeJERyt7elKH0rTglxikxMVVFNLZ+pJMJh5R7fMZg7RTxSMCWCaBH2ecRb
-MOmDYpWUsOsbsW+oIKqYEDRnYy8wz/hH0mQMWM8Xm5ZLmg2Il70=
-=v1Hy
------END PGP SIGNATURE-----
 
