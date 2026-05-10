@@ -1,87 +1,72 @@
-Return-Path: <linuxppc-dev+bounces-20657-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20658-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 94B3BCD3447
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 May 2026 19:56:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E764ECD3427
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 10 May 2026 12:59:48 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gCcFZ3Y4jz2xqv;
-	Sun, 10 May 2026 05:56:50 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::42d"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778356610;
-	cv=none; b=HDbtlW5cfHycAdFHvNB4gDkw0G79fT/BBGeWY9m8i2e+SsE7hnz55LRvoDiCmGX7AdyANC7fbb4fzHp6B7rqcGO2fBJciKlUr9lDOUY/k7wZDs+IFhxfnJNeiQ9cPwqYtjZG9v6G/ZlW1qPvt0tSlQEZW2qBHK/q9210aOyB5yxQ4eFxO46w8yGlZegKWbeBV5Z6b8vUXTY/J6k+Nxv2BTnM4EVvk3PYiZ+OPC+94Pto+9yZzLKz3dFR8QYgibOs0At01KxA8iDQWxTXKuABMc96jhuaU9bYMEtd5cUI21LewFEOQoJP0kixDLPgWDVYsadpixqa98YZYC1ZmrnYtw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gD2xv1g28z2xl6;
+	Sun, 10 May 2026 22:59:47 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778417987;
+	cv=none; b=g021a0otipOMDMy4X4kK+HAU9+Gu0YIT7ermUv7rfcoMhvuAYL8yGu5hz0PwtJxulyNA5IB/xmU/YfmxVkpzhDhd1S+7trRYMLIu9fk/eSRMjofP6J7eeN6NpP3D7f2y8sX9dEkMijCmJsT4bjW4T58pn5BH2zM1Dy9cMaCmGAxvLaKNTPstbs89QlfcJVsBrKKAefsM0N7TbfuZ8kpjz8NovQcPeGsxA8nH46wxtLRbcRnraDgusal2FNyeGSfVlFt2kW22bWDQe3+X/Twej6YJy3raC32futRRXDKXKxwCeYzDR+KZUihYxYi6zZBfk9s3t0DXglPIUZ1FCoJWLQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1778356610; c=relaxed/relaxed;
-	bh=nKiaZuFuBrfeYgzxGRMsLy+An4o+pYh57uREy1jun3c=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=f8SsziL4JuksUsXs7EXMFdtUjYJKKhfJ12O/rKMrVsYC5+ijfaN2dnceVcLm/PoHeZmFmi38XLLFPkSqGC+G2sE4AhfqbdME+VpRWW2Ea+H0QaU3qYFbX9AswJjhp0picF21EFpUVyDFX6lMs74xsrjUC/UOkw/a0by4v9W6aiLvfBIO2gu6ZZZfbxsumoUo3dMFD5F1u3hai1gh6clDuxYNfwOynf2DsjPyQK6fB2fXQVtqbEDdBZwZClBA2NjDMUKXUCGVCQzJeM3LF71i8D4Pj0qqErOlELQlp9uy5Vz4enQRs+Tk/KhRFtgU9/oP9cQK5eUBK5w5qZDCJWOHKw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=n1hobLdm; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::42d; helo=mail-wr1-x42d.google.com; envelope-from=julianbraha@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1778417987; c=relaxed/relaxed;
+	bh=mW+6YCnMMcG+N3STMPBDPuy5FUn5TKVoLDPBk6Mi4t0=;
+	h=Date:Message-ID:From:To:Cc:Subject:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=JdNKVxu3V86/VZMMf0GFfqJewN83QFHkV2vZCvmV9YH3ZNPQ7QdE+39QfKXvnczj/S55xyQoAqnJtvS5uvwlZXr6gRt0DNCW1c+z9xn6jB3U4RqLvSVD6Q9uI1ce43pmUsojnRLnuBoCl1gdX6MMqTLGVBB/PmAtQgijRmg5cLvVdssIyMXXkNER+noQTXZ4+nJDl6QWy/yPSbLok2ETQ8kp9wgy+ihnkOETDDr90WX5PllG1P7FixhTpYG3M7dfrHyrdYjeyN90X7X5aTRX/+6bLWAYZRaQy4vs88efocDX24XU03yZbPs5UvF06VGaJRi5y3gNh9VuFhzE5q7xkA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=WI+9yRs2; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=maz@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=n1hobLdm;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=WI+9yRs2;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::42d; helo=mail-wr1-x42d.google.com; envelope-from=julianbraha@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-wr1-x42d.google.com (mail-wr1-x42d.google.com [IPv6:2a00:1450:4864:20::42d])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=maz@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gCcFX3Rylz2xlV
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 May 2026 05:56:47 +1000 (AEST)
-Received: by mail-wr1-x42d.google.com with SMTP id ffacd0b85a97d-43fe3e22e33so1790279f8f.0
-        for <linuxppc-dev@lists.ozlabs.org>; Sat, 09 May 2026 12:56:47 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1778356603; x=1778961403; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:sender:from:to:cc:subject:date:message-id:reply-to;
-        bh=nKiaZuFuBrfeYgzxGRMsLy+An4o+pYh57uREy1jun3c=;
-        b=n1hobLdm+VRGEbi+TLC6J8RTC0ppZ9KU0ItHdy7/Q4noupa6ok5B2Fr8wqcdUXDTO6
-         2GCuY7pSkqDLVG1F4JNp8T59rCv9f3I4Y/05vfMSc/DdZ5bbe5qfzE8DZusmLfacc2cZ
-         6H8kd5/EjrdntZJiXHYERqKzWye2EpzugkXxpYXqWsvcxI3aMidVfxfKxiYuwNJ6UNzb
-         h62fuO4r5Wa+NSN/ly28nvbEHuEVRGyScnzJEV0RBweizIv72MATDIxe4vy4becn6FTt
-         JNQmDBCAtsatFiAJxUX1VtoF1biH9WA9vYNDPPbITpcIu5uO9zC2rjCooDI/693h9syd
-         /77A==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1778356603; x=1778961403;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:sender:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=nKiaZuFuBrfeYgzxGRMsLy+An4o+pYh57uREy1jun3c=;
-        b=dnvv8y4ZiEfUdmhlzCFOAyMHpzmBSQpXhFuuc2vHoWPiTrlqRpkhmF6N8y76LU+sqC
-         cp9Njg3tW/hKqBsSiVc4pSPAhmdKcz8Tf+4P4tBomxK09AlrnJdrKu/8oK6dvJVqlVjr
-         lwc8yNAyr+e1mrogIMjVslJoX9d4qbVhTOlDuKNyKePBnUo4O8RKVzea7dp+tpakVJob
-         ZTdleXHEeGguWRXbv5zop3XWq5QkCxLN5wrJjCFeFOwsoOg4dWfukUZMtNjzPawHP6bn
-         AZTwfdbVcWhiXfigTks/e0gYi4j9wezVFVwyK4K9Qd7s8DIOF1WCOqR/Ks1aejLDC+5o
-         rMPQ==
-X-Gm-Message-State: AOJu0YzXi0ckXVBADHcl36BJV1e2Q6wXq7bCfqAvuNc4KZww8uHTJK3R
-	kLj53ga5Bo+sOOqxLrY1SCBVKEGp2BQWZQl98uXiKHMAd5cgYlPbS7wa
-X-Gm-Gg: Acq92OGpfpkdhnkqoy6S2GzQ7Fn/GOkfV8yT3P7dkovAhCJhvTRQjsF3xrVOCw/c7H7
-	tIP60M7Y200erC6GA2s9hMsHAHhnL2WbUc+6B7vdjV4lj9q+dAzDXZQsOPOQn57cwPDIdXxcrTn
-	ladVo7TVx2d6okgykyrdMarUm54QKQkAGnF5Sp/J98k7HY3tNRO1yrLYlyOCw5L+ZeBtyixBpBQ
-	xVhf94si/1EvTEsnvzbriOlG34m0fN8AF7lKLUj0+Ggld98wN7OW8CUsWRroJzSC7ifHjOekZ6H
-	t7a1PAuECS/ZP+wMSxhuQsONz5ZuXSCBgGzzv6rKC9ID30deI8AU1GfokYNuws5By8iOpb0u7vT
-	lGSWVcn2lstJH/shQmMTLmU81WuoR5O2HTqEzRa/ikaxPzb7EePUQHqoCzLICZ1nsIHGPNyFzTD
-	7tYoW0crenM9pc1thDx2fcG+PYSBR3wbMW2lFZg96BYUhkRFBGAe7AenA=
-X-Received: by 2002:a05:6000:26c9:b0:44b:cb31:b767 with SMTP id ffacd0b85a97d-4515d2e6d77mr28428138f8f.36.1778356602489;
-        Sat, 09 May 2026 12:56:42 -0700 (PDT)
-Received: from nixos-office (195-23-151-163.net.novis.pt. [195.23.151.163])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-454919c13c9sm13904793f8f.27.2026.05.09.12.56.41
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 09 May 2026 12:56:42 -0700 (PDT)
-Sender: Julian Braha <julian.braha@gmail.com>
-From: Julian Braha <julianbraha@gmail.com>
-To: maddy@linux.ibm.com,
-	mpe@ellerman.id.au,
-	npiggin@gmail.com,
-	chleroy@kernel.org,
-	jniethe5@gmail.com
-Cc: linuxppc-dev@lists.ozlabs.org,
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gD2xt2PnLz2xS2
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 May 2026 22:59:46 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sea.source.kernel.org (Postfix) with ESMTP id 2537343ACA;
+	Sun, 10 May 2026 12:59:44 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id F3A71C2BCF6;
+	Sun, 10 May 2026 12:59:43 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1778417984;
+	bh=kUmsgLX1nU1TZOEe6JDVbQeCrALlJrbC2ra/r/oY25c=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+	b=WI+9yRs2J5WWa5MlZzLnbKbbQKRwTPVdMNy7FbUFlgw5jtJ3rFdHo9of+XmGy1qt+
+	 +VCILRTY4nEyScWX06/9OMmdG37+AcYPKJSWKHxnfjFPbO0By7rIbzdKJAvGHqCVGz
+	 Rrz69qJ27bh7o+TVLN4i+GtpPyZ+QAbqKr9TU02hqWY9MjfqxBQgr0mg3/sfcqud/7
+	 HExhd8JW9h3IRPpxi2byMbodAMtKwAEzqZ4yadrVykH6OwY69cnkRae3NXTOtzaw7V
+	 7SEB7SBzfalwBKwBHYVTBPV4eb3mgg4VtQq1Nu/8DbtQ+8I9k37+QIh8a/6FTfRyna
+	 ykHvUQcZEBSsw==
+Received: from sofa.misterjones.org ([185.219.108.64] helo=lobster-girl.misterjones.org)
+	by disco-boy.misterjones.org with esmtpsa  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+	(Exim 4.98.2)
+	(envelope-from <maz@kernel.org>)
+	id 1wM3kz-00000000nwK-2uPj;
+	Sun, 10 May 2026 12:59:41 +0000
+Date: Sun, 10 May 2026 14:00:15 +0100
+Message-ID: <87v7cva080.wl-maz@kernel.org>
+From: Marc Zyngier <maz@kernel.org>
+To: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+Cc: Ioana Ciornei <ioana.ciornei@nxp.com>,
+	Thomas Gleixner <tglx@kernel.org>,
+	Sascha Bischoff <sascha.bischoff@arm.com>,
 	linux-kernel@vger.kernel.org,
-	Julian Braha <julianbraha@gmail.com>
-Subject: [PATCH v2] powerpc: fix dead default for GUEST_STATE_BUFFER_TEST
-Date: Sat,  9 May 2026 20:56:34 +0100
-Message-ID: <20260509195634.1134277-1-julianbraha@gmail.com>
-X-Mailer: git-send-email 2.53.0
+	linux-arm-kernel@lists.infradead.org,
+	linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v2 0/6] fsl-mc: Move over to device MSI infrastructure
+In-Reply-To: <177209938125.547814.7154250802402503122.b4-ty@kernel.org>
+References: <20260224100936.3752303-1-maz@kernel.org>
+	<177209938125.547814.7154250802402503122.b4-ty@kernel.org>
+User-Agent: Wanderlust/2.15.9 (Almost Unreal) SEMI-EPG/1.14.7 (Harue)
+ FLIM-LB/1.14.9 (=?UTF-8?B?R29qxY0=?=) APEL-LB/10.8 EasyPG/1.0.0 Emacs/30.1
+ (aarch64-unknown-linux-gnu) MULE/6.0 (HANACHIRUSATO)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -94,48 +79,53 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+MIME-Version: 1.0 (generated by SEMI-EPG 1.14.7 - "Harue")
+Content-Type: text/plain; charset=US-ASCII
+X-SA-Exim-Connect-IP: 185.219.108.64
+X-SA-Exim-Rcpt-To: chleroy@kernel.org, ioana.ciornei@nxp.com, tglx@kernel.org, sascha.bischoff@arm.com, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org
+X-SA-Exim-Mail-From: maz@kernel.org
+X-SA-Exim-Scanned: No (on disco-boy.misterjones.org); SAEximRunCond expanded to false
 
-The GUEST_STATE_BUFFER_TEST config option should default
-to KUNIT_ALL_TESTS so that if all tests are enabled then
-it is included, but currently the 'default KUNIT_ALL_TESTS'
-statement is shadowed by 'def_tristate n',
-meaning that this second default statement is currently dead code.
+On Thu, 26 Feb 2026 09:50:43 +0000,
+"Christophe Leroy (CS GROUP)" <chleroy@kernel.org> wrote:
+> 
+> 
+> On Tue, 24 Feb 2026 10:09:30 +0000, Marc Zyngier wrote:
+> > This is the second drop of this cleanup series for the fsl-mc MSI
+> > infrastructure, initially posted at [1].
+> > 
+> > * From v1 [1]:
+> > 
+> >   - Drop the now unused DOMAIN_BUS_FSL_MC_MSI bus token
+> > 
+> > [...]
+> 
+> Applied, thanks!
+> 
+> [1/6] fsl-mc: Remove MSI domain propagation to sub-devices
+>       commit: 1fb7392ee3408494d4d62c09a8c3e5f5934caba7
+> [2/6] fsl-mc: Add minimal infrastructure to use platform MSI
+>       commit: 0c9f522f2d41c7e055a602a0d2c41dc7af01010b
+> [3/6] irqchip/gic-v3-its: Add fsl_mc device plumbing to the msi-parent handling
+>       commit: cf3179b4e53f527aba9f0c6c3b921619c8adf761
+> [4/6] fsl-mc: Switch over to per-device platform MSI
+>       commit: 4a958e47c246fa3fb8954f4303e0da15ab3d026d
+> [5/6] fsl-mc: Remove legacy MSI implementation
+>       commit: 14b1cbcc6cec0b02298f4adf717646cd943b7ef6
+> [6/6] platform-msi: Remove stale comment
+>       commit: f0a2eac6a597268034fd40d92c1469182438b53d
 
-It looks to me like the commit
-6ccbbc33f06a ("KVM: PPC: Add helper library for Guest State Buffers")
-intended to set the default to KUNIT_ALL_TESTS, but mistakenly
-missed the def_tristate.
+Is there any particular reason why this didn't make it into 7.1?
 
-This dead code was found by kconfirm, a static analysis tool for Kconfig.
+I was really looking forward to some additional cleanups in the GICv3
+ITS code, and this gets in the way.
 
-Signed-off-by: Julian Braha <julianbraha@gmail.com>
----
-v2: remove Fixes tag
-Link to v1: https://lore.kernel.org/all/20260405161545.161006-1-julianbraha@gmail.com/
----
- arch/powerpc/Kconfig.debug | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+Do I need to respin it?
 
-diff --git a/arch/powerpc/Kconfig.debug b/arch/powerpc/Kconfig.debug
-index f15e5920080b..e8718bc13eeb 100644
---- a/arch/powerpc/Kconfig.debug
-+++ b/arch/powerpc/Kconfig.debug
-@@ -83,11 +83,10 @@ config MSI_BITMAP_SELFTEST
- 	depends on DEBUG_KERNEL
- 
- config GUEST_STATE_BUFFER_TEST
--	def_tristate n
-+	def_tristate KUNIT_ALL_TESTS
- 	prompt "Enable Guest State Buffer unit tests"
- 	depends on KUNIT
- 	depends on KVM_BOOK3S_HV_POSSIBLE
--	default KUNIT_ALL_TESTS
- 	help
- 	  The Guest State Buffer is a data format specified in the PAPR.
- 	  It is by hcalls to communicate the state of L2 guests between
+Thanks,
+
+	M.
+
 -- 
-2.53.0
-
+Jazz isn't dead. It just smells funny.
 
