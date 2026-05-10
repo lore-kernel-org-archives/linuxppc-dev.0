@@ -1,72 +1,75 @@
-Return-Path: <linuxppc-dev+bounces-20658-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20659-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E764ECD3427
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 10 May 2026 12:59:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AC5BBCD37B2
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 10 May 2026 16:16:01 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gD2xv1g28z2xl6;
-	Sun, 10 May 2026 22:59:47 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778417987;
-	cv=none; b=g021a0otipOMDMy4X4kK+HAU9+Gu0YIT7ermUv7rfcoMhvuAYL8yGu5hz0PwtJxulyNA5IB/xmU/YfmxVkpzhDhd1S+7trRYMLIu9fk/eSRMjofP6J7eeN6NpP3D7f2y8sX9dEkMijCmJsT4bjW4T58pn5BH2zM1Dy9cMaCmGAxvLaKNTPstbs89QlfcJVsBrKKAefsM0N7TbfuZ8kpjz8NovQcPeGsxA8nH46wxtLRbcRnraDgusal2FNyeGSfVlFt2kW22bWDQe3+X/Twej6YJy3raC32futRRXDKXKxwCeYzDR+KZUihYxYi6zZBfk9s3t0DXglPIUZ1FCoJWLQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gD7JH6HCbz2xlr;
+	Mon, 11 May 2026 02:15:59 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=198.175.65.21
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778429759;
+	cv=none; b=MvMhxjgk/M1NFsgPb4rz8kMgI1nXBcOEjDV7tnI7KUJCVH1D7QVDzpd6Cun4CGDICWYCftZKjmPr39niN9Ww4hHCKoIR3BB/Hc+jtZvRDhG03MWEj0n/SlDAqJ2cqENOjyv61PIxrnOKuc/p+Inzm/nH36gynjEq4/4sh+uzXcMUel5ygI00VweQk4yx6UoG3foAA+V2lFNAzh7WKGjjzJFNF167n5FsMyNz3J7EEnyFEQeLzy8G0NHUb5sFFodo0DBZCrOYgbYAgkdL17ufGf4LKX1jDayUpYwYR5Vzk9RXbQp0k0hhnUv0pRsybdTubgbKngZdnTC7FipV2KW7rQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1778417987; c=relaxed/relaxed;
-	bh=mW+6YCnMMcG+N3STMPBDPuy5FUn5TKVoLDPBk6Mi4t0=;
-	h=Date:Message-ID:From:To:Cc:Subject:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=JdNKVxu3V86/VZMMf0GFfqJewN83QFHkV2vZCvmV9YH3ZNPQ7QdE+39QfKXvnczj/S55xyQoAqnJtvS5uvwlZXr6gRt0DNCW1c+z9xn6jB3U4RqLvSVD6Q9uI1ce43pmUsojnRLnuBoCl1gdX6MMqTLGVBB/PmAtQgijRmg5cLvVdssIyMXXkNER+noQTXZ4+nJDl6QWy/yPSbLok2ETQ8kp9wgy+ihnkOETDDr90WX5PllG1P7FixhTpYG3M7dfrHyrdYjeyN90X7X5aTRX/+6bLWAYZRaQy4vs88efocDX24XU03yZbPs5UvF06VGaJRi5y3gNh9VuFhzE5q7xkA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=WI+9yRs2; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=maz@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1778429759; c=relaxed/relaxed;
+	bh=Z4WON5HBiky4MENrDPJykkWnK8mi0fYZGXBvqrGDrhU=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=Hc8YwrI2fboW/Er+auyEb0s+1ourbDTFLG3JjXGJJujKCKp5GZPekmncGUk1Kx1bRunGvjefEpq9YdTTc/8/tdAJsEqitMOVXtCRqSt792zBp6MJln38Pj0jftIa58OoAStxwcHZDA4YdLT0USKrCLPMR9yQFDYcI7m1TeW4wRIeoWnbUYiULugofn0LjzQc1ntmPkaFSKNH6lUqiuuyfd6hUaBMtA3L9BtwIk2BnZjdzHI8QxBpwAd1ox67Kw+YS8xofbWNi9jOXd92rblTQm25G7+ITnrmIhjpPiJIImQISppcMSZuPjc++ilf+DAYCUCQnKm0MiuckdV/Kc/asA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=LihR95wz; dkim-atps=neutral; spf=pass (client-ip=198.175.65.21; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=intel.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=WI+9yRs2;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=LihR95wz;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=maz@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=198.175.65.21; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org)
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.21])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gD2xt2PnLz2xS2
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 May 2026 22:59:46 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 2537343ACA;
-	Sun, 10 May 2026 12:59:44 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id F3A71C2BCF6;
-	Sun, 10 May 2026 12:59:43 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1778417984;
-	bh=kUmsgLX1nU1TZOEe6JDVbQeCrALlJrbC2ra/r/oY25c=;
-	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
-	b=WI+9yRs2J5WWa5MlZzLnbKbbQKRwTPVdMNy7FbUFlgw5jtJ3rFdHo9of+XmGy1qt+
-	 +VCILRTY4nEyScWX06/9OMmdG37+AcYPKJSWKHxnfjFPbO0By7rIbzdKJAvGHqCVGz
-	 Rrz69qJ27bh7o+TVLN4i+GtpPyZ+QAbqKr9TU02hqWY9MjfqxBQgr0mg3/sfcqud/7
-	 HExhd8JW9h3IRPpxi2byMbodAMtKwAEzqZ4yadrVykH6OwY69cnkRae3NXTOtzaw7V
-	 7SEB7SBzfalwBKwBHYVTBPV4eb3mgg4VtQq1Nu/8DbtQ+8I9k37+QIh8a/6FTfRyna
-	 ykHvUQcZEBSsw==
-Received: from sofa.misterjones.org ([185.219.108.64] helo=lobster-girl.misterjones.org)
-	by disco-boy.misterjones.org with esmtpsa  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
-	(Exim 4.98.2)
-	(envelope-from <maz@kernel.org>)
-	id 1wM3kz-00000000nwK-2uPj;
-	Sun, 10 May 2026 12:59:41 +0000
-Date: Sun, 10 May 2026 14:00:15 +0100
-Message-ID: <87v7cva080.wl-maz@kernel.org>
-From: Marc Zyngier <maz@kernel.org>
-To: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-Cc: Ioana Ciornei <ioana.ciornei@nxp.com>,
-	Thomas Gleixner <tglx@kernel.org>,
-	Sascha Bischoff <sascha.bischoff@arm.com>,
-	linux-kernel@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org,
-	linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v2 0/6] fsl-mc: Move over to device MSI infrastructure
-In-Reply-To: <177209938125.547814.7154250802402503122.b4-ty@kernel.org>
-References: <20260224100936.3752303-1-maz@kernel.org>
-	<177209938125.547814.7154250802402503122.b4-ty@kernel.org>
-User-Agent: Wanderlust/2.15.9 (Almost Unreal) SEMI-EPG/1.14.7 (Harue)
- FLIM-LB/1.14.9 (=?UTF-8?B?R29qxY0=?=) APEL-LB/10.8 EasyPG/1.0.0 Emacs/30.1
- (aarch64-unknown-linux-gnu) MULE/6.0 (HANACHIRUSATO)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gD7JD5rDcz2xl6
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 May 2026 02:15:53 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1778429757; x=1809965757;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=HupmRejFkybmBtAWAKmjljvXHZ0NmF6l1vTvqbQNWUU=;
+  b=LihR95wzttJbfdROefQkS/yBQd91piDTGDVRuvB9pCspun1EIPqYIyr2
+   CP49PMnvNv7MaTCVpkoRfXDXCIMeGtOUOfT3Sj3YMH6dwB6ZNjM6K/8Ra
+   audOCixhgya3eJbuAkIid1BV3JLrl8eaWje4wz1yi4JWzWwV58yR88nDF
+   kc7EcOiMV29LGO6zq8ouxx9YPmJH3KDwjqJtw4cuhNWBp0MlOJyuhdrGJ
+   wQnvIDV1We/TEQCd/8CjTAchMDFjhSoLyGQAqs9nmqxyUX9Ufx8X5oQyH
+   GBeSWER4rRydbNq9no/FkQ2/xsyapZtHNl9sOTpn2nyvZmUA954iWYV6M
+   g==;
+X-CSE-ConnectionGUID: OTp8nyYuQoixX1aioOHyJg==
+X-CSE-MsgGUID: DNN9jb+8RwSHwOkSlIuQkw==
+X-IronPort-AV: E=McAfee;i="6800,10657,11782"; a="79232017"
+X-IronPort-AV: E=Sophos;i="6.23,227,1770624000"; 
+   d="scan'208";a="79232017"
+Received: from orviesa009.jf.intel.com ([10.64.159.149])
+  by orvoesa113.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 10 May 2026 09:15:48 -0700
+X-CSE-ConnectionGUID: yDlc9PidRvSc3mLRG0+kKA==
+X-CSE-MsgGUID: bv+ywnRdSTCR/UJPZGPiiQ==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.23,227,1770624000"; 
+   d="scan'208";a="237339824"
+Received: from igk-lkp-server01.igk.intel.com (HELO bdf09bfdbd5f) ([10.211.93.152])
+  by orviesa009.jf.intel.com with ESMTP; 10 May 2026 09:15:47 -0700
+Received: from kbuild by bdf09bfdbd5f with local (Exim 4.98.2)
+	(envelope-from <lkp@intel.com>)
+	id 1wM6oi-000000007kb-0mLS;
+	Sun, 10 May 2026 16:15:44 +0000
+Date: Sun, 10 May 2026 18:15:21 +0200
+From: kernel test robot <lkp@intel.com>
+To: Gaurav Batra <gbatra@linux.ibm.com>, maddy@linux.ibm.com
+Cc: oe-kbuild-all@lists.linux.dev, linuxppc-dev@lists.ozlabs.org,
+	sbhat@linux.ibm.com, vaibhav@linux.ibm.com, ritesh.list@gmail.com,
+	Gaurav Batra <gbatra@linux.ibm.com>,
+	Brian King <brking@linux.ibm.com>
+Subject: Re: [PATCH v2] powerpc/pseries/iommu: export DMA window data to user
+ space
+Message-ID: <202605101820.ZpQl79bh-lkp@intel.com>
+References: <20260507180646.40356-1-gbatra@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -79,53 +82,41 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0 (generated by SEMI-EPG 1.14.7 - "Harue")
-Content-Type: text/plain; charset=US-ASCII
-X-SA-Exim-Connect-IP: 185.219.108.64
-X-SA-Exim-Rcpt-To: chleroy@kernel.org, ioana.ciornei@nxp.com, tglx@kernel.org, sascha.bischoff@arm.com, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org
-X-SA-Exim-Mail-From: maz@kernel.org
-X-SA-Exim-Scanned: No (on disco-boy.misterjones.org); SAEximRunCond expanded to false
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260507180646.40356-1-gbatra@linux.ibm.com>
 
-On Thu, 26 Feb 2026 09:50:43 +0000,
-"Christophe Leroy (CS GROUP)" <chleroy@kernel.org> wrote:
-> 
-> 
-> On Tue, 24 Feb 2026 10:09:30 +0000, Marc Zyngier wrote:
-> > This is the second drop of this cleanup series for the fsl-mc MSI
-> > infrastructure, initially posted at [1].
-> > 
-> > * From v1 [1]:
-> > 
-> >   - Drop the now unused DOMAIN_BUS_FSL_MC_MSI bus token
-> > 
-> > [...]
-> 
-> Applied, thanks!
-> 
-> [1/6] fsl-mc: Remove MSI domain propagation to sub-devices
->       commit: 1fb7392ee3408494d4d62c09a8c3e5f5934caba7
-> [2/6] fsl-mc: Add minimal infrastructure to use platform MSI
->       commit: 0c9f522f2d41c7e055a602a0d2c41dc7af01010b
-> [3/6] irqchip/gic-v3-its: Add fsl_mc device plumbing to the msi-parent handling
->       commit: cf3179b4e53f527aba9f0c6c3b921619c8adf761
-> [4/6] fsl-mc: Switch over to per-device platform MSI
->       commit: 4a958e47c246fa3fb8954f4303e0da15ab3d026d
-> [5/6] fsl-mc: Remove legacy MSI implementation
->       commit: 14b1cbcc6cec0b02298f4adf717646cd943b7ef6
-> [6/6] platform-msi: Remove stale comment
->       commit: f0a2eac6a597268034fd40d92c1469182438b53d
+Hi Gaurav,
 
-Is there any particular reason why this didn't make it into 7.1?
+kernel test robot noticed the following build warnings:
 
-I was really looking forward to some additional cleanups in the GICv3
-ITS code, and this gets in the way.
+[auto build test WARNING on 192c0159402e6bfbe13de6f8379546943297783d]
 
-Do I need to respin it?
+url:    https://github.com/intel-lab-lkp/linux/commits/Gaurav-Batra/powerpc-pseries-iommu-export-DMA-window-data-to-user-space/20260510-175116
+base:   192c0159402e6bfbe13de6f8379546943297783d
+patch link:    https://lore.kernel.org/r/20260507180646.40356-1-gbatra%40linux.ibm.com
+patch subject: [PATCH v2] powerpc/pseries/iommu: export DMA window data to user space
+compiler: clang version 20.1.8 (https://github.com/llvm/llvm-project 87f0227cb60147a26a1eeb4fb06e3b505e9c7261)
+docutils: docutils (Docutils 0.21.2, Python 3.13.5, on linux)
+reproduce: (https://download.01.org/0day-ci/archive/20260510/202605101820.ZpQl79bh-lkp@intel.com/reproduce)
 
-Thanks,
+If you fix the issue in a separate patch/commit (i.e. not just a new version of
+the same patch/commit), kindly add following tags
+| Reported-by: kernel test robot <lkp@intel.com>
+| Closes: https://lore.kernel.org/oe-kbuild-all/202605101820.ZpQl79bh-lkp@intel.com/
 
-	M.
+All warnings (new ones prefixed by >>):
 
--- 
-Jazz isn't dead. It just smells funny.
+   Documentation/userspace-api/landlock:453: ./include/uapi/linux/landlock.h:45: ERROR: Unknown target name: "network flags". [docutils]
+   Documentation/userspace-api/landlock:453: ./include/uapi/linux/landlock.h:50: ERROR: Unknown target name: "scope flags". [docutils]
+   Documentation/userspace-api/landlock:453: ./include/uapi/linux/landlock.h:24: ERROR: Unknown target name: "filesystem flags". [docutils]
+   Documentation/userspace-api/landlock:462: ./include/uapi/linux/landlock.h:153: ERROR: Unknown target name: "filesystem flags". [docutils]
+   Documentation/userspace-api/landlock:462: ./include/uapi/linux/landlock.h:176: ERROR: Unknown target name: "network flags". [docutils]
+>> Documentation/arch/powerpc/dma_window_attributes.rst: WARNING: document isn't included in any toctree [toc.not_included]
+   Documentation/networking/skbuff:36: ./include/linux/skbuff.h:181: WARNING: Failed to create a cross reference. A title or caption not found: 'crc' [ref.ref]
+
+--
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
 
