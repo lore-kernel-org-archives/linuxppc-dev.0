@@ -1,51 +1,41 @@
-Return-Path: <linuxppc-dev+bounces-20718-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20719-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AC4D9CD37BE
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 May 2026 15:28:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B6CFCCD37BE
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 May 2026 21:58:02 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gDkC31J9Zz2y8F;
-	Tue, 12 May 2026 01:28:31 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778513311;
-	cv=none; b=Ny3XTpI7ly6K08HnV+Bdw5g8MN4eGKQfK4zZxJywFHGfTKAj8+gDHRUQ9O5JNMbVNx/eyBlWGY/y+ch8WpjBdc/WkCdAk03RZct10xcE+84kNLK0Bf024pjTpsmePl7mla5RKXvId2zhzi1I5HRF9ah+xtjMru9OxV1Hub5aPhFXXSMHdP9mcbGujvDwWOabmh81KLU9K/dOA6wp+d1xMJDMiB7gYLJO5o7z5ZPs81DAeyeHUpXISgBFAxeTFTLbJcx/mcSXQtOlDrsgPEk/ki8tHOWB/iBxH19VmdzojEs+xAK7Zv84bYwd6OnnKJlYZGJZBadUJ859n5b0J02EWw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gDtrS6vDXz2xRw;
+	Tue, 12 May 2026 07:58:00 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=141.14.17.11
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778536680;
+	cv=none; b=Dtew+osHkaOUWwMR0UEkZJMlvM85sebpd4WbJw6RMrQEKKSKBDxJ5phoLF3CjdBngHlFo3+qoG/mh8JuHrtrKuL3nfRZfqQlGqpnebpRLWX3tpW0b5rFNh7bUqcIh6fxbP1ZIo2/LoiGOGadHjBVfjGGqrSL48SyDlJclJk94iZoixhAzCBCBcZICGnmPVHXZhOiqIrtZM4ERAw28l5laDLf/qVzX9GZ8X7hu0j4UftmXs2KyF8TafzCNCVnKEtXexI0Usv7rLVnch2+AkV0ZeXEXIx25FwxDn/q7LWIp7FdHbUjAgNEvgl8JS7TEF4zMTNDost64exB1EB2tG0aUg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1778513311; c=relaxed/relaxed;
-	bh=ngyya0n7FUZHsfgtEEQKWhQTC+q9xGjKzkDrmPrT8L8=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=KXAP57ZjQoHx7gWPY2j47oK8T0jjwcXk67uc+ooHb+G+wOvkZeCZk7eF4x0CiTS1kaxB1EeE4W36WXDmcjzqTkbrfYEl1PJUAaijzBUZ7/Hy841wAU1m4xSx4Z0akGS/XF5LDcoRyrEIkY4BB2J5nIHUy2WzdYKxsmLHcr5xjjA6potfqa1igP6VGKxEsLt6hJrTN3HqiFkKylaXX0vx8DAEbkGCuzbjL48Elqo9cNl82/MgduOtcTIVw1WkHuv9tUtYE27N4qHiACZADjN/BXXDC3aEko4Fn9vpqResvo3zmKHeRoRTdcxdhnU/ROuT79R9aSub3yb3OcOoMCBf+A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=oXOo0Oa/; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=oXOo0Oa/;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+	t=1778536680; c=relaxed/relaxed;
+	bh=0y9bCwkULPMaD74a4Jizo8wULbnDYbw90+1zbRhnHl4=;
+	h=Content-Type:Message-ID:Date:MIME-Version:Subject:To:Cc:
+	 References:From:In-Reply-To; b=gX2M+1W8T+fH3ulcbEgAe5QGorXfh6ef0ThNdWkEziR1Zbv22s9DugiLUwdhCoUOyN/blnDZJWl7bpF4Xtpk5juRe8DlDDsKFAdHtYzRR1elQwYS8rk/WnygWJzndE4f47pweX7hbxubBUPskDAYqaOY854cJwF6k4Oj8nATyYiJHpoAr5HyXEKaMRNh4BswENGr0AfAXOBn6z+tqpbQE9UJJONrIbW52H8f6Wjf6b/PxPjBgGQQZmJMJ+11UyCR+stE+cXUGBtVRDjzuFOXUkWTfrky7RkyT9yhAvWHKNAQItOD0tDFZKHnfxzMrydriOHrW6Mcugz5wfY+bilkWA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=molgen.mpg.de; spf=pass (client-ip=141.14.17.11; helo=mx3.molgen.mpg.de; envelope-from=pmenzel@molgen.mpg.de; receiver=lists.ozlabs.org) smtp.mailfrom=molgen.mpg.de
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=molgen.mpg.de
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=molgen.mpg.de (client-ip=141.14.17.11; helo=mx3.molgen.mpg.de; envelope-from=pmenzel@molgen.mpg.de; receiver=lists.ozlabs.org)
+Received: from mx3.molgen.mpg.de (mx3.molgen.mpg.de [141.14.17.11])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bit raw public key) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gDkC218l4z2xlh
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2026 01:28:30 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id BC3C24350C;
-	Mon, 11 May 2026 15:28:27 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5852CC2BCB0;
-	Mon, 11 May 2026 15:28:23 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1778513307;
-	bh=2aroQtYDtjSGspp1QH3bOqVOxqQk6yEJHUDxYLOzoEA=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=oXOo0Oa/mDKzCQVgJEAP5UCLHyjZd54DPuMXt8vBVcUe9kzBUspRII79uVAJc9soE
-	 E6fG3W1TSy1flgxpY7DjLElBAbIjhK30EQDTBJIvasHnVPmg5FrMNLeBNijoji/jrZ
-	 ZNZ6OHoK56HB8S4Q+xNUxOJbRPTtZZ5ErPm/GqT0RhaXHohoZM1PtL0i9d8GTiPE8c
-	 WVQkF/MOtajWsLsOyO6B8vHwFIgaOqgek4aewgwM14UxcSRftJc5ymAtvNKc6HwSy1
-	 V97Jg+P1/tipKP85wnDrCRiE2A9HruP6AobZInPBKNUFZJBsAOtRoUJufvHg2sqOM0
-	 NtHI4BOYd0LBQ==
-Message-ID: <79cf446a-f195-474b-8122-93a2c07cf8b5@kernel.org>
-Date: Mon, 11 May 2026 17:28:22 +0200
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gDtrQ5mlyz2x9N
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2026 07:57:56 +1000 (AEST)
+Received: from [192.168.0.192] (ip5f5af765.dynamic.kabel-deutschland.de [95.90.247.101])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	(Authenticated sender: pmenzel)
+	by mx.molgen.mpg.de (Postfix) with ESMTPSA id 287E54C2C37F00;
+	Mon, 11 May 2026 23:57:34 +0200 (CEST)
+Content-Type: multipart/mixed; boundary="------------ZjKhgj2VAadPB7IkJSUJfcKq"
+Message-ID: <69fa1c3f-3ea9-42cb-a49a-7da39f72806e@molgen.mpg.de>
+Date: Mon, 11 May 2026 23:57:33 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -60,104 +50,156 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 7/8] s390/mm: use free_reserved_page() in
- vmem_free_pages()
-To: Heiko Carstens <hca@linux.ibm.com>
-Cc: "David S. Miller" <davem@davemloft.net>,
- Andreas Larsson <andreas@gaisler.com>, Mike Rapoport <rppt@kernel.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- Alexander Gordeev <agordeev@linux.ibm.com>,
- Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
- Vasily Gorbik <gor@linux.ibm.com>,
- Christian Borntraeger <borntraeger@linux.ibm.com>,
- Sven Schnelle <svens@linux.ibm.com>,
- Madhavan Srinivasan <maddy@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
- "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
- Lorenzo Stoakes <ljs@kernel.org>, "Liam R. Howlett" <liam@infradead.org>,
- Vlastimil Babka <vbabka@kernel.org>, Suren Baghdasaryan <surenb@google.com>,
- Michal Hocko <mhocko@suse.com>, sparclinux@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- linux-s390@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-References: <20260511-bootmem_info_prep-v1-0-3fb0be6fc688@kernel.org>
- <20260511-bootmem_info_prep-v1-7-3fb0be6fc688@kernel.org>
- <20260511142157.9589E90-hca@linux.ibm.com>
- <9e313bd2-cc90-4b9f-9d6c-7dac8d9ec9db@kernel.org>
- <20260511152226.9589G9f-hca@linux.ibm.com>
-From: "David Hildenbrand (Arm)" <david@kernel.org>
+Subject: Re: IBM Power S822LC: pci 0021:0d:00.0: xHCI HW did not halt within
+ 32000 usec status = 0x0
+To: Michal Pecio <michal.pecio@gmail.com>
+Cc: Mathias Nyman <mathias.nyman@intel.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-usb@vger.kernel.org,
+ LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@lists.ozlabs.org
+References: <fb68e15d-b8f2-42ac-aa65-0d9fedcfcdbd@molgen.mpg.de>
+ <20260506193037.6de9e355.michal.pecio@gmail.com>
 Content-Language: en-US
-Autocrypt: addr=david@kernel.org; keydata=
- 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
- qIws/H2t
-In-Reply-To: <20260511152226.9589G9f-hca@linux.ibm.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+From: Paul Menzel <pmenzel@molgen.mpg.de>
+In-Reply-To: <20260506193037.6de9e355.michal.pecio@gmail.com>
 
-On 5/11/26 17:22, Heiko Carstens wrote:
-> On Mon, May 11, 2026 at 04:24:16PM +0200, David Hildenbrand (Arm) wrote:
->> On 5/11/26 16:21, Heiko Carstens wrote:
-> ...
->>> What about the implicit call of kmemleak_free_part_phys() which gets
->>> removed with this?
+This is a multi-part message in MIME format.
+--------------ZjKhgj2VAadPB7IkJSUJfcKq
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+
+[Cc: +linuxppc-dev]
+
+Dear Michal,
+
+
+Thank you for your reply.
+
+Am 06.05.26 um 19:30 schrieb Michal Pecio:
+> On Wed, 6 May 2026 18:06:20 +0200, Paul Menzel wrote:
+
+>> On the IBM Power S822LC (8335-GCA POWER8), rebooting into Linux 7.1-rc2+
+>> with kexec results in the warning below:
 >>
->> Thanks for taking a look!
->>
->> See patch #4:
->>
->> https://lore.kernel.org/r/20260511-bootmem_info_prep-v1-4-3fb0be6fc688@kernel.org
-> 
-> Heh, right, you can't expect from me that I would read more than one
-> patch of a series :)
+>>       [    0.000000] Linux version 7.1.0-rc2+ (x@b) (gcc (Ubuntu 11.2.0-7ubuntu2) 11.2.0, GNU ld (GNU Binutils for Ubuntu) 2.37) #3 SMP PREEMPT Wed May  6 08:50:5
+>>       […]
+>>       [    0.000000] Hardware name: 8335-GCA POWER8 (raw) 0x4d0200 opal:skiboot-5.4.8-5787ad3 PowerNV
+>>       […]
+>>       [    1.593760] NET: Registered PF_UNIX/PF_LOCAL protocol family
+>>       [    1.593859] pci 0021:0d:00.0: enabling device (0140 -> 0142)
+>>       [    1.627080] pci 0021:0d:00.0: xHCI HW did not halt within 32000 usec status = 0x0
+>>       [    1.627094] pci 0021:0d:00.0: quirk_usb_early_handoff+0x0/0x300 took 32465 usecs
+>>       [    1.627123] PCI: CLS 0 bytes, default 128
 
-:)
+> Does it work any better if kexecing other kernel versions?
 
-Let me add a hint that a recent patch changed that.
+No, the problem goes as far back as 5.17-rc7. (I didn’t try anything 
+before.)
 
-Thanks!
+> What if you increase XHCI_MAX_HALT_USEC by 10* or 100* ?
 
--- 
-Cheers,
+I have to test this.
 
-David
+> Does the controller work normally after this warning?
+It does not look like it. In the log attached to my report, later on 
+there is:
+
+     [    1.739374] xhci_hcd 0021:0d:00.0: xHCI Host Controller
+     [    1.739431] xhci_hcd 0021:0d:00.0: new USB bus registered, 
+assigned bus number 1
+     [    1.794727] Freeing initrd memory: 52928K
+     [    1.801984] xhci_hcd 0021:0d:00.0: Host halt failed, -110
+     [    1.801988] xhci_hcd 0021:0d:00.0: can't setup: -110
+     [    1.802137] xhci_hcd 0021:0d:00.0: USB bus 1 deregistered
+     [    1.802154] xhci_hcd 0021:0d:00.0: init 0021:0d:00.0 fail, -110
+     [    1.802250] xhci_hcd 0021:0d:00.0: probe with driver xhci_hcd 
+failed with error -110
+
+`lsusb` also does not list the device. But I need to check on hardware.
+
+
+Kind regards,
+
+Paul
+
+
+PS: Claude Sonnet 4.6 cooked up the attached patch, which does *not* 
+help though, but does get it to the return code 0x10, which Claude 
+replied to with:
+
+> ● The status change 0x0 → 0x10 is meaningful: 0x10 is PCD (Port Change Detect, bit 4),
+>   HCHalted=0. The old-kernel reset (from our commit) did take effect …
+
+Please excuse, if I attach/cite hallucinations.
+--------------ZjKhgj2VAadPB7IkJSUJfcKq
+Content-Type: text/x-patch; charset=UTF-8;
+ name="0001-usb-xhci-Reset-controller-on-kexec-to-prevent-stale-.patch"
+Content-Disposition: attachment;
+ filename*0="0001-usb-xhci-Reset-controller-on-kexec-to-prevent-stale-.pa";
+ filename*1="tch"
+Content-Transfer-Encoding: base64
+
+RnJvbSBiMTEwZDEyOGViZTY2MmEwMjMxOWFmNjg5OWQ4ZGM1MDc1OWExMTQ3IE1vbiBTZXAg
+MTcgMDA6MDA6MDAgMjAwMQpGcm9tOiBQYXVsIE1lbnplbCA8cG1lbnplbEBtb2xnZW4ubXBn
+LmRlPgpEYXRlOiBNb24sIDExIE1heSAyMDI2IDE3OjMzOjM1ICswMjAwClN1YmplY3Q6IFtQ
+QVRDSF0gdXNiOiB4aGNpOiBSZXNldCBjb250cm9sbGVyIG9uIGtleGVjIHRvIHByZXZlbnQg
+c3RhbGUgc3RhdGUKIGluIG5leHQga2VybmVsCk1JTUUtVmVyc2lvbjogMS4wCkNvbnRlbnQt
+VHlwZTogdGV4dC9wbGFpbjsgY2hhcnNldD1VVEYtOApDb250ZW50LVRyYW5zZmVyLUVuY29k
+aW5nOiA4Yml0CgpXaGVuIGtleGVjIGlzIHVzZWQgdG8gYm9vdCBpbnRvIGEgbmV3IExpbnV4
+IGtlcm5lbCwgeGhjaV9zaHV0ZG93bigpIG9ubHkKaGFsdHMgdGhlIHhIQ0kgY29udHJvbGxl
+ciAoQ01EX1JVTj0wLCB3YWl0cyBmb3IgU1RTX0hBTFQpIHdpdGhvdXQKcmVzZXR0aW5nIGl0
+LiAgQWZ0ZXIgaGFsdCwgdGhlIGNvbnRyb2xsZXIgc3RpbGwgaG9sZHMgc3RhbGUgaW50ZXJu
+YWwgc3RhdGUKZnJvbSB0aGUgb2xkIGtlcm5lbDogdGhlIERDQkFBIHBvaW50ZXIsIHNjcmF0
+Y2hwYWQgYnVmZmVyIGFkZHJlc3MsIGV2ZW50CmFuZCBjb21tYW5kIHJpbmcgZGVxdWV1ZSBw
+b2ludGVycywgYW5kIHNvIG9uLCBhbGwgcG9pbnRpbmcgaW50byB0aGUgb2xkCmtlcm5lbCdz
+IG5vdy1pbnZhbGlkIG1lbW9yeS4KCklmIHBsYXRmb3JtIGZpcm13YXJlIChlLmcuIE9QQUwg
+b24gSUJNIFBPV0VSOCkgdGhlbiB0b3VjaGVzIHRoZSBVU0IKY29udHJvbGxlciBkdXJpbmcg
+dGhlIGtleGVjIHRyYW5zaXRpb24g4oCTIGZvciBleGFtcGxlIHRvIHByb3ZpZGUgYSBVU0IK
+a2V5Ym9hcmQgY29uc29sZSDigJMgaXQgbWF5IGF0dGVtcHQgdG8gdXNlIHRob3NlIHN0YWxl
+IHJpbmctYnVmZmVyCnBvaW50ZXJzLiAgVGhpcyBsZWF2ZXMgdGhlIGNvbnRyb2xsZXIgaW4g
+YW4gdW5kZWZpbmVkLCBydW5uaW5nIHN0YXRlCihTVFNfSEFMVD0wKSB3aGVuIHRoZSBuZXcg
+a2VybmVsIGFycml2ZXMuICBUaGUgbmV3IGtlcm5lbCdzIGVhcmx5CnF1aXJrX3VzYl9oYW5k
+b2ZmX3hoY2koKSBmaXh1cCB0aGVuIGZhaWxzIHRvIGhhbHQgdGhlIGNvbnRyb2xsZXIgYW5k
+CnRoZSB4SENJIGRyaXZlciBjYW4gbm8gbG9uZ2VyIGluaXRpYWxpc2UgaXQsIHByb2R1Y2lu
+ZzoKCiAgSUJNIFBvd2VyIFM4MjJMQzogcGNpIDAwMjE6MGQ6MDAuMDogeEhDSSBIVyBkaWQg
+bm90IGhhbHQgd2l0aGluCiAgICAgICAgICAgICAgICAgICAgMzIwMDAgdXNlYyBzdGF0dXMg
+PSAweDAKCkEgUGV0aXRib290LXRvLUxpbnV4IGtleGVjIGNoYWluIHdvcmtzIGNvcnJlY3Rs
+eSBiZWNhdXNlIFBldGl0Ym9vdCwgYXMKdGhlIGFjdGl2ZSBVU0Igb3duZXIsIHByb3Blcmx5
+IGhhbHRlZCB0aGUgY29udHJvbGxlcjsgdGhlIG5ldyBrZXJuZWwKZmluZHMgaXQgY2xlYW5s
+eSBoYWx0ZWQuCgpGaXggdGhpcyBieSBpc3N1aW5nIGEgY29udHJvbGxlciByZXNldCAoQ01E
+X1JFU0VUKSBhZnRlciB0aGUgaGFsdAp3aGVuZXZlciBrZXhlYyBpcyBpbiBwcm9ncmVzcy4g
+IFRoZSByZXNldCBjbGVhcnMgYWxsIGludGVybmFsIHN0YXRlCihEQ0JBQSwgc2NyYXRjaHBh
+ZCwgcmluZyBidWZmZXJzLCBwb3J0IHN0YXRlKSBzbyB0aGF0IGFueSBmaXJtd2FyZSBvcgp0
+aGUgaW5jb21pbmcga2VybmVsIGFsd2F5cyBzdGFydHMgZnJvbSBhIHdlbGwta25vd24sIGlu
+aXRpYWxpc2F0aW9uLXJlYWR5CnN0YXRlLiAgVGhpcyBtaXJyb3JzIHRoZSBhcHByb2FjaCBh
+bHJlYWR5IHVzZWQgZm9yIHRoZQpYSENJX1NQVVJJT1VTX1dBS0VVUCBhbmQgWEhDSV9SRVNF
+VF9UT19ERUZBVUxUIHF1aXJrcy4KCkxpbms6IGh0dHBzOi8vbG9yZS5rZXJuZWwub3JnL2Fs
+bC9mYjY4ZTE1ZC1iOGYyLTQyYWMtYWE2NS0wZDlmZWRjZmNkYmRAbW9sZ2VuLm1wZy5kZS8K
+U2lnbmVkLW9mZi1ieTogUGF1bCBNZW56ZWwgPHBtZW56ZWxAbW9sZ2VuLm1wZy5kZT4KQXNz
+aXN0ZWQtYnk6IENsYXVkZSBTb25uZXQgNC42IDxub3JlcGx5QGFudGhyb3BpYy5jb20+Ci0t
+LQogZHJpdmVycy91c2IvaG9zdC94aGNpLmMgfCAxMiArKysrKysrKystLS0KIDEgZmlsZSBj
+aGFuZ2VkLCA5IGluc2VydGlvbnMoKyksIDMgZGVsZXRpb25zKC0pCgpkaWZmIC0tZ2l0IGEv
+ZHJpdmVycy91c2IvaG9zdC94aGNpLmMgYi9kcml2ZXJzL3VzYi9ob3N0L3hoY2kuYwppbmRl
+eCBhNTRmNWI1N2YyMDU1Li41NTAzMWQwM2FkNDBlIDEwMDY0NAotLS0gYS9kcml2ZXJzL3Vz
+Yi9ob3N0L3hoY2kuYworKysgYi9kcml2ZXJzL3VzYi9ob3N0L3hoY2kuYwpAQCAtOSw2ICs5
+LDcgQEAKICAqLwogCiAjaW5jbHVkZSA8bGludXgvamlmZmllcy5oPgorI2luY2x1ZGUgPGxp
+bnV4L2tleGVjLmg+CiAjaW5jbHVkZSA8bGludXgvcGNpLmg+CiAjaW5jbHVkZSA8bGludXgv
+aW9tbXUuaD4KICNpbmNsdWRlIDxsaW51eC9pb3BvbGwuaD4KQEAgLTc3NSwxMSArNzc2LDE2
+IEBAIHZvaWQgeGhjaV9zaHV0ZG93bihzdHJ1Y3QgdXNiX2hjZCAqaGNkKQogCXhoY2lfaGFs
+dCh4aGNpKTsKIAogCS8qCi0JICogV29ya2Fyb3VuZCBmb3Igc3B1cmlvdXMgd2FrZXBzIGF0
+IHNodXRkb3duIHdpdGggSFNXLCBhbmQgZm9yIGJvb3QKLQkgKiBmaXJtd2FyZSBkZWxheSBp
+biBBREwtUCBQQ0ggaWYgcG9ydCBhcmUgbGVmdCBpbiBVMyBhdCBzaHV0ZG93bgorCSAqIFdv
+cmthcm91bmQgZm9yIHNwdXJpb3VzIHdha2V1cHMgYXQgc2h1dGRvd24gd2l0aCBIU1csIGFu
+ZCBmb3IgYm9vdAorCSAqIGZpcm13YXJlIGRlbGF5IGluIEFETC1QIFBDSCBpZiBwb3J0cyBh
+cmUgbGVmdCBpbiBVMyBhdCBzaHV0ZG93bi4KKwkgKiBBbHNvIHJlc2V0IG9uIGtleGVjIHRv
+IGxlYXZlIHRoZSBjb250cm9sbGVyIGluIGEgY2xlYW4gc3RhdGUgd2l0aAorCSAqIGFsbCBp
+bnRlcm5hbCBzdGF0ZSAoRENCQUEsIHNjcmF0Y2hwYWQsIHJpbmdzKSBjbGVhcmVkLCBzbyB0
+aGUgbmV4dAorCSAqIGtlcm5lbCBjYW4gaW5pdGlhbGl6ZSBpdCB3aXRob3V0IGludGVyZmVy
+ZW5jZSBmcm9tIHN0YWxlIHBvaW50ZXJzCisJICogaW50byB0aGUgb2xkIGtlcm5lbCdzIG1l
+bW9yeS4KIAkgKi8KIAlpZiAoeGhjaS0+cXVpcmtzICYgWEhDSV9TUFVSSU9VU19XQUtFVVAg
+fHwKLQkgICAgeGhjaS0+cXVpcmtzICYgWEhDSV9SRVNFVF9UT19ERUZBVUxUKQorCSAgICB4
+aGNpLT5xdWlya3MgJiBYSENJX1JFU0VUX1RPX0RFRkFVTFQgfHwKKwkgICAga2V4ZWNfaW5f
+cHJvZ3Jlc3MpCiAJCXhoY2lfcmVzZXQoeGhjaSwgWEhDSV9SRVNFVF9TSE9SVF9VU0VDKTsK
+IAogCXNwaW5fdW5sb2NrX2lycSgmeGhjaS0+bG9jayk7Ci0tIAoyLjU0LjAKCg==
+
+--------------ZjKhgj2VAadPB7IkJSUJfcKq--
 
