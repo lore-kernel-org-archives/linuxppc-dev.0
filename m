@@ -1,87 +1,80 @@
-Return-Path: <linuxppc-dev+bounces-20662-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20663-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4C839CD37B2
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 10 May 2026 21:49:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5D05FCD3427
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 May 2026 01:10:00 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gDGj64Vsdz2xnK;
-	Mon, 11 May 2026 07:49:30 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::435"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778433263;
-	cv=none; b=nBroBQt7syxfY36zKet1wxsTeEVjCizXe5gb3ErRIHfTi+9P9ofSe6s8nxs5Yh1WNl9CIEo1aRfeeP++qITMoMVaanICL6Ha2c+CzmyhRZysxjsA1GKBsjmQfeo1V20iG8BmOBb77ZWQ1c5VkC5ANH6Io2C94IiNH2Ng1p5ffHBpvl8JJzZi0mKdduAR7LZqmd8n8NVkVuC2qpKzAFB0fkA/lNiDFckAXTTYT6helCxK+q005KCeFF9Sl24PBplLJxpvbqMD/ipn2zG85kqo1x4gBrYrh8QgOR15Eou1NaPYDyUZ43GXlTdV+a5tNGqrKnRucV51X+F+FJlaeAWL+g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gDM8Q4kt4z2xqn;
+	Mon, 11 May 2026 11:09:58 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1032"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778461798;
+	cv=none; b=E9egvRpBTsmODhnixDhV4y4JRNrDiljIRVnvZSc4nIQKBeCgDOXW4ut8dRr1vBt3lY9ry+EwVsaaspVXePz8BEHgv5ZeU/sboPv7RZmkAfAkMS+m/kMiOHGVffftPKZ4ZRqgNFAGrRHogfymsAb7uwVh0diADO8hMpW/McMEhFzqY/bATGMw1oGZ73sdbIoBdMECzvnhq2FQn1SamWxmF1+zZZtHkRvitzCRRqT8HNHF4fTGMEoHZvepe7JDv4+YOsOWXtRQYWz1BQ0ZPQegMZhdBwO9fKk1MNbGvhLr398cHdhLJ1CGYzqAnAzKOGKqAwHsDAhqumGUVUrewb8Kjg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1778433263; c=relaxed/relaxed;
-	bh=ljxyGF0XpRcmphShZNeAA60z8jVSJUpH0HQBwb34PqY=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=S4ZQzhec8SSaWln3FSxqWB37JgI5HOel17hsEOM58LDAItl9kxNy0P0xefQGch+/RSAACabNyb+JXIDJoVPohz/WMitSzeY3nB+GF9nPifV7DKa9Gho6NtBh2acKdl8hPzjxNHslUU1s2ziHE7lYbi53O2Mc6u4rOP2Fm4QaWR6DYe5+0AA7C3nQ3NpueZsUaH7EuzOQi3Qb54ViT1yJ/ZuzzEkkfPZ6I3TeJjOr8i7hiAnuPEuJObzD3S0amZxz9K9qyQnyxk/cUoSyoAW/aMfvidtZFUiTmuISMDY6HPFwQignWlN2yvZeG15iAVchzjcGHcOCGEmGd6E3HRyh3g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=bCrCDPYg; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::435; helo=mail-pf1-x435.google.com; envelope-from=ekffu200098@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	t=1778461798; c=relaxed/relaxed;
+	bh=mfqH990mdH+IgSJnB2dubzEg0nm51/Cx4c7wzJvVDXE=;
+	h=From:To:Subject:In-Reply-To:Date:Message-ID:References; b=mOSfJZLhQg0s6unlBiNCSD5IQ5hEdqRRtk6jw/QEJK+C7Wc7qM2w6VN+yiW9BqkuRhQVNjpuewiUvL1CrglLq0y/yzB1Vb/EQjC2/vbAG6VZvaDbMumsPE1+hjLCYrruNe3HbF8TMt9fVo9gMhOPBeIA8Pk1BO8THVxwX/gmL7TK1wCqX6GXkzLxaqOu6zLBvYnUKfMI+CKavApXUnWD6aBkFuagtnmp95r2WRwRyB9pmCUrcEwyCKNQGoqznKZIV57WfGBgFL1MDbDvKR4dTtgckQ1fhWVrVFOBnRF4CLHbGZix0Te/1YTlZrPsAl2cRoGVLsEAHaZwcJknjH45AA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=hESMuZhE; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1032; helo=mail-pj1-x1032.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=bCrCDPYg;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=hESMuZhE;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::435; helo=mail-pf1-x435.google.com; envelope-from=ekffu200098@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pf1-x435.google.com (mail-pf1-x435.google.com [IPv6:2607:f8b0:4864:20::435])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1032; helo=mail-pj1-x1032.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pj1-x1032.google.com (mail-pj1-x1032.google.com [IPv6:2607:f8b0:4864:20::1032])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gD8bd5ptdz2xS2
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 May 2026 03:14:20 +1000 (AEST)
-Received: by mail-pf1-x435.google.com with SMTP id d2e1a72fcca58-82f9fdfc965so1460593b3a.1
-        for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 May 2026 10:14:20 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gDM8N6hFmz2xnQ
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 May 2026 11:09:55 +1000 (AEST)
+Received: by mail-pj1-x1032.google.com with SMTP id 98e67ed59e1d1-367d88b9940so744740a91.1
+        for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 May 2026 18:09:55 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1778433257; x=1779038057; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=ljxyGF0XpRcmphShZNeAA60z8jVSJUpH0HQBwb34PqY=;
-        b=bCrCDPYgPfjkJaMb+PdSF8H5KC1ns+W6pg54YxxAqaUx9OMTq9h9ful11LUT99jQSh
-         oSWX9t6MQt5DCsg1CWUAN22LchsIpwmqvpWARVDXU92jxWWujnQ8uVVDkzNdKFEoYhuf
-         OQ21zGT+XZ7HG0LrUsLdiS7DVGN5Ap9pSqb9sS8nOZ+T8I1+bgc4sZ0xzPzxnb+myAFN
-         7mTmbumVlefVEQ4wYIOF3EdNgiU0GVnRznX84PqwHy7bAum3NQaGWomrQkI54fbxLDvR
-         Igz6JNdybeIANCUXuYCDzjBnxH5dH6lnxsdCi8nuPMPOBKr8d6IDxXMBAjh/VYnNQuhC
-         882w==
+        d=gmail.com; s=20251104; t=1778461793; x=1779066593; darn=lists.ozlabs.org;
+        h=references:message-id:date:in-reply-to:subject:to:from:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=mfqH990mdH+IgSJnB2dubzEg0nm51/Cx4c7wzJvVDXE=;
+        b=hESMuZhEDz3yzQs/F4EEn8yP0MwHwiCTkBPoXvUw2J8m2xlYLTGVCtHRGa15OmGtGc
+         dvQBDouxDUNYE6w+pWMHF8NgoZ2C05UYRKnIuaYq2tgAZYpwUiTxiZzc2cG4Wz2A4zuF
+         SBXe6fs6p2egShatGSmzcW1b+mKY4LWsHBvaXo3Aa99sH1URyiCiHUkhnMc9h7V6AmkS
+         P4LiGj+SRdzYvYAbRR1RMyH9aKJY0FHFDkoe9NqYKLaKfgpxWzie5MGTaIGMKtgz4L4P
+         XlkP3Q+dDVcqzhPkzca3tZOLwLZxVS+mwfYtCothpKPxBrEXs4sMrgKiRLYoex/4s7n0
+         rxWw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1778433257; x=1779038057;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=ljxyGF0XpRcmphShZNeAA60z8jVSJUpH0HQBwb34PqY=;
-        b=fcnhrheK7Hx3eGbR3FF28WLq7UK7ws32TFfox8i+3MCWNigHQqs8QD9CVmu3dwcqwM
-         MoZ3vf3mHN8GCiKurYcMeLrfl+eQ+1mCC6ZozTQHqd4eHfDS/fwHO8rZV5/t9A30kZAw
-         muRqU1USYRjYyr+sJwET6BawCSF1womvhKJKVnLE4BKj2wHTVMlWCPDBuadz9/n51VYK
-         8b7+b7o5GN1de66xwDVE82jqgxAayhnJeTyLBcvZEz1JWG/Qngr+N6ywi4J5dFhuycFh
-         Z9NLESbvzMQwfe7/bZbwWXnYjrilzvyA+p9URa2+pRWZYuArZ/AhE/rgJSamsbMIpY4w
-         e3IA==
-X-Gm-Message-State: AOJu0Yybo6hfW0hes9i4lcZAkGhdNv3FUOjN2J5s0Fno4grscymR3Kzo
-	FIcGeBQQrSv/E9oBHG29E2TtAdFFi1CWtZn+QZOAXjc1Q+VrAZGqmVJ4
-X-Gm-Gg: Acq92OGyRBSWOMVgLj4dSWuHnr96A4tOT9Qo+3iAAxEW3RLYpsMBmPIQoA5aDG4dhtL
-	U+5bTTVakKpGAJ0OZVQCj7GUi9503hDwkhyN4lgRm/9vVLofI8aiaZQp2pFdH26+zwu/kdKYqSK
-	5n2qJM+VVPqMzL5sHjGsNcB4m8gZTgsfOTWFwAsNfcfGmss3m3d5jcUOPYhKaCvrkk3mcJ1THvV
-	g1FwjW/YkhYZtjpeAk6ULFcM5PgQhILxYytZFpRcVwCKVdnFZZCw0dfobtntaJ+/sHxxs9/70aK
-	E8Y9pDSitmtx4dni7PP8DdJEUJHkGD/nX4k87uYk7Y5+hYB5GMn7HP1iMj7ytScxJzXo2+M99sH
-	u5fLDihhMNBz5EWSD2prpVATZxbg0ikIPTlgKfry7heNdicalID4+rT6Ae9NIgOBe9b3Cw1IfWb
-	dW4xneqmxDPRgR/HYLVJpsND8iwBsV
-X-Received: by 2002:a05:6a00:4098:b0:82c:e09b:3f76 with SMTP id d2e1a72fcca58-83cf6e732c9mr11292717b3a.41.1778433256778;
-        Sun, 10 May 2026 10:14:16 -0700 (PDT)
-Received: from ubuntu.. ([110.9.142.4])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-8396563f381sm21799778b3a.6.2026.05.10.10.14.14
+        d=1e100.net; s=20251104; t=1778461793; x=1779066593;
+        h=references:message-id:date:in-reply-to:subject:to:from:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=mfqH990mdH+IgSJnB2dubzEg0nm51/Cx4c7wzJvVDXE=;
+        b=LhCLzW412upDxsruWfU/xUHWsaODeAfKQ2a+oDIpitd4UZoVpUWptJeoI2qAK1nRcY
+         YEleaEjCrfgaTwErR1XZrMcaIlYTHw9x6CUE7YbPoOjegcBL5BBvCfd13sF6LVboa6i4
+         g0E5rE06BgHC2Wl7bCOHasntzPhEs6VFur/wWSlTPJZYFVPrVbg6SBmNEijfak/QlaWV
+         KWVAnYrbjMspHy+8gOmYeQb0zDFhadaBPfQ5iEI9ulTroj6qvyvPDuNjpIFMhCKEARVM
+         Fozx/vytIdDV/aR9EcqXL+bz2FInKyRXaWu+wxyh3J+QJMxEuj4+IxAPxtz0tlMd/yv8
+         DXag==
+X-Forwarded-Encrypted: i=1; AFNElJ+xViMR7pULyP+bpv3zBFWtyIsLLIYz5paqEVPL0oGMgLHdNP71VY2KXG35uurMk1Cj/VLcMBrdNwwMbPk=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YzLoxqAj+Uptnef6Vh//VNy1FIbJ8uVIU005jQ1B2AgOp07LPOR
+	gBPrqWv6snTt40U3UFBJjarxpOA1/f9uCOe97Yhivq+O8fu5LLV7nKYS
+X-Gm-Gg: Acq92OGOCl0FWIXw6+jPDogsipn3+xED2Vsp6RcAo05iYZlgHkVMoik8g9P2C6HXp7p
+	5FxNrCRKAPmYGzRnqWJWAQ9tuzHSVKjXKN22D1U0kiZB7zQnw8hjx9yd1AJvD6zZias61kKNr/h
+	JDjMyi5R9W3KMB1jeeH9Xwhps/GE0Vn2/eSZ5pNdxGY/Wkr1De957SijiCDxjeDo3VXeqdZXQZ0
+	EftDtAJgCJlR2ZOvO+pESmHUVp4RrkS8fIsOX0wreaJ6m9me5h4Q4CUJnY0ltp4Wo2ZULjlgz2p
+	GKFbx02azFTiSBDg4tqAbfOKH5v03ocjhLqoXBePZB2sPfwrf11O6HTS7MYprrB+UxH6qAIuMgF
+	4emDU9BlZzpT6Ev7t8DuYIX8tTYyAtKV85qWCBJ0rs4EYWCL5LYdn54XA18gHib/q2QR4rOVRTT
+	HCk3UgnzLOKLLKVQf4rmuYRQ==
+X-Received: by 2002:a17:90b:582c:b0:364:7a37:4066 with SMTP id 98e67ed59e1d1-3664ccca676mr10993664a91.14.1778461792574;
+        Sun, 10 May 2026 18:09:52 -0700 (PDT)
+Received: from pve-server ([49.205.216.49])
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3686a6aae94sm580232a91.0.2026.05.10.18.09.50
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 10 May 2026 10:14:16 -0700 (PDT)
-From: Sang-Heon Jeon <ekffu200098@gmail.com>
-To: maddy@linux.ibm.com,
-	mpe@ellerman.id.au,
-	npiggin@gmail.com,
-	chleroy@kernel.org,
-	robh@kernel.org,
-	saravanak@kernel.org
-Cc: linuxppc-dev@lists.ozlabs.org,
-	devicetree@vger.kernel.org,
-	Sang-Heon Jeon <ekffu200098@gmail.com>
-Subject: [PATCH 0/2] powerpc/prom, of/fdt: fix chosen node handling and cleanup
-Date: Mon, 11 May 2026 02:13:51 +0900
-Message-ID: <20260510171353.1406018-1-ekffu200098@gmail.com>
-X-Mailer: git-send-email 2.43.0
+        Sun, 10 May 2026 18:09:51 -0700 (PDT)
+From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org, Madhavan Srinivasan <maddy@linux.ibm.com>, "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+Subject: Re: [PATCH] MAINTAINERS: Demote myself to reviewer
+In-Reply-To: <87y0hspx0u.fsf@mpe.ellerman.id.au>
+Date: Mon, 11 May 2026 06:30:33 +0530
+Message-ID: <7bpasqtq.ritesh.list@gmail.com>
+References: <87y0hspx0u.fsf@mpe.ellerman.id.au>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -94,40 +87,23 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
 
-Hello,
+Michael Ellerman <mpe@ellerman.id.au> writes:
+  
+>  LINUX FOR POWERPC (32-BIT AND 64-BIT)
+>  M:	Madhavan Srinivasan <maddy@linux.ibm.com>
+> -M:	Michael Ellerman <mpe@ellerman.id.au>
 
-While looking into boot information, I found one bug fix and one
-minor cleanup around /chosen node handling.
+Thanks for more than a decade of maintainership of Linux on PowerPC tree
+:)
 
-Patch 1 fixes a bug in powerpc where /chosen properties are read
-from the wrong node.
+> +R:	Michael Ellerman <mpe@ellerman.id.au>
 
-This bug has existed for a while without any report, so I don't
-think backporting is necessary and I did not add Cc: stable.
-Please let me know if you think otherwise.
+Always grateful to have you around. Thanks for helping us from time to time :)
 
-Patch 2 is a follow-up cleanup that drops the now-unused return
-value of early_init_dt_scan_chosen() and the dead checks at its
-callers.
+>  R:	Nicholas Piggin <npiggin@gmail.com>
+>  R:	Christophe Leroy (CS GROUP) <chleroy@kernel.org>
+>  L:	linuxppc-dev@lists.ozlabs.org
 
-If I missunderstood anything, please feel free to let me know.
-
-Best Regards,
-Sang-Heon Jeon
-
-Sang-Heon Jeon (2):
-  powerpc/prom: fix /chosen properties read from wrong node
-  of/fdt: make early_init_dt_scan_chosen() return void
-
- arch/powerpc/kernel/prom.c | 20 ++++++++++----------
- drivers/of/fdt.c           | 10 ++--------
- include/linux/of_fdt.h     |  2 +-
- 3 files changed, 13 insertions(+), 19 deletions(-)
-
--- 
-2.43.0
-
+-ritesh
 
