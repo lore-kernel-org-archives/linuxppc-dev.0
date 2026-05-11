@@ -1,52 +1,52 @@
-Return-Path: <linuxppc-dev+bounces-20707-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20708-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EB181CD37BE
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 May 2026 14:05:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B18A4CD37BE
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 May 2026 14:05:58 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gDhMb1W1bz2yFQ;
-	Tue, 12 May 2026 00:05:47 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778508347;
-	cv=none; b=IvbrSuE2nZjBVhPWU53Rbs0fUAxdK5ctPzqwNBCna4Ov3B3Yhv7Zu7wRg4rxj2EysfgLCvAq8bK0s5USvFJ8b7kCKGCMFN4fY/9yL1ryB3XebRhg3Fd45664LS+VT78KGFD6yXh55S7EqXljuG3HVZGvRbyRX0dcKE+VwsWjuJdKkjF1RsTpee58mntfyYzKQIj40+QGRKDyb41Ar56uSCU6l/AIEtSVmDAC61jGiXWsfOPiP7aUeBirXG7ZIk9CKeNCYHmC1gpuKtUVnyz8/rKGR73huSvzuqsnrpwlOSAnlp0n0HgN4BZKJBWLaK07DaRCXLLJkqpv8+mHeF1LfQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gDhMg0Cg2z2yN8;
+	Tue, 12 May 2026 00:05:51 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778508350;
+	cv=none; b=jsuXXZpwmTb9KBcss7cbXQL47SvS3bfvPH7aH+uNs0vnY7XROzIAuu6XG0gHb0J49qRLzZjUNj0TMm2DF3aKzWq5qRQQkHzNX4/QcZXlH+lsNvzuUUaiZldM/y8xqemsIxQr6eJNB512PBF41KVNTFPt9CAw6UqtBYmwCeWAEMc+MsrHOJIRMyXBQDUzWzG2/68i9pb1i6XA+7Kdp/4GKMuUvcsKkKwru034E8aeB/rDsFfrgZ1u/7hTMS4cihKprEsp/pTbGGgsN4OdgzNeVyKkZ0nJ25KZphAet7shwCqYKpRyTXctRb5E0w+DXvitlQkLCICQYOFOxEJrxi4DqA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1778508347; c=relaxed/relaxed;
-	bh=uRHNmf93uQX2kBlaHb/fY571d6FVsWsidkKskPPh+yI=;
+	t=1778508350; c=relaxed/relaxed;
+	bh=qI0Uz/9XXXc8IlcXlbD3ad0VmEZHBkxihS3lSDL524Y=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=GbWAPns8EIrm1oX27z70pNpBYlJp7t0nBH7jwlY1/vF3LmhrPCGqufDFgPnQGTqVnVu/kjpOeh/2hyR3Lo5BDFOIVhEO1yGlfs4O7RKeGTI22TMaJJGKhboKxA9cRpfNdqxb9aiklVauhOoWtKNpl4Q0pz2z0XI6bdtcNH8CSfQz2ZQh1NMN6VVNozZj4UlWUhYT/gQXarwcKvg1zP+WycxWiIEnOfppoLandajJEEZlK/RRQ1seOwqlqKEQv2PBVnQOkiS57/8txeCeMgF6LQsIT9IByCSh81roZVZBJjZD1VYSF3naGPP+wm1eKtjuvDPufItV2+nLd0J+DFshWw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ZVqW/8uB; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:To:Cc; b=P12By0rPYVFRVS9QjLuELXN1BgCz+6PuQF5/aCio6yLJ2bZKY322cZY4LlrPIWMbg6+gV0hhJUS7BzTvOddFZn5lGzUdc9Z1YRvc7fDZLDk5+hsTPTm7OVf02KMi3AmUvH5eEVJqf3meADxHUGfaPQqQoLwZiXdhSQkhbE16H27UCoR9MjxSmA9ywC1rVa+1KzJuf41NFbKauLVmyBUnMcVm81onGSAS8XJuY4IupS6vAQF+/jN8NVjaBkpaUQGYUwIiDpXI0oNTvSC2MSpOMswJ83RjN+Y2z2x+vgjb3X/7O2rvexDrrxc1AGk2DtDfqjjeo7jk1PrBmI6/uavUcg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=hOgjHA25; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ZVqW/8uB;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=hOgjHA25;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gDhMZ3pJdz2x9N
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2026 00:05:46 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gDhMf3SRJz2x9N
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2026 00:05:50 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 147BC600CB;
+	by sea.source.kernel.org (Postfix) with ESMTP id C8D5E42DA3;
+	Mon, 11 May 2026 14:05:48 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3921EC2BCF7;
 	Mon, 11 May 2026 14:05:44 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4DD66C2BCB0;
-	Mon, 11 May 2026 14:05:39 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1778508343;
-	bh=zGEwXeQeeaa/yetEDRVp5+lm1X5UYQ4s449U39c7KOQ=;
+	s=k20201202; t=1778508348;
+	bh=VMme4hNP/eM+ancPCzgwcEMKJqVdjI2yHAw5rPRUmE8=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=ZVqW/8uBvCQNuH1FvNzPpfFfOV3fXvq9+aGIjhZjuuGqpF1t7+7+jnJnz2fGIA+/D
-	 yxYGeANt8K3XRNU9rBN3mNKFQ+2z65C4F0WaEymY9eIT42HUwFGIU35Eb4InQAFnZw
-	 9tKd3WH7g8BdkcFMxeaxQoBX4UoNqEc/YvxkV3cx1VktE0HUZwsiTxNo4b95L8Va7o
-	 QEBPTERhjBauEwb1ned73L8nMQCwv2VkyNbRrjtncsuhg7G7zOIjCHkibLXIpKONG4
-	 1JdBvkGT+0r4+PiZFrgPk/5vVPlDICWGR2QQJJ3jB2zi39CRKDKza7z1iF9RCoh54s
-	 M1DoU+naPhh3Q==
+	b=hOgjHA251N+AuGQAcHY49+GihQZEWt/kPQGVzFkJ1DoPGaWOYf2DJxFRf0DdPUImS
+	 7AIus401fPM2QGs3iwxv6jpqlJe4Ake+N9+d++Dh5t+N4IfV/drPMm1XsSzGr6sec7
+	 kSweIR6wwM/Gp0bdaj9g9Trvk2DFZELNPRVBiNsZDa4Tw5gNDgJzIg2l7Jq735fDrr
+	 voxt/4ejanfokwg4xolHAwo6eqyi5y95IaMOZ2YO15ilj5nVYqFpZJdXg+FKQzzJv8
+	 tCFCjZjobllgHLhyqv2zRnfJ30612QxGV6mbMINrfWztiOi5qzTmqUoCZbQO7mC6Ih
+	 oNuEdbrf0mpjg==
 From: "David Hildenbrand (Arm)" <david@kernel.org>
-Date: Mon, 11 May 2026 16:05:29 +0200
-Subject: [PATCH 1/8] sparc/mm: remove register_page_bootmem_info()
+Date: Mon, 11 May 2026 16:05:30 +0200
+Subject: [PATCH 2/8] mm/bootmem_info: drop initialization of page->lru
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -62,7 +62,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260511-bootmem_info_prep-v1-1-3fb0be6fc688@kernel.org>
+Message-Id: <20260511-bootmem_info_prep-v1-2-3fb0be6fc688@kernel.org>
 References: <20260511-bootmem_info_prep-v1-0-3fb0be6fc688@kernel.org>
 In-Reply-To: <20260511-bootmem_info_prep-v1-0-3fb0be6fc688@kernel.org>
 To: "David S. Miller" <davem@davemloft.net>, 
@@ -84,61 +84,30 @@ Cc: sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, "David Hildenbrand (Arm)" <david@kernel.org>
 X-Mailer: b4 0.13.0
 
-sparc does not select CONFIG_HAVE_BOOTMEM_INFO_NODE, therefore,
-register_page_bootmem_info_node() is a nop.
+In the past, we used to store the type in page->lru.next, introduced by
+commit 5f24ce5fd34c ("thp: remove PG_buddy"). The location changed over
+the years; ever since commit 0386aaa6e9c8 ("bootmem: stop using
+page->index"), we store it alongside the info in page->private.
 
-Let's just get rid of register_page_bootmem_info().
+Consequently, there is no need to reset page->lru anymore.
 
 Signed-off-by: David Hildenbrand (Arm) <david@kernel.org>
 ---
- arch/sparc/mm/init_64.c | 20 --------------------
- 1 file changed, 20 deletions(-)
+ mm/bootmem_info.c | 1 -
+ 1 file changed, 1 deletion(-)
 
-diff --git a/arch/sparc/mm/init_64.c b/arch/sparc/mm/init_64.c
-index 367c269305e5..3b679b1d1d72 100644
---- a/arch/sparc/mm/init_64.c
-+++ b/arch/sparc/mm/init_64.c
-@@ -27,7 +27,6 @@
- #include <linux/percpu.h>
- #include <linux/mmzone.h>
- #include <linux/gfp.h>
--#include <linux/bootmem_info.h>
- 
- #include <asm/head.h>
- #include <asm/page.h>
-@@ -2477,17 +2476,6 @@ int page_in_phys_avail(unsigned long paddr)
- 	return 0;
- }
- 
--static void __init register_page_bootmem_info(void)
--{
--#ifdef CONFIG_NUMA
--	int i;
--
--	for_each_online_node(i)
--		if (NODE_DATA(i)->node_spanned_pages)
--			register_page_bootmem_info_node(NODE_DATA(i));
--#endif
--}
--
- void __init arch_setup_zero_pages(void)
- {
- 	phys_addr_t zero_page_pa = kern_base +
-@@ -2498,14 +2486,6 @@ void __init arch_setup_zero_pages(void)
- 
- void __init mem_init(void)
- {
--	/*
--	 * Must be done after boot memory is put on freelist, because here we
--	 * might set fields in deferred struct pages that have not yet been
--	 * initialized, and memblock_free_all() initializes all the reserved
--	 * deferred pages for us.
--	 */
--	register_page_bootmem_info();
--
- 	if (tlb_type == cheetah || tlb_type == cheetah_plus)
- 		cheetah_ecache_flush_init();
- }
+diff --git a/mm/bootmem_info.c b/mm/bootmem_info.c
+index 3d7675a3ae04..a0a1ecdec8d0 100644
+--- a/mm/bootmem_info.c
++++ b/mm/bootmem_info.c
+@@ -34,7 +34,6 @@ void put_page_bootmem(struct page *page)
+ 	if (page_ref_dec_return(page) == 1) {
+ 		ClearPagePrivate(page);
+ 		set_page_private(page, 0);
+-		INIT_LIST_HEAD(&page->lru);
+ 		kmemleak_free_part_phys(PFN_PHYS(page_to_pfn(page)), PAGE_SIZE);
+ 		free_reserved_page(page);
+ 	}
 
 -- 
 2.43.0
