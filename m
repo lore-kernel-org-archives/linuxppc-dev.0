@@ -1,53 +1,54 @@
-Return-Path: <linuxppc-dev+bounces-20699-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20700-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5E67ACD37AC
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 May 2026 11:31:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7AB8ECD37B9
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 May 2026 12:07:25 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gDcx10g9pz2xlh;
-	Mon, 11 May 2026 21:31:01 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=113.46.200.223
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778499061;
-	cv=none; b=K+PFTCr/dU8PHvpZKWstzR3ezetCmk8QqNkFzBeQl0G0Y5WVC0MUaFobXRW1rE/MFxxdv8j6dyDlxXp5eOWfNeNSTSrVkPbmlr3r7T0zpDXD8jICd56UDHR35Vrou5/ngtQSyMwTerLH/L9u05zZ7O8hiLYqSa+tGnE9EMcN2EMLUt1RaThciRlHsrto1nScEPVxAqRYl68S4V8Kf18+bAxplCCQnAruKsJqbFCLRz4EDeRTFBVcJ+x4r885kR/MztqIMbDsbjoZI7QdGEbncLi/JnLTzb1grhxXLqk6Hrg4NR068b6dcZ5ElQYo2jgU4TizH9VDshE/j+hjKcuQlQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gDdkz6rFHz2xlh;
+	Mon, 11 May 2026 22:07:23 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=141.14.17.11
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778501243;
+	cv=none; b=PvVhoeScmdX7Y+Ut1lIKS8WvaQUqslDqbKZ2BHNPPJlh4rqXUqJi5q7mny9eUuZ3hViNmL3PzRTVY3MZx1330SBVJ1WscqiDjN4H4faZJUmsWo435YuYvj3WeeY8T5KSJjSQVyJYr8oxTC4TeoSm30frXhd9qf2mwNRikDGzhWkX8WE7sa1+enQgEoAkaM+lwF7veRvDKdXMoeVc6igbm5bmSir3B77rwsbYd12mFL84/5RyOhB3CCUm5s6f0lVpLmGejvAy8gIsHIT6JuP+hvvzS9bQJFu3ftNfXVUWKMP343lXhuNHfhLmuIFEv+cSuzGAV2iAtCb5s7V9Hx1aoQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1778499061; c=relaxed/relaxed;
-	bh=hZY77WY1R4lZKqkiJYVx90NM7cypXm7b/K/Dl6ostWU=;
-	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
-	 In-Reply-To:Content-Type; b=KPlMsKXGIl/ikNxsGDLw0pptV/zsTsQpgO6EiRIFRRjslUGM+QNqdxT91CEVUwEmU76gX37SDTq6aRBfptcr4UPeSOgZbBSzHEjqH7LxqnAgOuP4khigQhs+TiIqPd/Bq7N6V3+0PssH3GU1zT+bZOfsmshjgbZCMf/xRLWNg1+nOCFEq5+7O19va2LO9Ym7p0/Axv6i8jaD7H/wjT0piohcxAt1V3oPfxgC6z2hpbVeoTjzwVg9GB7idc1gVw0JULIl85JtJwTfdvzPwobQcudiI0+EPyYKilUMnSapHtJi39fTHIDXiCUb4M3hPglvir0QvvA7sMU0qdi0tlDEwg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=A7gfGf9I; dkim-atps=neutral; spf=pass (client-ip=113.46.200.223; helo=canpmsgout08.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=A7gfGf9I;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=113.46.200.223; helo=canpmsgout08.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org)
-Received: from canpmsgout08.his.huawei.com (canpmsgout08.his.huawei.com [113.46.200.223])
+	t=1778501243; c=relaxed/relaxed;
+	bh=EejTLY3OBIlLpwEB0GNm1ilVJ/CzXgY7DxCgsyni+qk=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=EcrQ4bSwurJrhNQ87+8EzxPQhZEr9C1eoI3J5FJhM8oPH3d9oAl+oaa+FdsxgEXaeAVtxpyj3mzY1lNLAeCabK9bGBRqUD98k7d74RMAHkTn8JNTheZDcnlRkhH2Hxc6iVaTwb19CNA1OJX+J8Q06/TGiL+AmBQBPQKKin/Zu4oM6OwkOCfh7NE+cLV3QBGyxBGq3z8JpNNu+sthVCBMc/od/yEfOQCLmHHwqXZr3+3WIewB8Z0gVeF9w55qIHWETAbq96pEF5xl/6q4G/Nt7UlXJDD/ZP9V61mS4QGBd5/ASVUYtFFqwvDGpXL7T8m+jyXisvxB8lcUO7iZnoqDKA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=molgen.mpg.de; spf=pass (client-ip=141.14.17.11; helo=mx3.molgen.mpg.de; envelope-from=pmenzel@molgen.mpg.de; receiver=lists.ozlabs.org) smtp.mailfrom=molgen.mpg.de
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=molgen.mpg.de
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=molgen.mpg.de (client-ip=141.14.17.11; helo=mx3.molgen.mpg.de; envelope-from=pmenzel@molgen.mpg.de; receiver=lists.ozlabs.org)
+Received: from mx3.molgen.mpg.de (mx3.molgen.mpg.de [141.14.17.11])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bit raw public key) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gDcwy0F6Pz2xRw
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 May 2026 21:30:55 +1000 (AEST)
-dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
-	c=relaxed/relaxed; q=dns/txt;
-	h=From;
-	bh=hZY77WY1R4lZKqkiJYVx90NM7cypXm7b/K/Dl6ostWU=;
-	b=A7gfGf9I2mWtoGk1twpeKdsTWxHRCoqkxK6h8sqAufJacFPxPk7J5UV8oj4BBjTyooxVD2Cki
-	IZBX0lyWqVPhijn1Ra4jjJgWV2oQvMFsHXLFq2R6ycKWvoUQXNa+lNIZBbmfXSzS+9wfOLM4NXI
-	bc1oxF4bSdMbsjNUg+iYH3U=
-Received: from mail.maildlp.com (unknown [172.19.163.163])
-	by canpmsgout08.his.huawei.com (SkyGuard) with ESMTPS id 4gDcm00dzbzmV6w;
-	Mon, 11 May 2026 19:23:12 +0800 (CST)
-Received: from dggpemf500011.china.huawei.com (unknown [7.185.36.131])
-	by mail.maildlp.com (Postfix) with ESMTPS id 2B9494048B;
-	Mon, 11 May 2026 19:30:49 +0800 (CST)
-Received: from [10.67.109.254] (10.67.109.254) by
- dggpemf500011.china.huawei.com (7.185.36.131) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1544.11; Mon, 11 May 2026 19:30:44 +0800
-Message-ID: <79c14bee-b1f5-4d70-8345-6582d6cf0128@huawei.com>
-Date: Mon, 11 May 2026 19:30:44 +0800
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gDdky3p1nz2xf8
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 May 2026 22:07:20 +1000 (AEST)
+Received: from abreu.molgen.mpg.de (g42.guest.molgen.mpg.de [141.14.220.42])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	(Authenticated sender: pmenzel)
+	by mx.molgen.mpg.de (Postfix) with ESMTPSA id 8CAB84C1A0B1B4;
+	Mon, 11 May 2026 14:06:29 +0200 (CEST)
+From: Paul Menzel <pmenzel@molgen.mpg.de>
+To: Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	Kees Cook <kees@kernel.org>,
+	Tony Luck <tony.luck@intel.com>,
+	"Guilherme G. Piccoli" <gpiccoli@igalia.com>,
+	"Jason A. Donenfeld" <Jason@zx2c4.com>
+Cc: Paul Menzel <pmenzel@molgen.mpg.de>,
+	stable@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH] powerpc/powernv: fix null pointer dereference in pnv_get_random_long()
+Date: Mon, 11 May 2026 14:04:12 +0200
+Message-ID: <20260511120413.254934-2-pmenzel@molgen.mpg.de>
+X-Mailer: git-send-email 2.53.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -61,131 +62,106 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v13 04/15] arm64: kexec_file: Fix potential buffer
- overflow in prepare_elf_headers()
-To: Breno Leitao <leitao@debian.org>
-CC: <corbet@lwn.net>, <skhan@linuxfoundation.org>, <catalin.marinas@arm.com>,
-	<will@kernel.org>, <chenhuacai@kernel.org>, <kernel@xen0n.name>,
-	<maddy@linux.ibm.com>, <mpe@ellerman.id.au>, <npiggin@gmail.com>,
-	<chleroy@kernel.org>, <pjw@kernel.org>, <palmer@dabbelt.com>,
-	<aou@eecs.berkeley.edu>, <alex@ghiti.fr>, <tglx@kernel.org>,
-	<mingo@redhat.com>, <bp@alien8.de>, <dave.hansen@linux.intel.com>,
-	<hpa@zytor.com>, <robh@kernel.org>, <saravanak@kernel.org>,
-	<akpm@linux-foundation.org>, <bhe@redhat.com>, <rppt@kernel.org>,
-	<pasha.tatashin@soleen.com>, <pratyush@kernel.org>, <ruirui.yang@linux.dev>,
-	<rdunlap@infradead.org>, <pmladek@suse.com>, <dapeng1.mi@linux.intel.com>,
-	<kees@kernel.org>, <elver@google.com>, <kuba@kernel.org>,
-	<ebiggers@kernel.org>, <lirongqing@baidu.com>, <paulmck@kernel.org>,
-	<sourabhjain@linux.ibm.com>, <coxu@redhat.com>, <jbohac@suse.cz>,
-	<ryan.roberts@arm.com>, <osandov@fb.com>, <cfsworks@gmail.com>,
-	<tangyouling@kylinos.cn>, <ritesh.list@gmail.com>, <adityag@linux.ibm.com>,
-	<guoren@kernel.org>, <songshuaishuai@tinylab.org>, <kevin.brodsky@arm.com>,
-	<vishal.moola@gmail.com>, <junhui.liu@pigmoral.tech>,
-	<wangruikang@iscas.ac.cn>, <namcao@linutronix.de>, <chao.gao@intel.com>,
-	<seanjc@google.com>, <fuqiang.wang@easystack.cn>, <ardb@kernel.org>,
-	<chenjiahao16@huawei.com>, <hbathini@linux.ibm.com>,
-	<takahiro.akashi@linaro.org>, <james.morse@arm.com>, <lizhengyu3@huawei.com>,
-	<x86@kernel.org>, <linux-doc@vger.kernel.org>,
-	<linux-kernel@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
-	<loongarch@lists.linux.dev>, <linuxppc-dev@lists.ozlabs.org>,
-	<linux-riscv@lists.infradead.org>, <devicetree@vger.kernel.org>,
-	<kexec@lists.infradead.org>
-References: <20260511030454.1730881-1-ruanjinjie@huawei.com>
- <20260511030454.1730881-5-ruanjinjie@huawei.com> <agGkvrg06KNDNfDi@gmail.com>
-From: Jinjie Ruan <ruanjinjie@huawei.com>
-In-Reply-To: <agGkvrg06KNDNfDi@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-X-Originating-IP: [10.67.109.254]
-X-ClientProxiedBy: kwepems200002.china.huawei.com (7.221.188.68) To
- dggpemf500011.china.huawei.com (7.185.36.131)
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 
+pnv_get_random_long() dereferences the per-CPU pnv_rng pointer without
+checking whether it has been initialized resulting in the oops below:
 
+    [    0.000000] Linux version 7.1.0-rc2+ (pmenzel@flughafenberlinbrandenburgwillybrandt.molgen.mpg.de) (gcc (Ubuntu 11.2.0-7ubuntu2) 11.2.0, GNU ld (GNU Binutils for Ubuntu) 2.37) #3 SMP PREEMPT Wed May  6 08:50:58 CEST 2026
+    […]
+    [   17.901992] Kernel attempted to read user page (0) - exploit attempt? (uid: 0)
+    [   17.902011] BUG: Kernel NULL pointer dereference on read at 0x00000000
+    [   17.902018] Faulting instruction address: 0xc0000000000e7138
+    [   17.902027] Oops: Kernel access of bad area, sig: 11 [#1]
+    [   17.902034] LE PAGE_SIZE=64K MMU=Hash  SMP NR_CPUS=2048 NUMA PowerNV
+    [   17.902045] Modules linked in: powernv_rng(+) bnx2x ofpart ibmpowernv bfq mdio cmdlinepart powernv_flash ipmi_powernv ipmi_devintf mtd ipmi_msghandler at24(+) vmx_crypto opal_prd sch_fq_codel nfsd parport_pc ppdev auth_rpcgss nfs_acl lp lockd grace parport sunrpc autofs4 btrfs xor libblake2b raid6_pq ast drm_shmem_helper drm_client_lib i2c_algo_bit drm_kms_helper drm ahci drm_panel_orientation_quirks libahci
+    [   17.902185] CPU: 147 UID: 0 PID: 2626 Comm: hwrng Not tainted 7.1.0-rc2+ #3 PREEMPTLAZY
+    [   17.902197] Hardware name: 8335-GCA POWER8 (raw) 0x4d0200 opal:skiboot-5.4.8-5787ad3 PowerNV
+    [   17.902204] NIP:  c0000000000e7138 LR: c00800001ec8013c CTR: c0000000000e70fc
+    [   17.902212] REGS: c000000092913c50 TRAP: 0300   Not tainted  (7.1.0-rc2+)
+    [   17.902222] MSR:  900000000280b033 <SF,HV,VEC,VSX,EE,FP,ME,IR,DR,RI,LE>  CR: 44420220  XER: 20000000
+    [   17.902269] CFAR: c00800001ec8026c DAR: 0000000000000000 DSISR: 40000000 IRQMASK: 0
+                   GPR00: c00800001ec8013c c000000092913ef0 c000000001c18100 c00000002222d900
+                   GPR04: c00000002222d900 0000000000000080 0000000000000001 0000000000000000
+                   GPR08: 0000000000000000 c000000002212000 c0000000951e1780 c00800001ec80258
+                   GPR12: c0000000000e70fc c00000ffff6fd700 c0000000001d11c0 c00000001b99b9c0
+                   GPR16: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
+                   GPR20: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
+                   GPR24: 0000000000000000 c000000002fe6a58 0000000000000000 0000000000000000
+                   GPR28: c000000002fe6a20 0000000000000010 000000000000000f c00000002222d900
+    [   17.902406] NIP [c0000000000e7138] pnv_get_random_long+0x3c/0x114
+    [   17.902426] LR [c00800001ec8013c] powernv_rng_read+0x78/0xc4 [powernv_rng]
+    [   17.902444] Call Trace:
+    [   17.902448] [c000000092913ef0] [c000000092913f30] 0xc000000092913f30 (unreliable)
+    [   17.902463] [c000000092913f30] [c000000000decd58] hwrng_fillfn+0xd4/0x3dc
+    [   17.902484] [c000000092913f90] [c0000000001d1328] kthread+0x170/0x1a4
+    [   17.902498] [c000000092913fe0] [c00000000000d030] start_kernel_thread+0x14/0x18
+    [   17.902513] Code: 60000000 7d2000a6 71290010 418200bc e94d0908 812a0000 39290001 912a0000 e90d0030 3d220060 39299f00 7d08482a <e9280000> 7c0004ac e8e90000 0c070000
+    [   17.902569] ---[ end trace 0000000000000000 ]---
+    [   18.008801] pstore: backend (nvram) writing error (-1)
 
-On 5/11/2026 5:46 PM, Breno Leitao wrote:
-> On Mon, May 11, 2026 at 11:04:43AM +0800, Jinjie Ruan wrote:
->> There is a race condition between the kexec_load() system call
->> (crash kernel loading path) and memory hotplug operations that can
->> lead to buffer overflow and potential kernel crash.
->>
->> During prepare_elf_headers(), the following steps occur:
->> 1. The first for_each_mem_range() queries current System RAM memory ranges
->> 2. Allocates buffer based on queried count
->> 3. The 2st for_each_mem_range() populates ranges from memblock
->>
->> If memory hotplug occurs between step 1 and step 3, the number of ranges
->> can increase, causing out-of-bounds write when populating cmem->ranges[].
->>
->> This happens because kexec_load() uses kexec_trylock (atomic_t) while
->> memory hotplug uses device_hotplug_lock (mutex), so they don't serialize
->> with each other.
->>
->> Add the explicit bounds checking to prevent out-of-bounds access.
-> 
-> It seems you have a TOCTOU type of issue, and this seems to be shrinking
-> the window, but not fully solving it?
+    [   18.015458] note: hwrng[2626] exited with irqs disabled
+    [   18.015483] note: hwrng[2626] exited with preempt_count 1
 
-Hi Breno,
+Commit f3eac426657d ("powerpc/powernv: wire up rng during setup_arch")
+introduced a lazy initialization path via pnv_get_random_long_early():
+per-CPU pointers are left NULL until slab becomes available and
+rng_create() completes.
 
-Thanks for your comments regarding the TOCTOU issue.
+pnv_get_random_long() is an exported symbol called directly by the
+powernv_rng hwrng module (powernv_rng_read()), bypassing the
+ppc_md.get_random_seed guard that would otherwise ensure per-CPU data is
+ready.  If the hwrng fill thread runs on a CPU whose slot is still NULL,
+the function crashes dereferencing rng->regs at offset 0.
 
-You are correct that the current bounds checking only "shrinks the
-window" and prevents a kernel crash, but doesn't fully guarantee header
-consistency if a race occurs.
+Guard both branches with a NULL check and return 0 (no data) when the
+per-CPU pointer has not been set up yet.
 
-In my local environment, this race is extremely difficult to reproduce,
-but it is theoretically possible.
+Testing on the IBM Power S822LC (8335-GCA POWER8 (raw) 0x4d0200
+opal:skiboot-5.4.8-5787ad3 PowerNV) is successful:
 
-To address this properly for arm64, I am considering two steps:
+    [   23.850775] powernv_rng: Registered powernv hwrng.
 
-- For this patch: I will change the return value to -EAGAIN and keep the
-bounds check. This ensures that even if a race happens, the kernel
-remains safe (no OOB access), and user-space is notified to retry.
+Fixes: f3eac426657d ("powerpc/powernv: wire up rng during setup_arch")
+Link: https://lore.kernel.org/all/a159e81a-ccfd-440f-af68-6a56cca09cb2@molgen.mpg.de/
+Cc: Jason A. Donenfeld <Jason@zx2c4.com>
+Cc: stable@vger.kernel.org # v5.18
+Assisted-by: Claude Sonnet 4.6
+Signed-off-by: Paul Menzel <pmenzel@molgen.mpg.de>
+---
+No idea, how to test, that the rng works as expected (and if, despite
+the missing message) it  didn’t work before.
 
-- Long-term solution: A better way to solve this is to implement ARM64
-CRASH_HOTPLUG support (similar to x86). With crash hotplug, the kernel
-will automatically re-generate the crash headers whenever a memory
-hotplug event occurs. This makes the TOCTOU during the initial
-kexec_load less critical, as any transient inconsistency will be
-immediately corrected by the subsequent hotplug handler.
+ arch/powerpc/platforms/powernv/rng.c | 12 ++++++++----
+ 1 file changed, 8 insertions(+), 4 deletions(-)
 
-Does it make sense to you to use this patch as a safety guard first, and
-then I (or someone else) follow up with the full CRASH_HOTPLUG support
-for arm64 as [1]?
-
-[1]:
-https://lore.kernel.org/all/20260402081459.635022-1-ruanjinjie@huawei.com/
-
-Best regards,
-Jinjie
-
-> 
->> Cc: Catalin Marinas <catalin.marinas@arm.com>
->> Cc: Will Deacon <will.deacon@arm.com>
->> Cc: Andrew Morton <akpm@linux-foundation.org>
->> Cc: Baoquan He <bhe@redhat.com>
->> Cc: Breno Leitao <leitao@debian.org>
->> Cc: stable@vger.kernel.org
->> Fixes: 3751e728cef2 ("arm64: kexec_file: add crash dump support")
->> Closes: https://sashiko.dev/#/patchset/20260323072745.2481719-1-ruanjinjie%40huawei.com
->> Signed-off-by: Jinjie Ruan <ruanjinjie@huawei.com>
->> ---
->>  arch/arm64/kernel/machine_kexec_file.c | 5 +++++
->>  1 file changed, 5 insertions(+)
->>
->> diff --git a/arch/arm64/kernel/machine_kexec_file.c b/arch/arm64/kernel/machine_kexec_file.c
->> index e31fabed378a..a67e7b1abbab 100644
->> --- a/arch/arm64/kernel/machine_kexec_file.c
->> +++ b/arch/arm64/kernel/machine_kexec_file.c
->> @@ -59,6 +59,11 @@ static int prepare_elf_headers(void **addr, unsigned long *sz)
->>  	cmem->max_nr_ranges = nr_ranges;
->>  	cmem->nr_ranges = 0;
->>  	for_each_mem_range(i, &start, &end) {
->> +		if (cmem->nr_ranges >= cmem->max_nr_ranges) {
->> +			ret = -ENOMEM;
-> 
-> -ENOMEM seems to be the the wrong errno. This isn't an allocation
-> failure; it's a transient race. -EBUSY or -EAGAIN would be more honest
+diff --git a/arch/powerpc/platforms/powernv/rng.c b/arch/powerpc/platforms/powernv/rng.c
+index 7a4c38cd6a82..dc71eaf5d954 100644
+--- a/arch/powerpc/platforms/powernv/rng.c
++++ b/arch/powerpc/platforms/powernv/rng.c
+@@ -87,12 +87,16 @@ int pnv_get_random_long(unsigned long *v)
+ 
+ 	if (mfmsr() & MSR_DR) {
+ 		rng = get_cpu_var(pnv_rng);
+-		*v = rng_whiten(rng, in_be64(rng->regs));
++		if (rng)
++			*v = rng_whiten(rng, in_be64(rng->regs));
+ 		put_cpu_var(rng);
+-	} else {
+-		rng = raw_cpu_read(pnv_rng);
+-		*v = rng_whiten(rng, __raw_rm_readq(rng->regs_real));
++		return rng ? 1 : 0;
+ 	}
++
++	rng = raw_cpu_read(pnv_rng);
++	if (!rng)
++		return 0;
++	*v = rng_whiten(rng, __raw_rm_readq(rng->regs_real));
+ 	return 1;
+ }
+ EXPORT_SYMBOL_GPL(pnv_get_random_long);
+-- 
+2.53.0
 
 
