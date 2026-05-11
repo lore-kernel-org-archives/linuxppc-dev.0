@@ -1,81 +1,104 @@
-Return-Path: <linuxppc-dev+bounces-20694-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20695-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9CA94CD37AC
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 May 2026 08:19:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F2C3ECD37AC
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 May 2026 09:29:10 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gDXhT2SY5z2xlh;
-	Mon, 11 May 2026 18:19:53 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778487593;
-	cv=none; b=atlGJGobjQGkJnUlSb0h6X7B22C1UyfNJtDyEWotSrmcAb7o9ElDHpUQQ/XTsTLv3mEqYM4KEEFBSEePSgmZBW1b1vxl6r0PZILWhRQPDV33AKfxdND23NH9hcWq3C1JWOWfutNw4oBef87p1k1OYUbjP4y3JGMN2E5hJOuw3CUlXqCF7umlAuRfIe2suZZbyr2MhhH6nqxOnnIoZmzOIVj/a0C/l3PnnaQKx4JxJT2KKpQuxlXR/CBU3H8VHPBLlu9rlX1483VUNsJsPenL2937Cxa66j9AdP1f+sWShHY4nL79kHzMPW9BXc3HgCDdfg3xwR4rUwEAR67b3yKRdQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gDZDP4Fbbz2xlh;
+	Mon, 11 May 2026 19:29:09 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::32b"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778491749;
+	cv=none; b=RAdUXMQCoCC+E717C8mra8Ta5ap5HehfB88cDFM7CmcyyjFmfuHF7dGtt/4noWtsmZEnlzBRzDFZYdB47l/tCBtsNonp8DRlrJeFt2/BafAO9Y6B/e92XtN/IPlFFepOl65Ej+OgCSfOipn9Hzo+cOEbA2PjouhAVlqm/arl75ePNPNKBIuFYdnsnvLx7ZY7RtLUIrE5V5GEX6z5wD3K8cIJWqF/LEMtVtVeR/hlTTjyGHVoiVWBEn16nnkPpDSrLIyX2EWpOL6Kh5K0sCnkE2vlFgqQPonTMejf72yEqczirROwnRP5Ek0vB7eiP6+3FxSf2xBFDbmT9kK+upgVHw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1778487593; c=relaxed/relaxed;
-	bh=5skeTQrgKgaoUQFjMs+9nYQVMNnHu8e04zHpAr+imq4=;
-	h=Date:From:To:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=CjJBMuHWMhLH6wSr0a79IqL2/lnIUuu2xy75exxPhon9Wss3EHtH8Gdl6k/8E126d+LzHpulSuP5Ihp72r+9MdGWmarE383CDJc4QxRKixTrUfVwQP8/6wga14nnclbNWUa6JHIjOoCZW0S9EKaEaqJnzqypCGrqJwO9owlf2/4TtMV8aHf/QRD7ozk/F0A0wnPoBP4ViWiql80fI4rj0jCoVI7xXqJRzNZSz0gfkRliemo5xpHA13AXrzNeZy+GQJL2Rb7K2vkzBduerZGeHla2r/XzF3fix1E5M5ANWIeiSV2zUmtSd5wp+vBovXFUBgzIxgsLgMgS8iDRlo0zqw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=QV7nIJ5M; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=gautam@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1778491749; c=relaxed/relaxed;
+	bh=YNtvrx6JU0RSTB5C/gMvs38ikePYtzcXdrklgWjxoQE=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=Lsxnd8UuT3XnBYnzeo2j83mDLBzTP6T4Nr6jAbMDTiUIMTzU0E2jxCvWaH6DRZA8RwABAYxxdtjPlJ9guOhiXXI45u7hCvxHlGve8otSicUumbV394Xq5Thm/TwMqiift1Oj80jFv5tVDj7+FtSPsZyL4OzxhCBFl/GAKfyeTTlHulqKxGLg3o6fE/xpvACNZrSYPhi/oFXyKY0ArrXtDvwYqTi97eSVodzONZOBoEAR9xMWkn98qBT4QzdOevcLb8gjatZZ54YniR6hz1CwY9i6L1bRouRdr28YhkRpWezsahpgljHHwZbkR28NDeEoUk7kmA+IiM0x7ivIDH5RrQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com; dkim=pass (2048-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=google header.b=EieNBX1e; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::32b; helo=mail-wm1-x32b.google.com; envelope-from=marco.crivellari@suse.com; receiver=lists.ozlabs.org) smtp.mailfrom=suse.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=QV7nIJ5M;
+	dkim=pass (2048-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=google header.b=EieNBX1e;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=gautam@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.com (client-ip=2a00:1450:4864:20::32b; helo=mail-wm1-x32b.google.com; envelope-from=marco.crivellari@suse.com; receiver=lists.ozlabs.org)
+Received: from mail-wm1-x32b.google.com (mail-wm1-x32b.google.com [IPv6:2a00:1450:4864:20::32b])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gDXhS2ZDhz2xjQ
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 May 2026 18:19:51 +1000 (AEST)
-Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 64ADG0J42940561;
-	Mon, 11 May 2026 08:19:42 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=
-	content-type:date:from:in-reply-to:message-id:mime-version
-	:references:subject:to; s=pp1; bh=5skeTQrgKgaoUQFjMs+9nYQVMNnHu8
-	e04zHpAr+imq4=; b=QV7nIJ5MWNi7eRMw6gp8nPPjE7TkwP228qy4kJ8B+1QcEk
-	3NYNFSCmjmrs4PKyA7zqCkpLXJ3XAHtMgrDv+Iv4aE3ZRGvijSle2L5bKx0mhBCK
-	3ASb+NCnsFDK+61Qf7QHAbtqXjJgFvSf7PtnyFRiHZ4HULEXp8ommzUIQA0QP7aa
-	xIQrL6FTX2yfBW1Noy2JqZMdP0MHSigxWHQfXxHp8FNKdhq59AwTtt4BYxFCnJfE
-	cARAG6g6ZkGt2xoJ4xlxPm8SqPxHFu519XJgdJGQDmV/7xaPG0ogz77E/9CuOhhX
-	ab0GhKxYUmvbw86uu3saOyiB+MKbY9vjv5kLGXMw==
-Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4e1vkqq917-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 11 May 2026 08:19:41 +0000 (GMT)
-Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma12.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 64B89lQC003744;
-	Mon, 11 May 2026 08:19:41 GMT
-Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
-	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 4e2f8q4gtx-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 11 May 2026 08:19:40 +0000 (GMT)
-Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com [10.20.54.104])
-	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 64B8Jdac47317416
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 11 May 2026 08:19:39 GMT
-Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 49AE920043;
-	Mon, 11 May 2026 08:19:39 +0000 (GMT)
-Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id ACA0920040;
-	Mon, 11 May 2026 08:19:37 +0000 (GMT)
-Received: from Gautams-MacBook-Pro.local (unknown [9.43.41.100])
-	by smtpav05.fra02v.mail.ibm.com (Postfix) with ESMTPS;
-	Mon, 11 May 2026 08:19:37 +0000 (GMT)
-Date: Mon, 11 May 2026 13:49:30 +0530
-From: Gautam Menghani <gautam@linux.ibm.com>
-To: Gautam Menghani <Gautam.Menghani@ibm.com>, maddy@linux.ibm.com,
-        npiggin@gmail.com, mpe@ellerman.id.au, chleroy@kernel.org,
-        linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2] KVM: PPC: Book3S HV: Add H_FAC_UNAVAIL mapping for
- tracing exits
-Message-ID: <agGREsKnaQQBB_ti@Gautams-MacBook-Pro.local>
-References: <20260428084534.49781-1-Gautam.Menghani@ibm.com>
- <20260507151014.fd9d5732-0f-amachhiw@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gDZDM1mt0z2xl6
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 May 2026 19:29:06 +1000 (AEST)
+Received: by mail-wm1-x32b.google.com with SMTP id 5b1f17b1804b1-48d102471a4so39906005e9.2
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 May 2026 02:29:06 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=suse.com; s=google; t=1778491738; x=1779096538; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=YNtvrx6JU0RSTB5C/gMvs38ikePYtzcXdrklgWjxoQE=;
+        b=EieNBX1eYPQr4930/0mlBGkayPfuy9S/Byz8j1wZ/9TDlREkJtpsSvvq8ih+e+2a8J
+         fCO6zheYIkPxRKhaVdAK6tNpkovMfkZzk3+HDY0ybsV5hluGLbjPzcAfns3+uqlgBDOT
+         I4QLQMpzpa5933p2dn8xWdkd5F3NdX5V2G7HdfhxY/yUQQu6Q2qYWLm/L+7BtiNab2jM
+         Ik8iAJEDfz3qMu6T6ZSFyE1TcoQYe2jDW49eW1nmFe/QPb/r2iJKuNtdnmItHwIcAXVV
+         Is55HPS0fZnik+Tl2MmEBRCNLzzo19izP9Ax0b3+iCzSssBjm9UwyEB2+Tz8wD3GsEyb
+         g7vw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1778491738; x=1779096538;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=YNtvrx6JU0RSTB5C/gMvs38ikePYtzcXdrklgWjxoQE=;
+        b=YdzzztD392YOSBb/BIxDM35eMbVAHxYy5hOdJ4Ty2RcpbptsLqD8p/xV3UbIGolxcM
+         O1bpCbWKo9nddB5cX+A16OtLCyEVmzDaLrAnqbwQj7Wp2SQied4GqIU3miTJjHNWHhtW
+         asId8Ezuq2ZuLEReW7D6uphbuUEnEkV/aujeS3PO4Biw0eZjxJR44Oeo2e0eskLzsbc3
+         QvoaHtBErZSjV045O3IgxUnVqWZiGdVJ8Q7fto8LnX3/86NEDN5Xd+Jm/jNTC3JX08f3
+         2NX1kS23xRpKT6GwxUDHovURvRmJCk+VVULtwc0HJ6uS2jtxVeuzkRdClA1NxViTLkhd
+         uvUA==
+X-Forwarded-Encrypted: i=1; AFNElJ8J1Unp/QIGiVRqxWK+G00hAVeudQf8K34fR1xKaHKMoivkeilIG6k6g5txZblIGeXSSyReOG/8I818W08=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YycIRecMdiDOZcqJfP+yugo5BV11HL1tHMyicL9Rfrd1ffydi8h
+	hOchLZ0WSvOfSWgmxLHlPScNzl9b3u+yCoOLhfn+qa9vXWTK3nnd+PH/loaQ8CdMarU=
+X-Gm-Gg: Acq92OFjNe+1OgJJBSF5ZWfOoXkKArJwkS4uqGMpcA9mgCjn+GrTr/cQUdCw7ZGV1HK
+	RfdWhlcpUc65CAAXnCyDslG64WUNvbwbZAKUCifaRYAnwEPgTbvinXf2SVWD3Bd33vLtcDDFIuV
+	295KcudPIlt1g/3mn8E+VKs3TQYjpVRoQXcclng5qF0Bn8Ghdf8PUC0belVW69BnfUsxdmniljM
+	VvfO2hJfCleETHF5DbECvq0IomeOQik1aiX8BHP4IZ96VokdR1/ErhmzlWMzwSFkchcSvPahnmk
+	wz4USlxs9pmxYY/wOLo2ck2zspVo5LY7AAlCj2//m+Hm/3eDHDhZebAtPKcS9Js4BPwvv1osX4t
+	Ebcxncg9XcvZ66fdZsAZBatZ0LcTIxeDAKGs4ggXtn2YR7jaZhVwJlt4EqIDxyBQ5zgmrUEt2ve
+	v4M+9b8tqpQYzfZiuXzdAavFIGZ927RrQgA8YrtLxXuisLIKk=
+X-Received: by 2002:a05:600c:8908:b0:48e:6275:27ec with SMTP id 5b1f17b1804b1-48e676b6393mr138132725e9.24.1778491737984;
+        Mon, 11 May 2026 02:28:57 -0700 (PDT)
+Received: from localhost.localdomain ([2a00:6d43:105:c401:e307:1a37:2e76:ce91])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-48e701e89fbsm157606675e9.4.2026.05.11.02.28.57
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 11 May 2026 02:28:57 -0700 (PDT)
+From: Marco Crivellari <marco.crivellari@suse.com>
+To: linux-kernel@vger.kernel.org,
+	netdev@vger.kernel.org
+Cc: Tejun Heo <tj@kernel.org>,
+	Lai Jiangshan <jiangshanlai@gmail.com>,
+	Frederic Weisbecker <frederic@kernel.org>,
+	Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
+	Marco Crivellari <marco.crivellari@suse.com>,
+	Michal Hocko <mhocko@suse.com>,
+	Andrew Lunn <andrew+netdev@lunn.ch>,
+	"David S . Miller" <davem@davemloft.net>,
+	Eric Dumazet <edumazet@google.com>,
+	Jakub Kicinski <kuba@kernel.org>,
+	Paolo Abeni <pabeni@redhat.com>,
+	Haren Myneni <haren@linux.ibm.com>,
+	Rick Lindsley <ricklind@linux.ibm.com>,
+	Nick Child <nnac123@linux.ibm.com>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	linuxppc-dev@lists.ozlabs.org
+Subject: [RFC PATCH net-next 1/5] ibmvnic: Move long delayed work on system_dfl_long_wq
+Date: Mon, 11 May 2026 11:28:36 +0200
+Message-ID: <20260511092846.120141-2-marco.crivellari@suse.com>
+X-Mailer: git-send-email 2.54.0
+In-Reply-To: <20260511092846.120141-1-marco.crivellari@suse.com>
+References: <20260511092846.120141-1-marco.crivellari@suse.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -89,71 +112,66 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260507151014.fd9d5732-0f-amachhiw@linux.ibm.com>
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTExMDA4OCBTYWx0ZWRfX1gpDTzM0r7d6
- f2LjosBx2SINSHDJkt3uzpuUt4Fc6cwujcOID0XkHvIOUfvdTpWMjKRT2IEV4lFTa0ZMyO+LIYp
- 8Dg9h856yV9qBKrHoKj9cGa71fT6sjxnk8VEr9uRJDEZzbMPLCBWOS+C06t3K0vy4mEUE2kxoC+
- bkjzPAgRi+7NsO12JzOFZsvy/y79Nc5K8wBXSuNSMG8r3gZDro7yqZuJzh5iCLdqt/Gr+YAhGek
- vaD/cVHyCLLXdEVSoUaHlKoCdjJMG9UCN8zFws0JCaPuejxT8cBRULtsUXQox01tvZ4b6DjE+3K
- hMWkr9aV5x7HSWmxSEXK4avFCP+x0hBxxoFfmw+YUxA573rO1o7Lfn7HUThDJbFZ7byNNfksKk6
- TZrtFiYQVqV27sBIxyS8RfK3Adb9yjKI5MKPPRrMEtVu2VVtQk+QrmBidU/EmJeSvcFb7zSo/eY
- PeSjvQGBXYgnVTs/7Qg==
-X-Authority-Analysis: v=2.4 cv=OaWoyBTY c=1 sm=1 tr=0 ts=6a01911e cx=c_pps
- a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17
- a=kj9zAlcOel0A:10 a=NGcC8JguVDcA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=uAbxVGIbfxUO_5tXvNgY:22 a=VnNF1IyMAAAA:8
- a=kE01fTQ8JUY0VEJNiJkA:9 a=CjuIK1q_8ugA:10
-X-Proofpoint-ORIG-GUID: yL18fCqFpeXbY6sGqg3k971s9iYvblrW
-X-Proofpoint-GUID: 4J2kyQk9TNTqw_BBeXKri3kOw5BC5krV
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-05-11_02,2026-05-08_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- malwarescore=0 suspectscore=0 spamscore=0 clxscore=1015 bulkscore=0
- phishscore=0 lowpriorityscore=0 priorityscore=1501 impostorscore=0
- adultscore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2604200000
- definitions=main-2605110088
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 
-On Thu, May 07, 2026 at 03:12:29PM +0530, Amit Machhiwal wrote:
-> On 2026/04/28 02:15 PM, Gautam Menghani wrote:
-> > From: Gautam Menghani <gautam@linux.ibm.com>
-> > 
-> > The macro kvm_trace_symbol_exit is used for providing the mappings
-> > for the trap vectors and their names. Add mapping for H_FAC_UNAVAIL so that
-> > trap reason is displayed as string instead of a vector number when using
-> > the kvm_guest_exit tracepoint.
-> > 
-> > Signed-off-by: Gautam Menghani <gautam@linux.ibm.com>
-> > ---
-> > v2:
-> > 1. Remove the trailing comma after last element
-> > 
-> >  arch/powerpc/kvm/trace_book3s.h | 3 ++-
-> >  1 file changed, 2 insertions(+), 1 deletion(-)
-> > 
-> > diff --git a/arch/powerpc/kvm/trace_book3s.h b/arch/powerpc/kvm/trace_book3s.h
-> > index 9260ddbd557f..5d272c115331 100644
-> > --- a/arch/powerpc/kvm/trace_book3s.h
-> > +++ b/arch/powerpc/kvm/trace_book3s.h
-> > @@ -28,6 +28,7 @@
-> >  	{0xea0, "H_VIRT"}, \
-> >  	{0xf00, "PERFMON"}, \
-> >  	{0xf20, "ALTIVEC"}, \
-> > -	{0xf40, "VSX"}
-> > +	{0xf40, "VSX"}, \
-> > +	{0xf80, "H_FAC_UNAVAIL"}
-> 
-> While we are at it, should we also consider adding 0xf60 for Facility
-> Unavailable? Anyways, LGTM.
+Currently the code enqueue work items using {queue|mod}_delayed_work(),
+using system_long_wq. This workqueue should be used when long works are
+expected and it is a per-cpu workqueue.
 
-0xf60 is handled by OS when problem state tries to use a facility which
-is not available. So we won't exit to host for this.
+The function(s) end up calling __queue_delayed_work(), which set a global
+timer that could fire anywhere, enqueuing the work where the timer fired.
 
-Thanks,
-Gautam
+Unbound works could benefit from scheduler task placement, to optimize
+performance and power consumption. Long work shouldn't stick to a single
+CPU.
+
+Recently, a new unbound workqueue specific for long running work has
+been added:
+
+    c116737e972e ("workqueue: Add system_dfl_long_wq for long unbound works")
+
+Since the workqueue work doesn't rely on per-cpu variables, there is no
+obvious reason that justify the use of a per-cpu workqueue. So change
+system_long_wq with system_dfl_long_wq so that the work may benefit from
+scheduler task placement.
+
+Cc: Haren Myneni <haren@linux.ibm.com>
+Cc: Rick Lindsley <ricklind@linux.ibm.com>
+Cc: Nick Child <nnac123@linux.ibm.com>
+Cc: Madhavan Srinivasan <maddy@linux.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Nicholas Piggin <npiggin@gmail.com>
+Cc: Christophe Leroy (CS GROUP) <chleroy@kernel.org>
+Cc: linuxppc-dev@lists.ozlabs.org
+Signed-off-by: Marco Crivellari <marco.crivellari@suse.com>
+---
+ drivers/net/ethernet/ibm/ibmvnic.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/net/ethernet/ibm/ibmvnic.c b/drivers/net/ethernet/ibm/ibmvnic.c
+index 5a510eed335e..a1c01c9820d2 100644
+--- a/drivers/net/ethernet/ibm/ibmvnic.c
++++ b/drivers/net/ethernet/ibm/ibmvnic.c
+@@ -3229,7 +3229,7 @@ static void __ibmvnic_reset(struct work_struct *work)
+ 	if (adapter->state == VNIC_PROBING &&
+ 	    !wait_for_completion_timeout(&adapter->probe_done, timeout)) {
+ 		dev_err(dev, "Reset thread timed out on probe");
+-		queue_delayed_work(system_long_wq,
++		queue_delayed_work(system_dfl_long_wq,
+ 				   &adapter->ibmvnic_delayed_reset,
+ 				   IBMVNIC_RESET_DELAY);
+ 		return;
+@@ -3267,7 +3267,7 @@ static void __ibmvnic_reset(struct work_struct *work)
+ 	spin_lock(&adapter->rwi_lock);
+ 	if (!list_empty(&adapter->rwi_list)) {
+ 		if (test_and_set_bit_lock(0, &adapter->resetting)) {
+-			queue_delayed_work(system_long_wq,
++			queue_delayed_work(system_dfl_long_wq,
+ 					   &adapter->ibmvnic_delayed_reset,
+ 					   IBMVNIC_RESET_DELAY);
+ 		} else {
+-- 
+2.54.0
+
 
