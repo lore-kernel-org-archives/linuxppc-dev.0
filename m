@@ -1,63 +1,61 @@
-Return-Path: <linuxppc-dev+bounces-20720-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20721-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 83555CD37BE
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 May 2026 22:19:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 61353CD37BE
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 May 2026 22:20:11 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gDvKg1RYjz2xLr;
-	Tue, 12 May 2026 08:19:51 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778537991;
-	cv=none; b=J/7/r1JOI2YPPXA7vtoGyeLo4mi4YKo7Gh3X9A1myuTPZi8F5U9Q+lrT6L6WYyZOODPX6cm3WpBWE1s4GBHmF9vjiJPKlIXV6Umnr2x0mhSQOw4rIgZ4shvigpxhQYrKj/wnNlt/fnNM3ZDY+4EVXhAG/w7HliZrYD4ULPJUatVsNNbRpXeTDxpNpMy9/aO+VZ2kT84hHlpyIjqJdJ7m4pRAPzGyXgoGpfLvSMmauFYI5hOUoXkisHgkSzrzPbACTegI4Y44PFayWVY/MR4exCDOgU659s+rH9Uph28w/PErLhHpzIF8DCjl1os9yJykKcRXHLQqiJTmweZUp/tgXQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gDvL15jJMz2xLr;
+	Tue, 12 May 2026 08:20:09 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778538009;
+	cv=none; b=k9Jiqgd3w2WD0aMWTjfX87lVC1g7mNipIS537eOiyF0P7OgBYR8aqzTcFXOKKyEJbjl+9QXy6aiM86kkI0LaVjv86wQKaOfdtHrXYzmGspq2TSEfHV/ZJKEKpuKZpL4GWdartHSnwFh6s9cp+eZHMXv+JsdwPGR0wZWwreXJ+QxpSByyz4cLoXvbrl+DhIjU6sQBFQ/gyfcGqyhCm0Maz8U3NFPtkK1b9dLvzlIEA+QqEyFu+1PiVT0Qtx0rPX3H7MDR85pjJllfNjXjMP9UbUFGnvHsONDR2S75d3Gh46aO/x+N1gitVjI7cVkqU7wuniZ0MsZdSaQHYsZxm0Wu/A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1778537991; c=relaxed/relaxed;
-	bh=jUTfMqqDDJxFfr+dLoEBVtFnN+A04vnvH69Uzit7gWQ=;
+	t=1778538009; c=relaxed/relaxed;
+	bh=8T65It1GO1SXGGayulZQ3wUSSNygOruDa19FjF8qO0c=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=jlsqDNEF/fqPPeNNTv0ORxFOquq7gufGherT5CONvjJFNclMMmp82bNhr4EcZhblUrjRhQ1FiTzqwD4qsUGjo6ZKmNTYha37H7WmdYTMfV0vH6fcNsQkxpfGZZdB5l137y994wGQuUBKfJzogARRSc/2eeaOXT+BkxlrXeGlUN/9H3o96k/JC+hZhj7JoNKDrD5d1s6YN+PDepney9WRW+I1+au/2QmRtrDYfuonMa3e8m0XoDRAoQg44Roj3xp+W7gD/dyRfSmOh8yc2mrhqjikI8em1+5kymIsJH+S540BtRvz68zhm2OyHY5YLMte0RxpPH4Bbe+xG9LeXmeBxw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=S9kr+phy; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=sashal@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=m3ifc3X51ZPFeb15ugcFIFiWWWeddC6YbOnKVMHcEk1bsawlAGiXlzqN8ZYJ4aw/reeMPNKIPrqfmzTHCEJEk562TFAL6OTxQ7kv8uDjo2dnlM2euMR9tSGn11XFHSHj/Vm1B89muyrMQjNmBN7Zpf+Vlpa0e8V7arqocH7crY1Ji+eaoL+yKpiblDZwcVmxOk4TwEO0+REA4t9BThBTHb+6i4YHqKFU77nxmwUSO5oa+YbtwcMJp08sCECwAZzqpYm3PiQbA4frmAxFg3QJjvc6vQvQEm4dz60+lvn/IaMIF1mYMBtHiKRzBQ4Jvx2iIpewsZMTlqQaAOnIDR9NIA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=l9dZcwsm; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=sashal@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=S9kr+phy;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=l9dZcwsm;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=sashal@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=sashal@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gDvKd4F94z2xKh
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2026 08:19:49 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gDvL05qZ5z2xKh
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2026 08:20:08 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 186DF43F83;
-	Mon, 11 May 2026 22:19:47 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id DB62BC2BCF7;
-	Mon, 11 May 2026 22:19:45 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 32450600CB;
+	Mon, 11 May 2026 22:20:06 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 05810C2BCB0;
+	Mon, 11 May 2026 22:20:04 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1778537987;
-	bh=zGb5XWpc6ZIDpU9QwhdmaqYvZSeao8Zu2vRfr5h3CZ8=;
+	s=k20201202; t=1778538005;
+	bh=vr+0ZuihRL24Qjc3VjSI1tB9O5L3mQz2Kfxc90uzM34=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=S9kr+phy7rRnFIeKi3kiaOVCuFx9zoupJJToECCTXR0hGoqIGj+Qrmw8vag1/HfFy
-	 NUST0Uo20I72BjJY10MUJcHn/raRhWQGmN795XPqo0UPxDV0XmmrdZutNJsUXbCj+O
-	 5/kpkDU6IgNy/HOrdYbNUxn0dAbFiMNx+ji27UsAtrDWSRHJE6C0bWDqg2qjeLTWKn
-	 7zuLLKphQhx5tcWsE2Lxpf/mAzLfcZw0hXWT/6+KxSqIO9rWf881AtVZGU7Rlchrrl
-	 uRC3jhK7OCaVgimd9iwqxdfGX03soWDeO8U5sTCfDleTlFX4ERd5oPQANRt59G+0kk
-	 4SjyMRDXlsNuw==
+	b=l9dZcwsm1uw5WejSzPLSZIopnhLslw5Bxqfenn8g1m8Ffud4+zKxNT8F9LHq/DrJ9
+	 p8JdyMOOuvY2kdI77gkSH4TMiwbfyafeLTuhf9MhjwN3xEadyAfu5wdPtu3ekVBUFw
+	 2oaRErm1M2Qw1JNv6YXLl9buqz4at5zuP2rTMxpVhkvWSLQuQCA0EI+YOsiFfUcYtJ
+	 aHdXd8ms/IW9iQZlnAsHelHDlzfnpeQI2XTdLVtg/A9WWDmIC+SL+eHwqZbmmMTcgW
+	 Ja9gVtGCFDg/JYg2Jl1ZEcIgtiMz0XDjRZ3Xv6/zYZQzTOIPxV8gelUIkOmfBqCoeI
+	 5g4KgPjhhuNDw==
 From: Sasha Levin <sashal@kernel.org>
 To: patches@lists.linux.dev,
 	stable@vger.kernel.org
-Cc: Sourabh Jain <sourabhjain@linux.ibm.com>,
-	Aboorva Devarajan <aboorvad@linux.ibm.com>,
-	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
+Cc: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>,
 	Madhavan Srinivasan <maddy@linux.ibm.com>,
 	Sasha Levin <sashal@kernel.org>,
 	mpe@ellerman.id.au,
 	linuxppc-dev@lists.ozlabs.org,
 	linux-kernel@vger.kernel.org
-Subject: [PATCH AUTOSEL 7.0-5.10] powerpc/vmx: avoid KASAN instrumentation in enter_vmx_ops() for kexec
-Date: Mon, 11 May 2026 18:19:09 -0400
-Message-ID: <20260511221931.2370053-10-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 7.0-6.1] powerpc/pasemi: Drop redundant res assignment
+Date: Mon, 11 May 2026 18:19:22 -0400
+Message-ID: <20260511221931.2370053-23-sashal@kernel.org>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20260511221931.2370053-1-sashal@kernel.org>
 References: <20260511221931.2370053-1-sashal@kernel.org>
@@ -77,369 +75,242 @@ MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
 X-stable-base: Linux 7.0.6
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-From: Sourabh Jain <sourabhjain@linux.ibm.com>
+From: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
 
-[ Upstream commit 38e989d504fc52900a3786b7144fb53cd67e0389 ]
+[ Upstream commit f583bd5f64d40e083dde5bb22846c4d93e59d471 ]
 
-The kexec sequence invokes enter_vmx_ops() via copy_page() with the MMU
-disabled. In this context, code must not rely on normal virtual address
-translations or trigger page faults.
+Return value of pas_add_bridge() is not used, so code can be simplified
+to fix W=1 clang warnings:
 
-With KASAN enabled, functions get instrumented and may access shadow
-memory using regular address translation. When executed with the MMU
-off, this can lead to page faults (bad_page_fault) from which the
-kernel cannot recover in the kexec path, resulting in a hang.
+  arch/powerpc/platforms/pasemi/pci.c:275:6: error: variable 'res' set but not used [-Werror,-Wunused-but-set-variable]
 
-The kexec path sets preempt_count to HARDIRQ_OFFSET before entering
-the MMU-off copy sequence.
-
-current_thread_info()->preempt_count = HARDIRQ_OFFSET
-  kexec_sequence(..., copy_with_mmu_off = 1)
-    -> kexec_copy_flush(image)
-         copy_segments()
-           -> copy_page(dest, addr)
-	         bl enter_vmx_ops()
-                   if (in_interrupt())
-                     return 0
-	         beq .Lnonvmx_copy
-
-Since kexec sets preempt_count to HARDIRQ_OFFSET, in_interrupt()
-evaluates to true and enter_vmx_ops() returns early.
-
-As in_interrupt() (and preempt_count()) are always inlined, mark
-enter_vmx_ops() with __no_sanitize_address to avoid KASAN
-instrumentation and shadow memory access with MMU disabled, helping
-kexec boot fine with KASAN enabled.
-
-Reported-by: Aboorva Devarajan <aboorvad@linux.ibm.com>
-Reviewed-by: Aboorva Devarajan <aboorvad@linux.ibm.com>
-Tested-by: Aboorva Devarajan <aboorvad@linux.ibm.com>
-Reviewed-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-Signed-off-by: Sourabh Jain <sourabhjain@linux.ibm.com>
+Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
 Signed-off-by: Madhavan Srinivasan <maddy@linux.ibm.com>
-Link: https://patch.msgid.link/20260407124349.1698552-2-sourabhjain@linux.ibm.com
+Link: https://patch.msgid.link/20260317130823.240279-4-krzysztof.kozlowski@oss.qualcomm.com
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
 
 LLM Generated explanations, may be completely bogus:
 
-## Phase 1: Commit Message Forensics
-Record: subsystem `powerpc/vmx`; action verb `avoid`; intent is to
-prevent KASAN instrumentation of `enter_vmx_ops()` when it is reached
-from the kexec MMU-off copy path.
+## Phase Walkthrough
 
-Record: tags parsed from the candidate message:
-- `Reported-by: Aboorva Devarajan <aboorvad@linux.ibm.com>`
-- `Reviewed-by: Aboorva Devarajan <aboorvad@linux.ibm.com>`
-- `Tested-by: Aboorva Devarajan <aboorvad@linux.ibm.com>`
-- `Reviewed-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>`
-- `Signed-off-by: Sourabh Jain <sourabhjain@linux.ibm.com>`
-- `Signed-off-by: Madhavan Srinivasan <maddy@linux.ibm.com>`
-- `Link: https://patch.msgid.link/20260407124349.1698552-2-
-  sourabhjain@linux.ibm.com`
-- No `Fixes:` tag in this commit. Absence is not a negative signal.
+### Phase 1: Commit Message Forensics
+Record 1.1: Subsystem `powerpc/pasemi`; action verb `Drop`; intent is to
+remove an unused local variable assignment in PA Semi PCI init.
 
-Record: bug description from the message: `kexec_sequence()` may call
-`copy_page()` with the MMU disabled; on PowerPC Book3S this can enter
-`copypage_power7.S`, which calls `enter_vmx_ops()`. If KASAN instruments
-`enter_vmx_ops()`, the instrumentation may access shadow memory using
-normal virtual translation, which is invalid with MMU off and can cause
-an unrecoverable `bad_page_fault`/hang in kexec.
+Record 1.2: Tags found: `Signed-off-by: Krzysztof Kozlowski`, `Signed-
+off-by: Madhavan Srinivasan`, `Link: https://patch.msgid.link/2026031713
+0823.240279-4-krzysztof.kozlowski@oss.qualcomm.com`. No `Fixes:`,
+`Reported-by:`, `Tested-by:`, `Reviewed-by:`, `Acked-by:`, or `Cc:
+stable`.
 
-Record: hidden bug fix: yes. Although phrased as “avoid
-instrumentation,” this fixes a real boot/hang failure in the kexec/kdump
-path under KASAN.
+Record 1.3: The commit explicitly describes a Clang `W=1` build warning
+promoted to an error: `variable 'res' set but not used
+[-Werror,-Wunused-but-set-variable]`. No runtime symptom, crash, data
+corruption, or user-visible functional failure is described.
 
-## Phase 2: Diff Analysis
-Record: one file changed: `arch/powerpc/lib/vmx-helper.c`, with 8
-insertions and 1 deletion in the fetched v3 patch. The only functional
-change is changing `int enter_vmx_ops(void)` to `int
-__no_sanitize_address enter_vmx_ops(void)`; the remaining additions are
-explanatory comments.
+Record 1.4: This is not a hidden runtime bug fix. It is a build-warning
+cleanup that can matter when building powerpc with warning-as-error
+settings.
 
-Record: modified function: `enter_vmx_ops()`.
+### Phase 2: Diff Analysis
+Record 2.1: One file changed: `arch/powerpc/platforms/pasemi/pci.c`, `1
+insertion(+), 2 deletions(-)`. Only `pas_pci_init()` is modified. Scope
+is single-file surgical.
 
-Record: before behavior: `enter_vmx_ops()` could be KASAN-instrumented.
-During kexec with MMU off, the function first checks `in_interrupt()`
-and should return `0`, but KASAN prologue/body instrumentation can run
-before or around normal code and touch shadow memory.
+Record 2.2: Before: `pas_pci_init()` declared `int res;` and assigned
+`res = pas_add_bridge(np);`, then never read `res`. After: it still
+calls `pas_add_bridge(np);` but does not assign the return value. The
+execution path and side effects are unchanged.
 
-Record: after behavior: `__no_sanitize_address` suppresses KASAN
-instrumentation for this function, preserving the intended early return
-path when `preempt_count` contains `HARDIRQ_OFFSET`.
+Record 2.3: Bug category: build warning/build error under specific
+compiler options. Mechanism: remove unused-but-set variable. No resource
+lifetime, locking, memory safety, reference counting, or logic behavior
+changes.
 
-Record: bug category: sanitizer/real-mode correctness bug causing kexec
-hang. This is a crash/hang class fix, not a cleanup.
+Record 2.4: Fix quality is obviously correct by inspection: the function
+call remains, only the unused local storage is removed. Regression risk
+is very low because runtime behavior is unchanged.
 
-Record: fix quality: small, surgical, and low risk. It does not alter
-normal logic, public API, data structures, or userspace-visible
-behavior. The only behavioral effect is disabling KASAN instrumentation
-for one helper that can run in an MMU-off path.
+### Phase 3: Git History Investigation
+Record 3.1: `git blame` on current stable code shows the exact changed
+lines are present in the checked-out stable tree. Deeper history shows
+the unused `res` assignment was introduced by `250a93501d626`
+(`powerpc/pasemi: Search for PCI root bus by compatible property`),
+first described by `git describe` as `v4.19-rc1~110^2~83`.
 
-## Phase 3: Git History Investigation
-Record: local `HEAD` is a stable release commit, not the candidate. `git
-log --grep` on current history, `master`, and `power-next` did not find
-the candidate commit locally, so there was no commit hash available for
-`b4 dig -c`.
+Record 3.2: No `Fixes:` tag is present. Manual history identified
+`250a93501d626` as the introducing commit for the exact unused
+assignment pattern.
 
-Record: `git blame` on current `arch/powerpc/lib/vmx-helper.c` shows the
-unannotated `enter_vmx_ops()` present in the local tree; due this
-repository’s history shape, blame attributes the original lines to a
-merge/root history point, so the exact original introduction commit was
-not verifiable locally.
+Record 3.3: Recent file history shows only the candidate commit and
+unrelated treewide allocation changes in `next-20260508`; no
+prerequisite pasemi PCI refactor was found.
 
-Record: no candidate `Fixes:` tag to follow. The companion patch in the
-same series has `Fixes: 2ab2d5794f14 ("powerpc/kasan: Disable address
-sanitization in kexec paths")`; `git show` confirms that commit disabled
-sanitization for PowerPC kexec real-mode paths in 2022.
+Record 3.4: The author has other powerpc cleanup commits nearby,
+including the sibling PS3 warning fix. `MAINTAINERS` identifies Madhavan
+Srinivasan and Michael Ellerman as powerpc maintainers; Madhavan
+committed this patch.
 
-Record: related recent local history: `6bc9c0a905228` changed VMX
-usercopy flow and added export context around the same file. That
-affects hunk context for older stable trees, but not the actual one-line
-fix.
+Record 3.5: The sibling commit `8333e4916040e` is part of the same
+cleanup series but is independent. This pasemi patch applies standalone
+to the current 7.0.5 checkout.
 
-Record: author context: `git log --author="Sourabh Jain" --
-arch/powerpc/...` shows multiple PowerPC kexec/crash/fadump commits.
-`MAINTAINERS` lists Madhavan Srinivasan and Michael Ellerman as PowerPC
-maintainers; Madhavan signed off the candidate.
+### Phase 4: Mailing List And External Research
+Record 4.1: `b4 dig -c f583bd5f64d40` found the original submission by
+patch-id. It found the January submission and the March resend
+corresponding to the commit `Link:`. Direct WebFetch to
+lore/patch.msgid.link was blocked by Anubis.
 
-Record: dependencies: no source-level prerequisite for the annotation
-itself. Function `enter_vmx_ops()` and `__no_sanitize_address` exist in
-checked stable tags. Functional completeness is best with the companion
-patch fixing `KASAN_SANITIZE_core_$(BITS).o`, because review/test
-discussion says both patches together make KASAN kexec succeed.
+Record 4.2: `b4 dig -w` showed appropriate powerpc maintainers and
+LLVM/compiler-warning stakeholders were copied: Madhavan Srinivasan,
+Michael Ellerman, Nicholas Piggin, Christophe Leroy, Nathan Chancellor,
+LLVM list, linuxppc-dev, and others.
 
-## Phase 4: Mailing List And External Research
-Record: `b4 am` for message id
-`20260407124349.1698552-2-sourabhjain@linux.ibm.com` fetched a v3 two-
-patch series. It reported total patches: 2, current tree apply clean,
-and DKIM signature valid for patch 2.
+Record 4.3: No bug report link or reporter tag exists. The thread
+describes a compiler warning/build-cleanliness issue, not a runtime bug
+report.
 
-Record: `b4 am -c` checked for newer revisions and did not report a
-newer v4. v3 appears to be the latest fetched revision.
+Record 4.4: The patch is part of a two-patch series with `powerpc/ps3:
+Drop redundant result assignment`; the other patch is the same class of
+cleanup and is not a dependency.
 
-Record: `b4 mbox` fetched the v3 thread. Patch 2 was addressed to
-`linuxppc-dev` and CC’d PowerPC/kexec stakeholders including Michael
-Ellerman, Madhavan Srinivasan, Mahesh Salgaonkar, Hari Bathini, Daniel
-Axtens, Venkat Rao Bagalkote, Aboorva Devarajan, and Ritesh Harjani.
+Record 4.5: The downloaded thread contains no `stable` mention. A direct
+lore stable search was attempted but blocked by Anubis, so no stable-
+list archive result could be independently verified.
 
-Record: `WebFetch` of lore URLs was blocked by Anubis, but `b4` and the
-`yhbt.net` lore mirror provided the thread content.
+### Phase 5: Code Semantic Analysis
+Record 5.1: Modified function: `pas_pci_init()`.
 
-Record: v2 review discussion verified:
-- Ritesh Harjani reviewed patch 2 and said “LGTM,” granting `Reviewed-
-  by`.
-- Aboorva Devarajan reported an actual KASAN-enabled kexec hang on
-  pseries PowerVM: system reached “kexec: Starting switchover sequence”
-  and then hung.
-- Aboorva tested that “with both the patches applied, kexec completes
-  successfully with KASAN enabled.”
-- v1 annotated both `enter_vmx_ops()` and `exit_vmx_ops()`; v2 removed
-  `exit_vmx_ops()` annotation and added the explanatory comment. This
-  shows review-driven narrowing of the fix.
+Record 5.2: Callers: `pas_pci_init()` is assigned to `.discover_phbs` in
+the PA Semi machine descriptor in
+`arch/powerpc/platforms/pasemi/setup.c`. `pas_add_bridge()` is static
+and, in `next-20260508`, is called only from `pas_pci_init()`.
 
-Record: stable-specific discussion: Ritesh explicitly suggested `Cc:
-stable@vger.kernel.org` for patch 1. I did not find a direct stable
-nomination for patch 2, but patch 2 was reviewed and tested as part of
-the same two-patch functional fix.
+Record 5.3: Relevant callees in the affected path include
+`pci_set_flags()`, `of_find_compatible_node()`, `pas_add_bridge()`, and
+`of_node_put()`. `pas_add_bridge()` allocates/configures the PCI
+controller and scans OF ranges/ISA bridge state.
 
-## Phase 5: Code Semantic Analysis
-Record: modified function: `enter_vmx_ops()`.
+Record 5.4: Reachability is boot-time/platform-init only for PA Semi
+systems. It is not syscall-reachable and has no unprivileged runtime
+trigger.
 
-Record: callers found by exact search:
-- `arch/powerpc/lib/copypage_power7.S`
-- `arch/powerpc/lib/memcpy_power7.S`
-- `arch/powerpc/lib/memcmp_64.S`
+Record 5.5: Similar pattern found: sibling commit `8333e4916040e`
+removes an unused assignment in PS3 platform code for the same warning
+class.
 
-Record: relevant kexec call chain verified in code:
-`reboot(LINUX_REBOOT_CMD_KEXEC)` -> `kernel_kexec()` ->
-`machine_kexec()` -> `default_machine_kexec()` -> `kexec_sequence()` ->
-`kexec_copy_flush()` -> `copy_segments()` -> `copy_page()` ->
-`copypage_power7.S` -> `enter_vmx_ops()`.
+### Phase 6: Stable Tree Analysis
+Record 6.1: The exact unused `res = pas_add_bridge(np);` pattern exists
+in verified tags `v4.19`, `v5.10`, `v5.15`, `v6.1`, `v6.6`, `v6.12`,
+`v6.17`, `v6.18`, `v6.19`, and `v7.0`. It was not present in the same
+form in `v4.14` or `v4.9`.
 
-Record: key callees/logic in `enter_vmx_ops()`: `in_interrupt()`,
-`preempt_disable()`, and `enable_kernel_altivec()`. In the kexec MMU-off
-path, `default_machine_kexec()` sets
-`current_thread_info()->preempt_count = HARDIRQ_OFFSET`, and
-`include/linux/preempt.h` defines `in_interrupt()` via `irq_count()`,
-which observes the hardirq bits.
+Record 6.2: Backport difficulty is clean for the current 7.0.5 tree,
+verified by `git format-patch -1 --stdout f583bd5f64d40 | git apply
+--check`. Older stable trees may need minor context adjustment because
+surrounding code differs in older releases.
 
-Record: reachability: reachable from privileged kexec/kdump paths. It is
-not unprivileged-user reachable, but kdump reliability is operationally
-important.
+Record 6.3: No earlier same-subject fix exists in `v7.0`; related same-
+series warning fixes were found only in `next-20260508`.
 
-Record: similar patterns: PowerPC already disables KASAN for sensitive
-real-mode/interrupt code in multiple Makefiles and uses
-`__no_sanitize_address` in PowerPC interrupt/stack code, so the
-attribute is consistent with local practice.
+### Phase 7: Subsystem Context
+Record 7.1: Subsystem is `arch/powerpc/platforms/pasemi`, a platform-
+specific powerpc PCI init path. Criticality is peripheral/platform-
+specific, not core kernel.
 
-## Phase 6: Cross-Referencing And Stable Tree Analysis
-Record: buggy code exists in stable tags checked: `v5.4`, `v5.10`,
-`v5.15`, `v6.1`, `v6.6`, `v6.12`, `v6.18`, `v6.19`, and `v7.0` all have
-`enter_vmx_ops()` without `__no_sanitize_address`.
+Record 7.2: Recent pasemi file history is low churn. This is mature
+platform code with little recent activity.
 
-Record: the kexec `copy_segments()` -> `copy_page()` path and
-`preempt_count = HARDIRQ_OFFSET` were verified in `v5.4`, `v5.10`,
-`v5.15`, `v6.1`, and current/v7.0-era code.
+### Phase 8: Impact And Risk
+Record 8.1: Affected population: PA Semi powerpc platform builders,
+especially Clang `W=1` builds with powerpc `-Werror` behavior.
 
-Record: `copypage_power7.S` calls `enter_vmx_ops()` in `v5.4`, `v5.10`,
-`v5.15`, and current code.
+Record 8.2: Trigger condition is build-time only. No runtime trigger and
+no unprivileged-user trigger were verified.
 
-Record: `__no_sanitize_address` exists in compiler headers in checked
-stable tags, including `v5.4`, `v5.10`, `v6.1`, `v6.6`, and current.
+Record 8.3: Failure mode is build failure under specific warning/error
+settings, not crash/corruption/deadlock. Severity is medium for affected
+builders, low for runtime users.
 
-Record: backport difficulty: clean on current `7.0.y` per `git apply
---check` and `b4`. Older stable trees may need a tiny context adjustment
-because `EXPORT_SYMBOL(exit_vmx_usercopy)` is not present in older
-versions, but the actual function signature is present and the backport
-is straightforward.
+Record 8.4: Benefit is narrow but real under the stable build-fix
+exception. Risk is extremely low because the generated runtime behavior
+should be unchanged: the same function call remains and only an unused
+local assignment is removed.
 
-Record: related fixes already in stable: not verified as already
-present; local stable tags checked do not contain the candidate
-annotation.
+### Phase 9: Final Synthesis
+Record 9.1: Evidence for backporting: fixes a verified compiler
+warning/error class; code exists across many stable-era releases; patch
+is tiny, standalone, and behavior-preserving; applies cleanly to current
+stable checkout. Evidence against: no runtime bug, no default-build
+failure was verified, no stable nomination, platform-specific impact.
+Unresolved: direct stable lore search was blocked, and I did not run a
+full Clang `W=1` build.
 
-## Phase 7: Subsystem And Maintainer Context
-Record: subsystem is PowerPC architecture library/kexec path:
-`arch/powerpc/lib` and `arch/powerpc/kexec`.
+Record 9.2: Stable rules checklist: obviously correct: yes by
+inspection; tested: no explicit `Tested-by` and no local full build;
+fixes a real issue: yes as a build-warning/error issue under specific
+settings; important: only under build-fix exception, not runtime-
+critical; small/contained: yes, 3-line single-function change; no new
+feature/API: yes; applies to stable: current 7.0.5 yes, older trees
+likely simple but not all tested.
 
-Record: criticality: important/platform-specific. It affects PowerPC
-systems using kexec/kdump with KASAN enabled, especially pseries/PowerVM
-cases verified in review. It is not universal across all architectures.
+Record 9.3: Exception category: build fix. This is the only reason to
+take it; it is not a runtime bug fix.
 
-Record: subsystem activity: local history shows recent PowerPC VMX
-usercopy and kexec/crash/fadump activity, and the patch was handled
-through the PowerPC maintainer path.
-
-## Phase 8: Impact And Risk Assessment
-Record: affected users: PowerPC Book3S/PowerVM-style systems using
-kexec/kdump with KASAN-enabled kernels and VMX copy paths.
-
-Record: trigger conditions: kexec/kdump switchover, MMU-off copy path,
-KASAN enabled, and `copy_page()` selecting the Power7 VMX copy path. The
-triggering operation is privileged, but the failure impacts crash dump
-capture and reboot into the new kernel.
-
-Record: failure mode: system hang during kexec/kdump. Review discussion
-includes an observed hang after “kexec: Starting switchover sequence,”
-and the commit message explains unrecoverable `bad_page_fault` risk with
-MMU off. Severity: HIGH to CRITICAL for affected debug/crash-dump
-deployments.
-
-Record: benefit: high for affected PowerPC KASAN/kdump users because it
-prevents a hard hang and restores kexec completion.
-
-Record: risk: very low. One function annotation plus comment; no logic
-change. The main concern is that stable maintainers should also take the
-companion Makefile fix for full KASAN/kexec coverage.
-
-## Phase 9: Final Synthesis
-Record: evidence for backporting:
-- Fixes a real, reviewed, and tested kexec hang with KASAN enabled.
-- Aboorva Devarajan reported and tested the failure/fix.
-- Ritesh Harjani reviewed the final approach.
-- The fix is one function attribute and explanatory comment.
-- It affects a serious operational path: kexec/kdump boot into a
-  new/capture kernel.
-- The buggy code and call path exist across active stable versions
-  checked.
-- Backport is clean for current `7.0.y` and trivial for older stable
-  trees.
-
-Record: evidence against backporting:
-- The issue is config/platform specific: PowerPC plus KASAN plus
-  kexec/kdump plus VMX copy path.
-- Older stable trees may require minor context adjustment.
-- The commit is part of a two-patch series; the companion Makefile KASAN
-  fix should be included for the tested complete fix.
-
-Record: unresolved questions:
-- Exact original introduction commit for `enter_vmx_ops()` could not be
-  verified from local history.
-- Direct lore `WebFetch` was blocked by Anubis; I used `b4` and a lore
-  mirror instead.
-- I did not build-test the backport.
-
-Stable rules checklist:
-1. Obviously correct and tested: yes. The annotation directly suppresses
-   KASAN instrumentation on the one helper that can execute with MMU
-   off; tested-by is present.
-2. Fixes a real bug: yes. Review discussion reports an actual kexec hang
-   with KASAN.
-3. Important issue: yes. Failure mode is kexec/kdump hang.
-4. Small and contained: yes. One file, one function annotation.
-5. No new features/APIs: yes.
-6. Can apply to stable: yes for current `7.0.y`; older trees may need
-   trivial context adjustment.
-
-Exception category: not a device ID/quirk/build/doc exception. It is a
-normal stability fix.
+Record 9.4: Decision: backport as a low-risk build fix for Clang
+`W=1`/powerpc warning-as-error builds. The benefit is narrow, but the
+patch is minimal, standalone, and behavior-preserving.
 
 ## Verification
-- [Phase 1] Parsed the supplied commit message and fetched patch mbox;
-  confirmed tags, no `Fixes:` tag in patch 2, and the linked message id.
-- [Phase 2] Inspected fetched v3 diff; confirmed `arch/powerpc/lib/vmx-
-  helper.c` has 8 insertions and 1 deletion, changing only
-  `enter_vmx_ops()`.
-- [Phase 3] Ran `git log --grep` on current history, `master`, and
-  `power-next`; candidate not present locally.
-- [Phase 3] Ran `git blame` around `enter_vmx_ops()`; local history
-  could not identify true original introduction beyond repository
-  history shape.
-- [Phase 3] Ran `git show 2ab2d5794f14`; confirmed related PowerPC kexec
-  KASAN sanitization commit from 2022.
-- [Phase 4] Ran `b4 am` and `b4 am -c`; fetched v3 two-patch series, no
-  newer revision reported, patch 2 DKIM valid.
-- [Phase 4] Ran `b4 mbox`; confirmed original recipients and patch
-  content.
-- [Phase 4] Used lore mirror for v2 thread; confirmed Ritesh review,
-  Aboorva tested-by/reported hang, and v1-to-v2 narrowing.
-- [Phase 5] Searched call sites; confirmed `copypage_power7.S`,
-  `memcpy_power7.S`, and `memcmp_64.S` call `enter_vmx_ops()`.
-- [Phase 5] Read kexec and assembly code; confirmed kexec path reaches
-  `copy_page()` with MMU-off logic and `preempt_count = HARDIRQ_OFFSET`.
-- [Phase 6] Checked stable tags `v5.4` through `v7.0`; confirmed
-  `enter_vmx_ops()` exists without the annotation and the relevant
-  kexec/copy path exists in checked trees.
-- [Phase 6] Ran `git apply --check` on current tree for patch 2 and the
-  series; clean on current `7.0.y`.
-- [Phase 7] Checked `MAINTAINERS`; confirmed PowerPC maintainers and
-  that Madhavan Srinivasan is listed for PowerPC.
-- [Phase 8] Verified failure mode from review discussion: KASAN-enabled
-  kexec hangs after switchover; with both patches applied, kexec
-  completes.
-
-This should be backported, ideally together with the companion
-`powerpc/kdump: fix KASAN sanitization flag for core_$(BITS).o` patch
-for the tested complete KASAN/kexec fix.
+- [Phase 1] `git show --format=fuller --stat --patch f583bd5f64d40`
+  verified commit message, tags, and exact diff.
+- [Phase 2] Diff verified one file, one function, `1 insertion`, `2
+  deletions`.
+- [Phase 3] `git blame` and `git show 250a93501d626` verified the unused
+  assignment pattern was introduced by `250a93501d626`, described as
+  before `v4.19-rc1`.
+- [Phase 4] `b4 dig -c`, `-a`, `-w`, and `b4 mbox` verified the patch
+  submission, resend, recipients, and lack of candidate-specific stable
+  tags in the downloaded thread.
+- [Phase 5] `rg` and `git grep` verified `pas_pci_init()` call placement
+  and `pas_add_bridge()` call sites.
+- [Phase 6] `git grep` verified the pattern in `v4.19`, `v5.10`,
+  `v5.15`, `v6.1`, `v6.6`, `v6.12`, `v6.17`, `v6.18`, `v6.19`, and
+  `v7.0`; `git apply --check` verified clean apply to current 7.0.5.
+- [Phase 7] `MAINTAINERS` verified powerpc maintainers and subsystem
+  ownership.
+- [Phase 8] `arch/powerpc/Kconfig.debug` and `arch/powerpc/Kbuild`
+  verified powerpc warning-as-error configuration exists.
+- UNVERIFIED: I did not run a full Clang `W=1` build, and direct lore
+  stable search was blocked by Anubis.
 
 **YES**
 
- arch/powerpc/lib/vmx-helper.c | 9 ++++++++-
- 1 file changed, 8 insertions(+), 1 deletion(-)
+ arch/powerpc/platforms/pasemi/pci.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/lib/vmx-helper.c b/arch/powerpc/lib/vmx-helper.c
-index 554b248002b4f..57e897b60db86 100644
---- a/arch/powerpc/lib/vmx-helper.c
-+++ b/arch/powerpc/lib/vmx-helper.c
-@@ -52,7 +52,14 @@ int exit_vmx_usercopy(void)
- }
- EXPORT_SYMBOL(exit_vmx_usercopy);
- 
--int enter_vmx_ops(void)
-+/*
-+ * Can be called from kexec copy_page() path with MMU off. The kexec
-+ * code sets preempt_count to HARDIRQ_OFFSET so we return early here.
-+ * Since in_interrupt() is always inline, __no_sanitize_address on this
-+ * function is sufficient to avoid KASAN shadow memory accesses in real
-+ * mode.
-+ */
-+int __no_sanitize_address enter_vmx_ops(void)
+diff --git a/arch/powerpc/platforms/pasemi/pci.c b/arch/powerpc/platforms/pasemi/pci.c
+index 60f990a336c47..2df9552746529 100644
+--- a/arch/powerpc/platforms/pasemi/pci.c
++++ b/arch/powerpc/platforms/pasemi/pci.c
+@@ -272,13 +272,12 @@ void __init pas_pci_init(void)
  {
- 	if (in_interrupt())
- 		return 0;
+ 	struct device_node *root = of_find_node_by_path("/");
+ 	struct device_node *np;
+-	int res;
+ 
+ 	pci_set_flags(PCI_SCAN_ALL_PCIE_DEVS);
+ 
+ 	np = of_find_compatible_node(root, NULL, "pasemi,rootbus");
+ 	if (np) {
+-		res = pas_add_bridge(np);
++		pas_add_bridge(np);
+ 		of_node_put(np);
+ 	}
+ 	of_node_put(root);
 -- 
 2.53.0
 
