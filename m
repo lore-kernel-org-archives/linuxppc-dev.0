@@ -1,53 +1,52 @@
-Return-Path: <linuxppc-dev+bounces-20710-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20711-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1BF06CD37AC
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 May 2026 14:06:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4516BCD484A
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 May 2026 14:06:22 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gDhMs2wT9z2yC9;
-	Tue, 12 May 2026 00:06:01 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778508361;
-	cv=none; b=DDS2lnKmIBMGKIx/GUwBikJL8RzmcOs+5HKrSsSHm/Q2engrzqrYyGLfkakqScTSV0CZk1STmctbevlYyJ3tVDFJ9atoblL3SX+cwYyMDVLd+k6MtAqW60PpKfqTCOgthOwyQGJDTP+kWmjFHp0+Oag9tn1k9Z2ZV85uB5KIE/HvpHsbRUTy2OeP2bqtKusEWixJeI7/tO3icOItVOC7cWRzyX6G/SG3SUizG7p+vIVq1VQQu8xwoPmRX8eIsttvQSJEm2JcA+BaYgaPp8RSnNFl2b53zB9q6MTJLAuzMZWctQwVDiqYYIgSfFKxUZEHb+F+DzIPVhcoqWbdYZQnqQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gDhMy139Qz2yCL;
+	Tue, 12 May 2026 00:06:06 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778508366;
+	cv=none; b=VvIJEFeNof6iEgvDSMB8omn+cWLtt1HrJN1g7fnABr4Klfn5GKoWozHpJuFBzJdu9eZPzP5y9Qm4kjfTRl0JMlfRxor/ZhcfSjpmwh0ZWYcXAihv0WUY5CyY9Hdnt5LQiJsRjArhRD6NaA8i2g2ZLEqC3UbScFgtaTrtoexItyJCVv7T0xb7Vvc35q7Qri+STFShhsB7DAL4qj0CBCNY3rvH1ThQKi/Qu7OtAgeQxdtJjYFj0l1HF3E7GK9sznPSgkfY294Y+3QyewP2D/OsRoKHRZ8pZy7Ai3zyPJS0jhinijsEyaj6DeBNIDhnAKzP6/G6tI7YuGOvUuD08ScLEA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1778508361; c=relaxed/relaxed;
-	bh=UoXpkzT0EfRbW4uqwNffzpPOEjrNcXkx1+2e54N79mE=;
+	t=1778508366; c=relaxed/relaxed;
+	bh=9Hxie3l6GF/3E3owdSqmOU0xCneMvVXO4cvVixoG97o=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=Z3Gb936wmnDcNr5XrqQ+IEPg8veVAI8tNClT+hQHTW9gLiWXfN3+COKP7or+pMRy84eUQ2Vfz3OWZ2Ir1HqNLchMn8JqScP2qzZ4hL151Nmh3I+2PaoxuXceQuEqXCXhs3n7KYBTInbdaCdZYHqzRRXPj22Lvp2ETW2WHLiAw3Et467vXmHY48JKEbl5WlSwSGnbos2i/aOhAeJcpxJoaaDiSh9KVSE5/QmME/pv7WMmZSueWMogFB/TQK4FjC0n3R7CI7sg7QZ0hG+d3vthWBuM2xTAvYoAf7ZCyfgU1FeNJzV5K6fmildeSn2eAd/WAzXi6DV9RHrseF4FRiqqSw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=kohAm45R; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:To:Cc; b=hkumjDeD6ElRf4Yc0Jrhfc3hlmKnLVIB/nk4Be31SaL86De1jNddcXxMnb1wskqwiCTFKUJR3Yy8Cyg5ZZ3RsYRdf1LRrsm2mDfMnd6dh9+HtZoUwP7ugmXs8gx37/ZSMqsaUo8DObXG1nFcMDx+vMSYniO8PWPdm2Nb8l7K26G8+E2djL3ZrtSaGDEtG33tgZYfJtDbBL+h+L2rvW/OlQ9XBO3o69CjTbpPTXunuMOBp1HbJAJ6WpXIBm/nnzrvv2kEDcJB9WOUzCHGsCxaahvuLmBW6ahCzlTxsNZYyUJIXucTAfTZxD/HwbY4U0On5EFdOP2EcydDLu/6RF38mg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=VzzaUGht; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=kohAm45R;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=VzzaUGht;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gDhMr5gFnz2x9N
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2026 00:06:00 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gDhMx3hZdz2x9N
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2026 00:06:05 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id C4F3260121;
+	by sea.source.kernel.org (Postfix) with ESMTP id 83DC443768;
+	Mon, 11 May 2026 14:06:03 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E6A89C2BCC9;
 	Mon, 11 May 2026 14:05:58 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0A68AC2BCB0;
-	Mon, 11 May 2026 14:05:53 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1778508358;
-	bh=0Ocue3eCm7kftjDOEvgMIfcEU6dPF7QGnIf4HYzbk1E=;
+	s=k20201202; t=1778508363;
+	bh=MFrlSNsTp04kT+A7ReVQ6q1RUJiMOyuWN+whgS79KCI=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=kohAm45Rpj0GtsJc339+4HuV+qMJDQGo+OaGrUlsvRENMLfGC7yd+8Am9w+nMsbot
-	 lj6c+L4Z1u6qvm6mkjovGEmaHCIyIMXnG7LyJQpkgojs5UXrNFgpWefy6AwbnY5C1z
-	 ty2kfu8/5ma/3T+/lZKlKFaDOGpcpGI/QWxfqZjZNw2uJlzHEDnZjf6L6VSMEqPIiI
-	 AW+6ECoossl3ODeBCgdyyUGa1ibx5REXX3G95YbmSUcDkQIkm4h6rzaV3iCdE20VEm
-	 omnCjbI3KzvVWJnQ8H1EH6BJI5eh2E/YkK6veo2XPHKLx0TNxDaFyDiqrm2Xf0StNx
-	 ljcaeng7fr+ig==
+	b=VzzaUGhtjmv+hgICpWb9Ds9RkOduoJ8mQ0Y/DcgBVY2dFaaRVfcVxiN2SbUKQuwiL
+	 o7eRr+5Toxr4lABnCNoOTIMMN4aJ7fOgqOVvyGtkdg6QrUqs7rUeaGOqi3u1nVPDkg
+	 Ksz0MxzCsMSNEnnyFYKhliTDT4hT3Njg5ZT2r8cMD3/8wzL/mBhdvfWXpE7D+1LW98
+	 rN7lvX13lEtdJbla8okiBqaGSKrxpTp5HtBwVqWJp27YyraoMyd04koJ5hVKbMZSfn
+	 dFRNDUbp6ZtPNR/BNeg+D8gkJkfsmTb8oqE4KzJl4JXpHPBQHLEyE3u3AiI6BbVR9e
+	 ixKjUMbFwUVSQ==
 From: "David Hildenbrand (Arm)" <david@kernel.org>
-Date: Mon, 11 May 2026 16:05:32 +0200
-Subject: [PATCH 4/8] mm/bootmem_info: remove call to
- kmemleak_free_part_phys()
+Date: Mon, 11 May 2026 16:05:33 +0200
+Subject: [PATCH 5/8] mm/bootmem_info: stop marking the pgdat as NODE_INFO
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -63,7 +62,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260511-bootmem_info_prep-v1-4-3fb0be6fc688@kernel.org>
+Message-Id: <20260511-bootmem_info_prep-v1-5-3fb0be6fc688@kernel.org>
 References: <20260511-bootmem_info_prep-v1-0-3fb0be6fc688@kernel.org>
 In-Reply-To: <20260511-bootmem_info_prep-v1-0-3fb0be6fc688@kernel.org>
 To: "David S. Miller" <davem@davemloft.net>, 
@@ -85,48 +84,48 @@ Cc: sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, "David Hildenbrand (Arm)" <david@kernel.org>
 X-Mailer: b4 0.13.0
 
-The call to kmemleak_free_part_phys() was added in 2022 in
-commit dd0ff4d12dd2 ("bootmem: remove the vmemmap pages from kmemleak in
-put_page_bootmem").
+We removed the last user of NODE_INFO in commit 119c31caa59e ("mm/sparse:
+remove !CONFIG_SPARSEMEM_VMEMMAP leftovers for CONFIG_MEMORY_HOTPLUG").
 
-In 2025, commit b2aad24b5333 ("mm/memmap: prevent double scanning of memmap
-by kmemleak") started to use MEMBLOCK_ALLOC_NOLEAKTRACE when allocating
-the memmap to skip the kmemleak_alloc_phys() in the buddy.
+But it really was never used it besides for safety-checks ever since it was
+introduced in commit 04753278769f ("memory hotplug: register section/node
+id to free"), where we had the comment:
 
-So remove the call to kmemleak_free_part_phys(). If this would still
-be required for other purposes, either free_reserved_page() should take
-care of it, or selected users.
+	5) The node information like pgdat has similar issues. But, this
+	   will be able to be solved too by this.
+	   (Not implemented yet, but, remembering node id in the pages.)
+
+Of course, that never happened, and we are not planning on freeing the
+node data (pgdat/pglist_data), during memory hotunplug.
+
+So let's just stop marking the pgdat as NODE_INFO.
 
 Signed-off-by: David Hildenbrand (Arm) <david@kernel.org>
 ---
- include/linux/bootmem_info.h | 1 -
- mm/bootmem_info.c            | 1 -
- 2 files changed, 2 deletions(-)
+ mm/bootmem_info.c | 9 +--------
+ 1 file changed, 1 insertion(+), 8 deletions(-)
 
-diff --git a/include/linux/bootmem_info.h b/include/linux/bootmem_info.h
-index 492ceeb1cdf8..f724340755e5 100644
---- a/include/linux/bootmem_info.h
-+++ b/include/linux/bootmem_info.h
-@@ -82,7 +82,6 @@ static inline void get_page_bootmem(unsigned long info, struct page *page,
- 
- static inline void free_bootmem_page(struct page *page)
- {
--	kmemleak_free_part_phys(PFN_PHYS(page_to_pfn(page)), PAGE_SIZE);
- 	free_reserved_page(page);
- }
- #endif
 diff --git a/mm/bootmem_info.c b/mm/bootmem_info.c
-index 6e2aaab3dca9..74c1116626c8 100644
+index 74c1116626c8..cce1d560f094 100644
 --- a/mm/bootmem_info.c
 +++ b/mm/bootmem_info.c
-@@ -32,7 +32,6 @@ void put_page_bootmem(struct page *page)
+@@ -62,15 +62,8 @@ static void __init register_page_bootmem_info_section(unsigned long start_pfn)
  
- 	if (page_ref_dec_return(page) == 1) {
- 		set_page_private(page, 0);
--		kmemleak_free_part_phys(PFN_PHYS(page_to_pfn(page)), PAGE_SIZE);
- 		free_reserved_page(page);
- 	}
- }
+ void __init register_page_bootmem_info_node(struct pglist_data *pgdat)
+ {
+-	unsigned long i, pfn, end_pfn, nr_pages;
++	unsigned long pfn, end_pfn;
+ 	int node = pgdat->node_id;
+-	struct page *page;
+-
+-	nr_pages = PAGE_ALIGN(sizeof(struct pglist_data)) >> PAGE_SHIFT;
+-	page = virt_to_page(pgdat);
+-
+-	for (i = 0; i < nr_pages; i++, page++)
+-		get_page_bootmem(node, page, NODE_INFO);
+ 
+ 	pfn = pgdat->node_start_pfn;
+ 	end_pfn = pgdat_end_pfn(pgdat);
 
 -- 
 2.43.0
