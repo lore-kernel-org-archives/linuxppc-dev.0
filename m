@@ -1,80 +1,81 @@
-Return-Path: <linuxppc-dev+bounces-20663-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20664-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5D05FCD3427
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 May 2026 01:10:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 339FECD3427
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 May 2026 01:48:54 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gDM8Q4kt4z2xqn;
-	Mon, 11 May 2026 11:09:58 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1032"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778461798;
-	cv=none; b=E9egvRpBTsmODhnixDhV4y4JRNrDiljIRVnvZSc4nIQKBeCgDOXW4ut8dRr1vBt3lY9ry+EwVsaaspVXePz8BEHgv5ZeU/sboPv7RZmkAfAkMS+m/kMiOHGVffftPKZ4ZRqgNFAGrRHogfymsAb7uwVh0diADO8hMpW/McMEhFzqY/bATGMw1oGZ73sdbIoBdMECzvnhq2FQn1SamWxmF1+zZZtHkRvitzCRRqT8HNHF4fTGMEoHZvepe7JDv4+YOsOWXtRQYWz1BQ0ZPQegMZhdBwO9fKk1MNbGvhLr398cHdhLJ1CGYzqAnAzKOGKqAwHsDAhqumGUVUrewb8Kjg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gDN1J5r93z2xqn;
+	Mon, 11 May 2026 11:48:52 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::52d"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778464132;
+	cv=none; b=XLrDWGtJqNVcc44jDYBVPW/bdc1E77dgwL9utspgLB01Eqe5+bgKzVv9RuARZ4QIlpyJg1q6nLRsVn/DKBpOZyUt79Ulv5eNW69OQ1YaubrX4RRCXehMdhl79CKJ3BjYGbRfHHHrqUX98QTciw+zoIpYmvEqWEKhUFC6mk8+IUITAjMQIuCe7RHW/BSOrzzw8BAqhMUJZ7yucfoQKCWA6L8XoLFyLHa24JOPNZjft+1QL/Oqz0AgT9d0vW0m+VfB2VROJwLFYMVTJvt+hkia8JaQyBtofCZriWA/TAe94D50AHhpSrrLl5X/Oh6yTKhGSblahz9EwBTUQSq3nXjb4Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1778461798; c=relaxed/relaxed;
-	bh=mfqH990mdH+IgSJnB2dubzEg0nm51/Cx4c7wzJvVDXE=;
-	h=From:To:Subject:In-Reply-To:Date:Message-ID:References; b=mOSfJZLhQg0s6unlBiNCSD5IQ5hEdqRRtk6jw/QEJK+C7Wc7qM2w6VN+yiW9BqkuRhQVNjpuewiUvL1CrglLq0y/yzB1Vb/EQjC2/vbAG6VZvaDbMumsPE1+hjLCYrruNe3HbF8TMt9fVo9gMhOPBeIA8Pk1BO8THVxwX/gmL7TK1wCqX6GXkzLxaqOu6zLBvYnUKfMI+CKavApXUnWD6aBkFuagtnmp95r2WRwRyB9pmCUrcEwyCKNQGoqznKZIV57WfGBgFL1MDbDvKR4dTtgckQ1fhWVrVFOBnRF4CLHbGZix0Te/1YTlZrPsAl2cRoGVLsEAHaZwcJknjH45AA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=hESMuZhE; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1032; helo=mail-pj1-x1032.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	t=1778464132; c=relaxed/relaxed;
+	bh=EcpoM038XooU1Y0bBIiyinlJ3K3Hm9yy8VMj5gv4Yrg=;
+	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References; b=J6qM0PvSYLULaVQt5rPkoDHchGI/p8Xw/zrZpGujCrEeI2fQhHJuhwqyP5OwVwIjT9X4lNI3YCO1VecpCsHDKKaaXG97fxqVsnETL+mcuBeiE/TEmQRMfnGD0Wt/dP0Hhf1qEmKB6sYC81wgtlrypq0EL/cHKZORBzW8KP6/FIiew+xfhdtfRYg75Ln10Jx6wsJBO3L7qp5Osi7bYQSLrkOawDwewJ/Dfm2vgoDPKIqbg/s7vwvys6VmEjJFBXsJ5ubTR6jsaXmzgR/zDWPXRgNiemTXihdMoYzhqMf+m/nY6iEXRGLfuh2yv6hq4SFu396K7n4+tKNb0TBduaGP+A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=bmCUgdlg; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::52d; helo=mail-pg1-x52d.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=hESMuZhE;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=bmCUgdlg;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1032; helo=mail-pj1-x1032.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pj1-x1032.google.com (mail-pj1-x1032.google.com [IPv6:2607:f8b0:4864:20::1032])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::52d; helo=mail-pg1-x52d.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pg1-x52d.google.com (mail-pg1-x52d.google.com [IPv6:2607:f8b0:4864:20::52d])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gDM8N6hFmz2xnQ
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 May 2026 11:09:55 +1000 (AEST)
-Received: by mail-pj1-x1032.google.com with SMTP id 98e67ed59e1d1-367d88b9940so744740a91.1
-        for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 May 2026 18:09:55 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gDN1H71xfz2xnQ
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 May 2026 11:48:50 +1000 (AEST)
+Received: by mail-pg1-x52d.google.com with SMTP id 41be03b00d2f7-c801912c903so1568589a12.0
+        for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 May 2026 18:48:50 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1778461793; x=1779066593; darn=lists.ozlabs.org;
-        h=references:message-id:date:in-reply-to:subject:to:from:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=mfqH990mdH+IgSJnB2dubzEg0nm51/Cx4c7wzJvVDXE=;
-        b=hESMuZhEDz3yzQs/F4EEn8yP0MwHwiCTkBPoXvUw2J8m2xlYLTGVCtHRGa15OmGtGc
-         dvQBDouxDUNYE6w+pWMHF8NgoZ2C05UYRKnIuaYq2tgAZYpwUiTxiZzc2cG4Wz2A4zuF
-         SBXe6fs6p2egShatGSmzcW1b+mKY4LWsHBvaXo3Aa99sH1URyiCiHUkhnMc9h7V6AmkS
-         P4LiGj+SRdzYvYAbRR1RMyH9aKJY0FHFDkoe9NqYKLaKfgpxWzie5MGTaIGMKtgz4L4P
-         XlkP3Q+dDVcqzhPkzca3tZOLwLZxVS+mwfYtCothpKPxBrEXs4sMrgKiRLYoex/4s7n0
-         rxWw==
+        d=gmail.com; s=20251104; t=1778464128; x=1779068928; darn=lists.ozlabs.org;
+        h=references:message-id:date:in-reply-to:subject:cc:to:from:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=EcpoM038XooU1Y0bBIiyinlJ3K3Hm9yy8VMj5gv4Yrg=;
+        b=bmCUgdlgiUN2p3iMNmHBlRGdZpWRss4oYeJZwiuKQjMaCYijhXbtGyznJfm9CZGqhI
+         +ZXC/f732FUrau6qveWixNC+nINH4AlBrhOm+pnzSxfD7cLrvCRxorUpgr0A5DwRhyPw
+         tVUFd1mpwrT+uArYIVz6jtoI+2dOwJ63jKyAUpSb7BE2GKrv5mEU3stKp77JGpqZgEGW
+         R/+iwxwg0zJqGCJR/iXNxCMka0t1L1INFfk2T6Foix7/vV9eyPyHCZmrGQY6XjuzdOjA
+         jVp/oC64aTAdt1J4juXZb2O4xiabqShVmkMKJ1G9MFG9BpqCYTzuUvF/GgeLj4E69hUl
+         gM4A==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1778461793; x=1779066593;
-        h=references:message-id:date:in-reply-to:subject:to:from:x-gm-gg
+        d=1e100.net; s=20251104; t=1778464128; x=1779068928;
+        h=references:message-id:date:in-reply-to:subject:cc:to:from:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=mfqH990mdH+IgSJnB2dubzEg0nm51/Cx4c7wzJvVDXE=;
-        b=LhCLzW412upDxsruWfU/xUHWsaODeAfKQ2a+oDIpitd4UZoVpUWptJeoI2qAK1nRcY
-         YEleaEjCrfgaTwErR1XZrMcaIlYTHw9x6CUE7YbPoOjegcBL5BBvCfd13sF6LVboa6i4
-         g0E5rE06BgHC2Wl7bCOHasntzPhEs6VFur/wWSlTPJZYFVPrVbg6SBmNEijfak/QlaWV
-         KWVAnYrbjMspHy+8gOmYeQb0zDFhadaBPfQ5iEI9ulTroj6qvyvPDuNjpIFMhCKEARVM
-         Fozx/vytIdDV/aR9EcqXL+bz2FInKyRXaWu+wxyh3J+QJMxEuj4+IxAPxtz0tlMd/yv8
-         DXag==
-X-Forwarded-Encrypted: i=1; AFNElJ+xViMR7pULyP+bpv3zBFWtyIsLLIYz5paqEVPL0oGMgLHdNP71VY2KXG35uurMk1Cj/VLcMBrdNwwMbPk=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YzLoxqAj+Uptnef6Vh//VNy1FIbJ8uVIU005jQ1B2AgOp07LPOR
-	gBPrqWv6snTt40U3UFBJjarxpOA1/f9uCOe97Yhivq+O8fu5LLV7nKYS
-X-Gm-Gg: Acq92OGOCl0FWIXw6+jPDogsipn3+xED2Vsp6RcAo05iYZlgHkVMoik8g9P2C6HXp7p
-	5FxNrCRKAPmYGzRnqWJWAQ9tuzHSVKjXKN22D1U0kiZB7zQnw8hjx9yd1AJvD6zZias61kKNr/h
-	JDjMyi5R9W3KMB1jeeH9Xwhps/GE0Vn2/eSZ5pNdxGY/Wkr1De957SijiCDxjeDo3VXeqdZXQZ0
-	EftDtAJgCJlR2ZOvO+pESmHUVp4RrkS8fIsOX0wreaJ6m9me5h4Q4CUJnY0ltp4Wo2ZULjlgz2p
-	GKFbx02azFTiSBDg4tqAbfOKH5v03ocjhLqoXBePZB2sPfwrf11O6HTS7MYprrB+UxH6qAIuMgF
-	4emDU9BlZzpT6Ev7t8DuYIX8tTYyAtKV85qWCBJ0rs4EYWCL5LYdn54XA18gHib/q2QR4rOVRTT
-	HCk3UgnzLOKLLKVQf4rmuYRQ==
-X-Received: by 2002:a17:90b:582c:b0:364:7a37:4066 with SMTP id 98e67ed59e1d1-3664ccca676mr10993664a91.14.1778461792574;
-        Sun, 10 May 2026 18:09:52 -0700 (PDT)
+        bh=EcpoM038XooU1Y0bBIiyinlJ3K3Hm9yy8VMj5gv4Yrg=;
+        b=nOaccLbRiFaJ1ikNcnq0Z8ns0GB1gNUzEGzG1WIqqWp8FEsSyRJfsDsMv0cskodgYp
+         ZQKWEAHDtsGFbmzmHP272e7kDi47PfDGIhO4AgzDD44AqDD0i15Ck3rm8EIA0OH0roCK
+         RJyPpzH1uzb4v66uHYHXuYbybB9yy2vHSkHu0QoAe0203QKe7yMEdKQv7lVuSrhfQ4vt
+         TIzQz7PHEX7RvSlUmsfEEa95qzH66MSG4y1npmQlhwnTA+ie3+PgHa9q3UwXJjtFj+p6
+         kUIp//DkDwNH7loCGRtYNbFmyj6oAl0lrMYRtFZF9evLOgQKaHxVAjdF8vfA1GjrLnVr
+         6WTA==
+X-Forwarded-Encrypted: i=1; AFNElJ9NRXBMGWFwxqFBhXqefnSAQ/fwWkQn9YfqTkvuXkZa8JPLQ7xDaoSuTv1S0Y4FYqL4jjFlbA1gcEUjJ4U=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YwBjq5KeJoMsEOdkUWEE0dle1xrJ01+oecgdtjFM5X2Ob5QfKZ3
+	dqezF5nEQffyXpn51Jci5ghmFnUUonR2DoyIu81jyZXLsJV+3DZqT9u0
+X-Gm-Gg: Acq92OHZfhiOgbtKFApg4pMbE0HCPAmbjXuSHZbEmo26N/l2/lHzN3eIZnUXgChCMSK
+	wY7wRYjDFC1vBw0UVOE+f6C9w9BrdUKFaENpNJTpqMdA48T+kLbX8IU9NJ69sp0NeCLkI8G2xLJ
+	3UEKdq+rjfz9BekPR6O1hP5+D43CS9KiJOF1RFyytHRVYxwo5vmShRUi9MsiwH0j9UZExrPP/gm
+	oLHJEg8qjLJlzRwoivZFJnBuu/l7mo77H47qbKmoHONEMJzYHps3+6t8Y4Fyzjgw8KXKwe5fbLX
+	FNbciucPDVmb2wLEQyQy4/ROyBIqRxAAz9JEduAX6pO3A4QJChjJf14EZ8nnL1TXZCO2IEQH8MW
+	tArGw1HhXgrmFYZYfNW4HH9eBc143LBxgWiuvxDA1ApZw8+kJ2eloShZMFTWGxvtE6u59jSuCDV
+	7lyUvyKn4/MDca7l5TomiL1faYz1+4tHwx
+X-Received: by 2002:a05:6a20:1585:b0:3a2:dc51:458 with SMTP id adf61e73a8af0-3aad4498cc2mr7256531637.41.1778464128371;
+        Sun, 10 May 2026 18:48:48 -0700 (PDT)
 Received: from pve-server ([49.205.216.49])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3686a6aae94sm580232a91.0.2026.05.10.18.09.50
+        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-c8267727401sm7349158a12.30.2026.05.10.18.48.44
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 10 May 2026 18:09:51 -0700 (PDT)
+        Sun, 10 May 2026 18:48:47 -0700 (PDT)
 From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org, Madhavan Srinivasan <maddy@linux.ibm.com>, "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-Subject: Re: [PATCH] MAINTAINERS: Demote myself to reviewer
-In-Reply-To: <87y0hspx0u.fsf@mpe.ellerman.id.au>
-Date: Mon, 11 May 2026 06:30:33 +0530
-Message-ID: <7bpasqtq.ritesh.list@gmail.com>
-References: <87y0hspx0u.fsf@mpe.ellerman.id.au>
+To: Aboorva Devarajan <aboorvad@linux.ibm.com>, Madhavan Srinivasan <maddy@linux.ibm.com>, Athira Rajeev <atrajeev@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Aboorva Devarajan <aboorvad@linux.ibm.com>, Christophe Leroy <chleroy@kernel.org>, Kajol Jain <kjain@linux.ibm.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] powerpc/hv-gpci: fix preempt count leak in sysfs show paths
+In-Reply-To: <20260508041256.3447113-1-aboorvad@linux.ibm.com>
+Date: Mon, 11 May 2026 07:07:32 +0530
+Message-ID: <5x4usp43.ritesh.list@gmail.com>
+References: <20260508041256.3447113-1-aboorvad@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -88,22 +89,50 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 
-Michael Ellerman <mpe@ellerman.id.au> writes:
-  
->  LINUX FOR POWERPC (32-BIT AND 64-BIT)
->  M:	Madhavan Srinivasan <maddy@linux.ibm.com>
-> -M:	Michael Ellerman <mpe@ellerman.id.au>
+Aboorva Devarajan <aboorvad@linux.ibm.com> writes:
 
-Thanks for more than a decade of maintainership of Linux on PowerPC tree
-:)
+> Four sysfs show() callbacks in hv-gpci take get_cpu_var(hv_gpci_reqb)
+> (which calls preempt_disable()) but only call the matching put_cpu_var()
+> on the error path under the 'out:' label. Every successful read leaks
+> one preempt_disable():
+>
+>   processor_bus_topology_show()
+>   processor_config_show()
+>   affinity_domain_via_virtual_processor_show()
+>   affinity_domain_via_domain_show()
+>
+> (affinity_domain_via_partition_show() was already correct.)
+>
+> On a CONFIG_PREEMPT=y kernel, repeated reads raise preempt_count and
+> eventually return to userspace with preemption still disabled. The
+> next user-mode page fault then hits faulthandler_disabled() == 1,
+> gets forced to SIGSEGV, and the resulting coredump trips
+> 'BUG: scheduling while atomic' in call_usermodehelper_exec ->
+> wait_for_completion_state -> schedule:
+>
+>   BUG: scheduling while atomic: <task>/<pid>/0x00000004
+>   ...
+>   __schedule_bug+0x6c/0x90
+>   __schedule+0x58c/0x13a0
+>   schedule+0x48/0x1a0
+>   schedule_timeout+0x104/0x170
+>   wait_for_completion_state+0x16c/0x330
+>   call_usermodehelper_exec+0x254/0x2d0
+>   vfs_coredump+0x1050/0x2590
+>   get_signal+0xb9c/0xc80
+>   do_notify_resume+0xf8/0x470
+>
+> Add an out_success label that calls put_cpu_var() before returning
+> the byte count, mirroring affinity_domain_via_partition_show().
 
-> +R:	Michael Ellerman <mpe@ellerman.id.au>
+Yup. That seems like the right thing to do otherwise we leak preempt
+count.
+I guess, these would be the other kind of issues which might show up now,
+since powerpc is moved to CONFIG_PREEMPTION=y with lazy preempt as the
+default preemption mode. It will be nice to have some mechanism to catch
+these error handling paths where preempt counts might be getting leaked.
 
-Always grateful to have you around. Thanks for helping us from time to time :)
+Nice Catch! As for this patch, it looks to me.
 
->  R:	Nicholas Piggin <npiggin@gmail.com>
->  R:	Christophe Leroy (CS GROUP) <chleroy@kernel.org>
->  L:	linuxppc-dev@lists.ozlabs.org
-
--ritesh
+Reviewed-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
 
