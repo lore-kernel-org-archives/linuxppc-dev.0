@@ -1,85 +1,68 @@
-Return-Path: <linuxppc-dev+bounces-20689-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20690-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4F2FCCD3427
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 May 2026 03:07:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7B473CD37B5
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 May 2026 06:42:34 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gDPkx6V8jz2yx7;
-	Mon, 11 May 2026 13:06:33 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=113.46.200.224
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778468793;
-	cv=none; b=LRBDW0TDkJNgrZEY0rvmEqZfXUmrklC8bYpzvfMVbix5l8I/IjK3qdzCNDvSOU/pGk+tpaJPSig5dHXtz0HtFnahRTM04zXRp6V87hiARyqHdA9Ji05jJKXpxBKweqEQr/h2X1iwBNHghgrVRzc/FMNk+oeScJt29XEKIcshdDd4gIQMIHbklDmb22TfMybFv4fuiNeaz1z1hMmjfBjuzGw4Fe1AsgGIhl2rVNdRwWn13dXygja68IABUZ+p4LftUIyYu31iWWeInwcXNWd0Ei4+OPI9yjUwLEhN2TUNn/N6UoUsILiydKs6dOPTpvyKC0wb6UKZru4Nh2p/Y8BBXA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gDVX85RjPz2xl6;
+	Mon, 11 May 2026 16:42:32 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=209.85.221.173
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778481752;
+	cv=none; b=TtNbm3LX/vc+fdfcV96GhojT9enIRvGjFYgpqgT3XcKmtM5BUAMC9Xw+cwNcGN0KmkzO7wDruiQYFECfoLJVCqiFwA8Hv6dwEfoccFBTikbjkv50EH8941DT8dzjZsZ1nPkiSOsvuw+tp1469TnXz2KVjEwmfH2lyR4E8m3Kjk4vNbrfsinP1rUcPVeJWQsM6bC6re+S/AoNlVaxNiFRt7Cxmgrzqg/ZBuUGlvVGt0fFoXGDFFZ3nAMQiAiSjd6fT8KuQTF7A1eJsRZI+/UPlmNiO+EN0q5cg1SNcIL3dE5DsSTtkRX5f+4cKruD8EkxcYDwY+GsEOJIaCljaN4QNg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1778468793; c=relaxed/relaxed;
-	bh=pSS8z5ePfPujmR3EaZYR+81djN5DZlHfawlFjVUvFbE=;
-	h=From:To:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=Otn/SMFiBW3kOC8cEShJma1ibDzPiRTVT3FXAa3T1uxBqKoaiYIHfIIVayKFWwKGcLBrE/VXZw16kRsFElazIr1fqw3X9oOLn/MIZc/2N0xMwI9rKscOq7XpdDM4Q089zmJmFUMAmW2BNOlu/Bs8FhvmYtx22WywrDGqDJdUvCuUCA/P96z6W+MnoZEvxW97ckysl85gm4FthjIHLmdUAVwZNtYZGgnqkVXuLgk5Pk4wAqgtLi2Sg9qNYHi4p+WFjjmCSbEKB/EfjAcphaCZVa/5zlIzN9FmcozEFjZjXRsaKrdJXvQ4xZt+0/iXy8HUH9KbbpFxI7qyDeN4GlTNSg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=peLaBv9G; dkim-atps=neutral; spf=pass (client-ip=113.46.200.224; helo=canpmsgout09.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=peLaBv9G;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=113.46.200.224; helo=canpmsgout09.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org)
-Received: from canpmsgout09.his.huawei.com (canpmsgout09.his.huawei.com [113.46.200.224])
+	t=1778481752; c=relaxed/relaxed;
+	bh=nmM7uPcTxOtt/CXqxfbtSzgj1ys1bMpqCcKcPX8L8Aw=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=AxGP91oRJ9rgEdZQ+WeXSR0qg1YAJvkylNfQHe6jIvvu6dc3R0yd+vZXeoDaNKw7L25kH2xT+Ydr9jx3zmOjdDgu+9S1UE20n1GY8kS6ema2V7KP6XYo6WgDTFc9IMS0wN3zwzhBsJiJwU0Vc7w8VIwT5szFhoKbGRUvTnnB1r8KHe0yRrqEtneF5KNbteqmvvQ21Yc/DvcKkdL5EokkrYqGeYs9gJHtydT4Z8nvRBT9Kz8eMcUdcZwBWqyTs9NAUmlUNcU3FPNcdtSFUPNtqT1H5ZZcH71ktL55+MVSTnC35/tX2JI0r61NWccL3fzE2Zu4NZnl/GmqQJKEh8oYZQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass (client-ip=209.85.221.173; helo=mail-vk1-f173.google.com; envelope-from=geert.uytterhoeven@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.221.173; helo=mail-vk1-f173.google.com; envelope-from=geert.uytterhoeven@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-vk1-f173.google.com (mail-vk1-f173.google.com [209.85.221.173])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gDPkx0g1Fz2yF7
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 May 2026 13:06:32 +1000 (AEST)
-dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
-	c=relaxed/relaxed; q=dns/txt;
-	h=From;
-	bh=pSS8z5ePfPujmR3EaZYR+81djN5DZlHfawlFjVUvFbE=;
-	b=peLaBv9Gj0Ycvya8xNQgJAkiN8nF7ptADM2WsH3T6DM/SjwEDq/nW3hgOG9Hu0NihAz+yPzqE
-	Qhbtq9qoOK+YPGSLWt9CqlfDLsfQ9BSxJ+KJf+jkhZun2RB2C6paikmAY0UhFpcAMcW8eZyhqwq
-	qSU7JbGB2kdn6kPia7XVYBA=
-Received: from mail.maildlp.com (unknown [172.19.163.214])
-	by canpmsgout09.his.huawei.com (SkyGuard) with ESMTPS id 4gDPZ742zgz1cynh;
-	Mon, 11 May 2026 10:58:55 +0800 (CST)
-Received: from dggpemf500011.china.huawei.com (unknown [7.185.36.131])
-	by mail.maildlp.com (Postfix) with ESMTPS id F2FE04056C;
-	Mon, 11 May 2026 11:06:29 +0800 (CST)
-Received: from huawei.com (10.90.53.73) by dggpemf500011.china.huawei.com
- (7.185.36.131) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.11; Mon, 11 May
- 2026 11:06:26 +0800
-From: Jinjie Ruan <ruanjinjie@huawei.com>
-To: <corbet@lwn.net>, <skhan@linuxfoundation.org>, <catalin.marinas@arm.com>,
-	<will@kernel.org>, <chenhuacai@kernel.org>, <kernel@xen0n.name>,
-	<maddy@linux.ibm.com>, <mpe@ellerman.id.au>, <npiggin@gmail.com>,
-	<chleroy@kernel.org>, <pjw@kernel.org>, <palmer@dabbelt.com>,
-	<aou@eecs.berkeley.edu>, <alex@ghiti.fr>, <tglx@kernel.org>,
-	<mingo@redhat.com>, <bp@alien8.de>, <dave.hansen@linux.intel.com>,
-	<hpa@zytor.com>, <robh@kernel.org>, <saravanak@kernel.org>,
-	<akpm@linux-foundation.org>, <bhe@redhat.com>, <rppt@kernel.org>,
-	<pasha.tatashin@soleen.com>, <pratyush@kernel.org>, <ruirui.yang@linux.dev>,
-	<rdunlap@infradead.org>, <pmladek@suse.com>, <dapeng1.mi@linux.intel.com>,
-	<kees@kernel.org>, <elver@google.com>, <kuba@kernel.org>,
-	<ebiggers@kernel.org>, <lirongqing@baidu.com>, <paulmck@kernel.org>,
-	<ruanjinjie@huawei.com>, <sourabhjain@linux.ibm.com>, <coxu@redhat.com>,
-	<leitao@debian.org>, <jbohac@suse.cz>, <ryan.roberts@arm.com>,
-	<osandov@fb.com>, <cfsworks@gmail.com>, <tangyouling@kylinos.cn>,
-	<ritesh.list@gmail.com>, <adityag@linux.ibm.com>, <guoren@kernel.org>,
-	<songshuaishuai@tinylab.org>, <kevin.brodsky@arm.com>,
-	<vishal.moola@gmail.com>, <junhui.liu@pigmoral.tech>,
-	<wangruikang@iscas.ac.cn>, <namcao@linutronix.de>, <chao.gao@intel.com>,
-	<seanjc@google.com>, <fuqiang.wang@easystack.cn>, <ardb@kernel.org>,
-	<chenjiahao16@huawei.com>, <hbathini@linux.ibm.com>,
-	<takahiro.akashi@linaro.org>, <james.morse@arm.com>, <lizhengyu3@huawei.com>,
-	<x86@kernel.org>, <linux-doc@vger.kernel.org>,
-	<linux-kernel@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
-	<loongarch@lists.linux.dev>, <linuxppc-dev@lists.ozlabs.org>,
-	<linux-riscv@lists.infradead.org>, <devicetree@vger.kernel.org>,
-	<kexec@lists.infradead.org>
-Subject: [PATCH v13 15/15] riscv: kexec: Add support for crashkernel CMA reservation
-Date: Mon, 11 May 2026 11:04:54 +0800
-Message-ID: <20260511030454.1730881-16-ruanjinjie@huawei.com>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20260511030454.1730881-1-ruanjinjie@huawei.com>
-References: <20260511030454.1730881-1-ruanjinjie@huawei.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gDVX66d98z2xSF
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 May 2026 16:42:30 +1000 (AEST)
+Received: by mail-vk1-f173.google.com with SMTP id 71dfb90a1353d-575320e6f2aso2896104e0c.0
+        for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 May 2026 23:42:29 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1778481747; x=1779086547;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=nmM7uPcTxOtt/CXqxfbtSzgj1ys1bMpqCcKcPX8L8Aw=;
+        b=GwmglrGqskGaNnG7KFehjD2quo1BUh2WE5+POEeJWc/2Q3f5bKrWT4iL9AR6hWhmPF
+         b44fWeamAZpbquXC1s4dM6r7RXdr58iAvwmg9WdNVAhtjHQoHYgd1tcezkU+gr402U3/
+         9WmZcpTu6kdKGYnYrwJ00h/3lhcGaZbiUgy1ksHunnqDTYxRHfqeFP4BKJPdMET/KUWh
+         X2IV5BKNOme7AcUi0VwjP95aq5gK8aKx1XUkXVrqRy42AvmjdwYNqOYhWOvkRJTc4q0+
+         /VMdmtb82Q2MPYfVVcAtmBT1stSE9FCDbSBuoATJHxpNZRtCVhF5FkvihKAEgDRSGfpL
+         fPgg==
+X-Forwarded-Encrypted: i=1; AFNElJ+QN0QI/qJGuAGVD4i/BcBT6FqCZybHmv2vZ23Z4k7ivo6xtR4T3eL8gAnIchPVneGxTey3qNIOQN0MM0Q=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yx7V53klEThQqIyZcF1HTfsvyCyQ54Oio5ig9kixi757Npj/H27
+	VbXXLzZMhAR45IVLvvSFcOJK0+7cOplzgPreN9o19uxU0kqMfKYHlITU8+K5YGSk
+X-Gm-Gg: Acq92OHr9/aLPLdg/GxheNrbOs2jUCti9IjCs8Oe1smzUbgNdb8Zdo7yoC8puI8xHmd
+	B+teYdNIJbNVKT34u6KnCY4+znRvKCxIytWjEOOhL68sMpeRjS/mRY/xP0+8t3L65fzr1qEhV8O
+	i2NfDuZdwfuT0lpmVPI9eJZV/woPLd2gfUDNS1O32dOrpVy0GcYAd2vGtvqIlqK24q17nBj6fRj
+	6JPSBcGbk3B3fMOIpHNXPc5ldU3x8jgeNakRy6bME0pptS9c5gdkPDMOwSw+w+RJIyfGQYR6N+L
+	fzqPoyi5MET/r1FbyLbfukq2KdXzGegPRO+HsDGHiCYSntrucbjnNsVCnHwG1D4O1WwhMSjERj2
+	np62hqy3REg37KTlZXBCJPS9RfQ0kaZHZuUhfPcsVbHOfPOUamDwi2JaJut8oDhl6OkTJsgBh+3
+	kUvnd6AS8Y90SgSJ9Uizdc1r+z7/vCGkY6nmH28ty2GDsOWLiDWqJbLATJjmQSv9jswXWcR0w=
+X-Received: by 2002:a05:6122:915:b0:56b:5893:d042 with SMTP id 71dfb90a1353d-5755962d507mr11074903e0c.12.1778481747008;
+        Sun, 10 May 2026 23:42:27 -0700 (PDT)
+Received: from mail-vs1-f41.google.com (mail-vs1-f41.google.com. [209.85.217.41])
+        by smtp.gmail.com with ESMTPSA id 71dfb90a1353d-5752425a19csm15049569e0c.10.2026.05.10.23.42.26
+        for <linuxppc-dev@lists.ozlabs.org>
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Sun, 10 May 2026 23:42:26 -0700 (PDT)
+Received: by mail-vs1-f41.google.com with SMTP id ada2fe7eead31-631466587e9so1607507137.1
+        for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 May 2026 23:42:26 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AFNElJ+el50Xer5Ovkaoc5TMDv5bV929FURM2h0qIVoYg/VV0WfTKWHPq6Jk2OhL+hv/Ak2ow+iR2aM/Ouo30hI=@lists.ozlabs.org
+X-Received: by 2002:a05:6102:2ac7:b0:633:c6c4:b32c with SMTP id
+ ada2fe7eead31-633c6c4b990mr1428757137.15.1778481746411; Sun, 10 May 2026
+ 23:42:26 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -93,116 +76,77 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-Originating-IP: [10.90.53.73]
-X-ClientProxiedBy: kwepems100002.china.huawei.com (7.221.188.206) To
- dggpemf500011.china.huawei.com (7.185.36.131)
+References: <202605100125.l4JVHppO-lkp@intel.com>
+In-Reply-To: <202605100125.l4JVHppO-lkp@intel.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Mon, 11 May 2026 08:42:13 +0200
+X-Gmail-Original-Message-ID: <CAMuHMdXPeUnjN__PvY+HQg+cSxKe-RLnyT-A5KGe=4cmjnUNbg@mail.gmail.com>
+X-Gm-Features: AVHnY4LhC2w7Nls0eAOnAROXGmHfJhM8ihUdL8l1JwrVFRMxvNzDPSpVspNG9hQ
+Message-ID: <CAMuHMdXPeUnjN__PvY+HQg+cSxKe-RLnyT-A5KGe=4cmjnUNbg@mail.gmail.com>
+Subject: Re: crypto/ahash.c:1073:1: warning: the frame size of 1040 bytes is
+ larger than 1024 bytes
+To: kernel test robot <lkp@intel.com>
+Cc: Herbert Xu <herbert@gondor.apana.org.au>, oe-kbuild-all@lists.linux.dev, 
+	linux-kernel@vger.kernel.org, linux-mips@vger.kernel.org, 
+	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, wireguard@lists.zx2c4.com
+Content-Type: text/plain; charset="UTF-8"
 
-Commit 35c18f2933c5 ("Add a new optional ",cma" suffix to the
-crashkernel= command line option") and commit ab475510e042 ("kdump:
-implement reserve_crashkernel_cma") added CMA support for kdump
-crashkernel reservation. This allows the kernel to dynamically allocate
-contiguous memory for crash dumping when needed, rather than permanently
-reserving a fixed region at boot time.
+On Sat, 9 May 2026 at 19:07, kernel test robot <lkp@intel.com> wrote:
+> FYI, the error/warning still remains.
+>
+> tree:   https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git master
+> head:   ec89572766744e844df24c27d31c97b4c00f4e07
+> commit: 9d9b193ed73a65ec47cf1fd39925b09da8216461 crypto: hash - Increase HASH_MAX_DESCSIZE for hmac(sha3-224-s390)
+> date:   9 months ago
+> config: mips-eyeq5_defconfig (https://download.01.org/0day-ci/archive/20260510/202605100125.l4JVHppO-lkp@intel.com/config)
+> compiler: mips64-linux-gcc (GCC) 15.2.0
+> reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20260510/202605100125.l4JVHppO-lkp@intel.com/reproduce)
+>
+> If you fix the issue in a separate patch/commit (i.e. not just a new version of
+> the same patch/commit), kindly add following tags
+> | Fixes: 9d9b193ed73a ("crypto: hash - Increase HASH_MAX_DESCSIZE for hmac(sha3-224-s390)")
+> | Reported-by: kernel test robot <lkp@intel.com>
+> | Closes: https://lore.kernel.org/oe-kbuild-all/202605100125.l4JVHppO-lkp@intel.com/
+>
+> All warnings (new ones prefixed by >>):
+>
+>    crypto/ahash.c: In function 'crypto_hash_digest':
+> >> crypto/ahash.c:1073:1: warning: the frame size of 1040 bytes is larger than 1024 bytes [-Wframe-larger-than=]
+>     1073 | }
+>          | ^
 
-So extend crashkernel CMA reservation support to riscv. The following
-changes are made to enable CMA reservation:
+This is one of the few defconfigs that still use CONFIG_FRAME_WARN=1024.
+The default value for 32-bit systems was lifted from 1024 to 1280 in
+commit 32115734c0ed8b46 ("Increase the default 32-bit build frame size
+warning limit to 1280 bytes") in v6.18, so perhaps the downgrade to
+1024 should be dropped from the following defconfigs:
 
-- Parse and obtain the CMA reservation size along with other crashkernel
-  parameters.
-- Call reserve_crashkernel_cma() to allocate the CMA region for kdump.
-- Include the CMA-reserved ranges for kdump kernel to use, which was
-  already done in of_kexec_alloc_and_setup_fdt().
-- Exclude the CMA-reserved ranges from the crash kernel memory to
-  prevent them from being exported through /proc/vmcore, which was
-  already done in the crash core.
+$ git grep CONFIG_FRAME_WARN=1024
+arch/mips/configs/eyeq5_defconfig:CONFIG_FRAME_WARN=1024
+arch/mips/configs/eyeq6_defconfig:CONFIG_FRAME_WARN=1024
+arch/mips/configs/eyeq6lplus_defconfig:CONFIG_FRAME_WARN=1024
+arch/mips/configs/lemote2f_defconfig:CONFIG_FRAME_WARN=1024
+arch/mips/configs/loongson2k_defconfig:CONFIG_FRAME_WARN=1024
+arch/powerpc/configs/fsl-emb-nonhw.config:CONFIG_FRAME_WARN=1024
+tools/testing/selftests/wireguard/qemu/arch/arm.config:CONFIG_FRAME_WARN=1024
+tools/testing/selftests/wireguard/qemu/arch/armeb.config:CONFIG_FRAME_WARN=1024
+tools/testing/selftests/wireguard/qemu/arch/i686.config:CONFIG_FRAME_WARN=1024
+tools/testing/selftests/wireguard/qemu/arch/m68k.config:CONFIG_FRAME_WARN=1024
+tools/testing/selftests/wireguard/qemu/arch/mips.config:CONFIG_FRAME_WARN=1024
+tools/testing/selftests/wireguard/qemu/arch/mipsel.config:CONFIG_FRAME_WARN=1024
+tools/testing/selftests/wireguard/qemu/arch/powerpc.config:CONFIG_FRAME_WARN=1024
 
-Update kernel-parameters.txt to document CMA support for crashkernel on
-riscv architecture.
+I am not sure about the wireguard selftests: they might use the lower
+value deliberately for testing?
 
-Cc: Paul Walmsley <pjw@kernel.org>
-Cc: Palmer Dabbelt <palmer@dabbelt.com>
-Cc: Albert Ou <aou@eecs.berkeley.edu>
-Cc: Alexandre Ghiti <alex@ghiti.fr>
-Acked-by: Baoquan He <bhe@redhat.com>
-Acked-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
-Acked-by: Paul Walmsley <pjw@kernel.org> # arch/riscv
-Signed-off-by: Jinjie Ruan <ruanjinjie@huawei.com>
----
- Documentation/admin-guide/kernel-parameters.txt | 16 ++++++++--------
- arch/riscv/kernel/machine_kexec_file.c          |  2 +-
- arch/riscv/mm/init.c                            |  5 +++--
- 3 files changed, 12 insertions(+), 11 deletions(-)
+Gr{oetje,eeting}s,
 
-diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
-index 52742fab49a9..3ff3ddd516cf 100644
---- a/Documentation/admin-guide/kernel-parameters.txt
-+++ b/Documentation/admin-guide/kernel-parameters.txt
-@@ -1119,14 +1119,14 @@ Kernel parameters
- 			It will be ignored when crashkernel=X,high is not used
- 			or memory reserved is below 4G.
- 	crashkernel=size[KMG],cma
--			[KNL, X86, ARM64, PPC] Reserve additional crash kernel memory from
--			CMA. This reservation is usable by the first system's
--			userspace memory and kernel movable allocations (memory
--			balloon, zswap). Pages allocated from this memory range
--			will not be included in the vmcore so this should not
--			be used if dumping of userspace memory is intended and
--			it has to be expected that some movable kernel pages
--			may be missing from the dump.
-+			[KNL, X86, ARM64, RISCV, PPC] Reserve additional crash
-+			kernel memory from CMA. This reservation is usable by
-+			the first system's userspace memory and kernel movable
-+			allocations (memory balloon, zswap). Pages allocated
-+			from this memory range will not be included in the vmcore
-+			so this should not be used if dumping of userspace memory
-+			is intended and it has to be expected that some movable
-+			kernel pages may be missing from the dump.
- 
- 			A standard crashkernel reservation, as described above,
- 			is still needed to hold the crash kernel and initrd.
-diff --git a/arch/riscv/kernel/machine_kexec_file.c b/arch/riscv/kernel/machine_kexec_file.c
-index bea818f75dd6..c79cd86d5713 100644
---- a/arch/riscv/kernel/machine_kexec_file.c
-+++ b/arch/riscv/kernel/machine_kexec_file.c
-@@ -46,7 +46,7 @@ static int get_nr_ram_ranges_callback(struct resource *res, void *arg)
- 
- unsigned int arch_get_system_nr_ranges(void)
- {
--	unsigned int nr_ranges = 2; /* For exclusion of crashkernel region */
-+	unsigned int nr_ranges = 2 + crashk_cma_cnt; /* For exclusion of crashkernel region */
- 
- 	walk_system_ram_res(0, -1, &nr_ranges, get_nr_ram_ranges_callback);
- 
-diff --git a/arch/riscv/mm/init.c b/arch/riscv/mm/init.c
-index decd7df40fa4..c848454b8349 100644
---- a/arch/riscv/mm/init.c
-+++ b/arch/riscv/mm/init.c
-@@ -1295,7 +1295,7 @@ static inline void setup_vm_final(void)
-  */
- static void __init arch_reserve_crashkernel(void)
- {
--	unsigned long long low_size = 0;
-+	unsigned long long low_size = 0, cma_size = 0;
- 	unsigned long long crash_base, crash_size;
- 	bool high = false;
- 	int ret;
-@@ -1305,11 +1305,12 @@ static void __init arch_reserve_crashkernel(void)
- 
- 	ret = parse_crashkernel(boot_command_line, memblock_phys_mem_size(),
- 				&crash_size, &crash_base,
--				&low_size, NULL, &high);
-+				&low_size, &cma_size, &high);
- 	if (ret)
- 		return;
- 
- 	reserve_crashkernel_generic(crash_size, crash_base, low_size, high);
-+	reserve_crashkernel_cma(cma_size);
- }
- 
- void __init paging_init(void)
+                        Geert
+
 -- 
-2.34.1
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
 
