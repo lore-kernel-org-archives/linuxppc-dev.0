@@ -1,53 +1,52 @@
-Return-Path: <linuxppc-dev+bounces-20712-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20713-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 11090CD37AC
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 May 2026 14:06:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D1BC1CD37AC
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 May 2026 14:06:40 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gDhN31y3Tz2yD6;
-	Tue, 12 May 2026 00:06:11 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gDhN80Pljz2yF1;
+	Tue, 12 May 2026 00:06:16 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778508371;
-	cv=none; b=a5E3SmDjZMB5ZFTF8apPoUc9/6bJVn+Ot0F2uVeP0yqcYwCCU1appg9mNhqEFoNpXfobYC/IBcpaD/rtCjWtsG009sWRbo2EbVtxheKaEDDwppsmajcP38OtDtwsa5FGvCS+9A7P4+FZ33LlwO2mPKg3yt/w54+TJr54FtWIhDtCDjpz9xIMntHfnpXnDjakySF1s+DuPh0vvtGF/YykE28lLuYP4cTyx7naj0cmZcC/Fue6OHqEWvTKH5GE3VaxSkA5adM3Ak5/x6gFL2z1zAaFJtBh2Thaj+k9+WxJh7WK2E7LMYv1htvZ1Am7pDJOxvnmSL7/+Xy3Amd3oynD0w==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778508376;
+	cv=none; b=bDNfmAJS7xHHfmHuGGYF0C56Rfp0jexixXZVB9K735bwkPniPpIvy96TEL9c0spQx3xu/QCy0/hZmI4+UqAzj+HkkditgdT4qlgZaE+bWXHliubYxsgeR+chccmhnIEIPJIeTKG0/w8YpmoU1jaGCtAqjuGMmu+fbbf+IN+GixsTu85K4T3UGIhjX8BuFXh07UUpU34sDLhZgfmyMWtQAIMQINN+zCIi00Kxt58mrF3eHk2+jvzX/A1DZnT+LMsvqwY97OSTGsPh2FFA4qsjCc+R1izjVvG3Gf3VQ3jSggdGudKSjhst2kCgb/Rzi/kCoGeBq6dtA1YJu+3xuhQpoA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1778508371; c=relaxed/relaxed;
-	bh=2mKTc398hqCNIyVV1mxRFzypz9k5PW9K0UCO/3rhqKk=;
+	t=1778508376; c=relaxed/relaxed;
+	bh=3z4GklFCErfTQtmmOR00Q4UhPA9FcZSnCFOQyXtKW7g=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=gs6TpyeuVSBOE+oC8xU5CeygU+E2iyEEvAtujPdmOXS67YdAtm7cqEht91QM5T2diuWsvYXMxJtLGf1EujZj9DE1pVSO+3jucffwElwttHZVUTLbtX0+Fteb6YmZmSSydhVGw5sr/8GlEUEkl/g6PUhydoUGnCYdEKTZRkbweSBtrjiookfGx/JQ8u4TTAWYB76pzdnWhFjqMG4tpffHuOzEsJu3aynFj1qRFvcdNz9ppEypgqdByWf8k+nNm47mb1JaQsWw/meZL1lreviEVa4dZ7hmzY4EfExZ4s8aXvKmOAI/ewBP/41VcwLct90EozXouB1ZJYAGMnCq8pwvxw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=FkHD5Qko; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:To:Cc; b=a2VivdQQmChGPbDN2khVUDCRG2CGyLp9LJduekf/Y3LXi+ElSIquvLtc9MNwcp50AcNyn9sxe3yjfUrkQ7K2jaWZ16jY1b5M/oWmmO9yhZIFSosKfrHMdvXSpw0KrGO5IqM1py0bjWLQvfrx/H8QznkHB99A+tdLTlBlvEWhVEVUWskUf3tLN8AXqHpO00K5G4uybc22UF/iQIqKn6pSCuFFVVhzQEztth69yt5XD0Df532YRYFo60ypx7KKmFl8pgURg6mGe1DrAamwuZhS3iGfua2rbH8b2Oqtab/rgdMaQz2iJT6pbxUXSW0zG6fzijKZ0Y8h3KAdgWWus6TaYw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=MC++Iby5; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=FkHD5Qko;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=MC++Iby5;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org)
 Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gDhN24c3mz2x9N
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2026 00:06:10 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gDhN7465Tz2x9N
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2026 00:06:15 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 9971560138;
+	by tor.source.kernel.org (Postfix) with ESMTP id 84CA460172;
+	Mon, 11 May 2026 14:06:13 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id BB5FFC2BCC9;
 	Mon, 11 May 2026 14:06:08 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D3134C2BCB0;
-	Mon, 11 May 2026 14:06:03 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1778508368;
-	bh=Df7YQtlt1u58ew8l6Y3LcE6eBp8Ob9c95zjKPT1feMY=;
+	s=k20201202; t=1778508373;
+	bh=7BplXJKZlQZOSJidAvpNkGSKkzbCMEkCK3cF3mfqU+w=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=FkHD5QkoYoiTQo6rsfptPtJyyjVmT203uCGrdm3RY3TRoKsGoRzuEBRzTLOM/MoDg
-	 MayWcxnF91mKM6xXDqXD9sGLU9DDrFF/Wd0FcMZBhsbYliBwps+T+lJ6mRl4OaaReO
-	 AlharA0hbNn+y6DBkFP+QQAyvIrUPUFzFmpPv9Aeut02HsJDMZ8DCG5+AYe4QiH1Jo
-	 8RHEPoYqRTLWsqkE6/OR/o79ST9ZtLIw1kKnllAjVgvLKKr3BbYRA+dtRv8sj5b0ws
-	 pNwKalE2Qqrlt/eCvy2KefMfl81e24Y17AgpykKyxL2jc/Kn4MflcxXJ6feg6RoApD
-	 oitkf0c1mdkoQ==
+	b=MC++Iby5ok7TXQGGc+uvg4Efk5zAMeJWOG3GMzC9znDRLh77sNxq1/rWfakudf+Lf
+	 ryEJQVBagPaPXTKqmKiLzgUcFrnhQ8eOCrfmxUdkhB3iXLgVsV1Tvfklz9fKrJOhCN
+	 CBaXJF9ug+ycGiW0eTVI5IIFRqbQjitiB9Utta6xmp5xEwQzK+PYR9jG4kLGMLYKbM
+	 hB/XM1I/3Cp9r7hbhk/SBnPybVltI0bkF+F52k7f+2LivbjmQfB8GxCq2rfyHJe4xz
+	 JsNU1b+6kEJ9qZjaYN5n/MZmWZxyntdGM4p4s3lOh7wJP0Bcyk/9jekF3yTJqi7Wi/
+	 1sEPxTCVP5VBg==
 From: "David Hildenbrand (Arm)" <david@kernel.org>
-Date: Mon, 11 May 2026 16:05:34 +0200
-Subject: [PATCH 6/8] mm/bootmem_info: stop marking mem_section_usage as
- MIX_SECTION_INFO
+Date: Mon, 11 May 2026 16:05:35 +0200
+Subject: [PATCH 7/8] s390/mm: use free_reserved_page() in vmem_free_pages()
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -63,7 +62,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260511-bootmem_info_prep-v1-6-3fb0be6fc688@kernel.org>
+Message-Id: <20260511-bootmem_info_prep-v1-7-3fb0be6fc688@kernel.org>
 References: <20260511-bootmem_info_prep-v1-0-3fb0be6fc688@kernel.org>
 In-Reply-To: <20260511-bootmem_info_prep-v1-0-3fb0be6fc688@kernel.org>
 To: "David S. Miller" <davem@davemloft.net>, 
@@ -85,49 +84,41 @@ Cc: sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, "David Hildenbrand (Arm)" <david@kernel.org>
 X-Mailer: b4 0.13.0
 
-We never free the ms->usage data for boot memory sections (see
-section_deactivate()). And to identify whether ms->usage was allocated
-from memblock, we simply identify it by looking at PG_reserved.
+We never select CONFIG_HAVE_BOOTMEM_INFO_NODE on s390. Therefore,
+free_bootmem_page() nowadays always translates to free_reserved_page().
 
-Consequently, there is no need to mark ms->usage as MIX_SECTION_INFO.
-Let's just stop doing that.
+Let's use free_reserved_page() to replace the free_bootmem_page() loop.
+We can stop including bootmem_info.h.
+
+Likely, vmemmap freeing code could be factored out into the core in the
+future.
 
 Signed-off-by: David Hildenbrand (Arm) <david@kernel.org>
 ---
- mm/bootmem_info.c | 12 +-----------
- 1 file changed, 1 insertion(+), 11 deletions(-)
+ arch/s390/mm/vmem.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-diff --git a/mm/bootmem_info.c b/mm/bootmem_info.c
-index cce1d560f094..0fa78db7fbc0 100644
---- a/mm/bootmem_info.c
-+++ b/mm/bootmem_info.c
-@@ -38,10 +38,8 @@ void put_page_bootmem(struct page *page)
+diff --git a/arch/s390/mm/vmem.c b/arch/s390/mm/vmem.c
+index eeadff45e0e1..d8b2a60e0c33 100644
+--- a/arch/s390/mm/vmem.c
++++ b/arch/s390/mm/vmem.c
+@@ -4,7 +4,6 @@
+  */
  
- static void __init register_page_bootmem_info_section(unsigned long start_pfn)
- {
--	unsigned long mapsize, section_nr, i;
-+	unsigned long section_nr;
- 	struct mem_section *ms;
--	struct mem_section_usage *usage;
--	struct page *page;
- 
- 	start_pfn = SECTION_ALIGN_DOWN(start_pfn);
- 	section_nr = pfn_to_section_nr(start_pfn);
-@@ -50,14 +48,6 @@ static void __init register_page_bootmem_info_section(unsigned long start_pfn)
- 	if (!preinited_vmemmap_section(ms))
- 		register_page_bootmem_memmap(section_nr, pfn_to_page(start_pfn),
- 					     PAGES_PER_SECTION);
--
--	usage = ms->usage;
--	page = virt_to_page(usage);
--
--	mapsize = PAGE_ALIGN(mem_section_usage_size()) >> PAGE_SHIFT;
--
--	for (i = 0; i < mapsize; i++, page++)
--		get_page_bootmem(section_nr, page, MIX_SECTION_INFO);
- }
- 
- void __init register_page_bootmem_info_node(struct pglist_data *pgdat)
+ #include <linux/memory_hotplug.h>
+-#include <linux/bootmem_info.h>
+ #include <linux/cpufeature.h>
+ #include <linux/memblock.h>
+ #include <linux/pfn.h>
+@@ -51,7 +50,7 @@ static void vmem_free_pages(unsigned long addr, int order, struct vmem_altmap *a
+ 	if (PageReserved(page)) {
+ 		/* allocated from memblock */
+ 		while (nr_pages--)
+-			free_bootmem_page(page++);
++			free_reserved_page(page++);
+ 	} else {
+ 		free_pages(addr, order);
+ 	}
 
 -- 
 2.43.0
