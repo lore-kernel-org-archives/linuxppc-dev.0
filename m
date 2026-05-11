@@ -1,51 +1,81 @@
-Return-Path: <linuxppc-dev+bounces-20702-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20703-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B03E2CD4846
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 May 2026 12:22:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D643BCD4840
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 May 2026 12:32:50 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gDf4Z2HTbz2xlh;
-	Mon, 11 May 2026 22:22:38 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778502158;
-	cv=none; b=FIXP1e1GShgJaVDc9WC1kOi+hdzCCw9efhPokB+uNbrp/FCDXvxEdQN+/6PxSvTM3YMjLn339dC9qXik8ZR9rjis2ExZVuSzH6bCf5Rb0JgDP3nKEgIZ1Q4Sr9xe3blWTSQHWIKfd4+eJWKXDyABy6oCKmirtiQj4178kYOMRzHe3mi2eyJEBtzI7y8TvOmnNbAYwa6KCItCMvcoYSyPXKhzVKVFVQ5fruPViAYuCTmxTJSqtV+YfCIMK82jHQTyWSghmsokEC3uACF1kR6rHU4BfH6Mq2iqc+72chfjxXHfmyu+MUFV+XdAmtk3HiZ4/EvoH07F88akGa543RNQPQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gDfJK328Mz2xlh;
+	Mon, 11 May 2026 22:32:49 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:41b8:202:deb::311:108"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778502769;
+	cv=none; b=RCQHFgDcPmxS5nZSJY+/hL6RrZ/VVVbyQzp5+GosFS1d2MHT6qF6GIsX2OSKkO277Q5+cP2RX6E9XKeNRvLtyoFU8gsxKs1p2pM1yj5OYTDxfqttx9kwGwYPyzr8J3TM3yYOaYrAIDX28jCnzYxmavMqkfVJRJI2BYavRUppqmO4juZVjjhpCU+2AEUi5YW7Nfqk6hO1UrxTU8c3sdyOpvdKYXPGlayPypbmk+QOb6xN+uxX0+EaxXxKX95krz58Jsz1SOB7j74fJjQTkP7RwOkAabk26T4xBfamDSNyOO0v7EunubiOYORLNefRUGM2mD6AUY8WVcM9k2pnjes4yQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1778502158; c=relaxed/relaxed;
-	bh=mnd9gwvyRXwmE2qLowSxqIaA64S47ubc4nBaZPf34yM=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=Hq17q1KubBOEQ91U0W6a3b0f4V7jGOcI6pi8TvRkf+YHFbdx5sLSTqLP/SrFElI2aHhYFtbZFReett06K/g1ezpfgwv9yJEjRpOD1QJ66BxEAuK455ndBqD1enZ9UM5IDKee8Jss9C8p+XO1EwDyj2ZsfgRh02HQ7T0brYIPQXWK3cPUHAiB7g2P0R7ALvN5gYombfDpqUNzZC4wxrtaqYbMDqyG+4LSkmsRfxgs7k8n6789Jt4iiCYdPg+ItO4aa62LKRCdQ9vAtgbOnnukYYxHHy2S0PyVRth8+Zi5opFOKl/m30j4JSVfDVKWaTcWtoE9t+P1cSxf++xJ0z19KQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=DmpuWN7u; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1778502769; c=relaxed/relaxed;
+	bh=M8lmcQvjJ5LUpDA4EmGDDTnt8GNDhiFnrJNCJhkuZWM=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=mmfqbQTzmMCyf3BgxE5I4EPROdfoi4NUoitISlqL7EhUpbW05zqKof1yMgy/PTeO4pKRmq8man0twsFn+z4+oB5FDOUeRJh60dMm4BOmELf32TluQfDlTeh11ALAb9H7y9bxj2niFPrhHOYsusAW4z528ccYe17tHMErNgzZ+5fa9BDcnR4XovYP5hQaRnWfdgplP/wGfgTg4QBiexAQ43w9q6ZDlkx0Dv/WG0HeGMtn898YSok0S0JkcRksrCKBZMxMmOYK6QDcdv9srhJ4zSHe+8bUHA+zdgInFn14YP0ngccvU6s5tVggOibHvZ3ucK5pXayUML/E68WkNsL30A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=debian.org; dkim=pass (2048-bit key; secure) header.d=debian.org header.i=@debian.org header.a=rsa-sha256 header.s=smtpauto.stravinsky header.b=XmiFKakl; dkim-atps=neutral; spf=pass (client-ip=2001:41b8:202:deb::311:108; helo=stravinsky.debian.org; envelope-from=leitao@debian.org; receiver=lists.ozlabs.org) smtp.mailfrom=debian.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=debian.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=DmpuWN7u;
+	dkim=pass (2048-bit key; secure) header.d=debian.org header.i=@debian.org header.a=rsa-sha256 header.s=smtpauto.stravinsky header.b=XmiFKakl;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=debian.org (client-ip=2001:41b8:202:deb::311:108; helo=stravinsky.debian.org; envelope-from=leitao@debian.org; receiver=lists.ozlabs.org)
+Received: from stravinsky.debian.org (stravinsky.debian.org [IPv6:2001:41b8:202:deb::311:108])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gDf4Y11swz2xf8
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 May 2026 22:22:37 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 329D144339;
-	Mon, 11 May 2026 12:22:34 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6B9B0C2BCB0;
-	Mon, 11 May 2026 12:22:29 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1778502154;
-	bh=2rnwGRjBmZwkmLDXWbAeEC18DQrH8JRTazD+yQeB2OQ=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=DmpuWN7u/aNBrVr6S4NCkSG90RyEDQAwy7lT0bv9sOkf4cV9XeoheC1A+79QFzc77
-	 2g7hKN8WPGTp1DiUYRMLZJ038Z+LDME0/WD0UKJv9UXsKa/GZ+TVjIAB+SDrElauVB
-	 HED6EoEQjsgmKHoQIRxXQaOnzwQvWJIbgJPIpJ9jv1Kj4+8NLmgiswpBngzzgFIgcq
-	 OLERCeDC3g2q0BNmFYtvjbpUtiziHBsc2tgUuOjRrbvQgl9n6EJAcywhaaeeBHVuQK
-	 aE2qXLF/yKnZQC1yR375kwEolGQq8uzvLq/uMJzP1bQYrz3z8kGnWPx1H4d/QGHYAE
-	 dHKRtKsmaCJIw==
-Message-ID: <2841f424-580c-48c6-bb26-de30e4397b7f@kernel.org>
-Date: Mon, 11 May 2026 14:22:28 +0200
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gDfJJ1Y5mz2xf8
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 May 2026 22:32:47 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=debian.org;
+	s=smtpauto.stravinsky; h=X-Debian-User:In-Reply-To:Content-Type:MIME-Version:
+	References:Message-ID:Subject:Cc:To:From:Date:Reply-To:
+	Content-Transfer-Encoding:Content-ID:Content-Description;
+	bh=M8lmcQvjJ5LUpDA4EmGDDTnt8GNDhiFnrJNCJhkuZWM=; b=XmiFKaklZ3QQYtH8/ygJpRi6/c
+	cJ9m6w27ps4ZkaQs+L3zmaULdxP92hxNU3mBsUHkvC5gV/Gr2OWyX7UNQwKGJQMGSIgDGnMR05nSr
+	6Hz3vsI22lcNtQs/VMzI48fbeiQc3TW5qrsNxcffxftFa5xlDo5LQ3kJ7Q0m2F5+M5D8c3G+2BDUt
+	Wr7OwYwQSZNfs/cIihoRG+30TDa9XqeX3dKysWM/Sidq9OVS27lVgnLamFYvGQfr7bsghipMWPyrI
+	mYwBzzTjZXPAId0EF/iDyo+lUuvmMRF8iddzWl4iCApO3hINgAD4OJDf0mLBEMdj/gGrp5p3Xx6ka
+	a7gITkwQ==;
+Received: from authenticated user
+	by stravinsky.debian.org with esmtpsa (TLS1.3:ECDHE_X25519__RSA_PSS_RSAE_SHA256__AES_256_GCM:256)
+	(Exim 4.96)
+	(envelope-from <leitao@debian.org>)
+	id 1wMPmt-001bCJ-0c;
+	Mon, 11 May 2026 12:31:07 +0000
+Date: Mon, 11 May 2026 05:30:54 -0700
+From: Breno Leitao <leitao@debian.org>
+To: Jinjie Ruan <ruanjinjie@huawei.com>
+Cc: corbet@lwn.net, skhan@linuxfoundation.org, catalin.marinas@arm.com, 
+	will@kernel.org, chenhuacai@kernel.org, kernel@xen0n.name, maddy@linux.ibm.com, 
+	mpe@ellerman.id.au, npiggin@gmail.com, chleroy@kernel.org, pjw@kernel.org, 
+	palmer@dabbelt.com, aou@eecs.berkeley.edu, alex@ghiti.fr, tglx@kernel.org, 
+	mingo@redhat.com, bp@alien8.de, dave.hansen@linux.intel.com, hpa@zytor.com, 
+	robh@kernel.org, saravanak@kernel.org, akpm@linux-foundation.org, bhe@redhat.com, 
+	rppt@kernel.org, pasha.tatashin@soleen.com, pratyush@kernel.org, 
+	ruirui.yang@linux.dev, rdunlap@infradead.org, pmladek@suse.com, 
+	dapeng1.mi@linux.intel.com, kees@kernel.org, elver@google.com, kuba@kernel.org, 
+	ebiggers@kernel.org, lirongqing@baidu.com, paulmck@kernel.org, 
+	sourabhjain@linux.ibm.com, coxu@redhat.com, jbohac@suse.cz, ryan.roberts@arm.com, 
+	osandov@fb.com, cfsworks@gmail.com, tangyouling@kylinos.cn, 
+	ritesh.list@gmail.com, adityag@linux.ibm.com, guoren@kernel.org, 
+	songshuaishuai@tinylab.org, kevin.brodsky@arm.com, vishal.moola@gmail.com, 
+	junhui.liu@pigmoral.tech, wangruikang@iscas.ac.cn, namcao@linutronix.de, 
+	chao.gao@intel.com, seanjc@google.com, fuqiang.wang@easystack.cn, ardb@kernel.org, 
+	chenjiahao16@huawei.com, hbathini@linux.ibm.com, takahiro.akashi@linaro.org, 
+	james.morse@arm.com, lizhengyu3@huawei.com, x86@kernel.org, linux-doc@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, loongarch@lists.linux.dev, 
+	linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org, devicetree@vger.kernel.org, 
+	kexec@lists.infradead.org
+Subject: Re: [PATCH v13 04/15] arm64: kexec_file: Fix potential buffer
+ overflow in prepare_elf_headers()
+Message-ID: <agHL1zzC5bzgoCiJ@gmail.com>
+References: <20260511030454.1730881-1-ruanjinjie@huawei.com>
+ <20260511030454.1730881-5-ruanjinjie@huawei.com>
+ <agGkvrg06KNDNfDi@gmail.com>
+ <79c14bee-b1f5-4d70-8345-6582d6cf0128@huawei.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -59,146 +89,65 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] drivers/base/memory: make memory block get/put explicit
-To: Muchun Song <songmuchun@bytedance.com>, Oscar Salvador
- <osalvador@suse.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- "Rafael J. Wysocki" <rafael@kernel.org>, Danilo Krummrich <dakr@kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
- Lorenzo Stoakes <ljs@kernel.org>, "Liam R. Howlett" <liam@infradead.org>,
- Vlastimil Babka <vbabka@kernel.org>, Mike Rapoport <rppt@kernel.org>,
- Suren Baghdasaryan <surenb@google.com>, Michal Hocko <mhocko@suse.com>,
- Madhavan Srinivasan <maddy@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
- "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
- Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>,
- Alexander Gordeev <agordeev@linux.ibm.com>,
- Christian Borntraeger <borntraeger@linux.ibm.com>,
- Sven Schnelle <svens@linux.ibm.com>, linux-mm@kvack.org,
- driver-core@lists.linux.dev, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
- muchun.song@linux.dev
-References: <20260511111800.2181785-1-songmuchun@bytedance.com>
-From: "David Hildenbrand (Arm)" <david@kernel.org>
-Content-Language: en-US
-Autocrypt: addr=david@kernel.org; keydata=
- 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
- qIws/H2t
-In-Reply-To: <20260511111800.2181785-1-songmuchun@bytedance.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <79c14bee-b1f5-4d70-8345-6582d6cf0128@huawei.com>
+X-Debian-User: leitao
 
-On 5/11/26 13:18, Muchun Song wrote:
-> Rename the memory block lookup helper to make the acquired reference
-> explicit, add memory_block_put() to wrap put_device(), and collapse the
-> redundant section-number wrapper into a single block-id based lookup
-> interface.
+On Mon, May 11, 2026 at 07:30:44PM +0800, Jinjie Ruan wrote:
 > 
-> This makes it clearer to callers that a successful lookup holds a
-> reference that must be dropped, reducing the chance of forgetting the
-> matching put and leaking the memory block device reference.
+> 
+> On 5/11/2026 5:46 PM, Breno Leitao wrote:
+> > On Mon, May 11, 2026 at 11:04:43AM +0800, Jinjie Ruan wrote:
+> >> There is a race condition between the kexec_load() system call
+> >> (crash kernel loading path) and memory hotplug operations that can
+> >> lead to buffer overflow and potential kernel crash.
+> >>
+> >> During prepare_elf_headers(), the following steps occur:
+> >> 1. The first for_each_mem_range() queries current System RAM memory ranges
+> >> 2. Allocates buffer based on queried count
+> >> 3. The 2st for_each_mem_range() populates ranges from memblock
+> >>
+> >> If memory hotplug occurs between step 1 and step 3, the number of ranges
+> >> can increase, causing out-of-bounds write when populating cmem->ranges[].
+> >>
+> >> This happens because kexec_load() uses kexec_trylock (atomic_t) while
+> >> memory hotplug uses device_hotplug_lock (mutex), so they don't serialize
+> >> with each other.
+> >>
+> >> Add the explicit bounds checking to prevent out-of-bounds access.
+> > 
+> > It seems you have a TOCTOU type of issue, and this seems to be shrinking
+> > the window, but not fully solving it?
+> 
+> Hi Breno,
+> 
+> Thanks for your comments regarding the TOCTOU issue.
+> 
+> You are correct that the current bounds checking only "shrinks the
+> window" and prevents a kernel crash, but doesn't fully guarantee header
+> consistency if a race occurs.
+> 
+> In my local environment, this race is extremely difficult to reproduce,
+> but it is theoretically possible.
+> 
+> To address this properly for arm64, I am considering two steps:
+> 
+> - For this patch: I will change the return value to -EAGAIN and keep the
+> bounds check. This ensures that even if a race happens, the kernel
+> remains safe (no OOB access), and user-space is notified to retry.
+> 
+> - Long-term solution: A better way to solve this is to implement ARM64
+> CRASH_HOTPLUG support (similar to x86). With crash hotplug, the kernel
+> will automatically re-generate the crash headers whenever a memory
+> hotplug event occurs. This makes the TOCTOU during the initial
+> kexec_load less critical, as any transient inconsistency will be
+> immediately corrected by the subsequent hotplug handler.
+> 
+> Does it make sense to you to use this patch as a safety guard first, and
+> then I (or someone else) follow up with the full CRASH_HOTPLUG support
+> for arm64 as [1]?
 
-Better mention some of the other changes here, like removing find_memory_block().
-
-[...]
-
->  	unlock_device_hotplug();
-> diff --git a/include/linux/memory.h b/include/linux/memory.h
-> index 5bb5599c6b2b..29edef1f975c 100644
-> --- a/include/linux/memory.h
-> +++ b/include/linux/memory.h
-> @@ -158,7 +158,11 @@ int create_memory_block_devices(unsigned long start, unsigned long size,
->  void remove_memory_block_devices(unsigned long start, unsigned long size);
->  extern void memory_dev_init(void);
->  extern int memory_notify(enum memory_block_state state, void *v);
-> -extern struct memory_block *find_memory_block(unsigned long section_nr);
-> +extern struct memory_block *memory_block_get(unsigned long block_id);
-
-While at it, please drop the "extern".
-
-> +static inline void memory_block_put(struct memory_block *mem)
-> +{
-> +	put_device(&mem->dev);
-> +}
->  typedef int (*walk_memory_blocks_func_t)(struct memory_block *, void *);
->  extern int walk_memory_blocks(unsigned long start, unsigned long size,
->  			      void *arg, walk_memory_blocks_func_t func);
-> @@ -171,7 +175,6 @@ struct memory_group *memory_group_find_by_id(int mgid);
->  typedef int (*walk_memory_groups_func_t)(struct memory_group *, void *);
->  int walk_dynamic_memory_groups(int nid, walk_memory_groups_func_t func,
->  			       struct memory_group *excluded, void *arg);
-> -struct memory_block *find_memory_block_by_id(unsigned long block_id);
->  #define hotplug_memory_notifier(fn, pri) ({		\
->  	static __meminitdata struct notifier_block fn##_mem_nb =\
->  		{ .notifier_call = fn, .priority = pri };\
-> diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
-> index 462d8dcd636d..890c6453e887 100644
-> --- a/mm/memory_hotplug.c
-> +++ b/mm/memory_hotplug.c
-> @@ -1417,14 +1417,13 @@ static void remove_memory_blocks_and_altmaps(u64 start, u64 size)
->  		struct vmem_altmap *altmap = NULL;
->  		struct memory_block *mem;
->  
-> -		mem = find_memory_block(pfn_to_section_nr(PFN_DOWN(cur_start)));
-> +		mem = memory_block_get(phys_to_block_id(cur_start));
->  		if (WARN_ON_ONCE(!mem))
->  			continue;
->  
->  		altmap = mem->altmap;
->  		mem->altmap = NULL;
-> -		/* drop the ref. we got via find_memory_block() */
-> -		put_device(&mem->dev);
-> +		memory_block_put(mem);
-
-Would guards come in handy here?
-
-In general
-
-Acked-by: David Hildenbrand (Arm) <david@kernel.org>
-
--- 
-Cheers,
-
-David
+It would be OK for me, but, make it explict that there is a TOCTOU
+issue, that depends on CRASH_HOTPLUG.
 
