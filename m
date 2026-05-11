@@ -1,81 +1,48 @@
-Return-Path: <linuxppc-dev+bounces-20703-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20704-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D643BCD4840
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 May 2026 12:32:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 62D6ECD37AC
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 May 2026 13:24:45 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gDfJK328Mz2xlh;
-	Mon, 11 May 2026 22:32:49 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:41b8:202:deb::311:108"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778502769;
-	cv=none; b=RCQHFgDcPmxS5nZSJY+/hL6RrZ/VVVbyQzp5+GosFS1d2MHT6qF6GIsX2OSKkO277Q5+cP2RX6E9XKeNRvLtyoFU8gsxKs1p2pM1yj5OYTDxfqttx9kwGwYPyzr8J3TM3yYOaYrAIDX28jCnzYxmavMqkfVJRJI2BYavRUppqmO4juZVjjhpCU+2AEUi5YW7Nfqk6hO1UrxTU8c3sdyOpvdKYXPGlayPypbmk+QOb6xN+uxX0+EaxXxKX95krz58Jsz1SOB7j74fJjQTkP7RwOkAabk26T4xBfamDSNyOO0v7EunubiOYORLNefRUGM2mD6AUY8WVcM9k2pnjes4yQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gDgSC6nJpz2xlh;
+	Mon, 11 May 2026 23:24:43 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:41d0:1004:224b::b2"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778505883;
+	cv=none; b=I279c0npOMQqLDYwE2Ry+UI1/CQjBU0JBPYU0iU9yyou/UVTufiINOgpA4eL+TMTPe9pGy1R1JFvqFtXoGRfhfbbWEe/PRypYgCOCP8rvDSnXBMC7gELd3LmOyduLhGUPqTGFjHcLs1sc/wo9RHeQDLAz8rHVqEGJcl8mdQBLNKo4sFwtEBD6yLAvxKF2mFzcd9dAHdasjnsCGhpiq05mdNmXu4/pN/XflArh4d/9uR3R9DrqvoHNSGNZzv1hbOsTAb0DlaBiAE6KTcqCEf26FCLNFQKh7brMMqZ2WPT8jYD4argVzClLKjljvDC7EaLNHA0cu1Lz96sma70TMkmsA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1778502769; c=relaxed/relaxed;
-	bh=M8lmcQvjJ5LUpDA4EmGDDTnt8GNDhiFnrJNCJhkuZWM=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=mmfqbQTzmMCyf3BgxE5I4EPROdfoi4NUoitISlqL7EhUpbW05zqKof1yMgy/PTeO4pKRmq8man0twsFn+z4+oB5FDOUeRJh60dMm4BOmELf32TluQfDlTeh11ALAb9H7y9bxj2niFPrhHOYsusAW4z528ccYe17tHMErNgzZ+5fa9BDcnR4XovYP5hQaRnWfdgplP/wGfgTg4QBiexAQ43w9q6ZDlkx0Dv/WG0HeGMtn898YSok0S0JkcRksrCKBZMxMmOYK6QDcdv9srhJ4zSHe+8bUHA+zdgInFn14YP0ngccvU6s5tVggOibHvZ3ucK5pXayUML/E68WkNsL30A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=debian.org; dkim=pass (2048-bit key; secure) header.d=debian.org header.i=@debian.org header.a=rsa-sha256 header.s=smtpauto.stravinsky header.b=XmiFKakl; dkim-atps=neutral; spf=pass (client-ip=2001:41b8:202:deb::311:108; helo=stravinsky.debian.org; envelope-from=leitao@debian.org; receiver=lists.ozlabs.org) smtp.mailfrom=debian.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=debian.org
+	t=1778505883; c=relaxed/relaxed;
+	bh=5z8Lm7PbYzdvsHr44p/Kq/5LGVMLu1AFqGqWWK02nUg=;
+	h=Content-Type:From:Mime-Version:Subject:Date:Message-Id:References:
+	 Cc:In-Reply-To:To; b=BaEMJc508l2EQwR+wuQ/gS/cDtlwWseg3vx0hT5xsilAuvmmnQqFJIsS5b8902EJ+zpcXeZDL6ZeaHQ9n0xgRitc4hQ1VuX7Hdcd1UHP9Pwn/mG9s4jhV8t90mwKf9uePLTbHk39Xkh8dd7i6gjb7ekI32ZWJ4wlYXaDyGxobCP1HcTM7vfxX6fjUfClNkG75kCTRlTmc5FtM4G9r1iJeC489WBXGpq9zNsOeRMAj18sBVJIMQzjRleBFTFRZvbr7vL8MY9FFoWY5PM7RBSc0+ClmIq4LBKi5znPqv7cVE/n42IUvu4qarAA506cWfPAWciy22XG6GWeqRFvpI0Fcw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=tR6uiK4v; dkim-atps=neutral; spf=pass (client-ip=2001:41d0:1004:224b::b2; helo=out-178.mta0.migadu.com; envelope-from=muchun.song@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=debian.org header.i=@debian.org header.a=rsa-sha256 header.s=smtpauto.stravinsky header.b=XmiFKakl;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=tR6uiK4v;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=debian.org (client-ip=2001:41b8:202:deb::311:108; helo=stravinsky.debian.org; envelope-from=leitao@debian.org; receiver=lists.ozlabs.org)
-Received: from stravinsky.debian.org (stravinsky.debian.org [IPv6:2001:41b8:202:deb::311:108])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=2001:41d0:1004:224b::b2; helo=out-178.mta0.migadu.com; envelope-from=muchun.song@linux.dev; receiver=lists.ozlabs.org)
+Received: from out-178.mta0.migadu.com (out-178.mta0.migadu.com [IPv6:2001:41d0:1004:224b::b2])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gDfJJ1Y5mz2xf8
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 May 2026 22:32:47 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=debian.org;
-	s=smtpauto.stravinsky; h=X-Debian-User:In-Reply-To:Content-Type:MIME-Version:
-	References:Message-ID:Subject:Cc:To:From:Date:Reply-To:
-	Content-Transfer-Encoding:Content-ID:Content-Description;
-	bh=M8lmcQvjJ5LUpDA4EmGDDTnt8GNDhiFnrJNCJhkuZWM=; b=XmiFKaklZ3QQYtH8/ygJpRi6/c
-	cJ9m6w27ps4ZkaQs+L3zmaULdxP92hxNU3mBsUHkvC5gV/Gr2OWyX7UNQwKGJQMGSIgDGnMR05nSr
-	6Hz3vsI22lcNtQs/VMzI48fbeiQc3TW5qrsNxcffxftFa5xlDo5LQ3kJ7Q0m2F5+M5D8c3G+2BDUt
-	Wr7OwYwQSZNfs/cIihoRG+30TDa9XqeX3dKysWM/Sidq9OVS27lVgnLamFYvGQfr7bsghipMWPyrI
-	mYwBzzTjZXPAId0EF/iDyo+lUuvmMRF8iddzWl4iCApO3hINgAD4OJDf0mLBEMdj/gGrp5p3Xx6ka
-	a7gITkwQ==;
-Received: from authenticated user
-	by stravinsky.debian.org with esmtpsa (TLS1.3:ECDHE_X25519__RSA_PSS_RSAE_SHA256__AES_256_GCM:256)
-	(Exim 4.96)
-	(envelope-from <leitao@debian.org>)
-	id 1wMPmt-001bCJ-0c;
-	Mon, 11 May 2026 12:31:07 +0000
-Date: Mon, 11 May 2026 05:30:54 -0700
-From: Breno Leitao <leitao@debian.org>
-To: Jinjie Ruan <ruanjinjie@huawei.com>
-Cc: corbet@lwn.net, skhan@linuxfoundation.org, catalin.marinas@arm.com, 
-	will@kernel.org, chenhuacai@kernel.org, kernel@xen0n.name, maddy@linux.ibm.com, 
-	mpe@ellerman.id.au, npiggin@gmail.com, chleroy@kernel.org, pjw@kernel.org, 
-	palmer@dabbelt.com, aou@eecs.berkeley.edu, alex@ghiti.fr, tglx@kernel.org, 
-	mingo@redhat.com, bp@alien8.de, dave.hansen@linux.intel.com, hpa@zytor.com, 
-	robh@kernel.org, saravanak@kernel.org, akpm@linux-foundation.org, bhe@redhat.com, 
-	rppt@kernel.org, pasha.tatashin@soleen.com, pratyush@kernel.org, 
-	ruirui.yang@linux.dev, rdunlap@infradead.org, pmladek@suse.com, 
-	dapeng1.mi@linux.intel.com, kees@kernel.org, elver@google.com, kuba@kernel.org, 
-	ebiggers@kernel.org, lirongqing@baidu.com, paulmck@kernel.org, 
-	sourabhjain@linux.ibm.com, coxu@redhat.com, jbohac@suse.cz, ryan.roberts@arm.com, 
-	osandov@fb.com, cfsworks@gmail.com, tangyouling@kylinos.cn, 
-	ritesh.list@gmail.com, adityag@linux.ibm.com, guoren@kernel.org, 
-	songshuaishuai@tinylab.org, kevin.brodsky@arm.com, vishal.moola@gmail.com, 
-	junhui.liu@pigmoral.tech, wangruikang@iscas.ac.cn, namcao@linutronix.de, 
-	chao.gao@intel.com, seanjc@google.com, fuqiang.wang@easystack.cn, ardb@kernel.org, 
-	chenjiahao16@huawei.com, hbathini@linux.ibm.com, takahiro.akashi@linaro.org, 
-	james.morse@arm.com, lizhengyu3@huawei.com, x86@kernel.org, linux-doc@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, loongarch@lists.linux.dev, 
-	linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org, devicetree@vger.kernel.org, 
-	kexec@lists.infradead.org
-Subject: Re: [PATCH v13 04/15] arm64: kexec_file: Fix potential buffer
- overflow in prepare_elf_headers()
-Message-ID: <agHL1zzC5bzgoCiJ@gmail.com>
-References: <20260511030454.1730881-1-ruanjinjie@huawei.com>
- <20260511030454.1730881-5-ruanjinjie@huawei.com>
- <agGkvrg06KNDNfDi@gmail.com>
- <79c14bee-b1f5-4d70-8345-6582d6cf0128@huawei.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gDgS473xJz2xf8
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 May 2026 23:24:34 +1000 (AEST)
+Content-Type: text/plain; charset=utf-8
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
+	t=1778505849;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=5z8Lm7PbYzdvsHr44p/Kq/5LGVMLu1AFqGqWWK02nUg=;
+	b=tR6uiK4vEp5eioru6Ipra4Az/BhAvo1kWF1fPx6I9XeodPF8HIrBISmioNv7imWa3B6iiI
+	/VEPQtEj82FsW6aw7jq/5BB4OkswlViDVjO+jJucIVX6gDAj4r/773nRMQen1GTVH5A6RO
+	KhzO5EEzI5sjkIVCHpA+MgQlMRr49rQ=
+Content-Transfer-Encoding: quoted-printable
+X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
+From: Muchun Song <muchun.song@linux.dev>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -88,66 +55,134 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <79c14bee-b1f5-4d70-8345-6582d6cf0128@huawei.com>
-X-Debian-User: leitao
+Mime-Version: 1.0 (1.0)
+Subject: Re: [PATCH] drivers/base/memory: make memory block get/put explicit
+Date: Mon, 11 May 2026 21:23:18 +0800
+Message-Id: <3234B4D3-8202-4E79-B85B-8B6373BB76F6@linux.dev>
+References: <2841f424-580c-48c6-bb26-de30e4397b7f@kernel.org>
+Cc: Muchun Song <songmuchun@bytedance.com>,
+ Oscar Salvador <osalvador@suse.de>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ "Rafael J. Wysocki" <rafael@kernel.org>,
+ Danilo Krummrich <dakr@kernel.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Lorenzo Stoakes <ljs@kernel.org>, "Liam R. Howlett" <liam@infradead.org>,
+ Vlastimil Babka <vbabka@kernel.org>, Mike Rapoport <rppt@kernel.org>,
+ Suren Baghdasaryan <surenb@google.com>, Michal Hocko <mhocko@suse.com>,
+ Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
+ Christophe Leroy <chleroy@kernel.org>, Heiko Carstens <hca@linux.ibm.com>,
+ Vasily Gorbik <gor@linux.ibm.com>,
+ Alexander Gordeev <agordeev@linux.ibm.com>,
+ Christian Borntraeger <borntraeger@linux.ibm.com>,
+ Sven Schnelle <svens@linux.ibm.com>, linux-mm@kvack.org,
+ driver-core@lists.linux.dev, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org
+In-Reply-To: <2841f424-580c-48c6-bb26-de30e4397b7f@kernel.org>
+To: David Hildenbrand <david@kernel.org>
+X-Migadu-Flow: FLOW_OUT
 
-On Mon, May 11, 2026 at 07:30:44PM +0800, Jinjie Ruan wrote:
-> 
-> 
-> On 5/11/2026 5:46 PM, Breno Leitao wrote:
-> > On Mon, May 11, 2026 at 11:04:43AM +0800, Jinjie Ruan wrote:
-> >> There is a race condition between the kexec_load() system call
-> >> (crash kernel loading path) and memory hotplug operations that can
-> >> lead to buffer overflow and potential kernel crash.
-> >>
-> >> During prepare_elf_headers(), the following steps occur:
-> >> 1. The first for_each_mem_range() queries current System RAM memory ranges
-> >> 2. Allocates buffer based on queried count
-> >> 3. The 2st for_each_mem_range() populates ranges from memblock
-> >>
-> >> If memory hotplug occurs between step 1 and step 3, the number of ranges
-> >> can increase, causing out-of-bounds write when populating cmem->ranges[].
-> >>
-> >> This happens because kexec_load() uses kexec_trylock (atomic_t) while
-> >> memory hotplug uses device_hotplug_lock (mutex), so they don't serialize
-> >> with each other.
-> >>
-> >> Add the explicit bounds checking to prevent out-of-bounds access.
-> > 
-> > It seems you have a TOCTOU type of issue, and this seems to be shrinking
-> > the window, but not fully solving it?
-> 
-> Hi Breno,
-> 
-> Thanks for your comments regarding the TOCTOU issue.
-> 
-> You are correct that the current bounds checking only "shrinks the
-> window" and prevents a kernel crash, but doesn't fully guarantee header
-> consistency if a race occurs.
-> 
-> In my local environment, this race is extremely difficult to reproduce,
-> but it is theoretically possible.
-> 
-> To address this properly for arm64, I am considering two steps:
-> 
-> - For this patch: I will change the return value to -EAGAIN and keep the
-> bounds check. This ensures that even if a race happens, the kernel
-> remains safe (no OOB access), and user-space is notified to retry.
-> 
-> - Long-term solution: A better way to solve this is to implement ARM64
-> CRASH_HOTPLUG support (similar to x86). With crash hotplug, the kernel
-> will automatically re-generate the crash headers whenever a memory
-> hotplug event occurs. This makes the TOCTOU during the initial
-> kexec_load less critical, as any transient inconsistency will be
-> immediately corrected by the subsequent hotplug handler.
-> 
-> Does it make sense to you to use this patch as a safety guard first, and
-> then I (or someone else) follow up with the full CRASH_HOTPLUG support
-> for arm64 as [1]?
 
-It would be OK for me, but, make it explict that there is a TOCTOU
-issue, that depends on CRASH_HOTPLUG.
+
+> On May 11, 2026, at 20:22, David Hildenbrand (Arm) <david@kernel.org> wrot=
+e:
+>=20
+> =EF=BB=BFOn 5/11/26 13:18, Muchun Song wrote:
+>> Rename the memory block lookup helper to make the acquired reference
+>> explicit, add memory_block_put() to wrap put_device(), and collapse the
+>> redundant section-number wrapper into a single block-id based lookup
+>> interface.
+>>=20
+>> This makes it clearer to callers that a successful lookup holds a
+>> reference that must be dropped, reducing the chance of forgetting the
+>> matching put and leaking the memory block device reference.
+>=20
+> Better mention some of the other changes here, like removing find_memory_b=
+lock().
+
+Will do.
+
+>=20
+> [...]
+>=20
+>>    unlock_device_hotplug();
+>> diff --git a/include/linux/memory.h b/include/linux/memory.h
+>> index 5bb5599c6b2b..29edef1f975c 100644
+>> --- a/include/linux/memory.h
+>> +++ b/include/linux/memory.h
+>> @@ -158,7 +158,11 @@ int create_memory_block_devices(unsigned long start,=
+ unsigned long size,
+>> void remove_memory_block_devices(unsigned long start, unsigned long size)=
+;
+>> extern void memory_dev_init(void);
+>> extern int memory_notify(enum memory_block_state state, void *v);
+>> -extern struct memory_block *find_memory_block(unsigned long section_nr);=
+
+>> +extern struct memory_block *memory_block_get(unsigned long block_id);
+>=20
+> While at it, please drop the "extern".
+
+OK.
+
+>=20
+>> +static inline void memory_block_put(struct memory_block *mem)
+>> +{
+>> +    put_device(&mem->dev);
+>> +}
+>> typedef int (*walk_memory_blocks_func_t)(struct memory_block *, void *);
+>> extern int walk_memory_blocks(unsigned long start, unsigned long size,
+>>                  void *arg, walk_memory_blocks_func_t func);
+>> @@ -171,7 +175,6 @@ struct memory_group *memory_group_find_by_id(int mgid=
+);
+>> typedef int (*walk_memory_groups_func_t)(struct memory_group *, void *);
+>> int walk_dynamic_memory_groups(int nid, walk_memory_groups_func_t func,
+>>                   struct memory_group *excluded, void *arg);
+>> -struct memory_block *find_memory_block_by_id(unsigned long block_id);
+>> #define hotplug_memory_notifier(fn, pri) ({        \
+>>    static __meminitdata struct notifier_block fn##_mem_nb =3D\
+>>        { .notifier_call =3D fn, .priority =3D pri };\
+>> diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
+>> index 462d8dcd636d..890c6453e887 100644
+>> --- a/mm/memory_hotplug.c
+>> +++ b/mm/memory_hotplug.c
+>> @@ -1417,14 +1417,13 @@ static void remove_memory_blocks_and_altmaps(u64 s=
+tart, u64 size)
+>>        struct vmem_altmap *altmap =3D NULL;
+>>        struct memory_block *mem;
+>>=20
+>> -        mem =3D find_memory_block(pfn_to_section_nr(PFN_DOWN(cur_start))=
+);
+>> +        mem =3D memory_block_get(phys_to_block_id(cur_start));
+>>        if (WARN_ON_ONCE(!mem))
+>>            continue;
+>>=20
+>>        altmap =3D mem->altmap;
+>>        mem->altmap =3D NULL;
+>> -        /* drop the ref. we got via find_memory_block() */
+>> -        put_device(&mem->dev);
+>> +        memory_block_put(mem);
+>=20
+> Would guards come in handy here?
+
+You mean to introduce something like:
+
+scoped_guard(memory_block, id) {
+}
+
+Right? If yes, I will give it a try.
+
+>=20
+> In general
+>=20
+> Acked-by: David Hildenbrand (Arm) <david@kernel.org>
+
+Thanks.
+
+Muchun
+
+>=20
+> --
+> Cheers,
+>=20
+> David
 
