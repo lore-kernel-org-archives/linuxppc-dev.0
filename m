@@ -1,83 +1,127 @@
-Return-Path: <linuxppc-dev+bounces-20782-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20783-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D6CD3CD4851
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 May 2026 09:50:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A1D27CD4F21
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 May 2026 11:42:48 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gFBfs0zcrz2yXj;
-	Tue, 12 May 2026 19:50:45 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778579445;
-	cv=none; b=CtqDTf9ts86GFD78eOgoi/ryZOUPqkr6vhpKtKZN6h7zrLlp1bsmdL7ivzZEhOXRKZ2xP3WuzbbfJLAYlPUUDmj1jbmhJVaJkGisctVgklEWgkFP0UgzaJM31GzVI5nrkWbWgHs9PQV0YkmjbusrD06YAbpmJ0F8YckXRljcYJH6caeYCs60OEyVrF1dxSHQ8d82JiuejpE0oNSjokJhkmvcQhpxGJY954hXVe87P/WYy+A/4G4+ahCJl9KWxTm3av5FAyOpHyN5EHUUSj5P7ErgT9JAS+gz+3o2GRTfRVNBYNKRGpFOcHo4GCkZxFLV3gORkd+sR1JFALWS9Ohe/g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gFF866Cfyz2xm3;
+	Tue, 12 May 2026 21:42:46 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a07:de40:b251:101:10:150:64:2"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778586166;
+	cv=none; b=iDUo/Hseqa9NAc9GhebzVZFrVz0iFacjf1VWmSnnj4GFZQL0jRzTilRZRLAe9yzZW0assaGL5Xd+bQUadNEoU5iaYtnQs+9NQEmO5fwRJ9uNCWHI+jrXPulnYZG8u3qlfHL+qThU8rZE0+QtLY7oqxvmS0qzcJRD+gU2pdFLGc8jv1SeK3Zfj6q1qdQseXSnW6LYXC9KSWhPRNhkoDd61Z8IqngnECFx25s4pnFoHhJ/TkhbGVo6FAlJsYNjgEdh2RSckNm9LFJ4SoJS0KQSbeJkOW/uFBMkz4FS5rMl0mWwPkUmOMaP+Xrn+Fzwjd3pQ+PLmb55pvNdDZxfaliPTw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1778579445; c=relaxed/relaxed;
-	bh=a1RC0kpmGJbZo1UqA0ld7Tn2VrAQWpnq79+ztkIjS8I=;
-	h=MIME-Version:Date:From:To:Cc:Message-Id:In-Reply-To:References:
-	 Subject:Content-Type; b=Gx/PP94enKnS3X1iCq1hItYuOJwHtZHZLDUKhPXHrbcKOrBaODgCdNMOaIoQG5rexsIZv+xK7kCG+H86cZdWKs4iiwAHI8UULAbgyME7xQRSyYrL9Yte9PP5zJW5zNa27QfMS0jD3Ebwdn/af4Szcgz7N5SROeBCGlpeB+Pu7+xk5/x7pNwPu0bkIY7wOLWRo/JjzH/3rGE4spERbiKtPiJzpODGRDrGPl+VzZa41roUWKURgsEV04r6Ozye3QUZs/8rYyGgzXwbVsYVMnXtt6oZ5omrLokSrjpVMlC3iJOc6F+UGDuGxenKle77udlRBaWZIGy4tYLwIT+3hp9qQw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=XFOgFHvn; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ardb@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1778586166; c=relaxed/relaxed;
+	bh=QLgB5RUZcid9XLsWsmXqzit5YR0tRKGHMrKjGe72tnI=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=MElenXgU1lMCAca16U6HS/CNn6Nzkx5cghL3SyHFYnDchSVb8Jv12qO2PmgdSF6+xys0PE4nTw4k6lsrOZniKFLBtvjPLGY6duDwpTGYqyPr8bB/0qWIjJnJbs7vsEM5ftbVM1snCukIw7f4/ptvJGysqPZCKQ/LkyWqJ1f9vRYRg5ssC6MnX9JozmFGsKYTIs2RenrwTR7pu59O8syg/Zee0a77ClHM0qjs/eshFQ1+UIJcakM761jdWP/+xYfHWwyRT6rYu7ZxHtMh2J6PJd9MO2ahJcFMAa1nkd69OYxwRvKucIfpgj5yA/YkMOIuC5tGELliWCtrCcJYP+M+eQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=suse.cz; dkim=pass (1024-bit key; unprotected) header.d=suse.cz header.i=@suse.cz header.a=rsa-sha256 header.s=susede2_rsa header.b=KEweNcFX; dkim=pass header.d=suse.cz header.i=@suse.cz header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=0J342uiq; dkim=pass (1024-bit key) header.d=suse.cz header.i=@suse.cz header.a=rsa-sha256 header.s=susede2_rsa header.b=KEweNcFX; dkim=neutral header.d=suse.cz header.i=@suse.cz header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=0J342uiq; dkim-atps=neutral; spf=pass (client-ip=2a07:de40:b251:101:10:150:64:2; helo=smtp-out2.suse.de; envelope-from=dsterba@suse.cz; receiver=lists.ozlabs.org) smtp.mailfrom=suse.cz
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=suse.cz
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=XFOgFHvn;
+	dkim=pass (1024-bit key; unprotected) header.d=suse.cz header.i=@suse.cz header.a=rsa-sha256 header.s=susede2_rsa header.b=KEweNcFX;
+	dkim=pass header.d=suse.cz header.i=@suse.cz header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=0J342uiq;
+	dkim=pass (1024-bit key) header.d=suse.cz header.i=@suse.cz header.a=rsa-sha256 header.s=susede2_rsa header.b=KEweNcFX;
+	dkim=neutral header.d=suse.cz header.i=@suse.cz header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=0J342uiq;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ardb@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.cz (client-ip=2a07:de40:b251:101:10:150:64:2; helo=smtp-out2.suse.de; envelope-from=dsterba@suse.cz; receiver=lists.ozlabs.org)
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [IPv6:2a07:de40:b251:101:10:150:64:2])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gFBfm4tl6z2yVM
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2026 19:50:40 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id B2BFB44361;
-	Tue, 12 May 2026 09:50:38 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 63D85C2BCF5;
-	Tue, 12 May 2026 09:50:37 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1778579438;
-	bh=iodQUQY7CnisbRWz7ZX1kdnUrHJlSwk4Axa8QKYq830=;
-	h=Date:From:To:Cc:In-Reply-To:References:Subject:From;
-	b=XFOgFHvn9mBF2xBvRAZWYN4FsdnnUCfPsyFwGq5E9zA90qIOCobVdiEX9IjRuOO7A
-	 a4koWchkllcAIttf8zp8nn4DNgAVrP9LdSX7c7Wd2O/Ip/XWfV7tEV0OA9U7Udc+UE
-	 fEBu5x2ef3P1zVecOZKVBZrnFtNm/j8jBWssv5lVpyaW+nKCdX9FnSHkuv+MOahJJE
-	 QNDdbgoh7OoscH495SUEFI0BJnaKehG0YhHRaOpuk7FVyVPOsRcJRVWd+JLcdYAR9J
-	 Mh1IFQ3qEmNBYLJIOPrHNmKAZ1ztNQxjTy4SJZikX6wyepAIsQBzQb9nb5w/at5zDd
-	 CFzv2hvfalSuw==
-Received: from phl-compute-01.internal (phl-compute-01.internal [10.202.2.41])
-	by mailfauth.phl.internal (Postfix) with ESMTP id 69211F4007E;
-	Tue, 12 May 2026 05:50:36 -0400 (EDT)
-Received: from phl-imap-14 ([10.202.2.87])
-  by phl-compute-01.internal (MEProxy); Tue, 12 May 2026 05:50:36 -0400
-X-ME-Sender: <xms:7PcCam9YJOHuCSkFlDq4ISbUnfEsy1OEjiwfu2I0G97RJXn0Y9Qj3Q>
-    <xme:7PcCahg10CcdO5ywOYNj_MoUADdtr56c-r9bHz7tueJKnmE7BlO5CNe34OWAHP6O0
-    K2ZP7MTmRqCKNmM6To0iTGAEXW_mzbRu-_Ppobim0hC3yvVCtlniA>
-X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgeefhedrtddtgdduvddugeekucetufdoteggodetrf
-    dotffvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfurfetoffkrfgpnffqhgenuceu
-    rghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujf
-    gurhepofggfffhvfevkfgjfhfutgfgsehtjeertdertddtnecuhfhrohhmpedftehrugcu
-    uehivghshhgvuhhvvghlfdcuoegrrhgusgeskhgvrhhnvghlrdhorhhgqeenucggtffrrg
-    htthgvrhhnpeetgedvtddttdeuffegvdefgffgteeiueejuefhjefhvdekkeelkeduteej
-    tdetheenucffohhmrghinhepihhnfhhrrgguvggrugdrohhrghenucevlhhushhtvghruf
-    hiiigvpedtnecurfgrrhgrmhepmhgrihhlfhhrohhmpegrrhguodhmvghsmhhtphgruhht
-    hhhpvghrshhonhgrlhhithihqdduieejtdehtddtjeelqdeffedvudeigeduhedqrghrug
-    gspeepkhgvrhhnvghlrdhorhhgseifohhrkhhofhgrrhgurdgtohhmpdhnsggprhgtphht
-    thhopeegfedpmhhouggvpehsmhhtphhouhhtpdhrtghpthhtohepsghpsegrlhhivghnke
-    druggvpdhrtghpthhtoheptggrthgrlhhinhdrmhgrrhhinhgrshesrghrmhdrtghomhdp
-    rhgtphhtthhopegrrhhnugesrghrnhgusgdruggvpdhrtghpthhtohepphgrlhhmvghrse
-    gurggssggvlhhtrdgtohhmpdhrtghpthhtoheprghouhesvggvtghsrdgsvghrkhgvlhgv
-    hidrvgguuhdprhgtphhtthhopehmphgvsegvlhhlvghrmhgrnhdrihgurdgruhdprhgtph
-    htthhopegtlhhmsehfsgdrtghomhdprhgtphhtthhopeihuhhkuhgrihesfhhnnhgrshdr
-    tghomhdprhgtphhtthhopegrlhgvgiesghhhihhtihdrfhhr
-X-ME-Proxy: <xmx:7PcCalktau1ceeO9LVmwrvdgtBQqFGLkbXstpSg8yybS685IYcHORw>
-    <xmx:7PcCasmugZGdftyVI7SsXjAnPbfXZESq-0jgJf5WHEk-4Op-5tihhg>
-    <xmx:7PcCakOBuua_a1L3B6_7D8BIKwPWLDsIB0zTRk7q4odJEd-XR7f0rg>
-    <xmx:7PcCamtx3Q0fvbGtW41fj2F_sqDaICjJw47CJSybFMv4EVU0bnkNFA>
-    <xmx:7PcCauA9QdM04AOLLlOCDA53c0jW-oZSzKQywL6_3ngSclabTlPoqQSc>
-Feedback-ID: ice86485a:Fastmail
-Received: by mailuser.phl.internal (Postfix, from userid 501)
-	id 38C50C4006F; Tue, 12 May 2026 05:50:36 -0400 (EDT)
-X-Mailer: MessagingEngine.com Webmail Interface
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gFF8527xHz2xSF
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2026 21:42:44 +1000 (AEST)
+Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out2.suse.de (Postfix) with ESMTPS id 34B7376120;
+	Tue, 12 May 2026 11:42:41 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.cz; s=susede2_rsa;
+	t=1778586161;
+	h=from:from:reply-to:reply-to:date:date:message-id:message-id:to:to:
+	 cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=QLgB5RUZcid9XLsWsmXqzit5YR0tRKGHMrKjGe72tnI=;
+	b=KEweNcFXbI/4awwwikZwQpLsJhqdcKP/ND/eEIHZpMVZYswHjsmnrwZiU2bxaD8n1OK0IS
+	Kc6YjC0sw7nAn6qO/p47INirDH4cevpavEC2j0COzrDVxJtWpDOoi9k2FZAGtUc4QSsWyH
+	YY7KnSMmVLtonjV5smZq449Ls/XSOCc=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.cz;
+	s=susede2_ed25519; t=1778586161;
+	h=from:from:reply-to:reply-to:date:date:message-id:message-id:to:to:
+	 cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=QLgB5RUZcid9XLsWsmXqzit5YR0tRKGHMrKjGe72tnI=;
+	b=0J342uiqkSfyW8DZyH8r4hsv6i4foe07KIq12qtoXRLRS5m/d+XbyypVqVX3QbmZPnqRJi
+	sxhM5qcbrx7pPCAQ==
+Authentication-Results: smtp-out2.suse.de;
+	none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.cz; s=susede2_rsa;
+	t=1778586161;
+	h=from:from:reply-to:reply-to:date:date:message-id:message-id:to:to:
+	 cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=QLgB5RUZcid9XLsWsmXqzit5YR0tRKGHMrKjGe72tnI=;
+	b=KEweNcFXbI/4awwwikZwQpLsJhqdcKP/ND/eEIHZpMVZYswHjsmnrwZiU2bxaD8n1OK0IS
+	Kc6YjC0sw7nAn6qO/p47INirDH4cevpavEC2j0COzrDVxJtWpDOoi9k2FZAGtUc4QSsWyH
+	YY7KnSMmVLtonjV5smZq449Ls/XSOCc=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.cz;
+	s=susede2_ed25519; t=1778586161;
+	h=from:from:reply-to:reply-to:date:date:message-id:message-id:to:to:
+	 cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=QLgB5RUZcid9XLsWsmXqzit5YR0tRKGHMrKjGe72tnI=;
+	b=0J342uiqkSfyW8DZyH8r4hsv6i4foe07KIq12qtoXRLRS5m/d+XbyypVqVX3QbmZPnqRJi
+	sxhM5qcbrx7pPCAQ==
+Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 08727593A9;
+	Tue, 12 May 2026 11:42:41 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
+	by imap1.dmz-prg2.suse.org with ESMTPSA
+	id rkjQATESA2rLPQAAD6G6ig
+	(envelope-from <dsterba@suse.cz>); Tue, 12 May 2026 11:42:41 +0000
+Date: Tue, 12 May 2026 13:42:31 +0200
+From: David Sterba <dsterba@suse.cz>
+To: Christoph Hellwig <hch@lst.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+	Catalin Marinas <catalin.marinas@arm.com>,
+	Will Deacon <will@kernel.org>, Ard Biesheuvel <ardb@kernel.org>,
+	Huacai Chen <chenhuacai@kernel.org>,
+	WANG Xuerui <kernel@xen0n.name>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
+	Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>,
+	Heiko Carstens <hca@linux.ibm.com>,
+	Vasily Gorbik <gor@linux.ibm.com>,
+	Alexander Gordeev <agordeev@linux.ibm.com>,
+	Christian Borntraeger <borntraeger@linux.ibm.com>,
+	Sven Schnelle <svens@linux.ibm.com>,
+	Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>,
+	Borislav Petkov <bp@alien8.de>,
+	Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
+	"H. Peter Anvin" <hpa@zytor.com>,
+	Herbert Xu <herbert@gondor.apana.org.au>,
+	Dan Williams <dan.j.williams@intel.com>, Chris Mason <clm@fb.com>,
+	David Sterba <dsterba@suse.com>, Arnd Bergmann <arnd@arndb.de>,
+	Song Liu <song@kernel.org>, Yu Kuai <yukuai@fnnas.com>,
+	Li Nan <linan122@huawei.com>, linux-kernel@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org, loongarch@lists.linux.dev,
+	linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org,
+	linux-s390@vger.kernel.org, linux-crypto@vger.kernel.org,
+	linux-btrfs@vger.kernel.org, linux-arch@vger.kernel.org,
+	linux-raid@vger.kernel.org
+Subject: Re: [PATCH 01/19] btrfs: require at least 4 devices for RAID 6
+Message-ID: <20260512114231.GG2558453@suse.cz>
+Reply-To: dsterba@suse.cz
+References: <20260512052230.2947683-1-hch@lst.de>
+ <20260512052230.2947683-2-hch@lst.de>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -91,87 +135,51 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Date: Tue, 12 May 2026 11:50:15 +0200
-From: "Ard Biesheuvel" <ardb@kernel.org>
-To: "Christoph Hellwig" <hch@lst.de>,
- "Andrew Morton" <akpm@linux-foundation.org>
-Cc: "Catalin Marinas" <catalin.marinas@arm.com>,
- "Will Deacon" <will@kernel.org>, "Huacai Chen" <chenhuacai@kernel.org>,
- "WANG Xuerui" <kernel@xen0n.name>,
- "Madhavan Srinivasan" <maddy@linux.ibm.com>,
- "Michael Ellerman" <mpe@ellerman.id.au>,
- "Nicholas Piggin" <npiggin@gmail.com>,
- "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
- "Paul Walmsley" <pjw@kernel.org>, "Palmer Dabbelt" <palmer@dabbelt.com>,
- "Albert Ou" <aou@eecs.berkeley.edu>, "Alexandre Ghiti" <alex@ghiti.fr>,
- "Heiko Carstens" <hca@linux.ibm.com>,
- "Vasily Gorbik" <gor@linux.ibm.com>,
- "Alexander Gordeev" <agordeev@linux.ibm.com>,
- "Christian Borntraeger" <borntraeger@linux.ibm.com>,
- "Sven Schnelle" <svens@linux.ibm.com>,
- "Thomas Gleixner" <tglx@kernel.org>, "Ingo Molnar" <mingo@redhat.com>,
- "Borislav Petkov" <bp@alien8.de>,
- "Dave Hansen" <dave.hansen@linux.intel.com>, x86@kernel.org,
- "H . Peter Anvin" <hpa@zytor.com>,
- "Herbert Xu" <herbert@gondor.apana.org.au>,
- "Dan Williams" <dan.j.williams@intel.com>, "Chris Mason" <clm@fb.com>,
- "David Sterba" <dsterba@suse.com>, "Arnd Bergmann" <arnd@arndb.de>,
- "Song Liu" <song@kernel.org>, "Yu Kuai" <yukuai@fnnas.com>,
- "Li Nan" <linan122@huawei.com>, linux-kernel@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, loongarch@lists.linux.dev,
- linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org,
- linux-s390@vger.kernel.org, linux-crypto@vger.kernel.org,
- linux-btrfs@vger.kernel.org, linux-arch@vger.kernel.org,
- linux-raid@vger.kernel.org
-Message-Id: <d40e984f-7dec-425c-bf80-a255980c7457@app.fastmail.com>
-In-Reply-To: <20260512052230.2947683-1-hch@lst.de>
-References: <20260512052230.2947683-1-hch@lst.de>
-Subject: Re: cleanup the RAID6 P/Q library v2
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260512052230.2947683-2-hch@lst.de>
+User-Agent: Mutt/1.5.23.1-rc1 (2014-03-12)
+X-Spamd-Result: default: False [-8.00 / 50.00];
+	REPLY(-4.00)[];
+	BAYES_HAM(-3.00)[99.99%];
+	NEURAL_HAM_LONG(-1.00)[-1.000];
+	HAS_REPLYTO(0.30)[dsterba@suse.cz];
+	NEURAL_HAM_SHORT(-0.20)[-1.000];
+	MIME_GOOD(-0.10)[text/plain];
+	MIME_TRACE(0.00)[0:+];
+	R_RATELIMIT(0.00)[to_ip_from(RLj13sa47em33kcomko4xd63ai)];
+	RCPT_COUNT_TWELVE(0.00)[44];
+	FUZZY_RATELIMITED(0.00)[rspamd.com];
+	ARC_NA(0.00)[];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	TO_DN_SOME(0.00)[];
+	RCVD_TLS_ALL(0.00)[];
+	FREEMAIL_ENVRCPT(0.00)[gmail.com];
+	DKIM_SIGNED(0.00)[suse.cz:s=susede2_rsa,suse.cz:s=susede2_ed25519];
+	FROM_EQ_ENVFROM(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	FREEMAIL_CC(0.00)[linux-foundation.org,arm.com,kernel.org,xen0n.name,linux.ibm.com,ellerman.id.au,gmail.com,dabbelt.com,eecs.berkeley.edu,ghiti.fr,redhat.com,alien8.de,linux.intel.com,zytor.com,gondor.apana.org.au,intel.com,fb.com,suse.com,arndb.de,fnnas.com,huawei.com,vger.kernel.org,lists.infradead.org,lists.linux.dev,lists.ozlabs.org];
+	MID_RHS_MATCH_FROM(0.00)[];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[imap1.dmz-prg2.suse.org:helo,suse.cz:mid,suse.cz:replyto];
+	RCVD_COUNT_TWO(0.00)[2];
+	REPLYTO_ADDR_EQ_FROM(0.00)[];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	REPLYTO_DOM_NEQ_TO_DOM(0.00)[]
 
+On Tue, May 12, 2026 at 07:20:41AM +0200, Christoph Hellwig wrote:
+> While the RAID6 algorithm could in theory support 3 devices by just
+> copying the data disk to the two parity disks, this version is not only
+> useless because it is a suboptimal version of 3-way mirroring, but also
+> broken with various crashes and incorrect parity generation in various
+> architecture-optimized implementations.  Disallow it similar to mdraid
+> which requires at least 4 devices for RAID 6.
+> 
+> Fixes: 53b381b3abeb ("Btrfs: RAID5 and RAID6")
+> Signed-off-by: Christoph Hellwig <hch@lst.de>
 
-On Tue, 12 May 2026, at 07:20, Christoph Hellwig wrote:
-> Hi all,
->
-> this series cleans up the RAID6 P/Q library to match the recent updates
-> to the RAID 5 XOR library and other CRC/crypto libraries.  This includes
-> providing properly documented external interfaces, hiding the internals,
-> using static_call instead of indirect calls and turning the user space
-> test suite into an in-kernel kunit test which is also extended to
-> improve coverage.
->
-> Note that this changes registration so that non-priority algorithms are
-> not registered, which greatly helps with the benchmark time at boot time.
-> I'd like to encourage all architecture maintainers to see if they can
-> further optimized this by registering as few as possible algorithms when
-> there is a clear benefit in optimized or more unrolled implementations.
->
-> This series sits on top of the "cleanup the RAID5 XOR library v3" series.
->
-> A git tree is also available here:
->
->     git://git.infradead.org/users/hch/misc.git lib-raid6
->
-> Gitweb:
->
->     
-> https://git.infradead.org/?p=users/hch/misc.git;a=shortlog;h=refs/heads/lib-raid6
->
-> Changes since v1:
->  - fix arm64 objdir != srcdir builds
->  - call the kunit module raid6_kunit.ko from the beginning
->  - update MAINTAINERS
->  - don't require preemptible context and apply the same restrictions as
->    the merged version of the XOR API
->  - fix the arm64 default in Kconfig
->  - pick the last registered (and presumably most optimized) algorithm when
->    benchmarking is disabled
->  - port over the randomization fixes from the XOR series
->  - misc other kunit cleanups
->  - require at least 4 devices for RAID6 to skip broken special cases
->
-
-Tested-by: Ard Biesheuvel <ardb@kernel.org> # kunit only on arm64
-Acked-by: Ard Biesheuvel <ardb@kernel.org>
+This patch should have been sent separately as it has user visible
+impact and can potentially break some setups. The degenerate modes of
+raid0, 5, or 6 are explicit as a possible middle step when converting
+profiles.  We can use a fallback implementation for this case if the
+accelerated implementations cannot do it.
 
