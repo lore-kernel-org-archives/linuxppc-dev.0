@@ -1,49 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-20770-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20771-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4CA3BCD4855
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 May 2026 09:04:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 84D1BCD4851
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 May 2026 09:05:10 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gF9f204Y1z2yb9;
-	Tue, 12 May 2026 19:04:58 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778576697;
-	cv=none; b=coD+OxZAzOdlMRGgPfbnCBkCWwwVxyPSjrfWDt09dcAwfuJb/zZ6/7dAUuz6ZUKGB3jAalLiZqgjLhiEfF3F02lCLzHG58HjoKiQ1PC9GSUVqCe9Ow6R4YMrSZBAaXU6dZ6Jtz2XUzIz0gJiuxkgf6ukL1EzBN/xZI1fs8FVeyxx6ZaAYx+1zIHYYJgTN2ul3EUAF67EUPdpQAx3eWgZmsfEsuhmBXPkWU1TJcGJkyHWY40YaUrH5rkSsLd0/3xz3FHvEo1pyODOhJ8YV1BD0i4pSNdi0ZXGrM7mR3NuC1/1155njAONrtnlhnOVRF2l+9n+NvYkOd4zwuBa90R7Rg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gF9fF1fK7z2ynf;
+	Tue, 12 May 2026 19:05:09 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778576709;
+	cv=none; b=dNgNF16wTyPCUgCtAK7DsQ+9AC8a8g5s3S/WuE0HqlfuC2hQ64loyWXQmPlL3/qggD5T0S1GJgTET9FuZgKa4p/b744h7xSi7GMgZTp6czUzmjg52XYkw7bmXocvUBSnYsw4Yt/TITsGdFTQnyc9pOyiV5kFM0ohyyn0smLi4nPKBsHSLRaDlcU6aFb6z6vfRwXJ9JJVj0R3k+17zISPCCAOgDPyjSEylqhQHW2VW5Zcdj4WYwQUQXxP0DI0RW1VUMK0Pw+jsphXAS2R2Zt60QT4wQv/gc7C72gHiP3q83eWvj6TOman1nN/TYrTdPOlqD3Ncg0L9g3fxxgskqvhfw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1778576697; c=relaxed/relaxed;
-	bh=olUHD5VANODdDrlZfz5qllxi3FHpkTpPfvEYTlwhhJ8=;
+	t=1778576709; c=relaxed/relaxed;
+	bh=yhL/vEZ9b6wjZqegPRvxxEphHIzGV5+ehX2ObpVC5UA=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=F135EousGoL7qcYXeWFCcWKq3olH2tAWmWG4DgL6tNw5Tl//9AiLOgE2rQWMnKGFUHVNdl7OqCZHrMdGfQPh768Q7N+ZPnXvp+TsqZK4RTW12LxLwL1YgeSQQn+s30b2RpunTu98WzQeT3jWa8MgdxLIKiQ48uzpE0fD3i9Ubt2DRzEhJqSpZ22TO2ksgvygzu2dQGN25vc6VHccLU246yFAALywY3V4j8Cu9EMT5GpDEiW6kJRavlnid+PwLi9CmTj8Eflp5HH+aPigoKmvE1/0ao6LDqycdxz8oZbqGd7fhC1s7QqK5NkzVZaZ/UlS4wmRBm61rRCnLzwAJKCDYQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=KbwCoE0A; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=aneesh.kumar@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=k0yRxm64VdlLQ+BzU3AacOhkQ9X3Hg3E5P1P5dfZZA8Ug31WlxcYl8Yg53DpAOeCQKA7Xt5eMroy0FaR0PysfMiG0tghdB5ARgtI/W7gWsQdFNcPyN9ARzlm7+D6XuNLFaKkJahFcUuAELVWujnc+673T/nALlAkQbBBf7EfpAAecf8AiONeKKoyliRb6CFv+PRyG+f59YQNPnJen+9YRyLAta5ab+sjA/gY1ss/XZQnC2PZYet6CJ4YAIrrTDe0inu4CP+2UYSKRhSnIcUoTZzsJ/QAkjgdPAllRYA4jsGKK83/BJgm+ktAuD0tHlSBM1cRbymz5sRQYHJ4o+gLkg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=dCIUKZx5; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=aneesh.kumar@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=KbwCoE0A;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=dCIUKZx5;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=aneesh.kumar@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=aneesh.kumar@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gF9f11QDvz2yXj
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2026 19:04:57 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gF9fD1KYnz2yXj
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2026 19:05:08 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 89E7460120;
+	by tor.source.kernel.org (Postfix) with ESMTP id 46D8760132;
+	Tue, 12 May 2026 09:05:06 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E350CC2BCB0;
 	Tue, 12 May 2026 09:04:54 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D8431C2BCF5;
-	Tue, 12 May 2026 09:04:42 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1778576694;
-	bh=4MW7wMvDoqITfLwkJTW6/lwo+jU4h0pFXHWOV1R6rJM=;
+	s=k20201202; t=1778576706;
+	bh=j8HH2YzaomJYgS4p7VtC/iThZopaDRn/08EzGlHXEEw=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=KbwCoE0ASwdaQ0sDqenX3eV2dOoxqZ1/TFckfyJW6wsl78OCEz7fdBRLlIWH2WVy/
-	 sFRV8gkQD9L/Mqs80GkVY2hI9N/Zl7IpCNaaBGUabr02N0g8a8xHQVKvE27qFMc22Y
-	 Moc5qKLCRlFqPVQFD6o8OfprtKqgn6hObtzcYyV/ja3ahXjLP/J7BSn41O6emV6XZM
-	 j44eIFpfSCPhdsNwc6gVoAwh43+ZTWY1hvO0qfOUkcIY8lyuB3mKF2isu0H2bj7lcx
-	 0qMWtvyB5JjqGX+H3+qQAlmugtaUALG3nubVqCuniv+CCUgcdEkzGirzgWBjcgdr1o
-	 Hvr5pzU6q77Eg==
+	b=dCIUKZx5FHpZbnYu2ZPfKVOqJZ+fkFIsBUG9DxgRuQG5gaGNPzVBSOE1hdDSIWe5R
+	 +893PZlWBf+VpZ5T+qNbml78oyVSe4kGadZYaz1LvJ31tLa8hoWof4vxN2XsTS+D+B
+	 +va99+Wsl/kTizQKCCfBMXDp0Bn+GrV880iqHg5B2+tu1LUJhcJJr5VT3e6vR6vM1r
+	 r+s5srPky/dOW8AJ2YjutWePcMgys+hMxfggRvRP5XSVedWG17u5wX38DR9ktR+rt9
+	 5Ylwl2DSV4WxfZX0eSCokAMXtbSheJeWDnWczW7+5dNWOSBRx7s8J0wbTtrbTSFBg6
+	 EpH3TviyPbApQ==
 From: "Aneesh Kumar K.V (Arm)" <aneesh.kumar@kernel.org>
 To: iommu@lists.linux.dev,
 	linux-arm-kernel@lists.infradead.org,
@@ -77,9 +77,9 @@ Cc: "Aneesh Kumar K.V (Arm)" <aneesh.kumar@kernel.org>,
 	Christian Borntraeger <borntraeger@linux.ibm.com>,
 	Sven Schnelle <svens@linux.ibm.com>,
 	x86@kernel.org
-Subject: [PATCH v4 02/13] dma-direct: use DMA_ATTR_CC_SHARED in alloc/free paths
-Date: Tue, 12 May 2026 14:33:57 +0530
-Message-ID: <20260512090408.794195-3-aneesh.kumar@kernel.org>
+Subject: [PATCH v4 03/13] dma-pool: track decrypted atomic pools and select them via attrs
+Date: Tue, 12 May 2026 14:33:58 +0530
+Message-ID: <20260512090408.794195-4-aneesh.kumar@kernel.org>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20260512090408.794195-1-aneesh.kumar@kernel.org>
 References: <20260512090408.794195-1-aneesh.kumar@kernel.org>
@@ -98,106 +98,399 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Propagate force_dma_unencrypted() into DMA_ATTR_CC_SHARED in the
-dma-direct allocation path and use the attribute to drive the related
-decisions.
+Teach the atomic DMA pool code to distinguish between encrypted and
+decrypted pools, and make pool allocation select the matching pool based
+on DMA attributes.
 
-This updates dma_direct_alloc(), dma_direct_free(), and
-dma_direct_alloc_pages() to fold the forced unencrypted case into attrs.
+Introduce a dma_gen_pool wrapper that records whether a pool is
+decrypted, initialize that state when the atomic pools are created, and
+use it when expanding and resizing the pools.  Update dma_alloc_from_pool()
+to take attrs and skip pools whose encrypted/decrypted state does not
+match DMA_ATTR_CC_SHARED.  Update dma_free_from_pool() accordingly.
+
+Also pass DMA_ATTR_CC_SHARED from the swiotlb atomic allocation path
+so decrypted swiotlb allocations are taken from the correct atomic pool.
 
 Signed-off-by: Aneesh Kumar K.V (Arm) <aneesh.kumar@kernel.org>
 ---
- kernel/dma/direct.c | 44 ++++++++++++++++++++++++++++++++++++--------
- 1 file changed, 36 insertions(+), 8 deletions(-)
+ drivers/iommu/dma-iommu.c   |   2 +-
+ include/linux/dma-map-ops.h |   2 +-
+ kernel/dma/direct.c         |  11 ++-
+ kernel/dma/pool.c           | 163 +++++++++++++++++++++++-------------
+ kernel/dma/swiotlb.c        |   7 +-
+ 5 files changed, 122 insertions(+), 63 deletions(-)
 
+diff --git a/drivers/iommu/dma-iommu.c b/drivers/iommu/dma-iommu.c
+index 54d96e847f16..c2595bee3d41 100644
+--- a/drivers/iommu/dma-iommu.c
++++ b/drivers/iommu/dma-iommu.c
+@@ -1673,7 +1673,7 @@ void *iommu_dma_alloc(struct device *dev, size_t size, dma_addr_t *handle,
+ 	if (IS_ENABLED(CONFIG_DMA_DIRECT_REMAP) &&
+ 	    !gfpflags_allow_blocking(gfp) && !coherent)
+ 		page = dma_alloc_from_pool(dev, PAGE_ALIGN(size), &cpu_addr,
+-					       gfp, NULL);
++					   gfp, attrs, NULL);
+ 	else
+ 		cpu_addr = iommu_dma_alloc_pages(dev, size, &page, gfp, attrs);
+ 	if (!cpu_addr)
+diff --git a/include/linux/dma-map-ops.h b/include/linux/dma-map-ops.h
+index 6a1832a73cad..696b2c3a2305 100644
+--- a/include/linux/dma-map-ops.h
++++ b/include/linux/dma-map-ops.h
+@@ -212,7 +212,7 @@ void *dma_common_pages_remap(struct page **pages, size_t size, pgprot_t prot,
+ void dma_common_free_remap(void *cpu_addr, size_t size);
+ 
+ struct page *dma_alloc_from_pool(struct device *dev, size_t size,
+-		void **cpu_addr, gfp_t flags,
++		void **cpu_addr, gfp_t flags, unsigned long attrs,
+ 		bool (*phys_addr_ok)(struct device *, phys_addr_t, size_t));
+ bool dma_free_from_pool(struct device *dev, void *start, size_t size);
+ 
 diff --git a/kernel/dma/direct.c b/kernel/dma/direct.c
-index b958f150718a..0c2e1f8436ce 100644
+index 0c2e1f8436ce..dc2907439b3d 100644
 --- a/kernel/dma/direct.c
 +++ b/kernel/dma/direct.c
-@@ -201,16 +201,31 @@ void *dma_direct_alloc(struct device *dev, size_t size,
- 		dma_addr_t *dma_handle, gfp_t gfp, unsigned long attrs)
+@@ -162,7 +162,7 @@ static bool dma_direct_use_pool(struct device *dev, gfp_t gfp)
+ }
+ 
+ static void *dma_direct_alloc_from_pool(struct device *dev, size_t size,
+-		dma_addr_t *dma_handle, gfp_t gfp)
++		dma_addr_t *dma_handle, gfp_t gfp, unsigned long attrs)
  {
- 	bool remap = false, set_uncached = false;
--	bool mark_mem_decrypt = true;
-+	bool mark_mem_decrypt = false;
  	struct page *page;
- 	void *ret;
+ 	u64 phys_limit;
+@@ -172,7 +172,8 @@ static void *dma_direct_alloc_from_pool(struct device *dev, size_t size,
+ 		return NULL;
  
-+	/*
-+	 * DMA_ATTR_CC_SHARED is not a caller-visible dma_alloc_*()
-+	 * attribute. The direct allocator uses it internally after it has
-+	 * decided that the backing pages must be shared/decrypted, so the
-+	 * rest of the allocation path can consistently select DMA addresses,
-+	 * choose compatible pools and restore encryption on free.
-+	 */
-+	if (attrs & DMA_ATTR_CC_SHARED)
-+		return NULL;
-+
-+	if (force_dma_unencrypted(dev)) {
-+		attrs |= DMA_ATTR_CC_SHARED;
-+		mark_mem_decrypt = true;
-+	}
-+
- 	size = PAGE_ALIGN(size);
- 	if (attrs & DMA_ATTR_NO_WARN)
- 		gfp |= __GFP_NOWARN;
- 
--	if ((attrs & DMA_ATTR_NO_KERNEL_MAPPING) &&
--	    !force_dma_unencrypted(dev) && !is_swiotlb_for_alloc(dev))
-+	if (((attrs & (DMA_ATTR_NO_KERNEL_MAPPING | DMA_ATTR_CC_SHARED)) ==
-+	     DMA_ATTR_NO_KERNEL_MAPPING) && !is_swiotlb_for_alloc(dev))
- 		return dma_direct_alloc_no_mapping(dev, size, dma_handle, gfp);
- 
- 	if (!dev_is_dma_coherent(dev)) {
-@@ -244,7 +259,7 @@ void *dma_direct_alloc(struct device *dev, size_t size,
- 	 * Remapping or decrypting memory may block, allocate the memory from
- 	 * the atomic pools instead if we aren't allowed block.
+ 	gfp |= dma_direct_optimal_gfp_mask(dev, &phys_limit);
+-	page = dma_alloc_from_pool(dev, size, &ret, gfp, dma_coherent_ok);
++	page = dma_alloc_from_pool(dev, size, &ret, gfp, attrs,
++				   dma_coherent_ok);
+ 	if (!page)
+ 		return NULL;
+ 	*dma_handle = phys_to_dma_direct(dev, page_to_phys(page));
+@@ -261,7 +262,8 @@ void *dma_direct_alloc(struct device *dev, size_t size,
  	 */
--	if ((remap || force_dma_unencrypted(dev)) &&
-+	if ((remap || (attrs & DMA_ATTR_CC_SHARED)) &&
+ 	if ((remap || (attrs & DMA_ATTR_CC_SHARED)) &&
  	    dma_direct_use_pool(dev, gfp))
- 		return dma_direct_alloc_from_pool(dev, size, dma_handle, gfp);
- 
-@@ -318,11 +333,20 @@ void *dma_direct_alloc(struct device *dev, size_t size,
- void dma_direct_free(struct device *dev, size_t size,
- 		void *cpu_addr, dma_addr_t dma_addr, unsigned long attrs)
- {
--	bool mark_mem_encrypted = true;
-+	bool mark_mem_encrypted = false;
- 	unsigned int page_order = get_order(size);
- 
--	if ((attrs & DMA_ATTR_NO_KERNEL_MAPPING) &&
--	    !force_dma_unencrypted(dev) && !is_swiotlb_for_alloc(dev)) {
-+	/*
-+	 * if the device had requested for an unencrypted buffer,
-+	 * convert it to encrypted on free
-+	 */
-+	if (force_dma_unencrypted(dev)) {
-+		attrs |= DMA_ATTR_CC_SHARED;
-+		mark_mem_encrypted = true;
-+	}
-+
-+	if (((attrs & (DMA_ATTR_NO_KERNEL_MAPPING | DMA_ATTR_CC_SHARED)) ==
-+	     DMA_ATTR_NO_KERNEL_MAPPING) && !is_swiotlb_for_alloc(dev)) {
- 		/* cpu_addr is a struct page cookie, not a kernel address */
- 		dma_free_contiguous(dev, cpu_addr, size);
- 		return;
-@@ -365,10 +389,14 @@ void dma_direct_free(struct device *dev, size_t size,
- struct page *dma_direct_alloc_pages(struct device *dev, size_t size,
- 		dma_addr_t *dma_handle, enum dma_data_direction dir, gfp_t gfp)
- {
-+	unsigned long attrs = 0;
- 	struct page *page;
- 	void *ret;
- 
--	if (force_dma_unencrypted(dev) && dma_direct_use_pool(dev, gfp))
-+	if (force_dma_unencrypted(dev))
-+		attrs |= DMA_ATTR_CC_SHARED;
-+
-+	if ((attrs & DMA_ATTR_CC_SHARED) && dma_direct_use_pool(dev, gfp))
- 		return dma_direct_alloc_from_pool(dev, size, dma_handle, gfp);
+-		return dma_direct_alloc_from_pool(dev, size, dma_handle, gfp);
++		return dma_direct_alloc_from_pool(dev, size, dma_handle,
++						  gfp, attrs);
  
  	if (is_swiotlb_for_alloc(dev)) {
+ 		page = dma_direct_alloc_swiotlb(dev, size);
+@@ -397,7 +399,8 @@ struct page *dma_direct_alloc_pages(struct device *dev, size_t size,
+ 		attrs |= DMA_ATTR_CC_SHARED;
+ 
+ 	if ((attrs & DMA_ATTR_CC_SHARED) && dma_direct_use_pool(dev, gfp))
+-		return dma_direct_alloc_from_pool(dev, size, dma_handle, gfp);
++		return dma_direct_alloc_from_pool(dev, size, dma_handle,
++						  gfp, attrs);
+ 
+ 	if (is_swiotlb_for_alloc(dev)) {
+ 		page = dma_direct_alloc_swiotlb(dev, size);
+diff --git a/kernel/dma/pool.c b/kernel/dma/pool.c
+index 2b2fbb709242..75f0eba48a23 100644
+--- a/kernel/dma/pool.c
++++ b/kernel/dma/pool.c
+@@ -12,12 +12,18 @@
+ #include <linux/set_memory.h>
+ #include <linux/slab.h>
+ #include <linux/workqueue.h>
++#include <linux/cc_platform.h>
+ 
+-static struct gen_pool *atomic_pool_dma __ro_after_init;
++struct dma_gen_pool {
++	bool unencrypted;
++	struct gen_pool *pool;
++};
++
++static struct dma_gen_pool atomic_pool_dma __ro_after_init;
+ static unsigned long pool_size_dma;
+-static struct gen_pool *atomic_pool_dma32 __ro_after_init;
++static struct dma_gen_pool atomic_pool_dma32 __ro_after_init;
+ static unsigned long pool_size_dma32;
+-static struct gen_pool *atomic_pool_kernel __ro_after_init;
++static struct dma_gen_pool atomic_pool_kernel __ro_after_init;
+ static unsigned long pool_size_kernel;
+ 
+ /* Size can be defined by the coherent_pool command line */
+@@ -76,7 +82,7 @@ static bool cma_in_zone(gfp_t gfp)
+ 	return true;
+ }
+ 
+-static int atomic_pool_expand(struct gen_pool *pool, size_t pool_size,
++static int atomic_pool_expand(struct dma_gen_pool *dma_pool, size_t pool_size,
+ 			      gfp_t gfp)
+ {
+ 	unsigned int order;
+@@ -113,12 +119,15 @@ static int atomic_pool_expand(struct gen_pool *pool, size_t pool_size,
+ 	 * Memory in the atomic DMA pools must be unencrypted, the pools do not
+ 	 * shrink so no re-encryption occurs in dma_direct_free().
+ 	 */
+-	ret = set_memory_decrypted((unsigned long)page_to_virt(page),
++	if (dma_pool->unencrypted) {
++		ret = set_memory_decrypted((unsigned long)page_to_virt(page),
+ 				   1 << order);
+-	if (ret)
+-		goto remove_mapping;
+-	ret = gen_pool_add_virt(pool, (unsigned long)addr, page_to_phys(page),
+-				pool_size, NUMA_NO_NODE);
++		if (ret)
++			goto remove_mapping;
++	}
++
++	ret = gen_pool_add_virt(dma_pool->pool, (unsigned long)addr,
++				page_to_phys(page), pool_size, NUMA_NO_NODE);
+ 	if (ret)
+ 		goto encrypt_mapping;
+ 
+@@ -126,11 +135,15 @@ static int atomic_pool_expand(struct gen_pool *pool, size_t pool_size,
+ 	return 0;
+ 
+ encrypt_mapping:
+-	ret = set_memory_encrypted((unsigned long)page_to_virt(page),
+-				   1 << order);
+-	if (WARN_ON_ONCE(ret)) {
+-		/* Decrypt succeeded but encrypt failed, purposely leak */
+-		goto out;
++	if (dma_pool->unencrypted) {
++		int rc;
++
++		rc = set_memory_encrypted((unsigned long)page_to_virt(page),
++					  1 << order);
++		if (WARN_ON_ONCE(rc)) {
++			/* Decrypt succeeded but encrypt failed, purposely leak */
++			goto out;
++		}
+ 	}
+ remove_mapping:
+ #ifdef CONFIG_DMA_DIRECT_REMAP
+@@ -142,46 +155,52 @@ static int atomic_pool_expand(struct gen_pool *pool, size_t pool_size,
+ 	return ret;
+ }
+ 
+-static void atomic_pool_resize(struct gen_pool *pool, gfp_t gfp)
++static void atomic_pool_resize(struct dma_gen_pool *dma_pool, gfp_t gfp)
+ {
+-	if (pool && gen_pool_avail(pool) < atomic_pool_size)
+-		atomic_pool_expand(pool, gen_pool_size(pool), gfp);
++	if (dma_pool->pool && gen_pool_avail(dma_pool->pool) < atomic_pool_size)
++		atomic_pool_expand(dma_pool, gen_pool_size(dma_pool->pool), gfp);
+ }
+ 
+ static void atomic_pool_work_fn(struct work_struct *work)
+ {
+ 	if (IS_ENABLED(CONFIG_ZONE_DMA))
+-		atomic_pool_resize(atomic_pool_dma,
++		atomic_pool_resize(&atomic_pool_dma,
+ 				   GFP_KERNEL | GFP_DMA);
+ 	if (IS_ENABLED(CONFIG_ZONE_DMA32))
+-		atomic_pool_resize(atomic_pool_dma32,
++		atomic_pool_resize(&atomic_pool_dma32,
+ 				   GFP_KERNEL | GFP_DMA32);
+-	atomic_pool_resize(atomic_pool_kernel, GFP_KERNEL);
++	atomic_pool_resize(&atomic_pool_kernel, GFP_KERNEL);
+ }
+ 
+-static __init struct gen_pool *__dma_atomic_pool_init(size_t pool_size,
+-						      gfp_t gfp)
++static __init struct dma_gen_pool *__dma_atomic_pool_init(struct dma_gen_pool *dma_pool,
++		size_t pool_size, gfp_t gfp)
+ {
+-	struct gen_pool *pool;
+ 	int ret;
+ 
+-	pool = gen_pool_create(PAGE_SHIFT, NUMA_NO_NODE);
+-	if (!pool)
++	dma_pool->pool = gen_pool_create(PAGE_SHIFT, NUMA_NO_NODE);
++	if (!dma_pool->pool)
+ 		return NULL;
+ 
+-	gen_pool_set_algo(pool, gen_pool_first_fit_order_align, NULL);
++	gen_pool_set_algo(dma_pool->pool, gen_pool_first_fit_order_align, NULL);
++
++	/* if platform is using memory encryption atomic pools are by default decrypted. */
++	if (cc_platform_has(CC_ATTR_MEM_ENCRYPT))
++		dma_pool->unencrypted = true;
++	else
++		dma_pool->unencrypted = false;
+ 
+-	ret = atomic_pool_expand(pool, pool_size, gfp);
++	ret = atomic_pool_expand(dma_pool, pool_size, gfp);
+ 	if (ret) {
+-		gen_pool_destroy(pool);
++		gen_pool_destroy(dma_pool->pool);
++		dma_pool->pool = NULL;
+ 		pr_err("DMA: failed to allocate %zu KiB %pGg pool for atomic allocation\n",
+ 		       pool_size >> 10, &gfp);
+ 		return NULL;
+ 	}
+ 
+ 	pr_info("DMA: preallocated %zu KiB %pGg pool for atomic allocations\n",
+-		gen_pool_size(pool) >> 10, &gfp);
+-	return pool;
++		gen_pool_size(dma_pool->pool) >> 10, &gfp);
++	return dma_pool;
+ }
+ 
+ #ifdef CONFIG_ZONE_DMA32
+@@ -207,21 +226,22 @@ static int __init dma_atomic_pool_init(void)
+ 
+ 	/* All memory might be in the DMA zone(s) to begin with */
+ 	if (has_managed_zone(ZONE_NORMAL)) {
+-		atomic_pool_kernel = __dma_atomic_pool_init(atomic_pool_size,
+-						    GFP_KERNEL);
+-		if (!atomic_pool_kernel)
++		__dma_atomic_pool_init(&atomic_pool_kernel, atomic_pool_size, GFP_KERNEL);
++		if (!atomic_pool_kernel.pool)
+ 			ret = -ENOMEM;
+ 	}
++
+ 	if (has_managed_dma()) {
+-		atomic_pool_dma = __dma_atomic_pool_init(atomic_pool_size,
+-						GFP_KERNEL | GFP_DMA);
+-		if (!atomic_pool_dma)
++		__dma_atomic_pool_init(&atomic_pool_dma, atomic_pool_size,
++				       GFP_KERNEL | GFP_DMA);
++		if (!atomic_pool_dma.pool)
+ 			ret = -ENOMEM;
+ 	}
++
+ 	if (has_managed_dma32) {
+-		atomic_pool_dma32 = __dma_atomic_pool_init(atomic_pool_size,
+-						GFP_KERNEL | GFP_DMA32);
+-		if (!atomic_pool_dma32)
++		__dma_atomic_pool_init(&atomic_pool_dma32, atomic_pool_size,
++				       GFP_KERNEL | GFP_DMA32);
++		if (!atomic_pool_dma32.pool)
+ 			ret = -ENOMEM;
+ 	}
+ 
+@@ -230,19 +250,44 @@ static int __init dma_atomic_pool_init(void)
+ }
+ postcore_initcall(dma_atomic_pool_init);
+ 
+-static inline struct gen_pool *dma_guess_pool(struct gen_pool *prev, gfp_t gfp)
++static inline struct dma_gen_pool *__dma_guess_pool(struct dma_gen_pool *first,
++		struct dma_gen_pool *second, struct dma_gen_pool *third)
++{
++	if (first->pool)
++		return first;
++	if (second && second->pool)
++		return second;
++	if (third && third->pool)
++		return third;
++	return NULL;
++}
++
++static inline struct dma_gen_pool *dma_guess_pool(struct dma_gen_pool *prev,
++		gfp_t gfp)
+ {
+-	if (prev == NULL) {
++	if (!prev) {
+ 		if (gfp & GFP_DMA)
+-			return atomic_pool_dma ?: atomic_pool_dma32 ?: atomic_pool_kernel;
++			return __dma_guess_pool(&atomic_pool_dma,
++						&atomic_pool_dma32,
++						&atomic_pool_kernel);
++
+ 		if (gfp & GFP_DMA32)
+-			return atomic_pool_dma32 ?: atomic_pool_dma ?: atomic_pool_kernel;
+-		return atomic_pool_kernel ?: atomic_pool_dma32 ?: atomic_pool_dma;
++			return __dma_guess_pool(&atomic_pool_dma32,
++						&atomic_pool_dma,
++						&atomic_pool_kernel);
++
++		return __dma_guess_pool(&atomic_pool_kernel,
++					&atomic_pool_dma32,
++					&atomic_pool_dma);
+ 	}
+-	if (prev == atomic_pool_kernel)
+-		return atomic_pool_dma32 ? atomic_pool_dma32 : atomic_pool_dma;
+-	if (prev == atomic_pool_dma32)
+-		return atomic_pool_dma;
++
++	if (prev == &atomic_pool_kernel)
++		return __dma_guess_pool(&atomic_pool_dma32,
++					&atomic_pool_dma, NULL);
++
++	if (prev == &atomic_pool_dma32)
++		return __dma_guess_pool(&atomic_pool_dma, NULL, NULL);
++
+ 	return NULL;
+ }
+ 
+@@ -272,16 +317,20 @@ static struct page *__dma_alloc_from_pool(struct device *dev, size_t size,
+ }
+ 
+ struct page *dma_alloc_from_pool(struct device *dev, size_t size,
+-		void **cpu_addr, gfp_t gfp,
++		void **cpu_addr, gfp_t gfp, unsigned long attrs,
+ 		bool (*phys_addr_ok)(struct device *, phys_addr_t, size_t))
+ {
+-	struct gen_pool *pool = NULL;
++	struct dma_gen_pool *dma_pool = NULL;
+ 	struct page *page;
+ 	bool pool_found = false;
+ 
+-	while ((pool = dma_guess_pool(pool, gfp))) {
++	while ((dma_pool = dma_guess_pool(dma_pool, gfp))) {
++
++		if (dma_pool->unencrypted != !!(attrs & DMA_ATTR_CC_SHARED))
++			continue;
++
+ 		pool_found = true;
+-		page = __dma_alloc_from_pool(dev, size, pool, cpu_addr,
++		page = __dma_alloc_from_pool(dev, size, dma_pool->pool, cpu_addr,
+ 					     phys_addr_ok);
+ 		if (page)
+ 			return page;
+@@ -296,12 +345,14 @@ struct page *dma_alloc_from_pool(struct device *dev, size_t size,
+ 
+ bool dma_free_from_pool(struct device *dev, void *start, size_t size)
+ {
+-	struct gen_pool *pool = NULL;
++	struct dma_gen_pool *dma_pool = NULL;
++
++	while ((dma_pool = dma_guess_pool(dma_pool, 0))) {
+ 
+-	while ((pool = dma_guess_pool(pool, 0))) {
+-		if (!gen_pool_has_addr(pool, (unsigned long)start, size))
++		if (!gen_pool_has_addr(dma_pool->pool, (unsigned long)start, size))
+ 			continue;
+-		gen_pool_free(pool, (unsigned long)start, size);
++
++		gen_pool_free(dma_pool->pool, (unsigned long)start, size);
+ 		return true;
+ 	}
+ 
+diff --git a/kernel/dma/swiotlb.c b/kernel/dma/swiotlb.c
+index 1abd3e6146f4..ab4eccbaa076 100644
+--- a/kernel/dma/swiotlb.c
++++ b/kernel/dma/swiotlb.c
+@@ -612,6 +612,7 @@ static struct page *swiotlb_alloc_tlb(struct device *dev, size_t bytes,
+ 		u64 phys_limit, gfp_t gfp)
+ {
+ 	struct page *page;
++	unsigned long attrs = 0;
+ 
+ 	/*
+ 	 * Allocate from the atomic pools if memory is encrypted and
+@@ -623,8 +624,12 @@ static struct page *swiotlb_alloc_tlb(struct device *dev, size_t bytes,
+ 		if (!IS_ENABLED(CONFIG_DMA_COHERENT_POOL))
+ 			return NULL;
+ 
++		/* swiotlb considered decrypted by default */
++		if (cc_platform_has(CC_ATTR_MEM_ENCRYPT))
++			attrs = DMA_ATTR_CC_SHARED;
++
+ 		return dma_alloc_from_pool(dev, bytes, &vaddr, gfp,
+-					   dma_coherent_ok);
++					   attrs, dma_coherent_ok);
+ 	}
+ 
+ 	gfp &= ~GFP_ZONEMASK;
 -- 
 2.43.0
 
