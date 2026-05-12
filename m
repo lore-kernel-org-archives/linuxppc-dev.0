@@ -1,51 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-20752-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20753-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 48A34CD4F35
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 May 2026 07:47:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BAAF6CD4F26
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 May 2026 07:49:00 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gF7ww070Tz2ygG;
-	Tue, 12 May 2026 17:47:44 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778572063;
-	cv=none; b=VE3sIxlypyNumAY9jHtZ2YHFQSFcAVQxMfnKiJDFsIoOCvamcVziTs9ewwGBWoFROneo7nqXRObqu4qEjsACI3l8hIgQkai7t4plVjOz8CygETrIFp1snBfpko/QGhO3JayiEsEcZa3xHcHcPPBhy4FdB/5Zm5tWGr/tSWBCLTuF2MC6mL0zduHyQTd63C/vFtznvhZdrWsJ2416DD5oAYEKZEHADZtBq59vVERNKM03qluYs+SEMvY224JWI3IZ2JlTaY2T1zDKRLrl2+jF20jsnPMHFk/4+qAAgpvtdzhKfOgNPQn42eu480/mbEEj+rYR97QjRrTzKOt8LpAo0w==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gF7yM2XfVz2ygJ;
+	Tue, 12 May 2026 17:48:59 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778572139;
+	cv=none; b=PTkL1wGQbLmnoO1REuzdWvS1u566cPmL2tqC9vZVdzjv2T+mL/WAEfT5j66SRhK5rVZHWvfh+IljiYNCEbxcz1TK8Iy6+VdY37fvME/BdayW95YSfLSzQOHLZydGR3TLBeQ/UoW1sbtzFNc5GFWVDcFngdvzSui86TkrBCGR+XDe/Cs6qsxrkCCKUJItfRG48asOUrMWqkS3Z3gyRfsyIP546d+5Fj3Cm9GfqbBWuvmCPgPyMIRAW3AcgNBelzGtaHP6CWwi54c+t9ueuPMGGa6JAgAqEF+u5Yi8vvbKDRfmmOMy9uVxdSNBdFvuTvRmMXa/k9YWeJaoHTESA6wr4g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1778572063; c=relaxed/relaxed;
-	bh=0ntK6tjYBwRe/++/oh1AWSHRhzJGu/i+Tgo4xSvW+lU=;
+	t=1778572139; c=relaxed/relaxed;
+	bh=OVl3bUdeJ15anFyx5QHjuqbnYaSNeBHCDnvW1zOH62Y=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=Ca10Kl3HoVrgpWU9FnHmCANY1+8UrVEIQuyFzd0pT7nJx9PeHNaf4TIpmLGRrTA/IHaC+D1j6PZ1ob1mMNoMaliz7wpI3Ixo2eMcQrgWSL14nk1TQZ3kgYyCCTtlWpJM7wKvw/aj2MKV5mSYbcV1lwutsr4Fe+8plIiMc85OduE/TLgOXW3U2KGlnyPAExoyLhu1R620rHTexzLqAEFc79NqwFey7KD1O07pHpRpbkLOBhRz/QhVOWuPRU6Ivn34DEKKGnsK40BT4n0YdgSn4nqU7tpHH9q4s/w2c8Bqa7s4sS3Vt2105rHTELUYfTU7C28zg8Bdv86W2xIAkuMmwA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=KfH8aFKm; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:Content-Type; b=UJXolA7v+T7TRsu/RahakvjNZvYQ15q5N62OMavxTrHVjh7MxdbetxuYva3Pq80/KXWgLp8w50+6dv112wYwdLbuuCPEQ5z+amqjdbVRGfmQK6ujKzmBDU2NZ8ko5prMH36313inYskvI4YjEOQ7/wrU0GqRkMDxJv2ihotfY5e0KfGOMA8EGySSiiCl5mebyRUPV71JD27NMwkIrrUzDM1yb1wRmErl6QdwkCGZ39bSqLdmC4xRwR6O+Qi8skVf3IpAyfYOLVIO3ZMZ8f5pxpBX00QJiWCiapN9A9PaXyHcg0YLc8vvO1Zan4TpzPyMBPgUOfu1oNMHZY1gNOEAWQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=uCa1nNIK; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=KfH8aFKm;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=uCa1nNIK;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gF7wv1BsGz2yb9
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2026 17:47:43 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gF7yL43v4z2ygG
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2026 17:48:58 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 995BA60055;
-	Tue, 12 May 2026 07:47:40 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id EAD3FC2BCB8;
-	Tue, 12 May 2026 07:47:35 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 1E3DF4413C;
+	Tue, 12 May 2026 07:48:56 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id A162EC2BCB0;
+	Tue, 12 May 2026 07:48:51 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1778572060;
-	bh=SqZ7JuR9aZYiSNIjFrM9/Owp7pj1r/N+r9S6ZbflLLs=;
+	s=k20201202; t=1778572136;
+	bh=W1sWVav77uChxJzFCxQ1pVlTmhfGKv0xL+Q/RQCskXs=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=KfH8aFKm9U4WSzucyrLYsh/QmdVCSVlPGKBRnnS5gmbsYLlAGMaD5dfTgD3OJJtxQ
-	 SrIzwEEBr+JLyyxd6cSDlD+Yb/V6jguPm4vjh3hNlVrJERzxAZecZwXlFgBhjqUJCP
-	 fq2iNIHqnKcOTKN5VVQRmdEg4FtJq83TkTTMR6iIq+GGGmP9JtcM/S47L81kQd4O+c
-	 FrJe0I5Pk7GS7XZzb+SW1CGEpirOjbkeUCe5Z9qpO4HgSMGVCfKdLtdgax9fMGnFJV
-	 DoJD8cUmo93tkso5BAxtd/wJxsVLSkUS/0pnLKkpOqh/VP6Y4F0c6r0o++ZwL6ExyH
-	 HHTZm8Epupc7w==
-Message-ID: <ae34ed69-f56f-4d19-8a2d-48f7ff671342@kernel.org>
-Date: Tue, 12 May 2026 09:47:34 +0200
+	b=uCa1nNIKd5PutJrooTknPXUs80TLQpe5mDuqGyg3XdKeFcMgbrXW4uhM0VlL8QJAS
+	 tQkUOtlMj9URZs76ee1yVbbtMvlzQY/vQl4CvVAEqVWWEOBDxx1clD350rQubg+2Ur
+	 bViQdkGWZkA+laQ9XhWC5TXa81qIP9c404lIrdeEKWrXAez/FqMegKBkgXZHVqUk+U
+	 XOWjtI2YE5PNbOeJb/1H+HvjlvpCrQa/1ySqbQrMKQMu4fY6jDFEk9ygBnlEMUbuPa
+	 rr/nC0VGKvcPvc6GUqQaHH8BlFsA9sqw1CPDYVOT88H9nLO9WdrbESu/nYgX1gy7kh
+	 NH0TPCI2BTCug==
+Message-ID: <0edd94cf-0895-4f49-8afe-44651681965e@kernel.org>
+Date: Tue, 12 May 2026 09:48:50 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -60,7 +60,7 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 5/8] mm/bootmem_info: stop marking the pgdat as NODE_INFO
+Subject: Re: [PATCH 0/8] mm: remove CONFIG_HAVE_BOOTMEM_INFO_NODE (Part 1)
 To: Michal Hocko <mhocko@suse.com>
 Cc: "David S. Miller" <davem@davemloft.net>,
  Andreas Larsson <andreas@gaisler.com>, Mike Rapoport <rppt@kernel.org>,
@@ -78,8 +78,7 @@ Cc: "David S. Miller" <davem@davemloft.net>,
  sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org,
  linux-mm@kvack.org, linux-s390@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 References: <20260511-bootmem_info_prep-v1-0-3fb0be6fc688@kernel.org>
- <20260511-bootmem_info_prep-v1-5-3fb0be6fc688@kernel.org>
- <agLai5lr0CQRZLBK@tiehlicka>
+ <agLawTyWlnuC9Rz1@tiehlicka>
 From: "David Hildenbrand (Arm)" <david@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=david@kernel.org; keydata=
@@ -126,34 +125,58 @@ Autocrypt: addr=david@kernel.org; keydata=
  3iyY2Nsd7JxfKu1PRhCGwXzRw5TlfEsoRI7V9A8isUCoqE2Dzh3FvYHVeX4Us+bRL/oqareJ
  CIFqgYMyvHj7Q06kTKmauOe4Nf0l0qEkIuIzfoLJ3qr5UyXc2hLtWyT9Ir+lYlX9efqh7mOY
  qIws/H2t
-In-Reply-To: <agLai5lr0CQRZLBK@tiehlicka>
+In-Reply-To: <agLawTyWlnuC9Rz1@tiehlicka>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
-On 5/12/26 09:45, Michal Hocko wrote:
-> On Mon 11-05-26 16:05:33, David Hildenbrand wrote:
->> We removed the last user of NODE_INFO in commit 119c31caa59e ("mm/sparse:
->> remove !CONFIG_SPARSEMEM_VMEMMAP leftovers for CONFIG_MEMORY_HOTPLUG").
+On 5/12/26 09:46, Michal Hocko wrote:
+> On Mon 11-05-26 16:05:28, David Hildenbrand wrote:
+>> We want to remove CONFIG_HAVE_BOOTMEM_INFO_NODE. As a first step,
+>> let's limit the remaining harm to x86 and core code, removing
+>> sparc, ppc and s390 leftovers, starting the stepwise removal by removing
+>> and simplifying some code.
 >>
->> But it really was never used it besides for safety-checks ever since it was
->> introduced in commit 04753278769f ("memory hotplug: register section/node
->> id to free"), where we had the comment:
+>> Once a related x86 vmemmap fix [1] is in, we can merge part 2 that will
+>> remove CONFIG_HAVE_BOOTMEM_INFO_NODE entirely.
 >>
->> 	5) The node information like pgdat has similar issues. But, this
->> 	   will be able to be solved too by this.
->> 	   (Not implemented yet, but, remembering node id in the pages.)
+>> Tested on x86-64 with hugetlb vmemmap optimization in combination with
+>> KMEMLEAK, making sure that the problem reported in dd0ff4d12dd2 ("bootmem:
+>> remove the vmemmap pages from kmemleak in put_page_bootmem") does not
+>> reappear -- hoping I managed to trigger the original problem.
 >>
->> Of course, that never happened, and we are not planning on freeing the
->> node data (pgdat/pglist_data), during memory hotunplug.
+>> Heavily cross-compiled, but let's let build bots run on it for a bit.
 >>
->> So let's just stop marking the pgdat as NODE_INFO.
+>> [1] https://lore.kernel.org/r/20260429-vmemmap-v2-1-8dfcacffd877@kernel.org 
+>>
+>> Signed-off-by: David Hildenbrand (Arm) <david@kernel.org>
+>> ---
+>> David Hildenbrand (Arm) (8):
+>>       sparc/mm: remove register_page_bootmem_info()
+>>       mm/bootmem_info: drop initialization of page->lru
+>>       mm/bootmem_info: stop using PG_private
+>>       mm/bootmem_info: remove call to kmemleak_free_part_phys()
+>>       mm/bootmem_info: stop marking the pgdat as NODE_INFO
+>>       mm/bootmem_info: stop marking mem_section_usage as MIX_SECTION_INFO
+>>       s390/mm: use free_reserved_page() in vmem_free_pages()
+>>       powerpc/mm: remove CONFIG_HAVE_BOOTMEM_INFO_NODE
+>>
+>>  arch/powerpc/mm/init_64.c    |  8 --------
+>>  arch/s390/mm/vmem.c          |  3 +--
+>>  arch/sparc/mm/init_64.c      | 20 --------------------
+>>  include/linux/bootmem_info.h |  1 -
+>>  mm/Kconfig                   |  2 +-
+>>  mm/bootmem_info.c            | 25 ++-----------------------
+>>  6 files changed, 4 insertions(+), 55 deletions(-)
 > 
-> With the last user, shouldn't we simply drop NODE_INFO?
+> Good clean up. Feel free to add
+> Acked-by: Michal Hocko <mhocko@suse.com>
 
-I'll drop the whole thing in part 2.
+Thanks!
 
-I actually had both parts together until I stumbled into the vmmemmap x86
-freeing issue that now causes conflicts until upstream and synced to the MM tree.
+> to all patches but kmemleak one which I do not feel qualified to judge.
+
+It's black magic to me as well. I tried to test that scenario in particular and
+was not able to trigger the problem.
 
 -- 
 Cheers,
