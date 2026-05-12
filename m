@@ -1,51 +1,77 @@
-Return-Path: <linuxppc-dev+bounces-20753-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20754-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BAAF6CD4F26
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 May 2026 07:49:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E9318CD4855
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 May 2026 08:28:13 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gF7yM2XfVz2ygJ;
-	Tue, 12 May 2026 17:48:59 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778572139;
-	cv=none; b=PTkL1wGQbLmnoO1REuzdWvS1u566cPmL2tqC9vZVdzjv2T+mL/WAEfT5j66SRhK5rVZHWvfh+IljiYNCEbxcz1TK8Iy6+VdY37fvME/BdayW95YSfLSzQOHLZydGR3TLBeQ/UoW1sbtzFNc5GFWVDcFngdvzSui86TkrBCGR+XDe/Cs6qsxrkCCKUJItfRG48asOUrMWqkS3Z3gyRfsyIP546d+5Fj3Cm9GfqbBWuvmCPgPyMIRAW3AcgNBelzGtaHP6CWwi54c+t9ueuPMGGa6JAgAqEF+u5Yi8vvbKDRfmmOMy9uVxdSNBdFvuTvRmMXa/k9YWeJaoHTESA6wr4g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gF8qc1xlfz2yYs;
+	Tue, 12 May 2026 18:28:12 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=195.135.223.131
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778574492;
+	cv=none; b=hNyWD0NJqKjZ25rIH8PjAwGmOHHy726P5gobcySX7PoKoselxJ2CHBHHlz15jEjzd3tEuh9mQexwwFfEL0EZHnLLqIyQiQqTCpmEx1ZaIH7CiXZDxyoGWqa+d410z/NcAEFUzUSTuJsfR6vVZNjgqU4hIswFArn6BTATjODBEL1+rGqOWLe8OZaevizdsKXuP9PdQSW02ns1GBw0UazIOWcuZllDLIDATM1uLs9nIXHKCHyt2+ct2WyUPi1+5ciZlRkbIkT1j4rKe/u1seTpz5Cz8/g+kIVxHg3UrYF6FXozrFzGPpLFRS2Z8sdhYOeeKnUvsowidHsHZ1zwOMH8Kw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1778572139; c=relaxed/relaxed;
-	bh=OVl3bUdeJ15anFyx5QHjuqbnYaSNeBHCDnvW1zOH62Y=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=UJXolA7v+T7TRsu/RahakvjNZvYQ15q5N62OMavxTrHVjh7MxdbetxuYva3Pq80/KXWgLp8w50+6dv112wYwdLbuuCPEQ5z+amqjdbVRGfmQK6ujKzmBDU2NZ8ko5prMH36313inYskvI4YjEOQ7/wrU0GqRkMDxJv2ihotfY5e0KfGOMA8EGySSiiCl5mebyRUPV71JD27NMwkIrrUzDM1yb1wRmErl6QdwkCGZ39bSqLdmC4xRwR6O+Qi8skVf3IpAyfYOLVIO3ZMZ8f5pxpBX00QJiWCiapN9A9PaXyHcg0YLc8vvO1Zan4TpzPyMBPgUOfu1oNMHZY1gNOEAWQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=uCa1nNIK; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=uCa1nNIK;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+	t=1778574492; c=relaxed/relaxed;
+	bh=4xGGRlnxg7aexlglixAi3kMj3axlw5heWUP27yTL0LQ=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=jk77/KAFMBMLjQHWkgG3UIWw+TtthdWOiGGCEkdwUuLM6j/tb3lReQfZrJvCZX6zqPduFDeOMB8UsnQVbI3GmHzoxyWIBa29nEAYTiyS2VgBmH2f4/Y1OEeO40TE0x8VVm9egL2cejIT4li44CH3e5xlXPDUXCwovM88+tDRUDI9cuCaAWSlymIGKdlp7d9VVL5uUWhcvbrYC0VdBvi/zGPFEZ9LVAMeYEJkuD9+UV/7t64HVgW1TA7J4qltt9ss+kBdd3I8+Pfz5fwAI0PQNjU9upNP9+maeiKH4deCEl58j189Ug9i/FqQ4drrHsV7oBv6LOLbKfXHtClgArM8XQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass (client-ip=195.135.223.131; helo=smtp-out2.suse.de; envelope-from=osalvador@suse.de; receiver=lists.ozlabs.org) smtp.mailfrom=suse.de
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=195.135.223.131; helo=smtp-out2.suse.de; envelope-from=osalvador@suse.de; receiver=lists.ozlabs.org)
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gF7yL43v4z2ygG
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2026 17:48:58 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 1E3DF4413C;
-	Tue, 12 May 2026 07:48:56 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A162EC2BCB0;
-	Tue, 12 May 2026 07:48:51 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1778572136;
-	bh=W1sWVav77uChxJzFCxQ1pVlTmhfGKv0xL+Q/RQCskXs=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=uCa1nNIKd5PutJrooTknPXUs80TLQpe5mDuqGyg3XdKeFcMgbrXW4uhM0VlL8QJAS
-	 tQkUOtlMj9URZs76ee1yVbbtMvlzQY/vQl4CvVAEqVWWEOBDxx1clD350rQubg+2Ur
-	 bViQdkGWZkA+laQ9XhWC5TXa81qIP9c404lIrdeEKWrXAez/FqMegKBkgXZHVqUk+U
-	 XOWjtI2YE5PNbOeJb/1H+HvjlvpCrQa/1ySqbQrMKQMu4fY6jDFEk9ygBnlEMUbuPa
-	 rr/nC0VGKvcPvc6GUqQaHH8BlFsA9sqw1CPDYVOT88H9nLO9WdrbESu/nYgX1gy7kh
-	 NH0TPCI2BTCug==
-Message-ID: <0edd94cf-0895-4f49-8afe-44651681965e@kernel.org>
-Date: Tue, 12 May 2026 09:48:50 +0200
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gF8qb2g1qz2yY1
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2026 18:28:10 +1000 (AEST)
+Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out2.suse.de (Postfix) with ESMTPS id A9F1567AD1;
+	Tue, 12 May 2026 08:28:07 +0000 (UTC)
+Authentication-Results: smtp-out2.suse.de;
+	none
+Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 75CE8593A9;
+	Tue, 12 May 2026 08:28:06 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
+	by imap1.dmz-prg2.suse.org with ESMTPSA
+	id Uc6mGZbkAmqOegAAD6G6ig
+	(envelope-from <osalvador@suse.de>); Tue, 12 May 2026 08:28:06 +0000
+Date: Tue, 12 May 2026 10:28:04 +0200
+From: Oscar Salvador <osalvador@suse.de>
+To: "David Hildenbrand (Arm)" <david@kernel.org>
+Cc: "David S. Miller" <davem@davemloft.net>,
+	Andreas Larsson <andreas@gaisler.com>,
+	Mike Rapoport <rppt@kernel.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Alexander Gordeev <agordeev@linux.ibm.com>,
+	Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
+	Heiko Carstens <hca@linux.ibm.com>,
+	Vasily Gorbik <gor@linux.ibm.com>,
+	Christian Borntraeger <borntraeger@linux.ibm.com>,
+	Sven Schnelle <svens@linux.ibm.com>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	Lorenzo Stoakes <ljs@kernel.org>,
+	"Liam R. Howlett" <liam@infradead.org>,
+	Vlastimil Babka <vbabka@kernel.org>,
+	Suren Baghdasaryan <surenb@google.com>,
+	Michal Hocko <mhocko@suse.com>, sparclinux@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+	linux-s390@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 1/8] sparc/mm: remove register_page_bootmem_info()
+Message-ID: <agLklK9iCcV6lsSn@localhost.localdomain>
+References: <20260511-bootmem_info_prep-v1-0-3fb0be6fc688@kernel.org>
+ <20260511-bootmem_info_prep-v1-1-3fb0be6fc688@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -59,127 +85,33 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 0/8] mm: remove CONFIG_HAVE_BOOTMEM_INFO_NODE (Part 1)
-To: Michal Hocko <mhocko@suse.com>
-Cc: "David S. Miller" <davem@davemloft.net>,
- Andreas Larsson <andreas@gaisler.com>, Mike Rapoport <rppt@kernel.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- Alexander Gordeev <agordeev@linux.ibm.com>,
- Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
- Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>,
- Christian Borntraeger <borntraeger@linux.ibm.com>,
- Sven Schnelle <svens@linux.ibm.com>,
- Madhavan Srinivasan <maddy@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
- "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
- Lorenzo Stoakes <ljs@kernel.org>, "Liam R. Howlett" <liam@infradead.org>,
- Vlastimil Babka <vbabka@kernel.org>, Suren Baghdasaryan <surenb@google.com>,
- sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-mm@kvack.org, linux-s390@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-References: <20260511-bootmem_info_prep-v1-0-3fb0be6fc688@kernel.org>
- <agLawTyWlnuC9Rz1@tiehlicka>
-From: "David Hildenbrand (Arm)" <david@kernel.org>
-Content-Language: en-US
-Autocrypt: addr=david@kernel.org; keydata=
- xsFNBFXLn5EBEAC+zYvAFJxCBY9Tr1xZgcESmxVNI/0ffzE/ZQOiHJl6mGkmA1R7/uUpiCjJ
- dBrn+lhhOYjjNefFQou6478faXE6o2AhmebqT4KiQoUQFV4R7y1KMEKoSyy8hQaK1umALTdL
- QZLQMzNE74ap+GDK0wnacPQFpcG1AE9RMq3aeErY5tujekBS32jfC/7AnH7I0v1v1TbbK3Gp
- XNeiN4QroO+5qaSr0ID2sz5jtBLRb15RMre27E1ImpaIv2Jw8NJgW0k/D1RyKCwaTsgRdwuK
- Kx/Y91XuSBdz0uOyU/S8kM1+ag0wvsGlpBVxRR/xw/E8M7TEwuCZQArqqTCmkG6HGcXFT0V9
- PXFNNgV5jXMQRwU0O/ztJIQqsE5LsUomE//bLwzj9IVsaQpKDqW6TAPjcdBDPLHvriq7kGjt
- WhVhdl0qEYB8lkBEU7V2Yb+SYhmhpDrti9Fq1EsmhiHSkxJcGREoMK/63r9WLZYI3+4W2rAc
- UucZa4OT27U5ZISjNg3Ev0rxU5UH2/pT4wJCfxwocmqaRr6UYmrtZmND89X0KigoFD/XSeVv
- jwBRNjPAubK9/k5NoRrYqztM9W6sJqrH8+UWZ1Idd/DdmogJh0gNC0+N42Za9yBRURfIdKSb
- B3JfpUqcWwE7vUaYrHG1nw54pLUoPG6sAA7Mehl3nd4pZUALHwARAQABzS5EYXZpZCBIaWxk
- ZW5icmFuZCAoQ3VycmVudCkgPGRhdmlkQGtlcm5lbC5vcmc+wsGQBBMBCAA6AhsDBQkmWAik
- AgsJBBUKCQgCFgICHgUCF4AWIQQb2cqtc1xMOkYN/MpN3hD3AP+DWgUCaYJt/AIZAQAKCRBN
- 3hD3AP+DWriiD/9BLGEKG+N8L2AXhikJg6YmXom9ytRwPqDgpHpVg2xdhopoWdMRXjzOrIKD
- g4LSnFaKneQD0hZhoArEeamG5tyo32xoRsPwkbpIzL0OKSZ8G6mVbFGpjmyDLQCAxteXCLXz
- ZI0VbsuJKelYnKcXWOIndOrNRvE5eoOfTt2XfBnAapxMYY2IsV+qaUXlO63GgfIOg8RBaj7x
- 3NxkI3rV0SHhI4GU9K6jCvGghxeS1QX6L/XI9mfAYaIwGy5B68kF26piAVYv/QZDEVIpo3t7
- /fjSpxKT8plJH6rhhR0epy8dWRHk3qT5tk2P85twasdloWtkMZ7FsCJRKWscm1BLpsDn6EQ4
- jeMHECiY9kGKKi8dQpv3FRyo2QApZ49NNDbwcR0ZndK0XFo15iH708H5Qja/8TuXCwnPWAcJ
- DQoNIDFyaxe26Rx3ZwUkRALa3iPcVjE0//TrQ4KnFf+lMBSrS33xDDBfevW9+Dk6IISmDH1R
- HFq2jpkN+FX/PE8eVhV68B2DsAPZ5rUwyCKUXPTJ/irrCCmAAb5Jpv11S7hUSpqtM/6oVESC
- 3z/7CzrVtRODzLtNgV4r5EI+wAv/3PgJLlMwgJM90Fb3CB2IgbxhjvmB1WNdvXACVydx55V7
- LPPKodSTF29rlnQAf9HLgCphuuSrrPn5VQDaYZl4N/7zc2wcWM7BTQRVy5+RARAA59fefSDR
- 9nMGCb9LbMX+TFAoIQo/wgP5XPyzLYakO+94GrgfZjfhdaxPXMsl2+o8jhp/hlIzG56taNdt
- VZtPp3ih1AgbR8rHgXw1xwOpuAd5lE1qNd54ndHuADO9a9A0vPimIes78Hi1/yy+ZEEvRkHk
- /kDa6F3AtTc1m4rbbOk2fiKzzsE9YXweFjQvl9p+AMw6qd/iC4lUk9g0+FQXNdRs+o4o6Qvy
- iOQJfGQ4UcBuOy1IrkJrd8qq5jet1fcM2j4QvsW8CLDWZS1L7kZ5gT5EycMKxUWb8LuRjxzZ
- 3QY1aQH2kkzn6acigU3HLtgFyV1gBNV44ehjgvJpRY2cC8VhanTx0dZ9mj1YKIky5N+C0f21
- zvntBqcxV0+3p8MrxRRcgEtDZNav+xAoT3G0W4SahAaUTWXpsZoOecwtxi74CyneQNPTDjNg
- azHmvpdBVEfj7k3p4dmJp5i0U66Onmf6mMFpArvBRSMOKU9DlAzMi4IvhiNWjKVaIE2Se9BY
- FdKVAJaZq85P2y20ZBd08ILnKcj7XKZkLU5FkoA0udEBvQ0f9QLNyyy3DZMCQWcwRuj1m73D
- sq8DEFBdZ5eEkj1dCyx+t/ga6x2rHyc8Sl86oK1tvAkwBNsfKou3v+jP/l14a7DGBvrmlYjO
- 59o3t6inu6H7pt7OL6u6BQj7DoMAEQEAAcLBfAQYAQgAJgIbDBYhBBvZyq1zXEw6Rg38yk3e
- EPcA/4NaBQJonNqrBQkmWAihAAoJEE3eEPcA/4NaKtMQALAJ8PzprBEXbXcEXwDKQu+P/vts
- IfUb1UNMfMV76BicGa5NCZnJNQASDP/+bFg6O3gx5NbhHHPeaWz/VxlOmYHokHodOvtL0WCC
- 8A5PEP8tOk6029Z+J+xUcMrJClNVFpzVvOpb1lCbhjwAV465Hy+NUSbbUiRxdzNQtLtgZzOV
- Zw7jxUCs4UUZLQTCuBpFgb15bBxYZ/BL9MbzxPxvfUQIPbnzQMcqtpUs21CMK2PdfCh5c4gS
- sDci6D5/ZIBw94UQWmGpM/O1ilGXde2ZzzGYl64glmccD8e87OnEgKnH3FbnJnT4iJchtSvx
- yJNi1+t0+qDti4m88+/9IuPqCKb6Stl+s2dnLtJNrjXBGJtsQG/sRpqsJz5x1/2nPJSRMsx9
- 5YfqbdrJSOFXDzZ8/r82HgQEtUvlSXNaXCa95ez0UkOG7+bDm2b3s0XahBQeLVCH0mw3RAQg
- r7xDAYKIrAwfHHmMTnBQDPJwVqxJjVNr7yBic4yfzVWGCGNE4DnOW0vcIeoyhy9vnIa3w1uZ
- 3iyY2Nsd7JxfKu1PRhCGwXzRw5TlfEsoRI7V9A8isUCoqE2Dzh3FvYHVeX4Us+bRL/oqareJ
- CIFqgYMyvHj7Q06kTKmauOe4Nf0l0qEkIuIzfoLJ3qr5UyXc2hLtWyT9Ir+lYlX9efqh7mOY
- qIws/H2t
-In-Reply-To: <agLawTyWlnuC9Rz1@tiehlicka>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260511-bootmem_info_prep-v1-1-3fb0be6fc688@kernel.org>
+X-Rspamd-Pre-Result: action=no action;
+	module=replies;
+	Message is reply to one we originated
+X-Spamd-Result: default: False [-4.00 / 50.00];
+	REPLY(-4.00)[]
+X-Rspamd-Queue-Id: A9F1567AD1
+X-Rspamd-Pre-Result: action=no action;
+	module=replies;
+	Message is reply to one we originated
+X-Rspamd-Server: rspamd2.dmz-prg2.suse.org
+X-Rspamd-Action: no action
 
-On 5/12/26 09:46, Michal Hocko wrote:
-> On Mon 11-05-26 16:05:28, David Hildenbrand wrote:
->> We want to remove CONFIG_HAVE_BOOTMEM_INFO_NODE. As a first step,
->> let's limit the remaining harm to x86 and core code, removing
->> sparc, ppc and s390 leftovers, starting the stepwise removal by removing
->> and simplifying some code.
->>
->> Once a related x86 vmemmap fix [1] is in, we can merge part 2 that will
->> remove CONFIG_HAVE_BOOTMEM_INFO_NODE entirely.
->>
->> Tested on x86-64 with hugetlb vmemmap optimization in combination with
->> KMEMLEAK, making sure that the problem reported in dd0ff4d12dd2 ("bootmem:
->> remove the vmemmap pages from kmemleak in put_page_bootmem") does not
->> reappear -- hoping I managed to trigger the original problem.
->>
->> Heavily cross-compiled, but let's let build bots run on it for a bit.
->>
->> [1] https://lore.kernel.org/r/20260429-vmemmap-v2-1-8dfcacffd877@kernel.org 
->>
->> Signed-off-by: David Hildenbrand (Arm) <david@kernel.org>
->> ---
->> David Hildenbrand (Arm) (8):
->>       sparc/mm: remove register_page_bootmem_info()
->>       mm/bootmem_info: drop initialization of page->lru
->>       mm/bootmem_info: stop using PG_private
->>       mm/bootmem_info: remove call to kmemleak_free_part_phys()
->>       mm/bootmem_info: stop marking the pgdat as NODE_INFO
->>       mm/bootmem_info: stop marking mem_section_usage as MIX_SECTION_INFO
->>       s390/mm: use free_reserved_page() in vmem_free_pages()
->>       powerpc/mm: remove CONFIG_HAVE_BOOTMEM_INFO_NODE
->>
->>  arch/powerpc/mm/init_64.c    |  8 --------
->>  arch/s390/mm/vmem.c          |  3 +--
->>  arch/sparc/mm/init_64.c      | 20 --------------------
->>  include/linux/bootmem_info.h |  1 -
->>  mm/Kconfig                   |  2 +-
->>  mm/bootmem_info.c            | 25 ++-----------------------
->>  6 files changed, 4 insertions(+), 55 deletions(-)
+On Mon, May 11, 2026 at 04:05:29PM +0200, David Hildenbrand (Arm) wrote:
+> sparc does not select CONFIG_HAVE_BOOTMEM_INFO_NODE, therefore,
+> register_page_bootmem_info_node() is a nop.
 > 
-> Good clean up. Feel free to add
-> Acked-by: Michal Hocko <mhocko@suse.com>
+> Let's just get rid of register_page_bootmem_info().
+> 
+> Signed-off-by: David Hildenbrand (Arm) <david@kernel.org>
 
-Thanks!
+Acked-by: Oscar Salvador <osalvador@suse.de>
 
-> to all patches but kmemleak one which I do not feel qualified to judge.
-
-It's black magic to me as well. I tried to test that scenario in particular and
-was not able to trigger the problem.
 
 -- 
-Cheers,
-
-David
+Oscar Salvador
+SUSE Labs
 
