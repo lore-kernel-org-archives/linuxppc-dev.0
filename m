@@ -1,93 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-20792-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20793-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C4A1ACD4851
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 May 2026 15:58:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 10481CD4F24
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 May 2026 17:18:06 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gFLqQ3Xwpz2xH9;
-	Wed, 13 May 2026 01:58:42 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::532" arc.chain=google.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778601522;
-	cv=pass; b=gla2j2ci0Zy8+U/G35PnLerUgNjzMMRnYmkO6prS+gYm8ifiOsTEutVSCJJxAl8lDAI2/XrPH8SlyZVALXKGnTfLEf5iL9sEhnpizMoTLUTLZSNzs+gBHcP51SrGIDWtqeLlfu/XKnuHmnjw3h+bFd/XzXaokKWPKRqhruh9yglUbDIngEjkmkMe/1XRkOw0N9hhgSBGwLw//70TpKPduFYsO5tntLmL2gzuoGFpI0FVg8V93oZwXOJ41Dl+4JW6x012MP9WT3qH7VWgO+fWWGG+P8VfNAwSRgBiElI+J77UysDn3nrn5agloGQazCW83r+ywx4Wm7t9+rhuL7aH6w==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1778601522; c=relaxed/relaxed;
-	bh=zMSNZK3767pT4X+z5y5WvqKuf0fNy1CkRFtgBN2R5Uc=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=ILIvdXP8zQY/t1VBkWbzOqcRy3wDKeDh9WTgc86wvNOkP7g6vcFEvxK1lMvCVMQ94okDTgWhDoe1wGN6MKH3zHtcG5wFcSyxWbo1VpVONA06U/yCVabgFH/N+3VPLyN2Ga/CnBkWJW9pn621+qoVMzjem0DI/WTMOAXUxx8WsPZkrTQ/baJ2HSOtBMNp+QXbKHZ6tfDeZoo5d7EzMgKXWB23VSytDYOZ8/ZTPk2zs39wso5Ji2d2gbI3OBaoPWTahDJVkLodknCGxvsrZHcht9E2MIyITYFEbYeETysEC/kvDxt+uWS/bmoz1FdZpNHpdKXNA8HzSjdFtL7j/ZbN5Q==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=paul-moore.com; dkim=pass (2048-bit key; unprotected) header.d=paul-moore.com header.i=@paul-moore.com header.a=rsa-sha256 header.s=google header.b=Y6BrNyOR; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::532; helo=mail-pg1-x532.google.com; envelope-from=paul@paul-moore.com; receiver=lists.ozlabs.org) smtp.mailfrom=paul-moore.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=paul-moore.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gFNb12Vtwz2xb3;
+	Wed, 13 May 2026 03:18:05 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778606285;
+	cv=none; b=f9LzYmaEF8mYg64wAw5XT/KzkssqG2qxcs6nlJ/kd5K++x7bm1ExptXyJhYVXMCNLdpPIoO8m2x0j/7hQFdvqk7b7JEBZoU/YDNTUspYpHiCL04XTkVGjKqHN1kpjyeuQSoY3tzqsdiWDkq3SqxNwAe+GYF8gZiraR2HMJFi3jyu5iJMOW9i0EjIYMQgQByti9fQdpCDcCh5L3gH8lcQmsX/D1QlFul77cgBgT7YX/owXWCoNQ9mM+MbN6COdc1bYbNdLgK7mfiHkATMUXgYZf0VOc1QFw7otoOpzBFlVc43wm2WwMAy/7J5p3B8YBPD2OTVuVuGgdHYWrSy3aGR2w==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1778606285; c=relaxed/relaxed;
+	bh=fTpDlWO4wjDcJ2o3f17FVyRu8e/ZA1t2XGuF2DRbWD0=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=mx8C/niLUpBH7PcVOMNFiNUw9yZZyHEST+vuyWpzZjeSl2xycnYk11aD4BmXznhqwKR+0vWZrBT0FhGQQid7cQFH5vqxg7H8kPQXOIdylrgNjAcalMjlMxCX2tRkHJA5xh2wYvHxrZI9WJfeR0IkwWhp6mhAUJTWV5nyWxZKz3qhfGuf0nsX2uwKiZUkgNxloFWWd0zEeGOc5EDy35vuEi57xgqHC/z2SUuO+DuVZOFvIAK+0JzFItv9LFYklf+vwpRSR2CXU95p3HkLufmvQN5siL/yXtg1Hk99wh4HVLYLONAJOVoFisAEp0bgf/whF2OaYONYFCc7I8r8iHQH5w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=r+xYlNUe; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=harshpb@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=paul-moore.com header.i=@paul-moore.com header.a=rsa-sha256 header.s=google header.b=Y6BrNyOR;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=r+xYlNUe;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=paul-moore.com (client-ip=2607:f8b0:4864:20::532; helo=mail-pg1-x532.google.com; envelope-from=paul@paul-moore.com; receiver=lists.ozlabs.org)
-Received: from mail-pg1-x532.google.com (mail-pg1-x532.google.com [IPv6:2607:f8b0:4864:20::532])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=harshpb@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gFLqP19vrz2xGX
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2026 01:58:40 +1000 (AEST)
-Received: by mail-pg1-x532.google.com with SMTP id 41be03b00d2f7-c736261ee8dso2670796a12.1
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2026 08:58:40 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1778601518; cv=none;
-        d=google.com; s=arc-20240605;
-        b=R7hGST0xyhrulkUYB/hXtb3SmCXPja/JYrQTUPnXflwD9HN/vBx1JUCQnMWBmpeYB0
-         3lIM7KcqRDs+dE2k9bR7ZRmiOfuShfpgWlmuscenH2BhdgdhMIACdo2+tJf4gAdBjh4J
-         01Ci0XPjPEal3eJUjo9MhO3pkzb6fGbW/3w8gLFLSEMsBbRzUzd8cA9BZ4zf6qL9rrDB
-         zmKZ6wZ/+eVQATfBQyMb+wmunH+x9B9dxJchKSYRfu685PRQh/t63Xpz/OlhjyfyFT4D
-         +f7tOLjWIajt7CAo6rLh8uMH+qKDB3y8nsHrcO0jmS64eMkk6/SQYSaZGK+juqAIcXHi
-         bY8g==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=zMSNZK3767pT4X+z5y5WvqKuf0fNy1CkRFtgBN2R5Uc=;
-        fh=AY2a8ntjJ1mgnzUWD6/0aXK6Mz3sc5y4Aw3Hda0OkhU=;
-        b=QxhgsIXn1i5lhFvt7Cs280/Myf60/ZwyluQhERw7Xz+rwasHfP/TEL1lEXy5uR1CK0
-         0U5Q+VS29VppuqsZr3i7SOo8vfXbaAoL16ItIB/1JC2M48z9p8obUfxpo+E/M37V6Tt5
-         WlTDX1i+cWUcURQi2qqFmjYIWiyu2z3orBeQvgwX79PO8d1RHiKeyNzmU2HMJPV6C1O4
-         oQNWexgEg+XGinHf0o1FGigzoVO2v0pWbu25PovosFOIz4Y+uKj32duCpykGePOijYo0
-         j03aothCK6j7MC9GO83lV9difUMRUzYDwpec2Z1yl14Z0DUsCjI1+nHPi2TyeWn1FK9C
-         RUdg==;
-        darn=lists.ozlabs.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=paul-moore.com; s=google; t=1778601518; x=1779206318; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=zMSNZK3767pT4X+z5y5WvqKuf0fNy1CkRFtgBN2R5Uc=;
-        b=Y6BrNyORnilXDKMrIEtIGxOxX6tBZI2cWqdfhkRmjYgyR2sMaRXfhgraDuVzrbJJzO
-         m+DaKT2xe4sfXy6QtrGauPTsmHQsmDq1Qr0WYrpFyt6fXsP5lGw9eD4dRlxR183LWkxq
-         YTm1P3BCqd1vL3TYT8gNEREZRsYuUIr5oYso6vfq/qVPGEAshBit3EF6YiwYjueSuv9V
-         4C+wTGER5o4BtReZAdHVPnNDi2RborCxteDbSgcIAeu5UwtvgJI3s90S/SW3PVHzLOVD
-         /SkpYZPrC4Hwc7Wey0CdrnfWNrpF8lnJwnEpYdSAkDSZaDkuqqZtpuSWWX8D7ndsuGth
-         EmKg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1778601518; x=1779206318;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=zMSNZK3767pT4X+z5y5WvqKuf0fNy1CkRFtgBN2R5Uc=;
-        b=mNBK8Ne8axsv3Pr8AUuy3LZl5EMMCwiHuWNJygOS0EKdbO9cJzehUVvOT7jpRtjZu3
-         Ufv1W+1Q4ZezpiWXAq0YMt8+TUnVEQc47IYXMciVQlcvXSTQCDFYyEL0j4B/rWHIKL7P
-         ooO73EtR7r4RbTwwasp/YbdtWigTxVs5/YPTr9cLinrKgEG4rT3jVsHEZGlS3bN1TJbn
-         oowjU7YyqS+6fNp0v0EA6ywUBGCAohNKwuRVwW1ABYFHMxJqhmrtSATUC0cUOmXC+Uj2
-         oB2u9EtlkUyXWYpEq+fpwerbgodG9hw78poUh+oxbY6Nb+R08dgHOIXUtFbSPnrxsdPx
-         AO8A==
-X-Forwarded-Encrypted: i=1; AFNElJ8VW31izqN8/OJcIcToLncrzNsm7YoKznZBSV21rZQnmOpIpR+9JjslYP1F/uyjCvfihZIRt962ckd82hg=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Ywfh8KzI4ClYq6xkR+CXxdoYnE21wFtaPlJ702yWS9k5pWxpUZJ
-	VGUclihsfMCUZeD/V1GuaDPrZ77egCEhM4hi/NyKvrhqTEdRkXKGD357cu6Eo88l/NegtTnKRg3
-	Rd7tFzt/kwinYxGHWL6TGXqCQ3C302gzFGMw/rUmz
-X-Gm-Gg: Acq92OEN5QTHwlYdtwxz+8O6t4uyLXtOgGYu8R4LxO1p3ZstaBE9eiD53YL5Wpqv1x/
-	jMB4ng2BQk6LaYwlx5LOqK3uWsUnl2119jSWgRktfHALBh2eUsg95g33UIN8wvA9fdrmOnwUxOp
-	FNjyAv8YLkA/81RPzHAi9x4tXDCbWlXiSBpNCYEl1l+hEJZaml4eF921urrFVK2QO34xDlcd1A6
-	Sty6qC4U3j9oqeP6++FcJDk7lenixLb33PdKvnDSev1tuqAWhgt5kNKDeM9HQK7Y6YsjloYiGlp
-	rVF8hG4=
-X-Received: by 2002:a05:6a20:12ce:b0:393:74ed:7de9 with SMTP id
- adf61e73a8af0-3aa5a458774mr36680654637.3.1778601517961; Tue, 12 May 2026
- 08:58:37 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gFNb00gRnz2xHK
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2026 03:18:03 +1000 (AEST)
+Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 64CCcmd52608405;
+	Tue, 12 May 2026 17:17:53 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=fTpDlW
+	O4wjDcJ2o3f17FVyRu8e/ZA1t2XGuF2DRbWD0=; b=r+xYlNUeP+O4GqiTLrs9qB
+	ewJWp+aWnXw08CScxBKTeGT2mc94zA4nFlDun+sxTTfYidX6WxlhOSU/F7ZuledT
+	t6LWlmNsu1xj2NDmeXqVyteBvvonegrHiMI5V3lOlhRE6p91LD/RKiDp9jgLHsJA
+	Yb974ItFE203Mnvua4vdewnvSfokz9BahJzlOsgTLNLAvzz+h5mU7HXhWVnzktOc
+	rblmee+UCRQEA3RQjIwWv+Rf0W2kMgT4wpOb0deyOEOTwz5y88BG/Msuz0FSm9K4
+	XSZjr7b1Is4MdWI9XSMcOMJKsieN6SBnLPx3159QWDHrRMau7Or5KD5R60EnAhfw
+	==
+Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4e3nv547d6-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 12 May 2026 17:17:52 +0000 (GMT)
+Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma12.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 64CH9SoR029777;
+	Tue, 12 May 2026 17:17:51 GMT
+Received: from smtprelay04.dal12v.mail.ibm.com ([172.16.1.6])
+	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 4e3nfgc4rs-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 12 May 2026 17:17:51 +0000 (GMT)
+Received: from smtpav06.dal12v.mail.ibm.com (smtpav06.dal12v.mail.ibm.com [10.241.53.105])
+	by smtprelay04.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 64CHHppM24642066
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Tue, 12 May 2026 17:17:51 GMT
+Received: from smtpav06.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id F11E858055;
+	Tue, 12 May 2026 17:17:50 +0000 (GMT)
+Received: from smtpav06.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 4255658043;
+	Tue, 12 May 2026 17:17:48 +0000 (GMT)
+Received: from [9.39.27.160] (unknown [9.39.27.160])
+	by smtpav06.dal12v.mail.ibm.com (Postfix) with ESMTP;
+	Tue, 12 May 2026 17:17:47 +0000 (GMT)
+Message-ID: <b7b05e38-675a-4304-a266-91b10ab74e50@linux.ibm.com>
+Date: Tue, 12 May 2026 22:47:46 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -101,46 +81,118 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <261b1be5b8dc526b83d73e8281e682a73536ea28.1773155031.git.chleroy@kernel.org>
- <177562236431.1381144.17164983023348957945.b4-ty@linux.ibm.com>
-In-Reply-To: <177562236431.1381144.17164983023348957945.b4-ty@linux.ibm.com>
-From: Paul Moore <paul@paul-moore.com>
-Date: Tue, 12 May 2026 11:58:25 -0400
-X-Gm-Features: AVHnY4I275P3CzSroklxl1VjTCxBzyxSQmhvt1UdsgCWsDYxXPS271nl7VghH8o
-Message-ID: <CAHC9VhTjSFKEZNgd-w3Gh=qENW7KL-CYq_syozTqD05iAMubqw@mail.gmail.com>
-Subject: Re: [PATCH v3] powerpc/audit: Convert powerpc to AUDIT_ARCH_COMPAT_GENERIC
-To: Madhavan Srinivasan <maddy@linux.ibm.com>, "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
-	Eric Paris <eparis@redhat.com>, Venkat Rao Bagalkote <venkat88@linux.ibm.com>, linux-kernel@vger.kernel.org, 
-	linuxppc-dev@lists.ozlabs.org, audit@vger.kernel.org, 
-	Thomas Weissschuh <thomas.weissschuh@linutronix.de>, =?UTF-8?Q?C=C3=A9dric_Le_Goater?= <clg@kaod.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] powerpc/rtas_pci: No hotplug on permanently removed
+ device on pSeries
+Content-Language: en-GB
+To: Shivaprasad G Bhat <sbhat@linux.ibm.com>, maddy@linux.ibm.com,
+        linuxppc-dev@lists.ozlabs.org
+Cc: mpe@ellerman.id.au, npiggin@gmail.com, chleroy@kernel.org,
+        linux-kernel@vger.kernel.org
+References: <177725851139.12391.5948009745181492600.stgit@linux.ibm.com>
+From: Harsh Prateek Bora <harshpb@linux.ibm.com>
+In-Reply-To: <177725851139.12391.5948009745181492600.stgit@linux.ibm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTEyMDE3OCBTYWx0ZWRfX/YzKyTfwBwQY
+ GDBcG+zn3lj8QHZeXCbSoC1bQdUkCB3qsa5Sc/2bTsrEjvFX8mFM1Xtifwjw6XA+6/d807JngHy
+ SwTlBL2qsKaxF57C0uooK3S8WAp31r4rU+NEM28UIJJW6QzZKnX1W4HTwsVxwLsUiC3Tyri8Ke4
+ VXUeOa4mwypk6fOqwcNyZmba3JzO5EBYe1vAn0BctNTwacoFhW3phLuhs9Qd8GReX0cPDV9k0Qt
+ nvUG3WFpJ3fCmK3dBUPsqZ4sPmd/trDXemuXvQ7KnYm5wHHZ5FvYQq/+i7qhW9qnc68juJYoS7o
+ hTCsvWOvk4b8A3qnrjSVE+4NA1HT8rCRK4Z5nmJFuaM4iecFkP82zUVsFSSctgGzSUqyXtY+BGv
+ 9R0aL4HIvRNMCQES2aTgrawgbb3m6HCxl/7WcXuXekUgBWunf3jobs2cFE6Z89GI7MnerRZGUVq
+ LHPEy75I/f0f0qjGOzg==
+X-Proofpoint-ORIG-GUID: lCWR-71AWLPWhJ2HXqmNzjaLJ5ud4Rr4
+X-Authority-Analysis: v=2.4 cv=Jc6Ma0KV c=1 sm=1 tr=0 ts=6a0360c1 cx=c_pps
+ a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17
+ a=IkcTkHD0fZMA:10 a=NGcC8JguVDcA:10 a=f7IdgyKtn90A:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22 a=uAbxVGIbfxUO_5tXvNgY:22
+ a=VnNF1IyMAAAA:8 a=Ay4m-i_2IE4umDc45DwA:9 a=QEXdDO2ut3YA:10
+X-Proofpoint-GUID: ZZMvLkw2mwt5lRADhkgaKyl9G78u9ROu
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-05-11_05,2026-05-08_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ spamscore=0 priorityscore=1501 malwarescore=0 bulkscore=0 clxscore=1015
+ phishscore=0 adultscore=0 lowpriorityscore=0 suspectscore=0 impostorscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2605050000 definitions=main-2605120178
 
-On Wed, Apr 8, 2026 at 12:28=E2=80=AFAM Madhavan Srinivasan <maddy@linux.ib=
-m.com> wrote:
->
-> On Tue, 10 Mar 2026 16:08:07 +0100, Christophe Leroy (CS GROUP) wrote:
-> > Commit e65e1fc2d24b ("[PATCH] syscall class hookup for all normal
-> > targets") added generic support for AUDIT but that didn't include
-> > support for bi-arch like powerpc.
-> >
-> > Commit 4b58841149dc ("audit: Add generic compat syscall support")
-> > added generic support for bi-arch.
-> >
-> > [...]
->
-> Applied to powerpc/next.
->
-> [1/1] powerpc/audit: Convert powerpc to AUDIT_ARCH_COMPAT_GENERIC
->       https://git.kernel.org/powerpc/c/f26ad12356a275ab303d5d3af4790ad94a=
-cc20d7
 
-I never saw a follow-up demonstrating that the audit test suite runs
-clean with this change.
 
-Madhavan, did you test this before merging?
+On 27/04/26 8:25 am, Shivaprasad G Bhat wrote:
+> The eeh_driver disables and offlines the PE permanently when it
+> exceeds the freeze count beyond eeh_max_freeze within the last hour.
+> The PE is only offline, so the device tree entries, eeh device
+> references are all intact till the real unplug of the device from
+> the guest/host takes place.
+> 
+> On pSeries, with a new hotplug of any PCI device, the drmgr initiates
+> a system-wide PCI rescan, which finds devices offlined by the eeh_driver
+> and there will be attempts to bring them online. This leads to
+> recurring EEHs either at the config read time itself or a bit
+> later depending on the type of the problem.
+> 
+> For PowerNV, the commit d2b0f6f77ee5 ("powerpc/eeh: No hotplug on
+> permanently removed dev") introduced the EEH_DEV_REMOVED flag to
+> prevent such inadvertent rescans on hierarchical toplogies relavent in
+> Baremetal setups. For pSeries, such topologies don't really make sense
+> as the devices are either part of the same PE OR exposed as independent
+> devices on multiple virtual PHBs. However, the inadvertent rescans are
+> still a possibility with either hotplug of a new device or otherwise
+> with manual system-wide pci bus rescan attempts.
+> 
+> So the patch checks for EEH_DEV_REMOVED before allowing config space
+> access just like PowerNV, making the PCI core omit the PE, and thus
+> preventing subsequent EEH recurances. The patch is tested on PowerVM
+> and KVM machines with single and multi-function devices, and on the
+> devices behind a switch. The unplug of the affected devices post EEH
+> removal is also working fine as expected.
+> 
+> Signed-off-by: Shivaprasad G Bhat <sbhat@linux.ibm.com>
+> References: d2b0f6f77ee5 ("powerpc/eeh: No hotplug on permanently removed dev")
+> ---
+>   arch/powerpc/kernel/rtas_pci.c |    6 ++++++
+>   1 file changed, 6 insertions(+)
+> 
+> diff --git a/arch/powerpc/kernel/rtas_pci.c b/arch/powerpc/kernel/rtas_pci.c
+> index fccf96e897f6..ce24b18712ca 100644
+> --- a/arch/powerpc/kernel/rtas_pci.c
+> +++ b/arch/powerpc/kernel/rtas_pci.c
+> @@ -57,6 +57,9 @@ int rtas_pci_dn_read_config(struct pci_dn *pdn, int where, int size, u32 *val)
+>   	if (pdn->edev && pdn->edev->pe &&
+>   	    (pdn->edev->pe->state & EEH_PE_CFG_BLOCKED))
+>   		return PCIBIOS_SET_FAILED;
+> +
+> +	if (pdn->edev && pdn->edev->mode & EEH_DEV_REMOVED)
 
---=20
-paul-moore.com
+Consider using paranthesis for (pdn->edev->mode & EEH_DEV_REMOVED) and 
+moving to next line for readability (similar to prev one).
+
+> +		return PCIBIOS_SET_FAILED;
+
+Why not return PCIBIOS_DEVICE_NOT_FOUND ? Returning SET_FAILED for a 
+removed device could be misleading.
+
+Above comments applies to below changes also.
+
+>   #endif
+>   
+>   	addr = rtas_config_addr(pdn->busno, pdn->devfn, where);
+> @@ -108,6 +111,9 @@ int rtas_pci_dn_write_config(struct pci_dn *pdn, int where, int size, u32 val)
+>   	if (pdn->edev && pdn->edev->pe &&
+>   	    (pdn->edev->pe->state & EEH_PE_CFG_BLOCKED))
+>   		return PCIBIOS_SET_FAILED;
+> +
+> +	if (pdn->edev && pdn->edev->mode & EEH_DEV_REMOVED)
+> +		return PCIBIOS_SET_FAILED;
+>   #endif
+>   
+>   	addr = rtas_config_addr(pdn->busno, pdn->devfn, where);
+> 
+> 
+> 
+
 
