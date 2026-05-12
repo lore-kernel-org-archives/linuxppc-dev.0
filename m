@@ -1,82 +1,116 @@
-Return-Path: <linuxppc-dev+bounces-20759-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20760-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9371ACD4855
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 May 2026 08:37:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AAC96CD4F26
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 May 2026 08:37:34 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gF92C247qz2yY0;
-	Tue, 12 May 2026 18:37:23 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778575043;
-	cv=none; b=M2B6x4WUDW2QrRbo6jLgwWFA+RzaFkfXODErrMWrivLFNJB5OLSdBfa25xyuKbaEaeLOqqUAEq4OX3RtmFGGriXEFwseQEDqnuFSLNGzOcSv0QWnmUEzKH4maU2EpGCLf18Lxo4ksVyIU6yb0tbb8+B9WYkqwUdFAqvJKU062hHdc6ALwacFz421JQnmc/NGFfkhgX8EIkoymgBroUuinzb8E0JunRkq/kGXc3JymOyBDoEeWwifl+9aQRReCEu2CSUHuOzDr/zg9+hEGESD0OJoiRcHndOBmUhRLkCSp/THwcwE+gTSjgiE/4ATaHGQP+g8NuYYBY9pmuBe1pNZPg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gF92P31LJz2yY0;
+	Tue, 12 May 2026 18:37:33 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=195.135.223.130
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778575053;
+	cv=none; b=bv9wVSZBT9pW+gnmXrmbBVFzDECuPkVkQxagEkeH2CO+HEUKGtDgodT9acacme6Iss2xba7TfSAxtxrZKOCTOgWlZLJ4IkaXnAKYXA9MUzt/mxUnEMh6NYKDyr6YDx9cWgAD+hu6dbX0VyCWs0zvRvGjVXD8fGjcw1XaoyvEqPP5MjAocup6u90gqKb6fIwKjL54sqHRwVvUTP65pxVYKNBCLNGu5uN8/9P7T7c9K7FvMMgaXRlkAIwZgBRrc4GAJUqY2Kp6FjKYhXpLohUWXqqxSLj7C02Mpeg/A/mhBdhCGVOV4LUXtzrpOaHfrHm5Hl9kBxRdE4u9ECCfq1WFtQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1778575043; c=relaxed/relaxed;
-	bh=H8gZvhDiJcfPj4izdPoeTyKzYez876PA3k9XPRRUrF0=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
-	 MIME-Version:Content-Type; b=Bw3SSvqClrPjxEN4MP5woBjMZB4VV300Ag8fQZApANHwxLk32I0qNmhz9MHJwE6nRv76t+4VrvCuilDSJNHkaGYjpQG1ZVu7/3xhQY1550MfP15kHX4RXniaKvK3P/iJ/GKFjoleCR97PYfWFYUDb0Hd8nTZ1a90C6k9AoK3dqc9X8xR4bY4NtkUyWfMVCbZP0T2rOuXnqZ/89ZaszZGBlGGhSAueDj5lUiT/C1VkuKO5YNlto5Pu+EjQtGIJWDZ8cpqLIUKQqjwptaoNLH2PkG4pkObHTZlRicKLgOoY3fZFpq8yB3kDx0TSRWxXYDwElSiIf9ofMNlEKv0C4Rxxw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=JFKfrhPq; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=vaibhav@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1778575053; c=relaxed/relaxed;
+	bh=j7Q6p7r7/PTCrwEUB3BqNV/hhNykM2WI5rGmdNMnE/M=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=E9p/E33qJU+RdoQVJWU0+Szs3sEilxGy94v4XqjKaS3/NtTgpTdoOs6uo3oMddJxsAFczOhwLsg5Pif5igQzzyEH3sZ2Te0pYnt2MW6S7nFSSLSV7nXHpb/FTh2G0JJYr+rf/TUOQrlh+/loMWKvauAsngtetQfxeszXJPFs/jVRmj/GmhaWXtDzgPbTa3soQRdyCVSHFe34e4DHE69X3Yw9nwKz+dvMqaBZFqHuk1PV5jz5vO4speQiFHtwrTHpWgRcLPjfDHdk6HsWs2lTOSCE9jpzfd0O2xJVPJdLRF6Gum8V87eypmQyNU/GbCWG7UxwwvAByBqsD6gVZcoXjw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de; dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=XDcpM7HE; dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=9nMywJlr; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=XDcpM7HE; dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=9nMywJlr; dkim-atps=neutral; spf=pass (client-ip=195.135.223.130; helo=smtp-out1.suse.de; envelope-from=osalvador@suse.de; receiver=lists.ozlabs.org) smtp.mailfrom=suse.de
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=JFKfrhPq;
+	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=XDcpM7HE;
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=9nMywJlr;
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=XDcpM7HE;
+	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=9nMywJlr;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=vaibhav@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=195.135.223.130; helo=smtp-out1.suse.de; envelope-from=osalvador@suse.de; receiver=lists.ozlabs.org)
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gF92B1HXqz2ySl
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2026 18:37:21 +1000 (AEST)
-Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 64BK7H352760537;
-	Tue, 12 May 2026 08:37:04 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-type:date:from:in-reply-to:message-id:mime-version
-	:references:subject:to; s=pp1; bh=H8gZvhDiJcfPj4izdPoeTyKzYez876
-	PA3k9XPRRUrF0=; b=JFKfrhPq8nUkfghkSxPLnz3TlK6envyHBf7rktLvSsXHmy
-	iH1t0d6K4J710TpSKiT8tF9xje+oiyMy8ICvD6VMeIcSTcCn7NCtgOA0mj70X+Bl
-	SDP6eWNiQ6MOqJ37gRiXulrHHDWpjKnmelcjgVSxmGkdynJ3AzQ7j6sBtuJJT4eK
-	NntESoFIr/UIYKAe4aVr8qNbn/IB/MoR8M7KEN5ydLcAuet5pbAJgwSxazRbuq1l
-	CdDSzaXZS8UacvRj3C/IQJf5dUikwWKwGPZfvA1MuoCqH2AA4zNG5vkYFLY88ddF
-	UhbhTD5RaGfpLjM/k7jHyd+uK+IOxAMXs+OYBD/Q==
-Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4e3nv6j24w-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 12 May 2026 08:37:04 +0000 (GMT)
-Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma21.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 64C8OXsn028662;
-	Tue, 12 May 2026 08:37:03 GMT
-Received: from smtprelay07.dal12v.mail.ibm.com ([172.16.1.9])
-	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4e3nfgjb95-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 12 May 2026 08:37:03 +0000 (GMT)
-Received: from smtpav06.dal12v.mail.ibm.com (smtpav06.dal12v.mail.ibm.com [10.241.53.105])
-	by smtprelay07.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 64C8b2S325821758
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 12 May 2026 08:37:02 GMT
-Received: from smtpav06.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 3CD3A58059;
-	Tue, 12 May 2026 08:37:02 +0000 (GMT)
-Received: from smtpav06.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id D5EF458043;
-	Tue, 12 May 2026 08:36:57 +0000 (GMT)
-Received: from vaibhav?linux.ibm.com (unknown [9.124.208.192])
-	by smtpav06.dal12v.mail.ibm.com (Postfix) with SMTP;
-	Tue, 12 May 2026 08:36:57 +0000 (GMT)
-Received: by vaibhav@linux.ibm.com (sSMTP sendmail emulation); Tue, 12 May 2026 14:06:55 +0530
-From: Vaibhav Jain <vaibhav@linux.ibm.com>
-To: Gautam Menghani <Gautam.Menghani@ibm.com>, maddy@linux.ibm.com,
-        npiggin@gmail.com, mpe@ellerman.id.au, chleroy@kernel.org
-Cc: Gautam Menghani <gautam@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
-        kvm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2] KVM: PPC: Book3S HV: Add H_FAC_UNAVAIL mapping for
- tracing exits
-In-Reply-To: <20260428084534.49781-1-Gautam.Menghani@ibm.com>
-References: <20260428084534.49781-1-Gautam.Menghani@ibm.com>
-Date: Tue, 12 May 2026 14:06:55 +0530
-Message-ID: <87pl31uiqg.fsf@vajain21.in.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gF92N5D6gz2ySl
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2026 18:37:32 +1000 (AEST)
+Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out1.suse.de (Postfix) with ESMTPS id 1907A6BF57;
+	Tue, 12 May 2026 08:37:30 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1778575050; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=j7Q6p7r7/PTCrwEUB3BqNV/hhNykM2WI5rGmdNMnE/M=;
+	b=XDcpM7HE5T4YXQ8cU48rhnlq0031pTSR7lGt01xe7saIgyqP7q5NwgRWiPHf3ly+ynh0Cp
+	EZoWgGFSUcyC91HlWChdyHpptKV6LkzEWJ/PLw65aRJuw6ydfzUw6Kmo7ugyC8/Dic1iRy
+	Sg1qkIy8Or5cXMgS62vHomBmwb6OCqA=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1778575050;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=j7Q6p7r7/PTCrwEUB3BqNV/hhNykM2WI5rGmdNMnE/M=;
+	b=9nMywJlr4PLXO8Wk+lLz+Kzebosqxs5kPLFv9AgywrldbKhOX8RyZbBI7VnrvIEdsRJ8xd
+	Mcv8zGLYQKT+HDAw==
+Authentication-Results: smtp-out1.suse.de;
+	none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1778575050; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=j7Q6p7r7/PTCrwEUB3BqNV/hhNykM2WI5rGmdNMnE/M=;
+	b=XDcpM7HE5T4YXQ8cU48rhnlq0031pTSR7lGt01xe7saIgyqP7q5NwgRWiPHf3ly+ynh0Cp
+	EZoWgGFSUcyC91HlWChdyHpptKV6LkzEWJ/PLw65aRJuw6ydfzUw6Kmo7ugyC8/Dic1iRy
+	Sg1qkIy8Or5cXMgS62vHomBmwb6OCqA=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1778575050;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=j7Q6p7r7/PTCrwEUB3BqNV/hhNykM2WI5rGmdNMnE/M=;
+	b=9nMywJlr4PLXO8Wk+lLz+Kzebosqxs5kPLFv9AgywrldbKhOX8RyZbBI7VnrvIEdsRJ8xd
+	Mcv8zGLYQKT+HDAw==
+Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id E4920593A9;
+	Tue, 12 May 2026 08:37:28 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
+	by imap1.dmz-prg2.suse.org with ESMTPSA
+	id 0rFANcjmAmrjBAAAD6G6ig
+	(envelope-from <osalvador@suse.de>); Tue, 12 May 2026 08:37:28 +0000
+Date: Tue, 12 May 2026 10:37:19 +0200
+From: Oscar Salvador <osalvador@suse.de>
+To: "David Hildenbrand (Arm)" <david@kernel.org>
+Cc: "David S. Miller" <davem@davemloft.net>,
+	Andreas Larsson <andreas@gaisler.com>,
+	Mike Rapoport <rppt@kernel.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Alexander Gordeev <agordeev@linux.ibm.com>,
+	Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
+	Heiko Carstens <hca@linux.ibm.com>,
+	Vasily Gorbik <gor@linux.ibm.com>,
+	Christian Borntraeger <borntraeger@linux.ibm.com>,
+	Sven Schnelle <svens@linux.ibm.com>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	Lorenzo Stoakes <ljs@kernel.org>,
+	"Liam R. Howlett" <liam@infradead.org>,
+	Vlastimil Babka <vbabka@kernel.org>,
+	Suren Baghdasaryan <surenb@google.com>,
+	Michal Hocko <mhocko@suse.com>, sparclinux@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+	linux-s390@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 6/8] mm/bootmem_info: stop marking mem_section_usage as
+ MIX_SECTION_INFO
+Message-ID: <agLmv6kAorUNC37g@localhost.localdomain>
+References: <20260511-bootmem_info_prep-v1-0-3fb0be6fc688@kernel.org>
+ <20260511-bootmem_info_prep-v1-6-3fb0be6fc688@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -90,80 +124,48 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-ORIG-GUID: nU0nISuR4Dqqy-ix_PCeP0TTyaIL8XvG
-X-Proofpoint-GUID: KMAjbdqZw1a388q652BZ71xGUDq0AL35
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTEyMDA4NiBTYWx0ZWRfX21zcGlj/4oYi
- +mHmsCfhLL7CRqOq08J+bp0jRQxj2DZRsLgEdY2C0yOhPCupP7StLghLuZt24lFKu88cYDEFNYN
- djDl4gbF4nwyUdZf52QOLQRwOmK2EMpqWqPBLPmPhzQQYI291SOP+xWTZS0pWvjP/1+/kUxluR8
- +Qrq7zMHBSddBRIo58gtVOWmMpGGIofs7rgre+LFASvPyDXtdfP14Xh47vklkDbN0l37zt0byWP
- CItPw2cdJOE2sk9czVpq45oRgpBej1dY8x57TQxOFllQBMspXtsoKCaPvpoq5OHISKoPhoGBIEI
- 3bVO+IGRTsr6JH39wzILWTvV6rFH1GEt+5uYg3ei22BpjPYeewEO1gQ6GsEuFWbJ3RK6OLRvtdO
- TyshK9C+55j4tWHXSEC/6sI1XfLaG3zfN9viq+LdoIcpmgsKwikwYweqkWfRiARqrJ6stPYZKSW
- XhR8QpQozFN3Qf/+0Lg==
-X-Authority-Analysis: v=2.4 cv=P8UKQCAu c=1 sm=1 tr=0 ts=6a02e6b0 cx=c_pps
- a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
- a=NGcC8JguVDcA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=RzCfie-kr_QcCd8fBx8p:22 a=VnNF1IyMAAAA:8 a=ycv1Ynx4oPle2U8RHYcA:9
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-05-11_05,2026-05-08_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- adultscore=0 priorityscore=1501 phishscore=0 bulkscore=0 clxscore=1011
- malwarescore=0 spamscore=0 lowpriorityscore=0 suspectscore=0 impostorscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2605050000 definitions=main-2605120086
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260511-bootmem_info_prep-v1-6-3fb0be6fc688@kernel.org>
+X-Spamd-Result: default: False [-8.30 / 50.00];
+	REPLY(-4.00)[];
+	BAYES_HAM(-3.00)[100.00%];
+	NEURAL_HAM_LONG(-1.00)[-1.000];
+	NEURAL_HAM_SHORT(-0.20)[-1.000];
+	MIME_GOOD(-0.10)[text/plain];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	ARC_NA(0.00)[];
+	MIME_TRACE(0.00)[0:+];
+	TO_DN_SOME(0.00)[];
+	RCPT_COUNT_TWELVE(0.00)[25];
+	MISSING_XM_UA(0.00)[];
+	FUZZY_RATELIMITED(0.00)[rspamd.com];
+	FREEMAIL_ENVRCPT(0.00)[gmail.com];
+	R_RATELIMIT(0.00)[to_ip_from(RLc9u4wub3os6qw36hzxobph9o)];
+	FROM_HAS_DN(0.00)[];
+	FREEMAIL_CC(0.00)[davemloft.net,gaisler.com,kernel.org,linux-foundation.org,linux.ibm.com,ellerman.id.au,gmail.com,infradead.org,google.com,suse.com,vger.kernel.org,kvack.org,lists.ozlabs.org];
+	RCVD_TLS_ALL(0.00)[];
+	FROM_EQ_ENVFROM(0.00)[];
+	RCVD_COUNT_TWO(0.00)[2];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[localhost.localdomain:mid,suse.de:email,imap1.dmz-prg2.suse.org:helo]
 
+On Mon, May 11, 2026 at 04:05:34PM +0200, David Hildenbrand (Arm) wrote:
+> We never free the ms->usage data for boot memory sections (see
+> section_deactivate()). And to identify whether ms->usage was allocated
+> from memblock, we simply identify it by looking at PG_reserved.
+> 
+> Consequently, there is no need to mark ms->usage as MIX_SECTION_INFO.
+> Let's just stop doing that.
+> 
+> Signed-off-by: David Hildenbrand (Arm) <david@kernel.org>
 
-Thanks Gautam catching this and proposing this patch.
-Minor review comments below:
+Acked-by: Oscar Salvador <osalvador@suse.de>
 
-Gautam Menghani <Gautam.Menghani@ibm.com> writes:
+ 
 
-> From: Gautam Menghani <gautam@linux.ibm.com>
->
-> The macro kvm_trace_symbol_exit is used for providing the mappings
-> for the trap vectors and their names. Add mapping for H_FAC_UNAVAIL so that
-> trap reason is displayed as string instead of a vector number when using
-> the kvm_guest_exit tracepoint.
->
-> Signed-off-by: Gautam Menghani <gautam@linux.ibm.com>
-> ---
-> v2:
-> 1. Remove the trailing comma after last element
->
->  arch/powerpc/kvm/trace_book3s.h | 3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
->
-> diff --git a/arch/powerpc/kvm/trace_book3s.h b/arch/powerpc/kvm/trace_book3s.h
-> index 9260ddbd557f..5d272c115331 100644
-> --- a/arch/powerpc/kvm/trace_book3s.h
-> +++ b/arch/powerpc/kvm/trace_book3s.h
-> @@ -28,6 +28,7 @@
->  	{0xea0, "H_VIRT"}, \
->  	{0xf00, "PERFMON"}, \
->  	{0xf20, "ALTIVEC"}, \
-> -	{0xf40, "VSX"}
-> +	{0xf40, "VSX"}, \
-> +	{0xf80, "H_FAC_UNAVAIL"}
-Also add trap of 0x000 indicating "RETURN_TO_HOST"
-
-Also sychronize the contents of the proposed changes for this header with the
-libtraceevent header file tools/perf/util/kvm-stat-arch/book3s_hv_exits.h
-
->  
->  #endif
-> -- 
-> 2.52.0
->
->
-
-With above minor fixes done, feel free to add:
-
-Reviewed-by: Vaibhav Jain (IBM) <vaibhav@linux.ibm.com>
 -- 
-Cheers
-~ Vaibhav
+Oscar Salvador
+SUSE Labs
 
