@@ -1,73 +1,85 @@
-Return-Path: <linuxppc-dev+bounces-20767-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20768-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2E8B4CD4F26
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 May 2026 08:53:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 45174CD4851
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 May 2026 09:04:35 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gF9NL6Ctzz2yZc;
-	Tue, 12 May 2026 18:53:06 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778575986;
-	cv=none; b=k83mpdDz74czut5o4B4LlUaoqTL7RUelhZsgxY7vyMXs/GBF3aKsX0hyLCSGdS3xZRn9ZleMrsJdh7mfoXNUHL7AR8YyADSKpPLzHIbx7DqIEkoBZMTqgJ5EfIPiuQO8/vnG98LGQCWUfATp3Dvaukqwwxtztz27qwq/mAeB+8qdW8z5vmZ+2N9qVbCb8uSVr3vmQ4vOXclZs1KV9oEqTPLZ6pDuM4LfKNTSJz8nTTX2sTDa2dWbAjHYDC7fdtb4b6dUp1EGAMn+3x/9n3oaKxCCzYrnv8w2SawSje+rsb57PoeWjfaw77kE2lSIFYDtlwewZudlU1mT1vkOzy8UmA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gF9dZ04Brz2yY0;
+	Tue, 12 May 2026 19:04:34 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778576673;
+	cv=none; b=hcJC93BsvRKGa6gyU6ciX6O4RoDghkNjEasLktYplQO3KXsnFFO+vTcjpnORtqCWcVAsKpthWSCiRDi8lkdyGz4/hMWwOxT3PvfgWDgS9Pd0fWk577LJ2Tz4UtmXAu/E/r2uGqwteY1uvnOtVU2TwFuBke5VgoedGdY+LFXVckWWfrpnu8dQP/pHTIf9qP2r80XtjAuHj3cEOJQoODPIaU3aFjYnkH8mjFsOCZ3MxCOmJ29srPDE4/AY1VPzIfH4194beK+YS6KXDKSVKXorg8U7twRblU6d0BEY36UmHsN5mMbNrGNCngeaKQ4Y0zVh4DUg/cTRVnRYg5aAOHdWig==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1778575986; c=relaxed/relaxed;
-	bh=eZc3uNoEL/uKtPTMromxFjx6kMpuZDZaR5NkP8zxJqo=;
-	h=Content-Type:Mime-Version:Subject:From:In-Reply-To:Date:Cc:
-	 Message-Id:References:To; b=LA+rBj1litFWlsQjRQp1wlgYNQLVtLmFKtpUHTmuloBre3K5v6b6xc2b6GP0BW5tnHZ6vRZ4G1eyXqpqL2hKjitm9ZPl2Ukxa7QzU6/yDtZAO3ngYz54Fo2oTFzKg/BfhyIOFpoahWvsJMdioYjKVPsVtz2Dw9jaJ8yIL7ZOb5BsjQUYUCT8EX78jX5xp2jtSpYd41NNmyMkBrFYcOR+dKJOWo14/wjVUzVXeQb9+UXdqMP+iMu3MO8KivbqrHBsS/PZEH2O+hO6TgYDpOy3EmseSTfbU+arZzfRety5gB/YL5reO/fjdGXNDAG5VuBp7gVr6WU1c7Vfctw+AiB8wg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=hJYvFx9Y; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=venkat88@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1778576673; c=relaxed/relaxed;
+	bh=ydmoZMzugj7h4YD3/pIgewAgf7xI6DveijyUSQg1bH4=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=UjyypZ0dLRhq8kpvB6W4pPESqSmtSLRpYIhIFtC9MwntDFmcDKT0XrD/egNdrCatVQNABcWuAy5vTyuAoumsdDh9RTbiwbfHTq+6saACq071hvV5NQNRAs6N7XkJXOSRRCqYzc9475mKogGh0ZiOi8o3+qWJ/5UJC6LNlk5NUqoxl3ILWEPBkhq4Gp1WleuMSB/VM0FOtBK3+AOcZrKXR/tL0KlyQu5v9I3lw2cZeoPJbbYxa8cLE7uA0LOjsVDiSP0RatGDLrzaXLqr11Vtwb5nmXkyZMrEf1fDjDmtwDP8ojy60IT7m3Xg+aDTqkFrbCmPDtPn9t0wHtli4/CXrw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=oJTobraK; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=aneesh.kumar@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=hJYvFx9Y;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=oJTobraK;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=venkat88@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=aneesh.kumar@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gF9NL0zwLz2yYs
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2026 18:53:05 +1000 (AEST)
-Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 64BK6qhd2607277;
-	Tue, 12 May 2026 08:53:02 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=eZc3uN
-	oEL/uKtPTMromxFjx6kMpuZDZaR5NkP8zxJqo=; b=hJYvFx9Yf8Gk5MKHv6kjgG
-	u0XS2AtjGLCfT1zx+cn0jFT71pk1Thric49nkFZjWzugMIUdvEYwwdxn1xWPGEXO
-	Gwz2CVQNZh6LxoKQNDsHcd+kxn4BeYJQ/vYbcrBaLdr7DExTXV3sV7pk0DVLjrm/
-	CEMvyPrrinHJMw13k442f/uKHI1IPT7gS7YvgCM9rj6AMirqLKoLM4dt7tD0yoe4
-	QlJJv/nddgw8UygWTf7y7R7t9XXlCUhGdrLIJ3asTg6K4rNMTjROaBIhJcjK51wC
-	FvaZ5yg6SLuHZRMZoiPEbgwkC6MQden2MzEGKWH5SeFq0ktcSShGWL1edKM+qeYA
-	==
-Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4e3nv527r9-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 12 May 2026 08:53:01 +0000 (GMT)
-Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma21.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 64C8dNEq012190;
-	Tue, 12 May 2026 08:53:00 GMT
-Received: from smtprelay05.wdc07v.mail.ibm.com ([172.16.1.72])
-	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4e3nfgjcuf-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 12 May 2026 08:53:00 +0000 (GMT)
-Received: from smtpav06.wdc07v.mail.ibm.com (smtpav06.wdc07v.mail.ibm.com [10.39.53.233])
-	by smtprelay05.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 64C8qwqO34669246
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 12 May 2026 08:52:58 GMT
-Received: from smtpav06.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 2EE645804E;
-	Tue, 12 May 2026 08:52:58 +0000 (GMT)
-Received: from smtpav06.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 147BE5803F;
-	Tue, 12 May 2026 08:52:53 +0000 (GMT)
-Received: from smtpclient.apple (unknown [9.123.10.165])
-	by smtpav06.wdc07v.mail.ibm.com (Postfix) with ESMTPS;
-	Tue, 12 May 2026 08:52:52 +0000 (GMT)
-Content-Type: text/plain;
-	charset=utf-8
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gF9dX61fhz2yXj
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2026 19:04:32 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sea.source.kernel.org (Postfix) with ESMTP id 259FC43D73;
+	Tue, 12 May 2026 09:04:31 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id DB5B7C2BCC7;
+	Tue, 12 May 2026 09:04:19 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1778576671;
+	bh=61tXliQ/XBJoYkUBUBG8gxT+9Bu+8tJYiCkn9FV4ylo=;
+	h=From:To:Cc:Subject:Date:From;
+	b=oJTobraKOVigupVmeMOO2+Q1wWOaVGKhX/GzhO1CR+oMrH2HI51YYrr008C537v+G
+	 UUVmRUhwCUoGaExJMCFAz+hSb3R4HWDxAxNODc6Y4bmdjdIXAVj78RFh9mwRcqVLgb
+	 Fx8/aKJ77PvgASKN7hafTS/YFqKFOGxS5qXl95RkVPeuKoTEH3cP7zNJjuPaMUb+gZ
+	 V0V/jF3o7H6NpExI8piAPfpZwpG6PjdGI1VEOZLtFahXamXt2PkTVP2U5Iv1vt/4b8
+	 kqZmwZ86YGl97t8WiCSsqraIBEIvzUK06TVDfB50pvAxePXnFWAsKttcJ5wH4cvaYs
+	 OSuujN6V1HRVQ==
+From: "Aneesh Kumar K.V (Arm)" <aneesh.kumar@kernel.org>
+To: iommu@lists.linux.dev,
+	linux-arm-kernel@lists.infradead.org,
+	linux-kernel@vger.kernel.org,
+	linux-coco@lists.linux.dev
+Cc: "Aneesh Kumar K.V (Arm)" <aneesh.kumar@kernel.org>,
+	Robin Murphy <robin.murphy@arm.com>,
+	Marek Szyprowski <m.szyprowski@samsung.com>,
+	Will Deacon <will@kernel.org>,
+	Marc Zyngier <maz@kernel.org>,
+	Steven Price <steven.price@arm.com>,
+	Suzuki K Poulose <Suzuki.Poulose@arm.com>,
+	Catalin Marinas <catalin.marinas@arm.com>,
+	Jiri Pirko <jiri@resnulli.us>,
+	Jason Gunthorpe <jgg@ziepe.ca>,
+	Mostafa Saleh <smostafa@google.com>,
+	Petr Tesarik <ptesarik@suse.com>,
+	Alexey Kardashevskiy <aik@amd.com>,
+	Dan Williams <dan.j.williams@intel.com>,
+	Xu Yilun <yilun.xu@linux.intel.com>,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-s390@vger.kernel.org,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	Alexander Gordeev <agordeev@linux.ibm.com>,
+	Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
+	Heiko Carstens <hca@linux.ibm.com>,
+	Vasily Gorbik <gor@linux.ibm.com>,
+	Christian Borntraeger <borntraeger@linux.ibm.com>,
+	Sven Schnelle <svens@linux.ibm.com>,
+	x86@kernel.org
+Subject: [PATCH v4 00/13] dma-mapping: Use DMA_ATTR_CC_SHARED through direct, pool and swiotlb paths
+Date: Tue, 12 May 2026 14:33:55 +0530
+Message-ID: <20260512090408.794195-1-aneesh.kumar@kernel.org>
+X-Mailer: git-send-email 2.43.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -80,123 +92,130 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-Mime-Version: 1.0 (Mac OS X Mail 16.0 \(3864.300.41.1.7\))
-Subject: Re: [PATCH V4 1/2] tools/perf: Fix the check for parameterized field
- in event term
-From: Venkat <venkat88@linux.ibm.com>
-In-Reply-To: <20260504154205.21394-1-atrajeev@linux.ibm.com>
-Date: Tue, 12 May 2026 14:22:40 +0530
-Cc: acme@kernel.org, jolsa@kernel.org, adrian.hunter@intel.com,
-        mpetlan@redhat.com, tmricht@linux.ibm.com, maddy@linux.ibm.com,
-        irogers@google.com, namhyung@kernel.org,
-        linux-perf-users@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-        hbathini@linux.vnet.ibm.com, Tejas.Manhas1@ibm.com,
-        Tanushree.Shah@ibm.com, shivani@linux.ibm.com
-Content-Transfer-Encoding: quoted-printable
-Message-Id: <0FE86BD2-554C-402C-80A2-C8F86FC2F685@linux.ibm.com>
-References: <20260504154205.21394-1-atrajeev@linux.ibm.com>
-To: Athira Rajeev <atrajeev@linux.ibm.com>
-X-Mailer: Apple Mail (2.3864.300.41.1.7)
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTEyMDA4NiBTYWx0ZWRfXxM/GFRstIpsX
- 1oPyVQIg85G1wuAmr7P7UaH/LxOSXyahbAWBkmVbi8D7O5Xenlyu+xuxWnItYX1NgXcUj3ll9+a
- NcpzhwKLCkHvjwuQeURYt1QLmNEXfBY06AhTA/Og0ilnNO2lUpQUZC7vPYm61vNudeMGsSN7vdF
- h0oQ7NgBdQI5fkh7sP59oFffeXjxWkT0BUhX/tL4PHkXVOIf/eMuGdbNnHAqiCS6GICeylyJfcP
- EEvyZ/Mv6wh6nrc3yqM/QhODWbkcO0BxbmyyS9qrF8cx7ZKVCWM0E1VJOnMNIcGEQZrYiZJQc3L
- vuc72mS5trnP6ZubrUn2m/5ZmQ4jYNCGzVDFONcNUxkjeJcYD4caQqu14VSZqdWyjLciOPPa3v9
- Su+P8i4xJn+KAfpudLfdIEGK2/qFWPTQc+O2Ocj/Ta54oThpyk7vRcGQujpCEcxsh8UTO/ohKvv
- 0Y1adfz48GS5Y2i75VA==
-X-Proofpoint-ORIG-GUID: 41Sw65vucVvWl5GoTvZorxwU4QtZb83L
-X-Authority-Analysis: v=2.4 cv=Jc6Ma0KV c=1 sm=1 tr=0 ts=6a02ea6e cx=c_pps
- a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
- a=KlCRr-_lrQmZq1rU:21 a=IkcTkHD0fZMA:10 a=NGcC8JguVDcA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22 a=uAbxVGIbfxUO_5tXvNgY:22
- a=VnNF1IyMAAAA:8 a=gn8oeiLMC-0IUWM35G8A:9 a=QEXdDO2ut3YA:10
-X-Proofpoint-GUID: bwJvMwdIKraFPcjoz76QfOEeY-Kyyo96
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-05-11_05,2026-05-08_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- spamscore=0 priorityscore=1501 malwarescore=0 bulkscore=0 clxscore=1015
- phishscore=0 adultscore=0 lowpriorityscore=0 suspectscore=0 impostorscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2605050000 definitions=main-2605120086
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+
+This series propagates DMA_ATTR_CC_SHARED through the dma-direct,
+dma-pool, and swiotlb paths so that encrypted and decrypted DMA buffers
+are handled consistently.
+
+Today, the direct DMA path mostly relies on force_dma_unencrypted() for
+shared/decrypted buffer handling. This series consolidates the
+force_dma_unencrypted() checks in the top-level functions and ensures
+that the remaining DMA interfaces use DMA attributes to make the correct
+decisions.
+
+The series:
+- moves swiotlb-backed allocations out of __dma_direct_alloc_pages(),
+- propagates DMA_ATTR_CC_SHARED through the dma-direct alloc/free
+  paths
+- teaches the atomic DMA pools to track encrypted versus decrypted
+  state
+- tracks swiotlb pool encryption state and enforces strict pool
+  selection
+- centralizes encrypted/decrypted pgprot handling in dma_pgprot() using
+  DMA attributes
+- passes DMA attributes down to dma_capable() so capability checks can
+  validate whether the selected DMA address encoding matches
+  DMA_ATTR_CC_SHARED
+- makes dma_direct_map_phys() choose the DMA address encoding from
+  DMA_ATTR_CC_SHARED and fall back to swiotlb when a shared DMA request
+  cannot use the direct mapping, which lets arm64 and x86 CCA guests stop
+  relying on SWIOTLB_FORCE for DMA mappings
+- use the selected swiotlb pool state to derive the returned DMA
+  address.
+
+Changes from v3:
+https://lore.kernel.org/all/20260427055509.898190-1-aneesh.kumar@kernel.org
+* Handle DMA_ATTR_MMIO correctly in dma_direct_map_phys()
+* Address most of sashiko review
+* Rebase to latest kernel
+* drop SWIOTLB_FORCE for s390 and powerpc secure guest.
+ 
+Changes from v2:
+https://lore.kernel.org/all/20260420061415.3650870-1-aneesh.kumar@kernel.org
+* pass attrs to dma_capable() and update direct, swiotlb, Xen swiotlb, and
+  x86 GART paths so the capability checks see the DMA address attr value
+  DMA_ATTR_CC_SHARED.
+* rework dma_direct_map_phys() so DMA_ATTR_CC_SHARED selects
+  phys_to_dma_unencrypted() while the default path uses
+  phys_to_dma_encrypted(), with swiotlb fallback when the requested
+  shared/private state cannot be satisfied by a direct DMA address.
+* stop relying on SWIOTLB_FORCE for arm64 and x86 CC guest DMA mappings;
+  swiotlb is still enabled there, but shared mappings is now selected
+  through the generic dma_direct_map_phys()/dma_capable() decision instead
+  of a global force-bounce flag.
+
+Changes from v1:
+https://lore.kernel.org/all/20260417085900.3062416-1-aneesh.kumar@kernel.org
+* rebased to latest kernel (change from DMA_ATTR_CC_DECRYPTED -> DMA_ATTR_CC_SHARED)
+* update the alloc path so DMA_ATTR_CC_SHARED is not a caller-visible attribute.
+
+Cc: Robin Murphy <robin.murphy@arm.com>
+Cc: Marek Szyprowski <m.szyprowski@samsung.com>
+Cc: Will Deacon <will@kernel.org>
+Cc: Marc Zyngier <maz@kernel.org>
+Cc: Steven Price <steven.price@arm.com>
+Cc: Suzuki K Poulose <Suzuki.Poulose@arm.com>
+Cc: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Jiri Pirko <jiri@resnulli.us>
+Cc: Jason Gunthorpe <jgg@ziepe.ca>
+Cc: Mostafa Saleh <smostafa@google.com>
+Cc: Petr Tesarik <ptesarik@suse.com>
+Cc: Alexey Kardashevskiy <aik@amd.com>
+Cc: Dan Williams <dan.j.williams@intel.com>
+Cc: Xu Yilun <yilun.xu@linux.intel.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linux-s390@vger.kernel.org
+Cc: Madhavan Srinivasan <maddy@linux.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Nicholas Piggin <npiggin@gmail.com>
+Cc: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+Cc: Alexander Gordeev <agordeev@linux.ibm.com>
+Cc: Gerald Schaefer <gerald.schaefer@linux.ibm.com>
+Cc: Heiko Carstens <hca@linux.ibm.com>
+Cc: Vasily Gorbik <gor@linux.ibm.com>
+Cc: Christian Borntraeger <borntraeger@linux.ibm.com>
+Cc: Sven Schnelle <svens@linux.ibm.com>
+Cc: x86@kernel.org 
+
+Aneesh Kumar K.V (Arm) (13):
+  dma-direct: swiotlb: handle swiotlb alloc/free outside
+    __dma_direct_alloc_pages
+  dma-direct: use DMA_ATTR_CC_SHARED in alloc/free paths
+  dma-pool: track decrypted atomic pools and select them via attrs
+  dma: swiotlb: track pool encryption state and honor DMA_ATTR_CC_SHARED
+  dma-mapping: make dma_pgprot() honor DMA_ATTR_CC_SHARED
+  dma-direct: pass attrs to dma_capable() for DMA_ATTR_CC_SHARED checks
+  dma-direct: make dma_direct_map_phys() honor DMA_ATTR_CC_SHARED
+  dma-direct: set decrypted flag for remapped DMA allocations
+  dma-direct: select DMA address encoding from DMA_ATTR_CC_SHARED
+  dma-pool: fix page leak in atomic_pool_expand() cleanup
+  dma-direct: rename ret to cpu_addr in alloc helpers
+  dma-direct: return struct page from dma_direct_alloc_from_pool()
+  x86/amd-gart: preserve the direct DMA address until GART mapping
+    succeeds
+
+ arch/arm64/mm/init.c                 |   4 +-
+ arch/powerpc/platforms/pseries/svm.c |   2 +-
+ arch/s390/mm/init.c                  |   2 +-
+ arch/x86/kernel/amd_gart_64.c        |  36 ++--
+ arch/x86/kernel/pci-dma.c            |   4 +-
+ drivers/iommu/dma-iommu.c            |   2 +-
+ drivers/xen/swiotlb-xen.c            |  10 +-
+ include/linux/dma-direct.h           |  19 ++-
+ include/linux/dma-map-ops.h          |   2 +-
+ include/linux/swiotlb.h              |   8 +-
+ kernel/dma/direct.c                  | 243 ++++++++++++++++++++-------
+ kernel/dma/direct.h                  |  40 ++---
+ kernel/dma/mapping.c                 |  16 +-
+ kernel/dma/pool.c                    | 165 +++++++++++-------
+ kernel/dma/swiotlb.c                 | 109 +++++++++---
+ 15 files changed, 459 insertions(+), 203 deletions(-)
 
 
-
-> On 4 May 2026, at 9:12=E2=80=AFPM, Athira Rajeev =
-<atrajeev@linux.ibm.com> wrote:
->=20
-> The format_alias() function in util/pmu.c has a check to
-> detect whether the event has parameterized field ( =3D? ).
-> The string alias->terms contains the event and if the event
-> has user configurable parameter, there will be presence of
-> sub string "=3D?" in the alias->terms.
->=20
-> Snippet of code:
->=20
-> /* Paramemterized events have the parameters shown. */
->       if (strstr(alias->terms, "=3D?")) {
->               /* No parameters. */
->               snprintf(buf, len, "%.*s/%s/", (int)pmu_name_len, =
-pmu->name, alias->name);
->=20
-> if "strstr" contains the substring, it returns a pointer
-> and hence enters the above check which is not the expected
-> check. And hence "perf list" doesn't have the parameterized
-> fields in the result.
->=20
-> Fix this check to use:
->=20
-> if (!strstr(alias->terms, "=3D?")) {
->=20
-> With this change, perf list shows the events correctly with
-> the strings showing parameters.
->=20
-> Before the fix:
->=20
-> # ./perf list|grep -w PM_PAU_CYC
->  hv_24x7/PM_PAU_CYC/                                [Kernel PMU event]
->=20
-> With this fix:
->=20
-> # ./perf list|grep -w PM_PAU_CYC
->  hv_24x7/PM_PAU_CYC,chip=3D?/                         [Kernel PMU =
-event]
->=20
-> Signed-off-by: Athira Rajeev <atrajeev@linux.ibm.com>
-
-Tested-by: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
-> ---
-> Changelog:
-> v3 -> v4:
-> Updated commit message to show real example
-> addressing review comment from Namhyung.
->=20
-> v2 -> v3:
-> Split the strstr correction in a single patch
->=20
-> tools/perf/util/pmu.c | 2 +-
-> 1 file changed, 1 insertion(+), 1 deletion(-)
->=20
-> diff --git a/tools/perf/util/pmu.c b/tools/perf/util/pmu.c
-> index 23337d2fa281..0b8d58543f17 100644
-> --- a/tools/perf/util/pmu.c
-> +++ b/tools/perf/util/pmu.c
-> @@ -2117,7 +2117,7 @@ static char *format_alias(char *buf, int len, =
-const struct perf_pmu *pmu,
->   skip_duplicate_pmus);
->=20
-> /* Paramemterized events have the parameters shown. */
-> - if (strstr(alias->terms, "=3D?")) {
-> + if (!strstr(alias->terms, "=3D?")) {
-> /* No parameters. */
-> snprintf(buf, len, "%.*s/%s/", (int)pmu_name_len, pmu->name, =
-alias->name);
-> return buf;
-> --=20
-> 2.47.3
->=20
+base-commit: 50897c955902c93ae71c38698abb910525ebdc89
+-- 
+2.43.0
 
 
