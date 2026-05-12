@@ -1,49 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-20774-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20775-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 23D16CD4F35
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 May 2026 09:05:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 91815CD4855
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 May 2026 09:05:57 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gF9fx68vTz2yb9;
-	Tue, 12 May 2026 19:05:45 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778576745;
-	cv=none; b=S91E/oPT3easaIjvO59NmOXa0DoV77bOKNEcFjfjcWwwLBr/fU/YNdveqJ5FNgvPmHrpFqaO6XUlNZz37/MU4yDPz4bPqyo+sN9ErVufpk6yB+DoQuvaDhefrN82A9UxGXTrmgexLh/Tl1BC4IGvGnZ8KIRJIL45Ld1rMJErfhgxXfiOxN2IannHBzq10ju8jQJQr4jDpIuGpNE1w0Ed/jdG4/vXqDK6RjeYRIwN8dcdi2OX6/vKUyUdnDxDiwj7ucRru4+rFHbxa579vA4E6AOcQ1bw0tC+GHaZN9DvdW0pIuqIS079bMwREO7VRduwuPdiSI8L+teWWkDhUBwUUA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gF9g8291nz2yjw;
+	Tue, 12 May 2026 19:05:56 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778576756;
+	cv=none; b=OT8tpZF2g4ob/fuhVjB4ItO/sFPr7INraQzKJ7FW3WJ3mTc2dXn+UGMHuswVgAsmxdddHWoGnDMI4NduP1lPUhM+SKnpmgDRFLA/V18L1IRHoQWibcb6ICcURKAt7PSeCJCT1hnjZBg7gbeit/HN9o6FVv2wEn0ZnCNh9u/920NZDT0d3liiVJ00zmYx49kMIS2nDi2bcJfAN3zwgoG+8rL4ogV0R7N/dGxuGzVMts6o045oXmbLiYHEr/uMRAusQszAsWoVsYsp05cbR0SuqfeZkSW3z6JM9HAwLCl/TXIoQcHkJW9tbtnSfA/grdC4KYPCjfZpX4FmyTPcoFbrIQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1778576745; c=relaxed/relaxed;
-	bh=DRGV8TN67LX2ufPMNN6nPeKY8l1UFJ3b1ilTY0G8o5w=;
+	t=1778576756; c=relaxed/relaxed;
+	bh=Bdx4205VyoFCYDpfX7LPhqGkWbNFekWVAl0CyAC7Exc=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=F+iF/vKnIblSDKodSfi7s2zvNl9P9V2yAkfM3kC4Ten+IqyZyoceGXahpy+AnkPLlkwTpTvMp3bmd8PAyt3OOZkCBUH2pR0byrruh9jeAiheYFtgp0oEzf03Qd1aLWdDjoCjPzySRLNpDXqFZsC3bHxSeTS7iPLZuiMgquHDXyLKvsB1Q3se+GeoddHWX6pprBNQ1sXOhljBZr2swbo5cdxP0EH6TA/0bxlDFRWSe1MELa1BmKvrff+Xmx5KnniQDA+wgyYQeb0qUICh/tmlhMxaX2o5Fwb1I5s3kXUv86ohK4vkMaA2vpBuRoHXsVMUmvNSV8CYLUT9wqfM3AJPvg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=KsG60OzG; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=aneesh.kumar@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=OxBu3AIYQyqq059iCft91LUUnBXIu2KmNriTsP2Og0hwEyGRz+LXnZpJoWm+1pF0kjqNO8rW8vP71TZA5GOiloFGNmcu/L3hiwKh47Z77I4POHti9qUSB/0abkbnR5jQUB9m0fh2+J88vl4wErvd5bxrK4L0cXYVn/kTHd6ZG3EBgjg5ltpFL2BvNpRNwW6s/1I5vN758fkm6onuSXdHBcSw2x/hWxfskBcxEAbId9rnGXxHZk9EcG7TH3nYPvXVQSuQUQdMy1uI2VXh4XLFmAVvk7YgKklzB5usZV6pS1hDD3qiyp5Juo1qad6nRn2RWneaRKT7KpWutb2vFXQgMg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=fuh+zcQs; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=aneesh.kumar@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=KsG60OzG;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=fuh+zcQs;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=aneesh.kumar@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=aneesh.kumar@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gF9fw3cStz2ygL
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2026 19:05:44 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gF9g741mQz2ygL
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2026 19:05:55 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id A0A1960121;
+	by sea.source.kernel.org (Postfix) with ESMTP id D9510423C8;
+	Tue, 12 May 2026 09:05:53 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0682DC2BCC7;
 	Tue, 12 May 2026 09:05:42 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7EB18C2BCB0;
-	Tue, 12 May 2026 09:05:30 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1778576742;
-	bh=vPHU0CUqjPrs0bZjgUyqtv1tValYQko8vPrLTx/4JMg=;
+	s=k20201202; t=1778576753;
+	bh=djoVlq64riIKyUlBW+OecFjb5IHhvE+yjLiRQdlK7Xo=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=KsG60OzGz/+9kKCcBfATi/vPnDwLfvzwQ0HksoC7AxmNtRct3Hck1Lu+OfdMifRIf
-	 VsNcOtnZ4S4ZRrvU1n2q5TFFJRrpXFMsifTDvgJWfy7RIUy6otlmFmntvbJzahcAZA
-	 90YfSX9NYbILfiIdcA4CY4hvJ1s2+ay85Ec8PMVcTTxqhaXER2IFGVYAeJ38lNcSlz
-	 nR4eqlr8lPI+3dTkfZvkFTf598tyl2rT8iOs+blBJVylB4AavhZjoVPi/NhDiSJnsT
-	 H6MJAqq7KXFu0IY9wfDEuORqHajjOqiQbXM22dolWPLqdT2fXopJLCj9yh9QIJt5lI
-	 pVpWS0L4Hy+0Q==
+	b=fuh+zcQsaxfk2wQhFIIRp8/7gcaQLxZWOwrFiHLLxW5CnQkq0T/KSl1gp/vKApyP9
+	 R6DmxYhpxc2zRk2urFfPqZWxXnjmoH0MofSbKYSmgdbZB4P25Neb+k+78sIifLEU6e
+	 4w9X+UpIjBdI03TEPGNu6hiiYU2LzruavDT7RqYhhsafudue7rWC/M7yyh/AkAmu+A
+	 arg0xANxjpzXi8B9p5TT0Vu/fc7RmGkaEP3LnZP70W4DH6ZKE4PHX40DaupNv2eJe6
+	 3fBtIwklzh6LmOj/oEur30apoK6OLSNqPw4q32I6AUAghRWN6c98HJZ1M6PzXenUfZ
+	 GnfiBePVDQ7BA==
 From: "Aneesh Kumar K.V (Arm)" <aneesh.kumar@kernel.org>
 To: iommu@lists.linux.dev,
 	linux-arm-kernel@lists.infradead.org,
@@ -77,9 +77,9 @@ Cc: "Aneesh Kumar K.V (Arm)" <aneesh.kumar@kernel.org>,
 	Christian Borntraeger <borntraeger@linux.ibm.com>,
 	Sven Schnelle <svens@linux.ibm.com>,
 	x86@kernel.org
-Subject: [PATCH v4 06/13] dma-direct: pass attrs to dma_capable() for DMA_ATTR_CC_SHARED checks
-Date: Tue, 12 May 2026 14:34:01 +0530
-Message-ID: <20260512090408.794195-7-aneesh.kumar@kernel.org>
+Subject: [PATCH v4 07/13] dma-direct: make dma_direct_map_phys() honor DMA_ATTR_CC_SHARED
+Date: Tue, 12 May 2026 14:34:02 +0530
+Message-ID: <20260512090408.794195-8-aneesh.kumar@kernel.org>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20260512090408.794195-1-aneesh.kumar@kernel.org>
 References: <20260512090408.794195-1-aneesh.kumar@kernel.org>
@@ -98,236 +98,163 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Teach dma_capable() about DMA_ATTR_CC_SHARED so the capability
-check can reject encrypted DMA addresses for devices that require
-unencrypted/shared DMA.
+Teach dma_direct_map_phys() to select the DMA address encoding based on
+DMA_ATTR_CC_SHARED.
 
-Also propagate DMA_ATTR_CC_SHARED in swiotlb_map() when the selected
-SWIOTLB pool is decrypted so the capability check sees the correct DMA
-address attribute.
+Use phys_to_dma_unencrypted() for decrypted mappings and
+phys_to_dma_encrypted() otherwise. If a device requires unencrypted DMA
+but the source physical address is still encrypted, force the mapping
+through swiotlb so the DMA address and backing memory attributes remain
+consistent.
+
+Update the arm64, x86, s390 and powerpc secure-guest setup to not use
+swiotlb force option
 
 Signed-off-by: Aneesh Kumar K.V (Arm) <aneesh.kumar@kernel.org>
 ---
- arch/x86/kernel/amd_gart_64.c | 30 ++++++++++++++++--------------
- drivers/xen/swiotlb-xen.c     | 10 +++++++---
- include/linux/dma-direct.h    |  9 ++++++++-
- kernel/dma/direct.h           |  6 +++---
- kernel/dma/swiotlb.c          |  8 +++++---
- 5 files changed, 39 insertions(+), 24 deletions(-)
+Changes from v3:
+* Handle DMA_ATTR_MMIO
+---
+ arch/arm64/mm/init.c                 |  4 +--
+ arch/powerpc/platforms/pseries/svm.c |  2 +-
+ arch/s390/mm/init.c                  |  2 +-
+ arch/x86/kernel/pci-dma.c            |  4 +--
+ kernel/dma/direct.c                  |  4 ++-
+ kernel/dma/direct.h                  | 38 +++++++++++++---------------
+ 6 files changed, 24 insertions(+), 30 deletions(-)
 
-diff --git a/arch/x86/kernel/amd_gart_64.c b/arch/x86/kernel/amd_gart_64.c
-index e8000a56732e..b5f1f031d45b 100644
---- a/arch/x86/kernel/amd_gart_64.c
-+++ b/arch/x86/kernel/amd_gart_64.c
-@@ -180,22 +180,23 @@ static void iommu_full(struct device *dev, size_t size, int dir)
- }
+diff --git a/arch/arm64/mm/init.c b/arch/arm64/mm/init.c
+index 97987f850a33..acf67c7064db 100644
+--- a/arch/arm64/mm/init.c
++++ b/arch/arm64/mm/init.c
+@@ -338,10 +338,8 @@ void __init arch_mm_preinit(void)
+ 	unsigned int flags = SWIOTLB_VERBOSE;
+ 	bool swiotlb = max_pfn > PFN_DOWN(arm64_dma_phys_limit);
  
- static inline int
--need_iommu(struct device *dev, unsigned long addr, size_t size)
-+need_iommu(struct device *dev, unsigned long addr, size_t size, unsigned long attrs)
- {
--	return force_iommu || !dma_capable(dev, addr, size, true);
-+	return force_iommu || !dma_capable(dev, addr, size, true, attrs);
- }
+-	if (is_realm_world()) {
++	if (is_realm_world())
+ 		swiotlb = true;
+-		flags |= SWIOTLB_FORCE;
+-	}
  
- static inline int
--nonforced_iommu(struct device *dev, unsigned long addr, size_t size)
-+nonforced_iommu(struct device *dev, unsigned long addr, size_t size,
-+		unsigned long attrs)
- {
--	return !dma_capable(dev, addr, size, true);
-+	return !dma_capable(dev, addr, size, true, attrs);
- }
- 
- /* Map a single continuous physical area into the IOMMU.
-  * Caller needs to check if the iommu is needed and flush.
-  */
- static dma_addr_t dma_map_area(struct device *dev, dma_addr_t phys_mem,
--				size_t size, int dir, unsigned long align_mask)
-+		size_t size, int dir, unsigned long align_mask, unsigned long attrs)
- {
- 	unsigned long npages = iommu_num_pages(phys_mem, size, PAGE_SIZE);
- 	unsigned long iommu_page;
-@@ -206,7 +207,7 @@ static dma_addr_t dma_map_area(struct device *dev, dma_addr_t phys_mem,
- 
- 	iommu_page = alloc_iommu(dev, npages, align_mask);
- 	if (iommu_page == -1) {
--		if (!nonforced_iommu(dev, phys_mem, size))
-+		if (!nonforced_iommu(dev, phys_mem, size, attrs))
- 			return phys_mem;
- 		if (panic_on_overflow)
- 			panic("dma_map_area overflow %lu bytes\n", size);
-@@ -231,10 +232,10 @@ static dma_addr_t gart_map_phys(struct device *dev, phys_addr_t paddr,
- 	if (unlikely(attrs & DMA_ATTR_MMIO))
- 		return DMA_MAPPING_ERROR;
- 
--	if (!need_iommu(dev, paddr, size))
-+	if (!need_iommu(dev, paddr, size, attrs))
- 		return paddr;
- 
--	bus = dma_map_area(dev, paddr, size, dir, 0);
-+	bus = dma_map_area(dev, paddr, size, dir, 0, attrs);
- 	flush_gart();
- 
- 	return bus;
-@@ -289,7 +290,7 @@ static void gart_unmap_sg(struct device *dev, struct scatterlist *sg, int nents,
- 
- /* Fallback for dma_map_sg in case of overflow */
- static int dma_map_sg_nonforce(struct device *dev, struct scatterlist *sg,
--			       int nents, int dir)
-+		int nents, int dir, unsigned long attrs)
- {
- 	struct scatterlist *s;
- 	int i;
-@@ -301,8 +302,8 @@ static int dma_map_sg_nonforce(struct device *dev, struct scatterlist *sg,
- 	for_each_sg(sg, s, nents, i) {
- 		unsigned long addr = sg_phys(s);
- 
--		if (nonforced_iommu(dev, addr, s->length)) {
--			addr = dma_map_area(dev, addr, s->length, dir, 0);
-+		if (nonforced_iommu(dev, addr, s->length, attrs)) {
-+			addr = dma_map_area(dev, addr, s->length, dir, 0, attrs);
- 			if (addr == DMA_MAPPING_ERROR) {
- 				if (i > 0)
- 					gart_unmap_sg(dev, sg, i, dir, 0);
-@@ -401,7 +402,7 @@ static int gart_map_sg(struct device *dev, struct scatterlist *sg, int nents,
- 		s->dma_address = addr;
- 		BUG_ON(s->length == 0);
- 
--		nextneed = need_iommu(dev, addr, s->length);
-+		nextneed = need_iommu(dev, addr, s->length, attrs);
- 
- 		/* Handle the previous not yet processed entries */
- 		if (i > start) {
-@@ -449,7 +450,7 @@ static int gart_map_sg(struct device *dev, struct scatterlist *sg, int nents,
- 
- 	/* When it was forced or merged try again in a dumb way */
- 	if (force_iommu || iommu_merge) {
--		out = dma_map_sg_nonforce(dev, sg, nents, dir);
-+		out = dma_map_sg_nonforce(dev, sg, nents, dir, attrs);
- 		if (out > 0)
- 			return out;
- 	}
-@@ -473,7 +474,8 @@ gart_alloc_coherent(struct device *dev, size_t size, dma_addr_t *dma_addr,
- 		return vaddr;
- 
- 	*dma_addr = dma_map_area(dev, virt_to_phys(vaddr), size,
--			DMA_BIDIRECTIONAL, (1UL << get_order(size)) - 1);
-+				 DMA_BIDIRECTIONAL,
-+				 (1UL << get_order(size)) - 1, attrs);
- 	flush_gart();
- 	if (unlikely(*dma_addr == DMA_MAPPING_ERROR))
- 		goto out_free;
-diff --git a/drivers/xen/swiotlb-xen.c b/drivers/xen/swiotlb-xen.c
-index 2cbf2b588f5b..fa6734461d4c 100644
---- a/drivers/xen/swiotlb-xen.c
-+++ b/drivers/xen/swiotlb-xen.c
-@@ -212,7 +212,7 @@ static dma_addr_t xen_swiotlb_map_phys(struct device *dev, phys_addr_t phys,
- 	BUG_ON(dir == DMA_NONE);
- 
- 	if (attrs & DMA_ATTR_MMIO) {
--		if (unlikely(!dma_capable(dev, phys, size, false))) {
-+		if (unlikely(!dma_capable(dev, phys, size, false, attrs))) {
- 			dev_err_once(
- 				dev,
- 				"DMA addr %pa+%zu overflow (mask %llx, bus limit %llx).\n",
-@@ -231,7 +231,7 @@ static dma_addr_t xen_swiotlb_map_phys(struct device *dev, phys_addr_t phys,
- 	 * we can safely return the device addr and not worry about bounce
- 	 * buffering it.
+ 	if (IS_ENABLED(CONFIG_DMA_BOUNCE_UNALIGNED_KMALLOC) && !swiotlb) {
+ 		/*
+diff --git a/arch/powerpc/platforms/pseries/svm.c b/arch/powerpc/platforms/pseries/svm.c
+index 384c9dc1899a..7a403dbd35ee 100644
+--- a/arch/powerpc/platforms/pseries/svm.c
++++ b/arch/powerpc/platforms/pseries/svm.c
+@@ -29,7 +29,7 @@ static int __init init_svm(void)
+ 	 * need to use the SWIOTLB buffer for DMA even if dma_capable() says
+ 	 * otherwise.
  	 */
--	if (dma_capable(dev, dev_addr, size, true) &&
-+	if (dma_capable(dev, dev_addr, size, true, attrs) &&
- 	    !dma_kmalloc_needs_bounce(dev, size, dir) &&
- 	    !range_straddles_page_boundary(phys, size) &&
- 		!xen_arch_need_swiotlb(dev, phys, dev_addr) &&
-@@ -248,12 +248,16 @@ static dma_addr_t xen_swiotlb_map_phys(struct device *dev, phys_addr_t phys,
- 		return DMA_MAPPING_ERROR;
+-	ppc_swiotlb_flags |= SWIOTLB_ANY | SWIOTLB_FORCE;
++	ppc_swiotlb_flags |= SWIOTLB_ANY;
  
- 	phys = map;
-+	/* This always return an encrypted addr */
- 	dev_addr = xen_phys_to_dma(dev, map);
+ 	/* Share the SWIOTLB buffer with the host. */
+ 	swiotlb_update_mem_attributes();
+diff --git a/arch/s390/mm/init.c b/arch/s390/mm/init.c
+index 1f72efc2a579..843dbd445124 100644
+--- a/arch/s390/mm/init.c
++++ b/arch/s390/mm/init.c
+@@ -149,7 +149,7 @@ static void __init pv_init(void)
+ 	virtio_set_mem_acc_cb(virtio_require_restricted_mem_acc);
  
-+	if (WARN_ON(dev->dma_io_tlb_mem->unencrypted))
-+		attrs |= DMA_ATTR_CC_SHARED;
-+
- 	/*
- 	 * Ensure that the address returned is DMA'ble
+ 	/* make sure bounce buffers are shared */
+-	swiotlb_init(true, SWIOTLB_FORCE | SWIOTLB_VERBOSE);
++	swiotlb_init(true, SWIOTLB_VERBOSE);
+ 	swiotlb_update_mem_attributes();
+ }
+ 
+diff --git a/arch/x86/kernel/pci-dma.c b/arch/x86/kernel/pci-dma.c
+index 6267363e0189..75cf8f6ae8cd 100644
+--- a/arch/x86/kernel/pci-dma.c
++++ b/arch/x86/kernel/pci-dma.c
+@@ -59,10 +59,8 @@ static void __init pci_swiotlb_detect(void)
+ 	 * bounce buffers as the hypervisor can't access arbitrary VM memory
+ 	 * that is not explicitly shared with it.
  	 */
--	if (unlikely(!dma_capable(dev, dev_addr, size, true))) {
-+	if (unlikely(!dma_capable(dev, dev_addr, size, true, attrs))) {
- 		__swiotlb_tbl_unmap_single(dev, map, size, dir,
- 				attrs | DMA_ATTR_SKIP_CPU_SYNC,
- 				swiotlb_find_pool(dev, map));
-diff --git a/include/linux/dma-direct.h b/include/linux/dma-direct.h
-index 94fad4e7c11e..9dbe198b2c4a 100644
---- a/include/linux/dma-direct.h
-+++ b/include/linux/dma-direct.h
-@@ -135,12 +135,19 @@ static inline bool force_dma_unencrypted(struct device *dev)
- #endif /* CONFIG_ARCH_HAS_FORCE_DMA_UNENCRYPTED */
- 
- static inline bool dma_capable(struct device *dev, dma_addr_t addr, size_t size,
--		bool is_ram)
-+		bool is_ram, unsigned long attrs)
+-	if (cc_platform_has(CC_ATTR_GUEST_MEM_ENCRYPT)) {
++	if (cc_platform_has(CC_ATTR_GUEST_MEM_ENCRYPT))
+ 		x86_swiotlb_enable = true;
+-		x86_swiotlb_flags |= SWIOTLB_FORCE;
+-	}
+ }
+ #else
+ static inline void __init pci_swiotlb_detect(void)
+diff --git a/kernel/dma/direct.c b/kernel/dma/direct.c
+index ac315dd046c4..5aaa813c5509 100644
+--- a/kernel/dma/direct.c
++++ b/kernel/dma/direct.c
+@@ -691,8 +691,10 @@ size_t dma_direct_max_mapping_size(struct device *dev)
  {
- 	dma_addr_t end = addr + size - 1;
- 
- 	if (addr == DMA_MAPPING_ERROR)
- 		return false;
-+	/*
-+	 * if phys addr attribute is encrypted but the
-+	 * device is forcing an unencrypted dma addr
-+	 */
-+	if (!(attrs & DMA_ATTR_CC_SHARED) && force_dma_unencrypted(dev))
-+		return false;
+ 	/* If SWIOTLB is active, use its maximum mapping size */
+ 	if (is_swiotlb_active(dev) &&
+-	    (dma_addressing_limited(dev) || is_swiotlb_force_bounce(dev)))
++	    (dma_addressing_limited(dev) || is_swiotlb_force_bounce(dev) ||
++	     force_dma_unencrypted(dev)))
+ 		return swiotlb_max_mapping_size(dev);
 +
- 	if (is_ram && !IS_ENABLED(CONFIG_ARCH_DMA_ADDR_T_64BIT) &&
- 	    min(addr, end) < phys_to_dma(dev, PFN_PHYS(min_low_pfn)))
- 		return false;
+ 	return SIZE_MAX;
+ }
+ 
 diff --git a/kernel/dma/direct.h b/kernel/dma/direct.h
-index 7140c208c123..e05dc7649366 100644
+index e05dc7649366..4e35264ab6f8 100644
 --- a/kernel/dma/direct.h
 +++ b/kernel/dma/direct.h
-@@ -101,15 +101,15 @@ static inline dma_addr_t dma_direct_map_phys(struct device *dev,
+@@ -89,36 +89,32 @@ static inline dma_addr_t dma_direct_map_phys(struct device *dev,
+ 	dma_addr_t dma_addr;
  
- 	if (attrs & DMA_ATTR_MMIO) {
- 		dma_addr = phys;
--		if (unlikely(!dma_capable(dev, dma_addr, size, false)))
-+		if (unlikely(!dma_capable(dev, dma_addr, size, false, attrs)))
- 			goto err_overflow;
- 	} else if (attrs & DMA_ATTR_CC_SHARED) {
+ 	if (is_swiotlb_force_bounce(dev)) {
+-		if (!(attrs & DMA_ATTR_CC_SHARED)) {
+-			if (attrs & (DMA_ATTR_MMIO | DMA_ATTR_REQUIRE_COHERENT))
+-				return DMA_MAPPING_ERROR;
++		if (attrs & (DMA_ATTR_MMIO | DMA_ATTR_REQUIRE_COHERENT))
++			return DMA_MAPPING_ERROR;
+ 
+-			return swiotlb_map(dev, phys, size, dir, attrs);
+-		}
+-	} else if (attrs & DMA_ATTR_CC_SHARED) {
+-		return DMA_MAPPING_ERROR;
++		return swiotlb_map(dev, phys, size, dir, attrs);
+ 	}
+ 
+-	if (attrs & DMA_ATTR_MMIO) {
+-		dma_addr = phys;
+-		if (unlikely(!dma_capable(dev, dma_addr, size, false, attrs)))
+-			goto err_overflow;
+-	} else if (attrs & DMA_ATTR_CC_SHARED) {
++	if (attrs & DMA_ATTR_CC_SHARED)
  		dma_addr = phys_to_dma_unencrypted(dev, phys);
--		if (unlikely(!dma_capable(dev, dma_addr, size, false)))
-+		if (unlikely(!dma_capable(dev, dma_addr, size, false, attrs)))
++	else
++		dma_addr = phys_to_dma_encrypted(dev, phys);
++
++	if (attrs & DMA_ATTR_MMIO) {
+ 		if (unlikely(!dma_capable(dev, dma_addr, size, false, attrs)))
  			goto err_overflow;
- 	} else {
- 		dma_addr = phys_to_dma(dev, phys);
--		if (unlikely(!dma_capable(dev, dma_addr, size, true)) ||
-+		if (unlikely(!dma_capable(dev, dma_addr, size, true, attrs)) ||
- 		    dma_kmalloc_needs_bounce(dev, size, dir)) {
- 			if (is_swiotlb_active(dev) &&
- 			    !(attrs & DMA_ATTR_REQUIRE_COHERENT))
-diff --git a/kernel/dma/swiotlb.c b/kernel/dma/swiotlb.c
-index 065663be282c..9f87ebe42797 100644
---- a/kernel/dma/swiotlb.c
-+++ b/kernel/dma/swiotlb.c
-@@ -1646,12 +1646,14 @@ dma_addr_t swiotlb_map(struct device *dev, phys_addr_t paddr, size_t size,
- 	/*
- 	 * Use the allocated io_tlb_mem encryption type to determine dma addr.
- 	 */
--	if (dev->dma_io_tlb_mem->unencrypted)
-+	if (dev->dma_io_tlb_mem->unencrypted) {
- 		dma_addr = phys_to_dma_unencrypted(dev, swiotlb_addr);
--	else
-+		attrs |= DMA_ATTR_CC_SHARED;
-+	} else {
- 		dma_addr = phys_to_dma_encrypted(dev, swiotlb_addr);
+-	} else {
+-		dma_addr = phys_to_dma(dev, phys);
+-		if (unlikely(!dma_capable(dev, dma_addr, size, true, attrs)) ||
+-		    dma_kmalloc_needs_bounce(dev, size, dir)) {
+-			if (is_swiotlb_active(dev) &&
+-			    !(attrs & DMA_ATTR_REQUIRE_COHERENT))
+-				return swiotlb_map(dev, phys, size, dir, attrs);
++		goto dma_mapped;
 +	}
  
--	if (unlikely(!dma_capable(dev, dma_addr, size, true))) {
-+	if (unlikely(!dma_capable(dev, dma_addr, size, true, attrs))) {
- 		__swiotlb_tbl_unmap_single(dev, swiotlb_addr, size, dir,
- 			attrs | DMA_ATTR_SKIP_CPU_SYNC,
- 			swiotlb_find_pool(dev, swiotlb_addr));
+-			goto err_overflow;
+-		}
++	if (unlikely(!dma_capable(dev, dma_addr, size, true, attrs)) ||
++	    dma_kmalloc_needs_bounce(dev, size, dir)) {
++		if (is_swiotlb_active(dev) &&
++		    !(attrs & DMA_ATTR_REQUIRE_COHERENT))
++			return swiotlb_map(dev, phys, size, dir, attrs);
++		goto err_overflow;
+ 	}
+ 
++dma_mapped:
+ 	if (!dev_is_dma_coherent(dev) &&
+ 	    !(attrs & (DMA_ATTR_SKIP_CPU_SYNC | DMA_ATTR_MMIO))) {
+ 		arch_sync_dma_for_device(phys, size, dir);
 -- 
 2.43.0
 
