@@ -1,73 +1,83 @@
-Return-Path: <linuxppc-dev+bounces-20795-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20796-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 79280CD4F24
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 May 2026 17:49:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 748F3CD343F
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 May 2026 18:04:20 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gFPH40NgBz2xjQ;
-	Wed, 13 May 2026 03:49:20 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gFPcM0vdbz2xjQ;
+	Wed, 13 May 2026 04:04:19 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778608159;
-	cv=none; b=QJ/seL6aBiVzzFDXbalFUJoEqVKAsZe8GbywjRRng7K8z32wVbSIkhsKNQwCT+q5tTP8ZU7dSFQ5NsO5APfjd8fKjn+3t1+eM3HQhcAqKqag7F5UMQ0PGI5Y3M8IpqpGUYLo5HSniBBIhuHWYTy5Sh8GP5oO58URubEQItmvQgyM6MFTzq8iP+gyuU5wJ21PQmwz96COrGlENMZ6e6vmPApkDUtOTus6ThHQPjmEXY2oaV/GI5+aOXVZQJUCd8RE91Gri5zjtoDVMutv/QDQMy7RjVc/y/jWdxIvrsM5vgsE7vjYOH8I6xKjc/R+Dp/TAV+Rw7fk7tYwB3qr0LA/MQ==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778609059;
+	cv=none; b=KVKbWDfWr8WUqbMulY/8y/apY4pq2uHX2DJsPAwXLaiakQsEnLugtj5E15/Twun9FJU6VULGzZJ8HW+JSJFd1ZGtnVFkO06Hw9armsvSYEpZZr3XShbm8HvM0s4jeZrh2ZMnaxkt4VDWRR7ihDEetNKxzv0mUfdrqSdAGqFaLiNEJy961r5AmjNjIJ5wIig2qvamMWSd2ZG3PUK8jnUDYmlPsqKGNm80vt/uDGktIH4YrT/B77LLVKTWkp/77ShHxnSgl1h00gr++DS8PP2mBH7E76GmXArn2hdgTuO+31GC+FjV63yP5bdLsas06DGB9yiLvy5o9lXabomihqXG2A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1778608159; c=relaxed/relaxed;
-	bh=sgKv5WSjC1uwg0aFrRmpDhDFDivxM5A6u6vQa/XfzoU=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=cQCKJoXSU1dZmi3DnhR6ej3pQe7gnFbwNfcvE3psEmbHyBhd20iVKv2PNg4p+Et3BD18RmR2dF1CqZiY3+yMvEpaMvTSoY/o5ZpY55f+k8hTJHKOmCVrbumK9ATxeDGOjFtSMfRA6l6Ly+1EixG6Lxh29T3ebPxeDnswV8XHiQbg5d5xjWkZYQukwaYLvlrk5QN2MlPHatgDtXRWPngL5ii0SO16u/8cnBi7oFog85b7UASMyNOR0ByGXmGORJh9SmWn7o7MJklddC1J8ckjKuIuOo1Z0QaL78yLoz0nr6HXUxY0xU5MZNsBMi5KCbvGxAs75BlClGqM4QzB6Tkbgw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=kjwz4pEl; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=harshpb@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	t=1778609059; c=relaxed/relaxed;
+	bh=JOzF+CLcPWwWhcbX5+RE5fGkEATJlbY1giR5YKcZ2RY=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=Su2y1sMa7CYPCtzifcs3keI6/3JClIyIR/I2MYudgl+TgZgsPueitiRWAjSJH6AojmhoKaLPvCWUhrsgn9SS4AJPnuEoicyoy/ioSUEihbziLba27QB2XeoG+Z5PlU8nCUK7i+30Ww5kXj5vUBKXy4Ho74iy/O+vVJMnAhM5fq1HzXWx1CivpvtkskLXT+v/fhTt8kZY2N29O1+19ly41uK8g+vhE1v5Z6RL8/ynWqrAm2gRwuISZgcf5eS3Qv4W/6aCZTmHAaqb8mG+FJ+OrkDTcQz4NsOmeCyR/u0ibHz69jhkKgNIZho6Gcsy4Yv0abQNK+8R3ITLZEun4a8JYw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=nTP96Lcq; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=kjwz4pEl;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=nTP96Lcq;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=harshpb@linux.ibm.com; receiver=lists.ozlabs.org)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org)
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gFPH268yjz2xb3
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2026 03:49:18 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gFPcL2xQhz2xb3
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2026 04:04:17 +1000 (AEST)
 Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 64CCWqis2608399;
-	Tue, 12 May 2026 17:49:06 GMT
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 64CCcmh12608405;
+	Tue, 12 May 2026 18:04:09 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=sgKv5W
-	SjC1uwg0aFrRmpDhDFDivxM5A6u6vQa/XfzoU=; b=kjwz4pElgqlzMaf+nYMAAc
-	B/uSprDCMEl4Mcvb7lz0esWTPKTkyNqWk80tP/WdMa5J4dvGgDTV1ejOr/nUPrml
-	QCJgAa+gYOitZXj8A9858DeH0ZWbQ0n9Qt9stzmlZYZxccrFlp4ldzvAJIgLzKW5
-	YTowxn1QjtgHbLBWFExXWrAKxfDrHCMFoOr3j0QSCZKbRmPu/XLbZT66+iVBVR73
-	x0EU4FA8ycLi3jEGTc7TgfeuYzvNGX9kquFC0iNYhTcjM3VRaXYS73GHz0NGSK1S
-	z7qKV3wv1kKfMWHhBUyWPKWdKEKGfy4bPCL1MYqQ77bu15mU1ZZZ3X2UEf3fFqTQ
-	==
+	:content-type:date:from:in-reply-to:message-id:mime-version
+	:references:subject:to; s=pp1; bh=JOzF+CLcPWwWhcbX5+RE5fGkEATJlb
+	Y1giR5YKcZ2RY=; b=nTP96LcqOCWysvpptx9ixggH276iGqEX2OFx6mkMBDeMAE
+	pNfLiqy3MBNc5d8XHI+8uGbml5MdpoNmqUnLq+hPyNSuKbOOsWdpSuO/J8eTeFI8
+	k/rAU5u1vHanPwymqALu3VDjxa+gnuaUfqbGu0TjfNHeqj6ne0DuqNVd6EwjtFak
+	U1xG1LmvTmXrxbvLZ5cUzI8Ba9G/GtiHOeO6NMaTwx6d+Pw/umsMKJK2cOq9RWjn
+	l073ghbszp+v7lSPjc4DP76pHUmJNZS7+V+SUOroi574Pc5RW5lso+ijy3ywkgna
+	X9lfOxJpdBbZvqdWod0enAXdwk+ACWPwHnSLAbrA==
 Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4e3nv54bff-1
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4e3nv54dk1-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 12 May 2026 17:49:06 +0000 (GMT)
+	Tue, 12 May 2026 18:04:08 +0000 (GMT)
 Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma23.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 64CHdUN4024342;
-	Tue, 12 May 2026 17:49:05 GMT
-Received: from smtprelay05.dal12v.mail.ibm.com ([172.16.1.7])
-	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4e3nfgm7ny-1
+	by ppma23.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 64CHsPoQ007798;
+	Tue, 12 May 2026 18:04:07 GMT
+Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
+	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4e3nfgm9r7-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 12 May 2026 17:49:05 +0000 (GMT)
-Received: from smtpav06.dal12v.mail.ibm.com (smtpav06.dal12v.mail.ibm.com [10.241.53.105])
-	by smtprelay05.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 64CHn46e15794928
+	Tue, 12 May 2026 18:04:07 +0000 (GMT)
+Received: from smtpav07.fra02v.mail.ibm.com (smtpav07.fra02v.mail.ibm.com [10.20.54.106])
+	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 64CI43Y216384292
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 12 May 2026 17:49:04 GMT
-Received: from smtpav06.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 13FF458059;
-	Tue, 12 May 2026 17:49:04 +0000 (GMT)
-Received: from smtpav06.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 0002158043;
-	Tue, 12 May 2026 17:49:00 +0000 (GMT)
-Received: from [9.39.27.160] (unknown [9.39.27.160])
-	by smtpav06.dal12v.mail.ibm.com (Postfix) with ESMTP;
-	Tue, 12 May 2026 17:49:00 +0000 (GMT)
-Message-ID: <e162af5c-5438-42db-ba90-28fb439017ec@linux.ibm.com>
-Date: Tue, 12 May 2026 23:18:59 +0530
+	Tue, 12 May 2026 18:04:03 GMT
+Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 932AE20043;
+	Tue, 12 May 2026 18:04:03 +0000 (GMT)
+Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 84E3220040;
+	Tue, 12 May 2026 18:04:01 +0000 (GMT)
+Received: from mac.bl1-in.ibm.com (unknown [9.124.209.236])
+	by smtpav07.fra02v.mail.ibm.com (Postfix) with ESMTPS;
+	Tue, 12 May 2026 18:04:01 +0000 (GMT)
+Date: Tue, 12 May 2026 23:33:57 +0530
+From: Amit Machhiwal <amachhiw@linux.ibm.com>
+To: Gautam Menghani <Gautam.Menghani@ibm.com>
+Cc: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com,
+        chleroy@kernel.org, Gautam Menghani <gautam@linux.ibm.com>,
+        linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] powerpc/64s: Fix the vector number in comments for
+ h_facility_unavailable
+Message-ID: <20260512233145.9fea4380-a7-amachhiw@linux.ibm.com>
+Mail-Followup-To: Gautam Menghani <Gautam.Menghani@ibm.com>, 
+	maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com, chleroy@kernel.org, 
+	Gautam Menghani <gautam@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+References: <20260511080412.50722-1-Gautam.Menghani@ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -81,36 +91,26 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] powerpc/64s: Fix the vector number in comments for
- h_facility_unavailable
-Content-Language: en-GB
-To: Gautam Menghani <Gautam.Menghani@ibm.com>, maddy@linux.ibm.com,
-        mpe@ellerman.id.au, npiggin@gmail.com, chleroy@kernel.org
-Cc: Gautam Menghani <gautam@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
-        linux-kernel@vger.kernel.org
-References: <20260511080412.50722-1-Gautam.Menghani@ibm.com>
-From: Harsh Prateek Bora <harshpb@linux.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 In-Reply-To: <20260511080412.50722-1-Gautam.Menghani@ibm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
 X-TM-AS-GCONF: 00
 X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTEyMDE4MyBTYWx0ZWRfX7iJJgCfmzkXp
- +vrx61zBam3ssLK4coxeA4JfY8mTY0A2oosZz91FGrfVYBajMC4LxYu/WFPD6pjsXTqEiLcPwsO
- sGrUzfHiKMuGknL8rXzq7SunGZdzjGkrNuq/AiRxU1eG+wswpxEK8zJtP223eN6qkdh5C31fIcl
- qCx+h3AvOKNhVJzm7xqP3+Pk/xIkxvCphJmaAvDA5Hjvkd/1qlALm5gBqis4I5yGUZaOiskYKpK
- 77aIlqPmaJziVgeAZKI5OFsFqscB2miTVdcRi4cbsJat2/MrFwcVl5E4LO3VmuBlmZKtRnPRnnI
- I1BoR2I8J/BN1nX+UixdkOZHNluZPNHdklDw4Y2Pqano719lHr6jNYOvRV87kJM9BlbTQXWPgft
- O96QPXRtACCsF+O5FyVwnHW7z9KSGcfPSbHFRkgrNdSNoXl+7OlLY74jFllIRnoignJ6jV0cVZK
- oQucvcPhowy03HXA2eA==
-X-Proofpoint-ORIG-GUID: 4DJQc0sMcMfaDXP93UvUHagcCT1o8BKi
-X-Authority-Analysis: v=2.4 cv=Jc6Ma0KV c=1 sm=1 tr=0 ts=6a036812 cx=c_pps
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTEyMDE4MyBTYWx0ZWRfX9/O1wjr/n+aN
+ edRh3zs5zzgHvVKyvoPsPXGpE3pxYWcrw1amFBW0ncfMEx/t6P+YddHOkQ9suR01iWG7+Tgp4we
+ cV76Gh51ABEFWiUE72yk47JXg580JlZpGyAqd/SllhDJBA6vUrnh7jBIH+NfzVk1PVWNYNbtk+S
+ uo9O8v0OEqt7VOv//5FP04lYF/KJ3F9ysHFf5dPSKr/5HtD9TyOrbNf52+3FaH1OtEGNRBEWR0G
+ MeBVEDuSK2m7tp8hnUsGeP3AwOeMbcQuTObA2gPxeK/EPE77ChBWpU/gJwiO6zTJPEdNIRWiMvI
+ WGmjEhg725ZzYwcqu2LGvCKYQr9ZygllxEqzJymoRIfwtgHztMHZHVNvncD8F/RAZCqExawHUsA
+ yX+oEJIS/NaQdGjIkg68+T2k24pmwwEIMracfnSEApA3ZJIkCLK8L+o2pqd2J0VN06GOvhScVJ8
+ vaz74BP2he6Z+mWUkRw==
+X-Proofpoint-ORIG-GUID: aa1cPjyMiHijy4Gid_KN5xIXOts7hlrR
+X-Authority-Analysis: v=2.4 cv=Jc6Ma0KV c=1 sm=1 tr=0 ts=6a036b99 cx=c_pps
  a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
- a=IkcTkHD0fZMA:10 a=NGcC8JguVDcA:10 a=f7IdgyKtn90A:10
- a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22 a=uAbxVGIbfxUO_5tXvNgY:22
- a=VnNF1IyMAAAA:8 a=H539haAobqM9mTtHvcoA:9 a=QEXdDO2ut3YA:10
-X-Proofpoint-GUID: co6K7XIulD5N_QA1U5iXLrT8rHBUPzoV
+ a=kj9zAlcOel0A:10 a=NGcC8JguVDcA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=uAbxVGIbfxUO_5tXvNgY:22 a=VnNF1IyMAAAA:8
+ a=KsF5BuLE4_TF5G8aTxwA:9 a=CjuIK1q_8ugA:10
+X-Proofpoint-GUID: hCwXTA0y8Vmrr6sQKE2InSVSvMglJ4hW
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
  definitions=2026-05-11_05,2026-05-08_02,2025-10-01_01
@@ -120,9 +120,7 @@ X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
  reason=mlx scancount=1 engine=8.22.0-2605050000 definitions=main-2605120183
 
-
-
-On 11/05/26 1:34 pm, Gautam Menghani wrote:
+On 2026/05/11 01:34 PM, Gautam Menghani wrote:
 > From: Gautam Menghani <gautam@linux.ibm.com>
 > 
 > The comments explaining the h_facility_unavailable interrupt have mentioned
@@ -130,24 +128,27 @@ On 11/05/26 1:34 pm, Gautam Menghani wrote:
 > 
 > Signed-off-by: Gautam Menghani <gautam@linux.ibm.com>
 > ---
->   arch/powerpc/kernel/exceptions-64s.S | 2 +-
->   1 file changed, 1 insertion(+), 1 deletion(-)
+>  arch/powerpc/kernel/exceptions-64s.S | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+
+Reviewed-by: Amit Machhiwal <amachhiw@linux.ibm.com>
+
 > 
 > diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
 > index b7229430ca94..2696fbbca3b6 100644
 > --- a/arch/powerpc/kernel/exceptions-64s.S
 > +++ b/arch/powerpc/kernel/exceptions-64s.S
 > @@ -2498,7 +2498,7 @@ EXC_COMMON_BEGIN(facility_unavailable_common)
->   
->   
->   /**
+>  
+>  
+>  /**
 > - * Interrupt 0xf60 - Hypervisor Facility Unavailable Interrupt.
 > + * Interrupt 0xf80 - Hypervisor Facility Unavailable Interrupt.
-
-Reviewed-by: Harsh Prateek Bora <harshpb@linux.ibm.com>
-
->    * This is a synchronous interrupt in response to
->    * executing an instruction without access to the facility that can only
->    * be resolved in HV mode (e.g., HFSCR).
-
+>   * This is a synchronous interrupt in response to
+>   * executing an instruction without access to the facility that can only
+>   * be resolved in HV mode (e.g., HFSCR).
+> -- 
+> 2.53.0
+> 
+> 
 
