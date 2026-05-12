@@ -1,115 +1,82 @@
-Return-Path: <linuxppc-dev+bounces-20758-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20759-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EECB6CD4F26
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 May 2026 08:36:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9371ACD4855
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 May 2026 08:37:24 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gF91S3WSkz2yY0;
-	Tue, 12 May 2026 18:36:44 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=195.135.223.131
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778575004;
-	cv=none; b=WOjEGUVqGc6Qi77mbgtTSapRMHE1rRmfn7nYQeftZlyQtEKfOEdKU40j69xEXJf2j99AVdFsRw9MoEkQX6/U1GaN2cdVAhrMXTGDfof1RyUC9SW45ou7/KxB3bT5nQed6NtfTuhMaHRjwSgP5eHhtVzWNjjcHhWVyEdcjI35e86AbpI495aBFVt1RdRv+iNxpsyfDn9FleB7UzC/a517Fg5Bki9AReTDLnnaU3zqZgrasj1pbAVcXMUnJB+iIpuJjQidBosk6oUDmL9bgzNzMGzkMQJQo6mADzLMCFsRyqsdsxHeAqUxVyXg0/KcKZwve1SiT5RAA/doZkQ07c2FFg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gF92C247qz2yY0;
+	Tue, 12 May 2026 18:37:23 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778575043;
+	cv=none; b=M2B6x4WUDW2QrRbo6jLgwWFA+RzaFkfXODErrMWrivLFNJB5OLSdBfa25xyuKbaEaeLOqqUAEq4OX3RtmFGGriXEFwseQEDqnuFSLNGzOcSv0QWnmUEzKH4maU2EpGCLf18Lxo4ksVyIU6yb0tbb8+B9WYkqwUdFAqvJKU062hHdc6ALwacFz421JQnmc/NGFfkhgX8EIkoymgBroUuinzb8E0JunRkq/kGXc3JymOyBDoEeWwifl+9aQRReCEu2CSUHuOzDr/zg9+hEGESD0OJoiRcHndOBmUhRLkCSp/THwcwE+gTSjgiE/4ATaHGQP+g8NuYYBY9pmuBe1pNZPg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1778575004; c=relaxed/relaxed;
-	bh=qeFPBZ4MeGkkPKzW14cEWiFa5q6IagaEwfD13UPfREs=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=ozs5Cl8HhHGezFGDrNaUcG2FT3nXa7n9BMv6yecC8DufLPMA0tTjgzGHw19TEVscs7f1BBmkFoQARAiall0n6F1wsLbXgebE3KaKGz+FDC+FCfTk7QWQvKe0L1z5L/vo/ji9UUdjT+inRbSIOleI01dOjUj5RFdLtXjZtFSA+NBpGmGWAtEOZO1AWWt19vGRGNwOlrCqyHFqVrBrBzXN0yNTqjIEORJalaBks+IvN6rJ5qd3wCcD9qUitaqsLNGwKYM0kF2eWj5YJNQg7zCpHQpIcB7rRV/PcggaN69+xf7Pp05b9/y3MObjKdkHYjoY9pof5PR46t6YZ21UJuycGA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de; dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=OxABjhln; dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=L7RAFmAT; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=DfeZqqoI; dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=RPxKI++w; dkim-atps=neutral; spf=pass (client-ip=195.135.223.131; helo=smtp-out2.suse.de; envelope-from=osalvador@suse.de; receiver=lists.ozlabs.org) smtp.mailfrom=suse.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de
+	t=1778575043; c=relaxed/relaxed;
+	bh=H8gZvhDiJcfPj4izdPoeTyKzYez876PA3k9XPRRUrF0=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
+	 MIME-Version:Content-Type; b=Bw3SSvqClrPjxEN4MP5woBjMZB4VV300Ag8fQZApANHwxLk32I0qNmhz9MHJwE6nRv76t+4VrvCuilDSJNHkaGYjpQG1ZVu7/3xhQY1550MfP15kHX4RXniaKvK3P/iJ/GKFjoleCR97PYfWFYUDb0Hd8nTZ1a90C6k9AoK3dqc9X8xR4bY4NtkUyWfMVCbZP0T2rOuXnqZ/89ZaszZGBlGGhSAueDj5lUiT/C1VkuKO5YNlto5Pu+EjQtGIJWDZ8cpqLIUKQqjwptaoNLH2PkG4pkObHTZlRicKLgOoY3fZFpq8yB3kDx0TSRWxXYDwElSiIf9ofMNlEKv0C4Rxxw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=JFKfrhPq; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=vaibhav@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=OxABjhln;
-	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=L7RAFmAT;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=DfeZqqoI;
-	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=RPxKI++w;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=JFKfrhPq;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=195.135.223.131; helo=smtp-out2.suse.de; envelope-from=osalvador@suse.de; receiver=lists.ozlabs.org)
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=vaibhav@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gF91N1nvbz2ySl
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2026 18:36:40 +1000 (AEST)
-Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out2.suse.de (Postfix) with ESMTPS id 6A4EA759BF;
-	Tue, 12 May 2026 08:36:36 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1778574997; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=qeFPBZ4MeGkkPKzW14cEWiFa5q6IagaEwfD13UPfREs=;
-	b=OxABjhlnjKoPqma/DwnCh9ytg1ymqNAtN/sQ9nMfbNfSVVpO1pG0mn4USLcQjgr7xWMLG5
-	Ty0gqf/eauSaqpxetjhSr93gpbJ6JoFGw/oPkqrbLXvnRauqb6yT/sovIsNiX4Eijxb8L6
-	RWGveaKnKqRXk6euaWwZp8DaWlifR9w=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1778574997;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=qeFPBZ4MeGkkPKzW14cEWiFa5q6IagaEwfD13UPfREs=;
-	b=L7RAFmATKRu5J9cmTOV37Ybl7z/LrRpErCEHSPmy0c6dVYtgZaBPVe5X5XWAf6wbSYGAqU
-	020Pexc8OaYtLcCw==
-Authentication-Results: smtp-out2.suse.de;
-	none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1778574996; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=qeFPBZ4MeGkkPKzW14cEWiFa5q6IagaEwfD13UPfREs=;
-	b=DfeZqqoIT4ioiv6VHsaqCJQ4w2wWbcF+goDiMNScbajtWamahUFsQ4SLfSfRL9CKUtBvcT
-	O5x17wC9q+mHZWkVkUVwWf1B5Z4G/yx6+cIMDNk9PjAy6GV/Pn7EU01aEEpC7ONl8MlaBU
-	P3dMQd3mxA9QfMgOZEdbUZlA+NLdcHs=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1778574996;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=qeFPBZ4MeGkkPKzW14cEWiFa5q6IagaEwfD13UPfREs=;
-	b=RPxKI++wuNeC0Ia2Hjv4TcWo1i+E7zCF1qOWkpMPqs3WUzf64ogYfQrRoR7xY0z14vKqI5
-	UxMNPadIOZomMPBw==
-Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 6E7FE593A9;
-	Tue, 12 May 2026 08:36:35 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
-	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id P8jkGJPmAmrTAwAAD6G6ig
-	(envelope-from <osalvador@suse.de>); Tue, 12 May 2026 08:36:35 +0000
-Date: Tue, 12 May 2026 10:36:29 +0200
-From: Oscar Salvador <osalvador@suse.de>
-To: "David Hildenbrand (Arm)" <david@kernel.org>
-Cc: "David S. Miller" <davem@davemloft.net>,
-	Andreas Larsson <andreas@gaisler.com>,
-	Mike Rapoport <rppt@kernel.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Alexander Gordeev <agordeev@linux.ibm.com>,
-	Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
-	Heiko Carstens <hca@linux.ibm.com>,
-	Vasily Gorbik <gor@linux.ibm.com>,
-	Christian Borntraeger <borntraeger@linux.ibm.com>,
-	Sven Schnelle <svens@linux.ibm.com>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	Lorenzo Stoakes <ljs@kernel.org>,
-	"Liam R. Howlett" <liam@infradead.org>,
-	Vlastimil Babka <vbabka@kernel.org>,
-	Suren Baghdasaryan <surenb@google.com>,
-	Michal Hocko <mhocko@suse.com>, sparclinux@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-	linux-s390@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 5/8] mm/bootmem_info: stop marking the pgdat as NODE_INFO
-Message-ID: <agLmjW41Sn254z_G@localhost.localdomain>
-References: <20260511-bootmem_info_prep-v1-0-3fb0be6fc688@kernel.org>
- <20260511-bootmem_info_prep-v1-5-3fb0be6fc688@kernel.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gF92B1HXqz2ySl
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2026 18:37:21 +1000 (AEST)
+Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 64BK7H352760537;
+	Tue, 12 May 2026 08:37:04 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-type:date:from:in-reply-to:message-id:mime-version
+	:references:subject:to; s=pp1; bh=H8gZvhDiJcfPj4izdPoeTyKzYez876
+	PA3k9XPRRUrF0=; b=JFKfrhPq8nUkfghkSxPLnz3TlK6envyHBf7rktLvSsXHmy
+	iH1t0d6K4J710TpSKiT8tF9xje+oiyMy8ICvD6VMeIcSTcCn7NCtgOA0mj70X+Bl
+	SDP6eWNiQ6MOqJ37gRiXulrHHDWpjKnmelcjgVSxmGkdynJ3AzQ7j6sBtuJJT4eK
+	NntESoFIr/UIYKAe4aVr8qNbn/IB/MoR8M7KEN5ydLcAuet5pbAJgwSxazRbuq1l
+	CdDSzaXZS8UacvRj3C/IQJf5dUikwWKwGPZfvA1MuoCqH2AA4zNG5vkYFLY88ddF
+	UhbhTD5RaGfpLjM/k7jHyd+uK+IOxAMXs+OYBD/Q==
+Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4e3nv6j24w-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 12 May 2026 08:37:04 +0000 (GMT)
+Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma21.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 64C8OXsn028662;
+	Tue, 12 May 2026 08:37:03 GMT
+Received: from smtprelay07.dal12v.mail.ibm.com ([172.16.1.9])
+	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4e3nfgjb95-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 12 May 2026 08:37:03 +0000 (GMT)
+Received: from smtpav06.dal12v.mail.ibm.com (smtpav06.dal12v.mail.ibm.com [10.241.53.105])
+	by smtprelay07.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 64C8b2S325821758
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Tue, 12 May 2026 08:37:02 GMT
+Received: from smtpav06.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 3CD3A58059;
+	Tue, 12 May 2026 08:37:02 +0000 (GMT)
+Received: from smtpav06.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id D5EF458043;
+	Tue, 12 May 2026 08:36:57 +0000 (GMT)
+Received: from vaibhav?linux.ibm.com (unknown [9.124.208.192])
+	by smtpav06.dal12v.mail.ibm.com (Postfix) with SMTP;
+	Tue, 12 May 2026 08:36:57 +0000 (GMT)
+Received: by vaibhav@linux.ibm.com (sSMTP sendmail emulation); Tue, 12 May 2026 14:06:55 +0530
+From: Vaibhav Jain <vaibhav@linux.ibm.com>
+To: Gautam Menghani <Gautam.Menghani@ibm.com>, maddy@linux.ibm.com,
+        npiggin@gmail.com, mpe@ellerman.id.au, chleroy@kernel.org
+Cc: Gautam Menghani <gautam@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+        kvm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2] KVM: PPC: Book3S HV: Add H_FAC_UNAVAIL mapping for
+ tracing exits
+In-Reply-To: <20260428084534.49781-1-Gautam.Menghani@ibm.com>
+References: <20260428084534.49781-1-Gautam.Menghani@ibm.com>
+Date: Tue, 12 May 2026 14:06:55 +0530
+Message-ID: <87pl31uiqg.fsf@vajain21.in.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -123,55 +90,80 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260511-bootmem_info_prep-v1-5-3fb0be6fc688@kernel.org>
-X-Spamd-Result: default: False [-4.30 / 50.00];
-	BAYES_HAM(-3.00)[99.99%];
-	NEURAL_HAM_LONG(-1.00)[-1.000];
-	NEURAL_HAM_SHORT(-0.20)[-1.000];
-	MIME_GOOD(-0.10)[text/plain];
-	MISSING_XM_UA(0.00)[];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	MIME_TRACE(0.00)[0:+];
-	RCPT_COUNT_TWELVE(0.00)[25];
-	FUZZY_RATELIMITED(0.00)[rspamd.com];
-	ARC_NA(0.00)[];
-	RCVD_TLS_ALL(0.00)[];
-	FREEMAIL_ENVRCPT(0.00)[gmail.com];
-	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	FROM_HAS_DN(0.00)[];
-	FREEMAIL_CC(0.00)[davemloft.net,gaisler.com,kernel.org,linux-foundation.org,linux.ibm.com,ellerman.id.au,gmail.com,infradead.org,google.com,suse.com,vger.kernel.org,kvack.org,lists.ozlabs.org];
-	TO_DN_SOME(0.00)[];
-	FROM_EQ_ENVFROM(0.00)[];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	RCVD_COUNT_TWO(0.00)[2];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:email,localhost.localdomain:mid,imap1.dmz-prg2.suse.org:helo]
+Content-Type: text/plain
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-ORIG-GUID: nU0nISuR4Dqqy-ix_PCeP0TTyaIL8XvG
+X-Proofpoint-GUID: KMAjbdqZw1a388q652BZ71xGUDq0AL35
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTEyMDA4NiBTYWx0ZWRfX21zcGlj/4oYi
+ +mHmsCfhLL7CRqOq08J+bp0jRQxj2DZRsLgEdY2C0yOhPCupP7StLghLuZt24lFKu88cYDEFNYN
+ djDl4gbF4nwyUdZf52QOLQRwOmK2EMpqWqPBLPmPhzQQYI291SOP+xWTZS0pWvjP/1+/kUxluR8
+ +Qrq7zMHBSddBRIo58gtVOWmMpGGIofs7rgre+LFASvPyDXtdfP14Xh47vklkDbN0l37zt0byWP
+ CItPw2cdJOE2sk9czVpq45oRgpBej1dY8x57TQxOFllQBMspXtsoKCaPvpoq5OHISKoPhoGBIEI
+ 3bVO+IGRTsr6JH39wzILWTvV6rFH1GEt+5uYg3ei22BpjPYeewEO1gQ6GsEuFWbJ3RK6OLRvtdO
+ TyshK9C+55j4tWHXSEC/6sI1XfLaG3zfN9viq+LdoIcpmgsKwikwYweqkWfRiARqrJ6stPYZKSW
+ XhR8QpQozFN3Qf/+0Lg==
+X-Authority-Analysis: v=2.4 cv=P8UKQCAu c=1 sm=1 tr=0 ts=6a02e6b0 cx=c_pps
+ a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
+ a=NGcC8JguVDcA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
+ a=RzCfie-kr_QcCd8fBx8p:22 a=VnNF1IyMAAAA:8 a=ycv1Ynx4oPle2U8RHYcA:9
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-05-11_05,2026-05-08_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ adultscore=0 priorityscore=1501 phishscore=0 bulkscore=0 clxscore=1011
+ malwarescore=0 spamscore=0 lowpriorityscore=0 suspectscore=0 impostorscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2605050000 definitions=main-2605120086
 
-On Mon, May 11, 2026 at 04:05:33PM +0200, David Hildenbrand (Arm) wrote:
-> We removed the last user of NODE_INFO in commit 119c31caa59e ("mm/sparse:
-> remove !CONFIG_SPARSEMEM_VMEMMAP leftovers for CONFIG_MEMORY_HOTPLUG").
-> 
-> But it really was never used it besides for safety-checks ever since it was
-> introduced in commit 04753278769f ("memory hotplug: register section/node
-> id to free"), where we had the comment:
-> 
-> 	5) The node information like pgdat has similar issues. But, this
-> 	   will be able to be solved too by this.
-> 	   (Not implemented yet, but, remembering node id in the pages.)
-> 
-> Of course, that never happened, and we are not planning on freeing the
-> node data (pgdat/pglist_data), during memory hotunplug.
-> 
-> So let's just stop marking the pgdat as NODE_INFO.
-> 
-> Signed-off-by: David Hildenbrand (Arm) <david@kernel.org>
 
-Acked-by: Oscar Salvador <osalvador@suse.de>
+Thanks Gautam catching this and proposing this patch.
+Minor review comments below:
 
- 
+Gautam Menghani <Gautam.Menghani@ibm.com> writes:
 
+> From: Gautam Menghani <gautam@linux.ibm.com>
+>
+> The macro kvm_trace_symbol_exit is used for providing the mappings
+> for the trap vectors and their names. Add mapping for H_FAC_UNAVAIL so that
+> trap reason is displayed as string instead of a vector number when using
+> the kvm_guest_exit tracepoint.
+>
+> Signed-off-by: Gautam Menghani <gautam@linux.ibm.com>
+> ---
+> v2:
+> 1. Remove the trailing comma after last element
+>
+>  arch/powerpc/kvm/trace_book3s.h | 3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
+>
+> diff --git a/arch/powerpc/kvm/trace_book3s.h b/arch/powerpc/kvm/trace_book3s.h
+> index 9260ddbd557f..5d272c115331 100644
+> --- a/arch/powerpc/kvm/trace_book3s.h
+> +++ b/arch/powerpc/kvm/trace_book3s.h
+> @@ -28,6 +28,7 @@
+>  	{0xea0, "H_VIRT"}, \
+>  	{0xf00, "PERFMON"}, \
+>  	{0xf20, "ALTIVEC"}, \
+> -	{0xf40, "VSX"}
+> +	{0xf40, "VSX"}, \
+> +	{0xf80, "H_FAC_UNAVAIL"}
+Also add trap of 0x000 indicating "RETURN_TO_HOST"
+
+Also sychronize the contents of the proposed changes for this header with the
+libtraceevent header file tools/perf/util/kvm-stat-arch/book3s_hv_exits.h
+
+>  
+>  #endif
+> -- 
+> 2.52.0
+>
+>
+
+With above minor fixes done, feel free to add:
+
+Reviewed-by: Vaibhav Jain (IBM) <vaibhav@linux.ibm.com>
 -- 
-Oscar Salvador
-SUSE Labs
+Cheers
+~ Vaibhav
 
