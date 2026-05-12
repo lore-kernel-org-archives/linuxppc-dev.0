@@ -1,64 +1,46 @@
-Return-Path: <linuxppc-dev+bounces-20722-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20723-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4EE70CD4855
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 May 2026 22:20:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0CFACCD343F
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 May 2026 03:12:53 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gDvL41NzNz2xKh;
-	Tue, 12 May 2026 08:20:12 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778538012;
-	cv=none; b=gVmpAt7pOHX9d3bfVz69Nw9W0G8XUOgUpPY7w16KdVxrAEhA6rnWn7vZRgF75cVLUdSKcETBz6UamkfRL1oOP5XefMrbW7iY5Q3YgEd2kW1rv+uGQSDCdgRIOMrHuXGGtF+vuWhK6IrRrQeJn4qfJjMOl74k1WKXEG2kriVIi7oapJMJ1epiRvnVnatQli6qJ4ZpI1RCXj9ijqQVDrriWdsYC/4ciXYP6K5DML9UCzwdB1h7Y7c5s9drbaOzrxgqYaRhW8fsg6975l0IWy+OnZf2fL/R2xQfXbTC9C+vfAv3AlNHoex2UxPSPEXKgqmdt2yx7IPs8DeVoI2CWvpRjw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gF1qm1pPLz2xpk;
+	Tue, 12 May 2026 13:12:52 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=95.215.58.181
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778555572;
+	cv=none; b=L8nnxy6dCovaW2/mhaitbwDXAAo85/5dlTXWxeB38TefqArL3JmV5uUdICbDICEtwi8cH22ebwcdGTg4eLvj1br2PJbAsHacZ0bO/qUl7AKH1ZIStk9oEL49teeGzh6WFthcSgCLwqWjoa2N+9p8yt3+deHKVn4jMGfqPyoFDjTa/iS8d/aCCChMaX2i7nqyA224poMekEmHRLtV2YrYEU+AL+OVJRVNkwUJ3dPvdg9pW2fYHiOE+c21B3Y1nviZH+2trWyTr+jAgRK0mzZUlER43/TbqfAVIqMwpdRhL7XiySqyaue0H0ziukT7zMSHAMSQXQsYJwaNdvfd92aegw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1778538012; c=relaxed/relaxed;
-	bh=4E4m0krrTAOPHzvgF8sRUKe90FnIaCW88Ns6rN2/13c=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=D9Bwz50pwDnHfqX/2M9MmhlfotjoLwW0uNymEo7IXDT42yTtrNQL+7grvp3b++mxTMFAE4adTW7hsu5ymRHfryZBT6Pn8JGCXRcsmPQwzAfg7anE35ZebNAbI0DBgJvIM2U5TzvlGBm9ImLaMS6weCaot+AqA7qkORPR3XdWcER2nX6ICbL1kCYQ1bpijvloiZAlCuJRLsZjN1scdDd+kpjyrQuc50fYg+CEfglG86tVoD23YYZWWxnP7WJQ+eGJgm/kH1dWwC9yT3gM5dCzggvStEgLIUqP1N8KokKeT1sfnzKR8ay7/qSOrF9TegLYo28sqzjM8657LT0zquIZHQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=V/GpN/Q7; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=sashal@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1778555572; c=relaxed/relaxed;
+	bh=I4poRjePR6cFEz+knzlKugzzQz/9NFbmis/RU8TnLm8=;
+	h=Content-Type:Mime-Version:Subject:From:In-Reply-To:Date:Cc:
+	 Message-Id:References:To; b=Y2dzea7pkFjb640ZXTzIqGJWfYD5EociavnoBfho532Q0p8UbQrQ9zskZK6ZxtmshZTFnBRepZZAvpa2zDC8p1l2PrqaDamNAdlUhpiwLzmk5+xGdbfIbsK6T5NW2WuEghcxkOL055UyjS0aNE8utC/heYsgwJXRM7efGuacz1krdJR/DrOgUZILJ+sa4WrTCqlzBu00Mtv11zud8rlP3PFhRN8JdSgYcaToN0Tf+wy9duSwJKGjxWQs9YSbFXJb+jbEKHTUS3hMrHza1S8g0qWYn4n4jNCpfacP8KNb4T5kN+bT5M6CzwNoc9sXdNuOzQNt3iNZx1s2h/Kb48lhhw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=Azi14Ppr; dkim-atps=neutral; spf=pass (client-ip=95.215.58.181; helo=out-181.mta1.migadu.com; envelope-from=muchun.song@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=V/GpN/Q7;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=Azi14Ppr;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=sashal@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=95.215.58.181; helo=out-181.mta1.migadu.com; envelope-from=muchun.song@linux.dev; receiver=lists.ozlabs.org)
+Received: from out-181.mta1.migadu.com (out-181.mta1.migadu.com [95.215.58.181])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gDvL26KGmz2yLB
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2026 08:20:10 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id E379C60120;
-	Mon, 11 May 2026 22:20:08 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9EC62C2BCFC;
-	Mon, 11 May 2026 22:20:07 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1778538008;
-	bh=q6eOR/vT0ruqLc4hKC0zEPDh3Q6xaUvvH3Ag+Rm9p30=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=V/GpN/Q7RKCK8kLUPDjc0we8yGgvTraLQm7FO3toxCldysEapS/Yuvfg+fVO5o7s1
-	 r6OxVadLXIRgYo/NJFn0IPvS83W3GVPfcqVOWeuV0lC68kby9y9xbhjEWk6M6sHPF2
-	 FmN1fZQDPS5kdM5TNcfl4tL58ucDQ3ZkkGDDn4JYuPZj4TvUKe5crAqxOkAFhXwuOc
-	 bwjUxrn9EIyrt3IuPkQ74orfAZeogk/WfYUvw8gEN90S3MrBg2CA7OZTkGeJSIw3gY
-	 lH8IbIFCBhhNixUQucop4IyzrTQkhYZF0beh1xteaqUU4Cm2BhXNGRkzDQvtVjEqw+
-	 MSkRjmllykZvw==
-From: Sasha Levin <sashal@kernel.org>
-To: patches@lists.linux.dev,
-	stable@vger.kernel.org
-Cc: Athira Rajeev <atrajeev@linux.ibm.com>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Sasha Levin <sashal@kernel.org>,
-	mpe@ellerman.id.au,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH AUTOSEL 7.0-6.18] powerpc/pseries/htmdump: Free the global buffers in htmdump module exit
-Date: Mon, 11 May 2026 18:19:24 -0400
-Message-ID: <20260511221931.2370053-25-sashal@kernel.org>
-X-Mailer: git-send-email 2.53.0
-In-Reply-To: <20260511221931.2370053-1-sashal@kernel.org>
-References: <20260511221931.2370053-1-sashal@kernel.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gF1qd6WM2z2xnQ
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2026 13:12:43 +1000 (AEST)
+Content-Type: text/plain;
+	charset=utf-8
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
+	t=1778555537;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=I4poRjePR6cFEz+knzlKugzzQz/9NFbmis/RU8TnLm8=;
+	b=Azi14PprPniBe1V5WjMKA+afCZiQgf72uIBSnpUmv60pYeWqC3IjNVcI+F6g/cUtrfmtoK
+	9eWQnG6XAjQL2a/frLRhyjpMZjyu55AeB1Kab2o/jQHGfyaMSajaAmtzR8NrIrBYLHxonL
+	73at8Z7GhpsUWTub3wdFAO6VUW0iJj0=
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -71,389 +53,350 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-X-stable: review
-X-Patchwork-Hint: Ignore
-X-stable-base: Linux 7.0.6
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Mime-Version: 1.0 (Mac OS X Mail 16.0 \(3864.500.181\))
+Subject: Re: [PATCH] drivers/base/memory: make memory block get/put explicit
+X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
+From: Muchun Song <muchun.song@linux.dev>
+In-Reply-To: <3234B4D3-8202-4E79-B85B-8B6373BB76F6@linux.dev>
+Date: Tue, 12 May 2026 11:11:15 +0800
+Cc: Muchun Song <songmuchun@bytedance.com>,
+ Oscar Salvador <osalvador@suse.de>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ "Rafael J. Wysocki" <rafael@kernel.org>,
+ Danilo Krummrich <dakr@kernel.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Lorenzo Stoakes <ljs@kernel.org>,
+ "Liam R. Howlett" <liam@infradead.org>,
+ Vlastimil Babka <vbabka@kernel.org>,
+ Mike Rapoport <rppt@kernel.org>,
+ Suren Baghdasaryan <surenb@google.com>,
+ Michal Hocko <mhocko@suse.com>,
+ Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Nicholas Piggin <npiggin@gmail.com>,
+ Christophe Leroy <chleroy@kernel.org>,
+ Heiko Carstens <hca@linux.ibm.com>,
+ Vasily Gorbik <gor@linux.ibm.com>,
+ Alexander Gordeev <agordeev@linux.ibm.com>,
+ Christian Borntraeger <borntraeger@linux.ibm.com>,
+ Sven Schnelle <svens@linux.ibm.com>,
+ linux-mm@kvack.org,
+ driver-core@lists.linux.dev,
+ linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org
+Content-Transfer-Encoding: quoted-printable
+Message-Id: <E9BB5FC5-0785-4162-8D1A-2A51C7250B34@linux.dev>
+References: <2841f424-580c-48c6-bb26-de30e4397b7f@kernel.org>
+ <3234B4D3-8202-4E79-B85B-8B6373BB76F6@linux.dev>
+To: David Hildenbrand <david@kernel.org>
+X-Migadu-Flow: FLOW_OUT
 
-From: Athira Rajeev <atrajeev@linux.ibm.com>
 
-[ Upstream commit 54d54f33813d7911555226b4220737177a2ba8d6 ]
 
-htmdump modules uses global memory buffers to capture
-details like capabilities, status of specified HTM, read the
-trace buffer. These are initialized during module init and
-hence needs to be freed in module exit.
+> On May 11, 2026, at 21:23, Muchun Song <muchun.song@linux.dev> wrote:
+>=20
+>=20
+>=20
+>> On May 11, 2026, at 20:22, David Hildenbrand (Arm) <david@kernel.org> =
+wrote:
+>>=20
+>> =EF=BB=BFOn 5/11/26 13:18, Muchun Song wrote:
+>>> Rename the memory block lookup helper to make the acquired reference
+>>> explicit, add memory_block_put() to wrap put_device(), and collapse =
+the
+>>> redundant section-number wrapper into a single block-id based lookup
+>>> interface.
+>>>=20
+>>> This makes it clearer to callers that a successful lookup holds a
+>>> reference that must be dropped, reducing the chance of forgetting =
+the
+>>> matching put and leaking the memory block device reference.
+>>=20
+>> Better mention some of the other changes here, like removing =
+find_memory_block().
+>=20
+> Will do.
+>=20
+>>=20
+>> [...]
+>>=20
+>>>   unlock_device_hotplug();
+>>> diff --git a/include/linux/memory.h b/include/linux/memory.h
+>>> index 5bb5599c6b2b..29edef1f975c 100644
+>>> --- a/include/linux/memory.h
+>>> +++ b/include/linux/memory.h
+>>> @@ -158,7 +158,11 @@ int create_memory_block_devices(unsigned long =
+start, unsigned long size,
+>>> void remove_memory_block_devices(unsigned long start, unsigned long =
+size);
+>>> extern void memory_dev_init(void);
+>>> extern int memory_notify(enum memory_block_state state, void *v);
+>>> -extern struct memory_block *find_memory_block(unsigned long =
+section_nr);
+>>> +extern struct memory_block *memory_block_get(unsigned long =
+block_id);
+>>=20
+>> While at it, please drop the "extern".
+>=20
+> OK.
+>=20
+>>=20
+>>> +static inline void memory_block_put(struct memory_block *mem)
+>>> +{
+>>> +    put_device(&mem->dev);
+>>> +}
+>>> typedef int (*walk_memory_blocks_func_t)(struct memory_block *, void =
+*);
+>>> extern int walk_memory_blocks(unsigned long start, unsigned long =
+size,
+>>>                 void *arg, walk_memory_blocks_func_t func);
+>>> @@ -171,7 +175,6 @@ struct memory_group *memory_group_find_by_id(int =
+mgid);
+>>> typedef int (*walk_memory_groups_func_t)(struct memory_group *, void =
+*);
+>>> int walk_dynamic_memory_groups(int nid, walk_memory_groups_func_t =
+func,
+>>>                  struct memory_group *excluded, void *arg);
+>>> -struct memory_block *find_memory_block_by_id(unsigned long =
+block_id);
+>>> #define hotplug_memory_notifier(fn, pri) ({        \
+>>>   static __meminitdata struct notifier_block fn##_mem_nb =3D\
+>>>       { .notifier_call =3D fn, .priority =3D pri };\
+>>> diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
+>>> index 462d8dcd636d..890c6453e887 100644
+>>> --- a/mm/memory_hotplug.c
+>>> +++ b/mm/memory_hotplug.c
+>>> @@ -1417,14 +1417,13 @@ static void =
+remove_memory_blocks_and_altmaps(u64 start, u64 size)
+>>>       struct vmem_altmap *altmap =3D NULL;
+>>>       struct memory_block *mem;
+>>>=20
+>>> -        mem =3D =
+find_memory_block(pfn_to_section_nr(PFN_DOWN(cur_start)));
+>>> +        mem =3D memory_block_get(phys_to_block_id(cur_start));
+>>>       if (WARN_ON_ONCE(!mem))
+>>>           continue;
+>>>=20
+>>>       altmap =3D mem->altmap;
+>>>       mem->altmap =3D NULL;
+>>> -        /* drop the ref. we got via find_memory_block() */
+>>> -        put_device(&mem->dev);
+>>> +        memory_block_put(mem);
+>>=20
+>> Would guards come in handy here?
+>=20
+> You mean to introduce something like:
+>=20
+> scoped_guard(memory_block, id) {
+> }
+>=20
+> Right? If yes, I will give it a try.
 
-Patch adds freeing of the memory in module exit. The change
-also includes minor clean up for the variable name. The
-read call back for the debugfs interface file saves filp->private_data
-to local variable name which is same as global variable
-name for the memory buffers. Rename these local variable
-names.
+Hi David,
 
-Signed-off-by: Athira Rajeev <atrajeev@linux.ibm.com>
-Signed-off-by: Madhavan Srinivasan <maddy@linux.ibm.com>
-Link: https://patch.msgid.link/20260314132432.25581-1-atrajeev@linux.ibm.com
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
+Did I get that right?
 
-LLM Generated explanations, may be completely bogus:
+5 files changed, 26 insertions(+), 35 deletions(-)
 
-## Summary
-This commit fixes a real resource leak in
-`arch/powerpc/platforms/pseries/htmdump.c`: `htm_status_buf`,
-`htm_info_buf`, and `htm_caps_buf` are each allocated with
-`kmalloc(PAGE_SIZE, GFP_KERNEL)` during module/debugfs initialization,
-but only `htm_buf` is freed in `htmdump_exit()`. The patch adds the
-three missing `kfree()` calls. The local-variable renames are cleanup
-and are also used by the following two patches in the same posted
-series.
-
-The benefit is modest because the leak is on module unload, not a hot
-path, and the feature is PowerPC pseries/debugfs-specific. But it is a
-real leak in a `default m` module, the fix is trivial, isolated, and low
-risk. For stable trees that contain the v6.16-era `htmstatus`,
-`htminfo`, and `htmcaps` additions, this is suitable.
-
-## Phase Walkthrough
-### Phase 1: Commit Message Forensics
-Record 1.1: Subsystem is `powerpc/pseries/htmdump`; action verb is
-`Free`; claimed intent is freeing global HTM debugfs buffers during
-module exit.
-
-Record 1.2: Tags in the supplied commit message: `Signed-off-by: Athira
-Rajeev <atrajeev@linux.ibm.com>`, `Signed-off-by: Madhavan Srinivasan
-<maddy@linux.ibm.com>`, `Link:
-https://patch.msgid.link/20260314132432.25581-1-atrajeev@linux.ibm.com`.
-No `Fixes:`, `Reported-by:`, `Tested-by:`, `Reviewed-by:`, `Acked-by:`,
-or `Cc: stable@vger.kernel.org` tag was present in this commit.
-
-Record 1.3: The body describes global memory buffers initialized in
-module init and not freed in module exit. The user-visible symptom is
-unreclaimed kernel memory after unloading the module. No crash, stack
-trace, reporter, affected-version statement, or reproducer is given.
-
-Record 1.4: This is a hidden cleanup-style bug fix: the functional
-change is missing resource release on module exit.
-
-### Phase 2: Diff Analysis
-Record 2.1: One file changed:
-`arch/powerpc/platforms/pseries/htmdump.c`, 17 insertions and 14
-deletions in the posted patch. Modified functions are `htmdump_read()`,
-`htmstatus_read()`, `htminfo_read()`, `htmcaps_read()`, and
-`htmdump_exit()`. Scope is single-file surgical.
-
-Record 2.2: The read-callback hunks rename local variables from names
-shadowing globals to `*_data`; behavior is unchanged. The exit hunk
-changes `htmdump_exit()` from freeing only `htm_buf` to freeing
-`htm_buf`, `htm_status_buf`, `htm_info_buf`, and `htm_caps_buf`.
-
-Record 2.3: Bug category is resource leak. Verified allocations are
-three `PAGE_SIZE` buffers for status/info/caps in
-`htmdump_init_debugfs()` without corresponding frees before this patch.
-
-Record 2.4: Fix quality is high: `kfree(NULL)` is safe, the buffers are
-global module-owned allocations, and debugfs removal already happens
-before freeing. Regression risk is very low. The only non-functional
-churn is local-variable rename.
-
-### Phase 3: Git History Investigation
-Record 3.1: `git blame` on the current stable checkout points the
-relevant lines at the repository boundary merge `f3f5edc5e41e0`, so I
-followed explicit commit objects. `htm_status_buf` was added by
-`627cf584f4c3`, `htm_info_buf` by `dea7384e14e7`, and `htm_caps_buf` by
-`143a2584627c`, all described by `git describe --contains`/history as
-v6.16-rc1-era commits.
-
-Record 3.2: Candidate has no `Fixes:` tag, so no direct Fixes target
-applies. Related series patches 2/3 and 3/3 have `Fixes:` tags for
-`dea7384e14e7` and `627cf584f4c3`, but this patch does not depend on
-those fixes.
-
-Record 3.3: Recent `htmdump` history shows the v6.16 additions for
-status/info/setup/flags/caps and a header include fix. The candidate is
-patch 1/3 in a series; patch 1 is standalone, while patches 2/3 and 3/3
-textually build on its variable renames.
-
-Record 3.4: Author Athira Rajeev authored the original htmdump expansion
-commits; Madhavan Srinivasan committed them. This was verified from `git
-show` for the status/info/caps commits.
-
-Record 3.5: No prerequisite is needed for patch 1 beyond the buffers
-existing. An isolated `git apply --check` of patch 1 succeeds on the
-current 7.0 stable checkout.
-
-### Phase 4: Mailing List And External Research
-Record 4.1: `b4 dig` could not be meaningfully run because the candidate
-commit object/hash is not present in the checked-out refs; `b4 dig -h`
-confirmed it requires `-c <commitish>`. I used `b4 mbox -c` with
-message-id `20260314132432.25581-1-atrajeev@linux.ibm.com`; it fetched a
-3-message thread and reported no newer revision.
-
-Record 4.2: Original recipients from the mbox were
-`maddy@linux.ibm.com`, `linuxppc-dev@lists.ozlabs.org`, and CCs
-including `hbathini`, `sshegde`, and IBM HTM-related recipients. No
-review replies, NAKs, or stable nominations were present in the fetched
-mbox.
-
-Record 4.3: No `Reported-by` or bug-report link exists for this
-candidate. `WebFetch` to lore/patch.msgid was blocked by Anubis, but `b4
-mbox` successfully fetched the thread.
-
-Record 4.4: The patch is part of a 3-patch series. Patch 1 fixes exit
-cleanup; patch 2 fixes `htminfo_read()` offset handling; patch 3 fixes
-`htmstatus_read()` offset handling. Patch 1 can apply standalone, and
-later patches depend textually on its renames.
-
-Record 4.5: Stable-specific lore WebFetch was blocked by Anubis.
-WebSearch for the exact subject and stable context found no specific
-stable discussion. Local `git log --grep` checks of `v6.18`, `v6.19`,
-`v7.0`, and `linux-rolling-stable` found no exact-subject match.
-
-### Phase 5: Code Semantic Analysis
-Record 5.1: Modified functions are `htmdump_read()`, `htmstatus_read()`,
-`htminfo_read()`, `htmcaps_read()`, and `htmdump_exit()`.
-
-Record 5.2: Callers/entry points are verified through file operations
-and module macros: `htmdump_exit()` is registered with `module_exit()`,
-reads are reached through debugfs files created by
-`debugfs_create_file()` with the corresponding fops.
-
-Record 5.3: Key callees are `debugfs_remove_recursive()`, `kfree()`,
-`htm_hcall_wrapper()`, `virt_to_phys()`, and
-`simple_read_from_buffer()`. The functional fix only adds `kfree()`
-calls in exit.
-
-Record 5.4: Reachability is module lifecycle and debugfs based. The leak
-triggers on module unload after successful allocation of the
-status/info/caps buffers. Unprivileged triggering was not verified and
-is not relied on; Kconfig shows `HTMDUMP` is `tristate`, `default m`,
-and depends on `PPC_PSERIES && DEBUG_FS`.
-
-Record 5.5: Similar pattern found: `htm_buf` was already freed in
-`htmdump_exit()`, while the three later-added global buffers were not.
-
-### Phase 6: Stable Tree Analysis
-Record 6.1: `v6.15` has `htmdump.c` with only `htm_buf`; `v6.16`,
-`v6.17`, `v6.18`, `v6.19`, and `v7.0` have the three additional buffers
-and only free `htm_buf`. So the bug affects stable trees containing the
-v6.16 htmdump expansions, not older trees lacking those buffers.
-
-Record 6.2: Backport difficulty is low for affected trees. The patch’s
-base blob matches `v6.16`/`v6.17`/current 7.0 content for the relevant
-file, and isolated patch 1 applies cleanly to the current checkout.
-
-Record 6.3: No exact-subject related fix was found in checked `v6.18`,
-`v6.19`, `v7.0`, or `linux-rolling-stable`.
-
-### Phase 7: Subsystem And Maintainer Context
-Record 7.1: Subsystem is PowerPC pseries platform driver/debugfs
-support. Criticality is peripheral/platform-specific, not core kernel-
-wide.
-
-Record 7.2: `git log -20 v7.0 -- arch/powerpc/platforms/pseries` shows
-active pseries development, but this particular fix is contained to
-`htmdump.c`.
-
-### Phase 8: Impact And Risk
-Record 8.1: Affected users are PowerPC pseries users with
-`CONFIG_HTMDUMP` enabled, primarily using the debugfs HTM dump module.
-
-Record 8.2: Trigger is successful module initialization followed by
-module exit/unload. Repeated load/unload can accumulate unreclaimed
-pages until reboot. This is not verified as unprivileged-triggerable.
-
-Record 8.3: Failure mode is kernel memory/resource leak, three
-`PAGE_SIZE` allocations per unload for the later buffers. Severity is
-medium: real and persistent until reboot, but not a crash/security/data-
-corruption fix and not a hot path.
-
-Record 8.4: Benefit is moderate for affected stable users; risk is very
-low because the functional change is only three `kfree()` calls after
-debugfs removal.
-
-### Phase 9: Final Synthesis
-Record 9.1: Evidence for backporting: real resource leak, affects stable
-trees v6.16 and newer that contain the expanded htmdump module, fix is
-tiny and obviously correct, isolated patch applies cleanly. Evidence
-against: peripheral platform-specific module, leak occurs on module
-unload rather than common runtime path, no reporter/testing/stable tags
-in this patch. Unresolved: no full lore review discussion was available
-beyond the 3-patch mbox; direct WebFetch lore pages were blocked.
-
-Record 9.2: Stable rules checklist: obviously correct yes; fixes a real
-bug yes; important enough is borderline but acceptable as a real
-resource leak with very low regression risk; small and contained yes; no
-new feature/API yes; applies to affected stable trees yes for current
-7.0 and likely cleanly where file matches v6.16+.
-
-Record 9.3: No automatic exception category applies: this is not a
-device ID, quirk, DT update, build fix, or documentation-only fix.
-
-Record 9.4: Decision is YES for stable trees that contain
-`htm_status_buf`, `htm_info_buf`, and `htm_caps_buf`.
-
-## Verification
-- Phase 1: Parsed supplied commit message and b4-fetched patch 1;
-  confirmed no `Fixes:`, `Reported-by`, `Tested-by`, review, or stable
-  tag in patch 1.
-- Phase 2: Read `arch/powerpc/platforms/pseries/htmdump.c`; confirmed
-  allocations and missing frees; inspected patch hunks from
-  `/tmp/htmdump-20260314.mbx`.
-- Phase 3: Ran `git blame -L 410,485`; followed explicit commits
-  `627cf584f4c3`, `dea7384e14e7`, and `143a2584627c` with `git show`;
-  checked author/subsystem history.
-- Phase 4: `b4 mbox -c` fetched the 3-message thread; direct `WebFetch`
-  lore URLs were blocked; WebSearch found no exact stable discussion.
-- Phase 5: Used `rg`, `ReadFile`, and Kconfig/Makefile/docs to verify
-  module/debugfs reachability and `CONFIG_HTMDUMP` as `tristate`,
-  `default m`.
-- Phase 6: Checked `v6.15`, `v6.16`, `v6.17`, `v6.18`, `v6.19`, and
-  `v7.0` file contents; isolated patch 1 passed `git apply --check`.
-- Phase 8: Verified failure mode from concrete `kmalloc(PAGE_SIZE)`
-  allocations and missing matching `kfree()` calls.
-- Unverified: whether every downstream stable branch has identical
-  context; direct stable-list lore search was blocked by Anubis.
-
-**YES**
-
- arch/powerpc/platforms/pseries/htmdump.c | 31 +++++++++++++-----------
- 1 file changed, 17 insertions(+), 14 deletions(-)
-
-diff --git a/arch/powerpc/platforms/pseries/htmdump.c b/arch/powerpc/platforms/pseries/htmdump.c
-index 742ec52c9d4df..93f0cc2dc7fb6 100644
---- a/arch/powerpc/platforms/pseries/htmdump.c
-+++ b/arch/powerpc/platforms/pseries/htmdump.c
-@@ -86,7 +86,7 @@ static ssize_t htm_return_check(long rc)
- static ssize_t htmdump_read(struct file *filp, char __user *ubuf,
- 			     size_t count, loff_t *ppos)
+diff --git a/drivers/base/memory.c b/drivers/base/memory.c
+index 5b5d41089e81..eba48320fc30 100644
+--- a/drivers/base/memory.c
++++ b/drivers/base/memory.c
+@@ -997,7 +997,6 @@ int walk_memory_blocks(unsigned long start, unsigned =
+long size,
  {
--	void *htm_buf = filp->private_data;
-+	void *htm_buf_data = filp->private_data;
- 	unsigned long page, read_size, available;
- 	loff_t offset;
- 	long rc, ret;
-@@ -100,7 +100,7 @@ static ssize_t htmdump_read(struct file *filp, char __user *ubuf,
- 	 * - last three values are address, size and offset
- 	 */
- 	rc = htm_hcall_wrapper(htmflags, nodeindex, nodalchipindex, coreindexonchip,
--				   htmtype, H_HTM_OP_DUMP_DATA, virt_to_phys(htm_buf),
-+				   htmtype, H_HTM_OP_DUMP_DATA, virt_to_phys(htm_buf_data),
- 				   PAGE_SIZE, page);
- 
- 	ret = htm_return_check(rc);
-@@ -112,7 +112,7 @@ static ssize_t htmdump_read(struct file *filp, char __user *ubuf,
- 	available = PAGE_SIZE;
- 	read_size = min(count, available);
- 	*ppos += read_size;
--	return simple_read_from_buffer(ubuf, count, &offset, htm_buf, available);
-+	return simple_read_from_buffer(ubuf, count, &offset, htm_buf_data, available);
- }
- 
- static const struct file_operations htmdump_fops = {
-@@ -226,7 +226,7 @@ static int htmstart_get(void *data, u64 *val)
- static ssize_t htmstatus_read(struct file *filp, char __user *ubuf,
- 			     size_t count, loff_t *ppos)
- {
--	void *htm_status_buf = filp->private_data;
-+	void *htm_status_data = filp->private_data;
- 	long rc, ret;
- 	u64 *num_entries;
- 	u64 to_copy;
-@@ -238,7 +238,7 @@ static ssize_t htmstatus_read(struct file *filp, char __user *ubuf,
- 	 * - last three values as addr, size and offset
- 	 */
- 	rc = htm_hcall_wrapper(htmflags, nodeindex, nodalchipindex, coreindexonchip,
--				   htmtype, H_HTM_OP_STATUS, virt_to_phys(htm_status_buf),
-+				   htmtype, H_HTM_OP_STATUS, virt_to_phys(htm_status_data),
- 				   PAGE_SIZE, 0);
- 
- 	ret = htm_return_check(rc);
-@@ -255,13 +255,13 @@ static ssize_t htmstatus_read(struct file *filp, char __user *ubuf,
- 	 * So total count to copy is:
- 	 * 32 bytes (for first 7 fields) + (number of HTM entries * entry size)
- 	 */
--	num_entries = htm_status_buf + 0x10;
-+	num_entries = htm_status_data + 0x10;
- 	if (htmtype == 0x2)
- 		htmstatus_flag = 0x8;
- 	else
- 		htmstatus_flag = 0x6;
- 	to_copy = 32 + (be64_to_cpu(*num_entries) * htmstatus_flag);
--	return simple_read_from_buffer(ubuf, count, ppos, htm_status_buf, to_copy);
-+	return simple_read_from_buffer(ubuf, count, ppos, htm_status_data, to_copy);
- }
- 
- static const struct file_operations htmstatus_fops = {
-@@ -273,7 +273,7 @@ static const struct file_operations htmstatus_fops = {
- static ssize_t htminfo_read(struct file *filp, char __user *ubuf,
- 			     size_t count, loff_t *ppos)
- {
--	void *htm_info_buf = filp->private_data;
-+	void *htm_info_data = filp->private_data;
- 	long rc, ret;
- 	u64 *num_entries;
- 	u64 to_copy;
-@@ -284,7 +284,7 @@ static ssize_t htminfo_read(struct file *filp, char __user *ubuf,
- 	 * - last three values as addr, size and offset
- 	 */
- 	rc = htm_hcall_wrapper(htmflags, nodeindex, nodalchipindex, coreindexonchip,
--				   htmtype, H_HTM_OP_DUMP_SYSPROC_CONF, virt_to_phys(htm_info_buf),
-+				   htmtype, H_HTM_OP_DUMP_SYSPROC_CONF, virt_to_phys(htm_info_data),
- 				   PAGE_SIZE, 0);
- 
- 	ret = htm_return_check(rc);
-@@ -301,15 +301,15 @@ static ssize_t htminfo_read(struct file *filp, char __user *ubuf,
- 	 * So total count to copy is:
- 	 * 32 bytes (for first 5 fields) + (number of HTM entries * entry size)
- 	 */
--	num_entries = htm_info_buf + 0x10;
-+	num_entries = htm_info_data + 0x10;
- 	to_copy = 32 + (be64_to_cpu(*num_entries) * 16);
--	return simple_read_from_buffer(ubuf, count, ppos, htm_info_buf, to_copy);
-+	return simple_read_from_buffer(ubuf, count, ppos, htm_info_data, to_copy);
- }
- 
- static ssize_t htmcaps_read(struct file *filp, char __user *ubuf,
- 			     size_t count, loff_t *ppos)
- {
--	void *htm_caps_buf = filp->private_data;
-+	void *htm_caps_data = filp->private_data;
- 	long rc, ret;
- 
- 	/*
-@@ -319,7 +319,7 @@ static ssize_t htmcaps_read(struct file *filp, char __user *ubuf,
- 	 *   and zero
- 	 */
- 	rc = htm_hcall_wrapper(htmflags, nodeindex, nodalchipindex, coreindexonchip,
--				   htmtype, H_HTM_OP_CAPABILITIES, virt_to_phys(htm_caps_buf),
-+				   htmtype, H_HTM_OP_CAPABILITIES, virt_to_phys(htm_caps_data),
- 				   0x80, 0);
- 
- 	ret = htm_return_check(rc);
-@@ -328,7 +328,7 @@ static ssize_t htmcaps_read(struct file *filp, char __user *ubuf,
- 		return ret;
+ 	const unsigned long start_block_id =3D phys_to_block_id(start);
+ 	const unsigned long end_block_id =3D phys_to_block_id(start + =
+size - 1);
+-	struct memory_block *mem;
+ 	unsigned long block_id;
+ 	int ret =3D 0;
+
+@@ -1005,12 +1004,11 @@ int walk_memory_blocks(unsigned long start, =
+unsigned long size,
+ 		return 0;
+
+ 	for (block_id =3D start_block_id; block_id <=3D end_block_id; =
+block_id++) {
+-		mem =3D memory_block_get(block_id);
++		CLASS(memory_block_get, mem)(block_id);
+ 		if (!mem)
+ 			continue;
+
+ 		ret =3D func(mem, arg);
+-		memory_block_put(mem);
+ 		if (ret)
+ 			break;
  	}
- 
--	return simple_read_from_buffer(ubuf, count, ppos, htm_caps_buf, 0x80);
-+	return simple_read_from_buffer(ubuf, count, ppos, htm_caps_data, 0x80);
- }
- 
- static const struct file_operations htminfo_fops = {
-@@ -482,6 +482,9 @@ static void __exit htmdump_exit(void)
+@@ -1218,23 +1216,19 @@ int walk_dynamic_memory_groups(int nid, =
+walk_memory_groups_func_t func,
+ void memblk_nr_poison_inc(unsigned long pfn)
  {
- 	debugfs_remove_recursive(htmdump_debugfs_dir);
- 	kfree(htm_buf);
-+	kfree(htm_status_buf);
-+	kfree(htm_info_buf);
-+	kfree(htm_caps_buf);
+ 	const unsigned long block_id =3D pfn_to_block_id(pfn);
+-	struct memory_block *mem =3D memory_block_get(block_id);
++	CLASS(memory_block_get, mem)(block_id);
+
+-	if (mem) {
++	if (mem)
+ 		atomic_long_inc(&mem->nr_hwpoison);
+-		memory_block_put(mem);
+-	}
  }
- 
- module_init(htmdump_init);
--- 
-2.53.0
+
+ void memblk_nr_poison_sub(unsigned long pfn, long i)
+ {
+ 	const unsigned long block_id =3D pfn_to_block_id(pfn);
+-	struct memory_block *mem =3D memory_block_get(block_id);
++	CLASS(memory_block_get, mem)(block_id);
+
+-	if (mem) {
++	if (mem)
+ 		atomic_long_sub(i, &mem->nr_hwpoison);
+-		memory_block_put(mem);
+-	}
+ }
+
+ static unsigned long memblk_nr_poison(struct memory_block *mem)
+diff --git a/drivers/base/node.c b/drivers/base/node.c
+index b3333ca92090..32a5431cbb60 100644
+--- a/drivers/base/node.c
++++ b/drivers/base/node.c
+@@ -845,15 +845,12 @@ static void =
+register_memory_blocks_under_nodes(void)
+ 			continue;
+
+ 		for (block_id =3D start_block_id; block_id <=3D =
+end_block_id; block_id++) {
+-			struct memory_block *mem;
+-
+-			mem =3D memory_block_get(block_id);
++			CLASS(memory_block_get, mem)(block_id);
+ 			if (!mem)
+ 				continue;
+
+ 			memory_block_add_nid_early(mem, nid);
+ 			do_register_memory_block_under_node(nid, mem);
+-			memory_block_put(mem);
+ 		}
+
+ 	}
+diff --git a/drivers/s390/char/sclp_mem.c b/drivers/s390/char/sclp_mem.c
+index 6df1926d4c62..c9a1a7adcab6 100644
+--- a/drivers/s390/char/sclp_mem.c
++++ b/drivers/s390/char/sclp_mem.c
+@@ -237,13 +237,12 @@ static ssize_t sclp_config_mem_store(struct =
+kobject *kobj, struct kobj_attribute
+ 	} else {
+ 		if (!sclp_mem->config)
+ 			goto out_unlock;
+-		mem =3D memory_block_get(phys_to_block_id(addr));
+-		if (mem->state !=3D MEM_OFFLINE) {
+-			memory_block_put(mem);
+-			rc =3D -EBUSY;
+-			goto out_unlock;
++		scoped_class(memory_block_get, mem, =
+phys_to_block_id(addr)) {
++			if (mem->state !=3D MEM_OFFLINE) {
++				rc =3D -EBUSY;
++				goto out_unlock;
++			}
+ 		}
+-		memory_block_put(mem);
+ 		sclp_mem_change_state(addr, block_size, 0);
+ 		__remove_memory(addr, block_size);
+ #ifdef CONFIG_KASAN
+@@ -293,12 +292,12 @@ static ssize_t sclp_memmap_on_memory_store(struct =
+kobject *kobj, struct kobj_att
+ 		return rc;
+ 	block_size =3D memory_block_size_bytes();
+ 	sclp_mem =3D container_of(kobj, struct sclp_mem, kobj);
+-	mem =3D memory_block_get(phys_to_block_id(sclp_mem->id * =
+block_size));
+-	if (!mem) {
+-		WRITE_ONCE(sclp_mem->memmap_on_memory, value);
+-	} else {
+-		memory_block_put(mem);
+-		rc =3D -EBUSY;
++	scoped_class(memory_block_get, mem,
++		     phys_to_block_id(sclp_mem->id * block_size)) {
++		if (!mem)
++			WRITE_ONCE(sclp_mem->memmap_on_memory, value);
++		else
++			rc =3D -EBUSY;
+ 	}
+ 	unlock_device_hotplug();
+ 	return rc ? rc : count;
+diff --git a/include/linux/memory.h b/include/linux/memory.h
+index 463dc02f6cff..fb67041941a8 100644
+--- a/include/linux/memory.h
++++ b/include/linux/memory.h
+@@ -18,6 +18,7 @@
+
+ #include <linux/node.h>
+ #include <linux/compiler.h>
++#include <linux/cleanup.h>
+ #include <linux/mutex.h>
+ #include <linux/memory_hotplug.h>
+
+@@ -163,6 +164,8 @@ static inline void memory_block_put(struct =
+memory_block *mem)
+ {
+ 	put_device(&mem->dev);
+ }
++DEFINE_CLASS(memory_block_get, struct memory_block *, if (_T) =
+memory_block_put(_T),
++	     memory_block_get(block_id), unsigned long block_id)
+ typedef int (*walk_memory_blocks_func_t)(struct memory_block *, void =
+*);
+ extern int walk_memory_blocks(unsigned long start, unsigned long size,
+ 			      void *arg, walk_memory_blocks_func_t =
+func);
+diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
+index 890c6453e887..3f89ffb286d6 100644
+--- a/mm/memory_hotplug.c
++++ b/mm/memory_hotplug.c
+@@ -1415,15 +1415,13 @@ static void remove_memory_blocks_and_altmaps(u64 =
+start, u64 size)
+ 	for (cur_start =3D start; cur_start < start + size;
+ 	     cur_start +=3D memblock_size) {
+ 		struct vmem_altmap *altmap =3D NULL;
+-		struct memory_block *mem;
+-
+-		mem =3D memory_block_get(phys_to_block_id(cur_start));
+-		if (WARN_ON_ONCE(!mem))
+-			continue;
++		scoped_class(memory_block_get, mem, =
+phys_to_block_id(cur_start)) {
++			if (WARN_ON_ONCE(!mem))
++				continue;
+
+-		altmap =3D mem->altmap;
+-		mem->altmap =3D NULL;
+-		memory_block_put(mem);
++			altmap =3D mem->altmap;
++			mem->altmap =3D NULL;
++		}
+
+ 		remove_memory_block_devices(cur_start, memblock_size);
+
+Thanks,
+Muchun
+
+>=20
+>>=20
+>> In general
+>>=20
+>> Acked-by: David Hildenbrand (Arm) <david@kernel.org>
+>=20
+> Thanks.
+>=20
+> Muchun
+>=20
+>>=20
+>> --
+>> Cheers,
+>>=20
+>> David
 
 
