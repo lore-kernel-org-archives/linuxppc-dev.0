@@ -1,76 +1,76 @@
-Return-Path: <linuxppc-dev+bounces-20750-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20751-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0E83CCD4855
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 May 2026 07:45:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 72EADCD4855
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 May 2026 07:46:16 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gF7tB43xBz2yb9;
-	Tue, 12 May 2026 17:45:22 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::32e"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778571922;
-	cv=none; b=ghQZArQeSDmEWwhYe9m46dtqn8QBkZjJGxdDixLs7IO8UnCAMrB3ExTRGPEKN0NLO7l82/8/pgeiGYSvvyk+MJfY5TrB0Rjra+zUnUoVx+nCE81GLGrmIRadc2hbq+kALGnlEZZLCMw94VlgvJBsAlTHhHd0mmyMmPo3z9mjsxujAFj9HV6VExS2zwMRBuHCqsF1RuwMAbgntfMTebkQO088SudNvramcYAhU54/9fRoTuHOPJUAtFcBnP73RZK2qldC92Lw5CSh2umWfY84mScE6qVzYk10LifGTQKmvjd28Kk4ULl0plV2ZN7utk5bde/tKT+Usiv7s8Lkt7TePw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gF7vC0DLCz2ygG;
+	Tue, 12 May 2026 17:46:15 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::32f"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778571974;
+	cv=none; b=ZVDn4qSCMcCOjO6aiqG8BNczkfadNIpavVBzKIJmA4r48dzb6bY1sutEQyrw+VbPb+x5gStC5MtpCS4J9Ct1YMKdtB+bjHLmJGza3aonb8OXzxwKwhO1KMCqAUTSGECIa7tg9yslTA6tMw+pk8aGvxySaW9s6sdHKzmEqwN7TXgHpg4CPP15wO32vcQZoR2tYwfeTFDuvu6bcxc2kBPJ9woQH1bwQxlf8aJn8wKMxIauc6P6hd/CF0mz+en8DUYD7pr6Fy5JevXF+sn4Wpn735m+ClQLIOgSOXlo89dr+uTdUZIt10xQ9Qk9oc5O5LDO3pQWUn4WfGejdbuQVDkiPg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1778571922; c=relaxed/relaxed;
-	bh=YuUpqcwRSMeMl5pOLaTVyc6TdYwqJl65snzBr5xo1y0=;
+	t=1778571974; c=relaxed/relaxed;
+	bh=MV3zAoldwoclbqs7qOGs2hdICyTLCe/Y0G+BfFOFXqo=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=RWQmNv+BPDEHJeVNiD4us8sT+88eiX122NXsPZRpMf9cnLm7+q5D9AddeuNONV+lmg0YG8a7ghwkU2jETw4FBcNZ1YyiyKUkmtbIATO5yN57LaIm182l6QkXTXfLo4mLH+ydB7v1aY2vNcbyNqDmQ3oIde+C1qQ0N0hqQjKoDECuiIAa1GMrdbontiJ9vTgCal6+Cl04pTz+MHCcdg7gGqyKzRQ938j0AU90iRMRQgrcOwyJsTwSJ/59WtyKU9R6DFKemh1wO+rQlPMG7VFRA3rbm7dtcUOYvi+YcxglphtYuPiLjfXpl+i/0tbwn8CUxy1COvy61K/RWmikTccKuQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com; dkim=pass (2048-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=google header.b=CgldYc+8; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::32e; helo=mail-wm1-x32e.google.com; envelope-from=mhocko@suse.com; receiver=lists.ozlabs.org) smtp.mailfrom=suse.com
+	 Content-Type:Content-Disposition:In-Reply-To; b=iNJYblbuz3PGRMZkZfAuz7FiB45QdDAVUZvNbopPC2h98qA8BzQODz2ChWXtz01UaSUk12eCVuDI1zzMptPojqwMc/fnVK76wmar7aLkkYfoRL+me6ZLy7DYUnbjI/Fm53S0pECbwBsLIsRZLq3zavxaVk2eMmxlarYxj7OAShWTb9nakh7XdVw102Q8DXnMcqhC7cYzhJTRAZWmQMYzuyLlF9OC1GLbc1Max3VjNdAnQHlyqGg1sooyum1jW5nIg4Dmq4gmJ1Y6MXSZS/2F9EEcU4hpOGwJaqqdWof0/m6SaxeUJwmB8EyaJJeSSQAqzG93TSmeUGlRVhQanGIy2w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com; dkim=pass (2048-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=google header.b=Rz8Rw7jA; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::32f; helo=mail-wm1-x32f.google.com; envelope-from=mhocko@suse.com; receiver=lists.ozlabs.org) smtp.mailfrom=suse.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=google header.b=CgldYc+8;
+	dkim=pass (2048-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=google header.b=Rz8Rw7jA;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.com (client-ip=2a00:1450:4864:20::32e; helo=mail-wm1-x32e.google.com; envelope-from=mhocko@suse.com; receiver=lists.ozlabs.org)
-Received: from mail-wm1-x32e.google.com (mail-wm1-x32e.google.com [IPv6:2a00:1450:4864:20::32e])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.com (client-ip=2a00:1450:4864:20::32f; helo=mail-wm1-x32f.google.com; envelope-from=mhocko@suse.com; receiver=lists.ozlabs.org)
+Received: from mail-wm1-x32f.google.com (mail-wm1-x32f.google.com [IPv6:2a00:1450:4864:20::32f])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gF7t90yy5z2yXj
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2026 17:45:20 +1000 (AEST)
-Received: by mail-wm1-x32e.google.com with SMTP id 5b1f17b1804b1-488ba840146so45992535e9.1
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2026 00:45:20 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gF7v95JJVz2yb9
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2026 17:46:13 +1000 (AEST)
+Received: by mail-wm1-x32f.google.com with SMTP id 5b1f17b1804b1-488a14c31eeso35646805e9.0
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2026 00:46:13 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=suse.com; s=google; t=1778571916; x=1779176716; darn=lists.ozlabs.org;
+        d=suse.com; s=google; t=1778571971; x=1779176771; darn=lists.ozlabs.org;
         h=in-reply-to:content-disposition:mime-version:references:message-id
          :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=YuUpqcwRSMeMl5pOLaTVyc6TdYwqJl65snzBr5xo1y0=;
-        b=CgldYc+82u0iuLWSmVXa9M1uV8rVxZa7syJRQc/HTwoHn6GFr81eeTXvKD7jL4Panq
-         uagIGD20UR4tvLbgHorDeHA3QRQruDjNhel4Ocrt2Z8SyViET0O5SKv+Dpn4Cb0WTJ3B
-         hK5gWX/chhYx5xkqAE3kK5j45VOCFMQ16hD28/oTXWD6Bfz07JQbYzLuIvniT9ftMZcB
-         P/OmRtVPEFZTGrz+bF9u/pecOKKi9G6H6XbU0w6FKyCPrh9MXKJR/2X2nVliS7L/MV5l
-         YWRHkynACvdubaxgMMxbsqBbg4zcB1Tp5XsHrmgISgj6K+/BhLCMcPlqkkZxkaDVJhqm
-         6Tjw==
+        bh=MV3zAoldwoclbqs7qOGs2hdICyTLCe/Y0G+BfFOFXqo=;
+        b=Rz8Rw7jAYEX4dwphaPSC9qTVWI2xKcOFMvyd0NAlrBEK4bTWKJHGls6gYrhcqqO7MZ
+         P+PDrnIG2QQqW7KhXHY+o7ZWJqjn25vjyngPoIvAQ3+kmsO4/svx8DFZlYa76u2cLD0e
+         VKenZvqoaREclEL4AkMNjAm0v9yOGbVobryHBg0mZVWIA+HIj+0PGo6yaZX6Yx3lYt+b
+         JmnYLgwHkMnt37dbj99CmZkFOlCdSTrVLNpSwszzo0Fk5ecc4BO6iM6nR57Uzn1FaPFH
+         toSW5YtHen1BujBXM23ZVKfRMGuvRIa1HfO/kud6Th1faJGEuuxb0LVDQ3vwQpO6kcWi
+         EK8Q==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1778571916; x=1779176716;
+        d=1e100.net; s=20251104; t=1778571971; x=1779176771;
         h=in-reply-to:content-disposition:mime-version:references:message-id
          :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=YuUpqcwRSMeMl5pOLaTVyc6TdYwqJl65snzBr5xo1y0=;
-        b=TLrjV7ylq77Kvp0++OwvYfgUi3hm57pEPFVgIHXXKZo2wQYUZBCO950PFdYo2H8OxH
-         LFGTfc6zwgqNf8pWzeQgO1K1Lo8+XDSrdPQ+pEAVfPo+wXOWTH2NulrwCVVDYg4flJgr
-         Pgb1fYNZO1/V/TQEwsvnGSo54No6lFBLkurud2A2i7LTKNKOam0sSBTMMGcU7qrJjcrh
-         06XK+o4G9UTGYoXTLhNlHmu9ZT6K3A7lcE7TKU4KcOg7tFm/fBIPXj6HxBrrVNdbLU6a
-         yxLUYnuaS7RXe5CeKuYm5k6H7y7sVs/TbcZease/UXMv5XZbqbXxPML3ixJKSOojDv8k
-         5yEQ==
-X-Forwarded-Encrypted: i=1; AFNElJ8JpP1OCXki9w2bpA03iix2bEwpNW6k42LV0WRj7q9MGBtd3ecYcxYiALZ0MyYiyJ2uILVmxTD3HntbXjM=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YwQ/FAeErZq1VEN9EuFl4aGnsZRPehXfBxfGflsoh+oTay7hszy
-	G05s4Z55ARAhikB3JBz3Z+4Z/Hm5uAfzK9Cc7L0lEITOcd5DrC9tSdmfCn0pbUqMPjE=
-X-Gm-Gg: Acq92OECqsxTXAl7+qbhHgwDRKr4NALpErZABSaPvwr1mn2DNUlA23dRqwYmrbkFIbF
-	8tk+mTDClaLDSFieV3Zs2GZ02HOxf92iAhLtvQ2muLWX7AXbSgGcP+sdXhbJSfpDb6Srg7kO+IK
-	tKFVPvioXJqvpPinSjF8agwoKMiDRogYoYibS6VFzoFyb2sVEswMDUqWXu51kefY6p01WKtSAgo
-	YPSZYf89pJM10GdFAlfmtzLeCGlWxtsWEIhp97VqC+CW+nd7XgUmCnHLW006ieq7c4iccxeHG52
-	JfOEadxjMFjSnI3ibiJgttOK9IcoSkWzXsp/oMpKzv38JJI2nYCwI40aIcaIiw7bcDwgyLA6TBW
-	/E+00p6bB8f0EzIUX29jZbDFkstELg3kOqFBa9dOH7KuC98gmPU6LqlkxmJhmEnS81UUbw7PUUE
-	cdzmvfEP+M0ptATbi0a7NlquSDEdng+iITnMiN
-X-Received: by 2002:a05:600c:c058:b0:489:1aed:1658 with SMTP id 5b1f17b1804b1-48e8fe7b8bemr18623855e9.23.1778571916418;
-        Tue, 12 May 2026 00:45:16 -0700 (PDT)
+        bh=MV3zAoldwoclbqs7qOGs2hdICyTLCe/Y0G+BfFOFXqo=;
+        b=syD6DMa15dYvrn1QT57Xcqos3vT0bhwXwK9omcYCY4ijN2KEywZ8unsbOraf+sdE+6
+         tj623MiGQM5LakAMj1xaDgXSCJrO+hS3EgZEhoRzFoVwL3+q1MEv8qAtYPJ3Hy6eBC9t
+         /g7TogZBJo8q0aP2jdyfrgTZUG8v9WbpdlSYtc35TM3ZVlE5iD/Jd+F4uv0pCXSwoP82
+         ulXwoDfoPRRLu0n2n0nVkZxKHbrdDjbiA5/HmJM5C+Z4BUzbTITz80Ftroz12Z9AMEhY
+         6T/y1qAc++Ud4+z+Wz0BqNeE+v4Z5XFJ7rAupn7Lm6qxQehLDBGKaNaZJLLDu51AbsrM
+         /s5w==
+X-Forwarded-Encrypted: i=1; AFNElJ+eJ8CMTcOFv+UUVRFvRgvdlKlOH7Vcn2VmDLaqSQ8xDDKxdWCYTEqKIZjDf8zl0jxU+1exCNjxiR4AvTs=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YyIweOVzRkqx65/gqE7BozewpWjJE1BwQxbGyPDGpLN4x+o7gFi
+	amF4owO3Z4Ck0wvK5MvgkEJivWPrh/QREIsxA+y2k8nPkdbZ+n8eKmNEF69y89ANF5Q=
+X-Gm-Gg: Acq92OGJEbQkje21nCQsgmSm3Ab50rS8g+8U5t2VS7YqEe9sJfDNZH9oZzxqoUDxv+m
+	7la/752RadzL0GoLAQtdT2uVVxN9Cetf+XV3H8LgmpMUAcmeYW3lEQfCH4Fd8sH9C4sTwbeByUu
+	jK033tqiRgWC8QXXdXsd69AhrSJRosWHMEgQEpovLcbAUQOgrkurHQsjiNZknTAV6D/dmR8X/ry
+	KB8Ak+//iC+LWDaJsSUTFExCBJdl9MR3gAbbFQo8jrxTm+PmbBT3MuciSszt2YGDWi5FuF/A72N
+	ec+m89BBtURz6xc0FnlVZgtQmuvC+Hp7I+fQhpMnXm+sXFAkM3qu/jUd6D1p1jrWmiUiMB2jiDg
+	pFEyEcAGxrFJtqY/RYacgOonhTSqWiSusb97I0LmY2c6llIZffisrIjWMk7Jb3QGDDqE4Wk6Bwv
+	wyuo9U6SZN8ErRaIoZNO/MVTTtqbmrqAAh7TVE
+X-Received: by 2002:a05:600c:a02:b0:48a:6798:52e9 with SMTP id 5b1f17b1804b1-48e67244c53mr274594475e9.0.1778571970739;
+        Tue, 12 May 2026 00:46:10 -0700 (PDT)
 Received: from localhost (109-81-80-123.rct.o2.cz. [109.81.80.123])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-48e8f63beb7sm13428995e9.35.2026.05.12.00.45.15
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-48e908cb62dsm42830055e9.10.2026.05.12.00.46.10
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 12 May 2026 00:45:16 -0700 (PDT)
-Date: Tue, 12 May 2026 09:45:15 +0200
+        Tue, 12 May 2026 00:46:10 -0700 (PDT)
+Date: Tue, 12 May 2026 09:46:09 +0200
 From: Michal Hocko <mhocko@suse.com>
 To: "David Hildenbrand (Arm)" <david@kernel.org>
 Cc: "David S. Miller" <davem@davemloft.net>,
@@ -93,10 +93,9 @@ Cc: "David S. Miller" <davem@davemloft.net>,
 	Suren Baghdasaryan <surenb@google.com>, sparclinux@vger.kernel.org,
 	linux-kernel@vger.kernel.org, linux-mm@kvack.org,
 	linux-s390@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 5/8] mm/bootmem_info: stop marking the pgdat as NODE_INFO
-Message-ID: <agLai5lr0CQRZLBK@tiehlicka>
+Subject: Re: [PATCH 0/8] mm: remove CONFIG_HAVE_BOOTMEM_INFO_NODE (Part 1)
+Message-ID: <agLawTyWlnuC9Rz1@tiehlicka>
 References: <20260511-bootmem_info_prep-v1-0-3fb0be6fc688@kernel.org>
- <20260511-bootmem_info_prep-v1-5-3fb0be6fc688@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -112,57 +111,51 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20260511-bootmem_info_prep-v1-5-3fb0be6fc688@kernel.org>
+In-Reply-To: <20260511-bootmem_info_prep-v1-0-3fb0be6fc688@kernel.org>
 
-On Mon 11-05-26 16:05:33, David Hildenbrand wrote:
-> We removed the last user of NODE_INFO in commit 119c31caa59e ("mm/sparse:
-> remove !CONFIG_SPARSEMEM_VMEMMAP leftovers for CONFIG_MEMORY_HOTPLUG").
+On Mon 11-05-26 16:05:28, David Hildenbrand wrote:
+> We want to remove CONFIG_HAVE_BOOTMEM_INFO_NODE. As a first step,
+> let's limit the remaining harm to x86 and core code, removing
+> sparc, ppc and s390 leftovers, starting the stepwise removal by removing
+> and simplifying some code.
 > 
-> But it really was never used it besides for safety-checks ever since it was
-> introduced in commit 04753278769f ("memory hotplug: register section/node
-> id to free"), where we had the comment:
+> Once a related x86 vmemmap fix [1] is in, we can merge part 2 that will
+> remove CONFIG_HAVE_BOOTMEM_INFO_NODE entirely.
 > 
-> 	5) The node information like pgdat has similar issues. But, this
-> 	   will be able to be solved too by this.
-> 	   (Not implemented yet, but, remembering node id in the pages.)
+> Tested on x86-64 with hugetlb vmemmap optimization in combination with
+> KMEMLEAK, making sure that the problem reported in dd0ff4d12dd2 ("bootmem:
+> remove the vmemmap pages from kmemleak in put_page_bootmem") does not
+> reappear -- hoping I managed to trigger the original problem.
 > 
-> Of course, that never happened, and we are not planning on freeing the
-> node data (pgdat/pglist_data), during memory hotunplug.
+> Heavily cross-compiled, but let's let build bots run on it for a bit.
 > 
-> So let's just stop marking the pgdat as NODE_INFO.
-
-With the last user, shouldn't we simply drop NODE_INFO?
-
+> [1] https://lore.kernel.org/r/20260429-vmemmap-v2-1-8dfcacffd877@kernel.org 
+> 
 > Signed-off-by: David Hildenbrand (Arm) <david@kernel.org>
 > ---
->  mm/bootmem_info.c | 9 +--------
->  1 file changed, 1 insertion(+), 8 deletions(-)
+> David Hildenbrand (Arm) (8):
+>       sparc/mm: remove register_page_bootmem_info()
+>       mm/bootmem_info: drop initialization of page->lru
+>       mm/bootmem_info: stop using PG_private
+>       mm/bootmem_info: remove call to kmemleak_free_part_phys()
+>       mm/bootmem_info: stop marking the pgdat as NODE_INFO
+>       mm/bootmem_info: stop marking mem_section_usage as MIX_SECTION_INFO
+>       s390/mm: use free_reserved_page() in vmem_free_pages()
+>       powerpc/mm: remove CONFIG_HAVE_BOOTMEM_INFO_NODE
 > 
-> diff --git a/mm/bootmem_info.c b/mm/bootmem_info.c
-> index 74c1116626c8..cce1d560f094 100644
-> --- a/mm/bootmem_info.c
-> +++ b/mm/bootmem_info.c
-> @@ -62,15 +62,8 @@ static void __init register_page_bootmem_info_section(unsigned long start_pfn)
->  
->  void __init register_page_bootmem_info_node(struct pglist_data *pgdat)
->  {
-> -	unsigned long i, pfn, end_pfn, nr_pages;
-> +	unsigned long pfn, end_pfn;
->  	int node = pgdat->node_id;
-> -	struct page *page;
-> -
-> -	nr_pages = PAGE_ALIGN(sizeof(struct pglist_data)) >> PAGE_SHIFT;
-> -	page = virt_to_page(pgdat);
-> -
-> -	for (i = 0; i < nr_pages; i++, page++)
-> -		get_page_bootmem(node, page, NODE_INFO);
->  
->  	pfn = pgdat->node_start_pfn;
->  	end_pfn = pgdat_end_pfn(pgdat);
-> 
-> -- 
-> 2.43.0
-> 
+>  arch/powerpc/mm/init_64.c    |  8 --------
+>  arch/s390/mm/vmem.c          |  3 +--
+>  arch/sparc/mm/init_64.c      | 20 --------------------
+>  include/linux/bootmem_info.h |  1 -
+>  mm/Kconfig                   |  2 +-
+>  mm/bootmem_info.c            | 25 ++-----------------------
+>  6 files changed, 4 insertions(+), 55 deletions(-)
+
+Good clean up. Feel free to add
+Acked-by: Michal Hocko <mhocko@suse.com>
+to all patches but kmemleak one which I do not feel qualified to judge.
+
+Thanks!
 
 -- 
 Michal Hocko
