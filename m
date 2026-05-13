@@ -1,76 +1,76 @@
-Return-Path: <linuxppc-dev+bounces-20857-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20858-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 839D6CD4851
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 May 2026 13:08:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9AC76CD4F21
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 May 2026 13:08:49 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gFv0N1kscz2yFl;
-	Wed, 13 May 2026 23:08:20 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::62e"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778677700;
-	cv=none; b=mVnO/Zq/sIUQQpZJJ5SJWDzbJnZPbj8EnF1/JSoKD7bKrsctGevConMrzRqGSa25HqYmdS+cijPVIbLKiuGIE8sm3AQSsuJV4DVKMXzAiBUMabWl9gL0xubui1FKXq/1CW79lMB5jv8ZbrNu+lhgpWJF4lkp7TMS5kmmL6Vb05v4PJO5EnKQwu7oVizE821OrpWQa4w+o/anP51eOOQb92gMPB9G1fkZeWo2Gpcc5X3S9oypaT1fx6OvlIW/WbHYN5i7VST2H1ui95wB2ViDCiAByYvBRXLh3uE7ayNG2XKoxDMOffqvRxAc7lNYPK36sk/rAFSNHeMcqBBCtx+q1w==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gFv0T0PJ8z2y2B;
+	Wed, 13 May 2026 23:08:25 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::633"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778677705;
+	cv=none; b=JVHRzZvMNUO5eOEtQWz/ZEKfz5J/f7XIsaPL6yxHLRi0YF6TZxFseqvKbdvFPbm8qCwCvWdNSeRm+21HJvKWtdvkPERBELACXOJ2XtcVVxDadpzdxmZBiiYkC0igEyOh4c2tshF6CclxSUE9gntv4fBS6L/3QZRLc81rR67lFME3/Aq+AYIyUtmvjOA0a7vVOPh1eY7zRNGodoNOFOvrwFmWiEt2YKRAgupCTVOUpM4go4B46A4UcT3zTx1J+b5miPhyv1/uACDoSaYCtXmCYxOV0Scp749vvEtSpjfiZBGLKBIy/Bddmu/hXQ5P3FNKi49FMHjurMi2Ja5nl78stA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1778677700; c=relaxed/relaxed;
-	bh=DYuPvzchRBegO13WUUAUtcrTx/HN+dPBsLEtJBVtJ7M=;
+	t=1778677705; c=relaxed/relaxed;
+	bh=agVhcKOFJ9pAjcqZLpJ0s/37gKQkV6Sy+5Xwv4eBZ3I=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=bUl4OSeL7OIRyo274GziUWhJ8GvLd+fH8uU+8bHswM8uzjq5J3GCdJJkhArYgwLAVnQ4rDQCQicz2dLqHOuWxxRDNXwIC0D5i6JCfFLrTmZ82NkCGKJM4hUeH8WeWNroBKHZhkbTPxRnHL4ossCtTA9XtUmARuf6I5m3m94iBVEG1I1cykGC6WxBETM2tF8TLM5uyxhGx3CSifON0hSKCH/uKtKnJsrQtTStjJShVlyqoei5eVjgASO3g0RdzrlmOuqA7fT0ullIre2ltxDth4VPot/0RW9iBm1kYKHXiQwQHbXJ6fk5oip9jyaWVqXSXGAwiuqB228LyOLzmxmWCw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=bytedance.com; dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=TCNxrNFM; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::62e; helo=mail-pl1-x62e.google.com; envelope-from=songmuchun@bytedance.com; receiver=lists.ozlabs.org) smtp.mailfrom=bytedance.com
+	 MIME-Version; b=lT1nrWY8N2jksqOQ+yOi8/1ABDF+I/I7Ap4ldr4D+h1omf4CNLy4PVlu+URv2BNpzYxeAtnXeHYj4E3cUj2eXArWUROKLUyKPf9i7W2YRwNe38fyKPEqddk5+Rm/L7W81ZG/VXtPfUuyPMVY4k1FRWU2FqczPx6e5SUJS9fw9aEuOp0IdiT9S+JT/yzEEiRGMumvQf4w2tASOkBKpUPsF+Wke32JKVfnHQYr/N/u7SYFYkZx9YwfJM7EGAjGHPkMPPhkWZNoOE7iKLzAzS5freZy5pQqkxQdrpQrKC+rMiL/FYBLgD2+gXKU7xg2Iitg4cuA67x/wJrzTZLp55KKsA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=bytedance.com; dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=De91V/AU; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::633; helo=mail-pl1-x633.google.com; envelope-from=songmuchun@bytedance.com; receiver=lists.ozlabs.org) smtp.mailfrom=bytedance.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=bytedance.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=TCNxrNFM;
+	dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=De91V/AU;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bytedance.com (client-ip=2607:f8b0:4864:20::62e; helo=mail-pl1-x62e.google.com; envelope-from=songmuchun@bytedance.com; receiver=lists.ozlabs.org)
-Received: from mail-pl1-x62e.google.com (mail-pl1-x62e.google.com [IPv6:2607:f8b0:4864:20::62e])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bytedance.com (client-ip=2607:f8b0:4864:20::633; helo=mail-pl1-x633.google.com; envelope-from=songmuchun@bytedance.com; receiver=lists.ozlabs.org)
+Received: from mail-pl1-x633.google.com (mail-pl1-x633.google.com [IPv6:2607:f8b0:4864:20::633])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gFv0M3gwXz2xSb
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2026 23:08:19 +1000 (AEST)
-Received: by mail-pl1-x62e.google.com with SMTP id d9443c01a7336-2b9fcf7c91bso67439625ad.0
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2026 06:08:19 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gFv0S2Xz5z2xSb
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2026 23:08:24 +1000 (AEST)
+Received: by mail-pl1-x633.google.com with SMTP id d9443c01a7336-2ba4efedbeaso47445155ad.1
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2026 06:08:24 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=bytedance.com; s=google; t=1778677698; x=1779282498; darn=lists.ozlabs.org;
+        d=bytedance.com; s=google; t=1778677702; x=1779282502; darn=lists.ozlabs.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=DYuPvzchRBegO13WUUAUtcrTx/HN+dPBsLEtJBVtJ7M=;
-        b=TCNxrNFMthRVxg56THa2FWyQRa0ifVScI1j0DczGoRMFMtf/8CfGO9En759m6alVNE
-         HADvf+4zPL5nNSt+CYyjG+vDBUEY9f/dAABMLTCf0+e6fTxEZP0mDpzmfG7mwZpbA7Ko
-         ZhjtAdWM1dPctYhmJqtqb9PZ2oHIGkq12KsquevlG2f7H07wP1vh68pqvGRRcWuo9QRi
-         0dJ3jPOUfI/UmeZAZtp61yh53iLKqb/5hIhvU9gmxUaMGjxS+schEQaVYe2pnga78wqj
-         QrBzR3IDIM18WX867Em6RMRM/n2WPXaIPEHx1d9CDtbh/0yjQBvIDoRCLIQLFo9V82zv
-         HxFQ==
+        bh=agVhcKOFJ9pAjcqZLpJ0s/37gKQkV6Sy+5Xwv4eBZ3I=;
+        b=De91V/AU9llw+DHQQKA34uh0J7za14EP03QRjxMNAtpX7rvRONXeqm+Rjv2IRfvjpK
+         QN3DPNdZf50c8kRNmmUlOr1AJHR/o0xiNDl1W6LXpkRa76oGjPfOjTFaUa2Y5HIQSFvf
+         0V6pWiwzR9Ws5DnAlvxHZXB7PaP4cZh3veJlc7V7dU8OqPDk8dHn3DNtxv6PP3QhYOyx
+         yTB4kRDsSU9LgydmCM0xu79nhNBcu+5voJsOVezRp2T2/PgRaxIDlyX700FpcxbFImnX
+         Vps5S0dWCCjudaRo1ZepFH3J/aG8oVwWiqRkHJW0+nmfUOnzL6LBPJP4n8/Apiwnl07l
+         6HCQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1778677698; x=1779282498;
+        d=1e100.net; s=20251104; t=1778677702; x=1779282502;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to;
-        bh=DYuPvzchRBegO13WUUAUtcrTx/HN+dPBsLEtJBVtJ7M=;
-        b=R7UqoUNMYJmmdBUZwmiPe+FgLdwAXZYs8jashWzW8aWZxCrVpyEZUw8C0spJivWRQj
-         wguwPTvuDjDz/m4TC9ptH2qtA3NN4fndvw3hkMA4ZSKpBft+qt7akwbxp/ZS6iD5XdxK
-         CfGljXeymTXO/Vohtd/1IuVSgGaEarWHZBluB6SNp8u3NbBZu2BFigyINWhOcJ/6OsR5
-         NwSkJvM2N4WZoa8mTcbNI0HCENkNzGzNIj5zmMX16whkew2AZ0uXcSR3/XBQkhFYh0hb
-         FldYvaFqPg4AfCVyhBCQ5iyG9ygPX7GaVV9JhWDVGLwujZIEOZc6jMupTFuempNJwi4+
-         1+dw==
-X-Forwarded-Encrypted: i=1; AFNElJ/2PNRCdyaIy1xAdFtY25U8VvugGfP0VNWg9aRPPKL++slfT/XUB+tP/hMoUUCNBjMmsGW7LoqsYtpJ5gs=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yw2r87DVmv0XvtlauZGpC6DX9sMZGebH1cym48OIpcFYufQHP8R
-	Myb+BlRjn4s/I55+99whoMf1XNsbEhyFu5ubcnHVQbOTBBMaRc50g+9sNPR6RkJhwRw=
-X-Gm-Gg: Acq92OHlAGhImXCqa64cKQeby9m20qjB2pA+NVnaqEg8jkayppRtgPh/PZ5JDYllaS0
-	3QY+/Uf4pJf7uk2gYhox1jtVl20JoTXvGGb316x9IIj68JUIZ24qckpGkhkO/+0QGPJ3+xr4jnE
-	WQVwKkR3yhN6PvPAeC9uD3kgtu5gAy/7ILuFw9+k9JDN/EKwJhy610K2ae+UjXhd1fnp9iLnN+8
-	KpHPes6yev7Rz9UAkLzUDPQdwWvF71Xs2hruVaY1uCZH0dYI71EwaI5C+U3JY9/xPfuGvWfth/c
-	OthIKt6buKmfJdlK86xIxZMwpcuTmYpYF+uxOHuIuijEbfqLFtOnFu6kk9R1DqM6QrHhTzQFHm7
-	w0nKr3ggaHQiz/MmryyKtmZ2geNPHJ0LVcAUIM1vibbl7BHoo0QOjGtlN3o0GtOv8qPmiTc6yt5
-	2/QZkLK8Aue+HHDjM/pm9xphtERxCkZh3mJNbajfGhmpDsSCQGKaZZKqCKHPE=
-X-Received: by 2002:a17:903:46c4:b0:2bd:2de3:51ad with SMTP id d9443c01a7336-2bd3043ca95mr32656455ad.34.1778677697132;
-        Wed, 13 May 2026 06:08:17 -0700 (PDT)
+        bh=agVhcKOFJ9pAjcqZLpJ0s/37gKQkV6Sy+5Xwv4eBZ3I=;
+        b=aPGpXyXATZwFLqqNneeEUnR0SRpKirSNXdlrABFjvWMcAN8DXSPHxQWxqyvSaHxibE
+         MoPhdfJPRvy0+4J84aQNHFABECk+q6llmrDHX6ig4q41kwzHrIchvx9ixxHrFFONmzcr
+         IfG/F3P3E6VF6nddCoOHg7ejDKefZ3ej/CKBs5b72UDH40N4n7sk0QDreDVEISqoOPP2
+         8L+ix8ypbmsl6XWUmxZPpHWyyxsZKpJgRlF56HDqtZAhvy1R38IS25eUxV6WJ8RntJ+Z
+         ee0PT58up9FusQokW9bc0d2tcFFzyneiGsMxRvzCGzvrDVNYqpoPt/H70IqE5vUMX2fR
+         hsrg==
+X-Forwarded-Encrypted: i=1; AFNElJ8hrBVsuYpbYhBdeDJGe2qb+VnDHwwJ4MvmBBgroAkIptqIpqaId8xHL2L61gN0mFkzJocgTdldXoTPoU8=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YwndvncEB6YHlrOA1o0t4IACqXP2Hs/luVnyv2xUXbWOPceLAnl
+	r1LmANw1DG1CPPDIopxF7nE6/i9XYmtuZXvryIccXIPfDrsjzeasYEXyAJ0F68bQwR4=
+X-Gm-Gg: Acq92OEJEHRUTQYk0BV4wEuHheB/WQNLibsvp65f7t0i3I0Wb6PYyDbX0FJgsnfHDQE
+	74/m7HKPC/8WUJWtOz5aMhLkU8bl26lbJaEDYg30bd/zE0as48jl4tPFE9N6UCw5y4FNgOFJ6pd
+	3Zuj4Kz4r5HzlpJ/3tz0yRs83te2j6MMHuHLjFWu6FscyvcULeil8iRz4/cqZLzEqQmICLQhx5D
+	tvRLRRuVy8aB6UT5v+y2zENplgD4WwObagen8z6XrtnCX4nEkcIRYUS26n4/9AWFL+JmlfcTcO+
+	pPbUPCD98npaq+ejCwMkrpqRuwX6t7SxgnfFcPxfRYmofZY5Z2zW1rLs4tvREevHSk6QtNardUn
+	hUBvau4B7fovtAoCYx/oELNGvUZxpBte1yKP6J7ZcM/xm3BnVDXVsFjfVmlj23Y3DYMY3m67qd7
+	PoxUe98oLPdLzSFhPob/ibwCFe0wz5P1i/9UOUCSIjU2hbGr+NBAGBOAmeJX8=
+X-Received: by 2002:a17:903:120f:b0:2b2:eaec:c810 with SMTP id d9443c01a7336-2bd2f4f76c1mr29145735ad.8.1778677702439;
+        Wed, 13 May 2026 06:08:22 -0700 (PDT)
 Received: from PXLDJ45XCM.bytedance.net ([61.213.176.6])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2baf1e90854sm166641925ad.66.2026.05.13.06.08.12
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2baf1e90854sm166641925ad.66.2026.05.13.06.08.17
         (version=TLS1_3 cipher=TLS_CHACHA20_POLY1305_SHA256 bits=256/256);
-        Wed, 13 May 2026 06:08:16 -0700 (PDT)
+        Wed, 13 May 2026 06:08:22 -0700 (PDT)
 From: Muchun Song <songmuchun@bytedance.com>
 To: Andrew Morton <akpm@linux-foundation.org>,
 	David Hildenbrand <david@kernel.org>,
@@ -94,9 +94,9 @@ Cc: Lorenzo Stoakes <ljs@kernel.org>,
 	linuxppc-dev@lists.ozlabs.org,
 	linux-kernel@vger.kernel.org,
 	Muchun Song <songmuchun@bytedance.com>
-Subject: [PATCH v2 08/69] mm/mm_init: Defer sparse_init() until after zone initialization
-Date: Wed, 13 May 2026 21:04:36 +0800
-Message-ID: <20260513130542.35604-9-songmuchun@bytedance.com>
+Subject: [PATCH v2 09/69] mm/mm_init: Defer hugetlb reservation until after zone initialization
+Date: Wed, 13 May 2026 21:04:37 +0800
+Message-ID: <20260513130542.35604-10-songmuchun@bytedance.com>
 X-Mailer: git-send-email 2.50.1
 In-Reply-To: <20260513130542.35604-1-songmuchun@bytedance.com>
 References: <20260513130542.35604-1-songmuchun@bytedance.com>
@@ -115,70 +115,38 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-free_area_init() is responsible for initializing pgdat and zone state.
-Calling sparse_init() from there mixes in later vmemmap and struct page
-setup, which makes the initialization flow less clear.
+hugetlb_cma_reserve() and hugetlb_bootmem_alloc() currently run before
+free_area_init(), so HugeTLB reservation happens before zone state is
+initialized.
 
-Defer sparse_init(), sparse_vmemmap_init_nid_late(), and memmap_init()
-until after free_area_init() completes, when zone initialization is fully
-done. This keeps free_area_init() focused on zone setup and ensures that
-sparse_init() runs with the relevant zone state already available.
-
-This is also a prerequisite for later hugetlb vmemmap changes that need
-zone information during early sparse vmemmap setup.
+Move the reservation step after free_area_init() so the relevant zone
+information is available before HugeTLB reserves memory. This is needed
+for later hugetlb changes that validate boot-time HugeTLB reservations
+against zone boundaries.
 
 Signed-off-by: Muchun Song <songmuchun@bytedance.com>
-Reviewed-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
 ---
-v1->v2:
-- Restore the set_pageblock_order() change suggested by Mike Rapoport
-- Add Mike Rapoport's Reviewed-by
----
- mm/mm_init.c | 12 +++++++-----
- 1 file changed, 7 insertions(+), 5 deletions(-)
+ mm/mm_init.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/mm/mm_init.c b/mm/mm_init.c
-index 12fe21c4e26c..c14491c2dad3 100644
+index c14491c2dad3..75f98abfed97 100644
 --- a/mm/mm_init.c
 +++ b/mm/mm_init.c
-@@ -1826,7 +1826,6 @@ static void __init free_area_init(void)
- 	bool descending;
- 
- 	arch_zone_limits_init(max_zone_pfn);
--	sparse_init();
- 
- 	start_pfn = PHYS_PFN(memblock_start_of_DRAM());
- 	descending = arch_has_descending_max_zone_pfns();
-@@ -1915,11 +1914,7 @@ static void __init free_area_init(void)
- 		}
- 	}
- 
--	for_each_node_state(nid, N_MEMORY)
--		sparse_vmemmap_init_nid_late(nid);
--
- 	calc_nr_kernel_pages();
--	memmap_init();
- 
- 	/* disable hash distribution for systems with a single node */
- 	fixup_hashdist();
-@@ -2691,10 +2686,17 @@ void __init __weak mem_init(void)
- 
- void __init mm_core_init_early(void)
+@@ -2688,11 +2688,11 @@ void __init mm_core_init_early(void)
  {
-+	int nid;
+ 	int nid;
+ 
++	free_area_init();
 +
  	hugetlb_cma_reserve();
  	hugetlb_bootmem_alloc();
  
- 	free_area_init();
-+
-+	sparse_init();
-+	for_each_node_state(nid, N_MEMORY)
-+		sparse_vmemmap_init_nid_late(nid);
-+	memmap_init();
- }
- 
- /*
+-	free_area_init();
+-
+ 	sparse_init();
+ 	for_each_node_state(nid, N_MEMORY)
+ 		sparse_vmemmap_init_nid_late(nid);
 -- 
 2.54.0
 
