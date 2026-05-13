@@ -1,83 +1,105 @@
-Return-Path: <linuxppc-dev+bounces-20848-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20849-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B74FACD37B6
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 May 2026 10:09:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BF8BDCD4F24
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 May 2026 13:07:43 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gFq1c1VRSz2yGv;
-	Wed, 13 May 2026 20:09:08 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778666948;
-	cv=none; b=HDYgm1PB113CPVL6dNuZn/XnMHBy20Mvoj0s6BDfIponIPxRYJvhYR0V2p5XBr5RjXITgnwi20T2eOtbhXwep6NN6HZon77uBdTV2cyxTJ+s4nnTLCPWgh3mEsy1FzQrdCjudpCLoDdmJZVAWUisQPSvFAQPjlL/zcq3hgD2SRLHd+KkRB5qTnTqvo8YnDIH7Mkbk0wVQJTEEm2QIaReksKG0Bh25GLiBSNE3x2oWNRZDShXNEj+91OLbqNXPhPe45f5iwflqbhFn0eWWLND8wpAYqVSNzhUnkhfpUBdpQXQfo35EYwJx6E6swSQmmCOtWeybJDPit+YJb7vr0whDQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gFtzf1GLGz2xn3;
+	Wed, 13 May 2026 23:07:42 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::62c"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778677662;
+	cv=none; b=VFkswSi2F4HiO1tftzZwpiHO4mYhxCSGmJYXMUn+XH1aRIrGb5odoIv7LtAWXvNz/6sA/YbJT5F0l0lolXnZ5mHv7voGCBpRh3cNyOttsGaV3mx5ZYy1/OpxzlcWS2/R7x2aAH+UZtWv5s5S1neQfPg3j1td3Bhj/9aUhAHLsTD1cuEEIHgsdRfJe8PBBQT4+TlhRCrcXthUaLe6jjAqk0XLY27x3Y1wWJF34whjX7VGSnxKOyireXm+N+WtM9MyCl0EbYJJtn9cQWRmRzc0egqiUyQ0itBSdlgu3x1JTprLbEg6EiXm3GGwqjD0xcB4WqL3Sj+NgPY42Qznd3PucA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1778666948; c=relaxed/relaxed;
-	bh=eYTK6cAUBtTFuzy/O8wptvb61XPJ8NVqXjyj9UPi/yA=;
+	t=1778677662; c=relaxed/relaxed;
+	bh=glZCSgCcQPUR5mPOULt0p1weLkVndlFTk9nY8tD6isc=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=S0HS+owbOp0pAtEy82rnU7LL5MODAzTU5rzmbU1wEexxm3j84rNpcFQgwC3XeT3At2wgtmORimAg4BASefeOoQl9Tgcg+TsAegSxXc5yo4pZE7UjARLnvYkrsM3fORNnbIhdbyW/7nypUFVuifra5lyuXYXZcVp9fB8ym8eU1f+5RjEdw1vWXnQzDZK2SO694r7+Ij4esGpOAr+XpWHfEv1Ea2O+S3fgpRYtPJoslYWET3M752CHlpekFOzdm2xyDPK9eLyyNOqmNXl03SKO9Yt6yYD4QbnMyMWwKlsk3DVpQPIJOFTV3eOZrUsBS9q1aOwm3FxcA7CK7BsnRP1dMA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=iV9KPDGq; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	 MIME-Version; b=HUbjP4/etSBpivwHHoGaNpZpCwaQMeooNwwRHh8jjBMNNuJQIJY0mA5ggxYt0OgXNvXTEKG3a6w9IvCBNayaaPgjV1RkdXsRFzMz2/DbTLFoBZMs21Ho/LNtcIGuCPNuqOvpNWYbKvkSX8HtCjJUKLxhx4ATiOgCjLRlMngoqWv5UgyrPJSLcbJ2WtTd8QKhf48xBQzf4xbqC9ZBrL5xSpHUBWsJKUzz+uFj2ne36nh2HX8JwiUdUmtUX7W2Kh30SeiLAz/JX4dydVwEEj9ihalMp5RZX5hBh+bjK9UmvmK1cYTCNpmjz03lcq6mQYsjza9J7GL3KNzD5ho+t38OdQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=bytedance.com; dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=S7KEWUMy; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::62c; helo=mail-pl1-x62c.google.com; envelope-from=songmuchun@bytedance.com; receiver=lists.ozlabs.org) smtp.mailfrom=bytedance.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=bytedance.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=iV9KPDGq;
+	dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=S7KEWUMy;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bytedance.com (client-ip=2607:f8b0:4864:20::62c; helo=mail-pl1-x62c.google.com; envelope-from=songmuchun@bytedance.com; receiver=lists.ozlabs.org)
+Received: from mail-pl1-x62c.google.com (mail-pl1-x62c.google.com [IPv6:2607:f8b0:4864:20::62c])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gFq1b1s76z2xqn
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2026 20:09:07 +1000 (AEST)
-Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 64D3KUiG2608088;
-	Wed, 13 May 2026 10:09:04 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=pp1; bh=eYTK6cAUBtTFuzy/O
-	8wptvb61XPJ8NVqXjyj9UPi/yA=; b=iV9KPDGqX7ZDOs+6UhqLxbe2bktFBhjL2
-	G0O2vitUvsQlp03PXW0POXOzCIVZnFCLMh3EsNyBR9uIcag9NvOvLtktmJeS+WL2
-	Y6bMP/gggl5R8RLGoK3WDBAzrFRY09jpnKTTqxZo3g2YMED0yGvmg5MRoLntbXUT
-	gmxH+HQAkLgBAqkNQWvmCvcz76/60B8MHUZd0ayCgq6b3hHrNbWwTCCFd+gkFcTH
-	9WsGgSeUcDKBvH7/TAzoZQ0OHyFiUPHdgSg4I6v70a/1/KY8KZaQ08KCdt5cpReu
-	hFeBYreIgUaDm0QPj5OOpdGZ+hSSBgv8RPgu4YJOrBFPYBDQVrcbA==
-Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4e3nv5751y-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 13 May 2026 10:09:03 +0000 (GMT)
-Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma21.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 64D9dU8V024778;
-	Wed, 13 May 2026 10:09:02 GMT
-Received: from smtprelay01.fra02v.mail.ibm.com ([9.218.2.227])
-	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4e3nfgq8wx-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 13 May 2026 10:09:02 +0000 (GMT)
-Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com [10.20.54.104])
-	by smtprelay01.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 64DA8w3v61276538
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 13 May 2026 10:08:58 GMT
-Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id A3FDB20063;
-	Wed, 13 May 2026 10:08:58 +0000 (GMT)
-Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id B80FC20065;
-	Wed, 13 May 2026 10:08:56 +0000 (GMT)
-Received: from mac.bl1-in.ibm.com (unknown [9.123.0.51])
-	by smtpav05.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Wed, 13 May 2026 10:08:56 +0000 (GMT)
-From: Amit Machhiwal <amachhiw@linux.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, Madhavan Srinivasan <maddy@linux.ibm.com>
-Cc: Amit Machhiwal <amachhiw@linux.ibm.com>,
-        Vaibhav Jain <vaibhav@linux.ibm.com>,
-        Paolo Bonzini <pbonzini@redhat.com>, Jonathan Corbet <corbet@lwn.net>,
-        Shuah Khan <skhan@linuxfoundation.org>, kvm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org
-Subject: [PATCH v2 5/5] KVM: PPC: Document KVM_PPC_GET_COMPAT_CAPS ioctl
-Date: Wed, 13 May 2026 15:37:54 +0530
-Message-ID: <20260513100755.83215-6-amachhiw@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gFtzd2QhZz2xld
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2026 23:07:41 +1000 (AEST)
+Received: by mail-pl1-x62c.google.com with SMTP id d9443c01a7336-2bcd3ac3307so19190005ad.0
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2026 06:07:41 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=bytedance.com; s=google; t=1778677659; x=1779282459; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=glZCSgCcQPUR5mPOULt0p1weLkVndlFTk9nY8tD6isc=;
+        b=S7KEWUMylbi26brgV/OM/s/2fS1esVFiYB9WLqdXpie6fUSCiazk0XkqwWlQ4G65Ax
+         cUTX5q1hqCRGKw+4FHesMlSvbu6nT9DDDSnVqKxfEhjRfx3nu/tMDYgZHJyqyp9Rm81R
+         BDQdTUgXQEla+/4RsStR/DhOqzkwDrzeJY9JkQXim0rQPPjIzDyvOoc9iepC17e7SA4M
+         8oUUO78ez9Xjs4yvDdgCXPGVj3Uz7vIknNAGukmsYkHSPXtGlrvn/nIeDvddH5NdRAfh
+         dHlW05seKs/fFyXH2tJIo/OxEL837SphTtQAK1xPW0lFwFgNRkmlKztwlWsH0d6iRW6n
+         gfeQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1778677659; x=1779282459;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=glZCSgCcQPUR5mPOULt0p1weLkVndlFTk9nY8tD6isc=;
+        b=J0eR7X1WlJD03UaPH6svmaTy0t5uFUrOhYpaWmFGf0IaeDJ7qv9iFCYeNk3UcAJJrw
+         1U+ypPja5rhNg6sdzsOzElh2vmqQN6aF9h/1i/3/rIQg/V53kimbQ2g7TbyUYbIb22nQ
+         v759VRZj3Vx3jNva0Qs9RrFsN51rOo5oRRwJP698l03cq+WuMDcGBbkWppKUQmbW7CAn
+         uNY82aKwkQcu7lYvgMESXfHGI/B3nE2rL3r1pvdRpsMiyWTCa4EUOCgE0UF3DocWdpNx
+         b6nX+1at0AukInjtM3eD8H0C+yBiFU3/ufvnHwF5WB1bxb4qvB5KOBTZbwOIYEVFQ5U3
+         Kk7Q==
+X-Forwarded-Encrypted: i=1; AFNElJ8c7SWWlVRnqB4BhmVx9pf3WYO3lsnszBQfNWpBSwV8nbTpamI2u8fB92ntgV66v5GFfm6hgyB8BkhN+Uw=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yx3sFXsHNSK3OvhqL5R+L0GATCBm3CQXaio61BUeqmL3Tcbtlhp
+	XSE9IkzvQf/dG3IsmTMQQSB16vSK1XRKNzPxsPavAkLcm+jrJgx14nRAz6hZCqCiAwM=
+X-Gm-Gg: Acq92OGMiKn1/X65eh+9r0xJYvqoxDpaRLaUOOGSgtcggn+WX3kBr0qfXzaZmrwWTw8
+	WSPrS6z8/zn8jPXitjMf8eAZt9dhrfvSvo5ANzoqBf2aBbetkI+efzup/ADSEOzwVFmtwfDHAiw
+	/h10xXKyjzXS8K+9SQuxtuDZJs8Xnmnf2nlamBwEh3lvrZhN2dI8OXYSltY442yTgs8DJomt21U
+	6HZrDUCiMy7gvUasFkZ9nmiQzxuu8zWljAMM4NF0POJVJYGuUAkFUEqM+7KaeHdRe41ydgXFTgk
+	QzmrppO7g2NixoVcXGclHoTuOKDzdbNVO+6nQQCia0AL2f9sABb50DANrEwAdh6734hDai6tkqK
+	hgOd3AlTYWLYq4P1AvYdjapiqNLTJ2BtNasQogN1TNen063EDLv7SZdy+gbdGmGd+0FZNlPkASB
+	EM47lYULDKy4zTC27k+0aZMTa6OWUrjkpVNROCJ8xHD5Y9xZtixQcCXE4wWDY=
+X-Received: by 2002:a17:903:907:b0:2bc:e216:db47 with SMTP id d9443c01a7336-2bd2713c36cmr35966965ad.8.1778677658559;
+        Wed, 13 May 2026 06:07:38 -0700 (PDT)
+Received: from PXLDJ45XCM.bytedance.net ([61.213.176.6])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2baf1e90854sm166641925ad.66.2026.05.13.06.07.33
+        (version=TLS1_3 cipher=TLS_CHACHA20_POLY1305_SHA256 bits=256/256);
+        Wed, 13 May 2026 06:07:38 -0700 (PDT)
+From: Muchun Song <songmuchun@bytedance.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+	David Hildenbrand <david@kernel.org>,
+	Muchun Song <muchun.song@linux.dev>,
+	Oscar Salvador <osalvador@suse.de>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>
+Cc: Lorenzo Stoakes <ljs@kernel.org>,
+	"Liam R . Howlett" <Liam.Howlett@oracle.com>,
+	Vlastimil Babka <vbabka@kernel.org>,
+	Mike Rapoport <rppt@kernel.org>,
+	Suren Baghdasaryan <surenb@google.com>,
+	Michal Hocko <mhocko@suse.com>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Christophe Leroy <chleroy@kernel.org>,
+	Ackerley Tng <ackerleytng@google.com>,
+	Frank van der Linden <fvdl@google.com>,
+	aneesh.kumar@linux.ibm.com,
+	joao.m.martins@oracle.com,
+	linux-mm@kvack.org,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org,
+	Muchun Song <songmuchun@bytedance.com>
+Subject: [PATCH v2 01/69] mm/hugetlb: Fix boot panic with CONFIG_DEBUG_VM and HVO bootmem pages
+Date: Wed, 13 May 2026 21:04:29 +0800
+Message-ID: <20260513130542.35604-2-songmuchun@bytedance.com>
 X-Mailer: git-send-email 2.50.1
-In-Reply-To: <20260513100755.83215-1-amachhiw@linux.ibm.com>
-References: <20260513100755.83215-1-amachhiw@linux.ibm.com>
+In-Reply-To: <20260513130542.35604-1-songmuchun@bytedance.com>
+References: <20260513130542.35604-1-songmuchun@bytedance.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -92,88 +114,95 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTEzMDEwNSBTYWx0ZWRfX/TNKQD8ZsDEq
- xnf+us/AasQaZDvdyetolHyfkMKPryjrhC9INEb9alHAsRdYW6FzzQM+rWooowm9ofLyWurNlCa
- CHhjVRfSG4jMOwl6HmjjIyinEaGBnmUyIxvdgebYCOefNx9O77dvKC1pdDY95o9OeZzrBsZ5uEX
- aDjGbx/Cjm+l7EuSIUM6kgXqVkNQ4wKJ7OA2D6NefbQmxm+Pl8m9tlDPa+XrKkzZ9b62awUqVJp
- EpF6UpaKh3mCtaXQEdTnYEa8j56jEeQvW73u4lPRK7cQN4+MXjJdqYEBh2LLfs8CLiXXED2P7Wy
- RTbd+tRqBPkO3v7n/sy+1kTRO48J9FuKPU84yyr5z+/M5TiwI/drQLLyxoouNTis91qQRcCFRqy
- Z1GGIAYewrT98zZUmc0T7ymsJ1YG0De4FRey+7fnvSOwmD4HmivHb0mz+kYpKRCVf478lBU6ekG
- FNVtV6uxmFXqCE+CFjw==
-X-Proofpoint-ORIG-GUID: GHcvUbvyi9sBzj_5vVZaIPGnRCxtENJ-
-X-Authority-Analysis: v=2.4 cv=Jc6Ma0KV c=1 sm=1 tr=0 ts=6a044dbf cx=c_pps
- a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
- a=NGcC8JguVDcA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=uAbxVGIbfxUO_5tXvNgY:22 a=VnNF1IyMAAAA:8 a=FhmJ5nnsb20HCo8Rnz4A:9
-X-Proofpoint-GUID: GHcvUbvyi9sBzj_5vVZaIPGnRCxtENJ-
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-05-11_05,2026-05-08_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- spamscore=0 priorityscore=1501 malwarescore=0 bulkscore=0 clxscore=1015
- phishscore=0 adultscore=0 lowpriorityscore=0 suspectscore=0 impostorscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2605050000 definitions=main-2605130105
 
-Add documentation for the KVM_PPC_GET_COMPAT_CAPS ioctl to the KVM API
-documentation.
+Commit 622026e87c40 ("mm/hugetlb: remove fake head pages") switched
+HVO to reuse per-zone shared tail pages from zone->vmemmap_tails[].
 
-The ioctl exposes host processor compatibility modes supported for
-nested KVM guests on PowerPC systems.
+Those shared tail pages were initialized in hugetlb_vmemmap_init(), but
+bootmem HugeTLB folios are prepared earlier from gather_bootmem_prealloc().
+With hugetlb_free_vmemmap=on, prep_and_add_bootmem_folios() can access
+pageblock flags on bootmem HugeTLB pages whose mirrored tail struct pages
+already point to the shared tail page. On CONFIG_DEBUG_VM kernels,
+get_pfnblock_bitmap_bitidx() then dereferences the still-uninitialized
+shared tail page and can panic during boot.
 
-Signed-off-by: Amit Machhiwal <amachhiw@linux.ibm.com>
+Initialize zone->vmemmap_tails[] from gather_bootmem_prealloc(), before
+bootmem HugeTLB folios are processed, and drop the later initialization
+from hugetlb_vmemmap_init().
+
+This bug only affects CONFIG_DEBUG_VM kernels, where the relevant
+assertion is evaluated.
+
+Fixes: 622026e87c40 ("mm/hugetlb: remove fake head pages")
+Signed-off-by: Muchun Song <songmuchun@bytedance.com>
 ---
- Documentation/virt/kvm/api.rst | 35 ++++++++++++++++++++++++++++++++++
- 1 file changed, 35 insertions(+)
+ mm/hugetlb.c         | 19 +++++++++++++++++++
+ mm/hugetlb_vmemmap.c | 17 -----------------
+ 2 files changed, 19 insertions(+), 17 deletions(-)
 
-diff --git a/Documentation/virt/kvm/api.rst b/Documentation/virt/kvm/api.rst
-index 52bbbb553ce1..1b533f674a09 100644
---- a/Documentation/virt/kvm/api.rst
-+++ b/Documentation/virt/kvm/api.rst
-@@ -6555,6 +6555,41 @@ KVM_S390_KEYOP_SSKE
+diff --git a/mm/hugetlb.c b/mm/hugetlb.c
+index 31b34ca0f402..d22683ab30a1 100644
+--- a/mm/hugetlb.c
++++ b/mm/hugetlb.c
+@@ -3382,6 +3382,25 @@ static void __init gather_bootmem_prealloc(void)
+ 		.max_threads	= num_node_state(N_MEMORY),
+ 		.numa_aware	= true,
+ 	};
++#ifdef CONFIG_HUGETLB_PAGE_OPTIMIZE_VMEMMAP
++	struct zone *zone;
++
++	for_each_zone(zone) {
++		for (int i = 0; i < NR_VMEMMAP_TAILS; i++) {
++			struct page *tail, *p;
++			unsigned int order;
++
++			tail = zone->vmemmap_tails[i];
++			if (!tail)
++				continue;
++
++			order = i + VMEMMAP_TAIL_MIN_ORDER;
++			p = page_to_virt(tail);
++			for (int j = 0; j < PAGE_SIZE / sizeof(struct page); j++)
++				init_compound_tail(p + j, NULL, order, zone);
++		}
++	}
++#endif
  
- .. _kvm_run:
+ 	padata_do_multithreaded(&job);
+ }
+diff --git a/mm/hugetlb_vmemmap.c b/mm/hugetlb_vmemmap.c
+index 4a077d231d3a..62e61af18c9a 100644
+--- a/mm/hugetlb_vmemmap.c
++++ b/mm/hugetlb_vmemmap.c
+@@ -870,27 +870,10 @@ static const struct ctl_table hugetlb_vmemmap_sysctls[] = {
+ static int __init hugetlb_vmemmap_init(void)
+ {
+ 	const struct hstate *h;
+-	struct zone *zone;
  
-+4.145 KVM_PPC_GET_COMPAT_CAPS
-+-----------------------------
-+:Capability: KVM_CAP_PPC_COMPAT_CAPS
-+:Architectures: powerpc
-+:Type: vm ioctl
-+:Parameters: struct kvm_ppc_compat_caps (out)
-+:Returns:
-+	0 on successful completion,
-+	-EFAULT if ``struct kvm_ppc_compat_caps`` cannot be written
-+
-+IBM POWER system server-based processors provide a compatibility mode feature
-+where an Nth generation processor can operate in modes consistent with earlier
-+generations such as (N-1) and (N-2).
-+
-+This ioctl provides userspace with information about the CPU compatibility modes
-+supported by the current host processor for booting the nested KVM guests on
-+PowerNV (KVM nested APIv1) and PowerVM (KVM nested APIv2) platforms.
-+
-+::
-+
-+  struct kvm_ppc_compat_caps {
-+	__u64	flags;			/* Reserved for future use */
-+	__u64	compat_capabilities;	/* Capabilities supported by the host */
-+  };
-+
-+The ``compat_capabilities`` bit field describes the processor compatibility
-+modes supported by the host. For example, the following bits indicate support
-+for specific processor modes.
-+
-+::
-+
-+H_GUEST_CAP_POWER9  (bit 1): KVM guests can run in Power9 processor mode
-+H_GUEST_CAP_POWER10 (bit 2): KVM guests can run in Power10 processor mode
-+H_GUEST_CAP_POWER11 (bit 3): KVM guests can run in Power11 processor mode
-+
- 5. The kvm_run structure
- ========================
+ 	/* HUGETLB_VMEMMAP_RESERVE_SIZE should cover all used struct pages */
+ 	BUILD_BUG_ON(__NR_USED_SUBPAGE > HUGETLB_VMEMMAP_RESERVE_PAGES);
  
+-	for_each_zone(zone) {
+-		for (int i = 0; i < NR_VMEMMAP_TAILS; i++) {
+-			struct page *tail, *p;
+-			unsigned int order;
+-
+-			tail = zone->vmemmap_tails[i];
+-			if (!tail)
+-				continue;
+-
+-			order = i + VMEMMAP_TAIL_MIN_ORDER;
+-			p = page_to_virt(tail);
+-			for (int j = 0; j < PAGE_SIZE / sizeof(struct page); j++)
+-				init_compound_tail(p + j, NULL, order, zone);
+-		}
+-	}
+-
+ 	for_each_hstate(h) {
+ 		if (hugetlb_vmemmap_optimizable(h)) {
+ 			register_sysctl_init("vm", hugetlb_vmemmap_sysctls);
 -- 
-2.50.1 (Apple Git-155)
+2.54.0
 
 
