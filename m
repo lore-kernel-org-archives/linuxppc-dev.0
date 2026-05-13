@@ -1,76 +1,76 @@
-Return-Path: <linuxppc-dev+bounces-20868-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20869-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 17969CD4F21
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 May 2026 13:10:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 24125CD4851
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 May 2026 13:10:13 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gFv1X2TzWz2ySS;
-	Wed, 13 May 2026 23:09:20 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::631"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778677760;
-	cv=none; b=B8/EEu430jUUnDuR8kN3aej+qnerGnI4ihhyM8E/okYX/6KkQmd6Hsm4pCXDCimKbvfvlekhCSV8KuqeG27wHqKfHcUvnO0OsKl13C2uahsCG0vZWM2oUXESpaaxbbRsCkP5BxUk+SHFQU8Jl0HktVDqe8BCEyCteyKgLQh8gE7rj9wH9Tq1FRcZ2Dbte5/InLTG15GsQd4MwWveW624Lu82N+/wsf5lifvHIFzXevFwdGoYrCPJPv/FvVHTrC+50Tp0LhKGmQTWEdvE5jYfTBm8B3AZ0UNjfPLPT4j9rW3Y5fp4hvVwEr/Qnd0iaskTBT9i91BL8DJ4fnMV/lv7nA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gFv1f3YPgz2ySV;
+	Wed, 13 May 2026 23:09:26 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::635"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778677766;
+	cv=none; b=arPxliLgg0JvMXOCUKsCMwor3GxUWykPu2Hj9yPctwAPdl2eVVqyyhfYhHK+/DF27tWCQ/+IU0g0UY1jU2AycEgTJpFNd+mw2dsVmOamhhbspMYKY5CHKG84yWlQ32IWPfaKN/eowT9YyvQHDcyhf6m27Gd/0ApHTvCjQ/kMhIeftUa5+zaRc+odOkgWGRsIrWdOlQZT8C7IE2oDd5uKOQobuJ6vqzIL/wY8sSU6TldNwCW6KWg9+Xik4F/wpIMjCp536KviahVgyqniLXebJF+ihQ7mvvsfDXCqc/mdhnmGrJ9/VVQNcsnskfFPFCjfK1BXLwYtKMRKlSc640gkFw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1778677760; c=relaxed/relaxed;
-	bh=4Fut968wGN1n7g7zLkJRGy6a00PEkBTyJzeVX+ErWGA=;
+	t=1778677766; c=relaxed/relaxed;
+	bh=jxlTDmfL7zgwYuPQPoNgGF9X7KRsj/YO5X5OnwZ25t4=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=aRp8+hocrbZYPQkuwNb6Lc5VCqYiC8XulvPb035j4o6PwUmGPXazFxuznGz3klFYT4GXL7i1X/zdw2u2PSqw6rbmqg9mZ6sVpTztWP/iNB1PEtgCF+6smZaAvfyGF0O9YfU3cT1q/HXuWo/AxetLgvWojNnB1nesljT7t5AaetqngHabXqNQsE0muRv2DYv+s9qCodhx9OB0nA3iQA16r2hePDK3jWfwCG58fa0naJRe8ZAlz7Hg+bciGUHBkaXVDu6X/z8uQk3ZB/zrTc6ywDBWkFtpYKEAkHfexZfzvwrt3CbsHgnPEqUl2imkUuVWsAkIPA0hA1mCPE5LpZnm6g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=bytedance.com; dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=aDnJIndo; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::631; helo=mail-pl1-x631.google.com; envelope-from=songmuchun@bytedance.com; receiver=lists.ozlabs.org) smtp.mailfrom=bytedance.com
+	 MIME-Version; b=RQXdiGtcrdRGbY8OT/gUsm6QLJt27s9o3yc0xZyyemaOJYjgkkcxlsieq8aBueaMIWHcpMkbN8ZyREfTSXkB3k5VEZVVCeC0jT5/klfzfmKdYkak9jKXJAZH3hFaUyx84ieZEFUqgNoaBnPk2Odw9Ecn9X2vd+g1U6eoZncc0+AYEUcg+qU5oPf4vexIl9Q6P8puWGKCYdmlAkEHUtS+Xoo1O6dlB4vFVTD/vp4bhX23Wh7EnJtK9GoLWYwkpA1jAbWVgdKJmC7TZigfFcFO7odZLF0wpOeJcW2cKh3hbHj3ZF63aziq0S/D+K8YRaXIZg4B9TPIdybSQobTSW5mnQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=bytedance.com; dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=OEC4XgxJ; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::635; helo=mail-pl1-x635.google.com; envelope-from=songmuchun@bytedance.com; receiver=lists.ozlabs.org) smtp.mailfrom=bytedance.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=bytedance.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=aDnJIndo;
+	dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=OEC4XgxJ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bytedance.com (client-ip=2607:f8b0:4864:20::631; helo=mail-pl1-x631.google.com; envelope-from=songmuchun@bytedance.com; receiver=lists.ozlabs.org)
-Received: from mail-pl1-x631.google.com (mail-pl1-x631.google.com [IPv6:2607:f8b0:4864:20::631])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bytedance.com (client-ip=2607:f8b0:4864:20::635; helo=mail-pl1-x635.google.com; envelope-from=songmuchun@bytedance.com; receiver=lists.ozlabs.org)
+Received: from mail-pl1-x635.google.com (mail-pl1-x635.google.com [IPv6:2607:f8b0:4864:20::635])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gFv1W46ykz2xSb
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2026 23:09:19 +1000 (AEST)
-Received: by mail-pl1-x631.google.com with SMTP id d9443c01a7336-2b9fcf7c91bso67456615ad.0
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2026 06:09:19 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gFv1d5FRLz2xSb
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2026 23:09:25 +1000 (AEST)
+Received: by mail-pl1-x635.google.com with SMTP id d9443c01a7336-2bcf48850c4so18641855ad.1
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2026 06:09:25 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=bytedance.com; s=google; t=1778677758; x=1779282558; darn=lists.ozlabs.org;
+        d=bytedance.com; s=google; t=1778677764; x=1779282564; darn=lists.ozlabs.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=4Fut968wGN1n7g7zLkJRGy6a00PEkBTyJzeVX+ErWGA=;
-        b=aDnJIndosSLLLpyzoQKTwYM/nhC03iVs0vLyMp/+MpiisivsKWAop0Hj/m922Mg1zH
-         SSPhiapD32Iqsy+S/mzf5M0TEHDabDlInIMygj8pUqh+emm8QJVVpkxe476W+B9nrGXI
-         h3fB2fzEixumo3R656YxijDOePdAZVCcStRofBCX81Qp6zj/lLZt4eaB/1GU3Qmhtk1l
-         Qj3+nAYXZXIQ4lj002/hEjhcV0KeLfn6TpD0e8/gQ3jyAtWUcp/t03CRdju3FJ6i3PQK
-         Pofk1fexhWsgv5W/Cq3z9hB15yJtOdQIHhYDpVYRR2wKUR+lNibIXHObAexO3Ln0IJap
-         25Qg==
+        bh=jxlTDmfL7zgwYuPQPoNgGF9X7KRsj/YO5X5OnwZ25t4=;
+        b=OEC4XgxJAx5OCwlXfVF62twjsBa+5HGcKjhsCRq+6XV0U0pgg9lvFKiFlyIY+Q+hKn
+         uLIX9ibi8kfCu4CxL/0luwZv7+Xs2vY32FTQzqd9LmUeFdOMxjYfcFoWNDyMri0oHzNX
+         WW0+ZpgvxyklnPJBPkdFtwlgAv+7H9kPuUINvDjaiyYDph8DqExN0TGP8V81Jr3myosw
+         uH+POtJK93PprjPTaN2wx73eUyGjRf6tfy+1FXyPqWsIZWyMZrtAHAd5QssGf3ycnOfw
+         mprfDy43jeG5kY4FgXjaPMgCFecB7f4n4ozG9PhLYJBJkMepNwwzvYSodUPk0mt3Itka
+         wGMw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1778677758; x=1779282558;
+        d=1e100.net; s=20251104; t=1778677764; x=1779282564;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to;
-        bh=4Fut968wGN1n7g7zLkJRGy6a00PEkBTyJzeVX+ErWGA=;
-        b=dsp1TezZx+5UcHq1ftO2YYX8sI5PMshoLExpbRpwBTTiags5VhfHj5Vai4rXi8nsf8
-         X8CSPMGarb95p5YWAdkQmhRar7bb0Nzj5HIn2Sek2TSapK7mbXeSEzB3wr30fXOU9pIL
-         rxg/j/DurbB2cId8tHWJ53z2IxKlRRSu3xaxHtOhw2HKsC71OIwVQe/0pJQ/OUi2jhqz
-         csIEZ17LDrqvvwo0kWat9EdKM7ezOwWd+hVR0ASA+6jOa8NTibdxLfs9zufzhbf+cTC4
-         MkzdH7GeTLleGvW589G1I/ktZUDWhamnqSRdd4t9vI9khYEKAZyrtAIpqoF6lSl8pScj
-         hfog==
-X-Forwarded-Encrypted: i=1; AFNElJ8v9Runv3EPmQ83uH6KSuMo5cccHGiZmP6uqy7IrAGjymJbuxALaRtkxlBHdrrfbMNMrYGHpWRP/2CbFlI=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YwzOAl2LDIPgEyXTFtIUJaNfIdBCZ91IY7PipS6x0bakf5DoiXp
-	QdS1ahtS8A/k0NEsRAxYh0aSWkAfX/Qvw0Ih2IP6fR725ix2LByea+uJfyt2lgEgkpQ=
-X-Gm-Gg: Acq92OEJ86kkAmPWz6FuLPI6hjoHuZLYouaI2dJF0ujLU1A3PIsPGkwIy0kHLc7R3H3
-	cexLDuLToH200EsPMk6DU+PHHAMkfIZrO5RAx5UT2DhS/GybX9TsAY5lNX723I9l3ty0YV9dxk1
-	lROCOyqZTofQb5m5up4ZxpzacHT4aG+5kShTRKZYo9HtXQm/xZhL3Zz6wRH7zAzSox288JixkrM
-	sB9juiRCK2ZDCfJ4EPXMH3IdK9NC7fZNpdmbUpXv/jnpBN9MI7DCm38U8iqWpB6vnDMPi+26W+f
-	y/QlibBG/hTERDfU/L+rzGLCsCGiuzfRte+BnG6NIQSa4Pixv4VIDoyx8ZqU5d1xsTQJyCL+PH1
-	eid8hrLbxvIQEWB5D4EkjEdW5B++rYzktmoGHdgALEsl232fHqnSIZ6/2xojx7+VUFUoeFBEJ2e
-	gzI0hsk2UorVe7e7Pr4gP9yKEEaC6cqtK+lLH7x57TMwpV1A1H5OtMbVBcWuA=
-X-Received: by 2002:a17:903:bcb:b0:2b9:cd2d:6f14 with SMTP id d9443c01a7336-2bd2f4f740fmr22553475ad.2.1778677757605;
-        Wed, 13 May 2026 06:09:17 -0700 (PDT)
+        bh=jxlTDmfL7zgwYuPQPoNgGF9X7KRsj/YO5X5OnwZ25t4=;
+        b=OWhwjJMoN6dJmVplevWEOHAk76JLXR8jzQ31JI3dc5ZBbmLQs4hoRJ/q9lKdbhmLUE
+         akVYNyIAfwVEiMOXiSrvHzskeJF7YXwiuvs3CGwfUPOY1iS3sRqZ1w8j2eWAzknulTxx
+         n0TtZR2Z7erIcbdeBrQMfoHRlWczt/+AHiD8U79Mm1BIH+qSHc/mT0c3hAI/C+XXB1ii
+         3uBQbwRBUmJJVdnS+XBkl1rp9uBKAxxlgKGpUMBcclk2oQrwMP9PTN4hwZgTQAnxViKo
+         GmLfvNbg/mFiMro7mjRkBFHmRt43BPLlHbuZweW8bOI1/2W9S6PbqXzfCVjfbsNJHcoH
+         7mgA==
+X-Forwarded-Encrypted: i=1; AFNElJ8jdoF3Jbd30rEiacsM9KqGrSvXGDjPSm1bldy/mupraMfh42ngoRaHh5Bi7T1bOCKowENnmS0jwyWEJLI=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YyFNdWKfi7i7AKstjCWrKNtbXrQhRlSdyKPOPk9+vgyxU+48r6V
+	tKYoygAZ5IoBLXdOVFpCR5SpDnzCZ452goakN2xPWKFJTstg/jAPv3Ofb9uuYTtxr6I=
+X-Gm-Gg: Acq92OGoj9GP4fq5gT8AWezqGME/OKEHrFm+BMKoe2nCVcFKAAk8C1dae6VeBqTRsYJ
+	57We+uTvV9MO1OM6SkdfSmNEm8P5oErLIZUdeE8tlMOI5bp1P+1m8TcZA+hQTHpM8UNVUz65/JW
+	s8n3prb6sjD75OLxBc9T4bJr6M/G3xGa64mbUU5+akvP5Oe9wp0iUi8NOkKZJHUbYEn/arCucph
+	h3NDXC/676RX3lc1rBArAa3gfe8LbCobYs9z+ZI4dTrd9XkUTsl3BmofyxVlwdmwMJOwvG5ZdFL
+	RsZe9J5pH64pKR8SWoc19ThRx8I5pNuQ3Z8uyEri9h5XV1UsSxtnNyso0GXpbYUda2bxTefUYeB
+	1cSgcJMwR8xIWnb0J9F2etQsYiOB1Cpw+2oIHve5Ai6Udeqz4GuYWedPggfGlX7h+W33EFMht2Z
+	q2Z3rRETxWgNEW5hTKAZhxXJTnUNHxlEA8IBL7YuwNQwJc8bibsVEuYYOICRQ=
+X-Received: by 2002:a17:903:120a:b0:2b9:fb0b:b727 with SMTP id d9443c01a7336-2bd27714d46mr39301505ad.39.1778677763716;
+        Wed, 13 May 2026 06:09:23 -0700 (PDT)
 Received: from PXLDJ45XCM.bytedance.net ([61.213.176.6])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2baf1e90854sm166641925ad.66.2026.05.13.06.09.12
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2baf1e90854sm166641925ad.66.2026.05.13.06.09.17
         (version=TLS1_3 cipher=TLS_CHACHA20_POLY1305_SHA256 bits=256/256);
-        Wed, 13 May 2026 06:09:17 -0700 (PDT)
+        Wed, 13 May 2026 06:09:22 -0700 (PDT)
 From: Muchun Song <songmuchun@bytedance.com>
 To: Andrew Morton <akpm@linux-foundation.org>,
 	David Hildenbrand <david@kernel.org>,
@@ -94,9 +94,9 @@ Cc: Lorenzo Stoakes <ljs@kernel.org>,
 	linuxppc-dev@lists.ozlabs.org,
 	linux-kernel@vger.kernel.org,
 	Muchun Song <songmuchun@bytedance.com>
-Subject: [PATCH v2 19/69] mm/mm_init: Make __init_page_from_nid() static
-Date: Wed, 13 May 2026 21:04:47 +0800
-Message-ID: <20260513130542.35604-20-songmuchun@bytedance.com>
+Subject: [PATCH v2 20/69] mm/sparse-vmemmap: Drop VMEMMAP_POPULATE_PAGEREF
+Date: Wed, 13 May 2026 21:04:48 +0800
+Message-ID: <20260513130542.35604-21-songmuchun@bytedance.com>
 X-Mailer: git-send-email 2.50.1
 In-Reply-To: <20260513130542.35604-1-songmuchun@bytedance.com>
 References: <20260513130542.35604-1-songmuchun@bytedance.com>
@@ -115,54 +115,157 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-__init_page_from_nid() no longer has external users and is only used
-locally in mm/mm_init.c under CONFIG_DEFERRED_STRUCT_PAGE_INIT.
+VMEMMAP_POPULATE_PAGEREF is only needed once the slab allocator is
+available, so it does not need to be passed through the vmemmap
+population call chain.
 
-Make it static and keep it inside that block.
+Drop the flag and test slab_is_available() directly in
+vmemmap_pte_populate() instead.
 
 Signed-off-by: Muchun Song <songmuchun@bytedance.com>
 ---
- mm/internal.h | 1 -
- mm/mm_init.c  | 4 ++--
- 2 files changed, 2 insertions(+), 3 deletions(-)
+ mm/sparse-vmemmap.c | 40 ++++++++++++++--------------------------
+ 1 file changed, 14 insertions(+), 26 deletions(-)
 
-diff --git a/mm/internal.h b/mm/internal.h
-index 6bd9aa37b952..4a5053368078 100644
---- a/mm/internal.h
-+++ b/mm/internal.h
-@@ -1754,7 +1754,6 @@ static inline bool pte_needs_soft_dirty_wp(struct vm_area_struct *vma, pte_t pte
+diff --git a/mm/sparse-vmemmap.c b/mm/sparse-vmemmap.c
+index 17d45dac4324..d7e9fb47f7ee 100644
+--- a/mm/sparse-vmemmap.c
++++ b/mm/sparse-vmemmap.c
+@@ -33,13 +33,6 @@
+ #include <asm/tlbflush.h>
  
- void __meminit __init_single_page(struct page *page, unsigned long pfn,
- 				unsigned long zone, int nid);
--void __meminit __init_page_from_nid(unsigned long pfn, int nid);
+ #include "hugetlb_vmemmap.h"
+-
+-/*
+- * Flags for vmemmap_populate_range and friends.
+- */
+-/* Get a ref on the head page struct page, for ZONE_DEVICE compound pages */
+-#define VMEMMAP_POPULATE_PAGEREF	0x0001
+-
+ #include "internal.h"
  
- /* shrinker related functions */
- unsigned long shrink_slab(gfp_t gfp_mask, int nid, struct mem_cgroup *memcg,
-diff --git a/mm/mm_init.c b/mm/mm_init.c
-index 165b83c9a9c3..c64e5d63c4ae 100644
---- a/mm/mm_init.c
-+++ b/mm/mm_init.c
-@@ -688,10 +688,11 @@ static __meminit void pageblock_migratetype_init_range(unsigned long pfn,
+ /*
+@@ -147,8 +140,8 @@ void __meminit vmemmap_verify(pte_t *pte, int node,
+ }
+ 
+ static pte_t * __meminit vmemmap_pte_populate(pmd_t *pmd, unsigned long addr, int node,
+-				       struct vmem_altmap *altmap,
+-				       unsigned long ptpfn, unsigned long flags)
++					      struct vmem_altmap *altmap,
++					      unsigned long ptpfn)
+ {
+ 	pte_t *pte = pte_offset_kernel(pmd, addr);
+ 	if (pte_none(ptep_get(pte))) {
+@@ -170,7 +163,7 @@ static pte_t * __meminit vmemmap_pte_populate(pmd_t *pmd, unsigned long addr, in
+ 			 * and through vmemmap_populate_compound_pages() when
+ 			 * slab is available.
+ 			 */
+-			if (flags & VMEMMAP_POPULATE_PAGEREF)
++			if (slab_is_available())
+ 				get_page(pfn_to_page(ptpfn));
+ 		}
+ 		entry = pfn_pte(ptpfn, PAGE_KERNEL);
+@@ -243,8 +236,7 @@ static pgd_t * __meminit vmemmap_pgd_populate(unsigned long addr, int node)
+ 
+ static pte_t * __meminit vmemmap_populate_address(unsigned long addr, int node,
+ 					      struct vmem_altmap *altmap,
+-					      unsigned long ptpfn,
+-					      unsigned long flags)
++					      unsigned long ptpfn)
+ {
+ 	pgd_t *pgd;
+ 	p4d_t *p4d;
+@@ -264,7 +256,7 @@ static pte_t * __meminit vmemmap_populate_address(unsigned long addr, int node,
+ 	pmd = vmemmap_pmd_populate(pud, addr, node);
+ 	if (!pmd)
+ 		return NULL;
+-	pte = vmemmap_pte_populate(pmd, addr, node, altmap, ptpfn, flags);
++	pte = vmemmap_pte_populate(pmd, addr, node, altmap, ptpfn);
+ 	if (!pte)
+ 		return NULL;
+ 	vmemmap_verify(pte, node, addr, addr + PAGE_SIZE);
+@@ -275,15 +267,14 @@ static pte_t * __meminit vmemmap_populate_address(unsigned long addr, int node,
+ static int __meminit vmemmap_populate_range(unsigned long start,
+ 					    unsigned long end, int node,
+ 					    struct vmem_altmap *altmap,
+-					    unsigned long ptpfn,
+-					    unsigned long flags)
++					    unsigned long ptpfn)
+ {
+ 	unsigned long addr = start;
+ 	pte_t *pte;
+ 
+ 	for (; addr < end; addr += PAGE_SIZE) {
+ 		pte = vmemmap_populate_address(addr, node, altmap,
+-					       ptpfn, flags);
++					       ptpfn);
+ 		if (!pte)
+ 			return -ENOMEM;
+ 	}
+@@ -294,7 +285,7 @@ static int __meminit vmemmap_populate_range(unsigned long start,
+ int __meminit vmemmap_populate_basepages(unsigned long start, unsigned long end,
+ 					 int node, struct vmem_altmap *altmap)
+ {
+-	return vmemmap_populate_range(start, end, node, altmap, -1, 0);
++	return vmemmap_populate_range(start, end, node, altmap, -1);
+ }
+ 
+ /*
+@@ -370,7 +361,7 @@ int __meminit vmemmap_populate_hvo(unsigned long addr, unsigned long end,
+ 		return -ENOMEM;
+ 
+ 	for (maddr = addr; maddr < addr + headsize; maddr += PAGE_SIZE) {
+-		pte = vmemmap_populate_address(maddr, node, NULL, -1, 0);
++		pte = vmemmap_populate_address(maddr, node, NULL, -1);
+ 		if (!pte)
+ 			return -ENOMEM;
+ 	}
+@@ -378,8 +369,7 @@ int __meminit vmemmap_populate_hvo(unsigned long addr, unsigned long end,
+ 	/*
+ 	 * Reuse the last page struct page mapped above for the rest.
+ 	 */
+-	return vmemmap_populate_range(maddr, end, node, NULL,
+-				      page_to_pfn(tail), 0);
++	return vmemmap_populate_range(maddr, end, node, NULL, page_to_pfn(tail));
  }
  #endif
  
-+#ifdef CONFIG_DEFERRED_STRUCT_PAGE_INIT
- /*
-  * Initialize a reserved page unconditionally, finding its zone first.
-  */
--void __meminit __init_page_from_nid(unsigned long pfn, int nid)
-+static void __meminit __init_page_from_nid(unsigned long pfn, int nid)
- {
- 	pg_data_t *pgdat;
- 	int zid;
-@@ -713,7 +714,6 @@ void __meminit __init_page_from_nid(unsigned long pfn, int nid)
+@@ -503,8 +493,7 @@ static int __meminit vmemmap_populate_compound_pages(unsigned long start_pfn,
+ 		 * with just tail struct pages.
+ 		 */
+ 		return vmemmap_populate_range(start, end, node, NULL,
+-					      pte_pfn(ptep_get(pte)),
+-					      VMEMMAP_POPULATE_PAGEREF);
++					      pte_pfn(ptep_get(pte)));
  	}
- }
  
--#ifdef CONFIG_DEFERRED_STRUCT_PAGE_INIT
- static inline void pgdat_set_deferred_range(pg_data_t *pgdat)
- {
- 	pgdat->first_deferred_pfn = ULONG_MAX;
+ 	size = min(end - start, pgmap_vmemmap_nr(pgmap) * sizeof(struct page));
+@@ -512,13 +501,13 @@ static int __meminit vmemmap_populate_compound_pages(unsigned long start_pfn,
+ 		unsigned long next, last = addr + size;
+ 
+ 		/* Populate the head page vmemmap page */
+-		pte = vmemmap_populate_address(addr, node, NULL, -1, 0);
++		pte = vmemmap_populate_address(addr, node, NULL, -1);
+ 		if (!pte)
+ 			return -ENOMEM;
+ 
+ 		/* Populate the tail pages vmemmap page */
+ 		next = addr + PAGE_SIZE;
+-		pte = vmemmap_populate_address(next, node, NULL, -1, 0);
++		pte = vmemmap_populate_address(next, node, NULL, -1);
+ 		if (!pte)
+ 			return -ENOMEM;
+ 
+@@ -528,8 +517,7 @@ static int __meminit vmemmap_populate_compound_pages(unsigned long start_pfn,
+ 		 */
+ 		next += PAGE_SIZE;
+ 		rc = vmemmap_populate_range(next, last, node, NULL,
+-					    pte_pfn(ptep_get(pte)),
+-					    VMEMMAP_POPULATE_PAGEREF);
++					    pte_pfn(ptep_get(pte)));
+ 		if (rc)
+ 			return -ENOMEM;
+ 	}
 -- 
 2.54.0
 
