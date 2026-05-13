@@ -1,89 +1,108 @@
-Return-Path: <linuxppc-dev+bounces-20924-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20925-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3FC83CD37AC
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 May 2026 20:19:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4C053CD4F21
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 May 2026 23:01:22 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gG4Z240qGz2xn3;
-	Thu, 14 May 2026 06:19:38 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=195.135.223.130
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778703578;
-	cv=none; b=iR6GG/h3t8UI4OTwj8VGkQ6oR987KtBxvrAAA5qheOqqAFYdkPxTVhnHm8Vt1xDxDQM8PTPA6DOCL32kKv9H7/2bz+1mdR3bXG/hZNTbBg7yh6MIuxgdmQ34WiaUTC8lzeiAXjWy6sbRAK7J09cTlp+kzPEUaznMDiHaN+vbU8DfEY7g5H219NUBFUqFpjp0c6fb3Nco3dXAdC8ZadC8Y0kfehcOOPQRyVNcC0ajS/LW/TNPdD4fsSZnzQmGWk1Avz2tGi5iY1TC019uHzVifMFpVjiXd54++IVuWbHL2djz+IlqIirHTJSus3nNUlNTXKwLgqPbTX+LBXAwCtylGA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gG88c4lS1z2y8W;
+	Thu, 14 May 2026 09:01:20 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::336"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778680739;
+	cv=none; b=JTKlrHWHHVjzCvFSn2/UJTCPuyz2/Nz75BfUnudkt1YV0iMIkg1Wl4F2UPwm6u7UEkwE6Xl35UcH7V/R5H411zaEx/5POgmXADogDtNFbt6E+7dxhorlXIz2EnSgMt39j7pQxfO2wxZ22uQMibMdToXpQN70ltDjGJg/BFxr1vJFq0fURk4K1eyX5SRbJZbyJ+7ocl4B4dosjL1uUi4NhCi5kJKTm7p+aGPVwNK5wlQdc+T1FxEbKDC5yY5hDPe2t0qlKRI4ViVMQuA7N8SVlr4WVVPLUU+lTSSB9+yTQwL+ERiQHaXnXmlEiWFb68oQUOpXgTUcjEsSbpMZxgDtQQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1778703578; c=relaxed/relaxed;
-	bh=uEs2l25RMgTsDXvEQvBIXqNT2xkIVk4H/8R/2ZbyLkM=;
+	t=1778680739; c=relaxed/relaxed;
+	bh=tPMVkSo7vb48jv7YwJ0Vd+mCEf6970EXP9V58QWiGq0=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=b6VW/59Bw3dqlTyD3m0wZ94URuc5m56sz/mfzLIOQvy79DlG0mXkCWC0zllvmEerUWJc6B6Hj97PmZK5DEoa4T6ZXTS5IFEO0PlsNCj3VJythLGnyzkhweMVOfk57d7vHuyoMIAaap7bjZX1GusCYhmuHs3axBkpXEyrDdbaVxsk1+h1ZmihSpO4OMwlJNtmaOTBa3KNBkiU001yvsr9V9die29eWS6dRXDzEIC/1bJIP6oJRosSeg/cpyfYHEoWEDVWyOCTFKwXBdpcHhmqQwSeHOnWA6yi7jkZlCO00D62rzLQSAqCNf6DHW54+H7wpguj+8bjndGEgmNY4hDs4w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=suse.cz; spf=pass (client-ip=195.135.223.130; helo=smtp-out1.suse.de; envelope-from=dsterba@suse.cz; receiver=lists.ozlabs.org) smtp.mailfrom=suse.cz
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=suse.cz
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.cz (client-ip=195.135.223.130; helo=smtp-out1.suse.de; envelope-from=dsterba@suse.cz; receiver=lists.ozlabs.org)
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
+	 Content-Type:Content-Disposition:In-Reply-To; b=Aaqx5HVmEgyx02VU/xtOQ4an6IjxaaFrbAkOILjYCSGQ9nTm+Q4dI9eUatrTaKknuBHVx4XbYPsnkU7soDfD3BTBk7yeCxnwVa76scNWXCGh9xoofGjfr2pQiMvp9IbW/7RrB3pngwWS4wdKeZqh6E00s/NqaXrJQKh8BrBF1FAEqn370tBaAjUW1ZFSBDZya+pSleEdLrWhpSA5+LSz+9IwFYoqL20rh58s4HA0SLZ6+TI0+KuZRo8BBu4k2ylNzxWwB0ya2Ng6L09wFPzRL4oRRX3MplArdIIThIIWaIL6mheg1mPOQnYUEm441b15Cpe6IYVNAe+DBCWjFiLBdA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=OsBuYyeD; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::336; helo=mail-wm1-x336.google.com; envelope-from=smostafa@google.com; receiver=lists.ozlabs.org) smtp.mailfrom=google.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=OsBuYyeD;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2a00:1450:4864:20::336; helo=mail-wm1-x336.google.com; envelope-from=smostafa@google.com; receiver=lists.ozlabs.org)
+Received: from mail-wm1-x336.google.com (mail-wm1-x336.google.com [IPv6:2a00:1450:4864:20::336])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gG4Z13pLnz2xld
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 May 2026 06:19:37 +1000 (AEST)
-Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id ED6E36B0F3;
-	Wed, 13 May 2026 20:19:29 +0000 (UTC)
-Authentication-Results: smtp-out1.suse.de;
-	none
-Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id A5E0E593A9;
-	Wed, 13 May 2026 20:19:29 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
-	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id G7fLJ9HcBGpwcwAAD6G6ig
-	(envelope-from <dsterba@suse.cz>); Wed, 13 May 2026 20:19:29 +0000
-Date: Wed, 13 May 2026 22:19:28 +0200
-From: David Sterba <dsterba@suse.cz>
-To: Christoph Hellwig <hch@lst.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gFw6n4JQ6z2y2B
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2026 23:58:57 +1000 (AEST)
+Received: by mail-wm1-x336.google.com with SMTP id 5b1f17b1804b1-4891ca4ce02so3525e9.1
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2026 06:58:57 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20251104; t=1778680729; x=1779285529; darn=lists.ozlabs.org;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:message-id:subject:cc:to:from:date:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=tPMVkSo7vb48jv7YwJ0Vd+mCEf6970EXP9V58QWiGq0=;
+        b=OsBuYyeDD2xiObB27tZD3/PWyLf15jO6FPD2GLKhmQrTaTOZbE2NxHE6+m6b/Swcqw
+         223/oGs2/If1HaDJPrtOUiQ8F8/x87uZ6fq8IM/4aMcJiU2UrPLfKXZGgtWVfxXVUqQY
+         lorafQ9ItSYNqWczdETLhi9SlpqsY9ki+yKagbOPgpVgjGA5qZ9qiXcOt8nGIxVYguQs
+         uE+jYXuXRQHecHBruDhP+bSVwfZ3aykE8JrL6ZMaeh/Jmr0Rik25km/qa5vpSGsWNq/9
+         tRzdaXlchSrbfDgGLb76iOuPPv8lQO4UBJUtyPU3ijZQz1n/wadR8qc8ZQisA8kRlr8o
+         8z7Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1778680729; x=1779285529;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:message-id:subject:cc:to:from:date:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=tPMVkSo7vb48jv7YwJ0Vd+mCEf6970EXP9V58QWiGq0=;
+        b=pVPFrW8K60O5tyN77JrQy1jkLugxPR5qySwQephq1FFcSaZjaCq/BmuU4YTBYWGH6Z
+         efZPgX5qG4BHgqRwn+84dme9k0344Af8u44GkGeowda+SaYGoz1d2HOTL8Oqb1X9MOKf
+         kyeu2gVQARDCq/Wd5QlP11cgbXIJKZX8qbg8QNpa+k/kYZwClOJYtyWMUMpaqc0aZFKx
+         NTK4a+bapFI/OqQ5mjruvuzfbROGikDw5iIm1RGy7BzXW1IuN7cKlRVUJp7cCptaxrWt
+         FLqwCnsAbHpeek8OETc3eZk0o1ovTtpajZgYbWQaupubbXz1JxttEjKL10JfW9QhOE58
+         9sTA==
+X-Forwarded-Encrypted: i=1; AFNElJ+5j071BxeR6mD2N3oUBDvdY2rwLmdugxW0RG4o3UKW3kbb7A7gHJ0HObTXlyXz5C6jVYF4Cujd2A0Ylm8=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YxLgUJzbiRDtBMEa3K253BGs38K2/7QQNEKzzVMnAL3uYo1tJl8
+	Ql39mLPlWX18t8pWpXVY7VtzFotpt6U5mX40cpwZKKwoF5BP8IolEZc7rBg1Nfh47A==
+X-Gm-Gg: Acq92OG4OXu5kNLOPt2BaRzgKK8aM4/kQ/B9md3/x81Q/RMrjWY1PYkcgsp3ERY7h6y
+	us9yZPZEMhTJaELhBsxUHZi/EefL/6UcqJUQOD5fEgkchBf/lgtOCkOne1+zXE9rYQApOZ27DBN
+	1OTmh1ZJ5R0TMynx/vYbgGaQq3OaI0MYDyamcGLSRGpxG0tb9TwTHem+Bg+b2aQmaDIbJLWmPIH
+	fk1hVR9avrLeB6yAido5rGksAnYMqX9iLcYK0cWAwud0t2/hgXPHo47mz1PzHXraV1Hyrn1J6Gp
+	Xq2fii0+qQdWtYLXUpcLVm9EmH8jhrfvAXl8mocbubUGHMoOVuU0OOju5KMYWI10dHBB2TPJgG1
+	Ux6wAPTS+IZ4MxLj5wMCmstrL7qfYc0qGi910dlJGak3MtO+wXR/GMmddqVfi5mdXj2m6XzldiY
+	eu39nsqROOgbrOYMaoLPltp7NcsbDmq8xi0lOr3MSRIZnIWWJ26OddgaYU6xxE0N7D8Bs=
+X-Received: by 2002:a05:600c:8a16:10b0:48a:5618:b4d4 with SMTP id 5b1f17b1804b1-48fcacd0d81mr589735e9.1.1778680729194;
+        Wed, 13 May 2026 06:58:49 -0700 (PDT)
+Received: from google.com (8.181.38.34.bc.googleusercontent.com. [34.38.181.8])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-4548ec6cd75sm39576190f8f.16.2026.05.13.06.58.47
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 13 May 2026 06:58:48 -0700 (PDT)
+Date: Wed, 13 May 2026 13:58:43 +0000
+From: Mostafa Saleh <smostafa@google.com>
+To: "Aneesh Kumar K.V (Arm)" <aneesh.kumar@kernel.org>
+Cc: iommu@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
+	linux-kernel@vger.kernel.org, linux-coco@lists.linux.dev,
+	Robin Murphy <robin.murphy@arm.com>,
+	Marek Szyprowski <m.szyprowski@samsung.com>,
+	Will Deacon <will@kernel.org>, Marc Zyngier <maz@kernel.org>,
+	Steven Price <steven.price@arm.com>,
+	Suzuki K Poulose <Suzuki.Poulose@arm.com>,
 	Catalin Marinas <catalin.marinas@arm.com>,
-	Will Deacon <will@kernel.org>, Ard Biesheuvel <ardb@kernel.org>,
-	Huacai Chen <chenhuacai@kernel.org>,
-	WANG Xuerui <kernel@xen0n.name>,
+	Jiri Pirko <jiri@resnulli.us>, Jason Gunthorpe <jgg@ziepe.ca>,
+	Petr Tesarik <ptesarik@suse.com>,
+	Alexey Kardashevskiy <aik@amd.com>,
+	Dan Williams <dan.j.williams@intel.com>,
+	Xu Yilun <yilun.xu@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
+	linux-s390@vger.kernel.org,
 	Madhavan Srinivasan <maddy@linux.ibm.com>,
 	Michael Ellerman <mpe@ellerman.id.au>,
 	Nicholas Piggin <npiggin@gmail.com>,
 	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
-	Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>,
+	Alexander Gordeev <agordeev@linux.ibm.com>,
+	Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
 	Heiko Carstens <hca@linux.ibm.com>,
 	Vasily Gorbik <gor@linux.ibm.com>,
-	Alexander Gordeev <agordeev@linux.ibm.com>,
 	Christian Borntraeger <borntraeger@linux.ibm.com>,
-	Sven Schnelle <svens@linux.ibm.com>,
-	Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>,
-	Borislav Petkov <bp@alien8.de>,
-	Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
-	"H. Peter Anvin" <hpa@zytor.com>,
-	Herbert Xu <herbert@gondor.apana.org.au>,
-	Dan Williams <dan.j.williams@intel.com>, Chris Mason <clm@fb.com>,
-	David Sterba <dsterba@suse.com>, Arnd Bergmann <arnd@arndb.de>,
-	Song Liu <song@kernel.org>, Yu Kuai <yukuai@fnnas.com>,
-	Li Nan <linan122@huawei.com>, linux-kernel@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org, loongarch@lists.linux.dev,
-	linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org,
-	linux-s390@vger.kernel.org, linux-crypto@vger.kernel.org,
-	linux-btrfs@vger.kernel.org, linux-arch@vger.kernel.org,
-	linux-raid@vger.kernel.org
-Subject: Re: [PATCH 01/19] btrfs: require at least 4 devices for RAID 6
-Message-ID: <20260513201928.GO2558453@suse.cz>
-Reply-To: dsterba@suse.cz
-References: <20260512052230.2947683-1-hch@lst.de>
- <20260512052230.2947683-2-hch@lst.de>
- <20260512114231.GG2558453@suse.cz>
- <20260513054742.GA1018@lst.de>
+	Sven Schnelle <svens@linux.ibm.com>, x86@kernel.org
+Subject: Re: [PATCH v4 02/13] dma-direct: use DMA_ATTR_CC_SHARED in
+ alloc/free paths
+Message-ID: <agSDk0QsEM0ZBCTA@google.com>
+References: <20260512090408.794195-1-aneesh.kumar@kernel.org>
+ <20260512090408.794195-3-aneesh.kumar@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -97,55 +116,124 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20260513054742.GA1018@lst.de>
-User-Agent: Mutt/1.5.23.1-rc1 (2014-03-12)
-X-Rspamd-Pre-Result: action=no action;
-	module=replies;
-	Message is reply to one we originated
-X-Spamd-Result: default: False [-4.00 / 50.00];
-	REPLY(-4.00)[]
-X-Rspamd-Queue-Id: ED6E36B0F3
-X-Rspamd-Pre-Result: action=no action;
-	module=replies;
-	Message is reply to one we originated
-X-Rspamd-Server: rspamd2.dmz-prg2.suse.org
-X-Rspamd-Action: no action
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20260512090408.794195-3-aneesh.kumar@kernel.org>
 
-On Wed, May 13, 2026 at 07:47:42AM +0200, Christoph Hellwig wrote:
-> On Tue, May 12, 2026 at 01:42:31PM +0200, David Sterba wrote:
-> > On Tue, May 12, 2026 at 07:20:41AM +0200, Christoph Hellwig wrote:
-> > > While the RAID6 algorithm could in theory support 3 devices by just
-> > > copying the data disk to the two parity disks, this version is not only
-> > > useless because it is a suboptimal version of 3-way mirroring, but also
-> > > broken with various crashes and incorrect parity generation in various
-> > > architecture-optimized implementations.  Disallow it similar to mdraid
-> > > which requires at least 4 devices for RAID 6.
-> > > 
-> > > Fixes: 53b381b3abeb ("Btrfs: RAID5 and RAID6")
-> > > Signed-off-by: Christoph Hellwig <hch@lst.de>
-> > 
-> > This patch should have been sent separately as it has user visible
-> > impact and can potentially break some setups.
+On Tue, May 12, 2026 at 02:33:57PM +0530, Aneesh Kumar K.V (Arm) wrote:
+> Propagate force_dma_unencrypted() into DMA_ATTR_CC_SHARED in the
+> dma-direct allocation path and use the attribute to drive the related
+> decisions.
 > 
-> It _is_ sent out separate.
-
-It's public interface change of btrfs but in a patch series cleaning
-up some library code, I noticed it by accident.
-
-> > The degenerate modes of
-> > raid0, 5, or 6 are explicit as a possible middle step when converting
-> > profiles.  We can use a fallback implementation for this case if the
-> > accelerated implementations cannot do it.
+> This updates dma_direct_alloc(), dma_direct_free(), and
+> dma_direct_alloc_pages() to fold the forced unencrypted case into attrs.
 > 
-> This is not about a degenerated mode.  For a degenerated RAID 6, parity
-> generation uses the RAID 5 XOR routines as the second parity will be
-> missing.  This is about generating two parities for a single data disk,
-> which must be explicitly selected.
+> Signed-off-by: Aneesh Kumar K.V (Arm) <aneesh.kumar@kernel.org>
+> ---
+>  kernel/dma/direct.c | 44 ++++++++++++++++++++++++++++++++++++--------
+>  1 file changed, 36 insertions(+), 8 deletions(-)
+> 
+> diff --git a/kernel/dma/direct.c b/kernel/dma/direct.c
+> index b958f150718a..0c2e1f8436ce 100644
+> --- a/kernel/dma/direct.c
+> +++ b/kernel/dma/direct.c
+> @@ -201,16 +201,31 @@ void *dma_direct_alloc(struct device *dev, size_t size,
+>  		dma_addr_t *dma_handle, gfp_t gfp, unsigned long attrs)
+>  {
+>  	bool remap = false, set_uncached = false;
+> -	bool mark_mem_decrypt = true;
+> +	bool mark_mem_decrypt = false;
+>  	struct page *page;
+>  	void *ret;
+>  
+> +	/*
+> +	 * DMA_ATTR_CC_SHARED is not a caller-visible dma_alloc_*()
+> +	 * attribute. The direct allocator uses it internally after it has
+> +	 * decided that the backing pages must be shared/decrypted, so the
+> +	 * rest of the allocation path can consistently select DMA addresses,
+> +	 * choose compatible pools and restore encryption on free.
+> +	 */
+> +	if (attrs & DMA_ATTR_CC_SHARED)
+> +		return NULL;
+> +
+> +	if (force_dma_unencrypted(dev)) {
+> +		attrs |= DMA_ATTR_CC_SHARED;
+> +		mark_mem_decrypt = true;
+> +	}
+> +
+>  	size = PAGE_ALIGN(size);
+>  	if (attrs & DMA_ATTR_NO_WARN)
+>  		gfp |= __GFP_NOWARN;
+>  
+> -	if ((attrs & DMA_ATTR_NO_KERNEL_MAPPING) &&
+> -	    !force_dma_unencrypted(dev) && !is_swiotlb_for_alloc(dev))
+> +	if (((attrs & (DMA_ATTR_NO_KERNEL_MAPPING | DMA_ATTR_CC_SHARED)) ==
+> +	     DMA_ATTR_NO_KERNEL_MAPPING) && !is_swiotlb_for_alloc(dev))
+>  		return dma_direct_alloc_no_mapping(dev, size, dma_handle, gfp);
+>  
+>  	if (!dev_is_dma_coherent(dev)) {
+> @@ -244,7 +259,7 @@ void *dma_direct_alloc(struct device *dev, size_t size,
+>  	 * Remapping or decrypting memory may block, allocate the memory from
+>  	 * the atomic pools instead if we aren't allowed block.
+>  	 */
+> -	if ((remap || force_dma_unencrypted(dev)) &&
+> +	if ((remap || (attrs & DMA_ATTR_CC_SHARED)) &&
+>  	    dma_direct_use_pool(dev, gfp))
+>  		return dma_direct_alloc_from_pool(dev, size, dma_handle, gfp);
+>  
+> @@ -318,11 +333,20 @@ void *dma_direct_alloc(struct device *dev, size_t size,
+>  void dma_direct_free(struct device *dev, size_t size,
+>  		void *cpu_addr, dma_addr_t dma_addr, unsigned long attrs)
+>  {
+> -	bool mark_mem_encrypted = true;
+> +	bool mark_mem_encrypted = false;
+>  	unsigned int page_order = get_order(size);
+>  
+> -	if ((attrs & DMA_ATTR_NO_KERNEL_MAPPING) &&
+> -	    !force_dma_unencrypted(dev) && !is_swiotlb_for_alloc(dev)) {
+> +	/*
+> +	 * if the device had requested for an unencrypted buffer,
+> +	 * convert it to encrypted on free
+> +	 */
+> +	if (force_dma_unencrypted(dev)) {
+> +		attrs |= DMA_ATTR_CC_SHARED;
+> +		mark_mem_encrypted = true;
+> +	}
+> +
+> +	if (((attrs & (DMA_ATTR_NO_KERNEL_MAPPING | DMA_ATTR_CC_SHARED)) ==
+> +	     DMA_ATTR_NO_KERNEL_MAPPING) && !is_swiotlb_for_alloc(dev)) {
+>  		/* cpu_addr is a struct page cookie, not a kernel address */
+>  		dma_free_contiguous(dev, cpu_addr, size);
+>  		return;
+> @@ -365,10 +389,14 @@ void dma_direct_free(struct device *dev, size_t size,
+>  struct page *dma_direct_alloc_pages(struct device *dev, size_t size,
+>  		dma_addr_t *dma_handle, enum dma_data_direction dir, gfp_t gfp)
+>  {
+> +	unsigned long attrs = 0;
+>  	struct page *page;
+>  	void *ret;
+>  
+> -	if (force_dma_unencrypted(dev) && dma_direct_use_pool(dev, gfp))
+> +	if (force_dma_unencrypted(dev))
+> +		attrs |= DMA_ATTR_CC_SHARED;
+> +
+> +	if ((attrs & DMA_ATTR_CC_SHARED) && dma_direct_use_pool(dev, gfp))
+>  		return dma_direct_alloc_from_pool(dev, size, dma_handle, gfp);
 
-The calcuation is a different than what I'm concened about, changing
-minimum devices from 3 to 4 is a breaking change. If the library won't
-provide the xor/parity functions then we'll have to add a fallback for
-this special case.
+What about dma_direct_free_pages()? Nothing inside uses attrs, but
+that’s quite similar to dma_direct_alloc_pages()
+
+Also, at this point, shouldn’t this patch also remove
+force_dma_unencrypted() calls from dma_set_decrypted() and
+dma_set_encrypted()?
+
+Thanks,
+Mostafa
+
+>  
+>  	if (is_swiotlb_for_alloc(dev)) {
+> -- 
+> 2.43.0
+> 
 
