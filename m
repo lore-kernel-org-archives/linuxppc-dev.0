@@ -1,93 +1,46 @@
-Return-Path: <linuxppc-dev+bounces-20799-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20800-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B3479CD4F21
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 May 2026 01:03:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 57255CD37AC
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 May 2026 01:42:49 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gFZvk1PMNz2xrC;
-	Wed, 13 May 2026 11:03:14 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::1229" arc.chain=google.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778634194;
-	cv=pass; b=DlRVzHFqCHG915P9XdzF//rxHXCan8djRuq1rqxrZN1X5RDOG22yb1MtlRvPWozmVwgGqdmMV/lWkDCuX6KHbqLwsR8vlLhHygiXa6yFcaDZm3cYBxBK7qSHk7x5R1A6o5jlGZG2TB7zVfpSEfYIwdqfAlUjekUWkufVq+vp8SHsk0ldJ3M7H2bEtWBaSRf/fwtkO8RPySQmSuTf6lYFsjNxjvjAFc25B9qBi4aai5wbMmSqzxVYXryXM7B3ae4x56DQzEwDWHIzbEu/sHUVul+4yPGMZfhM4ho0pRoaYGf0/rTiBUQIW3ZIVdGkS9Rrv7EMQWOTU8D12pyp2on+7Q==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1778634194; c=relaxed/relaxed;
-	bh=ulhWHKpmSnD058yAqu2u4kJ2BZiEp2EGH+nr0nLUtAM=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=aF/fUGSI5qiCA0X2gTRT5x3nFhgpbxcWzigNjXEyYpHBnwGwXSdXsj1S0AZGuvNK1XtZSpXVD7KgTMYkPzH4vEOsopgJnuhrvu5GSxKuSx7B0HELt/w1/ZawgzykGXTQOKPztu/BWgdygtXn55/dPMJf84IWxA6eCQBTRaREzvzAqGr3OaCW5CEv723xIakPRXu8ZpP1ZIntsvwnYk+jedMwORO0MAP0zS6wpmhh7SQkAWXfrOlXvPqG9NPYwUWuJfe5Sp/Hgk8kV2LOtfNbwb0bASBMKCsr4YbPGR2B00zK0WH1qSFtDAKKlnoiUSfY+kMnBgDmN/fDRxmlbf2HCA==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=Qb1i9JEx; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1229; helo=mail-dl1-x1229.google.com; envelope-from=irogers@google.com; receiver=lists.ozlabs.org) smtp.mailfrom=google.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gFbnM5Frwz2xrC;
+	Wed, 13 May 2026 11:42:47 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=95.215.58.171
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778636567;
+	cv=none; b=Q8ezW2fuTFNIZI4hUxyhEtC9nX1FLuqIjh0Drlh1wYH0lEbR2jDHl/QQCGdzHlAxE0j3/Fwt+dSK3459zO2sNcop2vkAG8C1JIZbjuGkfZZgc3tOgqTxxzZPm2q+2Qk7wm02tb0UfDBgpcaJVphUjRG7ctRVBzbo6srFXw26lvjfx0Gwkms4yeFuvUWXQDy/kmeknSRjysc70p5vR0Qt8CPG2xk8MH1g7GevFRs1Om8NzHQnbKoe+23xyAgB0GdX/O522AiGpO0UjTdABFY2qG6a8fsMiv4XaAZR9mmzhpWh1gnCkITDr6Mt4dSOTNbYqZUHUzm9uwMw+djueUDbhg==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1778636567; c=relaxed/relaxed;
+	bh=fhvTYmzHBJF0Uy2iUIqRc2sMKqrtzRCDZRsnolCJW14=;
+	h=Content-Type:Mime-Version:Subject:From:In-Reply-To:Date:Cc:
+	 Message-Id:References:To; b=BpvLmjvLD9oJm81oONPP8L9H1cHZvkyixbScL3xxryN6Gw2jHKEBHOP9ifRsNn4IGwwPcewamVmw+81fDpm6xyY+/FidUfY5Uxob5aSdApx/ExM3cB0P8qQDWB5j5/HCee79C7nEKmZdRtr8WrG3xJPWOAfIageM9+tPOlbu4uJiOkI5gRnm2kmB0MJ+sMH0pkcOmFLcgtRKc5mQHWX7E2pmVt7aKjoqqowhsQmJxjQOJTag3TTxTufm6yA2KESsGTiMJQYxwR3rbtrkYrFAzp6evYKU4/jvjtwOoOQ+4St9uqtbxgB8TeUyy6rxLGP2EopeclQ3Hgkl82Z8EvZ31w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=G+4UjxhM; dkim-atps=neutral; spf=pass (client-ip=95.215.58.171; helo=out-171.mta1.migadu.com; envelope-from=muchun.song@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=Qb1i9JEx;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=G+4UjxhM;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::1229; helo=mail-dl1-x1229.google.com; envelope-from=irogers@google.com; receiver=lists.ozlabs.org)
-Received: from mail-dl1-x1229.google.com (mail-dl1-x1229.google.com [IPv6:2607:f8b0:4864:20::1229])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=95.215.58.171; helo=out-171.mta1.migadu.com; envelope-from=muchun.song@linux.dev; receiver=lists.ozlabs.org)
+Received: from out-171.mta1.migadu.com (out-171.mta1.migadu.com [95.215.58.171])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gFZvh6Tb8z2xpt
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2026 11:03:12 +1000 (AEST)
-Received: by mail-dl1-x1229.google.com with SMTP id a92af1059eb24-133362c30cfso28c88.0
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2026 18:03:12 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1778634190; cv=none;
-        d=google.com; s=arc-20240605;
-        b=YlCua+n5uIwFju9GMyzNsfNihOvwVUTIzJvlJNsnNAulGPk9eEg0O2nPSpzl4/8nbF
-         ++TZvm0Cqo1O020pbC1ZjYrARX6OpFVL70qE407HmuJzDq7BVd7YCQKJGCh961h/HLfe
-         a7Lz3a7vzdpoYqEXeL5cKloCZTq4AsNAzsP7b7n+H5pgDNAHIrLJ0HIWHecHfKSC3m74
-         wroEs6mttIuS1I+di22IjYcuQCro8A/FhIGqyIVJ3lnGnnwN/TzUgY36xp9oU62MDuBT
-         YMxjf7J2O/OSB1uDeNfCl3CL24GgUq0Nc00eVob/ExeJCrCnGy3vuUHsC85UC96QBJd5
-         nxdw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=ulhWHKpmSnD058yAqu2u4kJ2BZiEp2EGH+nr0nLUtAM=;
-        fh=uj4xV6Uk7yJTErKpdbOxaNztUDcp2NtNYANM1RQ32I0=;
-        b=UJLyeioIkSEZcl2aipMtNJ7DaR5temlRwd1eGPK/DFZZcjA4hV27jweC5HTpjC8tT/
-         RfgxgNVi/LDz/2T4xadldG2NFhDnXZG6tu0OpN3AjAAXoZGSyO0Ij/LjZBHEm2Xxh2cX
-         xp9JnnJZtJQKqLZgrxxmhbTMG8gGXgvxCHjIFHJFpTzWj/BDLodWlMNAZ2mkqQH9Ao6a
-         qH1LnoiqI53NRdo80y8tnFtKu/Jp6ccVLkwCPrmMfEsZXFChMbSSnpr6P422ThWjDs+k
-         4+ExWvLssrFj8Jipqh/VdidFujaD7kxfycPc1ygwoVZyc/wIXFrvshlFwzrsNgChFtlS
-         MfWA==;
-        darn=lists.ozlabs.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20251104; t=1778634190; x=1779238990; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=ulhWHKpmSnD058yAqu2u4kJ2BZiEp2EGH+nr0nLUtAM=;
-        b=Qb1i9JExvyvFbYpBAE97GtCGBaS0x0qmuL9kDq0mTkZAcxCrD6uegD1JjImYQDUdxZ
-         hmcNHePmhOW8fhPGe4Kd74fTbvTzovbHkhbE3FdAj+3XO0Fq+5XqBWiAVA2OQr/c434n
-         RTwqsBYnH6oBBNs4wnx46IF+hT6gIKpLOm4QI1T38a03Et8h+OfIXK9DDF8SxjpMaKLx
-         bBQVnH3dzKH40X2bTGaVHNRvXfiSTvdlK1q757IqcANMDlDXP9VHTGNTEJNDp5YpEg+L
-         F3/yTWN+V6P3xMaFLhnyhwxpkTqqUbivDO9kP+BVhC9Ofj3Rl3SwlMWIn9kKIwfgX402
-         2lqQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1778634190; x=1779238990;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=ulhWHKpmSnD058yAqu2u4kJ2BZiEp2EGH+nr0nLUtAM=;
-        b=TshK+DClazVDda4RvofUGZwNnM4Qzx1FTvSZEFoAIL3seSHwXZriJ1lzGJa9ANTi6Y
-         KIoxAqTm7LHZD/ZRGRC4UtuHbzush4QJxACjpU3Qw07JbBiE9gK1jnsrgd/VdhSWdRv1
-         fgzp/FVGEqeASmHXAVfny730S/geDTYa0ghYfgyNbGzPLHkOjKyunoUV1CPXTLNdEGCb
-         Wzj8V13OiBTK8EZK6aNH/R6vdlqs2lDfyxfDVZhorhc1n1gH9AeixMxWZj134x0l0E0M
-         UKJyMFAth0g2vz6zCvaE0S0L6ItrpNQRhr6x7AHdZgAUfq8y5eCfGVtGQ7663oIMiCj9
-         E3Ng==
-X-Forwarded-Encrypted: i=1; AFNElJ8B8fKk9I6CtSkXvv0dR0Cw1xRxpgO9zUResBv8zOc8yMexGMcZnASIbg7EmSVXh5t+Vdkt7BYoeHYzubA=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YypSlAPVawF79J8C6HiWbhY6bjJRNkyoE5V7OgpxsIYW3zm6+tx
-	NJhZrhxRErcr4jkGsCBJx3P8deRdaOsEWaXq59oWYyLa7CU4OxjBEYioMoTF4epbW3vexBiHFPu
-	9DbG/1qP8LFZcBvYrPDzIRDW4wHkssJD7tneq5WqL
-X-Gm-Gg: Acq92OGaCQjCZPA+3QgPC8H/DxnBOwpK4nKe9T8DKBflzOs+Ax1rzEqBoT78ptzpcMg
-	fO2IGmEuTR694Y6m4f9EOzSwlAwfcF2xCLF8wVJ5w6NgOgulGzb/aGY6dLeMzMP2DuxCjFac8Ge
-	N0j3jtMcTpqdRdYJFPsszEcKOzj2vVEmTxaG1+lAzivqqWZIB1mkt6TKGxvkbz5vY4vOjcleM+j
-	Nx8nQfcBYMrihe1iKiA52CzShjCV1yS7nCKGNTD9FjHVNz7f8iqH1jIpAP3o9toTZnVUhIv3Tv8
-	xBV0jpys9kPRNqv3phQ=
-X-Received: by 2002:a05:7022:785:b0:133:3bc1:bf2e with SMTP id
- a92af1059eb24-13489ba2e12mr62355c88.5.1778634189086; Tue, 12 May 2026
- 18:03:09 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gFbnJ2N7Kz2xJT
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2026 11:42:42 +1000 (AEST)
+Content-Type: text/plain;
+	charset=utf-8
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
+	t=1778636542;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=fhvTYmzHBJF0Uy2iUIqRc2sMKqrtzRCDZRsnolCJW14=;
+	b=G+4UjxhMuR07b1wvtvS6rFSIFCLeBeV0PTrTb930Igb2yqCO6sGi3cGOms8uKKb2mtUcT3
+	4uJfSpJciYXosRJ7A1RirFXphlg+tJTVg5sbiTMn94I6cgh7JeQtiYGE5xqL1CzEHZjSdJ
+	3hn3WfT3ZwzRVzkfVB2JN1kp7awPMV8=
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -100,175 +53,463 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-References: <20260504154205.21394-1-atrajeev@linux.ibm.com> <20260504154205.21394-2-atrajeev@linux.ibm.com>
-In-Reply-To: <20260504154205.21394-2-atrajeev@linux.ibm.com>
-From: Ian Rogers <irogers@google.com>
-Date: Tue, 12 May 2026 18:02:55 -0700
-X-Gm-Features: AVHnY4L4IACcJi8qI8F6D66t_-FPiqzis4dycqEsczXQ7zZot14mCrzXc7WlR2Y
-Message-ID: <CAP-5=fWWN_+v9h8LDwm0UamHtGv0awg6P+ZZYkBJR18P_TanSw@mail.gmail.com>
-Subject: Re: [PATCH V4 2/2] tools/perf: Use scnprintf in buffer offset calculations
-To: Athira Rajeev <atrajeev@linux.ibm.com>
-Cc: acme@kernel.org, jolsa@kernel.org, adrian.hunter@intel.com, 
-	mpetlan@redhat.com, tmricht@linux.ibm.com, maddy@linux.ibm.com, 
-	namhyung@kernel.org, linux-perf-users@vger.kernel.org, 
-	linuxppc-dev@lists.ozlabs.org, hbathini@linux.vnet.ibm.com, 
-	Tejas.Manhas1@ibm.com, Tanushree.Shah@ibm.com, shivani@linux.ibm.com
-Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0 (Mac OS X Mail 16.0 \(3864.500.181\))
+Subject: Re: [PATCH v2] drivers/base/memory: make memory block get/put
+ explicit
+X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
+From: Muchun Song <muchun.song@linux.dev>
+In-Reply-To: <agMVtO5QPGYVb48D@MWDK4CY14F>
+Date: Wed, 13 May 2026 09:41:23 +0800
+Cc: Muchun Song <songmuchun@bytedance.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ David Hildenbrand <david@kernel.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ linux-mm@kvack.org,
+ driver-core@lists.linux.dev,
+ Oscar Salvador <osalvador@suse.de>,
+ Lorenzo Stoakes <ljs@kernel.org>,
+ "Liam R . Howlett" <liam@infradead.org>,
+ Vlastimil Babka <vbabka@kernel.org>,
+ Mike Rapoport <rppt@kernel.org>,
+ Suren Baghdasaryan <surenb@google.com>,
+ Michal Hocko <mhocko@suse.com>,
+ Danilo Krummrich <dakr@kernel.org>,
+ "Rafael J . Wysocki" <rafael@kernel.org>,
+ linux-kernel@vger.kernel.org,
+ linux-cxl@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org,
+ Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Nicholas Piggin <npiggin@gmail.com>,
+ Christophe Leroy <chleroy@kernel.org>,
+ Heiko Carstens <hca@linux.ibm.com>,
+ Vasily Gorbik <gor@linux.ibm.com>,
+ Alexander Gordeev <agordeev@linux.ibm.com>,
+ Christian Borntraeger <borntraeger@linux.ibm.com>,
+ Sven Schnelle <svens@linux.ibm.com>,
+ Sumanth Korikkar <sumanthk@linux.ibm.com>,
+ Kees Cook <kees@kernel.org>,
+ Douglas Anderson <dianders@chromium.org>,
+ Donet Tom <donettom@linux.ibm.com>
 Content-Transfer-Encoding: quoted-printable
+Message-Id: <3EE08C93-F28D-4363-AC1C-C9B99F8ABB7C@linux.dev>
+References: <20260512072635.3969576-1-songmuchun@bytedance.com>
+ <agMVtO5QPGYVb48D@MWDK4CY14F>
+To: Richard Cheng <icheng@nvidia.com>
+X-Migadu-Flow: FLOW_OUT
 
-On Mon, May 4, 2026 at 8:42=E2=80=AFAM Athira Rajeev <atrajeev@linux.ibm.co=
-m> wrote:
->
-> Replace snprintf with scnprintf in buffer offset calculations to
-> ensure the 'used' count will not exceed the "len".
->
-> The current logic in perf_pmu__for_each_event uses an unconditional
-> + 1 increment to buf_used to account for null terminators. This can
-> cause a a stack buffer overflow in the subsequent scnprintf call.
-> When the local stack buffer buf (1024 bytes) is full, buf_used can
-> reach 1025. This causes the subsequent remaining space calculation
-> sizeof(buf) - buf_used to underflow.
->
-> Use sub_non_neg() to see if space actually existed, and only
-> increment the offset if remaning space is present.
->
-> Changes includes:
-> - Use sub_non_neg to check if space exists
-> - Replacing snprintf with scnprintf to ensure the return value
-> reflects the actual bytes written into the buffer.
-> - Only increment buf_used by 1 if space exists
-> - If a parameterized event uses a built-in perf keyword for its
-> parameter name (eg, config=3D?), the lexer parses it as a predefined
-> term token, which sets term->config to NULL. Add check to use
-> parse_events__term_type_str() if term->config is NULL.
->
-> Signed-off-by: Athira Rajeev <atrajeev@linux.ibm.com>
 
-Reviewed-by: Ian Rogers <irogers@google.com>
+
+> On May 12, 2026, at 20:03, Richard Cheng <icheng@nvidia.com> wrote:
+>=20
+> On Tue, May 12, 2026 at 03:26:35PM +0800, Muchun Song wrote:
+>> Rename the memory block lookup helper to make the acquired reference
+>> explicit, add memory_block_put() to wrap put_device(), remove
+>> find_memory_block(), and use memory_block_get() as the single =
+block-id
+>> based lookup interface.
+>>=20
+>> This makes it clearer to callers that a successful lookup holds a
+>> reference that must be dropped, reducing the chance of forgetting the
+>> matching put and leaking the memory block device reference.
+>>=20
+>> Link: =
+https://lore.kernel.org/linux-mm/7887915D-E598-42B3-9AFE-BFFBACE8DE2D@linu=
+x.dev/#t
+>> Signed-off-by: Muchun Song <songmuchun@bytedance.com>
+>> Acked-by: Oscar Salvador <osalvador@suse.de>
+>> Acked-by: David Hildenbrand (Arm) <david@kernel.org>
+>> Acked-by: Michal Hocko <mhocko@suse.com>
+>> Tested-by: Donet Tom <donettom@linux.ibm.com>
+>> Reviewed-by: Lorenzo Stoakes <ljs@kernel.org>
+>> ---
+>> Changes in v2:
+>> - mention the removal of find_memory_block() in the commit message
+>> - drop the redundant extern from the memory_block_get() declaration
+>> ---
+>> .../platforms/pseries/hotplug-memory.c        | 14 ++-----
+>> drivers/base/memory.c                         | 38 =
++++++++------------
+>> drivers/base/node.c                           |  4 +-
+>> drivers/s390/char/sclp_mem.c                  | 17 ++++-----
+>> include/linux/memory.h                        |  7 +++-
+>> mm/memory_hotplug.c                           |  5 +--
+>> 6 files changed, 35 insertions(+), 50 deletions(-)
+>>=20
+>> diff --git a/arch/powerpc/platforms/pseries/hotplug-memory.c =
+b/arch/powerpc/platforms/pseries/hotplug-memory.c
+>> index 75f85a5da981..94f3b57054b6 100644
+>> --- a/arch/powerpc/platforms/pseries/hotplug-memory.c
+>> +++ b/arch/powerpc/platforms/pseries/hotplug-memory.c
+>> @@ -164,13 +164,7 @@ static int update_lmb_associativity_index(struct =
+drmem_lmb *lmb)
+>>=20
+>> static struct memory_block *lmb_to_memblock(struct drmem_lmb *lmb)
+>> {
+>> - unsigned long section_nr;
+>> - struct memory_block *mem_block;
+>> -
+>> - section_nr =3D pfn_to_section_nr(PFN_DOWN(lmb->base_addr));
+>> -
+>> - mem_block =3D find_memory_block(section_nr);
+>> - return mem_block;
+>> + return memory_block_get(phys_to_block_id(lmb->base_addr));
+>> }
+>>=20
+>> static int get_lmb_range(u32 drc_index, int n_lmbs,
+>> @@ -220,7 +214,7 @@ static int dlpar_change_lmb_state(struct =
+drmem_lmb *lmb, bool online)
+>> else
+>> rc =3D 0;
+>>=20
+>> - put_device(&mem_block->dev);
+>> + memory_block_put(mem_block);
+>>=20
+>> return rc;
+>> }
+>> @@ -319,12 +313,12 @@ static int dlpar_remove_lmb(struct drmem_lmb =
+*lmb)
+>>=20
+>> rc =3D dlpar_offline_lmb(lmb);
+>> if (rc) {
+>> - put_device(&mem_block->dev);
+>> + memory_block_put(mem_block);
+>> return rc;
+>> }
+>>=20
+>> __remove_memory(lmb->base_addr, memory_block_size);
+>> - put_device(&mem_block->dev);
+>> + memory_block_put(mem_block);
+>>=20
+>> /* Update memory regions for memory remove */
+>> memblock_remove(lmb->base_addr, memory_block_size);
+>> diff --git a/drivers/base/memory.c b/drivers/base/memory.c
+>> index 11d57cfa8d72..5b5d41089e81 100644
+>> --- a/drivers/base/memory.c
+>> +++ b/drivers/base/memory.c
+>> @@ -649,7 +649,7 @@ int __weak arch_get_memory_phys_device(unsigned =
+long start_pfn)
+>>  *
+>>  * Called under device_hotplug_lock.
+>>  */
+>> -struct memory_block *find_memory_block_by_id(unsigned long block_id)
+>> +struct memory_block *memory_block_get(unsigned long block_id)
+>> {
+>> struct memory_block *mem;
+>>=20
+>> @@ -659,16 +659,6 @@ struct memory_block =
+*find_memory_block_by_id(unsigned long block_id)
+>> return mem;
+>> }
+>>=20
+>> -/*
+>> - * Called under device_hotplug_lock.
+>> - */
+>> -struct memory_block *find_memory_block(unsigned long section_nr)
+>> -{
+>> - unsigned long block_id =3D memory_block_id(section_nr);
+>> -
+>> - return find_memory_block_by_id(block_id);
+>> -}
+>> -
+>> static struct attribute *memory_memblk_attrs[] =3D {
+>> &dev_attr_phys_index.attr,
+>> &dev_attr_state.attr,
+>> @@ -701,7 +691,7 @@ static int __add_memory_block(struct memory_block =
+*memory)
+>>=20
+>> ret =3D device_register(&memory->dev);
+>> if (ret) {
+>> - put_device(&memory->dev);
+>> + memory_block_put(memory);
+>> return ret;
+>> }
+>> ret =3D xa_err(xa_store(&memory_blocks, memory->dev.id, memory,
+>> @@ -795,9 +785,9 @@ static int add_memory_block(unsigned long =
+block_id, int nid, unsigned long state
+>> struct memory_block *mem;
+>> int ret =3D 0;
+>>=20
+>> - mem =3D find_memory_block_by_id(block_id);
+>> + mem =3D memory_block_get(block_id);
+>> if (mem) {
+>> - put_device(&mem->dev);
+>> + memory_block_put(mem);
+>> return -EEXIST;
+>> }
+>> mem =3D kzalloc_obj(*mem);
+>> @@ -845,8 +835,8 @@ static void remove_memory_block(struct =
+memory_block *memory)
+>> memory->group =3D NULL;
+>> }
+>>=20
+>> - /* drop the ref. we got via find_memory_block() */
+>> - put_device(&memory->dev);
+>> + /* drop the ref. we got via memory_block_get() */
+>> + memory_block_put(memory);
+>> device_unregister(&memory->dev);
+>> }
+>>=20
+>> @@ -880,7 +870,7 @@ int create_memory_block_devices(unsigned long =
+start, unsigned long size,
+>> end_block_id =3D block_id;
+>> for (block_id =3D start_block_id; block_id !=3D end_block_id;
+>>      block_id++) {
+>> - mem =3D find_memory_block_by_id(block_id);
+>> + mem =3D memory_block_get(block_id);
+>> if (WARN_ON_ONCE(!mem))
+>> continue;
+>> remove_memory_block(mem);
+>> @@ -908,7 +898,7 @@ void remove_memory_block_devices(unsigned long =
+start, unsigned long size)
+>> return;
+>>=20
+>> for (block_id =3D start_block_id; block_id !=3D end_block_id; =
+block_id++) {
+>> - mem =3D find_memory_block_by_id(block_id);
+>> + mem =3D memory_block_get(block_id);
+>> if (WARN_ON_ONCE(!mem))
+>> continue;
+>> num_poisoned_pages_sub(-1UL, memblk_nr_poison(mem));
+>> @@ -1015,12 +1005,12 @@ int walk_memory_blocks(unsigned long start, =
+unsigned long size,
+>> return 0;
+>>=20
+>> for (block_id =3D start_block_id; block_id <=3D end_block_id; =
+block_id++) {
+>> - mem =3D find_memory_block_by_id(block_id);
+>> + mem =3D memory_block_get(block_id);
+>> if (!mem)
+>> continue;
+>>=20
+>> ret =3D func(mem, arg);
+>> - put_device(&mem->dev);
+>> + memory_block_put(mem);
+>> if (ret)
+>> break;
+>> }
+>> @@ -1228,22 +1218,22 @@ int walk_dynamic_memory_groups(int nid, =
+walk_memory_groups_func_t func,
+>> void memblk_nr_poison_inc(unsigned long pfn)
+>> {
+>> const unsigned long block_id =3D pfn_to_block_id(pfn);
+>> - struct memory_block *mem =3D find_memory_block_by_id(block_id);
+>> + struct memory_block *mem =3D memory_block_get(block_id);
+>>=20
+>> if (mem) {
+>> atomic_long_inc(&mem->nr_hwpoison);
+>> - put_device(&mem->dev);
+>> + memory_block_put(mem);
+>> }
+>> }
+>>=20
+>> void memblk_nr_poison_sub(unsigned long pfn, long i)
+>> {
+>> const unsigned long block_id =3D pfn_to_block_id(pfn);
+>> - struct memory_block *mem =3D find_memory_block_by_id(block_id);
+>> + struct memory_block *mem =3D memory_block_get(block_id);
+>>=20
+>> if (mem) {
+>> atomic_long_sub(i, &mem->nr_hwpoison);
+>> - put_device(&mem->dev);
+>> + memory_block_put(mem);
+>> }
+>> }
+>>=20
+>> diff --git a/drivers/base/node.c b/drivers/base/node.c
+>> index 126f66aa2c3e..b3333ca92090 100644
+>> --- a/drivers/base/node.c
+>> +++ b/drivers/base/node.c
+>> @@ -847,13 +847,13 @@ static void =
+register_memory_blocks_under_nodes(void)
+>> for (block_id =3D start_block_id; block_id <=3D end_block_id; =
+block_id++) {
+>> struct memory_block *mem;
+>>=20
+>> - mem =3D find_memory_block_by_id(block_id);
+>> + mem =3D memory_block_get(block_id);
+>> if (!mem)
+>> continue;
+>>=20
+>> memory_block_add_nid_early(mem, nid);
+>> do_register_memory_block_under_node(nid, mem);
+>> - put_device(&mem->dev);
+>> + memory_block_put(mem);
+>> }
+>>=20
+>> }
+>> diff --git a/drivers/s390/char/sclp_mem.c =
+b/drivers/s390/char/sclp_mem.c
+>> index 78c054e26d17..6df1926d4c62 100644
+>> --- a/drivers/s390/char/sclp_mem.c
+>> +++ b/drivers/s390/char/sclp_mem.c
+>> @@ -204,7 +204,7 @@ static ssize_t sclp_config_mem_store(struct =
+kobject *kobj, struct kobj_attribute
+>> addr =3D sclp_mem->id * block_size;
+>> /*
+>>  * Hold device_hotplug_lock when adding/removing memory blocks.
+>> -  * Additionally, also protect calls to find_memory_block() and
+>> +  * Additionally, also protect calls to memory_block_get() and
+>>  * sclp_attach_storage().
+>>  */
+>> rc =3D lock_device_hotplug_sysfs();
+>> @@ -231,20 +231,19 @@ static ssize_t sclp_config_mem_store(struct =
+kobject *kobj, struct kobj_attribute
+>> sclp_mem_change_state(addr, block_size, 0);
+>> goto out_unlock;
+>> }
+>> - mem =3D find_memory_block(pfn_to_section_nr(PFN_DOWN(addr)));
+>> - put_device(&mem->dev);
+>> + mem =3D memory_block_get(phys_to_block_id(addr));
+>> + memory_block_put(mem);
+>> WRITE_ONCE(sclp_mem->config, 1);
+>> } else {
+>> if (!sclp_mem->config)
+>> goto out_unlock;
+>> - mem =3D find_memory_block(pfn_to_section_nr(PFN_DOWN(addr)));
+>> + mem =3D memory_block_get(phys_to_block_id(addr));
+>> if (mem->state !=3D MEM_OFFLINE) {
+>> - put_device(&mem->dev);
+>> + memory_block_put(mem);
+>> rc =3D -EBUSY;
+>> goto out_unlock;
+>> }
+>> - /* drop the ref just got via find_memory_block() */
+>> - put_device(&mem->dev);
+>> + memory_block_put(mem);
+>> sclp_mem_change_state(addr, block_size, 0);
+>> __remove_memory(addr, block_size);
+>> #ifdef CONFIG_KASAN
+>> @@ -294,11 +293,11 @@ static ssize_t =
+sclp_memmap_on_memory_store(struct kobject *kobj, struct kobj_att
+>> return rc;
+>> block_size =3D memory_block_size_bytes();
+>> sclp_mem =3D container_of(kobj, struct sclp_mem, kobj);
+>> - mem =3D find_memory_block(pfn_to_section_nr(PFN_DOWN(sclp_mem->id * =
+block_size)));
+>> + mem =3D memory_block_get(phys_to_block_id(sclp_mem->id * =
+block_size));
+>> if (!mem) {
+>> WRITE_ONCE(sclp_mem->memmap_on_memory, value);
+>> } else {
+>> - put_device(&mem->dev);
+>> + memory_block_put(mem);
+>> rc =3D -EBUSY;
+>> }
+>> unlock_device_hotplug();
+>> diff --git a/include/linux/memory.h b/include/linux/memory.h
+>> index 5bb5599c6b2b..463dc02f6cff 100644
+>> --- a/include/linux/memory.h
+>> +++ b/include/linux/memory.h
+>> @@ -158,7 +158,11 @@ int create_memory_block_devices(unsigned long =
+start, unsigned long size,
+>> void remove_memory_block_devices(unsigned long start, unsigned long =
+size);
+>> extern void memory_dev_init(void);
+>> extern int memory_notify(enum memory_block_state state, void *v);
+>> -extern struct memory_block *find_memory_block(unsigned long =
+section_nr);
+>> +struct memory_block *memory_block_get(unsigned long block_id);
+>> +static inline void memory_block_put(struct memory_block *mem)
+>> +{
+>> + put_device(&mem->dev);
+>> +}
+>=20
+> Hi Muchun,
+
+Hi,
+
+>=20
+> Thanks for the work, I have a small suggestion if that fits your =
+thought.
+>=20
+> I think we should at least add a comment  above memory_block_put() to =
+remind the caller to check
+> for the availabitliy of "mem" before calling this function.
+> We perform the check in memory_block_get() inside the function body, I =
+see different usage pattern
+> across the caller when they're dealing with "mem =3D=3D NULL" and =
+avoid to call memory_block_put(),=20
+> I can understand we should leverage the check to caller, not inside =
+memory_block_put().
+> But just in case the next caller might forgot to do the check or think =
+the behavior might be symmetric
+> bettween memory_block_get() and memory_block_put(), a comment above =
+the function would be nice.
+
+Thanks for the suggestion!
+
+Regarding the additional comment, I feel they might not be strictly =
+necessary.
+If a user passes a NULL pointer, the issue would be exposed immediately
+before memory_block_put() is even called. It's unlikely a user would =
+obtain
+mem and not perform any read/write operations; any such attempt would =
+trigger
+a NULL pointer dereference right away.
+
+As for adding comments to memory_block_get(), I=E2=80=99m wondering if =
+it=E2=80=99s truly
+essential. The function is quite straightforward=E2=80=94anyone looking =
+at the
+definition would see the implementation alongside the comments. It=E2=80=99=
+s very
+clear from the code that mem must be non-NULL to be "gotten."
+
+Overall, I=E2=80=99m concerned the extra comments might not add much =
+value. What do
+you think?
 
 Thanks,
-Ian
+Muchun
+>=20
+> Best regards,
+> Richard Cheng.
+>=20
+>> typedef int (*walk_memory_blocks_func_t)(struct memory_block *, void =
+*);
+>> extern int walk_memory_blocks(unsigned long start, unsigned long =
+size,
+>>       void *arg, walk_memory_blocks_func_t func);
+>> @@ -171,7 +175,6 @@ struct memory_group *memory_group_find_by_id(int =
+mgid);
+>> typedef int (*walk_memory_groups_func_t)(struct memory_group *, void =
+*);
+>> int walk_dynamic_memory_groups(int nid, walk_memory_groups_func_t =
+func,
+>>        struct memory_group *excluded, void *arg);
+>> -struct memory_block *find_memory_block_by_id(unsigned long =
+block_id);
+>> #define hotplug_memory_notifier(fn, pri) ({ \
+>> static __meminitdata struct notifier_block fn##_mem_nb =3D\
+>> { .notifier_call =3D fn, .priority =3D pri };\
+>> diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
+>> index 462d8dcd636d..890c6453e887 100644
+>> --- a/mm/memory_hotplug.c
+>> +++ b/mm/memory_hotplug.c
+>> @@ -1417,14 +1417,13 @@ static void =
+remove_memory_blocks_and_altmaps(u64 start, u64 size)
+>> struct vmem_altmap *altmap =3D NULL;
+>> struct memory_block *mem;
+>>=20
+>> - mem =3D find_memory_block(pfn_to_section_nr(PFN_DOWN(cur_start)));
+>> + mem =3D memory_block_get(phys_to_block_id(cur_start));
+>> if (WARN_ON_ONCE(!mem))
+>> continue;
+>>=20
+>> altmap =3D mem->altmap;
+>> mem->altmap =3D NULL;
+>> - /* drop the ref. we got via find_memory_block() */
+>> - put_device(&mem->dev);
+>> + memory_block_put(mem);
+>>=20
+>> remove_memory_block_devices(cur_start, memblock_size);
+>>=20
+>>=20
+>> base-commit: e98d21c170b01ddef366f023bbfcf6b31509fa83
+>> --=20
+>> 2.54.0
 
-> ---
-> Changelog:
-> v2 -> v3:
-> - Split the scnprintf related changes in separate patch
-> - Handle the overflow issues and unconditional increment
-> wrapped around sub_non_neg addressing review comment from Sashiko
->
->  tools/perf/util/pmu.c | 46 ++++++++++++++++++++++++++++++++-----------
->  1 file changed, 35 insertions(+), 11 deletions(-)
->
-> diff --git a/tools/perf/util/pmu.c b/tools/perf/util/pmu.c
-> index 0b8d58543f17..4b9ade1a4cf9 100644
-> --- a/tools/perf/util/pmu.c
-> +++ b/tools/perf/util/pmu.c
-> @@ -2129,15 +2129,19 @@ static char *format_alias(char *buf, int len, con=
-st struct perf_pmu *pmu,
->                 pr_err("Failure to parse '%s' terms '%s': %d\n",
->                         alias->name, alias->terms, ret);
->                 parse_events_terms__exit(&terms);
-> -               snprintf(buf, len, "%.*s/%s/", (int)pmu_name_len, pmu->na=
-me, alias->name);
-> +               scnprintf(buf, len, "%.*s/%s/", (int)pmu_name_len, pmu->n=
-ame, alias->name);
->                 return buf;
->         }
-> -       used =3D snprintf(buf, len, "%.*s/%s", (int)pmu_name_len, pmu->na=
-me, alias->name);
-> +       used =3D scnprintf(buf, len, "%.*s/%s", (int)pmu_name_len, pmu->n=
-ame, alias->name);
->
->         list_for_each_entry(term, &terms.terms, list) {
-> +               const char *name =3D term->config;
-> +
-> +               if (!name)
-> +                       name =3D parse_events__term_type_str(term->type_t=
-erm);
->                 if (term->type_val =3D=3D PARSE_EVENTS__TERM_TYPE_STR)
-> -                       used +=3D snprintf(buf + used, sub_non_neg(len, u=
-sed),
-> -                                       ",%s=3D%s", term->config,
-> +                       used +=3D scnprintf(buf + used, sub_non_neg(len, =
-used),
-> +                                       ",%s=3D%s", name,
->                                         term->val.str);
->         }
->         parse_events_terms__exit(&terms);
-> @@ -2201,6 +2205,7 @@ int perf_pmu__for_each_event(struct perf_pmu *pmu, =
-bool skip_duplicate_pmus,
->         int ret =3D 0;
->         struct hashmap_entry *entry;
->         size_t bkt;
-> +       size_t size_rem, len;
->
->         if (perf_pmu__is_tracepoint(pmu))
->                 return tp_pmu__for_each_event(pmu, state, cb);
-> @@ -2234,17 +2239,36 @@ int perf_pmu__for_each_event(struct perf_pmu *pmu=
-, bool skip_duplicate_pmus,
->                         }
->                         buf_used =3D strlen(buf) + 1;
->                 }
-> +
->                 info.scale_unit =3D NULL;
->                 if (strlen(event->unit) || event->scale !=3D 1.0) {
-> -                       info.scale_unit =3D buf + buf_used;
-> -                       buf_used +=3D snprintf(buf + buf_used, sizeof(buf=
-) - buf_used,
-> -                                       "%G%s", event->scale, event->unit=
-) + 1;
-> +                       /* Check the remaining space */
-> +                       size_rem =3D sub_non_neg(sizeof(buf), buf_used);
-> +
-> +                       if (size_rem > 0) {
-> +                               info.scale_unit =3D buf + buf_used;
-> +                               len =3D scnprintf(buf + buf_used, size_re=
-m, "%G%s",
-> +                                               event->scale, event->unit=
-);
-> +                               /*
-> +                                * Increment buf_used by 1 only if
-> +                                * it fits remaining space
-> +                                */
-> +                               buf_used +=3D min(len + 1, size_rem);
-> +                       }
->                 }
->                 info.desc =3D event->desc;
->                 info.long_desc =3D event->long_desc;
-> -               info.encoding_desc =3D buf + buf_used;
-> -               buf_used +=3D snprintf(buf + buf_used, sizeof(buf) - buf_=
-used,
-> -                               "%.*s/%s/", (int)pmu_name_len, info.pmu_n=
-ame, event->terms) + 1;
-> +               info.encoding_desc =3D NULL;
-> +
-> +               /* Check the remaining space */
-> +               size_rem =3D sub_non_neg(sizeof(buf), buf_used);
-> +               if (size_rem > 0) {
-> +                       info.encoding_desc =3D buf + buf_used;
-> +                       len =3D scnprintf(buf + buf_used, size_rem, "%.*s=
-/%s/",
-> +                                       (int)pmu_name_len, info.pmu_name,=
- event->terms);
-> +                       buf_used +=3D min(len + 1, size_rem);
-> +               }
-> +
->                 info.str =3D event->terms;
->                 info.topic =3D event->topic;
->                 info.deprecated =3D perf_pmu_alias__check_deprecated(pmu,=
- event);
-> @@ -2254,7 +2278,7 @@ int perf_pmu__for_each_event(struct perf_pmu *pmu, =
-bool skip_duplicate_pmus,
->         }
->         if (pmu->selectable) {
->                 info.name =3D buf;
-> -               snprintf(buf, sizeof(buf), "%s//", pmu->name);
-> +               scnprintf(buf, sizeof(buf), "%s//", pmu->name);
->                 info.alias =3D NULL;
->                 info.scale_unit =3D NULL;
->                 info.desc =3D NULL;
-> --
-> 2.47.3
->
+
 
