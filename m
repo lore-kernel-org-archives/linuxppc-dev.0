@@ -1,76 +1,82 @@
-Return-Path: <linuxppc-dev+bounces-20841-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20842-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CD11ECD4851
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 May 2026 08:41:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7300DCD37B6
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 May 2026 09:06:27 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gFn4w2YBWz2xpt;
-	Wed, 13 May 2026 18:41:52 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778661712;
-	cv=none; b=nrQG+k5N+pQ7evFR+C5nIX498PjhR+D0bxvEq0sPqT4Ut/XU9sEWFBeD3sbXURtWAWiWQIYXQ4M6Qnp6iJcMMwMVDYBbWsq15uxmDWI29IeZXKdystZzO1s8H08PRsr1SA9FNwz65uk42hcDbRkP31zuBzr1S/K6JuaelDUxwO+Chj3BPTr6kQWhax9dydiPOKLX2X6S/napKngj7Kj2oZraMK2Kg9r/WM6fPH40BlulYQa8gkAmj9DHweNKGK+TCZFWoJFRiGq58Gm2cZpEdB7vPbMUJkq4FOTrQQPVmDmHICG7QJ05K4Yta9Ynewv2CChj+AhP82QYXZQ+dQGRYg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gFndC36RPz2xlV;
+	Wed, 13 May 2026 19:06:23 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778663183;
+	cv=none; b=m5GKIMNy4zaKY588Zkec8Ife3HdQQNk8TZp3RdzlppmIAsao7MTmeeSdjIK2pbocM2AiaP9L0gdiGgPGfV7nU2YPb6NTD4qvXZ/TLdQrLOF5nwXDU1RiFilIV/GqHizR7LFzbcZaHtiyuqXwDqLew662lWJMiQN7cGQFmdyXf0bibSSTjW3Bkl2vTHmgBlhij6c5IXzIN7Y66YxPg6V0JOmgEjL7zt/4NhKxGK3wH8EnKDeQBHWzM6M4Z0gslXlnHlepRCnF48POPeh+6QM0hiAGh1gYMS45rWJVY12rItG2EUOMGVJhvIbncK4prCs3Jheum5B2uQVTxbilDDoSVw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1778661712; c=relaxed/relaxed;
-	bh=2C3fKVu8ZecWuoJ3nOe6Vz6QaIlyNcNPEBJ1uLO+ojw=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Cz8V9Ol/SrchNDTvrHbfcTIVIF+qlzvd+fkk+O7DTglnI/TLfPpHbV9O6Xkuua6SvksufegU9vou7OXM38ROMr2oJE1E0LOiApK4zhlMCBufnpPctqPKW4a1n5tNJGS/Whg6cSfKWVqI7r+2B6w12C0eY9N1vH2XpVAWd3Y56vsbbIr8xakfxweCiba2KUL+TqqZloQFtskz4wjspoAG2WZHgIUO2fyzqzMkRDiSHPNSuHOWNpcV5TWZPAaK4WUYvfQCWg7CycG0v3GfmrSBycEZTjmqDAV2mM0IGmXu4AepeqU/ZkDY7W/D8kKCIHkTXMTjGsdsnkhbPnCcfi2cFA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=gF1ZrZh2; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1778663183; c=relaxed/relaxed;
+	bh=A2TXYQaZgIB0HYqEhGeB3su6RVy9mc4qpOzuN57P6Xc=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
+	 MIME-Version:Content-Type; b=ewFmj6oWC6g08bzmQSnr6qP4DGhStOefSRzxOe3A/Bsa7ljHpgUEaTr7rjBBymz9hfTA6dukPWGqThsSk6h5XJOVtbEH7ycTqjTbjwa9gHVypANjhQj4OWx1JBWSHx1yYwApFLvdJi3WLnWn3gXYTP2s+yGE7CocEqZA0mSOzue8kaTKw2CdWZoRQvMGPvC8c4/VRUxCAyZa4DAC5+j12/j1/DsYa+fUIOX7xH1Yk+GEvmxhxUdL48isjAACWPf8Oc0+KU34OG3jsI+E6RJKnnu4V7PBxYUQhn55BLJuOW0e/vkd9QEIA6DM4otq3Z8n2XbELeOsZNXh3xTtJDBLjw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=DhcqKJ13; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=vaibhav@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=gF1ZrZh2;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=DhcqKJ13;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=vaibhav@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gFn4v2WR4z2xn3
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2026 18:41:51 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 1DE2C600CB;
-	Wed, 13 May 2026 08:41:49 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 17B4BC2BCB7;
-	Wed, 13 May 2026 08:41:40 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1778661708;
-	bh=G5ge1Ms5w5w/WOlbzkIN+oCsjgnKKihgDEBHNY+4t84=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=gF1ZrZh2z0PfjXk/JaTiWJN3Zwq9n1yXdLYSwGgtH/UbaPGBeI1PqTFOWu+uw2fmv
-	 Lz2BCj9WAqFkC5+okdC8bt8qsrUwRjoGCTtmIVx421M+sYpp/fzlPQ7U3GqhFJxpOL
-	 eWQd+iFykyLefV4HtfewUidnx08Bm8oy069QupPbc0Cg/FoRNW1zMl/3q4Yz+fXTYT
-	 9aWTDk2zqKWoB77yQ/FdvQ853sm5qE3FID4NnDWBftlpdWIXTHmYe6kyq1pbxwW53C
-	 BpnQCY6u/QtkKHB4t28Ckn7ckSQVCqHqbbhViJQ80UnY04G7AA9ybc8FL5okBUdu1l
-	 vjNSlJ6SsWKUg==
-Date: Wed, 13 May 2026 11:41:37 +0300
-From: Mike Rapoport <rppt@kernel.org>
-To: "David Hildenbrand (Arm)" <david@kernel.org>
-Cc: "David S. Miller" <davem@davemloft.net>,
-	Andreas Larsson <andreas@gaisler.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Alexander Gordeev <agordeev@linux.ibm.com>,
-	Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
-	Heiko Carstens <hca@linux.ibm.com>,
-	Vasily Gorbik <gor@linux.ibm.com>,
-	Christian Borntraeger <borntraeger@linux.ibm.com>,
-	Sven Schnelle <svens@linux.ibm.com>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	Lorenzo Stoakes <ljs@kernel.org>,
-	"Liam R. Howlett" <liam@infradead.org>,
-	Vlastimil Babka <vbabka@kernel.org>,
-	Suren Baghdasaryan <surenb@google.com>,
-	Michal Hocko <mhocko@suse.com>, sparclinux@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-	linux-s390@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 8/8] powerpc/mm: remove CONFIG_HAVE_BOOTMEM_INFO_NODE
-Message-ID: <agQ5QVEyMsEcKbxa@kernel.org>
-References: <20260511-bootmem_info_prep-v1-0-3fb0be6fc688@kernel.org>
- <20260511-bootmem_info_prep-v1-8-3fb0be6fc688@kernel.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gFnd96DK4z2xGX
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2026 19:06:10 +1000 (AEST)
+Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 64D2Bov72607040;
+	Wed, 13 May 2026 09:05:42 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-type:date:from:in-reply-to:message-id:mime-version
+	:references:subject:to; s=pp1; bh=A2TXYQaZgIB0HYqEhGeB3su6RVy9mc
+	4qpOzuN57P6Xc=; b=DhcqKJ13hzyH1qzI7Eg4dZTaNzvpYcSfRrbrjY6faLHNOQ
+	HF9Ts3LPYX5J2DipQM17HpCW0KLQsDzmw9CE18hlighHZJ9noD0sZwP41nfinhvo
+	zMHP1z7uN7pWzZJlVsOpeEsH5NrtJEtkFsfA0bj9elcopV+jy/ZEzur0EC2BQKyC
+	umwPjeBXBRC4Ltub7Y4Bcu7ZnlhDQ0X7WbRoI9cEJUJO4zIE97XsHr5tKPBwNWf0
+	3+cZsVdHb4pmQoU4Ca8FJbmUjkMaW0/6BsuCKPiZ7tDJ4EM8xarwttsyiuBdrOPI
+	/tWn4oXzSfhBRU6x4KpHBYjduXH30PZSShzPZIaA==
+Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4e3nv56wt0-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 13 May 2026 09:05:37 +0000 (GMT)
+Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma23.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 64D8sVZi019927;
+	Wed, 13 May 2026 09:05:36 GMT
+Received: from smtprelay04.wdc07v.mail.ibm.com ([172.16.1.71])
+	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4e3nfgq0wm-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 13 May 2026 09:05:36 +0000 (GMT)
+Received: from smtpav06.dal12v.mail.ibm.com (smtpav06.dal12v.mail.ibm.com [10.241.53.105])
+	by smtprelay04.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 64D95Z6U31654434
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Wed, 13 May 2026 09:05:35 GMT
+Received: from smtpav06.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id E757A58063;
+	Wed, 13 May 2026 09:05:34 +0000 (GMT)
+Received: from smtpav06.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id CA56358043;
+	Wed, 13 May 2026 09:05:30 +0000 (GMT)
+Received: from vaibhav?linux.ibm.com (unknown [9.39.28.42])
+	by smtpav06.dal12v.mail.ibm.com (Postfix) with SMTP;
+	Wed, 13 May 2026 09:05:30 +0000 (GMT)
+Received: by vaibhav@linux.ibm.com (sSMTP sendmail emulation); Wed, 13 May 2026 14:35:29 +0530
+From: Vaibhav Jain <vaibhav@linux.ibm.com>
+To: Gautam Menghani <Gautam.Menghani@ibm.com>, maddy@linux.ibm.com,
+        mpe@ellerman.id.au, npiggin@gmail.com, chleroy@kernel.org
+Cc: Gautam Menghani <gautam@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+        linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] powerpc/64s: Fix the vector number in comments for
+ h_facility_unavailable
+In-Reply-To: <20260511080412.50722-1-Gautam.Menghani@ibm.com>
+References: <20260511080412.50722-1-Gautam.Menghani@ibm.com>
+Date: Wed, 13 May 2026 14:35:29 +0530
+Message-ID: <87fr3vvfvq.fsf@vajain21.in.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -84,72 +90,74 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260511-bootmem_info_prep-v1-8-3fb0be6fc688@kernel.org>
+Content-Type: text/plain
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTEzMDA4OCBTYWx0ZWRfX4NKFR68aEEY9
+ MT5BC/Haj/A+/QhrSThWjF2pFhSeodWlnHfqUWmfruHW0yW0pyiq+2WTa/ZDe31aaAKpZDJPOAM
+ 9VmJb82CTPD/p9rWSvJhVx8Kiyl6CFZ3txZy8XM5xB7IOmrvqa3pLq1ViI6dYN55M0ZUj2GKCac
+ mnlpUR+tfOaEGzwcxQjszzq/7Mbnx14V58JpdRlLeEfptFYuE9wvoZNNDFtISOwHAZghwZo6Gty
+ xVjFWyfghTmZzjC3ihUHTuiiuJwlCwUWBfeccNC5TOX0QOxoX/FtHvB6zbPWIbFfmwALa5iV8Lt
+ UOG81tdbstyA7jBiujhsb+UhUUx8Uee/tOrv8EeaA1yn4ybAQ5EYqhsSdlCsqBdP8R1hdGkrYFn
+ 2P2SWZLGMUhDD/RdkD6J3Z4lA126MKkOl9PJSbGIzxs0Pbtxp7G34bLgod7yqkf9Rl9B19+K7hj
+ 5Tjwf4j9cYQz1Lswcog==
+X-Proofpoint-ORIG-GUID: iY8g_XiTtjAGt8YpAwJn2RvSWDZ1MKJd
+X-Authority-Analysis: v=2.4 cv=Jc6Ma0KV c=1 sm=1 tr=0 ts=6a043ee2 cx=c_pps
+ a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
+ a=NGcC8JguVDcA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
+ a=uAbxVGIbfxUO_5tXvNgY:22 a=VwQbUJbxAAAA:8 a=VnNF1IyMAAAA:8
+ a=KsF5BuLE4_TF5G8aTxwA:9
+X-Proofpoint-GUID: gbGZGvxfS6iab2NYBAba_4jDp6B1z2Ug
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-05-11_05,2026-05-08_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ spamscore=0 priorityscore=1501 malwarescore=0 bulkscore=0 clxscore=1015
+ phishscore=0 adultscore=0 lowpriorityscore=0 suspectscore=0 impostorscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2605050000 definitions=main-2605130088
 
-On Mon, May 11, 2026 at 04:05:36PM +0200, David Hildenbrand (Arm) wrote:
-> register_page_bootmem_info_node() essentially only calls
-> register_page_bootmem_memmap(). However, on powerpc that function is a
-> nop. So there is not benefit in using CONFIG_HAVE_BOOTMEM_INFO_NODE
-> anymore, let's just drop it.
-> 
-> We can stop including bootmem_info.h.
-> 
-> Signed-off-by: David Hildenbrand (Arm) <david@kernel.org>
+Hey Gautam,
 
-Reviewed-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
+Thanks for the patch. Since this patch doesnt have any functional or
+code change can you please put a 'trivial' suffix to it patch title like
+[1] or some other suffix indicating its a non-functional change. That
+way maintainers can easily pull the patch without worrying much about a
+regression.
 
+[1]
+https://git.kernel.org/powerpc/c/d2827e5e2e0f0941a651f4b1ca5e9b778c4b5293
+
+Gautam Menghani <Gautam.Menghani@ibm.com> writes:
+> From: Gautam Menghani <gautam@linux.ibm.com>
+>
+> The comments explaining the h_facility_unavailable interrupt have mentioned
+> the vector number as 0xf60 instead of 0xf80. Fix this typo.
+>
+> Signed-off-by: Gautam Menghani <gautam@linux.ibm.com>
 > ---
->  arch/powerpc/mm/init_64.c | 8 --------
->  mm/Kconfig                | 2 +-
->  2 files changed, 1 insertion(+), 9 deletions(-)
-> 
-> diff --git a/arch/powerpc/mm/init_64.c b/arch/powerpc/mm/init_64.c
-> index b6f3ae03ca9e..64f0df5bb5cd 100644
-> --- a/arch/powerpc/mm/init_64.c
-> +++ b/arch/powerpc/mm/init_64.c
-> @@ -41,7 +41,6 @@
->  #include <linux/libfdt.h>
->  #include <linux/memremap.h>
->  #include <linux/memory.h>
-> -#include <linux/bootmem_info.h>
+>  arch/powerpc/kernel/exceptions-64s.S | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+> index b7229430ca94..2696fbbca3b6 100644
+> --- a/arch/powerpc/kernel/exceptions-64s.S
+> +++ b/arch/powerpc/kernel/exceptions-64s.S
+> @@ -2498,7 +2498,7 @@ EXC_COMMON_BEGIN(facility_unavailable_common)
 >  
->  #include <asm/pgalloc.h>
->  #include <asm/page.h>
-> @@ -388,13 +387,6 @@ void __ref vmemmap_free(unsigned long start, unsigned long end,
 >  
->  #endif
->  
-> -#ifdef CONFIG_HAVE_BOOTMEM_INFO_NODE
-> -void register_page_bootmem_memmap(unsigned long section_nr,
-> -				  struct page *start_page, unsigned long size)
-> -{
-> -}
-> -#endif /* CONFIG_HAVE_BOOTMEM_INFO_NODE */
-> -
->  #endif /* CONFIG_SPARSEMEM_VMEMMAP */
->  
->  #ifdef CONFIG_PPC_BOOK3S_64
-> diff --git a/mm/Kconfig b/mm/Kconfig
-> index e221fa1dc54d..97b079372325 100644
-> --- a/mm/Kconfig
-> +++ b/mm/Kconfig
-> @@ -537,7 +537,7 @@ endchoice
->  
->  config MEMORY_HOTREMOVE
->  	bool "Allow for memory hot remove"
-> -	select HAVE_BOOTMEM_INFO_NODE if (X86_64 || PPC64)
-> +	select HAVE_BOOTMEM_INFO_NODE if X86_64
->  	depends on MEMORY_HOTPLUG
->  	select MIGRATION
->  
-> 
+>  /**
+> - * Interrupt 0xf60 - Hypervisor Facility Unavailable Interrupt.
+> + * Interrupt 0xf80 - Hypervisor Facility Unavailable Interrupt.
+>   * This is a synchronous interrupt in response to
+>   * executing an instruction without access to the facility that can only
+>   * be resolved in HV mode (e.g., HFSCR).
 > -- 
-> 2.43.0
-> 
+> 2.53.0
+>
+>
 
 -- 
-Sincerely yours,
-Mike.
+Cheers
+~ Vaibhav
 
