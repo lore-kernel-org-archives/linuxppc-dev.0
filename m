@@ -1,68 +1,65 @@
-Return-Path: <linuxppc-dev+bounces-20921-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20922-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 494EACD37AC
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 May 2026 17:33:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2BCE7CD4F3D
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 May 2026 17:46:47 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gG0tg5kYJz2xld;
-	Thu, 14 May 2026 03:33:47 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::549"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778693627;
-	cv=none; b=bRYBVw7QB9vHa2DMo9KkeMd8SL80BojfLSnpKo8HtjV0zU+pzW5xXBJiu+cNVsKp2qMO1Aiqq5bk5WzRpYjbGZOaY54X3AeGc9Uev7kI3tFDH8//JWzEdAXJPM036daq/0fQb1v9FnVptPqGBfcO3IYowR6At8l/z3NAvHqd7ixiOJlS4mD/ujxISBIREhLS0wd5A2sRKZNVoJqrUQahuJi7tJKIbJ3Yviz/zerh6MCL5Zt0hKc8xc0/lFLr/rzOEIk8uynuFk7IeeqX8jKjLYYcGXsu+7naB6xOQzvrzWP+tET9q4IPZj1Uqar2qcZBWTFHrwhjPAiqa2MhK0PYQw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gG19d5h7Vz2xld;
+	Thu, 14 May 2026 03:46:45 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778694405;
+	cv=none; b=Ufb6xe/eE3QCFNDyfpb/GlDPmQ90fIguEGkuQITxSDcvb3szdQhumWFnpnWWMHZVMzrBuvb2syZH497lbViALVZD6W//2i/aia4lceS2H9ZA2inqGNmRqg2iFox0BDHXUt5c01kNu6v3LN9iFj1yz00O/Q/Jwbydz+2xH9gGKFW0BtjkLxqckHQLKfTJQYxVBHXDENaWMlbDbI96e8NcGoVr7wEFcoK9RNvkpvJx5rYruXbFINjp6ubneN8qgYvdLiLi2qLZ4PcCWzgya1ukBA1C14yICBon5F/O0OkVfncruyLb9WWLMzC6Dsuj5V0S0agTqb8cx7a+hw9xFf8rpg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1778693627; c=relaxed/relaxed;
-	bh=jMEgM1iZspGG7I35Q8gjdtCOP5swckX6p2O9sp5dK20=;
-	h=Date:In-Reply-To:Mime-Version:References:Message-ID:Subject:From:
-	 To:Cc:Content-Type; b=gjnjDBnHIJPKfDSBpY2zhBaZzMW+EzW3Vlcct7a9O5btOi6kv3cBwzHqKC+t/vFiudTN8S9igChje+dApg2PJLigdwdoQhAdU32OvxTf4yL/9HLIM3Nzt6Q2ghGFKuun1i3Ov7Pj8f/s9RGptrPRGsziQcR9M0mT1XNRrrzmvnujAngeDopRPrmoskxQADOLH9gOY2Ysdxuvt7PjKHjcAr0JePr01ONHUrQ2wVQbE7p/ecjtxIV8G/uIlscmbkELlVbe6+VxyrepeAcWpSC5wqQCbJdZXyiCOl6+YVrcfywF3NaI7KrDortkiXuCxhEPcAVxygQ3Q7fW4jbNKjONLA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=B3K06FIr; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::549; helo=mail-pg1-x549.google.com; envelope-from=39rueagykdms9vr40tx55x2v.t532z4be66t-uvc2z9a9.5g2rs9.58x@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=flex--seanjc.bounces.google.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
+	t=1778694405; c=relaxed/relaxed;
+	bh=AIr1xcqYq5Tl3HDmm7kwPWSRvEZ/6U01PUBrtWGLIxA=;
+	h=Date:From:To:Cc:Subject:Message-Id:In-Reply-To:References:
+	 Mime-Version:Content-Type; b=hSpPuVAvBRzr2Z1Vc7wpDEOlwGlhR3ws6qBQnpU2l4/tC0sFvK36jk85vmg9HMQY/r7GWxtoNRvpGBH+e8Z+Gh8HK6j1zUS48o0Nq/Ay6bD/+avzedtsN2ZFCOCAaWQT+ZSQAioDoSHz000T8maK1Ty/KJ8Ky/wyROzlPdxQ0gvMEyaQqyVpqtY5isrHFmwmui9Cs6GZDqIKZDZrwiLL84slBX+ob8Ws3Q15dvZTLj18vHBrW/tNIQZ7GhJUQx3DD3uhZKRmbfvf0J3KKxEqzcxbKujSJSi7xXRt671KZ8MiVrX1LRt/lYKAflgwRWAQ6PNsto3kVECsSpV+4t/OOw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org; dkim=pass (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=korg header.b=BsfZzrgC; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=akpm@linux-foundation.org; receiver=lists.ozlabs.org) smtp.mailfrom=linux-foundation.org
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=B3K06FIr;
+	dkim=pass (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=korg header.b=BsfZzrgC;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--seanjc.bounces.google.com (client-ip=2607:f8b0:4864:20::549; helo=mail-pg1-x549.google.com; envelope-from=39rueagykdms9vr40tx55x2v.t532z4be66t-uvc2z9a9.5g2rs9.58x@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org)
-Received: from mail-pg1-x549.google.com (mail-pg1-x549.google.com [IPv6:2607:f8b0:4864:20::549])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux-foundation.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=akpm@linux-foundation.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gG0tf1J1mz2xlV
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 May 2026 03:33:45 +1000 (AEST)
-Received: by mail-pg1-x549.google.com with SMTP id 41be03b00d2f7-c827c880e39so2456629a12.0
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2026 10:33:45 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20251104; t=1778693623; x=1779298423; darn=lists.ozlabs.org;
-        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
-         :date:from:to:cc:subject:date:message-id:reply-to;
-        bh=jMEgM1iZspGG7I35Q8gjdtCOP5swckX6p2O9sp5dK20=;
-        b=B3K06FIrw+gzxcBByZ5BkzNjBFp1ffTQIbNRvIJj4NnaP5Qb0ma7XQmYwQhyiKDwZT
-         MOxfkt+D1varztwPdtzgYA4tJAdOA5cegWlT0eUJWIH7uUo6XehTXh/MaMatGXEIgw1G
-         L0CXGIvor8N4DPBWMvGE6QS+HvI0gvqc0dw0b7hdjrH37p5zh4HHqUbXkbW47JM4nc6w
-         yJJ98Jpp9QCXIspmv8m7d/nLvyLtbJuujyByh9rvh/SvZYt6Gu2KUSIDLdhhu9TI9lBo
-         nZ8yGgUrS4DIBuHW3K2j/PLmjjStWiwZNW3MKtheiLqjYzh8S4s1ZHMJT2RQTJZHiIni
-         Jpow==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1778693623; x=1779298423;
-        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
-         :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=jMEgM1iZspGG7I35Q8gjdtCOP5swckX6p2O9sp5dK20=;
-        b=lQWo7UvnO+mRQOo02Mxs786FTWHeAovPLR1gKBPX7KNwMV1uLla0dUwOJapEXcLz6l
-         lY99o8etG9eup+5VQ1407i+qX1fSttBRIZYLIfVkD0ptCJPMRvxTd3qoynapKeudvofR
-         1qOMdvt+iUJyG0CEAmDUQ6I19hqqhtC7Nlt35mg8ItO4JSSZoIPD6w1XSJjh4jXgAwNy
-         KQl4enMs3Nf5ZCjsx0cDOvfKAY4PXJp3Il0s2NjAziuXjdlp8EOnK+HqishIQtK1AsIF
-         ++sXxkwCtHsxsGnizhiBjbXrpb9esKDZkQYV1+bFf7jCn3BZXwt2HT1doxBxRYI2I0ZH
-         b1cQ==
-X-Forwarded-Encrypted: i=1; AFNElJ93KsCDt2BwqiRpr8tudQ1cVNhpcMHs+X12l6CpLq39k1k2vLBcyrly7P5d8kVcvS7KRURz8vZH6EFxZr0=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Ywz28H+m6R87SgnwchzOaYWuP4PZAidQVgwYzxkHTObNp3jF4Mc
-	nHGyY68Gm/zd9L0cAG4b11Ve625W8q1kImRbkGQVz93H30LF/GDwFePjG3c2jgbQ0guiAKIfmhy
-	BnRS/7w==
-X-Received: from pgc19.prod.google.com ([2002:a05:6a02:2f93:b0:c79:83b3:cdf8])
- (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a05:6a21:9982:b0:3a2:d79c:4161
- with SMTP id adf61e73a8af0-3af8248bdf4mr4453790637.47.1778693622726; Wed, 13
- May 2026 10:33:42 -0700 (PDT)
-Date: Wed, 13 May 2026 10:33:42 -0700
-In-Reply-To: <20260507081855.GA362060@pedri>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gG19c5hmyz2xlV
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 May 2026 03:46:44 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by tor.source.kernel.org (Postfix) with ESMTP id 32ABF60121;
+	Wed, 13 May 2026 17:46:42 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 37904C19425;
+	Wed, 13 May 2026 17:46:41 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linux-foundation.org;
+	s=korg; t=1778694401;
+	bh=EvrM3uz6EOhLIcr/NdISliy5/4+6NtJJVBVMpjRPn7o=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+	b=BsfZzrgCAKpVLGW+zLYqSFHcPyq87YZ8baXJG3nnULrm3Z+RuAAKdtgbdqYF/xcPp
+	 LaIyzOwnzGxY2wcl2jy6+8nQwTZZV7ipeDmZATx+i3waJHlqutAHx5FH+Y8h+ipAOP
+	 Cwxqkkec6wE+E4hm4PRn631DaNoGQYC3o/VkP+gc=
+Date: Wed, 13 May 2026 10:46:40 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Muchun Song <songmuchun@bytedance.com>
+Cc: David Hildenbrand <david@kernel.org>, Muchun Song
+ <muchun.song@linux.dev>, Oscar Salvador <osalvador@suse.de>, Michael
+ Ellerman <mpe@ellerman.id.au>, Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Lorenzo Stoakes <ljs@kernel.org>, "Liam R . Howlett"
+ <Liam.Howlett@oracle.com>, Vlastimil Babka <vbabka@kernel.org>, Mike
+ Rapoport <rppt@kernel.org>, Suren Baghdasaryan <surenb@google.com>, Michal
+ Hocko <mhocko@suse.com>, Nicholas Piggin <npiggin@gmail.com>, Christophe
+ Leroy <chleroy@kernel.org>, Ackerley Tng <ackerleytng@google.com>, Frank
+ van der Linden <fvdl@google.com>, aneesh.kumar@linux.ibm.com,
+ joao.m.martins@oracle.com, linux-mm@kvack.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2 00/69] mm: Generalize HVO for HugeTLB and device DAX
+Message-Id: <20260513104640.b0f02b844c57f92bc954878e@linux-foundation.org>
+In-Reply-To: <20260513130542.35604-1-songmuchun@bytedance.com>
+References: <20260513130542.35604-1-songmuchun@bytedance.com>
+X-Mailer: Sylpheed 3.8.0beta1 (GTK+ 2.24.33; x86_64-pc-linux-gnu)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -76,54 +73,44 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 Mime-Version: 1.0
-References: <20260408001137.3290444-1-peter.fang@intel.com>
- <c2fad21764d2561469151f5dd5d35833ae8f76e6.camel@infradead.org>
- <20260427080554.GD1733452@pedri> <afjeahNaSG0zsMgx@google.com> <20260507081855.GA362060@pedri>
-Message-ID: <agS19k6eWBR9Xv3v@google.com>
-Subject: Re: [PATCH v2 0/3] KVM: Fix and clean up kvm_vcpu_map[_readonly]() usages
-From: Sean Christopherson <seanjc@google.com>
-To: Peter Fang <peter.fang@intel.com>
-Cc: David Woodhouse <dwmw2@infradead.org>, Paolo Bonzini <pbonzini@redhat.com>, 
-	Madhavan Srinivasan <maddy@linux.ibm.com>, Nicholas Piggin <npiggin@gmail.com>, 
-	Fred Griffoul <fgriffo@amazon.com>, Yosry Ahmed <yosry@kernel.org>, 
-	Ritesh Harjani <ritesh.list@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>, 
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>, 
-	Borislav Petkov <bp@alien8.de>, Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org, 
-	"H. Peter Anvin" <hpa@zytor.com>, kvm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
-	linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 
-On Thu, May 07, 2026, Peter Fang wrote:
-> On Mon, May 04, 2026 at 10:59:06AM -0700, Sean Christopherson wrote:
-> > On Mon, Apr 27, 2026, Peter Fang wrote:
-> > 
-> > > Thanks David!
-> > > 
-> > > I think I'd need at least input from the maintainers on this but just by
-> > > code inspection, the kvm_vcpu_map() usage in sev.c seems a bit tricky.
-> > > Unmapping doesn't happen until right before switching to the guest, so
-> > > this might fall into the "keep the mapping around for a longer time"
-> > > category [1].
-> > 
-> > It definitely falls into that category.  But that code is also rather gross, i.e.
-> > could use some cleanup no matter what, so I don't think it's a good argument for
-> > keeping kvm_vcpu_map() around.
-> > 
-> > To avoid a bunch of pointless work and churn, let's hold off on hardening and/or
-> > renaming kvm_vcpu_map() for now.  I'll take this v2 as-is; even though taking a
-> > gpa instead of a gfn will conflict with the nVMX series, it's dead simple and a
-> > worthwhile cleanup even if some of the conversions get discarded shortly after.
+On Wed, 13 May 2026 21:04:28 +0800 Muchun Song <songmuchun@bytedance.com> wrote:
 
-I had a change of heart after looking at the applied code, and after going through
-Fred's gpc+nVMX series.  I don't want to have a discrepancy between kvm_vcpu_map()
-and __kvm_vcpu_map(), even for a "short" amount of time, and I do think it makes
-sense to pursue switching to gpcs for the nested code.  But, I also agree with the
-changelog's statement that __kvm_vcpu_map() fundamentally operates on gfns, i.e. I
-don't want to "fix" the discrepancy.
+> In this series, HVO is redefined as Hugepage Vmemmap Optimization: a
+> general vmemmap optimization model for large hugepage-backed mappings,
+> rather than a HugeTLB-only implementation detail.
+> 
+> The existing code grew around the original HugeTLB-specific HVO path,
+> while device DAX developed similar but separate vmemmap optimization
+> handling. As a result, the current implementation carries duplicated
+> logic, boot-time special cases, and subsystem-specific interfaces around
+> what is fundamentally the same sparse-vmemmap optimization.
+> 
+> This series generalizes that optimization into a common framework used
+> by both HugeTLB and device DAX.
+> 
+> The first few patches include some minor bug fixes found during AI-aided
+> review of the current code. These fixes are not the main goal of the
+> series, but the later refactoring and unification work depends on them,
+> so they are included here as preparatory changes.
+> 
+> The series then reworks the relevant early boot and sparse
+> initialization paths, introduces a generic section-based sparse-vmemmap
+> optimization infrastructure, switches HugeTLB and device DAX over to the
+> shared implementation, and removes the old special-case code.
+>
+> ...
+>
+>  46 files changed, 743 insertions(+), 1812 deletions(-)
 
-The other thing that swayed me is patch 2; I have a separate patch (amusingly
-related to gpc stuff) to extra gpa_to_gfn (and others) into kvm_types.h, and so
-I don't want to take patch 2 either.
+Gulp.
 
-Long story short, I'm going to grab only patch 1.
+I think the first 15ish patches (little fixes and cleanups and
+refactorings) are ready to go in immediately?
+
+Perhaps you could prepare such things as a separate series.  Or tell me
+which ones are suitable and I'll fudge up a [0/N]?
+
 
