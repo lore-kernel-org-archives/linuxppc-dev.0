@@ -1,114 +1,68 @@
-Return-Path: <linuxppc-dev+bounces-20920-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20921-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 75326CD4F3D
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 May 2026 17:25:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 494EACD37AC
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 May 2026 17:33:49 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gG0hY5kBhz2xld;
-	Thu, 14 May 2026 03:25:01 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::736"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778693101;
-	cv=none; b=EKkMnKTXnpj+T3JnVq5VkncWTi1j+t/DkhimWxay7Q4W/8gvKcO5Wt/cij2WR6PlpK/ZU1s/z+TXrlQl8hYF6HBObCR9mI+mWNeohMpom0+yC7fLhZfwpaObOL5pTDuk4NXkKCJcm4vlv0GRdMPjBGGLHewIshYnvlYbqPuWSA2eGTImaJACdFGJgQ50CIyuymuwueDPraFny6VM9ODAxKHvmf2sU9wBa2Hs80ilGzy96RRVZUoaxy0ByORS2A5XPoRR0EUsXwlIIRHCyRKaX55t7H0t5LHI3Gn/iqNx71efgQIMXPitA8e+OEPlESBadg6W2nK91y6YHA3cW1AidQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gG0tg5kYJz2xld;
+	Thu, 14 May 2026 03:33:47 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::549"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778693627;
+	cv=none; b=bRYBVw7QB9vHa2DMo9KkeMd8SL80BojfLSnpKo8HtjV0zU+pzW5xXBJiu+cNVsKp2qMO1Aiqq5bk5WzRpYjbGZOaY54X3AeGc9Uev7kI3tFDH8//JWzEdAXJPM036daq/0fQb1v9FnVptPqGBfcO3IYowR6At8l/z3NAvHqd7ixiOJlS4mD/ujxISBIREhLS0wd5A2sRKZNVoJqrUQahuJi7tJKIbJ3Yviz/zerh6MCL5Zt0hKc8xc0/lFLr/rzOEIk8uynuFk7IeeqX8jKjLYYcGXsu+7naB6xOQzvrzWP+tET9q4IPZj1Uqar2qcZBWTFHrwhjPAiqa2MhK0PYQw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1778693101; c=relaxed/relaxed;
-	bh=fQtwNmxswhQih8gmC6FPDl+zfVKzr3i0rq4YmglfcBk=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=HEM40uvKVxwcXQZcyDBjvnOtPFlDhNxF9ghrGpmyHdab9/R1CEvIlpbXwaYiFrZW795/P9L3hgHa1sj/XhQoGcly7Xe+0CEANI3UiYY424nKe2mC5DtpFaqh/cpB9RksEQzJug7tSr8kIYK81lvqzZq5LLqLUiOmn+8sDtGU09SQ4VANTjjK70HpU17dwVepUCwA7+nrCLKjkZUgIlCLPrL9MfdRaCPdWPuNWI6Pjh7HCXjzKrI9kuzOObFmJdGp9SsU1mwGdpOqWzJ10DXm1fIlhgzEpxE7tBMzSQ0mvRMF1eQT8apHjm0YxnCNqk9CKe3zUYdk6Y9bdrSfMdiSsA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ziepe.ca; dkim=pass (2048-bit key; secure) header.d=ziepe.ca header.i=@ziepe.ca header.a=rsa-sha256 header.s=google header.b=f3w4Y0Cr; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::736; helo=mail-qk1-x736.google.com; envelope-from=jgg@ziepe.ca; receiver=lists.ozlabs.org) smtp.mailfrom=ziepe.ca
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ziepe.ca
+	t=1778693627; c=relaxed/relaxed;
+	bh=jMEgM1iZspGG7I35Q8gjdtCOP5swckX6p2O9sp5dK20=;
+	h=Date:In-Reply-To:Mime-Version:References:Message-ID:Subject:From:
+	 To:Cc:Content-Type; b=gjnjDBnHIJPKfDSBpY2zhBaZzMW+EzW3Vlcct7a9O5btOi6kv3cBwzHqKC+t/vFiudTN8S9igChje+dApg2PJLigdwdoQhAdU32OvxTf4yL/9HLIM3Nzt6Q2ghGFKuun1i3Ov7Pj8f/s9RGptrPRGsziQcR9M0mT1XNRrrzmvnujAngeDopRPrmoskxQADOLH9gOY2Ysdxuvt7PjKHjcAr0JePr01ONHUrQ2wVQbE7p/ecjtxIV8G/uIlscmbkELlVbe6+VxyrepeAcWpSC5wqQCbJdZXyiCOl6+YVrcfywF3NaI7KrDortkiXuCxhEPcAVxygQ3Q7fW4jbNKjONLA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=B3K06FIr; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::549; helo=mail-pg1-x549.google.com; envelope-from=39rueagykdms9vr40tx55x2v.t532z4be66t-uvc2z9a9.5g2rs9.58x@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=flex--seanjc.bounces.google.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=ziepe.ca header.i=@ziepe.ca header.a=rsa-sha256 header.s=google header.b=f3w4Y0Cr;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=B3K06FIr;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=ziepe.ca (client-ip=2607:f8b0:4864:20::736; helo=mail-qk1-x736.google.com; envelope-from=jgg@ziepe.ca; receiver=lists.ozlabs.org)
-Received: from mail-qk1-x736.google.com (mail-qk1-x736.google.com [IPv6:2607:f8b0:4864:20::736])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--seanjc.bounces.google.com (client-ip=2607:f8b0:4864:20::549; helo=mail-pg1-x549.google.com; envelope-from=39rueagykdms9vr40tx55x2v.t532z4be66t-uvc2z9a9.5g2rs9.58x@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org)
+Received: from mail-pg1-x549.google.com (mail-pg1-x549.google.com [IPv6:2607:f8b0:4864:20::549])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gG0hS4qXvz2xlV
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 May 2026 03:24:55 +1000 (AEST)
-Received: by mail-qk1-x736.google.com with SMTP id af79cd13be357-8d560ede296so784028485a.0
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2026 10:24:55 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gG0tf1J1mz2xlV
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 May 2026 03:33:45 +1000 (AEST)
+Received: by mail-pg1-x549.google.com with SMTP id 41be03b00d2f7-c827c880e39so2456629a12.0
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2026 10:33:45 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ziepe.ca; s=google; t=1778693092; x=1779297892; darn=lists.ozlabs.org;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :mime-version:references:message-id:subject:cc:to:from:date:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=fQtwNmxswhQih8gmC6FPDl+zfVKzr3i0rq4YmglfcBk=;
-        b=f3w4Y0Crx5RJ9hwoKiVyY/ILyA725kEoj1n65JRdscszwiOe4i/kH1OEU2cJU1dg8Z
-         x2TJWUB4CWN73FwUy/QohgGqxdbIj7Bim8AyONUyLs1v0sG3uXaW9yTJNBYHA0aZmYPo
-         d12Rq51k/NOATofN0OaeC37x7c23qF75u6bpwwZQ0buKdxDUlr5e+uYlMEJDVWFYyeR6
-         xvq8h6uzzLiZXKsKef1wxt8NnyqNXbwymIZ2Iy1Fvg2+1HbQke7UvUaqOPlav1p1JHn9
-         fYPJRChesYWiTH6UdVUKkhOjlksMrpUs+9NkanYu84+nQvAovEeDbtviL9olLNk3+tRx
-         digw==
+        d=google.com; s=20251104; t=1778693623; x=1779298423; darn=lists.ozlabs.org;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:from:to:cc:subject:date:message-id:reply-to;
+        bh=jMEgM1iZspGG7I35Q8gjdtCOP5swckX6p2O9sp5dK20=;
+        b=B3K06FIrw+gzxcBByZ5BkzNjBFp1ffTQIbNRvIJj4NnaP5Qb0ma7XQmYwQhyiKDwZT
+         MOxfkt+D1varztwPdtzgYA4tJAdOA5cegWlT0eUJWIH7uUo6XehTXh/MaMatGXEIgw1G
+         L0CXGIvor8N4DPBWMvGE6QS+HvI0gvqc0dw0b7hdjrH37p5zh4HHqUbXkbW47JM4nc6w
+         yJJ98Jpp9QCXIspmv8m7d/nLvyLtbJuujyByh9rvh/SvZYt6Gu2KUSIDLdhhu9TI9lBo
+         nZ8yGgUrS4DIBuHW3K2j/PLmjjStWiwZNW3MKtheiLqjYzh8S4s1ZHMJT2RQTJZHiIni
+         Jpow==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1778693092; x=1779297892;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :mime-version:references:message-id:subject:cc:to:from:date:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=fQtwNmxswhQih8gmC6FPDl+zfVKzr3i0rq4YmglfcBk=;
-        b=CjVbCR5YORnuQQjZ2wpJ4c0z95YdhfCQiV+1m/L7FppGfxEHK/TRpgm2c41iPmaV5e
-         n5yAhKYWItMCqD3UZx1rrbQmFoIUht7AntVnnSJqBMGf4TsbxlBOAWHjKVop426Feye9
-         +afeb3fL3yEgZ8bTGsMLt9w5wkpBrvrD5LMBh2/jIOmanWEQyPpznSiJUf8zXU2ZJ2YM
-         27AoSCEBaXMvqGGGA2u/+VS/wz0xtqcEAlTOSVZStbXZJLviisoR3DnrMzkkiKbaqkUk
-         y1GP8hBN7Ysix62EGgUD8Jk+whnhKWcGmv1121sjRuTMR2vFpx7IanRTDqJCwGQYSE9B
-         jLLA==
-X-Forwarded-Encrypted: i=1; AFNElJ816nzEN3blB7iKjEkXVdLw7Fy9LU4koJIjovKx/YUj5PQzcqHoTztNJQIyFdovZ5qhgdtxAQVTchEdZhc=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yw+ikViz+7MQougrRreouFeYnTPTOGKdQ0PoiogxR4R9P6zumLJ
-	LwxZbfLcZ3O71mU1nMQQN2yrsNbWnyKy4x5Y+5uYbbDOSTh6lkeS+xLA7fcfNfoaxeU=
-X-Gm-Gg: Acq92OGJqfr3RCqAIZKCqcfpWgo55iv4EVcJrwO5U7vSQtqwJGSRMBOFHnUHcm0wF1t
-	Iiz7KyfkNKsEqQ+tFtrnXgPA4XCxDaer5M9A3XmmpUfVV9b23I/GmHR4h7aY6VDDsEScGQ95Msx
-	1UXbSrHuClctxigJOy8GM8g8tWfIHRJyQn3wPbd7dEncETKe53tQ3rA0tBk3B461m21U8GjSegR
-	/Jn1v2ISoOaGG7pQ6eY0wWxssfhGrheBmVaJRsDQuHI8FNnNNuQz16CLMWWK7er7SxncfifGf9w
-	oRzHjh70DcaLxh4eA79XnPUnn6urx/1od1j9oZJCa17Kb54qp8OimNSOQka2Qd1jw+oJH1LSQE0
-	1wrqIU1fyRXLWbnRIYJphhLXSyPI/9MpmHDaU2j+rAV94R52QuYU2U35SdDQ9RhY+NeolXuhvq9
-	9ljVZMacd5GrgV8Y45U9AMnbkrNWH1/gighh+RIxlrXdki/OsJEt2CXT5JU32/Tu4CRNvMuOQ4R
-	EK28Q==
-X-Received: by 2002:a05:620a:19a3:b0:8ee:42cc:4d9c with SMTP id af79cd13be357-90f8ac08735mr658592985a.39.1778693092335;
-        Wed, 13 May 2026 10:24:52 -0700 (PDT)
-Received: from ziepe.ca (crbknf0213w-47-54-130-67.pppoe-dynamic.high-speed.nl.bellaliant.net. [47.54.130.67])
-        by smtp.gmail.com with ESMTPSA id af79cd13be357-910bc83bbf5sm13598685a.28.2026.05.13.10.24.50
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 13 May 2026 10:24:50 -0700 (PDT)
-Received: from jgg by wakko with local (Exim 4.97)
-	(envelope-from <jgg@ziepe.ca>)
-	id 1wNDKE-00000003dZu-0jxL;
-	Wed, 13 May 2026 14:24:50 -0300
-Date: Wed, 13 May 2026 14:24:50 -0300
-From: Jason Gunthorpe <jgg@ziepe.ca>
-To: Mostafa Saleh <smostafa@google.com>
-Cc: "Aneesh Kumar K.V (Arm)" <aneesh.kumar@kernel.org>,
-	iommu@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
-	linux-kernel@vger.kernel.org, linux-coco@lists.linux.dev,
-	Robin Murphy <robin.murphy@arm.com>,
-	Marek Szyprowski <m.szyprowski@samsung.com>,
-	Will Deacon <will@kernel.org>, Marc Zyngier <maz@kernel.org>,
-	Steven Price <steven.price@arm.com>,
-	Suzuki K Poulose <Suzuki.Poulose@arm.com>,
-	Catalin Marinas <catalin.marinas@arm.com>,
-	Jiri Pirko <jiri@resnulli.us>, Petr Tesarik <ptesarik@suse.com>,
-	Alexey Kardashevskiy <aik@amd.com>,
-	Dan Williams <dan.j.williams@intel.com>,
-	Xu Yilun <yilun.xu@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
-	linux-s390@vger.kernel.org,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	Alexander Gordeev <agordeev@linux.ibm.com>,
-	Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
-	Heiko Carstens <hca@linux.ibm.com>,
-	Vasily Gorbik <gor@linux.ibm.com>,
-	Christian Borntraeger <borntraeger@linux.ibm.com>,
-	Sven Schnelle <svens@linux.ibm.com>, x86@kernel.org
-Subject: Re: [PATCH v4 04/13] dma: swiotlb: track pool encryption state and
- honor DMA_ATTR_CC_SHARED
-Message-ID: <20260513172450.GR7702@ziepe.ca>
-References: <20260512090408.794195-1-aneesh.kumar@kernel.org>
- <20260512090408.794195-5-aneesh.kumar@kernel.org>
- <agSKQrSIhizCXKwx@google.com>
+        d=1e100.net; s=20251104; t=1778693623; x=1779298423;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=jMEgM1iZspGG7I35Q8gjdtCOP5swckX6p2O9sp5dK20=;
+        b=lQWo7UvnO+mRQOo02Mxs786FTWHeAovPLR1gKBPX7KNwMV1uLla0dUwOJapEXcLz6l
+         lY99o8etG9eup+5VQ1407i+qX1fSttBRIZYLIfVkD0ptCJPMRvxTd3qoynapKeudvofR
+         1qOMdvt+iUJyG0CEAmDUQ6I19hqqhtC7Nlt35mg8ItO4JSSZoIPD6w1XSJjh4jXgAwNy
+         KQl4enMs3Nf5ZCjsx0cDOvfKAY4PXJp3Il0s2NjAziuXjdlp8EOnK+HqishIQtK1AsIF
+         ++sXxkwCtHsxsGnizhiBjbXrpb9esKDZkQYV1+bFf7jCn3BZXwt2HT1doxBxRYI2I0ZH
+         b1cQ==
+X-Forwarded-Encrypted: i=1; AFNElJ93KsCDt2BwqiRpr8tudQ1cVNhpcMHs+X12l6CpLq39k1k2vLBcyrly7P5d8kVcvS7KRURz8vZH6EFxZr0=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Ywz28H+m6R87SgnwchzOaYWuP4PZAidQVgwYzxkHTObNp3jF4Mc
+	nHGyY68Gm/zd9L0cAG4b11Ve625W8q1kImRbkGQVz93H30LF/GDwFePjG3c2jgbQ0guiAKIfmhy
+	BnRS/7w==
+X-Received: from pgc19.prod.google.com ([2002:a05:6a02:2f93:b0:c79:83b3:cdf8])
+ (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a05:6a21:9982:b0:3a2:d79c:4161
+ with SMTP id adf61e73a8af0-3af8248bdf4mr4453790637.47.1778693622726; Wed, 13
+ May 2026 10:33:42 -0700 (PDT)
+Date: Wed, 13 May 2026 10:33:42 -0700
+In-Reply-To: <20260507081855.GA362060@pedri>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -121,73 +75,55 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <agSKQrSIhizCXKwx@google.com>
+Mime-Version: 1.0
+References: <20260408001137.3290444-1-peter.fang@intel.com>
+ <c2fad21764d2561469151f5dd5d35833ae8f76e6.camel@infradead.org>
+ <20260427080554.GD1733452@pedri> <afjeahNaSG0zsMgx@google.com> <20260507081855.GA362060@pedri>
+Message-ID: <agS19k6eWBR9Xv3v@google.com>
+Subject: Re: [PATCH v2 0/3] KVM: Fix and clean up kvm_vcpu_map[_readonly]() usages
+From: Sean Christopherson <seanjc@google.com>
+To: Peter Fang <peter.fang@intel.com>
+Cc: David Woodhouse <dwmw2@infradead.org>, Paolo Bonzini <pbonzini@redhat.com>, 
+	Madhavan Srinivasan <maddy@linux.ibm.com>, Nicholas Piggin <npiggin@gmail.com>, 
+	Fred Griffoul <fgriffo@amazon.com>, Yosry Ahmed <yosry@kernel.org>, 
+	Ritesh Harjani <ritesh.list@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>, 
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>, 
+	Borislav Petkov <bp@alien8.de>, Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org, 
+	"H. Peter Anvin" <hpa@zytor.com>, kvm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
+	linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
 
-On Wed, May 13, 2026 at 02:27:14PM +0000, Mostafa Saleh wrote:
+On Thu, May 07, 2026, Peter Fang wrote:
+> On Mon, May 04, 2026 at 10:59:06AM -0700, Sean Christopherson wrote:
+> > On Mon, Apr 27, 2026, Peter Fang wrote:
+> > 
+> > > Thanks David!
+> > > 
+> > > I think I'd need at least input from the maintainers on this but just by
+> > > code inspection, the kvm_vcpu_map() usage in sev.c seems a bit tricky.
+> > > Unmapping doesn't happen until right before switching to the guest, so
+> > > this might fall into the "keep the mapping around for a longer time"
+> > > category [1].
+> > 
+> > It definitely falls into that category.  But that code is also rather gross, i.e.
+> > could use some cleanup no matter what, so I don't think it's a good argument for
+> > keeping kvm_vcpu_map() around.
+> > 
+> > To avoid a bunch of pointless work and churn, let's hold off on hardening and/or
+> > renaming kvm_vcpu_map() for now.  I'll take this v2 as-is; even though taking a
+> > gpa instead of a gfn will conflict with the nVMX series, it's dead simple and a
+> > worthwhile cleanup even if some of the conversions get discarded shortly after.
 
-> > +		/*
-> > +		 * if platform supports memory encryption,
-> > +		 * restricted mem pool is decrypted by default
-> > +		 */
-> > +		if (cc_platform_has(CC_ATTR_MEM_ENCRYPT)) {
-> > +			mem->unencrypted = true;
-> > +			set_memory_decrypted((unsigned long)phys_to_virt(rmem->base),
-> > +					     rmem->size >> PAGE_SHIFT);
-> > +		} else {
-> > +			mem->unencrypted = false;
-> > +		}
->
-> This breaks pKVM as it doesn’t set CC_ATTR_MEM_ENCRYPT, so all virtio
-> traffic now fails.
+I had a change of heart after looking at the applied code, and after going through
+Fred's gpc+nVMX series.  I don't want to have a discrepancy between kvm_vcpu_map()
+and __kvm_vcpu_map(), even for a "short" amount of time, and I do think it makes
+sense to pursue switching to gpcs for the nested code.  But, I also agree with the
+changelog's statement that __kvm_vcpu_map() fundamentally operates on gfns, i.e. I
+don't want to "fix" the discrepancy.
 
-How will pKVM signal what kind of memory the DMA needs then?
+The other thing that swayed me is patch 2; I have a separate patch (amusingly
+related to gpc stuff) to extra gpa_to_gfn (and others) into kvm_types.h, and so
+I don't want to take patch 2 either.
 
-Does it use set_memory_decrypted()? How can it use
-set_memory_decrypted() without offering CC_ATTR_MEM_ENCRYPT ?
-
-> Also, by design, some drivers are clueless about bouncing, so
-
-Oh? What does this mean? We take quite a dim view of drivers mis-using
-the DMA API..
-
-> I believe that the pool should have a way to control it’s property
-> (encrypted or decrypted) and that takes priority over whatever
-> attributes comes from allocation.
-
-We should get here because dma_capable() fails, and then swiotlb needs
-to return something that makes dma_capable() succeed. Yes, it should
-return details about the thing it decided, but it shouldn't have been
-pre-created with some idea how to make dma_capable() work.
-
-If dma_capable() can fail, then swiotlb should know exactly what to do
-to fix it.
-
-If pkvm wants to use the hacky scheme where you force a swiotlb pool
-configuration during arch init with force swiotlb that's a somewhat
-different flow and, sure the forced pool should force do whatever it
-is forced to.
-
-But lets try to keep them seperated in the discussion..
-
-> And that brings us to the same point whether it’s better to return
-> the memory along with it’s state or we pass the requested state.
-> I think for other cases it’s fine for the device/DMA-API to dictate
-> the attrs, but not in restricted-dma case, the firmware just knows better.
-
-The memory type must be returned back at some level so downstream
-things can do the right transformation of the phys_addr_t.
-
-One of the aspirational CC things that should work is a T=1 device
-tries to DMA from a decrypted page, finds the address is above the dma
-limit of the device, so it bounces it with SWIOTLB to an encrypted low
-address page and then the DMA API internal flow switiches from working
-with decrypted to encrypted phys_addr_t.
-
-If we can make that work then maybe the flows are designed correctly.
-
-Jason
+Long story short, I'm going to grab only patch 1.
 
