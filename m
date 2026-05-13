@@ -1,73 +1,81 @@
-Return-Path: <linuxppc-dev+bounces-20823-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20824-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 791F5CD484C
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 May 2026 04:36:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 20C8DCD37B6
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 May 2026 05:32:17 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gFgf80nSkz2xld;
-	Wed, 13 May 2026 14:36:48 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778647008;
-	cv=none; b=EL80yc7TmxQd8Of3CckGgr8gflvVPehpeFmg5N50A4qGrbiHpHTG6e/OuXGtPCaZBgn4ctpRbQ7SlrpfX4+vRRz9E+ueqnwXtOeZoV8ZMNQv74BDvxHZv/lpn9tTcL72zVRELB8piPdmut2BB61WoPgd/CCKQx+sot1Yl4srt4qSDvI6qdmVERInsleCfYrux/qtOBltt0NEV8XRu7TcuL3ZaP7ZpKxc6KxweeZRmVymKd+VN8NWcdxJiZIG3yclLu2Gbk4yhhMqTqz+XpmoiQ4vsBUHAhFgkBg8s1EYW/rLTJZXui0/HJkHmMX9CuW6gL9p8ImZMJHMODKJiLzQ/A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gFht82pDZz2xpp;
+	Wed, 13 May 2026 15:32:16 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1036"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778650336;
+	cv=none; b=PTVHLp48m0R2z7AZY+Tdd3Aep/7dmgPnSW8L27waee1AGT9LMXkKgBG+khTHDx6aMrPL8liZcrDILZRIwZCgM0BhCSOwSrIdRujhvFjiTV51z5exQyBLjc+wYD7jEKPZqVhb4kG4TSy+mQZwj6ZAiZUFNe5V+2zN03c0dqKdiRS5+OsxzuvAMURH2AW0nr6+4UVwRhwSgm69nnBkmjfrbY7PBgWvjetEUfzWf4eoE/Up1w3zY8mlWQLpyO8EBaDZ0sOGO2XzqAryfw9Am+0OHnnarKSoLCVOikQNJhBVga7gp7Ui/8owxR29W7lkjNetfFOvbMSu9IJ8vigOCilv3A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1778647008; c=relaxed/relaxed;
-	bh=M4u8rbwtxUflV09UEV6XuYkTaxCTyaoYKBUSERTied8=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=KHgkhEBOunaHUrcTggIUy8L2dIvI/gi+jPuNCg/eoCbSZClK340eyaPuW0rvHUblWN8n6enJmPKhjHMxylHdLIk6Lorv/ab+p5CjdQvgFuwlGWRQ9w+Nt8ZNqujOWL4xS/dFOuj5+k2f2BeiuHTtovs69kVUKRmL+W6j0ASeUcxHX6WAN4PVmdddXp76zFY42vuR3/pm9JHl1YPwSSSSI92BXYsQT2DoaVBg+N+IDfHJfgb9cl2CMwjOuwPHDlFl7xTyVPtooGMDAKpC5dbgRC8jmMb+BGfk3PBh0rmmrceNOwa4W82ZrmBYs2s3yA8T/l/sbhR4IjKKq6xKEO80Nw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=MIxUdbgZ; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=harshpb@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1778650336; c=relaxed/relaxed;
+	bh=Odlz6dn4AMU3xpWoO+zOes01KTSuDtmQ6fjIHbN8+tI=;
+	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References; b=MT4oYBh+NRFXdK85nOqEww9mytqp2C0nWEe1Cuo+V2DrVeesLn996wajPqbIcrgl8sxctbsQchvyEj3c6ddjaeUYftCuvWgtIfXHspLz0Tjef/ONJKVJ1gCLDvffHMLSLjOt60YMCvZ2pMFgAONgfiDhg2guUX2ayRXhhRj+YbBPRqA3tR+HLMFpSMK1NkaxLsY4go0p2R9oAA+MVWCaYzlTigBU5Rd2m8yDICHk3hP+RhAY5Y8iru/DsmybSu2maI4EfnkrYKyh2belamJn5SQJ74RCFbCQcPBgPUB+491BmXQeebZVauhkgewEMriprick/1B0I/qcwD0/QikCzA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=C5LUzQXa; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1036; helo=mail-pj1-x1036.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=MIxUdbgZ;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=C5LUzQXa;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=harshpb@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1036; helo=mail-pj1-x1036.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pj1-x1036.google.com (mail-pj1-x1036.google.com [IPv6:2607:f8b0:4864:20::1036])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gFgf66yN5z2xlV
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2026 14:36:46 +1000 (AEST)
-Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 64D1dmN12608399;
-	Wed, 13 May 2026 04:36:10 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=M4u8rb
-	wtxUflV09UEV6XuYkTaxCTyaoYKBUSERTied8=; b=MIxUdbgZmh3lPu3YHHcks8
-	vrS2aplSXbS95uM/obXAdd/7MuJW/YwnoeEkq8x6Ds5pnw/UQgedEmwTfABWQIRC
-	4/RaOOYmrAuqLfZDvDGt5qq2uuI2ogaJEDaRGkGo9CC035ozP+EtL05Bq21CzeBA
-	USv7qQLFIAotRaSslXGBtbL/8ogsTO6x73s03IU6kRla6r5TiWT7NUVRGgsKf4El
-	IpAQCiWyk6Vct4sjvzv8fNeLvmTCKSfSdzuCPqaokfMIM1mKdGY0K15nhP5lmBUf
-	InrUl3Anw9Te+n0TbiH4lkJr0rdmvpYzay9Wk/BOFdlXRts6HQX//BguNh44uC6g
-	==
-Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4e3nv561wb-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 13 May 2026 04:36:09 +0000 (GMT)
-Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma13.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 64D4ORVm013529;
-	Wed, 13 May 2026 04:36:08 GMT
-Received: from smtprelay02.wdc07v.mail.ibm.com ([172.16.1.69])
-	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4e3nfgp6xe-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 13 May 2026 04:36:08 +0000 (GMT)
-Received: from smtpav03.wdc07v.mail.ibm.com (smtpav03.wdc07v.mail.ibm.com [10.39.53.230])
-	by smtprelay02.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 64D4a6Jl65667438
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 13 May 2026 04:36:06 GMT
-Received: from smtpav03.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id ABD0E5805A;
-	Wed, 13 May 2026 04:36:06 +0000 (GMT)
-Received: from smtpav03.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id EA7BE58054;
-	Wed, 13 May 2026 04:36:00 +0000 (GMT)
-Received: from [9.39.26.26] (unknown [9.39.26.26])
-	by smtpav03.wdc07v.mail.ibm.com (Postfix) with ESMTP;
-	Wed, 13 May 2026 04:36:00 +0000 (GMT)
-Message-ID: <fce0a701-ee58-4cb2-b34b-8aec26aaab5d@linux.ibm.com>
-Date: Wed, 13 May 2026 10:05:59 +0530
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gFht65pQPz2xn3
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2026 15:32:13 +1000 (AEST)
+Received: by mail-pj1-x1036.google.com with SMTP id 98e67ed59e1d1-36608b2f2dcso4421358a91.2
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2026 22:32:13 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1778650331; x=1779255131; darn=lists.ozlabs.org;
+        h=references:message-id:date:in-reply-to:subject:cc:to:from:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=Odlz6dn4AMU3xpWoO+zOes01KTSuDtmQ6fjIHbN8+tI=;
+        b=C5LUzQXaoXKDJA5aIkhgg51UlwAL4phGMIaEWgXYX2ZnecNlqIeVHLL0HtPbJmmD91
+         dj6pu6XxDrUHB7Qj51llNF7xPxe7c9aTj9CsWF0oeJ5Oc67G3konTNXLIfVIyJBIZSm8
+         jQhHC8D3eMe49Z96Sl1lJDkm754SieWzvdry/TqLXxjx446ZRQ/1F+2Ik+CK+y6zsLrj
+         o+6ujY9ZWykvtPsDcbk12rkN6OBCkqUuziz8aEjIexk2eQcVTsm7g+HlEEZrTeVGoCOq
+         9udmRWwhUtq6kwl6uAc3m6TVKhhG3Ap3Dc1tLdsfto3J92xnyXmND2t+lXB06NNmDLT/
+         iNhw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1778650331; x=1779255131;
+        h=references:message-id:date:in-reply-to:subject:cc:to:from:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=Odlz6dn4AMU3xpWoO+zOes01KTSuDtmQ6fjIHbN8+tI=;
+        b=Jr8Q8zmWjbtobRxS/HLajXZTYJSZMzMPZvKnVf/LOm6S87uKk2urRDECxazryXh1S3
+         I5+AUq56dNpEiOHv1Sw1akK84KCdYFcMctnyg0BIQhyrJ8cu+bAX5O+DeaHWOtW3n/3u
+         u8i/p9BHJ/EJl5ErsIqSacVlz+5jDL/Pk7VvL9HNHi1KGSweAYyAm8qz34qXWx2WRXRz
+         PplIVP3oPwfk53RG30Wx5cD5q6UH8VolWzKIeWTGopnxzkyYC1jKlJ2RD6BxMhiX4+3H
+         FXufVYfdaIdbE0u3dmvu7m7hFbzrCJRtv5LQSYNWXjtiu3UMXg808JF+1Bhg8D1NYrdU
+         79Tg==
+X-Forwarded-Encrypted: i=1; AFNElJ+7WpjQNyAqB16DwklIk4rixVKlj/OEuPyzEh52mwr0yT2DcDcC5PajCRydskQS/qeDp6uRr2tWEmA/h0M=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yw9CLq0md+/5BVoHA0y6eMA1X2MO9fqIgdQmeqPr3q1EeFbKFJx
+	Pdz5xmev+WgchniiZqAVrsOewoMRFrLEVJ72MbRNyObi6CAdPSM1c3te
+X-Gm-Gg: Acq92OGU2hvHVuuaD6XK5Xm165AQCOETJlBvCQbV1CGwFyZe+97Q6sRblCXh9zJAtYQ
+	ABWfjohzfzAEYWg84Jj5peh+JZrw81zdhAaj6H5ARaCKqtkQIGyr9mTTH0pHKITtTwymxN8d7xI
+	1Iw7I3h7QQMzF+7FcCQ3OKpFqEl2YPlNEB5ipzoPobcbDRFdA3IkkNJLvDoLHXR3uJuhIo4DNPr
+	Rw9e9agj7pPqWOeqU2b+K6NACL0EZgIduk92p6XgN+zAbIvJr8VYWSVMGhjj8BwJ8QtA6VxdqG/
+	X6ENQwf2b5vWze5/Jd/GTzIfmWOFPOgzBcBBWpmoRr1XCN+eWQeaNut68SCQ0oU52nEIDwu+S0A
+	S9NvQfV/30YVO6GW+u/pfQFM6Oi/UCt3jbNCytgB2lFw88zZuq5+9elSm3hlGP7ySqwSq/Sw7it
+	8ceDDohfpc/a+HVDkDg8zvGw==
+X-Received: by 2002:a17:90b:2702:b0:366:4782:139a with SMTP id 98e67ed59e1d1-368f79930c2mr1396471a91.17.1778650330660;
+        Tue, 12 May 2026 22:32:10 -0700 (PDT)
+Received: from pve-server ([49.205.216.49])
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-368ede49dfcsm1614075a91.7.2026.05.12.22.32.07
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 12 May 2026 22:32:09 -0700 (PDT)
+From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+To: Sayali Patil <sayalip@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org, maddy@linux.ibm.com
+Cc: linux-kernel@vger.kernel.org, Mahesh Salgaonkar <mahesh@linux.ibm.com>, sshegde@linux.ibm.com, chleroy@kernel.org
+Subject: Re: [PATCH 1/3] powerpc/time: remove preempt_disable/enable from arch_irq_work_raise()
+In-Reply-To: <a64fa7d86da51f78743bee26e16ae155c43016c7.1778057685.git.sayalip@linux.ibm.com>
+Date: Wed, 13 May 2026 10:00:49 +0530
+Message-ID: <pl30q6bq.ritesh.list@gmail.com>
+References: <cover.1778057685.git.sayalip@linux.ibm.com> <a64fa7d86da51f78743bee26e16ae155c43016c7.1778057685.git.sayalip@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -80,113 +88,103 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3] powerpc/audit: Convert powerpc to
- AUDIT_ARCH_COMPAT_GENERIC
-Content-Language: en-GB
-To: Paul Moore <paul@paul-moore.com>,
-        "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-        Venkat Rao Bagalkote <venkat88@linux.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>,
-        Nicholas Piggin
- <npiggin@gmail.com>,
-        Madhavan Srinivasan <maddy@linux.ibm.com>,
-        Eric Paris <eparis@redhat.com>,
-        Christophe Leroy <christophe.leroy@csgroup.eu>,
-        linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-        audit@vger.kernel.org,
-        Thomas Weissschuh <thomas.weissschuh@linutronix.de>,
-        =?UTF-8?Q?C=C3=A9dric_Le_Goater?= <clg@kaod.org>,
-        ritesh.list@gmail.com
-References: <261b1be5b8dc526b83d73e8281e682a73536ea28.1773155031.git.chleroy@kernel.org>
- <CAHC9VhTyOuuPs1uovodM9M_8zZeJnVXs9xrWSdPhZcjXUb=mvA@mail.gmail.com>
-From: Harsh Prateek Bora <harshpb@linux.ibm.com>
-In-Reply-To: <CAHC9VhTyOuuPs1uovodM9M_8zZeJnVXs9xrWSdPhZcjXUb=mvA@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTEzMDA0MyBTYWx0ZWRfX2ySjBRHf1ifO
- sZtPjOZRjZv9XruT2/Qeanu0d5sV4Ze9wdKlIC/06tYDrnvwXRNbsY2c310z18n51SzamH/oXd2
- HayGlZnXqRdV6o2uopIXDuOlvFyrxTzav+Xx7nxcPm5DpzlkFn1aSneKfnU6OY6FAF+HKZC2xFg
- uPdouBdYipC+j/fl9TSFLyidBM4i45Xly1UBetQUJGztCVLp8z2RA4eMsHo9bP7x59VXvANyhdN
- +6kQpPXJt0nnaSGBZ1zu/VTeq4e5G/zRspndHz71wHK56VJRSJrt704xmzqi2vYF3VPfPsIycYF
- eKXl7WyiHQD6E34uIX/HLGaRZ4/fgM0jXS5zvQFJDiKRZqpRLmFYipgBE1YID78y3eie/t9zu3s
- /tXyQr7uVlWFgYdLDiusSlGZ4/Nh/Dkm3JclaI7pr7e6rDyrBeVv4SAg8I8Lwods1QYAOPPz0/Y
- /NQcnBz7riLvUC0AAow==
-X-Proofpoint-ORIG-GUID: _U2tDHj2DvVrKAdqK3lGFQq7FqDIQv_E
-X-Authority-Analysis: v=2.4 cv=Jc6Ma0KV c=1 sm=1 tr=0 ts=6a03ffb9 cx=c_pps
- a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
- a=IkcTkHD0fZMA:10 a=NGcC8JguVDcA:10 a=f7IdgyKtn90A:10
- a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22 a=uAbxVGIbfxUO_5tXvNgY:22
- a=VwQbUJbxAAAA:8 a=NEAV23lmAAAA:8 a=1UX6Do5GAAAA:8 a=aow-egSQAAAA:8
- a=c3vZd6dCDRh6lx_OUBwA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
- a=Et2XPkok5AAZYJIKzHr1:22 a=gFNbaldVC-z-bsjSTzMo:22
-X-Proofpoint-GUID: WTnx8P3coCCvEntJqiTgZBrH5JErmR21
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-05-11_05,2026-05-08_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- spamscore=0 priorityscore=1501 malwarescore=0 bulkscore=0 clxscore=1011
- phishscore=0 adultscore=0 lowpriorityscore=0 suspectscore=0 impostorscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2605050000 definitions=main-2605130043
 
-+ Ritesh
+Sayali Patil <sayalip@linux.ibm.com> writes:
 
-Hi Venkat,
+> A kernel panic is observed when handling machine check exceptions from
+> real mode.
+>
+>   BUG: Unable to handle kernel data access on read at 0xc00000006be21300
+>   Oops: Kernel access of bad area, sig: 11 [#1]
+>   NIP [c000000000029e40] arch_irq_work_raise+0x10/0x70
+>   LR [c00000000003ffc8] machine_check_queue_event+0xa8/0x150
 
-On 11/03/26 12:49 am, Paul Moore wrote:
-> On Tue, Mar 10, 2026 at 11:08 AM Christophe Leroy (CS GROUP)
-> <chleroy@kernel.org> wrote:
->>
->> From: Christophe Leroy <christophe.leroy@csgroup.eu>
->>
->> Commit e65e1fc2d24b ("[PATCH] syscall class hookup for all normal
->> targets") added generic support for AUDIT but that didn't include
->> support for bi-arch like powerpc.
->>
->> Commit 4b58841149dc ("audit: Add generic compat syscall support")
->> added generic support for bi-arch.
->>
->> Convert powerpc to that bi-arch generic audit support.
->>
->> With this change generated text is similar.
->>
->> Thomas has confirmed that the previously failing filter_exclude/test
->> is now successful both without and with this patch, see [1]
->>
->> [1] https://lore.kernel.org/all/20260306115350-ef265661-6d6b-4043-9bd0-8e6b437d0d67@linutronix.de/
->>
->> Link: https://github.com/linuxppc/issues/issues/412
->> Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
->> Reviewed-by: Cédric Le Goater <clg@kaod.org>
->> ---
->> Venkat, a test result with https://github.com/linux-audit/audit-testsuite would be appreciated.
-> 
-> Yes, I'd like to see confirmation that the audit test suite runs clean
-> on ppc systems with this patch applied, and unfortunately without a
-> ppc system I have no way to test this myself.
+[14626.841925] MSR:  8000000000001003 <SF,ME,RI,LE>  CR: 88222248  XER: 00000005
+[14626.841939] CFAR: c00000000003ffc4 DAR: c00000006be21300 DSISR: 40000000 IRQMASK: 0
 
-Is it possible to include this test suite in the IBM CI ?
 
-Thanks
-Harsh
-> 
->> v3: Rebased on v7.0-rc1
->>
->> v2: https://lore.kernel.org/all/a4b3951d1191d4183d92a07a6097566bde60d00a.1629812058.git.christophe.leroy@csgroup.eu/
->> ---
->>   arch/powerpc/Kconfig                |  5 +-
->>   arch/powerpc/include/asm/unistd32.h |  7 +++
->>   arch/powerpc/kernel/Makefile        |  3 -
->>   arch/powerpc/kernel/audit.c         | 87 -----------------------------
->>   arch/powerpc/kernel/compat_audit.c  | 49 ----------------
->>   5 files changed, 8 insertions(+), 143 deletions(-)
->>   create mode 100644 arch/powerpc/include/asm/unistd32.h
->>   delete mode 100644 arch/powerpc/kernel/audit.c
->>   delete mode 100644 arch/powerpc/kernel/compat_audit.c
-> 
+Let's also add the above MSR state along with the call stack showing
+MSR[EE] was 0 when this triggered. This also shows the DAR as 0xc....
+while MSR[IR|DR] = 0. 
 
+>   Call Trace:
+>   [c0000000179d3c70] [c00000000003ff64] machine_check_queue_event+0x44/0x150
+>   [c0000000179d3d30] [c0000000000084e0] machine_check_early_common+0x1f0/0x2c0
+>
+> The crash occurs because arch_irq_work_raise() calls preempt_disable()
+> from machine check exception (MCE) handlers running in real mode. In
+> this context, accessing the preempt_count can fault, leading to the panic.
+>
+> The preempt_disable()/preempt_enable() pair in arch_irq_work_raise()
+> was originally added by commit 0fe1ac48bef0 ("powerpc/perf_event: Fix
+> oops due to perf_event_do_pending call") to avoid races while raising
+> irq work from exception context.
+>
+> Later, commit 471ba0e686cb ("irq_work: Do not raise an IPI when
+> queueing work on the local CPU") added preemption protection in
+> irq_work_queue() path, while commit 20b876918c06 ("irq_work: Use per
+> cpu atomics instead of regular atomics") added equivalent
+> protection in irq_work_queue_on() before reaching arch_irq_work_raise():
+>
+>   irq_work_queue() / irq_work_queue_on()
+>     -> preempt_disable()
+>       -> __irq_work_queue_local()
+>         -> irq_work_raise()
+>           -> arch_irq_work_raise()
+>
+> As a result, callers other than mce_irq_work_raise() already execute
+> with preemption disabled, making the additional
+> preempt_disable()/preempt_enable() pair in arch_irq_work_raise()
+> redundant.
+>
+> Remove it to avoid accessing preempt_count from real mode context.
+>
+> Fixes: cc15ff327569 ("powerpc/mce: Avoid using irq_work_queue() in realmode")
+
+Agree with the Fixes tag. This patch actually moved mce to use
+arch_irq_work_raise(). It was ok until the CONFIG_PREEMPTION was
+disabled on powerpc since macros like preempt_enable|disable() were
+mostly a no-op. However, after lazy preemption got enabled, access to
+preempt_count while in real mode can cause the issue you described.
+
+
+One more thing which we should add to the commit msg is:
+The arch_irq_work_raise() function executes in NMI context when called
+from MCE handler, hence we won't be preempted or scheduled out since we
+are in NMI context with MSR[EE]=0, hence it is safe to remove
+preempt_disable|enable() call from here.
+
+And let's change the commit subject to:
+    powerpc/time: Remove redundant preempt_disable|enable() calls from arch_irq_work_raise()
+
+
+BTW, thanks for adding a nice commit msg with the sequence of events.
+With the above changes - pease feel free to add:
+
+Reviewed-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+
+
+> Suggested-by: Mahesh Salgaonkar <mahesh@linux.ibm.com>
+> Signed-off-by: Sayali Patil <sayalip@linux.ibm.com>
+> ---
+>  arch/powerpc/kernel/time.c | 2 --
+>  1 file changed, 2 deletions(-)
+>
+> diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
+> index 4bbeb8644d3d..a99eb43f6ce9 100644
+> --- a/arch/powerpc/kernel/time.c
+> +++ b/arch/powerpc/kernel/time.c
+> @@ -471,10 +471,8 @@ void arch_irq_work_raise(void)
+>  	 * which could get tangled up if we're messing with the same state
+>  	 * here.
+>  	 */
+> -	preempt_disable();
+>  	set_irq_work_pending_flag();
+>  	set_dec(1);
+> -	preempt_enable();
+>  }
+>  
+>  static void set_dec_or_work(u64 val)
+> -- 
+> 2.52.0
 
