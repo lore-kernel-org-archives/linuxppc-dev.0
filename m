@@ -1,63 +1,81 @@
-Return-Path: <linuxppc-dev+bounces-20818-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20819-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C9507CD37AC
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 May 2026 03:24:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D8750CD484C
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 May 2026 03:30:32 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gFf303g0Zz2xl0;
-	Wed, 13 May 2026 13:24:44 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778642684;
-	cv=none; b=AEVsqV6dXSOw6euUpd2rn3Uf5fLgzyu8iYZVZjoF7W5VmqcYSrPYdfAZqkqAeO3r5+d2W7ovtWgNIiLGS3WOIGz241o4JfvXDisOO2j4+o5sp84aZVmtelAssoDVm4ODNRjxo+lPfSNfZWxbYX3pdPt/Sety2ZiDPxDxJRQO+0fXOqgAz3GPfb1K78r8tzofXcfKRE8J6XNckTLRJIpasC7pVkrrlJpqsP/ZguraSf9NRVN+xdhsrmIFohuI/7MQWfk7gvZIk11uOBBUoUGOZjxgQSPtRH0cNwO3aO50GVUuGbt02rYdoZPWFd6OU9N2pjdjWTLvDS1SWrFWQZ4dVQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gFf9g3K9Bz2xld;
+	Wed, 13 May 2026 13:30:31 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1034"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778643031;
+	cv=none; b=PNfK5qZmFY65Va9rOwNsI8yS7za6ddB1dzz7uhrB9cqi7JFwx4F7jwDxIazgbTv5fOpTgKq54Q8tHeamza27QErl8gqshfeH1fIWiY0cjgZ73XeaG33o0guYWJHlLywldR1ae47UgIgaZsJdFN1h6R3zsx8sTvBTapnb/UVUII9eV+ku49aCtK2aFygknviN6P+QVmk6vLIvPBVZoLmkqB4Pc24sMK/YbcbhFpsZGCFxmDMirn9jQel0++YHiow5qUW50mHI7uxjeWRykV1/MJIsJom5K/Y3bF7tRnmHtMgjgMRFGOcYPlJL5RtWQPFRvTkCUD3yNnWBw5qgvpTsrw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1778642684; c=relaxed/relaxed;
-	bh=MYZpouVE2OLehGyAa7PaE6T71GlIlZTGmcLnilYkS4g=;
-	h=Date:From:To:Cc:Subject:Message-Id:In-Reply-To:References:
-	 Mime-Version:Content-Type; b=nJKb8PRIAdcxe586pmfzs4gS7TQ8TJq36+FdtRXGW4iC9jHZnPFPN8M1UxfIkXwQRK1Q9OQydjRtxc6kJRFUz43kGEuEMMHkxYaGPmc575bnwQBzWz8iGlNtuqvMxwK2P1I23TsvqDG0oz8NHhV/lM+U5pV5Odh83z1Eoj2k/siUcAnZBLSM/wjWSXSplGCmlyq6/+baqK791Gup58KY4mhLOaWjg2Am4cYZYdFicYs9Q2bNyjg5I664v3zUMYKDeFW4jJTxocbyPLM46qw//vyWh7xuf/qOHWd9OpoKgYLrUD0G3D0d8svrF995wWbYNaQoRWS+pjvCWy5x2NhKDw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org; dkim=pass (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=korg header.b=xd0V97Ck; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=akpm@linux-foundation.org; receiver=lists.ozlabs.org) smtp.mailfrom=linux-foundation.org
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org
+	t=1778643031; c=relaxed/relaxed;
+	bh=pqkZzYqVpdf77W53Sw/ScZCotUHs99LkzilZL1EWsNI=;
+	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References; b=mc6C77Y52gvIuntlah1xtFdgCh0J70el8GM4BX3LZXr3C6B4Eb34zhLL5iVte3WVy/Gyhq3/2Unje9VF1rKn11zXY57N/pRWhO2EBA/qZo3uqoKrUyPFFafWAsqKe0DKa7VUHhnDunctH+BUes0L4vRqLv5Uw/msscoroJrvwfIqe5IvtzsBfwf/FetUivPMwH7cNNXpbcdiR013Wug/Mkx6m0DmVM+7kElFz0Iy7QJxpKGIs/7AikUBM+YVLwXkryhkuuZtiXNv5/Elewqb5GLhYLLVen1jcyv4ulmoZfltQCtFJteskM1byRX1tz7nHPZcjHuiqoSD8duPbWa6+g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=JX5JETbE; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1034; helo=mail-pj1-x1034.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=korg header.b=xd0V97Ck;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=JX5JETbE;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux-foundation.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=akpm@linux-foundation.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1034; helo=mail-pj1-x1034.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pj1-x1034.google.com (mail-pj1-x1034.google.com [IPv6:2607:f8b0:4864:20::1034])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gFf2z6DtGz2xJT
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2026 13:24:43 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id BA3BA60121;
-	Wed, 13 May 2026 03:24:40 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id ED6B5C2BCB0;
-	Wed, 13 May 2026 03:24:39 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linux-foundation.org;
-	s=korg; t=1778642680;
-	bh=WeTxWCELMc05TsXWrycjVf+KrYRziDCqbR7joXkp6tw=;
-	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
-	b=xd0V97CkQEyg8x1FCAD5O8fl3kaLAs6QTAlIzAN8i7h9BDqugDelSjLtLWiLpt82w
-	 /lo32+w1a5m/ikHJozf7RS3jC3KMNyJPQRApM3skBLRvETu1vUSWOhogkx1RkNfRkY
-	 WVNe7LEJIPK3i85YpX/8OCD2wwknb8wg1/pXfZt0=
-Date: Tue, 12 May 2026 20:24:39 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Sayali Patil <sayalip@linux.ibm.com>
-Cc: Shuah Khan <shuah@kernel.org>, linux-mm@kvack.org,
- linux-kernel@vger.kernel.org, linux-kselftest@vger.kernel.org, Ritesh
- Harjani <ritesh.list@gmail.com>, David Hildenbrand <david@kernel.org>, Zi
- Yan <ziy@nvidia.com>, Michal Hocko <mhocko@kernel.org>, Oscar Salvador
- <osalvador@suse.de>, Lorenzo Stoakes <lorenzo.stoakes@oracle.com>, Dev Jain
- <dev.jain@arm.com>, Liam.Howlett@oracle.com, linuxppc-dev@lists.ozlabs.org,
- Miaohe Lin <linmiaohe@huawei.com>, Venkat Rao Bagalkote
- <venkat88@linux.ibm.com>
-Subject: Re: [PATCH v6 00/14] selftests/mm: fix failures and robustness
- improvements
-Message-Id: <20260512202439.e71f233281428ff596dab0b6@linux-foundation.org>
-In-Reply-To: <cover.1777877814.git.sayalip@linux.ibm.com>
-References: <cover.1777877814.git.sayalip@linux.ibm.com>
-X-Mailer: Sylpheed 3.8.0beta1 (GTK+ 2.24.33; x86_64-pc-linux-gnu)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gFf9d4Mgcz2xGX
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2026 13:30:28 +1000 (AEST)
+Received: by mail-pj1-x1034.google.com with SMTP id 98e67ed59e1d1-3665a90bcd3so4550961a91.1
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2026 20:30:28 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1778643026; x=1779247826; darn=lists.ozlabs.org;
+        h=references:message-id:date:in-reply-to:subject:cc:to:from:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=pqkZzYqVpdf77W53Sw/ScZCotUHs99LkzilZL1EWsNI=;
+        b=JX5JETbEqedbb9+PNgw3HtSmJ8hcZA+hvKJatn0bzRoaJJrsGP7FNjmCPTMG8aBRR5
+         u7t3wDv4g76lcCFf5okp5wMl4oUSl4w/MKoL/0ZbM9KguPeENVFodYBMx0+mgiBrqje8
+         Mk9XmXpl3tTpawEJlEn236a2bDxbwmdAqMJ1a1E4g2ls9658VGxIC4zcg5lsyERnbge/
+         xf3hpkioZRKvor1Bmxff+o4SBQqAmNun0F7UtDEiDEx1TKzNtBo+umTReyTfv7HoHmu7
+         UJ7PHj7R13bCRjano31kkpPYWQdUn5nluePOVtLnI9aQONrVduOOuK48aWye/cSFMozR
+         7XdQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1778643026; x=1779247826;
+        h=references:message-id:date:in-reply-to:subject:cc:to:from:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=pqkZzYqVpdf77W53Sw/ScZCotUHs99LkzilZL1EWsNI=;
+        b=pisxrQaXSOTwUHbeYDRyncVn9tcz+LfScX64oEWcewkOf50+JFTUqQsM72ffYDv8sP
+         cFa1vqxx5lYk8Lyb8Cb6meDP0mRQZ6xZ18xT6oRfb3KcjWkla2OQyv0ciSn4K5oThK7o
+         sakieJ+ZtRoCqNqkdhsxJ4VszYu3cXlt860F/fMGeJ1RTLJzKbvE6ydfIokBiGgxbwzU
+         coQsQQ2vyeyc2sVU3+BE29iG+ebOq9ieNfh57/X2dpGJaoQjGImINwhbdzFmMbBjV4vE
+         xTQi7f53I1T5p1jroKqEFjZQ5FFFI8Er0gSV+4s+5EwEkPAC9zg6YR6J6K4fBAn+58RE
+         ZDGw==
+X-Forwarded-Encrypted: i=1; AFNElJ9MJmh1VWhjQVANtsDf2cWBozfIDnpqCqa4eoD5nnl+hGABCS2GmnUdcEem2s7XOxbUQS04WleMilJ5OLU=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YztCpXl3i5q/y1D7mN99lKsIubtTRamnmrvmSVnS04EgWlwZ5nN
+	6mdqKaj5K3oE4j7SX53z0lkz8wStmPuD4FUHz8u95O44HPLosUScv8G+
+X-Gm-Gg: Acq92OH0jpqC+RSBqf0JBviwn4Cr7yPvQ+4TJytTp1dXWppw1FJ9zy4y6MLdf9/S7f8
+	UcOWJGOtU8VmFdCCAUYx3fVk5CkHm2tyTKsAltg9vmAWU2ae92L/Y35Ha2SOT+3sk8Qjj39rjZ2
+	AhgkM4Sd/8m3i1PoVED9rmrq/Kxvjv1wYRHHL5Yplvmt5XpIyDEqCEgW7/aRNYPuZRXzoWi85Px
+	ED13OPEFPlLGE1gRKxJkYUy1OzUHAmzyuw3rwIeZ1gJI33v1UJvrWj8AxgyA2R+hRxTPnlZ1zNz
+	uJAoVU3ojX0VY+JGJtVPl571B/1VGT9Zg3IbrDEIozMVkNAjb+Fjr/OxyNg+Tm11oJDcAsRoaCr
+	zJ/+VFx0coJ/LAejPaAeyrfTqhjUIryPO/lDnWDZlM4V6EoDpopNBhqo3Cfej4WvgIxon15lUtz
+	6DqqGWQBZuAAHGHU4ucqTF6w==
+X-Received: by 2002:a05:6a20:728a:b0:3a2:ccb5:abc7 with SMTP id adf61e73a8af0-3af809790b7mr1486042637.13.1778643025638;
+        Tue, 12 May 2026 20:30:25 -0700 (PDT)
+Received: from pve-server ([49.205.216.49])
+        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-c8267710262sm13455532a12.18.2026.05.12.20.30.16
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 12 May 2026 20:30:23 -0700 (PDT)
+From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+To: "David Hildenbrand (Arm)" <david@kernel.org>, "David S. Miller" <davem@davemloft.net>, Andreas Larsson <andreas@gaisler.com>, Mike Rapoport <rppt@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Alexander Gordeev <agordeev@linux.ibm.com>, Gerald Schaefer <gerald.schaefer@linux.ibm.com>, Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, Sven Schnelle <svens@linux.ibm.com>, Madhavan Srinivasan <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, Lorenzo Stoakes <ljs@kernel.org>, "Liam R. Howlett" <liam@infradead.org>, Vlastimil Babka <vbabka@kernel.org>, Suren Baghdasaryan <surenb@google.com>, Michal Hocko <mhocko@suse.com>
+Cc: sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org, linux-s390@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, "David Hildenbrand (Arm)" <david@kernel.org>
+Subject: Re: [PATCH 8/8] powerpc/mm: remove CONFIG_HAVE_BOOTMEM_INFO_NODE
+In-Reply-To: <20260511-bootmem_info_prep-v1-8-3fb0be6fc688@kernel.org>
+Date: Wed, 13 May 2026 08:55:05 +0530
+Message-ID: <wlx8q9da.ritesh.list@gmail.com>
+References: <20260511-bootmem_info_prep-v1-0-3fb0be6fc688@kernel.org> <20260511-bootmem_info_prep-v1-8-3fb0be6fc688@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -70,23 +88,23 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
 
-On Mon,  4 May 2026 13:54:37 +0530 Sayali Patil <sayalip@linux.ibm.com> wrote:
+"David Hildenbrand (Arm)" <david@kernel.org> writes:
 
-> Powerpc systems with a 64K base page size exposed several issues while
-> running mm selftests. Some tests assume specific hugetlb configurations,
-> use incorrect interfaces, or fail instead of skipping when the required
-> kernel features are not available.
-> 
-> This series fixes these issues and improves test robustness.
+> register_page_bootmem_info_node() essentially only calls
+> register_page_bootmem_memmap(). However, on powerpc that function is a
+> nop. So there is not benefit in using CONFIG_HAVE_BOOTMEM_INFO_NODE
+> anymore, let's just drop it.
+>
+> We can stop including bootmem_info.h.
 
-Sorry, bitrot.  Mike's monster series "make MM selftests more CI
-friendly" has moved a lot of this code around then altered it.  Can you
-please redo against mm.git's mm-new branch?
+Yup, the following patch [1] removed the usage of bootmem more than a
+decade ago. Thanks for cleaning up the remaining unused pieces.
 
-Thanks.
+[1]: https://lore.kernel.org/all/1410933504-28564-1-git-send-email-anton@samba.org/
+
+LGTM. Please feel free to add:
+
+Reviewed-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
 
 
