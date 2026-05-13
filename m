@@ -1,73 +1,81 @@
-Return-Path: <linuxppc-dev+bounces-20831-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20832-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E1F3ACD37B6
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 May 2026 07:09:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8DAABCD37B6
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 May 2026 07:11:08 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gFl1m43Vtz2xpp;
-	Wed, 13 May 2026 17:09:00 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778656140;
-	cv=none; b=YZGBYYjg+5cPebL6pyQYOyk3nR4++RSw+lA7TkZ7vZ/Ya+8iFHvThS7kp+42E36AU9oKMzjh/HB0ZO3na7fkOfFqlBFeWdvKMiPhX8do3YLMhHIN2W3bdgx3g0Z65nGZCIvmOOxSqo5g8VKdEA2v1HsON0EJc2f1yJzPCBwbjeKYPbPwOSpU8+DWKTXDlqrQeSZORXN5y8DH4wq8seEH0LE8yTAh6USOVRr7BBAy+qD5/f0MuNzgnWyJeeGBEbbYfSvEaZCX+HzQj3g8xj5HeumoNoNPs9IiMajeXTngJE/y2wV/dnqjLRhxqd2tmmO0fYzL5kZRKpDMIp8FV79tKw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gFl4C0M6Kz2xpp;
+	Wed, 13 May 2026 17:11:07 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778656266;
+	cv=none; b=lPd6AE6IBh0aTHLmhaplvq9xTNp3rFMAOcozhKsJMIdoWjPGNHk5zyLsijSMRBArwfuT5poF/BRNRZ8k/s2aYZ+pN8IyC4tbMzRIgBqXU040uw7Z0UuMnRE5QpaZzB8ktvzP3l14br9UpcOtO7KJugCs1lxK4+FUr/fYDIFcSTjhC+8wGQZ3KE7H3LbPopjWY4poEJpwhk/snS3IQZzZsOfM16xBPknEo05zJMuJYZl88BeNR5zue5Ts4yktU8wCml8BGInN/oZb3V7CwpKugJnxt8moIOrxxtNskt2sG03t0lctrX2USw+z2NUvvN3C7lzTcuWMUsxtIJaMJmnJtg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1778656140; c=relaxed/relaxed;
-	bh=ZFLG1ThLigjpcIXngpflJ7eNwj+nm/3eRnDkncjhTMA=;
-	h=Message-ID:Date:MIME-Version:Subject:From:To:Cc:References:
-	 In-Reply-To:Content-Type; b=YeDYyQJD/CBIoDjFajqeCi9t4pOClLnewjdTy5NAtI8ikwIfihiexeDoMmna3KvprDofuJBPQK5mX5FjNHd3eUNQKHRGnbCOgUT365xXAqqLsna9B+FDH8K9R5Ry5xi2UBTDKZnxDrna8fgaBOYVsrP2sZVoGIi2hu2HTjDA0+wcG0KRB/ZCOYOqnZn+ubO5a3+/5GNqlZAaKkqM5YKoPstklXxeyO0J8ch671NTxEEj3Sy3CFc5OIAUuLxCxlxntoVpTElyyma1Bh0y7toJIk91bOrU3QnEqfdylrLjjOkjSPwvMFZWqGg8t1Mk6JquMn5bM4FD44wtuHWh1TE6yQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=UjYbfCH2; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sayalip@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	t=1778656266; c=relaxed/relaxed;
+	bh=VArn79Pl9dmLvybq1WxvJe8e+cluwn41tPIStEn/a+c=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
+	 MIME-Version:Content-Type; b=lRfZgTZnYjZK5HqAgtIo4D3V35TFaS7gpnPd8xvnJ7eCt5meoOqh3yhhT145SG2ZklSM1iSaHK8eZsNQbwttUXObkd/1/cMB1kmKqQclB4SqOGtBU9eJXn1GF3v8FBRjQInTp2Ki9TF14CS7eSDrikyCJYt8/i71ud+IYtQVrWfhzErem5wRzm7JmDT3JcWE4D2Dmlw/frVZuc/9DwPKLPOBXETj4bLadVRbnw7FJEFDfWREBXZlVvV8Iqhc6jJD8dlOvGkYHeuonURJ3+uRruPEuOa1WyYw6jXzBqGN/cRABj+0ggH009cbA3RYmKbjwjqgZ7XVMD9uvI9p8HWRbg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=bTnt9D17; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=vaibhav@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=UjYbfCH2;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=bTnt9D17;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sayalip@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=vaibhav@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gFl1l171Jz2xn3
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2026 17:08:58 +1000 (AEST)
-Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 64D23CUL3179843;
-	Wed, 13 May 2026 07:08:54 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gFl495tv2z2xn3
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2026 17:11:05 +1000 (AEST)
+Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 64D2YpvX2607539
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2026 07:11:03 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=ZFLG1T
-	hLigjpcIXngpflJ7eNwj+nm/3eRnDkncjhTMA=; b=UjYbfCH2gW7NaQN14BnAhu
-	qG82vNlq9hMJv5sCE20XDO4Y1pZmaPghaIPG9ZRyCC+whNtM3xFLc/HDXQXj9RnB
-	eMOVKA2pzLjTv7zV/IACUXMfaNBiAnxdB2dnrl1RDePUmgIDGiYiRHHz9Fc/RgK8
-	96g7mL7SbEAzm5OS4HYO6hoUef4UqgavI1jbqac5R3Z5FtlP+d2xNcPkj7RRWFEN
-	9j2h61evno0K7oUaEJnSkzdWZl2MK6EKxIgkeecWB5u61ULWXCZs8D+7iI1RcnZf
-	3gMssvysbqfltjrxyFbSMIR2lRC3H2z5YSwStOZQNOWWWVC19gqUxvNyPs+KMQIQ
-	==
-Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4e3nv6p7te-1
+	:content-type:date:from:in-reply-to:message-id:mime-version
+	:references:subject:to; s=pp1; bh=VArn79Pl9dmLvybq1WxvJe8e+cluwn
+	41tPIStEn/a+c=; b=bTnt9D17xmC8CIGoAlW9igEeTiOO6J/CdYt/vXkPmP6VTY
+	MT6GgxdqGmZ1v7/ydGWqCWMH+Sv4Jm3+nY7bPbkGnJk5hnZQahCLRx4vzzW3erW0
+	l3nZnYEHrRDOteOQL0YtaCY11e0EoVSgjH3SNQjAvScNhAf8N9uUX0hajoF2U8Lu
+	j4/9O456vfi054ggaj3Iqix9UrtW8xBvZOjPua889xEuHbSt9UYANZrnA4maV10D
+	QZNVIU4uPxncOvlO/L5A21+ShJEIAmW8fhklXKV6i/YRaEeONZeB2gQ73jaYtgHK
+	YdrzFfKjjWzqHGwQSY+acTLHBnQ91dZEyXGJCpKg==
+Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4e3nv56hc3-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 13 May 2026 07:08:54 +0000 (GMT)
-Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma13.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 64D6sXP7004913;
-	Wed, 13 May 2026 07:08:53 GMT
-Received: from smtprelay04.wdc07v.mail.ibm.com ([172.16.1.71])
-	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4e3nfgpp2m-1
+	Wed, 13 May 2026 07:11:03 +0000 (GMT)
+Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma11.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 64D79N3u011001;
+	Wed, 13 May 2026 07:11:02 GMT
+Received: from smtprelay07.wdc07v.mail.ibm.com ([172.16.1.74])
+	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4e3nfgepug-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 13 May 2026 07:08:53 +0000 (GMT)
-Received: from smtpav02.dal12v.mail.ibm.com (smtpav02.dal12v.mail.ibm.com [10.241.53.101])
-	by smtprelay04.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 64D78p7335914420
+	Wed, 13 May 2026 07:11:02 +0000 (GMT)
+Received: from smtpav06.dal12v.mail.ibm.com (smtpav06.dal12v.mail.ibm.com [10.241.53.105])
+	by smtprelay07.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 64D7B0WI30999086
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 13 May 2026 07:08:51 GMT
-Received: from smtpav02.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 712E05805C;
-	Wed, 13 May 2026 07:08:51 +0000 (GMT)
-Received: from smtpav02.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 4580A58051;
-	Wed, 13 May 2026 07:08:48 +0000 (GMT)
-Received: from [9.39.28.204] (unknown [9.39.28.204])
-	by smtpav02.dal12v.mail.ibm.com (Postfix) with ESMTP;
-	Wed, 13 May 2026 07:08:47 +0000 (GMT)
-Message-ID: <59787cfc-c08f-465b-b66c-1a4537307bf3@linux.ibm.com>
-Date: Wed, 13 May 2026 12:38:36 +0530
+	Wed, 13 May 2026 07:11:00 GMT
+Received: from smtpav06.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 660C55805F;
+	Wed, 13 May 2026 07:11:00 +0000 (GMT)
+Received: from smtpav06.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id EC74558043;
+	Wed, 13 May 2026 07:10:56 +0000 (GMT)
+Received: from vaibhav?linux.ibm.com (unknown [9.39.28.42])
+	by smtpav06.dal12v.mail.ibm.com (Postfix) with SMTP;
+	Wed, 13 May 2026 07:10:56 +0000 (GMT)
+Received: by vaibhav@linux.ibm.com (sSMTP sendmail emulation); Wed, 13 May 2026 12:40:55 +0530
+From: Vaibhav Jain <vaibhav@linux.ibm.com>
+To: Gaurav Batra <gbatra@linux.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, sbhat@linux.ibm.com, ritesh.list@gmail.com,
+        Brian King <brking@linux.ibm.com>, maddy@linux.ibm.com
+Subject: Re: [PATCH v2] powerpc/pseries/iommu: export DMA window data to
+ user space
+In-Reply-To: <20260507180646.40356-1-gbatra@linux.ibm.com>
+References: <20260507180646.40356-1-gbatra@linux.ibm.com>
+Date: Wed, 13 May 2026 12:40:55 +0530
+Message-ID: <87ik8rvl6o.fsf@vajain21.in.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -81,85 +89,681 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 0/3] MCE robustness fixes and LKDTM powerpc enhancements
-From: Sayali Patil <sayalip@linux.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, maddy@linux.ibm.com,
-        "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>, sshegde@linux.ibm.com
-Cc: linux-kernel@vger.kernel.org, Mahesh Salgaonkar <mahesh@linux.ibm.com>,
-        chleroy@kernel.org
-References: <cover.1778057685.git.sayalip@linux.ibm.com>
-Content-Language: en-IN
-In-Reply-To: <cover.1778057685.git.sayalip@linux.ibm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain
 X-TM-AS-GCONF: 00
 X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Authority-Analysis: v=2.4 cv=Us1T8ewB c=1 sm=1 tr=0 ts=6a042386 cx=c_pps
- a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
- a=IkcTkHD0fZMA:10 a=NGcC8JguVDcA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=Y2IxJ9c9Rs8Kov3niI8_:22 a=c92rfblmAAAA:8
- a=VnNF1IyMAAAA:8 a=FSmv8dLCCGc-WVpy0bEA:9 a=QEXdDO2ut3YA:10
- a=GvGzcOZaWPEFPQC_NcjD:22
-X-Proofpoint-GUID: tNgME0BuTSbqN9nByqr2SIgXhjpX6yAf
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTEzMDA3MSBTYWx0ZWRfX6XBwRuiPax7v
- bWleYpKGWeKkxhoCm7E61DjUXKoPKpjf7MQiZ+6n9dLInZO5r2lhk5Mxl6qDsQ8I2cv6O9RhnHh
- IubO7eH6KvCyhybWW45wxjTI5Qidz07jVRidDwbZf2D3fFHoyLXgNbIe15Ps8D6ryduK3nwZ/oS
- Mhwl3LT7wIKdYvNtZEiB1+S84UDWeROVuQ8ZG+H6AFg3u9Gi7DSc+psRFFraD3XYQeNZm66mr76
- qvmMpjT+N7Ei2RffV1ZEFV961x3nLyg74I6OP5qnGDDUe5Zd2ktKL8k+vY7rxkwMz9HzZfLLndR
- BaAF9d5PwP8KDw+JLkUJvyE9JYb07GM01+3nx8N8n2pbHhWa2xSNqNe/prkj4dDWRi7Og5/YHWz
- D2GGJyOlfjevOaM9EHU4qhjQL9ssMZ/FNcUx21iJiIWiKzb3AWR2Y4xPt6EroJ7uHENhFCF0aeP
- OrngOpNDZppMKCXalQA==
-X-Proofpoint-ORIG-GUID: z_vBTsT7t_k4R8xwTkJMKK7D30Yi8H-0
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTEzMDA3MSBTYWx0ZWRfXwG2N1k62qvMi
+ UYVMmTMWRatkqE89AM3lBzyBwDgmtlkirkzpeRWJoQVlJm0IZKXRloVswVykxBNxhLEPLT9t4hl
+ IKOpsrdroWOd6iJo/Hc2k0gnqK+dJaAZzaa9ZKM25vxiG3i2LYdtG/L41IDmgk8aoTtBVoQGC4P
+ riquyu5nCP7DyDqWPY3BiG0WFjayQQ2/i5J1qiGe+CdoMy5YwY2DczztK1k0KhPIoKrTMUlj4XH
+ C2mAtlY7QOiz19ntaLkVNOKKozYopygwwWEuUx+gE7r67DvMkgJcom6rUzHNKCGP/podFU17jWC
+ HLbiN0aSsQtwvTQHGHyC7cY2r1aXCw9Z+I06kRExdWQ1s3cMk9dF5SDckthId8Jh4WNOAiCkduQ
+ TzC2KH4D7efNnCPBm9KPCKAof1uv9Ym9954Qb3Vjch3D/1yklZJezbY+mWfM4vTpTRFHvUL+J/z
+ u45GSE3N8CoNMxq/rWA==
+X-Proofpoint-ORIG-GUID: LeuWPYMlPRrONSytRRZ3CS1a2LzDW8gm
+X-Authority-Analysis: v=2.4 cv=Jc6Ma0KV c=1 sm=1 tr=0 ts=6a042407 cx=c_pps
+ a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
+ a=NGcC8JguVDcA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
+ a=uAbxVGIbfxUO_5tXvNgY:22 a=VnNF1IyMAAAA:8 a=voM4FWlXAAAA:8
+ a=LOHgJW6Tez0lq80d3vUA:9 a=IC2XNlieTeVoXbcui8wp:22
+X-Proofpoint-GUID: qMDSnZ9YSw08ZSdEswuW4ns1mzQqdJd0
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
  definitions=2026-05-11_05,2026-05-08_02,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- phishscore=0 priorityscore=1501 impostorscore=0 lowpriorityscore=0
- bulkscore=0 suspectscore=0 spamscore=0 malwarescore=0 clxscore=1015
- adultscore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2605050000
- definitions=main-2605130071
+ spamscore=0 priorityscore=1501 malwarescore=0 bulkscore=0 clxscore=1015
+ phishscore=0 adultscore=0 lowpriorityscore=0 suspectscore=0 impostorscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2605050000 definitions=main-2605130071
+
+Gaurav Batra <gbatra@linux.ibm.com> writes:
+
+Thanks for the v2 patch. My review comments below:
+
+General comment. I see some issues in the patch that checkpatch would
+have flagged. Can you please also ensure that there are no checkpatch
+related warning before you send the patch
+
+Optional comment:
+Please split the patch into 2 , moving the DOC changes into separate
+patch.
+
+> Export PowerPC DMA window information (both default 2GB and Dynamic
+> larger window) to user space via sysfs. Each of these DMA windows has
+> attributes like size of the window, page size backing the window, mode,
+> etc. Each of these atributes is exported for user space consumption as a
+> file.
+>
+> PowerPC Host Bridge (PHB) can have multiple devices/functions sharing
+> the same DMA window. For each PHB, iommu registration creates an iommu
+> device under "/sys/devices/virtual/iommu".
+>
+> These devices will have 2 groups created to export Default and DDW
+> attributes.
+>
+> Reviewed-by: Brian King <brking@linux.ibm.com>
+> Reviewed-by: Vaibhav Jain <vaibhav@linux.ibm.com>
+
+Thanks for incorporating my review comments from the previous
+iteration. However I dont remember reviewing the v2 of this patch
+before. Can you please avoid presumptively adding my R-b until I have a
+chance to review the patch.
+
+> Reviewed-by: Shivaprasad G Bhat <sbhat@linux.ibm.com>
+> Signed-off-by: Gaurav Batra <gbatra@linux.ibm.com>
+> ---
+> V1 -> V2 change log:
+>
+> 1. Shiva: "weight" the it_map for the bitmap. This avoids using an extra
+>    counter in the table. Please look into how iommu_debugfs_weight_get()
+>    does this
+>
+>    Response: Incorporated changes
+>
+> 2. Vaibhav: If the DMA window is not available, show function should just
+>    return ENOENT so that userspace know the error instantly instead of
+>    having to parse the sysfs contents.
+>
+>    Response: Incorporated changes, returning ENODATA
+>
+> 3. Vaibhav: All the show functions have similar template. Please convert
+>    them to macros expansion to reduce code volume.
+>
+>    Response: Incorporated changes
+>
+> 4. Vaibhav: These new attributes are PSeries specific but they are being
+>    setup in ppc generic iommu code at arch/powerpc/kernel/iommu.c. Can
+>    you move these attributes to arch/powerpc/platforms/pseries/iommu.c
+>
+>    Response: I have split the attributes and moved them to pseries specific
+>    files. The original group "spapr-tce-iommu", is moved to PowerNV code
+>    base to retain the legacy functionality.
+>
+>    I tested the changes both on Pseries and PowerNV.
+>
+> 5. Vaibhav: It would be better to use function iommu_table_inuse_tces() as
+>    a callback in iommu_table_ops which can be implemented by pseries and
+>    powernv code differently.
+>
+>    Response: the function is no longer needed after changes in #1
+>
+> 6. Vaibhav: Since sysfs is ABI can you propose appropriate entries under
+>    Documentation/ABI/testing
+>
+>    Response: Added documentation
+>
+>  ...sfs-devices-virtual-iommu-dma_window_attrs |  21 ++
+>  .../arch/powerpc/dma_window_attributes.rst    |  65 +++++
+>  arch/powerpc/include/asm/pci-bridge.h         |   4 +
+>  arch/powerpc/kernel/iommu.c                   |  16 +-
+>  arch/powerpc/platforms/powernv/pci-ioda.c     |  16 ++
+>  arch/powerpc/platforms/pseries/iommu.c        | 261 ++++++++++++++++++
+>  arch/powerpc/platforms/pseries/pci_dlpar.c    |   2 +
+>  arch/powerpc/platforms/pseries/pseries.h      |   1 +
+>  arch/powerpc/platforms/pseries/setup.c        |   2 +
+>  9 files changed, 373 insertions(+), 15 deletions(-)
+>  create mode 100644 Documentation/ABI/testing/sysfs-devices-virtual-iommu-dma_window_attrs
+>  create mode 100644 Documentation/arch/powerpc/dma_window_attributes.rst
+>
+> diff --git a/Documentation/ABI/testing/sysfs-devices-virtual-iommu-dma_window_attrs b/Documentation/ABI/testing/sysfs-devices-virtual-iommu-dma_window_attrs
+> new file mode 100644
+> index 000000000000..18ba63874276
+> --- /dev/null
+> +++ b/Documentation/ABI/testing/sysfs-devices-virtual-iommu-dma_window_attrs
+> @@ -0,0 +1,21 @@
+> +What:
+> /sys/devices/virtual/iommu/<iommu-isolation>/spapr-tce-ddw/*
+Suggested:
+s/iommu-isolation/iommu-group/
+> +Date:       Oct 2025
+> +Contact:    linuxppc-dev@lists.ozlabs.org
+> +Description:    read only
+> +    For each IOMMU isolation unit spapr-tce-ddw sub-directory provides
+> +    attributes to query information related to the bigger Dynamic DMA
+> +    window (DDW) in the PowerPC virtualized platforms.
+> +
+> +    See Documentation/arch/powerpc/dma_window_attributes.rst for more
+> +    information.
+> +
+> +What:       /sys/devices/virtual/iommu/<iommu-isolation>/spapr-tce-dma/*
+> +Date:       Oct 2025
+> +Contact:    linuxppc-dev@lists.ozlabs.org
+> +Description:    read only
+> +    For each IOMMU isolation unit spapr-tce-dma sub-directory provides
+> +    attributes to query information related to the default 2GB DMA
+> +    window in the PowerPC virtualized platforms.
+> +
+> +    See Documentation/arch/powerpc/dma_window_attributes.rst for more
+> +    information.
+sysfs ABI documentation typically describes all the attribute files rather
+then directory. Please add details of the individual attributes that you
+are adding here.
+
+> diff --git a/Documentation/arch/powerpc/dma_window_attributes.rst b/Documentation/arch/powerpc/dma_window_attributes.rst
+> new file mode 100644
+> index 000000000000..8bd9aec8539d
+> --- /dev/null
+> +++ b/Documentation/arch/powerpc/dma_window_attributes.rst
+> @@ -0,0 +1,65 @@
+> +.. SPDX-License-Identifier: GPL-2.0
+> +
+> +=====================
+> +DMA Window Attributes
+> +=====================
+> +
+> +In PowerPC architecture there are 2 types of DMA windows -
+> +
+This is only true for PPC64-PSeries not for PPC64-PowerNV
+
+> +1. Default 2GB DMA window which is backed by 4K page size
+> +2. A bigger Dynamic DMA Window (DDW) which is backed by larger page size
+> +   (64K or 2MB)
+> +
+> +A dedicated device will have both the DMA windows instantiated but an SR-IOV
+> +device will only have the bigger Dynamic DMA Window.
+In context of PSeries please give some context abt 'dedicated device'
+
+> +
+> +The attributes of these 2 DMA windows are exported to user space via sysfs.
+> +Each IOMMU isolation unit will have its directory created under
+> +/sys/devices/virtual/iommu.
+> +
+> +As an exapmple, iommu-phb0001
+> +
+> +Under each IOMMU isolation unit, there will be a group of attributes for
+> +"Default 2GB DMA Window" and "Dynamic DMA Window" - spapr-tce-dma and
+> +spapr-tce-ddw respectively.
+> +
+> +Attributes under each group
+> +
+> +spapr-tce-ddw:
+> +direct_address  dynamic_address       dynamic_size  window_type
+> +direct_size     dynamic_pages_mapped  page_size
+> +
+> +spapr-tce-dma:
+> +dynamic_address  dynamic_pages_mapped  dynamic_size  page_size
+> +
+> +
+> +The bigger Dynamic DMA Window is configured into pre-mapped and/or dynamically
+> +allocated TCEs. If the DDW is in "Hybrid" mode, then both the Direct
+> +(pre-mapped) and Dynamic part of the DMA window will have valid values. Hybrid
+> +mode is valid only for SR-IOV devices.
+> +
+> +DMA Window properties:
+> +
+> +direct_address              Starting address of the pre-mapped DMA window
+> +direct_size                 Size of the pre-mapped DMA Window
+> +dynamic_address             Starting address of the dynamic allocations
+> +dynamic_size                Size of the dynamic allocation window
+> +dynamic_pages_mapped        Pages mapped for DMA by dynamic allocations
+> +page_size                   Page size backing the DMA window
+> +window_type                 Type of the DMA Window (Direct/Dynamic/Hybrid)
+> +
+
+these attributes should also be documented in the sysfs/ABI 
+
+> +
+> +An example of DDW attributes for an SR-IOV device::
+> +
+> +    $ cd /sys/devices/virtual/iommu/iommu-phb0001/spapr-tce-ddw
+> +
+> +    $ grep . *
+> +
+> +    direct_address:0x800000000000000   <-- Starting addr of pre-mapped Window
+> +    direct_size:137438953472           <-- Size of pre-mapped Window (128GB)
+> +    dynamic_address:0x800002000000000  <-- Starting addr of Dynamic allocations
+> +    dynamic_size:412316860416          <-- Size of dynamic allocation window (384GB)
+> +    dynamic_pages_mapped:270           <-- Pages mapped by dynamic allocations
+> +    page_size:2097152                  <-- DMA window page size (2MB)
+> +    window_type:Hybrid                 <-- window has both pre-mapped and
+> +                                           dynamic sections
+Suggested:
+This documentation can be improved by moving details on sysfs attrs and
+adding details on how 2 different types of DMA windows are allocated and managed.
+
+> diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
+> index 1dae53130782..9b09178aca5e 100644
+> --- a/arch/powerpc/include/asm/pci-bridge.h
+> +++ b/arch/powerpc/include/asm/pci-bridge.h
+> @@ -124,6 +124,10 @@ struct pci_controller {
+>  	resource_size_t dma_window_base_cur;
+>  	resource_size_t dma_window_size;
+>  
+> +#if defined(CONFIG_PPC_PSERIES) || defined(CONFIG_PPC_POWERNV)
+> +	const struct attribute_group **iommu_groups;
+> +#endif
+Ideally addition of new members to a struct should be done at the end
+to preserve KABI.
+Naming issue: s/iommu_groups/iommu_group_attrs/
+
+> +
+>  #ifdef CONFIG_PPC64
+>  	unsigned long buid;
+>  	struct pci_dn *pci_data;
+> diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
+> index 0ce71310b7d9..d6242e3f77da 100644
+> --- a/arch/powerpc/kernel/iommu.c
+> +++ b/arch/powerpc/kernel/iommu.c
+> @@ -1269,24 +1269,10 @@ static const struct iommu_ops spapr_tce_iommu_ops = {
+>  	.device_group = spapr_tce_iommu_device_group,
+>  };
+>
 
 
+> -static struct attribute *spapr_tce_iommu_attrs[] = {
+> -	NULL,
+> -};
+> -
+> -static struct attribute_group spapr_tce_iommu_group = {
+> -	.name = "spapr-tce-iommu",
+> -	.attrs = spapr_tce_iommu_attrs,
+> -};
+> -
+> -static const struct attribute_group *spapr_tce_iommu_groups[] = {
+> -	&spapr_tce_iommu_group,
+> -	NULL,
+> -};
+> -
+>  void ppc_iommu_register_device(struct pci_controller *phb)
+>  {
+>  	iommu_device_sysfs_add(&phb->iommu, phb->parent,
+> -				spapr_tce_iommu_groups, "iommu-phb%04x",
+> +				phb->iommu_groups, "iommu-phb%04x",
+>  				phb->global_number);
+>  	iommu_device_register(&phb->iommu, &spapr_tce_iommu_ops,
+>  				phb->parent);
+Since you are changing this code, can you check for NULL
+phb->iommu_groups and also check for returned errors from these two
+functions().
+In case phb->iommu_groups == NULL you can ignore registering sysfs. That
+will take care of POWERNV case.
 
-On 06/05/26 14:36, Sayali Patil wrote:
-> Hi all,
-> 
-> This series fixes a panic observed while handling machine check exceptions
-> (MCEs) from real mode. It also improves the reliability of the
-> PPC_SLB_MULTIHIT test by adding isync instructions after slbmte operations,
-> and introduces a new LKDTM trigger (PPC_RADIX_TLBIEL) to validate MCE
-> behavior on radix MMU.
-> 
-> Please review the patches and provide any feedback or suggestions
-> for improvement.
-> 
-> Thanks,
-> Sayali
-> 
-> Sayali Patil (3):
->    powerpc/time: remove preempt_disable/enable from arch_irq_work_raise()
->    lkdtm/powerpc: add isync after slbmte to enforce SLB update ordering
->    lkdtm/powerpc: add PPC_RADIX_TLBIEL test for radix MCE validation
-> 
->   arch/powerpc/kernel/time.c              |  2 --
->   drivers/misc/lkdtm/Makefile             |  2 +-
->   drivers/misc/lkdtm/powerpc.c            | 44 +++++++++++++++++++++++++
->   tools/testing/selftests/lkdtm/tests.txt |  1 +
->   4 files changed, 46 insertions(+), 3 deletions(-)
-> 
+> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+> index 1c78fdfb7b03..0887f154955e 100644
+> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
+> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+> @@ -2493,6 +2493,20 @@ static const struct pci_controller_ops pnv_npu_ocapi_ioda_controller_ops = {
+>  	.shutdown		= pnv_pci_ioda_shutdown,
+>  };
+>  
+> +static struct attribute *pnv_tce_iommu_attrs[] = {
+> +	NULL,
+> +};
+> +
+> +static struct attribute_group pnv_tce_iommu_group = {
+> +	.name = "spapr-tce-iommu",
+> +	.attrs = pnv_tce_iommu_attrs,
+> +};
+> +
+> +static const struct attribute_group *pnv_tce_iommu_groups[] = {
+> +	&pnv_tce_iommu_group,
+> +	NULL,
+> +};
+> +
+>  static void __init pnv_pci_init_ioda_phb(struct device_node *np,
+>  					 u64 hub_id, int ioda_type)
+>  {
+> @@ -2697,6 +2711,8 @@ static void __init pnv_pci_init_ioda_phb(struct device_node *np,
+>  		hose->controller_ops = pnv_pci_ioda_controller_ops;
+>  	}
+>  
+> +	hose->iommu_groups = pnv_tce_iommu_groups;
+> +
+See the previous comment for optimization. This  proposed hunk can be
+removed.
+
+>  	ppc_md.pcibios_default_alignment = pnv_pci_default_alignment;
+>  
+>  #ifdef CONFIG_PCI_IOV
+> diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
+> index 5497b130e026..28be7a45761d 100644
+> --- a/arch/powerpc/platforms/pseries/iommu.c
+> +++ b/arch/powerpc/platforms/pseries/iommu.c
+> @@ -56,6 +56,20 @@ enum {
+>  	DDW_EXT_LIMITED_ADDR_MODE = 3
+>  };
+>  
+> +/* used by sysfs when querying Dynamic/Default DMA Window data */
+> +struct dma_win_data {
+> +	u32     page_size;
+> +	u64     direct_address;
+> +	u64     direct_size;
+> +	u64     dynamic_address;
+> +	u64     dynamic_size;
+> +	u32     dynamic_pages_mapped;
+> +	char    window_type[15];
+Why do you need to hold a string representation of the window_type. Can
+this be replaced by an enum that holds much smaller space.
+
+> +};
+> +
+> +#define SPAPR_SUCCESS		0
+> +#define SPAPR_ERROR			-1
+
+Returning 0 or -1 are common and well known return values from kernel
+functions and as such you need not create seperate macros for them.
+
+Also Indentation looks strange.
+> +
+>  static struct iommu_table *iommu_pseries_alloc_table(int node)
+>  {
+>  	struct iommu_table *tbl;
+> @@ -837,6 +851,253 @@ static struct device_node *pci_dma_find(struct device_node *dn,
+>  	return rdn;
+>  }
+>  
+> +/* Get DDW information for the device */
+> +static int gather_ddw_info(struct device *dev, struct dma_win_data *data)
+> +{
+> +	struct iommu_device *iommu;
+> +	struct pci_controller *phb;
+> +	struct device_node *dn;
+> +	struct pci_dn *pci;
+> +	const __be32 *prop = NULL;
+> +	bool ddw_direct = false;
+> +	bool found = false;
+> +	struct iommu_table *tbl;
+> +	u32 pgshift;
+> +	struct dynamic_dma_window_prop *p;
+> +
+> +	memset(data, 0, sizeof(*data));
+> +
+> +	iommu = dev_get_drvdata(dev);
+> +	phb = container_of(iommu, struct pci_controller, iommu);
+> +	dn = phb->dn;
+> +
+> +	if (!dn)
+> +		return SPAPR_ERROR;
+> +
+> +	pci = PCI_DN(dn);
+> +	if (!pci || !pci->table_group)
+> +		return SPAPR_ERROR;
+> +
+> +	/* Find DDW */
+> +	prop = of_get_property(dn, DIRECT64_PROPNAME, NULL);
+> +	if (prop) {
+> +		ddw_direct = true;
+> +		found = true;
+> +	} else {
+> +		prop = of_get_property(dn, DMA64_PROPNAME, NULL);
+> +		if (prop)
+> +			found = true;
+> +	}
+> +
+> +	/* NO DDW */
+> +	if (!found)
+> +		return SPAPR_ERROR;
+> +
+> +	p = (struct dynamic_dma_window_prop *)prop;
+> +
+> +	pgshift = be32_to_cpu(p->tce_shift);
+> +	if (pgshift != 0xc && pgshift != 0x10 && pgshift != 0x15)
+> +		data->page_size = 0;
+> +	else
+> +		data->page_size = 1 << pgshift;
+> +
+> +	/* Check if DDW has table associated with it. Having a table associated with
+> +	 * DDW is indicative that is has some dynamic TCE allocations. In this case the
+> +	 * DDW can be fully Dynamic or in Hybrid mode. For SR-IOV DDW is on index 0,
+> +	 * for dedicated adapter on index 1.
+> +	 */
+> +	found = false;
+> +	for (int i = 0; i < IOMMU_TABLE_GROUP_MAX_TABLES; ++i) {
+Variable Naming: avoid 'i' . Also please hoist the loop variable
+> +		tbl = pci->table_group->tables[i];
+> +
+> +		if (tbl && tbl->it_index == be32_to_cpu(p->liobn)) {
+> +			found = true;
+> +			break;
+> +		}
+> +	}
+> +
+> +	/* set the parameters depnding on the DDW type */
+> +	if (ddw_direct && found) {          /* Hybrid */
+> +		data->direct_address = be64_to_cpu(p->dma_base);
+> +		data->dynamic_size = (u64)(tbl->it_size <<
+> tbl->it_page_shift);
+May want to check for possible overflow
+
+> +
+> +		data->dynamic_address = data->direct_address
+> +								+ (u64)(1UL << be32_to_cpu(p->window_shift))
+> +								-
+> data->dynamic_size;
+May want to check for possible overflow
 
 
-Sashiko has provided some comments 
-(https://sashiko.dev/#/patchset/cover.1778057685.git.sayalip%40linux.ibm.com), 
-so I am planning to split this into two patch series. I will send v2 
-part 1 today with the proposed change for "powerpc/time: Remove 
-preempt_disable/enable from arch_irq_work_raise()", and v2 part 2 with 
-the remaining two patches later.
+> +
+> +		data->direct_size = data->dynamic_address - data->direct_address;
+> +		data->dynamic_pages_mapped = bitmap_weight(tbl->it_map, tbl->it_size);
+> +
+> +		sprintf(data->window_type, "%s", "Hybrid");
+> +	} else if (ddw_direct && !found) {    /* Direct */
+> +		data->direct_address = be64_to_cpu(p->dma_base);
+> +		data->direct_size = (u64)(1UL << be32_to_cpu(p->window_shift));
+> +
+> +		sprintf(data->window_type, "%s", "Direct");
+> +	} else {                              /* Dynamic */
+> +		data->dynamic_address = be64_to_cpu(p->dma_base);
+> +		data->dynamic_size = (u64)(1UL << be32_to_cpu(p->window_shift));
+> +		data->dynamic_pages_mapped = bitmap_weight(tbl->it_map, tbl->it_size);
+> +
+> +		sprintf(data->window_type, "%s", "Dynamic");
+> +	}
+> +
+> +	return SPAPR_SUCCESS;
+> +}
+> +
+> +/* Get DDW information for the device */
+> +static int gather_dma_info(struct device *dev, struct dma_win_data *data)
+> +{
+> +	struct iommu_device *iommu;
+> +	struct pci_controller *phb;
+> +	struct device_node *dn;
+> +	struct pci_dn *pci;
+> +	const __be32 *prop = NULL;
+> +	struct iommu_table *tbl;
+> +	unsigned long offset, size, liobn;
+> +
+> +	memset(data, 0, sizeof(*data));
+> +
+> +	iommu = dev_get_drvdata(dev);
+> +	phb = container_of(iommu, struct pci_controller, iommu);
+> +	dn = phb->dn;
+> +
+> +	if (!dn)
+> +		return SPAPR_ERROR;
+> +
+> +	pci = PCI_DN(dn);
+> +	if (!pci || !pci->table_group)
+> +		return SPAPR_ERROR;
+> +
+> +	/* search for default DMA window */
+> +	prop = of_get_property(dn, "ibm,dma-window", NULL);
+> +
+> +	if (!prop)
+> +		return SPAPR_ERROR;
+> +
+> +	/* default DMA Window is always at index 0 */
+> +	tbl = pci->table_group->tables[0];
+> +	if (!tbl)
+> +		return SPAPR_ERROR;
+> +
+> +	of_parse_dma_window(dn, prop, &liobn, &offset, &size);
+> +
+> +	data->dynamic_address = offset;
+> +	data->dynamic_size = size;
+> +	data->page_size = 1ULL << IOMMU_PAGE_SHIFT_4K;
+> +	data->dynamic_pages_mapped = bitmap_weight(tbl->it_map, tbl->it_size);
+> +
+> +	return SPAPR_SUCCESS;
+> +}
+> +
+> +#define DEVICE_SHOW_DDW(_name, _fmt)							\
+> +ssize_t ddw_##_name##_show(struct device *dev,					\
+> +								  struct device_attribute *attr,\
+> +								  char *buf)					\
+> +{																\
+> +	int rc = 0;													\
+> +	struct dma_win_data data;									\
+> +																\
+> +	rc = gather_ddw_info(dev, &data);							\
+> +																\
+> +	if (rc == SPAPR_SUCCESS)									\
+> +		return sysfs_emit(buf, _fmt, data._name);				\
+> +	else														\
+> +		return -ENODATA;										\
+> +}																\
+All the device tree data that gather_{ddw dma}_info() collects except
+bitmap_weight is static in nature and need not be refreshed at each call
+to xx_show(). This can be optimized.
 
-Thanks for the review, Ritesh and Shrikanth.
+> +
+> +#define DEVICE_SHOW_DMA(_name, _fmt)							\
+> +ssize_t dma_##_name##_show(struct device *dev,					\
+> +								  struct device_attribute *attr,\
+> +								  char *buf)					\
+> +{																\
+> +	int rc = 0;													\
+> +	struct dma_win_data data;									\
+> +																\
+> +	rc = gather_dma_info(dev, &data);							\
+> +																\
+> +	if (rc == SPAPR_SUCCESS)									\
+> +		return sysfs_emit(buf, _fmt, data._name);				\
+> +	else														\
+> +		return -ENODATA;										\
+> +}																\
+> +
 
-Regards,
-Sayali
+Indentation looks strange.
+Also can you just return the 'rc' from gather_{ddw dma}_info back from
+xx_show rather then ENODATA
+
+> +static DEVICE_SHOW_DDW(direct_address, "%#llx\n");
+> +static DEVICE_SHOW_DDW(direct_size, "%lld\n");
+> +static DEVICE_SHOW_DDW(page_size, "%d\n");
+> +static DEVICE_SHOW_DDW(window_type, "%s\n");
+> +static DEVICE_SHOW_DDW(dynamic_address, "%#llx\n");
+> +static DEVICE_SHOW_DDW(dynamic_size, "%lld\n");
+> +static DEVICE_SHOW_DDW(dynamic_pages_mapped, "%d\n");
+> +static DEVICE_SHOW_DMA(dynamic_address, "%#llx\n");
+> +static DEVICE_SHOW_DMA(dynamic_size, "%lld\n");
+> +static DEVICE_SHOW_DMA(page_size, "%d\n");
+> +static DEVICE_SHOW_DMA(dynamic_pages_mapped, "%d\n");
+Avoid putting '\n's at the end of strings. Makes parsing contents
+tricky.
+
+> +
+> +#define DEVICE_ATTR_DDW(_name)                              \
+> +		struct device_attribute dev_attr_ddw_##_name =      \
+> +			__ATTR(_name, 0444, ddw_##_name##_show, NULL)
+> +#define DEVICE_ATTR_DMA(_name)                              \
+> +		struct device_attribute dev_attr_dma_##_name =      \
+> +		__ATTR(_name, 0444, dma_##_name##_show, NULL)
+> +
+> +static DEVICE_ATTR_DDW(direct_address);
+> +static DEVICE_ATTR_DDW(direct_size);
+> +static DEVICE_ATTR_DDW(page_size);
+> +static DEVICE_ATTR_DDW(window_type);
+> +static DEVICE_ATTR_DDW(dynamic_address);
+> +static DEVICE_ATTR_DDW(dynamic_size);
+> +static DEVICE_ATTR_DDW(dynamic_pages_mapped);
+> +static DEVICE_ATTR_DMA(dynamic_address);
+> +static DEVICE_ATTR_DMA(dynamic_size);
+> +static DEVICE_ATTR_DMA(page_size);
+> +static DEVICE_ATTR_DMA(dynamic_pages_mapped);
+> +
+> +static struct attribute *spapr_tce_ddw_attrs[] = {
+> +	&dev_attr_ddw_direct_address.attr,
+> +	&dev_attr_ddw_direct_size.attr,
+> +	&dev_attr_ddw_page_size.attr,
+> +	&dev_attr_ddw_window_type.attr,
+> +	&dev_attr_ddw_dynamic_address.attr,
+> +	&dev_attr_ddw_dynamic_size.attr,
+> +	&dev_attr_ddw_dynamic_pages_mapped.attr,
+> +	NULL,
+> +};
+> +
+> +static struct attribute *spapr_tce_dma_attrs[] = {
+> +	&dev_attr_dma_dynamic_address.attr,
+> +	&dev_attr_dma_dynamic_size.attr,
+> +	&dev_attr_dma_page_size.attr,
+> +	&dev_attr_dma_dynamic_pages_mapped.attr,
+> +	NULL,
+> +};
+> +
+> +static struct attribute_group spapr_tce_ddw_group = {
+> +	.name = "spapr-tce-ddw",
+> +	.attrs = spapr_tce_ddw_attrs,
+> +};
+> +
+> +static struct attribute_group spapr_tce_dma_group = {
+> +	.name = "spapr-tce-dma",
+> +	.attrs = spapr_tce_dma_attrs,
+> +};
+> +
+> +static struct attribute *spapr_tce_iommu_attrs[] = {
+> +	NULL,
+> +};
+> +
+> +static struct attribute_group spapr_tce_iommu_group = {
+> +	.name = "spapr-tce-iommu",
+> +	.attrs = spapr_tce_iommu_attrs,
+> +};
+> +
+> +const struct attribute_group *spapr_tce_iommu_groups[] = {
+> +	&spapr_tce_iommu_group,
+> +	&spapr_tce_ddw_group,
+> +	&spapr_tce_dma_group,
+> +	NULL,
+> +};
+> +
+>  static void pci_dma_bus_setup_pSeriesLP(struct pci_bus *bus)
+>  {
+>  	struct iommu_table *tbl;
+> diff --git a/arch/powerpc/platforms/pseries/pci_dlpar.c b/arch/powerpc/platforms/pseries/pci_dlpar.c
+> index 8c77ec7980de..b457451a2814 100644
+> --- a/arch/powerpc/platforms/pseries/pci_dlpar.c
+> +++ b/arch/powerpc/platforms/pseries/pci_dlpar.c
+> @@ -45,6 +45,8 @@ struct pci_controller *init_phb_dynamic(struct device_node *dn)
+>  	pci_process_bridge_OF_ranges(phb, dn, 0);
+>  	phb->controller_ops = pseries_pci_controller_ops;
+>  
+> +	phb->iommu_groups = spapr_tce_iommu_groups;
+> +
+>  	pci_devs_phb_init_dynamic(phb);
+>  
+>  	pseries_msi_allocate_domains(phb);
+> diff --git a/arch/powerpc/platforms/pseries/pseries.h b/arch/powerpc/platforms/pseries/pseries.h
+> index 3968a6970fa8..4cf0b7a4e96a 100644
+> --- a/arch/powerpc/platforms/pseries/pseries.h
+> +++ b/arch/powerpc/platforms/pseries/pseries.h
+> @@ -128,4 +128,5 @@ struct iommu_group *pSeries_pci_device_group(struct pci_controller *hose,
+>  					     struct pci_dev *pdev);
+>  #endif
+>  
+> +extern const struct attribute_group *spapr_tce_iommu_groups[];
+>  #endif /* _PSERIES_PSERIES_H */
+> diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
+> index 50b26ed8432d..4d877aae0560 100644
+> --- a/arch/powerpc/platforms/pseries/setup.c
+> +++ b/arch/powerpc/platforms/pseries/setup.c
+> @@ -512,6 +512,8 @@ static void __init pSeries_discover_phbs(void)
+>  		isa_bridge_find_early(phb);
+>  		phb->controller_ops = pseries_pci_controller_ops;
+>  
+> +		phb->iommu_groups = spapr_tce_iommu_groups;
+> +
+>  		/* create pci_dn's for DT nodes under this PHB */
+>  		pci_devs_phb_init_dynamic(phb);
+>  
+> base-commit: 192c0159402e6bfbe13de6f8379546943297783d
+> -- 
+> 2.39.3
+>
+
+-- 
+Cheers
+~ Vaibhav
 
