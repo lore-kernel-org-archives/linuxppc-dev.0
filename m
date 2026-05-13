@@ -1,76 +1,76 @@
-Return-Path: <linuxppc-dev+bounces-20865-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20866-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 06C7DCD4851
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 May 2026 13:09:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5CD9FCD4F21
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 May 2026 13:09:49 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gFv1C57Btz2yQL;
-	Wed, 13 May 2026 23:09:03 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::636"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778677743;
-	cv=none; b=YC1pIKgqF554J5qNiQjENIej/mrha1eCGvE2JpdT6mzDSrnwCSAFEUsGjFP0cRkb59Zu0IbuR7v4XECJmOwHnv1tKZn+hW2JG6QRCp0S1h9kKASQ8agVxYHKLKtsgjmo4bF5K8LWnhmFp0tkhrx/sNcbaC8D4v6jJ7JTiU4qGhNiCbV5Q2hqO6vQe8q7WPsKjPKPGw5HI/P7HMSa5b5K2cHRJ7NbRpnaPUyVWmCpHe5cmN0+Vht2B8nK+bbwJ8nPAsNmKnYkfJ4e90YsUxDtJh8ugyNAD2T+NHD0PU4S8+mSMNzXdUB13n5EEs6tn9DqB4hnTEzvD4IfkcQA0PjYcQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gFv1K0wJnz2yRn;
+	Wed, 13 May 2026 23:09:09 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::62f"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778677749;
+	cv=none; b=Jgf8M7UTukcihSfVkf6vH+d/RIrZ3iPYCosY5VdFDvQNI6ptO23N43W4SMKYqyCCwTAa5JsH4rxqwxGiZi7rIZmt7r+lQqgf10DP6RTGNhbXHQTxbxWd1xnYWEdVHH4jTM2DtUYI6X9rx+xgHwtV6VV9huAL+DXLPvL3CT280IW62ywtl1ypB8+PwB1SaeZNc7eIpHNjAPT5K+qXylzctVZFWY2lskUZCA24P+ZacFc134aa11ZiWCfIBtgihdZzAmPn8cme2rwgIan8vhMNV9qUVu780t5WbVH0CyxdZas2fuwpgKxQF2gfvIeY6rgUYKxdQEedY++vRck0sw0DLg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1778677743; c=relaxed/relaxed;
-	bh=J6ElOBv7vrKvKF8FNit7K/7AGAfvZCZIjE1YfuNh7wQ=;
+	t=1778677749; c=relaxed/relaxed;
+	bh=dkeVw3HOR7cCG2HPcJochpzFU9bdzNUhNCW0ub/Qsyw=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=YJT1ACVjKFzgQ8QBHGCpfF7hPAy+f56OUcsrjf82NpdthG1x0LwKoIdLAuinYD/+HVno1kYlW5ktFBPnpgcJOaZWCjJoHcP1UNpvI9UhueDQ1mYHFUNrPe+74Cofjt3EsK8sj8dJiyn5Y6OAjKBMGj1/ddaMFLQHW6wJ3dz6pLib/u9CF7Wn1llFwq3Y/80TQx+ea12Qv0+1bZr9Zz9SMPDv1V+LM3rsIVzhELBzGc0J44OFtwI0asYF1Fi1YhBIenyX617+Sb6Ukt72fUde6xPP05lOFFS+hN9vL3p7Xt3gbUkrLbktlBeW3Zciudk5FynPO8OiDQHbYMoZ9iHdWA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=bytedance.com; dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=Vm7S0MN6; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::636; helo=mail-pl1-x636.google.com; envelope-from=songmuchun@bytedance.com; receiver=lists.ozlabs.org) smtp.mailfrom=bytedance.com
+	 MIME-Version; b=PP+oJI02L7T3Tm1jeMsU9KHyYRh+DGwEVCRVUbduqyW4SoAKkd2lMoILNurRI65+ELfS8RO/wXpmJkN0iMj/NrVWCNOln5LHUMFuTcgMoufw5vN6RRi54lsQRG1cq/ugHysgnLhXhH1NxdeXBUM3ZFpPC7nujh4vBAadvNEyCSq4vvvtkaG1TDQGUYcOBfwgCS3LACeI6QHbZtNtbG0tX5FdjInEjSTIXskSeyU7LDuKGhnBjyCvYLnXzDNumQjuxLoGTWPaA/5/YKMTh9TjE8CYqigLVh6KGFgzdV/GykKPqyluvXLLLzx0MgFHQHyJMFSzafj+NV5RquXtcgzkLA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=bytedance.com; dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=CjPulOsI; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::62f; helo=mail-pl1-x62f.google.com; envelope-from=songmuchun@bytedance.com; receiver=lists.ozlabs.org) smtp.mailfrom=bytedance.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=bytedance.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=Vm7S0MN6;
+	dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=CjPulOsI;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bytedance.com (client-ip=2607:f8b0:4864:20::636; helo=mail-pl1-x636.google.com; envelope-from=songmuchun@bytedance.com; receiver=lists.ozlabs.org)
-Received: from mail-pl1-x636.google.com (mail-pl1-x636.google.com [IPv6:2607:f8b0:4864:20::636])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bytedance.com (client-ip=2607:f8b0:4864:20::62f; helo=mail-pl1-x62f.google.com; envelope-from=songmuchun@bytedance.com; receiver=lists.ozlabs.org)
+Received: from mail-pl1-x62f.google.com (mail-pl1-x62f.google.com [IPv6:2607:f8b0:4864:20::62f])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gFv1B6wM6z2xSb
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2026 23:09:02 +1000 (AEST)
-Received: by mail-pl1-x636.google.com with SMTP id d9443c01a7336-2b9fcf7c91bso67451965ad.0
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2026 06:09:02 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gFv1J3kTZz2xSb
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2026 23:09:08 +1000 (AEST)
+Received: by mail-pl1-x62f.google.com with SMTP id d9443c01a7336-2bab2548e8bso31486845ad.0
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2026 06:09:08 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=bytedance.com; s=google; t=1778677741; x=1779282541; darn=lists.ozlabs.org;
+        d=bytedance.com; s=google; t=1778677747; x=1779282547; darn=lists.ozlabs.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=J6ElOBv7vrKvKF8FNit7K/7AGAfvZCZIjE1YfuNh7wQ=;
-        b=Vm7S0MN6Lvs9+Ra2LTqISkVQ849DsQUtHsc4j7DIPPOYcCB/tQIgFosXWzAx3cz003
-         CAhBMNk66g5NS2wD1nuP3DyCpfNMDvWo0KLwJ+HNSfwRx3yUXvbge8tFHNSYM+kkCy2S
-         oqbByB63TqalBq0gOnv+K7dAcivNkBOw0U92KGLjeHmk3kwkgw+NN83zY9B4ImebX+NJ
-         YiG8hhDTgjOD/18JWawpVsOheiM8wq3q43XQod8Zp0ts+mqxvze6djzDQ9jUY4LQglO6
-         izGyUSycXQHfjrp++oqYSxo84JOKrJcOucd5NP5kp3BJYYuF+5gI83f7kRCBJyYyhyLc
-         d2Lg==
+        bh=dkeVw3HOR7cCG2HPcJochpzFU9bdzNUhNCW0ub/Qsyw=;
+        b=CjPulOsIukYM3DsRRRJoWRhP1pDFO/2ylhE2WspylPsh+b6tfIrsifL262KKMQBBrp
+         XKtrVujhD/E9ynF3O9nt5lq7dpMQ23cxYQF11tConr6XyPaHM8EdKp2LKxO0a2SEwvOV
+         PL4KkhS2op7ustRHXrHSJ3bnEJuMawM7u/SN7trXD+QQJyzMx/PmO3T/pVLfsa+Tvvsa
+         JDStjEjymDAtBPKvS/1xOoJPu9piqnKDiBSIYPkRiveRiUIMY7+1qOcqr7t7kWIOYrSR
+         p7TssmJO0vS8XOkf+yunukzmSsffmgivalzUbcvF1MBWfqwQ9CRY/xU02dRdlJgNDdLv
+         cYRA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1778677741; x=1779282541;
+        d=1e100.net; s=20251104; t=1778677747; x=1779282547;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to;
-        bh=J6ElOBv7vrKvKF8FNit7K/7AGAfvZCZIjE1YfuNh7wQ=;
-        b=jzp3t1Asl18ghEXeAWr5WQjdfqMXHkFMTjTaJENANGmtXfL6DSirk3fsxv3SyPAVfo
-         lCroAesHPu7jK4BMeGD5cjrii7gPszEn9qhWe3piHnJO++2xNkRPOPvD6oX71STudd0+
-         IZ2S9lzsxPEp8j9fVYwB++93TFOFV8dtKE5BdRzolyxXCHnCkz8szIW6O+B2tTVzY+PC
-         IcAGViwJkeelokqgXD3CTnl5TMfsQISY0K/2/v0KT0LinMKI3VSHeWg3A5IOtTqPOM/3
-         vE5ERuODCmbScYwSMiYcwH9cM68i+DLBGxA1AdZMoG7okdDdMPdazsPmMdTMa0eWyYxm
-         PK7g==
-X-Forwarded-Encrypted: i=1; AFNElJ+4uDwaGHJM7gJjV5VfTjCGls9ComEiK4yQM78AVKpdA3x6CO9B6M1hTZHipLyElkRc707SiCAWqwuFtlA=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yx7tVuPs2GnYfdiGUOsgJhyrh9ZATaFfvcVGgFKXkECkv+IYsAD
-	P7J85ygOzDeafiLmdMCjHZ2asesRpL7vEjYqhjPJj6eovxKuw6BpTE3yP3BMWQjlAkM=
-X-Gm-Gg: Acq92OFywsd6VLHnWDyueHe42pwRrACs4uOnaHSIH+drylpc8A0gzYcgoIoBug5Z5//
-	h+L+Fv8GJ+HkxvZcxL73qhhz6KR33xIuDMSKZ2zG3krDychZE6w7k4Y+I7sHoQFGWQuWYLoo/zc
-	Q3tgR+knSXohdF3FfTKZopXhhYXFvdzM93y6EELGZCJRH3doP2reqyh7KHzIeCGQ2ofd6gudbvU
-	g6/jyGszFsDH4rRCH34bv5aHHand2W3c++6B9I9xZsqChOvi11YLnEBnc4hRKFTpjK4dEcU7uSX
-	WwTHoRMBVs23FUG2fGWzxRFSDfHZpEzhFPIPEQWumt4l5hn3p//SoRozehmIHm/pHvZvuiho6zV
-	MygqsME2+ev0vbEDY0kfLiSiOxhHsnulsbiBmE57lhc/myNMRTDwu48E+17s4kcuFKZ8v5Kg8Qq
-	AX7AXflG+aXtL2nPIJbWtUO5sgsah/d7dQKMRpoWNfyDc3Cnfo0CG43rQnV7HQknGBZiYovQ==
-X-Received: by 2002:a17:903:46c4:b0:2bd:2de3:51ad with SMTP id d9443c01a7336-2bd3043ca95mr32688825ad.34.1778677740889;
-        Wed, 13 May 2026 06:09:00 -0700 (PDT)
+        bh=dkeVw3HOR7cCG2HPcJochpzFU9bdzNUhNCW0ub/Qsyw=;
+        b=s6pWm/80FoQ0Tdhq7WG97XJAUXTCPnkeyiA8Vz0txTJQR132P944Tg1q/0ufkLQrzr
+         kAlhX9F1RQTbC6n0K8PyhwkB9TrXY5/ov/NtbMSSkUZMTRBKUeLHcHgOH+YJEklVGBmX
+         D++s8H19QTDRjwNkt3T0e5Yk79Fy17cQICJeix9I1G+5p9nDw+RGHZag7vyitj28dJCV
+         rSJU+bZEyWKBxOV0l44VCV23oXHE2IJGKT+StBnOAjt1KAlPiZdE2Oj6plCmySUrOW4l
+         uPoOihjyAvxMcEjnLQ57u/Zv0QZFa5smE1x6vttisLtFBA30Q/TWdzSxAKa4V2/yOdcf
+         1uLQ==
+X-Forwarded-Encrypted: i=1; AFNElJ/Dq1+waopJZyM6fzfhKZEZUGic8snGnGHVB0wzHrB5S/efCp2yo97pLrrH7yt7SSMP7ZsdeBHvwFuDjZY=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YyLUpJ40AEqMwJVtJHHcr6xBQx9i8HV8gO4Hu1VJNEh5MATX2vS
+	HjUhCx79hdsDLzb5/E+eHUZyPGxPXfrmHG8YxqqdexNWB3KjBDphcfQTAaYQI8CD67E=
+X-Gm-Gg: Acq92OHhKUkTfCsGx5+vCEKuYeAG4eApQyL/eQoZbzuYq71LC/XlcsrULDX9euU/deE
+	awMYnhSp2JqQrJHPFQXqUeYmIKkd/UcPtAagnmu9XZzitDyffmdc85dfYl2DZRCJbShA1LFKjW/
+	5G3rkjDDh6fo5jGnr2oRM77syozCMzTnqtoQ4kaMnKyJu4mDLmDUQwT86Txhiugpn+ywwyz3K8i
+	RMW/NSzAGNXGsK/lHUT20CFsj4/uwOVRmc8qm+8kp3VYPzA4jcm/Ur24TLHCGZu6n80V/K5nO5g
+	xhNHuOkQ2a2tpeRmt5XdgQecELPy25szV7jMgevBaoGfOwWeVCa59r7oeaK6QfAUkSHdVnxOA+V
+	WaP7qjcN/Sbja/snJ2wM1XqlnW8vPC2m2p1yX2UJwDVfFzcgJLdu44kWXVw6QSVJ6QIObqT1ztb
+	TOSVUHU+sVxpscc9TyMtrUR6bRieI13vkXMTAuFGGLmZCLZA35zeR3fliQPdQ=
+X-Received: by 2002:a17:903:1b4f:b0:2b0:9c2b:641d with SMTP id d9443c01a7336-2bd2f4dbc06mr31387055ad.2.1778677746427;
+        Wed, 13 May 2026 06:09:06 -0700 (PDT)
 Received: from PXLDJ45XCM.bytedance.net ([61.213.176.6])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2baf1e90854sm166641925ad.66.2026.05.13.06.08.55
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2baf1e90854sm166641925ad.66.2026.05.13.06.09.01
         (version=TLS1_3 cipher=TLS_CHACHA20_POLY1305_SHA256 bits=256/256);
-        Wed, 13 May 2026 06:09:00 -0700 (PDT)
+        Wed, 13 May 2026 06:09:06 -0700 (PDT)
 From: Muchun Song <songmuchun@bytedance.com>
 To: Andrew Morton <akpm@linux-foundation.org>,
 	David Hildenbrand <david@kernel.org>,
@@ -94,9 +94,9 @@ Cc: Lorenzo Stoakes <ljs@kernel.org>,
 	linuxppc-dev@lists.ozlabs.org,
 	linux-kernel@vger.kernel.org,
 	Muchun Song <songmuchun@bytedance.com>
-Subject: [PATCH v2 16/69] mm/hugetlb: Remove obsolete bootmem cross-zone checks
-Date: Wed, 13 May 2026 21:04:44 +0800
-Message-ID: <20260513130542.35604-17-songmuchun@bytedance.com>
+Subject: [PATCH v2 17/69] mm/sparse-vmemmap: Remove sparse_vmemmap_init_nid_late()
+Date: Wed, 13 May 2026 21:04:45 +0800
+Message-ID: <20260513130542.35604-18-songmuchun@bytedance.com>
 X-Mailer: git-send-email 2.50.1
 In-Reply-To: <20260513130542.35604-1-songmuchun@bytedance.com>
 References: <20260513130542.35604-1-songmuchun@bytedance.com>
@@ -115,145 +115,124 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Bootmem gigantic HugeTLB pages used to be validated again during
-gather_bootmem_prealloc_node() and any cross-zone pages were discarded
-there.
+hugetlb_vmemmap_init_late() no longer has any users, so the remaining
+late-init path in sparse_vmemmap_init_nid_late() is dead code.
 
-That validation is no longer needed. Cross-zone bootmem gigantic pages
-are now detected during allocation and freed before they reach the later
-bootmem gathering path, so the remaining pages are already zone-valid.
-
-Remove the obsolete cross-zone validation, invalid-page freeing, and the
-associated discarded-page accounting.
+Remove sparse_vmemmap_init_nid_late() and its declarations.
 
 Signed-off-by: Muchun Song <songmuchun@bytedance.com>
 ---
- include/linux/hugetlb.h |  2 --
- mm/hugetlb.c            | 70 -----------------------------------------
- 2 files changed, 72 deletions(-)
+ include/linux/mmzone.h |  7 -------
+ mm/hugetlb_vmemmap.c   |  4 ----
+ mm/hugetlb_vmemmap.h   |  5 -----
+ mm/sparse-vmemmap.c    | 11 -----------
+ mm/sparse.c            |  1 -
+ 5 files changed, 28 deletions(-)
 
-diff --git a/include/linux/hugetlb.h b/include/linux/hugetlb.h
-index 9a65271d167c..ece4e6a4a4c6 100644
---- a/include/linux/hugetlb.h
-+++ b/include/linux/hugetlb.h
-@@ -701,8 +701,6 @@ struct huge_bootmem_page {
- #define HUGE_BOOTMEM_ZONES_VALID	0x0002
- #define HUGE_BOOTMEM_CMA		0x0004
- 
--bool hugetlb_bootmem_page_zones_valid(int nid, struct huge_bootmem_page *m);
--
- int isolate_or_dissolve_huge_folio(struct folio *folio, struct list_head *list);
- int replace_free_hugepage_folios(unsigned long start_pfn, unsigned long end_pfn);
- void wait_for_freed_hugetlb_folios(void);
-diff --git a/mm/hugetlb.c b/mm/hugetlb.c
-index d5d324f69d7a..dcf8e09ec6be 100644
---- a/mm/hugetlb.c
-+++ b/mm/hugetlb.c
-@@ -58,7 +58,6 @@ struct hstate hstates[HUGE_MAX_HSTATE];
- 
- __initdata nodemask_t hugetlb_bootmem_nodes;
- __initdata struct list_head huge_boot_pages[MAX_NUMNODES];
--static unsigned long hstate_boot_nrinvalid[HUGE_MAX_HSTATE] __initdata;
- 
- /*
-  * Due to ordering constraints across the init code for various
-@@ -3238,57 +3237,6 @@ static void __init prep_and_add_bootmem_folios(struct hstate *h,
- 	}
+diff --git a/include/linux/mmzone.h b/include/linux/mmzone.h
+index 9adb2ad21da5..362e16497533 100644
+--- a/include/linux/mmzone.h
++++ b/include/linux/mmzone.h
+@@ -2167,8 +2167,6 @@ static inline int preinited_vmemmap_section(const struct mem_section *section)
  }
  
--bool __init hugetlb_bootmem_page_zones_valid(int nid,
--					     struct huge_bootmem_page *m)
+ void sparse_vmemmap_init_nid_early(int nid);
+-void sparse_vmemmap_init_nid_late(int nid);
+-
+ #else
+ static inline int preinited_vmemmap_section(const struct mem_section *section)
+ {
+@@ -2177,10 +2175,6 @@ static inline int preinited_vmemmap_section(const struct mem_section *section)
+ static inline void sparse_vmemmap_init_nid_early(int nid)
+ {
+ }
+-
+-static inline void sparse_vmemmap_init_nid_late(int nid)
 -{
--	unsigned long start_pfn;
--	bool valid;
--
--	if (m->flags & HUGE_BOOTMEM_ZONES_VALID) {
--		/*
--		 * Already validated, skip check.
--		 */
--		return true;
--	}
--
--	if (hugetlb_bootmem_page_earlycma(m)) {
--		valid = cma_validate_zones(m->cma);
--		goto out;
--	}
--
--	start_pfn = virt_to_phys(m) >> PAGE_SHIFT;
--
--	valid = !pfn_range_intersects_zones(nid, start_pfn,
--			pages_per_huge_page(m->hstate));
--out:
--	if (!valid)
--		hstate_boot_nrinvalid[hstate_index(m->hstate)]++;
--
--	return valid;
 -}
+ #endif
+ 
+ static inline int online_section_nr(unsigned long nr)
+@@ -2385,7 +2379,6 @@ static inline unsigned long next_present_section_nr(unsigned long section_nr)
+ 
+ #else
+ #define sparse_vmemmap_init_nid_early(_nid) do {} while (0)
+-#define sparse_vmemmap_init_nid_late(_nid) do {} while (0)
+ #define pfn_in_present_section pfn_valid
+ #endif /* CONFIG_SPARSEMEM */
+ 
+diff --git a/mm/hugetlb_vmemmap.c b/mm/hugetlb_vmemmap.c
+index e2251bc47444..952216a49bcb 100644
+--- a/mm/hugetlb_vmemmap.c
++++ b/mm/hugetlb_vmemmap.c
+@@ -810,10 +810,6 @@ static struct zone *pfn_to_zone(unsigned nid, unsigned long pfn)
+ 
+ 	return NULL;
+ }
+-
+-void __init hugetlb_vmemmap_init_late(int nid)
+-{
+-}
+ #endif
+ 
+ static const struct ctl_table hugetlb_vmemmap_sysctls[] = {
+diff --git a/mm/hugetlb_vmemmap.h b/mm/hugetlb_vmemmap.h
+index 18b490825215..7ac49c52457d 100644
+--- a/mm/hugetlb_vmemmap.h
++++ b/mm/hugetlb_vmemmap.h
+@@ -29,7 +29,6 @@ void hugetlb_vmemmap_optimize_folios(struct hstate *h, struct list_head *folio_l
+ void hugetlb_vmemmap_optimize_bootmem_folios(struct hstate *h, struct list_head *folio_list);
+ #ifdef CONFIG_SPARSEMEM_VMEMMAP_PREINIT
+ void hugetlb_vmemmap_init_early(int nid);
+-void hugetlb_vmemmap_init_late(int nid);
+ #endif
+ 
+ 
+@@ -81,10 +80,6 @@ static inline void hugetlb_vmemmap_init_early(int nid)
+ {
+ }
+ 
+-static inline void hugetlb_vmemmap_init_late(int nid)
+-{
+-}
+-
+ static inline unsigned int hugetlb_vmemmap_optimizable_size(const struct hstate *h)
+ {
+ 	return 0;
+diff --git a/mm/sparse-vmemmap.c b/mm/sparse-vmemmap.c
+index fcf0ce5212f1..17d45dac4324 100644
+--- a/mm/sparse-vmemmap.c
++++ b/mm/sparse-vmemmap.c
+@@ -574,17 +574,6 @@ void __init sparse_vmemmap_init_nid_early(int nid)
+ {
+ 	hugetlb_vmemmap_init_early(nid);
+ }
 -
 -/*
-- * Free a bootmem page that was found to be invalid (intersecting with
-- * multiple zones).
-- *
-- * Since it intersects with multiple zones, we can't just do a free
-- * operation on all pages at once, but instead have to walk all
-- * pages, freeing them one by one.
+- * This is called just before the initialization of page structures
+- * through memmap_init. Zones are now initialized, so any work that
+- * needs to be done that needs zone information can be done from
+- * here.
 - */
--static void __init hugetlb_bootmem_free_invalid_page(int nid, struct page *page,
--					     struct hstate *h)
+-void __init sparse_vmemmap_init_nid_late(int nid)
 -{
--	unsigned long npages = pages_per_huge_page(h);
--	unsigned long pfn;
--
--	while (npages--) {
--		pfn = page_to_pfn(page);
--		__init_page_from_nid(pfn, nid);
--		free_reserved_page(page);
--		page++;
--	}
+-	hugetlb_vmemmap_init_late(nid);
 -}
--
- /*
-  * Put bootmem huge pages into the standard lists after mem_map is up.
-  * Note: This only applies to gigantic (order > MAX_PAGE_ORDER) pages.
-@@ -3304,17 +3252,6 @@ static void __init gather_bootmem_prealloc_node(unsigned long nid)
- 		struct folio *folio = (void *)page;
+ #endif
  
- 		h = m->hstate;
--		if (!hugetlb_bootmem_page_zones_valid(nid, m)) {
--			/*
--			 * Can't use this page. Initialize the
--			 * page structures if that hasn't already
--			 * been done, and give them to the page
--			 * allocator.
--			 */
--			hugetlb_bootmem_free_invalid_page(nid, page, h);
--			continue;
--		}
--
- 		/*
- 		 * It is possible to have multiple huge page sizes (hstates)
- 		 * in this list.  If so, process each size separately.
-@@ -3703,20 +3640,13 @@ static void __init hugetlb_init_hstates(void)
- static void __init report_hugepages(void)
- {
- 	struct hstate *h;
--	unsigned long nrinvalid;
- 
- 	for_each_hstate(h) {
- 		char buf[32];
- 
--		nrinvalid = hstate_boot_nrinvalid[hstate_index(h)];
--		h->max_huge_pages -= nrinvalid;
--
- 		string_get_size(huge_page_size(h), 1, STRING_UNITS_2, buf, 32);
- 		pr_info("HugeTLB: registered %s page size, pre-allocated %ld pages\n",
- 			buf, h->nr_huge_pages);
--		if (nrinvalid)
--			pr_info("HugeTLB: %s page size: %lu invalid page%s discarded\n",
--					buf, nrinvalid, str_plural(nrinvalid));
- 		pr_info("HugeTLB: %d KiB vmemmap can be freed for a %s page\n",
- 			hugetlb_vmemmap_optimizable_size(h) / SZ_1K, buf);
+ static void subsection_mask_set(unsigned long *map, unsigned long pfn,
+diff --git a/mm/sparse.c b/mm/sparse.c
+index 3917a47153d8..324213d8bdcb 100644
+--- a/mm/sparse.c
++++ b/mm/sparse.c
+@@ -320,7 +320,6 @@ static void __init sparse_init_nid(int nid, unsigned long pnum_begin,
+ 		}
  	}
+ 	sparse_usage_fini();
+-	sparse_vmemmap_init_nid_late(nid);
+ }
+ 
+ /*
 -- 
 2.54.0
 
