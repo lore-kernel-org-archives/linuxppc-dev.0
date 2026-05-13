@@ -1,76 +1,74 @@
-Return-Path: <linuxppc-dev+bounces-20849-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20850-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BF8BDCD4F24
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 May 2026 13:07:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5C15DCD4F24
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 May 2026 13:07:50 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gFtzf1GLGz2xn3;
-	Wed, 13 May 2026 23:07:42 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::62c"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778677662;
-	cv=none; b=VFkswSi2F4HiO1tftzZwpiHO4mYhxCSGmJYXMUn+XH1aRIrGb5odoIv7LtAWXvNz/6sA/YbJT5F0l0lolXnZ5mHv7voGCBpRh3cNyOttsGaV3mx5ZYy1/OpxzlcWS2/R7x2aAH+UZtWv5s5S1neQfPg3j1td3Bhj/9aUhAHLsTD1cuEEIHgsdRfJe8PBBQT4+TlhRCrcXthUaLe6jjAqk0XLY27x3Y1wWJF34whjX7VGSnxKOyireXm+N+WtM9MyCl0EbYJJtn9cQWRmRzc0egqiUyQ0itBSdlgu3x1JTprLbEg6EiXm3GGwqjD0xcB4WqL3Sj+NgPY42Qznd3PucA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gFtzg32Ckz2xld;
+	Wed, 13 May 2026 23:07:43 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::531"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778677663;
+	cv=none; b=cffWCXsNYtjTD3uJdCa+owszF0RpD1AzgpqsM+EWFsussqL3P6YrfH2STzONPbwfapoqUrkJuUm6mGiq+YRMk84rmAyZUBcTMZId4f3rMspuQroMJqfKfZueNAgW41i2RkUg+PdLVFEHnNZtuQVvJXU9EkzUiF5Xq6chPDGvO2xOtigJ4+q4F8t7CDL8NWzk3lB+Nk9mwVrroBRUJswXBQTSuQsrNx0kKfYjtvcZPeHjQIPXdnOs2thFb1/Y5lKE8cl8gVbEsNkllBgz0qIj7zBkHPhuYqQ5qGdDy56KRZgOhOOclAV2GVqrLIPW4rTO9B+l846veFJvWR6kCvCt4A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1778677662; c=relaxed/relaxed;
-	bh=glZCSgCcQPUR5mPOULt0p1weLkVndlFTk9nY8tD6isc=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=HUbjP4/etSBpivwHHoGaNpZpCwaQMeooNwwRHh8jjBMNNuJQIJY0mA5ggxYt0OgXNvXTEKG3a6w9IvCBNayaaPgjV1RkdXsRFzMz2/DbTLFoBZMs21Ho/LNtcIGuCPNuqOvpNWYbKvkSX8HtCjJUKLxhx4ATiOgCjLRlMngoqWv5UgyrPJSLcbJ2WtTd8QKhf48xBQzf4xbqC9ZBrL5xSpHUBWsJKUzz+uFj2ne36nh2HX8JwiUdUmtUX7W2Kh30SeiLAz/JX4dydVwEEj9ihalMp5RZX5hBh+bjK9UmvmK1cYTCNpmjz03lcq6mQYsjza9J7GL3KNzD5ho+t38OdQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=bytedance.com; dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=S7KEWUMy; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::62c; helo=mail-pl1-x62c.google.com; envelope-from=songmuchun@bytedance.com; receiver=lists.ozlabs.org) smtp.mailfrom=bytedance.com
+	t=1778677663; c=relaxed/relaxed;
+	bh=J8NpoUoHQ+aQSSKrd0jYtj6P28R/h0KlfJ/MEbWicLs=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=HfIsfQjJdzIdi2e46lP4203heu/aSdfmcqswWkoZ6yn+mcCPTQ84ucyAP4jfO9kTFHvqyJTY1pB/q6mKdnEOjyHGKD+nazXfn9vK9/koTDxltkwgofvajTuFGFyRTR/LpndYraGCbwqlm9R2rwLFThhN+CEZSYZ6jmyIVQhcQLLpif8wxU8ewAHEbAVE9XmsGAJoUkEYA0U7EBl1vLNx5KzF7zNP2uU0DVRUNtVxoy5y/vIZ9AzJMojXPia0bIT9woFbMRJ3epferxkMxg1pFIeeFdaKqQR2wE5J+TnPS82gEuhn4BuTJdaa/KJ4auDkMwbax4l72ckdYZSKWwlzBA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=bytedance.com; dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=dIYvHzXG; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::531; helo=mail-pg1-x531.google.com; envelope-from=songmuchun@bytedance.com; receiver=lists.ozlabs.org) smtp.mailfrom=bytedance.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=bytedance.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=S7KEWUMy;
+	dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=dIYvHzXG;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bytedance.com (client-ip=2607:f8b0:4864:20::62c; helo=mail-pl1-x62c.google.com; envelope-from=songmuchun@bytedance.com; receiver=lists.ozlabs.org)
-Received: from mail-pl1-x62c.google.com (mail-pl1-x62c.google.com [IPv6:2607:f8b0:4864:20::62c])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bytedance.com (client-ip=2607:f8b0:4864:20::531; helo=mail-pg1-x531.google.com; envelope-from=songmuchun@bytedance.com; receiver=lists.ozlabs.org)
+Received: from mail-pg1-x531.google.com (mail-pg1-x531.google.com [IPv6:2607:f8b0:4864:20::531])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gFtzd2QhZz2xld
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2026 23:07:41 +1000 (AEST)
-Received: by mail-pl1-x62c.google.com with SMTP id d9443c01a7336-2bcd3ac3307so19190005ad.0
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2026 06:07:41 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gFtzY5rFqz2xSb
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2026 23:07:36 +1000 (AEST)
+Received: by mail-pg1-x531.google.com with SMTP id 41be03b00d2f7-c7ffe8eeaf2so2863538a12.0
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2026 06:07:35 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=bytedance.com; s=google; t=1778677659; x=1779282459; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=glZCSgCcQPUR5mPOULt0p1weLkVndlFTk9nY8tD6isc=;
-        b=S7KEWUMylbi26brgV/OM/s/2fS1esVFiYB9WLqdXpie6fUSCiazk0XkqwWlQ4G65Ax
-         cUTX5q1hqCRGKw+4FHesMlSvbu6nT9DDDSnVqKxfEhjRfx3nu/tMDYgZHJyqyp9Rm81R
-         BDQdTUgXQEla+/4RsStR/DhOqzkwDrzeJY9JkQXim0rQPPjIzDyvOoc9iepC17e7SA4M
-         8oUUO78ez9Xjs4yvDdgCXPGVj3Uz7vIknNAGukmsYkHSPXtGlrvn/nIeDvddH5NdRAfh
-         dHlW05seKs/fFyXH2tJIo/OxEL837SphTtQAK1xPW0lFwFgNRkmlKztwlWsH0d6iRW6n
-         gfeQ==
+        d=bytedance.com; s=google; t=1778677653; x=1779282453; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=J8NpoUoHQ+aQSSKrd0jYtj6P28R/h0KlfJ/MEbWicLs=;
+        b=dIYvHzXGiOCtFjjPYRoBeeS5NxVkLB5SysE9h4SyUwA4S8SXfXgDTIbj2jtKzUyVL2
+         eYEEcdISosLB38UtXvk2/lPzQeVbOMiVboymxYfbF2bVRvsOiFV0ALV7AFOgZ+NhgDRl
+         kzQW5aKFdrpcpW4QK4NP0kMPgQUuq2MsVpldJ/e150/VYV4eElVRFHfWm2prMotiD1wM
+         1Zy/EmJSnR/3LbvN5HmAgaU9DZORB1JoJ/WoARiegPHAN1GB20FJfMxDF03JdDhBxRBX
+         l0w3nNuBw7ImX2LdxBYSJl6oiuAP7HUF6ajRO0YFUEU46w7IRcx0ypRW/qTgp4gd9KHR
+         8PXg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1778677659; x=1779282459;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=glZCSgCcQPUR5mPOULt0p1weLkVndlFTk9nY8tD6isc=;
-        b=J0eR7X1WlJD03UaPH6svmaTy0t5uFUrOhYpaWmFGf0IaeDJ7qv9iFCYeNk3UcAJJrw
-         1U+ypPja5rhNg6sdzsOzElh2vmqQN6aF9h/1i/3/rIQg/V53kimbQ2g7TbyUYbIb22nQ
-         v759VRZj3Vx3jNva0Qs9RrFsN51rOo5oRRwJP698l03cq+WuMDcGBbkWppKUQmbW7CAn
-         uNY82aKwkQcu7lYvgMESXfHGI/B3nE2rL3r1pvdRpsMiyWTCa4EUOCgE0UF3DocWdpNx
-         b6nX+1at0AukInjtM3eD8H0C+yBiFU3/ufvnHwF5WB1bxb4qvB5KOBTZbwOIYEVFQ5U3
-         Kk7Q==
-X-Forwarded-Encrypted: i=1; AFNElJ8c7SWWlVRnqB4BhmVx9pf3WYO3lsnszBQfNWpBSwV8nbTpamI2u8fB92ntgV66v5GFfm6hgyB8BkhN+Uw=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yx3sFXsHNSK3OvhqL5R+L0GATCBm3CQXaio61BUeqmL3Tcbtlhp
-	XSE9IkzvQf/dG3IsmTMQQSB16vSK1XRKNzPxsPavAkLcm+jrJgx14nRAz6hZCqCiAwM=
-X-Gm-Gg: Acq92OGMiKn1/X65eh+9r0xJYvqoxDpaRLaUOOGSgtcggn+WX3kBr0qfXzaZmrwWTw8
-	WSPrS6z8/zn8jPXitjMf8eAZt9dhrfvSvo5ANzoqBf2aBbetkI+efzup/ADSEOzwVFmtwfDHAiw
-	/h10xXKyjzXS8K+9SQuxtuDZJs8Xnmnf2nlamBwEh3lvrZhN2dI8OXYSltY442yTgs8DJomt21U
-	6HZrDUCiMy7gvUasFkZ9nmiQzxuu8zWljAMM4NF0POJVJYGuUAkFUEqM+7KaeHdRe41ydgXFTgk
-	QzmrppO7g2NixoVcXGclHoTuOKDzdbNVO+6nQQCia0AL2f9sABb50DANrEwAdh6734hDai6tkqK
-	hgOd3AlTYWLYq4P1AvYdjapiqNLTJ2BtNasQogN1TNen063EDLv7SZdy+gbdGmGd+0FZNlPkASB
-	EM47lYULDKy4zTC27k+0aZMTa6OWUrjkpVNROCJ8xHD5Y9xZtixQcCXE4wWDY=
-X-Received: by 2002:a17:903:907:b0:2bc:e216:db47 with SMTP id d9443c01a7336-2bd2713c36cmr35966965ad.8.1778677658559;
-        Wed, 13 May 2026 06:07:38 -0700 (PDT)
+        d=1e100.net; s=20251104; t=1778677653; x=1779282453;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=J8NpoUoHQ+aQSSKrd0jYtj6P28R/h0KlfJ/MEbWicLs=;
+        b=Dzrh8S/39+Wrn9BQ2dQh2U7GRWMOb4RlEBjWZQQkPCIZpokFZsT/v5fKEwve2psXWh
+         zSRDdkexQsqkPIm4bl7PHR/xuGZ9EjHSBCJrGDheKBKnXKD6L1ULeR65Sa0Wj3DWvk8P
+         VttqyOZ1Go0CXVjsOTCJgu7tA6srabs9uk1Slott/dBWuwGQEmwU0Ti1RWFx0lxj2KOK
+         bkqB+YVRh8qCHzU/KRJKaVukFhBav4uylaoeO8mZWQ1VYpsELsov6CJ3NHvJIwwfc0Ni
+         Q0tltNXOTQXw5UwYQHxTpfV4id5jzJv8Rv+rSsqbNQW2oJATPZI3uuE7stTrAPIm6u5g
+         IrTg==
+X-Forwarded-Encrypted: i=1; AFNElJ95tUxHfm+5uVTKgpWAprrGA5i37OrJDPmj8NdgefJw8zW2THji7sUxT+vZWyW/B6FrXZ/c7fh8ZJ3sX2A=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yy5OOQ1P79jhpLlkaguIu0TI+GQWACLxZaWaNg6yYSRrDoccBvq
+	kPYaNyGz602zHnguzdHINipyWAmB804jutSrsqQjmRYjusS2GCJiV+jhqP1/eGC8Rt8=
+X-Gm-Gg: Acq92OGneu/A3OsvfQ8Be9hKXaOUsM7pw0FFrFofTZCMWkEWEP1LSdO6Gu2Nnb10Zho
+	gMUuK5fKyhCUhgJe1bFercCKNdrlTE+uBGwRz9oYfaBYj54+6fMniORBXv5pFg01XVd/wJSS3OU
+	LF3ClyOnB16GX5l/TYN/2/yLs5PT3SXxCq4jr3K1ve3rPk+xzkWKStV2XBTTd6zkWn8RiL3D2uA
+	eEzOJDIFHpjZLzJUMHyU7VN3WJhrYe4NRzCzcXYcUxvn9EjAb4SdIMEpuuBCLjGNtO/ii6eewZd
+	YsIfTbxxf7jbDDRzfOMrWyqWCdf+nJflCwPFAVTCAmjUqGCNWDOurd7UbmytrBfRcdeLsoBQPOg
+	R3dOEousRPvFkzp+iYn80ouCZ0n/YEEer+Nc66vpGdD0ytqIvmTsGv0hWeK6owPm6UfGQwFpqhs
+	M5/4Gyi1YM+ZnUCOByyPm4r/b8SiM9TPLFDYjYRL7YHZTF2zKhS2jIrExJWdw=
+X-Received: by 2002:a17:903:1b4f:b0:2b0:9c2b:641d with SMTP id d9443c01a7336-2bd2f4dbc06mr31307215ad.2.1778677652955;
+        Wed, 13 May 2026 06:07:32 -0700 (PDT)
 Received: from PXLDJ45XCM.bytedance.net ([61.213.176.6])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2baf1e90854sm166641925ad.66.2026.05.13.06.07.33
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2baf1e90854sm166641925ad.66.2026.05.13.06.07.27
         (version=TLS1_3 cipher=TLS_CHACHA20_POLY1305_SHA256 bits=256/256);
-        Wed, 13 May 2026 06:07:38 -0700 (PDT)
+        Wed, 13 May 2026 06:07:32 -0700 (PDT)
 From: Muchun Song <songmuchun@bytedance.com>
 To: Andrew Morton <akpm@linux-foundation.org>,
 	David Hildenbrand <david@kernel.org>,
@@ -94,12 +92,10 @@ Cc: Lorenzo Stoakes <ljs@kernel.org>,
 	linuxppc-dev@lists.ozlabs.org,
 	linux-kernel@vger.kernel.org,
 	Muchun Song <songmuchun@bytedance.com>
-Subject: [PATCH v2 01/69] mm/hugetlb: Fix boot panic with CONFIG_DEBUG_VM and HVO bootmem pages
-Date: Wed, 13 May 2026 21:04:29 +0800
-Message-ID: <20260513130542.35604-2-songmuchun@bytedance.com>
+Subject: [PATCH v2 00/69] mm: Generalize HVO for HugeTLB and device DAX
+Date: Wed, 13 May 2026 21:04:28 +0800
+Message-ID: <20260513130542.35604-1-songmuchun@bytedance.com>
 X-Mailer: git-send-email 2.50.1
-In-Reply-To: <20260513130542.35604-1-songmuchun@bytedance.com>
-References: <20260513130542.35604-1-songmuchun@bytedance.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -115,93 +111,186 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Commit 622026e87c40 ("mm/hugetlb: remove fake head pages") switched
-HVO to reuse per-zone shared tail pages from zone->vmemmap_tails[].
+In this series, HVO is redefined as Hugepage Vmemmap Optimization: a
+general vmemmap optimization model for large hugepage-backed mappings,
+rather than a HugeTLB-only implementation detail.
 
-Those shared tail pages were initialized in hugetlb_vmemmap_init(), but
-bootmem HugeTLB folios are prepared earlier from gather_bootmem_prealloc().
-With hugetlb_free_vmemmap=on, prep_and_add_bootmem_folios() can access
-pageblock flags on bootmem HugeTLB pages whose mirrored tail struct pages
-already point to the shared tail page. On CONFIG_DEBUG_VM kernels,
-get_pfnblock_bitmap_bitidx() then dereferences the still-uninitialized
-shared tail page and can panic during boot.
+The existing code grew around the original HugeTLB-specific HVO path,
+while device DAX developed similar but separate vmemmap optimization
+handling. As a result, the current implementation carries duplicated
+logic, boot-time special cases, and subsystem-specific interfaces around
+what is fundamentally the same sparse-vmemmap optimization.
 
-Initialize zone->vmemmap_tails[] from gather_bootmem_prealloc(), before
-bootmem HugeTLB folios are processed, and drop the later initialization
-from hugetlb_vmemmap_init().
+This series generalizes that optimization into a common framework used
+by both HugeTLB and device DAX.
 
-This bug only affects CONFIG_DEBUG_VM kernels, where the relevant
-assertion is evaluated.
+The first few patches include some minor bug fixes found during AI-aided
+review of the current code. These fixes are not the main goal of the
+series, but the later refactoring and unification work depends on them,
+so they are included here as preparatory changes.
 
-Fixes: 622026e87c40 ("mm/hugetlb: remove fake head pages")
-Signed-off-by: Muchun Song <songmuchun@bytedance.com>
----
- mm/hugetlb.c         | 19 +++++++++++++++++++
- mm/hugetlb_vmemmap.c | 17 -----------------
- 2 files changed, 19 insertions(+), 17 deletions(-)
+The series then reworks the relevant early boot and sparse
+initialization paths, introduces a generic section-based sparse-vmemmap
+optimization infrastructure, switches HugeTLB and device DAX over to the
+shared implementation, and removes the old special-case code.
 
-diff --git a/mm/hugetlb.c b/mm/hugetlb.c
-index 31b34ca0f402..d22683ab30a1 100644
---- a/mm/hugetlb.c
-+++ b/mm/hugetlb.c
-@@ -3382,6 +3382,25 @@ static void __init gather_bootmem_prealloc(void)
- 		.max_threads	= num_node_state(N_MEMORY),
- 		.numa_aware	= true,
- 	};
-+#ifdef CONFIG_HUGETLB_PAGE_OPTIMIZE_VMEMMAP
-+	struct zone *zone;
-+
-+	for_each_zone(zone) {
-+		for (int i = 0; i < NR_VMEMMAP_TAILS; i++) {
-+			struct page *tail, *p;
-+			unsigned int order;
-+
-+			tail = zone->vmemmap_tails[i];
-+			if (!tail)
-+				continue;
-+
-+			order = i + VMEMMAP_TAIL_MIN_ORDER;
-+			p = page_to_virt(tail);
-+			for (int j = 0; j < PAGE_SIZE / sizeof(struct page); j++)
-+				init_compound_tail(p + j, NULL, order, zone);
-+		}
-+	}
-+#endif
- 
- 	padata_do_multithreaded(&job);
- }
-diff --git a/mm/hugetlb_vmemmap.c b/mm/hugetlb_vmemmap.c
-index 4a077d231d3a..62e61af18c9a 100644
---- a/mm/hugetlb_vmemmap.c
-+++ b/mm/hugetlb_vmemmap.c
-@@ -870,27 +870,10 @@ static const struct ctl_table hugetlb_vmemmap_sysctls[] = {
- static int __init hugetlb_vmemmap_init(void)
- {
- 	const struct hstate *h;
--	struct zone *zone;
- 
- 	/* HUGETLB_VMEMMAP_RESERVE_SIZE should cover all used struct pages */
- 	BUILD_BUG_ON(__NR_USED_SUBPAGE > HUGETLB_VMEMMAP_RESERVE_PAGES);
- 
--	for_each_zone(zone) {
--		for (int i = 0; i < NR_VMEMMAP_TAILS; i++) {
--			struct page *tail, *p;
--			unsigned int order;
--
--			tail = zone->vmemmap_tails[i];
--			if (!tail)
--				continue;
--
--			order = i + VMEMMAP_TAIL_MIN_ORDER;
--			p = page_to_virt(tail);
--			for (int j = 0; j < PAGE_SIZE / sizeof(struct page); j++)
--				init_compound_tail(p + j, NULL, order, zone);
--		}
--	}
--
- 	for_each_hstate(h) {
- 		if (hugetlb_vmemmap_optimizable(h)) {
- 			register_sysctl_init("vm", hugetlb_vmemmap_sysctls);
+At a high level, the series does the following:
+
+  - apply a small set of preparatory bug fixes
+  - reorder early boot and sparse initialization so optimized vmemmap
+    setup has the required zone and pageblock state
+  - introduce generic section-based vmemmap optimization infrastructure
+  - switch HugeTLB and device DAX to the shared implementation
+  - consolidate HVO enablement and naming
+  - remove obsolete HugeTLB-specific boot-time and architecture-specific
+    optimization code
+  - rewrite the documentation around the unified design
+
+This brings a few concrete benefits:
+
+  - HugeTLB and device DAX share one vmemmap optimization framework,
+    reducing duplicated logic and long-term maintenance overhead
+  - when CONFIG_DEFERRED_STRUCT_PAGE_INIT is disabled, optimized struct
+    pages can skip the usual memmap_init() initialization work, which
+    helps reduce boot-time overhead
+  - all architectures that support HVO benefit from the generic
+    sparse-vmemmap optimization path without extra architecture-specific
+    preinit handling
+  - device DAX improves its struct page savings further by dropping the
+    extra reserved tail page
+  - shared vmemmap tail pages are mapped read-only, improving robustness
+
+I have only built and tested this series on x86. I do not currently have
+a powerpc test environment, so any testing or feedback on powerpc would
+be much appreciated.
+
+Changes since v1:
+  - rebased onto current next tree
+  - added the preparatory minor bug fixes found during AI-aided review
+  - added further refactoring on top of the new infrastructure
+
+Muchun Song (69):
+  mm/hugetlb: Fix boot panic with CONFIG_DEBUG_VM and HVO bootmem pages
+  mm/hugetlb_vmemmap: Fix __hugetlb_vmemmap_optimize_folios()
+  powerpc/mm: Fix wrong addr_pfn tracking in compound vmemmap population
+  mm/hugetlb: Initialize gigantic bootmem hugepage struct pages earlier
+  mm/mm_init: Simplify deferred_free_pages() migratetype init
+  mm/sparse: Panic on memmap and usemap allocation failure
+  mm/sparse: Move subsection_map_init() into sparse_init()
+  mm/mm_init: Defer sparse_init() until after zone initialization
+  mm/mm_init: Defer hugetlb reservation until after zone initialization
+  mm/mm_init: Remove set_pageblock_order() call from sparse_init()
+  mm/sparse: Move sparse_vmemmap_init_nid_late() into sparse_init_nid()
+  mm/hugetlb_cma: Validate hugetlb CMA range by zone at reserve time
+  mm/hugetlb: Refactor early boot gigantic hugepage allocation
+  mm/hugetlb: Free cross-zone bootmem gigantic pages after allocation
+  mm/hugetlb_vmemmap: Move bootmem HVO setup to early init
+  mm/hugetlb: Remove obsolete bootmem cross-zone checks
+  mm/sparse-vmemmap: Remove sparse_vmemmap_init_nid_late()
+  mm/hugetlb: Remove unused bootmem cma field
+  mm/mm_init: Make __init_page_from_nid() static
+  mm/sparse-vmemmap: Drop VMEMMAP_POPULATE_PAGEREF
+  mm: Rename vmemmap optimization macros around folio semantics
+  mm/sparse: Drop power-of-2 size requirement for struct mem_section
+  mm/sparse-vmemmap: track compound page order in struct mem_section
+  mm/mm_init: Skip initializing shared vmemmap tail pages
+  mm/sparse-vmemmap: Initialize shared tail vmemmap pages on allocation
+  mm/sparse-vmemmap: Support section-based vmemmap accounting
+  mm/sparse-vmemmap: Support section-based vmemmap optimization
+  mm/hugetlb: Use generic vmemmap optimization macros
+  mm/sparse: Mark memblocks present earlier
+  mm/hugetlb: Switch HugeTLB to section-based vmemmap optimization
+  mm/sparse: Remove section_map_size()
+  mm/mm_init: Factor out pfn_to_zone() as a shared helper
+  mm/sparse: Remove SPARSEMEM_VMEMMAP_PREINIT
+  mm/sparse: Inline usemap allocation into sparse_init_nid()
+  mm/hugetlb: Remove HUGE_BOOTMEM_HVO
+  mm/hugetlb: Remove HUGE_BOOTMEM_CMA
+  mm/sparse-vmemmap: Factor out shared vmemmap page allocation
+  mm/sparse-vmemmap: Introduce CONFIG_SPARSEMEM_VMEMMAP_OPTIMIZATION
+  mm/sparse-vmemmap: Switch DAX to vmemmap_shared_tail_page()
+  powerpc/mm: Switch DAX to vmemmap_shared_tail_page()
+  mm/sparse-vmemmap: Drop the extra tail page from DAX reservation
+  mm/sparse-vmemmap: Switch DAX to section-based vmemmap optimization
+  mm/sparse-vmemmap: Unify DAX and HugeTLB population paths
+  mm/sparse-vmemmap: Remove the unused ptpfn argument
+  powerpc/mm: Make vmemmap_populate_compound_pages() static
+  mm/sparse-vmemmap: Map shared vmemmap tail pages read-only
+  powerpc/mm: Map shared vmemmap tail pages read-only
+  mm/sparse-vmemmap: Inline vmemmap_populate_address() into its caller
+  mm/hugetlb_vmemmap: Remove vmemmap_wrprotect_hvo()
+  mm/sparse: Simplify section_nr_vmemmap_pages()
+  mm/sparse-vmemmap: Introduce vmemmap_nr_struct_pages()
+  powerpc/mm: Drop powerpc vmemmap_can_optimize()
+  mm/sparse-vmemmap: Drop vmemmap_can_optimize()
+  mm/sparse-vmemmap: Drop @pgmap from vmemmap population APIs
+  mm/sparse: Decouple section activation from ZONE_DEVICE
+  mm: Redefine HVO as Hugepage Vmemmap Optimization
+  mm/sparse-vmemmap: Consolidate HVO enable checks
+  mm/hugetlb: Make HVO optimizable checks depend on generic logic
+  mm/sparse-vmemmap: Localize init_compound_tail()
+  mm/mm_init: Check zone consistency on optimized vmemmap sections
+  mm/hugetlb: Drop boot-time HVO handling for gigantic folios
+  mm/hugetlb: Simplify hugetlb_folio_init_vmemmap()
+  mm/hugetlb: Initialize the full bootmem hugepage in hugetlb code
+  mm/mm_init: Factor out compound page initialization
+  mm/mm_init: Make __init_single_page() static
+  mm/cma: Move CMA pageblock initialization into cma_activate_area()
+  mm/cma: Move init_cma_pageblock() into cma.c
+  mm/mm_init: Initialize pageblock migratetype in memmap init helpers
+  Documentation/mm: Rewrite vmemmap_dedup.rst for unified HVO
+
+ .../admin-guide/kernel-parameters.txt         |   2 +-
+ Documentation/admin-guide/mm/hugetlbpage.rst  |   4 +-
+ .../admin-guide/mm/memory-hotplug.rst         |   2 +-
+ Documentation/admin-guide/sysctl/vm.rst       |   3 +-
+ Documentation/arch/powerpc/index.rst          |   1 -
+ Documentation/arch/powerpc/vmemmap_dedup.rst  | 101 ----
+ Documentation/mm/vmemmap_dedup.rst            | 217 ++------
+ arch/arm64/mm/mmu.c                           |   5 +-
+ arch/loongarch/mm/init.c                      |   5 +-
+ arch/powerpc/include/asm/book3s/64/radix.h    |  12 -
+ arch/powerpc/mm/book3s64/radix_pgtable.c      | 154 +-----
+ arch/powerpc/mm/hugetlbpage.c                 |  11 +-
+ arch/powerpc/mm/init_64.c                     |   1 +
+ arch/powerpc/mm/mem.c                         |   5 +-
+ arch/riscv/mm/init.c                          |   5 +-
+ arch/s390/mm/init.c                           |   5 +-
+ arch/x86/Kconfig                              |   1 -
+ arch/x86/entry/vdso/vdso32/fake_32bit_build.h |   1 -
+ arch/x86/mm/init_64.c                         |   5 +-
+ drivers/dax/Kconfig                           |   1 +
+ fs/Kconfig                                    |   6 +-
+ include/linux/hugetlb.h                       |  23 +-
+ include/linux/memory_hotplug.h                |  12 +-
+ include/linux/mm.h                            |  44 +-
+ include/linux/mm_types.h                      |   3 +-
+ include/linux/mmzone.h                        | 151 ++++--
+ include/linux/page-flags-layout.h             |   2 +
+ include/linux/page-flags.h                    |  31 +-
+ kernel/bounds.c                               |   5 +
+ mm/Kconfig                                    |   9 +-
+ mm/bootmem_info.c                             |   5 +-
+ mm/cma.c                                      |  18 +-
+ mm/hugetlb.c                                  | 337 ++++--------
+ mm/hugetlb_cma.c                              |  41 +-
+ mm/hugetlb_cma.h                              |   4 +-
+ mm/hugetlb_vmemmap.c                          | 266 +--------
+ mm/hugetlb_vmemmap.h                          |  64 +--
+ mm/internal.h                                 |  72 ++-
+ mm/memory-failure.c                           |   6 +-
+ mm/memory_hotplug.c                           |  22 +-
+ mm/memremap.c                                 |   4 +-
+ mm/mm_init.c                                  | 241 ++++-----
+ mm/sparse-vmemmap.c                           | 511 ++++++------------
+ mm/sparse.c                                   | 129 +----
+ mm/util.c                                     |   2 +-
+ scripts/gdb/linux/mm.py                       |   6 +-
+ 46 files changed, 743 insertions(+), 1812 deletions(-)
+ delete mode 100644 Documentation/arch/powerpc/vmemmap_dedup.rst
+
+
+base-commit: e98d21c170b01ddef366f023bbfcf6b31509fa83
 -- 
 2.54.0
 
