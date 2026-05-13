@@ -1,92 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-20829-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20830-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1B7E2CD4F24
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 May 2026 06:45:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 44DB8CD4851
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 May 2026 06:50:00 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gFkVF5D08z2xpp;
-	Wed, 13 May 2026 16:45:09 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c005::5" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778651693;
-	cv=pass; b=G9vkY+R8uU4yqK4O59wDkXArQwLecnuZxM0Gl28z9hGTkwco8IHXwiSFrO5QBX4ygNzA+j7woiR/NL1AIQTxxnXEcktsygDSNAA48vuprTYBUdyKQdmQhIwZJuy60M/6xOK3KZAPrGIAPV+7HRjSBCABMavIIzoohdrJghX1lIeu9OAl9qZnc8oE6jQ2w9mSNEbiHBhEDsD4tgBMkpDH+bhPgi/S6Zr97JrqSEUQUssa0MOA+6N8fyYVAsPtxl1qVmZrrqB82CGMxDREg8mb0dKwminmqjzbn2xn+lhSganuNDMMEVRkJgaNTo2xrNjhPWyt4M1bmuah4uoMk4bUjg==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1778651693; c=relaxed/relaxed;
-	bh=lUj/rqXL4xIAvB3noygtdItJnvmtvfw0MMRlgPcDOFk=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:Content-Type:
-	 Content-Disposition:In-Reply-To:MIME-Version; b=iV1xKUCK08hfEzssa+LBVijYFyEjA/DHvdpi4z42Iz0N1E+j16wbEgNX8xnrs2262gKjOYzCiZSFiTnp5LBfmGuLdzi8IP07uQVJRZ8qsfndNqqFxgiL4wqrQy/MWKZmAAInp88lUtFEU/nFOhwIKVFaihi5HpTRyuBPqL/a61OWAXxzkR5GHDhgGJBwW3y20h04gwemY2ID5D+rjgfTgbau/+Xh9BLA43dbD7H9hkKjMUdH/S4tjXZHWRxUip0D/GlU4ckGAOX3Cg096umjsvnm5Kk0NlYcsY1p/SBMvDehpAo34d6CqRzPATe4cKaJ+uP9cYMEPEotJ6v/syQAIA==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=Rn7HtyD9; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c005::5; helo=co1pr03cu002.outbound.protection.outlook.com; envelope-from=icheng@nvidia.com; receiver=lists.ozlabs.org) smtp.mailfrom=nvidia.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gFkbp6MnVz2xpp;
+	Wed, 13 May 2026 16:49:58 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778654998;
+	cv=none; b=k+i1xmx0MpRrtFYYEKsQ99blKv8Id+teGxzG4sqct58ISCGsUxHg8OisfN2qbsiPRTL37Fv73/QFz3Y/g1jvhW5tN5b3ZCaloiWDWr8IvbodOzFmI9INQMbQBe97cm4aKvngz4kVZkqX12EqXbNYFOR6pSFTWqNXNuBMXlpNi3qdBn/lGKlqQnKfYzrTyPJ7CWoQ08SNVKHQ7K05zbUVed8+zukteX4rVXBn3q6EADN88WDkgcv/35cCdU+WrCz3IqEleyNKpQV/Ae6wvDWjWKyiFBDep6bKr0RaA8CVAkUQ3JujZPfuFmHk8lOuiOIvVvshMh6xIpQn9aJLVnTMuQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1778654998; c=relaxed/relaxed;
+	bh=zb9AnSZJ8g0WPOC/nqP5MzEBiIJ7WLyueMPR929x84k=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=NkDxQmTp+OmNPY5HD0xhNtjXm1k1CJ78/KHKD0YVxRxEAmtsWXgur00cQMH14h65xx3AWTnlQFwnPjRLSq6GAQuG0S3kuX3YR6V0343q/GfLRB1ZAR75KTqAnWjFQYDq9uCXFPnCj6/WZu6kQXMthvOJKa06pWg0q/9h+8sbW0xRx08sY8FibnXHvwIMAObNaqB9iBZNG8Vle+huO1WTHl6lAAt2zMnxBoFxD8/cFFEZ/KmMsozzX/wIy8SCUPtfj/gLnkEuwYuwXHVhRXG+EKE/5pMkweT6VbsXOAItvmG86zEM3n2wXSg4XqckFLNbBmHJlJ/lkNxg0iz13bPNPg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=PJZKY9il; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=harshpb@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=Rn7HtyD9;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=PJZKY9il;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nvidia.com (client-ip=2a01:111:f403:c005::5; helo=co1pr03cu002.outbound.protection.outlook.com; envelope-from=icheng@nvidia.com; receiver=lists.ozlabs.org)
-Received: from CO1PR03CU002.outbound.protection.outlook.com (mail-westus2azlp170100005.outbound.protection.outlook.com [IPv6:2a01:111:f403:c005::5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=harshpb@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gFjNC0P8Gz2xlV
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2026 15:54:50 +1000 (AEST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=dnIniu2hn0QPtKgQU9SO8RDM8Er7xL/pHXSilbdtYS0vjuk7KdOqtqG3aBYcvP5FmBvHCfbqZcm5sOIcTWXAgYfKZAVZmk5yLECUcZ6S5SCaIY5ON6zmaVlz/KPa10au+5bM7scebI3CFhwD0UZJ6OqYI9v7e4gwtqjiDjOIPViQZcZ9JYAl6i+M0kM/u2c9LTRFjdEAXtloZnJKlXj5gEmVRihTDTIawqqz5A/24YdOWM3PNas2Zq6qPJGxOqzdDJPX7HBe0jCyk5Doklo/CKJ87N1fREiyEcD8nZwXrWgX+qsiapmhxdkzNzRjKFHOGqJGSO/fXyk9x5ZL7jD8Tg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=lUj/rqXL4xIAvB3noygtdItJnvmtvfw0MMRlgPcDOFk=;
- b=y0UPcXZa+KjPJtjp4AVndw/gALVq6R5DMkhTtJHY3vDYR0Ya1LXLHYAvZa66bdQx7OeCk4BowJR/oxo8k12JDMm20AmwzpN5qyJOgEUU2uScK7XHznpWm7qyckwwoz8SWcL6ZNT2U8tLvXiBRFFLCDEyuDgR4UgbngR2ClGtMonko5Hx7MweMIRh2wdtylEIoOhC82PABTD6yNswd1UC5UdjUjPfwByAxBR3Bq8oj6Olsn4y8EY4Pn+7j/PBVc2MRQdsYejL3UyQxTfBsBAGrJadm4zrJnDfUC5dj2gtWDwT5HOmN86Vit++vPMnYgj8K5UqbQ3nCrFdDOBvnVtdQg==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
- dkim=pass header.d=nvidia.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
- s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=lUj/rqXL4xIAvB3noygtdItJnvmtvfw0MMRlgPcDOFk=;
- b=Rn7HtyD9BKorQGqRo726rRYR2FuEsMRCvxc0nQ2h8KMWqVRc+a9Fs7WTDwot92zPGu4NvvYrSMLM9QXr/XMJDqgJud/nraMk3iSLYXsqkC9cLG0lI+MW4uGaWJLD0tJ+4qst5jo0gmRdRqXWckYRICBB1OLArMdVwTOznxTJF0I9CxJWGVfeFAWANwbBMGfskHeLZVurIfYOmxJbd2QH0WiVMPMm2Z4igRhj++P49KWocWR58xHZTg2lhs8ILWYZ7V4CJhiA9/Vt+GCJTo3aTcwvtto6Ta6TxLVjcJf4PzwYCAl03y5l0HKEjKVvnrTzytLH6v+kLsmtzBCDsgQ+vQ==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=nvidia.com;
-Received: from BL0PR12MB2370.namprd12.prod.outlook.com (2603:10b6:207:47::27)
- by SA5PPF530AE3851.namprd12.prod.outlook.com (2603:10b6:80f:fc04::8c9) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9891.21; Wed, 13 May
- 2026 05:54:18 +0000
-Received: from BL0PR12MB2370.namprd12.prod.outlook.com
- ([fe80::86cf:c3ec:2cf5:74c8]) by BL0PR12MB2370.namprd12.prod.outlook.com
- ([fe80::86cf:c3ec:2cf5:74c8%5]) with mapi id 15.20.9913.009; Wed, 13 May 2026
- 05:54:18 +0000
-Date: Wed, 13 May 2026 13:54:11 +0800
-From: Richard Cheng <icheng@nvidia.com>
-To: Muchun Song <muchun.song@linux.dev>
-Cc: Muchun Song <songmuchun@bytedance.com>, 
-	Andrew Morton <akpm@linux-foundation.org>, David Hildenbrand <david@kernel.org>, 
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-mm@kvack.org, driver-core@lists.linux.dev, 
-	Oscar Salvador <osalvador@suse.de>, Lorenzo Stoakes <ljs@kernel.org>, 
-	"Liam R . Howlett" <liam@infradead.org>, Vlastimil Babka <vbabka@kernel.org>, 
-	Mike Rapoport <rppt@kernel.org>, Suren Baghdasaryan <surenb@google.com>, 
-	Michal Hocko <mhocko@suse.com>, Danilo Krummrich <dakr@kernel.org>, 
-	"Rafael J . Wysocki" <rafael@kernel.org>, linux-kernel@vger.kernel.org, linux-cxl@vger.kernel.org, 
-	linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org, 
-	Madhavan Srinivasan <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, 
-	Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <chleroy@kernel.org>, 
-	Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>, 
-	Alexander Gordeev <agordeev@linux.ibm.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, 
-	Sven Schnelle <svens@linux.ibm.com>, Sumanth Korikkar <sumanthk@linux.ibm.com>, 
-	Kees Cook <kees@kernel.org>, Douglas Anderson <dianders@chromium.org>, 
-	Donet Tom <donettom@linux.ibm.com>
-Subject: Re: [PATCH v2] drivers/base/memory: make memory block get/put
- explicit
-Message-ID: <agQRSj2sGXSVegGJ@MWDK4CY14F>
-References: <20260512072635.3969576-1-songmuchun@bytedance.com>
- <agMVtO5QPGYVb48D@MWDK4CY14F>
- <3EE08C93-F28D-4363-AC1C-C9B99F8ABB7C@linux.dev>
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <3EE08C93-F28D-4363-AC1C-C9B99F8ABB7C@linux.dev>
-X-ClientProxiedBy: SG2PR02CA0131.apcprd02.prod.outlook.com
- (2603:1096:4:188::6) To BL0PR12MB2370.namprd12.prod.outlook.com
- (2603:10b6:207:47::27)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gFkbn5kqqz2xlV
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2026 16:49:57 +1000 (AEST)
+Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 64D2YqgU3179852;
+	Wed, 13 May 2026 06:49:33 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=zb9AnS
+	ZJ8g0WPOC/nqP5MzEBiIJ7WLyueMPR929x84k=; b=PJZKY9ilwXIhUZeOaNHP4j
+	qBSKKlIoj/jXROM2HyAj71i85DIH+tmB9yCC+LT2cdedfoqqzciAuo5qO5DuWApa
+	Rgw9OBKa0cviYd3s+5+y0nG8zW7rE+a1T/2aqe4pZnktuGXisMjnR/39clEH4LDu
+	Cb8ss0Hv8ewnA3rcU5d/+IUfDhHD+WPXb52Wot4oDZ3EW02ZzApGSNQc8aEHjCmZ
+	JsuqUkErwpLnTn0zOc22V5cXsi2cen69NnDq2nZk0U9Z6kl8K1PaRT+8Z4j2S17h
+	GKY8ZGnfB2qbjYMPirbrZPZ8cHvdtJ/dfau5kY1WWrhTOA2cuvlwufkSm/KXI+Xg
+	==
+Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4e3nv6p5px-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 13 May 2026 06:49:32 +0000 (GMT)
+Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma21.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 64D6deWS031508;
+	Wed, 13 May 2026 06:49:32 GMT
+Received: from smtprelay05.dal12v.mail.ibm.com ([172.16.1.7])
+	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4e3nfgpm01-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 13 May 2026 06:49:32 +0000 (GMT)
+Received: from smtpav03.wdc07v.mail.ibm.com (smtpav03.wdc07v.mail.ibm.com [10.39.53.230])
+	by smtprelay05.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 64D6nUAi62390736
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Wed, 13 May 2026 06:49:30 GMT
+Received: from smtpav03.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 7FC3358054;
+	Wed, 13 May 2026 06:49:30 +0000 (GMT)
+Received: from smtpav03.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 7ABC85805A;
+	Wed, 13 May 2026 06:49:26 +0000 (GMT)
+Received: from [9.39.26.26] (unknown [9.39.26.26])
+	by smtpav03.wdc07v.mail.ibm.com (Postfix) with ESMTP;
+	Wed, 13 May 2026 06:49:26 +0000 (GMT)
+Message-ID: <a994957d-ab93-47d9-9fd3-16b0ce701c6e@linux.ibm.com>
+Date: Wed, 13 May 2026 12:19:24 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -100,440 +81,134 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: BL0PR12MB2370:EE_|SA5PPF530AE3851:EE_
-X-MS-Office365-Filtering-Correlation-Id: 9adbf709-c0c9-4bc0-55f5-08deb0b4122e
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|1800799024|366016|7416014|376014|56012099003|22082099003|18002099003|11063799003;
-X-Microsoft-Antispam-Message-Info:
-	rMYR9QTrQh2K1aNkM8UlIHe1xoz+fjo/qlrS5RFNcJQ5HUx+v0pEU64l8XK0Lq2W714jxHaIvlsllJYT56C3UaplZV8vYYH1SdvynNYHLY0rm0f8n2LG9rHhJDCs9YJvrEQziN7ml8ZHshKOjDPgdY2BYeIG7tIqj0J4g5etUu0yEqBBX39QBzGOzggRLgJFCYeAaMHQDhoLVkzfPjWdKTiw2g2V+McybyCJr3quvZf5+Pcj3psBN8cpEzt8uk89y0lgv5ymBzuVspq+Kuq5JyAOfaL2y+MrIfEdKSc/WqvLywQXmTfe5Y51DRvZiA3qC6J3dtbVgH30zdMdq/BbgGFjyZlH9i5anO9XWKyCa3BcC1/DuspWERdiBOs2ahjEoCsqTv94yg+weqEcTQ3l0ZvhN5ttQdXqhL9P615Ue+RtdEsgT3BSF9k/ntS4QJ+5cIT/Cc83pHCEz11+GMZ81Vkwc5TRHCvI3xS7Mrb+nqTYxKHo/hM2wePMXM8zTfiKTGVG886oZHze5/FIiigta9ILi3q97VeYd//7+5zJBmRQusskEniFgM6zuP5pX9EHWLjvkeIxdD60T3SfWg6PWZd0ekDTrEVwDJ2HcuvHfSxjEMwkhRWq61WI12ZQO5+2PybBtHJFtajAzVV2d2+EmumoXdb++qQU58Xcuq5TtZpiALs5FCs+JIYRSoF2MLbPrp9KVkq5fi4kdoDY0+hLhQ==
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:BL0PR12MB2370.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(366016)(7416014)(376014)(56012099003)(22082099003)(18002099003)(11063799003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?utf-8?B?eXZWNDlwU25ReHhGaXlZQnNyZGlHNkR0cm1jc1pBQldITUJqUEhFVjB3ZFlH?=
- =?utf-8?B?cURGQlJjNElrRGd6ZDBQVU82YjA1cnRyeG1UeFFibDRucEVkR09qTTJBSlk4?=
- =?utf-8?B?NU00NW45eEdUK2lQa1hZbWJKK2pkOVI1SjhmK1k0ajJnZ2RoQWgzVzVaQVVI?=
- =?utf-8?B?blNmcmxiZ1NXeUx0UzJSYjhsQ1g0eCtYTUcrcmNiczBRZ0xKMWkwNkRYMGJ0?=
- =?utf-8?B?ellZUytBak01Vnc1SFlyV1phSXlSMG1YNldRVVlmV1NSY05KREhINSsvWkVS?=
- =?utf-8?B?bDFaeEo3WENnWGNlVWVQRnRXRW1WVHRzTE9kNXdoUXl2c245TXEvWHpFMHR3?=
- =?utf-8?B?TW9MbUljUVpRdTdYTmljY0hRdmJ1aUFVd2dLRWxneExhNGc3RnZWcTl6V05N?=
- =?utf-8?B?d3ZHMWIxaWh3QXVUS1N0N2hXcXZsY3FhVmVocGNQN1ovN1creVo4MmJMdjln?=
- =?utf-8?B?OERUR0hLYmorMjZDNW5mSHRJbVpkOFpIYkI3S3NVSEt1ZGVGSktVVmZHQnkw?=
- =?utf-8?B?R1NZT096bzNTRmVBcDIzUXgrcHpoZG0zSXM3OW5veUFKRFFkaDJWN1JiUjVr?=
- =?utf-8?B?Q2VIQlVsNFNOQlBDTGxLdjNQQjh6bjhnVE9FUlUwa0xxVGxIOC8xYzNUMTha?=
- =?utf-8?B?MmhWYVhIdHJHbmh0eVJSNWpxVyt6MVRTQlo2Sll6ZjhVSzJxV2M0YWErVXZO?=
- =?utf-8?B?YVBhVm05QjJyNExzNGo2by92WTFMNkZLSk1MdVdBUFBmM2prZmM1NHIwNXAv?=
- =?utf-8?B?azVSVTV1cy9mUzRINzFkTzBTdU1LdEZWNTBEUjVqN2VJd09lWCt1ZmROdUV6?=
- =?utf-8?B?TTVqQzRDQ0NLN1BSSzEzcG9KOXZqYVJ5dVBZR29yNi9VbCt0SHE5bU85NnJF?=
- =?utf-8?B?MkVJLzVIUU94Z0p3TG9Pc3lrK3ZXM3lCVktMS2dvSGdkOUJQcnl0TGlrbldR?=
- =?utf-8?B?SU5OSWcxVGMwOUZOMzdYV0ZsbUp5Z2ZDanR6bHQyaVJUbExWa2xqMVpSZjE2?=
- =?utf-8?B?MmRBN1duajZnNGtyQ05XUW05VWJiMkI4bzVpaVU2MFJvUTI2ZU1QWjdoeTFm?=
- =?utf-8?B?YmtyWGpSNGJldU5oK3Z3OFNXWkRPODM5VXR6ZnZTdER2aE9aYzFjVGpkZlZT?=
- =?utf-8?B?V2FrUGJCOW9nVm4ydWVyd085dGxCSDZ4OVgrY04xdzMrSEJaOUJCaitRYnl0?=
- =?utf-8?B?YzdXTDlKOUk0cEptODRCS1lmWG1iSlJtQ0VVNkhUem5hMEFIaHlWUkZ3SWFN?=
- =?utf-8?B?U3JQdlZDczRSdFByd0h5RFVYbzRHK01hWDBJUEtNeDd4L2JTUVNiWmtyazBp?=
- =?utf-8?B?V05tTSsrdk54TFI1N0JubDlNSDFYeGErNzlhbDdDa1FnN1RyZVJIUHZNRDM1?=
- =?utf-8?B?bjlydzFSYUpPMHVMb2lOMW40c2tIZ0NPaUpQQU05bzFNZ1oyYVRJUU82dTBq?=
- =?utf-8?B?ZnV4ckxtNzBnQ1Y2Q05sNlNJdTBmcU9Hd2RaN3RyaWpuTVkxbDBSenlqVVZx?=
- =?utf-8?B?Z3dDaUtxOTJqditJUlpjL2J4M3VscHFCNmF1eUFidHZ3SHphNWxCOEpRTmZ3?=
- =?utf-8?B?MmtYKzhyUHhwNHBLR2p3cEtnZnQ0bU9aY2RidDd3QUhPYUs1aDN6QmxFM2Zj?=
- =?utf-8?B?bXZUbVBGNVRXaHRiVUMvdXhFVTFzUmIxeS92bVFZTWNZVTR4K3pOOERPUXgx?=
- =?utf-8?B?T0RBdFd1UmxURUZ1K2ZtcTZKVE1tb3hqTGExNWlVM0ZoMTZDODZGZWxNNEYw?=
- =?utf-8?B?cUhzUEdZSGc0Z2VQdW55WmRGTEN0N0RZYlJ5cFpHMWJ2R2U2bkU2KzNPbzBI?=
- =?utf-8?B?SzJEUFNGcWRwaUV4aC82dUhxYW95bDNMK0w5anYyQ3V5akpMSlRhVk9MWE9k?=
- =?utf-8?B?a0VaWndiaVhMVnlBaTVlUUhrK0R0YW95NFRxMmNSSTI0TjJJcThEVTUwT0dO?=
- =?utf-8?B?UVVMeXZOOHdpWmY5Uk8zOWo4aXpDMTlEN2N2NzA2NTdHaG0wUzgrMDFObkZL?=
- =?utf-8?B?ZHFZei9WYmVaRFJpL3RKb2NtdEdPcHRWWXkwWUVhOElIeUh5a0RkcVVoQUV0?=
- =?utf-8?B?ZXJ5TllvOXhod0IzN1loZEdCWVJnWVFpRVk2a0tENWtXZDBsajNhZGN1NlBl?=
- =?utf-8?B?dXRic21CdktMQVQ3aTYwRmF3UDBmODRkckdRemEybXluWExSai9BcHFld1ds?=
- =?utf-8?B?OGtVUXZqd3M0d3BUcXlld0xBUHljMDBDK0hmVUUwNUk0VjNiSnFoN1lveHJk?=
- =?utf-8?B?eFdydFlVdWRCU2I0b1hMU25TdGQ2S3l1ay9vRWxkdzJvcmNQV2VxZEpQSVJk?=
- =?utf-8?B?RHN1ZHNCVjBjQ0cwNFlqRUZrQ210R3g5a2grRTRRem4xek1oaFFtUT09?=
-X-OriginatorOrg: Nvidia.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 9adbf709-c0c9-4bc0-55f5-08deb0b4122e
-X-MS-Exchange-CrossTenant-AuthSource: BL0PR12MB2370.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 13 May 2026 05:54:18.0744
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: oe9DlIF3ANyfZWyC+4wgzy1Zc8yfQi2nZF+4s74ZLNp8tMkrL10BiU9ITp+3F+c0YS++5STYboFxeVe4lz5KQA==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: SA5PPF530AE3851
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 1/1] powerpc/pseries/pci: quirks: Add pseries TG3 D3hot
+ delay quirk for EEH stability
+Content-Language: en-GB
+To: Narayana Murty N <nnmlinux@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+        maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com
+Cc: christophe.leroy@csgroup.eu, linux-kernel@vger.kernel.org,
+        mahesh@linux.ibm.com, vaibhav@linux.ibm.com, sbhat@linux.ibm.com
+References: <20260428093529.7618-1-nnmlinux@linux.ibm.com>
+From: Harsh Prateek Bora <harshpb@linux.ibm.com>
+In-Reply-To: <20260428093529.7618-1-nnmlinux@linux.ibm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Authority-Analysis: v=2.4 cv=Us1T8ewB c=1 sm=1 tr=0 ts=6a041efd cx=c_pps
+ a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
+ a=IkcTkHD0fZMA:10 a=NGcC8JguVDcA:10 a=f7IdgyKtn90A:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22 a=Y2IxJ9c9Rs8Kov3niI8_:22
+ a=VnNF1IyMAAAA:8 a=v8Yr_C-N-M78gxKgxPMA:9 a=QEXdDO2ut3YA:10
+X-Proofpoint-GUID: pBi12oTuJGY0WC4PBSUcPBTI0sR4oViz
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTEzMDA2NSBTYWx0ZWRfX6WDri40QNy0h
+ SREeKKmxqGnQaZ6X9iu6p4UX2KlKVaUKfGFPkYJqTRtjXZAYw5A5wN61tjHRF/+xHiAxSI1MvNp
+ +tuWVlceiFbyFffjfEW6UaDLN9coN8heYzSxsnSETrYDOkJMv7R2MQv6nMOBN3zsQPWdhLHJeOF
+ QFDGzpvf1K5IYXHNgJgzEuBWAUtweEEpbPpX/3divpY0HfuD0nDSgRR6vcUqkszoV9GFtHVhxiF
+ L+GS8DRICF0y5z+TwdYy0keIcVwW6c2FWVOx11Pv/Yg92r1SMbI8PCJPX/35WZ1WVNftGt1t/XZ
+ vCtElbKzD02G8gG9kbsTq9ac2nWAorcHQxd/cVkVC8lO2WOncwql4MGjuL2ITd2Pw7eIk2/j6Fa
+ hSbh7gN9lIxeruyVcUxa8GmAYORajx42lbRuhp0Z/DUPjyaHMHxDNozZijEtaf0bewGR/hjofB3
+ uSCP22HEYxWaUOoztdQ==
+X-Proofpoint-ORIG-GUID: 5VYVtYpq5e5j_EbuxFbwByCW9mSiaIbs
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-05-11_05,2026-05-08_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ phishscore=0 priorityscore=1501 impostorscore=0 lowpriorityscore=0
+ bulkscore=0 suspectscore=0 spamscore=0 malwarescore=0 clxscore=1015
+ adultscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2605050000
+ definitions=main-2605130065
 
-On Wed, May 13, 2026 at 09:41:23AM +0800, Muchun Song wrote:
-> 
-> 
-> > On May 12, 2026, at 20:03, Richard Cheng <icheng@nvidia.com> wrote:
-> > 
-> > On Tue, May 12, 2026 at 03:26:35PM +0800, Muchun Song wrote:
-> >> Rename the memory block lookup helper to make the acquired reference
-> >> explicit, add memory_block_put() to wrap put_device(), remove
-> >> find_memory_block(), and use memory_block_get() as the single block-id
-> >> based lookup interface.
-> >> 
-> >> This makes it clearer to callers that a successful lookup holds a
-> >> reference that must be dropped, reducing the chance of forgetting the
-> >> matching put and leaking the memory block device reference.
-> >> 
-> >> Link: https://lore.kernel.org/linux-mm/7887915D-E598-42B3-9AFE-BFFBACE8DE2D@linux.dev/#t
-> >> Signed-off-by: Muchun Song <songmuchun@bytedance.com>
-> >> Acked-by: Oscar Salvador <osalvador@suse.de>
-> >> Acked-by: David Hildenbrand (Arm) <david@kernel.org>
-> >> Acked-by: Michal Hocko <mhocko@suse.com>
-> >> Tested-by: Donet Tom <donettom@linux.ibm.com>
-> >> Reviewed-by: Lorenzo Stoakes <ljs@kernel.org>
-> >> ---
-> >> Changes in v2:
-> >> - mention the removal of find_memory_block() in the commit message
-> >> - drop the redundant extern from the memory_block_get() declaration
-> >> ---
-> >> .../platforms/pseries/hotplug-memory.c        | 14 ++-----
-> >> drivers/base/memory.c                         | 38 +++++++------------
-> >> drivers/base/node.c                           |  4 +-
-> >> drivers/s390/char/sclp_mem.c                  | 17 ++++-----
-> >> include/linux/memory.h                        |  7 +++-
-> >> mm/memory_hotplug.c                           |  5 +--
-> >> 6 files changed, 35 insertions(+), 50 deletions(-)
-> >> 
-> >> diff --git a/arch/powerpc/platforms/pseries/hotplug-memory.c b/arch/powerpc/platforms/pseries/hotplug-memory.c
-> >> index 75f85a5da981..94f3b57054b6 100644
-> >> --- a/arch/powerpc/platforms/pseries/hotplug-memory.c
-> >> +++ b/arch/powerpc/platforms/pseries/hotplug-memory.c
-> >> @@ -164,13 +164,7 @@ static int update_lmb_associativity_index(struct drmem_lmb *lmb)
-> >> 
-> >> static struct memory_block *lmb_to_memblock(struct drmem_lmb *lmb)
-> >> {
-> >> - unsigned long section_nr;
-> >> - struct memory_block *mem_block;
-> >> -
-> >> - section_nr = pfn_to_section_nr(PFN_DOWN(lmb->base_addr));
-> >> -
-> >> - mem_block = find_memory_block(section_nr);
-> >> - return mem_block;
-> >> + return memory_block_get(phys_to_block_id(lmb->base_addr));
-> >> }
-> >> 
-> >> static int get_lmb_range(u32 drc_index, int n_lmbs,
-> >> @@ -220,7 +214,7 @@ static int dlpar_change_lmb_state(struct drmem_lmb *lmb, bool online)
-> >> else
-> >> rc = 0;
-> >> 
-> >> - put_device(&mem_block->dev);
-> >> + memory_block_put(mem_block);
-> >> 
-> >> return rc;
-> >> }
-> >> @@ -319,12 +313,12 @@ static int dlpar_remove_lmb(struct drmem_lmb *lmb)
-> >> 
-> >> rc = dlpar_offline_lmb(lmb);
-> >> if (rc) {
-> >> - put_device(&mem_block->dev);
-> >> + memory_block_put(mem_block);
-> >> return rc;
-> >> }
-> >> 
-> >> __remove_memory(lmb->base_addr, memory_block_size);
-> >> - put_device(&mem_block->dev);
-> >> + memory_block_put(mem_block);
-> >> 
-> >> /* Update memory regions for memory remove */
-> >> memblock_remove(lmb->base_addr, memory_block_size);
-> >> diff --git a/drivers/base/memory.c b/drivers/base/memory.c
-> >> index 11d57cfa8d72..5b5d41089e81 100644
-> >> --- a/drivers/base/memory.c
-> >> +++ b/drivers/base/memory.c
-> >> @@ -649,7 +649,7 @@ int __weak arch_get_memory_phys_device(unsigned long start_pfn)
-> >>  *
-> >>  * Called under device_hotplug_lock.
-> >>  */
-> >> -struct memory_block *find_memory_block_by_id(unsigned long block_id)
-> >> +struct memory_block *memory_block_get(unsigned long block_id)
-> >> {
-> >> struct memory_block *mem;
-> >> 
-> >> @@ -659,16 +659,6 @@ struct memory_block *find_memory_block_by_id(unsigned long block_id)
-> >> return mem;
-> >> }
-> >> 
-> >> -/*
-> >> - * Called under device_hotplug_lock.
-> >> - */
-> >> -struct memory_block *find_memory_block(unsigned long section_nr)
-> >> -{
-> >> - unsigned long block_id = memory_block_id(section_nr);
-> >> -
-> >> - return find_memory_block_by_id(block_id);
-> >> -}
-> >> -
-> >> static struct attribute *memory_memblk_attrs[] = {
-> >> &dev_attr_phys_index.attr,
-> >> &dev_attr_state.attr,
-> >> @@ -701,7 +691,7 @@ static int __add_memory_block(struct memory_block *memory)
-> >> 
-> >> ret = device_register(&memory->dev);
-> >> if (ret) {
-> >> - put_device(&memory->dev);
-> >> + memory_block_put(memory);
-> >> return ret;
-> >> }
-> >> ret = xa_err(xa_store(&memory_blocks, memory->dev.id, memory,
-> >> @@ -795,9 +785,9 @@ static int add_memory_block(unsigned long block_id, int nid, unsigned long state
-> >> struct memory_block *mem;
-> >> int ret = 0;
-> >> 
-> >> - mem = find_memory_block_by_id(block_id);
-> >> + mem = memory_block_get(block_id);
-> >> if (mem) {
-> >> - put_device(&mem->dev);
-> >> + memory_block_put(mem);
-> >> return -EEXIST;
-> >> }
-> >> mem = kzalloc_obj(*mem);
-> >> @@ -845,8 +835,8 @@ static void remove_memory_block(struct memory_block *memory)
-> >> memory->group = NULL;
-> >> }
-> >> 
-> >> - /* drop the ref. we got via find_memory_block() */
-> >> - put_device(&memory->dev);
-> >> + /* drop the ref. we got via memory_block_get() */
-> >> + memory_block_put(memory);
-> >> device_unregister(&memory->dev);
-> >> }
-> >> 
-> >> @@ -880,7 +870,7 @@ int create_memory_block_devices(unsigned long start, unsigned long size,
-> >> end_block_id = block_id;
-> >> for (block_id = start_block_id; block_id != end_block_id;
-> >>      block_id++) {
-> >> - mem = find_memory_block_by_id(block_id);
-> >> + mem = memory_block_get(block_id);
-> >> if (WARN_ON_ONCE(!mem))
-> >> continue;
-> >> remove_memory_block(mem);
-> >> @@ -908,7 +898,7 @@ void remove_memory_block_devices(unsigned long start, unsigned long size)
-> >> return;
-> >> 
-> >> for (block_id = start_block_id; block_id != end_block_id; block_id++) {
-> >> - mem = find_memory_block_by_id(block_id);
-> >> + mem = memory_block_get(block_id);
-> >> if (WARN_ON_ONCE(!mem))
-> >> continue;
-> >> num_poisoned_pages_sub(-1UL, memblk_nr_poison(mem));
-> >> @@ -1015,12 +1005,12 @@ int walk_memory_blocks(unsigned long start, unsigned long size,
-> >> return 0;
-> >> 
-> >> for (block_id = start_block_id; block_id <= end_block_id; block_id++) {
-> >> - mem = find_memory_block_by_id(block_id);
-> >> + mem = memory_block_get(block_id);
-> >> if (!mem)
-> >> continue;
-> >> 
-> >> ret = func(mem, arg);
-> >> - put_device(&mem->dev);
-> >> + memory_block_put(mem);
-> >> if (ret)
-> >> break;
-> >> }
-> >> @@ -1228,22 +1218,22 @@ int walk_dynamic_memory_groups(int nid, walk_memory_groups_func_t func,
-> >> void memblk_nr_poison_inc(unsigned long pfn)
-> >> {
-> >> const unsigned long block_id = pfn_to_block_id(pfn);
-> >> - struct memory_block *mem = find_memory_block_by_id(block_id);
-> >> + struct memory_block *mem = memory_block_get(block_id);
-> >> 
-> >> if (mem) {
-> >> atomic_long_inc(&mem->nr_hwpoison);
-> >> - put_device(&mem->dev);
-> >> + memory_block_put(mem);
-> >> }
-> >> }
-> >> 
-> >> void memblk_nr_poison_sub(unsigned long pfn, long i)
-> >> {
-> >> const unsigned long block_id = pfn_to_block_id(pfn);
-> >> - struct memory_block *mem = find_memory_block_by_id(block_id);
-> >> + struct memory_block *mem = memory_block_get(block_id);
-> >> 
-> >> if (mem) {
-> >> atomic_long_sub(i, &mem->nr_hwpoison);
-> >> - put_device(&mem->dev);
-> >> + memory_block_put(mem);
-> >> }
-> >> }
-> >> 
-> >> diff --git a/drivers/base/node.c b/drivers/base/node.c
-> >> index 126f66aa2c3e..b3333ca92090 100644
-> >> --- a/drivers/base/node.c
-> >> +++ b/drivers/base/node.c
-> >> @@ -847,13 +847,13 @@ static void register_memory_blocks_under_nodes(void)
-> >> for (block_id = start_block_id; block_id <= end_block_id; block_id++) {
-> >> struct memory_block *mem;
-> >> 
-> >> - mem = find_memory_block_by_id(block_id);
-> >> + mem = memory_block_get(block_id);
-> >> if (!mem)
-> >> continue;
-> >> 
-> >> memory_block_add_nid_early(mem, nid);
-> >> do_register_memory_block_under_node(nid, mem);
-> >> - put_device(&mem->dev);
-> >> + memory_block_put(mem);
-> >> }
-> >> 
-> >> }
-> >> diff --git a/drivers/s390/char/sclp_mem.c b/drivers/s390/char/sclp_mem.c
-> >> index 78c054e26d17..6df1926d4c62 100644
-> >> --- a/drivers/s390/char/sclp_mem.c
-> >> +++ b/drivers/s390/char/sclp_mem.c
-> >> @@ -204,7 +204,7 @@ static ssize_t sclp_config_mem_store(struct kobject *kobj, struct kobj_attribute
-> >> addr = sclp_mem->id * block_size;
-> >> /*
-> >>  * Hold device_hotplug_lock when adding/removing memory blocks.
-> >> -  * Additionally, also protect calls to find_memory_block() and
-> >> +  * Additionally, also protect calls to memory_block_get() and
-> >>  * sclp_attach_storage().
-> >>  */
-> >> rc = lock_device_hotplug_sysfs();
-> >> @@ -231,20 +231,19 @@ static ssize_t sclp_config_mem_store(struct kobject *kobj, struct kobj_attribute
-> >> sclp_mem_change_state(addr, block_size, 0);
-> >> goto out_unlock;
-> >> }
-> >> - mem = find_memory_block(pfn_to_section_nr(PFN_DOWN(addr)));
-> >> - put_device(&mem->dev);
-> >> + mem = memory_block_get(phys_to_block_id(addr));
-> >> + memory_block_put(mem);
-> >> WRITE_ONCE(sclp_mem->config, 1);
-> >> } else {
-> >> if (!sclp_mem->config)
-> >> goto out_unlock;
-> >> - mem = find_memory_block(pfn_to_section_nr(PFN_DOWN(addr)));
-> >> + mem = memory_block_get(phys_to_block_id(addr));
-> >> if (mem->state != MEM_OFFLINE) {
-> >> - put_device(&mem->dev);
-> >> + memory_block_put(mem);
-> >> rc = -EBUSY;
-> >> goto out_unlock;
-> >> }
-> >> - /* drop the ref just got via find_memory_block() */
-> >> - put_device(&mem->dev);
-> >> + memory_block_put(mem);
-> >> sclp_mem_change_state(addr, block_size, 0);
-> >> __remove_memory(addr, block_size);
-> >> #ifdef CONFIG_KASAN
-> >> @@ -294,11 +293,11 @@ static ssize_t sclp_memmap_on_memory_store(struct kobject *kobj, struct kobj_att
-> >> return rc;
-> >> block_size = memory_block_size_bytes();
-> >> sclp_mem = container_of(kobj, struct sclp_mem, kobj);
-> >> - mem = find_memory_block(pfn_to_section_nr(PFN_DOWN(sclp_mem->id * block_size)));
-> >> + mem = memory_block_get(phys_to_block_id(sclp_mem->id * block_size));
-> >> if (!mem) {
-> >> WRITE_ONCE(sclp_mem->memmap_on_memory, value);
-> >> } else {
-> >> - put_device(&mem->dev);
-> >> + memory_block_put(mem);
-> >> rc = -EBUSY;
-> >> }
-> >> unlock_device_hotplug();
-> >> diff --git a/include/linux/memory.h b/include/linux/memory.h
-> >> index 5bb5599c6b2b..463dc02f6cff 100644
-> >> --- a/include/linux/memory.h
-> >> +++ b/include/linux/memory.h
-> >> @@ -158,7 +158,11 @@ int create_memory_block_devices(unsigned long start, unsigned long size,
-> >> void remove_memory_block_devices(unsigned long start, unsigned long size);
-> >> extern void memory_dev_init(void);
-> >> extern int memory_notify(enum memory_block_state state, void *v);
-> >> -extern struct memory_block *find_memory_block(unsigned long section_nr);
-> >> +struct memory_block *memory_block_get(unsigned long block_id);
-> >> +static inline void memory_block_put(struct memory_block *mem)
-> >> +{
-> >> + put_device(&mem->dev);
-> >> +}
-> > 
-> > Hi Muchun,
-> 
-> Hi,
-> 
-> > 
-> > Thanks for the work, I have a small suggestion if that fits your thought.
-> > 
-> > I think we should at least add a comment  above memory_block_put() to remind the caller to check
-> > for the availabitliy of "mem" before calling this function.
-> > We perform the check in memory_block_get() inside the function body, I see different usage pattern
-> > across the caller when they're dealing with "mem == NULL" and avoid to call memory_block_put(), 
-> > I can understand we should leverage the check to caller, not inside memory_block_put().
-> > But just in case the next caller might forgot to do the check or think the behavior might be symmetric
-> > bettween memory_block_get() and memory_block_put(), a comment above the function would be nice.
-> 
-> Thanks for the suggestion!
-> 
-> Regarding the additional comment, I feel they might not be strictly necessary.
-> If a user passes a NULL pointer, the issue would be exposed immediately
-> before memory_block_put() is even called. It's unlikely a user would obtain
-> mem and not perform any read/write operations; any such attempt would trigger
-> a NULL pointer dereference right away.
->
+Hi Narayana,
 
-Makes sense.
- 
-> As for adding comments to memory_block_get(), I’m wondering if it’s truly
-> essential. The function is quite straightforward—anyone looking at the
-> definition would see the implementation alongside the comments. It’s very
-> clear from the code that mem must be non-NULL to be "gotten."
-> 
-> Overall, I’m concerned the extra comments might not add much value. What do
-> you think?
+Few comments inline below ..
+
+On 28/04/26 3:05 pm, Narayana Murty N wrote:
+> On pseries platforms, binding Broadcom PCIe NIC devices to the vfio-pci
+> driver frequently triggers an unintended EEH (Extended Error Handling)
+> isolation event.
 > 
 
-Agreed, let's leave it as it is then.
+Commit log title can be rephrased to say "Broadcom TG3" instead of 
+"pseries TG3". Also, need to mention TG3 in commit log as well.
 
-Best regards,
-Richard Cheng.
+> This occurs because the device firmware violates PCIe specification
+> recovery timings when transitioning from the D3hot to D0 power state
+> during the binding process. The strict pseries PHB catches the
+> resulting Unsupported Request during the subsequent configuration
+> space read, assuming a device failure.
+> 
+> Add a pseries-specific PCI fixup quirk for Broadcom devices to
 
-> Thanks,
-> Muchun
-> > 
-> > Best regards,
-> > Richard Cheng.
-> > 
-> >> typedef int (*walk_memory_blocks_func_t)(struct memory_block *, void *);
-> >> extern int walk_memory_blocks(unsigned long start, unsigned long size,
-> >>       void *arg, walk_memory_blocks_func_t func);
-> >> @@ -171,7 +175,6 @@ struct memory_group *memory_group_find_by_id(int mgid);
-> >> typedef int (*walk_memory_groups_func_t)(struct memory_group *, void *);
-> >> int walk_dynamic_memory_groups(int nid, walk_memory_groups_func_t func,
-> >>        struct memory_group *excluded, void *arg);
-> >> -struct memory_block *find_memory_block_by_id(unsigned long block_id);
-> >> #define hotplug_memory_notifier(fn, pri) ({ \
-> >> static __meminitdata struct notifier_block fn##_mem_nb =\
-> >> { .notifier_call = fn, .priority = pri };\
-> >> diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
-> >> index 462d8dcd636d..890c6453e887 100644
-> >> --- a/mm/memory_hotplug.c
-> >> +++ b/mm/memory_hotplug.c
-> >> @@ -1417,14 +1417,13 @@ static void remove_memory_blocks_and_altmaps(u64 start, u64 size)
-> >> struct vmem_altmap *altmap = NULL;
-> >> struct memory_block *mem;
-> >> 
-> >> - mem = find_memory_block(pfn_to_section_nr(PFN_DOWN(cur_start)));
-> >> + mem = memory_block_get(phys_to_block_id(cur_start));
-> >> if (WARN_ON_ONCE(!mem))
-> >> continue;
-> >> 
-> >> altmap = mem->altmap;
-> >> mem->altmap = NULL;
-> >> - /* drop the ref. we got via find_memory_block() */
-> >> - put_device(&mem->dev);
-> >> + memory_block_put(mem);
-> >> 
-> >> remove_memory_block_devices(cur_start, memblock_size);
-> >> 
-> >> 
-> >> base-commit: e98d21c170b01ddef366f023bbfcf6b31509fa83
-> >> -- 
-> >> 2.54.0
+Not all broadcom devices, only TG3 specific, right ?
+
+> explicitly extend the `d3hot_delay` to 200ms. This forces the PCI
+> core to sleep long enough for the firmware to safely complete the
+> D0 transition before attempting config reads, ensuring a clean VFIO
+> passthrough initialization.
+
+Do we need a "Fixes:" tag here to mention specific TG3 device support 
+being tested/fixed ?
+
 > 
+> Signed-off-by: Narayana Murty N <nnmlinux@linux.ibm.com>
+> ---
+>   arch/powerpc/platforms/pseries/pci.c | 21 +++++++++++++++++++++
+>   1 file changed, 21 insertions(+)
 > 
+> diff --git a/arch/powerpc/platforms/pseries/pci.c b/arch/powerpc/platforms/pseries/pci.c
+> index 84e4ffe957a8..5f3cf9a7bdd3 100644
+> --- a/arch/powerpc/platforms/pseries/pci.c
+> +++ b/arch/powerpc/platforms/pseries/pci.c
+> @@ -291,3 +291,24 @@ int pseries_root_bridge_prepare(struct pci_host_bridge *bridge)
+>   	bus->cur_bus_speed = prop_to_pci_speed(pcie_link_speed_stats[1]);
+>   	return 0;
+>   }
+> +
+> +/*
+> + * Workaround for sluggish PCIe device firmware.
+
+Mention Broadcom TG3 (specific device details) here as well, until the 
+routine broadens its scope.
+
+Also, which specific Broadcom device IDs exhibit this issue?
+Are all TG3 devices affected, or only specific models? Please document.
+
+> + *
+> + * The device violates the PCIe spec recovery timing when transitioning
+> + * from D3hot to D0. On standard architectures this is often ignored, but
+> + * the strict PowerPC pseries PHB catches the Unsupported Request during
+> + * the subsequent config read and triggers an EEH.
+> + *
+> + * We inject a longer delay to ensure the device is ready before the PCI
+> + * core attempts to access configuration space.
+> + */
+> +static void quirk_pseries_d0_wake_delay(struct pci_dev *dev)
+> +{
+> +	dev->d3hot_delay = 200;
+
+No justification provided for using this value. Is this minimum or
+maximum from test observations? Please share test details in comments
+and/or commit log. Also, I see Marvel sky2 driver using 300ms, not sure
+if we may need to increase. Preferably, use a macro to define this
+constant? Should it be a tg3 driver level fix during probe or be placed
+in drivers/pci/quirks.c ? Also, is there an impact on system boot time?
+
+> +	pci_info(dev, "pseries  Quirk:D3hot->D0 delay %d ms to prevent EEH\n",
+
+Double space after "pseries", missing space after "Quirk:"
+Also pci_dbg() may be more appropriate?
+
+> +		 dev->d3hot_delay);
+> +}
+> +/* Blanket application to ALL Broadcom PCI devices */
+> +DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_BROADCOM,
+> +			PCI_ANY_ID, quirk_pseries_d0_wake_delay);
+
+Replace PCI_ANY_ID with specific device IDs that are known to have this 
+issue, or provide strong justification for the broad scope as it may 
+impact system boot time.
+
 
