@@ -1,53 +1,52 @@
-Return-Path: <linuxppc-dev+bounces-20939-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20940-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CD3D9CD4F39
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 May 2026 06:24:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0609CCD4851
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 May 2026 07:01:13 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gGL0J26cFz2xlQ;
-	Thu, 14 May 2026 16:24:48 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778739888;
-	cv=none; b=AF1+McvyDO0JTPIAnwu7LKjfpxkT+RWM/FtLLK8CWynU9aZOAgoO1NiJrPF2mh2XPCCP09UjgbqwVREJQuijH1bWWgDa2RbZzkICnS15Q6EQ/jNPjwwsaqAmJFmqT1FwuwgiWY8O3wOF+17jkEjysh68hEYHSJB9QoXRAOUzu4SBIbYJ8accxrlySGqt5gEd+JJCWvf8NZnKDEQv0vz/p96BPCeL/30jVvtTi0ddN75BGd8uJgCvHOuy9T1cL6hkwju+YBNOvcH33ISHcXJBk+Bhue6vtjWLSkW5THdJY7HHLN6ZiokJOTFe69HtVs5T/aQtP63DvhHOgw+XBbI23w==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gGLpJ26n6z2xnQ;
+	Thu, 14 May 2026 17:01:12 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778742072;
+	cv=none; b=M0copVkhh/NchQidKInQ+tosGeynylsAhEuKVYTUFMOZKjuvtk5ibAUq9DpxhYfDszXdvsaFJDWEszXnR7c2WFPj6C0CNJGiWJpKYmvuYHPjqAWLe5lvpZoL1eNjubTRE7Hgwq6OXA8fQ9b83Gpv70bBqAp64ACxg+JU99aEs9uvgTQCr5d4MoTVbGtVQsTjD4abziEpB8eXsnpM9xhzq5XavljTl9MMVPVVcoahptEXFUOAyY2EbkF8aKXPuw0Me535YrhIoGk2S/lp86Byu6+Q+dJsRNU6WKQn6MgGqYorXd1aSLb3r4D/OupzH/Nrp00O3KyJCv3/MJyWGljcRQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1778739888; c=relaxed/relaxed;
-	bh=lVwzh7YuBLKrnB/3wy8MuXgNUlPj7/YkEbnMaWT4mW0=;
+	t=1778742072; c=relaxed/relaxed;
+	bh=Gd1QdciNqJLabQe9V6UbfKLhjsyQkS+rfP3lZ3ns1AA=;
 	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
-	 MIME-Version:Content-Type; b=P5o8nRVfR1WYywjsO5XsbxvnzG9HryGSA7t2l2r2GYeo3c34FHoHRXs2O8xdRZIhoGBz8na6+lzzPs8+vD7IAuVWglMhLjESqAb9C1N5ChT1xLDhCY16wvhSukYG7h2iYcwCrcS8tc3/33fxRBw0AtMon/DRTNOSUlz+O+enQwz4n36rY58Ca9DcpBWbOs5kOBE8g5aaY6CYddlB5rNW1NW2weZ6L2K+g+E3EoWbMPcyME9RV1rLNWKSnxCIPDjTTfka+6UqetPOVFChlVMewUbt5AfwzdgMvfz279EKYRk6+137NNSslnQJYbU0aUItAU/Y4f/ii8Ky8m2tpFI9hg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=VIFBftDk; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=aneesh.kumar@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version:Content-Type; b=SG/YyalWIwOLdMLium1GP7N9uqjDc/QKE2VvBLxPZ6pnmaH6Vvgmr1XkvOH9PbiOOk6tmHO7OkH3U+LwBaaqh3W/kkQENPPjLVUzs9T4sCL5wnwehX1+jTEqCFios5QBJasKw1SidVjT8MXYy8TYOLGo9GKCa8HXHegnACU0RIk/hmnup7zp3W/qn3sP30WMUWCv3y6eKh4mY4J2CfZRrmHBWrpVfmiDUBNKngqduvqMGCCcUpNtVcSEOTrtgGrJ28dNNfm5eNGWDytAA8WKJgyCnSIW93xG0G/S2CwXrq6uJuRBM2f2DZPdGuT0N8A+nKSqku2vxUjmSmk6T9BMCA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=HNCUigYp; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=aneesh.kumar@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=VIFBftDk;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=HNCUigYp;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=aneesh.kumar@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=aneesh.kumar@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gGL0H12mfz2xH9
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 May 2026 16:24:47 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gGLpH2SDZz2xlQ
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 May 2026 17:01:11 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id F0FEE600AE;
-	Thu, 14 May 2026 06:24:43 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A983DC2BCB7;
-	Thu, 14 May 2026 06:24:33 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 0979B40332;
+	Thu, 14 May 2026 07:01:09 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 96842C2BCB7;
+	Thu, 14 May 2026 07:00:58 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1778739883;
-	bh=ecGsHNVV/zGWfQo2KCz+UMgNIz0oxNVr7CL3H1ueicQ=;
+	s=k20201202; t=1778742068;
+	bh=f66lgQPtTtd9CODAjOd3YiCN6f2o8c7PL46CffwEH+U=;
 	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
-	b=VIFBftDkTqQvTeGSGdUb63C6Y5jX6Qcf/aCnqTSus57moAmWsHaY20Ek8+NzNXF7I
-	 r30wh4vj1ifGB0fA2KjcIkRogw3gf/w/DwCz8rVK9iAc/K453wPiIu8E8hBCt7TUx+
-	 djavHnjghAjLiadXV9zorYImb47+oIv4wV/oN58jnzuEcvJqM5fABJjEe+zUiHiIwr
-	 2QhZIGpd2mWiRm0jNgOlqLkPgQDFCTqrCKFDe2+QllPsd7D5xi2BKD5Z4yDZF3gpjR
-	 +BGATD5Q3YuIez48+zWs0mHgv5HFqviNpKfMGsjB3Cx0lI1Sy1ANa46iOb/RUQrXqA
-	 h/GpqX2YIjQlQ==
+	b=HNCUigYpQNIMO+LxVL5xbaa1ZBiZuV2vfRVdsc+y1HHuPEq+l5D5j/DC+iPE2kiIq
+	 NpDsRHaoFXm34+ZqBocK830wWh70Kw2uZ7kNeJCIkV7COgnNUBdPHRKGHc1Irr6eqT
+	 RzIdbuXwoG5RlINNMckfHkUIlsEBm8Q+6X6fbrNS2E7E458DcXOOWvUh3a7kWJKjHX
+	 3EMGurhVhG6iArtsZj1jNDGSW6qS4EdUJUwdCenJ/uVYvP608IEFPORinOqSL2kojN
+	 dZmmuskcWBS0eH8pFr7ZoMjQsMpu0LZsmkHF6dDbrjpt0d1kopfEpVNDU3hdnSFdSi
+	 Ck4CbLAhd2How==
 X-Mailer: emacs 30.2 (via feedmail 11-beta-1 I)
 From: Aneesh Kumar K.V <aneesh.kumar@kernel.org>
-To: Jason Gunthorpe <jgg@ziepe.ca>,
-	Mostafa Saleh <smostafa@google.com>
+To: Mostafa Saleh <smostafa@google.com>
 Cc: iommu@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
 	linux-kernel@vger.kernel.org, linux-coco@lists.linux.dev,
 	Robin Murphy <robin.murphy@arm.com>,
@@ -57,6 +56,7 @@ Cc: iommu@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
 	Suzuki K Poulose <Suzuki.Poulose@arm.com>,
 	Catalin Marinas <catalin.marinas@arm.com>,
 	Jiri Pirko <jiri@resnulli.us>,
+	Jason Gunthorpe <jgg@ziepe.ca>,
 	Petr Tesarik <ptesarik@suse.com>,
 	Alexey Kardashevskiy <aik@amd.com>,
 	Dan Williams <dan.j.williams@intel.com>,
@@ -72,14 +72,14 @@ Cc: iommu@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
 	Vasily Gorbik <gor@linux.ibm.com>,
 	Christian Borntraeger <borntraeger@linux.ibm.com>,
 	Sven Schnelle <svens@linux.ibm.com>, x86@kernel.org
-Subject: Re: [PATCH v4 04/13] dma: swiotlb: track pool encryption state and
- honor DMA_ATTR_CC_SHARED
-In-Reply-To: <20260513172450.GR7702@ziepe.ca>
+Subject: Re: [PATCH v4 03/13] dma-pool: track decrypted atomic pools and
+ select them via attrs
+In-Reply-To: <agSED6BdSXBhbDYI@google.com>
 References: <20260512090408.794195-1-aneesh.kumar@kernel.org>
- <20260512090408.794195-5-aneesh.kumar@kernel.org>
- <agSKQrSIhizCXKwx@google.com> <20260513172450.GR7702@ziepe.ca>
-Date: Thu, 14 May 2026 11:54:30 +0530
-Message-ID: <yq5aecjea4pt.fsf@kernel.org>
+ <20260512090408.794195-4-aneesh.kumar@kernel.org>
+ <agSED6BdSXBhbDYI@google.com>
+Date: Thu, 14 May 2026 12:30:54 +0530
+Message-ID: <yq5abjeia315.fsf@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -96,51 +96,48 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: quoted-printable
 
-Jason Gunthorpe <jgg@ziepe.ca> writes:
+Mostafa Saleh <smostafa@google.com> writes:
 
->> And that brings us to the same point whether it=E2=80=99s better to retu=
-rn
->> the memory along with it=E2=80=99s state or we pass the requested state.
->> I think for other cases it=E2=80=99s fine for the device/DMA-API to dict=
-ate
->> the attrs, but not in restricted-dma case, the firmware just knows bette=
-r.
+...
+
+>>  struct page *dma_alloc_from_pool(struct device *dev, size_t size,
+>> -		void **cpu_addr, gfp_t gfp,
+>> +		void **cpu_addr, gfp_t gfp, unsigned long attrs,
+>>  		bool (*phys_addr_ok)(struct device *, phys_addr_t, size_t))
+>>  {
+>> -	struct gen_pool *pool =3D NULL;
+>> +	struct dma_gen_pool *dma_pool =3D NULL;
+>>  	struct page *page;
+>>  	bool pool_found =3D false;
+>>=20=20
+>> -	while ((pool =3D dma_guess_pool(pool, gfp))) {
+>> +	while ((dma_pool =3D dma_guess_pool(dma_pool, gfp))) {
+>> +
+>> +		if (dma_pool->unencrypted !=3D !!(attrs & DMA_ATTR_CC_SHARED))
+>> +			continue;
+>> +
 >
-> The memory type must be returned back at some level so downstream
-> things can do the right transformation of the phys_addr_t.
->
-> One of the aspirational CC things that should work is a T=3D1 device
-> tries to DMA from a decrypted page, finds the address is above the dma
-> limit of the device, so it bounces it with SWIOTLB to an encrypted low
-> address page and then the DMA API internal flow switiches from working
-> with decrypted to encrypted phys_addr_t.
->
-> If we can make that work then maybe the flows are designed correctly.
+> nit: If we fail to find a matching pool, a slightly misleading message
+> is printed as pool_found =3D false
 >
 
-That is what this patch series aims to do. dma_direct_map_phys() will
-derive the DMA address based on the attributes of the physical address:
+The message printed is
 
-if (attrs & DMA_ATTR_CC_SHARED)
-        dma_addr =3D phys_to_dma_unencrypted(dev, phys);
-else
-        dma_addr =3D phys_to_dma_encrypted(dev, phys);
+	WARN(1, "Failed to get suitable pool for %s\n", dev_name(dev));
 
-If that fails the dma_capable() check, we fall back to swiotlb_map():
+That is correct, isn=E2=80=99t it? The kernel failed to find a pool with the
+correct encryption attribute. For example, the request was for an
+encrypted allocation from the pool, but no encrypted pool was available.
 
-if (unlikely(!dma_capable(dev, dma_addr, size, true, attrs)))
-        return swiotlb_map(dev, phys, size, dir, attrs);
-
-We currently do not have an encrypted SWIOTLB pool, but once that is
-supported, swiotlb_map() should do the right thing and return the
-correct encrypted dma_addr_t based on io_tlb_mem->unencrypted:
-
-if (dev->dma_io_tlb_mem->unencrypted) {
-        dma_addr =3D phys_to_dma_unencrypted(dev, swiotlb_addr);
-        attrs |=3D DMA_ATTR_CC_SHARED;
-} else {
-        dma_addr =3D phys_to_dma_encrypted(dev, swiotlb_addr);
-}
+>
+>>  		pool_found =3D true;
+>> -		page =3D __dma_alloc_from_pool(dev, size, pool, cpu_addr,
+>> +		page =3D __dma_alloc_from_pool(dev, size, dma_pool->pool, cpu_addr,
+>>  					     phys_addr_ok);
+>>  		if (page)
+>>  			return page;
+>> @@ -296,12 +345,14 @@ struct page *dma_alloc_from_pool(struct device *de=
+v, size_t size,
 
 -aneesh
 
