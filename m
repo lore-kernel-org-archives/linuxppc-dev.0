@@ -1,67 +1,96 @@
-Return-Path: <linuxppc-dev+bounces-20957-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20958-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 16B87CD4851
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 May 2026 12:48:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 25168CD4F25
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 May 2026 14:37:41 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gGVVv59yvz2xy8;
-	Thu, 14 May 2026 22:48:23 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778762903;
-	cv=none; b=XqvrwtEO8H5WxQjvR/jq31ILZ5zldfDjhPIObITzkiFQuqxtVHLM6bxoX8KCDEhWSuKkvLsLDXNpT+zAClociEnKJ5dqqJx2FX4HLvvkVzdATC9w5ly7NhdtVIBnu32TNLzWHxHpjygaHewyEQEm3aoZygODKRT3O2wDZFZEHNr2tlM7YIcPxZbd5RpCrUpC+Utyl/RlxF6HXfXJwQIqQIgSG5QDzruNIfy1aFFDff5uKSAlE4XU685vs1WhYmBwM4XXqMcZX1OlljTzfM9T5i37A9kOh6J8/bHVgmdRzsypGX911f+5XnyK+hbacJkWjLZhVMgkukemhtQNe2GhhQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gGXwz581hz2xH9;
+	Fri, 15 May 2026 00:37:39 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::f2a"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778769459;
+	cv=none; b=cVKgEypAZv/JpIkuIseuiuFtU+s4DJBURM3Man6/YwkFioaMgBgRWMTKxjWJNHXpKI93BMMMXIoIHoFHvFlA/rQ0eagnk1eJzIY6RsRgXt1cyPg4fGP3QaQhLlUNfsMIXWV3DLLgdhjpD2SIDuwQOA9zo0Y3Mqh94aayx2cw0QgaHKh/fVYPC8jN2aXDHGbBgXBf8r+LkHLSUszuHVG8HYDTNY4OjNb/LofLNpBJ5ng3m7BD1fDZf7LXEAdY7Pm/ff5KbJ7RlaJCDYt8pBlnp8I0MMwyPioFkyupavoPuh3KrO65M6sl/uW12i3jmpVPMjzFsYorUlU1WT/oKYS9Pw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1778762903; c=relaxed/relaxed;
-	bh=Jw4ABT9x3jx6mVwZ5gWRjwvb8z2mXoEX5NGAojPOs6g=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
-	 MIME-Version:Content-Type; b=M63XmAwfU4t5seoWjFtW4KO8cFVqnWZuMTkDUN+NAHYlWUO7vghCCAMg1zEil1RQVzIoprZjc3DLuFIS6RpqPJ4zUnYvLnZklZmryPZJ/e3meBbRA9umP1l7KHssAbI2RcTf/UontcLhZ0f5XUgUvdhqphYP0liWmlxXMPeN0yaTfy3pdDLlcnZFJhYTnrgdhTtBv6BotzBEZvuAqpSGBxJFTT4I9j5MwXvUIwh24UJZt2E6U+n8A6TF2WBpkoWEznm7tDZZYOaxaXQRovhEP3aPzT5leITBE2ewleD5tBS+9Xlbq9l51ZNQvHEEvPfXx4DpG9X/1QihqotDhmFzuA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=UEOUad/j; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=aneesh.kumar@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1778769459; c=relaxed/relaxed;
+	bh=TKVmCu+Gb/QJi05GS/MUngbhCp2nJ8/F0kCLFA01DR8=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=HXcgpcWbMKuZ/p5CU5IrnFMnbEKsgYhQdtjsjqyWEVCJq3Jcic0JA0pTLG2cdwM8qlLietoapygJJJaLvb6Z8PcbnzvJh/x852MU56C4p6Z65lE/RPieGOt98oycZGiUXnfNbBtgbRhqoQgiX11fYl7bwyY8mZrEmhIcAglYm+CqURaueLdHR5VGEPA9SF3LIH9+dHzv2aWHXTev626UAEr14QeH/4mGTiGHQDhMn3o68mRT2ZPjwA9wL5R8ejD9Vu5f7bW0imkf3s7tCbHna/6aIGTskwMcHVpakHg9nY+70w4lfzJ1n8OrajRE6colt1BoRp6cJnlELs5zWT2vBQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ziepe.ca; dkim=pass (2048-bit key; secure) header.d=ziepe.ca header.i=@ziepe.ca header.a=rsa-sha256 header.s=google header.b=ENsV5tiQ; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::f2a; helo=mail-qv1-xf2a.google.com; envelope-from=jgg@ziepe.ca; receiver=lists.ozlabs.org) smtp.mailfrom=ziepe.ca
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ziepe.ca
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=UEOUad/j;
+	dkim=pass (2048-bit key; secure) header.d=ziepe.ca header.i=@ziepe.ca header.a=rsa-sha256 header.s=google header.b=ENsV5tiQ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=aneesh.kumar@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=ziepe.ca (client-ip=2607:f8b0:4864:20::f2a; helo=mail-qv1-xf2a.google.com; envelope-from=jgg@ziepe.ca; receiver=lists.ozlabs.org)
+Received: from mail-qv1-xf2a.google.com (mail-qv1-xf2a.google.com [IPv6:2607:f8b0:4864:20::f2a])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gGVVt3dXyz2xdL
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 May 2026 22:48:22 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 1AD5F43C05;
-	Thu, 14 May 2026 12:48:20 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A2CF9C2BCB3;
-	Thu, 14 May 2026 12:48:08 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1778762900;
-	bh=VUWmRA8aXU+HnMeLs+BTr41ED3eKAvdXr9BJ7idfr7w=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
-	b=UEOUad/jBiyhlG9/jjEgB1fZEz2NfF3PckJwoFYGqVpEKGHFkr5BT6IEOCFoFp+aJ
-	 JNUyCgKim+EmBbCw8ZpvUrzylS0yr0M8rO2Rgn24M1u81Tu9StH95y8s4mGym7FSgE
-	 f02am7FkNtJa5b2NzpuM+je07uFBHWAhPIr8PY3KvUKC/VVmg0ciCNyljqCgKZRCRC
-	 yvw3yUsfon4nKW2Nst7pBT90Zq5MgDrSqZQOx1YBncKSM1j6ONWma1ZcYUmi6QjNTl
-	 sSG4RWNKLXylpcSO+bz1vrWD/kqu/xkhghf/xTzgMskDLXtm/y7kopo/5YqxfpeXHi
-	 2dZoG07sFVPQw==
-X-Mailer: emacs 30.2 (via feedmail 11-beta-1 I)
-From: Aneesh Kumar K.V <aneesh.kumar@kernel.org>
-To: Mostafa Saleh <smostafa@google.com>
-Cc: iommu@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
-	linux-kernel@vger.kernel.org, linux-coco@lists.linux.dev,
-	Robin Murphy <robin.murphy@arm.com>,
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gGXwy37cnz2xFl
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 May 2026 00:37:38 +1000 (AEST)
+Received: by mail-qv1-xf2a.google.com with SMTP id 6a1803df08f44-8be236ce888so63931486d6.3
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 May 2026 07:37:37 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=ziepe.ca; s=google; t=1778769455; x=1779374255; darn=lists.ozlabs.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=TKVmCu+Gb/QJi05GS/MUngbhCp2nJ8/F0kCLFA01DR8=;
+        b=ENsV5tiQ4BBSQAiFcpxANb+7vBkxGfUOUH4Yn1I1923OkrRLdeH2e5CH3dFXF41hFr
+         JktsxY7eqXkUkaoPIEcVKek40OWwfJD35wBzGWkEfHnsvqfMBvz9u7DRH/v5tOVkqMhj
+         ztTIqMGMsg5OGm7ynPDg3zsh4v1ATCGd+Cyp5ryLQ60qSr+Iej9NSWW5DWNYkikigg35
+         R63nwWDMkMddTrPxTCek+KSb8qzqdlMMUfaw77Qg8w0KBl5OoR3byNNbmbmDBUUzXRxK
+         8cRFnVFBgJT73yc7TPEyYtYCMsui1Wl0pCE+tn4g2h8GRRzSlEY3zmtPch5eRwbMDsZu
+         wvOA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1778769455; x=1779374255;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=TKVmCu+Gb/QJi05GS/MUngbhCp2nJ8/F0kCLFA01DR8=;
+        b=guepS5tlM4f339KIeD4zLuMx6tG/4hDNP/Eu8A7j+DCvkYTvk7FiJFxmphzlohQI4m
+         Pei1+oOtni0el0GTsq69Q15d5U52DajMLEXqGBhEEdr+qqqdge6lWnexK4YusfXw3K0a
+         uhwK7OV7+5Rq23Bvndhh0mtbC4LRiVfc/QwHxi9h3bMFDZmQtncguSn9v0Resxa140IP
+         g8X1oEyJ9pq0RanbtXY+z+EQ4WGTYhBcoSuhf593ahRLXn6HGw5uTEGevtPZVhvzmf/d
+         /462AM2aL4pAgQ80RDGXKBPxvy0HmkLV4MRXp4x1imgwwwjcoTdDeXH/dKEsd+P0TMzu
+         eo/g==
+X-Forwarded-Encrypted: i=1; AFNElJ8s7dZqQkofQntfdNazb96Mi+nodsZakybnyNdVUgqbpi6V8dbVgpkWaGeNuKwc3tUOq/4uT0lQmFHTHuU=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yznfx/CP6RZFZd4kzG9UE06Vl/QTDMX37iX4yR8c4KrKcJbhO4H
+	3TYlL99IlfeFCDHkD812LV5HBlWsrwIfHWMcePVd+iEALmWafgZ+8xnaijXWqnsiU/M=
+X-Gm-Gg: Acq92OHwWM/pPS2YoW+jMOlQPHqKr2t1oKiUu7kleBm7WXcrbjAiCf/LaZM1n6sK13E
+	aLbtk76g8SVISM+PYHLnTbuqLX0+7P1UmbLkUEeSj0VDvmR7lv5WiAjNqGJwTKTk26hyAFKut5k
+	rAmIQCRq+8KHYpNKG12+8K+aAgNmrfTUslOnJLYVhy2VLoIWlamNWx21FJ8s5CIn1Q3ct9f5tXe
+	DfSK5XevFtICkB/kfpftT37dFV7U4obSiBuTzEP1AC2M1KuckbemTWaAbbpFTPzGapExOi1IiLW
+	n7sjD5JBpfLdNhKKo5OVDqahWSjSYFyz1INQzm4w0geptg7fATUuVks29lYdC1S+nb/LANvB8A7
+	NK0IoWFdnLne5OqYQvZYYHOX+40eOmJBL2uqD4KekiEoZ7uY9uw0MHucc9CfpYr/IEY+nGeAhUw
+	Ao1QbVpEeyNcWnfrAglpvoGGJN7+7jnk9xOSmIrQBVYtWHS+3gENjIhMvsy2K9QhWvwAeH2jIMZ
+	rHQlA==
+X-Received: by 2002:a05:6214:55c6:b0:8ca:ee3:6e99 with SMTP id 6a1803df08f44-8ca0ee376b1mr2894306d6.44.1778769454659;
+        Thu, 14 May 2026 07:37:34 -0700 (PDT)
+Received: from ziepe.ca (crbknf0213w-47-54-130-67.pppoe-dynamic.high-speed.nl.bellaliant.net. [47.54.130.67])
+        by smtp.gmail.com with ESMTPSA id 6a1803df08f44-8c908e11929sm25017416d6.14.2026.05.14.07.37.33
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 14 May 2026 07:37:33 -0700 (PDT)
+Received: from jgg by wakko with local (Exim 4.97)
+	(envelope-from <jgg@ziepe.ca>)
+	id 1wNXBt-00000005Lti-0CPB;
+	Thu, 14 May 2026 11:37:33 -0300
+Date: Thu, 14 May 2026 11:37:33 -0300
+From: Jason Gunthorpe <jgg@ziepe.ca>
+To: "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>
+Cc: Mostafa Saleh <smostafa@google.com>, iommu@lists.linux.dev,
+	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+	linux-coco@lists.linux.dev, Robin Murphy <robin.murphy@arm.com>,
 	Marek Szyprowski <m.szyprowski@samsung.com>,
 	Will Deacon <will@kernel.org>, Marc Zyngier <maz@kernel.org>,
 	Steven Price <steven.price@arm.com>,
 	Suzuki K Poulose <Suzuki.Poulose@arm.com>,
 	Catalin Marinas <catalin.marinas@arm.com>,
-	Jiri Pirko <jiri@resnulli.us>,
-	Jason Gunthorpe <jgg@ziepe.ca>,
-	Petr Tesarik <ptesarik@suse.com>,
+	Jiri Pirko <jiri@resnulli.us>, Petr Tesarik <ptesarik@suse.com>,
 	Alexey Kardashevskiy <aik@amd.com>,
 	Dan Williams <dan.j.williams@intel.com>,
-	Xu Yilun <yilun.xu@linux.intel.com>,
-	linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+	Xu Yilun <yilun.xu@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
+	linux-s390@vger.kernel.org,
 	Madhavan Srinivasan <maddy@linux.ibm.com>,
 	Michael Ellerman <mpe@ellerman.id.au>,
 	Nicholas Piggin <npiggin@gmail.com>,
@@ -74,13 +103,13 @@ Cc: iommu@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
 	Sven Schnelle <svens@linux.ibm.com>, x86@kernel.org
 Subject: Re: [PATCH v4 04/13] dma: swiotlb: track pool encryption state and
  honor DMA_ATTR_CC_SHARED
-In-Reply-To: <agW5rhE9n2gDQ0w5@google.com>
+Message-ID: <20260514143733.GB7702@ziepe.ca>
 References: <20260512090408.794195-1-aneesh.kumar@kernel.org>
  <20260512090408.794195-5-aneesh.kumar@kernel.org>
- <agSKQrSIhizCXKwx@google.com> <yq5ah5oaa63h.fsf@kernel.org>
+ <agSKQrSIhizCXKwx@google.com>
+ <yq5ah5oaa63h.fsf@kernel.org>
  <agW5rhE9n2gDQ0w5@google.com>
-Date: Thu, 14 May 2026 18:18:05 +0530
-Message-ID: <yq5apl2y5f96.fsf@kernel.org>
+ <yq5apl2y5f96.fsf@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -94,583 +123,28 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <yq5apl2y5f96.fsf@kernel.org>
 
-Mostafa Saleh <smostafa@google.com> writes:
+On Thu, May 14, 2026 at 06:18:05PM +0530, Aneesh Kumar K.V wrote:
+> > There is no problem with non-protected guests as they don't use memory
+> > encryption, my initial thought was that th encrpyted/decrypted is
+> > per-pool property which is decided by FW (device-tree).
+> 
+> What I meant was that we need a generic way to identify a pKVM guest, so
+> that we can use it in the conditional above.
 
-> On Thu, May 14, 2026 at 11:24:42AM +0530, Aneesh Kumar K.V wrote:
->> Mostafa Saleh <smostafa@google.com> writes:
->>=20
->> > On Tue, May 12, 2026 at 02:33:59PM +0530, Aneesh Kumar K.V (Arm) wrote:
->> >> Teach swiotlb to distinguish between encrypted and decrypted bounce
->> >> buffer pools, and make allocation and mapping paths select a pool who=
-se
->> >> state matches the requested DMA attributes.
->> >>=20
->> >> Add a decrypted flag to io_tlb_mem, initialize it for the default and
->> >> restricted pools, and propagate DMA_ATTR_CC_SHARED into swiotlb pool
->> >> allocation. Reject swiotlb alloc/map requests when the selected pool =
-does
->> >> not match the required encrypted/decrypted state.
->> >>=20
->> >> Also return DMA addresses with the matching phys_to_dma_{encrypted,
->> >> unencrypted} helper so the DMA address encoding stays consistent with=
- the
->> >> chosen pool.
->> >>=20
->> >> Signed-off-by: Aneesh Kumar K.V (Arm) <aneesh.kumar@kernel.org>
->> >> ---
->> >>  include/linux/dma-direct.h |  10 ++++
->> >>  include/linux/swiotlb.h    |   8 ++-
->> >>  kernel/dma/direct.c        |  14 +++--
->> >>  kernel/dma/swiotlb.c       | 108 +++++++++++++++++++++++++++--------=
---
->> >>  4 files changed, 107 insertions(+), 33 deletions(-)
->> >>=20
->> >> diff --git a/include/linux/dma-direct.h b/include/linux/dma-direct.h
->> >> index c249912456f9..94fad4e7c11e 100644
->> >> --- a/include/linux/dma-direct.h
->> >> +++ b/include/linux/dma-direct.h
->> >> @@ -77,6 +77,10 @@ static inline dma_addr_t dma_range_map_max(const s=
-truct bus_dma_region *map)
->> >>  #ifndef phys_to_dma_unencrypted
->> >>  #define phys_to_dma_unencrypted		phys_to_dma
->> >>  #endif
->> >> +
->> >> +#ifndef phys_to_dma_encrypted
->> >> +#define phys_to_dma_encrypted		phys_to_dma
->> >> +#endif
->> >>  #else
->> >>  static inline dma_addr_t __phys_to_dma(struct device *dev, phys_addr=
-_t paddr)
->> >>  {
->> >> @@ -90,6 +94,12 @@ static inline dma_addr_t phys_to_dma_unencrypted(s=
-truct device *dev,
->> >>  {
->> >>  	return dma_addr_unencrypted(__phys_to_dma(dev, paddr));
->> >>  }
->> >> +
->> >> +static inline dma_addr_t phys_to_dma_encrypted(struct device *dev,
->> >> +		phys_addr_t paddr)
->> >> +{
->> >> +	return dma_addr_encrypted(__phys_to_dma(dev, paddr));
->> >> +}
->> >>  /*
->> >>   * If memory encryption is supported, phys_to_dma will set the memor=
-y encryption
->> >>   * bit in the DMA address, and dma_to_phys will clear it.
->> >> diff --git a/include/linux/swiotlb.h b/include/linux/swiotlb.h
->> >> index 3dae0f592063..b3fa3c6e0169 100644
->> >> --- a/include/linux/swiotlb.h
->> >> +++ b/include/linux/swiotlb.h
->> >> @@ -81,6 +81,7 @@ struct io_tlb_pool {
->> >>  	struct list_head node;
->> >>  	struct rcu_head rcu;
->> >>  	bool transient;
->> >> +	bool unencrypted;
->> >>  #endif
->> >>  };
->> >>=20=20
->> >> @@ -111,6 +112,7 @@ struct io_tlb_mem {
->> >>  	struct dentry *debugfs;
->> >>  	bool force_bounce;
->> >>  	bool for_alloc;
->> >> +	bool unencrypted;
->> >>  #ifdef CONFIG_SWIOTLB_DYNAMIC
->> >>  	bool can_grow;
->> >>  	u64 phys_limit;
->> >> @@ -282,7 +284,8 @@ static inline void swiotlb_sync_single_for_cpu(st=
-ruct device *dev,
->> >>  extern void swiotlb_print_info(void);
->> >>=20=20
->> >>  #ifdef CONFIG_DMA_RESTRICTED_POOL
->> >> -struct page *swiotlb_alloc(struct device *dev, size_t size);
->> >> +struct page *swiotlb_alloc(struct device *dev, size_t size,
->> >> +		unsigned long attrs);
->> >>  bool swiotlb_free(struct device *dev, struct page *page, size_t size=
-);
->> >>=20=20
->> >>  static inline bool is_swiotlb_for_alloc(struct device *dev)
->> >> @@ -290,7 +293,8 @@ static inline bool is_swiotlb_for_alloc(struct de=
-vice *dev)
->> >>  	return dev->dma_io_tlb_mem->for_alloc;
->> >>  }
->> >>  #else
->> >> -static inline struct page *swiotlb_alloc(struct device *dev, size_t =
-size)
->> >> +static inline struct page *swiotlb_alloc(struct device *dev, size_t =
-size,
->> >> +		unsigned long attrs)
->> >>  {
->> >>  	return NULL;
->> >>  }
->> >> diff --git a/kernel/dma/direct.c b/kernel/dma/direct.c
->> >> index dc2907439b3d..97ae4fa10521 100644
->> >> --- a/kernel/dma/direct.c
->> >> +++ b/kernel/dma/direct.c
->> >> @@ -104,9 +104,10 @@ static void __dma_direct_free_pages(struct devic=
-e *dev, struct page *page,
->> >>  	dma_free_contiguous(dev, page, size);
->> >>  }
->> >>=20=20
->> >> -static struct page *dma_direct_alloc_swiotlb(struct device *dev, siz=
-e_t size)
->> >> +static struct page *dma_direct_alloc_swiotlb(struct device *dev, siz=
-e_t size,
->> >> +		unsigned long attrs)
->> >>  {
->> >> -	struct page *page =3D swiotlb_alloc(dev, size);
->> >> +	struct page *page =3D swiotlb_alloc(dev, size, attrs);
->> >>=20=20
->> >>  	if (page && !dma_coherent_ok(dev, page_to_phys(page), size)) {
->> >>  		swiotlb_free(dev, page, size);
->> >> @@ -266,8 +267,12 @@ void *dma_direct_alloc(struct device *dev, size_=
-t size,
->> >>  						  gfp, attrs);
->> >>=20=20
->> >>  	if (is_swiotlb_for_alloc(dev)) {
->> >> -		page =3D dma_direct_alloc_swiotlb(dev, size);
->> >> +		page =3D dma_direct_alloc_swiotlb(dev, size, attrs);
->> >>  		if (page) {
->> >> +			/*
->> >> +			 * swiotlb allocations comes from pool already marked
->> >> +			 * decrypted
->> >> +			 */
->> >>  			mark_mem_decrypt =3D false;
->> >>  			goto setup_page;
->> >>  		}
->> >> @@ -374,6 +379,7 @@ void dma_direct_free(struct device *dev, size_t s=
-ize,
->> >>  		return;
->> >>=20=20
->> >>  	if (swiotlb_find_pool(dev, dma_to_phys(dev, dma_addr)))
->> >> +		/* Swiotlb doesn't need a page attribute update on free */
->> >>  		mark_mem_encrypted =3D false;
->> >>=20=20
->> >>  	if (is_vmalloc_addr(cpu_addr)) {
->> >> @@ -403,7 +409,7 @@ struct page *dma_direct_alloc_pages(struct device=
- *dev, size_t size,
->> >>  						  gfp, attrs);
->> >>=20=20
->> >>  	if (is_swiotlb_for_alloc(dev)) {
->> >> -		page =3D dma_direct_alloc_swiotlb(dev, size);
->> >> +		page =3D dma_direct_alloc_swiotlb(dev, size, attrs);
->> >>  		if (!page)
->> >>  			return NULL;
->> >>=20=20
->> >> diff --git a/kernel/dma/swiotlb.c b/kernel/dma/swiotlb.c
->> >> index ab4eccbaa076..065663be282c 100644
->> >> --- a/kernel/dma/swiotlb.c
->> >> +++ b/kernel/dma/swiotlb.c
->> >> @@ -259,10 +259,21 @@ void __init swiotlb_update_mem_attributes(void)
->> >>  	struct io_tlb_pool *mem =3D &io_tlb_default_mem.defpool;
->> >>  	unsigned long bytes;
->> >>=20=20
->> >> +	/*
->> >> +	 * if platform support memory encryption, swiotlb buffers are
->> >> +	 * decrypted by default.
->> >> +	 */
->> >> +	if (cc_platform_has(CC_ATTR_MEM_ENCRYPT))
->> >> +		io_tlb_default_mem.unencrypted =3D true;
->> >> +	else
->> >> +		io_tlb_default_mem.unencrypted =3D false;
->> >> +
->> >>  	if (!mem->nslabs || mem->late_alloc)
->> >>  		return;
->> >>  	bytes =3D PAGE_ALIGN(mem->nslabs << IO_TLB_SHIFT);
->> >> -	set_memory_decrypted((unsigned long)mem->vaddr, bytes >> PAGE_SHIFT=
-);
->> >> +
->> >> +	if (io_tlb_default_mem.unencrypted)
->> >> +		set_memory_decrypted((unsigned long)mem->vaddr, bytes >> PAGE_SHIF=
-T);
->> >>  }
->> >>=20=20
->> >>  static void swiotlb_init_io_tlb_pool(struct io_tlb_pool *mem, phys_a=
-ddr_t start,
->> >> @@ -505,8 +516,10 @@ int swiotlb_init_late(size_t size, gfp_t gfp_mas=
-k,
->> >>  	if (!mem->slots)
->> >>  		goto error_slots;
->> >>=20=20
->> >> -	set_memory_decrypted((unsigned long)vstart,
->> >> -			     (nslabs << IO_TLB_SHIFT) >> PAGE_SHIFT);
->> >> +	if (io_tlb_default_mem.unencrypted)
->> >> +		set_memory_decrypted((unsigned long)vstart,
->> >> +				     (nslabs << IO_TLB_SHIFT) >> PAGE_SHIFT);
->> >> +
->> >>  	swiotlb_init_io_tlb_pool(mem, virt_to_phys(vstart), nslabs, true,
->> >>  				 nareas);
->> >>  	add_mem_pool(&io_tlb_default_mem, mem);
->> >> @@ -539,7 +552,9 @@ void __init swiotlb_exit(void)
->> >>  	tbl_size =3D PAGE_ALIGN(mem->end - mem->start);
->> >>  	slots_size =3D PAGE_ALIGN(array_size(sizeof(*mem->slots), mem->nsla=
-bs));
->> >>=20=20
->> >> -	set_memory_encrypted(tbl_vaddr, tbl_size >> PAGE_SHIFT);
->> >> +	if (io_tlb_default_mem.unencrypted)
->> >> +		set_memory_encrypted(tbl_vaddr, tbl_size >> PAGE_SHIFT);
->> >> +
->> >>  	if (mem->late_alloc) {
->> >>  		area_order =3D get_order(array_size(sizeof(*mem->areas),
->> >>  			mem->nareas));
->> >> @@ -563,6 +578,7 @@ void __init swiotlb_exit(void)
->> >>   * @gfp:	GFP flags for the allocation.
->> >>   * @bytes:	Size of the buffer.
->> >>   * @phys_limit:	Maximum allowed physical address of the buffer.
->> >> + * @unencrypted: true to allocate unencrypted memory, false for encr=
-ypted memory
->> >>   *
->> >>   * Allocate pages from the buddy allocator. If successful, make the =
-allocated
->> >>   * pages decrypted that they can be used for DMA.
->> >> @@ -570,7 +586,8 @@ void __init swiotlb_exit(void)
->> >>   * Return: Decrypted pages, %NULL on allocation failure, or ERR_PTR(=
--EAGAIN)
->> >>   * if the allocated physical address was above @phys_limit.
->> >>   */
->> >> -static struct page *alloc_dma_pages(gfp_t gfp, size_t bytes, u64 phy=
-s_limit)
->> >> +static struct page *alloc_dma_pages(gfp_t gfp, size_t bytes,
->> >> +		u64 phys_limit, bool unencrypted)
->> >>  {
->> >>  	unsigned int order =3D get_order(bytes);
->> >>  	struct page *page;
->> >> @@ -588,13 +605,13 @@ static struct page *alloc_dma_pages(gfp_t gfp, =
-size_t bytes, u64 phys_limit)
->> >>  	}
->> >>=20=20
->> >>  	vaddr =3D phys_to_virt(paddr);
->> >> -	if (set_memory_decrypted((unsigned long)vaddr, PFN_UP(bytes)))
->> >> +	if (unencrypted && set_memory_decrypted((unsigned long)vaddr, PFN_U=
-P(bytes)))
->> >>  		goto error;
->> >>  	return page;
->> >>=20=20
->> >>  error:
->> >>  	/* Intentional leak if pages cannot be encrypted again. */
->> >> -	if (!set_memory_encrypted((unsigned long)vaddr, PFN_UP(bytes)))
->> >> +	if (unencrypted && !set_memory_encrypted((unsigned long)vaddr, PFN_=
-UP(bytes)))
->> >>  		__free_pages(page, order);
->> >>  	return NULL;
->> >>  }
->> >> @@ -604,30 +621,26 @@ static struct page *alloc_dma_pages(gfp_t gfp, =
-size_t bytes, u64 phys_limit)
->> >>   * @dev:	Device for which a memory pool is allocated.
->> >>   * @bytes:	Size of the buffer.
->> >>   * @phys_limit:	Maximum allowed physical address of the buffer.
->> >> + * @attrs:	DMA attributes for the allocation.
->> >>   * @gfp:	GFP flags for the allocation.
->> >>   *
->> >>   * Return: Allocated pages, or %NULL on allocation failure.
->> >>   */
->> >>  static struct page *swiotlb_alloc_tlb(struct device *dev, size_t byt=
-es,
->> >> -		u64 phys_limit, gfp_t gfp)
->> >> +		u64 phys_limit, unsigned long attrs, gfp_t gfp)
->> >>  {
->> >>  	struct page *page;
->> >> -	unsigned long attrs =3D 0;
->> >>=20=20
->> >>  	/*
->> >>  	 * Allocate from the atomic pools if memory is encrypted and
->> >>  	 * the allocation is atomic, because decrypting may block.
->> >>  	 */
->> >> -	if (!gfpflags_allow_blocking(gfp) && dev && force_dma_unencrypted(d=
-ev)) {
->> >> +	if (!gfpflags_allow_blocking(gfp) && (attrs & DMA_ATTR_CC_SHARED)) {
->> >>  		void *vaddr;
->> >>=20=20
->> >>  		if (!IS_ENABLED(CONFIG_DMA_COHERENT_POOL))
->> >>  			return NULL;
->> >>=20=20
->> >> -		/* swiotlb considered decrypted by default */
->> >> -		if (cc_platform_has(CC_ATTR_MEM_ENCRYPT))
->> >> -			attrs =3D DMA_ATTR_CC_SHARED;
->> >> -
->> >>  		return dma_alloc_from_pool(dev, bytes, &vaddr, gfp,
->> >>  					   attrs, dma_coherent_ok);
->> >>  	}
->> >> @@ -638,7 +651,8 @@ static struct page *swiotlb_alloc_tlb(struct devi=
-ce *dev, size_t bytes,
->> >>  	else if (phys_limit <=3D DMA_BIT_MASK(32))
->> >>  		gfp |=3D __GFP_DMA32;
->> >>=20=20
->> >> -	while (IS_ERR(page =3D alloc_dma_pages(gfp, bytes, phys_limit))) {
->> >> +	while (IS_ERR(page =3D alloc_dma_pages(gfp, bytes, phys_limit,
->> >> +					     !!(attrs & DMA_ATTR_CC_SHARED)))) {
->> >>  		if (IS_ENABLED(CONFIG_ZONE_DMA32) &&
->> >>  		    phys_limit < DMA_BIT_MASK(64) &&
->> >>  		    !(gfp & (__GFP_DMA32 | __GFP_DMA)))
->> >> @@ -657,15 +671,18 @@ static struct page *swiotlb_alloc_tlb(struct de=
-vice *dev, size_t bytes,
->> >>   * swiotlb_free_tlb() - free a dynamically allocated IO TLB buffer
->> >>   * @vaddr:	Virtual address of the buffer.
->> >>   * @bytes:	Size of the buffer.
->> >> + * @unencrypted: true if @vaddr was allocated decrypted and must be
->> >> + *	re-encrypted before being freed
->> >>   */
->> >> -static void swiotlb_free_tlb(void *vaddr, size_t bytes)
->> >> +static void swiotlb_free_tlb(void *vaddr, size_t bytes, bool unencry=
-pted)
->> >>  {
->> >>  	if (IS_ENABLED(CONFIG_DMA_COHERENT_POOL) &&
->> >>  	    dma_free_from_pool(NULL, vaddr, bytes))
->> >>  		return;
->> >>=20=20
->> >>  	/* Intentional leak if pages cannot be encrypted again. */
->> >> -	if (!set_memory_encrypted((unsigned long)vaddr, PFN_UP(bytes)))
->> >> +	if (!unencrypted ||
->> >> +	    !set_memory_encrypted((unsigned long)vaddr, PFN_UP(bytes)))
->> >>  		__free_pages(virt_to_page(vaddr), get_order(bytes));
->> >>  }
->> >>=20=20
->> >> @@ -676,6 +693,7 @@ static void swiotlb_free_tlb(void *vaddr, size_t =
-bytes)
->> >>   * @nslabs:	Desired (maximum) number of slabs.
->> >>   * @nareas:	Number of areas.
->> >>   * @phys_limit:	Maximum DMA buffer physical address.
->> >> + * @attrs:	DMA attributes for the allocation.
->> >>   * @gfp:	GFP flags for the allocations.
->> >>   *
->> >>   * Allocate and initialize a new IO TLB memory pool. The actual numb=
-er of
->> >> @@ -686,7 +704,8 @@ static void swiotlb_free_tlb(void *vaddr, size_t =
-bytes)
->> >>   */
->> >>  static struct io_tlb_pool *swiotlb_alloc_pool(struct device *dev,
->> >>  		unsigned long minslabs, unsigned long nslabs,
->> >> -		unsigned int nareas, u64 phys_limit, gfp_t gfp)
->> >> +		unsigned int nareas, u64 phys_limit, unsigned long attrs,
->> >> +		gfp_t gfp)
->> >>  {
->> >>  	struct io_tlb_pool *pool;
->> >>  	unsigned int slot_order;
->> >> @@ -704,9 +723,10 @@ static struct io_tlb_pool *swiotlb_alloc_pool(st=
-ruct device *dev,
->> >>  	if (!pool)
->> >>  		goto error;
->> >>  	pool->areas =3D (void *)pool + sizeof(*pool);
->> >> +	pool->unencrypted =3D !!(attrs & DMA_ATTR_CC_SHARED);
->> >>=20=20
->> >>  	tlb_size =3D nslabs << IO_TLB_SHIFT;
->> >> -	while (!(tlb =3D swiotlb_alloc_tlb(dev, tlb_size, phys_limit, gfp))=
-) {
->> >> +	while (!(tlb =3D swiotlb_alloc_tlb(dev, tlb_size, phys_limit, attrs=
-, gfp))) {
->> >>  		if (nslabs <=3D minslabs)
->> >>  			goto error_tlb;
->> >>  		nslabs =3D ALIGN(nslabs >> 1, IO_TLB_SEGSIZE);
->> >> @@ -724,7 +744,8 @@ static struct io_tlb_pool *swiotlb_alloc_pool(str=
-uct device *dev,
->> >>  	return pool;
->> >>=20=20
->> >>  error_slots:
->> >> -	swiotlb_free_tlb(page_address(tlb), tlb_size);
->> >> +	swiotlb_free_tlb(page_address(tlb), tlb_size,
->> >> +			 !!(attrs & DMA_ATTR_CC_SHARED));
->> >>  error_tlb:
->> >>  	kfree(pool);
->> >>  error:
->> >> @@ -742,7 +763,9 @@ static void swiotlb_dyn_alloc(struct work_struct =
-*work)
->> >>  	struct io_tlb_pool *pool;
->> >>=20=20
->> >>  	pool =3D swiotlb_alloc_pool(NULL, IO_TLB_MIN_SLABS, default_nslabs,
->> >> -				  default_nareas, mem->phys_limit, GFP_KERNEL);
->> >> +				  default_nareas, mem->phys_limit,
->> >> +				  mem->unencrypted ? DMA_ATTR_CC_SHARED : 0,
->> >> +				  GFP_KERNEL);
->> >>  	if (!pool) {
->> >>  		pr_warn_ratelimited("Failed to allocate new pool");
->> >>  		return;
->> >> @@ -762,7 +785,7 @@ static void swiotlb_dyn_free(struct rcu_head *rcu)
->> >>  	size_t tlb_size =3D pool->end - pool->start;
->> >>=20=20
->> >>  	free_pages((unsigned long)pool->slots, get_order(slots_size));
->> >> -	swiotlb_free_tlb(pool->vaddr, tlb_size);
->> >> +	swiotlb_free_tlb(pool->vaddr, tlb_size, pool->unencrypted);
->> >>  	kfree(pool);
->> >>  }
->> >>=20=20
->> >> @@ -1232,6 +1255,7 @@ static int swiotlb_find_slots(struct device *de=
-v, phys_addr_t orig_addr,
->> >>  	nslabs =3D nr_slots(alloc_size);
->> >>  	phys_limit =3D min_not_zero(*dev->dma_mask, dev->bus_dma_limit);
->> >>  	pool =3D swiotlb_alloc_pool(dev, nslabs, nslabs, 1, phys_limit,
->> >> +				  mem->unencrypted ? DMA_ATTR_CC_SHARED : 0,
->> >>  				  GFP_NOWAIT);
->> >>  	if (!pool)
->> >>  		return -1;
->> >> @@ -1394,6 +1418,7 @@ phys_addr_t swiotlb_tbl_map_single(struct devic=
-e *dev, phys_addr_t orig_addr,
->> >>  		enum dma_data_direction dir, unsigned long attrs)
->> >>  {
->> >>  	struct io_tlb_mem *mem =3D dev->dma_io_tlb_mem;
->> >> +	bool require_decrypted =3D false;
->> >>  	unsigned int offset;
->> >>  	struct io_tlb_pool *pool;
->> >>  	unsigned int i;
->> >> @@ -1411,6 +1436,16 @@ phys_addr_t swiotlb_tbl_map_single(struct devi=
-ce *dev, phys_addr_t orig_addr,
->> >>  	if (cc_platform_has(CC_ATTR_MEM_ENCRYPT))
->> >>  		pr_warn_once("Memory encryption is active and system is using DMA =
-bounce buffers\n");
->> >>=20=20
->> >> +	/*
->> >> +	 * if we are trying to swiotlb map a decrypted paddr or the paddr i=
-s encrypted
->> >> +	 * but the device is forcing decryption, use decrypted io_tlb_mem
->> >> +	 */
->> >> +	if ((attrs & DMA_ATTR_CC_SHARED) || force_dma_unencrypted(dev))
->> >> +		require_decrypted =3D true;
->> >> +
->> >> +	if (require_decrypted !=3D mem->unencrypted)
->> >> +		return (phys_addr_t)DMA_MAPPING_ERROR;
->> >> +
->> >>  	/*
->> >>  	 * The default swiotlb memory pool is allocated with PAGE_SIZE
->> >>  	 * alignment. If a mapping is requested with larger alignment,
->> >> @@ -1608,8 +1643,14 @@ dma_addr_t swiotlb_map(struct device *dev, phy=
-s_addr_t paddr, size_t size,
->> >>  	if (swiotlb_addr =3D=3D (phys_addr_t)DMA_MAPPING_ERROR)
->> >>  		return DMA_MAPPING_ERROR;
->> >>=20=20
->> >> -	/* Ensure that the address returned is DMA'ble */
->> >> -	dma_addr =3D phys_to_dma_unencrypted(dev, swiotlb_addr);
->> >> +	/*
->> >> +	 * Use the allocated io_tlb_mem encryption type to determine dma ad=
-dr.
->> >> +	 */
->> >> +	if (dev->dma_io_tlb_mem->unencrypted)
->> >> +		dma_addr =3D phys_to_dma_unencrypted(dev, swiotlb_addr);
->> >> +	else
->> >> +		dma_addr =3D phys_to_dma_encrypted(dev, swiotlb_addr);
->> >> +
->> >>  	if (unlikely(!dma_capable(dev, dma_addr, size, true))) {
->> >>  		__swiotlb_tbl_unmap_single(dev, swiotlb_addr, size, dir,
->> >>  			attrs | DMA_ATTR_SKIP_CPU_SYNC,
->> >> @@ -1773,7 +1814,8 @@ static inline void swiotlb_create_debugfs_files=
-(struct io_tlb_mem *mem,
->> >>=20=20
->> >>  #ifdef CONFIG_DMA_RESTRICTED_POOL
->> >>=20=20
->> >> -struct page *swiotlb_alloc(struct device *dev, size_t size)
->> >> +struct page *swiotlb_alloc(struct device *dev, size_t size,
->> >> +		unsigned long attrs)
->> >>  {
->> >>  	struct io_tlb_mem *mem =3D dev->dma_io_tlb_mem;
->> >>  	struct io_tlb_pool *pool;
->> >> @@ -1784,6 +1826,9 @@ struct page *swiotlb_alloc(struct device *dev, =
-size_t size)
->> >>  	if (!mem)
->> >>  		return NULL;
->> >>=20=20
->> >> +	if (mem->unencrypted !=3D !!(attrs & DMA_ATTR_CC_SHARED))
->> >> +		return NULL;
->> >> +
->> >>  	align =3D (1 << (get_order(size) + PAGE_SHIFT)) - 1;
->> >>  	index =3D swiotlb_find_slots(dev, 0, size, align, &pool);
->> >>  	if (index =3D=3D -1)
->> >> @@ -1853,9 +1898,18 @@ static int rmem_swiotlb_device_init(struct res=
-erved_mem *rmem,
->> >>  			kfree(mem);
->> >>  			return -ENOMEM;
->> >>  		}
->> >> +		/*
->> >> +		 * if platform supports memory encryption,
->> >> +		 * restricted mem pool is decrypted by default
->> >> +		 */
->> >> +		if (cc_platform_has(CC_ATTR_MEM_ENCRYPT)) {
->> >> +			mem->unencrypted =3D true;
->> >> +			set_memory_decrypted((unsigned long)phys_to_virt(rmem->base),
->> >> +					     rmem->size >> PAGE_SHIFT);
->> >> +		} else {
->> >> +			mem->unencrypted =3D false;
->> >> +		}
->> >
->> > This breaks pKVM as it doesn=E2=80=99t set CC_ATTR_MEM_ENCRYPT, so all=
- virtio
->> > traffic now fails.
->> >
->> > Also, by design, some drivers are clueless about bouncing, so
->> > I believe that the pool should have a way to control it=E2=80=99s prop=
-erty
->> > (encrypted or decrypted) and that takes priority over whatever
->> > attributes comes from allocation.
->> > And that brings us to the same point whether it=E2=80=99s better to re=
-turn
->> > the memory along with it=E2=80=99s state or we pass the requested stat=
-e.
->> > I think for other cases it=E2=80=99s fine for the device/DMA-API to di=
-ctate
->> > the attrs, but not in restricted-dma case, the firmware just knows bet=
-ter.
->> >
->>=20
->> Is it that the pKVM guest kernel does not have awareness of
->> encrypted/decrypted DMA allocations? Instead, the firmware attaches
->> hypervisor-shared pages to the device via restricted-dma-pool? The
->> kernel then has swiotlb->for_alloc =3D true, and hence all DMA allocatio=
-ns
->> go through the restricted-dma-pool?
->
-> Yes.
->
->>=20
->> Given that pKVM supports pkvm_set_memory_encrypted() and
->> pkvm_set_memory_decrypted(), can we consider adding CC_ATTR_MEM_ENCRYPT
->> support to pKVM? It would also be good to investigate whether we can set
->> force_dma_unencrypted(dev) to true where needed.
->
-> I was looking in to that, but it didn't work because
-> force_dma_unencrypted() is broken with restricted-dma due to the
-> double decryption issue, that's when I sent my first series [1]
->
-> May be we should land some basic fixes for that path so we can
-> convert pKVM, then we do the full rework.
->
-> I will revive my old work and see if I can send a RFC.
->
-> [1] https://lore.kernel.org/all/20260305170335.963568-1-smostafa@google.c=
-om/
->
+If I understood Mostafa's remarks I think different devices in the
+guest need shared/decrypted and some don't? Ie a virtio hypervisor
+device needs shared while a real PCI device doesn't? Is that right?
 
-With this series, can you check whether the only change needed is
-something like the following?
+In CC terms that would be a mixture of T=0 and T=1 devices hardwired
+and signaled by firwmare..
 
-modified   kernel/dma/swiotlb.c
-@@ -1905,7 +1905,8 @@ static int rmem_swiotlb_device_init(struct reserved_m=
-em *rmem,
- 		 * if platform supports memory encryption,
- 		 * restricted mem pool is decrypted by default
- 		 */
--		if (cc_platform_has(CC_ATTR_MEM_ENCRYPT)) {
-+		//if (cc_platform_has(CC_ATTR_MEM_ENCRYPT)) {
-+		if (true) {
- 			mem->unencrypted =3D true;
- 			set_memory_decrypted((unsigned long)phys_to_virt(rmem->base),
- 					     rmem->size >> PAGE_SHIFT);
+Ideally we'd have a flow where if the arch precreates a swiotlb pool
+with special parameters this overrides all other decision making. Then
+this series is about making CC NOT use that flow... ??
 
->
->>=20
->> I agree that this patch, as it stands, can break pKVM because we are now
->> missing the set_memory_decrypted() call required for pKVM to work.
->>=20
->> We now mark the swiotlb io_tlb_mem as unencrypted/encrypted in the guest
->> using struct io_tlb_mem->unencrypted. I am not clear what we can use for
->> pKVM to conditionalize this so that it works for both protected and
->> unprotected guests.
->
-> There is no problem with non-protected guests as they don't use memory
-> encryption, my initial thought was that th encrpyted/decrypted is
-> per-pool property which is decided by FW (device-tree).
->
-
-What I meant was that we need a generic way to identify a pKVM guest, so
-that we can use it in the conditional above.
-
--aneesh
+Jason
 
