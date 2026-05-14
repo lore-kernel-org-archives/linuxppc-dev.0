@@ -1,46 +1,95 @@
-Return-Path: <linuxppc-dev+bounces-20950-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20952-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 42AB0CD4851
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 May 2026 08:21:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D71E3CD4851
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 May 2026 10:05:29 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gGNZZ05CHz2xy8;
-	Thu, 14 May 2026 18:21:10 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:41d0:1004:224b::bd"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778746869;
-	cv=none; b=CMJmeKyc6rHcNZqbcTdtgAaxO6U4hWDPvS2qEX0XIYQumdbwoARZ3VNyx0teivR+7h8XAWwwol4QFPl6WFpIQP8T4vSQjNIslRTmDymeUc2xvbnu4vkmFVLNfqSuwfWzpNxrKaeE2V6iwjqf1Oa627gAGYMxKGsN6baEttM35DCxKMvmvcAQq4xgOSRs+5jdPYlmc/tV01uyBSUpdI9+np571hfDkZp+BmeWsqxCEeFEDDvqBDGPRLSQMpZXXrUowBFL+nz+Eu3CrOqZSfDNF3RGpMUv32L18RcEoYQuhWiAmHLMNwhQakRz14Kn1KDHovHq587vxXu4rVKkatZysg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gGQtv4vjJz2xy8;
+	Thu, 14 May 2026 20:05:27 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778753127;
+	cv=none; b=ek0jsZgwQclZaRLIJ9U45NDiu6uLcOJKHfCb1xjJH3PuGAX9yFVMG9oRBFVckPCnXB68N5otTG+va3tCjOPahL8sOxPbGdC+u3HRbTTafkrX7kSq0AKHAe6iqE3m7GBlTjv2gEn3KDRbq7p3JF9tVX3DPpbG1m5m5gYjAJTiXViwMNqfZHkqu7ZAsJPEIZa6ezK6dFlCRumyhWBHbMwB8qZjdKfdmlmbnyE1RaMmhnlIi+tx7pEeGWqYXovtbp43LEx+99DTzQ9n7VDT1Gyve9642YcPvEqHnZ1aKhPXfJQ/OKClUg+FpAVHqf/TGxNLqWX5Tw/pQ22RwEjAQqL2Tw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1778746869; c=relaxed/relaxed;
-	bh=eF9zsW7xnXvYZrz7iQ2MKx+MqvnRKTtP5O8YBI2NE3c=;
-	h=Content-Type:Mime-Version:Subject:From:In-Reply-To:Date:Cc:
-	 Message-Id:References:To; b=aiMwD7ngEBdy7hegSz7mzFrkIAJypPO1KU+2rDeFlbx69xbvLtLcFGtZ3x9VKPLFU1fWZc4zKU5G8j2YZikrVhx7ZH7Qaj2OKcLT7i+PdSh0VBrD4xkgzAViubYxQCDUQJXzetsnNaAPt/08DDy3QGvP8XXv57twADSZYnJL7jdS3vP1FVAbjHge1f2G9Bgg52v2T6eyywhwEgAjE0Tm1apwY5D9GhhnFi/EbXFakuAUPV3zDBIAx2gjn1/sK3zu33vQQE2bJ/t5Jx2UZqt7xocTJjI31PpTjzRdS1vdC4cDUlBTRrf2TBxJ59i+9NZW9gVh+yKcRvGzv2QjA+lWTA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=KDwxvaKg; dkim-atps=neutral; spf=pass (client-ip=2001:41d0:1004:224b::bd; helo=out-189.mta0.migadu.com; envelope-from=muchun.song@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
+	t=1778753127; c=relaxed/relaxed;
+	bh=Af/BdJqD45t8qNOLx315vRMVFrP03JVrShiBq1i949A=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=Eo39e4A8hzM3DDSz0Qn+cjR5KYSI2dZkmTFTm5veCvr4tU/nac1mJlGxBOjn0NUB2tA2vIVzjshcoYw0ZGYC5wj3AADX5jrDKsJncjELfDZDMCiQ78bg+QuGaTQBJzRbJ5IRULIZdnM4/VWRJ/vWaKB3ijXiUfCmkIKeN5aqQuq/lpIkCV7LMuTtNIKxg5SAhGT5m/hsz+lj9LEPyB0sJ2c9i4C4I2KlOY827ZVTEuwjl5vBtBf8o/XDF9G8bz1J3r4w/6gHhI+bPe6nsgOeHscgfi7Q1b1pg46BWGPaSKUBdYClX1LBkUZORD/9csEr4VQjksF2AOzJ3Ej4PIlr/A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=TRwJYUiR; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=KDwxvaKg;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=TRwJYUiR;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=2001:41d0:1004:224b::bd; helo=out-189.mta0.migadu.com; envelope-from=muchun.song@linux.dev; receiver=lists.ozlabs.org)
-Received: from out-189.mta0.migadu.com (out-189.mta0.migadu.com [IPv6:2001:41d0:1004:224b::bd])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gGNZT5Kyvz2xdL
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 May 2026 18:21:05 +1000 (AEST)
-Content-Type: text/plain;
-	charset=us-ascii
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
-	t=1778746844;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=eF9zsW7xnXvYZrz7iQ2MKx+MqvnRKTtP5O8YBI2NE3c=;
-	b=KDwxvaKgh9l7mgpFBVZ+HTHG5TDMhl79lW7K3ZfMryQ5xm+gJinvCPr43E41bc7FSO4UAU
-	xg27y1DxfnLCU6Y5XwSgd/HiNCx2W+k3aOiQfCwlb22XLvPX1xKbHpaPTswYw7yqpDHi4i
-	Qy7K2XvZmO+OLALVUA8mkSffbYKzz3c=
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gGQtt2fGbz2xdL
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 May 2026 20:05:25 +1000 (AEST)
+Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 64E6bNxr3773759;
+	Thu, 14 May 2026 10:05:13 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-type:date:from:in-reply-to:message-id:mime-version
+	:references:subject:to; s=pp1; bh=Af/BdJqD45t8qNOLx315vRMVFrP03J
+	VrShiBq1i949A=; b=TRwJYUiRt883EuwdI2JIPQrLychxHyIoCjmifxevnrR9Om
+	1qPj9pTDCIJc2vFS3Op28hz4O7DDcoDgY3Yp29ggv9RcC76TsNMrluR6rL+QBGTP
+	egpC9CTHfLFjbmQcuS+n9q2goqvZLJNkdJbinXo20+efUeYFYS6YjwjIC5+YSI7O
+	BmfGJCH5E0kgruJ4PX3Du5C63loVZX0BXGSYq2yyTpMLJZLWV49RMITTcEgRdCw+
+	YClY8i/N/4DkH9gtljpPafAjdpT4wIAnsemoHznDHGXaR0oibdc3aeUp2Jucm3uG
+	7Y6RvNavxhbD+iucYzN13lHRbYLP1lJMa/42R9GA==
+Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4e3nv6ubr7-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 14 May 2026 10:05:12 +0000 (GMT)
+Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma22.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 64E9safm006877;
+	Thu, 14 May 2026 10:05:11 GMT
+Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
+	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4e3nfh3w5j-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 14 May 2026 10:05:11 +0000 (GMT)
+Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com [10.20.54.104])
+	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 64EA57gC49021370
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Thu, 14 May 2026 10:05:07 GMT
+Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id A4F7020067;
+	Thu, 14 May 2026 10:05:07 +0000 (GMT)
+Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id C34B920063;
+	Thu, 14 May 2026 10:05:03 +0000 (GMT)
+Received: from mac.bl1-in.ibm.com (unknown [9.124.209.153])
+	by smtpav05.fra02v.mail.ibm.com (Postfix) with ESMTPS;
+	Thu, 14 May 2026 10:05:03 +0000 (GMT)
+Date: Thu, 14 May 2026 15:34:58 +0530
+From: Amit Machhiwal <amachhiw@linux.ibm.com>
+To: Ritesh Harjani <ritesh.list@gmail.com>
+Cc: Amit Machhiwal <amachhiw@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+        Madhavan Srinivasan <maddy@linux.ibm.com>,
+        Vaibhav Jain <vaibhav@linux.ibm.com>,
+        Paolo Bonzini <pbonzini@redhat.com>,
+        Nicholas Piggin <npiggin@gmail.com>,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+        Jonathan Corbet <corbet@lwn.net>,
+        Shuah Khan <skhan@linuxfoundation.org>, kvm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org
+Subject: Re: [PATCH v2 0/5] KVM: PPC: Handle CPU compatibility mode for
+ nested guests
+Message-ID: <20260514151719.b7ea3fdd-9b-amachhiw@linux.ibm.com>
+Mail-Followup-To: Ritesh Harjani <ritesh.list@gmail.com>, 
+	linuxppc-dev@lists.ozlabs.org, Madhavan Srinivasan <maddy@linux.ibm.com>, 
+	Vaibhav Jain <vaibhav@linux.ibm.com>, Paolo Bonzini <pbonzini@redhat.com>, 
+	Nicholas Piggin <npiggin@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>, 
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, Jonathan Corbet <corbet@lwn.net>, 
+	Shuah Khan <skhan@linuxfoundation.org>, kvm@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	linux-doc@vger.kernel.org
+References: <20260513100755.83215-1-amachhiw@linux.ibm.com>
+ <o6iir82o.ritesh.list@gmail.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -53,96 +102,146 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-Mime-Version: 1.0 (Mac OS X Mail 16.0 \(3864.500.181\))
-Subject: Re: [PATCH v2 02/69] mm/hugetlb_vmemmap: Fix
- __hugetlb_vmemmap_optimize_folios()
-X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
-From: Muchun Song <muchun.song@linux.dev>
-In-Reply-To: <agWANe6i5gsfXFgP@localhost.localdomain>
-Date: Thu, 14 May 2026 16:19:58 +0800
-Cc: Muchun Song <songmuchun@bytedance.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- David Hildenbrand <david@kernel.org>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Madhavan Srinivasan <maddy@linux.ibm.com>,
- Lorenzo Stoakes <ljs@kernel.org>,
- "Liam R . Howlett" <Liam.Howlett@oracle.com>,
- Vlastimil Babka <vbabka@kernel.org>,
- Mike Rapoport <rppt@kernel.org>,
- Suren Baghdasaryan <surenb@google.com>,
- Michal Hocko <mhocko@suse.com>,
- Nicholas Piggin <npiggin@gmail.com>,
- Christophe Leroy <chleroy@kernel.org>,
- Ackerley Tng <ackerleytng@google.com>,
- Frank van der Linden <fvdl@google.com>,
- aneesh.kumar@linux.ibm.com,
- joao.m.martins@oracle.com,
- linux-mm@kvack.org,
- linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: quoted-printable
-Message-Id: <76D9FAE1-7830-495F-A98D-B3F5FC26F9CC@linux.dev>
-References: <20260513130542.35604-1-songmuchun@bytedance.com>
- <20260513130542.35604-3-songmuchun@bytedance.com>
- <agWANe6i5gsfXFgP@localhost.localdomain>
-To: Oscar Salvador <osalvador@suse.de>
-X-Migadu-Flow: FLOW_OUT
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <o6iir82o.ritesh.list@gmail.com>
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Authority-Analysis: v=2.4 cv=KbvidwYD c=1 sm=1 tr=0 ts=6a059e58 cx=c_pps
+ a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
+ a=kj9zAlcOel0A:10 a=NGcC8JguVDcA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=V8glGbnc2Ofi9Qvn3v5h:22 a=VnNF1IyMAAAA:8
+ a=i22HGULVa775TzVH9QoA:9 a=CjuIK1q_8ugA:10
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTE0MDA5NSBTYWx0ZWRfX918kfqsQK0XT
+ fQqlTF2/LIFYk8ExLBawLpcm4t4wXs8AkLFlxbdlNQEcBD7eCWVT1lgUhhUqxoX4NwZIew2uQuS
+ W+D6qCdBSjUv8X8mViguKluejCRHqzqP/2gs1E5OX1vpgadmDmNZLtViLobZH9GGF3o0wiszLCk
+ esYh6An9EccbFhjN2neQQpaTarwIdaUq93aM2KEedj7mNoGBgCrVnVDXy7WXs9DGMSecmR+5ZaB
+ +ICQL9T3qnpHEteApyH9ZhLHBQzJK3RtO70/fm0DaLqEKK2bKBLWVtKRNIxEnhHUvgFrQEWNd6C
+ QT2cykrqq81znxY+h2mA28TZzlRRzNU8HZRaFP3Vn26sJfWh7YN9nVDC6BdpSG3jsF7EIxuef0b
+ +/RPvFA/npwBqg3Ico5x2w6gqNmwNR6QJgLH5djXZ181GadCbcyfcZ7Au6Uuq8dLe0fo5v9zBY5
+ wV4AFBbbm9fJW42Rz2g==
+X-Proofpoint-GUID: mWigg6i4TIUXe3RphRc177hdpIWcF7QH
+X-Proofpoint-ORIG-GUID: OCds5ZSKTFOuOWVRRk572-yCfhIyWWJg
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-05-14_02,2026-05-13_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501 bulkscore=0 impostorscore=0 malwarescore=0
+ lowpriorityscore=0 phishscore=0 spamscore=0 suspectscore=0 clxscore=1015
+ adultscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2605050000
+ definitions=main-2605140095
 
+Hi Ritesh,
 
+Thanks for taking a look at this series. Please find my comment inline below:
 
-> On May 14, 2026, at 15:56, Oscar Salvador <osalvador@suse.de> wrote:
->=20
-> On Wed, May 13, 2026 at 09:04:30PM +0800, Muchun Song wrote:
->> __hugetlb_vmemmap_optimize_folios() uses incorrect arguments when =
-handling
->> bootmem HugeTLB folios.
->>=20
->> The section number passed to register_page_bootmem_memmap() is =
-derived from
->> the vmemmap virtual address of folio->page instead of the folio PFN, =
-so the
->> bootmem memmap metadata can be registered against the wrong section. =
-The
->> helper is also given HUGETLB_VMEMMAP_RESERVE_SIZE even though it =
-expects a
->> page count, not a size in bytes. In addition, the write-protect range =
-is
->> based on pages_per_huge_page(h), which does not cover the full =
-HugeTLB
->> vmemmap area and can leave part of the shared tail vmemmap mapping =
-writable.
->>=20
->> Fix the section lookup to use folio_pfn(folio), use
->> HUGETLB_VMEMMAP_RESERVE_PAGES when registering the reserved memmap =
-pages, and
->> use hugetlb_vmemmap_size(h) for the write-protect range.
->>=20
->> Fixes: 752fe17af693 ("mm/hugetlb: add pre-HVO framework")
->> Signed-off-by: Muchun Song <songmuchun@bytedance.com>
->=20
-> Acked-by: Oscar Salvador <osalvador@suse.de>
+On 2026/05/14 08:49 AM, Ritesh Harjani wrote:
+> 
+> Hi Amit,
+> 
+> Amit Machhiwal <amachhiw@linux.ibm.com> writes:
+> 
+> > On POWER systems, newer processor generations can operate in compatibility
+> > modes corresponding to earlier generations (e.g., a Power11 system running
+> > in Power10 compatibility mode). In such cases, the effective CPU level
+> > exposed to guests differs from the physical processor generation.
+> >
+> > This creates a problem for nested virtualization. When booting a nested KVM
+> > guest (L2) inside a host KVM guest (L1) running in a compatibility mode,
+> > userspace (e.g., QEMU) may derive the CPU model from the raw hardware PVR
+> > and attempt to configure the nested guest accordingly. However, the L1
+> > partition is constrained by the compatibility level negotiated with the
+> > hypervisor (L0), and requests exceeding that level are rejected, leading to
+> > guest boot failures such as:
+> >
+> >   KVM-NESTEDv2: couldn't set guest wide elements
+> >
+> > This series addresses the issue in two steps:
+> >
+> > 1. Detect and reject invalid compatibility requests early in KVM to avoid
+> >    late failures.
+> >
+> > 2. Provide a mechanism for userspace to query the effective CPU
+> >    compatibility modes supported by the host, so it can select an
+> >    appropriate CPU model for nested guests.
+> >
+>
+> Do we really need to add a uapi change for this? Tools like Qemu can
+> read the device tree info of the host, isn't it?
 
-Thanks.
+While cpu-version is available in /proc/device-tree/cpus/<cpu#>/cpu-version on
+both L1 booted on PowerNV and PowerVM LPARs, I believe the UAPI change is still
+preferable for several reasons:
 
->=20
-> did you observe any Ooops or malfunctioning or was just code =
-reviewing?
+1. We would want to rely on the capabilities negotiated with pHYP (L0) in KVM on
+   PowerVM case instead of device tree property. Also, the cpu-version property
+   only depicts the current compat mode host (L1) is booted in but doesn't
+   really point to what all compat modes are supported for the nested guest
+   (L2).
 
-Found by LLM (Gemini Pro).
+2. procfs dependency: Not all systems run with procfs enabled (CONFIG_PROC_FS is
+   optional). For example, minimal configurations (like buildroot) might disable
+   it. The KVM ioctl works regardless of procfs availability since it accesses
+   kernel data structures directly.
 
-When I touched the code here, LLM will report the bug as well, even it =
-is
-not introduced by me :)
+3. Kernel validation: The kernel validates and normalizes the compatibility
+   information. For example, patch 1 adds validation logic that rejects invalid
+   compatibility requests early. The ioctl ensures userspace gets validated,
+   consistent data.
+
+4. Abstraction & stability: While /proc/device-tree works today, it's an
+   implementation detail. The UAPI provides a stable interface that won't break
+   if the underlying mechanism changes.
+
+5. Semantic clarity: KVM_PPC_GET_COMPAT_CAPS clearly expresses what
+   compatibility modes can I use for KVM guests vs. parsing device tree which
+   requires understanding the semantic meaning of cpu-version.
+
+>
+> > To achieve this, the series introduces a new KVM capability and ioctl
+> > (KVM_CAP_PPC_COMPAT_CAPS / KVM_PPC_GET_COMPAT_CAPS) that expose the
+> > compatibility modes supported by the host.
+> >
+> > The implementation supports both:
+> >
+> >   - PowerVM (nested API v2), where compatibility information is obtained
+> >     via the H_GUEST_GET_CAPABILITIES hypercall.
+> >   - PowerNV (nested API v1), where compatibility is derived from the device
+> >     tree ("cpu-version") representing the effective processor compatibility
+> >     level.
+> 
+> See there you go, for PowerNV if this info is provided in the device
+> tree, then Qemu could as well just read that info, no?
+>
+> ... yup, kvmppc_read_int_dt() can do that I guess.
+> 
+> So, my request is, can we look into this to see, if there is a possible
+> alternative to this? maybe we already have a mechanism which Qemu could
+> use to get this info already?
+
+You're right that QEMU could read the device tree from procfs. We had discussed
+this approach internally as well. However, we believe the UAPI approach offers
+additional benefits and looks more robust and future proof as outlined above.
+
+> 
+> btw - I haven't given a full read of the patch series, but reading the
+> cover letter, I felt  we should atleast add this info to the cover
+> letter on, why a uapi change is really needed here, why can't the
+> existing alternatives work for us.
+
+I have described above why we did the UAPI change for the approach followed in
+this series. Could you please suggest what else can be added?
 
 Thanks,
-Muchun
+Amit
 
->=20
->=20
->=20
-> --=20
-> Oscar Salvador
-> SUSE Labs
-
-
+> -ritesh
+> 
+> >
+> > This allows userspace (e.g., QEMU) to select a CPU model consistent with
+> > the host compatibility mode, avoiding mismatches and enabling successful
+> > nested guest boot.
+> >
 
