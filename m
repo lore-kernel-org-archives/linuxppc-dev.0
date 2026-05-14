@@ -1,81 +1,52 @@
-Return-Path: <linuxppc-dev+bounces-20971-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20972-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 603C9CD4851
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 May 2026 13:08:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F1271CD343F
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 May 2026 14:13:38 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gH6w35VgJz2xTl;
-	Fri, 15 May 2026 23:08:51 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778850531;
-	cv=none; b=k8yjVREd8oMbYpcZIo57n3UxjH7R+cxQY8B0CUlneeK4lAkJJhyz14GCx39PMaJKy91JOruCtWc9TjpFy1Q+3MYQ+rSvnt04QhvzHr1xlOVoYdBMfhInnpZlUmCYRhiSLWLG5nGrws9oCEOngCk8En0s5DpObC6AX7INzlhcVB4Mvd7PeQ0tmg8/+j0f2xlsXqr6sk1u63ZwjChk+2fbQcWsMxkRhipmqn3hOCpgl7/HLwfaLOYUSC4aFRMHUikNn5O25qZdq8+GTMz7ERnvFEgrH1bxVYHDbigfVRnMw+/alA97ca/nlW8BFwKRB8VTj8v9sRli1Ny1lVJWndZ6Pg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gH8Ln2ZSsz2xnZ;
+	Sat, 16 May 2026 00:13:37 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=213.209.10.18
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778788747;
+	cv=none; b=hATo6EPThhCd0B6P4zFgekLYjNeOWDo3g6y77bMG9lOLGB3UrdQIPXILHpKFuJnt+fm7WJBLa5nQ0pOWCtDVpGdgpq09QfliQp1oET5kxzlliVJluZpoDQPmYW5HgZunuhJSzsLAF7ZogEIbTha0YeaiQJNEwpsFDf8YjBY2c78WXnUCABYv2jkoZCdeaBHwW5kUeN/IQktrU1fMqGJ+mXN/9CATrEfZgZJ1Tt/xQbf/LsAPhbSSEZU1Bb0N/brBmSFxbHN51JHJE9zJtfdwF+B0EJgHIqsAbcv79e7gVshfn0t3tjLeHwcAU4bNDx/eVU2PlKyiF+FI5bbVPX3/JA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1778850531; c=relaxed/relaxed;
-	bh=jRi7dPn0xPwwF44nsUPUR/9QOu9r5yU5sKUGfcXfjQY=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=DF/ZP8cQPZ3YTnYBTCPv0UHxtgK3Ty6fDbS7hrJXlv/ANzoxH26cqFj/ZWRTgpp+skPZIJBfy6CItqthcM8IF18AJvO9x9UX9h7mwUrvMU8GEktbCLDQDYdUrghQVb4vqZRXiBJ3gFSgSPVmF3GReCgi9Z3kjL0UpWbFwso8dWwOsacjsus/TE307AYpen0BmbxX3diYzRNRkSROn27OkHgHOCEc2CLE7iQxZIHzBppDc7IGy3PAk305zr9M+4dRExX8hp9ZTEXMdxtfDgTbtHG7oRQ5YoSYlJbptt4Zd8EjmaXCkDFrbTrNG8/GdOGJp6R+Wt73jwxVKnSvfQhHUw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=RGYFH50e; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=gautam@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1778788747; c=relaxed/relaxed;
+	bh=bD3QJ+lr63//8NcpvDCT9tKc3YLZWQgdbpAaQhjYRpQ=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=e6Xm7assD0rM+O5Z47fOLFHRUqtNAsgAT3az3cGOa0dDX+6cFjko2SLVEHQ/o9i7idFZKJYV8dc7T3MwKDfzdBoxYw3yAMISMdBnlD2Ctlelz4xTNuNVVIzwpRQrF2n3qeZj3e23h3pZ1RDZnzM+Ehon6iJMiDmJYG2BhqSHHjnSPW3UqHmqf0DXZ5KHZWsu6pDCEEu+anPjp+TLUA9Zq2x44MwFzpRHW5qGF1ySi8gQyV+u3Bu15Qilt9S++rW4Ye0UMqhIWk/wp6LL39OgbipNWmeMT0KMHTU8Q5klMhCfrXGfdY+lhz8G4GFQn0bYFr2DX8lyW2PMNroQ6ovn4w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=libero.it; dkim=pass (2048-bit key; unprotected) header.d=libero.it header.i=@libero.it header.a=rsa-sha256 header.s=s2021 header.b=WjBd6m5G; dkim-atps=neutral; spf=pass (client-ip=213.209.10.18; helo=libero.it; envelope-from=kreijack@libero.it; receiver=lists.ozlabs.org) smtp.mailfrom=libero.it
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=libero.it
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=RGYFH50e;
+	dkim=pass (2048-bit key; unprotected) header.d=libero.it header.i=@libero.it header.a=rsa-sha256 header.s=s2021 header.b=WjBd6m5G;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=gautam@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=libero.it (client-ip=213.209.10.18; helo=libero.it; envelope-from=kreijack@libero.it; receiver=lists.ozlabs.org)
+X-Greylist: delayed 290 seconds by postgrey-1.37 at boromir; Fri, 15 May 2026 05:59:04 AEST
+Received: from libero.it (smtp-18.italiaonline.it [213.209.10.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gH6w24MvXz2xHF
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 May 2026 23:08:49 +1000 (AEST)
-Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 64FAlpKW4090487;
-	Fri, 15 May 2026 13:08:34 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-type:date:from:in-reply-to:message-id:mime-version
-	:references:subject:to; s=pp1; bh=jRi7dPn0xPwwF44nsUPUR/9QOu9r5y
-	U5sKUGfcXfjQY=; b=RGYFH50el99/T35p6ITw4Yw/r62tIvRIx/gaDibIDPFSsp
-	wlAxK5oz/2rvi/ZNWO3g6+HRab4XvP2QXzWlbhQr3sgFgunaILY9Egf8lua+Ylp7
-	92B7PGuPxdYk4l3fYqddmrnyJXBRvvgQY+w/f18G9VF5EEOPycF3/8sP3Use0SHf
-	PU6wfl6YkKVGslrCLPTedbDfs5TxzclpgyQ1LK2A2C7gZLBluBbDwNyj0WDn8qcW
-	l2oyMYXfg6XNpp3vDIMWq0ag/LhD1GsCKqIbZfR3BbaYtkcqZItHqRsd1wvGdea6
-	6Shj5IN7palrJLGhGUM0jneTxRU0GlzxwNtz4rSw==
-Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4e5m93ua8n-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 15 May 2026 13:08:33 +0000 (GMT)
-Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma11.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 64FCsBbj022227;
-	Fri, 15 May 2026 13:08:32 GMT
-Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
-	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4e5kvcbm8c-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 15 May 2026 13:08:32 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
-	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 64FD8T0F55443788
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 15 May 2026 13:08:29 GMT
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 527A120043;
-	Fri, 15 May 2026 13:08:29 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 644EE20040;
-	Fri, 15 May 2026 13:08:27 +0000 (GMT)
-Received: from Gautams-MacBook-Pro.local (unknown [9.43.96.145])
-	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTPS;
-	Fri, 15 May 2026 13:08:27 +0000 (GMT)
-Date: Fri, 15 May 2026 18:38:20 +0530
-From: Gautam Menghani <gautam@linux.ibm.com>
-To: Vaibhav Jain <vaibhav@linux.ibm.com>
-Cc: Gautam Menghani <Gautam.Menghani@ibm.com>, maddy@linux.ibm.com,
-        mpe@ellerman.id.au, npiggin@gmail.com, chleroy@kernel.org,
-        linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] powerpc/64s: Fix the vector number in comments for
- h_facility_unavailable
-Message-ID: <agcaxAANsk5gNzWX@Gautams-MacBook-Pro.local>
-References: <20260511080412.50722-1-Gautam.Menghani@ibm.com>
- <87fr3vvfvq.fsf@vajain21.in.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gGh3r1Y5lz2xlV
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 May 2026 05:59:03 +1000 (AEST)
+Received: from [192.168.1.27] ([84.220.171.3])
+	by smtp-18.iol.local with ESMTPA
+	id Nc6CwXG9svXD3Nc6CwmS65; Thu, 14 May 2026 21:52:07 +0200
+x-libjamoibt: 1601
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=libero.it; s=s2021;
+	t=1778788327; bh=bD3QJ+lr63//8NcpvDCT9tKc3YLZWQgdbpAaQhjYRpQ=;
+	h=From;
+	b=WjBd6m5GeZLiEpJDmyyT/8VPp5EOXd4PhZx9kHUiOpqfvSBe7IFbl7krzNd92M9Ij
+	 h6EhL6qXXq9UaNsQfdJ5a66jWHPe3D2L7Nu/xrybOS+yOAwV6LdAjAl7orTfUz4kwH
+	 3auL6iqBbyl11V0qHQa1mg54QFrGy31tudePZPxfmDSHUVOc9cV7FN4yHppkUtjtZO
+	 1eNNuq7/0Y74HmPuEqWqRhs3SrQQlZ7arXDilEcB+jEsAp8ofe+4bD0Y0I0ZeAg86U
+	 3nuNpLvyVhMptjCg9r0R4NKBj3/xghtHqCInpSBZcxe6j2wOauOLHj8pRwkeniaUAa
+	 v7xxVDpm6+b5w==
+X-CNFS-Analysis: v=2.4 cv=KNpaDEFo c=1 sm=1 tr=0 ts=6a0627e7 cx=a_exe
+ a=hciw9o01/L1eIHAASTHaSw==:117 a=hciw9o01/L1eIHAASTHaSw==:17
+ a=IkcTkHD0fZMA:10 a=gdOXTq2rPY5K92qxl70A:9 a=QEXdDO2ut3YA:10
+Message-ID: <0a8d1ff4-f5a2-49e9-aa45-d25dbe4ded40@libero.it>
+Date: Thu, 14 May 2026 21:51:59 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -89,49 +60,80 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <87fr3vvfvq.fsf@vajain21.in.ibm.com>
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-ORIG-GUID: dzs8Ch2V-41uKQDwaGR07m7Djh1pKAUf
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTE1MDEzMyBTYWx0ZWRfX3znBzUxpRPMS
- RreTmCo36fqorD94ALrDRhvvXK8HgoOr93qAO9+EhQE6xYqC1Ksek6U27visXJvgr+GwjkPvZWo
- s/Her1O1/p7hy3wH1qr7nQD1uSkZT9byL6BJyCRAmh+o0KwWgDlKg/PruC5gtfdekDVV3O0fi0D
- VLuUjBTdShY3zqD+f9pLBrKzJH8vX4c60KQYKTPxwzVsux3N7E1liWIvtRYnLtqABfXUcX1QYEp
- US84TSZPj3z9jOzO8J2L+Yap+JzSw5KHKdj5R/o7PqT11tPGJlvDh5KULKbtKNGI1BclkAHo0yH
- OETHb2v8Srgbssa59a2oZk+AcZCQi5Arq+UO6gcARBlBygIqkAFjIsveLA3wkiijQv5JAyFyGbO
- qHGgjViFV7+i8qVCQx4fBXEMoaPXI+6wG6qh7KWNrVHh13DzcC3Zj/uw5U3uGnJb1ZhUEdK0d3y
- HnQrk2n/i7a7Cugv9LA==
-X-Authority-Analysis: v=2.4 cv=ZZEt8MVA c=1 sm=1 tr=0 ts=6a071ad2 cx=c_pps
- a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
- a=kj9zAlcOel0A:10 a=NGcC8JguVDcA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=uAbxVGIbfxUO_5tXvNgY:22 a=VwQbUJbxAAAA:8
- a=sjeT_KK2IyOrXBOZXBIA:9 a=CjuIK1q_8ugA:10
-X-Proofpoint-GUID: ZjZGrCugJOQQB92ZOLJ9eYiqP6mZu8Ir
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-05-15_03,2026-05-13_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1015 priorityscore=1501 malwarescore=0 bulkscore=0 impostorscore=0
- phishscore=0 spamscore=0 lowpriorityscore=0 suspectscore=0 adultscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2605130000 definitions=main-2605150133
+User-Agent: Mozilla Thunderbird
+Reply-To: kreijack@inwind.it
+Subject: Re: [PATCH 01/19] btrfs: require at least 4 devices for RAID 6
+To: Christoph Hellwig <hch@lst.de>, David Sterba <dsterba@suse.cz>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+ Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>,
+ Ard Biesheuvel <ardb@kernel.org>, Huacai Chen <chenhuacai@kernel.org>,
+ WANG Xuerui <kernel@xen0n.name>, Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
+ "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+ Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
+ Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>,
+ Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>,
+ Alexander Gordeev <agordeev@linux.ibm.com>,
+ Christian Borntraeger <borntraeger@linux.ibm.com>,
+ Sven Schnelle <svens@linux.ibm.com>, Thomas Gleixner <tglx@kernel.org>,
+ Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
+ Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
+ "H. Peter Anvin" <hpa@zytor.com>, Herbert Xu <herbert@gondor.apana.org.au>,
+ Dan Williams <dan.j.williams@intel.com>, Chris Mason <clm@fb.com>,
+ David Sterba <dsterba@suse.com>, Arnd Bergmann <arnd@arndb.de>,
+ Song Liu <song@kernel.org>, Yu Kuai <yukuai@fnnas.com>,
+ Li Nan <linan122@huawei.com>, linux-kernel@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, loongarch@lists.linux.dev,
+ linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org,
+ linux-s390@vger.kernel.org, linux-crypto@vger.kernel.org,
+ linux-btrfs@vger.kernel.org, linux-arch@vger.kernel.org,
+ linux-raid@vger.kernel.org
+References: <20260512052230.2947683-1-hch@lst.de>
+ <20260512052230.2947683-2-hch@lst.de> <20260512114231.GG2558453@suse.cz>
+ <20260513054742.GA1018@lst.de>
+Content-Language: en-US
+From: Goffredo Baroncelli <kreijack@libero.it>
+In-Reply-To: <20260513054742.GA1018@lst.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-CMAE-Envelope: MS4xfIDtr7UvibXhotDq/eGXiDloNUqbPDkdUcxlgBaAHHbQvsiYahHpeNORunqIajszasgr8c3B8z/XyVOyAuN5hf4175nD+vlvtMC0bIY9QJZp6woWJNrG
+ aQk3PfyHHPYy0hAJeCmEsrwL+sXrn8raXvwSVFwja+mNIGcKFygU4bdVw8v1VKDOhOcKheYp3BbVwQqMojH7Fl3INb7gtuRV2KJmyAjSGXNJhncVaQGAWAXT
+ oo9oBSC2F1t8jl/GotUy7wzpLHDbKBEqbAMmtYHdik+INpHro8RYa5E9Xq6OjONzHdXTvo9rbFmCDPwVpbwYHwCe0MqnMSDrNEtco2tbBGAHXZQltPV0OL6m
+ Xs4XHyVNJychZ3wNHl+FP7VInrjAJxVyZarLA6h1GLmH6C7bo7xh7AiFVhmS448mJ7oddw2E4GcHCQLw5nc+mncOBuUBdW8FPmgVqBmLYRW/E1uHf5H7ymxf
+ 7+M72Ab7Lfz5l1ZroO9USEopaT2TBjueXvWWFJeuh+TSc+GQh5CVcLujqqlEOSlSp1R8OM48gPzAiNRzuVncRPYO912eFvGsZNofHbnJZ9P4JQlVvIPXrGUB
+ k7Rksq1+0+/sGJ2glUPm+veTLd0hOFrGOX4ZELZW5Img1Rjh7oT/YM8G+lXjJbJOhlr6dtYSc1AC8AObXM80AsLIGbqAOpJVhPL0SZOZ5g6Eu3Cfm1/Q33as
+ QHSlwOGbMr3uM6BXBwCA/iRSLcteO0RORQvEAQO/e8MiSvc/dUNZzTez6wHixpEXWQgZ9Z2NCRxukJhNoR1Rx4h+eGB19h2fhW2x2HiNZrbKd9S9OcLI88MY
+ VUksbcbJ5ZMjktY8kGFSnH8Sl2ShB0yrH/NgA0RY1roEXSzCGqsE7TP3RQARPk+NJazqFOqfqBBqnZtd5+mQ4UNQ7vAQ8hGUUzJa0YumkRS4nD9X559FZfXe
+ 3QOgg2TlhwAwcQGvb+Ss+4k9h9DXM6VcEJLsA1QfBnYHYKfliz3h16SIG6W9Iv+uyDk540G1k9dytoNAOXtfwInzV/kvD8Gdkx/D5xTLs2Sy2Vsz+fiNYheM
+ RnLdoR588cGVPiQvhFzHmun/E7dTIUBeFfbij8HjYQhlm3iRhm0aHJPBV9Vy9cCHzTY2Xgl9a5O9fV2pbB+fheegaejlj1NEvwMJXnqpW4b7V72sTbFeBBpq
+ sV7UY0G4iFsh4psQSpK2n56bqWeEew5AkQ99Y/kUreS7WeUBfBiERWWaetQDZDCQNQA8U71Vc5hY0RLOFV2Aw7GFB7tuY8UWgz+lrNAODlW3lBkv98wvQAM2
+ elm5SufYC+WToRDZbALHIfeKQaWetyvkUyIdnsY+d8sgX9LlFz8i7BQ2NdF+Kx5bVl5SHJ+7SVGlrENFPkZmuc9c76uB16GUvPNEKCGDocJxGmG4zCOAHF2C
+ /C9IjdfcMCOt4BPR2AQ5I7a7UIHbl/0cLeCT3ndssV7yObVQj8fyrC9JvV103G4ONfKQAFRlbxqOghcPn/SVhhkuA7CbWDbiGwsvIIr4aWyBADP7w9O7YYob
+ oxPW28FwtEbUoi7iCAVuNr75ZuhwG4v9wrI1nPiKemFdJA==
 
-On Wed, May 13, 2026 at 02:35:29PM +0530, Vaibhav Jain wrote:
-> Hey Gautam,
+On 13/05/2026 07.47, Christoph Hellwig wrote:
+> On Tue, May 12, 2026 at 01:42:31PM +0200, David Sterba wrote:
+
 > 
-> Thanks for the patch. Since this patch doesnt have any functional or
-> code change can you please put a 'trivial' suffix to it patch title like
-> [1] or some other suffix indicating its a non-functional change. That
-> way maintainers can easily pull the patch without worrying much about a
-> regression.
+>> The degenerate modes of
+>> raid0, 5, or 6 are explicit as a possible middle step when converting
+>> profiles.  We can use a fallback implementation for this case if the
+>> accelerated implementations cannot do it.
 > 
-> [1]
-> https://git.kernel.org/powerpc/c/d2827e5e2e0f0941a651f4b1ca5e9b778c4b5293
+> This is not about a degenerated mode.  For a degenerated RAID 6, parity
+> generation uses the RAID 5 XOR routines as the second parity will be
+> missing.  This is about generating two parities for a single data disk,
+> which must be explicitly selected.
+> 
 
-Yeah I've mentioned "comments" in the title, so I guess that's fine?
+I think that the David concern is : "what happens for an already
+existing btrfs raid6 3 disks filesystem when the user upgrade the kernel ?"
+(I am thinking when a new BG needs to be allocated)...
 
-Thanks,
-Gautam
+BR
+GB
+
+-- 
+gpg @keyserver.linux.it: Goffredo Baroncelli <kreijackATinwind.it>
+Key fingerprint BBF5 1610 0B64 DAC6 5F7D  17B2 0EDA 9B37 8B82 E0B5
 
