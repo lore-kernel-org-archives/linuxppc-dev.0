@@ -1,73 +1,62 @@
-Return-Path: <linuxppc-dev+bounces-20964-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20965-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 00C70CD4851
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 May 2026 08:33:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D657ECD343F
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 May 2026 08:40:37 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gH0p61v14z2yXj;
-	Fri, 15 May 2026 18:33:18 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778833998;
-	cv=none; b=kbkCG5J8hyT74KBIcLrWfIM7vi2uJzAeK5nx++T45StVKdk+ToKzpPjfJpQ4rGdVOkcVPQ3jwnEm9zGA1KkGfZmrdgzSWzm5lQCcQfV7yqXJQyqU/zLivgkSFAbwKKQ5SAqvwn5MR7ztQTgFx9MXT9wQ7Ez20ySZBP3rgWtaclMSFjSBhDEqT7L18pJlOHGpoR8QjLPpf8Id09NzvCFpPA+b1jniOc6Jgrp8CWFEsrPliH23BFT75zjuet8MJRkB8q7FbUin/Z+DtZqeL6xhfCR5rrf6+b86Lu6ATDFDWhe57hzCSvgVmfPpbEfqcWCN3vapbi1er8lCN1no05ae8g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gH0yX2L32z2yb9;
+	Fri, 15 May 2026 18:40:36 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=198.175.65.21
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778834436;
+	cv=none; b=SsoNAzi+0xhSX37b+P+kiOFRBq7oEUPaQhVBrQKStpkOClMy/ibXS7GkR5f57CrQbasv12pV7NnoclJHn16GrGCV1mrxt/uUgEobetJrNwUsQDk1Dsrd/YytW0swGnua0f//M8oBQw6BKiLgU17EP1XQGOnP5RcRGCCPUuhM3DKjqqC+LeF9WVQSoEoCMNP22T8/0Il10WYiRQD3f5M6YeUmAst+d1c2lj2qWQ6aiX9XcdD61x8KP6S2vkdjLZgrbE37gQnb9kt0zEsfVzdUkQ1mLGFnaMcnFBVeiIrrI6ibXfe9/2m+xCoLTaR3z3aOJdTRBEoFn8yHJPzxZ+jQ8Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1778833998; c=relaxed/relaxed;
-	bh=TaDuseA/itOKlEBn4YEX/bd94cnHw2cIDKLG8NsxiA0=;
+	t=1778834436; c=relaxed/relaxed;
+	bh=RdG29TFBdBx9QQCNNdr8lrTQL/bIfR6gp1jNPsVGW10=;
 	h=Message-ID:Date:MIME-Version:Subject:From:To:Cc:References:
-	 In-Reply-To:Content-Type; b=OsLRtb6DfpGLUhvvNNW3tHaRLMz5g+Qh6yOyNzFeh2ZVfbt6NOKA43ugGwvpjL5roNaEL9WM6ZVLTOdPAJ4ZJvM1fCjr3PAhbbhCPy5EgLuePobATHUEJIuo8V6JP3Q/wT0mxhY1/xjxq3cJoyTKeRz1NGtJhE7GBhIQyheEoPMu1+umkhskuxQ6uXLSwySNSKN71dPzb+C/t6vTDLM+u42PK5nSUre3iZIAShPVO7qdzXKCHaSk33JpaEZ8BhrRRBjr1VnjBAQrk7KXZ+xQBSd4lTJXgks01loKVXJl6RdWQto1wtLYQBub46HMjIYifNZaEoMwnHSQE1snqrcq7A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=jIElVNx4; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=venkat88@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	 In-Reply-To:Content-Type; b=Cdle+iIIzrwZAFPH2kkhpgIFeqm2l5lAYVFWZuq1vjpwZ8mGXEtzsmU+Ubm6LnXArR+vzZl+AAIr9jp0iinCvb/YSDYLQcG1hmC5Kd31w925ox708P7iPt+qe+H2urbK1jAGeKLaF4AcG6W2zPj/Z3hIJwFR+eehVbOvx4je2K4xNg+xJXlh2kn5rxmg2N1TXEKqVo+CpStPDes3MgBLxeGyxvxnPV+dFnRoKmWFWw89eAa6qFSJx8dqyjSXI3UvJpjUGCa6WuFWzzUYFny9vttqLW73hrJNywJJ0KFW/pN7lYXtranH4AC20auzGvKZTpcKfwMbII9/lDP7bUVXgw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=mUNKP/jI; dkim-atps=neutral; spf=pass (client-ip=198.175.65.21; helo=mgamail.intel.com; envelope-from=dapeng1.mi@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=jIElVNx4;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=mUNKP/jI;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=venkat88@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.intel.com (client-ip=198.175.65.21; helo=mgamail.intel.com; envelope-from=dapeng1.mi@linux.intel.com; receiver=lists.ozlabs.org)
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.21])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gH0p53Nxnz2yWK
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 May 2026 18:33:17 +1000 (AEST)
-Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 64EJ72Zo4089555;
-	Fri, 15 May 2026 05:30:00 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=TaDuse
-	A/itOKlEBn4YEX/bd94cnHw2cIDKLG8NsxiA0=; b=jIElVNx43xLKGNI5XGyUdi
-	w6tdO8nAUc6m4mTwYEk7diihX0ij0vlNOyNk5MMJKynSyWzZqtGMg07IJi3N57NQ
-	7hQ4v8Ih4SjU4+ZCTR/gw51LOlZzXI1WLug04W14XkP62TNeSzpG1PLjggVKTpJq
-	fXs4sTPvDAbXCAbtUNMoQRHZQkM2FxN+5283ZV/SbtLY+uuZNz1oBTUXJSnxwraw
-	Lf8mEdMRE0hHga0YmBXmBT+K5RrBtbYyTQ/0+D4z8yHMk7fTO3qxaGtBkyvTkJ1r
-	eHC+zCVPVfr3pyN4/iZBjEtoFHFW3undu+KkqYkgVXLM5i58hEnqPmkigIaUxK9Q
-	==
-Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4e5m93sjvp-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 15 May 2026 05:30:00 +0000 (GMT)
-Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma21.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 64F5O5IP001743;
-	Fri, 15 May 2026 05:29:59 GMT
-Received: from smtprelay05.dal12v.mail.ibm.com ([172.16.1.7])
-	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4e5kvcsuq7-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 15 May 2026 05:29:59 +0000 (GMT)
-Received: from smtpav01.dal12v.mail.ibm.com (smtpav01.dal12v.mail.ibm.com [10.241.53.100])
-	by smtprelay05.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 64F5TwV519792594
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 15 May 2026 05:29:58 GMT
-Received: from smtpav01.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 6A5A558057;
-	Fri, 15 May 2026 05:29:58 +0000 (GMT)
-Received: from smtpav01.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 2352F58058;
-	Fri, 15 May 2026 05:29:57 +0000 (GMT)
-Received: from [9.61.247.83] (unknown [9.61.247.83])
-	by smtpav01.dal12v.mail.ibm.com (Postfix) with ESMTP;
-	Fri, 15 May 2026 05:29:56 +0000 (GMT)
-Message-ID: <d18c4a14-c26f-460e-a04f-2998bc4e9e25@linux.ibm.com>
-Date: Fri, 15 May 2026 10:59:55 +0530
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gH0yT1bfgz2yZ8
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 May 2026 18:40:31 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1778834434; x=1810370434;
+  h=message-id:date:mime-version:subject:from:to:cc:
+   references:in-reply-to:content-transfer-encoding;
+  bh=5s9WkE+DvQbSASeNGK2PjpHgJ41YEOMPYBPgMnpNXpQ=;
+  b=mUNKP/jIPx11ppFj+EuhRcI/sundXQiRJFYFvQlOAWzIdKDtUG+CHnFl
+   GiWyq2UxPHN4sWh9KSR6XZKSSIcyq+EvWerklGBayBjETi2Dg35ghm136
+   Vh6DsU87vjA0blKe0FwV5dzrMqMnWQjvNhDw4xpv2iEPK64oN5b8ArK9M
+   y/cTB/dW7GrsOMIadpt6vfoB+qDcfuC9Smx7T8yu/igh/hA8UHcfpJRpJ
+   BS6wvKLIIZfjxw8zzNrXj4lEteRrQgbFQSc6yPnT6UMVSpcay+EUGppRJ
+   2ozM6gT0fRCeC/BKJRM1+EKnkFbrnMdimL+AaT8yQuWTheWDUM2nBEPvh
+   g==;
+X-CSE-ConnectionGUID: Ll4VBHH9QXSxRCxMM62LNQ==
+X-CSE-MsgGUID: dKJMWIOITGeGBrOluV7ZPQ==
+X-IronPort-AV: E=McAfee;i="6800,10657,11786"; a="79672376"
+X-IronPort-AV: E=Sophos;i="6.23,236,1770624000"; 
+   d="scan'208";a="79672376"
+Received: from fmviesa009.fm.intel.com ([10.60.135.149])
+  by orvoesa113.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 May 2026 23:25:44 -0700
+X-CSE-ConnectionGUID: rj14tv9ATyOibeTzgI0fMA==
+X-CSE-MsgGUID: RdxphKbsSaK0zCOxfA3ADQ==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.23,236,1770624000"; 
+   d="scan'208";a="232215584"
+Received: from dapengmi-mobl1.ccr.corp.intel.com (HELO [10.124.241.147]) ([10.124.241.147])
+  by fmviesa009-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 May 2026 23:25:39 -0700
+Message-ID: <80e5932e-df03-4619-bcd4-375537538c0d@linux.intel.com>
+Date: Fri, 15 May 2026 14:25:36 +0800
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -82,116 +71,285 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: =?UTF-8?Q?Re=3A_=5Bmainline=5D_powerpc/TM=3A_Unexpected_TM_Bad_Thin?=
- =?UTF-8?Q?g_during_core_dump_on_POWER9_=287=2E1=E2=80=91rc1=29?=
-From: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
-To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
-        Madhavan Srinivasan <maddy@linux.ibm.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-        Christophe Leroy <christophe.leroy@csgroup.eu>
-References: <364996ce-aba2-4213-8d20-7dd481b43fe6@linux.ibm.com>
-Content-Language: en-GB
-In-Reply-To: <364996ce-aba2-4213-8d20-7dd481b43fe6@linux.ibm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Subject: Re: [PATCH] tools/perf/test: Check for perf stat return code in perf
+ all PMU test
+From: "Mi, Dapeng" <dapeng1.mi@linux.intel.com>
+To: Ian Rogers <irogers@google.com>, "Falcon, Thomas"
+ <thomas.falcon@intel.com>, "Kleen, Andi" <andi.kleen@intel.com>
+Cc: "atrajeev@linux.ibm.com" <atrajeev@linux.ibm.com>,
+ "venkat88@linux.ibm.com" <venkat88@linux.ibm.com>,
+ "Shivani.Nittor@ibm.com" <Shivani.Nittor@ibm.com>,
+ "tmricht@linux.ibm.com" <tmricht@linux.ibm.com>,
+ "hbathini@linux.vnet.ibm.com" <hbathini@linux.vnet.ibm.com>,
+ "mpetlan@redhat.com" <mpetlan@redhat.com>,
+ "Tanushree.Shah@ibm.com" <Tanushree.Shah@ibm.com>,
+ "Hunter, Adrian" <adrian.hunter@intel.com>,
+ "linux-perf-users@vger.kernel.org" <linux-perf-users@vger.kernel.org>,
+ "maddy@linux.ibm.com" <maddy@linux.ibm.com>, "Chen, Zide"
+ <zide.chen@intel.com>, "vmolnaro@redhat.com" <vmolnaro@redhat.com>,
+ "Tejas.Manhas1@ibm.com" <Tejas.Manhas1@ibm.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "acme@kernel.org" <acme@kernel.org>, "jolsa@kernel.org" <jolsa@kernel.org>,
+ "Mi, Dapeng1" <dapeng1.mi@intel.com>,
+ "namhyung@kernel.org" <namhyung@kernel.org>
+References: <20260315105751.86835-1-atrajeev@linux.ibm.com>
+ <7B7E5C6C-D15A-4B79-925B-B5F3EDD84774@linux.ibm.com>
+ <CAP-5=fWxDouXfCV3Xzk5JdouidUOaNqHBfZaf_c9JoEA8Ft-7g@mail.gmail.com>
+ <ec33d914a3eb3f8cc1a0ad16bf877ff7284072c9.camel@intel.com>
+ <cf702c86-7dea-44af-8dd2-0c27e19da1b5@linux.intel.com>
+ <CAP-5=fWR6v7kKSMVD+ANwMTmOdc4zKLEVY+9tNR5n+kq0F=Mkg@mail.gmail.com>
+ <ec1e04d3-4235-4593-80bb-270a86e6b01f@linux.intel.com>
+Content-Language: en-US
+In-Reply-To: <ec1e04d3-4235-4593-80bb-270a86e6b01f@linux.intel.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: uP4dnc6RwQYcAzrr_oZFpRSHwsTyigzg
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTE1MDA0OCBTYWx0ZWRfX2qd/Z10AKm9f
- N07dbptnmXc3KBAWZ5slVhbnCW5AUF7r43byGE7r39CQl3Du5v9Mz791TXQbBT+5IlOxsNeV+3G
- klC56rj4w/oOYiGDllxFRWO7L+94wWQbAjYVBdzNXJq+uU6O5jppTYgCkGEIb2kOu6OtPXZ0Oef
- tZrChBpTDyIN6RQr43EgutjtSROe6JJJU5HFNa7603fbFmX4mgYAHaZvjP9Qf0a8XVFpxdyRSJc
- rrQoRIK4ZUuOdd8RCCBDvh7BJMD3czMf/qsTlW62Tind6MoUYsLlW8DjF55Ln2C6FodARkoPsKT
- dNaZu9cQ0cUSUCqckPbLSEltxqqjZQXDNKAd2g+akD3c/ineLQ8h9GJE0C1MxBNhy6jyTzyuPxK
- TX2ewCxQhbGkEZrZND9zgWdwrU3hQ+a66lw5I3XCklGI+A91PmNfFlRD2QgpM1kGBIkhDYFJfty
- NlZkV7yqD+sXhnfLDfA==
-X-Authority-Analysis: v=2.4 cv=ZZEt8MVA c=1 sm=1 tr=0 ts=6a06af58 cx=c_pps
- a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
- a=IkcTkHD0fZMA:10 a=NGcC8JguVDcA:10 a=5KLPUuaC_9wA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22 a=uAbxVGIbfxUO_5tXvNgY:22
- a=VnNF1IyMAAAA:8 a=wohju4B2r2WM4v6AVBMA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
-X-Proofpoint-GUID: uP4dnc6RwQYcAzrr_oZFpRSHwsTyigzg
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-05-15_01,2026-05-13_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1015 priorityscore=1501 malwarescore=0 bulkscore=0 impostorscore=0
- phishscore=0 spamscore=0 lowpriorityscore=0 suspectscore=0 adultscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2605130000 definitions=main-2605150048
 
 
-On 28/04/26 5:48 pm, Venkat Rao Bagalkote wrote:
-> Greetings!!
->
-> IBM CI has reported a kernel crash while running 
-> selftests/powerpc/signal on a POWER9 pSeries system.
->
-> I attempted to reproduce this issue manually, but was not successful 
-> so far.
+On 4/7/2026 8:48 AM, Mi, Dapeng wrote:
+> On 4/3/2026 11:39 PM, Ian Rogers wrote:
+>> On Fri, Apr 3, 2026 at 12:36 AM Mi, Dapeng <dapeng1.mi@linux.intel.com> wrote:
+>>> On 4/3/2026 1:32 AM, Falcon, Thomas wrote:
+>>>> On Wed, 2026-04-01 at 13:40 -0700, Ian Rogers wrote:
+>>>>> On Mon, Mar 23, 2026 at 3:40 AM Venkat <venkat88@linux.ibm.com>
+>>>>> wrote:
+>>>>>>> On 15 Mar 2026, at 4:27 PM, Athira Rajeev
+>>>>>>> <atrajeev@linux.ibm.com> wrote:
+>>>>>>>
+>>>>>>> Currently in "perf all PMU test", for "perf stat -e <event>
+>>>>>>> true",
+>>>>>>> below checks are done:
+>>>>>>> - if return code is zero, look for "not supported" to decide pass
+>>>>>>>  scenario
+>>>>>>> - check for "not supported" to ignore the event
+>>>>>>> - looks for "No permission to enable" to skip the event.
+>>>>>>> - If output has "Bad event name", fail the test.
+>>>>>>> - Use "Access to performance monitoring and observability
+>>>>>>> operations is
+>>>>>>>  limited." to ignore fail due to access limitations
+>>>>>>>
+>>>>>>> If we failed to see event and it is supported, retries with
+>>>>>>> longer
+>>>>>>> workload "perf bench internals synthesize".
+>>>>>>> - Here if output has <event>, the test is a pass.
+>>>>>>>
+>>>>>>> Snippet of code check:
+>>>>>>>  ```
+>>>>>>>  output=$(perf stat -e "$p" perf bench internals synthesize 2>&1)
+>>>>>>>  if echo "$output" | grep -q "$p"
+>>>>>>>  ```
+>>>>>>> - if output doesn't have event printed in logs, considers it
+>>>>>>> fail.
+>>>>>>>
+>>>>>>> But this results in false pass for events in some cases.
+>>>>>>> Example, if perf stat fails as below:
+>>>>>>>
+>>>>>>> # ./perf stat -e pmu/event/  true
+>>>>>>> event syntax error: 'pmu/event/'
+>>>>>>>                     \___ Bad event or PMU
+>>>>>>>
+>>>>>>> Unable to find PMU or event on a PMU of 'pmu'
+>>>>>>> Run 'perf list' for a list of valid events
+>>>>>>>
+>>>>>>>  Usage: perf stat [<options>] [<command>]
+>>>>>>>
+>>>>>>>    -e, --event <event>   event selector. use 'perf list' to list
+>>>>>>> available events
+>>>>>>> # echo $?
+>>>>>>> 129
+>>>>>>>
+>>>>>>> Since this has non-zero return code and doesn't have the
+>>>>>>> fail strings being checked in the test, it will enter check using
+>>>>>>> longer workload. and since the output fail log has event, it
+>>>>>>> declares test as "supported".
+>>>>>>>
+>>>>>>> Since all the fail strings can't be added in the check, update
+>>>>>>> the testcase to check return code before proceeding to longer
+>>>>>>> workload run.
+>>>>>>>
+>>>>>>> Another missing scenario is when system wide monitoring is
+>>>>>>> supported
+>>>>>>> example:
+>>>>>>> # ./perf stat -e pmu/event/ true
+>>>>>>> Error:
+>>>>>>> No supported events found.
+>>>>>>>  Unsupported event (pmu/event/H) in per-thread mode, enable
+>>>>>>> system wide with '-a'.
+>>>>>>>
+>>>>>>> Update testcase to check with "perf stat -a -e $p" as well
+>>>>>>>
+>>>>>>> Signed-off-by: Athira Rajeev <atrajeev@linux.ibm.com>
+>>>>>>> ---
+>>>>>> Tested this patch.
+>>>>>>
+>>>>>>
+>>>>>> With this patch:
+>>>>>>
+>>>>>> Testing hv_24x7/CPM_ADJUNCT_INST/ -- perf stat failed with non-zero
+>>>>>> return code
+>>>>>> Testing hv_24x7/CPM_ADJUNCT_PCYC/ -- perf stat failed with non-zero
+>>>>>> return code
+>>>>>>
+>>>>>>
+>>>>>>
+>>>>>> Tested-by: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
+>>>>> Testing on an Intel Alderlake the test is now failing:
+>>>>> ```
+>>>>> ...
+>>>>> Testing offcore_requests_outstanding.l3_miss_demand_data_rd --
+>>>>> supported
+>>>>> Testing ocr.full_streaming_wr.any_response -- perf stat failed with
+>>>>> non-zero return code
+>>>>> Testing ocr.partial_streaming_wr.any_response -- perf stat failed
+>>>>> with
+>>>>> non-zero return code
+>>>>> Testing ocr.streaming_wr.any_response -- supported
+>>>>> ...
+>>>>> ```
+>>>>>
+>>>>> Running `perf stat` manually reveals an issue with the event:
+>>>>> ```
+>>>>> $ sudo perf stat -vv -e ocr.full_streaming_wr.any_response -a sleep
+>>>>> 1
+>>>>> Using CPUID GenuineIntel-6-B7-1
+>>>>> Attempt to add: cpu_atom/ocr.full_streaming_wr.any_response/
+>>>>> ..after resolving event:
+>>>>> cpu_atom/event=0xb7,period=0x186a3,umask=0x1,offcore_rsp=0x8000000100
+>>>>> 00/
+>>>>> ocr.full_streaming_wr.any_response ->
+>>>>> cpu_atom/ocr.full_streaming_wr.any_response/
+>>>>> Control descriptor is not initialized
+>>>>> ------------------------------------------------------------
+>>>>> perf_event_attr:
+>>>>>  type                             10 (cpu_atom)
+>>>>>  size                             144
+>>>>> ------------------------------------------------------------
+>>>>> perf_event_attr:
+>>>>>  type                             0 (PERF_TYPE_HARDWARE)
+>>>>>  config                           0xa00000000
+>>>>> (cpu_atom/PERF_COUNT_HW_CPU_CYCLES/)
+>>>>>  disabled                         1
+>>>>> ------------------------------------------------------------
+>>>>> sys_perf_event_open: pid 0  cpu -1  group_fd -1  flags 0x8 = 3
+>>>>> ------------------------------------------------------------
+>>>>> perf_event_attr:
+>>>>>  type                             0 (PERF_TYPE_HARDWARE)
+>>>>>  config                           0x400000000
+>>>>> (cpu_core/PERF_COUNT_HW_CPU_CYCLES/)
+>>>>>  disabled                         1
+>>>>> ------------------------------------------------------------
+>>>>> sys_perf_event_open: pid 0  cpu -1  group_fd -1  flags 0x8 = 3
+>>>>>  config                           0x1b7
+>>>>> (ocr.demand_data_rd.l3_hit.snoop_hit_no_fwd)
+>>>>>  sample_type                      IDENTIFIER
+>>>>>  read_format
+>>>>> TOTAL_TIME_ENABLED|TOTAL_TIME_RUNNING
+>>>>>  disabled                         1
+>>>>>  inherit                          1
+>>>>>  { bp_addr, config1 }             0x800000010000
+>>>>> ------------------------------------------------------------
+>>>>> sys_perf_event_open: pid -1  cpu 16  group_fd -1  flags 0x8
+>>>>> sys_perf_event_open failed, error -22
+>>>>> switching off deferred callchain support
+>>>>> Warning:
+>>>>> ocr.full_streaming_wr.any_response event is not supported by the
+>>>>> kernel.
+>>>>> The sys_perf_event_open() syscall failed for event
+>>>>> (ocr.full_streaming_wr.any_response): Invalid argument
+>>>>> "dmesg | grep -i perf" may provide additional information.
+>>>>>
+>>>>> Error:
+>>>>> No supported events found.
+>>>>> The sys_perf_event_open() syscall failed for event
+>>>>> (ocr.full_streaming_wr.any_response): Invalid argument
+>>>>> "dmesg | grep -i perf" may provide additional information.
+>>>>> ```
+>>>>>
+>>>>> This looks like a latent Intel cpu_atom PMU bug. Thomas, wdyt?
+>>> Hmm, it looks the error is caused by the invalid bitmask of OFFCORE_RSP_x
+>>> MSRs. Currently the valid bitmask of OFFCORE_RSP_x MSR is set to
+>>> 0x3fffffffff in intel_grt_extra_regs[], while the msr value is set
+>>> 0x800000010000 for the ocr.full_streaming_wr.any_response event. The bit 47
+>>> is recognized an invalid bit and then abort the event creation.
+>>>
+>>> Base on the description "Table 21-56. MSR_OFFCORE_RSPx Request Type
+>>> Definition" in SDM, bit 47 should be a valid bit now. Suppose bit 47 should
+>>> not be a valid bit when adding the ADL PMU support, but it's updated and
+>>> becomes valid later.
+>>>
+>>> Along with the constant updates of perf event lists
+>>> (https://github.com/intel/perfmon), we have noticed there are mismatches
+>>> more or less between the driver hardcoded events and perfmon event list.
+>>> Currently we are summarizing the mismatches. Once these mismatches are
+>>> finalized. we would submit a patchset to fix these mismatches.
+>> That's great, if it takes too long perhaps we could just remove the
+>> events for now.
+> Suppose it won't be too long. I plan to post the patchset in next release
+> cycle. The code changes are simple but need much time to verify on all
+> kinds of platforms. Thanks.
 
-I’m now able to reproduce this issue reliably and consistently. The 
-reproduction steps are simple:
+The patch
+(https://lore.kernel.org/all/20260515061143.338553-5-dapeng1.mi@linux.intel.com/)
+would fix this issue. Thanks.
 
-Run selftests/powerpc/signal
-
-
-Regards,
-
-Venkat.
 
 >
-> Below are the details of the crash as reported by CI.
 >
-> Crash Details:
->
-> [ 9798.880148] Unexpected TM Bad Thing exception at c00000000000dbac
->                (msr 0x8000000302a03031) tm_scratch=800000010280b033
-> [ 9798.880160] Oops: Unrecoverable exception, sig: 6 [#1]
-> [ 9798.880165] LE PAGE_SIZE=64K MMU=Hash SMP NR_CPUS=8192 NUMA pSeries
-> [ 9798.880173] Modules linked in: nvram(E) rpadlpar_io(E) rpaphp(E) ...
-> [ 9798.880233] CPU: 8 UID: 0 PID: 1039530 Comm: sigfuz
->                Tainted: G            E       7.1.0-rc1 #1 PREEMPT
-> [ 9798.880245] Hardware name: IBM,8375-42A POWER9 (architected)
->                hv:phyp pSeries
-> [ 9798.880251] NIP:  c00000000000dbac LR: 0000000010001e58
-> [ 9798.880262] MSR:  8000000302a03031 <SF,VEC,VSX,FP,ME,IR,DR,LE,TM[SE]>
->
->
-> Call Trace:
->
->
-> NIP [c00000000000dbac] interrupt_return_srr_kernel+0x15c/0x18c
-> Call Trace:
->  tm_reclaim_thread
->  flush_tmregs_to_thread
->  vsr_get
->  regset_get_alloc
->  fill_thread_core_info.isra.0
->  fill_note_info
->  elf_core_dump
->  coredump_write
->  do_coredump
->  vfs_coredump
->  get_signal
->  do_signal
->  do_notify_resume
->  interrupt_exit_user_prepare_main
->  interrupt_exit_user_prepare
->  interrupt_return_srr_user
->
->
-> Please let me know if further details are required.
->
->
-> If you happen to fix this issue, please add below tag.
->
-> Reported-by: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
->
->
->
-> Regards,
->
-> Venkat.
->
->
+>> Thanks,
+>> Ian
+>>
+>>> Thanks.
+>>>
+>>>> +Dapeng, Zide, Andi
+>>>>
+>>>> Thanks,
+>>>> Tom
+>>>>
+>>>>> Thanks,
+>>>>> Ian
+>>>>>
+>>>>>> Regards,
+>>>>>> Venkat.
+>>>>>>
+>>>>>>
+>>>>>>
+>>>>>>> tools/perf/tests/shell/stat_all_pmu.sh | 20 ++++++++++++++++++++
+>>>>>>> 1 file changed, 20 insertions(+)
+>>>>>>>
+>>>>>>> diff --git a/tools/perf/tests/shell/stat_all_pmu.sh
+>>>>>>> b/tools/perf/tests/shell/stat_all_pmu.sh
+>>>>>>> index 9c466c0efa85..6c4d59cbfa5f 100755
+>>>>>>> --- a/tools/perf/tests/shell/stat_all_pmu.sh
+>>>>>>> +++ b/tools/perf/tests/shell/stat_all_pmu.sh
+>>>>>>> @@ -53,6 +53,26 @@ do
+>>>>>>>     continue
+>>>>>>>   fi
+>>>>>>>
+>>>>>>> +  # check with system wide if it is supported.
+>>>>>>> +  output=$(perf stat -a -e "$p" true 2>&1)
+>>>>>>> +  stat_result=$?
+>>>>>>> +  if echo "$output" | grep -q "not supported"
+>>>>>>> +  then
+>>>>>>> +    # Event not supported, so ignore.
+>>>>>>> +    echo "not supported"
+>>>>>>> +    continue
+>>>>>>> +  fi
+>>>>>>> +
+>>>>>>> +  # checked through possible access limitations and permissions.
+>>>>>>> +  # At this step, non-zero return code from "perf stat" needs to
+>>>>>>> +  # reported as fail for the user to investigate
+>>>>>>> +  if [ $stat_result -ne 0 ]
+>>>>>>> +  then
+>>>>>>> +    echo "perf stat failed with non-zero return code"
+>>>>>>> +    err=1
+>>>>>>> +    continue
+>>>>>>> +  fi
+>>>>>>> +
+>>>>>>>   # We failed to see the event and it is supported. Possibly the
+>>>>>>> workload was
+>>>>>>>   # too small so retry with something longer.
+>>>>>>>   output=$(perf stat -e "$p" perf bench internals synthesize
+>>>>>>> 2>&1)
+>>>>>>> --
+>>>>>>> 2.47.3
+>>>>>>>
 
