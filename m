@@ -1,77 +1,86 @@
-Return-Path: <linuxppc-dev+bounces-20985-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20986-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 74795CD4F25
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 May 2026 15:51:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A0E1ECD343F
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 May 2026 16:04:42 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gHBX64FRfz2xTl;
-	Sat, 16 May 2026 01:51:50 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778860310;
-	cv=none; b=CRsiGV5Pa3AGSMqcsMH0/uok+dpPu2m9vHUKSSUBp7JA9ODhr79fjDonB5Qwsb8iWyygXYAn8keS7Cze5AxeQ9PKrIXbbn/XM4NPVeKQj0zJpf3fKOZRTE87E7kvRWXhODo9sShc49mRQObbFqhHlFUit05VNhnNMyhCwI854CQCWszldjBmG1LScu7zEPOid1LvSDJaQK5O5V1UwXp4RPpBRX2Zp57/3oDrpa26bEoC6quihPuGS5HZstpJZqoguT0u4fBXm4lVFUpgZUb0FUBB3KERlrsUvn7x+BRy16GYUyt2Q5yqDht+nYbI1PMjKTz/6uT1zCUFxm+5EKlm+A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gHBpx0Kzwz2xnH;
+	Sat, 16 May 2026 02:04:41 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::435"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778861081;
+	cv=none; b=lkJC37L7oTVWru4B4/XKPkUhVWCJWRCNa7cBYmmefu5tvpQ3WWJteZsTbRmafzUl9cZEGPsLxfkAlt3Xyea6yLAgLK4sd0PdAGB7YM0FeB1lan1nA/GyRPmE392twk8FYEam1T52o/kBP/64bH0mxOYIvPaVgUFBw9j7bVXFwViZwCKChwErwN5UlVzz2cKmSHsZmWrneFPB088kUtyR1gR/JcewyZfu4S3AzSLDDGamLdACb67RQFqCycrngymuA6O6jmEskFtqY2khTyIwibyiX3C5lms7fvnpP2E7Jsv1rl37ESClLhm9FTYrLXWmsMTYYz+OUDjc3JBfavWfxA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1778860310; c=relaxed/relaxed;
-	bh=duReQAfsNR9OgUiFC1IjxrxHBNB8vEoP6dAxA6ZbOhU=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=NIDerqoedRhgTvVwQ5u0omp4i4BlfSxUur+QFurtKyQO6VJYdcFxD7k07qOWvRGrvlbf9SwSyzP9dgOaYnYGAGtiqPssHNV85yg/GsBcJuxkleFVRWXgH2FLcoxyQaicIZbwE0PZ8R+acVDez1P+hw1mIqtjWKASiEBirbmHqtP9nVnqPB1XDPMHPyrD+7oJF6tUbECOYJRhPIDvOZ79Co0s7m7BvPzTItUPzH86DloT1xUMXpbgZFwD8/SIOVOMD7UE1JQn4umStkf3hV7pmzrEiYPxvCwd+7qy0prlsWc6Pc/2xaSaNp3ciI2xxUGa/RS8XlLkUqmRdMw5PHu1LQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=gGBr7b5r; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=gbatra@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1778861081; c=relaxed/relaxed;
+	bh=/qI88RwCNnWnFb4fjGmxbgcnIrnRtogWwTEfP7LNxqs=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=ejJKImM3p4A2V0dFBAsWmk18V+cAxk9X76mVIQtuZOfMxmQdRZIberb2EEwj+X5Ue8a+qWTAenmgLzuHGLcuDf7gHS1J9MH1qVHOBadjM9K/6ypstlISvQNZMcnl8Lrc0kNBb/RbqMo9Es/mFUsIaPDFk/zLGVjF8moZgzO8nWv+Z6e3SEjrRJwRfGS/hiGREpy1h+t3eSdW4gu4KzSRJhKo47qIZCrExx8ve1HSpe+hlH1tp/ynbNvNaXxhQspxVtEnWyd/9UDwmMjuSOwPcNAwjnkvTNpY85Tt7Mk5AeUbmUnp51WJmxcRzX/2HUgZC1S2nA9zVAiNBelxyVHPGg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=i2qwBvff; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::435; helo=mail-pf1-x435.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=gGBr7b5r;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=i2qwBvff;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=gbatra@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::435; helo=mail-pf1-x435.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pf1-x435.google.com (mail-pf1-x435.google.com [IPv6:2607:f8b0:4864:20::435])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gHBX56Dv5z2xHF
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 May 2026 01:51:48 +1000 (AEST)
-Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 64FBPR8k3950769
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 May 2026 15:51:47 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:message-id:mime-version
-	:subject:to; s=pp1; bh=duReQAfsNR9OgUiFC1IjxrxHBNB8vEoP6dAxA6ZbO
-	hU=; b=gGBr7b5rzMcigfPP6D3XJl5x39mnFBRi6YmLVjdd5ctIXhQBOZSFpNWzM
-	Kj3xjw8ilIzyKWZxdIQ9GcTuddrDCLjnO0PfFW51P4x9M8ZLkXZ+blLr6lr78AmX
-	tzyxb/8LMEIhN5ypEGHNZLS0eMgOeEzhcfJ2XA24PWf+X10Hx0wKKcqaOB8eTgzf
-	Tn2DHeMXNIagRzbWVlidlHgrzTCXR3kbre1hoGQS6jczpeSCMuhwWSqCfn3NfNun
-	e9X56c4cCSKO4oVTgI5ZIOmskAGJ+8M9z5NLhDjMs4NpQQfhqMzbEEKCrnJR9qnd
-	a3bO11dEiQ37u7NaJSNOI2YTfGdzQ==
-Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4e5m8yc00a-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 15 May 2026 15:51:46 +0000 (GMT)
-Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma21.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 64FFd5g7022839;
-	Fri, 15 May 2026 15:51:45 GMT
-Received: from smtprelay03.dal12v.mail.ibm.com ([172.16.1.5])
-	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4e5kvcv6se-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 15 May 2026 15:51:45 +0000 (GMT)
-Received: from smtpav03.dal12v.mail.ibm.com (smtpav03.dal12v.mail.ibm.com [10.241.53.102])
-	by smtprelay03.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 64FFpiLC30409232
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 15 May 2026 15:51:44 GMT
-Received: from smtpav03.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 1026B5805A;
-	Fri, 15 May 2026 15:51:44 +0000 (GMT)
-Received: from smtpav03.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id CDEB958056;
-	Fri, 15 May 2026 15:51:43 +0000 (GMT)
-Received: from dhcp-9-16-48-107.atx-us.ibm.com (unknown [9.16.48.107])
-	by smtpav03.dal12v.mail.ibm.com (Postfix) with ESMTP;
-	Fri, 15 May 2026 15:51:43 +0000 (GMT)
-From: Gaurav Batra <gbatra@linux.ibm.com>
-To: maddy@linux.ibm.com
-Cc: linuxppc-dev@lists.ozlabs.org, ritesh.list@gmail.com, sbhat@linux.ibm.com,
-        vaibhav@linux.ibm.com, donettom@linux.ibm.com, harshpb@linux.ibm.com,
-        Gaurav Batra <gbatra@linux.ibm.com>
-Subject: [PATCH v3] powerpc/pseries/iommu: Add TCEs for 16GB pages when RAM is pre-mapped
-Date: Fri, 15 May 2026 10:51:43 -0500
-Message-ID: <20260515155143.39050-1-gbatra@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gHBpv1TxFz2xTl
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 May 2026 02:04:38 +1000 (AEST)
+Received: by mail-pf1-x435.google.com with SMTP id d2e1a72fcca58-83975e992e1so4685413b3a.2
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 May 2026 09:04:38 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1778861076; x=1779465876; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=/qI88RwCNnWnFb4fjGmxbgcnIrnRtogWwTEfP7LNxqs=;
+        b=i2qwBvffUS2OhkygztUfAllPKK5RbHx8+fuI2Hd/A2dcxBynmk8sws3ccyWIpbwk+d
+         5cWXAUT/g9gqvjYxHG7aOk/8R9fa958xUApmbji8zHFdixnPt3x+UNkNlxxc5Sw3sUci
+         9pdIlx0DcoozQNxl3iOReeHZwBiNUhFbAIENaLTPl3Tlv20jsxdMN6/Wi/1EvMR7UKEP
+         q1vupU54TVeMdwQim/Recv5ao+j00sTeQbesNyOmwP3WdA828avETUyvg7tjpteeXZYb
+         4/S4lE6bbHW6ptO2jKMFs0uWTdX1ZzS7GssqDFVfMCqrkCTSvm3C2VhZXuw6sEaNjjzp
+         Fl2g==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1778861076; x=1779465876;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=/qI88RwCNnWnFb4fjGmxbgcnIrnRtogWwTEfP7LNxqs=;
+        b=jsstP0VPt0GyAFPl1XxhvpV6M3okm3wSMfT4jAirPk/Q9Mdas8QyzDXlt3IFKSjLYs
+         aD0kflrAjbzj+vnz5nq7twtf53uJareCXD9YDt9a8mjL+OTSIiEulhAK3oA3qpQ0vA6H
+         3OEbjhO8ibes3qchO5HEwJi4T6rjlGOvdU5L4xOUeAzhc+hQla9JXKxtssit7qDVMmKi
+         JlTyZ0yyj+IVKwKUASRCzzMQ1rHxhp3xm9F+Vm1GVlZN1P7yrk72iR4XwQ4U30ECryRN
+         urpw/Yrtn4mXkq2KRDH/78uUL5ZnfA1I7wqAtZJ9nYtsCIm9v8MOGf5xtQ2OdgADcE+Y
+         JspQ==
+X-Gm-Message-State: AOJu0YyrdHnDQg3s9391kf8fZRIajaFTQfF0pl8e/n4DoiOHQX1NYRXg
+	zGY8i8ZiL8J+ww2fM8bJ+aXUJuE18LDAvJt7+Kk451OL6GTpULmqn54K
+X-Gm-Gg: Acq92OGYiIXIuWg+OPmh5i73bEDUebgrAO0rFRdTOScbpenIGcb6V1G5u+8B7zVr9uB
+	lp9syXLrGCL5aDo9nhwlnrFhPcJVvlqQkQNGKm1V+XWIZ8xX5xybPT3tQGbavJkTj92iPxWlbO7
+	IWg7TfSPcluia/ELopsfzHubXN/UHFo0T2rB/uF4ve/huwJwdLQCFd2jagp63+he3rI3ynw0R76
+	0IrIZ3vcbNHBSBiZP0S6F1c91AA0ISJhLwR7pLPMQyKRTdYcC7929l+87sDobfgMzsLN2rSIVy7
+	RNwangU+oTS1M1aF3svC7WZGiunB08rxQ644oXYSXO3xo18rcwgtF1UuV46CxmFXF8Ka9d0X552
+	qXSG6tc7RGoeka34CYwMX7AGRoBr1j6hw32KgcI9PbfuFI2NpRI6Xvm5tmbh3for0veBd1MYQhl
+	MsT2845IYjvxS9uok6Lvjwgwy8rQ7FTI3v7dmlo22em/Xw+by1YHkKmxesNunqsNg=
+X-Received: by 2002:a05:6a00:cd4:b0:82f:b0:28f0 with SMTP id d2e1a72fcca58-83f33cbc0fcmr5625295b3a.34.1778861075925;
+        Fri, 15 May 2026 09:04:35 -0700 (PDT)
+Received: from localhost.localdomain ([171.76.86.174])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-83f19c7c74fsm7920262b3a.49.2026.05.15.09.04.32
+        (version=TLS1_3 cipher=TLS_CHACHA20_POLY1305_SHA256 bits=256/256);
+        Fri, 15 May 2026 09:04:35 -0700 (PDT)
+From: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
+To: kvm@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Harsh Prateek Bora <harshpb@linux.ibm.com>,
+	Christophe Leroy <chleroy@kernel.org>,
+	Venkat Rao Bagalkote <venkat88@linux.ibm.com>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	linux-kernel@vger.kernel.org,
+	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
+Subject: [RFC 0/4] KVM: selftests: add powerpc support
+Date: Fri, 15 May 2026 21:34:19 +0530
+Message-ID: <cover.1778857539.git.ritesh.list@gmail.com>
 X-Mailer: git-send-email 2.50.1
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -87,236 +96,67 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-GUID: ix7t_1sN364Cwa1lyk8LeCtMTQ_5MhOb
-X-Authority-Analysis: v=2.4 cv=Os5/DS/t c=1 sm=1 tr=0 ts=6a074112 cx=c_pps
- a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
- a=NGcC8JguVDcA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=U7nrCbtTmkRpXpFmAIza:22 a=VnNF1IyMAAAA:8 a=8VRwuDZYO3urSD4AI04A:9
-X-Proofpoint-ORIG-GUID: bdpO8m6pYw04TUmzzUQqd7N05vsOh_P8
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTE1MDE1OSBTYWx0ZWRfX4EJ1myWOutKl
- VmvQGefqTSpc2c2r/86PiXBN998fl1x0zvDaE9JwoBOJAwAkWYMbnvKof05FGrje0i5gCD+Jg7D
- NHFTN2nvh+C+mRYR/KB8Q5/dDMo6nxa//kfahIKZQrHoljBxmFweVs1MsX2Bzm1//6VS2GBmyEf
- 01tyWWrwtUfUBO4kY/unWeIaJVuMrLiaw8CuxeqNZy/1CluBJamAuKGd+BYIxG/2r7ZCjB0Pws2
- 7fE98jX5Sd2VFwILlzDMj6wwL91GkE3dzVKYoVa0KMB2KrTPYXiuuyvU9dCJETgcM2sPD4yRtUO
- mtVbymdrXRJcfwmSOqLxXirax3MyiIJgKPissJX4VGA2+y7U61njFWbv2U0QRcEwZWP3Oy+HeUl
- VhnXhE2XfPZXXN46Qf/KFt4lbZGu7ojBrVjT+ZmKitAUE+RAYgwKE8qknrIzoi8AV9bPRWO5+Mc
- +IvgiUT/YwLQsVF+quA==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-05-15_03,2026-05-15_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- spamscore=0 phishscore=0 impostorscore=0 clxscore=1015 lowpriorityscore=0
- adultscore=0 malwarescore=0 priorityscore=1501 bulkscore=0 suspectscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2605130000 definitions=main-2605150159
 
-In powerPC, if Dynamic DMA Window is big enough, RAM is pre-mapped. To
-determine the size of RAM, a PAPR+ property "ibm,lrdr-capacity" is used.
-This OF property dictates what is the max size of RAM an LPAR can have,
-including DR added memory.
+Hi All,
 
-In PowerPC, 16GB pages can be allocated at machine level and then
-assigned to LPARs. These 16GB pages are added to LPAR memory at the time
-of boot. The address range for these 16GB pages is above MAX RAM an LPAR
-can have (ibm,lrdr-capacity). In the current implementation, these 16GB
-pages are being excluded from pre-mapped TCEs. A driver can have DMA
-buffers allocated from 16GB pages. This results in platform to raise an
-EEH when DMA is attempted on buffers in 16GB memory range.
+This series primarly adds KVM selftests support for powerpc (64-bit, BookS,
+radix MMU).
 
-commit 6aa989ab2bd0 ("powerpc/pseries/iommu: memory notifier incorrectly
-adds TCEs for pmemory")
+This patch series is originally Nick's work. I have mainly only rebased it on
+the latest upstream tree. Since the rebase required few changes to all four
+patches, I have dropped the earlier Acked-by from Michael Ellerman.
 
-Prior to the above patch, memblock_end_of_DRAM() was being used to
-determine the MAX memory of an LPAR. This included 16GB pages as well.
-The issue with using memblock_end_of_DRAM() is that when pmemory is
-converted to RAM via daxctl command, the DDW engine will incorrectly try
-to add TCEs for pmemory as well.
+Since the last series was posted three years ago [1], I am resetting the
+version to RFC and posting an early version (few tests still pending) for
+getting any early review comments. BTW, I ran this on P9 (PowerNV) with radix
+and haven't found any regressions so far. 
 
-Below is the address distribution of RAM, 16GB pages and pmemory for an
-LPAR with max memory of 256GB, memory allocated 64GB, 2 16GB pages and
-assigned pmemory of 8GB.
-
-RANGE                                 SIZE  STATE REMOVABLE     BLOCK
-0x0000000000000000-0x0000000fffffffff  64G online       yes     0-255
-0x0000004000000000-0x00000047ffffffff  32G online       yes 1024-1151
-
-cat /sys/bus/nd/devices/region0/resource
-0x40100000000
-cat /sys/bus/nd/devices/region0/size
-8589934592
-
-The approach to fix this problem is to revert back the code changes
-introduced by the above patch and to stash away the MAX memory of an
-LPAR, including 16GB pages, at the LPAR boot time. This value is then
-used whenever TCEs are needed to be pre-mapped - enable_DDW() or,
-iommu_mem_notifier()
-
-Fixes: 6aa989ab2bd0 ("powerpc/pseries/iommu: memory notifier incorrectly adds TCEs for pmemory")
-Signed-off-by: Gaurav Batra <gbatra@linux.ibm.com>
----
-
-Change log:
-
-V2 -> V3
-
-1. Harsh: Remove R-b tags from the change log
-
-   Response: Incorporated changes
-
-2. Harsh: Change WARN_ON() to WARN_ONCE()
-
-   Response: Incorporated changes
-
-3. Harsh: Fix indendation
-
-   Response: Incorporated changes
-
-4. Harsh: Replace comment with a log if limit < arg->nr_pages ? 
-
-   Response: Doesn't seems to be needed since the WARN_ONCE() will log this
-   scenario. I removed the comment instead.
-
-V1 -> V2
-
-1. Harsh: Not only start_pfn, but end_pfn also needs to be within allowed
-   range, which may require clamping arg->nr_pages if crossing the limits.
-
-   Response: Incorporated changes.
-
- arch/powerpc/platforms/pseries/iommu.c | 58 ++++++++++++++++++--------
- 1 file changed, 41 insertions(+), 17 deletions(-)
-
-diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
-index 3e1f915fe4f6..7bbe070006fa 100644
---- a/arch/powerpc/platforms/pseries/iommu.c
-+++ b/arch/powerpc/platforms/pseries/iommu.c
-@@ -69,6 +69,8 @@ static struct iommu_table *iommu_pseries_alloc_table(int node)
- 	return tbl;
- }
+Note that I am planning to run this selftests with different configurations as
+well on PowerPC and will share the test results soon. This rebase was done as
+part of a larger effort to improve the selftests infrastructure for Linux on
+PowerPC tree. Thanks to Harsh and Maddy for their help on this.
  
-+static phys_addr_t pseries_ddw_max_ram;
-+
- #ifdef CONFIG_IOMMU_API
- static struct iommu_table_group_ops spapr_tce_table_group_ops;
- #endif
-@@ -1285,13 +1287,17 @@ static LIST_HEAD(failed_ddw_pdn_list);
- 
- static phys_addr_t ddw_memory_hotplug_max(void)
- {
--	resource_size_t max_addr;
-+	resource_size_t max_addr = memory_hotplug_max();
-+	struct device_node *memory;
- 
--#if defined(CONFIG_NUMA) && defined(CONFIG_MEMORY_HOTPLUG)
--	max_addr = hot_add_drconf_memory_max();
--#else
--	max_addr = memblock_end_of_DRAM();
--#endif
-+	for_each_node_by_type(memory, "memory") {
-+		struct resource res;
-+
-+		if (of_address_to_resource(memory, 0, &res))
-+			continue;
-+
-+		max_addr = max_t(resource_size_t, max_addr, res.end + 1);
-+	}
- 
- 	return max_addr;
- }
-@@ -1446,7 +1452,7 @@ static struct property *ddw_property_create(const char *propname, u32 liobn, u64
- static bool enable_ddw(struct pci_dev *dev, struct device_node *pdn, u64 dma_mask)
- {
- 	int len = 0, ret;
--	int max_ram_len = order_base_2(ddw_memory_hotplug_max());
-+	int max_ram_len = order_base_2(pseries_ddw_max_ram);
- 	struct ddw_query_response query;
- 	struct ddw_create_response create;
- 	int page_shift;
-@@ -1668,7 +1674,7 @@ static bool enable_ddw(struct pci_dev *dev, struct device_node *pdn, u64 dma_mas
- 
- 	if (direct_mapping) {
- 		/* DDW maps the whole partition, so enable direct DMA mapping */
--		ret = walk_system_ram_range(0, ddw_memory_hotplug_max() >> PAGE_SHIFT,
-+		ret = walk_system_ram_range(0, pseries_ddw_max_ram >> PAGE_SHIFT,
- 					    win64->value, tce_setrange_multi_pSeriesLP_walk);
- 		if (ret) {
- 			dev_info(&dev->dev, "failed to map DMA window for %pOF: %d\n",
-@@ -2419,23 +2425,35 @@ static int iommu_mem_notifier(struct notifier_block *nb, unsigned long action,
- {
- 	struct dma_win *window;
- 	struct memory_notify *arg = data;
-+	unsigned long limit = arg->nr_pages;
-+	unsigned long max_ram_pages = pseries_ddw_max_ram >> PAGE_SHIFT;
- 	int ret = 0;
- 
- 	/* This notifier can get called when onlining persistent memory as well.
- 	 * TCEs are not pre-mapped for persistent memory. Persistent memory will
--	 * always be above ddw_memory_hotplug_max()
-+	 * always be above pseries_ddw_max_ram
- 	 */
-+	if (arg->start_pfn >= max_ram_pages)
-+		return NOTIFY_OK;
-+
-+	/* RAM is being DLPAR'ed. The range should never exceed max ram.
-+	 * Just in case, clamp the range and throw a warning.
-+	 */
-+	if (arg->start_pfn + limit > max_ram_pages) {
-+		limit = max_ram_pages - arg->start_pfn;
-+		WARN_ONCE(1, "Limiting Page Range %lx - %lx to Max Mem Pages: %lx\n",
-+					arg->start_pfn, arg->start_pfn + arg->nr_pages,
-+					max_ram_pages);
-+	}
- 
- 	switch (action) {
- 	case MEM_GOING_ONLINE:
- 		spin_lock(&dma_win_list_lock);
- 		list_for_each_entry(window, &dma_win_list, list) {
--			if (window->direct && (arg->start_pfn << PAGE_SHIFT) <
--				ddw_memory_hotplug_max()) {
-+			if (window->direct) {
- 				ret |= tce_setrange_multi_pSeriesLP(arg->start_pfn,
--						arg->nr_pages, window->prop);
-+						limit, window->prop);
- 			}
--			/* XXX log error */
- 		}
- 		spin_unlock(&dma_win_list_lock);
- 		break;
-@@ -2443,12 +2461,10 @@ static int iommu_mem_notifier(struct notifier_block *nb, unsigned long action,
- 	case MEM_OFFLINE:
- 		spin_lock(&dma_win_list_lock);
- 		list_for_each_entry(window, &dma_win_list, list) {
--			if (window->direct && (arg->start_pfn << PAGE_SHIFT) <
--				ddw_memory_hotplug_max()) {
-+			if (window->direct) {
- 				ret |= tce_clearrange_multi_pSeriesLP(arg->start_pfn,
--						arg->nr_pages, window->prop);
-+						limit, window->prop);
- 			}
--			/* XXX log error */
- 		}
- 		spin_unlock(&dma_win_list_lock);
- 		break;
-@@ -2532,6 +2548,14 @@ void __init iommu_init_early_pSeries(void)
- 	register_memory_notifier(&iommu_mem_nb);
- 
- 	set_pci_dma_ops(&dma_iommu_ops);
-+
-+	/* During init determine the max memory an LPAR can have and set it. This
-+	 * will be used for pre-mapping RAM in DDW. memblock_end_of_DRAM() can
-+	 * change during the running of LPAR - daxctl can add pmemory as
-+	 * "system-ram". This memory range should not be pre-mapped in DDW since
-+	 * the address of pmemory can be much higher than the DDW size.
-+	 */
-+	pseries_ddw_max_ram = ddw_memory_hotplug_max();
- }
- 
- static int __init disable_multitce(char *str)
+[1]: https://lore.kernel.org/all/20231120122920.293076-1-npiggin@gmail.com/
 
-base-commit: 6d35786de28116ecf78797a62b84e6bf3c45aa5a
--- 
-2.39.3
+Nicholas Piggin (4):
+  KVM: selftests: Move pgd_created check into virt_pgd_alloc
+  KVM: selftests: Add aligned guest physical page allocator
+  KVM: PPC: selftests: add support for powerpc
+  KVM: PPC: selftests: powerpc enable kvm_create_max_vcpus test
+
+ MAINTAINERS                                   |   2 +
+ tools/testing/selftests/kvm/Makefile          |   2 +-
+ tools/testing/selftests/kvm/Makefile.kvm      |  10 +
+ .../testing/selftests/kvm/include/kvm_util.h  |  34 +-
+ .../selftests/kvm/include/powerpc/hcall.h     |  17 +
+ .../kvm/include/powerpc/kvm_util_arch.h       |  22 +
+ .../selftests/kvm/include/powerpc/ppc_asm.h   |  32 ++
+ .../selftests/kvm/include/powerpc/processor.h |  38 ++
+ .../selftests/kvm/include/powerpc/ucall.h     |  21 +
+ .../selftests/kvm/kvm_create_max_vcpus.c      |   9 +
+ .../selftests/kvm/lib/arm64/processor.c       |   4 -
+ tools/testing/selftests/kvm/lib/guest_modes.c |  20 +-
+ tools/testing/selftests/kvm/lib/kvm_util.c    |  41 +-
+ .../selftests/kvm/lib/loongarch/processor.c   |   4 -
+ .../selftests/kvm/lib/powerpc/handlers.S      |  93 ++++
+ .../testing/selftests/kvm/lib/powerpc/hcall.c |  45 ++
+ .../selftests/kvm/lib/powerpc/processor.c     | 481 ++++++++++++++++++
+ .../testing/selftests/kvm/lib/powerpc/ucall.c |  22 +
+ .../selftests/kvm/lib/riscv/processor.c       |   4 -
+ .../selftests/kvm/lib/s390/processor.c        |   4 -
+ .../testing/selftests/kvm/lib/x86/processor.c |   9 +-
+ 21 files changed, 869 insertions(+), 45 deletions(-)
+ create mode 100644 tools/testing/selftests/kvm/include/powerpc/hcall.h
+ create mode 100644 tools/testing/selftests/kvm/include/powerpc/kvm_util_arch.h
+ create mode 100644 tools/testing/selftests/kvm/include/powerpc/ppc_asm.h
+ create mode 100644 tools/testing/selftests/kvm/include/powerpc/processor.h
+ create mode 100644 tools/testing/selftests/kvm/include/powerpc/ucall.h
+ create mode 100644 tools/testing/selftests/kvm/lib/powerpc/handlers.S
+ create mode 100644 tools/testing/selftests/kvm/lib/powerpc/hcall.c
+ create mode 100644 tools/testing/selftests/kvm/lib/powerpc/processor.c
+ create mode 100644 tools/testing/selftests/kvm/lib/powerpc/ucall.c
+
+--
+2.39.5
 
 
