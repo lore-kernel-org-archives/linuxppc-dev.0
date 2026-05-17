@@ -1,58 +1,57 @@
-Return-Path: <linuxppc-dev+bounces-21004-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21005-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 19CC8CD4F25
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 May 2026 08:45:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 800D8CD37AC
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 May 2026 10:47:24 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gJDzJ36WYz2xfB;
-	Sun, 17 May 2026 18:45:32 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779007532;
-	cv=none; b=GLK18On2QlMN3HEXZuTMX8o1eBZKd8Q+yNdZVlbroEbCF8Ph++nP3psZrUaxlEs4/XTG8vS12F9bGSevchMOLuY012rNApjR2nTw3niclvhMjLvRHUWMxfXKZL4wklR1naz+ahs6oCMoDyIgTOZ/BnoYDfUVhV7DSfraqBRdK3eHs4XjdrMHhUu0rA2DpP7thqA5pJ/suodPUHA+BiCXDIq0DX69uur46kT3KUaJ9j6TLp4B3roVKF34EG6oOFkMV2kbndHYRDPt8ubLpUHDDGJ5IQAbhGc5eZqUfPPjnGSWcPRCgUsawurqv5xLsZiDh+Rw6dCMYUia0A3HsG/Ucg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gJHgt6Zvnz2xdh;
+	Sun, 17 May 2026 20:47:22 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779014842;
+	cv=none; b=PQTABMcyrwoVuRfukTkkH5SNv1aV/fD+uIRQeLwgeKkOhHte/3lOyY4yU2qrukepK+x0SKxMHn4oTXtM/i+XDWKDnT6+ojIWL6CjSKwezwN/EiyvnJUIU/jYE2+MycZdGYRp8pxBzuAWoWug1nJ9M9Q4lzwBXiJO8eFkpc6DPFzIg3kvo4j9pTuV8gAhmZ+pNhCUDHpzTYbj35QuSioNzYZX5eB5tvsq2KWUEaR6oAnt/M82AF346tCpM5rQYC1F/gspIekt73aUbtYgCeFlnJn7aO6BOXHjDSisbHhYxVj+Q9hnVuPsMosNBiiHFtwBV+11kXy6c8530ZgGXR9AhQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1779007532; c=relaxed/relaxed;
-	bh=IwqWSnt1f+GtnaOqHAf4nnsKSW4Dkee99uCObNaViNs=;
+	t=1779014842; c=relaxed/relaxed;
+	bh=x5OthVxZR8h4YrenYpMX4q6wZfMFvGhjdqdMWQqbl0s=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=f4S0KIW1QdXH9Phn7FOvStJOaASdD9m5AmveE1oTUXa1CCSyQDgcw8jojKv5SqecaH4tTatQeKLKO6n9Q6/5w30ldrdWMJ4rp0Qd317v+UVbikh0AYVeIWU4tnPP1AalfgFtvVYu1HbobrbG8LXA2BfOgMlp4uUyosL1jGpEAYrHLXMhxNs9wjr6hKXflCHI+uEJwzrh3/9ScXiv8xkdVo3ahdhIlDoYU6cInlfGtiw8zFJTDnalhMKrQGJGiIDr4Q3lkeJY72z7tzn9dzK2pAdjjQx3j87KfASPHvKlHppIT0GtEHjRhIQ2YLOF35ABc9c1kbpc5PcqTyADV2GP7w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=IcZT9tUo; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=baohua@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 To:Cc:Content-Type; b=nllN/LzPoPue+kTP7E08EW1PAX0WncLq4VNB4bjsX62pdolMb/6nQ+zqTNAsvmGBWX7YsvLCgG+O3H1kpApA5qaTN56cJb5+rfaAU21BaLlOEn0/Vm+uUXwsbMbmr8WXE4OvmSdRNKBjEUmr9upp/UlXieREvfPyk7voV61kYU3lhmE71sFkQR2QPDvjY5aVDIDBIMyRCqrXJqlPE86hFdw5+NDP2hsDSwwt37q2Qe6mauB39N8PszYMbdMhTYu4WShATv2VDuTt48bj9OIn+1TNgSzeft7HrW+JoEkbgOax1Uks7Z8dOAz6SGcNbIymw1b+HyBrIXQO9H+5moV5Bw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=uhoiNK1a; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=linusw@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=IcZT9tUo;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=uhoiNK1a;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=baohua@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=linusw@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gJDzG6GHpz2xdh
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 May 2026 18:45:30 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gJHgt0B8pz2xVK
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 May 2026 20:47:21 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id D7B0E445D5
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 May 2026 08:45:27 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B3AB8C2BD05
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 May 2026 08:45:27 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id C9CDB419B7
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 May 2026 10:47:19 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id A4ED1C2BCB0
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 May 2026 10:47:19 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1779007527;
-	bh=p/9AJiwpH9htKz1qH1Sl1BuAo/sVquMqqj2hIHE2j60=;
+	s=k20201202; t=1779014839;
+	bh=x5OthVxZR8h4YrenYpMX4q6wZfMFvGhjdqdMWQqbl0s=;
 	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-	b=IcZT9tUolcrkwWW0g0RY9HTDkbfvMUWKMC+4fxz9cOlxN5nLUbfxb37rlEv77K6Yz
-	 91/W8a+pD9VIXpnwYL9jbGNNe64gmPI7/gmARH/LrsqxjAESIXXbB0hoqlAI/eOVyA
-	 71yxBQAqlF7qQVourMYDTKkIlJOEhH+OOJG8NyQvxKt+Jkv+ZeuvJZZuT8Uv72hHKe
-	 5Uy2D1EisdI1IXy6U24mBXVmBUDot+lzpFzHE4Dt6atMPLsp/jew4RZqdckHNc2wLr
-	 FmqGPcBeg679dY+2flLU2OkyQdSmrf0RqKFym7/EfEyCQaoVLB61fYxtlxJ1BqzoTE
-	 TcjhzGKbClSVA==
-Received: by mail-qv1-f47.google.com with SMTP id 6a1803df08f44-8b6c9fdb68cso14183166d6.2
-        for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 May 2026 01:45:27 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AFNElJ/1pW628W1QKESp7jtkpiuNb2tS7FYEZXAsz0neK/VVDa4rpKJ2pdyG+9A31z2uN/pUUCNfw/KqiYnIDS0=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YzYQXd+mXhXQd3VEWCW1JY4l0Y/FMPuGEx28rtdYSWRi6N15t1b
-	l2qMcpiAzukLh6hzGKeCjbXHCmu2kGC9iY/8589F6hc4jbMN05UiPJz+PvLdPlUsnlUGe271GYA
-	lUcYy+i05315NMRe2HsgFQCQs00XwuPQ=
-X-Received: by 2002:a05:6214:1c82:b0:8be:7ed5:477b with SMTP id
- 6a1803df08f44-8ca0f6b95a0mr188510036d6.22.1779007526681; Sun, 17 May 2026
- 01:45:26 -0700 (PDT)
+	b=uhoiNK1a/7+3F2Fkboo3WqWxenULTJtYJlyHKIs7fGWtBVwkVKG7nzcw4pIB5r4gD
+	 OPimIgJsY78P3hzKBrcFcHSeQTE0h0dYzcfR6ynRlRPwefj+M21Nxym0DSr+SXIB6K
+	 bjIwTKBoxHw3Q17/f83fWysh0LIgmd29c9tC6bGwA+7T7cJlVGI0bzTISpsxsZpGmY
+	 5kgNyPuq6uPA1mGTjvk7Vb3uzv3AFLGuj97wxE72hQVE7r4GTKJUbqQFl2gACyaQd8
+	 +lMZbb8ncQ49RMj6oUtHJEOo9+/k3T9hjXIzSoyz9kGVoF8vF2xkTJ6M3vpcol9Rkf
+	 k3nd0kz9flbhQ==
+Received: by mail-lf1-f51.google.com with SMTP id 2adb3069b0e04-5a8f9841616so1203364e87.0
+        for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 May 2026 03:47:19 -0700 (PDT)
+X-Gm-Message-State: AOJu0YzxHGLREslkDTSOGLqcYl6SCYb1HxzGTdW/rU+So19tygrsAZdS
+	REMRIsOXw10NubybDb1dFH3MlpYTsIpKyjPe+girRKsbKFubS0m/8r7qiroergM7hlq4z6dWmSN
+	gzBIcFp3n/vD6RpVEmEbcO3CR/Ikw+2w=
+X-Received: by 2002:a05:6512:3f1a:b0:5a8:97d7:8c2e with SMTP id
+ 2adb3069b0e04-5aa0e73225fmr3222764e87.28.1779014838393; Sun, 17 May 2026
+ 03:47:18 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -66,130 +65,39 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20260430040427.4672-1-baohua@kernel.org> <afNM-gIqxpyJ6ro7@casper.infradead.org>
- <CAGsJ_4w0qcYmukHqsyRd0jomoyYkJjOt8b-Cgp53BgP-8QQghw@mail.gmail.com>
- <afS_L-5XeWIldTXA@casper.infradead.org> <CAGsJ_4wk=SDtgin+84Ev2TamU-JFfmrg_SUay=-tcYmnFvK6Nw@mail.gmail.com>
- <afTpoL3FklpQZNMM@casper.infradead.org>
-In-Reply-To: <afTpoL3FklpQZNMM@casper.infradead.org>
-From: Barry Song <baohua@kernel.org>
-Date: Sun, 17 May 2026 16:45:15 +0800
-X-Gmail-Original-Message-ID: <CAGsJ_4ysMcrmDLSOwBkf7qwCQrcDWeEMXkHDajTJFMLKUk0bSQ@mail.gmail.com>
-X-Gm-Features: AVHnY4ICHad0vRrEOEwJ7DjNSE1jL9epFkBx0OBK2sLJbi9Nv2hHU65J8Z0HpVM
-Message-ID: <CAGsJ_4ysMcrmDLSOwBkf7qwCQrcDWeEMXkHDajTJFMLKUk0bSQ@mail.gmail.com>
-Subject: Re: [PATCH v2 0/5] mm: reduce mmap_lock contention and improve page
- fault performance
-To: Matthew Wilcox <willy@infradead.org>, surenb@google.com
-Cc: akpm@linux-foundation.org, linux-mm@kvack.org, david@kernel.org, 
-	ljs@kernel.org, liam@infradead.org, vbabka@kernel.org, rppt@kernel.org, 
-	mhocko@suse.com, jack@suse.cz, pfalcato@suse.de, wanglian@kylinos.cn, 
-	chentao@kylinos.cn, lianux.mm@gmail.com, kunwu.chan@gmail.com, 
-	liyangouwen1@oppo.com, chrisl@kernel.org, kasong@tencent.com, 
-	shikemeng@huaweicloud.com, nphamcs@gmail.com, bhe@redhat.com, 
-	youngjun.park@lge.com, linux-arm-kernel@lists.infradead.org, 
-	linux-kernel@vger.kernel.org, loongarch@lists.linux.dev, 
-	linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org, 
-	linux-s390@vger.kernel.org, Nanzhe Zhao <nzzhao@126.com>
+References: <20260517063754.21819-1-rosenp@gmail.com>
+In-Reply-To: <20260517063754.21819-1-rosenp@gmail.com>
+From: Linus Walleij <linusw@kernel.org>
+Date: Sun, 17 May 2026 12:47:05 +0200
+X-Gmail-Original-Message-ID: <CAD++jLnnRSbZn+1Ho9DO10uu9SeoA4xmkGGMYdQskZbs2-7UrQ@mail.gmail.com>
+X-Gm-Features: AVHnY4Jj2qGp8iCCV7uyyHmWGturxuG39Lg_p7cijFMBsFdk0piuRaPK0H9-3z4
+Message-ID: <CAD++jLnnRSbZn+1Ho9DO10uu9SeoA4xmkGGMYdQskZbs2-7UrQ@mail.gmail.com>
+Subject: Re: [PATCHv2] powerpc/44x: Set GPIO chip parent
+To: Rosen Penev <rosenp@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Madhavan Srinivasan <maddy@linux.ibm.com>, 
+	Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, open list <linux-kernel@vger.kernel.org>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Sat, May 2, 2026 at 1:58=E2=80=AFAM Matthew Wilcox <willy@infradead.org>=
- wrote:
+On Sun, May 17, 2026 at 8:38=E2=80=AFAM Rosen Penev <rosenp@gmail.com> wrot=
+e:
+
+> The PPC4xx GPIO driver stopped assigning an explicit parent
+> to the gpio_chip when it moved away from of_mm_gpiochip_add_data().
 >
-> On Sat, May 02, 2026 at 01:44:34AM +0800, Barry Song wrote:
-> > On Fri, May 1, 2026 at 10:57=E2=80=AFPM Matthew Wilcox <willy@infradead=
-.org> wrote:
-> > >
-> > > On Fri, May 01, 2026 at 06:49:58AM +0800, Barry Song wrote:
-> > > > 1. There is no deterministic latency for I/O completion. It depends=
- on
-> > > > both the hardware and the software stack (bio/request queues and th=
-e
-> > > > block scheduler). Sometimes the latency is short; at other times it=
- can
-> > > > be quite long. In such cases, a high-priority thread performing ope=
-rations
-> > > > such as mprotect, unmap, prctl_set_vma, or madvise may be forced to=
- wait
-> > > > for an unpredictable amount of time.
-> > >
-> > > But does that actually happen?  I find it hard to believe that thread=
- A
-> > > unmaps a VMA while thread B is in the middle of taking a page fault i=
-n
-> > > that same VMA.  mprotect() and madvise() are more likely to happen, b=
-ut
-> > > it still seems really unlikely to me.
-> >
-> > It doesn=E2=80=99t have to involve unmapping or applying mprotect to
-> > the entire VMA=E2=80=94just a portion of it is sufficient.
+> Restore that association from the platform device so OF GPIO lookup
+> can match phandles to the registered gpiochip.
 >
-> Yes, but that still fails to answer "does this actually happen".  How muc=
-h
-> performance is all this complexity in the page fault handler buying us?
-> If you don't answer this question, I'm just going to go in and rip it
-> all out.
+> Tested on: Cisco MX60W. No more probe deferral.
 >
+> Assisted-by: Codex:GPT-5.5
+> Fixes: 1044dbaf2a77 ("powerpc/44x: Change GPIO driver to a proper platfor=
+m driver")
+> Signed-off-by: Rosen Penev <rosenp@gmail.com>
 
-Hi Matthew (and Lorenzo, Jan, and anyone else who may be
-waiting for answers),
+Reviewed-by: Linus Walleij <linusw@kernel.org>
 
-As promised during LSF/MM/BPF, we conducted thorough
-testing on Android phones to determine whether performing
-I/O in `filemap_fault()` can block `vma_start_write()`.
-I wanted to give a quick update on this question.
-
-Nanzhe at Xiaomi created tracing scripts and ran various
-applications on Android devices with I/O performed under
-the VMA lock in `filemap_fault()`. We found that:
-
-1. There are very few cases where unmap() is blocked by
-   page faults. I assume this is due to buggy user code
-   or poor synchronization between reads and unmap().
-So I assume it is not a problem.
-
-2. We observed many cases where `vma_start_write()`
-   is blocked by page-fault I/O in some applications.
-   The blocking occurs in the `dup_mmap()` path during
-   fork().
-
-With Suren's commit fb49c455323ff ("fork: lock VMAs of
-the parent process when forking"), we now always hold
-`vma_write_lock()` for each VMA. Note that the
-`mmap_lock` write lock is also held, which could lead to
-chained waiting if page-fault I/O is performed without
-releasing the VMA lock.
-
-My gut feeling is that Suren's commit may be overshooting,
-so my rough idea is that we might want to do something like
-the following (we haven't tested it yet and it might be
-wrong):
-
-diff --git a/mm/mmap.c b/mm/mmap.c
-index 2311ae7c2ff4..5ddaf297f31a 100644
---- a/mm/mmap.c
-+++ b/mm/mmap.c
-@@ -1762,7 +1762,13 @@ __latent_entropy int dup_mmap(struct mm_struct
-*mm, struct mm_struct *oldmm)
-        for_each_vma(vmi, mpnt) {
-                struct file *file;
-
--               retval =3D vma_start_write_killable(mpnt);
-+               /*
-+                * For anonymous or writable private VMAs, prevent
-+                * concurrent CoW faults.
-+                */
-+               if (!mpnt->vm_file || (!(mpnt->vm_flags & VM_SHARED) &&
-+                                       (mpnt->vm_flags & VM_WRITE)))
-+                       retval =3D vma_start_write_killable(mpnt);
-                if (retval < 0)
-                        goto loop_out;
-                if (mpnt->vm_flags & VM_DONTCOPY) {
-
-Based on the above, we may want to re-check whether fork()
-can be blocked by page faults. At the same time, if Suren,
-you, or anyone else has any comments, please feel free to
-share them.
-
-Best Regards
-Barry
+Yours,
+Linus Walleij
 
