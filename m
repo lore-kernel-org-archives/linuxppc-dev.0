@@ -1,67 +1,82 @@
-Return-Path: <linuxppc-dev+bounces-21007-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21009-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 769C5CD4F47
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 May 2026 15:50:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4EF7ACD4F4A
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 May 2026 17:40:51 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gJQPp4Kzvz2xdh;
-	Mon, 18 May 2026 01:50:38 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=89.208.246.23
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779033038;
-	cv=none; b=GUD54m8f6Ziym2/HQabToRyqkJcBcMXWTYZF0UAwV2QTDkhaX3g/ReOUmEkeTQpH6bVlBLyBKvt6t5A7+zh1EjQ6c/GGSF/wma0mPDDlptj+x1Wf13R4dr6WL38SX+Om5sRo6yBL+gj5xIN9G3dU3EFgfc2D70QEPqcnc7ynxtsDc/7UK7fBloacvd+yln0kzlzXSF0GEC3Qhp/1oJXceq72ipr78kK6CbNY94o5S5dSWLDuFgorFMaZAfFGxJbEnkJmeoWdtgqTyjEZSzlf1evi5tmUJQeU7iYAy+gYBG7k7QWtUiEoxfzqrRx7ujEA6a3zi6bRO1jq2hvnq1ojag==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gJSrx5CX2z2xjN;
+	Mon, 18 May 2026 03:40:49 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779039649;
+	cv=none; b=IbZwFTBtbZqevCd37xzif+6qNk+xSjxqU5a7/YTn5DmNVKgpdI9rJSsW7YjO7FMQynKhVRXS4/AXigdHaNKnnBFL0QOwHVne9zzqDOMGrUbh/j56s5Pi3bwIemirwe5lXnx8u+7GuAFE32lsRbLy6TgGsjvksXQWxBgqAjbOgJR6cOstTOeWE2b2Jbqwy6rJsQXSqSuqSI3J7Ac9ScmoqEwUJmkrpnGqDJCKsU68YvYbOjBc6Bxodo7HUNK8RWSRWfPTenZt7J/w1RMez3NYInbvpDQukCr338Pt2AvT/F7/9qGvTSga/4DAP1STVObZnWjj0l8V8GOvileyqQ0IBw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1779033038; c=relaxed/relaxed;
-	bh=acTPhhZ8T4/kftVIx/SIb/SY4r6jw6Sos9c0kyE9qlg=;
-	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=cYMvMnGOyJ3RnuFyYZylT7Kh+LCI88qtjxWLaItoCGOKp5BO8mV4fX82ObRiuGM6coIHCPX6vZrx4OqDNiGzJiPufNd0fzYl6qXNMskQsEJ69g4caI1sWkUQVs6m9ch6gKeHivpv2C40/ZDjmmPsiJPfCh8etJl/s2NsErawALw+OQj6oui/uCeAtMHLwXtx2SXA6r3UiSkRCC/pyfxwj0wBeqnahn3PfHnlpe+zycvWZDBGC0Oip9gT/2bSsfMbg/WXV7CzTGWM/ZbMOuVgWUhG8fanzJCUqAJGz3sfJHonv9OlJdT2woaTcOxs9Xtn+jfovlEOzdS7suvJMFmwPg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=xry111.site; dkim=pass (1024-bit key; unprotected) header.d=xry111.site header.i=@xry111.site header.a=rsa-sha256 header.s=default header.b=MLM5Z8rn; dkim-atps=neutral; spf=pass (client-ip=89.208.246.23; helo=xry111.site; envelope-from=xry111@xry111.site; receiver=lists.ozlabs.org) smtp.mailfrom=xry111.site
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=xry111.site
+	t=1779039649; c=relaxed/relaxed;
+	bh=SZp77nDRgk8UCryrIML11mAyYjGZXI/yRiPXaatMvhU=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=HuUBVucqxlJmFeb3efINbYUOhb6FCvnuCc6FYt6xf3Fds9Vaebt4ZOE7KEV3Tk+nAVeflBB/ueFCorP1BySR8Iy6ssPXnaiWZmmPlVLC4MMnPyDfl9LLnR3ubsfU0o6oJS/jsAZYxVzRgGRVtpjgevJSQ3xcw55BW5XgJ/7Oiatu8qifDHjPBWIfebuPFum/uD8mvvVXT+OWTCaqcUtpyQjm+C/H3v+hDYLI3rUeKTyliqCJjGgRrRGSGGP1LAlqlaBX59ZFBG1anyD3EUt5cgMLg6tm+1TacH0lQ9BU++LJGSEgDkJrauNljGgZE1zTevlD9vldlgbhsVfm/P0DyQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=IyE2Cmou; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=adubey@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=xry111.site header.i=@xry111.site header.a=rsa-sha256 header.s=default header.b=MLM5Z8rn;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=IyE2Cmou;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=xry111.site (client-ip=89.208.246.23; helo=xry111.site; envelope-from=xry111@xry111.site; receiver=lists.ozlabs.org)
-X-Greylist: delayed 530 seconds by postgrey-1.37 at boromir; Mon, 18 May 2026 01:50:37 AEST
-Received: from xry111.site (xry111.site [89.208.246.23])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=adubey@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gJQPn2V1mz2xWP
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 May 2026 01:50:36 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=xry111.site;
-	s=default; t=1779032472;
-	bh=acTPhhZ8T4/kftVIx/SIb/SY4r6jw6Sos9c0kyE9qlg=;
-	h=Subject:From:To:Cc:Date:In-Reply-To:References:From;
-	b=MLM5Z8rncS6vPb6+OXBQRN56srVPBuQNT1pqM52QYCt7iAkmMHZC4gYE8dxwyxYsR
-	 9cPwUU0tsyZRLGnwyTUBn30yoPb/hfiIyeM+ag977u6bHs+XEy6TblgzEUqqSMlmbe
-	 Hf1STzLpmfqq4bViX8Mt0ffPoVNTrUZexB8+GIZA=
-Received: from [192.168.42.56] (unknown [182.102.57.47])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (prime256v1) server-signature ECDSA (secp384r1) server-digest SHA384)
-	(Client did not present a certificate)
-	(Authenticated sender: xry111@xry111.site)
-	by xry111.site (Postfix) with ESMTPSA id E2A116597E;
-	Sun, 17 May 2026 11:41:10 -0400 (EDT)
-Message-ID: <ce45668b766e6dd58ff0eda8e7fe1c07e14ef758.camel@xry111.site>
-Subject: Re: [PATCH] powerpc: define __LITTLE_ENDIAN and __BIG_ENDIAN for
- math-emu
-From: Xi Ruoyao <xry111@xry111.site>
-To: David Laight <david.laight.linux@gmail.com>, Mingcong Bai
- <jeffbai@aosc.io>
-Cc: linux-kernel@vger.kernel.org, Kexy Biscuit <kexybiscuit@aosc.io>, 
-	stable@vger.kernel.org, kernel test robot <lkp@intel.com>, Madhavan
- Srinivasan	 <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>,
- Nicholas Piggin	 <npiggin@gmail.com>, "Christophe Leroy (CS GROUP)"
- <chleroy@kernel.org>, 	linuxppc-dev@lists.ozlabs.org
-Date: Sun, 17 May 2026 23:40:37 +0800
-In-Reply-To: <20260517145421.2d1ac77c@pumpkin>
-References: <20260517041423.71243-1-jeffbai@aosc.io>
-	 <20260517145421.2d1ac77c@pumpkin>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.60.1 
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gJSrw1q1hz2xdh
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 May 2026 03:40:47 +1000 (AEST)
+Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 64H6vrj43913287;
+	Sun, 17 May 2026 17:40:34 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:date:from:in-reply-to:message-id
+	:mime-version:references:subject:to; s=pp1; bh=SZp77nDRgk8UCryrI
+	ML11mAyYjGZXI/yRiPXaatMvhU=; b=IyE2CmouOzsPJOeIfgGqPUMGCsQ9MJXLO
+	l6hhfd46S6olueB4Cx/L4tZjWd0C3TG0pig4SoSCmYaeHFUNTGfM6/QjoyHZUNLN
+	YR24l5Kh0l+E4qGaNC9pLg9Rj13oWZs5BGUKmjgFfpIrX3/2MZp/RNs+0v4qTn0X
+	4H2xXtVit3TAWDg3zWkpuEUJSVS82LwjpJ4TkfffacCi79zHSlywRB636AmwczT2
+	R6QoGjB4Iqx19iGqWP35YaWIrDTPl82i9MnjYxO9VReeU5Bl9B9infi0oNk3ZsNn
+	128vC1hwjgZBW4jMvBY46B6Y2e7ABKJIxq4u61Hp/tqhAp0dTVEbA==
+Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4e6h9xmnsy-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Sun, 17 May 2026 17:40:34 +0000 (GMT)
+Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma21.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 64HHdNXV005638;
+	Sun, 17 May 2026 17:40:32 GMT
+Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
+	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4e73wjtf58-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Sun, 17 May 2026 17:40:32 +0000 (GMT)
+Received: from smtpav01.fra02v.mail.ibm.com (smtpav01.fra02v.mail.ibm.com [10.20.54.100])
+	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 64HHeTDu56426812
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Sun, 17 May 2026 17:40:29 GMT
+Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 2C79620043;
+	Sun, 17 May 2026 17:40:29 +0000 (GMT)
+Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 231DF20040;
+	Sun, 17 May 2026 17:40:27 +0000 (GMT)
+Received: from ltcrain4-lp15.ltc.tadn.ibm.com (unknown [9.5.7.39])
+	by smtpav01.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Sun, 17 May 2026 17:40:26 +0000 (GMT)
+From: adubey@linux.ibm.com
+To: bpf@vger.kernel.org
+Cc: hbathini@linux.ibm.com, linuxppc-dev@lists.ozlabs.org, maddy@linux.ibm.com,
+        ast@kernel.org, andrii@kernel.org, daniel@iogearbox.net,
+        shuah@kernel.org, linux-kselftest@vger.kernel.org,
+        stable@vger.kernel.org, Abhishek Dubey <adubey@linux.ibm.com>
+Subject: [PATCH v4 1/5] powerpc/bpf: fix alignment of long branch trampoline address
+Date: Sun, 17 May 2026 17:40:39 -0400
+Message-ID: <20260517214043.12975-2-adubey@linux.ibm.com>
+X-Mailer: git-send-email 2.52.0
+In-Reply-To: <20260517214043.12975-1-adubey@linux.ibm.com>
+References: <20260517214043.12975-1-adubey@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -75,64 +90,170 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTE3MDE5MCBTYWx0ZWRfX5EMnFofdD+fg
+ uMhbvwMuAMYXgOqm0b3m1jgnyFdLmqaTktA3MxoemNRpiWBCDTBWRvqVSF7/8kFMwjBgUs7wzaA
+ q2SIt3vTO5nczmS8qZdqDyPsJet81rh4QVGR/xSPi/Q9n5dbBW5Uad42u3Z7brVTApLQ2FXwz7Z
+ 2X8xnebOsDYYGLpUkJCaGwFrqnr11FMOwlDU/Sg13lij9oUSTbEe9ukkmA061kf1Fsh2MzLgmyH
+ XIJDkLM8sr3ZotY+gasaXRllCw9XpUpPOqk/73XbNLNVBx8KmM99sRJgIIiWzgWuiGPvoYZC8g4
+ 5lXBoNXzja9J86SdePXfdz8EGG4s73gDVYGzN4CNdGC9Ie2xAo4ldB8/PL9X+OpITtTnPE4Sz83
+ Ua9aw1egzWEUWNaMdeRCpQGMNo4J1ytBM6pcXVsX8wPL7US0tzgm2/t9EvAHPdAscELHblQqg0a
+ gBFsATpp5sDrXmU0ZTQ==
+X-Authority-Analysis: v=2.4 cv=BNuDalQG c=1 sm=1 tr=0 ts=6a09fd92 cx=c_pps
+ a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
+ a=NGcC8JguVDcA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
+ a=iQ6ETzBq9ecOQQE5vZCe:22 a=VnNF1IyMAAAA:8 a=VwQbUJbxAAAA:8
+ a=3Zv-X24pnbuftgYs6HsA:9
+X-Proofpoint-ORIG-GUID: QFMwR_TzpNMjkXvMx6tjFctDD6tEccWv
+X-Proofpoint-GUID: QFMwR_TzpNMjkXvMx6tjFctDD6tEccWv
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-05-17_04,2026-05-15_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ adultscore=0 priorityscore=1501 malwarescore=0 impostorscore=0 suspectscore=0
+ lowpriorityscore=0 phishscore=0 bulkscore=0 spamscore=0 clxscore=1015
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2605130000 definitions=main-2605170190
 
-On Sun, 2026-05-17 at 14:54 +0100, David Laight wrote:
-> On Sun, 17 May 2026 12:14:21 +0800
-> Mingcong Bai <jeffbai@aosc.io> wrote:
->=20
-> > Similar to commit b929926f01f2 ("sh: define __BIG_ENDIAN for math-emu")=
-,
-> > define __LITTLE_ENDIAN and __BIG_ENDIAN as 0 to mitigate build-time
-> > warnings:
-> >=20
-> > =C2=A0 ./include/math-emu/double.h:59:21: error: =E2=80=98__BIG_ENDIAN=
-=E2=80=99 is not defined, evaluates to =E2=80=980=E2=80=99 [-Werror=3Dundef=
-]
-> > =C2=A0=C2=A0=C2=A0=C2=A0 59 | #if __BYTE_ORDER =3D=3D __BIG_ENDIAN
-> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 |
-> >=20
-> > Cc: stable@vger.kernel.org
-> > Fixes: 13da9e200fe4 ("Revert "endian: #define __BYTE_ORDER"")
-> > Reported-by: kernel test robot <lkp@intel.com>
-> > Closes: https://lore.kernel.org/oe-kbuild-all/202507301656.7FEX6J5W-lkp=
-@intel.com/
-> > Signed-off-by: Mingcong Bai <jeffbai@aosc.io>
-> > ---
-> > =C2=A0arch/powerpc/include/asm/sfp-machine.h | 4 +++-
-> > =C2=A01 file changed, 3 insertions(+), 1 deletion(-)
-> >=20
-> > diff --git a/arch/powerpc/include/asm/sfp-machine.h b/arch/powerpc/incl=
-ude/asm/sfp-machine.h
-> > index 8b957aabb826d..db8525605c026 100644
-> > --- a/arch/powerpc/include/asm/sfp-machine.h
-> > +++ b/arch/powerpc/include/asm/sfp-machine.h
-> > @@ -319,10 +319,12 @@
-> > =C2=A0#define abort()								\
-> > =C2=A0	return 0
-> > =C2=A0
-> > -#ifdef __BIG_ENDIAN
-> > +#ifdef __BIG_ENDIAN__
-> > =C2=A0#define __BYTE_ORDER __BIG_ENDIAN
-> > +#define __LITTLE_ENDIAN 0
-> > =C2=A0#else
-> > =C2=A0#define __BYTE_ORDER __LITTLE_ENDIAN
-> > +#define __BIG_ENDIAN 0
-> > =C2=A0#endif
->=20
-> I thought the expected/correct value for __BYTE_ORDER__ was either 1234 o=
-r 4321.
-> (apart from pdp11's 2143).
+From: Abhishek Dubey <adubey@linux.ibm.com>
 
-Should we just do
+Ensure the dummy trampoline address field present between the OOL stub
+and the long branch stub is 8-byte aligned, for memory compatibility
+when content loaded to a register.
 
-#define __BYTE_ORDER __BYTE_ORDER__
-#define __LITTLE_ENDIAN __ORDER_LITTLE_ENDIAN__
-#define __BIG_ENDIAN __ORDER_BIG_ENDIAN__
+Reported-by: Hari Bathini <hbathini@linux.ibm.com>
+Fixes: d243b62b7bd3 ("powerpc64/bpf: Add support for bpf trampolines")
+Cc: stable@vger.kernel.org
+Signed-off-by: Abhishek Dubey <adubey@linux.ibm.com>
+---
+ arch/powerpc/net/bpf_jit.h        |  4 ++--
+ arch/powerpc/net/bpf_jit_comp.c   | 34 ++++++++++++++++++++++++++-----
+ arch/powerpc/net/bpf_jit_comp64.c |  4 ++--
+ 3 files changed, 33 insertions(+), 9 deletions(-)
 
-then?  __BYTE_ORDER__ etc. are available since gcc 4.6 and now we
-requires gcc >=3D 8 to build the kernel.
+diff --git a/arch/powerpc/net/bpf_jit.h b/arch/powerpc/net/bpf_jit.h
+index f32de8704d4d..71e6e7d01057 100644
+--- a/arch/powerpc/net/bpf_jit.h
++++ b/arch/powerpc/net/bpf_jit.h
+@@ -214,8 +214,8 @@ int bpf_jit_emit_func_call_rel(u32 *image, u32 *fimage, struct codegen_context *
+ int bpf_jit_build_body(struct bpf_prog *fp, u32 *image, u32 *fimage, struct codegen_context *ctx,
+ 		       u32 *addrs, int pass, bool extra_pass);
+ void bpf_jit_build_prologue(u32 *image, struct codegen_context *ctx);
+-void bpf_jit_build_epilogue(u32 *image, struct codegen_context *ctx);
+-void bpf_jit_build_fentry_stubs(u32 *image, struct codegen_context *ctx);
++void bpf_jit_build_epilogue(u32 *image, u32 *fimage, struct codegen_context *ctx);
++void bpf_jit_build_fentry_stubs(u32 *image, u32 *fimage, struct codegen_context *ctx);
+ void bpf_jit_realloc_regs(struct codegen_context *ctx);
+ int bpf_jit_emit_exit_insn(u32 *image, struct codegen_context *ctx, int tmp_reg, long exit_addr);
+ void prepare_for_fsession_fentry(u32 *image, struct codegen_context *ctx, int cookie_cnt,
+diff --git a/arch/powerpc/net/bpf_jit_comp.c b/arch/powerpc/net/bpf_jit_comp.c
+index 53ab97ad6074..ef7614177cb1 100644
+--- a/arch/powerpc/net/bpf_jit_comp.c
++++ b/arch/powerpc/net/bpf_jit_comp.c
+@@ -49,11 +49,34 @@ asm (
+ "	.popsection				;"
+ );
+ 
+-void bpf_jit_build_fentry_stubs(u32 *image, struct codegen_context *ctx)
++void bpf_jit_build_fentry_stubs(u32 *image, u32 *fimage, struct codegen_context *ctx)
+ {
+ 	int ool_stub_idx, long_branch_stub_idx;
+ 
+ 	/*
++	 * In the final pass, align the mis-aligned dummy_tramp_addr field
++	 * in the fimage. The alignment NOP must appear before OOL stub,
++	 * to make ool_stub_idx & long_branch_stub_idx constant from end.
++	 */
++#ifdef CONFIG_PPC64
++	if (fimage && image) {
++		/*
++		 * pc points to first instruction of OOL stub,
++		 * dummy_tramp_addr is past 4/3 instructions depending on
++		 * CONFIG_PPC_FTRACE_OUT_OF_LINE is enabled/not respectively.
++		 *
++		 * The decision to emit alignment NOP must depend on the alignment
++		 * of dummy_tramp_addr field.
++		 */
++		unsigned long pc = (unsigned long)fimage + CTX_NIA(ctx);
++		pc += IS_ENABLED(CONFIG_PPC_FTRACE_OUT_OF_LINE) ? 4 : 3;
++
++		if (!IS_ALIGNED(pc, 8))
++			EMIT(PPC_RAW_NOP());
++	}
++#endif
++
++	/*      nop     // optional, for alignment of dummy_tramp_addr
+ 	 * Out-of-line stub:
+ 	 *	mflr	r0
+ 	 *	[b|bl]	tramp
+@@ -70,7 +93,7 @@ void bpf_jit_build_fentry_stubs(u32 *image, struct codegen_context *ctx)
+ 
+ 	/*
+ 	 * Long branch stub:
+-	 *	.long	<dummy_tramp_addr>
++	 *	.long	<dummy_tramp_addr>  // 8-byte aligned
+ 	 *	mflr	r11
+ 	 *	bcl	20,31,$+4
+ 	 *	mflr	r12
+@@ -81,6 +104,7 @@ void bpf_jit_build_fentry_stubs(u32 *image, struct codegen_context *ctx)
+ 	 */
+ 	if (image)
+ 		*((unsigned long *)&image[ctx->idx]) = (unsigned long)dummy_tramp;
++
+ 	ctx->idx += SZL / 4;
+ 	long_branch_stub_idx = ctx->idx;
+ 	EMIT(PPC_RAW_MFLR(_R11));
+@@ -107,7 +131,7 @@ int bpf_jit_emit_exit_insn(u32 *image, struct codegen_context *ctx, int tmp_reg,
+ 		PPC_JMP(ctx->alt_exit_addr);
+ 	} else {
+ 		ctx->alt_exit_addr = ctx->idx * 4;
+-		bpf_jit_build_epilogue(image, ctx);
++		bpf_jit_build_epilogue(image, NULL, ctx);
+ 	}
+ 
+ 	return 0;
+@@ -286,7 +310,7 @@ struct bpf_prog *bpf_int_jit_compile(struct bpf_verifier_env *env, struct bpf_pr
+ 	 */
+ 	bpf_jit_build_prologue(NULL, &cgctx);
+ 	addrs[fp->len] = cgctx.idx * 4;
+-	bpf_jit_build_epilogue(NULL, &cgctx);
++	bpf_jit_build_epilogue(NULL, NULL, &cgctx);
+ 
+ 	fixup_len = fp->aux->num_exentries * BPF_FIXUP_LEN * 4;
+ 	extable_len = fp->aux->num_exentries * sizeof(struct exception_table_entry);
+@@ -318,7 +342,7 @@ struct bpf_prog *bpf_int_jit_compile(struct bpf_verifier_env *env, struct bpf_pr
+ 			bpf_jit_binary_pack_free(fhdr, hdr);
+ 			goto out_err;
+ 		}
+-		bpf_jit_build_epilogue(code_base, &cgctx);
++		bpf_jit_build_epilogue(code_base, fcode_base, &cgctx);
+ 
+ 		if (bpf_jit_enable > 1)
+ 			pr_info("Pass %d: shrink = %d, seen = 0x%x\n", pass,
+diff --git a/arch/powerpc/net/bpf_jit_comp64.c b/arch/powerpc/net/bpf_jit_comp64.c
+index db364d9083e7..885dc8cf55a2 100644
+--- a/arch/powerpc/net/bpf_jit_comp64.c
++++ b/arch/powerpc/net/bpf_jit_comp64.c
+@@ -398,7 +398,7 @@ static void bpf_jit_emit_common_epilogue(u32 *image, struct codegen_context *ctx
+ 	}
+ }
+ 
+-void bpf_jit_build_epilogue(u32 *image, struct codegen_context *ctx)
++void bpf_jit_build_epilogue(u32 *image, u32 *fimage, struct codegen_context *ctx)
+ {
+ 	bpf_jit_emit_common_epilogue(image, ctx);
+ 
+@@ -407,7 +407,7 @@ void bpf_jit_build_epilogue(u32 *image, struct codegen_context *ctx)
+ 
+ 	EMIT(PPC_RAW_BLR());
+ 
+-	bpf_jit_build_fentry_stubs(image, ctx);
++	bpf_jit_build_fentry_stubs(image, fimage, ctx);
+ }
+ 
+ /*
+-- 
+2.52.0
 
-
---=20
-Xi Ruoyao <xry111@xry111.site>
 
