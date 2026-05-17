@@ -1,93 +1,95 @@
-Return-Path: <linuxppc-dev+bounces-21001-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21002-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 875B6CD37AC
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 May 2026 05:44:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 31B22CD37AC
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 May 2026 06:19:51 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gJ8yK08Rkz2xfB;
-	Sun, 17 May 2026 15:44:25 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a00:1450:4864:20::532" arc.chain=google.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778996664;
-	cv=pass; b=fnBZwJgwFqpnScvzyxSpvVAiY8+So+RNFsnOzlDsM5dAZk66j15/6akbIy+iGxOlPteCQ/BcggmIB5AHSI+VWEbBLURzvRcmlL98zujcP/WAkqBGiUbtH5Danu7YFUPnyOxD65HQPtgzI7rHgcbAVIIJlvp0e9bHKAG6PglIiTXW38mmQrhKIwARFLWQd1FWD8w3k3WnmS5HNl/HBm3/S+VrvBCaVBjtCbwoeAVqb5Rv9ky7pNwi1v3zaevALFCzpaqMIV7V1J0VSJiiuftmKSj7kqYzH5v6lMpcIimVEkWYJUmpK0DWHUDo3nXmoXDO39K4M6po02NMLD50zZ7k3Q==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1778996664; c=relaxed/relaxed;
-	bh=zJ0Her01fUERuq6UNXxLc9TUkx/Xlff3Qxk3pw57hRE=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=Y3Ueb0X6MA8qlO76sOi1+iZGwF+W4nvgVONkWxzNWDLpaZHo7EixGV6wYN50LFDrdUzBNyYToscQafTBiT3GpMFEvEc1CaEw7Wg0Ovj+dmUyTnZrW7eD6UOE87qLJNGpipfUVkkcWhTQQsRfbynzNM3kOlVc1M5hDH4cQn/rVxTmD3EcH6AslLk2oeiOvYYUDThnFCm9siZX3bfqrHQhHqa2zF7JmrdlUCHxIKiEZNVbtLZF/+SP2OjdhhbjrkSpKF/UyHZ0sWniJfWpxpB0Z7X2N8Cuqjcp0+LePx/E18ojm5+jE/pIcUMWlwFHu/sI1pYghc/9Gda0IJHLqCOsIA==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=b1ods3bV; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::532; helo=mail-ed1-x532.google.com; envelope-from=rosenp@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gJ9l95X0fz2xfB;
+	Sun, 17 May 2026 16:19:49 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::429"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1778998789;
+	cv=none; b=KAglg5q3nr3ZZ7weSZ0dwf5ciCw0UcyP3YUFopHfUDFukUBUMg2p+WHdvsWBLFDrcegWT4/06AQ5WPcyFXnbYhRWmzK7343zIa6747I+4NcYiVAVNWvllCaJTL3ytYOfb+LE4GpVkv2EG566oOLl4Fs0kwoGmL3cyIJl35tY3Muqg6bsWOMbHOSPjDb+Thuf0654udQf4F68fQLwoULcVM3o2msWcJNXPrWTqK2oFOGEj9HAMnZu8s32bFc9zkgpQ0G51oCqKa0EIV6VQTYcV4MqKF8BgGRDmyrot0tcy6wSdwq0zte5ZaGCo9SV6jMU9rxZb9GS7f+KFehZhOECsQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1778998789; c=relaxed/relaxed;
+	bh=qUI1Kvy8G4UZN8XVWU9+FHDr0P4yKt9TWkL45QXTVdc=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=MAN2oFewHE+l4XvI6wd9J9ggny/rsxzFF6Cvbv9Plt86EhI40bSBbTC7q2EtIm/rxu81tMWv+xkqHBHIZHwxBh35c4kgrzRvPF6bSJ3nR2PzYL6r0MH6wcG/6t8LF9FZueE15AZp34atO+9Iq4IMJNKU0lV3KxTEthl795Tnw0Dc0AtP2/W3qMKxso91cAWmP5ucFDW2dYm68f4ST9rP1e4XjCncRRCN5KkAHccfxPgsSKBHEcpRsoXd1IeJEk/Jr5RXxEa7HVlzkFBo0wo27cXrw1NIgM62miMWM79XPHhrwf6r1XLEdsETJUqAjfCEDH9UIpLwQbKx1S8moWMOxA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=resnulli.us; dkim=pass (2048-bit key; unprotected) header.d=resnulli-us.20251104.gappssmtp.com header.i=@resnulli-us.20251104.gappssmtp.com header.a=rsa-sha256 header.s=20251104 header.b=xGXZZhZW; dkim-atps=neutral; spf=none (client-ip=2a00:1450:4864:20::429; helo=mail-wr1-x429.google.com; envelope-from=jiri@resnulli.us; receiver=lists.ozlabs.org) smtp.mailfrom=resnulli.us
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=resnulli.us
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=b1ods3bV;
+	dkim=pass (2048-bit key; unprotected) header.d=resnulli-us.20251104.gappssmtp.com header.i=@resnulli-us.20251104.gappssmtp.com header.a=rsa-sha256 header.s=20251104 header.b=xGXZZhZW;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::532; helo=mail-ed1-x532.google.com; envelope-from=rosenp@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-ed1-x532.google.com (mail-ed1-x532.google.com [IPv6:2a00:1450:4864:20::532])
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=resnulli.us (client-ip=2a00:1450:4864:20::429; helo=mail-wr1-x429.google.com; envelope-from=jiri@resnulli.us; receiver=lists.ozlabs.org)
+Received: from mail-wr1-x429.google.com (mail-wr1-x429.google.com [IPv6:2a00:1450:4864:20::429])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gJ8yH1sG5z2xRw
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 May 2026 15:44:22 +1000 (AEST)
-Received: by mail-ed1-x532.google.com with SMTP id 4fb4d7f45d1cf-67e9b3037dcso2909808a12.0
-        for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 May 2026 22:44:22 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1778996659; cv=none;
-        d=google.com; s=arc-20240605;
-        b=W8/lGlZkGLKtf09ZHumQ3wmdwBt1TusObWZVIYphpgDzzEPw9+GemCzt8VNxFMiLMP
-         lwEQz51C18pP8Jj1MRxT7HRxnxGkjh96YYyYHxE9TEOol60Ywdy9azM/UiZGVPNANKFn
-         dMtFCQ1Z5RO6Mr8Gdd6NbY2XRjidCAQ6zjzXs4M9XTNdNHhkmV6zVuptzH8N2MaS5gye
-         wpR7PbujWuz0V1JojGcKKfVaqbbjua2p2tcpDn/Di2Jl7um10zi2VAB38OOXONradom1
-         WZJ6BJ+tiFOuNmrSW+kx7O6YuRbs2iHKNMXxV9xFoc1UYSVuKjcVXsAf2hPKcZqwSvPy
-         LaEA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=zJ0Her01fUERuq6UNXxLc9TUkx/Xlff3Qxk3pw57hRE=;
-        fh=yIiGJRU6HrPeRHEZORnAPTBSVVdGvb4GZY7zcXQCVHQ=;
-        b=N++RLIZ/J6ERmUpRn7hy0f+t+VNWJF6j66AWq4YnAvscWNay43IhZSHyJMMQFhQEWe
-         62zRevWbtLe6d2D202BorEDyispSaVNfzQtJQozMEd9M4kSh2LKiZH+IwXGgart8wrwz
-         DKmPul+jIAgtmkqNzlvPIjYRhvzDLVOTSR6ggjchlKNzFPveRyEGYjGhYYGA2K2SDoWB
-         abejTu9H9R4VdTX5vyKoZgK3dcsgEJL3XyLpcKAcHgrvd0Ws7/E6CN1KBkjON5f+j5cC
-         HGPGle6vTwb5FIyZlfbbFpTv27kSzB3Allpb9KMovXzryLZbZ7+ydm22nxQ+W9jNronB
-         sG/g==;
-        darn=lists.ozlabs.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gJ9l6111Gz2xRw
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 May 2026 16:19:44 +1000 (AEST)
+Received: by mail-wr1-x429.google.com with SMTP id ffacd0b85a97d-43d7e23defbso530074f8f.0
+        for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 May 2026 23:19:44 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1778996659; x=1779601459; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=zJ0Her01fUERuq6UNXxLc9TUkx/Xlff3Qxk3pw57hRE=;
-        b=b1ods3bVod249kb8VLh45nHbcXe2Xy0EtjX9mc1ifG8khC94mm0NYgf1qts/TM6gkh
-         DmaHFHdWkmLF4ItntAp9e4wWNI53P8lklQ6e7FxYqgq0Z+oekzPs9mZ7a/7bGuYjlN7c
-         StR6cLHg1nsZtZ5ejxO1Lo4k6h4uYU8AtS0sVR0ONFbdFrrrAQ+tiT1e9zbg+owAxw0j
-         4vV7Iqeoxqqdw5Ar7d7hkgxn4lW9Y0qgq4xNPIfeelqrxkXdndQ/WM5mJ46Q1EyK4aZO
-         pWUQmEj5L87GMHsBwSCPJYL/oRjRGJG2nmE23+7MRfogEl6Ube7xyYhkuyUDTVFD3eMr
-         SufA==
+        d=resnulli-us.20251104.gappssmtp.com; s=20251104; t=1778998781; x=1779603581; darn=lists.ozlabs.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=qUI1Kvy8G4UZN8XVWU9+FHDr0P4yKt9TWkL45QXTVdc=;
+        b=xGXZZhZWQeUUY8zUSbkhaCnTtTD9MN/0TTaGu7ztFE2LEVCKxf6Kpy2J2gJOkq3b7S
+         ddYPXLjumhcYwlBKo6p6asx3kgZgUb9itZYHuDGH5Ek6j1x+1zl3qyDwjubYfXooYA9P
+         RrUwZ9kQkAdATUisdKfYVHskxgT+Gc56uYC88W2TcWPtbgl103u32yDtWmo/0xdwVd/H
+         oFa8Ffj0Ap4IlKVaAlC5xU84+aWLAC5fXwOQmKAluHmawj1IWQ6aEr3mnBuZP9Z81PjF
+         w4zU/+3Ox2Y59GTFcILHqSfWdw2AjaaYm6lrWCAsBxr+5oAjO1etE9ytRhBFZTMZ2KmF
+         tMRQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1778996659; x=1779601459;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=zJ0Her01fUERuq6UNXxLc9TUkx/Xlff3Qxk3pw57hRE=;
-        b=m2GH2aO1hArSNGHaEBPL45Xc2SrNgvhiaUyQ6u0UEeRMn1uHaGFVtSiCOhZ/3VG/2n
-         Y6JMO9D0Y1uxQ9Vp+35IXJQn7RgBEJGnQb+44ejyDiemi7YAWkmmDFZjG3ip8JEoCaaX
-         T9dlWUYTaLjl9EC8jRpVZAz8h0xYQUu7y4oYv1RxFqrtNDqsElJdPeuVz9+PF93oj04w
-         XId8XQIzsqOxAPKN+ovbivCjU9CCD9hLgkFj3VDGYNt1EM1h7OXy7PbYcyeYs6UgPXEw
-         8Fif7pn5v86tLQEo9aAx+1UoXI/Vw1ZiCj2juLZGgc07ZntAfUnc+N0XZf3KE/0Q+Y5l
-         Wx6w==
-X-Gm-Message-State: AOJu0YzpdyU8naJkV3puT6q0lBddCEtwu5ZXfhe5aCMuw0isZyGMxUPI
-	I3VBunq7tuu8rTmxnVnIAeBSBJRDr4nyukch0S9TxhKZwVRfyf+hcHe6E/OvatJCcgvlDGrMVyT
-	nnvr0GpBHaczldixfcYTBuNoggpQiSdI=
-X-Gm-Gg: Acq92OE4Di7FslxpYtV39MnUXpj+o817JeZELW/DUHabilbKzT7b10mwtxZnttlHrpL
-	pEkV+xEKE6Js0B/LyN9rnPsdILAs9oEOOqmR75taql9uIKyXUmMvKCe6m2GGCCWP5gjsdFJrYrI
-	/FgcUG6mU/L46Br0BsIGzzWs2rjPhEuDYf0W28OSfI/daNIqxRGHjDLpZ8izA6pEIHXO/kx5pmD
-	96hfHUVy/eIs28GxwyJb1pJhIM0Ix4kE+afEThDRrLwVEtiHm7+Ij1aG2TWW3plKk1JxXuB3Yy1
-	QNbbco7Xw/0nAPptTKD9gtPRvcyNqIz+zIjC8nryQee3UdqtbxnKeOjtNsVwOpAwmAmEkXjSnOr
-	mHKFpZtDhOmTzucr/ZkCocxXyYJRqw98u9D7k0wICDtWBqNXvKqoSJ4chJg==
-X-Received: by 2002:a05:6402:a584:10b0:672:7145:21bb with SMTP id
- 4fb4d7f45d1cf-683bc5ba401mr3704535a12.8.1778996658512; Sat, 16 May 2026
- 22:44:18 -0700 (PDT)
+        d=1e100.net; s=20251104; t=1778998781; x=1779603581;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=qUI1Kvy8G4UZN8XVWU9+FHDr0P4yKt9TWkL45QXTVdc=;
+        b=gQWLSZjKcsah1aRSQ0t5QAn+lT0LaRT4rUWBLeegXbI4Ja3Yq2LwwEY4MF18QX61hg
+         V7EUsBqJQgHrElwoyhpABDiEBu2tAjDvGy0K64h0XRktJZ81CR6W2jzA/Vn587HDbFyq
+         bGvxfAgR1cC06YLa/uMgBV4X2Vi90neF50HQsyJpCNb0xxk58zrgt7WdY6JbK8MHnLZs
+         20JJU+4Lj/WFxzHSslHRFIkZn6gqeEMyzwp532zqDOtztmV+QCU6MB5XLMn1Tn25ZDbN
+         zbyxF8OwVikdMnO94fxqywK4yby+2WMuU105ugBKu2On8dQE14xymkNWVxc4O9xyl/rE
+         cnqA==
+X-Forwarded-Encrypted: i=1; AFNElJ/WPOzdaDkVu+sDWjcq2wgE7jz5XpTl5QGKOz5byTk0vWW0EHQinfIYp2w4rYPFoW289lScLnZs5GW/dGw=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YwMY7ZtmucvlQ0vVMU85/Iuouz2GDFrCOjtc7/2BceBcsMAJ7Hf
+	O/LjhAv76yB5+jI/I73CuFfzh6wsPmg9TGxPHLB87xsfYJ/wPLHfSOn8piJ9ZZkuBHs=
+X-Gm-Gg: Acq92OHu/RZbmGvwCydyCO3Kk48As7gohfEU7nKARcY8OLe+m25AtzDeq93PozNpVLA
+	Q++ZvMPBfWM8zMgkvsyU+Jx3V6J2wMSE1mrRYUOiCpzlXxtSI4lhz+aQlvsIGLQdeh9ZUVf4A9O
+	iSYcFwkMS7wtrxzX8xmGmPQrvSX0PGU762/CL3chkSX4DMcXsWzruhnc6JEVmnivdS9AdCN8yKA
+	SZ2Gu4wJ5i2LaaoD2p6XXklKAnu4M1YBb69u/v+m31CVNruwYi/3bZ8C2ePfqu9yJWS2a04iskt
+	IYW7mc1ow9KOUj0W1qxloa2vCP3oqziixZ43s97eBjxbwuX0tlHzF4nbOux7o2CISoomD+EPhMt
+	SltjqgRlWALuyifXgVYuXS15doREwnF8fZvAG/GjZd2JsQcnZUbf4TQ9ic2pBL/PSzgH65B5772
+	Ul5RpwuHZ4qBYVwG1L99NInISI1KNfHpqDowXpwsFZMDUD7Q==
+X-Received: by 2002:a05:600c:a30a:b0:48a:568f:ae8a with SMTP id 5b1f17b1804b1-48fe5fda35fmr111967805e9.8.1778998781051;
+        Sat, 16 May 2026 23:19:41 -0700 (PDT)
+Received: from FV6GYCPJ69 ([140.209.217.212])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-48fe537c788sm163535945e9.12.2026.05.16.23.19.36
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sat, 16 May 2026 23:19:39 -0700 (PDT)
+Date: Sun, 17 May 2026 08:19:34 +0200
+From: Jiri Pirko <jiri@resnulli.us>
+To: "Aneesh Kumar K.V (Arm)" <aneesh.kumar@kernel.org>
+Cc: iommu@lists.linux.dev, linux-arm-kernel@lists.infradead.org, 
+	linux-kernel@vger.kernel.org, linux-coco@lists.linux.dev, Robin Murphy <robin.murphy@arm.com>, 
+	Marek Szyprowski <m.szyprowski@samsung.com>, Will Deacon <will@kernel.org>, Marc Zyngier <maz@kernel.org>, 
+	Steven Price <steven.price@arm.com>, Suzuki K Poulose <Suzuki.Poulose@arm.com>, 
+	Catalin Marinas <catalin.marinas@arm.com>, Jason Gunthorpe <jgg@ziepe.ca>, 
+	Mostafa Saleh <smostafa@google.com>, Petr Tesarik <ptesarik@suse.com>, 
+	Alexey Kardashevskiy <aik@amd.com>, Dan Williams <dan.j.williams@intel.com>, 
+	Xu Yilun <yilun.xu@linux.intel.com>, linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org, 
+	Madhavan Srinivasan <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, 
+	Nicholas Piggin <npiggin@gmail.com>, "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, 
+	Alexander Gordeev <agordeev@linux.ibm.com>, Gerald Schaefer <gerald.schaefer@linux.ibm.com>, 
+	Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>, 
+	Christian Borntraeger <borntraeger@linux.ibm.com>, Sven Schnelle <svens@linux.ibm.com>, x86@kernel.org
+Subject: Re: [PATCH v4 00/13] dma-mapping: Use DMA_ATTR_CC_SHARED through
+ direct, pool and swiotlb paths
+Message-ID: <agldl4XQLKAtyLty@FV6GYCPJ69>
+References: <20260512090408.794195-1-aneesh.kumar@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -101,47 +103,23 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20260515231913.1154801-1-rosenp@gmail.com> <CAD++jLnuJDs=Zkba5H0L0Wrny+Wej2YLTWF9mCrb1PBownw=kA@mail.gmail.com>
-In-Reply-To: <CAD++jLnuJDs=Zkba5H0L0Wrny+Wej2YLTWF9mCrb1PBownw=kA@mail.gmail.com>
-From: Rosen Penev <rosenp@gmail.com>
-Date: Sat, 16 May 2026 22:44:06 -0700
-X-Gm-Features: AVHnY4J1M83WqBCCDl8TelZl90TAncktoHcmSicUyYKOM7ehSYSArpohXSA5Tpo
-Message-ID: <CAKxU2N_=TnpEaaAY=OZZONg-KAq_GvW7LYchNHsFAfC3A=h0qw@mail.gmail.com>
-Subject: Re: [PATCH] powerpc/44x: Set GPIO chip firmware node
-To: Linus Walleij <linusw@kernel.org>
-Cc: linuxppc-dev@lists.ozlabs.org, Madhavan Srinivasan <maddy@linux.ibm.com>, 
-	Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, Bartosz Golaszewski <brgl@kernel.org>, 
-	open list <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260512090408.794195-1-aneesh.kumar@kernel.org>
 
-On Sat, May 16, 2026 at 7:55=E2=80=AFAM Linus Walleij <linusw@kernel.org> w=
-rote:
+Tue, May 12, 2026 at 11:03:55AM +0200, aneesh.kumar@kernel.org wrote:
+>This series propagates DMA_ATTR_CC_SHARED through the dma-direct,
+>dma-pool, and swiotlb paths so that encrypted and decrypted DMA buffers
+>are handled consistently.
 >
-> On Sat, May 16, 2026 at 1:19=E2=80=AFAM Rosen Penev <rosenp@gmail.com> wr=
-ote:
->
-> > The PPC4xx GPIO driver stopped assigning an explicit firmware node
-> > to the gpio_chip when it moved away from of_mm_gpiochip_add_data().
-> >
-> > Restore that association from the platform device so OF GPIO lookup
-> > can match phandles to the registered gpiochip.
-> >
-> > Tested on: Cisco MX60W. No more probe deferral.
-> >
-> > Assisted-by: Codex:GPT-5.5
-> > Fixes: 1044dbaf2a77 ("powerpc/44x: Change GPIO driver to a proper platf=
-orm driver")
-> > Signed-off-by: Rosen Penev <rosenp@gmail.com>
->
-> Reviewed-by: Linus Walleij <linusw@kernel.org>
-dev was needed, not fwnode. Which makes sense as this is specified in dts.
+>Today, the direct DMA path mostly relies on force_dma_unencrypted() for
+>shared/decrypted buffer handling. This series consolidates the
+>force_dma_unencrypted() checks in the top-level functions and ensures
+>that the remaining DMA interfaces use DMA attributes to make the correct
+>decisions.
 
-https://patch.msgid.link/20260427-gpio-mmio-more-v3-1-fe1882351424@kernel.o=
-rg
-fixes this but that's not in a released kernel.
->
-> Yours,
-> Linus Walleij
+FWIW, the patchset in general looks good to me. I tested this with my
+system_cc_shared dmabuf flow, works flawlessly.
+
+Thanks!
 
