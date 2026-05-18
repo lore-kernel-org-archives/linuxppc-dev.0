@@ -1,78 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-21073-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21074-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5040DCD4F48
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 May 2026 07:50:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 31BA0CD4F3C
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 May 2026 07:53:32 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gJqj00PqKz30FP;
-	Mon, 18 May 2026 17:50:12 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=91.218.175.171
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779090611;
-	cv=none; b=FM7jbps5isHxsXUscCK2zL7zIsry/aI4VhnlDHMjAiTCj35DkiYy1Ob1YxsRXFqZutorzZvrhh44xmswOt8GIDsBCc1Gpo+goyaIyfUWWlQBEtqqSQlDLrOdtm+2wkhg9WwwrXSpDKFG6cgLDZN+Elq8Uh7JI95Eam0i73/5MlMKrUlq3TME0MBAsOXW9ytKrjcz1Vl5UuHiYr64JUj8JkNsB8+HxNTbSwsqqddw1tgMsfOkw2L8iJJaGf73ekfhYoOkwN6WH8nUNL+hvZEzmgCg6BIR+Yox+rSJymPGRjo/1nUMj5V+Ow0ln2B/ei0NOgm8jUym+QFOU0+DbjgZcA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gJqmp5zq6z2yRF;
+	Mon, 18 May 2026 17:53:30 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779090810;
+	cv=none; b=MZjc+Nm6tPBP4/N6XCNjjzYfIEBRYMcYDf2Rh5vq08dc5ANAPBj06BSpxTy/644rQFzGqmjOkbX6EgvVsbrWz50GK/MDuBzcExbvqfUxWOWcDvFkhKjDaRNIpAUBsbeMcZrvAeeJrMVjZj4rMoysyiZdv6RihYvo0PWM9oNU3MmNB6GodTxrwSeZ00O0JSXV/4Q+ASaPnTwNCTMI4TRuMvP+ldpDERbDm2UQJjj9+6UJ/+TaH+vFaZWUzIS2BEj2y/jMSii8/E4+voQHKOZ5eXb26i8p2oz8rhMiDd9cVfyrJ9EBVl0R6zl1X6DcwFpkDW9BqwMNhSrNzgGxUQxcdg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1779090611; c=relaxed/relaxed;
-	bh=fTTRIuI2xioXcBOay/WhZ57PMiS4AlcVkZHDZZirdOs=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=A4UAAqVPSuEq1XF8Hf9TTJiO9QrBUjrgHKoOcYGoxUxY51YUcxQCdXGaqAcNB8+A69KZrhANahPYcsjjjJ2Wie5Y+9E+MbikfhbQHQKCTauTo+fiC3GPkc2qfX+3R2NFAZqHDh9SKCYWGZsVliLIc0yPqtiW7FXpTIcZ0i6jYIM6FeCimPb1EnyKvEGv5ClimqVJM/a4rAmItheiTJcZMtaUEEUkNFWsOFVJN+tTQcMcSozcKIguzCWOdueCTNuY0m/zjwmiWaiXvq9/un5gsYqfQhdXVbmJ6+3bzO5uiLs/ipz0BeF8+R57khxvftiAq2vqk2JqYvtpNUgn1jAumQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=sQA9gAlm; dkim-atps=neutral; spf=pass (client-ip=91.218.175.171; helo=out-171.mta0.migadu.com; envelope-from=lance.yang@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
+	t=1779090810; c=relaxed/relaxed;
+	bh=oOAsXAytSQAgmxOv/NeD2RAa3hTI0NZumiDSDgpMwgE=;
+	h=Message-ID:Date:MIME-Version:Subject:From:To:Cc:References:
+	 In-Reply-To:Content-Type; b=nIgNUumwOXVTcMXCQDSCvca7lwOVDkytcXm+KcnN0O5dvefVN14M8MdaudcGHlETpiKMpB1/R/RNg7tFKHvGm0cby5M4/2E3ADZn0c5otysF/+4dAov0//t/8bSJYL922S9MkidYv2wmrR2vt3qK/axWu8gwzW7vmFgfF3gMaQe0+TmJ0lw6w/ff9oRbAIY3Oe/0Vk6hjhGzfTlydPdQQgDIQZiT5sQ1umZ0ObSluJSx8UBRauIVbWKSSUOaBzPMx315iWZgIFlln69V0SLVIqyaKnVelQsHjR30ULosoK5D87n6+2Bk6lUkEjysoItRC3Lakxy5STvBcdB/PoCfng==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Fa1MnSnA; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=hbathini@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=sQA9gAlm;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Fa1MnSnA;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=91.218.175.171; helo=out-171.mta0.migadu.com; envelope-from=lance.yang@linux.dev; receiver=lists.ozlabs.org)
-X-Greylist: delayed 3269 seconds by postgrey-1.37 at boromir; Mon, 18 May 2026 17:50:09 AEST
-Received: from out-171.mta0.migadu.com (out-171.mta0.migadu.com [91.218.175.171])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=hbathini@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gJqhx1ffYz2yS4
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 May 2026 17:50:08 +1000 (AEST)
-X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
-	t=1779090587;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=fTTRIuI2xioXcBOay/WhZ57PMiS4AlcVkZHDZZirdOs=;
-	b=sQA9gAlmLXajI0q10KUnEdN1uuZqCxucU3NRWLlR3WCTWt4IvAIwwMmL9Yv6cg1ak9LTUk
-	GcZJgc51RUZJ7q5loEHLNQ7RZ6YM5RGuq2Q/7SkVZott8sl3sIvYYq4EpVgjv3FmqR41gO
-	tjAWCElujIzm29k6iPaM4P/xnC8SWbI=
-From: Lance Yang <lance.yang@linux.dev>
-To: david@kernel.org
-Cc: davem@davemloft.net,
-	andreas@gaisler.com,
-	rppt@kernel.org,
-	akpm@linux-foundation.org,
-	agordeev@linux.ibm.com,
-	gerald.schaefer@linux.ibm.com,
-	hca@linux.ibm.com,
-	gor@linux.ibm.com,
-	borntraeger@linux.ibm.com,
-	svens@linux.ibm.com,
-	maddy@linux.ibm.com,
-	mpe@ellerman.id.au,
-	npiggin@gmail.com,
-	chleroy@kernel.org,
-	ljs@kernel.org,
-	liam@infradead.org,
-	vbabka@kernel.org,
-	surenb@google.com,
-	mhocko@suse.com,
-	sparclinux@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	linux-mm@kvack.org,
-	linux-s390@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org,
-	Lance Yang <lance.yang@linux.dev>
-Subject: Re: [PATCH 2/8] mm/bootmem_info: drop initialization of page->lru
-Date: Mon, 18 May 2026 15:49:31 +0800
-Message-Id: <20260518074931.34380-1-lance.yang@linux.dev>
-In-Reply-To: <20260511-bootmem_info_prep-v1-2-3fb0be6fc688@kernel.org>
-References: <20260511-bootmem_info_prep-v1-2-3fb0be6fc688@kernel.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gJqmp0bJ9z2yQH
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 May 2026 17:53:29 +1000 (AEST)
+Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 64HLeg1E1409980;
+	Mon, 18 May 2026 07:53:15 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=oOAsXA
+	ytSQAgmxOv/NeD2RAa3hTI0NZumiDSDgpMwgE=; b=Fa1MnSnAlbHAnH6j/X4CWO
+	ykG9AXfzjPI9nvZ77JwvVKc+08p6WN0qkoeI7KoNCAWL2V0iaEtORwNzHfMfScWS
+	R0gWG8mDmV6Ic66G8jesW44GrfVblZCdqStYgBQva7apexZ7Jzuc8hAPQhgWwuqP
+	xlosGsk3n1tpbIblyL8dR2DI7Nr9f4ZG0S23RbAOqyzR2APneifOO+UMTda9AJpv
+	+1FPuEas0GkkGpRzVQPbQf+JxiUCtNmZbOMTmx+iNGFzIU4e5/SODDbb0liZ8dMk
+	SJDMHHqD1xERNI7xyhkLlqPIXLIjpeOnnN6LMpI8/KlAL9jPbeFd4oV45UT08PDA
+	==
+Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4e6h9xpx9n-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 18 May 2026 07:53:14 +0000 (GMT)
+Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma22.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 64I7d6kF021481;
+	Mon, 18 May 2026 07:53:13 GMT
+Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
+	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4e739vmy4k-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 18 May 2026 07:53:13 +0000 (GMT)
+Received: from smtpav07.fra02v.mail.ibm.com (smtpav07.fra02v.mail.ibm.com [10.20.54.106])
+	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 64I7r9lG42795364
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Mon, 18 May 2026 07:53:09 GMT
+Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id C6AD720043;
+	Mon, 18 May 2026 07:53:09 +0000 (GMT)
+Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 882F72004B;
+	Mon, 18 May 2026 07:53:07 +0000 (GMT)
+Received: from [9.78.106.17] (unknown [9.78.106.17])
+	by smtpav07.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Mon, 18 May 2026 07:53:07 +0000 (GMT)
+Message-ID: <e9a263a7-0f90-4393-b407-0c3a771d3780@linux.ibm.com>
+Date: Mon, 18 May 2026 13:23:06 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -86,52 +81,135 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v4 2/5] powerpc/bpf: Move out dummy_tramp_addr after Long
+ branch stub
+Content-Language: en-US
+From: Hari Bathini <hbathini@linux.ibm.com>
+To: adubey@linux.ibm.com, bpf@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org, maddy@linux.ibm.com, ast@kernel.org,
+        andrii@kernel.org, daniel@iogearbox.net, shuah@kernel.org,
+        linux-kselftest@vger.kernel.org, stable@vger.kernel.org
+References: <20260517214043.12975-1-adubey@linux.ibm.com>
+ <20260517214043.12975-3-adubey@linux.ibm.com>
+ <e074658e-401f-4d12-8997-4007d86b9826@linux.ibm.com>
+In-Reply-To: <e074658e-401f-4d12-8997-4007d86b9826@linux.ibm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-X-Migadu-Flow: FLOW_OUT
+X-TM-AS-GCONF: 00
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTE4MDA2NyBTYWx0ZWRfXykjks/YEhS5D
+ cqJYGQodr4wrTAclW+vVBcLiN39k0bFFKlebpa31AM+ddPlJQdUkEEgOVKyAASbCSXWDt1lGlBz
+ pXFUZsKPL8JWBhf5SWvaLi7b6SYmaTePk0bElVUMBUMx7JziNwt0BdlFilso9ciiidW6TILeXEn
+ AoTRwrq2AW7KOeeqiQbmPhm+xCuVzHm56qjtPXNnBFhdJKrIc3dLXyf7YzuD6GD17PbRVSBos2g
+ h6lw3edrsvu2PJzDjULrWu7YAe0x7T9yhw0JaeliuDpKEx9dfea5vT6aXIhDduIvYxdKOmU5fFF
+ yg0FISEAe3UYfqnKf5bpB1znjthNEW1Jcp5q25YWBa5nvOZCzk4ar/1BiVmny0KF6bzX3Zcohxr
+ l604DuftyU/V6+1y6tEgb+BHioy1E8XEMJpAc/jl6ZHFEGS49h6mLSax+GD02ltI7eexc/WMz/v
+ h8MpH68WL7ALZm8yCsw==
+X-Authority-Analysis: v=2.4 cv=BNuDalQG c=1 sm=1 tr=0 ts=6a0ac56a cx=c_pps
+ a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
+ a=IkcTkHD0fZMA:10 a=NGcC8JguVDcA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=iQ6ETzBq9ecOQQE5vZCe:22 a=VnNF1IyMAAAA:8
+ a=PIyfoD_1ohwjx45KiRgA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+X-Proofpoint-ORIG-GUID: E4NaMlrcjvD3dE8O6znwFtvl7-BB6LuG
+X-Proofpoint-GUID: E4NaMlrcjvD3dE8O6znwFtvl7-BB6LuG
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-05-18_01,2026-05-15_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ adultscore=0 priorityscore=1501 malwarescore=0 impostorscore=0 suspectscore=0
+ lowpriorityscore=0 phishscore=0 bulkscore=0 spamscore=0 clxscore=1015
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2605130000 definitions=main-2605180067
 
 
-On Mon, May 11, 2026 at 04:05:30PM +0200, David Hildenbrand (Arm) wrote:
->In the past, we used to store the type in page->lru.next, introduced by
->commit 5f24ce5fd34c ("thp: remove PG_buddy"). The location changed over
->the years; ever since commit 0386aaa6e9c8 ("bootmem: stop using
->page->index"), we store it alongside the info in page->private.
->
->Consequently, there is no need to reset page->lru anymore.
->
->Signed-off-by: David Hildenbrand (Arm) <david@kernel.org>
->---
-> mm/bootmem_info.c | 1 -
-> 1 file changed, 1 deletion(-)
->
->diff --git a/mm/bootmem_info.c b/mm/bootmem_info.c
->index 3d7675a3ae04..a0a1ecdec8d0 100644
->--- a/mm/bootmem_info.c
->+++ b/mm/bootmem_info.c
->@@ -34,7 +34,6 @@ void put_page_bootmem(struct page *page)
-> 	if (page_ref_dec_return(page) == 1) {
-> 		ClearPagePrivate(page);
-> 		set_page_private(page, 0);
->-		INIT_LIST_HEAD(&page->lru);
 
-Yep, that old INIT_LIST_HEAD() call was dead cleanup. page->lru and
-page->buddy_list are in the same union:
+On 18/05/26 12:55 pm, Hari Bathini wrote:
+> 
+> 
+> On 18/05/26 3:10 am, adubey@linux.ibm.com wrote:
+>> From: Abhishek Dubey <adubey@linux.ibm.com>
+>>
+>> Move the long branch address space to the bottom of the long
+>> branch stub. This allows uninterrupted disassembly until the
+>> last 8 bytes. Exclude these last bytes from the overall
+>> program length to prevent failure in assembly generation.
+>> Also, align dummy_tramp_addr field with 8-byte boundary.
+>>
+>> Following is disassembler output for test program with moved down
+>> dummy_tramp_addr field:
+>> .....
+>> .....
+>> pc:68    left:44     a6 03 08 7c  :  mtlr 0
+>> pc:72    left:40     bc ff ff 4b  :  b .-68
+>> pc:76    left:36     a6 02 68 7d  :  mflr 11
+>> pc:80    left:32     05 00 9f 42  :  bcl 20, 31, .+4
+>> pc:84    left:28     a6 02 88 7d  :  mflr 12
+>> pc:88    left:24     14 00 8c e9  :  ld 12, 20(12)
+>> pc:92    left:20     a6 03 89 7d  :  mtctr 12
+>> pc:96    left:16     a6 03 68 7d  :  mtlr 11
+>> pc:100   left:12     20 04 80 4e  :  bctr
+>> pc:104   left:8      c0 34 1d 00  :
+>>
+>> Failure log:
+>> Can't disasm instruction at offset 104: c0 34 1d 00 00 00 00 c0
+>> Disassembly logic can truncate at 104, ignoring last 8 bytes.
+>>
+>> Update the dummy_tramp_addr field offset calculation from the end
+>> of the program to reflect its new location, for bpf_arch_text_poke()
+>> to update the actual trampoline's address in this field.
+>>
+>> All BPF trampoline selftests continue to pass with this patch applied.
+>>
+>> Signed-off-by: Abhishek Dubey <adubey@linux.ibm.com>
+>> ---
+>>   arch/powerpc/net/bpf_jit_comp.c | 34 +++++++++++++++++++--------------
+>>   1 file changed, 20 insertions(+), 14 deletions(-)
+>>
+>> diff --git a/arch/powerpc/net/bpf_jit_comp.c b/arch/powerpc/net/ 
+>> bpf_jit_comp.c
+>> index ef7614177cb1..b73bc9295c31 100644
+>> --- a/arch/powerpc/net/bpf_jit_comp.c
+>> +++ b/arch/powerpc/net/bpf_jit_comp.c
+>> @@ -57,19 +57,21 @@ void bpf_jit_build_fentry_stubs(u32 *image, u32 
+>> *fimage, struct codegen_context
+>>        * In the final pass, align the mis-aligned dummy_tramp_addr field
+>>        * in the fimage. The alignment NOP must appear before OOL stub,
+>>        * to make ool_stub_idx & long_branch_stub_idx constant from end.
+>> +     *
+>> +     * The dummy_tramp_addr field is placed at bottom of Long branch 
+>> stub.
+>>        */
+>>   #ifdef CONFIG_PPC64
+>>       if (fimage && image) {
+>>           /*
+>>            * pc points to first instruction of OOL stub,
+>> -         * dummy_tramp_addr is past 4/3 instructions depending on
+>> +         * dummy_tramp_addr is past 11/10 instructions depending on
+>>            * CONFIG_PPC_FTRACE_OUT_OF_LINE is enabled/not respectively.
+>>            *
+>>            * The decision to emit alignment NOP must depend on the 
+>> alignment
+>>            * of dummy_tramp_addr field.
+>>            */
+>>           unsigned long pc = (unsigned long)fimage + CTX_NIA(ctx);
+> 
+>> -        pc += IS_ENABLED(CONFIG_PPC_FTRACE_OUT_OF_LINE) ? 4 : 3;
+>> +        pc += IS_ENABLED(CONFIG_PPC_FTRACE_OUT_OF_LINE) ? 11 : 10;
+> 
+> To get the address, should multiply the instruction count with 4..
+> 
+>      pc += (IS_ENABLED(CONFIG_PPC_FTRACE_OUT_OF_LINE) ? 11 : 10) * 4;
+> 
+> Also, pc may not be appropriate name here. We are essentially
+> calculating the pointer address of dummy_tramp_addr. `addrp` maybe?
 
-			union {
-				struct list_head lru;
+Something like this:
 
-				/* Or, free page */
-				struct list_head buddy_list;
-			};
++		u32 *addrp = fimage + ctx->idx;
++
++		addrp += IS_ENABLED(CONFIG_PPC_FTRACE_OUT_OF_LINE) ? 4 : 3;
++		if (!IS_ALIGNED((unsigned long)addrp, 8))
++			EMIT(PPC_RAW_NOP());
 
-and free_reserved_page() passes the page to the buddy allocator. The
-later buddy list insertion will overwrite the values written by
-INIT_LIST_HEAD(&page->lru) anyway.
-
-> 		kmemleak_free_part_phys(PFN_PHYS(page_to_pfn(page)), PAGE_SIZE);
-> 		free_reserved_page(page);
-> 	}
-
-LGTM, feel free to add:
-Reviewed-by: Lance Yang <lance.yang@linux.dev>
+- Hari
 
