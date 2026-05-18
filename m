@@ -1,48 +1,48 @@
-Return-Path: <linuxppc-dev+bounces-21050-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21051-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B33E7CD343F
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 May 2026 05:22:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A1DF0CD343F
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 May 2026 05:22:36 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gJmQX3640z3cZB;
-	Mon, 18 May 2026 15:22:28 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gJmQg2Z51z3cZg;
+	Mon, 18 May 2026 15:22:35 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:7c80:54:3::133"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779081748;
-	cv=none; b=Sr0OMC0LhGphPXdNE6tZlr+6P6+/Ao5KKOeOXWJEUxcV89DuqBmbj83bFJjPFx9igVyuUQMAJVLLE7C5dn6kYVQgATJYSjr0rTc7YqHE5damd/Qfd9ZE0ImMuvee0b1u/drJbDV6WbSpkjQstUEm5WPcaDYiCdj076mNei0/0N5oR0rRmDw/4XSnkEeM0Mak8DKlBFeXCYzGqQmtUB1fCYWHox/iO8ngBbA6ch1QO2uD2FGO2UOx+4Az1fRgmLCdI/yFXN9Bh2Jt0zDFBz7r6QJZB6FXkS0RcweWdmCglFxEcveGVvqy+DnD84gYb5XASfEyDoPPMktyLu25C/wYGw==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779081755;
+	cv=none; b=n1d5TaMRKc8UzKd1OfRc1rKVglnqXwJ9rDhFPkyt31qTZQVwonIvOZ26JOentUMPEhjPdDpPM5KS9QJPB4G6J0GcbQJqFIEzYOnEkpmPmdobZ/hnR+tUxVhQzLZK4lBeHOKj9rkGQ37TNS1T+5ejCFyPbRAoMGb6516bHvQvd9vfh25HvSxOKw69Y5OpXLftDLNtNK09EdaU9xdcxY6yMWYhw/u3uMuW3W3WKen+AmMHUPeKSoZHbbKhJ4iGavH+vhMMEanB364LB7/i7gVoT0q1KEkZq7uRKj2/wSQHRozTX7+1XsIpn8obAiEfCXsMJuZqIyZfvh2KHojRWA6MZg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1779081748; c=relaxed/relaxed;
-	bh=w+LFtyouKEGXgjMzYtLU5E62mpQVR0MfAyj6RVhrD0Q=;
+	t=1779081755; c=relaxed/relaxed;
+	bh=uaKQjfFAYtBVCxqvynOc2mKXzrdsWopfj35JuMOV+rY=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=hOqZy47n6ieFTQ3fgsWttxdEVDqKpNGp25vQxLrIYGpOXJd8Yrsxy8TZzS0nLWUsS2lj1IqpNZEzaO83u5iQK/8MPx8I2fhBTXWFGXQFflXvu4AlCoATKm6U+XfSI4onBNpb62iu+NAebKBELKaQZIE4oZczoQBfTsEez7q8QyjBtI0Pa3SPk8Bj2axqBCKfQccDZnKEbHEQ/xBvG9MYERIwDyH1TSu97v7mGsz4xkk3+9WaRgyTOby0ad/74IM8uGJSfhV0ludXFKXMoCQL8TXri80o/TMZkKk4xdjRYwfHZSSbZoUbsxAHL4CgzSofX/PginKJtshRemXK8wIYkg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=lst.de; dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=0aiWgjFP; dkim-atps=neutral; spf=none (client-ip=2607:7c80:54:3::133; helo=bombadil.infradead.org; envelope-from=batv+a5a5d3dd39d7e5270008+8303+infradead.org+hch@bombadil.srs.infradead.org; receiver=lists.ozlabs.org) smtp.mailfrom=bombadil.srs.infradead.org
+	 MIME-Version; b=gdtE1DRJyyb/E+FauK07NhyEi48RGd/suBrHozo6g2PHn0Yw6a64nLSn+oVz6g2fePwCTeyFw1vrtOCOTdisCxQYKYU+tTBdaso+9gGXHUxEqFqQEGKNgiL+UNoO3YVPdjdCW8JcKx+Yv0Qvd/j7nU+O6xyMqLBURbb/OAC4lA0psZyrFNDBYGrJbuktdUaSbnmds662odMrieIC5/dzJ9+zXGCpqWVb/tiph5xLe8kke9fM/TXQ7L42pWerU91CBMe6VRhLbHjgi4EYoKh7W16Lw+Jflkox+HgEGrF+NWi+hftMHBj0e8u+K+0Qz4tAQkKkn05ae1zhDWzAZoa5rA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=lst.de; dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=Jing+W1v; dkim-atps=neutral; spf=none (client-ip=2607:7c80:54:3::133; helo=bombadil.infradead.org; envelope-from=batv+a5a5d3dd39d7e5270008+8303+infradead.org+hch@bombadil.srs.infradead.org; receiver=lists.ozlabs.org) smtp.mailfrom=bombadil.srs.infradead.org
 Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=lst.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=0aiWgjFP;
+	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=Jing+W1v;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=bombadil.srs.infradead.org (client-ip=2607:7c80:54:3::133; helo=bombadil.infradead.org; envelope-from=batv+a5a5d3dd39d7e5270008+8303+infradead.org+hch@bombadil.srs.infradead.org; receiver=lists.ozlabs.org)
 Received: from bombadil.infradead.org (bombadil.infradead.org [IPv6:2607:7c80:54:3::133])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gJmQW4Zb1z3cZ5
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 May 2026 15:22:27 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gJmQf53NHz3cZd
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 May 2026 15:22:34 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
 	MIME-Version:References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:Sender
 	:Reply-To:Content-Type:Content-ID:Content-Description;
-	bh=w+LFtyouKEGXgjMzYtLU5E62mpQVR0MfAyj6RVhrD0Q=; b=0aiWgjFPrEViCYJB7un1seblij
-	L2b6INmxQsn9fHcXIUOmJIWFKm+N4sQuEo5aKmvI8Dib15DPPX2sPVKkd/vp0Chi2AlZrPynuuD1t
-	gaQZncMnCZ3uCq/HkZVz28hdUZq2S2DAtW7VFGTnRV3clrYNdsgKB2ey4tj7HRlrwllW7VvJRbdAB
-	KYWKEP1WxDTcgOARbIpJhH/vc8rey2ZWyq/4O6noYT6DZLvEJ5Pt3IIyklu25r8CRq72WQuoMNafd
-	oN4W8H0l9NtPu61QxS4HZeDC+2puB7cz/tSwIdBd/uCG1pLfxQT2wwfE150t1ElsjQ+31/iEpzoL3
-	QX0y5Sqw==;
+	bh=uaKQjfFAYtBVCxqvynOc2mKXzrdsWopfj35JuMOV+rY=; b=Jing+W1vqKafzy33W0HLcJFYgc
+	RKUGazs84SeejS8GgQu72B4qMAleWYZX8ji94eMmBAxUwg6lB/Udy2wC2M8Q76kOvOPVBPH1p0WdI
+	MHfY5E9RI4blWIv0zxUslTrMHHvulRctkB+TX88SubO7bFbf0OrN9Vk2wETpwJqyzjfwn+HQ1DYLV
+	aqdOL8urartp7j2usvg+LQVtbczGTh74oqg3q9aDYDb8shiHqlaOburv3o9h8uMZYtC92EOfVRI/3
+	1sAWWMsx5mUZ7niJlPrjVBkuksc33JlNNpyxsXsDzqwyMBRI4X262XuIGoUi10V1SXSa9iJVgIvdm
+	Nfp7GkbQ==;
 Received: from [2001:4bb8:2d1:6fdb:d67d:128c:34ba:85b8] (helo=localhost)
 	by bombadil.infradead.org with esmtpsa (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wOqQV-0000000EI0j-3E9H;
-	Mon, 18 May 2026 05:22:04 +0000
+	id 1wOqQk-0000000EID1-3vrf;
+	Mon, 18 May 2026 05:22:19 +0000
 From: Christoph Hellwig <hch@lst.de>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Catalin Marinas <catalin.marinas@arm.com>,
@@ -87,9 +87,9 @@ Cc: Catalin Marinas <catalin.marinas@arm.com>,
 	linux-btrfs@vger.kernel.org,
 	linux-arch@vger.kernel.org,
 	linux-raid@vger.kernel.org
-Subject: [PATCH 15/18] raid6_kunit: dynamically allocate data buffers using vmalloc
-Date: Mon, 18 May 2026 07:17:58 +0200
-Message-ID: <20260518051804.462141-16-hch@lst.de>
+Subject: [PATCH 16/18] raid6_kunit: cleanup dataptr handling
+Date: Mon, 18 May 2026 07:17:59 +0200
+Message-ID: <20260518051804.462141-17-hch@lst.de>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20260518051804.462141-1-hch@lst.de>
 References: <20260518051804.462141-1-hch@lst.de>
@@ -109,170 +109,97 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org. See http://www.infradead.org/rpr.html
 
-Use vmalloc for the data buffers instead of using static .data allocations.
-This provides for better out of bounds checking and avoids wasting kernel
-memory after the test has run.  vmalloc is used instead of kmalloc to
-provide for better out of bounds access checking as in other kunit tests.
+Move the global dataptr array into test_recover() as all sites that fill
+data or parity can use test_buffers directly, and this localized the
+override for the failed slots to the recovery testing routine.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 Acked-by: Ard Biesheuvel <ardb@kernel.org>
 Tested-by: Ard Biesheuvel <ardb@kernel.org> # kunit only on arm64
 ---
- lib/raid/raid6/tests/raid6_kunit.c | 77 ++++++++++++++++++++++++------
- 1 file changed, 62 insertions(+), 15 deletions(-)
+ lib/raid/raid6/tests/raid6_kunit.c | 19 +++++++------------
+ 1 file changed, 7 insertions(+), 12 deletions(-)
 
 diff --git a/lib/raid/raid6/tests/raid6_kunit.c b/lib/raid/raid6/tests/raid6_kunit.c
-index 9d06ed9b90e4..72c78834df7f 100644
+index 72c78834df7f..152d5d1c3a88 100644
 --- a/lib/raid/raid6/tests/raid6_kunit.c
 +++ b/lib/raid/raid6/tests/raid6_kunit.c
-@@ -7,19 +7,20 @@
- 
- #include <kunit/test.h>
- #include <linux/prandom.h>
-+#include <linux/vmalloc.h>
- #include "../algos.h"
- 
- MODULE_IMPORT_NS("EXPORTED_FOR_KUNIT_TESTING");
- 
- #define RAID6_KUNIT_SEED		42
-+#define RAID6_KUNIT_MAX_FAILURES	2
- 
+@@ -18,7 +18,6 @@ MODULE_IMPORT_NS("EXPORTED_FOR_KUNIT_TESTING");
  #define NDISKS		16	/* Including P and Q */
  
  static struct rnd_state rng;
- static void *dataptrs[NDISKS];
--static char data[NDISKS][PAGE_SIZE] __attribute__((aligned(PAGE_SIZE)));
--static char recovi[PAGE_SIZE] __attribute__((aligned(PAGE_SIZE)));
--static char recovj[PAGE_SIZE] __attribute__((aligned(PAGE_SIZE)));
-+static void *test_buffers[NDISKS];
-+static void *test_recov_buffers[RAID6_KUNIT_MAX_FAILURES];
+-static void *dataptrs[NDISKS];
+ static void *test_buffers[NDISKS];
+ static void *test_recov_buffers[RAID6_KUNIT_MAX_FAILURES];
  
- struct test_args {
- 	unsigned int recov_idx;
-@@ -35,8 +36,8 @@ static void makedata(int start, int stop)
+@@ -35,10 +34,8 @@ static void makedata(int start, int stop)
+ {
  	int i;
  
- 	for (i = start; i <= stop; i++) {
--		prandom_bytes_state(&rng, data[i], PAGE_SIZE);
--		dataptrs[i] = data[i];
-+		prandom_bytes_state(&rng, test_buffers[i], PAGE_SIZE);
-+		dataptrs[i] = test_buffers[i];
- 	}
+-	for (i = start; i <= stop; i++) {
++	for (i = start; i <= stop; i++)
+ 		prandom_bytes_state(&rng, test_buffers[i], PAGE_SIZE);
+-		dataptrs[i] = test_buffers[i];
+-	}
  }
  
-@@ -55,12 +56,13 @@ static char member_type(int d)
+ static char member_type(int d)
+@@ -56,11 +53,13 @@ static char member_type(int d)
  static void test_recover(struct kunit *test, int faila, int failb)
  {
  	const struct test_args *ta = test->param_value;
-+	int i;
++	void *dataptrs[NDISKS];
+ 	int i;
  
--	memset(recovi, 0xf0, PAGE_SIZE);
--	memset(recovj, 0xba, PAGE_SIZE);
-+	for (i = 0; i < RAID6_KUNIT_MAX_FAILURES; i++)
-+		memset(test_recov_buffers[i], 0xf0, PAGE_SIZE);
+ 	for (i = 0; i < RAID6_KUNIT_MAX_FAILURES; i++)
+ 		memset(test_recov_buffers[i], 0xf0, PAGE_SIZE);
  
--	dataptrs[faila] = recovi;
--	dataptrs[failb] = recovj;
-+	dataptrs[faila] = test_recov_buffers[0];
-+	dataptrs[failb] = test_recov_buffers[1];
++	memcpy(dataptrs, test_buffers, sizeof(dataptrs));
+ 	dataptrs[faila] = test_recov_buffers[0];
+ 	dataptrs[failb] = test_recov_buffers[1];
  
- 	if (failb == NDISKS - 1) {
- 		/*
-@@ -80,18 +82,20 @@ static void test_recover(struct kunit *test, int faila, int failb)
- 		ta->recov->data2(NDISKS, PAGE_SIZE, faila, failb, dataptrs);
- 	}
+@@ -70,7 +69,7 @@ static void test_recover(struct kunit *test, int faila, int failb)
+ 		 * is equivalent to a RAID-5 failure (XOR, then recompute Q).
+ 		 */
+ 		if (faila != NDISKS - 2)
+-			goto skip;
++			return;
  
--	KUNIT_EXPECT_MEMEQ_MSG(test, data[faila], recovi, PAGE_SIZE,
-+	KUNIT_EXPECT_MEMEQ_MSG(test, test_buffers[faila], test_recov_buffers[0],
-+			PAGE_SIZE,
- 			"faila miscompared: %3d[%c] (failb=%3d[%c])\n",
- 			faila, member_type(faila),
- 			failb, member_type(failb));
--	KUNIT_EXPECT_MEMEQ_MSG(test, data[failb], recovj, PAGE_SIZE,
-+	KUNIT_EXPECT_MEMEQ_MSG(test, test_buffers[failb], test_recov_buffers[1],
-+			PAGE_SIZE,
+ 		/* P+Q failure.  Just rebuild the syndrome. */
+ 		ta->gen->gen_syndrome(NDISKS, PAGE_SIZE, dataptrs);
+@@ -92,10 +91,6 @@ static void test_recover(struct kunit *test, int faila, int failb)
  			"failb miscompared: %3d[%c] (faila=%3d[%c])\n",
  			failb, member_type(failb),
  			faila, member_type(faila));
- 
- skip:
--	dataptrs[faila] = data[faila];
--	dataptrs[failb] = data[failb];
-+	dataptrs[faila] = test_buffers[faila];
-+	dataptrs[failb] = test_buffers[failb];
+-
+-skip:
+-	dataptrs[faila] = test_buffers[faila];
+-	dataptrs[failb] = test_buffers[failb];
  }
  
  static void raid6_test(struct kunit *test)
-@@ -100,8 +104,8 @@ static void raid6_test(struct kunit *test)
- 	int i, j, p1, p2;
- 
- 	/* Nuke syndromes */
--	memset(data[NDISKS - 2], 0xee, PAGE_SIZE);
--	memset(data[NDISKS - 1], 0xee, PAGE_SIZE);
-+	memset(test_buffers[NDISKS - 2], 0xee, PAGE_SIZE);
-+	memset(test_buffers[NDISKS - 1], 0xee, PAGE_SIZE);
+@@ -108,7 +103,7 @@ static void raid6_test(struct kunit *test)
+ 	memset(test_buffers[NDISKS - 1], 0xee, PAGE_SIZE);
  
  	/* Generate assumed good syndrome */
- 	ta->gen->gen_syndrome(NDISKS, PAGE_SIZE, (void **)&dataptrs);
-@@ -161,15 +165,58 @@ static struct kunit_case raid6_test_cases[] = {
+-	ta->gen->gen_syndrome(NDISKS, PAGE_SIZE, (void **)&dataptrs);
++	ta->gen->gen_syndrome(NDISKS, PAGE_SIZE, test_buffers);
  
- static int raid6_suite_init(struct kunit_suite *suite)
- {
-+	int i;
-+
- 	prandom_seed_state(&rng, RAID6_KUNIT_SEED);
-+
-+	/*
-+	 * Allocate the test buffer using vmalloc() with a page-aligned length
-+	 * so that it is immediately followed by a guard page.  This allows
-+	 * buffer overreads to be detected, even in assembly code.
-+	 */
-+	for (i = 0; i < RAID6_KUNIT_MAX_FAILURES; i++) {
-+		test_recov_buffers[i] = vmalloc(PAGE_SIZE);
-+		if (!test_recov_buffers[i])
-+			goto out_free_recov_buffers;
-+	}
-+	for (i = 0; i < NDISKS; i++) {
-+		test_buffers[i] = vmalloc(PAGE_SIZE);
-+		if (!test_buffers[i])
-+			goto out_free_buffers;
-+	}
-+
- 	makedata(0, NDISKS - 1);
-+
- 	return 0;
-+
-+out_free_buffers:
-+	for (i = 0; i < NDISKS; i++)
-+		vfree(test_buffers[i]);
-+	memset(test_buffers, 0, sizeof(test_buffers));
-+out_free_recov_buffers:
-+	for (i = 0; i < RAID6_KUNIT_MAX_FAILURES; i++)
-+		vfree(test_recov_buffers[i]);
-+	memset(test_recov_buffers, 0, sizeof(test_recov_buffers));
-+	return -ENOMEM;
-+}
-+
-+static void raid6_suite_exit(struct kunit_suite *suite)
-+{
-+	int i;
-+
-+	for (i = 0; i < NDISKS; i++)
-+		vfree(test_buffers[i]);
-+	memset(test_buffers, 0, sizeof(test_buffers));
-+	for (i = 0; i < RAID6_KUNIT_MAX_FAILURES; i++)
-+		vfree(test_recov_buffers[i]);
-+	memset(test_recov_buffers, 0, sizeof(test_recov_buffers));
- }
+ 	for (i = 0; i < NDISKS - 1; i++)
+ 		for (j = i + 1; j < NDISKS; j++)
+@@ -121,10 +116,10 @@ static void raid6_test(struct kunit *test)
+ 		for (p2 = p1; p2 < NDISKS - 2; p2++) {
+ 			/* Simulate rmw run */
+ 			ta->gen->xor_syndrome(NDISKS, p1, p2, PAGE_SIZE,
+-					(void **)&dataptrs);
++					test_buffers);
+ 			makedata(p1, p2);
+ 			ta->gen->xor_syndrome(NDISKS, p1, p2, PAGE_SIZE,
+-					(void **)&dataptrs);
++					test_buffers);
  
- static struct kunit_suite raid6_test_suite = {
- 	.name		= "raid6",
- 	.test_cases	= raid6_test_cases,
- 	.suite_init	= raid6_suite_init,
-+	.suite_exit	= raid6_suite_exit,
- };
- kunit_test_suite(raid6_test_suite);
- 
+ 			for (i = 0; i < NDISKS - 1; i++)
+ 				for (j = i + 1; j < NDISKS; j++)
 -- 
 2.53.0
 
