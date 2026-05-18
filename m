@@ -1,94 +1,92 @@
-Return-Path: <linuxppc-dev+bounces-21078-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21079-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 17B80CD4F54
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 May 2026 08:20:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 89DB2CD4F49
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 May 2026 08:23:02 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gJrMJ6W5dz3brB;
-	Mon, 18 May 2026 18:19:56 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=fail smtp.remote-ip="2a01:111:f403:c10c::1"
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779092396;
-	cv=fail; b=H/IgqfPnubL7YaEZtzgc9RTq8qhecw3NT4z7ZZ+D77Q1UqlEXdUgUHlYK9JKkwTPGl4E1vG8+eEKJWElOA64wW7bfZBUsGVQyKlNkhCeqpxvBknYQDDxRT95mHjWv0laDt4O6ofGCVgMg4Q4BmFAfysklFBSfi2lXuiCNQEBJkVPpQf0w/HBFoUf/YyJ6WHpvK5G6Nj4pH3hBYJdnocLt79OwRZLyVVnCqpk95irchH+yCpRtsOwD1LVdHUMEw6uUQ+NONU3Ko5biYCboAlY3rCS4DN/pzDa1+NYstGMl6zzwD6DQCowsdTvuBBhcfRRy3eb/l/PCutlvoXeXPUC/w==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gJrQs1fFzz3brL;
+	Mon, 18 May 2026 18:23:01 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c201::1" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779092581;
+	cv=pass; b=bQmu9WP1spgzo4DrUXiYBJAZ7qgBe0kgUK6+5gZmhL61PCTFoff2S5nvrMEOoJS+FdoxHkQpbv/TFhvdIBhdS3FJu4NSZ0DtHPibfl+4N7b2fmwOtcvAE3MJAMRhQF1Jg0jd82msvp0SL1omCox1rwEXbEl/CmxJYXv92w34NdACM4PsBbRJvzH91IcwzfTS/ubYHiDg80tR7KClvsRABOTrffvC9GY1ZOG6sLHhf/d2Uhy2Fbh4AFwE/Es9AYiLxe9gxYk3WPHANcXCdK+WssCvmnE4qVAskew+aiTBgSNoGDqHegLzee7iHMA30yUoIVewhMAKHyYomRSycrJhVA==
 ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1779092396; c=relaxed/relaxed;
-	bh=nOO9+7kaHEhQ4ycpJFEyDcA43xnlJdHdSHPTvkdJ7fg=;
-	h=Message-ID:Date:Subject:From:To:Cc:References:In-Reply-To:
-	 Content-Type:MIME-Version; b=OW75rhfXeYeE8Xdtc66HosjUyLY7Pm+zjWOP3JzCLVhaWL2QXG5sBDGK8KlI80gMP7oEPR8jQ4XBPdxpyaK4zZx8+/ShnAK67ijulQ5eN3bGbeXIdgt7gnkQHPeN40pubipfIPE2nAPpbefOsqi6kR1nupRP2bL8gIgU+3TYKtS4WV2Vw3agbSnbml+uZwwD7pWsQPsbH8flZt4Aks1JSlS0GCJFLWPNymtKMQ8FpZd9bq5wPQZLNREj3DJZMCbmgAjCeZPS6SullCsbDfLJkLGSZCiVgvxWFWwS408pBmsSuovnOjtuHB/4vRqUjZqlRKeaEn84Cq3b74PJAT7X9w==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; dkim=pass (1024-bit key; unprotected) header.d=amd.com header.i=@amd.com header.a=rsa-sha256 header.s=selector1 header.b=f2udR0MB; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c10c::1; helo=sa9pr02cu001.outbound.protection.outlook.com; envelope-from=alexey.kardashevskiy@amd.com; receiver=lists.ozlabs.org) smtp.mailfrom=amd.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
+	t=1779092581; c=relaxed/relaxed;
+	bh=u/AwtKtJ1cHYQaBxNYDgUizbz+huTSjEEo9GXTCRbBs=;
+	h=From:To:Cc:Subject:Date:Message-Id:Content-Type:MIME-Version; b=LKt/26iR9iH8YIXqahwZt+jgatT84gWCECZEBl6+ChIDlyCg2Ok7ryF0w8lsA2bsqVoPDSG8S4w/6JyT8N8Jvf3T8S6JslMQijnNUPXypQ+Zv85lk3gPCM0uqNx7nbj9Uf7XxYI/q02ya7YknlIcFb2x3131v41S9qO8DHyLb8ZeufelsJY2WZ2XJcK5HaRdG1ytDl0qoLEMY6cA5kRbk9f/opZcW0iB+7Issa219RQY63mWydfQkPd9x3OxjG/8VHbcHbiiHra0VmeE514iKXu8JaSwhrj15K0UTf0npsnix5n1swHAbAmln+ndee5kDxdVVdJ5Psb8CfVoCi7oVw==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com; dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=l+efqyhP; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c201::1; helo=am0pr83cu005.outbound.protection.outlook.com; envelope-from=wei.fang@nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=nxp.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=amd.com header.i=@amd.com header.a=rsa-sha256 header.s=selector1 header.b=f2udR0MB;
+	dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=l+efqyhP;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=amd.com (client-ip=2a01:111:f403:c10c::1; helo=sa9pr02cu001.outbound.protection.outlook.com; envelope-from=alexey.kardashevskiy@amd.com; receiver=lists.ozlabs.org)
-Received: from SA9PR02CU001.outbound.protection.outlook.com (mail-southcentralusazlp170130001.outbound.protection.outlook.com [IPv6:2a01:111:f403:c10c::1])
+Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=nxp.com (client-ip=2a01:111:f403:c201::1; helo=am0pr83cu005.outbound.protection.outlook.com; envelope-from=wei.fang@nxp.com; receiver=lists.ozlabs.org)
+Received: from AM0PR83CU005.outbound.protection.outlook.com (mail-westeuropeazlp170100001.outbound.protection.outlook.com [IPv6:2a01:111:f403:c201::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gJrMH0nSZz3brR
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 May 2026 18:19:55 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gJrQp4Pypz3brD
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 May 2026 18:22:58 +1000 (AEST)
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=cUMsuptlyYKVoVQ0kFBSJEHTCGYpxkguUUIfHJKFYg3PfsvamZn9cxlVhPCRbS0ldBDkelDfxHW/EfVIonHrcZpyZ03r+qE/88XtUWWfkpVNTox7arKunHrjYp25OnFPjxpGk1zeiNZVlBIWPiLdXVx7u4XwXsCwreFbt89+4pO5Hh0BV0V/oYsM29Ed0HD7M5cZ1/k6JmPawjtFZDWwoqdRMOkefSL2WW/9fCsaXgkZ3PYooXsVYOE7cDpIj4p121TfDcJ2WDq5MUuE6CKsiSOUOZSDb8SZApeE7fKZAO5DchPsCBlZ3m3JyYooEqLiG7B/lxzDHF8FJQGEsr5tgw==
+ b=sblKV1yTogt64eO5fGMz+j9CDi2n5iS36+PphtHXBEq6eVObXLQDlRrHhEcpWlSAiiiq8R0BCIUFtacQzIQFk/e5IHr6+rvKOckdpEl4If1YdTURdaBGdkGdLpdm+vE4Pt+uLxELnWdPp0FCAc5ySmX6Xt0Q+Jlofp/NWvgfa6rW1JYS6Tbk2B8D/rDho8iodIbaZ0oW0uzjXY22V7BYJDh1k1IWKVd1yp6EgneCdPYqFCaHF+IE+2dT3qR8bFH31LALHzzZncZfyxfThhD7TGLNy0SQpuiZrnYHXByTUQzLz2rVoPPh86kX4+pbUMk8IY+dW719oYbjiCiOcxOCUg==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=nOO9+7kaHEhQ4ycpJFEyDcA43xnlJdHdSHPTvkdJ7fg=;
- b=Zg0RZTTAHzVcbMVgRVBef6NFdoyTwzopOPuNirjFvwqP6iIP077v2RxZMbcvBI36pHv/OyDnZzzAgU6LMbm0L4fmUWK+bkHamhN69RrT6ckLTDocbNDh6/Tq2wgqzP+Qi7xBKcMPUUE1X4AX9DYXPWQczWwCJOULLnATxbmJq0zQbFplghK+yiTI5BlcPpZKEqOr++uGe/Fjg31IDh+X9MjCULqo10kWqEmwEoXdxGTO6Jl6ivxNHBYB70H7aPMmaj1KTikwvZsCxyAp2d2Uau4i81c0q5tvqTGiWjaUQM3gBlmZBU7x95SEx1Zpw48qkDBlwJmjw2yYefObULjA7w==
+ bh=u/AwtKtJ1cHYQaBxNYDgUizbz+huTSjEEo9GXTCRbBs=;
+ b=iRdah5FFmQ7uzRe2vWAVoMtMZVW0m0mic/gm3GhYA0CDDstMPh6xCGaJsvP0TwVzeP/kLdDQn/PFjq13FHw6IxYM9P6z81WkyjXIaa4EVpQ0YP4q/SOUheCp2UpEBYp6o0v2DF1NGkzuim0Vuee9eL+q2qv2nzee+4KZw1kyvGOicJutqYhUd9qHFm0eXfwBBSipBOk6n/6Mry6QGLFBDO9DeZIt9ORV4IlmGaJGu4zjuCrktX+pjVZ6VbAIqeJU+FgQu9pbCSoktvSbOM3b3vbf9Phpzym49MgFrK4AMcN8Tg3NC040cqVC6FXMihD19Og2U8erECnRlKkfNkJy3A==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=amd.com; dmarc=pass action=none header.from=amd.com; dkim=pass
- header.d=amd.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
+ smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
+ header.d=nxp.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=nOO9+7kaHEhQ4ycpJFEyDcA43xnlJdHdSHPTvkdJ7fg=;
- b=f2udR0MBUryMQ4ZizhYXLFJ+HoTNFr4EB2fa7pM+zVq5CBFfLICCGEdBadpQCwQ6H3+CKlEu1v9AIcAsBFn9DvpUAupLqM2nD/z7I55aWKS5T2jLaWS5JfuCLQEweZLPBV7pPFf6ND96rAhPtp0rRdL/rSPSSH7jJBmtEldelYM=
+ bh=u/AwtKtJ1cHYQaBxNYDgUizbz+huTSjEEo9GXTCRbBs=;
+ b=l+efqyhP+5uTax/8bR1n6kPPCjlmGLAdt4Nz7soDea/uEf58TR06xqa60WrXVvKqY1pa5kP3pTc80OUuTujgpoC/C0zkJVfXP78lyxNvvGoSO10SOQd44B8NDOjCHOKOZf6QSjEMycCaULLxdEBre51ajxULnxQmaoyFsN8Z18gkvCXEBZYHIlnBxjKi2EQjPeUIoht1ryPiUT2vxxqlNdvONfEXDRgEFVan/N686InyJ55Bh/eTu/HT3A+Ir8eOWMIMrt0dnKxyEoXO9VUDPCiT0SAV5A3btO6yP5AcgaSnqb3cKFCJfG4tynSPCNZFEGiSjLthpk0feCQWwhZPKQ==
 Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=amd.com;
-Received: from CH3PR12MB9194.namprd12.prod.outlook.com (2603:10b6:610:19f::7)
- by DM4PR12MB7647.namprd12.prod.outlook.com (2603:10b6:8:105::6) with
+ header.d=none;dmarc=none action=none header.from=nxp.com;
+Received: from DBBPR04MB7500.eurprd04.prod.outlook.com (2603:10a6:10:1f4::16)
+ by AM9PR04MB7713.eurprd04.prod.outlook.com (2603:10a6:20b:2d4::12) with
  Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.25.21; Mon, 18 May
- 2026 08:19:34 +0000
-Received: from CH3PR12MB9194.namprd12.prod.outlook.com
- ([fe80::1e6b:ca8b:7715:6fee]) by CH3PR12MB9194.namprd12.prod.outlook.com
- ([fe80::1e6b:ca8b:7715:6fee%6]) with mapi id 15.21.0025.022; Mon, 18 May 2026
- 08:19:33 +0000
-Message-ID: <df4b78cf-6192-4fe3-8ad5-df9e6fdda8e6@amd.com>
-Date: Mon, 18 May 2026 18:19:27 +1000
-User-Agent: Mozilla Thunderbird Beta
-Subject: Re: [PATCH v4 03/13] dma-pool: track decrypted atomic pools and
- select them via attrs
-From: Alexey Kardashevskiy <aik@amd.com>
-To: "Aneesh Kumar K.V (Arm)" <aneesh.kumar@kernel.org>,
- iommu@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
- linux-kernel@vger.kernel.org, linux-coco@lists.linux.dev
-Cc: Robin Murphy <robin.murphy@arm.com>,
- Marek Szyprowski <m.szyprowski@samsung.com>, Will Deacon <will@kernel.org>,
- Marc Zyngier <maz@kernel.org>, Steven Price <steven.price@arm.com>,
- Suzuki K Poulose <Suzuki.Poulose@arm.com>,
- Catalin Marinas <catalin.marinas@arm.com>, Jiri Pirko <jiri@resnulli.us>,
- Jason Gunthorpe <jgg@ziepe.ca>, Mostafa Saleh <smostafa@google.com>,
- Petr Tesarik <ptesarik@suse.com>, Dan Williams <dan.j.williams@intel.com>,
- Xu Yilun <yilun.xu@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org, Madhavan Srinivasan <maddy@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
- "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
- Alexander Gordeev <agordeev@linux.ibm.com>,
- Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
- Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>,
- Christian Borntraeger <borntraeger@linux.ibm.com>,
- Sven Schnelle <svens@linux.ibm.com>, x86@kernel.org
-References: <20260512090408.794195-1-aneesh.kumar@kernel.org>
- <20260512090408.794195-4-aneesh.kumar@kernel.org>
- <6f01978e-ead9-409b-866d-69231dc44d00@amd.com>
-Content-Language: en-US
-In-Reply-To: <6f01978e-ead9-409b-866d-69231dc44d00@amd.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+ 2026 08:22:34 +0000
+Received: from DBBPR04MB7500.eurprd04.prod.outlook.com
+ ([fe80::c291:543b:4bde:cee7]) by DBBPR04MB7500.eurprd04.prod.outlook.com
+ ([fe80::c291:543b:4bde:cee7%6]) with mapi id 15.20.9913.009; Mon, 18 May 2026
+ 08:22:34 +0000
+From: Wei Fang <wei.fang@nxp.com>
+To: claudiu.manoil@nxp.com,
+	vladimir.oltean@nxp.com,
+	xiaoning.wang@nxp.com,
+	andrew+netdev@lunn.ch,
+	davem@davemloft.net,
+	edumazet@google.com,
+	kuba@kernel.org,
+	pabeni@redhat.com,
+	robh@kernel.org,
+	krzk+dt@kernel.org,
+	conor+dt@kernel.org,
+	f.fainelli@gmail.com,
+	frank.li@nxp.com,
+	chleroy@kernel.org,
+	horms@kernel.org,
+	linux@armlinux.org.uk,
+	maxime.chevallier@bootlin.com,
+	andrew@lunn.ch,
+	olteanv@gmail.com
+Cc: netdev@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	devicetree@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-arm-kernel@lists.infradead.org,
+	imx@lists.linux.dev
+Subject: [PATCH v8 net-next 00/15] Add preliminary NETC switch support for i.MX94
+Date: Mon, 18 May 2026 16:24:51 +0800
+Message-Id: <20260518082506.1318236-1-wei.fang@nxp.com>
+X-Mailer: git-send-email 2.34.1
 Content-Transfer-Encoding: 8bit
-X-ClientProxiedBy: SY5P282CA0180.AUSP282.PROD.OUTLOOK.COM
- (2603:10c6:10:249::29) To CH3PR12MB9194.namprd12.prod.outlook.com
- (2603:10b6:610:19f::7)
+Content-Type: text/plain
+X-ClientProxiedBy: SG2P153CA0005.APCP153.PROD.OUTLOOK.COM (2603:1096::15) To
+ DBBPR04MB7500.eurprd04.prod.outlook.com (2603:10a6:10:1f4::16)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -103,459 +101,203 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: CH3PR12MB9194:EE_|DM4PR12MB7647:EE_
-X-MS-Office365-Filtering-Correlation-Id: 033350a6-593e-4d77-f68c-08deb4b6314f
+X-MS-TrafficTypeDiagnostic: DBBPR04MB7500:EE_|AM9PR04MB7713:EE_
+X-MS-Office365-Filtering-Correlation-Id: f7e8e5bc-1b1c-468e-e667-08deb4b69ca3
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|1800799024|376014|7416014|366016|22082099003|18002099003|56012099003|4143699003|11063799003;
+	BCL:0;ARA:13230040|52116014|376014|7416014|1800799024|19092799006|366016|38350700014|921020|18002099003|56012099003|3023799003|11063799003;
 X-Microsoft-Antispam-Message-Info:
-	WAOnr4OrQU7G4D9Lr9oOiNAwnJLwErIFi6iu3UWFbkx5XfVgj2oe1JyQ9CTjcvq3ePmpzPHfkzqP85bOKQp8lI5AWG+Ll1I327nQw5AOCv+MQMDTiJKSs6P1/cR6iuobnE+r4iVQ4B6OoGr5NyNerY9FFvj16Dv4zK3Ayru9e71WI88Ka+Lv/Egr8r/OPjuFbAT8A6GTuQf6AEbiY+6XMHssPwkcvpRA4JyV6i516UsJ+2PdPuS35Bs8n9n23wq7EQhWsjdHOeuyUCnI/thTx81iccxWpQVsXub46XXLfY1lHG9jvdL9YsgwNTWHf6R2d9qVHwrKM4dAsqwj/EntVXjnV1G45ML50ioEDj3VXtI9+BHLmm8nD0xJypt2ZR/M5CCjKRzr2xhfK9mY/bBDK8As4yzIFbKHNqlwrf5O0d1+FOCeG2FeIFHvj7eDE3XO5iuBJ05ZI5/l5FVcYjmtvWWcFsAKVc6Qsk+9nGVlTcIb7VDYefjSyQLGWOjhu4wx7R579EPWHX+dgo5qSl42cYld0ygNQchZ8JIS4dxgfVyyeUU1/9uchKu4eYgCE1oD1jiOXPC+u6ZVgbzOkBvPtmM8i8W3jB4YCTQkqhG8ZTlG6AF7kem00iS9kBITbQ9cz8iYTSWhhirj1HRp3AaujUeMNduR+tA2OJhfkXQPrl0i/YA0JXM5+Rkt2MwUoQSf
+	zBJvU9npTtjF79fhlTH535n0NMZxjYmPq3rXqWoFfN+Klo0fBDIYGlVIh9DaeVCstdyvAYrkJizn0jy5Ae+q+1szGqT61WBE+qbmd6Y8+UbPHYpyDj/2QtZq1e3V+tV0UNUiGDBWGBtsVFeBG32iTN3SoFsqZI5A8VVBjb+6J3ci3i7vOigKvcloXeKplihSPlRK12jtL5XAPNsA2xyfwCRxDfzmmJwtCr0WWh/dEzZzgHecnIBJ9KfNWdhnxKKbf64Yyy7AV0UFNeLhzN4/QZLT1aeERSTNi9WsUo2lLkfbaywodORHJyB2MSf3Sn2NXVJWBVh+6yeYI73f0w8X90G81i8T5bAOFZ5jX7adVATfTVNLLCR5B+95WXnaJNgqrrYBgXLtRwIFMyHsv21RnkeYXJpnh6RkErMii5GSWKijOetDjfjFU8SrrYQNfFKpGQIAi0mquIa8gbmMKFi/mlCVn2Vh7O8ONdKftPz9PZc7+V4si0Fk4VzOk/OTRrLvmEX63lKrEd/sukYVlMcZp6ljUI0hTPi04LZ3cMvOE36bJcyG/B+x1sIOJAmO75xMJCM8hjlNX1eOIiOBsRyx7pjU9s6fXJ+YduJB5Qr0ZmA+dAp+Lo8si4ohijZBaKoXxefXrTjFnuxT9rIvH5J1V9o/76m9w3HrNwcVd6B4G7HWzR9BurCH+fAK7VZScMQdC6riIyqJaQI8hlQfdu2DnBltSyo7uLBGWPWE43Oe2qmEZdu7FoaOF0mvOWUrhAoOD+qPfWw9emLElc4xtNMbPg==
 X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:CH3PR12MB9194.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(376014)(7416014)(366016)(22082099003)(18002099003)(56012099003)(4143699003)(11063799003);DIR:OUT;SFP:1101;
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DBBPR04MB7500.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(52116014)(376014)(7416014)(1800799024)(19092799006)(366016)(38350700014)(921020)(18002099003)(56012099003)(3023799003)(11063799003);DIR:OUT;SFP:1101;
 X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
 X-MS-Exchange-AntiSpam-MessageData-0:
-	=?utf-8?B?STVQUlhOcFNtRVo2am01d0p5SWdtMkcxcTc2NVByTmlEMVRFSGFrMDVRUTFE?=
- =?utf-8?B?SmdrenhabjdObFZ1MGp2YnNYUldMWFBMN1FhMDc5YUQxeUdWeFRCM0dkRklX?=
- =?utf-8?B?aUFsd244S3B4Q0FXZ1daWFQwZDhSR0orTWg5SC9TYU1lcElTOEJhMEtEOFph?=
- =?utf-8?B?V0NyWWQyM0Z5Y3JKa0huNm1JVlNibnY0Q210ZzFRazVzOUpuS0k2cmIxTUxN?=
- =?utf-8?B?aVhSWk0ycW5SZlBUSndmeTlQc2lkdlArcm13NjdTUkxJT2RBdkp0OEM3bU1x?=
- =?utf-8?B?c2ttN0dBMk5BS0U2SUJGM3RGZmVwYlZia01abjMvdmRMbjhvcTJBazNDMU4w?=
- =?utf-8?B?cENzelRlSjVqTjAvVnRiODdtQ2Z5N1loQmhQRWxDUERlTlNNeU82TGZCRWwz?=
- =?utf-8?B?dnhac3V5Mlp1MEk4SGRiMDMvWHhQTEtlTnY5WTFFQ290QXgvMWVjUUpXbkxy?=
- =?utf-8?B?em44WWk5Qm5iY2dFTEtwY0xkc2xVTEhYQjFDejJ4N2U3VU9zeTdaUXIzQVAr?=
- =?utf-8?B?bTJlYnQrdnF5RG9ZampSWW5JRi9vU2pBNmxwdVp2UXg1SHZvYXN6YzhjZUNZ?=
- =?utf-8?B?WFVEZURqNUZ0aFpQNVE5WlpqMkdzMS9aZngyd1E1S3paK2dwS3JkdkthRGh6?=
- =?utf-8?B?YkdXejR4S3g4V2JlN0szMnVjSXp2eDNQRzZHb1N4Z2pSQ0ZwWXYrQTJBSlB2?=
- =?utf-8?B?TzlrWVU5OWxkQWpGalNYS1JkbjRCbDU4SGMvRVlaV25UMnpodE5hdnJ4UkNx?=
- =?utf-8?B?UUhrWHRwZk5LVnQxelRta3lvckVGUjlBUUk2c0VxNHZkTG9UNFYwcE9KSUxX?=
- =?utf-8?B?N0x3c1R1U2JRbEVleCtmaDFpdDZqTlZzaStucjJtbXFiOUxWUWV3YzZib2h4?=
- =?utf-8?B?bTBEN0wrZlcrL0M2ekdFS2pWcGl5ckIyYWZwVXNkZk5KVmRTa2Z5WmJtcGNi?=
- =?utf-8?B?UHY1ZXpRS3JOVnFYS2Y5Um1UR0dUbTEvbkM3RWM0bHB2OGhnL2tneVZHN2c0?=
- =?utf-8?B?bWpDdUpLNjJjOU1OcVo1c084bC9SQzNLNUlQN0dTaVdmdzRnV2s5ZG02MHZS?=
- =?utf-8?B?RTA2YTh2QkZQdFlycUZUUkw4RTc5TGMwV0d4VHVxVWZqMU0zTnIxQjhMb3hZ?=
- =?utf-8?B?YmsrOG0rMDVOODg5TGhGL2VNZUVvbzE3MkhMYWdqTk1lL0RvTUpYenJyYnlB?=
- =?utf-8?B?UjM1UmxINHlVSE15VDhRZzNZSldqbUp3U045MTlkMWFtSGJLRG5zSGpMSXRk?=
- =?utf-8?B?WkxvbFdpa28vaHlna0pHMUExc3I2YjlscnUvUlZ4cWdHcytwZVdQRkxodGJ3?=
- =?utf-8?B?Z3pWN045T2hQemw4NGFteUQ2eE10UkZOMlJsWEVIVFhvWjNEOENDSDV4K2tU?=
- =?utf-8?B?V0dLQVdhQjRIMTEyNVAvU2wyeVNLMW4vdGRQVFJMVk5Hb3VOZW5ZakcxZWx2?=
- =?utf-8?B?N2I0Zk5FemhQMnhpY2R2VktuVE1MUDU4akFVOHY3UUgySTBBcmhONG53TS9W?=
- =?utf-8?B?SmNoTlByNlBUQlRJVUMwQ2krV2FwM1BIbi9YQjIydmVQT1phN2N2TzhYd3hL?=
- =?utf-8?B?UzNzdkxCUFY2ckF6T2thb0l4ZTUzU1J1S0JzMTEra0IzL2hzdk5rQStUdjFL?=
- =?utf-8?B?TjdhZk5YTlc3Q3p5RzJDSVBNMDlERGdvWDE0dTlEa3dvSUpSOTVUOTBCbjJm?=
- =?utf-8?B?OE5vdkREL0NFdFJLd2l6WEdEVTA5Z2daM0hKR3E1SnlPWnQvZFNrU2RQOHVL?=
- =?utf-8?B?aFdrbVl5YTAxQXIxNTVYeUNiSDZwSWZTd0ZPVDNaWFlBSGp6RW1vcWxmQUFL?=
- =?utf-8?B?cDA3UjVGSWozdzZQZlhlWGZmbFFZVE0xWGdGUk9ucGZFWVpLcVBrQ3RlV2Rq?=
- =?utf-8?B?K082ajRyRUtpUmRqYWVBUzB0T0VFNUtSMGc4aDI4ekJGcU52VHRkQVhLa1hw?=
- =?utf-8?B?ckU1ZE55NFFaYy9CN0h6ak1QM3FLcHozUzhUMkVSbWErRXlhdjVoWkRJbWZT?=
- =?utf-8?B?QlU2eDdXSlg4T3BBcHJORFdDMlN3T0ZuQlhSdDJacy9ibk5rakpJWWxVUi9y?=
- =?utf-8?B?QkZNeWxoTFhyWlZkYmhxcTJENDZ6Y1hvclJqM01xOC9wQk43b0tGcmJmMktW?=
- =?utf-8?B?RkhUNkl5Nmw3dE53UW90ZWk4ODlOOFAybDhwaC9WZ21mUHFoWmV6bFdQcnpK?=
- =?utf-8?B?WGlualhsWmMraVIxNmhiR2JNUlN0WTRxTFdYRGZkUkh0NlpZS1R3UHVuZEdk?=
- =?utf-8?B?Sk9Ua0RJTlhBbXNMUEZwZlBPS21kRHVpN0Z6dkY2aXNmMjNQelNVQ1B1dmpr?=
- =?utf-8?Q?5Bn6mlNG1e+4vU5FsS?=
-X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 033350a6-593e-4d77-f68c-08deb4b6314f
-X-MS-Exchange-CrossTenant-AuthSource: CH3PR12MB9194.namprd12.prod.outlook.com
+	=?us-ascii?Q?bOn5R3UfBuyBlFur35aFvNSKX/4s6/KyywGHolrrIgrNhvP4KyNh1LNHfSyt?=
+ =?us-ascii?Q?KYFnUdUCDWQOMYSzv8YLJn3cPWoIfC6OCcdwEpbA3zXkXKlCklKVAOWp/1iA?=
+ =?us-ascii?Q?rSOL5+JkRMeAB3v1507rVT278iDj5Yh2by+08KCYJb5OGk7HMX3jbcYF+cuK?=
+ =?us-ascii?Q?TPr13g20gzmAnThbYlIh4jPKUmlpa58EyXkZQdUmAutlB98oh2dWud+Iu7zm?=
+ =?us-ascii?Q?lZOtsiz+CXFoMVj4nUdYregLCAqQm35eexSoUChijMeYp4CHjDgo6q8AqIFb?=
+ =?us-ascii?Q?kT/eCdU47+HzMRjCna4Db2bFKignIxuNkC9hau82girueJ2rSDtbvQFyGuF3?=
+ =?us-ascii?Q?ApZM5OKzL5ZGwaFNehW/DGQzj36Fpy80R4cq3ZNGc+NJgjx11xCEsuu2UcZK?=
+ =?us-ascii?Q?uNIgdxiOKQi6dPvlAqK+srprLJZLzdXqBNi+wkBuuJNdhFlL4ihTIjBSK5sP?=
+ =?us-ascii?Q?lu5U50hnMy1P0uOceCow/SuqZk8ftQVAD/VguGd5eoxHKhVSwSDDBg6U32dN?=
+ =?us-ascii?Q?zE3H5TUDyiPKen1uHyct5DoWsUz8XYSxv7OTvcD5yVBD1yT+K7d+RLqBjKoH?=
+ =?us-ascii?Q?mOwYgxkBXr7+e93XQW3FHn1HIngiCK4tBcIkHKU8iNcA53LejpHBdYe2OoEG?=
+ =?us-ascii?Q?HZ6dqKgc4iLVhfq31odaEW6D3zqzEMX6Ldh7aIJ3Dz3bEQJEJvM2lUXQ7smP?=
+ =?us-ascii?Q?cHe/L2eogywnVnxydVA1OxAQWUMoohEGhj3DqiXXDRvXlDW9WHIOkBalNwhk?=
+ =?us-ascii?Q?b6/HZqO2iVFZUBj7HnV9WGTKa+YCuNavHSfOMr2ouwQTjdBHa0zyHgER7RSW?=
+ =?us-ascii?Q?VmJosUeP3JKYqlF+1Yk5A7P2WICKzoCKyytlSEzP17jlbqhB6HIoUQhR7kyr?=
+ =?us-ascii?Q?ndlR/1TVsHziRxXWUaKEs44NYe/oUoNug7Z7zHYuIU+j1FaumcGo55KOI4KK?=
+ =?us-ascii?Q?JnV6sr2erCkzlB8gX2fMLcSdSr5VE38ZhDm/UdVGm1cOuKe8CcldQ1/XDwDd?=
+ =?us-ascii?Q?/z/PwKXJYzXG68txwxjDkxm7C0KmNm2uqf3p2R7TtrR1Usrwm6cN2/PAguJ9?=
+ =?us-ascii?Q?joZ/ewvkUqfPqGFBoklEGjsdIXQPxNUNz6ktAyAMqvYZzwlFEBvCnKRM/28f?=
+ =?us-ascii?Q?b4ijUa6ir9Ob74P/TkdxaFUHM+SA3w1XEDntZNAa5qavSy7voqnDeVBJJ/3I?=
+ =?us-ascii?Q?QsN17uqZTguILrZxuY6U6nl55FnAlJcLNpZ3RUJLO1jo+Kegglv3WFXrhAO5?=
+ =?us-ascii?Q?H5l4DUfDzYRaopmBwfMHyoLvTjLCuZhgWPAn4GGbq5glAeAUpcEoLJQYfMGt?=
+ =?us-ascii?Q?bHCN/80DkfInXKRSPTz7W5mrzJ9wtZRiMjdWpkW/nX7hpyQafJ62QJkdpoh2?=
+ =?us-ascii?Q?95oP0y0vhw8S1Kppt9FndYzHR369YYn280NbLQWv5z1PUzi6MweL2RDousIA?=
+ =?us-ascii?Q?vefi4W6pvItECWvBLFq+bKtTds75GC4BtNwbW8a+3fJWREpsYRY6ZOgs7P4i?=
+ =?us-ascii?Q?6OLAzBg+f6iLWC7p6wlwCmp8aIjYjH/8b6rHfFzzCcUHWrnIo8nTEazq/1KC?=
+ =?us-ascii?Q?sciG045hlIdgmjpwlFwgdumqOlFAMTMljZwhFJnEJLSJYyQzprzeJtz8Ttc7?=
+ =?us-ascii?Q?pr992d2/ahHShnZnl75q9FqA+GEsdpHzpmodQdfre6pNLlkIetnNV5V7NLDQ?=
+ =?us-ascii?Q?iRar7o1hSc3LdfzSOUov+GRMzwAUObSwDttJVG1YB3IkoOe8fwsMGMbW8EO2?=
+ =?us-ascii?Q?XBqg7Dy/8w=3D=3D?=
+X-OriginatorOrg: nxp.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: f7e8e5bc-1b1c-468e-e667-08deb4b69ca3
+X-MS-Exchange-CrossTenant-AuthSource: DBBPR04MB7500.eurprd04.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 18 May 2026 08:19:33.8844
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 18 May 2026 08:22:34.0891
  (UTC)
 X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
+X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
 X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: v6VyH7TBjVRevSAHoMLWMlWDcU9x3wvkWCJfcB0q2XY1B9+IY+XusFk0SdUzQ16O4ToqHZgB9LMYZm2nJZtodA==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: DM4PR12MB7647
+X-MS-Exchange-CrossTenant-UserPrincipalName: MiiVFywOLoM3ywpP1UWvgnI36ktg86hRuIZcm8jlHgasN7Ou7QCPzXzNy3NFn8ZQVCjt6kAOBO4ajm1yGHWBVQ==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: AM9PR04MB7713
 
+i.MX94 NETC (v4.3) integrates 802.1Q Ethernet switch functionality, the
+switch provides advanced QoS with 8 traffic classes and a full range of
+TSN standards capabilities. It has 3 user ports and 1 CPU port, and the
+CPU port is connected to an internal ENETC through the pseduo link, so
+instead of a back-to-back MAC, the lightweight "pseudo MAC" is used at
+both ends of the pseudo link to transfer Ethernet frames. The pseudo
+link provides a zero-copy interface (no serialization delay) and lower
+power (less logic and memory).
 
+Like most Ethernet switches, the NETC switch also supports a proprietary
+switch tag, is used to carry in-band metadata information about frames.
+This in-band metadata information can include the source port from which
+the frame was received, what was the reason why this frame got forwarded
+to the entity, and for the entity to indicate the precise destination
+port of a frame. The NETC switch tag is added to frames after the source
+MAC address. There are three types of switch tags, and each type has 1
+to 4 subtypes, more details are as follows.
 
-On 16/5/26 22:53, Alexey Kardashevskiy wrote:
-> On 12/5/26 19:03, Aneesh Kumar K.V (Arm) wrote:
->> Teach the atomic DMA pool code to distinguish between encrypted and
->> decrypted pools, and make pool allocation select the matching pool based
->> on DMA attributes.
->>
->> Introduce a dma_gen_pool wrapper that records whether a pool is
->> decrypted, initialize that state when the atomic pools are created, and
->> use it when expanding and resizing the pools.  Update dma_alloc_from_pool()
->> to take attrs and skip pools whose encrypted/decrypted state does not
->> match DMA_ATTR_CC_SHARED.  Update dma_free_from_pool() accordingly.
->>
->> Also pass DMA_ATTR_CC_SHARED from the swiotlb atomic allocation path
->> so decrypted swiotlb allocations are taken from the correct atomic pool.
->>
->> Signed-off-by: Aneesh Kumar K.V (Arm) <aneesh.kumar@kernel.org>
->> ---
->>   drivers/iommu/dma-iommu.c   |   2 +-
->>   include/linux/dma-map-ops.h |   2 +-
->>   kernel/dma/direct.c         |  11 ++-
->>   kernel/dma/pool.c           | 163 +++++++++++++++++++++++-------------
->>   kernel/dma/swiotlb.c        |   7 +-
->>   5 files changed, 122 insertions(+), 63 deletions(-)
->>
->> diff --git a/drivers/iommu/dma-iommu.c b/drivers/iommu/dma-iommu.c
->> index 54d96e847f16..c2595bee3d41 100644
->> --- a/drivers/iommu/dma-iommu.c
->> +++ b/drivers/iommu/dma-iommu.c
->> @@ -1673,7 +1673,7 @@ void *iommu_dma_alloc(struct device *dev, size_t size, dma_addr_t *handle,
->>       if (IS_ENABLED(CONFIG_DMA_DIRECT_REMAP) &&
->>           !gfpflags_allow_blocking(gfp) && !coherent)
->>           page = dma_alloc_from_pool(dev, PAGE_ALIGN(size), &cpu_addr,
->> -                           gfp, NULL);
->> +                       gfp, attrs, NULL);
->>       else
->>           cpu_addr = iommu_dma_alloc_pages(dev, size, &page, gfp, attrs);
->>       if (!cpu_addr)
->> diff --git a/include/linux/dma-map-ops.h b/include/linux/dma-map-ops.h
->> index 6a1832a73cad..696b2c3a2305 100644
->> --- a/include/linux/dma-map-ops.h
->> +++ b/include/linux/dma-map-ops.h
->> @@ -212,7 +212,7 @@ void *dma_common_pages_remap(struct page **pages, size_t size, pgprot_t prot,
->>   void dma_common_free_remap(void *cpu_addr, size_t size);
->>   struct page *dma_alloc_from_pool(struct device *dev, size_t size,
->> -        void **cpu_addr, gfp_t flags,
->> +        void **cpu_addr, gfp_t flags, unsigned long attrs,
->>           bool (*phys_addr_ok)(struct device *, phys_addr_t, size_t));
->>   bool dma_free_from_pool(struct device *dev, void *start, size_t size);
->> diff --git a/kernel/dma/direct.c b/kernel/dma/direct.c
->> index 0c2e1f8436ce..dc2907439b3d 100644
->> --- a/kernel/dma/direct.c
->> +++ b/kernel/dma/direct.c
->> @@ -162,7 +162,7 @@ static bool dma_direct_use_pool(struct device *dev, gfp_t gfp)
->>   }
->>   static void *dma_direct_alloc_from_pool(struct device *dev, size_t size,
->> -        dma_addr_t *dma_handle, gfp_t gfp)
->> +        dma_addr_t *dma_handle, gfp_t gfp, unsigned long attrs)
->>   {
->>       struct page *page;
->>       u64 phys_limit;
->> @@ -172,7 +172,8 @@ static void *dma_direct_alloc_from_pool(struct device *dev, size_t size,
->>           return NULL;
->>       gfp |= dma_direct_optimal_gfp_mask(dev, &phys_limit);
->> -    page = dma_alloc_from_pool(dev, size, &ret, gfp, dma_coherent_ok);
->> +    page = dma_alloc_from_pool(dev, size, &ret, gfp, attrs,
->> +                   dma_coherent_ok);
->>       if (!page)
->>           return NULL;
->>       *dma_handle = phys_to_dma_direct(dev, page_to_phys(page));
->> @@ -261,7 +262,8 @@ void *dma_direct_alloc(struct device *dev, size_t size,
->>        */
->>       if ((remap || (attrs & DMA_ATTR_CC_SHARED)) &&
->>           dma_direct_use_pool(dev, gfp))
->> -        return dma_direct_alloc_from_pool(dev, size, dma_handle, gfp);
->> +        return dma_direct_alloc_from_pool(dev, size, dma_handle,
->> +                          gfp, attrs);
->>       if (is_swiotlb_for_alloc(dev)) {
->>           page = dma_direct_alloc_swiotlb(dev, size);
->> @@ -397,7 +399,8 @@ struct page *dma_direct_alloc_pages(struct device *dev, size_t size,
->>           attrs |= DMA_ATTR_CC_SHARED;
->>       if ((attrs & DMA_ATTR_CC_SHARED) && dma_direct_use_pool(dev, gfp))
->> -        return dma_direct_alloc_from_pool(dev, size, dma_handle, gfp);
->> +        return dma_direct_alloc_from_pool(dev, size, dma_handle,
->> +                          gfp, attrs);
->>       if (is_swiotlb_for_alloc(dev)) {
->>           page = dma_direct_alloc_swiotlb(dev, size);
->> diff --git a/kernel/dma/pool.c b/kernel/dma/pool.c
->> index 2b2fbb709242..75f0eba48a23 100644
->> --- a/kernel/dma/pool.c
->> +++ b/kernel/dma/pool.c
->> @@ -12,12 +12,18 @@
->>   #include <linux/set_memory.h>
->>   #include <linux/slab.h>
->>   #include <linux/workqueue.h>
->> +#include <linux/cc_platform.h>
->> -static struct gen_pool *atomic_pool_dma __ro_after_init;
->> +struct dma_gen_pool {
->> +    bool unencrypted;
->> +    struct gen_pool *pool;
->> +};
->> +
->> +static struct dma_gen_pool atomic_pool_dma __ro_after_init;
->>   static unsigned long pool_size_dma;
->> -static struct gen_pool *atomic_pool_dma32 __ro_after_init;
->> +static struct dma_gen_pool atomic_pool_dma32 __ro_after_init;
->>   static unsigned long pool_size_dma32;
->> -static struct gen_pool *atomic_pool_kernel __ro_after_init;
->> +static struct dma_gen_pool atomic_pool_kernel __ro_after_init;
->>   static unsigned long pool_size_kernel;
->>   /* Size can be defined by the coherent_pool command line */
->> @@ -76,7 +82,7 @@ static bool cma_in_zone(gfp_t gfp)
->>       return true;
->>   }
->> -static int atomic_pool_expand(struct gen_pool *pool, size_t pool_size,
->> +static int atomic_pool_expand(struct dma_gen_pool *dma_pool, size_t pool_size,
->>                     gfp_t gfp)
->>   {
->>       unsigned int order;
->> @@ -113,12 +119,15 @@ static int atomic_pool_expand(struct gen_pool *pool, size_t pool_size,
->>        * Memory in the atomic DMA pools must be unencrypted, the pools do not
->>        * shrink so no re-encryption occurs in dma_direct_free().
->>        */
->> -    ret = set_memory_decrypted((unsigned long)page_to_virt(page),
->> +    if (dma_pool->unencrypted) {
->> +        ret = set_memory_decrypted((unsigned long)page_to_virt(page),
->>                      1 << order);
->> -    if (ret)
->> -        goto remove_mapping;
->> -    ret = gen_pool_add_virt(pool, (unsigned long)addr, page_to_phys(page),
->> -                pool_size, NUMA_NO_NODE);
->> +        if (ret)
->> +            goto remove_mapping;
->> +    }
->> +
->> +    ret = gen_pool_add_virt(dma_pool->pool, (unsigned long)addr,
->> +                page_to_phys(page), pool_size, NUMA_NO_NODE);
+Forward switch tag (Type = 0): Represents forwarded frames.
+  - SubType = 0 - Normal frame processing.
 
+To_Port switch tag (Type = 1): Represents frames that are to be sent to
+a specific switch port.
+  - SubType = 0. No request to perform timestamping.
+  - SubType = 1. Request to perform one-step timestamping.
+  - SubType = 2. Request to perform two-step timestamping.
+  - SubType = 3. Request to perform both one-step timestamping and
+    two-step timestamping.
 
-This clause could go to the else branch.
+To_Host switch tag (Type = 2): Represents frames redirected or copied to
+the switch management port.
+  - SubType = 0. Received frames redirected or copied to the switch
+     management port.
+  - SubType = 1. Received frames redirected or copied to the switch
+    management port with captured timestamp at the switch port where
+    the frame was received.
+  - SubType = 2. Transmit timestamp response (two-step timestamping).
 
+Currently, this patch set supports Forward tag, SubType 0 of To_Port tag
+and SubType 0 of To_Host tag. More tags will be supported in the future.
 
->>       if (ret)
->>           goto encrypt_mapping;
->> @@ -126,11 +135,15 @@ static int atomic_pool_expand(struct gen_pool *pool, size_t pool_size,
->>       return 0;
->>   encrypt_mapping:
->> -    ret = set_memory_encrypted((unsigned long)page_to_virt(page),
->> -                   1 << order);
->> -    if (WARN_ON_ONCE(ret)) {
->> -        /* Decrypt succeeded but encrypt failed, purposely leak */
->> -        goto out;
->> +    if (dma_pool->unencrypted) {
->> +        int rc;
->> +
->> +        rc = set_memory_encrypted((unsigned long)page_to_virt(page),
->> +                      1 << order);
->> +        if (WARN_ON_ONCE(rc)) {
->> +            /* Decrypt succeeded but encrypt failed, purposely leak */
->> +            goto out;
->> +        }
->>       }
->>   remove_mapping:
->>   #ifdef CONFIG_DMA_DIRECT_REMAP
->> @@ -142,46 +155,52 @@ static int atomic_pool_expand(struct gen_pool *pool, size_t pool_size,
->>       return ret;
->>   }
->> -static void atomic_pool_resize(struct gen_pool *pool, gfp_t gfp)
->> +static void atomic_pool_resize(struct dma_gen_pool *dma_pool, gfp_t gfp)
->>   {
->> -    if (pool && gen_pool_avail(pool) < atomic_pool_size)
->> -        atomic_pool_expand(pool, gen_pool_size(pool), gfp);
->> +    if (dma_pool->pool && gen_pool_avail(dma_pool->pool) < atomic_pool_size)
->> +        atomic_pool_expand(dma_pool, gen_pool_size(dma_pool->pool), gfp);
->>   }
->>   static void atomic_pool_work_fn(struct work_struct *work)
->>   {
->>       if (IS_ENABLED(CONFIG_ZONE_DMA))
->> -        atomic_pool_resize(atomic_pool_dma,
->> +        atomic_pool_resize(&atomic_pool_dma,
->>                      GFP_KERNEL | GFP_DMA);
->>       if (IS_ENABLED(CONFIG_ZONE_DMA32))
->> -        atomic_pool_resize(atomic_pool_dma32,
->> +        atomic_pool_resize(&atomic_pool_dma32,
->>                      GFP_KERNEL | GFP_DMA32);
->> -    atomic_pool_resize(atomic_pool_kernel, GFP_KERNEL);
->> +    atomic_pool_resize(&atomic_pool_kernel, GFP_KERNEL);
->>   }
->> -static __init struct gen_pool *__dma_atomic_pool_init(size_t pool_size,
->> -                              gfp_t gfp)
->> +static __init struct dma_gen_pool *__dma_atomic_pool_init(struct dma_gen_pool *dma_pool,
->> +        size_t pool_size, gfp_t gfp)
->>   {
->> -    struct gen_pool *pool;
->>       int ret;
->> -    pool = gen_pool_create(PAGE_SHIFT, NUMA_NO_NODE);
->> -    if (!pool)
->> +    dma_pool->pool = gen_pool_create(PAGE_SHIFT, NUMA_NO_NODE);
->> +    if (!dma_pool->pool)
->>           return NULL;
->> -    gen_pool_set_algo(pool, gen_pool_first_fit_order_align, NULL);
->> +    gen_pool_set_algo(dma_pool->pool, gen_pool_first_fit_order_align, NULL);
->> +
->> +    /* if platform is using memory encryption atomic pools are by default decrypted. */
->> +    if (cc_platform_has(CC_ATTR_MEM_ENCRYPT))
->> +        dma_pool->unencrypted = true;
->> +    else
->> +        dma_pool->unencrypted = false;
->> -    ret = atomic_pool_expand(pool, pool_size, gfp);
->> +    ret = atomic_pool_expand(dma_pool, pool_size, gfp);
->>       if (ret) {
->> -        gen_pool_destroy(pool);
->> +        gen_pool_destroy(dma_pool->pool);
->> +        dma_pool->pool = NULL;
->>           pr_err("DMA: failed to allocate %zu KiB %pGg pool for atomic allocation\n",
->>                  pool_size >> 10, &gfp);
->>           return NULL;
->>       }
->>       pr_info("DMA: preallocated %zu KiB %pGg pool for atomic allocations\n",
->> -        gen_pool_size(pool) >> 10, &gfp);
->> -    return pool;
->> +        gen_pool_size(dma_pool->pool) >> 10, &gfp);
->> +    return dma_pool;
->>   }
->>   #ifdef CONFIG_ZONE_DMA32
->> @@ -207,21 +226,22 @@ static int __init dma_atomic_pool_init(void)
->>       /* All memory might be in the DMA zone(s) to begin with */
->>       if (has_managed_zone(ZONE_NORMAL)) {
->> -        atomic_pool_kernel = __dma_atomic_pool_init(atomic_pool_size,
->> -                            GFP_KERNEL);
->> -        if (!atomic_pool_kernel)
->> +        __dma_atomic_pool_init(&atomic_pool_kernel, atomic_pool_size, GFP_KERNEL);
->> +        if (!atomic_pool_kernel.pool)
->>               ret = -ENOMEM;
->>       }
->> +
->>       if (has_managed_dma()) {
->> -        atomic_pool_dma = __dma_atomic_pool_init(atomic_pool_size,
->> -                        GFP_KERNEL | GFP_DMA);
->> -        if (!atomic_pool_dma)
->> +        __dma_atomic_pool_init(&atomic_pool_dma, atomic_pool_size,
->> +                       GFP_KERNEL | GFP_DMA);
->> +        if (!atomic_pool_dma.pool)
->>               ret = -ENOMEM;
->>       }
->> +
->>       if (has_managed_dma32) {
->> -        atomic_pool_dma32 = __dma_atomic_pool_init(atomic_pool_size,
->> -                        GFP_KERNEL | GFP_DMA32);
->> -        if (!atomic_pool_dma32)
->> +        __dma_atomic_pool_init(&atomic_pool_dma32, atomic_pool_size,
->> +                       GFP_KERNEL | GFP_DMA32);
->> +        if (!atomic_pool_dma32.pool)
->>               ret = -ENOMEM;
->>       }
->> @@ -230,19 +250,44 @@ static int __init dma_atomic_pool_init(void)
->>   }
->>   postcore_initcall(dma_atomic_pool_init);
->> -static inline struct gen_pool *dma_guess_pool(struct gen_pool *prev, gfp_t gfp)
->> +static inline struct dma_gen_pool *__dma_guess_pool(struct dma_gen_pool *first,
->> +        struct dma_gen_pool *second, struct dma_gen_pool *third)
->> +{
->> +    if (first->pool)
->> +        return first;
->> +    if (second && second->pool)
->> +        return second;
->> +    if (third && third->pool)
->> +        return third;
->> +    return NULL;
->> +}
->> +
->> +static inline struct dma_gen_pool *dma_guess_pool(struct dma_gen_pool *prev,
->> +        gfp_t gfp)
->>   {
->> -    if (prev == NULL) {
->> +    if (!prev) {
->>           if (gfp & GFP_DMA)
->> -            return atomic_pool_dma ?: atomic_pool_dma32 ?: atomic_pool_kernel;
->> +            return __dma_guess_pool(&atomic_pool_dma,
->> +                        &atomic_pool_dma32,
->> +                        &atomic_pool_kernel);
->> +
->>           if (gfp & GFP_DMA32)
->> -            return atomic_pool_dma32 ?: atomic_pool_dma ?: atomic_pool_kernel;
->> -        return atomic_pool_kernel ?: atomic_pool_dma32 ?: atomic_pool_dma;
->> +            return __dma_guess_pool(&atomic_pool_dma32,
->> +                        &atomic_pool_dma,
->> +                        &atomic_pool_kernel);
->> +
->> +        return __dma_guess_pool(&atomic_pool_kernel,
->> +                    &atomic_pool_dma32,
->> +                    &atomic_pool_dma);
->>       }
->> -    if (prev == atomic_pool_kernel)
->> -        return atomic_pool_dma32 ? atomic_pool_dma32 : atomic_pool_dma;
->> -    if (prev == atomic_pool_dma32)
->> -        return atomic_pool_dma;
->> +
->> +    if (prev == &atomic_pool_kernel)
->> +        return __dma_guess_pool(&atomic_pool_dma32,
->> +                    &atomic_pool_dma, NULL);
->> +
->> +    if (prev == &atomic_pool_dma32)
->> +        return __dma_guess_pool(&atomic_pool_dma, NULL, NULL);
->> +
->>       return NULL;
->>   }
->> @@ -272,16 +317,20 @@ static struct page *__dma_alloc_from_pool(struct device *dev, size_t size,
->>   }
->>   struct page *dma_alloc_from_pool(struct device *dev, size_t size,
->> -        void **cpu_addr, gfp_t gfp,
->> +        void **cpu_addr, gfp_t gfp, unsigned long attrs,
->>           bool (*phys_addr_ok)(struct device *, phys_addr_t, size_t))
->>   {
->> -    struct gen_pool *pool = NULL;
->> +    struct dma_gen_pool *dma_pool = NULL;
->>       struct page *page;
->>       bool pool_found = false;
->> -    while ((pool = dma_guess_pool(pool, gfp))) {
->> +    while ((dma_pool = dma_guess_pool(dma_pool, gfp))) {
->> +
->> +        if (dma_pool->unencrypted != !!(attrs & DMA_ATTR_CC_SHARED))
->> +            continue;
->> +
->>           pool_found = true;
->> -        page = __dma_alloc_from_pool(dev, size, pool, cpu_addr,
->> +        page = __dma_alloc_from_pool(dev, size, dma_pool->pool, cpu_addr,
->>                            phys_addr_ok);
->>           if (page)
->>               return page;
->> @@ -296,12 +345,14 @@ struct page *dma_alloc_from_pool(struct device *dev, size_t size,
->>   bool dma_free_from_pool(struct device *dev, void *start, size_t size)
->>   {
->> -    struct gen_pool *pool = NULL;
->> +    struct dma_gen_pool *dma_pool = NULL;
->> +
->> +    while ((dma_pool = dma_guess_pool(dma_pool, 0))) {
->> -    while ((pool = dma_guess_pool(pool, 0))) {
->> -        if (!gen_pool_has_addr(pool, (unsigned long)start, size))
->> +        if (!gen_pool_has_addr(dma_pool->pool, (unsigned long)start, size))
-> 
-> 
-> v3 of this just crashed here with dma_pool!=NULL but dma_pool->pool==NULL. continuing debugging... Thanks,
+In addition, the switch supports NETC Table Management Protocol (NTMP),
+some switch functionality is controlled using control messages sent to
+the hardware using BD ring interface with 32B descriptors similar to the
+packet Transmit BD ring used on ENETC. This interface is referred to as
+the command BD ring. This is used to configure functionality where the
+underlying resources may be shared between different entities or being
+too large to configure using direct registers.
 
+For this patch set, we have supported the following tables through the
+command BD ring interface.
 
-dma_direct_free:
-   dma_free_from_pool (loop over pools) -> false
-     [here was a crash which I fixed by "if (!dma_pool->pool) continue"]
-   swiotlb_find_pool (loop again) -> false
-     __dma_direct_free_pages
-       swiotlb_free
-         swiotlb_find_pool (loop again)
-       dma_free_contiguous => done.
+FDB Table: It contains forwarding and/or filtering information about MAC
+addresses. The FDB table is used for MAC learning lookups and MAC
+forwarding lookups.
 
-so that works but kinda hard to follow and there is some room for optimization. I do not normally have swiottlb when I test this and there is too many of this swiotlb stuff on the real direct dma mapping path imho. Thanks,
-> 
-> 
->>               continue;
->> -        gen_pool_free(pool, (unsigned long)start, size);
->> +
->> +        gen_pool_free(dma_pool->pool, (unsigned long)start, size);
->>           return true;
->>       }
->> diff --git a/kernel/dma/swiotlb.c b/kernel/dma/swiotlb.c
->> index 1abd3e6146f4..ab4eccbaa076 100644
->> --- a/kernel/dma/swiotlb.c
->> +++ b/kernel/dma/swiotlb.c
->> @@ -612,6 +612,7 @@ static struct page *swiotlb_alloc_tlb(struct device *dev, size_t bytes,
->>           u64 phys_limit, gfp_t gfp)
->>   {
->>       struct page *page;
->> +    unsigned long attrs = 0;
->>       /*
->>        * Allocate from the atomic pools if memory is encrypted and
->> @@ -623,8 +624,12 @@ static struct page *swiotlb_alloc_tlb(struct device *dev, size_t bytes,
->>           if (!IS_ENABLED(CONFIG_DMA_COHERENT_POOL))
->>               return NULL;
->> +        /* swiotlb considered decrypted by default */
->> +        if (cc_platform_has(CC_ATTR_MEM_ENCRYPT))
->> +            attrs = DMA_ATTR_CC_SHARED;
->> +
->>           return dma_alloc_from_pool(dev, bytes, &vaddr, gfp,
->> -                       dma_coherent_ok);
->> +                       attrs, dma_coherent_ok);
->>       }
->>       gfp &= ~GFP_ZONEMASK;
-> 
+VLAN Filter Table: It contains configuration and control information for
+each VLAN configured on the switch.
+
+Buffer Pool Table: It contains buffer pool configuration and operational
+information. Each entry corresponds to a buffer pool. Currently, we use
+this table to implement flow control feature on each port.
+
+Ingress Port Filter Table: It contains a set of filters each capable of
+classifying incoming traffic using a mix of L2, L3, and L4 parsed and
+arbitrary field data. We use this table to implement host flood support
+to the switch port.
+
+The switch also supports other tables, and we will add more advanced
+features through them in the future.
+
+---
+v8:
+1. Remove the duplicated 'is' in the help text of NET_DSA_NETC_SWITCH
+2. Replace num_fdb_gmac with htmcapr_num_words
+3. Update NETC_PAUSE_THRESH and related thresholds of buffer pool entry
+4. Remove the read-reset registers from netc_port_counters, and also
+   update the commit message of patch 15
+v7 link: https://lore.kernel.org/imx/20260513030454.1666570-1-wei.fang@nxp.com/
+v6 link: https://lore.kernel.org/imx/20260509102954.4116624-1-wei.fang@nxp.com/
+v5 link: https://lore.kernel.org/imx/20260430024945.3413973-1-wei.fang@nxp.com/
+v4 link: https://lore.kernel.org/imx/20260331113025.1566878-1-wei.fang@nxp.com/
+v3 link: https://lore.kernel.org/imx/20260326062917.3552334-1-wei.fang@nxp.com/
+v2 link: https://lore.kernel.org/imx/20260323060752.1157031-1-wei.fang@nxp.com/
+v1 link: https://lore.kernel.org/imx/20260316094152.1558671-1-wei.fang@nxp.com/
+---
+
+Wei Fang (15):
+  dt-bindings: net: dsa: update the description of 'dsa,member' property
+  dt-bindings: net: dsa: add NETC switch
+  net: enetc: add pre-boot initialization for i.MX94 switch
+  net: enetc: add basic operations to the FDB table
+  net: enetc: add support for the "Add" operation to VLAN filter table
+  net: enetc: add support for the "Update" operation to buffer pool
+    table
+  net: enetc: add support for "Add" and "Delete" operations to IPFT
+  net: enetc: add multiple command BD rings support
+  net: dsa: add NETC switch tag support
+  net: dsa: netc: introduce NXP NETC switch driver for i.MX94
+  net: dsa: netc: add phylink MAC operations
+  net: dsa: netc: add FDB, STP, MTU, port setup and host flooding
+    support
+  net: dsa: netc: initialize buffer pool table and implement
+    flow-control
+  net: dsa: netc: add support for the standardized counters
+  net: dsa: netc: add support for ethtool private statistics
+
+ .../devicetree/bindings/net/dsa/dsa.yaml      |    6 +-
+ .../bindings/net/dsa/nxp,netc-switch.yaml     |  131 ++
+ MAINTAINERS                                   |   11 +
+ drivers/net/dsa/Kconfig                       |    2 +
+ drivers/net/dsa/Makefile                      |    1 +
+ drivers/net/dsa/netc/Kconfig                  |   15 +
+ drivers/net/dsa/netc/Makefile                 |    3 +
+ drivers/net/dsa/netc/netc_ethtool.c           |  291 +++
+ drivers/net/dsa/netc/netc_main.c              | 1585 +++++++++++++++++
+ drivers/net/dsa/netc/netc_platform.c          |   87 +
+ drivers/net/dsa/netc/netc_switch.h            |  173 ++
+ drivers/net/dsa/netc/netc_switch_hw.h         |  366 ++++
+ .../ethernet/freescale/enetc/netc_blk_ctrl.c  |  185 +-
+ drivers/net/ethernet/freescale/enetc/ntmp.c   |  391 +++-
+ .../ethernet/freescale/enetc/ntmp_private.h   |  122 +-
+ include/linux/dsa/tag_netc.h                  |   14 +
+ include/linux/fsl/netc_global.h               |    6 +
+ include/linux/fsl/ntmp.h                      |  186 +-
+ include/net/dsa.h                             |    2 +
+ include/uapi/linux/if_ether.h                 |    1 +
+ net/dsa/Kconfig                               |   10 +
+ net/dsa/Makefile                              |    1 +
+ net/dsa/tag_netc.c                            |  214 +++
+ 23 files changed, 3773 insertions(+), 30 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/net/dsa/nxp,netc-switch.yaml
+ create mode 100644 drivers/net/dsa/netc/Kconfig
+ create mode 100644 drivers/net/dsa/netc/Makefile
+ create mode 100644 drivers/net/dsa/netc/netc_ethtool.c
+ create mode 100644 drivers/net/dsa/netc/netc_main.c
+ create mode 100644 drivers/net/dsa/netc/netc_platform.c
+ create mode 100644 drivers/net/dsa/netc/netc_switch.h
+ create mode 100644 drivers/net/dsa/netc/netc_switch_hw.h
+ create mode 100644 include/linux/dsa/tag_netc.h
+ create mode 100644 net/dsa/tag_netc.c
 
 -- 
-Alexey
+2.34.1
 
 
