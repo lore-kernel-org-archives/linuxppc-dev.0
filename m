@@ -1,83 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-21060-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21061-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C9E10CD4F3C
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 May 2026 05:44:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E3CEACD343F
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 May 2026 06:02:51 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gJmvN4TCfz3dKL;
-	Mon, 18 May 2026 15:44:00 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779083040;
-	cv=none; b=SIW1rOkSWz+IYRAeTfe0FMiKWKvQwdMC8LjRWruZi6MTdLsJYe+ExysdHSBqViuAbReih5NUJqfNaY+hihZlvxqcGy9DA9tIzDsJ/468FjmxyI9ALFUoJ9++UXaiLms0stl8/g6f0BKMuJTji7vXZv8l3jdA85l1aprFwn5aOzHHDlpRpbKvGOW/yCdsuyPAh9l5SG9XuYIQx0cO0vf9n2dp2US0X1ZGi/gCKLUp+r4taY/+QIlzJZcVoSJsi+u7bHY9ZxftPRbJoQyaiajVpfC7kKemP80wmRunS6olnbWihXVXwTgrx0jnEqqNkEj5oYnf+ENVTVp1WUnVCLsFJA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gJnK64hnXz3byP;
+	Mon, 18 May 2026 16:02:50 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779084170;
+	cv=none; b=cshqnezF2hITdfKrqWnFbE01NTYAusPSDSiwjlIt9tsTOqP7O9qmvUc6dWr5zSNuWnPb3TFMsHgcVpYDkWETRpnGMtSvO0gemq6xN5iQ0xPD7NJwl4TafAxtwgPU+pYpQCc+PeyXz9/cx0HeiKVLaKBB+4nZ94qPbxFziMTAI8dY8wgAemGTKr0cjmKaXO8NQ/BWIpHj2Z5jSf2Ck3CUYcjNauEP5Wa3bh94mdLcJIjtOseWNVrCOEGr64uJHluHbmFM0Z0TRzJ3JM7JADaGULcghTa5O5SB+ld8ZeUVltARPkdRIDggBhyHSwDbHyrIF/D5aanjuKsFBPsyklw3+A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1779083040; c=relaxed/relaxed;
-	bh=/d+b9koYYJ383tPUUP0AcYDRjFx6C12hgmW5OIErYV4=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=FTK7ImZqX0hZ+tqkAALJskrvJ5iZea+Q23yo8uiF65J0fHXJbJTgFc8xdd0n/0jaPhrWaxcaHnaA8sEayVD5Jmope91hwBT7M1VKK+wS6K23zryj10QzJAq/pl27cGWq9CHsS3dtLhwN6buEs8Boa1QzqH7VXoQL9PiS2aStdQL42mNPQQHzSutkZcG+qifJinNhYVMLACTeUM+NkxSC46qJJPqH8Z6xt6QKD11QLOb2/fn6CacgnIj//vbqrm+QuRbQqI+Bi/maRir9Y9HuYILxxCarabGJD2FznUiWvSdLTVNeomKNojnJ9P0ZPKjnjO1p6l1cIJYvBPTJ7dcaoA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=pr4rn+Rv; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	t=1779084170; c=relaxed/relaxed;
+	bh=u4e4+MzPeloaa5eq93jr1M0tS8Ki+Q8ynCwUcev8HlU=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=dUk77gLrM8R5oeG634YoEsJH2SZswbtAt4gFxb5aoHz+EFzRc6jU+/6MQeVpuBuPBYRGIxy+CYw0aKjeAxo9m60sugPuqFf2EX6i0JREx9TZqa3PNNzohXE2Bk/ijRG7EqMO2jltbgS3jt4beEwxIhSCttL+wxrVnN4bkHlH9QeyuXYsb2u0IBDp20w/bQcbfWxmegW2hEmf+0GwERikE2CEX/RWl9c9pOmShXz5z+Ixz93XnqIPPG2/7TcAtenD6tQJDH82TVNAaRS2jF9qyOm0O/vYvhSESJaa91rDI5qXz8e9uixlAaHP6dcEXNRJ/o64qcuKnMaAbHOYEwgtCQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ZgRM0otc; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=pr4rn+Rv;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ZgRM0otc;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gJmvM6rDxz3cll
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 May 2026 15:43:59 +1000 (AEST)
-Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 64HMHmqn982643;
-	Mon, 18 May 2026 05:43:47 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gJnK54jkVz3bwR
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 May 2026 16:02:49 +1000 (AEST)
+Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 64HJboDJ1876843;
+	Mon, 18 May 2026 06:02:45 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
 	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=/d+b9k
-	oYYJ383tPUUP0AcYDRjFx6C12hgmW5OIErYV4=; b=pr4rn+RvoWjNY+nsJ1dyY2
-	Lk4xDETRtgC7TeurnKY4Cf58GljRoPDqNALkXl4PHgtgimN90TipQh9Uf8tPg7he
-	G4hFMGAlIiIm/LralVHSHWH7ykzoEljm9zoJJBnmxOVdeHHon8VyvAZhOKORwGFF
-	kUAuAJ8Us/JQ1V7kFVoBF/W/aj3F0Eede7KwQ8Aa7004VPdx89gmlyN8CaRLl/U6
-	F5HBDsTP3W3gi8P49xZ+kj667w8m0w3WYQwXGRrPpeMPYBgUEEwnSCtobrLKE5kI
-	YEihd/BW55f81ksXfUYZRziYqkQIve4nYjuvM3QlMy/VMfglS5jmYC3f8626OV/A
+	:message-id:mime-version:references:subject:to; s=pp1; bh=u4e4+M
+	zPeloaa5eq93jr1M0tS8Ki+Q8ynCwUcev8HlU=; b=ZgRM0otc/P3Ma9Nof/lNLh
+	b9vuCCL2mtldXy+FOx2yP4eKaCxDu8srTb9997fPwb95MxwOuZTrJeCdsWZX+ktD
+	hPJPUYUeW3HQYI6p+E27gNbu/k4ZlNzIy/AtBaguqXgzYq0j6v4MvbNws01bFf0o
+	qiUlNk8RGVBaAd612I6X68a50wY3xjTzr7ZaRb9IIcgwyZsB7S0e1GW9NA/L2QGN
+	sY5lfCFtHa1mUMjEYI4/RMg17UPwozoaHE9z6mT1OQbXsm1j9C6FiEBweilchm6a
+	djpGm90tq+Y/8npDcXTPK8N8Q9aaq7ihVZZYCXxoF5CVWBpal00I5UWGEulz1SNQ
 	==
-Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4e6h8mebqx-1
+Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4e6h8860hq-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 18 May 2026 05:43:46 +0000 (GMT)
-Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma11.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 64I5d3J9024830;
-	Mon, 18 May 2026 05:43:45 GMT
-Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
-	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4e75kxv3kg-1
+	Mon, 18 May 2026 06:02:44 +0000 (GMT)
+Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma23.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 64I5sAou009037;
+	Mon, 18 May 2026 06:02:44 GMT
+Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
+	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4e74dhcbga-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 18 May 2026 05:43:45 +0000 (GMT)
-Received: from smtpav06.fra02v.mail.ibm.com (smtpav06.fra02v.mail.ibm.com [10.20.54.105])
-	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 64I5hhZa31588776
+	Mon, 18 May 2026 06:02:44 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
+	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 64I62ena48300510
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 18 May 2026 05:43:43 GMT
-Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id A62E520040;
-	Mon, 18 May 2026 05:43:43 +0000 (GMT)
-Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 4B2A720049;
-	Mon, 18 May 2026 05:43:40 +0000 (GMT)
-Received: from Linuxdev (unknown [9.43.43.25])
-	by smtpav06.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Mon, 18 May 2026 05:43:39 +0000 (GMT)
-From: Madhavan Srinivasan <maddy@linux.ibm.com>
-To: mpe@ellerman.id.au, npiggin@gmail.com, benh@kernel.crashing.org,
-        smaclennan@pikatech.com, Christophe Leroy <chleroy@kernel.org>,
-        Ma Ke <make24@iscas.ac.cn>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
-        akpm@linux-foundation.org, stable@vger.kernel.org
-Subject: Re: [PATCH] powerpc/warp: Fix error handling in pika_dtm_thread
-Date: Mon, 18 May 2026 11:13:38 +0530
-Message-ID: <177908291160.287704.16294849296370164231.b4-ty@linux.ibm.com>
-X-Mailer: git-send-email 2.54.0
-In-Reply-To: <20251116024411.21968-1-make24@iscas.ac.cn>
-References: <20251116024411.21968-1-make24@iscas.ac.cn>
+	Mon, 18 May 2026 06:02:40 GMT
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 7998E20043;
+	Mon, 18 May 2026 06:02:40 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id DF8062004B;
+	Mon, 18 May 2026 06:02:38 +0000 (GMT)
+Received: from [9.123.5.233] (unknown [9.123.5.233])
+	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Mon, 18 May 2026 06:02:38 +0000 (GMT)
+Message-ID: <45af9f95-da07-45b6-babe-dbae0f7eb318@linux.ibm.com>
+Date: Mon, 18 May 2026 11:32:38 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -91,49 +81,134 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 3/3] powerpc/kexec: fix double get_cpu() imbalance in
+ kexec_prepare_cpus
+To: Aboorva Devarajan <aboorvad@linux.ibm.com>,
+        Madhavan Srinivasan <maddy@linux.ibm.com>,
+        linuxppc-dev@lists.ozlabs.org
+Cc: Athira Rajeev <atrajeev@linux.vnet.ibm.com>,
+        Christophe Leroy <chleroy@kernel.org>, linux-kernel@vger.kernel.org,
+        Sourabh Jain <sourabhjain@linux.ibm.com>,
+        Ritesh Harjani <ritesh.list@gmail.com>
+References: <20260518050855.1147242-1-aboorvad@linux.ibm.com>
+ <20260518050855.1147242-4-aboorvad@linux.ibm.com>
+From: Shrikanth Hegde <sshegde@linux.ibm.com>
+Content-Language: en-US
+In-Reply-To: <20260518050855.1147242-4-aboorvad@linux.ibm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 X-TM-AS-GCONF: 00
 X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-GUID: osToTChQ8jajGyfxbqhQBOL5SDs6aD6B
-X-Authority-Analysis: v=2.4 cv=GYMnWwXL c=1 sm=1 tr=0 ts=6a0aa712 cx=c_pps
- a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
+X-Proofpoint-ORIG-GUID: UzyFgxX_jkVt8H868ceh3EF4ElsNY7dT
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTE4MDA1MSBTYWx0ZWRfX5qpda25PIm6S
+ Hgpeu/9HRz26Zs3F6ZBX9nan1VrsxMrII4mU9n+vO4bvyzrt0Dwzo2SkqZnmMCW3fR5XHqgwOWH
+ hmzo8YeIUvkBE1KnpCzjHs4TEbA2rvPaajc6RWh+9cZ3CVT6n39xZTLU+ccvgtFdf6Wf9ix1GMh
+ smLZvQNkYtwAGO8oCKShmurGq9O+x52P3XnTC2qQIiZHIjcERil5HjOuvejzGrf3AHSCerx9cLv
+ FD+e+e3MPFodURov/jeWCHRpYd1Xjz6woBTlHAMSF1+1Bq4kDbmO3lREsYA++4IFMeZrD+b4J+R
+ Lpnvzvp63/HORCQvoMMCS93IYaEH4GMNOxMKvI5wmWJdmcYyec+bcZjElr952eDZ4OiBgsWem0x
+ i3IREDtRgwdYwIYEbGSdZuQAEqZezU+14bBA6Y46Xe7daAmucLqMNAmmCyaij+JTOcbEw/eErYl
+ Jg13pUhcQ/nO4gVhcFQ==
+X-Proofpoint-GUID: 0QB6blTLBVZg7d-qTshchTKYAS6O_sgp
+X-Authority-Analysis: v=2.4 cv=apyCzyZV c=1 sm=1 tr=0 ts=6a0aab85 cx=c_pps
+ a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
  a=IkcTkHD0fZMA:10 a=NGcC8JguVDcA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=uAbxVGIbfxUO_5tXvNgY:22 a=VwQbUJbxAAAA:8
- a=-GyfqmGyNljL1kGGE3gA:9 a=QEXdDO2ut3YA:10
-X-Proofpoint-ORIG-GUID: UuZO23Y2vWK2vyeQJg-z0FiQ39VNilDL
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTE4MDA1MSBTYWx0ZWRfXyHaHLqYTU1Vz
- N4BcCIQVyVx5BrJXcBs/Cc51xPVb6A1PfLQBUUmCErwa8w+mNrTguHZfFVZgcWb9e2ef/XVxXLJ
- 3x2pRQYIchCso8FuABFNmOFx5kc7EYXmTk1fFd19LQe6qrCpoHhhYavUtdE76vj68/Qg3Jrsl5s
- DSi5QTW3zQCqTyiZ4ZvjsC6OsVnMeELvxU5jj99hF4RDJWy540eluF3nKQo963hzRBrcpVm6ONU
- oizlYb4pHN3CgsYu5rdUai05Otg0bhBiuHr1FYR2rUly8Jh/UPUMFI7Ro9ZcS5bivXHh054N3P4
- thCm7rOpkh2N7mpzAJUC3D5T0/anfg6WYpFfWV1pt8LR2vjaHmzo/NQYOiVGQDCA9h0yn+Ch1oK
- tS1wkgj0vg5IX0fH0Utg2gEGXgqgqF2Wg+DtsFZsdPLcoADMfH20H4yKdoXacbJnQMRue+9KD+G
- 3lDl840Yt692R7XdfsA==
+ a=RnoormkPH1_aCDwRdu11:22 a=V8glGbnc2Ofi9Qvn3v5h:22 a=VnNF1IyMAAAA:8
+ a=REhrpbHZYlxIgP8uR5AA:9 a=QEXdDO2ut3YA:10 a=O8hF6Hzn-FEA:10
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
  definitions=2026-05-18_01,2026-05-15_01,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- phishscore=0 malwarescore=0 lowpriorityscore=0 priorityscore=1501 bulkscore=0
- adultscore=0 suspectscore=0 spamscore=0 clxscore=1011 impostorscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2605130000 definitions=main-2605180051
+ malwarescore=0 lowpriorityscore=0 priorityscore=1501 impostorscore=0
+ bulkscore=0 suspectscore=0 adultscore=0 spamscore=0 phishscore=0
+ clxscore=1015 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2605130000
+ definitions=main-2605180051
 
-On Sun, 16 Nov 2025 10:44:11 +0800, Ma Ke wrote:
-> pika_dtm_thread() acquires client through of_find_i2c_device_by_node()
-> but fails to release it in error handling path. This could result in a
-> reference count leak, preventing proper cleanup and potentially
-> leading to resource exhaustion. Add put_device() to release the
-> reference in the error handling path.
+Hi Aboorva.
+
+On 5/18/26 10:38 AM, Aboorva Devarajan wrote:
+> kexec_prepare_cpus_wait() calls get_cpu() internally to obtain the
+> current CPU id. kexec_prepare_cpus() calls kexec_prepare_cpus_wait()
+> twice -- once for KEXEC_STATE_IRQS_OFF and once for
+> KEXEC_STATE_REAL_MODE -- but only issues a single put_cpu() at the end,
+> leaving preempt_count elevated by one extra nesting level.
 > 
-> Found by code review.
+> In practice the imbalance does not trigger a 'scheduling while atomic'
+> splat because the kexec path is a one-way trip: IRQs are already
+> disabled, no schedule() occurs after the leak, and
+> default_machine_kexec() overwrites preempt_count with HARDIRQ_OFFSET
+> before jumping into kexec_sequence() which never returns. However the
+> bookkeeping is still wrong.
 > 
-> [...]
+> Lift the get_cpu()/put_cpu() pair into kexec_prepare_cpus() so it is
+> called exactly once, and pass the CPU id to kexec_prepare_cpus_wait()
+> as a parameter. This keeps preempt_count correctly balanced.
+> 
+> Fixes: 1fc711f7ffb01 ("powerpc/kexec: Fix race in kexec shutdown")
+> Signed-off-by: Aboorva Devarajan <aboorvad@linux.ibm.com>
+> ---
+>   arch/powerpc/kexec/core_64.c | 15 ++++++++-------
+>   1 file changed, 8 insertions(+), 7 deletions(-)
+> 
+> diff --git a/arch/powerpc/kexec/core_64.c b/arch/powerpc/kexec/core_64.c
+> index 825ab8a88f18e..9d7e5a1e6e5b8 100644
+> --- a/arch/powerpc/kexec/core_64.c
+> +++ b/arch/powerpc/kexec/core_64.c
+> @@ -164,12 +164,11 @@ static void kexec_smp_down(void *arg)
+>   	/* NOTREACHED */
+>   }
+>   
+> -static void kexec_prepare_cpus_wait(int wait_state)
+> +static void kexec_prepare_cpus_wait(int wait_state, int my_cpu)
+>   {
+> -	int my_cpu, i, notified=-1;
+> +	int i, notified = -1;
+>   
+>   	hw_breakpoint_disable();
+> -	my_cpu = get_cpu();
+>   	/* Make sure each CPU has at least made it to the state we need.
+>   	 *
+>   	 * FIXME: There is a (slim) chance of a problem if not all of the CPUs
+> @@ -246,6 +245,8 @@ static void wake_offline_cpus(void)
+>   
+>   static void kexec_prepare_cpus(void)
+>   {
+> +	int my_cpu;
+> +
+>   	wake_offline_cpus();
+>   	smp_call_function(kexec_smp_down, NULL, /* wait */0);
+>   	local_irq_disable();
+> @@ -254,7 +255,8 @@ static void kexec_prepare_cpus(void)
+>   	mb(); /* make sure IRQs are disabled before we say they are */
+>   	get_paca()->kexec_state = KEXEC_STATE_IRQS_OFF;
+>   
+> -	kexec_prepare_cpus_wait(KEXEC_STATE_IRQS_OFF);
+> +	my_cpu = get_cpu();
 
-Applied to powerpc/fixes.
+raw_smp_processor_id() is better here. All it needs is get current cpu?
+caller does irq_disable above and that renders call for get_cpu un-necessary.
 
-[1/1] powerpc/warp: Fix error handling in pika_dtm_thread
-      https://git.kernel.org/powerpc/c/108d7f951271cbd36ca36efc5e5d106966f5180c
 
-cheers
+> +	kexec_prepare_cpus_wait(KEXEC_STATE_IRQS_OFF, my_cpu);
+>   	/* we are sure every CPU has IRQs off at this point */
+>   	kexec_all_irq_disabled = 1;
+>   
+> @@ -262,13 +264,12 @@ static void kexec_prepare_cpus(void)
+>   	 * Before removing MMU mappings make sure all CPUs have entered real
+>   	 * mode:
+>   	 */
+> -	kexec_prepare_cpus_wait(KEXEC_STATE_REAL_MODE);
+> +	kexec_prepare_cpus_wait(KEXEC_STATE_REAL_MODE, my_cpu);
+> +	put_cpu();
+>   
+>   	/* after we tell the others to go down */
+>   	if (ppc_md.kexec_cpu_down)
+>   		ppc_md.kexec_cpu_down(0, 0);
+> -
+> -	put_cpu();
+>   }
+>   
+>   #else /* ! SMP */
+
 
