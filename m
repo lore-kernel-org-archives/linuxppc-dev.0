@@ -1,56 +1,64 @@
-Return-Path: <linuxppc-dev+bounces-21124-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21125-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D6657CD4F49
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 May 2026 15:00:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 09173CD4F49
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 May 2026 15:06:11 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gK1Dd10gWz3bsK;
-	Tue, 19 May 2026 00:59:45 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779116384;
-	cv=none; b=e9PFVeQ5ULE+9dJ56eizE6gTOKQN4ZA37hbfxSL5/KWVyaePjPCh5fhK4TentHFSeUMx2CMy3+1CI+s8AI93RRB4gF6VOaGOsQ0qKsbTpMGpf5pz28avL7fn57c3c6hiLr3kgzC8uPkO2gaYuXyJt2Tu/RCkyN2As9kXJxMZAjPI20QFEvbFtYDwh4iI1N/LLzuIpPGhAiFkSeeDIS7k6pd/ekklNC/NvRSKSTwoPk0EWbuhw6beNcp/yOr8D7UfNpMSSyeqKarPqbvOidvMgZfELLubDcGRLAnsBGg7g5aRfGqSWE7GvsgxT0R/q9c5qKiSNtOamvOijYOq8/mebA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gK1N14qM8z2yDs;
+	Tue, 19 May 2026 01:06:09 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=45.249.212.187
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779116769;
+	cv=none; b=f0jHJkv7AFZqOE3YVSfqvOU50/Tj/lH35ILsEiqQLS2dFzJ77O7Sba9gE+aOuT3VyubNnI5qICvcXbI1JbvOdqiDBmHTEHWO68C7mIRNLJRxCPkhZf9mE4M9olQKUkk5+FdFPTKT8mV4D+ZNBIcx3Ep/Kva+K2lCE/8xk15Yvd2uAfp/hsghezvI0/U3vd5pht3AC1oOOD8dIIKWu1cjSY3PezddNQI57JknUi9KdDXHKYpWmro13zLtFM/NUutd0jgYNA2YS0drOSEiCBLjuNd5jTdRpEo9wXZXRylTr8GhxBmeDhsh8wG0la+uU3P+No5NTmWNYL+P5yW8bzxyOQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1779116384; c=relaxed/relaxed;
-	bh=NcIrJtePgNlQsqYUCB9tmwDxNJlR2Q+4iKxOOhTb1NI=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=ROKU3u8cBRtLz2CS2NHTa7YFMjn2YArXfPW/WO2CiOmgC658vBtQFx2FAhj4eVHeLYpG+DdOXgGRqCpjgqxFLQ7TiDiGTFCPNbYOCB1SaQK1yLqkXV6FKHNdsUQRvTwmhtaydUJINvfWncN8K+IYFDFlbWFEgOgKEiGEjGYbw/Ap3TpcjCkgz/7PLnGNaV3rvJwtOyFzoYT5tBVfrFPtrFisOIPPgbId2I88ne2fkECe5g2aWMZ1pQM/856GQKlKDp57gFaoygpPB2d3gdFHW15h4f1/GWocYMygFzNaPk4F3KiMw4p+AxbTBt4vUnRL/DFjRd7zUyFpieNfwr6o0g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=drdRHNx/; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=devnull+manivannan.sadhasivam.oss.qualcomm.com@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1779116769; c=relaxed/relaxed;
+	bh=y/0A0U2Miz8g6qlnLZ9M+S48R9RoXDn+PxaRIdMuKWw=;
+	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
+	 In-Reply-To:Content-Type; b=C+LrAPywlUOLJOahKMYmI4SQleu74U0T1xvZ05UlPfm3PllKkdI+FcvKtY5H8qk0GqydzWl+s3SyQbUUlI2LwA5iaqRVsSwToYt1Z/3kMGwSqBehHOrTOCwZ5S7ATJ3JWg4J9rPnQyW8adFv4PTUtk4IoM0MulTOJWQnG7GI5m42M7z0hq1MqJpAs7Fl12TQES/Geohaqh43v5f999zaMMxFeUwp64RASJC8U+45YwUYQfP9LhqKjShPnxqa2bby8V/N8Ef4TkCxcVGtcsXOBOKYXA5gZcF10NrlgeIJf0uKQV+WZF9ya7LtJGsb0/rVYn8BolBVEYsNZU6kBiZS1g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=RX0ElzSc; dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=RX0ElzSc; dkim-atps=neutral; spf=pass (client-ip=45.249.212.187; helo=szxga01-in.huawei.com; envelope-from=wangkefeng.wang@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=drdRHNx/;
+	dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=RX0ElzSc;
+	dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=RX0ElzSc;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=devnull+manivannan.sadhasivam.oss.qualcomm.com@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.187; helo=szxga01-in.huawei.com; envelope-from=wangkefeng.wang@huawei.com; receiver=lists.ozlabs.org)
+Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [45.249.212.187])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gK1DW5pGQz2yFP
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 May 2026 00:59:39 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 3ECE060212;
-	Mon, 18 May 2026 14:59:37 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id D2309C2BCF7;
-	Mon, 18 May 2026 14:59:36 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1779116376;
-	bh=9uNtK2Slk5M/MFG/T6Fl0ro6rywtcWVe7XXN38NhWzk=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=drdRHNx/+UGyZO4sPLC0FPQOmkDc9G4GsVF+SbXd1RPGUnMQcIoePAEaDaYSGBdnh
-	 S5Ne7f+dFXhfSxENyeC3X3dRF7fd/XuIOq5t/gxnxtfRHIqiQTabTZ52kKbkrUDSIW
-	 8kcUfeIzYzK9MGazyqzhuEbqUyrw1ctR4/j2uxd+qvKtmOW6AMNIIuRyPBpagLZRVy
-	 lhPzL75eBydM3bOniQzGArqxac6YUID3c+qobA1Gdl4O1ZN4ZoEscVkAKRrtyo0pQw
-	 avu9ja/hcbl7fLZ1/jjcLEp6wojVUc0l5bAd8wC3QNapsURGU7sRC3GcMIdD41Z8d/
-	 465mtPJVeejIg==
-Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C7AAECD4F3C;
-	Mon, 18 May 2026 14:59:36 +0000 (UTC)
-From: Manivannan Sadhasivam via B4 Relay <devnull+manivannan.sadhasivam.oss.qualcomm.com@kernel.org>
-Date: Mon, 18 May 2026 20:29:16 +0530
-Subject: [PATCH v8 4/5] PCI: qcom: Add support for resetting the Root Port
- due to link down event
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gK1My4G7rz2xRw
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 May 2026 01:06:06 +1000 (AEST)
+dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
+	c=relaxed/relaxed; q=dns/txt;
+	h=From;
+	bh=y/0A0U2Miz8g6qlnLZ9M+S48R9RoXDn+PxaRIdMuKWw=;
+	b=RX0ElzScjqNuMohNV0n+PGsOJK4o5h7/i9vlL2sQ9VyK6wXEJGcs3VrXf411MsQU1J6BdGm4V
+	+QYDqtIEY2/9VB2OMtB0T6Y0dYKPAKtFDIYh53Bg6/h3V3XDWLJTBmKqy0Qb/YcoWpaXfsRJo8M
+	kvipdlxr//vuYSo/1AAzWtA=
+Received: from canpmsgout07.his.huawei.com (unknown [172.19.92.160])
+	by szxga01-in.huawei.com (SkyGuard) with ESMTPS id 4gK1M936Tbz1BFRh
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 May 2026 23:05:25 +0800 (CST)
+dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
+	c=relaxed/relaxed; q=dns/txt;
+	h=From;
+	bh=y/0A0U2Miz8g6qlnLZ9M+S48R9RoXDn+PxaRIdMuKWw=;
+	b=RX0ElzScjqNuMohNV0n+PGsOJK4o5h7/i9vlL2sQ9VyK6wXEJGcs3VrXf411MsQU1J6BdGm4V
+	+QYDqtIEY2/9VB2OMtB0T6Y0dYKPAKtFDIYh53Bg6/h3V3XDWLJTBmKqy0Qb/YcoWpaXfsRJo8M
+	kvipdlxr//vuYSo/1AAzWtA=
+Received: from mail.maildlp.com (unknown [172.19.162.92])
+	by canpmsgout07.his.huawei.com (SkyGuard) with ESMTPS id 4gK1Br0RpLzLlSx;
+	Mon, 18 May 2026 22:58:12 +0800 (CST)
+Received: from dggpemf100008.china.huawei.com (unknown [7.185.36.138])
+	by mail.maildlp.com (Postfix) with ESMTPS id E86F740565;
+	Mon, 18 May 2026 23:05:51 +0800 (CST)
+Received: from [10.174.177.243] (10.174.177.243) by
+ dggpemf100008.china.huawei.com (7.185.36.138) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.1544.11; Mon, 18 May 2026 23:05:49 +0800
+Message-ID: <f115ceaa-4573-41c0-8c8d-5f4fb1b017f2@huawei.com>
+Date: Mon, 18 May 2026 23:05:47 +0800
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -64,311 +72,305 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260518-pci-port-reset-v8-4-eb5a7d331dfc@oss.qualcomm.com>
-References: <20260518-pci-port-reset-v8-0-eb5a7d331dfc@oss.qualcomm.com>
-In-Reply-To: <20260518-pci-port-reset-v8-0-eb5a7d331dfc@oss.qualcomm.com>
-To: Bjorn Helgaas <bhelgaas@google.com>, 
- Mahesh J Salgaonkar <mahesh@linux.ibm.com>, 
- Oliver O'Halloran <oohall@gmail.com>, Will Deacon <will@kernel.org>, 
- Lorenzo Pieralisi <lpieralisi@kernel.org>, 
- =?utf-8?q?Krzysztof_Wilczy=C5=84ski?= <kwilczynski@kernel.org>, 
- Manivannan Sadhasivam <mani@kernel.org>, Rob Herring <robh@kernel.org>, 
- Heiko Stuebner <heiko@sntech.de>, Philipp Zabel <p.zabel@pengutronix.de>
-Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org, 
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org, 
- linux-arm-msm@vger.kernel.org, linux-rockchip@lists.infradead.org, 
- Niklas Cassel <cassel@kernel.org>, 
- Wilfred Mallawa <wilfred.mallawa@wdc.com>, 
- Krishna Chaitanya Chundru <krishna.chundru@oss.qualcomm.com>, 
- mani@kernel.org, Lukas Wunner <lukas@wunner.de>, 
- Richard Zhu <hongxing.zhu@nxp.com>, Brian Norris <briannorris@chromium.org>, 
- Wilson Ding <dingwei@marvell.com>, 
- Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>, 
- Manivannan Sadhasivam <mani@kernel.org>
-X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=openpgp-sha256; l=8416;
- i=manivannan.sadhasivam@oss.qualcomm.com; h=from:subject:message-id;
- bh=HojmREZ0jAida7uK4WRsuxfksvkybUvZ4WI0dInXW7I=;
- b=owEBbQGS/pANAwAKAVWfEeb+kc71AcsmYgBqCylVI3RliwSOZLt6TTVCbTtQuwT888ePf5R/m
- C3ypFaHFjCJATMEAAEKAB0WIQRnpUMqgUjL2KRYJ5dVnxHm/pHO9QUCagspVQAKCRBVnxHm/pHO
- 9fhCB/wP8Xp7OPTQCp+m88qqqIaR0n3rP3pOpLtRh/DSChLRJ/weFuscoPEorBj3mimvsDVTloy
- n9LdXSLLevX0LEfWvtwKygfVXxKGF3ges5I8+E2Cbax+3DMrJB0x2QY/TsNDPgW41LJHPsSSHf8
- JCnt78lMW08OoROLip6GokyHKZieDvdgOGrXJUgpI1N3//YOIz8rCy74ZKVbTNOWTICqqQzIzEP
- eXpaVrsP4Y2eiGXel5LuEm24jBs9Vpf+ICLY0+anNlAnRWZX4ppmgPBCWWe2vgxkG6TJBFGks0o
- PCwfh7is8zBqC6bDhTnrN/+8vfWV7mhjkicNi3uqm3UP6tHO
-X-Developer-Key: i=manivannan.sadhasivam@oss.qualcomm.com; a=openpgp;
- fpr=C668AEC3C3188E4C611465E7488550E901166008
-X-Endpoint-Received: by B4 Relay for
- manivannan.sadhasivam@oss.qualcomm.com/default with auth_id=461
-X-Original-From: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
-Reply-To: manivannan.sadhasivam@oss.qualcomm.com
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v14 0/8] arm64: add ARCH_HAS_COPY_MC support
+To: Ruidong Tian <tianruidong@linux.alibaba.com>, <catalin.marinas@arm.com>,
+	<will@kernel.org>, <rafael@kernel.org>, <tony.luck@intel.com>,
+	<guohanjun@huawei.com>, <mchehab@kernel.org>, <xueshuai@linux.alibaba.com>,
+	<tongtiangen@huawei.com>, <james.morse@arm.com>, <robin.murphy@arm.com>,
+	<andreyknvl@gmail.com>, <dvyukov@google.com>, <vincenzo.frascino@arm.com>,
+	<mpe@ellerman.id.au>, <npiggin@gmail.com>, <ryabinin.a.a@gmail.com>,
+	<glider@google.com>, <christophe.leroy@csgroup.eu>,
+	<aneesh.kumar@kernel.org>, <naveen.n.rao@linux.ibm.com>,
+	<tglx@linutronix.de>, <mingo@redhat.com>
+CC: <linux-arm-kernel@lists.infradead.org>, <linux-mm@kvack.org>,
+	<linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>,
+	<kasan-dev@googlegroups.com>
+References: <20260518084956.2538442-1-tianruidong@linux.alibaba.com>
+Content-Language: en-US
+From: Kefeng Wang <wangkefeng.wang@huawei.com>
+In-Reply-To: <20260518084956.2538442-1-tianruidong@linux.alibaba.com>
+Content-Type: text/plain; charset="UTF-8"; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Originating-IP: [10.174.177.243]
+X-ClientProxiedBy: kwepems200002.china.huawei.com (7.221.188.68) To
+ dggpemf100008.china.huawei.com (7.185.36.138)
 
-From: Manivannan Sadhasivam <mani@kernel.org>
 
-The PCIe link can go down under circumstances such as the device firmware
-crash, link instability, etc... When that happens, the PCIe Root Port needs
-to be reset to make it operational again. Currently, the driver is not
-handling the link down event, due to which the users have to restart the
-machine to make PCIe link operational again. So fix it by detecting the
-link down event and resetting the Root Port.
 
-Since the Qcom PCIe controllers report the link down event through the
-'global' IRQ, enable the link down event by setting PARF_INT_ALL_LINK_DOWN
-bit in PARF_INT_ALL_MASK register.
+On 5/18/2026 4:49 PM, Ruidong Tian wrote:
+> This series continues Tong Tiangen's work on arm64 ARCH_HAS_COPY_MC
+> support. We encounter the same problem, and from a forward-looking
+> perspective, large-memory ARM machines such as Grace and Vera will suffer
+> more from this class of issues, which motivates us to push this feature
+> upstream.
+> 
+> Problem
+> =========
+> With the increase of memory capacity and density, the probability of memory
+> error also increases. The increasing size and density of server RAM in data
+> centers and clouds have shown increased uncorrectable memory errors.
+> 
+> Currently, more and more scenarios that can tolerate memory errors, such as
+> COW[1,2], KSM copy[3], coredump copy[4], khugepaged[5,6], uaccess copy[7],
+> etc.
 
-In the case of the event, iterate through the available Root Ports and call
-pci_host_handle_link_down() API with Root Port 'pci_dev' to let the PCI
-core handle the link down condition. Since Qcom PCIe controllers only
-support one Root Port per controller instance, the API will be called only
-once. But the looping is necessary as there is no PCI API available to
-fetch the Root Port instance without the child 'pci_dev'.
+We have encountered more scenarios and have made more enhancements, eg,
 
-The API will internally call, 'pci_host_bridge::reset_root_port()' callback
-to reset the Root Port in a platform specific way. So implement the
-callback to reset the Root Port by first resetting the PCIe core, followed
-by reinitializing the resources and then finally starting the link again.
+  658be46520ce mm: support poison recovery from copy_present_page()
+  aa549f923f5e mm: support poison recovery from do_cow_fault()
+  f00b295b9b61 fs: hugetlbfs: support poisoned recover from 
+hugetlbfs_migrate_folio()
+  060913999d7a mm: migrate: support poisoned recover from migrate folio
 
-Signed-off-by: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
-Signed-off-by: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
-Tested-by: Krishna Chaitanya Chundru <krishna.chundru@oss.qualcomm.com>
----
- drivers/pci/controller/dwc/pcie-qcom.c | 143 ++++++++++++++++++++++++++++++++-
- 1 file changed, 142 insertions(+), 1 deletion(-)
+Hope that the architecture-related sections can receive relevant reviews 
+and responses.
 
-diff --git a/drivers/pci/controller/dwc/pcie-qcom.c b/drivers/pci/controller/dwc/pcie-qcom.c
-index af6bf5cce65b..feda8abf5f85 100644
---- a/drivers/pci/controller/dwc/pcie-qcom.c
-+++ b/drivers/pci/controller/dwc/pcie-qcom.c
-@@ -56,6 +56,10 @@
- #define PARF_AXI_MSTR_WR_ADDR_HALT_V2		0x1a8
- #define PARF_Q2A_FLUSH				0x1ac
- #define PARF_LTSSM				0x1b0
-+#define PARF_INT_ALL_STATUS			0x224
-+#define PARF_INT_ALL_CLEAR			0x228
-+#define PARF_INT_ALL_MASK			0x22c
-+#define PARF_STATUS				0x230
- #define PARF_SID_OFFSET				0x234
- #define PARF_BDF_TRANSLATE_CFG			0x24c
- #define PARF_DBI_BASE_ADDR_V2			0x350
-@@ -131,6 +135,13 @@
- 
- /* PARF_LTSSM register fields */
- #define LTSSM_EN				BIT(8)
-+#define SW_CLEAR_FLUSH_MODE			BIT(10)
-+#define FLUSH_MODE				BIT(11)
-+
-+/* PARF_INT_ALL_{STATUS/CLEAR/MASK} register fields */
-+#define INT_ALL_LINK_DOWN			1
-+#define PARF_INT_ALL_LINK_DOWN			BIT(INT_ALL_LINK_DOWN)
-+#define PARF_INT_MSI_DEV_0_7			GENMASK(30, 23)
- 
- /* PARF_NO_SNOOP_OVERRIDE register fields */
- #define WR_NO_SNOOP_OVERRIDE_EN			BIT(1)
-@@ -142,6 +153,9 @@
- /* PARF_BDF_TO_SID_CFG fields */
- #define BDF_TO_SID_BYPASS			BIT(0)
- 
-+/* PARF_STATUS fields */
-+#define FLUSH_COMPLETED				BIT(8)
-+
- /* ELBI_SYS_CTRL register fields */
- #define ELBI_SYS_CTRL_LT_ENABLE			BIT(0)
- 
-@@ -166,6 +180,7 @@
- 						PCIE_CAP_SLOT_POWER_LIMIT_SCALE)
- 
- #define PERST_DELAY_US				1000
-+#define FLUSH_TIMEOUT_US			100
- 
- #define QCOM_PCIE_CRC8_POLYNOMIAL		(BIT(2) | BIT(1) | BIT(0))
- 
-@@ -282,11 +297,14 @@ struct qcom_pcie {
- 	const struct qcom_pcie_cfg *cfg;
- 	struct dentry *debugfs;
- 	struct list_head ports;
-+	int global_irq;
- 	bool suspended;
- 	bool use_pm_opp;
- };
- 
- #define to_qcom_pcie(x)		dev_get_drvdata((x)->dev)
-+static int qcom_pcie_reset_root_port(struct pci_host_bridge *bridge,
-+				  struct pci_dev *pdev);
- 
- static void __qcom_pcie_perst_assert(struct qcom_pcie *pcie, bool assert)
- {
-@@ -1330,6 +1348,8 @@ static int qcom_pcie_host_init(struct dw_pcie_rp *pp)
- 			goto err_assert_reset;
- 	}
- 
-+	pp->bridge->reset_root_port = qcom_pcie_reset_root_port;
-+
- 	return 0;
- 
- err_assert_reset:
-@@ -1613,6 +1633,78 @@ static void qcom_pcie_icc_opp_update(struct qcom_pcie *pcie)
- 	}
- }
- 
-+/*
-+ * Qcom PCIe controllers only support one Root Port per controller instance. So
-+ * this function ignores the 'pci_dev' associated with the Root Port and just
-+ * resets the host bridge, which in turn resets the Root Port also.
-+ */
-+static int qcom_pcie_reset_root_port(struct pci_host_bridge *bridge,
-+				  struct pci_dev *pdev)
-+{
-+	struct pci_bus *bus = bridge->bus;
-+	struct dw_pcie_rp *pp = bus->sysdata;
-+	struct dw_pcie *pci = to_dw_pcie_from_pp(pp);
-+	struct qcom_pcie *pcie = to_qcom_pcie(pci);
-+	struct device *dev = pcie->pci->dev;
-+	u32 val;
-+	int ret;
-+
-+	/* Wait for the pending transactions to be completed */
-+	ret = readl_relaxed_poll_timeout(pcie->parf + PARF_STATUS, val,
-+					 val & FLUSH_COMPLETED, 10,
-+					 FLUSH_TIMEOUT_US);
-+	if (ret) {
-+		dev_err(dev, "Flush completion failed: %d\n", ret);
-+		goto err_host_deinit;
-+	}
-+
-+	/* Clear the FLUSH_MODE to allow the core to be reset */
-+	val = readl(pcie->parf + PARF_LTSSM);
-+	val |= SW_CLEAR_FLUSH_MODE;
-+	writel(val, pcie->parf + PARF_LTSSM);
-+
-+	/* Wait for the FLUSH_MODE to clear */
-+	ret = readl_relaxed_poll_timeout(pcie->parf + PARF_LTSSM, val,
-+					 !(val & FLUSH_MODE), 10,
-+					 FLUSH_TIMEOUT_US);
-+	if (ret) {
-+		dev_err(dev, "Flush mode clear failed: %d\n", ret);
-+		goto err_host_deinit;
-+	}
-+
-+	qcom_pcie_host_deinit(pp);
-+
-+	ret = qcom_pcie_host_init(pp);
-+	if (ret) {
-+		dev_err(dev, "Host init failed\n");
-+		return ret;
-+	}
-+
-+	ret = dw_pcie_setup_rc(pp);
-+	if (ret)
-+		goto err_host_deinit;
-+
-+	/*
-+	 * Re-enable global IRQ events as the PARF_INT_ALL_MASK register is
-+	 * non-sticky.
-+	 */
-+	if (pcie->global_irq)
-+		writel_relaxed(PARF_INT_ALL_LINK_DOWN | PARF_INT_MSI_DEV_0_7,
-+				pcie->parf + PARF_INT_ALL_MASK);
-+
-+	qcom_pcie_start_link(pci);
-+	dw_pcie_wait_for_link(pci);
-+
-+	dev_dbg(dev, "Root Port reset completed\n");
-+
-+	return 0;
-+
-+err_host_deinit:
-+	qcom_pcie_host_deinit(pp);
-+
-+	return ret;
-+}
-+
- static int qcom_pcie_link_transition_count(struct seq_file *s, void *data)
- {
- 	struct qcom_pcie *pcie = (struct qcom_pcie *)dev_get_drvdata(s->private);
-@@ -1650,6 +1742,27 @@ static void qcom_pcie_init_debugfs(struct qcom_pcie *pcie)
- 				    qcom_pcie_link_transition_count);
- }
- 
-+static irqreturn_t qcom_pcie_global_irq_thread(int irq, void *data)
-+{
-+	struct qcom_pcie *pcie = data;
-+	struct dw_pcie_rp *pp = &pcie->pci->pp;
-+	struct device *dev = pcie->pci->dev;
-+	struct pci_dev *port;
-+	unsigned long status = readl_relaxed(pcie->parf + PARF_INT_ALL_STATUS);
-+
-+	writel_relaxed(status, pcie->parf + PARF_INT_ALL_CLEAR);
-+
-+	if (test_and_clear_bit(INT_ALL_LINK_DOWN, &status)) {
-+		dev_dbg(dev, "Received Link down event\n");
-+		for_each_pci_bridge(port, pp->bridge->bus) {
-+			if (pci_pcie_type(port) == PCI_EXP_TYPE_ROOT_PORT)
-+				pci_host_handle_link_down(port);
-+		}
-+	}
-+
-+	return IRQ_HANDLED;
-+}
-+
- static void qcom_pci_free_msi(void *ptr)
- {
- 	struct dw_pcie_rp *pp = (struct dw_pcie_rp *)ptr;
-@@ -1852,7 +1965,7 @@ static int qcom_pcie_probe(struct platform_device *pdev)
- 	struct dw_pcie_rp *pp;
- 	struct resource *res;
- 	struct dw_pcie *pci;
--	int ret;
-+	int ret, irq;
- 
- 	pcie_cfg = of_device_get_match_data(dev);
- 	if (!pcie_cfg) {
-@@ -2009,6 +2122,32 @@ static int qcom_pcie_probe(struct platform_device *pdev)
- 		goto err_phy_exit;
- 	}
- 
-+	irq = platform_get_irq_byname_optional(pdev, "global");
-+	if (irq > 0) {
-+		const char *name;
-+
-+		name = devm_kasprintf(dev, GFP_KERNEL, "qcom_pcie_global_irq%d",
-+				      pci_domain_nr(pp->bridge->bus));
-+		if (!name) {
-+			ret = -ENOMEM;
-+			goto err_host_deinit;
-+		}
-+
-+		ret = devm_request_threaded_irq(&pdev->dev, irq, NULL,
-+						qcom_pcie_global_irq_thread,
-+						IRQF_ONESHOT, name, pcie);
-+		if (ret) {
-+			dev_err_probe(&pdev->dev, ret,
-+				      "Failed to request Global IRQ\n");
-+			goto err_host_deinit;
-+		}
-+
-+		writel_relaxed(PARF_INT_ALL_LINK_DOWN | PARF_INT_MSI_DEV_0_7,
-+				pcie->parf + PARF_INT_ALL_MASK);
-+
-+		pcie->global_irq = irq;
-+	}
-+
- 	qcom_pcie_icc_opp_update(pcie);
- 
- 	if (pcie->mhi)
-@@ -2016,6 +2155,8 @@ static int qcom_pcie_probe(struct platform_device *pdev)
- 
- 	return 0;
- 
-+err_host_deinit:
-+	dw_pcie_host_deinit(pp);
- err_phy_exit:
- 	list_for_each_entry_safe(port, tmp_port, &pcie->ports, list) {
- 		list_for_each_entry_safe(perst, tmp_perst, &port->perst, list)
-
--- 
-2.48.1
-
+Thanks.
+  > Solution
+> =========
+> 
+> This patchset introduces a new processing framework on ARM64, which enables
+> ARM64 to support error recovery in the above scenarios, and more scenarios
+> can be expanded based on this in the future.
+> 
+> In arm64, memory error handling in do_sea(), which is divided into two cases:
+>   1. If the user state consumed the memory errors, the solution is to kill
+>      the user process and isolate the error page.
+>   2. If the kernel state consumed the memory errors, the solution is to
+>      panic.
+> 
+> For case 2, Undifferentiated panic may not be the optimal choice, as it can
+> be handled better. In some scenarios, we can avoid panic, such as uaccess,
+> if the uaccess fails due to memory error, only the user process will be
+> affected, returning an error to the caller and isolating the user page with
+> hardware memory errors is a better choice.
+> 
+> [1] commit d302c2398ba2 ("mm, hwpoison: when copy-on-write hits poison, take page offline")
+> [2] commit 1cb9dc4b475c ("mm: hwpoison: support recovery from HugePage copy-on-write faults")
+> [3] commit 6b970599e807 ("mm: hwpoison: support recovery from ksm_might_need_to_copy()")
+> [4] commit 245f09226893 ("mm: hwpoison: coredump: support recovery from dump_user_range()")
+> [5] commit 98c76c9f1ef7 ("mm/khugepaged: recover from poisoned anonymous memory")
+> [6] commit 12904d953364 ("mm/khugepaged: recover from poisoned file-backed memory")
+> [7] commit 278b917f8cb9 ("x86/mce: Add _ASM_EXTABLE_CPY for copy user access")
+> 
+> ------------------
+> Test result:
+> 
+> Tested on Kunpeng 920.
+> 
+> 1. copy_page(), copy_mc_page() basic function test pass, and the disassembly
+>     contents remains the same before and after refactor.
+> 
+> 2. copy_to/from_user() access kernel NULL pointer raise translation fault
+>     and dump error message then die(), test pass.
+> 
+> 3. Test following scenarios: copy_from_user(), get_user(), COW.
+> 
+>     Before patched: trigger a hardware memory error then panic.
+>     After  patched: trigger a hardware memory error without panic.
+> 
+>     Testing step:
+>     step1. start an user-process.
+>     step2. poison(einj) the user-process's page.
+>     step3: user-process access the poison page in kernel mode, then trigger SEA.
+>     step4: the kernel will not panic, only the user process is killed, the poison
+>            page is isolated. (before patched, the kernel will panic in do_sea())
+> 
+>     The above tests can also be reproduced using ras-tools, which provides
+>     einj-based injection and validation for uaccess and COW scenarios.
+>     Example usage:
+> 
+>       einj_mem_uc futex          # get_user
+>       einj_mem_uc copyin         # copy_to_user
+>       einj_mem_uc copy-on-write  # COW
+> 
+>     Link: https://git.kernel.org/pub/scm/linux/kernel/git/aegl/ras-tools.git
+> 
+> ------------------
+> 
+> Benefits
+> =========
+> According to Huawei's statistics from their storage products, memory errors
+> triggered in kernel-mode by COW and page cache read (uaccess) scenarios
+> account for more than 50%. With this patchset deployed, all kernel panics
+> caused by COW and page cache memory errors are eliminated.
+> Alibaba Cloud has also observed memory errors occurring in uaccess contexts.
+> 
+> Since V13:
+> 1. Changed MC-safe functions to return an error rather than kill the user
+>     process. When a user program invokes a syscall and the kernel encounters
+>     a memory error during uaccess, killing the process is unexpected; the
+>     syscall should return an error.
+> 2. Added FEAT_MOPS support for the copy_page_mc paths.
+> 3. Refactored copy_page() and memcpy() on top of the shared memcpy_template,
+>     reducing duplicated assembly code.
+> 
+> Since v12:
+> Thanks to the suggestions of Jonathan, Mark, and Mauro, the following modifications
+> are made:
+> 1. Rebase to latest kernel version.
+> 2. Patch1, add Jonathan's and Mauro's review-by.
+> 3. Patch2, modified do_apei_claim_sea() according to Mark's and Jonathan's suggestions,
+>     and optimized the commit message according to Mark's suggestions(Added description of
+>     the impact on regular copy_to_user()).
+> 4. Patch3, optimized the commit message according to Mauro's suggestions and add Jonathan's
+>     review-by.
+> 5. Patch4, modified copy_mc_user_highpage() and Optimized the commit message according to
+>     Jonathan's suggestions(no functional changes).
+> 6. Patch5, optimized the commit message according to Mauro's suggestions.
+> 7. Patch4/5, FEAT_MOPS is added to the code logic. Currently, the fixup is not performed
+>     on the MOPS instruction.
+> 8. Remove patch6 in v12 according to Jonathan's suggestions.
+> 
+> Since v11:
+> 1. Rebase to latest kernel version 6.9-rc1.
+> 2. Add patch 5, Since the problem described in "Since V10 Besides 3" has
+>     been solved in a50026bdb867 ('iov_iter: get rid of 'copy_mc' flag').
+> 3. Add the benefit of applying the patch set to our company to the description of patch0.
+> 
+> Since V10:
+>   Accroding Mark's suggestion:
+>   1. Merge V10's patch2 and patch3 to V11's patch2.
+>   2. Patch2(V11): use new fixup_type for ld* in copy_to_user(), fix fatal
+>      issues (NULL kernel pointeraccess) been fixup incorrectly.
+>   3. Patch2(V11): refactoring the logic of do_sea().
+>   4. Patch4(V11): Remove duplicate assembly logic and remove do_mte().
+> 
+>   Besides:
+>   1. Patch2(V11): remove st* insn's fixup, st* generally not trigger memory error.
+>   2. Split a part of the logic of patch2(V11) to patch5(V11), for detail,
+>      see patch5(V11)'s commit msg.
+>   3. Remove patch6(v10) “arm64: introduce copy_mc_to_kernel() implementation”.
+>      During modification, some problems that cannot be solved in a short
+>      period are found. The patch will be released after the problems are
+>      solved.
+>   4. Add test result in this patch.
+>   5. Modify patchset title, do not use machine check and remove "-next".
+> 
+> Since V9:
+>   1. Rebase to latest kernel version 6.8-rc2.
+>   2. Add patch 6/6 to support copy_mc_to_kernel().
+> 
+> Since V8:
+>   1. Rebase to latest kernel version and fix topo in some of the patches.
+>   2. According to the suggestion of Catalin, I attempted to modify the
+>      return value of function copy_mc_[user]_highpage() to bytes not copied.
+>      During the modification process, I found that it would be more
+>      reasonable to return -EFAULT when copy error occurs (referring to the
+>      newly added patch 4).
+> 
+>      For ARM64, the implementation of copy_mc_[user]_highpage() needs to
+>      consider MTE. Considering the scenario where data copying is successful
+>      but the MTE tag copying fails, it is also not reasonable to return
+>      bytes not copied.
+>   3. Considering the recent addition of machine check safe support for
+>      multiple scenarios, modify commit message for patch 5 (patch 4 for V8).
+> 
+> Since V7:
+>   Currently, there are patches supporting recover from poison
+>   consumption for the cow scenario[1]. Therefore, Supporting cow
+>   scenario under the arm64 architecture only needs to modify the relevant
+>   code under the arch/.
+>   [1]https://lore.kernel.org/lkml/20221031201029.102123-1-tony.luck@intel.com/
+> 
+> Since V6:
+>   Resend patches that are not merged into the mainline in V6.
+> 
+> Since V5:
+>   1. Add patch2/3 to add uaccess assembly helpers.
+>   2. Optimize the implementation logic of arm64_do_kernel_sea() in patch8.
+>   3. Remove kernel access fixup in patch9.
+>   All suggestion are from Mark.
+> 
+> Since V4:
+>   1. According Michael's suggestion, add patch5.
+>   2. According Mark's suggestiog, do some restructuring to arm64
+>   extable, then a new adaptation of machine check safe support is made based
+>   on this.
+>   3. According Mark's suggestion, support machine check safe in do_mte() in
+>   cow scene.
+>   4. In V4, two patches have been merged into -next, so V5 not send these
+>   two patches.
+> 
+> Since V3:
+>   1. According to Robin's suggestion, direct modify user_ldst and
+>   user_ldp in asm-uaccess.h and modify mte.S.
+>   2. Add new macro USER_MC in asm-uaccess.h, used in copy_from_user.S
+>   and copy_to_user.S.
+>   3. According to Robin's suggestion, using micro in copy_page_mc.S to
+>   simplify code.
+>   4. According to KeFeng's suggestion, modify powerpc code in patch1.
+>   5. According to KeFeng's suggestion, modify mm/extable.c and some code
+>   optimization.
+> 
+> Since V2:
+>   1. According to Mark's suggestion, all uaccess can be recovered due to
+>      memory error.
+>   2. Scenario pagecache reading is also supported as part of uaccess
+>      (copy_to_user()) and duplication code problem is also solved.
+>      Thanks for Robin's suggestion.
+>   3. According Mark's suggestion, update commit message of patch 2/5.
+>   4. According Borisllav's suggestion, update commit message of patch 1/5.
+> 
+> Since V1:
+>   1.Consistent with PPC/x86, Using CONFIG_ARCH_HAS_COPY_MC instead of
+>     ARM64_UCE_KERNEL_RECOVERY.
+>   2.Add two new scenes, cow and pagecache reading.
+>   3.Fix two small bug(the first two patch).
+> 
+> V1 in here:
+> https://lore.kernel.org/lkml/20220323033705.3966643-1-tongtiangen@huawei.com/
+> 
+> Ruidong Tian (3):
+>    ACPI: APEI: GHES: use exception context to gate SIGBUS on poison
+>      consumption
+>    lib/test: memcpy_kunit: add copy_page() and copy_mc_page() tests
+>    lib/tests: memcpy_kunit: add memcpy_mc() and memcpy_mc_large() test
+> 
+> Tong Tiangen (5):
+>    uaccess: add generic fallback version of copy_mc_to_user()
+>    arm64: add support for ARCH_HAS_COPY_MC
+>    mm/hwpoison: return -EFAULT when copy fail in
+>      copy_mc_[user]_highpage()
+>    arm64: support copy_mc_[user]_highpage()
+>    arm64: introduce copy_mc_to_kernel() implementation
+> 
+>   arch/arm64/Kconfig                   |   1 +
+>   arch/arm64/include/asm/asm-extable.h |  22 ++-
+>   arch/arm64/include/asm/asm-uaccess.h |   4 +
+>   arch/arm64/include/asm/extable.h     |   1 +
+>   arch/arm64/include/asm/mte.h         |   9 +
+>   arch/arm64/include/asm/page.h        |  10 ++
+>   arch/arm64/include/asm/string.h      |   5 +
+>   arch/arm64/include/asm/uaccess.h     |  17 ++
+>   arch/arm64/kernel/acpi.c             |   2 +-
+>   arch/arm64/lib/Makefile              |   2 +
+>   arch/arm64/lib/copy_mc_page.S        |  44 +++++
+>   arch/arm64/lib/copy_page.S           |  62 +------
+>   arch/arm64/lib/copy_page_template.S  |  71 ++++++++
+>   arch/arm64/lib/copy_to_user.S        |  10 +-
+>   arch/arm64/lib/memcpy.S              | 253 ++-------------------------
+>   arch/arm64/lib/memcpy_mc.S           |  56 ++++++
+>   arch/arm64/lib/memcpy_template.S     | 249 ++++++++++++++++++++++++++
+>   arch/arm64/lib/mte.S                 |  29 +++
+>   arch/arm64/mm/copypage.c             |  75 ++++++++
+>   arch/arm64/mm/extable.c              |  21 +++
+>   arch/arm64/mm/fault.c                |  30 +++-
+>   arch/powerpc/include/asm/uaccess.h   |   1 +
+>   arch/x86/include/asm/uaccess.h       |   1 +
+>   drivers/acpi/apei/ghes.c             |  36 ++--
+>   include/acpi/ghes.h                  |   6 +-
+>   include/linux/highmem.h              |  16 +-
+>   include/linux/uaccess.h              |   8 +
+>   lib/tests/memcpy_kunit.c             | 178 ++++++++++++++++++-
+>   mm/kasan/shadow.c                    |  12 ++
+>   mm/khugepaged.c                      |   4 +-
+>   30 files changed, 904 insertions(+), 331 deletions(-)
+>   create mode 100644 arch/arm64/lib/copy_mc_page.S
+>   create mode 100644 arch/arm64/lib/copy_page_template.S
+>   create mode 100644 arch/arm64/lib/memcpy_mc.S
+>   create mode 100644 arch/arm64/lib/memcpy_template.S
+> 
 
 
