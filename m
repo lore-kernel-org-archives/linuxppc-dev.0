@@ -1,78 +1,71 @@
-Return-Path: <linuxppc-dev+bounces-21106-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21107-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E7FC2CD4F3C
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 May 2026 08:55:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2D251CD4F54
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 May 2026 09:47:13 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gJs8X4vznz3bs5;
-	Mon, 18 May 2026 18:55:40 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=115.124.30.131
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779094540;
-	cv=none; b=lH3YaxoTiGfDKrUDtgRz1EJB981hwdgd71ofpG/Oq3hayCSBMIJTtWQcShmSjh6SCfWpRBWRue1zuWc6T7yNezrTti6zOMcs+0RHZ/X6aR1nOtku4W7u40DPPFbOkex/tgDw+3u70f88UphL15nXr2bN3OB/apv/za+uqL14XEhjmiB3iqdXpVYjlI8HfJwd39/9qEr2U5aMqb0smgG1pv9KrSIRbaaez2HzPKj9wp43Ixc1owCeD6LZmxrIjD771e4gXTUCccSyNhW2MyzEXWuNTeOPEUq5nRfOmIu3U4EKCENph/UM4YngNncSgftcJs+Olymx+TwGxHPExqL5bA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gJtHz5nsFz2yDs;
+	Mon, 18 May 2026 19:47:11 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779097631;
+	cv=none; b=dMUgnwweLDm0u3zBxudvJfiCmizsWEYx8t+MTxnJaQUQ+EnaPMgnBh9stIXh0Pk5NUHnicYiNsJKd5ynUCyRqj/XhwJsBxv5gCBpFaIUgsnU5L1GNGD5Tgq3XDt0JIx26S5ZuRZCKALnAUkA48m/mg92AeI20M0tOcXzFlod8xD5wxyYXEAX1BpoKsV9+RYWbHkKtj3wlT6oMlKqCMyCp4bSr/I6O/9ux+NSZKNFuabbIg8oun2cD9NzksvlNzf4xmbuZ9WlhtP2k1PzFQ44inbx0WGV834pqkPA4LXTZFyGPXq0IUERJ+Bs20GQ6UfrabNcxpu8ICivJ4jPzDSrAg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1779094540; c=relaxed/relaxed;
-	bh=JfppSwEbo8CVHsJ/3tFLMi3O9oZ5mHSNY9AbWVhXA+M=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=d9Hf5e5QbmPsuXmCxl5C/ZXJVoLlSm3OvSpYRXSFY/SfRT2OdwbviEwrNm8nLIxNMzeLxJWjFrer40EhHJ8oRg1EuCTO7R13gmRuo3bW8DG2E2kwqErHSbb/7FFNj/h5pTrG+XvVCA+jsYylEVMUwO8cfav4kwspgfNfQbli1pwwU3r7EpPJVqUYikk7jJzBkY6p4Kt4n9lZDsHf59PY5hmOmiWqj2g5FfOJoWuB8cYveADiUxrr+dLPHogzRat2JnJm5lniagfoxI6E9L1xVAsYaSb9CQ9eS0gS0wg1ef+R7nfxjwCDSUnFXitgfT5PC8DKExtC3FuWBhTDBi3/tQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.alibaba.com; dkim=pass (1024-bit key; unprotected) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.a=rsa-sha256 header.s=default header.b=hlJqx2mf; dkim-atps=neutral; spf=pass (client-ip=115.124.30.131; helo=out30-131.freemail.mail.aliyun.com; envelope-from=tianruidong@linux.alibaba.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.alibaba.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.alibaba.com
+	t=1779097631; c=relaxed/relaxed;
+	bh=ET333FRP9aSoxb7NhOmP9XopJpnV8U7OLN71bw9AvnU=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=N1zvUyeQRcaKO9t16Te6MaU3GvxnqL0zwqw/k8ySduR2gDlWEysU7/+rG0Ei+POlgZM6eeCoST7SliZmpmaY7cy9YMsR17gbrzqcYv9j4RukqaMmau9ymFvbSU1dAAcKmVbbMou3M8okN6fBNUn83j0P5pYlfTqMJ//29MDnZcXxf1SEdgshLJz+1ecub3Z4+cw5ePIYgk79mjyoGPp6X0GsNtG5XczLZF0pADS/PGmIDRNgV+PHuQlAXuuvREhUbbcCL1QM2Z+eOuucr9QyRCftjhacC+aZN0444G4e32su9cnE7r1jLXR+Qr8vRotTQHt3tDP8LoH92w7Y/hBBGw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=vQJ0arCr; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.a=rsa-sha256 header.s=default header.b=hlJqx2mf;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=vQJ0arCr;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.alibaba.com (client-ip=115.124.30.131; helo=out30-131.freemail.mail.aliyun.com; envelope-from=tianruidong@linux.alibaba.com; receiver=lists.ozlabs.org)
-Received: from out30-131.freemail.mail.aliyun.com (out30-131.freemail.mail.aliyun.com [115.124.30.131])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gJs8W2dr8z3brR
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 May 2026 18:55:38 +1000 (AEST)
-DKIM-Signature:v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=linux.alibaba.com; s=default;
-	t=1779094535; h=From:To:Subject:Date:Message-ID:MIME-Version;
-	bh=JfppSwEbo8CVHsJ/3tFLMi3O9oZ5mHSNY9AbWVhXA+M=;
-	b=hlJqx2mfmwb9yw43Yi+fQ8Aftt0S6DG768cc4I8S2scE84nLHZzOURCsdgsKXv3vIWR6uLLfme5KpVhOb/UKY+QnXKxRfltiNMcbfWcwoCI83Rzx1AeXwZlQ7XoB1hVBT0IaXPXhFa4JbwGgPjL/H1WCJfiBcnM9DCxOzGzW6e0=
-X-Alimail-AntiSpam:AC=PASS;BC=-1|-1;BR=01201311R201e4;CH=green;DM=||false|;DS=||;FP=0|-1|-1|-1|0|-1|-1|-1;HT=maildocker-contentspam033032089153;MF=tianruidong@linux.alibaba.com;NM=1;PH=DS;RN=28;SR=0;TI=SMTPD_---0X3647Nb_1779094217;
-Received: from localhost(mailfrom:tianruidong@linux.alibaba.com fp:SMTPD_---0X3647Nb_1779094217 cluster:ay36)
-          by smtp.aliyun-inc.com;
-          Mon, 18 May 2026 16:50:19 +0800
-From: Ruidong Tian <tianruidong@linux.alibaba.com>
-To: catalin.marinas@arm.com,
-	will@kernel.org,
-	rafael@kernel.org,
-	tony.luck@intel.com,
-	guohanjun@huawei.com,
-	mchehab@kernel.org,
-	xueshuai@linux.alibaba.com,
-	tongtiangen@huawei.com,
-	james.morse@arm.com,
-	robin.murphy@arm.com,
-	andreyknvl@gmail.com,
-	dvyukov@google.com,
-	vincenzo.frascino@arm.com,
-	mpe@ellerman.id.au,
-	npiggin@gmail.com,
-	ryabinin.a.a@gmail.com,
-	glider@google.com,
-	christophe.leroy@csgroup.eu,
-	aneesh.kumar@kernel.org,
-	naveen.n.rao@linux.ibm.com,
-	tglx@linutronix.de,
-	mingo@redhat.com
-Cc: linux-arm-kernel@lists.infradead.org,
-	linux-mm@kvack.org,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org,
-	kasan-dev@googlegroups.com,
-	tianruidong@linux.alibaba.com
-Subject: [PATCH v14 6/8] lib/test: memcpy_kunit: add copy_page() and copy_mc_page() tests
-Date: Mon, 18 May 2026 16:49:50 +0800
-Message-ID: <20260518084956.2538442-7-tianruidong@linux.alibaba.com>
-X-Mailer: git-send-email 2.43.7
-In-Reply-To: <20260518084956.2538442-1-tianruidong@linux.alibaba.com>
-References: <20260518084956.2538442-1-tianruidong@linux.alibaba.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gJtHz0r5cz2y7Y
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 May 2026 19:47:11 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sea.source.kernel.org (Postfix) with ESMTP id 00EBB44018;
+	Mon, 18 May 2026 09:47:09 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 68AFAC2BCB7;
+	Mon, 18 May 2026 09:47:02 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1779097628;
+	bh=TG4jY49etADdd0W92AOWeHiLbA5nZOb/ARZcjnb31oU=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=vQJ0arCrP/xBPlP5xYCcSSm/fS+QQUbWLyhqiDIrU88DmvTAFFSm30+Xht992Kwkr
+	 skPTdxS4IrMJ+p5tztV/luY0iNJBbYXUE/c8+gstKuaH8hi9y+Mgq2xBBpJ3ADVJs7
+	 ZCI2TQ1MeRf+U2+0uF/4b9BlIJuAH+0Z2Wi/G40INZkrBzkH/PD0+ypSZP4/Fk+Kxe
+	 Xp/7tp+4rG7efDwwY87OsxwuUVOB9eHt9qUSqLvldLdv2/QVprIE0DCJVhFMfpWFP/
+	 hXJ3evSbQlYMMWAjGszf1ccS6LkTIDY+CHhyS99vXL1+9ZkBTzfrKsyfLU8JAER3+q
+	 xVpAdvt8jECkg==
+Date: Mon, 18 May 2026 10:46:59 +0100
+From: Lorenzo Stoakes <ljs@kernel.org>
+To: Barry Song <baohua@kernel.org>
+Cc: Matthew Wilcox <willy@infradead.org>, surenb@google.com, 
+	akpm@linux-foundation.org, linux-mm@kvack.org, david@kernel.org, liam@infradead.org, 
+	vbabka@kernel.org, rppt@kernel.org, mhocko@suse.com, jack@suse.cz, pfalcato@suse.de, 
+	wanglian@kylinos.cn, chentao@kylinos.cn, lianux.mm@gmail.com, kunwu.chan@gmail.com, 
+	liyangouwen1@oppo.com, chrisl@kernel.org, kasong@tencent.com, shikemeng@huaweicloud.com, 
+	nphamcs@gmail.com, bhe@redhat.com, youngjun.park@lge.com, 
+	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, loongarch@lists.linux.dev, 
+	linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org, 
+	Nanzhe Zhao <nzzhao@126.com>
+Subject: Re: [PATCH v2 0/5] mm: reduce mmap_lock contention and improve page
+ fault performance
+Message-ID: <agrWuDNGddNmvMFD@lucifer>
+References: <20260430040427.4672-1-baohua@kernel.org>
+ <afNM-gIqxpyJ6ro7@casper.infradead.org>
+ <CAGsJ_4w0qcYmukHqsyRd0jomoyYkJjOt8b-Cgp53BgP-8QQghw@mail.gmail.com>
+ <afS_L-5XeWIldTXA@casper.infradead.org>
+ <CAGsJ_4wk=SDtgin+84Ev2TamU-JFfmrg_SUay=-tcYmnFvK6Nw@mail.gmail.com>
+ <afTpoL3FklpQZNMM@casper.infradead.org>
+ <CAGsJ_4ysMcrmDLSOwBkf7qwCQrcDWeEMXkHDajTJFMLKUk0bSQ@mail.gmail.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -86,111 +79,138 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
+In-Reply-To: <CAGsJ_4ysMcrmDLSOwBkf7qwCQrcDWeEMXkHDajTJFMLKUk0bSQ@mail.gmail.com>
 
-Add KUnit tests for copy_page() and copy_mc_page(), modeled after
-the existing memcpy_test() style: a static page-aligned src and a
-two-page dst, filled with random bytes plus non-zero edges, then
-verify byte-for-byte equality and that the adjacent page is
-untouched. The copy_mc_page() case additionally checks the return
-value is 0 on clean memory and is gated on CONFIG_ARCH_HAS_COPY_MC.
+On Sun, May 17, 2026 at 04:45:15PM +0800, Barry Song wrote:
+> On Sat, May 2, 2026 at 1:58 AM Matthew Wilcox <willy@infradead.org> wrote:
+> >
+> > On Sat, May 02, 2026 at 01:44:34AM +0800, Barry Song wrote:
+> > > On Fri, May 1, 2026 at 10:57 PM Matthew Wilcox <willy@infradead.org> wrote:
+> > > >
+> > > > On Fri, May 01, 2026 at 06:49:58AM +0800, Barry Song wrote:
+> > > > > 1. There is no deterministic latency for I/O completion. It depends on
+> > > > > both the hardware and the software stack (bio/request queues and the
+> > > > > block scheduler). Sometimes the latency is short; at other times it can
+> > > > > be quite long. In such cases, a high-priority thread performing operations
+> > > > > such as mprotect, unmap, prctl_set_vma, or madvise may be forced to wait
+> > > > > for an unpredictable amount of time.
+> > > >
+> > > > But does that actually happen?  I find it hard to believe that thread A
+> > > > unmaps a VMA while thread B is in the middle of taking a page fault in
+> > > > that same VMA.  mprotect() and madvise() are more likely to happen, but
+> > > > it still seems really unlikely to me.
+> > >
+> > > It doesn’t have to involve unmapping or applying mprotect to
+> > > the entire VMA—just a portion of it is sufficient.
+> >
+> > Yes, but that still fails to answer "does this actually happen".  How much
+> > performance is all this complexity in the page fault handler buying us?
+> > If you don't answer this question, I'm just going to go in and rip it
+> > all out.
+> >
+>
+> Hi Matthew (and Lorenzo, Jan, and anyone else who may be
+> waiting for answers),
+>
+> As promised during LSF/MM/BPF, we conducted thorough
+> testing on Android phones to determine whether performing
+> I/O in `filemap_fault()` can block `vma_start_write()`.
+> I wanted to give a quick update on this question.
+>
+> Nanzhe at Xiaomi created tracing scripts and ran various
+> applications on Android devices with I/O performed under
+> the VMA lock in `filemap_fault()`. We found that:
+>
+> 1. There are very few cases where unmap() is blocked by
+>    page faults. I assume this is due to buggy user code
+>    or poor synchronization between reads and unmap().
+> So I assume it is not a problem.
+>
+> 2. We observed many cases where `vma_start_write()`
+>    is blocked by page-fault I/O in some applications.
+>    The blocking occurs in the `dup_mmap()` path during
+>    fork().
+>
+> With Suren's commit fb49c455323ff ("fork: lock VMAs of
+> the parent process when forking"), we now always hold
+> `vma_write_lock()` for each VMA. Note that the
+> `mmap_lock` write lock is also held, which could lead to
+> chained waiting if page-fault I/O is performed without
+> releasing the VMA lock.
 
-Signed-off-by: Ruidong Tian <tianruidong@linux.alibaba.com>
----
- lib/tests/memcpy_kunit.c | 67 +++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 66 insertions(+), 1 deletion(-)
+Hm but did you observe this 'chained waiting'? And what were the latencies?
 
-diff --git a/lib/tests/memcpy_kunit.c b/lib/tests/memcpy_kunit.c
-index d36933554e46..85df53ccfb0c 100644
---- a/lib/tests/memcpy_kunit.c
-+++ b/lib/tests/memcpy_kunit.c
-@@ -493,6 +493,67 @@ static void memmove_overlap_test(struct kunit *test)
- 	}
- }
- 
-+/* --- Page-sized copy tests --- */
-+
-+static u8 page_src[PAGE_SIZE] __aligned(PAGE_SIZE);
-+static u8 page_dst[PAGE_SIZE * 2] __aligned(PAGE_SIZE);
-+static const u8 page_zero[PAGE_SIZE] __aligned(PAGE_SIZE);
-+
-+static void init_page(struct kunit *test)
-+{
-+	/* Get many bit patterns. */
-+	get_random_bytes(page_src, PAGE_SIZE);
-+
-+	/* Make sure we have non-zero edges. */
-+	set_random_nonzero(test, &page_src[0]);
-+	set_random_nonzero(test, &page_src[PAGE_SIZE - 1]);
-+
-+	/* Explicitly zero the entire destination. */
-+	memset(page_dst, 0, ARRAY_SIZE(page_dst));
-+}
-+
-+static void copy_page_test(struct kunit *test)
-+{
-+	init_page(test);
-+
-+	/* Copy. */
-+	copy_page(page_dst, page_src);
-+
-+	/* Verify byte-for-byte exact. */
-+	KUNIT_ASSERT_EQ_MSG(test,
-+		memcmp(page_dst, page_src, PAGE_SIZE), 0,
-+		"copy_page content mismatch with random data");
-+
-+	/* Verify no overflow into second page. */
-+	KUNIT_ASSERT_EQ_MSG(test,
-+		memcmp(page_dst + PAGE_SIZE, page_zero, PAGE_SIZE), 0,
-+		"copy_page overflow into adjacent page");
-+}
-+
-+#ifdef CONFIG_ARCH_HAS_COPY_MC
-+static void copy_mc_page_test(struct kunit *test)
-+{
-+	int ret;
-+
-+	init_page(test);
-+
-+	/* Copy and check return value. */
-+	ret = copy_mc_page(page_dst, page_src);
-+	KUNIT_ASSERT_EQ_MSG(test, ret, 0,
-+		"copy_mc_page returned %d on clean memory", ret);
-+
-+	/* Verify byte-for-byte exact. */
-+	KUNIT_ASSERT_EQ_MSG(test,
-+		memcmp(page_dst, page_src, PAGE_SIZE), 0,
-+		"copy_mc_page content mismatch with random data");
-+
-+	/* Verify no overflow into second page. */
-+	KUNIT_ASSERT_EQ_MSG(test,
-+		memcmp(page_dst + PAGE_SIZE, page_zero, PAGE_SIZE), 0,
-+		"copy_mc_page overflow into adjacent page");
-+}
-+#endif /* CONFIG_ARCH_HAS_COPY_MC */
-+
- static struct kunit_case memcpy_test_cases[] = {
- 	KUNIT_CASE(memset_test),
- 	KUNIT_CASE(memcpy_test),
-@@ -500,6 +561,10 @@ static struct kunit_case memcpy_test_cases[] = {
- 	KUNIT_CASE_SLOW(memmove_test),
- 	KUNIT_CASE_SLOW(memmove_large_test),
- 	KUNIT_CASE_SLOW(memmove_overlap_test),
-+	KUNIT_CASE(copy_page_test),
-+#ifdef CONFIG_ARCH_HAS_COPY_MC
-+	KUNIT_CASE(copy_mc_page_test),
-+#endif
- 	{}
- };
- 
-@@ -510,5 +575,5 @@ static struct kunit_suite memcpy_test_suite = {
- 
- kunit_test_suite(memcpy_test_suite);
- 
--MODULE_DESCRIPTION("test cases for memcpy(), memmove(), and memset()");
-+MODULE_DESCRIPTION("test cases for memcpy(), memmove(), memset() and copy_page()");
- MODULE_LICENSE("GPL");
--- 
-2.39.3
+>
+> My gut feeling is that Suren's commit may be overshooting,
+> so my rough idea is that we might want to do something like
+> the following (we haven't tested it yet and it might be
+> wrong):
 
+Yeah I'm really not sure about that.
+
+Prior to the VMA locks, the mmap write lock would have guaranteed no concurrent
+page faults, which is really what fb49c455323ff is about.
+
+So Suren's patch was essentially restoring the _existing_ forking behaviour, and
+now you're saying 'let's change the forking behaviour that's been like that for
+forever'.
+
+I think you would _really_ have to be sure that's safe. And forking is a very
+dangerous time in terms of complexity and sensitivity and 'weird stuff'
+happening so I'd tread _very_ carefully here.
+
+>
+> diff --git a/mm/mmap.c b/mm/mmap.c
+> index 2311ae7c2ff4..5ddaf297f31a 100644
+> --- a/mm/mmap.c
+> +++ b/mm/mmap.c
+> @@ -1762,7 +1762,13 @@ __latent_entropy int dup_mmap(struct mm_struct
+> *mm, struct mm_struct *oldmm)
+>         for_each_vma(vmi, mpnt) {
+>                 struct file *file;
+>
+> -               retval = vma_start_write_killable(mpnt);
+> +               /*
+> +                * For anonymous or writable private VMAs, prevent
+> +                * concurrent CoW faults.
+> +                */
+
+To nit pick I think the comment's confusing but also tells you you don't need to
+specific anon check - writable private is sufficient. And it's not really just
+CoW that's the issue, it's anon_vma population _at all_ as well as CoW.
+
+> +               if (!mpnt->vm_file || (!(mpnt->vm_flags & VM_SHARED) &&
+> +                                       (mpnt->vm_flags & VM_WRITE)))
+> +                       retval = vma_start_write_killable(mpnt);
+
+I think this has to be VM_MAYWRITE, because somebody could otherwise mprotect()
+it R/W.
+
+I also don't understand why !mpnt->vm_file for a read-only anon mapping (more
+likely PROT_NONE) is here, just do the second check?
+
+(Also please use the new interface, so !vma_test(mpnt, VMA_SHARED_BIT) &&
+vma_test(mpnt, VMA_MAYWRITE_BIT))
+
+>                 if (retval < 0)
+>                         goto loop_out;
+>                 if (mpnt->vm_flags & VM_DONTCOPY) {
+>
+> Based on the above, we may want to re-check whether fork()
+> can be blocked by page faults. At the same time, if Suren,
+> you, or anyone else has any comments, please feel free to
+> share them.
+>
+> Best Regards
+> Barry
+
+Technical commentary above is sort of 'just cos' :) because I really question
+doing this honestly.
+
+I'd also like to get Suren's input, however.
+
+Thanks, Lorenzo
 
