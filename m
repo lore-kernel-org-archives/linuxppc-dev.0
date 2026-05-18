@@ -1,73 +1,58 @@
-Return-Path: <linuxppc-dev+bounces-21109-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21110-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C2CB9CD4F49
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 May 2026 10:04:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 50EA7CD4F52
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 May 2026 11:26:11 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gJthR2Qszz2yFQ;
-	Mon, 18 May 2026 20:04:55 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779098695;
-	cv=none; b=iL0KUt32FDzeE0OhGf8bA5+xZAMJkq7p5vE0wZvYOqjYxywDsjfqwulYpMh9hCQZKexLrrQvru2Ivm5Pvv/YTAnJllhrMoaI0LLJ/7MCF6P1OA9S/NOKH/AN9nddnK0NA6cekjIjMfV0OUOvluJQF8FNrkBt/ooTQzTf7NBRUmsX/umUyTTGeQMgMmGbh6aIsg5KhHp3yVNqxioRHrPQ16+mXZ+j/Sz7y7fB4IfTifvmugWtVPIzSHCBaffACp/N6Y81sIqDc9g4UpyWMwz1w1Gawgn7HbUEIIe1Mk1WKPtbL8X6Q8AywY1w5gHQETVh1Y2fIV41+tt6ACZ09bmuxg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gJwV96RFkz2xrC;
+	Mon, 18 May 2026 21:26:09 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779103569;
+	cv=none; b=WmwqnG7y6M7b9Mg4sGcGG3SjT7Cet+BbZXQnQ2xMMlhsBCbli8ub+2I3Z3TTNHdP78IvJCkhaj6IK2PsAg+9Z8HI6TugCfsUlqnoSwQ6JCfOz07Vucr4DU2jUaXUPGJtV1eYkF68aX2SGlrYHj/xV/hbJ/Vu/u29I3uoCqgLbO0baClqaBpo9tCeboupWKeVbQrOQ3UI6mL8TVurDxIRbtQTyWsgyXqjnpfMHPXTja/N+y82LiLTt+5lRcOfzrjzkNmObxi2FJ+NMWnR+kE2cYZ8kL4kRLmZ3PPzd4ItebijAX+Or0mfeLYUwO9EzsbAwCvaAKjwboay5442FQZEBQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1779098695; c=relaxed/relaxed;
-	bh=xqG9pcJuVwBv9+ztVwo8tr2fW0UH1ib8ZvGVBXkIgQw=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=ch49lIc2KwIGzyq3a5aopbGAhW0bt4VUZ/qqMMnEQjp8wvIfYQ4fzb6lHztXAWkAEhzEyYhdI4dszQM1AcscY/STm4UPstZqh7RssTUn4prqOgFOvreCy36Zdc+DCMcGiwK+PTThLxVumYnHbD1y1ws2QMJGsHDRg7zqrPjjzmjWGj/Ux1tlMJJdSLp3r8O1J+v+CTiI8BNkh/xdnos1KMXaQ9pdvVoimstIOcQB7gJDv+e00o/JIiB+OIISqC4SV5Vj9kJD9o8r0B21nrugaQ8fgp60ug+DNgkog65moqjUpz5jMRs9aFCiXnYc2Sh6B+YlzUblLpgT6H+fMgMOeA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=SCGHXnOZ; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=borntraeger@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1779103569; c=relaxed/relaxed;
+	bh=oasN+OgbaOKUdlSyv4LBJZ12kRuvWjrq6B74m1t66gg=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=BQgzpzif26AdWsnCnTajqRMDkux9DtaY8jaYNGla2r8Qt9oayzlUTOJQwwdKNQpUZ+qvexIxY3x49FNCVK2qyptJ6llxq/GS7avEKRsjQWPDpSrjBKZO8ew/w0t0lg2oKmL7vzgUqd0CjpADhZ1eoYJ3vWY0CEu4bDpGkqjbdmS11pWIPFLi5xtsP7Id/K7QbAzjRNg6ahGtS46eY2ir2rWHlC42/jMPZOpiotYmVcVJh+xtk2PPKrgojOQzGTDXERy3Lvc682qy1W+wOgpFvUIKQs+q95qPTdN/L3y5OGwAxUsjnS45HufaJ+FVAxEKTZUeTv7QLQfcdl66puoq+g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=uAqXOApK; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=baohua@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=SCGHXnOZ;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=uAqXOApK;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=borntraeger@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=baohua@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gJthQ1zllz2yDs
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 May 2026 20:04:53 +1000 (AEST)
-Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 64I5xINO3644003;
-	Mon, 18 May 2026 10:04:32 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=xqG9pc
-	JuVwBv9+ztVwo8tr2fW0UH1ib8ZvGVBXkIgQw=; b=SCGHXnOZiuLhs26tPceFUq
-	EeQYRCC3wgSS4WI7KC14mP3KNB6D2AAKK8pfccYiMIWsB9BRMuyHWLC5udDnspwW
-	A+MSsUkU0nCp6L3/eGNkBVCu1hB+8eXHDeGgYqDnt87PjvWQ3XZGVNgnhPpsTM3O
-	4RLGtDNkB+Ed7HoUoZ9sKYVMrqtlNeUiKGNBWa6EpoCI7yLC1zEhqy9swpKNrXsg
-	Eh0m4Z9RQMkoCEmqWYAQU39ITzthgM6HyxZdbNuggeWWv6mXqxdk9VBtNgBouq5X
-	nF6ebA6+ys04MhwYCg5v/IW8Z65tcTt2nhcbcLaZv2V8o1emCOB0UpspTkHn4MbQ
-	==
-Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4e6hb86ysr-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 18 May 2026 10:04:31 +0000 (GMT)
-Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma23.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 64I9s5oD009355;
-	Mon, 18 May 2026 10:04:30 GMT
-Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
-	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4e74dhd8rc-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 18 May 2026 10:04:30 +0000 (GMT)
-Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
-	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 64IA4QZN16318818
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 18 May 2026 10:04:26 GMT
-Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 6DAF72004E;
-	Mon, 18 May 2026 10:04:26 +0000 (GMT)
-Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id D838B2004B;
-	Mon, 18 May 2026 10:04:25 +0000 (GMT)
-Received: from [9.52.200.39] (unknown [9.52.200.39])
-	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Mon, 18 May 2026 10:04:25 +0000 (GMT)
-Message-ID: <3488974b-ad99-4adb-96c2-e8623f81c3f0@linux.ibm.com>
-Date: Mon, 18 May 2026 12:04:25 +0200
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gJwV91N5Sz2xRw
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 May 2026 21:26:09 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sea.source.kernel.org (Postfix) with ESMTP id D9DA8445D7
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 May 2026 11:26:06 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id BBF06C2BD04
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 May 2026 11:26:06 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1779103566;
+	bh=F3n0UdinpQtyBJO33nDrHQ72Dx0uW0V/XKaoM2m07kI=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=uAqXOApKWF1Xe3+LAeJNWkFk31ZW4fbNV/F002scZZx6yKDRL1Nelp16PQTiwF5/O
+	 L2ld20ihwOzAUllxHmqzcC/rOSSkj7C/eDMghfxqru4gg4Pi9E4DtFEXRyGfPILQLw
+	 3Mu6oqvtpmqIKjee/3S0BZ6lbLoUOBw+9So9lJ5LXE6BCQ+PtqFt1FstBSgMYfLDM5
+	 tc23e2UsUq7rglab6ooRPhUVvn7Z/6p5nsnajmLjhLoDcqhfv/GcTmY7GjXjqFU7Kr
+	 JF1iYFdc0eWHcXV+bhXJRJLLeTiq90d7vScm4Mqf3lPh1LzURF7IjLwg6XNjEYkz5c
+	 488cEcCqvdoUw==
+Received: by mail-qk1-f171.google.com with SMTP id af79cd13be357-90d13fa59e8so231897685a.2
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 May 2026 04:26:06 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AFNElJ8kFVGpRisLbKWT0BnBnM5kZnOiBx00Myx3z9eBoHFWmnN2UVC185sPBEysvucwhIPuewcwD0IRZByMXmI=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YziUFg6HMcqh2hMHcgaNlKQyAvh26lfNs4aSbYxFRNDnPLfxoyS
+	5ir64YQRMZmHPb2lv1lOASmO+DWrPjm6nKxs0WwIDFhY3an31eatOaw3ia4rzj5iFL9mSjqPXLx
+	EQw+AZk7KGRd8BNP4Ba+YyGn0oymqKxw=
+X-Received: by 2002:a05:620a:414a:b0:910:4023:4fd2 with SMTP id
+ af79cd13be357-911cca9d25emr2230185485a.5.1779103565699; Mon, 18 May 2026
+ 04:26:05 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -81,228 +66,236 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v4 07/13] dma-direct: make dma_direct_map_phys() honor
- DMA_ATTR_CC_SHARED
-To: "Aneesh Kumar K.V (Arm)" <aneesh.kumar@kernel.org>, iommu@lists.linux.dev,
-        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-        linux-coco@lists.linux.dev
-Cc: Robin Murphy <robin.murphy@arm.com>,
-        Marek Szyprowski <m.szyprowski@samsung.com>,
-        Will Deacon <will@kernel.org>, Marc Zyngier <maz@kernel.org>,
-        Steven Price <steven.price@arm.com>,
-        Suzuki K Poulose <Suzuki.Poulose@arm.com>,
-        Catalin Marinas <catalin.marinas@arm.com>,
-        Jiri Pirko <jiri@resnulli.us>, Jason Gunthorpe <jgg@ziepe.ca>,
-        Mostafa Saleh <smostafa@google.com>, Petr Tesarik <ptesarik@suse.com>,
-        Alexey Kardashevskiy <aik@amd.com>,
-        Dan Williams <dan.j.williams@intel.com>,
-        Xu Yilun
- <yilun.xu@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
-        linux-s390@vger.kernel.org, Madhavan Srinivasan <maddy@linux.ibm.com>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        Nicholas Piggin <npiggin@gmail.com>,
-        "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-        Alexander Gordeev <agordeev@linux.ibm.com>,
-        Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
-        Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>,
-        Sven Schnelle <svens@linux.ibm.com>, x86@kernel.org,
-        Halil Pasic <pasic@linux.ibm.com>,
-        Matthew Rosato <mjrosato@linux.ibm.com>,
-        Jaehoon Kim <jhkim@linux.ibm.com>
-References: <20260512090408.794195-1-aneesh.kumar@kernel.org>
- <20260512090408.794195-8-aneesh.kumar@kernel.org>
-Content-Language: en-US
-From: Christian Borntraeger <borntraeger@linux.ibm.com>
-In-Reply-To: <20260512090408.794195-8-aneesh.kumar@kernel.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTE4MDA5MiBTYWx0ZWRfXweiiSDL+TsiI
- 8jYni17GlfiiUQkjE+LprA3ViqMfAzAhdcoH54htbeNnRhM0stXFxfm1EHaGmrBFQP9PjyEmE7N
- 9n23EAatbVmq7kRfVC07ErevUPVkCpcIptKoX7JUlnUHsT+FBYtUeHFDHozSyE0NizAgMRRPE5g
- kFTi2itktI9BOqK92lemOsxyHHU4YVKMSQwXHKzI+71UPPGIZT9GZFeBKoVECnhQyA75672VqWv
- d2X8lZa4d3KiJvviOZkR8ohQGU/HfIUrSQlqVhg5OIUzYrurkPpG+II4u1stFhYU05DUs5hwz3L
- ACcOX+TyejgiHcKRx4UWAsf6hpx9+WAUMZGn1Wl8yZ9/YCgJvO+HcXIM4doqmQX+iSty4CniAeO
- muLLQBQ2AAGLzvzCLdsZbD2W5QjkHa++34l5lrzH6QygREm6GxMe3sTaM39LNf1Lzpgkh2dRn3K
- zXbCC85lM8fWpui8x6w==
-X-Proofpoint-GUID: _1ROsYvBpxxXKrSVhYjNsdTf1ncTdJwI
-X-Proofpoint-ORIG-GUID: GMA_N4PbhBFPm2tIl6aZuINIeP481idN
-X-Authority-Analysis: v=2.4 cv=aYBRWxot c=1 sm=1 tr=0 ts=6a0ae42f cx=c_pps
- a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
- a=IkcTkHD0fZMA:10 a=NGcC8JguVDcA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=Y2IxJ9c9Rs8Kov3niI8_:22 a=VwQbUJbxAAAA:8
- a=cNP6tjfTc9-AQSTecuMA:9 a=QEXdDO2ut3YA:10
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-05-18_02,2026-05-15_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- impostorscore=0 adultscore=0 bulkscore=0 suspectscore=0 lowpriorityscore=0
- clxscore=1011 spamscore=0 phishscore=0 priorityscore=1501 malwarescore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2605130000 definitions=main-2605180092
+References: <20260430040427.4672-1-baohua@kernel.org> <afNM-gIqxpyJ6ro7@casper.infradead.org>
+ <CAGsJ_4w0qcYmukHqsyRd0jomoyYkJjOt8b-Cgp53BgP-8QQghw@mail.gmail.com>
+ <afS_L-5XeWIldTXA@casper.infradead.org> <CAGsJ_4wk=SDtgin+84Ev2TamU-JFfmrg_SUay=-tcYmnFvK6Nw@mail.gmail.com>
+ <afTpoL3FklpQZNMM@casper.infradead.org> <CAGsJ_4ysMcrmDLSOwBkf7qwCQrcDWeEMXkHDajTJFMLKUk0bSQ@mail.gmail.com>
+ <agrWuDNGddNmvMFD@lucifer>
+In-Reply-To: <agrWuDNGddNmvMFD@lucifer>
+From: Barry Song <baohua@kernel.org>
+Date: Mon, 18 May 2026 19:25:54 +0800
+X-Gmail-Original-Message-ID: <CAGsJ_4zqLfdWoTH9s7FFaqWWj0mESfikYgr7=GcV64qcuXrPxA@mail.gmail.com>
+X-Gm-Features: AVHnY4LeGZMchPoL34USSPxXubMnUYltJ3Iu_W0eCgw6q0PgniLXvjRrK9TQyNs
+Message-ID: <CAGsJ_4zqLfdWoTH9s7FFaqWWj0mESfikYgr7=GcV64qcuXrPxA@mail.gmail.com>
+Subject: Re: [PATCH v2 0/5] mm: reduce mmap_lock contention and improve page
+ fault performance
+To: Lorenzo Stoakes <ljs@kernel.org>
+Cc: Matthew Wilcox <willy@infradead.org>, surenb@google.com, akpm@linux-foundation.org, 
+	linux-mm@kvack.org, david@kernel.org, liam@infradead.org, vbabka@kernel.org, 
+	rppt@kernel.org, mhocko@suse.com, jack@suse.cz, pfalcato@suse.de, 
+	wanglian@kylinos.cn, chentao@kylinos.cn, lianux.mm@gmail.com, 
+	kunwu.chan@gmail.com, liyangouwen1@oppo.com, chrisl@kernel.org, 
+	kasong@tencent.com, shikemeng@huaweicloud.com, nphamcs@gmail.com, 
+	bhe@redhat.com, youngjun.park@lge.com, linux-arm-kernel@lists.infradead.org, 
+	linux-kernel@vger.kernel.org, loongarch@lists.linux.dev, 
+	linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org, 
+	linux-s390@vger.kernel.org, Nanzhe Zhao <nzzhao@126.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-cc Halil, Matt, Jaehoon.
-Can you have a look what this means for virtio on secure execution?
+On Mon, May 18, 2026 at 5:47=E2=80=AFPM Lorenzo Stoakes <ljs@kernel.org> wr=
+ote:
+>
+> On Sun, May 17, 2026 at 04:45:15PM +0800, Barry Song wrote:
+> > On Sat, May 2, 2026 at 1:58=E2=80=AFAM Matthew Wilcox <willy@infradead.=
+org> wrote:
+> > >
+> > > On Sat, May 02, 2026 at 01:44:34AM +0800, Barry Song wrote:
+> > > > On Fri, May 1, 2026 at 10:57=E2=80=AFPM Matthew Wilcox <willy@infra=
+dead.org> wrote:
+> > > > >
+> > > > > On Fri, May 01, 2026 at 06:49:58AM +0800, Barry Song wrote:
+> > > > > > 1. There is no deterministic latency for I/O completion. It dep=
+ends on
+> > > > > > both the hardware and the software stack (bio/request queues an=
+d the
+> > > > > > block scheduler). Sometimes the latency is short; at other time=
+s it can
+> > > > > > be quite long. In such cases, a high-priority thread performing=
+ operations
+> > > > > > such as mprotect, unmap, prctl_set_vma, or madvise may be force=
+d to wait
+> > > > > > for an unpredictable amount of time.
+> > > > >
+> > > > > But does that actually happen?  I find it hard to believe that th=
+read A
+> > > > > unmaps a VMA while thread B is in the middle of taking a page fau=
+lt in
+> > > > > that same VMA.  mprotect() and madvise() are more likely to happe=
+n, but
+> > > > > it still seems really unlikely to me.
+> > > >
+> > > > It doesn=E2=80=99t have to involve unmapping or applying mprotect t=
+o
+> > > > the entire VMA=E2=80=94just a portion of it is sufficient.
+> > >
+> > > Yes, but that still fails to answer "does this actually happen".  How=
+ much
+> > > performance is all this complexity in the page fault handler buying u=
+s?
+> > > If you don't answer this question, I'm just going to go in and rip it
+> > > all out.
+> > >
+> >
+> > Hi Matthew (and Lorenzo, Jan, and anyone else who may be
+> > waiting for answers),
+> >
+> > As promised during LSF/MM/BPF, we conducted thorough
+> > testing on Android phones to determine whether performing
+> > I/O in `filemap_fault()` can block `vma_start_write()`.
+> > I wanted to give a quick update on this question.
+> >
+> > Nanzhe at Xiaomi created tracing scripts and ran various
+> > applications on Android devices with I/O performed under
+> > the VMA lock in `filemap_fault()`. We found that:
+> >
+> > 1. There are very few cases where unmap() is blocked by
+> >    page faults. I assume this is due to buggy user code
+> >    or poor synchronization between reads and unmap().
+> > So I assume it is not a problem.
+> >
+> > 2. We observed many cases where `vma_start_write()`
+> >    is blocked by page-fault I/O in some applications.
+> >    The blocking occurs in the `dup_mmap()` path during
+> >    fork().
+> >
+> > With Suren's commit fb49c455323ff ("fork: lock VMAs of
+> > the parent process when forking"), we now always hold
+> > `vma_write_lock()` for each VMA. Note that the
+> > `mmap_lock` write lock is also held, which could lead to
+> > chained waiting if page-fault I/O is performed without
+> > releasing the VMA lock.
+>
+> Hm but did you observe this 'chained waiting'? And what were the latencie=
+s?
 
-Am 12.05.26 um 11:04 schrieb Aneesh Kumar K.V (Arm):
-> Teach dma_direct_map_phys() to select the DMA address encoding based on
-> DMA_ATTR_CC_SHARED.
-> 
-> Use phys_to_dma_unencrypted() for decrypted mappings and
-> phys_to_dma_encrypted() otherwise. If a device requires unencrypted DMA
-> but the source physical address is still encrypted, force the mapping
-> through swiotlb so the DMA address and backing memory attributes remain
-> consistent.
-> 
-> Update the arm64, x86, s390 and powerpc secure-guest setup to not use
-> swiotlb force option
-> 
-> Signed-off-by: Aneesh Kumar K.V (Arm) <aneesh.kumar@kernel.org>
-> ---
-> Changes from v3:
-> * Handle DMA_ATTR_MMIO
-> ---
->   arch/arm64/mm/init.c                 |  4 +--
->   arch/powerpc/platforms/pseries/svm.c |  2 +-
->   arch/s390/mm/init.c                  |  2 +-
->   arch/x86/kernel/pci-dma.c            |  4 +--
->   kernel/dma/direct.c                  |  4 ++-
->   kernel/dma/direct.h                  | 38 +++++++++++++---------------
->   6 files changed, 24 insertions(+), 30 deletions(-)
-> 
-> diff --git a/arch/arm64/mm/init.c b/arch/arm64/mm/init.c
-> index 97987f850a33..acf67c7064db 100644
-> --- a/arch/arm64/mm/init.c
-> +++ b/arch/arm64/mm/init.c
-> @@ -338,10 +338,8 @@ void __init arch_mm_preinit(void)
->   	unsigned int flags = SWIOTLB_VERBOSE;
->   	bool swiotlb = max_pfn > PFN_DOWN(arm64_dma_phys_limit);
->   
-> -	if (is_realm_world()) {
-> +	if (is_realm_world())
->   		swiotlb = true;
-> -		flags |= SWIOTLB_FORCE;
-> -	}
->   
->   	if (IS_ENABLED(CONFIG_DMA_BOUNCE_UNALIGNED_KMALLOC) && !swiotlb) {
->   		/*
-> diff --git a/arch/powerpc/platforms/pseries/svm.c b/arch/powerpc/platforms/pseries/svm.c
-> index 384c9dc1899a..7a403dbd35ee 100644
-> --- a/arch/powerpc/platforms/pseries/svm.c
-> +++ b/arch/powerpc/platforms/pseries/svm.c
-> @@ -29,7 +29,7 @@ static int __init init_svm(void)
->   	 * need to use the SWIOTLB buffer for DMA even if dma_capable() says
->   	 * otherwise.
->   	 */
-> -	ppc_swiotlb_flags |= SWIOTLB_ANY | SWIOTLB_FORCE;
-> +	ppc_swiotlb_flags |= SWIOTLB_ANY;
->   
->   	/* Share the SWIOTLB buffer with the host. */
->   	swiotlb_update_mem_attributes();
-> diff --git a/arch/s390/mm/init.c b/arch/s390/mm/init.c
-> index 1f72efc2a579..843dbd445124 100644
-> --- a/arch/s390/mm/init.c
-> +++ b/arch/s390/mm/init.c
-> @@ -149,7 +149,7 @@ static void __init pv_init(void)
->   	virtio_set_mem_acc_cb(virtio_require_restricted_mem_acc);
->   
->   	/* make sure bounce buffers are shared */
-> -	swiotlb_init(true, SWIOTLB_FORCE | SWIOTLB_VERBOSE);
-> +	swiotlb_init(true, SWIOTLB_VERBOSE);
->   	swiotlb_update_mem_attributes();
->   }
->   
-> diff --git a/arch/x86/kernel/pci-dma.c b/arch/x86/kernel/pci-dma.c
-> index 6267363e0189..75cf8f6ae8cd 100644
-> --- a/arch/x86/kernel/pci-dma.c
-> +++ b/arch/x86/kernel/pci-dma.c
-> @@ -59,10 +59,8 @@ static void __init pci_swiotlb_detect(void)
->   	 * bounce buffers as the hypervisor can't access arbitrary VM memory
->   	 * that is not explicitly shared with it.
->   	 */
-> -	if (cc_platform_has(CC_ATTR_GUEST_MEM_ENCRYPT)) {
-> +	if (cc_platform_has(CC_ATTR_GUEST_MEM_ENCRYPT))
->   		x86_swiotlb_enable = true;
-> -		x86_swiotlb_flags |= SWIOTLB_FORCE;
-> -	}
->   }
->   #else
->   static inline void __init pci_swiotlb_detect(void)
-> diff --git a/kernel/dma/direct.c b/kernel/dma/direct.c
-> index ac315dd046c4..5aaa813c5509 100644
-> --- a/kernel/dma/direct.c
-> +++ b/kernel/dma/direct.c
-> @@ -691,8 +691,10 @@ size_t dma_direct_max_mapping_size(struct device *dev)
->   {
->   	/* If SWIOTLB is active, use its maximum mapping size */
->   	if (is_swiotlb_active(dev) &&
-> -	    (dma_addressing_limited(dev) || is_swiotlb_force_bounce(dev)))
-> +	    (dma_addressing_limited(dev) || is_swiotlb_force_bounce(dev) ||
-> +	     force_dma_unencrypted(dev)))
->   		return swiotlb_max_mapping_size(dev);
-> +
->   	return SIZE_MAX;
->   }
->   
-> diff --git a/kernel/dma/direct.h b/kernel/dma/direct.h
-> index e05dc7649366..4e35264ab6f8 100644
-> --- a/kernel/dma/direct.h
-> +++ b/kernel/dma/direct.h
-> @@ -89,36 +89,32 @@ static inline dma_addr_t dma_direct_map_phys(struct device *dev,
->   	dma_addr_t dma_addr;
->   
->   	if (is_swiotlb_force_bounce(dev)) {
-> -		if (!(attrs & DMA_ATTR_CC_SHARED)) {
-> -			if (attrs & (DMA_ATTR_MMIO | DMA_ATTR_REQUIRE_COHERENT))
-> -				return DMA_MAPPING_ERROR;
-> +		if (attrs & (DMA_ATTR_MMIO | DMA_ATTR_REQUIRE_COHERENT))
-> +			return DMA_MAPPING_ERROR;
->   
-> -			return swiotlb_map(dev, phys, size, dir, attrs);
-> -		}
-> -	} else if (attrs & DMA_ATTR_CC_SHARED) {
-> -		return DMA_MAPPING_ERROR;
-> +		return swiotlb_map(dev, phys, size, dir, attrs);
->   	}
->   
-> -	if (attrs & DMA_ATTR_MMIO) {
-> -		dma_addr = phys;
-> -		if (unlikely(!dma_capable(dev, dma_addr, size, false, attrs)))
-> -			goto err_overflow;
-> -	} else if (attrs & DMA_ATTR_CC_SHARED) {
-> +	if (attrs & DMA_ATTR_CC_SHARED)
->   		dma_addr = phys_to_dma_unencrypted(dev, phys);
-> +	else
-> +		dma_addr = phys_to_dma_encrypted(dev, phys);
-> +
-> +	if (attrs & DMA_ATTR_MMIO) {
->   		if (unlikely(!dma_capable(dev, dma_addr, size, false, attrs)))
->   			goto err_overflow;
-> -	} else {
-> -		dma_addr = phys_to_dma(dev, phys);
-> -		if (unlikely(!dma_capable(dev, dma_addr, size, true, attrs)) ||
-> -		    dma_kmalloc_needs_bounce(dev, size, dir)) {
-> -			if (is_swiotlb_active(dev) &&
-> -			    !(attrs & DMA_ATTR_REQUIRE_COHERENT))
-> -				return swiotlb_map(dev, phys, size, dir, attrs);
-> +		goto dma_mapped;
-> +	}
->   
-> -			goto err_overflow;
-> -		}
-> +	if (unlikely(!dma_capable(dev, dma_addr, size, true, attrs)) ||
-> +	    dma_kmalloc_needs_bounce(dev, size, dir)) {
-> +		if (is_swiotlb_active(dev) &&
-> +		    !(attrs & DMA_ATTR_REQUIRE_COHERENT))
-> +			return swiotlb_map(dev, phys, size, dir, attrs);
-> +		goto err_overflow;
->   	}
->   
-> +dma_mapped:
->   	if (!dev_is_dma_coherent(dev) &&
->   	    !(attrs & (DMA_ATTR_SKIP_CPU_SYNC | DMA_ATTR_MMIO))) {
->   		arch_sync_dma_for_device(phys, size, dir);
+We have clearly observed that the `fork()` operations of many
+popular Android apps, such as iQiyi, Baidu Tieba, and 10086,
+end up waiting on page-fault (PF) I/O when the VMA lock is
+held during I/O operations. This has already become a
+practical issue. I also believe this can lead to chained
+waiting, since the global `mmap_lock` blocks all threads that
+need to acquire it.
 
+
+>
+> >
+> > My gut feeling is that Suren's commit may be overshooting,
+> > so my rough idea is that we might want to do something like
+> > the following (we haven't tested it yet and it might be
+> > wrong):
+>
+> Yeah I'm really not sure about that.
+>
+> Prior to the VMA locks, the mmap write lock would have guaranteed no conc=
+urrent
+> page faults, which is really what fb49c455323ff is about.
+>
+> So Suren's patch was essentially restoring the _existing_ forking behavio=
+ur, and
+> now you're saying 'let's change the forking behaviour that's been like th=
+at for
+> forever'.
+
+
+I am afraid not. Before we introduced the per-VMA lock, we
+were not performing I/O while holding `mmap_lock`. A page fault
+that needed I/O would drop the `mmap_lock` read lock and allow
+`fork()` to proceed.
+
+Now, you are suggesting performing I/O while holding the VMA
+lock, which changes the requirements and introduces this
+problem.
+
+>
+> I think you would _really_ have to be sure that's safe. And forking is a =
+very
+> dangerous time in terms of complexity and sensitivity and 'weird stuff'
+> happening so I'd tread _very_ carefully here.
+
+Yep. I think my original proposal did not require any changes
+to `fork()`, since it simply preserved the current behavior of
+dropping the VMA lock before performing I/O. In that model,
+`fork()` would not end up waiting on I/O at all.
+
+What you are suggesting now appears to be performing I/O while
+holding the VMA lock, which in turn introduces the need to
+change `fork()`.
+
+>
+> >
+> > diff --git a/mm/mmap.c b/mm/mmap.c
+> > index 2311ae7c2ff4..5ddaf297f31a 100644
+> > --- a/mm/mmap.c
+> > +++ b/mm/mmap.c
+> > @@ -1762,7 +1762,13 @@ __latent_entropy int dup_mmap(struct mm_struct
+> > *mm, struct mm_struct *oldmm)
+> >         for_each_vma(vmi, mpnt) {
+> >                 struct file *file;
+> >
+> > -               retval =3D vma_start_write_killable(mpnt);
+> > +               /*
+> > +                * For anonymous or writable private VMAs, prevent
+> > +                * concurrent CoW faults.
+> > +                */
+>
+> To nit pick I think the comment's confusing but also tells you you don't =
+need to
+> specific anon check - writable private is sufficient. And it's not really=
+ just
+> CoW that's the issue, it's anon_vma population _at all_ as well as CoW.
+>
+> > +               if (!mpnt->vm_file || (!(mpnt->vm_flags & VM_SHARED) &&
+> > +                                       (mpnt->vm_flags & VM_WRITE)))
+> > +                       retval =3D vma_start_write_killable(mpnt);
+>
+> I think this has to be VM_MAYWRITE, because somebody could otherwise mpro=
+tect()
+> it R/W.
+>
+> I also don't understand why !mpnt->vm_file for a read-only anon mapping (=
+more
+> likely PROT_NONE) is here, just do the second check?
+>
+> (Also please use the new interface, so !vma_test(mpnt, VMA_SHARED_BIT) &&
+> vma_test(mpnt, VMA_MAYWRITE_BIT))
+
+Yep, I can definitely refine the check further. But before
+doing that, I'd first like to confirm that we are aligned on
+the direction.
+
+If you still intend to hold the VMA lock while performing I/O,
+then I think we should fix `fork()` to avoid taking
+`vma_start_write()`.
+
+>
+> >                 if (retval < 0)
+> >                         goto loop_out;
+> >                 if (mpnt->vm_flags & VM_DONTCOPY) {
+> >
+> > Based on the above, we may want to re-check whether fork()
+> > can be blocked by page faults. At the same time, if Suren,
+> > you, or anyone else has any comments, please feel free to
+> > share them.
+> >
+> > Best Regards
+> > Barry
+>
+> Technical commentary above is sort of 'just cos' :) because I really ques=
+tion
+> doing this honestly.
+
+I think we either need to fix `fork()`, or keep the current
+behavior of dropping the VMA lock before performing I/O.
+
+>
+> I'd also like to get Suren's input, however.
+
+Yes. of course.
+
+>
+> Thanks, Lorenzo
+
+Best Regards
+Barry
 
