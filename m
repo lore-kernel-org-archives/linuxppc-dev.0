@@ -1,79 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-21025-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21026-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BD9E6CD4F3C
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 May 2026 04:42:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2BA4ECD343F
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 May 2026 04:44:23 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gJlX82s4Vz2xfB;
-	Mon, 18 May 2026 14:42:16 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779079336;
-	cv=none; b=Vr8PJSQju///vEUyaKR5rRPzxr9hCloAzX3LQ+M969QfBkTr20ldM2Njle4d4Faf/S4sXg2r0Ex1r8OH3Zq048be0p9jsIEXrEDe9alLeGvy+27QxWbfFkJvhF+KOGfVZ/Cw1nkAs0ab7dR8eizt+12wu7a5brH4IwDw1d/W25IBH0bmOeFnhEd9eE5Xh3BkUbidNMPAfG1wgTt716oyVZG2d9ASWBZQEFegfqc7MKqqhgy5NNzIemxCRNg6m/CHAKSwoif304YZP1WsAgz766mD1om8oAU8mIurfAl9DwFWpQF6214o5D2Qjr/o4P0n25KwRFFAlyXTyHZj8Ev13A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gJlZY5cRrz2xfB;
+	Mon, 18 May 2026 14:44:21 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779079461;
+	cv=none; b=QESYgWUKEAv5p3jmJ0etmfYF9Rz/6MGjK9JXk+SEPGAvNxA/iJUYnoUmEZDqjNjceftJ2LgNtj6wMz7nrOn9bRGJWP8BolXvGCidftwedJwi5ZJhlDyEc0D9+4BkzudlpkbjtRvA85BwRbFGDoM3n/qilaj3bLEnuM0Svp8f2qDEgd7IC0WKOUsSXzHfKJmrzNmOLjtriacWm1JUbzUrUB44RxB9kxZCgZ1vPS5A+hGQrJECOyC881h+j3/A79x5382QsayYSBEDYNtw19xdE2En+z4w4e5SLRTJnQBf8YlTJbxvzf1Hs6ZOwWAM9HK9CbgVd+kSwiaQcN6H8IBStA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1779079336; c=relaxed/relaxed;
-	bh=bGWUFNUd70rQ8WihNw4jpC4+/xY2vnlDmpGuDw5bxQg=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=URLvwn5+pUzmW+c0nQSesudX4NyB370mQHa5AVRaXllK/+84SDoeHGf2zsEjFzSKwHYgZz1x463D3YxivNFkViVsRMGqtswaUK3PvTBBd5lFwC8l1WhWIsv+ORgvw8HBSYCtvz+NP6MRZ667Utz0zuLOAJKyFHBNjFCZHFzxSmll0qpwRsAyMBUOKa8OACiTbvI1jQ3QS4Mi/hWu9HHwLODWIyRIeLTMP4Acg06EIHqllxR5kouEsDOzvv5shCq+2R8QUMNfuKrcLtYgQLSo70imb0C5uSmpoUk6+/fr/IjN/XQMN0h93eMV6ccGN3wo5/Ys6lZ6hwgGzSy6ujc9WQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Bob+Je/R; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=gautam@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	t=1779079461; c=relaxed/relaxed;
+	bh=HamLZEp239TZgkHmy0+6e5I4NJw5ztecqIRxR28bPp4=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=Rkzfa7EzQ1WSH2+pkAXC5KssfZ40ztCrfCX/PvziVB5227veJ2GChpVzbA8TXB73IkkbJLZ/fvgxgZ1KBdn1NX0L5U8vb2tNADTgFEB4u/VT2/KL4vmkVOPMaWII4VfUMrbiVraoi4KLZtO4p69mEfn/7wFdNcg/4m6R7i0IVfDRW4Tze5e4W3WxakAZZwZkVzi6DptkDm1/ZJ7RgIPJ2bsXAf4bht6yQxYaRFgcbvMMTHpU/vhGymTZSoa4gI4uNnuQjxBYBgDHNKGFjxlQaz44eBYjz4EsZRIS/25rF3Ddt5nbBlKbkbr0lLaQU/c+LCfI6lv80yWH5hwPLG5OVg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=sc3UErXU; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Bob+Je/R;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=sc3UErXU;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=gautam@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gJlX70bmqz2xWP
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 May 2026 14:42:14 +1000 (AEST)
-Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 64H8j4hW620482;
-	Mon, 18 May 2026 04:42:03 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gJlZX09mFz2xWP
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 May 2026 14:44:19 +1000 (AEST)
+Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 64I3nRhM069465;
+	Mon, 18 May 2026 04:44:08 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:message-id:mime-version
-	:subject:to; s=pp1; bh=bGWUFNUd70rQ8WihNw4jpC4+/xY2vnlDmpGuDw5bx
-	Qg=; b=Bob+Je/Rhd2jPNcblU/JjBGDwT7MN4kL4Tplm6pQwPB/miTo2afP/n6OG
-	ussqWY3Awn/Hs3uhEJIbEoGMixAnflspd4raDJVdeYpGwK/DMaIFcjzyw1z9Efvd
-	b/cp2CZnEFPywiX/WhtIWJxyhT1iKryoEyatzuNYqV4sxBX2FCjymx6xSbTI9wyD
-	fDmfzKV8Vq7ET2a83PnuQ8PLi/jbsm2SQ9uFKwsXAGbjgRAbmklJKDRXARKV36tr
-	wnj5yqhJVq+O2hpVXZkD6eS1CFhdlqtS8Zn++v/FjvX/BvXinoDH0sGc8tkGWah5
-	3Z6m2q4BKwvvLUFD0SAKV+jItocHw==
-Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4e6h885s9v-1
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=HamLZE
+	p239TZgkHmy0+6e5I4NJw5ztecqIRxR28bPp4=; b=sc3UErXU4Gtz6sE6C4BjDD
+	Zct92naCoZH6v9sijxJeoydt66KqgCzp8J5KjRKjweUfLJLLw8fgmOkfgCoi5niK
+	8bB75WVOpNCxZM6iCUDSk+lMECarKBXzly6U3NamkiA8JmdqL93fUxfu8SgYZ4iO
+	X6JAnpLjFZRan83e1VisVoV4XDd8iOOQVuH8U1BCYPep5WKz4PCh2b0skgB8f2gQ
+	PulvZUI1x29oQ8jVXz4i/R2mQlRt0BgfC8HLQnDh2P9zCH7qo/m9CZT/HeMoq3UU
+	VZHOV7nqR1a0bTpW/oRSdkhDAmZ4WeBUkN6l9QertRMWZaBhXtk13Z1jbuDk90ZQ
+	==
+Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4e6h8me64s-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 18 May 2026 04:42:02 +0000 (GMT)
-Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma12.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 64I4dMfu028251;
-	Mon, 18 May 2026 04:42:02 GMT
-Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
-	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 4e72wpvc1g-1
+	Mon, 18 May 2026 04:44:07 +0000 (GMT)
+Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma22.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 64I4d9uV021389;
+	Mon, 18 May 2026 04:44:06 GMT
+Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
+	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4e739vm9bh-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 18 May 2026 04:42:01 +0000 (GMT)
-Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com [10.20.54.104])
-	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 64I4fwdE45744632
+	Mon, 18 May 2026 04:44:06 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
+	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 64I4i4rY47907086
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 18 May 2026 04:41:58 GMT
-Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 79BFB2004D;
-	Mon, 18 May 2026 04:41:58 +0000 (GMT)
-Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 20FC220040;
-	Mon, 18 May 2026 04:41:56 +0000 (GMT)
-Received: from localhost.localdomain (unknown [9.43.47.251])
-	by smtpav05.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Mon, 18 May 2026 04:41:55 +0000 (GMT)
-From: Gautam Menghani <gautam@linux.ibm.com>
-To: maddy@linux.ibm.com, npiggin@gmail.com, mpe@ellerman.id.au,
-        chleroy@kernel.org, atrajeev@linux.ibm.com
-Cc: Gautam Menghani <gautam@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
-        kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        stable@vger.kernel.org
-Subject: [PATCH v2] KVM: PPC: Kconfig: Enable CONFIG_VPA_PMU with KVM
-Date: Mon, 18 May 2026 10:11:49 +0530
-Message-ID: <20260518044150.34632-1-gautam@linux.ibm.com>
-X-Mailer: git-send-email 2.50.1
+	Mon, 18 May 2026 04:44:04 GMT
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id ADEDC2004E;
+	Mon, 18 May 2026 04:44:04 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 7344220043;
+	Mon, 18 May 2026 04:44:03 +0000 (GMT)
+Received: from [9.123.5.233] (unknown [9.123.5.233])
+	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Mon, 18 May 2026 04:44:03 +0000 (GMT)
+Message-ID: <0233138b-57bb-4cdf-86b9-8a48fa8b54c3@linux.ibm.com>
+Date: Mon, 18 May 2026 10:14:02 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -87,64 +81,66 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2 0/4] powerpc: A few misc cpumask changes
+To: maddy@linux.ibm.com, chleroy@kernel.org
+Cc: linux-kernel@vger.kernel.org, linux@rasmusvillemoes.dk,
+        linuxppc-dev@lists.ozlabs.org, yury.norov@gmail.com
+References: <20260427044715.559137-1-sshegde@linux.ibm.com>
+From: Shrikanth Hegde <sshegde@linux.ibm.com>
+Content-Language: en-US
+In-Reply-To: <20260427044715.559137-1-sshegde@linux.ibm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 X-TM-AS-GCONF: 00
 X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-ORIG-GUID: PpjuoOT9BjwOhUhLQsC87Y3Z8qEG--ja
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTE4MDA0MSBTYWx0ZWRfX4K9NQFNAFt8/
- StCBKLsWKzJWsfzTJTf593fHSB99oKGv5RSzJeGGO+NuwUR/aMtlisBFKS07qsgHO3JZZEhjKjT
- 76RgwG8NuM3PjW6X1kdfXt2Hv4j3GqovCPrjp1VSbkllo0cujn9WyIEdSrIxXzFoubQRLCYoPKl
- lKPULk4WS8r5B6Xa1zV8q5VvXDbd5+pY92Th4gy90MBYEbtN3ljWppfCU0f3aK+fSA70ztJPLDs
- u0Fnd+cpNo458Mg51J3r/g+3s4WTUkW71uKua6DuOY0KlMsN7smYyQOJqM2fUb7fR/D0A2i1vHA
- WlOVW+069coUCIMoq0D0MfNJTYn2Au8tg1OsehZb/sptSbUUIjLqrluBSK4z9PHWJ+B2Gbh+gAE
- sSXSZWQ0hyLuNLZN7FKjG8bA7hVRcI8hXVvtXA/qnT0Sa54RTiSqk7KGo+GdRVuIWoNxmFeooqj
- n/W3l7UtxFOkPKUwQsg==
-X-Proofpoint-GUID: vjKVfJVpSCIxUrFwZ6gp_3WBDmW1M8qf
-X-Authority-Analysis: v=2.4 cv=apyCzyZV c=1 sm=1 tr=0 ts=6a0a989b cx=c_pps
- a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17
- a=NGcC8JguVDcA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=V8glGbnc2Ofi9Qvn3v5h:22 a=VwQbUJbxAAAA:8 a=VnNF1IyMAAAA:8
- a=cDqL2IBmYfLLLIMnpHoA:9
+X-Proofpoint-GUID: Zokar5nU7Vtah9k8N-rgeokwIphCipFg
+X-Authority-Analysis: v=2.4 cv=GYMnWwXL c=1 sm=1 tr=0 ts=6a0a9918 cx=c_pps
+ a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
+ a=IkcTkHD0fZMA:10 a=NGcC8JguVDcA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=uAbxVGIbfxUO_5tXvNgY:22 a=PQsHxT7xaXkNK9Fa26gA:9
+ a=QEXdDO2ut3YA:10 a=zgiPjhLxNE0A:10
+X-Proofpoint-ORIG-GUID: JMKCCp5x6alCdm1wCm6yU40ECtVCuqhi
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTE4MDA0MSBTYWx0ZWRfX3Dk8sb+g1kEx
+ USC/BXO5RNZ0w04q+K+iDbPL3jCJGjj9FZ0TiumONXTKdu6F59kQrhn5iuEWM6VU2EuTTvQgfP/
+ 2xcz8QKJruliDciyYZCrvxFoWlN7E3t7a47zGrStlzYqJsoW0ksqNBlbKTx56JD7T0Lv2g9gZSc
+ liDp6AZJ77Pwf5yqWbq37EJ3F/5dS2uVng2LZQsOyAtR6AN3Re+/My6QZgr8DSQzBi+fIO2HllD
+ R/VE6trxp74p3UYtuIDdZyDkpyyiNG4V86Jwqy7Ov5f3TLamTMWOVya981MuiCW4haXftU/7t/q
+ 9UmoVc2bSX5K3VXclaXa50MrkNBgRDvlAkwJxC25t2SCxkfLpGZD0fx3QFL8fcggHlyeYrauS5+
+ RNC8BxcIkvu6ZEXiQUvZzvKmfhWRqZ94ZHWigujCfviIv1/8MIUpm9YwzftgvXxsiL6n1JzmiS/
+ Hi1Jihm4yqIZ5OS4ZXw==
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
  definitions=2026-05-18_01,2026-05-15_01,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- malwarescore=0 lowpriorityscore=0 priorityscore=1501 impostorscore=0
- bulkscore=0 suspectscore=0 adultscore=0 spamscore=0 phishscore=0
- clxscore=1011 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2605130000
- definitions=main-2605180041
+ phishscore=0 malwarescore=0 lowpriorityscore=0 priorityscore=1501 bulkscore=0
+ adultscore=0 suspectscore=0 spamscore=0 clxscore=1015 impostorscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2605130000 definitions=main-2605180041
 
-Enable CONFIG_VPA_PMU with KVM to enable its usage. Currently, the
-vpa-pmu driver cannot be used since it is not enabled in distro configs.
+Hi Maddy, Christophe,
 
-On fedora kernel 6.13.7, the config option is disabled:
-$ cat /boot/config-6.19.12-200.fc43.ppc64le  | grep VPA_PMU
- # CONFIG_VPA_PMU is not set
 
-Fixes: 176cda0619b6c ("powerpc/perf: Add perf interface to expose vpa counters")
-Cc: stable@vger.kernel.org # v6.13+
-Signed-off-by: Gautam Menghani <gautam@linux.ibm.com>
----
-v1 -> v2:
-1. Rebased on latest master
+> Based on tip/master at: (dffc5753ba4c "Merge branch into tip/master: 'timers/clocksource'")
+>
 
- arch/powerpc/kvm/Kconfig | 1 +
- 1 file changed, 1 insertion(+)
+Gentle Ping,
+Still applies cleanly to today's tip master.
+  
+> Shrikanth Hegde (4):
+>    powerpc: Use cpumask_next_wrap instead
+>    powerpc: Simplify cpumask api usage for cpuinfo display
+>    powerpc/perf: Use cpumask_intersects api for checking disable path
+>    powerpc/xive: Add warning if target CPU not found
+> 
+>   arch/powerpc/kernel/irq.c             | 5 +----
+>   arch/powerpc/kernel/setup-common.c    | 7 ++-----
+>   arch/powerpc/mm/book3s64/hash_utils.c | 4 +---
+>   arch/powerpc/perf/imc-pmu.c           | 6 ++----
+>   arch/powerpc/sysdev/xive/common.c     | 1 +
+>   5 files changed, 7 insertions(+), 16 deletions(-)
+> 
 
-diff --git a/arch/powerpc/kvm/Kconfig b/arch/powerpc/kvm/Kconfig
-index 9a0d1c1aca6c..56e86b46ff13 100644
---- a/arch/powerpc/kvm/Kconfig
-+++ b/arch/powerpc/kvm/Kconfig
-@@ -82,6 +82,7 @@ config KVM_BOOK3S_64_HV
- 	select KVM_BOOK3S_HV_POSSIBLE
- 	select KVM_BOOK3S_HV_PMU
- 	select CMA
-+	select VPA_PMU if HV_PERF_CTRS
- 	help
- 	  Support running unmodified book3s_64 guest kernels in
- 	  virtual machines on POWER7 and newer processors that have
--- 
-2.53.0
 
+Do you have any comments on this? Do you want me to resend with yury's tag?
 
