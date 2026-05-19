@@ -1,62 +1,89 @@
-Return-Path: <linuxppc-dev+bounces-21159-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21160-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B6CB1CD4F3C
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 May 2026 13:58:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3C1DECD4F3C
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 May 2026 14:00:32 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gKbq23LFGz2yFP;
-	Tue, 19 May 2026 23:58:06 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779199086;
-	cv=none; b=d+R3RrpB9dUJqJHN9KTcdqm0n52+olxbbVp5xfNHVd2mV94ApzLw41y9JcYofhXqSS76bXbalWu7kL7H8UTdz11HWwj6uLH5PSykwZuQ6NLKyd6lyY16kZm4uVN34+flyXJOXpi4i3hO1WiL0sf3I2toODITYqBRO7WXXriXeEzxnW1lGcd+4KrWKIekr6U4VyTKR2iy/4yd1oTBmRyOuW82Hu+CESUrFoII8/yGocWci03XOjCU6vwMAMu8N5T4MqZc+h1y00tCRyvjbioSLBTc8XcC0vdkIzzyGb6R6gvnBN47iFomNBaduA/pds/5QAKJLgh5bdm9u4BPVF6HHg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gKbsp6nPZz2yFP;
+	Wed, 20 May 2026 00:00:30 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779199230;
+	cv=none; b=PEKmypzr50tPmNEY0/MIXpIrAsXD5MRfi2AeRe9WtBpRZbSv5OxoBbs0RQ3M5PYikuXgJtQTJheQM3Sw66qtNzNwCwlHunfQBX/sDWjgCO8cMMUTHOh8NuhGPCbI2wcPQvv6HiUUjOJZvAsZbnM/qCJ5VCtN6Z+MYomr3cSInNl7Y0HxCQ7P8zz8Svlkof/Sx+X9RC6sEV7rHqGjFPIPrqMI1DKXsWjujVKMoPDDt1yUFsP1Tly5Y1Q6uKk9FnCPDjr+GAkXaof51/sLNH4HC32QeqBUE6UjQdP/LUAWbn/PPjPFA4RuQQuE2OVP5kcMQBWcB1zsdI3VAn9zzwEmJQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1779199086; c=relaxed/relaxed;
-	bh=/W4oxpzN1d7sPekN8lVKIaETlbzMCmju1+8WOS6FrPk=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=UQlJvqd+A+YM8gOFp8Y02plrVB/s7QgxfbxZMTjL69in+nvxy7D7ika7HOXdaDAYy9/OD6hHZGyULvwXV4lKaY12tPyc0dwz64kUNGZBoSVr5kz15A9uYSl4MzJaTR01WNKoDjgYR0snkTKsdwhYjlhUYxxl1NCcKTXIoeQz466JAYfICZ2l8Qg2NvYz2Iv2bf46SAglcs2RKArG0gf9/IO37jKnD9iCij6qf5w8Eb9lrIBG9YsHp15TSIJVnpsHd0pcGeQenIwD1jvJ4ZQLyfoPLHxU/8R1KZKl3NrF0Zs7QEoNYwjHwCbZTZzNdEPHMRMRyCVhnfrhG5UpY9Lnkw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=IjXyKLC6; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=mani@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1779199230; c=relaxed/relaxed;
+	bh=GHkXRgSpfCE3cZ1V0Db4Vo8H9DBcC8wfYFae8i+MopE=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
+	 MIME-Version:Content-Type; b=gAjt9PMzBNvHWIXuJKVo7Y46eeDOofWOm473LrI9WwVxqBRS1xpq+TYJM+BQXK6MThaXNUtWNOmtBeriZP0SsMpd2LhHPD8rBe9QgX+S6ysYMN3j+xK8yhBQ7pv+ejEE7uYNPWiMpDZuWAPD0Z/5posaP375t9I6ys0NYV70cQrywL+2sqctdnhVOswu7divCM/Nr1uSwWbjnF5+omFkQWGl/cKQ64bX/9/UWnAcyBY1hfNy0B8QHjoGk+0k836Og2fTzrzrk00gE3qt+74DrGK1xUWbacyhRgtplNnqmpGkoR1LLWu7qD/7JAySRQAEhTXlYRPXW+CdpjT37TOpAA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=FJApOYnD; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=aneesh.kumar@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=IjXyKLC6;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=FJApOYnD;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=mani@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=aneesh.kumar@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gKbq13cd7z2xRw
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 May 2026 23:58:05 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gKbsp0csLz2xRw
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 May 2026 00:00:29 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id E04B160121;
-	Tue, 19 May 2026 13:58:02 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 76AC3C2BCB3;
-	Tue, 19 May 2026 13:57:57 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 1E3F544493;
+	Tue, 19 May 2026 14:00:27 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 31D58C2BCB3;
+	Tue, 19 May 2026 14:00:18 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1779199082;
-	bh=nfEX+4aODCvAUv+wyKcqPTid35QTc5cD/VwXCz3ADcs=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=IjXyKLC6RnfU2IV5vALZIj8Ip/8qoyK/R3psuwMTG3JXO9BTcuOc3el0D8NNI8chT
-	 s0gGRepmdjn02maEMVKdztKHkmL0PIRI1De0REdgunGfSBH+Jxn7oMMz0xGiu00Bnm
-	 V2FTqeNiIYu+Dh6VViDLtkb4Ds0j2QzD96R1MrZyXxs7u8yH5s+l1TzD4x35lylgJ3
-	 9/G+prDp/+eIrDIqw6OrAJVNIFWXJr5E3BqmCHSGMhvHJnGYTvBoElvWGf0y8kqAcN
-	 2Iq5THM2nomRkDRaKihObdG6sjEnVdNnX2RH/YlaWNy/FEJXedmSno2xWIrD0A4HU7
-	 zfFdSHFaj+oqg==
-Date: Tue, 19 May 2026 19:27:53 +0530
-From: Manivannan Sadhasivam <mani@kernel.org>
-To: Hans Zhang <18255117159@163.com>
-Cc: bhelgaas@google.com, lpieralisi@kernel.org, kwilczynski@kernel.org, 
-	jingoohan1@gmail.com, mx@lists.linux.dev, linuxppc-dev@lists.ozlabs.org, 
-	linux-amlogic@lists.infradead.org, linux-rockchip@lists.infradead.org, 
-	linux-arm-msm@vger.kernel.org, sophgo@lists.linux.dev, linux-riscv@lists.infradead.org, 
-	spacemit@lists.linux.dev, linux-tegra@vger.kernel.org, linux-pci@vger.kernel.org, 
-	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/3] PCI: dwc: Cache PCIe capability offset and simplify
- drivers
-Message-ID: <beqy5ykxgo4ianya6r4mahkkyujs6lly475u26vqaemgqsdnhp@2pn5ipczwc34>
-References: <20260509135152.2241235-1-18255117159@163.com>
+	s=k20201202; t=1779199227;
+	bh=3DPK2EbXv/3wsOl17AXXlVKobx6PME7rhn3Y2pD37rY=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+	b=FJApOYnDwaielcOINdOz1m25oZHbpn3hiDJIO3zmg0dNyspugG9+kJWbUgDPzC6d+
+	 /ckU7YijNm2/TPN+Hz9RYOAUzY4hFu0d+0bNggkC3U/bzYs/3cZmAwn1DyeZSlzZvx
+	 dH1PeSgRGGCQHSlDRvsay4KTbEzvQ504Kg3+MSpbrx/nvn3fChg43T26iLRVkK7/gt
+	 8rcqRCSQy5u6NoaNncNwcxb0/MwBCLyjuB/JnTsulV4dvriOnfy7Bt7IitbvfRRQ0X
+	 vP67ZNbXn4wwSpMF/8KYnn1WmsOdTRVJ8wYY9blbr8Eu8xLzQ5d3DqyyGuHqTPib1P
+	 /nStnaekQuhpQ==
+X-Mailer: emacs 30.2 (via feedmail 11-beta-1 I)
+From: Aneesh Kumar K.V <aneesh.kumar@kernel.org>
+To: Mostafa Saleh <smostafa@google.com>,
+	Jason Gunthorpe <jgg@ziepe.ca>
+Cc: iommu@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
+	linux-kernel@vger.kernel.org, linux-coco@lists.linux.dev,
+	Robin Murphy <robin.murphy@arm.com>,
+	Marek Szyprowski <m.szyprowski@samsung.com>,
+	Will Deacon <will@kernel.org>, Marc Zyngier <maz@kernel.org>,
+	Steven Price <steven.price@arm.com>,
+	Suzuki K Poulose <Suzuki.Poulose@arm.com>,
+	Catalin Marinas <catalin.marinas@arm.com>,
+	Jiri Pirko <jiri@resnulli.us>,
+	Petr Tesarik <ptesarik@suse.com>,
+	Alexey Kardashevskiy <aik@amd.com>,
+	Dan Williams <dan.j.williams@intel.com>,
+	Xu Yilun <yilun.xu@linux.intel.com>,
+	linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	Alexander Gordeev <agordeev@linux.ibm.com>,
+	Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
+	Heiko Carstens <hca@linux.ibm.com>,
+	Vasily Gorbik <gor@linux.ibm.com>,
+	Christian Borntraeger <borntraeger@linux.ibm.com>,
+	Sven Schnelle <svens@linux.ibm.com>, x86@kernel.org
+Subject: Re: [PATCH v4 04/13] dma: swiotlb: track pool encryption state and
+ honor DMA_ATTR_CC_SHARED
+In-Reply-To: <agxolksC_1nfO34X@google.com>
+References: <20260512090408.794195-1-aneesh.kumar@kernel.org>
+ <20260512090408.794195-5-aneesh.kumar@kernel.org>
+ <agSKQrSIhizCXKwx@google.com> <yq5ah5oaa63h.fsf@kernel.org>
+ <agW5rhE9n2gDQ0w5@google.com> <yq5apl2y5f96.fsf@kernel.org>
+ <agXaby-7L7yS3Vva@google.com> <yq5ah5oa59wy.fsf@kernel.org>
+ <agxDxdxynp4KEovA@google.com> <20260519132911.GA7702@ziepe.ca>
+ <agxolksC_1nfO34X@google.com>
+Date: Tue, 19 May 2026 19:30:16 +0530
+Message-ID: <yq5ah5o3sdn3.fsf@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -71,60 +98,68 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20260509135152.2241235-1-18255117159@163.com>
+Content-Transfer-Encoding: quoted-printable
 
-On Sat, May 09, 2026 at 09:51:49PM +0800, Hans Zhang wrote:
-> The DWC PCIe core and its many platform drivers repeatedly call
-> dw_pcie_find_capability(pci, PCI_CAP_ID_EXP) to obtain the offset of the
-> PCI Express Capability structure. This is wasteful and makes the code
-> verbose. And some even search for the PCI_CAP_ID_EXP offset value within
-> the suspend/resume functions.
-> 
+Mostafa Saleh <smostafa@google.com> writes:
 
-Sashiko has flagged some real issues with this series in accessing DBI space
-very early and 'pci->pcie_cap' being 0.
+> On Tue, May 19, 2026 at 10:29:11AM -0300, Jason Gunthorpe wrote:
+>> On Tue, May 19, 2026 at 11:04:37AM +0000, Mostafa Saleh wrote:
+>> > On Thu, May 14, 2026 at 08:13:25PM +0530, Aneesh Kumar K.V wrote:
+>> > > >>=20
+>> > > >> What I meant was that we need a generic way to identify a pKVM gu=
+est, so
+>> > > >> that we can use it in the conditional above.
+>> > > >
+>> > > > I have this patch, with that I can boot with your series unmodifie=
+d,
+>> > > > but I will need to do more testing.
+>> > > >
+>> > >=20
+>> > > Thanks, I can add this to the series once you complete the required =
+testing.
+>> > >=20
+>> >=20
+>> > I am still running more tests, but looking more into it. Setting
+>> > force_dma_unencrypted() to true for pKVM guests is wrong, as the
+>> > guest shouldn=E2=80=99t try to decrypt arbitrary memory as it can incl=
+ude
+>> > sensitive information (for example in case of virtio sub-page
+>> > allocation) and should strictly rely on the restricted-dma-pool
+>> > for that.
+>>=20
+>> ??
+>>=20
+>> Where does force_dma_unencrypted() cause arbitary memory passed into
+>> the DMA API to be decrypted? That should never happen???
+>
+> Sorry, maybe arbitrary is not the right expression again :)
+> I mean that, with emulated devices that use the DMA-API under pKVM,
+> they will map memory coming from other layers (VFS, net) through
+> vitrio-block, virtio-net... These can be smaller than a page, and
+>
 
-Those needs to be fixed.
+Don't we PAGE_ALIGN these requests?
 
-- Mani
+dma_direct_alloc
+	size =3D PAGE_ALIGN(size);
 
-> Add a cached pcie_cap field in struct dw_pcie and a helper
-> dw_pcie_get_pcie_cap() to initialize it once at probe time. Then replace
-> all explicit capability searches with the cached value across the
-> entire dwc subtree.
-> 
-> Hans Zhang (3):
->   PCI: dwc: Add pcie_cap field and helper in designware header
->   PCI: dwc: Use cached PCIe capability offset in core
->   PCI: dwc: Simplify platform drivers using cached capability offset
-> 
->  drivers/pci/controller/dwc/pci-imx6.c         |  6 +--
->  .../pci/controller/dwc/pci-layerscape-ep.c    |  4 +-
->  drivers/pci/controller/dwc/pci-meson.c        |  4 +-
->  .../pci/controller/dwc/pcie-designware-ep.c   |  4 +-
->  .../pci/controller/dwc/pcie-designware-host.c |  4 +-
->  drivers/pci/controller/dwc/pcie-designware.c  | 16 +++---
->  drivers/pci/controller/dwc/pcie-designware.h  | 17 +++++++
->  drivers/pci/controller/dwc/pcie-dw-rockchip.c | 15 +++---
->  drivers/pci/controller/dwc/pcie-eswin.c       |  3 +-
->  drivers/pci/controller/dwc/pcie-fu740.c       |  2 +-
->  drivers/pci/controller/dwc/pcie-intel-gw.c    |  2 +-
->  drivers/pci/controller/dwc/pcie-qcom-ep.c     | 11 ++--
->  drivers/pci/controller/dwc/pcie-qcom.c        | 24 ++++-----
->  drivers/pci/controller/dwc/pcie-sophgo.c      |  8 ++-
->  drivers/pci/controller/dwc/pcie-spacemit-k1.c |  5 +-
->  drivers/pci/controller/dwc/pcie-spear13xx.c   |  6 +--
->  drivers/pci/controller/dwc/pcie-tegra194.c    | 51 +++++++------------
->  17 files changed, 85 insertions(+), 97 deletions(-)
-> 
-> 
-> base-commit: 70390501d1944d4e5b8f7352be180fceb3a44132
-> -- 
-> 2.34.1
-> 
+iommu_dma_alloc_pages
+	size_t alloc_size =3D PAGE_ALIGN(size);
 
--- 
-மணிவண்ணன் சதாசிவம்
+
+
+> using force_dma_unencrypted() will share the whole page.
+> And as discussed, that leaks sensitive information to the untrusted
+> host.
+> I am currently investigating passing iova/phys/size
+> to force_dma_unencrypted() and then we can share pages inplace only
+> if possible without leaking extra information.
+> I am trying to get some performance results first. But the tricky part
+> is to get the semantics right, I believe in that case those devices
+> shouldn=E2=80=99t use restricted-dma-pools as those should always force
+> bouncing. Instead bouncing happens through the default SWIOTLB pool,
+> if not possible to decrypt in place.
+>
+
+-aneesh
 
