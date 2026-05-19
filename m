@@ -1,83 +1,80 @@
-Return-Path: <linuxppc-dev+bounces-21166-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21167-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C6330CD4F5B
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 May 2026 14:37:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 73DD2CD4F3C
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 May 2026 14:45:47 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gKchw2XpBz2yRC;
-	Wed, 20 May 2026 00:37:52 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::835"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779201472;
-	cv=none; b=oJ3M9EKBJ8fBs5iba9+YVKt04oWzHCcoR970mmKm930F/rn50XewggqfZKEiWfdYn6MMfnlI83SVJy8Vx5ZbnFd571ilghqPaj6XoTyNsQ6jYlEH6hZIsltQDRrpXRFjV+7ds9fQCaVSJd+pjllwo1t+s2MOQOlxEwa1X8m6EwTbp2azIMzQtW6cb0k0HoOwlsMr3iFTSqnU/6spIW2jKOLOgYtWMSB1flFupI7Qp5uzNvZdOJQLQbnIPP3i0PTZCEoWC4AVDXIbmQt6ygmMCh5q6Trmuc8SgHavL47M46fLsR3/A2EEBb0gH0cN/s2/GEdsdrWWh76Kn1D6ZQhtEg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gKct164gwz2yRF;
+	Wed, 20 May 2026 00:45:45 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::32b"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779201945;
+	cv=none; b=QS0OE4z2VJwwLrE/4QSTR2lVHx3hIx0OthGGHQ7ngnAm0+uE//HMsgiLOCg0IFJprXSIPmrRPR0DvlmZdRkO7sL0Nn55FM+jppjGpza1Hr38rjChuL5ne/w8HU2wFM1V0mLzu8q+xLZ3Hd78seE/xvNVbzWE/dM86idLktrUmjXmxMoKB08PjaTjnqXvt2uZUeeht5l4KSPiKZoo8opQrFmTYhcblTNAPoXPPfawKFwFFWiPPrlQbk66GzOZRtqrFLIIRutlkdsHPdR0+Al05fuckSPnQezydsqkoNKe4JXK2bNT33AXZQ8dYuS0C3o/6y43PSg1hhTX8Eng4OQ9GA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1779201472; c=relaxed/relaxed;
-	bh=xoUre0ZHh111UbHEIDXHq8nedRN8EZ+gBdSl0fms4oE=;
+	t=1779201945; c=relaxed/relaxed;
+	bh=h7Nz6XFDKFDcI1TVcowrB8v0PKJyf/qnRnOMl+2I2pU=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=kq7GSB0/Sv/QzOmp+lDua6vEsQFpTci3fwY3kavpGQ/ZRE7UuHAt0j56phPJnFcNv/OdA1W3NNGOvgwGDd7j69eLy1NSvXBz2N9kbGOT8qBLKBbOGBWLEdCSzu+lEuOb+7XwYkntf842I/I+h69BDTf+uWm8DQhmjzlqtVU/2iZXYADE0gzr/Yifm2WAUM0LENcXa4jhiLfaTBzScnDOIIpY6c2aIihWTCVM6grDS+opr9VeU+Wu/8D1ES4HwXgCosfonENZekr4J1zJFhxDb81DjetMPsHQGvOQvAZloQ2o6c/8lBktNbbCfmY69c3N9qLvafsRfOvtYajj7wi2gQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ziepe.ca; dkim=pass (2048-bit key; secure) header.d=ziepe.ca header.i=@ziepe.ca header.a=rsa-sha256 header.s=google header.b=XhISstGx; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::835; helo=mail-qt1-x835.google.com; envelope-from=jgg@ziepe.ca; receiver=lists.ozlabs.org) smtp.mailfrom=ziepe.ca
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ziepe.ca
+	 Content-Type:Content-Disposition:In-Reply-To; b=HqsolwMOMh4WE2d6qNMtXPzhB+P4NDXq2P6LUPQQyWojpH0TcxCqYEy6LpbhD9WdIhPmgr6V9Cq7p9Wwtqtw4xHX4UJeD2rGJfWBySZDN3G6qatCZGYEYbPUTyO12xDGCZfEJm7P4Wl9eH8anNFVwRUJqRWcheEISh8V/2bAK82RjcGXjOmhy+Cjwb2l9OMas3rAbvwd7rTQfpHwRgJOQ0wn0URtvCX3d2DZiyE7ZsQZCgO81VpDfx1WyDiFyZl8qwp3HkXFMhE5lrqLMEZMhMOY3Hp1Upwm3LWsX9BFhLgC/rxCbZJiErKS3lSC97AQbr16aw39It4A34t5zZmDRw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=kYC5z7PY; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::32b; helo=mail-wm1-x32b.google.com; envelope-from=smostafa@google.com; receiver=lists.ozlabs.org) smtp.mailfrom=google.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=ziepe.ca header.i=@ziepe.ca header.a=rsa-sha256 header.s=google header.b=XhISstGx;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=kYC5z7PY;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=ziepe.ca (client-ip=2607:f8b0:4864:20::835; helo=mail-qt1-x835.google.com; envelope-from=jgg@ziepe.ca; receiver=lists.ozlabs.org)
-Received: from mail-qt1-x835.google.com (mail-qt1-x835.google.com [IPv6:2607:f8b0:4864:20::835])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2a00:1450:4864:20::32b; helo=mail-wm1-x32b.google.com; envelope-from=smostafa@google.com; receiver=lists.ozlabs.org)
+Received: from mail-wm1-x32b.google.com (mail-wm1-x32b.google.com [IPv6:2a00:1450:4864:20::32b])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gKchv50qDz2yQH
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 May 2026 00:37:51 +1000 (AEST)
-Received: by mail-qt1-x835.google.com with SMTP id d75a77b69052e-50faf8ed9c5so18442251cf.2
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 May 2026 07:37:51 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gKct00B1rz2xRw
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 May 2026 00:45:43 +1000 (AEST)
+Received: by mail-wm1-x32b.google.com with SMTP id 5b1f17b1804b1-4891b4934ffso575e9.0
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 May 2026 07:45:43 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ziepe.ca; s=google; t=1779201469; x=1779806269; darn=lists.ozlabs.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=xoUre0ZHh111UbHEIDXHq8nedRN8EZ+gBdSl0fms4oE=;
-        b=XhISstGxR7JdfQG5h1wF6MYkwh0rLa0c2UM0wAZNbxB9oJr32PsOL5IoI06vL/8mQY
-         rscWjJgwdxFGdmIBB3bdCI4K5kaveOycTzhdtrg3yJ/QY8cwQlU5i86En4G6DKQIQEPu
-         sYAeC63vwedWvVtOqMwRXioJ7nLDERk4oESZiwpoB4E0QZ0kQLp9qhQcI/4LU6ykt2CY
-         QZFh9Prb5rTzZaDSyFnfgUaEVdgdKTrzwLOqi3/vbEnT9B2dZBt350kMTYopt5gD3I9h
-         Dh36C1U2OsCpKVwnt7WjRlD2nOeccTLzWJKa7v5cTU2eSMEc8vv1oDDSM8uznIPsaiYH
-         euDw==
+        d=google.com; s=20251104; t=1779201940; x=1779806740; darn=lists.ozlabs.org;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:message-id:subject:cc:to:from:date:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=h7Nz6XFDKFDcI1TVcowrB8v0PKJyf/qnRnOMl+2I2pU=;
+        b=kYC5z7PYRQBSa5zBLIA8Iev0Ic/+Zy3Rwh7CUi2ePO+nByyLvVoprR88SDkqul/mem
+         OJQe7Slb0LSuBOUMlYMGO4wHX21kCSh8MRJ1xcM4K83msms8g5EiWfdYjxOWH+hxC8W8
+         ATJNSqHAantnsGnB2z15ohJuO59qWZli7K2KBF8UsCj2XX/1TJ57C4EY++t7S7r1oMFF
+         8X0Dmiitc+j87ntnC7XVVUgn9HcO3tPjfTjjX327VnJnFfpIR3Izlo2OBopsFZpg3Aoy
+         0hlu6BBSt3KciuAGGfshG7ixOasGrtDQstNWSUkfFQjGefEU763GMBthMU1iQ9xLoVAC
+         h9EQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1779201469; x=1779806269;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=xoUre0ZHh111UbHEIDXHq8nedRN8EZ+gBdSl0fms4oE=;
-        b=YGyWADQ7QpOwgZCMCcmKTUana8A/WieJf3YljoR0TPwFCWsmmbHiuWImdvQeoWjUYg
-         zpFEjiVREn9uI3mPfH5DSCvTQeZt1BtfxJugK1UUR09p8WGh81+Lmj+gckHn36EqFFbR
-         BWYCkZDxuRUCYLahuOEbjmDtZeeST8CPHFtFB2rMKjEePIcA+OTGjeXO3eett8fAHDSy
-         XzfgVzJRhhMVpsWc45Xa0IKTWc29hKbUX2bkzTPnXTXKvNgUfe3nxW+31RiU4rI1j3ii
-         DMywgNv60Zya8FhlPC5yNzoduLylNi8yVRgxXBMdiII4TIlWomynwdDWPx1ZExxfPkB0
-         Mqkw==
-X-Forwarded-Encrypted: i=1; AFNElJ8MITPynybqkfmP+skASEBfRcDPaI+cKjgHE7P0kf/B7p6b5rAYgmUSdxo32lF+j6CY3f/oNLjH3Q5qz+M=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YwDr6l2w8xN2v3ctu8reymsi2ijfgmB4SRzFxB4CwmlR9iUyhAx
-	iYu+yjgfoN17KDRMITh5tkWCq+KqaURVKdHq4ISKXZiyVFQb8CwScEB8GduGcFCoPak=
-X-Gm-Gg: Acq92OFGbp+SBu+eQGVvo2NdJMqMssTEqZpv/+2AG4zsKTWkklIkR3C4zuH4bxLL3M+
-	oS0Q60IqyTlKcOCWYMPvOtN6Vany7ksDNiUbbZ0GJVFT++ibGL6JGfTmvxFAMrRk/8jhf/0/XtD
-	RcUawbtz1o9O8xl7l5bVzE8znplvFK1PTMjSXRbxXAp+xzqimu+qMTl5QBJxKb7g6k7g5afzsb5
-	81rqHv2S/h8GlrKnVhQ7MCscMkMHXj+IcdwUEZZGAXBLh5XW4XXLuliCbsJUE7EhDwm0Mesa4+O
-	VHvzE1TnmfLfuRJSeTe0th2Vn+2mWWBCHvlU2NUxZ6ZAK8XFKbwguz4xLaCcgoTJEDTi54aIKV3
-	B37QYokRmNYiqomkznGLx/y8oG7o51RewqcGB3rSJWkOuRACJV3bXUbkJE6TT2tNZIIWW6+Nmwa
-	ufqTRFVvcpb56YezBDoyiUP7kqzLEwpHivCylqQOtos8nBcYZnw3yL14mO9PWY1NUW2K8yIaOpx
-	Cysm41ki/ukLDa4
-X-Received: by 2002:ac8:584d:0:b0:50f:c26d:f31f with SMTP id d75a77b69052e-5165a046334mr283700431cf.19.1779201468969;
-        Tue, 19 May 2026 07:37:48 -0700 (PDT)
-Received: from ziepe.ca (crbknf0213w-47-54-130-67.pppoe-dynamic.high-speed.nl.bellaliant.net. [47.54.130.67])
-        by smtp.gmail.com with ESMTPSA id d75a77b69052e-516456b6856sm165713481cf.7.2026.05.19.07.37.48
+        d=1e100.net; s=20251104; t=1779201940; x=1779806740;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:message-id:subject:cc:to:from:date:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=h7Nz6XFDKFDcI1TVcowrB8v0PKJyf/qnRnOMl+2I2pU=;
+        b=IOXC8oIAWIxi8o9OOei641Q45zwbWJKT7EYaf93FijMIK0rilyBDEaR+LcbmSYwK/T
+         O9isvJQtjliAxx5TDoGxTJnnYCY8OVXTl1sRkh3t4vsQ60q8a1Deaf0YlPP4iJpLhHAv
+         2AR6eFhreoq+yHs2wIR3BhPo92pFZOKCrDRqGLhuJYrMVjldw2de4/Vbr+N3nbnkmqQ9
+         4X1v2QJNty2i0bIMtDxayjEJup/3xn2MoZlkL0dh2G2rwZZhdk2jcLMyfU3v+yBbAT8b
+         y6hfIVaWS5k/OzD+8G8P2q70Ja5Xfk5SU2/40Ch+iSgM9ikd9v3oo4zDlhazU42PLhCR
+         tbtQ==
+X-Forwarded-Encrypted: i=1; AFNElJ+v4iUWhS9kJp0tRI3MAM8Th7jF42f2UcoLODy0wEKxdrMCpydbg0s0ULqnjqwcbY6+36akoWyEifTMI+c=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YzSveH92IOGQqa5socxdwDExDmxtgjplFZY14/7L1IcJQsLEI0q
+	IRhVf82TBRdtxPOweVrW2U52s2vv5cEuCqEirYPvyPQCAJlQe6qBh5vOmgRWLu9aqA==
+X-Gm-Gg: Acq92OGNbZ/ISZSIYAOkbRin2MqymUa562Ux0QLzp0cUDEiK6i8ixEqubgwLSJ59h5Z
+	9iekBRvFos4INEaMlYd6MQ2/ugoolP4xH6sfUcaddbQhwPIUkI23IKX9oE7UABMHKIP5loxRkqV
+	xI0f969/L7pjg/Mgse+iYBp6Am9QiOPyH8Mm1tSCQqdnw6LDiNCpDdluf3kJEVL+QnM938W/Baa
+	RLSuBFR6cAIGtkiss0J8lM3qeEUph7rBh57PQ7pOPohZp6ORFay30RMQQRRhEtrTOBEwxsdqNCm
+	Vo0pb054KNZ4mEAabkm5lY9zBSFT8f/d6Rk2ocMjniY0KSRq5DlP9rZxTYi64jFeFRGKBwStBNO
+	kLXaobHC7k0kuWPQcNGIe10nUOcti3H3oOLEnHDJVw6cFnFlaInuO15SugIvb2PTVEC0NfJPCb8
+	NTJKPxpcu0JNmse79FEvdAoUSNhZ+oqZfwxZyPdPYWRxZBXeG9WgeZMVERd3gr7wOd/sU0HVDTE
+	Cw=
+X-Received: by 2002:a05:600d:6401:20b0:489:1f6a:4ac0 with SMTP id 5b1f17b1804b1-48ffa0627e7mr3099895e9.0.1779201939945;
+        Tue, 19 May 2026 07:45:39 -0700 (PDT)
+Received: from google.com (136.41.155.104.bc.googleusercontent.com. [104.155.41.136])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-45da0a178adsm48721081f8f.18.2026.05.19.07.45.39
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 19 May 2026 07:37:48 -0700 (PDT)
-Received: from jgg by wakko with local (Exim 4.97)
-	(envelope-from <jgg@ziepe.ca>)
-	id 1wPLZr-0000000F80e-38LO;
-	Tue, 19 May 2026 11:37:47 -0300
-Date: Tue, 19 May 2026 11:37:47 -0300
-From: Jason Gunthorpe <jgg@ziepe.ca>
-To: Mostafa Saleh <smostafa@google.com>
+        Tue, 19 May 2026 07:45:39 -0700 (PDT)
+Date: Tue, 19 May 2026 14:45:35 +0000
+From: Mostafa Saleh <smostafa@google.com>
+To: Jason Gunthorpe <jgg@ziepe.ca>
 Cc: "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, iommu@lists.linux.dev,
 	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
 	linux-coco@lists.linux.dev, Robin Murphy <robin.murphy@arm.com>,
@@ -103,17 +100,17 @@ Cc: "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, iommu@lists.linux.dev,
 	Sven Schnelle <svens@linux.ibm.com>, x86@kernel.org
 Subject: Re: [PATCH v4 04/13] dma: swiotlb: track pool encryption state and
  honor DMA_ATTR_CC_SHARED
-Message-ID: <20260519143747.GE7702@ziepe.ca>
-References: <yq5apl2y5f96.fsf@kernel.org>
+Message-ID: <agx3j6Oc8QivZ3RG@google.com>
+References: <agSKQrSIhizCXKwx@google.com>
+ <yq5ah5oaa63h.fsf@kernel.org>
+ <agW5rhE9n2gDQ0w5@google.com>
+ <yq5apl2y5f96.fsf@kernel.org>
  <agXaby-7L7yS3Vva@google.com>
  <yq5ah5oa59wy.fsf@kernel.org>
  <agxDxdxynp4KEovA@google.com>
  <20260519132911.GA7702@ziepe.ca>
  <agxolksC_1nfO34X@google.com>
- <yq5ah5o3sdn3.fsf@kernel.org>
- <agxt7SFGT7OLMIah@google.com>
- <yq5aecj7sctv.fsf@kernel.org>
- <agxzanDBmIP54hUz@google.com>
+ <20260519143529.GD7702@ziepe.ca>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -127,21 +124,62 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <agxzanDBmIP54hUz@google.com>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20260519143529.GD7702@ziepe.ca>
 
-On Tue, May 19, 2026 at 02:27:54PM +0000, Mostafa Saleh wrote:
-> However, as I mentioned to Jason, I think with some tweaks to
-> force_dma_unencrypted() we can make it work under pKVM for aligned
-> memory which eliminates some of the bouncing.
-> I am currently investigating that.
+On Tue, May 19, 2026 at 11:35:29AM -0300, Jason Gunthorpe wrote:
+> On Tue, May 19, 2026 at 01:41:42PM +0000, Mostafa Saleh wrote:
+> > On Tue, May 19, 2026 at 10:29:11AM -0300, Jason Gunthorpe wrote:
+> > > On Tue, May 19, 2026 at 11:04:37AM +0000, Mostafa Saleh wrote:
+> > > > On Thu, May 14, 2026 at 08:13:25PM +0530, Aneesh Kumar K.V wrote:
+> > > > > >> 
+> > > > > >> What I meant was that we need a generic way to identify a pKVM guest, so
+> > > > > >> that we can use it in the conditional above.
+> > > > > >
+> > > > > > I have this patch, with that I can boot with your series unmodified,
+> > > > > > but I will need to do more testing.
+> > > > > >
+> > > > > 
+> > > > > Thanks, I can add this to the series once you complete the required testing.
+> > > > > 
+> > > > 
+> > > > I am still running more tests, but looking more into it. Setting
+> > > > force_dma_unencrypted() to true for pKVM guests is wrong, as the
+> > > > guest shouldn’t try to decrypt arbitrary memory as it can include
+> > > > sensitive information (for example in case of virtio sub-page
+> > > > allocation) and should strictly rely on the restricted-dma-pool
+> > > > for that.
+> > > 
+> > > ??
+> > > 
+> > > Where does force_dma_unencrypted() cause arbitary memory passed into
+> > > the DMA API to be decrypted? That should never happen???
+> > 
+> > Sorry, maybe arbitrary is not the right expression again :)
+> > I mean that, with emulated devices that use the DMA-API under pKVM,
+> > they will map memory coming from other layers (VFS, net) through
+> > vitrio-block, virtio-net... These can be smaller than a page, and
+> > using force_dma_unencrypted() will share the whole page.
+> 
+> force_dma_unencrypted() should only trigger swiotlb and that never
+> memcpy's more than necessary?
+> 
+> Where does it do otherwise? That sounds like a bug?
 
-force_dma_unencrypted() literally means that memory passed into the
-DMA API *without* DMA_ATTR_CC_SHARED cannot be DMA'd from.
+Agh, I got confused and thought that it can be triggered from dma_map()
+too. I need to figure out why that made pKVM guests boot with broken
+restricted-dma-pool then.
 
-It should not mean anything else. The DMA API should never decrypt
-passed in memory. You always have to bounce.
+However, it should not alway use SWIOTLB? It can trigger decryption for
+any memory returned from __dma_direct_alloc_pages() which can come
+from alloc_pages_node().
 
-Jason
+Thanks,
+Mostafa
+
+
+> 
+> Jason
 
