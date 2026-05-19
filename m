@@ -1,51 +1,88 @@
-Return-Path: <linuxppc-dev+bounces-21169-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21170-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C0830CD4F5B
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 May 2026 14:54:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BCACDCD4F3C
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 May 2026 15:08:10 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gKd4c2PV0z2yS0;
-	Wed, 20 May 2026 00:54:56 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779202496;
-	cv=none; b=hN75cixuDAfbZorWPmY5qt55gn5IovF0Ots3z8WfQyxnDgml0URDRz+dGt38NSVHi12Z7K6Sc9QYi8W99PU0ui1fMZkbRe1dZ9sAZBrqV8+BqwKmRnUep2JuQYNabIksV4r5DiYQ2sJrWvNDPSpggzhSidi6zKI0EsW3mP3xfvnS4FPXgcstTMdG9svEHlwzhBkrCPONQZ5YMbv9yCSBMm3gxvyGj9bP3ObYm4WHEMgjTuklbJYnMP7p7ujG/ONtQr6K8JhvJ3KqQTY+BlPl6odsKv+Kic1F90VO/8I88flsVry/ZKeKMOWN5pKaZkBb35HUaSOe5hm5nLacGn24bw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gKdMs2p9kz2yRM;
+	Wed, 20 May 2026 01:08:09 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779203289;
+	cv=none; b=Ig+qw4UQRexuckUgXawx+MkzIaJKZHHKGtQDJ4uUaXLMyeIkqgecu/zBhMZOiiCG8Lnx9JE34Us/JoQLiwJ1ndhdHwX3rYQ7izTvFfQZZjjJskeTqbo81Vno48BJ/JngvM89PFbn4PGAmnLh0U/zN8UZmek+LPKEflt+9snCm4SGSebhTLqPIumgDRhzuWLNJ9FVrkhUHmYrXX+PfMLqbEx+KqMZNIm4aNBBYnJf8ord5RuxL4hNztHSQmaiKNeEwDujTtincviv2YTpq4XCXjv8BQtOp/90T9bPo2io2ZX+KRDnDFV44o/5sd3E7x2fVW52NbycKfUeFFgDYZ6wWQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1779202496; c=relaxed/relaxed;
-	bh=jXXCHnnXm6J+7IdVEF67li849mIRrrMUbIp+mCicGjc=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=UifPT7HrmjrXa48bc/61FzXyPD7Qg2jJzy2PFJ7F4tv8J+cji7GSRuhjz5KNE0CV5DJKy7nlTHoggI596nasXzbnMoW9yMlhPCc2v+ftAvAZGaEFs/kB8Q+WOPoK89TOZXMrIT8MT7mYy4v+fQePYIgCuxH24bPqN/BI9/YZFpBqDmNvJGP++PatAkcGg6Q+3He1yGleX4hFuaAybrNJQIbwpb5mMtyijxYNvjucdCny1toMSkO7xuBonG6E2YtH9pzgH7bUA1gS7ox5mC2CRaeX8/zptfjR0gweKdQkEMnE4eaNYYpdPNxP5j950BCdDZAaM87K/1A7uiYBR5Yhvw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=eonNaHjg; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1779203289; c=relaxed/relaxed;
+	bh=Ttyl0SGfI2S+HXHnoxLYjOoSjjZ/rM+6b9HnFU18EnE=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
+	 MIME-Version:Content-Type; b=SEKbcE/kTMIErjNXVRQ2NSIlfcXJl3pXudr0kiTWlLpP9Of/hd5ID825JsIL7t+D2ePlgjBheS+poBKK1a7bEr+oSTDE8s4eTASWw0Ac7Y8nF1EwyvQ8GOW+aaQ3qPgeIX+sgG9e1CF0ZBJPG73jv5b4LkyCIWKC2fL4mpXY/z9HrWVUVx/IzHYIqVjF+Zb7WF8ZysricuX4lcXopkcicRboqkoSAhBWYuM1lME29Wcvj+3FYkazO0YzNxujEA8lYEfM6TOTf0IKsbVkoik2F1klUPr37zNdQF4Dp3bz9JJ2cJSBShBUSS9uTdKSl8dSaJ5bE/sbGhmSjIfY+OwoLQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=gfCVmqRQ; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=aneesh.kumar@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=eonNaHjg;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=gfCVmqRQ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=aneesh.kumar@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gKd4Z1y76z2yRM
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 May 2026 00:54:54 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gKdMr24cBz2xqv
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 May 2026 01:08:08 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 29A5860126;
-	Tue, 19 May 2026 14:54:52 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3FA54C2BCB3;
-	Tue, 19 May 2026 14:54:48 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 2AEB060121;
+	Tue, 19 May 2026 15:08:06 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id F0CB7C2BCB3;
+	Tue, 19 May 2026 15:07:57 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1779202491;
-	bh=UC51TFFAdYAAEu3Hn1AG/aOnKPwgH/g/o3sh2GAq0HA=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=eonNaHjgLxe9B7jJYmeAsLPwIsWasueEug+6sELaPW6zhqCBLKCVV0eXFoe5YqR/1
-	 S8bKD+SEITM0ZovBZW83+t7ypM3/0bjK1YzUjckPvv6g5Kdkmpcd6F2rAwUS7oEgNw
-	 0kq4U3FeqHKd2W/uPZnkkMGekIuuSoakXy+iDUcby8YgheVKxHyrVDAzj2DEu552s9
-	 NYwahujt0vth4USrNPOpkPip6bcEeKyVlm1Lo7eE96penUWhmF8uZW0o+BdWceb0sn
-	 V9q+MgwaQynubQNmFwKwcPDI8qJpxB5heitif+1RJfxLJS2ZJ3mpkvmuu2wVKeWzqw
-	 riPzTDUCCAeuw==
-Message-ID: <eb236109-1284-43ad-bd0f-1a39765fa30f@kernel.org>
-Date: Tue, 19 May 2026 16:54:31 +0200
+	s=k20201202; t=1779203285;
+	bh=KyaOKUufk660jyAnyO4dwLztr2A/5z8gocMgG2ZXcQM=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+	b=gfCVmqRQQdy8M8HA+XstwwoOpKN65jH/uDBv2iWJ6wdryzFjV5aqQ5J5zLKpnXd1R
+	 MFePXRwJdlj0GE7vzB9h3mSdyYx+ToaECrqs8QXecIfN1ZsN3uSEg/aPjk5q3dnHDd
+	 6x79LO3IArWLhr/nYRTv/X7YOfD7PNsBnNqxTreMAIV0LA5SmVfv87HgZUtCD/QPrU
+	 ZbPRwVbbTLSoiNY4KtbyRJLSxc77SM+MLRmeWIXpFli++we4iwZ1y+H0UFcDRjYdiy
+	 f3BUle31jswVsGu+sQx5NS55VsHZxmeQelzm2Y/aOpkLXTQLxhx9k+011Cn+nvKBVz
+	 CMNlOzS75r7pw==
+X-Mailer: emacs 30.2 (via feedmail 11-beta-1 I)
+From: Aneesh Kumar K.V <aneesh.kumar@kernel.org>
+To: Mostafa Saleh <smostafa@google.com>
+Cc: iommu@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
+	linux-kernel@vger.kernel.org, linux-coco@lists.linux.dev,
+	Robin Murphy <robin.murphy@arm.com>,
+	Marek Szyprowski <m.szyprowski@samsung.com>,
+	Will Deacon <will@kernel.org>, Marc Zyngier <maz@kernel.org>,
+	Steven Price <steven.price@arm.com>,
+	Suzuki K Poulose <Suzuki.Poulose@arm.com>,
+	Catalin Marinas <catalin.marinas@arm.com>,
+	Jiri Pirko <jiri@resnulli.us>,
+	Jason Gunthorpe <jgg@ziepe.ca>,
+	Petr Tesarik <ptesarik@suse.com>,
+	Alexey Kardashevskiy <aik@amd.com>,
+	Dan Williams <dan.j.williams@intel.com>,
+	Xu Yilun <yilun.xu@linux.intel.com>,
+	linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	Alexander Gordeev <agordeev@linux.ibm.com>,
+	Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
+	Heiko Carstens <hca@linux.ibm.com>,
+	Vasily Gorbik <gor@linux.ibm.com>,
+	Christian Borntraeger <borntraeger@linux.ibm.com>,
+	Sven Schnelle <svens@linux.ibm.com>, x86@kernel.org
+Subject: Re: [PATCH v4 04/13] dma: swiotlb: track pool encryption state and
+ honor DMA_ATTR_CC_SHARED
+In-Reply-To: <yq5amrxvshxg.fsf@kernel.org>
+References: <20260512090408.794195-1-aneesh.kumar@kernel.org>
+ <20260512090408.794195-5-aneesh.kumar@kernel.org>
+ <agSKQrSIhizCXKwx@google.com> <yq5ah5oaa63h.fsf@kernel.org>
+ <agW5rhE9n2gDQ0w5@google.com> <yq5apl2y5f96.fsf@kernel.org>
+ <agXaby-7L7yS3Vva@google.com> <yq5ah5oa59wy.fsf@kernel.org>
+ <agxDxdxynp4KEovA@google.com> <yq5amrxvshxg.fsf@kernel.org>
+Date: Tue, 19 May 2026 20:37:54 +0530
+Message-ID: <yq5abjebsaid.fsf@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -59,86 +96,135 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: crypto/ahash.c:1073:1: warning: the frame size of 1040 bytes is
- larger than 1024 bytes
-To: Geert Uytterhoeven <geert@linux-m68k.org>,
- kernel test robot <lkp@intel.com>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>, oe-kbuild-all@lists.linux.dev,
- linux-kernel@vger.kernel.org, linux-mips@vger.kernel.org,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, wireguard@lists.zx2c4.com
-References: <202605100125.l4JVHppO-lkp@intel.com>
- <CAMuHMdXPeUnjN__PvY+HQg+cSxKe-RLnyT-A5KGe=4cmjnUNbg@mail.gmail.com>
-Content-Language: fr-FR
-From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-In-Reply-To: <CAMuHMdXPeUnjN__PvY+HQg+cSxKe-RLnyT-A5KGe=4cmjnUNbg@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
+Aneesh Kumar K.V <aneesh.kumar@kernel.org> writes:
 
-
-Le 11/05/2026 à 08:42, Geert Uytterhoeven a écrit :
-> On Sat, 9 May 2026 at 19:07, kernel test robot <lkp@intel.com> wrote:
->> FYI, the error/warning still remains.
+> Mostafa Saleh <smostafa@google.com> writes:
+>
+>> On Thu, May 14, 2026 at 08:13:25PM +0530, Aneesh Kumar K.V wrote:
+>>> >>=20
+>>> >> What I meant was that we need a generic way to identify a pKVM guest=
+, so
+>>> >> that we can use it in the conditional above.
+>>> >
+>>> > I have this patch, with that I can boot with your series unmodified,
+>>> > but I will need to do more testing.
+>>> >
+>>>=20
+>>> Thanks, I can add this to the series once you complete the required tes=
+ting.
+>>>=20
 >>
->> tree:   https://eur01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fgit.kernel.org%2Fpub%2Fscm%2Flinux%2Fkernel%2Fgit%2Ftorvalds%2Flinux.git&data=05%7C02%7Cchristophe.leroy2%40cs-soprasteria.com%7Cb57c2e1952ea48b306d508deaf28809f%7C8b87af7d86474dc78df45f69a2011bb5%7C0%7C0%7C639140785686768547%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=MBIlFF0TKur9ZxxdvLflUjFXN8BiEIWx%2FW2eO2rQteM%3D&reserved=0 master
->> head:   ec89572766744e844df24c27d31c97b4c00f4e07
->> commit: 9d9b193ed73a65ec47cf1fd39925b09da8216461 crypto: hash - Increase HASH_MAX_DESCSIZE for hmac(sha3-224-s390)
->> date:   9 months ago
->> config: mips-eyeq5_defconfig (https://eur01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fdownload.01.org%2F0day-ci%2Farchive%2F20260510%2F202605100125.l4JVHppO-lkp%40intel.com%2Fconfig&data=05%7C02%7Cchristophe.leroy2%40cs-soprasteria.com%7Cb57c2e1952ea48b306d508deaf28809f%7C8b87af7d86474dc78df45f69a2011bb5%7C0%7C0%7C639140785686802803%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=9mLXlRz5JrVhRQ0Ft4c3tQJGrDtlSSmYmd7vZ4pneYc%3D&reserved=0)
->> compiler: mips64-linux-gcc (GCC) 15.2.0
->> reproduce (this is a W=1 build): (https://eur01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fdownload.01.org%2F0day-ci%2Farchive%2F20260510%2F202605100125.l4JVHppO-lkp%40intel.com%2Freproduce&data=05%7C02%7Cchristophe.leroy2%40cs-soprasteria.com%7Cb57c2e1952ea48b306d508deaf28809f%7C8b87af7d86474dc78df45f69a2011bb5%7C0%7C0%7C639140785686823501%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=NNAWk0DHq2gD1%2FToE%2FXk75Mz3sKpppwVkpkDG6amzD0%3D&reserved=0)
+>> I am still running more tests, but looking more into it. Setting
+>> force_dma_unencrypted() to true for pKVM guests is wrong, as the
+>> guest shouldn=E2=80=99t try to decrypt arbitrary memory as it can include
+>> sensitive information (for example in case of virtio sub-page
+>> allocation) and should strictly rely on the restricted-dma-pool
+>> for that.
 >>
->> If you fix the issue in a separate patch/commit (i.e. not just a new version of
->> the same patch/commit), kindly add following tags
->> | Fixes: 9d9b193ed73a ("crypto: hash - Increase HASH_MAX_DESCSIZE for hmac(sha3-224-s390)")
->> | Reported-by: kernel test robot <lkp@intel.com>
->> | Closes: https://eur01.safelinks.protection.outlook.com/?url=https%3A%2F%2Flore.kernel.org%2Foe-kbuild-all%2F202605100125.l4JVHppO-lkp%40intel.com%2F&data=05%7C02%7Cchristophe.leroy2%40cs-soprasteria.com%7Cb57c2e1952ea48b306d508deaf28809f%7C8b87af7d86474dc78df45f69a2011bb5%7C0%7C0%7C639140785686842796%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=2M0BnhyxISt3rrzxPXkX4p%2Ba1bIVz%2FhjwSNokIVueuE%3D&reserved=0
+>> However, with my patch and setting force_dma_unencrypted() to false
+>> on top of this series, it fails on pKVM due to a missing shared
+>> attribute as Alexey mentioned, as now SWIOTLB rejects non shared
+>> attrs, so, the DMA-API has to pass it. With that, I can boot again:
 >>
->> All warnings (new ones prefixed by >>):
+>> diff --git a/kernel/dma/direct.c b/kernel/dma/direct.c
+>> index 5103a04df99f..b19aeec03f27 100644
+>> --- a/kernel/dma/direct.c
+>> +++ b/kernel/dma/direct.c
+>> @@ -286,6 +286,8 @@ void *dma_direct_alloc(struct device *dev, size_t si=
+ze,
+>>  	}
+>>=20=20
+>>  	if (is_swiotlb_for_alloc(dev)) {
+>> +		attrs |=3D DMA_ATTR_CC_SHARED;
+>> +
+>>  		page =3D dma_direct_alloc_swiotlb(dev, size, attrs);
+>>  		if (page) {
+>>  			/*
+>> @@ -449,6 +451,8 @@ struct page *dma_direct_alloc_pages(struct device *d=
+ev, size_t size,
+>>  						  &cpu_addr, gfp, attrs);
+>>=20=20
+>>  	if (is_swiotlb_for_alloc(dev)) {
+>> +		attrs |=3D DMA_ATTR_CC_SHARED;
+>> +
+>>  		page =3D dma_direct_alloc_swiotlb(dev, size, attrs);
+>>  		if (!page)
+>>  			return NULL;
+>> diff --git a/kernel/dma/direct.h b/kernel/dma/direct.h
+>> index 4e35264ab6f8..8ee5bbf78cfb 100644
+>> --- a/kernel/dma/direct.h
+>> +++ b/kernel/dma/direct.h
+>> @@ -92,6 +92,7 @@ static inline dma_addr_t dma_direct_map_phys(struct de=
+vice *dev,
+>>  		if (attrs & (DMA_ATTR_MMIO | DMA_ATTR_REQUIRE_COHERENT))
+>>  			return DMA_MAPPING_ERROR;
+>>=20=20
+>> +		attrs |=3D DMA_ATTR_CC_SHARED;
+>>  		return swiotlb_map(dev, phys, size, dir, attrs);
+>>  	}
+>>=20=20
+>> --
 >>
->>     crypto/ahash.c: In function 'crypto_hash_digest':
->>>> crypto/ahash.c:1073:1: warning: the frame size of 1040 bytes is larger than 1024 bytes [-Wframe-larger-than=]
->>      1073 | }
->>           | ^
-> 
-> This is one of the few defconfigs that still use CONFIG_FRAME_WARN=1024.
-> The default value for 32-bit systems was lifted from 1024 to 1280 in
-> commit 32115734c0ed8b46 ("Increase the default 32-bit build frame size
-> warning limit to 1280 bytes") in v6.18, so perhaps the downgrade to
-> 1024 should be dropped from the following defconfigs:
-> 
-> $ git grep CONFIG_FRAME_WARN=1024
-> arch/mips/configs/eyeq5_defconfig:CONFIG_FRAME_WARN=1024
-> arch/mips/configs/eyeq6_defconfig:CONFIG_FRAME_WARN=1024
-> arch/mips/configs/eyeq6lplus_defconfig:CONFIG_FRAME_WARN=1024
-> arch/mips/configs/lemote2f_defconfig:CONFIG_FRAME_WARN=1024
-> arch/mips/configs/loongson2k_defconfig:CONFIG_FRAME_WARN=1024
-> arch/powerpc/configs/fsl-emb-nonhw.config:CONFIG_FRAME_WARN=1024
+>
+> How about the below?
+>
+> modified   kernel/dma/direct.c
+> @@ -278,6 +278,10 @@ void *dma_direct_alloc(struct device *dev, size_t si=
+ze,
+>  	}
+>=20=20
+>  	if (is_swiotlb_for_alloc(dev)) {
+> +
+> +		if (dev->dma_io_tlb_mem->unencrypted)
+> +			attrs |=3D DMA_ATTR_CC_SHARED;
+> +
+>  		page =3D dma_direct_alloc_swiotlb(dev, size, attrs);
+>  		if (page) {
+>  			/*
+> @@ -451,6 +455,10 @@ struct page *dma_direct_alloc_pages(struct device *d=
+ev, size_t size,
+>  						  &cpu_addr, gfp, attrs);
+>=20=20
+>  	if (is_swiotlb_for_alloc(dev)) {
+> +
+> +		if (dev->dma_io_tlb_mem->unencrypted)
+> +			attrs |=3D DMA_ATTR_CC_SHARED;
+> +
+>  		page =3D dma_direct_alloc_swiotlb(dev, size, attrs);
+>  		if (!page)
+>  			return NULL;
+> modified   kernel/dma/direct.h
+> @@ -92,6 +92,9 @@ static inline dma_addr_t dma_direct_map_phys(struct dev=
+ice *dev,
+>  		if (attrs & (DMA_ATTR_MMIO | DMA_ATTR_REQUIRE_COHERENT))
+>  			return DMA_MAPPING_ERROR;
+>=20=20
+> +		if (dev->dma_io_tlb_mem->unencrypted)
+> +			attrs |=3D DMA_ATTR_CC_SHARED;
+> +
+>  		return swiotlb_map(dev, phys, size, dir, attrs);
+>  	}
+>=20=20
+>
+>
 
-I agree for that one, lets drop the downgrade, don't know why it was 
-added at the first place as it was the default, most likely someone 
-didn't use make savedefconfig
+if we get force_dma_unencrypted(dev) correct, we won't need the above.
 
-So feel from to drop that in a treewide cleanup with my Acked-by: 
-Christophe Leroy (CS GROUP) <chleroy@kernel.org>
+for dma_direct_alloc and dma_direct_alloc_pages() we have
+
+	if (force_dma_unencrypted(dev))
+		attrs |=3D DMA_ATTR_CC_SHARED;
 
 
+for dma_direct_map_phys(), if we have swiotlb bouncing forced,
 
-> tools/testing/selftests/wireguard/qemu/arch/arm.config:CONFIG_FRAME_WARN=1024
-> tools/testing/selftests/wireguard/qemu/arch/armeb.config:CONFIG_FRAME_WARN=1024
-> tools/testing/selftests/wireguard/qemu/arch/i686.config:CONFIG_FRAME_WARN=1024
-> tools/testing/selftests/wireguard/qemu/arch/m68k.config:CONFIG_FRAME_WARN=1024
-> tools/testing/selftests/wireguard/qemu/arch/mips.config:CONFIG_FRAME_WARN=1024
-> tools/testing/selftests/wireguard/qemu/arch/mipsel.config:CONFIG_FRAME_WARN=1024
-> tools/testing/selftests/wireguard/qemu/arch/powerpc.config:CONFIG_FRAME_WARN=1024
-> 
-> I am not sure about the wireguard selftests: they might use the lower
-> value deliberately for testing?
-> 
-> Gr{oetje,eeting}s,
-> 
->                          Geert
-> 
+swiotlb_tbl_map_single():
 
+	if ((attrs & DMA_ATTR_CC_SHARED) || force_dma_unencrypted(dev))
+		require_decrypted =3D true;
+
+-aneesh
 
