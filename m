@@ -1,62 +1,60 @@
-Return-Path: <linuxppc-dev+bounces-21385-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21386-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 04D83CD5BB0
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 May 2026 09:57:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E6005CD5BB0
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 May 2026 10:21:54 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gMLKX48rnz2yC9;
-	Fri, 22 May 2026 19:57:04 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779443824;
-	cv=none; b=CkSGTn4hW82kW5mZfW6oZGFK+kXg1+6NiZD0+8w9LDJoOk1odmV0U+INvQzk8OYPq/XXYiXQfVLusX3JhV74qhzp6nCjRbAOlk9uDgEaIGfl0p6bOcrWLV6koKTbf8M7cJU9Kk4Qka0O90INQBUnaHF2fMu5zhzHg/cP4QeUne+Ip9sQvbki5eV5Wvv1kG9zTkCT14GloAuBJi94y61+qxJ93JbKzgcpOCvRqby0CodGO/o1nEJXvASBk0QVBbrjs1DhvnFzt2XqvFeqrV1hk1KDQtWr1JNQUYKcZziFk5z/hbEFU8iPbD1pSjAyA8arAHYa2dZtCK2EXOga+sgxxw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gMLt93QBVz2xc2;
+	Fri, 22 May 2026 20:21:53 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779445313;
+	cv=none; b=ebpcZV4f1LU7OzjcCNbzHU+zNYHQ5ta0RfQzGItws57ijNbeUL0rePx/BTKnb0ZY3ilp6aULkaYzcrxCzbZUCEf5b2CggEnnwiCcxmPzdTAZqA+fCaNS+hMF9MjMnE1Ce1uKp2HEM7q7meGghzg3hOeBkkd49ZdYkHunq7gZKykaGFCNPDkcqUAOQNxaYnOz3PCR+V2lVcV5et467UaCyJnFwkvDQ/dFcuGS0QxRNS0mJOrHuEXh+cSeTRQg8yaLDikDh7RybCU1/1t900zLA9vgUoZMHdoYKAK+mFew2EoCRCDpoxt26NwehmkPCWWA0+TNCxGE2gxbL2GKoiaL4Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1779443824; c=relaxed/relaxed;
-	bh=/rlRShe3uK6rrgQZ4IrnyUDRenTqFqb/izOjWLnR3G0=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=YuxVORSRZuhNpyOIfQxrnPOe2nZpHcdamib1cMTHaSX7x5uuY4ZZ89eHBpHvGcYum/FhZlVShWYG5u3fXrg09f8KMDTgBV4tItcTpf/5VQ955l07r2DHZ70FAOkXW2M+Dnk44vk/vqTvzMFdOlqCfN2G9B3yfa3QGhNErrXX1IuTpNsWH0/hRbxES8MBVdZtLJx25zHAR0gUf0YmlcatRkoonkdSQKPxDWBbKuhzbTDI03VABEejA9iOCv0I+VjnHAOmf6D3jBapOguA5EigOxWaXuLcaen1WFnsqn3l6fwz1kTA5hfhtKtlAIBlbvgO7yCqLjyjz8/N5mDHndfqpw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=blaxcWEp; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1779445313; c=relaxed/relaxed;
+	bh=v5hG5ljo2yEbas7N/t9jsu08GA8nFBFOwWsnzFp/4F0=;
+	h=From:To:In-Reply-To:References:Subject:Message-Id:Date:
+	 MIME-Version:Content-Type; b=QTDFqgGQfsFsO1mECEkFGe5JGQ0TfV1JomyY1gzNJdbgI419iSG+F9U8sbfoP6lKr0BfcGl7rUR2z4OTDWxu32ixDkRY/cbZ5XuXg05PbThmlAdqz5HtyvU8Ufg2t6k2m8SOr9tCM3syp/1c+coUvZ3oKXNTsoz2AokeAwJ99uzM4PBZb031Mod32muEj+1sw/vxyXFZ2q8DhQEc36pgogq+Ln1MV0wxqbUyfIH6DEom87daWX18D/b8AFdDIhbOMR1P0vXutM5AqGQCEhnowctPkgNn3P/Zl3+DCUBZEFzHCGwzUa0gj8Sr0RJNDFxuvy8hho7YEufoz7mVjG5zHA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=OJCAQjSj; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=blaxcWEp;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=OJCAQjSj;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gMLKV3Xfjz2xpn
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 May 2026 19:57:02 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gMLt25919z2xC3
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 May 2026 20:21:46 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 6A7BD60136;
-	Fri, 22 May 2026 09:56:58 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 793971F00A3D;
-	Fri, 22 May 2026 09:56:56 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 2288F601F3;
+	Fri, 22 May 2026 10:21:44 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C90C21F000E9;
+	Fri, 22 May 2026 10:21:41 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1779443818;
-	bh=/rlRShe3uK6rrgQZ4IrnyUDRenTqFqb/izOjWLnR3G0=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=blaxcWEp8Alstxd06rVmlKQUcUEfXjfOvS3jgXpwpaE4e9xfGXyFa5HJ+dTS0Ftai
-	 G9Kp9lqTiCbGeSfL0R7ILUI8TW0PTHpuiFpADsTx3Xp2sf9smT+Z0rVEQReYIO/J0W
-	 DpcZbplzYDHfL1LKKtOyzbPYzCJNLrgJc0vD70XT6hapkiETHNzgeWeaK/iuMfn0qO
-	 gILQ6ErbVRhVG887QcuGdHF1IziYJ/N9KLRY8vP/FeqbLMIEPX+PDoduF7vDWbnIaK
-	 Pa0OT3OgqxRKL9Rz9vS61i5q+YCErQ2pd1OTg/V9rZcsUPhEXvyb8XAEG9bXJ8jlhV
-	 gFyLAN9bIPMYA==
-From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-To: Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>
-Cc: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	linux-kernel@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v1 8/8] powerpc/signal: Use unsafe_copy_siginfo_to_user()
-Date: Fri, 22 May 2026 11:56:08 +0200
-Message-ID: <4a8b361c988655ab008ee2b205bfb0b246e16cc2.1779441786.git.chleroy@kernel.org>
-X-Mailer: git-send-email 2.54.0
-In-Reply-To: <cover.1779441786.git.chleroy@kernel.org>
-References: <cover.1779441786.git.chleroy@kernel.org>
+	s=k20260515; t=1779445303;
+	bh=v5hG5ljo2yEbas7N/t9jsu08GA8nFBFOwWsnzFp/4F0=;
+	h=From:To:In-Reply-To:References:Subject:Date;
+	b=OJCAQjSjVDyBLcKibt6kKzsl5FcdJH4CU24VcEGayWXiZn38GoqWQ5shUb36om2et
+	 23jvjnBn3A++Far23IJrsugZfZfesUnRrKW4UrrgkdZXBbgd3mYW403sfor+SQuH0b
+	 KmKI3960FzW0z4eu4o9s+2D0hh+RdmSqJn5zy+6HK09yA2e9qkiPLAZ8mAfcOddBON
+	 yz94YRigmmm29ROsTd5hnKHXkNWX0+yYWUeE8P+AhcK9x6qp/C2KFPgVNc7sAxmoUy
+	 LTyEVSz43hi6E+q8mdQGknAo0fJVYrmXaPOc5EKkxTjoj5ixebLWCsLL6v67xEE8Qs
+	 KMjXPmJWzkGfQ==
+From: Mark Brown <broonie@kernel.org>
+To: shengjiu.wang@gmail.com, Xiubo.Lee@gmail.com, festevam@gmail.com, 
+ nicoleotsuka@gmail.com, lgirdwood@gmail.com, perex@perex.cz, tiwai@suse.com, 
+ linux-sound@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
+ linux-kernel@vger.kernel.org, Shengjiu Wang <shengjiu.wang@nxp.com>
+In-Reply-To: <20260512065252.75859-1-shengjiu.wang@nxp.com>
+References: <20260512065252.75859-1-shengjiu.wang@nxp.com>
+Subject: Re: [PATCH] ASoC: fsl_sai: Eliminate possible interrupt storm
+ during probe
+Message-Id: <177918448823.6167.7164201834938027833.b4-ty@b4>
+Date: Tue, 19 May 2026 10:54:48 +0100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -70,98 +68,50 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=3199; i=chleroy@kernel.org; h=from:subject:message-id; bh=rIbxm+X12keZqdi4mG1S8vXGOqwRa/TOAViAMLqxvMw=; b=owGbwMvMwCV2d0KB2p7V54MZT6slMWQJaNi3dT5aZGE+kZFFcu+dtINx/070nHmlf5Yx+cut1 pqWbQvjO0pZGMS4GGTFFFmO/+feNaPrS2r+1F36MHNYmUCGMHBxCsBExOwY/kffWfFwtX6Xa2lY ekV9cO1DG+k/K1suyjquKdHOXenf842R4ZJV6af7ydvNOU8mnVfM6trX513zx3qKxh2LaXtzMuX m8wAA
-X-Developer-Key: i=chleroy@kernel.org; a=openpgp; fpr=10FFE6F8B390DE17ACC2632368A92FEB01B8DD78
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-Mailer: b4 0.16-dev
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1143; i=broonie@kernel.org;
+ h=from:subject:message-id; bh=5ZVaWSjfDYV8xFEG2qHRcRpnpfYwZGaYOU2WyjAd3VA=;
+ b=owEBbQGS/pANAwAKASTWi3JdVIfQAcsmYgBqEC40SrnHckZVbEky/P7ocAxP+K2BJW/i9tLmd
+ FCQ7nEsg4iJATMEAAEKAB0WIQSt5miqZ1cYtZ/in+ok1otyXVSH0AUCahAuNAAKCRAk1otyXVSH
+ 0Ep8CACFYtYjQfnZ/W701ctqn2f/S7gjAAUoclcQFx8vbu9CwZr+9XEFiAKl0CsoZYKCrY7eQUH
+ DwJnc3xGcchM4/Rpy2xRyT5dnfsZzU05F0hYj+Oy/KMYyMuS2v7k1/fuFgmVuVpQ6WfKmwkW2jq
+ J71bPc+9SqR9rnAHJuxlTSYaUC3aCe6rz68xxMek7bBtRJnoG6PyiL6JSXoEADpBAeoFJZSQBQq
+ 2Xzg7I58gExyEDm/ofVQkqITMqC6F98ToppFahOoI8fvAH+fmlANMUO9e5FlBCVjxuKF8Il/MO1
+ jza7u/eFEiKvaiMA4lSu/bqAD1GqwKC8nie7Zqn2lQlh8S5F
+X-Developer-Key: i=broonie@kernel.org; a=openpgp;
+ fpr=3F2568AAC26998F9E813A1C5C3F436CA30F5D8EB
 
-Use unsafe_copy_siginfo_to_user() in order to do the copy
-within the user access block.
+On Tue, 12 May 2026 14:52:52 +0800, Shengjiu Wang wrote:
+> ASoC: fsl_sai: Eliminate possible interrupt storm during probe
 
-On an mpc 8321 (book3s/32) the improvment is about 5% on a process
-sending a signal to itself.
+Applied to
 
-Signed-off-by: Christophe Leroy (CS GROUP) <chleroy@kernel.org>
----
- arch/powerpc/kernel/signal_32.c | 18 +++++++++---------
- arch/powerpc/kernel/signal_64.c |  5 +----
- 2 files changed, 10 insertions(+), 13 deletions(-)
+   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git for-7.1
 
-diff --git a/arch/powerpc/kernel/signal_32.c b/arch/powerpc/kernel/signal_32.c
-index 6b1fbd95b07d..99a3efa874eb 100644
---- a/arch/powerpc/kernel/signal_32.c
-+++ b/arch/powerpc/kernel/signal_32.c
-@@ -716,12 +716,6 @@ static long restore_tm_user_regs(struct pt_regs *regs, struct mcontext __user *s
- }
- #endif
- 
--#ifdef CONFIG_PPC64
--
--#define copy_siginfo_to_user	copy_siginfo_to_user32
--
--#endif /* CONFIG_PPC64 */
--
- /*
-  * Set up a signal frame for a "real-time" signal handler
-  * (one which gets siginfo).
-@@ -735,6 +729,7 @@ int handle_rt_signal32(struct ksignal *ksig, sigset_t *oldset,
- 	struct pt_regs *regs = tsk->thread.regs;
- 	/* Save the thread's msr before get_tm_stackpointer() changes it */
- 	unsigned long msr = regs->msr;
-+	compat_siginfo_t uinfo;
- 
- 	/* Set up Signal Frame */
- 	frame = get_sigframe(ksig, tsk, sizeof(*frame), 1);
-@@ -744,6 +739,9 @@ int handle_rt_signal32(struct ksignal *ksig, sigset_t *oldset,
- 	else
- 		prepare_save_user_regs(1);
- 
-+	if (IS_ENABLED(CONFIG_COMPAT))
-+		copy_siginfo_to_external32(&uinfo, &ksig->info);
-+
- 	scoped_user_rw_access_size(newsp, __SIGNAL_FRAMESIZE + 16 + sizeof(*frame), badframe) {
- 		struct mcontext __user *mctx;
- 		struct mcontext __user *tm_mctx = NULL;
-@@ -785,14 +783,16 @@ int handle_rt_signal32(struct ksignal *ksig, sigset_t *oldset,
- 			asm("dcbst %y0; sync; icbi %y0; sync" :: "Z" (mctx->mc_pad[0]));
- 		}
- 		unsafe_put_sigset_t(&frame->uc.uc_sigmask, oldset, badframe);
-+		if (IS_ENABLED(CONFIG_COMPAT))
-+			unsafe_copy_to_user(&frame->info, &uinfo, sizeof(frame->info), badframe);
-+		else
-+			unsafe_copy_siginfo_to_user((void __user *)&frame->info, &ksig->info,
-+						    badframe);
- 
- 		/* create a stack frame for the caller of the handler */
- 		unsafe_put_user(regs->gpr[1], newsp, badframe);
- 	}
- 
--	if (copy_siginfo_to_user(&frame->info, &ksig->info))
--		goto badframe;
--
- 	regs->link = tramp;
- 
- #ifdef CONFIG_PPC_FPU_REGS
-diff --git a/arch/powerpc/kernel/signal_64.c b/arch/powerpc/kernel/signal_64.c
-index 67de29cf581a..fa18ac43eb2a 100644
---- a/arch/powerpc/kernel/signal_64.c
-+++ b/arch/powerpc/kernel/signal_64.c
-@@ -893,14 +893,11 @@ int handle_rt_signal64(struct ksignal *ksig, sigset_t *set,
- 		}
- 
- 		unsafe_copy_to_user(&frame->uc.uc_sigmask, set, sizeof(*set), badframe);
-+		unsafe_copy_siginfo_to_user(&frame->info, &ksig->info, badframe);
- 		/* Allocate a dummy caller frame for the signal handler. */
- 		unsafe_put_user(regs->gpr[1], newsp, badframe);
- 	}
- 
--	/* Save the siginfo outside of the unsafe block. */
--	if (copy_siginfo_to_user(&frame->info, &ksig->info))
--		goto badframe;
--
- 	/* Make sure signal handler doesn't get spurious FP exceptions */
- 	tsk->thread.fp_state.fpscr = 0;
- 
--- 
-2.54.0
+Thanks!
+
+[1/1] ASoC: fsl_sai: Eliminate possible interrupt storm during probe
+      https://git.kernel.org/broonie/sound/c/fd3b95866d86
+
+All being well this means that it will be integrated into the linux-next
+tree (usually sometime in the next 24 hours) and sent to Linus during
+the next merge window (or sooner if it is a bug fix), however if
+problems are discovered then the patch may be dropped or reverted.
+
+You may get further e-mails resulting from automated or manual testing
+and review of the tree, please engage with people reporting problems and
+send followup patches addressing any issues that are reported if needed.
+
+If any updates are required or you are submitting further changes they
+should be sent as incremental updates against current git, existing
+patches will not be replaced.
+
+Please add any relevant lists and maintainers to the CCs when replying
+to this mail.
+
+Thanks,
+Mark
 
 
