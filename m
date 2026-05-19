@@ -1,79 +1,79 @@
-Return-Path: <linuxppc-dev+bounces-21187-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21188-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 03675CD4F5E
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 May 2026 19:38:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 71199CD4F5B
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 May 2026 19:38:53 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gKlMj02dMz3br2;
-	Wed, 20 May 2026 05:38:25 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gKlMq5LgTz3bsd;
+	Wed, 20 May 2026 05:38:31 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779219504;
-	cv=none; b=jeGFlvqikK5Y3rxidgW1vX2hWyT/H6/pYFtm6CP+pN2qThXUwwnONSF2BmV5ipvM3FAr79XRO2HX+JMeDW5umzt04cKJ5q2P/fL1ywpZyIEG5vWmTXAN63ec6t95zBPXEDi1zQcY5Irp1S3dSlsuKzngdxszC0mZ4A+vaWPSEFdm2zT62tiZCWg9pkuBduMhmvAybsbVdKBI1cHamQmWcIm9uzBG1iXMv2tVugVIr6ydJQbCTXbdV1Cd6I66W6+8AIYNHMcDbsaxB3YHNmJGG6GtESb3X7Mo0KTCTpI90s1KGFuh4L7Jxef8O+IbwGxudZMiFQ+GYtrmKrDYXkDuDQ==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779219511;
+	cv=none; b=Ya+Ks9FMphYVuFRmsWareVSFYYi7KhREfpJSlxx8lBWudiJficEE+r6xkLF2uCPK0dm/bekgtRM2spSPML8LIlBsGFey/EyG5PxuwtL03BhXczyGAX78sdJPcxYZ+4WzBnu+/rRnL2Z1y9TM5dUOlohe/yGpj1mO7mmcXG+DdHr5cwsknjmVUTIfF6IRARxYlx0/1bj7Rf+/GRJlbMkj1Mnt5gLiR1M+fspjyzLrHPr/BbBzitgieCREMroqp1PrtRuvF9n8qrnwfVb++9HwSSB+iFdEnnFTgMYgvwaOkMlEc4cOazzb6GlFifcadQQYJ7SGpaM05YSa4WDtqJ3Rzw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1779219504; c=relaxed/relaxed;
-	bh=3AJGiF3jSZFKcO2dswxqWQz67N42vxEawnsA+LUOjTQ=;
+	t=1779219511; c=relaxed/relaxed;
+	bh=TIct3NHUYaBH36Fj/LbbJuo0SwZOr7xZ34JrF6Ab3dM=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=ei3NqLiqkBTYieU1sY7hVXMcPTM2H4t5FxagVk75SuueWLS3Uc86B81YF53qZHb09PW8vP4Cbx81qIA4IrU5iYgODfAWOyGPSEP5fsGAnegorLMCQv7zJu2dyiAXJgrt96KUN8f9uJfDtGhbmXZkqMSPjlNlnmQiLJUA9eyFR2aHSgJGtX5KwWr7Yr+UAwk+a2itAVsvwbyGHD2jd4j4wZFo91RmrC/mxkMLmn9CWDoKPb3fTh5D006dTwGU3nM4hnAF+6wsjlCAID2qLr32Uw/gDFVokf+PdcGK4LF2t9ZKrfsJTR/jqR1awlF+m+7qsmw+enKIzLw2Z3WuGLkzJw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=qabgLt4v; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=adubey@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	 MIME-Version; b=YAv6R/ANPdkIc4FtsyxN4dR4rMUC+FVZT00+zmwLQaIXFDKjJydAwm5VlEs5StVBki+j60KM35i6JoiJKxPmuQkVFB6/4+2nlOWFQ+1zyp0lOUrEryBtbgRej6EK7fG+WDqZO//u1B68GWd9gexgH+FzF0wUfIcsD9vfsVEuId1jY8swX1QWaDO/0U4IfQvXW7v2Akzvng3zkaPYb67Ip3jVcqTY6qZJ35pvnWpMI1INkT+vAoSLYME0GakqumJ8mKMvNJSOkQBjeJOIdIWO7OkffoR9Yq0hpOMmHETz/PEJ8DsciRvAdX2x0h1UTyIk80g6BfjAcGfbEMtkMHwU0w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=RU2ftkLU; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=adubey@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=qabgLt4v;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=RU2ftkLU;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=adubey@linux.ibm.com; receiver=lists.ozlabs.org)
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gKlMf6M70z2yD6
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 May 2026 05:38:22 +1000 (AEST)
-Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 64JGHnLg1522114;
-	Tue, 19 May 2026 19:38:09 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gKlMq0djXz2yD6
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 May 2026 05:38:30 +1000 (AEST)
+Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 64JGPw8H2166376;
+	Tue, 19 May 2026 19:38:15 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
 	:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=pp1; bh=3AJGiF3jSZFKcO2ds
-	wxqWQz67N42vxEawnsA+LUOjTQ=; b=qabgLt4v1NB8Bl4ARaogPNQkson7hPhoc
-	aFGfPEq1BTnOEwavWAtwL8qYuCecKX+oYD7hYCsau77/m6No5Ry4Md/1aayV9M5L
-	6zIMJolr3TTQDP2RDYd4jI86m2DJQ7uWURNcUtMuy9/rEO844ERTz1ICQ84Ozdq2
-	l8ktplqKFxte8jrShxzVsrCFlNmkGQxdpeMwfNq/RFiX7iqOm3rYd+/QdB1auwoB
-	NetorDnY2LU11n8wSFshgZGF6lTF5Uql/S/pniCq6/W8BCKzJZlSwqV6q4CG7Iu2
-	9dWCYAA9rq5d6/aM3Xvm6muoyLM6dlUI27uxrXWL34VtXm/R12H+g==
-Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4e6h9xxvh0-1
+	:mime-version:references:subject:to; s=pp1; bh=TIct3NHUYaBH36Fj/
+	LbbJuo0SwZOr7xZ34JrF6Ab3dM=; b=RU2ftkLUqRJUtpA+SqV42DyF+VuNeOUQ9
+	PNZXDBxtgdgI/b6kAahrGVaFB32cWBv/1hmGMUvYiJJM7FPsz0m8y7x1h4EA9qoN
+	mG3dy9FshA+Xu1o75xnn0mLiC+QOeRGqeJJ4A9RA+Wbmn5/oWpPwQjyBSNaOnl/n
+	ng2A3UuyiUE2pVQUosTYxXRkO1JadRPTa8+YR0Bf/pCyNSCfFggOZbrtTiDosItG
+	JOOfD6DnAoqAY64gwmPLX58B9KP7UY/EijExoUem50DdQfRVUsBtzI5MHSS8dR42
+	vEboO+5NulFsx5i4+uXkp3ZaBtoXZH0UHr7NpteZutGEC/revsGFQ==
+Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4e6h74xu0u-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 19 May 2026 19:38:09 +0000 (GMT)
-Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma13.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 64JJO5lQ028476;
-	Tue, 19 May 2026 19:38:08 GMT
-Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
-	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4e754gc0k4-1
+	Tue, 19 May 2026 19:38:14 +0000 (GMT)
+Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma22.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 64JJOGjh020218;
+	Tue, 19 May 2026 19:38:13 GMT
+Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
+	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4e739vvbyu-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 19 May 2026 19:38:08 +0000 (GMT)
+	Tue, 19 May 2026 19:38:13 +0000 (GMT)
 Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
-	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 64JJc4kk53477796
+	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 64JJc91847448356
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 19 May 2026 19:38:05 GMT
+	Tue, 19 May 2026 19:38:09 GMT
 Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id D9DD320043;
-	Tue, 19 May 2026 19:38:04 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id A6D0D20043;
+	Tue, 19 May 2026 19:38:09 +0000 (GMT)
 Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id D9EE420040;
-	Tue, 19 May 2026 19:38:02 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id A7E7320040;
+	Tue, 19 May 2026 19:38:07 +0000 (GMT)
 Received: from ltcrain4-lp15.ltc.tadn.ibm.com (unknown [9.5.7.39])
 	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Tue, 19 May 2026 19:38:02 +0000 (GMT)
+	Tue, 19 May 2026 19:38:07 +0000 (GMT)
 From: adubey@linux.ibm.com
 To: bpf@vger.kernel.org
 Cc: hbathini@linux.ibm.com, linuxppc-dev@lists.ozlabs.org, maddy@linux.ibm.com,
         ast@kernel.org, andrii@kernel.org, daniel@iogearbox.net,
         shuah@kernel.org, linux-kselftest@vger.kernel.org,
         stable@vger.kernel.org, Abhishek Dubey <adubey@linux.ibm.com>
-Subject: [PATCH v5 3/6] selftest/bpf: Fixing powerpc JIT disassembly failure
-Date: Tue, 19 May 2026 19:38:09 -0400
-Message-ID: <20260519233812.18787-4-adubey@linux.ibm.com>
+Subject: [PATCH v5 4/6] selftest/bpf: Enable verifier selftest for powerpc64
+Date: Tue, 19 May 2026 19:38:10 -0400
+Message-ID: <20260519233812.18787-5-adubey@linux.ibm.com>
 X-Mailer: git-send-email 2.52.0
 In-Reply-To: <20260519233812.18787-1-adubey@linux.ibm.com>
 References: <20260519233812.18787-1-adubey@linux.ibm.com>
@@ -92,84 +92,83 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTE5MDE5NiBTYWx0ZWRfX711ppvCoXq3D
- oJgDze0wsRV8Wff1v6HvZbTnpDLjo9GdMGZwZYCccatqwknir0MrHoK8SIyemo/Q1UAe7N6PEaQ
- SFbImLnNU9NvHr2rkKRR21a/3WSr35x8nZ1OmM+wJkhe6zR6k7GbDp6Ye5vSaNYo2lliWoR91A6
- A1LoWXQk8iHrOFygsey0rJiWtoC4itY7Pj3bokInynhsGUVkoDyeYbEWA9peGdtpIkdxlGgmbYq
- PvJKEbYah9rqvJYqrUGWY1cjPSC0NxLybapLuxmg8G/5QLWGD8QT4njxCtajA73EHBQW/AFXXAr
- 5V6YAnjNQnRWQZ3+cTF84HVZ2ZUFe8RgX8zPmC1xEwObscDAg16MBPEpbI60ijR01endoG045RW
- sQAPvtWq86D38W2B7hwxPTKyO3Iv/SVBGrsXcRC3Y0OCmvG9AXVEksq7o9Th+JOBb1g/P2wTWDz
- bmWvLVgNu3AYc0tpFjA==
-X-Authority-Analysis: v=2.4 cv=BNuDalQG c=1 sm=1 tr=0 ts=6a0cbc21 cx=c_pps
- a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
+X-Authority-Analysis: v=2.4 cv=ffCdDUQF c=1 sm=1 tr=0 ts=6a0cbc26 cx=c_pps
+ a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
  a=NGcC8JguVDcA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=iQ6ETzBq9ecOQQE5vZCe:22 a=VnNF1IyMAAAA:8 a=BG0PCUMEzKLNx9Y0HWgA:9
-X-Proofpoint-ORIG-GUID: LBk5Xahk3sYHmNoZdWc95XdJPjecHAnj
-X-Proofpoint-GUID: LBk5Xahk3sYHmNoZdWc95XdJPjecHAnj
+ a=U7nrCbtTmkRpXpFmAIza:22 a=VnNF1IyMAAAA:8 a=DRl-xmwt84w-93Xc4WMA:9
+X-Proofpoint-ORIG-GUID: K_Agw9Vj91cSoma71GlcH_wsRXA8pbGP
+X-Proofpoint-GUID: K_Agw9Vj91cSoma71GlcH_wsRXA8pbGP
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTE5MDE5NiBTYWx0ZWRfX8a1DskaLjdhr
+ VGGB8eSR65JmbEktInWdczCDHfWnnMsV+BR2/bnJg9vC/EXjPN+BM7QoOoSH2tomdk/w14BB3Z1
+ 1qGtITNxTPYODo2+VtP2uWYqGp7FYCvAtBGzd6aUX55BysC78lS2IXmhDY5XB+Q8OKqTtYJgtll
+ ddNgzudMeprm7tBgOJ3A8LqF4f/pclf9Ie2W2FTJzlyAhi3x7ri7qHpdlq27T4Z7o//aRWVctv3
+ NStHxw1Z5+VwFQk9PVQ4yuQyMV+nvDJL2wmUGrKb5BGjpwIB1cOKjXYuNyo8I4KIuXr+54igqVE
+ SEDA7N7AYtspJeTqZYne216afXTn5UrBuvVoISam3UAMBE1x3lUAuBhuh0LHUyXUNBP39nj56L7
+ 3JI6qZI+hBS75byLIF5kTNvZCEiSTf1lVspbzB3wVUdaKgsr76WvPLs9VrDXUEnr4hXX0oLfeuj
+ PslSP9csXymhhGKH2Aw==
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
  definitions=2026-05-19_05,2026-05-18_01,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- adultscore=0 priorityscore=1501 malwarescore=0 impostorscore=0 suspectscore=0
- lowpriorityscore=0 phishscore=0 bulkscore=0 spamscore=0 clxscore=1015
+ priorityscore=1501 spamscore=0 phishscore=0 suspectscore=0 adultscore=0
+ clxscore=1015 impostorscore=0 lowpriorityscore=0 bulkscore=0 malwarescore=0
  classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
  reason=mlx scancount=1 engine=8.22.0-2605130000 definitions=main-2605190196
 
 From: Abhishek Dubey <adubey@linux.ibm.com>
 
-Ensure that the trampoline stubs JITed at the tail of the
-epilogue do not expose the dummy trampoline address stored
-in the last 8 bytes (for both 64-bit and 32-bit PowerPC)
-to the disassembly flow. Prevent the disassembler from
-ingesting this memory address, as it may occasionally decode
-into a seemingly valid but incorrect instruction. Fix this
-issue by truncating the last 8 bytes from JITed buffers
-before supplying them for disassembly.
+This patch enables arch specifier "__powerpc64" in verifier
+selftest for ppc64. Power 32-bit would require separate
+handling. Changes tested for 64-bit only.
 
 Signed-off-by: Abhishek Dubey <adubey@linux.ibm.com>
 ---
- tools/testing/selftests/bpf/jit_disasm_helpers.c | 16 +++++++++++++++-
- 1 file changed, 15 insertions(+), 1 deletion(-)
+ tools/testing/selftests/bpf/progs/bpf_misc.h | 1 +
+ tools/testing/selftests/bpf/test_loader.c    | 5 +++++
+ 2 files changed, 6 insertions(+)
 
-diff --git a/tools/testing/selftests/bpf/jit_disasm_helpers.c b/tools/testing/selftests/bpf/jit_disasm_helpers.c
-index 364c557c5115..9e6613479145 100644
---- a/tools/testing/selftests/bpf/jit_disasm_helpers.c
-+++ b/tools/testing/selftests/bpf/jit_disasm_helpers.c
-@@ -170,9 +170,11 @@ int get_jited_program_text(int fd, char *text, size_t text_sz)
- 	struct bpf_prog_info info = {};
- 	__u32 info_len = sizeof(info);
- 	__u32 jited_funcs, len, pc;
-+	__u32 trunc_len = 0;
- 	__u32 *func_lens = NULL;
- 	FILE *text_out = NULL;
- 	uint8_t *image = NULL;
-+	char *triple = NULL;
- 	int i, err = 0;
+diff --git a/tools/testing/selftests/bpf/progs/bpf_misc.h b/tools/testing/selftests/bpf/progs/bpf_misc.h
+index 9eeb5b0b63d6..cdc2a3de3054 100644
+--- a/tools/testing/selftests/bpf/progs/bpf_misc.h
++++ b/tools/testing/selftests/bpf/progs/bpf_misc.h
+@@ -158,6 +158,7 @@
+ #define __arch_arm64		__arch("ARM64")
+ #define __arch_riscv64		__arch("RISCV64")
+ #define __arch_s390x		__arch("s390x")
++#define __arch_powerpc64	__arch("POWERPC64")
+ #define __caps_unpriv(caps)	__test_tag("test_caps_unpriv=" EXPAND_QUOTE(caps))
+ #define __load_if_JITed()	__test_tag("load_mode=jited")
+ #define __load_if_no_JITed()	__test_tag("load_mode=no_jited")
+diff --git a/tools/testing/selftests/bpf/test_loader.c b/tools/testing/selftests/bpf/test_loader.c
+index abdb9e6e3713..d5589355ed9e 100644
+--- a/tools/testing/selftests/bpf/test_loader.c
++++ b/tools/testing/selftests/bpf/test_loader.c
+@@ -377,6 +377,7 @@ enum arch {
+ 	ARCH_ARM64	= 0x4,
+ 	ARCH_RISCV64	= 0x8,
+ 	ARCH_S390X	= 0x10,
++	ARCH_POWERPC64	= 0x20,
+ };
  
- 	if (!llvm_initialized) {
-@@ -216,9 +218,21 @@ int get_jited_program_text(int fd, char *text, size_t text_sz)
- 	if (!ASSERT_OK(err, "bpf_prog_get_info_by_fd #2"))
- 		goto out;
- 
-+	/*
-+	 * last 8 bytes contains dummy_trampoline address in JIT
-+	 * output for 64-bit and 32-bit powerpc, which can't
-+	 * disassemble a to valid instruction.
-+	 */
-+	triple = LLVMGetDefaultTargetTriple();
-+	if (triple) {
-+		if (strstr(triple, "powerpc"))
-+			trunc_len = 8;
-+		LLVMDisposeMessage(triple);
-+	}
-+
- 	for (pc = 0, i = 0; i < jited_funcs; ++i) {
- 		fprintf(text_out, "func #%d:\n", i);
--		disasm_one_func(text_out, image + pc, func_lens[i]);
-+		disasm_one_func(text_out, image + pc, func_lens[i] - trunc_len);
- 		fprintf(text_out, "\n");
- 		pc += func_lens[i];
- 	}
+ static int get_current_arch(void)
+@@ -389,6 +390,8 @@ static int get_current_arch(void)
+ 	return ARCH_RISCV64;
+ #elif defined(__s390x__)
+ 	return ARCH_S390X;
++#elif defined(__powerpc64__)
++	return ARCH_POWERPC64;
+ #endif
+ 	return ARCH_UNKNOWN;
+ }
+@@ -580,6 +583,8 @@ static int parse_test_spec(struct test_loader *tester,
+ 				arch = ARCH_RISCV64;
+ 			} else if (strcmp(val, "s390x") == 0) {
+ 				arch = ARCH_S390X;
++			} else if (strcmp(val, "POWERPC64") == 0) {
++				arch = ARCH_POWERPC64;
+ 			} else {
+ 				PRINT_FAIL("bad arch spec: '%s'\n", val);
+ 				err = -EINVAL;
 -- 
 2.52.0
 
