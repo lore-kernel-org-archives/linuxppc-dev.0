@@ -1,119 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-21153-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21154-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A51ECCD4F3C
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 May 2026 13:29:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 597C0CD5BA4
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 May 2026 13:34:44 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gKb9q1Rdkz2xwH;
-	Tue, 19 May 2026 23:29:19 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::72f"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779197359;
-	cv=none; b=E42ewY0jUsL08kCDKZa50XKrJQ/TrKvw1pX5SdHEANW/lizCa8wZ4HMJu6NcQx2KcWiCcl61Cr4rXE/Lzpdo/myS52UrG1f8P7QqGsOjUYBF+XjzLV5aHh7/1xQ5oVSU/W6IVW3/Q1Vy9FmAuXNb075vskwrUNtwlpYJxVhP48AhzGRJOTHSGPvyGmSRlcB+pKIdOntyt8WI0ZhCDlIv4byrtMfhmyryS9IKxXegFgn/ecw66KRe8ThvvVZ3+yFzogfsH48ADpgfhujtaIrqR94HD2gTtC2WmWkiRWw+BfQNQ9jM5PTiUgVdtBuSn5WCOMY4JaNpYjMZQelK7GTUtg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gKbJ30VFHz2yCM;
+	Tue, 19 May 2026 23:34:43 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779197683;
+	cv=none; b=BL4DflV8BfqEgdujbYVyO3gFYQKzAVAcHLG0oPyWni0feGb4X/pKKQH+veJfkljtUGYL+DeBIR40SBOk/EGKHROoK5ndzOMHT37dq2xeSYrXrCrXJWLGgFB/24hKeXp1VN4yiBB7i1wqD5zOWcYpQ/IjYdt5MYIEKXPPDT/Ily7gPDZkCjFb8SC0WtA/a0XWWnsrGFRyEcXxWrK2OoNsHn2SmV3C2ZeC9oHsxE88ktoCOAGKCn9AiWH26OcX/fBIMzmsEgnaZSnuLaOIbd5TCGu5kcYbVGHxU4jjqEs/q9m5epJ6oRIbe2yhLzaWr9XGQR38FPWMATOEd70UoJoINw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1779197359; c=relaxed/relaxed;
-	bh=LrtAP8Eaa/f2vd8w85VzyR8xqf5rOlnG9+YArbfK2NQ=;
+	t=1779197683; c=relaxed/relaxed;
+	bh=igLXJd4fTn7BrUWoEo6/WCNhTtAf6rW8Mq0yK1dWozI=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=g6mSZNv3HZMAofmF1KQLdNG7pS86uaIq0h9jPh4Eiu34sm+4rArqdMsmTW4LTDYenPWGqF+B8aSoWIkalINZvB1E5undHpbihBJh3JSavLg8rp7BrW9dKQhxtoYvm5ztFbOoYepklXUWBmPCDwuvWufzFWpQTvlFvJ+N/J7lLuukmMiEljI+1BsMm1aWToKI6R1uU+Mi0/OmWDXmZIvLqKfIUsk6QZAcHTTzm0+Nq5KBjR8OlDNiMAIG+FQmAd0d4FeEEcCS4V0EiRk8HzodG7fKKTWqWKPKVLRkY84+SkYvxFey4E5cEtrk1rCxfhgeiKGeUxWEavdvDLgDgR87kA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ziepe.ca; dkim=pass (2048-bit key; secure) header.d=ziepe.ca header.i=@ziepe.ca header.a=rsa-sha256 header.s=google header.b=QuRCo1K6; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::72f; helo=mail-qk1-x72f.google.com; envelope-from=jgg@ziepe.ca; receiver=lists.ozlabs.org) smtp.mailfrom=ziepe.ca
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ziepe.ca
+	 Content-Type:Content-Disposition:In-Reply-To; b=nRgoI7rK3OV1mTPEbV1io3DaASSsAknbsEZLVE34N0jycRbnYoZ4TcZ8Kl9ABPP/ZwyKQkLKRray8SzroCl1ZtEWOIpf/EEOmfD9cTsayMpgnVQfAzITNqZTi4uTQZdfsKH+sFGGs42rm8A+AVQpoCQKnjpvh1wvgTmpSHuKwoxJnarbRx89ogXPswbN3tLYfQGFiEWQeOEjnqTpErpvoTi5g8yohXTYaSxIFyxSs9OVGyQIvzxRcooHo/z2DgUC94yvj1+Fj7p9NzCYJQlKJc/FRw2BRUFKb6T40lApjLXSqTxYyh6SuhCfBZFpPyzJ+EF0WOR4SqMVboyDni7UCA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=DDTfph8D; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=ziepe.ca header.i=@ziepe.ca header.a=rsa-sha256 header.s=google header.b=QuRCo1K6;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=DDTfph8D;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=ziepe.ca (client-ip=2607:f8b0:4864:20::72f; helo=mail-qk1-x72f.google.com; envelope-from=jgg@ziepe.ca; receiver=lists.ozlabs.org)
-Received: from mail-qk1-x72f.google.com (mail-qk1-x72f.google.com [IPv6:2607:f8b0:4864:20::72f])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gKb9n206tz2xqv
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 May 2026 23:29:16 +1000 (AEST)
-Received: by mail-qk1-x72f.google.com with SMTP id af79cd13be357-90d1f03238bso437317785a.1
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 May 2026 06:29:16 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ziepe.ca; s=google; t=1779197353; x=1779802153; darn=lists.ozlabs.org;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :mime-version:references:message-id:subject:cc:to:from:date:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=LrtAP8Eaa/f2vd8w85VzyR8xqf5rOlnG9+YArbfK2NQ=;
-        b=QuRCo1K6Os3h8wNFLkdWTdANaBnwpqkhc997+fBCX5jMOlUhYyR4cunY0/iTW41SrE
-         cQqYC+Stv+oVgAkdXY5aDjsPP5isEX0IVsizYbggv45UrvQTkEy/klPZ77qrTHpB4A9Q
-         0ZqZMiYTvGbg0tiMEef/Kv97GukYQ9Ks0Cmnok50m7pyOZjjb5gAFGNhPf7UTNkjPaE4
-         u8swT8ECwuDx3k2uc/iw+Sc22+N9N33cg7f8lqxZIiy6uXg2Fq3ddYvJdRBJuNNSzYhV
-         lM4iQvAUNxNXJkG9HAi026Uq7wr9p0WZODgZHaLIFNRChERh5ex0gJUXXyNq0svGb9//
-         bJsw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1779197353; x=1779802153;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :mime-version:references:message-id:subject:cc:to:from:date:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=LrtAP8Eaa/f2vd8w85VzyR8xqf5rOlnG9+YArbfK2NQ=;
-        b=MokBCEnPfUQp0g+Z1aazOZPjngD5aRk5EytuqRObzF5NtzbdBo5iS38zEA7VNV4Mb8
-         P73Iv/+2TCFLVRm6lX25mrb8puJ8sh4vnxRkxwlfr7IImWigpVlvs3NSSFr9bZDXXRPR
-         bCDJNVPU2TWRV6ex9NArc5s58qN1CZBHgjk4VYphO1ryre+N2DtXZfzTGMqsO5nFicNM
-         6ZjIKjJj0ldDZ/ohRTP5JUuVAZ7bK18UuoWGZH81UIEUff5sBemnRbySs4TuCCXlXam0
-         bGfy1o10fmOIMaDx2J9Gw41tWyfbgV8ZoOGA+sLgWTTkfheXxJTwuYApba/Dm6I1yCF1
-         W6yQ==
-X-Forwarded-Encrypted: i=1; AFNElJ9zKJvwOfSeO9Nkm1jZmblpWZhmpCmpgu0eBEOlrMfZDaTpa0UHDw16rNammyB4NLeITDBhtX8VC116FUA=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YyAKqbDJJ+fEcsnW6wP5Y9ze2ASMV8+OZYyfxoBuAKyLn8byGdX
-	DgkxcomQ86KZWYA/PUKZQvUQPjZm5+ek3hD5xWB2g0Gz3uLPuMMwXGJkfHLd+N9qgL8=
-X-Gm-Gg: Acq92OHHHtjcPmwp1svrms/ZXNRMmrF9w6UPUhaVI8mc53dW3HnWxAe9erXenQjUIEb
-	Ziw6WPNJg/FWr0SS+2MPs12r6RZGsI/ZZg6rXVX/DB+Dw0Vz2UcRl5yxZGFycrq+IiHoPiWKNMi
-	OyypCijzkKHyhX1kkIwTR9sq3unoGII801Xmbf7LFVk49Ny8tw0Wi5Zcr7YNsHglNdZs9+/69Xc
-	KCXyvyjHzpRwAQWQ9i6hxmH/XS7dzDU1OQqQTgCDsq8Jo+xoFFa+j3j9FwiR6HS3MVxU7fdaGlq
-	H/tXKoTBcIeQYBuzqhlTsqA0O52AocefO0t6oblg78NBunC7rIiyrbr3EiMOVvoOSA1z+pmggeL
-	RYkgRl4p22x7MQU9HDhLm2Awf2e4x3KcTSKjnONXy9D7SvqJyijBQ/VWXGoJ7rAXJXDRi8Q/4io
-	jZYo5xTml42AHATvhVwfOTSnZPW4bOqQkl+qNwX6UE1up5CdkQZdpqmoBznRqS/t3VFuHEDCcbK
-	nnBPBj4RhEZ0Ji/
-X-Received: by 2002:ad4:5ca9:0:b0:8c2:7cc5:b5d5 with SMTP id 6a1803df08f44-8c8fda1ccb0mr344078466d6.17.1779197352561;
-        Tue, 19 May 2026 06:29:12 -0700 (PDT)
-Received: from ziepe.ca (crbknf0213w-47-54-130-67.pppoe-dynamic.high-speed.nl.bellaliant.net. [47.54.130.67])
-        by smtp.gmail.com with ESMTPSA id 6a1803df08f44-8ca360979c2sm90678436d6.18.2026.05.19.06.29.11
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 19 May 2026 06:29:12 -0700 (PDT)
-Received: from jgg by wakko with local (Exim 4.97)
-	(envelope-from <jgg@ziepe.ca>)
-	id 1wPKVT-0000000EubB-2Vp2;
-	Tue, 19 May 2026 10:29:11 -0300
-Date: Tue, 19 May 2026 10:29:11 -0300
-From: Jason Gunthorpe <jgg@ziepe.ca>
-To: Mostafa Saleh <smostafa@google.com>
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, iommu@lists.linux.dev,
-	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-	linux-coco@lists.linux.dev, Robin Murphy <robin.murphy@arm.com>,
-	Marek Szyprowski <m.szyprowski@samsung.com>,
-	Will Deacon <will@kernel.org>, Marc Zyngier <maz@kernel.org>,
-	Steven Price <steven.price@arm.com>,
-	Suzuki K Poulose <Suzuki.Poulose@arm.com>,
-	Catalin Marinas <catalin.marinas@arm.com>,
-	Jiri Pirko <jiri@resnulli.us>, Petr Tesarik <ptesarik@suse.com>,
-	Alexey Kardashevskiy <aik@amd.com>,
-	Dan Williams <dan.j.williams@intel.com>,
-	Xu Yilun <yilun.xu@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
-	linux-s390@vger.kernel.org,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	Alexander Gordeev <agordeev@linux.ibm.com>,
-	Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
-	Heiko Carstens <hca@linux.ibm.com>,
-	Vasily Gorbik <gor@linux.ibm.com>,
-	Christian Borntraeger <borntraeger@linux.ibm.com>,
-	Sven Schnelle <svens@linux.ibm.com>, x86@kernel.org
-Subject: Re: [PATCH v4 04/13] dma: swiotlb: track pool encryption state and
- honor DMA_ATTR_CC_SHARED
-Message-ID: <20260519132911.GA7702@ziepe.ca>
-References: <20260512090408.794195-1-aneesh.kumar@kernel.org>
- <20260512090408.794195-5-aneesh.kumar@kernel.org>
- <agSKQrSIhizCXKwx@google.com>
- <yq5ah5oaa63h.fsf@kernel.org>
- <agW5rhE9n2gDQ0w5@google.com>
- <yq5apl2y5f96.fsf@kernel.org>
- <agXaby-7L7yS3Vva@google.com>
- <yq5ah5oa59wy.fsf@kernel.org>
- <agxDxdxynp4KEovA@google.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gKbJ20k9vz2xqv
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 May 2026 23:34:41 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sea.source.kernel.org (Postfix) with ESMTP id EFCEA402FC;
+	Tue, 19 May 2026 13:34:39 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E6AA2C2BCC6;
+	Tue, 19 May 2026 13:34:32 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1779197679;
+	bh=jZ9eiUfdecTYmnNTglbe4v4suLmPNtkaKYThIKqcEms=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=DDTfph8DoNxs0r7uOMyzlcGYs56uMr1Oz4qj1hQo+aMCMvqfCj5wWWtFFuzaXr20G
+	 yOrNWL62DjLdDDlRviIJLyzu7SLkguP5tlMqTJ2WQIVJWPTnA86I5YPVIip7/TFWQ9
+	 FfrnD4ESweJw+hFMJuTvrUpCxGuU6H47B2CfWi24NlBhbxtC8GhtBFvViN70YQOnHi
+	 8Ne2TKTGwa05BOzhDmg5PqaztRqe9W0pUc1pz8Dwx2hEmHekf3M22g1B0bmBSyTO4M
+	 LSoTbzYoydCPM/mKQeRc4B3bTUv/T+VH4Q+CW5WrMmkFxAUx1H1A4n9+s9VNkHK0yl
+	 xbNoiM2Z8+puA==
+Date: Tue, 19 May 2026 14:34:29 +0100
+From: Lorenzo Stoakes <ljs@kernel.org>
+To: Barry Song <baohua@kernel.org>
+Cc: Yang Shi <shy828301@gmail.com>, Matthew Wilcox <willy@infradead.org>, 
+	surenb@google.com, akpm@linux-foundation.org, linux-mm@kvack.org, david@kernel.org, 
+	liam@infradead.org, vbabka@kernel.org, rppt@kernel.org, mhocko@suse.com, 
+	jack@suse.cz, pfalcato@suse.de, wanglian@kylinos.cn, chentao@kylinos.cn, 
+	lianux.mm@gmail.com, kunwu.chan@gmail.com, liyangouwen1@oppo.com, chrisl@kernel.org, 
+	kasong@tencent.com, shikemeng@huaweicloud.com, nphamcs@gmail.com, bhe@redhat.com, 
+	youngjun.park@lge.com, linux-arm-kernel@lists.infradead.org, 
+	linux-kernel@vger.kernel.org, loongarch@lists.linux.dev, linuxppc-dev@lists.ozlabs.org, 
+	linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org, Nanzhe Zhao <nzzhao@126.com>
+Subject: Re: [PATCH v2 0/5] mm: reduce mmap_lock contention and improve page
+ fault performance
+Message-ID: <agxhwM9i-in8TpIz@lucifer>
+References: <20260430040427.4672-1-baohua@kernel.org>
+ <afNM-gIqxpyJ6ro7@casper.infradead.org>
+ <CAGsJ_4w0qcYmukHqsyRd0jomoyYkJjOt8b-Cgp53BgP-8QQghw@mail.gmail.com>
+ <afS_L-5XeWIldTXA@casper.infradead.org>
+ <CAGsJ_4wk=SDtgin+84Ev2TamU-JFfmrg_SUay=-tcYmnFvK6Nw@mail.gmail.com>
+ <afTpoL3FklpQZNMM@casper.infradead.org>
+ <CAGsJ_4ysMcrmDLSOwBkf7qwCQrcDWeEMXkHDajTJFMLKUk0bSQ@mail.gmail.com>
+ <CAHbLzkrOSoh-jmR=uaNvx73n_wn+vExoKY0UzH5zGcfdAiDbNg@mail.gmail.com>
+ <CAGsJ_4w_-Y8qNLDeLX9OWpLpK01YG2bF-N6_mGypgsauvfCvkA@mail.gmail.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -130,32 +84,195 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <agxDxdxynp4KEovA@google.com>
+In-Reply-To: <CAGsJ_4w_-Y8qNLDeLX9OWpLpK01YG2bF-N6_mGypgsauvfCvkA@mail.gmail.com>
 
-On Tue, May 19, 2026 at 11:04:37AM +0000, Mostafa Saleh wrote:
-> On Thu, May 14, 2026 at 08:13:25PM +0530, Aneesh Kumar K.V wrote:
-> > >> 
-> > >> What I meant was that we need a generic way to identify a pKVM guest, so
-> > >> that we can use it in the conditional above.
+On Tue, May 19, 2026 at 07:07:37PM +0800, Barry Song wrote:
+> On Tue, May 19, 2026 at 5:21 AM Yang Shi <shy828301@gmail.com> wrote:
+> >
+> > On Sun, May 17, 2026 at 1:45 AM Barry Song <baohua@kernel.org> wrote:
 > > >
-> > > I have this patch, with that I can boot with your series unmodified,
-> > > but I will need to do more testing.
+> > > On Sat, May 2, 2026 at 1:58 AM Matthew Wilcox <willy@infradead.org> wrote:
+> > > >
+> > > > On Sat, May 02, 2026 at 01:44:34AM +0800, Barry Song wrote:
+> > > > > On Fri, May 1, 2026 at 10:57 PM Matthew Wilcox <willy@infradead.org> wrote:
+> > > > > >
+> > > > > > On Fri, May 01, 2026 at 06:49:58AM +0800, Barry Song wrote:
+> > > > > > > 1. There is no deterministic latency for I/O completion. It depends on
+> > > > > > > both the hardware and the software stack (bio/request queues and the
+> > > > > > > block scheduler). Sometimes the latency is short; at other times it can
+> > > > > > > be quite long. In such cases, a high-priority thread performing operations
+> > > > > > > such as mprotect, unmap, prctl_set_vma, or madvise may be forced to wait
+> > > > > > > for an unpredictable amount of time.
+> > > > > >
+> > > > > > But does that actually happen?  I find it hard to believe that thread A
+> > > > > > unmaps a VMA while thread B is in the middle of taking a page fault in
+> > > > > > that same VMA.  mprotect() and madvise() are more likely to happen, but
+> > > > > > it still seems really unlikely to me.
+> > > > >
+> > > > > It doesn’t have to involve unmapping or applying mprotect to
+> > > > > the entire VMA—just a portion of it is sufficient.
+> > > >
+> > > > Yes, but that still fails to answer "does this actually happen".  How much
+> > > > performance is all this complexity in the page fault handler buying us?
+> > > > If you don't answer this question, I'm just going to go in and rip it
+> > > > all out.
+> > > >
 > > >
-> > 
-> > Thanks, I can add this to the series once you complete the required testing.
-> > 
-> 
-> I am still running more tests, but looking more into it. Setting
-> force_dma_unencrypted() to true for pKVM guests is wrong, as the
-> guest shouldn’t try to decrypt arbitrary memory as it can include
-> sensitive information (for example in case of virtio sub-page
-> allocation) and should strictly rely on the restricted-dma-pool
-> for that.
+> > > Hi Matthew (and Lorenzo, Jan, and anyone else who may be
+> > > waiting for answers),
+> > >
+> > > As promised during LSF/MM/BPF, we conducted thorough
+> > > testing on Android phones to determine whether performing
+> > > I/O in `filemap_fault()` can block `vma_start_write()`.
+> > > I wanted to give a quick update on this question.
+> > >
+> > > Nanzhe at Xiaomi created tracing scripts and ran various
+> > > applications on Android devices with I/O performed under
+> > > the VMA lock in `filemap_fault()`. We found that:
+> > >
+> > > 1. There are very few cases where unmap() is blocked by
+> > >    page faults. I assume this is due to buggy user code
+> > >    or poor synchronization between reads and unmap().
+> > > So I assume it is not a problem.
+> > >
+> > > 2. We observed many cases where `vma_start_write()`
+> > >    is blocked by page-fault I/O in some applications.
+> > >    The blocking occurs in the `dup_mmap()` path during
+> > >    fork().
+> > >
+> > > With Suren's commit fb49c455323ff ("fork: lock VMAs of
+> > > the parent process when forking"), we now always hold
+> > > `vma_write_lock()` for each VMA. Note that the
+> > > `mmap_lock` write lock is also held, which could lead to
+> > > chained waiting if page-fault I/O is performed without
+> > > releasing the VMA lock.
+> > >
+> > > My gut feeling is that Suren's commit may be overshooting,
+> > > so my rough idea is that we might want to do something like
+> > > the following (we haven't tested it yet and it might be
+> > > wrong):
+> > >
+> > > diff --git a/mm/mmap.c b/mm/mmap.c
+> > > index 2311ae7c2ff4..5ddaf297f31a 100644
+> > > --- a/mm/mmap.c
+> > > +++ b/mm/mmap.c
+> > > @@ -1762,7 +1762,13 @@ __latent_entropy int dup_mmap(struct mm_struct
+> > > *mm, struct mm_struct *oldmm)
+> > >         for_each_vma(vmi, mpnt) {
+> > >                 struct file *file;
+> > >
+> > > -               retval = vma_start_write_killable(mpnt);
+> > > +               /*
+> > > +                * For anonymous or writable private VMAs, prevent
+> > > +                * concurrent CoW faults.
+> > > +                */
+> > > +               if (!mpnt->vm_file || (!(mpnt->vm_flags & VM_SHARED) &&
+> > > +                                       (mpnt->vm_flags & VM_WRITE)))
+> > > +                       retval = vma_start_write_killable(mpnt);
+> > >                 if (retval < 0)
+> > >                         goto loop_out;
+> > >                 if (mpnt->vm_flags & VM_DONTCOPY) {
+> >
+> > Maybe a little bit off topic. This is an interesting idea. It seems
+> > possible we don't have to take vma write lock unconditionally. IIUC
+> > the write lock is mainly used to serialize against page fault and
+> > madvise, right? I got a crazy idea off the top of my head. We may be
+> > able to just take vma write lock iff vma->anon_vma is not NULL.
+> >
+> > First of all, write mmap_lock is held, so the vma can't go or be
+> > changed under us.
+> >
+> > Secondly, if vma->anon_vma is NULL, it basically means either no page
+> > fault happened or no cow happened, so there is no page table to copy,
+> > this is also what copy_page_range() does currently. So we can shrink
+> > the critical section to:
+> >
+> > if (vma->anon_vma) {
+> >     vma_start_write_killable(src_vma);
+> >     anon_vma_fork(dst_vma, src_vma);
+> >     copy_page_range(dst_vma, src_vma);
+> > }
+> >
+> > But page fault can happen before write mmap_lock is taken, when we
+> > check vma->anon_vma, it is possible it has not been set up yet. But it
+> > seems to be equivalent to page fault after fork and won't break the
+> > semantic.
+>
+> Re-reading Suren's commit log for fb49c455323ff8
+> ("fork: lock VMAs of the parent process when forking"),
+> it seems that vm_start_write() is used to protect
+> against a race where anon_vma changes from NULL to
+> non-NULL during fork. In that scenario, we hold the
+> mmap_lock write lock, but not vma_start_write(), so a
+> concurrent anon_vma_prepare() could still install an
+> anon_vma.
+>
+> "    A concurrent page fault on a page newly marked read-only by the page
+>     copy might trigger wp_page_copy() and a anon_vma_prepare(vma) on the
+>     source vma, defeating the anon_vma_clone() that wasn't done because the
+>     parent vma originally didn't have an anon_vma, but we now might end up
+>     copying a pte entry for a page that has one.
+> "
+>
+> If that is the case, then your change does not work.
+>
+> Nowadays, nobody calls anon_vma_prepare(vma) directly.
 
-??
+I see callers? Am I imagining them? :)
+https://elixir.bootlin.com/linux/v7.0.9/A/ident/anon_vma_prepare
 
-Where does force_dma_unencrypted() cause arbitary memory passed into
-the DMA API to be decrypted? That should never happen???
+> Instead, vmf_anon_prepare() is used, and we always
+> require the mmap_lock read lock before calling
+> __anon_vma_prepare(). As a result, anon_vma cannot
+> transition from NULL to non-NULL during fork.
 
-Jason
+Right, yes the mmap read lock is required for that.
+
+>
+> So the original race condition has effectively
+> disappeared.
+
+Err the page tables? All the other cases which require page table copying?
+
+Concurrent faults mean that copy_page_range() and faulting with vma->anon_vma
+_or_ any of the multiple cases mentioned elsewhere.
+
+And who knows what else serialises on that.
+
+>
+> You also mentioned the madvise() case. If I understand
+> correctly, madvise() should take mmap_lock before
+> modifying anon_vma. Only some parts of madvise() can
+> support per-VMA locking. Therefore, we probably do not
+> need:
+>
+> if (vma->anon_vma) {
+> vma_start_write_killable(src_vma);
+> ...
+> }
+
+I like how you hand wave the VMA lock operations in madvise() :)
+
+(Maybe) guard regions being present cause page tables to be copied, they're
+installed under VMA (read) lock, and can race now.
+
+And it sets traps for future changes - introducing more horrible edge case race
+conditions in fork is just a big nope nope nope.
+
+This isn't an area to play around in.
+
+>
+> >
+> > Anyway, just a crazy idea, I may miss some corner cases.
+>
+> To me, it seems that we could remove vma_start_write()
+> entirely now. Or is that an even crazier idea?
+
+As above that'd be totally broken. NAK.
+
+>
+> Thanks
+> Barry
+
+Thanks, Lorenzo
 
