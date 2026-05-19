@@ -1,81 +1,85 @@
-Return-Path: <linuxppc-dev+bounces-21164-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21165-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9161DCD4F5B
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 May 2026 14:28:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8ADD6CD4F5B
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 May 2026 14:35:37 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gKcTg1wLVz2yL8;
-	Wed, 20 May 2026 00:28:07 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::829"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779200887;
-	cv=none; b=jtbJa3+LmdSp/U6q3+9OpSPrKwH/5Xl8Us1iwaTG5M7TmND9GHHBfjymdTalekesoZTuGoZk5IwD88fq/QxZ8HXA99W2F5KuY4WF5xzCRTSYimsFw/u+bB1PBWN7dcIWmUAQm+oCL3JXF36iriSMsf6esBvYy9g+sr5bJnSjw3hf8L6bEixn0G+iHhwJ1wiFMOXReL+72Z5w9IBVzjOskWbEbRAfy3Oqnah5DUQHJFPOa7d1S/b8zylDKQxpYNXaL2sJBqshhQIgJrO7AnRPmKR+BorxR7oqr5bL//m7jF0zFoTsVPiigPZBQutqB3cbXGbq4ye3fkLH+eVhQF3qxw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gKcfH712sz2yR5;
+	Wed, 20 May 2026 00:35:35 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::736"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779201335;
+	cv=none; b=POdp7lDrBlR3oHGk3PE9HCnrrpcu0dwtYAO4Jrw4OwZ3Nf6HIaTfxzbKwetW6XC0/r72qznGkGnBRErTyMJyocc2lSN4KgGwtExylHtUNQmKvcVdpe9Xak8BJZ/E2QIw+gRTyTPJvarRWwU7RPnvJWym4+yDo4iarPk55MhkyliFACWWYXCILTwUhQ1eX61kHcdvlCGPtFVpqSebpqym/TN85zcfoinj0AgTF1ASBIS6NMm1H8e14QmpvHqWflGx9M7skDAwKCG8ciXn29G89z/nZV1QCVjxdQ87IIYYvHA6sME50rxXo9Xcyf7hji4rRgM3H8ePmd4KrvF9oZgjTg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1779200887; c=relaxed/relaxed;
-	bh=FTIuQdBXtpQH67pVdVz1Fjrx/oRpQ8R86tVZsSSuQBc=;
+	t=1779201335; c=relaxed/relaxed;
+	bh=oQZO5nTRmEQFRCy1SP5NN6DtrD69wZAHlR442WwrJB4=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=nXDaTU/qFOgptGdMH4kSHIsfgvecgkAftNkgtJQOO4aAqG9K3slBxzBSb81kQMQWMmAD084hCZGdcKiQ7myhdIutPzBJM9UyGwkKrzX/8crziL19XRPjuQ/Co6AGgpZRzz9GDJtWQZ8K7A6vP78ZgH55r+9h1ejU893rfjeBAMSvIv4/LzVheaHYjXUL02ApDsi+1I+COtWtFFRgFraeBbPIRTEfymuYCFQU+dJnXW+jWv+3KZIiwZ2cjnP+Q1zlVq0FPIRg1DOEKWnXRth4hXUoPkMDP4Xs4vsrF7yiJRahIF1z3DZlN8eEN4lBHeeSZe3zGserAdfy+2jnJG0Lew==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=ASqfTKOm; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::829; helo=mail-qt1-x829.google.com; envelope-from=smostafa@google.com; receiver=lists.ozlabs.org) smtp.mailfrom=google.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
+	 Content-Type:Content-Disposition:In-Reply-To; b=DfnA2WvT5Xrb/IW30FtxfOkhlIfzOkYsH792f270vWM3ywjfswkgASAOeSLRK4hUqkPfI4rrT8XmQLeEHTpGFNE7B5RFmxXhbOqdAXkT0i9UtSZKv2H9O3sFfV/66Rr6xlXt8CqQzncpxwG/aaoD/Xq1+JZMx1wY3rJQe9teH74lxS8VE4Io2YkxYSqrKyupt9bgZgqi15VHbx1cnvKGPzkablXSjeZ/2PaGvg16nO2Ox4uui1wT87moWkw2xMuSm3NVjs7sdwyHKRks0St4qxb2n3rqHbRBQ9C7jQPF3lNDCcvLMDblP0N0N9Yfi9cTfnrKGhfm7BxWVtEyJ7xPBQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ziepe.ca; dkim=pass (2048-bit key; secure) header.d=ziepe.ca header.i=@ziepe.ca header.a=rsa-sha256 header.s=google header.b=Y1vUUj1x; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::736; helo=mail-qk1-x736.google.com; envelope-from=jgg@ziepe.ca; receiver=lists.ozlabs.org) smtp.mailfrom=ziepe.ca
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ziepe.ca
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=ASqfTKOm;
+	dkim=pass (2048-bit key; secure) header.d=ziepe.ca header.i=@ziepe.ca header.a=rsa-sha256 header.s=google header.b=Y1vUUj1x;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::829; helo=mail-qt1-x829.google.com; envelope-from=smostafa@google.com; receiver=lists.ozlabs.org)
-Received: from mail-qt1-x829.google.com (mail-qt1-x829.google.com [IPv6:2607:f8b0:4864:20::829])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=ziepe.ca (client-ip=2607:f8b0:4864:20::736; helo=mail-qk1-x736.google.com; envelope-from=jgg@ziepe.ca; receiver=lists.ozlabs.org)
+Received: from mail-qk1-x736.google.com (mail-qk1-x736.google.com [IPv6:2607:f8b0:4864:20::736])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gKcTf1vksz2xRw
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 May 2026 00:28:05 +1000 (AEST)
-Received: by mail-qt1-x829.google.com with SMTP id d75a77b69052e-50d864c23bdso1051cf.1
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 May 2026 07:28:05 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gKcfG3zS1z2yQH
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 May 2026 00:35:33 +1000 (AEST)
+Received: by mail-qk1-x736.google.com with SMTP id af79cd13be357-90ea08cc5ceso640425685a.2
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 May 2026 07:35:33 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20251104; t=1779200883; x=1779805683; darn=lists.ozlabs.org;
+        d=ziepe.ca; s=google; t=1779201331; x=1779806131; darn=lists.ozlabs.org;
         h=in-reply-to:content-transfer-encoding:content-disposition
          :mime-version:references:message-id:subject:cc:to:from:date:from:to
          :cc:subject:date:message-id:reply-to;
-        bh=FTIuQdBXtpQH67pVdVz1Fjrx/oRpQ8R86tVZsSSuQBc=;
-        b=ASqfTKOmLxRZUUcdg/K9tmDVBfp58JN37v5qr+RC/THukKT9Ah1H86EeJ83bUX7R3U
-         PG7BSdGNTvaYrWdzP6LLcCtv2ekvbwgqSRIDtb/XSnPQlg/C7vL+m4BiwMhwozjAyhmY
-         OR0EK5KDJbv/EYidx8f6o04Lse0AIZonrKDkIO5L14gGHGPazeSiZR8z+V125hD2RwFV
-         3OCtFD4QglsQdlIlUgZu4KuooVHwxXJfvhk9CanFLzQoAN0BZB24U5DpG6mzTXY/EobB
-         rSWUyLrMWh65kBQlNFg8RRGGBkw2ylf1CxJSlJU/YGyO9FLGItJM1EYHdOtT6MGfH0Uk
-         StFg==
+        bh=oQZO5nTRmEQFRCy1SP5NN6DtrD69wZAHlR442WwrJB4=;
+        b=Y1vUUj1xHB9bFdW+tGGVMIrmMkqnLGzuPAb/ygZDgT8DmabLEE4FMFmHSz6ecE+1YW
+         BRzzgbDa6Ghq/2nmN4ksmiVrAISilEncMksUUwfKcbOwhDXP4On+hSvjLNLdlI+NADYl
+         QPjzTXPRthggcPSq/FaPX4wCSomOZ3LfsjpAU/TSMcTRWJUZaufxcR4+MnddsYUah9os
+         eNr7oMWQsdeHmZMmFOflJwGBpuBu5M8CFugY7CX0noZRIlTx/TzPKWdFljF3mbBybnAM
+         3RDmcN6nsfhkhyuXMfJSLDmawUq31qDG5LyzjY2DxFyuEOk+dKlxgHeqDgrOse8wKIef
+         vj8w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1779200883; x=1779805683;
+        d=1e100.net; s=20251104; t=1779201331; x=1779806131;
         h=in-reply-to:content-transfer-encoding:content-disposition
          :mime-version:references:message-id:subject:cc:to:from:date:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=FTIuQdBXtpQH67pVdVz1Fjrx/oRpQ8R86tVZsSSuQBc=;
-        b=sLeXPMvOV7dNyEX6WBv8wBtq4XmLxjowwU9sKD4iq6pc0qPNo3TNKN3JxSgR/ddsVw
-         CvtSev8TFN+sMKUOEdGJS04Cik6dgYpLBL5z2RQsA/ZXeGRxphCk/xlyF17tHrzGwlDV
-         i3Gup/uekpjI3L+zpbt/t4ZxOM2RIMFgaFp/jAY6NyRl/n/10I6pOU87G3X+VqkscCb4
-         by4DyqA9SsjrVS1OpVcumx2ddKAKR6CL5SFEaE5JjiA2Z17dveqt1Fdo7He2fBErzEId
-         S+VhYexbtIWsZgOZ2t0HIlWBJK6Y/+M7BGB8I0X+TRCcJE29NNdTRSuXUCs1/bL0CJa+
-         AC0g==
-X-Forwarded-Encrypted: i=1; AFNElJ+GYIU8ZEuDxJDgucOyIk1pAJWaNZe6LrpY6Jd9j8yO3E01H3615ucnaumeuanGitcXBOi/239DeIUiQtU=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YxWjgJe8cect+hbuMvtN/4PllIlDWnacRKv7g+yDLX2vSVPer89
-	ckGASsUgX57pkhbwilZaF/zCnxr+cJPiilfnrxnTnIggje865dYic7K2wueOWZ9YZA==
-X-Gm-Gg: Acq92OEYgXMykN85Q5VADXX3cp9muVF6Ey6k9a/e1wwmlDXpt0nPO+ncwbwbdocHWaX
-	PQnfG9EwyGzwe/A9kKivHY217fsoAVb1BA5HqY0sLS+bcrd/JzZ1my8gUZCQP5sqKtJPsc451Lb
-	tCriWDBCtjb6eRzWIUOQGf+NWdxOTuWKdMGjuwKwH0wlLLS3dEpbqgxj3SMgGPAhlMcmXr9dWPk
-	DmOtb4dSezCb7rQgEZWM/8QvscY39NQl7Dgpx/6eomSq5s9+L/UtIgbIoF9uKXzrTvrrw0d0qpM
-	3i6eYmwl0cIG7+jVJYYFo17Ju8c/Wdf6ZUcT49qCzbtWLsTyg7adSLxHzBSon+ZZMda1xQC3IHM
-	SB9Kaw+U+4UQ/MYGlvgL72Jj9AQQV+0OwIu87uPjNHIK7i+hXX2omzqJ7bu89lK1JsMQPD/vqzB
-	QiAdt0v28D5P2e69egFAOlX6VWOy88U/e/NMu5NQQI7IDRDRjliIJpdnhTWEJR3hsYcovdKA4MR
-	4rY
-X-Received: by 2002:ac8:5cd0:0:b0:516:4f62:85ee with SMTP id d75a77b69052e-5167b6a87a6mr33333931cf.19.1779200882847;
-        Tue, 19 May 2026 07:28:02 -0700 (PDT)
-Received: from google.com (136.41.155.104.bc.googleusercontent.com. [104.155.41.136])
-        by smtp.gmail.com with ESMTPSA id 00721157ae682-7cc9cbb0404sm37077347b3.42.2026.05.19.07.27.58
+        bh=oQZO5nTRmEQFRCy1SP5NN6DtrD69wZAHlR442WwrJB4=;
+        b=YrMVHglEZHS3mrke19GP2k5veoyKjqhmWEr0WoKx9gfEYnnGKRvW6aDPVXC8F2IKHV
+         3ed+tuG3JjZvCCQ5k/Z5nhndpE2kovSKX9ZaKNlysAEjSZ2CNzysYqlVO4ITkaxPGStA
+         OL72o4OImQJbGUff285Faj0w6tlbM98BN4drokcqtP6Ks+FLn2roriI+qdE2EJn/RPui
+         Yyy56DD3iCKsDilDz+0xItdtd2X3fuppfKFhps9hT4p7YJyMZkL3IgfltLdwvPQ6z53Y
+         Y8DaouPsIqjFGjUyFFsY2dIhQlar/+O8pFI+38ZpUG97J/igH6ucRQsobrqXv+ElYWc2
+         QHtg==
+X-Forwarded-Encrypted: i=1; AFNElJ8O7rAPAWfT5nCs8VBBTa17GQ7MB4nIqmlJ0dtTfbrpFZlBOWUMRXlGPUcRfH6amMDoSgGyyRd0EdH2vIs=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YyqmPeHlrHatghK1iTkbUHAkcjE0g2ZdnyiU5JPEJJ71CC7Lv6T
+	nqO7FKDGNztIfxeUc+OrV7dISYVnSY0UznjPa9YG2utmeHa7VHVTUSy9GUtHuSs+04I=
+X-Gm-Gg: Acq92OHnlJMH0g00UmZytiAx4gmK9FzRBASBdHrKjcJ+z49jra0ptdRybu9iGCFdVHv
+	yw9uFt6deWFybQ4YtEVITVY3iFWaqc2T8aazx528A/CMwWQytimQ5Tl1bW3CBT3xYQBgLs14imJ
+	lhWx9CUZEET2uzWy7xx80wbE2J6I0iXVC8jjIzuNyVrTKO1pyWvcwt1k/bZmHypoxnGhVdKXNiN
+	mIGkqwD05G5PBseT6hW5ahMzZzt50TFmX/4TNEiaQtzLIKgJ14WwSLIIy5AbP5Q8qh/DixKmfuy
+	QxegQKvFl/Vklna+rzVWxVMUiTf3Bqqmfohuw+I07KE9zUISzVi80oBxN4p+PJT/lQiktjlYmbJ
+	xzT80CH2vMGbRPoFrY49tzTl0yhvGf74c49Hp+DUjhZaWhOcKW2QaGOVeeObT2ARX2NRKDV+72V
+	p9USmRAqft/pdWPE7+IbQ7oJ5ywAqV/jjyZEcrhSz8IPvRJ9WzCjOtj5A6n0mtUZSgWJZDXOtGj
+	0BRug==
+X-Received: by 2002:a05:620a:d8a:b0:913:e5bb:3db6 with SMTP id af79cd13be357-913e5bb548amr1506341585a.31.1779201330581;
+        Tue, 19 May 2026 07:35:30 -0700 (PDT)
+Received: from ziepe.ca (crbknf0213w-47-54-130-67.pppoe-dynamic.high-speed.nl.bellaliant.net. [47.54.130.67])
+        by smtp.gmail.com with ESMTPSA id af79cd13be357-910bc83ff00sm1849026185a.26.2026.05.19.07.35.29
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 19 May 2026 07:28:02 -0700 (PDT)
-Date: Tue, 19 May 2026 14:27:54 +0000
-From: Mostafa Saleh <smostafa@google.com>
-To: "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>
-Cc: Jason Gunthorpe <jgg@ziepe.ca>, iommu@lists.linux.dev,
+        Tue, 19 May 2026 07:35:30 -0700 (PDT)
+Received: from jgg by wakko with local (Exim 4.97)
+	(envelope-from <jgg@ziepe.ca>)
+	id 1wPLXd-0000000F7pa-1dCL;
+	Tue, 19 May 2026 11:35:29 -0300
+Date: Tue, 19 May 2026 11:35:29 -0300
+From: Jason Gunthorpe <jgg@ziepe.ca>
+To: Mostafa Saleh <smostafa@google.com>
+Cc: "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, iommu@lists.linux.dev,
 	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
 	linux-coco@lists.linux.dev, Robin Murphy <robin.murphy@arm.com>,
 	Marek Szyprowski <m.szyprowski@samsung.com>,
@@ -100,17 +104,17 @@ Cc: Jason Gunthorpe <jgg@ziepe.ca>, iommu@lists.linux.dev,
 	Sven Schnelle <svens@linux.ibm.com>, x86@kernel.org
 Subject: Re: [PATCH v4 04/13] dma: swiotlb: track pool encryption state and
  honor DMA_ATTR_CC_SHARED
-Message-ID: <agxzanDBmIP54hUz@google.com>
-References: <agW5rhE9n2gDQ0w5@google.com>
+Message-ID: <20260519143529.GD7702@ziepe.ca>
+References: <20260512090408.794195-5-aneesh.kumar@kernel.org>
+ <agSKQrSIhizCXKwx@google.com>
+ <yq5ah5oaa63h.fsf@kernel.org>
+ <agW5rhE9n2gDQ0w5@google.com>
  <yq5apl2y5f96.fsf@kernel.org>
  <agXaby-7L7yS3Vva@google.com>
  <yq5ah5oa59wy.fsf@kernel.org>
  <agxDxdxynp4KEovA@google.com>
  <20260519132911.GA7702@ziepe.ca>
  <agxolksC_1nfO34X@google.com>
- <yq5ah5o3sdn3.fsf@kernel.org>
- <agxt7SFGT7OLMIah@google.com>
- <yq5aecj7sctv.fsf@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -127,71 +131,45 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <yq5aecj7sctv.fsf@kernel.org>
+In-Reply-To: <agxolksC_1nfO34X@google.com>
 
-On Tue, May 19, 2026 at 07:47:48PM +0530, Aneesh Kumar K.V wrote:
-> Mostafa Saleh <smostafa@google.com> writes:
+On Tue, May 19, 2026 at 01:41:42PM +0000, Mostafa Saleh wrote:
+> On Tue, May 19, 2026 at 10:29:11AM -0300, Jason Gunthorpe wrote:
+> > On Tue, May 19, 2026 at 11:04:37AM +0000, Mostafa Saleh wrote:
+> > > On Thu, May 14, 2026 at 08:13:25PM +0530, Aneesh Kumar K.V wrote:
+> > > > >> 
+> > > > >> What I meant was that we need a generic way to identify a pKVM guest, so
+> > > > >> that we can use it in the conditional above.
+> > > > >
+> > > > > I have this patch, with that I can boot with your series unmodified,
+> > > > > but I will need to do more testing.
+> > > > >
+> > > > 
+> > > > Thanks, I can add this to the series once you complete the required testing.
+> > > > 
+> > > 
+> > > I am still running more tests, but looking more into it. Setting
+> > > force_dma_unencrypted() to true for pKVM guests is wrong, as the
+> > > guest shouldn’t try to decrypt arbitrary memory as it can include
+> > > sensitive information (for example in case of virtio sub-page
+> > > allocation) and should strictly rely on the restricted-dma-pool
+> > > for that.
+> > 
+> > ??
+> > 
+> > Where does force_dma_unencrypted() cause arbitary memory passed into
+> > the DMA API to be decrypted? That should never happen???
 > 
-> > On Tue, May 19, 2026 at 07:30:16PM +0530, Aneesh Kumar K.V wrote:
-> >> Mostafa Saleh <smostafa@google.com> writes:
-> >> 
-> >> >> > 
-> >> >> > I am still running more tests, but looking more into it. Setting
-> >> >> > force_dma_unencrypted() to true for pKVM guests is wrong, as the
-> >> >> > guest shouldn’t try to decrypt arbitrary memory as it can include
-> >> >> > sensitive information (for example in case of virtio sub-page
-> >> >> > allocation) and should strictly rely on the restricted-dma-pool
-> >> >> > for that.
-> >> >> 
-> >> >> ??
-> >> >> 
-> >> >> Where does force_dma_unencrypted() cause arbitary memory passed into
-> >> >> the DMA API to be decrypted? That should never happen???
-> >> >
-> >> > Sorry, maybe arbitrary is not the right expression again :)
-> >> > I mean that, with emulated devices that use the DMA-API under pKVM,
-> >> > they will map memory coming from other layers (VFS, net) through
-> >> > vitrio-block, virtio-net... These can be smaller than a page, and
-> >> >
-> >> 
-> >> Don't we PAGE_ALIGN these requests?
-> >> 
-> >> dma_direct_alloc
-> >> 	size = PAGE_ALIGN(size);
-> >> 
-> >> iommu_dma_alloc_pages
-> >> 	size_t alloc_size = PAGE_ALIGN(size);
-> >> 
-> >> 
-> >
-> > For allocation, yes, and that's fine because we bring memory from
-> > the pool.
-> > But not for mapping, as dma_direct_map_phys(), where the memory is
-> > allocated from the driver or other parts in the kernel and the page
-> > may be shared with other kernel components.
-> >
-> 
-> But if we are using restricted-dma-pool, we also have:
-> 
-> mem->force_bounce = true;
-> mem->for_alloc = true;
-> 
-> So, will we use the swiotlb buffers for mapping and copy only the shared
-> content into those swiotlb buffers?
+> Sorry, maybe arbitrary is not the right expression again :)
+> I mean that, with emulated devices that use the DMA-API under pKVM,
+> they will map memory coming from other layers (VFS, net) through
+> vitrio-block, virtio-net... These can be smaller than a page, and
+> using force_dma_unencrypted() will share the whole page.
 
-True, that's why under pKVM, force_dma_unencrypted() should never
-cause any memory to be decrypted and so we set it to false.
-As in case of any bugs, the guest does not leak any information,
-similar to what just happened initially here due to missing attrs.
+force_dma_unencrypted() should only trigger swiotlb and that never
+memcpy's more than necessary?
 
-However, as I mentioned to Jason, I think with some tweaks to
-force_dma_unencrypted() we can make it work under pKVM for aligned
-memory which eliminates some of the bouncing.
-I am currently investigating that.
+Where does it do otherwise? That sounds like a bug?
 
-Thanks,
-Mostafa
-
-> 
-> -aneesh
+Jason
 
