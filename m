@@ -1,45 +1,77 @@
-Return-Path: <linuxppc-dev+bounces-21179-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21180-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B0BADCD4F5B
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 May 2026 16:53:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7BE92CD4F5B
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 May 2026 17:20:04 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gKgjl3869z2yCM;
-	Wed, 20 May 2026 02:53:47 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=220.197.31.3
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779209627;
-	cv=none; b=IOLN1wmAmomOWksISDhYSDtINzghMkVgvkOSl1hgczPq5TZ+7MWNmjoewBL1slNo6TWrK59QJzAjHeE3inFnIIjzOCsbe2PdpqyiNZT1mK1JdtldJEZebLwfbvh8QB1Gn7q9edqU9dbhdZ7ggG45XJVZhTQ+fPIQEcN4ao8MSBfkFxjmw3eT4lmcQ0ZnfqPPsXm9kbvJp1d7zv+p91pPWd/klBECh6/6a1EQUdBGC/hVBRTRWuS/Ms6txFcZ6ZiDz7iR4ThZjKtzyewIF4qXMH/MrutqH4KMOqqrDKS9AVfYjJBqh3/v6OONNqLr0zIUUvHJMH/Nky33Hqh6V2PzEA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gKhJ30lZQz2xqv;
+	Wed, 20 May 2026 03:20:03 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779211203;
+	cv=none; b=XBaMD8cht74zD37dKB6mNOP3Opz0JOzyuUGdrz/RvVJSEhP/SA9sh8COvm5jgEWtV2BVCDA/U+nDYRAZh8Rk7VsYR6cAa4uAYclvRRp1QyxNO5xPYDD0+tz2D50BHGooUpsU35ogHxVgzm8Nfz1qMXNxTP2eYyvYhfGtABmDMAxMHycGJR6fOScF2xcorqSbI1aRVapg8HFG7sU1WdJxXKc0Ed9Gzkwb0jOj23JBDV8WQgx0YUn0NdyWbEajvpB2XcccIdJo9pnMv+B43HYWzovfFWo1H91EalMsywAGYNYBAvUjjiPPbg5d9dQSuc/mpkk8a93NOzgGWN/kwLuvoA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1779209627; c=relaxed/relaxed;
-	bh=8sTqgK7mp+Unp9Wpw9+a9pZzPmJnG02xCCH/x+as8c0=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=jZI2q5pF4QPlSLxvBWCUQCDlV4EKRalYNiZsIIk8Ec4XlOLT2rC1KVbMC9N6IEn0tBvRWAFtuo/LOihmUGMELpuEY1cXjj0V4XsaxlC0NLn2BD13DTbgA8Xe0dfrgg485eNdqA5Kuqop0weQRhJJTJAtUcpUDNmVQ73G5REkHDeiHnmR24WymfjcfdtGlikK6PKhkykwXh2OyVNQagQCJO1rUKJJ1zZQiuupjaN2sIfwu+LgfDCoO7tJEUbivG40gq6BmMoAqTIYsvkTZPrAXlWV06buNyYFG8sxzR+v2S84eWFCBtITIypZ1+nTDa/h57Myqa4ccRhEGQsHCRlkWg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=163.com; dkim=pass (1024-bit key; unprotected) header.d=163.com header.i=@163.com header.a=rsa-sha256 header.s=s110527 header.b=Xu0Xi0jk; dkim-atps=neutral; spf=pass (client-ip=220.197.31.3; helo=m16.mail.163.com; envelope-from=18255117159@163.com; receiver=lists.ozlabs.org) smtp.mailfrom=163.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=163.com
+	t=1779211203; c=relaxed/relaxed;
+	bh=rhhqEnu8La1VhGsX5KPnVeC0WvP0XJ8PE7da3JMkWtc=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=m3QKzUiVCv02oaOl09+94PNJl1hcQAZva1+RyRed6A0g1SUbAl1IOe5aYgS34eauRaG4edyzM+9Ge3NYPhTCXrfyiquACHFxgnzII9dF9T0DFNARXN6NmganHAwdL6DfL+fMUM53niM1tfiQYDdDnfuheo3OexbFLAOGt4hk+q/XGkBfPvU7dEd51qKq6hM3vGSe54hEin7Gv31yfNjvBGatNmc3zryc9q2JugsPxQQ0t6jQaBkm8VGUB4dsRnt+AndMCij1mkmJcO9NCfPdbNeLyNLF10YWQDHWhGbZfclnintTZisDcINk2/LluGwIms23McdZBKmnY236IsAdww==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=XbBBzI6B; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=cassel@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=163.com header.i=@163.com header.a=rsa-sha256 header.s=s110527 header.b=Xu0Xi0jk;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=XbBBzI6B;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=163.com (client-ip=220.197.31.3; helo=m16.mail.163.com; envelope-from=18255117159@163.com; receiver=lists.ozlabs.org)
-Received: from m16.mail.163.com (m16.mail.163.com [220.197.31.3])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=cassel@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gKgjj0BGhz2xRw
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 May 2026 02:53:42 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
-	s=s110527; h=Message-ID:Date:MIME-Version:Subject:To:From:
-	Content-Type; bh=8sTqgK7mp+Unp9Wpw9+a9pZzPmJnG02xCCH/x+as8c0=;
-	b=Xu0Xi0jk2I5naAv7BW68F8wp+zf1WAfWvdPqJpYEhtBNnvKKpsM19fbiGRrZPS
-	F4gw7ba0Z9JxW9iVOQ/J8DKU643Vejg2Re33hDXOK5KpZquw7itTVc+DsmEKjzR9
-	6MmRfJR7mRKX3hFEotycCpHiXhM1D+4enlNArWgobDb24=
-Received: from [IPV6:240e:b8f:91b3:d000:7f44:7c72:8a1e:7e64] (unknown [])
-	by gzga-smtp-mtada-g0-2 (Coremail) with SMTP id _____wCHGflilQxqMA8gCQ--.43458S2;
-	Wed, 20 May 2026 00:52:51 +0800 (CST)
-Message-ID: <e0c89a4a-709e-42c6-ad1c-7ec50cc5790c@163.com>
-Date: Wed, 20 May 2026 00:52:49 +0800
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gKhJ20w7xz2xRw
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 May 2026 03:20:01 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sea.source.kernel.org (Postfix) with ESMTP id E531442DD5;
+	Tue, 19 May 2026 17:19:58 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id CE02BC2BCB3;
+	Tue, 19 May 2026 17:19:53 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1779211198;
+	bh=PcQgZeciD6zTFbc/Al2Qw1LpZV+52E8Gj2OSIzC9Qss=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=XbBBzI6BMmc2qi3CO/PJ03L/0BLjVUWyHeawfD9cL5/Zzfr6WScpP28XVy2zTPt2a
+	 ljZxJD6N9ASkopYjKp67ifLM3nvk+x3bNgJjQ3DEk+H1XdQoY5pVyxFITJh/YqBggM
+	 /7KGybNccUvfeB0gUVw/ZKhWVoQwjtBHNrtclXL7HSsCBMRekKdsE56dzcCpTohR21
+	 p+DQfqk6jZLV2LDjGtesHbn1XRL0vzBGFqNoE6wXGIwVw8slCzZUQsO1BZgApb5mii
+	 Cb0kl7/79jR/btL5zrqnIi3y47jE3yZzzRC0fdAju6hYf6U5Zf98CCl3/IBjZZJ0ex
+	 NqYjdckOwMG0w==
+Date: Tue, 19 May 2026 19:19:51 +0200
+From: Niklas Cassel <cassel@kernel.org>
+To: Manivannan Sadhasivam <mani@kernel.org>
+Cc: manivannan.sadhasivam@oss.qualcomm.com,
+	Bjorn Helgaas <bhelgaas@google.com>,
+	Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
+	Oliver O'Halloran <oohall@gmail.com>, Will Deacon <will@kernel.org>,
+	Lorenzo Pieralisi <lpieralisi@kernel.org>,
+	Krzysztof =?utf-8?Q?Wilczy=C5=84ski?= <kwilczynski@kernel.org>,
+	Rob Herring <robh@kernel.org>, Heiko Stuebner <heiko@sntech.de>,
+	Philipp Zabel <p.zabel@pengutronix.de>, linux-pci@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+	linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org,
+	linux-rockchip@lists.infradead.org,
+	Wilfred Mallawa <wilfred.mallawa@wdc.com>,
+	Krishna Chaitanya Chundru <krishna.chundru@oss.qualcomm.com>,
+	Lukas Wunner <lukas@wunner.de>, Richard Zhu <hongxing.zhu@nxp.com>,
+	Brian Norris <briannorris@chromium.org>,
+	Wilson Ding <dingwei@marvell.com>, Frank Li <Frank.Li@nxp.com>
+Subject: Re: [PATCH v7 0/4] PCI: Add support for resetting the Root Ports in
+ a platform specific way
+Message-ID: <agybt3onTAJO2Dl9@ryzen>
+References: <20260310-pci-port-reset-v7-0-9dd00ccc25ab@oss.qualcomm.com>
+ <abFMa6DCGGLUHddA@fedora>
+ <dp2rem4gj7zhfgykvekmcrhq4ticm6m6ido6tbgflwzfcuuwkl@4wuxgle27eyx>
+ <srdn3bspgwff7f7tnst7wzg4us4buifrv7o3ylo527hmuciyl3@6ioyrl6rfhaz>
+ <abk3rU2EDKjkefUD@ryzen>
+ <tgsh3cum6qxrqjzbdeqjsp6bf7cqedj7il77hww3oxecadndin@idjnwib7cz4z>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -53,104 +85,99 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 0/3] PCI: dwc: Cache PCIe capability offset and simplify
- drivers
-To: Manivannan Sadhasivam <mani@kernel.org>
-Cc: bhelgaas@google.com, lpieralisi@kernel.org, kwilczynski@kernel.org,
- jingoohan1@gmail.com, mx@lists.linux.dev, linuxppc-dev@lists.ozlabs.org,
- linux-amlogic@lists.infradead.org, linux-rockchip@lists.infradead.org,
- linux-arm-msm@vger.kernel.org, sophgo@lists.linux.dev,
- linux-riscv@lists.infradead.org, spacemit@lists.linux.dev,
- linux-tegra@vger.kernel.org, linux-pci@vger.kernel.org,
- linux-kernel@vger.kernel.org
-References: <20260509135152.2241235-1-18255117159@163.com>
- <beqy5ykxgo4ianya6r4mahkkyujs6lly475u26vqaemgqsdnhp@2pn5ipczwc34>
- <5cc6fbcc-98eb-4da5-b123-2c04c4d39326@163.com>
- <bejh7em2a67a6wohtakovbg6wqwhjoxkuqtdompsexfm5bbzrf@yqwcqeg6yugq>
- <3464ded9-721a-4eb2-afb6-bbca6fdc8a46@163.com>
- <m332ocvmmdzcgnzmzxmbn2nmczxuhplt5efh64fd22fagrot42@x3okixj5qjb2>
-Content-Language: en-US
-From: Hans Zhang <18255117159@163.com>
-In-Reply-To: <m332ocvmmdzcgnzmzxmbn2nmczxuhplt5efh64fd22fagrot42@x3okixj5qjb2>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-CM-TRANSID:_____wCHGflilQxqMA8gCQ--.43458S2
-X-Coremail-Antispam: 1Uf129KBjvJXoWxJr4rZw1kKFy5Gr48Xr47Jwb_yoW8uFWDpa
-	y3JayFyF4UXF4Iya1Ivw48XF4xKasxJry7Xr95Gry5Arn0vF1rJr4FvrWYkF9rGrWvyr1Y
-	vF4Yq3429r15AaDanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
-	9KBjDUYxBIdaVFxhVjvjDU0xZFpf9x0zRMrW7UUUUU=
-X-Originating-IP: [240e:b8f:91b3:d000:7f44:7c72:8a1e:7e64]
-X-CM-SenderInfo: rpryjkyvrrlimvzbiqqrwthudrp/xtbC7AQcv2oMlWSKKgAA38
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <tgsh3cum6qxrqjzbdeqjsp6bf7cqedj7il77hww3oxecadndin@idjnwib7cz4z>
 
+Hello Mani,
 
-
-On 5/20/26 00:49, Manivannan Sadhasivam wrote:
-> On Wed, May 20, 2026 at 12:27:21AM +0800, Hans Zhang wrote:
->>
->>
->> On 5/20/26 00:15, Manivannan Sadhasivam wrote:
->>> On Wed, May 20, 2026 at 12:09:28AM +0800, Hans Zhang wrote:
->>>>
->>>>
->>>> On 5/19/26 21:57, Manivannan Sadhasivam wrote:
->>>>> On Sat, May 09, 2026 at 09:51:49PM +0800, Hans Zhang wrote:
->>>>>> The DWC PCIe core and its many platform drivers repeatedly call
->>>>>> dw_pcie_find_capability(pci, PCI_CAP_ID_EXP) to obtain the offset of the
->>>>>> PCI Express Capability structure. This is wasteful and makes the code
->>>>>> verbose. And some even search for the PCI_CAP_ID_EXP offset value within
->>>>>> the suspend/resume functions.
->>>>>>
->>>>>
->>>>> Sashiko has flagged some real issues with this series in accessing DBI space
->>>>> very early and 'pci->pcie_cap' being 0.
->>>>
->>>>
->>>> Hi Mani,
->>>>
->>>> We have discussed this issue in the Cadence driver. I think it won't cause
->>>> any problems. Specifically as follows:
->>>>
->>>> https://lore.kernel.org/linux-pci/5823faec-d972-4c77-90ec-a215c686e0a8@163.com/
->>>> """
->>>> As per PCIe r7.0, sec 7.5.1.1.11, Since all PCI Express Functions are
->>>> required to implement the PCI Express Capability structure, which
->>>> must be included somewhere in this linked list.
->>>> """
->>>>
->>>>
->>>>
->>>> Bjorn also responded as follows:
->>>> https://lore.kernel.org/linux-pci/20260505212306.GA744158@bhelgaas/
->>>> """
->>>> It's true that all Root Ports must have a PCIe Capability.
->>>> """
->>>>
->>>
->>> Ok, what about reading the DBI registers very early?
->>
->> Hi Mani,
->>
->> Yes. I have performed the DBI read register operation at the very beginning
->> of the following code.
->>
->>
->> dw_pcie_ep_init()
->>    dw_pcie_get_pcie_cap(pci);
->>
->> dw_pcie_host_init
->>    dw_pcie_get_pcie_cap(pci);
->>
+On Mon, May 18, 2026 at 11:51:56AM +0530, Manivannan Sadhasivam wrote:
+> > 
+> > With the patch above. There is zero difference before/after reset, and all
+> > the BAR tests pass. However, MSI/MSI-X tests still fail with:
+> > 
+> > # pci_endpoint_test.c:143:MSI_TEST:Expected 0 (0) == ret (-110) 
+> > # pci_endpoint_test.c:143:MSI_TEST:Test failed for MSI1
+> > 
+> > ETIMEDOUT.
+> > 
+> > This suggests that pci_endpoint_test on the host side did not receive an
+> > interrupt.
+> > 
+> > I don't know why, but considering that lspci output is now (with the
+> > save+restore) identical, I assume that the problem is not related to
+> > the host. Unless somehow the host will use a new/different MSI address
+> > after the root port has been reset, and we restore the old MSI address,
+> > but looking at the code, dw_pcie_msi_init() is called by
+> > dw_pcie_setup_rc(), so I would expect the MSI address to be the same.
+> > 
 > 
-> These both calls will cause crash on a lot of platforms because these will be
-> reading the DBI registers while the resources are not enabled.
+> Hi Niklas,
+> 
+> When I rebased this series on top of v7.1-rc1, I ended up seeing the issue what
+> you described here (not sure why I didn't see it earlier). So after the Root
+> Port reset, MSI tests fail, but BAR tests succeed. Also, I got IOMMU faults on
+> the host after endpoint triggers MSI.
+> 
+> I investigated it and found that the MSI iATU mapping gets cleared in hw after
+> LDn happens. But the host continues to use the same address/size for the
+> endpoint MSI even after reset. Due to this, the existing checks in
+> dw_pcie_ep_raise_msi_irq() don't pass and the stale MSI iATU mapping gets
+> reused.
+> 
+> The fix would be to clear the mapping in dw_pcie_ep_cleanup(), which gets called
+> as part of the PERST# assert/deassert sequence post LDn and also set
+> msi_iatu_mapped flag to 'false'. This will force dw_pcie_ep_raise_msi_irq() to
+> use fresh iATU mapping when it gets called for the first time:
+> 
+> diff --git a/drivers/pci/controller/dwc/pcie-designware-ep.c b/drivers/pci/controller/dwc/pcie-designware-ep.c
+> index d4dc3b24da60..4ae0e1b55f39 100644
+> --- a/drivers/pci/controller/dwc/pcie-designware-ep.c
+> +++ b/drivers/pci/controller/dwc/pcie-designware-ep.c
+> @@ -1035,6 +1035,11 @@ void dw_pcie_ep_cleanup(struct dw_pcie_ep *ep)
+>  {
+>         struct dw_pcie *pci = to_dw_pcie_from_ep(ep);
+>  
+> +       if (ep->msi_iatu_mapped) {
+> +               dw_pcie_ep_unmap_addr(ep->epc, 0, 0, ep->msi_mem_phys);
+> +               ep->msi_iatu_mapped = false;
+> +       }
+> +
+>         dwc_pcie_debugfs_deinit(pci);
+>         dw_pcie_edma_remove(pci);
+>  }
+> 
+> With this change, MSI works after Root Port reset without any issues on our Qcom
+> endpoint/host setup.
+> 
+> Please test this change on your rockchip setup as well. You have to make sure
+> that dw_pcie_ep_cleanup() is called during PERST# assert/deassert.
+> 
+> I'm going to respin the series with this fix. If you confirm it works for you,
+> then we can merge your Rockchip Root Port change.
 
-Hi Mani,
+I am happy to hear that you managed to find the root cause!
 
-Next, I will check all the DBI register-related issues. It will be fixed 
-in the next version. Thank you very much.
+Hopefully your series can finally move forward :)
 
-Best regards,
-Hans
+While e.g. RK3588 does have a PERST# input GPIO, so it could theoretically
+add a perst_deassert()/assert() function. However, when the EPC support was
+added, you did not want that, since I remember that you said that you only
+wanted that for drivers that required an external refclock.
 
+Thus, for drivers that do not require an external refclock, should we
+perhaps add your suggested code in dw_pcie_ep_linkdown()?
+
+E.g. pcie-tegra194.c does not call dw_pcie_ep_linkdown(), so I'm not
+sure if we can simply move it from dw_pcie_ep_cleanup() to
+dw_pcie_ep_linkdown() either...
+
+Perhaps we need the code in both functions?
+
+(pcie-qcom-ep.c seems to be the only function that will call both
+dw_pcie_ep_linkdown() and dw_pcie_ep_cleanup().)
+
+
+Kind regards,
+Niklas
 
