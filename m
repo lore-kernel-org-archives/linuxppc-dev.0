@@ -1,88 +1,53 @@
-Return-Path: <linuxppc-dev+bounces-21147-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21148-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D60E2CD4F5B
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 May 2026 12:27:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0DFF6CD4F5B
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 May 2026 12:42:23 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gKYpy1lV2z2xwH;
-	Tue, 19 May 2026 22:27:54 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779193674;
-	cv=none; b=eHmaKSY1IhJxqhAHgCHrqifYYW6URW8GbG9V6ZcJBi9rwtjbglmCWs+D5lynaFLYKc8v7mbc8s8kkm9fDw3a+AUfg2rKLUA0LlnmwZKyF268PEJ5ifVcA2mxan6JbKKjAP1crofGaVhUAJK+ulChcobZgRD326RUTwRl2wuHOGWXBBsFX2qqfs/DwGMEvB7C/f7oKcggmA+2v8rRnIiLv7wXY3Y2eYv1QHll66fQ1aD5VEJOkp9RWE47etcNkRTppxpPjrVXPisnrNCGpZ3F4aEoXyLh+QeV0WlwBaZGEP9KT9Q1J/GUfBEEx5PwLTCxr3JdYZJ6++jDJDEBsjXF2g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gKZ7f4MWyz2xwH;
+	Tue, 19 May 2026 22:42:22 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=113.46.200.220
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779194542;
+	cv=none; b=Crg4BKVX721P6y8PKvn01Bb8wzH92uswY97ilOhqxxNgoisKc6WH9sU14JLT3LSVtv2g19KIus+bvOhpALHqTmkX/QQZfK/fFBSowVLr+wpe8kpKaENZdqJ9NymDhYeuk5IdhvO04HWiza97LlhTr2QXX5Ugp1VQEwcEAk4b9KIph4gUKPR/vYoUmB6OSgK6AjxFhbKAwYviaezoVMYfgfH7E8+j/KBJZcVJEzwRLmvN77l1x0/M1tXPFTTwHFLtguo8uZh0jvI1My/UyHPl8Fcy9jPTYsrYAvoEMbMzI2bC6FUtQm+wgvP9ddRn17N/kNqpK4fIDkA5XD42ZzkrkA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1779193674; c=relaxed/relaxed;
-	bh=giGCMqDpZvOYaPXFHvByTdWlAM3FpvuXoYiriOAx8IA=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
-	 MIME-Version:Content-Type; b=br196vEDIbHGvof6U8PVb4JiqfX+v8KLAs2O1oU6IQ2A1hPMNdj1uB3DpNyE2PBetQujcNmLXLNNHmKnd425ebx5Toc+nuGgR/1VeqKPi/lDw1trff2v6UgnhcL+fTy3ZgZkJZ1m0mjgtf1LqiLj3g5dY4MQiDCXXOC9373c/77T3LQHwaRfCPNlUH4MCL0ksBP5mNBIsvoDH4B5hTscdES9rRbe5DzDCu8e5UxU6fERuQeSUaTPWwn9fIxSVh/825X8gLTarulLLJrlk13zcpKoKMzqemEw92J3pHV/DQojgAZLfvC2MSB+LkFJWEmKKwki7jZErKzXmJMZqbzzwg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=s3oeSiK5; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=aneesh.kumar@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1779194542; c=relaxed/relaxed;
+	bh=Ha3U5FJeF61nR13fqhapGOPU2jfN530U4ccDWtKILT0=;
+	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
+	 In-Reply-To:Content-Type; b=iqy2bsH8xNHSMwADn0tPrZfktXHvUyFa3gCoo365icvazUHuh5kbdblKzAcropKPPW//mRBay6Pxn+D+3aXok3EGb/BCuz2XFpcquLt4qvvcmW7V/QA0VCGbkaBXebOtNNNGhC8WRRujQVS7UXD3mkynM0I0rkInDKRVJNXSFXIReWYjsIwkYc3lLUuPfCWOdWn5Bd6wenuskFlBTTamP1D9FfACcq/BNEJGVBmmrCvT5LCNHD7jiSfdN/S2eIwjpfyN30fo4ntnqS60CDdWZ25PMnmFT9oEAK8paB3noH1SRVz9kJX6kPUfVJQ3eVLs7+igbNQRdmDsIXYtmQOfGA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=Imw5scWN; dkim-atps=neutral; spf=pass (client-ip=113.46.200.220; helo=canpmsgout05.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=s3oeSiK5;
+	dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=Imw5scWN;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=aneesh.kumar@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=113.46.200.220; helo=canpmsgout05.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org)
+Received: from canpmsgout05.his.huawei.com (canpmsgout05.his.huawei.com [113.46.200.220])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gKYpx2jPGz2xRw
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 May 2026 22:27:53 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 7BAFC60126;
-	Tue, 19 May 2026 12:27:50 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 32C3FC2BCB3;
-	Tue, 19 May 2026 12:27:41 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1779193670;
-	bh=oh5xPm7aO87/jnT+7JZsE59suIMOg+uwG7kUANkSuuI=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
-	b=s3oeSiK56KkasaDy21lXdRfQDszSI3yWcCMnoLlKn+41S+6zU+PAJqEy2hv5A8k+E
-	 GtFnA/KesjHZTSVPVbtE0+H6iwxJYXPK16SxOeloY4HxuZnWheY5jMOXopVGzmD/tX
-	 x0estu0/tyUMY5mo9AOcnX4J4MK/2WrIN/uHZSCL9536avpyokio0u8SsTUgEz0JZS
-	 krheaIjJ+T0JM9+sgG7PVkxCYbXPfMPvZiIraW7/42ON+11dSoUaWtXRmITP+pQZ6v
-	 MR6kg+qxSRKziQEl05pFMLwJ1RLRLf5uTVMWAk0hWiC8FQd6nHG9rmr97bALIPojqF
-	 8G/bTvvjCUjWw==
-X-Mailer: emacs 30.2 (via feedmail 11-beta-1 I)
-From: Aneesh Kumar K.V <aneesh.kumar@kernel.org>
-To: Mostafa Saleh <smostafa@google.com>
-Cc: iommu@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
-	linux-kernel@vger.kernel.org, linux-coco@lists.linux.dev,
-	Robin Murphy <robin.murphy@arm.com>,
-	Marek Szyprowski <m.szyprowski@samsung.com>,
-	Will Deacon <will@kernel.org>, Marc Zyngier <maz@kernel.org>,
-	Steven Price <steven.price@arm.com>,
-	Suzuki K Poulose <Suzuki.Poulose@arm.com>,
-	Catalin Marinas <catalin.marinas@arm.com>,
-	Jiri Pirko <jiri@resnulli.us>,
-	Jason Gunthorpe <jgg@ziepe.ca>,
-	Petr Tesarik <ptesarik@suse.com>,
-	Alexey Kardashevskiy <aik@amd.com>,
-	Dan Williams <dan.j.williams@intel.com>,
-	Xu Yilun <yilun.xu@linux.intel.com>,
-	linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	Alexander Gordeev <agordeev@linux.ibm.com>,
-	Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
-	Heiko Carstens <hca@linux.ibm.com>,
-	Vasily Gorbik <gor@linux.ibm.com>,
-	Christian Borntraeger <borntraeger@linux.ibm.com>,
-	Sven Schnelle <svens@linux.ibm.com>, x86@kernel.org
-Subject: Re: [PATCH v4 04/13] dma: swiotlb: track pool encryption state and
- honor DMA_ATTR_CC_SHARED
-In-Reply-To: <agxDxdxynp4KEovA@google.com>
-References: <20260512090408.794195-1-aneesh.kumar@kernel.org>
- <20260512090408.794195-5-aneesh.kumar@kernel.org>
- <agSKQrSIhizCXKwx@google.com> <yq5ah5oaa63h.fsf@kernel.org>
- <agW5rhE9n2gDQ0w5@google.com> <yq5apl2y5f96.fsf@kernel.org>
- <agXaby-7L7yS3Vva@google.com> <yq5ah5oa59wy.fsf@kernel.org>
- <agxDxdxynp4KEovA@google.com>
-Date: Tue, 19 May 2026 17:57:39 +0530
-Message-ID: <yq5amrxvshxg.fsf@kernel.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gKZ7X631Wz2xRw
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 May 2026 22:42:14 +1000 (AEST)
+dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
+	c=relaxed/relaxed; q=dns/txt;
+	h=From;
+	bh=Ha3U5FJeF61nR13fqhapGOPU2jfN530U4ccDWtKILT0=;
+	b=Imw5scWNyENSClDDsm0aKoLrou92ErUJJIQORPJEcabYI3utCuQCW0cH+DSoBKS/L+LrRsUXe
+	4/57egHk9L82uCmnWMcuwAKP6ON3NWimFljmUY71FbmH/qt6gcc0LgcZJmkJ1LP6GuoGabpLGiL
+	lCnVxupN6NtwOTzTEcksGao=
+Received: from mail.maildlp.com (unknown [172.19.163.104])
+	by canpmsgout05.his.huawei.com (SkyGuard) with ESMTPS id 4gKYzG6L5wz12LF7;
+	Tue, 19 May 2026 20:35:06 +0800 (CST)
+Received: from dggpemf500011.china.huawei.com (unknown [7.185.36.131])
+	by mail.maildlp.com (Postfix) with ESMTPS id 899C44056A;
+	Tue, 19 May 2026 20:42:08 +0800 (CST)
+Received: from [10.67.109.254] (10.67.109.254) by
+ dggpemf500011.china.huawei.com (7.185.36.131) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.1544.11; Tue, 19 May 2026 20:42:04 +0800
+Message-ID: <3ca700ed-e081-4c62-8289-5bbd4248e630@huawei.com>
+Date: Tue, 19 May 2026 20:42:04 +0800
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -96,139 +61,174 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v13 04/15] arm64: kexec_file: Fix potential buffer
+ overflow in prepare_elf_headers()
+To: Breno Leitao <leitao@debian.org>
+CC: <corbet@lwn.net>, <skhan@linuxfoundation.org>, <catalin.marinas@arm.com>,
+	<will@kernel.org>, <chenhuacai@kernel.org>, <kernel@xen0n.name>,
+	<maddy@linux.ibm.com>, <mpe@ellerman.id.au>, <npiggin@gmail.com>,
+	<chleroy@kernel.org>, <pjw@kernel.org>, <palmer@dabbelt.com>,
+	<aou@eecs.berkeley.edu>, <alex@ghiti.fr>, <tglx@kernel.org>,
+	<mingo@redhat.com>, <bp@alien8.de>, <dave.hansen@linux.intel.com>,
+	<hpa@zytor.com>, <robh@kernel.org>, <saravanak@kernel.org>,
+	<akpm@linux-foundation.org>, <bhe@redhat.com>, <rppt@kernel.org>,
+	<pasha.tatashin@soleen.com>, <pratyush@kernel.org>, <ruirui.yang@linux.dev>,
+	<rdunlap@infradead.org>, <pmladek@suse.com>, <dapeng1.mi@linux.intel.com>,
+	<kees@kernel.org>, <elver@google.com>, <kuba@kernel.org>,
+	<ebiggers@kernel.org>, <lirongqing@baidu.com>, <paulmck@kernel.org>,
+	<sourabhjain@linux.ibm.com>, <coxu@redhat.com>, <jbohac@suse.cz>,
+	<ryan.roberts@arm.com>, <osandov@fb.com>, <cfsworks@gmail.com>,
+	<tangyouling@kylinos.cn>, <ritesh.list@gmail.com>, <adityag@linux.ibm.com>,
+	<guoren@kernel.org>, <songshuaishuai@tinylab.org>, <kevin.brodsky@arm.com>,
+	<vishal.moola@gmail.com>, <junhui.liu@pigmoral.tech>,
+	<wangruikang@iscas.ac.cn>, <namcao@linutronix.de>, <chao.gao@intel.com>,
+	<seanjc@google.com>, <fuqiang.wang@easystack.cn>, <ardb@kernel.org>,
+	<chenjiahao16@huawei.com>, <hbathini@linux.ibm.com>,
+	<takahiro.akashi@linaro.org>, <james.morse@arm.com>, <lizhengyu3@huawei.com>,
+	<x86@kernel.org>, <linux-doc@vger.kernel.org>,
+	<linux-kernel@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
+	<loongarch@lists.linux.dev>, <linuxppc-dev@lists.ozlabs.org>,
+	<linux-riscv@lists.infradead.org>, <devicetree@vger.kernel.org>,
+	<kexec@lists.infradead.org>
+References: <20260511030454.1730881-1-ruanjinjie@huawei.com>
+ <20260511030454.1730881-5-ruanjinjie@huawei.com> <agGkvrg06KNDNfDi@gmail.com>
+From: Jinjie Ruan <ruanjinjie@huawei.com>
+In-Reply-To: <agGkvrg06KNDNfDi@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+X-Originating-IP: [10.67.109.254]
+X-ClientProxiedBy: kwepems200002.china.huawei.com (7.221.188.68) To
+ dggpemf500011.china.huawei.com (7.185.36.131)
 
-Mostafa Saleh <smostafa@google.com> writes:
 
-> On Thu, May 14, 2026 at 08:13:25PM +0530, Aneesh Kumar K.V wrote:
->> >>=20
->> >> What I meant was that we need a generic way to identify a pKVM guest,=
- so
->> >> that we can use it in the conditional above.
->> >
->> > I have this patch, with that I can boot with your series unmodified,
->> > but I will need to do more testing.
->> >
->>=20
->> Thanks, I can add this to the series once you complete the required test=
-ing.
->>=20
->
-> I am still running more tests, but looking more into it. Setting
-> force_dma_unencrypted() to true for pKVM guests is wrong, as the
-> guest shouldn=E2=80=99t try to decrypt arbitrary memory as it can include
-> sensitive information (for example in case of virtio sub-page
-> allocation) and should strictly rely on the restricted-dma-pool
-> for that.
->
-> However, with my patch and setting force_dma_unencrypted() to false
-> on top of this series, it fails on pKVM due to a missing shared
-> attribute as Alexey mentioned, as now SWIOTLB rejects non shared
-> attrs, so, the DMA-API has to pass it. With that, I can boot again:
->
-> diff --git a/kernel/dma/direct.c b/kernel/dma/direct.c
-> index 5103a04df99f..b19aeec03f27 100644
-> --- a/kernel/dma/direct.c
-> +++ b/kernel/dma/direct.c
-> @@ -286,6 +286,8 @@ void *dma_direct_alloc(struct device *dev, size_t siz=
-e,
->  	}
->=20=20
->  	if (is_swiotlb_for_alloc(dev)) {
-> +		attrs |=3D DMA_ATTR_CC_SHARED;
-> +
->  		page =3D dma_direct_alloc_swiotlb(dev, size, attrs);
->  		if (page) {
->  			/*
-> @@ -449,6 +451,8 @@ struct page *dma_direct_alloc_pages(struct device *de=
-v, size_t size,
->  						  &cpu_addr, gfp, attrs);
->=20=20
->  	if (is_swiotlb_for_alloc(dev)) {
-> +		attrs |=3D DMA_ATTR_CC_SHARED;
-> +
->  		page =3D dma_direct_alloc_swiotlb(dev, size, attrs);
->  		if (!page)
->  			return NULL;
-> diff --git a/kernel/dma/direct.h b/kernel/dma/direct.h
-> index 4e35264ab6f8..8ee5bbf78cfb 100644
-> --- a/kernel/dma/direct.h
-> +++ b/kernel/dma/direct.h
-> @@ -92,6 +92,7 @@ static inline dma_addr_t dma_direct_map_phys(struct dev=
-ice *dev,
->  		if (attrs & (DMA_ATTR_MMIO | DMA_ATTR_REQUIRE_COHERENT))
->  			return DMA_MAPPING_ERROR;
->=20=20
-> +		attrs |=3D DMA_ATTR_CC_SHARED;
->  		return swiotlb_map(dev, phys, size, dir, attrs);
->  	}
->=20=20
-> --
->
 
-How about the below?
+On 5/11/2026 5:46 PM, Breno Leitao wrote:
+> On Mon, May 11, 2026 at 11:04:43AM +0800, Jinjie Ruan wrote:
+>> There is a race condition between the kexec_load() system call
+>> (crash kernel loading path) and memory hotplug operations that can
+>> lead to buffer overflow and potential kernel crash.
+>>
+>> During prepare_elf_headers(), the following steps occur:
+>> 1. The first for_each_mem_range() queries current System RAM memory ranges
+>> 2. Allocates buffer based on queried count
+>> 3. The 2st for_each_mem_range() populates ranges from memblock
+>>
+>> If memory hotplug occurs between step 1 and step 3, the number of ranges
+>> can increase, causing out-of-bounds write when populating cmem->ranges[].
+>>
+>> This happens because kexec_load() uses kexec_trylock (atomic_t) while
+>> memory hotplug uses device_hotplug_lock (mutex), so they don't serialize
+>> with each other.
+>>
+>> Add the explicit bounds checking to prevent out-of-bounds access.
+> 
+> It seems you have a TOCTOU type of issue, and this seems to be shrinking
+> the window, but not fully solving it?
 
-modified   kernel/dma/direct.c
-@@ -278,6 +278,10 @@ void *dma_direct_alloc(struct device *dev, size_t size,
- 	}
-=20
- 	if (is_swiotlb_for_alloc(dev)) {
+I plan to fix this issue as follows, and would appreciate your feedback
+on whether this is reasonable.
+
+Sashiko AI code review pointed out there is a TOCTOU (Time-of-Check to
+Time-of-Use) race condition in prepare_elf_headers() between the initial
+pass that counts System RAM ranges and the second pass that populates them.
+If a memory hotplug event occurs between these two steps, the number of
+memory regions may increase, causing an out-of-bounds write to
+the cmem->ranges[] array.
+
+To resolve this and ensure data consistency, this patch:
+
+1. Wraps the counting and population passes with get_online_mems() and
+   crash_hotplug_lock(). This serializes the kexec_file_load() path
+   with concurrent memory hotplug operations, ensuring the memory
+   map remains consistent throughout the header preparation.
+
+2. Adds an explicit boundary check in prepare_elf64_ram_headers_callback().
+   If the number of ranges exceeds the allocated maximum, it now returns
+   -EAGAIN, which indicates a transient race, signaling userspace
+   kexec-tools to retry the syscall instead of leaving the system
+without a loaded crash kernel.
+
+index daf81a873bbd..546be6261177 100644
+--- a/arch/arm64/kernel/machine_kexec_file.c
++++ b/arch/arm64/kernel/machine_kexec_file.c
+@@ -15,6 +15,7 @@
+ #include <linux/kexec.h>
+ #include <linux/libfdt.h>
+ #include <linux/memblock.h>
++#include <linux/memory_hotplug.h>
+ #include <linux/of.h>
+ #include <linux/of_fdt.h>
+ #include <linux/slab.h>
+@@ -40,7 +41,7 @@ int arch_kimage_file_post_load_cleanup(struct kimage
+*image)
+ }
+
+ #ifdef CONFIG_CRASH_DUMP
+-int prepare_elf_headers(void **addr, unsigned long *sz)
++static int __prepare_elf_headers(void **addr, unsigned long *sz)
+ {
+ 	struct crash_mem *cmem;
+ 	unsigned int nr_ranges;
+@@ -59,6 +60,11 @@ int prepare_elf_headers(void **addr, unsigned long *sz)
+ 	cmem->max_nr_ranges = nr_ranges;
+ 	cmem->nr_ranges = 0;
+ 	for_each_mem_range(i, &start, &end) {
++		if (cmem->nr_ranges >= cmem->max_nr_ranges) {
++			ret = -EAGAIN;
++			goto out;
++		}
 +
-+		if (dev->dma_io_tlb_mem->unencrypted)
-+			attrs |=3D DMA_ATTR_CC_SHARED;
+ 		cmem->ranges[cmem->nr_ranges].start = start;
+ 		cmem->ranges[cmem->nr_ranges].end = end - 1;
+ 		cmem->nr_ranges++;
+@@ -81,6 +87,21 @@ int prepare_elf_headers(void **addr, unsigned long *sz)
+ 	kfree(cmem);
+ 	return ret;
+ }
 +
- 		page =3D dma_direct_alloc_swiotlb(dev, size, attrs);
- 		if (page) {
- 			/*
-@@ -451,6 +455,10 @@ struct page *dma_direct_alloc_pages(struct device *dev=
-, size_t size,
- 						  &cpu_addr, gfp, attrs);
-=20
- 	if (is_swiotlb_for_alloc(dev)) {
++int prepare_elf_headers(void **addr, unsigned long *sz)
++{
++	int ret;
 +
-+		if (dev->dma_io_tlb_mem->unencrypted)
-+			attrs |=3D DMA_ATTR_CC_SHARED;
++	crash_hotplug_lock();
++	get_online_mems();
 +
- 		page =3D dma_direct_alloc_swiotlb(dev, size, attrs);
- 		if (!page)
- 			return NULL;
-modified   kernel/dma/direct.h
-@@ -92,6 +92,9 @@ static inline dma_addr_t dma_direct_map_phys(struct devic=
-e *dev,
- 		if (attrs & (DMA_ATTR_MMIO | DMA_ATTR_REQUIRE_COHERENT))
- 			return DMA_MAPPING_ERROR;
-=20
-+		if (dev->dma_io_tlb_mem->unencrypted)
-+			attrs |=3D DMA_ATTR_CC_SHARED;
++	ret = __prepare_elf_headers(addr, sz);
 +
- 		return swiotlb_map(dev, phys, size, dir, attrs);
- 	}
-=20
++	put_online_mems();
++	crash_hotplug_unlock();
++
++	return ret;
++}
+ #endif
 
+> 
+>> Cc: Catalin Marinas <catalin.marinas@arm.com>
+>> Cc: Will Deacon <will.deacon@arm.com>
+>> Cc: Andrew Morton <akpm@linux-foundation.org>
+>> Cc: Baoquan He <bhe@redhat.com>
+>> Cc: Breno Leitao <leitao@debian.org>
+>> Cc: stable@vger.kernel.org
+>> Fixes: 3751e728cef2 ("arm64: kexec_file: add crash dump support")
+>> Closes: https://sashiko.dev/#/patchset/20260323072745.2481719-1-ruanjinjie%40huawei.com
+>> Signed-off-by: Jinjie Ruan <ruanjinjie@huawei.com>
+>> ---
+>>  arch/arm64/kernel/machine_kexec_file.c | 5 +++++
+>>  1 file changed, 5 insertions(+)
+>>
+>> diff --git a/arch/arm64/kernel/machine_kexec_file.c b/arch/arm64/kernel/machine_kexec_file.c
+>> index e31fabed378a..a67e7b1abbab 100644
+>> --- a/arch/arm64/kernel/machine_kexec_file.c
+>> +++ b/arch/arm64/kernel/machine_kexec_file.c
+>> @@ -59,6 +59,11 @@ static int prepare_elf_headers(void **addr, unsigned long *sz)
+>>  	cmem->max_nr_ranges = nr_ranges;
+>>  	cmem->nr_ranges = 0;
+>>  	for_each_mem_range(i, &start, &end) {
+>> +		if (cmem->nr_ranges >= cmem->max_nr_ranges) {
+>> +			ret = -ENOMEM;
+> 
+> -ENOMEM seems to be the the wrong errno. This isn't an allocation
+> failure; it's a transient race. -EBUSY or -EAGAIN would be more honest
 
->
->
-> I will keep testing and let you know how it goes. If there is nothing
-> else required to convert pKVM guests to CC, I can just post the patch
-> separately as it has no dependency on this series.
->
-
-That would be useful. I can then carry the patch as a dependent change,
-which can also be merged separately
-
->
-> Re force_dma_unencrypted(), I am looking into a safe way to use it
-> for pKVM as I beleive it will be useful to eliminate some bouncing.
-> However, that=E2=80=99s not critical for this series and can be added lat=
-er
-> as I am still investigating it, if I reach something I can post it
-> along the pKVM patch above.
->
-> Thanks,
-> Mostafa
->
->>=20
->>=20
->> -aneesh
 
