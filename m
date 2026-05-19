@@ -1,45 +1,119 @@
-Return-Path: <linuxppc-dev+bounces-21174-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21175-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 21089CD4F5B
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 May 2026 16:10:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2FC0CCD4F3C
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 May 2026 16:11:26 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gKflf676mz30GH;
-	Wed, 20 May 2026 02:10:22 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=220.197.31.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779207022;
-	cv=none; b=HJ7+yCokSeoaHBBQqvr44sChjXpgfET3hU0BuSxpd1OP6kfgoCGSjuTy7DtuhsOpugblM0avTIaF4hHf6cD5Ax017O99kx6sCG7hzs+K9PtE/mJJZs4e6TB9gKFJFPkXQR9xIv0FaftDUbp3zqgR5K3x2ZzUFyeJpmOAq+97U63Rfo6zSssXJhiMpw0zYykDmm3WtTq2xrWUBbifSLzJdm4IRjBLUktU14lZCp94Skz1JkrA8+fUa0rfc+5D2+eNxzWS4ntHjJ6p4EDPqWhWww803HY6AY5YavFlbZmAo/L6TDU1x4dZLMpRwNEGvhtfMX37qZPIOPQkpw3AGVIOOg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gKfmr6gCYz3bqQ;
+	Wed, 20 May 2026 02:11:24 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::b12a"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779207084;
+	cv=none; b=djq5N7NesavVV1lIu88X8JT7qICbKaCT7unwAuaV46jwtwhmpzHNa51KQu2x45JpLqIACa00gnM3/p05v5VtQ/C+g+cx+GlmL4e0LZV2KA3VsSMwRZRfPsGB/dWq3c1piZBDG9ZRMbkt+ZTV87LkIr9T2HzFpSgNAolJw6+16mFnbtV/2vmzLFl7qsNf7ZDVS0ykWfbl7BMIs+kbFuKo+Tr0RVJJQUO8py4XEulA54q7/1b0BmWCga7UMcmDKgsllb31hjxoQbzSde84vq9vivqznnlftb/43ozkKC7bODLJG1oEZx9agkhOk5b+RPHba/tsImmudpxUV/EsPXHArA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1779207022; c=relaxed/relaxed;
-	bh=JLeG6x1Y3dfOvgAW0mg1VnFVfEP9lZkOIYEiUHHIyoA=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=Us6+Cx7ecOlePaRTqlU1Q6kwS/do5Ib6paPiv25y/3ux45Mdd26ep6e8JbUvOtORkD7fdLwhXC99uY03USU4omhPGwoXC0o+zIPXEKsvlzHOh3j1Wokt2eCNXf1lNy/BBqm+/ZuDi/ou0HR8HgZro1MNhLk7w6FSYpcR7k84pvpsOdgL+ivsXYU5vKw51gZJ+DdR5efiZC22RI90BW5M/8sG9H+mrMIVvU78GtFbm4A5Pxvx+tjEqD2DHkPiJU42eo8S50r96t7UtYWUsuIUhTXkdTV9GTrtIrh0+A59N+h4gnqQ1/dopYb0gt6b/mt4T+f9TcEbU8U2evBVWeOKXw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=163.com; dkim=pass (1024-bit key; unprotected) header.d=163.com header.i=@163.com header.a=rsa-sha256 header.s=s110527 header.b=JUyt0G87; dkim-atps=neutral; spf=pass (client-ip=220.197.31.5; helo=m16.mail.163.com; envelope-from=18255117159@163.com; receiver=lists.ozlabs.org) smtp.mailfrom=163.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=163.com
+	t=1779207084; c=relaxed/relaxed;
+	bh=UcSuL4+fBcC8SeCa+tlTSs00pii8MZZ+rCZs+NXP3JM=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=JZEbP/g2yJ0MsskGuxqNk7r4o8m0lkduzUY2hOyxTo1muFfPnhdXpT+u442G1ks8HR0+OoIJBEYIJRnZ0u4vsnLr9YxIAmVN8xaaz4DrPPRb3Wg1cEMKTt2MQV0WViGVFu623dzFdi3FsZWvJgQfHW1H7pyQWs4oZMleLbUUq9rxaGrt2MZTXD3uJVz7Rp+t4mB3tC7GXkszgZP4HKtvd+juPfImIq6EyctRuu2OKEvf/Hw+t+ojDQTsVuyyZUm4ZC+mfX6jtlwiINloOQtv6XBmLLmQSz98362Y9dA3dZgxHLyIJGF0p1NT8MhmiXRlJH6xQ7jbD7vf4O/QYiY2hw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ziepe.ca; dkim=pass (2048-bit key; secure) header.d=ziepe.ca header.i=@ziepe.ca header.a=rsa-sha256 header.s=google header.b=M73slNWC; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::b12a; helo=mail-yx1-xb12a.google.com; envelope-from=jgg@ziepe.ca; receiver=lists.ozlabs.org) smtp.mailfrom=ziepe.ca
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ziepe.ca
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=163.com header.i=@163.com header.a=rsa-sha256 header.s=s110527 header.b=JUyt0G87;
+	dkim=pass (2048-bit key; secure) header.d=ziepe.ca header.i=@ziepe.ca header.a=rsa-sha256 header.s=google header.b=M73slNWC;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=163.com (client-ip=220.197.31.5; helo=m16.mail.163.com; envelope-from=18255117159@163.com; receiver=lists.ozlabs.org)
-Received: from m16.mail.163.com (m16.mail.163.com [220.197.31.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=ziepe.ca (client-ip=2607:f8b0:4864:20::b12a; helo=mail-yx1-xb12a.google.com; envelope-from=jgg@ziepe.ca; receiver=lists.ozlabs.org)
+Received: from mail-yx1-xb12a.google.com (mail-yx1-xb12a.google.com [IPv6:2607:f8b0:4864:20::b12a])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gKflc0B0Sz30GG
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 May 2026 02:10:17 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
-	s=s110527; h=Message-ID:Date:MIME-Version:Subject:To:From:
-	Content-Type; bh=JLeG6x1Y3dfOvgAW0mg1VnFVfEP9lZkOIYEiUHHIyoA=;
-	b=JUyt0G87rt7PYlK4QmM8e4B8RwvbyXFoil0YpiApMe3XoreMYWYuEqJf5cPfwf
-	qlBIVDUaQLyHq0JgoD73DUE643nlzgebsfiYDyj3SJ0JmWnZ7d0U+bjJkV9ql9SY
-	HGrtIli4iTrWBVdI6Ps9vODOFptHtzla5d5m36vbO5yK4=
-Received: from [IPV6:240e:b8f:91b3:d000:9130:b3d8:6241:39fd] (unknown [])
-	by gzga-smtp-mtada-g0-4 (Coremail) with SMTP id _____wBXXrU4iwxqGKJPCQ--.44368S2;
-	Wed, 20 May 2026 00:09:29 +0800 (CST)
-Message-ID: <5cc6fbcc-98eb-4da5-b123-2c04c4d39326@163.com>
-Date: Wed, 20 May 2026 00:09:28 +0800
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gKfmr17w6z30GG
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 May 2026 02:11:24 +1000 (AEST)
+Received: by mail-yx1-xb12a.google.com with SMTP id 956f58d0204a3-65c21049dafso3319132d50.2
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 May 2026 09:11:23 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=ziepe.ca; s=google; t=1779207082; x=1779811882; darn=lists.ozlabs.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=UcSuL4+fBcC8SeCa+tlTSs00pii8MZZ+rCZs+NXP3JM=;
+        b=M73slNWCDb0cQ0gwVj1/v9mPwVJg4L3MARdVGKFeLs/E1So3NnJZekE4atYu+ooFo9
+         TlH5CUuGD3TPoNJAT9wRnUUe5srpA284vxsJjff7a7O1wWWanH10QGvlqu+OZzoI7u3a
+         BbNPZaVbgWaZNOgeZOW7+D/0U94KzuW+4vLCeYMBYWerWgGYZXu0vJm17TBv6sTtogYp
+         CytRy4x0gAvtNLS84Jn8fPl2ZoWg2RJwFZV/jBsqQ6ZirdL2xCC4XIPbz/6zGS7O2K6w
+         T4YwETPXkM+vGIS5fSulfpY6eptaEgvda9OZB7XENKlth7HRc7rQxxcsdWCbAZeVhL1x
+         tzBw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1779207082; x=1779811882;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=UcSuL4+fBcC8SeCa+tlTSs00pii8MZZ+rCZs+NXP3JM=;
+        b=bLiwaS17+WyO7dnADeXoN5Kh2tXTtDkU9mW32qD+GwGyY0rDCcp1lEvCEnvVysXoyk
+         0lfADih1rMX62ooIenvHp3t62l9zey8WhwTNw4rTa1GmBMKwGou3Wh897eftNIUIMnsE
+         KnFS+1Dw/nRqgi0p6BCntSZEiSrc446/iLg0+VKSV1UvsuH9nTFor6TI+165wbm4gLj5
+         xFpdoVyHATl7jjupAh0l/7EuWf4xZH1Hg9OWfKntUwUgqTNfWAqQbFmGqDawqHWw2ZBA
+         xGLZlu942bGgsso+lsrZ5BpOcaBmaX7FqWWkIPem6Hm6QL77V4LZzuJE0jrCGZyIt9hc
+         EuUA==
+X-Forwarded-Encrypted: i=1; AFNElJ8Wv2u3iGBcWkM00nDcE3jvNjXXTfu2HhapfLvpe5RnOn2iSp3bkUlRSiGqMZ6bWnrRbewsf2hih4ZnX7U=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YxLQ0OMFVKSeCYtfAGxdtHc08YuKNvujZof7cl0g/RN4ntdZSWZ
+	/78ipQufthApCIUWuhEkAjoidxfCacy5MVoLV1drFvZv7qJhNpq3kwtk2jL+WRcMK58=
+X-Gm-Gg: Acq92OHZxde4he4WRRyfs2lgQXhh5p2Mks4RqQh3g/OIskyRGgTZpCHAar6EQj7I+9T
+	e5PvpIrEpkISy4wJlAo07zgEQkXvr2/hN/4SkdpW3v2zsSrqlYlnBgqT4S0ox3xI4F8HHwq5XyV
+	Arlbg2HhjRWp79Z8damzTU3pu4AgbW8ZnMB44WONXx8eXpYTD/b5tpYK0oadIbu5Y7Dn4ZDUE/C
+	w6TgepD4oNqdfP8YG7MZImV7adfN6PhFLSpUQMnMzl15ZufhXHZOtkWD/4UstnilOT09vROLBEZ
+	BqwC3kMc/k+0lTij5evAT/yb3i8sPnJTzfNuO6E2O9wySTEEjzXjkwJPC9ZiHxBGpNE/2o1a3kO
+	CKTJ08IFaZdhHqUOqZcuOJPJxQg0DRikl/gr/l9a5WhCCwRxAcAuaPvvdQoC0AaxVJg/LHeWYIW
+	MVGghJ7tvrkDydb9x3NIG1gT7VnBj89K5/fDX2PwQV1z1VRBNRKCcZWiYa+hfunfnq+956+sIuf
+	nPx3Q==
+X-Received: by 2002:a05:690e:148b:b0:65e:18a4:3021 with SMTP id 956f58d0204a3-65e22839e72mr21408719d50.52.1779207081601;
+        Tue, 19 May 2026 09:11:21 -0700 (PDT)
+Received: from ziepe.ca (crbknf0213w-47-54-130-67.pppoe-dynamic.high-speed.nl.bellaliant.net. [47.54.130.67])
+        by smtp.gmail.com with ESMTPSA id 6a1803df08f44-8ca36086a61sm95500586d6.4.2026.05.19.09.11.20
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 19 May 2026 09:11:20 -0700 (PDT)
+Received: from jgg by wakko with local (Exim 4.97)
+	(envelope-from <jgg@ziepe.ca>)
+	id 1wPN2O-0000000FGo6-1YPM;
+	Tue, 19 May 2026 13:11:20 -0300
+Date: Tue, 19 May 2026 13:11:20 -0300
+From: Jason Gunthorpe <jgg@ziepe.ca>
+To: "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>
+Cc: Mostafa Saleh <smostafa@google.com>, iommu@lists.linux.dev,
+	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+	linux-coco@lists.linux.dev, Robin Murphy <robin.murphy@arm.com>,
+	Marek Szyprowski <m.szyprowski@samsung.com>,
+	Will Deacon <will@kernel.org>, Marc Zyngier <maz@kernel.org>,
+	Steven Price <steven.price@arm.com>,
+	Suzuki K Poulose <Suzuki.Poulose@arm.com>,
+	Catalin Marinas <catalin.marinas@arm.com>,
+	Jiri Pirko <jiri@resnulli.us>, Petr Tesarik <ptesarik@suse.com>,
+	Alexey Kardashevskiy <aik@amd.com>,
+	Dan Williams <dan.j.williams@intel.com>,
+	Xu Yilun <yilun.xu@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
+	linux-s390@vger.kernel.org,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	Alexander Gordeev <agordeev@linux.ibm.com>,
+	Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
+	Heiko Carstens <hca@linux.ibm.com>,
+	Vasily Gorbik <gor@linux.ibm.com>,
+	Christian Borntraeger <borntraeger@linux.ibm.com>,
+	Sven Schnelle <svens@linux.ibm.com>, x86@kernel.org
+Subject: Re: [PATCH v4 04/13] dma: swiotlb: track pool encryption state and
+ honor DMA_ATTR_CC_SHARED
+Message-ID: <20260519161120.GO7702@ziepe.ca>
+References: <yq5ah5oaa63h.fsf@kernel.org>
+ <agW5rhE9n2gDQ0w5@google.com>
+ <yq5apl2y5f96.fsf@kernel.org>
+ <agXaby-7L7yS3Vva@google.com>
+ <yq5ah5oa59wy.fsf@kernel.org>
+ <agxDxdxynp4KEovA@google.com>
+ <yq5amrxvshxg.fsf@kernel.org>
+ <yq5abjebsaid.fsf@kernel.org>
+ <20260519152741.GM7702@ziepe.ca>
+ <yq5a8q9fs7ud.fsf@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -53,117 +127,44 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 0/3] PCI: dwc: Cache PCIe capability offset and simplify
- drivers
-To: Manivannan Sadhasivam <mani@kernel.org>
-Cc: bhelgaas@google.com, lpieralisi@kernel.org, kwilczynski@kernel.org,
- jingoohan1@gmail.com, mx@lists.linux.dev, linuxppc-dev@lists.ozlabs.org,
- linux-amlogic@lists.infradead.org, linux-rockchip@lists.infradead.org,
- linux-arm-msm@vger.kernel.org, sophgo@lists.linux.dev,
- linux-riscv@lists.infradead.org, spacemit@lists.linux.dev,
- linux-tegra@vger.kernel.org, linux-pci@vger.kernel.org,
- linux-kernel@vger.kernel.org
-References: <20260509135152.2241235-1-18255117159@163.com>
- <beqy5ykxgo4ianya6r4mahkkyujs6lly475u26vqaemgqsdnhp@2pn5ipczwc34>
-Content-Language: en-US
-From: Hans Zhang <18255117159@163.com>
-In-Reply-To: <beqy5ykxgo4ianya6r4mahkkyujs6lly475u26vqaemgqsdnhp@2pn5ipczwc34>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-CM-TRANSID:_____wBXXrU4iwxqGKJPCQ--.44368S2
-X-Coremail-Antispam: 1Uf129KBjvJXoWxGryfKrW8tFykKr18tF1fJFb_yoW5ArWkpa
-	y5tF4IyF18tF4S9a12v3WDuF13t3Z7AFyDJ39xW34SvFya9F17Wr10yrWftF97JrW2qr1a
-	kF45ta47uFs5JFUanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
-	9KBjDUYxBIdaVFxhVjvjDU0xZFpf9x0zRiiSJUUUUU=
-X-Originating-IP: [240e:b8f:91b3:d000:9130:b3d8:6241:39fd]
-X-CM-SenderInfo: rpryjkyvrrlimvzbiqqrwthudrp/xtbC7BqOMmoMizpQVQAA3Y
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <yq5a8q9fs7ud.fsf@kernel.org>
 
-
-
-On 5/19/26 21:57, Manivannan Sadhasivam wrote:
-> On Sat, May 09, 2026 at 09:51:49PM +0800, Hans Zhang wrote:
->> The DWC PCIe core and its many platform drivers repeatedly call
->> dw_pcie_find_capability(pci, PCI_CAP_ID_EXP) to obtain the offset of the
->> PCI Express Capability structure. This is wasteful and makes the code
->> verbose. And some even search for the PCI_CAP_ID_EXP offset value within
->> the suspend/resume functions.
->>
+On Tue, May 19, 2026 at 09:35:30PM +0530, Aneesh Kumar K.V wrote:
+> Yes, that also resulted in simpler and cleaner code.
 > 
-> Sashiko has flagged some real issues with this series in accessing DBI space
-> very early and 'pci->pcie_cap' being 0.
-
-
-Hi Mani,
-
-We have discussed this issue in the Cadence driver. I think it won't 
-cause any problems. Specifically as follows:
-
-https://lore.kernel.org/linux-pci/5823faec-d972-4c77-90ec-a215c686e0a8@163.com/
-"""
-As per PCIe r7.0, sec 7.5.1.1.11, Since all PCI Express Functions are 
-required to implement the PCI Express Capability structure, which
-must be included somewhere in this linked list.
-"""
-
-
-
-Bjorn also responded as follows:
-https://lore.kernel.org/linux-pci/20260505212306.GA744158@bhelgaas/
-"""
-It's true that all Root Ports must have a PCIe Capability.
-"""
-
-
-
-Mani, should I continue to make the judgment that 'pci->pcie_cap' might 
-be 0 as per your instructions?
-
-
-
-Best regards,
-Hans
-
-
+> swiotlb_tbl_map_single
+> 	/*
+> 	 * If the physical address is encrypted but the device requires
+> 	 * decrypted DMA, use a decrypted io_tlb_mem and update the
+> 	 * attributes so the caller knows that a decrypted io_tlb_mem
+> 	 * was used.
+> 	 */
+> 	if (!(*attrs & DMA_ATTR_CC_SHARED) && force_dma_unencrypted(dev))
+> 		*attrs |= DMA_ATTR_CC_SHARED;
 > 
-> Those needs to be fixed.
-> 
-> - Mani
-> 
->> Add a cached pcie_cap field in struct dw_pcie and a helper
->> dw_pcie_get_pcie_cap() to initialize it once at probe time. Then replace
->> all explicit capability searches with the cached value across the
->> entire dwc subtree.
->>
->> Hans Zhang (3):
->>    PCI: dwc: Add pcie_cap field and helper in designware header
->>    PCI: dwc: Use cached PCIe capability offset in core
->>    PCI: dwc: Simplify platform drivers using cached capability offset
->>
->>   drivers/pci/controller/dwc/pci-imx6.c         |  6 +--
->>   .../pci/controller/dwc/pci-layerscape-ep.c    |  4 +-
->>   drivers/pci/controller/dwc/pci-meson.c        |  4 +-
->>   .../pci/controller/dwc/pcie-designware-ep.c   |  4 +-
->>   .../pci/controller/dwc/pcie-designware-host.c |  4 +-
->>   drivers/pci/controller/dwc/pcie-designware.c  | 16 +++---
->>   drivers/pci/controller/dwc/pcie-designware.h  | 17 +++++++
->>   drivers/pci/controller/dwc/pcie-dw-rockchip.c | 15 +++---
->>   drivers/pci/controller/dwc/pcie-eswin.c       |  3 +-
->>   drivers/pci/controller/dwc/pcie-fu740.c       |  2 +-
->>   drivers/pci/controller/dwc/pcie-intel-gw.c    |  2 +-
->>   drivers/pci/controller/dwc/pcie-qcom-ep.c     | 11 ++--
->>   drivers/pci/controller/dwc/pcie-qcom.c        | 24 ++++-----
->>   drivers/pci/controller/dwc/pcie-sophgo.c      |  8 ++-
->>   drivers/pci/controller/dwc/pcie-spacemit-k1.c |  5 +-
->>   drivers/pci/controller/dwc/pcie-spear13xx.c   |  6 +--
->>   drivers/pci/controller/dwc/pcie-tegra194.c    | 51 +++++++------------
->>   17 files changed, 85 insertions(+), 97 deletions(-)
->>
->>
->> base-commit: 70390501d1944d4e5b8f7352be180fceb3a44132
->> -- 
->> 2.34.1
->>
-> 
+> 	if (mem->unencrypted != !!(*attrs & DMA_ATTR_CC_SHARED))
+> 		return (phys_addr_t)DMA_MAPPING_ERROR;
 
+Yeah, exactly that is so much clearer now that the mem->unecrypted is
+tied directly.
+
+That logic is reversed though, the incoming ATTR_CC doesn't matter for
+swiotlb, that is just the source of the memcpy.
+
+/* swiotlb pool is incorrect for this device */
+if (mem->unencrypted != force_dma_unencrypted(dev))
+    return (phys_addr_t)DMA_MAPPING_ERROR;
+
+/* Force attrs to match the kind of memory in the pool */
+if (mem->unencrypted)
+     *attrs |= DMA_ATTR_CC_SHARED;
+else
+     *attrs &= ~DMA_ATTR_CC_SHARED;
+
+
+Attrs should be forced to whatever memory swiotlb selected.
+
+Jason
 
