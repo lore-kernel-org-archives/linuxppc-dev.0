@@ -1,119 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-21168-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21169-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9BFDDCD4F3C
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 May 2026 14:49:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C0830CD4F5B
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 May 2026 14:54:57 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gKcyg2WRNz2yRG;
-	Wed, 20 May 2026 00:49:47 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::729"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779202187;
-	cv=none; b=KxOvrVuEQRje7PteM0WlNialjGsYACdDLAKL1EXQ6rl16ftC6jPgE4piFy+/jwC3NXF2bD/q9BVk00dVFeQp3otYFdZDDhdU6zlSuV2JHkSxDZXMpqjQmW/sTxNMQh/V9V0epJVUA+CC7P0alTKNSFmYadcQboPccZFVE4F/cr1O7sjUKy0M8wZtxhCectZSXteF/WFq+NpxbiRYs7Tw6wNzGFLIkiC0bET5xsXTPGiWx68umX8Cen6MO8YAPfPSKog4Ru+t157cDLJGyPHC+kvZP1rwpKMQKAM5OkvxxbLRGttlgfKpz1y2x2LNq8J4d+VWnckU5n272Ud6CR9PlQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gKd4c2PV0z2yS0;
+	Wed, 20 May 2026 00:54:56 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779202496;
+	cv=none; b=hN75cixuDAfbZorWPmY5qt55gn5IovF0Ots3z8WfQyxnDgml0URDRz+dGt38NSVHi12Z7K6Sc9QYi8W99PU0ui1fMZkbRe1dZ9sAZBrqV8+BqwKmRnUep2JuQYNabIksV4r5DiYQ2sJrWvNDPSpggzhSidi6zKI0EsW3mP3xfvnS4FPXgcstTMdG9svEHlwzhBkrCPONQZ5YMbv9yCSBMm3gxvyGj9bP3ObYm4WHEMgjTuklbJYnMP7p7ujG/ONtQr6K8JhvJ3KqQTY+BlPl6odsKv+Kic1F90VO/8I88flsVry/ZKeKMOWN5pKaZkBb35HUaSOe5hm5nLacGn24bw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1779202187; c=relaxed/relaxed;
-	bh=mf/OGUGuIRiuTTXYie0rUXZGqyUUzS6jn0J2l0v1FPs=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=BzJclQn2+qREVfcIbRG+FsQ4VqUWZrkxjYYIZ5bD8mBmuWKjQIvtbZoQeMqAIdIEooMWIywut4HOpzWMzwl1RGj/SnWb64aDd9V4of03hCmfGE/Hu+5JLwSjDb4TI1QN9lvRDrYoiH5uvP7Ikb+Vye4MW8aJ+md9J7LvJaM+I9irT0jurJOxhmkD8vl/XCa09pWZ5Wcby0lllbKv9Z6HU2koHnv3I9DHSsDPq+0bf5hbsU0UOvv7gM/lEMcPJwNnq7TlpFyjj4+lDQPbLBzKo338vHdOqsddYKksHZSXLd4Y4eVOPAUCQ1Rie1GbaNxp6CIFBY4xcR5YYf/WgBEg+Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ziepe.ca; dkim=pass (2048-bit key; secure) header.d=ziepe.ca header.i=@ziepe.ca header.a=rsa-sha256 header.s=google header.b=aIe0+QUI; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::729; helo=mail-qk1-x729.google.com; envelope-from=jgg@ziepe.ca; receiver=lists.ozlabs.org) smtp.mailfrom=ziepe.ca
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ziepe.ca
+	t=1779202496; c=relaxed/relaxed;
+	bh=jXXCHnnXm6J+7IdVEF67li849mIRrrMUbIp+mCicGjc=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=UifPT7HrmjrXa48bc/61FzXyPD7Qg2jJzy2PFJ7F4tv8J+cji7GSRuhjz5KNE0CV5DJKy7nlTHoggI596nasXzbnMoW9yMlhPCc2v+ftAvAZGaEFs/kB8Q+WOPoK89TOZXMrIT8MT7mYy4v+fQePYIgCuxH24bPqN/BI9/YZFpBqDmNvJGP++PatAkcGg6Q+3He1yGleX4hFuaAybrNJQIbwpb5mMtyijxYNvjucdCny1toMSkO7xuBonG6E2YtH9pzgH7bUA1gS7ox5mC2CRaeX8/zptfjR0gweKdQkEMnE4eaNYYpdPNxP5j950BCdDZAaM87K/1A7uiYBR5Yhvw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=eonNaHjg; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=ziepe.ca header.i=@ziepe.ca header.a=rsa-sha256 header.s=google header.b=aIe0+QUI;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=eonNaHjg;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=ziepe.ca (client-ip=2607:f8b0:4864:20::729; helo=mail-qk1-x729.google.com; envelope-from=jgg@ziepe.ca; receiver=lists.ozlabs.org)
-Received: from mail-qk1-x729.google.com (mail-qk1-x729.google.com [IPv6:2607:f8b0:4864:20::729])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gKcyf130Kz2xRw
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 May 2026 00:49:45 +1000 (AEST)
-Received: by mail-qk1-x729.google.com with SMTP id af79cd13be357-90cbb2b50ccso286933585a.0
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 May 2026 07:49:45 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ziepe.ca; s=google; t=1779202183; x=1779806983; darn=lists.ozlabs.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=mf/OGUGuIRiuTTXYie0rUXZGqyUUzS6jn0J2l0v1FPs=;
-        b=aIe0+QUIm9W9c8frg7fClbM2NMY+jld82ZHFUY8vLKpTdnaAKl+i0YgPxiYOzmlmi1
-         mi/S7pTOu5jVOM7+enu7N9DtjG0HGM18qA+mjVYXW/efLi+ScQpa5CPM09Ooqt2m64x9
-         Bx9necnFmXoJ3M45oKXIxjTpfHwKZDp3mb9xDTlPc3IeXmEVY6YsYMsHc2SY/8kB+1Bf
-         v2Fr9zKbVTKlwqrVacvGulqnFce4RJDU45v/hSeC0CYDoD5/coFBupSHZuLSrUiXciNf
-         16Ljpz90DnWbjU8MZCx3IPitzsjoWXIyVkyF0urIRidM6tcKyOeMSWIezyUhjgM3z4/V
-         7agw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1779202183; x=1779806983;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=mf/OGUGuIRiuTTXYie0rUXZGqyUUzS6jn0J2l0v1FPs=;
-        b=M6woeWMi4HYMpvQnUHxjqImbtdmLX2LHajwtMTyQLecO319nm91GZgF9xdGSoAQidR
-         GbwnLZuYZJne6qPSc2C/sqFwEMa3HA/lmxuOfLw/vlMt/BVRJ1cVr89XnrAxpIfK2brq
-         m4CCrdBfP2hhFhbU2W+FuqsHQHuj1mpqKmrh/X5Ao0wlxxTbl3hTWakbw3KR0o11TETc
-         zJ7NlUrURlOkNuMVWVbKaLSyNdKJ/UPexRZ/wsMW2bm4bVdM/z4PwFrPNIrCsibzzJfA
-         TRgwl8uaNTI+gVYy7wSsONsFCNb1faMiz8an4qC2maf8JVQClB60Too9hN1B3psTMGch
-         XbUw==
-X-Forwarded-Encrypted: i=1; AFNElJ+AAGLf7betYIlLn4wD7zu9kHNjfj9jC1qHMvFRkmokMdOtEUwe3mijSeaYxczyvr2J5TzpIURis3Me95E=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YzUctCbYa0aQYjCKsOOvKH6ttFu9Dd8YRF1eL5Jb9nSzf0Xqyaq
-	GX8rTi9JO0/8+a6Bpp5u5QzieRgMg/E4SDpT4C97gy/IgiTg/5ME2aR5t8sOwDULows=
-X-Gm-Gg: Acq92OGLlRM0Dv2CyoYXfN43zirQMYO0LxjD0bWn0YaYW3lfbmm/n2bnSFcqKWMMD1H
-	crQ/ijwS0hsQHG2EefbK7jtXYsBxMnOo4MfudYv66EZPYFLqvozWa9qxXxrPAWnINh84FUgZvr2
-	ZfbM4A8CFPzO9sOn7DkztaM8j62K3RGg09f+h2D9fPBODbnfIdWPXn27rc29oSfJYZpMwo/AxSg
-	3165yMyDbaQeZof8BjcWMFWML0BaHlkvSjsjYIXE6IBMnhCcs+2qsoJoj1UxSBmlTKH4eexI6pd
-	eATntp4fLj19X4qPvI2Cxb4tk6Xz7471JBGgmvvQYHieAI0x/5q3MY53XV0oOWVrxFbcpqbc+7I
-	B8LixXW1ltiAxbGcPuplYiEbk5yA9QasuRG7g4lH6rOHakwmzXkwMskzbPkTaNO/Vija+m761xm
-	oF2kE7+5L+b6kXqyaKgcSyn/mluKi0QklGCnAkRC/aEpkyKsPPlXdSKYiq2sWUWZN5eNA10qgJ4
-	dG79w==
-X-Received: by 2002:a05:620a:1a14:b0:911:411e:2e4b with SMTP id af79cd13be357-911cd46df94mr3109274985a.23.1779202183344;
-        Tue, 19 May 2026 07:49:43 -0700 (PDT)
-Received: from ziepe.ca (crbknf0213w-47-54-130-67.pppoe-dynamic.high-speed.nl.bellaliant.net. [47.54.130.67])
-        by smtp.gmail.com with ESMTPSA id af79cd13be357-910ba36e68csm1851459085a.10.2026.05.19.07.49.42
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 19 May 2026 07:49:42 -0700 (PDT)
-Received: from jgg by wakko with local (Exim 4.97)
-	(envelope-from <jgg@ziepe.ca>)
-	id 1wPLlO-0000000F92G-1VL1;
-	Tue, 19 May 2026 11:49:42 -0300
-Date: Tue, 19 May 2026 11:49:42 -0300
-From: Jason Gunthorpe <jgg@ziepe.ca>
-To: Mostafa Saleh <smostafa@google.com>
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, iommu@lists.linux.dev,
-	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-	linux-coco@lists.linux.dev, Robin Murphy <robin.murphy@arm.com>,
-	Marek Szyprowski <m.szyprowski@samsung.com>,
-	Will Deacon <will@kernel.org>, Marc Zyngier <maz@kernel.org>,
-	Steven Price <steven.price@arm.com>,
-	Suzuki K Poulose <Suzuki.Poulose@arm.com>,
-	Catalin Marinas <catalin.marinas@arm.com>,
-	Jiri Pirko <jiri@resnulli.us>, Petr Tesarik <ptesarik@suse.com>,
-	Alexey Kardashevskiy <aik@amd.com>,
-	Dan Williams <dan.j.williams@intel.com>,
-	Xu Yilun <yilun.xu@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
-	linux-s390@vger.kernel.org,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	Alexander Gordeev <agordeev@linux.ibm.com>,
-	Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
-	Heiko Carstens <hca@linux.ibm.com>,
-	Vasily Gorbik <gor@linux.ibm.com>,
-	Christian Borntraeger <borntraeger@linux.ibm.com>,
-	Sven Schnelle <svens@linux.ibm.com>, x86@kernel.org
-Subject: Re: [PATCH v4 04/13] dma: swiotlb: track pool encryption state and
- honor DMA_ATTR_CC_SHARED
-Message-ID: <20260519144942.GJ7702@ziepe.ca>
-References: <yq5ah5oaa63h.fsf@kernel.org>
- <agW5rhE9n2gDQ0w5@google.com>
- <yq5apl2y5f96.fsf@kernel.org>
- <agXaby-7L7yS3Vva@google.com>
- <yq5ah5oa59wy.fsf@kernel.org>
- <agxDxdxynp4KEovA@google.com>
- <20260519132911.GA7702@ziepe.ca>
- <agxolksC_1nfO34X@google.com>
- <20260519143529.GD7702@ziepe.ca>
- <agx3j6Oc8QivZ3RG@google.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gKd4Z1y76z2yRM
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 May 2026 00:54:54 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by tor.source.kernel.org (Postfix) with ESMTP id 29A5860126;
+	Tue, 19 May 2026 14:54:52 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3FA54C2BCB3;
+	Tue, 19 May 2026 14:54:48 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1779202491;
+	bh=UC51TFFAdYAAEu3Hn1AG/aOnKPwgH/g/o3sh2GAq0HA=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=eonNaHjgLxe9B7jJYmeAsLPwIsWasueEug+6sELaPW6zhqCBLKCVV0eXFoe5YqR/1
+	 S8bKD+SEITM0ZovBZW83+t7ypM3/0bjK1YzUjckPvv6g5Kdkmpcd6F2rAwUS7oEgNw
+	 0kq4U3FeqHKd2W/uPZnkkMGekIuuSoakXy+iDUcby8YgheVKxHyrVDAzj2DEu552s9
+	 NYwahujt0vth4USrNPOpkPip6bcEeKyVlm1Lo7eE96penUWhmF8uZW0o+BdWceb0sn
+	 V9q+MgwaQynubQNmFwKwcPDI8qJpxB5heitif+1RJfxLJS2ZJ3mpkvmuu2wVKeWzqw
+	 riPzTDUCCAeuw==
+Message-ID: <eb236109-1284-43ad-bd0f-1a39765fa30f@kernel.org>
+Date: Tue, 19 May 2026 16:54:31 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -127,20 +59,86 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <agx3j6Oc8QivZ3RG@google.com>
+User-Agent: Mozilla Thunderbird
+Subject: Re: crypto/ahash.c:1073:1: warning: the frame size of 1040 bytes is
+ larger than 1024 bytes
+To: Geert Uytterhoeven <geert@linux-m68k.org>,
+ kernel test robot <lkp@intel.com>
+Cc: Herbert Xu <herbert@gondor.apana.org.au>, oe-kbuild-all@lists.linux.dev,
+ linux-kernel@vger.kernel.org, linux-mips@vger.kernel.org,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, wireguard@lists.zx2c4.com
+References: <202605100125.l4JVHppO-lkp@intel.com>
+ <CAMuHMdXPeUnjN__PvY+HQg+cSxKe-RLnyT-A5KGe=4cmjnUNbg@mail.gmail.com>
+Content-Language: fr-FR
+From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+In-Reply-To: <CAMuHMdXPeUnjN__PvY+HQg+cSxKe-RLnyT-A5KGe=4cmjnUNbg@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 
-On Tue, May 19, 2026 at 02:45:35PM +0000, Mostafa Saleh wrote:
-> However, it should not alway use SWIOTLB? It can trigger decryption for
-> any memory returned from __dma_direct_alloc_pages() which can come
-> from alloc_pages_node().
 
-The alloc coherent flow is seperate and different, these are not pages
-'passed into the DMA API' but pages fully allocated internally and
-owned by it.
 
-Yes, it should cause decrypted *allocation*.
+Le 11/05/2026 à 08:42, Geert Uytterhoeven a écrit :
+> On Sat, 9 May 2026 at 19:07, kernel test robot <lkp@intel.com> wrote:
+>> FYI, the error/warning still remains.
+>>
+>> tree:   https://eur01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fgit.kernel.org%2Fpub%2Fscm%2Flinux%2Fkernel%2Fgit%2Ftorvalds%2Flinux.git&data=05%7C02%7Cchristophe.leroy2%40cs-soprasteria.com%7Cb57c2e1952ea48b306d508deaf28809f%7C8b87af7d86474dc78df45f69a2011bb5%7C0%7C0%7C639140785686768547%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=MBIlFF0TKur9ZxxdvLflUjFXN8BiEIWx%2FW2eO2rQteM%3D&reserved=0 master
+>> head:   ec89572766744e844df24c27d31c97b4c00f4e07
+>> commit: 9d9b193ed73a65ec47cf1fd39925b09da8216461 crypto: hash - Increase HASH_MAX_DESCSIZE for hmac(sha3-224-s390)
+>> date:   9 months ago
+>> config: mips-eyeq5_defconfig (https://eur01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fdownload.01.org%2F0day-ci%2Farchive%2F20260510%2F202605100125.l4JVHppO-lkp%40intel.com%2Fconfig&data=05%7C02%7Cchristophe.leroy2%40cs-soprasteria.com%7Cb57c2e1952ea48b306d508deaf28809f%7C8b87af7d86474dc78df45f69a2011bb5%7C0%7C0%7C639140785686802803%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=9mLXlRz5JrVhRQ0Ft4c3tQJGrDtlSSmYmd7vZ4pneYc%3D&reserved=0)
+>> compiler: mips64-linux-gcc (GCC) 15.2.0
+>> reproduce (this is a W=1 build): (https://eur01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fdownload.01.org%2F0day-ci%2Farchive%2F20260510%2F202605100125.l4JVHppO-lkp%40intel.com%2Freproduce&data=05%7C02%7Cchristophe.leroy2%40cs-soprasteria.com%7Cb57c2e1952ea48b306d508deaf28809f%7C8b87af7d86474dc78df45f69a2011bb5%7C0%7C0%7C639140785686823501%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=NNAWk0DHq2gD1%2FToE%2FXk75Mz3sKpppwVkpkDG6amzD0%3D&reserved=0)
+>>
+>> If you fix the issue in a separate patch/commit (i.e. not just a new version of
+>> the same patch/commit), kindly add following tags
+>> | Fixes: 9d9b193ed73a ("crypto: hash - Increase HASH_MAX_DESCSIZE for hmac(sha3-224-s390)")
+>> | Reported-by: kernel test robot <lkp@intel.com>
+>> | Closes: https://eur01.safelinks.protection.outlook.com/?url=https%3A%2F%2Flore.kernel.org%2Foe-kbuild-all%2F202605100125.l4JVHppO-lkp%40intel.com%2F&data=05%7C02%7Cchristophe.leroy2%40cs-soprasteria.com%7Cb57c2e1952ea48b306d508deaf28809f%7C8b87af7d86474dc78df45f69a2011bb5%7C0%7C0%7C639140785686842796%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=2M0BnhyxISt3rrzxPXkX4p%2Ba1bIVz%2FhjwSNokIVueuE%3D&reserved=0
+>>
+>> All warnings (new ones prefixed by >>):
+>>
+>>     crypto/ahash.c: In function 'crypto_hash_digest':
+>>>> crypto/ahash.c:1073:1: warning: the frame size of 1040 bytes is larger than 1024 bytes [-Wframe-larger-than=]
+>>      1073 | }
+>>           | ^
+> 
+> This is one of the few defconfigs that still use CONFIG_FRAME_WARN=1024.
+> The default value for 32-bit systems was lifted from 1024 to 1280 in
+> commit 32115734c0ed8b46 ("Increase the default 32-bit build frame size
+> warning limit to 1280 bytes") in v6.18, so perhaps the downgrade to
+> 1024 should be dropped from the following defconfigs:
+> 
+> $ git grep CONFIG_FRAME_WARN=1024
+> arch/mips/configs/eyeq5_defconfig:CONFIG_FRAME_WARN=1024
+> arch/mips/configs/eyeq6_defconfig:CONFIG_FRAME_WARN=1024
+> arch/mips/configs/eyeq6lplus_defconfig:CONFIG_FRAME_WARN=1024
+> arch/mips/configs/lemote2f_defconfig:CONFIG_FRAME_WARN=1024
+> arch/mips/configs/loongson2k_defconfig:CONFIG_FRAME_WARN=1024
+> arch/powerpc/configs/fsl-emb-nonhw.config:CONFIG_FRAME_WARN=1024
 
-Jason
+I agree for that one, lets drop the downgrade, don't know why it was 
+added at the first place as it was the default, most likely someone 
+didn't use make savedefconfig
+
+So feel from to drop that in a treewide cleanup with my Acked-by: 
+Christophe Leroy (CS GROUP) <chleroy@kernel.org>
+
+
+
+> tools/testing/selftests/wireguard/qemu/arch/arm.config:CONFIG_FRAME_WARN=1024
+> tools/testing/selftests/wireguard/qemu/arch/armeb.config:CONFIG_FRAME_WARN=1024
+> tools/testing/selftests/wireguard/qemu/arch/i686.config:CONFIG_FRAME_WARN=1024
+> tools/testing/selftests/wireguard/qemu/arch/m68k.config:CONFIG_FRAME_WARN=1024
+> tools/testing/selftests/wireguard/qemu/arch/mips.config:CONFIG_FRAME_WARN=1024
+> tools/testing/selftests/wireguard/qemu/arch/mipsel.config:CONFIG_FRAME_WARN=1024
+> tools/testing/selftests/wireguard/qemu/arch/powerpc.config:CONFIG_FRAME_WARN=1024
+> 
+> I am not sure about the wireguard selftests: they might use the lower
+> value deliberately for testing?
+> 
+> Gr{oetje,eeting}s,
+> 
+>                          Geert
+> 
+
 
