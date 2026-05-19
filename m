@@ -1,58 +1,84 @@
-Return-Path: <linuxppc-dev+bounces-21197-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21198-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BA92BCD4F54
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 May 2026 22:02:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3ACB9CD4F54
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 May 2026 22:51:48 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gKpYf0n1wz2xK4;
-	Wed, 20 May 2026 08:02:14 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779228134;
-	cv=none; b=HlZB6cXPlsx9XHEr25HmZD+lvV3fAO3XaOinpDRRJaOESAdqaNKUYgcDltRRs2c3a117+ONNgJW8ZaRNydBMe0O0vd12T850s20YBun4e1QOZx7G44Img6WJ1w7c6MZSfN9Z54r/3Luq2eVNxcrqYq0VTZs1SrH/3R7OA1LDaOSeaPWsEAWGJ79F/yKSHpPEwLK6r7RZAepeVV6EOw8VkH0q7xFPacDCMYhfziMKEX3wZvPpxO9DKk6CgAvH17U3XLmJnlxeejYeafybkZRd+9Rczr2K1JG1ePHRFc0HAC4B1iBSa7n4+wtgCRQieh5Y5gGl3JruPZ6C9ezs/oEa3A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gKqfp3xG5z2xKh;
+	Wed, 20 May 2026 08:51:46 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779230640;
+	cv=none; b=Qoq5edyH67umJGBJS1jRhXVxLmbUOBoqIsTGTo3tTU1YH8MJZZIytHUpreoYNvpf6WMZQZ7Uljdd7FMIJYDXUYZb9ay41yE7AS1S6GmaBc5H28sPhcTs6uK1O8b4TQENj4LasKKBLrADncZQ/hDYbCXfWiUBrXuKnrQbOzVKhW5AlW7F8mkxzPLRewX15otMsMoj4QEpwIRdHUGL+LAB1XlQWk2KXbf68TZ+SIipmjLZpXYvvimVxNQkdATV/biZyS/jwJAMPa7qHJL58Hk4QtS0HX1+EaUPPnXwFdy3HvzJm9qAgx3NjMuMbPgT6tSN2awaqP1q+3fpv1HxSXCidw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1779228134; c=relaxed/relaxed;
-	bh=RrgSUFMhpGIkWoOChuhQyLYVDUdtSZljRgOJt705GjA=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=d//Owys6U33v6AGM1h58Pf7xU9y1CwrAf6A+mRK04kQiKf7CGsdja22PF3J7c2lPkDtMIPQ9MrhVgbhVBTaMmRr+SxS3jzh7rjHHkbNwIAG/h1HcYYkjUOy4TMABo6Rqy+oguu3yaS5AQrKWUwsXzrV6z3Zv2K2woQhs/p7yC4yPRx8BvuGzXY/yMjYW+osp4yrVc4HePtFUTQWGzs0i0h7zt5O0mq4/rJIj4B2yYla/LZt1Vgwlq51yxCUYfajPww5D/05zg+50pBXzF38OoOAEYvwco2L87Wjz2JD715xL5RvdrYR/f5tSUliARZWt9Jvw3BVe+VPldNocIf4kEg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=EEiINEmV; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=baohua@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1779230640; c=relaxed/relaxed;
+	bh=4Ckjf65EFcPIldW44SVtWhwPYV6gPOriHiesCHbBBho=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=gAF1SviqamzuV4KgyfBXFcdGxXZxMvcsxZnfekyKm/zmu3WCtJlN4+GPBXAsvhesdq6w2jJR/ssLi4DWTaqWqO4MckJvTsLqET81q1Jt314PvKmRp1BU9uSajrtPrSoLmRsOLwBwVLZQCVSrLTS4Jv6y8UNAN2hYpwlxjirjE3y8HFezLrr12maXNaCHZftpkbZZJVQeEEN7GOWMZDgnG1DYf2dwkMOkd6aoubPOjjgDHGzV5uA+YSxUDZuFAV8jMXrz1x4zcfxBuHap47JLvI9vz7osfeRrgE9NJDtW46wtMiZ7YgeeoFyET/wKvWVrVn0hwthYJGhEPB1UW0KN5g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=oLs9PJrH; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=drc@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=EEiINEmV;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=oLs9PJrH;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=baohua@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=drc@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gKpYc1z88z2xJT
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 May 2026 08:02:12 +1000 (AEST)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id C020060252
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 May 2026 22:02:09 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 784D71F00898
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 May 2026 22:02:09 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1779228129;
-	bh=RrgSUFMhpGIkWoOChuhQyLYVDUdtSZljRgOJt705GjA=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=EEiINEmV/ttnXkHREkmSNrg22w/pd85GQ24kGDom/qX0DitA92kwK7imrN1F7tfHP
-	 /WClIpIcz37rNq9FOtLY4huZKlhKLtBg/gq5tOO1/IYaKENgHCq8w5+Lnv5OFXdXSL
-	 2sIuISEhYHzkbmfjMHN6eKzTUmO8K/tDIrzQnMmRv3D90x14h5TzWDmjPA+zx7T0oZ
-	 IE8SbeYeLv8dhtCTOAuISA3eqbujACiE+Q9q0u8nfuITSR5e6vuWcd5Iclq1d5zdAT
-	 HF4oRjC7RA3KX6/I4zDoQ5jAmNSGhxJ1QKqkbIZT/JE9UU3XCdU3Y9b3mu/a4r3yR1
-	 lk/+recZ8aGvQ==
-Received: by mail-yx1-f54.google.com with SMTP id 956f58d0204a3-651c366f7efso4343998d50.1
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 May 2026 15:02:09 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AFNElJ+irXGopkboIwX/PxSi1zRzbN3neynzTe3AOnS8EIM5AwRVUOzhXoJPm6RqbWB981c8VOAMypmupaAB+Wg=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YyR3Zr9zZim10km6zssJnDNJnmQTd5lX4nEMZw8qgsyfJwuM4Jo
-	w7getwRLC3EMqtY7J3kJKQzBh6X2VrnTe7XU6pjaq7GXFbKz5D3sMwJ04jq4WKTW1wdz8Bzeya2
-	5eZ6XjoelnbZoFyuAiq4/6RJCMutXMpk=
-X-Received: by 2002:a05:690c:38a:b0:7bd:9899:f904 with SMTP id
- 00721157ae682-7c95c7ede6bmr245611007b3.39.1779228128311; Tue, 19 May 2026
- 15:02:08 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gKqTq5blWz2xK4
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 May 2026 08:43:59 +1000 (AEST)
+Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 64JCLbhl610903;
+	Tue, 19 May 2026 22:43:47 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:date:from:in-reply-to:message-id
+	:mime-version:references:subject:to; s=pp1; bh=4Ckjf65EFcPIldW44
+	SVtWhwPYV6gPOriHiesCHbBBho=; b=oLs9PJrHaIvrHFzc5sb3BjKQK+FqaNxEO
+	axO8fCLhFDhMHy/bMVIi28gIS+Tx+1mGaoRrl+YBpab5oDVU1ZDVEXL2u6CD1kNp
+	zYn2jvZ7ZAW/R1tSmXJGsgAMLxjfR1RXnc27+MzSK/62p2wnzJ1ZNgNcH4/f+bBr
+	SzMzDKD5RvoH+1XolXVmtBIVIh/yll9X33B0F5KVD309ZYqwvqvd7IJklvY0sx/6
+	A3bKK1gMmleRGwlO41Vtj1LiQhNLdjY/i/HYpjqbI9kk09uTfazUkJv+pOV9sr/8
+	T/LRGIefosJZaxzG/Beqboh5R8ySacqLKLA+xySr9V5nGOeuhAXqA==
+Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4e6hb8eja6-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 19 May 2026 22:43:46 +0000 (GMT)
+Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma21.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 64JMdHYa021162;
+	Tue, 19 May 2026 22:43:45 GMT
+Received: from smtprelay02.dal12v.mail.ibm.com ([172.16.1.4])
+	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4e73wk4tur-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 19 May 2026 22:43:45 +0000 (GMT)
+Received: from smtpav01.wdc07v.mail.ibm.com (smtpav01.wdc07v.mail.ibm.com [10.39.53.228])
+	by smtprelay02.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 64JMhiWq30343868
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Tue, 19 May 2026 22:43:45 GMT
+Received: from smtpav01.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id A9E1458055;
+	Tue, 19 May 2026 22:43:44 +0000 (GMT)
+Received: from smtpav01.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id C164258059;
+	Tue, 19 May 2026 22:43:43 +0000 (GMT)
+Received: from ltcblue121-lp3.ltc.tadn.ibm.com (unknown [9.5.7.39])
+	by smtpav01.wdc07v.mail.ibm.com (Postfix) with ESMTP;
+	Tue, 19 May 2026 22:43:43 +0000 (GMT)
+From: David Christensen <drc@linux.ibm.com>
+To: "David S . Miller" <davem@davemloft.net>,
+        Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>,
+        Paolo Abeni <pabeni@redhat.com>, Michael Ellerman <mpe@ellerman.id.au>,
+        Nicholas Piggin <npiggin@gmail.com>,
+        Christophe Leroy <christophe.leroy@csgroup.eu>
+Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+        linux-kernel@vger.kernel.org, David Christensen <drc@linux.ibm.com>
+Subject: [RFC PATCH net-next 2/2] powerpc: remove ehea driver references
+Date: Tue, 19 May 2026 17:43:52 -0500
+Message-ID: <20260519224353.1282038-3-drc@linux.ibm.com>
+X-Mailer: git-send-email 2.47.3
+In-Reply-To: <20260519224353.1282038-1-drc@linux.ibm.com>
+References: <20260519224353.1282038-1-drc@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -66,170 +92,72 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <afNM-gIqxpyJ6ro7@casper.infradead.org> <CAGsJ_4w0qcYmukHqsyRd0jomoyYkJjOt8b-Cgp53BgP-8QQghw@mail.gmail.com>
- <afS_L-5XeWIldTXA@casper.infradead.org> <CAGsJ_4wk=SDtgin+84Ev2TamU-JFfmrg_SUay=-tcYmnFvK6Nw@mail.gmail.com>
- <afTpoL3FklpQZNMM@casper.infradead.org> <CAGsJ_4ysMcrmDLSOwBkf7qwCQrcDWeEMXkHDajTJFMLKUk0bSQ@mail.gmail.com>
- <agrWuDNGddNmvMFD@lucifer> <CAGsJ_4zqLfdWoTH9s7FFaqWWj0mESfikYgr7=GcV64qcuXrPxA@mail.gmail.com>
- <CAJuCfpE0WQrB3zJp9qn3jvn5DthS=ttpX7gJJvyEhA_BJGrp5g@mail.gmail.com>
- <CAGsJ_4zgeE3ebEJ+j7GJFzWVoVYHeiOn4dOoOsmWCLA6s=oECQ@mail.gmail.com> <5zdaa5uv5oj27q3taopl3amops57ouxgyfsdveudz4ovmbdw7z@6lwrlyvmhcp2>
-In-Reply-To: <5zdaa5uv5oj27q3taopl3amops57ouxgyfsdveudz4ovmbdw7z@6lwrlyvmhcp2>
-From: Barry Song <baohua@kernel.org>
-Date: Wed, 20 May 2026 06:01:56 +0800
-X-Gmail-Original-Message-ID: <CAGsJ_4yKxg1QugcsJi3WD0KVGJKe-zXycgm5D6cRi9vWtNcpDQ@mail.gmail.com>
-X-Gm-Features: AVHnY4KXMvR35lLgRvdk-7E8dkEjtOPBxVO6EaEmgpy8kErjRkXyQizjBsuo3fM
-Message-ID: <CAGsJ_4yKxg1QugcsJi3WD0KVGJKe-zXycgm5D6cRi9vWtNcpDQ@mail.gmail.com>
-Subject: Re: [PATCH v2 0/5] mm: reduce mmap_lock contention and improve page
- fault performance
-To: "Liam R. Howlett" <liam@infradead.org>
-Cc: Suren Baghdasaryan <surenb@google.com>, Lorenzo Stoakes <ljs@kernel.org>, 
-	Matthew Wilcox <willy@infradead.org>, akpm@linux-foundation.org, linux-mm@kvack.org, 
-	david@kernel.org, vbabka@kernel.org, rppt@kernel.org, mhocko@suse.com, 
-	jack@suse.cz, pfalcato@suse.de, wanglian@kylinos.cn, chentao@kylinos.cn, 
-	lianux.mm@gmail.com, kunwu.chan@gmail.com, liyangouwen1@oppo.com, 
-	chrisl@kernel.org, kasong@tencent.com, shikemeng@huaweicloud.com, 
-	nphamcs@gmail.com, bhe@redhat.com, youngjun.park@lge.com, 
-	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, 
-	loongarch@lists.linux.dev, linuxppc-dev@lists.ozlabs.org, 
-	linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org, 
-	Nanzhe Zhao <nzzhao@126.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTE5MDIyNyBTYWx0ZWRfX1Pyl8qjCtNrh
+ HME/VsLOTH0Mz1Xxe/yruhvdRc8vZDkYtHqNKhel5KnssyBO48QoD5bVXlOZZuSxlEszBnlHHyC
+ OM94vWbW4d9SXZj7vygvWW1uoR+xoAAgoR0SkfNUuynchcDd9DEsoXy7LHFk0Gp1xru3DDQHYso
+ XroFmbpNuY+69o965UQMt5h2siMepuF3DfP8AomK4aXNyv5AXdxw4BC0g8u65IVSusT6gTVOrBe
+ 7+kmkoa8stOg6fhSekAqdiJyMpvawSxtOyKDSGEfR7hTtAGDWPEewxk1rHbTCzUrtKrSxexSEGp
+ eM0S1+q0S4V4DTcj3m01xn8f9fC8c+l85CDCokk04iwFrQ8zvOW6Z0j62svfFkFw/s5up41+bGb
+ OjIUv+GUPinBbhlpnOOEJTKqXcmDqRBckQ+DZ8BdI1NkHQ6WUEMbVPeRcAlMVQBv3ur1dB2rOMq
+ DgINdQ+L7OIUdo0wFOg==
+X-Proofpoint-GUID: K8pxDYP2wMKB5seWxbgLGraxmXlvKrYL
+X-Proofpoint-ORIG-GUID: tZekUGBsXhsgomI0g2COYYzNwB2P0R70
+X-Authority-Analysis: v=2.4 cv=aYBRWxot c=1 sm=1 tr=0 ts=6a0ce7a2 cx=c_pps
+ a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
+ a=NGcC8JguVDcA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
+ a=Y2IxJ9c9Rs8Kov3niI8_:22 a=VnNF1IyMAAAA:8 a=ShowhVjdL_h4nbc8-K8A:9
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-05-19_06,2026-05-18_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ impostorscore=0 adultscore=0 bulkscore=0 suspectscore=0 lowpriorityscore=0
+ clxscore=1015 spamscore=0 phishscore=0 priorityscore=1501 malwarescore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2605130000 definitions=main-2605190227
 
-On Tue, May 19, 2026 at 10:17=E2=80=AFPM Liam R. Howlett <liam@infradead.or=
-g> wrote:
->
-> On 26/05/19 05:14AM, Barry Song wrote:
-> > On Tue, May 19, 2026 at 3:57=E2=80=AFAM Suren Baghdasaryan <surenb@goog=
-le.com> wrote:
-> > >
-> > > On Mon, May 18, 2026 at 4:26=E2=80=AFAM Barry Song <baohua@kernel.org=
-> wrote:
-> > > >
-> > > > On Mon, May 18, 2026 at 5:47=E2=80=AFPM Lorenzo Stoakes <ljs@kernel=
-.org> wrote:
-> > > > >
-> > > > > On Sun, May 17, 2026 at 04:45:15PM +0800, Barry Song wrote:
-> > [...]
-> > > >
-> > > > I think we either need to fix `fork()`, or keep the current
-> > > > behavior of dropping the VMA lock before performing I/O.
-> > >
-> > > I see. So, this problem arises from the fact that we are changing the
-> > > pagefaults requiring I/O operation to hold VMA lock...
-> > > And you want to lock VMA on fork only if vma_is_anonymous(vma) ||
-> > > is_cow_mapping(vma->vm_flags). So, we will be blocking page faults fo=
-r
-> > > anonymous and COW VMAs only while holding mmap_write_lock, preventing
-> > > any VMA modification. On the surface, that looks ok to me but I might
-> > > be missing some corner cases. If nobody sees any obvious issues, I
-> > > think it's worth a try.
->
-> From Barry's description, I think what he is saying is that the vma
-> locking has caused the mmap_lock to become unfair?  I think what is
+Follow-on cleanup after the removal of the IBM eHEA driver in commit
+XXXXXXXXXXXX ("net: ethernet: ibm: remove the ehea driver").
 
-For now, we do not have this problem. Before per-VMA
-locks, we dropped mmap_lock before doing I/O in the
-page-fault path and then retried the page fault. After
-per-VMA locks, we dropped the VMA lock before doing I/O in
-the page-fault path and then retried the page fault.
+Remove the CONFIG_IBM_EHEA entry from ppc64_defconfig and the obsolete
+comment in arch/powerpc/mm/mem.c that referenced the driver.
 
-The problem only starts to exist if we decide to perform
-I/O without releasing the VMA lock =E2=80=94 which is what Matthew
-is suggesting, because it would allow us to rip out a large
-amount of page-fault retry code.
+Signed-off-by: David Christensen <drc@linux.ibm.com>
+---
+ arch/powerpc/configs/ppc64_defconfig | 1 -
+ arch/powerpc/mm/mem.c                | 4 ----
+ 2 files changed, 5 deletions(-)
 
-> implied is that the per-vma locking may stall mmap_lock writes for
-> longer than if the mmap_lock was taken in read mode?  Barry, is that
-> correct?
+diff --git a/arch/powerpc/configs/ppc64_defconfig b/arch/powerpc/configs/ppc64_defconfig
+index 6316ca4df25d..b022d00708f4 100644
+--- a/arch/powerpc/configs/ppc64_defconfig
++++ b/arch/powerpc/configs/ppc64_defconfig
+@@ -210,7 +210,6 @@ CONFIG_BNX2X=m
+ CONFIG_CHELSIO_T1=m
+ CONFIG_BE2NET=m
+ CONFIG_IBMVETH=m
+-CONFIG_EHEA=m
+ CONFIG_IBMVNIC=m
+ CONFIG_E100=y
+ CONFIG_E1000=y
+diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
+index 648d0c5602ec..1f5ad1a59d68 100644
+--- a/arch/powerpc/mm/mem.c
++++ b/arch/powerpc/mm/mem.c
+@@ -370,10 +370,6 @@ int devmem_is_allowed(unsigned long pfn)
+ }
+ #endif /* CONFIG_STRICT_DEVMEM */
+ 
+-/*
+- * This is defined in kernel/resource.c but only powerpc needs to export it, for
+- * the EHEA driver. Drop this when drivers/net/ethernet/ibm/ehea is removed.
+- */
+ EXPORT_SYMBOL_GPL(walk_system_ram_range);
+ 
+ #ifdef CONFIG_EXECMEM
+-- 
+2.47.3
 
-Not the case =E2=80=94 the actual situation is (if we modify the
-current kernel to perform I/O without releasing VMA read locks):
-
-thread 1 PF: lock vma1 read ----  IO ----- ;
-thread 2 PF: lock vma2 read ----- IO ----- ;
-thread 3 PF:  lock vma3 read ---- IO ----- ;
-thread 4 fork:  mmap_lock_write ---- lock vma1, vma2, vma3 write ;
-thread 5 :  take mmap_lock for any read/write reason
-
-Now you can see that thread 4 has to wait for the I/O of
-VMA1, VMA2, and VMA3 to complete, and thread 5 then has to
-wait for thread 4 to release mmap_lock. Both thread 4 and
-thread 5 can become extremely slow, because I/O may be stuck
-anywhere in the bio/request queue or filesystem GC.
-
-So now we have two choices:
-
-1. Change fork() to avoid taking the vma write lock for vma1/2/3 where poss=
-ible;
-2. Keep the current kernel behavior and drop the VMA lock before I/O:
-
-thread 1 PF: lock vma1 read; drop vma1 read_lock ----  IO ----- retry PF
-thread 2 PF: lock vma2 read; drop vma2 read_lock ----- IO ----- retry PF
-thread 3 PF:  lock vma3 read; drop vma3 read_lock ---- IO ----- retry PF
-
-Option 2 is what mainline is currently doing, and what this
-patchset also follows. The only difference in this patchset is
-that page faults are retried under the VMA read lock, rather
-than under mmap_lock as in the current kernel, which is causing
-mmap_lock contention.
-
->
-> Since Android is doing something (according to Barry) that should not be
-> done (according to Willy), both of these together are causing slow down?
-
-The only thing that would cause slowdown is holding the VMA
-lock while performing I/O in the page-fault path, which is not
-happening today. It would only happen if we insist on doing I/O
-under the VMA lock without changing fork().
-
->
-> >
-> > Thanks. Besides the creation of processes via fork(), I
-> > am also beginning to worry about the death of processes.
-> >
-> > One thing that came to my mind this morning
-> > is that when lowmemorykiller decides to kill an app, we
-> > want the memory to be released as quickly as possible so
-> > the new app or user scenario can get memory sooner.
-> >
-> > In that case, if the app being killed is performing I/O
-> > while holding the VMA lock, the unmapping procedure
-> > could end up being blocked as well.
-> >
-> > If we release the VMA lock as we currently do, we allow
-> > process exit to proceed.
-> >
-> > I haven't thought it through very clearly yet, and I
-> > may be wrong. I'd like to do more investigation. I hope
-> > the apps being killed stay very still, but who knows=E2=80=94we
-> > have so many applications in the market.
-> >
-> > Meanwhile, if you have any comments regarding the death
-> > of processes, they would be very welcome.
->
-> The oom killer only cleans out anon/not shared vmas [1].  So, what this
-> would hold up would be the actual process exit path.  Although that
-> would have resources associated with it, the amount of resources should
-> be relatively low compared to the amount freed by the oom reaper, right?
->
-> The other entry point that's mostly to do with android,
-> process_mrelease() [2] will end up in the same  __oom_reap_task_mm()
-> function.
->
-> So, for the most part, the memory will be freed while the file backed
-> vma completes IO and that sounds like the right thing to do anyways.
-
-Thanks very much for your valuable input!
-I=E2=80=99m going to run more experiments to dig deeper into this.
-
->
-> Thanks,
-> Liam
->
-> [1]. https://elixir.bootlin.com/linux/v7.1-rc4/source/mm/oom_kill.c#L547
-> [2]. https://elixir.bootlin.com/linux/v6.18.6/source/mm/oom_kill.c#L1210
->
-
-Best Regards
-Barry
 
