@@ -1,53 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-21148-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21149-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0DFF6CD4F5B
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 May 2026 12:42:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2597DCD4F5B
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 May 2026 12:44:08 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gKZ7f4MWyz2xwH;
-	Tue, 19 May 2026 22:42:22 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=113.46.200.220
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779194542;
-	cv=none; b=Crg4BKVX721P6y8PKvn01Bb8wzH92uswY97ilOhqxxNgoisKc6WH9sU14JLT3LSVtv2g19KIus+bvOhpALHqTmkX/QQZfK/fFBSowVLr+wpe8kpKaENZdqJ9NymDhYeuk5IdhvO04HWiza97LlhTr2QXX5Ugp1VQEwcEAk4b9KIph4gUKPR/vYoUmB6OSgK6AjxFhbKAwYviaezoVMYfgfH7E8+j/KBJZcVJEzwRLmvN77l1x0/M1tXPFTTwHFLtguo8uZh0jvI1My/UyHPl8Fcy9jPTYsrYAvoEMbMzI2bC6FUtQm+wgvP9ddRn17N/kNqpK4fIDkA5XD42ZzkrkA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gKZ9f5njGz2xwH;
+	Tue, 19 May 2026 22:44:06 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779194646;
+	cv=none; b=YEhxaZyleZ/V9gj5o0q74FyLqpEDoG6VQ3ILQg2wgKxaq/R3WbhZYkypQ/81d2RlKa86yVphNRWC8XAkhdHS2jrI1vYCaU9hLatGpxcAsHzvhUJRPTmDYn10ohpyy/CZClf97BrNj3qUUfVrWJacgh4GwdHB6mExS+co4Wp6lFruplgYA0iSUoBBTgYTyplO44Hav/Ah/ik3NFHhPxz9RXqb+g4YZnMM+k3ZZHX5BS8f8uMAZRTCmzFglg1UNA856QsPUjp0PTXuFC1dyXgENcJJRHCO1YEqVGpReojev/kJjoAO5ATPcNqTrZNXozhBoIyXE9pg3oYBZlnPxRyF4w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1779194542; c=relaxed/relaxed;
-	bh=Ha3U5FJeF61nR13fqhapGOPU2jfN530U4ccDWtKILT0=;
-	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
-	 In-Reply-To:Content-Type; b=iqy2bsH8xNHSMwADn0tPrZfktXHvUyFa3gCoo365icvazUHuh5kbdblKzAcropKPPW//mRBay6Pxn+D+3aXok3EGb/BCuz2XFpcquLt4qvvcmW7V/QA0VCGbkaBXebOtNNNGhC8WRRujQVS7UXD3mkynM0I0rkInDKRVJNXSFXIReWYjsIwkYc3lLUuPfCWOdWn5Bd6wenuskFlBTTamP1D9FfACcq/BNEJGVBmmrCvT5LCNHD7jiSfdN/S2eIwjpfyN30fo4ntnqS60CDdWZ25PMnmFT9oEAK8paB3noH1SRVz9kJX6kPUfVJQ3eVLs7+igbNQRdmDsIXYtmQOfGA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=Imw5scWN; dkim-atps=neutral; spf=pass (client-ip=113.46.200.220; helo=canpmsgout05.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
+	t=1779194646; c=relaxed/relaxed;
+	bh=jO8lU9nZfaIXvi4aM14Apu8W/4/KaBQAgvYJVbl8iHA=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=MjfEtPQgzkr6d7+ZLtUeQRfZmSrbC9G7zumc37O9Y3n4VwkHhY79qfBY1DSUl3BDn/K+BQfNlEhPcbiy7CTYaBrf8Fh+QoIImzT2ZSUsQM5co+aRy1BxSrAe587M9I/S3pnGdNXOLcv7/IUhcPdgtNGsXMOe/VmbbeuRuyRnV+9dPvDXyhI+HYpbgqu0tluGaUX3MZiGkZxf6k3ilWtKBCxFUFsU9Qu9C4W12fZeNb3egN6tYCCiRfOPqUxDX7OtpcqhJZn91CANyC+G31H4ptzzeF4D82F0crJ0ESLbjEYZuthFLHhdY/D/HH09oNaQ0YibabW3sY8CD+EQS8Gqwg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=bfo4BDRf; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=Imw5scWN;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=bfo4BDRf;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=113.46.200.220; helo=canpmsgout05.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org)
-Received: from canpmsgout05.his.huawei.com (canpmsgout05.his.huawei.com [113.46.200.220])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gKZ7X631Wz2xRw
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 May 2026 22:42:14 +1000 (AEST)
-dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
-	c=relaxed/relaxed; q=dns/txt;
-	h=From;
-	bh=Ha3U5FJeF61nR13fqhapGOPU2jfN530U4ccDWtKILT0=;
-	b=Imw5scWNyENSClDDsm0aKoLrou92ErUJJIQORPJEcabYI3utCuQCW0cH+DSoBKS/L+LrRsUXe
-	4/57egHk9L82uCmnWMcuwAKP6ON3NWimFljmUY71FbmH/qt6gcc0LgcZJmkJ1LP6GuoGabpLGiL
-	lCnVxupN6NtwOTzTEcksGao=
-Received: from mail.maildlp.com (unknown [172.19.163.104])
-	by canpmsgout05.his.huawei.com (SkyGuard) with ESMTPS id 4gKYzG6L5wz12LF7;
-	Tue, 19 May 2026 20:35:06 +0800 (CST)
-Received: from dggpemf500011.china.huawei.com (unknown [7.185.36.131])
-	by mail.maildlp.com (Postfix) with ESMTPS id 899C44056A;
-	Tue, 19 May 2026 20:42:08 +0800 (CST)
-Received: from [10.67.109.254] (10.67.109.254) by
- dggpemf500011.china.huawei.com (7.185.36.131) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1544.11; Tue, 19 May 2026 20:42:04 +0800
-Message-ID: <3ca700ed-e081-4c62-8289-5bbd4248e630@huawei.com>
-Date: Tue, 19 May 2026 20:42:04 +0800
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gKZ9d4c8bz2xRw
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 May 2026 22:44:05 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by tor.source.kernel.org (Postfix) with ESMTP id 395EA60129;
+	Tue, 19 May 2026 12:44:03 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 23CD8C2BCC6;
+	Tue, 19 May 2026 12:43:55 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1779194642;
+	bh=kMUFbNwBqvJpO+Bjd3l9GBxXRf0w6ZacFORzSNgGrqw=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=bfo4BDRfvA9myn7305sBhrTH2J0JJJLZN41DyiCsBL5RaW4yJzwWoRjqEv4bw7XRu
+	 3sS6wrONgvzJAEmXQdyWNoxP7IRgXT+BwOJdEatfiHb5tGo3e7Wv57MRVS0Mfl/KwF
+	 x37oBTK95eNvN0DhfsqWoIm8NOxS3mlo/N7lra4/86d92nRL8dOyMRTzXe4aNafoSP
+	 zmYFhFt5OepkId8YyQ/JRMelvQ33s7dDez4kr7Q7tGi40FybpnQQzZ966Ac5xeTssH
+	 5GqAFt9tX2CAZo6ci+b6JD7q1AC8DXMlEmsrGOnNr7zIOL1N/xCP/W2AdAHZDtwZKR
+	 +0JGj8KZOVUKg==
+Date: Tue, 19 May 2026 13:43:52 +0100
+From: Lorenzo Stoakes <ljs@kernel.org>
+To: Barry Song <baohua@kernel.org>
+Cc: Matthew Wilcox <willy@infradead.org>, surenb@google.com, 
+	akpm@linux-foundation.org, linux-mm@kvack.org, david@kernel.org, liam@infradead.org, 
+	vbabka@kernel.org, rppt@kernel.org, mhocko@suse.com, jack@suse.cz, pfalcato@suse.de, 
+	wanglian@kylinos.cn, chentao@kylinos.cn, lianux.mm@gmail.com, kunwu.chan@gmail.com, 
+	liyangouwen1@oppo.com, chrisl@kernel.org, kasong@tencent.com, shikemeng@huaweicloud.com, 
+	nphamcs@gmail.com, bhe@redhat.com, youngjun.park@lge.com, 
+	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, loongarch@lists.linux.dev, 
+	linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org, 
+	Nanzhe Zhao <nzzhao@126.com>
+Subject: Re: [PATCH v2 0/5] mm: reduce mmap_lock contention and improve page
+ fault performance
+Message-ID: <agxXPfG--tkoPynl@lucifer>
+References: <20260430040427.4672-1-baohua@kernel.org>
+ <afNM-gIqxpyJ6ro7@casper.infradead.org>
+ <CAGsJ_4w0qcYmukHqsyRd0jomoyYkJjOt8b-Cgp53BgP-8QQghw@mail.gmail.com>
+ <afS_L-5XeWIldTXA@casper.infradead.org>
+ <CAGsJ_4wk=SDtgin+84Ev2TamU-JFfmrg_SUay=-tcYmnFvK6Nw@mail.gmail.com>
+ <afTpoL3FklpQZNMM@casper.infradead.org>
+ <CAGsJ_4ysMcrmDLSOwBkf7qwCQrcDWeEMXkHDajTJFMLKUk0bSQ@mail.gmail.com>
+ <agrWuDNGddNmvMFD@lucifer>
+ <CAGsJ_4zqLfdWoTH9s7FFaqWWj0mESfikYgr7=GcV64qcuXrPxA@mail.gmail.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -61,174 +81,242 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v13 04/15] arm64: kexec_file: Fix potential buffer
- overflow in prepare_elf_headers()
-To: Breno Leitao <leitao@debian.org>
-CC: <corbet@lwn.net>, <skhan@linuxfoundation.org>, <catalin.marinas@arm.com>,
-	<will@kernel.org>, <chenhuacai@kernel.org>, <kernel@xen0n.name>,
-	<maddy@linux.ibm.com>, <mpe@ellerman.id.au>, <npiggin@gmail.com>,
-	<chleroy@kernel.org>, <pjw@kernel.org>, <palmer@dabbelt.com>,
-	<aou@eecs.berkeley.edu>, <alex@ghiti.fr>, <tglx@kernel.org>,
-	<mingo@redhat.com>, <bp@alien8.de>, <dave.hansen@linux.intel.com>,
-	<hpa@zytor.com>, <robh@kernel.org>, <saravanak@kernel.org>,
-	<akpm@linux-foundation.org>, <bhe@redhat.com>, <rppt@kernel.org>,
-	<pasha.tatashin@soleen.com>, <pratyush@kernel.org>, <ruirui.yang@linux.dev>,
-	<rdunlap@infradead.org>, <pmladek@suse.com>, <dapeng1.mi@linux.intel.com>,
-	<kees@kernel.org>, <elver@google.com>, <kuba@kernel.org>,
-	<ebiggers@kernel.org>, <lirongqing@baidu.com>, <paulmck@kernel.org>,
-	<sourabhjain@linux.ibm.com>, <coxu@redhat.com>, <jbohac@suse.cz>,
-	<ryan.roberts@arm.com>, <osandov@fb.com>, <cfsworks@gmail.com>,
-	<tangyouling@kylinos.cn>, <ritesh.list@gmail.com>, <adityag@linux.ibm.com>,
-	<guoren@kernel.org>, <songshuaishuai@tinylab.org>, <kevin.brodsky@arm.com>,
-	<vishal.moola@gmail.com>, <junhui.liu@pigmoral.tech>,
-	<wangruikang@iscas.ac.cn>, <namcao@linutronix.de>, <chao.gao@intel.com>,
-	<seanjc@google.com>, <fuqiang.wang@easystack.cn>, <ardb@kernel.org>,
-	<chenjiahao16@huawei.com>, <hbathini@linux.ibm.com>,
-	<takahiro.akashi@linaro.org>, <james.morse@arm.com>, <lizhengyu3@huawei.com>,
-	<x86@kernel.org>, <linux-doc@vger.kernel.org>,
-	<linux-kernel@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
-	<loongarch@lists.linux.dev>, <linuxppc-dev@lists.ozlabs.org>,
-	<linux-riscv@lists.infradead.org>, <devicetree@vger.kernel.org>,
-	<kexec@lists.infradead.org>
-References: <20260511030454.1730881-1-ruanjinjie@huawei.com>
- <20260511030454.1730881-5-ruanjinjie@huawei.com> <agGkvrg06KNDNfDi@gmail.com>
-From: Jinjie Ruan <ruanjinjie@huawei.com>
-In-Reply-To: <agGkvrg06KNDNfDi@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-X-Originating-IP: [10.67.109.254]
-X-ClientProxiedBy: kwepems200002.china.huawei.com (7.221.188.68) To
- dggpemf500011.china.huawei.com (7.185.36.131)
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <CAGsJ_4zqLfdWoTH9s7FFaqWWj0mESfikYgr7=GcV64qcuXrPxA@mail.gmail.com>
 
+On Mon, May 18, 2026 at 07:25:54PM +0800, Barry Song wrote:
+> On Mon, May 18, 2026 at 5:47 PM Lorenzo Stoakes <ljs@kernel.org> wrote:
+> >
+> > On Sun, May 17, 2026 at 04:45:15PM +0800, Barry Song wrote:
+> > > On Sat, May 2, 2026 at 1:58 AM Matthew Wilcox <willy@infradead.org> wrote:
+> > > >
+> > > > On Sat, May 02, 2026 at 01:44:34AM +0800, Barry Song wrote:
+> > > > > On Fri, May 1, 2026 at 10:57 PM Matthew Wilcox <willy@infradead.org> wrote:
+> > > > > >
+> > > > > > On Fri, May 01, 2026 at 06:49:58AM +0800, Barry Song wrote:
+> > > > > > > 1. There is no deterministic latency for I/O completion. It depends on
+> > > > > > > both the hardware and the software stack (bio/request queues and the
+> > > > > > > block scheduler). Sometimes the latency is short; at other times it can
+> > > > > > > be quite long. In such cases, a high-priority thread performing operations
+> > > > > > > such as mprotect, unmap, prctl_set_vma, or madvise may be forced to wait
+> > > > > > > for an unpredictable amount of time.
+> > > > > >
+> > > > > > But does that actually happen?  I find it hard to believe that thread A
+> > > > > > unmaps a VMA while thread B is in the middle of taking a page fault in
+> > > > > > that same VMA.  mprotect() and madvise() are more likely to happen, but
+> > > > > > it still seems really unlikely to me.
+> > > > >
+> > > > > It doesn’t have to involve unmapping or applying mprotect to
+> > > > > the entire VMA—just a portion of it is sufficient.
+> > > >
+> > > > Yes, but that still fails to answer "does this actually happen".  How much
+> > > > performance is all this complexity in the page fault handler buying us?
+> > > > If you don't answer this question, I'm just going to go in and rip it
+> > > > all out.
+> > > >
+> > >
+> > > Hi Matthew (and Lorenzo, Jan, and anyone else who may be
+> > > waiting for answers),
+> > >
+> > > As promised during LSF/MM/BPF, we conducted thorough
+> > > testing on Android phones to determine whether performing
+> > > I/O in `filemap_fault()` can block `vma_start_write()`.
+> > > I wanted to give a quick update on this question.
+> > >
+> > > Nanzhe at Xiaomi created tracing scripts and ran various
+> > > applications on Android devices with I/O performed under
+> > > the VMA lock in `filemap_fault()`. We found that:
+> > >
+> > > 1. There are very few cases where unmap() is blocked by
+> > >    page faults. I assume this is due to buggy user code
+> > >    or poor synchronization between reads and unmap().
+> > > So I assume it is not a problem.
+> > >
+> > > 2. We observed many cases where `vma_start_write()`
+> > >    is blocked by page-fault I/O in some applications.
+> > >    The blocking occurs in the `dup_mmap()` path during
+> > >    fork().
+> > >
+> > > With Suren's commit fb49c455323ff ("fork: lock VMAs of
+> > > the parent process when forking"), we now always hold
+> > > `vma_write_lock()` for each VMA. Note that the
+> > > `mmap_lock` write lock is also held, which could lead to
+> > > chained waiting if page-fault I/O is performed without
+> > > releasing the VMA lock.
+> >
+> > Hm but did you observe this 'chained waiting'? And what were the latencies?
+>
+> We have clearly observed that the `fork()` operations of many
+> popular Android apps, such as iQiyi, Baidu Tieba, and 10086,
+> end up waiting on page-fault (PF) I/O when the VMA lock is
+> held during I/O operations. This has already become a
+> practical issue. I also believe this can lead to chained
+> waiting, since the global `mmap_lock` blocks all threads that
+> need to acquire it.
 
+I asked about the chained waiting :) I'm aware you've observed contention on
+write lock, you said so in your LSF talk.
 
-On 5/11/2026 5:46 PM, Breno Leitao wrote:
-> On Mon, May 11, 2026 at 11:04:43AM +0800, Jinjie Ruan wrote:
->> There is a race condition between the kexec_load() system call
->> (crash kernel loading path) and memory hotplug operations that can
->> lead to buffer overflow and potential kernel crash.
->>
->> During prepare_elf_headers(), the following steps occur:
->> 1. The first for_each_mem_range() queries current System RAM memory ranges
->> 2. Allocates buffer based on queried count
->> 3. The 2st for_each_mem_range() populates ranges from memblock
->>
->> If memory hotplug occurs between step 1 and step 3, the number of ranges
->> can increase, causing out-of-bounds write when populating cmem->ranges[].
->>
->> This happens because kexec_load() uses kexec_trylock (atomic_t) while
->> memory hotplug uses device_hotplug_lock (mutex), so they don't serialize
->> with each other.
->>
->> Add the explicit bounds checking to prevent out-of-bounds access.
-> 
-> It seems you have a TOCTOU type of issue, and this seems to be shrinking
-> the window, but not fully solving it?
+So have you observed that or is this a theory?
 
-I plan to fix this issue as follows, and would appreciate your feedback
-on whether this is reasonable.
+>
+>
+> >
+> > >
+> > > My gut feeling is that Suren's commit may be overshooting,
+> > > so my rough idea is that we might want to do something like
+> > > the following (we haven't tested it yet and it might be
+> > > wrong):
+> >
+> > Yeah I'm really not sure about that.
+> >
+> > Prior to the VMA locks, the mmap write lock would have guaranteed no concurrent
+> > page faults, which is really what Fb49c455323ff is about.
+> >
+> > So Suren's patch was essentially restoring the _existing_ forking behaviour, and
+> > now you're saying 'let's change the forking behaviour that's been like that for
+> > forever'.
+>
+>
+> I am afraid not. Before we introduced the per-VMA lock, we
+> were not performing I/O while holding `mmap_lock`. A page fault
+> that needed I/O would drop the `mmap_lock` read lock and allow
+> `fork()` to proceed.
 
-Sashiko AI code review pointed out there is a TOCTOU (Time-of-Check to
-Time-of-Use) race condition in prepare_elf_headers() between the initial
-pass that counts System RAM ranges and the second pass that populates them.
-If a memory hotplug event occurs between these two steps, the number of
-memory regions may increase, causing an out-of-bounds write to
-the cmem->ranges[] array.
+Err I'm talking about fork? The patch you reference is a change to fork?
 
-To resolve this and ensure data consistency, this patch:
+So you're saying that Fb49c455323ff which explicitly takes the VMA write lock on
+fork, was somehow an addendum after fork didnt take the mmap write lock?
 
-1. Wraps the counting and population passes with get_online_mems() and
-   crash_hotplug_lock(). This serializes the kexec_file_load() path
-   with concurrent memory hotplug operations, ensuring the memory
-   map remains consistent throughout the header preparation.
+I must be imagining
+https://elixir.bootlin.com/linux/v6.0/source/kernel/fork.c#L590 then in v6.0
+pre-vma locks :)
 
-2. Adds an explicit boundary check in prepare_elf64_ram_headers_callback().
-   If the number of ranges exceeds the allocated maximum, it now returns
-   -EAGAIN, which indicates a transient race, signaling userspace
-   kexec-tools to retry the syscall instead of leaving the system
-without a loaded crash kernel.
+I suspect that's _not_ what you're saying, so now what you're suggesting as I
+stated above, is to fundamentally change fork behaviour to account for the
+existing per-VMA lock behaviour on the fault path?
 
-index daf81a873bbd..546be6261177 100644
---- a/arch/arm64/kernel/machine_kexec_file.c
-+++ b/arch/arm64/kernel/machine_kexec_file.c
-@@ -15,6 +15,7 @@
- #include <linux/kexec.h>
- #include <linux/libfdt.h>
- #include <linux/memblock.h>
-+#include <linux/memory_hotplug.h>
- #include <linux/of.h>
- #include <linux/of_fdt.h>
- #include <linux/slab.h>
-@@ -40,7 +41,7 @@ int arch_kimage_file_post_load_cleanup(struct kimage
-*image)
- }
+Again I state - are you really sure you want to fundamentally change fork
+behaviour for this?
 
- #ifdef CONFIG_CRASH_DUMP
--int prepare_elf_headers(void **addr, unsigned long *sz)
-+static int __prepare_elf_headers(void **addr, unsigned long *sz)
- {
- 	struct crash_mem *cmem;
- 	unsigned int nr_ranges;
-@@ -59,6 +60,11 @@ int prepare_elf_headers(void **addr, unsigned long *sz)
- 	cmem->max_nr_ranges = nr_ranges;
- 	cmem->nr_ranges = 0;
- 	for_each_mem_range(i, &start, &end) {
-+		if (cmem->nr_ranges >= cmem->max_nr_ranges) {
-+			ret = -EAGAIN;
-+			goto out;
-+		}
-+
- 		cmem->ranges[cmem->nr_ranges].start = start;
- 		cmem->ranges[cmem->nr_ranges].end = end - 1;
- 		cmem->nr_ranges++;
-@@ -81,6 +87,21 @@ int prepare_elf_headers(void **addr, unsigned long *sz)
- 	kfree(cmem);
- 	return ret;
- }
-+
-+int prepare_elf_headers(void **addr, unsigned long *sz)
-+{
-+	int ret;
-+
-+	crash_hotplug_lock();
-+	get_online_mems();
-+
-+	ret = __prepare_elf_headers(addr, sz);
-+
-+	put_online_mems();
-+	crash_hotplug_unlock();
-+
-+	return ret;
-+}
- #endif
+I am extremely concerned about doing that.
 
-> 
->> Cc: Catalin Marinas <catalin.marinas@arm.com>
->> Cc: Will Deacon <will.deacon@arm.com>
->> Cc: Andrew Morton <akpm@linux-foundation.org>
->> Cc: Baoquan He <bhe@redhat.com>
->> Cc: Breno Leitao <leitao@debian.org>
->> Cc: stable@vger.kernel.org
->> Fixes: 3751e728cef2 ("arm64: kexec_file: add crash dump support")
->> Closes: https://sashiko.dev/#/patchset/20260323072745.2481719-1-ruanjinjie%40huawei.com
->> Signed-off-by: Jinjie Ruan <ruanjinjie@huawei.com>
->> ---
->>  arch/arm64/kernel/machine_kexec_file.c | 5 +++++
->>  1 file changed, 5 insertions(+)
->>
->> diff --git a/arch/arm64/kernel/machine_kexec_file.c b/arch/arm64/kernel/machine_kexec_file.c
->> index e31fabed378a..a67e7b1abbab 100644
->> --- a/arch/arm64/kernel/machine_kexec_file.c
->> +++ b/arch/arm64/kernel/machine_kexec_file.c
->> @@ -59,6 +59,11 @@ static int prepare_elf_headers(void **addr, unsigned long *sz)
->>  	cmem->max_nr_ranges = nr_ranges;
->>  	cmem->nr_ranges = 0;
->>  	for_each_mem_range(i, &start, &end) {
->> +		if (cmem->nr_ranges >= cmem->max_nr_ranges) {
->> +			ret = -ENOMEM;
-> 
-> -ENOMEM seems to be the the wrong errno. This isn't an allocation
-> failure; it's a transient race. -EBUSY or -EAGAIN would be more honest
+>
+> Now, you are suggesting performing I/O while holding the VMA
+> lock, which changes the requirements and introduces this
+> problem.
+>
+> >
+> > I think you would _really_ have to be sure that's safe. And forking is a very
+> > dangerous time in terms of complexity and sensitivity and 'weird stuff'
+> > happening so I'd tread _very_ carefully here.
+>
+> Yep. I think my original proposal did not require any changes
+> to `fork()`, since it simply preserved the current behavior of
+> dropping the VMA lock before performing I/O. In that model,
+> `fork()` would not end up waiting on I/O at all.
+>
+> What you are suggesting now appears to be performing I/O while
+> holding the VMA lock, which in turn introduces the need to
+> change `fork()`.
 
+Again, you're saying we should fundamentally change the way fork has worked
+forever to work around something else.
+
+At LSF I raised the fact that Josef himself suggested we simply drop this I/O
+waiting behaviour for file-backed mapppings. Isn't there a way forward that way
+rather than 'hey let's drop locks and hope for the best!'
+
+I am really reticent about this because we've seen HORRIBLE bugs come from fork
+behaviour, especially edge cases, and mm testing isn't great so I am basically
+opposed to this, and you're not really convincing me here.
+
+>
+> >
+> > >
+> > > diff --git a/mm/mmap.c b/mm/mmap.c
+> > > index 2311ae7c2ff4..5ddaf297f31a 100644
+> > > --- a/mm/mmap.c
+> > > +++ b/mm/mmap.c
+> > > @@ -1762,7 +1762,13 @@ __latent_entropy int dup_mmap(struct mm_struct
+> > > *mm, struct mm_struct *oldmm)
+> > >         for_each_vma(vmi, mpnt) {
+> > >                 struct file *file;
+> > >
+> > > -               retval = vma_start_write_killable(mpnt);
+> > > +               /*
+> > > +                * For anonymous or writable private VMAs, prevent
+> > > +                * concurrent CoW faults.
+> > > +                */
+> >
+> > To nit pick I think the comment's confusing but also tells you you don't need to
+> > specific anon check - writable private is sufficient. And it's not really just
+> > CoW that's the issue, it's anon_vma population _at all_ as well as CoW.
+> >
+> > > +               if (!mpnt->vm_file || (!(mpnt->vm_flags & VM_SHARED) &&
+> > > +                                       (mpnt->vm_flags & VM_WRITE)))
+> > > +                       retval = vma_start_write_killable(mpnt);
+> >
+> > I think this has to be VM_MAYWRITE, because somebody could otherwise mprotect()
+> > it R/W.
+> >
+> > I also don't understand why !mpnt->vm_file for a read-only anon mapping (more
+> > likely PROT_NONE) is here, just do the second check?
+> >
+> > (Also please use the new interface, so !vma_test(mpnt, VMA_SHARED_BIT) &&
+> > vma_test(mpnt, VMA_MAYWRITE_BIT))
+>
+> Yep, I can definitely refine the check further. But before
+> doing that, I'd first like to confirm that we are aligned on
+> the direction.
+>
+> If you still intend to hold the VMA lock while performing I/O,
+> then I think we should fix `fork()` to avoid taking
+> `vma_start_write()`.
+
+Yeah or we could do something different, it isn't a case of you get to do one of
+two options you propose - the maintainers decide which way is appropriate.
+
+Of the two options dropping the lock on the fault path rather than this fork
+insanity is my preference but I wonder if we can't find another way.
+
+Let me read through the series and give more thoughts I guess.
+
+>
+> >
+> > >                 if (retval < 0)
+> > >                         goto loop_out;
+> > >                 if (mpnt->vm_flags & VM_DONTCOPY) {
+> > >
+> > > Based on the above, we may want to re-check whether fork()
+> > > can be blocked by page faults. At the same time, if Suren,
+> > > you, or anyone else has any comments, please feel free to
+> > > share them.
+> > >
+> > > Best Regards
+> > > Barry
+> >
+> > Technical commentary above is sort of 'just cos' :) because I really question
+> > doing this honestly.
+>
+> I think we either need to fix `fork()`, or keep the current
+> behavior of dropping the VMA lock before performing I/O.
+
+Yup you said :)
+
+>
+> >
+> > I'd also like to get Suren's input, however.
+>
+> Yes. of course.
+>
+> >
+> > Thanks, Lorenzo
+>
+> Best Regards
+> Barry
+
+Thanks, Lorenzo
 
