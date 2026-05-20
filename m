@@ -1,88 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-21229-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21230-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 686F2CD4F54
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 May 2026 10:24:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id ECA0CCD4F54
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 May 2026 10:34:13 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gL72415PZz2xqv;
-	Wed, 20 May 2026 20:24:28 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::42a"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779272668;
-	cv=none; b=k98LM1bND4QGs45N05Frcn3mjtg4YwydAXFzBbP1k7b8nbs/TeP1Yko05/nN7h9wNBiCZWgax3RGX123MS7Dc/F/952Jy7/UCOQwjaBqHcUSCpfduvS3F6LbTSc8GdnWzRR6Aw5Wyad/PTOD6uR2TZlglZsnAlH++ZJjnbV6KgHmR/AvB6rP/E+Jmdw+F/Sw2N9TCKNzaW0fLCehBqEUlgxvoxczVBZCcY84SP1tcPc1wHNwDfLaXlp1g9NnKt31UzRiwzownOokzzzAnGYgQQ2WP17WyY1rCeRxALhGOtvhC6IX/iq1/YsR2Hj9cGMnX3nY2mux1pvBD3MebqmuIw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gL7FJ42CBz2xqv;
+	Wed, 20 May 2026 20:34:12 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779273252;
+	cv=none; b=gFEmz4DrQ9yH3kE5UrzDehYzqEVX5H6u7cofUadVatYdvNhtdjXOxteltkkRI9M0Pdli+wHW90FEW/3dl7I/gaZQeP0f8SvvBwTLN2Y9QQTSXLeiR/hyDM2kXetAItX3hW+X65jWBuGFiIgrgSkYrr5RfyCV2ccK0At5mXL1Y7cs9zuVmdhkwmnV4kdZ0u9f87yJxtyGw8j5aXxHfkZLR9Lj0r6EC7R0ozUgt7xTjjdOuQ+UPMqcpPzByNkGp2SruAsILTmTpN5I+nGiy8RDwKGCLlKDQgPIlRYv3duGWy68Yi8PhIO/yOnam9NYsOwku1eHkhK/1tmEtDahBpEZxg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1779272668; c=relaxed/relaxed;
-	bh=Fjyw2SPSbDAWDTOYsBSPfcvH3EJiKjWBtVx5pcWE1q0=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=TMRgfwVMF2VfJY9b9dwPE2UtSZIarQTbC4l6TxeSxhURXw3v3EYfMDXaJGJViB76P7MRjHa0RNNha1q0k30ano1roP9+mOioYmO56x4v8+oyFawRQR0diRIQHMqlbElTtjsyq610SkNVMO9e0+PtNqnE+btPX+A1yZfXrdc/9d8/m9UIfmGpgWLcAgH4J/1zsAFoSmLy7e5LmfjH2smfQA5R0rFqNT9x+epzWLHTYSkXrdIrxcXPoNGSXDroQsEpP58g6cJk1BQB5Q8pGmO2bkBPMb2jlQOwenXQwRVnZLb31lMad80MqizyxvompGleMugCKUbKSF4/V3dyYK3bHQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=ROH9xyHF; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::42a; helo=mail-wr1-x42a.google.com; envelope-from=error27@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1779273252; c=relaxed/relaxed;
+	bh=1LDWtyaODcbYP5iCV92+/8GVnwUqEJ5fHGR9cz0/w+U=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=QRV8wFxJqO2Ub06j1Q59oqKL5qakhXYnpHUOP4bpQhUyw06TpIfe9HK1Q4TrBgRaqggEaWLad8tzf96KBJTH4JpAcgkGpH7s0E30hGSyfE2hbAR1PJc1bO7DY2hknNl0s/+bDPiOl7+9TQx9+1JUbfEhaX71B5vTLMNzJxY/0QGKzCk+a3P1b7hwBY/iMHLY0KVfDcqhY91FrpIvrO7sPQKasts9Ml7ObuOXBI2rXAGAV3EddxQzY0s5Gp2/BDGZRHvb3WBNROnOQ/2x2oOIohu0aa72DafkoOUqHMXbqTLdJ3UwxNyQXU3O23MsrFkPhBtIYARPopyLCvWzQ0q8pw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=k0S3S/ke; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=ROH9xyHF;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=k0S3S/ke;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::42a; helo=mail-wr1-x42a.google.com; envelope-from=error27@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-wr1-x42a.google.com (mail-wr1-x42a.google.com [IPv6:2a00:1450:4864:20::42a])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gL7223nR0z2xfB
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 May 2026 20:24:25 +1000 (AEST)
-Received: by mail-wr1-x42a.google.com with SMTP id ffacd0b85a97d-44509921fbcso2920087f8f.3
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 May 2026 03:24:25 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1779272662; x=1779877462; darn=lists.ozlabs.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=Fjyw2SPSbDAWDTOYsBSPfcvH3EJiKjWBtVx5pcWE1q0=;
-        b=ROH9xyHF7qhyIDrHQPXVe82CjQ51WnEY+yJQV7RMiv3J3h23v1h6ayO3em0Zet8yl7
-         5TRI5el/H9y7jXlDdCVe1hfzTXkeV19YLRh+SSUk9VtHR8MtcFk9HH+svHiwmBEjDsnN
-         B89DgOc7JZq1MKNhi2oEmnO/bsbkGQvgj7CmkfPrYXla6NQC8q5yKtJ7ZBcb05w6jbOB
-         ctIj9I9mdjKHH2Z5FGcGpLXkFlX6o2bTJQLQBO9y9uSqRfgSmYl8rCy1/0PzXwHpCGeo
-         iM70/ewMrAmA3AdKh/Zj4gVehjoktGlvCqTYk0zuuKNDh/zN3f+sfy/xardN2tK2JtrL
-         76CQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1779272662; x=1779877462;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=Fjyw2SPSbDAWDTOYsBSPfcvH3EJiKjWBtVx5pcWE1q0=;
-        b=HfClRONkA8P9JyLd5sd4jvmTeBSJhP95pnZ4rbpMc2OrVLOI1A9BJZRI5+830F8mvq
-         LVaDhR6MnkymP0y9ue2oqxgGcO1NIcP403szTbGyvVqmIXkdLePkA6VNUGJ6SG9fT7sO
-         6fKYnyinuvoqDrfZsIkaggJ1ZkJdh2f/3f+LdZ/Z3r1biqvWyRWCJjffFsOTpZdBGAQJ
-         gIjcL8Pb6vTYhZb/t+8dfR8ydD0Vct1/Yqz4XMD41lBcpWtRl1aho2h9lsdk0wl+Y6sH
-         RgmZ/z5rjOAZWT8zUh+qm1QzYGqHnNyLFhjOQ2RmA0NdeXzs5MXbq/6QUThdj4/Mvzbc
-         YV6Q==
-X-Forwarded-Encrypted: i=1; AFNElJ91JyyxDf7NFFAbx3KJKl5coHA85uIjyJ+2w6a69FAYj/pUwDmxUoCvlsiOZEz/jWd5RqOuWxiLjrcydfs=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YyI0R7FejuK2xLy8c0D9xY282FKGUBEfkt6hVNbkbMNYpBT59Of
-	ezvLnNUZPsMUsveP38Ykes+uxCW4hjOtY1rhX86eE9E7HmjAuG50iNLS
-X-Gm-Gg: Acq92OG1WsBs/h8sJemNOlvH6ZpY01476KZEhl9b+OHavQWyXJRkD2lyF4V9iSP/uBJ
-	y0nQeamT9TEGaoY2oVGz0SwyLAe3K9dkuG0ajc6SoC0pfOClRC4M5nW+zN6Vm8EyIdgzuSaJFTZ
-	JjINZ8CkPt0PokRWxL1TvN2DpYEuYahqpT0pVy7bqkEOz4lSLHks+IN4zrFpRdJpzpf7jfqeOnD
-	cxDpEEm+qhpaYXbDOwWxbI8GB1xwM9Cu2hJ25KUqdTNkp+sWYjg3w/gzIWqDG8yN6ZTgHWIQh9X
-	2E2L2UfBA9xlf9tFpZUE1MHQWnARkuc2g4y0268/RICokavpOwmXu32tXEFE/Ps2egk3gttRoQZ
-	qnBp0d45AkkbowAIokIomQ0e8oUsjO+BYnIzwQ2cEWFGP622PjilD6Ld9QdqL7Uqh7sT2MA7fOS
-	wK9yWhyQWtrzJ5LhCjVGGEDBU=
-X-Received: by 2002:a5d:5f45:0:b0:44d:821:1a0b with SMTP id ffacd0b85a97d-45e5c5dd260mr38410505f8f.29.1779272662508;
-        Wed, 20 May 2026 03:24:22 -0700 (PDT)
-Received: from localhost ([196.207.164.177])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-45d9e767d0bsm51188114f8f.3.2026.05.20.03.24.21
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 20 May 2026 03:24:21 -0700 (PDT)
-Date: Wed, 20 May 2026 13:24:18 +0300
-From: Dan Carpenter <error27@gmail.com>
-To: gjoyce@linux.vnet.ibm.com
-Cc: linux-block@vger.kernel.org, axboe@kernel.dk,
-	linuxppc-dev@lists.ozlabs.org, jonathan.derrick@linux.dev,
-	brking@linux.vnet.ibm.com, msuchanek@suse.de, mpe@ellerman.id.au,
-	nayna@linux.ibm.com, akpm@linux-foundation.org,
-	ndesaulniers@google.com, nathan@kernel.org, jarkko@kernel.org,
-	okozina@redhat.com
-Subject: Re: [PATCH v8 3/3] powerpc/pseries: PLPKS SED Opal keystore support
-Message-ID: <ag2L0kO_zK5hzx-W@stanley.mountain>
-References: <20231004201957.1451669-1-gjoyce@linux.vnet.ibm.com>
- <20231004201957.1451669-4-gjoyce@linux.vnet.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gL7FH4c44z2xfB
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 May 2026 20:34:11 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with ESMTP id CA14843649;
+	Wed, 20 May 2026 10:34:09 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1C1841F000E9;
+	Wed, 20 May 2026 10:33:58 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1779273249;
+	bh=1LDWtyaODcbYP5iCV92+/8GVnwUqEJ5fHGR9cz0/w+U=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To;
+	b=k0S3S/keSBLaGmyqupwK3Z1mvr66dN2JMGWF3ieVRlx99hH1pXaQueAW+z7vgQZ43
+	 FLddevi4zJjipFoHV8RO/xzDu2eW9Ph1tnMl9S5JrNxSfKr4IyUkNNUz/TuOjmvQ9P
+	 TfQSYdlPaCepQYkAi1wuPiRy349QjRGU+zQCiB3bmhODCk48llGycLn/gBzTK7mkYK
+	 eFYbb7rydTwhcEVglxFxRS1oGV5dyfP6l0CptCFYZUnF9mX1EEI1icTLZvmR+2Ap2G
+	 yD8FRNrZRvT5G47Y74X4p4e0ovLOLp6kYC3eA6xjU58ieE3ACOpqv7VnYaRg3b780f
+	 K35saKMpZRS4Q==
+Message-ID: <e6d1017a-e4c5-493e-bfca-932c6d64eaac@kernel.org>
+Date: Wed, 20 May 2026 12:33:56 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -96,48 +59,125 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20231004201957.1451669-4-gjoyce@linux.vnet.ibm.com>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2 0/5] mm: reduce mmap_lock contention and improve page
+ fault performance
+To: Lorenzo Stoakes <ljs@kernel.org>, Suren Baghdasaryan <surenb@google.com>
+Cc: Barry Song <baohua@kernel.org>, Matthew Wilcox <willy@infradead.org>,
+ akpm@linux-foundation.org, linux-mm@kvack.org, liam@infradead.org,
+ vbabka@kernel.org, rppt@kernel.org, mhocko@suse.com, jack@suse.cz,
+ pfalcato@suse.de, wanglian@kylinos.cn, chentao@kylinos.cn,
+ lianux.mm@gmail.com, kunwu.chan@gmail.com, liyangouwen1@oppo.com,
+ chrisl@kernel.org, kasong@tencent.com, shikemeng@huaweicloud.com,
+ nphamcs@gmail.com, bhe@redhat.com, youngjun.park@lge.com,
+ linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+ loongarch@lists.linux.dev, linuxppc-dev@lists.ozlabs.org,
+ linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
+ Nanzhe Zhao <nzzhao@126.com>
+References: <20260430040427.4672-1-baohua@kernel.org>
+ <afNM-gIqxpyJ6ro7@casper.infradead.org>
+ <CAGsJ_4w0qcYmukHqsyRd0jomoyYkJjOt8b-Cgp53BgP-8QQghw@mail.gmail.com>
+ <afS_L-5XeWIldTXA@casper.infradead.org>
+ <CAGsJ_4wk=SDtgin+84Ev2TamU-JFfmrg_SUay=-tcYmnFvK6Nw@mail.gmail.com>
+ <afTpoL3FklpQZNMM@casper.infradead.org>
+ <CAGsJ_4ysMcrmDLSOwBkf7qwCQrcDWeEMXkHDajTJFMLKUk0bSQ@mail.gmail.com>
+ <agrWuDNGddNmvMFD@lucifer>
+ <CAGsJ_4zqLfdWoTH9s7FFaqWWj0mESfikYgr7=GcV64qcuXrPxA@mail.gmail.com>
+ <CAJuCfpE0WQrB3zJp9qn3jvn5DthS=ttpX7gJJvyEhA_BJGrp5g@mail.gmail.com>
+ <agxbq1TxJdniMQT3@lucifer>
+From: "David Hildenbrand (Arm)" <david@kernel.org>
+Content-Language: en-US
+Autocrypt: addr=david@kernel.org; keydata=
+ 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
+ qIws/H2t
+In-Reply-To: <agxbq1TxJdniMQT3@lucifer>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-On Wed, Oct 04, 2023 at 03:19:57PM -0500, gjoyce@linux.vnet.ibm.com wrote:
-> +int sed_read_key(char *keyname, char *key, u_int *keylen)
-> +{
-> +	struct plpks_var var;
-> +	struct plpks_sed_object_data data;
-> +	int ret;
-> +	u_int len;
-> +
-> +	plpks_init_var(&var, keyname);
-> +
-> +	if (!plpks_sed_available)
-> +		return -EOPNOTSUPP;
-> +
-> +	var.data = (u8 *)&data;
-> +	var.datalen = sizeof(data);
-> +
-> +	ret = plpks_read_os_var(&var);
-> +	if (ret != 0)
-> +		return ret;
-> +
-> +	len = min_t(u16, be32_to_cpu(data.key_len), var.datalen);
-                                                    ^^^^^^^^^^^
-This isn't the correct limit.  This is the number of bytes that we
-copied into data.  Probably it's sizeof(data) and, hopefully, it's
-at least the offsetof(struct plpks_sed_object_data, key).
+On 5/19/26 14:53, Lorenzo Stoakes wrote:
+> On Mon, May 18, 2026 at 12:56:59PM -0700, Suren Baghdasaryan wrote:
+> 
+>>>
+>>> I think we either need to fix `fork()`, or keep the current
+>>> behavior of dropping the VMA lock before performing I/O.
+>>
+>> I see. So, this problem arises from the fact that we are changing the
+>> pagefaults requiring I/O operation to hold VMA lock...
+>> And you want to lock VMA on fork only if vma_is_anonymous(vma) ||
+>> is_cow_mapping(vma->vm_flags). So, we will be blocking page faults for
+>> anonymous and COW VMAs only while holding mmap_write_lock, preventing
+>> any VMA modification. On the surface, that looks ok to me but I might
+>> be missing some corner cases. If nobody sees any obvious issues, I
+>> think it's worth a try.
+> 
+> Not sure if you noticed but I did raise concerns ;)
+> 
+> I wonder if you've confused the fault path and fork here, as I think Barry has
+> been a little unclear on that.
+> 
+> What's being suggested in this thread is to fundamentally change fork behaviour
+> so it's different from the entire history of the kernel (or - presumably - at
+> least recent history :) 
+I don't want fork() to become different in that regard.
 
-To me the temptation is the initialize data to zero and
-s/var.datalen/sizeof(data.key)/.
+There is already a slight difference with vs. without per-VMA locks, because
+there is a window in-between us taking the write mmap_lock and all the per-VMA
+locks. I raised that previously [1] and assumed that it is probably fine.
 
-> +	memcpy(key, data.key, len);
-                    ^^^^^^^^
+I also raised in the past why I think we must not allow concurrent page faults,
+at least as soon as anonymous memory is involved [2].
 
-> +	key[len] = '\0';
-> +	*keylen = len;
-> +
-> +	return 0;
-> +}
+... and I raised that this is pretty much slower by design right now: "Well, the
+design decision that CONFIG_PER_VMA_LOCK made for now to make page faults fast
+and to make blocking any page faults from happening to  be slower ..." [3]
 
-regards,
-dan carpenter
+[1] https://lore.kernel.org/all/970295ab-e85d-7af3-76e6-df53a5c52f8b@redhat.com/
+[2] https://lore.kernel.org/all/7e3f35cc-59b9-bf12-b8b1-4ed78223844a@redhat.com/
+[3] https://lore.kernel.org/all/2efa2c89-3765-721d-2c3c-00590054aa5b@redhat.com/
+
+-- 
+Cheers,
+
+David
 
