@@ -1,61 +1,61 @@
-Return-Path: <linuxppc-dev+bounces-21233-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21234-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7A24ACD4F3C
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 May 2026 11:20:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 86E9BCD4F3C
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 May 2026 11:21:03 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gL8H86sY6z2yRF;
-	Wed, 20 May 2026 21:20:52 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779276052;
-	cv=none; b=drz/Y4qGEolqph0AWEwxztieAVKItc6xWw7A2XkVI0uOO4hjiQOsUB4HghoC3Tw+nIcTi0VveXdD25nrClq/wMR/Nu9ztVULBvzOWRjN0+u6uv0JTme1+Hen1zvwNo6VpnwIz89ssjEL7g8N7dTJtwyGZz5Uy53+TesaykaRk1p8GLXhdlkYrI/6t4wTSRNlBwDn2nREg5NLcgE0Iw2QTabInfU3FGXL1ZCYs2I6YvGnc6kzlDW+MV81TJa3URyeSfYO1KUs7oDXskaw0XvqoRLloNWxWIV8XL1dWy1/g5Qs9VTK0KOCiDgVFD6b6xwECq1CunPLfLMhKm153Q52rQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gL8HL1Xd9z2yS4;
+	Wed, 20 May 2026 21:21:02 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779276062;
+	cv=none; b=DoZ9iOrxB9oVs7aZO2mRRYAr7XJtoHBVXUKXSgztRGuiyCTMsjKqqMAypflP20DopirPJbGeb0aBZBkYrIhagFFvaBWfttE/zfPbQMVP72Ci1+PSKmJQJtfpqlPzTKGJ9PCxS+QfmLhyV1SjUrPqtJ2JByPKFdEi1XI/oRIwKNmCqKbcaw+6NmaGlHXAbLUvP8lttWw1Eq7lWolWEl7L3HWFBxcMnjdCc7ZMrmrbQN6zK4AI62zoxHe5ZxmMacL5kDYB5/efOMDkw0dvyHJHLnJYvZ1cdE32dse7gG5o8EHq62UrEXo/F099qbGwzJQNpdOIwsY6oZejwh730MxekA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1779276052; c=relaxed/relaxed;
-	bh=8T65It1GO1SXGGayulZQ3wUSSNygOruDa19FjF8qO0c=;
+	t=1779276062; c=relaxed/relaxed;
+	bh=4E4m0krrTAOPHzvgF8sRUKe90FnIaCW88Ns6rN2/13c=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=eVbc6UiFenjecAKJYEvbLCd7R/ijmfMRrAaZQST2o6EUZothWLEhQdjBE2ds3OWr7oRinZRHFBG9rDGaWpEy0X8qNpY8bMC5RFfsj+qKD5cm49kG2HIVhGTOhPaZZz25mg357WKmQa1qUQHRZh3b81SNFukFW2h2egWAk4Sj4UaIXMSake0J/AUgc/4aNbz7i9KPz5SqH/MTv3xpxuRiWCPJV/rcgmq7MrB99LZVqQKPCFhH+kRv6RmYuEy8OT+AI70KZNf1jEo1LSmDSqkEG9OuO9qNJ1DHvivfVD28MKK9U3OGYpNosnq34fEdpBitXkuNi7SfvFX7jLLxG6Vjvw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=KkRVim+0; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=sashal@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version:Content-Type; b=QWjEVsk9trGdKJHySVntUbJniQVvjCrBv/IL8rQYT+lYU335mItrhJCOrw3rWd7Ozsakx2LM5KJoW4cx0wGEfhovyJQhayptLWyCahQxASETE0spiVSO3C/thIbCEp+yGAGYvszXzOgKzGrTrD2xbtj1MEF+IH8dW8PB/D6q/8/FjWQHUFrPytyUI7n/bAm/tR9jz5+gz8AKTWsfxfgiEnS6Nxu32QIagmwNRBKBmb5aPMI/UYUydoByZwdAxOBt29ICD7sZ7XzvVblndscBJ7ykpz7rdCmVSTLQc5oizolVIR1yLloBVhBhtDk0IeuG86Fw7BPFA4+1JdLEWNUgRw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=A8kAzGAZ; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=sashal@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=KkRVim+0;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=A8kAzGAZ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=sashal@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=sashal@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gL8H800yXz2xPL
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 May 2026 21:20:51 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gL8HK0gh0z2xPL
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 May 2026 21:21:01 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 7400244159;
-	Wed, 20 May 2026 11:20:49 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7E38C1F00894;
-	Wed, 20 May 2026 11:20:48 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 0C2A660121;
+	Wed, 20 May 2026 11:20:59 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D94C61F00897;
+	Wed, 20 May 2026 11:20:57 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1779276049;
-	bh=8T65It1GO1SXGGayulZQ3wUSSNygOruDa19FjF8qO0c=;
+	s=k20260515; t=1779276058;
+	bh=4E4m0krrTAOPHzvgF8sRUKe90FnIaCW88Ns6rN2/13c=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=KkRVim+0+OrVyWTQbhEi2+sEilqbCrnoxyGjk/uz5K6bKSEWuo0H6i5G5uol8HA6J
-	 NU6olKMJvO1C8/wtkK0KHycrlKHtu9I78pTcZuAqH+4fhZjDA0TqpPSAOwezVfjh7T
-	 o2UgB/swKxMXFdj8Ivs1LLNQvpqtx+nYMu85zOF1K4xI3WlsATW3GxVzW6aN3bn/S8
-	 iOt31QxxVLM1dwBeOZdkR8geZBIg+4y8IpOAqXJynvxa58q03b9zNxTMrfR2axyUGi
-	 uLSe646jOQojvbeaTT0EE2hpKMt5gnoZgJJuUCsIZ9pGX/qWx82pvJ1gBL+edOw1c7
-	 YBa9zpb/KNL2A==
+	b=A8kAzGAZezew7YqU1jAiuwjlJ7LYpDvl5E1RVUzBPu1MGtghsSRP0Ede8pQIZyV/N
+	 cdY0wkSpm4YxjWtx+rt6KeOEc8sn2C+7ayVwKExsC1arS8NAO8cKdyMfKaVPeIOnaU
+	 RCZiAMBSwEwjyLNZlqikzHZbRNLM8Wsj962Q0e3DWJSt2Ugo9i3ZOLx3a4/VQ+tPsC
+	 RBuKB/ZEGiCzm+k0tkn4aTlN40/AIn3HsV6gHCUkfrwS7zJLNe60IQtupPhrQz8r5E
+	 c30KFDvbO9cU2ClQ7YRxopIH0CVpeA9U/UtAKNuqxzjQneIVwC1IOvZM6X/89PKYMy
+	 rXvJ8yNe4pdtg==
 From: Sasha Levin <sashal@kernel.org>
 To: patches@lists.linux.dev,
 	stable@vger.kernel.org
-Cc: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>,
+Cc: Athira Rajeev <atrajeev@linux.ibm.com>,
 	Madhavan Srinivasan <maddy@linux.ibm.com>,
 	Sasha Levin <sashal@kernel.org>,
 	mpe@ellerman.id.au,
 	linuxppc-dev@lists.ozlabs.org,
 	linux-kernel@vger.kernel.org
-Subject: [PATCH AUTOSEL 7.0-6.1] powerpc/pasemi: Drop redundant res assignment
-Date: Wed, 20 May 2026 07:19:17 -0400
-Message-ID: <20260520111944.3424570-45-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 7.0-6.18] powerpc/pseries/htmdump: Free the global buffers in htmdump module exit
+Date: Wed, 20 May 2026 07:19:24 -0400
+Message-ID: <20260520111944.3424570-52-sashal@kernel.org>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20260520111944.3424570-1-sashal@kernel.org>
 References: <20260520111944.3424570-1-sashal@kernel.org>
@@ -75,242 +75,384 @@ MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
 X-stable-base: Linux 7.0.9
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-From: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+From: Athira Rajeev <atrajeev@linux.ibm.com>
 
-[ Upstream commit f583bd5f64d40e083dde5bb22846c4d93e59d471 ]
+[ Upstream commit 54d54f33813d7911555226b4220737177a2ba8d6 ]
 
-Return value of pas_add_bridge() is not used, so code can be simplified
-to fix W=1 clang warnings:
+htmdump modules uses global memory buffers to capture
+details like capabilities, status of specified HTM, read the
+trace buffer. These are initialized during module init and
+hence needs to be freed in module exit.
 
-  arch/powerpc/platforms/pasemi/pci.c:275:6: error: variable 'res' set but not used [-Werror,-Wunused-but-set-variable]
+Patch adds freeing of the memory in module exit. The change
+also includes minor clean up for the variable name. The
+read call back for the debugfs interface file saves filp->private_data
+to local variable name which is same as global variable
+name for the memory buffers. Rename these local variable
+names.
 
-Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+Signed-off-by: Athira Rajeev <atrajeev@linux.ibm.com>
 Signed-off-by: Madhavan Srinivasan <maddy@linux.ibm.com>
-Link: https://patch.msgid.link/20260317130823.240279-4-krzysztof.kozlowski@oss.qualcomm.com
+Link: https://patch.msgid.link/20260314132432.25581-1-atrajeev@linux.ibm.com
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
 
 LLM Generated explanations, may be completely bogus:
 
+## Summary
+This commit fixes a real resource leak in
+`arch/powerpc/platforms/pseries/htmdump.c`: `htm_status_buf`,
+`htm_info_buf`, and `htm_caps_buf` are each allocated with
+`kmalloc(PAGE_SIZE, GFP_KERNEL)` during module/debugfs initialization,
+but only `htm_buf` is freed in `htmdump_exit()`. The patch adds the
+three missing `kfree()` calls. The local-variable renames are cleanup
+and are also used by the following two patches in the same posted
+series.
+
+The benefit is modest because the leak is on module unload, not a hot
+path, and the feature is PowerPC pseries/debugfs-specific. But it is a
+real leak in a `default m` module, the fix is trivial, isolated, and low
+risk. For stable trees that contain the v6.16-era `htmstatus`,
+`htminfo`, and `htmcaps` additions, this is suitable.
+
 ## Phase Walkthrough
-
 ### Phase 1: Commit Message Forensics
-Record 1.1: Subsystem `powerpc/pasemi`; action verb `Drop`; intent is to
-remove an unused local variable assignment in PA Semi PCI init.
+Record 1.1: Subsystem is `powerpc/pseries/htmdump`; action verb is
+`Free`; claimed intent is freeing global HTM debugfs buffers during
+module exit.
 
-Record 1.2: Tags found: `Signed-off-by: Krzysztof Kozlowski`, `Signed-
-off-by: Madhavan Srinivasan`, `Link: https://patch.msgid.link/2026031713
-0823.240279-4-krzysztof.kozlowski@oss.qualcomm.com`. No `Fixes:`,
-`Reported-by:`, `Tested-by:`, `Reviewed-by:`, `Acked-by:`, or `Cc:
-stable`.
+Record 1.2: Tags in the supplied commit message: `Signed-off-by: Athira
+Rajeev <atrajeev@linux.ibm.com>`, `Signed-off-by: Madhavan Srinivasan
+<maddy@linux.ibm.com>`, `Link:
+https://patch.msgid.link/20260314132432.25581-1-atrajeev@linux.ibm.com`.
+No `Fixes:`, `Reported-by:`, `Tested-by:`, `Reviewed-by:`, `Acked-by:`,
+or `Cc: stable@vger.kernel.org` tag was present in this commit.
 
-Record 1.3: The commit explicitly describes a Clang `W=1` build warning
-promoted to an error: `variable 'res' set but not used
-[-Werror,-Wunused-but-set-variable]`. No runtime symptom, crash, data
-corruption, or user-visible functional failure is described.
+Record 1.3: The body describes global memory buffers initialized in
+module init and not freed in module exit. The user-visible symptom is
+unreclaimed kernel memory after unloading the module. No crash, stack
+trace, reporter, affected-version statement, or reproducer is given.
 
-Record 1.4: This is not a hidden runtime bug fix. It is a build-warning
-cleanup that can matter when building powerpc with warning-as-error
-settings.
+Record 1.4: This is a hidden cleanup-style bug fix: the functional
+change is missing resource release on module exit.
 
 ### Phase 2: Diff Analysis
-Record 2.1: One file changed: `arch/powerpc/platforms/pasemi/pci.c`, `1
-insertion(+), 2 deletions(-)`. Only `pas_pci_init()` is modified. Scope
-is single-file surgical.
+Record 2.1: One file changed:
+`arch/powerpc/platforms/pseries/htmdump.c`, 17 insertions and 14
+deletions in the posted patch. Modified functions are `htmdump_read()`,
+`htmstatus_read()`, `htminfo_read()`, `htmcaps_read()`, and
+`htmdump_exit()`. Scope is single-file surgical.
 
-Record 2.2: Before: `pas_pci_init()` declared `int res;` and assigned
-`res = pas_add_bridge(np);`, then never read `res`. After: it still
-calls `pas_add_bridge(np);` but does not assign the return value. The
-execution path and side effects are unchanged.
+Record 2.2: The read-callback hunks rename local variables from names
+shadowing globals to `*_data`; behavior is unchanged. The exit hunk
+changes `htmdump_exit()` from freeing only `htm_buf` to freeing
+`htm_buf`, `htm_status_buf`, `htm_info_buf`, and `htm_caps_buf`.
 
-Record 2.3: Bug category: build warning/build error under specific
-compiler options. Mechanism: remove unused-but-set variable. No resource
-lifetime, locking, memory safety, reference counting, or logic behavior
-changes.
+Record 2.3: Bug category is resource leak. Verified allocations are
+three `PAGE_SIZE` buffers for status/info/caps in
+`htmdump_init_debugfs()` without corresponding frees before this patch.
 
-Record 2.4: Fix quality is obviously correct by inspection: the function
-call remains, only the unused local storage is removed. Regression risk
-is very low because runtime behavior is unchanged.
+Record 2.4: Fix quality is high: `kfree(NULL)` is safe, the buffers are
+global module-owned allocations, and debugfs removal already happens
+before freeing. Regression risk is very low. The only non-functional
+churn is local-variable rename.
 
 ### Phase 3: Git History Investigation
-Record 3.1: `git blame` on current stable code shows the exact changed
-lines are present in the checked-out stable tree. Deeper history shows
-the unused `res` assignment was introduced by `250a93501d626`
-(`powerpc/pasemi: Search for PCI root bus by compatible property`),
-first described by `git describe` as `v4.19-rc1~110^2~83`.
+Record 3.1: `git blame` on the current stable checkout points the
+relevant lines at the repository boundary merge `f3f5edc5e41e0`, so I
+followed explicit commit objects. `htm_status_buf` was added by
+`627cf584f4c3`, `htm_info_buf` by `dea7384e14e7`, and `htm_caps_buf` by
+`143a2584627c`, all described by `git describe --contains`/history as
+v6.16-rc1-era commits.
 
-Record 3.2: No `Fixes:` tag is present. Manual history identified
-`250a93501d626` as the introducing commit for the exact unused
-assignment pattern.
+Record 3.2: Candidate has no `Fixes:` tag, so no direct Fixes target
+applies. Related series patches 2/3 and 3/3 have `Fixes:` tags for
+`dea7384e14e7` and `627cf584f4c3`, but this patch does not depend on
+those fixes.
 
-Record 3.3: Recent file history shows only the candidate commit and
-unrelated treewide allocation changes in `next-20260508`; no
-prerequisite pasemi PCI refactor was found.
+Record 3.3: Recent `htmdump` history shows the v6.16 additions for
+status/info/setup/flags/caps and a header include fix. The candidate is
+patch 1/3 in a series; patch 1 is standalone, while patches 2/3 and 3/3
+textually build on its variable renames.
 
-Record 3.4: The author has other powerpc cleanup commits nearby,
-including the sibling PS3 warning fix. `MAINTAINERS` identifies Madhavan
-Srinivasan and Michael Ellerman as powerpc maintainers; Madhavan
-committed this patch.
+Record 3.4: Author Athira Rajeev authored the original htmdump expansion
+commits; Madhavan Srinivasan committed them. This was verified from `git
+show` for the status/info/caps commits.
 
-Record 3.5: The sibling commit `8333e4916040e` is part of the same
-cleanup series but is independent. This pasemi patch applies standalone
-to the current 7.0.5 checkout.
+Record 3.5: No prerequisite is needed for patch 1 beyond the buffers
+existing. An isolated `git apply --check` of patch 1 succeeds on the
+current 7.0 stable checkout.
 
 ### Phase 4: Mailing List And External Research
-Record 4.1: `b4 dig -c f583bd5f64d40` found the original submission by
-patch-id. It found the January submission and the March resend
-corresponding to the commit `Link:`. Direct WebFetch to
-lore/patch.msgid.link was blocked by Anubis.
+Record 4.1: `b4 dig` could not be meaningfully run because the candidate
+commit object/hash is not present in the checked-out refs; `b4 dig -h`
+confirmed it requires `-c <commitish>`. I used `b4 mbox -c` with
+message-id `20260314132432.25581-1-atrajeev@linux.ibm.com`; it fetched a
+3-message thread and reported no newer revision.
 
-Record 4.2: `b4 dig -w` showed appropriate powerpc maintainers and
-LLVM/compiler-warning stakeholders were copied: Madhavan Srinivasan,
-Michael Ellerman, Nicholas Piggin, Christophe Leroy, Nathan Chancellor,
-LLVM list, linuxppc-dev, and others.
+Record 4.2: Original recipients from the mbox were
+`maddy@linux.ibm.com`, `linuxppc-dev@lists.ozlabs.org`, and CCs
+including `hbathini`, `sshegde`, and IBM HTM-related recipients. No
+review replies, NAKs, or stable nominations were present in the fetched
+mbox.
 
-Record 4.3: No bug report link or reporter tag exists. The thread
-describes a compiler warning/build-cleanliness issue, not a runtime bug
-report.
+Record 4.3: No `Reported-by` or bug-report link exists for this
+candidate. `WebFetch` to lore/patch.msgid was blocked by Anubis, but `b4
+mbox` successfully fetched the thread.
 
-Record 4.4: The patch is part of a two-patch series with `powerpc/ps3:
-Drop redundant result assignment`; the other patch is the same class of
-cleanup and is not a dependency.
+Record 4.4: The patch is part of a 3-patch series. Patch 1 fixes exit
+cleanup; patch 2 fixes `htminfo_read()` offset handling; patch 3 fixes
+`htmstatus_read()` offset handling. Patch 1 can apply standalone, and
+later patches depend textually on its renames.
 
-Record 4.5: The downloaded thread contains no `stable` mention. A direct
-lore stable search was attempted but blocked by Anubis, so no stable-
-list archive result could be independently verified.
+Record 4.5: Stable-specific lore WebFetch was blocked by Anubis.
+WebSearch for the exact subject and stable context found no specific
+stable discussion. Local `git log --grep` checks of `v6.18`, `v6.19`,
+`v7.0`, and `linux-rolling-stable` found no exact-subject match.
 
 ### Phase 5: Code Semantic Analysis
-Record 5.1: Modified function: `pas_pci_init()`.
+Record 5.1: Modified functions are `htmdump_read()`, `htmstatus_read()`,
+`htminfo_read()`, `htmcaps_read()`, and `htmdump_exit()`.
 
-Record 5.2: Callers: `pas_pci_init()` is assigned to `.discover_phbs` in
-the PA Semi machine descriptor in
-`arch/powerpc/platforms/pasemi/setup.c`. `pas_add_bridge()` is static
-and, in `next-20260508`, is called only from `pas_pci_init()`.
+Record 5.2: Callers/entry points are verified through file operations
+and module macros: `htmdump_exit()` is registered with `module_exit()`,
+reads are reached through debugfs files created by
+`debugfs_create_file()` with the corresponding fops.
 
-Record 5.3: Relevant callees in the affected path include
-`pci_set_flags()`, `of_find_compatible_node()`, `pas_add_bridge()`, and
-`of_node_put()`. `pas_add_bridge()` allocates/configures the PCI
-controller and scans OF ranges/ISA bridge state.
+Record 5.3: Key callees are `debugfs_remove_recursive()`, `kfree()`,
+`htm_hcall_wrapper()`, `virt_to_phys()`, and
+`simple_read_from_buffer()`. The functional fix only adds `kfree()`
+calls in exit.
 
-Record 5.4: Reachability is boot-time/platform-init only for PA Semi
-systems. It is not syscall-reachable and has no unprivileged runtime
-trigger.
+Record 5.4: Reachability is module lifecycle and debugfs based. The leak
+triggers on module unload after successful allocation of the
+status/info/caps buffers. Unprivileged triggering was not verified and
+is not relied on; Kconfig shows `HTMDUMP` is `tristate`, `default m`,
+and depends on `PPC_PSERIES && DEBUG_FS`.
 
-Record 5.5: Similar pattern found: sibling commit `8333e4916040e`
-removes an unused assignment in PS3 platform code for the same warning
-class.
+Record 5.5: Similar pattern found: `htm_buf` was already freed in
+`htmdump_exit()`, while the three later-added global buffers were not.
 
 ### Phase 6: Stable Tree Analysis
-Record 6.1: The exact unused `res = pas_add_bridge(np);` pattern exists
-in verified tags `v4.19`, `v5.10`, `v5.15`, `v6.1`, `v6.6`, `v6.12`,
-`v6.17`, `v6.18`, `v6.19`, and `v7.0`. It was not present in the same
-form in `v4.14` or `v4.9`.
+Record 6.1: `v6.15` has `htmdump.c` with only `htm_buf`; `v6.16`,
+`v6.17`, `v6.18`, `v6.19`, and `v7.0` have the three additional buffers
+and only free `htm_buf`. So the bug affects stable trees containing the
+v6.16 htmdump expansions, not older trees lacking those buffers.
 
-Record 6.2: Backport difficulty is clean for the current 7.0.5 tree,
-verified by `git format-patch -1 --stdout f583bd5f64d40 | git apply
---check`. Older stable trees may need minor context adjustment because
-surrounding code differs in older releases.
+Record 6.2: Backport difficulty is low for affected trees. The patch’s
+base blob matches `v6.16`/`v6.17`/current 7.0 content for the relevant
+file, and isolated patch 1 applies cleanly to the current checkout.
 
-Record 6.3: No earlier same-subject fix exists in `v7.0`; related same-
-series warning fixes were found only in `next-20260508`.
+Record 6.3: No exact-subject related fix was found in checked `v6.18`,
+`v6.19`, `v7.0`, or `linux-rolling-stable`.
 
-### Phase 7: Subsystem Context
-Record 7.1: Subsystem is `arch/powerpc/platforms/pasemi`, a platform-
-specific powerpc PCI init path. Criticality is peripheral/platform-
-specific, not core kernel.
+### Phase 7: Subsystem And Maintainer Context
+Record 7.1: Subsystem is PowerPC pseries platform driver/debugfs
+support. Criticality is peripheral/platform-specific, not core kernel-
+wide.
 
-Record 7.2: Recent pasemi file history is low churn. This is mature
-platform code with little recent activity.
+Record 7.2: `git log -20 v7.0 -- arch/powerpc/platforms/pseries` shows
+active pseries development, but this particular fix is contained to
+`htmdump.c`.
 
 ### Phase 8: Impact And Risk
-Record 8.1: Affected population: PA Semi powerpc platform builders,
-especially Clang `W=1` builds with powerpc `-Werror` behavior.
+Record 8.1: Affected users are PowerPC pseries users with
+`CONFIG_HTMDUMP` enabled, primarily using the debugfs HTM dump module.
 
-Record 8.2: Trigger condition is build-time only. No runtime trigger and
-no unprivileged-user trigger were verified.
+Record 8.2: Trigger is successful module initialization followed by
+module exit/unload. Repeated load/unload can accumulate unreclaimed
+pages until reboot. This is not verified as unprivileged-triggerable.
 
-Record 8.3: Failure mode is build failure under specific warning/error
-settings, not crash/corruption/deadlock. Severity is medium for affected
-builders, low for runtime users.
+Record 8.3: Failure mode is kernel memory/resource leak, three
+`PAGE_SIZE` allocations per unload for the later buffers. Severity is
+medium: real and persistent until reboot, but not a crash/security/data-
+corruption fix and not a hot path.
 
-Record 8.4: Benefit is narrow but real under the stable build-fix
-exception. Risk is extremely low because the generated runtime behavior
-should be unchanged: the same function call remains and only an unused
-local assignment is removed.
+Record 8.4: Benefit is moderate for affected stable users; risk is very
+low because the functional change is only three `kfree()` calls after
+debugfs removal.
 
 ### Phase 9: Final Synthesis
-Record 9.1: Evidence for backporting: fixes a verified compiler
-warning/error class; code exists across many stable-era releases; patch
-is tiny, standalone, and behavior-preserving; applies cleanly to current
-stable checkout. Evidence against: no runtime bug, no default-build
-failure was verified, no stable nomination, platform-specific impact.
-Unresolved: direct stable lore search was blocked, and I did not run a
-full Clang `W=1` build.
+Record 9.1: Evidence for backporting: real resource leak, affects stable
+trees v6.16 and newer that contain the expanded htmdump module, fix is
+tiny and obviously correct, isolated patch applies cleanly. Evidence
+against: peripheral platform-specific module, leak occurs on module
+unload rather than common runtime path, no reporter/testing/stable tags
+in this patch. Unresolved: no full lore review discussion was available
+beyond the 3-patch mbox; direct WebFetch lore pages were blocked.
 
-Record 9.2: Stable rules checklist: obviously correct: yes by
-inspection; tested: no explicit `Tested-by` and no local full build;
-fixes a real issue: yes as a build-warning/error issue under specific
-settings; important: only under build-fix exception, not runtime-
-critical; small/contained: yes, 3-line single-function change; no new
-feature/API: yes; applies to stable: current 7.0.5 yes, older trees
-likely simple but not all tested.
+Record 9.2: Stable rules checklist: obviously correct yes; fixes a real
+bug yes; important enough is borderline but acceptable as a real
+resource leak with very low regression risk; small and contained yes; no
+new feature/API yes; applies to affected stable trees yes for current
+7.0 and likely cleanly where file matches v6.16+.
 
-Record 9.3: Exception category: build fix. This is the only reason to
-take it; it is not a runtime bug fix.
+Record 9.3: No automatic exception category applies: this is not a
+device ID, quirk, DT update, build fix, or documentation-only fix.
 
-Record 9.4: Decision: backport as a low-risk build fix for Clang
-`W=1`/powerpc warning-as-error builds. The benefit is narrow, but the
-patch is minimal, standalone, and behavior-preserving.
+Record 9.4: Decision is YES for stable trees that contain
+`htm_status_buf`, `htm_info_buf`, and `htm_caps_buf`.
 
 ## Verification
-- [Phase 1] `git show --format=fuller --stat --patch f583bd5f64d40`
-  verified commit message, tags, and exact diff.
-- [Phase 2] Diff verified one file, one function, `1 insertion`, `2
-  deletions`.
-- [Phase 3] `git blame` and `git show 250a93501d626` verified the unused
-  assignment pattern was introduced by `250a93501d626`, described as
-  before `v4.19-rc1`.
-- [Phase 4] `b4 dig -c`, `-a`, `-w`, and `b4 mbox` verified the patch
-  submission, resend, recipients, and lack of candidate-specific stable
-  tags in the downloaded thread.
-- [Phase 5] `rg` and `git grep` verified `pas_pci_init()` call placement
-  and `pas_add_bridge()` call sites.
-- [Phase 6] `git grep` verified the pattern in `v4.19`, `v5.10`,
-  `v5.15`, `v6.1`, `v6.6`, `v6.12`, `v6.17`, `v6.18`, `v6.19`, and
-  `v7.0`; `git apply --check` verified clean apply to current 7.0.5.
-- [Phase 7] `MAINTAINERS` verified powerpc maintainers and subsystem
-  ownership.
-- [Phase 8] `arch/powerpc/Kconfig.debug` and `arch/powerpc/Kbuild`
-  verified powerpc warning-as-error configuration exists.
-- UNVERIFIED: I did not run a full Clang `W=1` build, and direct lore
-  stable search was blocked by Anubis.
+- Phase 1: Parsed supplied commit message and b4-fetched patch 1;
+  confirmed no `Fixes:`, `Reported-by`, `Tested-by`, review, or stable
+  tag in patch 1.
+- Phase 2: Read `arch/powerpc/platforms/pseries/htmdump.c`; confirmed
+  allocations and missing frees; inspected patch hunks from
+  `/tmp/htmdump-20260314.mbx`.
+- Phase 3: Ran `git blame -L 410,485`; followed explicit commits
+  `627cf584f4c3`, `dea7384e14e7`, and `143a2584627c` with `git show`;
+  checked author/subsystem history.
+- Phase 4: `b4 mbox -c` fetched the 3-message thread; direct `WebFetch`
+  lore URLs were blocked; WebSearch found no exact stable discussion.
+- Phase 5: Used `rg`, `ReadFile`, and Kconfig/Makefile/docs to verify
+  module/debugfs reachability and `CONFIG_HTMDUMP` as `tristate`,
+  `default m`.
+- Phase 6: Checked `v6.15`, `v6.16`, `v6.17`, `v6.18`, `v6.19`, and
+  `v7.0` file contents; isolated patch 1 passed `git apply --check`.
+- Phase 8: Verified failure mode from concrete `kmalloc(PAGE_SIZE)`
+  allocations and missing matching `kfree()` calls.
+- Unverified: whether every downstream stable branch has identical
+  context; direct stable-list lore search was blocked by Anubis.
 
 **YES**
 
- arch/powerpc/platforms/pasemi/pci.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+ arch/powerpc/platforms/pseries/htmdump.c | 31 +++++++++++++-----------
+ 1 file changed, 17 insertions(+), 14 deletions(-)
 
-diff --git a/arch/powerpc/platforms/pasemi/pci.c b/arch/powerpc/platforms/pasemi/pci.c
-index 60f990a336c47..2df9552746529 100644
---- a/arch/powerpc/platforms/pasemi/pci.c
-+++ b/arch/powerpc/platforms/pasemi/pci.c
-@@ -272,13 +272,12 @@ void __init pas_pci_init(void)
+diff --git a/arch/powerpc/platforms/pseries/htmdump.c b/arch/powerpc/platforms/pseries/htmdump.c
+index 742ec52c9d4df..93f0cc2dc7fb6 100644
+--- a/arch/powerpc/platforms/pseries/htmdump.c
++++ b/arch/powerpc/platforms/pseries/htmdump.c
+@@ -86,7 +86,7 @@ static ssize_t htm_return_check(long rc)
+ static ssize_t htmdump_read(struct file *filp, char __user *ubuf,
+ 			     size_t count, loff_t *ppos)
  {
- 	struct device_node *root = of_find_node_by_path("/");
- 	struct device_node *np;
--	int res;
+-	void *htm_buf = filp->private_data;
++	void *htm_buf_data = filp->private_data;
+ 	unsigned long page, read_size, available;
+ 	loff_t offset;
+ 	long rc, ret;
+@@ -100,7 +100,7 @@ static ssize_t htmdump_read(struct file *filp, char __user *ubuf,
+ 	 * - last three values are address, size and offset
+ 	 */
+ 	rc = htm_hcall_wrapper(htmflags, nodeindex, nodalchipindex, coreindexonchip,
+-				   htmtype, H_HTM_OP_DUMP_DATA, virt_to_phys(htm_buf),
++				   htmtype, H_HTM_OP_DUMP_DATA, virt_to_phys(htm_buf_data),
+ 				   PAGE_SIZE, page);
  
- 	pci_set_flags(PCI_SCAN_ALL_PCIE_DEVS);
+ 	ret = htm_return_check(rc);
+@@ -112,7 +112,7 @@ static ssize_t htmdump_read(struct file *filp, char __user *ubuf,
+ 	available = PAGE_SIZE;
+ 	read_size = min(count, available);
+ 	*ppos += read_size;
+-	return simple_read_from_buffer(ubuf, count, &offset, htm_buf, available);
++	return simple_read_from_buffer(ubuf, count, &offset, htm_buf_data, available);
+ }
  
- 	np = of_find_compatible_node(root, NULL, "pasemi,rootbus");
- 	if (np) {
--		res = pas_add_bridge(np);
-+		pas_add_bridge(np);
- 		of_node_put(np);
+ static const struct file_operations htmdump_fops = {
+@@ -226,7 +226,7 @@ static int htmstart_get(void *data, u64 *val)
+ static ssize_t htmstatus_read(struct file *filp, char __user *ubuf,
+ 			     size_t count, loff_t *ppos)
+ {
+-	void *htm_status_buf = filp->private_data;
++	void *htm_status_data = filp->private_data;
+ 	long rc, ret;
+ 	u64 *num_entries;
+ 	u64 to_copy;
+@@ -238,7 +238,7 @@ static ssize_t htmstatus_read(struct file *filp, char __user *ubuf,
+ 	 * - last three values as addr, size and offset
+ 	 */
+ 	rc = htm_hcall_wrapper(htmflags, nodeindex, nodalchipindex, coreindexonchip,
+-				   htmtype, H_HTM_OP_STATUS, virt_to_phys(htm_status_buf),
++				   htmtype, H_HTM_OP_STATUS, virt_to_phys(htm_status_data),
+ 				   PAGE_SIZE, 0);
+ 
+ 	ret = htm_return_check(rc);
+@@ -255,13 +255,13 @@ static ssize_t htmstatus_read(struct file *filp, char __user *ubuf,
+ 	 * So total count to copy is:
+ 	 * 32 bytes (for first 7 fields) + (number of HTM entries * entry size)
+ 	 */
+-	num_entries = htm_status_buf + 0x10;
++	num_entries = htm_status_data + 0x10;
+ 	if (htmtype == 0x2)
+ 		htmstatus_flag = 0x8;
+ 	else
+ 		htmstatus_flag = 0x6;
+ 	to_copy = 32 + (be64_to_cpu(*num_entries) * htmstatus_flag);
+-	return simple_read_from_buffer(ubuf, count, ppos, htm_status_buf, to_copy);
++	return simple_read_from_buffer(ubuf, count, ppos, htm_status_data, to_copy);
+ }
+ 
+ static const struct file_operations htmstatus_fops = {
+@@ -273,7 +273,7 @@ static const struct file_operations htmstatus_fops = {
+ static ssize_t htminfo_read(struct file *filp, char __user *ubuf,
+ 			     size_t count, loff_t *ppos)
+ {
+-	void *htm_info_buf = filp->private_data;
++	void *htm_info_data = filp->private_data;
+ 	long rc, ret;
+ 	u64 *num_entries;
+ 	u64 to_copy;
+@@ -284,7 +284,7 @@ static ssize_t htminfo_read(struct file *filp, char __user *ubuf,
+ 	 * - last three values as addr, size and offset
+ 	 */
+ 	rc = htm_hcall_wrapper(htmflags, nodeindex, nodalchipindex, coreindexonchip,
+-				   htmtype, H_HTM_OP_DUMP_SYSPROC_CONF, virt_to_phys(htm_info_buf),
++				   htmtype, H_HTM_OP_DUMP_SYSPROC_CONF, virt_to_phys(htm_info_data),
+ 				   PAGE_SIZE, 0);
+ 
+ 	ret = htm_return_check(rc);
+@@ -301,15 +301,15 @@ static ssize_t htminfo_read(struct file *filp, char __user *ubuf,
+ 	 * So total count to copy is:
+ 	 * 32 bytes (for first 5 fields) + (number of HTM entries * entry size)
+ 	 */
+-	num_entries = htm_info_buf + 0x10;
++	num_entries = htm_info_data + 0x10;
+ 	to_copy = 32 + (be64_to_cpu(*num_entries) * 16);
+-	return simple_read_from_buffer(ubuf, count, ppos, htm_info_buf, to_copy);
++	return simple_read_from_buffer(ubuf, count, ppos, htm_info_data, to_copy);
+ }
+ 
+ static ssize_t htmcaps_read(struct file *filp, char __user *ubuf,
+ 			     size_t count, loff_t *ppos)
+ {
+-	void *htm_caps_buf = filp->private_data;
++	void *htm_caps_data = filp->private_data;
+ 	long rc, ret;
+ 
+ 	/*
+@@ -319,7 +319,7 @@ static ssize_t htmcaps_read(struct file *filp, char __user *ubuf,
+ 	 *   and zero
+ 	 */
+ 	rc = htm_hcall_wrapper(htmflags, nodeindex, nodalchipindex, coreindexonchip,
+-				   htmtype, H_HTM_OP_CAPABILITIES, virt_to_phys(htm_caps_buf),
++				   htmtype, H_HTM_OP_CAPABILITIES, virt_to_phys(htm_caps_data),
+ 				   0x80, 0);
+ 
+ 	ret = htm_return_check(rc);
+@@ -328,7 +328,7 @@ static ssize_t htmcaps_read(struct file *filp, char __user *ubuf,
+ 		return ret;
  	}
- 	of_node_put(root);
+ 
+-	return simple_read_from_buffer(ubuf, count, ppos, htm_caps_buf, 0x80);
++	return simple_read_from_buffer(ubuf, count, ppos, htm_caps_data, 0x80);
+ }
+ 
+ static const struct file_operations htminfo_fops = {
+@@ -482,6 +482,9 @@ static void __exit htmdump_exit(void)
+ {
+ 	debugfs_remove_recursive(htmdump_debugfs_dir);
+ 	kfree(htm_buf);
++	kfree(htm_status_buf);
++	kfree(htm_info_buf);
++	kfree(htm_caps_buf);
+ }
+ 
+ module_init(htmdump_init);
 -- 
 2.53.0
 
