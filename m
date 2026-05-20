@@ -1,93 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-21257-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21258-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4FE83CD4F3D
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 May 2026 21:40:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D7650CD4F5E
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 May 2026 21:53:32 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gLQ1f6Mvtz2yDs;
-	Thu, 21 May 2026 07:40:06 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a00:1450:4864:20::636" arc.chain=google.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779313206;
-	cv=pass; b=RtFbeMkSDoD9khdC4ecXMAy5Bcvrr5GtGNmNe7ELR42IeMVpGtlruQ1x99EgEhbZaroDe9yL5YVdyBfxLAlvgu1WjFUgoK/2EGbooM9SDCYld3WX9lILA28yLFf4MAU7RKWHgk/pLl4KPG032fDcs+sY/wZsdZZ4T/de1WecgPVegxjuE46Kpz0r5ExlfDXfuRSj+uzTCVvX9sJQH6vMPV3B7mK2kCI7WaUdLc9sY+SldQwPaJ+zbG/HM0ljDM4/+8jws4WTLhhi0xdVrxVsXXGcuglm0cmmGqx1Z303tj9dL8dAkM0H6Svt0VeOtcQce7wRlfHZ+aPm6GJU9ZZSlQ==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1779313206; c=relaxed/relaxed;
-	bh=FmdK4vbjUWnyTBEm67qsNClqg8Ylwzn73Ycp8tLb8QQ=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=ZGQA5HwDCeSRoV9jyVAOkQT5Hg6kW5o1IJiduY05qm/5bShx8fjrUb17S2CamLVqT2Apc3ivsnrcTSRORF3agydVoYJGKnmwyfwOrg8QBYi0P2DeyyG7QR2rEd2iaYNr2+JeUCH4HWayc8LVwfWJ0G6aSeC6EqWt3v7ZiVdvX7G94tpLwYXa5jKoKb27F53QQwyXpMklF9D4CJUu1zasaCR01fDcQMvX4RZCenxJ4174OZtcko28JB7zwLUkRaqCzEDiHjizUuB2MgzfeYCq9MoygUrqv58ndY3jowgX4GgsUCQa5VmwPKu0bn+oL033/UucOR0LWuMfaeoR9jl9MQ==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=lGEA3DWV; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::636; helo=mail-ej1-x636.google.com; envelope-from=shy828301@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gLQK73RJ6z2yFh;
+	Thu, 21 May 2026 07:53:31 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779314011;
+	cv=none; b=WS8Id/4C0/ELqGw/FZdV5UxzCDCHkIEfXf0EbBiUpOw0EqunWwPizb4pGWqC4cnz2gMQO4WONJZizOmlXYwS5wWH7Lco7q4wOe6fe+smgGYwZI66aZvT3q1bX+UQpc1pSB67x7VN0wYQNgomOoX77J1CvMXZFu13bgl92RqnbJxIk6gacOdH/b3PS8Wrkc4YnQqHYRRm94pZhiaM9n3Ve7hobQeaiObqh71ybevYmx9pbyKLWh5EZnXNWS47j4QrwJhGsWyKJrfY2rIidbAzOY4X7ApfEWNXKGKqjqzTp/JFTE40o0Vrrl2FXVDoSTtmZ/gfU4JF+czq6AbVr3rjyA==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1779314011; c=relaxed/relaxed;
+	bh=xPV2dKwaE2Vd6MXTyx7rLZbYWuBOQncN75Rd2vCx2ro=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=m9PHPdAhq9tZ9EK6IfWKHmUsbml3+QD2Aozh8qYI8FTdpHrMmOYkJ4PNzX7xv6Hs8s8ZSVvoP6A97t2G9rFyZe7i3IfdIrU5F2hk/E/J86NcrnLy+oVT6JVa6tKBi2FiFpb54waV7BO7DpkkTrsgM3UQ91RhfIiQS94c/0dn2QFhRbRMtYKWloCtjT6LmHNQY8lllXKdzur2CN3s7NVERfmyNBtiodqYLsRLQ2QKQzm65kixc6MXdxvs1VG8pEM1qhN4ZB9yUC9yA1/UDq1k9U2ovKVRcflgo3BXO2l7T7Hufj48EXZidKWq/oW6qcu2M6zgFEoLgbWvuaSx69ckRA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=lITw4wyv; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=lGEA3DWV;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=lITw4wyv;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::636; helo=mail-ej1-x636.google.com; envelope-from=shy828301@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-ej1-x636.google.com (mail-ej1-x636.google.com [IPv6:2a00:1450:4864:20::636])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gLQ1c54VCz2y8d
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 May 2026 07:40:04 +1000 (AEST)
-Received: by mail-ej1-x636.google.com with SMTP id a640c23a62f3a-b9358bc9c50so813166866b.1
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 May 2026 14:40:03 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1779313201; cv=none;
-        d=google.com; s=arc-20240605;
-        b=apooVOMwosDjq3iYRCQXXWaweGMiy/cFOXKPmAsdYCORuhV4TXPTMsHgI4cwvcsyGB
-         o+Vocnu9oIBoDYZyWs4mwBVapKgWlrKZJmJG9xx0cKXJYtxjNDafWib188BZ8uROs2Ic
-         S7shsjYvLh6h7xBuZsEqrPveLoutCSyc+ZpwpWcsN7k8asnh/fEx5qURJ0U7UXGI2b2t
-         8SV1lMSsHnhbreoDYdXhxB3fzb1vG5KrblKafiinov5ICQzLJuApcqVvWheR0D6/D+8A
-         e3g9WDeqyqVXHpeyDTw9MoSPYPGHcGf3mCrFJBsvarZumX7W/7BIto/KPLeAbl6H2X5O
-         JGiQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=FmdK4vbjUWnyTBEm67qsNClqg8Ylwzn73Ycp8tLb8QQ=;
-        fh=5XBtcKEMUpLvSOq79n7E/JfXuf5r/F/cuT4gv/55U+U=;
-        b=HvlP258ubqeEo1wjKg557Qa7cVQkzbVBv/FN7HKQQvXk2dFON6DNFceBW+tmrRnVbi
-         tB5IGNWynkAEBEIwmfIn+vMNjoxahuz6Y4PzT4l0DUxcZWU0d4ytZsxFBEBK8/NCNWgI
-         aPfWdNbvXhHgJAQbsatGcjB3VM/B2F8/g8n6gvUF3TF3S1oWkMvbuMY5J8vWI7DJfTQ4
-         TxSOBGVtgbtrXt2RfT5aKPE136OX3W0QTrpPHhWOot09Ja9Ks+0kUVcR6Er/Ldm4/a64
-         zocymhH9dZYftKxxc30t/DbpkTMAV0tf8NQVPIjWMvakKPRZo3oM+tiMUCvIXmY+6Xv4
-         K3lw==;
-        darn=lists.ozlabs.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1779313201; x=1779918001; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=FmdK4vbjUWnyTBEm67qsNClqg8Ylwzn73Ycp8tLb8QQ=;
-        b=lGEA3DWVclz0dHAahh775416wjaJhAANJ7q9Wyc1i9vshBKKJJw6SuIZwc49HEdW1w
-         U9rvQ8fhC7krLz3kXSI5Ko+FDomAWjNLrH4Et94SvCPSlsUkhUTgWl5aH2RichZF+p1E
-         sZgr1ztM9UXeo2CZ71jW+RLARkhUZPJJpPvGAGPT3W5CsSmndubmUC16kW15UFJqpn7+
-         BjqnSl6XyJxj0HFbeumpBtG9KLNtsiW47Co7BHX7c667qMV59taVjOGj1w9uNXqljUrn
-         FqFL8M/BqOjFeg3AsIRqzdWM1iIUek2+ayHqvgr20iLASNuU5zvumz6ALDuU+ne4tnQx
-         gl1Q==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1779313201; x=1779918001;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=FmdK4vbjUWnyTBEm67qsNClqg8Ylwzn73Ycp8tLb8QQ=;
-        b=kUfL3LG4jqQn1ZgUCYO3yv+cG1ukBUrGrWYkCCwnLwcWq+xW6bTPO+7Me9YE1XWDtn
-         QVOsq2jZlsFPo2oP81H6aHDlezLKC37wKINxqGPZO4KUzJGGHWHVBSmtuq9UE2jpNLZL
-         +rg4SIv8PK3BhwOd/CzJP922gfot4AN4BhJDzeQG86fDfrRpfS6D3OeQ3EU+BU/35are
-         boJPI/NmlON7a/eRK0KzpEjsgsWp1bPY9lz5sTNFTgxLl1TQBcMEls13AF/w5cL9Zxzw
-         oANk9YJOuEkXqtygwrzD+LSuWQ3bHj3nFiUvsr5LXVW09Cc9iAF5irXE3DySqz9HHpyU
-         9AMg==
-X-Forwarded-Encrypted: i=1; AFNElJ+IHNP/YBZQDS5QTGmp0TTRcO7IroLueiFxhtDitmYq8gZ+hoKpe01kBZDFuv0moMi5MmTKtBRz5tHgwUg=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YxGPKeaj8HDpIAaAm2Jcr8h5eu03wz3lv6clXBxtZz/85qMXdDg
-	P7INn6W3m26ug9bWAwu7NSOe3BXTTfYjLCgWGwZ4tHdTMkCpBk8NTuuE0WjUboEs8VijvAL0tNp
-	r7h8X5ToLjMkunNKJ0i1KehEvIFDBKus=
-X-Gm-Gg: Acq92OGcCMy3fdOeFsRVfSG5Ds6btIy/YCEg1BCTt/w29dHVaTPipTrWtqIfR6f+kE+
-	HtZnLVdQWcB5kX4IWbD/jBon5/0DKfdvRnHpi98W1z3WFHZt9kH36uzWLKlpxGd6TX8tk11rDx6
-	1NYdiq+QblWPI0ZXjI5m/rKFj9K0OyAdxxWXxgOhdqqVYD2jW1kabpS4rRfsGPlbqDz4Kbwbtj1
-	mTCms0cSQKlhsLsWe6zY1+Kc9xUGiog1hty/ppXDZH274GASZTdDQNm+OeNkIpq1ap3slhsIvYv
-	iyQoKc8vjlREew==
-X-Received: by 2002:a17:907:e14b:10b0:bd5:151d:2d31 with SMTP id
- a640c23a62f3a-bd51781106dmr1121316766b.13.1779313200765; Wed, 20 May 2026
- 14:40:00 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gLQK65zGxz2xM7
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 May 2026 07:53:30 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with ESMTP id 421E340DB5;
+	Wed, 20 May 2026 21:53:28 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 96AF61F000E9;
+	Wed, 20 May 2026 21:53:24 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1779314008;
+	bh=xPV2dKwaE2Vd6MXTyx7rLZbYWuBOQncN75Rd2vCx2ro=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To;
+	b=lITw4wyvZjTzkXXF5BIabqkOsAkkTnk8NhyhWVUYyUzfg8BYN44UNob3dHZktS4jb
+	 0rY1QfWGESKKYfKb35cHc9ouS6SRzDNrtDqOyXSwStx4n5IqrLOIUg4NqxJ+3l+P4Z
+	 hJ+Sif5F4oRLchBTgqzGD0vCKxDN9sjh96QZoas3YsExzAGbOJvSQOlB3jvMsjTY2u
+	 vhMi7dUtv/xuNIXN5QmfBJA1F0VJAiw0ADJ4fw7+WuBG2qxJVFj7W7HeH7wPo1EClo
+	 3bDRRGlRvuSwHcqF9y/LfpaiXl8c222ySl6UJAjoAKo2AP3HuWYctiHwggEKw8RhmQ
+	 unjGGhixMCQZQ==
+Message-ID: <1e0bc483-ed98-41ae-a5a1-a6ac5069c010@kernel.org>
+Date: Wed, 20 May 2026 23:53:21 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -101,119 +59,77 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20260430040427.4672-1-baohua@kernel.org> <afNM-gIqxpyJ6ro7@casper.infradead.org>
- <CAGsJ_4w0qcYmukHqsyRd0jomoyYkJjOt8b-Cgp53BgP-8QQghw@mail.gmail.com>
- <afS_L-5XeWIldTXA@casper.infradead.org> <CAGsJ_4wk=SDtgin+84Ev2TamU-JFfmrg_SUay=-tcYmnFvK6Nw@mail.gmail.com>
- <afTpoL3FklpQZNMM@casper.infradead.org> <CAGsJ_4ysMcrmDLSOwBkf7qwCQrcDWeEMXkHDajTJFMLKUk0bSQ@mail.gmail.com>
- <agrWuDNGddNmvMFD@lucifer> <CAGsJ_4zqLfdWoTH9s7FFaqWWj0mESfikYgr7=GcV64qcuXrPxA@mail.gmail.com>
- <CAJuCfpE0WQrB3zJp9qn3jvn5DthS=ttpX7gJJvyEhA_BJGrp5g@mail.gmail.com>
- <agxbq1TxJdniMQT3@lucifer> <e6d1017a-e4c5-493e-bfca-932c6d64eaac@kernel.org>
-In-Reply-To: <e6d1017a-e4c5-493e-bfca-932c6d64eaac@kernel.org>
-From: Yang Shi <shy828301@gmail.com>
-Date: Wed, 20 May 2026 14:39:49 -0700
-X-Gm-Features: AVHnY4IxXAq80R4nUJKOoKG85hi3I-EgpsftnPlc019PI3pxbjgBD4oSC5VrWsM
-Message-ID: <CAHbLzkq3S7NDYe4LXjurKNQU+40-wtqrD_PT18YcyHbAcNxiRQ@mail.gmail.com>
-Subject: Re: [PATCH v2 0/5] mm: reduce mmap_lock contention and improve page
- fault performance
-To: "David Hildenbrand (Arm)" <david@kernel.org>
-Cc: Lorenzo Stoakes <ljs@kernel.org>, Suren Baghdasaryan <surenb@google.com>, Barry Song <baohua@kernel.org>, 
-	Matthew Wilcox <willy@infradead.org>, akpm@linux-foundation.org, linux-mm@kvack.org, 
-	liam@infradead.org, vbabka@kernel.org, rppt@kernel.org, mhocko@suse.com, 
-	jack@suse.cz, pfalcato@suse.de, wanglian@kylinos.cn, chentao@kylinos.cn, 
-	lianux.mm@gmail.com, kunwu.chan@gmail.com, liyangouwen1@oppo.com, 
-	chrisl@kernel.org, kasong@tencent.com, shikemeng@huaweicloud.com, 
-	nphamcs@gmail.com, bhe@redhat.com, youngjun.park@lge.com, 
-	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, 
-	loongarch@lists.linux.dev, linuxppc-dev@lists.ozlabs.org, 
-	linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org, 
-	Nanzhe Zhao <nzzhao@126.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 1/4] fbdev: Wrap user-invoked calls to fb_set_var() in
+ helper
+To: Helge Deller <deller@gmx.de>, Thomas Zimmermann <tzimmermann@suse.de>,
+ simona@ffwll.ch, airlied@gmail.com, lukas@wunner.de, maddy@linux.ibm.com,
+ mpe@ellerman.id.au, npiggin@gmail.com
+Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+References: <20260520160744.130841-1-tzimmermann@suse.de>
+ <20260520160744.130841-2-tzimmermann@suse.de>
+ <0ce59eaf-1124-48c5-b812-c8e6b58e01d0@gmx.de>
+Content-Language: fr-FR
+From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+In-Reply-To: <0ce59eaf-1124-48c5-b812-c8e6b58e01d0@gmx.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 
-On Wed, May 20, 2026 at 3:34=E2=80=AFAM David Hildenbrand (Arm)
-<david@kernel.org> wrote:
->
-> On 5/19/26 14:53, Lorenzo Stoakes wrote:
-> > On Mon, May 18, 2026 at 12:56:59PM -0700, Suren Baghdasaryan wrote:
-> >
-> >>>
-> >>> I think we either need to fix `fork()`, or keep the current
-> >>> behavior of dropping the VMA lock before performing I/O.
-> >>
-> >> I see. So, this problem arises from the fact that we are changing the
-> >> pagefaults requiring I/O operation to hold VMA lock...
-> >> And you want to lock VMA on fork only if vma_is_anonymous(vma) ||
-> >> is_cow_mapping(vma->vm_flags). So, we will be blocking page faults for
-> >> anonymous and COW VMAs only while holding mmap_write_lock, preventing
-> >> any VMA modification. On the surface, that looks ok to me but I might
-> >> be missing some corner cases. If nobody sees any obvious issues, I
-> >> think it's worth a try.
-> >
-> > Not sure if you noticed but I did raise concerns ;)
-> >
-> > I wonder if you've confused the fault path and fork here, as I think Ba=
-rry has
-> > been a little unclear on that.
-> >
-> > What's being suggested in this thread is to fundamentally change fork b=
-ehaviour
-> > so it's different from the entire history of the kernel (or - presumabl=
-y - at
-> > least recent history :)
-> I don't want fork() to become different in that regard.
->
-> There is already a slight difference with vs. without per-VMA locks, beca=
-use
-> there is a window in-between us taking the write mmap_lock and all the pe=
-r-VMA
-> locks. I raised that previously [1] and assumed that it is probably fine.
->
-> I also raised in the past why I think we must not allow concurrent page f=
-aults,
-> at least as soon as anonymous memory is involved [2].
 
-Thanks for sharing the context, it is quite helpful to understand the
-race conditions. Because Lorenzo also raised the concern about page
-fault race, I will reply to all the concerns regarding page fault race
-together in this thread.
 
-IIUC, there is already some sort of race with per vma lock. Before per
-vma lock, mmap_lock did lock everything. So page fault happened either
-before fork or after fork. But page fault can happen on other VMAs
-which have not been lock'ed yet during fork with per vma lock. For
-example, we have 3 VMAs, we lock the first VMA, but page fault still
-can happen on the other 2 VMAs during fork if they already have
-anon_vma. This is the status quo now, but it seems not harmful.
+Le 20/05/2026 à 20:51, Helge Deller a écrit :
+> On 5/20/26 18:00, Thomas Zimmermann wrote:
+>> Handle fbcon during display updates in fb_set_var_from_user(). Check
+>> with fbcon if the mode change is possible, update hardware state and
+>> finally update fbcon. Update all callers.
+>>
+>> Only the FBIOPUT_VSCREENINFO ioctl currently does all steps. Other
+>> mode-changes callers in sysfs and driver code are missing fbcon-related
+>> steps.
+>>
+>> With the new helper, ps3fb and sh_mobile_lcdcfb no longer maintain
+>> fbcon state themselves.
+>>
+>> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+>> ---
+>>   drivers/video/fbdev/core/fb_chrdev.c   |  6 +-----
+>>   drivers/video/fbdev/core/fbcon.c       |  2 --
+>>   drivers/video/fbdev/core/fbmem.c       | 13 +++++++++++++
+>>   drivers/video/fbdev/core/fbsysfs.c     |  4 +---
+>>   drivers/video/fbdev/ps3fb.c            |  5 +----
+>>   drivers/video/fbdev/sh_mobile_lcdcfb.c |  5 +----
+>>   include/linux/fb.h                     |  2 ++
+>>   7 files changed, 19 insertions(+), 18 deletions(-)
+>>
+>> ...
+>> diff --git a/include/linux/fb.h b/include/linux/fb.h
+>> index 5178a33c752c..88680a7cabd5 100644
+>> --- a/include/linux/fb.h
+>> +++ b/include/linux/fb.h
+>> @@ -533,6 +533,8 @@ extern int fb_set_var(struct fb_info *info, struct 
+>> fb_var_screeninfo *var);
+>>   extern int fb_pan_display(struct fb_info *info, struct 
+>> fb_var_screeninfo *var);
+>>   extern int fb_blank(struct fb_info *info, int blank);
+>> +int fb_set_var_from_user(struct fb_info *info, struct 
+>> fb_var_screeninfo *var);
+>> +
+> 
+> "extern" int fb_set_var_from_user(...) ?
 
-The bad race shared by David is caused by racing with copy page. So it
-seems like it will be fine as long as we serialize copy page against
-page fault if I don't miss anything. Since we decide whether to copy
-page or not by checking vma->anon_vma, so it seems fine to not take
-vma lock if vma->anon_vma is NULL. This will not introduce more race
-either because setting up a new  anon_vma in page fault or madvise
-requires taking mmap_lock according to the earlier discussions.
+No, 'extern' is pointless for function prototypes and 'checkpatch 
+--strict' will complain about it.
 
-Thanks,
-Yang
+See following link, search for extern : 
+https://docs.kernel.org/dev-tools/checkpatch.html
 
->
-> ... and I raised that this is pretty much slower by design right now: "We=
-ll, the
-> design decision that CONFIG_PER_VMA_LOCK made for now to make page faults=
- fast
-> and to make blocking any page faults from happening to  be slower ..." [3=
-]
->
-> [1] https://lore.kernel.org/all/970295ab-e85d-7af3-76e6-df53a5c52f8b@redh=
-at.com/
-> [2] https://lore.kernel.org/all/7e3f35cc-59b9-bf12-b8b1-4ed78223844a@redh=
-at.com/
-> [3] https://lore.kernel.org/all/2efa2c89-3765-721d-2c3c-00590054aa5b@redh=
-at.com/
->
-> --
-> Cheers,
->
-> David
->
+
+
+> 
+> Other than that the series is a nice cleanup!
+> 
+> Thanks!
+> Helge
+
 
