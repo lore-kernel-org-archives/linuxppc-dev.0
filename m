@@ -1,78 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-21237-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21238-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D3E33CD4F3C
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 May 2026 12:15:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2709BCD4F54
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 May 2026 12:28:06 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gL9VT3S0Mz2xqv;
-	Wed, 20 May 2026 22:15:45 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:41d0:1004:224b::b4"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779279345;
-	cv=none; b=X6G7VeahEsacax/ZhjlRA0arEj4V2wEXJwY9/225/BgOPBmg449Q3YFx4zGyiw8/J9bhr3JC0/pHxCIxUCEpqJU+seG3ZDjtIjoAcJU5XHufJGoRk/42nXKlnZDCJ/HTOQxFKTQpDNIT+SPbxbRxM4TYxaUdDNTjIczKtammzb0tStJRkSt/HtESBbEuzu2+9+0itmubsceDfcmqGgVTMBVGg1Qs6/aUP2RkXdQZadQ1FrKGmU8jYF1soWQWKFj+n41A1cROhysCi1oebuqLR59t8/I0PFmGq3ndE+oiNiTyo/W5VraOhGtYjZ6JyRXAIbVahPuvKS8AEeqWEPtFeQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gL9mj4cp4z2xqv;
+	Wed, 20 May 2026 22:28:05 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779280085;
+	cv=none; b=oh3Fax4g2JKQ0o6TuXEcOFyRNJGNnHkLeL/B0M/HN9iIhrff8ouGIPGSuJh6e5cNcmxzKzrzJBtyRPuS3r/EIBuAcoVXtTMRi1HBII/lsEuPqKmpg1o2OmTU9eI46vMUsTY1WCh43x2EagjQyukIgJuE5If7nOGjWmygDbvMMou5SVRwc1z235d2v3Mteuvr6oN8XfqwKPLDDgItVWQhrn+VBmzHBz3NhAkX/4hAbp2IMLRn0pSjqhj5zVqeG9DzSWz4NvMG8wvHJakOkRa8Rqk2L9EQh+paMvk8gg9XinzLepvWf4XejAPj70uWQ3OavA8rNbxWdVGZMiML8sIY7g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1779279345; c=relaxed/relaxed;
-	bh=lpVD7PvJ3yLAhhJddRj1iqDdwuhUY+Ubp+n7mSO2yuo=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=INovSsdepukIF8gP201aX51wQgN2nmOqPu7sec2QOPEXhIK1JsKIpJb1WjASOu9gwawndy6LukZH7u6RA2kdndDoG/pZIOYaa0/urUFwDEPUbNkRSm+jE4elNNXYog8RrQ0g+gkYbed4bgnfn8qjlqUrIBJaC5wElOF9D+hBnHw2RXKkgz6dakPuCb/gh3mWbm/LKEtCT0BQqubQYeMjeItWw25Bmijpos8l4qh/4WPAEBX/U7Va+vu0iSgI3tLrPXLn28iy+rUL/OWs6wgkZgSNO0qXToKKhRzry3Y+XtMVAl9ip+S0zNFE74EGj44pPjL2wewUiGxcxIwEoyFB5Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=CxR4mGr/; dkim-atps=neutral; spf=pass (client-ip=2001:41d0:1004:224b::b4; helo=out-180.mta0.migadu.com; envelope-from=lance.yang@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
+	t=1779280085; c=relaxed/relaxed;
+	bh=YPsDEinQC31MNkFSqLK/AYf2QgBz8ODGpxSGL7Px3IA=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=J4u4qIh2YGpL/8XOUbMdPtHYmd6HLx1y2QUNtqKfx/5R4QzTpYWQ/3JKDxjhPl3kfK1L784kqJINezlqfjcuz+NeoPKHqNUwHYi3Xlbh2qdG3lnbuhTO7t20JPKIPTzuBmlubS1Yf7q1q4fHfFhevBc13vpsszeJxi0Jd60sQlVilLMHWBmc6nYmhroJ9NSxNsjxM+wIRKpYXXRm8QedNjotpgE3XPFZqCElRee1sJBOBhyGx0FNshozR6+veNguDJ0fcQafmMV34nMSdTQN39JtRp+ccQX0JtBBoI8uwHJEM+ZZ56oui739sowSYa4z0BFgFLwGn7UwrAme4KcTiA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Tc4Tbi1m; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=CxR4mGr/;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Tc4Tbi1m;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=2001:41d0:1004:224b::b4; helo=out-180.mta0.migadu.com; envelope-from=lance.yang@linux.dev; receiver=lists.ozlabs.org)
-Received: from out-180.mta0.migadu.com (out-180.mta0.migadu.com [IPv6:2001:41d0:1004:224b::b4])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gL9VQ6wVxz2xdb
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 May 2026 22:15:41 +1000 (AEST)
-X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
-	t=1779279320;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=lpVD7PvJ3yLAhhJddRj1iqDdwuhUY+Ubp+n7mSO2yuo=;
-	b=CxR4mGr/kbCFb8VOKtUL9MJeH5OxsnTYvxgXmVOSe0Z9v82ZfRdNB3x4IjDWyCRj/mcar0
-	2MlOZFVwz6UAb24nlbVSQvG8zVgEBTUcHXyjchJ9+S+e3On01dfRhOwahPNI2CzLOC+eU2
-	2RM45/OVYi7NgcXDE3Ms3iA9ru4uu3M=
-From: Lance Yang <lance.yang@linux.dev>
-To: david@kernel.org
-Cc: osalvador@suse.de,
-	davem@davemloft.net,
-	andreas@gaisler.com,
-	rppt@kernel.org,
-	akpm@linux-foundation.org,
-	agordeev@linux.ibm.com,
-	gerald.schaefer@linux.ibm.com,
-	hca@linux.ibm.com,
-	gor@linux.ibm.com,
-	borntraeger@linux.ibm.com,
-	svens@linux.ibm.com,
-	maddy@linux.ibm.com,
-	mpe@ellerman.id.au,
-	npiggin@gmail.com,
-	chleroy@kernel.org,
-	ljs@kernel.org,
-	liam@infradead.org,
-	vbabka@kernel.org,
-	surenb@google.com,
-	mhocko@suse.com,
-	sparclinux@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	linux-mm@kvack.org,
-	linux-s390@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org,
-	Lance Yang <lance.yang@linux.dev>
-Subject: Re: [PATCH 4/8] mm/bootmem_info: remove call to kmemleak_free_part_phys()
-Date: Wed, 20 May 2026 20:15:05 +0800
-Message-Id: <20260520121505.60854-1-lance.yang@linux.dev>
-In-Reply-To: <b2a8e918-7ed2-46b4-bf59-e65dc9359310@kernel.org>
-References: <b2a8e918-7ed2-46b4-bf59-e65dc9359310@kernel.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gL9mh1hDCz2xdb
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 May 2026 22:28:04 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id 1088D60120;
+	Wed, 20 May 2026 12:28:01 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D74851F000E9;
+	Wed, 20 May 2026 12:27:58 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1779280080;
+	bh=YPsDEinQC31MNkFSqLK/AYf2QgBz8ODGpxSGL7Px3IA=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To;
+	b=Tc4Tbi1mDQTXmycd1ELO6Lje82rVlRYlTAc840+8ZjfSzh5ogFOayADO17WMiJvZh
+	 eUNK8P1ItT1GNhsEXP5Mj8bYthxGgeidBMKeFrA/TA3FC//EjtKeQ1zpL1bKFrZdJq
+	 GcRahcvzBjBH176FYWWve2Ut0Ybt2qKHE/DXfqM+FKK8Jgur4ifwQtl5WqbcMRbILS
+	 IafqUbxhOZzvBEnm9K7SrCw4t/c6QnnVDOZj+Cr92f+H6VG+7JzE2moRiLTvlroN3v
+	 DtChkRU1G5QGhIR5nY39NCOmTHKTw2ZxnFHx48fDiSEmdSCKrprcl/eMiedM6X83SJ
+	 1LlS4+JwBqwDg==
+Message-ID: <8ba30f1d-19ce-449a-966c-236fd6026c07@kernel.org>
+Date: Wed, 20 May 2026 14:27:56 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -86,62 +59,82 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+User-Agent: Mozilla Thunderbird
+Subject: Re: [RFC PATCH net-next 2/2] powerpc: remove ehea driver references
+To: David Christensen <drc@linux.ibm.com>,
+ "David S . Miller" <davem@davemloft.net>, Eric Dumazet
+ <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>,
+ Paolo Abeni <pabeni@redhat.com>, Michael Ellerman <mpe@ellerman.id.au>,
+ Nicholas Piggin <npiggin@gmail.com>
+Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+References: <20260519224353.1282038-1-drc@linux.ibm.com>
+ <20260519224353.1282038-3-drc@linux.ibm.com>
+Content-Language: fr-FR
+From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+In-Reply-To: <20260519224353.1282038-3-drc@linux.ibm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-X-Migadu-Flow: FLOW_OUT
 
 
-On Tue, May 12, 2026 at 10:45:03AM +0200, David Hildenbrand (Arm) wrote:
->On 5/12/26 10:34, Oscar Salvador wrote:
-[...]
->>> diff --git a/mm/bootmem_info.c b/mm/bootmem_info.c
->>> index 6e2aaab3dca9..74c1116626c8 100644
->>> --- a/mm/bootmem_info.c
->>> +++ b/mm/bootmem_info.c
->>> @@ -32,7 +32,6 @@ void put_page_bootmem(struct page *page)
->>>  
->>>  	if (page_ref_dec_return(page) == 1) {
->>>  		set_page_private(page, 0);
->>> -		kmemleak_free_part_phys(PFN_PHYS(page_to_pfn(page)), PAGE_SIZE);
->> 
->> A bit odd that kmemleak_free_part_phys() did not complain if we never
->> did kmemleak_alloc_phys() for these pages?
->
->delete_object_part() calls __find_and_remove_object() and essentially just skips
->if it didn't find anything.
->
->Maybe the kmemleak_warn() would trigger, but it's guarded by "#ifdef DEBUG" ...
 
-Right! With kmemleak DEBUG enabled, kmemleak_free_part_phys() does warns
-whenever delete_object_part() cannot find the corresponding physical
-object ...
+Le 20/05/2026 à 00:43, David Christensen a écrit :
+> [Vous ne recevez pas souvent de courriers de drc@linux.ibm.com. Découvrez pourquoi ceci est important à https://aka.ms/LearnAboutSenderIdentification ]
+> 
+> Follow-on cleanup after the removal of the IBM eHEA driver in commit
+> XXXXXXXXXXXX ("net: ethernet: ibm: remove the ehea driver").
+> 
+> Remove the CONFIG_IBM_EHEA entry from ppc64_defconfig and the obsolete
+> comment in arch/powerpc/mm/mem.c that referenced the driver.
 
-Before this patch, booting with:
+What do you mean by 'obsolete' ?
 
-"kmemleak=on hugetlb_free_vmemmap=on default_hugepagesz=2M hugepagesz=2M hugepages=512"
+As far as I can see the commit is still valid, I can't see any other 
+module caller of function walk_system_ram_range().
 
-I got a lot of warnings, something like:
+The comment was introduced by commit 26b523356f49 ("powerpc: Drop 
+page_is_ram() and walk_system_ram_range()")
 
-[   44.481883] kmemleak: Partially freeing unknown object at 0x2acc59000 (size 4096)
-[   44.482754] CPU: 2 UID: 0 PID: 1 Comm: swapper/0 Not tainted 7.1.0-rc3 #206 PREEMPT(full)
-[   44.482758] Hardware name: Red Hat KVM, BIOS 1.11.0-2.el7 04/01/2014
-[   44.482760] Call Trace:
-[   44.482762]  <TASK>
-[   44.482764]  dump_stack_lvl+0x60/0x90
-[   44.482769]  dump_stack+0x14/0x1a
-[   44.482774]  delete_object_part.cold+0x28/0x2d
-[   44.482779]  kmemleak_free_part_phys+0x67/0x80
-[   44.482783]  put_page_bootmem+0xc0/0x100
-[   44.482787]  free_vmemmap_page_list+0x13e/0x230
-[   44.482791]  __hugetlb_vmemmap_optimize_folios+0x351/0x430
-[...]
+> 
+> Signed-off-by: David Christensen <drc@linux.ibm.com>
+> ---
+>   arch/powerpc/configs/ppc64_defconfig | 1 -
+>   arch/powerpc/mm/mem.c                | 4 ----
+>   2 files changed, 5 deletions(-)
+> 
+> diff --git a/arch/powerpc/configs/ppc64_defconfig b/arch/powerpc/configs/ppc64_defconfig
+> index 6316ca4df25d..b022d00708f4 100644
+> --- a/arch/powerpc/configs/ppc64_defconfig
+> +++ b/arch/powerpc/configs/ppc64_defconfig
+> @@ -210,7 +210,6 @@ CONFIG_BNX2X=m
+>   CONFIG_CHELSIO_T1=m
+>   CONFIG_BE2NET=m
+>   CONFIG_IBMVETH=m
+> -CONFIG_EHEA=m
+>   CONFIG_IBMVNIC=m
+>   CONFIG_E100=y
+>   CONFIG_E1000=y
+> diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
+> index 648d0c5602ec..1f5ad1a59d68 100644
+> --- a/arch/powerpc/mm/mem.c
+> +++ b/arch/powerpc/mm/mem.c
+> @@ -370,10 +370,6 @@ int devmem_is_allowed(unsigned long pfn)
+>   }
+>   #endif /* CONFIG_STRICT_DEVMEM */
+> 
+> -/*
+> - * This is defined in kernel/resource.c but only powerpc needs to export it, for
+> - * the EHEA driver. Drop this when drivers/net/ethernet/ibm/ehea is removed.
+> - */
+>   EXPORT_SYMBOL_GPL(walk_system_ram_range);
 
-So, yeah, looks like these calls are trying to free physical kmemleak
-objects that are no longer tracked after memmap_alloc() started using
-MEMBLOCK_ALLOC_NOLEAKTRACE :)
+As mentioned in the comment, the EXPORT_SYMBOL_GPL() has to be dropped 
+when drivers/net/ethernet/ibm/ehea is removed, which is now.
 
-With this patch applied, those stale calls are gone, and so are the
-warnings :P
+> 
+>   #ifdef CONFIG_EXECMEM
+> --
+> 2.47.3
+> 
 
-Tested-by: Lance Yang <lance.yang@linux.dev>
 
