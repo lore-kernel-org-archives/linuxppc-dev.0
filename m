@@ -1,65 +1,78 @@
-Return-Path: <linuxppc-dev+bounces-21236-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21237-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 794BBCD4F54
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 May 2026 12:13:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D3E33CD4F3C
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 May 2026 12:15:46 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gL9Rx0yRKz2xqv;
-	Wed, 20 May 2026 22:13:33 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::44a"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779262500;
-	cv=none; b=Lqy6yAZyncAvIuhi25hoCiqmRKoQHm/SbDzXwN+n7D+drkQnrCFj4JBJQ4+WdWoY/5DYOP0YHbGES1vZ3Y6DZ0fbelFLgl7skqqktGXdt/GfZE248ukqp1R2acx6/mzzm+etkEsehyA88BIkOXP9tAy2cU2LKoFPLKp5MLtTkfSPy3hx6Esv7UjZyScpXYsT+hQaQtMUr+bnvFyuA9Zl4J6SuvM6/s2dt+IBBO9RWBm2qqrun9Dh5DIR+KXvh26KYKSXpvEAivJQsECtJsA4YKhzUSmMou35K4cGnBgPpeZNjUcPtaVcRUOkhX8s3kmHYLZ+MKEiSfwiRU7eB86eSA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gL9VT3S0Mz2xqv;
+	Wed, 20 May 2026 22:15:45 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:41d0:1004:224b::b4"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779279345;
+	cv=none; b=X6G7VeahEsacax/ZhjlRA0arEj4V2wEXJwY9/225/BgOPBmg449Q3YFx4zGyiw8/J9bhr3JC0/pHxCIxUCEpqJU+seG3ZDjtIjoAcJU5XHufJGoRk/42nXKlnZDCJ/HTOQxFKTQpDNIT+SPbxbRxM4TYxaUdDNTjIczKtammzb0tStJRkSt/HtESBbEuzu2+9+0itmubsceDfcmqGgVTMBVGg1Qs6/aUP2RkXdQZadQ1FrKGmU8jYF1soWQWKFj+n41A1cROhysCi1oebuqLR59t8/I0PFmGq3ndE+oiNiTyo/W5VraOhGtYjZ6JyRXAIbVahPuvKS8AEeqWEPtFeQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1779262500; c=relaxed/relaxed;
-	bh=TBfrHUM4K+Fvnf6VLbbC+7tqRoLbh8+kTigJR63RjPw=;
-	h=Date:Mime-Version:Message-ID:Subject:From:To:Cc:Content-Type; b=KQv5icNW6OdnL7RAPzWiZ6ihXX2edQqhPg+hd3PAHml7lf4bfDqoNo6LXulf6BmEGwpdkPQRlP+T/2Ne5Rv7rOsXicF+2fBvKSkzHjxOtspmAWi+KEZZmT2hyUhHOaJW5bPjp31/p8a4Zx5pDzxfOnEPEngrCVdvSUU8eAEIm6CjYU15/oQukYsa4/8F7t7f/FauPyN9YgBOgOFS+4tcrb0IotBQVEzGS/SQxbjYFer627FeA585LOQfzjVSKcBma9mwHXmIK8JIZ2IhUddfsY0pM2aosASwgwx7MmBf+YIX6qWexysJLrDYmpsA/aFcxdyrVJPXlrofz1pNmzBrWQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=fdlECA2t; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::44a; helo=mail-wr1-x44a.google.com; envelope-from=3hmqnaggkdhmrius+xzkxffxcv.tfdczeloggt-uvmczjkj.fqcrsj.fix@flex--ardb.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=flex--ardb.bounces.google.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
+	t=1779279345; c=relaxed/relaxed;
+	bh=lpVD7PvJ3yLAhhJddRj1iqDdwuhUY+Ubp+n7mSO2yuo=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=INovSsdepukIF8gP201aX51wQgN2nmOqPu7sec2QOPEXhIK1JsKIpJb1WjASOu9gwawndy6LukZH7u6RA2kdndDoG/pZIOYaa0/urUFwDEPUbNkRSm+jE4elNNXYog8RrQ0g+gkYbed4bgnfn8qjlqUrIBJaC5wElOF9D+hBnHw2RXKkgz6dakPuCb/gh3mWbm/LKEtCT0BQqubQYeMjeItWw25Bmijpos8l4qh/4WPAEBX/U7Va+vu0iSgI3tLrPXLn28iy+rUL/OWs6wgkZgSNO0qXToKKhRzry3Y+XtMVAl9ip+S0zNFE74EGj44pPjL2wewUiGxcxIwEoyFB5Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=CxR4mGr/; dkim-atps=neutral; spf=pass (client-ip=2001:41d0:1004:224b::b4; helo=out-180.mta0.migadu.com; envelope-from=lance.yang@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=fdlECA2t;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=CxR4mGr/;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--ardb.bounces.google.com (client-ip=2a00:1450:4864:20::44a; helo=mail-wr1-x44a.google.com; envelope-from=3hmqnaggkdhmrius+xzkxffxcv.tfdczeloggt-uvmczjkj.fqcrsj.fix@flex--ardb.bounces.google.com; receiver=lists.ozlabs.org)
-Received: from mail-wr1-x44a.google.com (mail-wr1-x44a.google.com [IPv6:2a00:1450:4864:20::44a])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=2001:41d0:1004:224b::b4; helo=out-180.mta0.migadu.com; envelope-from=lance.yang@linux.dev; receiver=lists.ozlabs.org)
+Received: from out-180.mta0.migadu.com (out-180.mta0.migadu.com [IPv6:2001:41d0:1004:224b::b4])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gL3GV4w1rz2xfB
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 May 2026 17:34:58 +1000 (AEST)
-Received: by mail-wr1-x44a.google.com with SMTP id ffacd0b85a97d-44d79da8cf7so3707539f8f.2
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 May 2026 00:34:57 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20251104; t=1779262495; x=1779867295; darn=lists.ozlabs.org;
-        h=cc:to:from:subject:message-id:mime-version:date:from:to:cc:subject
-         :date:message-id:reply-to;
-        bh=TBfrHUM4K+Fvnf6VLbbC+7tqRoLbh8+kTigJR63RjPw=;
-        b=fdlECA2tSxA4XJYcSx4Ct4MZCDn0fAiHdk+8TGUeaAQTXzUeR6sNRJXQfto/tiIKib
-         T/5szE2T94x4OL44Is2w5e3qSVq4y7YOv0bCfbqyFjZ7V5mdDtsKJCoZpNBYoQqzZ48t
-         yJHGHFQcidwdzw8b9/A7wUA38d2rbenMJU7k5f3E7dHMXWit8tB3bCcC+/x/fiDlUY4F
-         Ke6jBCRIcm8XiAmzQhYx+O7PN6Dx37tiMdcwHFASp1IkixSiSqRE0ucF4kqVYIwxw7ws
-         5Qh92vV55t82OJVSJnYbYBixbAVmA6C8gtRFWzwU7eBf5JBeUIRRJbp+OvWuE1GuAMXt
-         zniQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1779262495; x=1779867295;
-        h=cc:to:from:subject:message-id:mime-version:date:x-gm-message-state
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=TBfrHUM4K+Fvnf6VLbbC+7tqRoLbh8+kTigJR63RjPw=;
-        b=Eq8CglIXSNntDUm11BcOLDFZFg8ZaBN2L+V0bhiBl3s6lHJfch9Z87HPINhdkLW4TK
-         V8rznCCyd2jbNuYbPJJCbwo93h0Tk1FBGIS7+NqPzOlEp5BCsOOerZQBJgjFEFbMhuv8
-         r7ztbQL3X5dhYRXsI2VrFJ6+gbAiCzQhg1myXGNl7poysxwNyTL6rEaPjFtvUwYD+ruk
-         U6P0UayVy0C7iYdUuJYMmQwEXw0SIQRaEJobbzS5swhzeHi0NTGlyDEAtW880RWkynoT
-         /BPGp71jcfMyeCnUTBWTSkmubBWDd3/Epl8s3LHEU+wk53YtIFZvGVQMi0gB/oHR4DJp
-         UVLg==
-X-Gm-Message-State: AOJu0YwfULeCO8yPriuNJpbUCMEK3Mk7W0t7F4yAQ/O7HKUJqY1xg7wB
-	RFUF+ig9EWI8am7puPFmmzZe2aSwECuMBMcJbTiY4se62AkVPLnUIWQ/sor9msWbQYKAk8KqQw=
-	=
-X-Received: from wmxb16-n2.prod.google.com ([2002:a05:600d:8450:20b0:488:e192:6fb1])
- (user=ardb job=prod-delivery.src-stubby-dispatcher) by 2002:a05:600c:8210:b0:48a:5c23:cab
- with SMTP id 5b1f17b1804b1-48fe6322447mr327485535e9.19.1779262494439; Wed, 20
- May 2026 00:34:54 -0700 (PDT)
-Date: Wed, 20 May 2026 09:34:40 +0200
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gL9VQ6wVxz2xdb
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 May 2026 22:15:41 +1000 (AEST)
+X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
+	t=1779279320;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=lpVD7PvJ3yLAhhJddRj1iqDdwuhUY+Ubp+n7mSO2yuo=;
+	b=CxR4mGr/kbCFb8VOKtUL9MJeH5OxsnTYvxgXmVOSe0Z9v82ZfRdNB3x4IjDWyCRj/mcar0
+	2MlOZFVwz6UAb24nlbVSQvG8zVgEBTUcHXyjchJ9+S+e3On01dfRhOwahPNI2CzLOC+eU2
+	2RM45/OVYi7NgcXDE3Ms3iA9ru4uu3M=
+From: Lance Yang <lance.yang@linux.dev>
+To: david@kernel.org
+Cc: osalvador@suse.de,
+	davem@davemloft.net,
+	andreas@gaisler.com,
+	rppt@kernel.org,
+	akpm@linux-foundation.org,
+	agordeev@linux.ibm.com,
+	gerald.schaefer@linux.ibm.com,
+	hca@linux.ibm.com,
+	gor@linux.ibm.com,
+	borntraeger@linux.ibm.com,
+	svens@linux.ibm.com,
+	maddy@linux.ibm.com,
+	mpe@ellerman.id.au,
+	npiggin@gmail.com,
+	chleroy@kernel.org,
+	ljs@kernel.org,
+	liam@infradead.org,
+	vbabka@kernel.org,
+	surenb@google.com,
+	mhocko@suse.com,
+	sparclinux@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	linux-mm@kvack.org,
+	linux-s390@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org,
+	Lance Yang <lance.yang@linux.dev>
+Subject: Re: [PATCH 4/8] mm/bootmem_info: remove call to kmemleak_free_part_phys()
+Date: Wed, 20 May 2026 20:15:05 +0800
+Message-Id: <20260520121505.60854-1-lance.yang@linux.dev>
+In-Reply-To: <b2a8e918-7ed2-46b4-bf59-e65dc9359310@kernel.org>
+References: <b2a8e918-7ed2-46b4-bf59-e65dc9359310@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -72,92 +85,63 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-Mime-Version: 1.0
-X-Developer-Key: i=ardb@kernel.org; a=openpgp; fpr=F43D03328115A198C90016883D200E9CA6329909
-X-Developer-Signature: v=1; a=openpgp-sha256; l=2580; i=ardb@kernel.org;
- h=from:subject; bh=oY6gtKVWNTBx6UhZYZ8J5F7bWJKDdqkgNGPUoOyRHTg=;
- b=owGbwMvMwCVmkMcZplerG8N4Wi2JIYs3RWD7P9O9sip+nxa8t3i22u1c9+ypXxduWjaj6mv8v
- Ad5y6codpSyMIhxMciKKbIIzP77bufpiVK1zrNkYeawMoEMYeDiFICJhBox/M94/XbBEb45a0sm
- T0iw2eXcuyKvVOt/YIzwzZp7x18VHdrC8E/zmjyPpZ+xlEKMw/TfJ/4sXjvrUTTvgvztfF9NHeL uS7ECAA==
-X-Mailer: git-send-email 2.54.0.631.ge1b05301d1-goog
-Message-ID: <20260520073439.3279874-2-ardb+git@google.com>
-Subject: [PATCH] powerpc/code-patching: Avoid r/w mapping of the zero page
-From: Ard Biesheuvel <ardb+git@google.com>
-To: linux-kernel@vger.kernel.org
-Cc: linuxppc-dev@lists.ozlabs.org, Ard Biesheuvel <ardb@kernel.org>, 
-	Madhavan Srinivasan <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, 
-	Nicholas Piggin <npiggin@gmail.com>, "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Migadu-Flow: FLOW_OUT
 
-From: Ard Biesheuvel <ardb@kernel.org>
 
-The only remaining use of map_patch_area() is mapping the zero page, and
-immediately unmapping it again so that the intermediate page table
-levels are all guaranteed to be populated.
+On Tue, May 12, 2026 at 10:45:03AM +0200, David Hildenbrand (Arm) wrote:
+>On 5/12/26 10:34, Oscar Salvador wrote:
+[...]
+>>> diff --git a/mm/bootmem_info.c b/mm/bootmem_info.c
+>>> index 6e2aaab3dca9..74c1116626c8 100644
+>>> --- a/mm/bootmem_info.c
+>>> +++ b/mm/bootmem_info.c
+>>> @@ -32,7 +32,6 @@ void put_page_bootmem(struct page *page)
+>>>  
+>>>  	if (page_ref_dec_return(page) == 1) {
+>>>  		set_page_private(page, 0);
+>>> -		kmemleak_free_part_phys(PFN_PHYS(page_to_pfn(page)), PAGE_SIZE);
+>> 
+>> A bit odd that kmemleak_free_part_phys() did not complain if we never
+>> did kmemleak_alloc_phys() for these pages?
+>
+>delete_object_part() calls __find_and_remove_object() and essentially just skips
+>if it didn't find anything.
+>
+>Maybe the kmemleak_warn() would trigger, but it's guarded by "#ifdef DEBUG" ...
 
-The use of the zero page here is completely arbitrary, and not harmful
-per se, but currently, it creates a writable mapping, and does so in a
-manner that requires that the empty_zero_page[] symbol is not
-const-qualified.
+Right! With kmemleak DEBUG enabled, kmemleak_free_part_phys() does warns
+whenever delete_object_part() cannot find the corresponding physical
+object ...
 
-Given that this is about to change, and that map_patch_area() now never
-maps anything other than the zero page, let's simplify the code and
-- take the PA of empty_zero_page directly
-- create a read-only temporary mapping.
+Before this patch, booting with:
 
-This allows empty_zero_page[] to be repainted as const u8[] in a
-subsequent patch, without making substantial changes to this code
-patching logic.
+"kmemleak=on hugetlb_free_vmemmap=on default_hugepagesz=2M hugepagesz=2M hugepages=512"
 
-Cc: Madhavan Srinivasan <maddy@linux.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Nicholas Piggin <npiggin@gmail.com>
-Cc: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-Signed-off-by: Ard Biesheuvel <ardb@kernel.org>
----
-Build tested only (Clang)
+I got a lot of warnings, something like:
 
- arch/powerpc/lib/code-patching.c | 11 +++++------
- 1 file changed, 5 insertions(+), 6 deletions(-)
+[   44.481883] kmemleak: Partially freeing unknown object at 0x2acc59000 (size 4096)
+[   44.482754] CPU: 2 UID: 0 PID: 1 Comm: swapper/0 Not tainted 7.1.0-rc3 #206 PREEMPT(full)
+[   44.482758] Hardware name: Red Hat KVM, BIOS 1.11.0-2.el7 04/01/2014
+[   44.482760] Call Trace:
+[   44.482762]  <TASK>
+[   44.482764]  dump_stack_lvl+0x60/0x90
+[   44.482769]  dump_stack+0x14/0x1a
+[   44.482774]  delete_object_part.cold+0x28/0x2d
+[   44.482779]  kmemleak_free_part_phys+0x67/0x80
+[   44.482783]  put_page_bootmem+0xc0/0x100
+[   44.482787]  free_vmemmap_page_list+0x13e/0x230
+[   44.482791]  __hugetlb_vmemmap_optimize_folios+0x351/0x430
+[...]
 
-diff --git a/arch/powerpc/lib/code-patching.c b/arch/powerpc/lib/code-patching.c
-index f84e0337cc02..13a8acf851f1 100644
---- a/arch/powerpc/lib/code-patching.c
-+++ b/arch/powerpc/lib/code-patching.c
-@@ -60,7 +60,7 @@ struct patch_context {
- 
- static DEFINE_PER_CPU(struct patch_context, cpu_patching_context);
- 
--static int map_patch_area(void *addr, unsigned long text_poke_addr);
-+static int map_patch_area(unsigned long text_poke_addr);
- static void unmap_patch_area(unsigned long addr);
- 
- static bool mm_patch_enabled(void)
-@@ -117,7 +117,7 @@ static int text_area_cpu_up(unsigned int cpu)
- 
- 	// Map/unmap the area to ensure all page tables are pre-allocated
- 	addr = (unsigned long)area->addr;
--	err = map_patch_area(empty_zero_page, addr);
-+	err = map_patch_area(addr);
- 	if (err)
- 		return err;
- 
-@@ -236,11 +236,10 @@ static unsigned long get_patch_pfn(void *addr)
- /*
-  * This can be called for kernel text or a module.
-  */
--static int map_patch_area(void *addr, unsigned long text_poke_addr)
-+static int map_patch_area(unsigned long text_poke_addr)
- {
--	unsigned long pfn = get_patch_pfn(addr);
--
--	return map_kernel_page(text_poke_addr, (pfn << PAGE_SHIFT), PAGE_KERNEL);
-+	return map_kernel_page(text_poke_addr, __pa_symbol(empty_zero_page),
-+			       PAGE_KERNEL_RO);
- }
- 
- static void unmap_patch_area(unsigned long addr)
--- 
-2.54.0.631.ge1b05301d1-goog
+So, yeah, looks like these calls are trying to free physical kmemleak
+objects that are no longer tracked after memmap_alloc() started using
+MEMBLOCK_ALLOC_NOLEAKTRACE :)
 
+With this patch applied, those stale calls are gone, and so are the
+warnings :P
+
+Tested-by: Lance Yang <lance.yang@linux.dev>
 
