@@ -1,63 +1,61 @@
-Return-Path: <linuxppc-dev+bounces-21231-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21232-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A2C2ECD4F3C
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 May 2026 11:20:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 457FBCD4F3C
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 May 2026 11:20:46 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gL8GY6B1Tz2xqv;
-	Wed, 20 May 2026 21:20:21 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gL8H068Htz2xqv;
+	Wed, 20 May 2026 21:20:44 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779276021;
-	cv=none; b=VCXC/7Btl1WMwFBx9HoUYnpbGL6A1BgbfSMuWjetaLrrqsU06vK3ZaCNZlBq8K0qY4st3Al8NfVZv/uXt6l1/uDD76xlMnYTTPfyFi77COe3lo7RPHFP8wisDJ/hP0oQzhtx39/pu2lFyonphgv4Necg9Ce58v5M0mwZtRA447IBL6oewC6+czv28f+Od04r7vtqCIQwf9aXMMKVrSdLGb7Y6gkSUhSkoTFdwpgOy7O8HCtTroCmtVqLox+yufnkG89X6wFRrjiYpaslwTNeEgsbRhFeP+T4dwaP+EFOGu+uHF8vMFjmk/MuKfljmDh/1GFajYb3cSDp6Om3OpYyqw==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779276044;
+	cv=none; b=Bu1S81wVHv3NUI+Kr73oLJ5ynGsCn1Yrj/KVTIAv2tzAxCDuc3km2L98EH8NWXqeoLCTAZdkb7hPY6q3VQ+1dAr68D6owBT9fqrRG9xWJmfj2naOPDnrD/onh6v2E+QJPLTHRH9xK3M5bqU6o95ZGnBnyDiHqFpSopyg1XtVX4CHJT+6pFH5WdTmkOWCuE3stZViyYUArjTBrZU4hfqhxzYp45viqtd75u+bccZ8PQht7UV+SOcowBDzEQy3c6NgAs+H8Mf49EtEvfHCcdZZmcJO72bOXrkVLNl/hhgmR9Q6gGWTEgOH+7rG7rpP0D6D4VC/TkGX3Pm9ddGFhbEJNA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1779276021; c=relaxed/relaxed;
-	bh=jUTfMqqDDJxFfr+dLoEBVtFnN+A04vnvH69Uzit7gWQ=;
+	t=1779276044; c=relaxed/relaxed;
+	bh=4r0b79gth2S7r/zdOPKesNo2Nh2lUQWQHcWgM+q4up4=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=ol+r8FpqX5v36wiPviGteNDXIZacWRGwrvIn41TbmLM6CEFmudALdQLgNJfD6cRxKBbjt4tKUmyEqMDa2u25s0e+lz/xOM0mQAcTzUJr4lReVBNSMVT6PfkFKYaJEZLIVC8hHxAWcPXNPCX+kAwPCc/MKH2XYT5am2DrUobUM73uZOP4GdXSZsaxTOiqfU+Z7cCYSsxDOeISHYwTq0TUU2ECwyuMecXmnfQQZBbDntZUEfo6eztX/BIT6uWa+2BJ5w0i21ZVR6L2SdG8QXxCXFj7762mLhvuOogEaUBoWxY1Y9pCTjZDBeF6tw90s2tpiZCebcZrl+3CuH+eB81qow==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ZUtTWfy5; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=sashal@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version:Content-Type; b=aOmf81wb8Mw3jAaM648TGhgXFWINcEnyjYM3aYq1e4du6yiRbUzzPhdQ29Yo041otHXdmV4qKIAMpYEuwMwtBUdupKTARB35dOMI6iDy3GcmFCnYtpv5I3XhkRaWRueGspVSqWA+7isEapgks2aUzB6NJzFPE3klIYBVvT79JWFtHWVAxei9Vxy8qxNw6+zneO+3+4Ag49crTbhpd5+eDaV3Ln+jPONWRwxpQB+h1nrzQRxNL9LI2gEv+p2nvU16ppDa1ZPnJP04rIAH+7kStBFp6RqrXSmsnrcEuzTZa7HjAQoFwONBiDVwhV1JzR+d1S5OCXngxkIyXd+DCd5xuw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=bTd8vY28; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=sashal@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ZUtTWfy5;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=bTd8vY28;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=sashal@kernel.org; receiver=lists.ozlabs.org)
 Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gL8GW4rP0z2xPL
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 May 2026 21:20:19 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gL8H00FwYz2xPL
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 May 2026 21:20:44 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id E27126012B;
-	Wed, 20 May 2026 11:20:16 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8C4ED1F00896;
-	Wed, 20 May 2026 11:20:15 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 3D50160129;
+	Wed, 20 May 2026 11:20:42 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1FCC11F000E9;
+	Wed, 20 May 2026 11:20:41 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1779276016;
-	bh=jUTfMqqDDJxFfr+dLoEBVtFnN+A04vnvH69Uzit7gWQ=;
+	s=k20260515; t=1779276042;
+	bh=4r0b79gth2S7r/zdOPKesNo2Nh2lUQWQHcWgM+q4up4=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=ZUtTWfy51U0NJxlxaugirdw+0fmsVFQ8+vxLbr8GQXW7RV7Ny7ldQ9sovvF66hmvd
-	 ZV4hThAMsb6gsNlTdx8YA9i+YnFGAPyZTXW4TUs7ZLYkt9KoReko24owclmvVU4P/O
-	 xMKMuBUUWapGIAdlVDry2SEJ3oZvvhNVxeSwqHbs4pX1EP+7+xvTAudQmLw9cuByUJ
-	 lgYWHIG7xL37+zMG6QqRmv4OTqT1vZe1Rta9b09sHOavnp9MpOR6/KJEYTCnCNlg/5
-	 k4KMco/mxVpxo7maGJU2fIq6KogB9nym2uJYcxreefZrKOQYUhOMIq4NCCL6O+JGvW
-	 4fmG8x9EfYQWw==
+	b=bTd8vY28SVhBKkXI16aOGse33gu+o57QrMcpA8ROuKjq7hT52SYZb8c9e/4D7ycFS
+	 Qi1YNSz+yzXUwinhe+d/BjIWWcYjelzMbzPLYH5AP4y0kFCEZJzzzoW2ZKsrEloxXT
+	 eAWwk8x5cXqLRmWS9wdzfsmxeEovbpGLz0FTEfRl3B4M9oSNnaoAhwTRrs4M7ftDzC
+	 UeUQzBbHYHyC+HlI94qWG1UrAhivz1ObJTplqL4tMyNosvyYdEGLWoBW3kP9uVgbq+
+	 ba+mnFTQZt8Oj0gc+CHssFxfyl4Bac3DpFiHCFyv11FKLa5pDcb8s5tx0X6/0sKnad
+	 UY0DwTsQoZzMQ==
 From: Sasha Levin <sashal@kernel.org>
 To: patches@lists.linux.dev,
 	stable@vger.kernel.org
-Cc: Sourabh Jain <sourabhjain@linux.ibm.com>,
-	Aboorva Devarajan <aboorvad@linux.ibm.com>,
-	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
+Cc: Linus Walleij <linusw@kernel.org>,
 	Madhavan Srinivasan <maddy@linux.ibm.com>,
 	Sasha Levin <sashal@kernel.org>,
 	mpe@ellerman.id.au,
 	linuxppc-dev@lists.ozlabs.org,
 	linux-kernel@vger.kernel.org
-Subject: [PATCH AUTOSEL 7.0-5.10] powerpc/vmx: avoid KASAN instrumentation in enter_vmx_ops() for kexec
-Date: Wed, 20 May 2026 07:18:54 -0400
-Message-ID: <20260520111944.3424570-22-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 7.0-5.10] powerpc/g5: Enable all windfarms by default
+Date: Wed, 20 May 2026 07:19:12 -0400
+Message-ID: <20260520111944.3424570-40-sashal@kernel.org>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20260520111944.3424570-1-sashal@kernel.org>
 References: <20260520111944.3424570-1-sashal@kernel.org>
@@ -80,366 +78,213 @@ X-stable-base: Linux 7.0.9
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-From: Sourabh Jain <sourabhjain@linux.ibm.com>
+From: Linus Walleij <linusw@kernel.org>
 
-[ Upstream commit 38e989d504fc52900a3786b7144fb53cd67e0389 ]
+[ Upstream commit 8d57bb61734b23f6342e9de781173f1d83f90d3a ]
 
-The kexec sequence invokes enter_vmx_ops() via copy_page() with the MMU
-disabled. In this context, code must not rely on normal virtual address
-translations or trigger page faults.
+The G5 defconfig is clearly intended for the G5 Powermac
+series, and that should enable all the available
+windfarm drivers, or the machine will overheat a short
+while after booting and shut itself down, which is
+annoying.
 
-With KASAN enabled, functions get instrumented and may access shadow
-memory using regular address translation. When executed with the MMU
-off, this can lead to page faults (bad_page_fault) from which the
-kernel cannot recover in the kexec path, resulting in a hang.
-
-The kexec path sets preempt_count to HARDIRQ_OFFSET before entering
-the MMU-off copy sequence.
-
-current_thread_info()->preempt_count = HARDIRQ_OFFSET
-  kexec_sequence(..., copy_with_mmu_off = 1)
-    -> kexec_copy_flush(image)
-         copy_segments()
-           -> copy_page(dest, addr)
-	         bl enter_vmx_ops()
-                   if (in_interrupt())
-                     return 0
-	         beq .Lnonvmx_copy
-
-Since kexec sets preempt_count to HARDIRQ_OFFSET, in_interrupt()
-evaluates to true and enter_vmx_ops() returns early.
-
-As in_interrupt() (and preempt_count()) are always inlined, mark
-enter_vmx_ops() with __no_sanitize_address to avoid KASAN
-instrumentation and shadow memory access with MMU disabled, helping
-kexec boot fine with KASAN enabled.
-
-Reported-by: Aboorva Devarajan <aboorvad@linux.ibm.com>
-Reviewed-by: Aboorva Devarajan <aboorvad@linux.ibm.com>
-Tested-by: Aboorva Devarajan <aboorvad@linux.ibm.com>
-Reviewed-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-Signed-off-by: Sourabh Jain <sourabhjain@linux.ibm.com>
+Signed-off-by: Linus Walleij <linusw@kernel.org>
 Signed-off-by: Madhavan Srinivasan <maddy@linux.ibm.com>
-Link: https://patch.msgid.link/20260407124349.1698552-2-sourabhjain@linux.ibm.com
+Link: https://patch.msgid.link/20260505-powermac-g5-config-v3-1-7747bf72f874@kernel.org
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
 
 LLM Generated explanations, may be completely bogus:
 
 ## Phase 1: Commit Message Forensics
-Record: subsystem `powerpc/vmx`; action verb `avoid`; intent is to
-prevent KASAN instrumentation of `enter_vmx_ops()` when it is reached
-from the kexec MMU-off copy path.
+Record 1.1: Subsystem `powerpc/g5`; action verb `Enable`; intent: enable
+all existing windfarm thermal drivers in `g5_defconfig`.
 
-Record: tags parsed from the candidate message:
-- `Reported-by: Aboorva Devarajan <aboorvad@linux.ibm.com>`
-- `Reviewed-by: Aboorva Devarajan <aboorvad@linux.ibm.com>`
-- `Tested-by: Aboorva Devarajan <aboorvad@linux.ibm.com>`
-- `Reviewed-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>`
-- `Signed-off-by: Sourabh Jain <sourabhjain@linux.ibm.com>`
-- `Signed-off-by: Madhavan Srinivasan <maddy@linux.ibm.com>`
-- `Link: https://patch.msgid.link/20260407124349.1698552-2-
-  sourabhjain@linux.ibm.com`
-- No `Fixes:` tag in this commit. Absence is not a negative signal.
+Record 1.2: Tags found: `Signed-off-by: Linus Walleij
+<linusw@kernel.org>`, `Signed-off-by: Madhavan Srinivasan
+<maddy@linux.ibm.com>`, `Link: https://patch.msgid.link/20260505-
+powermac-g5-config-v3-1-7747bf72f874@kernel.org`. No `Fixes:`,
+`Reported-by:`, `Tested-by:`, `Reviewed-by:`, `Acked-by:`, or `Cc:
+stable`.
 
-Record: bug description from the message: `kexec_sequence()` may call
-`copy_page()` with the MMU disabled; on PowerPC Book3S this can enter
-`copypage_power7.S`, which calls `enter_vmx_ops()`. If KASAN instruments
-`enter_vmx_ops()`, the instrumentation may access shadow memory using
-normal virtual translation, which is invalid with MMU off and can cause
-an unrecoverable `bad_page_fault`/hang in kexec.
+Record 1.3: The body says G5 machines using this defconfig may overheat
+shortly after boot and shut down if not all windfarm drivers are
+enabled. Root cause: the G5 defconfig enables some, but not all, G5
+windfarm thermal control drivers.
 
-Record: hidden bug fix: yes. Although phrased as “avoid
-instrumentation,” this fixes a real boot/hang failure in the kexec/kdump
-path under KASAN.
+Record 1.4: This is a hidden bug fix despite “Enable” wording: it
+changes default configuration to include missing existing thermal-
+management drivers, preventing hardware overheat shutdown.
 
 ## Phase 2: Diff Analysis
-Record: one file changed: `arch/powerpc/lib/vmx-helper.c`, with 8
-insertions and 1 deletion in the fetched v3 patch. The only functional
-change is changing `int enter_vmx_ops(void)` to `int
-__no_sanitize_address enter_vmx_ops(void)`; the remaining additions are
-explanatory comments.
-
-Record: modified function: `enter_vmx_ops()`.
-
-Record: before behavior: `enter_vmx_ops()` could be KASAN-instrumented.
-During kexec with MMU off, the function first checks `in_interrupt()`
-and should return `0`, but KASAN prologue/body instrumentation can run
-before or around normal code and touch shadow memory.
-
-Record: after behavior: `__no_sanitize_address` suppresses KASAN
-instrumentation for this function, preserving the intended early return
-path when `preempt_count` contains `HARDIRQ_OFFSET`.
-
-Record: bug category: sanitizer/real-mode correctness bug causing kexec
-hang. This is a crash/hang class fix, not a cleanup.
-
-Record: fix quality: small, surgical, and low risk. It does not alter
-normal logic, public API, data structures, or userspace-visible
-behavior. The only behavioral effect is disabling KASAN instrumentation
-for one helper that can run in an MMU-off path.
-
-## Phase 3: Git History Investigation
-Record: local `HEAD` is a stable release commit, not the candidate. `git
-log --grep` on current history, `master`, and `power-next` did not find
-the candidate commit locally, so there was no commit hash available for
-`b4 dig -c`.
-
-Record: `git blame` on current `arch/powerpc/lib/vmx-helper.c` shows the
-unannotated `enter_vmx_ops()` present in the local tree; due this
-repository’s history shape, blame attributes the original lines to a
-merge/root history point, so the exact original introduction commit was
-not verifiable locally.
-
-Record: no candidate `Fixes:` tag to follow. The companion patch in the
-same series has `Fixes: 2ab2d5794f14 ("powerpc/kasan: Disable address
-sanitization in kexec paths")`; `git show` confirms that commit disabled
-sanitization for PowerPC kexec real-mode paths in 2022.
-
-Record: related recent local history: `6bc9c0a905228` changed VMX
-usercopy flow and added export context around the same file. That
-affects hunk context for older stable trees, but not the actual one-line
+Record 2.1: One file changed: `arch/powerpc/configs/g5_defconfig`,
+`+2/-0`. No functions modified. Scope: single-file surgical defconfig
 fix.
 
-Record: author context: `git log --author="Sourabh Jain" --
-arch/powerpc/...` shows multiple PowerPC kexec/crash/fadump commits.
-`MAINTAINERS` lists Madhavan Srinivasan and Michael Ellerman as PowerPC
-maintainers; Madhavan signed off the candidate.
+Record 2.2: Before: `g5_defconfig` enabled `WINDFARM_PM81`, `PM91`,
+`PM112`, and `PM121`, but omitted `PM72` and `RM31`. After: it also
+enables `CONFIG_WINDFARM_PM72=y` and `CONFIG_WINDFARM_RM31=y`.
 
-Record: dependencies: no source-level prerequisite for the annotation
-itself. Function `enter_vmx_ops()` and `__no_sanitize_address` exist in
-checked stable tags. Functional completeness is best with the companion
-patch fixing `KASAN_SANITIZE_core_$(BITS).o`, because review/test
-discussion says both patches together make KASAN kexec succeed.
+Record 2.3: Bug category: hardware/default-config correctness fix.
+Mechanism: builds in already-existing thermal control drivers for
+PowerMac7,2/7,3 and RackMac3,1 systems.
+
+Record 2.4: Fix quality is high: two config lines, no API change, no
+code refactor. Regression risk is low because the enabled drivers check
+machine compatibility and return `-ENODEV` on nonmatching hardware.
+
+## Phase 3: Git History Investigation
+Record 3.1: Blame shows surrounding windfarm entries came from
+`2c39bf49fd0530` in 2012, while PM72/RM31 drivers were introduced by
+`6cd320996746` and are present from v3.5. Checked v3.5, v3.6, v4.0,
+v5.4, v5.10: the defconfig omitted PM72/RM31.
+
+Record 3.2: No `Fixes:` tag, so no Fixes target to follow.
+
+Record 3.3: Recent `g5_defconfig` history is mostly defconfig
+maintenance and symbol removals; no prerequisite patch was identified.
+The mailed patch is a one-patch series.
+
+Record 3.4: Linus Walleij is an established kernel
+maintainer/contributor, though not listed as PowerPC maintainer. The
+patch was acked by Michael Ellerman in-thread and applied by Madhavan
+Srinivasan, both PowerPC maintainers per `MAINTAINERS`.
+
+Record 3.5: Dependencies are existing Kconfig symbols and are satisfied.
+`make ARCH=powerpc g5_defconfig` on the candidate produced
+`CONFIG_WINDFARM_PM72=y`, `CONFIG_WINDFARM_RM31=y`, and `CONFIG_I2C=y`.
 
 ## Phase 4: Mailing List And External Research
-Record: `b4 am` for message id
-`20260407124349.1698552-2-sourabhjain@linux.ibm.com` fetched a v3 two-
-patch series. It reported total patches: 2, current tree apply clean,
-and DKIM signature valid for patch 2.
+Record 4.1: `b4 am` found the v3 submission and three revisions: v1, v2,
+v3. `b4 dig` matched the patch-id and found lore/patch.msgid links.
+Direct `WebFetch` to lore was blocked by Anubis, but `b4 mbox`
+downloaded the full v3 thread.
 
-Record: `b4 am -c` checked for newer revisions and did not report a
-newer v4. v3 appears to be the latest fetched revision.
+Record 4.2: `b4 dig -w` showed the patch was sent to Madhavan
+Srinivasan, Michael Ellerman, Nicholas Piggin, Christophe Leroy,
+`linuxppc-dev`, and `linux-kernel`.
 
-Record: `b4 mbox` fetched the v3 thread. Patch 2 was addressed to
-`linuxppc-dev` and CC’d PowerPC/kexec stakeholders including Michael
-Ellerman, Madhavan Srinivasan, Mahesh Salgaonkar, Hari Bathini, Daniel
-Axtens, Venkat Rao Bagalkote, Aboorva Devarajan, and Ritesh Harjani.
+Record 4.3: No separate bug report link was present. Thread evidence
+confirms impact: Segher Boessenkool wrote that affected machines boot
+but “won’t run for even a minute”; Linus said Debian likely works by
+having the driver in initramfs/rootfs and that built-in is safer.
 
-Record: `WebFetch` of lore URLs was blocked by Anubis, but `b4` and the
-`yhbt.net` lore mirror provided the thread content.
+Record 4.4: Series context: same two-line patch rebased from v1 to v3,
+no multi-patch dependency.
 
-Record: v2 review discussion verified:
-- Ritesh Harjani reviewed patch 2 and said “LGTM,” granting `Reviewed-
-  by`.
-- Aboorva Devarajan reported an actual KASAN-enabled kexec hang on
-  pseries PowerVM: system reached “kexec: Starting switchover sequence”
-  and then hung.
-- Aboorva tested that “with both the patches applied, kexec completes
-  successfully with KASAN enabled.”
-- v1 annotated both `enter_vmx_ops()` and `exit_vmx_ops()`; v2 removed
-  `exit_vmx_ops()` annotation and added the explanatory comment. This
-  shows review-driven narrowing of the fix.
-
-Record: stable-specific discussion: Ritesh explicitly suggested `Cc:
-stable@vger.kernel.org` for patch 1. I did not find a direct stable
-nomination for patch 2, but patch 2 was reviewed and tested as part of
-the same two-patch functional fix.
+Record 4.5: Web search found no stable-list discussion for this exact
+patch. No known stable objection found.
 
 ## Phase 5: Code Semantic Analysis
-Record: modified function: `enter_vmx_ops()`.
+Record 5.1: No functions changed. Relevant enabled init functions are
+`wf_pm72_init()` and `wf_rm31_init()`.
 
-Record: callers found by exact search:
-- `arch/powerpc/lib/copypage_power7.S`
-- `arch/powerpc/lib/memcpy_power7.S`
-- `arch/powerpc/lib/memcmp_64.S`
+Record 5.2: These init functions are run at boot/module init when built.
+`windfarm_core_init()` registers the `windfarm` platform device.
 
-Record: relevant kexec call chain verified in code:
-`reboot(LINUX_REBOOT_CMD_KEXEC)` -> `kernel_kexec()` ->
-`machine_kexec()` -> `default_machine_kexec()` -> `kexec_sequence()` ->
-`kexec_copy_flush()` -> `copy_segments()` -> `copy_page()` ->
-`copypage_power7.S` -> `enter_vmx_ops()`.
+Record 5.3: `wf_pm72_init()` checks `PowerMac7,2`/`PowerMac7,3`;
+`wf_rm31_init()` checks `RackMac3,1`; both register a platform driver
+only after compatibility checks.
 
-Record: key callees/logic in `enter_vmx_ops()`: `in_interrupt()`,
-`preempt_disable()`, and `enable_kernel_altivec()`. In the kexec MMU-off
-path, `default_machine_kexec()` sets
-`current_thread_info()->preempt_count = HARDIRQ_OFFSET`, and
-`include/linux/preempt.h` defines `in_interrupt()` via `irq_count()`,
-which observes the hardirq bits.
+Record 5.4: Reachability is boot-time on affected hardware using
+`g5_defconfig`, not syscall-triggered. The failure mode is hardware
+thermal shutdown, not userspace API behavior.
 
-Record: reachability: reachable from privileged kexec/kdump paths. It is
-not unprivileged-user reachable, but kdump reliability is operationally
-important.
+Record 5.5: Similar pattern already exists in the same defconfig for
+other G5 windfarm drivers (`PM81`, `PM91`, `PM112`, `PM121`).
 
-Record: similar patterns: PowerPC already disables KASAN for sensitive
-real-mode/interrupt code in multiple Makefiles and uses
-`__no_sanitize_address` in PowerPC interrupt/stack code, so the
-attribute is consistent with local practice.
+## Phase 6: Stable Tree Analysis
+Record 6.1: Checked v5.10, v5.15, v6.1, v6.6, v6.12, v6.18, v6.19, and
+v7.0 tags: the buggy omission exists and the PM72/RM31 Kconfig symbols
+exist.
 
-## Phase 6: Cross-Referencing And Stable Tree Analysis
-Record: buggy code exists in stable tags checked: `v5.4`, `v5.10`,
-`v5.15`, `v6.1`, `v6.6`, `v6.12`, `v6.18`, `v6.19`, and `v7.0` all have
-`enter_vmx_ops()` without `__no_sanitize_address`.
+Record 6.2: Generated patch applied cleanly to all checked tags: v5.10
+through v7.0.
 
-Record: the kexec `copy_segments()` -> `copy_page()` path and
-`preempt_count = HARDIRQ_OFFSET` were verified in `v5.4`, `v5.10`,
-`v5.15`, `v6.1`, and current/v7.0-era code.
+Record 6.3: Checked those tags for the exact subject; no related fix
+already present.
 
-Record: `copypage_power7.S` calls `enter_vmx_ops()` in `v5.4`, `v5.10`,
-`v5.15`, and current code.
+## Phase 7: Subsystem Context
+Record 7.1: Subsystem: PowerPC defconfig / Power Macintosh thermal
+management. Criticality: platform-specific but important for affected
+hardware because thermal control is required for safe operation.
 
-Record: `__no_sanitize_address` exists in compiler headers in checked
-stable tags, including `v5.4`, `v5.10`, `v6.1`, `v6.6`, and current.
+Record 7.2: `drivers/macintosh` has low-to-moderate activity, mostly
+treewide cleanups and small fixes; PowerMac is marked orphan, while
+broader PowerPC is supported.
 
-Record: backport difficulty: clean on current `7.0.y` per `git apply
---check` and `b4`. Older stable trees may need a tiny context adjustment
-because `EXPORT_SYMBOL(exit_vmx_usercopy)` is not present in older
-versions, but the actual function signature is present and the backport
-is straightforward.
+## Phase 8: Impact And Risk
+Record 8.1: Affected users: PowerMac G5 AGP systems (`PowerMac7,2`,
+`PowerMac7,3`) and Xserve G5 (`RackMac3,1`) using kernels built from
+`g5_defconfig`.
 
-Record: related fixes already in stable: not verified as already
-present; local stable tags checked do not contain the candidate
-annotation.
+Record 8.2: Trigger: booting affected hardware with the default G5
+config lacking the built-in thermal driver. Not unprivileged-user-
+triggered.
 
-## Phase 7: Subsystem And Maintainer Context
-Record: subsystem is PowerPC architecture library/kexec path:
-`arch/powerpc/lib` and `arch/powerpc/kexec`.
+Record 8.3: Failure mode: overheating followed by shutdown shortly after
+boot. Severity: CRITICAL for affected hardware availability and hardware
+safety.
 
-Record: criticality: important/platform-specific. It affects PowerPC
-systems using kexec/kdump with KASAN enabled, especially pseries/PowerVM
-cases verified in review. It is not universal across all architectures.
-
-Record: subsystem activity: local history shows recent PowerPC VMX
-usercopy and kexec/crash/fadump activity, and the patch was handled
-through the PowerPC maintainer path.
-
-## Phase 8: Impact And Risk Assessment
-Record: affected users: PowerPC Book3S/PowerVM-style systems using
-kexec/kdump with KASAN-enabled kernels and VMX copy paths.
-
-Record: trigger conditions: kexec/kdump switchover, MMU-off copy path,
-KASAN enabled, and `copy_page()` selecting the Power7 VMX copy path. The
-triggering operation is privileged, but the failure impacts crash dump
-capture and reboot into the new kernel.
-
-Record: failure mode: system hang during kexec/kdump. Review discussion
-includes an observed hang after “kexec: Starting switchover sequence,”
-and the commit message explains unrecoverable `bad_page_fault` risk with
-MMU off. Severity: HIGH to CRITICAL for affected debug/crash-dump
-deployments.
-
-Record: benefit: high for affected PowerPC KASAN/kdump users because it
-prevents a hard hang and restores kexec completion.
-
-Record: risk: very low. One function annotation plus comment; no logic
-change. The main concern is that stable maintainers should also take the
-companion Makefile fix for full KASAN/kexec coverage.
+Record 8.4: Benefit is high for affected stable users; risk is very low:
+two defconfig lines, existing drivers, clean applies, machine-specific
+init guards.
 
 ## Phase 9: Final Synthesis
-Record: evidence for backporting:
-- Fixes a real, reviewed, and tested kexec hang with KASAN enabled.
-- Aboorva Devarajan reported and tested the failure/fix.
-- Ritesh Harjani reviewed the final approach.
-- The fix is one function attribute and explanatory comment.
-- It affects a serious operational path: kexec/kdump boot into a
-  new/capture kernel.
-- The buggy code and call path exist across active stable versions
-  checked.
-- Backport is clean for current `7.0.y` and trivial for older stable
-  trees.
+Record 9.1: Evidence for backporting: fixes real hardware thermal
+shutdown; two-line contained patch; existing drivers; dependencies
+verified; applies cleanly to checked stable tags; maintainer
+ack/application in PowerPC fixes. Evidence against: affects only niche
+old hardware; no explicit `Cc: stable` or `Tested-by`. No unresolved
+technical blockers.
 
-Record: evidence against backporting:
-- The issue is config/platform specific: PowerPC plus KASAN plus
-  kexec/kdump plus VMX copy path.
-- Older stable trees may require minor context adjustment.
-- The commit is part of a two-patch series; the companion Makefile KASAN
-  fix should be included for the tested complete fix.
+Record 9.2: Stable rules: obviously correct: yes; tested: config
+generation verified, no runtime `Tested-by`; real bug: yes; important
+issue: yes, overheating/shutdown; small/contained: yes; no new
+API/features: yes, only enables existing drivers in defconfig; applies
+to stable: yes for checked tags.
 
-Record: unresolved questions:
-- Exact original introduction commit for `enter_vmx_ops()` could not be
-  verified from local history.
-- Direct lore `WebFetch` was blocked by Anubis; I used `b4` and a lore
-  mirror instead.
-- I did not build-test the backport.
+Record 9.3: Exception category: closest match is hardware-support/config
+fix for existing drivers, not new driver code.
 
-Stable rules checklist:
-1. Obviously correct and tested: yes. The annotation directly suppresses
-   KASAN instrumentation on the one helper that can execute with MMU
-   off; tested-by is present.
-2. Fixes a real bug: yes. Review discussion reports an actual kexec hang
-   with KASAN.
-3. Important issue: yes. Failure mode is kexec/kdump hang.
-4. Small and contained: yes. One file, one function annotation.
-5. No new features/APIs: yes.
-6. Can apply to stable: yes for current `7.0.y`; older trees may need
-   trivial context adjustment.
-
-Exception category: not a device ID/quirk/build/doc exception. It is a
-normal stability fix.
+Record 9.4: Decision: backport. This is a small, low-risk default-config
+fix for a severe hardware failure mode.
 
 ## Verification
-- [Phase 1] Parsed the supplied commit message and fetched patch mbox;
-  confirmed tags, no `Fixes:` tag in patch 2, and the linked message id.
-- [Phase 2] Inspected fetched v3 diff; confirmed `arch/powerpc/lib/vmx-
-  helper.c` has 8 insertions and 1 deletion, changing only
-  `enter_vmx_ops()`.
-- [Phase 3] Ran `git log --grep` on current history, `master`, and
-  `power-next`; candidate not present locally.
-- [Phase 3] Ran `git blame` around `enter_vmx_ops()`; local history
-  could not identify true original introduction beyond repository
-  history shape.
-- [Phase 3] Ran `git show 2ab2d5794f14`; confirmed related PowerPC kexec
-  KASAN sanitization commit from 2022.
-- [Phase 4] Ran `b4 am` and `b4 am -c`; fetched v3 two-patch series, no
-  newer revision reported, patch 2 DKIM valid.
-- [Phase 4] Ran `b4 mbox`; confirmed original recipients and patch
-  content.
-- [Phase 4] Used lore mirror for v2 thread; confirmed Ritesh review,
-  Aboorva tested-by/reported hang, and v1-to-v2 narrowing.
-- [Phase 5] Searched call sites; confirmed `copypage_power7.S`,
-  `memcpy_power7.S`, and `memcmp_64.S` call `enter_vmx_ops()`.
-- [Phase 5] Read kexec and assembly code; confirmed kexec path reaches
-  `copy_page()` with MMU-off logic and `preempt_count = HARDIRQ_OFFSET`.
-- [Phase 6] Checked stable tags `v5.4` through `v7.0`; confirmed
-  `enter_vmx_ops()` exists without the annotation and the relevant
-  kexec/copy path exists in checked trees.
-- [Phase 6] Ran `git apply --check` on current tree for patch 2 and the
-  series; clean on current `7.0.y`.
-- [Phase 7] Checked `MAINTAINERS`; confirmed PowerPC maintainers and
-  that Madhavan Srinivasan is listed for PowerPC.
-- [Phase 8] Verified failure mode from review discussion: KASAN-enabled
-  kexec hangs after switchover; with both patches applied, kexec
-  completes.
-
-This should be backported, ideally together with the companion
-`powerpc/kdump: fix KASAN sanitization flag for core_$(BITS).o` patch
-for the tested complete KASAN/kexec fix.
+- Phase 1: Parsed tags from supplied commit and b4-fetched mbox.
+- Phase 2: Verified diff is `+2/-0` in
+  `arch/powerpc/configs/g5_defconfig`.
+- Phase 3: Used `git blame`, `git log`, and `git show`; found PM72/RM31
+  drivers introduced by `6cd320996746`, present since v3.5.
+- Phase 4: Used `b4 am`, `b4 dig`, `b4 dig -w`, `b4 mbox`; full thread
+  shows Michael Ellerman ack and Madhavan Srinivasan applied it to
+  `powerpc/fixes`.
+- Phase 5: Read `drivers/macintosh/Kconfig`, `Makefile`,
+  `windfarm_pm72.c`, `windfarm_rm31.c`, and `windfarm_core.c`; verified
+  machine-specific guards and boot/init path.
+- Phase 6: Checked v5.10, v5.15, v6.1, v6.6, v6.12, v6.18, v6.19, v7.0
+  for symbol presence and clean patch application.
+- Phase 8: Failure mode verified from commit text and mailing-list
+  thread; no independent runtime test performed here.
 
 **YES**
 
- arch/powerpc/lib/vmx-helper.c | 9 ++++++++-
- 1 file changed, 8 insertions(+), 1 deletion(-)
+ arch/powerpc/configs/g5_defconfig | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/arch/powerpc/lib/vmx-helper.c b/arch/powerpc/lib/vmx-helper.c
-index 554b248002b4f..57e897b60db86 100644
---- a/arch/powerpc/lib/vmx-helper.c
-+++ b/arch/powerpc/lib/vmx-helper.c
-@@ -52,7 +52,14 @@ int exit_vmx_usercopy(void)
- }
- EXPORT_SYMBOL(exit_vmx_usercopy);
- 
--int enter_vmx_ops(void)
-+/*
-+ * Can be called from kexec copy_page() path with MMU off. The kexec
-+ * code sets preempt_count to HARDIRQ_OFFSET so we return early here.
-+ * Since in_interrupt() is always inline, __no_sanitize_address on this
-+ * function is sufficient to avoid KASAN shadow memory accesses in real
-+ * mode.
-+ */
-+int __no_sanitize_address enter_vmx_ops(void)
- {
- 	if (in_interrupt())
- 		return 0;
+diff --git a/arch/powerpc/configs/g5_defconfig b/arch/powerpc/configs/g5_defconfig
+index 428f17b455132..2fe8ca266b5f6 100644
+--- a/arch/powerpc/configs/g5_defconfig
++++ b/arch/powerpc/configs/g5_defconfig
+@@ -85,6 +85,8 @@ CONFIG_PMAC_SMU=y
+ CONFIG_MAC_EMUMOUSEBTN=y
+ CONFIG_WINDFARM=y
+ CONFIG_WINDFARM_PM81=y
++CONFIG_WINDFARM_PM72=y
++CONFIG_WINDFARM_RM31=y
+ CONFIG_WINDFARM_PM91=y
+ CONFIG_WINDFARM_PM112=y
+ CONFIG_WINDFARM_PM121=y
 -- 
 2.53.0
 
