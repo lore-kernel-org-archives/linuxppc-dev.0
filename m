@@ -1,74 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-21239-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21240-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D787ACD4F3C
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 May 2026 12:56:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B7FCACD4F3D
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 May 2026 13:14:49 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gLBP91KrZz2xqv;
-	Wed, 20 May 2026 22:56:13 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gLBpc2GvGz2xPL;
+	Wed, 20 May 2026 23:14:48 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779281773;
-	cv=none; b=EPW2HHOIXUqDglG7wz3C/6UCy2bJlELBjQmIjnRebMlarvU+4ye9HG2K3sP6K0HQ8/fGyxy0pBoXAntBDejYKXVkCYJF3U9AS0Q3SYV9Ons9t7uyVYvS6H9xaC92mAvOfcbYOywJUXf57COjCmVBp+A/qQfT8rq+/ccYjfTkcRFlrkJ3t4UWsClFK276XRyBi8JikU6s04MMhqgflsaTwiRq++rNmUUfJncO//OCB071targfgSMzQn/U0/7pVvK9K0dn+GJBlLh2SA67XbjtBtvrKJHsnIIMWnOtwQT4sDcemMLhU/bdgJh7gJ8+rnQj8OJuMFYK+tWXvzhzxGrOg==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779282888;
+	cv=none; b=WTe6Dzmfd4IqudkUopsXTe5IuwahWVZRi7iZyDAMDsvGLK/WZwjWeme5x031bs1MVluQ4FUEj4weckTd8Be19ViXo19Ni/mptSSGMeGcfemMCs7K+oXRKywb1Ax73bqXnNIOirq51EosY7HY1dDSIYNyL4fyg7XHYjal20x2mFdxnigqbloIahokw07VLiFkDXr/8gnxr8bkkXdrZ0nqJj9F/V1ZD36d8tjiV5wYMHx/ZkXN75C1RBGwo/uUb2UBD991OH8REq0Z7sYuVd6DhCKgXWeEQ4PAgXmRHLrCOApcoodFWsN2bvaC2sIWuY0FXaR6+fGHW4czLGJFXc5bFw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1779281773; c=relaxed/relaxed;
-	bh=IHcIhsCGtp+zFimfYJhlVXiifBlHPpWiDOsOVHQEJSk=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=KIFbaIYTP3mVkbXyQv51bNRKsIDfqSFYLfR6XQWEYRFfeu6eBklU1cWFNxMNpK/DcWNBoLrlg+K7s94O9OSAFly0HJ4B4pCD9sD3utctxn1Ymusmo3VJt0l0husnjslQWpzXba8Oh2ZFsV4QjuJoTidvhOsxF9w3iQ8IXY0ncMGPu9Jyp/OuQ9iGiAKZtVw/gmXnX7sdot52DziKAQYlzxvhCgS4Ro/ahd7L9tKL0gd2+vdmAWtz1g6cFidqpH9NUXqjdfXp3vAdxWgxZY0kDf51yG/WSWxfhDxFaD/znrU3XLbwFj4BmXomPRp7E/4g3yUfWS3CotX9R23B1oavsQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=odw+ysF2; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1779282888; c=relaxed/relaxed;
+	bh=l61V1ePK9sHn8zK/nyVF01xCrG/hivVTbasBGpfgkw4=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=hyIAwyypk6ybMB2ufWp6RS29j1VS/+iLH4HevUjcQLeCYMYa9CNvtX7IDEFWsJR5FNWctIIL8S2tdTpRRamG7cDKkLkiRBnRLdi46iQs0QesBhsPItzNKzx8bLdG0ae57yYIhfJ2T19gzzy+dNLfUeQFmMAeY64KF31qMYRaERrLVlWjltqcKVQCYP8E58wF3qhYBC49DPEiJiNOovFyEzRJIkaARw1C6IARjktJfXIv4YO/8cjVZgWXBD38/xpe6oZqOkczGN2AH99clC3uitdlTkHildc9BFSUI7N34dZ026pUuIBJdIkfw93yJVLHp3CYqMJQ1T1EIXEjTuZY9A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=DtFKd/RU; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=odw+ysF2;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=DtFKd/RU;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
 Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gLBP76BDlz2xPL
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 May 2026 22:56:11 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gLBpZ5NCWz2xqv
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 May 2026 23:14:46 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id C1BEF4184E;
-	Wed, 20 May 2026 12:56:08 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 195301F000E9;
-	Wed, 20 May 2026 12:56:01 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 3828444330;
+	Wed, 20 May 2026 13:14:44 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1AB741F000E9;
+	Wed, 20 May 2026 13:14:41 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1779281768;
-	bh=IHcIhsCGtp+zFimfYJhlVXiifBlHPpWiDOsOVHQEJSk=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=odw+ysF2fSGs0CYgREQtSvLkA7C1vnjLq+yTGH8uUyZQL5gIwy8l0sgOhMQFrvR/U
-	 uhiwWUqoaRwvkgB0dpBHlc/BUJ1q5+UUOAqod11j8iXpTYoTcMdKWbeJzuR6xMAqQ+
-	 OvTmgxH6iYYQP1hB8J7APtE6URdQBmktp1g/AVzlcWRxqXXJ8L/XVRnaqQo7zC7Xng
-	 ETzTvLZhkt1SvKxjfJTjvTYcMABci75fb1o2/YPfIpAPbJkiRERe++WMYYQiw7kmc/
-	 0b+T91xT73D5pkQltTZRR+EMWtVC4246AhUUcvutCmfPfiXeX8053NtPz89QYDfQc2
-	 xRaHqWoL1+79g==
-Date: Wed, 20 May 2026 13:55:58 +0100
-From: Lorenzo Stoakes <ljs@kernel.org>
-To: "David Hildenbrand (Arm)" <david@kernel.org>
-Cc: Suren Baghdasaryan <surenb@google.com>, Barry Song <baohua@kernel.org>, 
-	Matthew Wilcox <willy@infradead.org>, akpm@linux-foundation.org, linux-mm@kvack.org, 
-	liam@infradead.org, vbabka@kernel.org, rppt@kernel.org, mhocko@suse.com, 
-	jack@suse.cz, pfalcato@suse.de, wanglian@kylinos.cn, chentao@kylinos.cn, 
-	lianux.mm@gmail.com, kunwu.chan@gmail.com, liyangouwen1@oppo.com, chrisl@kernel.org, 
-	kasong@tencent.com, shikemeng@huaweicloud.com, nphamcs@gmail.com, bhe@redhat.com, 
-	youngjun.park@lge.com, linux-arm-kernel@lists.infradead.org, 
-	linux-kernel@vger.kernel.org, loongarch@lists.linux.dev, linuxppc-dev@lists.ozlabs.org, 
-	linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org, Nanzhe Zhao <nzzhao@126.com>
-Subject: Re: [PATCH v2 0/5] mm: reduce mmap_lock contention and improve page
- fault performance
-Message-ID: <ag2vKm3K00wCiwUV@lucifer>
-References: <CAGsJ_4w0qcYmukHqsyRd0jomoyYkJjOt8b-Cgp53BgP-8QQghw@mail.gmail.com>
- <afS_L-5XeWIldTXA@casper.infradead.org>
- <CAGsJ_4wk=SDtgin+84Ev2TamU-JFfmrg_SUay=-tcYmnFvK6Nw@mail.gmail.com>
- <afTpoL3FklpQZNMM@casper.infradead.org>
- <CAGsJ_4ysMcrmDLSOwBkf7qwCQrcDWeEMXkHDajTJFMLKUk0bSQ@mail.gmail.com>
- <agrWuDNGddNmvMFD@lucifer>
- <CAGsJ_4zqLfdWoTH9s7FFaqWWj0mESfikYgr7=GcV64qcuXrPxA@mail.gmail.com>
- <CAJuCfpE0WQrB3zJp9qn3jvn5DthS=ttpX7gJJvyEhA_BJGrp5g@mail.gmail.com>
- <agxbq1TxJdniMQT3@lucifer>
- <e6d1017a-e4c5-493e-bfca-932c6d64eaac@kernel.org>
+	s=k20260515; t=1779282884;
+	bh=l61V1ePK9sHn8zK/nyVF01xCrG/hivVTbasBGpfgkw4=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To;
+	b=DtFKd/RUIPItLf4gpuOm3HWcKU/PTmroifXHUuLxoG70/aGDn/BMeQrB2QqNukF6F
+	 bUGpfLKoIwAT5eh1c49OyEV4OjGApVaf2ulIqKD6+PO+8kN0r/CulxUhT2dbuUwIZt
+	 Gb1SJL1KcoEnPUMas1hQw1z/gfAOCXoED1kZJMjquq72Y33ifvkkAsZAx1cDTD6IFU
+	 vJs710X8uTMIpigJU/GVTwqd/shgYu7lUweFwhGSW0FaYpJimt8RUCvkLyVSn5lFMV
+	 IklwB+OIea1Hh/z/2apPwKTF8pEJNXm7ATKqPl92VcLI3mwJKARrYYX8aQvniyJcFZ
+	 kctjIHTa51NRg==
+Message-ID: <eb93d563-7042-458e-a5c0-b5389343d41b@kernel.org>
+Date: Wed, 20 May 2026 15:14:40 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -82,65 +59,80 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <e6d1017a-e4c5-493e-bfca-932c6d64eaac@kernel.org>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] powerpc: define __LITTLE_ENDIAN and __BIG_ENDIAN for
+ math-emu
+To: David Laight <david.laight.linux@gmail.com>,
+ Mingcong Bai <jeffbai@aosc.io>
+Cc: linux-kernel@vger.kernel.org, Xi Ruoyao <xry111@xry111.site>,
+ Kexy Biscuit <kexybiscuit@aosc.io>, stable@vger.kernel.org,
+ kernel test robot <lkp@intel.com>, Madhavan Srinivasan
+ <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>,
+ Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
+References: <20260517041423.71243-1-jeffbai@aosc.io>
+ <20260517145421.2d1ac77c@pumpkin>
+Content-Language: fr-FR
+From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+In-Reply-To: <20260517145421.2d1ac77c@pumpkin>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 
-On Wed, May 20, 2026 at 12:33:56PM +0200, David Hildenbrand (Arm) wrote:
-> On 5/19/26 14:53, Lorenzo Stoakes wrote:
-> > On Mon, May 18, 2026 at 12:56:59PM -0700, Suren Baghdasaryan wrote:
-> >
-> >>>
-> >>> I think we either need to fix `fork()`, or keep the current
-> >>> behavior of dropping the VMA lock before performing I/O.
-> >>
-> >> I see. So, this problem arises from the fact that we are changing the
-> >> pagefaults requiring I/O operation to hold VMA lock...
-> >> And you want to lock VMA on fork only if vma_is_anonymous(vma) ||
-> >> is_cow_mapping(vma->vm_flags). So, we will be blocking page faults for
-> >> anonymous and COW VMAs only while holding mmap_write_lock, preventing
-> >> any VMA modification. On the surface, that looks ok to me but I might
-> >> be missing some corner cases. If nobody sees any obvious issues, I
-> >> think it's worth a try.
-> >
-> > Not sure if you noticed but I did raise concerns ;)
-> >
-> > I wonder if you've confused the fault path and fork here, as I think Barry has
-> > been a little unclear on that.
-> >
-> > What's being suggested in this thread is to fundamentally change fork behaviour
-> > so it's different from the entire history of the kernel (or - presumably - at
-> > least recent history :)
-> I don't want fork() to become different in that regard.
->
-> There is already a slight difference with vs. without per-VMA locks, because
-> there is a window in-between us taking the write mmap_lock and all the per-VMA
-> locks. I raised that previously [1] and assumed that it is probably fine.
->
-> I also raised in the past why I think we must not allow concurrent page faults,
-> at least as soon as anonymous memory is involved [2].
->
-> ... and I raised that this is pretty much slower by design right now: "Well, the
-> design decision that CONFIG_PER_VMA_LOCK made for now to make page faults fast
-> and to make blocking any page faults from happening to  be slower ..." [3]
 
-Thanks for the background will read through! :)
 
-But yeah I think the transition from !vma->anon_vma -> vma->anon_vma being a bit
-slow is kinda ok most page faults will of course have anon_vma populated.
+Le 17/05/2026 à 15:54, David Laight a écrit :
+> On Sun, 17 May 2026 12:14:21 +0800
+> Mingcong Bai <jeffbai@aosc.io> wrote:
+> 
+>> Similar to commit b929926f01f2 ("sh: define __BIG_ENDIAN for math-emu"),
+>> define __LITTLE_ENDIAN and __BIG_ENDIAN as 0 to mitigate build-time
+>> warnings:
+>>
+>>    ./include/math-emu/double.h:59:21: error: ‘__BIG_ENDIAN’ is not defined, evaluates to ‘0’ [-Werror=undef]
+>>       59 | #if __BYTE_ORDER == __BIG_ENDIAN
+>>          |
+>>
+>> Cc: stable@vger.kernel.org
+>> Fixes: 13da9e200fe4 ("Revert "endian: #define __BYTE_ORDER"")
+>> Reported-by: kernel test robot <lkp@intel.com>
+>> Closes: https://eur01.safelinks.protection.outlook.com/?url=https%3A%2F%2Flore.kernel.org%2Foe-kbuild-all%2F202507301656.7FEX6J5W-lkp%40intel.com%2F&data=05%7C02%7Cchristophe.leroy%40csgroup.eu%7C08977974fb1c495e9bd508deb41bd275%7C8b87af7d86474dc78df45f69a2011bb5%7C0%7C0%7C639146228768693730%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=4qGulR%2BL7i7inksEbEH9jNGZS8HG80uvm3I9IyYzZww%3D&reserved=0
+>> Signed-off-by: Mingcong Bai <jeffbai@aosc.io>
+>> ---
+>>   arch/powerpc/include/asm/sfp-machine.h | 4 +++-
+>>   1 file changed, 3 insertions(+), 1 deletion(-)
+>>
+>> diff --git a/arch/powerpc/include/asm/sfp-machine.h b/arch/powerpc/include/asm/sfp-machine.h
+>> index 8b957aabb826d..db8525605c026 100644
+>> --- a/arch/powerpc/include/asm/sfp-machine.h
+>> +++ b/arch/powerpc/include/asm/sfp-machine.h
+>> @@ -319,10 +319,12 @@
+>>   #define abort()								\
+>>   	return 0
+>>   
+>> -#ifdef __BIG_ENDIAN
+>> +#ifdef __BIG_ENDIAN__
+>>   #define __BYTE_ORDER __BIG_ENDIAN
+>> +#define __LITTLE_ENDIAN 0
+>>   #else
+>>   #define __BYTE_ORDER __LITTLE_ENDIAN
+>> +#define __BIG_ENDIAN 0
+>>   #endif
+> 
+> I thought the expected/correct value for __BYTE_ORDER__ was either 1234 or 4321.
+> (apart from pdp11's 2143).
 
-Be interesting with CoW context, because we won't need to mmap read lock there
-at all :)
+That's the case, in include/linux/kconfig.h we have:
 
->
-> [1] https://lore.kernel.org/all/970295ab-e85d-7af3-76e6-df53a5c52f8b@redhat.com/
-> [2] https://lore.kernel.org/all/7e3f35cc-59b9-bf12-b8b1-4ed78223844a@redhat.com/
-> [3] https://lore.kernel.org/all/2efa2c89-3765-721d-2c3c-00590054aa5b@redhat.com/
->
-> --
-> Cheers,
->
-> David
+#ifdef CONFIG_CPU_BIG_ENDIAN
+#define __BIG_ENDIAN 4321
+#else
+#define __LITTLE_ENDIAN 1234
+#endif
 
-Cheers, Lorenzo
+But as far as I understand the problem is that math-emu expects 
+__BIG_ENDIAN to be defined at all time as it has tests like:
+
+#if __BYTE_ORDER == __BIG_ENDIAN
+
+Christophe
+
 
