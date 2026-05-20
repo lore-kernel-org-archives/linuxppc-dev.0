@@ -1,80 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-21205-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21206-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BB8F9CD4F5E
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 May 2026 05:53:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DE921CD4F5E
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 May 2026 06:30:58 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gL11h2WKlz2yDs;
-	Wed, 20 May 2026 15:53:44 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779256424;
-	cv=none; b=XyPatfxgr/kWktJtEubdoE94fxJmOwCs7bmhRGiqaaXGPB1RjN501yZnDSWSdn8Hp4MJwTmYBxU72g1x4D8WOai6F9Z1cd60fXGtrtNlQf5fLR1PjnlcMWWw/agzYpBrc0HbFyyyFbGIGu5d/j1HtKC7Ue6zL5LxUmSNH1d50Nv8LrkmbPrPfRm8ex2tVqDF31k5QUm4QNwsqmXvoAXxieDRdhBSXezeCAAvSTJ7sQJAlFLskOjvAl86PxQ4NA9/OQOAvmi3DbfqMwI5nqmmlseDKruQLUbxHVJjGl9+okw0QhChXbMh9DQyv9Z8b6IP/mlPswGwyTgfdNyf9hSh8w==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gL1rd3LcRz2xrC;
+	Wed, 20 May 2026 16:30:57 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779258657;
+	cv=none; b=OF+erDII7XAQUAof/XrsthGT71MP2vh8iP2x/omtugoHuKPO4SJ3r7OXcL7yjHq/3Fun2/2w525KD5NrwOCIBI4G/kg3uwyr39KLrAQp5rqqLibnr/y+LpOnYGyXmZWRxoFJX6+D6fiXsfGAzVLwITySJPfXcbo6HzGctj9ULhdMMWNHhDZR5EkCFoPqtpaAcI+n0NhCjvrMC2NP4Jb3q60iTXMjuGkOQJnuvlV49Ejrhb57LTcVaAv0UpHECr4GvxNVx3kilfUiP7orscvUbDmCcY1+Vb9upI6rI1RVmVGA2l0ta/360EE+zfRII+2vdWI5iumCufb/7aXtH1SGfQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1779256424; c=relaxed/relaxed;
-	bh=ELJz6tOBuKE1LJ23ONfI6yuWIWAuaZAH66RoA1RhQJg=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=DYtOaukAn/wpDWvNiJznyYzyujl5Y/yI3TKQzoAxeY1xEjiAkYQ5+ClVs2hyMgEQAOnOSlq/WauHrMPKBwK9NYQwLWQr9YSDbviNpOqyMlINLZI93ZAivyUxFXjoPM8ODkaqLIIwRaw4gaB+CVk+KsRjFqda+K0kMBHr4oaj0D79k4PHCHG9kY6FDmuqQeuNFaDJ+KkkL78XgRmWNSe+VtWnn6I0AWBPr0lFnzKrKw3tILy+cj5DX9HdvEeD3tKa2PC0ZSnHJlmAWIudeAtr62kdIJRck60A0plGU208Jeii6T1AcKmJZm0/0I7xFOTxeZDTcIKfgTDCpc1g/Iw93w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=mhXo79Dm; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sayalip@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	t=1779258657; c=relaxed/relaxed;
+	bh=J1wNi/OPNOG8LqsGjP23XYv/FtyLgW6nkJyEArHX9HA=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=b9bJ1Kw0EBJBQnecwdWQGXh8ok7YiCL/9SlOEIMGTuNsnI4uyWfnEJnJEEzMkgUwf/7w2PdgLGRp1nUL9pLNH0f0P13GXyY3+90sPVtOweA2waIAnoPLKr2BWlv8lXMO0ojuYUTimXGqg5anBToGDOy6HP7YSVQlMaugO82js5V+ktvEro1wQ3hX0UH1OEQfLjRkrBKPhLGTUuxxxA2+D8WDk4A8xk1Xhd7Q3tTigvEGWWTKStNXZB/shn83XpjlGsimHIeVskBnpzTvYCrkHj6DjMtO1jNJZcYPn35MN6JPf0c25g6lKudHcVF9vMeUajTUtidbwLWKqNfUMucFHQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=grYkMKLJ; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sayalip@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=mhXo79Dm;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=grYkMKLJ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sayalip@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sayalip@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gL11f3QK5z2xy3
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 May 2026 15:53:42 +1000 (AEST)
-Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 64K0VH0Y3628517;
-	Wed, 20 May 2026 05:53:38 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gL1rc3rjXz2x9N
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 May 2026 16:30:56 +1000 (AEST)
+Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 64K1OW8H3727812;
+	Wed, 20 May 2026 06:30:52 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:message-id:mime-version
-	:subject:to; s=pp1; bh=ELJz6tOBuKE1LJ23ONfI6yuWIWAuaZAH66RoA1RhQ
-	Jg=; b=mhXo79Dm3nMpgbIPjesGbrFw5oTTGCexFEXt+lto0rBGD0S4Jx6xAt1Ob
-	93jwOxZNbygFZjs7ig+KCjO/rN0hzE0lpUOcFewgkLrU2OGCyrUKMAiPkfQ7NPqX
-	sKZADXe45v//bFrj6tC0WcPMq/3aw2jDlBafbnqaotYbMiTSgv3m3zuQO+H/uFfH
-	Y7TqEX1V8KQgytGkzbl1+MVekp+/CNJaC3KU7Wv1cQogs7yrZ24Y6UwDxH5z/HDD
-	eYkAxZqyQC+lWEw9SVKCgf3CTOk0pdAdUH1qqIvLcg6n43uktCpWDLY4Mxw2TCej
-	Y680Yq/Cd/6cEBxwlkdEub/P0XHjg==
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=J1wNi/
+	OPNOG8LqsGjP23XYv/FtyLgW6nkJyEArHX9HA=; b=grYkMKLJc3u2Jvfuxq8wND
+	SMfU/PnxQo6FWQCC8RDCxwJ1LFTW73KCEUnBLZjxE1i3MEdDGZzmyLxz/RmA3epN
+	HIAIM+RrhVOBs9CzhVXJUT5M2OrpztdKC3ScwRdOrAKL99P3dEjDiqEd/BhPhKZW
+	KAoeXrvv1N6qjsh98WhRiZP/0i0Y3yGtho/BxR308ITwlpnihRByXcQhEYto5okg
+	muIlpIrYjb9dmhX9MSkneIjC8cvJS1qJGj6DCCQS3md5ZOc/bFmwJ1tOiIIbCO+A
+	NBXus+eiDlhtIUCwOqt4e7E/sPPq1kq8oQDFdWEyoOvqqSgIzMHPXygEbSmAt/3g
+	==
 Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4e6haw7mxc-1
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4e6h750p6y-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 20 May 2026 05:53:37 +0000 (GMT)
+	Wed, 20 May 2026 06:30:52 +0000 (GMT)
 Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma11.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 64K5dAZG011956;
-	Wed, 20 May 2026 05:53:36 GMT
-Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
-	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4e75ky5qae-1
+	by ppma11.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 64K6O5OR024577;
+	Wed, 20 May 2026 06:30:51 GMT
+Received: from smtprelay06.wdc07v.mail.ibm.com ([172.16.1.73])
+	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4e75ky5tw2-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 20 May 2026 05:53:36 +0000 (GMT)
-Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
-	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 64K5rX4252625726
+	Wed, 20 May 2026 06:30:51 +0000 (GMT)
+Received: from smtpav06.wdc07v.mail.ibm.com (smtpav06.wdc07v.mail.ibm.com [10.39.53.233])
+	by smtprelay06.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 64K6UnZ429360880
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 20 May 2026 05:53:33 GMT
-Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 06B532004B;
-	Wed, 20 May 2026 05:53:33 +0000 (GMT)
-Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 9EAD920043;
-	Wed, 20 May 2026 05:53:29 +0000 (GMT)
-Received: from li-3f69264c-2ce6-11b2-a85c-c3f414d24014.ibm.com.com (unknown [9.124.214.77])
-	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Wed, 20 May 2026 05:53:29 +0000 (GMT)
-From: Sayali Patil <sayalip@linux.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, maddy@linux.ibm.com,
-        Christophe Leroy <chleroy@kernel.org>,
-        Michael Ellerman <mpe@kernel.org>, Nicholas Piggin <npiggin@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Ritesh Harjani <ritesh.list@gmail.com>,
-        Mahesh Salgaonkar <mahesh@linux.ibm.com>,
-        Sourabh Jain <sourabhjain@linux.ibm.com>
-Subject: [PATCH] powerpc/fadump: fix integer overflow in MIN_RMA size check
-Date: Wed, 20 May 2026 11:23:27 +0530
-Message-ID: <00e9b516b13316f7ce81b651957dad0441e56006.1779255851.git.sayalip@linux.ibm.com>
-X-Mailer: git-send-email 2.52.0
+	Wed, 20 May 2026 06:30:49 GMT
+Received: from smtpav06.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id F3C6A58066;
+	Wed, 20 May 2026 06:30:48 +0000 (GMT)
+Received: from smtpav06.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 0860658056;
+	Wed, 20 May 2026 06:30:43 +0000 (GMT)
+Received: from [9.124.214.92] (unknown [9.124.214.92])
+	by smtpav06.wdc07v.mail.ibm.com (Postfix) with ESMTP;
+	Wed, 20 May 2026 06:30:41 +0000 (GMT)
+Message-ID: <e683540e-3875-4b7f-ac25-c30ae3d2fc0e@linux.ibm.com>
+Date: Wed, 20 May 2026 11:59:35 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -88,71 +81,104 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2 0/2] LKDTM powerpc enhancements - Part2
+To: kees@kernel.org, Michael Ellerman <mpe@kernel.org>
+Cc: linux-kernel@vger.kernel.org, Ritesh Harjani <ritesh.list@gmail.com>,
+        Mahesh Salgaonkar <mahesh@linux.ibm.com>, maddy@linux.ibm.com,
+        linuxppc-dev@lists.ozlabs.org
+References: <cover.1778975974.git.sayalip@linux.ibm.com>
+ <fc776993-1ad7-49fd-834e-c1945da28ad9@kernel.org>
+Content-Language: en-IN
+From: Sayali Patil <sayalip@linux.ibm.com>
+In-Reply-To: <fc776993-1ad7-49fd-834e-c1945da28ad9@kernel.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
 X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTIwMDA1MiBTYWx0ZWRfX15i6pPR1sV1N
- C8r1RhGiLqSHmT2UnlnN7l992JfQws8cnbWAN85PFwqyFFbF9aRvV7ZNBACQA9oFNO7X9SqV11V
- d7/ZkgbgzfwmCG94f/UD0l/athSyig8NkdSUUhIZtY59ImVyi84LMrl9QoCnM9cVfnSyTI0qLJH
- kuhqzUB84C+bLWlD4mSFDPm6mFecCG6/Pf0RLB65h8ad2uIX1fG5wxRYrBxCBZo1raJsfbPPAQg
- IDTwhblTKByYYqtABniU7O+vYB+s2hfT7CB3HGtTAnuyPzCItptjHXbis2YWCE2WSLsonfTUQbM
- Fo+zyNKNLPMpgb/du5I5QpG/15pcyrSHNcmKyG2Ngp8o825ZT/vbtFsVJ+ru3PjBg86ZNsAaC2v
- zwN6Yl8VK7IwHgz3SYoZ/Oiy5LkRSrMapCIlHsqpCZyBwh5OXK9MqEjBqf7yfCF9yQKRRJK3LEb
- haKDBZVxObuNUvTob+w==
-X-Authority-Analysis: v=2.4 cv=Np/htcdJ c=1 sm=1 tr=0 ts=6a0d4c61 cx=c_pps
+X-Authority-Analysis: v=2.4 cv=ffCdDUQF c=1 sm=1 tr=0 ts=6a0d551c cx=c_pps
  a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
- a=NGcC8JguVDcA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=RzCfie-kr_QcCd8fBx8p:22 a=VnNF1IyMAAAA:8 a=xEzUMY8hw0MU3VbcfrQA:9
-X-Proofpoint-ORIG-GUID: xF8pnIz1dKbxKyu8yaHW-9rNXLp6BBSP
-X-Proofpoint-GUID: 2pLTHv-fU7tesTjD6dS34EDljLeOhvLO
+ a=IkcTkHD0fZMA:10 a=NGcC8JguVDcA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=U7nrCbtTmkRpXpFmAIza:22 a=VwQbUJbxAAAA:8
+ a=VnNF1IyMAAAA:8 a=2uRJyrLNzKtNGuPgDIwA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+X-Proofpoint-ORIG-GUID: nFhVK64gt4uEMd5KkY6fCfwGZOTUwkDw
+X-Proofpoint-GUID: wiCdWB_54BHHpqjGeNL6vqXfHU-54c-4
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTIwMDA1NyBTYWx0ZWRfXzM4LBonaSmnO
+ HlteZLDNr3bcJIEQ22hGU7gxJCmJSlOJr4IwSa3oXZkhc6KuQqjfUibpLs4U8G1fJStwcxBujcE
+ d2cFxRKitLayTPWG3p3FZu3DMIWtcWNBm9hHK3pRvkoBzBP2iJsk+Sjw0thUPN7cuDYEAzx97Lh
+ 7VcNFjp7AU36jiYXUKO93yHWzniX/yDKpN0Nw5yUBnJ1DVmXuDoqoFM3aJrrUwYqgAkLoWZEHii
+ 216zE00/2R1KBzFYnp0qFPs3o3ojoywoyVgu6kVOaoNHIn9IZ6dyG1zGLDLdr/HhP5RDq/CyASN
+ hXXSpt4d8KUYvZMxsgknSXFd7Ra/+RfWDvDDikJ3UHyfL7Ke8SKoQtOpdXYlWPeZM1d2kO4jokB
+ z7E4Asfqf1Mu3N6FQCCZltfwpEdiNDv5GDM7KBWCUUUTKO+EG9Ow1W4Fy0eLG39sCCDh64K7BIE
+ JR2w6i7YA2xRrU0VrGg==
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
  definitions=2026-05-20_01,2026-05-18_01,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- bulkscore=0 spamscore=0 clxscore=1011 priorityscore=1501 impostorscore=0
- lowpriorityscore=0 suspectscore=0 adultscore=0 phishscore=0 malwarescore=0
+ priorityscore=1501 spamscore=0 phishscore=0 suspectscore=0 adultscore=0
+ clxscore=1011 impostorscore=0 lowpriorityscore=0 bulkscore=0 malwarescore=0
  classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2605130000 definitions=main-2605200052
+ reason=mlx scancount=1 engine=8.22.0-2605130000 definitions=main-2605200057
 
-The MIN_RMA size checks in fadump_setup_param_area() use
-(MIN_RMA * 1024 * 1024), which is evaluated in int and can
-overflow when MIN_RMA is 2048 or larger. This triggers compiler
-warnings such as:
 
-warning: integer overflow in expression of type 'int'
-results in '0' [-Woverflow]
 
-Promote MIN_RMA to u64 before the multiplication so the expression
-is evaluated in 64-bit and matches the surrounding physical address
-and memory size calculations.
+On 18/05/26 17:28, Michael Ellerman wrote:
+> On 18/5/2026 16:56, Sayali Patil wrote:
+>> Hi all,
+>>
+>> This series adds a new LKDTM trigger PPC_RADIX_TLBIEL, to validate
+>> machine check handling on radix MMU systems and improves reliability of
+>> the PPC_SLB_MULTIHIT test by adding isync instructions after slbmte
+>> operations.
+>>
+>> Please review the patches and provide any feedback or suggestions
+>> for improvement.
+>>
+>> Thanks,
+>> Sayali
+>>
+>> ---
+>>
+>> v1->v2
+>>   - Split the patch series into two parts.
+>>   - Updated "lkdtm/powerpc: add PPC_RADIX_TLBIEL test for radix MCE
+>>     validation" as per review comments:
+>>     Wrapped Hash-MMU specific functions with #ifdef 
+>> CONFIG_PPC_64S_HASH_MMU.
+>>     Guarded powerpc_crashtypes registration with #ifdef 
+>> CONFIG_PPC_BOOK3S_64
+>>     Updated comment explaining the MCE trigger condition for radix MMU.
+>>
+>> v1: https://lore.kernel.org/all/ 
+>> cover.1778057685.git.sayalip@linux.ibm.com/
+>> ---
+>>
+>> Sayali Patil (2):
+>>    lkdtm/powerpc: add isync after slbmte to enforce SLB update ordering
+>>    lkdtm/powerpc: add PPC_RADIX_TLBIEL test for radix MCE validation
+>>
+>>   drivers/misc/lkdtm/Makefile             |  2 +-
+>>   drivers/misc/lkdtm/core.c               |  2 +-
+>>   drivers/misc/lkdtm/powerpc.c            | 49 +++++++++++++++++++++++++
+>>   tools/testing/selftests/lkdtm/tests.txt |  1 +
+>>   4 files changed, 52 insertions(+), 2 deletions(-)
+> 
+> Both changes look good to me.
+> 
+> You should send them to Kees, who maintains lkdtm. I've added him to Cc, 
+> but that may not be sufficient to get his attention.
+> 
+> Reviewed-by: Michael Ellerman <mpe@kernel.org>
+> 
+> cheers
+> 
+Thanks for the review, Michael!
 
-This fixes both the comparison against ppc64_rma_size and the
-assignment to range_start.
+Hi Kees,
 
-Fixes: b7bb46062457 ("powerpc/fadump: fix additional param memory reservation for HASH MMU")
-Signed-off-by: Sayali Patil <sayalip@linux.ibm.com>
----
- arch/powerpc/kernel/fadump.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+Could you please review these patches and let me know if you have any 
+comments?
 
-diff --git a/arch/powerpc/kernel/fadump.c b/arch/powerpc/kernel/fadump.c
-index 501d43bf18f3..dea7f7105e42 100644
---- a/arch/powerpc/kernel/fadump.c
-+++ b/arch/powerpc/kernel/fadump.c
-@@ -1759,10 +1759,10 @@ void __init fadump_setup_param_area(void)
- 		 * 2. The range should be between MIN_RMA and RMA size (ppc64_rma_size)
- 		 * 3. It must not overlap with the fadump reserved area.
- 		 */
--		if (ppc64_rma_size < MIN_RMA*1024*1024)
-+		if (ppc64_rma_size < (u64)MIN_RMA * 1024 * 1024)
- 			return;
- 
--		range_start = MIN_RMA * 1024 * 1024;
-+		range_start = (u64)MIN_RMA * 1024 * 1024;
- 		range_end = min(ppc64_rma_size, fw_dump.boot_mem_top);
- 	}
- 
--- 
-2.52.0
-
+Thanks,
+Sayali
 
