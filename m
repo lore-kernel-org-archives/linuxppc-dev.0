@@ -1,51 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-21240-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21241-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B7FCACD4F3D
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 May 2026 13:14:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D994DCD4F3D
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 May 2026 13:15:38 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gLBpc2GvGz2xPL;
-	Wed, 20 May 2026 23:14:48 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779282888;
-	cv=none; b=WTe6Dzmfd4IqudkUopsXTe5IuwahWVZRi7iZyDAMDsvGLK/WZwjWeme5x031bs1MVluQ4FUEj4weckTd8Be19ViXo19Ni/mptSSGMeGcfemMCs7K+oXRKywb1Ax73bqXnNIOirq51EosY7HY1dDSIYNyL4fyg7XHYjal20x2mFdxnigqbloIahokw07VLiFkDXr/8gnxr8bkkXdrZ0nqJj9F/V1ZD36d8tjiV5wYMHx/ZkXN75C1RBGwo/uUb2UBD991OH8REq0Z7sYuVd6DhCKgXWeEQ4PAgXmRHLrCOApcoodFWsN2bvaC2sIWuY0FXaR6+fGHW4czLGJFXc5bFw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gLBqY4BXXz2xqv;
+	Wed, 20 May 2026 23:15:37 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779282937;
+	cv=none; b=Am1ZbjsLxh8KPm/UQ5rk9yG2LZvfnYKDZAaQxGAm8kVE+z3zPkx0LrRp93JRrvyZJ1TDcwx0kMo2KG0RyVpEyjiPwvkuJWpIsS5qlgV8fN1WFcU/0ItT77ENDJThIvXsk14pe5PPGTHMJjf2n7uyKkjpK3ZnWudi4ls3J5o2ZbnncRrwbaHuz453H1Iaecd48qu370+P3b210ZXOd9iItEckDLv6ArniQx1GLv8uuwE3y4wvjXqtoqEIUE1L9T5/Upedeh+tUrvdKJom1neiywUONTt1CiNBDUu+hWN0a+kEP+0R90X4x5k952TnLcOZlyzq492XmdTPB2/j3S3BRA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1779282888; c=relaxed/relaxed;
-	bh=l61V1ePK9sHn8zK/nyVF01xCrG/hivVTbasBGpfgkw4=;
+	t=1779282937; c=relaxed/relaxed;
+	bh=vT277olcJ9OKS4+MATx3mmi6USeLxVT6fHEiUXX5X2s=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=hyIAwyypk6ybMB2ufWp6RS29j1VS/+iLH4HevUjcQLeCYMYa9CNvtX7IDEFWsJR5FNWctIIL8S2tdTpRRamG7cDKkLkiRBnRLdi46iQs0QesBhsPItzNKzx8bLdG0ae57yYIhfJ2T19gzzy+dNLfUeQFmMAeY64KF31qMYRaERrLVlWjltqcKVQCYP8E58wF3qhYBC49DPEiJiNOovFyEzRJIkaARw1C6IARjktJfXIv4YO/8cjVZgWXBD38/xpe6oZqOkczGN2AH99clC3uitdlTkHildc9BFSUI7N34dZ026pUuIBJdIkfw93yJVLHp3CYqMJQ1T1EIXEjTuZY9A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=DtFKd/RU; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:Content-Type; b=baASCA+lGcgbqhkhN40M8AriFjZHYiOsyrRaD/XccSwhslsrrH1YGMQi74Eq+5fs4R9M0puOjvDVQsrTFa7vhRnbBCumd5uVXP/BZp3XHwOneAx96j7B4gCPBye6nzD2N2EpelSuHmZkJuUazc7YS7JbHfcV40JU2FLSya0khnAEl+WFK0xMFiByjXiPCDABhQBcfDC7fZiIG6VyfkxkhuzXzCNZH9J+s7JyAigmNRnFiRqiROYxKqYIkXee+5kpWPqAIOFc4uDrXbvXXhFHAZPyiTT12aTv9Ez3ZvVAHkhOZ0VSmV5I/8l3Bq33//CV2NTRz2B5AVNLE2/CAs/X2w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Y72gpe0z; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=DtFKd/RU;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Y72gpe0z;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gLBpZ5NCWz2xqv
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 May 2026 23:14:46 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gLBqX6hh9z2xPL
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 May 2026 23:15:36 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 3828444330;
-	Wed, 20 May 2026 13:14:44 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1AB741F000E9;
-	Wed, 20 May 2026 13:14:41 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 21A7260120;
+	Wed, 20 May 2026 13:15:35 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 70AA41F000E9;
+	Wed, 20 May 2026 13:15:33 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1779282884;
-	bh=l61V1ePK9sHn8zK/nyVF01xCrG/hivVTbasBGpfgkw4=;
+	s=k20260515; t=1779282934;
+	bh=vT277olcJ9OKS4+MATx3mmi6USeLxVT6fHEiUXX5X2s=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=DtFKd/RUIPItLf4gpuOm3HWcKU/PTmroifXHUuLxoG70/aGDn/BMeQrB2QqNukF6F
-	 bUGpfLKoIwAT5eh1c49OyEV4OjGApVaf2ulIqKD6+PO+8kN0r/CulxUhT2dbuUwIZt
-	 Gb1SJL1KcoEnPUMas1hQw1z/gfAOCXoED1kZJMjquq72Y33ifvkkAsZAx1cDTD6IFU
-	 vJs710X8uTMIpigJU/GVTwqd/shgYu7lUweFwhGSW0FaYpJimt8RUCvkLyVSn5lFMV
-	 IklwB+OIea1Hh/z/2apPwKTF8pEJNXm7ATKqPl92VcLI3mwJKARrYYX8aQvniyJcFZ
-	 kctjIHTa51NRg==
-Message-ID: <eb93d563-7042-458e-a5c0-b5389343d41b@kernel.org>
-Date: Wed, 20 May 2026 15:14:40 +0200
+	b=Y72gpe0zXK455SHxQ9u24VUk+h9yDGQrivN5G6i5J5ryWkevEuRALOKaFoTXbupb1
+	 lTNI9Rl46QJJc4ebXpV7yEoNI6Y7eyvVgh2+vDNIJMIDFx1yqNZy4Okmo3DPAsWCz/
+	 qh7PTRteBpd0bGENrtIXS+da12hhTyQc5WjLY0cyFVAKIGy+68/cAlpe66fxFEMmly
+	 Ch4qngA1diFEbd74JBb4pu/5ALNelpdoa2GT4eZDCetCUyaYUGoQOcXIXWB+wRzFJV
+	 +hUQrvn3Pj6nZUu2eZUsOUMEPbeM5RLshOdFn0EnK8kODjieSNBGE+nhh/c0RY5zNh
+	 Gv0PRWK5EU5/g==
+Message-ID: <f58abe7e-acf3-44f5-bdc3-3b60a37126c0@kernel.org>
+Date: Wed, 20 May 2026 15:15:31 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -60,79 +60,50 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] powerpc: define __LITTLE_ENDIAN and __BIG_ENDIAN for
- math-emu
-To: David Laight <david.laight.linux@gmail.com>,
- Mingcong Bai <jeffbai@aosc.io>
-Cc: linux-kernel@vger.kernel.org, Xi Ruoyao <xry111@xry111.site>,
- Kexy Biscuit <kexybiscuit@aosc.io>, stable@vger.kernel.org,
- kernel test robot <lkp@intel.com>, Madhavan Srinivasan
- <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>,
- Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
-References: <20260517041423.71243-1-jeffbai@aosc.io>
- <20260517145421.2d1ac77c@pumpkin>
+Subject: Re: [PATCHv2] powerpc/44x: Set GPIO chip parent
+To: Rosen Penev <rosenp@gmail.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
+ Linus Walleij <linusw@kernel.org>, open list <linux-kernel@vger.kernel.org>
+References: <20260517063754.21819-1-rosenp@gmail.com>
 Content-Language: fr-FR
 From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-In-Reply-To: <20260517145421.2d1ac77c@pumpkin>
+In-Reply-To: <20260517063754.21819-1-rosenp@gmail.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 
 
 
-Le 17/05/2026 à 15:54, David Laight a écrit :
-> On Sun, 17 May 2026 12:14:21 +0800
-> Mingcong Bai <jeffbai@aosc.io> wrote:
+Le 17/05/2026 à 08:37, Rosen Penev a écrit :
+> The PPC4xx GPIO driver stopped assigning an explicit parent
+> to the gpio_chip when it moved away from of_mm_gpiochip_add_data().
 > 
->> Similar to commit b929926f01f2 ("sh: define __BIG_ENDIAN for math-emu"),
->> define __LITTLE_ENDIAN and __BIG_ENDIAN as 0 to mitigate build-time
->> warnings:
->>
->>    ./include/math-emu/double.h:59:21: error: ‘__BIG_ENDIAN’ is not defined, evaluates to ‘0’ [-Werror=undef]
->>       59 | #if __BYTE_ORDER == __BIG_ENDIAN
->>          |
->>
->> Cc: stable@vger.kernel.org
->> Fixes: 13da9e200fe4 ("Revert "endian: #define __BYTE_ORDER"")
->> Reported-by: kernel test robot <lkp@intel.com>
->> Closes: https://eur01.safelinks.protection.outlook.com/?url=https%3A%2F%2Flore.kernel.org%2Foe-kbuild-all%2F202507301656.7FEX6J5W-lkp%40intel.com%2F&data=05%7C02%7Cchristophe.leroy%40csgroup.eu%7C08977974fb1c495e9bd508deb41bd275%7C8b87af7d86474dc78df45f69a2011bb5%7C0%7C0%7C639146228768693730%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=4qGulR%2BL7i7inksEbEH9jNGZS8HG80uvm3I9IyYzZww%3D&reserved=0
->> Signed-off-by: Mingcong Bai <jeffbai@aosc.io>
->> ---
->>   arch/powerpc/include/asm/sfp-machine.h | 4 +++-
->>   1 file changed, 3 insertions(+), 1 deletion(-)
->>
->> diff --git a/arch/powerpc/include/asm/sfp-machine.h b/arch/powerpc/include/asm/sfp-machine.h
->> index 8b957aabb826d..db8525605c026 100644
->> --- a/arch/powerpc/include/asm/sfp-machine.h
->> +++ b/arch/powerpc/include/asm/sfp-machine.h
->> @@ -319,10 +319,12 @@
->>   #define abort()								\
->>   	return 0
->>   
->> -#ifdef __BIG_ENDIAN
->> +#ifdef __BIG_ENDIAN__
->>   #define __BYTE_ORDER __BIG_ENDIAN
->> +#define __LITTLE_ENDIAN 0
->>   #else
->>   #define __BYTE_ORDER __LITTLE_ENDIAN
->> +#define __BIG_ENDIAN 0
->>   #endif
+> Restore that association from the platform device so OF GPIO lookup
+> can match phandles to the registered gpiochip.
 > 
-> I thought the expected/correct value for __BYTE_ORDER__ was either 1234 or 4321.
-> (apart from pdp11's 2143).
+> Tested on: Cisco MX60W. No more probe deferral.
+> 
+> Assisted-by: Codex:GPT-5.5
+> Fixes: 1044dbaf2a77 ("powerpc/44x: Change GPIO driver to a proper platform driver")
+> Signed-off-by: Rosen Penev <rosenp@gmail.com>
 
-That's the case, in include/linux/kconfig.h we have:
+Reviewed-by: Christophe Leroy (CS GROUP) <chleroy@kernel.org>
 
-#ifdef CONFIG_CPU_BIG_ENDIAN
-#define __BIG_ENDIAN 4321
-#else
-#define __LITTLE_ENDIAN 1234
-#endif
-
-But as far as I understand the problem is that math-emu expects 
-__BIG_ENDIAN to be defined at all time as it has tests like:
-
-#if __BYTE_ORDER == __BIG_ENDIAN
-
-Christophe
+> ---
+>   arch/powerpc/platforms/44x/gpio.c | 1 +
+>   1 file changed, 1 insertion(+)
+> 
+> diff --git a/arch/powerpc/platforms/44x/gpio.c b/arch/powerpc/platforms/44x/gpio.c
+> index aea0d913b59d..4413a94cf7a6 100644
+> --- a/arch/powerpc/platforms/44x/gpio.c
+> +++ b/arch/powerpc/platforms/44x/gpio.c
+> @@ -169,6 +169,7 @@ static int ppc4xx_gpio_probe(struct platform_device *ofdev)
+>   
+>   	gc = &chip->gc;
+>   
+> +	gc->parent = dev;
+>   	gc->base = -1;
+>   	gc->ngpio = 32;
+>   	gc->direction_input = ppc4xx_gpio_dir_in;
 
 
