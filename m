@@ -1,52 +1,60 @@
-Return-Path: <linuxppc-dev+bounces-21218-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21219-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CF299CD4F3C
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 May 2026 08:51:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D465FCD4F54
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 May 2026 08:54:37 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gL4z63Krlz2xqv;
-	Wed, 20 May 2026 18:51:46 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a01:37:3000::53df:4ee9:0"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779267106;
-	cv=none; b=OzlOkUBAjQ8m6zs0GUaceL//BmU5KfRPC0Ge4kmVyRmDSo0h1ghB267lQrHC2BkcLowV2rtZpA8H4ANMjVzGqwiKB5dK90WM/Dan6zZ+WdvbtPLAYLZOVonISxnYWh763C0iEppP5XghmxhWYY/4KOQbzM5hPG3O6hq+7yVemrEZSzz1LzIR3Dzevh+Wx7PR01CnEMSIO3VdK50AeWLZ16aMFs7zHL+lvX7U5mrKxwzSzPiZJxQCYnAWL9DD6YiRPpyGn8TnCVMriMN7OGa1tE+KQjFpd9JMYWKM0k5jeS6PIT2u9nE5BTi3OzgU0gfYh9D65XwWB1fy466OXqVPYw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gL52N2ZKSz2xqv;
+	Wed, 20 May 2026 18:54:36 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779267276;
+	cv=none; b=Z7hG2xSMkVZgsZn4fOc3W0wS17u8kEY4TLdIUHTxhYYTUbSSykvyclagPthlqTWKIwKMNouN2QQiUwEkN+E3BnrDOa0mvjjqbkprqs1vzG1pDyEmAkvFqh6ZpHnEq23yCtDpFuRcQ+zg65nyls1+vmQuqueGar3cXmqjCYrIhRWxE3hXriFlTvCE2le6+rY6BOiKbEOXfTi+xT8beiravhGF+DUeIn+1vZF4bjpz4sTQF0/kwPeGe3m0pGuyHNCeQFc1T1KBwBLV5ukjBqR7+wMkPDinRBMlE9NNPMgna+Rlq2Zu7JPuUn1HnKMxfXj25483XZGbg25uyvwQfnvXjg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1779267106; c=relaxed/relaxed;
-	bh=wVHTMU3Nb+wXRLp69i3q+mt+UxaHuBodePJL/UKpJZc=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=l+qd6EGmZ6loVJkV4/eKlwy1FbQrWTJYqy3NiA7NH3b+OMFYiiwJCXB5/9DHez0nKjFK/mAXiVDJEummp1OCABOR7dVzmeus936Ub4fvXqMSjC+HLQGeKy59LAeVPfUibzQbnKf3O9OUDdxM3OtTZ1n4nKFjuNsJWDPTrXS7b+BO7qfo7j5v/VubVyrogx8v6THg6NNa3KapX9Thb4yeAyn0EywrECSaUXy8QZ8OSHOnDe2zxTKalz8IQzdQK/qRztjkfBH+pUYheqGCG89ztriDpA5Cre6E+7ILAIY1+j+2oF/d12UmYv6jluMoInwxpYv/DynE6HKSK6qtirJBvw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=wunner.de; spf=pass (client-ip=2a01:37:3000::53df:4ee9:0; helo=mailout2.hostsharing.net; envelope-from=lukas@wunner.de; receiver=lists.ozlabs.org) smtp.mailfrom=wunner.de
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=wunner.de
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=wunner.de (client-ip=2a01:37:3000::53df:4ee9:0; helo=mailout2.hostsharing.net; envelope-from=lukas@wunner.de; receiver=lists.ozlabs.org)
-X-Greylist: delayed 477 seconds by postgrey-1.37 at boromir; Wed, 20 May 2026 18:51:44 AEST
-Received: from mailout2.hostsharing.net (mailout2.hostsharing.net [IPv6:2a01:37:3000::53df:4ee9:0])
+	t=1779267276; c=relaxed/relaxed;
+	bh=SJbvQCeYYGK31no0UiRJJfovB9239W4R99+29etyJMU=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=V6OrLxDijAvNMUrwVhWWeFmb8CU5EfHJ2kynTvvznbaZ7RRLAbHQoa8J0IP+Naba2IYzKI4U6k2yfW0DMpdSKCSNZEUJpPL86OVWgkbWVufIR8nWgybdImbt45H9RR/AJ19niSJ/LU1OHa32ZRsi51xGbIl9UnBRGxcZtzbKX/iRegcamyjPZKectCVG59TUHyWdfooxfkYE7wPDv0MR4KNZgAIfwjAq8zUYZW0ZYTpXiVgue0erd0qCo+k6YeS4GNqlKVzAJj92COVxmdYTHRdo/p4Ytz5o4e8ru3/dYztj7GkOVxaWNPDkg7flYS0SwlBgSpzVvwiyEGz6WpNXYg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=nsYunww/; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=ardb@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=nsYunww/;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=ardb@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gL4z45mcGz2xPL
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 May 2026 18:51:44 +1000 (AEST)
-Received: from h08.hostsharing.net (h08.hostsharing.net [IPv6:2a01:37:1000::53df:5f1c:0])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature ECDSA (secp384r1) server-digest SHA384
-	 client-signature ECDSA (secp384r1) client-digest SHA384)
-	(Client CN "*.hostsharing.net", Issuer "GlobalSign GCC R6 AlphaSSL CA 2025" (verified OK))
-	by mailout2.hostsharing.net (Postfix) with ESMTPS id 4A3BB10625;
-	Wed, 20 May 2026 10:43:36 +0200 (CEST)
-Received: by h08.hostsharing.net (Postfix, from userid 100393)
-	id 38FD1602E4CC; Wed, 20 May 2026 10:43:36 +0200 (CEST)
-Date: Wed, 20 May 2026 10:43:36 +0200
-From: Lukas Wunner <lukas@wunner.de>
-To: "Yury M." <yurypm@arista.com>
-Cc: bhelgaas@google.com, mahesh@linux.ibm.com, oohall@gmail.com,
-	linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] PCI/AER: Clear non-fatal errors on AER recovery failure
-Message-ID: <ag10ON5pZ4ymPT9U@wunner.de>
-References: <CAPzpGcRCTCZtaX1EVaJNZ103THZKsoszZduY7=gwfYdcrMo-SQ@mail.gmail.com>
- <agwzHzF3bpPM6jcC@wunner.de>
- <3633b587-5782-4cfa-b967-997de86866bb@arista.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gL52M3jwbz2xPL
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 May 2026 18:54:35 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id 4D00F600CB;
+	Wed, 20 May 2026 08:54:33 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id A95071F000E9;
+	Wed, 20 May 2026 08:54:31 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1779267273;
+	bh=SJbvQCeYYGK31no0UiRJJfovB9239W4R99+29etyJMU=;
+	h=From:To:Cc:Subject:Date;
+	b=nsYunww/wNRisO2TgDK+NnVSxFs1l7ZnC4Cr1l+Mv8AdN0N49rj5GjBZEza3sAx7e
+	 6BzLM08hEytZZaqwT/hG2gaouG9wwGCLXzjJ1VtTRp1PbPlGIgWmkWT8OC8+wuOvol
+	 Umsz3HVbfb1s7phBZGumKda2+n97tSR0EnnNbsRHmaNfEcl6Sul27o6Eh42efiCnO5
+	 +MzvGAo67z/1QpbmS00ePYqARLlz43ZZuQB65TqVdo2aq714OtfnAsawZerHDkPthE
+	 0WJBYxD1w5mdAmEDNlhOz5joxLnEqejRILGOZ0EIGti2J6GpJ+Ih4Rw8+DPxxZKs/s
+	 aX/x1RqwCYINA==
+From: Ard Biesheuvel <ardb@kernel.org>
+To: linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org,
+	Ard Biesheuvel <ardb@kernel.org>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+Subject: [PATCH resend] powerpc/code-patching: Avoid r/w mapping of the zero page
+Date: Wed, 20 May 2026 10:54:23 +0200
+Message-ID: <20260520085423.485402-1-ardb@kernel.org>
+X-Mailer: git-send-email 2.47.3
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -60,43 +68,80 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <3633b587-5782-4cfa-b967-997de86866bb@arista.com>
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2580; i=ardb@kernel.org; h=from:subject; bh=oY6gtKVWNTBx6UhZYZ8J5F7bWJKDdqkgNGPUoOyRHTg=; b=owGbwMvMwCVmkMcZplerG8N4Wi2JIYs3RWD7P9O9sip+nxa8t3i22u1c9+ypXxduWjaj6mv8v Ad5y6codpSyMIhxMciKKbIIzP77bufpiVK1zrNkYeawMoEMYeDiFICJhBox/M94/XbBEb45a0sm T0iw2eXcuyKvVOt/YIzwzZp7x18VHdrC8E/zmjyPpZ+xlEKMw/TfJ/4sXjvrUTTvgvztfF9NHeL uS7ECAA==
+X-Developer-Key: i=ardb@kernel.org; a=openpgp; fpr=F43D03328115A198C90016883D200E9CA6329909
+Content-Transfer-Encoding: 8bit
 
-On Tue, May 19, 2026 at 05:05:20PM +0100, Yury M. wrote:
-> Root port can detect AER error with source 0000:00:00.0.
-> 
-> In this case, we call find_source_device -> find_device_iter. The
-> 'multi-error' flag is not set, and we are looking for the first error (not
-> all). This means that for any error with the 0000:00:00.0 source on the root
-> port, we will report the error for the first device on the bus.
+The only remaining use of map_patch_area() is mapping the zero page, and
+immediately unmapping it again so that the intermediate page table
+levels are all guaranteed to be populated.
 
-No, is_error_source() considers bus number 0 as a bogus number
-and will iterate over all devices on the bus.
+The use of the zero page here is completely arbitrary, and not harmful
+per se, but currently, it creates a writable mapping, and does so in a
+manner that requires that the empty_zero_page[] symbol is not
+const-qualified.
 
-> In my case, an AER error reported by 0000:06:08.0 will be logged as an error
-> reported by 0000:06:07.0 if AER recovery constantly fails.
+Given that this is about to change, and that map_patch_area() now never
+maps anything other than the zero page, let's simplify the code and
+- take the PA of empty_zero_page directly
+- create a read-only temporary mapping.
 
-The problem is that 0000:06:08.0 reports an Advisory Non-Fatal Error,
-i.e. it sets the ANFE bit in the Correctable Error Status Register
-and signals (only) a Correctable Error, even though it also sets bits
-in the Uncorrectable Error Status Register.
+This allows empty_zero_page[] to be repainted as const u8[] in a
+subsequent patch, without making substantial changes to this code
+patching logic.
 
-The kernel lacks support for ANFE handling and will only clear the bits
-in the Correctable Error Status Register.  It neglects to also clear
-(and report) the bits in the Uncorrectable Error Status Register.
+Cc: Madhavan Srinivasan <maddy@linux.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Nicholas Piggin <npiggin@gmail.com>
+Cc: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+Signed-off-by: Ard Biesheuvel <ardb@kernel.org>
+---
+Build tested only (Clang)
 
-There was an effort two years back to bring up ANFE support but it
-fizzled out.  I talked to the submitter and he's now busy with other
-things:
+Resending from my non-Google email. Apologies if you are receiving this
+twice.
 
-https://lore.kernel.org/r/20240620025857.206647-1-zhenzhong.duan@intel.com/
+ arch/powerpc/lib/code-patching.c | 11 +++++------
+ 1 file changed, 5 insertions(+), 6 deletions(-)
 
-It's on my todo list to respin his series but I can't promise when
-I'll get to it.
+diff --git a/arch/powerpc/lib/code-patching.c b/arch/powerpc/lib/code-patching.c
+index f84e0337cc02..13a8acf851f1 100644
+--- a/arch/powerpc/lib/code-patching.c
++++ b/arch/powerpc/lib/code-patching.c
+@@ -60,7 +60,7 @@ struct patch_context {
+ 
+ static DEFINE_PER_CPU(struct patch_context, cpu_patching_context);
+ 
+-static int map_patch_area(void *addr, unsigned long text_poke_addr);
++static int map_patch_area(unsigned long text_poke_addr);
+ static void unmap_patch_area(unsigned long addr);
+ 
+ static bool mm_patch_enabled(void)
+@@ -117,7 +117,7 @@ static int text_area_cpu_up(unsigned int cpu)
+ 
+ 	// Map/unmap the area to ensure all page tables are pre-allocated
+ 	addr = (unsigned long)area->addr;
+-	err = map_patch_area(empty_zero_page, addr);
++	err = map_patch_area(addr);
+ 	if (err)
+ 		return err;
+ 
+@@ -236,11 +236,10 @@ static unsigned long get_patch_pfn(void *addr)
+ /*
+  * This can be called for kernel text or a module.
+  */
+-static int map_patch_area(void *addr, unsigned long text_poke_addr)
++static int map_patch_area(unsigned long text_poke_addr)
+ {
+-	unsigned long pfn = get_patch_pfn(addr);
+-
+-	return map_kernel_page(text_poke_addr, (pfn << PAGE_SHIFT), PAGE_KERNEL);
++	return map_kernel_page(text_poke_addr, __pa_symbol(empty_zero_page),
++			       PAGE_KERNEL_RO);
+ }
+ 
+ static void unmap_patch_area(unsigned long addr)
+-- 
+2.54.0.631.ge1b05301d1-goog
 
-Thanks,
-
-Lukas
 
