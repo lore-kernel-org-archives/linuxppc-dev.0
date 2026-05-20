@@ -1,61 +1,61 @@
-Return-Path: <linuxppc-dev+bounces-21232-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21233-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 457FBCD4F3C
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 May 2026 11:20:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7A24ACD4F3C
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 May 2026 11:20:54 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gL8H068Htz2xqv;
-	Wed, 20 May 2026 21:20:44 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779276044;
-	cv=none; b=Bu1S81wVHv3NUI+Kr73oLJ5ynGsCn1Yrj/KVTIAv2tzAxCDuc3km2L98EH8NWXqeoLCTAZdkb7hPY6q3VQ+1dAr68D6owBT9fqrRG9xWJmfj2naOPDnrD/onh6v2E+QJPLTHRH9xK3M5bqU6o95ZGnBnyDiHqFpSopyg1XtVX4CHJT+6pFH5WdTmkOWCuE3stZViyYUArjTBrZU4hfqhxzYp45viqtd75u+bccZ8PQht7UV+SOcowBDzEQy3c6NgAs+H8Mf49EtEvfHCcdZZmcJO72bOXrkVLNl/hhgmR9Q6gGWTEgOH+7rG7rpP0D6D4VC/TkGX3Pm9ddGFhbEJNA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gL8H86sY6z2yRF;
+	Wed, 20 May 2026 21:20:52 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779276052;
+	cv=none; b=drz/Y4qGEolqph0AWEwxztieAVKItc6xWw7A2XkVI0uOO4hjiQOsUB4HghoC3Tw+nIcTi0VveXdD25nrClq/wMR/Nu9ztVULBvzOWRjN0+u6uv0JTme1+Hen1zvwNo6VpnwIz89ssjEL7g8N7dTJtwyGZz5Uy53+TesaykaRk1p8GLXhdlkYrI/6t4wTSRNlBwDn2nREg5NLcgE0Iw2QTabInfU3FGXL1ZCYs2I6YvGnc6kzlDW+MV81TJa3URyeSfYO1KUs7oDXskaw0XvqoRLloNWxWIV8XL1dWy1/g5Qs9VTK0KOCiDgVFD6b6xwECq1CunPLfLMhKm153Q52rQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1779276044; c=relaxed/relaxed;
-	bh=4r0b79gth2S7r/zdOPKesNo2Nh2lUQWQHcWgM+q4up4=;
+	t=1779276052; c=relaxed/relaxed;
+	bh=8T65It1GO1SXGGayulZQ3wUSSNygOruDa19FjF8qO0c=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=aOmf81wb8Mw3jAaM648TGhgXFWINcEnyjYM3aYq1e4du6yiRbUzzPhdQ29Yo041otHXdmV4qKIAMpYEuwMwtBUdupKTARB35dOMI6iDy3GcmFCnYtpv5I3XhkRaWRueGspVSqWA+7isEapgks2aUzB6NJzFPE3klIYBVvT79JWFtHWVAxei9Vxy8qxNw6+zneO+3+4Ag49crTbhpd5+eDaV3Ln+jPONWRwxpQB+h1nrzQRxNL9LI2gEv+p2nvU16ppDa1ZPnJP04rIAH+7kStBFp6RqrXSmsnrcEuzTZa7HjAQoFwONBiDVwhV1JzR+d1S5OCXngxkIyXd+DCd5xuw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=bTd8vY28; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=sashal@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=eVbc6UiFenjecAKJYEvbLCd7R/ijmfMRrAaZQST2o6EUZothWLEhQdjBE2ds3OWr7oRinZRHFBG9rDGaWpEy0X8qNpY8bMC5RFfsj+qKD5cm49kG2HIVhGTOhPaZZz25mg357WKmQa1qUQHRZh3b81SNFukFW2h2egWAk4Sj4UaIXMSake0J/AUgc/4aNbz7i9KPz5SqH/MTv3xpxuRiWCPJV/rcgmq7MrB99LZVqQKPCFhH+kRv6RmYuEy8OT+AI70KZNf1jEo1LSmDSqkEG9OuO9qNJ1DHvivfVD28MKK9U3OGYpNosnq34fEdpBitXkuNi7SfvFX7jLLxG6Vjvw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=KkRVim+0; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=sashal@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=bTd8vY28;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=KkRVim+0;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=sashal@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=sashal@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gL8H00FwYz2xPL
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 May 2026 21:20:44 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gL8H800yXz2xPL
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 May 2026 21:20:51 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 3D50160129;
-	Wed, 20 May 2026 11:20:42 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1FCC11F000E9;
-	Wed, 20 May 2026 11:20:41 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 7400244159;
+	Wed, 20 May 2026 11:20:49 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7E38C1F00894;
+	Wed, 20 May 2026 11:20:48 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1779276042;
-	bh=4r0b79gth2S7r/zdOPKesNo2Nh2lUQWQHcWgM+q4up4=;
+	s=k20260515; t=1779276049;
+	bh=8T65It1GO1SXGGayulZQ3wUSSNygOruDa19FjF8qO0c=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=bTd8vY28SVhBKkXI16aOGse33gu+o57QrMcpA8ROuKjq7hT52SYZb8c9e/4D7ycFS
-	 Qi1YNSz+yzXUwinhe+d/BjIWWcYjelzMbzPLYH5AP4y0kFCEZJzzzoW2ZKsrEloxXT
-	 eAWwk8x5cXqLRmWS9wdzfsmxeEovbpGLz0FTEfRl3B4M9oSNnaoAhwTRrs4M7ftDzC
-	 UeUQzBbHYHyC+HlI94qWG1UrAhivz1ObJTplqL4tMyNosvyYdEGLWoBW3kP9uVgbq+
-	 ba+mnFTQZt8Oj0gc+CHssFxfyl4Bac3DpFiHCFyv11FKLa5pDcb8s5tx0X6/0sKnad
-	 UY0DwTsQoZzMQ==
+	b=KkRVim+0+OrVyWTQbhEi2+sEilqbCrnoxyGjk/uz5K6bKSEWuo0H6i5G5uol8HA6J
+	 NU6olKMJvO1C8/wtkK0KHycrlKHtu9I78pTcZuAqH+4fhZjDA0TqpPSAOwezVfjh7T
+	 o2UgB/swKxMXFdj8Ivs1LLNQvpqtx+nYMu85zOF1K4xI3WlsATW3GxVzW6aN3bn/S8
+	 iOt31QxxVLM1dwBeOZdkR8geZBIg+4y8IpOAqXJynvxa58q03b9zNxTMrfR2axyUGi
+	 uLSe646jOQojvbeaTT0EE2hpKMt5gnoZgJJuUCsIZ9pGX/qWx82pvJ1gBL+edOw1c7
+	 YBa9zpb/KNL2A==
 From: Sasha Levin <sashal@kernel.org>
 To: patches@lists.linux.dev,
 	stable@vger.kernel.org
-Cc: Linus Walleij <linusw@kernel.org>,
+Cc: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>,
 	Madhavan Srinivasan <maddy@linux.ibm.com>,
 	Sasha Levin <sashal@kernel.org>,
 	mpe@ellerman.id.au,
 	linuxppc-dev@lists.ozlabs.org,
 	linux-kernel@vger.kernel.org
-Subject: [PATCH AUTOSEL 7.0-5.10] powerpc/g5: Enable all windfarms by default
-Date: Wed, 20 May 2026 07:19:12 -0400
-Message-ID: <20260520111944.3424570-40-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 7.0-6.1] powerpc/pasemi: Drop redundant res assignment
+Date: Wed, 20 May 2026 07:19:17 -0400
+Message-ID: <20260520111944.3424570-45-sashal@kernel.org>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20260520111944.3424570-1-sashal@kernel.org>
 References: <20260520111944.3424570-1-sashal@kernel.org>
@@ -75,216 +75,242 @@ MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
 X-stable-base: Linux 7.0.9
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-From: Linus Walleij <linusw@kernel.org>
+From: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
 
-[ Upstream commit 8d57bb61734b23f6342e9de781173f1d83f90d3a ]
+[ Upstream commit f583bd5f64d40e083dde5bb22846c4d93e59d471 ]
 
-The G5 defconfig is clearly intended for the G5 Powermac
-series, and that should enable all the available
-windfarm drivers, or the machine will overheat a short
-while after booting and shut itself down, which is
-annoying.
+Return value of pas_add_bridge() is not used, so code can be simplified
+to fix W=1 clang warnings:
 
-Signed-off-by: Linus Walleij <linusw@kernel.org>
+  arch/powerpc/platforms/pasemi/pci.c:275:6: error: variable 'res' set but not used [-Werror,-Wunused-but-set-variable]
+
+Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
 Signed-off-by: Madhavan Srinivasan <maddy@linux.ibm.com>
-Link: https://patch.msgid.link/20260505-powermac-g5-config-v3-1-7747bf72f874@kernel.org
+Link: https://patch.msgid.link/20260317130823.240279-4-krzysztof.kozlowski@oss.qualcomm.com
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
 
 LLM Generated explanations, may be completely bogus:
 
-## Phase 1: Commit Message Forensics
-Record 1.1: Subsystem `powerpc/g5`; action verb `Enable`; intent: enable
-all existing windfarm thermal drivers in `g5_defconfig`.
+## Phase Walkthrough
 
-Record 1.2: Tags found: `Signed-off-by: Linus Walleij
-<linusw@kernel.org>`, `Signed-off-by: Madhavan Srinivasan
-<maddy@linux.ibm.com>`, `Link: https://patch.msgid.link/20260505-
-powermac-g5-config-v3-1-7747bf72f874@kernel.org`. No `Fixes:`,
+### Phase 1: Commit Message Forensics
+Record 1.1: Subsystem `powerpc/pasemi`; action verb `Drop`; intent is to
+remove an unused local variable assignment in PA Semi PCI init.
+
+Record 1.2: Tags found: `Signed-off-by: Krzysztof Kozlowski`, `Signed-
+off-by: Madhavan Srinivasan`, `Link: https://patch.msgid.link/2026031713
+0823.240279-4-krzysztof.kozlowski@oss.qualcomm.com`. No `Fixes:`,
 `Reported-by:`, `Tested-by:`, `Reviewed-by:`, `Acked-by:`, or `Cc:
 stable`.
 
-Record 1.3: The body says G5 machines using this defconfig may overheat
-shortly after boot and shut down if not all windfarm drivers are
-enabled. Root cause: the G5 defconfig enables some, but not all, G5
-windfarm thermal control drivers.
+Record 1.3: The commit explicitly describes a Clang `W=1` build warning
+promoted to an error: `variable 'res' set but not used
+[-Werror,-Wunused-but-set-variable]`. No runtime symptom, crash, data
+corruption, or user-visible functional failure is described.
 
-Record 1.4: This is a hidden bug fix despite “Enable” wording: it
-changes default configuration to include missing existing thermal-
-management drivers, preventing hardware overheat shutdown.
+Record 1.4: This is not a hidden runtime bug fix. It is a build-warning
+cleanup that can matter when building powerpc with warning-as-error
+settings.
 
-## Phase 2: Diff Analysis
-Record 2.1: One file changed: `arch/powerpc/configs/g5_defconfig`,
-`+2/-0`. No functions modified. Scope: single-file surgical defconfig
-fix.
+### Phase 2: Diff Analysis
+Record 2.1: One file changed: `arch/powerpc/platforms/pasemi/pci.c`, `1
+insertion(+), 2 deletions(-)`. Only `pas_pci_init()` is modified. Scope
+is single-file surgical.
 
-Record 2.2: Before: `g5_defconfig` enabled `WINDFARM_PM81`, `PM91`,
-`PM112`, and `PM121`, but omitted `PM72` and `RM31`. After: it also
-enables `CONFIG_WINDFARM_PM72=y` and `CONFIG_WINDFARM_RM31=y`.
+Record 2.2: Before: `pas_pci_init()` declared `int res;` and assigned
+`res = pas_add_bridge(np);`, then never read `res`. After: it still
+calls `pas_add_bridge(np);` but does not assign the return value. The
+execution path and side effects are unchanged.
 
-Record 2.3: Bug category: hardware/default-config correctness fix.
-Mechanism: builds in already-existing thermal control drivers for
-PowerMac7,2/7,3 and RackMac3,1 systems.
+Record 2.3: Bug category: build warning/build error under specific
+compiler options. Mechanism: remove unused-but-set variable. No resource
+lifetime, locking, memory safety, reference counting, or logic behavior
+changes.
 
-Record 2.4: Fix quality is high: two config lines, no API change, no
-code refactor. Regression risk is low because the enabled drivers check
-machine compatibility and return `-ENODEV` on nonmatching hardware.
+Record 2.4: Fix quality is obviously correct by inspection: the function
+call remains, only the unused local storage is removed. Regression risk
+is very low because runtime behavior is unchanged.
 
-## Phase 3: Git History Investigation
-Record 3.1: Blame shows surrounding windfarm entries came from
-`2c39bf49fd0530` in 2012, while PM72/RM31 drivers were introduced by
-`6cd320996746` and are present from v3.5. Checked v3.5, v3.6, v4.0,
-v5.4, v5.10: the defconfig omitted PM72/RM31.
+### Phase 3: Git History Investigation
+Record 3.1: `git blame` on current stable code shows the exact changed
+lines are present in the checked-out stable tree. Deeper history shows
+the unused `res` assignment was introduced by `250a93501d626`
+(`powerpc/pasemi: Search for PCI root bus by compatible property`),
+first described by `git describe` as `v4.19-rc1~110^2~83`.
 
-Record 3.2: No `Fixes:` tag, so no Fixes target to follow.
+Record 3.2: No `Fixes:` tag is present. Manual history identified
+`250a93501d626` as the introducing commit for the exact unused
+assignment pattern.
 
-Record 3.3: Recent `g5_defconfig` history is mostly defconfig
-maintenance and symbol removals; no prerequisite patch was identified.
-The mailed patch is a one-patch series.
+Record 3.3: Recent file history shows only the candidate commit and
+unrelated treewide allocation changes in `next-20260508`; no
+prerequisite pasemi PCI refactor was found.
 
-Record 3.4: Linus Walleij is an established kernel
-maintainer/contributor, though not listed as PowerPC maintainer. The
-patch was acked by Michael Ellerman in-thread and applied by Madhavan
-Srinivasan, both PowerPC maintainers per `MAINTAINERS`.
+Record 3.4: The author has other powerpc cleanup commits nearby,
+including the sibling PS3 warning fix. `MAINTAINERS` identifies Madhavan
+Srinivasan and Michael Ellerman as powerpc maintainers; Madhavan
+committed this patch.
 
-Record 3.5: Dependencies are existing Kconfig symbols and are satisfied.
-`make ARCH=powerpc g5_defconfig` on the candidate produced
-`CONFIG_WINDFARM_PM72=y`, `CONFIG_WINDFARM_RM31=y`, and `CONFIG_I2C=y`.
+Record 3.5: The sibling commit `8333e4916040e` is part of the same
+cleanup series but is independent. This pasemi patch applies standalone
+to the current 7.0.5 checkout.
 
-## Phase 4: Mailing List And External Research
-Record 4.1: `b4 am` found the v3 submission and three revisions: v1, v2,
-v3. `b4 dig` matched the patch-id and found lore/patch.msgid links.
-Direct `WebFetch` to lore was blocked by Anubis, but `b4 mbox`
-downloaded the full v3 thread.
+### Phase 4: Mailing List And External Research
+Record 4.1: `b4 dig -c f583bd5f64d40` found the original submission by
+patch-id. It found the January submission and the March resend
+corresponding to the commit `Link:`. Direct WebFetch to
+lore/patch.msgid.link was blocked by Anubis.
 
-Record 4.2: `b4 dig -w` showed the patch was sent to Madhavan
-Srinivasan, Michael Ellerman, Nicholas Piggin, Christophe Leroy,
-`linuxppc-dev`, and `linux-kernel`.
+Record 4.2: `b4 dig -w` showed appropriate powerpc maintainers and
+LLVM/compiler-warning stakeholders were copied: Madhavan Srinivasan,
+Michael Ellerman, Nicholas Piggin, Christophe Leroy, Nathan Chancellor,
+LLVM list, linuxppc-dev, and others.
 
-Record 4.3: No separate bug report link was present. Thread evidence
-confirms impact: Segher Boessenkool wrote that affected machines boot
-but “won’t run for even a minute”; Linus said Debian likely works by
-having the driver in initramfs/rootfs and that built-in is safer.
+Record 4.3: No bug report link or reporter tag exists. The thread
+describes a compiler warning/build-cleanliness issue, not a runtime bug
+report.
 
-Record 4.4: Series context: same two-line patch rebased from v1 to v3,
-no multi-patch dependency.
+Record 4.4: The patch is part of a two-patch series with `powerpc/ps3:
+Drop redundant result assignment`; the other patch is the same class of
+cleanup and is not a dependency.
 
-Record 4.5: Web search found no stable-list discussion for this exact
-patch. No known stable objection found.
+Record 4.5: The downloaded thread contains no `stable` mention. A direct
+lore stable search was attempted but blocked by Anubis, so no stable-
+list archive result could be independently verified.
 
-## Phase 5: Code Semantic Analysis
-Record 5.1: No functions changed. Relevant enabled init functions are
-`wf_pm72_init()` and `wf_rm31_init()`.
+### Phase 5: Code Semantic Analysis
+Record 5.1: Modified function: `pas_pci_init()`.
 
-Record 5.2: These init functions are run at boot/module init when built.
-`windfarm_core_init()` registers the `windfarm` platform device.
+Record 5.2: Callers: `pas_pci_init()` is assigned to `.discover_phbs` in
+the PA Semi machine descriptor in
+`arch/powerpc/platforms/pasemi/setup.c`. `pas_add_bridge()` is static
+and, in `next-20260508`, is called only from `pas_pci_init()`.
 
-Record 5.3: `wf_pm72_init()` checks `PowerMac7,2`/`PowerMac7,3`;
-`wf_rm31_init()` checks `RackMac3,1`; both register a platform driver
-only after compatibility checks.
+Record 5.3: Relevant callees in the affected path include
+`pci_set_flags()`, `of_find_compatible_node()`, `pas_add_bridge()`, and
+`of_node_put()`. `pas_add_bridge()` allocates/configures the PCI
+controller and scans OF ranges/ISA bridge state.
 
-Record 5.4: Reachability is boot-time on affected hardware using
-`g5_defconfig`, not syscall-triggered. The failure mode is hardware
-thermal shutdown, not userspace API behavior.
+Record 5.4: Reachability is boot-time/platform-init only for PA Semi
+systems. It is not syscall-reachable and has no unprivileged runtime
+trigger.
 
-Record 5.5: Similar pattern already exists in the same defconfig for
-other G5 windfarm drivers (`PM81`, `PM91`, `PM112`, `PM121`).
+Record 5.5: Similar pattern found: sibling commit `8333e4916040e`
+removes an unused assignment in PS3 platform code for the same warning
+class.
 
-## Phase 6: Stable Tree Analysis
-Record 6.1: Checked v5.10, v5.15, v6.1, v6.6, v6.12, v6.18, v6.19, and
-v7.0 tags: the buggy omission exists and the PM72/RM31 Kconfig symbols
-exist.
+### Phase 6: Stable Tree Analysis
+Record 6.1: The exact unused `res = pas_add_bridge(np);` pattern exists
+in verified tags `v4.19`, `v5.10`, `v5.15`, `v6.1`, `v6.6`, `v6.12`,
+`v6.17`, `v6.18`, `v6.19`, and `v7.0`. It was not present in the same
+form in `v4.14` or `v4.9`.
 
-Record 6.2: Generated patch applied cleanly to all checked tags: v5.10
-through v7.0.
+Record 6.2: Backport difficulty is clean for the current 7.0.5 tree,
+verified by `git format-patch -1 --stdout f583bd5f64d40 | git apply
+--check`. Older stable trees may need minor context adjustment because
+surrounding code differs in older releases.
 
-Record 6.3: Checked those tags for the exact subject; no related fix
-already present.
+Record 6.3: No earlier same-subject fix exists in `v7.0`; related same-
+series warning fixes were found only in `next-20260508`.
 
-## Phase 7: Subsystem Context
-Record 7.1: Subsystem: PowerPC defconfig / Power Macintosh thermal
-management. Criticality: platform-specific but important for affected
-hardware because thermal control is required for safe operation.
+### Phase 7: Subsystem Context
+Record 7.1: Subsystem is `arch/powerpc/platforms/pasemi`, a platform-
+specific powerpc PCI init path. Criticality is peripheral/platform-
+specific, not core kernel.
 
-Record 7.2: `drivers/macintosh` has low-to-moderate activity, mostly
-treewide cleanups and small fixes; PowerMac is marked orphan, while
-broader PowerPC is supported.
+Record 7.2: Recent pasemi file history is low churn. This is mature
+platform code with little recent activity.
 
-## Phase 8: Impact And Risk
-Record 8.1: Affected users: PowerMac G5 AGP systems (`PowerMac7,2`,
-`PowerMac7,3`) and Xserve G5 (`RackMac3,1`) using kernels built from
-`g5_defconfig`.
+### Phase 8: Impact And Risk
+Record 8.1: Affected population: PA Semi powerpc platform builders,
+especially Clang `W=1` builds with powerpc `-Werror` behavior.
 
-Record 8.2: Trigger: booting affected hardware with the default G5
-config lacking the built-in thermal driver. Not unprivileged-user-
-triggered.
+Record 8.2: Trigger condition is build-time only. No runtime trigger and
+no unprivileged-user trigger were verified.
 
-Record 8.3: Failure mode: overheating followed by shutdown shortly after
-boot. Severity: CRITICAL for affected hardware availability and hardware
-safety.
+Record 8.3: Failure mode is build failure under specific warning/error
+settings, not crash/corruption/deadlock. Severity is medium for affected
+builders, low for runtime users.
 
-Record 8.4: Benefit is high for affected stable users; risk is very low:
-two defconfig lines, existing drivers, clean applies, machine-specific
-init guards.
+Record 8.4: Benefit is narrow but real under the stable build-fix
+exception. Risk is extremely low because the generated runtime behavior
+should be unchanged: the same function call remains and only an unused
+local assignment is removed.
 
-## Phase 9: Final Synthesis
-Record 9.1: Evidence for backporting: fixes real hardware thermal
-shutdown; two-line contained patch; existing drivers; dependencies
-verified; applies cleanly to checked stable tags; maintainer
-ack/application in PowerPC fixes. Evidence against: affects only niche
-old hardware; no explicit `Cc: stable` or `Tested-by`. No unresolved
-technical blockers.
+### Phase 9: Final Synthesis
+Record 9.1: Evidence for backporting: fixes a verified compiler
+warning/error class; code exists across many stable-era releases; patch
+is tiny, standalone, and behavior-preserving; applies cleanly to current
+stable checkout. Evidence against: no runtime bug, no default-build
+failure was verified, no stable nomination, platform-specific impact.
+Unresolved: direct stable lore search was blocked, and I did not run a
+full Clang `W=1` build.
 
-Record 9.2: Stable rules: obviously correct: yes; tested: config
-generation verified, no runtime `Tested-by`; real bug: yes; important
-issue: yes, overheating/shutdown; small/contained: yes; no new
-API/features: yes, only enables existing drivers in defconfig; applies
-to stable: yes for checked tags.
+Record 9.2: Stable rules checklist: obviously correct: yes by
+inspection; tested: no explicit `Tested-by` and no local full build;
+fixes a real issue: yes as a build-warning/error issue under specific
+settings; important: only under build-fix exception, not runtime-
+critical; small/contained: yes, 3-line single-function change; no new
+feature/API: yes; applies to stable: current 7.0.5 yes, older trees
+likely simple but not all tested.
 
-Record 9.3: Exception category: closest match is hardware-support/config
-fix for existing drivers, not new driver code.
+Record 9.3: Exception category: build fix. This is the only reason to
+take it; it is not a runtime bug fix.
 
-Record 9.4: Decision: backport. This is a small, low-risk default-config
-fix for a severe hardware failure mode.
+Record 9.4: Decision: backport as a low-risk build fix for Clang
+`W=1`/powerpc warning-as-error builds. The benefit is narrow, but the
+patch is minimal, standalone, and behavior-preserving.
 
 ## Verification
-- Phase 1: Parsed tags from supplied commit and b4-fetched mbox.
-- Phase 2: Verified diff is `+2/-0` in
-  `arch/powerpc/configs/g5_defconfig`.
-- Phase 3: Used `git blame`, `git log`, and `git show`; found PM72/RM31
-  drivers introduced by `6cd320996746`, present since v3.5.
-- Phase 4: Used `b4 am`, `b4 dig`, `b4 dig -w`, `b4 mbox`; full thread
-  shows Michael Ellerman ack and Madhavan Srinivasan applied it to
-  `powerpc/fixes`.
-- Phase 5: Read `drivers/macintosh/Kconfig`, `Makefile`,
-  `windfarm_pm72.c`, `windfarm_rm31.c`, and `windfarm_core.c`; verified
-  machine-specific guards and boot/init path.
-- Phase 6: Checked v5.10, v5.15, v6.1, v6.6, v6.12, v6.18, v6.19, v7.0
-  for symbol presence and clean patch application.
-- Phase 8: Failure mode verified from commit text and mailing-list
-  thread; no independent runtime test performed here.
+- [Phase 1] `git show --format=fuller --stat --patch f583bd5f64d40`
+  verified commit message, tags, and exact diff.
+- [Phase 2] Diff verified one file, one function, `1 insertion`, `2
+  deletions`.
+- [Phase 3] `git blame` and `git show 250a93501d626` verified the unused
+  assignment pattern was introduced by `250a93501d626`, described as
+  before `v4.19-rc1`.
+- [Phase 4] `b4 dig -c`, `-a`, `-w`, and `b4 mbox` verified the patch
+  submission, resend, recipients, and lack of candidate-specific stable
+  tags in the downloaded thread.
+- [Phase 5] `rg` and `git grep` verified `pas_pci_init()` call placement
+  and `pas_add_bridge()` call sites.
+- [Phase 6] `git grep` verified the pattern in `v4.19`, `v5.10`,
+  `v5.15`, `v6.1`, `v6.6`, `v6.12`, `v6.17`, `v6.18`, `v6.19`, and
+  `v7.0`; `git apply --check` verified clean apply to current 7.0.5.
+- [Phase 7] `MAINTAINERS` verified powerpc maintainers and subsystem
+  ownership.
+- [Phase 8] `arch/powerpc/Kconfig.debug` and `arch/powerpc/Kbuild`
+  verified powerpc warning-as-error configuration exists.
+- UNVERIFIED: I did not run a full Clang `W=1` build, and direct lore
+  stable search was blocked by Anubis.
 
 **YES**
 
- arch/powerpc/configs/g5_defconfig | 2 ++
- 1 file changed, 2 insertions(+)
+ arch/powerpc/platforms/pasemi/pci.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/configs/g5_defconfig b/arch/powerpc/configs/g5_defconfig
-index 428f17b455132..2fe8ca266b5f6 100644
---- a/arch/powerpc/configs/g5_defconfig
-+++ b/arch/powerpc/configs/g5_defconfig
-@@ -85,6 +85,8 @@ CONFIG_PMAC_SMU=y
- CONFIG_MAC_EMUMOUSEBTN=y
- CONFIG_WINDFARM=y
- CONFIG_WINDFARM_PM81=y
-+CONFIG_WINDFARM_PM72=y
-+CONFIG_WINDFARM_RM31=y
- CONFIG_WINDFARM_PM91=y
- CONFIG_WINDFARM_PM112=y
- CONFIG_WINDFARM_PM121=y
+diff --git a/arch/powerpc/platforms/pasemi/pci.c b/arch/powerpc/platforms/pasemi/pci.c
+index 60f990a336c47..2df9552746529 100644
+--- a/arch/powerpc/platforms/pasemi/pci.c
++++ b/arch/powerpc/platforms/pasemi/pci.c
+@@ -272,13 +272,12 @@ void __init pas_pci_init(void)
+ {
+ 	struct device_node *root = of_find_node_by_path("/");
+ 	struct device_node *np;
+-	int res;
+ 
+ 	pci_set_flags(PCI_SCAN_ALL_PCIE_DEVS);
+ 
+ 	np = of_find_compatible_node(root, NULL, "pasemi,rootbus");
+ 	if (np) {
+-		res = pas_add_bridge(np);
++		pas_add_bridge(np);
+ 		of_node_put(np);
+ 	}
+ 	of_node_put(root);
 -- 
 2.53.0
 
