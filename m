@@ -1,63 +1,53 @@
-Return-Path: <linuxppc-dev+bounces-21316-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21317-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2C091CD4F5E
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 May 2026 10:21:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8857DCD5BA4
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 May 2026 11:10:22 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gLkwZ4qfBz2xdL;
-	Thu, 21 May 2026 20:21:50 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779358910;
-	cv=none; b=SnFTA1wXpUHzgCT5Xk5RxgtQrRw+KzIaQVL7K1AVSauzfy0wtjLEG4llOYc55FUJNwrIzjmInknTXs8q8KWsgVrceT5kDl8tsd+7hIwgVaOFQ3UIeVYt1d6tmyQZ4CTK0QbS7lu7HuXEl5+9gUyk8jv43nb2gKXhoJ4lwx3MRKPYrvvA/pXkJblc5/hu+NYubCFBQxxH8vU5N+5bx8LaZdILg5VJB/mqzVE9KspRoJl0P3I8MwQcYZBqiTs0NbHH2zmA2cX1XNJZM2Fbm3tis+LH7z72LTrAUJtKX6YQd+2D6vQII4xrNwXbpOv0AQfIgS+eFVY5dPNB20U29w/HDQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gLm0X5dwMz2xSN;
+	Thu, 21 May 2026 21:10:20 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779361820;
+	cv=none; b=AgbMY0VpFftXbpJf+VWFxkqSILUc5lxoGJHplW0MNilcoAezuFekLdKvqBInKrBc+cbLUvmgvSMe0rT3U4+fJ7iB7IHEv478752zL8F/3Cko6Nf/eCpwLvor03n2sQUF4RMKuaq0TuCK007Uw+RB8D3pDx0EBHVazyMvN4442YeQRis+5/SeVaydmPcHXfO9nIE6B1Cc8kOdxwbRMJ4CtyK/WvBR4qwQjW/Sopcp6TNlkUmisGgKI7O8zEQkYKFhwkj1NiuNIOeRVRGqsMAUoaqkwjqjSCUvvBlccEwOf8bQvHlMvleKCRGpkjwFJNtkrVP8jbQEYpu4gW0oE4GhRQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1779358910; c=relaxed/relaxed;
-	bh=JMPwawuoo+FF/ktT9CWL/B41j3xPKyCYtygGQ631+OI=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=T0c2a41sMVbGXt7agfwlfPLM2jHHPDeUExwzf03ypZZ9GR28Olh6ROaEUUECq8bHhxGZPafjgzJm0/DE4vvQewjhtZP7QmuNtgRhoqO+f/ekdekD53s6EDyx6PUTjgZ75wuk2SuhIpInl2jjqUrjIKiskUc8ShQ4ArvpCiqTxlSDP8t5ojykutt4X0gIRrk7blwQgdVt1uP/tAL1sc5ATnNMNSG2UX53cP8WciBtdiCPcApgOKF8BtPtwGB7mtWbbig0Nl3QbIzeh9xY9ZWTeJpyDCRROy4Pei5T66xaaowm5tLQr8wALsSjmzefQEuD7v3KisljlUhTbrW7taj67Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=GyujhIcl; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=kees@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1779361820; c=relaxed/relaxed;
+	bh=xU8Xda3hTS+TH6/kqkYtkfd/gVphmpM5ys0iuESx0eo=;
+	h=Content-Type:MIME-Version:Subject:From:Message-Id:Date:References:
+	 In-Reply-To:To:Cc; b=eBCEaoZ9KR3isTOOv9R7EI+cYqt2oEP6+Ki1Kgke2uq858uOWvAis6bHSSFcShxEM8VJWMnAl6k/jpEMP7sRodTPmYTq5s7fvVHhe6IwUQDX6nadjwfwrw50tQzZXFDx6OI8tK+ADJPKWLBnENEBrAKYjixqkrhPSEuQmnSnpnPdMPN5TzJWI0s42Ngo170U+iDmfesU/OF+kz76UoiVGKanl3bvuPzPBRpSOZvvOYtm5lVAD1GlkUz3IrtKY4VMgsNgkgGbd3qqMzxbOKHibyV8ea7LAU88uLeCOzmYMiK/aZN1P5qWHQdmjrcDR1BVN7tqnEUDy+xC/yI9wNuXHg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=IeUc+TU8; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=patchwork-bot+netdevbpf@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=GyujhIcl;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=IeUc+TU8;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=kees@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=patchwork-bot+netdevbpf@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gLkwY6dcPz2xS2
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 May 2026 20:21:49 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gLm0W686Pz2xS2
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 May 2026 21:10:19 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id A73474407E;
-	Thu, 21 May 2026 10:21:47 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8940A1F000E9;
-	Thu, 21 May 2026 10:21:47 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 3817160212;
+	Thu, 21 May 2026 11:10:17 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id DECDA1F000E9;
+	Thu, 21 May 2026 11:10:16 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1779358907;
-	bh=JMPwawuoo+FF/ktT9CWL/B41j3xPKyCYtygGQ631+OI=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=GyujhIclQPg9DYXc/avMXQpQYuUEVt9xTmVMfACoSMdeycwpemfk5L53l6XWNuQHl
-	 oOjJ1MwucNSkhqlAQMuyXCBp3vFibdR8b4/JpZKqii1oMHrSanHqZtL769xnRN51rw
-	 rW/3+yHMuzfwagGcfCuC065ls555G7vsXUyI1pftWEg4zaw/Hbljho0P8e0NTR41FD
-	 HzA02akNd18S1hFMGIJe5CVwY9dtsrm6bez3LasEn+jkqLJNWHG2NLbHlqO5x47HeE
-	 /k0W8/xgMkwpSXRqaJuMJ9ZD7uyrvKWA2wJYUBDCQu74LR+KPKy+v8oua7XKjViXRH
-	 QVCfJSJIQdlBA==
-From: Kees Cook <kees@kernel.org>
-To: linuxppc-dev@lists.ozlabs.org,
-	maddy@linux.ibm.com,
-	Sayali Patil <sayalip@linux.ibm.com>
-Cc: Kees Cook <kees@kernel.org>,
-	linux-kernel@vger.kernel.org,
-	Ritesh Harjani <ritesh.list@gmail.com>,
-	Mahesh Salgaonkar <mahesh@linux.ibm.com>
-Subject: Re: [PATCH v2 0/2] LKDTM powerpc enhancements - Part2
-Date: Thu, 21 May 2026 03:21:21 -0700
-Message-Id: <177935887882.2266323.11773405239596341070.b4-ty@kernel.org>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <cover.1778975974.git.sayalip@linux.ibm.com>
-References: <cover.1778975974.git.sayalip@linux.ibm.com>
+	s=k20260515; t=1779361816;
+	bh=xU8Xda3hTS+TH6/kqkYtkfd/gVphmpM5ys0iuESx0eo=;
+	h=Subject:From:Date:References:In-Reply-To:To:Cc;
+	b=IeUc+TU8KfmOdLpDtUOEaJcHiCUK87i4XfCq0IgsjEVMuvTatrPzUduaPqXtzGTYF
+	 +yb2Nag0bIqi7PsRqx4bPgfzLke4z29ohFAEWnQi2AlyhcGncxJiaA/IZe1EF94T+T
+	 oZ4md4kwYc30zpyZJ5jGP4dnqcp/6BHFKBMb9RcBvqDZEJmDllHDy/gxpYJXz7chU2
+	 H6Js8SX//oWDtT2rKN8o6VL3jM9QSCDhaIsmZPtYkVxlTh1LHC9gr8lUyeE/uxe2q7
+	 OtuOhiDBT00ei8HkIJiz+38j+qvwE/foOTPD0SKFwPfzUiODrmT+LN85NCZsf/j8cK
+	 Ylfd5f8lf9sEA==
+Received: from [10.30.226.235] (localhost [IPv6:::1])
+	by aws-us-west-2-korg-oddjob-rhel9-1.codeaurora.org (Postfix) with ESMTP id 1994C3930D65;
+	Thu, 21 May 2026 11:10:28 +0000 (UTC)
+Content-Type: text/plain; charset="utf-8"
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -71,32 +61,79 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
+Subject: Re: [PATCH v8 net-next 00/15] Add preliminary NETC switch support for
+ i.MX94
+From: patchwork-bot+netdevbpf@kernel.org
+Message-Id: 
+ <177936182689.4032976.7498848495414588133.git-patchwork-notify@kernel.org>
+Date: Thu, 21 May 2026 11:10:26 +0000
+References: <20260518082506.1318236-1-wei.fang@nxp.com>
+In-Reply-To: <20260518082506.1318236-1-wei.fang@nxp.com>
+To: Wei Fang <wei.fang@nxp.com>
+Cc: claudiu.manoil@nxp.com, vladimir.oltean@nxp.com, xiaoning.wang@nxp.com,
+ andrew+netdev@lunn.ch, davem@davemloft.net, edumazet@google.com,
+ kuba@kernel.org, pabeni@redhat.com, robh@kernel.org, krzk+dt@kernel.org,
+ conor+dt@kernel.org, f.fainelli@gmail.com, frank.li@nxp.com,
+ chleroy@kernel.org, horms@kernel.org, linux@armlinux.org.uk,
+ maxime.chevallier@bootlin.com, andrew@lunn.ch, olteanv@gmail.com,
+ netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+ devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org, imx@lists.linux.dev
 
-On Mon, 18 May 2026 12:26:03 +0530, Sayali Patil wrote:
-> This series adds a new LKDTM trigger PPC_RADIX_TLBIEL, to validate
-> machine check handling on radix MMU systems and improves reliability of
-> the PPC_SLB_MULTIHIT test by adding isync instructions after slbmte
-> operations.
-> 
-> Please review the patches and provide any feedback or suggestions
-> for improvement.
+Hello:
+
+This series was applied to netdev/net-next.git (main)
+by Paolo Abeni <pabeni@redhat.com>:
+
+On Mon, 18 May 2026 16:24:51 +0800 you wrote:
+> i.MX94 NETC (v4.3) integrates 802.1Q Ethernet switch functionality, the
+> switch provides advanced QoS with 8 traffic classes and a full range of
+> TSN standards capabilities. It has 3 user ports and 1 CPU port, and the
+> CPU port is connected to an internal ENETC through the pseduo link, so
+> instead of a back-to-back MAC, the lightweight "pseudo MAC" is used at
+> both ends of the pseudo link to transfer Ethernet frames. The pseudo
+> link provides a zero-copy interface (no serialization delay) and lower
+> power (less logic and memory).
 > 
 > [...]
 
-Thanks for the CC! Yeah, with everyone's Acks this is fine by me.
+Here is the summary with links:
+  - [v8,net-next,01/15] dt-bindings: net: dsa: update the description of 'dsa,member' property
+    https://git.kernel.org/netdev/net-next/c/0c89a779c373
+  - [v8,net-next,02/15] dt-bindings: net: dsa: add NETC switch
+    https://git.kernel.org/netdev/net-next/c/6d019124be60
+  - [v8,net-next,03/15] net: enetc: add pre-boot initialization for i.MX94 switch
+    https://git.kernel.org/netdev/net-next/c/f059d55fd8a0
+  - [v8,net-next,04/15] net: enetc: add basic operations to the FDB table
+    https://git.kernel.org/netdev/net-next/c/4566269803ff
+  - [v8,net-next,05/15] net: enetc: add support for the "Add" operation to VLAN filter table
+    https://git.kernel.org/netdev/net-next/c/d0ac4d4bd299
+  - [v8,net-next,06/15] net: enetc: add support for the "Update" operation to buffer pool table
+    https://git.kernel.org/netdev/net-next/c/cb4d95d79d85
+  - [v8,net-next,07/15] net: enetc: add support for "Add" and "Delete" operations to IPFT
+    https://git.kernel.org/netdev/net-next/c/123db6a27511
+  - [v8,net-next,08/15] net: enetc: add multiple command BD rings support
+    https://git.kernel.org/netdev/net-next/c/c5aed83ddc53
+  - [v8,net-next,09/15] net: dsa: add NETC switch tag support
+    https://git.kernel.org/netdev/net-next/c/0850005c26d2
+  - [v8,net-next,10/15] net: dsa: netc: introduce NXP NETC switch driver for i.MX94
+    https://git.kernel.org/netdev/net-next/c/187fbae024c8
+  - [v8,net-next,11/15] net: dsa: netc: add phylink MAC operations
+    https://git.kernel.org/netdev/net-next/c/bbe97e347219
+  - [v8,net-next,12/15] net: dsa: netc: add FDB, STP, MTU, port setup and host flooding support
+    https://git.kernel.org/netdev/net-next/c/46d6407692c8
+  - [v8,net-next,13/15] net: dsa: netc: initialize buffer pool table and implement flow-control
+    https://git.kernel.org/netdev/net-next/c/a5ccb7f5e067
+  - [v8,net-next,14/15] net: dsa: netc: add support for the standardized counters
+    https://git.kernel.org/netdev/net-next/c/25049d8b6e6b
+  - [v8,net-next,15/15] net: dsa: netc: add support for ethtool private statistics
+    https://git.kernel.org/netdev/net-next/c/beb0e54f3806
 
-Applied to for-next/hardening, thanks!
-
-[1/2] lkdtm/powerpc: add isync after slbmte to enforce SLB update ordering
-      https://git.kernel.org/kees/c/3f21a4426e6f
-[2/2] lkdtm/powerpc: add PPC_RADIX_TLBIEL test for radix MCE validation
-      https://git.kernel.org/kees/c/122b52f0bab0
-
-Take care,
-
+You are awesome, thank you!
 -- 
-Kees Cook
+Deet-doot-dot, I am a bot.
+https://korg.docs.kernel.org/patchwork/pwbot.html
+
 
 
