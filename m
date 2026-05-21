@@ -1,140 +1,93 @@
-Return-Path: <linuxppc-dev+bounces-21338-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21339-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 30A72CD5BAF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 May 2026 16:46:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 53526CD5BAC
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 May 2026 17:06:32 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gLvSk0n35z2y7Y;
-	Fri, 22 May 2026 02:46:46 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::329"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779382006;
-	cv=none; b=JU9v+q/uUVt3ElkMDMkAsrJTIvwj56TH0AiLeme42NaUc0X6qkeo8M0zGWMPtgrS4iI+W8CUJWma17BEM8qOmuZGdQ/EJT6EZMyfzqIF/C07yfa0Cm3aOslrWT+C8Ciu1CU+f0D3mCuk0bRin4Xw+YvYBijcMIA9nthzFumJzT0k3Iqjec4k5CvFauSTu6ioGjmyUIA9VJtyErZLXA/zraaUfnt+K8fc1u7Q3EmgOBoufCR5w72EURD6WyYYU3YN+0WHkD3UPkU0sBVoHjP5LiqU+/sK2UF3R6saHPTL40CVyZITe9ipyNmyOObBxFzCp3s/Bvz4nuHKD1nCIuHuAw==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1779382006; c=relaxed/relaxed;
-	bh=NA/nM16UoxaTsk3A7SWQL7q3HkgK647mNtY2rDcRyyc=;
-	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=PQfyeaHM4wLhKZ+yit4Xt6BHpU68VHRvU2c00dS6ayESN7lD3/q4iKFXxe2npo7DOgcbEhtDOsLEbCc76bp5Ju85PNtXtHgkv1bFOp8XupnhW99D+3WX5hySPWqR0BwzrJ1lFR8upKbx6Vc9n6fYOhrSC7EuuftvanEx0S+1Gay5J/L/YgJgBT4T6ZkBS1GKYVgVEZbAOLLU44zcK8iDxgOLT1ejkJZCMCfpO1OgUXREHxvHa51zBIHvavvlxWITzmS4Xlnl1Vl6BaOQcAEsW2HE9F/5tXqL+T8DsoDJmXPVO1NF4qSK+8/xgSQgk4X95ItM1FsXWU6rHc5zxT69kQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=NqtVGveH; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::329; helo=mail-wm1-x329.google.com; envelope-from=david.laight.linux@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gLvvV5TJrz2xS2;
+	Fri, 22 May 2026 03:06:30 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::82e" arc.chain=google.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779383190;
+	cv=pass; b=QH9s9hCeP/CGKtiZGqAgae50u3vO5ib9fpbXxDcjMsPA0U6qyXrgoITQ+tMafk+5IFvzlRGDcbV+XnNTMpd2dKAfWhOEduRHfRWfrKh900lv3sojfM6KELSsDMNO1O+dJ19sKRYv4WgAwx4S+ZWCS+zxyy6EnPB5h/Qi2hd73I/J3Q7takiLdoh+w05/IBNWMzo8HKuc1igFHWurzlteiUJ9k9w9nqGcinHcGt3V8QDJuv+fHniYieufXO/B/I/Baqz9u2jkQ2ZUwu0PbbClN24WoC0J8s4ooSZDLnkz98xdXcJ7Lf+MLAbBgTg2hjgzMI+Mx5KvsJzgnpikmztERQ==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1779383190; c=relaxed/relaxed;
+	bh=mhUoyYsFnF9za8i7wBF/DE6TJUENWY+2L07rfya+Q9g=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=gHwyI+IOZrU141Sv5CWKI5YCqkdQHbzBqLOx9Dl7HdbBc22N6ARcdlMufA0PWtuQOmefQAHj2VuY9oPTUKwlnTwUKOIcgeSQ2TdWH4nDQEaNH+qfKf4ts1EH75fsHBMZ/aFBzsWBlyDUTwdeFz8q5eWoq9KMhzdFo8+6zv/4uWAnEZSlwfxRehproxOu2l9Z+uR+vA6fTE72l6CxXYDS8g5ec33NYLPqIwXmeoGrKjbCdqEXOrfJquKOdRwVWjadTPX+TdJrFOz9lJ5+gTF3OjQn/nnZuaJV5psqsykHDHFcBBw5CInlRoMbDz515SmBcZLQnN2zN3b6bmeDuLcAFA==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=Dm84n+OH; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::82e; helo=mail-qt1-x82e.google.com; envelope-from=smostafa@google.com; receiver=lists.ozlabs.org) smtp.mailfrom=google.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=NqtVGveH;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=Dm84n+OH;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::329; helo=mail-wm1-x329.google.com; envelope-from=david.laight.linux@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-wm1-x329.google.com (mail-wm1-x329.google.com [IPv6:2a00:1450:4864:20::329])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::82e; helo=mail-qt1-x82e.google.com; envelope-from=smostafa@google.com; receiver=lists.ozlabs.org)
+Received: from mail-qt1-x82e.google.com (mail-qt1-x82e.google.com [IPv6:2607:f8b0:4864:20::82e])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gLvSh3zBxz2xn3
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 May 2026 02:46:43 +1000 (AEST)
-Received: by mail-wm1-x329.google.com with SMTP id 5b1f17b1804b1-4891d7164ddso34454695e9.3
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 May 2026 09:46:43 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gLvvT1HwJz2xGY
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 May 2026 03:06:28 +1000 (AEST)
+Received: by mail-qt1-x82e.google.com with SMTP id d75a77b69052e-516d1ddcdf4so2391cf.0
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 May 2026 10:06:28 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1779383185; cv=none;
+        d=google.com; s=arc-20240605;
+        b=AFiAcxk88buqIjXRtRmxeC2Qsv4+IQZuol9EhtyFbovMME+IigNqgJjEvwqKjJu9zZ
+         D78Hka3S+ZhsmDAwA44puwTZ7VcCG8dXyVivatcBFK2evuZjn6qqPuVWfCa3MhCeh/eb
+         LhAgMi4ELdxfYjsSlSsn5MbKjeg92vczF+kw87qvH1e/aOx5/RIJ1ub+5zkypEapX+6v
+         +YluRTHwW6bgcu0OJT21QKbi5ftDERz1Gxkj51cvISrWvUYW1VGGW7DHVKWGg0r1kjMH
+         jO5JykzbeBZQBDzquCTZc/XYiy7CAjND4kFU8ny0Q7pXCa7qp5gYO/W8HeI+tYKo8BEX
+         JviA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=mhUoyYsFnF9za8i7wBF/DE6TJUENWY+2L07rfya+Q9g=;
+        fh=UiVGrtkgTQU2Y0c2gH6zVZs3vpq/mWQ6UCono+T55BQ=;
+        b=ATh0hpOTAFPiwvMhG5ow8aKiulpWsSS1v9EQxO6YqY1hPnTZufIFjHaI9sdxdz1I6+
+         WNmrBT8GmQQz8YU4kV9Gu1m9C9fIwpN1n+rTL1LuTlLTPOTovpc2Wzg45iYpJ+7KOUEL
+         rcFIsbvf22V3AUlIh6fhjHxkSutOuAdY84FqwpT8Lea3MYjGNUovOytPW+sH1i31IMAa
+         eRZAdqNqRIpiNe4eUI61USAsbtRTmqcqfEGuTmffwFrJZ7Xew57M6dmoO7QP48C8mzfa
+         uFyHlYQ0famO+c4s2tSzhOW+H1YXZobZk6cHNS7Qftk/3Y3Fec5VZtDcf5cNfcz0mVuh
+         wYVQ==;
+        darn=lists.ozlabs.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1779381995; x=1779986795; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:subject:cc:to:from:date:from:to:cc:subject:date
+        d=google.com; s=20251104; t=1779383185; x=1779987985; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=NA/nM16UoxaTsk3A7SWQL7q3HkgK647mNtY2rDcRyyc=;
-        b=NqtVGveHgWMsQXPFaJNIZz030/3/oSkKrsRgt1ZPycnO/Q4SXG0qPCdWMUTWK67VMT
-         3TeVRitZh4IjluM8rgoFWWqnEzGWYnUUMKV0F9FxUtEfrxRGF4+/PMYPqKfIoARVFaZT
-         S0oa65SHgvAE5ydg0j0tB+KJCkGflfopYKvW3gNxlzQGs+mKd+nq5XHz39GVTi0TWP44
-         5moER7xXmvK098aqr7C88qJaxrQq7Wt25u1QoVP2m6VJAwLZN7O2zb9dueMdKNyV76Fa
-         iIxCZCfPa8hDsgLkcu5/XQGMR7EjOV/f/MCnuYTv9M7fgzKRJAgKgy0s4If0b/xmRhYi
-         SAdA==
+        bh=mhUoyYsFnF9za8i7wBF/DE6TJUENWY+2L07rfya+Q9g=;
+        b=Dm84n+OH8WfmBoqks6Rz9OngVVdYCqOwlKzm7g/KyIszlOV/BfiI6t4jkdQQGIb51N
+         HYvY6p4WyOogQuCI6x+wOQSMtBRO3p5hlv9g0+kh7TX4R+pkNnn2Gp7gtga0GKxWhvhW
+         s6xs5VgiZUjnN930nXA/H8XDPwK+hhhAqWWe34GXowq4PJEja8OwYHw8b/Opu4MXQkpn
+         CL1ABx/VlTHibPfcH1BqtlbEERvHe5WjH7/0cyiXNQI3yTas58tUgfP2HiOJSWsNRt3M
+         jOULQ8JXZvyWV/LD6BEzlFWusv4IsX5qXLybVT78XWKcK9yhPV0EJoxdH0GgKWBjmStA
+         xE6w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1779381995; x=1779986795;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from
+        d=1e100.net; s=20251104; t=1779383185; x=1779987985;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to;
-        bh=NA/nM16UoxaTsk3A7SWQL7q3HkgK647mNtY2rDcRyyc=;
-        b=RNqPzMLEJv/58r/BvpRzlNsm7EjS7UG+9AejE7QPWNNGTepCO8LFiayMgtdVZhLQv1
-         Uvwzx4aUznNcLSMMBveOT+Kbqa750ytdIcwE+5m+DgnO/mzyAkH5rCZA/k3dl/yBvRui
-         LNJKT/a1ZUptyYgNr9ZTRUQszJbTXo9cIsEwPhZMDJQhPSH0J/YmTC/23/wwOQOhkA27
-         arPTCSIitKXc2PvpTxJdpE2ClFMjxPeQnKmqhquu5qhfqW+qbdi1jHnRcBYZYTCRheug
-         CW0ZGsWGVLZHRmUWfCvvQm7OSmw4ogcTnbkvCSOmehmtHt9+uKhNuXSO8yGYZ7YcYibS
-         CURw==
-X-Forwarded-Encrypted: i=1; AFNElJ9CYR3+WeeJtpRhCwxYsz6S7NM6y9G+HU3qVJsHKVy1yqYreb7UQRzdtj2lBj5HMyxBJWAJ+qXhpm6g6jk=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YyUrxkgs0grJrfPcPZnqBfrX6KiKpfUhul0tr4vTvYi1Vj23GWg
-	nER8Od8BjY6IISPiUGUshYMgpPJwVa0g3PFyZpdGlMwPOJ/hCgrbPOGF
-X-Gm-Gg: Acq92OFXCd8apc33sPlTJQi1DFo0ig6YDFCDcHCNxMqRGjYTOH4TYl77rUeK0HeHrN0
-	W1gjP/gUfyMeXf6QMkUjRORSOBJ8Ntziwj7oytGVpoFtQmMjHCloTok2Ubj7wlTHQnsjLJBHrtj
-	M5kxiTv15ekv443FlPEcdH+iuENQzewGO7EJV2ixdmaKcKBrMwUMBg9FB+rXxQwM0c6L1jsX2/R
-	dnDyErlEJovQnDwQEZ1kv6QwvtNiRmcXJgaJSpVptPJlgNw0C4DI8sAagUCFTshJhRnyTxWP1Yt
-	kNjklmZB1cFsONFgsoOGDlRW284Weu16/Dm40upF9Y3auCdNHoOwBtHOSpf9D+08wWij8NzQ6o0
-	8wKM/pzlFrZnOyiIksKuoBdI3+XHu3trF3T3MwG6xq2QRYU01rcaeK/lBIEqdV1vb8PsNhQBOEJ
-	B+YTAowMK4kDWgcGxG6sXDIz1lqn7e32euEBys5QKNwbKf+hYj2cCh91A+Eil1azX2
-X-Received: by 2002:a05:600c:45c6:b0:488:ac01:72de with SMTP id 5b1f17b1804b1-49036033502mr53623425e9.5.1779381994891;
-        Thu, 21 May 2026 09:46:34 -0700 (PDT)
-Received: from pumpkin (82-69-66-36.dsl.in-addr.zen.co.uk. [82.69.66.36])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-49035ecac15sm31613075e9.6.2026.05.21.09.46.33
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 21 May 2026 09:46:34 -0700 (PDT)
-Date: Thu, 21 May 2026 17:46:31 +0100
-From: David Laight <david.laight.linux@gmail.com>
-To: Kees Cook <kees@kernel.org>
-Cc: Luis Chamberlain <mcgrof@kernel.org>, Pengpeng Hou
- <pengpeng@iscas.ac.cn>, stable@vger.kernel.org, Petr Pavlu
- <petr.pavlu@suse.com>, Richard Weinberger <richard@nod.at>, Anton Ivanov
- <anton.ivanov@cambridgegreys.com>, Johannes Berg
- <johannes@sipsolutions.net>, "Rafael J. Wysocki" <rafael@kernel.org>, Len
- Brown <lenb@kernel.org>, Corey Minyard <corey@minyard.net>, Gabriel Somlo
- <somlo@cmu.edu>, "Michael S. Tsirkin" <mst@redhat.com>, Jani Nikula
- <jani.nikula@linux.intel.com>, Joonas Lahtinen
- <joonas.lahtinen@linux.intel.com>, Rodrigo Vivi <rodrigo.vivi@intel.com>,
- Tvrtko Ursulin <tursulin@ursulin.net>, David Airlie <airlied@gmail.com>,
- Simona Vetter <simona@ffwll.ch>, Bart Van Assche <bvanassche@acm.org>,
- Jason Gunthorpe <jgg@ziepe.ca>, Leon Romanovsky <leon@kernel.org>, Laurent
- Pinchart <laurent.pinchart@ideasonboard.com>, Hans de Goede
- <hansg@kernel.org>, Mauro Carvalho Chehab <mchehab@kernel.org>, Bjorn
- Helgaas <bhelgaas@google.com>, Hannes Reinecke <hare@suse.de>, "James E.J.
- Bottomley" <James.Bottomley@HansenPartnership.com>, "Martin K. Petersen"
- <martin.petersen@oracle.com>, Daniel Lezcano <daniel.lezcano@kernel.org>,
- Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>, Greg
- Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby
- <jirislaby@kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Jason Wang
- <jasowang@redhat.com>, Xuan Zhuo <xuanzhuo@linux.alibaba.com>, Eugenio
- =?UTF-8?B?UMOpcmV6?= <eperezma@redhat.com>, Jason Baron
- <jbaron@akamai.com>, Jim Cromie <jim.cromie@gmail.com>, Tiwei Bie
- <tiwei.btw@antgroup.com>, Benjamin Berg <benjamin.berg@intel.com>, Ilpo
- =?UTF-8?B?SsOkcnZpbmVu?= <ilpo.jarvinen@linux.intel.com>, "David E. Box"
- <david.e.box@linux.intel.com>, "Maciej W. Rozycki" <macro@orcam.me.uk>,
- Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Peter Zijlstra
- <peterz@infradead.org>, Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik
- <gor@linux.ibm.com>, Sean Christopherson <seanjc@google.com>, Paolo Bonzini
- <pbonzini@redhat.com>, Thomas Gleixner <tglx@kernel.org>, Ingo Molnar
- <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, Dave Hansen
- <dave.hansen@linux.intel.com>, x86@kernel.org, "H. Peter Anvin"
- <hpa@zytor.com>, Vinod Koul <vkoul@kernel.org>, Frank Li
- <Frank.Li@kernel.org>, Daniel Gomez <da.gomez@kernel.org>, Sami Tolvanen
- <samitolvanen@google.com>, Aaron Tomlin <atomlin@atomlin.com>, Alexander
- Potapenko <glider@google.com>, Marco Elver <elver@google.com>, Dmitry
- Vyukov <dvyukov@google.com>, Andrew Morton <akpm@linux-foundation.org>,
- John Johansen <john.johansen@canonical.com>, Paul Moore
- <paul@paul-moore.com>, James Morris <jmorris@namei.org>, "Serge E. Hallyn"
- <serge@hallyn.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
- Georgia Garcia <georgia.garcia@canonical.com>, kvm@vger.kernel.org,
- dmaengine@vger.kernel.org, linux-modules@vger.kernel.org,
- kasan-dev@googlegroups.com, linux-mm@kvack.org, apparmor@lists.ubuntu.com,
- linux-security-module@vger.kernel.org, linux-um@lists.infradead.org,
- linux-acpi@vger.kernel.org, openipmi-developer@lists.sourceforge.net,
- qemu-devel@nongnu.org, intel-gfx@lists.freedesktop.org,
- dri-devel@lists.freedesktop.org, linux-rdma@vger.kernel.org,
- linux-media@vger.kernel.org, linux-pci@vger.kernel.org,
- linux-scsi@vger.kernel.org, linux-pm@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-serial@vger.kernel.org,
- linux-usb@vger.kernel.org, usb-storage@lists.one-eyed-alien.net,
- virtualization@lists.linux.dev, linux-kernel@vger.kernel.org,
- linux-arch@vger.kernel.org, netdev@vger.kernel.org,
- linux-fsdevel@vger.kernel.org, linux-hardening@vger.kernel.org
-Subject: Re: [PATCH 01/11] params: bound array element output to the
- caller's page buffer
-Message-ID: <20260521174631.71a06440@pumpkin>
-In-Reply-To: <20260521133326.2465264-1-kees@kernel.org>
-References: <20260521133315.work.845-kees@kernel.org>
-	<20260521133326.2465264-1-kees@kernel.org>
-X-Mailer: Claws Mail 4.1.1 (GTK 3.24.38; arm-unknown-linux-gnueabihf)
+        bh=mhUoyYsFnF9za8i7wBF/DE6TJUENWY+2L07rfya+Q9g=;
+        b=JKjYe/79aqvdzJcPX9uLG5kiM1skifZKX+O/gjDasAD2GuuDmOMWRIoojUJwFh0GuC
+         Q3fkuu28Yd+3mund1pqQHddPFsAb02KMMmdaxONHK4SzBx9pkTxc6AuydD+ErgtX54gm
+         AglCiqyhi6auNt2oQ4sVw8dqYKy6QA1x09p0hBWJ9PxFEbub26pz6kvNHJ4UOWt+S6B+
+         BJ9DhGD+6vOVmxwFUNPO2TC7C6r3kyEEXAEHtaVBY0MIZ6eeitxzdMoyMyoP0tyLSzz9
+         CJTEq54Df94up9DAF2kht76TatftBFi1REkWyMWVZpm32MjKNli2WGIlB9c7M/wxOq/M
+         mO6w==
+X-Forwarded-Encrypted: i=1; AFNElJ96gPKYfI0XfeWuR/HF2KGfcNewawlEaQkPMDrfZ82SnQjApYlXc0WMbIxj291JBo/rVNL64b64pm2hlLw=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yz6faFp6J/HeFvwhd5xSa9AIBR7jG+B+sJKUmZZNiTbPUdcd5vo
+	QWWiSjuJwaCLlOTuz581D+6PFgzZVKv2YwEPQpep8al7ezoOEJON256avocBIa+tcT8xgx0uTNU
+	/IBrXtVMm1OHSxPNDBi/FMreLhjx/YXxO3U/LChgd
+X-Gm-Gg: Acq92OFLefwAW0IeeVEi+W08JFVTXTAxZQblA5Qb3yi+A2Zj3H0TRmkvDveiHcZNQ56
+	mYiyhiaQBSca0lVaWMVig6nIvMyzuAD7w4ZVm6fI8OWuYCknFhjgP6iKRzC2y3pDK3l/oJWBdgQ
+	KXQwRObFU5JDchvZAtS1nmrwB2r1BrdzTiJl2nQsFoswGJThLfQZBlBgeWwkK7apUm4rnuhY/2n
+	6yBsn+BmSYeAHsOY20Eh49FaEzVZbuvqi4AvfluMkg9IE5G48x41ejas1h7RoUuRFfCLCEXMgJR
+	KmVUm+bC1ElNBhIr/S2BGU4mzcRTUZ3j9P4YYZcEk30r0l1Tc/1n
+X-Received: by 2002:a05:622a:130d:b0:516:3def:1cf4 with SMTP id
+ d75a77b69052e-516c52f91damr11257861cf.1.1779383184387; Thu, 21 May 2026
+ 10:06:24 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -148,86 +101,57 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+References: <20260512090408.794195-1-aneesh.kumar@kernel.org> <20260512090408.794195-5-aneesh.kumar@kernel.org>
+In-Reply-To: <20260512090408.794195-5-aneesh.kumar@kernel.org>
+From: Mostafa Saleh <smostafa@google.com>
+Date: Thu, 21 May 2026 18:06:09 +0100
+X-Gm-Features: AVHnY4ISudxxSxVvcLPDn4R1NI9d_Ojyz-0XSa_zA0I3j6uTkfH8ncuvoLHXOtc
+Message-ID: <CAFgf54o4ZnvnJ3369bHb10tvJJVP+5YWq=ec4Jh5K6S6U9uNEA@mail.gmail.com>
+Subject: Re: [PATCH v4 04/13] dma: swiotlb: track pool encryption state and
+ honor DMA_ATTR_CC_SHARED
+To: "Aneesh Kumar K.V (Arm)" <aneesh.kumar@kernel.org>
+Cc: iommu@lists.linux.dev, linux-arm-kernel@lists.infradead.org, 
+	linux-kernel@vger.kernel.org, linux-coco@lists.linux.dev, 
+	Robin Murphy <robin.murphy@arm.com>, Marek Szyprowski <m.szyprowski@samsung.com>, 
+	Will Deacon <will@kernel.org>, Marc Zyngier <maz@kernel.org>, Steven Price <steven.price@arm.com>, 
+	Suzuki K Poulose <Suzuki.Poulose@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, 
+	Jiri Pirko <jiri@resnulli.us>, Jason Gunthorpe <jgg@ziepe.ca>, Petr Tesarik <ptesarik@suse.com>, 
+	Alexey Kardashevskiy <aik@amd.com>, Dan Williams <dan.j.williams@intel.com>, 
+	Xu Yilun <yilun.xu@linux.intel.com>, linuxppc-dev@lists.ozlabs.org, 
+	linux-s390@vger.kernel.org, Madhavan Srinivasan <maddy@linux.ibm.com>, 
+	Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, Alexander Gordeev <agordeev@linux.ibm.com>, 
+	Gerald Schaefer <gerald.schaefer@linux.ibm.com>, Heiko Carstens <hca@linux.ibm.com>, 
+	Vasily Gorbik <gor@linux.ibm.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, 
+	Sven Schnelle <svens@linux.ibm.com>, x86@kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On Thu, 21 May 2026 06:33:14 -0700
-Kees Cook <kees@kernel.org> wrote:
+On Tue, May 12, 2026 at 10:05=E2=80=AFAM Aneesh Kumar K.V (Arm)
+<aneesh.kumar@kernel.org> wrote:
+> @@ -1411,6 +1436,16 @@ phys_addr_t swiotlb_tbl_map_single(struct device *=
+dev, phys_addr_t orig_addr,
+>         if (cc_platform_has(CC_ATTR_MEM_ENCRYPT))
+>                 pr_warn_once("Memory encryption is active and system is u=
+sing DMA bounce buffers\n");
+>
+> +       /*
+> +        * if we are trying to swiotlb map a decrypted paddr or the paddr=
+ is encrypted
+> +        * but the device is forcing decryption, use decrypted io_tlb_mem
+> +        */
+> +       if ((attrs & DMA_ATTR_CC_SHARED) || force_dma_unencrypted(dev))
 
-> From: Pengpeng Hou <pengpeng@iscas.ac.cn>
-> 
-> param_array_get() appends each element's string representation into the
-> shared sysfs page buffer by passing buffer + off to the element getter.
-> 
-> That works for getters that only write a small bounded string, but
-> param_get_charp() and similar helpers format against PAGE_SIZE from the
-> pointer they receive. Once off is non-zero, an element getter can
-> therefore write past the end of the original sysfs page buffer.
-> 
-> Collect each element into a temporary PAGE_SIZE buffer first and then
-> copy only the remaining space into the caller's page buffer.
+I don't think swiotlb needs to know about force_dma_unencrypted(), the
+dma/direct caller should have all the information to pass the
+appropriate flags.
 
-Should this be using a 4k buffer on all architectures?
-Initially perhaps just using a different name for the constant until
-all the associated PAGE_SIZE limits have been removed.
+Thanks.
+Mostafa
 
--- David
-
-> 
-> Cc: stable@vger.kernel.org
-> Reviewed-by: Petr Pavlu <petr.pavlu@suse.com>
-> Signed-off-by: Pengpeng Hou <pengpeng@iscas.ac.cn>
-> Signed-off-by: Kees Cook <kees@kernel.org>
-> ---
->  kernel/params.c | 26 ++++++++++++++++++++------
->  1 file changed, 20 insertions(+), 6 deletions(-)
-> 
-> diff --git a/kernel/params.c b/kernel/params.c
-> index 74d620bc2521..752721922a15 100644
-> --- a/kernel/params.c
-> +++ b/kernel/params.c
-> @@ -475,22 +475,36 @@ static int param_array_set(const char *val, const struct kernel_param *kp)
->  static int param_array_get(char *buffer, const struct kernel_param *kp)
->  {
->  	int i, off, ret;
-> +	char *elem_buf;
->  	const struct kparam_array *arr = kp->arr;
->  	struct kernel_param p = *kp;
->  
-> +	elem_buf = kmalloc(PAGE_SIZE, GFP_KERNEL);
-> +	if (!elem_buf)
-> +		return -ENOMEM;
+> +               require_decrypted =3D true;
 > +
->  	for (i = off = 0; i < (arr->num ? *arr->num : arr->max); i++) {
-> -		/* Replace \n with comma */
-> -		if (i)
-> -			buffer[off - 1] = ',';
->  		p.arg = arr->elem + arr->elemsize * i;
->  		check_kparam_locked(p.mod);
-> -		ret = arr->ops->get(buffer + off, &p);
-> +		ret = arr->ops->get(elem_buf, &p);
->  		if (ret < 0)
-> -			return ret;
-> +			goto out;
-> +		ret = min(ret, (int)(PAGE_SIZE - 1 - off));
-> +		if (!ret)
-> +			break;
-> +		/* Replace the previous element's trailing newline with a comma. */
-> +		if (i)
-> +			buffer[off - 1] = ',';
-> +		memcpy(buffer + off, elem_buf, ret);
->  		off += ret;
-> +		if (off == PAGE_SIZE - 1)
-> +			break;
->  	}
->  	buffer[off] = '\0';
-> -	return off;
-> +	ret = off;
-> +out:
-> +	kfree(elem_buf);
-> +	return ret;
->  }
->  
->  static void param_array_free(void *arg)
-
+> +       if (require_decrypted !=3D mem->unencrypted)
+> +               return (phys_addr_t)DMA_MAPPING_ERROR;
+> +
 
