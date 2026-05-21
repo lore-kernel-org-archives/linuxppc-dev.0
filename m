@@ -1,155 +1,94 @@
-Return-Path: <linuxppc-dev+bounces-21331-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21332-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9BB4ECD5BAC
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 May 2026 13:34:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5348ACD5BAC
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 May 2026 13:41:21 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gLqB22d0qz3c3s;
-	Thu, 21 May 2026 23:33:46 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779370426;
-	cv=none; b=dsZzubZfF0aVR89ct8fpaqeaoQGd2w1mhqYzdw8BzRvfcq1Eykng3fEvSKMQataFv/wmNZniXbRysAQZKLUo6+MvuI3f/r3v8CyN2Ey8PlytVV57lzBScq6DegrsDr2VKTEfGvTlQNOAC1s2kkeYg68fkdcleekOqT280TgC9fs8MJVYSsKpGd0avbcm+WO/s8i6Im7vsmiFTHMj2VGYdqdoXCj9v0EdWYdiP7/64agd+XGmQrm/PxJs70tUUqPymJW+CtgBtIl9PWOlsRvNA/K2roEyjhOlFhtM+7tz8+8/UW2Vogn9aqUQ5Hd8SQRc1ujjrba+VNZpBqDbbhQwBg==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1779370426; c=relaxed/relaxed;
-	bh=FjugSMshJLRzJ87g+DhKxRTzvS9KFi5IJoAY8Me8wZ4=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=cEerJQfVVxcNPJtKl/5dpVaPyiDHH3luTgD/gh7MgdSFxTsrnVDtr2kn61HMccQtpdkLHAXkn9Wh6DVc2XFVGySyHJ7eIM5iis+jG7lGfzuiIFxftIV1D885eIH1XERG0F0IuCUL4QZ706xp6Y0+f/zsrhlsFivqv5qibX+2OeU1GrCSFPBa8p3nQ7KaPNwnlbuG/ko9FgRGf+MbhuJtOH5f5gj1RL/psEyhMwKPqdB0kPQcg9cReTmsueJ+Eg8gct5VEqRwjlzgKwdze3VVknFdKvAZxxLY9bRqcDbgwLrclUsEExSl6L5/nSg/WU5yD3PzN2+ciU4FwHE/+e8qVQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Rjl/C7Ak; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=kees@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gLqLm0RFDz2xl5;
+	Thu, 21 May 2026 23:41:20 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::82b" arc.chain=google.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779370879;
+	cv=pass; b=ZLjS5Ajsv9sWCTREqhTIIhAG+TFwD+7Uaf2JHtFJRvBTzneMLwJjB+N4mcbn+lTM5huIxLKI2cRwEaznifBgj7HAwnwDo4TTBr+0bcKiWnL+8DT2Jouy+cz8K6Bh9GEiB6YaWX9zxrdp5dNVLygfsHXuZtjT2WEwgD79wIMg6W5Ey6Zy1y9bNyWBufMM8heVVRcGKiNP+b+w9xGsRXlpHSqVTEx6VOVpTDf8KTXKlr7E5ErBusRmWonCdciYeyaNyCX7dvpK6PoNI6BfCXPV6K/unA3Tcb0Vko4/9+irHfdiWjOxsPrr5uq0mX0ZlVBPJUQcqP6w6S+B2K03eqIU8Q==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1779370879; c=relaxed/relaxed;
+	bh=Iztqdv46z3L/RfMJPUbTwKC4ovY74G3OQJ4DxuJSyZE=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=oRFIbJcEM6sm93CsU23OC/ONy9/mTRw1UQ/HAobU9aRnRZVV8ieWKZjKKthPk6e40IHbjiLlj6zDpWacuy1DHtldpkHA8VvpnyjxCIJe4zEh6TyFeErIYEr0Q9sByc7FM+CoDKvOUOX70xlm6oR7jPcd6ohQWu9f+mQXfSGQ/43glnkuZwSoFF/wUtWN/oujvtrU3DwlJIc/cKld6GR8/KcA6AwBlURjABnGBIA3lmldfRfvZ3Irob41CNM4eYc+DMxcrelfz40Ww5J3eGrHkmmb/xPcLj7AoiS9uJR5YKJgcP699h/DkZZ6zGxZfZ7k1mvb+wOJfvLzPKvny81BjQ==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=KOHfK6DW; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::82b; helo=mail-qt1-x82b.google.com; envelope-from=edumazet@google.com; receiver=lists.ozlabs.org) smtp.mailfrom=google.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Rjl/C7Ak;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=KOHfK6DW;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=kees@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::82b; helo=mail-qt1-x82b.google.com; envelope-from=edumazet@google.com; receiver=lists.ozlabs.org)
+Received: from mail-qt1-x82b.google.com (mail-qt1-x82b.google.com [IPv6:2607:f8b0:4864:20::82b])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gLq9s03F9z3bwk
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 May 2026 23:33:36 +1000 (AEST)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 59B0B44652;
-	Thu, 21 May 2026 13:33:27 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 208971F01566;
-	Thu, 21 May 2026 13:33:27 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1779370407;
-	bh=FjugSMshJLRzJ87g+DhKxRTzvS9KFi5IJoAY8Me8wZ4=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=Rjl/C7Ak/rWXoli6qausN/s7zIg/31jIrfAm6facv9zLoPhOVPhyOuBG7EQajOjH8
-	 gHI8NTfdKj/QipDfHZDexmfs+GBKcJtnfArb6l4tmHPrCeAsjOBE753KMnwIWHIXT7
-	 wiBrT5Ku1jWjtwhraZodt77LvIv28wxYiii9z7wXlGOyoetYfumYHpZHGLbsZLJVe5
-	 KDbtLWtPhhUwgagBBqEz6FOrn6eAX0VhmBv9wChxmjDB5nqC7e5jljwlbZmMWnNvy7
-	 68MXwt8eNgaDmqQ5piZHn7iG6hYuYz1KCLxD6IXY1kiyNSlLQOoyZzCD8CHIqruzCF
-	 J0Vq0H41abyQw==
-From: Kees Cook <kees@kernel.org>
-To: Luis Chamberlain <mcgrof@kernel.org>
-Cc: Kees Cook <kees@kernel.org>,
-	Pengpeng Hou <pengpeng@iscas.ac.cn>,
-	Petr Pavlu <petr.pavlu@suse.com>,
-	Richard Weinberger <richard@nod.at>,
-	Anton Ivanov <anton.ivanov@cambridgegreys.com>,
-	Johannes Berg <johannes@sipsolutions.net>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Len Brown <lenb@kernel.org>,
-	Corey Minyard <corey@minyard.net>,
-	Gabriel Somlo <somlo@cmu.edu>,
-	"Michael S. Tsirkin" <mst@redhat.com>,
-	Jani Nikula <jani.nikula@linux.intel.com>,
-	Joonas Lahtinen <joonas.lahtinen@linux.intel.com>,
-	Rodrigo Vivi <rodrigo.vivi@intel.com>,
-	Tvrtko Ursulin <tursulin@ursulin.net>,
-	David Airlie <airlied@gmail.com>,
-	Simona Vetter <simona@ffwll.ch>,
-	Bart Van Assche <bvanassche@acm.org>,
-	Jason Gunthorpe <jgg@ziepe.ca>,
-	Leon Romanovsky <leon@kernel.org>,
-	Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
-	Hans de Goede <hansg@kernel.org>,
-	Mauro Carvalho Chehab <mchehab@kernel.org>,
-	Bjorn Helgaas <bhelgaas@google.com>,
-	Hannes Reinecke <hare@suse.de>,
-	"James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
-	"Martin K. Petersen" <martin.petersen@oracle.com>,
-	Daniel Lezcano <daniel.lezcano@kernel.org>,
-	Zhang Rui <rui.zhang@intel.com>,
-	Lukasz Luba <lukasz.luba@arm.com>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Jiri Slaby <jirislaby@kernel.org>,
-	Alan Stern <stern@rowland.harvard.edu>,
-	Jason Wang <jasowang@redhat.com>,
-	Xuan Zhuo <xuanzhuo@linux.alibaba.com>,
-	=?UTF-8?q?Eugenio=20P=C3=A9rez?= <eperezma@redhat.com>,
-	Jason Baron <jbaron@akamai.com>,
-	Jim Cromie <jim.cromie@gmail.com>,
-	Tiwei Bie <tiwei.btw@antgroup.com>,
-	Benjamin Berg <benjamin.berg@intel.com>,
-	=?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>,
-	"David E. Box" <david.e.box@linux.intel.com>,
-	"Maciej W. Rozycki" <macro@orcam.me.uk>,
-	Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
-	Peter Zijlstra <peterz@infradead.org>,
-	Heiko Carstens <hca@linux.ibm.com>,
-	Vasily Gorbik <gor@linux.ibm.com>,
-	Sean Christopherson <seanjc@google.com>,
-	Paolo Bonzini <pbonzini@redhat.com>,
-	Thomas Gleixner <tglx@kernel.org>,
-	Ingo Molnar <mingo@redhat.com>,
-	Borislav Petkov <bp@alien8.de>,
-	Dave Hansen <dave.hansen@linux.intel.com>,
-	x86@kernel.org,
-	"H. Peter Anvin" <hpa@zytor.com>,
-	Vinod Koul <vkoul@kernel.org>,
-	Frank Li <Frank.Li@kernel.org>,
-	Daniel Gomez <da.gomez@kernel.org>,
-	Sami Tolvanen <samitolvanen@google.com>,
-	Aaron Tomlin <atomlin@atomlin.com>,
-	Alexander Potapenko <glider@google.com>,
-	Marco Elver <elver@google.com>,
-	Dmitry Vyukov <dvyukov@google.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	John Johansen <john.johansen@canonical.com>,
-	Paul Moore <paul@paul-moore.com>,
-	James Morris <jmorris@namei.org>,
-	"Serge E. Hallyn" <serge@hallyn.com>,
-	Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-	Georgia Garcia <georgia.garcia@canonical.com>,
-	kvm@vger.kernel.org,
-	dmaengine@vger.kernel.org,
-	linux-modules@vger.kernel.org,
-	kasan-dev@googlegroups.com,
-	linux-mm@kvack.org,
-	apparmor@lists.ubuntu.com,
-	linux-security-module@vger.kernel.org,
-	linux-um@lists.infradead.org,
-	linux-acpi@vger.kernel.org,
-	openipmi-developer@lists.sourceforge.net,
-	qemu-devel@nongnu.org,
-	intel-gfx@lists.freedesktop.org,
-	dri-devel@lists.freedesktop.org,
-	linux-rdma@vger.kernel.org,
-	linux-media@vger.kernel.org,
-	linux-pci@vger.kernel.org,
-	linux-scsi@vger.kernel.org,
-	linux-pm@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-serial@vger.kernel.org,
-	linux-usb@vger.kernel.org,
-	usb-storage@lists.one-eyed-alien.net,
-	virtualization@lists.linux.dev,
-	linux-kernel@vger.kernel.org,
-	linux-arch@vger.kernel.org,
-	netdev@vger.kernel.org,
-	linux-fsdevel@vger.kernel.org,
-	linux-hardening@vger.kernel.org
-Subject: [PATCH 09/11] treewide: Convert custom kernel_param_ops .get callbacks to seq_buf via cocci
-Date: Thu, 21 May 2026 06:33:22 -0700
-Message-Id: <20260521133326.2465264-9-kees@kernel.org>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20260521133315.work.845-kees@kernel.org>
-References: <20260521133315.work.845-kees@kernel.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gLqLk38qzz2xYh
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 May 2026 23:41:17 +1000 (AEST)
+Received: by mail-qt1-x82b.google.com with SMTP id d75a77b69052e-50fb1ad3734so75170411cf.1
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 May 2026 06:41:17 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1779370875; cv=none;
+        d=google.com; s=arc-20240605;
+        b=Lvb24+lpH/6MjXV5cAbHCCx7QWtDq1xAkM3e/JGfpy5lbHKwOrDnZytWkju/P5CyV0
+         yLu/G3JZAiufpT868ghYr5o+ouY0RJ6I8FdNSO7VbaYpIJe0ut26KWbrCIHJ7wXJ9lrq
+         xjCKnW+HbS9zOtGU+7bmhsisFCTw8+TmwWDqElmsvduklz+WRa7UdHMhbNN50AQCwJGJ
+         q1sXuvuRW0Fm9kHsD/qJBXmMvjB3oPK6v3BnGfcrFfcR4fdJh6zVmfsY+PVROzvE3R22
+         SCsGKR19yBeAqT5xfx0LSoA11iKSb8UGFYeS8JT2s6NN2e3tyVbwbKR8QfH6gEqosWi9
+         SoMg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=Iztqdv46z3L/RfMJPUbTwKC4ovY74G3OQJ4DxuJSyZE=;
+        fh=lqQdvjh1VMdnDURa58aFj8P5O1XIAMqj4bxXSvmnJxc=;
+        b=QZd9YHEys9KfRVzK4YUh1lCfejxjvCagnGwPERGQ2iuARcSlpSj1v4VmIKhHTkAQYK
+         9oFO1VTIapF9YoURKbjp2IPkFhtpRnbBmmzv1STB9DEBOdNSJrqf3Y9tnxOnK9szaIcE
+         aQx7XXQmqXuqEKcdGLxaanBWsoRhhRO9N/RTnQjVlIprtqgrWfCbacc935mzN9/tAle9
+         GC8CpT5kSZjDbGelV0Y88CPI8hoMstXdIGd2QnJ0u1Q9XY93tb6gQ4lK4pfdjPDTLN2f
+         AFhxU7RUwvkncrLSjLZuXDsLlZZl5KRFhzfxrly6ex6T80z+Xz1vTMzLqN4ceM3eTmTL
+         /stQ==;
+        darn=lists.ozlabs.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20251104; t=1779370875; x=1779975675; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=Iztqdv46z3L/RfMJPUbTwKC4ovY74G3OQJ4DxuJSyZE=;
+        b=KOHfK6DW7zoiEyoeLhkyH6f2yU1/ooIBDf1yMCZXfgxxpPeJdQ+3gv3p/5NQMsFPtI
+         yAA7+ZMa9I0t52fvwGDVKjN1aJ8acp5yosWFUKB2UqEaJVcTKO1WRKhx/qWHueObTwlz
+         t5FnyIOvU1O+T3F7yOwrGEo7t2yTEknl8a30HPx9LTO5Z8uVlyBg767TPMJ9iCeapp7j
+         vE9hzJA7oPirz+xJQEefRC+f6KEIem2c5gup4OE1Er8ds7Gm0ANMaGeiiySC8H1xwiSD
+         +8mz5+FvGFps5t1VaRHohP2nIcIrK11F4FXIAC51s4xsu79Ex2F5syOVJE1ahARutXAp
+         1u7Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1779370875; x=1779975675;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=Iztqdv46z3L/RfMJPUbTwKC4ovY74G3OQJ4DxuJSyZE=;
+        b=ZYQX9Z1ccb0N9qv8jLqRIUJtCQWkh6mp1P9jgYExgB8wL/5/DJPgI77eTVBipMd69u
+         grkbZTabhpiTjyg0vugJRU0AjNDMH6hMvaf6PCac18t/u93UQZcy/zPhPq/TufUcDpoA
+         jmR+6ZWnh/SJZcAeeL2Q3xAUl2fVO5X8AofnkehfCSJ34K96Nr6N4FcAcfRgxjTmM5Mt
+         3JtWD1YnKvhcv0i3tS/LXV50F5cQwpWRzzoPm/aFTZtnB3T51185T0aa1lzklrNFFp/X
+         0IDtxm/id+JNMzskYGgyKNxTJbnNxdLHsL8A1XhV/dKmZo5U+mrjUqk8/CkTiFAN5+Cg
+         ytmQ==
+X-Forwarded-Encrypted: i=1; AFNElJ97A4EBboe6B64kJjJd/tkufJP5rQeSqZLFIMOh5VWBWg1onE6hZRlwlLdSKDAiyTApen2J8aRHTiDlcfU=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yz5tL1/kOusjWmzAGHtyP5Y07qfTWXL/MhpdmuFjwif0BrVkC+F
+	Jv31NQo3nmRanHXYo/isjfosejyLwy0C4iTwy5cf76tMYKZCuxUuaSiIup5l/4539WmNk1sgKzK
+	YlxGvnNflBtTXjz9vJRODQY88vvgYUb+gssqeHEr4
+X-Gm-Gg: Acq92OGpgwgkWgQRBwA0cYrbQBuEugd8geEvQ6Vt937uUKdjxM161p3+dexG/bxpztF
+	0wJkxq+Ur36cGYGHiU0KqMJbBuaxoOSY7USLIKKIPQaFJfmO42o43STX76mrLAS1W+QTpE0rqEE
+	gs40Kai+t5HEp4iDGD66O0Dr0HVwh2FrtptnL5Pvwm8/xScgf/3AzPzXD4qafEA4Ndc2VFOvv8V
+	CDsLcy2LI8laNNjCjadQJzecjZkLHzLyw+x94L3GAt5r8rSxxi8lGygE0GCpwCYGWAlbJG7xSOD
+	oppZzjGH6oLSl677o/QW6HJwWizs3+wRHEuqFvrOdVgIg+zaAjqIsOSERtbd74o239lnxiQVkTr
+	mo+ludUcd9OR+jq8H+Pkld+LogqZP04Lujo0yY18Lfl4UWattvm3haS8KNvsQfT5T
+X-Received: by 2002:a05:622a:5c89:b0:50d:6fd3:421 with SMTP id
+ d75a77b69052e-516c5847b1emr35783761cf.6.1779370874163; Thu, 21 May 2026
+ 06:41:14 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -163,1120 +102,44 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=42083; i=kees@kernel.org; h=from:subject; bh=p6f0uHBZ7Ncu865sVYf8FVQdp7qUibRMEgCp94LuIm4=; b=owGbwMvMwCVmps19z/KJym7G02pJDFn8nIsbzeTTLszWqc6+lLCF+9/+6VJbp+llhKRF787jO OTlPWdVRykLgxgXg6yYIkuQnXuci8fb9nD3uYowc1iZQIYwcHEKwER83Rh+MTusOaP4X4o1Qey6 jf2i5U7ztCMX7Du+/cBF/tobn72NtRn+aeySYRVfV97dNVsx+wO35KbMGT5b5aab/otLW/JBsXI tIwA=
-X-Developer-Key: i=kees@kernel.org; a=openpgp; fpr=A5C3F68F229DD60F723E6E138972F4DFDC6DC026
-Content-Transfer-Encoding: 8bit
+References: <20260517192856.3925-1-rosenp@gmail.com> <20260520165746.7ed10c7b@kernel.org>
+ <CAKxU2N_vHyqZK8tBbYLo49iOUJSO56rgqbSdw3CnCUZjbs1qNw@mail.gmail.com>
+In-Reply-To: <CAKxU2N_vHyqZK8tBbYLo49iOUJSO56rgqbSdw3CnCUZjbs1qNw@mail.gmail.com>
+From: Eric Dumazet <edumazet@google.com>
+Date: Thu, 21 May 2026 06:41:03 -0700
+X-Gm-Features: AVHnY4KJHFfpbD1HQt-b9agKuVmI3qI3wyMZwjK6KWYSJA-YQqQ9wKOAjm-1zko
+Message-ID: <CANn89iK7i4u5nWxQCuURmSCJt8Sn+Q9x_ME8X+J0pF2_4OGuZg@mail.gmail.com>
+Subject: Re: [PATCH net-next] net: ucc_geth: Batch RX packets before stack handoff
+To: Rosen Penev <rosenp@gmail.com>
+Cc: Jakub Kicinski <kuba@kernel.org>, netdev@vger.kernel.org, 
+	Andrew Lunn <andrew+netdev@lunn.ch>, "David S. Miller" <davem@davemloft.net>, 
+	Paolo Abeni <pabeni@redhat.com>, 
+	"open list:FREESCALE QUICC ENGINE UCC ETHERNET DRIVER" <linuxppc-dev@lists.ozlabs.org>, open list <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Using the following Coccinelle script, convert struct kernel_param_ops
-.get callbacks from "char *" to "struct seq_buf *" when the only write
-to the buffer is via a final call of scnprintf(), snprintf(), sprintf(),
-or sysfs_emit().
+On Wed, May 20, 2026 at 5:39=E2=80=AFPM Rosen Penev <rosenp@gmail.com> wrot=
+e:
+>
+> On Wed, May 20, 2026 at 4:57=E2=80=AFPM Jakub Kicinski <kuba@kernel.org> =
+wrote:
+> >
+> > On Sun, 17 May 2026 12:28:56 -0700 Rosen Penev wrote:
+> > > Collect received skbs on a local list during RX polling and pass the
+> > > completed batch to netif_receive_skb_list(). This lets the networking
+> > > stack process packets from a poll cycle in bulk instead of handing ea=
+ch
+> > > skb up individually.
+> >
+> > GRO should be even better.
+> GRO will result in slower routing performance because there is no
+> hardware checksum.
 
-Since seq_buf_printf() will return -1 on overflow, and struct
-kernel_param_ops .get callbacks are expected to truncate without error,
-we must ignore the return value from seq_buf_print() and always return 0
-(as the length is calculated in the common dispatcher code).
+Then provide a knob or something, instead of trying to avoid GRO.
 
-@@
-identifier FN, BUF, KP;
-expression FMT;
-expression list ARGS;
-@@
- int FN(
--               char *BUF
-+               struct seq_buf *BUF
-                , const struct kernel_param *KP)
- {
-        ... when any
-(
--       return scnprintf(BUF, PAGE_SIZE, FMT, ARGS);
-|
--       return snprintf(BUF, PAGE_SIZE, FMT, ARGS);
-|
--       return sprintf(BUF, FMT, ARGS);
-|
--       return sysfs_emit(BUF, FMT, ARGS);
-)
-+       seq_buf_printf(BUF, FMT, ARGS);
-+       return 0;
- }
+For end hosts (forwarding not enabled), checksum will need to be
+computed anyway.
+GRO should be faster for them.
 
-No struct kernel_param_ops initializations need changing since
-DEFINE_KERNEL_PARAM_OPS already routes the pointer to .get or .get_str
-via _Generic based on the function signature, so converted callbacks
-are automatically moved from the .get_str to the .get callback.
-
-Signed-off-by: Kees Cook <kees@kernel.org>
----
- arch/s390/kernel/perf_cpum_sf.c               |  6 ++-
- arch/x86/kernel/msr.c                         |  5 +-
- arch/x86/kvm/vmx/vmx.c                        | 18 ++++---
- arch/x86/platform/uv/uv_nmi.c                 | 12 +++--
- drivers/acpi/ec.c                             | 14 ++++--
- drivers/acpi/sysfs.c                          |  6 ++-
- drivers/block/ublk_drv.c                      |  5 +-
- drivers/char/ipmi/ipmi_msghandler.c           |  6 ++-
- drivers/firmware/qcom/qcom_scm.c              | 12 +++--
- drivers/gpu/drm/drm_panic.c                   |  7 +--
- drivers/infiniband/hw/hfi1/driver.c           |  7 +--
- drivers/infiniband/ulp/srpt/ib_srpt.c         |  5 +-
- drivers/input/misc/ati_remote2.c              | 10 ++--
- drivers/input/mouse/psmouse-base.c            |  9 ++--
- drivers/md/md.c                               |  5 +-
- drivers/media/pci/tw686x/tw686x-core.c        |  6 ++-
- drivers/nvme/host/multipath.c                 |  5 +-
- drivers/power/supply/test_power.c             | 47 +++++++++++--------
- drivers/target/target_core_user.c             | 12 +++--
- .../processor_thermal_soc_slider.c            | 12 +++--
- drivers/ufs/core/ufs-fault-injection.c        |  7 +--
- drivers/vhost/scsi.c                          |  5 +-
- fs/nfs/namespace.c                            |  6 ++-
- fs/ocfs2/dlmfs/dlmfs.c                        |  5 +-
- fs/overlayfs/copy_up.c                        |  5 +-
- kernel/locking/locktorture.c                  |  6 ++-
- kernel/rcu/tree.c                             |  6 ++-
- kernel/workqueue.c                            |  6 ++-
- lib/test_dynamic_debug.c                      |  6 ++-
- mm/damon/lru_sort.c                           | 14 +++---
- mm/damon/reclaim.c                            | 14 +++---
- mm/damon/stat.c                               | 10 ++--
- mm/memory_hotplug.c                           | 18 ++++---
- net/ceph/ceph_common.c                        |  5 +-
- net/sunrpc/auth.c                             |  6 ++-
- net/sunrpc/svc.c                              |  5 +-
- security/apparmor/lsm.c                       | 16 ++++---
- 37 files changed, 218 insertions(+), 131 deletions(-)
-
-diff --git a/arch/s390/kernel/perf_cpum_sf.c b/arch/s390/kernel/perf_cpum_sf.c
-index 76119542562b..75b0d441d238 100644
---- a/arch/s390/kernel/perf_cpum_sf.c
-+++ b/arch/s390/kernel/perf_cpum_sf.c
-@@ -1991,11 +1991,13 @@ static int s390_pmu_sf_offline_cpu(unsigned int cpu)
- 	return cpusf_pmu_setup(cpu, PMC_RELEASE);
- }
- 
--static int param_get_sfb_size(char *buffer, const struct kernel_param *kp)
-+static int param_get_sfb_size(struct seq_buf *buffer,
-+			      const struct kernel_param *kp)
- {
- 	if (!cpum_sf_avail())
- 		return -ENODEV;
--	return sprintf(buffer, "%lu,%lu", CPUM_SF_MIN_SDB, CPUM_SF_MAX_SDB);
-+	seq_buf_printf(buffer, "%lu,%lu", CPUM_SF_MIN_SDB, CPUM_SF_MAX_SDB);
-+	return 0;
- }
- 
- static int param_set_sfb_size(const char *val, const struct kernel_param *kp)
-diff --git a/arch/x86/kernel/msr.c b/arch/x86/kernel/msr.c
-index 5f4e1814dc4d..9f07f66c3cfc 100644
---- a/arch/x86/kernel/msr.c
-+++ b/arch/x86/kernel/msr.c
-@@ -309,7 +309,7 @@ static int set_allow_writes(const char *val, const struct kernel_param *cp)
- 	return 0;
- }
- 
--static int get_allow_writes(char *buf, const struct kernel_param *kp)
-+static int get_allow_writes(struct seq_buf *buf, const struct kernel_param *kp)
- {
- 	const char *res;
- 
-@@ -319,7 +319,8 @@ static int get_allow_writes(char *buf, const struct kernel_param *kp)
- 	default: res = "default"; break;
- 	}
- 
--	return sprintf(buf, "%s\n", res);
-+	seq_buf_printf(buf, "%s\n", res);
-+	return 0;
- }
- 
- static DEFINE_KERNEL_PARAM_OPS(allow_writes_ops, set_allow_writes,
-diff --git a/arch/x86/kvm/vmx/vmx.c b/arch/x86/kvm/vmx/vmx.c
-index 07f4c7209ac0..00317774a90b 100644
---- a/arch/x86/kvm/vmx/vmx.c
-+++ b/arch/x86/kvm/vmx/vmx.c
-@@ -368,12 +368,16 @@ static int vmentry_l1d_flush_set(const char *s, const struct kernel_param *kp)
- 	return ret;
- }
- 
--static int vmentry_l1d_flush_get(char *s, const struct kernel_param *kp)
-+static int vmentry_l1d_flush_get(struct seq_buf *s,
-+				 const struct kernel_param *kp)
- {
--	if (WARN_ON_ONCE(l1tf_vmx_mitigation >= ARRAY_SIZE(vmentry_l1d_param)))
--		return sysfs_emit(s, "???\n");
-+	if (WARN_ON_ONCE(l1tf_vmx_mitigation >= ARRAY_SIZE(vmentry_l1d_param))) {
-+		seq_buf_printf(s, "???\n");
-+		return 0;
-+	}
- 
--	return sysfs_emit(s, "%s\n", vmentry_l1d_param[l1tf_vmx_mitigation].option);
-+	seq_buf_printf(s, "%s\n", vmentry_l1d_param[l1tf_vmx_mitigation].option);
-+	return 0;
- }
- 
- /*
-@@ -459,9 +463,11 @@ static int vmentry_l1d_flush_set(const char *s, const struct kernel_param *kp)
- 	pr_warn_once("Kernel compiled without mitigations, ignoring vmentry_l1d_flush\n");
- 	return 0;
- }
--static int vmentry_l1d_flush_get(char *s, const struct kernel_param *kp)
-+static int vmentry_l1d_flush_get(struct seq_buf *s,
-+				 const struct kernel_param *kp)
- {
--	return sysfs_emit(s, "never\n");
-+	seq_buf_printf(s, "never\n");
-+	return 0;
- }
- #endif
- 
-diff --git a/arch/x86/platform/uv/uv_nmi.c b/arch/x86/platform/uv/uv_nmi.c
-index a7ac80b5f8d9..c401369efe22 100644
---- a/arch/x86/platform/uv/uv_nmi.c
-+++ b/arch/x86/platform/uv/uv_nmi.c
-@@ -111,9 +111,11 @@ module_param_named(dump_loglevel, uv_nmi_loglevel, int, 0644);
-  * The following values show statistics on how perf events are affecting
-  * this system.
-  */
--static int param_get_local64(char *buffer, const struct kernel_param *kp)
-+static int param_get_local64(struct seq_buf *buffer,
-+			     const struct kernel_param *kp)
- {
--	return sprintf(buffer, "%lu\n", local64_read((local64_t *)kp->arg));
-+	seq_buf_printf(buffer, "%lu\n", local64_read((local64_t *)kp->arg));
-+	return 0;
- }
- 
- static int param_set_local64(const char *val, const struct kernel_param *kp)
-@@ -207,9 +209,11 @@ static const char * const actions_desc[nmi_act_max] = {
- 
- static enum action_t uv_nmi_action = nmi_act_dump;
- 
--static int param_get_action(char *buffer, const struct kernel_param *kp)
-+static int param_get_action(struct seq_buf *buffer,
-+			    const struct kernel_param *kp)
- {
--	return sprintf(buffer, "%s\n", actions[uv_nmi_action]);
-+	seq_buf_printf(buffer, "%s\n", actions[uv_nmi_action]);
-+	return 0;
- }
- 
- static int param_set_action(const char *val, const struct kernel_param *kp)
-diff --git a/drivers/acpi/ec.c b/drivers/acpi/ec.c
-index 45204538ed87..6478e5290faf 100644
---- a/drivers/acpi/ec.c
-+++ b/drivers/acpi/ec.c
-@@ -2236,18 +2236,22 @@ static int param_set_event_clearing(const char *val,
- 	return result;
- }
- 
--static int param_get_event_clearing(char *buffer,
-+static int param_get_event_clearing(struct seq_buf *buffer,
- 				    const struct kernel_param *kp)
- {
- 	switch (ec_event_clearing) {
- 	case ACPI_EC_EVT_TIMING_STATUS:
--		return sprintf(buffer, "status\n");
-+		seq_buf_printf(buffer, "status\n");
-+		return 0;
- 	case ACPI_EC_EVT_TIMING_QUERY:
--		return sprintf(buffer, "query\n");
-+		seq_buf_printf(buffer, "query\n");
-+		return 0;
- 	case ACPI_EC_EVT_TIMING_EVENT:
--		return sprintf(buffer, "event\n");
-+		seq_buf_printf(buffer, "event\n");
-+		return 0;
- 	default:
--		return sprintf(buffer, "invalid\n");
-+		seq_buf_printf(buffer, "invalid\n");
-+		return 0;
- 	}
- 	return 0;
- }
-diff --git a/drivers/acpi/sysfs.c b/drivers/acpi/sysfs.c
-index 3d32a5280432..5247ed7e05cc 100644
---- a/drivers/acpi/sysfs.c
-+++ b/drivers/acpi/sysfs.c
-@@ -192,9 +192,11 @@ static int param_set_trace_method_name(const char *val,
- 	return 0;
- }
- 
--static int param_get_trace_method_name(char *buffer, const struct kernel_param *kp)
-+static int param_get_trace_method_name(struct seq_buf *buffer,
-+				       const struct kernel_param *kp)
- {
--	return sysfs_emit(buffer, "%s\n", acpi_gbl_trace_method_name);
-+	seq_buf_printf(buffer, "%s\n", acpi_gbl_trace_method_name);
-+	return 0;
- }
- 
- static DEFINE_KERNEL_PARAM_OPS(param_ops_trace_method,
-diff --git a/drivers/block/ublk_drv.c b/drivers/block/ublk_drv.c
-index f7bf7ea2d088..ea35662381bf 100644
---- a/drivers/block/ublk_drv.c
-+++ b/drivers/block/ublk_drv.c
-@@ -5868,10 +5868,11 @@ static int ublk_set_max_unprivileged_ublks(const char *buf,
- 	return param_set_uint_minmax(buf, kp, 0, UBLK_MAX_UBLKS);
- }
- 
--static int ublk_get_max_unprivileged_ublks(char *buf,
-+static int ublk_get_max_unprivileged_ublks(struct seq_buf *buf,
- 					   const struct kernel_param *kp)
- {
--	return sysfs_emit(buf, "%u\n", unprivileged_ublks_max);
-+	seq_buf_printf(buf, "%u\n", unprivileged_ublks_max);
-+	return 0;
- }
- 
- static DEFINE_KERNEL_PARAM_OPS(ublk_max_unprivileged_ublks_ops,
-diff --git a/drivers/char/ipmi/ipmi_msghandler.c b/drivers/char/ipmi/ipmi_msghandler.c
-index b5fed11707e8..45941605b88f 100644
---- a/drivers/char/ipmi/ipmi_msghandler.c
-+++ b/drivers/char/ipmi/ipmi_msghandler.c
-@@ -90,7 +90,8 @@ static int panic_op_write_handler(const char *val,
- 	return 0;
- }
- 
--static int panic_op_read_handler(char *buffer, const struct kernel_param *kp)
-+static int panic_op_read_handler(struct seq_buf *buffer,
-+				 const struct kernel_param *kp)
- {
- 	const char *event_str;
- 
-@@ -99,7 +100,8 @@ static int panic_op_read_handler(char *buffer, const struct kernel_param *kp)
- 	else
- 		event_str = ipmi_panic_event_str[ipmi_send_panic_event];
- 
--	return sprintf(buffer, "%s\n", event_str);
-+	seq_buf_printf(buffer, "%s\n", event_str);
-+	return 0;
- }
- 
- static DEFINE_KERNEL_PARAM_OPS(panic_op_ops, panic_op_write_handler,
-diff --git a/drivers/firmware/qcom/qcom_scm.c b/drivers/firmware/qcom/qcom_scm.c
-index ef57df53e087..1bdb497e354e 100644
---- a/drivers/firmware/qcom/qcom_scm.c
-+++ b/drivers/firmware/qcom/qcom_scm.c
-@@ -2694,12 +2694,16 @@ static irqreturn_t qcom_scm_irq_handler(int irq, void *data)
- 	return IRQ_HANDLED;
- }
- 
--static int get_download_mode(char *buffer, const struct kernel_param *kp)
-+static int get_download_mode(struct seq_buf *buffer,
-+			     const struct kernel_param *kp)
- {
--	if (download_mode >= ARRAY_SIZE(download_mode_name))
--		return sysfs_emit(buffer, "unknown mode\n");
-+	if (download_mode >= ARRAY_SIZE(download_mode_name)) {
-+		seq_buf_printf(buffer, "unknown mode\n");
-+		return 0;
-+	}
- 
--	return sysfs_emit(buffer, "%s\n", download_mode_name[download_mode]);
-+	seq_buf_printf(buffer, "%s\n", download_mode_name[download_mode]);
-+	return 0;
- }
- 
- static int set_download_mode(const char *val, const struct kernel_param *kp)
-diff --git a/drivers/gpu/drm/drm_panic.c b/drivers/gpu/drm/drm_panic.c
-index c35d1adf2ce3..8b3b749284f0 100644
---- a/drivers/gpu/drm/drm_panic.c
-+++ b/drivers/gpu/drm/drm_panic.c
-@@ -841,10 +841,11 @@ static int drm_panic_type_set(const char *val, const struct kernel_param *kp)
- 	return -EINVAL;
- }
- 
--static int drm_panic_type_get(char *buffer, const struct kernel_param *kp)
-+static int drm_panic_type_get(struct seq_buf *buffer,
-+			      const struct kernel_param *kp)
- {
--	return scnprintf(buffer, PAGE_SIZE, "%s\n",
--			 drm_panic_type_map[drm_panic_type]);
-+	seq_buf_printf(buffer, "%s\n", drm_panic_type_map[drm_panic_type]);
-+	return 0;
- }
- 
- static DEFINE_KERNEL_PARAM_OPS(drm_panic_ops, drm_panic_type_set,
-diff --git a/drivers/infiniband/hw/hfi1/driver.c b/drivers/infiniband/hw/hfi1/driver.c
-index 5b9b0b38b419..3c3f8d4db99d 100644
---- a/drivers/infiniband/hw/hfi1/driver.c
-+++ b/drivers/infiniband/hw/hfi1/driver.c
-@@ -41,7 +41,7 @@ MODULE_PARM_DESC(cu, "Credit return units");
- 
- unsigned long hfi1_cap_mask = HFI1_CAP_MASK_DEFAULT;
- static int hfi1_caps_set(const char *val, const struct kernel_param *kp);
--static int hfi1_caps_get(char *buffer, const struct kernel_param *kp);
-+static int hfi1_caps_get(struct seq_buf *buffer, const struct kernel_param *kp);
- static DEFINE_KERNEL_PARAM_OPS(cap_ops, hfi1_caps_set, hfi1_caps_get);
- module_param_cb(cap_mask, &cap_ops, &hfi1_cap_mask, S_IWUSR | S_IRUGO);
- MODULE_PARM_DESC(cap_mask, "Bit mask of enabled/disabled HW features");
-@@ -101,14 +101,15 @@ static int hfi1_caps_set(const char *val, const struct kernel_param *kp)
- 	return ret;
- }
- 
--static int hfi1_caps_get(char *buffer, const struct kernel_param *kp)
-+static int hfi1_caps_get(struct seq_buf *buffer, const struct kernel_param *kp)
- {
- 	unsigned long cap_mask = *(unsigned long *)kp->arg;
- 
- 	cap_mask &= ~HFI1_CAP_LOCKED_SMASK;
- 	cap_mask |= ((cap_mask & HFI1_CAP_K2U) << HFI1_CAP_USER_SHIFT);
- 
--	return sysfs_emit(buffer, "0x%lx\n", cap_mask);
-+	seq_buf_printf(buffer, "0x%lx\n", cap_mask);
-+	return 0;
- }
- 
- struct pci_dev *get_pci_dev(struct rvt_dev_info *rdi)
-diff --git a/drivers/infiniband/ulp/srpt/ib_srpt.c b/drivers/infiniband/ulp/srpt/ib_srpt.c
-index 9aec5d80117f..97c77d52a86a 100644
---- a/drivers/infiniband/ulp/srpt/ib_srpt.c
-+++ b/drivers/infiniband/ulp/srpt/ib_srpt.c
-@@ -86,9 +86,10 @@ static int srpt_set_u64_x(const char *buffer, const struct kernel_param *kp)
- {
- 	return kstrtou64(buffer, 16, (u64 *)kp->arg);
- }
--static int srpt_get_u64_x(char *buffer, const struct kernel_param *kp)
-+static int srpt_get_u64_x(struct seq_buf *buffer, const struct kernel_param *kp)
- {
--	return sprintf(buffer, "0x%016llx\n", *(u64 *)kp->arg);
-+	seq_buf_printf(buffer, "0x%016llx\n", *(u64 *)kp->arg);
-+	return 0;
- }
- module_param_call(srpt_service_guid, srpt_set_u64_x, srpt_get_u64_x,
- 		  &srpt_service_guid, 0444);
-diff --git a/drivers/input/misc/ati_remote2.c b/drivers/input/misc/ati_remote2.c
-index 8b4ef7e163d3..d101fe1c2c4c 100644
---- a/drivers/input/misc/ati_remote2.c
-+++ b/drivers/input/misc/ati_remote2.c
-@@ -63,12 +63,13 @@ static int ati_remote2_set_channel_mask(const char *val,
- 	return ati_remote2_set_mask(val, kp, ATI_REMOTE2_MAX_CHANNEL_MASK);
- }
- 
--static int ati_remote2_get_channel_mask(char *buffer,
-+static int ati_remote2_get_channel_mask(struct seq_buf *buffer,
- 					const struct kernel_param *kp)
- {
- 	pr_debug("%s()\n", __func__);
- 
--	return sprintf(buffer, "0x%04x\n", *(unsigned int *)kp->arg);
-+	seq_buf_printf(buffer, "0x%04x\n", *(unsigned int *)kp->arg);
-+	return 0;
- }
- 
- static int ati_remote2_set_mode_mask(const char *val,
-@@ -79,12 +80,13 @@ static int ati_remote2_set_mode_mask(const char *val,
- 	return ati_remote2_set_mask(val, kp, ATI_REMOTE2_MAX_MODE_MASK);
- }
- 
--static int ati_remote2_get_mode_mask(char *buffer,
-+static int ati_remote2_get_mode_mask(struct seq_buf *buffer,
- 				     const struct kernel_param *kp)
- {
- 	pr_debug("%s()\n", __func__);
- 
--	return sprintf(buffer, "0x%02x\n", *(unsigned int *)kp->arg);
-+	seq_buf_printf(buffer, "0x%02x\n", *(unsigned int *)kp->arg);
-+	return 0;
- }
- 
- static unsigned int channel_mask = ATI_REMOTE2_MAX_CHANNEL_MASK;
-diff --git a/drivers/input/mouse/psmouse-base.c b/drivers/input/mouse/psmouse-base.c
-index f9ebb1fd0b6f..39a9b87e69d1 100644
---- a/drivers/input/mouse/psmouse-base.c
-+++ b/drivers/input/mouse/psmouse-base.c
-@@ -44,7 +44,8 @@ MODULE_LICENSE("GPL");
- 
- static unsigned int psmouse_max_proto = PSMOUSE_AUTO;
- static int psmouse_set_maxproto(const char *val, const struct kernel_param *);
--static int psmouse_get_maxproto(char *buffer, const struct kernel_param *kp);
-+static int psmouse_get_maxproto(struct seq_buf *buffer,
-+				const struct kernel_param *kp);
- static DEFINE_KERNEL_PARAM_OPS(param_ops_proto_abbrev, psmouse_set_maxproto,
- 			       psmouse_get_maxproto);
- #define param_check_proto_abbrev(name, p)	__param_check(name, p, unsigned int)
-@@ -1994,11 +1995,13 @@ static int psmouse_set_maxproto(const char *val, const struct kernel_param *kp)
- 	return 0;
- }
- 
--static int psmouse_get_maxproto(char *buffer, const struct kernel_param *kp)
-+static int psmouse_get_maxproto(struct seq_buf *buffer,
-+				const struct kernel_param *kp)
- {
- 	int type = *((unsigned int *)kp->arg);
- 
--	return sprintf(buffer, "%s\n", psmouse_protocol_by_type(type)->name);
-+	seq_buf_printf(buffer, "%s\n", psmouse_protocol_by_type(type)->name);
-+	return 0;
- }
- 
- static int __init psmouse_init(void)
-diff --git a/drivers/md/md.c b/drivers/md/md.c
-index 8b568eee8743..ce3eb1396ad0 100644
---- a/drivers/md/md.c
-+++ b/drivers/md/md.c
-@@ -10989,9 +10989,10 @@ static __exit void md_exit(void)
- subsys_initcall(md_init);
- module_exit(md_exit)
- 
--static int get_ro(char *buffer, const struct kernel_param *kp)
-+static int get_ro(struct seq_buf *buffer, const struct kernel_param *kp)
- {
--	return sprintf(buffer, "%d\n", start_readonly);
-+	seq_buf_printf(buffer, "%d\n", start_readonly);
-+	return 0;
- }
- static int set_ro(const char *val, const struct kernel_param *kp)
- {
-diff --git a/drivers/media/pci/tw686x/tw686x-core.c b/drivers/media/pci/tw686x/tw686x-core.c
-index a10e38221817..35a6ff8d77fc 100644
---- a/drivers/media/pci/tw686x/tw686x-core.c
-+++ b/drivers/media/pci/tw686x/tw686x-core.c
-@@ -69,9 +69,11 @@ static const char *dma_mode_name(unsigned int mode)
- 	}
- }
- 
--static int tw686x_dma_mode_get(char *buffer, const struct kernel_param *kp)
-+static int tw686x_dma_mode_get(struct seq_buf *buffer,
-+			       const struct kernel_param *kp)
- {
--	return sprintf(buffer, "%s", dma_mode_name(dma_mode));
-+	seq_buf_printf(buffer, "%s", dma_mode_name(dma_mode));
-+	return 0;
- }
- 
- static int tw686x_dma_mode_set(const char *val, const struct kernel_param *kp)
-diff --git a/drivers/nvme/host/multipath.c b/drivers/nvme/host/multipath.c
-index f7362377e427..e0c87447074d 100644
---- a/drivers/nvme/host/multipath.c
-+++ b/drivers/nvme/host/multipath.c
-@@ -85,9 +85,10 @@ static int nvme_set_iopolicy(const char *val, const struct kernel_param *kp)
- 	return 0;
- }
- 
--static int nvme_get_iopolicy(char *buf, const struct kernel_param *kp)
-+static int nvme_get_iopolicy(struct seq_buf *buf, const struct kernel_param *kp)
- {
--	return sprintf(buf, "%s\n", nvme_iopolicy_names[iopolicy]);
-+	seq_buf_printf(buf, "%s\n", nvme_iopolicy_names[iopolicy]);
-+	return 0;
- }
- 
- module_param_call(iopolicy, nvme_set_iopolicy, nvme_get_iopolicy,
-diff --git a/drivers/power/supply/test_power.c b/drivers/power/supply/test_power.c
-index 0bf2bef3383a..9dcd588ab5c9 100644
---- a/drivers/power/supply/test_power.c
-+++ b/drivers/power/supply/test_power.c
-@@ -490,10 +490,12 @@ static int param_set_ac_online(const char *key, const struct kernel_param *kp)
- 	return 0;
- }
- 
--static int param_get_ac_online(char *buffer, const struct kernel_param *kp)
-+static int param_get_ac_online(struct seq_buf *buffer,
-+			       const struct kernel_param *kp)
- {
--	return sprintf(buffer, "%s\n",
--			map_get_key(map_ac_online, ac_online, "unknown"));
-+	seq_buf_printf(buffer, "%s\n",
-+		       map_get_key(map_ac_online, ac_online, "unknown"));
-+	return 0;
- }
- 
- static int param_set_usb_online(const char *key, const struct kernel_param *kp)
-@@ -503,10 +505,12 @@ static int param_set_usb_online(const char *key, const struct kernel_param *kp)
- 	return 0;
- }
- 
--static int param_get_usb_online(char *buffer, const struct kernel_param *kp)
-+static int param_get_usb_online(struct seq_buf *buffer,
-+				const struct kernel_param *kp)
- {
--	return sprintf(buffer, "%s\n",
--			map_get_key(map_ac_online, usb_online, "unknown"));
-+	seq_buf_printf(buffer, "%s\n",
-+		       map_get_key(map_ac_online, usb_online, "unknown"));
-+	return 0;
- }
- 
- static int param_set_battery_status(const char *key,
-@@ -517,10 +521,12 @@ static int param_set_battery_status(const char *key,
- 	return 0;
- }
- 
--static int param_get_battery_status(char *buffer, const struct kernel_param *kp)
-+static int param_get_battery_status(struct seq_buf *buffer,
-+				    const struct kernel_param *kp)
- {
--	return sprintf(buffer, "%s\n",
--			map_get_key(map_ac_online, battery_status, "unknown"));
-+	seq_buf_printf(buffer, "%s\n",
-+		       map_get_key(map_ac_online, battery_status, "unknown"));
-+	return 0;
- }
- 
- static int param_set_battery_health(const char *key,
-@@ -531,10 +537,12 @@ static int param_set_battery_health(const char *key,
- 	return 0;
- }
- 
--static int param_get_battery_health(char *buffer, const struct kernel_param *kp)
-+static int param_get_battery_health(struct seq_buf *buffer,
-+				    const struct kernel_param *kp)
- {
--	return sprintf(buffer, "%s\n",
--			map_get_key(map_ac_online, battery_health, "unknown"));
-+	seq_buf_printf(buffer, "%s\n",
-+		       map_get_key(map_ac_online, battery_health, "unknown"));
-+	return 0;
- }
- 
- static int param_set_battery_present(const char *key,
-@@ -545,11 +553,12 @@ static int param_set_battery_present(const char *key,
- 	return 0;
- }
- 
--static int param_get_battery_present(char *buffer,
-+static int param_get_battery_present(struct seq_buf *buffer,
- 					const struct kernel_param *kp)
- {
--	return sprintf(buffer, "%s\n",
--			map_get_key(map_ac_online, battery_present, "unknown"));
-+	seq_buf_printf(buffer, "%s\n",
-+		       map_get_key(map_ac_online, battery_present, "unknown"));
-+	return 0;
- }
- 
- static int param_set_battery_technology(const char *key,
-@@ -561,12 +570,12 @@ static int param_set_battery_technology(const char *key,
- 	return 0;
- }
- 
--static int param_get_battery_technology(char *buffer,
-+static int param_get_battery_technology(struct seq_buf *buffer,
- 					const struct kernel_param *kp)
- {
--	return sprintf(buffer, "%s\n",
--			map_get_key(map_ac_online, battery_technology,
--					"unknown"));
-+	seq_buf_printf(buffer, "%s\n",
-+		       map_get_key(map_ac_online, battery_technology, "unknown"));
-+	return 0;
- }
- 
- static int param_set_battery_capacity(const char *key,
-diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
-index 676a12b44e88..5e8817a63726 100644
---- a/drivers/target/target_core_user.c
-+++ b/drivers/target/target_core_user.c
-@@ -249,10 +249,11 @@ static int tcmu_set_global_max_data_area(const char *str,
- 	return 0;
- }
- 
--static int tcmu_get_global_max_data_area(char *buffer,
-+static int tcmu_get_global_max_data_area(struct seq_buf *buffer,
- 					 const struct kernel_param *kp)
- {
--	return sprintf(buffer, "%d\n", TCMU_PAGES_TO_MBS(tcmu_global_max_pages));
-+	seq_buf_printf(buffer, "%d\n", TCMU_PAGES_TO_MBS(tcmu_global_max_pages));
-+	return 0;
- }
- 
- static DEFINE_KERNEL_PARAM_OPS(tcmu_global_max_data_area_op,
-@@ -265,11 +266,12 @@ MODULE_PARM_DESC(global_max_data_area_mb,
- 		 "Max MBs allowed to be allocated to all the tcmu device's "
- 		 "data areas.");
- 
--static int tcmu_get_block_netlink(char *buffer,
-+static int tcmu_get_block_netlink(struct seq_buf *buffer,
- 				  const struct kernel_param *kp)
- {
--	return sprintf(buffer, "%s\n", tcmu_netlink_blocked ?
--		       "blocked" : "unblocked");
-+	seq_buf_printf(buffer, "%s\n",
-+		       tcmu_netlink_blocked ? "blocked" : "unblocked");
-+	return 0;
- }
- 
- static int tcmu_set_block_netlink(const char *str,
-diff --git a/drivers/thermal/intel/int340x_thermal/processor_thermal_soc_slider.c b/drivers/thermal/intel/int340x_thermal/processor_thermal_soc_slider.c
-index 68275c3f2c9b..1a68721748d9 100644
---- a/drivers/thermal/intel/int340x_thermal/processor_thermal_soc_slider.c
-+++ b/drivers/thermal/intel/int340x_thermal/processor_thermal_soc_slider.c
-@@ -77,10 +77,12 @@ static int slider_def_balance_set(const char *arg, const struct kernel_param *kp
- 	return ret;
- }
- 
--static int slider_def_balance_get(char *buf, const struct kernel_param *kp)
-+static int slider_def_balance_get(struct seq_buf *buf,
-+				  const struct kernel_param *kp)
- {
- 	guard(mutex)(&slider_param_lock);
--	return sysfs_emit(buf, "%02x\n", slider_values[SOC_POWER_SLIDER_BALANCE]);
-+	seq_buf_printf(buf, "%02x\n", slider_values[SOC_POWER_SLIDER_BALANCE]);
-+	return 0;
- }
- 
- static DEFINE_KERNEL_PARAM_OPS(slider_def_balance_ops, slider_def_balance_set,
-@@ -109,10 +111,12 @@ static int slider_def_offset_set(const char *arg, const struct kernel_param *kp)
- 	return ret;
- }
- 
--static int slider_def_offset_get(char *buf, const struct kernel_param *kp)
-+static int slider_def_offset_get(struct seq_buf *buf,
-+				 const struct kernel_param *kp)
- {
- 	guard(mutex)(&slider_param_lock);
--	return sysfs_emit(buf, "%02x\n", slider_offset);
-+	seq_buf_printf(buf, "%02x\n", slider_offset);
-+	return 0;
- }
- 
- static DEFINE_KERNEL_PARAM_OPS(slider_offset_ops, slider_def_offset_set,
-diff --git a/drivers/ufs/core/ufs-fault-injection.c b/drivers/ufs/core/ufs-fault-injection.c
-index 7d2873da7dc5..88f348b41614 100644
---- a/drivers/ufs/core/ufs-fault-injection.c
-+++ b/drivers/ufs/core/ufs-fault-injection.c
-@@ -8,7 +8,7 @@
- #include <ufs/ufshcd.h>
- #include "ufs-fault-injection.h"
- 
--static int ufs_fault_get(char *buffer, const struct kernel_param *kp);
-+static int ufs_fault_get(struct seq_buf *buffer, const struct kernel_param *kp);
- static int ufs_fault_set(const char *val, const struct kernel_param *kp);
- 
- static DEFINE_KERNEL_PARAM_OPS(ufs_fault_ops, ufs_fault_set, ufs_fault_get);
-@@ -31,11 +31,12 @@ MODULE_PARM_DESC(timeout,
- 	"Fault injection. timeout=<interval>,<probability>,<space>,<times>");
- static DECLARE_FAULT_ATTR(ufs_timeout_attr);
- 
--static int ufs_fault_get(char *buffer, const struct kernel_param *kp)
-+static int ufs_fault_get(struct seq_buf *buffer, const struct kernel_param *kp)
- {
- 	const char *fault_str = kp->arg;
- 
--	return sysfs_emit(buffer, "%s\n", fault_str);
-+	seq_buf_printf(buffer, "%s\n", fault_str);
-+	return 0;
- }
- 
- static int ufs_fault_set(const char *val, const struct kernel_param *kp)
-diff --git a/drivers/vhost/scsi.c b/drivers/vhost/scsi.c
-index fd52f2213e27..23ca63ebf3d2 100644
---- a/drivers/vhost/scsi.c
-+++ b/drivers/vhost/scsi.c
-@@ -81,10 +81,11 @@ static int vhost_scsi_set_inline_sg_cnt(const char *buf,
- }
- #endif
- 
--static int vhost_scsi_get_inline_sg_cnt(char *buf,
-+static int vhost_scsi_get_inline_sg_cnt(struct seq_buf *buf,
- 					const struct kernel_param *kp)
- {
--	return sprintf(buf, "%u\n", vhost_scsi_inline_sg_cnt);
-+	seq_buf_printf(buf, "%u\n", vhost_scsi_inline_sg_cnt);
-+	return 0;
- }
- 
- static DEFINE_KERNEL_PARAM_OPS(vhost_scsi_inline_sg_cnt_op,
-diff --git a/fs/nfs/namespace.c b/fs/nfs/namespace.c
-index f2fba60dc5ed..5b7debe5274b 100644
---- a/fs/nfs/namespace.c
-+++ b/fs/nfs/namespace.c
-@@ -358,7 +358,8 @@ static int param_set_nfs_timeout(const char *val, const struct kernel_param *kp)
- 	return 0;
- }
- 
--static int param_get_nfs_timeout(char *buffer, const struct kernel_param *kp)
-+static int param_get_nfs_timeout(struct seq_buf *buffer,
-+				 const struct kernel_param *kp)
- {
- 	long num = *((int *)kp->arg);
- 
-@@ -369,7 +370,8 @@ static int param_get_nfs_timeout(char *buffer, const struct kernel_param *kp)
- 			num = (num + (HZ - 1)) / HZ;
- 	} else
- 		num = -1;
--	return sysfs_emit(buffer, "%li\n", num);
-+	seq_buf_printf(buffer, "%li\n", num);
-+	return 0;
- }
- 
- static DEFINE_KERNEL_PARAM_OPS(param_ops_nfs_timeout, param_set_nfs_timeout,
-diff --git a/fs/ocfs2/dlmfs/dlmfs.c b/fs/ocfs2/dlmfs/dlmfs.c
-index 5821e33df78f..8fd759d31ff9 100644
---- a/fs/ocfs2/dlmfs/dlmfs.c
-+++ b/fs/ocfs2/dlmfs/dlmfs.c
-@@ -78,10 +78,11 @@ static int param_set_dlmfs_capabilities(const char *val,
- 	printk(KERN_ERR "%s: readonly parameter\n", kp->name);
- 	return -EINVAL;
- }
--static int param_get_dlmfs_capabilities(char *buffer,
-+static int param_get_dlmfs_capabilities(struct seq_buf *buffer,
- 					const struct kernel_param *kp)
- {
--	return sysfs_emit(buffer, DLMFS_CAPABILITIES);
-+	seq_buf_printf(buffer, DLMFS_CAPABILITIES);
-+	return 0;
- }
- module_param_call(capabilities, param_set_dlmfs_capabilities,
- 		  param_get_dlmfs_capabilities, NULL, 0444);
-diff --git a/fs/overlayfs/copy_up.c b/fs/overlayfs/copy_up.c
-index 13cb60b52bd6..d9a21b813b4f 100644
---- a/fs/overlayfs/copy_up.c
-+++ b/fs/overlayfs/copy_up.c
-@@ -28,9 +28,10 @@ static int ovl_ccup_set(const char *buf, const struct kernel_param *param)
- 	return 0;
- }
- 
--static int ovl_ccup_get(char *buf, const struct kernel_param *param)
-+static int ovl_ccup_get(struct seq_buf *buf, const struct kernel_param *param)
- {
--	return sprintf(buf, "N\n");
-+	seq_buf_printf(buf, "N\n");
-+	return 0;
- }
- 
- module_param_call(check_copy_up, ovl_ccup_set, ovl_ccup_get, NULL, 0644);
-diff --git a/kernel/locking/locktorture.c b/kernel/locking/locktorture.c
-index 38ae3b596ef2..9c9b6dc25888 100644
---- a/kernel/locking/locktorture.c
-+++ b/kernel/locking/locktorture.c
-@@ -86,11 +86,13 @@ static int param_set_cpumask(const char *val, const struct kernel_param *kp)
- }
- 
- // Output a cpumask kernel parameter.
--static int param_get_cpumask(char *buffer, const struct kernel_param *kp)
-+static int param_get_cpumask(struct seq_buf *buffer,
-+			     const struct kernel_param *kp)
- {
- 	cpumask_var_t *cm_bind = kp->arg;
- 
--	return sprintf(buffer, "%*pbl", cpumask_pr_args(*cm_bind));
-+	seq_buf_printf(buffer, "%*pbl", cpumask_pr_args(*cm_bind));
-+	return 0;
- }
- 
- static bool cpumask_nonempty(cpumask_var_t mask)
-diff --git a/kernel/rcu/tree.c b/kernel/rcu/tree.c
-index e675d7f1b4ee..ffbbb7d4ff2a 100644
---- a/kernel/rcu/tree.c
-+++ b/kernel/rcu/tree.c
-@@ -3970,9 +3970,11 @@ static int param_set_do_rcu_barrier(const char *val, const struct kernel_param *
- /*
-  * Output the number of outstanding rcutree.do_rcu_barrier requests.
-  */
--static int param_get_do_rcu_barrier(char *buffer, const struct kernel_param *kp)
-+static int param_get_do_rcu_barrier(struct seq_buf *buffer,
-+				    const struct kernel_param *kp)
- {
--	return sprintf(buffer, "%d\n", atomic_read((atomic_t *)kp->arg));
-+	seq_buf_printf(buffer, "%d\n", atomic_read((atomic_t *)kp->arg));
-+	return 0;
- }
- 
- static DEFINE_KERNEL_PARAM_OPS(do_rcu_barrier_ops, param_set_do_rcu_barrier,
-diff --git a/kernel/workqueue.c b/kernel/workqueue.c
-index 42562b811d94..3fe338d2ca64 100644
---- a/kernel/workqueue.c
-+++ b/kernel/workqueue.c
-@@ -7157,9 +7157,11 @@ static int wq_affn_dfl_set(const char *val, const struct kernel_param *kp)
- 	return 0;
- }
- 
--static int wq_affn_dfl_get(char *buffer, const struct kernel_param *kp)
-+static int wq_affn_dfl_get(struct seq_buf *buffer,
-+			   const struct kernel_param *kp)
- {
--	return scnprintf(buffer, PAGE_SIZE, "%s\n", wq_affn_names[wq_affn_dfl]);
-+	seq_buf_printf(buffer, "%s\n", wq_affn_names[wq_affn_dfl]);
-+	return 0;
- }
- 
- static DEFINE_KERNEL_PARAM_OPS(wq_affn_dfl_ops, wq_affn_dfl_set,
-diff --git a/lib/test_dynamic_debug.c b/lib/test_dynamic_debug.c
-index 30880b6c726a..70faf8ede76d 100644
---- a/lib/test_dynamic_debug.c
-+++ b/lib/test_dynamic_debug.c
-@@ -18,10 +18,12 @@ static int param_set_do_prints(const char *instr, const struct kernel_param *kp)
- 	do_prints();
- 	return 0;
- }
--static int param_get_do_prints(char *buffer, const struct kernel_param *kp)
-+static int param_get_do_prints(struct seq_buf *buffer,
-+			       const struct kernel_param *kp)
- {
- 	do_prints();
--	return scnprintf(buffer, PAGE_SIZE, "did do_prints\n");
-+	seq_buf_printf(buffer, "did do_prints\n");
-+	return 0;
- }
- static DEFINE_KERNEL_PARAM_OPS(param_ops_do_prints, param_set_do_prints,
- 			       param_get_do_prints);
-diff --git a/mm/damon/lru_sort.c b/mm/damon/lru_sort.c
-index 5feb93c5262e..84e607f76126 100644
---- a/mm/damon/lru_sort.c
-+++ b/mm/damon/lru_sort.c
-@@ -438,10 +438,11 @@ static int damon_lru_sort_enabled_store(const char *val,
- 	return damon_lru_sort_turn(enabled);
- }
- 
--static int damon_lru_sort_enabled_load(char *buffer,
--		const struct kernel_param *kp)
-+static int damon_lru_sort_enabled_load(struct seq_buf *buffer,
-+				       const struct kernel_param *kp)
- {
--	return sprintf(buffer, "%c\n", damon_lru_sort_enabled() ? 'Y' : 'N');
-+	seq_buf_printf(buffer, "%c\n", damon_lru_sort_enabled() ? 'Y' : 'N');
-+	return 0;
- }
- 
- static DEFINE_KERNEL_PARAM_OPS(enabled_param_ops, damon_lru_sort_enabled_store,
-@@ -461,8 +462,8 @@ static int damon_lru_sort_kdamond_pid_store(const char *val,
- 	return 0;
- }
- 
--static int damon_lru_sort_kdamond_pid_load(char *buffer,
--		const struct kernel_param *kp)
-+static int damon_lru_sort_kdamond_pid_load(struct seq_buf *buffer,
-+					   const struct kernel_param *kp)
- {
- 	int kdamond_pid = -1;
- 
-@@ -471,7 +472,8 @@ static int damon_lru_sort_kdamond_pid_load(char *buffer,
- 		if (kdamond_pid < 0)
- 			kdamond_pid = -1;
- 	}
--	return sprintf(buffer, "%d\n", kdamond_pid);
-+	seq_buf_printf(buffer, "%d\n", kdamond_pid);
-+	return 0;
- }
- 
- static DEFINE_KERNEL_PARAM_OPS(kdamond_pid_param_ops,
-diff --git a/mm/damon/reclaim.c b/mm/damon/reclaim.c
-index 27e772b095fa..546bdf356a40 100644
---- a/mm/damon/reclaim.c
-+++ b/mm/damon/reclaim.c
-@@ -340,10 +340,11 @@ static int damon_reclaim_enabled_store(const char *val,
- 	return damon_reclaim_turn(enabled);
- }
- 
--static int damon_reclaim_enabled_load(char *buffer,
--		const struct kernel_param *kp)
-+static int damon_reclaim_enabled_load(struct seq_buf *buffer,
-+				      const struct kernel_param *kp)
- {
--	return sprintf(buffer, "%c\n", damon_reclaim_enabled() ? 'Y' : 'N');
-+	seq_buf_printf(buffer, "%c\n", damon_reclaim_enabled() ? 'Y' : 'N');
-+	return 0;
- }
- 
- static DEFINE_KERNEL_PARAM_OPS(enabled_param_ops, damon_reclaim_enabled_store,
-@@ -363,8 +364,8 @@ static int damon_reclaim_kdamond_pid_store(const char *val,
- 	return 0;
- }
- 
--static int damon_reclaim_kdamond_pid_load(char *buffer,
--		const struct kernel_param *kp)
-+static int damon_reclaim_kdamond_pid_load(struct seq_buf *buffer,
-+					  const struct kernel_param *kp)
- {
- 	int kdamond_pid = -1;
- 
-@@ -373,7 +374,8 @@ static int damon_reclaim_kdamond_pid_load(char *buffer,
- 		if (kdamond_pid < 0)
- 			kdamond_pid = -1;
- 	}
--	return sprintf(buffer, "%d\n", kdamond_pid);
-+	seq_buf_printf(buffer, "%d\n", kdamond_pid);
-+	return 0;
- }
- 
- static DEFINE_KERNEL_PARAM_OPS(kdamond_pid_param_ops,
-diff --git a/mm/damon/stat.c b/mm/damon/stat.c
-index 6eb548793802..70d6b477fc0b 100644
---- a/mm/damon/stat.c
-+++ b/mm/damon/stat.c
-@@ -19,8 +19,8 @@
- static int damon_stat_enabled_store(
- 		const char *val, const struct kernel_param *kp);
- 
--static int damon_stat_enabled_load(char *buffer,
--		const struct kernel_param *kp);
-+static int damon_stat_enabled_load(struct seq_buf *buffer,
-+				   const struct kernel_param *kp);
- 
- static DEFINE_KERNEL_PARAM_OPS(enabled_param_ops, damon_stat_enabled_store,
- 			       damon_stat_enabled_load);
-@@ -306,9 +306,11 @@ static int damon_stat_enabled_store(
- 	return 0;
- }
- 
--static int damon_stat_enabled_load(char *buffer, const struct kernel_param *kp)
-+static int damon_stat_enabled_load(struct seq_buf *buffer,
-+				   const struct kernel_param *kp)
- {
--	return sprintf(buffer, "%c\n", damon_stat_enabled() ? 'Y' : 'N');
-+	seq_buf_printf(buffer, "%c\n", damon_stat_enabled() ? 'Y' : 'N');
-+	return 0;
- }
- 
- static int __init damon_stat_init(void)
-diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
-index 42e0cf313281..887c18a193ac 100644
---- a/mm/memory_hotplug.c
-+++ b/mm/memory_hotplug.c
-@@ -100,13 +100,17 @@ static int set_memmap_mode(const char *val, const struct kernel_param *kp)
- 	return 0;
- }
- 
--static int get_memmap_mode(char *buffer, const struct kernel_param *kp)
-+static int get_memmap_mode(struct seq_buf *buffer,
-+			   const struct kernel_param *kp)
- {
- 	int mode = *((int *)kp->arg);
- 
--	if (mode == MEMMAP_ON_MEMORY_FORCE)
--		return sprintf(buffer, "force\n");
--	return sprintf(buffer, "%c\n", mode ? 'Y' : 'N');
-+	if (mode == MEMMAP_ON_MEMORY_FORCE) {
-+		seq_buf_printf(buffer, "force\n");
-+		return 0;
-+	}
-+	seq_buf_printf(buffer, "%c\n", mode ? 'Y' : 'N');
-+	return 0;
- }
- 
- static DEFINE_KERNEL_PARAM_OPS(memmap_mode_ops, set_memmap_mode,
-@@ -147,9 +151,11 @@ static int set_online_policy(const char *val, const struct kernel_param *kp)
- 	return 0;
- }
- 
--static int get_online_policy(char *buffer, const struct kernel_param *kp)
-+static int get_online_policy(struct seq_buf *buffer,
-+			     const struct kernel_param *kp)
- {
--	return sprintf(buffer, "%s\n", online_policy_to_str[*((int *)kp->arg)]);
-+	seq_buf_printf(buffer, "%s\n", online_policy_to_str[*((int *)kp->arg)]);
-+	return 0;
- }
- 
- /*
-diff --git a/net/ceph/ceph_common.c b/net/ceph/ceph_common.c
-index 633202a99e4a..583b11a2489c 100644
---- a/net/ceph/ceph_common.c
-+++ b/net/ceph/ceph_common.c
-@@ -47,10 +47,11 @@ bool libceph_compatible(void *data)
- }
- EXPORT_SYMBOL(libceph_compatible);
- 
--static int param_get_supported_features(char *buffer,
-+static int param_get_supported_features(struct seq_buf *buffer,
- 					const struct kernel_param *kp)
- {
--	return sprintf(buffer, "0x%llx", CEPH_FEATURES_SUPPORTED_DEFAULT);
-+	seq_buf_printf(buffer, "0x%llx", CEPH_FEATURES_SUPPORTED_DEFAULT);
-+	return 0;
- }
- static DEFINE_KERNEL_PARAM_OPS(param_ops_supported_features, NULL,
- 			       param_get_supported_features);
-diff --git a/net/sunrpc/auth.c b/net/sunrpc/auth.c
-index 64a3e894fd4c..5a2b64dcf9e5 100644
---- a/net/sunrpc/auth.c
-+++ b/net/sunrpc/auth.c
-@@ -73,12 +73,14 @@ static int param_set_hashtbl_sz(const char *val, const struct kernel_param *kp)
- 	return -EINVAL;
- }
- 
--static int param_get_hashtbl_sz(char *buffer, const struct kernel_param *kp)
-+static int param_get_hashtbl_sz(struct seq_buf *buffer,
-+				const struct kernel_param *kp)
- {
- 	unsigned int nbits;
- 
- 	nbits = *(unsigned int *)kp->arg;
--	return sprintf(buffer, "%u\n", 1U << nbits);
-+	seq_buf_printf(buffer, "%u\n", 1U << nbits);
-+	return 0;
- }
- 
- #define param_check_hashtbl_sz(name, p) __param_check(name, p, unsigned int);
-diff --git a/net/sunrpc/svc.c b/net/sunrpc/svc.c
-index 576fa42e7abf..26b85077ecc8 100644
---- a/net/sunrpc/svc.c
-+++ b/net/sunrpc/svc.c
-@@ -148,7 +148,7 @@ sunrpc_get_pool_mode(char *buf, size_t size)
- EXPORT_SYMBOL(sunrpc_get_pool_mode);
- 
- static int
--param_get_pool_mode(char *buf, const struct kernel_param *kp)
-+param_get_pool_mode(struct seq_buf *buf, const struct kernel_param *kp)
- {
- 	char str[16];
- 	int len;
-@@ -162,7 +162,8 @@ param_get_pool_mode(char *buf, const struct kernel_param *kp)
- 	str[len] = '\n';
- 	str[len + 1] = '\0';
- 
--	return sysfs_emit(buf, "%s", str);
-+	seq_buf_printf(buf, "%s", str);
-+	return 0;
- }
- 
- module_param_call(pool_mode, param_set_pool_mode, param_get_pool_mode,
-diff --git a/security/apparmor/lsm.c b/security/apparmor/lsm.c
-index a6815b4bd0da..748d08c57f60 100644
---- a/security/apparmor/lsm.c
-+++ b/security/apparmor/lsm.c
-@@ -1797,10 +1797,11 @@ static int param_set_debug(const char *val, const struct kernel_param *kp);
- static int param_get_debug(struct seq_buf *buffer, const struct kernel_param *kp);
- 
- static int param_set_audit(const char *val, const struct kernel_param *kp);
--static int param_get_audit(char *buffer, const struct kernel_param *kp);
-+static int param_get_audit(struct seq_buf *buffer,
-+			   const struct kernel_param *kp);
- 
- static int param_set_mode(const char *val, const struct kernel_param *kp);
--static int param_get_mode(char *buffer, const struct kernel_param *kp);
-+static int param_get_mode(struct seq_buf *buffer, const struct kernel_param *kp);
- 
- /* Flag values, also controllable via /sys/module/apparmor/parameters
-  * We define special types as we want to do additional mediation.
-@@ -2050,13 +2051,15 @@ static int param_set_debug(const char *val, const struct kernel_param *kp)
- 	return 0;
- }
- 
--static int param_get_audit(char *buffer, const struct kernel_param *kp)
-+static int param_get_audit(struct seq_buf *buffer,
-+			   const struct kernel_param *kp)
- {
- 	if (!apparmor_enabled)
- 		return -EINVAL;
- 	if (apparmor_initialized && !aa_current_policy_view_capable(NULL))
- 		return -EPERM;
--	return sysfs_emit(buffer, "%s\n", audit_mode_names[aa_g_audit]);
-+	seq_buf_printf(buffer, "%s\n", audit_mode_names[aa_g_audit]);
-+	return 0;
- }
- 
- static int param_set_audit(const char *val, const struct kernel_param *kp)
-@@ -2078,13 +2081,14 @@ static int param_set_audit(const char *val, const struct kernel_param *kp)
- 	return 0;
- }
- 
--static int param_get_mode(char *buffer, const struct kernel_param *kp)
-+static int param_get_mode(struct seq_buf *buffer, const struct kernel_param *kp)
- {
- 	if (!apparmor_enabled)
- 		return -EINVAL;
- 	if (apparmor_initialized && !aa_current_policy_view_capable(NULL))
- 		return -EPERM;
--	return sysfs_emit(buffer, "%s\n", aa_profile_mode_names[aa_g_profile_mode]);
-+	seq_buf_printf(buffer, "%s\n", aa_profile_mode_names[aa_g_profile_mode]);
-+	return 0;
- }
- 
- static int param_set_mode(const char *val, const struct kernel_param *kp)
--- 
-2.34.1
-
+Note that GRO also uses netif_receive_skb_list_internal()
 
