@@ -1,94 +1,68 @@
-Return-Path: <linuxppc-dev+bounces-21332-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21333-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5348ACD5BAC
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 May 2026 13:41:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 90327CD4F3D
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 May 2026 13:45:10 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gLqLm0RFDz2xl5;
-	Thu, 21 May 2026 23:41:20 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::82b" arc.chain=google.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779370879;
-	cv=pass; b=ZLjS5Ajsv9sWCTREqhTIIhAG+TFwD+7Uaf2JHtFJRvBTzneMLwJjB+N4mcbn+lTM5huIxLKI2cRwEaznifBgj7HAwnwDo4TTBr+0bcKiWnL+8DT2Jouy+cz8K6Bh9GEiB6YaWX9zxrdp5dNVLygfsHXuZtjT2WEwgD79wIMg6W5Ey6Zy1y9bNyWBufMM8heVVRcGKiNP+b+w9xGsRXlpHSqVTEx6VOVpTDf8KTXKlr7E5ErBusRmWonCdciYeyaNyCX7dvpK6PoNI6BfCXPV6K/unA3Tcb0Vko4/9+irHfdiWjOxsPrr5uq0mX0ZlVBPJUQcqP6w6S+B2K03eqIU8Q==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1779370879; c=relaxed/relaxed;
-	bh=Iztqdv46z3L/RfMJPUbTwKC4ovY74G3OQJ4DxuJSyZE=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=oRFIbJcEM6sm93CsU23OC/ONy9/mTRw1UQ/HAobU9aRnRZVV8ieWKZjKKthPk6e40IHbjiLlj6zDpWacuy1DHtldpkHA8VvpnyjxCIJe4zEh6TyFeErIYEr0Q9sByc7FM+CoDKvOUOX70xlm6oR7jPcd6ohQWu9f+mQXfSGQ/43glnkuZwSoFF/wUtWN/oujvtrU3DwlJIc/cKld6GR8/KcA6AwBlURjABnGBIA3lmldfRfvZ3Irob41CNM4eYc+DMxcrelfz40Ww5J3eGrHkmmb/xPcLj7AoiS9uJR5YKJgcP699h/DkZZ6zGxZfZ7k1mvb+wOJfvLzPKvny81BjQ==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=KOHfK6DW; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::82b; helo=mail-qt1-x82b.google.com; envelope-from=edumazet@google.com; receiver=lists.ozlabs.org) smtp.mailfrom=google.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gLqR91ytJz2xmX;
+	Thu, 21 May 2026 23:45:09 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::549"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779371109;
+	cv=none; b=f8qpCSLu43HPuvQuO05NytDEeJ/h5aJCbGMIeN4KMAcOHc02nW8PQ2j4unwL6HMn2kNVOBY8jPh9RVzVXri9CazXoLCH5a8oYM2XTBmMds8K28JSijcqAarxWpiYMfA5jWoyDuDq/iXmTwCjZ0wLEBKCV03ShuDAriYXohsKEKy1BkYOJiDWXLETHNahdWO64XiqYWm11AxXZkgTFKzlLZErhQ4UV6atCR6riprO7pOrjgd4sX016ADnHTpMNYFdMovgei4Pp4cFChDPiwF4zKfhgVOkFuzwcA7Pzjd12Yf20LyadNDv+I7ijkkztRz78d2epLl4D1VRXGWY3JhQog==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1779371109; c=relaxed/relaxed;
+	bh=Dnh9Qdh/Ek2SFmUD3YQQhAJ1lm8lFb5yTi3rkZyIV7s=;
+	h=Date:In-Reply-To:Mime-Version:References:Message-ID:Subject:From:
+	 To:Cc:Content-Type; b=SLyBac0xHyzM9yTT+mK0h+v82Qqp45Ovhn1ydYiVPYJXLytdy3k1hjg5vY09jAegZU8GpgfQdvfAI8b8gmku5OGcTyglMWv5jW/aD7uq5SlJOtaFxYW0ONnH+r03IoZupieXyuROV3/OhS/77avQkQfxXdilCA4Y2X5/8inAlp5YdlhxW7QwnduLf763Cp9Adl/skYM9nrasq6F4wkgVmYkyPJ8mzneEdOdHJR0Lr0jjMhiBVBvldZ8QbH/vCXYDpksr09Z+MJm+lx4MM09a8uZUh5dHG90c8CIsK6YKvI/tQMgXoQGJ0Zy9NdPs2j/4tlrRiJp7xa80807xycmfng==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=uVtflj2O; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::549; helo=mail-pg1-x549.google.com; envelope-from=3yawpagykda05rn0wpt11tyr.p1zyv07a22p-qr8yv565.1cyno5.14t@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=flex--seanjc.bounces.google.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=KOHfK6DW;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=uVtflj2O;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::82b; helo=mail-qt1-x82b.google.com; envelope-from=edumazet@google.com; receiver=lists.ozlabs.org)
-Received: from mail-qt1-x82b.google.com (mail-qt1-x82b.google.com [IPv6:2607:f8b0:4864:20::82b])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--seanjc.bounces.google.com (client-ip=2607:f8b0:4864:20::549; helo=mail-pg1-x549.google.com; envelope-from=3yawpagykda05rn0wpt11tyr.p1zyv07a22p-qr8yv565.1cyno5.14t@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org)
+Received: from mail-pg1-x549.google.com (mail-pg1-x549.google.com [IPv6:2607:f8b0:4864:20::549])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gLqLk38qzz2xYh
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 May 2026 23:41:17 +1000 (AEST)
-Received: by mail-qt1-x82b.google.com with SMTP id d75a77b69052e-50fb1ad3734so75170411cf.1
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 May 2026 06:41:17 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1779370875; cv=none;
-        d=google.com; s=arc-20240605;
-        b=Lvb24+lpH/6MjXV5cAbHCCx7QWtDq1xAkM3e/JGfpy5lbHKwOrDnZytWkju/P5CyV0
-         yLu/G3JZAiufpT868ghYr5o+ouY0RJ6I8FdNSO7VbaYpIJe0ut26KWbrCIHJ7wXJ9lrq
-         xjCKnW+HbS9zOtGU+7bmhsisFCTw8+TmwWDqElmsvduklz+WRa7UdHMhbNN50AQCwJGJ
-         q1sXuvuRW0Fm9kHsD/qJBXmMvjB3oPK6v3BnGfcrFfcR4fdJh6zVmfsY+PVROzvE3R22
-         SCsGKR19yBeAqT5xfx0LSoA11iKSb8UGFYeS8JT2s6NN2e3tyVbwbKR8QfH6gEqosWi9
-         SoMg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=Iztqdv46z3L/RfMJPUbTwKC4ovY74G3OQJ4DxuJSyZE=;
-        fh=lqQdvjh1VMdnDURa58aFj8P5O1XIAMqj4bxXSvmnJxc=;
-        b=QZd9YHEys9KfRVzK4YUh1lCfejxjvCagnGwPERGQ2iuARcSlpSj1v4VmIKhHTkAQYK
-         9oFO1VTIapF9YoURKbjp2IPkFhtpRnbBmmzv1STB9DEBOdNSJrqf3Y9tnxOnK9szaIcE
-         aQx7XXQmqXuqEKcdGLxaanBWsoRhhRO9N/RTnQjVlIprtqgrWfCbacc935mzN9/tAle9
-         GC8CpT5kSZjDbGelV0Y88CPI8hoMstXdIGd2QnJ0u1Q9XY93tb6gQ4lK4pfdjPDTLN2f
-         AFhxU7RUwvkncrLSjLZuXDsLlZZl5KRFhzfxrly6ex6T80z+Xz1vTMzLqN4ceM3eTmTL
-         /stQ==;
-        darn=lists.ozlabs.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gLqR81CHJz2xYh
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 May 2026 23:45:07 +1000 (AEST)
+Received: by mail-pg1-x549.google.com with SMTP id 41be03b00d2f7-c8271fb43d0so3444799a12.1
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 May 2026 06:45:07 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20251104; t=1779370875; x=1779975675; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=Iztqdv46z3L/RfMJPUbTwKC4ovY74G3OQJ4DxuJSyZE=;
-        b=KOHfK6DW7zoiEyoeLhkyH6f2yU1/ooIBDf1yMCZXfgxxpPeJdQ+3gv3p/5NQMsFPtI
-         yAA7+ZMa9I0t52fvwGDVKjN1aJ8acp5yosWFUKB2UqEaJVcTKO1WRKhx/qWHueObTwlz
-         t5FnyIOvU1O+T3F7yOwrGEo7t2yTEknl8a30HPx9LTO5Z8uVlyBg767TPMJ9iCeapp7j
-         vE9hzJA7oPirz+xJQEefRC+f6KEIem2c5gup4OE1Er8ds7Gm0ANMaGeiiySC8H1xwiSD
-         +8mz5+FvGFps5t1VaRHohP2nIcIrK11F4FXIAC51s4xsu79Ex2F5syOVJE1ahARutXAp
-         1u7Q==
+        d=google.com; s=20251104; t=1779371106; x=1779975906; darn=lists.ozlabs.org;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:from:to:cc:subject:date:message-id:reply-to;
+        bh=Dnh9Qdh/Ek2SFmUD3YQQhAJ1lm8lFb5yTi3rkZyIV7s=;
+        b=uVtflj2OwKUSt44IYxRYcy4ya5VNfiMP9mt/yI4Vrt69bRCfCQwkYOe5CoMCsJnuaa
+         Pserks1cvLCJgVndfcdG2YXJMz6wHCOJOpuJWEGdTnydRni9MqHeApJzWHKrs9weC9sJ
+         whEOV4BBg3abJ/pL9+FQig/ma+MjKT1oPuPtIU0lijA6HdxFJJZXh2En6GyCW5yvbScA
+         RP9JPmCo2rAqzklmDZd1Img1Oao2F6WvoK2uVb/uU4upPSS+H+wbasYtbVwVmHMJusEm
+         qXvcQChCvGqGnaHzBh/lHtTtgikn7aUDI5pabVK9PxcwxsSF49Y2SU7r31cDCdmb33Qa
+         KU1w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1779370875; x=1779975675;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=Iztqdv46z3L/RfMJPUbTwKC4ovY74G3OQJ4DxuJSyZE=;
-        b=ZYQX9Z1ccb0N9qv8jLqRIUJtCQWkh6mp1P9jgYExgB8wL/5/DJPgI77eTVBipMd69u
-         grkbZTabhpiTjyg0vugJRU0AjNDMH6hMvaf6PCac18t/u93UQZcy/zPhPq/TufUcDpoA
-         jmR+6ZWnh/SJZcAeeL2Q3xAUl2fVO5X8AofnkehfCSJ34K96Nr6N4FcAcfRgxjTmM5Mt
-         3JtWD1YnKvhcv0i3tS/LXV50F5cQwpWRzzoPm/aFTZtnB3T51185T0aa1lzklrNFFp/X
-         0IDtxm/id+JNMzskYGgyKNxTJbnNxdLHsL8A1XhV/dKmZo5U+mrjUqk8/CkTiFAN5+Cg
-         ytmQ==
-X-Forwarded-Encrypted: i=1; AFNElJ97A4EBboe6B64kJjJd/tkufJP5rQeSqZLFIMOh5VWBWg1onE6hZRlwlLdSKDAiyTApen2J8aRHTiDlcfU=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yz5tL1/kOusjWmzAGHtyP5Y07qfTWXL/MhpdmuFjwif0BrVkC+F
-	Jv31NQo3nmRanHXYo/isjfosejyLwy0C4iTwy5cf76tMYKZCuxUuaSiIup5l/4539WmNk1sgKzK
-	YlxGvnNflBtTXjz9vJRODQY88vvgYUb+gssqeHEr4
-X-Gm-Gg: Acq92OGpgwgkWgQRBwA0cYrbQBuEugd8geEvQ6Vt937uUKdjxM161p3+dexG/bxpztF
-	0wJkxq+Ur36cGYGHiU0KqMJbBuaxoOSY7USLIKKIPQaFJfmO42o43STX76mrLAS1W+QTpE0rqEE
-	gs40Kai+t5HEp4iDGD66O0Dr0HVwh2FrtptnL5Pvwm8/xScgf/3AzPzXD4qafEA4Ndc2VFOvv8V
-	CDsLcy2LI8laNNjCjadQJzecjZkLHzLyw+x94L3GAt5r8rSxxi8lGygE0GCpwCYGWAlbJG7xSOD
-	oppZzjGH6oLSl677o/QW6HJwWizs3+wRHEuqFvrOdVgIg+zaAjqIsOSERtbd74o239lnxiQVkTr
-	mo+ludUcd9OR+jq8H+Pkld+LogqZP04Lujo0yY18Lfl4UWattvm3haS8KNvsQfT5T
-X-Received: by 2002:a05:622a:5c89:b0:50d:6fd3:421 with SMTP id
- d75a77b69052e-516c5847b1emr35783761cf.6.1779370874163; Thu, 21 May 2026
- 06:41:14 -0700 (PDT)
+        d=1e100.net; s=20251104; t=1779371106; x=1779975906;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=Dnh9Qdh/Ek2SFmUD3YQQhAJ1lm8lFb5yTi3rkZyIV7s=;
+        b=onCimihfKpGNt5GdP10N5NWIFnsgSLIvntx5mlPcubY/2b5THiFxF8AhHr9ao9nLqH
+         HjXpZXm/+/hTuslaOjzEmaibco9JcE4vgkeu/6X0V4kl+9YgBZpbX28nTeaMSwFm4XDz
+         HT3nNA2n3wJW1nJLKes6KPWcQwnTEtJpjhVeaP6/yuq1sgVIqpjRiTZgxv9E67lxE1wK
+         N4SohrdyR3F9SYq8cp5aWq2Mh2/+KjdvY2RvmoxbLmYwqAUWkt7Q87WNK3D+kz8NJl7P
+         IapHvzcPQR4M+JqNKsMJoWlim/VsXAjXKKlAjTSPXlGmFnXCTRzxkE/r+mg67Gn7EZP9
+         Wmzg==
+X-Forwarded-Encrypted: i=1; AFNElJ9zzfmjgRkKSKDlBy5vR560m06p1uakJTw1Fb6qJuz11oQQjdUUoXhuHgfeLJeIBepG0E7EEQaMNB9Br9c=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YzRzw8LRTWxS9Jrs9V6K1+AN65Mbw6LUKuHYSn/21N2r/CqAh+6
+	o8Kbm0fveqx+aqLL6yHQkMve+nApu5kTvfB4O3ohWBrypNQHwDxJWXfTct9xxgXBAYJe23tnWCj
+	0xjcnwA==
+X-Received: from pgvm13.prod.google.com ([2002:a65:62cd:0:b0:c85:1159:ffbd])
+ (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a05:6a20:7491:b0:3a0:bc61:62e5
+ with SMTP id adf61e73a8af0-3b30883a17bmr3700528637.44.1779371104725; Thu, 21
+ May 2026 06:45:04 -0700 (PDT)
+Date: Thu, 21 May 2026 06:45:04 -0700
+In-Reply-To: <20260521133326.2465264-9-kees@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -101,45 +75,109 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-References: <20260517192856.3925-1-rosenp@gmail.com> <20260520165746.7ed10c7b@kernel.org>
- <CAKxU2N_vHyqZK8tBbYLo49iOUJSO56rgqbSdw3CnCUZjbs1qNw@mail.gmail.com>
-In-Reply-To: <CAKxU2N_vHyqZK8tBbYLo49iOUJSO56rgqbSdw3CnCUZjbs1qNw@mail.gmail.com>
-From: Eric Dumazet <edumazet@google.com>
-Date: Thu, 21 May 2026 06:41:03 -0700
-X-Gm-Features: AVHnY4KJHFfpbD1HQt-b9agKuVmI3qI3wyMZwjK6KWYSJA-YQqQ9wKOAjm-1zko
-Message-ID: <CANn89iK7i4u5nWxQCuURmSCJt8Sn+Q9x_ME8X+J0pF2_4OGuZg@mail.gmail.com>
-Subject: Re: [PATCH net-next] net: ucc_geth: Batch RX packets before stack handoff
-To: Rosen Penev <rosenp@gmail.com>
-Cc: Jakub Kicinski <kuba@kernel.org>, netdev@vger.kernel.org, 
-	Andrew Lunn <andrew+netdev@lunn.ch>, "David S. Miller" <davem@davemloft.net>, 
-	Paolo Abeni <pabeni@redhat.com>, 
-	"open list:FREESCALE QUICC ENGINE UCC ETHERNET DRIVER" <linuxppc-dev@lists.ozlabs.org>, open list <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Mime-Version: 1.0
+References: <20260521133315.work.845-kees@kernel.org> <20260521133326.2465264-9-kees@kernel.org>
+Message-ID: <ag8MYC6pOZvvYHMp@google.com>
+Subject: Re: [PATCH 09/11] treewide: Convert custom kernel_param_ops .get
+ callbacks to seq_buf via cocci
+From: Sean Christopherson <seanjc@google.com>
+To: Kees Cook <kees@kernel.org>
+Cc: Luis Chamberlain <mcgrof@kernel.org>, Pengpeng Hou <pengpeng@iscas.ac.cn>, 
+	Petr Pavlu <petr.pavlu@suse.com>, Richard Weinberger <richard@nod.at>, 
+	Anton Ivanov <anton.ivanov@cambridgegreys.com>, Johannes Berg <johannes@sipsolutions.net>, 
+	"Rafael J. Wysocki" <rafael@kernel.org>, Len Brown <lenb@kernel.org>, Corey Minyard <corey@minyard.net>, 
+	Gabriel Somlo <somlo@cmu.edu>, "Michael S. Tsirkin" <mst@redhat.com>, 
+	Jani Nikula <jani.nikula@linux.intel.com>, 
+	Joonas Lahtinen <joonas.lahtinen@linux.intel.com>, Rodrigo Vivi <rodrigo.vivi@intel.com>, 
+	Tvrtko Ursulin <tursulin@ursulin.net>, David Airlie <airlied@gmail.com>, 
+	Simona Vetter <simona@ffwll.ch>, Bart Van Assche <bvanassche@acm.org>, Jason Gunthorpe <jgg@ziepe.ca>, 
+	Leon Romanovsky <leon@kernel.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, 
+	Hans de Goede <hansg@kernel.org>, Mauro Carvalho Chehab <mchehab@kernel.org>, 
+	Bjorn Helgaas <bhelgaas@google.com>, Hannes Reinecke <hare@suse.de>, 
+	"James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>, 
+	"Martin K. Petersen" <martin.petersen@oracle.com>, Daniel Lezcano <daniel.lezcano@kernel.org>, 
+	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>, 
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby <jirislaby@kernel.org>, 
+	Alan Stern <stern@rowland.harvard.edu>, Jason Wang <jasowang@redhat.com>, 
+	Xuan Zhuo <xuanzhuo@linux.alibaba.com>, 
+	"Eugenio =?utf-8?B?UMOpcmV6?=" <eperezma@redhat.com>, Jason Baron <jbaron@akamai.com>, 
+	Jim Cromie <jim.cromie@gmail.com>, Tiwei Bie <tiwei.btw@antgroup.com>, 
+	Benjamin Berg <benjamin.berg@intel.com>, 
+	"Ilpo =?utf-8?B?SsOkcnZpbmVu?=" <ilpo.jarvinen@linux.intel.com>, 
+	"David E. Box" <david.e.box@linux.intel.com>, "Maciej W. Rozycki" <macro@orcam.me.uk>, 
+	Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Peter Zijlstra <peterz@infradead.org>, 
+	Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>, 
+	Paolo Bonzini <pbonzini@redhat.com>, Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>, 
+	Borislav Petkov <bp@alien8.de>, Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org, 
+	"H. Peter Anvin" <hpa@zytor.com>, Vinod Koul <vkoul@kernel.org>, Frank Li <Frank.Li@kernel.org>, 
+	Daniel Gomez <da.gomez@kernel.org>, Sami Tolvanen <samitolvanen@google.com>, 
+	Aaron Tomlin <atomlin@atomlin.com>, Alexander Potapenko <glider@google.com>, Marco Elver <elver@google.com>, 
+	Dmitry Vyukov <dvyukov@google.com>, Andrew Morton <akpm@linux-foundation.org>, 
+	John Johansen <john.johansen@canonical.com>, Paul Moore <paul@paul-moore.com>, 
+	James Morris <jmorris@namei.org>, "Serge E. Hallyn" <serge@hallyn.com>, 
+	Andy Shevchenko <andriy.shevchenko@linux.intel.com>, 
+	Georgia Garcia <georgia.garcia@canonical.com>, kvm@vger.kernel.org, 
+	dmaengine@vger.kernel.org, linux-modules@vger.kernel.org, 
+	kasan-dev@googlegroups.com, linux-mm@kvack.org, apparmor@lists.ubuntu.com, 
+	linux-security-module@vger.kernel.org, linux-um@lists.infradead.org, 
+	linux-acpi@vger.kernel.org, openipmi-developer@lists.sourceforge.net, 
+	qemu-devel@nongnu.org, intel-gfx@lists.freedesktop.org, 
+	dri-devel@lists.freedesktop.org, linux-rdma@vger.kernel.org, 
+	linux-media@vger.kernel.org, linux-pci@vger.kernel.org, 
+	linux-scsi@vger.kernel.org, linux-pm@vger.kernel.org, 
+	linuxppc-dev@lists.ozlabs.org, linux-serial@vger.kernel.org, 
+	linux-usb@vger.kernel.org, usb-storage@lists.one-eyed-alien.net, 
+	virtualization@lists.linux.dev, linux-kernel@vger.kernel.org, 
+	linux-arch@vger.kernel.org, netdev@vger.kernel.org, 
+	linux-fsdevel@vger.kernel.org, linux-hardening@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
 
-On Wed, May 20, 2026 at 5:39=E2=80=AFPM Rosen Penev <rosenp@gmail.com> wrot=
-e:
->
-> On Wed, May 20, 2026 at 4:57=E2=80=AFPM Jakub Kicinski <kuba@kernel.org> =
-wrote:
-> >
-> > On Sun, 17 May 2026 12:28:56 -0700 Rosen Penev wrote:
-> > > Collect received skbs on a local list during RX polling and pass the
-> > > completed batch to netif_receive_skb_list(). This lets the networking
-> > > stack process packets from a poll cycle in bulk instead of handing ea=
-ch
-> > > skb up individually.
-> >
-> > GRO should be even better.
-> GRO will result in slower routing performance because there is no
-> hardware checksum.
+On Thu, May 21, 2026, Kees Cook wrote:
+> diff --git a/arch/x86/kvm/vmx/vmx.c b/arch/x86/kvm/vmx/vmx.c
+> index 07f4c7209ac0..00317774a90b 100644
+> --- a/arch/x86/kvm/vmx/vmx.c
+> +++ b/arch/x86/kvm/vmx/vmx.c
+> @@ -368,12 +368,16 @@ static int vmentry_l1d_flush_set(const char *s, const struct kernel_param *kp)
+>  	return ret;
+>  }
+>  
+> -static int vmentry_l1d_flush_get(char *s, const struct kernel_param *kp)
+> +static int vmentry_l1d_flush_get(struct seq_buf *s,
+> +				 const struct kernel_param *kp)
+>  {
+> -	if (WARN_ON_ONCE(l1tf_vmx_mitigation >= ARRAY_SIZE(vmentry_l1d_param)))
+> -		return sysfs_emit(s, "???\n");
+> +	if (WARN_ON_ONCE(l1tf_vmx_mitigation >= ARRAY_SIZE(vmentry_l1d_param))) {
+> +		seq_buf_printf(s, "???\n");
+> +		return 0;
+> +	}
+>  
+> -	return sysfs_emit(s, "%s\n", vmentry_l1d_param[l1tf_vmx_mitigation].option);
+> +	seq_buf_printf(s, "%s\n", vmentry_l1d_param[l1tf_vmx_mitigation].option);
+> +	return 0;
 
-Then provide a knob or something, instead of trying to avoid GRO.
+For this one, can you manually change it to this?
 
-For end hosts (forwarding not enabled), checksum will need to be
-computed anyway.
-GRO should be faster for them.
+	if (WARN_ON_ONCE(l1tf_vmx_mitigation >= ARRAY_SIZE(vmentry_l1d_param)))
+		seq_buf_printf(s, "???\n");
+	else
+		seq_buf_printf(s, "%s\n", vmentry_l1d_param[l1tf_vmx_mitigation].option);
+	return 0;
 
-Note that GRO also uses netif_receive_skb_list_internal()
+>  }
+>  
+>  /*
+> @@ -459,9 +463,11 @@ static int vmentry_l1d_flush_set(const char *s, const struct kernel_param *kp)
+>  	pr_warn_once("Kernel compiled without mitigations, ignoring vmentry_l1d_flush\n");
+>  	return 0;
+>  }
+> -static int vmentry_l1d_flush_get(char *s, const struct kernel_param *kp)
+> +static int vmentry_l1d_flush_get(struct seq_buf *s,
+> +				 const struct kernel_param *kp)
+>  {
+> -	return sysfs_emit(s, "never\n");
+> +	seq_buf_printf(s, "never\n");
+> +	return 0;
+>  }
+>  #endif
 
