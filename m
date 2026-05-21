@@ -1,88 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-21282-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21283-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 89B0CCD4F3D
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 May 2026 06:49:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 85F3ACD343F
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 May 2026 07:32:07 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gLfBx6V3Xz3bp1;
-	Thu, 21 May 2026 16:48:57 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779346137;
-	cv=none; b=LQ4HLWrGF01mtsamsitfun0Sf1Bq8g7kbGOUuw86haJY+jTmd9pAFfLCAcURJdKnrc2WiLmbdchGTGLSOoqLDz8RsXK3KSZAOU2uXzqoPhxjK2Ee6+kdhLYKvD04pDk4FvGctJDv7cqUTf7lnWCGcaGI6wJKuWb1lb4e+lDX0FoFXSuraPovuaXtgqAI6xokJ3UmxNP/WYJlpdFOpJwJy3th5HRx2M5nwptZM3E3CFl+q5YPVQmtfPvgQ1QAYizt5/o2FmI8+aaSDOCr/8jwB0+J33FLGD2xaGbr8xbA73qFrFKKLOgWzjpeZVTLahfiabmS/+9VBOZ0ajg7VlQreA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gLg8k02fsz2xS2;
+	Thu, 21 May 2026 17:32:06 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779348725;
+	cv=none; b=DRTwk4TPKZ4hhfOJ0S12+ZpytyPzRLSsUUSxBtlmkbZci8RwU8Kzikn6EeLjefiIqyi/KXCkphxLI3RYEo/aB9uDv/aUOpka+gvQh7vJIL5qUMgCJl/MwYMe0kkaVcOQIvdEKCCkBObdK9LfXeKigmBXgslrJw8CQORfjT4Z2ZyuKeTg0zS4y+bfogttOdLAHn66ngQq3M3Aq7vRgRj1lpTJ/BnIYVClIo/O41XXT8SAKiRYR+qSz0Y+QzGGYNt2sx2ib/2uexYJvKK1YvU/yezgunhNTYEeRw1QUDrNPRiALIbmkvmP3ByXPjpTXlNIik5ihNT73r8R6z1ugfmIqw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1779346137; c=relaxed/relaxed;
-	bh=Nq5DzWgRtL4E1DjO2dFfdwfaryhi9dLpfVcJI5A/LOU=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=LFtY/l2gw2nHdso6fuGOOQaLJ84e//9GwqWKC77kJxR3aekExNgm8AckUgSHh+oBwWwUVCdo71swqMYFRQpUjeYTgwkXJdrpW4zogH7wW9pODnVVNL9dJnmZiyTwaSTE8AlsR5Z3LxCPr4T0Md/c2CATQFG3LXkQ2ch6FTCxVE1QH7xTnTNz3fwIMZ5HxqGNPvF9ZcwDMyrryt9Ry1TnNTwx2CjYjdwkbD6kfwCKOMkCZEYY4ET3JZDmd3yBfyEph9CIvHHOUESqP8m4Ts/CGUuMc1tLbx4Ysgk8f1JX8RRh3IGnusLLiFfMcAZgaTS2FP0Cp84SyBBmnwaLdCTnXA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=WyHTV82z; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sayalip@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	t=1779348725; c=relaxed/relaxed;
+	bh=AW/GCoe5m8FewCv0OMx2jYlfQuXa6110AAjFldL5Ooc=;
+	h=Content-Type:Mime-Version:Subject:From:In-Reply-To:Date:Cc:
+	 Message-Id:References:To; b=YsxgJGYTA3fxCuCPI+1n2am50uqxL/sJ7up2zheN5rJTbLtvVXaw77XsabnxDWjltPbsSSwc2rDaE/nLgr9hCWZwFQ24lkCqsiOcC3WAG91YowECxoXMDV2TxcQjUQ9pjYKg2kq7TReOhNJbTfXFy7FIl94TBII9ongW221DDorZsSMxJwVbpegPFs1Q9Y4knrOz1bDouGNTxI3TDOS9w2UcT7NySUv4EHbODkMaHArGGcj01oZ2cgiFy8GlDgI4beTiIuelgZFRqXTEbEFC7e8trOVkM9s3albQGVcyYPRI9974vENcGfh9b5QS4xR0aNgbfdwMPjh2fv35YSTFYQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=lR0p6kOZ; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=atrajeev@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=WyHTV82z;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=lR0p6kOZ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sayalip@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=atrajeev@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gLfBx187Tz3bnx
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 May 2026 16:48:56 +1000 (AEST)
-Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 64KIvSiV2082630;
-	Thu, 21 May 2026 06:48:41 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gLg8h0G7xz2xQD
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 May 2026 17:32:03 +1000 (AEST)
+Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 64KNlXCA3300127;
+	Thu, 21 May 2026 07:31:59 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=pp1; bh=Nq5DzWgRtL4E1DjO2
-	dFfdwfaryhi9dLpfVcJI5A/LOU=; b=WyHTV82z1KFFn4BB8fy5BaybULEjJQZZ1
-	wrf4oGmjLxBsjRBXCifazLl+LnLdbVX6ZLKMyYUjgjgNuNN+PnZLAgoaqU7Z7k/n
-	qgmAYiIov68p62Ysgd7keNQwPYPyZFWYXg2sBtWyE4D01VGgHoNCaH8xLE9m5CEZ
-	D4RXvKyKzgSyw1xM46a5bTmml5+Nf7yrGn6fXCvJ2rvFd/O2M1WDLEaZYqlDBs3g
-	Zn663AYQfT+/mhCSeVYta3eUBzVS2+QoHPxOGdooKrCU/BJr2g81t4annnXEBNI6
-	VB5WO/mC8uR3G3m9sUfjGmZoi0bi4TXYzsgX+416ZyFiEm+1dblqw==
-Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4e6h88mcey-1
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=AW/GCo
+	e5m8FewCv0OMx2jYlfQuXa6110AAjFldL5Ooc=; b=lR0p6kOZnakghIqjfAXhg6
+	/Mk34DBFkWRptwpZ1lb6kxYU3UxfpY/s8bSnIejUCelrayWFjNuMMsK+hnbFYhXy
+	ByW/kyfCTLMtdSkfL0F0qPsauuo3IfQt1Oeeoozxd9sNDifvu8sxE5vc6OnDSHVO
+	SG/+4WrNOkyrwj63NzRdoXKvPnm70qyS05QJPnAm9VDsYesDhLd3Ek4vQzNyWg7k
+	10hM86kEM/ypMLVr59tK9aJde+5okGmp2Qm5pWx5FySugSKUCFPOdxGgEUB20CGH
+	0BD14wiX+Pzl079LcSexP7qJ81Ka9eT585JdyuPlF8UtUWVfsp7ngSeVQSTRK3tg
+	==
+Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4e6h8mwnf6-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 21 May 2026 06:48:40 +0000 (GMT)
-Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma23.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 64L6dHiD009806;
-	Thu, 21 May 2026 06:48:39 GMT
-Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
-	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4e74dhtrr1-1
+	Thu, 21 May 2026 07:31:59 +0000 (GMT)
+Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma13.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 64L7O6AL019550;
+	Thu, 21 May 2026 07:31:58 GMT
+Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
+	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4e754gjrr0-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 21 May 2026 06:48:39 +0000 (GMT)
-Received: from smtpav01.fra02v.mail.ibm.com (smtpav01.fra02v.mail.ibm.com [10.20.54.100])
-	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 64L6mZKB24248794
+	Thu, 21 May 2026 07:31:58 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
+	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 64L7Vssr45482342
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 21 May 2026 06:48:36 GMT
-Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id D3F392004B;
-	Thu, 21 May 2026 06:48:35 +0000 (GMT)
-Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id A23D920040;
-	Thu, 21 May 2026 06:48:32 +0000 (GMT)
-Received: from li-3f69264c-2ce6-11b2-a85c-c3f414d24014.bl1-in.ibm.com (unknown [9.123.3.209])
-	by smtpav01.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Thu, 21 May 2026 06:48:32 +0000 (GMT)
-From: Sayali Patil <sayalip@linux.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>, Shuah Khan <shuah@kernel.org>,
-        linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-        linux-kselftest@vger.kernel.org,
-        Ritesh Harjani <ritesh.list@gmail.com>
-Cc: David Hildenbrand <david@kernel.org>, Zi Yan <ziy@nvidia.com>,
-        Michal Hocko <mhocko@kernel.org>, Oscar Salvador <osalvador@suse.de>,
-        Lorenzo Stoakes <lorenzo.stoakes@oracle.com>,
-        Dev Jain <dev.jain@arm.com>, Liam.Howlett@oracle.com,
-        linuxppc-dev@lists.ozlabs.org, Miaohe Lin <linmiaohe@huawei.com>,
-        Venkat Rao Bagalkote <venkat88@linux.ibm.com>,
-        Sayali Patil <sayalip@linux.ibm.com>
-Subject: [PATCH v7 13/13] selftests/mm: clarify alternate unmapping in compaction_test
-Date: Thu, 21 May 2026 12:17:53 +0530
-Message-ID: <da5e0a8d5152e54152c0d2f456aac2fac35af291.1779296493.git.sayalip@linux.ibm.com>
-X-Mailer: git-send-email 2.52.0
-In-Reply-To: <cover.1779296493.git.sayalip@linux.ibm.com>
-References: <cover.1779296493.git.sayalip@linux.ibm.com>
+	Thu, 21 May 2026 07:31:54 GMT
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id B4D0720043;
+	Thu, 21 May 2026 07:31:54 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 27CF220040;
+	Thu, 21 May 2026 07:31:52 +0000 (GMT)
+Received: from smtpclient.apple (unknown [9.123.10.78])
+	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTPS;
+	Thu, 21 May 2026 07:31:51 +0000 (GMT)
+Content-Type: text/plain;
+	charset=utf-8
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -95,60 +80,185 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Mime-Version: 1.0 (Mac OS X Mail 16.0 \(3864.300.41.1.7\))
+Subject: Re: [PATCH V5 1/2] powerpc tools perf: Initialize error code in
+ auxtrace_record_init function
+From: Athira Rajeev <atrajeev@linux.ibm.com>
+In-Reply-To: <afwtl1zodrSUpK7n@z2>
+Date: Thu, 21 May 2026 13:01:39 +0530
+Cc: acme@kernel.org, jolsa@kernel.org, adrian.hunter@intel.com,
+        mpetlan@redhat.com, tmricht@linux.ibm.com, maddy@linux.ibm.com,
+        irogers@google.com, linux-perf-users@vger.kernel.org,
+        linuxppc-dev@lists.ozlabs.org, hbathini@linux.vnet.ibm.com,
+        Tejas.Manhas1@ibm.com, Tanushree.Shah@ibm.com, shivani@linux.ibm.com
+Content-Transfer-Encoding: quoted-printable
+Message-Id: <1DDA8CC6-1804-4193-BA00-937F9781E6E3@linux.ibm.com>
+References: <20260504151321.12346-1-atrajeev@linux.ibm.com>
+ <afwtl1zodrSUpK7n@z2>
+To: Namhyung Kim <namhyung@kernel.org>,
+        Arnaldo Carvalho de Melo <acme@kernel.org>,
+        Ian Rogers <irogers@google.com>,
+        Adrian Hunter <adrian.hunter@intel.com>
+X-Mailer: Apple Mail (2.3864.300.41.1.7)
 X-TM-AS-GCONF: 00
 X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-ORIG-GUID: 1pF53W5BIdKYW_lxTRZ2eoamRBw1P_PD
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTIxMDA2MiBTYWx0ZWRfX06tcHDJDJrMG
- YTFU4A6E26qTAclF1E1qDWHIUoF9KXE8DEwb/pMYeYuOeVyLcCLybY1x5fGVUCSim145a1mlZD8
- GfjwxHYaqL2E4zu6APXvFl4rvBOA4ziF4hAXjNex9HYZzny/0JqUC1PI96EWVlUyuKLm31amdnI
- MLDCNdnJjFQHS0LKK48qb2Dd68yCdxjC+F4RQKg0JSs8vmfAv4i8vu8tAjmIQSKfFVEKgZt/eLp
- dBsWKBBBd9hmQJWBqYYvbLFiIIFWI+sIwZ446xwW4jiiBje7q3NqOsvfCRDAjbjZ8Nsn3EUT+v9
- WweWPONzdSF+DHLTri2ON7OuR2cTZM2OYVnLtvEAheoLqsxAGp93I3rwBgT/CwEjjEEEuEHL4eW
- C/NbNTJmy0naTFHV6RSZI0FYgik0rTGbFyzXyKpTWjNMbPZ3oL21U0f1bdxNmbr9FGAoZkH1xEw
- 35JkQVNyzF1ljtxr0CA==
-X-Proofpoint-GUID: ypZ8jMGmHbV48Chdn4zcz8L_7sFw0qly
-X-Authority-Analysis: v=2.4 cv=apyCzyZV c=1 sm=1 tr=0 ts=6a0eaac8 cx=c_pps
- a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
- a=NGcC8JguVDcA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=V8glGbnc2Ofi9Qvn3v5h:22 a=VnNF1IyMAAAA:8 a=THlBPJCoSQ4NST9nLWYA:9
+X-Proofpoint-GUID: KUJWTWSnrg3GiO07Bjn-oPRJnQ9WaA_r
+X-Authority-Analysis: v=2.4 cv=GYMnWwXL c=1 sm=1 tr=0 ts=6a0eb4ef cx=c_pps
+ a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
+ a=IkcTkHD0fZMA:10 a=NGcC8JguVDcA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=uAbxVGIbfxUO_5tXvNgY:22 a=VwQbUJbxAAAA:8
+ a=QyXUC8HyAAAA:8 a=VnNF1IyMAAAA:8 a=vpzdRXRLc0xae2Kgd0cA:9 a=QEXdDO2ut3YA:10
+X-Proofpoint-ORIG-GUID: TfoA6IYPIGHNZMloAqIqGjqDYb00_65-
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTIxMDA2OCBTYWx0ZWRfX1VyylWIeEK22
+ HCSmtRt73hQ5PS4K8qsMv5uWGeo6wMNkq7hcA1waBkiJ11IQjB2JXcrpwHDMJxO8HyR01sOs4v/
+ rEr0pCEDPKS39PTyR1YdBBfTpNqvb1qkjE86PNU8QgylXlsySSV3KUj1Tfomi9HOY3oDfL7BDMi
+ Is2/+QNou0KSj0Sx9m2mc9XM4K1gSNCv1qUdYDQU+gHGKrjeoTU1KXdU1hHyK0iBS2JdHvmFpTU
+ EXNi5P5ySNX5vbshOIYSBBSZUdeILmx0BfduYRIuQwFjzt0QxsVEUbclQDfvKsnfnygAhNLaz+q
+ qprcNBEUkJzXRT6LQpEJNnCHVgj2FnIi73LkTMNvvFrVsOrklCsxUW+Buwa619PlTAAbP7GQ4b/
+ 0AoW1sX/TCgiTg2xe9lYsgWcR1D9JHEA7FKd1BOnI5qQpi1SctNwWnf+4R2N1bmtDmjC3F7gg9E
+ 1l8Bj0FnOLniwLkUquw==
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
  definitions=2026-05-20_03,2026-05-18_01,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- malwarescore=0 lowpriorityscore=0 priorityscore=1501 impostorscore=0
- bulkscore=0 suspectscore=0 adultscore=0 spamscore=0 phishscore=0
- clxscore=1015 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2605130000
- definitions=main-2605210062
+ phishscore=0 malwarescore=0 lowpriorityscore=0 priorityscore=1501 bulkscore=0
+ adultscore=0 suspectscore=0 spamscore=0 clxscore=1015 impostorscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2605130000 definitions=main-2605210068
 
-Add a comment explaining that every other entry in the list is
-unmapped to intentionally create fragmentation with
-locked pages before invoking check_compaction().
 
-Fixes: bd67d5c15cc1 ("Test compaction of mlocked memory")
-Tested-by: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
-Signed-off-by: Sayali Patil <sayalip@linux.ibm.com>
----
- tools/testing/selftests/mm/compaction_test.c | 3 +++
- 1 file changed, 3 insertions(+)
 
-diff --git a/tools/testing/selftests/mm/compaction_test.c b/tools/testing/selftests/mm/compaction_test.c
-index de0633f9a7e5..5b582588e015 100644
---- a/tools/testing/selftests/mm/compaction_test.c
-+++ b/tools/testing/selftests/mm/compaction_test.c
-@@ -181,6 +181,9 @@ int main(int argc, char **argv)
- 		mem_fragmentable_MB -= MAP_SIZE_MB;
- 	}
- 
-+	/* Unmap every other entry in the list to create fragmentation with
-+	 * locked pages before invoking check_compaction().
-+	 */
- 	for (entry = list; entry != NULL; entry = entry->next) {
- 		munmap(entry->map, MAP_SIZE);
- 		if (!entry->next)
--- 
-2.52.0
+> On 7 May 2026, at 11:43=E2=80=AFAM, Namhyung Kim <namhyung@kernel.org> =
+wrote:
+>=20
+> On Mon, May 04, 2026 at 08:43:20PM +0530, Athira Rajeev wrote:
+>> perf trace record fails some cases in powerpc
+>>=20
+>> # ./perf test "perf trace record and replay"
+>> 128: perf trace record and replay                                    =
+: FAILED!
+>>=20
+>> # ./perf trace record sleep 1
+>> # echo $?
+>>   32
+>>=20
+>> This is happening because of non-zero err value from
+>> auxtrace_record__init() function.
+>>=20
+>> static int record__auxtrace_init(struct record *rec)
+>> {
+>>        int err;
+>>=20
+>>        if ((rec->opts.auxtrace_snapshot_opts || =
+rec->opts.auxtrace_sample_opts)
+>>            && record__threads_enabled(rec)) {
+>>                pr_err("AUX area tracing options are not available in =
+parallel streaming mode.\n");
+>>                return -EINVAL;
+>>        }
+>>=20
+>>        if (!rec->itr) {
+>>                rec->itr =3D auxtrace_record__init(rec->evlist, &err);
+>>                if (err)
+>>                        return err;
+>>        }
+>>=20
+>> Here "int err" is not initialised. The code expects "err" to be set
+>> from auxtrace_record__init() function.
+>>=20
+>> Update auxtrace_record__init() in arch/powerpc/util/auxtrace.c to =
+clear
+>> err value in the beginning.
+>>=20
+>> - Clear err value in beginning of function. Any fail later will
+>> set appropriate return code to err.
+>> - Even if we haven't found any event for auxtrace, perf record
+>> should continue for other events. NULL return
+>> will indicate that there is no auxtrace record initialized.
+>> - Not having "err" set here will affect monitoring of other events
+>> also because perf record will fail seeing random value in err.
+>>=20
+>> Set err to -EINVAL before invoking auxtrace_record__init() in
+>> builtin-record.c
+>>=20
+>> With the fix,
+>>=20
+>> # ./perf trace record sleep 1
+>> [ perf record: Woken up 2 times to write data ]
+>> [ perf record: Captured and wrote 0.033 MB perf.data (228 samples) ]
+>>=20
+>> Fixes: 1dbfaf94cf66 ("perf powerpc: Add basic CONFIG_AUXTRACE support =
+for VPA pmu on powerpc")
+>> Reviewed-by: Adrian Hunter <adrian.hunter@intel.com>
+>> Signed-off-by: Athira Rajeev <atrajeev@linux.ibm.com>
+>=20
+> For both patches,
+>=20
+> Acked-by: Namhyung Kim <namhyung@kernel.org>
+>=20
+> Thanks,
+> Namhyung
+>=20
+
+Hi,
+
+Can we please have this pulled in, if the patches looks fine ?
+
+Thanks
+Athira
+>> ---
+>> Changelog:
+>> v4:
+>> Added Reviewed-by from Adrian
+>>=20
+>> v1 -> v2
+>> Addressed review comment from Adrian:
+>> - Set err to -EINVAL before invoking auxtrace_record__init() in
+>>  builtin-record.c
+>> - Added kernel-doc to auxtrace_record__init() in =
+tools/perf/util/auxtrace.c
+>> Addressed review comment from Namhyung:
+>> - Added fixes tag
+>>=20
+>> tools/perf/arch/powerpc/util/auxtrace.c | 6 ++++++
+>> tools/perf/builtin-record.c             | 1 +
+>> 2 files changed, 7 insertions(+)
+>>=20
+>> diff --git a/tools/perf/arch/powerpc/util/auxtrace.c =
+b/tools/perf/arch/powerpc/util/auxtrace.c
+>> index e39deff6c857..4600a1661b4f 100644
+>> --- a/tools/perf/arch/powerpc/util/auxtrace.c
+>> +++ b/tools/perf/arch/powerpc/util/auxtrace.c
+>> @@ -71,6 +71,12 @@ struct auxtrace_record =
+*auxtrace_record__init(struct evlist *evlist,
+>> struct evsel *pos;
+>> int found =3D 0;
+>>=20
+>> + /*
+>> +  * Set err value to zero here. Any fail later
+>> +  * will set appropriate return code to err.
+>> +  */
+>> + *err =3D 0;
+>> +
+>> evlist__for_each_entry(evlist, pos) {
+>> if (strstarts(pos->name, "vpa_dtl")) {
+>> found =3D 1;
+>> diff --git a/tools/perf/builtin-record.c =
+b/tools/perf/builtin-record.c
+>> index 4a5eba498c02..708825747af5 100644
+>> --- a/tools/perf/builtin-record.c
+>> +++ b/tools/perf/builtin-record.c
+>> @@ -865,6 +865,7 @@ static int record__auxtrace_init(struct record =
+*rec)
+>> }
+>>=20
+>> if (!rec->itr) {
+>> + err =3D -EINVAL;
+>> rec->itr =3D auxtrace_record__init(rec->evlist, &err);
+>> if (err)
+>> return err;
+>> --=20
+>> 2.47.3
+
 
 
