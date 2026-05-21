@@ -1,141 +1,152 @@
-Return-Path: <linuxppc-dev+bounces-21319-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21320-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4320CCD5BAC
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 May 2026 12:55:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CF0CACD5BB9
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 May 2026 13:33:32 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gLpLN0qg0z2xmX;
-	Thu, 21 May 2026 22:55:56 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=fail smtp.remote-ip="2a01:111:f403:c200::5"
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779368156;
-	cv=fail; b=D534E2wAcTAZrmGq/TEj52bgpu0Kh8q327Z6hBYKIe61pwlsId8quRC8C0LLr0OAptYQ/2KQWCigN/0TwJCBuorqA/75h5dQ3B5aFPxcuTWru/IOgIJPttnWULfRExDUA4JXIUQuKfePNOWyFWDMA7WKD8U7PfAwcB8VA/tPI4UcO88B5wjie6OFJrjuuGL6i/X0ZytfgvhZESmpURhC3YTV8o3tzolN58uXzykDzFt30VyNDDKr7UKWNEjU7sV3MHJ0ljhr2cDHmrSiaNKCQsXLAHfHMXu20DvZRvp2Y59wncexwJY/ZNuqjc0EbvJM8ucL4uXoIWoLY+0JX/JX+w==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1779368156; c=relaxed/relaxed;
-	bh=S8hESN9zTKj5OoAbJc7/aaDhr686VhpDf6QH1mcWiok=;
-	h=From:To:CC:Subject:Date:Message-ID:References:In-Reply-To:
-	 Content-Type:MIME-Version; b=iaGbFaEG9cU1mdATsawNS3ufk9ODU87IGR8b0L6uwWmbzf6aZD2X0JUCam8FiiJYHDUCLFysz66+XwrgEh/sI1ng/f9FGpEhoYB0vTnv+CX0BGEYrika0S+0jXDPGZYh7I/BWoN0Olw6uufzAdRdCEuDwCt+LajVa204kf/FaBn3UM+XGwnXklQM0oK7iPFT0yyvbtgFsQKc2iaUwtocqh/4F2LNEgBanrgSAbZzKeyCSMfWQHxSn5N4MZCN+zdjm3yJFT1BVgG0uXTORVLyjlL+NTMOu14rNVkKZIq4IKigoFO628FzOsEaV2Jp/yinVEMkv8FMKGQTU94BB8IYNg==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=cs-soprasteria.com; dkim=pass (2048-bit key; unprotected) header.d=cs-soprasteria.com header.i=@cs-soprasteria.com header.a=rsa-sha256 header.s=selector1 header.b=JwmcatLi; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c200::5; helo=duzpr83cu001.outbound.protection.outlook.com; envelope-from=christophe.leroy2@cs-soprasteria.com; receiver=lists.ozlabs.org) smtp.mailfrom=cs-soprasteria.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=cs-soprasteria.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gLq9k6nLgz2y7r;
+	Thu, 21 May 2026 23:33:30 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779370410;
+	cv=none; b=N9OGW5qOJlkflmDhDGMu7zzJOT/9oA8swMswm8pL/PWgs/dFfepQYggRdvg+ldFD9P/v1jEJIiVui//mXMPgA0ByTX15p0ps7wyj9/j4AZ6niD8DwGLquAHZ6vESVlxfvl8GiBr7Ssmug1zJkuTDqPsI6eqDCYes9Mz0ELxhFujOs+fIaMiN2CATT8wC4zMu6PGwy/iyFhjF02Yq61tf+FeI+vwIreN/hJ5bTgaeJjDMrSAFkRXx+5T+uOTqaeTvHMdi9hqBxEnOVYxiJuBa+h98hfC/3rRvGVy06QEBxLEurGv+pbYyyKkoMbEYqeD1A8abj07vgqgc8967GyNMnw==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1779370410; c=relaxed/relaxed;
+	bh=JMvTXrLi2fecyuCzobJPBmjEJITlU0vYIW862WydbuI=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=kiPlGH/PxrJDTMus/j2asAeNbEnmqVspN3itMPUiJ+/CzTfTVcWsCP9V85Ij/J+ox7+OPjFd3WGVCZNeBaowdvDjmt6vWeh0pzQprrTVCbLXUegEPq1kvy5hy0t98BWpNbNYlLbtR9Tgjfzap2oYqw4/+NbpQGeZM19QsqZyO2UZVRjkXYRSGutKNPuR2Bs3GOhjiYmqIpYcIfT9nMbLp7mpc6ldpD+jLaUO6OIhF6M2+TK0Ue57Sups7GmfF3r7+oQRdrQEx0iz4mmNtfBYJZKWCOyaIf4oi3YU5KqBqmr1+jha1fHwr+0mJhglHksLUD08pNapf5VRtb2iSukHGg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ENRvP//N; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=kees@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=cs-soprasteria.com header.i=@cs-soprasteria.com header.a=rsa-sha256 header.s=selector1 header.b=JwmcatLi;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ENRvP//N;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=cs-soprasteria.com (client-ip=2a01:111:f403:c200::5; helo=duzpr83cu001.outbound.protection.outlook.com; envelope-from=christophe.leroy2@cs-soprasteria.com; receiver=lists.ozlabs.org)
-Received: from DUZPR83CU001.outbound.protection.outlook.com (mail-northeuropeazlp170120005.outbound.protection.outlook.com [IPv6:2a01:111:f403:c200::5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=kees@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gLpLK0BGRz2xYh
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 May 2026 22:55:52 +1000 (AEST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=DVkBSguqv6jXNadkm6E3D4BW1le4a5VIAreisoVRxO6mtcYreL2XjoINZ4Rtd74c83lqon9v4Ykgd5T6HrVA6Y6wLTLQdQpx7/291tRGGTzZBlFzCDwJw/MZ3FbXGwbzDbFdzQZ62hPfD/o9x39QfFfQhGTzMkQ/oPdGJ8E4qd7T4NMVsZVqtyGjatXiSvG0tozGYDE6tPb693rVyLLdsjeH0SrZe11RaqEY6gTkoMchGs/XeE5829jYEn0m8PuD4JINqho08Tiq8wcmJ4vSO51iVaCo7JldX8CMLxadDiW71EKse0+pZXm5N6ziVxME6Eot0VcyWtnsvIUt198GXg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=S8hESN9zTKj5OoAbJc7/aaDhr686VhpDf6QH1mcWiok=;
- b=cL863D+2l9/Yd4FPYFEtlx72PtUSFe3bu+khkz+uBxBwoRcZyWQsAAiZD7rBU8xZmMBIZ/kQIBCvrw1sJJwJiJtJUZvlzn6JNUU1NHWCOleiXaUDeGx6HFb1hIHVKfC/2HlKaoLRunoL7WE+xXLsXPqBRZV2+VDJSgH/M17bMWWVMY7Ax4tkmvX4UjNRGR5JPSzgo6VG1WISKWH4vzzTt1HoGyoGduk4xkGi3Sl/IK3H22/Y1zwwNcrOeHEaAoOjx0BG2JMxenO7mAUvQPJCEUpQsJcEEfpHtW0dP2TMOf0VxleXUdKmb1U2Qu+LUSMe28Ac/vEZtOQjzsHIM5pt/Q==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=cs-soprasteria.com; dmarc=pass action=none
- header.from=cs-soprasteria.com; dkim=pass header.d=cs-soprasteria.com;
- arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=cs-soprasteria.com;
- s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=S8hESN9zTKj5OoAbJc7/aaDhr686VhpDf6QH1mcWiok=;
- b=JwmcatLi38c/61OBzPToZiZ0+enRvntdcVhaE5g0olOVNlqoOJMJV1vzW/Sw8BhNWJ2r1gU/KahnI1uIAVyxWCf0JBNq+CnIUDD+OSuJCdImRsBLzKbV2WtsGbQYVnGfap2GmydZehErw6PieF5+jhS/FYSTw0437Y6q47zl7a7bn+QxussOx73i51o2zEA9npyHo513lOeKZqy8Pq3mzVpjoVDLulK0lQLzc5v7zHmGgfqanEjBVEv0yQDkoXuM33W5MPbeY/2HJN6ojkWny+a2MU0V5gRdSbsrHcAL0ZDMbNXyBhAqCqvTUP7MhOEjOp8fqh3JGqJ6jjrdBbGEfA==
-Received: from AS8PR07MB7960.eurprd07.prod.outlook.com (2603:10a6:20b:396::20)
- by AM0PR07MB6435.eurprd07.prod.outlook.com (2603:10a6:20b:159::11) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.48.17; Thu, 21 May
- 2026 12:55:23 +0000
-Received: from AS8PR07MB7960.eurprd07.prod.outlook.com
- ([fe80::2c24:b25f:5c9b:6db6]) by AS8PR07MB7960.eurprd07.prod.outlook.com
- ([fe80::2c24:b25f:5c9b:6db6%4]) with mapi id 15.21.0048.016; Thu, 21 May 2026
- 12:55:23 +0000
-From: LEROY Christophe <christophe.leroy2@cs-soprasteria.com>
-To: Jakub Kicinski <kuba@kernel.org>, Rosen Penev <rosenp@gmail.com>
-CC: "netdev@vger.kernel.org" <netdev@vger.kernel.org>, Andrew Lunn
-	<andrew+netdev@lunn.ch>, "David S. Miller" <davem@davemloft.net>, Eric
- Dumazet <edumazet@google.com>, Paolo Abeni <pabeni@redhat.com>, "open
- list:FREESCALE QUICC ENGINE UCC ETHERNET DRIVER"
-	<linuxppc-dev@lists.ozlabs.org>, open list <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH net-next] net: ucc_geth: Batch RX packets before stack
- handoff
-Thread-Topic: [PATCH net-next] net: ucc_geth: Batch RX packets before stack
- handoff
-Thread-Index: AQHc5jN8LukEtDwKuUGojDrPW/qNCbYXnIEAgAALt4CAAAGxgIAAy9sA
-Date: Thu, 21 May 2026 12:55:23 +0000
-Message-ID: <8bc3dc4e-dab7-4354-a594-95ebda75987a@cs-soprasteria.com>
-References: <20260517192856.3925-1-rosenp@gmail.com>
- <20260520165746.7ed10c7b@kernel.org>
- <CAKxU2N_vHyqZK8tBbYLo49iOUJSO56rgqbSdw3CnCUZjbs1qNw@mail.gmail.com>
- <20260520174545.69766438@kernel.org>
-In-Reply-To: <20260520174545.69766438@kernel.org>
-Accept-Language: fr-FR, en-US
-Content-Language: fr-FR
-X-MS-Has-Attach:
-X-MS-TNEF-Correlator:
-user-agent: Mozilla Thunderbird
-authentication-results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=cs-soprasteria.com;
-x-ms-publictraffictype: Email
-x-ms-traffictypediagnostic: AS8PR07MB7960:EE_|AM0PR07MB6435:EE_
-x-ms-office365-filtering-correlation-id: cf3e719c-6170-4a6c-f08b-08deb73838d7
-x-ms-exchange-senderadcheck: 1
-x-ms-exchange-antispam-relay: 0
-x-microsoft-antispam:
- BCL:0;ARA:13230040|1800799024|376014|366016|38070700021|56012099003|18002099003|22082099003|11063799006|4143699003;
-x-microsoft-antispam-message-info:
- lUpJLJOYxJa10qYA2gOLU75OfSOV0snMyZEuRDfcnu0sxI+0Uq5BbfU5D6TVr5H0zWfrNumJ5hHizzo+CkgDFIuchcUCdcEB9XEEcyFO+spFZVBM40DNaRU608oIEh4NxGi6IxSXlXPLKnF5aqp1pW7iL9FlCeTWhf/QVxEb1MpPj97PSoHgNo/wJtKvF9zeUz1TcEgdtxxskKDsXp4T3NtKZKCypv00kdnWDiRpK/uyxKPVL5H7RpdvMfW6uZ1DNImJqrFwCxoNaUn3K+kPTzofEnvhy4ZJe/JbXWf7yRYiUhDuRsaN/ZeVm/Z5EbmnLr/4WTL8AfChRKva01BXtEKZ7kg3nfxApugqG3Ej3UJ0Vvd9k7D5kHOVpPQPRlY0uZW61FCctSZaDCZ99a7nMKVX2y2QBKedy62bLUMr1M4AOkt9Pu3hn35LvpjeWdUbZr4xyz6d3j75RLLtdp50t6eHKDj3ipqL5JfYuCaC1DH8zLavsqe3PMjGhoE49rbcBqf8c3fHBIhC5osRA1b6OtaWuU1FU2oMhnYT6HzXmbgeyAY9UPxMDPNT8ntLbQPOFvJHEoEVV15mzKbh7rG0oWtNsNA7Na+I1/58IKIhAa4zOf1SM/gAwVJnAeywoJbgyr4HDLDYLPPoTIjYkrGoFrAv9z/OXV552PWfkbMirRrwwYup5p1H7XTmfPBw9+DPLxL799whhqOdPhNpNZQW0r+/P6sZ7fysWC+U3j5MiPrSSiqe+9KhN1n6wlPTwxmo
-x-forefront-antispam-report:
- CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AS8PR07MB7960.eurprd07.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(376014)(366016)(38070700021)(56012099003)(18002099003)(22082099003)(11063799006)(4143699003);DIR:OUT;SFP:1101;
-x-ms-exchange-antispam-messagedata-chunkcount: 1
-x-ms-exchange-antispam-messagedata-0:
- =?utf-8?B?S1Q2ZmhrWnpyVkVIelFiNU1tcnVrK0xmMzIvUFpQRUV3MWdGZnNlNlNQSXFj?=
- =?utf-8?B?NFdMZG85aUVVSW5nVlhYM3JNNUNBVlB4NERIODk5Mm1JdjhqaTR4OER3ay9R?=
- =?utf-8?B?WmJHZkNjeDFvdUh0UnFQemhuR1I5TGdPbFpYM1hhQ0dmN0pIR2h3WUhCRkls?=
- =?utf-8?B?MWtJY0VPSWU3Q0N6bUxabUJtdXUwazBUZUgwa0U4Nm1VNjRSYmI0SUFDRnYv?=
- =?utf-8?B?QmxsSEFtYXpTU0VPaW04VTBpL3RPRDV4Y0ZMZ0VtMjlaZXZBY1luK1h6UkQ3?=
- =?utf-8?B?OVFVSUNtb3R0RW5hS25sdzlaUEZSenYxUUw0Z3lUdEpGWkRvOHI2RlZ6VVZs?=
- =?utf-8?B?Rk15VDZlTmdnVEdwZUtZaXlKTDhBTE9mSnU0c016aURxTkxaRUo1UDdXRGlD?=
- =?utf-8?B?WnBkK2JiVnJtRWVuZW93WWE4WUFHRWNMS0tCamZEc2pxZmJYV0lac0syMzFU?=
- =?utf-8?B?UVYyRGlsSWkvNWxDVUpvV1JyMStrY1pEUmplYlY5ZkNtTlNlQlB5eFJDZUkx?=
- =?utf-8?B?Q3g2YmpDRktlVWRrOHBXbXVybUhqT2Z2bEhjeVp2TzhaaXE1aExHWlVzVHY2?=
- =?utf-8?B?ZERuaUI2bnhWa1JKRVBXUkJEeGp2SG5nZWRrbjlSNEltUjVBTElQS29UOTJK?=
- =?utf-8?B?eHM2aE54MjBqUXFHc2ZKYUVRUjNEYmFOekp0d1Q4aGFaSmt2b0lxcWJxSXBT?=
- =?utf-8?B?ZEgxZDJHUU1IeDVBdmUwQjBhbDJFbzlxbHJJK0VscEY0bFh5cXZ3bGZMNHp6?=
- =?utf-8?B?SUdiQmRsdjdDMDc3QjFEZDQza3FjRFBvSTBUSEFSQXo2Mzhodi91cW90cmxE?=
- =?utf-8?B?Sk9XNGhIMlE3aXBLVFFMOXZidVdUMHVNR250VVo5UGVZZjNyV1pRSFFYckFD?=
- =?utf-8?B?K003bURHRVhEQ0FaQ3JIaDBHci81RE1Pd2J2OVhaT0tRa2FtRDJOTW1oWnJp?=
- =?utf-8?B?M2Y4TUk0eXoxWGhtTFNmaDFCOTgrSVk4Q2dWOTN2VFJ0cCt6Y0VwUEtTSWhE?=
- =?utf-8?B?SkdGcy9DT0RJU1RnN1JjS0syKzc3MGc1TktwQzZkUHo0eUlGRkZDREdHOW5N?=
- =?utf-8?B?bHlYMmR3ejRjVlVUbjFDZE91QnFjaHJhM3VWa05zZVk2Z2xiZGVlREZiMTlo?=
- =?utf-8?B?aFRzMTNXYnJHTWJPMkd2dHVzRFJvOTZmTnVwUng1RXpOa3EveGtWUG10QS9P?=
- =?utf-8?B?ZjZRMUpFVHdIemlLWENoY0dhSGJmRXlrbFJnb0JTV3MrRU9UWk43K0g5eEMv?=
- =?utf-8?B?eC9Jck95eko4QkhPUEpqUXcyeTQ0bGxYem56Y2FYN2tscWVKSmRWclZ4M0c5?=
- =?utf-8?B?d092c1VUdzcvMkRYNXUvdmkwNHZLb0VxekhaUGJtRFRsL0xqVTFtQUdab25a?=
- =?utf-8?B?RHk0R3JOWXIzUVJYM1d5ZUxLVjBMdlpGNHk5UG9zUGJtTXpPWmdzeldUOHNu?=
- =?utf-8?B?Z0hhQ2pvVUpoN1BpQWNRUGFzRVdsUnNNTHJFZkgrcW5pa1dLTlErNTFYMHQw?=
- =?utf-8?B?NnRXSndrcVV1UVVuWCtabXRnZ0o5a0RLVjNZaG5JMHdEWXlkMmRxQmlvRXhJ?=
- =?utf-8?B?S3pKQWoybFIwTnhjWXpCRDBWamJTM3lXNmFSSERQandpY3BHMVJVRE9CeFJw?=
- =?utf-8?B?cmpVQ3FGczI4NFlIdEF0aXltbHNQeTY2aWdiSVR6b3RjazE4QnliTGUxc2Zy?=
- =?utf-8?B?MDZRU3hnSzkwczNvdmI5a3dFL2hQMkY0SDBUVjIvNVNlTGpTWGE5VExBSkV1?=
- =?utf-8?B?b0toaGFIRlZKR3pKSUVqRlFEMzhuNDM1V2kvNFhocVNuRzZlUzY2aHR0RTR3?=
- =?utf-8?B?YmhvejJJa3doc3pNdWp0bldFNzdkSEV2L0xKaW1ocEpJejNtQjlJQ0t3SVBF?=
- =?utf-8?B?QzZ2Rmx1b3V4WFNkVyt6VGN0M1hsaUlWUmZvNm10T0UvSVhLd2xVRDc3Q3Vm?=
- =?utf-8?B?OWFTY2c2OVBuRjVlRHM3VnpybmNPZE9yU09MZjJUMTVUeTEvSnpzN2VNVk1r?=
- =?utf-8?B?ZWdwM1JaZEFPeTdudWlGR2IwKytLUElvV1ZTbWlsSUI5SWdXM0lWZG55VUg0?=
- =?utf-8?B?VEtRN2g0Rm9NbDIrb3ZiNEV3aFJNbFJGZ3NsWEdBeTBXYUNQclhxa0ZYVW9y?=
- =?utf-8?B?dHIvUkE5Z3g5SXVpamxldlBmRWg3NWt3aXcxOTJMNzZ6ajlHNG4rbEFQeVFF?=
- =?utf-8?B?R3RNRHEvcVN5R0doNUNLM2Vtem96cnNiSUNEZ1FoTFAwUStpeWxja1hPY2sr?=
- =?utf-8?B?VTc5dHo1aHFGOW9CM0pVV3d2VDZha2RrMTJ5ZWxKei94eEJOakJjZlNnS3lq?=
- =?utf-8?B?S0VRQVRDWUJWN2M5Yk1ySjJ2bzF5VnZqQVdZRCt5L1pHREZBWGFIZzkrbWtr?=
- =?utf-8?Q?3i8xmQ4CD19lxv5Y=3D?=
-Content-Type: text/plain; charset="utf-8"
-Content-ID: <340CFF7948650141839EE5DFFB2432D5@eurprd07.prod.outlook.com>
-Content-Transfer-Encoding: base64
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gLq9j1lPkz2xYh
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 May 2026 23:33:29 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id 9E93660210;
+	Thu, 21 May 2026 13:33:26 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 52B451F000E9;
+	Thu, 21 May 2026 13:33:26 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1779370406;
+	bh=JMvTXrLi2fecyuCzobJPBmjEJITlU0vYIW862WydbuI=;
+	h=From:To:Cc:Subject:Date;
+	b=ENRvP//NxlPse9MxCJOFh1AogZslAel87SB2mSCIhsf3jItcOS+woGIBwiFJXxxJO
+	 /vrcLfGb5f9Zgybo+8/jwPpcfxzDdtk9qobrtYv1Jx7qF2CaHOv9To+pMFVf+CxBaj
+	 Txk/IJPdMMNkgGbRiVQjeh8OyeTtBQ2jV3/sTZSlJcvRZB5VWyLoc9rDPU3aPLI4HL
+	 h0jOm1f2w6p8YOUlM5pSaTCh9uIPDhngu0K2kHqivFsRg/751UQV/kKlDAKhtjc0hL
+	 ruCH8xG0ElU6V7TuBi+cEWySHRlk4t3CmGbCJy8V2gQGUgE/wtg5mB81jG8Jj8LiQq
+	 dMkB09LzsXQtw==
+From: Kees Cook <kees@kernel.org>
+To: Luis Chamberlain <mcgrof@kernel.org>
+Cc: Kees Cook <kees@kernel.org>,
+	Pengpeng Hou <pengpeng@iscas.ac.cn>,
+	Petr Pavlu <petr.pavlu@suse.com>,
+	Richard Weinberger <richard@nod.at>,
+	Anton Ivanov <anton.ivanov@cambridgegreys.com>,
+	Johannes Berg <johannes@sipsolutions.net>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Len Brown <lenb@kernel.org>,
+	Corey Minyard <corey@minyard.net>,
+	Gabriel Somlo <somlo@cmu.edu>,
+	"Michael S. Tsirkin" <mst@redhat.com>,
+	Jani Nikula <jani.nikula@linux.intel.com>,
+	Joonas Lahtinen <joonas.lahtinen@linux.intel.com>,
+	Rodrigo Vivi <rodrigo.vivi@intel.com>,
+	Tvrtko Ursulin <tursulin@ursulin.net>,
+	David Airlie <airlied@gmail.com>,
+	Simona Vetter <simona@ffwll.ch>,
+	Bart Van Assche <bvanassche@acm.org>,
+	Jason Gunthorpe <jgg@ziepe.ca>,
+	Leon Romanovsky <leon@kernel.org>,
+	Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
+	Hans de Goede <hansg@kernel.org>,
+	Mauro Carvalho Chehab <mchehab@kernel.org>,
+	Bjorn Helgaas <bhelgaas@google.com>,
+	Hannes Reinecke <hare@suse.de>,
+	"James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
+	"Martin K. Petersen" <martin.petersen@oracle.com>,
+	Daniel Lezcano <daniel.lezcano@kernel.org>,
+	Zhang Rui <rui.zhang@intel.com>,
+	Lukasz Luba <lukasz.luba@arm.com>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Jiri Slaby <jirislaby@kernel.org>,
+	Alan Stern <stern@rowland.harvard.edu>,
+	Jason Wang <jasowang@redhat.com>,
+	Xuan Zhuo <xuanzhuo@linux.alibaba.com>,
+	=?UTF-8?q?Eugenio=20P=C3=A9rez?= <eperezma@redhat.com>,
+	Jason Baron <jbaron@akamai.com>,
+	Jim Cromie <jim.cromie@gmail.com>,
+	Tiwei Bie <tiwei.btw@antgroup.com>,
+	Benjamin Berg <benjamin.berg@intel.com>,
+	=?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>,
+	"David E. Box" <david.e.box@linux.intel.com>,
+	"Maciej W. Rozycki" <macro@orcam.me.uk>,
+	Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+	Peter Zijlstra <peterz@infradead.org>,
+	Heiko Carstens <hca@linux.ibm.com>,
+	Vasily Gorbik <gor@linux.ibm.com>,
+	Sean Christopherson <seanjc@google.com>,
+	Paolo Bonzini <pbonzini@redhat.com>,
+	Thomas Gleixner <tglx@kernel.org>,
+	Ingo Molnar <mingo@redhat.com>,
+	Borislav Petkov <bp@alien8.de>,
+	Dave Hansen <dave.hansen@linux.intel.com>,
+	x86@kernel.org,
+	"H. Peter Anvin" <hpa@zytor.com>,
+	Vinod Koul <vkoul@kernel.org>,
+	Frank Li <Frank.Li@kernel.org>,
+	Daniel Gomez <da.gomez@kernel.org>,
+	Sami Tolvanen <samitolvanen@google.com>,
+	Aaron Tomlin <atomlin@atomlin.com>,
+	Alexander Potapenko <glider@google.com>,
+	Marco Elver <elver@google.com>,
+	Dmitry Vyukov <dvyukov@google.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	John Johansen <john.johansen@canonical.com>,
+	Paul Moore <paul@paul-moore.com>,
+	James Morris <jmorris@namei.org>,
+	"Serge E. Hallyn" <serge@hallyn.com>,
+	Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+	Georgia Garcia <georgia.garcia@canonical.com>,
+	kvm@vger.kernel.org,
+	dmaengine@vger.kernel.org,
+	linux-modules@vger.kernel.org,
+	kasan-dev@googlegroups.com,
+	linux-mm@kvack.org,
+	apparmor@lists.ubuntu.com,
+	linux-security-module@vger.kernel.org,
+	linux-um@lists.infradead.org,
+	linux-acpi@vger.kernel.org,
+	openipmi-developer@lists.sourceforge.net,
+	qemu-devel@nongnu.org,
+	intel-gfx@lists.freedesktop.org,
+	dri-devel@lists.freedesktop.org,
+	linux-rdma@vger.kernel.org,
+	linux-media@vger.kernel.org,
+	linux-pci@vger.kernel.org,
+	linux-scsi@vger.kernel.org,
+	linux-pm@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-serial@vger.kernel.org,
+	linux-usb@vger.kernel.org,
+	usb-storage@lists.one-eyed-alien.net,
+	virtualization@lists.linux.dev,
+	linux-kernel@vger.kernel.org,
+	linux-arch@vger.kernel.org,
+	netdev@vger.kernel.org,
+	linux-fsdevel@vger.kernel.org,
+	linux-hardening@vger.kernel.org
+Subject: [PATCH 00/11] Convert moduleparams to seq_buf
+Date: Thu, 21 May 2026 06:33:13 -0700
+Message-Id: <20260521133315.work.845-kees@kernel.org>
+X-Mailer: git-send-email 2.34.1
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -149,52 +160,167 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-OriginatorOrg: cs-soprasteria.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-AuthSource: AS8PR07MB7960.eurprd07.prod.outlook.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: cf3e719c-6170-4a6c-f08b-08deb73838d7
-X-MS-Exchange-CrossTenant-originalarrivaltime: 21 May 2026 12:55:23.2424
- (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 8b87af7d-8647-4dc7-8df4-5f69a2011bb5
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: tDOXYHoKQdMBbAQ/8rk/IJ/pc/ngBlJ7AvHqJdkpk43kumYnK1KApR4w5Umc7oYnuiubY+gYUDmnN19ee46F4wSyfoQv6Sj+PZlJP+MvD850/FVYzVn9EQ1LCrSMs5UN
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: AM0PR07MB6435
-X-MS-Exchange-CrossPremises-AuthAs: Internal
-X-MS-Exchange-CrossPremises-AuthMechanism: 04
-X-MS-Exchange-CrossPremises-AuthSource: AS8PR07MB7960.eurprd07.prod.outlook.com
-X-MS-Exchange-CrossPremises-TransportTrafficType: Email
-X-MS-Exchange-CrossPremises-SCL: 1
-X-MS-Exchange-CrossPremises-messagesource: StoreDriver
-X-MS-Exchange-CrossPremises-BCC:
-X-MS-Exchange-CrossPremises-originalclientipaddress: 93.17.236.2
-X-MS-Exchange-CrossPremises-transporttraffictype: Email
-X-MS-Exchange-CrossPremises-antispam-scancontext: DIR:Originating;SFV:NSPM;SKIP:0;
-X-MS-Exchange-CrossPremises-processed-by-journaling: Journal Agent
-X-OrganizationHeadersPreserved: AM0PR07MB6435.eurprd07.prod.outlook.com
+X-Developer-Signature: v=1; a=openpgp-sha256; l=8383; i=kees@kernel.org; h=from:subject:message-id; bh=iRiRSOifqAhDEW+rM5ucutf2vqbqOCl0n39wA2pC2nE=; b=owGbwMvMwCVmps19z/KJym7G02pJDFn8nPP5NjJqfrXdrfdzgRzzhL0cEUvVFLTFyz0Emuo2S cuk+1zsKGVhEONikBVTZAmyc49z8XjbHu4+VxFmDisTyBAGLk4BmMjpjYwMW1sezs9aJ6S4pvfM 9cD7+tJ32F5enlDXEpZXkNZ/g4mVnZFh3zrv5UmSl4OP8839kFvnc/3g3qNPdE9ob/yzv04h4/U XTgA=
+X-Developer-Key: i=kees@kernel.org; a=openpgp; fpr=A5C3F68F229DD60F723E6E138972F4DFDC6DC026
+Content-Transfer-Encoding: 8bit
 
-SGkgSmFrdWIsDQoNCkxlIDIxLzA1LzIwMjYgw6AgMDI6NDUsIEpha3ViIEtpY2luc2tpIGEgw6lj
-cml0wqA6DQo+IE9uIFdlZCwgMjAgTWF5IDIwMjYgMTc6Mzk6NDEgLTA3MDAgUm9zZW4gUGVuZXYg
-d3JvdGU6DQo+Pj4gT24gU3VuLCAxNyBNYXkgMjAyNiAxMjoyODo1NiAtMDcwMCBSb3NlbiBQZW5l
-diB3cm90ZToNCj4+Pj4gQ29sbGVjdCByZWNlaXZlZCBza2JzIG9uIGEgbG9jYWwgbGlzdCBkdXJp
-bmcgUlggcG9sbGluZyBhbmQgcGFzcyB0aGUNCj4+Pj4gY29tcGxldGVkIGJhdGNoIHRvIG5ldGlm
-X3JlY2VpdmVfc2tiX2xpc3QoKS4gVGhpcyBsZXRzIHRoZSBuZXR3b3JraW5nDQo+Pj4+IHN0YWNr
-IHByb2Nlc3MgcGFja2V0cyBmcm9tIGEgcG9sbCBjeWNsZSBpbiBidWxrIGluc3RlYWQgb2YgaGFu
-ZGluZyBlYWNoDQo+Pj4+IHNrYiB1cCBpbmRpdmlkdWFsbHkuDQo+Pj4NCj4+PiBHUk8gc2hvdWxk
-IGJlIGV2ZW4gYmV0dGVyLg0KPj4gR1JPIHdpbGwgcmVzdWx0IGluIHNsb3dlciByb3V0aW5nIHBl
-cmZvcm1hbmNlIGJlY2F1c2UgdGhlcmUgaXMgbm8NCj4+IGhhcmR3YXJlIGNoZWNrc3VtLg0KPiAN
-Cj4gTWVudGlvbiB0aGlzIGluIHRoZSBjb21taXQgbWVzc2FnZSB0b28uDQo+IE5ldHdvcmsgYWRh
-cHRlcnMgd2l0aG91dCBjaGVja3N1bSBvZmZsb2FkIGFyZSBwcmV0dHkgcmFyZSB0aGVzZSBkYXlz
-Lg0KPiBTcGVha2luZyBvZiBiZWluZyBvbGQsIGRvIHlvdSBrbm93IGlmIHRoaXMgZHJpdmVyIGlz
-IHVzZWQgaW4gcHJhY3RpY2U/DQo+IE1heWJlIHdlIGNhbiBkZWxldGUgaXQuDQo+IA0KDQpUaGF0
-J3Mgd2F5IHRvbyBlYXJseSB0byByZW1vdmUgdGhhdCBkcml2ZXIuDQoNClVDQyBpcyB3aGF0IHBy
-b3ZpZGVzIEV0aGVybmV0IGNvbm5lY3Rpdml0eSBpbiB0aGUgcG93ZXJwYyBNUEM4M3h4IENQVSAN
-CmZhbWlseS4gVGhpcyBmYW1pbHkgaGFzIGp1c3QgYmVlbiBkZWNsYXJlZCBFbmQgT2YgTGlmZSBi
-eSBKYW51YXJ5IHRoaXMgDQp5ZWFyIHdpdGggYSBMYXN0IFRpbWUgQnV5IERhdGUgMzAgSnVsIDIw
-MjYgYW5kIExhc3QgVGltZSBEZWxpdmVyeSBEYXRlIA0KYnkgMzAgQXByIDIwMjcuIFdlIGhhdmUg
-dGhhdCBDUFUgb24gaHVuZHJlZHMgb2YgYm9hcmRzIHNwcmVhZCBhbGwgb3ZlciANCkV1cm9wZSBh
-bmQgaGF2ZSB0byBtYWludGFpbiB0aG9zZSBzeXN0ZW1zIGZvciB0aGUgbmV4dCAxMCB0byAxNSB5
-ZWFycyBpZiANCm5vdCBldmVuIG1vcmUuDQoNClNvIHdlIGNhbiBtYXliZSByZWNvbnNpZGVyIHJl
-bW92aW5nIHRoYXQgZHJpdmVyIGJ5IDIwNDAgYnV0IHVubGlrZWx5IGJlZm9yZS4NCg0KQ2hyaXN0
-b3BoZQ0K
+Hi,
+
+I tried to trim the CC list here, but it's still pretty huge...
+
+We've had a long-standing issue with "write to a string pointer" callbacks
+that don't bounds check the destination (and for which the bounds is
+also not part of the callback prototype, even if it is "known" to be
+PAGE_SIZE, which sysfs_emit() depends on). Both moduleparams and sysfs
+use this pattern. As a first step, and to test the migration method,
+migrate moduleparams first.
+
+There are 2 "mechanical" treewide patches that are handled by Coccinelle:
+- treewide: Convert struct kernel_param_ops initializers to DEFINE_KERNEL_PARAM_OPS
+- treewide: Convert custom kernel_param_ops .get callbacks to seq_buf via cocci
+
+The last treewide patch is manual, and may need to be broken up into
+per-subsystem patches, though I'd prefer to avoid this, as it would
+extend the migration from 1 relase to at least 2 releases. (1 to
+release the migration infrastructure, then 1 release to collect all the
+subsystem changes, and possibly 1 more release to remove the migration
+infrastructure.)
+
+Thoughts, questions?
+
+-Kees
+
+Kees Cook (10):
+  panic: Replace panic_print_get() with generic helper
+  moduleparam: Add DEFINE_KERNEL_PARAM_OPS macro family
+  treewide: Convert struct kernel_param_ops initializers to
+    DEFINE_KERNEL_PARAM_OPS
+  moduleparam: Rename .get field to .get_str
+  moduleparam: Add seq_buf-based .get callback alongside .get_str
+  moduleparam: Route DEFINE_KERNEL_PARAM_OPS get pointer via _Generic
+  params: Convert generic kernel_param_ops .get helpers to seq_buf
+  treewide: Convert custom kernel_param_ops .get callbacks to seq_buf
+    via cocci
+  treewide: Manually convert custom kernel_param_ops .get callbacks
+  moduleparam: Drop legacy kernel_param_ops .get_str field and dispatch
+    logic
+
+Pengpeng Hou (1):
+  params: bound array element output to the caller's page buffer
+
+ include/linux/dynamic_debug.h                 |   8 +-
+ include/linux/moduleparam.h                   |  65 +++++++---
+ security/apparmor/include/lib.h               |   3 +-
+ mm/kfence/core.c                              |  15 ++-
+ arch/powerpc/kvm/book3s_hv.c                  |   5 +-
+ arch/s390/kernel/perf_cpum_sf.c               |  12 +-
+ arch/um/drivers/vfio_kern.c                   |   9 +-
+ arch/um/drivers/virtio_uml.c                  |  18 +--
+ arch/x86/kernel/msr.c                         |  11 +-
+ arch/x86/kvm/mmu/mmu.c                        |  28 ++--
+ arch/x86/kvm/svm/avic.c                       |  14 +-
+ arch/x86/kvm/vmx/vmx.c                        |  24 ++--
+ arch/x86/platform/uv/uv_nmi.c                 |  24 ++--
+ block/disk-events.c                           |   6 +-
+ drivers/acpi/button.c                         |  19 ++-
+ drivers/acpi/ec.c                             |  14 +-
+ drivers/acpi/sysfs.c                          | 114 ++++++++--------
+ drivers/block/loop.c                          |  12 +-
+ drivers/block/null_blk/main.c                 |  12 +-
+ drivers/block/rnbd/rnbd-srv.c                 |   6 +-
+ drivers/block/ublk_drv.c                      |  12 +-
+ drivers/char/ipmi/ipmi_msghandler.c           |  12 +-
+ drivers/char/ipmi/ipmi_watchdog.c             |  50 +++----
+ drivers/crypto/hisilicon/hpre/hpre_main.c     |  16 +--
+ drivers/crypto/hisilicon/sec2/sec_main.c      |  23 +---
+ drivers/crypto/hisilicon/zip/zip_crypto.c     |   5 +-
+ drivers/crypto/hisilicon/zip/zip_main.c       |  21 +--
+ drivers/dma/dmatest.c                         |  34 ++---
+ drivers/edac/i10nm_base.c                     |   6 +-
+ drivers/firmware/efi/efi-pstore.c             |   6 +-
+ drivers/firmware/qcom/qcom_scm.c              |  18 +--
+ drivers/firmware/qemu_fw_cfg.c                |  40 +++---
+ drivers/gpu/drm/drm_panic.c                   |  13 +-
+ drivers/gpu/drm/i915/i915_mitigations.c       |  31 ++---
+ drivers/gpu/drm/imagination/pvr_fw_trace.c    |   6 +-
+ drivers/hid/hid-cougar.c                      |   6 +-
+ drivers/hid/hid-steam.c                       |   6 +-
+ drivers/infiniband/hw/hfi1/driver.c           |  12 +-
+ drivers/infiniband/ulp/iser/iscsi_iser.c      |   6 +-
+ drivers/infiniband/ulp/isert/ib_isert.c       |   6 +-
+ drivers/infiniband/ulp/srp/ib_srp.c           |  12 +-
+ drivers/infiniband/ulp/srpt/ib_srpt.c         |   5 +-
+ drivers/input/misc/ati_remote2.c              |  23 ++--
+ drivers/input/mouse/psmouse-base.c            |  15 ++-
+ drivers/md/md.c                               |   5 +-
+ drivers/media/pci/tw686x/tw686x-core.c        |   6 +-
+ drivers/media/usb/uvc/uvc_driver.c            |  14 +-
+ drivers/misc/lis3lv02d/lis3lv02d.c            |   5 +-
+ drivers/net/wireless/ath/wil6210/main.c       |  10 +-
+ drivers/nvme/host/multipath.c                 |  17 +--
+ drivers/nvme/host/pci.c                       |  18 +--
+ drivers/nvme/target/rdma.c                    |   5 +-
+ drivers/nvme/target/tcp.c                     |   5 +-
+ drivers/pci/pcie/aspm.c                       |  17 ++-
+ drivers/platform/x86/acerhdf.c                |   5 +-
+ drivers/power/supply/bq27xxx_battery.c        |   6 +-
+ drivers/power/supply/test_power.c             | 122 +++++++++---------
+ drivers/scsi/fcoe/fcoe_transport.c            |  22 ++--
+ drivers/scsi/sg.c                             |   6 +-
+ drivers/target/target_core_user.c             |  25 ++--
+ .../processor_thermal_soc_slider.c            |  24 ++--
+ drivers/thermal/intel/intel_powerclamp.c      |  34 ++---
+ drivers/tty/hvc/hvc_iucv.c                    |  24 ++--
+ drivers/tty/sysrq.c                           |   6 +-
+ drivers/ufs/core/ufs-fault-injection.c        |  12 +-
+ drivers/ufs/core/ufs-mcq.c                    |  18 +--
+ drivers/ufs/core/ufs-txeq.c                   |   5 +-
+ drivers/ufs/core/ufshcd.c                     |  12 +-
+ drivers/usb/core/quirks.c                     |   6 +-
+ drivers/usb/gadget/legacy/serial.c            |   5 +-
+ drivers/usb/storage/usb.c                     |  25 ++--
+ drivers/vhost/scsi.c                          |  12 +-
+ drivers/virt/nitro_enclaves/ne_misc_dev.c     |   6 +-
+ drivers/virtio/virtio_mmio.c                  |  27 ++--
+ fs/ceph/super.c                               |  10 +-
+ fs/fuse/dir.c                                 |   5 +-
+ fs/nfs/namespace.c                            |  12 +-
+ fs/nfs/super.c                                |   6 +-
+ fs/ocfs2/dlmfs/dlmfs.c                        |   5 +-
+ fs/overlayfs/copy_up.c                        |   5 +-
+ fs/ubifs/super.c                              |   6 +-
+ kernel/locking/locktorture.c                  |  12 +-
+ kernel/panic.c                                |  11 +-
+ kernel/params.c                               | 122 +++++++++---------
+ kernel/power/hibernate.c                      |   6 +-
+ kernel/rcu/tree.c                             |  24 ++--
+ kernel/sched/ext.c                            |  11 +-
+ kernel/workqueue.c                            |  18 ++-
+ lib/dynamic_debug.c                           |  16 ++-
+ lib/test_dynamic_debug.c                      |  12 +-
+ mm/damon/lru_sort.c                           |  33 +++--
+ mm/damon/reclaim.c                            |  33 +++--
+ mm/damon/stat.c                               |  16 +--
+ mm/memory_hotplug.c                           |  30 +++--
+ mm/page_reporting.c                           |  11 +-
+ mm/shuffle.c                                  |   6 +-
+ mm/zswap.c                                    |  14 +-
+ net/batman-adv/bat_algo.c                     |   6 +-
+ net/ceph/ceph_common.c                        |  10 +-
+ net/ipv4/tcp_dctcp.c                          |   6 +-
+ net/sunrpc/auth.c                             |  12 +-
+ net/sunrpc/svc.c                              |   5 +-
+ net/sunrpc/xprtsock.c                         |  18 +--
+ samples/damon/mtier.c                         |   6 +-
+ samples/damon/prcl.c                          |   6 +-
+ samples/damon/wsse.c                          |   6 +-
+ security/apparmor/lib.c                       |  27 ++--
+ security/apparmor/lsm.c                       |  75 +++++------
+ sound/hda/controllers/intel.c                 |   5 +-
+ sound/usb/card.c                              |   7 +-
+ 110 files changed, 854 insertions(+), 1066 deletions(-)
+
+-- 
+2.34.1
+
 
