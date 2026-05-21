@@ -1,53 +1,84 @@
-Return-Path: <linuxppc-dev+bounces-21317-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21318-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8857DCD5BA4
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 May 2026 11:10:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1A9E7CD4F5E
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 May 2026 11:54:27 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gLm0X5dwMz2xSN;
-	Thu, 21 May 2026 21:10:20 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779361820;
-	cv=none; b=AgbMY0VpFftXbpJf+VWFxkqSILUc5lxoGJHplW0MNilcoAezuFekLdKvqBInKrBc+cbLUvmgvSMe0rT3U4+fJ7iB7IHEv478752zL8F/3Cko6Nf/eCpwLvor03n2sQUF4RMKuaq0TuCK007Uw+RB8D3pDx0EBHVazyMvN4442YeQRis+5/SeVaydmPcHXfO9nIE6B1Cc8kOdxwbRMJ4CtyK/WvBR4qwQjW/Sopcp6TNlkUmisGgKI7O8zEQkYKFhwkj1NiuNIOeRVRGqsMAUoaqkwjqjSCUvvBlccEwOf8bQvHlMvleKCRGpkjwFJNtkrVP8jbQEYpu4gW0oE4GhRQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gLmzQ31tQz2xSN;
+	Thu, 21 May 2026 21:54:26 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779364466;
+	cv=none; b=hQNRT14dvn6iFOkVtZ1KwWr3Q+Xfj6DArfrKPxyo3YY1nTEvmWkBofwpvCrwzvaTJxabsLqkvfpgPLuJnG0JCltr7yBiyYEGs92k907zZDYyVLEwcg3bPK+ywrx9WQ+J0cvBM+5s54AEvc6FKB6NK1kE6MqCtDVfZzXRAWSrL+QBBKvQRx0NgCTvrpIC9ZJtIeQKfYrl0UjM41pq74fzCxX47JBpBzqi7Es38f2jTsi9sZ+3Bu0DUO6B3eTD1kYbwBt5uP7gy+u+HyFKquftWPxAWI/4lyib6U0UTnXex9gk+ZKNGwg1Z99pf75CKjXIf4MJlkrjlP2F0p7xI/d8BA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1779361820; c=relaxed/relaxed;
-	bh=xU8Xda3hTS+TH6/kqkYtkfd/gVphmpM5ys0iuESx0eo=;
-	h=Content-Type:MIME-Version:Subject:From:Message-Id:Date:References:
-	 In-Reply-To:To:Cc; b=eBCEaoZ9KR3isTOOv9R7EI+cYqt2oEP6+Ki1Kgke2uq858uOWvAis6bHSSFcShxEM8VJWMnAl6k/jpEMP7sRodTPmYTq5s7fvVHhe6IwUQDX6nadjwfwrw50tQzZXFDx6OI8tK+ADJPKWLBnENEBrAKYjixqkrhPSEuQmnSnpnPdMPN5TzJWI0s42Ngo170U+iDmfesU/OF+kz76UoiVGKanl3bvuPzPBRpSOZvvOYtm5lVAD1GlkUz3IrtKY4VMgsNgkgGbd3qqMzxbOKHibyV8ea7LAU88uLeCOzmYMiK/aZN1P5qWHQdmjrcDR1BVN7tqnEUDy+xC/yI9wNuXHg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=IeUc+TU8; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=patchwork-bot+netdevbpf@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1779364466; c=relaxed/relaxed;
+	bh=AfaRmOFwq9PG0Q9lB7Y5h4Js0tCrSyooaZYJ9TAjF4I=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
+	 MIME-Version:Content-Type; b=DJvM3o1BTmGruYtsU2gcgj7P/v3+8e79Iy6Hp8qnC5pdqg31P94CfyLQ9wNI+e76JyIJs1Pjj5FBQFjLkHeyBJLcnjBYKBDfI5thdXyLhveraJ2Vsw2EIyBbRYD+ID/azYrRw7duJXjcOUpxp2g8pD/XQ+oxrAJnoNDxyIfd5/sQcGN2fKuae8PIGgqG3hmMSvXcpd/v9Xk/HU/njYB5AaJ7sYv0vk3dUzIbi59073BKZJqQDhE+yvBjgORvqq/vKuEL2AVGUsGyHcYRIzEeBzGEsiwDGY1o5zrnPf/7dhbZ+42R0mOBPYjzwWxSf/dWhUlqdmtFlenUwzMai4AxrA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=VRoV8Obk; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=aneesh.kumar@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=IeUc+TU8;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=VRoV8Obk;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=patchwork-bot+netdevbpf@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=aneesh.kumar@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gLm0W686Pz2xS2
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 May 2026 21:10:19 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gLmzN4hLYz2xGY
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 May 2026 21:54:24 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 3817160212;
-	Thu, 21 May 2026 11:10:17 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id DECDA1F000E9;
-	Thu, 21 May 2026 11:10:16 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 5740A437CB;
+	Thu, 21 May 2026 11:54:22 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D60901F000E9;
+	Thu, 21 May 2026 11:54:11 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1779361816;
-	bh=xU8Xda3hTS+TH6/kqkYtkfd/gVphmpM5ys0iuESx0eo=;
-	h=Subject:From:Date:References:In-Reply-To:To:Cc;
-	b=IeUc+TU8KfmOdLpDtUOEaJcHiCUK87i4XfCq0IgsjEVMuvTatrPzUduaPqXtzGTYF
-	 +yb2Nag0bIqi7PsRqx4bPgfzLke4z29ohFAEWnQi2AlyhcGncxJiaA/IZe1EF94T+T
-	 oZ4md4kwYc30zpyZJ5jGP4dnqcp/6BHFKBMb9RcBvqDZEJmDllHDy/gxpYJXz7chU2
-	 H6Js8SX//oWDtT2rKN8o6VL3jM9QSCDhaIsmZPtYkVxlTh1LHC9gr8lUyeE/uxe2q7
-	 OtuOhiDBT00ei8HkIJiz+38j+qvwE/foOTPD0SKFwPfzUiODrmT+LN85NCZsf/j8cK
-	 Ylfd5f8lf9sEA==
-Received: from [10.30.226.235] (localhost [IPv6:::1])
-	by aws-us-west-2-korg-oddjob-rhel9-1.codeaurora.org (Postfix) with ESMTP id 1994C3930D65;
-	Thu, 21 May 2026 11:10:28 +0000 (UTC)
-Content-Type: text/plain; charset="utf-8"
+	s=k20260515; t=1779364462;
+	bh=AfaRmOFwq9PG0Q9lB7Y5h4Js0tCrSyooaZYJ9TAjF4I=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date;
+	b=VRoV8Obk6Db2yTrA5yAdD7bmtQFvSWYfd/ZMw0E5GBL5jIdP8p2frzgVjebJ/AI8N
+	 hR/ltXnLmqYytDDOSL4NfrAm8WWL6Eapslk7nKLHkiEPTsINTDc/s/wXE5nhOEOkw0
+	 ocFPhIherbIJmWmA0TT9aOS8dxo5zor2QipnNUscdwsm508C2EjBqUXMBblgS8bTHy
+	 VTwtO3pIzg195ryyporAX+AUffxjuJV03eR50aV96prxY5h11jwtvbWjHvTe3DepXz
+	 Q2BR9ERr09ummMuYbcfqyARU4HAkb3n2S7jWp660Rin4hD/1ttPs8n0zhk15N2/FrI
+	 IAG1as/hVnwgg==
+X-Mailer: emacs 30.2 (via feedmail 11-beta-1 I)
+From: Aneesh Kumar K.V <aneesh.kumar@kernel.org>
+To: iommu@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
+	linux-kernel@vger.kernel.org, linux-coco@lists.linux.dev
+Cc: Robin Murphy <robin.murphy@arm.com>,
+	Marek Szyprowski <m.szyprowski@samsung.com>,
+	Will Deacon <will@kernel.org>, Marc Zyngier <maz@kernel.org>,
+	Steven Price <steven.price@arm.com>,
+	Suzuki K Poulose <Suzuki.Poulose@arm.com>,
+	Catalin Marinas <catalin.marinas@arm.com>,
+	Jiri Pirko <jiri@resnulli.us>,
+	Jason Gunthorpe <jgg@ziepe.ca>,
+	Mostafa Saleh <smostafa@google.com>,
+	Petr Tesarik <ptesarik@suse.com>,
+	Alexey Kardashevskiy <aik@amd.com>,
+	Dan Williams <dan.j.williams@intel.com>,
+	Xu Yilun <yilun.xu@linux.intel.com>,
+	linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	Alexander Gordeev <agordeev@linux.ibm.com>,
+	Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
+	Heiko Carstens <hca@linux.ibm.com>,
+	Vasily Gorbik <gor@linux.ibm.com>,
+	Christian Borntraeger <borntraeger@linux.ibm.com>,
+	Sven Schnelle <svens@linux.ibm.com>, x86@kernel.org
+Subject: Re: [PATCH v4 13/13] x86/amd-gart: preserve the direct DMA address
+ until GART mapping succeeds
+In-Reply-To: <20260512090408.794195-14-aneesh.kumar@kernel.org>
+References: <20260512090408.794195-1-aneesh.kumar@kernel.org>
+ <20260512090408.794195-14-aneesh.kumar@kernel.org>
+Date: Thu, 21 May 2026 17:24:07 +0530
+Message-ID: <yq5a4ik16krk.fsf@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -61,79 +92,62 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Subject: Re: [PATCH v8 net-next 00/15] Add preliminary NETC switch support for
- i.MX94
-From: patchwork-bot+netdevbpf@kernel.org
-Message-Id: 
- <177936182689.4032976.7498848495414588133.git-patchwork-notify@kernel.org>
-Date: Thu, 21 May 2026 11:10:26 +0000
-References: <20260518082506.1318236-1-wei.fang@nxp.com>
-In-Reply-To: <20260518082506.1318236-1-wei.fang@nxp.com>
-To: Wei Fang <wei.fang@nxp.com>
-Cc: claudiu.manoil@nxp.com, vladimir.oltean@nxp.com, xiaoning.wang@nxp.com,
- andrew+netdev@lunn.ch, davem@davemloft.net, edumazet@google.com,
- kuba@kernel.org, pabeni@redhat.com, robh@kernel.org, krzk+dt@kernel.org,
- conor+dt@kernel.org, f.fainelli@gmail.com, frank.li@nxp.com,
- chleroy@kernel.org, horms@kernel.org, linux@armlinux.org.uk,
- maxime.chevallier@bootlin.com, andrew@lunn.ch, olteanv@gmail.com,
- netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
- devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org, imx@lists.linux.dev
+Content-Type: text/plain
 
-Hello:
+"Aneesh Kumar K.V (Arm)" <aneesh.kumar@kernel.org> writes:
 
-This series was applied to netdev/net-next.git (main)
-by Paolo Abeni <pabeni@redhat.com>:
+> gart_alloc_coherent() first allocates memory through dma_direct_alloc(),
+> which returns a direct-mapped DMA address in dma_addr. When force_iommu is
+> enabled, the buffer is then remapped.
+>
+> Do not overwrite dma_addr before dma_map_area() has succeeded. Keep the
+> dma_map_area result in a temporary variable so the direct DMA address
+> remains available for dma_direct_free() on the error path.
+>
+> Signed-off-by: Aneesh Kumar K.V (Arm) <aneesh.kumar@kernel.org>
+> ---
+>  arch/x86/kernel/amd_gart_64.c | 10 ++++++----
+>  1 file changed, 6 insertions(+), 4 deletions(-)
+>
+> diff --git a/arch/x86/kernel/amd_gart_64.c b/arch/x86/kernel/amd_gart_64.c
+> index b5f1f031d45b..a109649c5649 100644
+> --- a/arch/x86/kernel/amd_gart_64.c
+> +++ b/arch/x86/kernel/amd_gart_64.c
+> @@ -467,18 +467,20 @@ gart_alloc_coherent(struct device *dev, size_t size, dma_addr_t *dma_addr,
+>  		    gfp_t flag, unsigned long attrs)
+>  {
+>  	void *vaddr;
+> +	dma_addr_t dma_map_addr;
+>  
+>  	vaddr = dma_direct_alloc(dev, size, dma_addr, flag, attrs);
+>  	if (!vaddr ||
+>  	    !force_iommu || dev->coherent_dma_mask <= DMA_BIT_MASK(24))
+>  		return vaddr;
+>  
+> -	*dma_addr = dma_map_area(dev, virt_to_phys(vaddr), size,
+> -				 DMA_BIDIRECTIONAL,
+> -				 (1UL << get_order(size)) - 1, attrs);
+> +	dma_map_addr = dma_map_area(dev, virt_to_phys(vaddr), size,
+> +				     DMA_BIDIRECTIONAL,
+> +				     (1UL << get_order(size)) - 1, attrs);
+>  	flush_gart();
+> -	if (unlikely(*dma_addr == DMA_MAPPING_ERROR))
+> +	if (unlikely(dma_map_addr == DMA_MAPPING_ERROR))
+>  		goto out_free;
+> +	*dma_addr = dma_map_addr;
+>  	return vaddr;
+>  out_free:
+>  	dma_direct_free(dev, size, vaddr, *dma_addr, attrs);
+> -- 
+> 2.43.0
+>
 
-On Mon, 18 May 2026 16:24:51 +0800 you wrote:
-> i.MX94 NETC (v4.3) integrates 802.1Q Ethernet switch functionality, the
-> switch provides advanced QoS with 8 traffic classes and a full range of
-> TSN standards capabilities. It has 3 user ports and 1 CPU port, and the
-> CPU port is connected to an internal ENETC through the pseduo link, so
-> instead of a back-to-back MAC, the lightweight "pseudo MAC" is used at
-> both ends of the pseudo link to transfer Ethernet frames. The pseudo
-> link provides a zero-copy interface (no serialization delay) and lower
-> power (less logic and memory).
-> 
-> [...]
+This needs corresponding changes on the gart_free_coherent() side as well.
 
-Here is the summary with links:
-  - [v8,net-next,01/15] dt-bindings: net: dsa: update the description of 'dsa,member' property
-    https://git.kernel.org/netdev/net-next/c/0c89a779c373
-  - [v8,net-next,02/15] dt-bindings: net: dsa: add NETC switch
-    https://git.kernel.org/netdev/net-next/c/6d019124be60
-  - [v8,net-next,03/15] net: enetc: add pre-boot initialization for i.MX94 switch
-    https://git.kernel.org/netdev/net-next/c/f059d55fd8a0
-  - [v8,net-next,04/15] net: enetc: add basic operations to the FDB table
-    https://git.kernel.org/netdev/net-next/c/4566269803ff
-  - [v8,net-next,05/15] net: enetc: add support for the "Add" operation to VLAN filter table
-    https://git.kernel.org/netdev/net-next/c/d0ac4d4bd299
-  - [v8,net-next,06/15] net: enetc: add support for the "Update" operation to buffer pool table
-    https://git.kernel.org/netdev/net-next/c/cb4d95d79d85
-  - [v8,net-next,07/15] net: enetc: add support for "Add" and "Delete" operations to IPFT
-    https://git.kernel.org/netdev/net-next/c/123db6a27511
-  - [v8,net-next,08/15] net: enetc: add multiple command BD rings support
-    https://git.kernel.org/netdev/net-next/c/c5aed83ddc53
-  - [v8,net-next,09/15] net: dsa: add NETC switch tag support
-    https://git.kernel.org/netdev/net-next/c/0850005c26d2
-  - [v8,net-next,10/15] net: dsa: netc: introduce NXP NETC switch driver for i.MX94
-    https://git.kernel.org/netdev/net-next/c/187fbae024c8
-  - [v8,net-next,11/15] net: dsa: netc: add phylink MAC operations
-    https://git.kernel.org/netdev/net-next/c/bbe97e347219
-  - [v8,net-next,12/15] net: dsa: netc: add FDB, STP, MTU, port setup and host flooding support
-    https://git.kernel.org/netdev/net-next/c/46d6407692c8
-  - [v8,net-next,13/15] net: dsa: netc: initialize buffer pool table and implement flow-control
-    https://git.kernel.org/netdev/net-next/c/a5ccb7f5e067
-  - [v8,net-next,14/15] net: dsa: netc: add support for the standardized counters
-    https://git.kernel.org/netdev/net-next/c/25049d8b6e6b
-  - [v8,net-next,15/15] net: dsa: netc: add support for ethtool private statistics
-    https://git.kernel.org/netdev/net-next/c/beb0e54f3806
+https://sashiko.dev/#/patchset/20260512090408.794195-1-aneesh.kumar%40kernel.org?part=13
 
-You are awesome, thank you!
--- 
-Deet-doot-dot, I am a bot.
-https://korg.docs.kernel.org/patchwork/pwbot.html
+I will avoid making that change as part of this series, since I assume
+it would require specific testing.
 
-
+-aneesh
 
