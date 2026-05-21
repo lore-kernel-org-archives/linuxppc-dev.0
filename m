@@ -1,70 +1,77 @@
-Return-Path: <linuxppc-dev+bounces-21265-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21266-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 19E83CD4F3D
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 May 2026 02:58:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A1743CD343F
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 May 2026 05:04:30 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gLY4Z4tD2z2xdL;
-	Thu, 21 May 2026 12:58:06 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=198.175.65.20
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779332286;
-	cv=none; b=NmRJIxkZ6YYT6g33MVDf44hOhmQ9I3y3v3ZGnlLrreJJGCCT6cSwQMsgyfpZo+0SXQhjI6fETsdEt0iaUfR+45XxiKbU4+3l83/eD7PnVWzlDNcohnmprASCgJqVn0UPdfHwC0bwhN/Jab3cwZ9BIPF/cLjjiRYpMMcF+jhohefvyGCQyZ/YCpqD5fkIHBhw+4OpxEKM0DAO49yAEiWtwz4Ca7XgCaGQ+eVxO+yqvVQM0yHGTTSidTcP+4LO3GWM5ofF+8ivyD6/YtYBwEMqd/UQ7OrSj73Vln1rT1AmrQwZWZC/ZzJSulQaC0werxmIswQ10jmDMoB3fYoOG7ymhg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gLbtN71czz2xSN;
+	Thu, 21 May 2026 15:04:28 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=95.215.58.179
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779339868;
+	cv=none; b=UfL6lxTLNt1FX8NXCTPGtpzPKDC23upGb9togVnU5oRgA2hgiwWVsskOjzWDyE9TBHLb+Ds5LP7EDHspSSSq2ezSDrknCUb76Pzcn2fZYJJhvzyrfSdFpAbRGhsvnEtmHtZdIQDLHaaDmBN+Tyg9vJit6kIqLsvvAXZyalaFwg/9ObBMKPo0+haiXoyaoZUL+MSyTHsfAn+HIpTZqum/B1PTsjc8aircEQ7vXjbtifaivCbT/QaPp9hxIfVLg9/yOZpbu0979vi1wK/oxd/c0Rjx/Ef56U3PYUkub/net+j4PU7wHD5JZ4z9RhNjIj1kZsqnaYN0d2NdnHDb+ffJvQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1779332286; c=relaxed/relaxed;
-	bh=h1NHR/hSUu6DBofWTp3DSNkdUZOtCZiOrLDD570fpxM=;
-	h=Date:From:To:Cc:Subject:Message-ID; b=bfkKzB0BQhB0zyPcJ4wd/3bERgJbuz/5n1GF2PuimFV2fw2grXqi95PklDr03VgQTNqv9cYbPvcwU3UKSBsQvZ0raRNGWcx1U+j25Hs2S7PWTaDIm+qGslCCpToAaGk63V3BUiZW0mcr1ReHecaiTz1MPBm+hvApKdzLH0zscwfhgReRq9arTumD85L24LVzOtBXoJIZ5NnEpLP1w/9h6eGlLVMRDWibJRmxQabiVJ3ES7w3TXBPrsUq4ed7UcJdB9PnUcdQJYCg2/eR8aAe3fUXgwwC+wlExf4DKkxXPPcqytmI/lD4bdZvV5hOwFbO72lzqTYG0UEKPpliq4U3BA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=BgWShENc; dkim-atps=neutral; spf=pass (client-ip=198.175.65.20; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=intel.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com
+	t=1779339868; c=relaxed/relaxed;
+	bh=udD7mWlkd64piA/1uV3JoogXR6FhB2/z0dczFUqXvp4=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=NS+XT6Txq99q9SI8W6+6R5mtf5S2MI2UQx+1SeR4EoR6GQ7jtkIcVr6SyIzmlspvbNcWC3rNZRPkKjunEK4Dr2x+xmoFuQdymsES4QkRlCwFhqpGSXe1ZdloBGwwWVcHJfLqqVDAfbOeLmZmMuEvIJecjHyYjcXvPw5yeN+6jcn3hQSR3NfRXMNF4avudvm+kPycX3XpsB2t+IQZVmc04G6vKlQQrsJTBlmwU+BKFOv6a+1R0svEzXIQx7ZRogwKzALDan3zeSJtda816RM3wsEJ7ud2SIa6pZZY6qyOnlSQge5ioy3ZOoHUuMRnI1pA4GzJjOzfbbgUimepIpAl1A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=JULoXvF9; dkim-atps=neutral; spf=pass (client-ip=95.215.58.179; helo=out-179.mta1.migadu.com; envelope-from=lance.yang@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=BgWShENc;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=JULoXvF9;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=198.175.65.20; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.20])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=95.215.58.179; helo=out-179.mta1.migadu.com; envelope-from=lance.yang@linux.dev; receiver=lists.ozlabs.org)
+Received: from out-179.mta1.migadu.com (out-179.mta1.migadu.com [95.215.58.179])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gLY4W3DtJz2xYh
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 May 2026 12:58:00 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1779332285; x=1810868285;
-  h=date:from:to:cc:subject:message-id;
-  bh=hcYLmMzt2ikVLckqrrTgJURMGyqe9SoYrUhNmnIDo4c=;
-  b=BgWShENcQSWIPK65m97FiCNXSdNTjUHf8uy3n+8p7sPdqauKIXGVfOTM
-   ZkayraOU7CeU6FqehfLL0mQ7Z7Mvd9R2hTTVjfWBxxkpVRyWrCSqowI+Z
-   w6Z5Ad+vmVS0Qd2CLAfsmla6b1VTdLiD7YgIum1ldOFslkOhFzbAmi8Jk
-   eSFmEtFgQ80PAJ/Ne9ohVpmULYQnR9E+vKxL4MlSTom4tr76qieRLqPfv
-   EWaBfNSvUyzlhM/y9uyKlwx9xv1n/pMmrvjvAIvZK+nl+v/ukwTXWHf1j
-   7PrBkoGdcfyIPhUnj/IwrhzgjGnUNXvxdWNHYJlnoyUO3hU9Knrc31BRv
-   w==;
-X-CSE-ConnectionGUID: 0CrN6nH7SGie54YYsdqPtQ==
-X-CSE-MsgGUID: UFxi3shUTs6iLTiC2G2ssw==
-X-IronPort-AV: E=McAfee;i="6800,10657,11792"; a="79976464"
-X-IronPort-AV: E=Sophos;i="6.23,245,1770624000"; 
-   d="scan'208";a="79976464"
-Received: from orviesa008.jf.intel.com ([10.64.159.148])
-  by orvoesa112.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 20 May 2026 19:57:57 -0700
-X-CSE-ConnectionGUID: I7aN1RbnQ+2dD04EXuuYTw==
-X-CSE-MsgGUID: Lx0P+MCBQk+Bf3TodYbH1A==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.23,245,1770624000"; 
-   d="scan'208";a="240258867"
-Received: from lkp-server02.sh.intel.com (HELO 30e86e9c1927) ([10.239.97.151])
-  by orviesa008.jf.intel.com with ESMTP; 20 May 2026 19:57:54 -0700
-Received: from kbuild by 30e86e9c1927 with local (Exim 4.98.2)
-	(envelope-from <lkp@intel.com>)
-	id 1wPtbC-000000004G7-03oX;
-	Thu, 21 May 2026 02:57:36 +0000
-Date: Thu, 21 May 2026 10:53:10 +0800
-From: kernel test robot <lkp@intel.com>
-To: Madhavan Srinivasan <maddy@linux.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: [powerpc:next-test] BUILD SUCCESS
- 6ed60999d33d49251b42976a5511f1bb089797ed
-Message-ID: <202605211002.BKX5WJdW-lkp@intel.com>
-User-Agent: s-nail v14.9.25
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gLbtK0wnpz2xQD
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 May 2026 15:04:23 +1000 (AEST)
+X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
+	t=1779339843;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=udD7mWlkd64piA/1uV3JoogXR6FhB2/z0dczFUqXvp4=;
+	b=JULoXvF9rBrdxisl033+Bdt9vswxhIhpTxZDs+FlAdkNcEg3HR7Hnujny9LdUKuej4hxLJ
+	iCfAds7VXyCqv+FOPxCKSMUoBQwrw59yeCxPcn5xYNCHYWFqJD7LIMlHe1JAMI794A1wmX
+	BdOajcXyff9GzuTfn9ACSh0PO5UhgKo=
+From: Lance Yang <lance.yang@linux.dev>
+To: david@kernel.org
+Cc: davem@davemloft.net,
+	andreas@gaisler.com,
+	rppt@kernel.org,
+	akpm@linux-foundation.org,
+	agordeev@linux.ibm.com,
+	gerald.schaefer@linux.ibm.com,
+	hca@linux.ibm.com,
+	gor@linux.ibm.com,
+	borntraeger@linux.ibm.com,
+	svens@linux.ibm.com,
+	maddy@linux.ibm.com,
+	mpe@ellerman.id.au,
+	npiggin@gmail.com,
+	chleroy@kernel.org,
+	ljs@kernel.org,
+	liam@infradead.org,
+	vbabka@kernel.org,
+	surenb@google.com,
+	mhocko@suse.com,
+	sparclinux@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	linux-mm@kvack.org,
+	linux-s390@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org,
+	Lance Yang <lance.yang@linux.dev>
+Subject: Re: [PATCH 6/8] mm/bootmem_info: stop marking mem_section_usage as MIX_SECTION_INFO
+Date: Thu, 21 May 2026 13:03:39 +0800
+Message-Id: <20260521050339.65872-1-lance.yang@linux.dev>
+In-Reply-To: <20260511-bootmem_info_prep-v1-6-3fb0be6fc688@kernel.org>
+References: <20260511-bootmem_info_prep-v1-6-3fb0be6fc688@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -77,198 +84,28 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Migadu-Flow: FLOW_OUT
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git next-test
-branch HEAD: 6ed60999d33d49251b42976a5511f1bb089797ed  powerpc: Remove unused functions
 
-elapsed time: 731m
+On Mon, May 11, 2026 at 04:05:34PM +0200, David Hildenbrand (Arm) wrote:
+>We never free the ms->usage data for boot memory sections (see
+>section_deactivate()). And to identify whether ms->usage was allocated
+>from memblock, we simply identify it by looking at PG_reserved.
 
-configs tested: 177
-configs skipped: 277
+Yep, PageReserved() is already enough to tell that case apart :)
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+>Consequently, there is no need to mark ms->usage as MIX_SECTION_INFO.
+>Let's just stop doing that.
 
-tested configs:
-alpha                             allnoconfig    gcc-15.2.0
-alpha                            allyesconfig    gcc-15.2.0
-alpha                               defconfig    gcc-15.2.0
-arc                              allmodconfig    clang-16
-arc                               allnoconfig    gcc-15.2.0
-arc                              allyesconfig    clang-23
-arc                                 defconfig    gcc-15.2.0
-arc                   randconfig-001-20260521    gcc-8.5.0
-arc                   randconfig-002-20260521    gcc-8.5.0
-arm                               allnoconfig    gcc-15.2.0
-arm                              allyesconfig    clang-16
-arm                                 defconfig    gcc-15.2.0
-arm                   randconfig-001-20260521    gcc-8.5.0
-arm                   randconfig-002-20260521    gcc-8.5.0
-arm                   randconfig-003-20260521    gcc-8.5.0
-arm                   randconfig-004-20260521    gcc-8.5.0
-arm64                            allmodconfig    clang-23
-arm64                             allnoconfig    gcc-15.2.0
-arm64                               defconfig    gcc-15.2.0
-arm64                 randconfig-001-20260521    gcc-8.5.0
-arm64                 randconfig-002-20260521    gcc-8.5.0
-arm64                 randconfig-003-20260521    gcc-8.5.0
-arm64                 randconfig-004-20260521    gcc-8.5.0
-csky                             allmodconfig    gcc-15.2.0
-csky                              allnoconfig    gcc-15.2.0
-csky                                defconfig    gcc-15.2.0
-csky                  randconfig-001-20260521    gcc-8.5.0
-csky                  randconfig-002-20260521    gcc-8.5.0
-hexagon                          allmodconfig    gcc-15.2.0
-hexagon                           allnoconfig    gcc-15.2.0
-hexagon                             defconfig    gcc-15.2.0
-hexagon               randconfig-001-20260521    gcc-11.5.0
-hexagon               randconfig-002-20260521    gcc-11.5.0
-i386                             allmodconfig    clang-20
-i386                              allnoconfig    gcc-15.2.0
-i386                             allyesconfig    clang-20
-i386        buildonly-randconfig-001-20260521    clang-20
-i386        buildonly-randconfig-002-20260521    clang-20
-i386        buildonly-randconfig-003-20260521    clang-20
-i386        buildonly-randconfig-004-20260521    clang-20
-i386        buildonly-randconfig-005-20260521    clang-20
-i386        buildonly-randconfig-006-20260521    clang-20
-i386                                defconfig    gcc-15.2.0
-i386                  randconfig-001-20260521    clang-20
-i386                  randconfig-002-20260521    clang-20
-i386                  randconfig-003-20260521    clang-20
-i386                  randconfig-004-20260521    clang-20
-i386                  randconfig-005-20260521    clang-20
-i386                  randconfig-006-20260521    clang-20
-i386                  randconfig-007-20260521    clang-20
-i386                  randconfig-011-20260521    gcc-14
-i386                  randconfig-012-20260521    gcc-14
-i386                  randconfig-013-20260521    gcc-14
-i386                  randconfig-014-20260521    gcc-14
-i386                  randconfig-015-20260521    gcc-14
-i386                  randconfig-016-20260521    gcc-14
-i386                  randconfig-017-20260521    gcc-14
-loongarch                        allmodconfig    clang-23
-loongarch                         allnoconfig    gcc-15.2.0
-loongarch                           defconfig    clang-19
-loongarch             randconfig-001-20260521    gcc-11.5.0
-loongarch             randconfig-002-20260521    gcc-11.5.0
-m68k                             allmodconfig    gcc-15.2.0
-m68k                              allnoconfig    gcc-15.2.0
-m68k                             allyesconfig    clang-16
-m68k                                defconfig    clang-19
-microblaze                        allnoconfig    gcc-15.2.0
-microblaze                       allyesconfig    gcc-15.2.0
-microblaze                          defconfig    clang-19
-mips                             allmodconfig    gcc-15.2.0
-mips                              allnoconfig    gcc-15.2.0
-mips                             allyesconfig    gcc-15.2.0
-mips                         rt305x_defconfig    clang-23
-nios2                            allmodconfig    clang-23
-nios2                             allnoconfig    clang-23
-nios2                               defconfig    clang-19
-nios2                 randconfig-001-20260521    gcc-11.5.0
-nios2                 randconfig-002-20260521    gcc-11.5.0
-openrisc                         allmodconfig    clang-23
-openrisc                          allnoconfig    clang-23
-openrisc                            defconfig    gcc-15.2.0
-parisc                           allmodconfig    gcc-15.2.0
-parisc                            allnoconfig    clang-23
-parisc                           allyesconfig    clang-19
-parisc                              defconfig    gcc-15.2.0
-parisc                randconfig-001-20260521    gcc-12.5.0
-parisc                randconfig-002-20260521    gcc-12.5.0
-parisc64                            defconfig    clang-19
-powerpc                          allmodconfig    gcc-15.2.0
-powerpc                           allnoconfig    clang-23
-powerpc                      mgcoge_defconfig    clang-23
-powerpc               randconfig-001-20260521    gcc-12.5.0
-powerpc               randconfig-002-20260521    gcc-12.5.0
-powerpc                     stx_gp3_defconfig    gcc-15.2.0
-powerpc64             randconfig-001-20260521    gcc-12.5.0
-powerpc64             randconfig-002-20260521    gcc-12.5.0
-riscv                            allmodconfig    clang-23
-riscv                             allnoconfig    clang-23
-riscv                            allyesconfig    clang-16
-riscv                               defconfig    gcc-15.2.0
-riscv                          randconfig-001    gcc-15.2.0
-riscv                 randconfig-001-20260521    gcc-15.2.0
-riscv                          randconfig-002    gcc-15.2.0
-riscv                 randconfig-002-20260521    gcc-15.2.0
-s390                             allmodconfig    clang-19
-s390                              allnoconfig    clang-23
-s390                             allyesconfig    gcc-15.2.0
-s390                          debug_defconfig    gcc-15.2.0
-s390                                defconfig    gcc-15.2.0
-s390                           randconfig-001    gcc-15.2.0
-s390                  randconfig-001-20260521    gcc-15.2.0
-s390                           randconfig-002    gcc-15.2.0
-s390                  randconfig-002-20260521    gcc-15.2.0
-sh                               allmodconfig    gcc-15.2.0
-sh                                allnoconfig    clang-23
-sh                               allyesconfig    clang-19
-sh                                  defconfig    gcc-14
-sh                             randconfig-001    gcc-15.2.0
-sh                    randconfig-001-20260521    gcc-15.2.0
-sh                             randconfig-002    gcc-15.2.0
-sh                    randconfig-002-20260521    gcc-15.2.0
-sparc                             allnoconfig    clang-23
-sparc                               defconfig    gcc-15.2.0
-sparc                 randconfig-001-20260521    gcc-8.5.0
-sparc                 randconfig-002-20260521    gcc-8.5.0
-sparc64                          allmodconfig    clang-23
-sparc64                             defconfig    gcc-14
-sparc64               randconfig-001-20260521    gcc-8.5.0
-sparc64               randconfig-002-20260521    gcc-8.5.0
-um                               allmodconfig    clang-19
-um                                allnoconfig    clang-23
-um                               allyesconfig    gcc-15.2.0
-um                                  defconfig    gcc-14
-um                             i386_defconfig    gcc-14
-um                    randconfig-001-20260521    gcc-8.5.0
-um                    randconfig-002-20260521    gcc-8.5.0
-um                           x86_64_defconfig    gcc-14
-x86_64                           allmodconfig    clang-20
-x86_64                            allnoconfig    clang-23
-x86_64                           allyesconfig    clang-20
-x86_64      buildonly-randconfig-001-20260521    clang-20
-x86_64      buildonly-randconfig-002-20260521    clang-20
-x86_64      buildonly-randconfig-003-20260521    clang-20
-x86_64      buildonly-randconfig-004-20260521    clang-20
-x86_64      buildonly-randconfig-005-20260521    clang-20
-x86_64      buildonly-randconfig-006-20260521    clang-20
-x86_64                              defconfig    gcc-14
-x86_64                                  kexec    clang-20
-x86_64                randconfig-001-20260521    clang-20
-x86_64                randconfig-002-20260521    clang-20
-x86_64                randconfig-003-20260521    clang-20
-x86_64                randconfig-004-20260521    clang-20
-x86_64                randconfig-005-20260521    clang-20
-x86_64                randconfig-006-20260521    clang-20
-x86_64                randconfig-011-20260521    gcc-14
-x86_64                randconfig-012-20260521    gcc-14
-x86_64                randconfig-013-20260521    gcc-14
-x86_64                randconfig-014-20260521    gcc-14
-x86_64                randconfig-015-20260521    gcc-14
-x86_64                randconfig-016-20260521    gcc-14
-x86_64                randconfig-071-20260521    clang-20
-x86_64                randconfig-072-20260521    clang-20
-x86_64                randconfig-073-20260521    clang-20
-x86_64                randconfig-074-20260521    clang-20
-x86_64                randconfig-075-20260521    clang-20
-x86_64                randconfig-076-20260521    clang-20
-x86_64                               rhel-9.4    clang-20
-x86_64                           rhel-9.4-bpf    gcc-14
-x86_64                          rhel-9.4-func    clang-20
-x86_64                    rhel-9.4-kselftests    clang-20
-x86_64                         rhel-9.4-kunit    gcc-14
-x86_64                           rhel-9.4-ltp    gcc-14
-x86_64                          rhel-9.4-rust    clang-20
-xtensa                            allnoconfig    clang-23
-xtensa                           allyesconfig    clang-23
-xtensa                randconfig-001-20260521    gcc-8.5.0
-xtensa                randconfig-002-20260521    gcc-8.5.0
+Right, MIX_SECTION_INFO doesn't add much here. For ms->usage, removal
+code doesn't use MIX_SECTION_INFO at all :)
 
---
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+>Signed-off-by: David Hildenbrand (Arm) <david@kernel.org>
+>---
+
+LGTM, feel free to add:
+Reviewed-by: Lance Yang <lance.yang@linux.dev>
 
