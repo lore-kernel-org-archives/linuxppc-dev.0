@@ -1,49 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-21324-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21325-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 48204CD5BBD
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 May 2026 13:33:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9147DCD5BAC
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 May 2026 13:34:09 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gLq9n0w1yz3brV;
-	Thu, 21 May 2026 23:33:33 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779370412;
-	cv=none; b=H3i5EQaQY1e+wfxmLnb8iNIbtZPLHXLMQbphO3i+WkXzzOzoqOb4319Se5WfFZtfufa829TXpyb0ZKgHvuzhFbUVn5PF+Hi4Utjg9GNXdCusDxLA2W57KpwycPxEGNr1GgewJZo/K1EvQ75Q/qGirfp6h6K2xDM7viEPCnhevxNevf9rPrZ0sdTdP/V+dVV7qHGNefWIEDKtMjAXZE7M6KMm7EcZfhnvz6lImczOiDOEX2bmxlbgiEACiSms8pp2TZpYRrUWqAOdaj59KqqGyEq8NhhyAFcWSx7oasx8/uDNMTUeyww31hyCQV1SQgLRuXXhAomVVL7QHAH4Y2EvJQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gLq9q3SxNz3bv8;
+	Thu, 21 May 2026 23:33:35 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779370415;
+	cv=none; b=dblDcGB/abwN8sYPVCVSPEmionY0kL4BzOzjTa+nE9jFqXC6er07BXl/WPlpztJfr5Aa635CWbNV/qkmIT57G8112r4TupAJ2Cz9f4zTtsM8GR2+r9GGUsi9DuBQEkxO1gVMknkDIUherK1fsyx+BBS+UNgt31LEdzNYFlwwzRKT4HYURWOLMLNBu+p6mRxNnO8ze7lr3PTqXQKn/eH1TAW+1ykxQ0LmrsUNVK7aBV1KRBPQQuNDDnxc0H323Xi0+KW+L4wRXrgi/eaXNKlr7vVY4K8LpfXhi6yqJRbkMlyyX85JBFrm5IJ1hf7+U81+oEl5RPHhJVo1DKSU/3xWcg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1779370412; c=relaxed/relaxed;
-	bh=xIIxiknLSHVZBHNOKlLgNSXxWTGeUxPYBjk6/bNkxVs=;
+	t=1779370415; c=relaxed/relaxed;
+	bh=Mj7DVCvMStdFPb34OrcUAAH1hWW4OYzU+C7hp9VpbjY=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=UjjVigjA7dMzeiPFUxYKZBG2gVjJB/cZ9TjIwQIsMcwtAQVL75yj4oe/1D270GQE4fGFz4gZ5cqzJnrcWR7uDytTE8usAXITpjPBxPe8FWlhdnzqxSaSEYbSPddsl57be+lbNx8iVrT2snuMwawC+yQeoYu+qKR3MEho/HHc/bofygYbWCmg6aDsPIAsx/aKK/Bp70Jgm9wVS/W0/uNEoZItQeI+zgG2639WpvarDwCIl/PHymkifgmFKHyLyey+O1CvRXbQxdkMdu8i6OurZBGnDtySDoY66ZXt1zR6VxsYG2nJPdtuRc+ToezRT7yLWaZQem9fmFvszOqmF7bilg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=F7Ykfcvp; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=kees@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=ipVVAOHUoM+Z0aFjb/qHd4LPvteQr7qeDsbVUmnhUcSH8Wco60DKjrZub07EKmUX4T1gP44GZBup1PV5/ceC0Ak3GbNJ2veXIpirafNwwi+dlP5e0D9P47Pz3VeRTalQSkriJO1Lsl/lReO4zSt7t/0H726y43J4RDhkU01iA9DJpHdj8QdeglTPTtEEV45RCL3o2umzbcfRvo6Vd35XvSJ+d72EsQ5nxWdJp+CsULRQmQOZCGFAkKsh7Ecvr2C7wlsBZiospw8hzafpFqV7kpGNLRveUA2LUWeDARc8sIJaQovfpUmEVmY7FVhbj4Io3UAIi1IdJg/GRRtuBiX2Mw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=eL7P5sQO; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=kees@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=F7Ykfcvp;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=eL7P5sQO;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=kees@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=kees@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gLq9k5lrqz2y7Y
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 May 2026 23:33:30 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gLq9n5Mpjz3bsS
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 May 2026 23:33:33 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id E19D34460C;
-	Thu, 21 May 2026 13:33:26 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9C9C71F0155A;
+	by sea.source.kernel.org (Postfix) with ESMTP id 2B203445E1;
+	Thu, 21 May 2026 13:33:27 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D38751F00A3E;
 	Thu, 21 May 2026 13:33:26 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
 	s=k20260515; t=1779370406;
-	bh=xIIxiknLSHVZBHNOKlLgNSXxWTGeUxPYBjk6/bNkxVs=;
+	bh=Mj7DVCvMStdFPb34OrcUAAH1hWW4OYzU+C7hp9VpbjY=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=F7Ykfcvp0h6C12Jt7BShNBYGEpfAXvBIAx55A0+93dBwBTPwWMwDWRrO5isUznkhU
-	 itctVylBMPCseJ9S3+reU25bfhnxLGs81ROGkHDrSKeWpg/Rez1y63/E0p0lUE95MZ
-	 f/u4MnqyDBhhEHDleXISBtEDS8S6m8ZqoBy++9FLbj+QOoOdhCrl4GIXgLtDV0fnor
-	 mdHdAkA0VigFdnzXd0I0EUKIL42pTjUoBNZrx7zwWr/eWeE294mHLH60nGc7HBVsnN
-	 mHi84Fj8xXC12VUh1R1/Dg14UV22HTZGInV0oKdkocpJo9YXz5btVupLw70hiUfFNW
-	 gaqKIygTuUjnA==
+	b=eL7P5sQOnRUqovuCINXrhkkCMFQg4gJz9lHl+mo5l/7tWzuLIYX1MykUtmft4cIo2
+	 M+FcdXMoQ4rswOfqo73Od6nx4/NZcLe4hChmGlU7e8EHcktUR9bbKkyMDXjIyfyf9B
+	 eV78dkZWgUFtYC1qxRKZKBtpzjNh1YNv+xYbvGb/59goFKFuu3NOIeGjgRpvSgtIPo
+	 8ivmmDGfUlUajD9Xi2Zb0jv40IpLIkZ1zlVqLGUDtdGxm942GdK2191iVOUAdgY/d9
+	 LkEDqWs4BcK2jEMPeiyQHLfliXA1m2lVAX62EVolUfTIC9T8HiuTytz5hngxpheUFV
+	 LHEYk2tMnbFvw==
 From: Kees Cook <kees@kernel.org>
 To: Luis Chamberlain <mcgrof@kernel.org>
 Cc: Kees Cook <kees@kernel.org>,
@@ -144,9 +144,9 @@ Cc: Kees Cook <kees@kernel.org>,
 	netdev@vger.kernel.org,
 	linux-fsdevel@vger.kernel.org,
 	linux-hardening@vger.kernel.org
-Subject: [PATCH 03/11] moduleparam: Add DEFINE_KERNEL_PARAM_OPS macro family
-Date: Thu, 21 May 2026 06:33:16 -0700
-Message-Id: <20260521133326.2465264-3-kees@kernel.org>
+Subject: [PATCH 06/11] moduleparam: Add seq_buf-based .get callback alongside .get_str
+Date: Thu, 21 May 2026 06:33:19 -0700
+Message-Id: <20260521133326.2465264-6-kees@kernel.org>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20260521133315.work.845-kees@kernel.org>
 References: <20260521133315.work.845-kees@kernel.org>
@@ -163,107 +163,111 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=3674; i=kees@kernel.org; h=from:subject; bh=3qCwRbQEn6qV8q9ahXLM93O2aOukjHk7G2WsPfFNfHo=; b=owGbwMvMwCVmps19z/KJym7G02pJDFn8nAuull67+C5txg2e1YGCbPvcujb6Wx/JN/xsvCs3x vgezzqPjlIWBjEuBlkxRZYgO/c4F4+37eHucxVh5rAygQxh4OIUgIkYvWZkOH+4UFL72GLVDkfh BLNPz5NZzv2JWSzlWpkxwSTGt4VrNiPD9r2rxE49blEzn3CRa4uBQPBb6Zti6VkbO1blT5RSdFv EBQA=
+X-Developer-Signature: v=1; a=openpgp-sha256; l=3696; i=kees@kernel.org; h=from:subject; bh=T4N6FoAPN5e2cqvWSGS7oEs1xiLk99wdr1LKck0ur78=; b=owGbwMvMwCVmps19z/KJym7G02pJDFn8nIs2HH8iHuPEcem9X7HM2rJrS2LZVs8vP/M+reLdF K3trxtfdZSyMIhxMciKKbIE2bnHuXi8bQ93n6sIM4eVCWQIAxenAExEwZOR4alreLoXi13roV/i 9/tfrbvsVLZZb2L3Qh33TS8N1v2/U8fwT//2x1KTz9OUg91P7LvT39NrdVL4qeIHRzc9ZcnAHRc /cgAA
 X-Developer-Key: i=kees@kernel.org; a=openpgp; fpr=A5C3F68F229DD60F723E6E138972F4DFDC6DC026
 Content-Transfer-Encoding: 8bit
 
-Add macros that define a struct kernel_param_ops initializer through a
-macro so the underlying field layout can evolve without touching every
-call site. Three variants cover the three cases:
+Add a new struct kernel_param_ops::get callback whose signature
+takes a struct seq_buf instead of a raw char buffer:
 
- DEFINE_KERNEL_PARAM_OPS(name, set, get) // basic
- DEFINE_KERNEL_PARAM_OPS_NOARG(name, set, get) // set KERNEL_PARAM_OPS_FL_NOARG
- DEFINE_KERNEL_PARAM_OPS_FREE(name, set, get, free) // also set .free
+  int (*get)(struct seq_buf *sb, const struct kernel_param *kp);
 
-Callers prefix their own visibility qualifiers, e.g.:
+The previously-legacy .get field is now .get_str (char *buffer);
+.get is the new seq_buf-aware form.  param_attr_show() prefers .get
+when set, otherwise falls back to .get_str.  WARN_ON_ONCE() if both
+are set.  Return contract for .get:
 
-  static DEFINE_KERNEL_PARAM_OPS(my_ops, my_set, my_get);
+  < 0 : errno propagated to userspace; seq_buf contents discarded
+  = 0 : success; length derived from seq_buf_used()
+  > 0 : forbidden; the dispatcher WARN_ON_ONCE()s and treats as 0
 
-Also update module_param_call() and STANDARD_PARAM_DEF() to use
-DEFINE_KERNEL_PARAM_OPS internally so the generated ops table will go
-through the same macro as everything else.
+The default policy on seq_buf_has_overflowed() is silent truncation,
+matching scnprintf()/sysfs_emit() behaviour.  Callbacks that want a
+specific overflow errno can check seq_buf_has_overflowed() and
+return their preferred error.
 
-Subsequent commits convert all open-coded struct kernel_param_ops
-definitions to use these macros, in preparation for migrating to a
-seq_buf .get API.
+No callbacks use .get yet; the legacy path is still the only one in use
+after this commit. A subsequent commit teaches DEFINE_KERNEL_PARAM_OPS
+to route initializers by type.
 
 Signed-off-by: Kees Cook <kees@kernel.org>
 ---
- include/linux/moduleparam.h | 36 ++++++++++++++++++++++++++++++++++--
- kernel/params.c             |  6 ++----
- 2 files changed, 36 insertions(+), 6 deletions(-)
+ include/linux/moduleparam.h | 13 ++++++++++++-
+ kernel/params.c             | 26 ++++++++++++++++++++++++--
+ 2 files changed, 36 insertions(+), 3 deletions(-)
 
 diff --git a/include/linux/moduleparam.h b/include/linux/moduleparam.h
-index 075f28585074..26bf45b36d02 100644
+index f5f4148e2504..c52120f6ac28 100644
 --- a/include/linux/moduleparam.h
 +++ b/include/linux/moduleparam.h
-@@ -68,6 +68,39 @@ struct kernel_param_ops {
+@@ -7,6 +7,7 @@
+ #include <linux/build_bug.h>
+ #include <linux/compiler.h>
+ #include <linux/init.h>
++#include <linux/seq_buf.h>
+ #include <linux/stringify.h>
+ #include <linux/sysfs.h>
+ #include <linux/types.h>
+@@ -62,7 +63,17 @@ struct kernel_param_ops {
+ 	unsigned int flags;
+ 	/* Returns 0, or -errno.  arg is in kp->arg. */
+ 	int (*set)(const char *val, const struct kernel_param *kp);
+-	/* Returns length written or -errno.  Buffer is 4k (ie. be short!) */
++	/*
++	 * Format the parameter's value into @s.  Return 0 on success
++	 * (length derived from seq_buf_used()) or -errno on error.
++	 * Exactly one of .get and .get_str should be set; the dispatcher
++	 * WARNs and prefers .get if both are.
++	 */
++	int (*get)(struct seq_buf *s, const struct kernel_param *kp);
++	/*
++	 * Returns length written or -errno.  Buffer is 4k (ie. be short!).
++	 * Deprecated: callbacks should implement .get instead.
++	 */
+ 	int (*get_str)(char *buffer, const struct kernel_param *kp);
+ 	/* Optional function to free kp->arg when module unloaded. */
  	void (*free)(void *arg);
- };
- 
-+/*
-+ * Define a const struct kernel_param_ops initializer. Callers prefix with
-+ * any required visibility qualifiers (typically "static"):
-+ *
-+ *   static DEFINE_KERNEL_PARAM_OPS(my_ops, my_set, my_get);
-+ *
-+ * Routing the @_set and @_get function pointers through the macro
-+ * (rather than naming the struct fields at every call site) lets the
-+ * field layout change in one place when callbacks are migrated to a
-+ * new signature.
-+ */
-+#define DEFINE_KERNEL_PARAM_OPS(_name, _set, _get)			\
-+	const struct kernel_param_ops _name = {				\
-+		.set = (_set),						\
-+		.get = (_get),						\
-+	}
-+
-+/* As DEFINE_KERNEL_PARAM_OPS, with KERNEL_PARAM_OPS_FL_NOARG set. */
-+#define DEFINE_KERNEL_PARAM_OPS_NOARG(_name, _set, _get)		\
-+	const struct kernel_param_ops _name = {				\
-+		.flags = KERNEL_PARAM_OPS_FL_NOARG,			\
-+		.set = (_set),						\
-+		.get = (_get),						\
-+	}
-+
-+/* As DEFINE_KERNEL_PARAM_OPS, with an additional .free callback. */
-+#define DEFINE_KERNEL_PARAM_OPS_FREE(_name, _set, _get, _free)		\
-+	const struct kernel_param_ops _name = {				\
-+		.set = (_set),						\
-+		.get = (_get),						\
-+		.free = (_free),					\
-+	}
-+
- /*
-  * Flags available for kernel_param
-  *
-@@ -311,8 +344,7 @@ struct kparam_array
-  * kernel_param_ops), use module_param_cb() instead.
-  */
- #define module_param_call(name, _set, _get, arg, perm)			\
--	static const struct kernel_param_ops __param_ops_##name =	\
--		{ .flags = 0, .set = _set, .get = _get };		\
-+	static DEFINE_KERNEL_PARAM_OPS(__param_ops_##name, _set, _get); \
- 	__module_param_call(MODULE_PARAM_PREFIX,			\
- 			    name, &__param_ops_##name, arg, perm, -1, 0)
- 
 diff --git a/kernel/params.c b/kernel/params.c
-index 752721922a15..2cbad1f4dd06 100644
+index 6852caea1785..4eda2d23ddf2 100644
 --- a/kernel/params.c
 +++ b/kernel/params.c
-@@ -222,10 +222,8 @@ char *parse_args(const char *doing,
- 		return scnprintf(buffer, PAGE_SIZE, format "\n",	\
- 				*((type *)kp->arg));			\
- 	}								\
--	const struct kernel_param_ops param_ops_##name = {			\
--		.set = param_set_##name,				\
--		.get = param_get_##name,				\
--	};								\
-+	DEFINE_KERNEL_PARAM_OPS(param_ops_##name,			\
-+				param_set_##name, param_get_##name);	\
- 	EXPORT_SYMBOL(param_set_##name);				\
- 	EXPORT_SYMBOL(param_get_##name);				\
- 	EXPORT_SYMBOL(param_ops_##name)
+@@ -553,12 +553,34 @@ static ssize_t param_attr_show(const struct module_attribute *mattr,
+ {
+ 	int count;
+ 	const struct param_attribute *attribute = to_param_attr(mattr);
++	const struct kernel_param_ops *ops = attribute->param->ops;
+ 
+-	if (!attribute->param->ops->get_str)
++	if (!ops->get && !ops->get_str)
+ 		return -EPERM;
+ 
++	WARN_ON_ONCE(ops->get && ops->get_str);
++
+ 	kernel_param_lock(mk->mod);
+-	count = attribute->param->ops->get_str(buf, attribute->param);
++	if (ops->get) {
++		struct seq_buf s;
++
++		seq_buf_init(&s, buf, PAGE_SIZE);
++		count = ops->get(&s, attribute->param);
++		if (count >= 0) {
++			WARN_ON_ONCE(count > 0);
++			count = seq_buf_used(&s);
++			/* Make sure string is terminated. */
++			seq_buf_str(&s);
++			/*
++			 * If overflowed, reduce count by 1 for trailing
++			 * NUL byte.
++			 */
++			if (seq_buf_has_overflowed(&s))
++				count--;
++		}
++	} else {
++		count = ops->get_str(buf, attribute->param);
++	}
+ 	kernel_param_unlock(mk->mod);
+ 	return count;
+ }
 -- 
 2.34.1
 
