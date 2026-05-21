@@ -1,68 +1,64 @@
-Return-Path: <linuxppc-dev+bounces-21334-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21335-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 77975CD5BB7
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 May 2026 13:59:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BAAB1CD4F3D
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 May 2026 14:18:06 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gLqlt65c0z2xn3;
-	Thu, 21 May 2026 23:59:38 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::54a"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779371978;
-	cv=none; b=RWxNqoNTp2EcY1nWfGGW1HYvbIe7fgydgIPHaXR0Sv6681jnM14RvAfONV0GUZknQpAI3Ff0Me2oWvM3aCvRAK2qYMbAJUkUowhwRs+h73pnYFbSSIfTKxiFJXx9SSli1T+UbE+3YXwG39TaShY7DUWLLOZzK099Nxd5aW7L+Dng1Lww1ADpY6XnPZSXAStDqz1IN14IFDuHr/mguNy9zLR32+DZaHlgM7a2emzTlIM77hCW9TzOdTWbcUE7BmvIQsQMK7s+WDCxi3reOirux5l7FgYNZ59m/DzGujBz0cDp1VU9VZpVjrMMFlsA82JoxS576eYDzfYrO0187tIFVQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gLr990VHlz2xqJ;
+	Fri, 22 May 2026 00:18:05 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779373084;
+	cv=none; b=PY7b9CT5tWcEzXkukVyvFBNKQkFiK8qd+3KxPjPZDLOX7AtZIow5vxbGThiShCD0UIpCVuOLwujHxl2rRneuxQcRZ+eeX2ualESr9nU67HLpyuQCODwofq8nccbBDPrtYiOnMPe9ibaYLynzdL5zRm/6FKQt0aqPbrhvf/O6mqc2UjLdknUF8MHxox6/sh2pvzZbAZGyyy8WY+3s+ugEqfabO9ocI07W289rbdJE6XABasUNkbzYe1fCbTeFjez1noBb5GqWeyloBY1Su8tMJWg7aE15rhcsrsVAsNV997Ihxve6XWeSDHj33JTrlJMxs0EKffteg0LV4KAGfcU7+w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1779371978; c=relaxed/relaxed;
-	bh=tqeEG6FXEKElqAGUt/Z2qfbIbuB++N7b4Fh1Zt6D5dk=;
-	h=Date:In-Reply-To:Mime-Version:References:Message-ID:Subject:From:
-	 To:Cc:Content-Type; b=hTZnq5Al5nrXU6M/A5r5W78yN1EDUyZmEZzP68Xd7074Kqx9FZ9RJvAxNnF7kgaipblKwqGXKVk5oWQyVQD1H2B1EBxEOXwZ6TG3aPlF4flfyhz9BHKdER1wX80tuBk8C71wO0pBYrttq6vIp+cjYKF6B7odgpiHoeCUwNeFMeizw7pwKYO0MZP/Pi9ImgypKr4r01zp8YjLIL5/cAsn9rQvnInQInJkZRe5WppesL1Kon+yhJsEf01qOipE5fXydb8W0ysR+nnvEifY2eC2zf0rPeQ9IyBtkvidCo5P7cKhdA4TRToHxlfgwMRXd3cfJRCntHm/iznHMnf/HCRVDQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=bi3dkZ3H; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::54a; helo=mail-pg1-x54a.google.com; envelope-from=3xq8pagykdhgoawjfyckkcha.ykihejqtlly-zarheopo.kvhwxo.knc@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=flex--seanjc.bounces.google.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
+	t=1779373084; c=relaxed/relaxed;
+	bh=CU7Jj/X6QYmcmszy64Ym5CLJFYdXggn2LGX/XrIXs6A=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=Mi4XYvJPP7ffikgJT2qorGH7i36jjEt7oKsfuq/KrLV2sCyP3alT4gwTCTvn1oVkbsdwyRXmyW5qrPU0r4wsWU5JzIjatJwlpZQNmaU21YjL3HthqQQ0yJTWHHuESgBRpRidT9yZCfmVXBuzH+QcKt4/YqOM4aacMX0oSJxhQ8hnoYf2lpPRsuNKO+Em0jEZr9NPZ1F/0z38jt1kpa+6L9soR/bqdUUprIgkCBeEGMI3LYWbO15zcJvpzQ2LnWatAo3xMjZ7IoAD7XQW1+y1mtD88uo8vOayLWP9Z9y4jOcm8/RWyJVW/JMHuGFte/2J3A2L4kRHrLKKrolJ6u5Ywg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=AEw4Oz5F; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=acme@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=bi3dkZ3H;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=AEw4Oz5F;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--seanjc.bounces.google.com (client-ip=2607:f8b0:4864:20::54a; helo=mail-pg1-x54a.google.com; envelope-from=3xq8pagykdhgoawjfyckkcha.ykihejqtlly-zarheopo.kvhwxo.knc@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org)
-Received: from mail-pg1-x54a.google.com (mail-pg1-x54a.google.com [IPv6:2607:f8b0:4864:20::54a])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=acme@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gLqls5RnJz2xl5
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 May 2026 23:59:37 +1000 (AEST)
-Received: by mail-pg1-x54a.google.com with SMTP id 41be03b00d2f7-c829366cf25so9100257a12.0
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 May 2026 06:59:37 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20251104; t=1779371975; x=1779976775; darn=lists.ozlabs.org;
-        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
-         :date:from:to:cc:subject:date:message-id:reply-to;
-        bh=tqeEG6FXEKElqAGUt/Z2qfbIbuB++N7b4Fh1Zt6D5dk=;
-        b=bi3dkZ3HJCmebLWkNE7KaHbj72stNfJYksGfQv/oBIgURvMvXRpWvIEX6Mqv8DTVy2
-         DWnWzYvTlGueCN3mrUp1mI5NNpdTxIgn6OpDwx0J/6Qogf06mwJ4xpd1K2AWap7lKkGI
-         SH7he6F1YKvKE+GOCoH4LJUnzjs47iJZvfSkS6U4uHhSpw/e/HBKdOhrAMK8ojBFrNFI
-         iyiQJfzDTDYipRxgblmG2I8vBGygyo5ZYOymcUJcGmrBZ+flWoEsinSpE1Adrf/KPiHn
-         z7XLKuXDRAo6yeQvbLugSHe4zm4gfxERSN+vYcDnu4Zyynmus+1FAUnuvDXfUIbwDkgR
-         67AQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1779371975; x=1779976775;
-        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
-         :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=tqeEG6FXEKElqAGUt/Z2qfbIbuB++N7b4Fh1Zt6D5dk=;
-        b=joMdubm7Rls5a+P9cHEcLohiNVEd9/g0n7DbVl9SDr1ZeULNNbDHflJLv+2jGgxzth
-         z+02weSi8PmGIgQEkDbWoWH7gm90jhdv08RVf51gs8hvY9Y1++cCuCsEwIUlJoAgzvqe
-         w6Q7DGP/oVu7QxzTYBKRfpwLLNSPj28ppjW+gNTrHeQ7m1/CRp5hpTuzh9h3Zdffp7K7
-         v+KtaSWKmHfyAeWhybQeYBVnn5h21sWw+oCRGtd1O4p0RR9pfzQussnB6oxfjQNIsOQU
-         Cg9BRLBz3IVSgD9XdarmpdjtGPrFbkjETN+0iGgjUfYdacl48CXqoC4LzJR7k0ZvR6s0
-         BLhQ==
-X-Forwarded-Encrypted: i=1; AFNElJ+2xa8c4hY/bTAagEFsJy4Al2zFY5GF+mmN06C2ea7bzpFWDwJy1+u5GZCB23uE+y/8nzRMBxiKatj0VQI=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yxo1yY8QXQbKnx490gaZYfHvia2dhGSjxsoOEvT6pM3oid06eNc
-	incqPODAiP9X8T49Sz95BiPLd8SUuui0NXMqTgiCkAk1QMK1hsXrI2Z321e0J8Ufm+mhHQCjmrh
-	1+13G8A==
-X-Received: from pge1.prod.google.com ([2002:a05:6a02:2d01:b0:c79:83b3:cdf8])
- (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a05:6a20:431a:b0:39c:a78e:dba9
- with SMTP id adf61e73a8af0-3b308ac1b14mr3725831637.40.1779371973881; Thu, 21
- May 2026 06:59:33 -0700 (PDT)
-Date: Thu, 21 May 2026 06:59:33 -0700
-In-Reply-To: <20260521133326.2465264-4-kees@kernel.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gLr9800C3z2xnK
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 May 2026 00:18:03 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id A4DCF600C3;
+	Thu, 21 May 2026 14:18:01 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C30191F000E9;
+	Thu, 21 May 2026 14:18:00 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1779373081;
+	bh=CU7Jj/X6QYmcmszy64Ym5CLJFYdXggn2LGX/XrIXs6A=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=AEw4Oz5FwLp5Q4ZQCje3wIdhbs4n701tJg1D6NntHxCY1enISj0o/kIYTYiycJHBK
+	 n0y2N9/nYiQWGEDW6eCtizXtfL0z9Z4nPhMR1FEvyJR6+b7Al+8DTBrzzqwJO2RX65
+	 4kAqp0NHgZPVGYXaV+KAdFAlhWJfD9T21T+KAGyPBCWtzcSRSYGw7H5Pz37Xl4h2HM
+	 1YsrjrK2Br8MBQJyr+Bca4TJOp6VBsgzaCYT/Y07XxzoGiN/StSuaow94UZ7gzHvsn
+	 0CknFojpO0wbLHIINZoQvZHT7YZSrHA4ygG2W/LL5iEB5aoVjQ+xl1PAXLnsjD2b7W
+	 ZSBYHUCqJf8Vg==
+Date: Thu, 21 May 2026 11:17:58 -0300
+From: Arnaldo Carvalho de Melo <acme@kernel.org>
+To: Athira Rajeev <atrajeev@linux.ibm.com>
+Cc: Namhyung Kim <namhyung@kernel.org>, Ian Rogers <irogers@google.com>,
+	jolsa@kernel.org, adrian.hunter@intel.com, mpetlan@redhat.com,
+	tmricht@linux.ibm.com, maddy@linux.ibm.com,
+	linux-perf-users@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+	hbathini@linux.vnet.ibm.com, Tejas.Manhas1@ibm.com,
+	Tanushree.Shah@ibm.com, Shivani.Nittor@ibm.com
+Subject: Re: [PATCH] tools/perf/sched: Update process names of processes in
+ zombie state for both -s and -S options
+Message-ID: <ag8UFqPmRu8v4g_9@x1>
+References: <20260426093930.47809-1-atrajeev@linux.ibm.com>
+ <ae76k1BvfgcYI18K@google.com>
+ <230801A2-5F9C-42A6-9390-B44786309E30@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -75,79 +71,73 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-Mime-Version: 1.0
-References: <20260521133315.work.845-kees@kernel.org> <20260521133326.2465264-4-kees@kernel.org>
-Message-ID: <ag8PxTTi5NxT51EW@google.com>
-Subject: Re: [PATCH 04/11] treewide: Convert struct kernel_param_ops
- initializers to DEFINE_KERNEL_PARAM_OPS
-From: Sean Christopherson <seanjc@google.com>
-To: Kees Cook <kees@kernel.org>
-Cc: Luis Chamberlain <mcgrof@kernel.org>, Pengpeng Hou <pengpeng@iscas.ac.cn>, 
-	Petr Pavlu <petr.pavlu@suse.com>, Richard Weinberger <richard@nod.at>, 
-	Anton Ivanov <anton.ivanov@cambridgegreys.com>, Johannes Berg <johannes@sipsolutions.net>, 
-	"Rafael J. Wysocki" <rafael@kernel.org>, Len Brown <lenb@kernel.org>, Corey Minyard <corey@minyard.net>, 
-	Gabriel Somlo <somlo@cmu.edu>, "Michael S. Tsirkin" <mst@redhat.com>, 
-	Jani Nikula <jani.nikula@linux.intel.com>, 
-	Joonas Lahtinen <joonas.lahtinen@linux.intel.com>, Rodrigo Vivi <rodrigo.vivi@intel.com>, 
-	Tvrtko Ursulin <tursulin@ursulin.net>, David Airlie <airlied@gmail.com>, 
-	Simona Vetter <simona@ffwll.ch>, Bart Van Assche <bvanassche@acm.org>, Jason Gunthorpe <jgg@ziepe.ca>, 
-	Leon Romanovsky <leon@kernel.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, 
-	Hans de Goede <hansg@kernel.org>, Mauro Carvalho Chehab <mchehab@kernel.org>, 
-	Bjorn Helgaas <bhelgaas@google.com>, Hannes Reinecke <hare@suse.de>, 
-	"James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>, 
-	"Martin K. Petersen" <martin.petersen@oracle.com>, Daniel Lezcano <daniel.lezcano@kernel.org>, 
-	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>, 
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby <jirislaby@kernel.org>, 
-	Alan Stern <stern@rowland.harvard.edu>, Jason Wang <jasowang@redhat.com>, 
-	Xuan Zhuo <xuanzhuo@linux.alibaba.com>, 
-	"Eugenio =?utf-8?B?UMOpcmV6?=" <eperezma@redhat.com>, Jason Baron <jbaron@akamai.com>, 
-	Jim Cromie <jim.cromie@gmail.com>, Tiwei Bie <tiwei.btw@antgroup.com>, 
-	Benjamin Berg <benjamin.berg@intel.com>, 
-	"Ilpo =?utf-8?B?SsOkcnZpbmVu?=" <ilpo.jarvinen@linux.intel.com>, 
-	"David E. Box" <david.e.box@linux.intel.com>, "Maciej W. Rozycki" <macro@orcam.me.uk>, 
-	Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Peter Zijlstra <peterz@infradead.org>, 
-	Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>, 
-	Paolo Bonzini <pbonzini@redhat.com>, Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>, 
-	Borislav Petkov <bp@alien8.de>, Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org, 
-	"H. Peter Anvin" <hpa@zytor.com>, Vinod Koul <vkoul@kernel.org>, Frank Li <Frank.Li@kernel.org>, 
-	Daniel Gomez <da.gomez@kernel.org>, Sami Tolvanen <samitolvanen@google.com>, 
-	Aaron Tomlin <atomlin@atomlin.com>, Alexander Potapenko <glider@google.com>, Marco Elver <elver@google.com>, 
-	Dmitry Vyukov <dvyukov@google.com>, Andrew Morton <akpm@linux-foundation.org>, 
-	John Johansen <john.johansen@canonical.com>, Paul Moore <paul@paul-moore.com>, 
-	James Morris <jmorris@namei.org>, "Serge E. Hallyn" <serge@hallyn.com>, 
-	Andy Shevchenko <andriy.shevchenko@linux.intel.com>, 
-	Georgia Garcia <georgia.garcia@canonical.com>, kvm@vger.kernel.org, 
-	dmaengine@vger.kernel.org, linux-modules@vger.kernel.org, 
-	kasan-dev@googlegroups.com, linux-mm@kvack.org, apparmor@lists.ubuntu.com, 
-	linux-security-module@vger.kernel.org, linux-um@lists.infradead.org, 
-	linux-acpi@vger.kernel.org, openipmi-developer@lists.sourceforge.net, 
-	qemu-devel@nongnu.org, intel-gfx@lists.freedesktop.org, 
-	dri-devel@lists.freedesktop.org, linux-rdma@vger.kernel.org, 
-	linux-media@vger.kernel.org, linux-pci@vger.kernel.org, 
-	linux-scsi@vger.kernel.org, linux-pm@vger.kernel.org, 
-	linuxppc-dev@lists.ozlabs.org, linux-serial@vger.kernel.org, 
-	linux-usb@vger.kernel.org, usb-storage@lists.one-eyed-alien.net, 
-	virtualization@lists.linux.dev, linux-kernel@vger.kernel.org, 
-	linux-arch@vger.kernel.org, netdev@vger.kernel.org, 
-	linux-fsdevel@vger.kernel.org, linux-hardening@vger.kernel.org
-Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <230801A2-5F9C-42A6-9390-B44786309E30@linux.ibm.com>
 
-On Thu, May 21, 2026, Kees Cook wrote:
-> Using Coccinelle, rewrite every struct kernel_param_ops initializer that
-> sets .get into a DEFINE_KERNEL_PARAM_OPS-family macro invocation,
-> for example:
+On Thu, May 21, 2026 at 02:02:53PM +0530, Athira Rajeev wrote:
+> > On 27 Apr 2026, at 11:26 AM, Namhyung Kim <namhyung@kernel.org> wrote:
+> > On Sun, Apr 26, 2026 at 03:09:30PM +0530, Athira Rajeev wrote:
+> >> In redhat perftool testsuite, observed fail for this test:
+> >>    -- [ FAIL ] -- perf_sched :: test_timehist :: --with-summary (output regexp parsing)
+> >> 
+> >> This led to analysis of "perf sched timehist" summary options.
+> >> 
+> >>  # perf sched record -a -o ./perf.data -- sleep 0.1
+> >>   This will record using perf sched record
+> >> 
+> >> perf sched timeliest has two options "-s" and "-S"
+> >>  # perf sched -i ./perf.data timehist -S
+> >> -S : Captures summary also at the end
+> >> 
+> >>  # perf sched -i ./perf.data timehist -s
+> >> -s : Captures only summary
+> >> 
+> >> The test saves -s result which has only summary and compares with
+> >> summary which comes at the end from -S . Since there is a difference
+> >> in these two, test fails.
+> >> 
+> >> Checking the behaviour change in -S and -s results, difference is:
+> >> 
+> >>                  rcu_sched[16]       2          4        0.013      0.001       0.003       0.006   33.23       0
+> >>               migration/11[73]       2          1        0.006      0.006       0.006       0.006    0.00       0
+> >>                migration/3[33]       2          1        0.006      0.006       0.006       0.006    0.00       0
+> >> -               :216753[216753]      -1          1        0.041      0.041       0.041       0.041    0.00       0
+> >> +                 sleep[216753]      -1          1        0.041      0.041       0.041       0.041    0.00       0
+> >>                migration/8[58]       2          1        0.005      0.005       0.005       0.005    0.00       0
+> >>            NetworkManager[811]       1          2        0.089      0.028       0.044       0.060   36.06       0
+> >>               migration/13[83]       2          1        0.005      0.005       0.005       0.005    0.00       0
+> >> 
+> >> Here 216753 is pid for sleep which is a zombie process. This is
+> >> happening in latest kernel due to an update in "-S" result.
+> >> In -S, the process name appears in the results "sleep[216753]",
+> >> where as in the -s, only pid is present in the summary result
+> >> ":216753[216753]".
+> >> 
+> >> After commit 39f473f6d0b2 ("perf sched timehist: decode process names
+> >> of processes in zombie state")
+> >> for -S option, if process name is using pid, it uses different way to
+> >> set it. So that we get the process name and not just Pid.
+> >> 
+> >> This change went in only for timehist_print_sample() function.
+> >> Add this improvement in generic place so that even -s option (which
+> >> captures summary) also will have meaningful information.
+> >> 
+> >> Signed-off-by: Athira Rajeev <atrajeev@linux.ibm.com>
+> > 
+> > Acked-by: Namhyung Kim <namhyung@kernel.org>
+> > 
+> > Thanks,
+> > Namhyung
+> Hi,
 > 
-> @@
-> declarer name DEFINE_KERNEL_PARAM_OPS;
-> identifier OPS;
-> expression SET, GET;
-> @@
-> - const struct kernel_param_ops OPS = {
-> -       .set = SET,
-> -       .get = GET,
-> - };
-> + DEFINE_KERNEL_PARAM_OPS(OPS, SET, GET);
+> Can we please have this pulled in, if the patch looks fine ?
 
-IMO, "OPS, GET, SET" is more intuitive, especially since that's the order used
-by DEFINE_SIMPLE_ATTRIBUTE and DEFINE_DEBUGFS_ATTRIBUTE.
+Can you please check applying it on top of current perf-tools-next?
+
+Thanks,
+
+- Arnaldo
 
