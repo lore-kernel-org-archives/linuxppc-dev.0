@@ -1,54 +1,85 @@
-Return-Path: <linuxppc-dev+bounces-21401-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21402-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 95303CD5BB0
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 May 2026 13:59:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0BF3DCD5BB3
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 May 2026 15:28:20 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gMRj416jBz2xFl;
-	Fri, 22 May 2026 23:59:20 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=212.227.17.21
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779458360;
-	cv=none; b=Akk65Q15yuw+I3ws8UI2P60gIeBtODaMmx6sUIh0X7qQVcTqwAqVd0+NcPSjBCJi+TxmUYcNmCUa63Fc8qLN09zx0cZDuUdll15Ea0g4JMvWpnqu3ywxZDB7cAX1wIjdJpWpZeDo66nP89a7lnH/WmHQpzejtNtdI0IiJr+VO6uJIqD8Hk0ssgrDOC2JTXhFBpaw0xmuSP7+gxGISdyccZwlIcwi43Bh1DNTkj8jQhSymV2rEf+uhfWxzYw+uwPkd5Y78XNF6A5Mn6vyHwfVDf0UJBa1/+f4LAKCSAKCXSJayp/BT9+Qx74rzl/sgk/hLRw5K2Vx1olAY/QUOT2rDw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gMTgl1mtSz2xSN;
+	Sat, 23 May 2026 01:28:19 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779463699;
+	cv=none; b=nUkt92A7hfjrtoq1O46pAsTcuztRNZKAVsFJFUTjh4k827XEoxXB4HcdehFZM5WiQ6cXSg9SGUxhaZsG/xwhwy1YaV9vT+IOD6OVt2pcXA7hz+/7fWD/7meZJnrlWcYAkNTZ05RSG2BDonZ5z5YiQr7e9nwen78EpKZJSz40Dk5qXAc3OK/JJl3WKmvFNSFvF/CyOA0dIilRyVU0pKv7c6aA3zIRT9Y+lECXa2v3XccLZnjDN6/A2HilZKM5hXDoLh+OBOQaBC8UgxB7k+Uf95MfbslZ0LSW74+qHh6cqBT+8aplULqBpdwP6KSgPw3+z5uSVNk0Wu7YerSvpyzSQQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1779458360; c=relaxed/relaxed;
-	bh=KMvj1aWLuME+cEJb5+X2gqSdfvUyTzaMWJ39Wcv6FfE=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=oTR6gxGlT9OsOoOUPXBn+TP0LyycS/2s7aJ1mhlF+5mL142IVIhE0McKU+P57nicH88qakN/ep2E84JhIxjKscXfMqh30NIuEXMZpYRqmikmdRSwHvOhBv3viNtOxJ0IEUJQy+B2i786W+cHKk2cgUTCtus2t506u9ok3IV0uC5Ygfxo5alA1Q0+x8FLc4b7i17n0ANLes5G2A3YEvxwm3XWqPKkvZoE+TAmgB170VDSDD2lAODQe5/6HrJJ24JhVKZ/9XPQ4viMPNWjeR4t1DcI6MBBuz7fKeGkHePKib6F85ZM2h+nzVdQ7IXey1N+qaZVrRpxr5w6JRXL818Ajw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; dkim=pass (2048-bit key; secure) header.d=gmx.de header.i=deller@gmx.de header.a=rsa-sha256 header.s=s31663417 header.b=qxWpXiyQ; dkim-atps=neutral; spf=pass (client-ip=212.227.17.21; helo=mout.gmx.net; envelope-from=deller@gmx.de; receiver=lists.ozlabs.org) smtp.mailfrom=gmx.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
+	t=1779463699; c=relaxed/relaxed;
+	bh=rMrxGouPSv/RreY0Aq+Pr4WXmG770mQeP5vSZQlFE1A=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=GLHLqCqL1krN5JuVeSUh64kqEgN71+jeB/4/pAL2JiuWUr0wKwMaLvLLVShdavh1sKGd2VtUGYHODSKrtk5yzXfr5zGpFc72RRB5IuOFdpzRDwRsUKq7/5pZ2/MHqqTXSEhRts7efHrWMXWU7SnbbZdV3S9NxmcTXQY1yqJxcucyx6ORGB79W33qYhHZ2P9UiVIkO/6NMV2xZA5xn9wUon/HzADcWNwFS1H0wf6cC1CyfOfXWbEInqeWU83xLGEvOVjw9QxTrxD4XqbQEuUp3lbnBSa64Rrl2rcea0X0AsmX1EXaoUmunkqdbSaa8XF53+gPvxucqINB736HUJPjXA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ROYfWapt; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=gmx.de header.i=deller@gmx.de header.a=rsa-sha256 header.s=s31663417 header.b=qxWpXiyQ;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ROYfWapt;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmx.de (client-ip=212.227.17.21; helo=mout.gmx.net; envelope-from=deller@gmx.de; receiver=lists.ozlabs.org)
-Received: from mout.gmx.net (mout.gmx.net [212.227.17.21])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gMRj02KfVz2xBb
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 May 2026 23:59:14 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.de;
-	s=s31663417; t=1779458342; x=1780063142; i=deller@gmx.de;
-	bh=KMvj1aWLuME+cEJb5+X2gqSdfvUyTzaMWJ39Wcv6FfE=;
-	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:To:Cc:
-	 References:From:In-Reply-To:Content-Type:
-	 Content-Transfer-Encoding:cc:content-transfer-encoding:
-	 content-type:date:from:message-id:mime-version:reply-to:subject:
-	 to;
-	b=qxWpXiyQJJzGuqGd10NL1vlIHWZm/Bg58XmQwseJvIJWeZ8Ow2GX55WiSbmWCvWc
-	 UGdEEZvHo/xH3d9mKlyAt1IH8+cdd2/Np+qgqVZ+Bp5pN6eC2v0afLsGBaxouLOL4
-	 1QasVKNjQgpIl7lu27JY77XP7jPRbdDlZ10VTteGS6nKZUzSrqscmrsI710KAuYIn
-	 1hxk/7Nz2AfNtsmiWeAa+WIYI7aTxLSABJmRA1b56vdXGncUNv9L4Q2N1NaToxQLK
-	 OADRb7kkuDo1tcLLQIf+97wxsQOYikUYPtmA+w1o3TTyGE3SSl2nKmsNk8tHKbBy4
-	 DIN0y92xXAxtfRprMw==
-X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from client.hidden.invalid by mail.gmx.net (mrgmx105
- [212.227.17.168]) with ESMTPSA (Nemesis) id 1MN5eX-1wjKjL17Th-00PZJY; Fri, 22
- May 2026 15:59:02 +0200
-Message-ID: <8e37cd60-4886-4018-83bc-8c6720264ecd@gmx.de>
-Date: Fri, 22 May 2026 15:59:00 +0200
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gMTgk1B8wz2xK4
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 May 2026 01:28:17 +1000 (AEST)
+Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 64MEYxmc2191659;
+	Fri, 22 May 2026 15:27:58 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:date:from:message-id:mime-version
+	:subject:to; s=pp1; bh=rMrxGouPSv/RreY0Aq+Pr4WXmG770mQeP5vSZQlFE
+	1A=; b=ROYfWaptcTTaa6DH8qXsx/ilF9y0OxFZsmzIF53EzE15tlYLYEYC4EO8C
+	FG+OstVtU5bULxrfhtfUNSaKlZTsfCM3Bcb7pvJVzvDPN/RO9ZbR8QkmuqXCQdxx
+	tYgXo6KnB5dRgQJ/YqsKFjFngEi4C6ul2uuPKhtQpAtdvsYFxFWIF9iJyiJaLBlK
+	fB9tONaiJtOmRX/KahTV3FfE3OejxzMJJCeBhxSsPsgYyEw4JLAjuRUEIDlEDT5y
+	pqBBpnR/ueq7UPsiYIaHTBpPfQwnearqzwJlbyQ1bbPp+0rjwvU5suqyUyBNgQvR
+	lZItyqvX/46INma76kMSmW2tO5mTg==
+Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4e6hawk6td-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 22 May 2026 15:27:57 +0000 (GMT)
+Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma11.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 64MFO7lj013973;
+	Fri, 22 May 2026 15:27:57 GMT
+Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
+	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4e75kyh5wx-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 22 May 2026 15:27:56 +0000 (GMT)
+Received: from smtpav04.fra02v.mail.ibm.com (smtpav04.fra02v.mail.ibm.com [10.20.54.103])
+	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 64MFRraX23659004
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Fri, 22 May 2026 15:27:53 GMT
+Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 529212004B;
+	Fri, 22 May 2026 15:27:53 +0000 (GMT)
+Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id E313E20043;
+	Fri, 22 May 2026 15:27:49 +0000 (GMT)
+Received: from localhost.localdomain (unknown [9.124.216.126])
+	by smtpav04.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Fri, 22 May 2026 15:27:49 +0000 (GMT)
+From: Amit Machhiwal <amachhiw@linux.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org, Madhavan Srinivasan <maddy@linux.ibm.com>
+Cc: Vaibhav Jain <vaibhav@linux.ibm.com>,
+        Amit Machhiwal <amachhiw@linux.ibm.com>,
+        Anushree Mathur <anushree.mathur@linux.ibm.com>,
+        Paolo Bonzini <pbonzini@redhat.com>,
+        Nicholas Piggin <npiggin@gmail.com>,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+        Jonathan Corbet <corbet@lwn.net>,
+        Shuah Khan <skhan@linuxfoundation.org>, kvm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, lkp@intel.com
+Subject: [PATCH v3 0/5] KVM: PPC: Handle CPU compatibility mode for nested guests
+Date: Fri, 22 May 2026 20:57:39 +0530
+Message-ID: <20260522152744.55251-1-amachhiw@linux.ibm.com>
+X-Mailer: git-send-email 2.50.1
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -62,183 +93,166 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 0/4] fbdev: Internalize fbcon
-To: Thomas Zimmermann <tzimmermann@suse.de>
-Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-References: <20260522123019.211059-1-tzimmermann@suse.de>
-Content-Language: en-US
-From: Helge Deller <deller@gmx.de>
-Autocrypt: addr=deller@gmx.de; keydata=
- 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
-In-Reply-To: <20260522123019.211059-1-tzimmermann@suse.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:PhttPxjbtarZX/dn2e5bcyXGol4bkp3O5paNGZSi5UW2R5YckDk
- ZueNxWYguIhBF4QUMwGeuF5Br4UBa7nMv5M/1Mw1GLep9V1OMKjYIi5KvbmcHh4xJVJKh68
- RRLm9wvk1ExDSkBYYU+INmpQULSoc2Z5hgWpqMVXnEq/GkcbxFAKMlgB+0hyzNfOg327Lxa
- GgX6rMtXrkKOgHx2LtuMw==
-UI-OutboundReport: notjunk:1;M01:P0:z2frKFNg8Fo=;lNNosPOz9KzvwjKwcN0t64SnhBc
- 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
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTIyMDE1MCBTYWx0ZWRfX4dQaiEJFMzwV
+ Dr3Vm1pDwnJA4jaIA8CtSpq8uTbwRRa1iZBXTv2xggVWODP6fm/crVu3bVk9sef+6BRd9Dr0LTg
+ Gdy6xk8pp85S5JiP72+ZNQ0YsCK494RRnh3+n+URtkk7bDNO3hsvZpdJ+KntLkNlJFyrBND8MG4
+ pcVVlQdhZaed73wzI82DCi17lp30P8+cvlxrwT0DQjb70Tz/WotBkkRPg/kwiAibwg7D17kVWq9
+ lR3LZ7qZa0VlWr6ozeDp6qzZArE2z9NbSG6RTL0cVj7R9lz1lWhSthgJSGNUfU+DXdNcBeUy7k4
+ 3rb0XmiGput7axMQBqs+zCnpJ8ChHELZoo79ZmK6DZfC5yHZWG3Jk/y6pcIUgzntjjiMckd82IZ
+ 5EsdvMH4ru/hA3uK7Czf40XDUP9DmCuVN7nQvqmBN7EnZmwVs8unSkZbTLI03/cFfnqJV4awaNl
+ B4WQD9LCE8V5tRKgjog==
+X-Authority-Analysis: v=2.4 cv=Np/htcdJ c=1 sm=1 tr=0 ts=6a1075fe cx=c_pps
+ a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
+ a=NGcC8JguVDcA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
+ a=RzCfie-kr_QcCd8fBx8p:22 a=VwQbUJbxAAAA:8 a=VnNF1IyMAAAA:8
+ a=XsWQ994mRvDqN3FwEnAA:9
+X-Proofpoint-ORIG-GUID: lxJtId-GrOVNYhhDbsrrvrB1xA96ZzBt
+X-Proofpoint-GUID: SKu5a__dTSr5dQAhGxcMvxMyNk8g9BNq
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-05-22_04,2026-05-18_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ bulkscore=0 spamscore=0 clxscore=1011 priorityscore=1501 impostorscore=0
+ lowpriorityscore=0 suspectscore=0 adultscore=0 phishscore=0 malwarescore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2605130000 definitions=main-2605220150
 
-On 5/22/26 14:28, Thomas Zimmermann wrote:
-> Turn fbcon into an internal client of fbdev. Manage all interactions
-> with graphics drivers within fbdev. Add helpers for these tasks and
-> convert drivers.
->=20
-> Fbdev's PS3 and SH-Mobile drivers update fbcon as part of user-invoked
-> mode changes. Call the new helpers, which also fix inconsistencies
-> among the various code paths.
->=20
-> Vga-switcheroo remaps the fbcon terminals when switching physical
-> outputs. For now, hide this in another helper. The call will later
-> move into DRM's fbdev emulation.
->=20
-> When all refactoring in place, fbdev manages fbcon interactions by
-> itself. Remove the public interfaces.
->=20
-> v2:
-> - use '#if defined' (Helge)
->=20
-> Thomas Zimmermann (4):
->    fbdev: Wrap user-invoked calls to fb_set_var() in helper
->    fbdev: Wrap user-invoked calls to fb_blank() in helper
->    fbdev: Wrap fbcon updates from vga-switcheroo in helper
->    fbdev: Do not export fbcon from fbdev
->=20
->   MAINTAINERS                            |  1 -
->   drivers/gpu/vga/vga_switcheroo.c       |  6 +--
->   drivers/video/fbdev/core/fb_chrdev.c   | 12 ++----
->   drivers/video/fbdev/core/fb_internal.h |  1 +
->   drivers/video/fbdev/core/fbcon.c       |  3 --
->   drivers/video/fbdev/core/fbcon.h       | 50 +++++++++++++++++++++++
->   drivers/video/fbdev/core/fbmem.c       | 35 +++++++++++++++-
->   drivers/video/fbdev/core/fbsysfs.c     |  9 +----
->   drivers/video/fbdev/ps3fb.c            |  5 +--
->   drivers/video/fbdev/sh_mobile_lcdcfb.c |  5 +--
->   include/linux/fb.h                     |  3 ++
->   include/linux/fbcon.h                  | 55 --------------------------
->   12 files changed, 98 insertions(+), 87 deletions(-)
->   delete mode 100644 include/linux/fbcon.h
+On POWER systems, newer processor generations can operate in compatibility
+modes corresponding to earlier generations (e.g., a Power11 system running
+in Power10 compatibility mode). In such cases, the effective CPU level
+exposed to guests differs from the physical processor generation.
 
-series applied to fbdev git tree.
-Thanks!
-Helge
+This creates a problem for nested virtualization. When booting a nested KVM
+guest (L2) inside a host KVM guest (L1) running in a compatibility mode,
+userspace (e.g., QEMU) may derive the CPU model from the raw hardware PVR
+and attempt to configure the nested guest accordingly. However, the L1
+partition is constrained by the compatibility level negotiated with the
+hypervisor (L0), and requests exceeding that level are rejected, leading to
+guest boot failures such as:
+
+  KVM-NESTEDv2: couldn't set guest wide elements
+
+This series addresses the issue in two steps:
+
+1. Detect and reject invalid compatibility requests early in KVM to avoid
+   late failures.
+
+2. Provide a mechanism for userspace to query the effective CPU
+   compatibility modes supported by the host, so it can select an
+   appropriate CPU model for nested guests.
+
+To achieve this, the series introduces a new KVM capability and ioctl
+(KVM_CAP_PPC_COMPAT_CAPS / KVM_PPC_GET_COMPAT_CAPS) that expose the
+compatibility modes supported by the host.
+
+Why a new UAPI?
+---------------
+While cpu-version is available in /proc/device-tree/cpus/<cpu#>/cpu-version
+on both L1 booted on PowerNV and PowerVM LPARs, the UAPI approach is
+preferable for several reasons:
+
+1. pHYP (L0) capabilities: On PowerVM, we need to rely on capabilities
+   negotiated with pHYP in KVM, not just device tree properties. The
+   cpu-version property depicts the current compat mode but doesn't point
+   to what all compat modes are supported for the nested guest.
+
+2. procfs dependency: Not all systems run with procfs enabled (CONFIG_PROC_FS
+   is optional). Minimal configurations like buildroot might disable it, but
+   KVM ioctl works regardless since it accesses kernel data structures
+   directly.
+
+3. Kernel validation: The kernel validates and normalizes the compatibility
+   information. Patch 1 adds validation logic that rejects invalid
+   compatibility requests early, ensuring userspace gets validated,
+   consistent data.
+
+4. Abstraction & stability: /proc/device-tree is an implementation detail.
+   The UAPI provides a stable interface that won't break if the underlying
+   mechanism changes.
+
+5. Semantic clarity: KVM_PPC_GET_COMPAT_CAPS clearly expresses what
+   compatibility modes can be used for KVM guests, vs. parsing device tree
+   which requires understanding the semantic meaning of cpu-version.
+
+The implementation supports both:
+
+  - PowerVM (nested API v2), where compatibility information is obtained
+    via the H_GUEST_GET_CAPABILITIES hypercall.
+  - PowerNV (nested API v1), where compatibility is derived from the device
+    tree ("cpu-version") representing the effective processor compatibility
+    level.
+
+This allows userspace (e.g., QEMU) to select a CPU model consistent with
+the host compatibility mode, avoiding mismatches and enabling successful
+nested guest boot.
+
+Changes in v3:
+  - Added "Why a new UAPI?" section to cover letter addressing questions
+    about the need for a new UAPI vs. using existing mechanisms like
+    /proc/device-tree
+  - Fixed initialization of 'r' in KVM_PPC_GET_COMPAT_CAPS ioctl handler
+    from 0 to -ENOTTY for proper error handling when the operation is not
+    supported
+  - Added Vaibhav's "Suggested-by" tags
+  - Have retained Anushree's "Tested-by" tags as no major code changes
+  - Fixed documentation build warning reported by kernel test robot and
+    added "Reported-by" and "Closes" tags to patch 5
+
+Changes in v2:
+  - Squashed patches 2 and 3 from v1 (capability introduction and ioctl
+    wiring) into a single patch for better logical grouping
+  - Changed kvm_ppc_compat_caps.flags from __u32 to __u64 for consistency
+    and future extensibility
+  - Addressed other review comments
+  - Improved commit messages with clearer explanations of the changes
+
+Patch summary:
+  [1/5] Validate arch_compat against host compatibility mode
+  [2/5] Introduce KVM_CAP_PPC_COMPAT_CAPS and wire up ioctl
+  [3/5] Implement capability retrieval for PowerVM (API v2)
+  [4/5] Add PowerNV support (API v1)
+  [5/5] Document the new ioctl
+
+Tested on:
+  - Power11 pSeries LPAR in Power10 compatibility mode (nested API v2)
+  - Power10 PowerNV system (and QEMU TCG PowerNV 11) with nested
+    virtualization (API v1) with various combinations of KVM L1/L2 guests
+    in various supported compatibility modes.
+
+With this series, nested guests boot successfully in configurations where
+they previously failed due to compatibility mismatches.
+
+Related QEMU series:
+  A corresponding QEMU series adds support for querying and using these
+  compatibility capabilities when configuring nested KVM guests:
+  https://lore.kernel.org/all/20260502140021.69712-1-amachhiw@linux.ibm.com/
+
+v2: https://lore.kernel.org/linuxppc-dev/20260513100755.83215-1-amachhiw@linux.ibm.com/
+v1: https://lore.kernel.org/linuxppc-dev/20260430054906.94431-1-amachhiw@linux.ibm.com/
+
+Amit Machhiwal (5):
+  KVM: PPC: Book3S HV: Validate arch_compat against host compatibility
+    mode
+  KVM: PPC: Introduce KVM_CAP_PPC_COMPAT_CAPS and wire up ioctl
+  KVM: PPC: Book3S HV: Implement compat CPU capability retrieval for KVM
+    on PowerVM
+  KVM: PPC: Book3S HV: Add support for compat CPU capabilities for KVM
+    on PowerNV
+  KVM: PPC: Document KVM_PPC_GET_COMPAT_CAPS ioctl
+
+ Documentation/virt/kvm/api.rst      | 35 ++++++++++++++++
+ arch/powerpc/include/asm/kvm_ppc.h  |  1 +
+ arch/powerpc/include/uapi/asm/kvm.h |  6 +++
+ arch/powerpc/kvm/book3s_hv.c        | 63 +++++++++++++++++++++++++++++
+ arch/powerpc/kvm/powerpc.c          | 21 ++++++++++
+ include/uapi/linux/kvm.h            |  4 ++
+ 6 files changed, 130 insertions(+)
+
+
+base-commit: 1d5dcaa3bd65f2e8c9baa14a393d3a2dc5db7524
+-- 
+2.50.1 (Apple Git-155)
 
