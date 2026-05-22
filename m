@@ -1,90 +1,90 @@
-Return-Path: <linuxppc-dev+bounces-21394-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21395-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 80DC6CD5BB1
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 May 2026 12:37:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3334ACD5BB1
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 May 2026 12:42:54 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gMPtk1n6Kz3brx;
-	Fri, 22 May 2026 22:37:34 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gMQ0r6WsQz3bpx;
+	Fri, 22 May 2026 22:42:52 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a07:de40:b251:101:10:150:64:2"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779453454;
-	cv=none; b=E44PIpnwNaUprKy/OEB11AMStd6qfSEcccMmA+1T8G+OEWu0zftfm1bIqvcG53Hyv+BQrw+FSDkTKm0V9H2Z6anl5UQymow+IyHTCAAqTxpXhk+7vZr/7ax6NekGNmWSHPLQdZTezybXWCcOxcWNatKfzPRL7r4rL+B87i51m1kryMZcUk5mVv0OO2JXxGCDWNIOR2bEzDX/w8ExdjS4MW4AJId3q4IUz40lH4JxodtLVs6Hh9YJYVdPU5MzpXNDTGBwpwadmlC/2nCJvq3Bhryq3VFw3LCHnsxZBlr4kUHPvjzUkMXif49ffeTAgSLGXFZC31sexpLQRk3sd5R3WQ==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779453772;
+	cv=none; b=bObGRb0m099YYpmpx34LJ+AKN90RyBd2FQiTaAGCFwe/MIGU2A9MzPS2MGJ7dD+Pf2aqPiXWyS2/2s41dVJFbu5WxIdArPKWZXrTijEItRadRZUAR1yhTIR8QCKuP8T8aMhtljN/8zuWfp91mKv4YBvvrRXBEht3MlU1gVIPhajd0lto3rF85jqy6qDoysG07M319oKLUmVlyyCq9CVCqaffUmM1ru1htuAiMzmBdZZRAAPLx4US2svsZesEdSZJo1/D3pq7r2oOVpx0EtRwkPUpHDMCLXXcSXIov57QUZUwNpo7KvbXrY+upzZW2yMLy1Gx8b/AWIjWNRA/JZFbRg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1779453454; c=relaxed/relaxed;
-	bh=vRL7lJ+FKh53s9XMUk0foKTPN+6R7sPbKwtDyw5wi7Q=;
+	t=1779453772; c=relaxed/relaxed;
+	bh=vBtaE/SLft/7bYaH+tW5iBuZ4PwLUahf4IAUa7S3OcI=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=jK93PllhCETB/CwxC6LxK3Iim/1ouo1e8AHSIPLTVBYOD5v4rXmrIUzMzgVyrCGIH1SxALcnc4/BXWO1j3H4z/TmuRx0TaVRrWX9ooCqKThc42cUcyS2kf8GDPuX1LFbEOFdceoN3G+w173FzQ8MlZRUuCp8kudb7j5xGGbgkZaCxT+E6K0QRlsfEXGOdTyJLgO8tfqROfUlxZew7vIJh6EvOI5hpo1tpXM7InP5UwAkA+PdG91IWIEV3K7iEe+jcHJ9hXWyV+zU5XzmeYEVyjThYH5NLceTlgZBm5uu9yI6w951o0BPm5awa4WndL1rpCFr2vjB47mkQR1KyhHYEQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de; dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=VmWO0Gdq; dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=c2R/9hIg; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=VmWO0Gdq; dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=c2R/9hIg; dkim-atps=neutral; spf=pass (client-ip=2a07:de40:b251:101:10:150:64:2; helo=smtp-out2.suse.de; envelope-from=tzimmermann@suse.de; receiver=lists.ozlabs.org) smtp.mailfrom=suse.de
+	 MIME-Version; b=IcLJ+OKJI+uDGELiX0+FrNPWZnHCWebyc55lO+8GekLJlHOtM6m4joTAVlzPKIPPyvcmI5/1kdl00LRf996iEoBYiVOmqNd2L8OkYGoNY7pJ91T0PtO3qIMWQ0Au5JtzXclphQfQdObr+4o4b/rr9EUtJAK0dbqxxs2BTAzkUCl2H77xVRA3dof0GHWZchYwfUpxSvDMlSvE3O44O6ON7AXAbAJXcCPJ+w7RLCcQwAiQyiFshPQD8YHBPzsVwvIt+BzBOwcQAdT+UALeEj/PdudGsn6OvTv0kevw2xPoszxj96D+R5BM+y06tVPHlI7asqPP6314qAen6j6vxhMPpw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de; dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=KWNrr3SG; dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=jYJ5Gux7; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=KWNrr3SG; dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=jYJ5Gux7; dkim-atps=neutral; spf=pass (client-ip=2a07:de40:b251:101:10:150:64:2; helo=smtp-out2.suse.de; envelope-from=tzimmermann@suse.de; receiver=lists.ozlabs.org) smtp.mailfrom=suse.de
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=VmWO0Gdq;
-	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=c2R/9hIg;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=VmWO0Gdq;
-	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=c2R/9hIg;
+	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=KWNrr3SG;
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=jYJ5Gux7;
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=KWNrr3SG;
+	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=jYJ5Gux7;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=2a07:de40:b251:101:10:150:64:2; helo=smtp-out2.suse.de; envelope-from=tzimmermann@suse.de; receiver=lists.ozlabs.org)
 Received: from smtp-out2.suse.de (smtp-out2.suse.de [IPv6:2a07:de40:b251:101:10:150:64:2])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gMPtd0SS3z3brL
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 May 2026 22:37:29 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gMQ0l6g3hz2xRw
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 May 2026 22:42:47 +1000 (AEST)
 Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by smtp-out2.suse.de (Postfix) with ESMTPS id DBDE767CCD;
-	Fri, 22 May 2026 12:30:28 +0000 (UTC)
+	by smtp-out2.suse.de (Postfix) with ESMTPS id 4078367CD6;
+	Fri, 22 May 2026 12:30:29 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1779453028; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	t=1779453029; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=vRL7lJ+FKh53s9XMUk0foKTPN+6R7sPbKwtDyw5wi7Q=;
-	b=VmWO0GdqkKWDC9s3oGyLUpbz64ZfCpRvn18L64NthYsBSCzutL8EcPgee7rMgMSwHvrFtR
-	DUHYWs64K2x1zXrEJpOFblnZ0v2o+/03KHQOjcz4i1veY8L1sdKTnFxZO4g6nQWnyRaqFd
-	8zyjYv0PFKx7krzV8vPwAeKgMcpY+Zg=
+	bh=vBtaE/SLft/7bYaH+tW5iBuZ4PwLUahf4IAUa7S3OcI=;
+	b=KWNrr3SGun+JUo91FFxQ2B6VAOg9V5cX+9Eb2YNZlg4szMTeqItdPJibs9f6e4Vf0RQNS6
+	J2/zP73rWBaC4/Eu39i9dyZf2VRg9AQxykRkRW2t8RUjWhY4ttaUQj9sDVfxDtfCfKCVnk
+	De3/szNjsnAbdpgyB4Isi2oOCoGK4Hg=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1779453028;
+	s=susede2_ed25519; t=1779453029;
 	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=vRL7lJ+FKh53s9XMUk0foKTPN+6R7sPbKwtDyw5wi7Q=;
-	b=c2R/9hIgV88MwmT/XqIu6lFPmde4BmTXUQZ2k0o+dGYFZ3NyD7ZoqnTDTauJ+xYTLFlXqj
-	lspc0pcG8FqFjnBA==
+	bh=vBtaE/SLft/7bYaH+tW5iBuZ4PwLUahf4IAUa7S3OcI=;
+	b=jYJ5Gux7lgD0D7y9dRKgYJeTxOYiuIRF5DzIk68cCqwlv7B1++xn4NB1MKNxeQ+FIfwfPl
+	V1kwNYO7HOfXTLDQ==
 Authentication-Results: smtp-out2.suse.de;
 	none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1779453028; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	t=1779453029; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=vRL7lJ+FKh53s9XMUk0foKTPN+6R7sPbKwtDyw5wi7Q=;
-	b=VmWO0GdqkKWDC9s3oGyLUpbz64ZfCpRvn18L64NthYsBSCzutL8EcPgee7rMgMSwHvrFtR
-	DUHYWs64K2x1zXrEJpOFblnZ0v2o+/03KHQOjcz4i1veY8L1sdKTnFxZO4g6nQWnyRaqFd
-	8zyjYv0PFKx7krzV8vPwAeKgMcpY+Zg=
+	bh=vBtaE/SLft/7bYaH+tW5iBuZ4PwLUahf4IAUa7S3OcI=;
+	b=KWNrr3SGun+JUo91FFxQ2B6VAOg9V5cX+9Eb2YNZlg4szMTeqItdPJibs9f6e4Vf0RQNS6
+	J2/zP73rWBaC4/Eu39i9dyZf2VRg9AQxykRkRW2t8RUjWhY4ttaUQj9sDVfxDtfCfKCVnk
+	De3/szNjsnAbdpgyB4Isi2oOCoGK4Hg=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1779453028;
+	s=susede2_ed25519; t=1779453029;
 	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=vRL7lJ+FKh53s9XMUk0foKTPN+6R7sPbKwtDyw5wi7Q=;
-	b=c2R/9hIgV88MwmT/XqIu6lFPmde4BmTXUQZ2k0o+dGYFZ3NyD7ZoqnTDTauJ+xYTLFlXqj
-	lspc0pcG8FqFjnBA==
+	bh=vBtaE/SLft/7bYaH+tW5iBuZ4PwLUahf4IAUa7S3OcI=;
+	b=jYJ5Gux7lgD0D7y9dRKgYJeTxOYiuIRF5DzIk68cCqwlv7B1++xn4NB1MKNxeQ+FIfwfPl
+	V1kwNYO7HOfXTLDQ==
 Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 88D87593AD;
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id E2B31593A8;
 	Fri, 22 May 2026 12:30:28 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
 	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id SJU0IGRMEGqqeQAAD6G6ig
+	id oF0mNmRMEGqqeQAAD6G6ig
 	(envelope-from <tzimmermann@suse.de>); Fri, 22 May 2026 12:30:28 +0000
 From: Thomas Zimmermann <tzimmermann@suse.de>
 To: deller@gmx.de,
@@ -99,9 +99,9 @@ Cc: dri-devel@lists.freedesktop.org,
 	linux-fbdev@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org,
 	Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH v2 3/4] fbdev: Wrap fbcon updates from vga-switcheroo in helper
-Date: Fri, 22 May 2026 14:28:15 +0200
-Message-ID: <20260522123019.211059-4-tzimmermann@suse.de>
+Subject: [PATCH v2 4/4] fbdev: Do not export fbcon from fbdev
+Date: Fri, 22 May 2026 14:28:16 +0200
+Message-ID: <20260522123019.211059-5-tzimmermann@suse.de>
 X-Mailer: git-send-email 2.54.0
 In-Reply-To: <20260522123019.211059-1-tzimmermann@suse.de>
 References: <20260522123019.211059-1-tzimmermann@suse.de>
@@ -143,87 +143,213 @@ X-Spamd-Result: default: False [-2.80 / 50.00];
 	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
 	FREEMAIL_ENVRCPT(0.00)[gmail.com,gmx.de]
 
-Handle console remapping in fbcon in fb_switch_output(). Vga-switcheroo
-invokes this functionality before switching physical outputs to a new
-graphics device. Open-coding fbcon state in vga-switcheroo exposed fbdev
-implementation details.
-
-Vga-switcheroo is used for switching physical outputs among graphics
-hardware. This functionality is only supported by DRM drivers. A later
-update will further move fb_switch_output() into DRM's fbdev emulation;
-thus fully decoupling vga-switcheroo from fbdev.
-
-v2:
-- use '#if defined' (Helge)
+There are no callers of fbcon outside fbdev. Move the declarations
+into the internal header.
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 ---
- drivers/gpu/vga/vga_switcheroo.c |  6 +++---
- drivers/video/fbdev/core/fbmem.c | 10 ++++++++++
- include/linux/fb.h               |  1 +
- 3 files changed, 14 insertions(+), 3 deletions(-)
+ MAINTAINERS                          |  1 -
+ drivers/video/fbdev/core/fb_chrdev.c |  2 +-
+ drivers/video/fbdev/core/fbcon.c     |  1 -
+ drivers/video/fbdev/core/fbcon.h     | 50 +++++++++++++++++++++++++
+ drivers/video/fbdev/core/fbmem.c     |  2 +-
+ include/linux/fbcon.h                | 55 ----------------------------
+ 6 files changed, 52 insertions(+), 59 deletions(-)
+ delete mode 100644 include/linux/fbcon.h
 
-diff --git a/drivers/gpu/vga/vga_switcheroo.c b/drivers/gpu/vga/vga_switcheroo.c
-index 8fe1ae3c71bb..22cf52b78b75 100644
---- a/drivers/gpu/vga/vga_switcheroo.c
-+++ b/drivers/gpu/vga/vga_switcheroo.c
-@@ -31,11 +31,9 @@
- #define pr_fmt(fmt) "vga_switcheroo: " fmt
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 6810710e7a57..0ed3ef0b466a 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -10147,7 +10147,6 @@ F:	drivers/video/fbdev/core/fbcon_rotate.h
+ F:	drivers/video/fbdev/core/fbcon_ud.c
+ F:	drivers/video/fbdev/core/softcursor.c
+ F:	drivers/video/fbdev/core/tileblit.c
+-F:	include/linux/fbcon.h
+ F:	include/linux/font.h
+ F:	lib/fonts/
  
- #include <linux/apple-gmux.h>
--#include <linux/console.h>
- #include <linux/debugfs.h>
+diff --git a/drivers/video/fbdev/core/fb_chrdev.c b/drivers/video/fbdev/core/fb_chrdev.c
+index 035e67d2c28f..ba1d0bc214c5 100644
+--- a/drivers/video/fbdev/core/fb_chrdev.c
++++ b/drivers/video/fbdev/core/fb_chrdev.c
+@@ -3,10 +3,10 @@
+ #include <linux/compat.h>
+ #include <linux/console.h>
  #include <linux/fb.h>
- #include <linux/fs.h>
 -#include <linux/fbcon.h>
- #include <linux/module.h>
- #include <linux/pci.h>
- #include <linux/pm_domain.h>
-@@ -735,8 +733,10 @@ static int vga_switchto_stage2(struct vga_switcheroo_client *new_client)
- 	if (!active->driver_power_control)
- 		set_audio_state(active->id, VGA_SWITCHEROO_OFF);
+ #include <linux/major.h>
  
-+#if defined(CONFIG_FB)
- 	if (new_client->fb_info)
--		fbcon_remap_all(new_client->fb_info);
-+		fb_switch_outputs(new_client->fb_info);
+ #include "fb_internal.h"
++#include "fbcon.h"
+ 
+ /*
+  * We hold a reference to the fb_info in file->private_data,
+diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
+index 50b84cd32938..853b52b40d01 100644
+--- a/drivers/video/fbdev/core/fbcon.c
++++ b/drivers/video/fbdev/core/fbcon.c
+@@ -70,7 +70,6 @@
+ #include <linux/printk.h>
+ #include <linux/slab.h>
+ #include <linux/fb.h>
+-#include <linux/fbcon.h>
+ #include <linux/vt_kern.h>
+ #include <linux/selection.h>
+ #include <linux/font.h>
+diff --git a/drivers/video/fbdev/core/fbcon.h b/drivers/video/fbdev/core/fbcon.h
+index 321cc7f44baa..407d207b14f1 100644
+--- a/drivers/video/fbdev/core/fbcon.h
++++ b/drivers/video/fbdev/core/fbcon.h
+@@ -11,6 +11,7 @@
+ #ifndef _VIDEO_FBCON_H
+ #define _VIDEO_FBCON_H
+ 
++#include <linux/compiler_types.h>
+ #include <linux/font.h>
+ #include <linux/types.h>
+ #include <linux/vt_buffer.h>
+@@ -19,6 +20,11 @@
+ 
+ #include <asm/io.h>
+ 
++struct fb_blit_caps;
++struct fb_info;
++struct fb_var_screeninfo;
++struct fb_videomode;
++
+    /*
+     *    This is the interface between the low-level console driver and the
+     *    low-level frame buffer device
+@@ -233,4 +239,48 @@ static inline int get_attribute(struct fb_info *info, u16 c)
+         (void) (&_r == &_v); \
+         (i == FB_ROTATE_UR || i == FB_ROTATE_UD) ? _r : _v; })
+ 
++#ifdef CONFIG_FRAMEBUFFER_CONSOLE
++void __init fb_console_init(void);
++void __exit fb_console_exit(void);
++int fbcon_fb_registered(struct fb_info *info);
++void fbcon_fb_unregistered(struct fb_info *info);
++void fbcon_fb_unbind(struct fb_info *info);
++void fbcon_suspended(struct fb_info *info);
++void fbcon_resumed(struct fb_info *info);
++int fbcon_mode_deleted(struct fb_info *info,
++		       struct fb_videomode *mode);
++void fbcon_delete_modelist(struct list_head *head);
++void fbcon_new_modelist(struct fb_info *info);
++void fbcon_get_requirement(struct fb_info *info,
++			   struct fb_blit_caps *caps);
++void fbcon_fb_blanked(struct fb_info *info, int blank);
++int  fbcon_modechange_possible(struct fb_info *info,
++			       struct fb_var_screeninfo *var);
++void fbcon_update_vcs(struct fb_info *info, bool all);
++void fbcon_remap_all(struct fb_info *info);
++int fbcon_set_con2fb_map_ioctl(void __user *argp);
++int fbcon_get_con2fb_map_ioctl(void __user *argp);
++#else
++static inline void fb_console_init(void) {}
++static inline void fb_console_exit(void) {}
++static inline int fbcon_fb_registered(struct fb_info *info) { return 0; }
++static inline void fbcon_fb_unregistered(struct fb_info *info) {}
++static inline void fbcon_fb_unbind(struct fb_info *info) {}
++static inline void fbcon_suspended(struct fb_info *info) {}
++static inline void fbcon_resumed(struct fb_info *info) {}
++static inline int fbcon_mode_deleted(struct fb_info *info,
++				     struct fb_videomode *mode) { return 0; }
++static inline void fbcon_delete_modelist(struct list_head *head) {}
++static inline void fbcon_new_modelist(struct fb_info *info) {}
++static inline void fbcon_get_requirement(struct fb_info *info,
++					 struct fb_blit_caps *caps) {}
++static inline void fbcon_fb_blanked(struct fb_info *info, int blank) {}
++static inline int  fbcon_modechange_possible(struct fb_info *info,
++				struct fb_var_screeninfo *var) { return 0; }
++static inline void fbcon_update_vcs(struct fb_info *info, bool all) {}
++static inline void fbcon_remap_all(struct fb_info *info) {}
++static inline int fbcon_set_con2fb_map_ioctl(void __user *argp) { return 0; }
++static inline int fbcon_get_con2fb_map_ioctl(void __user *argp) { return 0; }
 +#endif
- 
- 	mutex_lock(&vgasr_priv.mux_hw_lock);
- 	ret = vgasr_priv.handler->switchto(new_client->id);
++
+ #endif /* _VIDEO_FBCON_H */
 diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
-index 1a6758653b64..ecadbc58abff 100644
+index ecadbc58abff..e5221653ec2b 100644
 --- a/drivers/video/fbdev/core/fbmem.c
 +++ b/drivers/video/fbdev/core/fbmem.c
-@@ -684,6 +684,16 @@ void fb_set_suspend(struct fb_info *info, int state)
- }
- EXPORT_SYMBOL(fb_set_suspend);
+@@ -14,13 +14,13 @@
+ #include <linux/console.h>
+ #include <linux/export.h>
+ #include <linux/fb.h>
+-#include <linux/fbcon.h>
+ #include <linux/lcd.h>
+ #include <linux/leds.h>
  
-+/**
-+ * fb_switch_outputs - framebuffer got the outputs from vga-switcheroo
-+ * @info: framebuffer
-+ */
-+void fb_switch_outputs(struct fb_info *info)
-+{
-+	fbcon_remap_all(info);
-+}
-+EXPORT_SYMBOL(fb_switch_outputs);
-+
- static int __init fbmem_init(void)
- {
- 	int ret;
-diff --git a/include/linux/fb.h b/include/linux/fb.h
-index 88680a7cabd5..e9a26e82322a 100644
---- a/include/linux/fb.h
-+++ b/include/linux/fb.h
-@@ -608,6 +608,7 @@ void fb_pad_unaligned_buffer(u8 *dst, u32 d_pitch, const u8 *src, u32 idx, u32 h
- 			     u32 shift_high, u32 shift_low, u32 mod);
- void fb_pad_aligned_buffer(u8 *dst, u32 d_pitch, const u8 *src, u32 s_pitch, u32 height);
- extern void fb_set_suspend(struct fb_info *info, int state);
-+extern void fb_switch_outputs(struct fb_info *info);
- extern int fb_get_color_depth(struct fb_var_screeninfo *var,
- 			      struct fb_fix_screeninfo *fix);
- extern int fb_get_options(const char *name, char **option);
+ #include <video/nomodeset.h>
+ 
+ #include "fb_internal.h"
++#include "fbcon.h"
+ 
+     /*
+      *  Frame buffer device initialization and setup routines
+diff --git a/include/linux/fbcon.h b/include/linux/fbcon.h
+deleted file mode 100644
+index f206370060e1..000000000000
+--- a/include/linux/fbcon.h
++++ /dev/null
+@@ -1,55 +0,0 @@
+-#ifndef _LINUX_FBCON_H
+-#define _LINUX_FBCON_H
+-
+-#include <linux/compiler_types.h>
+-
+-struct fb_blit_caps;
+-struct fb_info;
+-struct fb_var_screeninfo;
+-struct fb_videomode;
+-
+-#ifdef CONFIG_FRAMEBUFFER_CONSOLE
+-void __init fb_console_init(void);
+-void __exit fb_console_exit(void);
+-int fbcon_fb_registered(struct fb_info *info);
+-void fbcon_fb_unregistered(struct fb_info *info);
+-void fbcon_fb_unbind(struct fb_info *info);
+-void fbcon_suspended(struct fb_info *info);
+-void fbcon_resumed(struct fb_info *info);
+-int fbcon_mode_deleted(struct fb_info *info,
+-		       struct fb_videomode *mode);
+-void fbcon_delete_modelist(struct list_head *head);
+-void fbcon_new_modelist(struct fb_info *info);
+-void fbcon_get_requirement(struct fb_info *info,
+-			   struct fb_blit_caps *caps);
+-void fbcon_fb_blanked(struct fb_info *info, int blank);
+-int  fbcon_modechange_possible(struct fb_info *info,
+-			       struct fb_var_screeninfo *var);
+-void fbcon_update_vcs(struct fb_info *info, bool all);
+-void fbcon_remap_all(struct fb_info *info);
+-int fbcon_set_con2fb_map_ioctl(void __user *argp);
+-int fbcon_get_con2fb_map_ioctl(void __user *argp);
+-#else
+-static inline void fb_console_init(void) {}
+-static inline void fb_console_exit(void) {}
+-static inline int fbcon_fb_registered(struct fb_info *info) { return 0; }
+-static inline void fbcon_fb_unregistered(struct fb_info *info) {}
+-static inline void fbcon_fb_unbind(struct fb_info *info) {}
+-static inline void fbcon_suspended(struct fb_info *info) {}
+-static inline void fbcon_resumed(struct fb_info *info) {}
+-static inline int fbcon_mode_deleted(struct fb_info *info,
+-				     struct fb_videomode *mode) { return 0; }
+-static inline void fbcon_delete_modelist(struct list_head *head) {}
+-static inline void fbcon_new_modelist(struct fb_info *info) {}
+-static inline void fbcon_get_requirement(struct fb_info *info,
+-					 struct fb_blit_caps *caps) {}
+-static inline void fbcon_fb_blanked(struct fb_info *info, int blank) {}
+-static inline int  fbcon_modechange_possible(struct fb_info *info,
+-				struct fb_var_screeninfo *var) { return 0; }
+-static inline void fbcon_update_vcs(struct fb_info *info, bool all) {}
+-static inline void fbcon_remap_all(struct fb_info *info) {}
+-static inline int fbcon_set_con2fb_map_ioctl(void __user *argp) { return 0; }
+-static inline int fbcon_get_con2fb_map_ioctl(void __user *argp) { return 0; }
+-#endif
+-
+-#endif /* _LINUX_FBCON_H */
 -- 
 2.54.0
 
