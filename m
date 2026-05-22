@@ -1,60 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-21386-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21387-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E6005CD5BB0
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 May 2026 10:21:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C5E52CD5BAC
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 May 2026 10:28:40 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gMLt93QBVz2xc2;
-	Fri, 22 May 2026 20:21:53 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779445313;
-	cv=none; b=ebpcZV4f1LU7OzjcCNbzHU+zNYHQ5ta0RfQzGItws57ijNbeUL0rePx/BTKnb0ZY3ilp6aULkaYzcrxCzbZUCEf5b2CggEnnwiCcxmPzdTAZqA+fCaNS+hMF9MjMnE1Ce1uKp2HEM7q7meGghzg3hOeBkkd49ZdYkHunq7gZKykaGFCNPDkcqUAOQNxaYnOz3PCR+V2lVcV5et467UaCyJnFwkvDQ/dFcuGS0QxRNS0mJOrHuEXh+cSeTRQg8yaLDikDh7RybCU1/1t900zLA9vgUoZMHdoYKAK+mFew2EoCRCDpoxt26NwehmkPCWWA0+TNCxGE2gxbL2GKoiaL4Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gMM1z2ZVqz2yHT;
+	Fri, 22 May 2026 20:28:39 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779445719;
+	cv=none; b=VSbniOwDSIkkU/inOv3l0ZHKKaj65bAO/ex1nzTnb9qMhPTgbMXSg0SNCC8cBF70kHy2x9KwPfpO7gEXfzvl7co/spf2Cyj8/RAwRFkfPLQ2jHKsAzrk50Xu24O5P3R5eP8N//bpiuQGFGQEYibxXdEn9CcZf6ARzRF7SOxDr5SUeQ+NVp6OvwabegGvsFZl4Elfmg9LUcoFUxE90YCuZNs1EHIqt1ZiWkSMYe2BvewmT2vvN0s2zDz2OrOr1B+ZmtVSCMBO0CgcPXojHgPGe3CDDCFu/bDunzlq2dFxDctys5va8l9B8a1L8DfV7w48WWEtex/0zMTSHQhPuRdG7A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1779445313; c=relaxed/relaxed;
-	bh=v5hG5ljo2yEbas7N/t9jsu08GA8nFBFOwWsnzFp/4F0=;
-	h=From:To:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=QTDFqgGQfsFsO1mECEkFGe5JGQ0TfV1JomyY1gzNJdbgI419iSG+F9U8sbfoP6lKr0BfcGl7rUR2z4OTDWxu32ixDkRY/cbZ5XuXg05PbThmlAdqz5HtyvU8Ufg2t6k2m8SOr9tCM3syp/1c+coUvZ3oKXNTsoz2AokeAwJ99uzM4PBZb031Mod32muEj+1sw/vxyXFZ2q8DhQEc36pgogq+Ln1MV0wxqbUyfIH6DEom87daWX18D/b8AFdDIhbOMR1P0vXutM5AqGQCEhnowctPkgNn3P/Zl3+DCUBZEFzHCGwzUa0gj8Sr0RJNDFxuvy8hho7YEufoz7mVjG5zHA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=OJCAQjSj; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1779445719; c=relaxed/relaxed;
+	bh=VF1GBnDH1TfMHCcLbg1KElBuyNuwHBmP/SstlDxzydw=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=bQwj5c/MhfshkWiyBZN4jtzt5rf1bWJKKrkJdswZWwOGRJHPEskU3a4hpU8BP0WPrNoLxWR2VoTzNGgvnVPyxJPaK7DQHwCyOFuqVrlj03N1foEehNW7QYQb0t90VHpjiWceqsRDpTgODkkN9LYMzqttq6DVr16i2Sr2ot+sQZgdU7My8+YvmIzHTH5eRUFcEbVlhrS0YDJTyRfss8abXp7XHNWMmqPVf0PG3yy33EO7nVkT8MtEViDpycpPVxxbhUQtTiFdSnp7bwrM/atY+3JdZhFQFbF88rzD6fpQ3I5fow81yXA8raFrZ8sR+bluwUfSF2c0nIOwpcUaqBkAbw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=QwVHpPrD; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=OJCAQjSj;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=QwVHpPrD;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gMLt25919z2xC3
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 May 2026 20:21:46 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gMM1t700mz2xpn
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 May 2026 20:28:34 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 2288F601F3;
-	Fri, 22 May 2026 10:21:44 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id C90C21F000E9;
-	Fri, 22 May 2026 10:21:41 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 0EDAA42DCD;
+	Fri, 22 May 2026 10:28:33 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8FC2A1F000E9;
+	Fri, 22 May 2026 10:28:30 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1779445303;
-	bh=v5hG5ljo2yEbas7N/t9jsu08GA8nFBFOwWsnzFp/4F0=;
-	h=From:To:In-Reply-To:References:Subject:Date;
-	b=OJCAQjSjVDyBLcKibt6kKzsl5FcdJH4CU24VcEGayWXiZn38GoqWQ5shUb36om2et
-	 23jvjnBn3A++Far23IJrsugZfZfesUnRrKW4UrrgkdZXBbgd3mYW403sfor+SQuH0b
-	 KmKI3960FzW0z4eu4o9s+2D0hh+RdmSqJn5zy+6HK09yA2e9qkiPLAZ8mAfcOddBON
-	 yz94YRigmmm29ROsTd5hnKHXkNWX0+yYWUeE8P+AhcK9x6qp/C2KFPgVNc7sAxmoUy
-	 LTyEVSz43hi6E+q8mdQGknAo0fJVYrmXaPOc5EKkxTjoj5ixebLWCsLL6v67xEE8Qs
-	 KMjXPmJWzkGfQ==
-From: Mark Brown <broonie@kernel.org>
-To: shengjiu.wang@gmail.com, Xiubo.Lee@gmail.com, festevam@gmail.com, 
- nicoleotsuka@gmail.com, lgirdwood@gmail.com, perex@perex.cz, tiwai@suse.com, 
- linux-sound@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
- linux-kernel@vger.kernel.org, Shengjiu Wang <shengjiu.wang@nxp.com>
-In-Reply-To: <20260512065252.75859-1-shengjiu.wang@nxp.com>
-References: <20260512065252.75859-1-shengjiu.wang@nxp.com>
-Subject: Re: [PATCH] ASoC: fsl_sai: Eliminate possible interrupt storm
- during probe
-Message-Id: <177918448823.6167.7164201834938027833.b4-ty@b4>
-Date: Tue, 19 May 2026 10:54:48 +0100
+	s=k20260515; t=1779445712;
+	bh=VF1GBnDH1TfMHCcLbg1KElBuyNuwHBmP/SstlDxzydw=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To;
+	b=QwVHpPrD/oEBvQMdU9brmnzYZbSsDOGAkDrk2jb8JZv62X7ESOn0Hfg794hQ/lgRq
+	 /HrpWT4d4wRypU8zcgWlRgct6FBay9owLOTL4Vk39+bj2gpUkJD2aEnbOL6qbm0kIN
+	 hgjlkD4Y/qT7M7ofxwpgPpCNmej22cCZdjXfhjJD3Nmc3urRr0hIyOiWHM3Od3X1me
+	 hKuEZeSzg7Cc/ymL9IugmOxDpXNb4aROr0WkTdGsMYY8OjqoVxUTq1ubNR4kZYgGXH
+	 HhNFddlLRiKKm9Co0UCidSBVgx9gxWNBm4zVAowAIIy/yl47noWHWKk00/x4ZrHAtv
+	 Wc9N1Ft0418gA==
+Message-ID: <227b6ea2-0cae-4f6d-a614-3b0891b5f8a5@kernel.org>
+Date: Fri, 22 May 2026 12:28:28 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -68,50 +59,141 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-X-Mailer: b4 0.16-dev
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1143; i=broonie@kernel.org;
- h=from:subject:message-id; bh=5ZVaWSjfDYV8xFEG2qHRcRpnpfYwZGaYOU2WyjAd3VA=;
- b=owEBbQGS/pANAwAKASTWi3JdVIfQAcsmYgBqEC40SrnHckZVbEky/P7ocAxP+K2BJW/i9tLmd
- FCQ7nEsg4iJATMEAAEKAB0WIQSt5miqZ1cYtZ/in+ok1otyXVSH0AUCahAuNAAKCRAk1otyXVSH
- 0Ep8CACFYtYjQfnZ/W701ctqn2f/S7gjAAUoclcQFx8vbu9CwZr+9XEFiAKl0CsoZYKCrY7eQUH
- DwJnc3xGcchM4/Rpy2xRyT5dnfsZzU05F0hYj+Oy/KMYyMuS2v7k1/fuFgmVuVpQ6WfKmwkW2jq
- J71bPc+9SqR9rnAHJuxlTSYaUC3aCe6rz68xxMek7bBtRJnoG6PyiL6JSXoEADpBAeoFJZSQBQq
- 2Xzg7I58gExyEDm/ofVQkqITMqC6F98ToppFahOoI8fvAH+fmlANMUO9e5FlBCVjxuKF8Il/MO1
- jza7u/eFEiKvaiMA4lSu/bqAD1GqwKC8nie7Zqn2lQlh8S5F
-X-Developer-Key: i=broonie@kernel.org; a=openpgp;
- fpr=3F2568AAC26998F9E813A1C5C3F436CA30F5D8EB
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v5] char/nvram: Remove redundant nvram_mutex
+To: Venkat <venkat88@linux.ibm.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, Arnd Bergmann <arnd@arndb.de>,
+ Christophe Leroy <chleroy@kernel.org>, Ritesh Harjani
+ <ritesh.list@gmail.com>, Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Tellakula Yeswanth Krishna <yeswanth@linux.ibm.com>
+References: <20260428061540.73668-1-venkat88@linux.ibm.com>
+ <FC8BDC39-4627-4532-B6FB-C4B88F4DF80E@linux.ibm.com>
+Content-Language: fr-FR
+From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+In-Reply-To: <FC8BDC39-4627-4532-B6FB-C4B88F4DF80E@linux.ibm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 
-On Tue, 12 May 2026 14:52:52 +0800, Shengjiu Wang wrote:
-> ASoC: fsl_sai: Eliminate possible interrupt storm during probe
 
-Applied to
 
-   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git for-7.1
+Le 14/05/2026 à 05:57, Venkat a écrit :
+> 
+> Hi,
+> 
+> Gentle ping on this patch.
+> 
+> This removes the unused global nvram_mutex and relies on the
+> existing per-architecture synchronization, as suggested earlier.
+> 
+> I’ve re-tested the change, and everything continues to work as expected.
+> No issues observed in validation.
+> 
+> Please let me know if any further changes are needed.
+> 
+> Thanks,
+> Venkat
+> 
+> 
+>> On 28 Apr 2026, at 11:45 AM, Venkat Rao Bagalkote <venkat88@linux.ibm.com> wrote:
+>>
+>> The global nvram_mutex in drivers/char/nvram.c is redundant and unused,
 
-Thanks!
+Redundant with what ?
 
-[1/1] ASoC: fsl_sai: Eliminate possible interrupt storm during probe
-      https://git.kernel.org/broonie/sound/c/fd3b95866d86
+It is _used_, at least in nvram_misc_ioctl()
 
-All being well this means that it will be integrated into the linux-next
-tree (usually sometime in the next 24 hours) and sent to Linus during
-the next merge window (or sooner if it is a bug fix), however if
-problems are discovered then the patch may be dropped or reverted.
 
-You may get further e-mails resulting from automated or manual testing
-and review of the tree, please engage with people reporting problems and
-send followup patches addressing any issues that are reported if needed.
+>> and this triggers compiler warnings on some configurations.
+>>
+>> All platform-specific nvram operations already provide their own internal
+>> synchronization, meaning the wrapper-level mutex does not provide any
+>> additional safety.
 
-If any updates are required or you are submitting further changes they
-should be sent as incremental updates against current git, existing
-patches will not be replaced.
+Indeed, this is what it is redundant with, I would say that first thing 
+in the message.
 
-Please add any relevant lists and maintainers to the CCs when replying
-to this mail.
+I think it would also be worth providing the history from Arnd from 
+here: 
+https://patchwork.ozlabs.org/project/linuxppc-dev/patch/20260323072422.25730-1-venkat88@linux.ibm.com/#3667538
 
-Thanks,
-Mark
+
+>>
+>> Remove the nvram_mutex definition along with all remaining lock/unlock
+>> users across PPC32, x86, and m68k code paths, and rely entirely on the
+>> per-architecture nvram implementations for locking.
+>>
+>> Reviewed-by: Arnd Bergmann <arnd@arndb.de>
+>> Suggested-by: Arnd Bergmann <arnd@arndb.de>
+>> Tested-by: Tellakula Yeswanth Krishna <yeswanth@linux.ibm.com>
+>> Signed-off-by: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
+
+With the above changes, Reviewed-by: Christophe Leroy (CS GROUP) 
+<chleroy@kernel.org>
+
+>> ---
+>> Changes since v4:
+>> - No code changes
+>> - Resent after v7.1-rc1 as suggested by Arnd Bergmann
+>>
+>> drivers/char/nvram.c | 16 +++-------------
+>> 1 file changed, 3 insertions(+), 13 deletions(-)
+>>
+>> diff --git a/drivers/char/nvram.c b/drivers/char/nvram.c
+>> index 9eff426a9286..e89cc1f1c89e 100644
+>> --- a/drivers/char/nvram.c
+>> +++ b/drivers/char/nvram.c
+>> @@ -53,7 +53,6 @@
+>> #include <asm/nvram.h>
+>> #endif
+>>
+>> -static DEFINE_MUTEX(nvram_mutex);
+>> static DEFINE_SPINLOCK(nvram_state_lock);
+>> static int nvram_open_cnt; /* #times opened */
+>> static int nvram_open_mode; /* special open modes */
+>> @@ -310,11 +309,8 @@ static long nvram_misc_ioctl(struct file *file, unsigned int cmd,
+>> break;
+>> #ifdef CONFIG_PPC32
+>> case IOC_NVRAM_SYNC:
+>> - if (ppc_md.nvram_sync != NULL) {
+>> - mutex_lock(&nvram_mutex);
+>> + if (ppc_md.nvram_sync)
+>> ppc_md.nvram_sync();
+>> - mutex_unlock(&nvram_mutex);
+>> - }
+>> ret = 0;
+>> break;
+>> #endif
+>> @@ -324,11 +320,8 @@ static long nvram_misc_ioctl(struct file *file, unsigned int cmd,
+>> if (!capable(CAP_SYS_ADMIN))
+>> return -EACCES;
+>>
+>> - if (arch_nvram_ops.initialize != NULL) {
+>> - mutex_lock(&nvram_mutex);
+>> + if (arch_nvram_ops.initialize)
+>> ret = arch_nvram_ops.initialize();
+>> - mutex_unlock(&nvram_mutex);
+>> - }
+>> break;
+>> case NVRAM_SETCKS:
+>> /* just set checksum, contents unchanged (maybe useful after
+>> @@ -336,11 +329,8 @@ static long nvram_misc_ioctl(struct file *file, unsigned int cmd,
+>> if (!capable(CAP_SYS_ADMIN))
+>> return -EACCES;
+>>
+>> - if (arch_nvram_ops.set_checksum != NULL) {
+>> - mutex_lock(&nvram_mutex);
+>> + if (arch_nvram_ops.set_checksum)
+>> ret = arch_nvram_ops.set_checksum();
+>> - mutex_unlock(&nvram_mutex);
+>> - }
+>> break;
+>> #endif /* CONFIG_X86 || CONFIG_M68K */
+>> }
+>> -- 
+>> 2.45.2
+>>
+> 
 
 
