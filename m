@@ -1,92 +1,58 @@
-Return-Path: <linuxppc-dev+bounces-21418-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21419-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2D325CD5BAC
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 May 2026 18:56:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2448BCD5BB0
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 May 2026 21:31:24 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gMZHZ5Yx0z2xld;
-	Sat, 23 May 2026 04:56:10 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::42a"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779476170;
-	cv=none; b=lUunlN0OIaJGZvPMcgZHTXPs3XIzOnwAjd10Q/KXrolGdtboHPCN8pGTYdeQwXElCJcg8YnluY72N2zdy8I1BXgkjWfg/Z2AsJuBNkzLKQOVwGKGb4ESgCIBQxwSb5sS0r1syeDzL9q+NxaJVnpBSl2bgOAnYRvztJrXxIQfAQ69mLJO2ohv1+nS9SVS0hwBqOlK0DmDx0kh6sk56yT5SaJ9EyXfRzGf4NOhRHtUlhwA+OibczZHyO3CyPJpb5v37Z8fVcY9cYTIPSUI3/n105yPdu4KIS0nuOvNnDnGHQH02/O43z40/hhofOIcLl+ak2Z1yW89CB/VIez0wSuiaQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gMdkf3fQqz2xld;
+	Sat, 23 May 2026 07:31:22 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779485482;
+	cv=none; b=d0EDMXk8UoRu6UMzG4wQXATbFKfQ2fp9N2TQgy0+b5gGWEXEjcsLsmqVh6c18+5yJy+qdq7qf0Win/gjN2rN46lXlus3oI49V7aGzGq9bXCCe09cQFkSRsTsEoubxXc9kj5lBWPUNGxWp2JFJcW9pe0AtzZfzi9HeO/TFcM6xPCQdurpHcuEpSaGxEVurKGG1VEleZrI7XtwE02C6p8n9ZVSDBqrMzJwH5KsNwhRUbCDXaiSbM2ZanPZDU4KGWb4/JkaEjXK+s3xhAJVR12ufzV21W1tongMtMuyYR3H1JPN8qpz8ipdqNM6ASlD715/YXI/kXxsVNlaqiA28qkIrw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1779476170; c=relaxed/relaxed;
-	bh=+wf/uINnwCK8WbvZvaLDBEegzhnbhM29i2MF7q8Btmc=;
-	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=dpRXhvZOfBsKhVG3v/RP/pB6PStd9OK26SFKHtIkVtWwsZG64+kMwN3sASQZ698G2EYcJUevdezq3AMX1XBXBhAV6ymGTP1h/kXcwfxq613CK8/Coo39gcpkeqRcjggzaJ32oYU8UtykpzMXYoMU9pxSSn8bw9H63ErDx0s4SRTd4VNUNXrTyM5N2Xd+t/Snn79TiA9075GozxAK62ppgeOPomkjMLiGDlkFMDUZI4UQK/FyRyxZqS0y19lmQmBewHY/0MASAlS+qSlQPZTsSzzM+4TSEk0VJk8hqZyMBpJWN/1W6paoS9ye6CL2eLs9NuWD3RDfOWSMMnpHYXZENA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=j+o70ilw; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::42a; helo=mail-wr1-x42a.google.com; envelope-from=david.laight.linux@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1779485482; c=relaxed/relaxed;
+	bh=C1JkI15vgeu08xV//dtK9AYlWM5a5o5EUbaFA14ty+I=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=aDI0gwPBkVmeHOEt7H5rVoUEukcIVHiY0jmlRv7+20Qo6qdgDByX1eS2ClgRfzI8rTZzZCixgtzJC0pIJJ+029GbJULufCv0SdYzgoIJHLKq2XQJ8c+WBleqxAfm3zYd9haLImrpfGlw5Z5TYKDfngTOZMroBcKsUoFOzUnZu+2w/IQrhwYjNoi4pW+Qq+uTJ20zvI9+qRnHEndiyUUmOpLArfj8rlHxWizaoIf2v8kocGLD4iT6eMRBD+zcml2Mb4wPm7pFBN6WRFRnbGqSO4DpOLE4VfxZzy9Eh9xUMn7WU7ru8bywNZs+/T9g6LQAtd2sUB92YML1sgj7YxDNcQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=BZkBhq1d; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=baohua@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=j+o70ilw;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=BZkBhq1d;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::42a; helo=mail-wr1-x42a.google.com; envelope-from=david.laight.linux@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-wr1-x42a.google.com (mail-wr1-x42a.google.com [IPv6:2a00:1450:4864:20::42a])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=baohua@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gMZHY16N4z2xYg
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 May 2026 04:56:08 +1000 (AEST)
-Received: by mail-wr1-x42a.google.com with SMTP id ffacd0b85a97d-44e5624c053so4724855f8f.2
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 May 2026 11:56:07 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1779476160; x=1780080960; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:subject:cc:to:from:date:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=+wf/uINnwCK8WbvZvaLDBEegzhnbhM29i2MF7q8Btmc=;
-        b=j+o70ilw3xDOrMGzhVCSCXLrkRiuprFS0//LX+Mqctzw85djD+KoiuuaqkJDE2mTUN
-         8B0fabB19Ag2jx/+iVzj/O/y/kHpQeOsRY0w3DrqI90zVrjMhVQroMh9dEbepm6Tz6U1
-         1+cVzBWN8SXTN/lfVSqqdcAQGkpa1+qx65UYcsTzrtXdvrLA+TNywc51mIcxZ5PaQXvI
-         uOUneDgivmqbT8YAm7Goe1ySa1e0nt/85OlRsuaMAzvzUx9oGW+jUE5R6HBWHppSaDrg
-         l1lUiNaOg/lF+Ql1ES01ocAm+wenDusKdnTcF1uIu5WT27UbDQMARGDmEseOcEM+fy4V
-         +1HA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1779476160; x=1780080960;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=+wf/uINnwCK8WbvZvaLDBEegzhnbhM29i2MF7q8Btmc=;
-        b=KlHl66/ccDBvYLnBabnXJCJ0sZIo9BP8yOhYJnL9DBXBALDkBD9ijCgyrM1BkpSeXW
-         7Wpp3BWJwVxWSEEPkL9JJIWFJDA/AWK8/AUyKawX//8F0wN5Tv2jUq29xfTubpKnHx11
-         pF/IZ655zZEzDrrtbkQSMeaMIqv0MFiyn+DFmArB5Cs+vdlIudjCGGNPQbFCroQUoF/h
-         D2yxMrxCXG34lGCgm7DZrJtnJoM4UqndhpkkpAmjbcVTWRugPA3b83lZC1SJMS6eSg+x
-         REq+s+y0dbkgJfmExlzKciq9fCgBUIhwKerlgL5bSzzuuM3u6gFa91VOIBLaWL6rGIZq
-         zeww==
-X-Forwarded-Encrypted: i=1; AFNElJ97xHGDg9NrwoU5Dlfo3Hvh6vctcG8WLoq859ywx4ShjgZA19Msq/9NIRSG+g9oHaolL5RKpNGkYjmgZu4=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YxALIqbJGUPpPVQ04Vu9F0zdWPhwxXhBSOpvwIeNlYkqmolvwaQ
-	TeT4KN5HKk/VRl1ZOVwfFdNnGGxr+Rw6rRSLDs5SJ1NB5lwGeBFMCOHb
-X-Gm-Gg: Acq92OGA3SotM18gQzuIHi+4qD7Y5aGa6/cwoDZd30nsGS4JumlBDZdFT2iAqRTbYor
-	b90CoZPohI1gfB3Ukzm9DLQnFYd0uCsbWhH6CWT3c4OoOccy3CkvFj9o+TMOg29bGwbSqzN05E2
-	eO4foJMumc4hehpZBUVCGZrpnOmdjSsyJZBI4o0QZv2W7Yc25rRHadsw/RqcsmQdcNmI8vFynE1
-	INpMrydq15PrtxOIa5njmjo18XLmnbKyFZCF6hXugEZXPDZIpPPueFhGJ7kfBYyuWX/eZmPxLnq
-	6HQ5QQv5m4+ILmZpslQa1aOdyUNPIjqRWhpqueuMF8b/RzhHGLnGllYfLS2wUAN2X9WRAuwW3if
-	WUILKbXTCeW7oonP3NKArmdkwBLwB8gLHYeePQHO0ylnGQwrk+P0d7Mdy5sFqNkFjXcAoZ6asQI
-	Ch48KfDJzgbMWlX5AP+42/7a8hSKaSz9ikhV4VuDvXautorJL5KyykXtNDMxzSdskP
-X-Received: by 2002:a05:6000:2488:b0:43d:c95c:4259 with SMTP id ffacd0b85a97d-45eb38a18e0mr7563614f8f.30.1779476159924;
-        Fri, 22 May 2026 11:55:59 -0700 (PDT)
-Received: from pumpkin (82-69-66-36.dsl.in-addr.zen.co.uk. [82.69.66.36])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-45eb6d5cb76sm5239833f8f.25.2026.05.22.11.55.59
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 22 May 2026 11:55:59 -0700 (PDT)
-Date: Fri, 22 May 2026 19:55:57 +0100
-From: David Laight <david.laight.linux@gmail.com>
-To: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin
- <npiggin@gmail.com>, Madhavan Srinivasan <maddy@linux.ibm.com>,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v1 2/8] powerpc/signal64: Untangle
- setup_tm_sigcontexts() and user_access_begin()
-Message-ID: <20260522195557.5fd73f80@pumpkin>
-In-Reply-To: <28a7b0b9-3c17-4f76-af80-f17f4869f854@kernel.org>
-References: <cover.1779441786.git.chleroy@kernel.org>
-	<7c83fe5a596514a02fde37da987a48d638d0d097.1779441786.git.chleroy@kernel.org>
-	<20260522121237.3089276f@pumpkin>
-	<69bd69b1-97f7-41e2-934b-bed28dc2fef7@kernel.org>
-	<28a7b0b9-3c17-4f76-af80-f17f4869f854@kernel.org>
-X-Mailer: Claws Mail 4.1.1 (GTK 3.24.38; arm-unknown-linux-gnueabihf)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gMdkd01Cyz2xVK
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 May 2026 07:31:20 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with ESMTP id 7735B43FD5
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 May 2026 21:31:18 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5F7101F00A3F
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 May 2026 21:31:18 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1779485478;
+	bh=C1JkI15vgeu08xV//dtK9AYlWM5a5o5EUbaFA14ty+I=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc;
+	b=BZkBhq1dEMkxCJHLGd9hHIZUnfovj2cBcOHoma7ZqB1sV0+I2O6Ds5hTpwlWo4Mft
+	 6cZWdkrBC8UapaBAwm7wTsgf6f8+bsxbXBKEVD6N264a0/eS6r2rdb08YfLVaVXRFl
+	 DCfthOwfboPEVZicSPecr1WRFLBuk1+P+LgQEe3wX84so6iEX2i0ZTBrRDglX2hSFx
+	 U8IUrYW8hVgwjP8B7VfqK2I0t+/0+rbDVSJLqQ9PbEvde4WIlEtliG3txUqHXy/bwe
+	 ykb+eAMoCx2v1OrYATTHe26u6dEHYIyLuKR8dX7rGXbs6//A4IoVMdKRjJahE4F5l7
+	 5hZy1XYN8h40Q==
+Received: by mail-qk1-f181.google.com with SMTP id af79cd13be357-90f850473f9so783392585a.3
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 May 2026 14:31:18 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AFNElJ/O53qWy2mtucKbrE60sehgzwY7AF591OKLopU4/2HKKJ5F1EIjJMz378WRPYFAM5ce6xAWKkoITiQc2aU=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YyVJkqp18x52ZLsrZfrW2HrkYN8qBk+04M4fdixU8XTaoQZ+qeB
+	MfdUMH5Q0HpiuBX5DyuU2MOqpubW/3c0X69zEFSaRvqgXwpWtho/EUH4PsAw1WJVAhXj2p4hIoh
+	78Ph6RiCmLgNnGIBKJ0vJ0cJw2P0d7pk=
+X-Received: by 2002:a05:620a:372a:b0:914:c100:6a0f with SMTP id
+ af79cd13be357-914c10072a4mr332092285a.23.1779485477280; Fri, 22 May 2026
+ 14:31:17 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -100,139 +66,84 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+References: <CAGsJ_4zqLfdWoTH9s7FFaqWWj0mESfikYgr7=GcV64qcuXrPxA@mail.gmail.com>
+ <CAJuCfpE0WQrB3zJp9qn3jvn5DthS=ttpX7gJJvyEhA_BJGrp5g@mail.gmail.com>
+ <CAGsJ_4zgeE3ebEJ+j7GJFzWVoVYHeiOn4dOoOsmWCLA6s=oECQ@mail.gmail.com>
+ <5zdaa5uv5oj27q3taopl3amops57ouxgyfsdveudz4ovmbdw7z@6lwrlyvmhcp2>
+ <CAGsJ_4yKxg1QugcsJi3WD0KVGJKe-zXycgm5D6cRi9vWtNcpDQ@mail.gmail.com>
+ <ag4h87CBd-gph9zX@casper.infradead.org> <CAGsJ_4zA8afu0xXy0WS+tMe-eesDX1W6UBmfAsuouUpcAgK8JQ@mail.gmail.com>
+ <ag4kj84EcKqamdB-@casper.infradead.org> <3be9475b-0e8a-4df8-a130-4262f993973d@kernel.org>
+ <CAGsJ_4xC5LdhuoWV1=tK-RZ5rkjc8aOKOkmb1L_8BG_3gtJhDg@mail.gmail.com> <ahB6QyHgYq8ksj65@lucifer>
+In-Reply-To: <ahB6QyHgYq8ksj65@lucifer>
+From: Barry Song <baohua@kernel.org>
+Date: Sat, 23 May 2026 05:31:05 +0800
+X-Gmail-Original-Message-ID: <CAGsJ_4zxLvZ01i19vdo0xA47T1hxa1VRYvxLmiDhy5q1GDKPRg@mail.gmail.com>
+X-Gm-Features: AVHnY4IqrepDwpGO5qDQsSaxTVFULk1Thk0Uu8QgQ0mfUUrDDRbDPxaWPMcP1VU
+Message-ID: <CAGsJ_4zxLvZ01i19vdo0xA47T1hxa1VRYvxLmiDhy5q1GDKPRg@mail.gmail.com>
+Subject: Re: [PATCH v2 0/5] mm: reduce mmap_lock contention and improve page
+ fault performance
+To: Lorenzo Stoakes <ljs@kernel.org>
+Cc: "David Hildenbrand (Arm)" <david@kernel.org>, Matthew Wilcox <willy@infradead.org>, 
+	"Liam R. Howlett" <liam@infradead.org>, Suren Baghdasaryan <surenb@google.com>, akpm@linux-foundation.org, 
+	linux-mm@kvack.org, vbabka@kernel.org, rppt@kernel.org, mhocko@suse.com, 
+	jack@suse.cz, pfalcato@suse.de, wanglian@kylinos.cn, chentao@kylinos.cn, 
+	lianux.mm@gmail.com, kunwu.chan@gmail.com, liyangouwen1@oppo.com, 
+	chrisl@kernel.org, kasong@tencent.com, shikemeng@huaweicloud.com, 
+	nphamcs@gmail.com, bhe@redhat.com, youngjun.park@lge.com, 
+	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, 
+	loongarch@lists.linux.dev, linuxppc-dev@lists.ozlabs.org, 
+	linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org, 
+	Nanzhe Zhao <nzzhao@126.com>
+Content-Type: text/plain; charset="UTF-8"
 
-On Fri, 22 May 2026 14:44:55 +0200
-"Christophe Leroy (CS GROUP)" <chleroy@kernel.org> wrote:
+>
+> Again this is making me want to sit outside and sip on some lemonade and
+> ice :)
+>
+> Yes - android processes are aggressively multi-threaded, sure of course.
+>
+> The missing bit here is the forking - what, where, why, when?
+>
 
-> Le 22/05/2026 =C3=A0 14:06, Christophe Leroy (CS GROUP) a =C3=A9crit=C2=
-=A0:
-> >=20
-> >=20
-> > Le 22/05/2026 =C3=A0 13:12, David Laight a =C3=A9crit=C2=A0: =20
-> >> On Fri, 22 May 2026 11:56:02 +0200
-> >> "Christophe Leroy (CS GROUP)" <chleroy@kernel.org> wrote:
-> >> =20
-> >>> Call setup_tm_sigcontexts() before opening user access to avoid
-> >>> having to close and open again.
-> >>>
-> >>> Signed-off-by: Christophe Leroy (CS GROUP) <chleroy@kernel.org>
-> >>> ---
-> >>> =C2=A0 arch/powerpc/kernel/signal_64.c | 22 +++++++++-------------
-> >>> =C2=A0 1 file changed, 9 insertions(+), 13 deletions(-)
-> >>>
-> >>> diff --git a/arch/powerpc/kernel/signal_64.c b/arch/powerpc/kernel/=20
-> >>> signal_64.c
-> >>> index 86bb5bb4c143..3849af21e1d8 100644
-> >>> --- a/arch/powerpc/kernel/signal_64.c
-> >>> +++ b/arch/powerpc/kernel/signal_64.c
-> >>> @@ -873,6 +873,15 @@ int handle_rt_signal64(struct ksignal *ksig,=20
-> >>> sigset_t *set,
-> >>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 if (!MSR_TM_ACTIVE(msr))
-> >>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 prepare_setup_=
-sigcontext(tsk);
-> >>> +#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
-> >>> +=C2=A0=C2=A0=C2=A0 if (MSR_TM_ACTIVE(msr)) =20
-> >>
-> >> Can't that be done without the ugly #ifdef?
-> >> I assume MSR_TM_ACTIVE() will be zero - so it will all get optimised=20
-> >> away. =20
-> >=20
-> > Yes but struct rt_sigframe field uc_transact only exists when=20
-> > CONFIG_PPC_TRANSACTIONAL_MEM is defined.
-> >=20
-> > And that would also require a stub setup_tm_sigcontexts() =20
->=20
-> After thinking once more, I think we can do the following, is it better=20
-> for you ?
+I really want to know the what, where, why, and when
+as well. But since most applications are not
+open-source, it is basically a black hole for anyone
+other than the owners of those apps.
 
-Certainly more like the expected style.
-setup_tm_sigcontexts() will get inlined, so it doesn't matter what values
-are passed as the arguments.
+Let me try to do more investigation to understand what
+is going on, although it is really hard.
+To be honest, I would rather the Android framework
+completely prohibit apps from calling fork(), if
+possible.
 
--- David
+> And then you say zygote is sometimes multi-threaded but sometimes
+> single-threaded, which is adding a whole bunch of confusion on top of all
+> that.
+>
+> I don't find these stack trace dumps all that useful (though thanks of
+> course for taking the time to gather them), I think we'd be better off with
+> specific data on forking, in some _concise_ _summarised_ form, ideally with
+> numbers.
+>
+> There's such a thing as too much information :))
 
->=20
-> diff --git a/arch/powerpc/kernel/signal_64.c=20
-> b/arch/powerpc/kernel/signal_64.c
-> index 86bb5bb4c143..c70732e8002d 100644
-> --- a/arch/powerpc/kernel/signal_64.c
-> +++ b/arch/powerpc/kernel/signal_64.c
-> @@ -203,8 +203,7 @@ static long notrace __unsafe_setup_sigcontext(struct=
-=20
-> sigcontext __user *sc,
->    * examine the transactional registers in the 2nd sigcontext to=20
-> determine the
->    * real origin of the signal.
->    */
-> -static long setup_tm_sigcontexts(struct sigcontext __user *sc,
-> -				 struct sigcontext __user *tm_sc,
-> +static long setup_tm_sigcontexts(struct rt_sigframe __user *frame,
->   				 struct task_struct *tsk,
->   				 int signr, sigset_t *set, unsigned long handler,
->   				 unsigned long msr)
-> @@ -217,6 +216,8 @@ static long setup_tm_sigcontexts(struct sigcontext=20
-> __user *sc,
->   	 * Userland shall check AT_HWCAP to know wether it can rely on the
->   	 * v_regs pointer or not.
->   	 */
-> +	struct sigcontext __user *sc =3D &frame->uc.uc_mcontext;
-> +	struct sigcontext __user *tm_sc =3D &frame->uc_transact.uc_mcontext;
->   #ifdef CONFIG_ALTIVEC
->   	elf_vrreg_t __user *v_regs =3D sigcontext_vmx_regs(sc);
->   	elf_vrreg_t __user *tm_v_regs =3D sigcontext_vmx_regs(tm_sc);
-> @@ -325,6 +326,14 @@ static long setup_tm_sigcontexts(struct sigcontext=20
-> __user *sc,
->=20
->   	return err;
->   }
-> +#else
-> +static long setup_tm_sigcontexts(struct rt_sigframe __user *frame,
-> +				 struct task_struct *tsk,
-> +				 int signr, sigset_t *set, unsigned long handler,
-> +				 unsigned long msr)
-> +{
-> +	return -EINVAL;
-> +}
->   #endif
->=20
->   /*
-> @@ -872,6 +881,9 @@ int handle_rt_signal64(struct ksignal *ksig,=20
-> sigset_t *set,
->   	 */
->   	if (!MSR_TM_ACTIVE(msr))
->   		prepare_setup_sigcontext(tsk);
-> +	else
-> +		err |=3D setup_tm_sigcontexts(frame, tsk, ksig->sig, NULL,
-> +					    (unsigned long)ksig->ka.sa.sa_handler, msr);
->=20
->   	if (!user_write_access_begin(frame, sizeof(*frame)))
->   		goto badframe;
-> @@ -889,19 +901,6 @@ int handle_rt_signal64(struct ksignal *ksig,=20
-> sigset_t *set,
->   		 * ucontext_t (for transactional state) with its uc_link ptr.
->   		 */
->   		unsafe_put_user(&frame->uc_transact, &frame->uc.uc_link,=20
-> badframe_block);
-> -
-> -		user_write_access_end();
-> -
-> -		err |=3D setup_tm_sigcontexts(&frame->uc.uc_mcontext,
-> -					    &frame->uc_transact.uc_mcontext,
-> -					    tsk, ksig->sig, NULL,
-> -					    (unsigned long)ksig->ka.sa.sa_handler,
-> -					    msr);
-> -
-> -		if (!user_write_access_begin(&frame->uc.uc_sigmask,
-> -					     sizeof(frame->uc.uc_sigmask)))
-> -			goto badframe;
-> -
->   #endif
->   	} else {
->   		unsafe_put_user(0, &frame->uc.uc_link, badframe_block);
->=20
->=20
-> Christophe
+This trace shows PF I/O in one thread overlapping
+with a fork() call in another thread.
+But as I explained, I really do not know what kind of
+user behavior is behind it.
 
+>
+> Anyway, again, please let's see a new _RFC_ with the approach proposed by
+> Suren, with some _succinct_ data demonstrating _exactly_ what the problem
+> is, so we can make some headway here.
+
+Okay, sure. Thanks for your patience.
+
+>
+> And now I'm off for a cornetto! :)
+
+Sounds good :) Enjoy your cornetto!
+
+Best Regards
+Barry
 
