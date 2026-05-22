@@ -1,48 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-21348-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21349-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CFEEBCD5BAF
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 May 2026 04:28:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BCFCACD5BB3
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 May 2026 04:28:54 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gMC2g1Y5yz2xSN;
-	Fri, 22 May 2026 14:28:43 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779424123;
-	cv=none; b=jEr7tng/OTyBM6UBgZbIJ80rrlQ8i4CYzKdUNxCv1V2AeR1q9zkh0E4n/ME0lWs95hpPEuUUM3gaZtik2a9I17ZYKt4lOQISzgGV8vz1uG+AIeCr2XEERSYz0oB3CatCTlxoYDKuAx/LtHglfkVDK+SNCbZLU/CftCGHiIuZ02xOu99mdOdPWrkT2IULlLAOP1y5QCiSwHStB0CDx6HYHz3RFOxNWFehhiy/9QymOZrxK36v9do1efS54zzIXmwXs44/GMSZVaO9NZBA/Dmw7NLfECPuxdJTG06VcLftnZkoqV+Koq+N076oZLsVS/MMUK9idU4U8EE4705RLSL0Ug==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gMC2s26bTz2xpn;
+	Fri, 22 May 2026 14:28:53 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779424133;
+	cv=none; b=LtJe5Sq9wwkna/XXkVurF4QptNTmf9yWKSpPn35OI0bEtWuDRnsyXwR/2+aQEdYDS/UxAX9/2KjUNbUDlg3/ZzZ3xxJ/fMVljB01WiaR4lc0YnlIKuWqOjO+AymNwZ4BU/CJwuJOttlFRi8umti717lXsDo9nYMz0d8OhInvYhTglxHT9WNZ0iblUjtMsJ9w56Lr/wZztjqUBVWFVLdC0/yI0O5BbLWhFCeZk5JIrZUZnczezweXKzDEcl+Yg2Z9wDT43TUhHVk2dZ5Q5xG9h1Rn4cXofS4jL4zyUA+sLv2yW995j3Q9TxI2nidP43+d/BFt2SIdUWS1H1EHRCQDLQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1779424123; c=relaxed/relaxed;
-	bh=ljCA/NXDFKTES1AXmSE7gDisUBh/0q1jcBgMHCOX1RE=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=U9WYonH2uy5+EDoGjwNj6UbyZXvgalbsUu3AzbeIaWTtOrLCrtDxotJ0vHA+iwkm3JE+N5hNjjcEnLDS7+fP5XDIfKjk7x62yu6WYru0UnIeoyoTUhBBtOPVnmdXrK79k9AfLZRji7kXjXXy7XFTyczozSdaa6/jGOKFV+N3PdEPAOgCHPJr0EYEcFFV79VMh04g2w/IGy0tCgbC6YlA1DPZBergW8hUe/D02d4kF9wcckBO67sn+76ph8Pi0ZJlPNTdjAqzIK8WTsivoJ3S610nKZdX/sPrK6jYrJkM99aAhloA03l6crNfoIRGtRs4rWk6cKvxMama9cSInQHPmA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=YNFMTmeY; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=aneesh.kumar@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1779424133; c=relaxed/relaxed;
+	bh=EN0IQUuPXitnl1iltsyZkrJ7mdFplVIW+Qac7dXtXac=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=EOjJ5TRxC4chWJkjBbeo4Q23hUoOQZ+trqbJSKxKYLyG2TExhPIX0QMalAsz3ix8cS4HcAgQwpo3ZnvUkbcr8q45XwimTsHmA4gMuhGFap2lFCJczUOP0HSY2HFeprdhV1o/jtNr9N/cE9CyjpHZ4yn3g6miIg87YZKNCNUIGmnMsaqKqoi7PjN3APxZcUaGZbMgQqbU+YPEXXZzsyDuxqvx7FhWRSnY48EzIqt63XqElWAD4XaYRnAgICAZT1DxkG93aa5ZSP56oagycWnq9LvFu+pNAvy9gXxFSL6ZDcglcdFCo04foUAcfLIX3PHTdWfpT4ulLgBK7GrkddWknA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=oofhJ+Bn; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=aneesh.kumar@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=YNFMTmeY;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=oofhJ+Bn;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=aneesh.kumar@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=aneesh.kumar@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gMC2f0y8zz2xC3
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 May 2026 14:28:42 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gMC2r3tbDz2xC3
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 May 2026 14:28:52 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 59A0660172;
+	by tor.source.kernel.org (Postfix) with ESMTP id 4502E60172;
+	Fri, 22 May 2026 04:28:50 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 78D9E1F00A3D;
 	Fri, 22 May 2026 04:28:39 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A7C811F000E9;
-	Fri, 22 May 2026 04:28:28 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1779424118;
-	bh=ljCA/NXDFKTES1AXmSE7gDisUBh/0q1jcBgMHCOX1RE=;
-	h=From:To:Cc:Subject:Date;
-	b=YNFMTmeYmK+CTbMr3BS7Np59jMFPjdf9kFRHUkkhPKCcpEHUrxHezGdW+lpgleiwd
-	 EUOI1mxDIQ/c9A05SdR4DSAuVJjmIHfk6j6XX0ELA0ygVA/4zoxVgtto8AaAcjICkM
-	 xoVdScPnU+ERmASx4pIaMerDRYJ/QI4T9sTNRawV46knUsPI3v5FBT3wXIyO5LfuTw
-	 8CzxtQTipM0WZO8KKmbE0C9pT1S0XiPGaok7McNBs2BRR2BI4D4znsgrcBecYuhiMN
-	 LM+yf2wBwQ7vvvDGiPth0ffqJCi5y5h8JD7mnMMzBoNtimi4ZQ2TEKD79H72rZe7Lq
-	 TYDU33uaLt30g==
+	s=k20260515; t=1779424130;
+	bh=EN0IQUuPXitnl1iltsyZkrJ7mdFplVIW+Qac7dXtXac=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References;
+	b=oofhJ+BnD8hM/LCVdJ/7G55+n1MfvMzsj1mvKIs9w+pDJYq+ccbHNjqkIxMBcMsOI
+	 IYRjlhqi87N4ou0jrg8o6TYwheH8tqcQW+W6RvZNEy5/RiBBWG59HTEH7imcMyRY78
+	 5/FXpn57pnIkN9R+y0xvddQGPGhc1Fihzc94yaxS4G9cm94A92wehVQmntTf0ceGoP
+	 EqaRcHfsrsIFCyQeY7lGyxVXnADKgk4z1iHqzSRL+6PrxS/DIveIY6JZWQDQmDwNUf
+	 ne3/dijtNZY+hUzTFcJggFSsezzF436KsKMclkD8FbeXxxhRKLI+pnP1/+1D51tgO7
+	 0D9yvrU1JTw9w==
 From: "Aneesh Kumar K.V (Arm)" <aneesh.kumar@kernel.org>
 To: iommu@lists.linux.dev,
 	linux-arm-kernel@lists.infradead.org,
@@ -76,10 +77,12 @@ Cc: "Aneesh Kumar K.V (Arm)" <aneesh.kumar@kernel.org>,
 	Christian Borntraeger <borntraeger@linux.ibm.com>,
 	Sven Schnelle <svens@linux.ibm.com>,
 	x86@kernel.org
-Subject: [PATCH v5 00/20] dma-mapping: Use DMA_ATTR_CC_SHARED through direct, pool and swiotlb paths
-Date: Fri, 22 May 2026 09:57:55 +0530
-Message-ID: <20260522042815.370873-1-aneesh.kumar@kernel.org>
+Subject: [PATCH v5 01/20] [DO NOT MERGE] arm64/coco: Add pKVM as a CC platform
+Date: Fri, 22 May 2026 09:57:56 +0530
+Message-ID: <20260522042815.370873-2-aneesh.kumar@kernel.org>
 X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20260522042815.370873-1-aneesh.kumar@kernel.org>
+References: <20260522042815.370873-1-aneesh.kumar@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -95,154 +98,147 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-This series propagates DMA_ATTR_CC_SHARED through the dma-direct,
-dma-pool, and swiotlb paths so that encrypted and decrypted DMA buffers
-are handled consistently.
+pKVM does support memory encryption, expose that to the rest of
+the kernel through cc_platform_has()
 
-Today, the direct DMA path mostly relies on force_dma_unencrypted() for
-shared/decrypted buffer handling. This series consolidates the
-force_dma_unencrypted() checks in the top-level functions and ensures
-that the remaining DMA interfaces use DMA attributes to make the correct
-decisions.
+At the moment, all devices inside the guest are emulated which
+requires its memory to be shared back to the host (decrypted), so
+set force_dma_unencrypted() to always return true.
 
-The series:
-- moves swiotlb-backed allocations out of __dma_direct_alloc_pages(),
-- propagates DMA_ATTR_CC_SHARED through the dma-direct alloc/free
-  paths
-- teaches the atomic DMA pools to track encrypted versus decrypted
-  state
-- tracks swiotlb pool encryption state and enforces strict pool
-  selection
-- centralizes encrypted/decrypted pgprot handling in dma_pgprot() using
-  DMA attributes
-- passes DMA attributes down to dma_capable() so capability checks can
-  validate whether the selected DMA address encoding matches
-  DMA_ATTR_CC_SHARED
-- makes dma_direct_map_phys() choose the DMA address encoding from
-  DMA_ATTR_CC_SHARED and fall back to swiotlb when a shared DMA request
-  cannot use the direct mapping, which lets arm64 and x86 CCA guests stop
-  relying on SWIOTLB_FORCE for DMA mappings
-- use the selected swiotlb pool state to derive the returned DMA
-  address.
+Signed-off-by: Mostafa Saleh <smostafa@google.com>
+Signed-off-by: Aneesh Kumar K.V (Arm) <aneesh.kumar@kernel.org>
+---
+ arch/arm64/include/asm/hypervisor.h           |  6 ++++++
+ arch/arm64/include/asm/mem_encrypt.h          |  3 ++-
+ arch/arm64/kernel/rsi.c                       | 12 ------------
+ arch/arm64/mm/init.c                          | 13 +++++++++++++
+ drivers/virt/coco/pkvm-guest/arm-pkvm-guest.c |  5 +++++
+ 5 files changed, 26 insertions(+), 13 deletions(-)
 
-Changes since v4:
-https://lore.kernel.org/all/20260512090408.794195-1-aneesh.kumar@kernel.org
-* Add new patches based on Sashiko review:
-  swiotlb: Preserve allocation virtual address for dynamic pools
-  dma: free atomic pool pages by physical address
-  dma: swiotlb: handle set_memory_decrypted() failures
-  dma: swiotlb: free dynamic pools from process context
-  iommu/dma: Check atomic pool allocation result directly
-* Include pKVM and s390 changes as dependent patches. These are not yet
-  ready to merge and are waiting for subsystem testing feedback.
-* Drop the AMD GART patch because it requires wider testing.
-* Update swiotlb_tbl_map_single() to take attrs by reference.
-* Switch swiotlb_free() to use rcu_work.
-* Avoid calling swiotlb_find_pool() multiple times in the free path.
-* Make DMA_ATTR_MMIO imply DMA_ATTR_CC_SHARED for devices requiring unencrypted DMA.
-
-Changes from v3:
-https://lore.kernel.org/all/20260427055509.898190-1-aneesh.kumar@kernel.org
-* Handle DMA_ATTR_MMIO correctly in dma_direct_map_phys()
-* Address most of sashiko review
-* Rebase to latest kernel
-* drop SWIOTLB_FORCE for s390 and powerpc secure guest.
-
-Changes from v2:
-https://lore.kernel.org/all/20260420061415.3650870-1-aneesh.kumar@kernel.org
-* pass attrs to dma_capable() and update direct, swiotlb, Xen swiotlb, and
-  x86 GART paths so the capability checks see the DMA address attr value
-  DMA_ATTR_CC_SHARED.
-* rework dma_direct_map_phys() so DMA_ATTR_CC_SHARED selects
-  phys_to_dma_unencrypted() while the default path uses
-  phys_to_dma_encrypted(), with swiotlb fallback when the requested
-  shared/private state cannot be satisfied by a direct DMA address.
-* stop relying on SWIOTLB_FORCE for arm64 and x86 CC guest DMA mappings;
-  swiotlb is still enabled there, but shared mappings is now selected
-  through the generic dma_direct_map_phys()/dma_capable() decision instead
-  of a global force-bounce flag.
-
-Changes from v1:
-https://lore.kernel.org/all/20260417085900.3062416-1-aneesh.kumar@kernel.org
-* rebased to latest kernel (change from DMA_ATTR_CC_DECRYPTED -> DMA_ATTR_CC_SHARED)
-* update the alloc path so DMA_ATTR_CC_SHARED is not a caller-visible attribute.
-
-Cc: Robin Murphy <robin.murphy@arm.com>
-Cc: Marek Szyprowski <m.szyprowski@samsung.com>
-Cc: Will Deacon <will@kernel.org>
-Cc: Marc Zyngier <maz@kernel.org>
-Cc: Steven Price <steven.price@arm.com>
-Cc: Suzuki K Poulose <Suzuki.Poulose@arm.com>
-Cc: Catalin Marinas <catalin.marinas@arm.com>
-Cc: Jiri Pirko <jiri@resnulli.us>
-Cc: Jason Gunthorpe <jgg@ziepe.ca>
-Cc: Mostafa Saleh <smostafa@google.com>
-Cc: Petr Tesarik <ptesarik@suse.com>
-Cc: Alexey Kardashevskiy <aik@amd.com>
-Cc: Dan Williams <dan.j.williams@intel.com>
-Cc: Xu Yilun <yilun.xu@linux.intel.com>
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: linux-s390@vger.kernel.org
-Cc: Madhavan Srinivasan <maddy@linux.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Nicholas Piggin <npiggin@gmail.com>
-Cc: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-Cc: Alexander Gordeev <agordeev@linux.ibm.com>
-Cc: Gerald Schaefer <gerald.schaefer@linux.ibm.com>
-Cc: Heiko Carstens <hca@linux.ibm.com>
-Cc: Vasily Gorbik <gor@linux.ibm.com>
-Cc: Christian Borntraeger <borntraeger@linux.ibm.com>
-Cc: Sven Schnelle <svens@linux.ibm.com>
-Cc: x86@kernel.org
-
-Aneesh Kumar K.V (Arm) (20):
-  [DO NOT MERGE] arm64/coco: Add pKVM as a CC platform
-  [DO NOT MERGE] s390: Expose protected virtualization through
-    cc_platform_has()
-  dma-direct: swiotlb: handle swiotlb alloc/free outside
-    __dma_direct_alloc_pages
-  dma-direct: use DMA_ATTR_CC_SHARED in alloc/free paths
-  dma-pool: track decrypted atomic pools and select them via attrs
-  dma: swiotlb: pass mapping attributes by reference
-  dma: swiotlb: track pool encryption state and honor DMA_ATTR_CC_SHARED
-  dma-mapping: make dma_pgprot() honor DMA_ATTR_CC_SHARED
-  dma-direct: pass attrs to dma_capable() for DMA_ATTR_CC_SHARED checks
-  dma-direct: make dma_direct_map_phys() honor DMA_ATTR_CC_SHARED
-  dma-direct: set decrypted flag for remapped DMA allocations
-  dma-direct: select DMA address encoding from DMA_ATTR_CC_SHARED
-  dma-pool: fix page leak in atomic_pool_expand() cleanup
-  dma-direct: rename ret to cpu_addr in alloc helpers
-  dma-direct: return struct page from dma_direct_alloc_from_pool()
-  iommu/dma: Check atomic pool allocation result directly
-  dma: swiotlb: free dynamic pools from process context
-  dma: swiotlb: handle set_memory_decrypted() failures
-  dma: free atomic pool pages by physical address
-  swiotlb: Preserve allocation virtual address for dynamic pools
-
- arch/arm64/include/asm/hypervisor.h           |   6 +
- arch/arm64/include/asm/mem_encrypt.h          |   3 +-
- arch/arm64/kernel/rsi.c                       |  12 -
- arch/arm64/mm/init.c                          |  17 +-
- arch/powerpc/platforms/pseries/svm.c          |   2 +-
- arch/s390/Kconfig                             |   1 +
- arch/s390/mm/init.c                           |  16 +-
- arch/x86/kernel/amd_gart_64.c                 |  30 +-
- arch/x86/kernel/pci-dma.c                     |   4 +-
- drivers/iommu/dma-iommu.c                     |  15 +-
- drivers/virt/coco/pkvm-guest/arm-pkvm-guest.c |   5 +
- drivers/xen/swiotlb-xen.c                     |   8 +-
- include/linux/dma-direct.h                    |  20 +-
- include/linux/dma-map-ops.h                   |   3 +-
- include/linux/swiotlb.h                       |  20 +-
- kernel/dma/direct.c                           | 275 +++++++++++++-----
- kernel/dma/direct.h                           |  47 +--
- kernel/dma/mapping.c                          |  16 +-
- kernel/dma/pool.c                             | 221 ++++++++++----
- kernel/dma/swiotlb.c                          | 270 +++++++++++++----
- 20 files changed, 717 insertions(+), 274 deletions(-)
-
-
-base-commit: 50897c955902c93ae71c38698abb910525ebdc89
+diff --git a/arch/arm64/include/asm/hypervisor.h b/arch/arm64/include/asm/hypervisor.h
+index a12fd897c877..1b0e15f290be 100644
+--- a/arch/arm64/include/asm/hypervisor.h
++++ b/arch/arm64/include/asm/hypervisor.h
+@@ -10,8 +10,14 @@ void kvm_arm_target_impl_cpu_init(void);
+ 
+ #ifdef CONFIG_ARM_PKVM_GUEST
+ void pkvm_init_hyp_services(void);
++bool is_protected_kvm_guest(void);
+ #else
+ static inline void pkvm_init_hyp_services(void) { };
++
++static inline bool is_protected_kvm_guest(void)
++{
++	return false;
++}
+ #endif
+ 
+ static inline void kvm_arch_init_hyp_services(void)
+diff --git a/arch/arm64/include/asm/mem_encrypt.h b/arch/arm64/include/asm/mem_encrypt.h
+index 314b2b52025f..636f45b4d8af 100644
+--- a/arch/arm64/include/asm/mem_encrypt.h
++++ b/arch/arm64/include/asm/mem_encrypt.h
+@@ -2,6 +2,7 @@
+ #ifndef __ASM_MEM_ENCRYPT_H
+ #define __ASM_MEM_ENCRYPT_H
+ 
++#include <asm/hypervisor.h>
+ #include <asm/rsi.h>
+ 
+ struct device;
+@@ -20,7 +21,7 @@ int realm_register_memory_enc_ops(void);
+ 
+ static inline bool force_dma_unencrypted(struct device *dev)
+ {
+-	return is_realm_world();
++	return is_realm_world() || is_protected_kvm_guest();
+ }
+ 
+ /*
+diff --git a/arch/arm64/kernel/rsi.c b/arch/arm64/kernel/rsi.c
+index 92160f2e57ff..25ca75ce1a4d 100644
+--- a/arch/arm64/kernel/rsi.c
++++ b/arch/arm64/kernel/rsi.c
+@@ -7,7 +7,6 @@
+ #include <linux/memblock.h>
+ #include <linux/psci.h>
+ #include <linux/swiotlb.h>
+-#include <linux/cc_platform.h>
+ #include <linux/platform_device.h>
+ 
+ #include <asm/io.h>
+@@ -23,17 +22,6 @@ EXPORT_SYMBOL(prot_ns_shared);
+ DEFINE_STATIC_KEY_FALSE_RO(rsi_present);
+ EXPORT_SYMBOL(rsi_present);
+ 
+-bool cc_platform_has(enum cc_attr attr)
+-{
+-	switch (attr) {
+-	case CC_ATTR_MEM_ENCRYPT:
+-		return is_realm_world();
+-	default:
+-		return false;
+-	}
+-}
+-EXPORT_SYMBOL_GPL(cc_platform_has);
+-
+ static bool rsi_version_matches(void)
+ {
+ 	unsigned long ver_lower, ver_higher;
+diff --git a/arch/arm64/mm/init.c b/arch/arm64/mm/init.c
+index 97987f850a33..c1b223e7cc8e 100644
+--- a/arch/arm64/mm/init.c
++++ b/arch/arm64/mm/init.c
+@@ -12,6 +12,7 @@
+ #include <linux/swap.h>
+ #include <linux/init.h>
+ #include <linux/cache.h>
++#include <linux/cc_platform.h>
+ #include <linux/mman.h>
+ #include <linux/nodemask.h>
+ #include <linux/initrd.h>
+@@ -36,6 +37,7 @@
+ 
+ #include <asm/boot.h>
+ #include <asm/fixmap.h>
++#include <asm/hypervisor.h>
+ #include <asm/kasan.h>
+ #include <asm/kernel-pgtable.h>
+ #include <asm/kvm_host.h>
+@@ -416,6 +418,17 @@ void dump_mem_limit(void)
+ 	}
+ }
+ 
++bool cc_platform_has(enum cc_attr attr)
++{
++	switch (attr) {
++	case CC_ATTR_MEM_ENCRYPT:
++		return is_realm_world() || is_protected_kvm_guest();
++	default:
++		return false;
++	}
++}
++EXPORT_SYMBOL_GPL(cc_platform_has);
++
+ #ifdef CONFIG_EXECMEM
+ static u64 module_direct_base __ro_after_init = 0;
+ static u64 module_plt_base __ro_after_init = 0;
+diff --git a/drivers/virt/coco/pkvm-guest/arm-pkvm-guest.c b/drivers/virt/coco/pkvm-guest/arm-pkvm-guest.c
+index 4230b817a80b..297e6d6019b8 100644
+--- a/drivers/virt/coco/pkvm-guest/arm-pkvm-guest.c
++++ b/drivers/virt/coco/pkvm-guest/arm-pkvm-guest.c
+@@ -95,6 +95,11 @@ static int mmio_guard_ioremap_hook(phys_addr_t phys, size_t size,
+ 	return 0;
+ }
+ 
++bool is_protected_kvm_guest(void)
++{
++	return !!pkvm_granule;
++}
++
+ void pkvm_init_hyp_services(void)
+ {
+ 	int i;
 -- 
 2.43.0
 
