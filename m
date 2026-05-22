@@ -1,88 +1,94 @@
-Return-Path: <linuxppc-dev+bounces-21368-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21369-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A0805CD5BAF
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 May 2026 04:32:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8D034CD5BAF
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 May 2026 04:44:45 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gMC6x2gLTz3btj;
-	Fri, 22 May 2026 14:32:25 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779424345;
-	cv=none; b=F0Bt85C9/Kpv+/PVK4+037pS12kzXxfNXcIfKQs4lWg1DU7rujxqgreEVWaqnwsVVmVYHL4HDvBxeMMw7XiBQBewGWtVChQUmjFcR/Todb86G0mYg+7da0Oawr8La3Mbtykvmd6/3zSnMTHN5vNGO7cnDVlgBOWV9DRI9t9z4SQEXQO2DDTyXryvt4FmtO8OR6NBPy3SqAqvFxVY5uZVn2O3ZooyYBWb+ciPvH2WzjnD2kMohmHrrXnkFoGkL46sZqgURX41g/jcTbUfp0FB5DwV5jzEPgHyvsd65Uv379lgmffsloKX1NF28Y2eP86cxyfl7NRTHeGzfPy7lPWQfA==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1779424345; c=relaxed/relaxed;
-	bh=PnWTr5M4G1txOK8iaNSiBBsCv6diWB65cB7qFD+glq0=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=M0U4WAxhuRWBz4C8AEASm+65ylAVn3Vnh4fpJp3nRkIBFHQf8xXUVXOEnrmkTSInipSKRRyMSOFC/F1Q8nxPKrTS+Xqb+UeP8mBPOs+QWttdK8qDlk/vr1GN0J4GUxzL1kBPbf4Duv48yYKQ3YaoIyQzcB2JKxlO1dvxW1270gxcloXJJpW2i9HkBxYpru8iHUN0YTP2UfYXcjsxVTQ+OhAaqkCZI63451iVdzEFWWYJVrfF6pTnze8gCopZZ0l8CfNLoo9pqfgvZyl/xvyyv4xJpveXjGli0eBmsw5fSCwCcC+KokMMTBCii1/SAcfhU/LWeVPdxZ6+Iko9xJ4fSQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=N1Lo4X9/; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=aneesh.kumar@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gMCP82853z2yS4;
+	Fri, 22 May 2026 14:44:44 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::834" arc.chain=google.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779425084;
+	cv=pass; b=dG4M+ooBpdBa8mdQX4321F0fJI9cX9oWK3u8cFuL0oWLyepJroUHwEaCl+yeXOvOoU70DWon6qn4eP7ZrSYMH1iynkCAoAalvZ8xTY8IRwAX3aQI0uEsUvaDCk8JwF28pW9NvA/KIhyi3sr3K9DRSuDF8eDU82yi3x1V8rVvQWpOUo3o9WQ6iSTLW+TWY3vmjFgYgUw1XVmiL+uFSsdKzssTp3XoXs8UzJaL+5HxGJD3ddv+cB9vsmtGchenX6ut2bhLvaavhBU7nsVv29aHDF9BudXVyvRzjHIsI4ZH4FwAc7mNGRVC2ekaHshtF8M5cQrItaI/dyqu9yrN8yCfiQ==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1779425084; c=relaxed/relaxed;
+	bh=QVnZFPmewmp25pRUj35a1bi5TPiOKs8MnkxmM2ghIIs=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=MWY5+IYKN8dxerjqMh9IIaiVzxLYIv16maGkfwS6qCKnd+gE4RX1EeKLRbtvQrerBEw7204epH56H0fHg38RYnrq+YFcGmfxVwudSGXC1Hs5whUbTxv14kSzmbJ5DFvjnHWigFyDFaZtyKvlV8BbvOHsVEmX8n3SboMowOxoAskxIeuKv6M/wxLTf0Keips8MIb5Dgp9+ajK8kL37cfshU9KxFCnwW3l8ti4NKy+rUPd55oj1tK2woDjVcSUAeLUC370tYKWil90o8pCYmTpC9NIk1ubozTYNmL7u+dr7DhgUTDwLeTfs+k3ErUosfJonld3ojLsQv/dE37/hWYhkw==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=BfoHLr43; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::834; helo=mail-qt1-x834.google.com; envelope-from=edumazet@google.com; receiver=lists.ozlabs.org) smtp.mailfrom=google.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=N1Lo4X9/;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=BfoHLr43;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=aneesh.kumar@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::834; helo=mail-qt1-x834.google.com; envelope-from=edumazet@google.com; receiver=lists.ozlabs.org)
+Received: from mail-qt1-x834.google.com (mail-qt1-x834.google.com [IPv6:2607:f8b0:4864:20::834])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gMC6w4k6Cz2yS4
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 May 2026 14:32:24 +1000 (AEST)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 30ADB43480;
-	Fri, 22 May 2026 04:32:23 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A6AC31F00A3D;
-	Fri, 22 May 2026 04:32:12 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1779424343;
-	bh=PnWTr5M4G1txOK8iaNSiBBsCv6diWB65cB7qFD+glq0=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=N1Lo4X9/X/2KPv5cK2+3UKHdUXj1cGz7UQ49YpR4OgSBfR0+o5/zbRv9Z7cltDb50
-	 FwgTU/8k/2hexHUy4YbuJemEE6lSzfhi66i39msOSQ4Bz6GNyATpcOm1rMYcXf9OWR
-	 clSxELElIXK8J5eNJg8255eiDlYEt34uyOkGHxaOA8zTgaijkHvaF4GQFHLw9OI/+1
-	 a3X51B2vggGH+Uo3Y7IFjEncwGqJZZBJcVWIhpJCeRKnOYZ/QJLuxl5i5wYmtzgx/h
-	 1Av8uIqZ12flfvo+MlDQ6FpOex14s+fq2H0CWER71C8OgvcFFRmUhvSte73qn524+a
-	 UwGNG8l5DiBgA==
-From: "Aneesh Kumar K.V (Arm)" <aneesh.kumar@kernel.org>
-To: iommu@lists.linux.dev,
-	linux-arm-kernel@lists.infradead.org,
-	linux-kernel@vger.kernel.org,
-	linux-coco@lists.linux.dev
-Cc: "Aneesh Kumar K.V (Arm)" <aneesh.kumar@kernel.org>,
-	Robin Murphy <robin.murphy@arm.com>,
-	Marek Szyprowski <m.szyprowski@samsung.com>,
-	Will Deacon <will@kernel.org>,
-	Marc Zyngier <maz@kernel.org>,
-	Steven Price <steven.price@arm.com>,
-	Suzuki K Poulose <Suzuki.Poulose@arm.com>,
-	Catalin Marinas <catalin.marinas@arm.com>,
-	Jiri Pirko <jiri@resnulli.us>,
-	Jason Gunthorpe <jgg@ziepe.ca>,
-	Mostafa Saleh <smostafa@google.com>,
-	Petr Tesarik <ptesarik@suse.com>,
-	Alexey Kardashevskiy <aik@amd.com>,
-	Dan Williams <dan.j.williams@intel.com>,
-	Xu Yilun <yilun.xu@linux.intel.com>,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-s390@vger.kernel.org,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	Alexander Gordeev <agordeev@linux.ibm.com>,
-	Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
-	Heiko Carstens <hca@linux.ibm.com>,
-	Vasily Gorbik <gor@linux.ibm.com>,
-	Christian Borntraeger <borntraeger@linux.ibm.com>,
-	Sven Schnelle <svens@linux.ibm.com>,
-	x86@kernel.org
-Subject: [PATCH v5 20/20] swiotlb: Preserve allocation virtual address for dynamic pools
-Date: Fri, 22 May 2026 09:58:15 +0530
-Message-ID: <20260522042815.370873-21-aneesh.kumar@kernel.org>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20260522042815.370873-1-aneesh.kumar@kernel.org>
-References: <20260522042815.370873-1-aneesh.kumar@kernel.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gMCP65T0mz2yS0
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 May 2026 14:44:42 +1000 (AEST)
+Received: by mail-qt1-x834.google.com with SMTP id d75a77b69052e-516cc5471bdso17269631cf.2
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 May 2026 21:44:42 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1779425080; cv=none;
+        d=google.com; s=arc-20240605;
+        b=IiTR29FKZQ1Lbzn2x7g0KUTuX2/oV+Yo82/OMMCwaoi9wxcfX24OpYM+RhWayGoOWQ
+         2LU5yD837GG9mrFNhnIcc9ESdLqOGIE78msBWxtDPDKxnwqQ34hAhQUzORX4qI6z4LOH
+         uM5l4XiwOoB2xDHvhXXTUPZ9eqvHMgEzJ6Dn+abCNO19ZlwdFcuJdWE28KVHr63HudQz
+         zNMMy0r+Vu6Ixf2xEIGY00YKhkhKOsjq06z1wox++b9yUrlDM6zKyoEgdVPbeKRv0woW
+         2ggxUrp/qTrxdlvnlV8F6uxHhVp/lxtqJOtDqcmHx0uRibLCccXtqneXNp9K2q9owkRD
+         dY5Q==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=QVnZFPmewmp25pRUj35a1bi5TPiOKs8MnkxmM2ghIIs=;
+        fh=6MhHgscsjLxngyXHAKbX8465mtyl4JABAFAxqJ5eTAY=;
+        b=D7cfm5T7HDIErPHUxED1Gun01Q/I7jTVDUReNiBtv0z/TirCtCWmO+tr3XFVm4q2Y8
+         kjotSxBojgxXW7r/ZaKh60LDPVeBbaZlnHU1dN4hQStTsrYAS5E4/elm0tws4fFVgZ7L
+         I5q7OTtoTsqVlbXED6uyvfCN0IzP775qaCxBHWAcW13wusCsQPbTvtsozMPzVfCU0XGA
+         lYZbnc16T74TWdgPEvgXRRE76UfZJStD0ZsAPHymLe12Ivl9aNSzDGWw+pVfRmPp0I1u
+         MCm+vW3usleHOESTPzrjqqum/inHMqGjYvh59HdMAjMd9faL4w6uizTxl0nseuxFpdBS
+         SHUw==;
+        darn=lists.ozlabs.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20251104; t=1779425080; x=1780029880; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=QVnZFPmewmp25pRUj35a1bi5TPiOKs8MnkxmM2ghIIs=;
+        b=BfoHLr43lDVzgUj4F/lnZOx/ZDw+49ue2e35i9YpF6hAFsfY9/wyTPCsItqktcCiYX
+         9GB1bTRVdxIF1jG7oj/7f7EQH1+/Y0GzisDzC47sy+jHDbtAjjmO05xTy9mUH0bEQykt
+         cdv5XGUDX4pJ6jpq8DhOrrLnAWQwuE9mCZPj1ziFUvEjrhTYUgMXR/5G+/++iZwvGazY
+         WkLeeQX/zUz8Lr0Z1IHe3Z7qj9KkYP4Ch8rSHIpEA9N7M3RIWKkxg6gdgXP0HMgMnWmA
+         WZReuvAlL7zcXwqPJIJ2vxbQZKVGeuzgzk6cWyMZyJZdOSrVksHvffOEfsSls6SSgx+8
+         QkDA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1779425080; x=1780029880;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=QVnZFPmewmp25pRUj35a1bi5TPiOKs8MnkxmM2ghIIs=;
+        b=V5zotbBDWKNMAXdhR11pO8muh1MOGtpjaVLLTN1Z8Yjc6eyDVS+5Nuh5NdMQl0TZWx
+         jHLubBavEeG1dr9w7/GFVnYsLMCthVPrYioJk/3H+spstjXH8pcb9cYkA7ZHDbXbG73Q
+         7IoIxo0qhC56vzqZYC1f7cd7YtLVdOld/j7FCLRcUJV9cOlgMeAJ9QEq/s2L8rUBqTAq
+         W5LMbl3O2egjQLzxPocXYy8ZEfuIMQ5qLBlQCBR0h9Rduo4jB43GRw4MtTzGZQC+/kg8
+         X3ht9KZCfWeJCwLzLNYuVN2NmEOThxURMtgo0U7QPaQ74S4Bcg9bNTVt71K8xzJhYRfT
+         PKxg==
+X-Forwarded-Encrypted: i=1; AFNElJ/mlDjK3d8dnjZFgCJ/CtjxUEu+WALRo92LOsQ+8KmmoxpojZpZbr7lU/3qLApRbu5MDKJ9ck00UKxKQQg=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YzfYOIav8rBE08o+I/xNRN3RN5zQGgt9nLiToPMMOZVamguNkuC
+	5QuZrrQ2ghJqD+VhnVa8NIsKPFLhPjb4BTgnZLXwhpWM5ZTkg7B+D/8v0NyaE6L585O/E+f7lKA
+	De+9zWIE6z3048H/pJkO54LlxaPjJy5+Y+C93OmV0
+X-Gm-Gg: Acq92OGpP6KX86NErcnl5ZkKcH/YkSQKIhLHOwAs94RfTl+xeBdqFzCYkr+EYiIxRwc
+	dEr8vhoGB/HorLTKcRV9KM/IxwVunGhURUeIR6lgyFCnVy2CMC7dug+mdfCT6agzYk51UjELWmf
+	XyD5LF3QDZ8/7bOPFXzcs5/LY+C1CdvxkWINWzff6FCGR8pJYnYyH7/DLsUKn9tFN+7d0A+GeLw
+	bHUXAwHthD/Qcsd8Zx+zz+4TqBoE/Jc6+35Xe4E/dxPiQgU5/S4Av8lC2lX9yjVUEYCj9RZef7F
+	wLHya59NduJ6b2HwDTd0rJWhO19Vhv/2jHeOzNUZq0/DlEWDQTRvGfgV5PbwK2LzPj4u1d+16v9
+	J6HyAclel0anwDQwViZtYZYUnPw4ZJ8GFV1IdApuzGkt4qPZB3glUusL1J7CrJGFk
+X-Received: by 2002:a05:622a:19a3:b0:50f:b904:454 with SMTP id
+ d75a77b69052e-516d429ace6mr35034201cf.11.1779425079512; Thu, 21 May 2026
+ 21:44:39 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -96,147 +102,63 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20260517192856.3925-1-rosenp@gmail.com> <20260520165746.7ed10c7b@kernel.org>
+ <CAKxU2N_vHyqZK8tBbYLo49iOUJSO56rgqbSdw3CnCUZjbs1qNw@mail.gmail.com>
+ <CANn89iK7i4u5nWxQCuURmSCJt8Sn+Q9x_ME8X+J0pF2_4OGuZg@mail.gmail.com> <CAKxU2N_63D7SFPkr9H9UYWif2DRW_qnV0SzZoRHWcRZtC_HTWg@mail.gmail.com>
+In-Reply-To: <CAKxU2N_63D7SFPkr9H9UYWif2DRW_qnV0SzZoRHWcRZtC_HTWg@mail.gmail.com>
+From: Eric Dumazet <edumazet@google.com>
+Date: Thu, 21 May 2026 21:44:28 -0700
+X-Gm-Features: AVHnY4IwHXQN7oTjZfKPdY-BOjCmCpO8SOOCKwqxNusbTrpv-CvTAEc7R2CudbM
+Message-ID: <CANn89iL1fC1UB=wE23Q7rAkQfFNE-XEZaj7bGybbZMNKkfUEHA@mail.gmail.com>
+Subject: Re: [PATCH net-next] net: ucc_geth: Batch RX packets before stack handoff
+To: Rosen Penev <rosenp@gmail.com>
+Cc: Jakub Kicinski <kuba@kernel.org>, netdev@vger.kernel.org, 
+	Andrew Lunn <andrew+netdev@lunn.ch>, "David S. Miller" <davem@davemloft.net>, 
+	Paolo Abeni <pabeni@redhat.com>, 
+	"open list:FREESCALE QUICC ENGINE UCC ETHERNET DRIVER" <linuxppc-dev@lists.ozlabs.org>, open list <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-swiotlb_alloc_tlb() can allocate from the DMA atomic pool when a decrypted
-pool is needed from atomic context. With CONFIG_DMA_DIRECT_REMAP, the
-atomic pool is backed by remapped virtual addresses, which are not the same
-as the direct-map addresses returned by phys_to_virt().
+On Thu, May 21, 2026 at 4:29=E2=80=AFPM Rosen Penev <rosenp@gmail.com> wrot=
+e:
+>
+> On Thu, May 21, 2026 at 6:41=E2=80=AFAM Eric Dumazet <edumazet@google.com=
+> wrote:
+> >
+> > On Wed, May 20, 2026 at 5:39=E2=80=AFPM Rosen Penev <rosenp@gmail.com> =
+wrote:
+> > >
+> > > On Wed, May 20, 2026 at 4:57=E2=80=AFPM Jakub Kicinski <kuba@kernel.o=
+rg> wrote:
+> > > >
+> > > > On Sun, 17 May 2026 12:28:56 -0700 Rosen Penev wrote:
+> > > > > Collect received skbs on a local list during RX polling and pass =
+the
+> > > > > completed batch to netif_receive_skb_list(). This lets the networ=
+king
+> > > > > stack process packets from a poll cycle in bulk instead of handin=
+g each
+> > > > > skb up individually.
+> > > >
+> > > > GRO should be even better.
+> > > GRO will result in slower routing performance because there is no
+> > > hardware checksum.
+> >
+> > Then provide a knob or something, instead of trying to avoid GRO.
+> >
+> > For end hosts (forwarding not enabled), checksum will need to be
+> > computed anyway.
+> > GRO should be faster for them.
+> >
+> > Note that GRO also uses netif_receive_skb_list_internal()
+> so you recommend switching to napi_gro_receive even though there's no
+> RX hardware checksum?
 
-swiotlb_init_io_tlb_pool() currently reconstructs the pool virtual address
-from the physical start address. For atomic-pool backed allocations this
-stores the wrong address in pool->vaddr. Later, swiotlb_free_tlb() passes
-that address to dma_free_from_pool(), which will fail to recognize the
-chunk
+Certainly.
 
-Pass the virtual address returned by the allocation path into
-swiotlb_init_io_tlb_pool(), and store that address in pool->vaddr. This
-keeps the pool free path using the same virtual address as the allocator.
+There is a reason we added support for sw checksum in GRO years ago.
 
-Signed-off-by: Aneesh Kumar K.V (Arm) <aneesh.kumar@kernel.org>
----
- kernel/dma/swiotlb.c | 32 +++++++++++++++++++-------------
- 1 file changed, 19 insertions(+), 13 deletions(-)
-
-diff --git a/kernel/dma/swiotlb.c b/kernel/dma/swiotlb.c
-index 14d834ca298b..e4bd8c9eaeda 100644
---- a/kernel/dma/swiotlb.c
-+++ b/kernel/dma/swiotlb.c
-@@ -302,9 +302,9 @@ void __init swiotlb_update_mem_attributes(void)
- }
- 
- static void swiotlb_init_io_tlb_pool(struct io_tlb_pool *mem, phys_addr_t start,
--		unsigned long nslabs, bool late_alloc, unsigned int nareas)
-+		void *vaddr, unsigned long nslabs, bool late_alloc,
-+		unsigned int nareas)
- {
--	void *vaddr = phys_to_virt(start);
- 	unsigned long bytes = nslabs << IO_TLB_SHIFT, i;
- 
- 	mem->nslabs = nslabs;
-@@ -445,7 +445,7 @@ void __init swiotlb_init_remap(bool addressing_limit, unsigned int flags,
- 		return;
- 	}
- 
--	swiotlb_init_io_tlb_pool(mem, __pa(tlb), nslabs, false, nareas);
-+	swiotlb_init_io_tlb_pool(mem, __pa(tlb), tlb, nslabs, false, nareas);
- 	add_mem_pool(&io_tlb_default_mem, mem);
- 
- 	if (flags & SWIOTLB_VERBOSE)
-@@ -553,7 +553,7 @@ int swiotlb_init_late(size_t size, gfp_t gfp_mask,
- 		}
- 	}
- 
--	swiotlb_init_io_tlb_pool(mem, virt_to_phys(vstart), nslabs, true,
-+	swiotlb_init_io_tlb_pool(mem, virt_to_phys(vstart), vstart, nslabs, true,
- 				 nareas);
- 	add_mem_pool(&io_tlb_default_mem, mem);
- 
-@@ -664,25 +664,26 @@ static struct page *alloc_dma_pages(gfp_t gfp, size_t bytes,
-  * @phys_limit:	Maximum allowed physical address of the buffer.
-  * @attrs:	DMA attributes for the allocation.
-  * @gfp:	GFP flags for the allocation.
-+ * @vaddr:	Receives the virtual address for the allocated buffer.
-  *
-  * Return: Allocated pages, or %NULL on allocation failure.
-  */
- static struct page *swiotlb_alloc_tlb(struct device *dev, size_t bytes,
--		u64 phys_limit, unsigned long attrs, gfp_t gfp)
-+		u64 phys_limit, unsigned long attrs, gfp_t gfp, void **vaddr)
- {
- 	struct page *page;
- 
-+	*vaddr = NULL;
-+
- 	/*
- 	 * Allocate from the atomic pools if memory is encrypted and
- 	 * the allocation is atomic, because decrypting may block.
- 	 */
- 	if (!gfpflags_allow_blocking(gfp) && (attrs & DMA_ATTR_CC_SHARED)) {
--		void *vaddr;
--
- 		if (!IS_ENABLED(CONFIG_DMA_COHERENT_POOL))
- 			return NULL;
- 
--		return dma_alloc_from_pool(dev, bytes, &vaddr, gfp,
-+		return dma_alloc_from_pool(dev, bytes, vaddr, gfp,
- 					   attrs, dma_coherent_ok);
- 	}
- 
-@@ -705,6 +706,8 @@ static struct page *swiotlb_alloc_tlb(struct device *dev, size_t bytes,
- 			return NULL;
- 	}
- 
-+	if (page)
-+		*vaddr = phys_to_virt(page_to_phys(page));
- 	return page;
- }
- 
-@@ -750,6 +753,7 @@ static struct io_tlb_pool *swiotlb_alloc_pool(struct device *dev,
- {
- 	struct io_tlb_pool *pool;
- 	unsigned int slot_order;
-+	void *tlb_vaddr;
- 	struct page *tlb;
- 	size_t pool_size;
- 	size_t tlb_size;
-@@ -767,7 +771,8 @@ static struct io_tlb_pool *swiotlb_alloc_pool(struct device *dev,
- 	pool->unencrypted = !!(attrs & DMA_ATTR_CC_SHARED);
- 
- 	tlb_size = nslabs << IO_TLB_SHIFT;
--	while (!(tlb = swiotlb_alloc_tlb(dev, tlb_size, phys_limit, attrs, gfp))) {
-+	while (!(tlb = swiotlb_alloc_tlb(dev, tlb_size, phys_limit, attrs, gfp,
-+					 &tlb_vaddr))) {
- 		if (nslabs <= minslabs)
- 			goto error_tlb;
- 		nslabs = ALIGN(nslabs >> 1, IO_TLB_SEGSIZE);
-@@ -781,12 +786,12 @@ static struct io_tlb_pool *swiotlb_alloc_pool(struct device *dev,
- 	if (!pool->slots)
- 		goto error_slots;
- 
--	swiotlb_init_io_tlb_pool(pool, page_to_phys(tlb), nslabs, true, nareas);
-+	swiotlb_init_io_tlb_pool(pool, page_to_phys(tlb), tlb_vaddr, nslabs,
-+				 true, nareas);
- 	return pool;
- 
- error_slots:
--	swiotlb_free_tlb(page_address(tlb), tlb_size,
--			 !!(attrs & DMA_ATTR_CC_SHARED));
-+	swiotlb_free_tlb(tlb_vaddr, tlb_size, !!(attrs & DMA_ATTR_CC_SHARED));
- error_tlb:
- 	kfree(pool);
- error:
-@@ -1995,7 +2000,8 @@ static int rmem_swiotlb_device_init(struct reserved_mem *rmem,
- 			mem->unencrypted = false;
- 		}
- 
--		swiotlb_init_io_tlb_pool(pool, rmem->base, nslabs,
-+		swiotlb_init_io_tlb_pool(pool, rmem->base, phys_to_virt(rmem->base),
-+					 nslabs,
- 					 false, nareas);
- 		mem->force_bounce = true;
- 		mem->for_alloc = true;
--- 
-2.43.0
-
+Most linux hosts on this planet do not forward packets.
+And if they do, there is a big chance the egress device supports TSO
+or tx checksum offload.
 
