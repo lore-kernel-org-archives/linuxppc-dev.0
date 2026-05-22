@@ -1,48 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-21377-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21378-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5E45CCD5BAC
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 May 2026 09:56:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 66FBACD5BAC
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 May 2026 09:56:54 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gMLK94NxHz2xc2;
-	Fri, 22 May 2026 19:56:45 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779443805;
-	cv=none; b=CWdlpLyMBIgn874kzTuNVW7WY15iZqV4qO97xLGMNaGdEDs4NA5F9BOloysw5yoLagw7NW9ff/lG1aCuFjxuaQJ+eUOISwFU1C17mrGDN7BSO1UWQ2x/bImCYXTu0iq6DbKjT7zIzl1cxqYE9zUEz/wFG8BHMgmoIkIB5oAh1EaXKi+Lgnrwrf1X6takBWEodcpZjlKyFSvSudPCtb65MhJjbNMEUj3uIXvVGl3a/oUnLC4KZRMm70kLqKjIHFfRnmfN9wtp6Umq76D/TbDHx2pZd00VJk+AyXZuCayJEjK1YqGCd5twHhWaE24c2bYsFR89eSijdDb4eFG2pXZgNg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gMLKD3Y6jz3bpL;
+	Fri, 22 May 2026 19:56:48 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779443808;
+	cv=none; b=iAaPOcPyhrwHj6tjVdN680L2VG96yfIL5nvI/f6rcRXsajqLXbYXyTMyhM36v55GnFp3DWdTrqC6bCTEqHBTAt+RK1JsoKojQYagOle8I0f7s1Gd/0xDnuWqZlcTJyg878uYU8A53Gk6YuFy4YyH7eVzTt9Cr8BUfl3U3r/1xysXHFbXY5E+Q5lzIGa0ZTeU64JZUglwPShb4K8gcQInGTdXCTxufqbWPSJmxoLtG4H7Jbk8pnAv4Q2uf60xIBZeaIC+/ieUTGU4e4pFfKinGHREt41uEENL0HZENMEiEk95cHtN4j2+wTRzxejKYYpsHsMIV5qrpMM3kkZre8jwTA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1779443805; c=relaxed/relaxed;
-	bh=fzwgZUQEacu3K8PcuQ/7zhHyuadt9SEQ2ccJ0dnfKhw=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=ldOMludN+3YTkBgUZ19QnpKy1jvKCzlgb4kEeqy/u1f2zhPFxP91Voiz4cxsv2gjLQ3FYKikWiFcyOsoq42Jo7M9/GRMPeIMD786hPrWTFU76Ee7muE+RqhmHfHaENxTsK/EBTKJxS5dC/S2t2Bxlo6WWNxllrLXaqzlbLjOl+Stm42eugi7/8rEdWjamkm7UEDnglzFLmeCpc9Urs454FkTqe/3+qzfpauynY6wSTju3ZQCnTbEGuOWsnztDpISnx+UAwAQ7WqvJqdIQNN/0CjdnTBSCQYkPDmcE6wyNaxhxm+/AbgBw2oP7qO/tSpGEh34p5CNN9X1ByXnt4JCwg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=aKcve0Qt; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1779443808; c=relaxed/relaxed;
+	bh=PS+M11qxsK7pLF5VPFqgaibCX0XcuKhFH5IihJWdaY8=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=PReGtxXlzmub8ZXaTOOuxRad8X5t/pUnURnxHISr2CTpHY5ZCrRDEZmgZXoWutVTHzBOpwuuZPrPBy6S6b5UU7Tg7ILPhKey7p3OpzH4MaC84RtLeqdRI01xL4gmqLt5851hN9/xuNuXdIFjepkHvcZMcuv51EPbOkXVxoxxY8iB1inwmIZpSuW/zZYPP/jUvGzjaRPnsBqF+Apf74WkBrQiqc3ggW7kxK1tLNGCYAEHDo5FZ2hmq+v5zg5036owJ2peFMTefofsCYY+O7xfoORx8Ol9/FXcfZyKgUw1S0ycKEnqLLGO+nSq8mt5tzsSXTc+z4z07IllVs6/FhcWFA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=kj6lTiSv; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=aKcve0Qt;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=kj6lTiSv;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gMLK732GVz2xC3
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 May 2026 19:56:43 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gMLKC21tlz2xC3
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 May 2026 19:56:46 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id BC86160136;
-	Fri, 22 May 2026 09:56:40 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 82B3E1F000E9;
-	Fri, 22 May 2026 09:56:38 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id ED4B143B3B;
+	Fri, 22 May 2026 09:56:44 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 388591F000E9;
+	Fri, 22 May 2026 09:56:42 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1779443800;
-	bh=fzwgZUQEacu3K8PcuQ/7zhHyuadt9SEQ2ccJ0dnfKhw=;
-	h=From:To:Cc:Subject:Date;
-	b=aKcve0QtayrCzcg0SnSnj+rVB3nViL1XW98creJ9xjT10+oP+wutVD8TnpWfxuP4k
-	 rpOR1wey77iYeo/a/fMmJf6SZqguqa48cBkDEMSkTzNr8xM+7+iHO9Q5yLrCDn0RQ4
-	 FxoEDXvnRVo+5fRMjEfIDbKRCjvV8qQyFnfZIveuL5xZXcWc6Gxbt3lZsK5AmXYBj/
-	 R9mfAuRAuA2cx/Lrq5rYRqf4CvKj+NACvJD2EjpAMgZdjjm2K1YpHdLXKSdvWzi9F2
-	 0xse62NVfYF4QELm6Zms//E30pYTftLBmmLeSskjODZsMqpK6e6/SpGQhdJEHiwR7P
-	 QzzusGkpu/Gbg==
+	s=k20260515; t=1779443804;
+	bh=PS+M11qxsK7pLF5VPFqgaibCX0XcuKhFH5IihJWdaY8=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References;
+	b=kj6lTiSveeDGvsRklW3EJORl7IkNohMN97x6WztN4Clsn87Ehipo81jvybhsDOzii
+	 JMBw4YecyzlZ+5eeOW0AtHlBJymgoRl7gEQ4WW1Ut7H8wTJiqMCedC7HYrlrFr80OG
+	 WJ5ggfvNRexBNdqVtDH7oizi2CVnMZHnGKuSG9/Pado3gU6ANilOsxUUAAfUROXwOq
+	 UtqBgGaOvBTSKUP1Lq2QcgR0OtXTDKIfsrZbvvMrAfpQeX+CeZ6/xrMVvZYsKtEGxn
+	 4l0Ya+tfQLYgpYi43rLHKuR5faiRbKiGAqLwxd7qX/xlQgbqtArN/n82PFgzyEXTmm
+	 8JdR2tpy5giQw==
 From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
 To: Michael Ellerman <mpe@ellerman.id.au>,
 	Nicholas Piggin <npiggin@gmail.com>,
@@ -50,10 +51,12 @@ To: Michael Ellerman <mpe@ellerman.id.au>,
 Cc: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
 	linux-kernel@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v1 0/8] powerpc/signal: Convert to scoped user access
-Date: Fri, 22 May 2026 11:56:00 +0200
-Message-ID: <cover.1779441786.git.chleroy@kernel.org>
+Subject: [PATCH v1 2/8] powerpc/signal64: Untangle setup_tm_sigcontexts() and user_access_begin()
+Date: Fri, 22 May 2026 11:56:02 +0200
+Message-ID: <7c83fe5a596514a02fde37da987a48d638d0d097.1779441786.git.chleroy@kernel.org>
 X-Mailer: git-send-email 2.54.0
+In-Reply-To: <cover.1779441786.git.chleroy@kernel.org>
+References: <cover.1779441786.git.chleroy@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -67,42 +70,58 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1396; i=chleroy@kernel.org; h=from:subject:message-id; bh=gT4/7lN4HmOIFqSwIFAmkc8jTKq7PVEB70sBkJ3jm+E=; b=owGbwMvMwCV2d0KB2p7V54MZT6slMWQJaJi9/e37UOr/9J1vol/drg9sWeicvVDCR8J5dV+Oi ensbVGcHaUsDGJcDLJiiizH/3PvmtH1JTV/6i59mDmsTCBDGLg4BWAiEcsZ/pdtnaA++VTBxS+a em8DbFU+9G7W/xnjtSNx3h6/yZ4nzWwY/lk6rXnUGHCVw85u3benk7u8LsloBk88uO1s0oJ/i9d /XcECAA==
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1675; i=chleroy@kernel.org; h=from:subject:message-id; bh=Icgb4f+mxemIv2zrP3yaLp1RI/4pQz56H5O4k1XMi/M=; b=owGbwMvMwCV2d0KB2p7V54MZT6slMWQJaNi5LT5ezLDXTnb26dvLuiYsOuJuvDM0W3je6gOC3 zmnd0h97ShlYRDjYpAVU2Q5/p9714yuL6n5U3fpw8xhZQIZwsDFKQATsVFjZFgfrJPHW6hc/qhR Od334o7VRftkvIRa3fgCplVa6K7UVGVkeCvk9+7Xs+lSMvnixyU2HRT7mc5cbX3uaXVnl3We3M+ j/AA=
 X-Developer-Key: i=chleroy@kernel.org; a=openpgp; fpr=10FFE6F8B390DE17ACC2632368A92FEB01B8DD78
 Content-Transfer-Encoding: 8bit
 
-This series converts powerpc architecture signal handling to scoped
-user access and enlarges some of the block accesses to minimise the
-number of times user access has to be opened and closed.
+Call setup_tm_sigcontexts() before opening user access to avoid
+having to close and open again.
 
-As mentioned in individual patches, some bring real performance
-improvement.
+Signed-off-by: Christophe Leroy (CS GROUP) <chleroy@kernel.org>
+---
+ arch/powerpc/kernel/signal_64.c | 22 +++++++++-------------
+ 1 file changed, 9 insertions(+), 13 deletions(-)
 
-This series is built from previous series [1] which predates
-implementation of scoped user access.
-
-[1] https://lore.kernel.org/all/1718f38859d5366f82d5bef531f255cedf537b5d.1631861883.git.christophe.leroy@csgroup.eu/T/#t
-
-Christophe Leroy (CS GROUP) (8):
-  powerpc/signal32: Convert to scoped user access
-  powerpc/signal64: Untangle setup_tm_sigcontexts() and
-    user_access_begin()
-  powerpc/signal64: Convert to scoped user access
-  powerpc/signal64: Access function descriptor with scoped user access
-  powerpc/signal: Include the new stack frame inside the user access
-    block
-  signal: Add unsafe_copy_siginfo_to_user()
-  powerpc/uaccess: Add unsafe_clear_user()
-  powerpc/signal: Use unsafe_copy_siginfo_to_user()
-
- arch/powerpc/include/asm/uaccess.h |  20 ++
- arch/powerpc/kernel/signal_32.c    | 498 ++++++++++++++---------------
- arch/powerpc/kernel/signal_64.c    | 120 +++----
- include/linux/signal.h             |  15 +
- include/linux/uaccess.h            |   1 +
- kernel/signal.c                    |   5 -
- 6 files changed, 323 insertions(+), 336 deletions(-)
-
+diff --git a/arch/powerpc/kernel/signal_64.c b/arch/powerpc/kernel/signal_64.c
+index 86bb5bb4c143..3849af21e1d8 100644
+--- a/arch/powerpc/kernel/signal_64.c
++++ b/arch/powerpc/kernel/signal_64.c
+@@ -873,6 +873,15 @@ int handle_rt_signal64(struct ksignal *ksig, sigset_t *set,
+ 	if (!MSR_TM_ACTIVE(msr))
+ 		prepare_setup_sigcontext(tsk);
+ 
++#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
++	if (MSR_TM_ACTIVE(msr))
++		err |= setup_tm_sigcontexts(&frame->uc.uc_mcontext,
++					    &frame->uc_transact.uc_mcontext,
++					    tsk, ksig->sig, NULL,
++					    (unsigned long)ksig->ka.sa.sa_handler,
++					    msr);
++
++#endif
+ 	if (!user_write_access_begin(frame, sizeof(*frame)))
+ 		goto badframe;
+ 
+@@ -889,19 +898,6 @@ int handle_rt_signal64(struct ksignal *ksig, sigset_t *set,
+ 		 * ucontext_t (for transactional state) with its uc_link ptr.
+ 		 */
+ 		unsafe_put_user(&frame->uc_transact, &frame->uc.uc_link, badframe_block);
+-
+-		user_write_access_end();
+-
+-		err |= setup_tm_sigcontexts(&frame->uc.uc_mcontext,
+-					    &frame->uc_transact.uc_mcontext,
+-					    tsk, ksig->sig, NULL,
+-					    (unsigned long)ksig->ka.sa.sa_handler,
+-					    msr);
+-
+-		if (!user_write_access_begin(&frame->uc.uc_sigmask,
+-					     sizeof(frame->uc.uc_sigmask)))
+-			goto badframe;
+-
+ #endif
+ 	} else {
+ 		unsafe_put_user(0, &frame->uc.uc_link, badframe_block);
 -- 
 2.54.0
 
