@@ -1,110 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-21395-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21396-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3334ACD5BB1
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 May 2026 12:42:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B4EECCD5BB0
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 May 2026 12:45:09 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gMQ0r6WsQz3bpx;
-	Fri, 22 May 2026 22:42:52 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a07:de40:b251:101:10:150:64:2"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779453772;
-	cv=none; b=bObGRb0m099YYpmpx34LJ+AKN90RyBd2FQiTaAGCFwe/MIGU2A9MzPS2MGJ7dD+Pf2aqPiXWyS2/2s41dVJFbu5WxIdArPKWZXrTijEItRadRZUAR1yhTIR8QCKuP8T8aMhtljN/8zuWfp91mKv4YBvvrRXBEht3MlU1gVIPhajd0lto3rF85jqy6qDoysG07M319oKLUmVlyyCq9CVCqaffUmM1ru1htuAiMzmBdZZRAAPLx4US2svsZesEdSZJo1/D3pq7r2oOVpx0EtRwkPUpHDMCLXXcSXIov57QUZUwNpo7KvbXrY+upzZW2yMLy1Gx8b/AWIjWNRA/JZFbRg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gMQ3S2qllz3brr;
+	Fri, 22 May 2026 22:45:08 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779453908;
+	cv=none; b=Kbjxa9Jm6jd0jMgAIDFBZQKdDPJYqtW6QDkrCTWbQy3TlrD9FamENdhJ5X4H+Bp4HiJy+2Q78T0KovpoR5augp1UhqFbo9Pjz7Z23Eq36EvkD710iFf+p/tJHSEgGDsQd1bzdye8uK+AVWHyI93YuIlifUhPU6+wMYQrh5un09OSSq+eg4lk8XABr49evFcgq3u1gMMcynohi0mZmyklo8fiFbrdVw/I4gCnJggkFcrOhhW+s3YUaWmLVgeOIKnwPzaZWi74NffE7wzfCWzwXug7RkFYcBsth1g/KNYYgmF4+clMapDBvBaQlxFHZyHQZC7XYUG6IhgHyT6DirjnfA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1779453772; c=relaxed/relaxed;
-	bh=vBtaE/SLft/7bYaH+tW5iBuZ4PwLUahf4IAUa7S3OcI=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=IcLJ+OKJI+uDGELiX0+FrNPWZnHCWebyc55lO+8GekLJlHOtM6m4joTAVlzPKIPPyvcmI5/1kdl00LRf996iEoBYiVOmqNd2L8OkYGoNY7pJ91T0PtO3qIMWQ0Au5JtzXclphQfQdObr+4o4b/rr9EUtJAK0dbqxxs2BTAzkUCl2H77xVRA3dof0GHWZchYwfUpxSvDMlSvE3O44O6ON7AXAbAJXcCPJ+w7RLCcQwAiQyiFshPQD8YHBPzsVwvIt+BzBOwcQAdT+UALeEj/PdudGsn6OvTv0kevw2xPoszxj96D+R5BM+y06tVPHlI7asqPP6314qAen6j6vxhMPpw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de; dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=KWNrr3SG; dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=jYJ5Gux7; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=KWNrr3SG; dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=jYJ5Gux7; dkim-atps=neutral; spf=pass (client-ip=2a07:de40:b251:101:10:150:64:2; helo=smtp-out2.suse.de; envelope-from=tzimmermann@suse.de; receiver=lists.ozlabs.org) smtp.mailfrom=suse.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de
+	t=1779453908; c=relaxed/relaxed;
+	bh=kc80LGaAlPljAg7ILWOq2bbeI+elbTjRGpAnUDTXRts=;
+	h=Message-ID:Date:MIME-Version:Subject:From:To:Cc:References:
+	 In-Reply-To:Content-Type; b=W2AHIidI7Z7y8fDu+NsgJYzV9qI3kmEkFCi1hfz3s/kCSQlpw3eKaLv/CUvqCJ9pyG+Kxj78TQB/7rJ5yrkVGhIw727C4dEEFOuOKBojmR1reSR/EYfpbeFhWt+UJjiRuub69+n42oIRa0zwbOBHCIiOsxWW0pKkuCwqge5gOI+osJLTDfzDtpdxIiShJCzcvek3oZfExdscT9dq+jSZaT4pKsmRSFQbfjkk0k0DtVMzafOY3uD6aa2vyvWWxMUn24xmZSLwgBXnaCrg+LEgcEnaRSVGfZzpy/zfYR4elj84X4MrGBHVCGBGatwjoSD7V5PoiVGUOUMFrhSDB0BJ0Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=lRldLOCn; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=KWNrr3SG;
-	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=jYJ5Gux7;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=KWNrr3SG;
-	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=jYJ5Gux7;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=lRldLOCn;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=2a07:de40:b251:101:10:150:64:2; helo=smtp-out2.suse.de; envelope-from=tzimmermann@suse.de; receiver=lists.ozlabs.org)
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [IPv6:2a07:de40:b251:101:10:150:64:2])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gMQ0l6g3hz2xRw
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 May 2026 22:42:47 +1000 (AEST)
-Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out2.suse.de (Postfix) with ESMTPS id 4078367CD6;
-	Fri, 22 May 2026 12:30:29 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1779453029; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=vBtaE/SLft/7bYaH+tW5iBuZ4PwLUahf4IAUa7S3OcI=;
-	b=KWNrr3SGun+JUo91FFxQ2B6VAOg9V5cX+9Eb2YNZlg4szMTeqItdPJibs9f6e4Vf0RQNS6
-	J2/zP73rWBaC4/Eu39i9dyZf2VRg9AQxykRkRW2t8RUjWhY4ttaUQj9sDVfxDtfCfKCVnk
-	De3/szNjsnAbdpgyB4Isi2oOCoGK4Hg=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1779453029;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=vBtaE/SLft/7bYaH+tW5iBuZ4PwLUahf4IAUa7S3OcI=;
-	b=jYJ5Gux7lgD0D7y9dRKgYJeTxOYiuIRF5DzIk68cCqwlv7B1++xn4NB1MKNxeQ+FIfwfPl
-	V1kwNYO7HOfXTLDQ==
-Authentication-Results: smtp-out2.suse.de;
-	none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1779453029; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=vBtaE/SLft/7bYaH+tW5iBuZ4PwLUahf4IAUa7S3OcI=;
-	b=KWNrr3SGun+JUo91FFxQ2B6VAOg9V5cX+9Eb2YNZlg4szMTeqItdPJibs9f6e4Vf0RQNS6
-	J2/zP73rWBaC4/Eu39i9dyZf2VRg9AQxykRkRW2t8RUjWhY4ttaUQj9sDVfxDtfCfKCVnk
-	De3/szNjsnAbdpgyB4Isi2oOCoGK4Hg=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1779453029;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=vBtaE/SLft/7bYaH+tW5iBuZ4PwLUahf4IAUa7S3OcI=;
-	b=jYJ5Gux7lgD0D7y9dRKgYJeTxOYiuIRF5DzIk68cCqwlv7B1++xn4NB1MKNxeQ+FIfwfPl
-	V1kwNYO7HOfXTLDQ==
-Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id E2B31593A8;
-	Fri, 22 May 2026 12:30:28 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
-	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id oF0mNmRMEGqqeQAAD6G6ig
-	(envelope-from <tzimmermann@suse.de>); Fri, 22 May 2026 12:30:28 +0000
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: deller@gmx.de,
-	simona@ffwll.ch,
-	airlied@gmail.com,
-	lukas@wunner.de,
-	maddy@linux.ibm.com,
-	mpe@ellerman.id.au,
-	npiggin@gmail.com,
-	chleroy@kernel.org
-Cc: dri-devel@lists.freedesktop.org,
-	linux-fbdev@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org,
-	Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH v2 4/4] fbdev: Do not export fbcon from fbdev
-Date: Fri, 22 May 2026 14:28:16 +0200
-Message-ID: <20260522123019.211059-5-tzimmermann@suse.de>
-X-Mailer: git-send-email 2.54.0
-In-Reply-To: <20260522123019.211059-1-tzimmermann@suse.de>
-References: <20260522123019.211059-1-tzimmermann@suse.de>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gMQ3K2k0Vz2xFl
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 May 2026 22:45:01 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id 47754600BB;
+	Fri, 22 May 2026 12:44:59 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9B1991F000E9;
+	Fri, 22 May 2026 12:44:57 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1779453899;
+	bh=kc80LGaAlPljAg7ILWOq2bbeI+elbTjRGpAnUDTXRts=;
+	h=Date:Subject:From:To:Cc:References:In-Reply-To;
+	b=lRldLOCn4Yiy3236MudQVu/AwN8Wqlzq1ZYWUa4taX0yZtdXIj5OnjwbBldGuMG4f
+	 CGgXzeuT437aQEF6weLjAO3Wf0rg8tPOG4MjN1IY/F64Rx27helR2UjTklyLi05v6M
+	 rbVFHKAWQGm3Ufbs7LjNmGKN2g2erF//eWiuxA0fquukjWkHAIlnXfdR+unv0iJSo/
+	 pv0JQNnzYUXYma+/A6Q7zt9JENM/7Jxd8rkf00M+CdVnI4xW86ky+rNXzHRi9bj86Q
+	 3LQPuQiMxwrLVeoS08NQ2zylbQPRdZ3VumnC9wkDFzXiWtHZRQhQJ3mrfwWcIvYxQc
+	 BJmOHpLQR9kCw==
+Message-ID: <28a7b0b9-3c17-4f76-af80-f17f4869f854@kernel.org>
+Date: Fri, 22 May 2026 14:44:55 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -118,239 +59,141 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v1 2/8] powerpc/signal64: Untangle setup_tm_sigcontexts()
+ and user_access_begin()
+From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+To: David Laight <david.laight.linux@gmail.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin
+ <npiggin@gmail.com>, Madhavan Srinivasan <maddy@linux.ibm.com>,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+References: <cover.1779441786.git.chleroy@kernel.org>
+ <7c83fe5a596514a02fde37da987a48d638d0d097.1779441786.git.chleroy@kernel.org>
+ <20260522121237.3089276f@pumpkin>
+ <69bd69b1-97f7-41e2-934b-bed28dc2fef7@kernel.org>
+Content-Language: fr-FR
+In-Reply-To: <69bd69b1-97f7-41e2-934b-bed28dc2fef7@kernel.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-X-Spamd-Result: default: False [-2.80 / 50.00];
-	BAYES_HAM(-3.00)[100.00%];
-	MID_CONTAINS_FROM(1.00)[];
-	NEURAL_HAM_LONG(-1.00)[-1.000];
-	R_MISSING_CHARSET(0.50)[];
-	NEURAL_HAM_SHORT(-0.20)[-0.999];
-	MIME_GOOD(-0.10)[text/plain];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	ARC_NA(0.00)[];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	MIME_TRACE(0.00)[0:+];
-	TO_DN_SOME(0.00)[];
-	RCPT_COUNT_TWELVE(0.00)[12];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:email,suse.de:mid,imap1.dmz-prg2.suse.org:helo];
-	FUZZY_RATELIMITED(0.00)[rspamd.com];
-	FROM_EQ_ENVFROM(0.00)[];
-	RCVD_COUNT_TWO(0.00)[2];
-	FREEMAIL_TO(0.00)[gmx.de,ffwll.ch,gmail.com,wunner.de,linux.ibm.com,ellerman.id.au,kernel.org];
-	RCVD_TLS_ALL(0.00)[];
-	R_RATELIMIT(0.00)[to_ip_from(RL3i8gi83d8iemn6cxmyh4cqsd)];
-	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	FREEMAIL_ENVRCPT(0.00)[gmail.com,gmx.de]
 
-There are no callers of fbcon outside fbdev. Move the declarations
-into the internal header.
 
-Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
----
- MAINTAINERS                          |  1 -
- drivers/video/fbdev/core/fb_chrdev.c |  2 +-
- drivers/video/fbdev/core/fbcon.c     |  1 -
- drivers/video/fbdev/core/fbcon.h     | 50 +++++++++++++++++++++++++
- drivers/video/fbdev/core/fbmem.c     |  2 +-
- include/linux/fbcon.h                | 55 ----------------------------
- 6 files changed, 52 insertions(+), 59 deletions(-)
- delete mode 100644 include/linux/fbcon.h
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 6810710e7a57..0ed3ef0b466a 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -10147,7 +10147,6 @@ F:	drivers/video/fbdev/core/fbcon_rotate.h
- F:	drivers/video/fbdev/core/fbcon_ud.c
- F:	drivers/video/fbdev/core/softcursor.c
- F:	drivers/video/fbdev/core/tileblit.c
--F:	include/linux/fbcon.h
- F:	include/linux/font.h
- F:	lib/fonts/
- 
-diff --git a/drivers/video/fbdev/core/fb_chrdev.c b/drivers/video/fbdev/core/fb_chrdev.c
-index 035e67d2c28f..ba1d0bc214c5 100644
---- a/drivers/video/fbdev/core/fb_chrdev.c
-+++ b/drivers/video/fbdev/core/fb_chrdev.c
-@@ -3,10 +3,10 @@
- #include <linux/compat.h>
- #include <linux/console.h>
- #include <linux/fb.h>
--#include <linux/fbcon.h>
- #include <linux/major.h>
- 
- #include "fb_internal.h"
-+#include "fbcon.h"
- 
- /*
-  * We hold a reference to the fb_info in file->private_data,
-diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
-index 50b84cd32938..853b52b40d01 100644
---- a/drivers/video/fbdev/core/fbcon.c
-+++ b/drivers/video/fbdev/core/fbcon.c
-@@ -70,7 +70,6 @@
- #include <linux/printk.h>
- #include <linux/slab.h>
- #include <linux/fb.h>
--#include <linux/fbcon.h>
- #include <linux/vt_kern.h>
- #include <linux/selection.h>
- #include <linux/font.h>
-diff --git a/drivers/video/fbdev/core/fbcon.h b/drivers/video/fbdev/core/fbcon.h
-index 321cc7f44baa..407d207b14f1 100644
---- a/drivers/video/fbdev/core/fbcon.h
-+++ b/drivers/video/fbdev/core/fbcon.h
-@@ -11,6 +11,7 @@
- #ifndef _VIDEO_FBCON_H
- #define _VIDEO_FBCON_H
- 
-+#include <linux/compiler_types.h>
- #include <linux/font.h>
- #include <linux/types.h>
- #include <linux/vt_buffer.h>
-@@ -19,6 +20,11 @@
- 
- #include <asm/io.h>
- 
-+struct fb_blit_caps;
-+struct fb_info;
-+struct fb_var_screeninfo;
-+struct fb_videomode;
-+
-    /*
-     *    This is the interface between the low-level console driver and the
-     *    low-level frame buffer device
-@@ -233,4 +239,48 @@ static inline int get_attribute(struct fb_info *info, u16 c)
-         (void) (&_r == &_v); \
-         (i == FB_ROTATE_UR || i == FB_ROTATE_UD) ? _r : _v; })
- 
-+#ifdef CONFIG_FRAMEBUFFER_CONSOLE
-+void __init fb_console_init(void);
-+void __exit fb_console_exit(void);
-+int fbcon_fb_registered(struct fb_info *info);
-+void fbcon_fb_unregistered(struct fb_info *info);
-+void fbcon_fb_unbind(struct fb_info *info);
-+void fbcon_suspended(struct fb_info *info);
-+void fbcon_resumed(struct fb_info *info);
-+int fbcon_mode_deleted(struct fb_info *info,
-+		       struct fb_videomode *mode);
-+void fbcon_delete_modelist(struct list_head *head);
-+void fbcon_new_modelist(struct fb_info *info);
-+void fbcon_get_requirement(struct fb_info *info,
-+			   struct fb_blit_caps *caps);
-+void fbcon_fb_blanked(struct fb_info *info, int blank);
-+int  fbcon_modechange_possible(struct fb_info *info,
-+			       struct fb_var_screeninfo *var);
-+void fbcon_update_vcs(struct fb_info *info, bool all);
-+void fbcon_remap_all(struct fb_info *info);
-+int fbcon_set_con2fb_map_ioctl(void __user *argp);
-+int fbcon_get_con2fb_map_ioctl(void __user *argp);
+Le 22/05/2026 à 14:06, Christophe Leroy (CS GROUP) a écrit :
+> 
+> 
+> Le 22/05/2026 à 13:12, David Laight a écrit :
+>> On Fri, 22 May 2026 11:56:02 +0200
+>> "Christophe Leroy (CS GROUP)" <chleroy@kernel.org> wrote:
+>>
+>>> Call setup_tm_sigcontexts() before opening user access to avoid
+>>> having to close and open again.
+>>>
+>>> Signed-off-by: Christophe Leroy (CS GROUP) <chleroy@kernel.org>
+>>> ---
+>>>   arch/powerpc/kernel/signal_64.c | 22 +++++++++-------------
+>>>   1 file changed, 9 insertions(+), 13 deletions(-)
+>>>
+>>> diff --git a/arch/powerpc/kernel/signal_64.c b/arch/powerpc/kernel/ 
+>>> signal_64.c
+>>> index 86bb5bb4c143..3849af21e1d8 100644
+>>> --- a/arch/powerpc/kernel/signal_64.c
+>>> +++ b/arch/powerpc/kernel/signal_64.c
+>>> @@ -873,6 +873,15 @@ int handle_rt_signal64(struct ksignal *ksig, 
+>>> sigset_t *set,
+>>>       if (!MSR_TM_ACTIVE(msr))
+>>>           prepare_setup_sigcontext(tsk);
+>>> +#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+>>> +    if (MSR_TM_ACTIVE(msr))
+>>
+>> Can't that be done without the ugly #ifdef?
+>> I assume MSR_TM_ACTIVE() will be zero - so it will all get optimised 
+>> away.
+> 
+> Yes but struct rt_sigframe field uc_transact only exists when 
+> CONFIG_PPC_TRANSACTIONAL_MEM is defined.
+> 
+> And that would also require a stub setup_tm_sigcontexts()
+
+After thinking once more, I think we can do the following, is it better 
+for you ?
+
+diff --git a/arch/powerpc/kernel/signal_64.c 
+b/arch/powerpc/kernel/signal_64.c
+index 86bb5bb4c143..c70732e8002d 100644
+--- a/arch/powerpc/kernel/signal_64.c
++++ b/arch/powerpc/kernel/signal_64.c
+@@ -203,8 +203,7 @@ static long notrace __unsafe_setup_sigcontext(struct 
+sigcontext __user *sc,
+   * examine the transactional registers in the 2nd sigcontext to 
+determine the
+   * real origin of the signal.
+   */
+-static long setup_tm_sigcontexts(struct sigcontext __user *sc,
+-				 struct sigcontext __user *tm_sc,
++static long setup_tm_sigcontexts(struct rt_sigframe __user *frame,
+  				 struct task_struct *tsk,
+  				 int signr, sigset_t *set, unsigned long handler,
+  				 unsigned long msr)
+@@ -217,6 +216,8 @@ static long setup_tm_sigcontexts(struct sigcontext 
+__user *sc,
+  	 * Userland shall check AT_HWCAP to know wether it can rely on the
+  	 * v_regs pointer or not.
+  	 */
++	struct sigcontext __user *sc = &frame->uc.uc_mcontext;
++	struct sigcontext __user *tm_sc = &frame->uc_transact.uc_mcontext;
+  #ifdef CONFIG_ALTIVEC
+  	elf_vrreg_t __user *v_regs = sigcontext_vmx_regs(sc);
+  	elf_vrreg_t __user *tm_v_regs = sigcontext_vmx_regs(tm_sc);
+@@ -325,6 +326,14 @@ static long setup_tm_sigcontexts(struct sigcontext 
+__user *sc,
+
+  	return err;
+  }
 +#else
-+static inline void fb_console_init(void) {}
-+static inline void fb_console_exit(void) {}
-+static inline int fbcon_fb_registered(struct fb_info *info) { return 0; }
-+static inline void fbcon_fb_unregistered(struct fb_info *info) {}
-+static inline void fbcon_fb_unbind(struct fb_info *info) {}
-+static inline void fbcon_suspended(struct fb_info *info) {}
-+static inline void fbcon_resumed(struct fb_info *info) {}
-+static inline int fbcon_mode_deleted(struct fb_info *info,
-+				     struct fb_videomode *mode) { return 0; }
-+static inline void fbcon_delete_modelist(struct list_head *head) {}
-+static inline void fbcon_new_modelist(struct fb_info *info) {}
-+static inline void fbcon_get_requirement(struct fb_info *info,
-+					 struct fb_blit_caps *caps) {}
-+static inline void fbcon_fb_blanked(struct fb_info *info, int blank) {}
-+static inline int  fbcon_modechange_possible(struct fb_info *info,
-+				struct fb_var_screeninfo *var) { return 0; }
-+static inline void fbcon_update_vcs(struct fb_info *info, bool all) {}
-+static inline void fbcon_remap_all(struct fb_info *info) {}
-+static inline int fbcon_set_con2fb_map_ioctl(void __user *argp) { return 0; }
-+static inline int fbcon_get_con2fb_map_ioctl(void __user *argp) { return 0; }
-+#endif
-+
- #endif /* _VIDEO_FBCON_H */
-diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
-index ecadbc58abff..e5221653ec2b 100644
---- a/drivers/video/fbdev/core/fbmem.c
-+++ b/drivers/video/fbdev/core/fbmem.c
-@@ -14,13 +14,13 @@
- #include <linux/console.h>
- #include <linux/export.h>
- #include <linux/fb.h>
--#include <linux/fbcon.h>
- #include <linux/lcd.h>
- #include <linux/leds.h>
- 
- #include <video/nomodeset.h>
- 
- #include "fb_internal.h"
-+#include "fbcon.h"
- 
-     /*
-      *  Frame buffer device initialization and setup routines
-diff --git a/include/linux/fbcon.h b/include/linux/fbcon.h
-deleted file mode 100644
-index f206370060e1..000000000000
---- a/include/linux/fbcon.h
-+++ /dev/null
-@@ -1,55 +0,0 @@
--#ifndef _LINUX_FBCON_H
--#define _LINUX_FBCON_H
--
--#include <linux/compiler_types.h>
--
--struct fb_blit_caps;
--struct fb_info;
--struct fb_var_screeninfo;
--struct fb_videomode;
--
--#ifdef CONFIG_FRAMEBUFFER_CONSOLE
--void __init fb_console_init(void);
--void __exit fb_console_exit(void);
--int fbcon_fb_registered(struct fb_info *info);
--void fbcon_fb_unregistered(struct fb_info *info);
--void fbcon_fb_unbind(struct fb_info *info);
--void fbcon_suspended(struct fb_info *info);
--void fbcon_resumed(struct fb_info *info);
--int fbcon_mode_deleted(struct fb_info *info,
--		       struct fb_videomode *mode);
--void fbcon_delete_modelist(struct list_head *head);
--void fbcon_new_modelist(struct fb_info *info);
--void fbcon_get_requirement(struct fb_info *info,
--			   struct fb_blit_caps *caps);
--void fbcon_fb_blanked(struct fb_info *info, int blank);
--int  fbcon_modechange_possible(struct fb_info *info,
--			       struct fb_var_screeninfo *var);
--void fbcon_update_vcs(struct fb_info *info, bool all);
--void fbcon_remap_all(struct fb_info *info);
--int fbcon_set_con2fb_map_ioctl(void __user *argp);
--int fbcon_get_con2fb_map_ioctl(void __user *argp);
--#else
--static inline void fb_console_init(void) {}
--static inline void fb_console_exit(void) {}
--static inline int fbcon_fb_registered(struct fb_info *info) { return 0; }
--static inline void fbcon_fb_unregistered(struct fb_info *info) {}
--static inline void fbcon_fb_unbind(struct fb_info *info) {}
--static inline void fbcon_suspended(struct fb_info *info) {}
--static inline void fbcon_resumed(struct fb_info *info) {}
--static inline int fbcon_mode_deleted(struct fb_info *info,
--				     struct fb_videomode *mode) { return 0; }
--static inline void fbcon_delete_modelist(struct list_head *head) {}
--static inline void fbcon_new_modelist(struct fb_info *info) {}
--static inline void fbcon_get_requirement(struct fb_info *info,
--					 struct fb_blit_caps *caps) {}
--static inline void fbcon_fb_blanked(struct fb_info *info, int blank) {}
--static inline int  fbcon_modechange_possible(struct fb_info *info,
--				struct fb_var_screeninfo *var) { return 0; }
--static inline void fbcon_update_vcs(struct fb_info *info, bool all) {}
--static inline void fbcon_remap_all(struct fb_info *info) {}
--static inline int fbcon_set_con2fb_map_ioctl(void __user *argp) { return 0; }
--static inline int fbcon_get_con2fb_map_ioctl(void __user *argp) { return 0; }
--#endif
--
--#endif /* _LINUX_FBCON_H */
--- 
-2.54.0
++static long setup_tm_sigcontexts(struct rt_sigframe __user *frame,
++				 struct task_struct *tsk,
++				 int signr, sigset_t *set, unsigned long handler,
++				 unsigned long msr)
++{
++	return -EINVAL;
++}
+  #endif
 
+  /*
+@@ -872,6 +881,9 @@ int handle_rt_signal64(struct ksignal *ksig, 
+sigset_t *set,
+  	 */
+  	if (!MSR_TM_ACTIVE(msr))
+  		prepare_setup_sigcontext(tsk);
++	else
++		err |= setup_tm_sigcontexts(frame, tsk, ksig->sig, NULL,
++					    (unsigned long)ksig->ka.sa.sa_handler, msr);
+
+  	if (!user_write_access_begin(frame, sizeof(*frame)))
+  		goto badframe;
+@@ -889,19 +901,6 @@ int handle_rt_signal64(struct ksignal *ksig, 
+sigset_t *set,
+  		 * ucontext_t (for transactional state) with its uc_link ptr.
+  		 */
+  		unsafe_put_user(&frame->uc_transact, &frame->uc.uc_link, 
+badframe_block);
+-
+-		user_write_access_end();
+-
+-		err |= setup_tm_sigcontexts(&frame->uc.uc_mcontext,
+-					    &frame->uc_transact.uc_mcontext,
+-					    tsk, ksig->sig, NULL,
+-					    (unsigned long)ksig->ka.sa.sa_handler,
+-					    msr);
+-
+-		if (!user_write_access_begin(&frame->uc.uc_sigmask,
+-					     sizeof(frame->uc.uc_sigmask)))
+-			goto badframe;
+-
+  #endif
+  	} else {
+  		unsafe_put_user(0, &frame->uc.uc_link, badframe_block);
+
+
+Christophe
 
