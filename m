@@ -1,75 +1,75 @@
-Return-Path: <linuxppc-dev+bounces-21426-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21427-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3F5ECCD5BB1
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 23 May 2026 11:15:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3537ACD5BAC
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 23 May 2026 11:15:09 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gN00v6sHhz3bpJ;
-	Sat, 23 May 2026 21:14:55 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::430"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779534895;
-	cv=none; b=fVPa5oJNWwWUXHIyJ/4cO9EGJ056AoJZ9DZ2iYLjaOBNfZ77zbemTpdWV7uUCXnc/o9x1FxGjX7NsLVldbsVcy5xQma7eAZmGbxTIqCXo2ZekhO9ltV6U59ThtRzD9pwoQ7HaKwuqby7Hc+fv4VzpMqw501fbb1b4w6oKsge9BhPYZxYia3dq5X5ThCjj+QQxdBF1ZIUE2b8TEjKEy91MPYvzijQug2l3nh7verp+kOKnx/jtavM2j+TwbGiykEQskk/q/o7LEluRdP8x8AR19YFh7m55l8RulgdvILdUySggv31U9HFHoz0k44KcSiGPMwPhF1bGUyc4lLyEw6obA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gN0130JMWz2y81;
+	Sat, 23 May 2026 21:15:03 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::434"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779534903;
+	cv=none; b=Hn5ek8kS+v9nZq6jXNHstPiSy1CghX6KSX8qcglLYDBvvoNJS1DKegNevBq8FlM2WLY2UF0LgGGjF1uIu25i25j6dlStBZHEADfcNhpaGILBtSkn43dvt9nWj8H+oMD4WoeH9HbA85UEgff3R45i1aV9bTYKsvdKiMveMgbxad6Mwh19UCZpXzMe6E9DM3RHmEABuZwDhuGmUfQ8tK1ZyaivtfT6QDW6ouhc0kih5KBp+YGv4a/jB/VbuQHDTm/AHhf8YUhdEhp6dq7i+hrfJyI2spfRzqBHd1P1oDrUaHcM6Amo8encAktftjWNKcZDnrqzD9G9pivWKXHCUKU0BA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1779534895; c=relaxed/relaxed;
-	bh=oMG8EtROF9Cg3C7hjmtqqGx+u6sXMBdHtk9UvMaumUw=;
+	t=1779534903; c=relaxed/relaxed;
+	bh=dYv7n7MNQFWGtdjlWPVxo0rnA4k4aMTlnbBv8oYiho8=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=IRcmjWgbQWonJvSVIb5kH6aKHJX/RIGytwSiks0xqBkijhPMOOO5Qxs5ZjJNDF1RpMegXbda28u1KvRi1mQat8ThIB1NoKICy7QpbfFR/K6arGcMmBSjubjlflckWXhANAnoOuvduUFilsjBtYOLo8Kpk2xKGFUmhaevACSMLc0unZAa8EfKNSSAbO2LPUHUoff+ZT/mlbWYgbXjpQzyfZ1BT3ddujnNDIwWcFntZsPAGgB4FQj3lzElY75JZR1oFYwRSa4ivHWkyhWSnc3DCpvf6Oirxsfaa4Z2F4aSdqGZPlpXd1mEajLJq6STZrGbkdr3IGBd+FNdp2vBJxyuPA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=s1r0jBt5; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::430; helo=mail-pf1-x430.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	 MIME-Version; b=bX4AKRsUnKm8b21YooNlgctLQ5lUBVzh+Q51+cXu86q9Y43DgBaQGg/tqprNAkGwW0D8xDJ6qJa3ptU1EwEkVMkmrJBdIte3PqmZ971sYUcn8uxwIn7zZbQ0nBDnX6gZLIJ6GRmvr6SyqLQLLsVi9H5XFBI5wRV8VbnjKQ+UV6GoxCAsWvKZjuvJP/1gpti5GotXXPD3wBkI8NOnBQuoN0RS2lyg7jw9Sdym0/ct9LZFRymoBjjEB7RKtDIa8VZ7f5JJd1cpEtiQuG3dh3fohGHzOpmWQScoWmqSF2ZiOjHuqD5mHgfdnFIdAd31pOs/TZp9Xd/w0OoqRGQYKSAlBg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=lHiUskNC; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::434; helo=mail-pf1-x434.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=s1r0jBt5;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=lHiUskNC;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::430; helo=mail-pf1-x430.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pf1-x430.google.com (mail-pf1-x430.google.com [IPv6:2607:f8b0:4864:20::430])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::434; helo=mail-pf1-x434.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pf1-x434.google.com (mail-pf1-x434.google.com [IPv6:2607:f8b0:4864:20::434])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gN00v25CJz2xJT
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 May 2026 21:14:55 +1000 (AEST)
-Received: by mail-pf1-x430.google.com with SMTP id d2e1a72fcca58-82fbdd60b64so6857200b3a.3
-        for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 May 2026 04:14:55 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gN0121Q29z2xJT
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 May 2026 21:15:01 +1000 (AEST)
+Received: by mail-pf1-x434.google.com with SMTP id d2e1a72fcca58-836ed29d1e5so3651719b3a.2
+        for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 May 2026 04:15:01 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1779534893; x=1780139693; darn=lists.ozlabs.org;
+        d=gmail.com; s=20251104; t=1779534900; x=1780139700; darn=lists.ozlabs.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=oMG8EtROF9Cg3C7hjmtqqGx+u6sXMBdHtk9UvMaumUw=;
-        b=s1r0jBt5V+9fWahQpaZ5tWMEMExVsfACem/B9PdSTHb2pdckqIMc9Z2AiCLZzZv57r
-         r/swfN5iT8EZz/lIWezH+uRaOxeLc+KnHRR3R2zmq2nxUmCNbJgZQQcVjvF0bAj2AuDb
-         O++XK/rqEauAYDmgRQITwt0TQU1SJRpOiGmExdlWL1WwmdbVi3iguSkK1z1I9VYdmq3w
-         nrf/9eX8Mf7WL7hyMmkptBr8y/H0mh92y0Lr1B4UHZAPCUasNr8eBHdoyww2RIDEnXSZ
-         nzJuJOgio+fOais6gzNcU/7lQU/nFzxUHdfWwXsoOokXNTTQoLHv+lvNpfvtRbaS4FAp
-         KmAA==
+        bh=dYv7n7MNQFWGtdjlWPVxo0rnA4k4aMTlnbBv8oYiho8=;
+        b=lHiUskNCNPc6ryLAOXum5mEUEWaEaWksAEkC+z57W2Bx2xYoqENjXin3VwmJ6rAjwn
+         ECevY8RUfir8H8kYCrf4qJM0jJ8E576KzdrlWlREPUc5iVlUGHEW8cfxikRf5QYOdv7Q
+         9EJ6jI0JkMGQQdBRRc/VgPX8DszJuyBZknF214NO4kuE7ZNb9dFsfFz3c/xwXWrMV5WU
+         fW5T6P7I4OOryQkeJ6g0d0tJYirQwwHbWz3v5Lsl5W23LGKcq3PkW3GKV17wAYP+Z4HZ
+         eyL3nIwG/T6Ww6J7jZHYEQ5ycFy7lilygISVSAm5nsvsyC+Z4d5qol1HyWIxYYno6ITw
+         JnYQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1779534893; x=1780139693;
+        d=1e100.net; s=20251104; t=1779534900; x=1780139700;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to;
-        bh=oMG8EtROF9Cg3C7hjmtqqGx+u6sXMBdHtk9UvMaumUw=;
-        b=pJkQ3qEnFXpUhvm2aY8EtK4odg6BQnPDtm075EcaEV2u/RCGAqD3WXnwg4vhDdD1aC
-         17H5FqhKFA3E79rG2ExT4BrfjGq8Jdso0Ifo2F30tiAm8sNltHxTmdd5JC1+t6v8LsVB
-         JHp25ZSoiA/+pcUrymp/ClwxqBwdVS+rZEdBRLR1C1TdWhN/grm1drQOmuKYEDwegQiQ
-         89ABDU4lLVlb38AJxKnreWjyqgVyvaxvf6jVI8umbfLFUw4jURlikuZbkQ5Ixdc2YhHE
-         BUsB3/Qb2g7ZEe3xEI8kvwkWmP8n3nN9kJ+nF0bpCN4H2ZCCRpYxsOn2ftg/whaQPm0h
-         rKhg==
-X-Gm-Message-State: AOJu0Yy2jZObzl71mbDXYcHbdsXcrHRlyKnP0gFBLPY58p13izT8l4tV
-	55ghKyo6k0jhsyUZu8NKxnpGQONXPXaYuwQUQWpNepWk3GuzglYGzCTW
-X-Gm-Gg: Acq92OEC27s/B3CKDOUI6+Sq+ui8x4Xnh19lq/LWatBSMB5rUfuDBBuZ3g461sEGCdM
-	oAj9U7EwsKEobeLoSLzKl0DEo2oiq2Kcdzk+EJep5Cou6IZbx/GKuvuwSkSXDDZE+20iaPlJgNz
-	8lNfmK2r3nPtLv2NCvUCAcOppgnEy3UcCW5ANQrBttQBZ86m2uq4CVk5cbKUNFteHkEhKNHaRoR
-	1/0FCVLxSGb2WYh8+tMaSZ3hiPj/aSgmGvnKKKCfJtovgKf8lkSP0O/B5HX69Hd8UAgFvbobAqI
-	XS9I2tACAcDNigA1WJysLav1CF8MG+hIwZtExz6dMEQl1UKdn5xLw0BGlnOtTCNDH2YgIqKJ/4o
-	oiyDoysEJrC+n1QfFByQ8WSRZW7GIfwioxAPAOE4HIh9liPerWRefiPEnUBa1qREdQjUQ9cVyqo
-	1bDp0jcjjE4naKVCB52WJTAqKebvD87Y4RoQyZQLU=
-X-Received: by 2002:a05:6a00:94fc:b0:82c:6683:b866 with SMTP id d2e1a72fcca58-8415f121b9bmr7424451b3a.4.1779534893432;
-        Sat, 23 May 2026 04:14:53 -0700 (PDT)
+        bh=dYv7n7MNQFWGtdjlWPVxo0rnA4k4aMTlnbBv8oYiho8=;
+        b=BICukYd4qJk6OxQZX6agloG21GbWuJHaJVa3V5svAHsthWDh53s3Zx55hqoZYY7gW5
+         55BG1b0+YxcQpIYvtOOFp8p5OAK11AqMK6wTDq+ILtZNM5vOyG62RdxV/Cag9F9p8u6e
+         0COkuJf3OhQFBWT+WfxlDEHkkR2Quw7/n7VzCuG7A7W4wlSouLy2qbyoHOwakaIthgJ8
+         XDH6FL+tTL6ZkltomglhzeCsJWgZNAe6oqYmh8K+klQ/qfT8sJNckYzY7KICWGye7ioe
+         gn5V7zZ7veEt9XuWXF/IKiY+7qY8A1GO6ko8nsXForNtbZB/2MyxfgfTT9qajD6QtvP0
+         OlDQ==
+X-Gm-Message-State: AOJu0Yz6qeeXYkoDMqNTqfWwYXfvm79qbvVZps1Tvai/VgCj5IfJGMDO
+	OijBJZXNcAR6pMKmLP8tE6+lEQ6JexOC6XS4IprdepEPzXvKnG3i0PAs
+X-Gm-Gg: Acq92OGA7AbwGhwPfBnDbX2JP317LrZrQo4Y+deM0ITxzBgFQ/khG7sQQaBS12ER/Ng
+	05K+KHoeU/y5gnOf9QOb7jVjm0iWxmgpv2uEXX1aOcmSdt+nWSh385VAHmgUvd8jowmGqB6h3j1
+	RBeTc2ytFfhpNtZOJEQTYNBQB6DGd2RwTmON/XY+fxtePjGuMq7B0SoXt5oQaooQMY/aQgnlOJg
+	0PeeX8o+cQNUY4wNtwsDI25OC/tzCLXLeTbVy8+Ca8k9HCNICDBugW+Rn2OrRkE7xcQBkb3aQxb
+	j9xbJxOQHL60yYxNDifeGAC6eJvZEcQjrmzXuhZgzD1O/PWgYx9L6eFg7OchKUDZ2/nkltfh6SK
+	GBUnqvY8CJBvefg/uejBbWo2TVIqR32M0QInI7qCov3o6m0dds99O1qQNCOiWnv1in0bhDADbQE
+	wy6ysLFJzM1Frkqwe3hrmcHyX9xZ0PPC0ImG4zf/k=
+X-Received: by 2002:a05:6a00:1c8a:b0:82f:4f67:1ff6 with SMTP id d2e1a72fcca58-8415f2dca4cmr7587485b3a.4.1779534899815;
+        Sat, 23 May 2026 04:14:59 -0700 (PDT)
 Received: from Mac.ibm.com ([49.205.216.49])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-84164ac9c77sm5249140b3a.2.2026.05.23.04.14.48
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-84164ac9c77sm5249140b3a.2.2026.05.23.04.14.53
         (version=TLS1_3 cipher=TLS_CHACHA20_POLY1305_SHA256 bits=256/256);
-        Sat, 23 May 2026 04:14:52 -0700 (PDT)
+        Sat, 23 May 2026 04:14:59 -0700 (PDT)
 From: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
 To: kvm@vger.kernel.org
 Cc: linuxppc-dev@lists.ozlabs.org,
@@ -83,9 +83,9 @@ Cc: linuxppc-dev@lists.ozlabs.org,
 	Michael Ellerman <mpe@ellerman.id.au>,
 	linux-kernel@vger.kernel.org,
 	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
-Subject: [RFC v2 1/5] KVM: selftests: Move pgd_created check into virt_pgd_alloc
-Date: Sat, 23 May 2026 16:44:20 +0530
-Message-ID: <d5256bfe85fbb8c7f37ab6090bb08ccfa6a47e7b.1779524962.git.ritesh.list@gmail.com>
+Subject: [RFC v2 2/5] KVM: selftests: Add aligned guest physical page allocator
+Date: Sat, 23 May 2026 16:44:21 +0530
+Message-ID: <0fcea77119a6f4e0554f8bc0b258a54c2fe9d49f.1779524962.git.ritesh.list@gmail.com>
 X-Mailer: git-send-email 2.50.1
 In-Reply-To: <cover.1779524962.git.ritesh.list@gmail.com>
 References: <cover.1779524962.git.ritesh.list@gmail.com>
@@ -106,119 +106,118 @@ Content-Transfer-Encoding: 8bit
 
 From: Nicholas Piggin <npiggin@gmail.com>
 
-virt_arch_pgd_alloc all do the same test and set pgd_created. Move
-this into common code -
-except for x86's virt_arch_pgd_alloc() -> virt_mmu_init() - because this
-can also be called from it's tdp_mmu_init() call for setting up it's
-stage-2 mmu.
+powerpc will require this to allocate MMU tables in guest memory that
+are larger than guest base page size.
 
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-[Rebased to latest mainline tree and removed x86 case]
+[Rebased to latest mainline tree]
 Signed-off-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
 ---
- tools/testing/selftests/kvm/include/kvm_util.h        | 5 +++++
- tools/testing/selftests/kvm/lib/arm64/processor.c     | 4 ----
- tools/testing/selftests/kvm/lib/loongarch/processor.c | 4 ----
- tools/testing/selftests/kvm/lib/riscv/processor.c     | 4 ----
- tools/testing/selftests/kvm/lib/s390/processor.c      | 4 ----
- 5 files changed, 5 insertions(+), 16 deletions(-)
+ .../testing/selftests/kvm/include/kvm_util.h  | 20 +++++++++--
+ tools/testing/selftests/kvm/lib/kvm_util.c    | 33 +++++++++----------
+ 2 files changed, 33 insertions(+), 20 deletions(-)
 
 diff --git a/tools/testing/selftests/kvm/include/kvm_util.h b/tools/testing/selftests/kvm/include/kvm_util.h
-index 2ecaaa0e9965..3666a8530f31 100644
+index 3666a8530f31..c515c918c2c9 100644
 --- a/tools/testing/selftests/kvm/include/kvm_util.h
 +++ b/tools/testing/selftests/kvm/include/kvm_util.h
-@@ -1197,7 +1197,12 @@ void virt_arch_pgd_alloc(struct kvm_vm *vm);
+@@ -991,8 +991,8 @@ void kvm_gsi_routing_write(struct kvm_vm *vm, struct kvm_irq_routing *routing);
+ const char *exit_reason_str(unsigned int exit_reason);
  
- static inline void virt_pgd_alloc(struct kvm_vm *vm)
- {
-+	if (vm->mmu.pgd_created)
-+		return;
-+
- 	virt_arch_pgd_alloc(vm);
-+
-+	vm->mmu.pgd_created = true;
+ gpa_t vm_phy_page_alloc(struct kvm_vm *vm, gpa_t min_gpa, u32 memslot);
+-gpa_t __vm_phy_pages_alloc(struct kvm_vm *vm, size_t num, gpa_t min_gpa,
+-			   u32 memslot, bool protected);
++gpa_t __vm_phy_pages_alloc(struct kvm_vm *vm, size_t num, size_t align,
++			   gpa_t min_gpa, u32 memslot, bool protected);
+ gpa_t vm_alloc_page_table(struct kvm_vm *vm);
+ 
+ static inline gpa_t vm_phy_pages_alloc(struct kvm_vm *vm, size_t num,
+@@ -1003,10 +1003,24 @@ static inline gpa_t vm_phy_pages_alloc(struct kvm_vm *vm, size_t num,
+ 	 * protected memory, as the majority of memory for such VMs is
+ 	 * protected, i.e. using shared memory is effectively opt-in.
+ 	 */
+-	return __vm_phy_pages_alloc(vm, num, min_gpa, memslot,
++	return __vm_phy_pages_alloc(vm, num, 1, min_gpa, memslot,
+ 				    vm_arch_has_protected_memory(vm));
  }
  
++static inline gpa_t vm_phy_pages_alloc_align(struct kvm_vm *vm, size_t num,
++					     size_t align, gpa_t min_gpa,
++					     u32 memslot)
++{
++	/*
++	 * By default, allocate memory as protected for VMs that support
++	 * protected memory, as the majority of memory for such VMs is
++	 * protected, i.e. using shared memory is effectively opt-in.
++	 */
++	return __vm_phy_pages_alloc(vm, num, align, min_gpa, memslot,
++				    vm_arch_has_protected_memory(vm));
++}
++
++
  /*
-diff --git a/tools/testing/selftests/kvm/lib/arm64/processor.c b/tools/testing/selftests/kvm/lib/arm64/processor.c
-index 01325bf4d36f..498fbcb0ea16 100644
---- a/tools/testing/selftests/kvm/lib/arm64/processor.c
-+++ b/tools/testing/selftests/kvm/lib/arm64/processor.c
-@@ -112,13 +112,9 @@ void virt_arch_pgd_alloc(struct kvm_vm *vm)
+  * ____vm_create() does KVM_CREATE_VM and little else.  __vm_create() also
+  * loads the test binary into guest memory and creates an IRQ chip (x86 only).
+diff --git a/tools/testing/selftests/kvm/lib/kvm_util.c b/tools/testing/selftests/kvm/lib/kvm_util.c
+index 2a76eca7029d..cdb004c9ba56 100644
+--- a/tools/testing/selftests/kvm/lib/kvm_util.c
++++ b/tools/testing/selftests/kvm/lib/kvm_util.c
+@@ -1442,7 +1442,7 @@ static gva_t ____vm_alloc(struct kvm_vm *vm, size_t sz, gva_t min_gva,
+ 	u64 pages = (sz >> vm->page_shift) + ((sz % vm->page_size) != 0);
+ 
+ 	virt_pgd_alloc(vm);
+-	gpa_t gpa = __vm_phy_pages_alloc(vm, pages,
++	gpa_t gpa = __vm_phy_pages_alloc(vm, pages, 1,
+ 					   KVM_UTIL_MIN_PFN * vm->page_size,
+ 					   vm->memslots[type], protected);
+ 
+@@ -2021,7 +2021,7 @@ const char *exit_reason_str(unsigned int exit_reason)
+  * and their base address is returned. A TEST_ASSERT failure occurs if
+  * not enough pages are available at or above min_gpa.
+  */
+-gpa_t __vm_phy_pages_alloc(struct kvm_vm *vm, size_t num,
++gpa_t __vm_phy_pages_alloc(struct kvm_vm *vm, size_t num, size_t align,
+ 			   gpa_t min_gpa, u32 memslot,
+ 			   bool protected)
  {
- 	size_t nr_pages = vm_page_align(vm, ptrs_per_pgd(vm) * 8) / vm->page_size;
+@@ -2039,23 +2039,22 @@ gpa_t __vm_phy_pages_alloc(struct kvm_vm *vm, size_t num,
+ 	TEST_ASSERT(!protected || region->protected_phy_pages,
+ 		    "Region doesn't support protected memory");
  
--	if (vm->mmu.pgd_created)
--		return;
+-	base = pg = min_gpa >> vm->page_shift;
+-	do {
+-		for (; pg < base + num; ++pg) {
+-			if (!sparsebit_is_set(region->unused_phy_pages, pg)) {
+-				base = pg = sparsebit_next_set(region->unused_phy_pages, pg);
+-				break;
++	base = min_gpa >> vm->page_shift;
++again:
++	base = (base + align - 1) & ~(align - 1);
++	for (pg = base; pg < base + num; ++pg) {
++		if (!sparsebit_is_set(region->unused_phy_pages, pg)) {
++			base = sparsebit_next_set(region->unused_phy_pages, pg);
++			if (!base) {
++				fprintf(stderr, "No guest physical page available, "
++					"min_gpa: 0x%lx page_size: 0x%x memslot: %u\n",
++					min_gpa, vm->page_size, memslot);
++				fputs("---- vm dump ----\n", stderr);
++				vm_dump(stderr, vm, 2);
++				abort();
+ 			}
++			goto again;
+ 		}
+-	} while (pg && pg != base + num);
 -
- 	vm->mmu.pgd = vm_phy_pages_alloc(vm, nr_pages,
- 					 KVM_GUEST_PAGE_TABLE_MIN_PADDR,
- 					 vm->memslots[MEM_REGION_PT]);
--	vm->mmu.pgd_created = true;
- }
- 
- static void _virt_pg_map(struct kvm_vm *vm, gva_t gva, gpa_t gpa,
-diff --git a/tools/testing/selftests/kvm/lib/loongarch/processor.c b/tools/testing/selftests/kvm/lib/loongarch/processor.c
-index 64d91fb76522..207055db5f5d 100644
---- a/tools/testing/selftests/kvm/lib/loongarch/processor.c
-+++ b/tools/testing/selftests/kvm/lib/loongarch/processor.c
-@@ -51,9 +51,6 @@ void virt_arch_pgd_alloc(struct kvm_vm *vm)
- 	int i;
- 	gpa_t child, table;
- 
--	if (vm->mmu.pgd_created)
--		return;
--
- 	child = table = 0;
- 	for (i = 0; i < vm->mmu.pgtable_levels; i++) {
- 		invalid_pgtable[i] = child;
-@@ -64,7 +61,6 @@ void virt_arch_pgd_alloc(struct kvm_vm *vm)
- 		child = table;
+-	if (pg == 0) {
+-		fprintf(stderr, "No guest physical page available, "
+-			"min_gpa: 0x%lx page_size: 0x%x memslot: %u\n",
+-			min_gpa, vm->page_size, memslot);
+-		fputs("---- vm dump ----\n", stderr);
+-		vm_dump(stderr, vm, 2);
+-		abort();
  	}
- 	vm->mmu.pgd = table;
--	vm->mmu.pgd_created = true;
- }
  
- static int virt_pte_none(u64 *ptep, int level)
-diff --git a/tools/testing/selftests/kvm/lib/riscv/processor.c b/tools/testing/selftests/kvm/lib/riscv/processor.c
-index ded5429f3448..75a5d4c46001 100644
---- a/tools/testing/selftests/kvm/lib/riscv/processor.c
-+++ b/tools/testing/selftests/kvm/lib/riscv/processor.c
-@@ -66,13 +66,9 @@ void virt_arch_pgd_alloc(struct kvm_vm *vm)
- {
- 	size_t nr_pages = vm_page_align(vm, ptrs_per_pte(vm) * 8) / vm->page_size;
- 
--	if (vm->mmu.pgd_created)
--		return;
--
- 	vm->mmu.pgd = vm_phy_pages_alloc(vm, nr_pages,
- 					 KVM_GUEST_PAGE_TABLE_MIN_PADDR,
- 					 vm->memslots[MEM_REGION_PT]);
--	vm->mmu.pgd_created = true;
- }
- 
- void virt_arch_pg_map(struct kvm_vm *vm, gva_t gva, gpa_t gpa)
-diff --git a/tools/testing/selftests/kvm/lib/s390/processor.c b/tools/testing/selftests/kvm/lib/s390/processor.c
-index a9adb3782b35..342b7c92463e 100644
---- a/tools/testing/selftests/kvm/lib/s390/processor.c
-+++ b/tools/testing/selftests/kvm/lib/s390/processor.c
-@@ -17,16 +17,12 @@ void virt_arch_pgd_alloc(struct kvm_vm *vm)
- 	TEST_ASSERT(vm->page_size == PAGE_SIZE, "Unsupported page size: 0x%x",
- 		    vm->page_size);
- 
--	if (vm->mmu.pgd_created)
--		return;
--
- 	gpa = vm_phy_pages_alloc(vm, PAGES_PER_REGION,
- 				   KVM_GUEST_PAGE_TABLE_MIN_PADDR,
- 				   vm->memslots[MEM_REGION_PT]);
- 	memset(addr_gpa2hva(vm, gpa), 0xff, PAGES_PER_REGION * vm->page_size);
- 
- 	vm->mmu.pgd = gpa;
--	vm->mmu.pgd_created = true;
- }
- 
- /*
+ 	for (pg = base; pg < base + num; ++pg) {
 -- 
 2.39.5
 
