@@ -1,66 +1,64 @@
-Return-Path: <linuxppc-dev+bounces-21422-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21423-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 815DECD5BB1
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 23 May 2026 03:52:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A83A6CD4F54
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 23 May 2026 04:09:00 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gMpBp4v0Bz2xtC;
-	Sat, 23 May 2026 13:52:50 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1049"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779490754;
-	cv=none; b=RMPhH6KXapQs+Pot4VHk9OnUM76boQ6fgFwvQdd/kcRFd+K51cuXkB7rLuXMrxj0+NqdKbP8ig21UqrEc9W1fNhDGMvt/9FuV9ocgx9mWAzXy7bVG4d4I3TbzUJTHuXqWjjgrat8Ig+U5dITWrtcZhSFroysNCd/rJZOqK5oHb0RX753RhzuZewOA9fb6SvI7duTKYjMiJTBPvjSGrP+ZOUojlAB2UHjsBqTkx1demDhirl75I6/0j5AVKAyBli6tcZghYbjQEFiMTu9avHubSuNWbHhAkBUaBwHCj8utDoc8PGCZFG45WeZHSPOg/cxWNUMxNjNThZ27AvB4EvzYw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gMpYR1t6Cz2xtC;
+	Sat, 23 May 2026 14:08:59 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=140.211.166.183
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779509339;
+	cv=none; b=KXuU0VikLbxR59/6JKmCkVabbe4ertxWHI7iTkVG0St8DrmZQaWh/DJLPEeleDp5UsE9Ikk5LTT5uC7CyuMjpkfN3/rxA85mOR4RWctVXUyGPSuI0NsRBYzm4MgVpNWFxwkBv6qt3cJZjQgMx9gCB7+ij1W9tnGCyAy1s4YOwcxvJt3N9txT87rRDmauYjJkCyldvXx0gQ2sBE1z/sHdG4TvQw8GP8ZGifRZr/g/XRcW96OzhlcRqi4satGq9lKG/kN52RJXtDNkgL+CiR0EwcZLdNXEiLvy5xgzxsS0J7cnSIqLQ4hDDQLbmTI5VYEkVG7u00cCBpOanBxH9FqskA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1779490754; c=relaxed/relaxed;
-	bh=YdUzE6tqdZkacDbc+Ei+hTDSqETPzI5AVuuqPmJdYCI=;
-	h=Date:Mime-Version:Message-ID:Subject:From:To:Cc:Content-Type; b=fGPkjTzOaUUHok9w+iOyWmj/Pp2KSX5p/84YNsL9tjkWd4xoSfVxkMJLcdZQfbDy6ZnsvXIiGJHCcQwLWCKlvrzLu2vtm4azlMxl5PgCZ9V0bFDasECzBlslbeec+MRJNw1Df4aS6DAoIzlZURm+YZYJ9ZRK1gDtx2HnqScuf6OuWilg4ycNqgAKpyrWpkNIEuG02weSb+vDDHpszgXmBg0aUbWpY3fD+zUgEhJaGdmQ19jssiaejIZ6mKWW5AJyKzomKsDTfGfEDYH3AJ2lgIS/iOYBgSGM6W4cgUMbhU2cUP7P2AFrOtOzR2o/zFAmFVXt/+TIx0dhXUDXWCn3sw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=HLNDxcOG; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1049; helo=mail-pj1-x1049.google.com; envelope-from=3vd8qagkkdbgh7a2f062f4cc492.0ca96bildd0-12j96ghg.cn9yzg.cf4@flex--tjmercier.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=flex--tjmercier.bounces.google.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=HLNDxcOG;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--tjmercier.bounces.google.com (client-ip=2607:f8b0:4864:20::1049; helo=mail-pj1-x1049.google.com; envelope-from=3vd8qagkkdbgh7a2f062f4cc492.0ca96bildd0-12j96ghg.cn9yzg.cf4@flex--tjmercier.bounces.google.com; receiver=lists.ozlabs.org)
-Received: from mail-pj1-x1049.google.com (mail-pj1-x1049.google.com [IPv6:2607:f8b0:4864:20::1049])
+	t=1779509339; c=relaxed/relaxed;
+	bh=3OP/IHL2TOrgPAlM8CKiJtT9HGLsgZ6UGWKVfFdnl38=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=hbljMoi1ONCmQbSc1By1q1Bv1xX3MsKtg9USjFzQ9JYcdt96sqbfyFCmy9Hw9ncXoAjlthRSWnW5qEItKx2R3li9iduqCDBXOshMHsoA4yrEaY1w2ugAi5LwRTky/Mr94BIPZ9h9RIhFnLhtvB/9tQucX+Xbap6jnDMi6PKRis475AHvc45NLp/K8bGo44qQBmzezKY/4OaRl0QtBSDLevcoMHqxrJpwJ0LKWnlhfGo7L5bzhmCn+POj71CkOSmCtqMY+HeGMDTbHmCaQTiZrlI1VGZcE255pXmkwA2+zoGG3pJkgA3VpBTjtcF1IsFcWM2kQ+oxGk0vb6yzRfrEOw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gentoo.org; spf=pass (client-ip=140.211.166.183; helo=smtp.gentoo.org; envelope-from=sam@gentoo.org; receiver=lists.ozlabs.org) smtp.mailfrom=gentoo.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gentoo.org
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gentoo.org (client-ip=140.211.166.183; helo=smtp.gentoo.org; envelope-from=sam@gentoo.org; receiver=lists.ozlabs.org)
+Received: from smtp.gentoo.org (woodpecker.gentoo.org [140.211.166.183])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gMgh05whBz2xWY
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 May 2026 08:59:12 +1000 (AEST)
-Received: by mail-pj1-x1049.google.com with SMTP id 98e67ed59e1d1-3663d5e9b9bso7521482a91.1
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 May 2026 15:59:12 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20251104; t=1779490750; x=1780095550; darn=lists.ozlabs.org;
-        h=cc:to:from:subject:message-id:mime-version:date:from:to:cc:subject
-         :date:message-id:reply-to;
-        bh=YdUzE6tqdZkacDbc+Ei+hTDSqETPzI5AVuuqPmJdYCI=;
-        b=HLNDxcOGwTK3gNnbJT69RNyb6U5hjjuLntvp+WRNe54dWQgz/CbyWlJ6f3bEsC6QsB
-         HLYqEaITSiI2Hj4VTjGMoqE17eqkElMnIS7L3zkFZ/sd6Uiv/A33+vFaUdDf2hOT5OG6
-         k/mtbYu/0hKNnWCSWOnHGz5wcmIqU098ebRtK0Zv4fct2P5Oxe+xYr9SZq/+dvQQJPCi
-         ysO1NJonhe1fphv687xON8oBYIq9QFWU3Yk9/uriTZ2CEA1c4SlYTLxkQZh/5gosGvRp
-         9a1sJe2cQEtnG0WBc8CpMXNo59kQ1/C+CbiAoTZb0oKoYNHEuCdl96xTJwzLhf+pON1o
-         Xe5w==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1779490750; x=1780095550;
-        h=cc:to:from:subject:message-id:mime-version:date:x-gm-message-state
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=YdUzE6tqdZkacDbc+Ei+hTDSqETPzI5AVuuqPmJdYCI=;
-        b=kgG+4MUVqP8i07t2tWMHLBY+XnMSTJKK7oJt+5rG1T305Kp71p/baYGcmpXdPl9M2i
-         ++v/Cz17uj7Kxtau6IqE0MQxg0WwnkadwDu3Zs1iaq70Txuw25nleZugZJPAMF/pk9cZ
-         n+d2qevKUrzDFSvVG4m1E/pcYu1O+e4n1G6wBY4lOhyRbpPl6/4sI+tXvZruHDFYutK5
-         OMzL2tviLyrBOZCm5TxDoQSlzlWTeQkz55IWnL/aDHLxvSErXOg2jvTuMvTF6WL3p/jI
-         BZbNrPy7iNzbJnFEzqQ9JN54YShx4M76kyOMjZEx19aFp6tYwyfTRSMqRDqKi3SlQ8dF
-         9t4A==
-X-Forwarded-Encrypted: i=1; AFNElJ+pdmNnN4dJN+3SDwcZwdDutgv6X9+YyPS1owB2Uh2qfyzdjcz6VwPbzufEHIbuAqLIKGJlzCPe+LXvVqY=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yz1VzQKaLtz8HLkujvP9wgbcOh9CaJ8JhjFtEx4n+FMVmCtg5U7
-	fq8ooU2cSum7OUiTamm/rhWE9aH9KIBD62Zm8uUhCpeeVVOU6KLGrIeHE0BdiNWv9XUb0iGPOix
-	L3IfgC9RCS5p3IwGS5g==
-X-Received: from pjbcu23.prod.google.com ([2002:a17:90a:fa97:b0:369:8552:9db3])
- (user=tjmercier job=prod-delivery.src-stubby-dispatcher) by
- 2002:a17:90b:3511:b0:369:e1fa:962b with SMTP id 98e67ed59e1d1-36a67896c7emr5260153a91.26.1779490749237;
- Fri, 22 May 2026 15:59:09 -0700 (PDT)
-Date: Fri, 22 May 2026 15:58:53 -0700
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gMpYP5jzGz2xfR
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 May 2026 14:08:57 +1000 (AEST)
+Received: from localhost (1.5.5.2.4.d.e.f.f.f.5.f.9.d.6.0.a.5.c.d.c.d.9.1.0.b.8.0.1.0.0.2.ip6.arpa [IPv6:2001:8b0:19dc:dc5a:6d9:f5ff:fed4:2551])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	(Authenticated sender: sam@gentoo.org)
+	by smtp.gentoo.org (Postfix) with ESMTPSA id EE14E34250E;
+	Sat, 23 May 2026 04:08:50 +0000 (UTC)
+From: Sam James <sam@gentoo.org>
+To: =?UTF-8?q?Breno=20Leit=C3=A3o?= <leitao@debian.org>,
+	Nayna Jain <nayna@linux.ibm.com>,
+	Paulo Flabiano Smorigo <pfsmorigo@gmail.com>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	Herbert Xu <herbert@gondor.apana.org.au>,
+	"David S. Miller" <davem@davemloft.net>,
+	Ard Biesheuvel <ardb@kernel.org>,
+	Eric Biggers <ebiggers@google.com>
+Cc: Sam James <sam@gentoo.org>,
+	Eric Biggers <ebiggers@kernel.org>,
+	stable@vger.kernel.org,
+	Calvin Buckley <calvin@cmpct.info>,
+	Brad Spengler <brad.spengler@opensrcsec.com>,
+	linux-crypto@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH v2] crypto: nx: fix nx_crypto_ctx_exit argument
+Date: Sat, 23 May 2026 05:08:09 +0100
+Message-ID: <b8b1b6fe740187c70349cd04a820d57324e0f70c.1779509289.git.sam@gentoo.org>
+X-Mailer: git-send-email 2.54.0
+In-Reply-To: <20260522184403.GA35544@quark>
+References: <20260522184403.GA35544@quark>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -73,59 +71,96 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-Mime-Version: 1.0
-X-Mailer: git-send-email 2.54.0.746.g67dd491aae-goog
-Message-ID: <20260522225853.878411-1-tjmercier@google.com>
-Subject: [PATCH] powerpc: Export set_memory_encrypted and set_memory_decrypted
-From: "T.J. Mercier" <tjmercier@google.com>
-To: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com, 
-	chleroy@kernel.org, linuxppc-dev@lists.ozlabs.org, mripard@kernel.org, 
-	sumit.semwal@linaro.org
-Cc: lkp@intel.com, linux-kernel@vger.kernel.org, 
-	"T.J. Mercier" <tjmercier@google.com>
-Content-Type: text/plain; charset="UTF-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 
-After commit fd55edff8a0a ("dma-buf: heaps: system: Turn the heap into a
-module") the system dma-buf heaps can be built as a module. The
-system_cc_shared heap uses set_memory_encrypted and set_memory_decrypted
-but those functions are not exported on powerpc. This can result in a
-build error like:
+nx_crypto_ctx_shash_exit calls nx_crypto_ctx_exit with crypto_shash_ctx(...)
+but crypto_shash_ctx gives a nx_crypto_ctx *, not a crypto_tfm *.
 
->> ERROR: modpost: "set_memory_decrypted" [drivers/dma-buf/heaps/system_heap.ko] undefined!
->> ERROR: modpost: "set_memory_encrypted" [drivers/dma-buf/heaps/system_heap.ko] undefined!
+Fix the type in nx_crypto_ctx_exit and drop the bogus crypto_tfm_ctx
+call.
 
-Export the functions so system_heap.ko can be built.
+This fixes the following oops:
 
-Reported-by: kernel test robot <lkp@intel.com>
-Closes: https://lore.kernel.org/oe-kbuild-all/202605230046.E9uhmQXM-lkp@intel.com/
-Fixes: fd55edff8a0a ("dma-buf: heaps: system: Turn the heap into a module")
-Signed-off-by: T.J. Mercier <tjmercier@google.com>
+  BUG: Unable to handle kernel data access at 0xc0403effffffffc8
+  Faulting instruction address: 0xc000000000396cb4
+  Oops: Kernel access of bad area, sig: 11 [#15]
+  Call Trace:
+   nx_crypto_ctx_shash_exit+0x24/0x60
+   crypto_shash_exit_tfm+0x28/0x40
+   crypto_destroy_tfm+0x98/0x140
+   crypto_exit_ahash_using_shash+0x20/0x40
+   crypto_destroy_tfm+0x98/0x140
+   hash_release+0x1c/0x30
+   alg_sock_destruct+0x38/0x60
+   __sk_destruct+0x48/0x2b0
+   af_alg_release+0x58/0xb0
+   __sock_release+0x68/0x150
+   sock_close+0x20/0x40
+   __fput+0x110/0x3a0
+   sys_close+0x48/0xa0
+   system_call_exception+0x140/0x2d0
+   system_call_common+0xf4/0x258
+
+.. which came from hardlink(1) opportunistically using AF_ALG.
+
+The same problem exists with nx_crypto_ctx_skcipher_exit getting a context
+it wasn't expecting, but apparently nobody hit that for years.
+
+Cc: Eric Biggers <ebiggers@kernel.org>
+Cc: stable@vger.kernel.org
+Fixes: bfd9efddf990 ("crypto: nx - convert AES-ECB to skcipher API")
+Fixes: 9420e628e7d8 ("crypto: nx - Use API partial block handling")
+Reviewed-by: Eric Biggers <ebiggers@kernel.org>
+Reported-by: Calvin Buckley <calvin@cmpct.info>
+Tested-by: Calvin Buckley <calvin@cmpct.info>
+Suggested-by: Brad Spengler <brad.spengler@opensrcsec.com>
+Signed-off-by: Sam James <sam@gentoo.org>
 ---
- arch/powerpc/platforms/pseries/svm.c | 3 +++
- 1 file changed, 3 insertions(+)
+v2: Add stable cc, fix doc for tfm param.
 
-diff --git a/arch/powerpc/platforms/pseries/svm.c b/arch/powerpc/platforms/pseries/svm.c
-index 384c9dc1899a..59cf32e51ca3 100644
---- a/arch/powerpc/platforms/pseries/svm.c
-+++ b/arch/powerpc/platforms/pseries/svm.c
-@@ -50,6 +50,7 @@ int set_memory_encrypted(unsigned long addr, int numpages)
- 
- 	return 0;
- }
-+EXPORT_SYMBOL_GPL(set_memory_encrypted);
- 
- int set_memory_decrypted(unsigned long addr, int numpages)
+ drivers/crypto/nx/nx.c | 6 ++----
+ drivers/crypto/nx/nx.h | 2 +-
+ 2 files changed, 3 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/crypto/nx/nx.c b/drivers/crypto/nx/nx.c
+index 78135fb13f5c..f4bc947086f8 100644
+--- a/drivers/crypto/nx/nx.c
++++ b/drivers/crypto/nx/nx.c
+@@ -714,15 +714,13 @@ int nx_crypto_ctx_aes_xcbc_init(struct crypto_shash *tfm)
+ /**
+  * nx_crypto_ctx_exit - destroy a crypto api context
+  *
+- * @tfm: the crypto transform pointer for the context
++ * @tfm: the crypto api context
+  *
+  * As crypto API contexts are destroyed, this exit hook is called to free the
+  * memory associated with it.
+  */
+-void nx_crypto_ctx_exit(struct crypto_tfm *tfm)
++void nx_crypto_ctx_exit(struct nx_crypto_ctx *nx_ctx)
  {
-@@ -63,6 +64,8 @@ int set_memory_decrypted(unsigned long addr, int numpages)
- 
- 	return 0;
- }
-+EXPORT_SYMBOL_GPL(set_memory_decrypted);
-+
- 
- /* There's one dispatch log per CPU. */
- #define NR_DTL_PAGE (DISPATCH_LOG_BYTES * CONFIG_NR_CPUS / PAGE_SIZE)
+-	struct nx_crypto_ctx *nx_ctx = crypto_tfm_ctx(tfm);
+-
+ 	kfree_sensitive(nx_ctx->kmem);
+ 	nx_ctx->csbcpb = NULL;
+ 	nx_ctx->csbcpb_aead = NULL;
+diff --git a/drivers/crypto/nx/nx.h b/drivers/crypto/nx/nx.h
+index 36974f08490a..6dfabfbf8192 100644
+--- a/drivers/crypto/nx/nx.h
++++ b/drivers/crypto/nx/nx.h
+@@ -153,7 +153,7 @@ int nx_crypto_ctx_aes_ctr_init(struct crypto_skcipher *tfm);
+ int nx_crypto_ctx_aes_cbc_init(struct crypto_skcipher *tfm);
+ int nx_crypto_ctx_aes_ecb_init(struct crypto_skcipher *tfm);
+ int nx_crypto_ctx_sha_init(struct crypto_shash *tfm);
+-void nx_crypto_ctx_exit(struct crypto_tfm *tfm);
++void nx_crypto_ctx_exit(struct nx_crypto_ctx *nx_ctx);
+ void nx_crypto_ctx_skcipher_exit(struct crypto_skcipher *tfm);
+ void nx_crypto_ctx_aead_exit(struct crypto_aead *tfm);
+ void nx_crypto_ctx_shash_exit(struct crypto_shash *tfm);
+
+base-commit: 758c807bb943138f887d42d986b645e12446ba9c
 -- 
-2.54.0.746.g67dd491aae-goog
+2.54.0
 
 
