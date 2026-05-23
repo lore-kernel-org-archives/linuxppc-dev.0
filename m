@@ -1,40 +1,90 @@
-Return-Path: <linuxppc-dev+bounces-21424-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21425-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4FF11CD4F54
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 23 May 2026 06:38:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F054FCD5BB1
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 23 May 2026 11:14:54 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gMssh5zPzz2y71;
-	Sat, 23 May 2026 16:38:16 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a02:c206:3008:6895::1"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779518296;
-	cv=none; b=EBp2zIiSmkfYc1nrOnAc4XaqeKSCr3Gy04ZmGOGlOSEpV9FhdQDwgLDTEVRo6hqWGo3MKyy4X1fZD7an81DOApAaVJ86lqtvmCXKEuv4iTTbxHlAFp+2mTIJqyKFuEqCFQoo/FyrA+yWchD/iZXC2k1y6vibWZK67toAHYJVr+FOkqr0Li5ouehJPsvd0+cq+cRHxVidmYmd7J4WLnGCDgeL9bFFw7e8cFVeAhYTWz9Ko4qiYbGynVicds8tx5MRcTX3Pw3624PbNFWS3b5hHJdHUO9C/aGKBcFzF3reZyh+uUc64kVZO//5TS7Y6hjaK7/uewtXABWHZUNzg6kz0A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gN00r5rFJz2y81;
+	Sat, 23 May 2026 21:14:52 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::430"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779534892;
+	cv=none; b=m09r2OTfVCvIHWlv+p9nrhL6Cqq1WU+xbOsjmYFHk7voQyoZMlXDrVP2Kqf30dKdRlI3MQxwqrA173qQsLcu9Wyi9Cv9ZXnwWUzZKhD178TYy16Wn3d/LbNC650Cx7Daq/o1nNuB5Iq4q7MVuRwX2/3GNq6IM0xHP+4QVKYUJsx1fbyk/VhoaOCE56qWXdtB2yHSjRcKv56goLIYHtMkhdmT0H1DW+hc9XAFSLml8zokFf0EuwLeowVBBwV+ozKXJA8o7rH01m/ZSsv03qvMh98oxkgkbhSAmoP9aL2HJ7beO32eQtMRKhUeH30cfnOTBvsI7ZXpQZUow4JpVx8GHg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1779518296; c=relaxed/relaxed;
-	bh=SRnj4VIpQMoo0py7BC+L3Q9AqSR0c/MgcO51JdaEJqw=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=AhcuWJbrJ5rblMXAytogciUaFxKXpVNIPGFnm3W3JOB4ivXHxUVB67kuO68j2CSsbsTLdSrI0/KpZ1dGDSN/Kv5C3O/h9rHGQhTteMCnmoMBYykHaEoJusghzjqrN12rykAWcpcCcONuFXjNdrVX5WVwYownowthQgpalfqJnTCFzA4CVNDIgMcl+TQostoT6GkNvC55/djNNWsj6KYzcEgmqUngsR4tsLNB3IJuhWZ9qgH0IO+xzZFh7FpK2U1DWCh5k4PO77HeKMhNBwI2wFcNIi0cb9pkSvz3ryA+TcFlSgkaoT0EczvlBBPZDTbB87WyVe9fYybrIh/F0hf82Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=hogyros.de; spf=pass (client-ip=2a02:c206:3008:6895::1; helo=psionic.psi5.com; envelope-from=simon.richter@hogyros.de; receiver=lists.ozlabs.org) smtp.mailfrom=hogyros.de
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=hogyros.de
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=hogyros.de (client-ip=2a02:c206:3008:6895::1; helo=psionic.psi5.com; envelope-from=simon.richter@hogyros.de; receiver=lists.ozlabs.org)
-X-Greylist: delayed 476 seconds by postgrey-1.37 at boromir; Sat, 23 May 2026 16:38:15 AEST
-Received: from psionic.psi5.com (psionic.psi5.com [IPv6:2a02:c206:3008:6895::1])
+	t=1779534892; c=relaxed/relaxed;
+	bh=NaXtD7iMykhT9quBtXIhBa6cc/VFPDrkai+sBLm7a98=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=ATeq8W3eOUYVKC/npKWG9svV3zHAv4vvCQCQfX4rwn679gnYg93AeqyhA0MqovGaR9T/UQM8bWkzaMbNQMfkk0stmm++SJ3lv1FUpydl9kGms77dWZyNGHdQYgphSbpsZaUznzu27wYaXF//DDRvgt20oIC9jSNHK7J4Yh5JlnzrEwakAEct7IICAxxbhai1qqaOfkbpdo6L4ZQCTklIKczeii3ks/xaO+nwbBPkIOyOwB7hGsL6AtfcjA6D+2TxvqdBMwN8Y3YEQfMDaZXPBA9TeH0TaxyBGuKWcZh8rKoj0FI1UMC/zoEG7fwFJfMDlhKphOvr11RZuty0Q7ZWrg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=jN009as3; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::430; helo=mail-pf1-x430.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=jN009as3;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::430; helo=mail-pf1-x430.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pf1-x430.google.com (mail-pf1-x430.google.com [IPv6:2607:f8b0:4864:20::430])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gMssg2gQXz2xtC
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 May 2026 16:38:15 +1000 (AEST)
-Received: from [IPV6:2400:2410:b120:f200:9e5c:8eff:fec0:ee40] (unknown [IPv6:2400:2410:b120:f200:9e5c:8eff:fec0:ee40])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(Client did not present a certificate)
-	by psionic.psi5.com (Postfix) with ESMTPSA id 6D71F3F202;
-	Sat, 23 May 2026 08:30:08 +0200 (CEST)
-Message-ID: <767d956a-4c60-40af-8c89-a4eac672eab1@hogyros.de>
-Date: Sat, 23 May 2026 15:30:04 +0900
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gN00q4v3nz2xJT
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 May 2026 21:14:50 +1000 (AEST)
+Received: by mail-pf1-x430.google.com with SMTP id d2e1a72fcca58-835b78c3797so3617383b3a.2
+        for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 May 2026 04:14:50 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1779534888; x=1780139688; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=NaXtD7iMykhT9quBtXIhBa6cc/VFPDrkai+sBLm7a98=;
+        b=jN009as3FiA61kWIiR9jv04bzkqN9niXDM/+FeJknOThNhwCq8uE50udpbiNkIHjkT
+         aniX2DSo2oNH2H/TCKaGlWEEbu2uY5E3S1/hLDnYldikTetzvE2nHI1cfB4d1ZkfhL2J
+         77A5riNn+q19SWjUTYlJ3lvSpz5Qezwscs1B4Qcya4VxK3d9Ph9WRy3IRu9ee1+ptzfK
+         Q1QEmfdXLfpcUJoIjWzqHqCLb4oO8Li/NmisY9yX2Z+a5P81GKNq2uY2f9uz/gf2TgfZ
+         kBFU8wZve/e9p7lGsGGXdSa+aRJrH/jP5y/cpPTdvdA3QXfAwjdb5sGU+sw5bbqTi0y9
+         wEug==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1779534888; x=1780139688;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=NaXtD7iMykhT9quBtXIhBa6cc/VFPDrkai+sBLm7a98=;
+        b=DX7M/RfaOK0sEgInKLM6cFgYlozk4KNLCjLHKaFX1ALRNT10aBXRnQeXxphnzdrrpD
+         QUIqy6e2ALrtG2Zh74HrEq3+HX52QWYaF7erKhNuIrH/GCMQaX1789Uo1lztFV1fsHxu
+         JFVUZngP1rV6h4fSjt2nskSYejCiDMVgwiwMzAmT/qSo2c+gFZ2yRYEQEPWCDc4rmEtV
+         CgtdAg0f1oQOBgphtjnJPMiubQKNeSrstHX3/MknyH3c9vb2shTjbsC67uYzsoKD0sjH
+         hdOljDziR/Y6PvqKNSOy6dOjgMK5dLfZdGA3iiCGcJmS4hkmnZbd4Wo8oyd1djuO+AeK
+         dxmg==
+X-Gm-Message-State: AOJu0YweZex1d6ghFf8nw0W2aO0KjDbWA8a32s2vB41AWOkjdo69/3p5
+	oH8XsCRnacmNCE8iBjJhodOG39iXqkoCu5Q3fL3PzOAGTs2hIfm//jQn
+X-Gm-Gg: Acq92OEgEE3vN+bZb6T1y3Fu9N33Qq5XmFIrvLthQWX5qW8weJGSxIHf2xTKrn1DRWd
+	xidrFPMGRLk6319TsFyEX8nlsnrPH7NZTL8YJHxhfGXLXR8oCRVZJCUuwyoB1oVQoFQGLskBvuf
+	d8nrWaOjw1KRRQbLv7woiwbOs02egg12z3VDgDrBFNqDoWo+IHSeWevsFT0MTp7hWEJrOYYBZfs
+	UQ13HRmnCbNiD79RfMg/8VBdk7rFUMx5NErn3rXoYGZ5mANDlXfpeM7gA1srdCigthV8Q2dkvjD
+	4BldEKi/U7Vn0ml+qj/6DQsUpuIJSvTyC4a8gWIEWbDFHe9halv4MSmNrVG13elUq+Ltw3eaSF8
+	p3EWkoQsJhJbLi534yARR6XD3BB03wKDUC73t6bB/soYLnxOGH5BtiYiVsrtFULEdZyr4x973Cm
+	o4aibr7TYsTsJRW9CmB2UZU9SZ9znImygIhQGlqp2hSHINp2yYcQ==
+X-Received: by 2002:a05:6a00:1312:b0:83e:eeab:aff8 with SMTP id d2e1a72fcca58-8415f306c6bmr7193042b3a.25.1779534887953;
+        Sat, 23 May 2026 04:14:47 -0700 (PDT)
+Received: from Mac.ibm.com ([49.205.216.49])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-84164ac9c77sm5249140b3a.2.2026.05.23.04.14.42
+        (version=TLS1_3 cipher=TLS_CHACHA20_POLY1305_SHA256 bits=256/256);
+        Sat, 23 May 2026 04:14:47 -0700 (PDT)
+From: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
+To: kvm@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Harsh Prateek Bora <harshpb@linux.ibm.com>,
+	Christophe Leroy <chleroy@kernel.org>,
+	Venkat Rao Bagalkote <venkat88@linux.ibm.com>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Misbah Anjum N <misanjum@linux.ibm.com>,
+	Anushree Mathur <anushree.mathur@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	linux-kernel@vger.kernel.org,
+	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
+Subject: [RFC v2 0/5] KVM: selftests: add powerpc support
+Date: Sat, 23 May 2026 16:44:19 +0530
+Message-ID: <cover.1779524962.git.ritesh.list@gmail.com>
+X-Mailer: git-send-email 2.50.1
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -48,125 +98,89 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] crypto: nx: fix nx_crypto_ctx_exit argument
-To: Eric Biggers <ebiggers@kernel.org>
-Cc: linux-crypto@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-References: <a3e89c1e8342ffa415b0d29725a0571a4f355d34.1779472902.git.sam@gentoo.org>
- <20260522184403.GA35544@quark>
-Content-Language: en-US
-From: Simon Richter <Simon.Richter@hogyros.de>
-In-Reply-To: <20260522184403.GA35544@quark>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="------------VPw0waTVGrt5xBDwtBc7yXfu"
+Content-Transfer-Encoding: 8bit
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---------------VPw0waTVGrt5xBDwtBc7yXfu
-Content-Type: multipart/mixed; boundary="------------V3ZPYW54wIlst90pqFZ4FB50";
- protected-headers="v1"
-From: Simon Richter <Simon.Richter@hogyros.de>
-To: Eric Biggers <ebiggers@kernel.org>
-Cc: linux-crypto@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Message-ID: <767d956a-4c60-40af-8c89-a4eac672eab1@hogyros.de>
-Subject: Re: [PATCH] crypto: nx: fix nx_crypto_ctx_exit argument
-References: <a3e89c1e8342ffa415b0d29725a0571a4f355d34.1779472902.git.sam@gentoo.org>
- <20260522184403.GA35544@quark>
-In-Reply-To: <20260522184403.GA35544@quark>
+Hi All,
 
---------------V3ZPYW54wIlst90pqFZ4FB50
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: base64
+This series primarly adds KVM selftests support for powerpc (64-bit, BookS,
+radix MMU).
 
-SGksDQoNCk9uIDUvMjMvMjYgMDM6NDQsIEVyaWMgQmlnZ2VycyB3cm90ZToNCg0KPiBPdGhl
-cndpc2UgdGhpcyBsb29rcyBnb29kLiAgUmVhbGx5IHRoZXJlJ3MgYSBnb29kIGNoYW5jZSB0
-aGlzIGRyaXZlciBpcw0KPiBubyBsb25nZXIgdXNlZnVsIChpZiBpdCBldmVyIHdhcykgYW5k
-IHNob3VsZCBqdXN0IGJlIGRlbGV0ZWQsIGJ1dCB0aGF0DQo+IHdvdWxkIGJlIGEgc2VwYXJh
-dGUgZWZmb3J0Lg0KDQpJIGhhcHBlbiB0byBoYXZlIG9uZSAod2VsbCwgdHdvKSBvZiB0aGVz
-ZSwgc28gdGhpcyBpcyByZWxldmFudCB0byBteSANCmludGVyZXN0cy4NCg0KdGw7ZHI6IHRo
-ZSBjcnlwdG8gZHJpdmVycyBhcmUgbW9zdCBsaWtlbHkgdW51c2VkLCB0aGUgaGFyZHdhcmUg
-aXMgZ3JlYXQsIA0KYnV0IHRoZSBjcnlwdG8gc3Vic3lzdGVtIGNhbm5vdCB1c2UgaXQgZWZm
-aWNpZW50bHkuDQoNCkJlbG93IGRyaXZlcnMvY3J5cHRvL254LCB0aGVyZSBhcmUgdGhyZWUg
-ZHJpdmVycyBpbiBhIHRyZW5jaGNvYXQ6DQoNCiAgLSBhbiBOWCBjcnlwdG8gZHJpdmVyIHRo
-YXQgaXMgbm90IGVuZGlhbiBzYWZlLCBjYW4gdGhlcmVmb3JlIG9ubHkgYmUgDQp1c2VkIG9u
-IGJpZyBlbmRpYW4gc3lzdGVtcywgYW5kIHRoYXQgaW1wbGVtZW50cyBhIGJ1bmNoIG9mIEFF
-UyBtb2RlcyANCnBsdXMgU0hBMjU2L1NIQTUxMiwgYWxsIG9mIHRoZW0gc3luY2hyb25vdXMu
-DQogIC0gYW4gc2NvbXAgZHJpdmVyIHdpdGggYW4gSUJNIHNwZWNpZmljIGNvbXByZXNzaW9u
-IGFsZ29yaXRobQ0KICAtIGEgZ3ppcCBkcml2ZXIgdGhhdCBkb2VzIG5vdCBpbnRlZ3JhdGUg
-d2l0aCB0aGUgY3J5cHRvIHN1YnN5c3RlbSBhbmQgDQpwcm92aWRlcyBpdHMgb3duIHVzZXJz
-cGFjZSBpbnRlcmZhY2UuDQoNClRoZSAiYmlnIGVuZGlhbiBvbmx5IiB0aGluZyBpcyBhIG1h
-c3NpdmUgcmVzdHJpY3Rpb24sIHRoaXMgaXMgaG93IElCTSANCnNlcGFyYXRlcyBlbnRlcnBy
-aXNlIGFuZCBob2JieWlzdCBjdXN0b21lcnMsIHNvIGlmIHRoZXJlIGFyZSB1c2VycyBvZiAN
-CnRoaXMgbW9kdWxlLCB0aGVuIHRoZXkgYm90aCBoYXZlIGVudGVycHJpc2Ugc3VwcG9ydCBj
-b250cmFjdHMuDQoNClRoZSBnemlwIG1vZGUgaXMgcmVhbGx5IHVzZWZ1bCwgd2l0aCA0IEdC
-IG9mIHJhbmRvbSBkYXRhIEkgZ2V0DQoNCiQgdGltZSAuL254X2d6aXAgdGVzdC5iaW4NCnJl
-YWwgMG0yLjk4OXMNCnVzZXIgMG0xLjMxN3MNCnN5cyAgMG0xLjY2NXMNCg0KJCB0aW1lIGd6
-aXAgLTlrIHRlc3QuYmluDQpyZWFsIDJtNTcuNDY4cw0KdXNlciAybTU1LjMyNXMNCnN5cyAg
-MG0xLjY4MnMNCg0Kc28gMyBHQi9zIHZzIDIyIE1CL3MuIEV2ZW4gaWYgSSBoYWQgYSB3b3Jr
-bG9hZCB3aGVyZSBJIGNvdWxkIHVzZSBhbGwgdGhlIA0KQ1BVIGNvcmVzIGluIHBhcmFsbGVs
-LCBvZmZsb2FkaW5nIGlzIHN0aWxsIGZhc3RlciwgMTIwVyBjaGVhcGVyIGFuZCANCmxlYXZl
-cyB0aGUgQ1BVIGZyZWUgYXMgYSBib251cywgc28gSSB0aGluayB0aGF0J3MgYSBuby1icmFp
-bmVyLg0KDQpUaGUgIjg0MiIgY29tcHJlc3Npb24gaXMgbWFpbmx5IGRlc2lnbmVkIHRvIGJl
-IGZhc3QsIHRoZSBtYXJrZXRpbmcgDQptYXRlcmlhbCBjbGFpbXMgPiAyNSBHQi9zLCB3aGlj
-aCBtYWtlcyBzZW5zZSwgdGhpcyB1bml0IHNpdHMgb24gYSAxMjggDQpiaXQgd2lkZSBidXMg
-Y2xvY2tlZCBhdCAyIEdIeiwgYW5kIHRoZSBhbGdvcml0aG0gaXMgZGVzaWduZWQgYXJvdW5k
-IA0KdGhhdC4gT24gdGhlIG90aGVyIGhhbmQgaXQgaXMgZmFpcmx5IG5pY2hlLg0KDQpJIGNv
-dWxkbid0IGZpbmQgbnVtYmVycyBmb3IgdGhlIEFFUyBhbmQgU0hBIHVuaXRzLCBJJ2QgZXhw
-ZWN0IHRoZW0gdG8gYmUgDQppbiB0aGUgc2FtZSBiYWxscGFyaywgYnV0IEkgY2Fubm90IG1l
-YXN1cmUgdGhlbSBlYXNpbHkuIENQVSBpcyB+NTAwIE1CL3MgDQpmb3IgU0hBMSBhbmQgU0hB
-NTEyLCB+MzAwIE1CL3MgZm9yIFNIQTI1NiwgdGhhdCBzaG91bGQgYmUgZWFzeSB0byBiZWF0
-IA0KKGV2ZW4gYSBwcmltaXRpdmUgMi13YXkgU0hBMjU2IHdvdWxkIGJlIGF0IDQgR0Ivcywg
-YW5kIEkgZG91YnQgSUJNIGxlZnQgDQppdCBhdCB0aGF0KS4NCg0KUE9XRVIxMSBpbnRyb2R1
-Y2VzIG5ldyBvcGNvZGVzLCB3aGljaCB3aWxsIHNoYWtlIHRoaW5ncyB1cCwgYnV0IHRoZXNl
-IA0KbWFjaGluZXMgYXJlIG9uIGEgZmFpcmx5IGxvbmcgcmVwbGFjZW1lbnQgY3ljbGUuDQoN
-ClRoZSBtYWluIHByb2JsZW0gd2l0aCBnZXR0aW5nIHRoZSBhZHZlcnRpc2VkIHBlcmZvcm1h
-bmNlIGlzIGZlZWRpbmcgDQpyZXF1ZXN0cyBmYXN0IGVub3VnaC4gTGFyZ2UgcmVxdWVzdHMg
-YXJlIGVhc3ksIGJ1dCB0aGUgb3B0aW11bSBzdHJhdGVneSANCmZvciBmZWVkaW5nIHNtYWxs
-IHJlcXVlc3RzIGlzIGp1c3QgdG8gc3RhcnQgc3VibWl0dGluZywgcG9sbCBvbGQgDQpyZXF1
-ZXN0cyBmb3IgY29tcGxldGlvbiBpbmJldHdlZW4sIGFuZCBzdGFydCByZXF1ZXN0aW5nIGlu
-dGVycnVwdHMgb25seSANCmlmIG5vdGhpbmcgaXMgY29tcGxldGUgYW5kIGl0IGxvb2tzIGxp
-a2UgdGhlIHVuaXQgd2lsbCBiZSBidXN5IGZvciBhIHdoaWxlLg0KDQpUaGF0J3Mgbm90IHdo
-YXQgaXMgY3VycmVudGx5IGltcGxlbWVudGVkLCBhbmQgSSBkb3VidCBpdCBjb3VsZCBiZSAN
-CmltcGxlbWVudGVkIHdpdGggdGhlIGN1cnJlbnQga2VybmVsIGludGVyZmFjZXMsIHNvIGdl
-dHRpbmcgZGVjZW50IA0KcGVyZm9ybWFuY2UgaW5zaWRlIHRoZSBrZXJuZWwgd291bGQgcmVx
-dWlyZSBzb21lIHJlZGVzaWduLg0KDQpJIHN1cHBvc2UgdGhhdCBhbHNvIGV4cGxhaW5zIHRo
-ZSBzeW5jaHJvbm91cyBpbXBsZW1lbnRhdGlvbjogd2UgYXJlIA0Kc3VibWl0dGluZyB0aGUg
-cmVxdWVzdCBhbmQgcG9sbGluZyBmb3IgY29tcGxldGlvbiwgc28gb3ZlcmhlYWQgaXMgZmFp
-cmx5IA0KbWluaW1hbCBhbmQgc2hvdWxkIGJyZWFrIGV2ZW4gYXQgYSBmZXcgaHVuZHJlZCBi
-eXRlcywgYnV0IG9idmlvdXNseSB0aGF0IA0KaXMgbm90IHRoZSBpZGVhbCB3YXkgdG8gcnVu
-IHRoaXMgdGhpbmcuDQoNClRoZSBlbmRpYW5uZXNzIGlzc3VlcyBhcmUgdHJpdmlhbCB0byBm
-aXggKHJlYWxseSBqdXN0IG5lZWRzIGEgc3ByaW5rbGUgDQpvZiBjcHVfdG9fYmVYWC9iZVhY
-X3RvX2NwdSB3aGVuIHB1dHRpbmcgdGhlIGpvYiBjb250cm9sIGJsb2NrcyB0b2dldGhlciwg
-DQpsaWtlIG54LTg0MiBkb2VzKTsgaWYgeW91IGhhdmUgYSBkZWZpbml0aW9uIG9mIHdoYXQg
-eW91IHdvdWxkIGNvbnNpZGVyIGEgDQoicmVhbCB3b3JsZCIgd29ya2xvYWQgZm9yIEFFUyBJ
-IGNvdWxkIHJ1biB0aGF0IHRvIGdhdGhlciBzb21lIG51bWJlcnMuDQoNClNvIGZhciBob3dl
-dmVyLCBubyBvbmUgYm90aGVyZWQgZml4aW5nIHRoaXMsIGFuZCBJJ20gcHJldHR5IG1laCBh
-Ym91dCBpdCANCm15c2VsZiBzaW5jZSBJIGRvbid0IGhhdmUgU0hBL0FFUyB3b3JrbG9hZHMg
-aW4gdGhlIGtlcm5lbCwgb25seSBpbiANCnVzZXJzcGFjZS4NCg0KT3RoZXIgdGhhbiB0aGF0
-LCBpZiB5b3UgZGVjaWRlIHRvIHJlbW92ZSB0aGUgZHJpdmVyIGZyb20gdGhlIGNyeXB0byAN
-CnN1YnN5c3RlbSwgdGhlbiBueC1nemlwIHNob3VsZCBiZSBrZXB0IChhbmQgcHJvYmFibHkg
-bW92ZWQgc29tZXdoZXJlIA0KZWxzZSksIGJlY2F1c2UgaXQgaXMgbm90IGEgY3J5cHRvIGRy
-aXZlciwgaXQganVzdCBzaGFyZXMgYSBidW5jaCBvZiANCmhlYWRlcnMgd2l0aCB0aGVtLg0K
-DQogICAgU2ltb24NCg==
+This patch series is originally Nick's work. I have mainly only rebased it on
+the latest upstream tree. Since the rebase required few changes to all the four
+patches (Patch 1-4), I have dropped the earlier Acked-by from Michael Ellerman.
 
---------------V3ZPYW54wIlst90pqFZ4FB50--
+Since the last series was posted three years ago [1], I am resetting the version
+to RFC. This rebase was done as part of a larger effort to improve the selftests
+infrastructure for Linux on PowerPC tree. Thanks to Harsh and Maddy for their
+help on this.
 
---------------VPw0waTVGrt5xBDwtBc7yXfu
-Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="OpenPGP_signature.asc"
 
------BEGIN PGP SIGNATURE-----
+Testing Updates:
+================
+1. Tested this on PowerNV P9 with Radix mode. (all selftests passes)
+2. Tested this on LPAR (KVM on PowerVM) case. (all selftests except-1 passes).
+   The failed testcase (kvm_create_max_vcpus) is because H_GUEST_CREATE_VCPU
+   (PAPR HCALL) only supports vcpu_ids 0-2047 i.e. max 2048 vcpus.
+   However, kernel always returns NR_CPUS for the KVM_CAP_MAX_VCPUS extension.
+   So if the LPAR kernel is built using NR_CPUS=8192, then kvm_create_max_vcpus
+   can fail in __vm_vcpu_add(). This failure needs to be handled seperately,
+   mostly as fix in kernel.
+3. Tested these selftests changes inside x86 kvm guest  - no new failures seen.
 
-iQEzBAEBCgAdFiEEtjuqOJSXmNjSiX3Tfr04e7CZCBEFAmoRSWwACgkQfr04e7CZ
-CBEwkgf+MNXai5l3ryYzxPIeM1tSZP5FzNmUPeFFqqLKMr7jx1C9vrg5geB3aojF
-W/4C8SKCHPCj5zJvUbmWLYk2CW0N8H6twemoZu8ncwZDpVcFS9vZVHShKzrCX/Is
-7AzhrTNJ3PcPLSmElt0k7cs2qpMpwVK0kwxpUH0iYec6aCXrsL0QPwp3/XuQgT5h
-Yu7WZMVJl8RnkZignRGYjZ/3YQGVEOPBTp3D1ZdQYkauORfdQgn5TJl42rTsiycq
-vPzW2Riw0rS/yv5o+/NT//xIVH0Yp7FKJO1Msj/ugBqx+NvN1G+GS63oOchhHFl9
-pu6+XWMxv1xCOceWpgnabkTfaG7s1Q==
-=ghvn
------END PGP SIGNATURE-----
 
---------------VPw0waTVGrt5xBDwtBc7yXfu--
+RFC v1 -> RFC v2
+================
+(mostly Sashiko review comments)
+1. Fixed x86's stage-2 mmu handling in patch-1 - commit msg has more description
+2. Added "cc" into the clobber list for hcalls in patch-3
+3. Fixed the size calculation in kvm_arch_vm_post_create in patch-3 for
+   allocating 2 pages for 4K pagesize
+4. Added patch-5 which prints vcpu_id in case of an error
+
+[RFCv1]: https://lore.kernel.org/linuxppc-dev/cover.1778857539.git.ritesh.list@gmail.com/
+[1]: https://lore.kernel.org/all/20231120122920.293076-1-npiggin@gmail.com/
+
+Nicholas Piggin (4):
+  KVM: selftests: Move pgd_created check into virt_pgd_alloc
+  KVM: selftests: Add aligned guest physical page allocator
+  KVM: PPC: selftests: add support for powerpc
+  KVM: PPC: selftests: powerpc enable kvm_create_max_vcpus test
+
+Ritesh Harjani (IBM) (1):
+  KVM: selftests: Print the vcpu_id when KVM_CREATE_VCPU ioctl fails
+
+ MAINTAINERS                                   |   2 +
+ tools/testing/selftests/kvm/Makefile          |   2 +-
+ tools/testing/selftests/kvm/Makefile.kvm      |  10 +
+ .../testing/selftests/kvm/include/kvm_util.h  |  34 +-
+ .../selftests/kvm/include/powerpc/hcall.h     |  17 +
+ .../kvm/include/powerpc/kvm_util_arch.h       |  22 +
+ .../selftests/kvm/include/powerpc/ppc_asm.h   |  32 ++
+ .../selftests/kvm/include/powerpc/processor.h |  38 ++
+ .../selftests/kvm/include/powerpc/ucall.h     |  21 +
+ .../selftests/kvm/kvm_create_max_vcpus.c      |   9 +
+ .../selftests/kvm/lib/arm64/processor.c       |   4 -
+ tools/testing/selftests/kvm/lib/guest_modes.c |  20 +-
+ tools/testing/selftests/kvm/lib/kvm_util.c    |  44 +-
+ .../selftests/kvm/lib/loongarch/processor.c   |   4 -
+ .../selftests/kvm/lib/powerpc/handlers.S      |  93 ++++
+ .../testing/selftests/kvm/lib/powerpc/hcall.c |  45 ++
+ .../selftests/kvm/lib/powerpc/processor.c     | 484 ++++++++++++++++++
+ .../testing/selftests/kvm/lib/powerpc/ucall.c |  22 +
+ .../selftests/kvm/lib/riscv/processor.c       |   4 -
+ .../selftests/kvm/lib/s390/processor.c        |   4 -
+ 20 files changed, 872 insertions(+), 39 deletions(-)
+ create mode 100644 tools/testing/selftests/kvm/include/powerpc/hcall.h
+ create mode 100644 tools/testing/selftests/kvm/include/powerpc/kvm_util_arch.h
+ create mode 100644 tools/testing/selftests/kvm/include/powerpc/ppc_asm.h
+ create mode 100644 tools/testing/selftests/kvm/include/powerpc/processor.h
+ create mode 100644 tools/testing/selftests/kvm/include/powerpc/ucall.h
+ create mode 100644 tools/testing/selftests/kvm/lib/powerpc/handlers.S
+ create mode 100644 tools/testing/selftests/kvm/lib/powerpc/hcall.c
+ create mode 100644 tools/testing/selftests/kvm/lib/powerpc/processor.c
+ create mode 100644 tools/testing/selftests/kvm/lib/powerpc/ucall.c
+
+--
+2.39.5
+
 
