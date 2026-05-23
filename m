@@ -1,58 +1,156 @@
-Return-Path: <linuxppc-dev+bounces-21419-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21420-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2448BCD5BB0
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 May 2026 21:31:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 73721CD5BB8
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 23 May 2026 00:38:17 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gMdkf3fQqz2xld;
-	Sat, 23 May 2026 07:31:22 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gMjtG4T6Dz2yH3;
+	Sat, 23 May 2026 10:38:14 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779485482;
-	cv=none; b=d0EDMXk8UoRu6UMzG4wQXATbFKfQ2fp9N2TQgy0+b5gGWEXEjcsLsmqVh6c18+5yJy+qdq7qf0Win/gjN2rN46lXlus3oI49V7aGzGq9bXCCe09cQFkSRsTsEoubxXc9kj5lBWPUNGxWp2JFJcW9pe0AtzZfzi9HeO/TFcM6xPCQdurpHcuEpSaGxEVurKGG1VEleZrI7XtwE02C6p8n9ZVSDBqrMzJwH5KsNwhRUbCDXaiSbM2ZanPZDU4KGWb4/JkaEjXK+s3xhAJVR12ufzV21W1tongMtMuyYR3H1JPN8qpz8ipdqNM6ASlD715/YXI/kXxsVNlaqiA28qkIrw==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779496694;
+	cv=none; b=VdDLFCc1nYxl4j6ZzULBeW4mpT7WvkrcB/bpBun3G/zsPPEHB4LfnMBYPExBospUUbMLBVON3XCPRYQRxSBgPZCr8p+1CRt3PwXcvu272Mij91CzPeu0raYA8mge0s2AkEcrWAGwrT/7WluozJsY3P0/Hwg98UfDSGLef0bjPeH+rIGz1vMyID4PqSbMo+18zgTPCUx9D46ifMtw+/9SxOQ99VdP34nHrBO457BbarCv9MqZy5DSQ+PI1tFYbzXSTvudDy/1q6XkmUdaLoZLgqwVdygAu9dOP9iMG89TXozJXGrka9waNhQxyHmzTC5G8lATC//UQrhxzZK4UTMybw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1779485482; c=relaxed/relaxed;
-	bh=C1JkI15vgeu08xV//dtK9AYlWM5a5o5EUbaFA14ty+I=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=aDI0gwPBkVmeHOEt7H5rVoUEukcIVHiY0jmlRv7+20Qo6qdgDByX1eS2ClgRfzI8rTZzZCixgtzJC0pIJJ+029GbJULufCv0SdYzgoIJHLKq2XQJ8c+WBleqxAfm3zYd9haLImrpfGlw5Z5TYKDfngTOZMroBcKsUoFOzUnZu+2w/IQrhwYjNoi4pW+Qq+uTJ20zvI9+qRnHEndiyUUmOpLArfj8rlHxWizaoIf2v8kocGLD4iT6eMRBD+zcml2Mb4wPm7pFBN6WRFRnbGqSO4DpOLE4VfxZzy9Eh9xUMn7WU7ru8bywNZs+/T9g6LQAtd2sUB92YML1sgj7YxDNcQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=BZkBhq1d; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=baohua@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1779496694; c=relaxed/relaxed;
+	bh=ke0QgGP72oU1/KHDzVSs1lh/gkg7Mw8fFDTolKbzoHA=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=IyAS/cU5+cMe0m7gObN/UA4aFwdEi2oAIV59oiFTP/qaU6/KQt1S4A2AU8JgDVx9sUXiy/JHiRvUYVy9fHMkUrmCRyiUF2ITKI3xSvkOB+09d7p8dqAkzxIJJ+dOP2+XpBmwFa28WTRimUOhyrMyZe+ZPskTWoWg5YdutfgQmwgX9nM3D7GvotAsjMSxC1QebdI8hShFce25gbUtr5gczoSrIplenRqpek2urcbaO8OaaT6dk7538AumeWKynHdfmqf9+Dw9gy28LGXIh+E6wEgKD8Y/X/kZQ1HAk1UH83Epl4gM2haiUPeNRPhcNrUTYsAjSK7RAxbZliHaVSEYPQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=W/qwAMS1; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=sj@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=BZkBhq1d;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=W/qwAMS1;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=baohua@kernel.org; receiver=lists.ozlabs.org)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=sj@kernel.org; receiver=lists.ozlabs.org)
 Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gMdkd01Cyz2xVK
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 May 2026 07:31:20 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gMjtF1L2Vz2yH5
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 May 2026 10:38:12 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 7735B43FD5
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 May 2026 21:31:18 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5F7101F00A3F
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 May 2026 21:31:18 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 7697440390;
+	Sat, 23 May 2026 00:38:08 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id EDCE81F000E9;
+	Sat, 23 May 2026 00:38:04 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1779485478;
-	bh=C1JkI15vgeu08xV//dtK9AYlWM5a5o5EUbaFA14ty+I=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=BZkBhq1dEMkxCJHLGd9hHIZUnfovj2cBcOHoma7ZqB1sV0+I2O6Ds5hTpwlWo4Mft
-	 6cZWdkrBC8UapaBAwm7wTsgf6f8+bsxbXBKEVD6N264a0/eS6r2rdb08YfLVaVXRFl
-	 DCfthOwfboPEVZicSPecr1WRFLBuk1+P+LgQEe3wX84so6iEX2i0ZTBrRDglX2hSFx
-	 U8IUrYW8hVgwjP8B7VfqK2I0t+/0+rbDVSJLqQ9PbEvde4WIlEtliG3txUqHXy/bwe
-	 ykb+eAMoCx2v1OrYATTHe26u6dEHYIyLuKR8dX7rGXbs6//A4IoVMdKRjJahE4F5l7
-	 5hZy1XYN8h40Q==
-Received: by mail-qk1-f181.google.com with SMTP id af79cd13be357-90f850473f9so783392585a.3
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 May 2026 14:31:18 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AFNElJ/O53qWy2mtucKbrE60sehgzwY7AF591OKLopU4/2HKKJ5F1EIjJMz378WRPYFAM5ce6xAWKkoITiQc2aU=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YyVJkqp18x52ZLsrZfrW2HrkYN8qBk+04M4fdixU8XTaoQZ+qeB
-	MfdUMH5Q0HpiuBX5DyuU2MOqpubW/3c0X69zEFSaRvqgXwpWtho/EUH4PsAw1WJVAhXj2p4hIoh
-	78Ph6RiCmLgNnGIBKJ0vJ0cJw2P0d7pk=
-X-Received: by 2002:a05:620a:372a:b0:914:c100:6a0f with SMTP id
- af79cd13be357-914c10072a4mr332092285a.23.1779485477280; Fri, 22 May 2026
- 14:31:17 -0700 (PDT)
+	s=k20260515; t=1779496688;
+	bh=ke0QgGP72oU1/KHDzVSs1lh/gkg7Mw8fFDTolKbzoHA=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References;
+	b=W/qwAMS1ok+56HAwvYiYz0R5wmKsD0RscuUhy5BVEzThMnr+wQxbKIW0Yk+lqtg0R
+	 dxN4FM+nLAHenqFi1JvSelOt20CYFnYpdSX3hvz5/mvzq/JXO7gcBTjSStG/A5FM8j
+	 0Dk4RFZ90/nX0Xzby8V+5D3uQDTYP8o1bo3XSKlx4rKPB6vCO/Oui18woqanoP+n4U
+	 enXhw+/EJeP6Kw2ZiII29eiMOdyHFC3VD0U1T97Mm+aD6rZa6A+hyeA7zcgLPdsptw
+	 8LWGxoojes1mewesgkVxxy+dLIhtJlwu3XyRYodcKxBzIRSnWjQs++a/owD5p2CmBM
+	 RNz3sazG7iMhQ==
+From: SeongJae Park <sj@kernel.org>
+To: Kees Cook <kees@kernel.org>
+Cc: SeongJae Park <sj@kernel.org>,
+	Luis Chamberlain <mcgrof@kernel.org>,
+	Pengpeng Hou <pengpeng@iscas.ac.cn>,
+	Petr Pavlu <petr.pavlu@suse.com>,
+	Richard Weinberger <richard@nod.at>,
+	Anton Ivanov <anton.ivanov@cambridgegreys.com>,
+	Johannes Berg <johannes@sipsolutions.net>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Len Brown <lenb@kernel.org>,
+	Corey Minyard <corey@minyard.net>,
+	Gabriel Somlo <somlo@cmu.edu>,
+	"Michael S. Tsirkin" <mst@redhat.com>,
+	Jani Nikula <jani.nikula@linux.intel.com>,
+	Joonas Lahtinen <joonas.lahtinen@linux.intel.com>,
+	Rodrigo Vivi <rodrigo.vivi@intel.com>,
+	Tvrtko Ursulin <tursulin@ursulin.net>,
+	David Airlie <airlied@gmail.com>,
+	Simona Vetter <simona@ffwll.ch>,
+	Bart Van Assche <bvanassche@acm.org>,
+	Jason Gunthorpe <jgg@ziepe.ca>,
+	Leon Romanovsky <leon@kernel.org>,
+	Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
+	Hans de Goede <hansg@kernel.org>,
+	Mauro Carvalho Chehab <mchehab@kernel.org>,
+	Bjorn Helgaas <bhelgaas@google.com>,
+	Hannes Reinecke <hare@suse.de>,
+	"James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
+	"Martin K. Petersen" <martin.petersen@oracle.com>,
+	Daniel Lezcano <daniel.lezcano@kernel.org>,
+	Zhang Rui <rui.zhang@intel.com>,
+	Lukasz Luba <lukasz.luba@arm.com>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Jiri Slaby <jirislaby@kernel.org>,
+	Alan Stern <stern@rowland.harvard.edu>,
+	Jason Wang <jasowang@redhat.com>,
+	Xuan Zhuo <xuanzhuo@linux.alibaba.com>,
+	=?UTF-8?q?Eugenio=20P=C3=A9rez?= <eperezma@redhat.com>,
+	Jason Baron <jbaron@akamai.com>,
+	Jim Cromie <jim.cromie@gmail.com>,
+	Tiwei Bie <tiwei.btw@antgroup.com>,
+	Benjamin Berg <benjamin.berg@intel.com>,
+	=?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>,
+	"David E. Box" <david.e.box@linux.intel.com>,
+	"Maciej W. Rozycki" <macro@orcam.me.uk>,
+	Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+	Peter Zijlstra <peterz@infradead.org>,
+	Heiko Carstens <hca@linux.ibm.com>,
+	Vasily Gorbik <gor@linux.ibm.com>,
+	Sean Christopherson <seanjc@google.com>,
+	Paolo Bonzini <pbonzini@redhat.com>,
+	Thomas Gleixner <tglx@kernel.org>,
+	Ingo Molnar <mingo@redhat.com>,
+	Borislav Petkov <bp@alien8.de>,
+	Dave Hansen <dave.hansen@linux.intel.com>,
+	x86@kernel.org,
+	"H. Peter Anvin" <hpa@zytor.com>,
+	Vinod Koul <vkoul@kernel.org>,
+	Frank Li <Frank.Li@kernel.org>,
+	Daniel Gomez <da.gomez@kernel.org>,
+	Sami Tolvanen <samitolvanen@google.com>,
+	Aaron Tomlin <atomlin@atomlin.com>,
+	Alexander Potapenko <glider@google.com>,
+	Marco Elver <elver@google.com>,
+	Dmitry Vyukov <dvyukov@google.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	John Johansen <john.johansen@canonical.com>,
+	Paul Moore <paul@paul-moore.com>,
+	James Morris <jmorris@namei.org>,
+	"Serge E. Hallyn" <serge@hallyn.com>,
+	Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+	Georgia Garcia <georgia.garcia@canonical.com>,
+	kvm@vger.kernel.org,
+	dmaengine@vger.kernel.org,
+	linux-modules@vger.kernel.org,
+	kasan-dev@googlegroups.com,
+	linux-mm@kvack.org,
+	apparmor@lists.ubuntu.com,
+	linux-security-module@vger.kernel.org,
+	linux-um@lists.infradead.org,
+	linux-acpi@vger.kernel.org,
+	openipmi-developer@lists.sourceforge.net,
+	qemu-devel@nongnu.org,
+	intel-gfx@lists.freedesktop.org,
+	dri-devel@lists.freedesktop.org,
+	linux-rdma@vger.kernel.org,
+	linux-media@vger.kernel.org,
+	linux-pci@vger.kernel.org,
+	linux-scsi@vger.kernel.org,
+	linux-pm@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-serial@vger.kernel.org,
+	linux-usb@vger.kernel.org,
+	usb-storage@lists.one-eyed-alien.net,
+	virtualization@lists.linux.dev,
+	linux-kernel@vger.kernel.org,
+	linux-arch@vger.kernel.org,
+	netdev@vger.kernel.org,
+	linux-fsdevel@vger.kernel.org,
+	linux-hardening@vger.kernel.org
+Subject: Re: [PATCH 04/11] treewide: Convert struct kernel_param_ops initializers to DEFINE_KERNEL_PARAM_OPS
+Date: Fri, 22 May 2026 17:38:01 -0700
+Message-ID: <20260523003801.86344-1-sj@kernel.org>
+X-Mailer: git-send-email 2.47.3
+In-Reply-To: <20260521133326.2465264-4-kees@kernel.org>
+References: 
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -66,84 +164,47 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <CAGsJ_4zqLfdWoTH9s7FFaqWWj0mESfikYgr7=GcV64qcuXrPxA@mail.gmail.com>
- <CAJuCfpE0WQrB3zJp9qn3jvn5DthS=ttpX7gJJvyEhA_BJGrp5g@mail.gmail.com>
- <CAGsJ_4zgeE3ebEJ+j7GJFzWVoVYHeiOn4dOoOsmWCLA6s=oECQ@mail.gmail.com>
- <5zdaa5uv5oj27q3taopl3amops57ouxgyfsdveudz4ovmbdw7z@6lwrlyvmhcp2>
- <CAGsJ_4yKxg1QugcsJi3WD0KVGJKe-zXycgm5D6cRi9vWtNcpDQ@mail.gmail.com>
- <ag4h87CBd-gph9zX@casper.infradead.org> <CAGsJ_4zA8afu0xXy0WS+tMe-eesDX1W6UBmfAsuouUpcAgK8JQ@mail.gmail.com>
- <ag4kj84EcKqamdB-@casper.infradead.org> <3be9475b-0e8a-4df8-a130-4262f993973d@kernel.org>
- <CAGsJ_4xC5LdhuoWV1=tK-RZ5rkjc8aOKOkmb1L_8BG_3gtJhDg@mail.gmail.com> <ahB6QyHgYq8ksj65@lucifer>
-In-Reply-To: <ahB6QyHgYq8ksj65@lucifer>
-From: Barry Song <baohua@kernel.org>
-Date: Sat, 23 May 2026 05:31:05 +0800
-X-Gmail-Original-Message-ID: <CAGsJ_4zxLvZ01i19vdo0xA47T1hxa1VRYvxLmiDhy5q1GDKPRg@mail.gmail.com>
-X-Gm-Features: AVHnY4IqrepDwpGO5qDQsSaxTVFULk1Thk0Uu8QgQ0mfUUrDDRbDPxaWPMcP1VU
-Message-ID: <CAGsJ_4zxLvZ01i19vdo0xA47T1hxa1VRYvxLmiDhy5q1GDKPRg@mail.gmail.com>
-Subject: Re: [PATCH v2 0/5] mm: reduce mmap_lock contention and improve page
- fault performance
-To: Lorenzo Stoakes <ljs@kernel.org>
-Cc: "David Hildenbrand (Arm)" <david@kernel.org>, Matthew Wilcox <willy@infradead.org>, 
-	"Liam R. Howlett" <liam@infradead.org>, Suren Baghdasaryan <surenb@google.com>, akpm@linux-foundation.org, 
-	linux-mm@kvack.org, vbabka@kernel.org, rppt@kernel.org, mhocko@suse.com, 
-	jack@suse.cz, pfalcato@suse.de, wanglian@kylinos.cn, chentao@kylinos.cn, 
-	lianux.mm@gmail.com, kunwu.chan@gmail.com, liyangouwen1@oppo.com, 
-	chrisl@kernel.org, kasong@tencent.com, shikemeng@huaweicloud.com, 
-	nphamcs@gmail.com, bhe@redhat.com, youngjun.park@lge.com, 
-	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, 
-	loongarch@lists.linux.dev, linuxppc-dev@lists.ozlabs.org, 
-	linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org, 
-	Nanzhe Zhao <nzzhao@126.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 
->
-> Again this is making me want to sit outside and sip on some lemonade and
-> ice :)
->
-> Yes - android processes are aggressively multi-threaded, sure of course.
->
-> The missing bit here is the forking - what, where, why, when?
->
+On Thu, 21 May 2026 06:33:17 -0700 Kees Cook <kees@kernel.org> wrote:
 
-I really want to know the what, where, why, and when
-as well. But since most applications are not
-open-source, it is basically a black hole for anyone
-other than the owners of those apps.
+> Using Coccinelle, rewrite every struct kernel_param_ops initializer that
+> sets .get into a DEFINE_KERNEL_PARAM_OPS-family macro invocation,
+> for example:
+> 
+> @@
+> declarer name DEFINE_KERNEL_PARAM_OPS;
+> identifier OPS;
+> expression SET, GET;
+> @@
+> - const struct kernel_param_ops OPS = {
+> -       .set = SET,
+> -       .get = GET,
+> - };
+> + DEFINE_KERNEL_PARAM_OPS(OPS, SET, GET);
+> 
+> Using the macro for initialization means future changes can manipulate
+> the struct layout and callback prototypes without having to change every
+> initializer.
+> 
+> Signed-off-by: Kees Cook <kees@kernel.org>
+> ---
+[...]
+>  mm/damon/lru_sort.c                           | 19 ++---
+>  mm/damon/reclaim.c                            | 19 ++---
+>  mm/damon/stat.c                               |  6 +-
+[...]
+>  samples/damon/mtier.c                         |  6 +-
+>  samples/damon/prcl.c                          |  6 +-
+>  samples/damon/wsse.c                          |  6 +-
 
-Let me try to do more investigation to understand what
-is going on, although it is really hard.
-To be honest, I would rather the Android framework
-completely prohibit apps from calling fork(), if
-possible.
+For the above DAMON part changes,
 
-> And then you say zygote is sometimes multi-threaded but sometimes
-> single-threaded, which is adding a whole bunch of confusion on top of all
-> that.
->
-> I don't find these stack trace dumps all that useful (though thanks of
-> course for taking the time to gather them), I think we'd be better off with
-> specific data on forking, in some _concise_ _summarised_ form, ideally with
-> numbers.
->
-> There's such a thing as too much information :))
+Reviewed-by: SeongJae Park <sj@kernel.org>
 
-This trace shows PF I/O in one thread overlapping
-with a fork() call in another thread.
-But as I explained, I really do not know what kind of
-user behavior is behind it.
 
->
-> Anyway, again, please let's see a new _RFC_ with the approach proposed by
-> Suren, with some _succinct_ data demonstrating _exactly_ what the problem
-> is, so we can make some headway here.
+Thanks,
+SJ
 
-Okay, sure. Thanks for your patience.
-
->
-> And now I'm off for a cornetto! :)
-
-Sounds good :) Enjoy your cornetto!
-
-Best Regards
-Barry
+[...]
 
