@@ -1,81 +1,80 @@
-Return-Path: <linuxppc-dev+bounces-21472-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21473-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B4822CD5BB1
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 May 2026 13:27:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 07364CD5BD2
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 May 2026 13:35:17 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gPGrq2Sq3z2xfB;
-	Mon, 25 May 2026 23:27:23 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::336"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779715643;
-	cv=none; b=Rb7P3bWDxRpxqIdMnUm/0P9QTlYpso39V9kiZJ6votR5tUadm74h0y2LD0hdkqueDtiKqB3671djll26eLci9L4J7ClvkopWCr4DuBO/cLeT+zZy1/EFkzkPHTxGeT6b+URGXdOXTD62BDIus/+tpTfFoGksSD70k+PXRh000gZdbgEo9tCCNpe8ZSey6NkrNQhd8Cauo+3aVWtXWipiBAxR+fsZ4sTT3DeZhn2QA1SnRHNMGgwfnCDVhgpZbWrdKv49EB5Rn3m7prr+jZeQvRLj2iIxSxf3UWLxAB77bkmXjETegt6Up5nlaSkK5yqxBINomtxC23w6hjx7pMIQmg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gPH1v4kmqz2xfB;
+	Mon, 25 May 2026 23:35:15 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::42d"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779716115;
+	cv=none; b=S0B6iKqYng7tM7GJa/psN5jMRZZ60SSaw+Av9dYrsLwfXBdGnmFOvCj1II9a9dyANkdhMMrvv5F403UZYzeVK5l69nEj2QzMOhZOeIe12585Bs+zbDTiVI1lHfDoYnO0ATTSJ9Rd7h8zpMYAxQEqiNsrQDHPDs59e46oA7h8rY1KePGXJnNykYoSi/BKoUlPr7EvUruWtTCqIyHyYo6jya5/3Rgtqzxrl+j5qL3fF9GRBRcVx98HCTVe5w4Ks8zgb4ziY6uQ6/1/yhWe4sc5a/LpKJZL1KBmE+1v6Z07mKA329rMqXyksZXvQFRZKWkd29wj2NkQgtoI+C8TjpZGGw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1779715643; c=relaxed/relaxed;
-	bh=Ij+l12dR+ISDUAaA9eJOw0SDQ47xwS4UQDqlRXMB76c=;
+	t=1779716115; c=relaxed/relaxed;
+	bh=9XVHRPBSt9KXo5wrulw6nEDVPqzcFN/DF35DZwL4F0c=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=TvjS/u1/GUAUvgqIqiJznOHt5oxjbiTXaSCu/LNcYS/9XuT9H4GQMe1dphda5T/huODBRRt4eG1T16I543r70IT7dtEWJBq7LNNG8z1QubS8Ie9RzVLrdPS0aimHUp+JjImvfFA8cNjbdaRcJfLzSm7IIFnEGI044MVqNfav2Rqf7sZ/omzMnAmkZzXvzEqI3/J69tjzbnMKUcyppCkWPdcZguSaeoT3MVUWcGwgDnOeTKGxOjy4dWe9UhF7jhmcS+yxkf4lq9Ic0SFqGcY7R8cVccv1lgUhLURVpMzAz3oL2bAvC5twpfQ1Csjit/C07lSD3SAwmnjELxBIdoO/xg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com; dkim=pass (2048-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=google header.b=LdANINO6; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::336; helo=mail-wm1-x336.google.com; envelope-from=petr.pavlu@suse.com; receiver=lists.ozlabs.org) smtp.mailfrom=suse.com
+	 In-Reply-To:Content-Type; b=f6SF8XnxdvpM0MpPnzJnij+Vag8UBy2d9ayogPW1PZ+Adn+O8SslS3C2mgG/gM4lS++cZfdZaPicmZ/DFF/X71q1APD+9VCXJsnxvhUDrPbq/A4uZszpU93Xzz1+fyuUCOLL9gwGLkcfBBQ2iFBBSq1ANdZYcRYDBsVkiQ5Xs346ZS1YA0QLQYjLXEh5DgIxwQWRdGLJXUPKWg93zmOhxvYbO0ZZNFRl+OKGYY8Cs0eRzf38RBLMb1fskmUXPSMdID7PHD2DA9hfCb7DEULoYTuMozAQ8f3UUneNZYMgiyXjeZG9BSzr8rCUcmfbXg3rieoDS6lkhocjUZU60ObI6A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com; dkim=pass (2048-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=google header.b=AYVHjWBf; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::42d; helo=mail-wr1-x42d.google.com; envelope-from=petr.pavlu@suse.com; receiver=lists.ozlabs.org) smtp.mailfrom=suse.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=google header.b=LdANINO6;
+	dkim=pass (2048-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=google header.b=AYVHjWBf;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.com (client-ip=2a00:1450:4864:20::336; helo=mail-wm1-x336.google.com; envelope-from=petr.pavlu@suse.com; receiver=lists.ozlabs.org)
-Received: from mail-wm1-x336.google.com (mail-wm1-x336.google.com [IPv6:2a00:1450:4864:20::336])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.com (client-ip=2a00:1450:4864:20::42d; helo=mail-wr1-x42d.google.com; envelope-from=petr.pavlu@suse.com; receiver=lists.ozlabs.org)
+Received: from mail-wr1-x42d.google.com (mail-wr1-x42d.google.com [IPv6:2a00:1450:4864:20::42d])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gPGrn5f3Xz2xYg
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 May 2026 23:27:20 +1000 (AEST)
-Received: by mail-wm1-x336.google.com with SMTP id 5b1f17b1804b1-4891e86fabeso121366055e9.1
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 May 2026 06:27:20 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gPH1s6YXxz2xYg
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 May 2026 23:35:13 +1000 (AEST)
+Received: by mail-wr1-x42d.google.com with SMTP id ffacd0b85a97d-44dd5cb0f81so6960714f8f.0
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 May 2026 06:35:12 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=suse.com; s=google; t=1779715637; x=1780320437; darn=lists.ozlabs.org;
+        d=suse.com; s=google; t=1779716110; x=1780320910; darn=lists.ozlabs.org;
         h=content-transfer-encoding:in-reply-to:from:content-language
          :references:cc:to:subject:user-agent:mime-version:date:message-id
          :from:to:cc:subject:date:message-id:reply-to;
-        bh=Ij+l12dR+ISDUAaA9eJOw0SDQ47xwS4UQDqlRXMB76c=;
-        b=LdANINO6geHaVLmte1TW+XXwkNtE1xzua7Bj4JmhA5cknMm23zb2LtpPROSbIGgAb1
-         QSrKpJAukCpCv54ntkPTV+5YgawnMjXCk3gTuExp24LyRHseSc94XNZFpAMs+ZTVj2Ux
-         q43OcYa/gzjUvTQW75Jy1jd2hucOscS8kAYbQwClVWZUvvpe6V74PcVlzEndANqovyGS
-         HRwW8aiJvNFCTkZbSTDoqIwgwBvFUZ/N3gbOA4SwMBvYE6KiRXz1krpN/GGZlAwQbboJ
-         xiNOuu1eGQdO6sZKGbrNSffI4CB+fc2/T0BPq6ruBID6SZoV/jnvrggSzJJ4uMMnFufx
-         MkGQ==
+        bh=9XVHRPBSt9KXo5wrulw6nEDVPqzcFN/DF35DZwL4F0c=;
+        b=AYVHjWBfT1Mk8dvz2o+m5ITeDbisDdp7bjYI9jlh2wl9DowwICdOagvFpWY2qnP4Gt
+         EgGZ6GndEP1WeF/8phIck7w9JNjj0Hnb0mQXr1Sme67W86yVDlB5kan4PpmFEzCrUSSN
+         9+yKO5uHIO9k4g6/xg82Pz1EbaNyuj4vnmxKFGAMST3HaCUhyXLsDjOLWuIKKG5WqYFa
+         zb1i0LdEgzXJk4Swu9dP/MvENZAMwokmB+tSz1l6IbUuRPCfK10Wg02snKBr6MiQd4yR
+         T1UEic+JCnCZt8KJrTC9WW3CJDY9Tdhkc0rqNRH14I2PZv5L1V7BPo3W6oYK1buZtdBb
+         R2Ig==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1779715637; x=1780320437;
+        d=1e100.net; s=20251104; t=1779716110; x=1780320910;
         h=content-transfer-encoding:in-reply-to:from:content-language
          :references:cc:to:subject:user-agent:mime-version:date:message-id
          :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=Ij+l12dR+ISDUAaA9eJOw0SDQ47xwS4UQDqlRXMB76c=;
-        b=DgZvAAmHcDoWrTQHQhXjfXro1yzfpcWMoT5z+xNYecVR3riUzKuZwtzAgeawzV3Qvg
-         H1iWnHg2oxrY0UztQ4eYZsdV3cqzOd118FDp5KoBWCRrFdj7tAiuBS3PlTo+jw+066Yd
-         GwcwGmU5ImqOn01P7diT3tKtDVT8bKKpz4vNbyYSDUREbVvEr/g+3+T7XXJ1rhyCQspd
-         4ZLjUr2Stk937K4UbBLbORoJ3FwT+/pNveandtFY8DAkCliIxmkV0kmUdkqtYqr5EgGn
-         REkzG50S7zqfswzsb3Iw9UiU+wTyhxGllCynVZ8RJs1jO0UL60asr6PGt2ZhTfR95voP
-         2Z7Q==
-X-Forwarded-Encrypted: i=1; AFNElJ/YFb06SVpg2hlsNY8FUmlhXDKOFIENINOSf2yp4/1BB40FZWDt6R4KwvvEprPJEgyOBKoDw8oTsYPnvT8=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yw3/Of4Sp+EuRJORlbRMVqWCyA0HT0J6EZug01sU89fu99+MuMu
-	irn8yDkilQIPPEABzyT+vE3Od1garChX5pSMccOKDm6qozWireZA5FOaUBO08l9f9sY=
-X-Gm-Gg: Acq92OE4J2wf6cL06lsqdlERp2bXX2dN/5NJAVhDKUcqSjg7nP9d21gm/JMh0hKRTpl
-	DavfdNEHJ1qnlOsyG907wZPxIoWSR+/jM7APJug9qDpCoTUci/sTWTcdkMOPOv2RbW5rs/qZNt8
-	O08IV4NLLGP6razCqTRu1gNXjbRzIu9I1F18XHNVIG9uYpdS3ohebTFoxKD+Y8FWuX8iqQ2A6xh
-	vhE7W+RKgb4xn2fa9xXy/9zKjoSs5CcKHE1RWGV600ZJLATTtiFYyoKpVxG+sWekPZxAgXTrZ97
-	duk/1zsQQy72rjyDcFpXloDCQdxXsiK4oyg7JJshNzrYFnzCG24jm6HkGp11ESyT4J4BG/uhUzB
-	2DPASQtfy3tQfVdg394/xlHBFwg+i3rncTJts8Y71ICK8q1XI+bPMScZyREODrq31jItiYMv71+
-	EsF8JMEPXQ0/zqqZLHkdbOmaf5hiwr0NrpSB9zOv/vNvWdHtGS3wPY//I5BNmkqVSRM/su0yOi/
-	bPqboVzFG5hDJzXfMtwFMoBgU1FtCixB6nysIQJkEEHunhKFLLnK3ykCIa3WJyVaxNK4f+J5HAI
-	0as+
-X-Received: by 2002:a05:600c:3b02:b0:48f:e1ac:c94f with SMTP id 5b1f17b1804b1-490424b3938mr247672645e9.10.1779715636631;
-        Mon, 25 May 2026 06:27:16 -0700 (PDT)
+        bh=9XVHRPBSt9KXo5wrulw6nEDVPqzcFN/DF35DZwL4F0c=;
+        b=RJvvP7f0YMDHk+2lbCVN6MrPQoe2c0TO7VNpxdmLZ92079E3yVrXZtSyDDhnKK4atU
+         pVxRzjrkOxv9J9ZnIJ31JkYh+3eMEp/bqbAWZUcAu99hfFMcoKBqwScr7oDyERRZ0ggX
+         a81NtdR4oMreuWaFSFUuGRKDcK9Yhx7NctbsZrLlOaHXMuuqLhRUT0y8gd4U4mQesvER
+         1A+0ME0cgAuQ4awFFQW50HGTjPdbybwauH2Dv1+LiKCWz/MkgixPgiad7SfWJpkAIr+C
+         m3qRR6y7Qo58aXdH8nv/hSHthaCMzKfoySPzcPqgPNa1tWkspyW337Ul9tO5Lx5T55hp
+         eQzg==
+X-Forwarded-Encrypted: i=1; AFNElJ/gx3nnK/v+u4HdRvN315hHMlZUavoDPjVOSe1NUBldRASyGhsFmTP1JRxmh99Hhnvrs5TZJ/wTIBCcdq4=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YzXudM/zuX4LdbF53Ps5kD1cJgUYdbdYFmTG4VChsS5HL33uYxs
+	fFEMi8h4DOH3wjdAcD54bLBcF6g5gPjSx3SEtcJfrkw7eeXWyRnTRyC56mpkrUpIvVM=
+X-Gm-Gg: Acq92OHe1xvO71K3q7Q/Tt1Kps7mXvQMvQaQJcSajS1duw5oQsUHNwuQzBNuXEpbnoz
+	WwIO2nj1/R8HmDTXvvpQWa3ed4mkXQ4qFOKR6NfSSVxm+Zxo62hwyrRgq4T4AzUKSF6SlZ8qfz4
+	2vfjYbpIkl+kv35vdJDwLFGM5KoiFECpXTBPWJPhcHAdt1nc4bEo5j8Mc4RHkb2IqSx0fq63Uwv
+	z5RLD1Airg+XndvqgQw/h7xTXVweYwDzK6vdgantalDLcZ28sVceOc4DQ77V+bbR1bszl8Xa4ec
+	sa1JmMxiClVUz4LWAIXjSNi9+xsp8xB49EBWHuwgTeE2wRJhWSlkDOvwlYA7tuWUwOv2atyq/a0
+	t3M5h7XTkDiAl8lph1hs3lrI6+WsHrqlIWCCPRDlsdkUQXZnp2jfmAJyXEtAQCsLUQJmNiqSb+o
+	6Tllcbhgh0tphtkJRM+RSj4uRk0UC+UNJlVyyemWq4AubIehJ7d6Yp+IrjHbmABT2nIHRj9wSXi
+	+23ziVeDWE9h4l3qG550h7Tarn7mZC25DnaGANMX7k1JwszY2aiEdKWPoMHLVxzn8x8AA==
+X-Received: by 2002:a05:6000:2008:b0:45e:8cdc:4ee8 with SMTP id ffacd0b85a97d-45ea3128ccdmr31052715f8f.6.1779716109692;
+        Mon, 25 May 2026 06:35:09 -0700 (PDT)
 Received: from ?IPV6:2a00:1028:838d:271e:8e3b:4aff:fe4c:a100? (dynamic-2a00-1028-838d-271e-8e3b-4aff-fe4c-a100.ipv6.o2.cz. [2a00:1028:838d:271e:8e3b:4aff:fe4c:a100])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-490454b1ab3sm284841905e9.14.2026.05.25.06.27.13
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-45eb6d5cb9asm29456456f8f.27.2026.05.25.06.35.06
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 25 May 2026 06:27:16 -0700 (PDT)
-Message-ID: <1c21f66f-0d0f-4a8b-835b-23408242cff1@suse.com>
-Date: Mon, 25 May 2026 15:27:13 +0200
+        Mon, 25 May 2026 06:35:09 -0700 (PDT)
+Message-ID: <da358ae1-91b4-4a16-ac76-ffab99c230b9@suse.com>
+Date: Mon, 25 May 2026 15:35:06 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -90,8 +89,8 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 03/11] moduleparam: Add DEFINE_KERNEL_PARAM_OPS macro
- family
+Subject: Re: [PATCH 04/11] treewide: Convert struct kernel_param_ops
+ initializers to DEFINE_KERNEL_PARAM_OPS
 To: Kees Cook <kees@kernel.org>
 Cc: Luis Chamberlain <mcgrof@kernel.org>, Pengpeng Hou
  <pengpeng@iscas.ac.cn>, Richard Weinberger <richard@nod.at>,
@@ -153,71 +152,36 @@ Cc: Luis Chamberlain <mcgrof@kernel.org>, Pengpeng Hou
  linux-arch@vger.kernel.org, netdev@vger.kernel.org,
  linux-fsdevel@vger.kernel.org, linux-hardening@vger.kernel.org
 References: <20260521133315.work.845-kees@kernel.org>
- <20260521133326.2465264-3-kees@kernel.org>
+ <20260521133326.2465264-4-kees@kernel.org>
 Content-Language: en-US
 From: Petr Pavlu <petr.pavlu@suse.com>
-In-Reply-To: <20260521133326.2465264-3-kees@kernel.org>
+In-Reply-To: <20260521133326.2465264-4-kees@kernel.org>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
 On 5/21/26 3:33 PM, Kees Cook wrote:
-> Add macros that define a struct kernel_param_ops initializer through a
-> macro so the underlying field layout can evolve without touching every
-> call site. Three variants cover the three cases:
+> Using Coccinelle, rewrite every struct kernel_param_ops initializer that
+> sets .get into a DEFINE_KERNEL_PARAM_OPS-family macro invocation,
+> for example:
 > 
->  DEFINE_KERNEL_PARAM_OPS(name, set, get) // basic
->  DEFINE_KERNEL_PARAM_OPS_NOARG(name, set, get) // set KERNEL_PARAM_OPS_FL_NOARG
->  DEFINE_KERNEL_PARAM_OPS_FREE(name, set, get, free) // also set .free
+> @@
+> declarer name DEFINE_KERNEL_PARAM_OPS;
+> identifier OPS;
+> expression SET, GET;
+> @@
+> - const struct kernel_param_ops OPS = {
+> -       .set = SET,
+> -       .get = GET,
+> - };
+> + DEFINE_KERNEL_PARAM_OPS(OPS, SET, GET);
 > 
-> Callers prefix their own visibility qualifiers, e.g.:
-> 
->   static DEFINE_KERNEL_PARAM_OPS(my_ops, my_set, my_get);
-> 
-> Also update module_param_call() and STANDARD_PARAM_DEF() to use
-> DEFINE_KERNEL_PARAM_OPS internally so the generated ops table will go
-> through the same macro as everything else.
-> 
-> Subsequent commits convert all open-coded struct kernel_param_ops
-> definitions to use these macros, in preparation for migrating to a
-> seq_buf .get API.
-> 
-> Signed-off-by: Kees Cook <kees@kernel.org>
-> ---
->  include/linux/moduleparam.h | 36 ++++++++++++++++++++++++++++++++++--
->  kernel/params.c             |  6 ++----
->  2 files changed, 36 insertions(+), 6 deletions(-)
-> 
-> diff --git a/include/linux/moduleparam.h b/include/linux/moduleparam.h
-> index 075f28585074..26bf45b36d02 100644
-> --- a/include/linux/moduleparam.h
-> +++ b/include/linux/moduleparam.h
-> @@ -68,6 +68,39 @@ struct kernel_param_ops {
->  	void (*free)(void *arg);
->  };
->  
-> +/*
-> + * Define a const struct kernel_param_ops initializer. Callers prefix with
-> + * any required visibility qualifiers (typically "static"):
-> + *
-> + *   static DEFINE_KERNEL_PARAM_OPS(my_ops, my_set, my_get);
-> + *
-> + * Routing the @_set and @_get function pointers through the macro
-> + * (rather than naming the struct fields at every call site) lets the
-> + * field layout change in one place when callbacks are migrated to a
-> + * new signature.
-> + */
+> Using the macro for initialization means future changes can manipulate
+> the struct layout and callback prototypes without having to change every
+> initializer.
 
-Nit: The newly introduced DEFINE_KERNEL_PARAM_OPS*() macros remain in
-place at the end of the series after the migration is complete and this
-comment is removed in patch 7. It would be helpful to describe in the
-commit message why these macros are generally preferable to defining
-kernel_param_ops instances directly.
-
-I assume the motivation is that the structure is simple enough and using
-macros then makes defining kernel_param_ops instances a bit more
-concise. A minor disadvantage is that some analysis tools, such as
-ctags, may no longer see the generated definition, but that is also the
-case for DEFINE_MUTEX() and other similar macros.
+Nit: For consistency, I suggest also converting the few remaining
+kernel_param_ops instances that specify only .set and no .get, such as
+simdisk_param_ops_filename.
 
 -- 
 Thanks,
