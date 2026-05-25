@@ -1,83 +1,58 @@
-Return-Path: <linuxppc-dev+bounces-21470-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21471-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4FC56CD5BB1
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 May 2026 12:17:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F24A6CD5BC9
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 May 2026 13:17:42 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gPFHl5WKJz2xbN;
-	Mon, 25 May 2026 22:17:07 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779711427;
-	cv=none; b=h2ipPfztu7psJGZyd+KaoHDEPRgICoNNQuRouBkWv3xtnv3asRNoiJ2tnCoiApvEgbdm2LfNmreUNOxSX6xk8LOqHNcOtDPCvVHXIbbr2awnoVdvzqfoQFsUM+a91RYmOhNJ8nsjWwrSg20WRT0s3FBaoxnInsVVPqe2+o5HFxmfJdXGHsqahBGtu5SOLNFXVHdwtfwKRdfzlmGA5lzi3/hh11x0GN7mtvLRs1IPgh5hYSic8iAU8ff3kqjpzDSK1yFUAugNzk/w39B+XqWm/FKLiEe5vyrlNS/tpWALvfgkZMCp5/rkjrXiOvTBxBqO9+2qcgGd0NQ4NAB4xNO8Uw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gPGdd13r7z2xfB;
+	Mon, 25 May 2026 23:17:41 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779715061;
+	cv=none; b=hFEVT7BY/E9FIy0uueLU4jCEmsE9dQYei/xJyrgARfNWa0GH98znnnlTlxii4vQQ62u092LZgslv3x/MY8O+5ocEpkgaIOajnIq4wSeghXfypGSdHPBuUPrhrNpLcGel7gs4JC8gMlq5MKTMjeRa3bffxuq95lxhxsTXKCqM1A67klcHPXjoTGXXnTpzfPfKEuvHK8ICABFhyHpi/C8mHny+zBpWFcG18lknlhzcbhzX2DSlLXrG0+7gQSZbBs2nLSG0z0tEhuNqTZ2qMvuQzPFrAU0Oc7gFP2dbXPYzHFyIOkqp8ZU9844IoZiF0AYq6llc5XrwGMHSsG+ogZxtcQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1779711427; c=relaxed/relaxed;
-	bh=kcbhuYVnIyM0gO1Ey8OTwYSmRoXUoO+BdnB7Gvputxg=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=YC/WqOjlvcLaJjZJtQa9zvPy0ioKzF6v8kYXdG5KqHj5w0sLncUcW9HCCjZAQKTurpGWXtLbkSDOAAshQG6rApgp+elQ7b50fTmlvBEG/22RVfK4FPeiWadRcCK5mFBrbeCBUV2V5xMdZTszNS7scVSmQka/y7Ou1oqZdVvrjx3JZAz8SKGDrz6UCMb0BgbXpjYW2CTeHgrkEBJL2GCUtPTn/+DlUX3tPJsFJWcL0PaaU5bLXYMbOwIUtTpsm3j+DWY/gGw7S3DY0/Y+nCYgk6oGUNRqNDzgFnIVNlxk5Ol6h1IJB/OYEMfT8Qn6gzj6hXqSPWzwraLTxRUR08ARYg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Mp0HBVZj; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=adityag@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1779715061; c=relaxed/relaxed;
+	bh=qV78+XoJ5yl4lw7jTkTV5DIdhzm9s8UbSBBAw5Rneo4=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=TkYf74sBA4ZfVXYJOlU1CmI/4viN1P0oU9i5fEWTUEewBZfEQEVMkKy8Q5TaMDQqDXENGI55ej+BRDwJmc6Uwz3BizA/AG4lm4rMRpFK9FaRZa3GOykvKI3bMkJrO8fCWu3JFYjwIqKwbh8bxpSro+87KPwA40JjVstL1cf8gf5h9VxHC0/LW5JKdMJ5XHwItLxkzdl7OwUN1EXuzTvjV8pEha5HF4kDFQLaasrkxRCavLKNLH4olSN+Q/NOvbotdXZDNuESCTZdN6SpUO3qGJBzYN+EsxnZbYAHe8hhw+wo5Lng3Uwy325WXJQ80MfO754tt5MyyMYZsyRzvAMNKQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=dCpzrAvf; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=chenhuacai@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Mp0HBVZj;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=dCpzrAvf;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=adityag@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=chenhuacai@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gPFHk6JHNz2xSb
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 May 2026 22:17:06 +1000 (AEST)
-Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 64OJo5e13032008;
-	Mon, 25 May 2026 12:16:49 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:message-id:mime-version
-	:subject:to; s=pp1; bh=kcbhuYVnIyM0gO1Ey8OTwYSmRoXUoO+BdnB7Gvput
-	xg=; b=Mp0HBVZj1/HtF9sBIL6MPfsxSIyjH4SRA7eXNKIJlsdiaBrkwuREZxFFU
-	OqZ5OSZryje6H9/mOd2KZKYdrvrOei9rPLxoBgqgKERTdQHbeFXBo33xjDtZgk0l
-	cctvz1m0diw1QcK+F9+i75+VjVQZVJ2JNi6GfynoMuedFuIuI6FBjrZv5bEK+wr3
-	LVsxRIgyBn46p/X3eIo0+w2Cjt7YgpVzmAt+4PbkSbY0oiW9leDqFWKXpl8lDREr
-	mL7uyR3P9PG+BwyD4owiZU4LrMghOPpU/TROP8urvBVJWtwvwLbKH6vQA4bsS29H
-	bfLaCiOx2uV5oq4BuMNPgpV8+JH4w==
-Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4eb4nbxwre-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 25 May 2026 12:16:48 +0000 (GMT)
-Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma21.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 64PC9AIC011263;
-	Mon, 25 May 2026 12:16:48 GMT
-Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
-	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4ebqjjn2x6-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 25 May 2026 12:16:47 +0000 (GMT)
-Received: from smtpav06.fra02v.mail.ibm.com (smtpav06.fra02v.mail.ibm.com [10.20.54.105])
-	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 64PCGikO42860928
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 25 May 2026 12:16:44 GMT
-Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id F151C2004B;
-	Mon, 25 May 2026 12:16:43 +0000 (GMT)
-Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 2275D20040;
-	Mon, 25 May 2026 12:16:40 +0000 (GMT)
-Received: from li-3c92a0cc-27cf-11b2-a85c-b804d9ca68fa.ibm.com (unknown [9.124.218.95])
-	by smtpav06.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Mon, 25 May 2026 12:16:39 +0000 (GMT)
-From: Aditya Gupta <adityag@linux.ibm.com>
-To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-        Madhavan Srinivasan <maddy@linux.ibm.com>,
-        Timothy Pearson <tpearson@raptorengineering.com>,
-        Bjorn Helgaas <bhelgaas@google.com>,
-        Shawn Anastasio <sanastasio@raptorengineering.com>
-Cc: linux-pci@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>,
-        Nicholas Piggin <npiggin@gmail.com>,
-        "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-        stable@vger.kernel.org
-Subject: [PATCH] ppc/pnv: Fix null pointer deref in pci hotplug
-Date: Mon, 25 May 2026 17:46:28 +0530
-Message-ID: <20260525121628.3906457-1-adityag@linux.ibm.com>
-X-Mailer: git-send-email 2.54.0
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gPGdb5V7wz2xYg
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 May 2026 23:17:39 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with ESMTP id 3BE47445E1
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 May 2026 13:17:36 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 237ED1F00ADF
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 May 2026 13:17:36 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1779715056;
+	bh=qV78+XoJ5yl4lw7jTkTV5DIdhzm9s8UbSBBAw5Rneo4=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc;
+	b=dCpzrAvfgk9mSUU6JI5HHHez6L14UFh5dckZN5DAlujdAQMm/PYPxcKDOMc41IypU
+	 NgmmttTk+nJ7gpnOe4Eg8v+8FV8RT+v5Ae+glRPhqcxzGZd/+6hgMw0F7yv/+6rQz4
+	 X95gdQuJUyAKc1hWH3Gy1/l+TIZX2idKqbCpGmaVwhcsQRUGGQYoJHz3dhHrh2l/au
+	 j0SXMMWwm+qgnDiXn93t6TJoPrAZ5gm82qSecFVClh3KPL2gWZzu9niNd8OSefMoGl
+	 agHzEYaoQKd6HOPeiZMWEfzv0bjMM/EusAmU3Hy1nMtvCCD/Sa2YxNSMJTFxPK7Fzo
+	 JaK+HMaC87z/g==
+Received: by mail-ej1-f48.google.com with SMTP id a640c23a62f3a-bd56d108454so1744967666b.2
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 May 2026 06:17:36 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AFNElJ851xzf57s+ToeyfLSk+sW0eniturv7TgdWKiAaMFKPuq1H4yC9xh+OkFLghDHi9AsrzSbDyF62YEr1gRY=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YxU4BfKPwxHtAl0wReP/fEfaQkS+Ozjq1cLKCdOceKwvp1MCSTZ
+	sN3OVmBxFHgaOKX586PqOWCOnNyfFeWxnHrJkwL59wxd1usS/HMscRX5FKhmXb1gKaYP7ocKWQE
+	AIFk4fU0ONXsytKpfP04NcyFJRMbCXEQ=
+X-Received: by 2002:a17:906:5a58:b0:bd5:7c2:7622 with SMTP id
+ a640c23a62f3a-bdd26fcc664mr633046266b.49.1779715053431; Mon, 25 May 2026
+ 06:17:33 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -91,99 +66,95 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Authority-Analysis: v=2.4 cv=VvYTxe2n c=1 sm=1 tr=0 ts=6a143db1 cx=c_pps
- a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
- a=NGcC8JguVDcA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=V8glGbnc2Ofi9Qvn3v5h:22 a=VwQbUJbxAAAA:8 a=VnNF1IyMAAAA:8
- a=lml1KbhEJxe8kdhi6MYA:9
-X-Proofpoint-ORIG-GUID: B4AjfRteot1akFQ4FhifVoHIFDoqMvAJ
-X-Proofpoint-GUID: j1ytpDlrHCLjuc5MFTTqjFIu-2Pq4kAT
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTI1MDEyNSBTYWx0ZWRfX8DynBRZ5R9JV
- A47tk1xLWQfh15pvCoJ/kWw821rXRAVTVUQkZEHsAYrz2muZdyg2ZKeoYU+AST9sWjxzJTFmb0R
- SXVl67H3QIR9WRRfGZUu6Gts/PdQtzg2qZQx7rIY5UqMr7b2iAd4lv5B29z2d0vPL7rpuWoHYgp
- bwgF7qB9EZMK2xmkCoUnc1pIssEW5G4/Bxs91WvvyyJOkhIgBzrb9B3FtAmpHFoQcsVFq99ITsb
- SlTyohakBR1o63i4e6O0yxfNJ/BtQUbkrzj9c9NN8R8iymLm/kprGIjTQ4nNL3ROHFQj8redOMY
- LLJGn/ElQIHT6xtTgXQv2wtdGakUXmokgvRtLNKLUvi1puWlJB6SfwVQjGRCQ4zEt9tmsYuE8Ys
- kapZad0DEMwU+218zFxJoFTUSlTfIeFgoBSXI4d9vwEggGnhaUGUqoKOGFzuxgehvWVGCG2MlQp
- p98HsvNkCnk55IHZ7vg==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-05-25_03,2026-05-18_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- suspectscore=0 phishscore=0 priorityscore=1501 spamscore=0 adultscore=0
- lowpriorityscore=0 malwarescore=0 impostorscore=0 clxscore=1011 bulkscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2605130000 definitions=main-2605250125
+References: <20260525084932.934910-1-ruanjinjie@huawei.com>
+ <CAAhV-H4NA7vgyxKnK+N_3C6pWBnwXc2URUyLh_h1m-MO=MnsGQ@mail.gmail.com> <ahQ0WRiMsB011tym@kernel.org>
+In-Reply-To: <ahQ0WRiMsB011tym@kernel.org>
+From: Huacai Chen <chenhuacai@kernel.org>
+Date: Mon, 25 May 2026 21:17:21 +0800
+X-Gmail-Original-Message-ID: <CAAhV-H5x3m08=acrUr2VOAQ8-r2PhN1xTdr3NihHocoPM5=3hQ@mail.gmail.com>
+X-Gm-Features: AVHnY4KF6iz3ZOONNz4YfBuRaFyzFjWLq0_9v1vlnlGZ6xwTI_B6DWjmlURC67Q
+Message-ID: <CAAhV-H5x3m08=acrUr2VOAQ8-r2PhN1xTdr3NihHocoPM5=3hQ@mail.gmail.com>
+Subject: Re: [PATCH v14 00/17] arm64/riscv: Add support for crashkernel CMA reservation
+To: Mike Rapoport <rppt@kernel.org>
+Cc: Jinjie Ruan <ruanjinjie@huawei.com>, corbet@lwn.net, skhan@linuxfoundation.org, 
+	catalin.marinas@arm.com, will@kernel.org, kernel@xen0n.name, 
+	maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com, 
+	chleroy@kernel.org, pjw@kernel.org, palmer@dabbelt.com, aou@eecs.berkeley.edu, 
+	alex@ghiti.fr, tglx@kernel.org, mingo@redhat.com, bp@alien8.de, 
+	dave.hansen@linux.intel.com, hpa@zytor.com, robh@kernel.org, 
+	saravanak@kernel.org, akpm@linux-foundation.org, bhe@redhat.com, 
+	pasha.tatashin@soleen.com, pratyush@kernel.org, ruirui.yang@linux.dev, 
+	rdunlap@infradead.org, pmladek@suse.com, feng.tang@linux.alibaba.com, 
+	dapeng1.mi@linux.intel.com, kees@kernel.org, elver@google.com, 
+	kuba@kernel.org, lirongqing@baidu.com, ebiggers@kernel.org, 
+	paulmck@kernel.org, thuth@redhat.com, ardb@kernel.org, masahiroy@kernel.org, 
+	mark.rutland@arm.com, maz@kernel.org, james.morse@arm.com, leitao@debian.org, 
+	sourabhjain@linux.ibm.com, yeoreum.yun@arm.com, coxu@redhat.com, 
+	jbohac@suse.cz, ryan.roberts@arm.com, cfsworks@gmail.com, 
+	tangyouling@kylinos.cn, ritesh.list@gmail.com, songshuaishuai@tinylab.org, 
+	junhui.liu@pigmoral.tech, vishal.moola@gmail.com, kas@kernel.org, 
+	debug@rivosinc.com, namcao@linutronix.de, liaoyuanhong@vivo.com, 
+	fuqiang.wang@easystack.cn, seanjc@google.com, guoren@kernel.org, 
+	chenjiahao16@huawei.com, hbathini@linux.ibm.com, bgwin@google.com, 
+	takahiro.akashi@linaro.org, lizhengyu3@huawei.com, x86@kernel.org, 
+	linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	linux-arm-kernel@lists.infradead.org, loongarch@lists.linux.dev, 
+	linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org, 
+	devicetree@vger.kernel.org, kexec@lists.infradead.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-With upstream kernel booted on a PowerNV system with OpenCAPI device,
-below crash is observed:
+On Mon, May 25, 2026 at 7:37=E2=80=AFPM Mike Rapoport <rppt@kernel.org> wro=
+te:
+>
+> Hi Huacai,
+>
+> On Mon, May 25, 2026 at 06:14:52PM +0800, Huacai Chen wrote:
+> > On Mon, May 25, 2026 at 4:50=E2=80=AFPM Jinjie Ruan <ruanjinjie@huawei.=
+com> wrote:
+> > >
+> > > Jinjie Ruan (16):
+> > >   riscv: kexec_file: Fix crashk_low_res not exclude bug
+> > >   powerpc/crash: Fix possible memory leak in update_crash_elfcorehdr(=
+)
+> > >   arm64: kexec: Fix image->elf_headers memory leak during retry loop
+> > >   x86/kexec: Fix potential buffer overflow in prepare_elf_headers()
+> > >   arm64: kexec_file: Fix potential buffer overflow in
+> > >     prepare_elf_headers()
+> > >   riscv: kexec_file: Fix potential buffer overflow in
+> > >     prepare_elf_headers()
+> > >   LoongArch: kexec: Fix potential buffer overflow in
+> > >     prepare_elf_headers()
+> > >   crash: Add crash_prepare_headers() to exclude crash kernel memory
+> > >   arm64: kexec_file: Use crash_prepare_headers() helper to simplify c=
+ode
+> > >   x86/kexec: Use crash_prepare_headers() helper to simplify code
+> > >   riscv: kexec_file: Use crash_prepare_headers() helper to simplify c=
+ode
+> > >   LoongArch: kexec: Use crash_prepare_headers() helper to simplify co=
+de
+> > >   crash: Use crash_exclude_core_ranges() on powerpc
+> > >   arm64: kexec: Add support for crashkernel CMA reservation
+> > >   riscv: kexec: Add support for crashkernel CMA reservation
+> > >   arm64/crash: Add crash hotplug support
+> > I have some bikesheedings about the subjects. Can we unify the prefix f=
+ormats?
+> > x86/kexec, arm64: kexec_file, riscv: kexec_file, LoongArch: kexec .....
+>
+> It might look weird in the series, but powerpc and x86 use '/' and arm64 =
+and
+> riscv use ':' so in the logs in arch/ this would be actually fine.
+OK, but at least we can unify kexec and kexec_file.
 
-    [    1.568588] PowerPC PowerNV PCI Hotplug Driver version: 0.1
-    [    1.569722] BUG: Kernel NULL pointer dereference at 0x00000074
-    [    1.569811] Faulting instruction address: 0xc000000000b75fd0
-    [    1.569890] Oops: Kernel access of bad area, sig: 11 [#1]
-    [    1.569963] LE PAGE_SIZE=64K MMU=Hash  SMP NR_CPUS=2048 NUMA PowerNV
-    [    1.570037] Modules linked in:
-    [    1.570099] CPU: 250 UID: 0 PID: 1 Comm: swapper/248 Not tainted 7.1.0-rc4+ #1 PREEMPTLAZY
-    [    1.570207] Hardware name: 9105-22A Power11 (raw) 0x820200 opal:v7.1-142-gbbc276524497 PowerNV
-    [    1.570325] NIP:  c000000000b75fd0 LR: c000000000b75fbc CTR: 000000003008a65c
-    [    1.570411] REGS: c000c0000688f6f0 TRAP: 0380   Not tainted  (7.1.0-rc4+)
-    [    1.570494] MSR:  9000000000009033 <SF,HV,EE,ME,IR,DR,RI,LE>  CR: 28000284  XER: 20040000
-    [    1.570636] CFAR: c00000000019f9e8 IRQMASK: 0
-    ...
-    [    1.571492] NIP [c000000000b75fd0] pnv_php_get_adapter_state+0x60/0x154
-    [    1.571604] LR [c000000000b75fbc] pnv_php_get_adapter_state+0x4c/0x154
-    [    1.571690] Call Trace:
-    [    1.571725] [c000c0000688f990] [c000000000b75fbc] pnv_php_get_adapter_state+0x4c/0x154 (unreliable)
-    [    1.571783] [c000c0000688fa20] [c000000000b78bd0] pnv_php_enable+0x94/0x378
-    [    1.571951] [c000c0000688fac0] [c000000000b7912c] pnv_php_register_one.isra.0+0x11c/0x1e0
-    [    1.572077] [c000c0000688fb00] [c000000002091318] pnv_php_init+0x168/0x1b0
-    [    1.572111] [c000c0000688fb80] [c00000000001103c] do_one_initcall+0x5c/0x450
-    [    1.572162] [c000c0000688fc70] [c000000002006abc] do_initcalls+0x15c/0x29c
-    [    1.572283] [c000c0000688fd30] [c000000002006ec4] kernel_init_freeable+0x224/0x3e0
-    [    1.572484] [c000c0000688fde0] [c000000000011578] kernel_init+0x30/0x268
-    [    1.572562] [c000c0000688fe50] [c00000000000debc] ret_from_kernel_user_thread+0x14/0x1c
-    [    1.572667] ---- interrupt: 0 at 0x0
-    [    1.572720] Code: 38810065 e90d0c78 f9010068 39000000 99210065 e8630020 4b6299c9 60000000 2c030000 418000ac e87f0058 89410065 <a1230074> 55290636 2c090060 41820044
+Huacai
 
-This NULL pointer dereference happens due to the call to
-'pci_pcie_type(php_slot->pdev)' without checking if php_slot->pdev is
-NULL.
-
-This occurs for hotplug slots on root buses where bus->self == NULL,
-such as OpenCAPI PHB direct slots. An added debug print (not part of
-this patch) confirmed it was opencapi:
-
-    [    1.617227] pnv_php: slot 'OPENCAPI-0009' has NULL pdev (bus 0009:00, parent=NO (root bus))
-    [    1.617308] pnv_php: slot 'OPENCAPI-0009' dn->full_name='pciex@603a000000000', compatible='ibm,power10-pau-opencapi-pciex'
-
-Add a NULL check for this.
-
-Cc: stable@vger.kernel.org
-Fixes: 80f9fc236279 ("PCI: pnv_php: Work around switches with broken presence detection")
-Signed-off-by: Aditya Gupta <adityag@linux.ibm.com>
----
- drivers/pci/hotplug/pnv_php.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/pci/hotplug/pnv_php.c b/drivers/pci/hotplug/pnv_php.c
-index ff92a5c301b8..21ce7ead9e19 100644
---- a/drivers/pci/hotplug/pnv_php.c
-+++ b/drivers/pci/hotplug/pnv_php.c
-@@ -414,7 +414,8 @@ static int pnv_php_get_adapter_state(struct hotplug_slot *slot, u8 *state)
- 	 */
- 	ret = pnv_pci_get_presence_state(php_slot->id, &presence);
- 	if (ret >= 0) {
--		if (pci_pcie_type(php_slot->pdev) == PCI_EXP_TYPE_DOWNSTREAM &&
-+		if (php_slot->pdev &&
-+			pci_pcie_type(php_slot->pdev) == PCI_EXP_TYPE_DOWNSTREAM &&
- 			presence == OPAL_PCI_SLOT_EMPTY) {
- 			/*
- 			 * Similar to pciehp_hpc, check whether the Link Active
--- 
-2.54.0
-
+>
+> With the only exception of arm64/crash that should have been arm64: crash=
+:
+>
+> > Huacai
+>
+> --
+> Sincerely yours,
+> Mike.
 
