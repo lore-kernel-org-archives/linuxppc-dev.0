@@ -1,40 +1,64 @@
-Return-Path: <linuxppc-dev+bounces-21444-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21445-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 68C8FCD5BBF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 May 2026 07:08:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 48FA4CD5BC0
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 May 2026 07:57:24 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gP6RW3w58z2xk7;
-	Mon, 25 May 2026 17:08:23 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=141.14.17.11
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779692903;
-	cv=none; b=HWhGJabMmqB0e0RkghxGiKrRDoyIDptD8HFuR6iN2UlPdKVbolqk30ArVZNc2UiQ55OnW+aXUmJyvLlPtaoZRJykso+JQ/NjkrUPnekJZsbhaVMUFrj9FAHfbDHm770LNPOWXItoJVw1Q9GDS4U44hXP5wg6q9EECO/IsZSBY/H9SkP4r49YE4U4N4PuQf7tKOw4HWCes74y9e+S3uNb5ezlO/j5Zqmls2Z9ussanFF/uXcLDoxRjIxHUmaP+cLAoH4y2U6Hd83RgtKdhYRxSoiX2nyI76wvctSyYgZBIgL4P5bHboVqndnsLSBMPHjjcZHsLZOGZtCpPMugYIGOUw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gP7X33GVhz2xnK;
+	Mon, 25 May 2026 17:57:23 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=140.211.166.183
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779695843;
+	cv=none; b=T6YXLjlhqor5Pcwpwn24xXLlcaB9NyTYSVhatNIIjgx0B2RwUnDCOtZChvt/nwbxxVy2NJmQl0X0kWU1CQwH/xTLm/NEuYJIjbHtdkeBWZlzKeV7N+pL9GMvtTVAZNu0znkl+roEEFsYs9mgFDJQKgDlJ3hMoe1S6mOzgDLeHGQ4MxtrqM+ypMh6QQw3cV2ATPqgI3knZcLE0yarv8GP4RLWlfdVVPajwynWgG2jWtZACWaX7fEpEuOD8D0w+M2/GaY6PulLYx2/wW0eSI9H8GKV75QTSW67x7ngzubwoPA5jsQuK3iyKZSTaVgOIP22S8WAFtpzDmCAt3SpcxGd/Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1779692903; c=relaxed/relaxed;
-	bh=eVPR0LLrILDMdBwjLVToivXpWGkmk5WE/EIyPpANZys=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=oLR3M7/MYtNq5bKTJc63QUk1BQUjB6VYeGysEAkd6yKF4So9fIapfRhvxvzZBFSmgtvKGX1juF3qfMeX6tutMmIv9bLeJbjvlCneUpgq2z8X0PyDeAIAEEu0zuoWtJhIFN1+nm3eSQkTmiq9GVANl5IBNlpH0d+VWw72AN1OQryL4lfOmLmJNnAaw+HVkk9/wk8wWtXVZav8SOCed+GUQHF9dP3GOg/g+Hta1+KzOqaUBhXEAjY6TFMNyg6J1rRa48l62duXjmLmcZHnoYJa5nm1gVlSwn1nTW/qa9whM18dawIE3OxhiZA+ptXNzbr6FDrvWMD6fU6WeV67TljfvQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=molgen.mpg.de; spf=pass (client-ip=141.14.17.11; helo=mx3.molgen.mpg.de; envelope-from=pmenzel@molgen.mpg.de; receiver=lists.ozlabs.org) smtp.mailfrom=molgen.mpg.de
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=molgen.mpg.de
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=molgen.mpg.de (client-ip=141.14.17.11; helo=mx3.molgen.mpg.de; envelope-from=pmenzel@molgen.mpg.de; receiver=lists.ozlabs.org)
-Received: from mx3.molgen.mpg.de (mx3.molgen.mpg.de [141.14.17.11])
+	t=1779695843; c=relaxed/relaxed;
+	bh=HHhpXlzRmHrzRtNTLHgm3F0nZIdqKdi1jX0PUFMVKPY=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=cytUznnSn2603q2OrE8gj8C/olKyDHkN1kZDDS+rBkcosPJWgcpKGJmcqriBpf7Hor2NLYs0H/2B4mCOVV0qNAC2O40xvfoiWKaMiziJGTW92lyXYGcvaQUlTnLP1Eq3hRCGKxU1xx2zO6ealNbcOg1HRwVq5jxepBL5FVCaQD2ILjc1WkhfgOVOMWki32mAEh5dIkWQZ2TLfNBy2znTCE1eHiOJQDpMzYb5cRcxX65fYRZLfvtE5jmhLWiZzfZ8e/JpdThUsjp2oIKWByI9vWHVKM8hTVM0W3U07WKVELFxwGoRkJjfuEeOyYAlMNPZVeZm9ymIgE1/yq3lnabu0w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gentoo.org; spf=pass (client-ip=140.211.166.183; helo=smtp.gentoo.org; envelope-from=sam@gentoo.org; receiver=lists.ozlabs.org) smtp.mailfrom=gentoo.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gentoo.org
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gentoo.org (client-ip=140.211.166.183; helo=smtp.gentoo.org; envelope-from=sam@gentoo.org; receiver=lists.ozlabs.org)
+Received: from smtp.gentoo.org (woodpecker.gentoo.org [140.211.166.183])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bit raw public key) server-digest SHA256)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gP6RV12L8z2xYg
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 May 2026 17:08:20 +1000 (AEST)
-Received: from [192.168.2.212] (p5dc55c87.dip0.t-ipconnect.de [93.197.92.135])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gP7X15zcWz2xk7
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 May 2026 17:57:21 +1000 (AEST)
+Received: from localhost (1.5.5.2.4.d.e.f.f.f.5.f.9.d.6.0.a.5.c.d.c.d.9.1.0.b.8.0.1.0.0.2.ip6.arpa [IPv6:2001:8b0:19dc:dc5a:6d9:f5ff:fed4:2551])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	(Authenticated sender: pmenzel)
-	by mx.molgen.mpg.de (Postfix) with ESMTPSA id 721DC4C1A2DF81;
-	Mon, 25 May 2026 09:07:44 +0200 (CEST)
-Message-ID: <84448a84-1c96-45a9-9ba8-1e058d0bf8a5@molgen.mpg.de>
-Date: Mon, 25 May 2026 09:07:42 +0200
+	(Authenticated sender: sam@gentoo.org)
+	by smtp.gentoo.org (Postfix) with ESMTPSA id 115E9341E5A;
+	Mon, 25 May 2026 07:57:09 +0000 (UTC)
+From: Sam James <sam@gentoo.org>
+To: =?UTF-8?q?Breno=20Leit=C3=A3o?= <leitao@debian.org>,
+	Nayna Jain <nayna@linux.ibm.com>,
+	Paulo Flabiano Smorigo <pfsmorigo@gmail.com>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	Herbert Xu <herbert@gondor.apana.org.au>,
+	"David S. Miller" <davem@davemloft.net>,
+	Ard Biesheuvel <ardb@kernel.org>,
+	Eric Biggers <ebiggers@google.com>
+Cc: Sam James <sam@gentoo.org>,
+	Eric Biggers <ebiggers@kernel.org>,
+	stable@vger.kernel.org,
+	Calvin Buckley <calvin@cmpct.info>,
+	Brad Spengler <brad.spengler@opensrcsec.com>,
+	linux-crypto@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH v3] crypto: nx: fix nx_crypto_ctx_exit argument
+Date: Mon, 25 May 2026 08:56:19 +0100
+Message-ID: <844faa8a75585e4088c95c052dd0ecd189bc3a64.1779695779.git.sam@gentoo.org>
+X-Mailer: git-send-email 2.54.0
+In-Reply-To: <b8b1b6fe740187c70349cd04a820d57324e0f70c.1779509289.git.sam@gentoo.org>
+References: <b8b1b6fe740187c70349cd04a820d57324e0f70c.1779509289.git.sam@gentoo.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -48,53 +72,100 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] misc: eeprom: at24: Make VCC supply description
- requirement optional
-To: Mark Brown <broonie@kernel.org>
-Cc: Bartosz Golaszewski <brgl@kernel.org>, Arnd Bergmann <arnd@arndb.de>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Liam Girdwood <lgirdwood@gmail.com>,
- Madhavan Srinivasan <maddy@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
- linux-i2c@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20260524080533.8749-2-pmenzel@molgen.mpg.de>
- <ahN2m3kCbyTUNXzZ@sirena.org.uk>
-Content-Language: en-US
-From: Paul Menzel <pmenzel@molgen.mpg.de>
-In-Reply-To: <ahN2m3kCbyTUNXzZ@sirena.org.uk>
-Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 
-Dear Mark,
+nx_crypto_ctx_shash_exit calls nx_crypto_ctx_exit with crypto_shash_ctx(...)
+but crypto_shash_ctx gives a nx_crypto_ctx *, not a crypto_tfm *.
 
+Fix the type in nx_crypto_ctx_exit and drop the bogus crypto_tfm_ctx
+call.
 
-Thank you for taking the time to review and respond.
+This fixes the following oops:
 
+  BUG: Unable to handle kernel data access at 0xc0403effffffffc8
+  Faulting instruction address: 0xc000000000396cb4
+  Oops: Kernel access of bad area, sig: 11 [#15]
+  Call Trace:
+   nx_crypto_ctx_shash_exit+0x24/0x60
+   crypto_shash_exit_tfm+0x28/0x40
+   crypto_destroy_tfm+0x98/0x140
+   crypto_exit_ahash_using_shash+0x20/0x40
+   crypto_destroy_tfm+0x98/0x140
+   hash_release+0x1c/0x30
+   alg_sock_destruct+0x38/0x60
+   __sk_destruct+0x48/0x2b0
+   af_alg_release+0x58/0xb0
+   __sock_release+0x68/0x150
+   sock_close+0x20/0x40
+   __fput+0x110/0x3a0
+   sys_close+0x48/0xa0
+   system_call_exception+0x140/0x2d0
+   system_call_common+0xf4/0x258
 
-Am 25.05.26 um 00:07 schrieb Mark Brown:
-> On Sun, May 24, 2026 at 10:05:33AM +0200, Paul Menzel wrote:
-> 
->> Some platforms (e.g. IBM Power System S822LC (8335-GCA POWER8)) do not
->> describe the EEPROM’s VCC supply in firmware-provided device trees.
->> Using `devm_regulator_get()` on such systems falls back to a dummy
->> regulator with a kernel warning:
-> 
->> Switch to `devm_regulator_get_optional()` and treat -ENODEV as “no
->> supply described”. When `vcc_reg` is NULL, skip all
->> regulator_enable/disable calls; the hardware is assumed to be always
->> powered. Linux now logs:
-> 
-> This is not appropriate unless the device can actually operate without
-> power, any driver could be used in a system where the firmware does not
-> describe the regultors and it'd obviously be pointless and error prone
-> to scatter bodges like this on every single call to a regulator API
-> function.
+.. which came from hardlink(1) opportunistically using AF_ALG.
 
-How should the warning on the POWER server be addressed then?
+The same problem exists with nx_crypto_ctx_skcipher_exit getting a context
+it wasn't expecting, but apparently nobody hit that for years.
 
+Cc: Eric Biggers <ebiggers@kernel.org>
+Cc: stable@vger.kernel.org
+Fixes: bfd9efddf990 ("crypto: nx - convert AES-ECB to skcipher API")
+Fixes: 9420e628e7d8 ("crypto: nx - Use API partial block handling")
+Acked-by: Breno Leitao <leitao@debian.org>
+Reviewed-by: Eric Biggers <ebiggers@kernel.org>
+Reported-by: Calvin Buckley <calvin@cmpct.info>
+Tested-by: Calvin Buckley <calvin@cmpct.info>
+Suggested-by: Brad Spengler <brad.spengler@opensrcsec.com>
+Signed-off-by: Sam James <sam@gentoo.org>
+---
+v3: Fix doc tag.
+v2: Add stable cc, fix doc for tfm param.
 
-Kind regards,
+v1: https://lore.kernel.org/all/a3e89c1e8342ffa415b0d29725a0571a4f355d34.1779472902.git.sam@gentoo.org/
+v2: https://lore.kernel.org/all/b8b1b6fe740187c70349cd04a820d57324e0f70c.1779509289.git.sam@gentoo.org/
 
-Paul
+ drivers/crypto/nx/nx.c | 6 ++----
+ drivers/crypto/nx/nx.h | 2 +-
+ 2 files changed, 3 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/crypto/nx/nx.c b/drivers/crypto/nx/nx.c
+index 78135fb13f5c..1b7509e2ce44 100644
+--- a/drivers/crypto/nx/nx.c
++++ b/drivers/crypto/nx/nx.c
+@@ -714,15 +714,13 @@ int nx_crypto_ctx_aes_xcbc_init(struct crypto_shash *tfm)
+ /**
+  * nx_crypto_ctx_exit - destroy a crypto api context
+  *
+- * @tfm: the crypto transform pointer for the context
++ * @nx_ctx: the crypto api context
+  *
+  * As crypto API contexts are destroyed, this exit hook is called to free the
+  * memory associated with it.
+  */
+-void nx_crypto_ctx_exit(struct crypto_tfm *tfm)
++void nx_crypto_ctx_exit(struct nx_crypto_ctx *nx_ctx)
+ {
+-	struct nx_crypto_ctx *nx_ctx = crypto_tfm_ctx(tfm);
+-
+ 	kfree_sensitive(nx_ctx->kmem);
+ 	nx_ctx->csbcpb = NULL;
+ 	nx_ctx->csbcpb_aead = NULL;
+diff --git a/drivers/crypto/nx/nx.h b/drivers/crypto/nx/nx.h
+index 36974f08490a..6dfabfbf8192 100644
+--- a/drivers/crypto/nx/nx.h
++++ b/drivers/crypto/nx/nx.h
+@@ -153,7 +153,7 @@ int nx_crypto_ctx_aes_ctr_init(struct crypto_skcipher *tfm);
+ int nx_crypto_ctx_aes_cbc_init(struct crypto_skcipher *tfm);
+ int nx_crypto_ctx_aes_ecb_init(struct crypto_skcipher *tfm);
+ int nx_crypto_ctx_sha_init(struct crypto_shash *tfm);
+-void nx_crypto_ctx_exit(struct crypto_tfm *tfm);
++void nx_crypto_ctx_exit(struct nx_crypto_ctx *nx_ctx);
+ void nx_crypto_ctx_skcipher_exit(struct crypto_skcipher *tfm);
+ void nx_crypto_ctx_aead_exit(struct crypto_aead *tfm);
+ void nx_crypto_ctx_shash_exit(struct crypto_shash *tfm);
+
+base-commit: 79bd2dded182b1d458b18e62684b7f82ffc682e5
+-- 
+2.54.0
+
 
