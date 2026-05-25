@@ -1,84 +1,82 @@
-Return-Path: <linuxppc-dev+bounces-21478-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21479-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CFC6ECD5BB1
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 May 2026 16:16:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 99A61CD5BB1
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 May 2026 16:17:26 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gPLbz6MPzz2xfB;
-	Tue, 26 May 2026 02:16:31 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779725791;
-	cv=none; b=SDSHfuwXheBTOL+MeCwe5IpCvn1F+03NDDemfKnchnhKuOXE2TVDn7jz58kk/9H+KaHTEZLuUOPH8KsS7W6Dv38xGLRPHW6LZXjwOPcDMFkuImxhTXFuELot8vBosiiPn0DNs1onNMsxXoHjN6kwZlxRA0xFchOd8gSk+7zTGk7a4ZVa0MiIPET3RtdHhmY4EL3yXpvjeHMvBprxRQz5uHBMjofxCasjo2emzF2sCGtOY4BHZm6ix+I+fSRi6o1OLCL+wwF9bWB6LDMzhsMVEXx1sgUwkJ6LyjobnoJneEgQ7SrdPDV6GShViq4o8qqATxrjc+99Kv33QcUSxPNWqw==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1779725791; c=relaxed/relaxed;
-	bh=yryrgrfAa/N6UOBPX8wmxnNENSoVuZV8vp8LcNiCM44=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=oROcx+KFOCIesOat2axjUeHC25odZfIgZaOBebA7iYNm4PVp9bDDY/0ygohHIgoQTIp+RB0c9UjVVRWFGWsT2CVuExL36K598VxmQ5BBtWf4PIdzL07vrngTmlTi980pxNiAEse5gYSDU1eadQOH29t+ENCPoan0v54fuTqij/+I8LWp31hIR8prDs0q+/JS8mgDKuiQX4Umc2lKbmHwkAfrBBXrhGqL01qfjd2nf9nbWPX2iB14QDwpriph7NQs8J2NnMeTe8NI2HOKPoxhZrNs7T+WQYFbdoA2o0DRwo+6EHPGs4RxiwrDCGcESOdDEdqEupOikeYKHfvBVU89VQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=P8s7QwRG; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gPLd10hhwz2xfB;
+	Tue, 26 May 2026 02:17:25 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=fail smtp.remote-ip="2a01:111:f403:c111::5"
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779725845;
+	cv=fail; b=SSdQnFVi4YzU1Lef/IxbW5Tj73oMUfUB0W3di+HHi6HRvvH9t7Z+z6wcxY6nLE7SUcQtS9dpvlYvgxxs4fpeALmCW9DFz1FysKc2jsJNyjUGkSXh8X7PHHJ+XxURkO/M5J5bJe63jHmFQRNdvDH3cIZZutEyLKHAkKjWU9iDwkW42jZR6YKTKlaAxr6l2XHfMrfFGg2KzkazAVb4Cwr/0HUeiTdmNnP+5CUUEfKDlsyotwAgErCV2st5k+e7rlSLOYXniJNh8pLyIUnujNH3XGxNm+7Nly/A0IVsp2wTEOsTda59IISwc360b0vLYEJwzcXpPrUarL1C/C0YCQYZww==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1779725845; c=relaxed/relaxed;
+	bh=LukzbtDsbbLjv3BKzXw2nLQaypYXFySwvhK2vzz99kw=;
+	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
+	 In-Reply-To:Content-Type; b=Zey9hGkP9slr7kPvkhoRE2u6+g1hwIXyoLUYi7Z6XCtIcbMrcNxbmeWulEnH9ocuzEqyEJ3xOI1dl//ANNIOJ22rELn/LfxyFZucgMALkW3Xe0wuRwK+dPp7//Yo7TLR0Xh4cvzSJhYX+cF/5qomP3hCoG3IIQ29Ux7oPttQW3Yw/YN0aPkOWr5CfC7jg2OKJCi4fRMX9Hl4+hmKd/BnQRZLuXSoibvn+4VwNZzttMbjZf+yM+IC7mvU+BfMlZo8Gdtq+OZpIOMNTrms4UmjTA7BOPn31gWmMbKGGymxdRYYg5Cs/Vmbkp4g2te0+oplJ3bYLhXFsQfuB/f3WZH2og==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; dkim=pass (1024-bit key; unprotected) header.d=amd.com header.i=@amd.com header.a=rsa-sha256 header.s=selector1 header.b=FL7rU08S; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c111::5; helo=dm1pr04cu001.outbound.protection.outlook.com; envelope-from=kprateek.nayak@amd.com; receiver=lists.ozlabs.org) smtp.mailfrom=amd.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=P8s7QwRG;
+	dkim=pass (1024-bit key; unprotected) header.d=amd.com header.i=@amd.com header.a=rsa-sha256 header.s=selector1 header.b=FL7rU08S;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=amd.com (client-ip=2a01:111:f403:c111::5; helo=dm1pr04cu001.outbound.protection.outlook.com; envelope-from=kprateek.nayak@amd.com; receiver=lists.ozlabs.org)
+Received: from DM1PR04CU001.outbound.protection.outlook.com (mail-centralusazlp170100005.outbound.protection.outlook.com [IPv6:2a01:111:f403:c111::5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gPLby59jBz2xbN
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 May 2026 02:16:29 +1000 (AEST)
-Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 64PFqiIx2737945;
-	Mon, 25 May 2026 16:16:14 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:message-id:mime-version
-	:subject:to; s=pp1; bh=yryrgrfAa/N6UOBPX8wmxnNENSoVuZV8vp8LcNiCM
-	44=; b=P8s7QwRGqSPUj440gODPsvX2EUSON5Rrg/EhoYsl51UsBAJfeE4gtJnpQ
-	X0pDSlxbGWgWwZo1f2p6qRj5c08gC3vo5G4xmRx47IiKihriFR/vj55nTnpNTyyr
-	Z6ToNnxJQS4Q7qy4K2Lm4DApUcAtqBGJMMZeJhk02medgxkYfBHNojZlCVQur1td
-	5/PcX/j1sFbE36RI4B8iYrfv2maPMqJnbLMZYPbkCb0HsfvPnfQHC66gokNSB5AD
-	+N1WCzQpdqG3wZHqQtiWZv1IOChKwGQdCPvgLJoKqH9tuaYKem3vMoK03edDUyEQ
-	LLBDvOyOqn75LRTERXSShQClv/56A==
-Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4eb4nugeec-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 25 May 2026 16:16:13 +0000 (GMT)
-Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma22.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 64PG96Gc010494;
-	Mon, 25 May 2026 16:16:12 GMT
-Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
-	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4ebpxvwvs6-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 25 May 2026 16:16:12 +0000 (GMT)
-Received: from smtpav04.fra02v.mail.ibm.com (smtpav04.fra02v.mail.ibm.com [10.20.54.103])
-	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 64PGG8M412452122
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 25 May 2026 16:16:08 GMT
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 99C202004B;
-	Mon, 25 May 2026 16:16:08 +0000 (GMT)
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id B378720043;
-	Mon, 25 May 2026 16:16:05 +0000 (GMT)
-Received: from localhost.localdomain (unknown [9.39.18.105])
-	by smtpav04.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Mon, 25 May 2026 16:16:05 +0000 (GMT)
-From: Amit Machhiwal <amachhiw@linux.ibm.com>
-To: Madhavan Srinivasan <maddy@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Cc: Amit Machhiwal <amachhiw@linux.ibm.com>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        Nicholas Piggin <npiggin@gmail.com>,
-        "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-        Antonio Alvarez Feijoo <antonio.feijoo@suse.com>,
-        Vaibhav Jain <vaibhav@linux.ibm.com>,
-        Harsh Prateek Bora <harshpb@linux.ibm.com>,
-        Anushree Mathur <anushree.mathur@linux.ibm.com>,
-        linux-kernel@vger.kernel.org
-Subject: [PATCH] powerpc/boot: Allow text relocations for pseries wrapper with binutils 2.46+
-Date: Mon, 25 May 2026 21:46:01 +0530
-Message-ID: <20260525161601.32097-1-amachhiw@linux.ibm.com>
-X-Mailer: git-send-email 2.50.1
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gPLcz2dGSz2xbN
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 May 2026 02:17:22 +1000 (AEST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=KQ2S5Yj/xy9ObMMzGo/d1aaEV90rq+y/Dq6EfI0UQ2PVdEJuPgNUJj3TiPDnmTjJk12AleZc0uSoBAMUJfs+aOOTSQY/rO5LZ5MrgTxbF1XIEuie2tk8nsLjSzjf984S+NEGmyXhEsJxpSN9r1BWaDFS7tWQGrizrLDAudUuVdqrWq4aNzWzn9yuU5OMHTd8K1u0el21h5lY1DMGZhdLMF5PvlVcjJohr24LjTTm5rmrss1U///KnhqnKSvSKZy3QCpOVru5wHj20aTltIqm08HVLmHymeGdhj8rElkvmdVDSRqMGAYmk/fgZHWWOeiyNar+z9F9jqgMFBUmFexaSw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=LukzbtDsbbLjv3BKzXw2nLQaypYXFySwvhK2vzz99kw=;
+ b=Hs9VJmai4xN1I9Y5H/EEPcNmKvwrC3nIzPUcWkQpkeFr3lXT6JbiTwxFQ/c+vC14Tzz99umxBpAf61ncqrH/vHw3gRQG8jralOUpGVuwHRsf22HPUj5cxdLddYUtJY/hM6hXfiUn3X5RfcLh5rrk9NKrd/bmh4/zvDASvtH5ebNVwBoBqKwtLKU564mQ/lZNAk8/8u+7q5LViYqU/ck542de/RNYRAfK/srZGfReomVqj7OU9pKwxdGMzvxyFUrzJhBLvl9VGCcxCsrH2gLzvaEn/2fNruoQILA6lH4PuiEtzlY9KdohHNwqgkwkvAoVhmInuuVbOVOcjk0Dx1OOkw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
+ 165.204.84.17) smtp.rcpttodomain=intel.com smtp.mailfrom=amd.com; dmarc=pass
+ (p=quarantine sp=quarantine pct=100) action=none header.from=amd.com;
+ dkim=none (message not signed); arc=none (0)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=LukzbtDsbbLjv3BKzXw2nLQaypYXFySwvhK2vzz99kw=;
+ b=FL7rU08SMDUnX2jp7yT6kqu5veODXVbIxDSxVNNXfvGoZwlc+GPKt3D6RS1J6uHsz33M+AUFpY0tQEJQr6ohsRbhJPx2c3uCtlD3FX1TbcT90r8woN5Yfdy+YoE3ck9fQStEoHIRIErXYZrfZg8/1QpjHKQEks74RSOsT5oNKLE=
+Received: from MN2PR15CA0048.namprd15.prod.outlook.com (2603:10b6:208:237::17)
+ by PH0PR12MB8031.namprd12.prod.outlook.com (2603:10b6:510:28e::7) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.48.19; Mon, 25 May
+ 2026 16:16:56 +0000
+Received: from MN1PEPF0000ECD5.namprd02.prod.outlook.com
+ (2603:10b6:208:237:cafe::f) by MN2PR15CA0048.outlook.office365.com
+ (2603:10b6:208:237::17) with Microsoft SMTP Server (version=TLS1_3,
+ cipher=TLS_AES_256_GCM_SHA384) id 15.21.48.20 via Frontend Transport; Mon, 25
+ May 2026 16:16:54 +0000
+X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 165.204.84.17)
+ smtp.mailfrom=amd.com; dkim=none (message not signed)
+ header.d=none;dmarc=pass action=none header.from=amd.com;
+Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
+ 165.204.84.17 as permitted sender) receiver=protection.outlook.com;
+ client-ip=165.204.84.17; helo=satlexmb07.amd.com; pr=C
+Received: from satlexmb07.amd.com (165.204.84.17) by
+ MN1PEPF0000ECD5.mail.protection.outlook.com (10.167.242.133) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.21.71.7 via Frontend Transport; Mon, 25 May 2026 16:16:54 +0000
+Received: from Satlexmb09.amd.com (10.181.42.218) by satlexmb07.amd.com
+ (10.181.42.216) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.41; Mon, 25 May
+ 2026 11:16:54 -0500
+Received: from satlexmb08.amd.com (10.181.42.217) by satlexmb09.amd.com
+ (10.181.42.218) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.41; Mon, 25 May
+ 2026 09:16:53 -0700
+Received: from [172.31.184.125] (10.180.168.240) by satlexmb08.amd.com
+ (10.181.42.217) with Microsoft SMTP Server id 15.2.2562.41 via Frontend
+ Transport; Mon, 25 May 2026 11:16:50 -0500
+Message-ID: <75179ee2-ec20-4757-8631-79b1f304c366@amd.com>
+Date: Mon, 25 May 2026 21:46:43 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -92,74 +90,104 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [BUG] sched/cache: "Make LLC id continuous" causes NULL cpumask
+ dereference in build_sched_domains on POWER9
+To: "Chen, Yu C" <yu.c.chen@intel.com>, Venkat Rao Bagalkote
+	<venkat88@linux.ibm.com>
+CC: Madhavan Srinivasan <maddy@linux.ibm.com>, Shrikanth Hegde
+	<sshegde@linux.ibm.com>, Ritesh Harjani <riteshh@linux.ibm.com>, "Christophe
+ Leroy (CS GROUP)" <chleroy@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
+	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, <linux-sched@vger.kernel.org>,
+	<tim.c.chen@linux.intel.com>, Peter Zijlstra <peterz@infradead.org>
+References: <51154de7-3700-4cb4-82f2-1b3a8fa427f7@linux.ibm.com>
+ <bca40921-d351-4439-ae6a-9e5294f23e2e@intel.com>
+Content-Language: en-US
+From: K Prateek Nayak <kprateek.nayak@amd.com>
+In-Reply-To: <bca40921-d351-4439-ae6a-9e5294f23e2e@intel.com>
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTI1MDE2MyBTYWx0ZWRfXzwc2CgDA2Sni
- nrbvUCDhefnJjIlk/HVJg3F8R5TLGzBsQKhISsvJ48wV9B+TEz/r9bv4xgGSpfc7Jo3GmMKDClk
- Bt4lR6KphOX0TKR8rdXxk4MSgOqW4GSsCULEZVz+oAn+0OHFn3IBkanCltjYo2nfG99bLiCNaEb
- XFfwknRMwYOr2/RwNX+QmC7TAGZ5izqnnP/5ZyerGX9+8vaLlPUMWj/ly6+rAHLyKHCZflZc5Kq
- UdiCtXTTtg7RVTuqioI95m+RyMxSayuc3KtFSMEh3cLpWmpWyP4Rc7Xj4YdWpXKw82vLd1KiwBu
- nfnhr4IqpzReyiv2O1jvslB3MPQ4SbjJLCVW1gE73CgU2ga9KaNF6f1XNDqJIRtYTGvSxFcw9PO
- Yagdc0GAZpJJJq1TckdSK3RFegXflkMX0PacfC8JuhKqQZgQc5UHUkORGf59GLUJs0uMdQu6xSZ
- LM6fGh3v0rRdYBxguUw==
-X-Authority-Analysis: v=2.4 cv=UtJT8ewB c=1 sm=1 tr=0 ts=6a1475ce cx=c_pps
- a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
- a=NGcC8JguVDcA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=iQ6ETzBq9ecOQQE5vZCe:22 a=VnNF1IyMAAAA:8 a=OLIXmKx2RgFzAWbePuEA:9
-X-Proofpoint-ORIG-GUID: qT0MOeCROwf--tpLM31KFr8IiqUlYJ94
-X-Proofpoint-GUID: BJMa9tVmhteqotsquINEIM8gTv_axPpj
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-05-25_04,2026-05-18_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- spamscore=0 suspectscore=0 adultscore=0 clxscore=1011 bulkscore=0
- phishscore=0 impostorscore=0 malwarescore=0 lowpriorityscore=0
- priorityscore=1501 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2605130000
- definitions=main-2605250163
+X-EOPAttributedMessage: 0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: MN1PEPF0000ECD5:EE_|PH0PR12MB8031:EE_
+X-MS-Office365-Filtering-Correlation-Id: ce61fa15-b974-40b3-9d8e-08deba79099e
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|36860700016|376014|1800799024|7416014|82310400026|22082099003|18002099003|56012099003|4143699003|11063799006;
+X-Microsoft-Antispam-Message-Info:
+	MnBnkggU+Ad0Z/FgYzsKtNk7SD/n8FBDHLCME61OqOana/vIS7poo3TDAXJxDSft72E6lzfB5/vNWvhzmDUeW0W6XhVJ08aCDWCErIX22+g8pXC52kNITcAP0mWG2XnfMeIgUf/EqJxqyiqffcfv/A02nGWA6zrkE8Np/xz63ITpikVf3IdXvEz7C9cMOV71KwIjco7OqQoUpU7hz4AH+4uOax0EcyDz0r74JrFQNIBjriYbbRqSZPkiZVwXwTWyN4LxOpJTw703JrFIIm/c/5C85450na+iEQ8+apRIg3NzHSZ1IlPUEZgWqS0yDIsx+yr1jUftefzcM6qUKQOHzB+auNSTynNtaLpZuhdhDrx49VrlP4IgLwwCwMvlBlzLLMnmpAo1X8lpib5/IyZRthySWCzyv3flBWx9OFjTbKsYCktFDxLvWSf0nLO4t6KCElvu6/fWVipfbbhuOHPVTaVaTF0rseuM5jkrLnbwystHtNUe9+V+prIAN0TQIzGdGIrzHMU0GK+hxsicaLMD3NrB1j8qMsSllTianogXUbtTyHNdBu8TGv/3uXWWHpuonaIA+UVtmxFAEDhytjleyyirIu308tj0Db/9vizGfuBB0ABJjBfwYrrAYOs6sEVjm8acu9BtN4nhwTI4cpAiuYq2i3fbQB3OG4UqFxRT8F0x+6HjQyDzxQrLXW6da2W4t5cM4Zo6JjGOozcykJVSf8Jh6FdtbZ0av5ht2IEGSoA=
+X-Forefront-Antispam-Report:
+	CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:satlexmb07.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(36860700016)(376014)(1800799024)(7416014)(82310400026)(22082099003)(18002099003)(56012099003)(4143699003)(11063799006);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	LLFp0hnZxkIpw3KpXXGQF/P+eqbZClfJGsYGMcs7KQEb01rD+q2ueJqpxTj7WNRlxmRC+qj3nqlprTr50gW7OXXyXpOqyAh/McNzVqxLrx33kKyXD4+fwoA9YlOblolPAj+qdL8/VbPwzu8RnSXHxb1N5O5opK4F0x5yYDARiKyNht2GMn82LmL3p8KwF5MJwxl5hJoOgpd+Dnr1uwvegiU1tzA1my8fx7FeFE1iwOFWhHfMTj4Sr0iilIe2bnsXsxwDMYOcvgUQS2cWA1sdvlVey/IsKaFCj/vOymJNTnz9NBhNqBEKBwaRJK3HvoYSe6m1oEj1QROgLdxwJ530ZHJdjJ8lOa9GvxpsuR3H9eDDCJHZdXgQk9L102c7s7xHemGUep3JvVttPqHY0LhJ/TvWSvX2/P9ycjPewFVBa/sowqog/zTZ7uZznZKS5yXN
+X-OriginatorOrg: amd.com
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 25 May 2026 16:16:54.7963
+ (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: ce61fa15-b974-40b3-9d8e-08deba79099e
+X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[satlexmb07.amd.com]
+X-MS-Exchange-CrossTenant-AuthSource:
+	MN1PEPF0000ECD5.namprd02.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Anonymous
+X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH0PR12MB8031
 
-Binutils 2.46 changed the default linker behavior from '-z notext' to
-'-z text', which treats dynamic relocations in read-only segments as
-errors rather than warnings. This causes the pseries boot wrapper build
-to fail with:
+Hello Chenyu, Venkat,
 
-  /usr/bin/ld.bfd: arch/powerpc/boot/wrapper.a(crt0.o): warning:
-    relocation against `_platform_stack_top' in read-only section `.text'
-  /usr/bin/ld.bfd: error: read-only segment has dynamic relocations
+On 5/25/2026 9:05 PM, Chen, Yu C wrote:
+> diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+> index 3467f86fd78f..cf6c2e4190ab 100644
+> --- a/arch/powerpc/kernel/smp.c
+> +++ b/arch/powerpc/kernel/smp.c
+> @@ -1042,11 +1042,6 @@ static const struct cpumask *tl_smallcore_smt_mask(struct sched_domain_topology_
+>  }
+>  #endif
+> 
+> -struct cpumask *cpu_coregroup_mask(int cpu)
+> -{
+> -       return per_cpu(cpu_coregroup_map, cpu);
+> -}
+> -
+>  static bool has_coregroup_support(void)
+>  {
+>         /* Coregroup identification not available on shared systems */
+> @@ -1056,6 +1051,14 @@ static bool has_coregroup_support(void)
+>         return coregroup_enabled;
+>  }
+> 
+> +struct cpumask *cpu_coregroup_mask(int cpu)
+> +{
+> +       if (!has_coregroup_support())
+> +               return cpu_l2_cache_mask(cpu);
+> +> +       return per_cpu(cpu_coregroup_map, cpu);
 
-The pseries wrapper uses '-pie' to create position-independent code.
-However, crt0.S contains a pointer to '_platform_stack_top' in the .text
-section, which requires a dynamic relocation at runtime. This creates
-DT_TEXTREL (text relocations), which were allowed by default in binutils
-2.45 and earlier (via implicit '-z notext') but are now rejected by
-binutils 2.46+.
+Interestingly, on powerpc, the MC domain doesn't have SD_SHARE_LLC flag
+set but I believe there is still some benefit of keeping the tasks on
+the same hemisphere?
 
-Add '-z notext' linker flag to explicitly allow text relocations for
-the pseries platform, similar to what is already done for the epapr
-platform. This restores the previous behavior and allows the boot
-wrapper to build successfully with binutils 2.46+.
+If we are actually aiming for LLC, I think cpu_l2_cache_mask() is the
+right cpumask for all cases since tl_cache_mask() also returns that
+and the l2_cache_mask is set in all cases covered by update_mask_by_l2()
+in the same file.
 
-Signed-off-by: Amit Machhiwal <amachhiw@linux.ibm.com>
----
- arch/powerpc/boot/wrapper | 1 +
- 1 file changed, 1 insertion(+)
+If consolidation on hemisphere is beneficial, then the above diff
+looks correct.
 
-diff --git a/arch/powerpc/boot/wrapper b/arch/powerpc/boot/wrapper
-index 1efd1206fcab..25321ce262e8 100755
---- a/arch/powerpc/boot/wrapper
-+++ b/arch/powerpc/boot/wrapper
-@@ -262,6 +262,7 @@ pseries)
-     if [ "$format" != "elf32ppc" ]; then
- 	link_address=
- 	pie=-pie
-+	notext='-z notext'
-     fi
-     make_space=n
-     ;;
+Note: For has_coregroup_support(), with the above fix, the scheduler
+side llc_id will now be based on MC domain's span which seems wrong
+since it doesn't have SD_SHARE_LLC flag and might lead to other
+behavioral changes now.
 
-base-commit: e7ae89a0c97ce2b68b0983cd01eda67cf373517d
+> +}
+> +
+>  static int __init init_big_cores(void)
+>  {
+>         int cpu;
+
 -- 
-2.50.1 (Apple Git-155)
+Thanks and Regards,
+Prateek
 
 
