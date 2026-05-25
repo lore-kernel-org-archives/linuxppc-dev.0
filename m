@@ -1,82 +1,80 @@
-Return-Path: <linuxppc-dev+bounces-21479-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21480-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 99A61CD5BB1
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 May 2026 16:17:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D16B1CD5BD5
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 May 2026 16:19:30 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gPLd10hhwz2xfB;
-	Tue, 26 May 2026 02:17:25 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=fail smtp.remote-ip="2a01:111:f403:c111::5"
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779725845;
-	cv=fail; b=SSdQnFVi4YzU1Lef/IxbW5Tj73oMUfUB0W3di+HHi6HRvvH9t7Z+z6wcxY6nLE7SUcQtS9dpvlYvgxxs4fpeALmCW9DFz1FysKc2jsJNyjUGkSXh8X7PHHJ+XxURkO/M5J5bJe63jHmFQRNdvDH3cIZZutEyLKHAkKjWU9iDwkW42jZR6YKTKlaAxr6l2XHfMrfFGg2KzkazAVb4Cwr/0HUeiTdmNnP+5CUUEfKDlsyotwAgErCV2st5k+e7rlSLOYXniJNh8pLyIUnujNH3XGxNm+7Nly/A0IVsp2wTEOsTda59IISwc360b0vLYEJwzcXpPrUarL1C/C0YCQYZww==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1779725845; c=relaxed/relaxed;
-	bh=LukzbtDsbbLjv3BKzXw2nLQaypYXFySwvhK2vzz99kw=;
-	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
-	 In-Reply-To:Content-Type; b=Zey9hGkP9slr7kPvkhoRE2u6+g1hwIXyoLUYi7Z6XCtIcbMrcNxbmeWulEnH9ocuzEqyEJ3xOI1dl//ANNIOJ22rELn/LfxyFZucgMALkW3Xe0wuRwK+dPp7//Yo7TLR0Xh4cvzSJhYX+cF/5qomP3hCoG3IIQ29Ux7oPttQW3Yw/YN0aPkOWr5CfC7jg2OKJCi4fRMX9Hl4+hmKd/BnQRZLuXSoibvn+4VwNZzttMbjZf+yM+IC7mvU+BfMlZo8Gdtq+OZpIOMNTrms4UmjTA7BOPn31gWmMbKGGymxdRYYg5Cs/Vmbkp4g2te0+oplJ3bYLhXFsQfuB/f3WZH2og==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; dkim=pass (1024-bit key; unprotected) header.d=amd.com header.i=@amd.com header.a=rsa-sha256 header.s=selector1 header.b=FL7rU08S; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c111::5; helo=dm1pr04cu001.outbound.protection.outlook.com; envelope-from=kprateek.nayak@amd.com; receiver=lists.ozlabs.org) smtp.mailfrom=amd.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gPLgN5T6dz2xfB;
+	Tue, 26 May 2026 02:19:28 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::32b"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779725968;
+	cv=none; b=cUn87ZY6s1/zGnacx5NqlQn8RHqzPtK3zFnGsB7gLkn6lalQ9XKqeoRfOPkDQ4J/0GEDH1woIqDBG+sn0Q2Axgu6wauqJ0SMfABAvaArgbl2QUpUiD7uqDd80WIgDrmLGTVr8KRMqpZ0iJ6id/DRFGr4MxKmT4gec5ezbqHbL+tdwQ/SDw10wlHORcRTJw423ZUBQq0fQtzcNBhT266EkCuYqUdA9dbQWwSgyzCODH5ObAzkYi+duujP8bCbpMLpezkFlLPH4St7ykKdd0u6pjotw43wztSKvaSGMbK69tjtI2kjMYxD6FSsWB/tSKosr1EEYRCAksi0FxHM6NDsXQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1779725968; c=relaxed/relaxed;
+	bh=6YA+/JJXQ9abERc/NViF0XyaL5qdJ2pUb4chRkVwshY=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=NN9dZkoNzyA0W1oX+Rh+R8hcT/OVDCL259ovIav6a/ewjvbK/hR8LMPHujvlBD5QiNx0fOJv8BLOePf3t548HEYwwWDndU80/WuZ59s+he92VQOKLAE4MTL76lngxxL53UNAht3UWCuaKrGIipa1q5ApB/o3Q8ra6N38Z56Tra8m0clFcWX1tGwyxWb8sxidMnTPXX9QZeKzJigLVj/W1uhFS4y3DRmLpdIeVor0J4X3eEqLVXw72g9Uajv+e+5uWkwKAizvsXPNyNuYC4kRejADES8bN05GO9GBsKvJWNyyX11uvSAMp2FFMcqfPUGeKIqeSkwcPP11WLoELn33Vg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com; dkim=pass (2048-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=google header.b=KaTpMUr/; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::32b; helo=mail-wm1-x32b.google.com; envelope-from=petr.pavlu@suse.com; receiver=lists.ozlabs.org) smtp.mailfrom=suse.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=amd.com header.i=@amd.com header.a=rsa-sha256 header.s=selector1 header.b=FL7rU08S;
+	dkim=pass (2048-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=google header.b=KaTpMUr/;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=amd.com (client-ip=2a01:111:f403:c111::5; helo=dm1pr04cu001.outbound.protection.outlook.com; envelope-from=kprateek.nayak@amd.com; receiver=lists.ozlabs.org)
-Received: from DM1PR04CU001.outbound.protection.outlook.com (mail-centralusazlp170100005.outbound.protection.outlook.com [IPv6:2a01:111:f403:c111::5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.com (client-ip=2a00:1450:4864:20::32b; helo=mail-wm1-x32b.google.com; envelope-from=petr.pavlu@suse.com; receiver=lists.ozlabs.org)
+Received: from mail-wm1-x32b.google.com (mail-wm1-x32b.google.com [IPv6:2a00:1450:4864:20::32b])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gPLcz2dGSz2xbN
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 May 2026 02:17:22 +1000 (AEST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=KQ2S5Yj/xy9ObMMzGo/d1aaEV90rq+y/Dq6EfI0UQ2PVdEJuPgNUJj3TiPDnmTjJk12AleZc0uSoBAMUJfs+aOOTSQY/rO5LZ5MrgTxbF1XIEuie2tk8nsLjSzjf984S+NEGmyXhEsJxpSN9r1BWaDFS7tWQGrizrLDAudUuVdqrWq4aNzWzn9yuU5OMHTd8K1u0el21h5lY1DMGZhdLMF5PvlVcjJohr24LjTTm5rmrss1U///KnhqnKSvSKZy3QCpOVru5wHj20aTltIqm08HVLmHymeGdhj8rElkvmdVDSRqMGAYmk/fgZHWWOeiyNar+z9F9jqgMFBUmFexaSw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=LukzbtDsbbLjv3BKzXw2nLQaypYXFySwvhK2vzz99kw=;
- b=Hs9VJmai4xN1I9Y5H/EEPcNmKvwrC3nIzPUcWkQpkeFr3lXT6JbiTwxFQ/c+vC14Tzz99umxBpAf61ncqrH/vHw3gRQG8jralOUpGVuwHRsf22HPUj5cxdLddYUtJY/hM6hXfiUn3X5RfcLh5rrk9NKrd/bmh4/zvDASvtH5ebNVwBoBqKwtLKU564mQ/lZNAk8/8u+7q5LViYqU/ck542de/RNYRAfK/srZGfReomVqj7OU9pKwxdGMzvxyFUrzJhBLvl9VGCcxCsrH2gLzvaEn/2fNruoQILA6lH4PuiEtzlY9KdohHNwqgkwkvAoVhmInuuVbOVOcjk0Dx1OOkw==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
- 165.204.84.17) smtp.rcpttodomain=intel.com smtp.mailfrom=amd.com; dmarc=pass
- (p=quarantine sp=quarantine pct=100) action=none header.from=amd.com;
- dkim=none (message not signed); arc=none (0)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=LukzbtDsbbLjv3BKzXw2nLQaypYXFySwvhK2vzz99kw=;
- b=FL7rU08SMDUnX2jp7yT6kqu5veODXVbIxDSxVNNXfvGoZwlc+GPKt3D6RS1J6uHsz33M+AUFpY0tQEJQr6ohsRbhJPx2c3uCtlD3FX1TbcT90r8woN5Yfdy+YoE3ck9fQStEoHIRIErXYZrfZg8/1QpjHKQEks74RSOsT5oNKLE=
-Received: from MN2PR15CA0048.namprd15.prod.outlook.com (2603:10b6:208:237::17)
- by PH0PR12MB8031.namprd12.prod.outlook.com (2603:10b6:510:28e::7) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.48.19; Mon, 25 May
- 2026 16:16:56 +0000
-Received: from MN1PEPF0000ECD5.namprd02.prod.outlook.com
- (2603:10b6:208:237:cafe::f) by MN2PR15CA0048.outlook.office365.com
- (2603:10b6:208:237::17) with Microsoft SMTP Server (version=TLS1_3,
- cipher=TLS_AES_256_GCM_SHA384) id 15.21.48.20 via Frontend Transport; Mon, 25
- May 2026 16:16:54 +0000
-X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 165.204.84.17)
- smtp.mailfrom=amd.com; dkim=none (message not signed)
- header.d=none;dmarc=pass action=none header.from=amd.com;
-Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
- 165.204.84.17 as permitted sender) receiver=protection.outlook.com;
- client-ip=165.204.84.17; helo=satlexmb07.amd.com; pr=C
-Received: from satlexmb07.amd.com (165.204.84.17) by
- MN1PEPF0000ECD5.mail.protection.outlook.com (10.167.242.133) with Microsoft
- SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.21.71.7 via Frontend Transport; Mon, 25 May 2026 16:16:54 +0000
-Received: from Satlexmb09.amd.com (10.181.42.218) by satlexmb07.amd.com
- (10.181.42.216) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.41; Mon, 25 May
- 2026 11:16:54 -0500
-Received: from satlexmb08.amd.com (10.181.42.217) by satlexmb09.amd.com
- (10.181.42.218) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.41; Mon, 25 May
- 2026 09:16:53 -0700
-Received: from [172.31.184.125] (10.180.168.240) by satlexmb08.amd.com
- (10.181.42.217) with Microsoft SMTP Server id 15.2.2562.41 via Frontend
- Transport; Mon, 25 May 2026 11:16:50 -0500
-Message-ID: <75179ee2-ec20-4757-8631-79b1f304c366@amd.com>
-Date: Mon, 25 May 2026 21:46:43 +0530
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gPLgM2nQvz2xbN
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 May 2026 02:19:26 +1000 (AEST)
+Received: by mail-wm1-x32b.google.com with SMTP id 5b1f17b1804b1-48fde648a71so63301375e9.0
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 May 2026 09:19:26 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=suse.com; s=google; t=1779725963; x=1780330763; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=6YA+/JJXQ9abERc/NViF0XyaL5qdJ2pUb4chRkVwshY=;
+        b=KaTpMUr/60gvSOAczosrrHpOxt+cbbcwAwhb9immXjYMuP1g+Ec3fYYdmPklSfP6in
+         ExRI7SV5d6y/j0C0W4y2IMugEVs1fEs9XpNEfxt7r7ZtflUJRdyiPTyAYBkfL7R4cABS
+         9aLrbVFhhBsVB3MN/JEb2Z8+0qv32UkentG2L5pQpcB/oYIT48U80DYnmRpSwNkAzR9H
+         o6IFYhYZugUkh0MYp6SncdVeTohu8Cwz/wqsZTGjD2+sTI0yyTFX1YggzbT7U9T80Eml
+         1An+mMB9aBNPX1yO6tUmwL+JHGZQZ5oda29fCfCcmIxDrSLvWfmE4CfEFMRe7adx70gr
+         DeyA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1779725963; x=1780330763;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=6YA+/JJXQ9abERc/NViF0XyaL5qdJ2pUb4chRkVwshY=;
+        b=m4IMhZu80k/YtoLM3hJM7uj76pVLeOgQnCt4HY58tuaZmL8pYh3ECl/7+Xz9xEHBfY
+         /Z8Gu2nG/gXGUhXZ5wQ/NvCokDJWigYfcVujt0aVxSUwe87IajZ2dhNo1SyEJnHJ2YKK
+         +9tzKWoeHfrGSRGhbmuAEDEhnzmGPoRCbzQek+bj5w0Rl+39nCoo76GDjUgUhP/2TlLA
+         ODxDdy3eAIVWCStCscML/ElNZvM1EAQHQQftOOj+J2BPZ0hZ3PkXvaU5hL1pQcnTRcP8
+         Kgsn10otXTkl44OnLnBclQ8DPNZPfZdAV/CdoBzbSOwnQfbpyRoCmxKe1/TOiP4adN7x
+         VXJg==
+X-Forwarded-Encrypted: i=1; AFNElJ/pNuQW4LxI635wxcrVAHP5+zlespd9rIMup1188+BbbC5+06hdGA/Zbx7ZLzIOpNnfIpUg5ifarsOmd8o=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YzoWElnE/t9927zr0w3WEalauM2hf7Vo2SoUfq6j1Ksk0SAhA5y
+	Vq8LvHisW5J+SC+Sy7sZzN4ifl7FKoIy9sF0A7eYZzbB0qNWg+7fyScOM/ZzM3o611g=
+X-Gm-Gg: Acq92OFK3K+YC8kTe0GgsKZq7fOOuY5tNeBb33nVoRFmNhJxEBPO74E4JqkNyOBNoiW
+	hYaLz74vCJixAMCByybtfJRgYKOMCYfa6w+CoK6aca72DSEqW7WQw7YHRAiU6GKfqmIBMbea4dH
+	kN8eM1JvmJnw7slo+w7JFs/C69TT3X7d/2XC8sCtf1Bi0+EQlLe2qi9LXxvbqvKEwwdJVK5l9Tx
+	Msr2Js9x+3ZFFIvxJojEYV7hbeZUZULbrFvg99Y5QWxdsoJ45ElcCSggl9rQgLfLWnZVOr2WvRv
+	Yj5AuuE9sLiokAHbos2Z7O9rWxv9kxEM1b8q3Zg12kXnNEkrzdo9RmcUklM7S39mZ+16JP94KsS
+	r46MQ9Q9KddgoT6hPiPrPuA8ZBjZavNxV69gUu7QAz9HdqmmgTceZ9Pu5mgAETn0eFmZxbPDavj
+	J8TtX8BVacszhoGWG6cp/4fWJPDmUzAd9OUmBcHe2R++l/O/cgfWJpMVtIW2wDwzB7ZHfTgJZ2y
+	vs9lVbx6WnAKudBre3G8XtyOB/f8he3i7wkicJZHE5tB+IHkF30zw4b0CWFV2pr59nvYQ==
+X-Received: by 2002:a05:600c:3b07:b0:490:f7c:b19 with SMTP id 5b1f17b1804b1-490420f67f5mr197977845e9.0.1779725963153;
+        Mon, 25 May 2026 09:19:23 -0700 (PDT)
+Received: from ?IPV6:2a00:1028:838d:271e:8e3b:4aff:fe4c:a100? (dynamic-2a00-1028-838d-271e-8e3b-4aff-fe4c-a100.ipv6.o2.cz. [2a00:1028:838d:271e:8e3b:4aff:fe4c:a100])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-49059cc9a91sm48939425e9.1.2026.05.25.09.19.19
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 25 May 2026 09:19:22 -0700 (PDT)
+Message-ID: <a4c7ccee-6189-4c74-bad8-57d1438c7d8d@suse.com>
+Date: Mon, 25 May 2026 18:19:19 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -91,103 +89,103 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [BUG] sched/cache: "Make LLC id continuous" causes NULL cpumask
- dereference in build_sched_domains on POWER9
-To: "Chen, Yu C" <yu.c.chen@intel.com>, Venkat Rao Bagalkote
-	<venkat88@linux.ibm.com>
-CC: Madhavan Srinivasan <maddy@linux.ibm.com>, Shrikanth Hegde
-	<sshegde@linux.ibm.com>, Ritesh Harjani <riteshh@linux.ibm.com>, "Christophe
- Leroy (CS GROUP)" <chleroy@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
-	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, <linux-sched@vger.kernel.org>,
-	<tim.c.chen@linux.intel.com>, Peter Zijlstra <peterz@infradead.org>
-References: <51154de7-3700-4cb4-82f2-1b3a8fa427f7@linux.ibm.com>
- <bca40921-d351-4439-ae6a-9e5294f23e2e@intel.com>
+Subject: Re: [PATCH 06/11] moduleparam: Add seq_buf-based .get callback
+ alongside .get_str
+To: Kees Cook <kees@kernel.org>
+Cc: Luis Chamberlain <mcgrof@kernel.org>, Pengpeng Hou
+ <pengpeng@iscas.ac.cn>, Richard Weinberger <richard@nod.at>,
+ Anton Ivanov <anton.ivanov@cambridgegreys.com>,
+ Johannes Berg <johannes@sipsolutions.net>,
+ "Rafael J. Wysocki" <rafael@kernel.org>, Len Brown <lenb@kernel.org>,
+ Corey Minyard <corey@minyard.net>, Gabriel Somlo <somlo@cmu.edu>,
+ "Michael S. Tsirkin" <mst@redhat.com>,
+ Jani Nikula <jani.nikula@linux.intel.com>,
+ Joonas Lahtinen <joonas.lahtinen@linux.intel.com>,
+ Rodrigo Vivi <rodrigo.vivi@intel.com>, Tvrtko Ursulin
+ <tursulin@ursulin.net>, David Airlie <airlied@gmail.com>,
+ Simona Vetter <simona@ffwll.ch>, Bart Van Assche <bvanassche@acm.org>,
+ Jason Gunthorpe <jgg@ziepe.ca>, Leon Romanovsky <leon@kernel.org>,
+ Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
+ Hans de Goede <hansg@kernel.org>, Mauro Carvalho Chehab
+ <mchehab@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>,
+ Hannes Reinecke <hare@suse.de>,
+ "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
+ "Martin K. Petersen" <martin.petersen@oracle.com>,
+ Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>,
+ Lukasz Luba <lukasz.luba@arm.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Jiri Slaby <jirislaby@kernel.org>, Alan Stern <stern@rowland.harvard.edu>,
+ Jason Wang <jasowang@redhat.com>, Xuan Zhuo <xuanzhuo@linux.alibaba.com>,
+ =?UTF-8?Q?Eugenio_P=C3=A9rez?= <eperezma@redhat.com>,
+ Jason Baron <jbaron@akamai.com>, Jim Cromie <jim.cromie@gmail.com>,
+ Tiwei Bie <tiwei.btw@antgroup.com>, Benjamin Berg <benjamin.berg@intel.com>,
+ =?UTF-8?Q?Ilpo_J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>,
+ "David E. Box" <david.e.box@linux.intel.com>,
+ "Maciej W. Rozycki" <macro@orcam.me.uk>,
+ Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+ Peter Zijlstra <peterz@infradead.org>, Heiko Carstens <hca@linux.ibm.com>,
+ Vasily Gorbik <gor@linux.ibm.com>, Sean Christopherson <seanjc@google.com>,
+ Paolo Bonzini <pbonzini@redhat.com>, Thomas Gleixner <tglx@kernel.org>,
+ Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
+ Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
+ "H. Peter Anvin" <hpa@zytor.com>, Vinod Koul <vkoul@kernel.org>,
+ Frank Li <Frank.Li@kernel.org>, Daniel Gomez <da.gomez@kernel.org>,
+ Sami Tolvanen <samitolvanen@google.com>, Aaron Tomlin <atomlin@atomlin.com>,
+ Alexander Potapenko <glider@google.com>, Marco Elver <elver@google.com>,
+ Dmitry Vyukov <dvyukov@google.com>, Andrew Morton
+ <akpm@linux-foundation.org>, John Johansen <john.johansen@canonical.com>,
+ Paul Moore <paul@paul-moore.com>, James Morris <jmorris@namei.org>,
+ "Serge E. Hallyn" <serge@hallyn.com>,
+ Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+ Georgia Garcia <georgia.garcia@canonical.com>, kvm@vger.kernel.org,
+ dmaengine@vger.kernel.org, linux-modules@vger.kernel.org,
+ kasan-dev@googlegroups.com, linux-mm@kvack.org, apparmor@lists.ubuntu.com,
+ linux-security-module@vger.kernel.org, linux-um@lists.infradead.org,
+ linux-acpi@vger.kernel.org, openipmi-developer@lists.sourceforge.net,
+ qemu-devel@nongnu.org, intel-gfx@lists.freedesktop.org,
+ dri-devel@lists.freedesktop.org, linux-rdma@vger.kernel.org,
+ linux-media@vger.kernel.org, linux-pci@vger.kernel.org,
+ linux-scsi@vger.kernel.org, linux-pm@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-serial@vger.kernel.org,
+ linux-usb@vger.kernel.org, usb-storage@lists.one-eyed-alien.net,
+ virtualization@lists.linux.dev, linux-kernel@vger.kernel.org,
+ linux-arch@vger.kernel.org, netdev@vger.kernel.org,
+ linux-fsdevel@vger.kernel.org, linux-hardening@vger.kernel.org
+References: <20260521133315.work.845-kees@kernel.org>
+ <20260521133326.2465264-6-kees@kernel.org>
 Content-Language: en-US
-From: K Prateek Nayak <kprateek.nayak@amd.com>
-In-Reply-To: <bca40921-d351-4439-ae6a-9e5294f23e2e@intel.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-X-EOPAttributedMessage: 0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: MN1PEPF0000ECD5:EE_|PH0PR12MB8031:EE_
-X-MS-Office365-Filtering-Correlation-Id: ce61fa15-b974-40b3-9d8e-08deba79099e
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|36860700016|376014|1800799024|7416014|82310400026|22082099003|18002099003|56012099003|4143699003|11063799006;
-X-Microsoft-Antispam-Message-Info:
-	MnBnkggU+Ad0Z/FgYzsKtNk7SD/n8FBDHLCME61OqOana/vIS7poo3TDAXJxDSft72E6lzfB5/vNWvhzmDUeW0W6XhVJ08aCDWCErIX22+g8pXC52kNITcAP0mWG2XnfMeIgUf/EqJxqyiqffcfv/A02nGWA6zrkE8Np/xz63ITpikVf3IdXvEz7C9cMOV71KwIjco7OqQoUpU7hz4AH+4uOax0EcyDz0r74JrFQNIBjriYbbRqSZPkiZVwXwTWyN4LxOpJTw703JrFIIm/c/5C85450na+iEQ8+apRIg3NzHSZ1IlPUEZgWqS0yDIsx+yr1jUftefzcM6qUKQOHzB+auNSTynNtaLpZuhdhDrx49VrlP4IgLwwCwMvlBlzLLMnmpAo1X8lpib5/IyZRthySWCzyv3flBWx9OFjTbKsYCktFDxLvWSf0nLO4t6KCElvu6/fWVipfbbhuOHPVTaVaTF0rseuM5jkrLnbwystHtNUe9+V+prIAN0TQIzGdGIrzHMU0GK+hxsicaLMD3NrB1j8qMsSllTianogXUbtTyHNdBu8TGv/3uXWWHpuonaIA+UVtmxFAEDhytjleyyirIu308tj0Db/9vizGfuBB0ABJjBfwYrrAYOs6sEVjm8acu9BtN4nhwTI4cpAiuYq2i3fbQB3OG4UqFxRT8F0x+6HjQyDzxQrLXW6da2W4t5cM4Zo6JjGOozcykJVSf8Jh6FdtbZ0av5ht2IEGSoA=
-X-Forefront-Antispam-Report:
-	CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:satlexmb07.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(36860700016)(376014)(1800799024)(7416014)(82310400026)(22082099003)(18002099003)(56012099003)(4143699003)(11063799006);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	LLFp0hnZxkIpw3KpXXGQF/P+eqbZClfJGsYGMcs7KQEb01rD+q2ueJqpxTj7WNRlxmRC+qj3nqlprTr50gW7OXXyXpOqyAh/McNzVqxLrx33kKyXD4+fwoA9YlOblolPAj+qdL8/VbPwzu8RnSXHxb1N5O5opK4F0x5yYDARiKyNht2GMn82LmL3p8KwF5MJwxl5hJoOgpd+Dnr1uwvegiU1tzA1my8fx7FeFE1iwOFWhHfMTj4Sr0iilIe2bnsXsxwDMYOcvgUQS2cWA1sdvlVey/IsKaFCj/vOymJNTnz9NBhNqBEKBwaRJK3HvoYSe6m1oEj1QROgLdxwJ530ZHJdjJ8lOa9GvxpsuR3H9eDDCJHZdXgQk9L102c7s7xHemGUep3JvVttPqHY0LhJ/TvWSvX2/P9ycjPewFVBa/sowqog/zTZ7uZznZKS5yXN
-X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 25 May 2026 16:16:54.7963
- (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: ce61fa15-b974-40b3-9d8e-08deba79099e
-X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
-X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[satlexmb07.amd.com]
-X-MS-Exchange-CrossTenant-AuthSource:
-	MN1PEPF0000ECD5.namprd02.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Anonymous
-X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH0PR12MB8031
+From: Petr Pavlu <petr.pavlu@suse.com>
+In-Reply-To: <20260521133326.2465264-6-kees@kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-Hello Chenyu, Venkat,
-
-On 5/25/2026 9:05 PM, Chen, Yu C wrote:
-> diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
-> index 3467f86fd78f..cf6c2e4190ab 100644
-> --- a/arch/powerpc/kernel/smp.c
-> +++ b/arch/powerpc/kernel/smp.c
-> @@ -1042,11 +1042,6 @@ static const struct cpumask *tl_smallcore_smt_mask(struct sched_domain_topology_
->  }
->  #endif
+On 5/21/26 3:33 PM, Kees Cook wrote:
+> Add a new struct kernel_param_ops::get callback whose signature
+> takes a struct seq_buf instead of a raw char buffer:
 > 
-> -struct cpumask *cpu_coregroup_mask(int cpu)
-> -{
-> -       return per_cpu(cpu_coregroup_map, cpu);
-> -}
-> -
->  static bool has_coregroup_support(void)
->  {
->         /* Coregroup identification not available on shared systems */
-> @@ -1056,6 +1051,14 @@ static bool has_coregroup_support(void)
->         return coregroup_enabled;
->  }
+>   int (*get)(struct seq_buf *sb, const struct kernel_param *kp);
 > 
-> +struct cpumask *cpu_coregroup_mask(int cpu)
-> +{
-> +       if (!has_coregroup_support())
-> +               return cpu_l2_cache_mask(cpu);
-> +> +       return per_cpu(cpu_coregroup_map, cpu);
+> The previously-legacy .get field is now .get_str (char *buffer);
+> .get is the new seq_buf-aware form.  param_attr_show() prefers .get
+> when set, otherwise falls back to .get_str.  WARN_ON_ONCE() if both
+> are set.  Return contract for .get:
+> 
+>   < 0 : errno propagated to userspace; seq_buf contents discarded
+>   = 0 : success; length derived from seq_buf_used()
+>   > 0 : forbidden; the dispatcher WARN_ON_ONCE()s and treats as 0
+> 
+> The default policy on seq_buf_has_overflowed() is silent truncation,
+> matching scnprintf()/sysfs_emit() behaviour.  Callbacks that want a
+> specific overflow errno can check seq_buf_has_overflowed() and
+> return their preferred error.
+> 
+> No callbacks use .get yet; the legacy path is still the only one in use
+> after this commit. A subsequent commit teaches DEFINE_KERNEL_PARAM_OPS
+> to route initializers by type.
+> 
+> Signed-off-by: Kees Cook <kees@kernel.org>
 
-Interestingly, on powerpc, the MC domain doesn't have SD_SHARE_LLC flag
-set but I believe there is still some benefit of keeping the tasks on
-the same hemisphere?
+Reviewed-by: Petr Pavlu <petr.pavlu@suse.com>
 
-If we are actually aiming for LLC, I think cpu_l2_cache_mask() is the
-right cpumask for all cases since tl_cache_mask() also returns that
-and the l2_cache_mask is set in all cases covered by update_mask_by_l2()
-in the same file.
-
-If consolidation on hemisphere is beneficial, then the above diff
-looks correct.
-
-Note: For has_coregroup_support(), with the above fix, the scheduler
-side llc_id will now be based on MC domain's span which seems wrong
-since it doesn't have SD_SHARE_LLC flag and might lead to other
-behavioral changes now.
-
-> +}
-> +
->  static int __init init_big_cores(void)
->  {
->         int cpu;
-
--- 
-Thanks and Regards,
-Prateek
-
+-- Petr
 
