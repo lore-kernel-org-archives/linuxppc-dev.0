@@ -1,85 +1,83 @@
-Return-Path: <linuxppc-dev+bounces-21469-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21470-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0B326CD5BB1
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 May 2026 11:37:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4FC56CD5BB1
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 May 2026 12:17:09 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gPDPz2SPRz2xbN;
-	Mon, 25 May 2026 21:37:27 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779709047;
-	cv=none; b=AkjKfSgghmvCrSTKJHawNWqWFg7xsyiS58grdnfqDxwQI2VIe7FSTOs1xTf2Kd86jQU0knVTN5TvqFhui6lwoGR0ovIdoj40+RkcVcbVlrFal++uzf9F8/MZf9+sDwpIQdGo3K33+MTd5x2Jxq55eo2CDwEiseE0ZsonLut0RieUnOz1Ah3lws6X4nPn18YlJ86PMMhb7SGBkM9o41ZokLUMSc31FAI1t9iff9/K4+xvMKl9rxNlb18JJAEtmbw2585YKRrf1id3dh8mBvD6EDIcvx+E1bZAPoi9QDYY4Zo0DeqidpJ/lcq1j022q37LvwPzWUEh4ntjlrDLze3GYg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gPFHl5WKJz2xbN;
+	Mon, 25 May 2026 22:17:07 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779711427;
+	cv=none; b=h2ipPfztu7psJGZyd+KaoHDEPRgICoNNQuRouBkWv3xtnv3asRNoiJ2tnCoiApvEgbdm2LfNmreUNOxSX6xk8LOqHNcOtDPCvVHXIbbr2awnoVdvzqfoQFsUM+a91RYmOhNJ8nsjWwrSg20WRT0s3FBaoxnInsVVPqe2+o5HFxmfJdXGHsqahBGtu5SOLNFXVHdwtfwKRdfzlmGA5lzi3/hh11x0GN7mtvLRs1IPgh5hYSic8iAU8ff3kqjpzDSK1yFUAugNzk/w39B+XqWm/FKLiEe5vyrlNS/tpWALvfgkZMCp5/rkjrXiOvTBxBqO9+2qcgGd0NQ4NAB4xNO8Uw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1779709047; c=relaxed/relaxed;
-	bh=kPbn/f1fuyb07lSfD/0s4GT4WdFio8z3401p2vvqFyE=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=DqvvkQMkmlaq78lbVZQG7JzDWSCryM6jGFEVmhY4hBzMX0nlsLwV7bbN59CjZ9MWF2Ij1GgnQnQ85XI5jO63frSKaroQO+taKUMYohZBh+tajbdpEaEOGUPlaLZAxIYL3fWxbCOp0jeRe9oHxL32JEJ6Vg9GKaFA13IvzR2aXRzstqkGVdhTZKE3z3Hl4ew574W/ruimeiBZyv1G8SUqlI9W8QWNcYr4q7n59doxz547kIGKkYRCpHu3jvyHdX1N2p8P4xqE/g3Fg5d3RV7ExEjrkxy/iK1OckLogdRsKY99AJ0Ot1maLqachlcmyRGi8rxjNlHVAZ2RUpUqcMmeVg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=W9sT/QL/; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1779711427; c=relaxed/relaxed;
+	bh=kcbhuYVnIyM0gO1Ey8OTwYSmRoXUoO+BdnB7Gvputxg=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=YC/WqOjlvcLaJjZJtQa9zvPy0ioKzF6v8kYXdG5KqHj5w0sLncUcW9HCCjZAQKTurpGWXtLbkSDOAAshQG6rApgp+elQ7b50fTmlvBEG/22RVfK4FPeiWadRcCK5mFBrbeCBUV2V5xMdZTszNS7scVSmQka/y7Ou1oqZdVvrjx3JZAz8SKGDrz6UCMb0BgbXpjYW2CTeHgrkEBJL2GCUtPTn/+DlUX3tPJsFJWcL0PaaU5bLXYMbOwIUtTpsm3j+DWY/gGw7S3DY0/Y+nCYgk6oGUNRqNDzgFnIVNlxk5Ol6h1IJB/OYEMfT8Qn6gzj6hXqSPWzwraLTxRUR08ARYg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Mp0HBVZj; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=adityag@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=W9sT/QL/;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Mp0HBVZj;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=adityag@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gPDPy2Vd7z2xYg
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 May 2026 21:37:26 +1000 (AEST)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 41F3A600BB;
-	Mon, 25 May 2026 11:37:23 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 17BBD1F000E9;
-	Mon, 25 May 2026 11:37:00 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1779709043;
-	bh=kPbn/f1fuyb07lSfD/0s4GT4WdFio8z3401p2vvqFyE=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=W9sT/QL/8R3LJxQuJnqULPdrM1nsn4daH1Hjg/KpYXguHjTqD086qv20sIL6mYl7R
-	 XvOBmsbGn+aUBuuD7YmCOeIBLyz0kPBoaqx8/W3s5VRN8Uno0zD9eWzhOy98TVtqHK
-	 uA5YsM6E1BhscTKFZqCHI7pnI0htTV0tK3UF7zLRCukCjMI3DNJkV8VmQGJ6ffOdN0
-	 iYCyXUqWwY3mrHjVk0kX4Rj4QjgL5c4kWpv5gUyVC+8qN/Ciuck/k/UyX3sdsCSWpw
-	 EdG7Pg1gWabsDFCJzyUMK6eYBu2NWAC8UFjZF4q/8uJvLDBi9zqnwL/M3hikizHgFZ
-	 G0HKwZWWlmGyg==
-Date: Mon, 25 May 2026 14:36:57 +0300
-From: Mike Rapoport <rppt@kernel.org>
-To: Huacai Chen <chenhuacai@kernel.org>
-Cc: Jinjie Ruan <ruanjinjie@huawei.com>, corbet@lwn.net,
-	skhan@linuxfoundation.org, catalin.marinas@arm.com, will@kernel.org,
-	kernel@xen0n.name, maddy@linux.ibm.com, mpe@ellerman.id.au,
-	npiggin@gmail.com, chleroy@kernel.org, pjw@kernel.org,
-	palmer@dabbelt.com, aou@eecs.berkeley.edu, alex@ghiti.fr,
-	tglx@kernel.org, mingo@redhat.com, bp@alien8.de,
-	dave.hansen@linux.intel.com, hpa@zytor.com, robh@kernel.org,
-	saravanak@kernel.org, akpm@linux-foundation.org, bhe@redhat.com,
-	pasha.tatashin@soleen.com, pratyush@kernel.org,
-	ruirui.yang@linux.dev, rdunlap@infradead.org, pmladek@suse.com,
-	feng.tang@linux.alibaba.com, dapeng1.mi@linux.intel.com,
-	kees@kernel.org, elver@google.com, kuba@kernel.org,
-	lirongqing@baidu.com, ebiggers@kernel.org, paulmck@kernel.org,
-	thuth@redhat.com, ardb@kernel.org, masahiroy@kernel.org,
-	mark.rutland@arm.com, maz@kernel.org, james.morse@arm.com,
-	leitao@debian.org, sourabhjain@linux.ibm.com, yeoreum.yun@arm.com,
-	coxu@redhat.com, jbohac@suse.cz, ryan.roberts@arm.com,
-	cfsworks@gmail.com, tangyouling@kylinos.cn, ritesh.list@gmail.com,
-	songshuaishuai@tinylab.org, junhui.liu@pigmoral.tech,
-	vishal.moola@gmail.com, kas@kernel.org, debug@rivosinc.com,
-	namcao@linutronix.de, liaoyuanhong@vivo.com,
-	fuqiang.wang@easystack.cn, seanjc@google.com, guoren@kernel.org,
-	chenjiahao16@huawei.com, hbathini@linux.ibm.com, bgwin@google.com,
-	takahiro.akashi@linaro.org, lizhengyu3@huawei.com, x86@kernel.org,
-	linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org, loongarch@lists.linux.dev,
-	linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org,
-	devicetree@vger.kernel.org, kexec@lists.infradead.org
-Subject: Re: [PATCH v14 00/17] arm64/riscv: Add support for crashkernel CMA
- reservation
-Message-ID: <ahQ0WRiMsB011tym@kernel.org>
-References: <20260525084932.934910-1-ruanjinjie@huawei.com>
- <CAAhV-H4NA7vgyxKnK+N_3C6pWBnwXc2URUyLh_h1m-MO=MnsGQ@mail.gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gPFHk6JHNz2xSb
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 May 2026 22:17:06 +1000 (AEST)
+Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 64OJo5e13032008;
+	Mon, 25 May 2026 12:16:49 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:date:from:message-id:mime-version
+	:subject:to; s=pp1; bh=kcbhuYVnIyM0gO1Ey8OTwYSmRoXUoO+BdnB7Gvput
+	xg=; b=Mp0HBVZj1/HtF9sBIL6MPfsxSIyjH4SRA7eXNKIJlsdiaBrkwuREZxFFU
+	OqZ5OSZryje6H9/mOd2KZKYdrvrOei9rPLxoBgqgKERTdQHbeFXBo33xjDtZgk0l
+	cctvz1m0diw1QcK+F9+i75+VjVQZVJ2JNi6GfynoMuedFuIuI6FBjrZv5bEK+wr3
+	LVsxRIgyBn46p/X3eIo0+w2Cjt7YgpVzmAt+4PbkSbY0oiW9leDqFWKXpl8lDREr
+	mL7uyR3P9PG+BwyD4owiZU4LrMghOPpU/TROP8urvBVJWtwvwLbKH6vQA4bsS29H
+	bfLaCiOx2uV5oq4BuMNPgpV8+JH4w==
+Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4eb4nbxwre-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 25 May 2026 12:16:48 +0000 (GMT)
+Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma21.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 64PC9AIC011263;
+	Mon, 25 May 2026 12:16:48 GMT
+Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
+	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4ebqjjn2x6-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 25 May 2026 12:16:47 +0000 (GMT)
+Received: from smtpav06.fra02v.mail.ibm.com (smtpav06.fra02v.mail.ibm.com [10.20.54.105])
+	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 64PCGikO42860928
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Mon, 25 May 2026 12:16:44 GMT
+Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id F151C2004B;
+	Mon, 25 May 2026 12:16:43 +0000 (GMT)
+Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 2275D20040;
+	Mon, 25 May 2026 12:16:40 +0000 (GMT)
+Received: from li-3c92a0cc-27cf-11b2-a85c-b804d9ca68fa.ibm.com (unknown [9.124.218.95])
+	by smtpav06.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Mon, 25 May 2026 12:16:39 +0000 (GMT)
+From: Aditya Gupta <adityag@linux.ibm.com>
+To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+        Madhavan Srinivasan <maddy@linux.ibm.com>,
+        Timothy Pearson <tpearson@raptorengineering.com>,
+        Bjorn Helgaas <bhelgaas@google.com>,
+        Shawn Anastasio <sanastasio@raptorengineering.com>
+Cc: linux-pci@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>,
+        Nicholas Piggin <npiggin@gmail.com>,
+        "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+        stable@vger.kernel.org
+Subject: [PATCH] ppc/pnv: Fix null pointer deref in pci hotplug
+Date: Mon, 25 May 2026 17:46:28 +0530
+Message-ID: <20260525121628.3906457-1-adityag@linux.ibm.com>
+X-Mailer: git-send-email 2.54.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -93,47 +91,99 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <CAAhV-H4NA7vgyxKnK+N_3C6pWBnwXc2URUyLh_h1m-MO=MnsGQ@mail.gmail.com>
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Authority-Analysis: v=2.4 cv=VvYTxe2n c=1 sm=1 tr=0 ts=6a143db1 cx=c_pps
+ a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
+ a=NGcC8JguVDcA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
+ a=V8glGbnc2Ofi9Qvn3v5h:22 a=VwQbUJbxAAAA:8 a=VnNF1IyMAAAA:8
+ a=lml1KbhEJxe8kdhi6MYA:9
+X-Proofpoint-ORIG-GUID: B4AjfRteot1akFQ4FhifVoHIFDoqMvAJ
+X-Proofpoint-GUID: j1ytpDlrHCLjuc5MFTTqjFIu-2Pq4kAT
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTI1MDEyNSBTYWx0ZWRfX8DynBRZ5R9JV
+ A47tk1xLWQfh15pvCoJ/kWw821rXRAVTVUQkZEHsAYrz2muZdyg2ZKeoYU+AST9sWjxzJTFmb0R
+ SXVl67H3QIR9WRRfGZUu6Gts/PdQtzg2qZQx7rIY5UqMr7b2iAd4lv5B29z2d0vPL7rpuWoHYgp
+ bwgF7qB9EZMK2xmkCoUnc1pIssEW5G4/Bxs91WvvyyJOkhIgBzrb9B3FtAmpHFoQcsVFq99ITsb
+ SlTyohakBR1o63i4e6O0yxfNJ/BtQUbkrzj9c9NN8R8iymLm/kprGIjTQ4nNL3ROHFQj8redOMY
+ LLJGn/ElQIHT6xtTgXQv2wtdGakUXmokgvRtLNKLUvi1puWlJB6SfwVQjGRCQ4zEt9tmsYuE8Ys
+ kapZad0DEMwU+218zFxJoFTUSlTfIeFgoBSXI4d9vwEggGnhaUGUqoKOGFzuxgehvWVGCG2MlQp
+ p98HsvNkCnk55IHZ7vg==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-05-25_03,2026-05-18_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ suspectscore=0 phishscore=0 priorityscore=1501 spamscore=0 adultscore=0
+ lowpriorityscore=0 malwarescore=0 impostorscore=0 clxscore=1011 bulkscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2605130000 definitions=main-2605250125
 
-Hi Huacai,
+With upstream kernel booted on a PowerNV system with OpenCAPI device,
+below crash is observed:
 
-On Mon, May 25, 2026 at 06:14:52PM +0800, Huacai Chen wrote:
-> On Mon, May 25, 2026 at 4:50 PM Jinjie Ruan <ruanjinjie@huawei.com> wrote:
-> >
-> > Jinjie Ruan (16):
-> >   riscv: kexec_file: Fix crashk_low_res not exclude bug
-> >   powerpc/crash: Fix possible memory leak in update_crash_elfcorehdr()
-> >   arm64: kexec: Fix image->elf_headers memory leak during retry loop
-> >   x86/kexec: Fix potential buffer overflow in prepare_elf_headers()
-> >   arm64: kexec_file: Fix potential buffer overflow in
-> >     prepare_elf_headers()
-> >   riscv: kexec_file: Fix potential buffer overflow in
-> >     prepare_elf_headers()
-> >   LoongArch: kexec: Fix potential buffer overflow in
-> >     prepare_elf_headers()
-> >   crash: Add crash_prepare_headers() to exclude crash kernel memory
-> >   arm64: kexec_file: Use crash_prepare_headers() helper to simplify code
-> >   x86/kexec: Use crash_prepare_headers() helper to simplify code
-> >   riscv: kexec_file: Use crash_prepare_headers() helper to simplify code
-> >   LoongArch: kexec: Use crash_prepare_headers() helper to simplify code
-> >   crash: Use crash_exclude_core_ranges() on powerpc
-> >   arm64: kexec: Add support for crashkernel CMA reservation
-> >   riscv: kexec: Add support for crashkernel CMA reservation
-> >   arm64/crash: Add crash hotplug support
-> I have some bikesheedings about the subjects. Can we unify the prefix formats?
-> x86/kexec, arm64: kexec_file, riscv: kexec_file, LoongArch: kexec .....
+    [    1.568588] PowerPC PowerNV PCI Hotplug Driver version: 0.1
+    [    1.569722] BUG: Kernel NULL pointer dereference at 0x00000074
+    [    1.569811] Faulting instruction address: 0xc000000000b75fd0
+    [    1.569890] Oops: Kernel access of bad area, sig: 11 [#1]
+    [    1.569963] LE PAGE_SIZE=64K MMU=Hash  SMP NR_CPUS=2048 NUMA PowerNV
+    [    1.570037] Modules linked in:
+    [    1.570099] CPU: 250 UID: 0 PID: 1 Comm: swapper/248 Not tainted 7.1.0-rc4+ #1 PREEMPTLAZY
+    [    1.570207] Hardware name: 9105-22A Power11 (raw) 0x820200 opal:v7.1-142-gbbc276524497 PowerNV
+    [    1.570325] NIP:  c000000000b75fd0 LR: c000000000b75fbc CTR: 000000003008a65c
+    [    1.570411] REGS: c000c0000688f6f0 TRAP: 0380   Not tainted  (7.1.0-rc4+)
+    [    1.570494] MSR:  9000000000009033 <SF,HV,EE,ME,IR,DR,RI,LE>  CR: 28000284  XER: 20040000
+    [    1.570636] CFAR: c00000000019f9e8 IRQMASK: 0
+    ...
+    [    1.571492] NIP [c000000000b75fd0] pnv_php_get_adapter_state+0x60/0x154
+    [    1.571604] LR [c000000000b75fbc] pnv_php_get_adapter_state+0x4c/0x154
+    [    1.571690] Call Trace:
+    [    1.571725] [c000c0000688f990] [c000000000b75fbc] pnv_php_get_adapter_state+0x4c/0x154 (unreliable)
+    [    1.571783] [c000c0000688fa20] [c000000000b78bd0] pnv_php_enable+0x94/0x378
+    [    1.571951] [c000c0000688fac0] [c000000000b7912c] pnv_php_register_one.isra.0+0x11c/0x1e0
+    [    1.572077] [c000c0000688fb00] [c000000002091318] pnv_php_init+0x168/0x1b0
+    [    1.572111] [c000c0000688fb80] [c00000000001103c] do_one_initcall+0x5c/0x450
+    [    1.572162] [c000c0000688fc70] [c000000002006abc] do_initcalls+0x15c/0x29c
+    [    1.572283] [c000c0000688fd30] [c000000002006ec4] kernel_init_freeable+0x224/0x3e0
+    [    1.572484] [c000c0000688fde0] [c000000000011578] kernel_init+0x30/0x268
+    [    1.572562] [c000c0000688fe50] [c00000000000debc] ret_from_kernel_user_thread+0x14/0x1c
+    [    1.572667] ---- interrupt: 0 at 0x0
+    [    1.572720] Code: 38810065 e90d0c78 f9010068 39000000 99210065 e8630020 4b6299c9 60000000 2c030000 418000ac e87f0058 89410065 <a1230074> 55290636 2c090060 41820044
 
-It might look weird in the series, but powerpc and x86 use '/' and arm64 and
-riscv use ':' so in the logs in arch/ this would be actually fine.
+This NULL pointer dereference happens due to the call to
+'pci_pcie_type(php_slot->pdev)' without checking if php_slot->pdev is
+NULL.
 
-With the only exception of arm64/crash that should have been arm64: crash:
- 
-> Huacai
+This occurs for hotplug slots on root buses where bus->self == NULL,
+such as OpenCAPI PHB direct slots. An added debug print (not part of
+this patch) confirmed it was opencapi:
 
+    [    1.617227] pnv_php: slot 'OPENCAPI-0009' has NULL pdev (bus 0009:00, parent=NO (root bus))
+    [    1.617308] pnv_php: slot 'OPENCAPI-0009' dn->full_name='pciex@603a000000000', compatible='ibm,power10-pau-opencapi-pciex'
+
+Add a NULL check for this.
+
+Cc: stable@vger.kernel.org
+Fixes: 80f9fc236279 ("PCI: pnv_php: Work around switches with broken presence detection")
+Signed-off-by: Aditya Gupta <adityag@linux.ibm.com>
+---
+ drivers/pci/hotplug/pnv_php.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/pci/hotplug/pnv_php.c b/drivers/pci/hotplug/pnv_php.c
+index ff92a5c301b8..21ce7ead9e19 100644
+--- a/drivers/pci/hotplug/pnv_php.c
++++ b/drivers/pci/hotplug/pnv_php.c
+@@ -414,7 +414,8 @@ static int pnv_php_get_adapter_state(struct hotplug_slot *slot, u8 *state)
+ 	 */
+ 	ret = pnv_pci_get_presence_state(php_slot->id, &presence);
+ 	if (ret >= 0) {
+-		if (pci_pcie_type(php_slot->pdev) == PCI_EXP_TYPE_DOWNSTREAM &&
++		if (php_slot->pdev &&
++			pci_pcie_type(php_slot->pdev) == PCI_EXP_TYPE_DOWNSTREAM &&
+ 			presence == OPAL_PCI_SLOT_EMPTY) {
+ 			/*
+ 			 * Similar to pciehp_hpc, check whether the Link Active
 -- 
-Sincerely yours,
-Mike.
+2.54.0
+
 
