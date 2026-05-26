@@ -1,67 +1,69 @@
-Return-Path: <linuxppc-dev+bounces-21506-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21507-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 37F69CD5BC8
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 May 2026 10:21:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3D4B1CD5BD2
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 May 2026 10:27:50 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gPph8389tz2y8t;
-	Tue, 26 May 2026 20:21:44 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779790904;
-	cv=none; b=onlzv4XEuhSAnou62FXhEVPxdjqOKReiq23sXtGvebfwokAy0k60kNX/sDGVl81K886reomerg3Lcl/ynG27SL587GkNNaVaejZouHvSjCJStbxSjahv7Pf3cYOJ5vUOZdn8NpweLff8d2LZNxblzR9JuXYFpmsY+Eh0jNCVGuq8DugKJUjWvNRTwxtJCkbPT5dnc59nVzLhoVVBKXCRThh3cGNuedfwqhaVax37cOU872EBqLSasbApoBHQjDthFVFZe/ZQslYFUJFRC2qAQpPHVgIBJumbzwr22e8yI/3av3C80MKljdKoIELqEVdB7+BhxRwmRj3fzI+fF4LLxg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gPpq85rc2z2y8t;
+	Tue, 26 May 2026 20:27:48 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779791268;
+	cv=none; b=LKwD2qq4xYAHPaBa0OJO+Bggmwv2XY6gSsC08tUINrSTUcRt9VGluyne6hWduwvA4AiPk93Ed1tYey0LFSML7U1Su26m0K5V7iJpus7JoGNxyhuZ3iFwI7OcPyrnYM6lug9n8Pvtn657aY4YAkCsAaoPofGxRsaCyBfidjcwoyi7nTB5xcvnREljfFlIAuVQtt6mpkmAuwcdodUXyj3kkWj7j4yDjvXCqV7LDayMwNBdzfKKIahHDYcl99+tplngLUabFsddiHnnHPhmC0sHnDcjDERNlpjSE7lNGQxgkTS9mEb3abM+ClRgkyOa9dWaN0C5s5UfifWISGvP+Zpezg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1779790904; c=relaxed/relaxed;
-	bh=rsGgpnBZc429OlLc+sfTkX+ix4uTLQuTZY4VW1h618s=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=Cij+J9R3Jv47EuUeww2CenT3va3Vt/BCmOY/kivWJI6Q1FdMXLK6SklZQoupEHgvlGmZuMyUqBPhvon0V1YTWeRbGFKhg++3zfx6TXTi168EyGhl4eosyZMhJsXs41iSxkNABB2TyGT3Iiz4Zn1kue1JJLmm2BTX9vrJxYJw67aRjv/dw9JQIuVskFIjh4/Z3gjfHwpiHau628TfPPWkCVhIIAkDf+b7aVocJFTFGqz6ueu4CALjuODHtCCWF7pY211qNTACt4VVIWM6KIXVTYnDaJaE0Wlj2+bF8so9RZ7p6Hx5mVvItSRct0oc3DMOipeq33dUayh81vJa1DPgUA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=iT+HtmsE; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=arnd@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1779791268; c=relaxed/relaxed;
+	bh=1BZk2y1KGNMX+ccHuEp6KWVVbr1Nr9TPnS/MltAXFTI=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=TVQ9T8fs8QZzpfs3TmuvXAfw2DBDabDZAy3TQRvsRoKaS3vzwFqQBurzVj8lPi7a75yFFA9RVOaGTMtyGuoWC31hcc7lgHwOaFfnRi6zYaQsHG2h1gbPrpcni+xhwAjNPE+gRJrdOM+CFzhOZtABDdrzzsQ3VgJX9LQdJDgBhDDPcNfabz2XX7Uz3iccwapX8zFeIaX0DIMCdPc+T802Lcg9prZSeYK7cYbYUsaXdVNJjV9cQUmMhLh65EF0YOiIMkKVr/7RDYBLnZtoM43Qyb8y6thT1lSkD091jpP6Ekrz/wX9Kl1NI+94yycA5Hq+VDHD8RMi4rveZ/7yEJYA3g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=SyKKdCFN; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=arnd@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=iT+HtmsE;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=SyKKdCFN;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=arnd@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=arnd@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gPph71SJ2z2xjQ
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 May 2026 20:21:43 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gPpq76PPsz2xPb
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 May 2026 20:27:47 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 89415600B0;
-	Tue, 26 May 2026 10:21:40 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id DB3C71F000E9;
-	Tue, 26 May 2026 10:21:37 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 29A4444425;
+	Tue, 26 May 2026 10:27:45 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id CD9501F00A3A;
+	Tue, 26 May 2026 10:27:41 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1779790900;
-	bh=rsGgpnBZc429OlLc+sfTkX+ix4uTLQuTZY4VW1h618s=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=iT+HtmsEGT9G0HHbIzt3B4MB70dCX6C0ptZcZWFsCZ23nquy8QEKR1HZyW8+8ymzD
-	 0S7/iinPB+2fF1BQ+GZ6yBcyee4tGcrKm61/cE8zgXUOqTHoxzxTrH2NDTWGfp1pJZ
-	 GiY/JkhF/ihb0sgTzs0S/rnv3Ki66n8jtU6XvF57XkDWrvymUMplh1M/xMr/TrDoEy
-	 QRY0HV1GLryksl3nnLfVp0znku3m4KlukFFiLENipTsEM49zoHcWKCTbV4WoUjfoKK
-	 HWylIhLQ1N8Q2e6gDNOC3Z6/zciu1yq85Q8PokixL1vGBWjwiKYmb9+nrdNQqFCn7W
-	 +OmaLw4uLopbA==
+	s=k20260515; t=1779791265;
+	bh=1BZk2y1KGNMX+ccHuEp6KWVVbr1Nr9TPnS/MltAXFTI=;
+	h=From:To:Cc:Subject:Date;
+	b=SyKKdCFN9GuMHt9XiHa/sVOfiYznVkXy51REaRbImzrnSeusFP4ZZH97TCZI3bhYy
+	 NwMHKfeb0ufokz91E2VRVvKNojYtjNC8ITkf/cnzS4JRbSxd7wOHXOJpcNn0EvAjj1
+	 e21iIdzG7x7CI9kmYC7lZbegajNZQ51RTPQRduko3ZU4/TykQb7lgfvSgvD7e6y7FS
+	 XjFBFL+ZPlW6Ohwrg3X9cTyFUK68gsu9FpyfK9LRg5JNHn7AjcpdRnLpAfKk5cBfIR
+	 pteTvV+A7+zqTXBjlwvNwaLfmH5daveHG2uIYkaa0ZB+U+ATPGHKpHSIppjn/dwzYs
+	 qmBmaC1iWrt0Q==
 From: Arnd Bergmann <arnd@kernel.org>
-To: Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	"T.J. Mercier" <tjmercier@google.com>,
-	Maxime Ripard <mripard@kernel.org>,
-	Sumit Semwal <sumit.semwal@linaro.org>,
-	Andrew Davis <afd@ti.com>
+To: Wei Fang <wei.fang@nxp.com>,
+	Claudiu Manoil <claudiu.manoil@nxp.com>,
+	Clark Wang <xiaoning.wang@nxp.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
 Cc: Arnd Bergmann <arnd@arndb.de>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	Andrew Lunn <andrew@lunn.ch>,
+	Vladimir Oltean <olteanv@gmail.com>,
+	"David S. Miller" <davem@davemloft.net>,
+	Eric Dumazet <edumazet@google.com>,
+	Jakub Kicinski <kuba@kernel.org>,
+	Paolo Abeni <pabeni@redhat.com>,
+	imx@lists.linux.dev,
+	netdev@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH 2/2] powerpc: export memory encryption helper functions
-Date: Tue, 26 May 2026 12:20:38 +0200
-Message-Id: <20260526102113.2594501-2-arnd@kernel.org>
+	linux-arm-kernel@lists.infradead.org
+Subject: [PATCH] [net-next] net: dsa: netc: fix enetc dependencies
+Date: Tue, 26 May 2026 12:26:37 +0200
+Message-Id: <20260526102708.2837129-1-arnd@kernel.org>
 X-Mailer: git-send-email 2.39.5
-In-Reply-To: <20260526102113.2594501-1-arnd@kernel.org>
-References: <20260526102113.2594501-1-arnd@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -79,49 +81,87 @@ Content-Transfer-Encoding: 8bit
 
 From: Arnd Bergmann <arnd@arndb.de>
 
-The set_memory_encrypted/set_memory_decrypted functions are exported
-on x86 and arm64 but not on powerpc, which leads to a new build failure
-because they are now used in a loadable module:
+The newly added netc dsa support has incorrect Kconfig dependencies,
+leading to Kconfig and link failures:
 
-ERROR: modpost: "set_memory_encrypted" [drivers/dma-buf/heaps/system_heap.ko] undefined!
-ERROR: modpost: "set_memory_decrypted" [drivers/dma-buf/heaps/system_heap.ko] undefined!
+WARNING: unmet direct dependencies detected for FSL_ENETC_MDIO
+  Depends on [n]: NETDEVICES [=y] && ETHERNET [=n] && NET_VENDOR_FREESCALE [=n] && PCI [=y] && PHYLIB [=y]
+  Selected by [y]:
+  - NET_DSA_NETC_SWITCH [=y] && NETDEVICES [=y] && (ARM64 || COMPILE_TEST [=y]) && NET_DSA [=y] && PCI [=y]
+WARNING: unmet direct dependencies detected for NXP_NTMP
+  Depends on [n]: NETDEVICES [=y] && ETHERNET [=n] && NET_VENDOR_FREESCALE [=n]
+  Selected by [m]:
+  - NET_DSA_NETC_SWITCH [=m] && NETDEVICES [=y] && (ARM64 || COMPILE_TEST [=y]) && NET_DSA [=m] && PCI [=y]
+ERROR: modpost: "enetc_mdio_read_c22" [drivers/net/dsa/netc/nxp-netc-switch.ko] undefined!
+ERROR: modpost: "ntmp_fdbt_delete_entry" [drivers/net/dsa/netc/nxp-netc-switch.ko] undefined!
+ERROR: modpost: "enetc_mdio_read_c45" [drivers/net/dsa/netc/nxp-netc-switch.ko] undefined!
 
-Export these the same way we do on the other architectures.
+Add the required 'NET_VENDOR_FREESCALE' dependency to make it possible
+to select both the PHY and NTMP library modules. Originally this was
+meant to be done through an 'IS_REACHABLE' check in the header file,
+but that did not work because the drivers/net/ethernet/freescale
+directory is not even entered in this case. IS_REACHABLE() is generally
+counterproductive because even when it works as intended, it turns
+a helpful link-time error into a silent runtime failure that is
+harder to debug. In this case, it clearly did not even do anything.
 
-Fixes: fd55edff8a0a ("dma-buf: heaps: system: Turn the heap into a module")
+Fixes: 187fbae024c8 ("net: dsa: netc: introduce NXP NETC switch driver for i.MX94")
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
- arch/powerpc/platforms/pseries/svm.c | 3 +++
- 1 file changed, 3 insertions(+)
+ drivers/net/dsa/netc/Kconfig   |  1 +
+ include/linux/fsl/enetc_mdio.h | 22 ----------------------
+ 2 files changed, 1 insertion(+), 22 deletions(-)
 
-diff --git a/arch/powerpc/platforms/pseries/svm.c b/arch/powerpc/platforms/pseries/svm.c
-index 384c9dc1899a..ab8f8c722741 100644
---- a/arch/powerpc/platforms/pseries/svm.c
-+++ b/arch/powerpc/platforms/pseries/svm.c
-@@ -6,6 +6,7 @@
-  * Author: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-  */
+diff --git a/drivers/net/dsa/netc/Kconfig b/drivers/net/dsa/netc/Kconfig
+index d2f78d74ac23..eaad3cb5babe 100644
+--- a/drivers/net/dsa/netc/Kconfig
++++ b/drivers/net/dsa/netc/Kconfig
+@@ -1,6 +1,7 @@
+ # SPDX-License-Identifier: GPL-2.0-only
+ config NET_DSA_NETC_SWITCH
+ 	tristate "NXP NETC Ethernet switch support"
++	depends on NET_VENDOR_FREESCALE
+ 	depends on ARM64 || COMPILE_TEST
+ 	depends on NET_DSA && PCI
+ 	select NET_DSA_TAG_NETC
+diff --git a/include/linux/fsl/enetc_mdio.h b/include/linux/fsl/enetc_mdio.h
+index 623ccfcbf39c..7cd5be694cc4 100644
+--- a/include/linux/fsl/enetc_mdio.h
++++ b/include/linux/fsl/enetc_mdio.h
+@@ -35,8 +35,6 @@ struct enetc_mdio_priv {
+ 	int mdio_base;
+ };
  
-+#include <linux/export.h>
- #include <linux/mm.h>
- #include <linux/memblock.h>
- #include <linux/mem_encrypt.h>
-@@ -50,6 +51,7 @@ int set_memory_encrypted(unsigned long addr, int numpages)
+-#if IS_REACHABLE(CONFIG_FSL_ENETC_MDIO)
+-
+ int enetc_mdio_read_c22(struct mii_bus *bus, int phy_id, int regnum);
+ int enetc_mdio_write_c22(struct mii_bus *bus, int phy_id, int regnum,
+ 			 u16 value);
+@@ -45,24 +43,4 @@ int enetc_mdio_write_c45(struct mii_bus *bus, int phy_id, int devad, int regnum,
+ 			 u16 value);
+ struct enetc_hw *enetc_hw_alloc(struct device *dev, void __iomem *port_regs);
  
- 	return 0;
- }
-+EXPORT_SYMBOL_GPL(set_memory_encrypted);
- 
- int set_memory_decrypted(unsigned long addr, int numpages)
- {
-@@ -63,6 +65,7 @@ int set_memory_decrypted(unsigned long addr, int numpages)
- 
- 	return 0;
- }
-+EXPORT_SYMBOL_GPL(set_memory_decrypted);
- 
- /* There's one dispatch log per CPU. */
- #define NR_DTL_PAGE (DISPATCH_LOG_BYTES * CONFIG_NR_CPUS / PAGE_SIZE)
+-#else
+-
+-static inline int enetc_mdio_read_c22(struct mii_bus *bus, int phy_id,
+-				      int regnum)
+-{ return -EINVAL; }
+-static inline int enetc_mdio_write_c22(struct mii_bus *bus, int phy_id,
+-				       int regnum, u16 value)
+-{ return -EINVAL; }
+-static inline int enetc_mdio_read_c45(struct mii_bus *bus, int phy_id,
+-				      int devad, int regnum)
+-{ return -EINVAL; }
+-static inline int enetc_mdio_write_c45(struct mii_bus *bus, int phy_id,
+-				       int devad, int regnum, u16 value)
+-{ return -EINVAL; }
+-static inline struct enetc_hw *enetc_hw_alloc(struct device *dev,
+-					      void __iomem *port_regs)
+-{ return ERR_PTR(-EINVAL); }
+-
+-#endif
+-
+ #endif
 -- 
 2.39.5
 
