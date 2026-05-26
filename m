@@ -1,94 +1,94 @@
-Return-Path: <linuxppc-dev+bounces-21503-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21504-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 04D67CD5BB4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 May 2026 07:25:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CFD25CD5BC8
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 May 2026 08:53:08 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gPkn44bL2z2y8t;
-	Tue, 26 May 2026 17:25:44 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=195.135.223.130
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779780344;
-	cv=none; b=IRj2v5HMzECEFTrNHMvcj3AxpcTTShudPo4PEilp4RHYGaPDT8ktF3X7Jkl025hdNOgk3Way3bHsQ/rlKsGv4dgJwmG33b7ln4oWKlp+MZsPXRyVt3bz/WIDnW4hoYqixl1G3VBru1HO4hcajud9QEb/TiDfsNvlzE77o8jcjqvWD27F04pdXO6KeQMPMwfzTJLhYubsaRKNQIKEW2GfRH7LPJed2YuKtHcP1Ia9RtSWI//qGVM8EV+3TJbXdlsXze7QEZ9B5oMAokI8VCambQhJ6Kg3cAuAodt3KVx3YcRik/pFr2btcwc056olK4T/ltsGgm6ebBAgQwZZKwfk0Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gPmjv0Wpvz2y8t;
+	Tue, 26 May 2026 18:53:07 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::42d"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779785587;
+	cv=none; b=RUvQHBUDH9tgha06s2WqrC9ZpGmLMa4GW2yHkU/HCu79WHcF0n8FJuNOHGp7HFoN4Mum1crruhWzTquy5SplgqJv4rWgIRRmDBzbL+wnhP4Tv3jvemfy2RgdqkD20aWB66A0cQaaw+QsWjUuqHMoErz33vgT07mbFTITMDIX8eJ2P/snalC5Yk3+yuFV0/TJYh3yWt7boNjrpoDi7eR9/z7wRgfPzI6C0gQFvWuysyLakrNy4mt17TzZPPhB7jKDrIUZcvQ8AFyQNJYAwlPnYdT8pDaYbiWG3iyfhY3SVTU4Lo/+KP/nZf4NFJc0kmml6kthxvHbjx88l7SK3HS3EQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1779780344; c=relaxed/relaxed;
-	bh=vbopPMUAcDk7jLhilmYVg0dGzzmpzpAxF4hYZz7NYRM=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=eESwBf9I6bhvX8ut25z4YXGbOkVtH6ILSu73Wc2L5JCaY/6vanivrOwM/CyiAq2NzchKq+zg5dMTQOKtQgMBXXLI3S96ZMm4nG37MTAXDf1C5N4HkUVCIRqwqivOVmjDpeBCOt123/8CNo9o6CrLTZiozy4CMXq992lHXognufBi4PNoSDIpSHkw6wreu9xnb58Oi2BHRExYElhDoB15dD+5AVkFcErfCg5xnZk3lMLvb13csgHrFWLZ/xCywz1249Zm4F/Cxz0cJFV9+dLNIjgDh5YgEjfpTRm2x5apJBixWDpYm0+mx2A57pJ2ALnByYp/rFsLLWCwxWRKYnEdJg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de; dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=pxONxFnV; dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=423ZpdgY; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=Ca4benR3; dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=wTMXG0xn; dkim-atps=neutral; spf=pass (client-ip=195.135.223.130; helo=smtp-out1.suse.de; envelope-from=tzimmermann@suse.de; receiver=lists.ozlabs.org) smtp.mailfrom=suse.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de
+	t=1779785587; c=relaxed/relaxed;
+	bh=InJMAp5dveD8bJ+7VPqWcHSAuX65wXSmTpY0vYoc1U0=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=afvSgnRi8sW0EO1hITNv4YykLeFVrhfKoQJPzRpEVIOXeOE3fqQEetjuF6Kjr9QFEt92BfTHnkZSXdXM6Yir5cE4v1qR58V22xOxTt2ItaeDTIqcSQJf2SQ2OGNw9rlYSp39NGLwBM+HCEzA0pXDv/ftmewQpYWQnIya0hbHAxBmst/X7Re7967KTN2mMMYqecEHSYgiX3R+rfLhbAT9FhpRn5lTADI1G7J53Jj0ZTtfm7yRJlL2R5Hi4w/fR1q/mZNf7dny6P4Vh6bSvPFMegh9yYV0eElOM54z3jEXZs4e56k+benSowt1Uan0pTAgDWpXd298ZcECdfdQa+YMtQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=HBl5qOGT; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::42d; helo=mail-pf1-x42d.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=pxONxFnV;
-	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=423ZpdgY;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=Ca4benR3;
-	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=wTMXG0xn;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=HBl5qOGT;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=195.135.223.130; helo=smtp-out1.suse.de; envelope-from=tzimmermann@suse.de; receiver=lists.ozlabs.org)
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::42d; helo=mail-pf1-x42d.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pf1-x42d.google.com (mail-pf1-x42d.google.com [IPv6:2607:f8b0:4864:20::42d])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gPkn148b9z2xjQ
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 May 2026 17:25:41 +1000 (AEST)
-Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id 3BB3C65443;
-	Tue, 26 May 2026 07:25:37 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1779780338; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=vbopPMUAcDk7jLhilmYVg0dGzzmpzpAxF4hYZz7NYRM=;
-	b=pxONxFnVbulMHn5Y6V2sHm+sTznAE0SstZoQBz0jByCjjDh8naiR1HzjD02lMQV9WTdLEK
-	hmtQh6EbPnn/zrLMpXjPV8AvkX980wCiqDLkrWTFXrlUH648fW0wd0BbTytRxndUssPf2E
-	0qG2yWgAMfeux3Cb7oW7647wLRezxoI=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1779780338;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=vbopPMUAcDk7jLhilmYVg0dGzzmpzpAxF4hYZz7NYRM=;
-	b=423ZpdgY19uNmHhgX84wNO9yS7iFotUmDFhS+TAUmtZL5xlo8RjNft2O1HxNN2eMQIPDdt
-	xtBdlctJS+54viBA==
-Authentication-Results: smtp-out1.suse.de;
-	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=Ca4benR3;
-	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=wTMXG0xn
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1779780337; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=vbopPMUAcDk7jLhilmYVg0dGzzmpzpAxF4hYZz7NYRM=;
-	b=Ca4benR3XC6eqbXaPAmkWHqrlwLdcKyEc+n/3MT3mf5n6XG6zKv1ZJqPerajkj3Suy7tts
-	So+twlh3+nj0r5DVz+iVWZK+kmKiwxmjrslSf8Jr7+cAKHLGaImAvn6rJSOmFyLiFf+AQE
-	Yko0vgiT/1WgekTl2sKuklJdblMZK9M=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1779780337;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=vbopPMUAcDk7jLhilmYVg0dGzzmpzpAxF4hYZz7NYRM=;
-	b=wTMXG0xnv1TUiYjLZz7CnWpwNZ6xbzTNONpqfzuwX41ciCODpV8v5VFKBA0BMGe3XwBjpq
-	vLovYNlw6FJxUKCQ==
-Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id D3E265A0AF;
-	Tue, 26 May 2026 07:25:36 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
-	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id bvY6MvBKFWpDBQAAD6G6ig
-	(envelope-from <tzimmermann@suse.de>); Tue, 26 May 2026 07:25:36 +0000
-Message-ID: <07a05f2e-c015-48e0-b942-9b3f0c63858c@suse.de>
-Date: Tue, 26 May 2026 09:25:36 +0200
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gPmjs3NdWz2xPb
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 May 2026 18:53:04 +1000 (AEST)
+Received: by mail-pf1-x42d.google.com with SMTP id d2e1a72fcca58-837dfccd950so4786153b3a.0
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 May 2026 01:53:04 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1779785581; x=1780390381; darn=lists.ozlabs.org;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:message-id:subject:cc:to:from:date:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=InJMAp5dveD8bJ+7VPqWcHSAuX65wXSmTpY0vYoc1U0=;
+        b=HBl5qOGTCiQ4UW1sW0vRivfpSOaGmjKzteVt5C0Pvh4Z27NYJw8v48EjCX+wtTM4XL
+         mOnV6MyEzzUiblJBDWbasKn97EV9u7WdjrORy69jvMAzfyv/GZqWWHp0uFM5/9wYxJJU
+         JhYNGLrfEIH7/AFcQumhRt+cid8cjX3TvY8rlerG+fmJkBxJJZuELzJ1yEYGhZIifrg/
+         HBOx5eaqfOWD9NmLJaaBFHBtwb0qKX5wOeXZAfRHj/ylrwfb4nTX0bi4e/JK8ia9MlvK
+         1093LNtKtGZ6eVni7aOwHI89HiFRWcix+nv3tSGAHujfYWxYvKUSgt2+dVZDmiq+PxHT
+         iXwg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1779785581; x=1780390381;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:message-id:subject:cc:to:from:date:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=InJMAp5dveD8bJ+7VPqWcHSAuX65wXSmTpY0vYoc1U0=;
+        b=B4lW/SFbn5awgkGFUsKN1yAQPZmyBBa52NIBu7fI5qi8niZcX3QGxHvanzuGnSbDJw
+         lReG10GMGYFeayO7B7l90YkUCUiHp3+URUW0vVpyEcoh6fElvRowg4B2+38g0S5s+/YH
+         e9/Z1l6ZggD5mWSnJKqAt4vvZ18DvzdJ44xKPJLPYuIL/1cx+0JBBfkYSdWQHsUMcQ3+
+         K/GeGcO6uOsJfDv1XGprKZhdeFboj33CdYJErL38jAzUaAPL8Cxu9X0Y6t7FVfHTrTA1
+         +Q9uTm+aDUxj+AiND3kVhacfXeyvNzHt1ZXkz5g611iPBq6RHQ08g4powfk36la9wZAW
+         sUcA==
+X-Forwarded-Encrypted: i=1; AFNElJ/yrC9dwQUbMhbOpQpkIXU+DYY0nXNz1MInsmbO2lDqDBDGFdt16QFeIDFETHT9kZZ9P2Yw5v1eQ95dsOA=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YxEHYRbR6wGfF1nTfL8G9Lpt2rQvF5LnODOewWZFMdKM5ARucRy
+	sIzIjYnmdfTPsGHnwz/mHIf8GwCnfhuxvxF8PB5EkNisTgTBbVypH4dF
+X-Gm-Gg: Acq92OEfh6ftgeuw3di3eyQwQ+UsC6YXxamW/pGtQ+FLL793279DAkTU3SZ0s+4CFj3
+	6IvpA5gXRRdOXiDdHfMFSS3uze97SZBrQ2VC5FtCREks6Vr7ADLA/L6WZwcoEgbvlT3b2VzZXMk
+	jBslXYWptTrXv2bQOWHC87Mb9iMih4LEFg7pG3PQrpZqhcrf2gdMhEqtejLJftK26sabFhh4aof
+	AX+SyuQffSwjUCckZyxl2h12x4b9xd+1wIOV0gFX75saP6kO/fX3Sf4SVv5iVMa5U4OqhV2fdwl
+	pIU78rjabdTNzvvkJCxMwSHaJXsb9Y/OcEKM66XuyL3f6aWido2JcMdd8L/yIg+YGXpT/cTJwl9
+	j8z0GFDQT67jHBO0LsLR5if/XkAPQNXGH6qBfbh/hbkUiHZovPOdXtX1Uil2KTeSyH1j5JMLkEJ
+	5ny5F9b+GaHedOdqtBCaXfD+72Kldh6Ub+n/78x1/8efcWTw/ewc3yeKuDRDnk+WF6x58=
+X-Received: by 2002:a05:6a00:2da4:b0:837:e9cc:d465 with SMTP id d2e1a72fcca58-8415f19e22fmr16062880b3a.20.1779785581098;
+        Tue, 26 May 2026 01:53:01 -0700 (PDT)
+Received: from li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com ([129.41.58.4])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-84164b06fa2sm13385336b3a.23.2026.05.26.01.52.51
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 26 May 2026 01:53:00 -0700 (PDT)
+Date: Tue, 26 May 2026 14:22:49 +0530
+From: Mukesh Kumar Chaurasiya <mkchauras@gmail.com>
+To: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
+Cc: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com, 
+	chleroy@kernel.org, peterz@infradead.org, jpoimboe@kernel.org, jbaron@akamai.com, 
+	aliceryhl@google.com, rostedt@goodmis.org, ardb@kernel.org, ojeda@kernel.org, 
+	boqun@kernel.org, gary@garyguo.net, bjorn3_gh@protonmail.com, lossin@kernel.org, 
+	a.hindborg@kernel.org, tmgross@umich.edu, dakr@kernel.org, nathan@kernel.org, 
+	nick.desaulniers+lkml@gmail.com, morbo@google.com, justinstitt@google.com, 
+	daniel.almeida@collabora.com, acourbot@nvidia.com, fujita.tomonori@gmail.com, 
+	gregkh@linuxfoundation.org, prafulrai522@gmail.com, tamird@kernel.org, kees@kernel.org, 
+	lyude@redhat.com, airlied@gmail.com, linuxppc-dev@lists.ozlabs.org, 
+	linux-kernel@vger.kernel.org, rust-for-linux@vger.kernel.org, llvm@lists.linux.dev
+Subject: Re: [PATCH V16 4/7] rust/powerpc: Set min rustc version for powerpc
+Message-ID: <ahVb4k-2rC4EYZF9@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
+References: <20260520064630.1785283-1-mkchauras@gmail.com>
+ <20260520064630.1785283-5-mkchauras@gmail.com>
+ <CANiq72nPOMkZXpMpwTLFg4xjFfmyf_O_x2FN_nrNBsxeNu178Q@mail.gmail.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -102,156 +102,59 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 3/4] fbdev: Wrap fbcon updates from vga-switcheroo in
- helper
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: deller@gmx.de, simona@ffwll.ch, airlied@gmail.com, lukas@wunner.de,
- maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com,
- chleroy@kernel.org, dri-devel@lists.freedesktop.org,
- linux-fbdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-References: <20260522123019.211059-1-tzimmermann@suse.de>
- <20260522123019.211059-4-tzimmermann@suse.de>
- <CAMuHMdXKF=fSZLqQiOuxDvygBDVSZKD+CQ3Rj+R4E_rYrz-WtA@mail.gmail.com>
-Content-Language: en-US
-From: Thomas Zimmermann <tzimmermann@suse.de>
-Autocrypt: addr=tzimmermann@suse.de; keydata=
- xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdg
- XH47fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0
- BeB5BbqP5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4Yc
- hdHm3bkPjz9EErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB
- 9GluwvIhSezPgnEmimZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEB
- AAHNJ1Rob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPsLAjgQTAQgAOAIb
- AwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftODH
- AAoJEGgNwR1TC3ojx1wH/0hKGWugiqDgLNXLRD/4TfHBEKmxIrmfu9Z5t7vwUKfwhFL6hqvo
- lXPJJKQpQ2z8+X2vZm/slsLn7J1yjrOsoJhKABDi+3QWWSGkaGwRJAdPVVyJMfJRNNNIKwVb
- U6B1BkX2XDKDGffF4TxlOpSQzdtNI/9gleOoUA8+jy8knnDYzjBNOZqLG2FuTdicBXblz0Mf
- vg41gd9kCwYXDnD91rJU8tzylXv03E75NCaTxTM+FBXPmsAVYQ4GYhhgFt8S2UWMoaaABLDe
- 7l5FdnLdDEcbmd8uLU2CaG4W2cLrUaI4jz2XbkcPQkqTQ3EB67hYkjiEE6Zy3ggOitiQGcqp
- j//OwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHUE9eosYb
- T6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+qbU6
- 3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWW
- GKdDegUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lv
- hFXodNFMAgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsA
- EQEAAcLAdgQYAQgAIAIbDBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftOH6AAoJEGgNwR1T
- C3ojVSkIALpAPkIJPQoURPb1VWjh34l0HlglmYHvZszJWTXYwavHR8+k6Baa6H7ufXNQtThR
- yIxJrQLW6rV5lm7TjhffEhxVCn37+cg0zZ3j7zIsSS0rx/aMwi6VhFJA5hfn3T0TtrijKP4A
- SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
- Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
- 4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
-In-Reply-To: <CAMuHMdXKF=fSZLqQiOuxDvygBDVSZKD+CQ3Rj+R4E_rYrz-WtA@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-X-Rspamd-Queue-Id: 3BB3C65443
-X-Rspamd-Action: no action
-X-Spamd-Result: default: False [-4.51 / 50.00];
-	BAYES_HAM(-3.00)[100.00%];
-	NEURAL_HAM_LONG(-1.00)[-1.000];
-	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	NEURAL_HAM_SHORT(-0.20)[-1.000];
-	MIME_GOOD(-0.10)[text/plain];
-	MX_GOOD(-0.01)[];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	FREEMAIL_ENVRCPT(0.00)[gmail.com,gmx.de];
-	RBL_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:104:10:150:64:97:from];
-	RCPT_COUNT_TWELVE(0.00)[12];
-	FUZZY_RATELIMITED(0.00)[rspamd.com];
-	MIME_TRACE(0.00)[0:+];
-	ARC_NA(0.00)[];
-	FREEMAIL_CC(0.00)[gmx.de,ffwll.ch,gmail.com,wunner.de,linux.ibm.com,ellerman.id.au,kernel.org,lists.freedesktop.org,vger.kernel.org,lists.ozlabs.org];
-	RCVD_TLS_ALL(0.00)[];
-	DKIM_TRACE(0.00)[suse.de:+];
-	RCVD_COUNT_TWO(0.00)[2];
-	FROM_EQ_ENVFROM(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	TO_DN_SOME(0.00)[];
-	DNSWL_BLOCKED(0.00)[2a07:de40:b281:106:10:150:64:167:received];
-	MID_RHS_MATCH_FROM(0.00)[];
-	internal_greylist_whitelist(0.00)[2a07:de40:b281:104:10:150:64:97];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	RECEIVED_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:106:10:150:64:167:received];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[bootlin.com:url,imap1.dmz-prg2.suse.org:rdns,imap1.dmz-prg2.suse.org:helo,suse.com:url,suse.de:email,suse.de:mid,suse.de:dkim]
-X-Rspamd-Server: rspamd1.dmz-prg2.suse.org
+In-Reply-To: <CANiq72nPOMkZXpMpwTLFg4xjFfmyf_O_x2FN_nrNBsxeNu178Q@mail.gmail.com>
 
-Hi Geert
+On Mon, May 25, 2026 at 08:16:53PM +0200, Miguel Ojeda wrote:
+> On Wed, May 20, 2026 at 8:48 AM Mukesh Kumar Chaurasiya (IBM)
+> <mkchauras@gmail.com> wrote:
+> >
+> > Minimum `rustc` version required for powerpc is 1.95 as some critical
+> > features required for compiling rust code for kernel are not there.
+> 
+> Which critical features?
+Hey Miguel,
 
-Am 25.05.26 um 11:31 schrieb Geert Uytterhoeven:
-> Hi Thomas,
->
-> On Fri, 22 May 2026 at 15:11, Thomas Zimmermann <tzimmermann@suse.de> wrote:
->> Handle console remapping in fbcon in fb_switch_output(). Vga-switcheroo
->> invokes this functionality before switching physical outputs to a new
->> graphics device. Open-coding fbcon state in vga-switcheroo exposed fbdev
->> implementation details.
->>
->> Vga-switcheroo is used for switching physical outputs among graphics
->> hardware. This functionality is only supported by DRM drivers. A later
->> update will further move fb_switch_output() into DRM's fbdev emulation;
->> thus fully decoupling vga-switcheroo from fbdev.
->>
->> v2:
->> - use '#if defined' (Helge)
->>
->> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-> Thanks for your patch, which is now commit 91458b3f2a84bc7b ("fbdev:
-> Wrap fbcon updates from vga-switcheroo in helper") in fbdev/for-next.
->
->> --- a/drivers/gpu/vga/vga_switcheroo.c
->> +++ b/drivers/gpu/vga/vga_switcheroo.c
->> @@ -31,11 +31,9 @@
->>   #define pr_fmt(fmt) "vga_switcheroo: " fmt
->>
->>   #include <linux/apple-gmux.h>
->> -#include <linux/console.h>
->>   #include <linux/debugfs.h>
->>   #include <linux/fb.h>
->>   #include <linux/fs.h>
->> -#include <linux/fbcon.h>
->>   #include <linux/module.h>
->>   #include <linux/pci.h>
->>   #include <linux/pm_domain.h>
->> @@ -735,8 +733,10 @@ static int vga_switchto_stage2(struct vga_switcheroo_client *new_client)
->>          if (!active->driver_power_control)
->>                  set_audio_state(active->id, VGA_SWITCHEROO_OFF);
->>
->> +#if defined(CONFIG_FB)
->>          if (new_client->fb_info)
->> -               fbcon_remap_all(new_client->fb_info);
->> +               fb_switch_outputs(new_client->fb_info);
->> +#endif
-> What if CONFIG_FB is modular?
-> CONFIG_VGA_SWITCHEROO is bool.
-
-Good point. Fbcon is currently linked into fb.ko, which is build with 
-CONFIG_FB.  Kconfig covers this dependency at [1]. For now, I think we 
-could make it 'depends on FB=y'.  As I mentioned elsewhere, this 
-fb-related logic is only relevant for DRM and supposed to be moved there 
-soon.  That will also resolve any such config issues.
-
-Let me prepare an update for this.
-
-Best regards
-Thomas
-
-[1] 
-https://elixir.bootlin.com/linux/v7.0.9/source/drivers/gpu/vga/Kconfig#L7
+Right now i can only think of inline asm. I can rerun the whole thing
+with 1.85 and figure out the issues with 1.85. I'll get back on this.
 
 >
->>          mutex_lock(&vgasr_priv.mux_hw_lock);
->>          ret = vgasr_priv.handler->switchto(new_client->id);
-> Gr{oetje,eeting}s,
->
->                          Geert
->
+> > For example Stable inline asm support which got merged in 1.95.
+> 
+> It is not needed that the support is stable, but rather that
+> everything you may need works.
+> 
+I wanted inline asm be stable, I was skeptical about inline asm to be
+unstable and potentially messing up the whole system. That's the reason
+I waited for the stable support to get merged before sending out this
+patch series.
 
--- 
---
-Thomas Zimmermann
-Graphics Driver Developer
-SUSE Software Solutions Germany GmbH
-Frankenstr. 146, 90461 Nürnberg, Germany, www.suse.com
-GF: Jochen Jaser, Andrew McDonald, Werner Knoblich, (HRB 36809, AG Nürnberg)
+> From a quick test (with a dummy example that may not be
+> representative), ppc64 inline assembly seems to work for a long time,
+> way before Rust 1.95.
+> 
+> So, which is the actual version that it is needed? i.e. 1.95.0 doesn't
+> seem to be required at least due to that.
+> 
+Yeah it may be true. I'll test out the 1.85 rustc and come back with the
+results.
 
+> That is why I am asking about the critical features above, because it
+> may be that this works since earlier versions.
+> 
+> (I wonder if this patch and s390's similar one influenced each other?)
+>
+I am not aware of s390x way of approaching support for rust so can't say
+anything about that.
+
+> Thanks!
+> 
+> Cheers,
+> Miguel
+
+Regards,
+Mukesh
 
 
