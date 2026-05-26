@@ -1,67 +1,67 @@
-Return-Path: <linuxppc-dev+bounces-21533-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21534-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 249B3CD5BD5
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 May 2026 22:42:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A6E1DCD5BD5
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 May 2026 22:42:59 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gQ77G64dsz2ydq;
-	Wed, 27 May 2026 08:42:50 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::34a"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779818368;
-	cv=none; b=YRLWjJT3iiKzrk/fc22MKsA26l2iXZ8R9q9LFSDO7pqM4/MGaBR6OgdA9YclAdzPvnFv6MCxNqkcFkiS0Jm6A5rAbKW6rSL/4NRZJSeI+bxce91qJh5bel4nks2BgTc7nkUdgyXhE7Q/aSqG5i/EUQuu6zmc4I6rOYKa+sBYO8dfyEYBbAUs/p9W8QGCRzjsH+XRIyzYCZBnEqOlfWlPcV/LLERgZCy5aHVDLKK/90g4ls6JzZY5BmGBwop3gTpoHEP5YHd806dW852OUS0rHxajXcbfWJhMgCJhLWauNFjEkQCnMV6dkj3rXKxStyLHMb8ihAB92XWxtERNTOLSDg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gQ77Q2rrKz2yYd;
+	Wed, 27 May 2026 08:42:58 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::549"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779818369;
+	cv=none; b=glXR1dhOUVUOfO5YkJ+E8+0DXCW/rClhdzDjFv0XG6yyLouNwzX41j4Syt28FHm7/aOCWkTTkh+YO+uxYraLl+ZBPSCwi3I5f2zjJDrWYg+Vq6lLmVA9rEZylM0awyjMGhYTguczReFk2/p1IzuReDgizH3PmygK71uQSF6ZYTCWscSW9Itv0mNs+zkkpx51J7SG/TmrjWjget3OdxjfWDnuKNJm7RcyWQS8pwBXlfbnVYJNJ2vYy2RbEBU6ZbBHQfQvZRWZqHYfijCJt8auC+znNkv5SI0NsApfQj7DQqFEqhOHHsT6+9TEe+QDBXaM1Q0Ytd7SCDC0ntiS1p/fNQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1779818368; c=relaxed/relaxed;
-	bh=+RFflol+bsWEcr4KlK98zfj4SqOIgycSAYTOMgzlgw0=;
+	t=1779818369; c=relaxed/relaxed;
+	bh=LtBeFQlOADPYK4gJNp1okGIhaF4i6t2Ouexf2+2MrWs=;
 	h=Date:In-Reply-To:Mime-Version:References:Message-ID:Subject:From:
-	 To:Cc:Content-Type; b=HMmN2nA+BgQGP0Go2uzoDMo+4cQe7CvMqpl0qsmP5VnQbcLJdW/evBvZhDZaWpFuRO1uqSkHhouWVy/MLkRhhTXkfhhQ1IIvxhFQP6atpqM+6LgXdqlp/doaEbJdaQ64oNE41ToT4pLxCmfSWtUvjb0tUIaT+ZGSFR+xQFTA4G4/iNzfB61bfvEen9vwwMVGu+4iudFFyW0oXjvDxkBYG2PDbyAJ9luHplBau9vXUHXNdxMyFTk5fGjT2ISySDI+FTuaG1RZPH+8SKNMbqh8ub6L9gkkjwCJJpV3nt1mIUrQ+MVBxhIe8z9OgYYkrgwDjOFzOkvWSPo3OVUBADAAPA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=nO8i9jhb; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::34a; helo=mail-wm1-x34a.google.com; envelope-from=3ed8vaggkdoyizlj+oqbowwotm.kwutqvcfxxk-lmdtqaba.whtija.wzo@flex--ardb.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=flex--ardb.bounces.google.com
+	 To:Cc:Content-Type; b=kyaAG6aWgoxVSdyy7BezzYP/1/65b/dXlPvX25IOhGsePD4xOEWqE7h1Krht5tE678Mi2xx9A402Jk/98ifIEQJC5JHcvKJcZzgq6zZIhGr337ML3jjCF+W5uaYSSnxxf8EUVxeaSfWvgxBKrRPDsbroGKqmP/B3RnpgY4UUm3xNma4m94tNknpYENPtid7EA0Xj83/a3sBJxUWwJoB8lEk39oJAq6oZssSwRY7DLVGQ+WOwIrqcESvlXyKaMJIj5IWI3dgxqonMCHuNpFiEQMO3HWsLiCilAqFsUeHXMQ1CinS9tFOWN4DYmV7F9qoBD7YKfkJwR4O/C8bVI7tauQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=IWuH8PLX; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::549; helo=mail-ed1-x549.google.com; envelope-from=3e98vaggkdogkbnl+qsdqyyqvo.mywvsxehzzm-nofvscdc.yjvklc.ybq@flex--ardb.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=flex--ardb.bounces.google.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=nO8i9jhb;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=IWuH8PLX;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--ardb.bounces.google.com (client-ip=2a00:1450:4864:20::34a; helo=mail-wm1-x34a.google.com; envelope-from=3ed8vaggkdoyizlj+oqbowwotm.kwutqvcfxxk-lmdtqaba.whtija.wzo@flex--ardb.bounces.google.com; receiver=lists.ozlabs.org)
-Received: from mail-wm1-x34a.google.com (mail-wm1-x34a.google.com [IPv6:2a00:1450:4864:20::34a])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--ardb.bounces.google.com (client-ip=2a00:1450:4864:20::549; helo=mail-ed1-x549.google.com; envelope-from=3e98vaggkdogkbnl+qsdqyyqvo.mywvsxehzzm-nofvscdc.yjvklc.ybq@flex--ardb.bounces.google.com; receiver=lists.ozlabs.org)
+Received: from mail-ed1-x549.google.com (mail-ed1-x549.google.com [IPv6:2a00:1450:4864:20::549])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gQ0rG5RPSz2xS2
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 May 2026 03:59:26 +1000 (AEST)
-Received: by mail-wm1-x34a.google.com with SMTP id 5b1f17b1804b1-490261c79fcso37463295e9.0
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 May 2026 10:59:25 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gQ0rH3rt9z2yD6
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 May 2026 03:59:27 +1000 (AEST)
+Received: by mail-ed1-x549.google.com with SMTP id 4fb4d7f45d1cf-6877fc51d4cso5448436a12.2
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 May 2026 10:59:27 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20251104; t=1779818362; x=1780423162; darn=lists.ozlabs.org;
+        d=google.com; s=20251104; t=1779818364; x=1780423164; darn=lists.ozlabs.org;
         h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
          :date:from:to:cc:subject:date:message-id:reply-to;
-        bh=+RFflol+bsWEcr4KlK98zfj4SqOIgycSAYTOMgzlgw0=;
-        b=nO8i9jhbPEZj2dqgMPr1V/QB83rINNZMtWFi0E3WADQ4yLcN+GHTem2SbQiAHnUa2b
-         vqpjBBpGA0P6GUa3nT2DqyiLO4xeXqh36HAF1+AQ0NDhtopUnHlEK911SGtUDDHxxR5d
-         J60m65Ft1/ADD3tr3a1AGrEVH105485r8EKvDB5YxxmIF6Fm8IjDN+OqLLikWB/vvGLy
-         5Qo0SApkWWIE41sgaldJ5AtRrCyGfdopqzob3zGxoOVkgDjDk7LdtHc4JleHZxK4hvQB
-         Cmcjne/GZkwuh7gRz3nNpJgljZg4k6a+PpD8qQmTEdTOkPrGaQxgEjC4uQlVo3ttmCNv
-         qqTQ==
+        bh=LtBeFQlOADPYK4gJNp1okGIhaF4i6t2Ouexf2+2MrWs=;
+        b=IWuH8PLXZi7URPE3xf+nE4wUj+a2HE2jQGCM+0Uuddtae4vkwHQP+vX/RgQQ7BVyBW
+         XmKDcDavXK0ASzlAnworFlRC6TxZEru54DNVIcCjv+0SHBHkGG4Lo2ZWO9hL7ilAKQve
+         x8ifCpBrGJmw2T2QVw7LgndzPr5sEA8H7aAdwer7xp1ri4DjD+r9SKbBHZHFq6mKJmUG
+         hLdrp6bBFMXumNU+teCVjF2vJJP9pXH6JHm5eSd944VMtn6jMEhAFXA/7P7sQTjXVQ4J
+         TTYLs2klBgbudtOKEATc15Y1tc6o62crdVNJoD9Q7F07Q6Gu7y4wSOqZlhgseJciu0FA
+         zP1w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1779818362; x=1780423162;
+        d=1e100.net; s=20251104; t=1779818364; x=1780423164;
         h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
          :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=+RFflol+bsWEcr4KlK98zfj4SqOIgycSAYTOMgzlgw0=;
-        b=BTxmHE1tZLgv9ri5hZ853DQa+nXg559r5pZzxt8qIDh6SH3xVNMrvIbI5gtfXC2Bvf
-         3EIEMQGDeU8QPUVdCYAkqISCWvaxQ8w6TtFfMCZON0dh/PyR5NJIEWMHJF00dID4klfX
-         OswTubO/QKmPLWnE5PHz4sRqHhK7qPcqunc0LYAGFqrft5pwqOXLtSO+w6pR5NunUMXK
-         755rEHkeHTmug4fPs2D4cZV6jmDDRXgEBsaAmvrj5l2Fff+j6v+9WzYnGcG5/bTbOtFc
-         JLGw2UrVC9M6rf3SlA5ZaPddilq3StvN4SP+/Stsb2IriEUScCzFJSpzgdKkWqxVSrj0
-         Az1Q==
-X-Forwarded-Encrypted: i=1; AFNElJ9YqHtGNiWycInC7Mnx34fNI71IUcwPsiRazqrt3H+G2A0fvbluFkSU5+GXYHZ4b4348E/BuGi7dZZAu8c=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YzwmU7UT8pTJQry4aWumGbTAe3TNaml4W9DUqfUfalpMrGaYUkF
-	N23NmNzTj808OeTmpPZr+zbKGhQby9TDFKTczAz7XKgopkhgWcVYLZRnNpP6hHI9hgu3lsnbKA=
+        bh=LtBeFQlOADPYK4gJNp1okGIhaF4i6t2Ouexf2+2MrWs=;
+        b=iuFJrkGT1SEF2gpYHq9XntWLyrzT7XK/Hfz2jhDTjGY4fakwuvGRm373TG+GqmxuXM
+         C6n9fWrBjX5NOA/d6NQFF7Khd/wjmBTMGBVNjTTsmDqgloPjEHyRvMSgtueRFcaI8JCX
+         mjOdaMd0pOygpRCZZTcUf6SoG2Ur5nXkfFyYGZbKQTf2cKFry6qj0UcyH9VG8w9wpKuo
+         qZoDDJbyGC4o/gCHdCx0HhNbJ6W8jL1VojKknfuqsIlXI8cBytm3X8l036VIJyWv0GPg
+         X2MFAuiF+sa7DQxlKqOEkfligw/yanhF/A/9+GjYo29R2ZWn+a3q5oWDKpjgrR4z8j/k
+         d2zQ==
+X-Forwarded-Encrypted: i=1; AFNElJ/Yi481jPsc1ggphVmOlQ+19X/e4tySQ8e7DzULhfQtSToz+QcaOHDYHzwcJxFNNOCAYJOQBwAHfgOYEvU=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yz8RXa4fNEo92v+6sGeoamLlRiYlLqDgZHRyPmTDSNiw3xd4gMF
+	/pS1iG+2VWRvyegYfSNE1lKMp7e2GgzxRjXzWnax8kv5W9CInn2B+6Ie4PKPKCh9tjI77CIJ8w=
 	=
-X-Received: from wmgb20.prod.google.com ([2002:a05:600c:1514:b0:48f:de5b:469b])
- (user=ardb job=prod-delivery.src-stubby-dispatcher) by 2002:a05:600c:8599:b0:48f:e230:29f4
- with SMTP id 5b1f17b1804b1-490426ade02mr205371775e9.15.1779818361151; Tue, 26
- May 2026 10:59:21 -0700 (PDT)
-Date: Tue, 26 May 2026 19:58:48 +0200
+X-Received: from edye18.prod.google.com ([2002:a05:6402:892:b0:67c:573d:d3a0])
+ (user=ardb job=prod-delivery.src-stubby-dispatcher) by 2002:a05:6402:40d4:b0:67b:cd1f:9cc1
+ with SMTP id 4fb4d7f45d1cf-6889c445088mr10125279a12.6.1779818363764; Tue, 26
+ May 2026 10:59:23 -0700 (PDT)
+Date: Tue, 26 May 2026 19:58:50 +0200
 In-Reply-To: <20260526175846.2694125-17-ardb+git@google.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -78,15 +78,15 @@ Precedence: list
 Mime-Version: 1.0
 References: <20260526175846.2694125-17-ardb+git@google.com>
 X-Developer-Key: i=ardb@kernel.org; a=openpgp; fpr=F43D03328115A198C90016883D200E9CA6329909
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1021; i=ardb@kernel.org;
- h=from:subject; bh=Kh7cxWXkNrSTDvznUsNThby14Lf6cpInZSVAIOoSUVU=;
- b=owGbwMvMwCVmkMcZplerG8N4Wi2JIUv0fsQvk8viPq9V2vx6dMWennJ+dkQqIjT+cV/VLZF1b
- R7nhSZ2lLIwiHExyIopsgjM/vtu5+mJUrXOs2Rh5rAygQxh4OIUgImsLWZk2HK0ii1yonQZe7ZV
- +ApXXrWOD0eLlqwV53zN/y7vkpHmYUaGZx8+meyLTM/2WSaWZW95P1zc+UOGxrXah+2Pw7MWVjW xAgA=
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2121; i=ardb@kernel.org;
+ h=from:subject; bh=UYuabKAGVqw/38U/k7XQfrNPG5ThRXq/7mqnsjcGnSk=;
+ b=owGbwMvMwCVmkMcZplerG8N4Wi2JIUv0fvTm0BsvTTTaUheFf26uWyada7zXR7A5ui2rSTZi1
+ o2FJrwdpSwMYlwMsmKKLAKz/77beXqiVK3zLFmYOaxMIEMYuDgFYCKHcxj+Cl+U+L3mz31fZxuh
+ tHcrzdsEq/i1War/p2x78yRMa8USUUaGzw8WujlZRJw7v672d9asvI8f57TITLjpqnwn3Gp2wO5 +NgA=
 X-Mailer: git-send-email 2.54.0.794.g4f17f83d09-goog
-Message-ID: <20260526175846.2694125-18-ardb+git@google.com>
-Subject: [PATCH v6 01/15] arm64: mm: Remove bogus stop condition from
- map_mem() loop
+Message-ID: <20260526175846.2694125-20-ardb+git@google.com>
+Subject: [PATCH v6 03/15] arm64: mm: Check for pud_/pmd_set_huge() failures on
+ kernel mappings
 From: Ard Biesheuvel <ardb+git@google.com>
 To: linux-arm-kernel@lists.infradead.org
 Cc: linux-kernel@vger.kernel.org, will@kernel.org, catalin.marinas@arm.com, 
@@ -96,38 +96,60 @@ Cc: linux-kernel@vger.kernel.org, will@kernel.org, catalin.marinas@arm.com,
 	Mike Rapoport <rppt@kernel.org>, David Hildenbrand <david@kernel.org>, 
 	Andrew Morton <akpm@linux-foundation.org>, Jann Horn <jannh@google.com>, linux-mm@kvack.org, 
 	linux-hardening@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
-	linux-sh@vger.kernel.org, Kevin Brodsky <kevin.brodsky@arm.com>
+	linux-sh@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
 
 From: Ard Biesheuvel <ardb@kernel.org>
 
-The memblock API guarantees that start is not greater than or equal to
-end, so there is no need to test it. And if it were, it is doubtful that
-breaking out of the loop would be a reasonable course of action here
-(rather than attempting to map the remaining regions)
+Sashiko reports:
 
-So let's drop this check.
+| If pmd_set_huge() rejects an unsafe page table transition (such as
+| mapping a different physical address over an existing block mapping),
+| it returns 0 and leaves the page table entry unmodified.
+|
+| Because *pmdp remains unmodified, READ_ONCE(pmd_val(*pmdp)) will equal
+| pmd_val(old_pmd). The transition from old_pmd to old_pmd is evaluated
+| as safe by pgattr_change_is_safe(), so the BUG_ON never triggers.
+|
+| This allows invalid and unsafe mapping updates to be silently dropped
+| instead of panicking, leaving stale memory mappings active while the
+| caller assumes the update was successful.
 
-Reviewed-by: Ryan Roberts <ryan.roberts@arm.com>
-Reviewed-by: Kevin Brodsky <kevin.brodsky@arm.com>
+The same applies to pud_set_huge() in alloc_init_pud().
+
+Given how it is generally preferred to limp on rather than blow up the
+system if an unexpected condition such as this one occurs, and the fact
+that there are no known cases where this disparity results in real
+problems, let's WARN on these failures rather than BUG, allowing the
+system to survive to the point where it can actually report them.
+
 Signed-off-by: Ard Biesheuvel <ardb@kernel.org>
 ---
- arch/arm64/mm/mmu.c | 2 --
- 1 file changed, 2 deletions(-)
+ arch/arm64/mm/mmu.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/arch/arm64/mm/mmu.c b/arch/arm64/mm/mmu.c
-index dd85e093ffdb..112fa4a3b0eb 100644
+index aa0e2c6435f7..b2ba5b35c35f 100644
 --- a/arch/arm64/mm/mmu.c
 +++ b/arch/arm64/mm/mmu.c
-@@ -1173,8 +1173,6 @@ static void __init map_mem(pgd_t *pgdp)
+@@ -257,7 +257,7 @@ static int init_pmd(pmd_t *pmdp, unsigned long addr, unsigned long end,
+ 		/* try section mapping first */
+ 		if (((addr | next | phys) & ~PMD_MASK) == 0 &&
+ 		    (flags & NO_BLOCK_MAPPINGS) == 0) {
+-			pmd_set_huge(pmdp, phys, prot);
++			WARN_ON(!pmd_set_huge(pmdp, phys, prot));
  
- 	/* map all the memory banks */
- 	for_each_mem_range(i, &start, &end) {
--		if (start >= end)
--			break;
- 		/*
- 		 * The linear map must allow allocation tags reading/writing
- 		 * if MTE is present. Otherwise, it has the same attributes as
+ 			/*
+ 			 * After the PMD entry has been populated once, we
+@@ -380,7 +380,7 @@ static int alloc_init_pud(p4d_t *p4dp, unsigned long addr, unsigned long end,
+ 		if (pud_sect_supported() &&
+ 		   ((addr | next | phys) & ~PUD_MASK) == 0 &&
+ 		    (flags & NO_BLOCK_MAPPINGS) == 0) {
+-			pud_set_huge(pudp, phys, prot);
++			WARN_ON(!pud_set_huge(pudp, phys, prot));
+ 
+ 			/*
+ 			 * After the PUD entry has been populated once, we
 -- 
 2.54.0.794.g4f17f83d09-goog
 
