@@ -1,61 +1,62 @@
-Return-Path: <linuxppc-dev+bounces-21527-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21528-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B7E76CD5BD0
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 May 2026 22:40:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A6FBCCD5BD5
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 May 2026 22:40:19 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gQ74B1njbz2y8h;
-	Wed, 27 May 2026 08:40:10 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gQ74L2qhdz2xVK;
+	Wed, 27 May 2026 08:40:18 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=45.249.212.187
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779807385;
-	cv=none; b=axwJ+6K+XcUyUFnObrFnfWHPAgw/aUB4WIuiLq6f6E3svxmOf+6QqW0hTaikLNFUxntShp35Deb7pALWnJ9EuDNp1IIqd/+B43AjZNQsy2jQAOwyV+O0LdyzPoIdgzKxHPMQnYb62d2VeKM4tPpeDTwX92hvYXlP1ln8LW9LvlhA6JRZ2JxzctlU4bbBEuflyEdSvk5A0TKNH5ATK0D382FL88DpUNetBNDi3uoXS3D4uzs6qmcnZy0ZavEz9En6kn1Q2rm7d6TAzsmUQ284pD4KZOPGya5xAixVligcXsrA/sx0ew4EPmrUxgEYp4dcCiKmY7gGuc6kP2grOzvwhA==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779807386;
+	cv=none; b=XQ0AUPobLdiHozm/mmxR883LkwreMPAGwcd1bpL8HYDnIprnrghq1GeciTWj6mlPvIw1dRV6lJ97l1I2oczEhS+KBvfdJCRUB5YAIZDGWFuKiMMNnyHv20y4OPFZnEE//cxmlswoEqsEfCdjuRavm3SzuFU2/QIeUIh4UQDWbbSNuW4eMLYF5j+BTuvAA+7SvYCyvLyusF8AzFx+obPNniXyyqRgU8cKnrd5p9Ce8E7N8mTHfJdLQd5wKjd7fDa/nGDY2/LOHpaUoBiLh80BmGcb1F/LSMFeVBSCYK21QLsLnNcKZ8I+eH63GjUxdLYH280zbYcjXpONLTGA6B+EiA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1779807385; c=relaxed/relaxed;
-	bh=tAOc0X5Ad5JET2TC9jtYXzCGegy15EhzBhrLna1J1iI=;
-	h=From:To:CC:Subject:Date:Message-ID:MIME-Version:Content-Type; b=eo3868zLlqnCXQWnfsQmHLyU60nZ3yggasMnNb1FeKIL3HnD92SHiQmi+n/Qc1jx5YAm2X+V8FSLLRkZgoLc1GwxgqcEax5i7tEVPIz1vumdqfxoVZi5nRw/7219L0U6SyiZT4uBhNf+0Go4JSgzKvahlBmx3nMM85VbQ9S5LgDcWfyTkrZYa6FNoT4aaoKsMdy5p0boP3nQQX3w87ZOQb6Jc5uJeoTgCOwPdDwPsoC+4kT+yuKI6SeIFYshtoVvQsghOTPkcDFqsJl+/XVIt9wFCYSsy9GeVpBab5M7Tl4l7s0qZIy/ETSZQv23JtDeOFmY56OFA1kXZFYhQtMqwQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=oNnYAJtF; dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=oNnYAJtF; dkim-atps=neutral; spf=pass (client-ip=45.249.212.187; helo=szxga01-in.huawei.com; envelope-from=yintirui@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
+	t=1779807386; c=relaxed/relaxed;
+	bh=nT3Zd6oOPYEtjshdg1Bk0FOHwde3zTVY8ceQsnwsZdM=;
+	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=bpfImq6nLzM0ROBSh58fQh8HLWgjTO+Ld5Cr4lsVyb8tuOgbodgq8a6aPWzTqGVoASlBJUrT7NeASV5iuX8vPSHq2A3fWFbC/lnnWeutwr6He0pccjQVeC0clCb6TGQoHw+Tiw2jX4gGOxa5UFWMQF45oe7P1BDKmE8dlM56oaAs5NpFQrdhO/UUd+zfuSF8THNlYViqYZdtpmj+a20EbofqQaKgypidDq40Rhoron3kuyKJCbcySFlETRY8QDO5tPIEroq38ZDu+NTlCmFW1X3GQMOLj7NI+yDWO7EXJHP+B1UeiiWWwu/3q7v9+PfcWc67lBHaDY0iKHEwU7aWoA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=kiqwDBz3; dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=kiqwDBz3; dkim-atps=neutral; spf=pass (client-ip=45.249.212.187; helo=szxga01-in.huawei.com; envelope-from=yintirui@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=oNnYAJtF;
-	dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=oNnYAJtF;
+	dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=kiqwDBz3;
+	dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=kiqwDBz3;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.187; helo=szxga01-in.huawei.com; envelope-from=yintirui@huawei.com; receiver=lists.ozlabs.org)
 Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [45.249.212.187])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gPwn20LWcz2yRG
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gPwn16DnSz2xLs
 	for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 May 2026 00:56:21 +1000 (AEST)
 dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
 	c=relaxed/relaxed; q=dns/txt;
 	h=From;
-	bh=tAOc0X5Ad5JET2TC9jtYXzCGegy15EhzBhrLna1J1iI=;
-	b=oNnYAJtFtBgGQSd27b8WhXsDgb/0pSK5BLEBS9P2hWlJ+ZLu8ZVnPWVy0Nea73pW/FtNdSq1+
-	n9s/lIWU9iEd/+tSltQfDjqavQdGCcmagG7lU8SrBvdKe1X8xGz7rqh5mkyjpIdIog7O96zBhP0
-	m9sDvQTKzbDB64y0y/QPHUo=
-Received: from canpmsgout03.his.huawei.com (unknown [172.19.92.159])
-	by szxga01-in.huawei.com (SkyGuard) with ESMTPS id 4gPwlz29GNz1BGT8
+	bh=nT3Zd6oOPYEtjshdg1Bk0FOHwde3zTVY8ceQsnwsZdM=;
+	b=kiqwDBz3UikJUKIHkaYsAJ3cG32hv5EY3xJjeU+J40+ELgW9Gb+SQrETtISNH2oxuiGlNE9zz
+	zUXZE7m8QkjMeJKNROiCtDM8044dorM/6NK6IOzokAXdK6TMSsdxhi4dc1/jP9v0T4Rd/2wRjw7
+	5+jNMqmxHKWukUuVyrcGCkQ=
+Received: from canpmsgout05.his.huawei.com (unknown [172.19.92.145])
+	by szxga01-in.huawei.com (SkyGuard) with ESMTPS id 4gPwlz26pQz1BGSd
 	for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 May 2026 22:55:27 +0800 (CST)
 dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
 	c=relaxed/relaxed; q=dns/txt;
 	h=From;
-	bh=tAOc0X5Ad5JET2TC9jtYXzCGegy15EhzBhrLna1J1iI=;
-	b=oNnYAJtFtBgGQSd27b8WhXsDgb/0pSK5BLEBS9P2hWlJ+ZLu8ZVnPWVy0Nea73pW/FtNdSq1+
-	n9s/lIWU9iEd/+tSltQfDjqavQdGCcmagG7lU8SrBvdKe1X8xGz7rqh5mkyjpIdIog7O96zBhP0
-	m9sDvQTKzbDB64y0y/QPHUo=
-Received: from mail.maildlp.com (unknown [172.19.163.104])
-	by canpmsgout03.his.huawei.com (SkyGuard) with ESMTPS id 4gPwcF0nYNzpSwR;
-	Tue, 26 May 2026 22:48:45 +0800 (CST)
+	bh=nT3Zd6oOPYEtjshdg1Bk0FOHwde3zTVY8ceQsnwsZdM=;
+	b=kiqwDBz3UikJUKIHkaYsAJ3cG32hv5EY3xJjeU+J40+ELgW9Gb+SQrETtISNH2oxuiGlNE9zz
+	zUXZE7m8QkjMeJKNROiCtDM8044dorM/6NK6IOzokAXdK6TMSsdxhi4dc1/jP9v0T4Rd/2wRjw7
+	5+jNMqmxHKWukUuVyrcGCkQ=
+Received: from mail.maildlp.com (unknown [172.19.162.223])
+	by canpmsgout05.his.huawei.com (SkyGuard) with ESMTPS id 4gPwbb0n0Hz12LJv;
+	Tue, 26 May 2026 22:48:11 +0800 (CST)
 Received: from kwepemr500001.china.huawei.com (unknown [7.202.194.229])
-	by mail.maildlp.com (Postfix) with ESMTPS id CC8F54048F;
-	Tue, 26 May 2026 22:56:09 +0800 (CST)
+	by mail.maildlp.com (Postfix) with ESMTPS id 3F95740571;
+	Tue, 26 May 2026 22:56:11 +0800 (CST)
 Received: from huawei.com (10.50.87.63) by kwepemr500001.china.huawei.com
  (7.202.194.229) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.11; Tue, 26 May
- 2026 22:56:08 +0800
+ 2026 22:56:09 +0800
 From: Yin Tirui <yintirui@huawei.com>
 To: Andrew Morton <akpm@linux-foundation.org>, Matthew Wilcox
 	<willy@infradead.org>, David Hildenbrand <david@kernel.org>, Lorenzo Stoakes
@@ -86,10 +87,12 @@ CC: Catalin Marinas <catalin.marinas@arm.com>, Peter Xu <peterx@redhat.com>,
 	<linux-kernel@vger.kernel.org>, <x86@kernel.org>,
 	<linux-arm-kernel@lists.infradead.org>, <linuxppc-dev@lists.ozlabs.org>,
 	<linux-pm@vger.kernel.org>
-Subject: [PATCH mm-unstable RFC v4 0/7] mm: add huge pfnmap support for remap_pfn_range()
-Date: Tue, 26 May 2026 22:49:56 +0800
-Message-ID: <20260526145003.88445-1-yintirui@huawei.com>
+Subject: [PATCH mm-unstable RFC v4 1/7] x86/mm: use PTE-level pgprot for huge PFN helpers
+Date: Tue, 26 May 2026 22:49:57 +0800
+Message-ID: <20260526145003.88445-2-yintirui@huawei.com>
 X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20260526145003.88445-1-yintirui@huawei.com>
+References: <20260526145003.88445-1-yintirui@huawei.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -109,156 +112,491 @@ X-Originating-IP: [10.50.87.63]
 X-ClientProxiedBy: kwepems100001.china.huawei.com (7.221.188.238) To
  kwepemr500001.china.huawei.com (7.202.194.229)
 
-This series is based on mm-unstable and depends on:
-1. pgtable_has_pmd_leaves(), introduced by Luiz's series:
-     https://lore.kernel.org/linux-mm/cover.1777663129.git.luizcap@redhat.com/
-2. mm/huge_memory: update file PMD counter before folio_put()
-     https://lore.kernel.org/linux-mm/20260526101337.1984081-1-yintirui@huawei.com/T/#u
+Make the x86 PMD/PUD PFN helpers use PTE-level pgprot_t as the basic
+format.
 
-v4:
-- Following Matthew Wilcox's feedback that huge-page attribute handling
-  should stay in architecture helpers:
-  https://lore.kernel.org/all/aapXRN4KjWtUUJ0g@casper.infradead.org/
+pfn_pmd() and pfn_pud() now translate PTE-level attributes into
+large-page entries, including the x86 PAT/PSE encoding. pmd_pgprot()
+and pud_pgprot() translate large-page attributes back to PTE-level
+pgprot_t, hiding _PAGE_PSE and converting large-page PAT encoding back
+to the PTE PAT position.
 
-  Reworked the pgprot contract for architectures that enable
-  CONFIG_ARCH_SUPPORTS_PMD_PFNMAP: pfn_pmd()/pfn_pud() construct PMD/PUD
-  leaf entries from base-PTE pgprot_t, while pmd_pgprot()/pud_pgprot()
-  return base-PTE pgprot_t.  Added the required x86, arm64 and powerpc
-  support; RISC-V already satisfies the required semantics.
-- Refactored copy_huge_pmd() and __split_huge_pmd_locked() to first
-  classify PMDs by pmd_present(), and then use vm_normal_folio_pmd() for
-  present PMDs, and make move_huge_pmd() use has_deposited_pgtable().
-- Introduced a restriction, following the discussion with Lorenzo and
-  David, that remap_pfn_range() does not create PMD-sized mappings for
-  VMAs that have a fault handler:
-  [https://lore.kernel.org/linux-mm/6417587a-7e43-4615-9e2c-50a245842f59@kernel.org/]
+Rework pmd_mkinvalid() and pud_mkinvalid() to use the same helpers:
+extract a PTE-level pgprot_t with pmd_pgprot()/pud_pgprot(), clear
+PRESENT/PROTNONE, and rebuild the PMD/PUD entry with
+pfn_pmd()/pfn_pud().
 
-  With this restriction, PMD PFNMAP entries in VMAs without fault handlers
-  are known to have been installed by remap_pfn_range(), which deposits a
-  page table when installing such mappings; PMD PFNMAP entries in VMAs
-  with fault handlers are created through fault-time insertion paths such
-  as vmf_insert_pfn_pmd().
+The old explicit huge pgprot conversion helpers are no longer needed.
+Remove pte_clrhuge(), pgprot_large_2_4k(), pgprot_4k_2_large(),
+PAGE_KERNEL_LARGE and PAGE_KERNEL_LARGE_EXEC, and update x86 callers to
+construct PMD/PUD entries through the normal PFN helpers.
 
-v3: https://lore.kernel.org/all/20260228070906.1418911-1-yintirui@huawei.com/
-1. Architectural Type Safety (Matthew Wilcox):
-Following the insightful architectural feedback from Matthew Wilcox in v2,
-the approach to clearing huge page attributes has been completely redesigned.
-Instead of spreading the `pte_clrhuge()` anti-pattern to ARM64 and RISC-V,
-this series enforces strict type safety at the lowest level: `pfn_pte()`
-must never natively return a PTE with huge page attributes set.
+Signed-off-by: Yin Tirui <yintirui@huawei.com>
+---
+ arch/x86/include/asm/pgtable.h       | 68 +++++++++++++++++++---------
+ arch/x86/include/asm/pgtable_types.h | 12 +----
+ arch/x86/mm/init_32.c                |  8 ++--
+ arch/x86/mm/init_64.c                | 30 ++++--------
+ arch/x86/mm/pat/set_memory.c         | 51 ++++++---------------
+ arch/x86/mm/pgtable.c                |  8 +---
+ arch/x86/power/hibernate_32.c        |  6 +--
+ 7 files changed, 77 insertions(+), 106 deletions(-)
 
-To achieve this without breaking the x86 core MM, the series is structured as:
-  - Fix historical type-casting abuses in x86 (vmemmap, vmalloc, CPA) where
-    `pfn_pte()` was wrongly used to generate huge PMDs/PUDs.
-  - Update `pfn_pte()` on x86 and ARM64 to inherently filter out huge page
-    attributes. (RISC-V leaf PMDs and PTEs share the exact same hardware
-    format without a specific "huge" bit, so it is naturally compliant).
-  - Completely eradicate `pte_clrhuge()` from the x86 tree and clean up
-    the type-casting mess in `arch/x86/mm/init_64.c`.
-
-2. Page Table Deposit fix during clone() (syzbot):
-Previously, `copy_huge_pmd()` was unaware of special PMDs created by pfnmap,
-failing to deposit a page table for the child process during `clone()`.
-This led to crashes during process teardown or PMD splitting. The logic is now
-updated to properly allocate and deposit pgtables for `pmd_special()` entries.
-
-v2: https://lore.kernel.org/linux-mm/20251016112704.179280-1-yintirui@huawei.com/#t
-- remove "nohugepfnmap" boot option and "pfnmap_max_page_shift" variable.
-- zap_deposited_table for non-special pmd.
-- move set_pmd_at() inside pmd_lock.
-- prevent PMD mapping creation when pgtable allocation fails.
-- defer the refactor of pte_clrhuge() to a separate patch series. For now,
-  add a TODO to track this.
-
-v1: https://lore.kernel.org/linux-mm/20250923133104.926672-1-yintirui@huawei.com/
-
-Overview
-========
-This patch series adds huge page support for remap_pfn_range(),
-automatically creating huge mappings when prerequisites are satisfied
-(size, alignment, architecture support, etc.) and falling back to
-normal page mappings otherwise.
-
-This work builds on Peter Xu's previous efforts on huge pfnmap
-support [0].
-
-TODO
-====
-- Add PUD-level huge page support. Currently, only PMD-level huge
-pages are supported.
-
-Tests Done
-==========
-- Cross-build tests.
-- Core MM Regression Tests
-   - Booted x86 kernel with `debug_pagealloc=on` to heavily stress the
-     large page splitting logic in direct mapping. No panics observed.
-   - Ran `make -C tools/testing/selftests/vm run_tests`. Both THP and
-     Hugetlbfs tests passed successfully, proving the `pfn_pte()` changes
-     do not interfere with native huge page generation.
-- Functional Tests (with a custom device driver & PTDUMP):
-   - Verified that `remap_pfn_range()` successfully creates 2MB mappings
-     by observing `/sys/kernel/debug/page_tables/current_user`.
-   - Triggered PMD splits via 4K-granular `mprotect()` and partial `munmap()`,
-     verifying correct fallback to 512 PTEs without corrupting permissions
-     or causing kernel crashes.
-   - Triggered `fork()`/`clone()` on the mapped regions, validating the
-     syzbot fix and ensuring safe pgtable deposit/withdraw lifecycle.
-- Performance tests with custom device driver implementing mmap()
-  with remap_pfn_range():
-    - lat_mem_rd benchmark modified to use mmap(device_fd) instead of
-      malloc() shows around 40% improvement in memory access latency with
-      huge page support compared to normal page mappings.
-
-      numactl -C 0 lat_mem_rd -t 4096M (stride=64)
-      Memory Size (MB)    Without Huge Mapping With Huge Mapping Improvement
-      ----------------    -----------------    --------------    -----------
-      64.00               148.858 ns           100.780 ns        32.3%
-      128.00              164.745 ns           103.537 ns        37.2%
-      256.00              169.907 ns           103.179 ns        39.3%
-      512.00              171.285 ns           103.072 ns        39.8%
-      1024.00             173.054 ns           103.055 ns        40.4%
-      2048.00             172.820 ns           103.091 ns        40.3%
-      4096.00             172.877 ns           103.115 ns        40.4%
-
-    - Custom memory copy operations on mmap(device_fd) show around 18% performance 
-      improvement with huge page support compared to normal page mappings.
-
-      numactl -C 0 memcpy_test (memory copy performance test)
-      Memory Size (MB)    Without Huge Mapping With Huge Mapping Improvement
-      ----------------    -----------------    --------------    -----------
-      1024.00             95.76 ms             77.91 ms          18.6%
-      2048.00             190.87 ms            155.64 ms         18.5%
-      4096.00             380.84 ms            311.45 ms         18.2%
-
-[0] https://lore.kernel.org/all/20240826204353.2228736-2-peterx@redhat.com/T/#u
-
-Yin Tirui (7):
-  x86/mm: use PTE-level pgprot for huge PFN helpers
-  arm64/mm: use PTE-level pgprot for huge PFN helpers
-  powerpc/mm: use PTE-level pgprot for huge PFN helpers
-  mm/huge_memory: refactor copy_huge_pmd()
-  mm/huge_memory: refactor __split_huge_pmd_locked()
-  mm/huge_memory: make move_huge_pmd() use has_deposited_pgtable()
-  mm: add PMD-level PFNMAP support for remap_pfn_range()
-
- arch/arm64/include/asm/pgtable.h             |  48 +-
- arch/arm64/mm/mmu.c                          |   4 +-
- arch/powerpc/include/asm/book3s/64/pgtable.h |   5 +-
- arch/powerpc/include/asm/pgtable.h           |  11 +-
- arch/powerpc/mm/book3s64/pgtable.c           |  11 +-
- arch/x86/include/asm/pgtable.h               |  68 ++-
- arch/x86/include/asm/pgtable_types.h         |  12 +-
- arch/x86/mm/init_32.c                        |   8 +-
- arch/x86/mm/init_64.c                        |  30 +-
- arch/x86/mm/pat/set_memory.c                 |  51 +--
- arch/x86/mm/pgtable.c                        |   8 +-
- arch/x86/power/hibernate_32.c                |   6 +-
- mm/huge_memory.c                             | 440 +++++++++++--------
- mm/internal.h                                |  21 +
- mm/memory.c                                  |  87 +++-
- 15 files changed, 493 insertions(+), 317 deletions(-)
-
+diff --git a/arch/x86/include/asm/pgtable.h b/arch/x86/include/asm/pgtable.h
+index 2edd6c9d789c..fe63a2f6d183 100644
+--- a/arch/x86/include/asm/pgtable.h
++++ b/arch/x86/include/asm/pgtable.h
+@@ -475,11 +475,6 @@ static inline pte_t pte_mkhuge(pte_t pte)
+ 	return pte_set_flags(pte, _PAGE_PSE);
+ }
+ 
+-static inline pte_t pte_clrhuge(pte_t pte)
+-{
+-	return pte_clear_flags(pte, _PAGE_PSE);
+-}
+-
+ static inline pte_t pte_mkglobal(pte_t pte)
+ {
+ 	return pte_set_flags(pte, _PAGE_GLOBAL);
+@@ -741,29 +736,31 @@ static inline pte_t pfn_pte(unsigned long page_nr, pgprot_t pgprot)
+ static inline pmd_t pfn_pmd(unsigned long page_nr, pgprot_t pgprot)
+ {
+ 	phys_addr_t pfn = (phys_addr_t)page_nr << PAGE_SHIFT;
+-	pfn ^= protnone_mask(pgprot_val(pgprot));
++	pgprotval_t protval = protval_4k_2_large(pgprot_val(pgprot));
++
++	protval = check_pgprot(__pgprot(protval));
++	if (protval)
++		protval |= _PAGE_PSE;
++
++	pfn ^= protnone_mask(protval);
+ 	pfn &= PHYSICAL_PMD_PAGE_MASK;
+-	return __pmd(pfn | check_pgprot(pgprot));
++
++	return __pmd(pfn | protval);
+ }
+ 
+ static inline pud_t pfn_pud(unsigned long page_nr, pgprot_t pgprot)
+ {
+ 	phys_addr_t pfn = (phys_addr_t)page_nr << PAGE_SHIFT;
+-	pfn ^= protnone_mask(pgprot_val(pgprot));
+-	pfn &= PHYSICAL_PUD_PAGE_MASK;
+-	return __pud(pfn | check_pgprot(pgprot));
+-}
++	pgprotval_t protval = protval_4k_2_large(pgprot_val(pgprot));
+ 
+-static inline pmd_t pmd_mkinvalid(pmd_t pmd)
+-{
+-	return pfn_pmd(pmd_pfn(pmd),
+-		      __pgprot(pmd_flags(pmd) & ~(_PAGE_PRESENT|_PAGE_PROTNONE)));
+-}
++	protval = check_pgprot(__pgprot(protval));
++	if (protval)
++		protval |= _PAGE_PSE;
+ 
+-static inline pud_t pud_mkinvalid(pud_t pud)
+-{
+-	return pfn_pud(pud_pfn(pud),
+-		       __pgprot(pud_flags(pud) & ~(_PAGE_PRESENT|_PAGE_PROTNONE)));
++	pfn ^= protnone_mask(protval);
++	pfn &= PHYSICAL_PUD_PAGE_MASK;
++
++	return __pud(pfn | protval);
+ }
+ 
+ static inline u64 flip_protnone_guard(u64 oldval, u64 val, u64 mask);
+@@ -860,10 +857,37 @@ static inline pgprot_t pgprot_modify(pgprot_t oldprot, pgprot_t newprot)
+ }
+ 
+ #define pte_pgprot(x) __pgprot(pte_flags(x))
+-#define pmd_pgprot(x) __pgprot(pmd_flags(x))
+-#define pud_pgprot(x) __pgprot(pud_flags(x))
++static inline pgprot_t pmd_pgprot(pmd_t pmd)
++{
++	return __pgprot(protval_large_2_4k(pmd_flags(pmd)));
++}
++
++#define pmd_pgprot pmd_pgprot
++
++static inline pgprot_t pud_pgprot(pud_t pud)
++{
++	return __pgprot(protval_large_2_4k(pud_flags(pud)));
++}
++
++#define pud_pgprot pud_pgprot
+ #define p4d_pgprot(x) __pgprot(p4d_flags(x))
+ 
++static inline pmd_t pmd_mkinvalid(pmd_t pmd)
++{
++	pgprot_t prot = pmd_pgprot(pmd);
++
++	pgprot_val(prot) &= ~(_PAGE_PRESENT | _PAGE_PROTNONE);
++	return pfn_pmd(pmd_pfn(pmd), prot);
++}
++
++static inline pud_t pud_mkinvalid(pud_t pud)
++{
++	pgprot_t prot = pud_pgprot(pud);
++
++	pgprot_val(prot) &= ~(_PAGE_PRESENT | _PAGE_PROTNONE);
++	return pfn_pud(pud_pfn(pud), prot);
++}
++
+ #define canon_pgprot(p) __pgprot(massage_pgprot(p))
+ 
+ static inline int is_new_memtype_allowed(u64 paddr, unsigned long size,
+diff --git a/arch/x86/include/asm/pgtable_types.h b/arch/x86/include/asm/pgtable_types.h
+index 2ec250ba467e..135f6f1f826c 100644
+--- a/arch/x86/include/asm/pgtable_types.h
++++ b/arch/x86/include/asm/pgtable_types.h
+@@ -251,8 +251,6 @@ enum page_cache_mode {
+ #define PAGE_KERNEL_EXEC_NOENC	__pgprot_mask(__PAGE_KERNEL_EXEC       |    0)
+ #define PAGE_KERNEL_ROX		__pgprot_mask(__PAGE_KERNEL_ROX        | _ENC)
+ #define PAGE_KERNEL_NOCACHE	__pgprot_mask(__PAGE_KERNEL_NOCACHE    | _ENC)
+-#define PAGE_KERNEL_LARGE	__pgprot_mask(__PAGE_KERNEL_LARGE      | _ENC)
+-#define PAGE_KERNEL_LARGE_EXEC	__pgprot_mask(__PAGE_KERNEL_LARGE_EXEC | _ENC)
+ #define PAGE_KERNEL_VVAR	__pgprot_mask(__PAGE_KERNEL_VVAR       | _ENC)
+ 
+ #define PAGE_KERNEL_IO		__pgprot_mask(__PAGE_KERNEL_IO)
+@@ -497,21 +495,13 @@ static inline pgprotval_t protval_4k_2_large(pgprotval_t val)
+ 	return (val & ~(_PAGE_PAT | _PAGE_PAT_LARGE)) |
+ 		((val & _PAGE_PAT) << (_PAGE_BIT_PAT_LARGE - _PAGE_BIT_PAT));
+ }
+-static inline pgprot_t pgprot_4k_2_large(pgprot_t pgprot)
+-{
+-	return __pgprot(protval_4k_2_large(pgprot_val(pgprot)));
+-}
++
+ static inline pgprotval_t protval_large_2_4k(pgprotval_t val)
+ {
+ 	return (val & ~(_PAGE_PAT | _PAGE_PAT_LARGE)) |
+ 		((val & _PAGE_PAT_LARGE) >>
+ 		 (_PAGE_BIT_PAT_LARGE - _PAGE_BIT_PAT));
+ }
+-static inline pgprot_t pgprot_large_2_4k(pgprot_t pgprot)
+-{
+-	return __pgprot(protval_large_2_4k(pgprot_val(pgprot)));
+-}
+-
+ 
+ typedef struct page *pgtable_t;
+ 
+diff --git a/arch/x86/mm/init_32.c b/arch/x86/mm/init_32.c
+index 0908c44d51e6..3c2c0af5a2d2 100644
+--- a/arch/x86/mm/init_32.c
++++ b/arch/x86/mm/init_32.c
+@@ -311,14 +311,12 @@ kernel_physical_mapping_init(unsigned long start,
+ 			 */
+ 			if (use_pse) {
+ 				unsigned int addr2;
+-				pgprot_t prot = PAGE_KERNEL_LARGE;
++				pgprot_t prot = PAGE_KERNEL;
+ 				/*
+ 				 * first pass will use the same initial
+ 				 * identity mapping attribute + _PAGE_PSE.
+ 				 */
+-				pgprot_t init_prot =
+-					__pgprot(PTE_IDENT_ATTR |
+-						 _PAGE_PSE);
++				pgprot_t init_prot = __pgprot(PTE_IDENT_ATTR);
+ 
+ 				pfn &= PMD_MASK >> PAGE_SHIFT;
+ 				addr2 = (pfn + PTRS_PER_PTE-1) * PAGE_SIZE +
+@@ -326,7 +324,7 @@ kernel_physical_mapping_init(unsigned long start,
+ 
+ 				if (is_x86_32_kernel_text(addr) ||
+ 				    is_x86_32_kernel_text(addr2))
+-					prot = PAGE_KERNEL_LARGE_EXEC;
++					prot = PAGE_KERNEL_EXEC;
+ 
+ 				pages_2m++;
+ 				if (mapping_iter == 1)
+diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
+index 77b889b71cf3..9e83fac8df4e 100644
+--- a/arch/x86/mm/init_64.c
++++ b/arch/x86/mm/init_64.c
+@@ -90,13 +90,6 @@ DEFINE_ENTRY(pud, pud, init)
+ DEFINE_ENTRY(pmd, pmd, init)
+ DEFINE_ENTRY(pte, pte, init)
+ 
+-static inline pgprot_t prot_sethuge(pgprot_t prot)
+-{
+-	WARN_ON_ONCE(pgprot_val(prot) & _PAGE_PAT);
+-
+-	return __pgprot(pgprot_val(prot) | _PAGE_PSE);
+-}
+-
+ /*
+  * NOTE: pagetable_init alloc all the fixmap pagetables contiguous on the
+  * physical space so we can cache the place of the first one and move
+@@ -390,8 +383,7 @@ static void __init __init_extra_mapping(unsigned long phys, unsigned long size,
+ 	pmd_t *pmd;
+ 	pgprot_t prot;
+ 
+-	pgprot_val(prot) = pgprot_val(PAGE_KERNEL_LARGE) |
+-		protval_4k_2_large(cachemode2protval(cache));
++	pgprot_val(prot) = pgprot_val(PAGE_KERNEL) | cachemode2protval(cache);
+ 	BUG_ON((phys & ~PMD_MASK) || (size & ~PMD_MASK));
+ 	for (; size; phys += PMD_SIZE, size -= PMD_SIZE) {
+ 		pgd = pgd_offset_k((unsigned long)__va(phys));
+@@ -414,7 +406,7 @@ static void __init __init_extra_mapping(unsigned long phys, unsigned long size,
+ 		}
+ 		pmd = pmd_offset(pud, phys);
+ 		BUG_ON(!pmd_none(*pmd));
+-		set_pmd(pmd, __pmd(phys | pgprot_val(prot)));
++		set_pmd(pmd, pfn_pmd(phys >> PAGE_SHIFT, prot));
+ 	}
+ }
+ 
+@@ -572,15 +564,13 @@ phys_pmd_init(pmd_t *pmd_page, unsigned long paddr, unsigned long paddr_end,
+ 				paddr_last = paddr_next;
+ 				continue;
+ 			}
+-			new_prot = pte_pgprot(pte_clrhuge(*(pte_t *)pmd));
++			new_prot = pmd_pgprot(*pmd);
+ 		}
+ 
+ 		if (page_size_mask & (1<<PG_LEVEL_2M)) {
+ 			pages++;
+ 			spin_lock(&init_mm.page_table_lock);
+-			set_pmd_init(pmd,
+-				     pfn_pmd(paddr >> PAGE_SHIFT, prot_sethuge(prot)),
+-				     init);
++			set_pmd_init(pmd, pfn_pmd(paddr >> PAGE_SHIFT, prot), init);
+ 			spin_unlock(&init_mm.page_table_lock);
+ 			paddr_last = paddr_next;
+ 			continue;
+@@ -658,15 +648,13 @@ phys_pud_init(pud_t *pud_page, unsigned long paddr, unsigned long paddr_end,
+ 				paddr_last = paddr_next;
+ 				continue;
+ 			}
+-			prot = pte_pgprot(pte_clrhuge(*(pte_t *)pud));
++			prot = pud_pgprot(*pud);
+ 		}
+ 
+ 		if (page_size_mask & (1<<PG_LEVEL_1G)) {
+ 			pages++;
+ 			spin_lock(&init_mm.page_table_lock);
+-			set_pud_init(pud,
+-				     pfn_pud(paddr >> PAGE_SHIFT, prot_sethuge(prot)),
+-				     init);
++			set_pud_init(pud, pfn_pud(paddr >> PAGE_SHIFT, prot), init);
+ 			spin_unlock(&init_mm.page_table_lock);
+ 			paddr_last = paddr_next;
+ 			continue;
+@@ -1519,11 +1507,9 @@ static int __meminitdata node_start;
+ void __meminit vmemmap_set_pmd(pmd_t *pmd, void *p, int node,
+ 			       unsigned long addr, unsigned long next)
+ {
+-	pte_t entry;
++	pmd_t entry = pfn_pmd(__pa(p) >> PAGE_SHIFT, PAGE_KERNEL);
+ 
+-	entry = pfn_pte(__pa(p) >> PAGE_SHIFT,
+-			PAGE_KERNEL_LARGE);
+-	set_pmd(pmd, __pmd(pte_val(entry)));
++	set_pmd(pmd, entry);
+ 
+ 	/* check to see if we have contiguous blocks */
+ 	if (p_end != p || node_start != node) {
+diff --git a/arch/x86/mm/pat/set_memory.c b/arch/x86/mm/pat/set_memory.c
+index d023a40a1e03..a26b2397c4cf 100644
+--- a/arch/x86/mm/pat/set_memory.c
++++ b/arch/x86/mm/pat/set_memory.c
+@@ -971,25 +971,16 @@ static int __should_split_large_page(pte_t *kpte, unsigned long address,
+ 
+ 	/*
+ 	 * We are safe now. Check whether the new pgprot is the same:
+-	 * Convert protection attributes to 4k-format, as cpa->mask* are set
+-	 * up accordingly.
++	 * Note that old_prot is already in the ideal 4k-format, so we can
++	 * directly apply cpa->mask* to it.
+ 	 */
+ 
+-	/* Clear PSE (aka _PAGE_PAT) and move PAT bit to correct position */
+-	req_prot = pgprot_large_2_4k(old_prot);
++	req_prot = old_prot;
+ 
+ 	pgprot_val(req_prot) &= ~pgprot_val(cpa->mask_clr);
+ 	pgprot_val(req_prot) |= pgprot_val(cpa->mask_set);
+ 
+-	/*
+-	 * req_prot is in format of 4k pages. It must be converted to large
+-	 * page format: the caching mode includes the PAT bit located at
+-	 * different bit positions in the two formats.
+-	 */
+-	req_prot = pgprot_4k_2_large(req_prot);
+ 	req_prot = pgprot_clear_protnone_bits(req_prot);
+-	if (pgprot_val(req_prot) & _PAGE_PRESENT)
+-		pgprot_val(req_prot) |= _PAGE_PSE;
+ 
+ 	/*
+ 	 * old_pfn points to the large page base pfn. So we need to add the
+@@ -1065,7 +1056,10 @@ static int __should_split_large_page(pte_t *kpte, unsigned long address,
+ 		return 1;
+ 
+ 	/* All checks passed. Update the large page mapping. */
+-	new_pte = pfn_pte(old_pfn, new_prot);
++	if (level == PG_LEVEL_2M)
++		new_pte = __pte(pmd_val(pfn_pmd(old_pfn, new_prot)));
++	else
++		new_pte = __pte(pud_val(pfn_pud(old_pfn, new_prot)));
+ 	__set_pmd_pte(kpte, address, new_pte);
+ 	cpa->flags |= CPA_FLUSHTLB;
+ 	cpa_inc_lp_preserved(level);
+@@ -1120,7 +1114,10 @@ static void split_set_pte(struct cpa_data *cpa, pte_t *pte, unsigned long pfn,
+ 	else
+ 		pr_warn_once("CPA: Cannot fixup static protections for PUD split\n");
+ set:
+-	set_pte(pte, pfn_pte(pfn, ref_prot));
++	if (size == PMD_SIZE)
++		set_pmd((pmd_t *)pte, pfn_pmd(pfn, ref_prot));
++	else
++		set_pte(pte, pfn_pte(pfn, ref_prot));
+ }
+ 
+ static int
+@@ -1151,11 +1148,6 @@ __split_large_page(struct cpa_data *cpa, pte_t *kpte, unsigned long address,
+ 	switch (level) {
+ 	case PG_LEVEL_2M:
+ 		ref_prot = pmd_pgprot(*(pmd_t *)kpte);
+-		/*
+-		 * Clear PSE (aka _PAGE_PAT) and move
+-		 * PAT bit to correct position.
+-		 */
+-		ref_prot = pgprot_large_2_4k(ref_prot);
+ 		ref_pfn = pmd_pfn(*(pmd_t *)kpte);
+ 		lpaddr = address & PMD_MASK;
+ 		lpinc = PAGE_SIZE;
+@@ -1167,13 +1159,6 @@ __split_large_page(struct cpa_data *cpa, pte_t *kpte, unsigned long address,
+ 		pfninc = PMD_SIZE >> PAGE_SHIFT;
+ 		lpaddr = address & PUD_MASK;
+ 		lpinc = PMD_SIZE;
+-		/*
+-		 * Clear the PSE flags if the PRESENT flag is not set
+-		 * otherwise pmd_present() will return true even on a non
+-		 * present pmd.
+-		 */
+-		if (!(pgprot_val(ref_prot) & _PAGE_PRESENT))
+-			pgprot_val(ref_prot) &= ~_PAGE_PSE;
+ 		break;
+ 
+ 	default:
+@@ -1289,8 +1274,7 @@ static int collapse_pmd_page(pmd_t *pmd, unsigned long addr,
+ 	old_pmd = *pmd;
+ 
+ 	/* Success: set up a large page */
+-	pgprot = pgprot_4k_2_large(pte_pgprot(first));
+-	pgprot_val(pgprot) |= _PAGE_PSE;
++	pgprot = pte_pgprot(first);
+ 	_pmd = pfn_pmd(pfn, pgprot);
+ 	set_pmd(pmd, _pmd);
+ 
+@@ -1593,7 +1577,6 @@ static long populate_pmd(struct cpa_data *cpa,
+ {
+ 	long cur_pages = 0;
+ 	pmd_t *pmd;
+-	pgprot_t pmd_pgprot;
+ 
+ 	/*
+ 	 * Not on a 2M boundary?
+@@ -1625,8 +1608,6 @@ static long populate_pmd(struct cpa_data *cpa,
+ 	if (num_pages == cur_pages)
+ 		return cur_pages;
+ 
+-	pmd_pgprot = pgprot_4k_2_large(pgprot);
+-
+ 	while (end - start >= PMD_SIZE) {
+ 
+ 		/*
+@@ -1638,8 +1619,7 @@ static long populate_pmd(struct cpa_data *cpa,
+ 
+ 		pmd = pmd_offset(pud, start);
+ 
+-		set_pmd(pmd, pmd_mkhuge(pfn_pmd(cpa->pfn,
+-					canon_pgprot(pmd_pgprot))));
++		set_pmd(pmd, pfn_pmd(cpa->pfn, canon_pgprot(pgprot)));
+ 
+ 		start	  += PMD_SIZE;
+ 		cpa->pfn  += PMD_SIZE >> PAGE_SHIFT;
+@@ -1667,7 +1647,6 @@ static int populate_pud(struct cpa_data *cpa, unsigned long start, p4d_t *p4d,
+ 	pud_t *pud;
+ 	unsigned long end;
+ 	long cur_pages = 0;
+-	pgprot_t pud_pgprot;
+ 
+ 	end = start + (cpa->numpages << PAGE_SHIFT);
+ 
+@@ -1705,14 +1684,12 @@ static int populate_pud(struct cpa_data *cpa, unsigned long start, p4d_t *p4d,
+ 		return cur_pages;
+ 
+ 	pud = pud_offset(p4d, start);
+-	pud_pgprot = pgprot_4k_2_large(pgprot);
+ 
+ 	/*
+ 	 * Map everything starting from the Gb boundary, possibly with 1G pages
+ 	 */
+ 	while (boot_cpu_has(X86_FEATURE_GBPAGES) && end - start >= PUD_SIZE) {
+-		set_pud(pud, pud_mkhuge(pfn_pud(cpa->pfn,
+-				   canon_pgprot(pud_pgprot))));
++		set_pud(pud, pfn_pud(cpa->pfn, canon_pgprot(pgprot)));
+ 
+ 		start	  += PUD_SIZE;
+ 		cpa->pfn  += PUD_SIZE >> PAGE_SHIFT;
+diff --git a/arch/x86/mm/pgtable.c b/arch/x86/mm/pgtable.c
+index da7f0a03cf90..cd9a62f4d437 100644
+--- a/arch/x86/mm/pgtable.c
++++ b/arch/x86/mm/pgtable.c
+@@ -644,9 +644,7 @@ int pud_set_huge(pud_t *pud, phys_addr_t addr, pgprot_t prot)
+ 	if (pud_present(*pud) && !pud_leaf(*pud))
+ 		return 0;
+ 
+-	set_pte((pte_t *)pud, pfn_pte(
+-		(u64)addr >> PAGE_SHIFT,
+-		__pgprot(protval_4k_2_large(pgprot_val(prot)) | _PAGE_PSE)));
++	set_pud(pud, pfn_pud((u64)addr >> PAGE_SHIFT, prot));
+ 
+ 	return 1;
+ }
+@@ -676,9 +674,7 @@ int pmd_set_huge(pmd_t *pmd, phys_addr_t addr, pgprot_t prot)
+ 	if (pmd_present(*pmd) && !pmd_leaf(*pmd))
+ 		return 0;
+ 
+-	set_pte((pte_t *)pmd, pfn_pte(
+-		(u64)addr >> PAGE_SHIFT,
+-		__pgprot(protval_4k_2_large(pgprot_val(prot)) | _PAGE_PSE)));
++	set_pmd(pmd, pfn_pmd((u64)addr >> PAGE_SHIFT, prot));
+ 
+ 	return 1;
+ }
+diff --git a/arch/x86/power/hibernate_32.c b/arch/x86/power/hibernate_32.c
+index 223d5bca29b8..2f18f8223376 100644
+--- a/arch/x86/power/hibernate_32.c
++++ b/arch/x86/power/hibernate_32.c
+@@ -107,7 +107,7 @@ static int resume_physical_mapping_init(pgd_t *pgd_base)
+ 			 * NOTE: We can mark everything as executable here
+ 			 */
+ 			if (boot_cpu_has(X86_FEATURE_PSE)) {
+-				set_pmd(pmd, pfn_pmd(pfn, PAGE_KERNEL_LARGE_EXEC));
++				set_pmd(pmd, pfn_pmd(pfn, PAGE_KERNEL_EXEC));
+ 				pfn += PTRS_PER_PTE;
+ 			} else {
+ 				pte_t *max_pte;
+@@ -156,13 +156,13 @@ static int set_up_temporary_text_mapping(pgd_t *pgd_base)
+ 
+ 	if (boot_cpu_has(X86_FEATURE_PSE)) {
+ 		set_pmd(pmd + pmd_index(restore_jump_address),
+-		__pmd((jump_address_phys & PMD_MASK) | pgprot_val(PAGE_KERNEL_LARGE_EXEC)));
++			pfn_pmd(jump_address_phys >> PAGE_SHIFT, PAGE_KERNEL_EXEC));
+ 	} else {
+ 		pte = resume_one_page_table_init(pmd);
+ 		if (!pte)
+ 			return -ENOMEM;
+ 		set_pte(pte + pte_index(restore_jump_address),
+-		__pte((jump_address_phys & PAGE_MASK) | pgprot_val(PAGE_KERNEL_EXEC)));
++			pfn_pte(jump_address_phys >> PAGE_SHIFT, PAGE_KERNEL_EXEC));
+ 	}
+ 
+ 	return 0;
 -- 
 2.43.0
 
