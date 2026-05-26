@@ -1,80 +1,80 @@
-Return-Path: <linuxppc-dev+bounces-21520-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21521-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6095ECD5BB1
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 May 2026 14:18:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0CDE8CD5BB1
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 May 2026 15:34:17 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gPvx42kCFz2y8t;
-	Wed, 27 May 2026 00:18:16 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=198.175.65.12
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779805096;
-	cv=none; b=k7PJAf5iLR0QMdhyzbMJ8W8cduaW2y3j0YOVv91PlE+6TjsjntxlUqbPdQp+11fyHiQH9o9upEpgcmuEz1/WtabHIGtVaYhOp+IAAynSFptRk4Oc+CzL5JTpr3MkF1FZ2VkiAaQjjZeOrHiLXW6xqFhnLPBbw/a4kZ5QKCZpjdtViXEzQmAemj7dH7Y+TqqcWeHCQx+aH4PZp1JTgOZhqVbflAwaPDLMXFt3YmDLvCuRuU4Sp3SKah5pt5nwyep6oVdeCFxea1I21fmS0miUrAv3bEuEEbr+OWhUfzAfNjhU4bKuza5xt2DsCXBnwiC+caf7ELqgmMJwYNdIxdJyfg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gPxcm0Yn4z2xtC;
+	Wed, 27 May 2026 01:34:16 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779809655;
+	cv=none; b=fr6A+GiIkB4Qt+InCJetqjnzlCgQS34Fnaf8uRg82nJlp2tXPbvZOVLSal5wdzDK4ndzXkosSl+oJevTGRAvhc5BxDssIzI3dJH8vBhMMjzjA5crFl/GMul1e6FQ6qSIj3/goAVHkvNRD8KK2szK3P/RUxiHu1xmcKbXXHS8p3NRyblx0WXdNpBT25WtIUKCx3MumZUdRGm77OCudYvQGk2kLKj2j3et4EWC3MG1Okx5UR2tf6H7e7LGURo6mkkTw+8d+pETyKb+4YhRJ7XhiMoRfLLuU5byZQ2/LWPWqMwmRu64RSsxNMlsbTPIixoRvlu9sFvWfbgeSwWRhRdy3g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1779805096; c=relaxed/relaxed;
-	bh=tjQlfk7go6/1bAyhMxtzLIiwVMACueFYxBZnKobXL84=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=ld76wEOso1BZZG/MF5Rp4wCitTEe65MC3LHBPL02/AZugXaKXtgE/xnuIKaT0FKiP7q8onejmJh0xWuOyt0ld2tHRweVYSXC54NFC01+0RZvgADwsCgUtL1SJz5sn105GMyAywQ8vcgL0hqJqz0XOiq1ROocLA4fiSDqANVSc+EWr9RrkGCZvcV3PnLu3ZS4nIA7oZ1EyeeQ9ipIQML/9ToPtf+vLgJyZSxFxkhtka15Hyy/5vW5ufrV+szdZ+zFkBe4UDzoVFju/wqCUITlVxlIakz3AHS9t1EGGPk62u9eeJNZherC2LPm40ZSepqRFx1I5HkbdsjzOzJ3H3+KDA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=L3R5XBl+; dkim-atps=neutral; spf=pass (client-ip=198.175.65.12; helo=mgamail.intel.com; envelope-from=yu.c.chen@intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=intel.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com
+	t=1779809655; c=relaxed/relaxed;
+	bh=IXtklErhcuWlv2r8L97+xvorQ7UpGoL4ZF+VJDkPygU=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=C1LZW/1BRpSYmisjYupjV+Uep0V9Egch6jg6ivhxNqgHsftkbOxOnW1WOp0M2ZYYh/2tAuCITW1AK44clNyjO7mb28bKDI1X2Z6JnTjL8zr8A9+sfvE6qipKEEBs2xk+8e1oAz1cePeA4CuSw1Adv3nzz++4tQsntrCc5FNLq34/4StZycQv03vjVxn4CyYz2B5hD4wzgJ1ooJs3+hyLxRALrKirlVxlVWXW3mMb5uhnyLVgUHDJWzEK97Bd2qWTC8ICtruD++k1OX0LUfyCvGSnhmSJp26y8soglMULe/VsHoE+SFO+xxScFZJNoDBVFoQsIXfTfQrKzWsXYPVG/Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Noq6FzjX; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=L3R5XBl+;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Noq6FzjX;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=198.175.65.12; helo=mgamail.intel.com; envelope-from=yu.c.chen@intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.12])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gPvx06zmGz2xjQ
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 May 2026 00:18:10 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1779805093; x=1811341093;
-  h=from:to:cc:subject:date:message-id:in-reply-to:
-   references:mime-version:content-transfer-encoding;
-  bh=qWQmUISyVvYDZTacgZETA7Z24zdMNhFfMuXRJJtoaaQ=;
-  b=L3R5XBl+jkorEH9TKt1hQ9Kp3Wd8uq5UIP72z6mjYOsEyLX6M6Dv651i
-   K7TQvPNOkpykwHDlzf7eUNHAXGaFKKHCPMPXMX77I4J8wU7hWQORBiLqv
-   BWlN0p7kBLP+EdQf+oLMjKKcX40Rvz8CP1Ki8FWZQLzQzRaEXG/Bhx7K8
-   hYnZPJhX4q8XJyjrX4TRYOk7Kx2w7Jf86vmfcGwpB+iLOdK4CkOS8YVtt
-   qUyuNWzJqr+C81UZKId/OnangDzYjGy+iYrl+7j8ahqyUrepuwpG9BLS4
-   r0KO/iJqc7hSZnCSBedDFS1jVr6MD1Ead/veoccQ0IjXJ5KM9rPHM/D1k
-   w==;
-X-CSE-ConnectionGUID: x8uUYmkKTZq2V4M0P4oCdQ==
-X-CSE-MsgGUID: xs6Ko5fLRsi2qTAs8RW8AQ==
-X-IronPort-AV: E=McAfee;i="6800,10657,11797"; a="92090407"
-X-IronPort-AV: E=Sophos;i="6.24,169,1774335600"; 
-   d="scan'208";a="92090407"
-Received: from orviesa003.jf.intel.com ([10.64.159.143])
-  by orvoesa104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 26 May 2026 07:18:06 -0700
-X-CSE-ConnectionGUID: /N/O0jiqRoeBzDL4zz6ugA==
-X-CSE-MsgGUID: ust5t8+yRMaCBRZLqc2Yvw==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.24,169,1774335600"; 
-   d="scan'208";a="245965852"
-Received: from chenyu-dev.sh.intel.com ([10.239.62.107])
-  by orviesa003.jf.intel.com with ESMTP; 26 May 2026 07:18:03 -0700
-From: Chen Yu <yu.c.chen@intel.com>
-To: kprateek.nayak@amd.com
-Cc: srikar@linux.ibm.com,
-	venkat88@linux.ibm.com,
-	maddy@linux.ibm.com,
-	sshegde@linux.ibm.com,
-	riteshh@linux.ibm.com,
-	chleroy@kernel.org,
-	tim.c.chen@linux.intel.com,
-	peterz@infradead.org,
-	linux-kernel@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-sched@vger.kernel.org,
-	Chen Yu <yu.c.chen@intel.com>
-Subject: Re: [BUG] sched/cache: "Make LLC id continuous" causes NULL cpumask
-Date: Tue, 26 May 2026 22:08:56 +0800
-Message-Id: <20260526140856.139657-1-yu.c.chen@intel.com>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <058664ab-0982-4c13-9d4b-caa2f7616b0f@amd.com>
-References: <51154de7-3700-4cb4-82f2-1b3a8fa427f7@linux.ibm.com> <ahUogeqIq5km7JSr@linux.ibm.com> <058664ab-0982-4c13-9d4b-caa2f7616b0f@amd.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gPxck73Yhz2xsW
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 May 2026 01:34:14 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with ESMTP id 986D34362A;
+	Tue, 26 May 2026 15:34:11 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id A5FAF1F00A3C;
+	Tue, 26 May 2026 15:33:59 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1779809651;
+	bh=IXtklErhcuWlv2r8L97+xvorQ7UpGoL4ZF+VJDkPygU=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=Noq6FzjXAHednyJbKDsO7gWlmRYH4wZD0QhvuTN+ag2i1VdurKmvBGP3bOfMJCqvU
+	 8kjwZvotf99uxGidiSuhzx7jYl16j0j9D5Yy+Ia0rEVFPucuDOg4YzNa4k3kD5Caql
+	 cOvHKMZEdCkn6xBAgqAbnQEdTy1mWt1ZyuPL6nPS3yKF2BtW7gtEowzkU10F/6E0sj
+	 qQ72PTZCTU8zRN6nz5ooPdaaDrJoW5P+Y3vgo8M1qA9dygwm5nF6SDZ5t2jHBQrPRo
+	 Mw4mppN1KUMAVp0SjeJl63QoEfTyTcLoZY3AGxngefu9qBzd2UnGgPGypTmdUHd5W5
+	 d3hKUeNpi6bxA==
+Date: Tue, 26 May 2026 16:33:56 +0100
+From: Lorenzo Stoakes <ljs@kernel.org>
+To: Yin Tirui <yintirui@huawei.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, 
+	Matthew Wilcox <willy@infradead.org>, David Hildenbrand <david@kernel.org>, 
+	Juergen Gross <jgross@suse.com>, Jonathan Cameron <jic23@kernel.org>, 
+	Will Deacon <will@kernel.org>, Catalin Marinas <catalin.marinas@arm.com>, 
+	Peter Xu <peterx@redhat.com>, Luiz Capitulino <luizcap@redhat.com>, 
+	Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, 
+	Dave Hansen <dave.hansen@linux.intel.com>, "H . Peter Anvin" <hpa@zytor.com>, 
+	Andy Lutomirski <luto@kernel.org>, Peter Zijlstra <peterz@infradead.org>, 
+	Madhavan Srinivasan <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, 
+	Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <chleroy@kernel.org>, 
+	"Liam R . Howlett" <liam@infradead.org>, Zi Yan <ziy@nvidia.com>, 
+	Baolin Wang <baolin.wang@linux.alibaba.com>, Nico Pache <npache@redhat.com>, 
+	Ryan Roberts <ryan.roberts@arm.com>, Dev Jain <dev.jain@arm.com>, Barry Song <baohua@kernel.org>, 
+	Lance Yang <lance.yang@linux.dev>, Vlastimil Babka <vbabka@kernel.org>, 
+	Mike Rapoport <rppt@kernel.org>, Suren Baghdasaryan <surenb@google.com>, 
+	Michal Hocko <mhocko@suse.com>, Anshuman Khandual <anshuman.khandual@arm.com>, 
+	Rohan McLure <rmclure@linux.ibm.com>, Kevin Brodsky <kevin.brodsky@arm.com>, 
+	Alistair Popple <apopple@nvidia.com>, Andrew Donnellan <andrew+kernel@donnellan.id.au>, 
+	Pasha Tatashin <pasha.tatashin@soleen.com>, Baoquan He <bhe@redhat.com>, Thomas Huth <thuth@redhat.com>, 
+	Coiby Xu <coxu@redhat.com>, Dan Williams <djbw@kernel.org>, 
+	Yu-cheng Yu <yu-cheng.yu@intel.com>, Lu Baolu <baolu.lu@linux.intel.com>, 
+	Conor Dooley <conor.dooley@microchip.com>, Rik van Riel <riel@surriel.com>, wangkefeng.wang@huawei.com, 
+	chenjun102@huawei.com, linux-mm@kvack.org, linux-kernel@vger.kernel.org, x86@kernel.org, 
+	linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, linux-pm@vger.kernel.org
+Subject: Re: [PATCH mm-unstable RFC v4 0/7] mm: add huge pfnmap support for
+ remap_pfn_range()
+Message-ID: <ahW7rut_WP17KADW@lucifer>
+References: <20260526145003.88445-1-yintirui@huawei.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -88,164 +88,26 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260526145003.88445-1-yintirui@huawei.com>
 
-Hi Prateek,
+Allow me to be mildly pedantic (sorry :)
 
-On Tue, 26 May 2026 11:23:59 +0530, K Prateek Nayak <kprateek.nayak@amd.com> wrote:
-> Hello Srikar,
->
-> On 5/26/2026 10:28 AM, Srikar Dronamraju wrote:
-> > L2 Cache reported here is for SMT8 Core aka CACHE domain.
->
-> Apart for the scheduler, nothing in tree currently cares about
-> cpu_coregroup_mask() except for drivers/base/arch_topology.c but
-> Power doesn't select GENERIC_ARCH_TOPOLOGY.
->
-> Why can't Power have an internal mask for MC domain (tl_mc_mask) and
-> the scheduler can use cpu_coregroup_mask() for the actual LLc? (The L2
-> mask in this case.)
->
-> Power anyways adds its own topology via set_sched_topology() so the
-> default_topology from kernel/sched/topology.c remains unused.
->
-> ...
->
-> > Shouldnt cache-aware scheduling be worried about cpuset partitions too.
-> > If a cpuset has subset of LLC cores, then we should Scheduler assume it can
-> > control complete LLC?
->
-> Well, the scheduling takes care of partitions and the cache aware
-> scheduling bits take care of looking at the full system perspective
-> for stats aggregation and pointing to a particular LLc.
->
-> We don't compare llc_id across cpusets so we keeping one unique llc_id
-> per H/W LLC instance is feasible and it enables us to keep llc_id space
-> limited for optimizing cache-aware scheduling.
->
-> Now if we have threads of same process across partitions, we'll
-> still aggregate the utilization numbers across the full LLC but
-> the load balancers at individual partitions will make a call on
-> the aggregation.
->
-> -- 
-> Thanks and Regards,
-> Prateek
->
->
+One thing I'd like to highlight here is that remap_pfn_range() is, in the long
+run, deprecated.
 
-I suppose what you suggested looks like below:
+mmap_prepare callbacks will indicate a PFN remap mmap_action, which will do the
+heavy lifting (see [0]).
 
-powerpc/smp: make cpu_coregroup_mask() return the LLC
+So perhaps worth referring to 'PFN remapping' or something?
 
-On pSeries shared LPARs(or coregroup_enabled is false on
-Power9 and earlier) the hemisphere map is not allocated, so
-build_sched_domains() dereferences a NULL cpumask and crashes.
+(Since we already have mmap_prepare() in use, it's also kinda inaccurate to
+say remap_pfn_range() :)
 
-The generic scheduler expects cpu_coregroup_mask() to span the LLC.
-On powerpc the LLC is the L2. Return cpu_l2_cache_mask() instead of
-the hemisphere map. Use a coregroup_map() helper for the in-file
-hemisphere users, and a powerpc_tl_mc_mask() wrapper for the MC
-sched-domain level.
+[0]: https://www.kernel.org/doc/html/next/filesystems/mmap_prepare.html
 
-Fixes: b5ea300a17e3 ("sched/cache: Make LLC id continuous")
-Reported-by: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
-Suggested-by: K Prateek Nayak <kprateek.nayak@amd.com>
----
- arch/powerpc/kernel/smp.c | 35 +++++++++++++++++++++++------------
- 1 file changed, 23 insertions(+), 12 deletions(-)
+Sorry, this is pretty nitpicky :)
 
-diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
---- a/arch/powerpc/kernel/smp.c
-+++ b/arch/powerpc/kernel/smp.c
-@@ -1040,11 +1040,22 @@ static const struct cpumask *tl_smallcore_smt_mask(struct sched_domain_topology_
- }
- #endif
- 
-+static inline struct cpumask *coregroup_map(int cpu)
-+{
-+	return per_cpu(cpu_coregroup_map, cpu);
-+}
-+
- struct cpumask *cpu_coregroup_mask(int cpu)
- {
--	return per_cpu(cpu_coregroup_map, cpu);
-+	return cpu_l2_cache_mask(cpu);
-+}
-+
-+static const struct cpumask *
-+powerpc_tl_mc_mask(struct sched_domain_topology_level *tl, int cpu)
-+{
-+	return coregroup_map(cpu);
- }
- 
- static bool has_coregroup_support(void)
- {
- 	if (is_shared_processor())
-@@ -1155,7 +1166,7 @@ void __init smp_prepare_cpus(unsigned int max_cpus)
- 	cpumask_set_cpu(boot_cpuid, cpu_core_mask(boot_cpuid));
- 
- 	if (has_coregroup_support())
--		cpumask_set_cpu(boot_cpuid, cpu_coregroup_mask(boot_cpuid));
-+		cpumask_set_cpu(boot_cpuid, coregroup_map(boot_cpuid));
- 
- 	init_big_cores();
- 	if (has_big_cores) {
-@@ -1520,8 +1531,8 @@ static void remove_cpu_from_masks(int cpu)
- 		set_cpus_unrelated(cpu, i, cpu_core_mask);
- 
- 	if (has_coregroup_support()) {
--		for_each_cpu(i, cpu_coregroup_mask(cpu))
--			set_cpus_unrelated(cpu, i, cpu_coregroup_mask);
-+		for_each_cpu(i, coregroup_map(cpu))
-+			set_cpus_unrelated(cpu, i, coregroup_map);
- 	}
- }
- #endif
-@@ -1553,7 +1564,7 @@ static void update_coregroup_mask(int cpu, cpumask_var_t *mask)
- 	if (!*mask) {
- 		/* Assume only siblings are part of this CPU's coregroup */
- 		for_each_cpu(i, submask_fn(cpu))
--			set_cpus_related(cpu, i, cpu_coregroup_mask);
-+			set_cpus_related(cpu, i, coregroup_map);
- 
- 		return;
- 	}
-@@ -1561,18 +1572,18 @@ static void update_coregroup_mask(int cpu, cpumask_var_t *mask)
- 	cpumask_and(*mask, cpu_online_mask, cpu_node_mask(cpu));
- 
- 	/* Update coregroup mask with all the CPUs that are part of submask */
--	or_cpumasks_related(cpu, cpu, submask_fn, cpu_coregroup_mask);
-+	or_cpumasks_related(cpu, cpu, submask_fn, coregroup_map);
- 
- 	/* Skip all CPUs already part of coregroup mask */
--	cpumask_andnot(*mask, *mask, cpu_coregroup_mask(cpu));
-+	cpumask_andnot(*mask, *mask, coregroup_map(cpu));
- 
- 	for_each_cpu(i, *mask) {
- 		/* Skip all CPUs not part of this coregroup */
- 		if (coregroup_id == cpu_to_coregroup_id(i)) {
--			or_cpumasks_related(cpu, i, submask_fn, cpu_coregroup_mask);
-+			or_cpumasks_related(cpu, i, submask_fn, coregroup_map);
- 			cpumask_andnot(*mask, *mask, submask_fn(i));
- 		} else {
--			cpumask_andnot(*mask, *mask, cpu_coregroup_mask(i));
-+			cpumask_andnot(*mask, *mask, coregroup_map(i));
- 		}
- 	}
- }
-@@ -1733,7 +1744,7 @@ static void __init build_sched_topology(void)
- 
- 	if (has_coregroup_support()) {
- 		powerpc_topology[i++] =
--			SDTL_INIT(tl_mc_mask, powerpc_shared_proc_flags, MC);
-+			SDTL_INIT(powerpc_tl_mc_mask, powerpc_shared_proc_flags, MC);
- 	}
- 
- 	powerpc_topology[i++] = SDTL_INIT(tl_pkg_mask, powerpc_shared_proc_flags, PKG);
--- 
-2.43.0
-
-Thanks,
-Yu
+Cheers, Lorenzo
 
