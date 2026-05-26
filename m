@@ -1,66 +1,86 @@
-Return-Path: <linuxppc-dev+bounces-21516-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21517-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3A64BCD5BC8
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 May 2026 12:34:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B82B4CD5BC8
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 May 2026 12:39:31 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gPsdb53N3z2yFK;
-	Tue, 26 May 2026 22:34:43 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a01:4f9:c010:3052::1"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779798883;
-	cv=none; b=Tsq3oIHOci2VdpHK18EK0guy2IlyJHsxJ606SndGe7xi/YRrQNIkyBR2UQC/yPWSQogMZgBdBckWkOxSlIdf9rjl/u3bTCdWUvA2YgvAaXpNHDkaopHHljrpeN34xRN+bYFDGerdRJz/W02osSi4Zk7kXq+KKuI1HFaQcloJfBRLnkmDwUGIu2nE4T3sDv73LySlLCwRq1cVsXqPTZMCTXXmuYElLSOJ9ZSWTHkJ2qZb1ABqKQew8iHVcy9I7wX8Yf4yBKs9fQlbPrRn3wosXedTYl3r0zSGFMimI9Aa8QHoMS/pGlSg4/ZY31FjwUFLLC9zXrALSTmJ+ImIeK22Zg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gPsl56ptPz2y8t;
+	Tue, 26 May 2026 22:39:29 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=202.12.124.151
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779799169;
+	cv=none; b=l/VhE668CK43USp3flYl+qIawlbQFVkJaISqu4c3VYKl3NHYG8fuQFFPfNeHkiQHYXg2E/ZmVXBZjEEZIGGIvLQeXtI55moj0epg9eLjSJ9QM0eS49n17G+hRMO8N96lpXf2aitVHJbyj58cMPKLiZM9DYeha/CnxdB0VU9pjDSRWs2eA5gogTwAWUZiRmwxs2WRAX41UwZc0+GhgpyQjo4ADLV2Smz/dAtVFT31+0M+JssVmTbX1fYrjUveuPb4x/nVHbFkgS7oqmm04ylGJ1P0lGD82u3FYtv+aQMBnX3mSsOPrtQX9VfzAvPpAS4bWctODmqsWV6RWwGTaKV6Bg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1779798883; c=relaxed/relaxed;
-	bh=DumjHkMnQiUKEXczcFzbHTJ12Og3qEh2uESbAgSH9Z0=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=jIscoMbz54ldEih4L+KSA+Bgo394salx8SvuJZzutuOhIwpsf+hb4UGJcpzCLVAg+ecgt7edLnWvscBGNxOCSTiY01YBrp/JVXsMpF4ZiUaHwGPjrW0DDyZgTw/guqOoTXTmnnr17hNT139oAvDzVO+2P40aI6NaCxnVTiYnrTGj2EjKFGnuRjDQRWxWaET6MpI3p4M/0LXVGiMN8M689ej+jAApN3KWKG7iN0QnMSsE/2nR0w2TdZmRsSOCFQ2cNKvKqByF7OI4/y/UJGqs3dSJt7AvvXZQVR3e5a9BQGZ9FsyGcbOWeu8XMdi3Q4LoAQLtPw7ulooLVDPiVaZstQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=archlinux.org; dkim=pass (4096-bit key; unprotected) header.d=archlinux.org header.i=@archlinux.org header.a=rsa-sha256 header.s=dkim-rsa header.b=0PaXCVkX; dkim=pass header.d=archlinux.org header.i=@archlinux.org header.a=ed25519-sha256 header.s=dkim-ed25519 header.b=qAvsEodf; dkim-atps=neutral; spf=pass (client-ip=2a01:4f9:c010:3052::1; helo=mail.archlinux.org; envelope-from=kpcyrd@archlinux.org; receiver=lists.ozlabs.org) smtp.mailfrom=archlinux.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=archlinux.org
+	t=1779799169; c=relaxed/relaxed;
+	bh=2DdhusNN+vFuzB0PmOPfndHbDWMKZxSYmfD1KK2/m2E=;
+	h=MIME-Version:Date:From:To:Cc:Message-Id:In-Reply-To:References:
+	 Subject:Content-Type; b=Wr2VwME+iJ+qhGzZWWREiGgB82LuJVomYJZ41HmOhKWy9Kzce+wbPJ58UrXSfIuPsyzvCf7aMr8jdjQeIwnmqFzXL8J5OQkZIOHc2Bop1sHQysd0ZCmWPZtRf1XWoiR3+WE9LvoGsUtb2filL0xvKWzUX8uTdPZ62fN7gIwIjzDDWfDVJKQX04V+h38dRLAMT1MYkun1jD5UIwqAb0795raAFtwHeyLPvvvchjaA7OsKCACW1KTMCR8B6A7YGaB2qN3+58c1KWM6x1HCd0wmh8sBb5HyPkQdpPXXu4zSSH081Ma5kOF73os/IyYKjzURJ6Mga7MToYeeyD1m4MfPZg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arndb.de; dkim=pass (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm3 header.b=Zl5C97iH; dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm3 header.b=WfRF8GIY; dkim-atps=neutral; spf=pass (client-ip=202.12.124.151; helo=fout-c8-smtp.messagingengine.com; envelope-from=arnd@arndb.de; receiver=lists.ozlabs.org) smtp.mailfrom=arndb.de
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arndb.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (4096-bit key; unprotected) header.d=archlinux.org header.i=@archlinux.org header.a=rsa-sha256 header.s=dkim-rsa header.b=0PaXCVkX;
-	dkim=pass header.d=archlinux.org header.i=@archlinux.org header.a=ed25519-sha256 header.s=dkim-ed25519 header.b=qAvsEodf;
+	dkim=pass (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm3 header.b=Zl5C97iH;
+	dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm3 header.b=WfRF8GIY;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=archlinux.org (client-ip=2a01:4f9:c010:3052::1; helo=mail.archlinux.org; envelope-from=kpcyrd@archlinux.org; receiver=lists.ozlabs.org)
-X-Greylist: delayed 410 seconds by postgrey-1.37 at boromir; Tue, 26 May 2026 22:34:40 AEST
-Received: from mail.archlinux.org (mail.archlinux.org [IPv6:2a01:4f9:c010:3052::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arndb.de (client-ip=202.12.124.151; helo=fout-c8-smtp.messagingengine.com; envelope-from=arnd@arndb.de; receiver=lists.ozlabs.org)
+Received: from fout-c8-smtp.messagingengine.com (fout-b8-smtp.messagingengine.com [202.12.124.151])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gPsdX0PVyz2xLs
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 May 2026 22:34:39 +1000 (AEST)
-Message-ID: <2d93a9e4-0c36-4bc7-8e94-b15f69ebda79@archlinux.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=archlinux.org;
-	s=dkim-rsa; t=1779798460;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=DumjHkMnQiUKEXczcFzbHTJ12Og3qEh2uESbAgSH9Z0=;
-	b=0PaXCVkXBjwxgV57Gtk9GND9h+M3olt9dDZsAZSMh69khuwz+7omoquMv7bxY+X2NwBvDs
-	7cJghWP+kfKXxa/Mzj4ItNhRylLxtHEbXT2U/CdXfxlLvJjJ5rkSidgc2aBrQrTiI+CPaf
-	ofc7Q62sZXcpwYR2fUFCbVV0KYA5RBkUnwqkS7dvPSc8p+xrEimxO3yvUJhT2LR8N394lG
-	zKL5TDaB8eCxpGZRhxbfjUn9RFNKl2xluA2p7u5kkai+avEVgv9hwAOtKMW2EVgYqK2xAn
-	EZYIc0WKVZAH1Nb4ZDiz1NIO/snRu/iHOKTOeHm8VeRYVTieMy8yWHVg8nfo1l/UbnU8Tv
-	k5Yk3bdm2ZtFa0+WU70NGuYxJOHWvVeBaFwICiatUOh8gM6R/WS3IFlU9YbXwjVzymwuFc
-	XKuulQ5BeoNzGUlr/QrMDgw1cdIvgtAwKofD4IsvIOGsRR1yNR3JjzQoMvKvrQPONqF6JZ
-	OMMNLxAhP1LGiCUgH2GoiCYXngwwZmE2ZcjLiIEAmlhKl2r0JyV2gMJn4Uke4zTOViHDJQ
-	/gJXPKLMTm5lh6Zjv6J183nbfZ/UIz4eehTUQeqX6uRy6jBru/K/rs1ICZHdgd/GSKMS+z
-	nP5SILf6vZKcsnA0+D/43BN50nXByYlhjDbPB2kBPA+oekNoiga84=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=archlinux.org;
-	s=dkim-ed25519; t=1779798460;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=DumjHkMnQiUKEXczcFzbHTJ12Og3qEh2uESbAgSH9Z0=;
-	b=qAvsEodfYN9Au3PfLWPaXQEfyjbOcwD3RqWnSlsvTSJQ3NP8ZX9wWEW0wqValvrgMDgl0u
-	ST8XcV+dvsfuSMCQ==
-Authentication-Results: mail.archlinux.org;
-	auth=pass smtp.auth=kpcyrd smtp.mailfrom=kpcyrd@archlinux.org
-Date: Tue, 26 May 2026 14:27:36 +0200
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gPsl24Vx5z2xLs
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 May 2026 22:39:25 +1000 (AEST)
+Received: from phl-compute-04.internal (phl-compute-04.internal [10.202.2.44])
+	by mailfout.stl.internal (Postfix) with ESMTP id 5C6CC1D000FB;
+	Tue, 26 May 2026 08:39:22 -0400 (EDT)
+Received: from phl-imap-05 ([10.202.2.95])
+  by phl-compute-04.internal (MEProxy); Tue, 26 May 2026 08:39:23 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arndb.de; h=cc
+	:cc:content-transfer-encoding:content-type:content-type:date
+	:date:from:from:in-reply-to:in-reply-to:message-id:mime-version
+	:references:reply-to:subject:subject:to:to; s=fm3; t=1779799162;
+	 x=1779885562; bh=2DdhusNN+vFuzB0PmOPfndHbDWMKZxSYmfD1KK2/m2E=; b=
+	Zl5C97iHWwzX+s65iHmz4A7cBN0fMHPEaOtqEkDv/450rxtnCqAzaF40910/sCx4
+	XsRkbYxxcRcJTVoVS+Rj3CPRkoTR9FAbkbgVlrTgwnH+fLNR3yKvTxYz6ozFJzD9
+	5yuPXhM+YyiHfrD1U1I94zpXS0nRa7zJJbPfxDZB83OlxXFH7Sx7iMdObzT4nZ/9
+	QyTXQ3GmYNukhtaTlyjn9nLG+6lJtoSVkxHPKo73M27e6ePO6zH7IWFSBDvwofzZ
+	JEKmEpOKHioFh4cFGmWvg9g1WoRdoeyJvLE+MfZMXBSlr8H3FjsSj/lZTUDr3DAI
+	5ctlqw67K0myRrIqnqoL/Q==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+	messagingengine.com; h=cc:cc:content-transfer-encoding
+	:content-type:content-type:date:date:feedback-id:feedback-id
+	:from:from:in-reply-to:in-reply-to:message-id:mime-version
+	:references:reply-to:subject:subject:to:to:x-me-proxy
+	:x-me-sender:x-me-sender:x-sasl-enc; s=fm3; t=1779799162; x=
+	1779885562; bh=2DdhusNN+vFuzB0PmOPfndHbDWMKZxSYmfD1KK2/m2E=; b=W
+	fRF8GIYRCMPR3lZ7dpGkTUoJuGKwURAj+8OZAfKcst2nL0NeRhZT3yRPm2KmRbOP
+	Pg2f9wF6MPHE03aMTf0a4d/Ez2Et0VujQWssWiz1GQy00aCIhYmFBFo/oj4IWcRZ
+	6fZuNjhGAfqa9tybpKAplceAM02TwxPiB2CUU2zcHQ4X/GkAemgOG9eEalZRme3e
+	KNlZieVVgZrtaN0Tw1PBc2OeZKKNGjtL5+BnrwDBK0IoDhIqItOe3DQ/MU7GUM8c
+	iBcnhtkmLvQ6JqQcXaqxQcTUzi1RBhT1HCSq2Oxf2OZJbw9rhxJE7ok8jECbXBaz
+	iME8iqB/zw59FnQTo+h7g==
+X-ME-Sender: <xms:eZQVanw1i65sp2LVimLDuabU3-yASNQPQj7As5LwwpnV27NmqNloJQ>
+    <xme:eZQVaqEBMhWCcmZ-9c-O9nLEdjSvBHkK3jdYjOZX7s3T0_F0CZ8OQyrNy5dRMKv94
+    iSaWwPDo1IurVvRVrTjAMWSxL1NCj1cwauc77ehoF1T9q1m6kpjqEg>
+X-ME-Proxy-Cause: dmFkZTEywkXow3xdYkQ2bDUtuiNbW7HPTteV8VzeERFNC0X3krSq4Ztmxvfvo6lBC3mfHk
+    nIOsh5OPxI5m9OkJYF5SpKXCL0JPa1nAwM4dHAgWRKmM5SD1y0YU3ZEds98AJZO2aNgC8j
+    zzzgjv6EQVgcIXDfju67LcVJpmmJa1u5qE2m+i8WyxOoLatK9rZaqTmq+Chxph1tcZy6Rl
+    gTzCoeLg4agwUggTSBIMIuJWS9zV2ihi7fFBfzxQBNcZLHVyYWYmrgQVAarNy80TcBgYrM
+    I5F11ACojSxd2njeimht6MiOouBM0c7tWRJlPYuirsqeO1C1G2wz8aGh7V0B9KYOs+fuf0
+    QWibBSswoX2aPbe5RpZ/T5/5VyXZ6ici5TcgaxQRbckIofh1dZ3vi2LHFvxvVf/zw1grSy
+    TiFbYmEapVu+EvbVggQzeocyApFx0GmICq1JbLoPZtt68MV/RHZYiHjz082yl3d4xSRIe3
+    7q3Tn3RFm9uDbM+GhABvyKx2DcAodSaFPYbYOTYSg1zpgNzA8elKSiy+uaifiZX3GNtC/x
+    AsDSiCan2W+1fKFlBxfg2RjxvJVGiNVr5S/0feP5fMpdG4S09OQObqy87wJ/x/QEUA7guh
+    WSBRWIsFhVA0TbqVIC33cj+SAHLUdeRWMUKNoj7e2Uj6A1+McumjsS9Oz1fw
+X-ME-Proxy: <xmx:eZQVah4bs_xWeiDDQibLl1aBwgYGX1cCRJ38kh4WBqDH10_9gDDYfw>
+    <xmx:eZQVav39f8LPj7xgJP3MvokKe5igghtVltfyKfZezSrQvzrup_8Fiw>
+    <xmx:eZQVaox4mTj8r5t8eDA1jZs5joqKPISo1WMYqZGbZsYhT5UMPMhqTQ>
+    <xmx:eZQVaonlNzLHp4EPnefWPUG_OJkRaPdx-UyE3T94ThcfHiWSuoKH_w>
+    <xmx:epQVakkNsMABvUsRVbAnepaf_1q-zRd7bKVxZUmYdvNcFqijiIjGZK2h>
+Feedback-ID: i56a14606:Fastmail
+Received: by mailuser.phl.internal (Postfix, from userid 501)
+	id 89ED7182007A; Tue, 26 May 2026 08:39:21 -0400 (EDT)
+X-Mailer: MessagingEngine.com Webmail Interface
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -74,70 +94,41 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Subject: Re: [PATCH v5 07/14] module: Make module authentication usable
- without MODULE_SIG
-To: =?UTF-8?Q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>,
- Petr Pavlu <petr.pavlu@suse.com>
-Cc: Alexei Starovoitov <ast@kernel.org>,
- Daniel Borkmann <daniel@iogearbox.net>, Andrii Nakryiko <andrii@kernel.org>,
- Eduard Zingerman <eddyz87@gmail.com>,
- Kumar Kartikeya Dwivedi <memxor@gmail.com>,
- Nathan Chancellor <nathan@kernel.org>, Nicolas Schier <nsc@kernel.org>,
- Arnd Bergmann <arnd@arndb.de>, Luis Chamberlain <mcgrof@kernel.org>,
- Sami Tolvanen <samitolvanen@google.com>, Daniel Gomez
- <da.gomez@samsung.com>, Paul Moore <paul@paul-moore.com>,
- James Morris <jmorris@namei.org>, "Serge E. Hallyn" <serge@hallyn.com>,
- Jonathan Corbet <corbet@lwn.net>, Madhavan Srinivasan <maddy@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
- Naveen N Rao <naveen@kernel.org>, Mimi Zohar <zohar@linux.ibm.com>,
- Roberto Sassu <roberto.sassu@huawei.com>,
- Dmitry Kasatkin <dmitry.kasatkin@gmail.com>,
- Eric Snowberg <eric.snowberg@oracle.com>,
- Nicolas Schier <nicolas.schier@linux.dev>, Daniel Gomez
- <da.gomez@kernel.org>, Aaron Tomlin <atomlin@atomlin.com>,
- "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
- Nicolas Bouchinet <nicolas.bouchinet@oss.cyber.gouv.fr>,
- Xiu Jianfeng <xiujianfeng@huawei.com>,
- Martin KaFai Lau <martin.lau@linux.dev>, Song Liu <song@kernel.org>,
- Yonghong Song <yonghong.song@linux.dev>, Jiri Olsa <jolsa@kernel.org>,
- bpf@vger.kernel.org, =?UTF-8?Q?Fabian_Gr=C3=BCnbichler?=
- <f.gruenbichler@proxmox.com>, Arnout Engelen <arnout@bzzt.net>,
- Mattia Rizzolo <mattia@mapreri.org>, Christian Heusel <christian@heusel.eu>,
- =?UTF-8?Q?C=C3=A2ju_Mihai-Drosi?= <mcaju95@gmail.com>,
- Eric Biggers <ebiggers@kernel.org>,
- Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
- linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-arch@vger.kernel.org, linux-modules@vger.kernel.org,
- linux-security-module@vger.kernel.org, linux-doc@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-integrity@vger.kernel.org,
- debian-kernel@lists.debian.org,
- Holger Levsen <holger@reproducible-builds.org>
-References: <20260505-module-hashes-v5-0-e174a5a49fce@weissschuh.net>
- <20260505-module-hashes-v5-7-e174a5a49fce@weissschuh.net>
- <0a0736a4-2cdd-49f2-9062-e2f18d769fc0@suse.com>
- <4ee3c775-1fbf-45e1-8b77-5f9034f45125@t-8ch.de>
-Content-Language: de-DE, en-US
-From: kpcyrd <kpcyrd@archlinux.org>
-In-Reply-To: <4ee3c775-1fbf-45e1-8b77-5f9034f45125@t-8ch.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+X-ThreadId: AuWQEIBBqPC7
+Date: Tue, 26 May 2026 14:39:01 +0200
+From: "Arnd Bergmann" <arnd@arndb.de>
+To: "Wei Fang" <wei.fang@nxp.com>, "Arnd Bergmann" <arnd@kernel.org>,
+ "Claudiu Manoil" <claudiu.manoil@nxp.com>,
+ "Clark Wang" <xiaoning.wang@nxp.com>, "Christophe Leroy" <chleroy@kernel.org>
+Cc: "Andrew Lunn" <andrew@lunn.ch>, "Vladimir Oltean" <olteanv@gmail.com>,
+ "David S . Miller" <davem@davemloft.net>,
+ "Eric Dumazet" <edumazet@google.com>, "Jakub Kicinski" <kuba@kernel.org>,
+ "Paolo Abeni" <pabeni@redhat.com>,
+ "imx@lists.linux.dev" <imx@lists.linux.dev>, Netdev <netdev@vger.kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Message-Id: <ef1435b1-0cce-4f15-9e4c-0e9d50a9e1ea@app.fastmail.com>
+In-Reply-To: 
+ <DBBPR04MB7500D92831D793CDD1D562E2880B2@DBBPR04MB7500.eurprd04.prod.outlook.com>
+References: <20260526102708.2837129-1-arnd@kernel.org>
+ <DBBPR04MB7500D92831D793CDD1D562E2880B2@DBBPR04MB7500.eurprd04.prod.outlook.com>
+Subject: Re: [PATCH] [net-next] net: dsa: netc: fix enetc dependencies
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 
-On 5/26/26 1:38 PM, Thomas Weißschuh wrote:
-> On 2026-05-26 12:53:22+0200, Petr Pavlu wrote:
->> Should MODULE_SIG_FORCE be renamed to MODULE_AUTH_FORCE, along with
->> renaming the sig_enforce functionality in kernel/module/auth.c to
->> auth_enforce?
-> 
-> Given that it is a user-visible symbol we'll need to be a bit careful
-> not to break existing configurations.
-> I'll try to use the new "transitional" kconfig attribute.
-A slightly softer worded alternative (yet semantically equivalent) name could be 
-MODULE_AUTH_REQUIRE. No strong opinion though, I think MODULE_AUTH_* does make 
-sense.
+On Tue, May 26, 2026, at 13:03, Wei Fang wrote:
+>
+> Thanks for fix this issue, I have sent a patch last Sunday.
+> Link: https://lore.kernel.org/netdev/20260524070310.2429819-1-wei.fang@nxp.com/
+>
+> I think the solution should simply be to add
+> "depends on NET_VENDOR_FREESCALE", right? The changes in
+> enetc_mdio.h seem more like improvements to me.
 
-I initially shared the concern about renaming well established config options, 
-but the transitional feature does seem to be a good fit for this.
+Yes, the added dependency is sufficient. I removed the other
+change only because that was intended as a workaround
+for the same problem but was incorrect.
 
-Sincerely,
-kpcyrd
+      Arnd
 
