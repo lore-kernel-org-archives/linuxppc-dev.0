@@ -1,94 +1,66 @@
-Return-Path: <linuxppc-dev+bounces-21515-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21516-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id ADC46CD5BB1
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 May 2026 12:21:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3A64BCD5BC8
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 May 2026 12:34:45 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gPsLs2bXZz2y8t;
-	Tue, 26 May 2026 22:21:57 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::132a" arc.chain=google.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779798117;
-	cv=pass; b=PP1DHc4TYWknJePFQY/D0i8fLGddq+q8sqLNFUJYWxj6VTprUIf0jlPxlidtYTmM2FeX2Tyyne4FB2kmeubt8b+5qi/5bCmkM4G0CD6SMoqT0Xc2hRreC0oabCrFbY4uvNx5ba7Vybhc196cetaxXP4ltRKqN914Uaj08GsYjvzinB7srEPIdXXLRsdfWJAn1OkErHUYo+idkFpB3KI6JUrbq1CYE58pFNeCdNCKWImY6Mw2QaE67oS+1a+8ZflPiQxJWyx2wlKQEsF7+B9cn12Oh6TAY/HVOxg8ZDNnSEtn3U6rVY9w7vku5lFZtx35dwwCb3Z9NpZtqJaYgbLztw==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1779798117; c=relaxed/relaxed;
-	bh=HJn5baRVScE6xD2wHYFVG8MdWdyU6wVQsFxtKnoFAoU=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=ZixAUOHC/6QpXVoYsnAN5bgsBYtuEdOdpmKJGPVT7DHZUN/utTijq30NN9h8J9GbujaZvdzPCRqIqEKjdDFHP1Q2GLfoYOlnckD3vnlhuU5xhpuvMVC7W5tay4Rfo9zrYY//m+9D60KIPWLp51zBCGCcbttV1Mx+vY5hZ0QxL4fkPBfZ8qQPeL4VYefpP4Fp//m8oJQ7xX9QuUruvUH/o+fjX98DnLa//AuSbpiywXOHBE/JZlOGbfYW1dVCaAQ1Vtz8z6EoHEOHiqSwfVt57bGzPuSUp+mLPDBIYAPm8JebVqZ6+k3u6QcYbi4CIbmMHKg7BIlE+uN8ShNNKBdkdg==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=XPNPd+Mt; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::132a; helo=mail-dy1-x132a.google.com; envelope-from=miguel.ojeda.sandonis@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gPsdb53N3z2yFK;
+	Tue, 26 May 2026 22:34:43 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a01:4f9:c010:3052::1"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779798883;
+	cv=none; b=Tsq3oIHOci2VdpHK18EK0guy2IlyJHsxJ606SndGe7xi/YRrQNIkyBR2UQC/yPWSQogMZgBdBckWkOxSlIdf9rjl/u3bTCdWUvA2YgvAaXpNHDkaopHHljrpeN34xRN+bYFDGerdRJz/W02osSi4Zk7kXq+KKuI1HFaQcloJfBRLnkmDwUGIu2nE4T3sDv73LySlLCwRq1cVsXqPTZMCTXXmuYElLSOJ9ZSWTHkJ2qZb1ABqKQew8iHVcy9I7wX8Yf4yBKs9fQlbPrRn3wosXedTYl3r0zSGFMimI9Aa8QHoMS/pGlSg4/ZY31FjwUFLLC9zXrALSTmJ+ImIeK22Zg==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1779798883; c=relaxed/relaxed;
+	bh=DumjHkMnQiUKEXczcFzbHTJ12Og3qEh2uESbAgSH9Z0=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=jIscoMbz54ldEih4L+KSA+Bgo394salx8SvuJZzutuOhIwpsf+hb4UGJcpzCLVAg+ecgt7edLnWvscBGNxOCSTiY01YBrp/JVXsMpF4ZiUaHwGPjrW0DDyZgTw/guqOoTXTmnnr17hNT139oAvDzVO+2P40aI6NaCxnVTiYnrTGj2EjKFGnuRjDQRWxWaET6MpI3p4M/0LXVGiMN8M689ej+jAApN3KWKG7iN0QnMSsE/2nR0w2TdZmRsSOCFQ2cNKvKqByF7OI4/y/UJGqs3dSJt7AvvXZQVR3e5a9BQGZ9FsyGcbOWeu8XMdi3Q4LoAQLtPw7ulooLVDPiVaZstQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=archlinux.org; dkim=pass (4096-bit key; unprotected) header.d=archlinux.org header.i=@archlinux.org header.a=rsa-sha256 header.s=dkim-rsa header.b=0PaXCVkX; dkim=pass header.d=archlinux.org header.i=@archlinux.org header.a=ed25519-sha256 header.s=dkim-ed25519 header.b=qAvsEodf; dkim-atps=neutral; spf=pass (client-ip=2a01:4f9:c010:3052::1; helo=mail.archlinux.org; envelope-from=kpcyrd@archlinux.org; receiver=lists.ozlabs.org) smtp.mailfrom=archlinux.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=archlinux.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=XPNPd+Mt;
+	dkim=pass (4096-bit key; unprotected) header.d=archlinux.org header.i=@archlinux.org header.a=rsa-sha256 header.s=dkim-rsa header.b=0PaXCVkX;
+	dkim=pass header.d=archlinux.org header.i=@archlinux.org header.a=ed25519-sha256 header.s=dkim-ed25519 header.b=qAvsEodf;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::132a; helo=mail-dy1-x132a.google.com; envelope-from=miguel.ojeda.sandonis@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-dy1-x132a.google.com (mail-dy1-x132a.google.com [IPv6:2607:f8b0:4864:20::132a])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=archlinux.org (client-ip=2a01:4f9:c010:3052::1; helo=mail.archlinux.org; envelope-from=kpcyrd@archlinux.org; receiver=lists.ozlabs.org)
+X-Greylist: delayed 410 seconds by postgrey-1.37 at boromir; Tue, 26 May 2026 22:34:40 AEST
+Received: from mail.archlinux.org (mail.archlinux.org [IPv6:2a01:4f9:c010:3052::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gPsLq6ywGz2xjQ
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 May 2026 22:21:55 +1000 (AEST)
-Received: by mail-dy1-x132a.google.com with SMTP id 5a478bee46e88-303da604df1so963146eec.3
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 May 2026 05:21:54 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1779798112; cv=none;
-        d=google.com; s=arc-20240605;
-        b=Jk3TTTQsT9a3zJcDOc/8Qy/VTSEsWFz6Dj7CPLbAvGg/INtFtMuGeeseU1krXCOUYa
-         9k4q0+BLGTy2sJbO9BptSmJrfUO64N5IdwOn0USsIqcVrWebMOcbUH1WsmspFuVvqZst
-         gISrwt+qMCZNeE4rijRcSc8D0ZUen2HOkifmDElkdhhUCaVukEBVqw9b4mNrpAa3W5YX
-         oglpYMT9fyzxDhoVgY1OM36dyhDLjNW5BkIKBZqdgKL11ImY6aMzQbHdju8dxcu8vylY
-         eQxrErcfZ5z2bJrkme4fgSUExgqvviArYYhaO23O48BQYUgT/oqyCWO4ogmVw/mEQPDU
-         oHWw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=HJn5baRVScE6xD2wHYFVG8MdWdyU6wVQsFxtKnoFAoU=;
-        fh=zJJGXGbS47P6C7ZIqIhgwV48/iMlDzBQLQ2pGRo1rUo=;
-        b=DCc22goNEIO2qt3SVtGJ2cF7mxUDF5hPpxUsQ9FaS+tCjsji5XgaNbN9q04FeHAOId
-         hAiXkyDb8PuyJOgi5UcoWZGgfEksj38/ye5f0eGAxgZ9EjhsJr9ohBGMehqTCDFOKX9S
-         5ACwmpDvpiD2eE3wP1jg/NT+HpdT9Q/MOPZ2okpffRHKFI4kp61t22Q36PCfaTgw4soZ
-         9HHd6BmSNs/P3iWY1y0ZGIuV2F8+kvymVHRkMzQgXisEgJ4cKZP9vgFbvi5ucFEKft16
-         Wtr9T8I0I3oYu8RLTc6H+o/lpvERdAYHJyJLDgRQEQFXFnAI0F21j1TSYR1TKYcyhWrK
-         49tA==;
-        darn=lists.ozlabs.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1779798112; x=1780402912; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=HJn5baRVScE6xD2wHYFVG8MdWdyU6wVQsFxtKnoFAoU=;
-        b=XPNPd+MtgOS4v2UTzAlzFOVRsg2osYHcReh7zv3ZL8ei09Kmaqa1cev4yajtV+lmVZ
-         sEKELgbnaNctjsSjoBDs8189BZInQCGtVQQf4ZZ0N/EdoDL+EMQ62h6ocJ2+DTwxmZov
-         tJlSbpVxjtm4hys/3FigJUvwMXJPZUJ5/PrZgZC+k7X3ACD17b+NjxIT3f7bPkum+aSh
-         mWsnCusjnmuLSPzmbctItktvW4psabF7ap/sh0YvutqRcaWozOJNiKFXrXRP2zsTjwZF
-         WPkhtLLwyvC9at1RviAeXIrx/NQ+NuCqD3DQv4Du0InKP52FQsFySdxK/nj2p9JNJ+ih
-         nkAA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1779798112; x=1780402912;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=HJn5baRVScE6xD2wHYFVG8MdWdyU6wVQsFxtKnoFAoU=;
-        b=fuED5Au8hHum2nPQtkbljk4OtZkXo6b4InpOAKaWLDG1yrtqZxPBDRJVpq0CgtlJOr
-         qB+EZeC2HR5tCd0tXJGw8YzLbQ3XYv7ID2hO+KUr/14N55DmOQHCnHRFyzuYkaTBK/YK
-         PtpqOZgyzZSqdwNhey8dIb+2Xu45sDa3UNq8hyV0I9/fNJK25P8ZkBoBFAspLq9P/7MM
-         lBkZaH6Y3Mk+DY6GU2R3bxb3fOW4b309GZPGepby5RVxYwqd76BjtmZT7f74hQs0DoHu
-         k/YJT55AQJdCFIPMV9nK/cnv6AG1v26GJzo6hevjt3pPK3wEySWbHEUE0PxIvRcXbrCn
-         K7hg==
-X-Forwarded-Encrypted: i=1; AFNElJ+uUoCGaqjTy7yMnITvZy4nUXp3eJZlMlqrdstgECHhr7YBipdVnM4CyJ2DpyNW2GeIHMIR9LJRKYRj4Jc=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YxFaqclvEVqMcK78+alllmRg5DW6Jw4V+3PoLkRQf8DvqXf8MgY
-	5RlQbcUhvB8QJtYBb+DZoL2jXpolgWrprDfRN2EKYBTyaV1r3nivC33p+BTXV8fX1oOZnmX5+eM
-	6Rm8bKDB/J8hEKsEJrekTyO4QRmSziXU=
-X-Gm-Gg: Acq92OE3vGzpmnUzpOFBSkqcR5+sxg28uS1GRztKnN3AeJJKJi0kvSb9H0C9DgPjud+
-	1llf5dJ9SAG3Vs54dAuRguheN4pwn2ZcyY6l+fN20ul9oFFOc0+tKDQcVUh0okLy8kAEIqomiXz
-	fhAdvAHmxnX4NagScLg1DCKV5LXgDOveakeoKauJGfP91OiRjotVw12gMT/zbpjLhqmx2+Uqtlu
-	RawOox+njGagPPfZfwmaF8xxLI6accwWCKmAVsF5G/I/o2OcLmXrhFRxenImJmq44LeOSWVGd1K
-	8gpoPhUw9siFMVOLxd9foawX/VfxlS239/AmU43f0J9A2Kn5dig00WdA8CZaclgzBSi45lDjeDf
-	rjuAtJBjBvrge2yXYRAfEix8=
-X-Received: by 2002:a05:7301:2c89:b0:2ce:db5e:354b with SMTP id
- 5a478bee46e88-3044912c779mr3837047eec.6.1779798111828; Tue, 26 May 2026
- 05:21:51 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gPsdX0PVyz2xLs
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 May 2026 22:34:39 +1000 (AEST)
+Message-ID: <2d93a9e4-0c36-4bc7-8e94-b15f69ebda79@archlinux.org>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=archlinux.org;
+	s=dkim-rsa; t=1779798460;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=DumjHkMnQiUKEXczcFzbHTJ12Og3qEh2uESbAgSH9Z0=;
+	b=0PaXCVkXBjwxgV57Gtk9GND9h+M3olt9dDZsAZSMh69khuwz+7omoquMv7bxY+X2NwBvDs
+	7cJghWP+kfKXxa/Mzj4ItNhRylLxtHEbXT2U/CdXfxlLvJjJ5rkSidgc2aBrQrTiI+CPaf
+	ofc7Q62sZXcpwYR2fUFCbVV0KYA5RBkUnwqkS7dvPSc8p+xrEimxO3yvUJhT2LR8N394lG
+	zKL5TDaB8eCxpGZRhxbfjUn9RFNKl2xluA2p7u5kkai+avEVgv9hwAOtKMW2EVgYqK2xAn
+	EZYIc0WKVZAH1Nb4ZDiz1NIO/snRu/iHOKTOeHm8VeRYVTieMy8yWHVg8nfo1l/UbnU8Tv
+	k5Yk3bdm2ZtFa0+WU70NGuYxJOHWvVeBaFwICiatUOh8gM6R/WS3IFlU9YbXwjVzymwuFc
+	XKuulQ5BeoNzGUlr/QrMDgw1cdIvgtAwKofD4IsvIOGsRR1yNR3JjzQoMvKvrQPONqF6JZ
+	OMMNLxAhP1LGiCUgH2GoiCYXngwwZmE2ZcjLiIEAmlhKl2r0JyV2gMJn4Uke4zTOViHDJQ
+	/gJXPKLMTm5lh6Zjv6J183nbfZ/UIz4eehTUQeqX6uRy6jBru/K/rs1ICZHdgd/GSKMS+z
+	nP5SILf6vZKcsnA0+D/43BN50nXByYlhjDbPB2kBPA+oekNoiga84=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=archlinux.org;
+	s=dkim-ed25519; t=1779798460;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=DumjHkMnQiUKEXczcFzbHTJ12Og3qEh2uESbAgSH9Z0=;
+	b=qAvsEodfYN9Au3PfLWPaXQEfyjbOcwD3RqWnSlsvTSJQ3NP8ZX9wWEW0wqValvrgMDgl0u
+	ST8XcV+dvsfuSMCQ==
+Authentication-Results: mail.archlinux.org;
+	auth=pass smtp.auth=kpcyrd smtp.mailfrom=kpcyrd@archlinux.org
+Date: Tue, 26 May 2026 14:27:36 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -102,60 +74,70 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20260520064630.1785283-1-mkchauras@gmail.com> <20260520064630.1785283-5-mkchauras@gmail.com>
- <CANiq72nPOMkZXpMpwTLFg4xjFfmyf_O_x2FN_nrNBsxeNu178Q@mail.gmail.com> <ahVb4k-2rC4EYZF9@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
-In-Reply-To: <ahVb4k-2rC4EYZF9@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
-From: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
-Date: Tue, 26 May 2026 14:21:38 +0200
-X-Gm-Features: AVHnY4JzDBCz65LWfOhQbkvjD_WZ3wkgopiTtJKdM9xbh9f_3NlkdYUpZbBQgqU
-Message-ID: <CANiq72nr8AX68THHi+7u6uU=TshQGDSjT7FVRBpMRfXMz7TyHQ@mail.gmail.com>
-Subject: Re: [PATCH V16 4/7] rust/powerpc: Set min rustc version for powerpc
-To: Mukesh Kumar Chaurasiya <mkchauras@gmail.com>
-Cc: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com, 
-	chleroy@kernel.org, peterz@infradead.org, jpoimboe@kernel.org, 
-	jbaron@akamai.com, aliceryhl@google.com, rostedt@goodmis.org, ardb@kernel.org, 
-	ojeda@kernel.org, boqun@kernel.org, gary@garyguo.net, 
-	bjorn3_gh@protonmail.com, lossin@kernel.org, a.hindborg@kernel.org, 
-	tmgross@umich.edu, dakr@kernel.org, nathan@kernel.org, 
-	nick.desaulniers+lkml@gmail.com, morbo@google.com, justinstitt@google.com, 
-	daniel.almeida@collabora.com, acourbot@nvidia.com, fujita.tomonori@gmail.com, 
-	gregkh@linuxfoundation.org, prafulrai522@gmail.com, tamird@kernel.org, 
-	kees@kernel.org, lyude@redhat.com, airlied@gmail.com, 
-	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
-	rust-for-linux@vger.kernel.org, llvm@lists.linux.dev
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Subject: Re: [PATCH v5 07/14] module: Make module authentication usable
+ without MODULE_SIG
+To: =?UTF-8?Q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>,
+ Petr Pavlu <petr.pavlu@suse.com>
+Cc: Alexei Starovoitov <ast@kernel.org>,
+ Daniel Borkmann <daniel@iogearbox.net>, Andrii Nakryiko <andrii@kernel.org>,
+ Eduard Zingerman <eddyz87@gmail.com>,
+ Kumar Kartikeya Dwivedi <memxor@gmail.com>,
+ Nathan Chancellor <nathan@kernel.org>, Nicolas Schier <nsc@kernel.org>,
+ Arnd Bergmann <arnd@arndb.de>, Luis Chamberlain <mcgrof@kernel.org>,
+ Sami Tolvanen <samitolvanen@google.com>, Daniel Gomez
+ <da.gomez@samsung.com>, Paul Moore <paul@paul-moore.com>,
+ James Morris <jmorris@namei.org>, "Serge E. Hallyn" <serge@hallyn.com>,
+ Jonathan Corbet <corbet@lwn.net>, Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
+ Naveen N Rao <naveen@kernel.org>, Mimi Zohar <zohar@linux.ibm.com>,
+ Roberto Sassu <roberto.sassu@huawei.com>,
+ Dmitry Kasatkin <dmitry.kasatkin@gmail.com>,
+ Eric Snowberg <eric.snowberg@oracle.com>,
+ Nicolas Schier <nicolas.schier@linux.dev>, Daniel Gomez
+ <da.gomez@kernel.org>, Aaron Tomlin <atomlin@atomlin.com>,
+ "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+ Nicolas Bouchinet <nicolas.bouchinet@oss.cyber.gouv.fr>,
+ Xiu Jianfeng <xiujianfeng@huawei.com>,
+ Martin KaFai Lau <martin.lau@linux.dev>, Song Liu <song@kernel.org>,
+ Yonghong Song <yonghong.song@linux.dev>, Jiri Olsa <jolsa@kernel.org>,
+ bpf@vger.kernel.org, =?UTF-8?Q?Fabian_Gr=C3=BCnbichler?=
+ <f.gruenbichler@proxmox.com>, Arnout Engelen <arnout@bzzt.net>,
+ Mattia Rizzolo <mattia@mapreri.org>, Christian Heusel <christian@heusel.eu>,
+ =?UTF-8?Q?C=C3=A2ju_Mihai-Drosi?= <mcaju95@gmail.com>,
+ Eric Biggers <ebiggers@kernel.org>,
+ Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
+ linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-arch@vger.kernel.org, linux-modules@vger.kernel.org,
+ linux-security-module@vger.kernel.org, linux-doc@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-integrity@vger.kernel.org,
+ debian-kernel@lists.debian.org,
+ Holger Levsen <holger@reproducible-builds.org>
+References: <20260505-module-hashes-v5-0-e174a5a49fce@weissschuh.net>
+ <20260505-module-hashes-v5-7-e174a5a49fce@weissschuh.net>
+ <0a0736a4-2cdd-49f2-9062-e2f18d769fc0@suse.com>
+ <4ee3c775-1fbf-45e1-8b77-5f9034f45125@t-8ch.de>
+Content-Language: de-DE, en-US
+From: kpcyrd <kpcyrd@archlinux.org>
+In-Reply-To: <4ee3c775-1fbf-45e1-8b77-5f9034f45125@t-8ch.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 
-On Tue, May 26, 2026 at 10:53=E2=80=AFAM Mukesh Kumar Chaurasiya
-<mkchauras@gmail.com> wrote:
->
-> I wanted inline asm be stable, I was skeptical about inline asm to be
-> unstable and potentially messing up the whole system. That's the reason
-> I waited for the stable support to get merged before sending out this
-> patch series.
+On 5/26/26 1:38 PM, Thomas Weißschuh wrote:
+> On 2026-05-26 12:53:22+0200, Petr Pavlu wrote:
+>> Should MODULE_SIG_FORCE be renamed to MODULE_AUTH_FORCE, along with
+>> renaming the sig_enforce functionality in kernel/module/auth.c to
+>> auth_enforce?
+> 
+> Given that it is a user-visible symbol we'll need to be a bit careful
+> not to break existing configurations.
+> I'll try to use the new "transitional" kconfig attribute.
+A slightly softer worded alternative (yet semantically equivalent) name could be 
+MODULE_AUTH_REQUIRE. No strong opinion though, I think MODULE_AUTH_* does make 
+sense.
 
-Yeah, sometimes unstable may mean there were remaining issues, but it
-is also common for features to remain unstable for a long time without
-no changes. So, yeah, we should at least try to know what is the
-overall status, i.e. the latest changes that landed regarding ppc64
-inline asm, e.g. when was the last time a significant bug was fixed
-etc.
+I initially shared the concern about renaming well established config options, 
+but the transitional feature does seem to be a good fit for this.
 
-(And I guess IBM prefers that it works with more versions rather than less?=
-)
-
-> Yeah it may be true. I'll test out the 1.85 rustc and come back with the
-> results.
-
-Thanks, that would be great.
-
-> I am not aware of s390x way of approaching support for rust so can't say
-> anything about that.
-
-Ah, OK -- both series added the conditional to
-`scripts/min-tool-version.sh` and both are from IBM, so I was just
-wondering :)
-
-Cheers,
-Miguel
+Sincerely,
+kpcyrd
 
