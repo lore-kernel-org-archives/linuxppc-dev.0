@@ -1,62 +1,62 @@
-Return-Path: <linuxppc-dev+bounces-21530-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21531-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DB1F7CD5BD0
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 May 2026 22:40:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 75CB0CD5BD5
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 May 2026 22:40:51 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gQ74n3nRrz2yYd;
-	Wed, 27 May 2026 08:40:41 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gQ74y1MqZz2xq0;
+	Wed, 27 May 2026 08:40:50 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=45.249.212.187
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779807387;
-	cv=none; b=an+HVVFVqTFEcS5w99u3awSetPzb5jEvRi/vckAPl4v0x9e9UP5KYmgM4PNIGfHSPy1mACqLiRyXBRQVDfbM4amoib05mLU5GnM3sShLfur2z2+eJeUZecytLlMOnYq8azr422xXGVU1mHsphqiS8z+04U57yQOF79YnrLzrREKNf2qkf1Z78MIEdW9C0cf6Jd2nC5HNJ5rla8mgsp+oHyh7sKB+AP/Xs8XY82aBtNkQ/cidereZSpSYzjncmlLfvafujsxuls9tw/TOAN5Z7SrbuRr8YZkKJ174Q04RdxPEz3kCeN0GIAf5LkL2Si0gy6bL+FrjewndCIDMQ03kcA==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779807388;
+	cv=none; b=fwwB+NdvjFyv0qYpqMNEC/iG3LkaRJ64lKmT9wFhwH9LF3PTy2YJXRNogvt1CG2wSXUGO9Kw1aCIpMBd7RQLD6PRbIIXANxQdrNm9/KWcw8CsCyg06GVSpMH9pptRlzmWcdzM/qO+r6fd43cL8oppbN40s3fdsIIi4fXHdoXaJ3X2/FO8MpFNoH0FCXTX44CakM/Q0qsWMqrUJ7B6GjOLK5aGl8Lx0HGNqWN1tyy+nRGNbjc9don4tWrGS9zZUDYKlmnixgKFSemCpI4d1QFrwLziTfwZYjDQVDounhJYhpu3gjLPwb0PgL3osONucbVB7/e5IU+9sCAYfmNpt0G1g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1779807387; c=relaxed/relaxed;
-	bh=wMIWaZV32Daasf+za8/Pnxre+NVOPFzoBSPfz4En8HQ=;
+	t=1779807388; c=relaxed/relaxed;
+	bh=k9KVwVo2Cm4f4rYBWd0AF4RdxTPXu9UJm3DZXHV1hSk=;
 	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=QdF3v1gzU4yl3V018HSIx5QIW6NZnMkkBWlCEuQc/IdOQ9dhL0/39xIAl+8XUzvMVhlhYlTkaKGhhHhx70M/+gdfW4fO656ZM7+kOXg1aw7iZw0E7izahxBKwqXTU80K8oFrs/GcTUnF3UQinnF8yIfiZdbcxzd0qLLHodvJ7c577T66w+EER7pHlsWgXcRPwtHJfNYYWbWlw+f38sQnWdIeuT6a6eBMm05Czr6ng32zg1lHW/SyswStp3Qlw7hTVKZVhF2R0r/xNQZ3LCULgyeCmbUVibD6zcZTqYZulQDBeUUnovSdgNdp/hEFqbOisDHh7wm8uBXjs+ZvO5hpbA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=cWP2C5F2; dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=cWP2C5F2; dkim-atps=neutral; spf=pass (client-ip=45.249.212.187; helo=szxga01-in.huawei.com; envelope-from=yintirui@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
+	 MIME-Version:Content-Type; b=ftRpPYpUWv03RS6QyIDicQYd/CQ2cGlcF1cm1tcU1zrY/p9gubdE5i7ti6zrCe6tdViFnvwmSOwjycUuE/qy71xd6JFjC1q3x2LOI9dHxFy5At0vUNV5ByQ021hjiYRe4RQzmXrWe8j/SI3N/ehmb5HxnzsPWhiYlY9KAt0aYywcrBkLVtwjYZEE/zhbAUSx/KNHE/zEnZza6UdnmkIG1lm8hsDvWDsjysFXanyxVD1zbR+qT1d1DqqjhEaC75ix9wFiRk7+0S+GLf1mHRI4/CmwxCbAlpGJ3XLcahf13fUBN9aW6GJxL7EogGdfu+ORX6Hq8AVR4R2MpALxEPxA+g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=CR/mU79d; dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=CR/mU79d; dkim-atps=neutral; spf=pass (client-ip=45.249.212.187; helo=szxga01-in.huawei.com; envelope-from=yintirui@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=cWP2C5F2;
-	dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=cWP2C5F2;
+	dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=CR/mU79d;
+	dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=CR/mU79d;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.187; helo=szxga01-in.huawei.com; envelope-from=yintirui@huawei.com; receiver=lists.ozlabs.org)
 Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [45.249.212.187])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gPwn65PM1z2xLs
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gPwn6622Mz2yR5
 	for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 May 2026 00:56:26 +1000 (AEST)
 dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
 	c=relaxed/relaxed; q=dns/txt;
 	h=From;
-	bh=wMIWaZV32Daasf+za8/Pnxre+NVOPFzoBSPfz4En8HQ=;
-	b=cWP2C5F2TBvhzg8T7RVE9LoZ2ByIKu0sClV+EAFEDCH0sYrngJWuk2R/h0BScXfHjlZ39EcF0
-	sm2W80NqlJG1l2DcbQ+f7BpC0XXWfXbT14ddcMTDZ61mK12koV6hAqFEZ0BpvXmYoJ1dR3dQgM8
-	I5JteHexY65OZ5Vz5woxwvk=
-Received: from canpmsgout03.his.huawei.com (unknown [172.19.92.159])
-	by szxga01-in.huawei.com (SkyGuard) with ESMTPS id 4gPwm05f4Wz1BGQ7
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 May 2026 22:55:28 +0800 (CST)
+	bh=k9KVwVo2Cm4f4rYBWd0AF4RdxTPXu9UJm3DZXHV1hSk=;
+	b=CR/mU79d0PRk0JiMm+3Bz8ydmIH42L8XRQ5l/1mx34szLa8TeL9FDoHeIzGpUof1CeyHqV1uo
+	MiMAzDnrdroxqRe8tboa8teu1VRpNr2pbt00sMv5yTUngQDbQorn/c8WgUYfzFhtNbbmPTL1rES
+	BykeJAQlxO0hm/dE9NVpZho=
+Received: from canpmsgout09.his.huawei.com (unknown [172.19.92.135])
+	by szxga01-in.huawei.com (SkyGuard) with ESMTPS id 4gPwm41wx9z1BGfL
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 May 2026 22:55:32 +0800 (CST)
 dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
 	c=relaxed/relaxed; q=dns/txt;
 	h=From;
-	bh=wMIWaZV32Daasf+za8/Pnxre+NVOPFzoBSPfz4En8HQ=;
-	b=cWP2C5F2TBvhzg8T7RVE9LoZ2ByIKu0sClV+EAFEDCH0sYrngJWuk2R/h0BScXfHjlZ39EcF0
-	sm2W80NqlJG1l2DcbQ+f7BpC0XXWfXbT14ddcMTDZ61mK12koV6hAqFEZ0BpvXmYoJ1dR3dQgM8
-	I5JteHexY65OZ5Vz5woxwvk=
-Received: from mail.maildlp.com (unknown [172.19.163.0])
-	by canpmsgout03.his.huawei.com (SkyGuard) with ESMTPS id 4gPwcN06v8zpT17;
-	Tue, 26 May 2026 22:48:52 +0800 (CST)
+	bh=k9KVwVo2Cm4f4rYBWd0AF4RdxTPXu9UJm3DZXHV1hSk=;
+	b=CR/mU79d0PRk0JiMm+3Bz8ydmIH42L8XRQ5l/1mx34szLa8TeL9FDoHeIzGpUof1CeyHqV1uo
+	MiMAzDnrdroxqRe8tboa8teu1VRpNr2pbt00sMv5yTUngQDbQorn/c8WgUYfzFhtNbbmPTL1rES
+	BykeJAQlxO0hm/dE9NVpZho=
+Received: from mail.maildlp.com (unknown [172.19.163.15])
+	by canpmsgout09.his.huawei.com (SkyGuard) with ESMTPS id 4gPwc33yv6z1cyNp;
+	Tue, 26 May 2026 22:48:35 +0800 (CST)
 Received: from kwepemr500001.china.huawei.com (unknown [7.202.194.229])
-	by mail.maildlp.com (Postfix) with ESMTPS id B5BD740561;
-	Tue, 26 May 2026 22:56:16 +0800 (CST)
+	by mail.maildlp.com (Postfix) with ESMTPS id 7C67340539;
+	Tue, 26 May 2026 22:56:19 +0800 (CST)
 Received: from huawei.com (10.50.87.63) by kwepemr500001.china.huawei.com
  (7.202.194.229) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.11; Tue, 26 May
- 2026 22:56:15 +0800
+ 2026 22:56:17 +0800
 From: Yin Tirui <yintirui@huawei.com>
 To: Andrew Morton <akpm@linux-foundation.org>, Matthew Wilcox
 	<willy@infradead.org>, David Hildenbrand <david@kernel.org>, Lorenzo Stoakes
@@ -87,9 +87,9 @@ CC: Catalin Marinas <catalin.marinas@arm.com>, Peter Xu <peterx@redhat.com>,
 	<linux-kernel@vger.kernel.org>, <x86@kernel.org>,
 	<linux-arm-kernel@lists.infradead.org>, <linuxppc-dev@lists.ozlabs.org>,
 	<linux-pm@vger.kernel.org>
-Subject: [PATCH mm-unstable RFC v4 5/7] mm/huge_memory: refactor __split_huge_pmd_locked()
-Date: Tue, 26 May 2026 22:50:01 +0800
-Message-ID: <20260526145003.88445-6-yintirui@huawei.com>
+Subject: [PATCH mm-unstable RFC v4 7/7] mm: add PMD-level PFNMAP support for remap_pfn_range()
+Date: Tue, 26 May 2026 22:50:03 +0800
+Message-ID: <20260526145003.88445-8-yintirui@huawei.com>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20260526145003.88445-1-yintirui@huawei.com>
 References: <20260526145003.88445-1-yintirui@huawei.com>
@@ -112,262 +112,302 @@ X-Originating-IP: [10.50.87.63]
 X-ClientProxiedBy: kwepems100001.china.huawei.com (7.221.188.238) To
  kwepemr500001.china.huawei.com (7.202.194.229)
 
-Rework __split_huge_pmd_locked() to classify huge PMDs by the PMD entry
-itself instead of starting from vma_is_anonymous().
+Teach remap_pfn_range() to install PMD-sized PFNMAP entries when the
+virtual range and PFN are PMD-aligned, the architecture exposes PMD
+PFNMAP support, and PMD leaves are available at runtime. The path only
+runs on VMAs without ->fault or ->huge_fault, so the resulting PMDs
+are known to be non-refaultable.
 
-Present PMDs are classified with vm_normal_folio_pmd(): file/shmem THPs
-are dropped and refaulted later, anonymous THPs are split into PTEs, and
-PMDs without a normal folio are handled as huge zero or special PMDs.
+Non-refaultable PFNMAP PMDs cannot be rebuilt on demand and are
+therefore installed with a deposited pgtable.
+vma_pfnmap_has_deposited_pgtable() becomes the common predicate driving
+the deposit logic in copy_huge_pmd(), zap_huge_pmd() through
+has_deposited_pgtable(), and the new __split_huge_pfnmap_pmd().
 
-Non-present PMDs are classified with pmd_to_softleaf_folio(): file/shmem
-migration entries are dropped, while anonymous migration/device-private
-entries are split into PTEs.
-
-This also makes the anonymous decision folio-based.  A private file
-mapping that has CoW'ed to an anonymous THP now follows the anonymous
-path even though the VMA is file-backed.
-
-No intended behavioural change.
+The split path withdraws the pgtable and populates it with special PTEs
+derived from the original PMD using pmd_pfn() and pmd_pgprot(). With
+pmd_pgprot() returning PTE-level pgprot_t, this preserves protection and
+cache attributes without reintroducing pte_clrhuge().
 
 Signed-off-by: Yin Tirui <yintirui@huawei.com>
 ---
- mm/huge_memory.c | 197 +++++++++++++++++++++++++++--------------------
- 1 file changed, 114 insertions(+), 83 deletions(-)
+ mm/huge_memory.c | 60 ++++++++++++++++++++++++++++-----
+ mm/internal.h    | 21 ++++++++++++
+ mm/memory.c      | 87 +++++++++++++++++++++++++++++++++++++++++-------
+ 3 files changed, 148 insertions(+), 20 deletions(-)
 
 diff --git a/mm/huge_memory.c b/mm/huge_memory.c
-index 3964258ff91d..8cd77389d52f 100644
+index be9b637c813b..19e6d856e8bf 100644
 --- a/mm/huge_memory.c
 +++ b/mm/huge_memory.c
-@@ -3136,25 +3136,38 @@ static void __split_huge_pmd_locked(struct vm_area_struct *vma, pmd_t *pmd,
+@@ -1879,6 +1879,8 @@ bool touch_pmd(struct vm_area_struct *vma, unsigned long addr,
+ 	return false;
+ }
  
- 	count_vm_event(THP_SPLIT_PMD);
- 
--	if (!vma_is_anonymous(vma)) {
--		old_pmd = pmdp_huge_clear_flush(vma, haddr, pmd);
--		/*
--		 * We are going to unmap this huge page. So
--		 * just go ahead and zap it
--		 */
--		if (arch_needs_pgtable_deposit())
--			zap_deposited_table(mm, pmd);
--		if (vma_is_special_huge(vma))
--			return;
--		if (unlikely(pmd_is_migration_entry(old_pmd))) {
--			const softleaf_t old_entry = softleaf_from_pmd(old_pmd);
-+	if (pmd_present(*pmd)) {
-+		folio = vm_normal_folio_pmd(vma, haddr, *pmd);
-+
-+		if (unlikely(!folio)) {
-+			if (is_huge_zero_pmd(*pmd)) {
-+				/*
-+				 * FIXME: Do we want to invalidate secondary mmu by calling
-+				 * mmu_notifier_arch_invalidate_secondary_tlbs() see comments below
-+				 * inside __split_huge_pmd() ?
-+				 *
-+				 * We are going from a zero huge page write protected to zero
-+				 * small page also write protected so it does not seems useful
-+				 * to invalidate secondary mmu at this time.
-+				 */
-+				return __split_huge_zero_page_pmd(vma, haddr, pmd);
-+			}
- 
--			folio = softleaf_to_folio(old_entry);
--		} else if (is_huge_zero_pmd(old_pmd)) {
-+			/* Present but not a normal folio: drop the PMD. */
-+			old_pmd = pmdp_huge_clear_flush(vma, haddr, pmd);
-+			if (arch_needs_pgtable_deposit())
-+				zap_deposited_table(mm, pmd);
- 			return;
--		} else {
-+		}
-+
-+		if (unlikely(!folio_test_anon(folio))) {
-+			old_pmd = pmdp_huge_clear_flush(vma, haddr, pmd);
-+			if (arch_needs_pgtable_deposit())
-+				zap_deposited_table(mm, pmd);
-+			if (vma_is_special_huge(vma))
-+				return;
-+
- 			page = pmd_page(old_pmd);
--			folio = page_folio(page);
- 			if (!folio_test_dirty(folio) && pmd_dirty(old_pmd))
- 				folio_mark_dirty(folio);
- 			if (!folio_test_referenced(folio) && pmd_young(old_pmd))
-@@ -3164,72 +3177,7 @@ static void __split_huge_pmd_locked(struct vm_area_struct *vma, pmd_t *pmd,
- 			folio_put(folio);
- 			return;
- 		}
--		add_mm_counter(mm, mm_counter_file(folio), -HPAGE_PMD_NR);
--		return;
--	}
--
--	if (is_huge_zero_pmd(*pmd)) {
--		/*
--		 * FIXME: Do we want to invalidate secondary mmu by calling
--		 * mmu_notifier_arch_invalidate_secondary_tlbs() see comments below
--		 * inside __split_huge_pmd() ?
--		 *
--		 * We are going from a zero huge page write protected to zero
--		 * small page also write protected so it does not seems useful
--		 * to invalidate secondary mmu at this time.
--		 */
--		return __split_huge_zero_page_pmd(vma, haddr, pmd);
--	}
--
--	if (pmd_is_migration_entry(*pmd)) {
--		softleaf_t entry;
--
--		old_pmd = *pmd;
--		entry = softleaf_from_pmd(old_pmd);
--		page = softleaf_to_page(entry);
--		folio = page_folio(page);
--
--		soft_dirty = pmd_swp_soft_dirty(old_pmd);
--		uffd_wp = pmd_swp_uffd_wp(old_pmd);
--
--		write = softleaf_is_migration_write(entry);
--		if (PageAnon(page))
--			anon_exclusive = softleaf_is_migration_read_exclusive(entry);
--		young = softleaf_is_migration_young(entry);
--		dirty = softleaf_is_migration_dirty(entry);
--	} else if (pmd_is_device_private_entry(*pmd)) {
--		softleaf_t entry;
--
--		old_pmd = *pmd;
--		entry = softleaf_from_pmd(old_pmd);
--		page = softleaf_to_page(entry);
--		folio = page_folio(page);
--
--		soft_dirty = pmd_swp_soft_dirty(old_pmd);
--		uffd_wp = pmd_swp_uffd_wp(old_pmd);
--
--		write = softleaf_is_device_private_write(entry);
--		anon_exclusive = PageAnonExclusive(page);
--
--		/*
--		 * Device private THP should be treated the same as regular
--		 * folios w.r.t anon exclusive handling. See the comments for
--		 * folio handling and anon_exclusive below.
--		 */
--		if (freeze && anon_exclusive &&
--		    folio_try_share_anon_rmap_pmd(folio, page))
--			freeze = false;
--		if (!freeze) {
--			rmap_t rmap_flags = RMAP_NONE;
--
--			folio_ref_add(folio, HPAGE_PMD_NR - 1);
--			if (anon_exclusive)
--				rmap_flags |= RMAP_EXCLUSIVE;
- 
--			folio_add_anon_rmap_ptes(folio, page, HPAGE_PMD_NR,
--						 vma, haddr, rmap_flags);
--		}
--	} else {
- 		/*
- 		 * Up to this point the pmd is present and huge and userland has
- 		 * the whole access to the hugepage during the split (which
-@@ -3255,7 +3203,6 @@ static void __split_huge_pmd_locked(struct vm_area_struct *vma, pmd_t *pmd,
++static bool has_deposited_pgtable(struct vm_area_struct *vma, pmd_t pmdval,
++		struct folio *folio);
+ static int copy_present_huge_pmd(
+ 		struct mm_struct *dst_mm, struct mm_struct *src_mm,
+ 		pmd_t *dst_pmd, pmd_t *src_pmd, unsigned long addr,
+@@ -1912,8 +1914,12 @@ static int copy_present_huge_pmd(
+ 		 * able to wrongly write to the backend MMIO.
  		 */
- 		old_pmd = pmdp_invalidate(vma, haddr, pmd);
- 		page = pmd_page(old_pmd);
--		folio = page_folio(page);
- 		if (pmd_dirty(old_pmd)) {
- 			dirty = true;
- 			folio_set_dirty(folio);
-@@ -3266,7 +3213,6 @@ static void __split_huge_pmd_locked(struct vm_area_struct *vma, pmd_t *pmd,
- 		uffd_wp = pmd_uffd_wp(old_pmd);
- 
- 		VM_WARN_ON_FOLIO(!folio_ref_count(folio), folio);
--		VM_WARN_ON_FOLIO(!folio_test_anon(folio), folio);
- 
- 		/*
- 		 * Without "freeze", we'll simply split the PMD, propagating the
-@@ -3296,6 +3242,85 @@ static void __split_huge_pmd_locked(struct vm_area_struct *vma, pmd_t *pmd,
- 			folio_add_anon_rmap_ptes(folio, page, HPAGE_PMD_NR,
- 						 vma, haddr, rmap_flags);
- 		}
-+	} else {
-+		/*
-+		 * Non-present PMD: a softleaf-encoded migration or
-+		 * device-private entry. pmd_to_softleaf_folio() warns and
-+		 * returns NULL for any other encoding.
-+		 */
-+		folio = pmd_to_softleaf_folio(*pmd);
-+		if (unlikely(!folio))
-+			return;
+ 		VM_WARN_ON_ONCE(is_cow_mapping(src_vma->vm_flags) && pmd_write(pmd));
+-		pte_free(dst_mm, pgtable);
+-		pgtable = NULL;
 +
-+		if (unlikely(!folio_test_anon(folio))) {
-+			/*
-+			 * File/shmem migration entry: drop the PMD without
-+			 * splitting. Unlike the present case the entry holds
-+			 * neither a folio reference nor an rmap to release,
-+			 * so just adjust the RSS counter.
-+			 */
-+			pmdp_huge_clear_flush(vma, haddr, pmd);
-+			if (arch_needs_pgtable_deposit())
-+				zap_deposited_table(mm, pmd);
-+			if (unlikely(vma_is_special_huge(vma))) {
-+				VM_WARN_ONCE(1,
-+					     "unexpected special huge PMD migration entry\n");
-+				return;
-+			}
-+			add_mm_counter(mm, mm_counter_file(folio), -HPAGE_PMD_NR);
-+			return;
++		if (!has_deposited_pgtable(dst_vma, pmd, NULL)) {
++			pte_free(dst_mm, pgtable);
++			pgtable = NULL;
 +		}
 +
-+		if (pmd_is_migration_entry(*pmd)) {
-+			softleaf_t entry;
-+
-+			old_pmd = *pmd;
-+			entry = softleaf_from_pmd(old_pmd);
-+			page = softleaf_to_page(entry);
-+
-+			soft_dirty = pmd_swp_soft_dirty(old_pmd);
-+			uffd_wp = pmd_swp_uffd_wp(old_pmd);
-+
-+			write = softleaf_is_migration_write(entry);
-+			if (PageAnon(page))
-+				anon_exclusive = softleaf_is_migration_read_exclusive(entry);
-+			young = softleaf_is_migration_young(entry);
-+			dirty = softleaf_is_migration_dirty(entry);
-+		} else if (pmd_is_device_private_entry(*pmd)) {
-+			softleaf_t entry;
-+
-+			old_pmd = *pmd;
-+			entry = softleaf_from_pmd(old_pmd);
-+			page = softleaf_to_page(entry);
-+
-+			soft_dirty = pmd_swp_soft_dirty(old_pmd);
-+			uffd_wp = pmd_swp_uffd_wp(old_pmd);
-+
-+			write = softleaf_is_device_private_write(entry);
-+			anon_exclusive = PageAnonExclusive(page);
-+
-+			/*
-+			 * Device-private THP should be treated the same as
-+			 * regular folios w.r.t. anon-exclusive handling. See
-+			 * the matching code for present anon folios above.
-+			 */
-+			if (freeze && anon_exclusive &&
-+			    folio_try_share_anon_rmap_pmd(folio, page))
-+				freeze = false;
-+			if (!freeze) {
-+				rmap_t rmap_flags = RMAP_NONE;
-+
-+				folio_ref_add(folio, HPAGE_PMD_NR - 1);
-+				if (anon_exclusive)
-+					rmap_flags |= RMAP_EXCLUSIVE;
-+
-+				folio_add_anon_rmap_ptes(folio, page, HPAGE_PMD_NR,
-+							 vma, haddr, rmap_flags);
-+			}
-+		} else {
-+			VM_WARN_ON_ONCE(1);
-+			return;
-+		}
+ 		wrprotect = false;
+ 		goto set_pmd;
  	}
+@@ -2495,11 +2501,19 @@ static bool has_deposited_pgtable(struct vm_area_struct *vma, pmd_t pmdval,
+ 	if (is_huge_zero_pmd(pmdval))
+ 		return !vma_is_dax(vma);
  
++	/*
++	 * PMD-sized PFNMAP mappings installed without fault handlers cannot be
++	 * refaulted after the PMD is cleared, so they carry a deposited page
++	 * table for later partial unmap/mprotect.
++	 */
++	if (!folio)
++		return pmd_present(pmdval) && vma_pfnmap_has_deposited_pgtable(vma);
++
  	/*
+ 	 * Otherwise, only anonymous folios are deposited, see
+ 	 * __do_huge_pmd_anonymous_page().
+ 	 */
+-	return folio && folio_test_anon(folio);
++	return folio_test_anon(folio);
+ }
+ 
+ /**
+@@ -3118,6 +3132,32 @@ static void __split_huge_zero_page_pmd(struct vm_area_struct *vma,
+ 	pmd_populate(mm, pmd, pgtable);
+ }
+ 
++static void __split_huge_pfnmap_pmd(struct vm_area_struct *vma,
++		unsigned long haddr, pmd_t *pmd)
++{
++	struct mm_struct *mm = vma->vm_mm;
++	pgtable_t pgtable;
++	pmd_t old_pmd, _pmd;
++	pte_t *pte, entry;
++
++	old_pmd = pmdp_huge_clear_flush(vma, haddr, pmd);
++	if (!has_deposited_pgtable(vma, old_pmd, NULL))
++		return;
++
++	pgtable = pgtable_trans_huge_withdraw(mm, pmd);
++	pmd_populate(mm, &_pmd, pgtable);
++
++	pte = pte_offset_map(&_pmd, haddr);
++	VM_BUG_ON(!pte);
++
++	entry = pfn_pte(pmd_pfn(old_pmd), pmd_pgprot(old_pmd));
++	set_ptes(mm, haddr, pte, entry, HPAGE_PMD_NR);
++	pte_unmap(pte);
++
++	smp_wmb(); /* make pte visible before pmd */
++	pmd_populate(mm, pmd, pgtable);
++}
++
+ static void __split_huge_pmd_locked(struct vm_area_struct *vma, pmd_t *pmd,
+ 		unsigned long haddr, bool freeze)
+ {
+@@ -3157,11 +3200,12 @@ static void __split_huge_pmd_locked(struct vm_area_struct *vma, pmd_t *pmd,
+ 				return __split_huge_zero_page_pmd(vma, haddr, pmd);
+ 			}
+ 
+-			/* Present but not a normal folio: drop the PMD. */
+-			old_pmd = pmdp_huge_clear_flush(vma, haddr, pmd);
+-			if (arch_needs_pgtable_deposit())
+-				zap_deposited_table(mm, pmd);
+-			return;
++			/*
++			 * Present PMDs without a normal folio are special mappings. Huge zero PMDs
++			 * are handled above; the remaining PMD-level special mappings are PFNMAP
++			 * mappings.
++			 */
++			return __split_huge_pfnmap_pmd(vma, haddr, pmd);
+ 		}
+ 
+ 		if (unlikely(!folio_test_anon(folio))) {
+diff --git a/mm/internal.h b/mm/internal.h
+index 5a2ddcf68e0b..f82bd987131d 100644
+--- a/mm/internal.h
++++ b/mm/internal.h
+@@ -198,6 +198,27 @@ static inline void vma_close(struct vm_area_struct *vma)
+ 	}
+ }
+ 
++static inline bool vma_has_fault_handler(const struct vm_area_struct *vma)
++{
++	const struct vm_operations_struct *vm_ops = vma->vm_ops;
++
++	return vm_ops && (vm_ops->fault || vm_ops->huge_fault);
++}
++
++/*
++ * PMD-sized PFNMAP mappings installed without fault handlers cannot be
++ * recreated after the PMD is cleared. Such mappings need a deposited page
++ * table so they can be split into PTEs for partial unmap/mprotect.
++ *
++ * Faultable PFNMAP VMAs can drop the PMD and refault it later, so they do
++ * not need a deposited page table.
++ */
++static inline bool
++vma_pfnmap_has_deposited_pgtable(const struct vm_area_struct *vma)
++{
++	return vma_test(vma, VMA_PFNMAP_BIT) && !vma_has_fault_handler(vma);
++}
++
+ /* unmap_vmas is in mm/memory.c */
+ void unmap_vmas(struct mmu_gather *tlb, struct unmap_desc *unmap);
+ 
+diff --git a/mm/memory.c b/mm/memory.c
+index 56886d1ddaf3..226e3a53a48e 100644
+--- a/mm/memory.c
++++ b/mm/memory.c
+@@ -2943,9 +2943,66 @@ static int remap_pte_range(struct mm_struct *mm, pmd_t *pmd,
+ 	return err;
+ }
+ 
+-static inline int remap_pmd_range(struct mm_struct *mm, pud_t *pud,
+-			unsigned long addr, unsigned long end,
+-			unsigned long pfn, pgprot_t prot)
++static int remap_try_install_pmd_leaf(struct mm_struct *mm,
++		pmd_t *pmd, struct vm_area_struct *vma, unsigned long addr,
++		unsigned long end, unsigned long pfn, pgprot_t prot)
++{
++	pgtable_t pgtable;
++	spinlock_t *ptl;
++	unsigned long i;
++	pmd_t entry;
++
++	if (!pgtable_level_has_pxx_special(PGTABLE_LEVEL_PMD))
++		return 0;
++
++	if (!pgtable_has_pmd_leaves())
++		return 0;
++
++	/*
++	 * Do not install PMD leaves through remap_pfn_range() for VMAs that have
++	 * a fault handler. With this restriction, a PFNMAP PMD in a VMA without
++	 * a fault handler is known to have been installed by remap_pfn_range()
++	 * and to have a deposited page table for later split; see
++	 * vma_pfnmap_has_deposited_pgtable().
++	 */
++	if (vma_has_fault_handler(vma))
++		return 0;
++
++	if (!IS_ALIGNED(addr | end, PMD_SIZE))
++		return 0;
++
++	if (!IS_ALIGNED(PFN_PHYS(pfn), PMD_SIZE))
++		return 0;
++
++	for (i = 0; i < PFN_DOWN(PMD_SIZE); i++) {
++		if (!pfn_modify_allowed(pfn + i, prot))
++			return -EACCES;
++	}
++
++	pgtable = pte_alloc_one(mm);
++	if (unlikely(!pgtable))
++		return 0;
++
++	ptl = pmd_lock(mm, pmd);
++	if (!pmd_none(*pmd)) {
++		spin_unlock(ptl);
++		pte_free(mm, pgtable);
++		return 0;
++	}
++
++	entry = pfn_pmd(pfn, prot);
++	entry = pmd_mkspecial(entry);
++	pgtable_trans_huge_deposit(mm, pmd, pgtable);
++	mm_inc_nr_ptes(mm);
++	set_pmd_at(mm, addr, pmd, entry);
++	spin_unlock(ptl);
++
++	return 1;
++}
++
++static inline int remap_pmd_range(struct mm_struct *mm,
++		struct vm_area_struct *vma, pud_t *pud, unsigned long addr,
++		unsigned long end, unsigned long pfn, pgprot_t prot)
+ {
+ 	pmd_t *pmd;
+ 	unsigned long next;
+@@ -2958,6 +3015,12 @@ static inline int remap_pmd_range(struct mm_struct *mm, pud_t *pud,
+ 	VM_BUG_ON(pmd_trans_huge(*pmd));
+ 	do {
+ 		next = pmd_addr_end(addr, end);
++		err = remap_try_install_pmd_leaf(mm, pmd, vma, addr, next,
++				pfn + (addr >> PAGE_SHIFT), prot);
++		if (err < 0)
++			return err;
++		if (err > 0)
++			continue;
+ 		err = remap_pte_range(mm, pmd, addr, next,
+ 				pfn + (addr >> PAGE_SHIFT), prot);
+ 		if (err)
+@@ -2966,9 +3029,9 @@ static inline int remap_pmd_range(struct mm_struct *mm, pud_t *pud,
+ 	return 0;
+ }
+ 
+-static inline int remap_pud_range(struct mm_struct *mm, p4d_t *p4d,
+-			unsigned long addr, unsigned long end,
+-			unsigned long pfn, pgprot_t prot)
++static inline int remap_pud_range(struct mm_struct *mm,
++		struct vm_area_struct *vma, p4d_t *p4d, unsigned long addr,
++		unsigned long end, unsigned long pfn, pgprot_t prot)
+ {
+ 	pud_t *pud;
+ 	unsigned long next;
+@@ -2980,7 +3043,7 @@ static inline int remap_pud_range(struct mm_struct *mm, p4d_t *p4d,
+ 		return -ENOMEM;
+ 	do {
+ 		next = pud_addr_end(addr, end);
+-		err = remap_pmd_range(mm, pud, addr, next,
++		err = remap_pmd_range(mm, vma, pud, addr, next,
+ 				pfn + (addr >> PAGE_SHIFT), prot);
+ 		if (err)
+ 			return err;
+@@ -2988,9 +3051,9 @@ static inline int remap_pud_range(struct mm_struct *mm, p4d_t *p4d,
+ 	return 0;
+ }
+ 
+-static inline int remap_p4d_range(struct mm_struct *mm, pgd_t *pgd,
+-			unsigned long addr, unsigned long end,
+-			unsigned long pfn, pgprot_t prot)
++static inline int remap_p4d_range(struct mm_struct *mm,
++		struct vm_area_struct *vma, pgd_t *pgd, unsigned long addr,
++		unsigned long end, unsigned long pfn, pgprot_t prot)
+ {
+ 	p4d_t *p4d;
+ 	unsigned long next;
+@@ -3002,7 +3065,7 @@ static inline int remap_p4d_range(struct mm_struct *mm, pgd_t *pgd,
+ 		return -ENOMEM;
+ 	do {
+ 		next = p4d_addr_end(addr, end);
+-		err = remap_pud_range(mm, p4d, addr, next,
++		err = remap_pud_range(mm, vma, p4d, addr, next,
+ 				pfn + (addr >> PAGE_SHIFT), prot);
+ 		if (err)
+ 			return err;
+@@ -3049,7 +3112,7 @@ static int remap_pfn_range_internal(struct vm_area_struct *vma, unsigned long ad
+ 	flush_cache_range(vma, addr, end);
+ 	do {
+ 		next = pgd_addr_end(addr, end);
+-		err = remap_p4d_range(mm, pgd, addr, next,
++		err = remap_p4d_range(mm, vma, pgd, addr, next,
+ 				pfn + (addr >> PAGE_SHIFT), prot);
+ 		if (err)
+ 			return err;
 -- 
 2.43.0
 
