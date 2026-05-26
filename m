@@ -1,62 +1,61 @@
-Return-Path: <linuxppc-dev+bounces-21526-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21527-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 486A1CD5BD5
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 May 2026 22:40:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B7E76CD5BD0
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 May 2026 22:40:11 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gQ7415ZSWz2xS2;
-	Wed, 27 May 2026 08:40:01 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gQ74B1njbz2y8h;
+	Wed, 27 May 2026 08:40:10 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=45.249.212.187
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779807385;
-	cv=none; b=bOxNXUuIlSeUlqM/qytPyB9yJuxqkcC8FIndoDBOMjDeHPSaOaWc8OfXmkFCmPlMBztwrTK49KVqDTZcnTukgmsh0N2ImXUwllbOqA0Ijyt7XbiYphfyEKuQQRDNxBQmBS+WSAjJiWUd+mOHgMXAgvDGEVzKh6eb3kflKbOMScrKO9fUUcHfbFfvEIJVIFfourcd3uyDB/jbwCwAYW5DXJmEv2bABgYdpJsrJzdlfT58tzMmOSjbJ+uV5KBPjlaKGCXta0duIqWguQ/h54T3OF/dIoXtLaZqBzY4wPDTofE8Q0bOpSVKgDQDFjnsKmjyvgEfTriS97OiXApGJjXpEQ==
+	cv=none; b=axwJ+6K+XcUyUFnObrFnfWHPAgw/aUB4WIuiLq6f6E3svxmOf+6QqW0hTaikLNFUxntShp35Deb7pALWnJ9EuDNp1IIqd/+B43AjZNQsy2jQAOwyV+O0LdyzPoIdgzKxHPMQnYb62d2VeKM4tPpeDTwX92hvYXlP1ln8LW9LvlhA6JRZ2JxzctlU4bbBEuflyEdSvk5A0TKNH5ATK0D382FL88DpUNetBNDi3uoXS3D4uzs6qmcnZy0ZavEz9En6kn1Q2rm7d6TAzsmUQ284pD4KZOPGya5xAixVligcXsrA/sx0ew4EPmrUxgEYp4dcCiKmY7gGuc6kP2grOzvwhA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1779807385; c=relaxed/relaxed;
-	bh=PEJKj8MrGm98KFDNsLR6hqBdS/9XHG5DFtB7L96xDQw=;
-	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=faGJN5WINgP1kPpKLpVXyK5qM/tdkVIthIoiYxupxzzMrYoVpPZ9Kub8TkBnbuHBKCxN154FWGL/57srAnYn+7omPu7mL5SWPUgcDnqqSFrPdbUa3tLCVuhk7807TFsvJ4nAeGv840Ht5BMNsVXCk4qyQDckKICHgthphF2yygFcZAa7yv/tpxyutbsUYXdsvwPZn4OeoddhDpV6DIjBsQqHKBo2npfxqqdTXWSflrjKq0niKsB+09WCVWi1WQH5lWO9DME2CJUSniRwaHqZF5iFA4Wv5B47H074ICfiXOOOo+qSSJm78ZutXbuFQZ/sJKr6BdPYatkruO1uA8P4WQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=i0YNxHW3; dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=i0YNxHW3; dkim-atps=neutral; spf=pass (client-ip=45.249.212.187; helo=szxga01-in.huawei.com; envelope-from=yintirui@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
+	bh=tAOc0X5Ad5JET2TC9jtYXzCGegy15EhzBhrLna1J1iI=;
+	h=From:To:CC:Subject:Date:Message-ID:MIME-Version:Content-Type; b=eo3868zLlqnCXQWnfsQmHLyU60nZ3yggasMnNb1FeKIL3HnD92SHiQmi+n/Qc1jx5YAm2X+V8FSLLRkZgoLc1GwxgqcEax5i7tEVPIz1vumdqfxoVZi5nRw/7219L0U6SyiZT4uBhNf+0Go4JSgzKvahlBmx3nMM85VbQ9S5LgDcWfyTkrZYa6FNoT4aaoKsMdy5p0boP3nQQX3w87ZOQb6Jc5uJeoTgCOwPdDwPsoC+4kT+yuKI6SeIFYshtoVvQsghOTPkcDFqsJl+/XVIt9wFCYSsy9GeVpBab5M7Tl4l7s0qZIy/ETSZQv23JtDeOFmY56OFA1kXZFYhQtMqwQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=oNnYAJtF; dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=oNnYAJtF; dkim-atps=neutral; spf=pass (client-ip=45.249.212.187; helo=szxga01-in.huawei.com; envelope-from=yintirui@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=i0YNxHW3;
-	dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=i0YNxHW3;
+	dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=oNnYAJtF;
+	dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=oNnYAJtF;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.187; helo=szxga01-in.huawei.com; envelope-from=yintirui@huawei.com; receiver=lists.ozlabs.org)
 Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [45.249.212.187])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gPwn20G6Bz2yR5
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gPwn20LWcz2yRG
 	for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 May 2026 00:56:21 +1000 (AEST)
 dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
 	c=relaxed/relaxed; q=dns/txt;
 	h=From;
-	bh=PEJKj8MrGm98KFDNsLR6hqBdS/9XHG5DFtB7L96xDQw=;
-	b=i0YNxHW3wq3lFr0pxm1PaJNgAVJTO1vRZUeYUiJLUthZy1rqBkAIdd47b8R+6cAyaooBDq9ga
-	Gi+EVanp6M6ViNTwBHbOygCaz+ZLtugXoLZmkLmAljpjW4ksf3jW9FcLRD3EtMD7xBeNQvKhMW1
-	e2Prn6nGp6met5Qh5OkxH2g=
-Received: from canpmsgout04.his.huawei.com (unknown [172.19.92.133])
-	by szxga01-in.huawei.com (SkyGuard) with ESMTPS id 4gPwlz1QYPz1BGPL
+	bh=tAOc0X5Ad5JET2TC9jtYXzCGegy15EhzBhrLna1J1iI=;
+	b=oNnYAJtFtBgGQSd27b8WhXsDgb/0pSK5BLEBS9P2hWlJ+ZLu8ZVnPWVy0Nea73pW/FtNdSq1+
+	n9s/lIWU9iEd/+tSltQfDjqavQdGCcmagG7lU8SrBvdKe1X8xGz7rqh5mkyjpIdIog7O96zBhP0
+	m9sDvQTKzbDB64y0y/QPHUo=
+Received: from canpmsgout03.his.huawei.com (unknown [172.19.92.159])
+	by szxga01-in.huawei.com (SkyGuard) with ESMTPS id 4gPwlz29GNz1BGT8
 	for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 May 2026 22:55:27 +0800 (CST)
 dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
 	c=relaxed/relaxed; q=dns/txt;
 	h=From;
-	bh=PEJKj8MrGm98KFDNsLR6hqBdS/9XHG5DFtB7L96xDQw=;
-	b=i0YNxHW3wq3lFr0pxm1PaJNgAVJTO1vRZUeYUiJLUthZy1rqBkAIdd47b8R+6cAyaooBDq9ga
-	Gi+EVanp6M6ViNTwBHbOygCaz+ZLtugXoLZmkLmAljpjW4ksf3jW9FcLRD3EtMD7xBeNQvKhMW1
-	e2Prn6nGp6met5Qh5OkxH2g=
-Received: from mail.maildlp.com (unknown [172.19.162.197])
-	by canpmsgout04.his.huawei.com (SkyGuard) with ESMTPS id 4gPwbt2RTYz1prmJ;
-	Tue, 26 May 2026 22:48:26 +0800 (CST)
+	bh=tAOc0X5Ad5JET2TC9jtYXzCGegy15EhzBhrLna1J1iI=;
+	b=oNnYAJtFtBgGQSd27b8WhXsDgb/0pSK5BLEBS9P2hWlJ+ZLu8ZVnPWVy0Nea73pW/FtNdSq1+
+	n9s/lIWU9iEd/+tSltQfDjqavQdGCcmagG7lU8SrBvdKe1X8xGz7rqh5mkyjpIdIog7O96zBhP0
+	m9sDvQTKzbDB64y0y/QPHUo=
+Received: from mail.maildlp.com (unknown [172.19.163.104])
+	by canpmsgout03.his.huawei.com (SkyGuard) with ESMTPS id 4gPwcF0nYNzpSwR;
+	Tue, 26 May 2026 22:48:45 +0800 (CST)
 Received: from kwepemr500001.china.huawei.com (unknown [7.202.194.229])
-	by mail.maildlp.com (Postfix) with ESMTPS id 0107540576;
-	Tue, 26 May 2026 22:56:14 +0800 (CST)
+	by mail.maildlp.com (Postfix) with ESMTPS id CC8F54048F;
+	Tue, 26 May 2026 22:56:09 +0800 (CST)
 Received: from huawei.com (10.50.87.63) by kwepemr500001.china.huawei.com
  (7.202.194.229) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.11; Tue, 26 May
- 2026 22:56:12 +0800
+ 2026 22:56:08 +0800
 From: Yin Tirui <yintirui@huawei.com>
 To: Andrew Morton <akpm@linux-foundation.org>, Matthew Wilcox
 	<willy@infradead.org>, David Hildenbrand <david@kernel.org>, Lorenzo Stoakes
@@ -87,12 +86,10 @@ CC: Catalin Marinas <catalin.marinas@arm.com>, Peter Xu <peterx@redhat.com>,
 	<linux-kernel@vger.kernel.org>, <x86@kernel.org>,
 	<linux-arm-kernel@lists.infradead.org>, <linuxppc-dev@lists.ozlabs.org>,
 	<linux-pm@vger.kernel.org>
-Subject: [PATCH mm-unstable RFC v4 3/7] powerpc/mm: use PTE-level pgprot for huge PFN helpers
-Date: Tue, 26 May 2026 22:49:59 +0800
-Message-ID: <20260526145003.88445-4-yintirui@huawei.com>
+Subject: [PATCH mm-unstable RFC v4 0/7] mm: add huge pfnmap support for remap_pfn_range()
+Date: Tue, 26 May 2026 22:49:56 +0800
+Message-ID: <20260526145003.88445-1-yintirui@huawei.com>
 X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20260526145003.88445-1-yintirui@huawei.com>
-References: <20260526145003.88445-1-yintirui@huawei.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -112,43 +109,156 @@ X-Originating-IP: [10.50.87.63]
 X-ClientProxiedBy: kwepems100001.china.huawei.com (7.221.188.238) To
  kwepemr500001.china.huawei.com (7.202.194.229)
 
-Make the powerpc PMD PFN helper use PTE-level pgprot_t as the basic
-format.
+This series is based on mm-unstable and depends on:
+1. pgtable_has_pmd_leaves(), introduced by Luiz's series:
+     https://lore.kernel.org/linux-mm/cover.1777663129.git.luizcap@redhat.com/
+2. mm/huge_memory: update file PMD counter before folio_put()
+     https://lore.kernel.org/linux-mm/20260526101337.1984081-1-yintirui@huawei.com/T/#u
 
-pmd_pgprot() currently derives pgprot_t from the PMD entry through
-pte_pgprot(). Some PMD leaf entries can carry H_PAGE_THP_HUGE, which is
-specific to huge PMDs and should not be propagated into PTE-level
-pgprot_t.
+v4:
+- Following Matthew Wilcox's feedback that huge-page attribute handling
+  should stay in architecture helpers:
+  https://lore.kernel.org/all/aapXRN4KjWtUUJ0g@casper.infradead.org/
 
-Mask H_PAGE_THP_HUGE out in pmd_pgprot().
+  Reworked the pgprot contract for architectures that enable
+  CONFIG_ARCH_SUPPORTS_PMD_PFNMAP: pfn_pmd()/pfn_pud() construct PMD/PUD
+  leaf entries from base-PTE pgprot_t, while pmd_pgprot()/pud_pgprot()
+  return base-PTE pgprot_t.  Added the required x86, arm64 and powerpc
+  support; RISC-V already satisfies the required semantics.
+- Refactored copy_huge_pmd() and __split_huge_pmd_locked() to first
+  classify PMDs by pmd_present(), and then use vm_normal_folio_pmd() for
+  present PMDs, and make move_huge_pmd() use has_deposited_pgtable().
+- Introduced a restriction, following the discussion with Lorenzo and
+  David, that remap_pfn_range() does not create PMD-sized mappings for
+  VMAs that have a fault handler:
+  [https://lore.kernel.org/linux-mm/6417587a-7e43-4615-9e2c-50a245842f59@kernel.org/]
 
-Signed-off-by: Yin Tirui <yintirui@huawei.com>
----
- arch/powerpc/include/asm/pgtable.h | 11 ++++++++++-
- 1 file changed, 10 insertions(+), 1 deletion(-)
+  With this restriction, PMD PFNMAP entries in VMAs without fault handlers
+  are known to have been installed by remap_pfn_range(), which deposits a
+  page table when installing such mappings; PMD PFNMAP entries in VMAs
+  with fault handlers are created through fault-time insertion paths such
+  as vmf_insert_pfn_pmd().
 
-diff --git a/arch/powerpc/include/asm/pgtable.h b/arch/powerpc/include/asm/pgtable.h
-index d20ff2ae02f5..0f368ea64b1f 100644
---- a/arch/powerpc/include/asm/pgtable.h
-+++ b/arch/powerpc/include/asm/pgtable.h
-@@ -67,7 +67,16 @@ static inline pgprot_t pte_pgprot(pte_t pte)
- #define pmd_pgprot pmd_pgprot
- static inline pgprot_t pmd_pgprot(pmd_t pmd)
- {
--	return pte_pgprot(pmd_pte(pmd));
-+	pgprot_t prot = pte_pgprot(pmd_pte(pmd));
-+
-+	/*
-+	 * pmd_pgprot() returns PTE-level pgprot_t. H_PAGE_THP_HUGE is specific
-+	 * to huge PMDs.
-+	 */
-+#ifdef H_PAGE_THP_HUGE
-+	prot = __pgprot(pgprot_val(prot) & ~H_PAGE_THP_HUGE);
-+#endif
-+	return prot;
- }
- 
- #define pud_pgprot pud_pgprot
+v3: https://lore.kernel.org/all/20260228070906.1418911-1-yintirui@huawei.com/
+1. Architectural Type Safety (Matthew Wilcox):
+Following the insightful architectural feedback from Matthew Wilcox in v2,
+the approach to clearing huge page attributes has been completely redesigned.
+Instead of spreading the `pte_clrhuge()` anti-pattern to ARM64 and RISC-V,
+this series enforces strict type safety at the lowest level: `pfn_pte()`
+must never natively return a PTE with huge page attributes set.
+
+To achieve this without breaking the x86 core MM, the series is structured as:
+  - Fix historical type-casting abuses in x86 (vmemmap, vmalloc, CPA) where
+    `pfn_pte()` was wrongly used to generate huge PMDs/PUDs.
+  - Update `pfn_pte()` on x86 and ARM64 to inherently filter out huge page
+    attributes. (RISC-V leaf PMDs and PTEs share the exact same hardware
+    format without a specific "huge" bit, so it is naturally compliant).
+  - Completely eradicate `pte_clrhuge()` from the x86 tree and clean up
+    the type-casting mess in `arch/x86/mm/init_64.c`.
+
+2. Page Table Deposit fix during clone() (syzbot):
+Previously, `copy_huge_pmd()` was unaware of special PMDs created by pfnmap,
+failing to deposit a page table for the child process during `clone()`.
+This led to crashes during process teardown or PMD splitting. The logic is now
+updated to properly allocate and deposit pgtables for `pmd_special()` entries.
+
+v2: https://lore.kernel.org/linux-mm/20251016112704.179280-1-yintirui@huawei.com/#t
+- remove "nohugepfnmap" boot option and "pfnmap_max_page_shift" variable.
+- zap_deposited_table for non-special pmd.
+- move set_pmd_at() inside pmd_lock.
+- prevent PMD mapping creation when pgtable allocation fails.
+- defer the refactor of pte_clrhuge() to a separate patch series. For now,
+  add a TODO to track this.
+
+v1: https://lore.kernel.org/linux-mm/20250923133104.926672-1-yintirui@huawei.com/
+
+Overview
+========
+This patch series adds huge page support for remap_pfn_range(),
+automatically creating huge mappings when prerequisites are satisfied
+(size, alignment, architecture support, etc.) and falling back to
+normal page mappings otherwise.
+
+This work builds on Peter Xu's previous efforts on huge pfnmap
+support [0].
+
+TODO
+====
+- Add PUD-level huge page support. Currently, only PMD-level huge
+pages are supported.
+
+Tests Done
+==========
+- Cross-build tests.
+- Core MM Regression Tests
+   - Booted x86 kernel with `debug_pagealloc=on` to heavily stress the
+     large page splitting logic in direct mapping. No panics observed.
+   - Ran `make -C tools/testing/selftests/vm run_tests`. Both THP and
+     Hugetlbfs tests passed successfully, proving the `pfn_pte()` changes
+     do not interfere with native huge page generation.
+- Functional Tests (with a custom device driver & PTDUMP):
+   - Verified that `remap_pfn_range()` successfully creates 2MB mappings
+     by observing `/sys/kernel/debug/page_tables/current_user`.
+   - Triggered PMD splits via 4K-granular `mprotect()` and partial `munmap()`,
+     verifying correct fallback to 512 PTEs without corrupting permissions
+     or causing kernel crashes.
+   - Triggered `fork()`/`clone()` on the mapped regions, validating the
+     syzbot fix and ensuring safe pgtable deposit/withdraw lifecycle.
+- Performance tests with custom device driver implementing mmap()
+  with remap_pfn_range():
+    - lat_mem_rd benchmark modified to use mmap(device_fd) instead of
+      malloc() shows around 40% improvement in memory access latency with
+      huge page support compared to normal page mappings.
+
+      numactl -C 0 lat_mem_rd -t 4096M (stride=64)
+      Memory Size (MB)    Without Huge Mapping With Huge Mapping Improvement
+      ----------------    -----------------    --------------    -----------
+      64.00               148.858 ns           100.780 ns        32.3%
+      128.00              164.745 ns           103.537 ns        37.2%
+      256.00              169.907 ns           103.179 ns        39.3%
+      512.00              171.285 ns           103.072 ns        39.8%
+      1024.00             173.054 ns           103.055 ns        40.4%
+      2048.00             172.820 ns           103.091 ns        40.3%
+      4096.00             172.877 ns           103.115 ns        40.4%
+
+    - Custom memory copy operations on mmap(device_fd) show around 18% performance 
+      improvement with huge page support compared to normal page mappings.
+
+      numactl -C 0 memcpy_test (memory copy performance test)
+      Memory Size (MB)    Without Huge Mapping With Huge Mapping Improvement
+      ----------------    -----------------    --------------    -----------
+      1024.00             95.76 ms             77.91 ms          18.6%
+      2048.00             190.87 ms            155.64 ms         18.5%
+      4096.00             380.84 ms            311.45 ms         18.2%
+
+[0] https://lore.kernel.org/all/20240826204353.2228736-2-peterx@redhat.com/T/#u
+
+Yin Tirui (7):
+  x86/mm: use PTE-level pgprot for huge PFN helpers
+  arm64/mm: use PTE-level pgprot for huge PFN helpers
+  powerpc/mm: use PTE-level pgprot for huge PFN helpers
+  mm/huge_memory: refactor copy_huge_pmd()
+  mm/huge_memory: refactor __split_huge_pmd_locked()
+  mm/huge_memory: make move_huge_pmd() use has_deposited_pgtable()
+  mm: add PMD-level PFNMAP support for remap_pfn_range()
+
+ arch/arm64/include/asm/pgtable.h             |  48 +-
+ arch/arm64/mm/mmu.c                          |   4 +-
+ arch/powerpc/include/asm/book3s/64/pgtable.h |   5 +-
+ arch/powerpc/include/asm/pgtable.h           |  11 +-
+ arch/powerpc/mm/book3s64/pgtable.c           |  11 +-
+ arch/x86/include/asm/pgtable.h               |  68 ++-
+ arch/x86/include/asm/pgtable_types.h         |  12 +-
+ arch/x86/mm/init_32.c                        |   8 +-
+ arch/x86/mm/init_64.c                        |  30 +-
+ arch/x86/mm/pat/set_memory.c                 |  51 +--
+ arch/x86/mm/pgtable.c                        |   8 +-
+ arch/x86/power/hibernate_32.c                |   6 +-
+ mm/huge_memory.c                             | 440 +++++++++++--------
+ mm/internal.h                                |  21 +
+ mm/memory.c                                  |  87 +++-
+ 15 files changed, 493 insertions(+), 317 deletions(-)
+
 -- 
 2.43.0
 
