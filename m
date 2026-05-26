@@ -1,85 +1,80 @@
-Return-Path: <linuxppc-dev+bounces-21508-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21509-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 446C7CD5BD0
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 May 2026 10:42:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 50F60CD5BC8
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 May 2026 10:53:31 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gPq7y6t5fz2y8t;
-	Tue, 26 May 2026 20:42:22 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779792142;
-	cv=none; b=n/2wZ3MbkakS9TuPEctbgb4P7zhVOGLgdbaQLYeUJj8z9m7eT5bch1nVmhADXb7CYqESH3MqVy5sIbs+clCvx15gVssrYOibrNYHxWPyTORDhncgG3Ij+AVroqDH12kRteX7OkY95OoWCIV27GK38PDeanji50Yeh40xYLqBdiJmKJk6zsOKTCKsExy0S0L7lADu0/1dYGglhhrk3saV67+/R2+BtdJKscUTUI1lWP0Gs4jRgMYDLNujrwDFhY6IOvBFt0zb2+mTU0tZoR5QsSKktS2HcLfKdEj7IN7JaP1NFoQ+0EGoD4YtfApx0TCei+clSf5gVMVnR8L5w/uoeg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gPqNn5ClPz2y8t;
+	Tue, 26 May 2026 20:53:29 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::432"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779792809;
+	cv=none; b=WaakTXLzL1FMQb6k5ic6CuweMJF5HIBAd36h81hQTz/3vRup057Antq7u99Wm8/I1vRC+6WCrPplxM2sQqq0xnzbSYy6j6xr0PAlHuOaXhc3hA7Vg8udaCNqooAieA7gtHauWMf9lbWIwhyxe570x7zw07iehu8XZeNFjs4iBXWwAUOeMOu+WI4iTeY/dkTxG8cNvUQo+Iu1ljyJm+gkq5TXWgsVW9THVQj2wnPNXOFaljycwEessukn4OvwEAUqbLIs4YlxvIK3j1pq9hJSZ4QD8hhQNYgbrJA4OyM0OKCjE4+LhRqJ+5rW5AtacmIAlOP0jTKM9d1SIXiEn06sEg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1779792142; c=relaxed/relaxed;
-	bh=L35IJ9WIVC7+atMHRpuJtxHcWN3aZ/3jF8Oyw9Qgfdc=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=RAAQUrveJGGldYvGEZlvUI6DT86H5AN/alx4wSpCloYrIaheOWUAlw0oMLc8F+IJahXhxJaxwBkco+GKIQixAIYLqrCX+MiyDtd004GDiWQL+d4okB5/GxShnSKeoTkm159I7rC4uQLjvh9kHqs94QlLY3i8d1qya+0s3CD2bmfgtmf0z0RqFf3FeuilPLRHNFvJBdBohaU0pN7Zh/J+PnS9atf7ZdIDcdTtdCBbWjBcnZE6F/oTkckfDgH1NVQS0SiqVo/tlEz2a7kU5pGrSYScQXT5yviU4jelQBaCK7ndhcyxa0ftWcgc0agStlubOTeo6W4t9NK5EfWRtZU1pA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=m1cEhu6G; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=frederic@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1779792809; c=relaxed/relaxed;
+	bh=ankQ6/0PQUNDJRsfxZkkDwmN1Szk45mZhdmBSOH36Gk=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=Bx6jZuaRf3UHsmcOgZNFDMYhTVlbhjlIFUaEPk9D6SkyRj14kqpZcFCIIjJMMm/M6Wi8fypxpzm/ftb+HTjk63iRxuJi433CcfT0jeCl6/q42InBuZHP7FQm/ItRwp7gUM56LeZWIp2/PPDAxVbJyBM+82edbK6mtWviC0W9/gPSVlOwVNnX/PuApnEhkKu21P9TpPju41YaVLw3fT5nUNeI4L+GQr64pSE3QAF6TdhQEr6G+hhQI3VRoF+t1O6Bi7yv9XVYeCcnvrLy7fU7m7Wzmk5FZQpOYHYvGTn6XO/tkUQMxQWAUJKqmz5pdgMem2M3q4j87t2m/nQiOjGIsA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com; dkim=pass (2048-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=google header.b=PN0VvQJI; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::432; helo=mail-wr1-x432.google.com; envelope-from=petr.pavlu@suse.com; receiver=lists.ozlabs.org) smtp.mailfrom=suse.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=m1cEhu6G;
+	dkim=pass (2048-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=google header.b=PN0VvQJI;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=frederic@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.com (client-ip=2a00:1450:4864:20::432; helo=mail-wr1-x432.google.com; envelope-from=petr.pavlu@suse.com; receiver=lists.ozlabs.org)
+Received: from mail-wr1-x432.google.com (mail-wr1-x432.google.com [IPv6:2a00:1450:4864:20::432])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gPq7x6H1kz2xPb
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 May 2026 20:42:21 +1000 (AEST)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id A7A9160018;
-	Tue, 26 May 2026 10:42:19 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id AF9AB1F000E9;
-	Tue, 26 May 2026 10:42:18 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1779792139;
-	bh=L35IJ9WIVC7+atMHRpuJtxHcWN3aZ/3jF8Oyw9Qgfdc=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=m1cEhu6G9y4XvRjUGsyR5hyCzt/7JJnLHzG4LYJ9jE+ye3Qo4gY+AtUN2095cV2n8
-	 9wtv6MsAfWqWL54yBxDpZpZYy2rUgX2gMJDlQ/yUsfEo3SIubXVgmQQyT6qA2k4ogo
-	 i8+pdUaSlsbQJoLNXMrJ9Mza+dJtogv3DE41DdtDJwRxuFKG+YFtysHZXakpcPMs47
-	 UWEsYPOFqr09BtTJ/tLFTCn1DJaBxWsmYn7+klXMTDjyV183RxkQ+TDu9LahzTX21d
-	 q2T9tLtfEvz5xq3+Lqo+3gkUYu1BCbXQqyjYYFfVjQDJoJlt1uaH2AG8cX5jSNiufk
-	 wES/210Zef+5w==
-Date: Tue, 26 May 2026 12:42:16 +0200
-From: Frederic Weisbecker <frederic@kernel.org>
-To: LKML <linux-kernel@vger.kernel.org>,
-	Peter Zijlstra <peterz@infradead.org>,
-	Thomas Gleixner <tglx@linutronix.de>
-Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Jan Kiszka <jan.kiszka@siemens.com>,
-	Dietmar Eggemann <dietmar.eggemann@arm.com>,
-	Shrikanth Hegde <sshegde@linux.ibm.com>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Alexander Gordeev <agordeev@linux.ibm.com>,
-	Ben Segall <bsegall@google.com>, Vasily Gorbik <gor@linux.ibm.com>,
-	"Rafael J. Wysocki" <rafael@kernel.org>, linux-pm@vger.kernel.org,
-	Sashiko@localhost.localdomain, Ingo Molnar <mingo@kernel.org>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Boqun Feng <boqun.feng@gmail.com>,
-	Valentin Schneider <vschneid@redhat.com>,
-	linuxppc-dev@lists.ozlabs.org, Sven Schnelle <svens@linux.ibm.com>,
-	Ingo Molnar <mingo@redhat.com>,
-	Vincent Guittot <vincent.guittot@linaro.org>,
-	Christian Borntraeger <borntraeger@linux.ibm.com>,
-	Mel Gorman <mgorman@suse.de>, Steven Rostedt <rostedt@goodmis.org>,
-	Joel Fernandes <joelagnelf@nvidia.com>,
-	"Paul E . McKenney" <paulmck@kernel.org>,
-	Neeraj Upadhyay <neeraj.upadhyay@kernel.org>,
-	Anna-Maria Behnsen <anna-maria@linutronix.de>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	Juri Lelli <juri.lelli@redhat.com>,
-	Uladzislau Rezki <urezki@gmail.com>,
-	Viresh Kumar <viresh.kumar@linaro.org>,
-	Kieran Bingham <kbingham@kernel.org>,
-	Xin Zhao <jackzxcui1989@163.com>, linux-s390@vger.kernel.org,
-	Heiko Carstens <hca@linux.ibm.com>
-Subject: Re: [PATCH 00/15 v4] tick/sched: Refactor idle cputime accounting
-Message-ID: <ahV5CFMvMEKtuVct@localhost.localdomain>
-References: <20260508131647.43868-1-frederic@kernel.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gPqNm40hTz2xPb
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 May 2026 20:53:27 +1000 (AEST)
+Received: by mail-wr1-x432.google.com with SMTP id ffacd0b85a97d-459bf19e87bso6132339f8f.1
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 May 2026 03:53:27 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=suse.com; s=google; t=1779792804; x=1780397604; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=ankQ6/0PQUNDJRsfxZkkDwmN1Szk45mZhdmBSOH36Gk=;
+        b=PN0VvQJIBTWAG88muvarIyzjiQfxrq6uT1K9F9bip79JkReYISAT3C1Yls9hrLYF9O
+         /5rY8rjHaavqmxo7t7dm5yjmnUAsTULpGEEznSIBvYO5X9yVEn2fL+Nw3gd7yh1DCH3r
+         +4M+4Oi+bmV022x+GwIwekJ2oc9ZSvEryLliYSd9p7n6Cy3r3lBc7RHY2wW4K1AZMdXU
+         ZM5+P6LRXZLWDdzMm7jfMjjhNB2FAmK9hEEEwETH/1h474C/9uf1oYAx0RnNR4K8LWIk
+         6RqO3QqFThF7WBFUXDcIhhN76AvAeDX5S9IOOUkIfP2aSXmKz9dJ9RzwkaBzYCO+zzsi
+         sXLQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1779792804; x=1780397604;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=ankQ6/0PQUNDJRsfxZkkDwmN1Szk45mZhdmBSOH36Gk=;
+        b=SymiSJ7RJ971/7Hh9WIJcmWk0cdeIh5YSpVbqtOeORWsgkF+CtLzv8cR+xgQqGewrn
+         iKFjYKgceV6f7XuCAvP+CXIs57QJLPY2AgXHLWERILRtpgftEdT7h6qQghIUe9oiPd/a
+         kuoEZEh3gLq+t086xqfy2v01eXI2/W1lTSKZxBC9BvYJrLDiwxfpQBf9cDZbQtqytwtT
+         TV+ad6V29Cblw8aEiZxMeyfNgMG8vHITq92q6hlCGM1SIgDvTB9J00YD+4o4S4AaTHVj
+         qhEMSKwHLrznyxhX1z2/EWftU0MfkbGA4z0xAbUIekTXeXyn0uPTrr0dAzmUiHi0yofa
+         P+Gw==
+X-Forwarded-Encrypted: i=1; AFNElJ9bTMyNYu0urNKNv3/TuMiFBWo/YOrmuaR6A9/tas5jirenE/OCxnTFXsyeBAcsRKAs3rfNBrr/C/RUMxo=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YwRf/W7whfG/VNAGN095sjX2egwqfjvybMdk/37bwRlqpRnZmjG
+	HH6jI9+NYVXbH4bJ/cwGpKazf85ibKoBux4VNS0OZLzL0xjmCSlzU1FC+R7qtuxxZrM=
+X-Gm-Gg: Acq92OH5OGDMXqo9hvMvGedBcRpdxZXKofFgbpa8eh7biwqDzIQtbMhZHgpZ9u3EIQF
+	w8v+WnWpJpe21SHmMZ6OAfYflIbhGUJ4qaTqqwmH/aVXwtcw194stGmdYoxNvbGYFYhECDOZRMm
+	pAu4ABGhLYEBJ++65rPFswECrPV+P+PkbR27nqLRFcHQCSgKWGv1O5kjrePxQ2c0CdPz3kV1D9F
+	zIvYxUt0eZ2s+zvSqXDL1dl5YTSTiYUjHhAkyJN1sEirBytQcdXwMSSxrro0KSppLAMcA8SNMRy
+	rXrEkvI6ic1bJTQN+0Ry14zNAyJ0oaWj7eXJz7FnqgcKTbRs6DlCw/gM9hRSlr2XxMch9QaVMZo
+	+y10sV2oUaCWxIzne6EP6UVRRcJw+qww+WoimOrJMwTCmtyur9mXsYhn439lPxYl6PvWpFyvgX0
+	e2QZEXHllscxDLqm1RvE2cBTQw6pHGtKk5UDAyTgH0v6pODDpGLjmsuW0OZKlb4Qd96iIcFFxqe
+	9rpZusKmcB5nCayQcdX0j0X7UJ6cUd/RLpWjxaj3NzOtAtk0h/vGUoEqDL2UERfuzR6Fg==
+X-Received: by 2002:a05:6000:2889:b0:43c:fdd:ea96 with SMTP id ffacd0b85a97d-45eb38c5259mr30630897f8f.26.1779792804025;
+        Tue, 26 May 2026 03:53:24 -0700 (PDT)
+Received: from ?IPV6:2a00:1028:838d:271e:8e3b:4aff:fe4c:a100? (dynamic-2a00-1028-838d-271e-8e3b-4aff-fe4c-a100.ipv6.o2.cz. [2a00:1028:838d:271e:8e3b:4aff:fe4c:a100])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-45eb6bc5479sm36850849f8f.0.2026.05.26.03.53.22
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 26 May 2026 03:53:23 -0700 (PDT)
+Message-ID: <0a0736a4-2cdd-49f2-9062-e2f18d769fc0@suse.com>
+Date: Tue, 26 May 2026 12:53:22 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -93,183 +88,82 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v5 07/14] module: Make module authentication usable
+ without MODULE_SIG
+To: =?UTF-8?Q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
+Cc: Alexei Starovoitov <ast@kernel.org>,
+ Daniel Borkmann <daniel@iogearbox.net>, Andrii Nakryiko <andrii@kernel.org>,
+ Eduard Zingerman <eddyz87@gmail.com>,
+ Kumar Kartikeya Dwivedi <memxor@gmail.com>,
+ Nathan Chancellor <nathan@kernel.org>, Nicolas Schier <nsc@kernel.org>,
+ Arnd Bergmann <arnd@arndb.de>, Luis Chamberlain <mcgrof@kernel.org>,
+ Sami Tolvanen <samitolvanen@google.com>, Daniel Gomez
+ <da.gomez@samsung.com>, Paul Moore <paul@paul-moore.com>,
+ James Morris <jmorris@namei.org>, "Serge E. Hallyn" <serge@hallyn.com>,
+ Jonathan Corbet <corbet@lwn.net>, Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
+ Naveen N Rao <naveen@kernel.org>, Mimi Zohar <zohar@linux.ibm.com>,
+ Roberto Sassu <roberto.sassu@huawei.com>,
+ Dmitry Kasatkin <dmitry.kasatkin@gmail.com>,
+ Eric Snowberg <eric.snowberg@oracle.com>,
+ Nicolas Schier <nicolas.schier@linux.dev>, Daniel Gomez
+ <da.gomez@kernel.org>, Aaron Tomlin <atomlin@atomlin.com>,
+ "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+ Nicolas Bouchinet <nicolas.bouchinet@oss.cyber.gouv.fr>,
+ Xiu Jianfeng <xiujianfeng@huawei.com>,
+ Martin KaFai Lau <martin.lau@linux.dev>, Song Liu <song@kernel.org>,
+ Yonghong Song <yonghong.song@linux.dev>, Jiri Olsa <jolsa@kernel.org>,
+ bpf@vger.kernel.org, =?UTF-8?Q?Fabian_Gr=C3=BCnbichler?=
+ <f.gruenbichler@proxmox.com>, Arnout Engelen <arnout@bzzt.net>,
+ Mattia Rizzolo <mattia@mapreri.org>, kpcyrd <kpcyrd@archlinux.org>,
+ Christian Heusel <christian@heusel.eu>, =?UTF-8?Q?C=C3=A2ju_Mihai-Drosi?=
+ <mcaju95@gmail.com>, Eric Biggers <ebiggers@kernel.org>,
+ Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
+ linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-arch@vger.kernel.org, linux-modules@vger.kernel.org,
+ linux-security-module@vger.kernel.org, linux-doc@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-integrity@vger.kernel.org,
+ debian-kernel@lists.debian.org
+References: <20260505-module-hashes-v5-0-e174a5a49fce@weissschuh.net>
+ <20260505-module-hashes-v5-7-e174a5a49fce@weissschuh.net>
+Content-Language: en-US
+From: Petr Pavlu <petr.pavlu@suse.com>
+In-Reply-To: <20260505-module-hashes-v5-7-e174a5a49fce@weissschuh.net>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20260508131647.43868-1-frederic@kernel.org>
 
-Hi,
+On 5/5/26 11:05 AM, Thomas Weißschuh wrote:
+> The module authentication functionality will also be used by the
+> hash-based module authentication. Split it out from CONFIG_MODULE_SIG
+> so it is usable by both.
+> 
+> Signed-off-by: Thomas Weißschuh <linux@weissschuh.net>
+> [...]
+> diff --git a/kernel/module/Kconfig b/kernel/module/Kconfig
+> index f535181e0d98..84297da666ff 100644
+> --- a/kernel/module/Kconfig
+> +++ b/kernel/module/Kconfig
+> @@ -271,9 +271,12 @@ config MODULE_SIG
+>  	  debuginfo strip done by some packagers (such as rpmbuild) and
+>  	  inclusion into an initramfs that wants the module size reduced.
+>  
+> +config MODULE_AUTH
+> +	def_bool MODULE_SIG
+> +
+>  config MODULE_SIG_FORCE
+>  	bool "Require modules to be validly signed"
+> -	depends on MODULE_SIG
+> +	depends on MODULE_AUTH
+>  	help
+>  	  Reject unsigned modules or signed modules for which we don't have a
+>  	  key.  Without this, such modules will simply taint the kernel.
 
-I don't see any further concern. What should we do with this? It could
-either go through the scheduler tree or the timer tree.
-
-Thanks.
-
-
-Le Fri, May 08, 2026 at 03:16:32PM +0200, Frederic Weisbecker a �crit :
-> Hi,
-> 
-> After the issue reported here:
-> 
->         https://lore.kernel.org/all/20251210083135.3993562-1-jackzxcui1989@163.com/
-> 
-> It occurs that the idle cputime accounting is a big mess that
-> accumulates within two concurrent statistics, each having their own
-> shortcomings:
-> 
-> * The accounting for online CPUs which is based on the delta between
->   tick_nohz_start_idle() and tick_nohz_stop_idle().
-> 
->   Pros:
->        - Works when the tick is off
-> 
->        - Has nsecs granularity
-> 
->   Cons:
->        - Account idle steal time but doesn't substract it from idle
->          cputime.
-> 
->        - Assumes CONFIG_IRQ_TIME_ACCOUNTING by not accounting IRQs but
->          the IRQ time is simply ignored when
->          CONFIG_IRQ_TIME_ACCOUNTING=n
-> 
->        - The windows between 1) idle task scheduling and the first call
->          to tick_nohz_start_idle() and 2) idle task between the last
->          tick_nohz_stop_idle() and the rest of the idle time are
->          blindspots wrt. cputime accounting (though mostly insignificant
->          amount)
-> 
->        - Relies on private fields outside of kernel stats, with specific
->          accessors.
-> 
-> * The accounting for offline CPUs which is based on ticks and the
->   jiffies delta during which the tick was stopped.
-> 
->   Pros:
->        - Handles steal time correctly
-> 
->        - Handle CONFIG_IRQ_TIME_ACCOUNTING=y and
->          CONFIG_IRQ_TIME_ACCOUNTING=n correctly.
-> 
->        - Handles the whole idle task
-> 
->        - Accounts directly to kernel stats, without midlayer accumulator.
-> 
->    Cons:
->        - Doesn't elapse when the tick is off, which doesn't make it
->          suitable for online CPUs.
-> 
->        - Has TICK_NSEC granularity (jiffies)
-> 
->        - Needs to track the dyntick-idle ticks that were accounted and
->          substract them from the total jiffies time spent while the tick
->          was stopped. This is an ugly workaround.
-> 
-> Having two different accounting for a single context is not the only
-> problem: since those accountings are of different natures, it is
-> possible to observe the global idle time going backward after a CPU goes
-> offline, as reported by Xin Zhao.
-> 
-> Clean up the situation with introducing a hybrid approach that stays
-> coherent, fixes the backward jumps and works for both online and offline
-> CPUs:
-> 
-> * Tick based or native vtime accounting operate before the tick is
->   stopped and resumes once the tick is restarted.
-> 
-> * When the idle loop starts, switch to dynticks-idle accounting as is
->   done currently, except that the statistics accumulate directly to the
->   relevant kernel stat fields.
-> 
-> * Private dyntick cputime accounting fields are removed.
-> 
-> * Works on both online and offline case.
-> 
-> * Move most of the relevant code to the common sched/cputime subsystem
-> 
-> * Handle CONFIG_IRQ_TIME_ACCOUNTING=n correctly such that the
->   dynticks-idle accounting still elapses while on IRQs.
-> 
-> * Correctly substract idle steal cputime from idle time
-> 
-> Changes since v3 (among which a lot of relevant reviews from Sashiko):
-> 
-> - Add new tags
-> 
-> - Rebase on latest -rc1
-> 
-> - Add "tick/sched: Fix TOCTOU in nohz idle time fetch" (Sashiko)
-> 
-> - Fix buggy state refetch in kcpustat_cpu_fetch_vtime() (Sashiko)
-> 
-> - Fix build issue on powerpc (Christophe Leroy)
-> 
-> - Fix s390 lost steal time occuring on idle IRQs (call vtime_flush() on
->   vtime_account_hardirq() and vtime_account_softirq()) (Sashiko)
-> 
-> - Fix build issue on s390
-> 
-> - Fix uninitialized idle_sleeptime_seq (Sashiko)
-> 
-> - Fix irqtime being disabled or enabled in the middle of an idle IRQ
->   (Sashiko)
->   
-> - Fix tick restart and then restop in the same idle loop (Sashiko)
-> 
-> - Fix "sched/cputime: Handle idle irqtime gracefully" changelog (Sashiko)
-> 
-> - Fix idle steal time substracted from the wrong index between idle and
->   iowait kcpustat. (Sashiko)
-> 
-> git://git.kernel.org/pub/scm/linux/kernel/git/frederic/linux-dynticks.git
-> 	timers/core-v4
-> 
-> HEAD: e64ba052ce04e363ff76d3cb8bedc5f812188acb
-> Thanks,
-> 	Frederic
-> ---
-> 
-> Frederic Weisbecker (15):
->       tick/sched: Fix TOCTOU in nohz idle time fetch
->       sched/idle: Handle offlining first in idle loop
->       sched/cputime: Remove superfluous and error prone kcpustat_field() parameter
->       sched/cputime: Correctly support generic vtime idle time
->       powerpc/time: Prepare to stop elapsing in dynticks-idle
->       s390/time: Prepare to stop elapsing in dynticks-idle
->       tick/sched: Unify idle cputime accounting
->       tick/sched: Remove nohz disabled special case in cputime fetch
->       tick/sched: Move dyntick-idle cputime accounting to cputime code
->       tick/sched: Remove unused fields
->       tick/sched: Account tickless idle cputime only when tick is stopped
->       tick/sched: Consolidate idle time fetching APIs
->       sched/cputime: Provide get_cpu_[idle|iowait]_time_us() off-case
->       sched/cputime: Handle idle irqtime gracefully
->       sched/cputime: Handle dyntick-idle steal time correctly
-> 
->  arch/powerpc/kernel/time.c         |  41 +++++
->  arch/s390/include/asm/idle.h       |   2 +
->  arch/s390/kernel/idle.c            |   5 +-
->  arch/s390/kernel/vtime.c           |  75 ++++++++-
->  drivers/cpufreq/cpufreq.c          |  29 +---
->  drivers/cpufreq/cpufreq_governor.c |   6 +-
->  drivers/macintosh/rack-meter.c     |   2 +-
->  fs/proc/stat.c                     |  40 +----
->  fs/proc/uptime.c                   |   8 +-
->  include/linux/kernel_stat.h        |  76 +++++++--
->  include/linux/tick.h               |   4 -
->  include/linux/vtime.h              |  22 ++-
->  kernel/rcu/tree.c                  |   9 +-
->  kernel/rcu/tree_stall.h            |   7 +-
->  kernel/sched/core.c                |   6 +-
->  kernel/sched/cputime.c             | 308 +++++++++++++++++++++++++++++++------
->  kernel/sched/idle.c                |  13 +-
->  kernel/time/tick-sched.c           | 212 ++++++-------------------
->  kernel/time/tick-sched.h           |  12 --
->  kernel/time/timer_list.c           |   6 +-
->  scripts/gdb/linux/timerlist.py     |   4 -
->  21 files changed, 529 insertions(+), 358 deletions(-)
+Should MODULE_SIG_FORCE be renamed to MODULE_AUTH_FORCE, along with
+renaming the sig_enforce functionality in kernel/module/auth.c to
+auth_enforce?
 
 -- 
-Frederic Weisbecker
-SUSE Labs
+Thanks,
+Petr
 
