@@ -1,118 +1,71 @@
-Return-Path: <linuxppc-dev+bounces-21522-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21523-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 23D7CCD5BC8
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 May 2026 15:39:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 51A89CD5BB1
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 May 2026 18:48:24 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gPxlJ47W1z2xtC;
-	Wed, 27 May 2026 01:39:56 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::82b"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779809996;
-	cv=none; b=h6fZZD5WShV/QN7rZ9VUPQMbcJaHPQacHocbjL4/qDaa2D/0D7DszfJoryUrBYm/u+zHV5YXerefziwxkwN0hNAJEqA3giLk1S664p1Z3Xzb1Mg47zlIq0CJ9OWHBprCsMKDygyG2vLrjo7r6bGx6KQKDU0Rr7k7bcGKTxgL+jTgFJOwyiS5cYb7JmFOc9IfanZQ1gu04swLYSFrjXnU6685EwElfa8cCR77bgrHyZoRxBDCcZzIMP2jRP1ClGNM+gfc0JlZCJBKB6UoIj+Kl+upvMZr+o+x4fr6XLDZdq3a0xtDgb82nirW5Ar6eX79Rm95mCXzlKQa72AH4jFLNQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gQ1wk44Y5z2yD6;
+	Wed, 27 May 2026 04:48:22 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a01:4f8:c0c:a5b1::1"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779821302;
+	cv=none; b=j/uEfIRwQvki0xlv04uaKTTpsS/WUVnCUZrtVi+rELI/e87WBm44jNxGlkX9zWG+Q6YR/1U4R9wro/6k8eeZ7vhjJYrH196MWJi5jt8XpKCv3MHrkj+JmAAZXCKh1eeWpqlDibFvwO4sVDtc8Up27qWsIVw6VTwp3f28O70qzfSzJ5N4ZMvOxpfI9vbeYG4ZOusIs+jBVU/p6RKI3ktT7oeBdTCZ/kXoovKujxd6portjzn0RIu9MS7j6N7VtjlUiWaa9GgqadVPI+S/dQ7F5lcaORLvZwRFUX0nfsgrqHLyFufGQJWwENVjusbxOLEcE6o2M9XKo14WQidGrwoeoA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1779809996; c=relaxed/relaxed;
-	bh=ItPd3iMhIb7X3YkSIy7+Cw4n/7vOFcAzSgB6r5JqsAg=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=V7k4aCGzQWwPQGCRL7zadk5oR6qYJT+w0ahdXV1CWZmy5eOOX6MyhZ8JBoImQwzx/lhh1OVexBeIBHBDkNzeTFLcaItDKOEAnqNZ8r8czkv8ew0K3ZrifPP0hD4m03MXm59jlfY0WwNMdS6Eb/f0H7Q3qMRB75eukz3Lu7edQvabuqeUQKwYDu6373Hc3uNZ8ivD5515TFfhHkIx2thwGrJpMxvzMNg8bNMIUMuzTFe5Ia9/R7diBvVvZCh1CqyUPIIxBatZWraYxC31MBDX8DWVketsqfVgsNKDyZUi1NMg+YoExfG8Ux3448No5cxTlAwvvaycDT7cfcg6YbNapw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ziepe.ca; dkim=pass (2048-bit key; secure) header.d=ziepe.ca header.i=@ziepe.ca header.a=rsa-sha256 header.s=google header.b=k/mjpMun; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::82b; helo=mail-qt1-x82b.google.com; envelope-from=jgg@ziepe.ca; receiver=lists.ozlabs.org) smtp.mailfrom=ziepe.ca
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ziepe.ca
+	t=1779821302; c=relaxed/relaxed;
+	bh=Yj59XIQE18o2FT3DKRpTTrhdOVfN3MXkuh7iKK7w97Y=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=Cp4390vEpqFtzZHoNvV7bkYffOShtfXBmbvt5N7ZY8HewRcuoZsK/ChikUVSPVo7Zo+Ves9lhTkv4o5y3KwICT8Cu8xEtql58wUnezjok14YgKvnBHNmdb/BhuzNKkwn2fl1aXgOgmeQ7DPosx2C56s4NXYazN2d/ZEeZWmr5Wl2UiBzVieQK3jdYYCrjdUtvs3+IDVYNx3wFgvLJFdbyslSHmw6A2Bj9gv8WTgDHnigA6YSsIhtWwVGflgJFcJEnr8skb182h6CPBVFJoq/ln0+hSXmPnE0yANdCVph56d85LFASDBwPd+FwdVEHo9fNmEDnK8N7BC2mo7XNNNPDA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=al2klimov.de; dkim=pass (2048-bit key; secure) header.d=al2klimov.de header.i=@al2klimov.de header.a=rsa-sha256 header.s=default header.b=KgcXZvh7; dkim-atps=neutral; spf=pass (client-ip=2a01:4f8:c0c:a5b1::1; helo=mta.al2klimov.de; envelope-from=grandmaster@al2klimov.de; receiver=lists.ozlabs.org) smtp.mailfrom=al2klimov.de
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=al2klimov.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=ziepe.ca header.i=@ziepe.ca header.a=rsa-sha256 header.s=google header.b=k/mjpMun;
+	dkim=pass (2048-bit key; secure) header.d=al2klimov.de header.i=@al2klimov.de header.a=rsa-sha256 header.s=default header.b=KgcXZvh7;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=ziepe.ca (client-ip=2607:f8b0:4864:20::82b; helo=mail-qt1-x82b.google.com; envelope-from=jgg@ziepe.ca; receiver=lists.ozlabs.org)
-Received: from mail-qt1-x82b.google.com (mail-qt1-x82b.google.com [IPv6:2607:f8b0:4864:20::82b])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=al2klimov.de (client-ip=2a01:4f8:c0c:a5b1::1; helo=mta.al2klimov.de; envelope-from=grandmaster@al2klimov.de; receiver=lists.ozlabs.org)
+X-Greylist: delayed 396 seconds by postgrey-1.37 at boromir; Wed, 27 May 2026 04:48:18 AEST
+Received: from mta.al2klimov.de (mta.al2klimov.de [IPv6:2a01:4f8:c0c:a5b1::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gPxlG2bxTz2xsW
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 May 2026 01:39:53 +1000 (AEST)
-Received: by mail-qt1-x82b.google.com with SMTP id d75a77b69052e-516d0db9372so41984941cf.2
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 May 2026 08:39:53 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ziepe.ca; s=google; t=1779809990; x=1780414790; darn=lists.ozlabs.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=ItPd3iMhIb7X3YkSIy7+Cw4n/7vOFcAzSgB6r5JqsAg=;
-        b=k/mjpMun7g2xiUXSzx8xG5hC39YSMODL1ctQhXZ0M+kX6T28ykAQqQ0/RKxpcsAFgv
-         lKN2nYqnIwL5g5H+77707kc2s5/t53xbwy882t1UWQlR1fw32pxdPyWWAhmndhtZPl9K
-         5f/WUY/tv1pSDM3rmAorIixOwhTQ9LKFGRyL/XI5CVpD2U8JH3koO0nolyEYho6Gy5IZ
-         h2tcI7tl5LYcHRX3wnDvmgoNZuhYxkX0XpdRNEwqActWxRZsoA84o/dJ+A8aYuimgSjG
-         oSeB1/hQnmDRXGpuYBl8fwTMMWlSvV3/rH/PiZkveOhxjUeBDd/6Pp6VlhqMVx7PQRJ+
-         nS3w==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1779809990; x=1780414790;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=ItPd3iMhIb7X3YkSIy7+Cw4n/7vOFcAzSgB6r5JqsAg=;
-        b=IpfMD2lpu889SiLVE3oXKC1TWAeGhTTp9RYRRlc4WWgxgWpRQe+U9vaFvYb+8zmqqL
-         L6H6f4S4cGzSI0SogSIVb2B+7hdQYx3/vclLsnmcrttLc3vYHDmu9oLCgLqW45lxHPoP
-         o2WJJHXPgHgWu4yNkxTdS0vf2eNzCrOxKLU7JQ3ODqsu/cmWQ1HlnV1k/wEj0ZihqcWx
-         Kf6F4UX37mArWLPV9XVoR9lSgQCHYgLReWkzZKj0EimRy7ldAs0sDywxKjOFOd2V++Nh
-         iFwpt6K4YQptNXXFPYoiJo7Pqjpb71whRILuK2ec7pe1J/Ie/eD7Thfcm3qrtolOxheH
-         QbVQ==
-X-Forwarded-Encrypted: i=1; AFNElJ9uT7VGJqa/udqKIOBaa5HEnL3dRi2MTZuK6KrZBz94ftTDycHw6MG/c055zZFUyTiH7ezSZM7C2vj0isI=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YxLSBMpgPF30/R3IhCRBn4HM180ceEd5a6aVDiKPbGZoWlwnFrY
-	rh5oShiv3d9RyglgQJ2AJ3hqM52gpq6hQp1Ny93W9jvwndOTvRno/r939sMOZsEUxuM=
-X-Gm-Gg: Acq92OEEddBbYFw0Vi70b/I7csJGGNYlzZIOluTx3iX24E/VMzVgvuTJ7a23+wXgcqR
-	UFj0Uy3AYOW9ZA5M4dPC9hD9sqcUuJpJgd79WalcWFByy3Q+0UHoPVEJabHf+BkhEaG8CG3Z5jy
-	t3WTJexAiCgJ9dwjUd+652/ZHzFDkm/VxQ42UfcwfIj6BbGLD6n9QkM65NDR7OBGNoZB/1ZTGK4
-	hQartxAWTviKHalPTCUPrlxCN3IyyfnwQeS6jdbgp45Bog+3Vn9aRfNb51jaE9Ym8AeFYJYxjEd
-	paE16MkyhH4WHlzA4+Mj8UHGcjBBTsnwMpmawN6nXS2/3OG2VABvKZ0rTsljc74k6YxcdBOf9Y6
-	4+381uf3z/WFTfA9+pEk71+7lLW5fyFJ1j59xVf1DtfBAuNqIj2+a6MnnLvVfB84D2bgVKY9OP8
-	+ukB5BneA88iQstClfR/TB5VYlwpE08pUK0dp5gopW1oQUdIfwDUw+fXXu49wsdTE2n5cgsXTFj
-	vasVg==
-X-Received: by 2002:a05:622a:1452:b0:50e:5cc3:6f3a with SMTP id d75a77b69052e-516d45eaf62mr265877421cf.26.1779809990039;
-        Tue, 26 May 2026 08:39:50 -0700 (PDT)
-Received: from ziepe.ca (crbknf0213w-47-54-130-67.pppoe-dynamic.high-speed.nl.bellaliant.net. [47.54.130.67])
-        by smtp.gmail.com with ESMTPSA id d75a77b69052e-5170c403529sm7414661cf.10.2026.05.26.08.39.49
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 26 May 2026 08:39:49 -0700 (PDT)
-Received: from jgg by wakko with local (Exim 4.97)
-	(envelope-from <jgg@ziepe.ca>)
-	id 1wRtsi-0000000DiUf-2t1G;
-	Tue, 26 May 2026 12:39:48 -0300
-Date: Tue, 26 May 2026 12:39:48 -0300
-From: Jason Gunthorpe <jgg@ziepe.ca>
-To: Michael Kelley <mhklinux@outlook.com>
-Cc: "Aneesh Kumar K.V (Arm)" <aneesh.kumar@kernel.org>,
-	"iommu@lists.linux.dev" <iommu@lists.linux.dev>,
-	"linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-	"linux-coco@lists.linux.dev" <linux-coco@lists.linux.dev>,
-	Robin Murphy <robin.murphy@arm.com>,
-	Marek Szyprowski <m.szyprowski@samsung.com>,
-	Will Deacon <will@kernel.org>, Marc Zyngier <maz@kernel.org>,
-	Steven Price <steven.price@arm.com>,
-	Suzuki K Poulose <Suzuki.Poulose@arm.com>,
-	Catalin Marinas <catalin.marinas@arm.com>,
-	Jiri Pirko <jiri@resnulli.us>, Mostafa Saleh <smostafa@google.com>,
-	Petr Tesarik <ptesarik@suse.com>,
-	Alexey Kardashevskiy <aik@amd.com>,
-	Dan Williams <dan.j.williams@intel.com>,
-	Xu Yilun <yilun.xu@linux.intel.com>,
-	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
-	"linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gQ1wf4jFKz2xjd
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 May 2026 04:48:18 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; s=default; bh=Yxu6cLp2nC8s
+	IKWrf8BHCgxZkIkwHCYaYzNUnh2jBvA=; h=references:in-reply-to:date:
+	subject:cc:to:from; d=al2klimov.de; b=KgcXZvh75ghDzewMNDjJvGdGkzAqan48
+	aMXSqceQrChAJOeehngZDsB+LZDSdEpCVt4lOi6sfZSuAEyHYFip6AJEGaDn3UpRUV9gjk
+	t+uGViIA8euFxUpxq2003kXWJjKXtuER8C6cCjbBPEcjbAbvcP0cXiafSTUgeL0SHF8Dvb
+	ddxuc7oektBV6A/91Kb3xaVyLvxanCi4BC29WS5tjY3bYuSHrM3aQ/NRgOA5gitwwZ1v8w
+	ZTv33AB8jTDWqX+mu9q7vt9PY6d0efUR1jw7CuT1E1I8NtKHND1EIBbfKe4sOhvkQURfm3
+	rtKZqcC2m/SWN02857nIcWah9VKfKw==
+Received: from cachy-ak (88.215.123.80.dyn.pyur.net [88.215.123.80])
+	by mta.al2klimov.de (OpenSMTPD) with ESMTPSA id cfc4909e (TLSv1.3:TLS_CHACHA20_POLY1305_SHA256:256:NO);
+	Tue, 26 May 2026 18:41:33 +0000 (UTC)
+From: "Alexander A. Klimov" <grandmaster@al2klimov.de>
+To: Haren Myneni <haren@linux.ibm.com>,
+	Rick Lindsley <ricklind@linux.ibm.com>,
+	Nick Child <nnac123@linux.ibm.com>,
 	Madhavan Srinivasan <maddy@linux.ibm.com>,
 	Michael Ellerman <mpe@ellerman.id.au>,
 	Nicholas Piggin <npiggin@gmail.com>,
 	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	Alexander Gordeev <agordeev@linux.ibm.com>,
-	Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
-	Heiko Carstens <hca@linux.ibm.com>,
-	Vasily Gorbik <gor@linux.ibm.com>,
-	Christian Borntraeger <borntraeger@linux.ibm.com>,
-	Sven Schnelle <svens@linux.ibm.com>,
-	"x86@kernel.org" <x86@kernel.org>, Jiri Pirko <jiri@nvidia.com>
-Subject: Re: [PATCH v5 10/20] dma-direct: make dma_direct_map_phys() honor
- DMA_ATTR_CC_SHARED
-Message-ID: <20260526153948.GH2487554@ziepe.ca>
-References: <20260522042815.370873-1-aneesh.kumar@kernel.org>
- <20260522042815.370873-11-aneesh.kumar@kernel.org>
- <SN6PR02MB41574064D14D4A2734222C51D40B2@SN6PR02MB4157.namprd02.prod.outlook.com>
+	Andrew Lunn <andrew+netdev@lunn.ch>,
+	"David S. Miller" <davem@davemloft.net>,
+	Eric Dumazet <edumazet@google.com>,
+	Jakub Kicinski <kuba@kernel.org>,
+	Paolo Abeni <pabeni@redhat.com>,
+	Thomas Falcon <tlfalcon@linux.vnet.ibm.com>,
+	Desnes Augusto Nunes do Rosario <desnesn@linux.vnet.ibm.com>,
+	netdev@vger.kernel.org (open list:IBM Power SRIOV Virtual NIC Device Driver),
+	linuxppc-dev@lists.ozlabs.org (open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)),
+	linux-kernel@vger.kernel.org (open list)
+Cc: "Alexander A. Klimov" <grandmaster@al2klimov.de>
+Subject: [PATCH] ibmvnic: fix krealloc() memory leak
+Date: Tue, 26 May 2026 20:41:01 +0200
+Message-ID: <20260526184105.18962-6-grandmaster@al2klimov.de>
+X-Mailer: git-send-email 2.54.0
+In-Reply-To: <20260526184105.18962-1-grandmaster@al2klimov.de>
+References: <20260526184105.18962-1-grandmaster@al2klimov.de>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -126,19 +79,68 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <SN6PR02MB41574064D14D4A2734222C51D40B2@SN6PR02MB4157.namprd02.prod.outlook.com>
+Content-Transfer-Encoding: 8bit
 
-On Tue, May 26, 2026 at 02:56:57AM +0000, Michael Kelley wrote:
+Don't just overwrite the original pointer passed to krealloc()
+with its return value without checking latter:
 
-> With this patch removing SWIOTLB_FORCE from four places in
-> kernel code, there are no remaining places where it is set.
-> The test of SWIOTLB_FORCE could be removed from
-> swiotlb_init_remap(), and its definition could be deleted
-> from include/linux/swiotlb.h.
+    MEM = krealloc(MEM, SZ, GFP);
 
-That's great! I think it shows this is the right approach!
+If krealloc() returns NULL, that erases the pointer
+to the still allocated memory, hence leaks this memory.
+Instead, use a temporary variable, check it's not NULL
+and only then assign it to the original pointer:
 
-Jason
+    TMP = krealloc(MEM, SZ, GFP);
+    if (!TMP) return;
+    MEM = TMP;
+
+Fixes: 4e6759be28e4 ("ibmvnic: Feature implementation of Vital Product Data (VPD) for the ibmvnic driver")
+Signed-off-by: Alexander A. Klimov <grandmaster@al2klimov.de>
+---
+ drivers/net/ethernet/ibm/ibmvnic.c | 15 ++++++++-------
+ 1 file changed, 8 insertions(+), 7 deletions(-)
+
+diff --git a/drivers/net/ethernet/ibm/ibmvnic.c b/drivers/net/ethernet/ibm/ibmvnic.c
+index 5a510eed335e..25d1d844ad19 100644
+--- a/drivers/net/ethernet/ibm/ibmvnic.c
++++ b/drivers/net/ethernet/ibm/ibmvnic.c
+@@ -1761,8 +1761,9 @@ static int ibmvnic_get_vpd(struct ibmvnic_adapter *adapter)
+ 	union ibmvnic_crq crq;
+ 	int len = 0;
+ 	int rc;
++	unsigned char *buff = adapter->vpd->buff;
+ 
+-	if (adapter->vpd->buff)
++	if (buff)
+ 		len = adapter->vpd->len;
+ 
+ 	mutex_lock(&adapter->fw_lock);
+@@ -1788,17 +1789,17 @@ static int ibmvnic_get_vpd(struct ibmvnic_adapter *adapter)
+ 	if (!adapter->vpd->len)
+ 		return -ENODATA;
+ 
+-	if (!adapter->vpd->buff)
+-		adapter->vpd->buff = kzalloc(adapter->vpd->len, GFP_KERNEL);
++	if (!buff)
++		buff = kzalloc(adapter->vpd->len, GFP_KERNEL);
+ 	else if (adapter->vpd->len != len)
+-		adapter->vpd->buff =
+-			krealloc(adapter->vpd->buff,
+-				 adapter->vpd->len, GFP_KERNEL);
++		buff = krealloc(buff,
++				adapter->vpd->len, GFP_KERNEL);
+ 
+-	if (!adapter->vpd->buff) {
++	if (!buff) {
+ 		dev_err(dev, "Could allocate VPD buffer\n");
+ 		return -ENOMEM;
+ 	}
++	adapter->vpd->buff = buff;
+ 
+ 	adapter->vpd->dma_addr =
+ 		dma_map_single(dev, adapter->vpd->buff, adapter->vpd->len,
+-- 
+2.54.0
+
 
