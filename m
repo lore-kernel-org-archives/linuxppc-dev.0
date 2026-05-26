@@ -1,82 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-21497-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21498-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0C358CD5BB4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 May 2026 05:54:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 29CA1CD5BB4
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 May 2026 06:33:31 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gPhly4QXpz2y8t;
-	Tue, 26 May 2026 15:54:38 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=fail smtp.remote-ip="2a01:111:f403:c10d::1"
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779774878;
-	cv=fail; b=L9Uds+JLDLN/aiXwyLEqlL3nZQDkdp03viZ/UrcnR0sFZ7db+hIrvNsNIZk2vQHVeoTLfFrdOclx/XNQAg1qRxHIlNj8diMZ60PBvSLsKUxx5roYpCqEDa8Ov/8RCU1QmMFERfofKGBL3RiFlr11EZLd3isDzsjxRS8zyviV6Yn+tkI2nquX5QeB5lR2xSFg9yLifdM6Kvb3zyWknG87r9rzfwJmeQJZ9xopwS6p09zxfIF0kyFlowDRtzo2rRMHouAAKDvTAcCROtE+4VlEOmmzaLvCpOsgTxXCsHAbK096K6lo/bpb4N7mcCvsKvZ3xkduWxrDkUF0ryHjj4juMQ==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1779774878; c=relaxed/relaxed;
-	bh=IaqBVgyGbOrjmmGv1Zd84r6b/ItQGuK9ZaC0K+dPPm0=;
-	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
-	 In-Reply-To:Content-Type; b=ITQqREnBZ+kUIbk0PtQrYeFkJOFU1Hv2Ro0vLq3CmTnRCe4pZefxV9r1/bCHEYaVTywty1qklfSo5ALMBVPmhsXGvpdYTfeRTi4Ys5gDppCXgCFS6RUhnKR98sZgnzMJoz2AP8JLPGJpPXAboUkiUkOih/D3KtevX7iWOPxVgxx5vEKU6D+BXuCQykrWYRvYXi4iGwEguD+f7lkPfTJAUvfn/85nOsQ2Szs/Bos+bGs76U+MLYVOArDdOWcBMfcV3jzqujYXjVkN9xnKEjdrgsCZgh++eSAe8Wswt8K5T4/dJUXKV4TEnYHFxVR74ymsz0S76qMDz8JTw/98LwFlmw==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; dkim=pass (1024-bit key; unprotected) header.d=amd.com header.i=@amd.com header.a=rsa-sha256 header.s=selector1 header.b=er+2DsoK; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c10d::1; helo=sn4pr2101cu001.outbound.protection.outlook.com; envelope-from=kprateek.nayak@amd.com; receiver=lists.ozlabs.org) smtp.mailfrom=amd.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gPjcp3kz4z2y8t;
+	Tue, 26 May 2026 16:33:30 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779777210;
+	cv=none; b=AVX3QnrmmLf8uu6AtdW1vj9k2RkCZdplZALpaL4wf1xNZ/USTTPJVTgTTNMuSLPPVcupBRtaEyR1yTBnPvH9pOrALDMSh1sOTjzw4IPWXTpPn5qLcXnkxn6366wxB9pSHiUTtgQLmM+3qpnM+ek0TW1TqNjM7GsbQYKP/SdfO6J+6PLhfwzGR7CQfTB6sBiIxMxCUKH81k42C6cLyYJBPLoivuqHxZe/T0gSAIUIIRrP2Us9fhuimTLWZqi6AmCqlutj6be7S5abIvRYKy19E2qDxnmrSwuqnzEifBQ1mH7Hin9oX56IWAdaJ20/bgi/vAB5VkP3QG7NQ6ekWSe+Aw==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1779777210; c=relaxed/relaxed;
+	bh=lSSTgIJxElpRPZXCwCiqCKzOkrKn0h4qZngFuiv7DgQ=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=UOf4qDKSFUyFXXfUr+AWehYIygrGXXoa8k0pVz7kkwPsifo9VFoaIgbRmlIIfCZbzMKBn1QmGvDdHM73+uc1E1/pR8j//pTuQg69nSS+1WVxuj1UMFRVwn1OuExXQp01DJmQ2BrkWa4UYnvl3OZmtlXoQguwCJsCCRSi+5NglEZ2bl4XQ51Vhh/fD0q8Tl8ZXPuX0JfAcBLZPOn2L7UK30MaDu1g6Jtwg7jXJ9D11ZMV14C/VnlvoLPXFPakXlZS/eOZMbBrYGsps03SyOuPFVmfshiBgu7dmTLPmg4HRumCw3gkF9oJEhLd0tl+/4UqkqvOj+2njequoiID1LmbfQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=cpfdUPE5; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=harshpb@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=amd.com header.i=@amd.com header.a=rsa-sha256 header.s=selector1 header.b=er+2DsoK;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=cpfdUPE5;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=amd.com (client-ip=2a01:111:f403:c10d::1; helo=sn4pr2101cu001.outbound.protection.outlook.com; envelope-from=kprateek.nayak@amd.com; receiver=lists.ozlabs.org)
-Received: from SN4PR2101CU001.outbound.protection.outlook.com (mail-southcentralusazlp170120001.outbound.protection.outlook.com [IPv6:2a01:111:f403:c10d::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=harshpb@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gPhlx053Bz2xjQ
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 May 2026 15:54:36 +1000 (AEST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=U+Oe/CrqF7YgEIB7eS2evhaRZA/elZgNUgHlACBPwOiR8Nx7CDLoe7Rt8j84D4W6uuut0gkwv0BaAXTR4z5J0ujoFeG3Ga2SZWB7v83xvpQCqyZdWUGhr93miBfYjKvY0Oalb5yPM3y5D8jv4F3vTxWoqYf2WJ1CCDw0BPcI66iQxJM3OipWJX1/lKshgjSJnqciW0Vz7f6KlVHZYX9eDUkzBCQrkGnKkPNTfZUa5V6yBJXV/HrSQP5D0PbNQH5K7JjLrEaF/7hB9sc1XvcsYPwstd/u8WEzKb/9bch/wIF1g3JFl44M1JAUDR35spTFafBKPKfTaH0Qh3+1nGGR9w==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=IaqBVgyGbOrjmmGv1Zd84r6b/ItQGuK9ZaC0K+dPPm0=;
- b=I39u+3tw5kGqYmsYMXQ8//qpH+k/7Hu+McudQPuJMf9IVFtKrLAN1zE793gwjWLAFYLj5rS1hEvPmAWA15fEoNBwBfy40hXx/fsby0EINDTeMuQjY7ABCFifBEVvkQAQLlY/4UDSd4OvkZwJ2XSAtnqLrIhXVuPkE4Qv8tiJZ8eJDgVFMWDouhmfqzEdPk6RX7oACdw0I6VlEdjUiJbflewGSE77mWSSXCDLIFFqwRkE1mobBFY5xdhvsp1b/5PPODMaDqY9zrY3qu6tgjCgEMkE9t2pEScTcybWYV3Docd3SrFeksgg76LdeASd5OmqX0giFwOwdnlvmv3a7f7X/Q==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
- 165.204.84.17) smtp.rcpttodomain=linux.ibm.com smtp.mailfrom=amd.com;
- dmarc=pass (p=quarantine sp=quarantine pct=100) action=none
- header.from=amd.com; dkim=none (message not signed); arc=none (0)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=IaqBVgyGbOrjmmGv1Zd84r6b/ItQGuK9ZaC0K+dPPm0=;
- b=er+2DsoKow5wQJCzBDnyNo6YhDx1F7xdr66UbnZWKwJ/zqPDf4c5/X3mIJXo/E8l7gDxVW4SP4Yd1R7p2bqhdM+GlRp3liPwc4mq2U2EDAAQFxy5mEjcmgJCP2JdHnaEpbhw0pPvA6PCkFfjnw+GT8qEvaOgvtnzZUH9HkrleNY=
-Received: from BN9PR03CA0257.namprd03.prod.outlook.com (2603:10b6:408:ff::22)
- by DS0PR12MB8366.namprd12.prod.outlook.com (2603:10b6:8:f9::17) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.48.20; Tue, 26 May
- 2026 05:54:06 +0000
-Received: from BN3PEPF0000B371.namprd21.prod.outlook.com
- (2603:10b6:408:ff:cafe::a1) by BN9PR03CA0257.outlook.office365.com
- (2603:10b6:408:ff::22) with Microsoft SMTP Server (version=TLS1_3,
- cipher=TLS_AES_256_GCM_SHA384) id 15.21.71.11 via Frontend Transport; Tue, 26
- May 2026 05:54:06 +0000
-X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 165.204.84.17)
- smtp.mailfrom=amd.com; dkim=none (message not signed)
- header.d=none;dmarc=pass action=none header.from=amd.com;
-Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
- 165.204.84.17 as permitted sender) receiver=protection.outlook.com;
- client-ip=165.204.84.17; helo=satlexmb08.amd.com; pr=C
-Received: from satlexmb08.amd.com (165.204.84.17) by
- BN3PEPF0000B371.mail.protection.outlook.com (10.167.243.168) with Microsoft
- SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.21.92.0 via Frontend Transport; Tue, 26 May 2026 05:54:06 +0000
-Received: from SATLEXMB04.amd.com (10.181.40.145) by satlexmb08.amd.com
- (10.181.42.217) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.2.2562.41; Tue, 26 May
- 2026 00:54:04 -0500
-Received: from satlexmb07.amd.com (10.181.42.216) by SATLEXMB04.amd.com
- (10.181.40.145) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.39; Tue, 26 May
- 2026 00:54:03 -0500
-Received: from [10.136.47.136] (10.180.168.240) by satlexmb07.amd.com
- (10.181.42.216) with Microsoft SMTP Server id 15.2.2562.41 via Frontend
- Transport; Tue, 26 May 2026 00:54:00 -0500
-Message-ID: <058664ab-0982-4c13-9d4b-caa2f7616b0f@amd.com>
-Date: Tue, 26 May 2026 11:23:59 +0530
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gPjcm3bJsz2xHK
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 May 2026 16:33:27 +1000 (AEST)
+Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 64PN5oCG4112531;
+	Tue, 26 May 2026 06:33:07 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=lSSTgI
+	JxElpRPZXCwCiqCKzOkrKn0h4qZngFuiv7DgQ=; b=cpfdUPE5GXZtk7jlSz6ZR/
+	9gZW04DexbKzX0Ao2CT9354Iq2VdPZ2LkuXTN020t0l+7B4S649D87v25jlxY+Z1
+	fptQYAGSz4U5aA71XLqZ1+H3eQpa7MDV5OebBvNT3zPJqwCxtO8XZwiyvCKZW5MP
+	vNjZ7GOVmQmOFsP4ubf8V4Him10gnMSvo6Q7A6UvS6mY/vhC/3AqKH1kb7LNpw7O
+	kK7Yapbyl/J5v1llS2nr+NsDqecbtAf9nkMrdYO9JZUk5E+sQenhTiu3kVQOb9oN
+	vN+A7y4ar4YBnHSMpgpwI4Ob/Cor1Wx5MmfeegXRaDOVBfx0sRlOjBwPGHH/R2DA
+	==
+Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4eb4pd9t75-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 26 May 2026 06:33:06 +0000 (GMT)
+Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma21.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 64Q6O35j009870;
+	Tue, 26 May 2026 06:33:06 GMT
+Received: from smtprelay05.dal12v.mail.ibm.com ([172.16.1.7])
+	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4ebqjjr3xx-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 26 May 2026 06:33:06 +0000 (GMT)
+Received: from smtpav06.dal12v.mail.ibm.com (smtpav06.dal12v.mail.ibm.com [10.241.53.105])
+	by smtprelay05.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 64Q6X5mr30147200
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Tue, 26 May 2026 06:33:05 GMT
+Received: from smtpav06.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 6C7D958055;
+	Tue, 26 May 2026 06:33:05 +0000 (GMT)
+Received: from smtpav06.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 1FE0558043;
+	Tue, 26 May 2026 06:33:00 +0000 (GMT)
+Received: from [9.123.0.169] (unknown [9.123.0.169])
+	by smtpav06.dal12v.mail.ibm.com (Postfix) with ESMTP;
+	Tue, 26 May 2026 06:32:59 +0000 (GMT)
+Message-ID: <76f82194-9afb-4dfe-ad96-ae338c7db61d@linux.ibm.com>
+Date: Tue, 26 May 2026 12:02:58 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -91,92 +82,95 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [BUG] sched/cache: "Make LLC id continuous" causes NULL cpumask
- dereference in build_sched_domains on POWER9
-To: Srikar Dronamraju <srikar@linux.ibm.com>, "Chen, Yu C"
-	<yu.c.chen@intel.com>
-CC: Venkat Rao Bagalkote <venkat88@linux.ibm.com>, Madhavan Srinivasan
-	<maddy@linux.ibm.com>, Shrikanth Hegde <sshegde@linux.ibm.com>, "Ritesh
- Harjani" <riteshh@linux.ibm.com>, "Christophe Leroy (CS GROUP)"
-	<chleroy@kernel.org>, LKML <linux-kernel@vger.kernel.org>, linuxppc-dev
-	<linuxppc-dev@lists.ozlabs.org>, <linux-sched@vger.kernel.org>,
-	<tim.c.chen@linux.intel.com>, Peter Zijlstra <peterz@infradead.org>
-References: <51154de7-3700-4cb4-82f2-1b3a8fa427f7@linux.ibm.com>
- <bca40921-d351-4439-ae6a-9e5294f23e2e@intel.com>
- <ahUQE-AgvOAQV_mI@linux.ibm.com>
- <a0e3f4f4-03b6-4bb1-881f-06bf5abca1a3@intel.com>
- <ahUogeqIq5km7JSr@linux.ibm.com>
-Content-Language: en-US
-From: K Prateek Nayak <kprateek.nayak@amd.com>
-In-Reply-To: <ahUogeqIq5km7JSr@linux.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
+Subject: Re: [PATCH] KVM: Validate irqchip index for LoongArch and PowerPC
+Content-Language: en-GB
+To: Yanfei Xu <yanfei.xu@bytedance.com>, zhaotianrui@loongson.cn,
+        maobibo@loongson.cn, chenhuacai@kernel.org, maddy@linux.ibm.com,
+        npiggin@gmail.com, sashiko-reviews@lists.linux.dev, seanjc@google.com,
+        pbonzini@redhat.com
+Cc: kvm@vger.kernel.org, loongarch@lists.linux.dev,
+        linuxppc-dev@lists.ozlabs.org, caixiangfeng@bytedance.com,
+        fangying.tommy@bytedance.com, isyanfei.xu@gmail.com,
+        Sashiko <sashiko-bot@kernel.org>, stable@vger.kernel.org
+References: <20260525070154.495455-1-yanfei.xu@bytedance.com>
+From: Harsh Prateek Bora <harshpb@linux.ibm.com>
+In-Reply-To: <20260525070154.495455-1-yanfei.xu@bytedance.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Received-SPF: None (SATLEXMB04.amd.com: kprateek.nayak@amd.com does not
- designate permitted sender hosts)
-X-EOPAttributedMessage: 0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: BN3PEPF0000B371:EE_|DS0PR12MB8366:EE_
-X-MS-Office365-Filtering-Correlation-Id: 03623f61-d632-482a-01ac-08debaeb328b
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|376014|36860700016|7416014|1800799024|82310400026|18002099003|56012099003|22082099003|11063799006|5023799004|4143699003;
-X-Microsoft-Antispam-Message-Info:
-	cYiw29zH2nD56juJXmS76oERzF/wcAugCPfdn/J4fSOaIO1fODVXw3tzE95sBlBaIUkJUne3a6QmdHj8jCXhl3YrkllNCXs9PWqJPERn39+wRdglufITS6tcwt38aaBx1qtoKlBAN+MzBjxeo3p7u2VVD16BK/sObLpghRGRPVdJsyC2g6ZskEoVjfxmooyaIupb8zjv6M7cYMBPJpKJPFE/CT++bBfHRqrEALvwMI/v/71DAL/dQGJROTl4UfllcPaJOWtBmEcozEyVL8tS+gDS/3qmYJ8xYic6hvt/V/K160+CYaS70OTHXKpWNQbr4qLeUBoFXnJ9qiBLDmwkEBAD4Yuq3EzhZ9wWesVmzw8mi07eIy5CnpPEjfT/nYEFpRVTgNFbTxLTMf3iWl07Yr3cy4Icm2665xljxUd054W5CTfS89kFNwSdZZy9fSzjICRN9QvyUuG94QvfI/5WK5rcmVplgdHEiGysCVftYmBckJ7m4yFUaz0nYDaeYULN2NVThaEnMyuuIAJSQ9jwSUfyCF3Dt/Ki1eR/BneXjnrnbJn76c7RYM6PkgBvLdRhRd1/TfXxlnc/hJZbczqpNobxkfcUZif+kaDl4/rmcgSvnSIwTkC3QvYY2FGMvzAfHHLjgOIsr0L1/LU8o/zOQTTcGvpCwKGRw4+MiHz9aj2G0HUbS1txGC03fV5YKruVrhhDL3VTXj+rVst3wicdXpFptH/m4EF9EQ7x8x2It5c=
-X-Forefront-Antispam-Report:
-	CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:satlexmb08.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(376014)(36860700016)(7416014)(1800799024)(82310400026)(18002099003)(56012099003)(22082099003)(11063799006)(5023799004)(4143699003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	tqrz8m8Emp9OKg6YrRQCqBxl6MQOStwIrBHKd9lP0J5JOPz3vXyT9ZuEdeAbrdVtxJOc+KtV3eMb1nI63Ko18Bjmu+w7nvg6zG6hnvEPNrF4Jv++Q2D0Js2Hlgv+KUI43UFQlP93qybBgC9VY8fcW8eQ+sWEayiakGDLhcobC2h109cQR5F7Gx5Y9uKnSKZAvQxSbY0OVDeCqmJYXJgEdTB2koTNsubmsMLyb61NF/Au2+xWqIORp3yAcPWdTXsSRN94zAorrlCnbPQ4J1PXNdlV65dB16w2gYuJ7oVWUy5vUnRCvPBMZJ+DBkZ/5V1DAdfMw+TQqDJQ3KG3GEeqMISObAmkpKIrjlwTRcwTUIu8izahtxsjPSQy5EZ/d/UgfaJk9RP2vWHCLrg5wh6jJadrXb6x9QFU/HfJPOnzjQYi0uCYhCr6ZwM6vhOys32J
-X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 26 May 2026 05:54:06.0819
- (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 03623f61-d632-482a-01ac-08debaeb328b
-X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
-X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[satlexmb08.amd.com]
-X-MS-Exchange-CrossTenant-AuthSource:
-	BN3PEPF0000B371.namprd21.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Anonymous
-X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: DS0PR12MB8366
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Authority-Analysis: v=2.4 cv=OdqoyBTY c=1 sm=1 tr=0 ts=6a153ea3 cx=c_pps
+ a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
+ a=IkcTkHD0fZMA:10 a=NGcC8JguVDcA:10 a=f7IdgyKtn90A:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22 a=RzCfie-kr_QcCd8fBx8p:22
+ a=VwQbUJbxAAAA:8 a=968KyxNXAAAA:8 a=VnNF1IyMAAAA:8 a=VhF_hiyGZBDqKw0Zxd0A:9
+ a=QEXdDO2ut3YA:10
+X-Proofpoint-GUID: LRBMiiFu8R_IMzxWSnnQX7_Q9AYoCXuw
+X-Proofpoint-ORIG-GUID: 5_W0oqDVcmHgDExfvwT3FxNm3zkLR1hH
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTI2MDA1MSBTYWx0ZWRfX90z2vKmC0yAk
+ CWSucWXg+h4/Q/KVFzuUyOVTM3Ffn5pOF70e9b6dUfaJEKlTKVS5FhR0ih3lCU5NshKV2HubsWL
+ SLfOz2KgQyFTWyDyk2c5VFMWK1WwrBK2V9He1yI9qH2vWFfu8CbOiIp2svrl8Uq45ssuZG3u1Ui
+ cuswYiUbKsINKddCpffjDXQZri/svJx49y8R9X0UXJ5QeIaEer68I3nADevAk7o7ZS6KHC7DBh7
+ MG28r5i57DGfw6xEXwCLKnf0V7ak8mqhnXdEfVg1oz1XtuJKej7DUYpLPsxWAu1QchEvUJRRzOU
+ iv4n2vwDpREmpc8NxtC0O7SgemcbY5bh0qeZ95hhSCXTfhTLcwq9eHdse9QCZxpX66x3iCn1oei
+ xB1qrl0z7NgLSMif/uc2QI9feykHP1Y9tJixKyB/lftuVZyDsUVJxUFB8gmLDmtZlH8qNq8mrER
+ 2NZy1yKpnBXTVaXu5PQ==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-05-26_01,2026-05-18_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501 impostorscore=0 clxscore=1011 malwarescore=0
+ lowpriorityscore=0 bulkscore=0 suspectscore=0 adultscore=0 spamscore=0
+ phishscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2605130000
+ definitions=main-2605260051
 
-Hello Srikar,
++ cc: stable@vger.kernel.org
 
-On 5/26/2026 10:28 AM, Srikar Dronamraju wrote:
-> L2 Cache reported here is for SMT8 Core aka CACHE domain.
+On 25/05/26 12:31 pm, Yanfei Xu wrote:
+> Sashiko reported that irqchip index is not validated for LoongArch and
+> PowerPC. Add validation and reject out-of-range irqchip indexes to avoid
+> indexing past the routing table's chip array.
+> 
+> Fixes: de9ba2f36368 ("KVM: PPC: Support irq routing and irqfd for in-kernel MPIC")
+> Fixes: 1928254c5ccb ("LoongArch: KVM: Add irqfd support")
+> Reported-by: Sashiko <sashiko-bot@kernel.org>
+> Closes: https://lore.kernel.org/kvm/20260525051714.485D51F000E9@smtp.kernel.org/
+> Signed-off-by: Yanfei Xu <yanfei.xu@bytedance.com>
+> ---
+>   arch/loongarch/kvm/irqfd.c | 3 ++-
+>   arch/powerpc/kvm/mpic.c    | 3 ++-
+>   2 files changed, 4 insertions(+), 2 deletions(-)
+> 
+> diff --git a/arch/loongarch/kvm/irqfd.c b/arch/loongarch/kvm/irqfd.c
+> index f4f953b22419..40ed1081c4b6 100644
+> --- a/arch/loongarch/kvm/irqfd.c
+> +++ b/arch/loongarch/kvm/irqfd.c
+> @@ -51,7 +51,8 @@ int kvm_set_routing_entry(struct kvm *kvm,
+>   		e->irqchip.irqchip = ue->u.irqchip.irqchip;
+>   		e->irqchip.pin = ue->u.irqchip.pin;
+>   
+> -		if (e->irqchip.pin >= KVM_IRQCHIP_NUM_PINS)
+> +		if (e->irqchip.pin >= KVM_IRQCHIP_NUM_PINS ||
+> +		    e->irqchip.irqchip >= KVM_NR_IRQCHIPS)
+>   			return -EINVAL;
+>   
+>   		return 0;
+> diff --git a/arch/powerpc/kvm/mpic.c b/arch/powerpc/kvm/mpic.c
+> index 3070f36d9fb8..fb5f9e65e02e 100644
+> --- a/arch/powerpc/kvm/mpic.c
+> +++ b/arch/powerpc/kvm/mpic.c
+> @@ -1833,7 +1833,8 @@ int kvm_set_routing_entry(struct kvm *kvm,
+>   		e->set = mpic_set_irq;
+>   		e->irqchip.irqchip = ue->u.irqchip.irqchip;
+>   		e->irqchip.pin = ue->u.irqchip.pin;
+> -		if (e->irqchip.pin >= KVM_IRQCHIP_NUM_PINS)
+> +		if (e->irqchip.pin >= KVM_IRQCHIP_NUM_PINS ||
+> +		    e->irqchip.irqchip >= KVM_NR_IRQCHIPS)
 
-Apart for the scheduler, nothing in tree currently cares about
-cpu_coregroup_mask() except for drivers/base/arch_topology.c but
-Power doesn't select GENERIC_ARCH_TOPOLOGY.
-
-Why can't Power have an internal mask for MC domain (tl_mc_mask) and
-the scheduler can use cpu_coregroup_mask() for the actual LLc? (The L2
-mask in this case.)
-
-Power anyways adds its own topology via set_sched_topology() so the
-default_topology from kernel/sched/topology.c remains unused.
-
-...
-
-> Shouldnt cache-aware scheduling be worried about cpuset partitions too.
-> If a cpuset has subset of LLC cores, then we should Scheduler assume it can
-> control complete LLC?
-
-Well, the scheduling takes care of partitions and the cache aware
-scheduling bits take care of looking at the full system perspective
-for stats aggregation and pointing to a particular LLc.
-
-We don't compare llc_id across cpusets so we keeping one unique llc_id
-per H/W LLC instance is feasible and it enables us to keep llc_id space
-limited for optimizing cache-aware scheduling.
-
-Now if we have threads of same process across partitions, we'll
-still aggregate the utilization numbers across the full LLC but
-the load balancers at individual partitions will make a call on
-the aggregation.
-
--- 
-Thanks and Regards,
-Prateek
+Reviewed-by: Harsh Prateek Bora <harshpb@linux.ibm.com> # PPC KVM
+>   			goto out;
+>   		break;
+>   	case KVM_IRQ_ROUTING_MSI:
 
 
