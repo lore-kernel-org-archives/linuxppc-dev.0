@@ -1,79 +1,80 @@
-Return-Path: <linuxppc-dev+bounces-21519-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21520-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DB7E2CD5BC8
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 May 2026 13:14:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6095ECD5BB1
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 May 2026 14:18:18 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gPtWz3z6tz2y8t;
-	Tue, 26 May 2026 23:14:55 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::332"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779801295;
-	cv=none; b=b7enXr0AS+N7G9OxI3Ce/tNlQ6B2rcwmZHD7n6AcvlyglU+dtB3xVigtMLz97pWAnzTtLkTrQiAEQEmCGEyKep0y/5QU6Wo39uTT0oz6qhWaVwYGlk+MdlpBT2rb8L33ux8d4s6r0QaLxXz/EfLrjWuSGzhs8okn0QMMoMJq2Yz5AG7ySgWWvQoj/23sqCeM/X/ihU5EFNOvV5DhE2diqrT4Vudo1YmS8l+XpMFghiG06kFY+eyLOa2LXJuFMfiD4g+EdHBpwxRs55sN984eSiuJyfameUb99vDoGDGTlfJnFQJ4aavJITHn1/6gtLc5jPJzp1aOfwVO+CqshxjQ8w==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gPvx42kCFz2y8t;
+	Wed, 27 May 2026 00:18:16 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=198.175.65.12
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779805096;
+	cv=none; b=k7PJAf5iLR0QMdhyzbMJ8W8cduaW2y3j0YOVv91PlE+6TjsjntxlUqbPdQp+11fyHiQH9o9upEpgcmuEz1/WtabHIGtVaYhOp+IAAynSFptRk4Oc+CzL5JTpr3MkF1FZ2VkiAaQjjZeOrHiLXW6xqFhnLPBbw/a4kZ5QKCZpjdtViXEzQmAemj7dH7Y+TqqcWeHCQx+aH4PZp1JTgOZhqVbflAwaPDLMXFt3YmDLvCuRuU4Sp3SKah5pt5nwyep6oVdeCFxea1I21fmS0miUrAv3bEuEEbr+OWhUfzAfNjhU4bKuza5xt2DsCXBnwiC+caf7ELqgmMJwYNdIxdJyfg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1779801295; c=relaxed/relaxed;
-	bh=P15uXtg9HdllBQIu/ZsCrfbcDnCOaC1HB3obrbgjmNc=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=h0GOM+T+6yD+q8DxDI0SRrDGa9aS+FYEX5ps8Mi4tRGS8va9mBdB5eaOlOm3WTni2M5xzuZde6AnnxisHf66fVdZTFFU52sGyAY7dHmFl5owy37wAcVo9sJO2C/fAwD7A5f/tdpqxKJVl3dbcT7KGs3LPA+PHqJOWKBu8IdPkax3Vk5ShZTfPn7mw42UkKAqF3Jj30hmYtJ+OiJYSj9xcxDQgQ/2EA9Ka6WoHyp7t8az1tSBLUZI2Q76+VNeneQxa6qgJIQ74yTmuFB+fDqQo+k1TDnxJxRunIV+uBVWgEkXP5eqj3H2XlOhEMkifloxPkbkPcWBp971Zf3M8SsmnQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com; dkim=pass (2048-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=google header.b=JOffIFtw; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::332; helo=mail-wm1-x332.google.com; envelope-from=petr.pavlu@suse.com; receiver=lists.ozlabs.org) smtp.mailfrom=suse.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com
+	t=1779805096; c=relaxed/relaxed;
+	bh=tjQlfk7go6/1bAyhMxtzLIiwVMACueFYxBZnKobXL84=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
+	 MIME-Version; b=ld76wEOso1BZZG/MF5Rp4wCitTEe65MC3LHBPL02/AZugXaKXtgE/xnuIKaT0FKiP7q8onejmJh0xWuOyt0ld2tHRweVYSXC54NFC01+0RZvgADwsCgUtL1SJz5sn105GMyAywQ8vcgL0hqJqz0XOiq1ROocLA4fiSDqANVSc+EWr9RrkGCZvcV3PnLu3ZS4nIA7oZ1EyeeQ9ipIQML/9ToPtf+vLgJyZSxFxkhtka15Hyy/5vW5ufrV+szdZ+zFkBe4UDzoVFju/wqCUITlVxlIakz3AHS9t1EGGPk62u9eeJNZherC2LPm40ZSepqRFx1I5HkbdsjzOzJ3H3+KDA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=L3R5XBl+; dkim-atps=neutral; spf=pass (client-ip=198.175.65.12; helo=mgamail.intel.com; envelope-from=yu.c.chen@intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=intel.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=google header.b=JOffIFtw;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=L3R5XBl+;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.com (client-ip=2a00:1450:4864:20::332; helo=mail-wm1-x332.google.com; envelope-from=petr.pavlu@suse.com; receiver=lists.ozlabs.org)
-Received: from mail-wm1-x332.google.com (mail-wm1-x332.google.com [IPv6:2a00:1450:4864:20::332])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=198.175.65.12; helo=mgamail.intel.com; envelope-from=yu.c.chen@intel.com; receiver=lists.ozlabs.org)
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.12])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gPtWx4QdNz2xLs
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 May 2026 23:14:53 +1000 (AEST)
-Received: by mail-wm1-x332.google.com with SMTP id 5b1f17b1804b1-48984d29fe3so111324395e9.0
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 May 2026 06:14:52 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=suse.com; s=google; t=1779801290; x=1780406090; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=P15uXtg9HdllBQIu/ZsCrfbcDnCOaC1HB3obrbgjmNc=;
-        b=JOffIFtwZtQyb55n1HpAxxWnSjGrJu7/auH4qh6joGpa56RYYKHHGAirYkWYEiy5Km
-         h/HtRbY1CqW5Z2OVUzYg5QQmpP7X9I7vWqXyz1twBZsEVCo0VOZzQDqIlN3uZ1pXg5+m
-         sFnWlBNT8czPFYDPAxIgXq1LWJcjvJyZUeg5kUyoqlvVN0jYH/J8PvPpnnoS7/6IB7T1
-         g0Lj1ts2qdFXg7DHo6epgm6KNKg9PutQGnCQTVjF3TMfJr8Yhe9AH59GLnjTUPiAwpF0
-         ebiajObnU/BPtKClb14xcW5DLlAQrJBiANZ6xnjCVA383x/gXboeGP+D6Ux9UUSt/EAP
-         BBDA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1779801290; x=1780406090;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=P15uXtg9HdllBQIu/ZsCrfbcDnCOaC1HB3obrbgjmNc=;
-        b=aefwRPN5iOnQgDdxngMT7M2lVgyjJcrlUPOiaiu+/XX1bW76Y2vtqTqx6fBXZx4OGq
-         RDaEYTUPFGS6TvVr5lZOi895rSOO/x6/A+h6Lzcwu2Zw8dTSQFEd2I7QqvCPAD04Qg/u
-         7mvlo0Mwd2FW3PA4J3vI+S5Kwap/oYq44oKHSmPyivRYmGq+JNaEO3RtFTL4ncq6/RGR
-         Fel0tifkD4psGiQlMKDhYhV8QarT1v12+i4x+EKJ+2B5VpGZOpe01wX7/aIozWBL/u/I
-         Cmw2OMPjrqP2ldEgKVbOlVUl/PdxckIgVnnQsXOoBhlAvftEdse8eHYtw3spWs89Inbc
-         AJxg==
-X-Forwarded-Encrypted: i=1; AFNElJ+sSehN3ZYlThGCMAD5vS3RvttKEI67ZhgIyLA/LNHmOrUxyGWpkzwllJNfb20Fr3MEH9EhDv35TNojaXQ=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YyJAZyLLvwgTNDRbe90LzpxIzdS0BAxpQdVYsy8AoZ+A1K1pnbK
-	Ff0Z9SlJXHhUhulweMvsDkMrvaKBmoBgiYZ6YetM8vSwI1w7gxgjiriMWuC2u/sTNLs=
-X-Gm-Gg: Acq92OEqgVM2Qw2Wig8mIoj3LOOvrq6rxlBo5xBAm6TIzRYyz+j2VXAsocoLkEg09oM
-	VXENRp8yUYZ9LutwP7MEhTyP/DzypHCdVV7o0WzXkSVZdE1SdiWjn96rLIhau3nedhO11/M8UZ/
-	b/eiq1xeFv8yANHgpH2CKih4uxGNxuyLItneEtxiprsLsmtQQ5w37ZDAe/x8mgfvApP6DNi8Ra8
-	2Vi8J3iUzGyj87HNuMu/5JNbdmpuAGSuwncnbhCe2QVfpshIW3gEY/4rwGzeSFRSZRSNrii8R8K
-	Apeu+vkLVDx4e9vozTeWiXy0Jm3a7DVh8AyfptfIqdQJNYM9/YOYuwkB5mxvBGUvqsb59NNgzih
-	qq/DjjfPc11d4yeV2nbETM8uM2czQ4UJA7tZ0l7g9AGMYvmirwdCPbH3M6xsg3TfB72dIDUv9l5
-	/NDCVRyXTd9hpPHslMYTbenqnBzkOzRx11uIizl9/7ZUz7
-X-Received: by 2002:a05:600c:4f91:b0:490:6e12:5418 with SMTP id 5b1f17b1804b1-4906e12552emr91630705e9.23.1779801289895;
-        Tue, 26 May 2026 06:14:49 -0700 (PDT)
-Received: from [192.168.42.79] (nat2.prg.suse.com. [195.250.132.146])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-45eb6c9f58dsm34868452f8f.5.2026.05.26.06.14.48
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 26 May 2026 06:14:49 -0700 (PDT)
-Message-ID: <a050130e-d354-411a-bfcd-afcfde4cafdc@suse.com>
-Date: Tue, 26 May 2026 15:14:47 +0200
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gPvx06zmGz2xjQ
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 May 2026 00:18:10 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1779805093; x=1811341093;
+  h=from:to:cc:subject:date:message-id:in-reply-to:
+   references:mime-version:content-transfer-encoding;
+  bh=qWQmUISyVvYDZTacgZETA7Z24zdMNhFfMuXRJJtoaaQ=;
+  b=L3R5XBl+jkorEH9TKt1hQ9Kp3Wd8uq5UIP72z6mjYOsEyLX6M6Dv651i
+   K7TQvPNOkpykwHDlzf7eUNHAXGaFKKHCPMPXMX77I4J8wU7hWQORBiLqv
+   BWlN0p7kBLP+EdQf+oLMjKKcX40Rvz8CP1Ki8FWZQLzQzRaEXG/Bhx7K8
+   hYnZPJhX4q8XJyjrX4TRYOk7Kx2w7Jf86vmfcGwpB+iLOdK4CkOS8YVtt
+   qUyuNWzJqr+C81UZKId/OnangDzYjGy+iYrl+7j8ahqyUrepuwpG9BLS4
+   r0KO/iJqc7hSZnCSBedDFS1jVr6MD1Ead/veoccQ0IjXJ5KM9rPHM/D1k
+   w==;
+X-CSE-ConnectionGUID: x8uUYmkKTZq2V4M0P4oCdQ==
+X-CSE-MsgGUID: xs6Ko5fLRsi2qTAs8RW8AQ==
+X-IronPort-AV: E=McAfee;i="6800,10657,11797"; a="92090407"
+X-IronPort-AV: E=Sophos;i="6.24,169,1774335600"; 
+   d="scan'208";a="92090407"
+Received: from orviesa003.jf.intel.com ([10.64.159.143])
+  by orvoesa104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 26 May 2026 07:18:06 -0700
+X-CSE-ConnectionGUID: /N/O0jiqRoeBzDL4zz6ugA==
+X-CSE-MsgGUID: ust5t8+yRMaCBRZLqc2Yvw==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.24,169,1774335600"; 
+   d="scan'208";a="245965852"
+Received: from chenyu-dev.sh.intel.com ([10.239.62.107])
+  by orviesa003.jf.intel.com with ESMTP; 26 May 2026 07:18:03 -0700
+From: Chen Yu <yu.c.chen@intel.com>
+To: kprateek.nayak@amd.com
+Cc: srikar@linux.ibm.com,
+	venkat88@linux.ibm.com,
+	maddy@linux.ibm.com,
+	sshegde@linux.ibm.com,
+	riteshh@linux.ibm.com,
+	chleroy@kernel.org,
+	tim.c.chen@linux.intel.com,
+	peterz@infradead.org,
+	linux-kernel@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-sched@vger.kernel.org,
+	Chen Yu <yu.c.chen@intel.com>
+Subject: Re: [BUG] sched/cache: "Make LLC id continuous" causes NULL cpumask
+Date: Tue, 26 May 2026 22:08:56 +0800
+Message-Id: <20260526140856.139657-1-yu.c.chen@intel.com>
+X-Mailer: git-send-email 2.25.1
+In-Reply-To: <058664ab-0982-4c13-9d4b-caa2f7616b0f@amd.com>
+References: <51154de7-3700-4cb4-82f2-1b3a8fa427f7@linux.ibm.com> <ahUogeqIq5km7JSr@linux.ibm.com> <058664ab-0982-4c13-9d4b-caa2f7616b0f@amd.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -87,60 +88,164 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v5 10/14] module: Prepare for additional module
- authentication mechanisms
-To: =?UTF-8?Q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
-Cc: Alexei Starovoitov <ast@kernel.org>,
- Daniel Borkmann <daniel@iogearbox.net>, Andrii Nakryiko <andrii@kernel.org>,
- Eduard Zingerman <eddyz87@gmail.com>,
- Kumar Kartikeya Dwivedi <memxor@gmail.com>,
- Nathan Chancellor <nathan@kernel.org>, Nicolas Schier <nsc@kernel.org>,
- Arnd Bergmann <arnd@arndb.de>, Luis Chamberlain <mcgrof@kernel.org>,
- Sami Tolvanen <samitolvanen@google.com>, Daniel Gomez
- <da.gomez@samsung.com>, Paul Moore <paul@paul-moore.com>,
- James Morris <jmorris@namei.org>, "Serge E. Hallyn" <serge@hallyn.com>,
- Jonathan Corbet <corbet@lwn.net>, Madhavan Srinivasan <maddy@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
- Naveen N Rao <naveen@kernel.org>, Mimi Zohar <zohar@linux.ibm.com>,
- Roberto Sassu <roberto.sassu@huawei.com>,
- Dmitry Kasatkin <dmitry.kasatkin@gmail.com>,
- Eric Snowberg <eric.snowberg@oracle.com>,
- Nicolas Schier <nicolas.schier@linux.dev>, Daniel Gomez
- <da.gomez@kernel.org>, Aaron Tomlin <atomlin@atomlin.com>,
- "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
- Nicolas Bouchinet <nicolas.bouchinet@oss.cyber.gouv.fr>,
- Xiu Jianfeng <xiujianfeng@huawei.com>,
- Martin KaFai Lau <martin.lau@linux.dev>, Song Liu <song@kernel.org>,
- Yonghong Song <yonghong.song@linux.dev>, Jiri Olsa <jolsa@kernel.org>,
- bpf@vger.kernel.org, =?UTF-8?Q?Fabian_Gr=C3=BCnbichler?=
- <f.gruenbichler@proxmox.com>, Arnout Engelen <arnout@bzzt.net>,
- Mattia Rizzolo <mattia@mapreri.org>, kpcyrd <kpcyrd@archlinux.org>,
- Christian Heusel <christian@heusel.eu>, =?UTF-8?Q?C=C3=A2ju_Mihai-Drosi?=
- <mcaju95@gmail.com>, Eric Biggers <ebiggers@kernel.org>,
- Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
- linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-arch@vger.kernel.org, linux-modules@vger.kernel.org,
- linux-security-module@vger.kernel.org, linux-doc@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-integrity@vger.kernel.org,
- debian-kernel@lists.debian.org
-References: <20260505-module-hashes-v5-0-e174a5a49fce@weissschuh.net>
- <20260505-module-hashes-v5-10-e174a5a49fce@weissschuh.net>
-Content-Language: en-US
-From: Petr Pavlu <petr.pavlu@suse.com>
-In-Reply-To: <20260505-module-hashes-v5-10-e174a5a49fce@weissschuh.net>
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-On 5/5/26 11:05 AM, Thomas Weißschuh wrote:
-> Reorganize the code to make it easier to add the new hash-based module
-> authentication.
-> 
-> Also drop the now unnecessary stub for module_sig_check().
-> 
-> Signed-off-by: Thomas Weißschuh <linux@weissschuh.net>
+Hi Prateek,
 
-Reviewed-by: Petr Pavlu <petr.pavlu@suse.com>
+On Tue, 26 May 2026 11:23:59 +0530, K Prateek Nayak <kprateek.nayak@amd.com> wrote:
+> Hello Srikar,
+>
+> On 5/26/2026 10:28 AM, Srikar Dronamraju wrote:
+> > L2 Cache reported here is for SMT8 Core aka CACHE domain.
+>
+> Apart for the scheduler, nothing in tree currently cares about
+> cpu_coregroup_mask() except for drivers/base/arch_topology.c but
+> Power doesn't select GENERIC_ARCH_TOPOLOGY.
+>
+> Why can't Power have an internal mask for MC domain (tl_mc_mask) and
+> the scheduler can use cpu_coregroup_mask() for the actual LLc? (The L2
+> mask in this case.)
+>
+> Power anyways adds its own topology via set_sched_topology() so the
+> default_topology from kernel/sched/topology.c remains unused.
+>
+> ...
+>
+> > Shouldnt cache-aware scheduling be worried about cpuset partitions too.
+> > If a cpuset has subset of LLC cores, then we should Scheduler assume it can
+> > control complete LLC?
+>
+> Well, the scheduling takes care of partitions and the cache aware
+> scheduling bits take care of looking at the full system perspective
+> for stats aggregation and pointing to a particular LLc.
+>
+> We don't compare llc_id across cpusets so we keeping one unique llc_id
+> per H/W LLC instance is feasible and it enables us to keep llc_id space
+> limited for optimizing cache-aware scheduling.
+>
+> Now if we have threads of same process across partitions, we'll
+> still aggregate the utilization numbers across the full LLC but
+> the load balancers at individual partitions will make a call on
+> the aggregation.
+>
+> -- 
+> Thanks and Regards,
+> Prateek
+>
+>
 
--- Petr
+I suppose what you suggested looks like below:
+
+powerpc/smp: make cpu_coregroup_mask() return the LLC
+
+On pSeries shared LPARs(or coregroup_enabled is false on
+Power9 and earlier) the hemisphere map is not allocated, so
+build_sched_domains() dereferences a NULL cpumask and crashes.
+
+The generic scheduler expects cpu_coregroup_mask() to span the LLC.
+On powerpc the LLC is the L2. Return cpu_l2_cache_mask() instead of
+the hemisphere map. Use a coregroup_map() helper for the in-file
+hemisphere users, and a powerpc_tl_mc_mask() wrapper for the MC
+sched-domain level.
+
+Fixes: b5ea300a17e3 ("sched/cache: Make LLC id continuous")
+Reported-by: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
+Suggested-by: K Prateek Nayak <kprateek.nayak@amd.com>
+---
+ arch/powerpc/kernel/smp.c | 35 +++++++++++++++++++++++------------
+ 1 file changed, 23 insertions(+), 12 deletions(-)
+
+diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+--- a/arch/powerpc/kernel/smp.c
++++ b/arch/powerpc/kernel/smp.c
+@@ -1040,11 +1040,22 @@ static const struct cpumask *tl_smallcore_smt_mask(struct sched_domain_topology_
+ }
+ #endif
+ 
++static inline struct cpumask *coregroup_map(int cpu)
++{
++	return per_cpu(cpu_coregroup_map, cpu);
++}
++
+ struct cpumask *cpu_coregroup_mask(int cpu)
+ {
+-	return per_cpu(cpu_coregroup_map, cpu);
++	return cpu_l2_cache_mask(cpu);
++}
++
++static const struct cpumask *
++powerpc_tl_mc_mask(struct sched_domain_topology_level *tl, int cpu)
++{
++	return coregroup_map(cpu);
+ }
+ 
+ static bool has_coregroup_support(void)
+ {
+ 	if (is_shared_processor())
+@@ -1155,7 +1166,7 @@ void __init smp_prepare_cpus(unsigned int max_cpus)
+ 	cpumask_set_cpu(boot_cpuid, cpu_core_mask(boot_cpuid));
+ 
+ 	if (has_coregroup_support())
+-		cpumask_set_cpu(boot_cpuid, cpu_coregroup_mask(boot_cpuid));
++		cpumask_set_cpu(boot_cpuid, coregroup_map(boot_cpuid));
+ 
+ 	init_big_cores();
+ 	if (has_big_cores) {
+@@ -1520,8 +1531,8 @@ static void remove_cpu_from_masks(int cpu)
+ 		set_cpus_unrelated(cpu, i, cpu_core_mask);
+ 
+ 	if (has_coregroup_support()) {
+-		for_each_cpu(i, cpu_coregroup_mask(cpu))
+-			set_cpus_unrelated(cpu, i, cpu_coregroup_mask);
++		for_each_cpu(i, coregroup_map(cpu))
++			set_cpus_unrelated(cpu, i, coregroup_map);
+ 	}
+ }
+ #endif
+@@ -1553,7 +1564,7 @@ static void update_coregroup_mask(int cpu, cpumask_var_t *mask)
+ 	if (!*mask) {
+ 		/* Assume only siblings are part of this CPU's coregroup */
+ 		for_each_cpu(i, submask_fn(cpu))
+-			set_cpus_related(cpu, i, cpu_coregroup_mask);
++			set_cpus_related(cpu, i, coregroup_map);
+ 
+ 		return;
+ 	}
+@@ -1561,18 +1572,18 @@ static void update_coregroup_mask(int cpu, cpumask_var_t *mask)
+ 	cpumask_and(*mask, cpu_online_mask, cpu_node_mask(cpu));
+ 
+ 	/* Update coregroup mask with all the CPUs that are part of submask */
+-	or_cpumasks_related(cpu, cpu, submask_fn, cpu_coregroup_mask);
++	or_cpumasks_related(cpu, cpu, submask_fn, coregroup_map);
+ 
+ 	/* Skip all CPUs already part of coregroup mask */
+-	cpumask_andnot(*mask, *mask, cpu_coregroup_mask(cpu));
++	cpumask_andnot(*mask, *mask, coregroup_map(cpu));
+ 
+ 	for_each_cpu(i, *mask) {
+ 		/* Skip all CPUs not part of this coregroup */
+ 		if (coregroup_id == cpu_to_coregroup_id(i)) {
+-			or_cpumasks_related(cpu, i, submask_fn, cpu_coregroup_mask);
++			or_cpumasks_related(cpu, i, submask_fn, coregroup_map);
+ 			cpumask_andnot(*mask, *mask, submask_fn(i));
+ 		} else {
+-			cpumask_andnot(*mask, *mask, cpu_coregroup_mask(i));
++			cpumask_andnot(*mask, *mask, coregroup_map(i));
+ 		}
+ 	}
+ }
+@@ -1733,7 +1744,7 @@ static void __init build_sched_topology(void)
+ 
+ 	if (has_coregroup_support()) {
+ 		powerpc_topology[i++] =
+-			SDTL_INIT(tl_mc_mask, powerpc_shared_proc_flags, MC);
++			SDTL_INIT(powerpc_tl_mc_mask, powerpc_shared_proc_flags, MC);
+ 	}
+ 
+ 	powerpc_topology[i++] = SDTL_INIT(tl_pkg_mask, powerpc_shared_proc_flags, PKG);
+-- 
+2.43.0
+
+Thanks,
+Yu
 
