@@ -1,42 +1,42 @@
-Return-Path: <linuxppc-dev+bounces-21511-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21512-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3D565CD5BB1
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 May 2026 11:36:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 35F66CD5BB1
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 May 2026 11:38:33 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gPrKx4rcdz2y8t;
-	Tue, 26 May 2026 21:36:05 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gPrNm4zyVz2y8t;
+	Tue, 26 May 2026 21:38:32 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=159.69.126.157
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779795365;
-	cv=none; b=XYliZgqIjAbNyxJ/KSJs9i291da2iQthocKXshFs7ekBIbYEs/VI4vn/96SMKfdpi9bMUQD2P3Yopf0l+CiiDb3/42RJVgu5fm9KKKDKBbeWTWzpRSbU9xalfQ/iaKzAVBJionAeKGL+YHsNANu8ntPj5fX+VVM/9bFn/qcKCTyDaQfjWhmztMQ0c8BXz0Odx7vA8F2skALlA7YyihI/IWCNCH/gG90nSjj+60lFLtcj4v1iE3bIXhnyMIH08Nd97TcE1wjQHvWP64+XwsLOiws4bYxF6EY88tfaNMjkuvgwT4up1U+MnnxA3Uo0h+DOVeJcj2vnWqxS4JCz0vQbHw==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779795512;
+	cv=none; b=ADH4Agf83ZeEPEGD172kEJk1RifuFhdNqncHIt0HbZSMY3z25Rn5CcF1UV1TKCXYsu0EmlYrB/Wbdd9TnATbSCVMYpHcGPwW36o2sVyi/xivh2x9yiB+ToQe05UolAU+IagJdUbg8xcjzPMCcCovvfahnVh6BXz30otYZ9riGTgBlGpJxLwnGEPjZYSb4tt3O0opFfA4f24hJXqura9a+lIBwSOrn7SwYvkFVxykVnyy33+9CdWJJpw7+CNgoQlI0i6tLi49/GCNl5DVBQDSKGjvMdS+WLYlNW0LtBK6ZPCkYCWfTne+GggqguQOfvpLFLKnQFX5qpwvtQP+7TyVbA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1779795365; c=relaxed/relaxed;
-	bh=g38w4OKBOqAFsjF1AkUYkPUxwJDq+5E7jc9LO5rc008=;
+	t=1779795512; c=relaxed/relaxed;
+	bh=d6dn2a7TQJ70h7LxKIS8YIip4+9CCa2Str2P4iVHOqw=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=QzdltKpjZeqmUp/uCWIv7vHMlVVw1vCdzK+r4xzMYqWOpkg8BoLaJF8RJdhJyfnUO0mFNBWzXtrmb3BP5RKwcM0TJKIVuQ/mq5j29iZf28JSbJLomtbM2p81MBrCnEzd06Fu2G7zeT3J2rKZAI9z9C1RcWan98u+tupOQ9ExNK4VWOPO0UaWANHI5eATwURuXl/MiPS4zMU+YJnLAMv+jzyDOIonxqsie1cljxv8rrdA1bQxgLFStSIzPipZifOCq392fW3kpXlyzMB/RJvArsaM8+PzmFjYm6rtloKN5pBdNBM8f3sEasT3k3QUTLDhy0rU9Fdp67xJ9V+onGEMxQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net; dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=aBKvmuQZ; dkim-atps=neutral; spf=pass (client-ip=159.69.126.157; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org) smtp.mailfrom=weissschuh.net
+	 Content-Type:Content-Disposition:In-Reply-To; b=FuWzn/8fklOs+Ow8oZahEPxfr9ujugfovzWNqIsSlApErCoDyEnZ82YJjWHHUjzgY/rkUUTPWIWo14j1W6ohZQrOMvIKkkNmvjRY07zIuGbbkS5iySx4Gf0+7vdyRir994EtssW3+Dqyu9pkCDUJlZsplYwyMUcwKWms+GvVFUcpSR2yiw05m0rQOFKRgw9TAnUvpw7pbUTmNaqOAV5VoIxHfUZwlUwmhSFwH7bM8/XKbbyVVh6oCVqhZ49YI4uPsm3GvsRZGnr2VtTrZDSxZnBxn6AwjSph9k9FuFKHbG3t5Df+Ysh/9nsQZD+2q7qFxsb1eTQ4OsuwA0rXxyp3lQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net; dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=ITIfPnNS; dkim-atps=neutral; spf=pass (client-ip=159.69.126.157; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org) smtp.mailfrom=weissschuh.net
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=aBKvmuQZ;
+	dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=ITIfPnNS;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=weissschuh.net (client-ip=159.69.126.157; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org)
 Received: from todd.t-8ch.de (todd.t-8ch.de [159.69.126.157])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gPrKt6ckQz2xjQ
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 May 2026 21:36:01 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gPrNl75Qnz2xjQ
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 May 2026 21:38:31 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=weissschuh.net;
-	s=mail; t=1779795351;
-	bh=HO2dMnPwk7LD1hzmaJr/Eo9RHeir7zm5koQqCs1AjVo=;
+	s=mail; t=1779795508;
+	bh=kTAeZ3xw/Df4ezBjxQUd+PwImFlqzKYS6yA31g42XCM=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=aBKvmuQZTp6ZKtR7ynKixoXE7f2WMAle0qcJl9B/WSVwC3AiAFcf6xmu8VQ93nDVm
-	 06ZJKxHeEK5WnQDXtpIecpLL231TRGxoWz8jum8/5wkSJPQPszeMFItOggbcmV30p5
-	 izm/ufOZTR+xqoMmUXPxmtOuxymwa4WTfcoECq2I=
-Date: Tue, 26 May 2026 13:35:51 +0200
+	b=ITIfPnNSj4iYGsWPx3Tx9oUQY5RTkoSnYSt5EUf34ubhh7X+6E48t9zD8QK7p9UPJ
+	 XunUJqRsVIEwWtiN2Rg9Bt86WZKhK6wBBXgLhouWeUEnyeCOr/EUakWvBODqgl2TFz
+	 sDgAbkSNsaErv2LOwqvJaTrHYSPNfR2ht4L4Vb1g=
+Date: Tue, 26 May 2026 13:38:27 +0200
 From: Thomas =?utf-8?Q?Wei=C3=9Fschuh?= <linux@weissschuh.net>
 To: Petr Pavlu <petr.pavlu@suse.com>
 Cc: Alexei Starovoitov <ast@kernel.org>, 
@@ -63,11 +63,12 @@ Cc: Alexei Starovoitov <ast@kernel.org>,
 	linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org, 
 	linux-modules@vger.kernel.org, linux-security-module@vger.kernel.org, linux-doc@vger.kernel.org, 
 	linuxppc-dev@lists.ozlabs.org, linux-integrity@vger.kernel.org, debian-kernel@lists.debian.org
-Subject: Re: [PATCH v5 06/14] module: Switch load_info::len to size_t
-Message-ID: <a1be99b5-997c-44d7-9516-5a53238034b7@t-8ch.de>
+Subject: Re: [PATCH v5 07/14] module: Make module authentication usable
+ without MODULE_SIG
+Message-ID: <4ee3c775-1fbf-45e1-8b77-5f9034f45125@t-8ch.de>
 References: <20260505-module-hashes-v5-0-e174a5a49fce@weissschuh.net>
- <20260505-module-hashes-v5-6-e174a5a49fce@weissschuh.net>
- <8de0e6ad-987a-4729-bbd0-8399968dbb48@suse.com>
+ <20260505-module-hashes-v5-7-e174a5a49fce@weissschuh.net>
+ <0a0736a4-2cdd-49f2-9062-e2f18d769fc0@suse.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -84,18 +85,43 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <8de0e6ad-987a-4729-bbd0-8399968dbb48@suse.com>
+In-Reply-To: <0a0736a4-2cdd-49f2-9062-e2f18d769fc0@suse.com>
 
-On 2026-05-26 11:47:09+0200, Petr Pavlu wrote:
+On 2026-05-26 12:53:22+0200, Petr Pavlu wrote:
 > On 5/5/26 11:05 AM, Thomas Weißschuh wrote:
-> > Switching the types will make some later changes cleaner.
+> > The module authentication functionality will also be used by the
+> > hash-based module authentication. Split it out from CONFIG_MODULE_SIG
+> > so it is usable by both.
+> > 
+> > Signed-off-by: Thomas Weißschuh <linux@weissschuh.net>
+> > [...]
+> > diff --git a/kernel/module/Kconfig b/kernel/module/Kconfig
+> > index f535181e0d98..84297da666ff 100644
+> > --- a/kernel/module/Kconfig
+> > +++ b/kernel/module/Kconfig
+> > @@ -271,9 +271,12 @@ config MODULE_SIG
+> >  	  debuginfo strip done by some packagers (such as rpmbuild) and
+> >  	  inclusion into an initramfs that wants the module size reduced.
+> >  
+> > +config MODULE_AUTH
+> > +	def_bool MODULE_SIG
+> > +
+> >  config MODULE_SIG_FORCE
+> >  	bool "Require modules to be validly signed"
+> > -	depends on MODULE_SIG
+> > +	depends on MODULE_AUTH
+> >  	help
+> >  	  Reject unsigned modules or signed modules for which we don't have a
+> >  	  key.  Without this, such modules will simply taint the kernel.
 > 
-> Since the updated version drops the patch "module: Deduplicate signature
-> extraction", I believe this change is no longer necessary.
+> Should MODULE_SIG_FORCE be renamed to MODULE_AUTH_FORCE, along with
+> renaming the sig_enforce functionality in kernel/module/auth.c to
+> auth_enforce?
 
-Ack.
+Given that it is a user-visible symbol we'll need to be a bit careful
+not to break existing configurations.
+I'll try to use the new "transitional" kconfig attribute.
 
-(...)
 
 Thomas
 
