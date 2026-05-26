@@ -1,114 +1,115 @@
-Return-Path: <linuxppc-dev+bounces-21492-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21493-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2084CCD5BC9
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 May 2026 03:15:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2E748CD5BCF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 May 2026 04:08:29 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gPdDD4wKhz2xSb;
-	Tue, 26 May 2026 13:15:24 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gPfPR5mLfz2xjQ;
+	Tue, 26 May 2026 14:08:27 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=fail smtp.remote-ip=198.175.65.18
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779765324;
-	cv=fail; b=cKyDku0ENAitW28WrjzKyc6VS9HsAv7plYAVRSkZJUoEY2/VCUMPt1Y9lF4XAGlllb9H3a0a0Z0XQQMvQnWT0Er+Q8MNEMxaapfRhfcxs8sD2/T5tThaqe9K198hYVWd1S38ViOzox2mERcG9JVorLp1uic33w7qITGIUiapInd79Py0GktDQhu6lbqJ6lWE7jD6fxFgTPkVh+TJaGsjMnMBxlG4i2KmmRfX/F8irOn5hrCVqt+a50BqoCg+/1MKtOR5mfiBN58EdGd9W+f949nV6aZ0/P6o0uHnlhWawY/woXVcPp55vl2g6gD5RLZ61p79uODPj557RaffeQJ7iQ==
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779768507;
+	cv=fail; b=BdVWHNrXGevtK1DUIHN3/TgH5a4H9NRmqp5pIs9dqyuIsBo32BxSEo2kUbmX/s70Fr/Iju807nEdg1H/oG2Ve0giNG/eyBkyq9ftzwo6gGI8HJEz/9j+/qoowE9OJTpAumPirlZK5/jRCWD8LMA5kUSpJwdU01IEbX2ZFQihhvsRGhXFzquOXB5sGG1MgGaFJl9SYg9pagTEKn3hmbEKpAtvlOmN/zEfAL4u3+2OWiLvoCbmfhydRzjNiStJrTDzAh5oOQSXy3f4PEQ7O5iUtVQ+U5fcKATUn+VsS4LcPf8dHysQGWmv+OciSagsUYl78Mlyi/FAfcmTm76mkOMqRQ==
 ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1779765324; c=relaxed/relaxed;
-	bh=yq3XBiXxQB4FDEQa+jhyJ5rJg3PjnMPgiExR0BzWOs8=;
+	t=1779768507; c=relaxed/relaxed;
+	bh=H1wa/vOc37DuGUGcMX8xXDFEBv19tC9EHFAG1im1KrM=;
 	h=Message-ID:Date:Subject:To:CC:References:From:In-Reply-To:
-	 Content-Type:MIME-Version; b=I7XfcfveGz2AE5Zn5WHmYN+9A19aDp+ZT0x2gEHtqFyC7HGQuYC2hEduAVhyJM5kOmejTplAOy1CYn4WV9BRGfU/9PbUpGmsJOdENub61KnEKf9qqVWBQ4BtzroWzKxheAIFVmKbHKcVQg6h7lQRCI/kzqi2bCmN9LtBt0ZhisoMtqq1NzAT6IOm9f4JbBAS8VMIiVkO1HTuY7wctpsueVNoGGtD57bcOadd1LwJSYYE2E6KAZTxlE6+22Q2QFRPHsj4gQdv8FsPSdvOdrxHGqHiwudZXWdrXRqabu2Td38hmibveLlkwHHqZHEHwTVbOJlaw8GmpdSDesAtVtOAoQ==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=RsG06/Eo; dkim-atps=neutral; spf=pass (client-ip=198.175.65.18; helo=mgamail.intel.com; envelope-from=yu.c.chen@intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=intel.com
+	 Content-Type:MIME-Version; b=aOBg+HZ5VrLrIdWvvLoZAe4QMrxmMOoGvpP0cNyVx+/zL+1cVS1a2zSVP4VdFpmSc4p4vEIRLKLMnCt58TBITbtsxNb8vrok+NcE8mbtYJDySCazjJZa5PalgR0d+HQm5OZKMl4Xe1R1d68zx5xrrU5s8LIwwlHc93cVToO7trpd71JbHlTze91i97TKofnmczMB8uqjRSkdqgtfVX5rnsfrXBBKybtPQqBOr+600aNvOsDQ4T8k4zrcTNxwl2fx/dd/18wgnH1GzgZm2FYqSQ+ejJwTaNRRA53QyDfD9Po2/6UEIrIPiZO74Me5uOVotnaX1I4Dbnd9UFypTwAokA==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=d5zsihCa; dkim-atps=neutral; spf=pass (client-ip=198.175.65.18; helo=mgamail.intel.com; envelope-from=yu.c.chen@intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=intel.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=RsG06/Eo;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=d5zsihCa;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=198.175.65.18; helo=mgamail.intel.com; envelope-from=yu.c.chen@intel.com; receiver=lists.ozlabs.org)
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gPdD85l04z2xHK
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 May 2026 13:15:18 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gPfPM5d1Mz2xPb
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 May 2026 14:08:21 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1779765321; x=1811301321;
+  t=1779768505; x=1811304505;
   h=message-id:date:subject:to:cc:references:from:
    in-reply-to:content-transfer-encoding:mime-version;
-  bh=ljTBwJosb8Y954+b4rypJRMLbevw9liHvrhzwKrhhRY=;
-  b=RsG06/EoQdAv7yfQVL8PDMHHHIHeaCmHwUhp5YcHZx6oshNg6NdVfzi6
-   sOzhdv0znK5auq+AtZGy3FQSfF6P9VlWZAiaU2IRi3w+3W2JYiFA96Ykb
-   o8nIBGNfNtn6z5/Jkl5bR8fxt0gSDCmQDSguR+q44swhjvbG/TdkeBtPS
-   oF/jWRYaHjZ/wx3SHAmgZf5rj5JYkDk4/i0Q1jCuEYtgVlOeLciMoUa8x
-   /uRzAjGWUDhw9dZ88JoF6aylV5twolGCChhRBfK5nzDbNydq/haqKUTZv
-   Wr3MtMtW2OHrExPLTUKSYVDaUuE7O1J7mrLKpx+plmaLY7ptbHns/3rBz
-   w==;
-X-CSE-ConnectionGUID: 4+c/++sHTre1NCg6FCT2bw==
-X-CSE-MsgGUID: ATkpslk4Tz68Lyt6xuYjZQ==
-X-IronPort-AV: E=McAfee;i="6800,10657,11797"; a="80629453"
+  bh=1kFMe3YmsaqPrLLEVBhp6uZ5e12JmM0AUMQ92ELeOrI=;
+  b=d5zsihCa3n4iZhd0OpbuptxytHlY03wSIo4g76mwNxcJ+V6I0ZzyGrns
+   1PpeF69G/cXCoUT8rR0QT+6aD6b+duI86rqvx9SIbdetuT4aZSQ2bO2wb
+   S7jp0u2WwRXl94jDuvAyTXB+6yb5XIZsEmyqKl9Es5SDylvy0m7J1+lqO
+   L8eW+tk3ZgUBthtpgjfFHRu+B61KzwVkTHba4At6RzVqeEaVC46OLQx6L
+   bHIX27Vwzri4yLZdyjnmvb/th8YSzC0HFsS1QNmdA2I6J74y3x4kAn7wr
+   4LJMyB29ekPXwZY0uAFT2hVVLP9Vt7oKu6yb56SbRtvRNwWvemhMySYIl
+   g==;
+X-CSE-ConnectionGUID: nOs9oRWIR/uv1cIla0KVVQ==
+X-CSE-MsgGUID: T61gct4tTyKJxubYSUa6WQ==
+X-IronPort-AV: E=McAfee;i="6800,10657,11797"; a="80631951"
 X-IronPort-AV: E=Sophos;i="6.24,169,1774335600"; 
-   d="scan'208";a="80629453"
-Received: from orviesa003.jf.intel.com ([10.64.159.143])
-  by orvoesa110.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 25 May 2026 20:15:10 -0700
-X-CSE-ConnectionGUID: zQFGCBldTTaLmKhob+lkaQ==
-X-CSE-MsgGUID: WsSg5iLmQ2eLBXSCDD2czA==
+   d="scan'208";a="80631951"
+Received: from fmviesa003.fm.intel.com ([10.60.135.143])
+  by orvoesa110.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 25 May 2026 21:08:18 -0700
+X-CSE-ConnectionGUID: lJOEFnVZTnG/Hl3X8WK1Ag==
+X-CSE-MsgGUID: 7Zb6FksMTTmp3YEKRwzcaQ==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.24,169,1774335600"; 
-   d="scan'208";a="245811619"
-Received: from fmsmsx903.amr.corp.intel.com ([10.18.126.92])
-  by orviesa003.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 25 May 2026 20:15:10 -0700
-Received: from FMSMSX903.amr.corp.intel.com (10.18.126.92) by
- fmsmsx903.amr.corp.intel.com (10.18.126.92) with Microsoft SMTP Server
+Received: from orsmsx902.amr.corp.intel.com ([10.22.229.24])
+  by fmviesa003.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 25 May 2026 21:08:16 -0700
+Received: from ORSMSX903.amr.corp.intel.com (10.22.229.25) by
+ ORSMSX902.amr.corp.intel.com (10.22.229.24) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.2562.37; Mon, 25 May 2026 20:15:10 -0700
-Received: from fmsedg902.ED.cps.intel.com (10.1.192.144) by
- FMSMSX903.amr.corp.intel.com (10.18.126.92) with Microsoft SMTP Server
+ 15.2.2562.37; Mon, 25 May 2026 21:08:16 -0700
+Received: from ORSEDG902.ED.cps.intel.com (10.7.248.12) by
+ ORSMSX903.amr.corp.intel.com (10.22.229.25) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.2562.37 via Frontend Transport; Mon, 25 May 2026 20:15:10 -0700
-Received: from PH0PR06CU001.outbound.protection.outlook.com (40.107.208.2) by
- edgegateway.intel.com (192.55.55.82) with Microsoft SMTP Server
+ 15.2.2562.37 via Frontend Transport; Mon, 25 May 2026 21:08:16 -0700
+Received: from CH5PR02CU005.outbound.protection.outlook.com (40.107.200.53) by
+ edgegateway.intel.com (134.134.137.112) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.2562.37; Mon, 25 May 2026 20:15:09 -0700
+ 15.2.2562.37; Mon, 25 May 2026 21:08:15 -0700
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=LGIo4qS7mnLJhNQQ5DL9dachOTgrn0yPzZwAC+deM19C+Qr1Fz4lCH+J454lSMIZ96qTtJK0JnQxpfAEOxzK0AJsCEVa4S1XNdlwl1oI3FhJtHHQfs2F+LSNsBA2n9WxSPblALTsDstb7Ge/P+jqqcIt6tR0Ij0pvbjNlpANLYosvKT7UbXcyQasyNWzwZZGhniK3gY/7X+/qg9MlrxwprrPiGogCWq7BTJJmDf1e/zoIcu2ZdLSTn9pao3q8YbZfwfjYsEEW5Yn5m/M4bGy0T6fFqKH9vS/FHOa/J15F0AkJ3STVfY7dIPHOR48btmPgWjZj5wmjK+q+YXVBpBIZA==
+ b=WIxmVrtNzdWc0poz959rOUeF9RwOYIJIZGWKk4OtRkQu1uHsgHtJvkTTmqXvJQOn0lWHJq/gL4xwwQ7r3v/xVGqq3yqf358HMCDEvaFezHpZFk0UnvpTifNGmsLBbckLlJtflleVAFDyIvxkdVcNBPLFRsq1mYhRH3aZgumrpPetHv2jClxEBHyF7UI4wIEYwuX333qSxvJnf6UWLa/YkhkJ3lse9WY7Tgk/Ze4Iq2Kk/mUN5zLfqVQJHURy198vEPOMXqiSRC29KSJzxIb75MKl0XOU8jO5ra3ripvppwCHThDSuO8ZE/mlJ64cxh0VbmyaJJFbeIX2ubSP3BvTFA==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=yq3XBiXxQB4FDEQa+jhyJ5rJg3PjnMPgiExR0BzWOs8=;
- b=HtjUxcS42dM4jxIxDh1yqfzOf2EQaMLtJ8nVwMI3uEbpIdepPD1MRfEH+OxNzypMhWy37E5pweokGNYXc0VO7bAXp1anuBVPjGmNQZJXfRRVnS/n/zmiwcbfNmHiGS/esC5AWbSOylUjW9zFIwcRt3lQOvwtdYQXXNX1jwB+KfalBh0Qku1gvT3qfZ9bGgA3dzc5oEt7fQPhESoYliDgFtU/OK/P8WWJYQKxcH/127oj+JNJmAm8jubMJ+vuYLis2Qx198Uu2dLsPu26ZZANLMh7oBfraYCO+boPJ0Au/ye7s8/Gm9HXdlJghjZs3L5lOf7tahX2AEKrzzNtRu8t1g==
+ bh=H1wa/vOc37DuGUGcMX8xXDFEBv19tC9EHFAG1im1KrM=;
+ b=bhS9EvDodUa8LggKGmLSYc3XZst+TMHVn6RJhw1ij4gem3fTnt4z42YVBI1BbWnL5dAfkVOQ1MjDpySO8mFKKbAd1ZVzLpRIbEpO7V9HURA0bB8a4BkDuAi+utbF9Sb8Hm2Hi0tkIOCDHymNeZ+S0OpTNEWyqnP5+FahrR2O6/KRLjAW0wCjQtTwyGBqQKfW88dS8+F0qYRmNk1LhBh4xKXiC5IBEDegUdQ1RvQIDAhOGAW+Gy36uqf7OubQJev8tpVy0pIYYlPo9GHLVDawKdhNsxXFOLcR2H7kt5e12ExAt+wT/toXNnVASaBZxAmPhXdsoJMIOR421x2rVwahLQ==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
  smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
  dkim=pass header.d=intel.com; arc=none
 Authentication-Results: dkim=none (message not signed)
  header.d=none;dmarc=none action=none header.from=intel.com;
 Received: from DM4PR11MB6020.namprd11.prod.outlook.com (2603:10b6:8:61::19) by
- DM4PR11MB5262.namprd11.prod.outlook.com (2603:10b6:5:389::10) with Microsoft
- SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.21.48.20; Tue, 26 May 2026 03:15:02 +0000
+ SJ0PR11MB4831.namprd11.prod.outlook.com (2603:10b6:a03:2d2::20) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.48.20; Tue, 26 May
+ 2026 04:08:13 +0000
 Received: from DM4PR11MB6020.namprd11.prod.outlook.com
  ([fe80::3058:1480:e4ac:5765]) by DM4PR11MB6020.namprd11.prod.outlook.com
  ([fe80::3058:1480:e4ac:5765%4]) with mapi id 15.21.0048.019; Tue, 26 May 2026
- 03:15:02 +0000
-Message-ID: <8d14c844-b4a8-4af6-acab-2cfdd42225be@intel.com>
-Date: Tue, 26 May 2026 11:14:54 +0800
+ 04:08:13 +0000
+Message-ID: <a0e3f4f4-03b6-4bb1-881f-06bf5abca1a3@intel.com>
+Date: Tue, 26 May 2026 12:08:05 +0800
 User-Agent: Mozilla Thunderbird
 Subject: Re: [BUG] sched/cache: "Make LLC id continuous" causes NULL cpumask
  dereference in build_sched_domains on POWER9
-To: K Prateek Nayak <kprateek.nayak@amd.com>, Venkat Rao Bagalkote
-	<venkat88@linux.ibm.com>
-CC: Madhavan Srinivasan <maddy@linux.ibm.com>, Shrikanth Hegde
-	<sshegde@linux.ibm.com>, Ritesh Harjani <riteshh@linux.ibm.com>, "Christophe
- Leroy (CS GROUP)" <chleroy@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
-	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, <linux-sched@vger.kernel.org>,
-	<tim.c.chen@linux.intel.com>, Peter Zijlstra <peterz@infradead.org>
+To: Srikar Dronamraju <srikar@linux.ibm.com>
+CC: Venkat Rao Bagalkote <venkat88@linux.ibm.com>, Madhavan Srinivasan
+	<maddy@linux.ibm.com>, Shrikanth Hegde <sshegde@linux.ibm.com>, "Ritesh
+ Harjani" <riteshh@linux.ibm.com>, "Christophe Leroy (CS GROUP)"
+	<chleroy@kernel.org>, LKML <linux-kernel@vger.kernel.org>, linuxppc-dev
+	<linuxppc-dev@lists.ozlabs.org>, <linux-sched@vger.kernel.org>,
+	<tim.c.chen@linux.intel.com>, K Prateek Nayak <kprateek.nayak@amd.com>,
+	"Peter Zijlstra" <peterz@infradead.org>
 References: <51154de7-3700-4cb4-82f2-1b3a8fa427f7@linux.ibm.com>
  <bca40921-d351-4439-ae6a-9e5294f23e2e@intel.com>
- <75179ee2-ec20-4757-8631-79b1f304c366@amd.com>
+ <ahUQE-AgvOAQV_mI@linux.ibm.com>
 Content-Language: en-US
 From: "Chen, Yu C" <yu.c.chen@intel.com>
-In-Reply-To: <75179ee2-ec20-4757-8631-79b1f304c366@amd.com>
+In-Reply-To: <ahUQE-AgvOAQV_mI@linux.ibm.com>
 Content-Type: text/plain; charset="UTF-8"; format=flowed
-Content-Transfer-Encoding: 8bit
-X-ClientProxiedBy: TPYP295CA0058.TWNP295.PROD.OUTLOOK.COM (2603:1096:7d0:8::9)
- To DM4PR11MB6020.namprd11.prod.outlook.com (2603:10b6:8:61::19)
+Content-Transfer-Encoding: 7bit
+X-ClientProxiedBy: TPYP295CA0060.TWNP295.PROD.OUTLOOK.COM
+ (2603:1096:7d0:8::19) To DM4PR11MB6020.namprd11.prod.outlook.com
+ (2603:10b6:8:61::19)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -123,188 +124,178 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: DM4PR11MB6020:EE_|DM4PR11MB5262:EE_
-X-MS-Office365-Filtering-Correlation-Id: 8e8daba5-7dfe-4644-903a-08debad4f9c9
+X-MS-TrafficTypeDiagnostic: DM4PR11MB6020:EE_|SJ0PR11MB4831:EE_
+X-MS-Office365-Filtering-Correlation-Id: 0f1471d8-e491-4e13-1526-08debadc67e2
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;ARA:13230040|1800799024|366016|7416014|376014|22082099003|56012099003|18002099003|4143699003|11063799006;
-X-Microsoft-Antispam-Message-Info: MD/2bTatSCqDvX1VHlVRRy1dM3XRyWKhyYR3wyDPsvssZbU82ukbRZM8NeyoDKaESYqlyVCKFdwFoa8qMN2Fbcpnq1pkp3QWSIUHN6g6mLpQuKlNUbmzYfjr1tcJYlfEvAhSpR9l9hoBpZ+8CTrK0AN/2h9T6V8c+we8BCXsdVMGMzOXN7yI6RzZq1bmTsKvNPx3iAYfbiCNBmGFQQe0vOJGg6pLQ4F6XOwvEYPyb5JTIP9m4UV4CDgFZl5kM29y+rmMluUJJe49af0c+YrwheBj+q6o8qe+U+CJKO+hCm2tlxw90cM3ycB5cK0TVq5b9rQ80xT5FzNwzTdg2/nlXzqM5743V1pag0QrxhJmt4CQsxPfccCaax+opVJuyMNTn2Sg/IDF7h303W+j0BDnWqwzm6iS2ES/hoVNap8ioy5E9zlFf7dvkrj2jyjPL8tL/f/NqomQSfsIXNvK/6I51J5CJ4vLYgMzKd7ECFdeVPkz1b3SKWibfodInVuIvFGZoDi1y9PzKR83FiW2gaiLwxPaZylEfRpScD0TzJyQiAZJEbJRqzBGPQkrzxjBoieHgZf4gxsgyB91nq2UItG+KogJ8KNmddtXvuqAWx/R0undaTOwnYbU8usu0RsIV2hjFlvSMFq1SnAbWnnIpudrXPuMpwIFsEnCfRdHB0knQDtvo7M1TM4XrzuKnG/7N1gM
-X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DM4PR11MB6020.namprd11.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(366016)(7416014)(376014)(22082099003)(56012099003)(18002099003)(4143699003)(11063799006);DIR:OUT;SFP:1101;
+X-Microsoft-Antispam: BCL:0;ARA:13230040|1800799024|7416014|376014|366016|22082099003|18002099003|56012099003|11063799006|4143699003;
+X-Microsoft-Antispam-Message-Info: wDR3QuWrCMI/LXp4H3pU0Scc18DQiAEbBKSmT6qirzIv0MHrWzYMMbFwh6geoFYt0p0aj0bzEGHc4YNlxa1XtFDyW0DzdcGb/hHbEEalcLfJvyG2j2fZHrrp7ryFbMc5vX69Alch0pAaUk4dQOFcqWv7fF8F40EA7PSwoEb0F3nX59raa/vbiYOlry1TT93hL4eS3F6FtXoPe/CJCpZkdP348W8n+zrQ8fe2yeBd3Yl+2up02v5+IulRuxj1Pbo7mf0LhFWsjyt6ERlLZKGX6J9zBEz/YNDJCeM6sk/r5yjB41GRG5H5tb9PCvOZ8quzy8Jyqi0SEZJW9pO/6s3sakYlFjjzt/3Y2LAdKEIbvYaq9wrdYcqhWAgl11rpgvGddA0YXiKCXq43DCWcvNqLr6aKJaw1szyPO8AWUzzJLUS+ex5cwgEShAanUB9QC3WmFXdqLsajCw0RWAiPbBb0IodwHBzDoJjTYsrJluE4kvOAiGceQH35z8vIhpKt5ofX6tgROC4VMWeXnH0+fvDXiR+ThAxOex0PDUVlU24AkBuoPctBQu6QLD3X0mIuRACpPM6H9kRCsjZ37Ez4iDzqtq5vNxwmvoL8pjMXg+mlFwKtFFg0ydeY6NPht3RtW+3lScQ4L6REvgz9/UEg8gl3bB+R/j99rYKFY0th4vhbVs33uwzrxgd6LHz5jfux17MaqibRnGzKd1iTJ2GzWGdR8g==
+X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DM4PR11MB6020.namprd11.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(7416014)(376014)(366016)(22082099003)(18002099003)(56012099003)(11063799006)(4143699003);DIR:OUT;SFP:1101;
 X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?YXR6QjB5b0NUZE1jNU43T3REZTcrRExxcEcvSXFmcko3TlB5YTZXTTBUc0dX?=
- =?utf-8?B?TWxBVHRqQ2RCVzkydDJiNTZTTHRseDczRHpkYXFFY29MSTN0KzVMMzRyanFr?=
- =?utf-8?B?VXd1dHY0VlJLaU1mMnE2NjhDZ05EVDZTRjVSUHd5dVFGcGdDM3pGeHE2TTRX?=
- =?utf-8?B?WHd5TUJDczJORHlFTlhkbjg2ZyszV0o2RE83cVpzME5uWFdPNlBzT3R6Mmo0?=
- =?utf-8?B?S2RtQzgrYUh6Y2w5SFMvS2tSRGp5YW9NT3haVEhqeUhrYUp4N05OQ1lObTRK?=
- =?utf-8?B?SndrZXM3ck5aTDE3aUxzRFN1MTRuSnVxQkVhUFY3S0ZNTk1aR3VvUnY3WDJZ?=
- =?utf-8?B?RWc0cUtMMkdYcDhjaFFYVlkyZlpSV1NVN0dRSjBKUkZpVC9EVnFjQjlTZWFR?=
- =?utf-8?B?Yk5BUjc2cWtQZWFrUEhsVEdhSmlBN0NoVmE3NEhsbG81S0l4T3lINkZRVDZa?=
- =?utf-8?B?L0VFVkowUDNsbTlkSlZDaEg0aStMd3N1UlgycmdtT1NGZk0xNjN4RjZ6QXRP?=
- =?utf-8?B?TGVtVGQzVHlpcGFNUXlxb1RYSngyT2N2TEh6REF3MG5tUGducVN3WW1CQTFq?=
- =?utf-8?B?ZlZlaGV1azNrNGtMNDNhSitETU4ySGpUdldVS1Qvd3B4RDJqK1ltTnNWSnpW?=
- =?utf-8?B?YkwycGVWN1pNK1hTRmtCMythWEpZeEZqUm9vck5tSXZBMGdGNXJTOVZSb3NG?=
- =?utf-8?B?d0h5YVF0NVFQeFFJcW5KZUxaL1hYNDB0dWwzcmdNYmttZWw2SWhFNlRuSTBW?=
- =?utf-8?B?aEU4amp1L1FwQ1gxdHllWW9melhoS2o1MDN2clVDM2NtQTI2V0hacFl1TXgv?=
- =?utf-8?B?bGlTa08xc21JUkdBWEZKZmcvZHVXTG01bnVNMjRsdkpydm9uZVM3RUtMNWhu?=
- =?utf-8?B?TGRmQVJGaEVaT0xIUWRkV1FnZ1ZkcjUzRi9jR1VTUU14VDhOcUF6V04xL1JB?=
- =?utf-8?B?ZzlEZVZ3OUpyYjgzQ0tkdDlDOUJZamlmVWFXVkJKT2xhR0lVU3J5WUs2c0dv?=
- =?utf-8?B?azlSTFphTVZ5WlAwNlJZU3I4Q01MMS8wRWtDUDFYTE4yRFgwWWp1TUphcmV5?=
- =?utf-8?B?WitEdUdzbVNLaDN3VE4xNkpGQzYxNjhoaHRhRzV4cEdSeVdwVnh0SEd2dURM?=
- =?utf-8?B?cEU1NTRUcFF4a3kwUnRjTkpnTHlHbzhvQlZKYVAxY3dPeGdxdGxEOVBqQ0xT?=
- =?utf-8?B?M1JSMHphNmdTaDIzcmMwRnFpRDdBOWxOQmFKaXV6WnVWSjllVFpNMTJOZlN4?=
- =?utf-8?B?SlNpdUN4dG1XWTV4b2hQLzk1V3BNVkZCWkJjZ3lFZWVmL25FMlc0Q1hpTCt6?=
- =?utf-8?B?TVNydkVWTytVZXNseU92K0Vib2xYanBacU5EMWg4RWJ3dkRCQ0xGaSs4K1Vn?=
- =?utf-8?B?ZnNiVkl3dFp4ZUxyN3lyZkFsYlhQdDc4N2hlN1UvUDVORlNuYXhTcTByZldu?=
- =?utf-8?B?V3JUYXdMbFA2OHdCdmlGdHFZYTBTSGZ6bS9sVDAwcVpiUGtzTkJGTFU1WUd1?=
- =?utf-8?B?dUpNaE1neU1scVU3am5rMjhFVWo1TGlZOGxDQ0dzV29GNTR6akV4SVV1Wkg2?=
- =?utf-8?B?cFdYRFhodG1OejJEdnY4NzBUbFN0QnFyQUY5MlVSWHRoQjBPcUdHbzJ6U0hR?=
- =?utf-8?B?WGdQYnlVOEEvYi9WbmgrNVZvNGsyLzlwZEZGUkRweFNuRTBJT3JYT0dkUDhQ?=
- =?utf-8?B?VlJxbHJNcXhtQ3dEZTlUU1RFTGQvVnBpRU9HNERCdkZ3NEtRZWN1dEUzZWIz?=
- =?utf-8?B?aUd2QmZESityNjl1aWpOMlJaSzNMUy9jWDRoUjJwalZYOFRJYlVxaGlSUWZD?=
- =?utf-8?B?bThGQi83WExzM2g5dzNKRDRIVi9sdVUybStjNXVzYW84bFdFanA5NXNRS1pZ?=
- =?utf-8?B?WjdFNkhFV2ZpM0VwblgyUzNLRnhJWkZ0ZHBnWTF5UnR4RndNdTNYWVpZMUx4?=
- =?utf-8?B?L0tReXZXRHhCT1RZTjh6QVZ0QThkZ3NuYk4vU1cybUJyNWZqd01kV3pRTnVk?=
- =?utf-8?B?blo2VXJtaExxT2ZqZWZESWRNRG80bGozSE9XdWdMMkRPM2hva0lJd0JOSVV6?=
- =?utf-8?B?bTlRZVJYQ1VoUlBPVVptLzN0S1R0VlZIZHZFQ0hWS1BNTVJrbkJOV045MUdL?=
- =?utf-8?B?dEkvOHZ3TWpDcHJXYW5BYWFrVXFkTkszVCtPcGEyeFRoelV3eTRZSW9vQWRX?=
- =?utf-8?B?dzRHdkgyc3JaS1o5djBMdVlnWGl5YmF6anlpU2hoeks5bW1keWZvbmk3cFN6?=
- =?utf-8?B?alhQM1FQMnp1WmZCSXd4UVMwMmw2c2JFNVFSdW96Snh6bTNXMThMMkRYQWE5?=
- =?utf-8?B?bXBzWFNXZkNXT01UN0RnN213ZU41UDA0RmwyeldTamp4Ukd3V214QT09?=
-X-Exchange-RoutingPolicyChecked: TOrHQdfYznp3gK09D9ZTBnbLm1SKOb3ac846bS91cpEL9Y1N1FYJ6Ix8AI+Bn6/yOVVr5ZskffN8D+4Et1XsqNDjrTBK/GGyVNqIVN9KtDJ7SOTUrme+xZ64MA9tgz/cd08CBKCUT4ovFxpYjKJvcKGIYyqepL/T//ilqlJSwGg7ktxiD8v3u41DXsedUsegJCkCmKm5A3aeBktkXfXZwKTJGcL5bE1YstxX5esfW5b166BmnOV9B91GcaRk4Yhy/AZwVrInto2qalV+zfg0jyggHk/jfGk5cMHCdIGch2J8UXASFvy0OwpY3PtvCc6a/u3PSXW6DTL1GFCsUzr9vQ==
-X-MS-Exchange-CrossTenant-Network-Message-Id: 8e8daba5-7dfe-4644-903a-08debad4f9c9
+X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?bjYxeWdlSWEyaGh5NWtDbDdRS0NXUndYamdtNjdzY1FULzFTWGpYdUV3cERs?=
+ =?utf-8?B?ajdWWFVKTFUwL3dmeXlNN21RWHZ1cVFXRVFmengyWldiWkxqNk56c1Y1djk5?=
+ =?utf-8?B?N0hnU29MQnkyRStpRXJPTWVZQmhJL0IrbmNwMDUrd2VXb3dZYThFS2NwQVpM?=
+ =?utf-8?B?S2tiRGdYbUppMjh2dkFRTHFFQmUvZ0haL1JQcFFCV2ljbXlrenB0eHBCZlRt?=
+ =?utf-8?B?UWpzbEloTldLemY1RUhDc2J5K3RUZ2NjMDZkVC9VdXMzVlpuQjhQd1JqZ3lJ?=
+ =?utf-8?B?eDZDcWhHNUVQNTFjVEl4cld5b3NGV3cxSmFjTHNVekUzQ2dkQTF3a2lES244?=
+ =?utf-8?B?dXVrRG5GdmhLSEc0Q0IrcEVMWUs0d1g3RlNrT1cvU0RjaVRqYmVGei9LYkhU?=
+ =?utf-8?B?MFB6UkRQVVdpV0NqeUh5UnYwRnZHbm5JVHEvQVNUVVh0Z1ZReUpLRTBFQmtl?=
+ =?utf-8?B?SjEwSHpSUVVzNVZ6R0ZDb0tndDZIeU84MXQ3T2lNVU4wL1BLMlFvYitHWUpK?=
+ =?utf-8?B?ZDVHV0RqVFF5TUVGYXozS2pnYnhVRkV1NzlIeXUxL0xOR1ZyaDJoY0hEdEcz?=
+ =?utf-8?B?RWU2NTl1bkE3aWVSeDZQRXF6NC90MGJTS25aRGlvS0tjNm1YdVRlVmxzY0R6?=
+ =?utf-8?B?aDUxSVN1QmxpSVk1K2hXQWo0dFlINlc0eDA3aW9kakFDeTJRV2wwY0hwUGpj?=
+ =?utf-8?B?b3FOdHZHNldLUFV2SSs1dktrKzFGWXBZckJKWDFPQlpRVitwSGt5WjVUZmEw?=
+ =?utf-8?B?K3ZLVkY2TXRsVC9pU1hNRHZhZ3gvekMzd0lsZXdsM3E0MHJGMS82ZUJLOVNY?=
+ =?utf-8?B?NGN3RWpKY3l2MEFNeXFKTDAxeklEMlpJOW12VFJoTTM0U3V6T0VNLzUxdTdq?=
+ =?utf-8?B?ZFkvWWh5M3pSeHp1Z0R0NldqYlBmYTRCNnBmeFRENE0wbWNIZUZmendmbmZR?=
+ =?utf-8?B?L2VTamV5d1ZaNExSczFFaGVYa0d2bzZxNzRTWnpVMGlpU0pCTVZNVEhjYmhj?=
+ =?utf-8?B?NkQ0TWJyY1Brb0pPbGVmY045RmZ0YkxOaURya1R5eVRrY2JnWHZ4UDBmY1RJ?=
+ =?utf-8?B?VDFiK3dNUXZxcFh3UHArbXovZEVPcnU3SFhJa2crd2NETEF5WmdzR3VJSVR6?=
+ =?utf-8?B?SUhsODVGNHB6dTBXTDNMS1VkcHdnbkxKTm1HUW9QTzc0OVcwT3Iya1RmNis1?=
+ =?utf-8?B?SEx2QjB2UEcxY0E4L2dvclIvVmM0NExKWUtYMTlqWExWVkR3dDI0cWMyNDUw?=
+ =?utf-8?B?UzFRWTVOS0Jyck5SVHcxNW1CZ0Q4M3owREw1elMrME9vMzZ3ZmQ3Z3g1anY3?=
+ =?utf-8?B?Ymp0dHV3cDAyaU5jT3JGOVZOVUhnQTdDZWZoYzNxODU4K3dPV05rRWdMTTNa?=
+ =?utf-8?B?Q3MyM2VsTGwrUGhqNDVhMjdjR2w0MTRxM1YzMjh5SnNLSEtoV1NuRzl3bWRr?=
+ =?utf-8?B?ZTRyNzlVUjl2cFNlbWtib1RCRWlPcW04QXNDN05CSW9sVm1QdElpYmsrZ21m?=
+ =?utf-8?B?STNBRGQ5NmxSL29uNmtSUTFDY0dNOG1xZGhYNmlqeGtGOC9Sa2xGZkZEZ1Y1?=
+ =?utf-8?B?OEp6MElxSGZlZjkwM0dDZjM5d01sRGFjNHZMWW5DSGFjR1FGNnJUb3FqY2Rk?=
+ =?utf-8?B?QS9RVU16Ym0vaGFBdUY5SHYwaU5COVMxcmFITWNYTStjY2kySkozUWp6SkJ2?=
+ =?utf-8?B?dEthQzd2ZzVqd2w3ZTFrYXRCdWxrUFpnOGh2a2NUOFpSTk5zbHFtLzNvK1ox?=
+ =?utf-8?B?T0dWNmhCak9renFjOCt2WnpDcXlWVjdLbEJNUUhFYWpQNzlkZG9xczhCS1FU?=
+ =?utf-8?B?eHNqbFlJZzY1Mm5LWHRQTWl6eU54MjBNMnZuU0FIMlhqMytOeG9FVXNzSmg0?=
+ =?utf-8?B?VklnOFhJQWhMMDAxSW9FMXVuUFZpMUpkek5vVE84aEFockhaTDZQNDB4ck9i?=
+ =?utf-8?B?RjJHbklDV3NEcGt6WWhVZ2c1Uk55S0l5VlBnV2gybXpvR1dIVEZSRzBhQjFM?=
+ =?utf-8?B?OFlqK1RVZjB3WWc1REpHeWJUeVFnZUNXSlo5MDVpZkQ2dGp5K3p3cEFjMWlF?=
+ =?utf-8?B?SlpJcDhSVlBvREd6UnJHOWVJZlZGeCt4aksycTVJdzhnTXdUSk9xMzJ4aHlL?=
+ =?utf-8?B?eGFtd1h1VXUyaHg5aVdoR0FQR0VaTVZYTis1UTZaMU94R0I2ZmtzUENyNTV3?=
+ =?utf-8?B?V3RWWU9JcjQ2ZmtJWm4xdU5Wa3JoaVVyU2EyZHZFdjlYU3hyQ2dqUGhjdVVX?=
+ =?utf-8?B?SndKTDZZR3ZZT2JxWHZlczEzeEdZTStVSFZjN0M4bUJoVGlwNUplWkU5aHRi?=
+ =?utf-8?B?Y0ZLMGoyR05wSW5oZXVIekVHdkV1SUoyNEFmY2Y0cC9VRWtSTllVUT09?=
+X-Exchange-RoutingPolicyChecked: rJsJoSQ2IugclAOKuKkWMGO63kQx1Z5FAWTFqtGNHW146Jij2AP5p8BuL8tL28cjKqxI0ZnPnefA+gt9V45m5v42HVhDF9P5cTRUVD3Sb41bjjjkvfKMIPtyp45bRdLFuKWApEhjA5aZ6I4s5ubiKVjq7o8uR6h/ySCXlXYlAqeD6Omf7KF5jlT3wUOQwldRIo5PrlhjdzZE2tJTV/XpY1Kgxjd2eSFpsMM/8WSgXQxgM9Ys5CZ8meOppolYY/JVnjJqZzfqBEy0Xh4HWjJ409uIRuwapdFrOJdGLiP12Grmhyb/jPXJzKO6z1rxGwHKJmd7LiwilGAXlkGJTmSqBA==
+X-MS-Exchange-CrossTenant-Network-Message-Id: 0f1471d8-e491-4e13-1526-08debadc67e2
 X-MS-Exchange-CrossTenant-AuthSource: DM4PR11MB6020.namprd11.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 26 May 2026 03:15:02.2455
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 26 May 2026 04:08:13.3324
  (UTC)
 X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
 X-MS-Exchange-CrossTenant-Id: 46c98d88-e344-4ed4-8496-4ed7712e255d
 X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: 2NpRa1GTPvDEBQY9O/qZJZRqKeT8eNwNEl2v4aZtSRqnBs4iIjWjGAqzBlcrtZYFt15Vn5s8Mu80mxPCQfyncw==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: DM4PR11MB5262
+X-MS-Exchange-CrossTenant-UserPrincipalName: vSpRjzeq9xiWHIOlVPm8107PZI8tOBzZ9ZH9zv5LK9ZiAhiEG6qfmFQXfwdaPS9CAnHOg78HBkPau8rHh+ghSw==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SJ0PR11MB4831
 X-OriginatorOrg: intel.com
 
-On 5/26/2026 12:16 AM, K Prateek Nayak wrote:
-> Hello Chenyu, Venkat,
+Hi Venkat,
+
+On 5/26/2026 11:14 AM, Srikar Dronamraju wrote:
+> * Chen, Yu C <yu.c.chen@intel.com> [2026-05-25 23:35:45]:
 > 
-> On 5/25/2026 9:05 PM, Chen, Yu C wrote:
+>> Hi Venkat,
+>>
+>> On 5/25/2026 10:07 PM, Venkat Rao Bagalkote wrote:
+>>> Greetings!!!
+>>>
+>>> I am seeing an early boot kernel panic due to NULL pointer dereference
+>>> on a POWER9 (pSeries) system when testing linux-next (next-20260522).
+>>
+>> It seems that cpumask_first(llc_mask(i)) is accessing
+>> NULL cpu_coregroup_mask():
+> 
+>> has_coregroup_support() is false, thus cpu_coregroup_map
+>> is never allocated in smp_prepare_cpus().
+>> This machine is a "shared system" VM. We should probably
+>> let the LLC id generation fall back to using L2 id if
+>> cpu_coregroup_mask is unavailable (which restores the
+>> behavior before this patch). I'm wondering if the following
+>> change would help(need IBM friends' help on this):
+> 
+> Power9 and below systems, dont have coregroup.
+> Its not because of shared LPAR. But its true for dedicated LPARs too.
+> Only Power10 and above systems have hemisphere where we add MC/coregroup
+> support.
+>
+
+OK, thanks for the correction. Are you saying coregroup_enabled is false
+on Power9 and older hardware, and set to true on Power10? Power10 has a
+corresponding device-tree property, which is parsed to enable hemisphere
+support in find_possible_nodes(). This is why has_coregroup_support()
+returns true for Power10.
+
+>>
 >> diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
 >> index 3467f86fd78f..cf6c2e4190ab 100644
 >> --- a/arch/powerpc/kernel/smp.c
 >> +++ b/arch/powerpc/kernel/smp.c
->> @@ -1042,11 +1042,6 @@ static const struct cpumask *tl_smallcore_smt_mask(struct sched_domain_topology_
->>   }
->>   #endif
+>> @@ -1042,11 +1042,6 @@ static const struct cpumask
+>> *tl_smallcore_smt_mask(struct sched_domain_topology_
+>>   }
+>>   #endif
 >>
 >> -struct cpumask *cpu_coregroup_mask(int cpu)
 >> -{
->> -       return per_cpu(cpu_coregroup_map, cpu);
+>> -       return per_cpu(cpu_coregroup_map, cpu);
 >> -}
 >> -
->>   static bool has_coregroup_support(void)
->>   {
->>          /* Coregroup identification not available on shared systems */
+>>   static bool has_coregroup_support(void)
+>>   {
+>>          /* Coregroup identification not available on shared systems */
 >> @@ -1056,6 +1051,14 @@ static bool has_coregroup_support(void)
->>          return coregroup_enabled;
->>   }
+>>          return coregroup_enabled;
+>>   }
 >>
 >> +struct cpumask *cpu_coregroup_mask(int cpu)
 >> +{
->> +       if (!has_coregroup_support())
->> +               return cpu_l2_cache_mask(cpu);
->> +> +       return per_cpu(cpu_coregroup_map, cpu);
+>> +       if (!has_coregroup_support())
+>> +               return cpu_l2_cache_mask(cpu);
+>> +
+>> +       return per_cpu(cpu_coregroup_map, cpu);
+>> +}
+>> +
 > 
-> Interestingly, on powerpc, the MC domain doesn't have SD_SHARE_LLC flag
-> set but I believe there is still some benefit of keeping the tasks on
-> the same hemisphere?
-> 
-You are right. I guess power9 reported here does not have hemisphere and
-power10 has, according to commit fb2ff9fa72e2:
-"From Power10 processors onwards, each chip has 2 hemispheres"
-but yes on both power9 and power10, MC domain doesn't have SD_SHARE_LLC
-thus aggregating threads to 1 L2 domain might bring benefit. A side note is
-that, cache aware scheduling is disabled on power for now because
-power does not use the generic cacheinfo framework, thus its cache size
-is returned as 0 so get_effective_llc_bytes() returns 0(for now, unless
-we get the help from IBM friends to support it)
-commit 7030513a0877 ("7030513a0877")
+> While this is a work-around for the problem in Power9
+> It will hurt Power10 and Power11 systems.
+> As has been alluded by Prateek, MC is not LLC on Power.
 
-> If we are actually aiming for LLC, I think cpu_l2_cache_mask() is the
-> right cpumask for all cases since tl_cache_mask() also returns that
-> and the l2_cache_mask is set in all cases covered by update_mask_by_l2()
-> in the same file.
+Could you please elaborate on the cache topology?
+Specifically, could you clarify what the LLC is for Power9
+and Power10 respectively? Is it always the L2 cache?
+
+I have checked the IBM documentation available at:
+https://hc32.hotchips.org/assets/program/conference/day1/HotChips2020_Server_Processors_IBM_Starke_POWER10_v33.pdf
+According to the document, a hemisphere corresponds to a 64MB
+L3 cache shared by 8 cores. Since the MC domain spans a single
+hemisphere, I wonder why the SD_SHARE_LLC flag is not enabled
+for the MC domain?
+
+> So by using llc_mask as cpu_coregroup_mask() we run the trouble of assuming
+> MC to be similar to LLC. So it will impact Power 10/11 Systems.
 > 
-> If consolidation on hemisphere is beneficial, then the above diff
-> looks correct.
+> In commit b5ea300a17e3 sched/cache: Make LLC id continuous, we define
+> #define llc_mask(cpu) cpu_coregroup_mask(cpu)
 > 
-> Note: For has_coregroup_support(), with the above fix, the scheduler
-> side llc_id will now be based on MC domain's span which seems wrong
-> since it doesn't have SD_SHARE_LLC flag and might lead to other
-> behavioral changes now.
+> defining it llc_mask to cpu_coregroup_mask means MC should be LLC.
+> This is not true for some architectures atleast on Power.
 > 
 
-You are right, it seems to be a bug when has_coregroup_support() is enabled.
-Maybe we can always return l2 id for power?
+OK.
 
-How about this(revert previous diff):
-diff --git a/arch/powerpc/include/asm/topology.h 
-b/arch/powerpc/include/asm/topology.h
-index 66ed5fe1b718..3b3b4156f418 100644
---- a/arch/powerpc/include/asm/topology.h
-+++ b/arch/powerpc/include/asm/topology.h
-@@ -130,13 +130,15 @@ static inline int cpu_to_coregroup_id(int cpu)
+> So shouldn't it be using
+> #define llc_mask(cpu) per_cpu(sd_llc, cpu)
+> 
+> This should work for systems where LLC is sub-coregroup, coregroup (or super
+> coregroup: Lets say some archs want LLC at PKG and cluster at coregroup).
+> 
+> if we do that, I dont think we even need the else case where we say
+> #define llc_mask(cpu) cpumask_of(cpu)
+> 
 
-  #ifdef CONFIG_SMP
-  #include <asm/cputable.h>
-+#include <asm/smp.h>
+I suppose you are referring to
+sched_domain_span(per_cpu(sd_llc, cpu)).
 
-  struct cpumask *cpu_coregroup_mask(int cpu);
-  const struct cpumask *cpu_die_mask(int cpu);
-  int cpu_die_id(int cpu);
-
-+#define arch_llc_mask(cpu)     cpu_l2_cache_mask(cpu)
-+
-  #ifdef CONFIG_PPC64
--#include <asm/smp.h>
-
-  #define topology_physical_package_id(cpu)      (cpu_to_chip_id(cpu))
-  #define topology_sibling_cpumask(cpu) 
-(per_cpu(cpu_sibling_map, cpu))
-diff --git a/kernel/sched/topology.c b/kernel/sched/topology.c
-index df2ceb54c970..6772eb0ce493 100644
---- a/kernel/sched/topology.c
-+++ b/kernel/sched/topology.c
-@@ -2063,12 +2063,18 @@ const struct cpumask *tl_mc_mask(struct 
-sched_domain_topology_level *tl, int cpu
-         return cpu_coregroup_mask(cpu);
-  }
-
--#define llc_mask(cpu) cpu_coregroup_mask(cpu)
-+#ifndef arch_llc_mask
-+#define arch_llc_mask(cpu) cpu_coregroup_mask(cpu)
-+#endif
-
-  #else
--#define llc_mask(cpu) cpumask_of(cpu)
-+#ifndef arch_llc_mask
-+#define arch_llc_mask(cpu) cpumask_of(cpu)
-+#endif
-  #endif
-
-+#define llc_mask(cpu) arch_llc_mask(cpu)
-+
-  const struct cpumask *tl_pkg_mask(struct sched_domain_topology_level 
-*tl, int cpu)
-  {
-         return cpu_node_mask(cpu);
-
+Indeed, deriving the LLC from the SD_SHARE_LLC level offers
+better scalability. However, this approach would involve scheduler
+domains, which can be truncated by cpuset partitions - a scenario we
+prefer to avoid.
 
 thanks,
 Chenyu
-
->> +}
->> +
->>   static int __init init_big_cores(void)
->>   {
->>          int cpu;
-> 
 
