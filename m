@@ -1,97 +1,81 @@
-Return-Path: <linuxppc-dev+bounces-21599-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21600-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B359CCD4F54
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 May 2026 16:07:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E5C41CD4F54
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 May 2026 16:17:03 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gQZJV2G0Fz3cnS;
-	Thu, 28 May 2026 02:07:22 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::830"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779898042;
-	cv=none; b=RlDn5WJUUHk0i0qhjtHsWyiPQofKlov/SBsC2zz9jLDOa6ODxnrXGo7cDBAXG4oJzs07dfM1xTHUGN5PdVGEZOJjwCuudZi9HSz8hCm7Podsq3/pqxw7RCn6Ezw2UoEQJy0LspF0oHNjNY0BzLtPJibCMKZtAseNy/OO+wKv/u7ZTlN7Y1PA2UlWMgn8rRbDhUVdvghQgDjtBxcdbIolo3XQDkE4gS9BFlltFHGNhe4kRCCjt0+dFZ9l5vuVRq4MHyP+x4/HNCNWEdO430fS5kjseXvnwChmeGtVhFW/1QdbPo1CVcb72ZCPxCvlr5b9DBgPFTgnOdv7l5BCJ6Yhqw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gQZWf2Mycz3cnK;
+	Thu, 28 May 2026 02:17:02 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779898622;
+	cv=none; b=jWrSnKJGv7uk/O33NKpTUhQ2BT2QgoHqFKeRUhPO04Sgk+5KTtPGRS8lQN3efMz+Sxl6iYYO3CbBf6N4dmK8+brrjfvbya/bA2UKgWKigc2BimUf04RIucTkTA7cBQYkJrl4v3hRhxN5cWpxo6yHmvo756hnAbXE6R0ezl43rU7nPCcYuZR80/IXlCfdmnyoN0wRUpwnnK6LEQVLj+9DMpcKaPJnmL4bfNBSUhhNfdCFbCHgL0bL8m6GbnSuGtwz2zeCyTYnl60bcsfsyPu6f0FOFiIMfQ4k6we2TyJl1vq0rkuxXQJyQXn4RdpuO7pldr6UvYz8Dx/IEI741CGVgA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1779898042; c=relaxed/relaxed;
-	bh=STKe203GtXAmunHIdMeMAq0fDblU9FAY1byc40VlLXM=;
+	t=1779898622; c=relaxed/relaxed;
+	bh=b9F+AmgWvYDlJzmEdke60GpHwUtQVzDqf0WjOaCEDh0=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=oiJ8OfN8ljDIZoLKkAiE4jEo8Cl1JwdWgWVskB/edB5KLD8e5ExOp1ojOPdUV1QoVSoiTEQIqGtECetQWqrxVAU7Wjak5RUomzuqKA/yqa4FzrmhP6sHx3peIqk5thvK5kp3QuWgHF+HS2YqEZu4kNGmrsHH+RYnUe0Zvad1XZoS+JiFBjIEk+P78WYnkAldyODSdnDzh9uK8f0ZUu9KD8EJKMC7AIH7h24wzVafqKpYlyIVkrjaRNHzk4pCyLlL4aH9tW+Uf48ZhkuQl3thdcVcKnDPvDetRJQT+E6OvIWE0gId0wO01RYBa3cPLI1ZtV2ujCZ89YfMKKeYBLgZIg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ziepe.ca; dkim=pass (2048-bit key; secure) header.d=ziepe.ca header.i=@ziepe.ca header.a=rsa-sha256 header.s=google header.b=MPRhinmG; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::830; helo=mail-qt1-x830.google.com; envelope-from=jgg@ziepe.ca; receiver=lists.ozlabs.org) smtp.mailfrom=ziepe.ca
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ziepe.ca
+	 Content-Type:Content-Disposition:In-Reply-To; b=oXRfNwnXhPN6DncZ+++vLMxUxh99itpS+bDslTQoxthzlrz+KJw5RJpPEtTpuQvcAdCC1CMWpsJNfaAlZnNRczk6mXqUuRoQG0Z3IPziASbR6CnA7X/qJtFAvbBuuNO8KAObkAosaZ/fnZbaaonNUP5WHhxLbkHPIHx4caam6F9htnWQufAsCtSSdEdc2HH/fVloihqBJUsTMGmQWzWj+z+dztXxxYoclS9J3urS/mfU+A4YXZi4U9iH04B4SAiKan+XwKF7sjeB8UoHN1idFgPPxsv5S5TGgPEuad7c7Qgk2pwbaJlCT6k8qjRl86T7QEC5Eoar9j7YJhcBoN1lRA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=B+cTT3I9; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=gautam@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=ziepe.ca header.i=@ziepe.ca header.a=rsa-sha256 header.s=google header.b=MPRhinmG;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=B+cTT3I9;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=ziepe.ca (client-ip=2607:f8b0:4864:20::830; helo=mail-qt1-x830.google.com; envelope-from=jgg@ziepe.ca; receiver=lists.ozlabs.org)
-Received: from mail-qt1-x830.google.com (mail-qt1-x830.google.com [IPv6:2607:f8b0:4864:20::830])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=gautam@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gQZJS467Mz3cZd
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 May 2026 02:07:20 +1000 (AEST)
-Received: by mail-qt1-x830.google.com with SMTP id d75a77b69052e-516cbde40f2so68114431cf.3
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 May 2026 09:07:20 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ziepe.ca; s=google; t=1779898037; x=1780502837; darn=lists.ozlabs.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=STKe203GtXAmunHIdMeMAq0fDblU9FAY1byc40VlLXM=;
-        b=MPRhinmGlXigVBPAPbsjzzEAoMPz3FR8et9jYBFU2IBnQH15goE3PIvV2084SOe5uA
-         yd0yjlUBUfo+nw07ZeIwq2mEpINlPsfUiAxD1Wda/PJPP6RZd6PnRc55aUSdS0O2ZrE7
-         bp4gJ7O9MZ4sPGPjM66sbNwsI5W+bBiI4EH4AFdSdOXviw/1baz3+P670+ovLaVAvZrC
-         zEGFaRE6w+rbf2JuYIh8eVv+ga7Qh3UuaMy4Wv60nXgrUGhNlqSQRXTOBYz12KYyjZlH
-         7U+P0eqBxNCYM3Vjycuu341RewI8wL6qfH2lkU6UjCX9rWAtcutyqq0UHEQTjJXSH9YO
-         NFRg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1779898037; x=1780502837;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=STKe203GtXAmunHIdMeMAq0fDblU9FAY1byc40VlLXM=;
-        b=VGA1JIoGiDaWodVJCUwmnYdoLPH0cd5GC4/DCPw1wmIi104mK7JKrIN21Loxg2z5gf
-         2EHXTo4qGXqfb+cs9sNq6wamLnLqNul6fFbKbBZVD+tis9UgqnhLcIFyLpT5dTpgBBc9
-         Wwu2mwJmvk9PjqbiLDaL/OXu2XNli/fzrX4y4VpsC5gw6s+exawZ1GX1uz4je77d1cdV
-         YqDFB4+14rkjfgLFzfiN4XBdR8RYHVoOmOQSoXLoPaycDyk9771Q4Y6FRysqXJY2Ydm+
-         /9eFmzktVU7XFRG8R4FT/kZSbkYARo1NLxcCtarnunUPLXZJquHkiGA7JGVcKo8i5TgW
-         H8QA==
-X-Forwarded-Encrypted: i=1; AFNElJ8wzcCMelN+vW7yBNExrltV7/UQNeouLXV2tWBAQ8heHqs2lM3o4VmsOGHs2ClaI1qC8dIDFWGqePakSMg=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YzmNbP3M7ffCUownFqZwS/thYn7zI/HQUm6/FsMk6mbEYz4+6SE
-	2V47HJ5Hv3Ro/93wQLVoen/sAiXxXB6TDa0dRy3yp4tG26k28cvVO3OOcLElIoNtjZQ=
-X-Gm-Gg: Acq92OG1lc3znGzY+qdz0KMaHJRUkp7r7ZT1L8FARFlX1ZCC9VwxkiCu5sYVMbHgaMs
-	Eih8tZG95ZFwSE6V+9zg4v/mNwXIE3c8BffU5DBaZTaXdDXf3SfbhdckFUkpySn8BzFP285xFub
-	brnPy4C0J41/1BOuix1TezNxqFVhey0sr6WJZgQOLLWgRH9HCmwyymtRNq+nWhJTq0vzRltym9g
-	HEDnf+nOwLTg/n/cp+8XWrDPUZIZYm9RaEN1G2IzQ1xyEchHmJNLV9/mL0/uvPIA4f7l+3yX8rn
-	4vyiJqDiVKdyP3E8RRF+/nayDT0Wy+LPxREqoFVlXLU+bOg/3ySUs4WjqmyOH5jV7Pt+BFkafuP
-	zRWOM/AfcQLwyvjOYzhTINVj2b4PPiyXhjmK3jq6nmxJDywICGo87ILkCOVSQ41OkRf/oeCg1kZ
-	VscsvldEFufRVSWLKmefNkXGOnOCHIpi1VWdzgR4jLWR8W7YEmx5jx0B6Fy9PZBakGfLRNgwlL9
-	5V90g==
-X-Received: by 2002:a05:620a:1b89:b0:914:c246:aca0 with SMTP id af79cd13be357-914c246b146mr2808635885a.36.1779898037030;
-        Wed, 27 May 2026 09:07:17 -0700 (PDT)
-Received: from ziepe.ca (crbknf0213w-47-54-130-67.pppoe-dynamic.high-speed.nl.bellaliant.net. [47.54.130.67])
-        by smtp.gmail.com with ESMTPSA id af79cd13be357-914f86e8e13sm505133685a.2.2026.05.27.09.07.16
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 27 May 2026 09:07:16 -0700 (PDT)
-Received: from jgg by wakko with local (Exim 4.97)
-	(envelope-from <jgg@ziepe.ca>)
-	id 1wSGmq-0000000FI8B-0NaX;
-	Wed, 27 May 2026 13:07:16 -0300
-Date: Wed, 27 May 2026 13:07:16 -0300
-From: Jason Gunthorpe <jgg@ziepe.ca>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: "T.J. Mercier" <tjmercier@google.com>, maddy@linux.ibm.com,
-	mpe@ellerman.id.au, npiggin@gmail.com, chleroy@kernel.org,
-	linuxppc-dev@lists.ozlabs.org, mripard@kernel.org,
-	sumit.semwal@linaro.org, lkp@intel.com,
-	linux-kernel@vger.kernel.org, iommu@lists.linux.dev,
-	linux-mm@kvack.org, agordeev@linux.ibm.com,
-	gerald.schaefer@linux.ibm.com, linux-s390@vger.kernel.org,
-	Dan Williams <djbw@kernel.org>,
-	Tom Lendacky <thomas.lendacky@amd.com>, x86@kernel.org
-Subject: Re: [PATCH] powerpc: Export set_memory_encrypted and
- set_memory_decrypted
-Message-ID: <20260527160716.GN2487554@ziepe.ca>
-References: <20260522225853.878411-1-tjmercier@google.com>
- <ahPqbfH54R3JJyaV@infradead.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gQZWc2f8kz3ckP
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 May 2026 02:16:59 +1000 (AEST)
+Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 64RC0gSF272240;
+	Wed, 27 May 2026 16:16:47 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-type:date:from:in-reply-to:message-id:mime-version
+	:references:subject:to; s=pp1; bh=b9F+AmgWvYDlJzmEdke60GpHwUtQVz
+	Dqf0WjOaCEDh0=; b=B+cTT3I9cHjb6BNxLlOprt9Z+T973dcNKzaK5AOiECzjIr
+	manQXwCv1j2GW2sL7WZcIRv6Yi0lt6gjtNZ9OknuAzzuGNrhWDRxD1jxysFQ8Why
+	GnKDcwVLGWwsgWUG0NMtT53WZ1cu0I8tDkQ/WtxS/ZWugiMOKPX8dldJmEQxssL/
+	Omax6bdFYMejZpIbYYz85HChlDfA7PZ9bEEuf2qFCD8oQGrhM2guaTyLQ9xXP0PE
+	weiUsw0wp9EbxiajT34+3BZc67bDMhlmPrg77aUDLLSUXkLN461O8+gVGaWZb5kE
+	IPwT3M+ImY08HMtRuBqPgcU88hfB2jbfxMJ6JU1g==
+Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4eb4nq91d4-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 27 May 2026 16:16:46 +0000 (GMT)
+Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma12.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 64RG96gu002888;
+	Wed, 27 May 2026 16:16:45 GMT
+Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
+	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 4edjrb3tt0-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 27 May 2026 16:16:45 +0000 (GMT)
+Received: from smtpav01.fra02v.mail.ibm.com (smtpav01.fra02v.mail.ibm.com [10.20.54.100])
+	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 64RGGfTI47907136
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Wed, 27 May 2026 16:16:42 GMT
+Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id DDDE020043;
+	Wed, 27 May 2026 16:16:41 +0000 (GMT)
+Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 09AF520040;
+	Wed, 27 May 2026 16:16:40 +0000 (GMT)
+Received: from Gautams-MacBook-Pro.local (unknown [9.43.117.77])
+	by smtpav01.fra02v.mail.ibm.com (Postfix) with ESMTPS;
+	Wed, 27 May 2026 16:16:39 +0000 (GMT)
+Date: Wed, 27 May 2026 21:46:33 +0530
+From: Gautam Menghani <gautam@linux.ibm.com>
+To: Sean Christopherson <seanjc@google.com>
+Cc: maddy@linux.ibm.com, npiggin@gmail.com, mpe@ellerman.id.au,
+        chleroy@kernel.org, atrajeev@linux.ibm.com,
+        linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Subject: Re: [PATCH v2] KVM: PPC: Kconfig: Enable CONFIG_VPA_PMU with KVM
+Message-ID: <ahcY4S7shzG_kDt6@Gautams-MacBook-Pro.local>
+References: <20260518044150.34632-1-gautam@linux.ibm.com>
+ <agu2UAi6lWclxFYh@google.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -107,27 +91,47 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <ahPqbfH54R3JJyaV@infradead.org>
+In-Reply-To: <agu2UAi6lWclxFYh@google.com>
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-GUID: Xu6BugMKoIkhkjlN9TsXGZnUcHw_o0Aa
+X-Proofpoint-ORIG-GUID: b4h-zIYe_oohMh7MgSS0yqDDW51hSHfT
+X-Authority-Analysis: v=2.4 cv=QIJYgALL c=1 sm=1 tr=0 ts=6a1718ee cx=c_pps
+ a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17
+ a=kj9zAlcOel0A:10 a=NGcC8JguVDcA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=Y2IxJ9c9Rs8Kov3niI8_:22 a=kH-xMUQrV69S-q4FAwAA:9
+ a=CjuIK1q_8ugA:10
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTI3MDE2MiBTYWx0ZWRfX2QhgFulZW/6g
+ Hy7Sug3x7czsigDCKgOh/cCVjtkTjghZP+Dz/ef744228AR1+LwgPyGw7dsgss2fBD1Cz6AqKgO
+ A/Qr25KvlfSitOv9ndVQacMFGfWA1PvBqNCad0OdoVIH9VWr/oklw1B2uHcIshV5B3iXJG6IyET
+ TtR/Y55rm5e8ypHl0w8i+rG7TfF4TX85HEcXVQ6Ny4ZbtAMt9QHzs3eKNbP4M1XjGf9UUbwxX56
+ 6bg7UyZymYshjdD4/UMye7nw6k/kplm5t6jZAC0ZstDFYkfSzWhDFkbvVeo5uS988VdjTz6wU7a
+ OdPHAoNvhY7kZZ9eJ9GTCiK/9+cA2tend9bHw3itshzDh9zPsMzycuKi7nlTfdq2jnsPUPioof2
+ UqUgEkoM+sk1yzN6JSn11CHdCn4lx6ZScHfjfxHwggMX2olJIEV6KStSYurHyDP0q6MGsfeWKlJ
+ EDpY9n0DTI+AIVsGxyA==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
+ definitions=2026-05-27_02,2026-05-26_03,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ clxscore=1015 priorityscore=1501 impostorscore=0 malwarescore=0
+ suspectscore=0 phishscore=0 bulkscore=0 adultscore=0 spamscore=0
+ lowpriorityscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2605130000
+ definitions=main-2605270162
 
-On Sun, May 24, 2026 at 11:21:33PM -0700, Christoph Hellwig wrote:
-> On Fri, May 22, 2026 at 03:58:53PM -0700, T.J. Mercier wrote:
-> > After commit fd55edff8a0a ("dma-buf: heaps: system: Turn the heap into a
-> > module") the system dma-buf heaps can be built as a module. The
-> > system_cc_shared heap uses set_memory_encrypted and set_memory_decrypted
-> > but those functions are not exported on powerpc. This can result in a
-> > build error like:
+On Mon, May 18, 2026 at 06:01:04PM -0700, Sean Christopherson wrote:
+> On Mon, May 18, 2026, Gautam Menghani wrote:
+> > Enable CONFIG_VPA_PMU with KVM to enable its usage. Currently, the
+> > vpa-pmu driver cannot be used since it is not enabled in distro configs.
 > 
-> I'd much rather revert the above commit.  Yes, x86 has exported these
-> since 2017, but that's a really bad idea, and we should fix it instead
-> of spreading the export.
-> 
-> Setting memory decrypted is a dangerous operations and should only
-> be available to core code.  We should have various allocators for
-> decrypted code, but not export the functionality to random code.
+> That seems like a problem to take up with distros, no?
 
-At the very least an EXPORT_SYMBOL_NS.
+Rather than enabling individually for different distros, wouldn't it be
+better if it is enabled with KVM automatically? I can rephrase the
+commit log to emphasize that this config option is only relevant for
+KVM (similar to CONFIG_KVM_BOOK3S_HV_PMU).
 
-Looks like there are about 3 modules using it already..
 
-Jason
+Thanks,
+Gautam
 
