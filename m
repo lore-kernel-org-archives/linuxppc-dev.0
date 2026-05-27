@@ -1,45 +1,57 @@
-Return-Path: <linuxppc-dev+bounces-21589-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21590-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 09F90CD5BD0
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 May 2026 13:44:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 366CFCD5BD5
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 May 2026 14:13:09 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gQW7P2wYZz30GH;
-	Wed, 27 May 2026 23:44:17 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=115.124.30.119
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779889457;
-	cv=none; b=l0oRUPk8kQVVEJqLb9nodKlDZLhPo6b022vZlbowGmhcpcgkt/gO3gEUVZLu8N9yYNI67sSzDYYkVGplpZXF4Zan04KbNbHMlH1oFHhhTgMq0zNP1GpVDLvFrKtw/e5z5VBSjZGC2hY8NzBi2I9xeoNPzXRcqCTUvjItJDRfXx/AlTmmzDQStRi28NXQKdvkwBKN5EjtsshQOPOpFaRSKk6DnVkjAQPVvaN+mpbrERg3X2sqjJggoF0XHt0scuk0Q4+DSpzSGY4rKKVjJXwn0m87hsAxeR1QCdhxG5cRDlWMsYtyVd/PfMrjxn/pNB5IPm6ZA96v4GDFFk/dknOw2g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gQWmg4wSkz3bpL;
+	Thu, 28 May 2026 00:13:07 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:41d0:1004:224b::b9"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779891187;
+	cv=none; b=YaxtNDqw9vvK5N9GfQYk0rcBOb21ATHvTvISvEW2OENH15+7X/R6xVuYwTGGlW+lBffHoJM/U33WJkQYIVsOfQs/j0sYr2IBeVfnihiyVuyMob1lfM7NGNsT/82ARVCE5kKIjUO9cNyJbyqvy4izSvmxQ/GFnDMNLSe+IWyqF5EiMJAIaRnpsefX8sAK05zwAAIEOGuD424g9CsSbGGcQt4Jy6YdJufenltiUfXvVkmCqDsIoblJCfW7218LCy5OFpmQqzVt0x67uAhJj3MocULz/5BJ6XUKtnJsULIfELtZ4ZpwcivexoW8X7OjmCxdFV1RvdX6TOv++tzEo7hkuA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1779889457; c=relaxed/relaxed;
-	bh=Qzhck0gw9pgwJJr+ZjjO323vwaaYqicFxNlPj8CzbAU=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=d4Keyf5uWIjVTvVKtMQOg3tsNTiyYWonL7v90xqLp11rnvyuS/W45Ul5LDD1y+SZwO0/qXcyZoJ+W7enS/+jyyv6xkQmc4AvqvgGq61KDedCjHlyVQgpzgrfnGHif/h2LsIqWUnCRhb16d4m17S4P/GYBZqeK4ay6EHioVnUrvO6i7OlauVwpUdteUQ0LNqGOjXQGxKdh+FKEcGxWw7p7sCdDIGwkKo0Ls8LZ9irE9ljyVFWm8fxhFZqEB1c02G5LBj73AIoS0pMxKIpgyaTX9dNwbtKFf+zwUblGevrxzAPNaTi/cNYGMTbpyqxg+jb48+lhZVuhtSPNuXL81Om1A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.alibaba.com; dkim=pass (1024-bit key; unprotected) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.a=rsa-sha256 header.s=default header.b=jW1Tm5jC; dkim-atps=neutral; spf=pass (client-ip=115.124.30.119; helo=out30-119.freemail.mail.aliyun.com; envelope-from=xueshuai@linux.alibaba.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.alibaba.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.alibaba.com
+	t=1779891187; c=relaxed/relaxed;
+	bh=hthxLoJgR89tBl7jthjU5X9svK67rTNi6Rp5QXjLXpM=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=Ku6AxgwxpwdwbP+CrP+sjCyVu0bOmkDa93j2Twr0gZx00Yz7NJx04oN8tRR2SL92nBxgJtJDGoNEi7RVuXHeQELDsO5+0H+e1bmEjhbdpZxnT0dhdeJefPKKAKd8pyuT1gktltXlnCNaZkM/CXPZ10D8H3/JTqMivv3sRsKVFhsSqUc6kqcU4/np4FMvpybKWNj/RUuXqULguQHn64RJBAhie9LH/TZ8T3dCS2MuH7Q1/ZHWdaoHukfeuDJ/6AVFQu7q084x+y9LQc3RPnbiCrRyr6tpiYnIimj5pD2lq+OEm9dUUFDLlrgfzqISoWmJQoVmh7SyfrRDL3hnHgybUw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=SuRyDeFQ; dkim-atps=neutral; spf=pass (client-ip=2001:41d0:1004:224b::b9; helo=out-185.mta0.migadu.com; envelope-from=thorsten.blum@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.a=rsa-sha256 header.s=default header.b=jW1Tm5jC;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=SuRyDeFQ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.alibaba.com (client-ip=115.124.30.119; helo=out30-119.freemail.mail.aliyun.com; envelope-from=xueshuai@linux.alibaba.com; receiver=lists.ozlabs.org)
-Received: from out30-119.freemail.mail.aliyun.com (out30-119.freemail.mail.aliyun.com [115.124.30.119])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=2001:41d0:1004:224b::b9; helo=out-185.mta0.migadu.com; envelope-from=thorsten.blum@linux.dev; receiver=lists.ozlabs.org)
+Received: from out-185.mta0.migadu.com (out-185.mta0.migadu.com [IPv6:2001:41d0:1004:224b::b9])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gQW7M5ztMz30GG
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 May 2026 23:44:13 +1000 (AEST)
-DKIM-Signature:v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=linux.alibaba.com; s=default;
-	t=1779889439; h=Message-ID:Date:MIME-Version:Subject:To:From:Content-Type;
-	bh=Qzhck0gw9pgwJJr+ZjjO323vwaaYqicFxNlPj8CzbAU=;
-	b=jW1Tm5jC9vRGaX/pQDf7yWqXUnnvzypjojAHC9XeBLiHjD+ZVefCJriMa4EYS/zVZa+/bfiuqKG17UYqPZYSJqaGaI3KHn8phHacsqkoxhAqS0UDJ0iX9xIK9dgA+KMrPDekR7VAEHohFKMD85CyUqaYZ/A0O+esONMTGBAj6Tk=
-X-Alimail-AntiSpam:AC=PASS;BC=-1|-1;BR=01201311R621e4;CH=green;DM=||false|;DS=||;FP=0|-1|-1|-1|0|-1|-1|-1;HT=maildocker-contentspam033032089153;MF=xueshuai@linux.alibaba.com;NM=1;PH=DS;RN=27;SR=0;TI=SMTPD_---0X3jnw6a_1779889436;
-Received: from 30.246.179.14(mailfrom:xueshuai@linux.alibaba.com fp:SMTPD_---0X3jnw6a_1779889436 cluster:ay36)
-          by smtp.aliyun-inc.com;
-          Wed, 27 May 2026 21:43:58 +0800
-Message-ID: <f75d7ff8-d965-4f17-8548-2525512a400a@linux.alibaba.com>
-Date: Wed, 27 May 2026 21:43:52 +0800
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gQWmb2Z0Qz30Wn
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 May 2026 00:13:00 +1000 (AEST)
+X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
+	t=1779891159;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=hthxLoJgR89tBl7jthjU5X9svK67rTNi6Rp5QXjLXpM=;
+	b=SuRyDeFQt6o3ov5uSgOJXQQe2HZfBw+4dwC6x7KoMPLaA6Hn21QA44+L8/hjp79utKZiIv
+	tNv9b+8HjNfEhN+WNourRRnNmiJBiWYiZ4OvXVK6kTjt0W6tBqDEfT1iOoWhxZg8cISgCJ
+	iOwceYUeUEw8P3l58aIVBiLXYMf8Wks=
+From: Thorsten Blum <thorsten.blum@linux.dev>
+To: Herbert Xu <herbert@gondor.apana.org.au>,
+	"David S. Miller" <davem@davemloft.net>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+Cc: Thorsten Blum <thorsten.blum@linux.dev>,
+	linux-crypto@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH] crypto: powerpc/aes - use min in ppc_{ecb,cbc,ctr,xts}_crypt
+Date: Wed, 27 May 2026 16:11:47 +0200
+Message-ID: <20260527141146.1230672-3-thorsten.blum@linux.dev>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -53,128 +65,65 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v14 6/8] lib/test: memcpy_kunit: add copy_page() and
- copy_mc_page() tests
-To: Ruidong Tian <tianruidong@linux.alibaba.com>, catalin.marinas@arm.com,
- will@kernel.org, rafael@kernel.org, tony.luck@intel.com,
- guohanjun@huawei.com, mchehab@kernel.org, tongtiangen@huawei.com,
- james.morse@arm.com, robin.murphy@arm.com, andreyknvl@gmail.com,
- dvyukov@google.com, vincenzo.frascino@arm.com, mpe@ellerman.id.au,
- npiggin@gmail.com, ryabinin.a.a@gmail.com, glider@google.com,
- christophe.leroy@csgroup.eu, aneesh.kumar@kernel.org,
- naveen.n.rao@linux.ibm.com, tglx@linutronix.de, mingo@redhat.com
-Cc: linux-arm-kernel@lists.infradead.org, linux-mm@kvack.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- kasan-dev@googlegroups.com
-References: <20260518084956.2538442-1-tianruidong@linux.alibaba.com>
- <20260518084956.2538442-7-tianruidong@linux.alibaba.com>
-From: Shuai Xue <xueshuai@linux.alibaba.com>
-In-Reply-To: <20260518084956.2538442-7-tianruidong@linux.alibaba.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1957; i=thorsten.blum@linux.dev; h=from:subject; bh=+n5NkJ5N4jZbkelJ0z6A3VaVtqvZIIQ+UU2iQaKm7qA=; b=owGbwMvMwCUWt7pQ4caZUj3G02pJDFlivxf5LN+uZShzc7ut4JOWl+eWWal9+rBnV+ei61Zyx e9bF5vadJSyMIhxMciKKbI8mPVjhm9pTeUmk4idMHNYmUCGMHBxCsBEPLcwMqwIXBh9i/n/6qao ZB3nP0pb1x+/vyDno4SDdzvLPhmB8FuMDItvn6hid9Kuk178/lPuujUTD+UEhqg5H5XaUWp6wtr sIC8A
+X-Developer-Key: i=thorsten.blum@linux.dev; a=openpgp; fpr=1D60735E8AEF3BE473B69D84733678FD8DFEEAD4
+Content-Transfer-Encoding: 8bit
+X-Migadu-Flow: FLOW_OUT
 
+Replace min_t() with the simpler min() macro since the values are
+unsigned and compatible.
 
+Signed-off-by: Thorsten Blum <thorsten.blum@linux.dev>
+---
+ arch/powerpc/crypto/aes-spe-glue.c | 9 +++++----
+ 1 file changed, 5 insertions(+), 4 deletions(-)
 
-On 5/18/26 4:49 PM, Ruidong Tian wrote:
-> Add KUnit tests for copy_page() and copy_mc_page(), modeled after
-> the existing memcpy_test() style: a static page-aligned src and a
-> two-page dst, filled with random bytes plus non-zero edges, then
-> verify byte-for-byte equality and that the adjacent page is
-> untouched. The copy_mc_page() case additionally checks the return
-> value is 0 on clean memory and is gated on CONFIG_ARCH_HAS_COPY_MC.
-> 
-> Signed-off-by: Ruidong Tian <tianruidong@linux.alibaba.com>
-> ---
->   lib/tests/memcpy_kunit.c | 67 +++++++++++++++++++++++++++++++++++++++-
->   1 file changed, 66 insertions(+), 1 deletion(-)
-> 
-> diff --git a/lib/tests/memcpy_kunit.c b/lib/tests/memcpy_kunit.c
-> index d36933554e46..85df53ccfb0c 100644
-> --- a/lib/tests/memcpy_kunit.c
-> +++ b/lib/tests/memcpy_kunit.c
-> @@ -493,6 +493,67 @@ static void memmove_overlap_test(struct kunit *test)
->   	}
->   }
->   
-> +/* --- Page-sized copy tests --- */
-> +
-> +static u8 page_src[PAGE_SIZE] __aligned(PAGE_SIZE);
-> +static u8 page_dst[PAGE_SIZE * 2] __aligned(PAGE_SIZE);
-> +static const u8 page_zero[PAGE_SIZE] __aligned(PAGE_SIZE);
-> +
-> +static void init_page(struct kunit *test)
-> +{
-> +	/* Get many bit patterns. */
-> +	get_random_bytes(page_src, PAGE_SIZE);
-> +
-> +	/* Make sure we have non-zero edges. */
-> +	set_random_nonzero(test, &page_src[0]);
-> +	set_random_nonzero(test, &page_src[PAGE_SIZE - 1]);
-> +
-> +	/* Explicitly zero the entire destination. */
-> +	memset(page_dst, 0, ARRAY_SIZE(page_dst));
-
-    init_page() memsets the entire two-page page_dst to zero, and the
-    test then asserts the second page is still zero. A buggy copy_page()
-    that overwrites the second page with bytes that happen to include a
-    zero byte would still pass.
-
-    Please fill page_dst with a non-zero sentinel (e.g. 0xA5) instead
-    of zero, and check the second half against that sentinel using
-    memchr_inv():
-
-        memset(page_dst, 0xA5, ARRAY_SIZE(page_dst));
-        ...
-        KUNIT_ASSERT_TRUE_MSG(test,
-            !memchr_inv(page_dst + PAGE_SIZE, 0xA5, PAGE_SIZE),
-            "copy_page overflow into adjacent page");
-
-    This also lets you delete page_zero[] entirely, which on
-    PAGE_SIZE=64K configs (arm64) saves a non-trivial amount of BSS.
-
-
-> +}
-> +
-> +static void copy_page_test(struct kunit *test)
-> +{
-> +	init_page(test);
-> +
-> +	/* Copy. */
-> +	copy_page(page_dst, page_src);
-> +
-> +	/* Verify byte-for-byte exact. */
-> +	KUNIT_ASSERT_EQ_MSG(test,
-> +		memcmp(page_dst, page_src, PAGE_SIZE), 0,
-> +		"copy_page content mismatch with random data");
-> +
-> +	/* Verify no overflow into second page. */
-> +	KUNIT_ASSERT_EQ_MSG(test,
-> +		memcmp(page_dst + PAGE_SIZE, page_zero, PAGE_SIZE), 0,
-> +		"copy_page overflow into adjacent page");
-> +}
-> +
-> +#ifdef CONFIG_ARCH_HAS_COPY_MC
-> +static void copy_mc_page_test(struct kunit *test)
-> +{
-> +	int ret;
-> +
-> +	init_page(test);
-> +
-> +	/* Copy and check return value. */
-> +	ret = copy_mc_page(page_dst, page_src);
-
- From sashiko:
-
-Does this introduce a build regression on architectures like x86_64 or
-powerpc?
-The CONFIG_ARCH_HAS_COPY_MC flag is selected by multiple architectures,
-but copy_mc_page() is an arm64-specific API. Other architectures use the
-generic copy_mc_to_kernel() API instead.
-If the kernel is built with KUnit enabled on non-arm64 architectures, it
-appears copy_mc_page() would be an undeclared identifier.
-
-
-Thanks.
-Shuai
+diff --git a/arch/powerpc/crypto/aes-spe-glue.c b/arch/powerpc/crypto/aes-spe-glue.c
+index 7d2827e65240..e038488087e6 100644
+--- a/arch/powerpc/crypto/aes-spe-glue.c
++++ b/arch/powerpc/crypto/aes-spe-glue.c
+@@ -9,6 +9,7 @@
+  */
+ 
+ #include <crypto/aes.h>
++#include <linux/minmax.h>
+ #include <linux/module.h>
+ #include <linux/init.h>
+ #include <linux/types.h>
+@@ -140,7 +141,7 @@ static int ppc_ecb_crypt(struct skcipher_request *req, bool enc)
+ 	err = skcipher_walk_virt(&walk, req, false);
+ 
+ 	while ((nbytes = walk.nbytes) != 0) {
+-		nbytes = min_t(unsigned int, nbytes, MAX_BYTES);
++		nbytes = min(nbytes, MAX_BYTES);
+ 		nbytes = round_down(nbytes, AES_BLOCK_SIZE);
+ 
+ 		spe_begin();
+@@ -179,7 +180,7 @@ static int ppc_cbc_crypt(struct skcipher_request *req, bool enc)
+ 	err = skcipher_walk_virt(&walk, req, false);
+ 
+ 	while ((nbytes = walk.nbytes) != 0) {
+-		nbytes = min_t(unsigned int, nbytes, MAX_BYTES);
++		nbytes = min(nbytes, MAX_BYTES);
+ 		nbytes = round_down(nbytes, AES_BLOCK_SIZE);
+ 
+ 		spe_begin();
+@@ -220,7 +221,7 @@ static int ppc_ctr_crypt(struct skcipher_request *req)
+ 	err = skcipher_walk_virt(&walk, req, false);
+ 
+ 	while ((nbytes = walk.nbytes) != 0) {
+-		nbytes = min_t(unsigned int, nbytes, MAX_BYTES);
++		nbytes = min(nbytes, MAX_BYTES);
+ 		if (nbytes < walk.total)
+ 			nbytes = round_down(nbytes, AES_BLOCK_SIZE);
+ 
+@@ -248,7 +249,7 @@ static int ppc_xts_crypt(struct skcipher_request *req, bool enc)
+ 	twk = ctx->key_twk;
+ 
+ 	while ((nbytes = walk.nbytes) != 0) {
+-		nbytes = min_t(unsigned int, nbytes, MAX_BYTES);
++		nbytes = min(nbytes, MAX_BYTES);
+ 		nbytes = round_down(nbytes, AES_BLOCK_SIZE);
+ 
+ 		spe_begin();
 
