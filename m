@@ -1,54 +1,54 @@
-Return-Path: <linuxppc-dev+bounces-21549-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21550-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EF9A9CD5BD5
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 May 2026 00:02:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 09B73CD5BD2
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 May 2026 02:57:59 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gQ8v11rD9z2xLs;
-	Wed, 27 May 2026 10:02:21 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=91.218.175.171
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779840141;
-	cv=none; b=HdWJmtD7l9pQfWFlZwEPJEviqVIYKnoNHzUNghkeDW26Vu8On8yO/zSZ+qoms4kue4wBpwG+vTwebltqMo9iPY8x0viXfzi3ORlWsWpQPjekkmfHDm9kwhvpU5ZZVnn6grbfYojP1ni/Op6rLIKPBIUPx55d45ECAAnHHIN4WpR7SYSXdA6QOKSvL5woGsdxoqZJF0S57aPACf3AtSHlPxqq99upLgcQ5aZoAZl4Atv/d4BeZACPg1IW3pDqf8rbcps4O7Ydzb/g/kfVvoQfCYhr9XRqoXqnFQCYSf8NJ4dd+JWd5pOkwkVyx7ORjnHCnmsQGVTQzoyWMmIM0N+C9g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gQDnf3Fsvz2yTH;
+	Wed, 27 May 2026 12:57:58 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=113.46.200.224
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779850678;
+	cv=none; b=B1VyI2HmZurkWIeeeDDKiUSWS/tpA0O/rQ6J8gFN18QlNQAxs9tEpoqHLl4HujcigwBgdY/ANRomHaJR+hKyDgA40R9NarPMOzvSqrZr/G9vqHB5Z91uUn6RmDgALZFx0PQ1zXJsNJX8tC6aszDQdy1MMzBVUFTGfif5U6TwbNWXwrUfa8HyalOeG5PXZJ4IASCIsI6RrQO2LBF2gqpU5UhGDbg1cTe1lOi/ZN/3RFUSYdQZMsw9nkuNZuSEac/qW+67+p9fVODENjmoscbRWnByVUsEcc5XgOTCFBWFqcE6Ln6QccHNFr4/UlVRhTAclnQU+Ba/p1X6BbpUfuM5Nw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1779840141; c=relaxed/relaxed;
-	bh=/mUNYVbQO7WzMBWFoPK4p8GJoNAcMMtkwfQmm2mOiPc=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=oARBtAI4YIqUa/lS5FA9JeNCt10KMQgFI+Bz+XNdT5h/MT501XFyI2+Eq5uhlhP3FcDnQI4pIHgPZoX2pIRtjU+ToCl48Cwu91Q9b4kJZsaHKJMJrFOqN4blGx1zEytLi7Hwp7AZCrpp26HqC6uEbRcqEzSidKOM+3WhE3MiOPVJapguan9EE2IebIoj5PclyFMZFa+B2TmGF/hIneiLvwwvn+roeKwS//S87T86AinpwQPzMA8IN7bOilqQl/bqRR0qDMw/E8k94c26IYrxtw3tkQRzMrNsHxCekrR5e20amPFWl4Hf0XIjQicu2blfxWP9tCwUuUo+I0CZNrUHAw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=aiDVxuzl; dkim-atps=neutral; spf=pass (client-ip=91.218.175.171; helo=out-171.mta0.migadu.com; envelope-from=thorsten.blum@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
+	t=1779850678; c=relaxed/relaxed;
+	bh=OevDCY97IHfMWjohNiIYTqTRYr/bbPEe4iODaGzCseQ=;
+	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
+	 In-Reply-To:Content-Type; b=Rre3fMZMmwT7Jq0+h/wWk5kgBRLgmlX//1GJ2k1WCd5IW5VXO8P3FahEtQ39GqBDcJbKj94UGKtapImPvulJ+A0+aC4DBD0O2WaeRhJP8JQ9HpYrGjBt9yWza7BDRmZvsS+Sl/5O7Akm96eiXMQrflD9xV4KGX4x6p+hXCqhtWW16xKkFNQqPG98ML/Gqx8WAH0sIveyQDsMaVmnEboMiQUZQKVIYdsxpfC24Skx2t2VF05dJOlEY6z8+DnBT7JF4fsKWjQvCzhDw2iuLrnJKnQMvi6ZmXuQu2SEhvVlrbCDm64ffNfVWC5OT12WsI5S7z3T6zBSdu8mxwlFTvoDmA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=jRHumPzy; dkim-atps=neutral; spf=pass (client-ip=113.46.200.224; helo=canpmsgout09.his.huawei.com; envelope-from=yintirui@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=aiDVxuzl;
+	dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=jRHumPzy;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=91.218.175.171; helo=out-171.mta0.migadu.com; envelope-from=thorsten.blum@linux.dev; receiver=lists.ozlabs.org)
-Received: from out-171.mta0.migadu.com (out-171.mta0.migadu.com [91.218.175.171])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=113.46.200.224; helo=canpmsgout09.his.huawei.com; envelope-from=yintirui@huawei.com; receiver=lists.ozlabs.org)
+X-Greylist: delayed 43298 seconds by postgrey-1.37 at boromir; Wed, 27 May 2026 12:57:55 AEST
+Received: from canpmsgout09.his.huawei.com (canpmsgout09.his.huawei.com [113.46.200.224])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gQ8tx50n7z2xKh
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 May 2026 10:02:16 +1000 (AEST)
-X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
-	t=1779840115;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding;
-	bh=/mUNYVbQO7WzMBWFoPK4p8GJoNAcMMtkwfQmm2mOiPc=;
-	b=aiDVxuzl6xKnDyhylyilTBRa4eKJJuAAspqZ1pYorXNyi3Is14v7Nc1tfCbSQMT+44oOVT
-	E21FZmqM92RYCQriQAlXtxgLflm433Nh3tOiyBIUinAwnUqHV48efb9wrNOPUD7yne0Wwf
-	7NKdMrqxKZnGSNodudsmCPyV9Mgi3eo=
-From: Thorsten Blum <thorsten.blum@linux.dev>
-To: Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-Cc: Thorsten Blum <thorsten.blum@linux.dev>,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH] powerpc/kexec_file: use snprintf to simplify setup_kdump_cmdline
-Date: Wed, 27 May 2026 02:01:06 +0200
-Message-ID: <20260527000105.1081651-3-thorsten.blum@linux.dev>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gQDnb4S6tz2xtC
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 May 2026 12:57:53 +1000 (AEST)
+dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
+	c=relaxed/relaxed; q=dns/txt;
+	h=From;
+	bh=OevDCY97IHfMWjohNiIYTqTRYr/bbPEe4iODaGzCseQ=;
+	b=jRHumPzyfWCCF+pN7RD25xUqbdZBtJrU/LkkjWSghE/SDZVDQJHA1uf8sTeQQJb+pPrrVIriv
+	BHuldCsnAcyzX2PDcp0+sXpNTRAcEZ1GyfXFQmgDwVeRSRjpiwTtY+Ft4brF9v9wA+TktkA6SrK
+	uso67IalMfYGi4RTYZwkOak=
+Received: from mail.maildlp.com (unknown [172.19.162.92])
+	by canpmsgout09.his.huawei.com (SkyGuard) with ESMTPS id 4gQDcX1Rg0z1cyQ9;
+	Wed, 27 May 2026 10:50:04 +0800 (CST)
+Received: from kwepemr500001.china.huawei.com (unknown [7.202.194.229])
+	by mail.maildlp.com (Postfix) with ESMTPS id 70A6E40565;
+	Wed, 27 May 2026 10:57:48 +0800 (CST)
+Received: from [10.174.179.248] (10.174.179.248) by
+ kwepemr500001.china.huawei.com (7.202.194.229) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.1544.11; Wed, 27 May 2026 10:57:45 +0800
+Message-ID: <9dbcf423-108b-40cd-80af-6b93f113599d@huawei.com>
+Date: Wed, 27 May 2026 10:57:45 +0800
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -62,55 +62,80 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1702; i=thorsten.blum@linux.dev; h=from:subject; bh=nd5yPR8MeFvqegyDZWdCPUoqwQ5AW3bnIbMhUoTcHU4=; b=owGbwMvMwCUWt7pQ4caZUj3G02pJDFliJo5vHnEJ3FidsGN3RNvaLLWtXdHdvm/fpszq6Yp8x Z2r8NOmo5SFQYyLQVZMkeXBrB8zfEtrKjeZROyEmcPKBDKEgYtTACZyt4Xhf8ivSyx72sMX3Ig9 6/jsQ63QrDz1vwmTKk02VySGv/xoGMjwi+m1+Q6m36v8uSem1Z04/euj60L/A8mtX9WXhpYYSZZ r8QMA
-X-Developer-Key: i=thorsten.blum@linux.dev; a=openpgp; fpr=1D60735E8AEF3BE473B69D84733678FD8DFEEAD4
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH mm-unstable RFC v4 0/7] mm: add huge pfnmap support for
+ remap_pfn_range()
+To: Lorenzo Stoakes <ljs@kernel.org>
+CC: Andrew Morton <akpm@linux-foundation.org>, Matthew Wilcox
+	<willy@infradead.org>, David Hildenbrand <david@kernel.org>, Juergen Gross
+	<jgross@suse.com>, Jonathan Cameron <jic23@kernel.org>, Will Deacon
+	<will@kernel.org>, Catalin Marinas <catalin.marinas@arm.com>, Peter Xu
+	<peterx@redhat.com>, Luiz Capitulino <luizcap@redhat.com>, Thomas Gleixner
+	<tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov
+	<bp@alien8.de>, Dave Hansen <dave.hansen@linux.intel.com>, "H . Peter Anvin"
+	<hpa@zytor.com>, Andy Lutomirski <luto@kernel.org>, Peter Zijlstra
+	<peterz@infradead.org>, Madhavan Srinivasan <maddy@linux.ibm.com>, Michael
+ Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
+	Christophe Leroy <chleroy@kernel.org>, "Liam R . Howlett"
+	<liam@infradead.org>, Zi Yan <ziy@nvidia.com>, Baolin Wang
+	<baolin.wang@linux.alibaba.com>, Nico Pache <npache@redhat.com>, Ryan Roberts
+	<ryan.roberts@arm.com>, Dev Jain <dev.jain@arm.com>, Barry Song
+	<baohua@kernel.org>, Lance Yang <lance.yang@linux.dev>, Vlastimil Babka
+	<vbabka@kernel.org>, Mike Rapoport <rppt@kernel.org>, Suren Baghdasaryan
+	<surenb@google.com>, Michal Hocko <mhocko@suse.com>, Anshuman Khandual
+	<anshuman.khandual@arm.com>, Rohan McLure <rmclure@linux.ibm.com>, Kevin
+ Brodsky <kevin.brodsky@arm.com>, Alistair Popple <apopple@nvidia.com>, Andrew
+ Donnellan <andrew+kernel@donnellan.id.au>, Pasha Tatashin
+	<pasha.tatashin@soleen.com>, Baoquan He <bhe@redhat.com>, Thomas Huth
+	<thuth@redhat.com>, Coiby Xu <coxu@redhat.com>, Dan Williams
+	<djbw@kernel.org>, Yu-cheng Yu <yu-cheng.yu@intel.com>, Lu Baolu
+	<baolu.lu@linux.intel.com>, Conor Dooley <conor.dooley@microchip.com>, Rik
+ van Riel <riel@surriel.com>, <wangkefeng.wang@huawei.com>,
+	<chenjun102@huawei.com>, <linux-mm@kvack.org>,
+	<linux-kernel@vger.kernel.org>, <x86@kernel.org>,
+	<linux-arm-kernel@lists.infradead.org>, <linuxppc-dev@lists.ozlabs.org>,
+	<linux-pm@vger.kernel.org>
+References: <20260526145003.88445-1-yintirui@huawei.com>
+ <ahW7rut_WP17KADW@lucifer>
+From: Yin Tirui <yintirui@huawei.com>
+In-Reply-To: <ahW7rut_WP17KADW@lucifer>
+Content-Type: text/plain; charset="UTF-8"; format=flowed
 Content-Transfer-Encoding: 8bit
-X-Migadu-Flow: FLOW_OUT
+X-Originating-IP: [10.174.179.248]
+X-ClientProxiedBy: kwepems100002.china.huawei.com (7.221.188.206) To
+ kwepemr500001.china.huawei.com (7.202.194.229)
 
-Replace the manual string length accounting, memcpy(), and NUL
-termination with a single snprintf() call to prepend the elfcorehdr=
-address and to detect string truncation at the same time.
 
-Use kmalloc() to avoid unnecessarily zeroing the memory. While at it,
-also use "prepending" instead of "appending" in the error message.
+On 5/26/2026 11:33 PM, Lorenzo Stoakes wrote:
+> Allow me to be mildly pedantic (sorry :)
+>
+> One thing I'd like to highlight here is that remap_pfn_range() is, in the long
+> run, deprecated.
+>
+> mmap_prepare callbacks will indicate a PFN remap mmap_action, which will do the
+> heavy lifting (see [0]).
 
-Signed-off-by: Thorsten Blum <thorsten.blum@linux.dev>
----
- arch/powerpc/kexec/file_load.c | 14 ++++----------
- 1 file changed, 4 insertions(+), 10 deletions(-)
+Thanks, I missed that mmap_action_remap() may also reach the same common 
+PFN remap
+path.
 
-diff --git a/arch/powerpc/kexec/file_load.c b/arch/powerpc/kexec/file_load.c
-index 4284f76cbef5..597998235136 100644
---- a/arch/powerpc/kexec/file_load.c
-+++ b/arch/powerpc/kexec/file_load.c
-@@ -36,25 +36,19 @@
- char *setup_kdump_cmdline(struct kimage *image, char *cmdline,
- 			  unsigned long cmdline_len)
- {
--	int elfcorehdr_strlen;
- 	char *cmdline_ptr;
- 
--	cmdline_ptr = kzalloc(COMMAND_LINE_SIZE, GFP_KERNEL);
-+	cmdline_ptr = kmalloc(COMMAND_LINE_SIZE, GFP_KERNEL);
- 	if (!cmdline_ptr)
- 		return NULL;
- 
--	elfcorehdr_strlen = sprintf(cmdline_ptr, "elfcorehdr=0x%lx ",
--				    image->elf_load_addr);
--
--	if (elfcorehdr_strlen + cmdline_len > COMMAND_LINE_SIZE) {
--		pr_err("Appending elfcorehdr=<addr> exceeds cmdline size\n");
-+	if (snprintf(cmdline_ptr, COMMAND_LINE_SIZE, "elfcorehdr=0x%lx %s",
-+		     image->elf_load_addr, cmdline_len ? cmdline : "") >= COMMAND_LINE_SIZE) {
-+		pr_err("Prepending elfcorehdr=<addr> exceeds cmdline size\n");
- 		kfree(cmdline_ptr);
- 		return NULL;
- 	}
- 
--	memcpy(cmdline_ptr + elfcorehdr_strlen, cmdline, cmdline_len);
--	// Ensure it's nul terminated
--	cmdline_ptr[COMMAND_LINE_SIZE - 1] = '\0';
- 	return cmdline_ptr;
- }
- 
+> So perhaps worth referring to 'PFN remapping' or something?
+>
+> (Since we already have mmap_prepare() in use, it's also kinda inaccurate to
+> say remap_pfn_range() :)
+
+Agreed, describing this as remap_pfn_range()support is indeed 
+inaccurate. I'll reword it.
+
+>
+> [0]: https://www.kernel.org/doc/html/next/filesystems/mmap_prepare.html
+>
+> Sorry, this is pretty nitpicky :)
+Not at all, this is really helpful.
+>
+> Cheers, Lorenzo
+>
+-- 
+Yin Tirui
+
 
