@@ -1,59 +1,60 @@
-Return-Path: <linuxppc-dev+bounces-21569-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21570-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EF736CD4F54
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 May 2026 12:12:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B0EEDCD4F54
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 May 2026 12:12:36 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gQT5F0F8cz2yYq;
-	Wed, 27 May 2026 22:12:17 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gQT5H5J97z2yft;
+	Wed, 27 May 2026 22:12:19 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c201::1" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779875991;
-	cv=pass; b=TUf99brB40kAP1vAaH2QGCIkoJI4MkuwgJln/Nu4jlPuDfRmT3itBPByZtnxhDCEe4COBAfMJLz/DIhRHscnPGNwFte4RZ43pP6IRBTF3+NZ8CPgABzaUfRUdCFFQ1CLC8NK7JxM/HcvP84z2AUJQ8CcZ1VXXlAFC4OMPEiMyqdb+1pbkZCrtor+wiEip6dWx2EJ9xbhgM7eEuqnyMfXMMcxsz0xChAdmN8r6xZyPZwjUBxjfXjb/IWO27BcjivwIBNeBj9+ac5HpcRCL36lMvlXoE5pZraDXr/mjF5pTT/ATwqAl01rml6JXKacCG5xu4NqiQjyjcoQV3Wd5d4PVw==
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779875993;
+	cv=pass; b=NEJNzLJ539bvDkUFh1COKUOPcKykRLwHoqz7Zu51dS6Sp9rOjHpdJ1frolM9fjhQyTwE0OuC7oZc8m0NASgCi0G6lOPbbQ0HYZ2++2W7hqpOKv5ejE8+iflNoPpbuTOr67/7BeHUmswJrVAlDS7kHsXUk3L+3s75IzRYTtmgUQELByntNtyU4P2UfSZKiXcILFAIXNplw/BFlAxpMAsqhY1euWtW7lGpCF/kjV0YQxJ5xcvaMvnCbQy2hoQl+3oTQjFURGNXkyzuEkeH5tmEypsfrmUBVMP5RSNXpOhbgIDsj/gh1iiVZeazm0240jxlZ/rYwQEJayLEhlZ85LaKtQ==
 ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1779875991; c=relaxed/relaxed;
-	bh=mePD1+AFaG79ukMOjTrZIF2pgBU7tXADn8HlkIPSQ/w=;
-	h=From:To:Cc:Subject:Date:Message-Id:Content-Type:MIME-Version; b=IdbfliFPjbooTh8GCHuT6vDShEvdX1AFJVX9AiavQU+rq50r694qbmHdDkwLTziI9Hiftsqwxkj1jHr2ZevjOyNx2jiSasuTREwZStJ7jyCLm4l+hhWCXGgb/ed+Cb3GE+o6G5gvqjg/1ulxsYx5mDp7Ig0K4VHp9wl6Y2sI90u+XuPuOytn/8ZA2mGJZN6qU/famryvCSrCqS/Z0z638JR6prYlEmbYlPdEjIewKjeBKVLOwjCBTLOwjEOKuhURdq8zMbzW+TExRT6I36uAVJC1W6G43hOuhG1gsqKyq5E0eBd6h6fWkfilSLBQsFmq+fKGW5GMYLCVor5zE+tlAQ==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=oss.nxp.com; dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=bFzNjFgK; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c201::1; helo=am0pr83cu005.outbound.protection.outlook.com; envelope-from=wei.fang@oss.nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=oss.nxp.com
+	t=1779875993; c=relaxed/relaxed;
+	bh=wm7uZcoRi2b+y6XgWskw0ORBYgR1sjxcFzUcNDwCcz4=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=NU/UGBot4L23cjsyOX+YDsct+0yJBhxsvrwfLeZ80S8AOxgZieUEOFc09A8eSPH2e3XuGXLjHrMHBr0IrNjUi3rSCK8AhpoVvIQy946sYl7buDHMSl92+yunW0iWY/Wy6n1FDl+x+Igjat1FhSA010E51hJk4Wx0DZWVDnz7q4lR/AVwYW/X/fCOZIPk6kLOpbp4XvzeOxh7h9KjBZai4nxHe/LgaeONtCbQwI4NwuS/ARVB1lqAHo/43HbPBcGikZhYk3rk4KpNOAXrz+rjwkvh6b60C9cPrZaMUCUpJRNohFrombP9lwgZICu/5cAJd0M+onxezstRL4DJw/mTVg==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=oss.nxp.com; dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=T2yj8WED; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c201::1; helo=am0pr83cu005.outbound.protection.outlook.com; envelope-from=wei.fang@oss.nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=oss.nxp.com
 Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=oss.nxp.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=bFzNjFgK;
+	dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=T2yj8WED;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=oss.nxp.com (client-ip=2a01:111:f403:c201::1; helo=am0pr83cu005.outbound.protection.outlook.com; envelope-from=wei.fang@oss.nxp.com; receiver=lists.ozlabs.org)
 Received: from AM0PR83CU005.outbound.protection.outlook.com (mail-westeuropeazlp170100001.outbound.protection.outlook.com [IPv6:2a01:111:f403:c201::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gQQ8N5fzQz2xHK
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 May 2026 19:59:48 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gQQ8S4ynbz2xHK
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 May 2026 19:59:52 +1000 (AEST)
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=qDNthRWA2I6xxWDmC7zBgk0SHwIZmNehKID+7fBb0BIBZDKVsrZ+rDXKcG5Sce77k+FgOyk8jg5vz3xpsS3Abwe2HnX+5RahtUG4qgHp1UcJV+xCNmfsnNEHkdYeT+5EVV7l2cHYs3Pin8edV6XJNYeHNL7YJJIAJrBkPhHqZxpOMvYi5N5CVItLZ2jLXn+BA12gLKjfIHoqEg7lj7NBG5cAXq4F2O250sHuKajbHmtCjgqix+BOTTVh03P9z/YNlFifuN3iJrtQCAR+DGp8n6hJwKw0E9kbBUmyPORnsSDYCHG01bqeuSsBHsOgBdxF2y7rcFFGwLoclRbFaY15SQ==
+ b=qUZJziZtDCf/RQUWLRrh1Hmwd6rrYKVFKpFKpbYcVo8JnjvRLfHuqcoNdhVYvRH6CkuYAsWY5vwa6rrQo1gCMT1lgR8b5HWgHZ1JY7pFAzWp7uC3t65Yhdl3/Y1KAVkvzQQ09/KSnVIRfOJUpgrDpkS43z9+42fGWyQr3tIDznf/9/xLyn/0Tm1b1dtFBW422cl+MQJk1FFl+YAYQ+9X2+2FmCcdPsCFVujzc3GgdB+BalAnsZffigYn3Oth+7KEgKcF1yZMyuTG1nGFuihgkGtBG5KDrJ09NObyNvuCOFAZdQzGjriSLpz1yOyEU4OpDCHsv/At6fJZNwllKMUKXg==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=mePD1+AFaG79ukMOjTrZIF2pgBU7tXADn8HlkIPSQ/w=;
- b=upJYYu26HjBfi7RjNjIBO6VGb65p5cfogpK0A12tl1t0KK3vAZk1RhZ4zYjU3dL+lLaeKYvmYEbOUolaT0ZenMCG9AZ0JyeXgcjkj2CFriftPmME8VcG6y0234XhcMqUFRlYOIWGV+CK/SNLnOXZs7XIEuLVvBjHAqfnNpaulnXhU0V0oCyIeJOg+i8IOcMcGV11o1Ovg9we3Yn+IL7wt0KalWPwQspwoUdmM9Ktst1qtYC/Ctjf+JM9iYevD+u/HXlT3BvzjQL1RKgX9q/qIZy3wUb5NH4G0X5WnWxmQhn57+Z56L460kqpFRPF+SOHbp9CgAu6269+ZFSPkdDunw==
+ bh=wm7uZcoRi2b+y6XgWskw0ORBYgR1sjxcFzUcNDwCcz4=;
+ b=p/o4e5O3wGpJVTNwSt8XAuBM6bQdbGds5QImcwr3/lbx0j8ISzpfV7e4s0V5TxM4IytB6JDBcpsZDPZTIPidvbb5vOEOu1F6ZHQEREHYjwWadQYblKK4+ih3Ykoumq9en/6QrtOD3XKIVwQvoOa/zvQGSJhKHot71Ktze6M0uS9GWQOyEquvjhsFvRZ8ibpUYU4u8wftU6Ma6zv0md4pgABFWNtyD7wA/jjY1RXNSbEUS/iM3vxlJe7pLDabNSfdaVqXZ8wGOaIDnUQgKDf7Rqd01PXwb+Tshn0D92bP2NeWOR/pKVKVh3HnzQSgyve2xBksUYd0Nr5EJtbRtWzdoA==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
  smtp.mailfrom=oss.nxp.com; dmarc=pass action=none header.from=oss.nxp.com;
  dkim=pass header.d=oss.nxp.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=NXP1.onmicrosoft.com;
  s=selector1-NXP1-onmicrosoft-com;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=mePD1+AFaG79ukMOjTrZIF2pgBU7tXADn8HlkIPSQ/w=;
- b=bFzNjFgKBx/Tw7rfn505IWYNtngHBVjPiXEkprQfCia0Y6IwRm/ZlT806N6D2nkn2gD+BdvT+i/k0zdoedKk7Q9U1vw+pH9vQex9hBDBz1wThvH9cRtKOjMav67r6ibUi2xFdlodceuj/TaM+TEyD1k0sO11e60HKBsNS+eqMj28/aW6lcd5/v2L1xerWm3MhjLLaduH9d8cYlBd/Lm9jXiOhk3zs8Hsqyf+ZZZS4N0t/bJodEf9HCJn6BFfQSrLI8ALc1fhLtReLYGcZTJEL1emwVYO1589+gnFq2BjGmBDFabOTiP4zL6Dse82YlLFtV5jHFkAXb33XAhfeg4vdQ==
+ bh=wm7uZcoRi2b+y6XgWskw0ORBYgR1sjxcFzUcNDwCcz4=;
+ b=T2yj8WED2Hhy7/RsbR+kqa87QBpUzvJ0nf+83qKOLLgo1wyUsY0i8kNpuW2Q5cC+7i5hIELSwOM79ZBYaY6F2WP8TDY8FlzxZVvTRXM+W57kbljioHyxAov0xbkgW/D45egkVjjDta3SsKW2cCrP3+S62+VrI9PISaLgx0cxKSsiIITLZs0/i+OHNiNLx1k+4eUd+MSYRthe9js0q1nPv7V+hU5jSCH7DXMD8aMMBhN+5pwYS8ksYei0yisVlsF3ruSdZeM+hlEY2XVjyE5Kv2rnKETu+q97kkRHPCwd7lPfRQ9K/nuXhe8H9seRsRao3RiArMF1p8AFRoMoePhTBA==
 Authentication-Results: dkim=none (message not signed)
  header.d=none;dmarc=none action=none header.from=oss.nxp.com;
 Received: from VE1PR04MB7216.eurprd04.prod.outlook.com (2603:10a6:800:1b0::22)
  by AMBPR04MB12205.eurprd04.prod.outlook.com (2603:10a6:20b:758::6) with
  Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.71.12; Wed, 27 May
- 2026 09:59:18 +0000
+ 2026 09:59:28 +0000
 Received: from VE1PR04MB7216.eurprd04.prod.outlook.com
  ([fe80::a9a5:cf83:dbe8:1f74]) by VE1PR04MB7216.eurprd04.prod.outlook.com
  ([fe80::a9a5:cf83:dbe8:1f74%6]) with mapi id 15.21.0048.019; Wed, 27 May 2026
- 09:59:17 +0000
+ 09:59:28 +0000
 From: wei.fang@oss.nxp.com
 To: claudiu.manoil@nxp.com,
 	vladimir.oltean@nxp.com,
@@ -72,14 +73,16 @@ Cc: wei.fang@nxp.com,
 	linux-kernel@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org,
 	linux-arm-kernel@lists.infradead.org
-Subject: [PATCH net-next 0/9] net: dsa: netc: add bridge mode support
-Date: Wed, 27 May 2026 18:02:08 +0800
-Message-Id: <20260527100217.794987-1-wei.fang@oss.nxp.com>
+Subject: [PATCH net-next 2/9] net: enetc: add "Update" and "Delete" operations to VLAN filter table
+Date: Wed, 27 May 2026 18:02:10 +0800
+Message-Id: <20260527100217.794987-3-wei.fang@oss.nxp.com>
 X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20260527100217.794987-1-wei.fang@oss.nxp.com>
+References: <20260527100217.794987-1-wei.fang@oss.nxp.com>
 Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
-X-ClientProxiedBy: SI2PR01CA0044.apcprd01.prod.exchangelabs.com
- (2603:1096:4:193::8) To VE1PR04MB7216.eurprd04.prod.outlook.com
+X-ClientProxiedBy: SI2PR02CA0032.apcprd02.prod.outlook.com
+ (2603:1096:4:195::12) To VE1PR04MB7216.eurprd04.prod.outlook.com
  (2603:10a6:800:1b0::22)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -96,97 +99,215 @@ Precedence: list
 MIME-Version: 1.0
 X-MS-PublicTrafficType: Email
 X-MS-TrafficTypeDiagnostic: VE1PR04MB7216:EE_|AMBPR04MB12205:EE_
-X-MS-Office365-Filtering-Correlation-Id: 3aec70bc-12e0-4a34-9f0d-08debbd69da1
+X-MS-Office365-Filtering-Correlation-Id: a41ebb25-c032-4274-83b0-08debbd6a439
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|7416014|376014|1800799024|366016|19092799006|11063799006|56012099006|18002099003|921020;
+	BCL:0;ARA:13230040|7416014|376014|1800799024|366016|19092799006|11063799006|56012099006|6133799003|18002099003|22082099003|921020;
 X-Microsoft-Antispam-Message-Info:
-	IIPzlQ+rOFggmP7+K9uOLnvWRg+jjy3E6IX43KpWctlZbBEZGXp17sprr1hyKf7kEbYoc9jsIrRPwPrkMhOOed+2JRxlsaQaUwJxmKPCRLxR6Ym8tNK6yUe+Rt8cvZtFMDpnmdVJXOEGGBEsUGyRnPtNC38zMI4RBli+t8SxN6YquwnTHzLRN8r2IP9Jg2waf9b06n5zDazpTUusY5x24w7HIAdTt/ArRW/Ey6rYhcnCMYmJzepGeNQOdBI4gO2uo/RXfvxzh5TtidnjhMO9w1EtshBeevbynrwSIiQmF8zv3BYEtbIaRt68CRSfVBdSVTNbDcsJVleMoZpbb/bLIZwtdXTFyFRMtp+mCyYXPq77ino0VTwH/2GpBybDr5VB3D6SQGT+LiOReey4ElyFs55COTgjmh0PxYkgF3oiOSA/xbb/B2EqAGy2Z7VtZtDEE/5+j6ATUFtICru1WArzrZbzXrWAWWTyqPWGEMjSEF1OwwiPRYWJoqQpcVy++6FEhe25qGNmnHZb9o3j1rv/RF9zwQdJ+157cc2fpiPulYS0oj8LTqlUX53/qvYTbXt6XB7MXM7ElcqrbgElpkS9yHxdJayiK+3dAogS8R7PaSP8zwDWsR6C2M5aeBQD0ELzl5nBfQx/KeVS575PR/MLlnyQw9kM3WnBcuqr0FKoP3al00XOOGMIlN/mG/rM0lbjcTiYxD0kcmckwWaKJTXJGv0YsgAWSqj235qyiIRMCDI=
+	2Ezv2rec99RFZZNGVcXESzoBmnF55nSjYbR2XvrnKnWFiol24HE2182kRwA7OXDlunGJbkU/OJ+cKMWEF6weq4aFaownho9bZ+BVf5fT16IieVDAz3ug0I/alJHbSpaKUgiRw27nCgtSgtUvc2xzGYttvO2VpdLllVkHm0aZDC/gk/e2vGH4UUMKSvg5ddGc6aiHejZLAfIz/OSndQL1LMvTghOjp+152D+rN6qXmhK03j9L2DbCur7eqfkaR30P4CVz4ZcWNHxcedfZ7TiQSbUlq+atPVBva/70yxGFWbkWDpJMHp3kBGUxvHTadfk4wYzC3NnJiG7NbWmn090ptjpIFmtRv23DcQRB7FHZ0qUA1X0UDBAr7NB5+bMXjz2H3VnzrScUS2TGO727V5qSgMTXVEfj9OWGTF7ku8/CZYk9xyqfYoGaHVTbL5MIGK8h7GZIe09pTGn50wqCkz8uQJs/Vk9WOLS21EP72M/yARTX38ylyPwPIGVX5kmSh6BgMqaXkalgK2enhgy89sP1oRr3Gw2Ms7M4DxNVRA80YYOTOdLzoL/4MgRT6vdQc7AVuhz9oDd9hixh3mBQunog4NbR+9n8GUSGs7raJ85eJRqvc2w0ITpjvSCoZJ5fYS72qr4ijAI0vVD33cBR8bZn9d8/A7c0Ivy+gmsJ9hIYIxjLhxCrVPY5a2kKXiIQ3IaxxnAvxgxAdCkbdeJxfhXKL8egU9QswA2cKXg03sz73Fg=
 X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:VE1PR04MB7216.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(7416014)(376014)(1800799024)(366016)(19092799006)(11063799006)(56012099006)(18002099003)(921020);DIR:OUT;SFP:1101;
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:VE1PR04MB7216.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(7416014)(376014)(1800799024)(366016)(19092799006)(11063799006)(56012099006)(6133799003)(18002099003)(22082099003)(921020);DIR:OUT;SFP:1101;
 X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
 X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?5EyUTlLosFosInwQN1p3sU9WpMXzwnoYnEV5JzJZX3Std9T10z9BSJH3dAMH?=
- =?us-ascii?Q?AixM3qv3vdi4eBmen15OKobHOJMfDIexPv1mZLQXSA60+srixYDyXDCEcx/h?=
- =?us-ascii?Q?W2LHELu/zhUe679E7ba1W3sfbmMOYJueWzHDhOgWWVfmdxW2IeWl1/GoIcGY?=
- =?us-ascii?Q?+fE7bQ2c/YkhwV7byRVsPjZQWnMAznApAh043dkW9YWnxOKTTYKjpSqV03ds?=
- =?us-ascii?Q?cV3GglWKP/VziRruNFvna3Y+kMj8SWm+bFLBlFKbyRQk0sVo7j7dCwv4YkQY?=
- =?us-ascii?Q?KAt+0nX8RLJ7g/aRO8t6tU7D8vuDJd0iGIFT0V/+b5nf7CatTmwIBobZmcyb?=
- =?us-ascii?Q?aHi1GsuPHwFaq+MAeeaZASRmMoFNmrV9Gr1pRixX4JMzukTJYBYA/tJDD9AB?=
- =?us-ascii?Q?M654rIYAHlGkMk9fZuPjxOFTWPuwZY79h6BZkxmqLrspZr76xSpPo2Yd2pBu?=
- =?us-ascii?Q?gU56SvtnL3KQo/aUH3iQLLLrjLST04Y5SKnj2mMeBtJmFG3umJlsbDjbskFv?=
- =?us-ascii?Q?XeLCTtsHFfxbzoOqB64CeFSAgp7FFPtZm3z6BD0HGg8+ClruGajVLemLlJUj?=
- =?us-ascii?Q?MyQN2bMYE5Gwc/Tv+j+A3eMIQ4+SkWQorMKicNpXX/MAPptoBrFzUO/IntIJ?=
- =?us-ascii?Q?zpqzWsz2AbVJZ2Yw6n7eReSQj80jWkSITe0n3tzvQDo7mkQcFeA/cGxZ+SMm?=
- =?us-ascii?Q?o4O0FO5EnHoFFWDpXBnPf1on+H1K8UnH4Zkj4AGxF8xS3CSaxXYOyqicXgn+?=
- =?us-ascii?Q?Bq656b8iCsRFmsLX4QvQ2o6868p+P1zXJMc0ztI0bHR85zmtIGVNz9p3Qtya?=
- =?us-ascii?Q?idauBZjiXdwtoAmppjgQkx4sOEMLv7LzcO64LAASSKGQvUCUInTlYuoXz+FA?=
- =?us-ascii?Q?4JQPukCZgI51S7VcusO7QiISPAeUTFl4rBO5bYZkXQGN67y+Pa9pAsekxhuI?=
- =?us-ascii?Q?+9HoR94dbY0HxGuWovo0/GwatouXFHuIcm0gbtwFzrK56IPgYca9neXbdTBT?=
- =?us-ascii?Q?B3pezlwT41POFDmE8VBVAHo71Ts8EQ7h1Kp1p6RjAln8AOgJsxo+eiKVkyRa?=
- =?us-ascii?Q?dtFUjX0/J2kskpX2X7UzgAy8FkY0thYWBczesLlV2rh1Jc1aZqTRb1AOLmrb?=
- =?us-ascii?Q?zB9mIABBAtUHNVNAOP7YxX1fA3uXy3vDIScLjHl7Gw2ND/GFFLVmVmqyLOGh?=
- =?us-ascii?Q?G5CaH7R0HPOk8t7o8AFW9jHiBZhZ3nq71DhN99fyMr244gho5lA8kGDu5m/T?=
- =?us-ascii?Q?qPWiP94ql3E4S7lpxS17XeyfQY0re+T+IA0JoMEr2jsyamjE3tijhJENrhfq?=
- =?us-ascii?Q?8q0jxKRJ0C7OpSGRx3sKV9/qL/riJxYKxfanQPwneO67+21FGYH422mrd0dk?=
- =?us-ascii?Q?JCSBMwmq1703jCtBcCJAEXw1Nu8izzi5OpR6eYL88dA+fjs67X2pxGzV/P/j?=
- =?us-ascii?Q?VdHIJ83ooTcIoki+SjjNpTTy7Qnrj9JQWVxL2TzvbmyWKpZmD2y+oyOMN2bk?=
- =?us-ascii?Q?MOafEJWhn38wKWER8+xBXnHcSEOGAoZ2NizyO/lbkyaaO97PiHgYG8XKvLBz?=
- =?us-ascii?Q?CmEvhSHtbbYpQglTbKbtD9sRh+YayBZ87fUbaIyKFvYlhVguCMMc5DXHf4OJ?=
- =?us-ascii?Q?a9YSYnqjPa+yCUTsTAqQhx8iTB5FskxDqTggXc0dwmaf3V3w5w2Cwo9cb7rx?=
- =?us-ascii?Q?VX0sRTi4wKyfUPCRHSnj2Kj3W6jIEX0S1O6oT4EcrsLYSpMUqMNkCVLCBHyn?=
- =?us-ascii?Q?y71DWo+TjyiMWnxNL2egVQ0l/4eHRIfnsjt7NPvkJuJ2ksb2Lt74?=
+	=?us-ascii?Q?q45e5kNyozO15377UClbafPef5+GFENkfN5vZXnzrIFm3avZczRWesWfvqmu?=
+ =?us-ascii?Q?eCsnDiD7hWmJtTLJwuX+EnOFOkZewAL2NvqLqGl9gO/o58eYtoU/6lNg8vnN?=
+ =?us-ascii?Q?po9aHpdz1qWSSHYCy3lPmI21cS/azzKQCRH3gMCzS/uxgs62kRMgrJtecxr7?=
+ =?us-ascii?Q?MMScCt15pmhvxOEL3WRP/41KqcxYETMx5tpWOOLC5ahcAf5weRWZ8E02Pz0G?=
+ =?us-ascii?Q?GFKRNM9I7yIBmiNi3a1pksNe2ai46PuzbJdzbZi8leZ4wCVrAz8WoWQWC9ug?=
+ =?us-ascii?Q?7QQrHCRYEyIjo6D6P/bmAwZyg6waHvN9ONyaT6ra5foDPg0lgWqgPnE+xPFp?=
+ =?us-ascii?Q?L0znyo5bfzVmYTqITT/PQJ/ucGuWTKC0NdGUkmhOz7mJCJZW/RwRzmiyvshb?=
+ =?us-ascii?Q?hqb190eSta0plIBNsS90ibBHnQLUsZFV3G+dNP32KQDGU1+YMCMPTkJzSlIt?=
+ =?us-ascii?Q?d9aK4PmOET8RIXpPTvLVQIERd1GZOHGbsd7I0zv3sEaigaEt6P5M6NUwgiu6?=
+ =?us-ascii?Q?7WS6qwDBGMbNehpcW50hciPp4zRzOxLsDdVuh6ccalbGVJ+GKSTlL4UmIStg?=
+ =?us-ascii?Q?1CgERE3b3R0BwXaJQFxXXAbniDYqPLEhTfwjzY7CAO1WVe91wXqI2fp6K11O?=
+ =?us-ascii?Q?FKBqIzFlF3QmDA9t5iy7H1HtNKxz5ApN5HPYXGTeVHZP6Rht0h7erDiqB5Nl?=
+ =?us-ascii?Q?tpsSQY/AqIifSbS4e4K+0332ZUlJhXqRtRDs1zM5iEvkaHWqvCy/nAL7R7iR?=
+ =?us-ascii?Q?jYdk3T3cj73Kv9bdRMkzT7jmzPsywOpsX4faQl/CjUitNqqUDDzy7gAdx7cf?=
+ =?us-ascii?Q?B3eQCehUlc8+FoSe+1FUfhTnhN0XNzL8TVLtUPqd50XAl3TBvjDSDb0WRkCw?=
+ =?us-ascii?Q?TZi7yQY7XT5GcCdNJr9hyOtxvATK1WjDxKt7xJkaytgLPfr7R4W4oehILvIl?=
+ =?us-ascii?Q?LGWkLbVLVSCJ3qRFx9xuaXJSakUxJ2tORcEGgz/1FTIKk6Befxd6xb5bX3Aw?=
+ =?us-ascii?Q?OenVU/9KpQOnS1W9JLWwb9Kq4WH9sk1Ef85+wBkaejFBY7KqjmnvZoGK6/6O?=
+ =?us-ascii?Q?PO73EykVRIAXNHWUMuH722sE81jUzTn4sLzh7kpRYpbIxmlNRLnmcUoHQprt?=
+ =?us-ascii?Q?rkJAbQfwGm3XDYmb/ULxP3liAcgo0LAxOmcAkA0KESZ75IeuJS4zIv8EWaag?=
+ =?us-ascii?Q?M6/lR+JfJszCUK7yrW0K+cMPR64Oc5lmPdkAozXeM5duJkicbeY7Nml+TzvW?=
+ =?us-ascii?Q?1LJXGFcC4Tuo6fdOEFg3nIAOIc9VTEjlv8Q1Gd8LjQJqyLwgvu2xQRol2rja?=
+ =?us-ascii?Q?b9dRCfrBBcvKmQtnyRpY7dZmGZtvzMVUPXzhMhsWab/XcbLqxcL9rBNp/Y6X?=
+ =?us-ascii?Q?2KGOta/wScp8bxwxZbjNP/KYKhJJn5cx2mNlxoh4PAg8wlGmoCOTF/WhKyai?=
+ =?us-ascii?Q?+oFFmE4J2HhFDhzylGLQ6p2kbU9u9lTUcPfOgyvs0R0HDwVqD4TBsvFo74om?=
+ =?us-ascii?Q?IEipjzAGcuhi6lOJ2c5kqOH+NniBguOeT4OuyJsH8J+XwOo5DqNFLaG9roXo?=
+ =?us-ascii?Q?DlMQjDmuqbDwYlqfwRU40yOwCYIneoSzCxCBU8MPTgMu+7iJUMyhte5EPXKN?=
+ =?us-ascii?Q?oOKYThxaq8XewCrEA5a9kw2eukWKWgb6UrmO09z9gJtVDshpzTgdpGHBIpu8?=
+ =?us-ascii?Q?9wn0BQG5pxylo4NpQEVAEaUXW6fHPegnRa+Nkot2H6LHSspoRUBszoCTPcQX?=
+ =?us-ascii?Q?5gKLWDQnmaQPfe2ZKY48cNX5+S3Ho4RCDOfwjx3TW9HYghGU9Hm8?=
 X-OriginatorOrg: oss.nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 3aec70bc-12e0-4a34-9f0d-08debbd69da1
+X-MS-Exchange-CrossTenant-Network-Message-Id: a41ebb25-c032-4274-83b0-08debbd6a439
 X-MS-Exchange-CrossTenant-AuthSource: VE1PR04MB7216.eurprd04.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 27 May 2026 09:59:17.8424
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 27 May 2026 09:59:28.7033
  (UTC)
 X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
 X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
 X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: xjT+n5a7UolbxnWGP5qjvWwQ0Wik93uf6CugAEf5i458xyBJbsQwnIDMmemoFjxcCZE/kat8bSvwWlCbzsceGOJNQqRh6eNboENRpRjE7HjWXYrSpvBblqfKJ5DF94qI
+X-MS-Exchange-CrossTenant-UserPrincipalName: u1b/Ier23krp+0SMnMPpTrDGAcREbOlIiNiFopK8Dy2wWbAkoPid+DM8t1/GLy0/3YAK2KQNAc2DIgyMu2b8oZMyEV5DxWCYdukIRrsmWVw2ZPfj/O9WB6IOugzFT3RK
 X-MS-Exchange-Transport-CrossTenantHeadersStamped: AMBPR04MB12205
 
 From: Wei Fang <wei.fang@nxp.com>
 
-This series adds bridge mode support to the NETC DSA switch driver,
-covering both VLAN-aware and VLAN-unaware operation.
+Add two interfaces to manage entries in the VLAN filter table:
 
-The NETC switch manages forwarding through a set of hardware tables
-accessed via NTMP: the FDB table (FDBT), VLAN filter table (VFT), egress
-treatment table (ETT), and egress count table (ECT).  The series extends
-the NTMP layer with the operations required for bridging, then builds the
-DSA bridge callbacks on top.
+ntmp_vft_update_entry(): Update the configuration element data of the
+specified VLAN filter entry based on the given VLAN ID. It uses the
+exact key access method to locate the entry.
 
-Since all switch ports share the VFT, so only one VLAN-aware bridge is
-supported.
+ntmp_vft_delete_entry(): Delete the VLAN filter entry corresponding to
+the specified VLAN ID. It also uses the exact key access method to
+identify the target entry.
 
-FDB aging is managed in software.  A periodic delayed work sweeps the
-table using the hardware activity element mechanism, with a default aging
-time of 300 seconds matching the IEEE 802.1Q standard.  Per-port entries
-are also flushed immediately on bridge leave and link-down events.
+In addition, introduce struct vft_req_qd to describe the request data
+buffer format for Query and Delete actions of the VLAN filter table,
+which contains a common request data header and a VLAN access key.
 
-Wei Fang (9):
-  net: enetc: add interfaces to manage FDB entries
-  net: enetc: add "Update" and "Delete" operations to VLAN filter table
-  net: enetc: add interfaces to manage egress treatment table
-  net: enetc: add "Update" operation to the egress count table
-  net: dsa: netc: initialize the group bitmap of ETT and ECT
-  net: enetc: add helpers to set/clear table bitmap
-  net: dsa: netc: add VLAN filter table and egress treatment management
-  net: dsa: netc: add bridge mode support
-  net: dsa: netc: implement dynamic FDB entry aging
+Signed-off-by: Wei Fang <wei.fang@nxp.com>
+---
+ drivers/net/ethernet/freescale/enetc/ntmp.c   | 91 +++++++++++++++++++
+ .../ethernet/freescale/enetc/ntmp_private.h   |  6 ++
+ include/linux/fsl/ntmp.h                      |  3 +
+ 3 files changed, 100 insertions(+)
 
- drivers/net/dsa/netc/netc_main.c              | 882 +++++++++++++++++-
- drivers/net/dsa/netc/netc_switch.h            |  34 +
- drivers/net/dsa/netc/netc_switch_hw.h         |   6 +
- drivers/net/ethernet/freescale/enetc/ntmp.c   | 431 +++++++++
- .../ethernet/freescale/enetc/ntmp_private.h   |  14 +
- include/linux/fsl/ntmp.h                      |  60 ++
- 6 files changed, 1413 insertions(+), 14 deletions(-)
-
+diff --git a/drivers/net/ethernet/freescale/enetc/ntmp.c b/drivers/net/ethernet/freescale/enetc/ntmp.c
+index 2e79515e1772..85abf9303bac 100644
+--- a/drivers/net/ethernet/freescale/enetc/ntmp.c
++++ b/drivers/net/ethernet/freescale/enetc/ntmp.c
+@@ -1046,6 +1046,97 @@ int ntmp_vft_add_entry(struct ntmp_user *user, u16 vid,
+ }
+ EXPORT_SYMBOL_GPL(ntmp_vft_add_entry);
+ 
++/**
++ * ntmp_vft_update_entry - update the configuration element data of the
++ * specified VLAN filter entry
++ * @user: target ntmp_user struct
++ * @vid: VLAN ID
++ * @cfge: configuration element data
++ *
++ * Return: 0 on success, otherwise a negative error code
++ */
++int ntmp_vft_update_entry(struct ntmp_user *user, u16 vid,
++			  const struct vft_cfge_data *cfge)
++{
++	struct netc_swcbd swcbd;
++	struct vft_req_ua *req;
++	struct netc_cbdr *cbdr;
++	union netc_cbd cbd;
++	u32 len;
++	int err;
++
++	swcbd.size = sizeof(*req);
++	err = ntmp_alloc_data_mem(user->dev, &swcbd, (void **)&req);
++	if (err)
++		return err;
++
++	/* Request data */
++	ntmp_fill_crd(&req->crd, user->tbl.vft_ver, 0, NTMP_GEN_UA_CFGEU);
++	req->ak.exact.vid = cpu_to_le16(vid);
++	req->cfge = *cfge;
++
++	/* Request header */
++	len = NTMP_LEN(swcbd.size, NTMP_STATUS_RESP_LEN);
++	ntmp_fill_request_hdr(&cbd, swcbd.dma, len, NTMP_VFT_ID,
++			      NTMP_CMD_UPDATE, NTMP_AM_EXACT_KEY);
++
++	ntmp_select_and_lock_cbdr(user, &cbdr);
++	err = netc_xmit_ntmp_cmd(cbdr, &cbd, &swcbd);
++	if (err)
++		dev_err(user->dev,
++			"Failed to update %s entry, vid: %u, err: %pe\n",
++			ntmp_table_name(NTMP_VFT_ID), vid, ERR_PTR(err));
++
++	ntmp_unlock_cbdr(cbdr);
++
++	return err;
++}
++EXPORT_SYMBOL_GPL(ntmp_vft_update_entry);
++
++/**
++ * ntmp_vft_delete_entry - delete the VLAN filter entry based on the
++ * specified VLAN ID
++ * @user: target ntmp_user struct
++ * @vid: VLAN ID
++ *
++ * Return: 0 on success, otherwise a negative error code
++ */
++int ntmp_vft_delete_entry(struct ntmp_user *user, u16 vid)
++{
++	struct netc_swcbd swcbd;
++	struct vft_req_qd *req;
++	struct netc_cbdr *cbdr;
++	union netc_cbd cbd;
++	u32 len;
++	int err;
++
++	swcbd.size = sizeof(*req);
++	err = ntmp_alloc_data_mem(user->dev, &swcbd, (void **)&req);
++	if (err)
++		return err;
++
++	/* Request data */
++	ntmp_fill_crd(&req->crd, user->tbl.vft_ver, 0, 0);
++	req->ak.exact.vid = cpu_to_le16(vid);
++
++	/* Request header */
++	len = NTMP_LEN(swcbd.size, NTMP_STATUS_RESP_LEN);
++	ntmp_fill_request_hdr(&cbd, swcbd.dma, len, NTMP_VFT_ID,
++			      NTMP_CMD_DELETE, NTMP_AM_EXACT_KEY);
++
++	ntmp_select_and_lock_cbdr(user, &cbdr);
++	err = netc_xmit_ntmp_cmd(cbdr, &cbd, &swcbd);
++	if (err)
++		dev_err(user->dev,
++			"Failed to delete %s entry, vid: %u, err: %pe\n",
++			ntmp_table_name(NTMP_VFT_ID), vid, ERR_PTR(err));
++
++	ntmp_unlock_cbdr(cbdr);
++
++	return err;
++}
++EXPORT_SYMBOL_GPL(ntmp_vft_delete_entry);
++
+ int ntmp_bpt_update_entry(struct ntmp_user *user, u32 entry_id,
+ 			  const struct bpt_cfge_data *cfge)
+ {
+diff --git a/drivers/net/ethernet/freescale/enetc/ntmp_private.h b/drivers/net/ethernet/freescale/enetc/ntmp_private.h
+index 0a9b87286105..ec2a1cdb0768 100644
+--- a/drivers/net/ethernet/freescale/enetc/ntmp_private.h
++++ b/drivers/net/ethernet/freescale/enetc/ntmp_private.h
+@@ -211,6 +211,12 @@ struct vft_req_ua {
+ 	struct vft_cfge_data cfge;
+ };
+ 
++/* VLAN Filter Table Request Data Buffer Format of Query and Delete actions */
++struct vft_req_qd {
++	struct ntmp_cmn_req_data crd;
++	union vft_access_key ak;
++};
++
+ /* Buffer Pool Table Request Data Buffer Format of Update action */
+ struct bpt_req_update {
+ 	struct ntmp_req_by_eid rbe;
+diff --git a/include/linux/fsl/ntmp.h b/include/linux/fsl/ntmp.h
+index f18556b072c8..f34151cc160e 100644
+--- a/include/linux/fsl/ntmp.h
++++ b/include/linux/fsl/ntmp.h
+@@ -270,6 +270,9 @@ int ntmp_fdbt_delete_aging_entries(struct ntmp_user *user, u8 act_cnt);
+ int ntmp_fdbt_delete_port_dynamic_entries(struct ntmp_user *user, int port);
+ int ntmp_vft_add_entry(struct ntmp_user *user, u16 vid,
+ 		       const struct vft_cfge_data *cfge);
++int ntmp_vft_update_entry(struct ntmp_user *user, u16 vid,
++			  const struct vft_cfge_data *cfge);
++int ntmp_vft_delete_entry(struct ntmp_user *user, u16 vid);
+ int ntmp_bpt_update_entry(struct ntmp_user *user, u32 entry_id,
+ 			  const struct bpt_cfge_data *cfge);
+ #else
 -- 
 2.34.1
 
