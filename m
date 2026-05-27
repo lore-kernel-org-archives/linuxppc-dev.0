@@ -1,68 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-21603-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21604-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5746FCD5BD0
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 May 2026 17:41:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 84276CD4F54
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 May 2026 18:07:56 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gQcNX5PXwz2yRn;
-	Thu, 28 May 2026 03:41:00 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::649"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779903660;
-	cv=none; b=NqCx2EQciGCS9ziAnvivqZGdWEgXhBEQXkMlnGtlAy5/FbLyQ75EJQKSVuilXnvZAiW0Bdiw0GVzak+DD/3gidDLzOadOefqCabTSSQZFKfKiBtsCEou2SGutYZGizsPOJaT80zz6YDHkaZbyZQ/rolXCleL1elwYz0ePjOrct1JMb645mvy2SKis8ErY6QC9oSYU2MnVudkDIkJEeuX6u7FQ6y9tKlwnk+G2vXB9PejVMt1tfZjd2/kYpC5htQw5DZsYSkNhZ54xWlzcEseyyo0err7VhuUuK5fHQMa/hqW8SjFSc4d96SFRlidvztYNcOeqjkBGxkN/3u3zVf5og==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gQczZ6xlcz2ySJ;
+	Thu, 28 May 2026 04:07:54 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779905274;
+	cv=none; b=c0xml6A997IfpduUsPG06bA7iYJfY70mTKgSoXs/eNZP3f3834VOCO1cOxRfMqWSqLwtZs58mQbRqKtfZXjLyu1lapiRMFVmU0jW6OfuiUE+M8tO5xll3kgre2M7wfPW54qzcIIAt+kH3iY0bnMwPGV8KaHw17Ao81aMniXJcWJNHjBDvaRLpE9ktP+XjK1wFOHJU/PIQBy8x8bPAEZWzTviqvBEVC3qmQDb9Bk97GnCwmESiMrWVCkSIAwXH77cFY6wGrWsDn5sBhPJUnBwkyUcud4628k4LkCW/fUGAe6dVMdEtJc4NFYqgaErCTg3KZJq0FWkXkyPEh0FJnl65A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1779903660; c=relaxed/relaxed;
-	bh=qag9lBdsZqOV4kYaafONmBvRHghB6X57fmrdhvqCEr4=;
-	h=Date:In-Reply-To:Mime-Version:References:Message-ID:Subject:From:
-	 To:Cc:Content-Type; b=f/XV4lrAm0p8yJZ8+pfwQg8OAxUBA+tI8gwGqgLHO1dIcGL2wWK9O1I3dMRuGU3HHXSe66qSP0NHxbrnPLHxCibQvgDkkzzKPz9wEWiN2Qse1WUhBmtJ6KT+9YbBEBngvH2oMP7S/M2Q0Xcs89vt/r0QlLzR6nMyzdgoLs075uUxt1U70/MzkECFT6fG8S6mpzfSy55zEeqouFmdezjQCgQIoov+pyYuHiX/+kuabT/1MtcqRB101gLmcTFJsCpSRQYemjOEj0blOwB0OtUYRQdtkVOORt4u9pqUuhtY5fgCPWCwX+RlJC4MpEgI1gj1K5iNomkTR97vE+mArWMSeQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=LhW6ijoz; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::649; helo=mail-pl1-x649.google.com; envelope-from=3pywxagykdlqmyuhdwaiiafy.wigfchorjjw-xypfcmnm.itfuvm.ila@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=flex--seanjc.bounces.google.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
+	t=1779905274; c=relaxed/relaxed;
+	bh=0MOXoSm/nGySOe5YkZQIyuBpPebHGJpOJFn3JXoRPDE=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=TasSTEomDJeKf4c+YDi436ouT981MHPaeoEWNtWVmnGPC3jqb7XMI3AJIg4W76pPMec0TVUik8RCUCjprzmtbyN6bjofWsQb4NoJi/dmuZ7NlLx12JyGNW/YlLinG1mWhteiGZ/b8Asi3bkHyGcAms3T8WInkrwRcQfSP1KJ6YsL3HENeD+yzLxKugJjWFIz9NHMLvGBVbKw3N0A0JcF4RDVxyiuUjBe5eD5B34jbTpdv42Fhz65VR1gWR4FqV6IiD6unnZILhi1iKvwisTF2WhizpmmJZQSNqtyeyFudE5mf6DGv2A7XtYMDoKD09S6Bw2AlFvq9uqBtdSV19I2tQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=TzsuE3oF; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=LhW6ijoz;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=TzsuE3oF;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--seanjc.bounces.google.com (client-ip=2607:f8b0:4864:20::649; helo=mail-pl1-x649.google.com; envelope-from=3pywxagykdlqmyuhdwaiiafy.wigfchorjjw-xypfcmnm.itfuvm.ila@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org)
-Received: from mail-pl1-x649.google.com (mail-pl1-x649.google.com [IPv6:2607:f8b0:4864:20::649])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gQcNW3xhgz2yR5
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 May 2026 03:40:58 +1000 (AEST)
-Received: by mail-pl1-x649.google.com with SMTP id d9443c01a7336-2ba268cb5e6so126506345ad.1
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 May 2026 10:40:58 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20251104; t=1779903656; x=1780508456; darn=lists.ozlabs.org;
-        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
-         :date:from:to:cc:subject:date:message-id:reply-to;
-        bh=qag9lBdsZqOV4kYaafONmBvRHghB6X57fmrdhvqCEr4=;
-        b=LhW6ijozT07a5awVyg+6C6d7Grifr3T0BklpIhBaUDl/7qeDiS46QlnjZcbeAF3R6M
-         QrxVgcRffg+yW38cK2mGzlrPPJL2c87m6uKGbRFLmU0xy8NAMTzL4bU4SMZgiS+hEkfr
-         Ov/VEVJ4HWWqSnSyh5mqmPqMKUUo5dv7HKRnQRF0VgpQ+3CcvVxBqSuWZJF+K/3O9BfK
-         uRDDD8ETgPzQrKSf7ybuN2BSxXwgiVe5GKT8OHCrWNwvpRPojptsPVaDV8EDxAE9v4+5
-         inXRljpiZSiJ0BhGaNxZhhRH89xH+Xdhoao9w/z3Fy/5znri7sx8nrnFQ4twWzImNGUr
-         Uqfg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1779903656; x=1780508456;
-        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
-         :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=qag9lBdsZqOV4kYaafONmBvRHghB6X57fmrdhvqCEr4=;
-        b=g3vlq60sTEQnRCN6HS2Pc+NVL848H/7W1OnimLPa6gMZNQe5x5RLjVclRvjTTotFet
-         Yio+BaQ6tYZowS/ynQJrywba3qz+K+Eyw6gKV5ytYK81PVX+cEGhxJDNlvhPaBapxf0y
-         1ciXNoYZiM6hM1XRcEapORy5lAZ21Y9jNScrKm9kjOf++UkMfyiKfKPrwJ80cplFgrRA
-         whvUPXUJbuxzQvDZ/Nmx2yvGPs9g9envaGlxGK63Xe7i7F3Qsh8h3OQbUvT1Sd/XbsZR
-         ch0A5xnxbo34k1b4+Zx/Aigy3YzT6/kDE5u3OR9Q3ywWG8fIOHSo+tAw2HaF6yJU/lkH
-         5ung==
-X-Forwarded-Encrypted: i=1; AFNElJ9RpbKfu4R2fbVAhqHy4pOHB9ykWFKSSEJfCf5R+8M3v/ntuDcJ9Hgkgm7n17Csicva/K2aidWSVQItS1o=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YwKTsVC8eME41TV6sXubBSxkVI9PmjsHDFcq1w1/o35rI+q+swh
-	XsZbO4AqByMrBlEGO7aw5KNgCuADs4ze8yIF1j4hj0GtekIGL4IQ2IzatLgMVZO1RuI06jrrNhP
-	o5v+anw==
-X-Received: from pgii35.prod.google.com ([2002:a63:2223:0:b0:c79:22b6:a344])
- (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a05:6a21:9d91:b0:39f:9eb3:1d09
- with SMTP id adf61e73a8af0-3b328ee2e52mr24673521637.37.1779903655856; Wed, 27
- May 2026 10:40:55 -0700 (PDT)
-Date: Wed, 27 May 2026 10:40:55 -0700
-In-Reply-To: <ahcY4S7shzG_kDt6@Gautams-MacBook-Pro.local>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gQczY5P8jz2ySC
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 May 2026 04:07:52 +1000 (AEST)
+Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 64RDDgZq735816;
+	Wed, 27 May 2026 18:07:39 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=0MOXoS
+	m/nGySOe5YkZQIyuBpPebHGJpOJFn3JXoRPDE=; b=TzsuE3oFOJOutyz310zqy+
+	DzDl4z16llvHotxFMReSCNLEtPWD2yaMHU+NMnFWvhsu/6A4IT8vW04+34o9Kxjg
+	atltfZAVHA2OHdEJjqFnACsk/PSV/d0BUizWAd5uiH3NCwWCybhjryWW5pdbzkaU
+	YnnCUTkxBGIp9UvKSUFtHK+3yvHt09VGsq6vwrmKF1ZNdeYIbokQpZoUw+0La8ER
+	TKGDB8+UvMfstdfj7e/9YUcTTlfa/81oZTmm38Ken7OvuRerXCXqxxkHpyeh0uKn
+	f5IzKdKCBW9RtdrcApIu/NGc1lkzwC4D2cdGO9cK8nh39mjJJ7OJidbdlN7WP8Kw
+	==
+Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4eb4nc9fp9-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 27 May 2026 18:07:39 +0000 (GMT)
+Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma21.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 64RHs69a023938;
+	Wed, 27 May 2026 18:07:38 GMT
+Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
+	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4edjrb4b03-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 27 May 2026 18:07:38 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
+	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 64RI7YD523593434
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Wed, 27 May 2026 18:07:34 GMT
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 71A8620043;
+	Wed, 27 May 2026 18:07:34 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id A9AFB20040;
+	Wed, 27 May 2026 18:07:31 +0000 (GMT)
+Received: from [9.39.21.117] (unknown [9.39.21.117])
+	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Wed, 27 May 2026 18:07:31 +0000 (GMT)
+Message-ID: <42a19577-fe56-44b4-b0ed-37cde6d03ff5@linux.ibm.com>
+Date: Wed, 27 May 2026 23:37:30 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -75,47 +80,205 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-Mime-Version: 1.0
-References: <20260518044150.34632-1-gautam@linux.ibm.com> <agu2UAi6lWclxFYh@google.com>
- <ahcY4S7shzG_kDt6@Gautams-MacBook-Pro.local>
-Message-ID: <ahcsp0tfST5AGdMb@google.com>
-Subject: Re: [PATCH v2] KVM: PPC: Kconfig: Enable CONFIG_VPA_PMU with KVM
-From: Sean Christopherson <seanjc@google.com>
-To: Gautam Menghani <gautam@linux.ibm.com>
-Cc: maddy@linux.ibm.com, npiggin@gmail.com, mpe@ellerman.id.au, 
-	chleroy@kernel.org, atrajeev@linux.ibm.com, linuxppc-dev@lists.ozlabs.org, 
-	kvm@vger.kernel.org, linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [BUG] sched/cache: "Make LLC id continuous" causes NULL cpumask
+To: "Chen, Yu C" <yu.c.chen@intel.com>, kprateek.nayak@amd.com
+Cc: srikar@linux.ibm.com, venkat88@linux.ibm.com, maddy@linux.ibm.com,
+        riteshh@linux.ibm.com, chleroy@kernel.org, tim.c.chen@linux.intel.com,
+        peterz@infradead.org, linux-kernel@vger.kernel.org,
+        linuxppc-dev@lists.ozlabs.org, linux-sched@vger.kernel.org
+References: <51154de7-3700-4cb4-82f2-1b3a8fa427f7@linux.ibm.com>
+ <ahUogeqIq5km7JSr@linux.ibm.com>
+ <058664ab-0982-4c13-9d4b-caa2f7616b0f@amd.com>
+ <20260526140856.139657-1-yu.c.chen@intel.com>
+ <d45877d5-86f1-4581-b3e0-59ceb722de3a@linux.ibm.com>
+ <912676bc-230e-410f-a5fe-153b0f304aee@intel.com>
+Content-Language: en-US
+From: Shrikanth Hegde <sshegde@linux.ibm.com>
+In-Reply-To: <912676bc-230e-410f-a5fe-153b0f304aee@intel.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Authority-Analysis: v=2.4 cv=VvYTxe2n c=1 sm=1 tr=0 ts=6a1732eb cx=c_pps
+ a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
+ a=IkcTkHD0fZMA:10 a=NGcC8JguVDcA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=V8glGbnc2Ofi9Qvn3v5h:22 a=VwQbUJbxAAAA:8
+ a=zd2uoN0lAAAA:8 a=QyXUC8HyAAAA:8 a=8uysP2Pe3OK28tamSnoA:9 a=3ZKOabzyN94A:10
+ a=QEXdDO2ut3YA:10
+X-Proofpoint-ORIG-GUID: G8fU30n7A9ishNSDb65urDp_ZQfE6Loj
+X-Proofpoint-GUID: G8fU30n7A9ishNSDb65urDp_ZQfE6Loj
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTI3MDE4MiBTYWx0ZWRfX21jYUvSMUaJ/
+ SJ/Ipxwzd9PcumlFChPAgvqWR+qX82m8bB2PY264VP4cgTvtfegT5jwR/Kkr9fErVGWAt8NBD7u
+ r2tSisjvovCVgHA1nnSHwKasHdWGqsvpxmxcfboaxQ9oxeYQ/BakibVFNIEP/f9wfREcs2aGmFl
+ p1JNm8aQhftUkUn2/zRxSdUBTL7ibAgKTp2ce9dyUjyedpPC7PPTO6w85/9iVpbKZLJ82cCQMft
+ lGdZ5WrkgFveegJa9oMi2tPTgxvAVZ4F/IShTKTEh62Et0FnH6km1Z8EUs+She4zJ/Xqa+UzYH6
+ 8a+MEfkSni84dyrSPC+l/ARzo9Z4n8VOvsgGOUv32VppRcnNFSTKdqlxDeOdZWBGD3W5cV7YIeY
+ WbPTNMZv93AXxPaoqvekoyzOGmWq0xTkj4P1QLBL3gRfIj0f5VB1o0cB1nHfhkwtBP8uXtq/LM+
+ Zt78qyzRGoGQma0uamw==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
+ definitions=2026-05-27_03,2026-05-26_03,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ suspectscore=0 phishscore=0 priorityscore=1501 spamscore=0 adultscore=0
+ lowpriorityscore=0 malwarescore=0 impostorscore=0 clxscore=1015 bulkscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2605130000 definitions=main-2605270182
 
-On Wed, May 27, 2026, Gautam Menghani wrote:
-> On Mon, May 18, 2026 at 06:01:04PM -0700, Sean Christopherson wrote:
-> > On Mon, May 18, 2026, Gautam Menghani wrote:
-> > > Enable CONFIG_VPA_PMU with KVM to enable its usage. Currently, the
-> > > vpa-pmu driver cannot be used since it is not enabled in distro configs.
-> > 
-> > That seems like a problem to take up with distros, no?
+Hi Chen, Prateek.
+
+On 5/27/26 9:35 PM, Chen, Yu C wrote:
+> Hi Shrikanth,
 > 
-> Rather than enabling individually for different distros, wouldn't it be
-> better if it is enabled with KVM automatically? I can rephrase the
-> commit log to emphasize that this config option is only relevant for
-> KVM (similar to CONFIG_KVM_BOOK3S_HV_PMU).
+> On 5/27/2026 3:01 PM, Shrikanth Hegde wrote:
+>> Hi Chen, Prateek.
+>>
+>> I got back to work today, sorry for delay.
+>> I am trying to go through the mails.
+>> Apologies in case i have missed any bits.
+>>
+> 
+> Thanks for taking a look at this!
+> 
+>> On 5/26/26 7:38 PM, Chen Yu wrote:
+>>> Hi Prateek,
+>>>
+>>> On Tue, 26 May 2026 11:23:59 +0530, K Prateek Nayak 
+>>> <kprateek.nayak@amd.com> wrote:
+>>>> Hello Srikar,
+>>>>
+>>>> On 5/26/2026 10:28 AM, Srikar Dronamraju wrote:
+>>>>> L2 Cache reported here is for SMT8 Core aka CACHE domain.
+>>>>
+>>>> Apart for the scheduler, nothing in tree currently cares about
+>>>> cpu_coregroup_mask() except for drivers/base/arch_topology.c but
+>>>> Power doesn't select GENERIC_ARCH_TOPOLOGY.
+>>>>
+>>>> Why can't Power have an internal mask for MC domain (tl_mc_mask) and
+>>>> the scheduler can use cpu_coregroup_mask() for the actual LLc? (The L2
+>>>> mask in this case.)
+>>
+>> This seems wrong. there is no notion that coregroup_mask
+>> (MC domain) has to point at LLC domain.
+>>
+>> For example, on Shared LPAR, there is no MC domain and LLC is at SMT 
+>> core level.
+>> In that case coregroup_mask has point at SMT mask is wrong.
+>>
+> 
+> On Shared LPAR, highest_flag_domain(SD_SHARE_LLC) selected the
+> SMT domain(L2 shared)prior to commit b5ea300a17e3.
+> Prateek suggested changing cpu_coregroup_mask() to use
+> cpu_l2_cache_mask(), which makes the LLC mask cover the same range.
+> sd_llc, size and grouping remain unchanged. Only sd_llc_id becomes
+> contiguous, which aligns with the intent of this commit.
+> 
+> But yes, the naming is confusing. cpu_coregroup_mask suggests a
+> "group of cores", but after the change, it only covers threads
+> within a single SMT core.
+> 
 
-Not if you can't turn it off.  As proposed, CONFIG_VPA_PMU gets forced to
-whatever CONFIG_KVM_BOOK3S_64_HV is set to.  At that point, the existence of
-the VPA_PMU Kconfig is pointless.
+Yes. Though it might achieve the same effect, keeping it explicit may
+help in maintaining it better.
 
-If you want it enabled by _default_, then turn it on by default, e.g.
+On PowerPC, there are these subtleties of Shared LPAR where MC domain
+per se doesn't exit etc, and on power9 and earlier has different 
+topologies. Maybe one could figure it all out and simplifies them into
+a few masks. But yes, it is slightly different as of today.
 
-diff --git arch/powerpc/platforms/pseries/Kconfig arch/powerpc/platforms/pseries/Kconfig
-index f7052b131a4c..74910ce3a541 100644
---- arch/powerpc/platforms/pseries/Kconfig
-+++ arch/powerpc/platforms/pseries/Kconfig
-@@ -154,6 +154,7 @@ config HV_PERF_CTRS
- config VPA_PMU
-        tristate "VPA PMU events"
-        depends on KVM_BOOK3S_64_HV && HV_PERF_CTRS
-+       default m
-        help
-          Enable access to the VPA PMU counters via perf. This enables
-          code that support measurement for KVM on PowerVM(KoP) feature.
+>> If we need a mask to point to the LLC mask which arch has to return, 
+>> then we would
+>> need a new api say cpu_llc_mask ? that can point accordingly.
+>>
+> 
+> Do you mean something like this?
+> https://lore.kernel.org/lkml/8d14c844-b4a8-4af6- 
+> acab-2cfdd42225be@intel.com/
+
+Yes. This is something i prefer, but not to make it point to l2 mask 
+always. See below diff which now make it boot on Shared Processor LPAR
+where i see panic without it.
+
+Need to add proper comments where appropriate.
+
+diff --git a/arch/powerpc/include/asm/topology.h 
+b/arch/powerpc/include/asm/topology.h
+index 66ed5fe1b718..bd1db3b1dbb0 100644
+--- a/arch/powerpc/include/asm/topology.h
++++ b/arch/powerpc/include/asm/topology.h
+@@ -131,6 +131,9 @@ static inline int cpu_to_coregroup_id(int cpu)
+  #ifdef CONFIG_SMP
+  #include <asm/cputable.h>
+
++const struct cpumask *arch_llc_mask(int cpu);
++#define arch_llc_mask  arch_llc_mask
++
+  struct cpumask *cpu_coregroup_mask(int cpu);
+  const struct cpumask *cpu_die_mask(int cpu);
+  int cpu_die_id(int cpu);
+diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+index 3467f86fd78f..26c15c786c55 100644
+--- a/arch/powerpc/kernel/smp.c
++++ b/arch/powerpc/kernel/smp.c
+@@ -1101,6 +1101,13 @@ const struct cpumask *cpu_die_mask(int cpu)
+  }
+  EXPORT_SYMBOL_GPL(cpu_die_mask);
+
++const struct cpumask *arch_llc_mask(int cpu)
++{
++       if (has_coregroup_support())
++               return cpu_coregroup_mask(cpu);
++       return cpu_smallcore_mask(cpu);
++}
++
+  int cpu_die_id(int cpu)
+  {
+         if (has_coregroup_support())
+diff --git a/kernel/sched/topology.c b/kernel/sched/topology.c
+index df2ceb54c970..3b5155121276 100644
+--- a/kernel/sched/topology.c
++++ b/kernel/sched/topology.c
+@@ -2063,7 +2063,11 @@ const struct cpumask *tl_mc_mask(struct 
+sched_domain_topology_level *tl, int cpu
+         return cpu_coregroup_mask(cpu);
+  }
+
++#ifndef arch_llc_mask
+  #define llc_mask(cpu) cpu_coregroup_mask(cpu)
++#else
++#define llc_mask(cpu) arch_llc_mask(cpu)
++#endif
+
+  #else
+  #define llc_mask(cpu) cpumask_of(cpu)
+
+(One more subtlety; crash would be seen only with NR_CPUS=8192 as 
+CPUMASK_OFFSTACK=y, but that's a different concern altogether.)
+
+
+> 
+>> I don't like mixing MC domain and LLC into one bit.
+>>
+> 
+> [ ... ]
+> 
+>>>   struct cpumask *cpu_coregroup_mask(int cpu)
+>>>   {
+>>> -    return per_cpu(cpu_coregroup_map, cpu);
+>>> +    return cpu_l2_cache_mask(cpu);
+>>> +}
+>>
+>> This looks wrong to me too. In different hardware topologies
+>> there maybe distinction between coregroup and l2 mask.
+>>
+>> Let me go through the code and see if there is better way.
+>>
+> 
+> Sure, please go ahead - I'm on board with the direction
+> you settle on.
+> 
+> thanks,
+> Chenyu
+> 
+
 
