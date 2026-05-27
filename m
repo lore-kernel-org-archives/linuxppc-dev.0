@@ -1,60 +1,60 @@
-Return-Path: <linuxppc-dev+bounces-21573-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21574-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C5A3FCD5BD0
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 May 2026 12:13:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A0276CD4F54
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 May 2026 12:13:51 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gQT5f2RJWz2yqf;
-	Wed, 27 May 2026 22:12:38 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gQT5m45K3z2yrm;
+	Wed, 27 May 2026 22:12:44 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c201::1" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779875997;
-	cv=pass; b=hlTytxMsZmjiT+3GR1/KRWB8FxJbfhI45bzvCt67GTKUC3Z3ZUWxHP1mg4n21hpnfvs7kbkilBUE8tQZVR3X9uRH+UZuW3zZ61F/LbjQxckC6jvCnVTSwaUQChMa5OFpXNiEhuMKFXb+XhKZihXuP4EJ6sPBTe1bGV4YZ3V3isJsB1kXLM+S17ybmKRkLhIODsk38HZV9ACjzHHreRY5XaStqhp0Kdl67CIGISuAf44NSBJlIVEU0LmnL6SnvQYHGeAJutTh8lNeuFa12l/2X/Lx2HCuYprHdAEJ40lhNTLQ1EJlW8zAux0dMFSoGvOmWprRGzWWxbAS5jr0Rw5rjA==
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779875998;
+	cv=pass; b=WRM4yFo/3Rn+1x+enxRWqeOalShw1XO9esnXt45lVD9x8N+nirv9GJeilo3cB0wZXRBf2BH0Y5JCTR+x479Pzp9lOy8dI7lzxSff3MG5KuHTmoWRpVR0C+59KPsCWhfJpow3pQHsHHodI8vbFP8gGt9osX2XYcFQG4he4f6LVQC0HZKKrHci2bjLxjkOAmqZuaMAxhDBW8i+5y0oUZVbrrwqw6Y7fg2UapmMbeXvRhXZ0YDFr9kgM1sBM1jryE6Zl5iGEfnANUxtUUEVXAe/7Mn6gzFv5+h1LLclOKB+/U1fFgAiaBeY485+V+qTGWpq4fT8REzo9Yy0Mcw3KRmHlQ==
 ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1779875997; c=relaxed/relaxed;
-	bh=XeSRdC3DeThks0sTDU8NstsogfKXMUFO5Szntxv1+H0=;
+	t=1779875998; c=relaxed/relaxed;
+	bh=KqdG0hvj/8ESaoKqJRKYKQBvah+RF2uwVS9jehpdDOw=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=PU9LqqboSlKQWD1Yj6bmINSpg+ztulIYqrQ9/ukr6P05Z6MdVU/hlUUTaUs/M+egmDd7i5HXcLg6iRpXT/jgtszRqTvtPTIKeJS+MM7hFIzJ5q7/LJ6EKi7BTMZWdFGJkJEcH+S3VMPdwEP01XNbXqSprRuesmMh3XKHQHSrpCiDdaiputDcGSDc2edkizQ80R4EaNd6ZwdN0lwEu24mXweMTzJH8fmXuG4Irr5VquOvsHNjyHvdT4LTC/1l5gZ2BGte7wOsWfXTHqXTaE0d2ERPVAH7ogu/UdT1EK0uRYhk1Uhv4G8Ptso81whw9guB0M9zAnwKXXbKiHu8xfUunQ==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=oss.nxp.com; dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=O5QRlCmS; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c201::1; helo=am0pr83cu005.outbound.protection.outlook.com; envelope-from=wei.fang@oss.nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=oss.nxp.com
+	 Content-Type:MIME-Version; b=SiSIHqC5GAkxwZfvHRSEoJtuVYi7aVDO8D4dBZfNLpA+Jcd1p5zp6Qzx1Lf6dlIdIrWBwfKc4cwthe6kDTa9Xn/DI8IisWAiGMA4JzfwV//su9Yw9lBZI4ghITR0ZTPvVIFJolCBsgGDt1SJJcUYD4i8l5pDadB61sE5/Z7Cd993aTLEP2D5qKBHkRhsJU52TE6yLvggVvMSEVUMyt8N+yFb7DsekldUeUBsz58HLDAwarEI4HBl5VF14hTWUeNg6q1lm4Yoiql86PzGtvRRORsKQH6/Sfcr3oNf3rxUhMElcvrFjw87BsvbInaCGLoDqtgXLG4vH5UXIJKhGlOM8w==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=oss.nxp.com; dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=BabAuk6l; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c201::1; helo=am0pr83cu005.outbound.protection.outlook.com; envelope-from=wei.fang@oss.nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=oss.nxp.com
 Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=oss.nxp.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=O5QRlCmS;
+	dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=BabAuk6l;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=oss.nxp.com (client-ip=2a01:111:f403:c201::1; helo=am0pr83cu005.outbound.protection.outlook.com; envelope-from=wei.fang@oss.nxp.com; receiver=lists.ozlabs.org)
 Received: from AM0PR83CU005.outbound.protection.outlook.com (mail-westeuropeazlp170100001.outbound.protection.outlook.com [IPv6:2a01:111:f403:c201::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gQQ8X1vJ7z2xHK
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 May 2026 19:59:56 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gQQ8Y49cYz2xHK
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 May 2026 19:59:57 +1000 (AEST)
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=lYmieTm9PgYKXM7ErhKsKwe6eDgvESojBiHtMfN2pbPV9ZQOE5u8HW8qmkb5pIE+Sc7LvCU7MDnPpfxfl1K4TUsrfsf3m5VjRwBO4YLS/PmzY9R5WpbWO7FSXL168qFHAb135zr+mRZptyRmmLpzKiX7ryR+Aimvxfn0oNnhnRwo5CEt2sYYW2B4H191F74A10g1/3d3dc7Ji0TrzDvi+dZmPAnDyM9lqHtJFPbAuXI0odm24MXaRzwKFMsxt69wcSIUCBab4jK0NK+Ep+VmLpMMeMx3pb+QffZcc645v7ySRSUiOpposuDzrW/eNnk6sUdECSC/Z31rCZHgdMTAoA==
+ b=ASWBm5LfsuFjW3+vR0nxUsrNJ0aZBWMN6Fp8743VzBakNRDYHM1OZfOwCDvtmbl9Nn4N3VfxbhIZKzE4hkPqBlSFmfbCopBELHJ7TfaA1VM40V1U2V3DUSCOV3PWPmMjJwmf4dQfCdbLQDNPdkCrxp09zZ0YvolLgnxmn7eN/I/U0ghQeJCDTA9zsdvSzPyOuXEm6rKQKdW84WRV18DYRyj0HNZWKxx3ay2NuFqC9/R5DOCji2ahp9KsuDGVJ+ej31y4AT5IPkZU5u4g/hekIW/HJlKQYpMpDY25zMqPEYctXUIz52Tp5eptTEKY+iYSgJHeXIgUQUmDk+WpF0w0zA==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=XeSRdC3DeThks0sTDU8NstsogfKXMUFO5Szntxv1+H0=;
- b=pqPAByqrel5+vErX/jePVCzdwGe0szu/y6E0prziDD2FH89x/d9DQKx8b5rfxnXTknfOf0NPiHKJkWsxFFUpTb1PUijn9V0dHm7F/1iJ0SJ4QebMgrT1by+mOQsQls1S1nS4TRSAnx9FiRq3DLIOAmQdOY51UCfbtEFcfuWsQS7dqEqaBHkpcBxVEMnZMz3+nqF8VZbAh7adT+sT8Yj6H/IF4i065TvxlWebjHuxdiYFiwIQZXPq3IzuBihDbie3sabbXyjUpGOXdebVmXrRk/AsCQ0tsCO3qO70z/CHYJ4T/YiR7yyup5UZhzSq9apHW+OILPxoXqOVbuA6K1vRrA==
+ bh=KqdG0hvj/8ESaoKqJRKYKQBvah+RF2uwVS9jehpdDOw=;
+ b=q1ahIzd6+uVP7D6SJfw+x+3NvBz3ubdFkjH6enTwju9qO2eqeDJWbT/UzKTD94pa4tgHwF/kisaPAW8LwhT750vfVBxd/oqgZHJaIzxQWlDV07m7HQ2kQ0c/3GoAXDtxFd21ttAyGSEdoO+brr/9OYxZaONyzw8Bh1eb79xIW917/hIXde4u3x56ZMdVNluJJMnZdU55eWf45avgkhaJpOwGQeZqKs25qZyne5cd8KCJf5pxHCu6EKw8SmHsHO+yKP6zVcc0UeDWtEetg+rIwkZS+XUT2nXATIBm3yNPj1XVV5rQORyRfWrc0IOUj8tuzrGr2p6UqJXs6qmSFlccuA==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
  smtp.mailfrom=oss.nxp.com; dmarc=pass action=none header.from=oss.nxp.com;
  dkim=pass header.d=oss.nxp.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=NXP1.onmicrosoft.com;
  s=selector1-NXP1-onmicrosoft-com;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=XeSRdC3DeThks0sTDU8NstsogfKXMUFO5Szntxv1+H0=;
- b=O5QRlCmSmay2gZY/6SCoCtPuC6vS0LbhmXGWc4deZOWkRrHf9umZBX3E+BnDJCEl5IHGvu2BMS9c9MiRS+c9dUC4bvBqdoEQ7vctftXDEKAcoLJ/VCOYZ7OG3jcsSOCbLGQapDuHdbldyptPBz3ShpOdoH2QlDSKQ8h1NE0dSYgOeipkeIU2WdK1RRF/9ZY4rrw1eva6eNZkI2tQEUwojojRW8sL0VTpNrDok3X2uVJkhiewzcaS21WDVz9laGCPJ6bHYrQ2me+DWaQcM0S8DEjol6HdClAUO/W3KACrWuHE3s3mUS3RpL4zRcQ/y6DOv1iWUK9ZEpVlB7uj3ZziwA==
+ bh=KqdG0hvj/8ESaoKqJRKYKQBvah+RF2uwVS9jehpdDOw=;
+ b=BabAuk6l5snrY8cff7/2OepwiZog1S2HR0eDspX1RiFmabGytFIOq9xma06EStJlsIlZJX0JQKhWeEsRESMiCotmlmQZd1wLUbBdLTBpTb5ACJbTE1l2qeEVVlSUvcV9z+pf+F7zFPEbEKFRZtn3iiKI50edgprFAtn4HHb23LipKBMtcWz1iIXfEjB93kuuAFSZD8Md296YM5zrieobyy4sgFdUy9jxrfeolLClDdbUuxm9BP5P5WBBF5rEbEBn+fgdxHXXQLvQFZ+qrcej+VSm2y945+unMAkXkB2Yczcw7FsMSP6pIe/VgpxCkH+PHk0uweLOCLgDIv1a9g11Bg==
 Authentication-Results: dkim=none (message not signed)
  header.d=none;dmarc=none action=none header.from=oss.nxp.com;
 Received: from VE1PR04MB7216.eurprd04.prod.outlook.com (2603:10a6:800:1b0::22)
  by AMBPR04MB12205.eurprd04.prod.outlook.com (2603:10a6:20b:758::6) with
  Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.71.12; Wed, 27 May
- 2026 09:59:47 +0000
+ 2026 09:59:53 +0000
 Received: from VE1PR04MB7216.eurprd04.prod.outlook.com
  ([fe80::a9a5:cf83:dbe8:1f74]) by VE1PR04MB7216.eurprd04.prod.outlook.com
  ([fe80::a9a5:cf83:dbe8:1f74%6]) with mapi id 15.21.0048.019; Wed, 27 May 2026
- 09:59:47 +0000
+ 09:59:53 +0000
 From: wei.fang@oss.nxp.com
 To: claudiu.manoil@nxp.com,
 	vladimir.oltean@nxp.com,
@@ -73,16 +73,16 @@ Cc: wei.fang@nxp.com,
 	linux-kernel@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org,
 	linux-arm-kernel@lists.infradead.org
-Subject: [PATCH net-next 5/9] net: dsa: netc: initialize the group bitmap of ETT and ECT
-Date: Wed, 27 May 2026 18:02:13 +0800
-Message-Id: <20260527100217.794987-6-wei.fang@oss.nxp.com>
+Subject: [PATCH net-next 6/9] net: enetc: add helpers to set/clear table bitmap
+Date: Wed, 27 May 2026 18:02:14 +0800
+Message-Id: <20260527100217.794987-7-wei.fang@oss.nxp.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20260527100217.794987-1-wei.fang@oss.nxp.com>
 References: <20260527100217.794987-1-wei.fang@oss.nxp.com>
 Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
-X-ClientProxiedBy: SI2PR02CA0001.apcprd02.prod.outlook.com
- (2603:1096:4:194::10) To VE1PR04MB7216.eurprd04.prod.outlook.com
+X-ClientProxiedBy: SI3PR01CA0006.apcprd01.prod.exchangelabs.com
+ (2603:1096:4:296::19) To VE1PR04MB7216.eurprd04.prod.outlook.com
  (2603:10a6:800:1b0::22)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -99,234 +99,130 @@ Precedence: list
 MIME-Version: 1.0
 X-MS-PublicTrafficType: Email
 X-MS-TrafficTypeDiagnostic: VE1PR04MB7216:EE_|AMBPR04MB12205:EE_
-X-MS-Office365-Filtering-Correlation-Id: 636c40a2-f7c1-456b-0cc6-08debbd6af41
+X-MS-Office365-Filtering-Correlation-Id: 430a2476-04c3-49a0-f4f2-08debbd6b2af
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam:
 	BCL:0;ARA:13230040|7416014|376014|1800799024|366016|19092799006|11063799006|56012099006|6133799003|18002099003|22082099003|921020;
 X-Microsoft-Antispam-Message-Info:
-	jJADa85cCzhwB8c5XnsmyVbnr4rf+c+uRm/bjSZpnAEKW0/wIox/wbTU3L1BL2sbdOzkUjeemRZInEXrmyQYa/A2f53IfRCsQxBGRNgdGO2WCNclb3jxbTGxaqGwd/mYp4Cp3XW/sk5RGNQqrveJgXCUq/4NzCsZiRnxNTr3DKq7i27sCzE8tBKoeqDEo3IvsTo9MNtSEBVxvyUep3Osf3mix0c86xqwq4ZcuC1mROsEFzNz/Zc9WkC3P4Et63LZE4saefqSrmTCGUWAbxYEzmDxdj5/UQa2G21vgzC5Y+dY4JXhsL0Ps26Uv7CuJpUD4Kz70/CmL89WyFNhdHJtd88ooyqlq+CSqEIqDCNgzaEwR1MjqCRE80sdj2xbKZu8w9fKBo3fm4yvoOxUVJJVGklIIcy4kMCvh1mMBl1fC10jS3O9CaePLKAhttPXvj7CIUGw2b3jHAV28lZBt4yTwvHVYI1dPwEBoFN6ur9P83rxAQK1DkJWjP5jmjVqw/xNuYNUxqdWluzh+Qu1NNWycT882U8io0r62RrqLmKjlPd3SZkSTUR0r9jN34vkIQjunIjfCuInsHVng9h+C5+mA9Bpd67ZnTWjjjVLQ7/DdHevAfavReV77p7ikDhkrOcDjDeWM9Jdju7ybthbnR6MagD3at/yHsc3IsOk5Lsk5ojh++JuEW/xp9jvPVseZcOFL1OoDZVHraV92SxDRxnd3vkbIExKED96uhgv8P2hAxM=
+	0RXUMoDu/PukJorZcmorrgIqbHxEIpnSkmfqkH3rjZYlU45puI7MT3PdOxYS5nzshcMZpINf94t408VPIWTgobbEp6FH0+mHTMIJm+qmPOAP1n8A2L0/pTTqFJ6To+WmAObaSO7QmLUqrR2Yk23AET/sxGNmd3xABW5MjiB39bUZ+0Xi46K6gDDcQ5T55wm+FM4lJ72yqGdfZN+s+Rk6/LGWNk+l9/ErdxPW/tNMmNzK5cBs/4ChV6SwRXblhh0dT+GMZMAIc6u3Z54kSq7w3mP9AhgdWdg/Ls5hiAGpwgLNa6/Vqji0BbOMMEmLJt/h5fjulvk74p8Ne9FEh/CIL6mmTf+ihbVt0mYQqsk93qdat9VvlAfEAY/iwQJU3nXdM9nHaxyJK8cSnr8s4qzQU9jzarqgWQxP1NUZ6Jkv0UvXhA2fiZTMY4fuSihpC+KwmKrCsnEbfvmu7agiaEi/ZP+BjtCXpqLbDRnJsOYI6bBlPujwuOuEXBL3RI8T8w1wIX4bJeFEbOqqYYzPIRJeWvL6mujfkw1TYwL6JeaDnAZROV9ZG1ykF/+1wBrTe7w3ZHaLIe2gO5YvAUinifr9Ewin5qtKWxNutxIytqedDMbvC3+MU8qBhwXkAP2Cvn1B/b+w3TMnW5LyJTooj+xlyarVroyvQFylWY2i1qtCIW4EQC0H4tLSWtI6vE2uChjXxGFDHlTQpkdMnyQu4HdFBgH8+M+FGMT+ZoE8/jD/K88=
 X-Forefront-Antispam-Report:
 	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:VE1PR04MB7216.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(7416014)(376014)(1800799024)(366016)(19092799006)(11063799006)(56012099006)(6133799003)(18002099003)(22082099003)(921020);DIR:OUT;SFP:1101;
 X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
 X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?bCuq9kuoTlRcqVSPsUp4Tka1rn4qwXjPMwOfV4LMfl6dxzAu4KAazphLg1m+?=
- =?us-ascii?Q?mw7eCIp5gVNfgvTuuGgwHlWPWH7lu7r55fp4xSgx5ckZ37sUb2ghSe/laI9b?=
- =?us-ascii?Q?YG8YcWQEPW1J0u5gqmrsAap2Q7U+WluRcPdfL6YU6biMUR7PuHnJ61bYBquX?=
- =?us-ascii?Q?6BjdA8AHdlxfiUPFQgMPRPa49gdHAmRiYT7G6xIDcKkNQve8VfQnqM9oFzi1?=
- =?us-ascii?Q?EnmvlRk13vz4gCy59gfLXyV0H82ZWahhwd5YE9SY3nKBSPBR5TXdr8miAzpa?=
- =?us-ascii?Q?W7G0pGCKcXV/69lhXYao/pGv6luf8fAd6BdFKclNDxx2tGFydtF63BJM4bVS?=
- =?us-ascii?Q?wbZg7tcaHqfhhDDodf45aKFu7v1wk36tIp+pz6t9ObDf+xNfJTyb3dCsvpci?=
- =?us-ascii?Q?18QUyFphnsSLUdlTxfgx0cJ9wCMYo2OMSHsK8Z3ZFI2EkDjMDf7J0UZ3cg6V?=
- =?us-ascii?Q?z79iYCCQ7Uf0gPSOYgEbrspMqfIu0j9fBTPzdfS7aAIqcVH6elQiocDuFw3C?=
- =?us-ascii?Q?xtQpwKNUz/UsPg+d4bAF61p7BoTnxXjmO5sIEUMuLDUwGkILGOUrqbdN36bs?=
- =?us-ascii?Q?FEhjNgBKJ81fTqwQx1p2SmDnLe3GptRCVuqE4nEYEFqYkDpQyLyp6A/8VNcH?=
- =?us-ascii?Q?NczfKk9asKxnWoEkkLtM1uEZVSx5iNMmkUJz1yo+/6eDQBkIuAcbSVzciJHT?=
- =?us-ascii?Q?/v38sYHubIVba+l3JDo4dU4+xBNfsg68PAsCeUXuCLJCPh3P3NpYiFbqVEbl?=
- =?us-ascii?Q?U4uSU85r3A0UNUnGc6XbXV8IPV/nTmeiVzHf0Vwti4cWVK/tFdp4aUcw72Yq?=
- =?us-ascii?Q?hxQQfuXzmMw6Y37d6+K1G0a9izKzfo9U91Mb5wNzZXY17HCGLeQg5CpGAEIi?=
- =?us-ascii?Q?by9Rff4IIFD+TtGoIWzhk3nBqgr3hII1ReDF0DqH7bW7HNWmTH6owFcZk8tA?=
- =?us-ascii?Q?g5GCYl+hU98lfSprOyoe5u7zpN92rOS+muAi9c96UfhxLpGQ6aYj4vukCxJX?=
- =?us-ascii?Q?OsXPWmwZKb7EbH2xeNCPGzwoOe0DhVCjM3/+LsRq29xCUkuzhQivWm1d/Z6p?=
- =?us-ascii?Q?MBkSsmvIvPDVBwooU/qxOqIepqRvD1SONZq6YA4MxO+4tcOljg+sVjMNiLx6?=
- =?us-ascii?Q?A9gh7FDXdVfLCVj6SjO1cmtjslaRyuLCCLa6UEvHb3lVoj+KMjigtEzX3UTI?=
- =?us-ascii?Q?oInUTqsrishzzdHaS7BMOIhpXtWoRT7ZUIzh+Dvncv6YH7+smnYHBz6vR5m6?=
- =?us-ascii?Q?K6AHRsxl3E1PeaOXQ292AczgLa81ED/b6ZhrQI6ijWat7BEn+ml6ucUdY3Wy?=
- =?us-ascii?Q?fc4rEMJagHE3TOdaDPbPML85YONM359T9O1i7Qsfo9T1J7v6YGszLFMVR8r+?=
- =?us-ascii?Q?OwUBhpu7d/vITXpyXHdlinLimpl6iRsWPWtTvkgYSBdQtx3uT4DRXVslfDdC?=
- =?us-ascii?Q?BPXH2fjKZJeYwcSmwF57vG0NVbpbwgwma8s7AY1rJYYJ2N7/zgJ+rVI4VocO?=
- =?us-ascii?Q?BRbfpr+28jtpjszHmhyv1PbbpYVS70TR13GPaKtKIMbxTbhRSO5qTV+twICi?=
- =?us-ascii?Q?yl+xIrIv8NRGME+Z10eOzPdwhIe37YZXaSh8mn5oOOTNAjRyphfJayVkgGe3?=
- =?us-ascii?Q?zEx7kIRrFcUvY2rBzUyLgQW5hixXMxgVtkHq658bNbwUjVR3hp6A9MWErWkh?=
- =?us-ascii?Q?vG6w474Wv+2v4a/aCcS9WT+aKCaxxS7yONQLr2zZLJblkH0H50MoXrcnmGIL?=
- =?us-ascii?Q?gfHfDkRH6YdCW8Z0cBFqQthpQvigle9uIVn0892G7I50wPU4spWb?=
+	=?us-ascii?Q?vowu2kZysaBoAYMvcBB6GJBGTqj9GJvEcQpVKL5fF9A1dF5JAe/fyga8wq32?=
+ =?us-ascii?Q?9KQmm1xxl7uqw29OiKuZi2+eGXmU5mpmTvM1HKg+OwlGjIO8Ofl5YyjbTl48?=
+ =?us-ascii?Q?VygzdIwUAfejfZwuwWRb8JfNASELEXPxUo0MYLAkZIWa5PfRoDblDckrCdsm?=
+ =?us-ascii?Q?zl3cd8lkc6qXwC+mKr7la8Ki2Lu3qnUUg6FuTMWy+YBBN5nKO7Z3VEdk7DcU?=
+ =?us-ascii?Q?ptT1w9TAK7oVRF5aDV03xh00aLbaThziFbrlER22ZIqMZE0b4H2gp9Q7O+AD?=
+ =?us-ascii?Q?xBEmQFw+BTL0PQ1NdgIqHMKmhgZUNs77KYpXW9rmQJxtlUCvz7/OCW2WwL+F?=
+ =?us-ascii?Q?eUpDHiOLfNylUrwotw9kxb+Z8HvtkwI56w6Fp6CF5XGt/hj+01e3fdxewTZQ?=
+ =?us-ascii?Q?oYh23gNQyZdWFR0yqWaU4hOyomE4yUPcWMDPKrwvmZLHS2pY5elk2u0HwHVG?=
+ =?us-ascii?Q?SL0gY0AqhW6Tv+wIMS6NAoHg/yCkXJBVDr0xz7N4jithQDE1OgOvyJJQWa1J?=
+ =?us-ascii?Q?+P5Br2Av+zK8n7sG44GhH5uJY76XPoHj173DmHgGsi1X6Gkciq6UMBpC4RZS?=
+ =?us-ascii?Q?1LLGbGfl4od7C1AsJJMpac7Wk+UBEp5VegJDJB0C9mTYtCmWro+Hmi7nzeK/?=
+ =?us-ascii?Q?gtp+7t5mX0YQYhkPse40M6jBljMUNLbTOxiou6rynm1/NobRy1qUl4QdfssX?=
+ =?us-ascii?Q?fuEMhqFxVdMgdDdSKPBrqOaCnY8OgKRXn6wOJPFmO2Fz4hWcm1ejFo7ixZwp?=
+ =?us-ascii?Q?iJj7yLJL9MG238a8Q8srNps9ybEyGRJAm3R24WH3GyYArrhLS+WHvYLY/pOt?=
+ =?us-ascii?Q?hK4nUW4vWF2SdBk6QH/U/knw4inecEpQagON3A/KSeKsxXYpR11cBQ5fCJ0e?=
+ =?us-ascii?Q?eiLnOBKaZ49e5m6fp6ZCV3LyXv/A431z8dJvKmfqKspb1VSfO8qEB54+Wsd7?=
+ =?us-ascii?Q?Bszc3j2udMSopfi3kc442xTdNBvGSYbOS3M5iwj/pja2g6vVQhw1AdqihPnx?=
+ =?us-ascii?Q?Qu+R9ohZCp5gNS8sXK0UTNPET0q5vwtLKnzTKwqrRC9VAY0hTO2jPxs7FuhE?=
+ =?us-ascii?Q?aUcbV0q7/2w6IU+iv0e6O5nGxd7Aa2GA9tZvq1Ty07DBmdW5PLYsQTEXd/hC?=
+ =?us-ascii?Q?7JcUl08OMFPfnxshoSNoZ0LMtzcrkZ6JUoX+kFqingBTQnXmFuuuNsvU4+um?=
+ =?us-ascii?Q?k7+UX+qzbmOPwyAtNYOb2tsN4O4tVfc7IVmae4rlVhJZ6+isNsQECuqKSMMn?=
+ =?us-ascii?Q?JYWLw8nVPnKo/vdBVMs9eYHTZmT/3qluidE+DaWUzC35YBJl1Q/ypeEL0HBx?=
+ =?us-ascii?Q?MJz3Z9Hp8KCye5hCztMK2mLxdQvnb7IqEloXxZrdncrEkAYQDDAHJ1uYxppb?=
+ =?us-ascii?Q?ZATDf/PzFdqZ6WtpgubwVgtbugZ7gDzPTmKGfpvYevkFByvWk3SmSwbeirZ/?=
+ =?us-ascii?Q?xHwFsTBBcOsPRaIhVqQ42U9w5rhfSKoS3FAfIe6oIU2TLz95xZRfXoOn1zbU?=
+ =?us-ascii?Q?Vo1CfUaQyEr2zNe/b3tLUOabZOtquL7dKA23DEe9KtiZUXTmNhYf3sTNCVAc?=
+ =?us-ascii?Q?h7ZIt+EMM0YarMWeVhE63+a93S3J675PdUvoQ53QdI9X3vMpOWfIPWtyuQz7?=
+ =?us-ascii?Q?bSeOusKGwo0mKfD2n8W+ac4OGsiEEgTvRZS9il4ebEV+7BGAm2pdcIMqo92p?=
+ =?us-ascii?Q?UfLEOMMceGHCMyUzqeJiFGoNnfu8UV52Qh8vvOofJZz4NWBRuQJdDm5hBFtU?=
+ =?us-ascii?Q?q6JUAitil7CzSDautzpEDM5AGPwNuSMdFO/scIj+GBNOlyevESxl?=
 X-OriginatorOrg: oss.nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 636c40a2-f7c1-456b-0cc6-08debbd6af41
+X-MS-Exchange-CrossTenant-Network-Message-Id: 430a2476-04c3-49a0-f4f2-08debbd6b2af
 X-MS-Exchange-CrossTenant-AuthSource: VE1PR04MB7216.eurprd04.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 27 May 2026 09:59:47.3091
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 27 May 2026 09:59:52.9884
  (UTC)
 X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
 X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
 X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: z46MeSZkgwWTUpvIZolAE+iJcRQTarxu5sONkWNExw+72gJGH1+YwK4XNbK92uEwNoiQT7wlYa3JlWJQ2s8+sVa+vwTx5SHPk+iKeO4nXLmO1/znvV1nhoBuewIpiYo5
+X-MS-Exchange-CrossTenant-UserPrincipalName: uBGCmP5E7KvnQEzwskLyPjWR5d+tMIizZJz6C6DlmoD63Coe6maYaAGT105ezN7HrgWfVKaz73dSIVW9NzBy6KHGC2cerXYCeQdo/umonJkZbYn2XFlSCj1tBu57LZGE
 X-MS-Exchange-Transport-CrossTenantHeadersStamped: AMBPR04MB12205
 
 From: Wei Fang <wei.fang@nxp.com>
 
-The Egress Treatment Table (ETT) and Egress Count Table (ECT) are both
-index tables whose entry IDs are allocated by software. Every num_ports
-entries form a group, where each entry in the group corresponds to one
-port. To facilitate group allocation and management, initialize the group
-index bitmaps for both tables based on hardware capabilities reported by
-ETTCAPR and ECTCAPR registers.
+NTMP index tables require software to allocate and manage entry IDs.
+Add two bitmap helper functions to facilitate this management:
 
-The bitmap size per table is calculated as the total number of hardware
-entries divided by the number of available ports, which gives the number
-of groups available for software allocation. A set bit in the bitmap
-represents a group index that has been allocated.
+ntmp_lookup_free_eid(): finds the first zero bit in the given bitmap,
+sets it to mark the entry as in-use, and returns the corresponding entry
+ID. Returns NTMP_NULL_ENTRY_ID if no free entry is available.
 
-These bitmaps will be used by subsequent patches that add VLAN support.
+ntmp_clear_eid_bitmap(): clears the bit associated with the given entry
+ID in the bitmap to mark the entry as free. It is a no-op if the entry
+ID is NTMP_NULL_ENTRY_ID.
+
+Both functions are exported for use by other modules, such as the NETC
+switch driver which needs to manage group index bitmaps for the Egress
+Treatment Table (ETT) and Egress Count Table (ECT).
 
 Signed-off-by: Wei Fang <wei.fang@nxp.com>
 ---
- drivers/net/dsa/netc/netc_main.c      | 90 ++++++++++++++++++++++++++-
- drivers/net/dsa/netc/netc_switch_hw.h |  6 ++
- include/linux/fsl/ntmp.h              |  7 +++
- 3 files changed, 102 insertions(+), 1 deletion(-)
+ drivers/net/ethernet/freescale/enetc/ntmp.c | 24 +++++++++++++++++++++
+ include/linux/fsl/ntmp.h                    |  2 ++
+ 2 files changed, 26 insertions(+)
 
-diff --git a/drivers/net/dsa/netc/netc_main.c b/drivers/net/dsa/netc/netc_main.c
-index fa7dd307ce13..d4475ad7ed6c 100644
---- a/drivers/net/dsa/netc/netc_main.c
-+++ b/drivers/net/dsa/netc/netc_main.c
-@@ -323,16 +323,104 @@ static void netc_remove_all_cbdrs(struct netc_switch *priv)
- 		ntmp_free_cbdr(&ntmp->ring[i]);
- }
+diff --git a/drivers/net/ethernet/freescale/enetc/ntmp.c b/drivers/net/ethernet/freescale/enetc/ntmp.c
+index 60e2ed68ed62..98f8e41e0267 100644
+--- a/drivers/net/ethernet/freescale/enetc/ntmp.c
++++ b/drivers/net/ethernet/freescale/enetc/ntmp.c
+@@ -47,6 +47,30 @@
+ #define RSST_STSE_DATA_SIZE(n)		((n) * 8)
+ #define RSST_CFGE_DATA_SIZE(n)		(n)
  
-+static u32 netc_num_available_ports(struct netc_switch *priv)
++u32 ntmp_lookup_free_eid(unsigned long *bitmap, u32 size)
 +{
-+	struct dsa_port *dp;
-+	u32 num_ports = 0;
++	u32 entry_id;
 +
-+	dsa_switch_for_each_available_port(dp, priv->ds)
-+		num_ports++;
++	entry_id = find_first_zero_bit(bitmap, size);
++	if (entry_id == size)
++		return NTMP_NULL_ENTRY_ID;
 +
-+	return num_ports;
++	/* Set the bit once we found it */
++	set_bit(entry_id, bitmap);
++
++	return entry_id;
 +}
++EXPORT_SYMBOL_GPL(ntmp_lookup_free_eid);
 +
-+static int netc_init_ntmp_bitmap_sizes(struct netc_switch *priv)
++void ntmp_clear_eid_bitmap(unsigned long *bitmap, u32 entry_id)
 +{
-+	u32 num_ports = netc_num_available_ports(priv);
-+	struct netc_switch_regs *regs = &priv->regs;
-+	struct ntmp_user *ntmp = &priv->ntmp;
-+	u32 val;
++	if (entry_id == NTMP_NULL_ENTRY_ID)
++		return;
 +
-+	if (!num_ports)
-+		return -EINVAL;
-+
-+	val = netc_base_rd(regs, NETC_ETTCAPR);
-+	ntmp->ett_bitmap_size = NETC_GET_NUM_ENTRIES(val) / num_ports;
-+	if (!ntmp->ett_bitmap_size)
-+		return -EINVAL;
-+
-+	val = netc_base_rd(regs, NETC_ECTCAPR);
-+	ntmp->ect_bitmap_size = NETC_GET_NUM_ENTRIES(val) / num_ports;
-+	if (!ntmp->ect_bitmap_size)
-+		return -EINVAL;
-+
-+	return 0;
++	clear_bit(entry_id, bitmap);
 +}
++EXPORT_SYMBOL_GPL(ntmp_clear_eid_bitmap);
 +
-+static int netc_init_ntmp_bitmaps(struct netc_switch *priv)
-+{
-+	struct ntmp_user *ntmp = &priv->ntmp;
-+
-+	ntmp->ett_gid_bitmap = bitmap_zalloc(ntmp->ett_bitmap_size,
-+					     GFP_KERNEL);
-+	if (!ntmp->ett_gid_bitmap)
-+		return -ENOMEM;
-+
-+	ntmp->ect_gid_bitmap = bitmap_zalloc(ntmp->ect_bitmap_size,
-+					     GFP_KERNEL);
-+	if (!ntmp->ect_gid_bitmap)
-+		goto free_ett_gid_bitmap;
-+
-+	return 0;
-+
-+free_ett_gid_bitmap:
-+	bitmap_free(ntmp->ett_gid_bitmap);
-+	ntmp->ett_gid_bitmap = NULL;
-+
-+	return -ENOMEM;
-+}
-+
-+static void netc_free_ntmp_bitmaps(struct netc_switch *priv)
-+{
-+	struct ntmp_user *ntmp = &priv->ntmp;
-+
-+	bitmap_free(ntmp->ect_gid_bitmap);
-+	ntmp->ect_gid_bitmap = NULL;
-+
-+	bitmap_free(ntmp->ett_gid_bitmap);
-+	ntmp->ett_gid_bitmap = NULL;
-+}
-+
- static int netc_init_ntmp_user(struct netc_switch *priv)
+ int ntmp_init_cbdr(struct netc_cbdr *cbdr, struct device *dev,
+ 		   const struct netc_cbdr_regs *regs)
  {
-+	int err;
-+
- 	netc_init_ntmp_tbl_versions(priv);
- 
--	return netc_init_all_cbdrs(priv);
-+	err = netc_init_ntmp_bitmap_sizes(priv);
-+	if (err)
-+		return err;
-+
-+	err = netc_init_ntmp_bitmaps(priv);
-+	if (err)
-+		return err;
-+
-+	err = netc_init_all_cbdrs(priv);
-+	if (err)
-+		goto free_ntmp_bitmaps;
-+
-+	return 0;
-+
-+free_ntmp_bitmaps:
-+	netc_free_ntmp_bitmaps(priv);
-+
-+	return err;
- }
- 
- static void netc_free_ntmp_user(struct netc_switch *priv)
- {
- 	netc_remove_all_cbdrs(priv);
-+	netc_free_ntmp_bitmaps(priv);
- }
- 
- static void netc_switch_dos_default_config(struct netc_switch *priv)
-diff --git a/drivers/net/dsa/netc/netc_switch_hw.h b/drivers/net/dsa/netc/netc_switch_hw.h
-index 1d976882a6cc..1404ae41c7bc 100644
---- a/drivers/net/dsa/netc/netc_switch_hw.h
-+++ b/drivers/net/dsa/netc/netc_switch_hw.h
-@@ -36,6 +36,12 @@
- #define  DOSL3CR_SAMEADDR		BIT(0)
- #define  DOSL3CR_IPSAMCC		BIT(1)
- 
-+#define NETC_ETTCAPR			0x18c4
-+#define NETC_ECTCAPR			0x18ec
-+/* Index table NUM_ENTRIES mask */
-+#define NETC_NUM_ENTRIES		GENMASK(15, 0)
-+#define NETC_GET_NUM_ENTRIES(v)		FIELD_GET(NETC_NUM_ENTRIES, (v))
-+
- /* Hash table memory capability register, the memory is shared by
-  * the following tables:
-  *
 diff --git a/include/linux/fsl/ntmp.h b/include/linux/fsl/ntmp.h
-index e3d4ea015391..b9d4a29abd23 100644
+index b9d4a29abd23..a678f1e1ee42 100644
 --- a/include/linux/fsl/ntmp.h
 +++ b/include/linux/fsl/ntmp.h
-@@ -3,6 +3,7 @@
- #ifndef __NETC_NTMP_H
- #define __NETC_NTMP_H
+@@ -271,6 +271,8 @@ struct bpt_cfge_data {
+ int ntmp_init_cbdr(struct netc_cbdr *cbdr, struct device *dev,
+ 		   const struct netc_cbdr_regs *regs);
+ void ntmp_free_cbdr(struct netc_cbdr *cbdr);
++u32 ntmp_lookup_free_eid(unsigned long *bitmap, u32 size);
++void ntmp_clear_eid_bitmap(unsigned long *bitmap, u32 entry_id);
  
-+#include <linux/bitmap.h>
- #include <linux/bitops.h>
- #include <linux/if_ether.h>
- 
-@@ -70,6 +71,12 @@ struct ntmp_user {
- 	struct device *dev;
- 	struct netc_cbdr *ring;
- 	struct netc_tbl_vers tbl;
-+
-+	/* NTMP table bitmaps for resource management */
-+	u32 ett_bitmap_size;
-+	u32 ect_bitmap_size;
-+	unsigned long *ett_gid_bitmap; /* only valid for switch */
-+	unsigned long *ect_gid_bitmap; /* only valid for switch */
- };
- 
- struct maft_entry_data {
+ /* NTMP APIs */
+ int ntmp_maft_add_entry(struct ntmp_user *user, u32 entry_id,
 -- 
 2.34.1
 
