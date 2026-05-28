@@ -1,117 +1,117 @@
-Return-Path: <linuxppc-dev+bounces-21625-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21626-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0F5CECD5BD5
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 May 2026 09:06:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5A965CD5BD1
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 May 2026 09:13:04 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gR0wV2TB0z2xLm;
-	Thu, 28 May 2026 19:06:34 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::32c"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779959194;
-	cv=none; b=hmvPM2ZoEGo0atHMW2gghAhnucgWrq1afZK0bKYengumoIyey2ycO4IBtxYEo3xz94FW7QqUTly//mB0pjskC3sxqooSMeGb4Q7xX5PH4PrVdPLHMBAP/ClKMFPWYrV5GS1k9EFZ9HVnMXbqoZAc36mjRpNwwoL+PIv+S7tYlHOCRMHxA6eu12vTgoq1wu/LgfEu64Zh+YY841mzx0NTB+bS5jOh6ISMGP134x4VfKQbnwkt2PzEHANbT31I7bxIT3pLaJnPnFi6AgdHYT6DOV9X2oAyQkaqCNxBF4+5VIXropvnCCcD2BWm0OawgE65vt3tGzfs/LyPJ9duTaCaXQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1779959194; c=relaxed/relaxed;
-	bh=UwHmEHawCvEdEm/8FkS4pO9969OH1I8FzaNoFpRPvxc=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=hKWvZ9eXOxn3J74y/w+oxJQ/q4OXxLeQzKSOMilaSxVzU+WbRbDqExBI8Qm5j3E67YpGkknDJtFkolf8BMSI70GHcmKnNw0B+TsMCoLPCgaF4EHX/DmMSjlxM6kTRcu5euWvXe17YrGX+X9xCnry3Ch4CkrSeNYARUe5Sy0jQiQB32ce2FqOb0Izo1/03CtViWbGdRQPsXNSvKeyfN/zdINd4kXjn45VLnn7AwGi9Yp4k3LHHNoB4qehsZE+3Pub2ggoqn6SVipEA7Y8aZB0VyAI1i81F/MzYLeQji6Jvbc7SF6f/NG45wMsmLkFYgYhfLRRTBFRB9nU0M7JqGOezQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=baylibre.com; dkim=pass (2048-bit key; secure) header.d=baylibre.com header.i=@baylibre.com header.a=rsa-sha256 header.s=google header.b=NHYvHIIj; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::32c; helo=mail-wm1-x32c.google.com; envelope-from=ukleinek@baylibre.com; receiver=lists.ozlabs.org) smtp.mailfrom=baylibre.com
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=baylibre.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gR13y70KPz2xM6;
+	Thu, 28 May 2026 19:13:02 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=fail smtp.remote-ip=198.175.65.21
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779959582;
+	cv=fail; b=NPsUoQwg7iRKxSI4aRbES5oFsBs6XNO9dzONWc9ZjRBzxPsGmqUuEulyZ8kqAICdR9XutfTHneayQhMfsH42s5+blcw3aIx2tNZ/zUlx+/QS7GE/tp4AAaooK5UW6OIDI8+Iarl8mlSKVxrvu+pMJeYhgf9KWrzhsOFBkDuvOTDDcd849dWnFaSPJNCj8A7iKG3tbmaUhMItouG3123+r3C6G2Q3jqiaLu7IfTo5DniVJmjnf6++pQ3vF57HGt11qRuu2jXrexUTmMVfWYToq8eAGLjX5GCzP5TfDT/4M6pkRg72dpsPKM94ghf3bL6Lpa7xzKz6llV6qckREQtf5A==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1779959582; c=relaxed/relaxed;
+	bh=rHup9dFG36J/57JgnmgGTh49ximPEGEGIq0kjdWDbvI=;
+	h=Message-ID:Date:Subject:To:CC:References:From:In-Reply-To:
+	 Content-Type:MIME-Version; b=MT0B55PuxFsAKg3df16M8BR/dAsDq6oaI9JSLfXDNrbLk5zUZzM1X3AAfdiVHOadgtEcpfIFsIRYeKIpKYPqb7m9Oc2oSCaEJrUu5SeRaKhKLeQ7ciooFprniww1onWmxQ9qA9+Y9ErHIwU5V85QFAOll3FJyDOIdXhY4CYZINKoBKt0Pa2oe7u92iXcMdCOelT+6wErkTbO6JZUsjqEYIDi2VQf2/4JIxxI7K7JTBt6utUjHC7XiySRfvmU4OGIS0SxcIv7vT8ag6C9v2Y56dPWKJbzGHP/6o7jsQpLQXxm11lKirHxI8LgkZcLRw9lRZW90TzzJCQljGb3kmH5zA==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=alHiFLBZ; dkim-atps=neutral; spf=pass (client-ip=198.175.65.21; helo=mgamail.intel.com; envelope-from=yu.c.chen@intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=intel.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=baylibre.com header.i=@baylibre.com header.a=rsa-sha256 header.s=google header.b=NHYvHIIj;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=alHiFLBZ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=baylibre.com (client-ip=2a00:1450:4864:20::32c; helo=mail-wm1-x32c.google.com; envelope-from=ukleinek@baylibre.com; receiver=lists.ozlabs.org)
-Received: from mail-wm1-x32c.google.com (mail-wm1-x32c.google.com [IPv6:2a00:1450:4864:20::32c])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=198.175.65.21; helo=mgamail.intel.com; envelope-from=yu.c.chen@intel.com; receiver=lists.ozlabs.org)
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.21])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gR0wS555Xz2xM6
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 May 2026 19:06:32 +1000 (AEST)
-Received: by mail-wm1-x32c.google.com with SMTP id 5b1f17b1804b1-48984d29fe3so131898175e9.0
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 May 2026 02:06:32 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=baylibre.com; s=google; t=1779959189; x=1780563989; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=UwHmEHawCvEdEm/8FkS4pO9969OH1I8FzaNoFpRPvxc=;
-        b=NHYvHIIjaQRXbBuFgveRl36lsqnBtoRULPQhsRCtb1L2KgGY3+0oyiP/xUIpafrDNi
-         S2c99+lyQwhtQhwb2IA7pTfKBaeEY+ZPxMIpJK+lrEg8Mbkw+P3hsZmqcI14A55e+nk7
-         7TKry6L/nOHUDxITmE9OG5ldcgBWE6LAcZng2xlq2bMXtYgQ80ebTaFd89J3BalMfG7N
-         Tfkgbb30+KmvYQPt+w7fmoLESzq35AcJraHU9Rn+u2xsIPkmRV42Y4Fwb/GZJHYxKhU2
-         OmhBMFsElMHYytyru4EapNAZbhiQZfN5o3Mj7iHpRpTgDDD43liXMmssU0TH9DKX3d/3
-         YXwA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1779959189; x=1780563989;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=UwHmEHawCvEdEm/8FkS4pO9969OH1I8FzaNoFpRPvxc=;
-        b=Lw2W6eL0KQdN55CNlO9T5nUErGr3M8TCD8YYCtCNmZ9bsZPckeiril68G5dVPbvsJG
-         ae4Q7X2oflGE2N2Hq+7vtjGOskpPxy8BjwkLm9z6IjhLQXhvJozQ7vlETk0tg9NzgmCF
-         uRfW7Vx70OSclkQOkd+bTKBhXGP/16rbMgiU8iY/gdVtBO32LIfjy8vVmswCSJ5DfdLX
-         gZCwVt6EngsrIOABL1fXHVpCOTQwaPrnV1pXN3jRPecUATPSyha3WIhPcqAMVGUgXwx9
-         SSbgYlhTmSi+DLhA8YcDLSNToih/hQipctPl+U5tNyCG2Zek4GrfU2ZLZjrigcBaYVxH
-         7+DA==
-X-Forwarded-Encrypted: i=1; AFNElJ+Sezg6ZjcpgsDIGjoqGQnz8XXphOdN9ALkAsYanWyieOcLnhbxWBOGneOKyqPo16JK/2m2ePTfKKTIo3o=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yyv/j+VdvooANKn3LwXLZ2ZJelVf7hHz6Cvud+s9O5KKoOC9HTN
-	nLiMW/zOaZWwS7RvzhRjWzUQzl+xaNnXdJs0Kk1M+9vwpqfjSyQo4/cEiPl+af91mCI=
-X-Gm-Gg: Acq92OG/daotW9XqK9aj3K2YYHBZaHUEkMV0CQUP27SvZK7FZ0hQtQvLpberCwBDCHh
-	bXISUtMDez9G8hBDxo99CgR9dKH/ZImvJqU/71gQ2K3oGLmInldfqXzB7abJEVaJlkbg/3AnnA+
-	5xzjrM9rnQb3Dmzvarwcfpf11QvF2dJKLb8gz8Io9h07KkdB/ha3deT5vaLDsJVIYmdocXAaSaD
-	0avoN4Pw7U1dOZy26gQgAvis6S/yi2WKrPNv9XJa88uTHkATMRHnVM/40rTXigCK5DTKRXm6Etw
-	gaFA641IP77et+YCx4N8HYVu824128FiFsD5Zhs2OuCQ0POhI23Jc6YIHycUt6GhnZx0rbcbUtB
-	QIArl8TnlQ8b8bSu6DFLaUk5LhmVTVyaaw13feBfuQTjesEh90Kb3tGZvJe+9cPlbUKYKJcCLDz
-	uGIsye5deXE5LKfb4Ex70hDa/F4S04En/iCjnnnFHekREv5ZHz/EEvQIp+n09jBk60GYLqLUgSn
-	vjg0AAagt3EH9pLowxCZsik5Q==
-X-Received: by 2002:a05:600c:35c9:b0:490:45bb:8dd8 with SMTP id 5b1f17b1804b1-49045bb8e65mr438275745e9.25.1779959189267;
-        Thu, 28 May 2026 02:06:29 -0700 (PDT)
-Received: from localhost (p200300f65f47db04e95e43453a0d1648.dip0.t-ipconnect.de. [2003:f6:5f47:db04:e95e:4345:3a0d:1648])
-        by smtp.gmail.com with UTF8SMTPSA id 5b1f17b1804b1-4908b6af139sm17124775e9.4.2026.05.28.02.06.27
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 28 May 2026 02:06:28 -0700 (PDT)
-From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig=20=28The=20Capable=20Hub=29?= <u.kleine-koenig@baylibre.com>
-To: Liam Girdwood <lgirdwood@gmail.com>,
-	Mark Brown <broonie@kernel.org>
-Cc: Vijendar Mukunda <Vijendar.Mukunda@amd.com>,
-	Venkata Prasad Potturu <venkataprasad.potturu@amd.com>,
-	Jaroslav Kysela <perex@perex.cz>,
-	Takashi Iwai <tiwai@suse.com>,
-	Lars-Peter Clausen <lars@metafoo.de>,
-	=?utf-8?q?Nuno_S=C3=A1?= <nuno.sa@analog.com>,
-	Srinivas Kandagatla <srini@kernel.org>,
-	Shengjiu Wang <shengjiu.wang@gmail.com>,
-	Xiubo Li <Xiubo.Lee@gmail.com>,
-	Fabio Estevam <festevam@gmail.com>,
-	Nicolin Chen <nicoleotsuka@gmail.com>,
-	Frank Li <Frank.Li@nxp.com>,
-	Sascha Hauer <s.hauer@pengutronix.de>,
-	Pengutronix Kernel Team <kernel@pengutronix.de>,
-	Cezary Rojewski <cezary.rojewski@intel.com>,
-	Peter Ujfalusi <peter.ujfalusi@linux.intel.com>,
-	Bard Liao <yung-chuan.liao@linux.intel.com>,
-	Kai Vehmanen <kai.vehmanen@linux.intel.com>,
-	Pierre-Louis Bossart <pierre-louis.bossart@linux.dev>,
-	"Guilherme G. Piccoli" <gpiccoli@igalia.com>,
-	Mario Limonciello <mario.limonciello@amd.com>,
-	Cristian Ciocaltea <cristian.ciocaltea@collabora.com>,
-	Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>,
-	=?utf-8?q?Amadeusz_S=C5=82awi=C5=84ski?= <amadeuszx.slawinski@linux.intel.com>,
-	Charles Keepax <ckeepax@opensource.cirrus.com>,
-	linux-sound@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	linux-arm-msm@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org,
-	imx@lists.linux.dev,
-	linux-arm-kernel@lists.infradead.org
-Subject: [PATCH v1 4/4] ASOC: Unify code style for platform_device_id arrays
-Date: Thu, 28 May 2026 11:06:03 +0200
-Message-ID:  <d131f7afc3c61ca8ac82a848aaa6ecfbb57ec63b.1779958164.git.u.kleine-koenig@baylibre.com>
-X-Mailer: git-send-email 2.47.3
-In-Reply-To: <cover.1779958164.git.u.kleine-koenig@baylibre.com>
-References: <cover.1779958164.git.u.kleine-koenig@baylibre.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gR13v2lbhz2xHK
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 May 2026 19:12:57 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1779959579; x=1811495579;
+  h=message-id:date:subject:to:cc:references:from:
+   in-reply-to:content-transfer-encoding:mime-version;
+  bh=p3yj6Qbuwyldg5irHn+mxjOr1HyW9k0srcJ2G8E+AqY=;
+  b=alHiFLBZX4y+YdP1XDzJIaO9ZMztjJuARFyLHWYHXnqyZI5SImE7WuKF
+   YHmiEf3rZORQ6DK/PGDK1ASLoZxcATd3tAR4ycU9JH3FtPxbsA5dMDgrF
+   Q3VZKwj9X3mqTulckFaXYYilbmFe/siSjFXdrPxiq1iLfVJ7V2pKL0o1O
+   mDqREkayXtekUWYb3dhyMI/7cw6/CN6feWpOcRTGaMT6euZ7goJCG6XqJ
+   gljwu+XsYFKqTCDaQNSZviSgDwHCp3bBzmIyAWYkptT2kow2trprvRGcQ
+   iR5SSyP+U9qPSAneXgI9vLiyQ4pQjxYbc9BHFAirk//42eFuseMPOn71n
+   Q==;
+X-CSE-ConnectionGUID: gb4FuPvgSviDHVxkdyQRcg==
+X-CSE-MsgGUID: IddtB7coQwC5w3QNqX6vDQ==
+X-IronPort-AV: E=McAfee;i="6800,10657,11799"; a="80700377"
+X-IronPort-AV: E=Sophos;i="6.24,173,1774335600"; 
+   d="scan'208";a="80700377"
+Received: from fmviesa003.fm.intel.com ([10.60.135.143])
+  by orvoesa113.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 28 May 2026 02:12:53 -0700
+X-CSE-ConnectionGUID: kHcULiYtS6S2a4oZEjLqFA==
+X-CSE-MsgGUID: vW6b+zshTayunvCAa0No5A==
+X-ExtLoop1: 1
+Received: from fmsmsx901.amr.corp.intel.com ([10.18.126.90])
+  by fmviesa003.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 28 May 2026 02:12:52 -0700
+Received: from FMSMSX901.amr.corp.intel.com (10.18.126.90) by
+ fmsmsx901.amr.corp.intel.com (10.18.126.90) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.37; Thu, 28 May 2026 02:12:52 -0700
+Received: from fmsedg903.ED.cps.intel.com (10.1.192.145) by
+ FMSMSX901.amr.corp.intel.com (10.18.126.90) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.37 via Frontend Transport; Thu, 28 May 2026 02:12:52 -0700
+Received: from PH0PR06CU001.outbound.protection.outlook.com (40.107.208.36) by
+ edgegateway.intel.com (192.55.55.83) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.37; Thu, 28 May 2026 02:12:50 -0700
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=dddTKJ/5Nptc/V3RU11nE+rTu26R8JPMd/9IZOB15U/4LpVMXYhhEzM4gTM3r1+z9juujLfCslUrpAjmx56t1aRk93g3j8/ZZErbZz43sHfduztn/EZwpY2RdGMvPE9CjVXyqx7vqwi4LM2Hz4m8Rp2zNOwSZd28OYZ4H8RMrNnYKISVI2zqu6cc+hx6juQl8RX8Pbur31sJjJoUU5jGBjNNQ8w3EskRqUkb86KpOhjifE8IXPWBvH/+CYvN1eWgZdbyPrHaiXy1HIjrvUzpjsaHzqpFTqf4/FVkpHAYGqf74toi5LS5IT10CtJq+o4fr0VTqZOgWwu7oJ1/A6QKNQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=rHup9dFG36J/57JgnmgGTh49ximPEGEGIq0kjdWDbvI=;
+ b=Yk3qZ1+CtrGOQOO74pjEGkjBcveHUAE/2QIOreGLxCwTAWq6ETLyCBxinVIGrYruWnbJlfLP2gFLxz/7z5FV4Yc9MH3+42ni0rDaktq2iKwaop77wwQiKNajXtlw4nE8PUKiFUhhJgqpiInj8Ys/PE6+JeKhaS+PAFghy8uAdAsRQ5UpL2TvQCvWMgpwUG5Nkul28Mv2eM6JgtGSgU/THNm++OCy/UrZRei/UfOkuDWiLlPEFmr3Gw13zh1D5Ppx9hWhs8UgqdUNsrU7La+FTCILevC//WIB5urO3TQ0Iv7P9B7fIRO8tW2jU+GoqLcsPQwL5eL2+Y+1+5wuZvmZDw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
+ dkim=pass header.d=intel.com; arc=none
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=intel.com;
+Received: from DM4PR11MB6020.namprd11.prod.outlook.com (2603:10b6:8:61::19) by
+ SA7PR11MB9594.namprd11.prod.outlook.com (2603:10b6:806:4cf::24) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.71.11; Thu, 28 May
+ 2026 09:12:49 +0000
+Received: from DM4PR11MB6020.namprd11.prod.outlook.com
+ ([fe80::3058:1480:e4ac:5765]) by DM4PR11MB6020.namprd11.prod.outlook.com
+ ([fe80::3058:1480:e4ac:5765%4]) with mapi id 15.21.0071.011; Thu, 28 May 2026
+ 09:12:49 +0000
+Message-ID: <db443a1e-e6fc-491c-a38a-1cafc8e674cd@intel.com>
+Date: Thu, 28 May 2026 17:12:41 +0800
+User-Agent: Mozilla Thunderbird
+Subject: Re: [BUG] sched/cache: "Make LLC id continuous" causes NULL cpumask
+To: Shrikanth Hegde <sshegde@linux.ibm.com>
+CC: <srikar@linux.ibm.com>, <venkat88@linux.ibm.com>, <maddy@linux.ibm.com>,
+	<riteshh@linux.ibm.com>, <chleroy@kernel.org>, <tim.c.chen@linux.intel.com>,
+	<peterz@infradead.org>, <linux-kernel@vger.kernel.org>,
+	<linuxppc-dev@lists.ozlabs.org>, <linux-sched@vger.kernel.org>,
+	<kprateek.nayak@amd.com>
+References: <51154de7-3700-4cb4-82f2-1b3a8fa427f7@linux.ibm.com>
+ <ahUogeqIq5km7JSr@linux.ibm.com>
+ <058664ab-0982-4c13-9d4b-caa2f7616b0f@amd.com>
+ <20260526140856.139657-1-yu.c.chen@intel.com>
+ <d45877d5-86f1-4581-b3e0-59ceb722de3a@linux.ibm.com>
+ <912676bc-230e-410f-a5fe-153b0f304aee@intel.com>
+ <42a19577-fe56-44b4-b0ed-37cde6d03ff5@linux.ibm.com>
+ <508a604b-2d30-47f4-a63c-36778a1d47c7@linux.ibm.com>
+Content-Language: en-US
+From: "Chen, Yu C" <yu.c.chen@intel.com>
+In-Reply-To: <508a604b-2d30-47f4-a63c-36778a1d47c7@linux.ibm.com>
+Content-Type: text/plain; charset="UTF-8"; format=flowed
+Content-Transfer-Encoding: 8bit
+X-ClientProxiedBy: TP0P295CA0017.TWNP295.PROD.OUTLOOK.COM
+ (2603:1096:910:5::11) To DM4PR11MB6020.namprd11.prod.outlook.com
+ (2603:10b6:8:61::19)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -125,318 +125,126 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-X-Developer-Signature: v=1; a=openpgp-sha256; l=10010; i=u.kleine-koenig@baylibre.com; h=from:subject:message-id; bh=/QZevzqoiILuJdxFPPb5GMy1YhLxYNO661KlZBY80hk=; b=owGbwMvMwMXY3/A7olbonx/jabUkhiwJ1iaBR1031CW00isu5K1or9LLz5CeJt+09/RBa5Vja wscegQ7GY1ZGBi5GGTFFFnsG9dkWlXJRXau/XcZZhArE8gUBi5OAZjIzHT2v5Idn0wVa6bXbuLw dVmSJ/TD6m/pPGHfC6ZpBjUOJtMebPOp9ax+/+f43NriH8dtaxtuXS3TOdEvFfvvzvOazoQCt6D Tl7MPPKqbxpnLIFb5/anq6yLn7JNSsvpxDuff2zO/M5IsOLngxXQ+9uUH5D4JZfUfq/LQXlZn3s nAnDFJYFXU8m86UfvdlEvN+6K3ncxX9928S+Xw/aCFjN/ar+4pf+uk923zmraPjf/iTXq0rHYb/ QmZdCj445bf9fKHV2y9/qVsR1vCpc8F9SsF90nMaIo9emX+zf/2l+91l5bb+zTuO/QwWGdhytXr H/sio25zKzGUzZNrEBc3rrZbwSOheq51xzeBzlR5ljWTAA==
-X-Developer-Key: i=u.kleine-koenig@baylibre.com; a=openpgp; fpr=0D2511F322BFAB1C1580266BE2DCDD9132669BD6
-Content-Transfer-Encoding: 8bit
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: DM4PR11MB6020:EE_|SA7PR11MB9594:EE_
+X-MS-Office365-Filtering-Correlation-Id: c11070cb-f5d5-4171-b84b-08debc994a03
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;ARA:13230040|7416014|376014|1800799024|366016|18002099003|22082099003|56012099006|11063799006|4143699003;
+X-Microsoft-Antispam-Message-Info: jVm+yHQd0xMb9oHlx0cfKVQeZKp9g5/8enMtn0jjjzH0CA/Hm6uAsCj+C0Erk8GJroJhGmBEHC2MCSZ/aQRMIVpNMalwHkixUzN+Gs4a/nOw5UWpOj5tSQgVqpd2RAl/XnpFCMpJuek0yAALinCOr7v7gvOA+YcXlLtSpRDjJG2ayf0wu6i/kOIecpn5wMaeueczRdQNMcvK0mhggBlxwtdY8lq1CATIEEDDqqqgrbHsIlj0VNUHZ33bb0/s7mPUVvE35+YIqvr0f8+5N9y5WPq3Rz3k5i1Ode3a6vre7l1jiah1TroBCAkR3CoEKCF3V+3aiqqEo+GA2j7hyba5JOolWNYic4umrm6eQmxiIERYaezM+WXZgFfOBRYNIoWNdwgOHJ4ZpNexImyp0hanuvOf3i3sAtoCHRp5uFaDR3vJ3rqDIAd41UJspHrnQ7KB0Rb4pv+PK1FscpZ/iUGR/zZw7uD3kgZnNd/lwiL5/95MFW6xeqC2WgliuPqJ+NIzowhucaWs/ZNG8yxfcvOgJuSXZbjxVyZeMBUl9lkfA/GlcPlYS32PIDutaOXo//9UkCfC3UjzUvGIrJ9UjKWy+TuS7dMXYNo0+LlqydDpgF+hXC5FdQgaQ+KlkYgrFc+CE0x5s3xAp360i18u8e9740U2mmRlwFFdYDgjzqlMntUa/ZyFtBaUkjPFoNAxQlQh
+X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DM4PR11MB6020.namprd11.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(7416014)(376014)(1800799024)(366016)(18002099003)(22082099003)(56012099006)(11063799006)(4143699003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?VFZ1SjM1amJsbFd6Y0g1MTZhdHV2UnFQekoycnRnTU5vSms0cUYrSUowbUN1?=
+ =?utf-8?B?ZGRPTFpjQS96K01Yb1pXQ0hEUWQ1VE5RSDdwYmU1WVFGdU41NytPWlFZTFRq?=
+ =?utf-8?B?MHNYZXR1MGRvREhoQWlPMGN2WmM1WG04VStKOEZ5Q0E1SU1tVmlwcHBlSVFm?=
+ =?utf-8?B?TUZtYzUzc2N4RjVkZy9HaWswU0M0dHBnR3VYdE1qSG1oWS92bkZTdERtRTdX?=
+ =?utf-8?B?bXZSRTRqVFRGRDJMRTdvQjZ0VDFtYnlsUmpnZVpFRDI4RmxpU2hTeVFpdXFP?=
+ =?utf-8?B?WEFGVjRPbVB0bDExQVcxZ1BkTHVFZmQ0OFVxT29GdVpMZmg5cDh6a2hrNVBt?=
+ =?utf-8?B?bjExa2ZvK0dvODZ3QkNGZHJRUmd2eFY5MzJWSnZiTWU2T1lMNVlacjZYc0c2?=
+ =?utf-8?B?cTdmTGJiTmxCZVkzWm5GcXRRRTVMbVlEaXdHOUJJZXUrRmM3L1RSWUNYZ2xo?=
+ =?utf-8?B?eXM4WTdkRGYvam5nMjZtN0ZMK2NEU3VzL1F5WnIyaE9ibFlsNHc5alFubWFB?=
+ =?utf-8?B?dEYxcXgwVmF4RmNwK3liejlkZm44aGcvK2xQMkpFTGFLUHpxWmJLaDhPcnJo?=
+ =?utf-8?B?V1FyYnNGNzd4WUxyWTY4UUQ3TWttOWlBVjUwa1Y4NkZyZnZRMHdTUytzamRs?=
+ =?utf-8?B?V2t4Tk1GRWpDZFY3eE0zOFY2NjlaTkpTS0cxcGVDN3lhUmZ4ZmI2K2loTHU2?=
+ =?utf-8?B?VUNIU3p1UnNNYjZhNEZSVzNMWkZ4alh4aldkM2tOc0NBTFRtU0dzNGxSOEtz?=
+ =?utf-8?B?SmFxTUVLcHVQandkS1JDZFBIRE9lY1dXaW9LeWlUblZyQTdiejVFSldmd0Q0?=
+ =?utf-8?B?SEdtZTdDSE84SkdFdTY3eWVVUlNBMzZsRnNwYlBYcGZ4YjFpNTgxelRxMSs5?=
+ =?utf-8?B?c2gxdldTZThjTERPNHFkTDZta3pPbHpJaGV5cCtQVU5vSkRxRFVCaW5pRHlP?=
+ =?utf-8?B?Q1VLZDd1djN3b0laSGtQc3NvTGtHQ2RweXZhdy9FbjdzQVVvT2FuVWxwdTRH?=
+ =?utf-8?B?NldWOW5Dek5Cd3RETmlnZEhPclh4TThKOE00aURoSXU5U2ovbmg4dklvRStG?=
+ =?utf-8?B?UTYzbVBRZlFUNnFRQjJxZ0FhTFlycTlZVlVBYjNpY2Y5Y2lzVTNNa1ovc1d4?=
+ =?utf-8?B?U3F5QnZoaGdYem9YTytQc3JnWC9Cc3F5V1JFVEgwaDRyNUxxK0VuRlJwcXNs?=
+ =?utf-8?B?aFArVUp1bk9SYUtXRllDRStiL3pXMCtubThqVm1nNk45RFZuamdpK0xHWnhY?=
+ =?utf-8?B?RW1Qd0pac2Jnb0cyRTBha2Zmc0p5eUdKbjA0aDVjbitOcUJGbEJtV28yZjB4?=
+ =?utf-8?B?a0EvSnk0b1VDcVFhVFlIR09TdUlZYXFFOFlLWEt4U3ZrdDZ2Q2QvdVV5K0pa?=
+ =?utf-8?B?VlI2ODl2QnBXZmpUQ0dYOW5RTko0T1VVbUN5OWx2Z3hlYVF6aHRGTk55VWhp?=
+ =?utf-8?B?bFVsNHRhbmhrMFZJYm92cWhSNkFuVmdNREhrZVpJak1ORHo1UG1pQTdYS0tj?=
+ =?utf-8?B?SFFkUkRPVUdIbnMxYVNDRmpqSjZzemp4My9OdXVrQ0VnSkhiV0ZmaTY2R1lO?=
+ =?utf-8?B?RXBpWWsvdkRCM24yK0kyNlhBaGUvZkczQ2hpVEJGUm1qc0xrRU1adCtjNDhB?=
+ =?utf-8?B?Y2RIazgvZFdCNG0xQTlLQk1RL2x0bHo3c1A0K3Z0d1huUUorZUxCOEVTY044?=
+ =?utf-8?B?SlNIUXJieTVjS0c3c3BPWDJGejEzazF1ejJmWnhLOXB1c0JsNU5TV0YxeDZB?=
+ =?utf-8?B?RVFpWFNJOUc5anFOUXhDSmwzRkJsT0lEZ1ZONmNXZFBNZTJzUGY4cUo1UjA3?=
+ =?utf-8?B?L1IwM2pNenBnaERZd0lUMkVKTW5Wbm1ySGc5a2p5SThnU1ArTHdReXE5V3Bu?=
+ =?utf-8?B?UVpCMUswMDVNak1qM2VxVVNqVytMSHFWQzNDNzdycnVXT2VoeHBEeDFxeVNu?=
+ =?utf-8?B?c0ZZaWFTTC9oMEw3SWNVL20zd2kyd3ZhaEs1ZjBRakxobjlmbm1zOUtzUGtm?=
+ =?utf-8?B?MG4wMWw3Q0tCN0dmdUlyRnk5cjFBSnB0Wkg5cm5XMnRXQzRxNmQxdjVLNG1u?=
+ =?utf-8?B?aWpucWVEcVZIOHBDckpzMUQxSVllREtMOWEzSEs5OUlJa0lEMk83ZHBzaDlT?=
+ =?utf-8?B?TTVrMUhqWE0vYkg2Z0hsMjFiVElTeHRiTmdVU3VYNm9OMWUzWGFKZXV2UEtX?=
+ =?utf-8?B?SlVBTTRVd2Y0d1hrNm1vVWdLRGp1TjFrQ01uQkwrcm1ldjhVMU9JT3dsZjd5?=
+ =?utf-8?B?Y1dXZFNRc3RvWHowMkE3bVFHMTJBeVJuNzdWVVEzSWU5M1J5TVh5VVZaaTNv?=
+ =?utf-8?B?RzllMzFDWUNCaTZqdC94SEcvQjZUcDlCY3BtZW0vV3JWaVRzcmw0QT09?=
+X-Exchange-RoutingPolicyChecked: CfoI8oTKod8op/5l6NvIhewX+g50azqztK98YzeEUnycObJSH1aV8eRknkyqAubLrBz4PAOO0gk2td08fUFHadttoo1RynW2h6TtrF+9E/nlXAl8cbaqg0Ani2iW9y98uCVEAQOwC5VbISNslpKxdYkSHEZ+gH7hRer3JRQuwWTHMEaSm/HLbtI5upgFaTfFptqTwspoAW7Wq0XEcqQBJMcoiKmX6mIjCosf6Q0MAfmDKJ38yVy7eS5oVICB60DrVdlNcPIKj/ZMTORJg/I24Aje620yv6+yIF5/88DrbkL9c+InAe9E5ixWuxRl5ne4dGUQQwzf772qx7aXDF5WDA==
+X-MS-Exchange-CrossTenant-Network-Message-Id: c11070cb-f5d5-4171-b84b-08debc994a03
+X-MS-Exchange-CrossTenant-AuthSource: DM4PR11MB6020.namprd11.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 28 May 2026 09:12:49.2080
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 46c98d88-e344-4ed4-8496-4ed7712e255d
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: SVp6BgapU76xbzTaz1GOPLzj5xU4Ck+XmzM3rOxHvgpXxaV/ZlFTsEHIsRBNL5MLRBXKYMXLdHS+0PHU1lx50A==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SA7PR11MB9594
+X-OriginatorOrg: intel.com
 
- - Add a trailing comma for initializers unless the closing brace is on
-   the same line and for the list terminator;
- - Use a single space in the list terminator;
- - Use compact one-line style for small entries;
- - s/\t=/ =/ were the tab is only one char wide anyhow;
+On 5/28/2026 12:58 PM, Shrikanth Hegde wrote:
+> 
+> 
+> On 5/27/26 11:37 PM, Shrikanth Hegde wrote:
 
-Signed-off-by: Uwe Kleine-König (The Capable Hub) <u.kleine-koenig@baylibre.com>
----
- sound/soc/amd/acp/acp-sof-mach.c       | 14 +++++++-------
- sound/soc/codecs/adau7118-hw.c         |  2 +-
- sound/soc/codecs/bt-sco.c              | 10 +++-------
- sound/soc/codecs/wcd934x.c             |  6 ++----
- sound/soc/fsl/imx-pcm-rpmsg.c          |  6 +++---
- sound/soc/intel/avs/boards/da7219.c    |  6 ++----
- sound/soc/intel/avs/boards/dmic.c      |  6 ++----
- sound/soc/intel/avs/boards/es8336.c    |  6 ++----
- sound/soc/intel/avs/boards/hdaudio.c   |  6 ++----
- sound/soc/intel/avs/boards/i2s_test.c  |  6 ++----
- sound/soc/intel/avs/boards/max98357a.c |  6 ++----
- sound/soc/intel/avs/boards/max98373.c  |  6 ++----
- sound/soc/intel/avs/boards/max98927.c  |  6 ++----
- sound/soc/intel/avs/boards/nau8825.c   |  6 ++----
- sound/soc/intel/avs/boards/pcm3168a.c  |  6 ++----
- 15 files changed, 36 insertions(+), 62 deletions(-)
+[ ... ]
 
-diff --git a/sound/soc/amd/acp/acp-sof-mach.c b/sound/soc/amd/acp/acp-sof-mach.c
-index 36ecef7013b9..8874151e159a 100644
---- a/sound/soc/amd/acp/acp-sof-mach.c
-+++ b/sound/soc/amd/acp/acp-sof-mach.c
-@@ -128,31 +128,31 @@ static int acp_sof_probe(struct platform_device *pdev)
- static const struct platform_device_id board_ids[] = {
- 	{
- 		.name = "rt5682-rt1019",
--		.driver_data = (kernel_ulong_t)&sof_rt5682_rt1019_data
-+		.driver_data = (kernel_ulong_t)&sof_rt5682_rt1019_data,
- 	},
- 	{
- 		.name = "rt5682-max",
--		.driver_data = (kernel_ulong_t)&sof_rt5682_max_data
-+		.driver_data = (kernel_ulong_t)&sof_rt5682_max_data,
- 	},
- 	{
- 		.name = "rt5682s-max",
--		.driver_data = (kernel_ulong_t)&sof_rt5682s_max_data
-+		.driver_data = (kernel_ulong_t)&sof_rt5682s_max_data,
- 	},
- 	{
- 		.name = "rt5682s-rt1019",
--		.driver_data = (kernel_ulong_t)&sof_rt5682s_rt1019_data
-+		.driver_data = (kernel_ulong_t)&sof_rt5682s_rt1019_data,
- 	},
- 	{
- 		.name = "nau8825-max",
--		.driver_data = (kernel_ulong_t)&sof_nau8825_data
-+		.driver_data = (kernel_ulong_t)&sof_nau8825_data,
- 	},
- 	{
- 		.name = "rt5682s-hs-rt1019",
--		.driver_data = (kernel_ulong_t)&sof_rt5682s_hs_rt1019_data
-+		.driver_data = (kernel_ulong_t)&sof_rt5682s_hs_rt1019_data,
- 	},
- 	{
- 		.name = "nau8821-max",
--		.driver_data = (kernel_ulong_t)&sof_nau8821_max98388_data
-+		.driver_data = (kernel_ulong_t)&sof_nau8821_max98388_data,
- 	},
- 	{ }
- };
-diff --git a/sound/soc/codecs/adau7118-hw.c b/sound/soc/codecs/adau7118-hw.c
-index 45a5d2dcc0f2..ffbd2ea3cde3 100644
---- a/sound/soc/codecs/adau7118-hw.c
-+++ b/sound/soc/codecs/adau7118-hw.c
-@@ -23,7 +23,7 @@ static const struct of_device_id adau7118_of_match[] = {
- MODULE_DEVICE_TABLE(of, adau7118_of_match);
- 
- static const struct platform_device_id adau7118_id[] = {
--	{ .name	= "adau7118" },
-+	{ .name = "adau7118" },
- 	{ }
- };
- MODULE_DEVICE_TABLE(platform, adau7118_id);
-diff --git a/sound/soc/codecs/bt-sco.c b/sound/soc/codecs/bt-sco.c
-index 3afcef2dfa35..6507bd20a650 100644
---- a/sound/soc/codecs/bt-sco.c
-+++ b/sound/soc/codecs/bt-sco.c
-@@ -79,13 +79,9 @@ static int bt_sco_probe(struct platform_device *pdev)
- }
- 
- static const struct platform_device_id bt_sco_driver_ids[] = {
--	{
--		.name		= "dfbmcs320",
--	},
--	{
--		.name		= "bt-sco",
--	},
--	{},
-+	{ .name = "dfbmcs320" },
-+	{ .name = "bt-sco" },
-+	{ }
- };
- MODULE_DEVICE_TABLE(platform, bt_sco_driver_ids);
- 
-diff --git a/sound/soc/codecs/wcd934x.c b/sound/soc/codecs/wcd934x.c
-index bc41a1466c70..a9e6f2923099 100644
---- a/sound/soc/codecs/wcd934x.c
-+++ b/sound/soc/codecs/wcd934x.c
-@@ -5899,10 +5899,8 @@ static int wcd934x_codec_probe(struct platform_device *pdev)
- }
- 
- static const struct platform_device_id wcd934x_driver_id[] = {
--	{
--		.name = "wcd934x-codec",
--	},
--	{},
-+	{ .name = "wcd934x-codec" },
-+	{ }
- };
- MODULE_DEVICE_TABLE(platform, wcd934x_driver_id);
- 
-diff --git a/sound/soc/fsl/imx-pcm-rpmsg.c b/sound/soc/fsl/imx-pcm-rpmsg.c
-index 031e5272215d..8f1185dff780 100644
---- a/sound/soc/fsl/imx-pcm-rpmsg.c
-+++ b/sound/soc/fsl/imx-pcm-rpmsg.c
-@@ -829,9 +829,9 @@ static const struct dev_pm_ops imx_rpmsg_pcm_pm_ops = {
- };
- 
- static const struct platform_device_id imx_rpmsg_pcm_id_table[] = {
--	{ .name	= "rpmsg-audio-channel" },
--	{ .name	= "rpmsg-micfil-channel" },
--	{ },
-+	{ .name = "rpmsg-audio-channel" },
-+	{ .name = "rpmsg-micfil-channel" },
-+	{ }
- };
- MODULE_DEVICE_TABLE(platform, imx_rpmsg_pcm_id_table);
- 
-diff --git a/sound/soc/intel/avs/boards/da7219.c b/sound/soc/intel/avs/boards/da7219.c
-index 2b17abcbd2bc..163d9982d797 100644
---- a/sound/soc/intel/avs/boards/da7219.c
-+++ b/sound/soc/intel/avs/boards/da7219.c
-@@ -259,10 +259,8 @@ static int avs_da7219_probe(struct platform_device *pdev)
- }
- 
- static const struct platform_device_id avs_da7219_driver_ids[] = {
--	{
--		.name = "avs_da7219",
--	},
--	{},
-+	{ .name = "avs_da7219" },
-+	{ }
- };
- MODULE_DEVICE_TABLE(platform, avs_da7219_driver_ids);
- 
-diff --git a/sound/soc/intel/avs/boards/dmic.c b/sound/soc/intel/avs/boards/dmic.c
-index bf6f580a5164..8d36bc7ddf16 100644
---- a/sound/soc/intel/avs/boards/dmic.c
-+++ b/sound/soc/intel/avs/boards/dmic.c
-@@ -104,10 +104,8 @@ static int avs_dmic_probe(struct platform_device *pdev)
- }
- 
- static const struct platform_device_id avs_dmic_driver_ids[] = {
--	{
--		.name = "avs_dmic",
--	},
--	{},
-+	{ .name = "avs_dmic" },
-+	{ }
- };
- MODULE_DEVICE_TABLE(platform, avs_dmic_driver_ids);
- 
-diff --git a/sound/soc/intel/avs/boards/es8336.c b/sound/soc/intel/avs/boards/es8336.c
-index 301cfb3cf15b..36c13db3a272 100644
---- a/sound/soc/intel/avs/boards/es8336.c
-+++ b/sound/soc/intel/avs/boards/es8336.c
-@@ -309,10 +309,8 @@ static int avs_es8336_probe(struct platform_device *pdev)
- }
- 
- static const struct platform_device_id avs_es8336_driver_ids[] = {
--	{
--		.name = "avs_es8336",
--	},
--	{},
-+	{ .name = "avs_es8336" },
-+	{ }
- };
- MODULE_DEVICE_TABLE(platform, avs_es8336_driver_ids);
- 
-diff --git a/sound/soc/intel/avs/boards/hdaudio.c b/sound/soc/intel/avs/boards/hdaudio.c
-index aec769e2396c..03cfd91202d3 100644
---- a/sound/soc/intel/avs/boards/hdaudio.c
-+++ b/sound/soc/intel/avs/boards/hdaudio.c
-@@ -231,10 +231,8 @@ static int avs_hdaudio_probe(struct platform_device *pdev)
- }
- 
- static const struct platform_device_id avs_hdaudio_driver_ids[] = {
--	{
--		.name = "avs_hdaudio",
--	},
--	{},
-+	{ .name = "avs_hdaudio" },
-+	{ }
- };
- MODULE_DEVICE_TABLE(platform, avs_hdaudio_driver_ids);
- 
-diff --git a/sound/soc/intel/avs/boards/i2s_test.c b/sound/soc/intel/avs/boards/i2s_test.c
-index 9a6b89ffdf14..787d781ba1d9 100644
---- a/sound/soc/intel/avs/boards/i2s_test.c
-+++ b/sound/soc/intel/avs/boards/i2s_test.c
-@@ -107,10 +107,8 @@ static int avs_i2s_test_probe(struct platform_device *pdev)
- }
- 
- static const struct platform_device_id avs_i2s_test_driver_ids[] = {
--	{
--		.name = "avs_i2s_test",
--	},
--	{},
-+	{ .name = "avs_i2s_test" },
-+	{ }
- };
- MODULE_DEVICE_TABLE(platform, avs_i2s_test_driver_ids);
- 
-diff --git a/sound/soc/intel/avs/boards/max98357a.c b/sound/soc/intel/avs/boards/max98357a.c
-index e9a87804f918..389a50923d3b 100644
---- a/sound/soc/intel/avs/boards/max98357a.c
-+++ b/sound/soc/intel/avs/boards/max98357a.c
-@@ -136,10 +136,8 @@ static int avs_max98357a_probe(struct platform_device *pdev)
- }
- 
- static const struct platform_device_id avs_max98357a_driver_ids[] = {
--	{
--		.name = "avs_max98357a",
--	},
--	{},
-+	{ .name = "avs_max98357a" },
-+	{ }
- };
- MODULE_DEVICE_TABLE(platform, avs_max98357a_driver_ids);
- 
-diff --git a/sound/soc/intel/avs/boards/max98373.c b/sound/soc/intel/avs/boards/max98373.c
-index 8b45b643ca29..b8231f71d3d6 100644
---- a/sound/soc/intel/avs/boards/max98373.c
-+++ b/sound/soc/intel/avs/boards/max98373.c
-@@ -191,10 +191,8 @@ static int avs_max98373_probe(struct platform_device *pdev)
- }
- 
- static const struct platform_device_id avs_max98373_driver_ids[] = {
--	{
--		.name = "avs_max98373",
--	},
--	{},
-+	{ .name = "avs_max98373" },
-+	{ }
- };
- MODULE_DEVICE_TABLE(platform, avs_max98373_driver_ids);
- 
-diff --git a/sound/soc/intel/avs/boards/max98927.c b/sound/soc/intel/avs/boards/max98927.c
-index db073125fa4d..d657e7da1cc0 100644
---- a/sound/soc/intel/avs/boards/max98927.c
-+++ b/sound/soc/intel/avs/boards/max98927.c
-@@ -188,10 +188,8 @@ static int avs_max98927_probe(struct platform_device *pdev)
- }
- 
- static const struct platform_device_id avs_max98927_driver_ids[] = {
--	{
--		.name = "avs_max98927",
--	},
--	{},
-+	{ .name = "avs_max98927" },
-+	{ }
- };
- MODULE_DEVICE_TABLE(platform, avs_max98927_driver_ids);
- 
-diff --git a/sound/soc/intel/avs/boards/nau8825.c b/sound/soc/intel/avs/boards/nau8825.c
-index d44edacbfc9a..d7ea08bb27cd 100644
---- a/sound/soc/intel/avs/boards/nau8825.c
-+++ b/sound/soc/intel/avs/boards/nau8825.c
-@@ -293,10 +293,8 @@ static int avs_nau8825_probe(struct platform_device *pdev)
- }
- 
- static const struct platform_device_id avs_nau8825_driver_ids[] = {
--	{
--		.name = "avs_nau8825",
--	},
--	{},
-+	{ .name = "avs_nau8825" },
-+	{ }
- };
- MODULE_DEVICE_TABLE(platform, avs_nau8825_driver_ids);
- 
-diff --git a/sound/soc/intel/avs/boards/pcm3168a.c b/sound/soc/intel/avs/boards/pcm3168a.c
-index b5bebadbbcb2..9d415fd0499a 100644
---- a/sound/soc/intel/avs/boards/pcm3168a.c
-+++ b/sound/soc/intel/avs/boards/pcm3168a.c
-@@ -132,10 +132,8 @@ static int avs_pcm3168a_probe(struct platform_device *pdev)
- }
- 
- static const struct platform_device_id avs_pcm3168a_driver_ids[] = {
--	{
--		.name = "avs_pcm3168a",
--	},
--	{},
-+	{ .name = "avs_pcm3168a" },
-+	{ }
- };
- MODULE_DEVICE_TABLE(platform, avs_pcm3168a_driver_ids);
- 
--- 
-2.47.3
+>> diff --git a/arch/powerpc/include/asm/topology.h b/arch/powerpc/ 
+>> include/ asm/topology.h
+>> index 66ed5fe1b718..bd1db3b1dbb0 100644
+>> --- a/arch/powerpc/include/asm/topology.h
+>> +++ b/arch/powerpc/include/asm/topology.h
+>> @@ -131,6 +131,9 @@ static inline int cpu_to_coregroup_id(int cpu)
+>>   #ifdef CONFIG_SMP
+>>   #include <asm/cputable.h>
+>>
+>> +const struct cpumask *arch_llc_mask(int cpu);
+>> +#define arch_llc_mask  arch_llc_mask
+>> +
+>>   struct cpumask *cpu_coregroup_mask(int cpu);
+>>   const struct cpumask *cpu_die_mask(int cpu);
+>>   int cpu_die_id(int cpu);
+>> diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+>> index 3467f86fd78f..26c15c786c55 100644
+>> --- a/arch/powerpc/kernel/smp.c
+>> +++ b/arch/powerpc/kernel/smp.c
+>> @@ -1101,6 +1101,13 @@ const struct cpumask *cpu_die_mask(int cpu)
+>>   }
+>>   EXPORT_SYMBOL_GPL(cpu_die_mask);
+>>
+>> +const struct cpumask *arch_llc_mask(int cpu)
+>> +{
+>> +       if (has_coregroup_support())
+>> +               return cpu_coregroup_mask(cpu);
+>> +       return cpu_smallcore_mask(cpu);
+> 
+> 
+> This function body needs change, since LLC is not at MC.
+> and I didn't account for power9.
+> 
+> Rest of the structure is what i would prefer the direction to go.
+> This will help future architectures too to account for their specific
+> needs.
+> 
+> What do you think?
+> 
+
+Yes this direction look good to me. Regarding the arch_llc_mask(),
+how about the following per Srikar's description
+
+const struct cpumask *arch_llc_mask(int cpu)
+{
+	/* Power9, CACHE domain is the LLC*/	if (shared_caches)
+		return cpu_l2_cache_mask(cpu);
+
+	/* P7, P8, P10, P11, SMT domain is the LLC*/	return cpu_smt_mask(cpu);
+}
+
+thanks,
+Chenyu
 
 
