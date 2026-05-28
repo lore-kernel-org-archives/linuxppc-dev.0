@@ -1,148 +1,159 @@
-Return-Path: <linuxppc-dev+bounces-21641-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21642-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 53757CD4F54
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 May 2026 18:30:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5B339CD5BD5
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 May 2026 18:37:04 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gRFR05nxYz2yY1;
-	Fri, 29 May 2026 04:30:20 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:d100::1" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779993020;
-	cv=pass; b=C1+kdsqP2IBT3nZ5436qWo+bxn0glUdK8xZ1pOEwae9B0WN8z7Xvz5RSAT827mOIarpicEOz8yr2CnkZc9CMaPaT408198BgI9ePECrbHfO4SJ3xC9/zUOf8mJxNvoviakwtMMi74TxRdpkM3idAPEUzSK5eKAGzCIND4z26v1sWEN5tAVopY3StAj9W0qmJpD4Sm17QJOmgI2J/C4GPcWYl951eTXRIFzr2iOZ1AU9sHQy79fP0BxfHHPQQyC8zpa7L7RxmGp2IgSOxP3UPIdJuiMeUQ9rp/eJj+6Si5sPO04HnRlhotCNsXl1lnf0CElKvVuNCNQKXVkd37QxEIA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gRFZk5Dk4z2yY1;
+	Fri, 29 May 2026 04:37:02 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c111::9" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779993422;
+	cv=pass; b=SWcQKz2Xgl7uiIcmNtRjvh/PQzQYnKMoondcxtj1JGvU9F21mdXsKv1lkb9ysnUDIg4HKTxwXATgNNgAVsP0HfeO5qo+uEFW7ls0uqUdDpc05x4EcgXTq1bLe8i/5/K06oSgyZZ8I1y+/+HdDGaBnNH2iJwyqkHUneBRi7hlXCsMDpt4YDZ/4IWi52cX5r2B1+oHX2G8LPWPz+Qj5OGdxziyfddeUTbpuYkIownU6fGj9X2gF5peorT7cdDckaquV9tOS/K+X+eUGJkttkwswC0sNo/iTsaykG/8QcTglRkcwwEciXZY4YxKe1BBW0U8Siy3D6Yf4PLUM8GeXUxVPg==
 ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1779993020; c=relaxed/relaxed;
-	bh=BmzRGnurAz6Xz3wlLcxonBCqfKIEUIDPrfHdVIvAqcs=;
-	h=From:To:CC:Subject:Date:Message-ID:References:In-Reply-To:
-	 Content-Type:MIME-Version; b=RuYDvU8csD7xlTSy7MEpVzHfjh1gSSmjXIpU9weu7uLjYY4SDP9qvoEZAQD20LJpH/se8pijP1bwWUK4liNOwYLOF+xfl7SR7Z9Zy8x86+hSVAy84lqyZ2v7qx5B7J2q0Oi8F8Jp8lObtkZ9KYJfX/T22Qxd4bKyBUPXky4psbjSTRV7KQws5BVoXDp3wV5BJ9LtWat1TiOBWL0kHnd99nY6X23DRe/6AHnLFGQH7kVJNL7Df+vShK/SMiQFg7tRgkKfLu457CHe0ZUgrR13DN+Tw3lpJeGb5YO9o3z/EqXwxEif7Fp44saLVgWwi2d35vAxHbelDoM+WBxXrnCUsA==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=outlook.com; dkim=pass (2048-bit key; unprotected) header.d=outlook.com header.i=@outlook.com header.a=rsa-sha256 header.s=selector1 header.b=bPZMau4G; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:d100::1; helo=bl0pr03cu003.outbound.protection.outlook.com; envelope-from=mhklinux@outlook.com; receiver=lists.ozlabs.org) smtp.mailfrom=outlook.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=outlook.com
+	t=1779993422; c=relaxed/relaxed;
+	bh=Pm3RxOlUziMIipQdyQHT2pcKu2ESuFD9ZeBKDhFFqu8=;
+	h=From:To:Cc:Subject:Date:Message-ID:Content-Type:MIME-Version; b=hKUhID0+QLJxhOr7FVn+yd6W1voRx0xaCxPqIoMQESxH9Jy1gL0Gyxpeh2aBVoYSVkMd8O9QtBR4zdgNeT5tXyb4HdgIlhRDs0MWIgy71LgCrnodyFqQwSvXXY0iQ8ehZ/GI/DIXZMV7vshBi6W8V0Qzp5malgTXvKiGbz7Pi0yXMTSDZ0Bu0DEpXrAsmv885LCMu721WySxftYYFmtyTwM8kQDnnbLAmmeK1VaF4wStuBLrYyJGk28mQm9EO09r5kgrkSRq0yoEMVm0+6VeOWvogtA0gJwAaw0DnFVytaMEXPSfjNv0NDNvGkFuPcKFv3CONWL8eA8mVMYAUSLWcw==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=h922R/VY; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c111::9; helo=dm5pr21cu001.outbound.protection.outlook.com; envelope-from=ynorov@nvidia.com; receiver=lists.ozlabs.org) smtp.mailfrom=nvidia.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=outlook.com header.i=@outlook.com header.a=rsa-sha256 header.s=selector1 header.b=bPZMau4G;
+	dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=h922R/VY;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=outlook.com (client-ip=2a01:111:f403:d100::1; helo=bl0pr03cu003.outbound.protection.outlook.com; envelope-from=mhklinux@outlook.com; receiver=lists.ozlabs.org)
-Received: from BL0PR03CU003.outbound.protection.outlook.com (mail-eastusazolkn190120001.outbound.protection.outlook.com [IPv6:2a01:111:f403:d100::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nvidia.com (client-ip=2a01:111:f403:c111::9; helo=dm5pr21cu001.outbound.protection.outlook.com; envelope-from=ynorov@nvidia.com; receiver=lists.ozlabs.org)
+Received: from DM5PR21CU001.outbound.protection.outlook.com (mail-centralusazlp170110009.outbound.protection.outlook.com [IPv6:2a01:111:f403:c111::9])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gRFQz4Gvyz2yVd
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 May 2026 04:30:19 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gRFZh3w4Mz2yVd
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 May 2026 04:36:59 +1000 (AEST)
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=RiG9mxL0AMfhSgcYowozehEp+juP2OFM90l3eeEfvj1VHjZW+AsBJb4xAmH4KLtpFNPSWYh7C/23GPEX7Sa3WguZQ1I9Vydt19aHvqmP0ssrxWv85QtMxPjpRDn/RpFjC2TxiR60Ce7/oR4vD+hRpiFAGztr+2oj3tOZzfZKJe5ECX9O6X0zVx/0TQAWCUxR/KK8xm7bIGqUx0g2QM/5YKSx60SZw7iQSeihIiNyIZ3mCKomrtDRaSvjnSNGReqUr+pQJbDD19NSgCn4t5lTwJLB0sc0BzsuZM0y3y3JG6+0qP67Q3X7IHE6zqxhuganSZlBdacpaj0oHt3cD8rwpQ==
+ b=W4rc1G8PRNEF63wnNNLGvJE16l8KgrKiwAeEz3bPzrqxfSAQrxkGURK0u6ar9hg6HAPQqDQTXnFE4ACzSIonGYHazhC4B4DleEbmCQWDo82KPtQvfwlPUntMvSVI7t/Ca7Eq2oKUFiVvldfUyOlWhR9rqe86HmpErjt1zqIssEn77WBGbNVigeikAnlwMqTCNOGGZZZens/OTGIyTTi34FMpw2DMQjzAKS5csTIVFf7WS3AKaup8xA4FnpMhnNvu0lrj/KO5SZ32v351BGZaiZ2nXEoyXY/c4C4NMGzz3Buzs/P7Mt+h32hT/1ISNZzwIP9knOt33hexviFKXlbQxQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=BmzRGnurAz6Xz3wlLcxonBCqfKIEUIDPrfHdVIvAqcs=;
- b=uDWEqeswW6O9zLQcsqXiE0F3EyOCx0nBWLFwEL81jY8luzwgVls081u6fUPFnSuO5w0EPg+3lNdnCeRoc9xNo3MGSJQ3Wn1Hg3Fq/mefztvrvmEHH+LFySQn/xeIhVlg351T/esrbLT/JaJ0MdhiHUhUZ9mltGfV49Hi9N0ceLJAfLE7gkrw3o1SfLjYD9zyPKf2KeCbx0MIQaJDDSyg3sNEwAMddRvOAzxNbKL+MH4R058RL+NNi9iKhuWk6TFzOMzPGwAJkbInRqAVs67TlAyS0KPO2h65AkO6hLZjVH+AMi9sClNcHyI4YOSw8SZddUq0LE3MeoSCTAkQvMPJxA==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=none; dmarc=none;
- dkim=none; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=outlook.com;
- s=selector1;
+ bh=Pm3RxOlUziMIipQdyQHT2pcKu2ESuFD9ZeBKDhFFqu8=;
+ b=m5RB8GrzCcx8H0fKPhUE613qwJk7kZSuxiAsh5leLQQoD7xBr4GHWcXAPlHT3dCBvTk7TdKoWIhp7SJAlEvs2r3q7zGvq29smyj/i3mCzx+pKwCcKOfkpkLhTOPAt2QboMXBYbdzTJlvpy1d2agc8ABH47tX3ebWXbofEaTc9pmo6OArI8YzHHeHd+0+IthDzJBW1d7CL1XLRtLp9eB8TgKLJOGurUU/hJ/Wc3gmp1viPBDaUbzNr/bqrdglTeesxFxWE9xKYSgG2jK6MNOHM5ExSh9EkrGUM2Rj5hJgyBSWvy3Fa2ZJv47ixO0ToU/JqHWJOU1X3ZkKmj6KKSC7ZA==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
+ dkim=pass header.d=nvidia.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
+ s=selector2;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=BmzRGnurAz6Xz3wlLcxonBCqfKIEUIDPrfHdVIvAqcs=;
- b=bPZMau4Gjf8mac47yifOAkg/IlCJqPE6APipteN516S27dKLqkdVlCSLazvvmXhE4vckFhGMZkEmcmlXkW9Zt/Pa3OH6FG33OVaM/JgtaYtpJihdMz21IIqlC8LFQ8oeKcjU00480JrLeLzWGBDF5fnuae/OtPMFS87wma0Ac1YnpLxZbT83qX7eX7sIMy90gNXIEHINJxce/h5hW51I+CG03UzVavqFhSalplj1bNR4HLy+pzc6xfMVm29B9KINMCeDzgbQTN6kjNUgeDnV1d/1Jo5iGA6hms4PwGabBAqNpyNDA9yJhCzE+wN9MISUs6WLxiM6t9Q9Ev7B83rerQ==
-Received: from SN6PR02MB4157.namprd02.prod.outlook.com (2603:10b6:805:33::23)
- by DS0PR02MB9571.namprd02.prod.outlook.com (2603:10b6:8:de::7) with Microsoft
- SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.21.71.12; Thu, 28 May 2026 18:29:54 +0000
-Received: from SN6PR02MB4157.namprd02.prod.outlook.com
- ([fe80::900:1ccf:2b1e:52b6]) by SN6PR02MB4157.namprd02.prod.outlook.com
- ([fe80::900:1ccf:2b1e:52b6%3]) with mapi id 15.21.0071.011; Thu, 28 May 2026
- 18:29:51 +0000
-From: Michael Kelley <mhklinux@outlook.com>
-To: "Aneesh Kumar K.V (Arm)" <aneesh.kumar@kernel.org>,
-	"iommu@lists.linux.dev" <iommu@lists.linux.dev>,
-	"linux-arm-kernel@lists.infradead.org"
-	<linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org"
-	<linux-kernel@vger.kernel.org>, "linux-coco@lists.linux.dev"
-	<linux-coco@lists.linux.dev>
-CC: Robin Murphy <robin.murphy@arm.com>, Marek Szyprowski
-	<m.szyprowski@samsung.com>, Will Deacon <will@kernel.org>, Marc Zyngier
-	<maz@kernel.org>, Steven Price <steven.price@arm.com>, Suzuki K Poulose
-	<Suzuki.Poulose@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, Jiri
- Pirko <jiri@resnulli.us>, Jason Gunthorpe <jgg@ziepe.ca>, Mostafa Saleh
-	<smostafa@google.com>, Petr Tesarik <ptesarik@suse.com>, Alexey Kardashevskiy
-	<aik@amd.com>, Dan Williams <dan.j.williams@intel.com>, Xu Yilun
-	<yilun.xu@linux.intel.com>, "linuxppc-dev@lists.ozlabs.org"
-	<linuxppc-dev@lists.ozlabs.org>, "linux-s390@vger.kernel.org"
-	<linux-s390@vger.kernel.org>, Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, Alexander Gordeev
-	<agordeev@linux.ibm.com>, Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
-	Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>,
-	Christian Borntraeger <borntraeger@linux.ibm.com>, Sven Schnelle
-	<svens@linux.ibm.com>, "x86@kernel.org" <x86@kernel.org>, Jiri Pirko
-	<jiri@nvidia.com>
-Subject: RE: [PATCH v5 05/20] dma-pool: track decrypted atomic pools and
- select them via attrs
-Thread-Topic: [PATCH v5 05/20] dma-pool: track decrypted atomic pools and
- select them via attrs
-Thread-Index: AQHp6tfu5DGfxW+HBL9src0vNhss0QGjMATQtfypCTA=
-Date: Thu, 28 May 2026 18:29:51 +0000
-Message-ID:
- <SN6PR02MB415754E94A9505C2B9739E4DD4092@SN6PR02MB4157.namprd02.prod.outlook.com>
-References: <20260522042815.370873-1-aneesh.kumar@kernel.org>
- <20260522042815.370873-6-aneesh.kumar@kernel.org>
-In-Reply-To: <20260522042815.370873-6-aneesh.kumar@kernel.org>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach:
-X-MS-TNEF-Correlator:
-x-ms-publictraffictype: Email
-x-ms-traffictypediagnostic: SN6PR02MB4157:EE_|DS0PR02MB9571:EE_
-x-ms-office365-filtering-correlation-id: 0542c1d2-3909-4df7-ba5f-08debce71b2c
-x-microsoft-antispam:
- BCL:0;ARA:14566002|19101099003|12121999013|37011999003|51005399006|41001999006|31061999003|8060799015|13091999003|8062599012|19110799012|15080799012|40105399003|3412199025|12091999003|440099028|102099032;
-x-microsoft-antispam-message-info:
- =?us-ascii?Q?uP5dnpJwt1kfLT9GEk89sr12pofUyzYkXvuB553Vd8g800b5BhSZEy+T9aqT?=
- =?us-ascii?Q?xTDYklr8nNNgm7QDzBwdoeqGggf2vgvzFD9M/J75gBQKjmGlhsbiXEwKo0AK?=
- =?us-ascii?Q?ku9nCHMjiJEKPH2xL4xRc7xIQRHbyUT6aH5Kp2rBqapeCDiv5mW6exU+fW5u?=
- =?us-ascii?Q?kRaFvFEy3/9zCnNnQLqNeZyc+4RWVeImuVmqfbxeLHg47l/PepbqPg0RVEnL?=
- =?us-ascii?Q?oEMKP82QwrN9DZxqfZf0s9RkHQZbETT3cOR/BZz5KeuAfWaJMQiX0rL5TjHb?=
- =?us-ascii?Q?x37dSZFmFpHCSo9G9qv3IqBIpeKBXpZtiAJu16L+4y7QKmdKWKF2ckTRi73J?=
- =?us-ascii?Q?vXV5tmLLB+PrBf8ycOgh84qsLOs6SP/8XtLIU6iDRzEbyhgQ/uezhTniLLss?=
- =?us-ascii?Q?HzrK8SZxrrSI/IkC2NGOjsKfs/FQVstNB68YyslbUIPS89AM4S43QKXgd6KO?=
- =?us-ascii?Q?lWZfsrO+2nfdOBNn3LCsAzKYZR2L3/Ki8TpUxpurQcv6wUvqca+g7hG4ZFbR?=
- =?us-ascii?Q?Y+w1tX7RlUAmJ8+NBUk8mbTKXSaAxsahcEWYuehjSN275xn3aJSc+iFNENjx?=
- =?us-ascii?Q?moVAYInLyONx/op4/8AFqIS/dyjnxL1RiiFQNhS1UfeggB8exnzoCkVUwVQU?=
- =?us-ascii?Q?45pYz6nPYfQTQ7m0duFbMJLICW8ux18Ex04s8R678FmuiqFueXCt2tSzYRk8?=
- =?us-ascii?Q?1plxF9d3+VAng4km6vsKx+MM06oHRqFuYXhPtXeUxetT2iRqzwBoIzNGit7V?=
- =?us-ascii?Q?RvUzfnxRje6mlJ6r7825TzZRItw0Z/dGX8aTA54niBST853P4mv4Uz3iIME7?=
- =?us-ascii?Q?hyI8ha/JkmB1XCRkQoKBsoHvgdSm7lyPCaj8yuGxitii40csg1tOWA/rlAlP?=
- =?us-ascii?Q?QE1ba3wi4f20F+tmnZ/J+32dfpGcAelsmWhvj+K7+Kf3p6+83idwk0gF7r7d?=
- =?us-ascii?Q?cf6LepHEsp4zCaYh4WsloXiAk2srMsAFsjOvmqmFVSAzXpf0QZWdVwd89TI1?=
- =?us-ascii?Q?jVKR1uopLz+R0M9BJOZgKzyREXieirjiyhbER83eLBMxg18xe6znTyuHh/0z?=
- =?us-ascii?Q?Au2kPNUh7868rOLmfG+HjNZ+zwv5FlCu6ESTtsxKjxAP5YSQ8r0=3D?=
-x-ms-exchange-antispam-messagedata-chunkcount: 1
-x-ms-exchange-antispam-messagedata-0:
- =?us-ascii?Q?HQ0umdFbO8Wz8hLL3fjVC0BgTAuJ8yGsDWYeYe6Eyo4tQk3W/hAQI0cUw3lW?=
- =?us-ascii?Q?oyOeet3l8RoFkpvlFBPENQSKYIIFM3U0ERCW6Mf5JzGI8ba7RvZzAhU+an70?=
- =?us-ascii?Q?a6eG9qo0GczHie0y8Dnfnwrhf2fXUp3nbQU7MTII6+aYEF6sPQ48tJV4b1U4?=
- =?us-ascii?Q?OMRzYzwcYLv8cTId5PzTXxsCgpMmoWBtWxeF4tZRLkUVL5bfiBlgrfSsLF63?=
- =?us-ascii?Q?E7ibjx73MqCZqOjFz+z/JBAQMszHWcTmb31Y9TuHfz0ygB2Tp2n8oGOxzHau?=
- =?us-ascii?Q?k0FpBIEghV1TB++gK7FfrlbVu1vCwzCK/4ZeDimdm+4UvF7JN8vcRlAjTshw?=
- =?us-ascii?Q?fZv9yXIJUknU0YzhYAJIZe8AkH27X0p02BIb2/txsdmEuBZgyex+O4BgZ2N2?=
- =?us-ascii?Q?ogkr79TwABKhnwsFIq2tlJGdzUcAZulvnnP9yAgoRjO/NnOcpbOY4sdoMNe6?=
- =?us-ascii?Q?aycFCBXoNpSzj5TpwoOnCJuPMANkwM5MLB8Nj3e/4zDpL62hGudQuf4FFJ2t?=
- =?us-ascii?Q?rvr4oL2Dw5G8vRsvT9B7T8IaBapZOCExRJd3FTOtbM4M939VVJe1/JPfISUH?=
- =?us-ascii?Q?C5H7t58YsC45xeds9dyh3cfzJmdZBLpsDNeUopcCUbeYqF12dREFFSrYs/I+?=
- =?us-ascii?Q?eN8oGjwGYp69Z7W8CM6FbPTgA6NxtmOKxezo3hzALWSdLJCYKbCeDJ5qRlxZ?=
- =?us-ascii?Q?mu+g3mMloA72cTa54kg9JhYtH2JfUc8jgJecdeUjOSeUQH64kzDuBu47vi28?=
- =?us-ascii?Q?8iHgnBbD5nrEMkWTXQtjpJ5/iQEoLasMhCBi1KzH+1vTUPuW0U3SDMkdBsfR?=
- =?us-ascii?Q?7UT/CQctVK6B5sHgly17tWiBkXB9doiM8TGselzwaa0AB029tlUqSkxrnX/0?=
- =?us-ascii?Q?ZOtc0hutg6EZLmK3tO2g9zAbVf9KFUAdKt4szMDyra7xK8BdPZQF+OFJVGwE?=
- =?us-ascii?Q?qdcXBL9BcfC8H4kEceeTLyRrldPu3j981/9co/k2qbvuCTdCJ2QNPuV5fZs7?=
- =?us-ascii?Q?GYwl3VA1YkN5cNBlb9yPCVslhEPr6FrZLZxfDy38rA4lg7JsvEFr/+8CymEp?=
- =?us-ascii?Q?b4HLdHxTQmmMcY/il2vQTJvlPnH/zrtl1LKud3d3XURGbQ4GtcMAHgasaVqV?=
- =?us-ascii?Q?TEU5nAHhWp1A7fSTXS3pZXC1y8Poh7UEz55ckmTfsvY39ynZlMX4s3IoA7eN?=
- =?us-ascii?Q?aitqJh9uJ76y2WyQBO3PqYSWwjvrKtksjjRakgqlXvreqxobCc16RownJHPF?=
- =?us-ascii?Q?GAxWRYPJv82Xo8WnY7rxZG36cvykwhBhZd0kc86EWp96bcMhUEmOKhGUNCqH?=
- =?us-ascii?Q?TR6YdHYgJP6Q/0I+6fwmL8Od6GBEcDZc2JQIOwVrp9El4AU5X60ZB/xoZWE2?=
- =?us-ascii?Q?WTphGMc=3D?=
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+ bh=Pm3RxOlUziMIipQdyQHT2pcKu2ESuFD9ZeBKDhFFqu8=;
+ b=h922R/VYYBrfQii2qD3ohQUoRXHoYuXC/tMwX4kGaSDBTjuwG6p4kQvU1DmzY4DgEh3wBrYoN1iZNtv+0s+8PFbTjMFhiOnYzxsOR7xnHGfqeCPyb/dI+boOmgU749k2WpC0577xYdTBC0Ojvsc7JHElGTx4XeTL4xjmgovFttijlMr4LvErTumd+o4Iamz0fp8JmAzE+/5qDjqBqynvu6jAGjr8fofKbqhW8dfrboM7/WRDpIZqx5iSjmc2SWVIbCNORItLYhnTi8Ih4jMirKSSk15e60dKQrbb0GJO/5Q+KPnhxDANU4V9xIrF8V8krSq6fM3QxRJ6pVXQrCIeDQ==
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=nvidia.com;
+Received: from LV3PR12MB9356.namprd12.prod.outlook.com (2603:10b6:408:20c::21)
+ by SA3PR12MB9228.namprd12.prod.outlook.com (2603:10b6:806:39c::5) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.71.13; Thu, 28 May
+ 2026 18:36:30 +0000
+Received: from LV3PR12MB9356.namprd12.prod.outlook.com
+ ([fe80::1c36:31b4:c420:6286]) by LV3PR12MB9356.namprd12.prod.outlook.com
+ ([fe80::1c36:31b4:c420:6286%5]) with mapi id 15.21.0071.011; Thu, 28 May 2026
+ 18:36:29 +0000
+From: Yury Norov <ynorov@nvidia.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+	Rasmus Villemoes <linux@rasmusvillemoes.dk>,
+	Yury Norov <ynorov@nvidia.com>
+Cc: Russell King <linux@armlinux.org.uk>,
+	Frank Li <Frank.Li@nxp.com>,
+	Sascha Hauer <s.hauer@pengutronix.de>,
+	Pengutronix Kernel Team <kernel@pengutronix.de>,
+	Fabio Estevam <festevam@gmail.com>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	Peter Zijlstra <peterz@infradead.org>,
+	Ingo Molnar <mingo@redhat.com>,
+	Arnaldo Carvalho de Melo <acme@kernel.org>,
+	Namhyung Kim <namhyung@kernel.org>,
+	Mark Rutland <mark.rutland@arm.com>,
+	Alexander Shishkin <alexander.shishkin@linux.intel.com>,
+	Jiri Olsa <jolsa@kernel.org>,
+	Ian Rogers <irogers@google.com>,
+	Adrian Hunter <adrian.hunter@intel.com>,
+	James Clark <james.clark@linaro.org>,
+	Thomas Gleixner <tglx@kernel.org>,
+	Borislav Petkov <bp@alien8.de>,
+	Dave Hansen <dave.hansen@linux.intel.com>,
+	"H. Peter Anvin" <hpa@zytor.com>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Len Brown <lenb@kernel.org>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Danilo Krummrich <dakr@kernel.org>,
+	Chanwoo Choi <cw00.choi@samsung.com>,
+	MyungJoo Ham <myungjoo.ham@samsung.com>,
+	Kyungmin Park <kyungmin.park@samsung.com>,
+	Heiko Stuebner <heiko@sntech.de>,
+	Lorenzo Pieralisi <lpieralisi@kernel.org>,
+	Xu Yilun <yilun.xu@intel.com>,
+	Tom Rix <trix@redhat.com>,
+	Moritz Fischer <mdf@kernel.org>,
+	Yicong Yang <yangyicong@hisilicon.com>,
+	Jonathan Cameron <jic23@kernel.org>,
+	Dennis Dalessandro <dennis.dalessandro@cornelisnetworks.com>,
+	Jason Gunthorpe <jgg@ziepe.ca>,
+	Leon Romanovsky <leon@kernel.org>,
+	Dan Williams <djbw@kernel.org>,
+	Vishal Verma <vishal.l.verma@intel.com>,
+	Dave Jiang <dave.jiang@intel.com>,
+	Ira Weiny <ira.weiny@intel.com>,
+	Bjorn Helgaas <bhelgaas@google.com>,
+	Shuai Xue <xueshuai@linux.alibaba.com>,
+	Will Deacon <will@kernel.org>,
+	Jiucheng Xu <jiucheng.xu@amlogic.com>,
+	Neil Armstrong <neil.armstrong@linaro.org>,
+	Kevin Hilman <khilman@baylibre.com>,
+	Jerome Brunet <jbrunet@baylibre.com>,
+	Martin Blumenstingl <martin.blumenstingl@googlemail.com>,
+	Robin Murphy <robin.murphy@arm.com>,
+	Jing Zhang <renyu.zj@linux.alibaba.com>,
+	Xu Yang <xu.yang_2@nxp.com>,
+	Linu Cherian <lcherian@marvell.com>,
+	Gowthami Thiagarajan <gthiagarajan@marvell.com>,
+	Ji Sheng Teoh <jisheng.teoh@starfivetech.com>,
+	Khuong Dinh <khuong@os.amperecomputing.com>,
+	Daniel Lezcano <daniel.lezcano@kernel.org>,
+	Zhang Rui <rui.zhang@intel.com>,
+	Lukasz Luba <lukasz.luba@arm.com>,
+	Yury Norov <yury.norov@gmail.com>,
+	Kees Cook <kees@kernel.org>,
+	=?UTF-8?q?Thomas=20Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>,
+	Aboorva Devarajan <aboorvad@linux.ibm.com>,
+	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
+	Ilkka Koskinen <ilkka@os.amperecomputing.com>,
+	Besar Wicaksono <bwicaksono@nvidia.com>,
+	Ma Ke <make24@iscas.ac.cn>,
+	Chengwen Feng <fengchengwen@huawei.com>,
+	linux-arm-kernel@lists.infradead.org,
+	imx@lists.linux.dev,
+	linux-kernel@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-perf-users@vger.kernel.org,
+	linux-acpi@vger.kernel.org,
+	driver-core@lists.linux.dev,
+	linux-pm@vger.kernel.org,
+	linux-rockchip@lists.infradead.org,
+	linux-fpga@vger.kernel.org,
+	linux-rdma@vger.kernel.org,
+	nvdimm@lists.linux.dev,
+	linux-pci@vger.kernel.org,
+	linux-amlogic@lists.infradead.org,
+	linux-cxl@vger.kernel.org,
+	linux-arm-msm@vger.kernel.org
+Subject: [PATCH 00/16] lib/cpumask: get rid of cpumap_print_to_pagebuf()
+Date: Thu, 28 May 2026 14:36:07 -0400
+Message-ID: <20260528183625.870813-1-ynorov@nvidia.com>
+X-Mailer: git-send-email 2.51.0
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-ClientProxiedBy: SJ0PR03CA0077.namprd03.prod.outlook.com
+ (2603:10b6:a03:331::22) To LV3PR12MB9356.namprd12.prod.outlook.com
+ (2603:10b6:408:20c::21)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -156,109 +167,151 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-OriginatorOrg: outlook.com
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: LV3PR12MB9356:EE_|SA3PR12MB9228:EE_
+X-MS-Office365-Filtering-Correlation-Id: 19749e33-0ed2-4e6e-5dfa-08debce80877
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|1800799024|7416014|376014|10070799003|366016|18002099003|11063799006|6133799003|56012099006;
+X-Microsoft-Antispam-Message-Info:
+	vUVY3uUYl2ZVcZRHFt1uUn0nw6d4ieHKXH/HFZHDcNyi+nyEY3JWsme1sfsPs/mo4L5wojaKHKkLm6i9jZd37fgEOchKCZjvVTPXs7H4+XchbPQ7IjHXVLLf0it0Dxzb0uqYwO8oTBxiF6QtifK3qfeyZ5YDTkl6r7LuwIM1ep19fQaUygG+jixUgouokBSdvnZwBCxDZIYRfNtyxosgZxBQxgsdpG92HvzZEA6lYYqB/x8Z+ShgH8f4SE5ozE9tU+ZJlUx+Dw9UvbpXvam6rt7WjJ1x7x2WldP2ijm6fSAmvPAPEBJGcOKGL5ns9f3ofAK2wHejW7hmd9KctxBbrK8nNeo+7f2Zfz+O+/4IX3eEKowaGO6kpkGOFiXvvuvRpOVs1aB7qfUef0Z0CaI74+hVxrZAM8h2mHXiXNUeTgI8fMoWNuU0u2hpNw43P4bC2JBur76cI3EfaSaIsoKxjPIlvmo2mv8qyWV8gMbPATH5ghs2c6E9TNFX4dxEyPu7D01eqevnJAb3J9Kocs6tM1J9jgRYMzJzxyY6ke9ae/6ta/NHHppfwZVQEnc3HVn/45w7/HQjBG2TIKOIkLo/RtN5Dya+P9VWaukhmKFkcHs1S7JBjhEGhLCTaCKOBVeTd0uRIQUS8pkpMaRKgbuT6FYYognFaBxGhIt0Yef9qn5BiUSBcYy2G6HWIuswNBdf
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:LV3PR12MB9356.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(7416014)(376014)(10070799003)(366016)(18002099003)(11063799006)(6133799003)(56012099006);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?us-ascii?Q?+HRz9lewdEfK9kpquRoYwbH1o6nEJdTpOVIrWceCHDdXJw+rIVJYAtbW9fpm?=
+ =?us-ascii?Q?pep5r+3N/cL1LNM7IsQeX1u/4M9ga28u25o4PZp9drsrxv0EFABK3/uv9LjJ?=
+ =?us-ascii?Q?PDinK5HONprFSfiQeEv0OhA3N3aKjTkeSEhK+F0zdbaDeZtDKS+PFAcHwcXy?=
+ =?us-ascii?Q?07fd6FV5IsDS4f65wzKl6LTi/kbLhTHmQC64sIyfnuRP0uMGlhcYPua+QKX+?=
+ =?us-ascii?Q?SW1ys5X6fHpRIUqVqwCySqR7l2jFNNaNNgI2n3KRiUwBTxPUYs7p4l677Xx8?=
+ =?us-ascii?Q?rZhRoXNmv1vJpMlD3WhpsC3KeG6UTtM8O2xqYXAvYTJ48r68QUD9d7OwnF9G?=
+ =?us-ascii?Q?WlcDoI96GtAsXHd8HGfYTx/yuze4W/AUOsevJx+BH14UDB0RL57tDWuqO1UE?=
+ =?us-ascii?Q?DNzu0Qelq5XVTaLK82e0DDy5+Cclzo+H4ZPzAPO2kfyk79Qdc/ZJET7MlPs0?=
+ =?us-ascii?Q?1qGuzPUfTGfccUFzSm0mCV54GtHvyV23vXJf8uOjgMCmYpwPEQBFxLZbxRd9?=
+ =?us-ascii?Q?+T9zKCoAgKGZjz8WP5LUBNtSfizXXN4BmzeTidi6m5YwEE8NBmZhBgJ92EXD?=
+ =?us-ascii?Q?GXQE2apDmHJzh5UqoNjFrFymljw7bLiBZVicHdXeFMzpWt8aRje1CFDhumL6?=
+ =?us-ascii?Q?QuNWzgjP1dr4V6a9gS+t5V9Z6YSdOtgQ8+pd9PEzduurpzK5vRGhRqrxK05i?=
+ =?us-ascii?Q?r9Hnx9blmNX9iSf+XMvy09yM9/M0zB3RpxNjjUWSgnVgP+lka9e8nbW65Wj8?=
+ =?us-ascii?Q?WTyBRssTzReZWiHvlt1YYpwv3a4WsVF145fOPIqSR13Zh6ooJRrA5sEdCTbA?=
+ =?us-ascii?Q?8xREizGwWocXScjgjSyKoF7nQNtY3qB997G+7NAc76J5puv8TVnIYKIEh+z2?=
+ =?us-ascii?Q?zQL2cvAxSDlThv10Lo6/UHsQV7SxKzdi3GNzixhjbWQQmV9tPAymRMPin2vB?=
+ =?us-ascii?Q?YVYh2cp6SPuiltlksxK0+pCE9+ZevFKuvsiijEvhxTnc8r874YXIiHTlByhJ?=
+ =?us-ascii?Q?qvB430xktTYisRP17Y36mUlta7o5ghDghBnn4v/piKxiW2PhpYuDqBSEpKXC?=
+ =?us-ascii?Q?Nl1VyviwA1C+e2s81rpsnkjslzRWYZRyUAK+z75+Wx5dqnLYxM8bVQFvSJ8z?=
+ =?us-ascii?Q?iVQtYQH/Kd0JyKSEki0dvMW3LP6aK6OCWzLZFHXQfYZ4MrPxS9oK0gj7w8Vr?=
+ =?us-ascii?Q?Ty3Kugvk3qDzf07xgP0MVoW/fUHPpBU0QDk9spsmJX5ZfbMBQol6G7BeGslH?=
+ =?us-ascii?Q?IfggJMss6ucFIRDnaRTPVpKPe+05bTDAnxy0mm2ZGhO054tZ7kK/5IfaRlec?=
+ =?us-ascii?Q?Js0Umh0Ogbsf2a8Grcxz1jdQsKAYREmWHPqonMnEuAIUF+jBVi5V/BnehoFM?=
+ =?us-ascii?Q?jOd2Yw1XPhl2YLMRw+BqANd9ZrGUwLPKpc32TFbROVWlGPYbm9b5pIM2bFR5?=
+ =?us-ascii?Q?8AQMmf/RMhTjuDq5co1uWiEBeNGTT4N2dn6VObhphUm/ardD+9wVCWCGHwo1?=
+ =?us-ascii?Q?TPtBtot8XTZkFTat8T9ps7FGHPtfs8BkRxgYXZKi7VpPdENosbSIFlA0oJEn?=
+ =?us-ascii?Q?RbB0K8vl1tKSfNCxRx0m4z9EnISN1bLVAmwYiA+VlHtQvW3HLxkEXuRmTfDP?=
+ =?us-ascii?Q?ATzAYV0Gay2/xzLeX2WROMBt3VBw05qqINQjZsgti55xlz2voB3YYCK+vfxY?=
+ =?us-ascii?Q?Ce6JvZj1cstRum7uN9hfUOdwBQbe3FxT1O3dxCGMyr8eNRcwrPp8LjX9mQ10?=
+ =?us-ascii?Q?njuLgRKiJWhPPZA59OfRzUBXiqbQZA4MCoHY/0GRQo66nRi+Ic4k?=
+X-OriginatorOrg: Nvidia.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 19749e33-0ed2-4e6e-5dfa-08debce80877
+X-MS-Exchange-CrossTenant-AuthSource: LV3PR12MB9356.namprd12.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-AuthSource: SN6PR02MB4157.namprd02.prod.outlook.com
-X-MS-Exchange-CrossTenant-RMS-PersistedConsumerOrg: 00000000-0000-0000-0000-000000000000
-X-MS-Exchange-CrossTenant-Network-Message-Id: 0542c1d2-3909-4df7-ba5f-08debce71b2c
-X-MS-Exchange-CrossTenant-originalarrivaltime: 28 May 2026 18:29:51.2491
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 28 May 2026 18:36:29.7574
  (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 84df9e7f-e9f6-40af-b435-aaaaaaaaaaaa
-X-MS-Exchange-CrossTenant-rms-persistedconsumerorg: 00000000-0000-0000-0000-000000000000
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: DS0PR02MB9571
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: Tc2GFQcS1qEMQ+1rOuwfNOGwp/zyCZQCEGjU4f399Zyt8Q/60ZuB32VMy2PiEPOG/h/szipm3VhUxO9zg2CODw==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SA3PR12MB9228
 
-From: Aneesh Kumar K.V (Arm) <aneesh.kumar@kernel.org>Sent: Thursday, May 2=
-1, 2026 9:28 PM
->=20
-> Teach the atomic DMA pool code to distinguish between encrypted and
-> unencrypted pools, and make pool allocation select the matching pool base=
-d
-> on DMA attributes.
->=20
-> Introduce a dma_gen_pool wrapper that records whether a pool is
-> unencrypted, initialize that state when the atomic pools are created, and
-> use it when expanding and resizing the pools. Update dma_alloc_from_pool(=
-)
-> to take attrs and skip pools whose encrypted state does not match
-> DMA_ATTR_CC_SHARED. Update dma_free_from_pool() accordingly.
->=20
-> Also pass DMA_ATTR_CC_SHARED from the swiotlb atomic allocation path so
-> decrypted swiotlb allocations are taken from the correct atomic pool.
->=20
-> Tested-by: Jiri Pirko <jiri@nvidia.com>
-> Reviewed-by: Mostafa Saleh <smostafa@google.com>
-> Signed-off-by: Aneesh Kumar K.V (Arm) <aneesh.kumar@kernel.org>
-> ---
->  drivers/iommu/dma-iommu.c   |   2 +-
->  include/linux/dma-map-ops.h |   2 +-
->  kernel/dma/direct.c         |  11 ++-
->  kernel/dma/pool.c           | 167 +++++++++++++++++++++++-------------
->  kernel/dma/swiotlb.c        |   7 +-
->  5 files changed, 123 insertions(+), 66 deletions(-)
->
+cpumap_print_to_pagebuf() is the equivalent for the "&*pb[l]" notation
+in printk-like functions. In some cases, it makes people to create
+temporary buffers for the printed cpumasks, where it can be avoided.
 
-[snip]
-=20
-> +static __init struct dma_gen_pool *__dma_atomic_pool_init(struct dma_gen=
-_pool *dma_pool,
-> +		size_t pool_size, gfp_t gfp)
->  {
-> -	struct gen_pool *pool;
->  	int ret;
->=20
-> -	pool =3D gen_pool_create(PAGE_SHIFT, NUMA_NO_NODE);
-> -	if (!pool)
-> +	dma_pool->pool =3D gen_pool_create(PAGE_SHIFT, NUMA_NO_NODE);
-> +	if (!dma_pool->pool)
->  		return NULL;
->=20
-> -	gen_pool_set_algo(pool, gen_pool_first_fit_order_align, NULL);
-> +	gen_pool_set_algo(dma_pool->pool, gen_pool_first_fit_order_align, NULL)=
-;
-> +
-> +	/* if platform is using memory encryption atomic pools are by default d=
-ecrypted. */
-> +	if (cc_platform_has(CC_ATTR_MEM_ENCRYPT))
-> +		dma_pool->unencrypted =3D true;
-> +	else
-> +		dma_pool->unencrypted =3D false;
+Get rid of it in a favor of more standard printing API.
 
-I'm curious about the name of the "unencrypted" field in struct dma_gen_poo=
-l,
-and similarly in Patch 7 of the series for the swiotlb struct io_tlb_pool a=
-nd
-struct io_tlb_mem. Up through v3 of this series, you used "decrypted", but
-starting in v4 switched to "unencrypted".
+Each patch, except for the last one, is independent and may be moved with
+the corresponding subsystem. Or I can take it in bitmap-for-next, at
+maintainers' discretion.
 
-To me, the above "if" statement has some cognitive dissonance in that if
-CC_ATTR_MEM_ENCRYPT is false (i.e., a normal VM), "unencrypted" is set
-to false. But I think of memory in a normal VM as "unencrypted" since it
-was never encrypted. A similar "if" statement occurs in your swiotlb change=
-s.
+On top of bitmap-for-next.
 
-Two related concepts are captured by the field:
-1) Is some action needed to put the memory into the unencrypted state,
-and to remove it from that state? This applies when assigning memory to the
-pool, or freeing the memory in the pool.
-2) Is the memory currently in the unencrypted state? This applies when
-allocating memory from the pool to a caller.
+(Apologize for the bulky CC list. Feel free to review only relevant
+patches.)
 
-It's hard to capture all that in a short field name. But I think I prefer "=
-decrypted"
-over "unencrypted".  The former implies that some action was taken. It's a
-little easier to think of a normal VM as *not* having decrypted memory. The
-memory was never encrypted in the first place, so no decryption action was =
-taken.
+Yury Norov (16):
+  psci: simplify hotplug_tests()
+  arm: Use sysfs_emit() for cpumask show callbacks
+  powerpc: Use sysfs_emit() for cpumask show callbacks
+  x86/events: Use sysfs_emit() for cpumask show callbacks
+  ACPI: pad: Use sysfs_emit() for idlecpus show
+  cpu: Use sysfs_emit() for cpumask show callback
+  devfreq: Use sysfs_emit() for cpumask show callbacks
+  fpga: dfl-fme-perf: Use sysfs_emit() for cpumask show
+  hwtracing: hisi_ptt: Use sysfs_emit() for cpumask show
+  RDMA/hfi1: Use sysfs_emit() for cpumask show helper
+  nvdimm: Use sysfs_emit() for cpumask show callback
+  PCI/sysfs: Use sysfs_emit() for cpumask show callbacks
+  perf: Use sysfs_emit() for cpumask show callbacks
+  powercap: intel_rapl: Use sysfs_emit() for cpumask show
+  thermal: intel: Use sysfs_emit() for powerclamp cpumask
+  lib/bitmap-str: get rid of cpumap_print_to_pagebuf()
 
-Throughout the kernel, "decrypted" occurs much more frequently than
-"unencrypted".  We have set_memory_encrypted() and set_memory_decrypted()
-that are "take action" names.  But we also have force_dma_unencrypted(),
-phys_to_dma_unencrypted(), and dma_addr_unencrypted(). So it's a bit
-of a mess.
+ arch/arm/mach-imx/mmdc.c                    |  2 +-
+ arch/arm/mm/cache-l2x0-pmu.c                |  2 +-
+ arch/powerpc/kernel/cacheinfo.c             |  3 ++-
+ arch/powerpc/perf/hv-24x7.c                 |  2 +-
+ arch/powerpc/perf/hv-gpci.c                 |  2 +-
+ arch/powerpc/perf/imc-pmu.c                 |  2 +-
+ arch/x86/events/amd/iommu.c                 |  2 +-
+ arch/x86/events/amd/power.c                 |  2 +-
+ arch/x86/events/amd/uncore.c                |  2 +-
+ arch/x86/events/intel/core.c                |  2 +-
+ arch/x86/events/intel/uncore.c              |  2 +-
+ drivers/acpi/acpi_pad.c                     |  4 ++--
+ drivers/base/cpu.c                          |  2 +-
+ drivers/devfreq/event/rockchip-dfi.c        |  2 +-
+ drivers/devfreq/hisi_uncore_freq.c          |  2 +-
+ drivers/firmware/psci/psci_checker.c        | 14 ++------------
+ drivers/fpga/dfl-fme-perf.c                 |  2 +-
+ drivers/hwtracing/ptt/hisi_ptt.c            |  2 +-
+ drivers/infiniband/hw/hfi1/sdma.c           |  3 ++-
+ drivers/nvdimm/nd_perf.c                    |  2 +-
+ drivers/pci/pci-sysfs.c                     |  7 ++++---
+ drivers/perf/alibaba_uncore_drw_pmu.c       |  2 +-
+ drivers/perf/amlogic/meson_ddr_pmu_core.c   |  2 +-
+ drivers/perf/arm-cci.c                      |  2 +-
+ drivers/perf/arm-ccn.c                      |  2 +-
+ drivers/perf/arm-cmn.c                      |  2 +-
+ drivers/perf/arm-ni.c                       |  2 +-
+ drivers/perf/arm_cspmu/arm_cspmu.c          |  2 +-
+ drivers/perf/arm_dmc620_pmu.c               |  4 ++--
+ drivers/perf/arm_dsu_pmu.c                  |  2 +-
+ drivers/perf/arm_pmu.c                      |  2 +-
+ drivers/perf/arm_smmuv3_pmu.c               |  2 +-
+ drivers/perf/arm_spe_pmu.c                  |  2 +-
+ drivers/perf/cxl_pmu.c                      |  2 +-
+ drivers/perf/dwc_pcie_pmu.c                 |  2 +-
+ drivers/perf/fsl_imx8_ddr_perf.c            |  2 +-
+ drivers/perf/fsl_imx9_ddr_perf.c            |  2 +-
+ drivers/perf/fujitsu_uncore_pmu.c           |  2 +-
+ drivers/perf/hisilicon/hisi_pcie_pmu.c      |  2 +-
+ drivers/perf/hisilicon/hisi_uncore_pmu.c    |  2 +-
+ drivers/perf/marvell_cn10k_ddr_pmu.c        |  2 +-
+ drivers/perf/marvell_cn10k_tad_pmu.c        |  2 +-
+ drivers/perf/marvell_pem_pmu.c              |  2 +-
+ drivers/perf/nvidia_t410_c2c_pmu.c          |  2 +-
+ drivers/perf/nvidia_t410_cmem_latency_pmu.c |  2 +-
+ drivers/perf/qcom_l2_pmu.c                  |  2 +-
+ drivers/perf/qcom_l3_pmu.c                  |  2 +-
+ drivers/perf/starfive_starlink_pmu.c        |  2 +-
+ drivers/perf/thunderx2_pmu.c                |  2 +-
+ drivers/perf/xgene_pmu.c                    |  2 +-
+ drivers/powercap/intel_rapl_common.c        |  2 +-
+ drivers/thermal/intel/intel_powerclamp.c    |  2 +-
+ include/linux/cpumask.h                     | 19 -------------------
+ kernel/events/core.c                        |  2 +-
+ lib/bitmap-str.c                            |  9 ++++-----
+ 55 files changed, 65 insertions(+), 92 deletions(-)
 
-But maybe there's more background here that led to the change
-between your v3 and v4.
-
-Michael
+-- 
+2.51.0
 
