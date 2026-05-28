@@ -1,82 +1,50 @@
-Return-Path: <linuxppc-dev+bounces-21674-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21675-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3EFC8CD4F54
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 May 2026 21:59:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E91C1CD4F54
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 May 2026 22:40:21 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gRL4P65r4z2yVP;
-	Fri, 29 May 2026 07:59:33 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780005573;
-	cv=none; b=aPze9HQSW9mh6dFzxNlAd3YdVyDqmN5hfSeegqR932xINJWDO5m0z8JCvv44+ISl3HzfhL5wzebkpRK1ilXOKeaTwDyiRO6ZCJOYVVJ8ezzVzzMXPpDhKZrbFy4p6L7B2RuKyAHw8UB5db7jNt3HFyrFqq2HoAOvuErsC3WH1Rt7ltfKBQej/ohewb740LIoUA4RzWXmEhnxqQGCub+f6JYXhLNh1hjCZZbJrfWtbnV92W4Adkcc7NojRwQP7AsNpYvbzaOU9c01l7vSMfyqtJKpmggHtFmcbFeiS/wm4DYMU94k2zULfBTXkLwxqo+ssCVL/PPlCOmzlh6EmeZZqg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gRLzS4Yq5z2xMW;
+	Fri, 29 May 2026 08:40:20 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780008020;
+	cv=none; b=YIODSiN6/1PAId5pMj89sCiVE/XVM7ZoIQielDeW1D4BmEm+xgCWDmjg2OIPiqgzWkZgqnNnterKrPyuxSfgfYi+huHNPEC1Hv9JhBm7XOQryDEOK9/6+tkSoE2iqtEvnkHtvMdnA2xoGUnSuncoURU03tlsM7OUW2BpR8QCq8gkJEsLNo/vqqFhcVFKcL1zPrI+NFlXFQHTLYO89h+HSsxDmX5rX/YzFtiqM30gtSllsd8I7iFZIS20+9boXGPoii2FdOqfq6F9s9klAmJnh8dhPWxAQBrIbBO/Lj9Ac6J8g4/vKSnii0xJha+rQ2PxcEhSqhH9WHz9GNfw+4ja5g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1780005573; c=relaxed/relaxed;
-	bh=BVdo1hcXqTWtroWAQylAGQcmZAyMaYVpqdzbBWR48D0=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=kT++NJWVnqXDBB1YD7dCme4/uJjBf0pYk7aZCUWEm3VTyVjX8I+9Y46naeC6vpzgC7BkFo0HmrFULvINCTaE9TdDNxC8wWibLKSjgslltvUkPeT0HQFTQlXIAio3+RYTbOpz7Nkexn45WzLZyVNxs73s/jxPQbetRyZf1p2o/Q5j6ORJ/JBIJeGXVI9026I+u8c8fkE55CRc6o55c9krDmbXNxDDhOcUoAce8rRTrfxqaZy+OiEtbyy3zcdRtv107F43qBfvWFIUQmnjHPe6T/uybxByd1vw3vOEdkfiDUXfpa85jU2Kws4e8TEz7KnWF/GycTMDlYO0UFKi4d7lmg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=c8QMr2Rc; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=adubey@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1780008020; c=relaxed/relaxed;
+	bh=ZYoIC7tgDvTnn72N4qZ6BOaf6goJiUEBgxODpeKiPNc=;
+	h=Content-Type:MIME-Version:Message-Id:In-Reply-To:References:
+	 Subject:From:To:Cc:Date; b=mXM9ZgS+7PasTgS8zQr7Rk1Qhd6HyjzxRqkz0di/CdmBPAPGdhOJFFstAlSuhtqP/WX7nFKkF/mvJ18BTiohKTJ9vLQuUXYfNmyOAS1/cTddrgUMC4+ueMeiyfLGy6aWSRtUItQMn27bkEqht6mbobmYTUHDCbybEtioixVl83ttRuNP65RgJeKbFPrpRRSUQAKRY9JNVl3vup+Va/On8mhzdsMZQsW3HKSVlmSsI+aq63IoCdl/NlruTGEOxzSgYDg2R1Wm1+i3/Zd7vVl8tmrAfPoBoB58pd3qbSVVlJEvW5WUOCn86BEWVeP7jwpq2OfzhsZkIB/yxCi0isWXTw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=TomYBcye; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=bot+bpf-ci@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=c8QMr2Rc;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=TomYBcye;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=adubey@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=bot+bpf-ci@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gRL4P12dHz2yXj
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 May 2026 07:59:32 +1000 (AEST)
-Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 64SLm2q82419213;
-	Thu, 28 May 2026 21:59:20 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=pp1; bh=BVdo1hcXqTWtroWAQ
-	ylAGQcmZAyMaYVpqdzbBWR48D0=; b=c8QMr2RczZEfQhbgmuF5BsPDHXbORCrv3
-	Z5kOy/hppte6Z/YQki3z1LZh25PHu1Lx68a5rHntNK65vUFjrIaEI4R++blBUFJn
-	jwPhcYYiCUOsARjg7eIOglS9KfsL2SHsbTIrlQBuRV7uJlWDCoReKV5n40nhbQnI
-	TRpB3/W/87Abg6B7kUgQGbIo7mdCDeutvx+RXwgksNP4FUXPFPU6C9W9Q32bF9qK
-	+qkBu1RKNv0F82jZtM4NAeqSCN18JGA54x5LYLo5VRixw+uxAU7MBvoVIFwte8y6
-	q+QQwWj1jUVYAQRCZ4Q+sKaDZ+sv5X71N2rm5FztJlGovEhpVCfxQ==
-Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4ee884nepq-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 28 May 2026 21:59:20 +0000 (GMT)
-Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma13.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 64SLd4Ex002206;
-	Thu, 28 May 2026 21:59:19 GMT
-Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
-	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4edjrba8ka-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 28 May 2026 21:59:19 +0000 (GMT)
-Received: from smtpav01.fra02v.mail.ibm.com (smtpav01.fra02v.mail.ibm.com [10.20.54.100])
-	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 64SLxFQ435914186
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 28 May 2026 21:59:15 GMT
-Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 9DBDD20043;
-	Thu, 28 May 2026 21:59:15 +0000 (GMT)
-Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 45F3E20040;
-	Thu, 28 May 2026 21:59:13 +0000 (GMT)
-Received: from ltcrain4-lp15.ltc.tadn.ibm.com (unknown [9.5.7.39])
-	by smtpav01.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Thu, 28 May 2026 21:59:13 +0000 (GMT)
-From: adubey@linux.ibm.com
-To: bpf@vger.kernel.org
-Cc: hbathini@linux.ibm.com, linuxppc-dev@lists.ozlabs.org, maddy@linux.ibm.com,
-        ast@kernel.org, andrii@kernel.org, daniel@iogearbox.net,
-        shuah@kernel.org, linux-kselftest@vger.kernel.org,
-        stable@vger.kernel.org, Abhishek Dubey <adubey@linux.ibm.com>
-Subject: [PATCH v6 6/6] selftest/bpf: Add tailcall verifier selftest for powerpc64
-Date: Thu, 28 May 2026 21:58:55 -0400
-Message-ID: <20260529015855.364704-7-adubey@linux.ibm.com>
-X-Mailer: git-send-email 2.52.0
-In-Reply-To: <20260529015855.364704-1-adubey@linux.ibm.com>
-References: <20260529015855.364704-1-adubey@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gRLzR0mFTz2xM7
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 May 2026 08:40:18 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id E05A560213;
+	Thu, 28 May 2026 22:40:15 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 573D71F000E9;
+	Thu, 28 May 2026 22:40:15 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1780008015;
+	bh=ZYoIC7tgDvTnn72N4qZ6BOaf6goJiUEBgxODpeKiPNc=;
+	h=In-Reply-To:References:Subject:From:To:Cc:Date;
+	b=TomYBcyexq04Y5cnuhvyWbfq++IQqybsVivOkfApAiWeUFFpmNVZGjPoI0C+3zsAe
+	 YcC4/BMQQmBVRo6eG065tXr8WhBQs3d0hEa8j4dlMH7MpJ8dvO5a2Zge53EeK+/SHM
+	 Sn0gkIAJdWWnRJuLGadnS7wUF3RgE+o6SGr9Qi6A7V5KLGjaamr15XspU0pH9AWcHc
+	 Z2wfc62CWBEbD7MNhBtWrQgccFjR/eDwDs5wBol4eoHm2cgrJQO2+00O6pj8HXYA2Z
+	 b62Qyt9d4wYYHBchJ8g1kBCbCH/jl2WACvshBHUM0sVprS3gmU3QDI1SLXvJQOSmVP
+	 2RZGOCKRIlKFA==
+Content-Type: multipart/mixed; boundary="===============2740736122395765729=="
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -90,129 +58,100 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Authority-Analysis: v=2.4 cv=L4MtheT8 c=1 sm=1 tr=0 ts=6a18bab8 cx=c_pps
- a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
- a=NGcC8JguVDcA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=iQ6ETzBq9ecOQQE5vZCe:22 a=VnNF1IyMAAAA:8 a=v_EuApQnFJK-j3Uko2UA:9
-X-Proofpoint-ORIG-GUID: IyuOet4M3dR86UB-TcbfKNtHbQ_JFpBR
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTI4MDIxOCBTYWx0ZWRfX/qEBW9jOsVob
- lUiqvaiEXmQT7t5mdi91KnTenEo9aWelqa8XtkIPIqO/c7tyq8DToDVLwfmcV1TfrDWmc3VvjDE
- nUa21DN1hJhlF+EGuk2gq9BEcT4xuOc9RETgsaBrqjSsaQkzDWZAKCUu5uLFdmMabkVCi1J2G7h
- 0GYkG7yD8n3vWYriPYIhXvsAOBUpz21SRpFrbYvqwKKILCdXHxvkAnxZ0rqwnTip0hlMTV430O5
- 3EzjQnMiuvm/wHvDL8mhM+Y2J+axn9RvbYYm9axjfiOo/Mqb3Utf4khXpBHvmN+jLpoRVrYSlT4
- HDl7YHViZ6Y6WhLzFmB1qo7xLUqAAuHspFl1msUPe1+ajiAbJHmlJRF8Ba138TQum1kl0LyKu8Z
- 0gL+2D/2n4j899DoIy9OWzLkGaZJVp3h2Z8W3Kr5ZSvJmBgndxlWvUmlonYtORs4Oz+Q00uI8Nk
- PJko3DnTiEJIh4ARM/Q==
-X-Proofpoint-GUID: IyuOet4M3dR86UB-TcbfKNtHbQ_JFpBR
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
- definitions=2026-05-28_04,2026-05-28_03,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- phishscore=0 lowpriorityscore=0 suspectscore=0 clxscore=1015 malwarescore=0
- bulkscore=0 impostorscore=0 adultscore=0 priorityscore=1501 spamscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2605210000 definitions=main-2605280218
+Message-Id: <cb81617c5327a5e1373d31f249ed8eeb9d5755e4c81d1e07464d2a0a08288e44@mail.kernel.org>
+In-Reply-To: <20260529015855.364704-4-adubey@linux.ibm.com>
+References: <20260529015855.364704-4-adubey@linux.ibm.com>
+Subject: Re: [PATCH v6 3/6] selftest/bpf: Fixing powerpc JIT disassembly failure
+From: bot+bpf-ci@kernel.org
+To: adubey@linux.ibm.com,bpf@vger.kernel.org
+Cc: hbathini@linux.ibm.com,linuxppc-dev@lists.ozlabs.org,maddy@linux.ibm.com,ast@kernel.org,andrii@kernel.org,daniel@iogearbox.net,shuah@kernel.org,linux-kselftest@vger.kernel.org,stable@vger.kernel.org,adubey@linux.ibm.com,ast@kernel.org,andrii@kernel.org,daniel@iogearbox.net,martin.lau@kernel.org,eddyz87@gmail.com,yonghong.song@linux.dev,clm@meta.com,ihor.solodrai@linux.dev
+Date: Thu, 28 May 2026 22:40:15 +0000 (UTC)
 
-From: Abhishek Dubey <adubey@linux.ibm.com>
+--===============2740736122395765729==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
 
-Verifier testcase result for tailcalls:
+> diff --git a/tools/testing/selftests/bpf/jit_disasm_helpers.c b/tools/testing/selftests/bpf/jit_disasm_helpers.c
+> index 364c557c5115..21e3e3e68c14 100644
+> --- a/tools/testing/selftests/bpf/jit_disasm_helpers.c
+> +++ b/tools/testing/selftests/bpf/jit_disasm_helpers.c
 
-# ./test_progs -t verifier_tailcall
-#618/1   verifier_tailcall/invalid map type for tail call:OK
-#618/2   verifier_tailcall/invalid map type for tail call @unpriv:OK
-#618     verifier_tailcall:OK
-#619/1   verifier_tailcall_jit/main:OK
-#619     verifier_tailcall_jit:OK
-Summary: 2/3 PASSED, 0 SKIPPED, 0 FAILED
+[ ... ]
 
-Signed-off-by: Abhishek Dubey <adubey@linux.ibm.com>
+> @@ -216,9 +218,28 @@ int get_jited_program_text(int fd, char *text, size_t text_sz)
+>  	if (!ASSERT_OK(err, "bpf_prog_get_info_by_fd #2"))
+>  		goto out;
+>
+> +	/*
+> +	 * last 8 bytes contains dummy_trampoline address in JIT
+> +	 * output on 64-bit and last 4 bytes on 32-bit powerpc,
+> +	 * which can't disassemble to a valid instruction.
+> +	 */
+> +	triple = LLVMGetDefaultTargetTriple();
+> +	if (triple) {
+> +		if (strstr(triple, "powerpc")) {
+> +			if (IS_ENABLED(CONFIG_PPC64))
+> +				trunc_len = 8;
+> +			else
+> +				trunc_len = 4;
+> +		}
+> +		LLVMDisposeMessage(triple);
+> +	}
+
+Can IS_ENABLED(CONFIG_PPC64) ever be true in this file?
+
+This is a userspace selftest (tools/testing/selftests/bpf/jit_disasm_helpers.c).
+IS_ENABLED here resolves to tools/include/linux/kconfig.h:
+
+  #define IS_ENABLED(option) __or(IS_BUILTIN(option), IS_MODULE(option))
+
+which ultimately tests __is_defined(CONFIG_PPC64), i.e. whether CONFIG_PPC64
+is a defined preprocessor macro.
+
+The kernel proper makes CONFIG_* macros visible by force-including
+include/generated/autoconf.h via the build flags. The selftests/bpf build
+does not do that: tools/testing/selftests/bpf/Makefile only adds an include
+search path and -DHAVE_GENHDR, with no -include autoconf.h, and the include
+chain for this file never pulls in generated/autoconf.h.
+
+So CONFIG_PPC64 is undefined and IS_ENABLED(CONFIG_PPC64) is 0 on every
+build, including ppc64/ppc64le. trunc_len then always becomes 4.
+
+On 64-bit powerpc the JITed stub appends an 8-byte dummy trampoline address,
+but only 4 bytes get truncated. The remaining 4 bytes are still handed to the
+disassembler, which can decode them into a seemingly valid instruction, which
+is the failure this change is meant to fix. Would a runtime check on the
+triple, for example strstr(triple, "powerpc64"), be needed to distinguish
+64-bit from 32-bit here, since the 8-vs-4 selection is otherwise compile-time?
+
+> +
+>  	for (pc = 0, i = 0; i < jited_funcs; ++i) {
+>  		fprintf(text_out, "func #%d:\n", i);
+> -		disasm_one_func(text_out, image + pc, func_lens[i]);
+> +		/* Disabled JIT have zero func_lens, hence underflow */
+> +		__u32 disasm_len = func_lens[i] > trunc_len ?
+> +					func_lens[i] - trunc_len : 0;
+> +		disasm_one_func(text_out, image + pc, disasm_len);
+>  		fprintf(text_out, "\n");
+>  		pc += func_lens[i];
+>  	}
+
+The commit message describes fixing a powerpc JIT disassembly failure caused
+by the dummy trampoline address emitted at the tail of the long_branch stub.
+That trailing field was introduced by commit d243b62b7bd3 ("powerpc64/bpf:
+Add support for bpf trampolines"). The two sibling commits in this series
+both carry that Fixes: tag, but this selftest-side commit does not.
+
+Should this include:
+
+  Fixes: d243b62b7bd3 ("powerpc64/bpf: Add support for bpf trampolines")
+
+
 ---
- .../bpf/progs/verifier_tailcall_jit.c         | 69 +++++++++++++++++++
- 1 file changed, 69 insertions(+)
+AI reviewed your patch. Please fix the bug or email reply why it's not a bug.
+See: https://github.com/kernel-patches/vmtest/blob/master/ci/claude/README.md
 
-diff --git a/tools/testing/selftests/bpf/progs/verifier_tailcall_jit.c b/tools/testing/selftests/bpf/progs/verifier_tailcall_jit.c
-index 8d60c634a114..b754b76420c9 100644
---- a/tools/testing/selftests/bpf/progs/verifier_tailcall_jit.c
-+++ b/tools/testing/selftests/bpf/progs/verifier_tailcall_jit.c
-@@ -90,6 +90,75 @@ __jited("	popq	%rax")
- __jited("	jmp	{{.*}}")		/* jump to tail call tgt   */
- __jited("L0:	leave")
- __jited("	{{(retq|jmp	0x)}}")		/* return or jump to rethunk */
-+__arch_powerpc64
-+/* program entry for main(), regular function prologue */
-+__jited("	nop")
-+__jited("...")                          /* ld 2, 16(13) absent with CONFIG_PPC_KERNEL_PCREL */
-+__jited("	li 9, 0")
-+__jited("	std 9, -8(1)")
-+__jited("	mflr 0")
-+__jited("	std 0, 16(1)")
-+__jited("	stdu 1, {{.*}}(1)")
-+/* load address and call sub() via count register */
-+__jited("	lis 12, {{.*}}")
-+__jited("	sldi 12, 12, 32")
-+__jited("	oris 12, 12, {{.*}}")
-+__jited("	ori 12, 12, {{.*}}")
-+__jited("	mtctr 12")
-+__jited("	bctrl")
-+__jited("	mr	8, 3")
-+__jited("	li 8, 0")
-+__jited("	addi 1, 1, {{.*}}")
-+__jited("	ld 0, 16(1)")
-+__jited("	mtlr 0")
-+__jited("	mr	3, 8")
-+__jited("	blr")
-+__jited("...")
-+__jited("func #1")
-+/* subprogram entry for sub() */
-+__jited("	nop")
-+__jited("...")                          /* ld 2, 16(13) absent with CONFIG_PPC_KERNEL_PCREL */
-+/* tail call prologue for subprogram */
-+__jited("	ld 10, 0(1)")
-+__jited("	ld 9, -8(10)")
-+__jited("	cmpldi	9, 33")
-+__jited("	bt	{{.*}}, {{.*}}")
-+__jited("	addi 9, 10, -8")
-+__jited("	std 9, -8(1)")
-+__jited("	lis {{.*}}, {{.*}}")
-+__jited("	sldi {{.*}}, {{.*}}, 32")
-+__jited("	oris {{.*}}, {{.*}}, {{.*}}")
-+__jited("	ori {{.*}}, {{.*}}, {{.*}}")
-+__jited("	li {{.*}}, 0")
-+__jited("	lwz 9, {{.*}}({{.*}})")
-+__jited("	slwi {{.*}}, {{.*}}, 0")
-+__jited("	cmplw	{{.*}}, 9")
-+__jited("	bf	0, {{.*}}")
-+/* bpf_tail_call implementation */
-+__jited("	ld 9, -8(1)")
-+__jited("	cmpldi	9, 33")
-+__jited("	bf	{{.*}}, {{.*}}")
-+__jited("	ld 9, 0(9)")
-+__jited("	cmpldi	9, 33")
-+__jited("	bt	{{.*}}, {{.*}}")
-+__jited("	addi 9, 9, 1")
-+__jited("	mulli 10, {{.*}}, 8")
-+__jited("	add 10, 10, {{.*}}")
-+__jited("	ld 10, {{.*}}(10)")
-+__jited("	cmpldi	10, 0")
-+__jited("	bt	{{.*}}, {{.*}}")
-+__jited("	ld 10, {{.*}}(10)")
-+__jited("	addi 10, 10, {{.*}}")    /* offset depends on CONFIG_PPC_KERNEL_PCREL */
-+__jited("	mtctr 10")
-+__jited("	ld 10, -8(1)")
-+__jited("	cmpldi	10, 33")
-+__jited("	bt	{{.*}}, {{.*}}")
-+__jited("	addi 10, 1, -8")
-+__jited("	std 9, 0(10)")
-+__jited("	bctr")
-+__jited("	mr	3, 8")
-+__jited("	blr")
-+
- SEC("tc")
- __naked int main(void)
- {
--- 
-2.52.0
-
+CI run summary: https://github.com/kernel-patches/bpf/actions/runs/26605473656
+--===============2740736122395765729==--
 
