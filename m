@@ -1,73 +1,81 @@
-Return-Path: <linuxppc-dev+bounces-21628-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21629-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D44F3CD6E44
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 May 2026 10:26:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 77E2BCD5BD1
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 May 2026 10:50:14 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gR2j46tFNz2xM6;
-	Thu, 28 May 2026 20:26:48 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779964008;
-	cv=none; b=kyDdXYCy1WsKMz3nRsJVjogijfUSovSmvqxorqXelHXiCH7R+wmH2yffInkO40t6BdN72FrZW517cHOoc89bIjORyoxkgqIm2eWJ2KtQhrV604xI9EHgCnQeeWJB/KexlQJ78AJV92DIvpwsX28HJKNKeUm1gWhIMXxrMl9EWhncBc3f/4QhyMWpjKlZ7WcrDRmZn/9OBBgP85f5sf4ss20ySe4IdY/Dljhjlm/icfHkrRgFrYiL5NtNWq5fRWidvN4Vm1+EKpN27LNkFjoG1uqwlkmIJg+I0BXxNwAVPLqUVjMT6YEHcFYv0V7mnCYkgJ1F22DdjwGRkMnrrBHfJA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gR3D46zm6z2xM6;
+	Thu, 28 May 2026 20:50:12 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::62b"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779965412;
+	cv=none; b=SPWialfS0AvWq/Q8IIqra1rBB7pROzbcNFfByLmmoZyGsde4rPAjtgGwMGuUHw5BU25Qne4OUslv8ybsy9bNKL9C0dp/yAJWKIaK352iLDCd6lkkp7Z/MBPDAzzUinbqgdvyzKZwlBtC1qvC9QFm0n+ESV28kfjmquFSssOmXhVTQO69j5EwUL5ihHtAyvmhzBIK77simDBsjyFNlFXxIXIrjvZdDS3dS8bFENP1JCtlWmZRfpd2os6hCo+7C3f1+wx6eW3bO3VCXCsrXcii80ak4KZ8f/v/CAENIsJiGa4XkFZ4Oys+5zAVMoAi9a6XNrxdFcd6I5xUBitZRylqMg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1779964008; c=relaxed/relaxed;
-	bh=+tWpfce2jppdCOF7t/epObAdoCgY9GtXI7jXzUkXwto=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=awCdlJmtco6CX5reUXfC4I5fgGvdSjNcZED6CnxU8Tws0rWMeyvRqzGen7+pMwK5dosxDyC6nvludkBu2PMQK80azHOWzc8PlPSdhzgaVCfF8DsxJFc36kAf2Q8/1B9ilyNlDVKhdqReSgRoaqRu9optKJJzyJ86j3YSuIn9jMYao6VbI5F2kGjuXkRyVJMzm2slY7gxpSQxWbLLknE5nZOlz+d/738HYU5XiZSP1xSHWi2d4my29Cu6/4oxFf+W36Zr4mc4GpUs8aYxvrZo66UrUzNm+5oLJR0yLbtj05ZQ9me6AeurBFV8QSX2Shzd5gm8ULvd0mffMjSFfr3Cmw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=BwNQWyhm; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1779965412; c=relaxed/relaxed;
+	bh=46bMWh+gCQYzpY1dEMifCzkdbqK+/RCfas0dsX6v9EQ=;
+	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References; b=WFVriX/mPg07RnL8ln4zRu/sm80c3SIHnSNoR/jR9sfZq6ZYCYqTcLLKqoB7t8dTH3VAjxReA0tmL67UV3QFgYhHS/3hw5DknxK9q0Nqg/PUmsE1Quew+yGpWGWOAjvX941LCcDwuhdZjojr+pgA8yh2Vzaooc2sq6bMA3KnbGItmAvamenMX8TZoyWJAbCF1uIiiEGR/2a1uD8Rh6MqdPiT7X54cwVdAiSqmQn5cNpnpx9OKw9qcTjU4giA607PpY6t9didbOiAc6SApwxa2qZOyGXuZUMIwO26voc459HWojRI8XApaoHThJCcZmMQKmZ6AQXiWioJniUiJRUR9g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=OIlaMZec; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::62b; helo=mail-pl1-x62b.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=BwNQWyhm;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=OIlaMZec;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::62b; helo=mail-pl1-x62b.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pl1-x62b.google.com (mail-pl1-x62b.google.com [IPv6:2607:f8b0:4864:20::62b])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gR2j33dBQz2xLm
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 May 2026 20:26:46 +1000 (AEST)
-Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 64RL74C52479745;
-	Thu, 28 May 2026 10:26:32 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=+tWpfc
-	e2jppdCOF7t/epObAdoCgY9GtXI7jXzUkXwto=; b=BwNQWyhmTJ4epesyh2VjEV
-	tLMnIMuMU50mdkvMSECUmx/NIg6bzQn6PZ1x0p4Lvafz+cBg6SkI/l2Jr5l0wFDC
-	ZjXgjCNmBodFjphg5qDE6nploGDBBgp+f4VVwiUK+DSJouXZiMEmpb4c89atilJN
-	cGM0K2VwFB50bOfvKSN+ndpGqmjH6i2/9DBh4Z5sdwrbJcc39Hip8SGw4yrF4H61
-	eYy4S1W4TJO5NzPP0BvCHU8FJWKWylXXXdWTvfI5PDm+AAIASe/Sh5wg+FRnNHxx
-	2Ueio2c+pSSo9l6wEqqQaobyEtpqxADiun/wgXb4N7ACmcxBFOI8nDNuLdL3NCMw
-	==
-Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4ee886agc8-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 28 May 2026 10:26:32 +0000 (GMT)
-Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma13.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 64SAO4ac009104;
-	Thu, 28 May 2026 10:26:31 GMT
-Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
-	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4edjrb7ky2-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 28 May 2026 10:26:31 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
-	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 64SAQRTs31916446
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 28 May 2026 10:26:27 GMT
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 618B82004B;
-	Thu, 28 May 2026 10:26:27 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 9A8702004E;
-	Thu, 28 May 2026 10:26:24 +0000 (GMT)
-Received: from [9.39.18.196] (unknown [9.39.18.196])
-	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Thu, 28 May 2026 10:26:24 +0000 (GMT)
-Message-ID: <a4d3703e-45a8-4f83-b854-14dbd0e62d1e@linux.ibm.com>
-Date: Thu, 28 May 2026 15:56:23 +0530
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gR3D31P1Gz2xLm
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 May 2026 20:50:10 +1000 (AEST)
+Received: by mail-pl1-x62b.google.com with SMTP id d9443c01a7336-2b941cd869cso82272785ad.1
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 May 2026 03:50:10 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1779965407; x=1780570207; darn=lists.ozlabs.org;
+        h=references:message-id:date:in-reply-to:subject:cc:to:from:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=46bMWh+gCQYzpY1dEMifCzkdbqK+/RCfas0dsX6v9EQ=;
+        b=OIlaMZecRr69xVPiU69nlUqDJgbWfM9IDl1tm+hU5wFwBfKGak3vOhIW/Zn+dPwC2a
+         zio1VU6noXpUB8Tof6UV4fDB/aBdnLORZm8USoNhNXqYFeiEcz8DrGsRdHBP3FdrIquc
+         CTOD9ww6TMUuZ/Q2BTvD6mP3FoJKxkP1w+q9mtUexoSK1XEI0xV+wzCH3plNnkLITc9d
+         tjXkniIiQ4+cExzBP/Cn+HvmYhpDuGI6y0yfQ1yZPj2NtY7EncvlhzjpYfwKfnXM0ocY
+         Z2onJcD7H01/ae3WqMVjc0t4wI07CLTAFbYTK6efj/4ACDf/q8npBnECLBrmx+dvREZn
+         NbOg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1779965407; x=1780570207;
+        h=references:message-id:date:in-reply-to:subject:cc:to:from:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=46bMWh+gCQYzpY1dEMifCzkdbqK+/RCfas0dsX6v9EQ=;
+        b=cKG8R0dj3dD2xpAdM0COEtQKBeBil2oqGy64K1pqf8/JOEIfO4drSlPAQcr6IofCo6
+         iixKERURCgHYfT+SADQxS5h7tVBQXH7mwrmjwqm5Z79aoHXSc9cfID05vbmGcuaXm9gE
+         keWgAYV5k3PT93vZkND724hjOdxqWxH0ER61A7DVfDm+0FgWn9+k3InE/ijPsetIiylC
+         yeIGHr0+BB4tZ6//4rl4nZWhHQQShscCwFuGSNyyJW24LP4pIvSW6msuHWGgOTMHwDKW
+         A+UYpb1ezC8UWavHHTgVWJQ4OIKgPf7EzYD5gZfcFQQX9V5Ho+Wt5HwN3fmuWm9rr9Le
+         G9UA==
+X-Forwarded-Encrypted: i=1; AFNElJ9mSQSvg7+ooD1jGpdN9e7lilnLIoG7+SnbJ/RXLtW19MbxHicoOMHKX7IcKQPGIVmA6cBMmW4Qg2Pxqa0=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YzZdKu/i8qz/s1tWuBojT5UV1Vzf14unfiZ6WFq1WrYSB5mnHIk
+	YFVyOLGiwTfaNsJx8r2W+rTulkYtHZr27innuuNJQgyY/LUmU+ZOQSDJ
+X-Gm-Gg: Acq92OFIYk1oEnplNK/S9dpUBN8aPblt0AWkv1Y+yuuMFG/bV7X2ZKVLmUvSqCLYcpR
+	5WlwOsxPx0Hq8T4DK9Xohccg1mAzEGzWdRSYTCmG/Ej6ABHhN0u8ObndnrKX0jc94FM5QyPsOXp
+	iQ4ndKFAL+glZmistfrDYhrdSb0GqMJOcO8iNFa7DUzA/gWClsQv+YHV7XBaPzOZ5mDIXlpjbQv
+	Ch9M6PlZ0bp4gz8Sli+C4DZHJ0NJyiTHMCSQ+NGl3dwwAjTJdvGy53mmD1eqzXfnFg1gsAt8MMj
+	7Ptbk1kVBPwhy78485hJiJCkuIfcdSWN5Qa3wqYbORX+Vb0o6MTSiD94hX0YSn64sLrzKAwRiz2
+	4TrrRtdiSybOe1uRm+zMKxBrcjOsn3j2MoGbRKxO1uhi2XPXkh8mQtPA2abOyaDZgiX/TaOgoSU
+	WXmR6asL28We/jKRxok7mL0JXdXQtNutq/
+X-Received: by 2002:a17:902:e845:b0:2ba:4f37:d3a7 with SMTP id d9443c01a7336-2beb06a63c6mr311583635ad.27.1779965407101;
+        Thu, 28 May 2026 03:50:07 -0700 (PDT)
+Received: from pve-server ([49.205.216.49])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2beb56bc151sm180571765ad.24.2026.05.28.03.50.01
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 28 May 2026 03:50:06 -0700 (PDT)
+From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+To: Amit Machhiwal <amachhiw@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org, Madhavan Srinivasan <maddy@linux.ibm.com>
+Cc: Vaibhav Jain <vaibhav@linux.ibm.com>, Amit Machhiwal <amachhiw@linux.ibm.com>, Anushree Mathur <anushree.mathur@linux.ibm.com>, Paolo Bonzini <pbonzini@redhat.com>, Nicholas Piggin <npiggin@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>, "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, Jonathan Corbet <corbet@lwn.net>, Shuah Khan <skhan@linuxfoundation.org>, kvm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, lkp@intel.com
+Subject: Re: [PATCH v3 1/5] KVM: PPC: Book3S HV: Validate arch_compat against host compatibility mode
+In-Reply-To: <20260522152744.55251-2-amachhiw@linux.ibm.com>
+Date: Thu, 28 May 2026 08:43:04 +0530
+Message-ID: <pl2g6xbz.ritesh.list@gmail.com>
+References: <20260522152744.55251-1-amachhiw@linux.ibm.com> <20260522152744.55251-2-amachhiw@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -80,75 +88,90 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [BUG] sched/cache: "Make LLC id continuous" causes NULL cpumask
-To: "Chen, Yu C" <yu.c.chen@intel.com>
-Cc: srikar@linux.ibm.com, venkat88@linux.ibm.com, maddy@linux.ibm.com,
-        riteshh@linux.ibm.com, chleroy@kernel.org, tim.c.chen@linux.intel.com,
-        peterz@infradead.org, linux-kernel@vger.kernel.org,
-        linuxppc-dev@lists.ozlabs.org, linux-sched@vger.kernel.org,
-        kprateek.nayak@amd.com
-References: <51154de7-3700-4cb4-82f2-1b3a8fa427f7@linux.ibm.com>
- <ahUogeqIq5km7JSr@linux.ibm.com>
- <058664ab-0982-4c13-9d4b-caa2f7616b0f@amd.com>
- <20260526140856.139657-1-yu.c.chen@intel.com>
- <d45877d5-86f1-4581-b3e0-59ceb722de3a@linux.ibm.com>
- <912676bc-230e-410f-a5fe-153b0f304aee@intel.com>
- <42a19577-fe56-44b4-b0ed-37cde6d03ff5@linux.ibm.com>
- <508a604b-2d30-47f4-a63c-36778a1d47c7@linux.ibm.com>
- <db443a1e-e6fc-491c-a38a-1cafc8e674cd@intel.com>
-Content-Language: en-US
-From: Shrikanth Hegde <sshegde@linux.ibm.com>
-In-Reply-To: <db443a1e-e6fc-491c-a38a-1cafc8e674cd@intel.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: N6F-va5WaRm7rOm09yaB4AlgUfaGRU50
-X-Authority-Analysis: v=2.4 cv=Z8Dc2nRA c=1 sm=1 tr=0 ts=6a181858 cx=c_pps
- a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
- a=IkcTkHD0fZMA:10 a=NGcC8JguVDcA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=U7nrCbtTmkRpXpFmAIza:22 a=YXovZx4J0gVKFteh5I0A:9
- a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTI4MDEwMiBTYWx0ZWRfX11tSjyO3F1tM
- XsM1wFSmj5bIJL/kYH53WxeSXG49p8p5+NUCodl4Uz3lCWXyWAK2nHa5Iu3TM0j2cwmaIbOUYRs
- DziBcNWL7AXZz2/SOq6bqafQgHjUmgB5BsLEtL9sTHw2x89z4zP3fhtqPkiPdyKlBj1qZ+PSgBw
- trSv/jOBYAAu8hrXIhv32UbZu4oaIx95rIX51H98Wrlj0IW1uClr6cgHExjpqy4/K0TVeS8cSyR
- DHsu4pHGO3ignbVQ8bc/nE94wYgAXjqcHVCyqxl9hIYPqnEdZohSUp7eHJWtK3+BbcYTkPcSVQ4
- /3bZXb8UL1fgVRBGJH86AKG97Z03OA+OftOO4P8DEdeZ3hwSMy4U/qCOLdijh/b/4GEOv4MJdRn
- 4T/E07KzLA3oz70YM/svXnYZ6cv7KhvbQErUVYInZLD18m/b/jFF7/8HF0SGiqCso+WFpKCKA3h
- xWsMBya2XjCEku86HQw==
-X-Proofpoint-ORIG-GUID: N6F-va5WaRm7rOm09yaB4AlgUfaGRU50
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
- definitions=2026-05-28_03,2026-05-26_03,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1015 spamscore=0 bulkscore=0 impostorscore=0 priorityscore=1501
- malwarescore=0 phishscore=0 suspectscore=0 adultscore=0 lowpriorityscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2605210000 definitions=main-2605280102
 
-Hi Chenyu.
+Amit Machhiwal <amachhiw@linux.ibm.com> writes:
 
-> Yes this direction look good to me. Regarding the arch_llc_mask(),
-> how about the following per Srikar's description
-> 
-> const struct cpumask *arch_llc_mask(int cpu)
-> {
->      /* Power9, CACHE domain is the LLC*/    if (shared_caches)
->          return cpu_l2_cache_mask(cpu);
-> 
->      /* P7, P8, P10, P11, SMT domain is the LLC*/    return 
-> cpu_smt_mask(cpu);
-> }
-> 
-> thanks,
-> Chenyu
-> 
+> On IBM POWER systems, newer processor generations can operate in
+> compatibility modes corresponding to earlier generations. This becomes
+> relevant for nested virtualization, where nested KVM guests may need to
+> run with a specific processor compatibility level.
+>
+> Currently, when running a nested KVM guest (L2) inside a Power11 pSeries
+> logical partition (L1) booted in Power10 compatibility mode, the guest
+> fails to boot while setting 'arch_compat'. This happens because the CPU
+> class is derived from the hardware PVR (via mfspr()), which reflects the
+> physical processor generation (Power11), rather than the effective
+> compatibility mode (Power10).
+>
+> As a result, userspace may request a Power11 arch_compat for the L2
+> guest. However, the L1 partition, running in Power10 compatibility, has
+> only negotiated support up to Power10 with the Power Hypervisor (L0).
+> When H_SET_STATE is invoked with a Power11 Logical PVR, the hypervisor
 
-Yes. this is what i was thinking too. I have the patch, let me send it 
-across shortly. It is fixing the boot panic for me in SPLPAR. Hopefully
-it should work for others too.
+s/H_SET_STATE/H_GUEST_SET_STATE 
 
-I will send it as reply to main thread so one doesn't miss it out.
+> rejects the request, leading to a late guest boot failure:
+>
+>   KVM-NESTEDv2: couldn't set guest wide elements
+>   [..KVM reg dump..]
+>
+
+I think irrespective of the other UAPI changes, we should still get this
+fixed - so that we don't see a late KVM guest boot failure msgs.
+
+So, in this review, I would like to mainly look at fixing this issue
+first and would request if we can defer the UAPI changes as a separate
+patch series please.
+
+
+> This situation should be detected earlier. Rejecting unsupported
+> 'arch_compat' values in 'kvmppc_set_arch_compat()' avoids issuing an
+> invalid H_SET_STATE hcall and provides a clearer failure mode.
+
+s/H_SET_STATE/H_GUEST_SET_STATE
+
+>
+> Add a check to reject Power11 'arch_compat' requests when the host is
+> running in Power10 compatibility mode, returning -EINVAL early instead
+> of deferring the failure to the hypervisor.
+>
+> Suggested-by: Vaibhav Jain <vaibhav@linux.ibm.com>
+> Tested-by: Anushree Mathur <anushree.mathur@linux.ibm.com>
+> Signed-off-by: Amit Machhiwal <amachhiw@linux.ibm.com>
+> ---
+>  arch/powerpc/kvm/book3s_hv.c | 12 ++++++++++++
+>  1 file changed, 12 insertions(+)
+>
+> diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
+> index 61dbeea317f3..249d1f2e4e2c 100644
+> --- a/arch/powerpc/kvm/book3s_hv.c
+> +++ b/arch/powerpc/kvm/book3s_hv.c
+> @@ -446,7 +446,19 @@ static int kvmppc_set_arch_compat(struct kvm_vcpu *vcpu, u32 arch_compat)
+>  			guest_pcr_bit = PCR_ARCH_300;
+>  			break;
+>  		case PVR_ARCH_31:
+> +			guest_pcr_bit = PCR_ARCH_31;
+> +			break;
+>  		case PVR_ARCH_31_P11:
+> +			/*
+> +			 * Need to check this for ISA 3.1, as Power10 and
+> +			 * Power11 share the same PCR. For any subsequent ISA
+> +			 * versions, this will be taken care of by the guest vs
+> +			 * host PCR comparison below.
+> +			 */
+> +			if ((PVR_ARCH_31 & cur_cpu_spec->pvr_mask) ==
+> +				cur_cpu_spec->pvr_value) {
+> +				return -EINVAL;
+> +			}
+
+Instead of the complicated check can we simply do this?
+			if (!cpu_has_feature(CPU_FTR_P11_PVR))
+				return -EINVAL;
+
+which means that if the Qemu is trying to set the arch_compat with P11
+PVR (arch_compat) and if the host cpu FTR doesn't support P11 PVR, then
+simply return -EINVAL
+
+-ritesh
+
 
