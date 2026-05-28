@@ -1,56 +1,81 @@
-Return-Path: <linuxppc-dev+bounces-21666-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21667-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EBF57CD4F54
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 May 2026 20:13:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4E9DDCD5BD5
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 May 2026 20:27:34 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gRHjz4Sp6z2yD6;
-	Fri, 29 May 2026 06:13:27 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:41d0:1004:224b::b1"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779999207;
-	cv=none; b=SPDVE3xLJWhUKSYK8Tv90Hm5SrFq442cSGgBWD4NZNk3aLpTsLBxig8h/8/ylfXmv0Rzt5zzbmHywTPfVHt22CBou+z2vBAND3QnE46SZzzvEoPlR5ZgdyAWYAk//yUIhhHMTvWPt+nupD2u/5jBk/qgBg1VRifAkDC7E2OIqSVXm/04nTQmIRwufRrTVkR7gmN6FgsRUMIzOXvA9p380WyLXox3f/m+Unm/8XLwEk8lnAyDAz50+GYLVxpjsXccOcJBal2QJWZ0+dVgH+ucu1fTYeylvUUXtZVMbcAxgcVxwK3+JIFUCYp9iBLPBRzcgtzLvQ0j3Y2QSZmK7fur8A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gRJ2D6Rvvz2yD6;
+	Fri, 29 May 2026 06:27:32 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::62d"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780000052;
+	cv=none; b=E6jg8CJbd5dRHhJ/n+oRBHdvZ1hyQ6wBUu9GjWtk22h89NBR5CG8jZnP9Q3rcOuDo5yn9upBLZy0IDijnFaYaFp6J6X6bd/vmwuEB4+NjJJQqY4oQpr2ejjkULPj1lr2vcRa60KltpNHWGMr0iJtFrnBJxhGmaAcDlEEdvJs0um0CO7OcBqExLVhmLP+lrUi6AbaFIA5WdurJ8dlJJBvP308/m3HYL2yPcKZ6vgzW4sMZ6XhqdU50QZRNX7StCBCbOwl9/VjM5oU7ymKL7vMx8TWGK14yDXgk9Sztsf7VeSGe4vgOeLG5WJ3k0psEaN6xoEtOO5P7gFubUil0G3UAg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1779999207; c=relaxed/relaxed;
-	bh=+6daMKvHNSz59JQjO/O9wJOU1wC6Fg64/a4W67M4u5w=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=D3wdb5+NHjh/pAhcQf4RQ5DYi9l9rj2099ORRm2x6ckA5Auq6egNWaGDJeyHymzl1aUnP20wQHAjb2ZieA4aH4RReo9FYaGyuLmI00edgyx1r+3w2f/KDSRBdGvHArqhc0R/v+ACvIM6bKVlqWPn3ct9M25sTtVIqe+hYlGaQPA0XkL5VpUq2/d7oVF6OiepNhc+jAucac9h2Rzr0q8C+76jHaDw2RukTiaabqT+DV+uL4hsKsdc9zxj6R9sJlM1ESFtcvIaaNPN7QSJ0LAo45qwTQLMaPEEP081OKBt+y+EzJrK4/7pM3r13yKP01RPoG5LnbASl8RoNRbGN4stzg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=H0SYJgJ8; dkim-atps=neutral; spf=pass (client-ip=2001:41d0:1004:224b::b1; helo=out-177.mta0.migadu.com; envelope-from=thorsten.blum@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
+	t=1780000052; c=relaxed/relaxed;
+	bh=f5AhkoBY3piDQ6CBCQr20PDZnfU2GGjm7VvcEixBb8M=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=AMkV2HyInWDGeTKIpVh7nyktuGgDo1QfNk+N4+asoJYgvwluIj4T4g4EKF2+nD2Wco+Wa8zR9SrQ+w2lrjtKZEiFfoD1YPl8qmNZNHktdoDRZ8vuVYlM76VOs8wztMzDtnHfPoV8+3QeNGJD7Q12uvr5R/KFX8LYr/y9wyPp5vKa9Sb1Yo6svAtxeOqFYhK/snKYee1trFRhbS0gMXOfxuRfPsO+eMsfichGHssc+7IDkyyghVEUZudcm8WakRxqWimybwk3KX6501k64rLxF0VItoN/9ChaLnDH7EvCxlbXyqfDcQ4nx9LqKMrMzEowqgzBw3XZu3U5jjPoVJan+Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=J61GhCi6; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::62d; helo=mail-pl1-x62d.google.com; envelope-from=rosenp@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=H0SYJgJ8;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=J61GhCi6;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=2001:41d0:1004:224b::b1; helo=out-177.mta0.migadu.com; envelope-from=thorsten.blum@linux.dev; receiver=lists.ozlabs.org)
-Received: from out-177.mta0.migadu.com (out-177.mta0.migadu.com [IPv6:2001:41d0:1004:224b::b1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::62d; helo=mail-pl1-x62d.google.com; envelope-from=rosenp@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pl1-x62d.google.com (mail-pl1-x62d.google.com [IPv6:2607:f8b0:4864:20::62d])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gRHjw3SnSz2xl5
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 May 2026 06:13:22 +1000 (AEST)
-X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
-	t=1779999182;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding;
-	bh=+6daMKvHNSz59JQjO/O9wJOU1wC6Fg64/a4W67M4u5w=;
-	b=H0SYJgJ80WeMgeiLvSEnrDJBVKXYEmvimQDGfdr1u7NDg3iJKwdDAAmbDizbKm+bAHAdH2
-	pjnj1Vqz21cfPCRi7p5q361ox98x1vAr0ZaCDlkKuM0+kip1WY9p935wJyARlmPzHw2Lff
-	Gg0ChWuAgrVcaawycTvKbDEjMaqigcM=
-From: Thorsten Blum <thorsten.blum@linux.dev>
-To: Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	Srikar Dronamraju <srikar@linux.ibm.com>,
-	Shrikanth Hegde <sshegde@linux.ibm.com>
-Cc: Thorsten Blum <thorsten.blum@linux.dev>,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH] powerpc: rtas: use get_user to simplify manage_flash_write
-Date: Thu, 28 May 2026 22:12:27 +0200
-Message-ID: <20260528201226.1599977-3-thorsten.blum@linux.dev>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gRJ2C2CRlz2xK4
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 May 2026 06:27:30 +1000 (AEST)
+Received: by mail-pl1-x62d.google.com with SMTP id d9443c01a7336-2baef9f5ecdso106221525ad.1
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 May 2026 13:27:30 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1780000048; x=1780604848; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=f5AhkoBY3piDQ6CBCQr20PDZnfU2GGjm7VvcEixBb8M=;
+        b=J61GhCi6AxFd8IiGEBt2bD6yQiyU2Z+dhfh0M7P689YOOPC9VgzvjIwQi3JP3Dsclg
+         J5bqo6ecvHCCK9+qqF4Kae20zN4IcGEI2FwdpNYKr85YxeRqXjyF9pdMFEpBgyCpmq7S
+         xgLLjvRo8ENZHQKIyOsaZa+/ty2MOg6U4GYZJuz7l1nZqwlSigoTA95fai0vO2YxPbgt
+         /dSoWY7xQTt306XZIQnX4fjD0gYeYWaFO7GcMCzdrlYua6n4IMrU/2pxWhkAUARHIULE
+         Ys1Za3ib+BB76sYl8+7CXrh5S9kel1keaXz8c/hmz5uDUmpgJsgRvTZfqmQWPKXo0p8o
+         Su5g==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1780000048; x=1780604848;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=f5AhkoBY3piDQ6CBCQr20PDZnfU2GGjm7VvcEixBb8M=;
+        b=q1cQ+3Mb4RALRzgtdNjKaCvGY+sl1q9//K0/yfGzI2jbAzQeakYzd8uG+0z2XtBk89
+         KVruZ3GSIucH1JNW1ARldKToyDsQF2dgUpdzb+AXPdPzYD1m7issH7WW+UraHVrGe4+w
+         5td5+QiIK1WWaNr3pBxz01krNuvHstDcov7SeSAbFbzlyZ1Mvl2OHplgKk4Yc0G1SvQZ
+         +FVxF7uriAHJN8nSV+W8lJb8vJORLprnAcuC9G4TmC8+EyMnZDzeaeDXcGArX/aVotvX
+         lzQx6dk8pXL76sCM2g/xgPU09/FoGxFUmxExdYE2QRl2CdD4ImJfXM0apnW7r6XBsfkP
+         khGw==
+X-Gm-Message-State: AOJu0YxWX7PDWYkWMku2rlQx476wxHenrtOq5hh/LSoc4Tt5rYkzuMLL
+	gPY+NOWePaD2EeZNTxV2Q1xb71Wr7PJks6u3SkWop6EnejlKnLkxrBgH9mOdv5DT
+X-Gm-Gg: Acq92OFZD0h8JhSerTNr2/9ZcrJz1cBSqLfB3KlXCXk6lWpQmLHo2GjP+jXC/21VIoy
+	j5ptv4c0URugxwUbhQfI8HSbUUFrIYpX8KxT8oy6k4mNZgbZdhdL1fpYrmKBgOiYaMihc+bMiRs
+	oXvrPbJE1FUqeU59iLzC9JCD+0dP3g6Yz6TjfTnUrp3Lw2DV5uKqvxczHaLKetuPIhl5+0onTGr
+	ZFzHzVieoXrHeqUN1VZOPEaD1XM+LBZPBMgKCcZaWBXVnSRTaPWSi6WxQMjKHGehb/TB1faMOBq
+	If+zRZwIJGVxOAHyXKayZkJgokFqo2Y3TAjBvC8MOwmHMhPXYH1fUe9zfKhHKJkrSEjBnMivYRK
+	V67S8+Qj/bSfoXK6FLVK1AJOvHcWNglaYMkckBnxKX3+RZr4NWqnoQX69p3m/kD+TiEl6UxefQZ
+	aExZB4wk7wx8yaRrhAXHe9fH1KwxJu74WbWVzTbFt1cJg2cm578pNo0HJFVE/KZCPP0Q7sBQlBx
+	Lv/hwkrRhkJGNkYdYluvAHoxznHgTJGnwVif+ugr0Iy2Qx3LFc1nsoV
+X-Received: by 2002:a17:903:4b03:b0:2bf:e42:2a94 with SMTP id d9443c01a7336-2bf1f3a59cfmr2993035ad.38.1780000048283;
+        Thu, 28 May 2026 13:27:28 -0700 (PDT)
+Received: from ryzen ([2601:644:8000:5b5d:7285:c2ff:fe45:8a32])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2bf1e604dbesm1748965ad.25.2026.05.28.13.27.27
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 28 May 2026 13:27:27 -0700 (PDT)
+From: Rosen Penev <rosenp@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: linux-kernel@vger.kernel.org (open list)
+Subject: [PATCH] macintosh: macio_asic: add missing kernel-doc params for macio_add_one_device
+Date: Thu, 28 May 2026 13:27:10 -0700
+Message-ID: <20260528202710.136904-1-rosenp@gmail.com>
+X-Mailer: git-send-email 2.54.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -64,74 +89,33 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=2184; i=thorsten.blum@linux.dev; h=from:subject; bh=8O9URT5B5VeVobAXWIkIqYJmai22F4B/MFQ7ldsFD+k=; b=owGbwMvMwCUWt7pQ4caZUj3G02pJDFkSC1eV3Uyd7Huj+H3uypjeSM7EnW3XEi+uc9Lo0BD5+ n2ftVhIRykLgxgXg6yYIsuDWT9m+JbWVG4yidgJM4eVCWQIAxenAEzEnZ+R4cr+zPiPCV1/Hm4U Fo9ftfUx/6Xjm74WXZRed//NesWH2gcZ/tcePH6M/UW71t7ohTxTrlnuPcDafyPy9EV+pZc1ioo a7xgA
-X-Developer-Key: i=thorsten.blum@linux.dev; a=openpgp; fpr=1D60735E8AEF3BE473B69D84733678FD8DFEEAD4
 Content-Transfer-Encoding: 8bit
-X-Migadu-Flow: FLOW_OUT
 
-Drop the local 10-byte buffer. The old code copied at most 9 bytes from
-the user buffer, but only the first byte was used to select the RTAS
-operation.
+Add documentation for the @parent and @parent_res parameters that were
+missing from the kernel-doc comment.
 
-Use get_user() to read the command byte instead and compare it directly
-with '0' and '1'. Drop the explicit user buffer check, since get_user()
-will fail on a NULL pointer and correctly return -EFAULT instead of
--EINVAL. Remove the now-obsolete string constants as well as any
-strncmp() and strlen() calls.
-
-Return the original count instead of a potentially capped value, since
-the full user write has been consumed once the command is accepted.
-
-Use unsigned int op to better match the manage_flash() interface.
-
-Signed-off-by: Thorsten Blum <thorsten.blum@linux.dev>
+Assisted-by: Opencode:Big-pickle
+Signed-off-by: Rosen Penev <rosenp@gmail.com>
 ---
- arch/powerpc/kernel/rtas_flash.c | 27 ++++++++++-----------------
- 1 file changed, 10 insertions(+), 17 deletions(-)
+ drivers/macintosh/macio_asic.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/arch/powerpc/kernel/rtas_flash.c b/arch/powerpc/kernel/rtas_flash.c
-index 583dc16e9d3c..722dbfb6fbf8 100644
---- a/arch/powerpc/kernel/rtas_flash.c
-+++ b/arch/powerpc/kernel/rtas_flash.c
-@@ -394,30 +394,23 @@ static ssize_t manage_flash_write(struct file *file, const char __user *buf,
- 				size_t count, loff_t *off)
- {
- 	struct rtas_manage_flash_t *const args_buf = &rtas_manage_flash_data;
--	static const char reject_str[] = "0";
--	static const char commit_str[] = "1";
--	char stkbuf[10];
--	int op;
-+	unsigned int op;
-+	char cmd;
- 
- 	guard(mutex)(&rtas_manage_flash_mutex);
- 
- 	if ((args_buf->status == MANAGE_AUTH) || (count == 0))
- 		return count;
- 		
--	op = -1;
--	if (buf) {
--		if (count > 9) count = 9;
--		if (copy_from_user (stkbuf, buf, count))
--			return -EFAULT;
--		if (strncmp(stkbuf, reject_str, strlen(reject_str)) == 0) 
--			op = RTAS_REJECT_TMP_IMG;
--		else if (strncmp(stkbuf, commit_str, strlen(commit_str)) == 0) 
--			op = RTAS_COMMIT_TMP_IMG;
--	}
--	
--	if (op == -1) {   /* buf is empty, or contains invalid string */
-+	if (get_user(cmd, buf))
-+		return -EFAULT;
-+
-+	if (cmd == '0')
-+		op = RTAS_REJECT_TMP_IMG;
-+	else if (cmd == '1')
-+		op = RTAS_COMMIT_TMP_IMG;
-+	else
- 		return -EINVAL;
--	}
- 
- 	manage_flash(args_buf, op);
- 	return count;
+diff --git a/drivers/macintosh/macio_asic.c b/drivers/macintosh/macio_asic.c
+index ee3caa3d87d1..9e744c8e687d 100644
+--- a/drivers/macintosh/macio_asic.c
++++ b/drivers/macintosh/macio_asic.c
+@@ -349,8 +349,10 @@ static void macio_setup_resources(struct macio_dev *dev,
+ /**
+  * macio_add_one_device - Add one device from OF node to the device tree
+  * @chip: pointer to the macio_chip holding the device
++ * @parent: parent device
+  * @np: pointer to the device node in the OF tree
+  * @in_bay: set to 1 if device is part of a media-bay
++ * @parent_res: parent resource
+  *
+  * When media-bay is changed to hotswap drivers, this function will
+  * be exposed to the bay driver some way...
+--
+2.54.0
+
 
