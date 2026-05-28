@@ -1,109 +1,56 @@
-Return-Path: <linuxppc-dev+bounces-21665-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21666-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5A709CD5BD5
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 May 2026 20:02:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EBF57CD4F54
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 May 2026 20:13:28 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gRHT66SsDz2xl5;
-	Fri, 29 May 2026 06:02:18 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779998538;
-	cv=none; b=N0cZ0bZA1oVtiPbH+dAtliy1cO8E9sVYb8RA5sJk9AmGLJq2VjJqE1MJgH9hvHWJjeXR/TuoWGN1dVzVfDqnjjvZkyGDa3kbbF1nL4rH0VcavsegqWOe7fV/ozTK0ZU+gj/l21zW5XZo2CVVgA75ZBA3oNN9dn5tQSHqZYT5YIgneB1nGRTYaDUa39tSO3AvoXIrpDU+hVVQx9F68pPCHBhTniJIJZiMRMacQn+88PhjONZSgt+aRMNo4/gTQStgb62NgYqQfmiiuFFGGfqbRH1saYc1IPyPvts67JoHFHsrEy4QPB9qsLZGniE5al8w0C0ZPoQnRO/gxeDEkOAdRw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gRHjz4Sp6z2yD6;
+	Fri, 29 May 2026 06:13:27 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:41d0:1004:224b::b1"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779999207;
+	cv=none; b=SPDVE3xLJWhUKSYK8Tv90Hm5SrFq442cSGgBWD4NZNk3aLpTsLBxig8h/8/ylfXmv0Rzt5zzbmHywTPfVHt22CBou+z2vBAND3QnE46SZzzvEoPlR5ZgdyAWYAk//yUIhhHMTvWPt+nupD2u/5jBk/qgBg1VRifAkDC7E2OIqSVXm/04nTQmIRwufRrTVkR7gmN6FgsRUMIzOXvA9p380WyLXox3f/m+Unm/8XLwEk8lnAyDAz50+GYLVxpjsXccOcJBal2QJWZ0+dVgH+ucu1fTYeylvUUXtZVMbcAxgcVxwK3+JIFUCYp9iBLPBRzcgtzLvQ0j3Y2QSZmK7fur8A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1779998538; c=relaxed/relaxed;
-	bh=sOdbbD7G7eTWO5JibIgZY1m2koWpPPdF6nvlH1ZT89M=;
-	h=Date:From:To:Cc:Subject:Message-Id:In-Reply-To:References:
-	 Mime-Version:Content-Type; b=BuosMd4Kfg0up8/M1gDs2e2X5dEXN0fK2WfzrsONvY+J3hUwDpraNiaMOIJ25t42mT3ZoW+Me6hC7UmZfElpyPCZ//nLfSjw6bK+stg2r8AaCvH/An3KUmijJ0l4qpb6z5e+pa59OwtsqyYFuIZ8+NXZHlUKOP+mcHvANcaZkcd5J8aMy+GdSwW3zCo3awQ87v9dFH9ZT71QMJjFOxIkYxzRM4fYWIVcHpGs8l1+vjwSlwzkSv+uN7U8ve7yBznolfzkU4nIpY+iWcRehiVtn72MZYQyC21zCzOUez6YNTegV6+J7C/ninAI4XFpWfgNy7AwS/LCvbW95WjqQTup6Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org; dkim=pass (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=korg header.b=K3wJo6jw; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=akpm@linux-foundation.org; receiver=lists.ozlabs.org) smtp.mailfrom=linux-foundation.org
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org
+	t=1779999207; c=relaxed/relaxed;
+	bh=+6daMKvHNSz59JQjO/O9wJOU1wC6Fg64/a4W67M4u5w=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=D3wdb5+NHjh/pAhcQf4RQ5DYi9l9rj2099ORRm2x6ckA5Auq6egNWaGDJeyHymzl1aUnP20wQHAjb2ZieA4aH4RReo9FYaGyuLmI00edgyx1r+3w2f/KDSRBdGvHArqhc0R/v+ACvIM6bKVlqWPn3ct9M25sTtVIqe+hYlGaQPA0XkL5VpUq2/d7oVF6OiepNhc+jAucac9h2Rzr0q8C+76jHaDw2RukTiaabqT+DV+uL4hsKsdc9zxj6R9sJlM1ESFtcvIaaNPN7QSJ0LAo45qwTQLMaPEEP081OKBt+y+EzJrK4/7pM3r13yKP01RPoG5LnbASl8RoNRbGN4stzg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=H0SYJgJ8; dkim-atps=neutral; spf=pass (client-ip=2001:41d0:1004:224b::b1; helo=out-177.mta0.migadu.com; envelope-from=thorsten.blum@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=korg header.b=K3wJo6jw;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=H0SYJgJ8;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux-foundation.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=akpm@linux-foundation.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=2001:41d0:1004:224b::b1; helo=out-177.mta0.migadu.com; envelope-from=thorsten.blum@linux.dev; receiver=lists.ozlabs.org)
+Received: from out-177.mta0.migadu.com (out-177.mta0.migadu.com [IPv6:2001:41d0:1004:224b::b1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gRHT56nVsz2xM7
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 May 2026 06:02:17 +1000 (AEST)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 03DCD601F8;
-	Thu, 28 May 2026 20:02:15 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9284A1F000E9;
-	Thu, 28 May 2026 20:02:11 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=linux-foundation.org; s=korg; t=1779998534;
-	bh=sOdbbD7G7eTWO5JibIgZY1m2koWpPPdF6nvlH1ZT89M=;
-	h=Date:From:To:Cc:Subject:In-Reply-To:References;
-	b=K3wJo6jw8qcEplqgtIkScPKA0RsLr1kFs7cucAKszlxSCQ18McSxCrghe3NioKpPq
-	 C/fk+aaY8amLdNR5N4Q3s412wEETs+pEB8A9alDdZX2MZJf2CddHa6+WqND0wg0n9l
-	 WgEPoOaDjPczHMoBWEQvjzjOIVL0dBxbHTAENBL0=
-Date: Thu, 28 May 2026 13:02:11 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Yury Norov <ynorov@nvidia.com>
-Cc: Rasmus Villemoes <linux@rasmusvillemoes.dk>, Russell King
- <linux@armlinux.org.uk>, Frank Li <Frank.Li@nxp.com>, Sascha Hauer
- <s.hauer@pengutronix.de>, Pengutronix Kernel Team <kernel@pengutronix.de>,
- Fabio Estevam <festevam@gmail.com>, Madhavan Srinivasan
- <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, Nicholas
- Piggin <npiggin@gmail.com>, "Christophe Leroy (CS GROUP)"
- <chleroy@kernel.org>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar
- <mingo@redhat.com>, Arnaldo Carvalho de Melo <acme@kernel.org>, Namhyung
- Kim <namhyung@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Alexander
- Shishkin <alexander.shishkin@linux.intel.com>, Jiri Olsa
- <jolsa@kernel.org>, Ian Rogers <irogers@google.com>, Adrian Hunter
- <adrian.hunter@intel.com>, James Clark <james.clark@linaro.org>, Thomas
- Gleixner <tglx@kernel.org>, Borislav Petkov <bp@alien8.de>, Dave Hansen
- <dave.hansen@linux.intel.com>, "H. Peter Anvin" <hpa@zytor.com>,
- "Rafael J. Wysocki" <rafael@kernel.org>, Len Brown <lenb@kernel.org>, Greg
- Kroah-Hartman <gregkh@linuxfoundation.org>, Danilo Krummrich
- <dakr@kernel.org>, Chanwoo Choi <cw00.choi@samsung.com>, MyungJoo Ham
- <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>,
- Heiko Stuebner <heiko@sntech.de>, Lorenzo Pieralisi
- <lpieralisi@kernel.org>, Xu Yilun <yilun.xu@intel.com>, Tom Rix
- <trix@redhat.com>, Moritz Fischer <mdf@kernel.org>, Yicong Yang
- <yangyicong@hisilicon.com>, Jonathan Cameron <jic23@kernel.org>, Dennis
- Dalessandro <dennis.dalessandro@cornelisnetworks.com>, Jason Gunthorpe
- <jgg@ziepe.ca>, Leon Romanovsky <leon@kernel.org>, Dan Williams
- <djbw@kernel.org>, Vishal Verma <vishal.l.verma@intel.com>, Dave Jiang
- <dave.jiang@intel.com>, Ira Weiny <ira.weiny@intel.com>, Bjorn Helgaas
- <bhelgaas@google.com>, Shuai Xue <xueshuai@linux.alibaba.com>, Will Deacon
- <will@kernel.org>, Jiucheng Xu <jiucheng.xu@amlogic.com>, Neil Armstrong
- <neil.armstrong@linaro.org>, Kevin Hilman <khilman@baylibre.com>, Jerome
- Brunet <jbrunet@baylibre.com>, Martin Blumenstingl
- <martin.blumenstingl@googlemail.com>, Robin Murphy <robin.murphy@arm.com>,
- Jing Zhang <renyu.zj@linux.alibaba.com>, Xu Yang <xu.yang_2@nxp.com>, Linu
- Cherian <lcherian@marvell.com>, Gowthami Thiagarajan
- <gthiagarajan@marvell.com>, Ji Sheng Teoh <jisheng.teoh@starfivetech.com>,
- Khuong Dinh <khuong@os.amperecomputing.com>, Daniel Lezcano
- <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>, Lukasz Luba
- <lukasz.luba@arm.com>, Yury Norov <yury.norov@gmail.com>, Kees Cook
- <kees@kernel.org>, Thomas =?ISO-8859-1?Q?Wei=DFschuh?=
- <thomas.weissschuh@linutronix.de>, Aboorva Devarajan
- <aboorvad@linux.ibm.com>, "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
- Ilkka Koskinen <ilkka@os.amperecomputing.com>, Besar Wicaksono
- <bwicaksono@nvidia.com>, Ma Ke <make24@iscas.ac.cn>, Chengwen Feng
- <fengchengwen@huawei.com>, linux-arm-kernel@lists.infradead.org,
- imx@lists.linux.dev, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-perf-users@vger.kernel.org,
- linux-acpi@vger.kernel.org, driver-core@lists.linux.dev,
- linux-pm@vger.kernel.org, linux-rockchip@lists.infradead.org,
- linux-fpga@vger.kernel.org, linux-rdma@vger.kernel.org,
- nvdimm@lists.linux.dev, linux-pci@vger.kernel.org,
- linux-amlogic@lists.infradead.org, linux-cxl@vger.kernel.org,
- linux-arm-msm@vger.kernel.org, Roman Gushchin <roman.gushchin@linux.dev>
-Subject: Re: [PATCH 00/16] lib/cpumask: get rid of cpumap_print_to_pagebuf()
-Message-Id: <20260528130211.54589cb876ca5e0d55caf117@linux-foundation.org>
-In-Reply-To: <ahiYUr0dO_dhOHTU@yury>
-References: <20260528183625.870813-1-ynorov@nvidia.com>
-	<20260528121806.2b54606ba6e42f7f371d95c3@linux-foundation.org>
-	<ahiW5LKLiPMC6il_@yury>
-	<20260528122903.cf74cf905418ab2d144607c3@linux-foundation.org>
-	<ahiYUr0dO_dhOHTU@yury>
-X-Mailer: Sylpheed 3.7.0 (GTK+ 2.24.33; x86_64-pc-linux-gnu)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gRHjw3SnSz2xl5
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 May 2026 06:13:22 +1000 (AEST)
+X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
+	t=1779999182;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=+6daMKvHNSz59JQjO/O9wJOU1wC6Fg64/a4W67M4u5w=;
+	b=H0SYJgJ80WeMgeiLvSEnrDJBVKXYEmvimQDGfdr1u7NDg3iJKwdDAAmbDizbKm+bAHAdH2
+	pjnj1Vqz21cfPCRi7p5q361ox98x1vAr0ZaCDlkKuM0+kip1WY9p935wJyARlmPzHw2Lff
+	Gg0ChWuAgrVcaawycTvKbDEjMaqigcM=
+From: Thorsten Blum <thorsten.blum@linux.dev>
+To: Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	Srikar Dronamraju <srikar@linux.ibm.com>,
+	Shrikanth Hegde <sshegde@linux.ibm.com>
+Cc: Thorsten Blum <thorsten.blum@linux.dev>,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH] powerpc: rtas: use get_user to simplify manage_flash_write
+Date: Thu, 28 May 2026 22:12:27 +0200
+Message-ID: <20260528201226.1599977-3-thorsten.blum@linux.dev>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -116,26 +63,75 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+MIME-Version: 1.0
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2184; i=thorsten.blum@linux.dev; h=from:subject; bh=8O9URT5B5VeVobAXWIkIqYJmai22F4B/MFQ7ldsFD+k=; b=owGbwMvMwCUWt7pQ4caZUj3G02pJDFkSC1eV3Uyd7Huj+H3uypjeSM7EnW3XEi+uc9Lo0BD5+ n2ftVhIRykLgxgXg6yYIsuDWT9m+JbWVG4yidgJM4eVCWQIAxenAEzEnZ+R4cr+zPiPCV1/Hm4U Fo9ftfUx/6Xjm74WXZRed//NesWH2gcZ/tcePH6M/UW71t7ohTxTrlnuPcDafyPy9EV+pZc1ioo a7xgA
+X-Developer-Key: i=thorsten.blum@linux.dev; a=openpgp; fpr=1D60735E8AEF3BE473B69D84733678FD8DFEEAD4
+Content-Transfer-Encoding: 8bit
+X-Migadu-Flow: FLOW_OUT
 
-On Thu, 28 May 2026 15:32:34 -0400 Yury Norov <ynorov@nvidia.com> wrote:
+Drop the local 10-byte buffer. The old code copied at most 9 bytes from
+the user buffer, but only the first byte was used to select the RTAS
+operation.
 
-> > > > Sashiko doesn't attempt bitmap-for-next, so it couldn't apply this series.
-> > > > 	https://sashiko.dev/#/patchset/20260528183625.870813-1-ynorov@nvidia.com
-> > > 
-> > > OK... What should I do about that?
-> > 
-> > Rebase onto something which Sashiko *does* attempt.  Mainline, a few
-> > mm.git branches.  Maybe linux-next.
-> 
-> Is Sashiko a new mandatory requirement now? Documentation doesn't even
-> mention the bot.
+Use get_user() to read the command byte instead and compare it directly
+with '0' and '1'. Drop the explicit user buffer check, since get_user()
+will fail on a NULL pointer and correctly return -EFAULT instead of
+-EINVAL. Remove the now-obsolete string constants as well as any
+strncmp() and strlen() calls.
 
-It's early days and things are still evolving.
+Return the original count instead of a potentially capped value, since
+the full user write has been consumed once the command is accepted.
 
-No, I'm not aware of any team having made it mandatory but boy it's
-helpful.  Authors appreciate it because it finds bugs, and nobody wants
-to add bugs to Linux.
+Use unsigned int op to better match the manage_flash() interface.
+
+Signed-off-by: Thorsten Blum <thorsten.blum@linux.dev>
+---
+ arch/powerpc/kernel/rtas_flash.c | 27 ++++++++++-----------------
+ 1 file changed, 10 insertions(+), 17 deletions(-)
+
+diff --git a/arch/powerpc/kernel/rtas_flash.c b/arch/powerpc/kernel/rtas_flash.c
+index 583dc16e9d3c..722dbfb6fbf8 100644
+--- a/arch/powerpc/kernel/rtas_flash.c
++++ b/arch/powerpc/kernel/rtas_flash.c
+@@ -394,30 +394,23 @@ static ssize_t manage_flash_write(struct file *file, const char __user *buf,
+ 				size_t count, loff_t *off)
+ {
+ 	struct rtas_manage_flash_t *const args_buf = &rtas_manage_flash_data;
+-	static const char reject_str[] = "0";
+-	static const char commit_str[] = "1";
+-	char stkbuf[10];
+-	int op;
++	unsigned int op;
++	char cmd;
+ 
+ 	guard(mutex)(&rtas_manage_flash_mutex);
+ 
+ 	if ((args_buf->status == MANAGE_AUTH) || (count == 0))
+ 		return count;
+ 		
+-	op = -1;
+-	if (buf) {
+-		if (count > 9) count = 9;
+-		if (copy_from_user (stkbuf, buf, count))
+-			return -EFAULT;
+-		if (strncmp(stkbuf, reject_str, strlen(reject_str)) == 0) 
+-			op = RTAS_REJECT_TMP_IMG;
+-		else if (strncmp(stkbuf, commit_str, strlen(commit_str)) == 0) 
+-			op = RTAS_COMMIT_TMP_IMG;
+-	}
+-	
+-	if (op == -1) {   /* buf is empty, or contains invalid string */
++	if (get_user(cmd, buf))
++		return -EFAULT;
++
++	if (cmd == '0')
++		op = RTAS_REJECT_TMP_IMG;
++	else if (cmd == '1')
++		op = RTAS_COMMIT_TMP_IMG;
++	else
+ 		return -EINVAL;
+-	}
+ 
+ 	manage_flash(args_buf, op);
+ 	return count;
 
