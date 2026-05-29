@@ -1,93 +1,76 @@
-Return-Path: <linuxppc-dev+bounces-21749-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21750-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B8146CD4F54
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 May 2026 18:25:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3978ACD4F54
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 May 2026 19:50:57 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gRsGN0lqgz2yQH;
-	Sat, 30 May 2026 04:25:00 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::102b" arc.chain=google.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780079100;
-	cv=pass; b=gP8SJNDljolEG2lOHbFGUs72BVuiBZQgi2lrsJGDWNtfwKJoLsBh+gKTqmzTlAwQx00Fs+2oH8a84Kt1NbAQxBAaSJfcXfkwOgwcy8yqFKVUVHZOuH4PGp0FfDmw/nnRteTzTPMyu7qnHttWvhHOgCPZ7GE4InQfKEQBWCS6ns1g0mLIgQ3yZ6u5qkgY5p1J1yGKYUjLYBlCVT9kIipfIa8CW3ZeocDB7M/t4iN3K+PAPBDaqSNMhddj29QB53xvdVSZokdsuAWsLW25K3epDv7z/mtSaNC7IWJlZbi0fbWJ/hVcSSDNMWf6EEddJTdPUoF0QNVdCpxLijUGxmc9HQ==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1780079100; c=relaxed/relaxed;
-	bh=raC80FL97vnFyloJA70eiiXfMtUS5ezjCgjeJ5g0ugg=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=FnyqCJFcRkh2F1CyVmYTftXcLo8y/id8A1QAjIeL9RTAEdaTb84KtvNGL9FF3f+yYNrZVwqF7YH0CrEQ2i2VbQm5eAJwnedbzoltAQCgf/QWKrjqufj48s0EYhbh4GUqQkCeTP78TJV/TqbtTZe7ckI3Wg8fAwmnxNmSWQ50i9hvkfuhEI/gHPGYo4954z90YhJ3+Nern9nfMWNRJvFIDA8D6jzlRf4B3Xs9nIFWqhYhFLK+XcjqVCPFzNqrCLiWJCE1lpeVbmtQQ6gx1D4jCL4+/TcyRK/ftdYTm5jqbUC0a1o4qFQnP5wofd01arKjiVfIgOtNrNkq2pB9kUQ/XQ==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=paul-moore.com; dkim=pass (2048-bit key; unprotected) header.d=paul-moore.com header.i=@paul-moore.com header.a=rsa-sha256 header.s=google header.b=ZJfwtdQG; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::102b; helo=mail-pj1-x102b.google.com; envelope-from=paul@paul-moore.com; receiver=lists.ozlabs.org) smtp.mailfrom=paul-moore.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=paul-moore.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gRv9W3kd1z2yN8;
+	Sat, 30 May 2026 05:50:55 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=198.175.65.11
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780084255;
+	cv=none; b=AyB7TVxAlAHrq1TyQhbFSkIOlflihq6yAaBgIDjPixrVGkiq2t6rzb/qjVK0fxwwRh5yubHMPJHVo+R/dQTwgOfwtRBS4VsW3DM3Hp1MqF77dxLGXYyHInpbl6E+VUi3PtC4JLIdLNAWdekTY4H0BS6Q/Em+zULz0kTadGdaLkgaP7qaoLgn4eeNgBWtzNotQqP6Aw2BOWKn3lpBErb50YTPod0lzIQCjx+tGeaUuSnlykgNrRT3R61GSPNVTaVGNtD4kDT7xP1BQ0VLU7GlRDQLwX69/XmMFLYZIoskvDJtdXUYdQMPHRMwqxjQVnxUQ+sU3yC2bvLqEX7A+dOeHg==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1780084255; c=relaxed/relaxed;
+	bh=9mosavUQhPwQgg41SgWFIt67OkCP0k2fTVt6P/KeJDs=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=URl/45stLfF8MLbWAeI3UrK9vSBrUgQktOaTDYCc010xsXMiROZvcox+OaHE7B/lKlA/blmVZZ+Y1RtC0lFwSBXTU0kgX/PiTaVQx5hkIgd6O9fpMjOlzB4wHRikD9KjEoV+FuZR63fwnw4xlwG/T+DlgB5zJxf0qqfMOVQipvcQYiw7MsO1uE3I/DDkYOhKa8Ul3sV+Ki0aqTo2b7Ubzuoy8dl+IZ0cwZKiHyuMq4Noru7Ggj9AuT6H84vPOf1ximz128MCzDxbIUQoHSqd6A1TwrpO+s0t2RFStwWzZ+Rc4WWOyDZVMxfQaTUee2pgZVuRtMaTFKF0pxCZyZ1kbQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=fhiLCZwy; dkim-atps=neutral; spf=pass (client-ip=198.175.65.11; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=intel.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=paul-moore.com header.i=@paul-moore.com header.a=rsa-sha256 header.s=google header.b=ZJfwtdQG;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=fhiLCZwy;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=paul-moore.com (client-ip=2607:f8b0:4864:20::102b; helo=mail-pj1-x102b.google.com; envelope-from=paul@paul-moore.com; receiver=lists.ozlabs.org)
-Received: from mail-pj1-x102b.google.com (mail-pj1-x102b.google.com [IPv6:2607:f8b0:4864:20::102b])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=198.175.65.11; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org)
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.11])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gRsGM2m9tz2xmX
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 May 2026 04:24:59 +1000 (AEST)
-Received: by mail-pj1-x102b.google.com with SMTP id 98e67ed59e1d1-3664df32e91so15793830a91.3
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 May 2026 11:24:59 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1780079097; cv=none;
-        d=google.com; s=arc-20240605;
-        b=Cy1ympi9pl1QiH2p4+D5WMmHSaEvgwUPnpBzF1t5+meJz9MbsdrGv5V/BvxSDm3jFm
-         Ad+n5L8ZoiXr5//Tlj2GtqbbD2mOKFD5iaTtPXzrWASTQXDuM2Q9n/5Y9vf0XwBwu6EO
-         zT2EJgWoXnxvxPpeb/96CDSBihfv6e90Ry7mVgt5F3jFmzekbOi6Mt2Z04Vmfg7iSZeA
-         k+KkSgFE1kSsIj/3klLM0fVKdoqxGhQwXA3TuP9BteRmdmy4T0YN96/C7le++hqoA+SO
-         63Ns3v9ja4OTvhgt4igSTTGYRoDAVHUIL38GwbNL7h1LgtBg5Wsyp7Ja8/bjJVLlYZut
-         nhHA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=raC80FL97vnFyloJA70eiiXfMtUS5ezjCgjeJ5g0ugg=;
-        fh=huTge2+oJfeOweDm/BUZlp5zHVdy3Bt7q/rKgfZtJXI=;
-        b=fbvb21tsHr/JdNJycOlU6G/Fl/IUB+lh5qqfYMZqvRnEYi0UjND/VtiFFbjTgGfgpK
-         FKgZYEuIx/v6Eb6crc0exIE/7/06oeVUBcuOv2wNRXfge8J+ASheOVvwcJ/Gfj1ozUwv
-         QzCgnHYcqlF0eoFiJ5yhCwoqJ1z7e2mA0WukvXvNKACOXjV1yyTn6X1FtY0zM+dzoijh
-         CtoF3qNqiDNmOf2xPAhn3mkXwAgebeCx2SnyBWRquL9UZLkcrwDw8zd+CUUcth981plR
-         Epd+8rRnWYKZOlHz1i6RVfltPOjd2whJNrr1TQObgVvTnr3LOnXKqSs16YgaxdgnmJ6Z
-         kStg==;
-        darn=lists.ozlabs.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=paul-moore.com; s=google; t=1780079097; x=1780683897; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=raC80FL97vnFyloJA70eiiXfMtUS5ezjCgjeJ5g0ugg=;
-        b=ZJfwtdQGpXEhMeVT2QJt7uhComd2QtWpZNhwmuVHwsQmTbHiWZbAO7DeJZ8bmSpJGe
-         yjmuJ1YiuOQ37D21Em+Li1i+lKWZ631/aovzz7Y6Y0f1rD5fvEgtm0c3ZMTXECPk8JxS
-         iKYaqUAQ4OJcJt5jIm8IRb1yoo9ghOg62+BGRXfK+2+YyRBwYAVrpCaBxF0lokocEnmV
-         /fuKA/4PGtd/BwckQJwaNo4U7XCkNzrwpZTaPdi9kNHe9+UcdFj+KCcYr2/tnzQUUK9Y
-         tMnUINKknOhi1vHwUFh0+8sxp1mB+ZkjOupMTaJScFYrHRD/MtGRrTDam6+C4locOW5P
-         /cMw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1780079097; x=1780683897;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=raC80FL97vnFyloJA70eiiXfMtUS5ezjCgjeJ5g0ugg=;
-        b=lbqEBvFKWn7oZ6chQLLeklVWqCywLr3m/AIUA9EqFRhAH0Tq7Ijm3pfhmtP800mwGs
-         2JdBq6kUUrVAO9OhdYGaNYl46gaF9D84QtKejzdolMa04EaK+ZFO5xVbF66E2iujBkz3
-         meICnzcQhm/Ic24p3kMW17KIrwY5JtUNJC0PxePg8l/ltr/iCMUmDdxnD0jCLIuB5YT3
-         ISK1UJr5urt5ghUBYhUq/jBAGTt3EBrDi03l3TzHwzr5/z9VLgSZCmFR9PhqgRn5JMmE
-         Bg0F1T5BdhuBvfi1ZscvL9EGhoY8DofdkpJRYiw0pM5N7ZuOtMmwLUOr6ynD6iFmhL9z
-         4xjQ==
-X-Forwarded-Encrypted: i=1; AFNElJ9py/5UbQtBv6SNfDDzCQdniURReAucJzzyVxPVxX/+K36fMjOXIcwGYbev+uOPNXt/0aGcOVjb3ZmmQoI=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yz5mCjieOsPxieQ02akEkoZ/iCZszrUd8zk2rjn+J46VIttQIKY
-	wZePyyTNIZeAXUF0gi43BqHCTX39UmuFl8P8YD+CD4BmvdxonQNsWZ6F/8AV42UwFJObBAYbHNC
-	vMoFz/q/AHlc0vAAFsxWkr4IEPz05SEDpC5aCT8RI
-X-Gm-Gg: Acq92OENkDfuT7EYywvAuY4j+BYXPFiFhXpeGewDieFBKoS/Dw8gObClyc9rcO4Behz
-	flI++jGYXUYSLJJrSgmKI4UJY1Va25T3DczBHPqx6lKiz4Da2vX5P6/20sSh9yuc1tWRGGy33Al
-	gg9GK9ZxijoUtWqgq9QCsQtr5yGocvutkMB9DFIrGBL3nTD6LAIzcrvY58nNKbYyXqjiB2z9nHz
-	pi3zgUWNnQy0f1Z4BQ1JXUWm4MrjaAJn5f/WvD+l/PMgKx8Q1uvqhsPN89u8XuYp3Ahlvf/VtVP
-	m+TSa3ad8L0xobkhDw==
-X-Received: by 2002:a17:90b:5212:b0:368:b176:c5a8 with SMTP id
- 98e67ed59e1d1-36c501e747emr374444a91.15.1780079097303; Fri, 29 May 2026
- 11:24:57 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gRv9T6zN7z2xmX
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 May 2026 05:50:53 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1780084254; x=1811620254;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=Xy47Vb9m65sQMnuPVEfRiE4rCqGWTQXYogQjJ4vAUFE=;
+  b=fhiLCZwyMnEamuXYcltF9fbZDjAmxKQMzKmqRLJo2FHUhMxCieHhYvDW
+   Kgm6oQlEc5jMgjj5ZRLspJk9QUPig5cMxVXLP7xu0n74JfSrcoDuKf/T2
+   ui7y7Pck3FEbfFXICHQ7VXu09zOnEHi9rjD9HyUWgawlDlHBNitPqq9GJ
+   1F341D9tREynEqYh0LPIH/ZgCQT9lVX1NASNKFYocQROgD4kVRRK2gROF
+   stq2PzRNBNWinDLZoWoOShyIJdDbFuZDRdSaTl9MEhUo92wxTq17XmxGa
+   7nBGDZQMXVBGa20HY0frvNM5+555RxvF1SlultIwqyn+XmMofotVh7e7n
+   w==;
+X-CSE-ConnectionGUID: FPk0MyaRQXeEoGO7ZQkIQA==
+X-CSE-MsgGUID: IWZg9o8+S4+pqkCyfsCDmg==
+X-IronPort-AV: E=McAfee;i="6800,10657,11801"; a="91252449"
+X-IronPort-AV: E=Sophos;i="6.24,176,1774335600"; 
+   d="scan'208";a="91252449"
+Received: from orviesa003.jf.intel.com ([10.64.159.143])
+  by orvoesa103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 29 May 2026 12:50:49 -0700
+X-CSE-ConnectionGUID: caj/6dIZQ8mge6IaX0afWA==
+X-CSE-MsgGUID: +stMZUGZScOU1l87RpGVlg==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.24,176,1774335600"; 
+   d="scan'208";a="246946747"
+Received: from lkp-server01.sh.intel.com (HELO f0d55cb201f0) ([10.239.97.150])
+  by orviesa003.jf.intel.com with ESMTP; 29 May 2026 12:50:48 -0700
+Received: from kbuild by f0d55cb201f0 with local (Exim 4.98.2)
+	(envelope-from <lkp@intel.com>)
+	id 1wT3EC-000000007dq-1Gfm;
+	Fri, 29 May 2026 19:50:44 +0000
+Date: Sat, 30 May 2026 03:50:26 +0800
+From: kernel test robot <lkp@intel.com>
+To: Thorsten Blum <thorsten.blum@linux.dev>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+Cc: oe-kbuild-all@lists.linux.dev, Thorsten Blum <thorsten.blum@linux.dev>,
+	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] powerpc/boot: remove unused min_t/max_t macros
+Message-ID: <202605300340.G7sL2jlK-lkp@intel.com>
+References: <20260525091839.817778-3-thorsten.blum@linux.dev>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -101,59 +84,96 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <03e5151a-f420-46f9-ad5e-109420132021@linux.ibm.com>
- <8f0c86f7-eab4-4e82-97c1-5d190c390770@linux.ibm.com> <CAEjxPJ7Y+9AqEVTJswUsan4OOP+DVkFG3vXukQVtcJZbVaoZnA@mail.gmail.com>
- <CAEjxPJ6DqhHKdjwC3ddZfUK4HVPwOTzb1Kkuabi5WmwmF8Lu_A@mail.gmail.com>
- <CAHC9VhSEjSmdVgNxg=PvwS6RXnJzFybJtFhCJbOsKiRhXi5PJQ@mail.gmail.com> <CAEjxPJ5wS+sXvCjO3q2sfrckuMo71_Y3uSdgu+Vte7xLkW0Huw@mail.gmail.com>
-In-Reply-To: <CAEjxPJ5wS+sXvCjO3q2sfrckuMo71_Y3uSdgu+Vte7xLkW0Huw@mail.gmail.com>
-From: Paul Moore <paul@paul-moore.com>
-Date: Fri, 29 May 2026 14:24:45 -0400
-X-Gm-Features: AVHnY4JkvYYnGXgtS-r6uyAoqJa9j23y-gvS34JWyjHW-_UBDjUi9Ylaj-ADNeQ
-Message-ID: <CAHC9VhQT43Dq=NeSBwKkeF=Xr9mqdG+Gi0L+xs0pCCxuMoZBZQ@mail.gmail.com>
-Subject: Re: PowerPC: Random memory corruption causing kernel oops on Power11
-To: Stephen Smalley <stephen.smalley.work@gmail.com>
-Cc: rppt@kernel.org, Venkat Rao Bagalkote <venkat88@linux.ibm.com>, 
-	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Madhavan Srinivasan <maddy@linux.ibm.com>, 
-	selinux@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, 
-	Ritesh Harjani <riteshh@linux.ibm.com>, "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260525091839.817778-3-thorsten.blum@linux.dev>
 
-On Fri, May 29, 2026 at 12:11=E2=80=AFPM Stephen Smalley
-<stephen.smalley.work@gmail.com> wrote:
-> On Fri, May 29, 2026 at 11:39=E2=80=AFAM Paul Moore <paul@paul-moore.com>=
- wrote:
-> > On Fri, May 29, 2026 at 11:19=E2=80=AFAM Stephen Smalley
-> > <stephen.smalley.work@gmail.com> wrote:
-> > > Alternatively, I suppose we could just update the dentry_path_raw()
-> > > call to also pass PATH_MAX, but
-> > > I don't see why we want to use __getname/__putname() instead of just
-> > > direct kmalloc/kfree here so
-> > > the size of the buffer is immediately evident to the reader.
-> >
-> > It's reverted, see the posting below:
-> >
-> > https://lore.kernel.org/selinux/20260529153608.30853-2-paul@paul-moore.=
-com
-> >
-> > I think there is still value in using __getname()/__putname() here as
-> > opposed to a simple kmalloc()/kfree() pairing, but either way we need
-> > to adjust the buffer length in selinux_genfs_get_sid() accordingly to
-> > use PATH_MAX instead of PAGE_SIZE.
->
-> IIUC, __getname()/__putname() were originally internal helpers for
-> getname()/putname() and allocated from names_cachep for struct
-> filename. commit c3a3577cdb35 ("struct filename: use names_cachep only
-> for getname() and friends") switched __getname()/__putname() over to
-> just generic kmalloc/kfree so that other users of those helpers would
-> stop allocating from names_cachep and noted that those lingering users
-> could be converted to explicit kmalloc() over time. So I don't think
-> vfs folks want new users of __getname()/__putname() but I could be
-> wrong.
+Hi Thorsten,
 
-Whoever wants to submit a patch to do the conversion again should
-chase that down.
+kernel test robot noticed the following build errors:
 
---=20
-paul-moore.com
+[auto build test ERROR on powerpc/next]
+[also build test ERROR on powerpc/fixes linus/master v7.1-rc5 next-20260528]
+[If your patch is applied to the wrong git tree, kindly drop us a note.
+And when submitting patch, we suggest to use '--base' as documented in
+https://git-scm.com/docs/git-format-patch#_base_tree_information]
+
+url:    https://github.com/intel-lab-lkp/linux/commits/Thorsten-Blum/powerpc-boot-remove-unused-min_t-max_t-macros/20260525-172120
+base:   https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git next
+patch link:    https://lore.kernel.org/r/20260525091839.817778-3-thorsten.blum%40linux.dev
+patch subject: [PATCH] powerpc/boot: remove unused min_t/max_t macros
+config: powerpc64-randconfig-r061-20260529 (https://download.01.org/0day-ci/archive/20260530/202605300340.G7sL2jlK-lkp@intel.com/config)
+compiler: clang version 23.0.0git (https://github.com/llvm/llvm-project 9409c07de6378507397ecdb6f05f628f58110112)
+reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20260530/202605300340.G7sL2jlK-lkp@intel.com/reproduce)
+
+If you fix the issue in a separate patch/commit (i.e. not just a new version of
+the same patch/commit), kindly add following tags
+| Reported-by: kernel test robot <lkp@intel.com>
+| Closes: https://lore.kernel.org/oe-kbuild-all/202605300340.G7sL2jlK-lkp@intel.com/
+
+All errors (new ones prefixed by >>):
+
+   In file included from arch/powerpc/boot/decompress.c:37:
+   In file included from arch/powerpc/boot/../../../lib/decompress_unxz.c:241:
+>> arch/powerpc/boot/../../../lib/xz/xz_dec_stream.c:158:21: error: call to undeclared function 'min_t'; ISO C99 and later do not support implicit function declarations [-Wimplicit-function-declaration]
+     158 |         size_t copy_size = min_t(size_t,
+         |                            ^
+>> arch/powerpc/boot/../../../lib/xz/xz_dec_stream.c:158:27: error: unexpected type name 'size_t': expected expression
+     158 |         size_t copy_size = min_t(size_t,
+         |                                  ^
+   In file included from arch/powerpc/boot/decompress.c:37:
+   In file included from arch/powerpc/boot/../../../lib/decompress_unxz.c:242:
+>> arch/powerpc/boot/../../../lib/xz/xz_dec_lzma2.c:357:9: error: call to undeclared function 'min_t'; ISO C99 and later do not support implicit function declarations [-Wimplicit-function-declaration]
+     357 |         left = min_t(size_t, dict->limit - dict->pos, *len);
+         |                ^
+>> arch/powerpc/boot/../../../lib/xz/xz_dec_lzma2.c:357:15: error: unexpected type name 'size_t': expected expression
+     357 |         left = min_t(size_t, dict->limit - dict->pos, *len);
+         |                      ^
+   arch/powerpc/boot/../../../lib/xz/xz_dec_lzma2.c:1101:25: error: call to undeclared function 'min_t'; ISO C99 and later do not support implicit function declarations [-Wimplicit-function-declaration]
+    1101 |                         dict_limit(&s->dict, min_t(size_t,
+         |                                              ^
+   arch/powerpc/boot/../../../lib/xz/xz_dec_lzma2.c:1101:31: error: unexpected type name 'size_t': expected expression
+    1101 |                         dict_limit(&s->dict, min_t(size_t,
+         |                                                    ^
+   In file included from arch/powerpc/boot/decompress.c:37:
+   In file included from arch/powerpc/boot/../../../lib/decompress_unxz.c:243:
+>> arch/powerpc/boot/../../../lib/xz/xz_dec_bcj.c:469:14: error: call to undeclared function 'min_t'; ISO C99 and later do not support implicit function declarations [-Wimplicit-function-declaration]
+     469 |         copy_size = min_t(size_t, s->temp.filtered, b->out_size - b->out_pos);
+         |                     ^
+>> arch/powerpc/boot/../../../lib/xz/xz_dec_bcj.c:469:20: error: unexpected type name 'size_t': expected expression
+     469 |         copy_size = min_t(size_t, s->temp.filtered, b->out_size - b->out_pos);
+         |                           ^
+   8 errors generated.
+
+
+vim +/min_t +158 arch/powerpc/boot/../../../lib/xz/xz_dec_stream.c
+
+24fa0402a9b6a5 Lasse Collin 2011-01-12  149  
+24fa0402a9b6a5 Lasse Collin 2011-01-12  150  /*
+24fa0402a9b6a5 Lasse Collin 2011-01-12  151   * Fill s->temp by copying data starting from b->in[b->in_pos]. Caller
+24fa0402a9b6a5 Lasse Collin 2011-01-12  152   * must have set s->temp.pos to indicate how much data we are supposed
+24fa0402a9b6a5 Lasse Collin 2011-01-12  153   * to copy into s->temp.buf. Return true once s->temp.pos has reached
+24fa0402a9b6a5 Lasse Collin 2011-01-12  154   * s->temp.size.
+24fa0402a9b6a5 Lasse Collin 2011-01-12  155   */
+24fa0402a9b6a5 Lasse Collin 2011-01-12  156  static bool fill_temp(struct xz_dec *s, struct xz_buf *b)
+24fa0402a9b6a5 Lasse Collin 2011-01-12  157  {
+24fa0402a9b6a5 Lasse Collin 2011-01-12 @158  	size_t copy_size = min_t(size_t,
+24fa0402a9b6a5 Lasse Collin 2011-01-12  159  			b->in_size - b->in_pos, s->temp.size - s->temp.pos);
+24fa0402a9b6a5 Lasse Collin 2011-01-12  160  
+24fa0402a9b6a5 Lasse Collin 2011-01-12  161  	memcpy(s->temp.buf + s->temp.pos, b->in + b->in_pos, copy_size);
+24fa0402a9b6a5 Lasse Collin 2011-01-12  162  	b->in_pos += copy_size;
+24fa0402a9b6a5 Lasse Collin 2011-01-12  163  	s->temp.pos += copy_size;
+24fa0402a9b6a5 Lasse Collin 2011-01-12  164  
+24fa0402a9b6a5 Lasse Collin 2011-01-12  165  	if (s->temp.pos == s->temp.size) {
+24fa0402a9b6a5 Lasse Collin 2011-01-12  166  		s->temp.pos = 0;
+24fa0402a9b6a5 Lasse Collin 2011-01-12  167  		return true;
+24fa0402a9b6a5 Lasse Collin 2011-01-12  168  	}
+24fa0402a9b6a5 Lasse Collin 2011-01-12  169  
+24fa0402a9b6a5 Lasse Collin 2011-01-12  170  	return false;
+24fa0402a9b6a5 Lasse Collin 2011-01-12  171  }
+24fa0402a9b6a5 Lasse Collin 2011-01-12  172  
+
+--
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
 
