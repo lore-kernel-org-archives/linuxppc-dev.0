@@ -1,51 +1,63 @@
-Return-Path: <linuxppc-dev+bounces-21701-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21702-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E2E2CCD5BD2
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 May 2026 09:10:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F04D4CD6E45
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 May 2026 09:18:12 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gRcyX29NFz2yQH;
-	Fri, 29 May 2026 19:10:28 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780045828;
-	cv=none; b=jZ4qRoWn2rmxllXkuWbEFqfxQ9ij82VALiiwuXtIp7sdZllMVmCl7AsCRQ2bjzZFYqiASlZGcLqP3WYzywr2GLZQNelqhgKyy7TtjFtP62nQMlpS4BKz5pjaXe2MsNisJpfF4O1UURRCoOxlqbwHlemndHKCndZbY30BBhuQomcM1YkJyqm9s5/Q5f9/Vd8EanpIJkA62hDxFytS//qD13mE2S+90riX4PcjwdwafxCF4YiM+B7Dv/N3fqKyofv5zb6JTJdD/ziTbzW/IZs6Vl7pQohmZSAeOfuJT3CMep2whvxWgi6NCKw7oefUECUR1VF/05fB60ENHhqN5sL0nw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gRd7R3gcfz2yQH;
+	Fri, 29 May 2026 19:18:11 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:8b0:10b:1:d65d:64ff:fe57:4e05"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780046291;
+	cv=none; b=EGvMyMC02mbLf2/yKB4RQLoJN27BCNjsQMePYtUegmw1wl2CoFks7AXVwgBjtorLqEa1S8c7lgoXNldjRX0Hrfeo4onTVze8vgrf/6nJOcv5PO07eo0ZMiCq5IsyK44i3isB88kDMPMJuLsJxcdMFUPhGH2ndttjaEkklA6u9VRAsKO8Zuu7m5O7hi4vrSkfNqNNcqOcf9nTWYCtNTIUSmcQq8ABAHfiQcx6DWnAQzcCOda2+x4z30tGcY4lHsZBm4zMp4ZRUDi3sY706FaaqHICi4yo6rGAuJcxoFegBrVw2dZ2ZVRFTmqEihgNgFn8v4JW9ByGt34cU9ALUD0Iyg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1780045828; c=relaxed/relaxed;
-	bh=S8RgkVBDzDG3YaYzhTa4ISLM+K3g4AZuNYjWiAh67ao=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=GQT9HXPWe1njrp4VqgRf4V4sU4TdS/iRFzehIO3bxucUztrLYSXbUeB6G9Ph+FvvNj+aiAqIgUrNSwl4mZrGB800YSyLwC1DgceeJyASn+ElQxwiZIASd+AHKnZbfl1/IMAFEVzCQLFn2frk/F0/+6l2hDjKBxl58Fgtl8mbjNbkVnUInpo5uP9p6kp64cMb30ZIfvH6AQSmaZjOAUp49cexkuxqukO2ymk/vjV4h8DeCAmiOrd0EEw4S5wtTM72MD/DEp9byxesRZwIRmZa4hQHPcdJ95tm5LC/UdrGqyC8ztF+EG2oAo+ziqpIfZL8bCEnsvYhmcF2CvpgoXDdgA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=npqlHZhf; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1780046291; c=relaxed/relaxed;
+	bh=3X+h87zVQbiADPCPME4wwho65wKw5nknhCHOBBKB/ZY=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=dB8nA+ySUAb7EAjQgZ30LyZHuH5ZYYY8+ZIM4Dx8CfBd5JK9FM8tQ1hnmJ8Cxu5AT8ycOV/nC9pKlLKW2TrBPNasChrYDoC1ZkNFX2/Z61+HPe0W4TqZlpcqkZP6BrcNTEYu/mX7UyyguLddurekcQ0y/4/N5h9wfc2Dr/V7dRC2SpdWKiYQz1MtqtVT7wvq+2LhWZ4raK9TRC6XzjnsMNFFLaS0bwXunw5ijyFbBjGt+2nJ1F773bjSbV/Q0qq/kose5nYYquB9D6HPi//DTybp7ajUNQbg/25crCzdQFTXknKWWZkNfUKbpE914NBU/ku1jqfU9DRSQ8rK5zcDDg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=infradead.org; dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=desiato.20200630 header.b=S4d5H3qa; dkim-atps=neutral; spf=none (client-ip=2001:8b0:10b:1:d65d:64ff:fe57:4e05; helo=desiato.infradead.org; envelope-from=peterz@infradead.org; receiver=lists.ozlabs.org) smtp.mailfrom=infradead.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=infradead.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=npqlHZhf;
+	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=desiato.20200630 header.b=S4d5H3qa;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=infradead.org (client-ip=2001:8b0:10b:1:d65d:64ff:fe57:4e05; helo=desiato.infradead.org; envelope-from=peterz@infradead.org; receiver=lists.ozlabs.org)
+Received: from desiato.infradead.org (desiato.infradead.org [IPv6:2001:8b0:10b:1:d65d:64ff:fe57:4e05])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gRcyW1F3Hz2xnZ
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 May 2026 19:10:27 +1000 (AEST)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id BDCE440965;
-	Fri, 29 May 2026 09:10:24 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id EC0201F00893;
-	Fri, 29 May 2026 09:10:22 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1780045824;
-	bh=S8RgkVBDzDG3YaYzhTa4ISLM+K3g4AZuNYjWiAh67ao=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=npqlHZhfv7Tx5WB+QmIVjPtAAEh9WWZ2VppHuNVru6ulksxMr965VBErPcNNlz+eN
-	 8ZDAwHiGR9rM0otdBqNZlKrgCk7dpmZ16UkDszKLMwS9lOylRmV/sJMkt+k1VMV9AY
-	 pG4vvSe8M4LirIFvLguXN1OkTyDGj61UM99uLqCqgWTJywYC/AAgD+I01eGxVg+izU
-	 x4UX/rMw0ZsfZ+5kQpambEzdIKi9zUVEq9tzU73sFs4r0jcv33owHSWNXC7hdhwa1K
-	 tCD/Ap15yHyaVxE1GOo+PQU8ZdWQhmLtA5ubviH5g/lvUFXi616tPdMewA5fDBWFGM
-	 qRkZqMrm+u4fg==
-Message-ID: <7c1a04f3-caa8-4200-a4ee-55cd2cc28461@kernel.org>
-Date: Fri, 29 May 2026 11:10:20 +0200
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gRd7J0ljgz2xnZ
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 May 2026 19:18:03 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=desiato.20200630; h=In-Reply-To:Content-Type:MIME-Version:
+	References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+	Content-Transfer-Encoding:Content-ID:Content-Description;
+	bh=3X+h87zVQbiADPCPME4wwho65wKw5nknhCHOBBKB/ZY=; b=S4d5H3qarX01z/0rutOkGmmtgH
+	SmafBLNzWSuRikquCnziG8k6GrnvLHPFhPRuOT3QvQS2TPy297K/UTdkimkO+hxne3sSLUIZTmNAq
+	9c/6l3GZ8/JCT+v6HV6Dlub5gF9Em85WhV44v4LajUdu9tII/JQ/jgZI65gHLSM86P5h7L9LcKWv5
+	5r2xmaLIMNNV81Rc5+dlEfgCzl2AMuzm/uByCPPZv3+cyzS3wvEIgWb+vsoIbvY1CSCSyKgZSiCAI
+	Q/RlCxJFIptG3MUxVHbnkVtyL8t2sdTzIMxejtZ4mGhP0o8T1F4YAvIaLiBOi0i/aCqzCwwhA6pe6
+	8G2je/rA==;
+Received: from 2001-1c00-8d85-4b00-266e-96ff-fe07-7dcc.cable.dynamic.v6.ziggo.nl ([2001:1c00:8d85:4b00:266e:96ff:fe07:7dcc] helo=noisy.programming.kicks-ass.net)
+	by desiato.infradead.org with esmtpsa (Exim 4.99.1 #2 (Red Hat Linux))
+	id 1wStLn-00000000t4y-2wo2;
+	Fri, 29 May 2026 09:17:56 +0000
+Received: by noisy.programming.kicks-ass.net (Postfix, from userid 1000)
+	id D4C5E301CEB; Fri, 29 May 2026 11:17:54 +0200 (CEST)
+Date: Fri, 29 May 2026 11:17:54 +0200
+From: Peter Zijlstra <peterz@infradead.org>
+To: Shrikanth Hegde <sshegde@linux.ibm.com>
+Cc: maddy@linux.ibm.com, linuxppc-dev@lists.ozlabs.org, mingo@kernel.org,
+	christophe.leroy@csgroup.eu, linux-kernel@vger.kernel.org,
+	venkat88@linux.ibm.com, yu.c.chen@intel.com,
+	tim.c.chen@linux.intel.com, kprateek.nayak@amd.com,
+	srikar@linux.ibm.com, riteshh@linux.ibm.com, stable@vger.kernel.org,
+	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
+Subject: Re: [PATCH] sched/topology: Provide arch_llc_mask for cache aware
+ scheduling
+Message-ID: <20260529091754.GO343181@noisy.programming.kicks-ass.net>
+References: <20260529075712.1181039-1-sshegde@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -59,87 +71,47 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] powerpc/boot: remove unused min_t/max_t macros
-To: Thorsten Blum <thorsten.blum@linux.dev>,
- Madhavan Srinivasan <maddy@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-References: <20260525091839.817778-3-thorsten.blum@linux.dev>
-Content-Language: fr-FR
-From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-In-Reply-To: <20260525091839.817778-3-thorsten.blum@linux.dev>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260529075712.1181039-1-sshegde@linux.ibm.com>
 
-
-
-Le 25/05/2026 à 11:18, Thorsten Blum a écrit :
-> The min_t() and max_t() macros are no longer used by the boot wrapper,
-> remove them.
-
-Did you test your change ?
-
-
-   BOOTCC  arch/powerpc/boot/decompress.o
-In file included from arch/powerpc/boot/../../../lib/decompress_unxz.c:241,
-                  from arch/powerpc/boot/decompress.c:37:
-arch/powerpc/boot/../../../lib/xz/xz_dec_stream.c: In function 'fill_temp':
-arch/powerpc/boot/../../../lib/xz/xz_dec_stream.c:158:28: error: 
-implicit declaration of function 'min_t'; did you mean 'min'? 
-[-Wimplicit-function-declaration]
-   158 |         size_t copy_size = min_t(size_t,
-       |                            ^~~~~
-       |                            min
-arch/powerpc/boot/../../../lib/xz/xz_dec_stream.c:158:34: error: 
-expected expression before 'size_t'
-   158 |         size_t copy_size = min_t(size_t,
-       |                                  ^~~~~~
-In file included from arch/powerpc/boot/../../../lib/decompress_unxz.c:242:
-arch/powerpc/boot/../../../lib/xz/xz_dec_lzma2.c: In function 'dict_repeat':
-arch/powerpc/boot/../../../lib/xz/xz_dec_lzma2.c:357:22: error: expected 
-expression before 'size_t'
-   357 |         left = min_t(size_t, dict->limit - dict->pos, *len);
-       |                      ^~~~~~
-arch/powerpc/boot/../../../lib/xz/xz_dec_lzma2.c: In function 
-'xz_dec_lzma2_run':
-arch/powerpc/boot/../../../lib/xz/xz_dec_lzma2.c:1101:52: error: 
-expected expression before 'size_t'
-  1101 |                         dict_limit(&s->dict, min_t(size_t,
-       |                                                    ^~~~~~
-In file included from arch/powerpc/boot/../../../lib/decompress_unxz.c:243:
-arch/powerpc/boot/../../../lib/xz/xz_dec_bcj.c: In function 'bcj_flush':
-arch/powerpc/boot/../../../lib/xz/xz_dec_bcj.c:469:27: error: expected 
-expression before 'size_t'
-   469 |         copy_size = min_t(size_t, s->temp.filtered, b->out_size 
-- b->out_pos);
-       |                           ^~~~~~
-make[2]: *** [arch/powerpc/boot/Makefile:235: 
-arch/powerpc/boot/decompress.o] Error 1
-make[1]: *** [arch/powerpc/Makefile:236: zImage] Error 2
-make: *** [Makefile:248: __sub-make] Error 2
-
-
-
+On Fri, May 29, 2026 at 01:27:12PM +0530, Shrikanth Hegde wrote:
+> Venkat Reported a boot kernel panic next-20260522. Git bisect pointed to
+> b5ea300a17e3 ("sched/cache: Make LLC id continuous")
 > 
-> Signed-off-by: Thorsten Blum <thorsten.blum@linux.dev>
-> ---
->   arch/powerpc/boot/types.h | 3 ---
->   1 file changed, 3 deletions(-)
+> Stacktrace points to llc_mask being null.
 > 
-> diff --git a/arch/powerpc/boot/types.h b/arch/powerpc/boot/types.h
-> index 8a4c418b7260..c5085c2632bf 100644
-> --- a/arch/powerpc/boot/types.h
-> +++ b/arch/powerpc/boot/types.h
-> @@ -37,9 +37,6 @@ typedef s64 int64_t;
->   	(void) (&_x == &_y);	\
->   	_x > _y ? _x : _y; })
->   
-> -#define min_t(type, a, b) min(((type) a), ((type) b))
-> -#define max_t(type, a, b) max(((type) a), ((type) b))
-> -
->   typedef int bool;
->   
->   #ifndef true
+> NIP [c000000000e58504] _find_first_bit+0x44/0x130
+> LR [c000000000e58500] _find_first_bit+0x40/0x130
+> Call Trace:
+> build_sched_domains+0xad8/0xe50
+> sched_init_smp+0xa8/0x164
+> kernel_init_freeable+0x250/0x370
+> ret_from_kernel_user_thread+0x14/0x1c
+> 
+> On powerpc, cpu_coregroup_mask is available only when the underlying
+> hardware support coregroup. In shared LPAR, QEMU guest or power9 etc
+> coregroup isn't supported. In such cases llc_mask was being referenced
+> when it was null leading to panic.
+> 
+> On powerpc, LLC is at SMT core level. So assumption that coregroup(MC)
+> domain point to LLC is wrong. Provide a way for archs to say where its
+> LLC is if it not at MC domain. 
+> 
+> Based on tip/master at 5c89783224e9 ("Merge branch into tip/master: 'x86/tdx'")
+> Cc: stable@vger.kernel.org
 
+This seems unwarranted, the patch breaking stuff is in tip:sched/core.
+
+> Fixes: b5ea300a17e3 ("sched/cache: Make LLC id continuous")
+> Reported-by: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
+> Closes: https://lore.kernel.org/all/51154de7-3700-4cb4-82f2-1b3a8fa427f7@linux.ibm.com/
+> Reviewed-by: Chen Yu <yu.c.chen@intel.com>
+> Tested-by: Venkat Rao Bagalkote <venkat88@linux.ibm.com> 
+> Tested-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+> Co-developed-by: Chen, Yu C <yu.c.chen@intel.com>
+> Signed-off-by: Shrikanth Hegde <sshegde@linux.ibm.com>
+
+Thanks all! I'll stick this in tip:sched/core to go along with the
+patches that broke stuff.
 
