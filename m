@@ -1,129 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-21676-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21677-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B2DCBCD5BD1
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 May 2026 01:53:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C1494CD6E49
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 May 2026 03:59:13 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gRRGM2yB0z2xYk;
-	Fri, 29 May 2026 11:53:31 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c200::1" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780019611;
-	cv=pass; b=JWvM1SP7c/pTtqckevnqrfLosH59Ym1rKFL6a1G1c/WiZQ7jixI1dz1sKFkj6/RhHrLYumfPokowSUx3jE8QmEpsAJbY27cUSrxWZyDheC39sjrJ2gkskz0i6lDQPcsq48SkhbTwKNxQtZ5d34RIPNQO+dsw64tsS/N6Ex90kezQ5A0Kmi1aCHxgZ7MQt16ECiCy2bcVUjwFjxnJuikThWW74BKmy2izW0wAybrb5TK7Tn93JcxZNXEx/PVPPsQrc8Kqi8QGLWF/MbAF/173Tjs+EdjmUAOdJVq9c82/6uBC/S0/r34mkB7rk2bS5jnNHW0XgWwNWfuyAvwIkd5AIQ==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1780019611; c=relaxed/relaxed;
-	bh=wTLP9lQVI5caKh+Ud9thgBOmF32F9OXEBKx2OoLxUL0=;
-	h=From:To:CC:Subject:Date:Message-ID:References:In-Reply-To:
-	 Content-Type:MIME-Version; b=kciFKtUaWH3q6cSs5V7VDxJ0cN6Itt2jyBpAfojcRR/fcFBExKANKxNnItGpfbQlFZCYyDslLP9j2CBj4m2OOdyg19AU2ZKWmdBvan0DqHAqZ5WdlDnZVJ3haxsZijcSZ9Qk/VXI0NiXkR+t7dwSRYNSrQBVIbAjTLrIp0859h19d6QOQbk3chFU281qTrmzYPbsZvm0Ff5c4Wiw5Mx40r4ejXqRSnXT9I2CbpSmZmSlGudivsjX7f820aUXMAgAE5+2unwQQIHzpQsPCt/kk4dp3oVITZXsWRhWi6WLUzwzSbjUQ6T4BsFhAkE1jX8Bd4b6dPUVFnhuidUuRyD7mw==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com; dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=kGdWxmST; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c200::1; helo=db3pr0202cu003.outbound.protection.outlook.com; envelope-from=wei.fang@nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=nxp.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gRV3N0XRHz2yRl;
+	Fri, 29 May 2026 13:59:12 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780027152;
+	cv=none; b=C+NSXlxrEocfQnh4fbwM9AUh5WLhId1NZsvUPMS3iCXyt9SVdtMGqQss0z8De5mrim3zbUsL7SDGZzicxbL3fk02SRvATax50q6WeATqGagQKwNcWScBOqY6Czryob88Ir2Iem8jtDT6bM7/1EANFw9AormDxIQuM1QJcNd9iVbks3VdTHl8tfPV+DILroygWIBT3CHioZcVwycqdKABwUoFIMM6x0c7p6WEUWHgoiVLbQn9FoYqiKCf6F6N16v5i45vxbo+H/NBA0xP3mOIfKSUBpWu/7cxHHKcK0vybSfPBlc9JnU+qqjKY9Akq36x3awXPl+mTPTCg6DSyljWNw==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1780027152; c=relaxed/relaxed;
+	bh=jZPBf1hknITbjBulQnAkW79M00akmP9Jf8bWCate1KM=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=KgHppq9jN0Dc6bC1RZeZ6ruAfZ0CPf0P/B2cEsGKOVv4gbJqYCnQCeLCQx1w1Y+ukgbUCKDsotqQ5X6gugSr0+HCmv+pG+1LNSjj0Smmwb+MR2/xqSfhP2Y8SpziqLqPcKFTn0RRvrwvq4Hp/TYjzUVe9x0OnpU4moWUpys4mQchuJzm8pSOhXHzC1U/JYivM2meJxkG89lH/I08e2LRGIjbpKS07pcuplvw1NoxXFh7FavKPA2ATb/u08qd1G/RpVs9iK+JtNXVD+omHUjnpTMFnhPKRHXTkV+wNe9tNLMM/2JRxrmwbYGA0fCaZPFVxE03OEKX8gMfSyHY84Z/oQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=C/NfY/kK; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=kGdWxmST;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=C/NfY/kK;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=nxp.com (client-ip=2a01:111:f403:c200::1; helo=db3pr0202cu003.outbound.protection.outlook.com; envelope-from=wei.fang@nxp.com; receiver=lists.ozlabs.org)
-Received: from DB3PR0202CU003.outbound.protection.outlook.com (mail-northeuropeazlp170100001.outbound.protection.outlook.com [IPv6:2a01:111:f403:c200::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gRRGK2hM9z2xM6
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 May 2026 11:53:28 +1000 (AEST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=r9x1s3zYDbONnSSfBtX+8rifZFsKl//k8oDUskWXbo8HhWKn1AzUBJ9SEYIJA8tPSR0/J1dBUeUy6uE4qqzLS4bw1yrr83VgPWQqG1UFy1GnZiaC99m/ASjKpvcYMnzy5YeOBxEDqD98mWkwFDuVvPEkDdw5/rohE0hFNjp8U7RyiCIBQIijH4A2LU2FtICSM5q9xZeyJFxkr5m5Rc3Co46m+SJbghN6HNQNZI14yUDvrs2z7liDiqOr1Ck8GTTiARsw+J9kqjthFSrWcUggnQHQNG2e6v9IPlexnf48PznuPPbIFKByFLWIi8foZhwPA9zeh3woc9oFcWK+l+Lcwg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=wTLP9lQVI5caKh+Ud9thgBOmF32F9OXEBKx2OoLxUL0=;
- b=mCraE6VLJ56hBtSNGi7xXFMEe18v9X06feuJzzOOcubmpxAIPUIPGjaRvlwlOwU9zLM6vrl5kDVky6yJ1qxyX86mxM/Xq0q0NQalIKPseiS/n4n5VSK9o1cLPBIPGSIjlKHq7rr0WBFdvXA+mIgyWrhbnqoKuOvfF0Mwd7GErqHnzOwoZ3bWARFsEJGKTZyWA/X0zgmMotkDcZYbHV6qULA3G0EyK6KNIjfi5GbMFycEPaiBbklkhCRlRbpPnSqkzaWRN9i2Q+u5BVYTbeRONoYAE9gy/XhPB9wtiAXL0C3LzxVrflmg1HQd3HbtZ4Wrk/bzaz9V26QOrqYgC4YAHw==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
- header.d=nxp.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=wTLP9lQVI5caKh+Ud9thgBOmF32F9OXEBKx2OoLxUL0=;
- b=kGdWxmSTyQc2AvaDzh9X7cPmbfIlzu3mjCiq6KRbIS/tdlfTx+BbJCI/iLtFxko+HNFreftS3oT64I1mTgledR6KbGAw1umorLU99AW+AIEvRJswYEWhtHTqYOg3rsCvaKuYRrh617EhNSpVYc25hJwrLz7kWvxsS0kwhKJP/3W0bhwgqmDP6UvH41FNA4wRnIXG4tnlUqpiUyZ8c3W9JS7M08JwwKMXVcRjLGsKKEcsObaP/SplJzyVEuWxoxNxpT0LkoiBc/IRYSkY0AS7GbYbw8spG32TCC6v5PwoqooVGK1DazPD3ZyITwrSogmOMCT6nmZE51sNi7pBGn0QIg==
-Received: from DBBPR04MB7500.eurprd04.prod.outlook.com (2603:10a6:10:1f4::16)
- by AM8PR04MB7729.eurprd04.prod.outlook.com (2603:10a6:20b:24c::24) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.71.11; Fri, 29 May
- 2026 01:53:04 +0000
-Received: from DBBPR04MB7500.eurprd04.prod.outlook.com
- ([fe80::c291:543b:4bde:cee7]) by DBBPR04MB7500.eurprd04.prod.outlook.com
- ([fe80::c291:543b:4bde:cee7%6]) with mapi id 15.21.0071.014; Fri, 29 May 2026
- 01:53:04 +0000
-From: Wei Fang <wei.fang@nxp.com>
-To: "Wei Fang (OSS)" <wei.fang@oss.nxp.com>, Claudiu Manoil
-	<claudiu.manoil@nxp.com>, Vladimir Oltean <vladimir.oltean@nxp.com>, Clark
- Wang <xiaoning.wang@nxp.com>, "andrew+netdev@lunn.ch"
-	<andrew+netdev@lunn.ch>, "davem@davemloft.net" <davem@davemloft.net>,
-	"edumazet@google.com" <edumazet@google.com>, "kuba@kernel.org"
-	<kuba@kernel.org>, "pabeni@redhat.com" <pabeni@redhat.com>,
-	"chleroy@kernel.org" <chleroy@kernel.org>, "andrew@lunn.ch" <andrew@lunn.ch>,
-	"olteanv@gmail.com" <olteanv@gmail.com>
-CC: "imx@lists.linux.dev" <imx@lists.linux.dev>, "netdev@vger.kernel.org"
-	<netdev@vger.kernel.org>, "linux-kernel@vger.kernel.org"
-	<linux-kernel@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org"
-	<linuxppc-dev@lists.ozlabs.org>, "linux-arm-kernel@lists.infradead.org"
-	<linux-arm-kernel@lists.infradead.org>
-Subject: RE: [PATCH net-next 0/9] net: dsa: netc: add bridge mode support
-Thread-Topic: [PATCH net-next 0/9] net: dsa: netc: add bridge mode support
-Thread-Index: AQHc7b9839CWsLJWGUGw7TxqVF516rYkPx1g
-Date: Fri, 29 May 2026 01:53:04 +0000
-Message-ID:
- <DBBPR04MB7500385FABFC6DB0DF9792DF88162@DBBPR04MB7500.eurprd04.prod.outlook.com>
-References: <20260527100217.794987-1-wei.fang@oss.nxp.com>
-In-Reply-To: <20260527100217.794987-1-wei.fang@oss.nxp.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach:
-X-MS-TNEF-Correlator:
-authentication-results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=nxp.com;
-x-ms-publictraffictype: Email
-x-ms-traffictypediagnostic: DBBPR04MB7500:EE_|AM8PR04MB7729:EE_
-x-ms-office365-filtering-correlation-id: 5623044f-62de-469a-0366-08debd2505c5
-x-ms-exchange-senderadcheck: 1
-x-ms-exchange-antispam-relay: 0
-x-microsoft-antispam:
- BCL:0;ARA:13230040|7416014|366016|19092799006|1800799024|376014|18002099003|22082099003|38070700021|921020|56012099006|11063799006;
-x-microsoft-antispam-message-info:
- HeptXSbFpITEkyxY30lSYrBa5t1cNHWNPAYfOje48gT95PzjSxVbqonIovHtD33BIYChshXxrOFoAcWpa2MKbuLTCuGFbyfskrZJ9KpuIlQZwBCrjiepXFebjuU6GP3Z3IdrWXB502SWXmFJr1mKFEYjqsvn2k7vXAtHei+nkq4l31a51UxuM78MYeYzI03PnrKBRUAYEPQi6fycGIcWmEB6jigUSnin7PpJRbEue9ncY8tMnj882SfDkBbfsnapu8aFcejAiYcGYhA2oZ7JL5lS3P8yZxJpqp7uO/T/rDAytR/+VFbU0YCUL4DXtL3/nrsfHapQriXj78rHXF1mgNf1BSCjGj8bel9BaVSwh/iYfWnfqNhrWIi5DrCOOLkwH+Wt6JsufxRXqyQnwmmW3+6E1lfGU1+ctU2HWFVTrKtIFAfJcfJrZTUWViUQqq8OOCjo/G8rMbhjC1cUK5+GkXJvcgnVpL+7OcdMMhF2Xg9wdJHKGGMWTWv2DJSS80QsTnaz0bL73oRTngKtKjxns7m88Ctxy/nXf7oTWJwdDEh3/NODOO4OBPKO/DQBFLQCFmx7AODvVBVC9S8eBLPqQxqntTtsl/cxrJUBK2NPlDqX6ox2wKGqMCMWOj4LEjT0W2xNQBiglOmoND4l7G7YdvmVnnJ73bb2IBr0XPYKN/jzm6Dckx0bAyGcWkcRCf9gtoU4oaeGAq+FfNrgzre1Uw==
-x-forefront-antispam-report:
- CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DBBPR04MB7500.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(7416014)(366016)(19092799006)(1800799024)(376014)(18002099003)(22082099003)(38070700021)(921020)(56012099006)(11063799006);DIR:OUT;SFP:1101;
-x-ms-exchange-antispam-messagedata-chunkcount: 1
-x-ms-exchange-antispam-messagedata-0:
- =?us-ascii?Q?+JO1GE79I+klgz8vBq7NOSGIn8fcfhmOBnpcqk9e5d/6ZfGUF0UJZXdpniLE?=
- =?us-ascii?Q?B6stSw+kBJHgw//XfAatouEdFBxniPGWeSCY2+SmH5ImPQGaJg7BnURLlvck?=
- =?us-ascii?Q?ksJFnImtQc7jADCAGdba2iHgNs9yYOOazNaSf9TaNZPxSOt8M4TWMr2WvdrP?=
- =?us-ascii?Q?GydIes816tRCUiqjZNvULUhikMCsRg0qDRvL5tK+btVgYpX2lGSFSBVVep5w?=
- =?us-ascii?Q?qQ5flkGhOwQJ2Rsycoz/APbdz2O7zlqPGv1nHV05CmVAZDt/iui2w2I4tp3P?=
- =?us-ascii?Q?0VXVsw8zJ856exVZJU0p13+HRHc3T69tOpAQLLlYZ3ei1eVe5ehlVajLodUh?=
- =?us-ascii?Q?IGi/ZAml1mRAhWCWsI3lrmvVS2Dq7a6OTRIHmR5tl0LTZzwfRvbt9NJyD/6/?=
- =?us-ascii?Q?9hsoM92EaL0jm9GVJ3+m0ZdUvxgt6vAjit2d1C5SVk0zhmIUfY9QLcw+INsg?=
- =?us-ascii?Q?Wqu97bstkkmD2uXfRfmQVPWIKwM9RaY3c8du/+Qm6r3ydM/UoAxQZYB8JSQp?=
- =?us-ascii?Q?lWs/OSNCeKhcQdXbBzZuw1Sr78dTTpVNuyL18CcO7LuuwIKqo1LV2H1GB1Ce?=
- =?us-ascii?Q?ttfOYgp5upDIol/jLBvmJvBphYrhBsbc/bhYkShps9/g3oouj3bd4GvjoLXn?=
- =?us-ascii?Q?ZZNDgjFUqbSDcYXUcAYN475jiXuEuCuFGm9VCSm5DY24K+VFRIi7pJ1lHvh7?=
- =?us-ascii?Q?YcWjmGZdFY/5p0yR5Yj3ONcM/tlwhy69aBnn/zI3XV1ADYHqtJLZchXwXslX?=
- =?us-ascii?Q?3tBnccwvXzbJDEWb2bdbRCmr8+7KJeeZSZmtxuPxSL9nSLCbGQYMXmsX+9xR?=
- =?us-ascii?Q?uJ0V+moCsAL93j0JJOLxWda4KZV0WJDlQc8fA45V/GOmfASvLGXSSvok32P/?=
- =?us-ascii?Q?fpd013+aNPf1hd48LHtt9keKXSIvxpAV97of1bREdDLPJaIzxOToRipB7KGL?=
- =?us-ascii?Q?9Tst33+HVN+RLFiknOiI9BycWASmu1zNeDubZa1EjBsyQ87W9FLsthJPnDnj?=
- =?us-ascii?Q?+oH+KzBD5w2gQAPiEjjeZR5+djg6rC+ayv4zXMxfNjtfUJl1ed71ow3YYUf7?=
- =?us-ascii?Q?jqr7rFhTsS0fY2ygNATZPwwOey3JvFotLjo6UrrO17sZcPPzt5z+14f3LJJh?=
- =?us-ascii?Q?KwTh+TgZKnyzE796gN7sbSoQmLMAb2G94kY6yKvGssqjGpAAyJi0sjUps70E?=
- =?us-ascii?Q?tYoqyQOXOqUqzUJmeulSzUXLVyRv9sGGJrfjDtAfhdaMkeYetP05N3jy396L?=
- =?us-ascii?Q?s5MW6ojFdOBGEpJlB+9Em+iiBfuru0i9sthJEYmTodX6otnQFJ6bQSa6BFX2?=
- =?us-ascii?Q?01LiJXyTSBZAeB6jEOOPA0ZXkElP8FPsjTtuNZQjaxTvHERhWZGiK4wAB022?=
- =?us-ascii?Q?hlpM5V9Bzo4eLxzldrVGO4GbwpnlCMQ/GO7gzAyq+FmnZlCff2fG4V049xZG?=
- =?us-ascii?Q?wNLy4R+DUkocY+yCITlguozlIYtRa84tiZ58c4u4Cye0V8jAdn0NGduYeP0b?=
- =?us-ascii?Q?CK341m5dfK87cOYO0Sp3qgjXlFoR+9vWGu7v4gu24Pi+2CKkUiVALH1qfAlf?=
- =?us-ascii?Q?V0RHXzWTDJaNpqJ/LYX1qhD/8ZZrkpUTV3A5kjEnHFqUozzd0JMqxGOcfleE?=
- =?us-ascii?Q?fvaKPS5bIEMaJPgQSVd0v9EPyc84W16AB2E6xOGGCZqGfOVlImDe9dPdvpei?=
- =?us-ascii?Q?+/t7JxGptB5ZUHfs0p3+ve4w3hqpsdHv4bGPyZ/+ZVE9ncae?=
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gRV3L3VLGz2xnZ
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 May 2026 13:59:09 +1000 (AEST)
+Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 64SLmDTh2134009;
+	Fri, 29 May 2026 03:58:34 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=jZPBf1
+	hknITbjBulQnAkW79M00akmP9Jf8bWCate1KM=; b=C/NfY/kKmtZ4NRd0ERUCqx
+	BW+MOkgu+C29dZTllRuC1n8xSIMNw+YxyQTcFeIP196LIy0CQ9ns2eU8h9Kt2FRS
+	gEqsWRJF21UfvqVAhDkJq6l8yQJUa5Hz7Xy/oq+6mK9fj46lJPWK1BDLDTmrVvhF
+	AVAbhnYcaqsUJ2aYoL25OSEoUc91P/Bq2WFGqbHmXv26RD2/RX9mcbQ/u6nwWYqV
+	U9VqV5YpSxI7rS8hMOIzoHhKvrT3Mmwrgx2lyDMXCiKHoCRi8EhZKepHQTx3Ubs3
+	cB5ceh3QRz9XibUf55jRodEAyDDpk9d9FpKuUPpQ4BF43SoxJAo8Y1DMZTC6xIEg
+	==
+Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4ee887p4s5-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 29 May 2026 03:58:34 +0000 (GMT)
+Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma23.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 64T3sPlA011699;
+	Fri, 29 May 2026 03:58:34 GMT
+Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
+	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4edjrc3bxf-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 29 May 2026 03:58:33 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
+	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 64T3wUtj41288156
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Fri, 29 May 2026 03:58:30 GMT
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 31F372004E;
+	Fri, 29 May 2026 03:58:30 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 1A24320040;
+	Fri, 29 May 2026 03:58:26 +0000 (GMT)
+Received: from [9.39.19.35] (unknown [9.39.19.35])
+	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Fri, 29 May 2026 03:58:25 +0000 (GMT)
+Message-ID: <85ff1fec-632c-4e5a-9b47-5d4b4a70a1a2@linux.ibm.com>
+Date: Fri, 29 May 2026 09:28:24 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -137,68 +81,167 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-OriginatorOrg: nxp.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-AuthSource: DBBPR04MB7500.eurprd04.prod.outlook.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 5623044f-62de-469a-0366-08debd2505c5
-X-MS-Exchange-CrossTenant-originalarrivaltime: 29 May 2026 01:53:04.1376
- (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: Yk4G1cVOLSzoR5G0VWIxuSsnGPDGTvX2XWEm5J16JWI3omyNa2oPNE2REq6EQuJP/bpCiSyrSzGl9ha7SInJVA==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: AM8PR04MB7729
+User-Agent: Mozilla Thunderbird
+Subject: Re: [BUG] sched/cache: "Make LLC id continuous" causes NULL cpumask
+ dereference in build_sched_domains on POWER9
+To: Venkat Rao Bagalkote <venkat88@linux.ibm.com>,
+        "Chen, Yu C" <yu.c.chen@intel.com>, tim.c.chen@linux.intel.com,
+        K Prateek Nayak <kprateek.nayak@amd.com>,
+        Srikar Dronamraju <srikar@linux.ibm.com>
+Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
+        Ritesh Harjani <riteshh@linux.ibm.com>,
+        "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+        LKML <linux-kernel@vger.kernel.org>,
+        linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+        Peter Zijlstra <peterz@infradead.org>
+References: <51154de7-3700-4cb4-82f2-1b3a8fa427f7@linux.ibm.com>
+From: Shrikanth Hegde <sshegde@linux.ibm.com>
+Content-Language: en-US
+In-Reply-To: <51154de7-3700-4cb4-82f2-1b3a8fa427f7@linux.ibm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Authority-Analysis: v=2.4 cv=QLJYgALL c=1 sm=1 tr=0 ts=6a190eea cx=c_pps
+ a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
+ a=IkcTkHD0fZMA:10 a=NGcC8JguVDcA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=RzCfie-kr_QcCd8fBx8p:22 a=VwQbUJbxAAAA:8
+ a=QyXUC8HyAAAA:8 a=VnNF1IyMAAAA:8 a=pGLkceISAAAA:8 a=sVCs8T_WoIwSPI0JDxcA:9
+ a=QEXdDO2ut3YA:10
+X-Proofpoint-GUID: C7mjtAmTbWyDQE8LBcbCEAZeL0YPkx8c
+X-Proofpoint-ORIG-GUID: C7mjtAmTbWyDQE8LBcbCEAZeL0YPkx8c
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTI5MDAzMiBTYWx0ZWRfXzhur0em7HVvM
+ eC9Q8XrsCSGo4IK/xihRpUWGn50Ma3MBlWZd/mIMmp6KbbETL1V719ZF/lecEyu8Gsr0VKAqPJJ
+ oirmGwU2kQbp+Z3D49Gls2rmBfgjDyS/NGRtE8MWch68+NZfen2jvHZ1100/Wxot+9tB1D+aQBq
+ 4Cj849j+/ratNUliwh3OzruuYnjs6sNMzIpJljt/vX3bCdpO6Ac4rCZLYABy6472A5lxAaA5jIW
+ TY2xu2jDovFCeby8kU4JgBmh/0BzFwEA3HQqwztGT+34JPtRVf3uZtGI/WxwEAtohnoswnvYv5o
+ jGzXiyXo0BcKWN/L7gYML79PqpCjRODeJMqi6V5hV8ixocWHXSMuzhnoPMHsTuVcyjPg09DeiBN
+ IYAF5FLuX5gAUVyqnk+cCVNBhgxkCYeGAidOs0aVWgiRXrVi/9/Q52D8/0Aim69hDnwfMGN6232
+ gU/HX2A1Z46SPRfg+3Q==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
+ definitions=2026-05-29_01,2026-05-28_03,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ spamscore=0 suspectscore=0 impostorscore=0 malwarescore=0 adultscore=0
+ lowpriorityscore=0 phishscore=0 clxscore=1015 priorityscore=1501 bulkscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2605210000 definitions=main-2605290032
 
-> This series adds bridge mode support to the NETC DSA switch driver,
-> covering both VLAN-aware and VLAN-unaware operation.
->=20
-> The NETC switch manages forwarding through a set of hardware tables
-> accessed via NTMP: the FDB table (FDBT), VLAN filter table (VFT), egress
-> treatment table (ETT), and egress count table (ECT).  The series extends
-> the NTMP layer with the operations required for bridging, then builds the
-> DSA bridge callbacks on top.
->=20
-> Since all switch ports share the VFT, so only one VLAN-aware bridge is
-> supported.
->=20
-> FDB aging is managed in software.  A periodic delayed work sweeps the
-> table using the hardware activity element mechanism, with a default aging
-> time of 300 seconds matching the IEEE 802.1Q standard.  Per-port entries
-> are also flushed immediately on bridge leave and link-down events.
->=20
-> Wei Fang (9):
->   net: enetc: add interfaces to manage FDB entries
->   net: enetc: add "Update" and "Delete" operations to VLAN filter table
->   net: enetc: add interfaces to manage egress treatment table
->   net: enetc: add "Update" operation to the egress count table
->   net: dsa: netc: initialize the group bitmap of ETT and ECT
->   net: enetc: add helpers to set/clear table bitmap
->   net: dsa: netc: add VLAN filter table and egress treatment management
->   net: dsa: netc: add bridge mode support
->   net: dsa: netc: implement dynamic FDB entry aging
->=20
->  drivers/net/dsa/netc/netc_main.c              | 882
-> +++++++++++++++++-
->  drivers/net/dsa/netc/netc_switch.h            |  34 +
->  drivers/net/dsa/netc/netc_switch_hw.h         |   6 +
->  drivers/net/ethernet/freescale/enetc/ntmp.c   | 431 +++++++++
->  .../ethernet/freescale/enetc/ntmp_private.h   |  14 +
->  include/linux/fsl/ntmp.h                      |  60 ++
->  6 files changed, 1413 insertions(+), 14 deletions(-)
->=20
-> --
-> 2.34.1
+Hello. Sorry for too many mails.
 
-Sashi reported some issues for this series:
-[1] https://sashiko.dev/#/patchset/20260527100217.794987-1-wei.fang%40oss.n=
-xp.com
-[2] https://netdev-ai.bots.linux.dev/sashiko/#/patchset/20260527100217.7949=
-87-1-wei.fang%40oss.nxp.com
+On 5/25/26 7:37 PM, Venkat Rao Bagalkote wrote:
+> Greetings!!!
+> 
+> I am seeing an early boot kernel panic due to NULL pointer dereference 
+> on a POWER9 (pSeries) system when testing linux-next (next-20260522).
+> 
+> 
 
-Some of them are indeed potential issues, I will fix them in next version.
-Any other comments are welcome, thanks.
+Based on srikar's suggestion to keep the below,
+#define arch_llc_mask(cpu)     cpu_l2_cache_mask(cpu)
 
---
-pw-bot: cr
+which makes it pretty much what chenyu had here
+https://lore.kernel.org/all/8d14c844-b4a8-4af6-acab-2cfdd42225be@intel.com/
+
+I added the changelog and comments. removed the changes in !CONFIG_MC case since powerpc
+defines it always. I have changed the chenyu tag to Co-developed-by: instead.
+
+I have carried the tested-by and reviewed-by tags since patch is
+still more or less the same.
+
+This is based on tip/master at
+5c89783224e9  Merge branch into tip/master: 'x86/tdx'
+I am planning to send it based on tip tree.
+Let me know if has to be against a any different tree.
+
+Please let me know if there are any concerns.
+verified below too fixes the panic seen in shared LPAR.
+
+============================================
+
+From: Shrikanth Hegde <sshegde@linux.ibm.com>
+Date: Thu, 28 May 2026 23:23:43 -0400
+Subject: [PATCH] sched/topology: Provide arch_llc_mask for cache aware scheduling
+
+Venkat Reported a boot kernel panic next-20260522. Git bisect pointed to
+b5ea300a17e3 ("sched/cache: Make LLC id continuous")
+
+Stacktrace points to llc_mask being null.
+
+NIP [c000000000e58504] _find_first_bit+0x44/0x130
+LR [c000000000e58500] _find_first_bit+0x40/0x130
+Call Trace:
+build_sched_domains+0xad8/0xe50
+sched_init_smp+0xa8/0x164
+kernel_init_freeable+0x250/0x370
+ret_from_kernel_user_thread+0x14/0x1c
+
+On powerpc, cpu_coregroup_mask is available only when the underlying
+hardware support coregroup. In shared LPAR, QEMU guest or power9 etc
+coregroup isn't supported. In such cases llc_mask was being referenced
+when it was null leading to panic.
+
+on powerpc, LLC is at SMT core level. So assumption that coregroup(MC)
+domain point to LLC is wrong. Provide a way for archs to say where its
+LLC is if it not at MC domain.
+
+Fixes: b5ea300a17e3 ("sched/cache: Make LLC id continuous")
+Reported-by: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
+Closes: https://lore.kernel.org/all/51154de7-3700-4cb4-82f2-1b3a8fa427f7@linux.ibm.com/
+Reviewed-by: Chen Yu <yu.c.chen@intel.com>
+Tested-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+Co-developed-by: Chen, Yu C <yu.c.chen@intel.com>
+Signed-off-by: Shrikanth Hegde <sshegde@linux.ibm.com>
+---
+  arch/powerpc/include/asm/topology.h |  6 ++++++
+  kernel/sched/topology.c             | 13 +++++++++++--
+  2 files changed, 17 insertions(+), 2 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/topology.h b/arch/powerpc/include/asm/topology.h
+index 66ed5fe1b718..e3de0f3d8b86 100644
+--- a/arch/powerpc/include/asm/topology.h
++++ b/arch/powerpc/include/asm/topology.h
+@@ -135,6 +135,12 @@ struct cpumask *cpu_coregroup_mask(int cpu);
+  const struct cpumask *cpu_die_mask(int cpu);
+  int cpu_die_id(int cpu);
+  
++/* Points to where the LLC is. On power9 this will point at CACHE
++ * domain, On others it will point to SMT domain. In all cases
++ * cpu_l2_cache_mask points to where LLC is.
++ */
++#define arch_llc_mask(cpu)     cpu_l2_cache_mask(cpu)
++
+  #ifdef CONFIG_PPC64
+  #include <asm/smp.h>
+  
+diff --git a/kernel/sched/topology.c b/kernel/sched/topology.c
+index df2ceb54c970..622e2e01974c 100644
+--- a/kernel/sched/topology.c
++++ b/kernel/sched/topology.c
+@@ -2063,12 +2063,21 @@ const struct cpumask *tl_mc_mask(struct sched_domain_topology_level *tl, int cpu
+  	return cpu_coregroup_mask(cpu);
+  }
+  
+-#define llc_mask(cpu) cpu_coregroup_mask(cpu)
++/*
++ * Majority of architectures have LLC at MC domain level with exception
++ * such as powerpc. Provide a way for arch to specify where its LLC is
++ * if it falls in exception category
++ */
++# ifndef arch_llc_mask
++#define arch_llc_mask(cpu) cpu_coregroup_mask(cpu)
++# endif
+  
+  #else
+-#define llc_mask(cpu) cpumask_of(cpu)
++#define arch_llc_mask(cpu) cpumask_of(cpu)
+  #endif
+  
++#define llc_mask(cpu) arch_llc_mask(cpu)
++
+  const struct cpumask *tl_pkg_mask(struct sched_domain_topology_level *tl, int cpu)
+  {
+  	return cpu_node_mask(cpu);
+-- 
+2.47.3
 
 
