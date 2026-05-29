@@ -1,99 +1,68 @@
-Return-Path: <linuxppc-dev+bounces-21752-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21753-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6D1E2CD6E49
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 May 2026 22:51:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B281BCD6E49
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 May 2026 22:51:41 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gRz9j70CHz2xYg;
-	Sat, 30 May 2026 08:51:21 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780059351;
-	cv=none; b=PPqTafQ7bybI5pCecxt28YO8Mv2eFaje8/xiZb09c4Slb1W8tiDMjKl8bg4qfkUOyhH/eqiJDYE54U5d4xkqykJUuW0dMiTyHJ7LUXyFotHRsW7PGayQKaV57oEBbmO0JeMa7nb1N0NzhSRbID6x9ZkdQNES90BFhK667sH1WFmnfk3O4G4ZzIXcWHpLARa9lmyTmXIgPcgr4HBmInhy9TmBTp+1K6tMHR1i0aYnZxuV06MXkTo8mECCwIVJPXtdNWWyZqObt/1N0butVt4y9A+cf0SxPGTAU0KTUeoQfp/sK6Cg+M85vTFTA0aA1OZiOKZlQtOtqpi0LslRfPThcA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gRzB41xcVz2xYg;
+	Sat, 30 May 2026 08:51:40 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::44a"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780095100;
+	cv=none; b=XdXnhK2SMlNvGp4xWKbAciT97GWXx0ipi8HejCKUoUm1SPCBcT1dyh1F4hWRzaXhn2/MXW1RdbLfJx9i6CT1SrMQ7LmwNvSCBY0LqpvS1+CMePslDsPzcWVTPGXKYfSOTo8WcEFr3UPrVL0JbwjwJnnQ89+Uk3bAk9QeERkrr3btffkD1HzIfKubxOD2CU50SRPiApYLw76+R4lzm3c1hnyQrPLYgnmxAww+i1BitxEvUP5L42ri/FZPTQjVwlICTIm33h7nHcdvoU4Zi9x7QVtVeRYfKgZeIn8BMkdOABz/aPxzZHeo0kz8DTSAfLBDFoQ8izBAVPFi8ITIfV5FoA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1780059351; c=relaxed/relaxed;
-	bh=+6AiMcZa3bd0LPjamkN4r9S9jW+Apu//pCbttaoWdDI=;
-	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=caBg/ud6LeQ+Dbx2+43n9N2r1g5kK0xKHMBo1xOk0PyEb2FJ/LdxNu7j+scit48073lB+lvFiF+mdlB7rM7kI7uJUPnTbd+61W+KV9vDeQ+WMV8iQ6kwfnMY2fvSSjbozttb4ZOoTPr545EnojUZEnvSesCQmsztPfXPap/BaAFDmKesB3/hR9p8Wkp+T0MaWyE+qFeLXSE/FO1opfHd0PSucpktT7d7iUkR/auVbYSr3BPNMLTw21H0nWaP6hBnjaE2cBQnSZQzJdPH9A6HdsqzzaV+rb8xJHHHTyX+UDCmHyvnugezBomc3gRcAZPTrKB3VoYReYDhetbe+xVsEg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=HKme3PJu; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=srini@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1780095100; c=relaxed/relaxed;
+	bh=iDamTyASUWUv87s6Ugw+3o5D1xad/djiw+VyKIvP/1s=;
+	h=Date:In-Reply-To:Mime-Version:References:Message-ID:Subject:From:
+	 To:Cc:Content-Type; b=Ju7K9ImsVK4AvF9zHFeSr93uuKl8U6p1qMxJxmXHMQuWSc5jTzsahfkdGiI1O3NATXR4WJJwQVxeJSxe88xGw3s+LFgbieXD2nMTV47DOrlS+8cPUBIWV9K293YCS7JPU35iRtZY8+L85C4yILE8ije8mR9Vdc8/7HPI7MApc0VH8xuzfc+cSnJyxmTPXFVKKoSEMl8MtASw4qr1JPn+s+OMgF3ZGncDtSVGbANkSpn+3aETlVY1FDRryf8l4zTInSCFzYhq5M8FrRRZvwbTUS/BX3erK9uT9oPgCyC0NTWx4u46Pm8IgiRW6IoeeZkKHDVW3g8Wd01OkXt9lwfGqA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=Q8W89Zc9; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::44a; helo=mail-pf1-x44a.google.com; envelope-from=3dxgaagykdggykgtpimuumrk.iusrotadvvi-jkbroyzy.ufrghy.uxm@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=flex--seanjc.bounces.google.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=HKme3PJu;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=Q8W89Zc9;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=srini@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--seanjc.bounces.google.com (client-ip=2607:f8b0:4864:20::44a; helo=mail-pf1-x44a.google.com; envelope-from=3dxgaagykdggykgtpimuumrk.iusrotadvvi-jkbroyzy.ufrghy.uxm@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org)
+Received: from mail-pf1-x44a.google.com (mail-pf1-x44a.google.com [IPv6:2607:f8b0:4864:20::44a])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gRjyZ4P60z2yQL
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 May 2026 22:55:50 +1000 (AEST)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 1A6B8605AB;
-	Fri, 29 May 2026 12:55:47 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id CF6271F00893;
-	Fri, 29 May 2026 12:55:33 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1780059346;
-	bh=+6AiMcZa3bd0LPjamkN4r9S9jW+Apu//pCbttaoWdDI=;
-	h=From:To:Cc:In-Reply-To:References:Subject:Date;
-	b=HKme3PJuW/g8Xe3fa9pH4ndcExyYxHcd2cNlg9NECKqK4v1asLZhvhZEXzEeGPFwC
-	 krMU26G83m8iPSglCfYKCqgciw6JWvcuzjQUTI3wFtoI62nF0UChddzGFraXimF9pJ
-	 1k54Uu9U94IdLdsnRGH4hwmLSLP/pSSK0uKpJsDzqk30FcWpIwESOtKLiumR4V+6As
-	 unm055hDnQ1A4hKk4u4dzRoTU87SIvLvelBGdBip7ZDoIZon4MXvQ/IpRhuSbyjuUY
-	 udebOV+LpQuBbeFt6sWaU5lZ0itKuFGMHeMAFQa8OxgbyKZLGpVxsvBB1IjU2d1o4J
-	 48Eb2LMB+rd1A==
-From: Srinivas Kandagatla <srini@kernel.org>
-To: Lee Jones <lee@kernel.org>, 
- Mark Brown <broonie@opensource.wolfsonmicro.com>, 
- Thierry Reding <thierry.reding@avionic-design.de>, 
- Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, 
- Andrew Lunn <andrew+netdev@lunn.ch>, 
- "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, 
- Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, 
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
- Vinod Koul <vkoul@kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>, 
- Danilo Krummrich <dakr@kernel.org>, Rob Herring <robh@kernel.org>, 
- Saravana Kannan <saravanak@kernel.org>, 
- Madhavan Srinivasan <maddy@linux.ibm.com>, 
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
- "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, 
- Andi Shyti <andi.shyti@kernel.org>, 
- Andy Shevchenko <andriy.shevchenko@linux.intel.com>, 
- Joerg Roedel <joro@8bytes.org>, Will Deacon <will@kernel.org>, 
- Robin Murphy <robin.murphy@arm.com>, Doug Berger <opendmb@gmail.com>, 
- Florian Fainelli <florian.fainelli@broadcom.com>, 
- Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>, 
- Ulf Hansson <ulfh@kernel.org>, Frank Li <Frank.Li@nxp.com>, 
- Sascha Hauer <s.hauer@pengutronix.de>, 
- Pengutronix Kernel Team <kernel@pengutronix.de>, 
- Fabio Estevam <festevam@gmail.com>, Matthew Brost <matthew.brost@intel.com>, 
- =?utf-8?q?Thomas_Hellstr=C3=B6m?= <thomas.hellstrom@linux.intel.com>, 
- Rodrigo Vivi <rodrigo.vivi@intel.com>, David Airlie <airlied@gmail.com>, 
- Simona Vetter <simona@ffwll.ch>, Peter Chen <peter.chen@kernel.org>, 
- Paul Cercueil <paul@crapouillou.net>, Bin Liu <b-liu@ti.com>, 
- Philipp Zabel <p.zabel@pengutronix.de>, 
- Maximilian Luz <luzmaximilian@gmail.com>, Hans de Goede <hansg@kernel.org>, 
- =?utf-8?q?Ilpo_J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>, 
- Krzysztof Kozlowski <krzk@kernel.org>, 
- Benjamin Herrenschmidt <benh@kernel.crashing.org>, 
- Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
-Cc: brgl@kernel.org, linux-kernel@vger.kernel.org, netdev@vger.kernel.org, 
- linux-arm-msm@vger.kernel.org, linux-sound@vger.kernel.org, 
- driver-core@lists.linux.dev, devicetree@vger.kernel.org, 
- linuxppc-dev@lists.ozlabs.org, linux-i2c@vger.kernel.org, 
- iommu@lists.linux.dev, linux-pm@vger.kernel.org, imx@lists.linux.dev, 
- linux-arm-kernel@lists.infradead.org, intel-xe@lists.freedesktop.org, 
- dri-devel@lists.freedesktop.org, linux-usb@vger.kernel.org, 
- linux-mips@vger.kernel.org, platform-driver-x86@vger.kernel.org, 
- stable@vger.kernel.org
-In-Reply-To: <20260521-pdev-fwnode-ref-v1-0-88c324a1b8d2@oss.qualcomm.com>
-References: <20260521-pdev-fwnode-ref-v1-0-88c324a1b8d2@oss.qualcomm.com>
-Subject: Re: (subset) [PATCH 00/23] driver core: count references of the
- platform device's fwnode, not OF node
-Message-Id: <178005933352.9337.17178239685242465219.b4-ty@kernel.org>
-Date: Fri, 29 May 2026 13:55:33 +0100
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gRzB30WnVz2xVK
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 May 2026 08:51:38 +1000 (AEST)
+Received: by mail-pf1-x44a.google.com with SMTP id d2e1a72fcca58-83536dc3be5so16373647b3a.1
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 May 2026 15:51:38 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20251104; t=1780095096; x=1780699896; darn=lists.ozlabs.org;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:from:to:cc:subject:date:message-id:reply-to;
+        bh=iDamTyASUWUv87s6Ugw+3o5D1xad/djiw+VyKIvP/1s=;
+        b=Q8W89Zc9BzBTxpVnLI6sT097rssfPiOJD1rIZd55fD8iK8f5cXWOH9Ats7yxoX2uXK
+         YWqPO0Cx9L6aoG2EJIwo51geXJvi8y9xhCx6hReewAo+wJEHsqFINWNqNA0C8c1MXm73
+         L5ZJw5tB2qWHNSZ3emquoIB5+6aC4atNGahU0A+8Ef54VZneUzWaba2oG93XHjdtyX07
+         v1XZRgxvA983Vzzo8xMz9mW0MfNWuSnqmB3ffV3V32G1tEWv+6XUACUt7JHtGk9EeLWY
+         id3UYwWN91FTpc5EMZnk8GT7I+BnaPhbKyNRsbFGsEPemgOb4wRq9kLlKMbKZgm91zbI
+         jwBw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1780095096; x=1780699896;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=iDamTyASUWUv87s6Ugw+3o5D1xad/djiw+VyKIvP/1s=;
+        b=GROQf0rTPVgvXe5GY52QyyX9eXDzZm4ZKaa0PhNbyq3o7cXupHTmn5Rh6W43kQ/XkN
+         N8m3q8vI1q27szQqdi1YrV7X7dQuMhPdlg/YKfLvwQ8m29p+EzVYNQhJ0E7L+2CRQC6G
+         2LEw2X8KQPmMPw10IH4iK6bHYvpvbV4ph6T0YVbs1lnAt5z25kMtQ0CDxIjOFyop8bLA
+         FUG1H8VFSX+mTQle0X0E2aaDBu3Ajr8nQnMalTANvK+Bc5SblVWfXjccX0GynT8rqM7X
+         Ha2o/Ilx4wbMBze460aEAlM7Ti2Pmz546SRy8QZ2mc6xcfdkx7+T0r6Hi1Hu3KdWmf7S
+         Vp9A==
+X-Forwarded-Encrypted: i=1; AFNElJ8gPuL4kx1QWrHsSC+Txb0K80EI32QXenyKRvoxcaRn7rXAHAS+sT4AkGN06tuDBi4Mp3KO90b3aYcDZFU=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yw50HC8ojinFW+gc8S/G+v4dxseXaVw6nbiucOLYEB4ul1kgixQ
+	yNwpDn13OA7vuffn/bMQg2uIpgLrbsJ1OrIrupTDR5xKgOjrPxlEL3oQiMs8zFYMw9cAj2V/STZ
+	HynvUKw==
+X-Received: from pfhz14.prod.google.com ([2002:a05:6a00:240e:b0:82f:7242:4cb9])
+ (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a05:6a00:3e19:b0:82c:2555:b9b2
+ with SMTP id d2e1a72fcca58-8422532a6ddmr1429112b3a.10.1780095095672; Fri, 29
+ May 2026 15:51:35 -0700 (PDT)
+Date: Fri, 29 May 2026 15:51:34 -0700
+In-Reply-To: <20260525070154.495455-1-yanfei.xu@bytedance.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -106,33 +75,31 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-X-Mailer: b4 0.14.3
+Mime-Version: 1.0
+References: <20260525070154.495455-1-yanfei.xu@bytedance.com>
+Message-ID: <ahoYdrs9dVzp6Ps6@google.com>
+Subject: Re: [PATCH] KVM: Validate irqchip index for LoongArch and PowerPC
+From: Sean Christopherson <seanjc@google.com>
+To: Yanfei Xu <yanfei.xu@bytedance.com>
+Cc: zhaotianrui@loongson.cn, maobibo@loongson.cn, chenhuacai@kernel.org, 
+	maddy@linux.ibm.com, npiggin@gmail.com, sashiko-reviews@lists.linux.dev, 
+	pbonzini@redhat.com, kvm@vger.kernel.org, loongarch@lists.linux.dev, 
+	linuxppc-dev@lists.ozlabs.org, caixiangfeng@bytedance.com, 
+	fangying.tommy@bytedance.com, isyanfei.xu@gmail.com, 
+	Sashiko <sashiko-bot@kernel.org>
+Content-Type: text/plain; charset="us-ascii"
 
+On Mon, May 25, 2026, Yanfei Xu wrote:
+> Sashiko reported that irqchip index is not validated for LoongArch and
+> PowerPC. Add validation and reject out-of-range irqchip indexes to avoid
+> indexing past the routing table's chip array.
 
-On Thu, 21 May 2026 10:36:23 +0200, Bartosz Golaszewski wrote:
-> I'd like to first apologize for the long, treewide series and an
-> extensive Cc list but I think it's important to show the big picture and
-> the end result of this rework.
-> 
-> Platform device core provides helper interfaces for dealing with
-> dynamically created platform devices. Most users should use
-> platform_device_register_full() which encapsulates most of the
-> operations but some modules will want to use the split approach of
-> calling platform_device_alloc() + platform_device_add() separately for
-> various reasons.
-> 
-> [...]
+Can you split this into two patches, and send a v2?  I suspect the reason no one
+has picked this up is because it straddles two completely different (sub)subsystems.
 
-Applied, thanks!
+That would also make it easier to get the fixes backported to stable trees.  PPC
+has been around a lot longer than LoongArch, so I assume the PPC fix will need to
+go further back in time.
 
-[03/23] slimbus: qcom-ngd-ctrl: fix OF node refcount
-        commit: 0208edaf0b32cae5b922729c4ef52dcd865e2e19
-
-Best regards,
--- 
-Srinivas Kandagatla <srini@kernel.org>
-
+Thanks!
 
