@@ -1,81 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-21687-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21688-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D8D6CCD6E45
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 May 2026 07:57:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6AAB1CD6E45
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 May 2026 07:58:37 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gRbLc3hnNz2xnZ;
-	Fri, 29 May 2026 17:57:44 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780041464;
-	cv=none; b=EPvI0n0tiTV3OnDXa1cIXFG2UBMtj6mvuTuq3wS54Z7RbBz9YkNk3HKMPYELkEOY2pdld6Afg5ThzLvN1SmnpdgmhFxwpUaOOtNlXJ/u8O2m6rGbyDFYWUK8cYikjOqGM8UPENaqUp19tpUBCpEB+kJ4ID7hWecFyCdE89c/Ma2L0eXJnhURXalNu/BgQMwm+z1+z/KiIK2bMe7yhjyK9O5BjXzoC6sS/TQsDJFnmnI3FlTnpgfgQ+vZ1q+CcIkYr4pl6ZyxaYesEAS81VbIdrWOJuzgGaYC8h7LfMJm4x6+FWDs9Qj8hfREdLjMQEj22Lt/SmWdaCbEJRQ5AWFy8w==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gRbMc17gSz2xnZ;
+	Fri, 29 May 2026 17:58:36 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780041516;
+	cv=none; b=MIDNkSsL9aWiAJ9Cb1WlPaaOjBsfQJ/SxnVR59TPwpzcRM5ZCEZVPum8kkB5PG6HtksgRu0QPF8J3NeUyGqja2s/gZngByRkzLoiR7DLbSLShIzcfPWI5zw+J8JgOGoOpXJmjnyPFagB9ZzfVIX5ZWZJSey3ehJ24Mv2eybAHIOEzv1JMCgq8LKfYHcgO+Jpb62AHy6vB5kuM15vnOJ6mAUpktjjzi0sBBOhXJW6k9Tlhbdh3xDkDDn3E1NliWR16CwtGQFXd7cNNFjzFuAIs8/ZXcAEm9XV7XSWpqFWsGBbWOhvQoqLJfabA7YWiZVb/LGXzMC2o+HOU1++FHp6iA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1780041464; c=relaxed/relaxed;
-	bh=QaUBM/YJNHXzrLlWg/ae6LCzGZf2VSHi8tS7MKIlZo8=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=BJb6REe9vvLP9//PuEtfymNWg7CllxapHH7YPS+h1rhmJYXED2LuY4IUCJ4b8m809Uwl1+U4+LkdZRX/wULlh/AbRTFz+jNBzrRy2pq1yUiu2GdytcLKCeE5Dx26v6PyVTLWPgc9HpDUOq0TXNMFmy0kBcRbnVnZWg6UxKRwr9qPsrU9hSGVxBEO7+xXRITNlpCi1WTlgh/wIusymNFtIZcMApOP3oGGRekX9ujvV6wi6+Ox0l7Ijvo+ZCeG4e/YWfWc0PnN7XoThnc9e8w1xcto6AaVnIFGANKMi+T+W3prA4piErbhz1KaL67M19hUwFAYJT8AKTiAsm4yuwG5Mw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=qz2qaSeC; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1780041516; c=relaxed/relaxed;
+	bh=nn+9YXyfJKX23Oc4un6567veI3wLVMvLdLpASTOROk0=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=QBmg36xC3SSp6a8ctiuKh1pf5mmuDU7sMgL9sMoBqvCjr636Qgv+3dAFZxfZUNLOX85dNFGyrwYgwlNsMOnocfXYsHsdlzyZu+xCsIDAa10bAgEn430NsyCvvzkNDWTEpAd1482IQeYOWbMXwI14sxSuGtgF8ArNtPG7H9lJ+AA3VCtJ5iq5PtLd7UU80N3kk9AuDL3vw7Q5DcTY/wq+QzOevyG8CHApacf5hzZ/8qlBi6yFiz0a18+T4tNpCEF+uH7hJiQiLbbUt6q11/CgyrsnSBD52LakYEpdzyLNccVqFXqSTZYQbPjQ/TQaxwLeYMcq1H1dlmtxxnP9xd853w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=h/cNSQuw; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=qz2qaSeC;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=h/cNSQuw;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gRbLb2nqNz2xLs
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 May 2026 17:57:43 +1000 (AEST)
-Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 64SLll9N2133353;
-	Fri, 29 May 2026 07:57:27 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:message-id:mime-version
-	:subject:to; s=pp1; bh=QaUBM/YJNHXzrLlWg/ae6LCzGZf2VSHi8tS7MKIlZ
-	o8=; b=qz2qaSeC5LvfSGCWOAhcYJKgXAFPR22K0q7wpMV2ZHUCmTCJqceLJ8f90
-	lGPVkopVhAlf/yya0Dui02qENISpQTEtWgpx6LQza79Nr0j28uMmlS6b4yKSgQZC
-	sbLLZxEReLaIz8rvd88L9IA6vtOlyYFJ+BPfXAlt6kZdV+TCNEvgw2jvtoAR5oJ2
-	isJb7GFL8wLyyaZOMxRd3PVFT+Itn35poMkGDMWuiZMcA2+XkHFL0SDOXz6EnzfB
-	pYw6X7TGHTun3JB8I9BwgTQV9q605+Gp3XBpJftH7/t2IMS0STdsgrAYL68tNXtm
-	VxeWPApAdbJ4Kh5tSVF/04YISMhvA==
-Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4ee887q2d8-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 29 May 2026 07:57:27 +0000 (GMT)
-Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma22.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 64T7s9ht015980;
-	Fri, 29 May 2026 07:57:26 GMT
-Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
-	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4edjrbvctj-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 29 May 2026 07:57:26 +0000 (GMT)
-Received: from smtpav04.fra02v.mail.ibm.com (smtpav04.fra02v.mail.ibm.com [10.20.54.103])
-	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 64T7vMQe46596514
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 29 May 2026 07:57:22 GMT
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 9FDF920043;
-	Fri, 29 May 2026 07:57:22 +0000 (GMT)
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 2435E20040;
-	Fri, 29 May 2026 07:57:18 +0000 (GMT)
-Received: from li-7bb28a4c-2dab-11b2-a85c-887b5c60d769.ibm.com.com (unknown [9.124.221.69])
-	by smtpav04.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Fri, 29 May 2026 07:57:17 +0000 (GMT)
-From: Shrikanth Hegde <sshegde@linux.ibm.com>
-To: maddy@linux.ibm.com, linuxppc-dev@lists.ozlabs.org, peterz@infradead.org,
-        mingo@kernel.org
-Cc: sshegde@linux.ibm.com, christophe.leroy@csgroup.eu,
-        linux-kernel@vger.kernel.org, venkat88@linux.ibm.com,
-        yu.c.chen@intel.com, tim.c.chen@linux.intel.com,
-        kprateek.nayak@amd.com, srikar@linux.ibm.com, riteshh@linux.ibm.com,
-        stable@vger.kernel.org, "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
-Subject: [PATCH] sched/topology: Provide arch_llc_mask for cache aware scheduling
-Date: Fri, 29 May 2026 13:27:12 +0530
-Message-ID: <20260529075712.1181039-1-sshegde@linux.ibm.com>
-X-Mailer: git-send-email 2.51.0
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gRbMZ55BVz2xLs
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 May 2026 17:58:34 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id 977CF60565;
+	Fri, 29 May 2026 07:58:32 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 068161F00893;
+	Fri, 29 May 2026 07:58:28 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1780041512;
+	bh=nn+9YXyfJKX23Oc4un6567veI3wLVMvLdLpASTOROk0=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To;
+	b=h/cNSQuwvmuR1CB2YQQHsieD9YyomGRGpfEstXnyozaZ2stDalEElgGKRdSer5LYn
+	 PiAUWBXpS5qSbPillQGkEsgo+hdd9k0trM3L+VO8Lg+LAzMC0nZuJJk3T66RXkSXgA
+	 B0ykO0WwES4jDlQ6Uf92Wfb+utBYId5pQjsFpyG2LPS8sNjXu3XSN0E8sPwf/0myCv
+	 DTs+hyX48/SM8Z28f+naan0d/c+Dep3BdS5NSuvVY1F3gx39MhCcXzQN+q5RL785cG
+	 1HozMnkTmzHfgP3rboNeuVbS3OIR9JDAlIL+W1T9MjvtdUYbKoCvY9fkLFj7cBaTON
+	 vyuMjnq3uZvOA==
+Message-ID: <6387fb12-76f1-4503-8ac2-3ca777c0186e@kernel.org>
+Date: Fri, 29 May 2026 09:58:25 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -89,117 +59,331 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] powerpc/topology: Support coregroup in PowerNV
+To: Srikar Dronamraju <srikar@linux.ibm.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
+ Naveen N Rao <naveen@kernel.org>
+Cc: skiboot@lists.ozlags.org, arbab@linux.ibm.com, mahesh@linux.ibm.com,
+ linux-kernel@vger.kernel.org
+References: <20260524010017.140408-1-srikar@linux.ibm.com>
+Content-Language: fr-FR
+From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+In-Reply-To: <20260524010017.140408-1-srikar@linux.ibm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Authority-Analysis: v=2.4 cv=QLJYgALL c=1 sm=1 tr=0 ts=6a1946e7 cx=c_pps
- a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
- a=NGcC8JguVDcA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=RzCfie-kr_QcCd8fBx8p:22 a=VwQbUJbxAAAA:8 a=VnNF1IyMAAAA:8 a=QyXUC8HyAAAA:8
- a=pGLkceISAAAA:8 a=-47l-NziEOCSl2LEx70A:9
-X-Proofpoint-GUID: N9MsWTTA2OgFAQqDSN6GN4uceCGzPAFW
-X-Proofpoint-ORIG-GUID: jd94O_QPmPdm8m04htMDSwhRKUKv57KN
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTI5MDA3MyBTYWx0ZWRfX7HaOgpR6LV/x
- o5XA8jIi7/LfDrSOpVhXiCAJ86QD5bof1TYXJwr13tgn0DxunZC1YAwL8eaBXipcPd88Ujy3VAo
- 9p854gXdmKuQYqABi76ayel/cUh7Ges5N425GFmamjae80z4TyvILcIufMIlP/TmvX1sl2+1NHV
- xFXLTqzoRoHBB+TE28XfVd21sMFWg6ZXWfjE6JnkqfzFf0zqHXzjB+M6ISccb18iEpXmj8Sjhpc
- LeieH3kHbkq6ZfgWQkUlUXcMKvne6gi/ooNHXg0kaMPvu2Ylq/6TRQKXTsBG5uwiSRIIu0NMjzl
- eO9SVcBd8kkmJWFmIlRppRZpezcoSADoU0YLgTqqiM16zr6CvaluLhkfFDzucCWmaLv3dFod8OO
- pQPHApAQR0sG7e9x+rh1bD3GlDuxJceWF1rjil8Nh8Nqq1kgcz48eoQ6//z4Pi7sNB7JdqAnN0C
- uxPE2BBxElVshbNK0Tw==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
- definitions=2026-05-29_02,2026-05-28_03,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- spamscore=0 suspectscore=0 impostorscore=0 malwarescore=0 adultscore=0
- lowpriorityscore=0 phishscore=0 clxscore=1011 priorityscore=1501 bulkscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2605210000 definitions=main-2605290073
 
-Venkat Reported a boot kernel panic next-20260522. Git bisect pointed to
-b5ea300a17e3 ("sched/cache: Make LLC id continuous")
 
-Stacktrace points to llc_mask being null.
 
-NIP [c000000000e58504] _find_first_bit+0x44/0x130
-LR [c000000000e58500] _find_first_bit+0x40/0x130
-Call Trace:
-build_sched_domains+0xad8/0xe50
-sched_init_smp+0xa8/0x164
-kernel_init_freeable+0x250/0x370
-ret_from_kernel_user_thread+0x14/0x1c
+Le 24/05/2026 à 03:00, Srikar Dronamraju a écrit :
+> Coregroup support was only available on PowerPC on PowerVM LPARs.
+> However if firmware were to expose coregroup-id to the kernel, then
+> coregroup can even be supported on PowerNV too.
+> 
+> PowerPC Linux kernel will detect support for coregroup by looking at the
+> primary_domain_index. Till now on PowerNV systems, primary_domain_index
+> has been the penultimate domain in cpunode ibm,associativity device-tree
+> property. This would be taken as hint that coregroup support is not
+> available in the firmware.
+> 
+> If on PowerNV systems, primary_domain_index is not the penultimate
+> domain in cpunode ibm,associativity device-tree property, then it would
+> be taken as a hint that coregroup support is available in the firmware.
+> 
+> This logic makes it compatible with PowerVM Systems, where
+> primary_domain_index is not the penultimate domain in cpunode
+> ibm,associativity device-tree property.
+> 
+> $ lscpu
+> Architecture:        ppc64le
+> Byte Order:          Little Endian
+> CPU(s):              480
+> On-line CPU(s) list: 0-479
+> Thread(s) per core:  8
+> Core(s) per socket:  15
+> Socket(s):           4
+> NUMA node(s):        4
+> Model:               2.0 (pvr 0080 0200)
+> Model name:          POWER10, altivec supported
+> CPU max MHz:         3249.0000
+> CPU min MHz:         3249.0000
+> L1d cache:           32K
+> L1i cache:           48K
+> L2 cache:            1024K
+> L3 cache:            4096K
+> NUMA node0 CPU(s):   0-119
+> NUMA node1 CPU(s):   120-239
+> NUMA node2 CPU(s):   240-359
+> NUMA node3 CPU(s):   360-479
+> 
+> with-out patched firmware and/or Linux-kernel
+> ---------------------------------------------
+> $ grep -h -r . /sys/devices/system/cpu/*/topology/die_id |sort | uniq -c | sort -n -r
+>      120 27
+>      120 18
+>      120 9
+>      120 0
+> 
+> $ grep -h -r . /sys/devices/system/cpu/*/topology/die_cpus_list |sort | uniq -c | sort -n -r
+>      120 360-479
+>      120 240-359
+>      120 120-239
+>      120 0-119
+> 
+> with patched firmware and Linux-kernel
+> --------------------------------------
+> grep -h -r . /sys/devices/system/cpu/*/topology/die_id |sort | uniq -c | sort -n -r
+>       64 6
+>       64 4
+>       64 2
+>       64 0
+>       56 7
+>       56 5
+>       56 3
+>       56 1
+> grep -h -r . /sys/devices/system/cpu/*/topology/die_cpus_list |sort | uniq -c | sort -n -r
+>       64 360-375,392-407,424-439,456-471
+>       64 240-255,272-287,296-311,328-343
+>       64 120-135,152-167,184-199,208-223
+>       64 0-15,32-47,64-79,88-103
+>       56 376-391,408-423,440-455,472-479
+>       56 256-271,288-295,312-327,344-359
+>       56 16-31,48-63,80-87,104-119
+>       56 136-151,168-183,200-207,224-239
+> 
+> Observation:
+> Without the patched kernel and/or skiboot, die-id and numa were same.
+> With patched kernel and/or skiboot, we see 2 die-id per node.
+> Signed-off-by: Srikar Dronamraju <srikar@linux.ibm.com>
+> ---
+>   arch/powerpc/include/asm/topology.h | 15 +++--
+>   arch/powerpc/mm/numa.c              | 87 ++++++++++++++++++++++-------
+>   2 files changed, 73 insertions(+), 29 deletions(-)
+> 
+> diff --git a/arch/powerpc/include/asm/topology.h b/arch/powerpc/include/asm/topology.h
+> index 66ed5fe1b718..568e6bc55726 100644
+> --- a/arch/powerpc/include/asm/topology.h
+> +++ b/arch/powerpc/include/asm/topology.h
+> @@ -71,6 +71,7 @@ extern void map_cpu_to_node(int cpu, int node);
+>   extern void unmap_cpu_from_node(unsigned long cpu);
+>   #endif /* CONFIG_HOTPLUG_CPU */
+>   
+> +extern int cpu_to_coregroup_id(int cpu);
 
-On powerpc, cpu_coregroup_mask is available only when the underlying
-hardware support coregroup. In shared LPAR, QEMU guest or power9 etc
-coregroup isn't supported. In such cases llc_mask was being referenced
-when it was null leading to panic.
+No new 'extern' for function prototypes (allthough it is only a move), 
+that's pointless. checkpatch.pl --strict will likely complain about it.
 
-On powerpc, LLC is at SMT core level. So assumption that coregroup(MC)
-domain point to LLC is wrong. Provide a way for archs to say where its
-LLC is if it not at MC domain. 
+>   #else
+>   
+>   static inline int early_cpu_to_node(int cpu) { return 0; }
+> @@ -107,14 +108,6 @@ static inline void map_cpu_to_node(int cpu, int node) {}
+>   static inline void unmap_cpu_from_node(unsigned long cpu) {}
+>   #endif /* CONFIG_HOTPLUG_CPU */
+>   #endif /* CONFIG_SMP */
+> -
+> -#endif /* CONFIG_NUMA */
+> -
+> -#if defined(CONFIG_NUMA) && defined(CONFIG_PPC_SPLPAR)
+> -void find_and_update_cpu_nid(int cpu);
+> -extern int cpu_to_coregroup_id(int cpu);
+> -#else
+> -static inline void find_and_update_cpu_nid(int cpu) {}
+>   static inline int cpu_to_coregroup_id(int cpu)
+>   {
+>   #ifdef CONFIG_SMP
+> @@ -124,6 +117,12 @@ static inline int cpu_to_coregroup_id(int cpu)
+>   #endif
+>   }
+>   
+> +#endif /* CONFIG_NUMA */
+> +
+> +#if defined(CONFIG_NUMA) && defined(CONFIG_PPC_SPLPAR)
+> +void find_and_update_cpu_nid(int cpu);
+> +#else
+> +static inline void find_and_update_cpu_nid(int cpu) {}
+>   #endif /* CONFIG_NUMA && CONFIG_PPC_SPLPAR */
+>   
+>   #include <asm-generic/topology.h>
+> diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
+> index f4cf3ae036de..9b45cc9e1f27 100644
+> --- a/arch/powerpc/mm/numa.c
+> +++ b/arch/powerpc/mm/numa.c
+> @@ -432,7 +432,7 @@ static void __init initialize_form2_numa_distance_lookup_table(void)
+>   
+>   static int __init find_primary_domain_index(void)
+>   {
+> -	int index;
+> +	int index = -1;
+>   	struct device_node *root;
+>   
+>   	/*
+> @@ -502,12 +502,9 @@ static int __init find_primary_domain_index(void)
+>   		distance_ref_points_depth = MAX_DISTANCE_REF_POINTS;
+>   	}
+>   
+> -	of_node_put(root);
+> -	return index;
+> -
+>   err:
+>   	of_node_put(root);
+> -	return -1;
+> +	return index;
+>   }
+>   
+>   static void __init get_n_mem_cells(int *n_addr_cells, int *n_size_cells)
+> @@ -892,12 +889,32 @@ static int __init numa_setup_drmem_lmb(struct drmem_lmb *lmb,
+>   	return 0;
+>   }
+>   
+> +/*
+> + * If hierarchy extends beyond primary_domain_index + 1, then next
+> + * level corresponds to coregroup.
+> + */
+> +static int detect_and_enable_coregroup(const __be32 *associativity, int index)
+> +{
+> +	if (!associativity)
+> +		return -1;
 
-Based on tip/master at 5c89783224e9 ("Merge branch into tip/master: 'x86/tdx'")
-Cc: stable@vger.kernel.org
+Even if 'index' is not 0 ?
 
-Fixes: b5ea300a17e3 ("sched/cache: Make LLC id continuous")
-Reported-by: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
-Closes: https://lore.kernel.org/all/51154de7-3700-4cb4-82f2-1b3a8fa427f7@linux.ibm.com/
-Reviewed-by: Chen Yu <yu.c.chen@intel.com>
-Tested-by: Venkat Rao Bagalkote <venkat88@linux.ibm.com> 
-Tested-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-Co-developed-by: Chen, Yu C <yu.c.chen@intel.com>
-Signed-off-by: Shrikanth Hegde <sshegde@linux.ibm.com>
----
- arch/powerpc/include/asm/topology.h |  6 ++++++
- kernel/sched/topology.c             | 13 +++++++++++--
- 2 files changed, 17 insertions(+), 2 deletions(-)
+> +
+> +	if (!index) {
+> +		index = of_read_number(associativity, 1);
+> +
+> +		if (index > primary_domain_index + 1)
+> +			coregroup_enabled = 1;
+> +		else
+> +			index = -1;
+> +	}
+> +	return index;
+> +}
 
-diff --git a/arch/powerpc/include/asm/topology.h b/arch/powerpc/include/asm/topology.h
-index 66ed5fe1b718..e3de0f3d8b86 100644
---- a/arch/powerpc/include/asm/topology.h
-+++ b/arch/powerpc/include/asm/topology.h
-@@ -135,6 +135,12 @@ struct cpumask *cpu_coregroup_mask(int cpu);
- const struct cpumask *cpu_die_mask(int cpu);
- int cpu_die_id(int cpu);
- 
-+/* Points to where the LLC is. On power9 this will point at CACHE
-+ * domain, On others it will point to SMT domain. In all cases
-+ * cpu_l2_cache_mask points to where LLC is
-+ */
-+#define arch_llc_mask(cpu)     cpu_l2_cache_mask(cpu)
-+
- #ifdef CONFIG_PPC64
- #include <asm/smp.h>
- 
-diff --git a/kernel/sched/topology.c b/kernel/sched/topology.c
-index df2ceb54c970..622e2e01974c 100644
---- a/kernel/sched/topology.c
-+++ b/kernel/sched/topology.c
-@@ -2063,12 +2063,21 @@ const struct cpumask *tl_mc_mask(struct sched_domain_topology_level *tl, int cpu
- 	return cpu_coregroup_mask(cpu);
- }
- 
--#define llc_mask(cpu) cpu_coregroup_mask(cpu)
-+/*
-+ * Majority of architectures have LLC at MC domain level with exception
-+ * such as powerpc. Provide a way for arch to specify where its LLC is
-+ * if it falls in exception category
-+ */
-+# ifndef arch_llc_mask
-+#define arch_llc_mask(cpu) cpu_coregroup_mask(cpu)
-+# endif
- 
- #else
--#define llc_mask(cpu) cpumask_of(cpu)
-+#define arch_llc_mask(cpu) cpumask_of(cpu)
- #endif
- 
-+#define llc_mask(cpu) arch_llc_mask(cpu)
-+
- const struct cpumask *tl_pkg_mask(struct sched_domain_topology_level *tl, int cpu)
- {
- 	return cpu_node_mask(cpu);
--- 
-2.47.3
+I'd prefer something more flat:
+
+	if (index)
+		return index;
+
+	index =  of_read_number(associativity, 1);
+
+	if (index <= primary_domain_index + 1)
+		return -1;
+
+	coregroup_enabled = 1;
+	return index;
+
+> +
+>   static int __init parse_numa_properties(void)
+>   {
+>   	struct device_node *memory, *pci;
+> -	int default_nid = 0;
+> -	unsigned long i;
+> +	int default_nid = 0, index = 0;
+>   	const __be32 *associativity;
+> +	unsigned long i;
+>   
+>   	if (numa_enabled == 0) {
+>   		pr_warn("disabled by user\n");
+> @@ -930,7 +947,6 @@ static int __init parse_numa_properties(void)
+>   	 */
+>   	for_each_present_cpu(i) {
+>   		__be32 vphn_assoc[VPHN_ASSOC_BUFSIZE];
+> -		struct device_node *cpu;
+>   		int nid = NUMA_NO_NODE;
+>   
+>   		memset(vphn_assoc, 0, VPHN_ASSOC_BUFSIZE * sizeof(__be32));
+> @@ -938,7 +954,10 @@ static int __init parse_numa_properties(void)
+>   		if (__vphn_get_associativity(i, vphn_assoc) == 0) {
+>   			nid = associativity_to_nid(vphn_assoc);
+>   			initialize_form1_numa_distance(vphn_assoc);
+> +			if (!index)
+> +				index = detect_and_enable_coregroup(vphn_assoc, index);
+>   		} else {
+> +			struct device_node *cpu;
+>   
+>   			/*
+>   			 * Don't fall back to default_nid yet -- we will plug
+> @@ -951,6 +970,8 @@ static int __init parse_numa_properties(void)
+>   			associativity = of_get_associativity(cpu);
+>   			if (associativity) {
+>   				nid = associativity_to_nid(associativity);
+> +				if (!index)
+> +					index = detect_and_enable_coregroup(associativity, index);
+>   				initialize_form1_numa_distance(associativity);
+>   			}
+>   			of_node_put(cpu);
+> @@ -1431,9 +1452,26 @@ void find_and_update_cpu_nid(int cpu)
+>   	pr_debug("%s:%d cpu %d nid %d\n", __func__, __LINE__, cpu, new_nid);
+>   }
+>   
+> +static int topology_update_init(void)
+> +{
+> +	topology_inited = 1;
+> +	return 0;
+> +}
+> +device_initcall(topology_update_init);
+> +
+> +#else
+> +static long vphn_get_associativity(unsigned long cpu,
+> +					__be32 *associativity)
+> +{
+> +	return -1;
+> +}
+> +#endif /* CONFIG_PPC_SPLPAR */
+> +
+>   int cpu_to_coregroup_id(int cpu)
+>   {
+> -	__be32 associativity[VPHN_ASSOC_BUFSIZE] = {0};
+> +	int coregroup_id = cpu_to_core_id(cpu);
+> +	struct device_node *cpunode = NULL;
+> +	const __be32 *associativity;
+>   	int index;
+>   
+>   	if (cpu < 0 || cpu > nr_cpu_ids)
+> @@ -1442,24 +1480,31 @@ int cpu_to_coregroup_id(int cpu)
+>   	if (!coregroup_enabled)
+>   		goto out;
+>   
+> -	if (!firmware_has_feature(FW_FEATURE_VPHN))
+> -		goto out;
+> +	if (firmware_has_feature(FW_FEATURE_VPHN)) {
+> +		__be32 tmp[VPHN_ASSOC_BUFSIZE] = {0};
+>   
+> -	if (vphn_get_associativity(cpu, associativity))
+> +		if (vphn_get_associativity(cpu, tmp))
+> +			goto out;
+> +
+> +		associativity = tmp;
+> +
+> +	} else {
+> +		cpunode = of_get_cpu_node(cpu, NULL);
+> +		if (!cpunode)
+> +			goto out;
+> +
+> +		associativity = of_get_associativity(cpunode);
+> +	}
+> +	if (!associativity)
+>   		goto out;
+>   
+>   	index = of_read_number(associativity, 1);
+>   	if (index > primary_domain_index + 1)
+> -		return of_read_number(&associativity[index - 1], 1);
+> +		coregroup_id = of_read_number(&associativity[index - 1], 1);
+>   
+>   out:
+> -	return cpu_to_core_id(cpu);
+> -}
+> +	if (cpunode)
+> +		of_node_put(cpunode);
+>   
+> -static int topology_update_init(void)
+> -{
+> -	topology_inited = 1;
+> -	return 0;
+> +	return coregroup_id;
+>   }
+> -device_initcall(topology_update_init);
+> -#endif /* CONFIG_PPC_SPLPAR */
 
 
