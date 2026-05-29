@@ -1,93 +1,89 @@
-Return-Path: <linuxppc-dev+bounces-21745-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21746-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E3533CD6E49
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 May 2026 16:11:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2D413CD6E49
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 May 2026 16:19:09 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gRpJJ6ZD2z2yQL;
-	Sat, 30 May 2026 02:11:28 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::529" arc.chain=google.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780071088;
-	cv=pass; b=UvPYtxUjfFbAlXFeJg+XCRvb+OlQ9LeDov2LRqoVQMuxR5pig/6D7nXrmg8YsnpqUrm4zMGE+zzsXSyIKf8W7Jjch98hfgue/SuFXF4JTrQwT4cwXCpAb0n+JMI8wCFuimyLmzpT4vdN+obGurmPbrU0ZRv6PJlUz8L2fpNE194yYYxNuuwhiEJYPl1LDhpTUF9fyCenfld9sct4LbiatSHm/cc5hM6sCL62rhqFGKG+ukc+7sOgmjoZP6vUrgUElODBOsv5kbLc8atSmnRykeUy+Tmttf4b7HQ7LLHc8LRoHqzeq5BMlcX3kS6FJrcE32NGnAJlMrCYnioGDF/ebQ==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1780071088; c=relaxed/relaxed;
-	bh=LOEaPD7Rz0zsPbSOZbfxpmu2DbPZ8teKVvGhPB/4or8=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=Ro7ooHXrYH9A1w/AN4lmr1jmRELncBerEra4rl6ogOTlvi2eNXTioaOA3hDJZrsmGO1q1v8jzPcwO6Kbp0bx7LlAJnaY7siRi4lIAx6G2vHx9WE4T47qDK5XXh/wEhslQOFUJe6p8ENyWgTZOmrlPRiV4IiTzE3wKI7d0yPKcZPh6sMG4zssRNK+EkNeqUnjwFhUBlOuPNQCIr1uDam7Tid9BNaMi3PS2nDlvO9+MmtgiIKpxxKtHvSACLoHWs4X/YMqQAdtyjvzunxaC89NQWiCybpwVll3MBxSx0x3Rl9lO9rAybF8HzsplCqfHgxTmfdmLrF1zW2lYFEDXbHEBw==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=SxUXYtla; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::529; helo=mail-pg1-x529.google.com; envelope-from=stephen.smalley.work@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gRpT73lbyz2yQL;
+	Sat, 30 May 2026 02:19:07 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::334"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780071547;
+	cv=none; b=a2UXtrS8Sl0RCar2ljqJLHCGGCWPoapzRflhnDNK1j9MBVFuFm4YRDbjV1MJn34ZA1JH2FBNd9COFHW4uBsXrV/o/8EXCnEjs14ugbhw2Mc5mqo1vqKyeQmJSRLm5YlmWi0aWZpq1g/3lHLoQUOTBGq4dEqNb1oIlvYfWp1bWWABubFRnHMlhOBypaal1WmWHezhxg6Q003eh4AzIFCqJQQnwXiJh8BDHh01HriiiJXzg9sYao7rO8EL19I36XUmHxoC7ssUup1gQilQ1G8uaWp3u+jYsq68kZtmaOIAoz82KGSZIs+6nsI31lntYVjQftid0hq3eMjBDD2zFLhz9Q==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1780071547; c=relaxed/relaxed;
+	bh=R8ivf4oZU2OMq2EC4pcFXCevvcnJjeHsSceuHKJCb7Y=;
+	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=JYffypQ6/4s8j/octJ/0DaQ3ZJMRMZTqPafEmOKEfJPJgkP7TMYWpS65YNn/8XvKHwqLrWHmKdteZ7Y4UKLOMThS093e4iYIXHSMuQA140scumKqVIFJ1xJWMylYLwNGuH/pQXOk28lpdkmQrQHp119TfoAuX9oQ0QR1UOGmckxf5Gp6nvj71TQc0zxfHAc2I/eFDBpp16X3UwLNIdBVtyzvhWl3sPySvYIb1vHp6BhgvJo35Er/fvRUqMLskl3vQWJALsik8zuG4GCa3AEX2WHAdERvO60whYhuMyPnIjj2VhovVKSSNOhCATVhwf5t2Otyv2Wf+dwAziQqbBy0IQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=m9TJ2j5i; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::334; helo=mail-wm1-x334.google.com; envelope-from=david.laight.linux@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=SxUXYtla;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=m9TJ2j5i;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::529; helo=mail-pg1-x529.google.com; envelope-from=stephen.smalley.work@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pg1-x529.google.com (mail-pg1-x529.google.com [IPv6:2607:f8b0:4864:20::529])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::334; helo=mail-wm1-x334.google.com; envelope-from=david.laight.linux@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-wm1-x334.google.com (mail-wm1-x334.google.com [IPv6:2a00:1450:4864:20::334])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gRpJH2mrzz2yQH
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 May 2026 02:11:26 +1000 (AEST)
-Received: by mail-pg1-x529.google.com with SMTP id 41be03b00d2f7-c85714efa22so803195a12.3
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 May 2026 09:11:26 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1780071084; cv=none;
-        d=google.com; s=arc-20240605;
-        b=KG8pXMNHh7UlZKoS/PIqt76jtPkcQYIZDh348u6BZmDn/DsBsRIbhqhTiSxcSZV4Y7
-         9ObAd2sLtlSuJ/GaRkAU0Yfavd7vBgH2hNC3/E3LhcLbZyA5Pf1kZYLV0790jGrLxtGp
-         7XWo9DWo0moaRpFu/2dju8ZVUYZX6vUpQ6rC7x4iIUHmYiUcJ9AO/KO26GeI4D6QmT8H
-         16y/WmKaeaScAd61T3ZPwQr3vuT+88rIRTYfxtPS+yp+IlMvN0s9usT2SXc4vm9Ew8XL
-         3OsMD20wxqesfWIwCUESP6jZFrjXDUr3E4absM57LPtBcwfpxWB+wr6cMa8jZtmo6Fxm
-         XICw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=LOEaPD7Rz0zsPbSOZbfxpmu2DbPZ8teKVvGhPB/4or8=;
-        fh=1WcuVaVp0srxfZx71EWB4CMm7dXlECJLNhHgIvBbRHY=;
-        b=ACIebzu59QMYHxnc+EMUs2O2IgSQcmXgw8WnjixGge27VYfcU7deusU08W44UH16od
-         jjVGV6kr6okJ4JmHD55MXQ39O2gxNIAd9StFAYCTcMpIf/BS/8FRW5CIsqgmgxTeGUaJ
-         tnu6eHXMx6Rx7wdcSdLWMn8zp1JDLZ4EsJLWxspcVSM//NN0FF3ZpeJp1RtBemw599i4
-         kifR4GYTArCfYheB1h/w6oGFYuJL56DjNj7dvusdp3JGgIFZblPt2ToZc84vrpjOCRbm
-         mJTNMFGpAzv4FeUWvc8nMMU8d84oc5AmKbJxcTshcGAZIKWrR+FpxsIYVDB35Hkd+jeM
-         kCDQ==;
-        darn=lists.ozlabs.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gRpT62w1mz2yQH
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 May 2026 02:19:05 +1000 (AEST)
+Received: by mail-wm1-x334.google.com with SMTP id 5b1f17b1804b1-490388fd0dbso84569835e9.0
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 May 2026 09:19:05 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1780071084; x=1780675884; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
+        d=gmail.com; s=20251104; t=1780071537; x=1780676337; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:subject:cc:to:from:date:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=LOEaPD7Rz0zsPbSOZbfxpmu2DbPZ8teKVvGhPB/4or8=;
-        b=SxUXYtla8oomHQpqc8M9ZvUbQnVEJeDc+YqfD19kVa6iUf6mPeSPOmLfVu3Ppag485
-         fPIkBiojX5jI4DqWwkeQam1T/PkUhprySaXpDpQzeCzkaqmVWzdOdZUfRXXRDiP/przy
-         mQyXiiTjQzE1M8sWuNXj9isNLXir23U0gn6OntERTMPc3vOmZ1q2NjthbKPR9gIIYlyS
-         0nxdhn/aT9NgQ60lqKcRHfY5SILzAnlHcekrHJ+AvIquHH9QggrL06SgQMF9yBsvAtJL
-         gF0TmT0KozrwEriv0WoSo1Ru0Zeek2AjvdimWGwesP4/oPYq77pUPKl3r6WCGuqXyop6
-         BRnQ==
+        bh=R8ivf4oZU2OMq2EC4pcFXCevvcnJjeHsSceuHKJCb7Y=;
+        b=m9TJ2j5izMxMQy44lA94j8JVhW77onnGMFKQic0HKr34rjZ3gY/E4tkVw0QMo1+rrc
+         5tDx02vp5GrRXtVMqzbE5MEfd2k1yUnTdYTJXZj15i/duGya+y3YFoGjtchuzTWCetCk
+         +AA0iFdaMR7QgwG+2gbth85ZoTqImpnCFJ5fV7Lh5/CA/OacwP1GeYCtnx4W6LHHT4Qq
+         hP3MGuSYh7Gu1fEGI3svpznBJ9ndBZvAgvaMiH7qUEizRHRrHdnxf4z1Wodt1TDjwUa0
+         9iOb2gqWAsiRoJ/xqOP+PpE6J7m3EGAEiM+FwIP5yv86vsovCwvipgmZF3OxggbBqrnf
+         jcdQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1780071084; x=1780675884;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
+        d=1e100.net; s=20251104; t=1780071537; x=1780676337;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to;
-        bh=LOEaPD7Rz0zsPbSOZbfxpmu2DbPZ8teKVvGhPB/4or8=;
-        b=GoPW75KuvyXc8yOtS9NhIWnVwJDDmiCK/vszt9ez9IVUvTy+wzMb1OvaX7VVOkDN0h
-         +RbHj35PBteuFuDRppP8DO4sy3gkFusEKLZchQSKNvYDnPB81QusPvTHc/idsREh9t3g
-         /SWTsDdMS0Gt+uZlmBdTqP4DNg2soamo4cQbyGeQGu+I0HivycikSpMuiQooWRCbmYtT
-         9Sr2I5pVjh/BzRt8kq4J+WoCSemxIEe8xrcsXonhiWkMv4G917TjwCfl0y4rL0chr9uc
-         DDtQw3Sh+TV0JHvarBW00PRVDzbORbpbQznRsrmOwalUzMGZtPkQ6o8u5PBuEo0My7nQ
-         SGxg==
-X-Forwarded-Encrypted: i=1; AFNElJ/h5JfJbkkH9Xbef60M+rhicLgYDgi3UoWeEl2StBgwmjLN8sfEliXQABYWOvhVMRYcBHxaWE25F8vN5eQ=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YxbRujNyHI6pfKy/vSvNLXXIxYWcx+GqRbo1edj9LrkePQrhAqk
-	8GCssSAYXZsQUTQaS13CicUmIwAQhWsMA7cSOCP7JruaxuixZf4HWzPUJU3weSaj4xj8dKO16of
-	aIjq46tOAoN+wNAifp6Imjf8kfyP+xX4=
-X-Gm-Gg: Acq92OHMoidTrJNWZniJ75DWbf8h8Dtufj39aJNXQt+bfxl7s2q/oKIodEuUAwIR3tW
-	9XGOzIXh4HdhHV9wdSkFHFcMjSoOg62zH5/bObtXEGczMoE71ryueQE7/Nfr6kOXOTUt5zVZI9Q
-	0QxkisLMRolRP1elc8PBvsTmCBJpWdCOm3qwgYIS10Hf7RDFkCFMxr2r3ZLkt2lP02phIX4OxR8
-	x4YcxkG9VlAR5yOcjVS3LWe/fEs3D2IeUr2EwlD7MbqZzssgXmjc/m3IE1i3ORj2F2d5yR4Lxxp
-	E0yXznoLnUd4jMfgSA==
-X-Received: by 2002:a05:6a20:e306:b0:398:9d5f:e093 with SMTP id
- adf61e73a8af0-3b411cd03aamr4325288637.19.1780071083461; Fri, 29 May 2026
- 09:11:23 -0700 (PDT)
+        bh=R8ivf4oZU2OMq2EC4pcFXCevvcnJjeHsSceuHKJCb7Y=;
+        b=VGSa0rJzId581QHMXCiMLLB2k/CeLMu2zH/Xg+kaTaZFUt6sTknnek5Iq0rGqXrxA+
+         ggzt8ukxOa6HUP86toizGV2GZQ418ELZqq8Q/hZ2I3AnuRluXr923VrSAyAC7nHwQEIU
+         7iBb/VZWk45Ni1EZMHAxUslx1kYRft5im7MY1FwDz10tgs7p7n9koqZTm1dITKvG0byN
+         XJm5CHTmphSTD4dhLxm3VDYAaRSijGlvqUc6H8zf00ZaEFuGnMPqF0jz1pleClI0t034
+         zXK6W+XDoGTiDhE2SnXQAqUCNjntiVli544uv/dnghucg+7sNlLW8xXl8DBCcWEXla2d
+         Z/cQ==
+X-Gm-Message-State: AOJu0Yx38AF4LKIsSfNNVOGjskTnbjxra2Hlb8Km+4Ezjexs9iJb9wFM
+	5TlD2x7+iioG1Av0i8HWnmcVxr+9FWgZq9w1hW/sSRRSChJqSiqnN0mh
+X-Gm-Gg: Acq92OG4pbH2Ki+59w7YW4p8HbOCvKDK5IzanfAI8H4lzvgQTxZBrrQg8V4dKyYLA0v
+	7KOWsJnJaYvwvDMuzEz6UVq/3NINvLy097NhnlL6dCLsJs6d1HEbdIpvvJ6/uOSGZOxcrmLNRvv
+	i2h2VD1MoGJNIKpVhrMHgMtvmDKH3spQkPsLdf4P/DGgBRzTtjJEWgGpyzTVeXiAnspffjihfYo
+	rZX0KTjVaPCaf02fLPokpMuktrm7QK+U3A1Y+F/yE71Z7cMYqB1AobMD+SCcwEnHfuP7fu915f8
+	vWuCCKLVhpR+LQblSRjzWaI4yUQbnkifKxvLLIOg1QiQfKzk/O4hE1fiqsArTjBTRTatOxR961/
+	JwdDpD5YOhncuVafbCDGfOn2ggVRDjjPezILHQiMLR8Be83FE+AM9D4evpDppZlXaa69ZFiN1ZL
+	LM6l9lXDijtaO0dQ93hxQ58pCxthMIq08atZdOfpHTTVMM205rqLOMsgXPxysMFS4eaGjzUhU=
+X-Received: by 2002:a05:600c:314e:b0:490:31e:d6fd with SMTP id 5b1f17b1804b1-490a2968488mr4398265e9.25.1780071537044;
+        Fri, 29 May 2026 09:18:57 -0700 (PDT)
+Received: from pumpkin (82-69-66-36.dsl.in-addr.zen.co.uk. [82.69.66.36])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4909c0498e0sm25344335e9.0.2026.05.29.09.18.56
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 29 May 2026 09:18:56 -0700 (PDT)
+Date: Fri, 29 May 2026 17:18:55 +0100
+From: David Laight <david.laight.linux@gmail.com>
+To: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Madhavan Srinivasan
+ <maddy@linux.ibm.com>, selinux@vger.kernel.org, rppt@kernel.org,
+ paul@paul-moore.com, LKML <linux-kernel@vger.kernel.org>, Ritesh Harjani
+ <riteshh@linux.ibm.com>, "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+Subject: Re: PowerPC: Random memory corruption causing kernel oops on
+ Power11
+Message-ID: <20260529171855.7966b752@pumpkin>
+In-Reply-To: <8f0c86f7-eab4-4e82-97c1-5d190c390770@linux.ibm.com>
+References: <03e5151a-f420-46f9-ad5e-109420132021@linux.ibm.com>
+	<8f0c86f7-eab4-4e82-97c1-5d190c390770@linux.ibm.com>
+X-Mailer: Claws Mail 4.1.1 (GTK 3.24.38; arm-unknown-linux-gnueabihf)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -101,51 +97,61 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <03e5151a-f420-46f9-ad5e-109420132021@linux.ibm.com>
- <8f0c86f7-eab4-4e82-97c1-5d190c390770@linux.ibm.com> <CAEjxPJ7Y+9AqEVTJswUsan4OOP+DVkFG3vXukQVtcJZbVaoZnA@mail.gmail.com>
- <CAEjxPJ6DqhHKdjwC3ddZfUK4HVPwOTzb1Kkuabi5WmwmF8Lu_A@mail.gmail.com> <CAHC9VhSEjSmdVgNxg=PvwS6RXnJzFybJtFhCJbOsKiRhXi5PJQ@mail.gmail.com>
-In-Reply-To: <CAHC9VhSEjSmdVgNxg=PvwS6RXnJzFybJtFhCJbOsKiRhXi5PJQ@mail.gmail.com>
-From: Stephen Smalley <stephen.smalley.work@gmail.com>
-Date: Fri, 29 May 2026 12:11:11 -0400
-X-Gm-Features: AVHnY4L4gN19PG3AQEBx0PURc8Ls8mq8w1hJmRjX8Fp47k7jg82ZQUCRn7L1ESw
-Message-ID: <CAEjxPJ5wS+sXvCjO3q2sfrckuMo71_Y3uSdgu+Vte7xLkW0Huw@mail.gmail.com>
-Subject: Re: PowerPC: Random memory corruption causing kernel oops on Power11
-To: Paul Moore <paul@paul-moore.com>
-Cc: rppt@kernel.org, Venkat Rao Bagalkote <venkat88@linux.ibm.com>, 
-	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Madhavan Srinivasan <maddy@linux.ibm.com>, 
-	selinux@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, 
-	Ritesh Harjani <riteshh@linux.ibm.com>, "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
 
-On Fri, May 29, 2026 at 11:39=E2=80=AFAM Paul Moore <paul@paul-moore.com> w=
-rote:
->
-> On Fri, May 29, 2026 at 11:19=E2=80=AFAM Stephen Smalley
-> <stephen.smalley.work@gmail.com> wrote:
-> > Alternatively, I suppose we could just update the dentry_path_raw()
-> > call to also pass PATH_MAX, but
-> > I don't see why we want to use __getname/__putname() instead of just
-> > direct kmalloc/kfree here so
-> > the size of the buffer is immediately evident to the reader.
->
-> It's reverted, see the posting below:
->
-> https://lore.kernel.org/selinux/20260529153608.30853-2-paul@paul-moore.co=
-m
->
-> I think there is still value in using __getname()/__putname() here as
-> opposed to a simple kmalloc()/kfree() pairing, but either way we need
-> to adjust the buffer length in selinux_genfs_get_sid() accordingly to
-> use PATH_MAX instead of PAGE_SIZE.
+On Fri, 29 May 2026 19:07:22 +0530
+Venkat Rao Bagalkote <venkat88@linux.ibm.com> wrote:
 
-IIUC, __getname()/__putname() were originally internal helpers for
-getname()/putname() and allocated from names_cachep for struct
-filename. commit c3a3577cdb35 ("struct filename: use names_cachep only
-for getname() and friends") switched __getname()/__putname() over to
-just generic kmalloc/kfree so that other users of those helpers would
-stop allocating from names_cachep and noted that those lingering users
-could be converted to explicit kmalloc() over time. So I don't think
-vfs folks want new users of __getname()/__putname() but I could be
-wrong.
+> On 29/05/26 12:20 pm, Venkat Rao Bagalkote wrote:
+> > Greetings!!!
+> >
+> > Kernel 7.1.0-rc5-next-20260528 crashes randomly on IBM Power11=20
+> > hardware. Attached is the config file.
+> >
+.
+>=20
+> Git bisect is pointing to 54067bacb49c selinux: hooks: use __getname()=20
+> to allocate path buffer as the first bad commit.
+>=20
+>=20
+> # git bisect good
+> 54067bacb49caeada82b20b6bd706dca0cb99ffc is the first bad commit
+> commit 54067bacb49caeada82b20b6bd706dca0cb99ffc
+> Author: Mike Rapoport (Microsoft) <rppt@kernel.org>
+> Date:=C2=A0 =C2=A0Wed May 20 11:18:56 2026 +0300
+>=20
+>  =C2=A0 =C2=A0 selinux: hooks: use __getname() to allocate path buffer
+>=20
+>  =C2=A0 =C2=A0 selinux_genfs_get_sid() allocates memory for a path with=20
+> __get_free_page()
+>  =C2=A0 =C2=A0 although there is a dedicated helper for allocation of fil=
+e paths:
+>  =C2=A0 =C2=A0 __getname().
+>=20
+>  =C2=A0 =C2=A0 Replace __get_free_page() for allocation of a path buffer =
+with=20
+> __getname().
+>=20
+>  =C2=A0 =C2=A0 Signed-off-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
+>  =C2=A0 =C2=A0 Signed-off-by: Paul Moore <paul@paul-moore.com>
+>=20
+>  =C2=A0security/selinux/hooks.c | 4 ++--
+>  =C2=A01 file changed, 2 insertions(+), 2 deletions(-)
+
+__getname() is kmalloc(PATH_MAX) aka kmalloc(4096).
+
+The old code was:
+	buffer =3D (char *)__get_free_page(GFP_KERNEL);
+	if (!buffer)
+		return -ENOMEM;
+
+	path =3D dentry_path_raw(dentry, buffer, PAGE_SIZE);
+only the allocate was changed.
+
+PAGE_SIZE is not the length of the buffer.
+Should be PATH_MAX.
+
+-- David
+
 
