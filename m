@@ -1,73 +1,93 @@
-Return-Path: <linuxppc-dev+bounces-21680-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21681-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C7EF7CD5BD2
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 May 2026 06:59:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E00E2CD5BD2
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 May 2026 07:01:56 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gRZ3j3QZKz2xnK;
-	Fri, 29 May 2026 16:59:45 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780037985;
-	cv=none; b=W3DtmCnz2NlAKIT5hWURFUxYVrrzOFbKauF0B9ajDQynTjzK1xqkdFWq+hK6przrSYEGwKSBnhZhOg++boMpNRQkjAq9yN3Pd2iMJ/+YzN1+tJb84okyRHe8m3AFmZiCv8ZDYPqegloJbKYKiSEjFDeV7uR1i0XMvMqy1t54X6B+wr+3zTEohJcORnz9+chkLOAUV+4L+SwR43wMiEgOkyJV5hOPcYhRsaEeUeY5hTDIiKu/h3vhaAC6Do6h2S7wacnrKyNzYahJB+2XWs5Ce/irXoTcp52Uv7reO96bmvzaxw43WZdMo3L1LzUZMmlVaa8LPc8Svt/4EaFiea9Yng==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1780037985; c=relaxed/relaxed;
-	bh=XfWkutqJcgw5mPwttpn5Eb9YOub78ax6IhTgr4R7FKs=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=eXovtmc9tvSR89ZD0XtEDXkP+q9WVTMdff1If64DYm4NX855fOXWR1dPmAK2AGh+WqvSC8+DIdX2n+Dh1Llmmt0Ob29ptDLc+nMYmWZoxhsOFrKGaSBJhFj9/fG73qQgYhQf93PPm9ylx084/eHL+L/NNKf6XWhlkHnLJk9fOMnlS4rxnPwPm/fhalL06UWvxq2+nmmdzNBDTnjlRR+im732r9/5CPHaBI5JTNKR35L4X4LloJJ3SKUWqUWx1JYWFlb+j2kgrYdbMVtDSvcdo3/Q5hfAZls4htI/6Wk6nzHeHjHnq514tFFAtvZNbmP7SLvCAqrnj460rf3No3w5Qg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=PflULOIn; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=venkat88@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gRZ6C1gqjz2xnK;
+	Fri, 29 May 2026 17:01:55 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a00:1450:4864:20::529" arc.chain=google.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780038115;
+	cv=pass; b=apXEW8S82A2ge80+ChNKO1b2mSPjVvIuFk4DFxy1h3LkSwXtJ2RPYx7+srSmbJYrYmpQAUqgoNJwMEj52l6gUw9W/d3W0iqa4Bq4icrg9bfM/gfR8aNCL+P0oeIjhmu/+KwsxdgD3TtHxQhkaSKdtNz7j2yXQDYHtjbADntbzwR0kV+58V0u+NccUJwmlAK3ePdEGmh0jeWHw7z0ICRNhmz7pdf1fmXJd7z+jTfgNgmLyniZJLOt+mNPPSlDA/8EYoKO2Pgjv6FoA1OnKo5+eInxNxL8Uctne3w6tLPTynHbRg3R+fL2knp8wGMxcsrpcBBspNGAaREANNIzLY8UjA==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1780038115; c=relaxed/relaxed;
+	bh=t89bnL9txs8rrnZk0wRkeIs3fRkSrv8Tzr4zb4FyARo=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=COPxJQjMrEspyrl/2bNzinCTDbjuFmjToMNjvwZ+gEodShbd/DRXyFaVWH7AdGW18YS4mI6RTeI+sTNYtAlvLr3HwqUk/nvQUAf8hn7IEckTt6PO6lttvt7OAR8ZCmTOQntD4EwvzLCRsGrPBKb6p+vyOHra3zjZ1uGrnpTqtFD79/Q8FyQC5z1qnR8f/Xnz3k3ZEHZDCSQP8WiKFdw5ispDuv/sKG9JahOCMeKiC6650ft07xnZjkLwJOM/MnyBY2yocqNRgn3giXn7e3EViHXXIld6npkTeJ2/utkqyQllXY5UID8y0YzLcZ63QLG1L49g7Vj2d/dmCTb+5KyMRw==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=kcsRZgR3; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::529; helo=mail-ed1-x529.google.com; envelope-from=rosenp@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=PflULOIn;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=kcsRZgR3;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=venkat88@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::529; helo=mail-ed1-x529.google.com; envelope-from=rosenp@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-ed1-x529.google.com (mail-ed1-x529.google.com [IPv6:2a00:1450:4864:20::529])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gRZ3h5GL4z2xWP
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 May 2026 16:59:44 +1000 (AEST)
-Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 64SLmq972420645;
-	Fri, 29 May 2026 06:59:31 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=XfWkut
-	qJcgw5mPwttpn5Eb9YOub78ax6IhTgr4R7FKs=; b=PflULOInoew+BA/mVBOJoS
-	eGWd0ZsTK3KSqC9r7++9SysFyFHyDCuYhjlx7Mq+32dGVVt6rZyyWWDpU5ersvxq
-	+KrgqJ0tewHQuPODYiVFfh+SUvJd9yMTDazF3GtkVZVAq/1cgCHDoVkjXPvCs8+J
-	pVIdQIpE2HEm8R6lAt4lbqfFfPPH8Luv7YRblrMFDd9nbOuEZmsv+5+bqrEcI3Yl
-	o98kUPFJO2ox8qmNPHgWKi/ldqc3M6mVR826a5oqmNnrScU0qtE5MSRKArm/Eqje
-	2yjDOGKt4jcKkwevDwcJarGd0vlces39T0WrDqnhxq+EZJx/i65ekkZQwlnNkGDQ
-	==
-Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4ee884q4xg-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 29 May 2026 06:59:30 +0000 (GMT)
-Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma21.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 64T6s6Tc018472;
-	Fri, 29 May 2026 06:59:29 GMT
-Received: from smtprelay07.wdc07v.mail.ibm.com ([172.16.1.74])
-	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4edjrbc4ac-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 29 May 2026 06:59:29 +0000 (GMT)
-Received: from smtpav04.dal12v.mail.ibm.com (smtpav04.dal12v.mail.ibm.com [10.241.53.103])
-	by smtprelay07.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 64T6xSK926739312
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 29 May 2026 06:59:28 GMT
-Received: from smtpav04.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 1569558056;
-	Fri, 29 May 2026 06:59:28 +0000 (GMT)
-Received: from smtpav04.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id E6ADE58052;
-	Fri, 29 May 2026 06:59:24 +0000 (GMT)
-Received: from [9.61.245.85] (unknown [9.61.245.85])
-	by smtpav04.dal12v.mail.ibm.com (Postfix) with ESMTP;
-	Fri, 29 May 2026 06:59:24 +0000 (GMT)
-Message-ID: <8d1485ae-8a9a-4991-8ca7-9ff7b6c4aca9@linux.ibm.com>
-Date: Fri, 29 May 2026 12:29:23 +0530
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gRZ693vLFz2xWP
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 May 2026 17:01:53 +1000 (AEST)
+Received: by mail-ed1-x529.google.com with SMTP id 4fb4d7f45d1cf-68bac6e24fdso1327767a12.1
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 May 2026 00:01:53 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1780038110; cv=none;
+        d=google.com; s=arc-20240605;
+        b=C8LjKVtmWJY/aROJ5feat6H2aRKX/qpVcZfFoAACuvc5f0K/DX4qpCdyOVMpN3sys+
+         GaRa9c2OCgjsd+e0xOZUxkWADS8bTPoa/zahiKnvBRyNsurgS17Xr33Jgv2dXdy9WfKw
+         6m85iKvIZ5BJrICBdDnELrJ+bZ3QDtJTYHdf1LIcZRzMoCxfjA+fDWT98hiFEd+pr3kT
+         gnzTBiLR1qtJyXq9BhXTa4AKdPg1uvxeV0Z4hW2E1M7tYG+giRWLScnGKUcHJB3LdBCG
+         8bcy5Hv3gG4ZEQgCUQ78g3ftfEA93tlKsyQOJE/SoYODe7FiBJah8fZI93fDNLUuhWHu
+         d2XQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=t89bnL9txs8rrnZk0wRkeIs3fRkSrv8Tzr4zb4FyARo=;
+        fh=h2leOhG82C5mlcgdopxnhpBqw+G0VkL8th/i3QeJ4Jk=;
+        b=lGVf2dh+060GlcvV9mvoZydEAmHX0U+RaKJ9TZikIOJWNMGSPJKQ312DnU8gt38pdT
+         0mOYSUq/vJhsHSlMma4Dq5q2v/qz4Mgd79PHvX9IVJmrwuwwsCA9oiyzomlGGeSjKwmc
+         X3jcM+8Y1FG4BFaC+0nuqzlERsru/7w8+sSUGG/LDvWaVDFqU88vWJJy4svfGlWWifou
+         +VBxkxJ/EG3ilu7OO2cKkuEGNpVZh7gbwxPSMhTREqlEgNeKWxWbxORlXGBfklxrwc8S
+         zYVqOclhtrXgTDqgOxiY5B+EnZZ1plw+AayT9ADHiIpIkU2wL79JpOvuNieXybe5Z9/4
+         765Q==;
+        darn=lists.ozlabs.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1780038110; x=1780642910; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=t89bnL9txs8rrnZk0wRkeIs3fRkSrv8Tzr4zb4FyARo=;
+        b=kcsRZgR3zg3ZizQHDODDTQwxrsIBoG10H4d0FldrfXvCDxFMQ4pgARwIUnUNVAXv2/
+         SHoJHaxW2aXrfVV2SNSNvt9YJzl7IuaZ0WITDoFCqJl+YvhvuboZurUMBzuQETho2xB+
+         xUofqL59KEvnRD/VnZpppYuYP7UKjarMjRJ6K4tbTTE4zFkTpnQu+Uj2sv//6eOCIBnt
+         D/qxA9WUtKrk2QI7s6W+ymmgVESAODuQHcCMMLl+FMqm+/ddYIY4CC8ZTqaQhJm8wExM
+         3IcykKOejMADFyM2/8LSGChsdTGbxZzg/PsuioX5nPkkSiFRyWSdBaYRgc3A+ZP4eGNM
+         SnbA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1780038110; x=1780642910;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=t89bnL9txs8rrnZk0wRkeIs3fRkSrv8Tzr4zb4FyARo=;
+        b=V+c3LPNTzc2QRBs5Xx+bVCOhvDB3oqumwS0eBiYm/0R0CCaPjXQ0eV2XfKE+DVj1Sn
+         +2J/jJwyE0LbiX7X1aj9vUXJooq5F9H9VhEF7uk217RaNQJ8BNOIphHHBV0StC93Vb0D
+         8sjPJwD+CD1jWHE/9uc9tif47DkWzkhg9MX//j24QIggAaG3YYOblo82bmLs+AsQU+Gt
+         S5CNsqXU9Fb4cgbzztaozBUUuRJMdHgJMnJUFnOGwazyfHLz8Hah2/5OpNufXmbBl2MD
+         azbjmNL8BFOKGu4lVlivBoden1vXwoM7jfiwLNHqppgc5f8XOPeuhrMdX6/4AVZ5/M/v
+         9fkg==
+X-Gm-Message-State: AOJu0Yx+RdhOTPuY9+Gfstluv0923MgoYraalaY+Ibt7WBKEZVmYYDAK
+	099Pix35pKQKbN48P6EY13CGwWrjTtMHqxGuQi+gX96lpDOKY70zv4YEUbmKbbSGqo2UycjB93w
+	b3OFX5H1Fsyl1mZjV3iXBW8tA8/bvA2E=
+X-Gm-Gg: Acq92OFKcTM/lQVtSr0G9qtUsc+bOKbUC24Hp1VbK3KPT3WGGHsk83ASzKBmhgJ5wBN
+	lSF+eEDzQ5zHiDsFJXtSX1f1ZhrlPBYMqBHf77tECv68LbOky5zLkGLhYHO2FaOkMgtBFHXpq1e
+	Hu/lxvM0fndPa4pyY95NQQuj0ujhUkg0cCPaqvXXqqJPN0P+83ZlArT2UJHdOLceuOhMcBKfI4q
+	B1p7Blt1JIYAa4HccX3x/EoP3Jd3jm2S3uuOvcbbSRfQTht2EAzxQYE+jMzmykYTtiag4zZjBt9
+	qa3DiTKUFr2Qv437A/hiL6en99+2773ToKjRGnulIgqZgZ0u8o7Qdg0Y5VqTvzWw0gVS0NxlIJJ
+	6eTKKSueguNcX6mFlXqxP5CCW35v9AqVn5I3JGr7OgP4aatyZvqRgsK0YYaCA7XJ5bAVH
+X-Received: by 2002:a05:6402:5191:b0:68a:2641:312a with SMTP id
+ 4fb4d7f45d1cf-68c1290f390mr693755a12.17.1780038103100; Fri, 29 May 2026
+ 00:01:43 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -81,192 +101,182 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [BUG] sched/cache: "Make LLC id continuous" causes NULL cpumask
- dereference in build_sched_domains on POWER9
-Content-Language: en-GB
-To: Shrikanth Hegde <sshegde@linux.ibm.com>,
-        "Chen, Yu C"
- <yu.c.chen@intel.com>, tim.c.chen@linux.intel.com,
-        K Prateek Nayak <kprateek.nayak@amd.com>,
-        Srikar Dronamraju <srikar@linux.ibm.com>
-Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
-        Ritesh Harjani <riteshh@linux.ibm.com>,
-        "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-        LKML <linux-kernel@vger.kernel.org>,
-        linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
-        Peter Zijlstra <peterz@infradead.org>
-References: <51154de7-3700-4cb4-82f2-1b3a8fa427f7@linux.ibm.com>
- <85ff1fec-632c-4e5a-9b47-5d4b4a70a1a2@linux.ibm.com>
-From: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
-In-Reply-To: <85ff1fec-632c-4e5a-9b47-5d4b4a70a1a2@linux.ibm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Authority-Analysis: v=2.4 cv=L4MtheT8 c=1 sm=1 tr=0 ts=6a193952 cx=c_pps
- a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
- a=IkcTkHD0fZMA:10 a=NGcC8JguVDcA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=iQ6ETzBq9ecOQQE5vZCe:22 a=VwQbUJbxAAAA:8
- a=QyXUC8HyAAAA:8 a=VnNF1IyMAAAA:8 a=pGLkceISAAAA:8 a=_aYY1UhqxzgcnjgfhtgA:9
- a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
-X-Proofpoint-ORIG-GUID: ZGEAhgQCCpiCiO-y2cpolK9UMFLIvlNY
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTI5MDA2MiBTYWx0ZWRfX/39rA8D4YEK/
- d7yJnPn0Hkuj6/jNot0N3AWdu3dKEceMU1jwI9hzS4sA1dW4Sxg4G1xL22LgLD8bB1QNQN5QZbL
- kj8P/rDw2iaQwiEARr12+Kiisa38inBS1Yy1gw0bkSL1ke9Nzbomel8PNjtk+1mcMkju2oXw2Mz
- PgdhOmZvlPt7x1fgAaw56tXlwHaT59FYivhdxnY+T7NbCqWlwH3IGBfI7UM9D5RSVBN0aLi0vTZ
- AoMPtTFq+AfP/pNb+q9kBGbcUj5h8/uu51DI1134sDKH+QZQ02MGgzCREvz6EJ8IFOiv1R8x5IU
- xado+M5hNLWzvqlFJiQd2/j/pnGE9tH2HP2SikXDhWC7KQgPxIQxETd+6sFf7XnOw9sYbNmjHZs
- 7jEdYOTmXDWYAAfQQa6birZr1i1ELnG7ktwBEIUEDftauGVEnmo31anY8CYTOQGBA4yFg36QhPl
- NznyBnfmR/JrmSTGZUA==
-X-Proofpoint-GUID: ZGEAhgQCCpiCiO-y2cpolK9UMFLIvlNY
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
- definitions=2026-05-29_02,2026-05-28_03,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- phishscore=0 lowpriorityscore=0 suspectscore=0 clxscore=1015 malwarescore=0
- bulkscore=0 impostorscore=0 adultscore=0 priorityscore=1501 spamscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2605210000 definitions=main-2605290062
+References: <20260528025610.713514-1-rosenp@gmail.com> <cc236562-3967-4361-ad92-05582db82282@kernel.org>
+In-Reply-To: <cc236562-3967-4361-ad92-05582db82282@kernel.org>
+From: Rosen Penev <rosenp@gmail.com>
+Date: Fri, 29 May 2026 00:01:30 -0700
+X-Gm-Features: AVHnY4IKU0fSryaVj01s709ESdvA-IppFByGBTXOMEAy66ZniXN3g5z_mMQtTt8
+Message-ID: <CAKxU2N_4i7qfayGnDUrNeAVidYq7_eCoXRNvGeF8bSWUV45uHQ@mail.gmail.com>
+Subject: Re: [PATCH] gpio: move ppc4xx gpio driver from arch/powerpc to drivers/gpio
+To: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+Cc: linuxppc-dev@lists.ozlabs.org, Madhavan Srinivasan <maddy@linux.ibm.com>, 
+	Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
+	Linus Walleij <linusw@kernel.org>, Bartosz Golaszewski <brgl@kernel.org>, 
+	open list <linux-kernel@vger.kernel.org>, 
+	"open list:GPIO SUBSYSTEM" <linux-gpio@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-
-On 29/05/26 9:28 am, Shrikanth Hegde wrote:
-> Hello. Sorry for too many mails.
->
-> On 5/25/26 7:37 PM, Venkat Rao Bagalkote wrote:
->> Greetings!!!
->>
->> I am seeing an early boot kernel panic due to NULL pointer 
->> dereference on a POWER9 (pSeries) system when testing linux-next 
->> (next-20260522).
->>
->>
->
-> Based on srikar's suggestion to keep the below,
-> #define arch_llc_mask(cpu)     cpu_l2_cache_mask(cpu)
->
-> which makes it pretty much what chenyu had here
-> https://lore.kernel.org/all/8d14c844-b4a8-4af6-acab-2cfdd42225be@intel.com/ 
+On Thu, May 28, 2026 at 11:50=E2=80=AFPM Christophe Leroy (CS GROUP)
+<chleroy@kernel.org> wrote:
 >
 >
-> I added the changelog and comments. removed the changes in !CONFIG_MC 
-> case since powerpc
-> defines it always. I have changed the chenyu tag to Co-developed-by: 
-> instead.
 >
-> I have carried the tested-by and reviewed-by tags since patch is
-> still more or less the same.
+> Le 28/05/2026 =C3=A0 04:56, Rosen Penev a =C3=A9crit :
+> > Move the ppc4xx gpio driver out of arch/powerpc/platforms/44x/ into
+> > drivers/gpio/gpio-ppc4xx.c. The driver has no architecture-specific
+> > dependencies and follows the same pattern as other PowerPC GPIO
+> > drivers already in drivers/gpio/ (e.g. gpio-mpc8xxx, gpio-mpc5200).
+> >
+> > - Renamed Kconfig symbol from PPC4xx_GPIO to GPIO_PPC4XX
+> > - Updated ppc44x_defconfig and warp_defconfig to use the new symbol
+> > - Marked the new option as tristate (was bool) since the driver
+> >    supports module build via module_platform_driver()
+> > - Added COMPILE_TEST support. Needs PPC as clrbits32 is in use.
 >
-> This is based on tip/master at
-> 5c89783224e9  Merge branch into tip/master: 'x86/tdx'
-> I am planning to send it based on tip tree.
-> Let me know if has to be against a any different tree.
+> Not only clrbits32() but also setbits32() and in_be32().
+Right. I noted it as an example.
 >
-> Please let me know if there are any concerns.
-> verified below too fixes the panic seen in shared LPAR.
+> On the long run we want to get rid of PPC specific IO helpers, at least
+> outside arch/powerpc/ , so don't add new instances.
 >
-> ============================================
+> Remove that dependency by switching to ioread32be() which has been
+> equivalent to in_be32() since commit 894fa235eb4c ("powerpc: inline
+> iomap accessors"), then implement a local equivalent of
+> clrbits32()/setbits32()
 >
-> From: Shrikanth Hegde <sshegde@linux.ibm.com>
-> Date: Thu, 28 May 2026 23:23:43 -0400
-> Subject: [PATCH] sched/topology: Provide arch_llc_mask for cache aware 
-> scheduling
+> See for instance:
+> - qe_setbits_be32() in include/soc/fsl/qe/qe.h
+> - tsa_clrbits32() in drivers/soc/fsl/qe/tsa.c
 >
-> Venkat Reported a boot kernel panic next-20260522. Git bisect pointed to
-> b5ea300a17e3 ("sched/cache: Make LLC id continuous")
+> >
+> > Assisted-by: OpenCode:BigPickle
+> > Signed-off-by: mangix <mangix@disroot.org>
 >
-> Stacktrace points to llc_mask being null.
+> Who is that ?
+My computer username. I've since edited AGENTS.md so it always adds --signo=
+ff.
 >
-> NIP [c000000000e58504] _find_first_bit+0x44/0x130
-> LR [c000000000e58500] _find_first_bit+0x40/0x130
-> Call Trace:
-> build_sched_domains+0xad8/0xe50
-> sched_init_smp+0xa8/0x164
-> kernel_init_freeable+0x250/0x370
-> ret_from_kernel_user_thread+0x14/0x1c
+> > ---
+> >   arch/powerpc/configs/44x/warp_defconfig                    | 2 +-
+> >   arch/powerpc/configs/ppc44x_defconfig                      | 2 +-
+> >   arch/powerpc/platforms/44x/Kconfig                         | 7 ------=
+-
+> >   arch/powerpc/platforms/44x/Makefile                        | 1 -
+> >   drivers/gpio/Kconfig                                       | 7 ++++++=
++
+> >   drivers/gpio/Makefile                                      | 1 +
+> >   .../platforms/44x/gpio.c =3D> drivers/gpio/gpio-ppc4xx.c     | 0
 >
-> On powerpc, cpu_coregroup_mask is available only when the underlying
-> hardware support coregroup. In shared LPAR, QEMU guest or power9 etc
-> coregroup isn't supported. In such cases llc_mask was being referenced
-> when it was null leading to panic.
+> Not gpio-ppc4xx.c but gpio-ppc44x.c
+ACK
 >
-> on powerpc, LLC is at SMT core level. So assumption that coregroup(MC)
-> domain point to LLC is wrong. Provide a way for archs to say where its
-> LLC is if it not at MC domain.
+> >   7 files changed, 10 insertions(+), 10 deletions(-)
+> >   rename arch/powerpc/platforms/44x/gpio.c =3D> drivers/gpio/gpio-ppc4x=
+x.c (100%)
+> >
+> > diff --git a/arch/powerpc/configs/44x/warp_defconfig b/arch/powerpc/con=
+figs/44x/warp_defconfig
+> > index 5757625469c4..380fa15af68d 100644
+> > --- a/arch/powerpc/configs/44x/warp_defconfig
+> > +++ b/arch/powerpc/configs/44x/warp_defconfig
+> > @@ -12,7 +12,7 @@ CONFIG_MODULE_UNLOAD=3Dy
+> >   # CONFIG_BLK_DEV_BSG is not set
+> >   # CONFIG_EBONY is not set
+> >   CONFIG_WARP=3Dy
+> > -CONFIG_PPC4xx_GPIO=3Dy
+> > +CONFIG_GPIO_PPC4XX=3Dy
+> >   CONFIG_HZ_1000=3Dy
+> >   CONFIG_CMDLINE=3D"ip=3Don"
+> >   # CONFIG_PCI is not set
+> > diff --git a/arch/powerpc/configs/ppc44x_defconfig b/arch/powerpc/confi=
+gs/ppc44x_defconfig
+> > index 41c930f74ed4..57a7342232d7 100644
+> > --- a/arch/powerpc/configs/ppc44x_defconfig
+> > +++ b/arch/powerpc/configs/ppc44x_defconfig
+> > @@ -22,7 +22,7 @@ CONFIG_GLACIER=3Dy
+> >   CONFIG_REDWOOD=3Dy
+> >   CONFIG_EIGER=3Dy
+> >   CONFIG_YOSEMITE=3Dy
+> > -CONFIG_PPC4xx_GPIO=3Dy
+> > +CONFIG_GPIO_PPC4XX=3Dy
+> >   CONFIG_MATH_EMULATION=3Dy
+> >   CONFIG_NET=3Dy
+> >   CONFIG_PACKET=3Dy
+> > diff --git a/arch/powerpc/platforms/44x/Kconfig b/arch/powerpc/platform=
+s/44x/Kconfig
+> > index fc79f8466933..150813cea945 100644
+> > --- a/arch/powerpc/platforms/44x/Kconfig
+> > +++ b/arch/powerpc/platforms/44x/Kconfig
+> > @@ -227,13 +227,6 @@ config PPC44x_SIMPLE
+> >       help
+> >         This option enables the simple PowerPC 44x platform support.
+> >
+> > -config PPC4xx_GPIO
+> > -     bool "PPC4xx GPIO support"
+> > -     depends on 44x
+> > -     select GPIOLIB
+> > -     help
+> > -       Enable gpiolib support for ppc440 based boards
+> > -
+> >   # 44x specific CPU modules, selected based on the board above.
+> >   config 440EP
+> >       bool
+> > diff --git a/arch/powerpc/platforms/44x/Makefile b/arch/powerpc/platfor=
+ms/44x/Makefile
+> > index ca7b1bb442d9..179468a00f5e 100644
+> > --- a/arch/powerpc/platforms/44x/Makefile
+> > +++ b/arch/powerpc/platforms/44x/Makefile
+> > @@ -15,4 +15,3 @@ obj-$(CONFIG_FSP2)  +=3D fsp2.o
+> >   obj-$(CONFIG_PCI)           +=3D pci.o
+> >   obj-$(CONFIG_PPC4xx_HSTA_MSI)       +=3D hsta_msi.o
+> >   obj-$(CONFIG_PPC4xx_CPM)    +=3D cpm.o
+> > -obj-$(CONFIG_PPC4xx_GPIO)    +=3D gpio.o
+> > diff --git a/drivers/gpio/Kconfig b/drivers/gpio/Kconfig
+> > index 020e51e30317..b87d2329900b 100644
+> > --- a/drivers/gpio/Kconfig
+> > +++ b/drivers/gpio/Kconfig
+> > @@ -584,6 +584,13 @@ config GPIO_POLARFIRE_SOC
+> >       help
+> >         Say yes here to support the GPIO controllers on Microchip FPGAs=
+.
+> >
+> > +config GPIO_PPC4XX
 >
-> Fixes: b5ea300a17e3 ("sched/cache: Make LLC id continuous")
-> Reported-by: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
-> Closes: 
-> https://lore.kernel.org/all/51154de7-3700-4cb4-82f2-1b3a8fa427f7@linux.ibm.com/
-> Reviewed-by: Chen Yu <yu.c.chen@intel.com>
-> Tested-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-> Co-developed-by: Chen, Yu C <yu.c.chen@intel.com>
-> Signed-off-by: Shrikanth Hegde <sshegde@linux.ibm.com>
-> ---
-
-
-Tested this fix, by applying on top of commit 
-b5ea300a17e37eada7a98561fbd34a3054578713 and on P9, its booting fine. 
-Please add the below tag.
-
-
-Tested-by: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
-
-
-Regards,
-
-Venkat.
-
-
->  arch/powerpc/include/asm/topology.h |  6 ++++++
->  kernel/sched/topology.c             | 13 +++++++++++--
->  2 files changed, 17 insertions(+), 2 deletions(-)
+> I'd prefer CONFIG_GPIO_PPC44X
 >
-> diff --git a/arch/powerpc/include/asm/topology.h 
-> b/arch/powerpc/include/asm/topology.h
-> index 66ed5fe1b718..e3de0f3d8b86 100644
-> --- a/arch/powerpc/include/asm/topology.h
-> +++ b/arch/powerpc/include/asm/topology.h
-> @@ -135,6 +135,12 @@ struct cpumask *cpu_coregroup_mask(int cpu);
->  const struct cpumask *cpu_die_mask(int cpu);
->  int cpu_die_id(int cpu);
+> That was added by 878e7556bfe7 ("powerpc/4xx: Add PowerPC 4xx GPIO
+> driver") but since then 40x is gone with commit 47d13a269bbd
+> ("powerpc/40x: Remove 40x platforms.") so only 44x remains as depicted
+> by commit 7bf5f0562b62 ("powerpc: Replace CONFIG_4xx with CONFIG_44x")
+Agreed.
 >
-> +/* Points to where the LLC is. On power9 this will point at CACHE
-> + * domain, On others it will point to SMT domain. In all cases
-> + * cpu_l2_cache_mask points to where LLC is.
-> + */
-> +#define arch_llc_mask(cpu)     cpu_l2_cache_mask(cpu)
-> +
->  #ifdef CONFIG_PPC64
->  #include <asm/smp.h>
+> > +     tristate "PPC4xx GPIO support"
+> > +     depends on 44x || (PPC && COMPILE_TEST)
+> > +     select GPIO_GENERIC
+> > +     help
+> > +       Enable gpiolib support for ppc440 based boards.
+> > +
+> >   config GPIO_PXA
+> >       bool "PXA GPIO support"
+> >       depends on ARCH_PXA || ARCH_MMP || COMPILE_TEST
+> > diff --git a/drivers/gpio/Makefile b/drivers/gpio/Makefile
+> > index b267598b517d..192242988ecb 100644
+> > --- a/drivers/gpio/Makefile
+> > +++ b/drivers/gpio/Makefile
+> > @@ -145,6 +145,7 @@ obj-$(CONFIG_GPIO_PCIE_IDIO_24)           +=3D gpio=
+-pcie-idio-24.o
+> >   obj-$(CONFIG_GPIO_PCI_IDIO_16)              +=3D gpio-pci-idio-16.o
+> >   obj-$(CONFIG_GPIO_PISOSR)           +=3D gpio-pisosr.o
+> >   obj-$(CONFIG_GPIO_PL061)            +=3D gpio-pl061.o
+> > +obj-$(CONFIG_GPIO_PPC4XX)            +=3D gpio-ppc4xx.o
+> >   obj-$(CONFIG_GPIO_PMIC_EIC_SPRD)    +=3D gpio-pmic-eic-sprd.o
+> >   obj-$(CONFIG_GPIO_POLARFIRE_SOC)    +=3D gpio-mpfs.o
+> >   obj-$(CONFIG_GPIO_PXA)                      +=3D gpio-pxa.o
+> > diff --git a/arch/powerpc/platforms/44x/gpio.c b/drivers/gpio/gpio-ppc4=
+xx.c
+> > similarity index 100%
+> > rename from arch/powerpc/platforms/44x/gpio.c
+> > rename to drivers/gpio/gpio-ppc4xx.c
 >
-> diff --git a/kernel/sched/topology.c b/kernel/sched/topology.c
-> index df2ceb54c970..622e2e01974c 100644
-> --- a/kernel/sched/topology.c
-> +++ b/kernel/sched/topology.c
-> @@ -2063,12 +2063,21 @@ const struct cpumask *tl_mc_mask(struct 
-> sched_domain_topology_level *tl, int cpu
->      return cpu_coregroup_mask(cpu);
->  }
->
-> -#define llc_mask(cpu) cpu_coregroup_mask(cpu)
-> +/*
-> + * Majority of architectures have LLC at MC domain level with exception
-> + * such as powerpc. Provide a way for arch to specify where its LLC is
-> + * if it falls in exception category
-> + */
-> +# ifndef arch_llc_mask
-> +#define arch_llc_mask(cpu) cpu_coregroup_mask(cpu)
-> +# endif
->
->  #else
-> -#define llc_mask(cpu) cpumask_of(cpu)
-> +#define arch_llc_mask(cpu) cpumask_of(cpu)
->  #endif
->
-> +#define llc_mask(cpu) arch_llc_mask(cpu)
-> +
->  const struct cpumask *tl_pkg_mask(struct sched_domain_topology_level 
-> *tl, int cpu)
->  {
->      return cpu_node_mask(cpu);
 
