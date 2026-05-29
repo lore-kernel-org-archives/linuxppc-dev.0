@@ -1,81 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-21719-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21720-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 756E6CD6E4A
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 May 2026 12:41:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 63641CD6E4A
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 May 2026 13:37:38 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gRjdk5TNVz2ybR;
-	Fri, 29 May 2026 22:41:14 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gRktm53z7z2ySg;
+	Fri, 29 May 2026 23:37:36 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780058474;
-	cv=none; b=XOm0i+YeRGa4/UrKBfJ21DPE/0W5Psp1u7xqc1VsBtZiRFUZesg+BB6pSYRFNY2Rznh2PlMJOSgjUEz9f0C6Lcwsa9U1vzv9pe85KoWkwp5kN1PgcoiHWLs00ZVg4lLg8AT9zjMve/iHWjhZGO5dTzZzd+OU0LDg1ysZDxal1vcjggXA54nrGnK5x0g2Apr4x40zhIS7fmsiAL+Q6i2gJGnLgTOCHT38aBjWW2d08Y8B9f9ZQp9zM7kmTncsxq99W07TSaJK08uYFGvBH1loIbiu0J7mjZG1d0qkcxiGPHUA2CsoZmgljtR49dHE/28PpgbOGawvc0X1lLhItqGXPw==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780061856;
+	cv=none; b=Y2ONvgaBxLMY9g5GaygvSDl0QT1v33zA0qs+EuONyf1pdBjBEMDYbTaSiYYtw5ojuZ+Wr/fwWMi2EwNj3prv96t/c+wAcaXS10NG65pNZkpT61/Eh8J2kq2fDlC1C+VuZvdlpGFN932a08dXxSvxieMaNdb4EYibtBitgQzY7c9PAEj65776nYMYk4H6w0j0SqRm1i1VOMrICWLlDzyvxSGfu0x5Vr2IDbzE2aZX10Z9LJI1Qup0KL6GTGFOpG+/hlnZ8lB6n5LzyKVjCzDiiRJzJlJNVCP06e4HQBwszENHGcgPUJHdQZRDhIgxA5Qt16uQxSembPvsGkTdvIT8YA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1780058474; c=relaxed/relaxed;
-	bh=LP+5jBze7U2XVcMEW98Vu9lKHhwwdgz0zWVCWBdi3Y4=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=bytA4F9fdB/Yx4+hC6maoWEigJfkecxJnq9av7Prz5TKx5s6Mx9PoBeK5TcmRRW0Y44vuB42Ndx64qW+CHwVPQN8Vmu3htLGbbxilNZSS5+goNRVZRDjPo1Pouk7edNxvsZZZ3IiYVL+d41CkDbTPA0vLEqrUMwfejr1Lh+qdmTz3yY0W2Qf+y75mRAphTidiuEUbx9nIEkJoZEjUmbQwtDjdU6dJATq59vg9tsEvmJUUCzFbbqAOGVqMPtUnwNthc5v4UtKY3vibCfT5C4HN7z4B1oWkerKrCjBmQ7KXVtq5Op59JiV8cvhBxzdg4PQKKPUG44v9PP0XXvpcxSHTA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=gVUYLs5H; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	t=1780061856; c=relaxed/relaxed;
+	bh=LBDpyHes44rErVBWAO3aaBlvTWbMQTrdUMe3T1rsGiM=;
+	h=Message-ID:Date:MIME-Version:Subject:From:To:References:Cc:
+	 In-Reply-To:Content-Type; b=SDmi9UdEKVc88ZNchpJEziX6sDkHD0fGGcVfRLoBtANn6glCfcCGbtLnYr8mN727TxA36zzKXBXnijW81u3YcTvbI+ZcI6KULSqH8L4OQJjWSNjXJ0XJmYEsFYGdapmPd4JDF5SWLOGmnpTkSfJmZc7yebgYkVodrCBP/p6/G0Eb5upIljEBrZxqlkICAJCXTQT60UMPZoA2UHNtJIk3pY5mxWno8z1V3xY8EDGUnouVDeJ1N3jLY+mmQqVDoLkCWqY7uF2GvjiBgTm+OYL/VI7WMm0kKDrdxKqt1kr2fIvsZNQjjs14H+lTO2tCim+UipXYNtrZpVQo2NFIsxhQCA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=kDmTSot8; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=venkat88@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=gVUYLs5H;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=kDmTSot8;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=venkat88@linux.ibm.com; receiver=lists.ozlabs.org)
 Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gRjdj5x9Bz2ySg
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 May 2026 22:41:13 +1000 (AEST)
-Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 64TAQPll2776276;
-	Fri, 29 May 2026 12:41:01 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gRktl3B7Dz2yQH
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 May 2026 23:37:34 +1000 (AEST)
+Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 64TA43lo2133371;
+	Fri, 29 May 2026 13:37:30 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=pp1; bh=LP+5jBze7U2XVcMEW
-	98Vu9lKHhwwdgz0zWVCWBdi3Y4=; b=gVUYLs5H/uZ35Bq0qLqSGx+NCnRRificL
-	stX5njSvSVJipLo2LoqLUQhFSVTtZywE4TKYWLSRWPHpKw7dKmyuIhX/6kM6g1ok
-	Jhib9uSPgNV+sNmVCxUaw1neWNQRoJZQpqPkuiLjf1ZWK6YNQZLeKIPD0RwAUKNV
-	fnNQpD+dNsdioEZokKfAvqqn5TxnFdzgjBR2FAfTpwOxpkL3RCPEyX1E04/qhDp+
-	fEwZrUDHbKjoM4sBGDtT/l9z/I/4WK8NhCxT78cBHrMspT0CdPlWXkXEdr6gZusm
-	kSgvWRqeKDklD5FKw+Jumb99Ne1C5ezDrlLjRKkzLfGMsl2dHUsXA==
-Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4ee889g96v-1
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=LBDpyH
+	es44rErVBWAO3aaBlvTWbMQTrdUMe3T1rsGiM=; b=kDmTSot88FOeOKO6qVl4f1
+	KXNhqewHUEPlBbs6s5DgkjU/Zb3vsj5pyRckczjTn+lUI6wycyBRagfQjH7iZqQ+
+	ZXjZ4UNwpgfmmrAPuDGM7xqgPp8HMN7g2/Y0kpT4E9zM58IwJYOvtEa7jMQ2c7Wk
+	foogL07UxxiVIN+K/ArjxRWZ7TVHMS2vHmMvBX+Khprt+sMvc1gjCGhVjarJpS3w
+	7l8VU8LCpYv9NqbT57gPA0kC949yM4Mty6H3yU+G9cZ2eyn2PwS3e6ujGOhpc5gU
+	B55LpERZhlsm9yMnilfOuxBXKpWUnQYEyosbPKvXBb0MA6yoevX1335IZu/VRUgg
+	==
+Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4ee887rhts-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 29 May 2026 12:41:01 +0000 (GMT)
-Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma22.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 64TCd9RN016767;
-	Fri, 29 May 2026 12:41:00 GMT
-Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
-	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4edjrbwjsx-1
+	Fri, 29 May 2026 13:37:30 +0000 (GMT)
+Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma21.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 64TDO6rP005047;
+	Fri, 29 May 2026 13:37:29 GMT
+Received: from smtprelay01.wdc07v.mail.ibm.com ([172.16.1.68])
+	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4edjrbdspe-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 29 May 2026 12:41:00 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
-	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 64TCev8f13762818
+	Fri, 29 May 2026 13:37:29 +0000 (GMT)
+Received: from smtpav04.wdc07v.mail.ibm.com (smtpav04.wdc07v.mail.ibm.com [10.39.53.231])
+	by smtprelay01.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 64TDbScX918426
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 29 May 2026 12:40:57 GMT
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id EAC3220040;
-	Fri, 29 May 2026 12:40:56 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 0462220043;
-	Fri, 29 May 2026 12:40:55 +0000 (GMT)
-Received: from li-7bb28a4c-2dab-11b2-a85c-887b5c60d769.ibm.com.com (unknown [9.124.221.69])
-	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Fri, 29 May 2026 12:40:54 +0000 (GMT)
-From: Shrikanth Hegde <sshegde@linux.ibm.com>
-To: christophe.leroy@csgroup.eu, maddy@linux.ibm.com,
-        linuxppc-dev@lists.ozlabs.org, tglx@kernel.org
-Cc: sshegde@linux.ibm.com, linux-kernel@vger.kernel.org,
-        "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-Subject: [PATCH v2 2/3] powerpc/irq: Make irqstats array based
-Date: Fri, 29 May 2026 18:10:44 +0530
-Message-ID: <20260529124045.1208539-3-sshegde@linux.ibm.com>
-X-Mailer: git-send-email 2.51.0
-In-Reply-To: <20260529124045.1208539-1-sshegde@linux.ibm.com>
-References: <20260529124045.1208539-1-sshegde@linux.ibm.com>
+	Fri, 29 May 2026 13:37:28 GMT
+Received: from smtpav04.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id CB96558050;
+	Fri, 29 May 2026 13:37:28 +0000 (GMT)
+Received: from smtpav04.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 29BBB58045;
+	Fri, 29 May 2026 13:37:25 +0000 (GMT)
+Received: from [9.61.247.63] (unknown [9.61.247.63])
+	by smtpav04.wdc07v.mail.ibm.com (Postfix) with ESMTP;
+	Fri, 29 May 2026 13:37:24 +0000 (GMT)
+Message-ID: <8f0c86f7-eab4-4e82-97c1-5d190c390770@linux.ibm.com>
+Date: Fri, 29 May 2026 19:07:22 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -89,374 +81,182 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: PowerPC: Random memory corruption causing kernel oops on Power11
+Content-Language: en-GB
+From: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
+To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+        Madhavan Srinivasan <maddy@linux.ibm.com>, selinux@vger.kernel.org,
+        rppt@kernel.org, paul@paul-moore.com
+References: <03e5151a-f420-46f9-ad5e-109420132021@linux.ibm.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+        Ritesh Harjani <riteshh@linux.ibm.com>,
+        "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+In-Reply-To: <03e5151a-f420-46f9-ad5e-109420132021@linux.ibm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: mwDugPUT38qW5Oe7Flgl_FowcOdKmEo7
-X-Proofpoint-GUID: mwDugPUT38qW5Oe7Flgl_FowcOdKmEo7
-X-Authority-Analysis: v=2.4 cv=XqfK/1F9 c=1 sm=1 tr=0 ts=6a19895d cx=c_pps
- a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
- a=NGcC8JguVDcA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=Y2IxJ9c9Rs8Kov3niI8_:22 a=VwQbUJbxAAAA:8 a=VnNF1IyMAAAA:8
- a=Nt6gJGhAC5hH5tf_ggoA:9
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTI5MDEyNiBTYWx0ZWRfXyrIhL2WA7NJu
- eixPNRfhCFuUuzgbud8U4HVd1mKK7rh6PoMCwh33ggTkF5cYlhhgzmveDwpGSHWPrvfaORCURnr
- 9rLacZ7MUmyzCpC1H/HhatBbLc6tHcAtZ6RE9//FrOUsAfJPuNbllusGeL4G/7qo2yIWJQouNLM
- a+jKSa4uZTQy+KHrRE4k3hNOXVPoUzPjy0WDspMHk24rTv/s14kzkXbhRWlSgGqeO3fjy+fwFte
- Jyw2qNs+xN/F0WsTPCLlDex5kbC/S6AH+ogPdhYikkMMgiX5GXk0RoOtJ1qj3E/cmHSILO44o8n
- 3mPxyhLklcb18LqXMnwWxSXgn2AJBHOIN172H15yz48xJ79ASO4tb+f9YIQB7+bZjSieIK2dwXu
- 3WeOoPnN0nZo9S8VlUYiRDxodXoaDaHa3K/Hca1fxV23Bt/E76dUyGFrhwj59W1RjUaw90Elh0r
- Pavz5R8tQgpbHiwgccA==
+X-Authority-Analysis: v=2.4 cv=QLJYgALL c=1 sm=1 tr=0 ts=6a19969a cx=c_pps
+ a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
+ a=IkcTkHD0fZMA:10 a=NGcC8JguVDcA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=RzCfie-kr_QcCd8fBx8p:22 a=VwQbUJbxAAAA:8
+ a=xVhDTqbCAAAA:8 a=VnNF1IyMAAAA:8 a=Es5cYSP9gH2uTasRBFEA:9 a=3ZKOabzyN94A:10
+ a=QEXdDO2ut3YA:10 a=GrmWmAYt4dzCMttCBZOh:22
+X-Proofpoint-GUID: X95Oq2XxFmbTvXpUZFekBxqU1m9zmlsM
+X-Proofpoint-ORIG-GUID: X95Oq2XxFmbTvXpUZFekBxqU1m9zmlsM
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTI5MDEzNiBTYWx0ZWRfX98yBgGkQ+DoP
+ 1+Aieu2z0FjWtV39VZaf1OkZjVESqSCHIQeUA/47uQ9OJ3sA6ItyhGM4WiEFFt+yqtDMMyX+wBK
+ 3fDpicUza8k49ZRnCdhRIScJqeyDgEq4EfCiUOeIHdm4TEzvLVw7bFjZEbzb/yNKCiMYzTq37GL
+ xbQcYhWTGhGKCiMh1tHZfkhA6sMw4Z3vaPBbFeCpC/r0jcRMT0Q04Ng7cI6liZUQDzBwZV/NJGj
+ r49z5aTSHdLznUPP20yPdJgngvkRkeAGzI82616bRoZnwm6Sp5jZQYHYnu/n/ISqnFi5WKtJ08n
+ +Q5gkDTRFwRb7DotcEfDrtkmzNS75JFOR75Derbk3hdzxMqi87Z9KvOTx7Ae+SIJYV74DnUl2j9
+ w/KJBh/JmJa6hmhxeGkakfRUbq3SVuXxlSPbL1261VJ6JT/2uNgXSUrO0jjBvMX4vicRsE8+EHb
+ Y16/mLkhPjrheX6BQXw==
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
  definitions=2026-05-29_03,2026-05-28_03,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- malwarescore=0 spamscore=0 impostorscore=0 adultscore=0 phishscore=0
- priorityscore=1501 lowpriorityscore=0 bulkscore=0 suspectscore=0
- clxscore=1015 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2605210000
- definitions=main-2605290126
+ spamscore=0 suspectscore=0 impostorscore=0 malwarescore=0 adultscore=0
+ lowpriorityscore=0 phishscore=0 clxscore=1011 priorityscore=1501 bulkscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2605210000 definitions=main-2605290136
 
-Current irq_cpustat_t has separate member for handling each arch
-specific interrupt type. The same can be achieved with array instead
-indexed by corresponding irq counter type.
 
-This helps to,
+On 29/05/26 12:20 pm, Venkat Rao Bagalkote wrote:
+> Greetings!!!
+>
+> Kernel 7.1.0-rc5-next-20260528 crashes randomly on IBM Power11 
+> hardware. Attached is the config file.
+>
+> **System:**
+> - Hardware: IBM 9080-HEX Power11, pSeries
+> - Broken: 7.1.0-rc5-next-20260528
+> - Config: 64K pages, Radix MMU
+>
+>
+> **Problem:**
+> Different crash at each reboot.
+>
+>
+> **Example Crash 1:**
+>
+> [    4.678016] BUG: Unable to handle kernel data access at 
+> 0xbffffffefec10628
+> [    4.678112] NIP [c008000004e3c74c] 
+> xfs_dir2_block_lookup_int+0xd4/0x300 [xfs]
+> [    4.678281] [c000000005eaf7d0] [c008000004e3c6d4] 
+> xfs_dir2_block_lookup_int+0x5c/0x300 [xfs]
+> [    4.678363] [c000000005eaf850] [c008000004e3d56c] 
+> xfs_dir2_block_lookup+0x44/0x1e0 [xfs]
+>
+>
+> **Example Crash 2:**
+>
+> [    6.327116] BUG: Unable to handle kernel data access at 
+> 0x762f736563697695
+> [    6.327242] NIP [c00000000073cf34] __refill_obj_stock+0x74/0x2c0
+> [    6.327261] [c0000013ffdbfd10] [c0000000007418b8] 
+> obj_cgroup_uncharge+0x48/0x70
+> [    6.327271] [c0000013ffdbfd50] [c00000000062fffc] 
+> free_percpu.part.0+0x12c/0x630
+>
+>
 
-- Make it easy to integrate into genirq improvements by calling
-  genirq provided irq_proc_emit_counts. That speeds up quite a bit
-  by printing all 0's once as much as possible.
+Git bisect is pointing to 54067bacb49c selinux: hooks: use __getname() 
+to allocate path buffer as the first bad commit.
 
-- Adding a new vector or software counter only requires to update the table
-  and everything just works
 
-- Remove ifdef usage a bit.
+# git bisect good
+54067bacb49caeada82b20b6bd706dca0cb99ffc is the first bad commit
+commit 54067bacb49caeada82b20b6bd706dca0cb99ffc
+Author: Mike Rapoport (Microsoft) <rppt@kernel.org>
+Date:   Wed May 20 11:18:56 2026 +0300
 
-- Instead of going through each member, it simply becomes an array
-  traversal.
+     selinux: hooks: use __getname() to allocate path buffer
 
-Time taken to read /proc/interrupts 1000 times.
-Base and v6 details can be found in cover-letter.
-Base		:  103us
-v6		:   63us
-v6+this_patch	:   57us
+     selinux_genfs_get_sid() allocates memory for a path with 
+__get_free_page()
+     although there is a dedicated helper for allocation of file paths:
+     __getname().
 
-A Decent 10% reduction can be seen in a system 240 CPUs. As the system
-size increases the gain would be more as emitting 0 would reduce more
-and more.
+     Replace __get_free_page() for allocation of a path buffer with 
+__getname().
 
-Reviewed-by: Christophe Leroy (CS GROUP) <chleroy@kernel.org>
-Signed-off-by: Shrikanth Hegde <sshegde@linux.ibm.com>
----
- arch/powerpc/include/asm/hardirq.h |  27 +++++---
- arch/powerpc/kernel/dbell.c        |   2 +-
- arch/powerpc/kernel/irq.c          | 107 ++++++++++-------------------
- arch/powerpc/kernel/time.c         |   6 +-
- arch/powerpc/kernel/traps.c        |  11 ++-
- arch/powerpc/kernel/watchdog.c     |   2 +-
- 6 files changed, 64 insertions(+), 91 deletions(-)
+     Signed-off-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
+     Signed-off-by: Paul Moore <paul@paul-moore.com>
 
-diff --git a/arch/powerpc/include/asm/hardirq.h b/arch/powerpc/include/asm/hardirq.h
-index bf3926a0c69c..38098e35b241 100644
---- a/arch/powerpc/include/asm/hardirq.h
-+++ b/arch/powerpc/include/asm/hardirq.h
-@@ -5,26 +5,33 @@
- #include <linux/threads.h>
- #include <linux/irq.h>
- 
--typedef struct {
--	unsigned int timer_irqs_event;
--	unsigned int broadcast_irqs_event;
--	unsigned int timer_irqs_others;
--	unsigned int pmu_irqs;
--	unsigned int mce_exceptions;
--	unsigned int spurious_irqs;
--	unsigned int sreset_irqs;
-+enum irq_stat_counts {
-+	IRQ_COUNT_LOC_TIMER,
-+	IRQ_COUNT_BCT_TIMER,
-+	IRQ_COUNT_OTHER_TIMER,
-+	IRQ_COUNT_SPURIOUS,
-+	IRQ_COUNT_PMI,
-+	IRQ_COUNT_MCE,
-+	IRQ_COUNT_NMI_SRESET,
- #ifdef CONFIG_PPC_WATCHDOG
--	unsigned int soft_nmi_irqs;
-+	IRQ_COUNT_WATCHDOG,
- #endif
- #ifdef CONFIG_PPC_DOORBELL
--	unsigned int doorbell_irqs;
-+	IRQ_COUNT_DOORBELL,
- #endif
-+	IRQ_COUNT_MAX,
-+};
-+
-+typedef struct {
-+	unsigned int counts[IRQ_COUNT_MAX];
- } ____cacheline_aligned irq_cpustat_t;
- 
- DECLARE_PER_CPU_SHARED_ALIGNED(irq_cpustat_t, irq_stat);
- DECLARE_PER_CPU(unsigned int, __softirq_pending);
- #define local_softirq_pending_ref       __softirq_pending
- 
-+#define inc_irq_stat(index)	__this_cpu_inc(irq_stat.counts[IRQ_COUNT_##index])
-+
- #define __ARCH_IRQ_STAT
- #define __ARCH_IRQ_EXIT_IRQS_DISABLED
- 
-diff --git a/arch/powerpc/kernel/dbell.c b/arch/powerpc/kernel/dbell.c
-index 5712dd846263..f5e298a4c4c0 100644
---- a/arch/powerpc/kernel/dbell.c
-+++ b/arch/powerpc/kernel/dbell.c
-@@ -31,7 +31,7 @@ DEFINE_INTERRUPT_HANDLER_ASYNC(doorbell_exception)
- 		do_hard_irq_enable();
- 
- 	kvmppc_clear_host_ipi(smp_processor_id());
--	__this_cpu_inc(irq_stat.doorbell_irqs);
-+	inc_irq_stat(DOORBELL);
- 
- 	smp_ipi_demux_relaxed(); /* already performed the barrier */
- 
-diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
-index f33df5e5c23f..e67a18f62142 100644
---- a/arch/powerpc/kernel/irq.c
-+++ b/arch/powerpc/kernel/irq.c
-@@ -84,79 +84,57 @@ u32 tau_interrupts(unsigned long cpu);
- #endif
- #endif /* CONFIG_PPC32 */
- 
-+struct irq_stat_info {
-+	const char	*symbol;
-+	const char	*text;
-+};
-+
-+#define ISE(idx, sym, txt)[IRQ_COUNT_##idx] = { .symbol = sym, .text = txt}
-+
-+static struct irq_stat_info irq_stat_info[IRQ_COUNT_MAX] __ro_after_init = {
-+	ISE(LOC_TIMER,		"LOC", "  Local timer interrupts for timer event device\n"),
-+	ISE(BCT_TIMER,		"BCT", "  Broadcast timer interrupts for timer event device\n"),
-+	ISE(OTHER_TIMER,	"LOC", "  Local timer interrupts for others\n"),
-+	ISE(SPURIOUS,		"SPU", "  Spurious interrupts\n"),
-+	ISE(PMI,		"PMI", "  Performance monitoring interrupts\n"),
-+	ISE(MCE,		"MCE", "  Machine check exceptions\n"),
-+	ISE(NMI_SRESET,		"NMI", "  System Reset interrupts\n"),
-+#ifdef CONFIG_PPC_WATCHDOG
-+	ISE(WATCHDOG,		"WDG", "  Watchdog soft-NMI interrupts\n"),
-+#endif
-+#ifdef CONFIG_PPC_DOORBELL
-+	ISE(DOORBELL,		"DBL", "  Doorbell interrupts\n"),
-+#endif
-+};
-+
- int arch_show_interrupts(struct seq_file *p, int prec)
- {
--	int j;
-+	const struct irq_stat_info *info = irq_stat_info;
-+
-+	for (unsigned int i = 0; i < ARRAY_SIZE(irq_stat_info); i++, info++) {
-+		seq_printf(p, "%*s:", prec, info->symbol);
-+		irq_proc_emit_counts(p, &irq_stat.counts[i]);
-+		seq_puts(p, info->text);
-+	}
- 
- #if defined(CONFIG_PPC32) && defined(CONFIG_TAU_INT)
- 	if (tau_initialized) {
-+		int j;
- 		seq_printf(p, "%*s:", prec, "TAU");
- 		for_each_online_cpu(j)
- 			seq_put_decimal_ull_width(p, " ", tau_interrupts(j), 10);
- 		seq_puts(p, "  PowerPC             Thermal Assist (cpu temp)\n");
- 	}
- #endif /* CONFIG_PPC32 && CONFIG_TAU_INT */
--
--	seq_printf(p, "%*s:", prec, "LOC");
--	for_each_online_cpu(j)
--		seq_put_decimal_ull_width(p, " ", per_cpu(irq_stat, j).timer_irqs_event, 10);
--        seq_printf(p, "  Local timer interrupts for timer event device\n");
--
--	seq_printf(p, "%*s:", prec, "BCT");
--	for_each_online_cpu(j)
--		seq_put_decimal_ull_width(p, " ", per_cpu(irq_stat, j).broadcast_irqs_event, 10);
--	seq_printf(p, "  Broadcast timer interrupts for timer event device\n");
--
--	seq_printf(p, "%*s:", prec, "LOC");
--	for_each_online_cpu(j)
--		seq_put_decimal_ull_width(p, " ", per_cpu(irq_stat, j).timer_irqs_others, 10);
--        seq_printf(p, "  Local timer interrupts for others\n");
--
--	seq_printf(p, "%*s:", prec, "SPU");
--	for_each_online_cpu(j)
--		seq_put_decimal_ull_width(p, " ", per_cpu(irq_stat, j).spurious_irqs, 10);
--	seq_printf(p, "  Spurious interrupts\n");
--
--	seq_printf(p, "%*s:", prec, "PMI");
--	for_each_online_cpu(j)
--		seq_put_decimal_ull_width(p, " ", per_cpu(irq_stat, j).pmu_irqs, 10);
--	seq_printf(p, "  Performance monitoring interrupts\n");
--
--	seq_printf(p, "%*s:", prec, "MCE");
--	for_each_online_cpu(j)
--		seq_put_decimal_ull_width(p, " ", per_cpu(irq_stat, j).mce_exceptions, 10);
--	seq_printf(p, "  Machine check exceptions\n");
--
- #ifdef CONFIG_PPC_BOOK3S_64
- 	if (cpu_has_feature(CPU_FTR_HVMODE)) {
-+		int j;
- 		seq_printf(p, "%*s:", prec, "HMI");
- 		for_each_online_cpu(j)
- 			seq_put_decimal_ull_width(p, " ", paca_ptrs[j]->hmi_irqs, 10);
- 		seq_printf(p, "  Hypervisor Maintenance Interrupts\n");
- 	}
- #endif
--
--	seq_printf(p, "%*s:", prec, "NMI");
--	for_each_online_cpu(j)
--		seq_put_decimal_ull_width(p, " ", per_cpu(irq_stat, j).sreset_irqs, 10);
--	seq_printf(p, "  System Reset interrupts\n");
--
--#ifdef CONFIG_PPC_WATCHDOG
--	seq_printf(p, "%*s:", prec, "WDG");
--	for_each_online_cpu(j)
--		seq_put_decimal_ull_width(p, " ", per_cpu(irq_stat, j).soft_nmi_irqs, 10);
--	seq_printf(p, "  Watchdog soft-NMI interrupts\n");
--#endif
--
--#ifdef CONFIG_PPC_DOORBELL
--	if (cpu_has_feature(CPU_FTR_DBELL)) {
--		seq_printf(p, "%*s:", prec, "DBL");
--		for_each_online_cpu(j)
--			seq_put_decimal_ull_width(p, " ", per_cpu(irq_stat, j).doorbell_irqs, 10);
--		seq_printf(p, "  Doorbell interrupts\n");
--	}
--#endif
--
- 	return 0;
- }
- 
-@@ -165,24 +143,15 @@ int arch_show_interrupts(struct seq_file *p, int prec)
-  */
- u64 arch_irq_stat_cpu(unsigned int cpu)
- {
--	u64 sum = per_cpu(irq_stat, cpu).timer_irqs_event;
-+	irq_cpustat_t *p = per_cpu_ptr(&irq_stat, cpu);
-+	u64 sum = 0;
-+
-+	for (unsigned int i = 0; i < ARRAY_SIZE(irq_stat_info); i++)
-+		sum += p->counts[i];
- 
--	sum += per_cpu(irq_stat, cpu).broadcast_irqs_event;
--	sum += per_cpu(irq_stat, cpu).pmu_irqs;
--	sum += per_cpu(irq_stat, cpu).mce_exceptions;
--	sum += per_cpu(irq_stat, cpu).spurious_irqs;
--	sum += per_cpu(irq_stat, cpu).timer_irqs_others;
- #ifdef CONFIG_PPC_BOOK3S_64
- 	sum += paca_ptrs[cpu]->hmi_irqs;
- #endif
--	sum += per_cpu(irq_stat, cpu).sreset_irqs;
--#ifdef CONFIG_PPC_WATCHDOG
--	sum += per_cpu(irq_stat, cpu).soft_nmi_irqs;
--#endif
--#ifdef CONFIG_PPC_DOORBELL
--	sum += per_cpu(irq_stat, cpu).doorbell_irqs;
--#endif
--
- 	return sum;
- }
- 
-@@ -248,7 +217,7 @@ static void __do_irq(struct pt_regs *regs, unsigned long oldsp)
- 
- 	/* And finally process it */
- 	if (unlikely(!irq))
--		__this_cpu_inc(irq_stat.spurious_irqs);
-+		inc_irq_stat(SPURIOUS);
- 	else
- 		generic_handle_irq(irq);
- 
-diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
-index b4472288e0d4..5794adc2e8df 100644
---- a/arch/powerpc/kernel/time.c
-+++ b/arch/powerpc/kernel/time.c
-@@ -574,13 +574,13 @@ DEFINE_INTERRUPT_HANDLER_ASYNC(timer_interrupt)
- 	now = get_tb();
- 	if (now >= *next_tb) {
- 		evt->event_handler(evt);
--		__this_cpu_inc(irq_stat.timer_irqs_event);
-+		inc_irq_stat(LOC_TIMER);
- 	} else {
- 		now = *next_tb - now;
- 		if (now > decrementer_max)
- 			now = decrementer_max;
- 		set_dec_or_work(now);
--		__this_cpu_inc(irq_stat.timer_irqs_others);
-+		inc_irq_stat(OTHER_TIMER);
- 	}
- 
- 	trace_timer_interrupt_exit(regs);
-@@ -593,7 +593,7 @@ EXPORT_SYMBOL(timer_interrupt);
- void timer_broadcast_interrupt(void)
- {
- 	tick_receive_broadcast();
--	__this_cpu_inc(irq_stat.broadcast_irqs_event);
-+	inc_irq_stat(BCT_TIMER);
- }
- #endif
- 
-diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-index cb8e9357383e..a8f15154bd9a 100644
---- a/arch/powerpc/kernel/traps.c
-+++ b/arch/powerpc/kernel/traps.c
-@@ -459,8 +459,7 @@ DEFINE_INTERRUPT_HANDLER_NMI(system_reset_exception)
- 	}
- 
- 	hv_nmi_check_nonrecoverable(regs);
--
--	__this_cpu_inc(irq_stat.sreset_irqs);
-+	inc_irq_stat(NMI_SRESET);
- 
- 	/* See if any machine dependent calls */
- 	if (ppc_md.system_reset_exception) {
-@@ -817,7 +816,7 @@ static void __machine_check_exception(struct pt_regs *regs)
- {
- 	int recover = 0;
- 
--	__this_cpu_inc(irq_stat.mce_exceptions);
-+	inc_irq_stat(MCE);
- 
- 	add_taint(TAINT_MACHINE_CHECK, LOCKDEP_NOW_UNRELIABLE);
- 
-@@ -1932,8 +1931,7 @@ DEFINE_INTERRUPT_HANDLER(vsx_unavailable_tm)
- DECLARE_INTERRUPT_HANDLER_NMI(performance_monitor_exception_nmi);
- DEFINE_INTERRUPT_HANDLER_NMI(performance_monitor_exception_nmi)
- {
--	__this_cpu_inc(irq_stat.pmu_irqs);
--
-+	inc_irq_stat(PMI);
- 	perf_irq(regs);
- 
- 	return 0;
-@@ -1943,8 +1941,7 @@ DEFINE_INTERRUPT_HANDLER_NMI(performance_monitor_exception_nmi)
- DECLARE_INTERRUPT_HANDLER_ASYNC(performance_monitor_exception_async);
- DEFINE_INTERRUPT_HANDLER_ASYNC(performance_monitor_exception_async)
- {
--	__this_cpu_inc(irq_stat.pmu_irqs);
--
-+	inc_irq_stat(PMI);
- 	perf_irq(regs);
- }
- 
-diff --git a/arch/powerpc/kernel/watchdog.c b/arch/powerpc/kernel/watchdog.c
-index 764001deb060..f516eeccc9f6 100644
---- a/arch/powerpc/kernel/watchdog.c
-+++ b/arch/powerpc/kernel/watchdog.c
-@@ -381,7 +381,7 @@ DEFINE_INTERRUPT_HANDLER_NMI(soft_nmi_interrupt)
- 	if (!cpumask_test_cpu(cpu, &wd_cpus_enabled))
- 		return 0;
- 
--	__this_cpu_inc(irq_stat.soft_nmi_irqs);
-+	inc_irq_stat(WATCHDOG);
- 
- 	tb = get_tb();
- 	if (tb - per_cpu(wd_timer_tb, cpu) >= wd_panic_timeout_tb) {
--- 
-2.47.3
+  security/selinux/hooks.c | 4 ++--
+  1 file changed, 2 insertions(+), 2 deletions(-)
 
+# git bisect log
+git bisect start
+# status: waiting for both good and bad commits
+# good: [e7ae89a0c97ce2b68b0983cd01eda67cf373517d] Linux 7.1-rc5
+git bisect good e7ae89a0c97ce2b68b0983cd01eda67cf373517d
+# status: waiting for bad commit, 1 good commit known
+# bad: [f7af91adc230aa99e23330ecf85bc9badd9780ad] Add linux-next 
+specific files for 20260528
+git bisect bad f7af91adc230aa99e23330ecf85bc9badd9780ad
+# good: [7189ebc81d5e4cb4e03dc4040b07c582b95b09d5] Merge branch 
+'nand/next' of https://git.kernel.org/pub/scm/linux/kernel/git/mtd/linux.git
+git bisect good 7189ebc81d5e4cb4e03dc4040b07c582b95b09d5
+# skip: [d22aa6f023f3fc275e1f994045a6b347288b2e5a] Merge branch 
+'watchdog-next' of 
+https://git.kernel.org/pub/scm/linux/kernel/git/groeck/linux-staging.git
+git bisect skip d22aa6f023f3fc275e1f994045a6b347288b2e5a
+# good: [40d5349aaaae55ec62451bfacc6189cf44ce02cb] iio: adc: ti-ads1298: 
+Add parentheses around macro parameter
+git bisect good 40d5349aaaae55ec62451bfacc6189cf44ce02cb
+# good: [6665ab5cf8e74edba571d3d2f31e575f89373dfd] Merge branch 
+'next-integrity' of 
+https://git.kernel.org/pub/scm/linux/kernel/git/zohar/linux-integrity
+git bisect good 6665ab5cf8e74edba571d3d2f31e575f89373dfd
+# bad: [4cc60db652df7ae5d659ec23325c341a52d065e0] Merge branch 
+'driver-core-next' of 
+https://git.kernel.org/pub/scm/linux/kernel/git/driver-core/driver-core.git
+git bisect bad 4cc60db652df7ae5d659ec23325c341a52d065e0
+# bad: [e1d469c38defe7fcb8c6f62a2b7dbf4a103da300] Merge branch 'master' 
+of https://git.kernel.org/pub/scm/linux/kernel/git/tip/tip.git
+git bisect bad e1d469c38defe7fcb8c6f62a2b7dbf4a103da300
+# good: [4678d11f294de0fd295a265e02955b5d1a4a2684] Merge branch into 
+tip/master: 'x86/tdx'
+git bisect good 4678d11f294de0fd295a265e02955b5d1a4a2684
+# bad: [9397e02d718fc52703d753f489042293cd807dd3] Merge branch 'next' of 
+https://git.kernel.org/pub/scm/linux/kernel/git/pcmoore/audit.git
+git bisect bad 9397e02d718fc52703d753f489042293cd807dd3
+# good: [c574bdb524095d24169e229b2e3b9318c72e733a] watchdog: 
+ziirave_wdt: Use named initializers for struct i2c_device_id
+git bisect good c574bdb524095d24169e229b2e3b9318c72e733a
+# bad: [5568ff6b5e30c7736c24e2096e968c8785c2c245] Merge branch 
+'for-next-tpm' of 
+https://git.kernel.org/pub/scm/linux/kernel/git/jarkko/linux-tpmdd.git
+git bisect bad 5568ff6b5e30c7736c24e2096e968c8785c2c245
+# bad: [23f6b2756d28e76464c7e87850d3d4f6d8c8b365] Merge branch 'next' of 
+https://git.kernel.org/pub/scm/linux/kernel/git/pcmoore/selinux.git
+git bisect bad 23f6b2756d28e76464c7e87850d3d4f6d8c8b365
+# good: [ecf41f6218b58c72f1511e395e480f70a9f44889] selinux: reorder 
+policydb_index()
+git bisect good ecf41f6218b58c72f1511e395e480f70a9f44889
+# bad: [54067bacb49caeada82b20b6bd706dca0cb99ffc] selinux: hooks: use 
+__getname() to allocate path buffer
+git bisect bad 54067bacb49caeada82b20b6bd706dca0cb99ffc
+# good: [2f0af91353cb64b54cfee5423820d2149039338d] selinux: check for 
+simple types
+git bisect good 2f0af91353cb64b54cfee5423820d2149039338d
+# good: [bc3f08d1ef15ebbd32faf0b10cd9699b90b9d30c] selinux: use 
+k[mz]alloc() to allocate temporary buffers
+git bisect good bc3f08d1ef15ebbd32faf0b10cd9699b90b9d30c
+# first bad commit: [54067bacb49caeada82b20b6bd706dca0cb99ffc] selinux: 
+hooks: use __getname() to allocate path buffer
+
+
+> If you happen to fix this, please add below tag.
+>
+> Reported-by: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
+>
+>
+> Regards,
+>
+> Venkat.
+>
 
