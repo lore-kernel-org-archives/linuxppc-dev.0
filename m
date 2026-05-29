@@ -1,76 +1,68 @@
-Return-Path: <linuxppc-dev+bounces-21725-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21726-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BF87CCD6E51
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 May 2026 14:48:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3B745CD6E52
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 May 2026 15:02:26 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gRmSP1QL6z2ySg;
-	Sat, 30 May 2026 00:48:21 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780066101;
-	cv=none; b=ojsqPPxPN78MSZZn1Zgn3UdQshgqXy/MKS6aHi3+pQQlFR4ltJ3ttVOwyG0q3WgAQyqayoamAr29zLYqz0tY3DKBANwfrDkpu4nmlx+dFj0UoOBSNzVnJufSopbUPwdgj/rwa9qLKn1eTezCwtPTEWWva9gD6rmQM/0XM1pUVRATp6r86i3BES2IxkDdEfCo4SFwvYU1a6OJRuzWL4mppP7Yk0yr2Ggu+OJOZt5yayQA2clx2hIhQVMcoD17wMue9TckzuVY0lo0sO1GT6A7e8H/AHObNLyTHEfkmZqWr/QBcwOWjB2X9lZPM7oXUw1bu5MLHPey94znwXM4pY0QIw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gRmmc30tsz2ykX;
+	Sat, 30 May 2026 01:02:24 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::34a"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780066944;
+	cv=none; b=PdRUFMaZLRCfWLRV5QhXB6ar02EOkvCIqd2iMtK5cSN4eVewpE5TkoIRrmTah0/yjMO6eW592x6obbfLBIzH8qgboeARoxxd31w62I/fvpx64gZP87VbkX8OYjV9Acw66Nwh48PJUPJTIt3RMhR+Xxwpzw+hLdXP6BPXf9GZXa7J8N1lmZpNwFVdizOIXMPQLjbt4NN9dhGB8kCwp+1kMel/Z9BkVN/tWiljNp43taVapZ5X/u6Qw129SI1wabWbUjyj7vMT1YKg7wRsYocMqbbNMm812Q1E3mYNO/dnmkrX09oXgMQqCAwEMfLS3F/YXNoDozked5b6Vu+BGzJJbQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1780066101; c=relaxed/relaxed;
-	bh=rDYAlmQq2lyT0mKI/5jPVDdXiqH331Ok6KPFJGIkolA=;
-	h=MIME-Version:Date:From:To:Cc:Message-Id:In-Reply-To:References:
-	 Subject:Content-Type; b=AuqyPsF7dLC9b8I/gwfzLYqPa5eVpgybHy3CPST3zS8dUHNZSRvTptu3UgJ6h+w1W6PfgRjGgpgffEV0PhcHzbJ1LnYqgsAtVEHPCdSCnHTikquztNOgWdo/nQRjL2pxpl2vSPUEAjMgXyaiBkaLPu+p/oM+4iVp8s3fGHmCkiP9cTcwFLuVSA5iwYFLJRgMT/+SYrokPBhDZ6h1ETnkbmhbfooYx9pkfvyPCnk4SNvvpffX5It0fQlHt7VGcVmY1jvOqFaJ8BRZcyAxydZVDSEG/S6m8hgkBt+EmcaZe0/6xZzy5GrV5OCgBjr49/GaLqtc729xvXH5G2LjV/Quvw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=QX53BMvH; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ardb@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1780066944; c=relaxed/relaxed;
+	bh=RHwZV4K/OQyLo87ubxB2N7tui2RqyNeWqpTDKGM1mWQ=;
+	h=Date:In-Reply-To:Mime-Version:References:Message-ID:Subject:From:
+	 To:Cc:Content-Type; b=GkhLajvyWsj0mG6ApxuRTr4LjTRm1HheI76QuRk40jDPjvOnt7i9zv4llPwtDm1T2DDkuyPvHtSSxY5b90mxpuUbqUbIkOMFkHQlviLJS9qI+dC7EERfTI4IoyXbhmAN4ZIliWIPrpBD0vg0kt7X3G0g/MxQvvrswuCp2j133HJqP78Y8v/3G9rJIgZTT4oBEbog0tjrAL/GTXMmouoZrHr6Tj+D1uaTJOBFbYsGOW587AM3W+GgmaZkk1y0L0iXSUfiJXZkYlwFlWtdxMctwCAifIMLenGVwEizcB5+sfry/BBrpRQqXP//aZWV5Cr7mIogNq3nCM4Ri4AoKH672w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=rmxa+GzO; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::34a; helo=mail-wm1-x34a.google.com; envelope-from=3e6ozaggkdi4s9vt+y0by66y3w.u64305cf77u-vwd30aba.6h3sta.69y@flex--ardb.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=flex--ardb.bounces.google.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=QX53BMvH;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=rmxa+GzO;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ardb@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--ardb.bounces.google.com (client-ip=2a00:1450:4864:20::34a; helo=mail-wm1-x34a.google.com; envelope-from=3e6ozaggkdi4s9vt+y0by66y3w.u64305cf77u-vwd30aba.6h3sta.69y@flex--ardb.bounces.google.com; receiver=lists.ozlabs.org)
+Received: from mail-wm1-x34a.google.com (mail-wm1-x34a.google.com [IPv6:2a00:1450:4864:20::34a])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gRmSN0g1Gz2yQL
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 May 2026 00:48:19 +1000 (AEST)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 1487F4444A;
-	Fri, 29 May 2026 14:48:17 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6A6541F00899;
-	Fri, 29 May 2026 14:48:16 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1780066097;
-	bh=rDYAlmQq2lyT0mKI/5jPVDdXiqH331Ok6KPFJGIkolA=;
-	h=Date:From:To:Cc:In-Reply-To:References:Subject;
-	b=QX53BMvHmF9Tb016y6OiviqLZpdCcXakEzemQvHAIKHZmDwqrBZ9kKc4eGKH+DM7R
-	 m6NOmObiOsgEXE9+ZMADhdk8mZfU87xXkUaBGEAcA4R/n1Q0380J4hxoJ7N0rnzntx
-	 pFEysq+iLGkMo4UZG6c2O5zG2qvZnbaM4aRgHF8b7tVhZ0eU4aaL0+tAbGi4TYbB5o
-	 Xheulmx2TTK+BQxu8Uw+3F7ThLsqWRwQiQ1T5gSGNdwLENawgUsV9l1gvVhixOS8J1
-	 nEYMDyX4++E76AADfsobhXucTV82EArbMolMJmHNQPts4kqOycyQ2QOqeHTZnczoo6
-	 2bjirJ6ob0crg==
-Received: from phl-compute-01.internal (phl-compute-01.internal [10.202.2.41])
-	by mailfauth.phl.internal (Postfix) with ESMTP id 9B26AF4006B;
-	Fri, 29 May 2026 10:48:15 -0400 (EDT)
-Received: from phl-imap-05 ([10.202.2.95])
-  by phl-compute-01.internal (MEProxy); Fri, 29 May 2026 10:48:15 -0400
-X-ME-Sender: <xms:L6cZalvqhsB-aHhaRkze_h7UY2ABhSZeFnZ60Q3_IKMDCODR4iuKzA>
-    <xme:L6cZapRecgER7059-g_h5SmbR74_rDZdbLKHp8wKImrL7GCvJSuQ-czyG9PRHVNgX
-    LodoT-OBe61zEkLfQ414HQKZYu3vF8l4Y7Vj5axhKW3qvVV9XuVlw0>
-X-ME-Proxy-Cause: dmFkZTGt+msDe027/QMow7WM2h4XBrXubrUHHx9XVuKXNuewjeECntXEkvpZpwjkpuwWEv
-    A+IG7AeFN5owfWzwbPO9CjcB7TRAAsY44WxF7zXFXy6LoVGUAKFH2Bx1eeqBPzIerpvVjv
-    ELx4NQx0XG6whtq/UTw90jigQlW4j18Zh0Zt1+paIGSTOJ9ku9oHpPkPFvh0lxBxqNkgBT
-    FnRPsw9ol+7BaTbq+VC3GgNlb/hfOhjgLaPfDPKB8smIObxRKijH1R3rHFi8eHD+NkkdLJ
-    A7LUeOTltjqUyU3MM5Wv53HhVF64Qimbf03q9/pBfm6OGXhfkEoLOeymapiGYXWuW7kwNp
-    ckYNzIG87pXFDqxBpRSEjOxQSObcP/T++yyH1GkG3YItNvgZi8BW7YZJf0oLK1Eiu9ctpj
-    e/Qrzm63c6EjvCPOKuUOldqVtQ9ZHP5SjAUyNeaZsq8FP10znmcrDkJjKhmkqvgalMjmqj
-    5yI6GJ6yQK3gJ/0sFlH1xfNMM7hLe/tXPVaeY8cRX+7fv6nhbeMCau2aQ4gfKKOCQInygr
-    DX9MXYrq5o/uY7i19kTROhADx/RRu9bkIc+kVBeOktIvcQ1AMx9acT0YqOTPMhDzC2jr7R
-    qbv5MzK1kh98MwYu6S2aUc5FDL3Tal9kQVrQ86RuzLjlmuBz9HkOhgZjLFug
-X-ME-Proxy: <xmx:L6cZanX74O-bar_jLvxjWKCnp-Ih7O5QrV09suBOhbCd2rIrR9xQeA>
-    <xmx:L6cZamrF7UpYic3Pul9sEvDf0nlILb6aAYq-n3JKJgUil7UpBZORtQ>
-    <xmx:L6cZarFrHHphMz_k0i3sOdMq0fdtjxTfs29QHz9bIdolxCo5oEEGVA>
-    <xmx:L6cZaouUFRbFWAprH-4qWiANOmu1DUXbhNuFie1nlzyqPUFP98ZCWQ>
-    <xmx:L6cZauQug8MFn_HvWRIXz9IpPD4mlQQP6iSw5xCI5jVhcTfQZiXZW5o_>
-Feedback-ID: ice86485a:Fastmail
-Received: by mailuser.phl.internal (Postfix, from userid 501)
-	id 780D8182007A; Fri, 29 May 2026 10:48:15 -0400 (EDT)
-X-Mailer: MessagingEngine.com Webmail Interface
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gRmmZ5C9nz2yQL
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 May 2026 01:02:22 +1000 (AEST)
+Received: by mail-wm1-x34a.google.com with SMTP id 5b1f17b1804b1-49058295985so41885485e9.2
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 May 2026 08:02:22 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20251104; t=1780066940; x=1780671740; darn=lists.ozlabs.org;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:from:to:cc:subject:date:message-id:reply-to;
+        bh=RHwZV4K/OQyLo87ubxB2N7tui2RqyNeWqpTDKGM1mWQ=;
+        b=rmxa+GzOtWXtUvUqjGXua3/eJNrDzgDtr6ZUs9g/s5M+1E9uc54mUfCPUZHzKboFY4
+         g8iiVoxGyJ94eJTvYD+mmhpRLugpG7qA7Sol9x1wbfILpkjaYiBpFfI4VMiIKgSxUBgG
+         K4PHtVbb/tz5ECqNz/xnRc8Kpvx86CNwaWtUYaF7BsOTyNms2jHvrYG3oyD6lvw5wHGc
+         zMfwby4ifH3pePFkhq5LGyzqYOP2IFjtmjbwlYBZzJuXO7UzIgHDkHiBgSF0wvWhk3cc
+         X1UbFFbm2ulwT/gNZo0R5pF2t9qv3eo6RrLnEg9EOm5U6JFLYvkwia15afKNduuXw9e0
+         uT4Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1780066940; x=1780671740;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=RHwZV4K/OQyLo87ubxB2N7tui2RqyNeWqpTDKGM1mWQ=;
+        b=B/x9sFHi17YO8XQrxOorUof9xTeVcOko4VZoDaX3QJ5cRi8OlHX01H3pWy/NwU/s/P
+         qpgEU2cj2N6U5Uv/iJuoX4Jiwp20O91EravCZXQf31OBDP1R3zIYUZLXyaiSwG5e8Hbc
+         /BIdTBCsUkyre8QIbC9yKlJp5yzV+wPzKdeMQeSRP4Ws2rpdd+W/rFJDI06NvH9YoJcN
+         DP//bS1DpkZh3VFfBvPS9rLz1VIOJ/ffIezOYTKRPuRwP6W7Mw0J8NK1LWopFIBe/ZEh
+         WpimjeS3enIs0+j6uuXu9KPeFO89mXvbo1hn3HTgZhvQ1a74Dd0zIp+XFkcYHs/a+djS
+         zXVQ==
+X-Forwarded-Encrypted: i=1; AFNElJ9KnmoaBfgAeoB1sxT5bi8rwIzUls3QKjLvUgvrFyWzm0XNcdN8HIcq1Zkt3ZFYs7ThhEEwWsxrSVTCKV0=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YzXsUwDA9HVCmgDt9kwoQKX0EtrhmsUzkrikWJlwHIWb/dyDExu
+	Tz02MEQhpOYcKj6aYyQS8FPi64APsBH7y1J6KamOWw2Q/g/4KTSCzcsC0sXuJfraxThlFDqZ3Q=
+	=
+X-Received: from wmbz2.prod.google.com ([2002:a05:600c:c082:b0:490:3d2f:edc])
+ (user=ardb job=prod-delivery.src-stubby-dispatcher) by 2002:a05:600c:828d:b0:490:507c:bdb1
+ with SMTP id 5b1f17b1804b1-490a291cbbemr329805e9.15.1780066939649; Fri, 29
+ May 2026 08:02:19 -0700 (PDT)
+Date: Fri, 29 May 2026 17:01:53 +0200
+In-Reply-To: <20260529150150.1670604-17-ardb+git@google.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -83,98 +75,123 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-Date: Fri, 29 May 2026 16:47:54 +0200
-From: "Ard Biesheuvel" <ardb@kernel.org>
-To: "Kevin Brodsky" <kevin.brodsky@arm.com>,
- "Ard Biesheuvel" <ardb+git@google.com>, linux-arm-kernel@lists.infradead.org
-Cc: linux-kernel@vger.kernel.org, "Will Deacon" <will@kernel.org>,
- "Catalin Marinas" <catalin.marinas@arm.com>,
- "Mark Rutland" <mark.rutland@arm.com>, "Ryan Roberts" <ryan.roberts@arm.com>,
- "Anshuman Khandual" <anshuman.khandual@arm.com>,
- "Liz Prucka" <lizprucka@google.com>, "Seth Jenkins" <sethjenkins@google.com>,
- "Kees Cook" <kees@kernel.org>, "Mike Rapoport" <rppt@kernel.org>,
- "David Hildenbrand" <david@kernel.org>,
- "Andrew Morton" <akpm@linux-foundation.org>, "Jann Horn" <jannh@google.com>,
- linux-mm@kvack.org, linux-hardening@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-sh@vger.kernel.org
-Message-Id: <feab72b8-2961-4145-ac5c-80e820bf1ce9@app.fastmail.com>
-In-Reply-To: <b76b327f-612e-494f-b8d3-44108aa73d2a@arm.com>
-References: <20260526175846.2694125-17-ardb+git@google.com>
- <20260526175846.2694125-26-ardb+git@google.com>
- <2a6f9f05-ac57-4ef8-9328-74cc8ccfea16@arm.com>
- <96a8b6b9-71f2-4550-bbbb-fbfa146f4e6a@app.fastmail.com>
- <b76b327f-612e-494f-b8d3-44108aa73d2a@arm.com>
-Subject: Re: [PATCH v6 09/15] arm64: Move fixmap and kasan page tables to end of kernel
- image
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+Mime-Version: 1.0
+References: <20260529150150.1670604-17-ardb+git@google.com>
+X-Developer-Key: i=ardb@kernel.org; a=openpgp; fpr=F43D03328115A198C90016883D200E9CA6329909
+X-Developer-Signature: v=1; a=openpgp-sha256; l=3439; i=ardb@kernel.org;
+ h=from:subject; bh=RVK4+kwUNBzT2vP63qv/oNPK4oNSEDZX2ULcXiZameE=;
+ b=owGbwMvMwCVmkMcZplerG8N4Wi2JIUtyVeK1gth6p/IV1dd2mU+oVf+4YqKnwbIQxumu9bquP
+ Yfu1HZ2lLIwiHExyIopsgjM/vtu5+mJUrXOs2Rh5rAygQxh4OIUgIncvMPIcGzv+x2vrDJc2eUk
+ LtltCDno/Lq1Z7LA5Ge9k44qbfyXuZqR4dqGMNajx9vSleJns73yeprz3enQ4h9HLk24LK1xMO+ dISMA
+X-Mailer: git-send-email 2.54.0.823.g6e5bcc1fc9-goog
+Message-ID: <20260529150150.1670604-19-ardb+git@google.com>
+Subject: [PATCH v7 02/15] arm64: mm: Drop redundant pgd_t* argument from map_mem()
+From: Ard Biesheuvel <ardb+git@google.com>
+To: linux-arm-kernel@lists.infradead.org
+Cc: linux-kernel@vger.kernel.org, will@kernel.org, catalin.marinas@arm.com, 
+	mark.rutland@arm.com, Ard Biesheuvel <ardb@kernel.org>, Ryan Roberts <ryan.roberts@arm.com>, 
+	Anshuman Khandual <anshuman.khandual@arm.com>, Kevin Brodsky <kevin.brodsky@arm.com>, 
+	Liz Prucka <lizprucka@google.com>, Seth Jenkins <sethjenkins@google.com>, 
+	Kees Cook <kees@kernel.org>, Mike Rapoport <rppt@kernel.org>, David Hildenbrand <david@kernel.org>, 
+	Andrew Morton <akpm@linux-foundation.org>, Jann Horn <jannh@google.com>, linux-mm@kvack.org, 
+	linux-hardening@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
+	linux-sh@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
 
-On Fri, 29 May 2026, at 16:42, Kevin Brodsky wrote:
-> On 29/05/2026 13:19, Ard Biesheuvel wrote:
->> On Fri, 29 May 2026, at 10:27, Kevin Brodsky wrote:
->>> On 26/05/2026 19:58, Ard Biesheuvel wrote:
->>>> From: Ard Biesheuvel <ardb@kernel.org>
->>>>
->>>> Move the fixmap and kasan page tables out of the BSS section, and place
->>>> them at the end of the image, right before the init_pg_dir section where
->>>> some of the other statically allocated page tables live.
->>>>
->>>> These page tables are currently the only data objects in vmlinux that
->>>> are meant to be accessed via the kernel image's linear alias, and so
->>>> placing them together allows the remainder of the data/bss section to be
->>>> remapped read-only or unmapped entirely.
->>>>
->>>> Reviewed-by: Kevin Brodsky <kevin.brodsky@arm.com>
->>>> Signed-off-by: Ard Biesheuvel <ardb@kernel.org>
->>>> ---
->>>>  arch/arm64/include/asm/mmu.h    | 2 ++
->>>>  arch/arm64/kernel/vmlinux.lds.S | 8 +++++++-
->>>>  arch/arm64/mm/fixmap.c          | 6 +++---
->>>>  arch/arm64/mm/kasan_init.c      | 2 +-
->>>>  4 files changed, 13 insertions(+), 5 deletions(-)
->>>>
->>>> diff --git a/arch/arm64/include/asm/mmu.h b/arch/arm64/include/asm/mmu.h
->>>> index 5e1211c540ab..fb95754f2876 100644
->>>> --- a/arch/arm64/include/asm/mmu.h
->>>> +++ b/arch/arm64/include/asm/mmu.h
->>>> @@ -13,6 +13,8 @@
->>>>  
->>>>  #ifndef __ASSEMBLER__
->>>>  
->>>> +#define __pgtbl_bss __section(".pgdir.bss") __aligned(PAGE_SIZE)
->>>> +
->>>>  #include <linux/refcount.h>
->>>>  #include <asm/cpufeature.h>
->>>>  
->>>> diff --git a/arch/arm64/kernel/vmlinux.lds.S b/arch/arm64/kernel/vmlinux.lds.S
->>>> index e1ac876200a3..2b0ebfb30c63 100644
->>>> --- a/arch/arm64/kernel/vmlinux.lds.S
->>>> +++ b/arch/arm64/kernel/vmlinux.lds.S
->>>> @@ -349,9 +349,15 @@ SECTIONS
->>>>  	_edata = .;
->>>>  
->>>>  	/* start of zero-init region */
->>>> -	BSS_SECTION(SBSS_ALIGN, 0, 0)
->>>> +	BSS_SECTION(SBSS_ALIGN, 0, PAGE_SIZE)
->>>>  	__pi___bss_start = __bss_start;
->>>>  
->>>> +	/* fixmap BSS starts here - preceding data/BSS is omitted from the linear map */
->>>> +	.pgdir.bss (NOLOAD) : ALIGN(PAGE_SIZE) {
->>> Do we actually need the NOLOAD type here?
->> Yes, otherwise it is emitted as PROGBITS, resulting in all of BSS to be
->> emitted into Image.
->
-> That's rather strange, aren't the .pgdir.bss input sections already
-> NOBITS since __pgtbl_bss is only used on default-initialised globals?
+From: Ard Biesheuvel <ardb@kernel.org>
 
-Not sure why, but the section was PROGBITS not NOBITS before I added the (NOLOAD)
+__map_memblock() and map_mem() always operate on swapper_pg_dir, so
+there is no need to pass around a pgd_t pointer between them.
 
-> Also AFAIU NOLOAD does not prevent the output section from being emitted
-> into the ELF file.
->
+Reviewed-by: Ryan Roberts <ryan.roberts@arm.com>
+Reviewed-by: Kevin Brodsky <kevin.brodsky@arm.com>
+Signed-off-by: Ard Biesheuvel <ardb@kernel.org>
+---
+ arch/arm64/mm/mmu.c | 25 ++++++++++----------
+ 1 file changed, 12 insertions(+), 13 deletions(-)
 
-NOLOAD marks it as NOBITS, which means there is no data in the file that should
-be used to populate the section in memory.
+diff --git a/arch/arm64/mm/mmu.c b/arch/arm64/mm/mmu.c
+index 112fa4a3b0eb..aa0e2c6435f7 100644
+--- a/arch/arm64/mm/mmu.c
++++ b/arch/arm64/mm/mmu.c
+@@ -1035,11 +1035,11 @@ static void update_mapping_prot(phys_addr_t phys, unsigned long virt,
+ 	flush_tlb_kernel_range(virt, virt + size);
+ }
+ 
+-static void __init __map_memblock(pgd_t *pgdp, phys_addr_t start,
+-				  phys_addr_t end, pgprot_t prot, int flags)
++static void __init __map_memblock(phys_addr_t start, phys_addr_t end,
++				  pgprot_t prot, int flags)
+ {
+-	early_create_pgd_mapping(pgdp, start, __phys_to_virt(start), end - start,
+-				 prot, early_pgtable_alloc, flags);
++	early_create_pgd_mapping(swapper_pg_dir, start, __phys_to_virt(start),
++				 end - start, prot, early_pgtable_alloc, flags);
+ }
+ 
+ void __init mark_linear_text_alias_ro(void)
+@@ -1087,13 +1087,13 @@ static phys_addr_t __init arm64_kfence_alloc_pool(void)
+ 	return kfence_pool;
+ }
+ 
+-static void __init arm64_kfence_map_pool(phys_addr_t kfence_pool, pgd_t *pgdp)
++static void __init arm64_kfence_map_pool(phys_addr_t kfence_pool)
+ {
+ 	if (!kfence_pool)
+ 		return;
+ 
+ 	/* KFENCE pool needs page-level mapping. */
+-	__map_memblock(pgdp, kfence_pool, kfence_pool + KFENCE_POOL_SIZE,
++	__map_memblock(kfence_pool, kfence_pool + KFENCE_POOL_SIZE,
+ 			pgprot_tagged(PAGE_KERNEL),
+ 			NO_BLOCK_MAPPINGS | NO_CONT_MAPPINGS);
+ 	memblock_clear_nomap(kfence_pool, KFENCE_POOL_SIZE);
+@@ -1129,11 +1129,11 @@ bool arch_kfence_init_pool(void)
+ #else /* CONFIG_KFENCE */
+ 
+ static inline phys_addr_t arm64_kfence_alloc_pool(void) { return 0; }
+-static inline void arm64_kfence_map_pool(phys_addr_t kfence_pool, pgd_t *pgdp) { }
++static inline void arm64_kfence_map_pool(phys_addr_t kfence_pool) { }
+ 
+ #endif /* CONFIG_KFENCE */
+ 
+-static void __init map_mem(pgd_t *pgdp)
++static void __init map_mem(void)
+ {
+ 	static const u64 direct_map_end = _PAGE_END(VA_BITS_MIN);
+ 	phys_addr_t kernel_start = __pa_symbol(_text);
+@@ -1178,7 +1178,7 @@ static void __init map_mem(pgd_t *pgdp)
+ 		 * if MTE is present. Otherwise, it has the same attributes as
+ 		 * PAGE_KERNEL.
+ 		 */
+-		__map_memblock(pgdp, start, end, pgprot_tagged(PAGE_KERNEL),
++		__map_memblock(start, end, pgprot_tagged(PAGE_KERNEL),
+ 			       flags);
+ 	}
+ 
+@@ -1192,10 +1192,9 @@ static void __init map_mem(pgd_t *pgdp)
+ 	 * Note that contiguous mappings cannot be remapped in this way,
+ 	 * so we should avoid them here.
+ 	 */
+-	__map_memblock(pgdp, kernel_start, kernel_end,
+-		       PAGE_KERNEL, NO_CONT_MAPPINGS);
++	__map_memblock(kernel_start, kernel_end, PAGE_KERNEL, NO_CONT_MAPPINGS);
+ 	memblock_clear_nomap(kernel_start, kernel_end - kernel_start);
+-	arm64_kfence_map_pool(early_kfence_pool, pgdp);
++	arm64_kfence_map_pool(early_kfence_pool);
+ }
+ 
+ void mark_rodata_ro(void)
+@@ -1417,7 +1416,7 @@ static void __init create_idmap(void)
+ 
+ void __init paging_init(void)
+ {
+-	map_mem(swapper_pg_dir);
++	map_mem();
+ 
+ 	memblock_allow_resize();
+ 
+-- 
+2.54.0.823.g6e5bcc1fc9-goog
 
 
