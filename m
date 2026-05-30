@@ -1,79 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-21758-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21759-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CF8BBCD6E49
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 30 May 2026 12:52:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E8940CD5BD0
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 30 May 2026 16:19:53 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gSKrf1R40z2yS6;
-	Sat, 30 May 2026 22:52:50 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=130.133.4.66
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780145570;
-	cv=none; b=aVot4ye1eSKoqe/h3eVukVNmu3rxculQoUU4O6I9kzUYgCRFUAfYwfKWv3nzz8tHU+AWpnm9xeWvSw+eeDyAEZ2ljns5AKfUXanzdQhemvaCJTFqCn4Fjt+OHcqiEdVBObRKoQC4fXPizR2llNjao2ID84FUX3NVDcFp4fZuWZnPIsus/ZFvdyU+SILWUPMwrrvLVT+XdhFpqdFzYqwzlAvPAtzswjM9F/XUOlFd8//OyX/yJ8rqqnRIhQog95OUqgmeN1VUzsER9QWic85UiwQ9lAQAVPE/DSJx6MKFtRdRllK1CVCKg/4/b/RNKfHu+vBf9WhjtzfnJ3XU1m+HQQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gSQRX1npVz2yS6;
+	Sun, 31 May 2026 02:19:52 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780157992;
+	cv=none; b=kX//cN1wzRe+C8qgY90prHEyhKIWPx0ebAD14+rjxyla4Mopx0X8CJp08v+/IsjwRqByy30XnMn90twt905tOc4CPDTPGaqhfF7r25nvjibgze178uI3XNmLV+OWc/9mNxZdiWtMdLGXbac7gyBGZa64m3xSJ6aeEIe5z0F5uNB/wavs9LVV32Dq3hZNMWf8W9Vyd0tPV8A+5DHT1HAzCSmTdLYuSckdpaxjBxIndpjlRNEpLUshqLjn5eeK2hxYnzCvEaTuVhiZCiBimu5XP+VyLX0gk80tgN94c3PQbAKs6fiFt82FS+bg7siWHEDjkqEASfwVN4lhlEdONHbtDw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1780145570; c=relaxed/relaxed;
-	bh=92XpvfBcjudylYPhM9mromsMM4Ay6oz3uieYkI5EGZo=;
-	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=Dhhi6Jh7p+QgMe4QGzi5p3Ow3tiAyEpLNmZHPoD2hBusFwBfaCcgBoRObvRhvF7Jno3LE6wwsxvsXs8omTHj88vWocewHeA7H2S783fyKUKIhP8jIyfyS6mVuARWQrCzSBsRdwMbGJBzkSZ31VzfvAgD/RtBfzRL6+dc/A02CldHGBY0aSwTjWbSitFwuY3ihMyioQT5TmVitnh/qi1kMyQd4euKgLUNQp1ONNfoFps4xtK/HWfLiugJBvqkFDFkFsAl41+rZvsZC594c7sHRMFC8K7uMCE5DLvGir0RI1Cve5XFhuQQK2MR5wCDoZWma8iYsDSO+xHcHtvpmZj8yA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=physik.fu-berlin.de; dkim=pass (2048-bit key; unprotected) header.d=fu-berlin.de header.i=@fu-berlin.de header.a=rsa-sha256 header.s=fub01 header.b=TUA8MLxA; dkim-atps=neutral; spf=pass (client-ip=130.133.4.66; helo=outpost1.zedat.fu-berlin.de; envelope-from=glaubitz@zedat.fu-berlin.de; receiver=lists.ozlabs.org) smtp.mailfrom=zedat.fu-berlin.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=physik.fu-berlin.de
+	t=1780157992; c=relaxed/relaxed;
+	bh=WxYmQxwwBxgWs6asR9XSCI+irQfqn2faBEqKE1hn53E=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=opV8i1yz8GBjS69Gys8aADF9rf3Z/WajZaG2z81b/lIhaIK2tP0K8DDXCRp1wZ/wh2Pt7mkEuIPloQ/eOXQRIW11kGRELvFC6Ff7zeRr2ghqh1ToRvdSgUt/hPNNRODFHBgDa5MiBgw5oc8UYy3NK3D7VE/+auh92qhGDJoRY0gtdUX+ppYcrkm0i6qqMrIpPKC6vtEEvsML7mBGCPkSjHqrzJLMgZ3BX8BuoIVcU3dz17Y4LNxmZKPiw+xDAVZDEbtk9z5TDpGNHGgDkVqQOE2MEnkehaC93o5P3mg8wmW1/Lbj8jOXVBLhgRnDbxWuwLo2byRdgqWRLWlQFAoSSA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=WZl0+4I9; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=fu-berlin.de header.i=@fu-berlin.de header.a=rsa-sha256 header.s=fub01 header.b=TUA8MLxA;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=WZl0+4I9;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=zedat.fu-berlin.de (client-ip=130.133.4.66; helo=outpost1.zedat.fu-berlin.de; envelope-from=glaubitz@zedat.fu-berlin.de; receiver=lists.ozlabs.org)
-X-Greylist: delayed 348 seconds by postgrey-1.37 at boromir; Sat, 30 May 2026 22:52:46 AEST
-Received: from outpost1.zedat.fu-berlin.de (outpost1.zedat.fu-berlin.de [130.133.4.66])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gSKrZ0Wcvz2xR4
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 May 2026 22:52:45 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=fu-berlin.de; s=fub01; h=MIME-Version:Content-Transfer-Encoding:
-	Content-Type:References:In-Reply-To:Date:Cc:To:From:Subject:Message-ID:From:
-	Reply-To:Subject:Date:Message-ID:To:Cc:MIME-Version:Content-Type:
-	Content-Transfer-Encoding:Content-ID:Content-Description:In-Reply-To:
-	References; bh=92XpvfBcjudylYPhM9mromsMM4Ay6oz3uieYkI5EGZo=; t=1780145566;
-	x=1780750366; b=TUA8MLxAC4Oer/6/ZB6gNVWsysfenvKPjaJnXk7pUUhNKliBmJ4dOyP0AYZMw
-	wt7TnUfaisQsH+hOfD+r4jePRRhdxO4CKQX8eFOv8205F9yi7Mt3lu64mbgWhQrCssjs5N6QJXQps
-	pNKD9dk+XiZjFsCjDZfZxFGDk6Prh1XD/MaEscuy8WBWxekJjWQib7j7O4n7CJ69LMkKJqDp0VItJ
-	9YtWscfPKAtV8ihf4dcJNoZsz3OAIIUZJQAg5M3vOeoxJKq/EYgKx/vN+66DkLYFtkTlyrsvC5XP+
-	aKH2OxHyZdG5ap+yx37aSDkm7JbEZYkf0U2zyt8/BucZJAau7w==;
-Received: from inpost2.zedat.fu-berlin.de ([130.133.4.69])
-          by outpost.zedat.fu-berlin.de (Exim 4.99)
-          with esmtps (TLS1.3)
-          tls TLS_AES_256_GCM_SHA384
-          (envelope-from <glaubitz@zedat.fu-berlin.de>)
-          id 1wTJ5H-00000003H2G-3YSm; Sat, 30 May 2026 14:46:35 +0200
-Received: from p57bd94c1.dip0.t-ipconnect.de ([87.189.148.193] helo=[192.168.178.61])
-          by inpost2.zedat.fu-berlin.de (Exim 4.99)
-          with esmtpsa (TLS1.3)
-          tls TLS_AES_256_GCM_SHA384
-          (envelope-from <glaubitz@physik.fu-berlin.de>)
-          id 1wTJ5H-00000003sQm-2Hzt; Sat, 30 May 2026 14:46:35 +0200
-Message-ID: <e450221c9d212a83a82fe1cf79668a8172f34b52.camel@physik.fu-berlin.de>
-Subject: Re: [PATCH] scsi: core: Remove dead code export of
- scsi_device_from_queue
-From: John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>
-To: Catalin Iacob <iacobcatalin@gmail.com>, Thomas Bogendoerfer	
- <tsbogend@alpha.franken.de>, Madhavan Srinivasan <maddy@linux.ibm.com>, 
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
- "Christophe Leroy (CS GROUP)"	 <chleroy@kernel.org>, Yoshinori Sato
- <ysato@users.sourceforge.jp>, Rich Felker	 <dalias@libc.org>, "David S.
- Miller" <davem@davemloft.net>, Andreas Larsson	 <andreas@gaisler.com>,
- "James E.J. Bottomley"	 <James.Bottomley@HansenPartnership.com>, "Martin K.
- Petersen"	 <martin.petersen@oracle.com>, Jens Axboe <axboe@kernel.dk>
-Cc: linux-mips@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	linuxppc-dev@lists.ozlabs.org, linux-sh@vger.kernel.org, 
-	sparclinux@vger.kernel.org, linux-scsi@vger.kernel.org
-Date: Sat, 30 May 2026 14:46:34 +0200
-In-Reply-To: <20260530-remove-pktcdvd-references-v1-1-aa56941d4315@gmail.com>
-References: <20260530-remove-pktcdvd-references-v1-1-aa56941d4315@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.60.1 
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gSQRW3QwMz2yS4
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 31 May 2026 02:19:51 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id 18ACC600BB;
+	Sat, 30 May 2026 16:19:48 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id BD33E1F00893;
+	Sat, 30 May 2026 16:19:40 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1780157987;
+	bh=WxYmQxwwBxgWs6asR9XSCI+irQfqn2faBEqKE1hn53E=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=WZl0+4I9eq0OPPyxyDBdqCGRR+y0CoJpx7P9J1ZNHafWZGZX1fuK9HT7HOCSp1FVU
+	 9ddWJ9lDITFjq9eKGfZ8XgcPI1Gceue8QxkZpOu0JwKjN75XEWJg4tA2a8UNAkWZvu
+	 d2ASsHkW3EY1IZ3rOpPzq31XPfEMQM756K5+/fSW612wkX78yv2eAZ66ejeZV4LlfY
+	 gAu+RNJYW42KKsssq+PHsl1z2ZSd/eOK+QZCgtAc5FgOD8sjUj3miMaJcP2gtaD17q
+	 8U+HAlTtH77+9KCSbzDnS36KQEJCJesVoZVR5wfQkL3btqSLgCjvtjIMAmDS1I+rUb
+	 wf48OWQ3Lcqyg==
+Date: Sat, 30 May 2026 19:19:36 +0300
+From: Mike Rapoport <rppt@kernel.org>
+To: Ard Biesheuvel <ardb+git@google.com>
+Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+	will@kernel.org, catalin.marinas@arm.com, mark.rutland@arm.com,
+	Ard Biesheuvel <ardb@kernel.org>,
+	Ryan Roberts <ryan.roberts@arm.com>,
+	Anshuman Khandual <anshuman.khandual@arm.com>,
+	Kevin Brodsky <kevin.brodsky@arm.com>,
+	Liz Prucka <lizprucka@google.com>,
+	Seth Jenkins <sethjenkins@google.com>, Kees Cook <kees@kernel.org>,
+	David Hildenbrand <david@kernel.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Jann Horn <jannh@google.com>, linux-mm@kvack.org,
+	linux-hardening@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+	linux-sh@vger.kernel.org,
+	Yoshinori Sato <ysato@users.sourceforge.jp>,
+	Rich Felker <dalias@libc.org>,
+	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
+	Geert Uytterhoeven <geert+renesas@glider.be>
+Subject: Re: [PATCH v7 12/15] sh: Drop cache flush of the zero page at boot
+Message-ID: <ahsOGMc7ys3H_oAt@kernel.org>
+References: <20260529150150.1670604-17-ardb+git@google.com>
+ <20260529150150.1670604-29-ardb+git@google.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -87,267 +81,39 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-Original-Sender: glaubitz@physik.fu-berlin.de
-X-Originating-IP: 87.189.148.193
-X-ZEDAT-Hint: PO
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260529150150.1670604-29-ardb+git@google.com>
 
-Hi Catalin,
+On Fri, May 29, 2026 at 05:02:03PM +0200, Ard Biesheuvel wrote:
+> From: Ard Biesheuvel <ardb@kernel.org>
+> 
+> SuperH performs cache maintenance on the zero page during boot,
+> presumably because before commit
+> 
+>   6215d9f4470f ("arch, mm: consolidate empty_zero_page")
+> 
+> the zero page did double duty as a boot params region, and was cleared
+> separately, as it was not part of BSS. The memset() in question was
+> dropped by that commit, but the __flush_wback_region() call remained.
+> 
+> As empty_zero_page[] has been moved to BSS, it can be treated as any
+> other BSS memory, and so the cache flush can be dropped.
+> 
+> Cc: Yoshinori Sato <ysato@users.sourceforge.jp>
+> Cc: Rich Felker <dalias@libc.org>
+> Cc: John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>
+> Cc: Mike Rapoport <rppt@kernel.org>
+> Cc: Geert Uytterhoeven <geert+renesas@glider.be>
+> Signed-off-by: Ard Biesheuvel <ardb@kernel.org>
 
-On Sat, 2026-05-30 at 15:31 +0300, Catalin Iacob wrote:
-> Commit 1cea5180f2f8 ("block: remove pktcdvd driver") left behind some
-> CONFIG_CONFIG_CDROM_PKTCDVD* references in defconfigs and around an
-> export. Remove them.
->=20
-> Signed-off-by: Catalin Iacob <iacobcatalin@gmail.com>
+Acked-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
+
 > ---
-> Found this incidentally while looking at kernel sources to understand
-> what pktcdvd is
-> ---
->  arch/mips/configs/fuloong2e_defconfig    | 1 -
->  arch/mips/configs/ip22_defconfig         | 1 -
->  arch/mips/configs/ip27_defconfig         | 1 -
->  arch/mips/configs/ip30_defconfig         | 1 -
->  arch/mips/configs/jazz_defconfig         | 1 -
->  arch/mips/configs/malta_defconfig        | 1 -
->  arch/mips/configs/malta_kvm_defconfig    | 1 -
->  arch/mips/configs/maltaup_xpa_defconfig  | 1 -
->  arch/mips/configs/rm200_defconfig        | 1 -
->  arch/mips/configs/sb1250_swarm_defconfig | 1 -
->  arch/powerpc/configs/g5_defconfig        | 1 -
->  arch/powerpc/configs/ppc6xx_defconfig    | 1 -
->  arch/sh/configs/sh2007_defconfig         | 1 -
->  arch/sparc/configs/sparc64_defconfig     | 2 --
->  drivers/scsi/scsi_lib.c                  | 8 --------
->  15 files changed, 23 deletions(-)
->=20
-> diff --git a/arch/mips/configs/fuloong2e_defconfig b/arch/mips/configs/fu=
-loong2e_defconfig
-> index b6fe3c962464..840130a73992 100644
-> --- a/arch/mips/configs/fuloong2e_defconfig
-> +++ b/arch/mips/configs/fuloong2e_defconfig
-> @@ -89,7 +89,6 @@ CONFIG_MTD_CFI_STAA=3Dm
->  CONFIG_MTD_PHYSMAP=3Dm
->  CONFIG_BLK_DEV_LOOP=3Dy
->  CONFIG_BLK_DEV_RAM=3Dm
-> -CONFIG_CDROM_PKTCDVD=3Dm
->  CONFIG_ATA_OVER_ETH=3Dm
->  CONFIG_BLK_DEV_SD=3Dy
->  CONFIG_BLK_DEV_SR=3Dy
-> diff --git a/arch/mips/configs/ip22_defconfig b/arch/mips/configs/ip22_de=
-fconfig
-> index e123848f94ab..61f09cc9ac12 100644
-> --- a/arch/mips/configs/ip22_defconfig
-> +++ b/arch/mips/configs/ip22_defconfig
-> @@ -177,7 +177,6 @@ CONFIG_NET_ACT_SIMP=3Dm
->  CONFIG_NET_ACT_SKBEDIT=3Dm
->  CONFIG_RFKILL=3Dm
->  CONFIG_CONNECTOR=3Dm
-> -CONFIG_CDROM_PKTCDVD=3Dm
->  CONFIG_ATA_OVER_ETH=3Dm
->  CONFIG_RAID_ATTRS=3Dm
->  CONFIG_SCSI=3Dy
-> diff --git a/arch/mips/configs/ip27_defconfig b/arch/mips/configs/ip27_de=
-fconfig
-> index fea0ccee6948..60da9cf71b72 100644
-> --- a/arch/mips/configs/ip27_defconfig
-> +++ b/arch/mips/configs/ip27_defconfig
-> @@ -83,7 +83,6 @@ CONFIG_CFG80211=3Dm
->  CONFIG_MAC80211=3Dm
->  CONFIG_RFKILL=3Dm
->  CONFIG_BLK_DEV_LOOP=3Dy
-> -CONFIG_CDROM_PKTCDVD=3Dm
->  CONFIG_ATA_OVER_ETH=3Dm
->  CONFIG_SCSI=3Dy
->  CONFIG_BLK_DEV_SD=3Dy
-> diff --git a/arch/mips/configs/ip30_defconfig b/arch/mips/configs/ip30_de=
-fconfig
-> index 718f3060d9fa..5c2911ff9a87 100644
-> --- a/arch/mips/configs/ip30_defconfig
-> +++ b/arch/mips/configs/ip30_defconfig
-> @@ -77,7 +77,6 @@ CONFIG_NET_ACT_PEDIT=3Dm
->  CONFIG_NET_ACT_SKBEDIT=3Dm
->  # CONFIG_VGA_ARB is not set
->  CONFIG_BLK_DEV_LOOP=3Dy
-> -CONFIG_CDROM_PKTCDVD=3Dm
->  CONFIG_ATA_OVER_ETH=3Dm
->  CONFIG_SCSI=3Dy
->  CONFIG_BLK_DEV_SD=3Dy
-> diff --git a/arch/mips/configs/jazz_defconfig b/arch/mips/configs/jazz_de=
-fconfig
-> index a790c2610fd3..dd3486b8d1fc 100644
-> --- a/arch/mips/configs/jazz_defconfig
-> +++ b/arch/mips/configs/jazz_defconfig
-> @@ -33,7 +33,6 @@ CONFIG_BLK_DEV_FD=3Dm
->  CONFIG_BLK_DEV_LOOP=3Dm
->  CONFIG_BLK_DEV_NBD=3Dm
->  CONFIG_BLK_DEV_RAM=3Dm
-> -CONFIG_CDROM_PKTCDVD=3Dm
->  CONFIG_ATA_OVER_ETH=3Dm
->  CONFIG_RAID_ATTRS=3Dm
->  CONFIG_SCSI=3Dy
-> diff --git a/arch/mips/configs/malta_defconfig b/arch/mips/configs/malta_=
-defconfig
-> index 81704ec67f09..b10dac71f400 100644
-> --- a/arch/mips/configs/malta_defconfig
-> +++ b/arch/mips/configs/malta_defconfig
-> @@ -224,7 +224,6 @@ CONFIG_BLK_DEV_FD=3Dm
->  CONFIG_BLK_DEV_LOOP=3Dm
->  CONFIG_BLK_DEV_NBD=3Dm
->  CONFIG_BLK_DEV_RAM=3Dy
-> -CONFIG_CDROM_PKTCDVD=3Dm
->  CONFIG_ATA_OVER_ETH=3Dm
->  CONFIG_RAID_ATTRS=3Dm
->  CONFIG_BLK_DEV_SD=3Dy
-> diff --git a/arch/mips/configs/malta_kvm_defconfig b/arch/mips/configs/ma=
-lta_kvm_defconfig
-> index 82a97f58bce1..bdd5d99884e3 100644
-> --- a/arch/mips/configs/malta_kvm_defconfig
-> +++ b/arch/mips/configs/malta_kvm_defconfig
-> @@ -228,7 +228,6 @@ CONFIG_BLK_DEV_FD=3Dm
->  CONFIG_BLK_DEV_LOOP=3Dm
->  CONFIG_BLK_DEV_NBD=3Dm
->  CONFIG_BLK_DEV_RAM=3Dy
-> -CONFIG_CDROM_PKTCDVD=3Dm
->  CONFIG_ATA_OVER_ETH=3Dm
->  CONFIG_RAID_ATTRS=3Dm
->  CONFIG_BLK_DEV_SD=3Dy
-> diff --git a/arch/mips/configs/maltaup_xpa_defconfig b/arch/mips/configs/=
-maltaup_xpa_defconfig
-> index 0f9ef20744f9..523c0ff329ac 100644
-> --- a/arch/mips/configs/maltaup_xpa_defconfig
-> +++ b/arch/mips/configs/maltaup_xpa_defconfig
-> @@ -226,7 +226,6 @@ CONFIG_BLK_DEV_FD=3Dm
->  CONFIG_BLK_DEV_LOOP=3Dm
->  CONFIG_BLK_DEV_NBD=3Dm
->  CONFIG_BLK_DEV_RAM=3Dy
-> -CONFIG_CDROM_PKTCDVD=3Dm
->  CONFIG_ATA_OVER_ETH=3Dm
->  CONFIG_RAID_ATTRS=3Dm
->  CONFIG_BLK_DEV_SD=3Dy
-> diff --git a/arch/mips/configs/rm200_defconfig b/arch/mips/configs/rm200_=
-defconfig
-> index ad9fbd0cbb38..60054e54bc5a 100644
-> --- a/arch/mips/configs/rm200_defconfig
-> +++ b/arch/mips/configs/rm200_defconfig
-> @@ -177,7 +177,6 @@ CONFIG_PARIDE_ON26=3Dm
->  CONFIG_BLK_DEV_LOOP=3Dm
->  CONFIG_BLK_DEV_NBD=3Dm
->  CONFIG_BLK_DEV_RAM=3Dm
-> -CONFIG_CDROM_PKTCDVD=3Dm
->  CONFIG_ATA_OVER_ETH=3Dm
->  CONFIG_RAID_ATTRS=3Dm
->  CONFIG_SCSI=3Dy
-> diff --git a/arch/mips/configs/sb1250_swarm_defconfig b/arch/mips/configs=
-/sb1250_swarm_defconfig
-> index 4a25b8d3e507..a50a7c097542 100644
-> --- a/arch/mips/configs/sb1250_swarm_defconfig
-> +++ b/arch/mips/configs/sb1250_swarm_defconfig
-> @@ -43,7 +43,6 @@ CONFIG_FW_LOADER=3Dm
->  CONFIG_CONNECTOR=3Dm
->  CONFIG_BLK_DEV_RAM=3Dy
->  CONFIG_BLK_DEV_RAM_SIZE=3D9220
-> -CONFIG_CDROM_PKTCDVD=3Dm
->  CONFIG_ATA_OVER_ETH=3Dm
->  CONFIG_RAID_ATTRS=3Dm
->  CONFIG_BLK_DEV_SD=3Dy
-> diff --git a/arch/powerpc/configs/g5_defconfig b/arch/powerpc/configs/g5_=
-defconfig
-> index 5ca1676e6058..647775f6d174 100644
-> --- a/arch/powerpc/configs/g5_defconfig
-> +++ b/arch/powerpc/configs/g5_defconfig
-> @@ -57,7 +57,6 @@ CONFIG_BLK_DEV_LOOP=3Dy
->  CONFIG_BLK_DEV_NBD=3Dm
->  CONFIG_BLK_DEV_RAM=3Dy
->  CONFIG_BLK_DEV_RAM_SIZE=3D65536
-> -CONFIG_CDROM_PKTCDVD=3Dm
->  CONFIG_BLK_DEV_SD=3Dy
->  CONFIG_CHR_DEV_ST=3Dy
->  CONFIG_BLK_DEV_SR=3Dy
-> diff --git a/arch/powerpc/configs/ppc6xx_defconfig b/arch/powerpc/configs=
-/ppc6xx_defconfig
-> index eda1fec7ffd9..5c3e25fd8edd 100644
-> --- a/arch/powerpc/configs/ppc6xx_defconfig
-> +++ b/arch/powerpc/configs/ppc6xx_defconfig
-> @@ -306,7 +306,6 @@ CONFIG_BLK_DEV_LOOP=3Dm
->  CONFIG_BLK_DEV_NBD=3Dm
->  CONFIG_BLK_DEV_RAM=3Dy
->  CONFIG_BLK_DEV_RAM_SIZE=3D16384
-> -CONFIG_CDROM_PKTCDVD=3Dm
->  CONFIG_VIRTIO_BLK=3Dm
->  CONFIG_ENCLOSURE_SERVICES=3Dm
->  CONFIG_SENSORS_TSL2550=3Dm
-> diff --git a/arch/sh/configs/sh2007_defconfig b/arch/sh/configs/sh2007_de=
-fconfig
-> index 5d9080499485..f287a41cd38c 100644
-> --- a/arch/sh/configs/sh2007_defconfig
-> +++ b/arch/sh/configs/sh2007_defconfig
-> @@ -45,7 +45,6 @@ CONFIG_NETWORK_SECMARK=3Dy
->  CONFIG_NET_PKTGEN=3Dy
->  CONFIG_BLK_DEV_LOOP=3Dy
->  CONFIG_BLK_DEV_RAM=3Dy
-> -CONFIG_CDROM_PKTCDVD=3Dy
->  CONFIG_RAID_ATTRS=3Dy
->  CONFIG_SCSI=3Dy
->  CONFIG_BLK_DEV_SD=3Dy
-> diff --git a/arch/sparc/configs/sparc64_defconfig b/arch/sparc/configs/sp=
-arc64_defconfig
-> index 632081a262ba..4abea39281cd 100644
-> --- a/arch/sparc/configs/sparc64_defconfig
-> +++ b/arch/sparc/configs/sparc64_defconfig
-> @@ -60,8 +60,6 @@ CONFIG_CONNECTOR=3Dm
->  CONFIG_BLK_DEV_LOOP=3Dm
->  CONFIG_BLK_DEV_CRYPTOLOOP=3Dm
->  CONFIG_BLK_DEV_NBD=3Dm
-> -CONFIG_CDROM_PKTCDVD=3Dm
-> -CONFIG_CDROM_PKTCDVD_WCACHE=3Dy
->  CONFIG_ATA_OVER_ETH=3Dm
->  CONFIG_SUNVDC=3Dm
->  CONFIG_ATA=3Dy
-> diff --git a/drivers/scsi/scsi_lib.c b/drivers/scsi/scsi_lib.c
-> index 6e8c7a42603e..f836212c2acf 100644
-> --- a/drivers/scsi/scsi_lib.c
-> +++ b/drivers/scsi/scsi_lib.c
-> @@ -2201,14 +2201,6 @@ struct scsi_device *scsi_device_from_queue(struct =
-request_queue *q)
-> =20
->  	return sdev;
->  }
-> -/*
-> - * pktcdvd should have been integrated into the SCSI layers, but for his=
-torical
-> - * reasons like the old IDE driver it isn't.  This export allows it to s=
-afely
-> - * probe if a given device is a SCSI one and only attach to that.
-> - */
-> -#ifdef CONFIG_CDROM_PKTCDVD_MODULE
-> -EXPORT_SYMBOL_GPL(scsi_device_from_queue);
-> -#endif
-> =20
->  /**
->   * scsi_block_requests - Utility function used by low-level drivers to p=
-revent
->=20
-> ---
-> base-commit: e7ae89a0c97ce2b68b0983cd01eda67cf373517d
-> change-id: 20260530-remove-pktcdvd-references-9d5c6362a5de
->=20
-> Best regards,
-> -- =20
-> Catalin Iacob <iacobcatalin@gmail.com>
+>  arch/sh/mm/init.c | 3 ---
+>  1 file changed, 3 deletions(-)
 
-I think the commit message should rather be:
-
-	scsi: core: Remove remaining references to CONFIG_CDROM_PKTCDVD
-
-or better
-
-	scsi: core: Remove remaining references to package CD/DVD support
-
-Adrian
-
---=20
- .''`.  John Paul Adrian Glaubitz
-: :' :  Debian Developer
-`. `'   Physicist
-  `-    GPG: 62FF 8A75 84E0 2956 9546  0006 7426 3B37 F5B5 F913
+-- 
+Sincerely yours,
+Mike.
 
