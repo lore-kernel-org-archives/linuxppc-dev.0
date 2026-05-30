@@ -1,68 +1,64 @@
-Return-Path: <linuxppc-dev+bounces-21753-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21754-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B281BCD6E49
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 May 2026 22:51:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 478EDCD4F54
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 30 May 2026 00:01:51 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gRzB41xcVz2xYg;
-	Sat, 30 May 2026 08:51:40 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::44a"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780095100;
-	cv=none; b=XdXnhK2SMlNvGp4xWKbAciT97GWXx0ipi8HejCKUoUm1SPCBcT1dyh1F4hWRzaXhn2/MXW1RdbLfJx9i6CT1SrMQ7LmwNvSCBY0LqpvS1+CMePslDsPzcWVTPGXKYfSOTo8WcEFr3UPrVL0JbwjwJnnQ89+Uk3bAk9QeERkrr3btffkD1HzIfKubxOD2CU50SRPiApYLw76+R4lzm3c1hnyQrPLYgnmxAww+i1BitxEvUP5L42ri/FZPTQjVwlICTIm33h7nHcdvoU4Zi9x7QVtVeRYfKgZeIn8BMkdOABz/aPxzZHeo0kz8DTSAfLBDFoQ8izBAVPFi8ITIfV5FoA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gS0l14lWpz2y2B;
+	Sat, 30 May 2026 10:01:49 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780099309;
+	cv=none; b=OslIqGj7HTUKC3eLI61Ur+2CatFp1jmNxgiDEcw79i0hhaxTGRVtP7O+yQPwnuedVDXuQRCn9OCBKQ1JYF8Mo+M1XarjWmbYsnAGfzn6ecDa5dPT1j2CK8OzFV38698f3cMvQi+bL8Ku1zhhx4rxySLy2FDbhMpxAMx0q6tHxIKnqSJBrI1XM1opvccL6hkilTbuQmHroEGDy9uYqQ3vyYIBUegEgn2F00yyqsoMoRNc9yTNkIFr4GQhRIjebVD8KZXRQxZifIQ5uIWWUrJopShewuHf38pUwKnHIVwwkGgmE5j0/Ccj97hA7fSDdBU668rBCpO36R5OnS984nyoOw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1780095100; c=relaxed/relaxed;
-	bh=iDamTyASUWUv87s6Ugw+3o5D1xad/djiw+VyKIvP/1s=;
-	h=Date:In-Reply-To:Mime-Version:References:Message-ID:Subject:From:
-	 To:Cc:Content-Type; b=Ju7K9ImsVK4AvF9zHFeSr93uuKl8U6p1qMxJxmXHMQuWSc5jTzsahfkdGiI1O3NATXR4WJJwQVxeJSxe88xGw3s+LFgbieXD2nMTV47DOrlS+8cPUBIWV9K293YCS7JPU35iRtZY8+L85C4yILE8ije8mR9Vdc8/7HPI7MApc0VH8xuzfc+cSnJyxmTPXFVKKoSEMl8MtASw4qr1JPn+s+OMgF3ZGncDtSVGbANkSpn+3aETlVY1FDRryf8l4zTInSCFzYhq5M8FrRRZvwbTUS/BX3erK9uT9oPgCyC0NTWx4u46Pm8IgiRW6IoeeZkKHDVW3g8Wd01OkXt9lwfGqA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=Q8W89Zc9; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::44a; helo=mail-pf1-x44a.google.com; envelope-from=3dxgaagykdggykgtpimuumrk.iusrotadvvi-jkbroyzy.ufrghy.uxm@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=flex--seanjc.bounces.google.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
+	t=1780099309; c=relaxed/relaxed;
+	bh=D7djoSGosrfa+muilz6GgByxSVGvd52+1HJJvvuJ18E=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=YlzTogk2MYpLTF+lNqwoDklNE+yThDD0HJvn2moWF/iFmMJ9hrAyf6GJOMewhtkUKPmx5VgT27mMhqsLdPWEzQie5XHxpFsxzqJSi8gzbOEfr1QVeLwNXZNszj5UM2/+s9ol4SfMKkahUpnQrLI5sDwa/a5Aso7vxJD+qm7PbdTh0vG6WerI7HCqmMH4bsntWM0+hI/I+xvVL3R673EjKIqs6eQUjpxA0Fo/V7TKJANXkUeJA7638/wA6G+dtwWM8YuaE6W2NJY02WqFIRpgv6x0J/aWpWrKkgg1bb5TUYekzLMRc2ZLO1c4pXFR1jTKGdO+8j3Ym51wEbvC2KVhpw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ChyQpitP; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=acme@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=Q8W89Zc9;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ChyQpitP;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--seanjc.bounces.google.com (client-ip=2607:f8b0:4864:20::44a; helo=mail-pf1-x44a.google.com; envelope-from=3dxgaagykdggykgtpimuumrk.iusrotadvvi-jkbroyzy.ufrghy.uxm@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org)
-Received: from mail-pf1-x44a.google.com (mail-pf1-x44a.google.com [IPv6:2607:f8b0:4864:20::44a])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=acme@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gRzB30WnVz2xVK
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 May 2026 08:51:38 +1000 (AEST)
-Received: by mail-pf1-x44a.google.com with SMTP id d2e1a72fcca58-83536dc3be5so16373647b3a.1
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 May 2026 15:51:38 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20251104; t=1780095096; x=1780699896; darn=lists.ozlabs.org;
-        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
-         :date:from:to:cc:subject:date:message-id:reply-to;
-        bh=iDamTyASUWUv87s6Ugw+3o5D1xad/djiw+VyKIvP/1s=;
-        b=Q8W89Zc9BzBTxpVnLI6sT097rssfPiOJD1rIZd55fD8iK8f5cXWOH9Ats7yxoX2uXK
-         YWqPO0Cx9L6aoG2EJIwo51geXJvi8y9xhCx6hReewAo+wJEHsqFINWNqNA0C8c1MXm73
-         L5ZJw5tB2qWHNSZ3emquoIB5+6aC4atNGahU0A+8Ef54VZneUzWaba2oG93XHjdtyX07
-         v1XZRgxvA983Vzzo8xMz9mW0MfNWuSnqmB3ffV3V32G1tEWv+6XUACUt7JHtGk9EeLWY
-         id3UYwWN91FTpc5EMZnk8GT7I+BnaPhbKyNRsbFGsEPemgOb4wRq9kLlKMbKZgm91zbI
-         jwBw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1780095096; x=1780699896;
-        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
-         :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=iDamTyASUWUv87s6Ugw+3o5D1xad/djiw+VyKIvP/1s=;
-        b=GROQf0rTPVgvXe5GY52QyyX9eXDzZm4ZKaa0PhNbyq3o7cXupHTmn5Rh6W43kQ/XkN
-         N8m3q8vI1q27szQqdi1YrV7X7dQuMhPdlg/YKfLvwQ8m29p+EzVYNQhJ0E7L+2CRQC6G
-         2LEw2X8KQPmMPw10IH4iK6bHYvpvbV4ph6T0YVbs1lnAt5z25kMtQ0CDxIjOFyop8bLA
-         FUG1H8VFSX+mTQle0X0E2aaDBu3Ajr8nQnMalTANvK+Bc5SblVWfXjccX0GynT8rqM7X
-         Ha2o/Ilx4wbMBze460aEAlM7Ti2Pmz546SRy8QZ2mc6xcfdkx7+T0r6Hi1Hu3KdWmf7S
-         Vp9A==
-X-Forwarded-Encrypted: i=1; AFNElJ8gPuL4kx1QWrHsSC+Txb0K80EI32QXenyKRvoxcaRn7rXAHAS+sT4AkGN06tuDBi4Mp3KO90b3aYcDZFU=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yw50HC8ojinFW+gc8S/G+v4dxseXaVw6nbiucOLYEB4ul1kgixQ
-	yNwpDn13OA7vuffn/bMQg2uIpgLrbsJ1OrIrupTDR5xKgOjrPxlEL3oQiMs8zFYMw9cAj2V/STZ
-	HynvUKw==
-X-Received: from pfhz14.prod.google.com ([2002:a05:6a00:240e:b0:82f:7242:4cb9])
- (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a05:6a00:3e19:b0:82c:2555:b9b2
- with SMTP id d2e1a72fcca58-8422532a6ddmr1429112b3a.10.1780095095672; Fri, 29
- May 2026 15:51:35 -0700 (PDT)
-Date: Fri, 29 May 2026 15:51:34 -0700
-In-Reply-To: <20260525070154.495455-1-yanfei.xu@bytedance.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gS0l05gpTz2xLs
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 May 2026 10:01:48 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with ESMTP id 6E46E44524;
+	Sat, 30 May 2026 00:01:46 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6FDAD1F00893;
+	Sat, 30 May 2026 00:01:45 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1780099306;
+	bh=D7djoSGosrfa+muilz6GgByxSVGvd52+1HJJvvuJ18E=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=ChyQpitPiqWnIx0Nb8Lf1UGm93rS8OURyYiFBTu5X0V5gvrXXUpQ8FLpjpAkhvXRY
+	 KozcQ/JGrGWhmwJVxgHYuFxM6fqrkgOg8CooVIeLxSMGT5QGlO4Il5VKJVcT1cnbur
+	 qz/uKcdFVtSoXpf9Bd+emBDbhMUqTWos/oLo3xOTZUHvwyDUJYr2d1qYjw1Wdk3SZp
+	 IeLnwIECrkTkPr2VvmWTILYOBtb7+dWkB8ZOjIiXYLK2m5bZxsBH3yM/boAG3MpTXC
+	 QusmEKp8HKecTgW3bcOFw7g4spSQJ3TJ5uwgJE/tY70dYBuVRgDB/6OKslKPydcdb5
+	 F7nQmGu2ca5/g==
+Date: Fri, 29 May 2026 21:01:41 -0300
+From: Arnaldo Carvalho de Melo <acme@kernel.org>
+To: Tejas Manhas <tejas05@linux.ibm.com>
+Cc: Gautam Menghani <Gautam.Menghani@ibm.com>, peterz@infradead.org,
+	mingo@redhat.com, namhyung@kernel.org, mark.rutland@arm.com,
+	alexander.shishkin@linux.intel.com, jolsa@kernel.org,
+	irogers@google.com, adrian.hunter@intel.com, james.clark@linaro.org,
+	atrajeev@linux.ibm.com, Gautam Menghani <gautam@linux.ibm.com>,
+	linux-perf-users@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] perf script powerpc: Update the hcall list with new
+ hcalls
+Message-ID: <ahoo5dI-6fVlFvvR@x1>
+References: <20260512084654.57729-1-Gautam.Menghani@ibm.com>
+ <61c8d600-72b4-4320-a1ff-18e061569f24@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -75,31 +71,102 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-Mime-Version: 1.0
-References: <20260525070154.495455-1-yanfei.xu@bytedance.com>
-Message-ID: <ahoYdrs9dVzp6Ps6@google.com>
-Subject: Re: [PATCH] KVM: Validate irqchip index for LoongArch and PowerPC
-From: Sean Christopherson <seanjc@google.com>
-To: Yanfei Xu <yanfei.xu@bytedance.com>
-Cc: zhaotianrui@loongson.cn, maobibo@loongson.cn, chenhuacai@kernel.org, 
-	maddy@linux.ibm.com, npiggin@gmail.com, sashiko-reviews@lists.linux.dev, 
-	pbonzini@redhat.com, kvm@vger.kernel.org, loongarch@lists.linux.dev, 
-	linuxppc-dev@lists.ozlabs.org, caixiangfeng@bytedance.com, 
-	fangying.tommy@bytedance.com, isyanfei.xu@gmail.com, 
-	Sashiko <sashiko-bot@kernel.org>
-Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <61c8d600-72b4-4320-a1ff-18e061569f24@linux.ibm.com>
 
-On Mon, May 25, 2026, Yanfei Xu wrote:
-> Sashiko reported that irqchip index is not validated for LoongArch and
-> PowerPC. Add validation and reject out-of-range irqchip indexes to avoid
-> indexing past the routing table's chip array.
+On Wed, May 20, 2026 at 09:25:08AM +0530, Tejas Manhas wrote:
+> From: Gautam Menghani [1]<gautam@linux.ibm.com>
+> 
+> Update the hcall list with the hcalls in bcc's ppchcalls script [1].
+> 
+> [1] : [2]https://github.com/iovisor/bcc/blob/master/tools/ppchcalls.py
+> 
+> 
+> Hi Gautam,
+> 
+> This patch doesn't seem to resolve the issue where numbers are seen instead of h
+> calls.
+> I have applied to the latest upstream but the numbers are still visible in perf
+> script.
+> Also the command doesn't recognise python-audit already present in the system.
+> 
+> Please find logs below for better understanding.
 
-Can you split this into two patches, and send a v2?  I suspect the reason no one
-has picked this up is because it straddles two completely different (sub)subsystems.
+Any progress on this?
 
-That would also make it easier to get the fixes backported to stable trees.  PPC
-has been around a lot longer than LoongArch, so I assume the PPC fix will need to
-go further back in time.
-
-Thanks!
+- Arnaldo
+ 
+> before patch
+> # perf record -a -e powerpc:hcall* sleep 10
+> [ perf record: Woken up 1 times to write data ]
+> [ perf record: Captured and wrote 0.343 MB perf.data (2388 samples) ]
+> [root@ltcden14-lp10 perf]# perf script  -s ./powerpc-hcalls.py -i ./perf.data
+> Install the python-audit package to get syscall names.
+> For example:
+>   # apt-get install python3-audit (Ubuntu)
+>   # yum install python3-audit (Fedora)
+>   etc.
+> 
+> hcall                            count   min(ns)   max(ns)   avg(ns)
+> --------------------------------------------------------------------
+> H_VIO_SIGNAL                       614       376     14068      1644
+> 584                                 36      1094     16120      2839
+> H_ADD_LOGICAL_LAN_BUFFER             9       660      3572      1320
+> H_STUFF_TCE                        132       632     12530      1310
+> H_PUT_TCE                          236       466      5500       865
+> H_RANDOM                             4       446      3300      1168
+> H_PUT_TCE_INDIRECT                  53       648     14318      2066
+> H_SEND_CRQ                         108       848      7754      1983
+> after patch
+> # yum install python3-audit
+> Updating Subscription Management repositories.
+> Unable to read consumer identity
+> 
+> This system is not registered with an entitlement server. You can use subscripti
+> on-manager to register.
+> 
+> rhe12_debug1                                    8.4 kB/s | 1.5 kB     00:00
+> rh102_base_upd                                   41 kB/s | 2.7 kB     00:00
+> rh102_app_upd                                    14 kB/s | 2.8 kB     00:00
+> rh102_crb                                        14 kB/s | 2.7 kB     00:00
+> rh102_srcbase                                   7.6 kB/s | 1.5 kB     00:00
+> rh102_srcas                                     6.9 kB/s | 1.5 kB     00:00
+> rh102_debug                                     7.1 kB/s | 1.5 kB     00:00
+> rhe102_debug1                                   7.1 kB/s | 1.5 kB     00:00
+> Package python3-audit-4.0.3-5.el10.ppc64le is already installed.
+> Dependencies resolved.
+> Nothing to do.
+> Complete!
+> # ./perf script -s scripts/python/powerpc-hcalls.py -i ./perf.data
+> Install the python-audit package to get syscall names.
+> For example:
+>   # apt-get install python3-audit (Ubuntu)
+>   # yum install python3-audit (Fedora)
+>   etc.
+> 
+> hcall                            count   min(ns)   max(ns)   avg(ns)
+> --------------------------------------------------------------------
+> H_VIO_SIGNAL                       533       404     13154      1638
+> 584                                 37      1034     14722      3178
+> H_ADD_LOGICAL_LAN_BUFFER             8       802      2602      1217
+> H_SEND_CRQ                          11       926     17536      4105
+> H_STUFF_TCE                         13       658      5306      1974
+> H_PUT_TCE                           18       476      5034      1476
+> H_PUT_TCE_INDIRECT                   5      1698      8934      4370
+> [root@ltcden14-lp10 perf]#
+> 
+> Please add the tag below.
+> Reported-by: Tejas Manhas [4]<tejas05@linux.ibm.com>
+> 
+> Thanks & Regards,
+> Tejas
+> 
+> References
+> 
+>    1. mailto:gautam@linux.ibm.com
+>    2. https://github.com/iovisor/bcc/blob/master/tools/ppchcalls.py
+>    3. mailto:gautam@linux.ibm.com
+>    4. mailto:tejas05@linux.ibm.com
 
