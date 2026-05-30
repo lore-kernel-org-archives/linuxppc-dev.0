@@ -1,84 +1,94 @@
-Return-Path: <linuxppc-dev+bounces-21755-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21756-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 217D6CD5BD0
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 30 May 2026 10:21:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C0936CD6E4A
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 30 May 2026 11:03:12 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gSGTY2zfDz2y1Y;
-	Sat, 30 May 2026 20:21:05 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::336"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780136465;
-	cv=none; b=Tvrx6W4zdXkfEkXZRgqat6Ucxo3r0WF87TnGaRg6XwX0ZgqeGAyEy0P2Kqn1w6k9Rq8SxpRK+YXF8D8VMqPGy/dCV4Y3l4cs0N9+7PedMQWC9byyYp18ZYACNBtsK1f1Gv06Djuyaiq2qgMYngDMBD8Sy5xss/EhK/6apC9bhR+vuF6prRqsJTWJlgwD0fhBy+XKoZ79ekIgMMPBXACQBRcwarbgu/wsBFTW+zjDJAHyr7UTKHXTBcZ3CSWPG1TMZW49fjTYHiUNxkYkWvTm2crjElpTxA+/SqXKiJaG6nsJ/6N8VWrWRC6/mCixQzO3NZqmroNBXuqDqvd1vEUTWw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gSHQ71LLNz2y1Y;
+	Sat, 30 May 2026 21:03:11 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::42f"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780138991;
+	cv=none; b=Luxqw1rrKD17fj+y7IIizCKwblKOxcxKqvcBilFfv/iO8DtI0qUHwcz1kG+vD2VOZNSUkojnkjPCqHb05UK6WZr8ZDWBvSfFO5hYQpbj5u+gAXOhhp60kXmiktmAmnb+wvfaOnluclBRrmI+SSv7CZ1C4K3FjZ11fcvOrc4Fl16z7bA0mOZn7TLNTHehDnzHPdkVNoRLA0fMWDDLDa8TOostN3rCM0BpWSpIwIdNOVNGD5puQLwNuOHOOJftUkmVw5WOD06brpwW1De0OPS6H6RQL/sAYpnVZUeTgdx1FLq6hzjdh9579GMqRqnuVw/V795PCRcoRHnDBjWRfUdhKQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1780136465; c=relaxed/relaxed;
-	bh=/5iL54slSEG9uXbaeaKITPpQk2F01eVqtxgSPAEZYv4=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=Zd9KjvbHxTvT+oqnaN+doa9kPSBacNrBlLNEncwoVRwrl5fmA71COQy6zA/8xgaaie/l09HFUe262TjYJkg1G285QU8gD3foANJPVZrSyP+J/XzSXwmaStHOJQ8c0MhMbkPwC33ED1yT2vftVNq/rkfv54656n+D0E9IZ2xThdvZBvAqAFESe2BW3j3INpPT3W5aFnVHmsL9GMoqwZnKW/D0Ld/GYPGH4knvlLNMtvlBiYDO7u+KCQfQoedzUajQzXzYXzw+pA8DOfH5x9v2WBHmlgKQGFsdhZUi+ZrbxIriwkEwVGOvVYMIWOKPPQj9EXFm8V1AXx+021bwz3t/qQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=TS5Nagkf; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::336; helo=mail-wm1-x336.google.com; envelope-from=chunkeey@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	t=1780138991; c=relaxed/relaxed;
+	bh=dp/mGIPuzMQgF9N9UpzPuL55AQoFcQOM3dm4eEgb0Pg=;
+	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=JBXqDZaiCNqFwNpQfy84CYQvIqhmxlaFoRrY1tqMZMI4SV9yb0A4rkHGVucvpX8M6a0rw8CW5VgBL6kFbPb56fsgV4fgiWAjrf5Bi+W2XUWuq0J1JLARurg+3pQek1Ewcic410+lHO79aHm89ShWJqIbGlwHlw7LHUDAgnvstwK/tmITh8tgRlW50zfzt+Xebl34dZzkQ6xXBg9Y6zrQGgM+BE4HC1BOfad949hjOEL+MsAhxNIk8EaskrZayRZjviMeugVGDI4uT1dk4qk41vMq+aMpGWu7kE7dKov0b/r+gf9VYfitnvIqTmyg04IadNQetVl6RTOGdFzhWbbYOQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=GJP/ESTb; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::42f; helo=mail-wr1-x42f.google.com; envelope-from=david.laight.linux@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=TS5Nagkf;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=GJP/ESTb;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::336; helo=mail-wm1-x336.google.com; envelope-from=chunkeey@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-wm1-x336.google.com (mail-wm1-x336.google.com [IPv6:2a00:1450:4864:20::336])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::42f; helo=mail-wr1-x42f.google.com; envelope-from=david.laight.linux@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-wr1-x42f.google.com (mail-wr1-x42f.google.com [IPv6:2a00:1450:4864:20::42f])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gSGTW6zcDz2xR4
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 May 2026 20:21:02 +1000 (AEST)
-Received: by mail-wm1-x336.google.com with SMTP id 5b1f17b1804b1-49041e84237so70185505e9.1
-        for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 May 2026 03:21:02 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gSHQ56XRrz2xR4
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 May 2026 21:03:09 +1000 (AEST)
+Received: by mail-wr1-x42f.google.com with SMTP id ffacd0b85a97d-45ef4223be7so803774f8f.2
+        for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 May 2026 04:03:08 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1780136460; x=1780741260; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=/5iL54slSEG9uXbaeaKITPpQk2F01eVqtxgSPAEZYv4=;
-        b=TS5NagkfwWDl5Z8wM28E6w492sWu/NceWDavL49ySV2mVo6bEDYIeqV4fSlxKflMx9
-         5WPjzL5XXt0uG5/oe71ouXq2DGyYiycs1VnlHbptHLpHpSn59XCx8jHp3nAqQC3irx2o
-         3/k0uYddUMuMADDOH6H1YR764rvweiCgUKip3PV2v228QOH5JltBe11fNIi/KM49WSd9
-         GG2hKWm2mkHuBzgAWuzflVtVDTLK2iJyyrppDhTOaja/LMS0U/hWYpljjNI01+6ARkY7
-         4y05SeQb1VAFuBnTEkO3+lufuZ2p1W/nz4MtwNEbk3W/IlX/THvfjby4ftZfWK7O/PS0
-         21qg==
+        d=gmail.com; s=20251104; t=1780138986; x=1780743786; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:subject:cc:to:from:date:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=dp/mGIPuzMQgF9N9UpzPuL55AQoFcQOM3dm4eEgb0Pg=;
+        b=GJP/ESTbjwoNhaqiavUepf7u65oiqwAfpNdan/hiEAfvzVjL9iCuFYeb1rmvQMaEPF
+         5vHbFQWxK0fruWAwKsO9D0p1BPuHPWZ6roTlLM4AMIBvxVqcY1GhCyDyBEHegp84qDsa
+         ZNG/3/GUtmDoaxHrvXOU3sg2/v3BAAjsAMjg7ftQdHtSEX/afrORZjZetaKn4rZy4KPl
+         XCwrO/VZU4P5WlTm9juRX/h5B/6BfQTxJN3AW/sfmYA4O0r4Iko5CHEf9fNaK2QFX0uF
+         v/2mH60IXOEeiiFwFWxzVMjAaJ1gq6KXObXVBNHtCi9sY8VqU/ShOWAr2pC/i2LUSn5l
+         Tm4g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1780136460; x=1780741260;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=/5iL54slSEG9uXbaeaKITPpQk2F01eVqtxgSPAEZYv4=;
-        b=IRtCAfLmI9rZ0Z5cvmFAE8YncpeCZx6AUTPqx0LwLUAfnE7+wexYbqoIgiLcbByZyS
-         o/eu3RSITGrYL+QRJpGXaFLWSe10KwHg0d+Bulz544gBVZi2Ars8CtmFri2dA05IKBMt
-         mwVamU3ord/DHGdhsSY5w5/ClbLi7obxXj4vbDWgH0IRGYDCORF0pxDPf4lmzyLWKQ+C
-         g/klGFMbtacR5CJkgM/OXgwDNF11MLznLBsHKy6UMvBI0vsFiLOIYweXU9aDIk1LO8io
-         ctDQ0+LEGqv/RNcw9a7o+9JljUkhQ7sLMLUVg6INfP55gXD/NKpK+Vi8cAOW68keQn56
-         bFzQ==
-X-Gm-Message-State: AOJu0YwbmGHjigJBK242ANXBEASYRtJ9t4HAEdKWVHHrDUSsTl42Wtln
-	Opdn+zBQ7Iy50Kkukryu84XPfAtc3R5S3mwfVU4YCpnMA1PwNetoGtFh
-X-Gm-Gg: Acq92OHNtUVuanCF4asMVbFkI82v/lN1shgEsyF06PQc9YtP5Gk7YwybxAO1IhCQXjK
-	FN00ZrGvYJSn1oyleIOp+k7m4KjOEYdA9nr2IuE1fW0fqBAsNHiBaJcSmfC+bvx4gI0teoCm15r
-	ZdHFZt265JqJ+AXHdOXcosOTiOpCTqMHaOb2qY2iRTPd5KnH7kRMAQLGd6NDS00UXUNoVuPQMqK
-	6ZCTzFDn8HchUBMvFyIimuuyKdc6ixvuSADu3CO8NBejXX67ueN6EkvN5a9PCgF2OsBBqRFQipj
-	LMlcZMMIDlPBbGdki3IVhwZkLi/1Qd9YnKBr+eYIJMWWN5EPZwpIKFE0BoDVJdBQBScIMol4yHl
-	yjkNxPhw7hJb5NP/BShFRfdQBj6TX5mWql41gBkK6F1Ggf02WHqw/p02AT3cmE6CKAtEvpLKuOg
-	zYbQq1sMlwPmzOcT1T2dHjyM1fvUAzRK0KkQ7vdhc27Lct+Y7TBNYINXggeKIaC5B8EzxhCyLor
-	F6DE3KMHH6OcwDuWLjsp5BctoD9Xf5Nhq+9YzD6DzY=
-X-Received: by 2002:a05:600c:8b5b:b0:490:9dc3:3483 with SMTP id 5b1f17b1804b1-490a2a02a43mr41843095e9.2.1780136459593;
-        Sat, 30 May 2026 03:20:59 -0700 (PDT)
-Received: from shift (p200300d5ff07e00050f496fffe46beef.dip0.t-ipconnect.de. [2003:d5:ff07:e000:50f4:96ff:fe46:beef])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4909c104920sm32015845e9.21.2026.05.30.03.20.58
+        d=1e100.net; s=20251104; t=1780138986; x=1780743786;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=dp/mGIPuzMQgF9N9UpzPuL55AQoFcQOM3dm4eEgb0Pg=;
+        b=VcnmcTOwZlIZRjR7/sppwlJUJgBLABpYBlmobKL2EEV0GxDAr2uIK+oHwfAzUS+06/
+         nIqnGAAb1B2Mi8zUu9K6QOgqedyNWxiwR1FjU3IcIUATtycT4teHxXqNfXMPAeF1EjQ3
+         kPN8zTAaCi94aQADDSE1JzRqSfLOiLkXX8w5xol3i4BkbV3Nfg5sC0BNWG0ZOl2etq4b
+         KASrQUfYF9/pbZb2Vd2aZAOac8lGa/jxouwaXQZ4m2IfMQSoXF6ll5EVCGNPdGNWEzYD
+         kJ3npNhAMNpgp/yTrGVSQzW6T2YzaZ2w4Fi69itPAGnlGEQtDHD6IHClosgZNgAWciDH
+         OV/w==
+X-Forwarded-Encrypted: i=1; AFNElJ/Uii9e2V1Jun4O+uqZPwLyLFmcItLMP9vZAOXYII3zATODyO4pYvCxfO+JYhmrPz3c9YxQuPuw1SWd5/Q=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yw1ekHUc+5sQPbVyj/25AMArqSU6j9bKrSzHKpd4Hbpjroidxvu
+	q+WhSCebXPR2EPAHC2LK958HC8hWGCdMqYn5cYv7sW6PQJIMcDIFKn7Y
+X-Gm-Gg: Acq92OHY4tfl4KtUrIRo9tx63P4QQkdCLBZUpCMpAZN80GEjgR8q9YwAexiUp2xdiyu
+	h/1aMvmSIbydmTuFZZb63O9R8Clo8kJvbJFaKsBAUaIWIPYaidLXxnQBbGy9jHmdjFfHIpNZdzi
+	xnq++ypwTCPPMKuTRANcoDhRFQ5BZmSiDymtw4DUrO2yLL/2AjLNMljM7pvXytbOhUZi6OL9J3p
+	ksZwuV3JHgzX/NaauEUzQGSx7+hFx8icRPoUksL5qF8xmPlfNuHOhUyTdfqFATBLNjbZQWThvXF
+	q8UkB0EfrGvHL/ApsCh2ef/WnUGz0XcsAY9cI15o3tz28xTXr0x1/x3flZ/6UVoQgBIxJDNLQcH
+	+D0CvIGQq1JMSyzAbHG1qGxTjrxiHATk9zOj0su770EsAjjjGSsUZ3SeCHkpLijkw6XxUPlvUDV
+	kmzAR0B2J7JGQiHoBLHSmyn6cdArrNvDWXtGtWcS2X59ad8X9O1w1HAhSeI/xf41/fk8znWNB1Y
+	evJHjWyxA==
+X-Received: by 2002:adf:e00b:0:20b0:44e:902f:e341 with SMTP id ffacd0b85a97d-45ef6b4f949mr4179217f8f.20.1780138985680;
+        Sat, 30 May 2026 04:03:05 -0700 (PDT)
+Received: from pumpkin (82-69-66-36.dsl.in-addr.zen.co.uk. [82.69.66.36])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-45ef34b7d6bsm10805363f8f.10.2026.05.30.04.03.04
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 30 May 2026 03:20:58 -0700 (PDT)
-Received: from localhost ([127.0.0.1])
-	by shift.daheim with esmtp (Exim 4.99.3)
-	(envelope-from <chunkeey@gmail.com>)
-	id 1wTGjX-000000002mX-1Lcb;
-	Sat, 30 May 2026 12:20:57 +0200
-Message-ID: <e0b3cfc2-c6da-46d4-9dec-027dafaba74e@gmail.com>
-Date: Sat, 30 May 2026 12:20:57 +0200
+        Sat, 30 May 2026 04:03:05 -0700 (PDT)
+Date: Sat, 30 May 2026 12:03:03 +0100
+From: David Laight <david.laight.linux@gmail.com>
+To: Paul Moore <paul@paul-moore.com>
+Cc: Venkat Rao Bagalkote <venkat88@linux.ibm.com>, linuxppc-dev
+ <linuxppc-dev@lists.ozlabs.org>, Madhavan Srinivasan <maddy@linux.ibm.com>,
+ selinux@vger.kernel.org, rppt@kernel.org, LKML
+ <linux-kernel@vger.kernel.org>, Ritesh Harjani <riteshh@linux.ibm.com>,
+ "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+Subject: Re: PowerPC: Random memory corruption causing kernel oops on
+ Power11
+Message-ID: <20260530120303.1b441fdc@pumpkin>
+In-Reply-To: <CAHC9VhRAbCAxg4swOCBT+nAUaqRPsdBuOa+nm=539ejpN4wmWQ@mail.gmail.com>
+References: <03e5151a-f420-46f9-ad5e-109420132021@linux.ibm.com>
+	<8f0c86f7-eab4-4e82-97c1-5d190c390770@linux.ibm.com>
+	<20260529171855.7966b752@pumpkin>
+	<CAHC9VhRAbCAxg4swOCBT+nAUaqRPsdBuOa+nm=539ejpN4wmWQ@mail.gmail.com>
+X-Mailer: Claws Mail 4.1.1 (GTK 3.24.38; arm-unknown-linux-gnueabihf)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -92,317 +102,30 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] crypto: crypto4xx - Remove insecure and unused rng_alg
-To: Eric Biggers <ebiggers@kernel.org>, linux-crypto@vger.kernel.org,
- Herbert Xu <herbert@gondor.apana.org.au>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- stable@vger.kernel.org
-References: <20260529220430.34135-1-ebiggers@kernel.org>
-Content-Language: de-DE
-From: Christian Lamparter <chunkeey@gmail.com>
-In-Reply-To: <20260529220430.34135-1-ebiggers@kernel.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-Hi!
+On Fri, 29 May 2026 14:23:06 -0400
+Paul Moore <paul@paul-moore.com> wrote:
 
-On 5/30/26 12:04 AM, Eric Biggers wrote:
-> Remove crypto4xx_rng, as it is insecure and unused:
-> 
-> - It has only a 64-bit security strength, which is highly inadequate.
->    This can be seen by the fact that crypto4xx_hw_init() seeds it with
->    only 64 bits of entropy, and the fact that the original commit
->    mentions that it implements ANSI X9.17 Annex C.
+> On Fri, May 29, 2026 at 12:18=E2=80=AFPM David Laight
+...
+> > PAGE_SIZE is not the length of the buffer.
+> > Should be PATH_MAX. =20
+>=20
+> Yes, as discussed earlier in the thread some additional work needs to
+> be done, and verified, but since we are at the end of -rc5 I simply
+> reverted the patch.  We can chase this down next dev cycle.
+>=20
 
-Yes, that "ANSI X9.17 Annex C" comes from the datasheet for the PRNG.
+Emails crossed in the afternoon...
 
->    Another issue was that this driver didn't implement the crypto_rng API
->    correctly, as crypto4xx_prng_generate() didn't return 0 on success.
+Like many of these changes the buffer size should never have been PAGE_SIZE.
+Clearly here PATH_MAX is the best way to say 4096.
+But I suspect some of the others should be (say) BUF_4K.
 
-Oh! Hmm, I think I copied that "return amount;" from another driver that
-had it implemented? But I'm not sure, this was sooo long ago. That said,
-if this never worked...
+I wonder how much userspace code is left that does 'char buf[BUFSIZE]' and
+just assumes it is 'big enough'.
 
-> - No user of this code is known.  It's usable only theoretically via the
->    "rng" algorithm type of AF_ALG.  But userspace actually just uses the
->    actual Linux RNG (/dev/random etc) instead.  And rng_algs don't
->    contribute entropy to the actual Linux RNG either.  (This may have
->    been confused with hwrng, which does contribute entropy.)
-
-... and it's completely redundant: Sure!
-
-just in case, this counts for anything, but as the person that added it in the
-first place:
-
-Acked-by: Christian Lamparter <chunkeey@gmail.com>
-
-> Fixes: d072bfa48853 ("crypto: crypto4xx - add prng crypto support")
-> Cc: stable@vger.kernel.org
-> Signed-off-by: Eric Biggers <ebiggers@kernel.org>
-> ---
->   drivers/crypto/Kconfig                  |  1 -
->   drivers/crypto/amcc/crypto4xx_core.c    | 88 -------------------------
->   drivers/crypto/amcc/crypto4xx_core.h    |  4 --
->   drivers/crypto/amcc/crypto4xx_reg_def.h | 11 ----
->   4 files changed, 104 deletions(-)
-> 
-> diff --git a/drivers/crypto/Kconfig b/drivers/crypto/Kconfig
-> index 3449b3c9c6ad..5dab813a9f74 100644
-> --- a/drivers/crypto/Kconfig
-> +++ b/drivers/crypto/Kconfig
-> @@ -299,11 +299,10 @@ config CRYPTO_DEV_PPC4XX
->   	select CRYPTO_AES
->   	select CRYPTO_LIB_AES
->   	select CRYPTO_CCM
->   	select CRYPTO_CTR
->   	select CRYPTO_GCM
-> -	select CRYPTO_RNG
->   	select CRYPTO_SKCIPHER
->   	help
->   	  This option allows you to have support for AMCC crypto acceleration.
->   
->   config HW_RANDOM_PPC4XX
-> diff --git a/drivers/crypto/amcc/crypto4xx_core.c b/drivers/crypto/amcc/crypto4xx_core.c
-> index b7b6c97d2147..68c5ff7a85b4 100644
-> --- a/drivers/crypto/amcc/crypto4xx_core.c
-> +++ b/drivers/crypto/amcc/crypto4xx_core.c
-> @@ -29,15 +29,13 @@
->   #include <crypto/aead.h>
->   #include <crypto/aes.h>
->   #include <crypto/ctr.h>
->   #include <crypto/gcm.h>
->   #include <crypto/sha1.h>
-> -#include <crypto/rng.h>
->   #include <crypto/scatterwalk.h>
->   #include <crypto/skcipher.h>
->   #include <crypto/internal/aead.h>
-> -#include <crypto/internal/rng.h>
->   #include <crypto/internal/skcipher.h>
->   #include "crypto4xx_reg_def.h"
->   #include "crypto4xx_core.h"
->   #include "crypto4xx_sa.h"
->   #include "crypto4xx_trng.h"
-> @@ -983,14 +981,10 @@ static int crypto4xx_register_alg(struct crypto4xx_device *sec_dev,
->   		switch (alg->alg.type) {
->   		case CRYPTO_ALG_TYPE_AEAD:
->   			rc = crypto_register_aead(&alg->alg.u.aead);
->   			break;
->   
-> -		case CRYPTO_ALG_TYPE_RNG:
-> -			rc = crypto_register_rng(&alg->alg.u.rng);
-> -			break;
-> -
->   		default:
->   			rc = crypto_register_skcipher(&alg->alg.u.cipher);
->   			break;
->   		}
->   
-> @@ -1012,14 +1006,10 @@ static void crypto4xx_unregister_alg(struct crypto4xx_device *sec_dev)
->   		switch (alg->alg.type) {
->   		case CRYPTO_ALG_TYPE_AEAD:
->   			crypto_unregister_aead(&alg->alg.u.aead);
->   			break;
->   
-> -		case CRYPTO_ALG_TYPE_RNG:
-> -			crypto_unregister_rng(&alg->alg.u.rng);
-> -			break;
-> -
->   		default:
->   			crypto_unregister_skcipher(&alg->alg.u.cipher);
->   		}
->   		kfree(alg);
->   	}
-> @@ -1074,73 +1064,10 @@ static irqreturn_t crypto4xx_ce_interrupt_handler_revb(int irq, void *data)
->   {
->   	return crypto4xx_interrupt_handler(irq, data, PPC4XX_INTERRUPT_CLR |
->   		PPC4XX_TMO_ERR_INT);
->   }
->   
-> -static int ppc4xx_prng_data_read(struct crypto4xx_device *dev,
-> -				 u8 *data, unsigned int max)
-> -{
-> -	unsigned int i, curr = 0;
-> -	u32 val[2];
-> -
-> -	do {
-> -		/* trigger PRN generation */
-> -		writel(PPC4XX_PRNG_CTRL_AUTO_EN,
-> -		       dev->ce_base + CRYPTO4XX_PRNG_CTRL);
-> -
-> -		for (i = 0; i < 1024; i++) {
-> -			/* usually 19 iterations are enough */
-> -			if ((readl(dev->ce_base + CRYPTO4XX_PRNG_STAT) &
-> -			     CRYPTO4XX_PRNG_STAT_BUSY))
-> -				continue;
-> -
-> -			val[0] = readl_be(dev->ce_base + CRYPTO4XX_PRNG_RES_0);
-> -			val[1] = readl_be(dev->ce_base + CRYPTO4XX_PRNG_RES_1);
-> -			break;
-> -		}
-> -		if (i == 1024)
-> -			return -ETIMEDOUT;
-> -
-> -		if ((max - curr) >= 8) {
-> -			memcpy(data, &val, 8);
-> -			data += 8;
-> -			curr += 8;
-> -		} else {
-> -			/* copy only remaining bytes */
-> -			memcpy(data, &val, max - curr);
-> -			break;
-> -		}
-> -	} while (curr < max);
-> -
-> -	return curr;
-> -}
-> -
-> -static int crypto4xx_prng_generate(struct crypto_rng *tfm,
-> -				   const u8 *src, unsigned int slen,
-> -				   u8 *dstn, unsigned int dlen)
-> -{
-> -	struct rng_alg *alg = crypto_rng_alg(tfm);
-> -	struct crypto4xx_alg *amcc_alg;
-> -	struct crypto4xx_device *dev;
-> -	int ret;
-> -
-> -	amcc_alg = container_of(alg, struct crypto4xx_alg, alg.u.rng);
-> -	dev = amcc_alg->dev;
-> -
-> -	mutex_lock(&dev->core_dev->rng_lock);
-> -	ret = ppc4xx_prng_data_read(dev, dstn, dlen);
-> -	mutex_unlock(&dev->core_dev->rng_lock);
-> -	return ret;
-> -}
-> -
-> -
-> -static int crypto4xx_prng_seed(struct crypto_rng *tfm, const u8 *seed,
-> -			unsigned int slen)
-> -{
-> -	return 0;
-> -}
-> -
->   /*
->    * Supported Crypto Algorithms
->    */
->   static struct crypto4xx_alg_common crypto4xx_alg[] = {
->   	/* Crypto AES modes */
-> @@ -1266,22 +1193,10 @@ static struct crypto4xx_alg_common crypto4xx_alg[] = {
->   			.cra_blocksize	= 1,
->   			.cra_ctxsize	= sizeof(struct crypto4xx_ctx),
->   			.cra_module	= THIS_MODULE,
->   		},
->   	} },
-> -	{ .type = CRYPTO_ALG_TYPE_RNG, .u.rng = {
-> -		.base = {
-> -			.cra_name		= "stdrng",
-> -			.cra_driver_name        = "crypto4xx_rng",
-> -			.cra_priority		= 300,
-> -			.cra_ctxsize		= 0,
-> -			.cra_module		= THIS_MODULE,
-> -		},
-> -		.generate               = crypto4xx_prng_generate,
-> -		.seed                   = crypto4xx_prng_seed,
-> -		.seedsize               = 0,
-> -	} },
->   };
->   
->   /*
->    * Module Initialization Routine
->    */
-> @@ -1351,13 +1266,10 @@ static int crypto4xx_probe(struct platform_device *ofdev)
->   	}
->   
->   	core_dev->dev->core_dev = core_dev;
->   	core_dev->dev->is_revb = is_revb;
->   	core_dev->device = dev;
-> -	rc = devm_mutex_init(&ofdev->dev, &core_dev->rng_lock);
-> -	if (rc)
-> -		return rc;
->   	spin_lock_init(&core_dev->lock);
->   	INIT_LIST_HEAD(&core_dev->dev->alg_list);
->   	ratelimit_default_init(&core_dev->dev->aead_ratelimit);
->   	rc = crypto4xx_build_sdr(core_dev->dev);
->   	if (rc)
-> diff --git a/drivers/crypto/amcc/crypto4xx_core.h b/drivers/crypto/amcc/crypto4xx_core.h
-> index ee36630c670f..3a028aec3f0c 100644
-> --- a/drivers/crypto/amcc/crypto4xx_core.h
-> +++ b/drivers/crypto/amcc/crypto4xx_core.h
-> @@ -12,14 +12,12 @@
->   
->   #ifndef __CRYPTO4XX_CORE_H__
->   #define __CRYPTO4XX_CORE_H__
->   
->   #include <linux/ratelimit.h>
-> -#include <linux/mutex.h>
->   #include <linux/scatterlist.h>
->   #include <crypto/internal/aead.h>
-> -#include <crypto/internal/rng.h>
->   #include <crypto/internal/skcipher.h>
->   #include "crypto4xx_reg_def.h"
->   #include "crypto4xx_sa.h"
->   
->   #define PPC460SX_SDR0_SRST                      0x201
-> @@ -109,11 +107,10 @@ struct crypto4xx_core_device {
->   	struct hwrng *trng;
->   	u32 int_status;
->   	u32 irq;
->   	struct tasklet_struct tasklet;
->   	spinlock_t lock;
-> -	struct mutex rng_lock;
->   };
->   
->   struct crypto4xx_ctx {
->   	struct crypto4xx_device *dev;
->   	struct dynamic_sa_ctl *sa_in;
-> @@ -133,11 +130,10 @@ struct crypto4xx_aead_reqctx {
->   struct crypto4xx_alg_common {
->   	u32 type;
->   	union {
->   		struct skcipher_alg cipher;
->   		struct aead_alg aead;
-> -		struct rng_alg rng;
->   	} u;
->   };
->   
->   struct crypto4xx_alg {
->   	struct list_head  entry;
-> diff --git a/drivers/crypto/amcc/crypto4xx_reg_def.h b/drivers/crypto/amcc/crypto4xx_reg_def.h
-> index 1038061224da..73d626308a84 100644
-> --- a/drivers/crypto/amcc/crypto4xx_reg_def.h
-> +++ b/drivers/crypto/amcc/crypto4xx_reg_def.h
-> @@ -88,24 +88,13 @@
->   
->   #define CRYPTO4XX_DMA_CFG	        	0x000600d4
->   #define CRYPTO4XX_BYTE_ORDER_CFG 		0x000600d8
->   #define CRYPTO4XX_ENDIAN_CFG			0x000600d8
->   
-> -#define CRYPTO4XX_PRNG_STAT			0x00070000
-> -#define CRYPTO4XX_PRNG_STAT_BUSY		0x1
->   #define CRYPTO4XX_PRNG_CTRL			0x00070004
->   #define CRYPTO4XX_PRNG_SEED_L			0x00070008
->   #define CRYPTO4XX_PRNG_SEED_H			0x0007000c
-> -
-> -#define CRYPTO4XX_PRNG_RES_0			0x00070020
-> -#define CRYPTO4XX_PRNG_RES_1			0x00070024
-> -#define CRYPTO4XX_PRNG_RES_2			0x00070028
-> -#define CRYPTO4XX_PRNG_RES_3			0x0007002C
-> -
-> -#define CRYPTO4XX_PRNG_LFSR_L			0x00070030
-> -#define CRYPTO4XX_PRNG_LFSR_H			0x00070034
-> -
-
-Hmm, don't think these defines will hurt anyone? As these are part of the hardware spec.
-Or do you forsee a future where AI-Agents will sent patches hallucinating that it "fixed"
-the issue which readds it? I have no idea.
-
->   /*
->    * Initialize CRYPTO ENGINE registers, and memory bases.
->    */
->   #define PPC4XX_PDR_POLL				0x3ff
->   #define PPC4XX_OUTPUT_THRESHOLD			2
-
-
-Cheers,
-Christian
+-- David
 
