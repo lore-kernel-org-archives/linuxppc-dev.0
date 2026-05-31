@@ -1,50 +1,44 @@
-Return-Path: <linuxppc-dev+bounces-21763-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21764-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E3AB4CD5BD1
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 31 May 2026 10:16:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 09F13CD6E5D
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 31 May 2026 13:56:15 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gStKD5gn9z2xld;
-	Sun, 31 May 2026 20:16:00 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=212.77.101.10
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780222560;
-	cv=none; b=idoYOaahexKRABjcXO9mYKG1Gy0olI6wyVetjl/zG+ifumc4V3V3ZNE+5jzfz63+MQ9YIAitZ2Ahu9xJRTkWK+RKqV9BtKLTBSQihcZKXfsqL99wsvBja8BLPe6XudbgEZv680fXJP/BQOsfWyimfdXJl9UBEbRQ/r0OjWrE3zcC9XDjFyD+VmzwiA/z/IeuaT8UCCOPBZIjEtiTxW3bT6F6Lxzj0MEDCp2E1aw9qpWfwEDK0svyIB1F/EocwjevlzxuLPah2kveI35bPVxFHYmUUqv6gDLgEODXf2iTLAyct39hA+o279DRkjbb9ge6o+1oPT0dntXXSiH3ikiMtg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gSzCL3VQ2z2xld;
+	Sun, 31 May 2026 23:56:14 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=103.149.242.128
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780235774;
+	cv=none; b=PJ0dyZVQpNyEI5Nla3wUgIGkRvZLNVArbYHpJUTYQ+W4FghlLS0eonrp0ib/AJUsSOn+e71jV7LEBBdf5CXa64qH/qT15bFotnBtDQ3McIved0QB/Ix5WZJ6PlUMJ5iHOu3xWWRCKcoa0wk1VvQ+xUBTDf/SrNLuuZYp1vkio5mLmhAKj8sL+SYcXlYZCaUMWV++MgiwaFIKzA3WSi0ngJ/3VAISfbu7DpoDBKdYeuohEZhcA9DS3X5yoxa81mseBL9UUEjPZZGVWIFHxtwgjWnGClZpXwhsWL1wxkDEqigUUcT/wu0FV0D+1s9/3XKZa3rlWEL1krsLcjI8SnLo6Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1780222560; c=relaxed/relaxed;
-	bh=2SQfCs0HoCf9vhy43ML8A/6cWeTnQI9VwH6KrCBIL2Y=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=CECn7N0H3gNe5aSygL/+pQCKZ1z/7mXIn2O4H7yDmictuYioCgUMV1Phkc4zg95mmBGqdLx9npX9qmiJamhY36kxZYeAEMJEi4JBC8OlgQ6fjmUntyuoPgF2E9DiVKDE5CK2PHvE7IRP7wH9pFXfT7haJjfaR5U7fmXHrezVfd+G+X9gJNaDz5iSgizV5Avmu8FR1XhmUja+Ekgc6XOjv9rlZuq3svGtHH29F1Ky+/20IPPF29TntDweTTD21Wmdzxe5qNZEMPu76K2Ro4qdhzwv3rH1jTGoG3urhw5g7TxRLJOAAqEeZh5iSFUNaC70Nzdlzh1ZUEBEqCI5bPN3tQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=wp.pl; dkim=pass (2048-bit key; unprotected) header.d=wp.pl header.i=@wp.pl header.a=rsa-sha256 header.s=20241105 header.b=BqcqyyO7; dkim-atps=neutral; spf=pass (client-ip=212.77.101.10; helo=mx3.wp.pl; envelope-from=olek2@wp.pl; receiver=lists.ozlabs.org) smtp.mailfrom=wp.pl
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=wp.pl
+	t=1780235774; c=relaxed/relaxed;
+	bh=iQj5TnujvPDGBG8oYjt78Ys5Do8XcI+QaD2jG2aisX0=;
+	h=Subject:Mime-Version:Date:Message-Id:Content-Type:To:Cc:From; b=Sk7b+BHgkHzC8kdDvjjIDmTbFpww8kDaNez/sTp8vazRKeENQb+FOeWTXtYof4EoVedlSdws50hbePPsJiwNd9n/QQprOTZAOcWN89L9OXZsxM7MoU2focLE7DyzXeQ6WoYleZrFMRJcAEFSRsI7bADtDwViAaEGTeXvX4ralg8ZYGZCUKRvUGPDrcT2UV9gCXPlGvHtGeVVI3Gx+6iMk3heXt+QuYar92M/jzfQTrmb8M3khmuPmjtV6SzIPW0xS2+I9EDe4Grdbf5ZmInLOdU8jZPINzdrWtIQ05ie3n6gVYahGJcJkj5rEKz7l+Xp8SuopKLH97bEO2QYZL59nA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=bytedance.com; dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=2212171451 header.b=ALj5KvTN; dkim-atps=neutral; spf=pass (client-ip=103.149.242.128; helo=lf-1-128.ptr.blmpb.com; envelope-from=yanfei.xu@bytedance.com; receiver=lists.ozlabs.org) smtp.mailfrom=bytedance.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=bytedance.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=wp.pl header.i=@wp.pl header.a=rsa-sha256 header.s=20241105 header.b=BqcqyyO7;
+	dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=2212171451 header.b=ALj5KvTN;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=wp.pl (client-ip=212.77.101.10; helo=mx3.wp.pl; envelope-from=olek2@wp.pl; receiver=lists.ozlabs.org)
-Received: from mx3.wp.pl (mx3.wp.pl [212.77.101.10])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bytedance.com (client-ip=103.149.242.128; helo=lf-1-128.ptr.blmpb.com; envelope-from=yanfei.xu@bytedance.com; receiver=lists.ozlabs.org)
+Received: from lf-1-128.ptr.blmpb.com (lf-1-128.ptr.blmpb.com [103.149.242.128])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gStK94VwJz2xC3
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 31 May 2026 20:15:55 +1000 (AEST)
-Received: (wp-smtpd smtp.wp.pl 13222 invoked from network); 31 May 2026 12:15:50 +0200
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=wp.pl; s=20241105;
-          t=1780222550; bh=2SQfCs0HoCf9vhy43ML8A/6cWeTnQI9VwH6KrCBIL2Y=;
-          h=Subject:To:Cc:From;
-          b=BqcqyyO72zHQfNAxITei2Q9ZqGAZZV5fA8933DKK1TQwzgx0QkjevfzORptFdOsR5
-           ur3j9/QkwPykJhWPJNspTVenLHeMbI0LvrT+5lKc1LxQxmegZAxaYRWrrJ4H6H6u8/
-           y7+i92zw5l1gIa0mEjYmz5F89FT98AcLK+fLju7OeeAHZWDYfeWqwhTmm5IQkJEEtd
-           sfwwAl9CO3OEwNWRoHP2nGHzXLpyLH6ZjdtL85hqSJ/RNgLoTUTg1skVmNDrN8xtIA
-           GKuR0YMjZfdeR7Km1Zx6DKzz4pdH2RxYF706tGxGD9m0vADhRTiQDEu9VWzLN6TT7s
-           jWup+ojD6k7Yg==
-Received: from 83.24.39.212.ipv4.supernova.orange.pl (HELO [192.168.3.203]) (olek2@wp.pl@[83.24.39.212])
-          (envelope-sender <olek2@wp.pl>)
-          by smtp.wp.pl (WP-SMTPD) with TLS_AES_256_GCM_SHA384 encrypted SMTP
-          for <ebiggers@kernel.org>; 31 May 2026 12:15:50 +0200
-Message-ID: <465adf3a-2c27-43d0-afdb-68ae12b89d10@wp.pl>
-Date: Sun, 31 May 2026 12:15:49 +0200
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gSzCG6wTLz2xC3
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 31 May 2026 23:56:07 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ s=2212171451; d=bytedance.com; t=1780235626; h=from:subject:
+ mime-version:from:date:message-id:subject:to:cc:reply-to:content-type:
+ mime-version:in-reply-to:message-id;
+ bh=iQj5TnujvPDGBG8oYjt78Ys5Do8XcI+QaD2jG2aisX0=;
+ b=ALj5KvTNr1sjr2+hfosteAP5Oq/rMhhEPrnDAohSVRG9zbkL4BTKP2x4MWQpBTQ4gP1PKT
+ aou0cy/p2Ep7P6KTDtQ4pjpo1Al2cR7eUsABi3kK4IDBO1wnuvQ6do/UVexRBUQbEiAJfp
+ +YWSbofaJ95tKYweVt3LbFvfvb4JuMgvZ/t2LqSMNIi6RSNTDkZ88yleClpd+r9ZT2JDmr
+ 4PK2KMy9ieeDEey3R2ilmE2JZVWJLuIVxYT/vSNqNPjXXRblSSgDHeZcrMgDAMz3j+iZw2
+ f6dyAGahyQmaiT/Bsa0trW33f0FapTTVKMbPIIvyj58FxG7yoKF6mN5G8Q2USA==
+Subject: [v2 0/2] KVM: Validate irqchip index in routing entries
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -57,84 +51,39 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] crypto: crypto4xx - Remove insecure and unused rng_alg
-To: Eric Biggers <ebiggers@kernel.org>
-Cc: linux-crypto@vger.kernel.org, Herbert Xu <herbert@gondor.apana.org.au>,
- Christian Lamparter <chunkeey@gmail.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, stable@vger.kernel.org
-References: <20260529220430.34135-1-ebiggers@kernel.org>
- <5c74c261-53cf-4185-a8a0-7554bc9fe5f7@wp.pl> <20260530192630.GB6807@quark>
-Content-Language: pl
-From: Aleksander Jan Bajkowski <olek2@wp.pl>
-In-Reply-To: <20260530192630.GB6807@quark>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Mime-Version: 1.0
+X-Lms-Return-Path: <lba+26a1c3d68+a300e1+lists.ozlabs.org+yanfei.xu@bytedance.com>
+Date: Sun, 31 May 2026 21:53:24 +0800
+Message-Id: <20260531135326.2238555-1-yanfei.xu@bytedance.com>
+Content-Type: text/plain; charset=UTF-8
+To: <harshpb@linux.ibm.com>, <zhaotianrui@loongson.cn>, 
+	<maobibo@loongson.cn>, <chenhuacai@kernel.org>, <maddy@linux.ibm.com>, 
+	<npiggin@gmail.com>, <sashiko-reviews@lists.linux.dev>, 
+	<seanjc@google.com>, <pbonzini@redhat.com>
+Cc: <kvm@vger.kernel.org>, <stable@vger.kernel.org>, 
+	<loongarch@lists.linux.dev>, <linuxppc-dev@lists.ozlabs.org>, 
+	<caixiangfeng@bytedance.com>, <fangying.tommy@bytedance.com>, 
+	<yanfei.xu@bytedance.com>, <isyanfei.xu@gmail.com>
+X-Mailer: git-send-email 2.20.1
 Content-Transfer-Encoding: 7bit
-X-WP-MailID: a6e63facd6f870f2252be64801227204
-X-WP-AV: skaner antywirusowy Poczty Wirtualnej Polski
-X-WP-SPAM: NO 0000009 [ker3]                               
+From: "Yanfei Xu" <yanfei.xu@bytedance.com>
+X-Original-From: Yanfei Xu <yanfei.xu@bytedance.com>
 
-Hi Eric,
+Validate irqchip indexes for LoongArch and PowerPC irq routing entries
+to reject out-of-range values before indexing the irqchip array.
 
-On 30/05/2026 21:26, Eric Biggers wrote:
-> On Sat, May 30, 2026 at 05:05:19PM +0200, Aleksander Jan Bajkowski wrote:
->> Hi Eric,
->>
->> On 30/05/2026 00:04, Eric Biggers wrote:
->>> Remove crypto4xx_rng, as it is insecure and unused:
->>>
->>> - It has only a 64-bit security strength, which is highly inadequate.
->>>     This can be seen by the fact that crypto4xx_hw_init() seeds it with
->>>     only 64 bits of entropy, and the fact that the original commit
->>>     mentions that it implements ANSI X9.17 Annex C.
->> In addition to a seed, the PRNG also uses ring oscillators as sources of
->> entropy. The entropy should be higher than 64b. This is the Rambus EIP-73d
->> IP core. The same IP core is built into eip93 (EIP-73a), eip97 (EIP-73d),
->> and eip197 (EIP-73d). You can find the documentation online. The complete
->> "container" is actually Rambus EIP-94, and one of its parts is EIP-73d.
-> Just because it may have another source of entropy doesn't mean its
-> security strength is higher than 64 bits.
->
-> I cannot find any documentation other than
-> https://datasheet.octopart.com/PPC460EX-SUB800T-AMCC-datasheet-11553412.pdf
-> which says "ANSI X9.17 Annex C compliant using a DES algorithm".
->
-> DES actually has a 56-bit key, so maybe I was over-generous.
->
-> And according to https://cacr.uwaterloo.ca/hac/about/chap5.pdf ANSI
-> X9.17 has only a 64-bit state anyway.  So even if we assume the
-> datasheet is incorrect and the algorithm is actually 3DES which has a
-> longer key, the state is likely still 64-bit.
-According to the datasheet, there is no second source of entropy. The PRNG
-has three built-in LFSRs. Each of them can be initialized independently. The
-first LFSR is used to generate input data. The second and third are used to
-generate keys for DES encryption. The output of the first LFSR is encrypted
-using 3DES with two 64-bit keys. Between individual DES operations, data is
-XORed with the seed. It sounds like a fairly secure design if properly 
-reseeded.
-There is also a newer design (EIP73a) based on the same algorithm. The
-only difference is the replacing of 3DES with AES using a 2TDEA scheme.
-The DES-based variant is more widely used, even in new SoCs.
->
-> So it isn't looking good.  And since it's an undocumented proprietary
-> design it shouldn't be given the benefit of the doubt either.
->
-As I mentioned earlier, this IP core is quite well documented[1] (page 198).
-Half of all SOHO routers have the EIP-73d built in. The algorithm is also
-described in TRM for some of these SoCs :)
+v1->v2:
+- Split the patch into two by architecture (Sean)
+- Pick up Reviewed-by
 
-List od SoCs with EIP-73d:
-AMCC PPC405EX/PPC460EX,
-Intel/Maxlinear GRX350, URX850,
-Marvell Armada 37x0, 7k, 8k,
-Mediatek MT7623/MT7981/MT7986/MT7987/MT7988,
-Qualcomm IPQ975x.
+Yanfei Xu (2):
+  KVM: LoongArch: Validate irqchip index in irqfd routing
+  KVM: PPC: Validate irqchip index in MPIC routing
 
-[1] 
-https://www.scribd.com/document/734250956/Safexcel-Ip-94-Plb-Sas-v1-5?_gl=1*dng4pf*_up*MQ..*_ga*OTQ4NjkzMTAxLjE3ODAyMjA4ODI.*_ga_Z4ZC50DED6*czE3ODAyMjA4ODEkbzEkZzEkdDE3ODAyMjA4ODEkajYwJGwwJGgw*_ga_8KZ8BV0P5W*czE3ODAyMjA4ODEkbzEkZzEkdDE3ODAyMjA4ODEkajYwJGwwJGgw
+ arch/loongarch/kvm/irqfd.c | 3 ++-
+ arch/powerpc/kvm/mpic.c    | 3 ++-
+ 2 files changed, 4 insertions(+), 2 deletions(-)
 
-Best regards,
-Aleksander
-
+-- 
+2.20.1
 
