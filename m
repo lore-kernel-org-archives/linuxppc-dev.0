@@ -1,45 +1,81 @@
-Return-Path: <linuxppc-dev+bounces-21810-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21811-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DDCD2CD6E56
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Jun 2026 10:44:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 291D0CD6E56
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Jun 2026 11:26:50 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gTVvJ21plz2ydQ;
-	Mon, 01 Jun 2026 20:44:12 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.140.110.172
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780310652;
-	cv=none; b=j9m4Qb+Mu3LLvn8C+nt/09C4Sttkdkmi41hm3FbS4uGu9OKtD6h0gwz0i9vgF+Rrf7dSuHJssSLsQDeHdQ2sFFn0gxCHp+bW3PsHgRfQ/RGBEswWtnjCiSzyxe8MiJSzUvRWCM+pxf7dc0BD9hW1VJJZ4hsLG6FlKH62G/AB/V415nF+8dDClp0Uu7ZhCDlFPeGwLXvMhM3eyBLUKYjrOX0o/vcgFv70/0TDtr6jbY3dnpuuiu5vW9FMJBJv5BDwoYb6W0NPa8pf/fGVR353wWVF9J7QG6TndMlUQ6t8yzidxqa+ZvjlDPysD4EPeugpj/TGnDLSaFP8zjaShzdthw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gTWrS4fSvz2xqn;
+	Mon, 01 Jun 2026 21:26:48 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780313208;
+	cv=none; b=cBBGhwEpurMBNQPvqK7U+JpBcDbDDvsPiD2zN4sKOhxZCJFJZyw8fSvSvi5sAutnIXhht/pQzmDzNX0A9GvtgSSo6T+VXPEFTYIFws2GoI+IR8t0me2tHvSxEEfXyJTa15MpWIuB57v512Jv9m5o4+342vRH1QEiIJcrAjzTwnl7qex/MsuvwSuMpOYNqRn8FZ8teQeWganGVbAyHfGPcsRH4ahyrtd9iQlR56PSv9SB8K8CNp3tuvxxoepoGfM4/haZ0YMhYLasq25YOb+5REM4eZvj45ISw78Dbnaop5AJ+d20RZqFRnR14spq3satpdqc5xM79qwJsm/5l8HskA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1780310652; c=relaxed/relaxed;
-	bh=BdxzfLXr6/G/k/tGtVLcYYbC4QvrQHAxO2smMCOSTy4=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=AV0gNB1rifyg0d+CHjBOdm9p/I2e157v0uM7UTMm6L83rXQjgl/QcSoYTDcuqT9un1mvFmbf9AsKDaI8MdW1RTNVDtRnFLhnhZx1rH+mIinn43g//bnNA+cxMW0Lg03dXvObCAqrPGG95x79IwwMH6A/nH+QhvQtGxncrx1V/s/78yDMmrk6WG+1AuwouvrL2iIc1aQuLTYehmItSNj4dB5RboPghz++IHmys9U2mwRF/MpBgDyDAoIRFcNJCxXkoKsq+H8uBqjS78wUaBVf/1UeXuAmjJOkvnCrX3y/EUhNAJuBY/jO1d2q3u35GcN6KtRYCEi6250HRvwSR+znqg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=ATGD2KEF; dkim-atps=neutral; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=kevin.brodsky@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
+	t=1780313208; c=relaxed/relaxed;
+	bh=EHtJczlzPsaw96sfgjdcb7909B2TunaiprAsMSFmrXA=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=F9j7o0cyY4CurVTTY0I6Y7oez132/0dnTWSQX8A95I9ecLsDY+xKDezM169sevLL86qbPn/XLshGvpXQmyfGMSIUNt+mdmuzHTPDN8PvL7fXfN3hEZl49JpH6z6xS8F+BfjJ+VAbzHXkJas2XDQl+nOpe+0Z3VBagpARlZx+l4QxPE8cRlwIs8Ply9gcWZcrnyE9b6hG5zefkMvIvLncB8FWZxhR6GFEUh+U5GdSZA2bt47Kn6vB5wZw1zKqoRECP6Y1jkGpzNMaw+7aYrjMAZ7lLf3A4TTpRXELFbVHqgXWb7qB1IKeCZVHjJStiFwIEKqsifukwn4ou8z+FvkqLg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=XctIx1+N; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=shivangu@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=ATGD2KEF;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=XctIx1+N;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=kevin.brodsky@arm.com; receiver=lists.ozlabs.org)
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gTVvH2Krlz2xdb
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 01 Jun 2026 20:44:11 +1000 (AEST)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id EB1D41516;
-	Mon,  1 Jun 2026 03:43:34 -0700 (PDT)
-Received: from [10.57.94.8] (unknown [10.57.94.8])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 38E4D3F905;
-	Mon,  1 Jun 2026 03:43:32 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1780310619; bh=C3+Nupy9epvTU9YJN+UUOeTEoo2XErmrS9cELXLEaTU=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=ATGD2KEFk9zH6A/3/wbmsLo8Bk16zruKAja2MWpstRHrcKrUHTc7cCqmaTsy1kze4
-	 vG+kAYpgRYGrfxsVM+k07lFcID8aETdcpIWAaY6POEOlyHhT7SAbyCaNPXgf688bb2
-	 NWAccF9tR54IJl/TxpZC5Vs/Yx5VmFz06QrmL7VQ=
-Message-ID: <e9187fdb-b4dc-4b82-8783-fe1eb221d885@arm.com>
-Date: Mon, 1 Jun 2026 12:43:29 +0200
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=shivangu@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gTWrQ08s5z2xdh
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 01 Jun 2026 21:26:45 +1000 (AEST)
+Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6514APAU3708091;
+	Mon, 1 Jun 2026 11:26:26 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:date:from:message-id:mime-version
+	:subject:to; s=pp1; bh=EHtJczlzPsaw96sfgjdcb7909B2TunaiprAsMSFmr
+	XA=; b=XctIx1+NexJmGxqwmgdYHLMq26TR905dr9iVjd1OU4pzBWmg9SZegX0Tf
+	LCUwhAvynbIDtBXkaLEOCnRIdJZJKPisljYK3gv3EpTz0mX8a780JrNfxK2ftzN3
+	vruv1JG9DaLvgGwHLjBRYfkLjFzbPp9ZupKxy+lPx9qmw9MFg8UXvKp+r3EnKm53
+	pDbFxFfRYjuxZIFBEqTmriDAP/vOkEnJD21zdqxO6XF/sofRTUma6Wmz3P1uICSm
+	xbeO/nKkyABleVeRjka8/s+bTBNnn19yvbMFvs1z85wjAYaMRrq5peoncj89TqDy
+	qo5w3bGrRlQVTc+VYysXC0kWya1Yw==
+Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4efpae05br-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 01 Jun 2026 11:26:25 +0000 (GMT)
+Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma23.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 651BO8Tp023788;
+	Mon, 1 Jun 2026 11:26:24 GMT
+Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
+	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4egbqh5qw9-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 01 Jun 2026 11:26:24 +0000 (GMT)
+Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
+	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 651BQLPw57016760
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Mon, 1 Jun 2026 11:26:21 GMT
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id E39CA2004F;
+	Mon,  1 Jun 2026 11:26:20 +0000 (GMT)
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 8D47720040;
+	Mon,  1 Jun 2026 11:26:18 +0000 (GMT)
+Received: from shivang.bl1-in.ibm.com (unknown [9.123.12.247])
+	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Mon,  1 Jun 2026 11:26:18 +0000 (GMT)
+From: Shivang Upadhyay <shivangu@linux.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com,
+        chleroy@kernel.org, thuth@redhat.com,
+        Shivang Upadhyay <shivangu@linux.ibm.com>,
+        Aditya Gupta <adityag@linux.ibm.com>,
+        Sourabh Jain <sourabhjain@linux.ibm.com>,
+        Mahesh J Salgaonkar <mahesh@linux.ibm.com>
+Subject: [PATCH] powerpc/powernv: Cache OPAL check_token() results
+Date: Mon,  1 Jun 2026 16:55:20 +0530
+Message-ID: <20260601112520.161605-1-shivangu@linux.ibm.com>
+X-Mailer: git-send-email 2.53.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -53,141 +89,161 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v7 15/15] arm64: mm: Unmap kernel data/bss entirely from
- the linear map
-To: Ard Biesheuvel <ardb+git@google.com>, linux-arm-kernel@lists.infradead.org
-Cc: linux-kernel@vger.kernel.org, will@kernel.org, catalin.marinas@arm.com,
- mark.rutland@arm.com, Ard Biesheuvel <ardb@kernel.org>,
- Ryan Roberts <ryan.roberts@arm.com>,
- Anshuman Khandual <anshuman.khandual@arm.com>,
- Liz Prucka <lizprucka@google.com>, Seth Jenkins <sethjenkins@google.com>,
- Kees Cook <kees@kernel.org>, Mike Rapoport <rppt@kernel.org>,
- David Hildenbrand <david@kernel.org>,
- Andrew Morton <akpm@linux-foundation.org>, Jann Horn <jannh@google.com>,
- linux-mm@kvack.org, linux-hardening@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-sh@vger.kernel.org
-References: <20260529150150.1670604-17-ardb+git@google.com>
- <20260529150150.1670604-32-ardb+git@google.com>
-From: Kevin Brodsky <kevin.brodsky@arm.com>
-Content-Language: en-GB
-In-Reply-To: <20260529150150.1670604-32-ardb+git@google.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Authority-Analysis: v=2.4 cv=Zt3d7d7G c=1 sm=1 tr=0 ts=6a1d6c62 cx=c_pps
+ a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
+ a=FelO9ux0wxsA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
+ a=V8glGbnc2Ofi9Qvn3v5h:22 a=VnNF1IyMAAAA:8 a=pGLkceISAAAA:8 a=VwQbUJbxAAAA:8
+ a=cfGK7pAvqkcwuHOd0NgA:9
+X-Proofpoint-GUID: 3J9yil8-VSsPEZOV2Ho9WB5emZ1dweoP
+X-Proofpoint-ORIG-GUID: 3cIZLfS7NjxrkyUVIx_G-P9my0RWHDrA
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjAxMDExMSBTYWx0ZWRfX46jnKkNyDhzq
+ emNSi1XE6BUD3PpY5BOE87ZDehswbgvXmqypZ7rJVhz14nPMnn6jKQqp+2aVSKKBz6IJFUF23ui
+ R3u74NCpr/XtDU98M4O1uSKMGXapK+Ymco7K+WyefH/tmv/6c1vbc598vLH+wlzLcp7LMVpNSMO
+ 6/I4O/gv62bzVzezTZL2y8VAtfOCixGxO4daRBVkqTX9nVJ0+HBbF4ykfGS6ruM2t2mNc5u7a0P
+ 7ntF08Zrmkd+jIqetE7T99aZGweoMuyK7TAswubD0WPSSmkAa547cTQxwa3My2dDlkeoRT2ashL
+ GPwzqMWzd+awMYwBLOqChxF3AlqFyI2UxvzZ8IlamEYhRWXivEXq3H+qjdfE/7Lyjbk4zu23/IV
+ jD821y7IbTOd1PTCTlHq2PILwI5PD3+53e9/dF5dw1W2ezWxOxgG43GhV3eCk/Ne5qkeyRi5R+x
+ cxl1hX31G9TwFE8rOCg==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
+ definitions=2026-06-01_03,2026-05-28_03,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ impostorscore=0 suspectscore=0 priorityscore=1501 bulkscore=0 clxscore=1015
+ phishscore=0 spamscore=0 malwarescore=0 adultscore=0 lowpriorityscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2605210000 definitions=main-2606010111
 
-On 29/05/2026 17:02, Ard Biesheuvel wrote:
-> From: Ard Biesheuvel <ardb@kernel.org>
->
-> The linear aliases of the kernel text and rodata are also mapped
-> read-only in the linear map. Given that the contents of these regions
-> are mostly identical to the version in the loadable image, mapping them
-> read-only and leaving their contents visible is a reasonable hardening
-> measure.
->
-> Data and bss, however, are now also mapped read-only but the contents of
-> these regions are more likely to contain data that we'd rather not leak.
-> So let's unmap these entirely in the linear map when the kernel is
-> running normally.
->
-> When going into hibernation or waking up from it, these regions need to
-> be mapped, so map the region initially, and toggle the valid bit so
-> map/unmap the region as needed.
+Add a caching layer for the opal_check_token() OPAL call to avoid
+repeated firmware calls for token availability checks.
 
-s/so map/to map/? Also not sure what "initially" is referring to here.
+The opal_check_token() function is used to determine if a specific
+OPAL firmware call is supported on the current platform. This check
+is performed frequently during boot and runtime, resulting in
+unnecessary firmware calls for the same token values.
 
-Otherwise:
+This reduces firmware call overhead during boot and runtime token
+checks while maintaining compatibility with existing code.
 
-Reviewed-by: Kevin Brodsky <kevin.brodsky@arm.com>
+Testing with buildroot images shows OPAL calls reduced from
+35578 to 28983, before console bring-up.
 
-I don't know much about hibernation though, would be good for someone
-knowledgeable to have a look.
+Cc: Madhavan Srinivasan <maddy@linux.ibm.com>
+Cc: Nicholas Piggin <npiggin@gmail.com>
+Cc: Christophe Leroy <chleroy@kernel.org>
+Cc: Aditya Gupta <adityag@linux.ibm.com>
+Cc: Sourabh Jain <sourabhjain@linux.ibm.com>
+Cc: Mahesh J Salgaonkar <mahesh@linux.ibm.com>
+Signed-off-by: Shivang Upadhyay <shivangu@linux.ibm.com>
+---
+ arch/powerpc/include/asm/opal.h            |  1 +
+ arch/powerpc/platforms/powernv/opal-call.c |  2 +-
+ arch/powerpc/platforms/powernv/opal.c      | 55 ++++++++++++++++++++++
+ 3 files changed, 57 insertions(+), 1 deletion(-)
 
-- Kevin
+diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
+index 0a398265ba04..e7e11479122b 100644
+--- a/arch/powerpc/include/asm/opal.h
++++ b/arch/powerpc/include/asm/opal.h
+@@ -156,6 +156,7 @@ int64_t opal_pci_next_error(uint64_t phb_id, __be64 *first_frozen_pe,
+ int64_t opal_pci_poll(uint64_t id);
+ int64_t opal_return_cpu(void);
+ int64_t opal_check_token(uint64_t token);
++int64_t opal_check_token_call(uint64_t token);
+ int64_t opal_reinit_cpus(uint64_t flags);
+ 
+ int64_t opal_xscom_read(uint32_t gcid, uint64_t pcb_addr, __be64 *val);
+diff --git a/arch/powerpc/platforms/powernv/opal-call.c b/arch/powerpc/platforms/powernv/opal-call.c
+index 021b0ec29e24..00325c189e69 100644
+--- a/arch/powerpc/platforms/powernv/opal-call.c
++++ b/arch/powerpc/platforms/powernv/opal-call.c
+@@ -207,7 +207,7 @@ OPAL_CALL(opal_validate_flash,			OPAL_FLASH_VALIDATE);
+ OPAL_CALL(opal_manage_flash,			OPAL_FLASH_MANAGE);
+ OPAL_CALL(opal_update_flash,			OPAL_FLASH_UPDATE);
+ OPAL_CALL(opal_resync_timebase,			OPAL_RESYNC_TIMEBASE);
+-OPAL_CALL(opal_check_token,			OPAL_CHECK_TOKEN);
++OPAL_CALL(opal_check_token_call,		OPAL_CHECK_TOKEN);
+ OPAL_CALL(opal_dump_init,			OPAL_DUMP_INIT);
+ OPAL_CALL(opal_dump_info,			OPAL_DUMP_INFO);
+ OPAL_CALL(opal_dump_info2,			OPAL_DUMP_INFO2);
+diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
+index 1946dbdc9fa1..c32035136efa 100644
+--- a/arch/powerpc/platforms/powernv/opal.c
++++ b/arch/powerpc/platforms/powernv/opal.c
+@@ -73,6 +73,12 @@ static struct task_struct *kopald_tsk;
+ static struct opal_msg *opal_msg;
+ static u32 opal_msg_size __ro_after_init;
+ 
++/* Token cache for opal_check_token() */
++#define OPAL_TOKEN_CACHE_SIZE 256  /* Covers tokens 0-255, including OPAL_LAST (178) */
++static unsigned long opal_token_cache[BITS_TO_LONGS(OPAL_TOKEN_CACHE_SIZE)] __ro_after_init;
++static bool opal_token_cache_initialized __ro_after_init;
++static void opal_token_cache_init(void);
++
+ void __init opal_configure_cores(void)
+ {
+ 	u64 reinit_flags = 0;
+@@ -1125,8 +1131,57 @@ EXPORT_SYMBOL_GPL(opal_flash_read);
+ EXPORT_SYMBOL_GPL(opal_flash_write);
+ EXPORT_SYMBOL_GPL(opal_flash_erase);
+ EXPORT_SYMBOL_GPL(opal_prd_msg);
++
++/**
++ * opal_check_token - Check if an OPAL call token is supported
++ * @token: OPAL token number to check
++ *
++ * Returns 1 if supported, 0 if not.
++ * Uses a cached bitmap for fast lookups after initialization.
++ */
++int64_t opal_check_token(uint64_t token)
++{
++	/* Initialize if not done before */
++	if (!opal_token_cache_initialized) {
++		opal_token_cache_init();
++	}
++
++	/* Use cached result */
++	if (token < OPAL_TOKEN_CACHE_SIZE) {
++		return test_bit(token, opal_token_cache);
++	}
++
++	/* Fall back to direct OPAL call for out-of-range tokens */
++	return opal_check_token_call(token);
++}
+ EXPORT_SYMBOL_GPL(opal_check_token);
+ 
++/**
++ * opal_token_cache_init - Initialize the OPAL token cache
++ *
++ * Called during opal_init() to populate the token cache by querying
++ * OPAL firmware for all tokens in the supported range.
++ */
++static void opal_token_cache_init(void)
++{
++	uint64_t token;
++	int64_t result;
++
++	pr_debug("Initializing OPAL token cache\n");
++
++	/* Query OPAL for each token and cache the result */
++	for (token = 0; token < OPAL_TOKEN_CACHE_SIZE; token++) {
++		result = opal_check_token_call(token);
++		if (result == 1)
++			set_bit(token, opal_token_cache);
++	}
++
++	/* Mark cache as initialized - enables fast path */
++	opal_token_cache_initialized = true;
++
++	pr_info("OPAL token cache initialized\n");
++}
++
+ /* Convert a region of vmalloc memory to an opal sg list */
+ struct opal_sg_list *opal_vmalloc_to_sg_list(void *vmalloc_addr,
+ 					     unsigned long vmalloc_size)
+-- 
+2.53.0
 
-> Doing so is required because pages covering the kernel image are marked
-> as PageReserved, and therefore disregarded for snapshotting by the
-> hibernate logic unless they are mapped.
->
-> Signed-off-by: Ard Biesheuvel <ardb@kernel.org>
-> ---
->  arch/arm64/mm/mmu.c | 45 ++++++++++++++++++--
->  1 file changed, 41 insertions(+), 4 deletions(-)
->
-> diff --git a/arch/arm64/mm/mmu.c b/arch/arm64/mm/mmu.c
-> index 7b18dc2f1721..07a6fa210171 100644
-> --- a/arch/arm64/mm/mmu.c
-> +++ b/arch/arm64/mm/mmu.c
-> @@ -24,6 +24,7 @@
->  #include <linux/mm.h>
->  #include <linux/vmalloc.h>
->  #include <linux/set_memory.h>
-> +#include <linux/suspend.h>
->  #include <linux/kfence.h>
->  #include <linux/pkeys.h>
->  #include <linux/mm_inline.h>
-> @@ -1056,6 +1057,29 @@ static void __init __map_memblock(phys_addr_t start, phys_addr_t end,
->  				 end - start, prot, early_pgtable_alloc, flags);
->  }
->  
-> +static void mark_linear_data_alias_valid(bool valid)
-> +{
-> +	set_memory_valid((unsigned long)lm_alias(__init_end),
-> +			 (unsigned long)(__bss_stop - __init_end) / PAGE_SIZE,
-> +			 valid);
-> +}
-> +
-> +static int arm64_hibernate_pm_notify(struct notifier_block *nb,
-> +				     unsigned long mode, void *unused)
-> +{
-> +	switch (mode) {
-> +	default:
-> +		break;
-> +	case PM_POST_HIBERNATION:
-> +		mark_linear_data_alias_valid(false);
-> +		break;
-> +	case PM_HIBERNATION_PREPARE:
-> +		mark_linear_data_alias_valid(true);
-> +		break;
-> +	}
-> +	return 0;
-> +}
-> +
->  void __init mark_linear_text_alias_ro(void)
->  {
->  	/*
-> @@ -1064,6 +1088,21 @@ void __init mark_linear_text_alias_ro(void)
->  	update_mapping_prot(__pa_symbol(_text), (unsigned long)lm_alias(_text),
->  			    (unsigned long)__init_begin - (unsigned long)_text,
->  			    PAGE_KERNEL_RO);
-> +
-> +	/*
-> +	 * Register a PM notifier to remap the linear alias of data/bss as
-> +	 * valid read-only before hibernation. This is needed because the
-> +	 * snapshot logic disregards PageReserved pages (such as the ones
-> +	 * covering the kernel image) unless they are mapped in the linear
-> +	 * map.
-> +	 */
-> +	if (IS_ENABLED(CONFIG_HIBERNATION)) {
-> +		static struct notifier_block nb = {
-> +			.notifier_call = arm64_hibernate_pm_notify
-> +		};
-> +
-> +		register_pm_notifier(&nb);
-> +	}
->  }
->  
->  #ifdef CONFIG_KFENCE
-> @@ -1193,10 +1232,8 @@ static void __init map_mem(void)
->  			       flags);
->  	}
->  
-> -	/* Map the kernel data/bss read-only in the linear map */
-> -	__map_memblock(init_end, kernel_end, PAGE_KERNEL_RO, flags);
-> -	flush_tlb_kernel_range((unsigned long)lm_alias(__init_end),
-> -			       (unsigned long)lm_alias(__bss_stop));
-> +	/* Map the kernel data/bss as invalid in the linear map */
-> +	mark_linear_data_alias_valid(false);
->  }
->  
->  void mark_rodata_ro(void)
 
