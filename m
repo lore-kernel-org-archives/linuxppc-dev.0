@@ -1,54 +1,53 @@
-Return-Path: <linuxppc-dev+bounces-21822-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21823-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D171CCD5BD1
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Jun 2026 19:59:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BD519CD6E55
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Jun 2026 20:25:18 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gTlDW6kyJz2xYg;
-	Tue, 02 Jun 2026 05:59:55 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780343995;
-	cv=none; b=c6Jx2/lkPkd7pr/bA2UTcDzBgJ8Fp8t9SG5ERotFB5AN+tDH2ynz+EBV0ssaTa7YO4g4x4SlYseCp6c5x9TP1AjQlhVVcKhas8SrK/4Bnt5Ukcqpe7bADhi7G+1b3JmuRr2xIgp5r8O0GFiE2RXwr/4NSl1rFQvYHmRxfrTuqo5PbQT+FF+EeqB4Hw0/zeuIVNONRdk/am3PhVFp/wZlGFd2OUaK7bKFnkBcRc+dXuLv0r5uVbIHqVQvbdbgb321N7A5y1kyAj1scs0Z0IogUm2ey984RfYKspP5Bo0iIgBdgYMFqIS52QkmU72qiLqUT5le2gNSvFXROdTJdY5PIw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gTlnn1wtmz2ydQ;
+	Tue, 02 Jun 2026 06:25:17 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:8b0:10b:1236::1"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780345517;
+	cv=none; b=T0kMQmYBQWMh+t2UNMv3tpRi8JYeQo0qc77FUqTuStjkq8CatwTcsT1ZlVnsXwElAUOMYXwC6yv40zdOAYyxxOSJrzvYjp/YlTV5H5x5UzCeDTeoFuRpxQKZKmL8baglHv0Uf9vlTzQzc5swTj7wKC23ErF0l6YP0XnKq+t0HUT0CmJ+DkNsJkAbLts63/2iZj9162ux7BO0/WIRED3ZvTqYcW4NMzC8hsWXXE1jhpvwWh9QWjZGbWKMIkyS4T3Z/xrH6RNZNuTPmCu6eGcng/fwM75Zr0Jdx0Ticad1tKvd6AyCvnRnv2Mu4f+r1f3HW/aBaW0s3Zz821F5Gpfa/g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1780343995; c=relaxed/relaxed;
-	bh=XNCn/hiuq2TSQD0/7268qMBjDGPldqx55TcTTgULBQo=;
+	t=1780345517; c=relaxed/relaxed;
+	bh=6/5W0G6Gs1Q9GB3IxcldPERQvThA7tz7U249bqa4a9U=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=JPgQw5A9wgf8N/oS0YCnrCh5yjXOYYFW46eerAmfAzbsXp5bO5+3ZoiGKrI7v8I873cux9thsyr8I/8J4u6Ea0y9UFEuSjZa8VkxC80f/uR7CpuyjTWFhSRtOhuA3qDYxxbP+x/wbq7O3iedWDq+/aeL+o2fo+T+gEPoUYuQSV0O2LHSS+Iqaydvc2Meo3Z90ynraV2FpUiN0iD0/tp6Vo2jLDMEjG7NcGcmfOKCysQl/m6JubZ+xnisXrVWjOi9N8dSoF8TU5Q3zZhUuFCwAI+hyneQ4Rb2MUd+OPLpeh57LEysh9jLiVQwim1rQeqfyvy7jHaDHGl+1/8Afq8lww==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=jPPf1HSE; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=kees@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	 Content-Type:Content-Disposition:In-Reply-To; b=kMpyS3l8E1IDG4+rk1F9QduYpZZpdnneUCLUAbBzLLUpcx8aBOX4JMV8dtexMIPrw1BmAEiMI/l0rrrRTshzYRYRYmHn0oCc5dZFjgTGEwIvJJrmLpJBUeVbTvaoHpiCDR3I97VBYvmvnYA/BZHm9ponLboT1+yk5k8e2O7yjDNbwa0YxVABYuRmsRu/k7AVIYk/nudhFpLl+PU8wX3ICpD3/5IEuKUeKu9q6/RSsK8ZmF5P2MM6xP0iZLh7lVVZngZ3nMm/BLUBQoOdJiJsQbgNJI4s2HwEIFNI2xAXTQ+9K5k2v6DBhsg+2MDnZWQsssBJrDSRjtvE6q0ws4jkgg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=infradead.org; dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=JD/rgItE; dkim-atps=neutral; spf=pass (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org; envelope-from=willy@infradead.org; receiver=lists.ozlabs.org) smtp.mailfrom=infradead.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=infradead.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=jPPf1HSE;
+	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=JD/rgItE;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=kees@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=infradead.org (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org; envelope-from=willy@infradead.org; receiver=lists.ozlabs.org)
+Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gTlDT2fMSz2xdh
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 02 Jun 2026 05:59:53 +1000 (AEST)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 4E93A40825;
-	Mon,  1 Jun 2026 19:59:50 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2D6831F00893;
-	Mon,  1 Jun 2026 19:59:50 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1780343990;
-	bh=XNCn/hiuq2TSQD0/7268qMBjDGPldqx55TcTTgULBQo=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=jPPf1HSEtTmrOkKgXG7yZ4L4yWlXriv9f4UInH3EUjfr7uRqEixqsswHEVJD66e/i
-	 UYMnZm3AwHRFYgRV2ih8KtH9UMVsaXegF2blXd/AV6FabDLb+h4l5NmMOw9ZVrD++N
-	 KcX2jHWXOHM02LWFJzDj4MfNwHTR6omd404TzjNZvpI6ZIAf59Yvhv/clTseKbIOtO
-	 ETM1funcq4ukCXv67pvcGJzgYBqL/gNfgi123wCjIaYqeaTkJBGmaBAvvqiI5vVIDR
-	 F9G7b/Sg9jjyGT7K98XQKfJ06MeRLxen4rImVcQChLpFwv+lALs23w52eL46/a7lq6
-	 WVHwgppy+tSkw==
-Date: Mon, 1 Jun 2026 12:59:49 -0700
-From: Kees Cook <kees@kernel.org>
-To: Petr Pavlu <petr.pavlu@suse.com>
-Cc: Luis Chamberlain <mcgrof@kernel.org>,
-	Pengpeng Hou <pengpeng@iscas.ac.cn>,
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gTlng3BS1z2yT0
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 02 Jun 2026 06:25:10 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=casper.20170209; h=In-Reply-To:Content-Type:MIME-Version:
+	References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+	Content-Transfer-Encoding:Content-ID:Content-Description;
+	bh=6/5W0G6Gs1Q9GB3IxcldPERQvThA7tz7U249bqa4a9U=; b=JD/rgItEItTF3waKZU0fyhZfOO
+	p6KhOF2dIKsWbBlXDH6Szda6v6pwxYE0KSLQ6p9Jvu4aC0kMd1Jp91bHbXXGW1JY4kLAuzDZFSXs9
+	P7bQk5/xrqJRa6GrGWdxnMhnM9cOr/Mh7DhOreUlDgBnF2TcRdtGfQbRd9WsBVDwHFqfKKNmW2p+o
+	Eq81r5ZCto6v0j62Ti/4LX0nmYsBAqhcbZ6JenvK3VL8pcuJJabuzAf2wJL1ohACsCSDs/sp5+nbD
+	m2tuZulS6JhmLQAZ2oWemvoJrOfuaHp1Sctzmp2YTWfFeramTBO8sylg/IQVtL1hc2i3NQH4Kt9qQ
+	+ovW+CfA==;
+Received: from willy by casper.infradead.org with local (Exim 4.99.1 #2 (Red Hat Linux))
+	id 1wU9Av-00000000iHG-2DOC;
+	Mon, 01 Jun 2026 20:23:53 +0000
+Date: Mon, 1 Jun 2026 21:23:53 +0100
+From: Matthew Wilcox <willy@infradead.org>
+To: David Laight <david.laight.linux@gmail.com>
+Cc: Kees Cook <kees@kernel.org>, Luis Chamberlain <mcgrof@kernel.org>,
+	Pengpeng Hou <pengpeng@iscas.ac.cn>, stable@vger.kernel.org,
+	Petr Pavlu <petr.pavlu@suse.com>,
 	Richard Weinberger <richard@nod.at>,
 	Anton Ivanov <anton.ivanov@cambridgegreys.com>,
 	Johannes Berg <johannes@sipsolutions.net>,
@@ -118,10 +117,12 @@ Cc: Luis Chamberlain <mcgrof@kernel.org>,
 	virtualization@lists.linux.dev, linux-kernel@vger.kernel.org,
 	linux-arch@vger.kernel.org, netdev@vger.kernel.org,
 	linux-fsdevel@vger.kernel.org, linux-hardening@vger.kernel.org
-Subject: Re: [PATCH 00/11] Convert moduleparams to seq_buf
-Message-ID: <202606011259.CE6E74CE@keescook>
+Subject: Re: [PATCH 01/11] params: bound array element output to the caller's
+ page buffer
+Message-ID: <ah3qWZ4cqhrbHZcl@casper.infradead.org>
 References: <20260521133315.work.845-kees@kernel.org>
- <88c5ca1d-eeda-4023-bc7a-397b92780db9@suse.com>
+ <20260521133326.2465264-1-kees@kernel.org>
+ <20260521174631.71a06440@pumpkin>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -137,41 +138,19 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <88c5ca1d-eeda-4023-bc7a-397b92780db9@suse.com>
+In-Reply-To: <20260521174631.71a06440@pumpkin>
 
-On Tue, May 26, 2026 at 08:53:06AM +0200, Petr Pavlu wrote:
-> On 5/21/26 3:33 PM, Kees Cook wrote:
-> > Hi,
-> > 
-> > I tried to trim the CC list here, but it's still pretty huge...
-> > 
-> > We've had a long-standing issue with "write to a string pointer" callbacks
-> > that don't bounds check the destination (and for which the bounds is
-> > also not part of the callback prototype, even if it is "known" to be
-> > PAGE_SIZE, which sysfs_emit() depends on). Both moduleparams and sysfs
-> > use this pattern. As a first step, and to test the migration method,
-> > migrate moduleparams first.
-> > 
-> > There are 2 "mechanical" treewide patches that are handled by Coccinelle:
-> > - treewide: Convert struct kernel_param_ops initializers to DEFINE_KERNEL_PARAM_OPS
-> > - treewide: Convert custom kernel_param_ops .get callbacks to seq_buf via cocci
-> > 
-> > The last treewide patch is manual, and may need to be broken up into
-> > per-subsystem patches, though I'd prefer to avoid this, as it would
-> > extend the migration from 1 relase to at least 2 releases. (1 to
-> > release the migration infrastructure, then 1 release to collect all the
-> > subsystem changes, and possibly 1 more release to remove the migration
-> > infrastructure.)
-> > 
-> > Thoughts, questions?
+On Thu, May 21, 2026 at 05:46:31PM +0100, David Laight wrote:
+> On Thu, 21 May 2026 06:33:14 -0700
+> Kees Cook <kees@kernel.org> wrote:
+> > Collect each element into a temporary PAGE_SIZE buffer first and then
+> > copy only the remaining space into the caller's page buffer.
 > 
-> This looks reasonable to me. I added a few minor comments on the patches
-> but they already look solid.
+> Should this be using a 4k buffer on all architectures?
+> Initially perhaps just using a different name for the constant until
+> all the associated PAGE_SIZE limits have been removed.
 
-Thanks for the review! I'll get a v2 prepared with your notes addressed. :)
-
--Kees
-
--- 
-Kees Cook
+If we're acually going to think about this, even 4KiB is too big.
+An 80x25 terminal is 2000 bytes (assuming no utf8), so 4KiB is two
+entire screenfuls.  Limiting to 2048 would seem reasonable to me.
 
