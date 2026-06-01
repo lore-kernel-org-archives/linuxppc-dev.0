@@ -1,73 +1,88 @@
-Return-Path: <linuxppc-dev+bounces-21782-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21783-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9CCD2CD6E56
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Jun 2026 09:16:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D77B7CD5BD1
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Jun 2026 09:48:45 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gTSyN2HQyz2xmV;
-	Mon, 01 Jun 2026 19:16:44 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780305404;
-	cv=none; b=hi6u9gRPPTkS6aSNe9FlA3CvrGGKfiREzJFsW/7oJIHPf93p24p2Ub+pHvDQYmEUYmq9qdhDorHqMc/7+Frlc29Uv+jUsm7yGFC9T1bV17Pz5+h7eOQ4Ryy2Cauh+U6xTFnrrWZyBquPd0SSAc2dGqpJi0keBu7aWlJDVe5oWQlQsAnFVSuChOitCHz9B/Il9wUrx2i7S64G+ywv9ueBfr8xZP64Mw5HlBTbECa042q4GWOOr0qNkd2+MXdsorydHL8ZCP+U/4fXjPo+nk7TKsY+4cI+XgYPQRdWbQ4QHUl7rn2VG7P2mLWtug8kTOmUZUlSrVfrXJ1B+WzxalKv/Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gTTgJ3GcKz2yb9;
+	Mon, 01 Jun 2026 19:48:44 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=113.46.200.222
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780307324;
+	cv=none; b=kdr7MXm+GhJpqEMqfFmpT7yTJJHoxXvgXvxZ4tZoHvvJ4mMdq3pFG0He4xNv4Sn4HBYeBPre8Svmpndw2ifz/4/65z34Ck3dDqYHEpr9oaQXqimljmjeLAZOX2agVzK0WO6XfSX7uL22DumM0l0CY9FXulVnQx/5kYH/DHVRwV8j4XxI4Zr1NsfoEE1vY64JKTt30VMxMeHR6BBQHnVC9gIy+RWgVMsapNonrS6zwBpcBUquGBnuzBzYpNt/gv6tt699W7cL4kfX23ukuf/uJqIRwzqvlfi4ljvril/YZNLT5Ycz0M4TUuwDayQLkGWiabk4pQU7w1d1Q51lqaBN1Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1780305404; c=relaxed/relaxed;
-	bh=a/ycVyQjuAv2y1mKMPGt6QcAdh4p+/k3TfFs3Y406vI=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=FQL2aNNGFNDyGS7SFJSFF0xCoK3H2jUueK0WK+/hr+KGrkb38J9uxTDSrUe55jkB0/Glr9khpK5vI/PX3BoPwbiPE5OfKHukDud+A8y6dn5CyQ2BRe2Ai+wY8mVNqRm0T/CbkVtV/ZsXduukcVP+ZVM4se9L446TGnTOa8ROY02Z/5Toxb18thlAFyIQB9NeMiAO3AQO9jdlcxTUOLzcQp5kOQE2SR42KsrKAiVg7N49Zj9psd2cq+MebnweMjoD2n02WmachHOvJFwi4VqPquSTYOExvcjG21NxfsjE3CTMUlxhq3TXdUf4sVKejnMj+KCBYEX4l4WSBwgDT4HFmA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ScfyuFFR; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1780307324; c=relaxed/relaxed;
+	bh=FnjP1QobxPs/w6p6RHmbGEPXnhvzKB2623I/PNNfmCM=;
+	h=From:To:CC:Subject:Date:Message-ID:MIME-Version:Content-Type; b=Ix9iExcppvL8zCLfoGvuMm1B2mWGX95XWmc0oj12t2us2sKLKMjc3aB7sR6tUGWakSykvahzs93LFtR1xQhlhhL3lqxxFjxKkqIUK2GCPj44jIJf+KaLYcXNmyLukVDU4+vT6jTiYGZaKzh/qwqnogS57MXWhvE2gnhUJAxtPwbMsMFiLmUvxblG9MqtUCJNQ8wnVxl1TrRHgKrTjonJQIeb4NyBWIdd/U5wBrcLnPzviIbaM5lfOley6XxdVJ07KoBm+dPQqoIfgw4uoLa3Wcq0fP3weF1dhurRluNgIYc5aWhbKPtFTyjODpJHpfgG4XqqphK+rweizaXaqqhKig==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=jIX1hvdd; dkim-atps=neutral; spf=pass (client-ip=113.46.200.222; helo=canpmsgout07.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ScfyuFFR;
+	dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=jIX1hvdd;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=113.46.200.222; helo=canpmsgout07.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org)
+Received: from canpmsgout07.his.huawei.com (canpmsgout07.his.huawei.com [113.46.200.222])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gTSyL6RJVz2xdb
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 01 Jun 2026 19:16:42 +1000 (AEST)
-Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 64VLGTdc085385;
-	Mon, 1 Jun 2026 09:16:32 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=a/ycVy
-	QjuAv2y1mKMPGt6QcAdh4p+/k3TfFs3Y406vI=; b=ScfyuFFRix67Hi7vU+3oTW
-	XighkrfSoc4Cju0e42t4GI8UX+H6kj0cqiiULCZ2LbmnXERw7Y3iaaTPXe6hTVLc
-	Pxxdzevugomp1Zdf0d/OGlcyzAWmlmnvOT08+Ya1j5kx4X/GRdr0x48bJ+6vqljc
-	hf2T7unDFXqc9igiO6+Fo0Jqm9fJ18n+V2YMMsxknkKHe1VlyXHG8lwZBRc3Tlv9
-	qP1Dmy+YnxZxauNfY95xuTE4a9ghFYdtqPsjpEyz8G2UU499+CFlmq3E+LCRdMHA
-	bMPvUQI77m9hsVu60xndmXv5KAfKORPfw9xV5TGdIArliovodirplXvXoiaDiXtQ
-	==
-Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4efpadypps-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 01 Jun 2026 09:16:31 +0000 (GMT)
-Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma22.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 65199FE7015698;
-	Mon, 1 Jun 2026 09:16:30 GMT
-Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
-	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4egakvng4j-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 01 Jun 2026 09:16:30 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
-	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6519GRkD50397538
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 1 Jun 2026 09:16:27 GMT
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id F1D8A2004B;
-	Mon,  1 Jun 2026 09:16:26 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 2225320043;
-	Mon,  1 Jun 2026 09:16:25 +0000 (GMT)
-Received: from [9.123.5.233] (unknown [9.123.5.233])
-	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Mon,  1 Jun 2026 09:16:24 +0000 (GMT)
-Message-ID: <2f8c3d75-de2c-48bf-bd05-46b816d55c69@linux.ibm.com>
-Date: Mon, 1 Jun 2026 14:46:24 +0530
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gTTgF29mHz2xmV
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 01 Jun 2026 19:48:38 +1000 (AEST)
+dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
+	c=relaxed/relaxed; q=dns/txt;
+	h=From;
+	bh=FnjP1QobxPs/w6p6RHmbGEPXnhvzKB2623I/PNNfmCM=;
+	b=jIX1hvddX9TfsNd66mTq8qZFUoxm/bsn0AEZJbbGskiOnhTbpUeqimLZdzos3fq+SBmq2h185
+	ZofLf+7S2BOjMGjaRCfph+2+kjV0Aj6rIHwyg9ibQgu7fHXx4BUvU/lyNSHfnOvz7TNYuNJh2EF
+	Adv+PapdiIZJZ0vB92OHkK8=
+Received: from mail.maildlp.com (unknown [172.19.163.127])
+	by canpmsgout07.his.huawei.com (SkyGuard) with ESMTPS id 4gTTV56hm4zLlTs;
+	Mon,  1 Jun 2026 17:40:45 +0800 (CST)
+Received: from dggpemf500011.china.huawei.com (unknown [7.185.36.131])
+	by mail.maildlp.com (Postfix) with ESMTPS id 3F964402AB;
+	Mon,  1 Jun 2026 17:48:34 +0800 (CST)
+Received: from huawei.com (10.90.53.73) by dggpemf500011.china.huawei.com
+ (7.185.36.131) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.11; Mon, 1 Jun
+ 2026 17:48:30 +0800
+From: Jinjie Ruan <ruanjinjie@huawei.com>
+To: <corbet@lwn.net>, <skhan@linuxfoundation.org>, <catalin.marinas@arm.com>,
+	<will@kernel.org>, <chenhuacai@kernel.org>, <kernel@xen0n.name>,
+	<maddy@linux.ibm.com>, <mpe@ellerman.id.au>, <npiggin@gmail.com>,
+	<chleroy@kernel.org>, <pjw@kernel.org>, <palmer@dabbelt.com>,
+	<aou@eecs.berkeley.edu>, <alex@ghiti.fr>, <tglx@kernel.org>,
+	<mingo@redhat.com>, <bp@alien8.de>, <dave.hansen@linux.intel.com>,
+	<hpa@zytor.com>, <robh@kernel.org>, <saravanak@kernel.org>,
+	<akpm@linux-foundation.org>, <bhe@redhat.com>, <rppt@kernel.org>,
+	<pasha.tatashin@soleen.com>, <pratyush@kernel.org>, <ruirui.yang@linux.dev>,
+	<rdunlap@infradead.org>, <feng.tang@linux.alibaba.com>,
+	<dapeng1.mi@linux.intel.com>, <kees@kernel.org>, <elver@google.com>,
+	<kuba@kernel.org>, <lirongqing@baidu.com>, <ebiggers@kernel.org>,
+	<paulmck@kernel.org>, <sourabhjain@linux.ibm.com>, <thuth@redhat.com>,
+	<ardb@kernel.org>, <masahiroy@kernel.org>, <gshan@redhat.com>,
+	<james.morse@arm.com>, <maz@kernel.org>, <leitao@debian.org>,
+	<yeoreum.yun@arm.com>, <coxu@redhat.com>, <suzuki.poulose@arm.com>,
+	<cfsworks@gmail.com>, <osandov@fb.com>, <jbohac@suse.cz>,
+	<ryan.roberts@arm.com>, <tangyouling@kylinos.cn>, <ritesh.list@gmail.com>,
+	<adityag@linux.ibm.com>, <hbathini@linux.ibm.com>, <bjorn@rivosinc.com>,
+	<songshuaishuai@tinylab.org>, <vishal.moola@gmail.com>,
+	<junhui.liu@pigmoral.tech>, <djordje.todorovic@htecgroup.com>,
+	<austin.kim@lge.com>, <namcao@linutronix.de>, <djbw@kernel.org>,
+	<chao.gao@intel.com>, <seanjc@google.com>, <fuqiang.wang@easystack.cn>,
+	<liaoyuanhong@vivo.com>, <makb@juniper.net>, <graf@amazon.com>,
+	<piliu@redhat.com>, <rafael.j.wysocki@intel.com>,
+	<mario.limonciello@amd.com>, <jbouron@amazon.com>, <chenjiahao16@huawei.com>,
+	<guoren@kernel.org>, <bauerman@linux.ibm.com>, <bgwin@google.com>,
+	<takahiro.akashi@linaro.org>, <x86@kernel.org>, <linux-doc@vger.kernel.org>,
+	<linux-kernel@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
+	<loongarch@lists.linux.dev>, <linuxppc-dev@lists.ozlabs.org>,
+	<linux-riscv@lists.infradead.org>, <devicetree@vger.kernel.org>,
+	<kexec@lists.infradead.org>
+CC: <ruanjinjie@huawei.com>
+Subject: [PATCH v15 00/23] arm64/riscv: Add support for crashkernel CMA reservation
+Date: Mon, 1 Jun 2026 17:47:42 +0800
+Message-ID: <20260601094805.2928614-1-ruanjinjie@huawei.com>
+X-Mailer: git-send-email 2.34.1
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -81,239 +96,196 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [linux-next20260529] kernel BUG at kernel/sched/core.c:7512!
-To: Venkat Rao Bagalkote <venkat88@linux.ibm.com>,
-        Madhavan Srinivasan <maddy@linux.ibm.com>,
-        Mukesh Kumar Chaurasiya <mchauras@linux.ibm.com>,
-        Ritesh Harjani <ritesh.list@gmail.com>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
-        LKML <linux-kernel@vger.kernel.org>,
-        Srikar Dronamraju
- <srikar@linux.ibm.com>,
-        Peter Zijlstra <peterz@infradead.org>
-References: <7904105b-9dfa-4efd-a5ef-bc0276ed255d@linux.ibm.com>
-Content-Language: en-US
-From: Shrikanth Hegde <sshegde@linux.ibm.com>
-In-Reply-To: <7904105b-9dfa-4efd-a5ef-bc0276ed255d@linux.ibm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Authority-Analysis: v=2.4 cv=Zt3d7d7G c=1 sm=1 tr=0 ts=6a1d4def cx=c_pps
- a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
- a=IkcTkHD0fZMA:10 a=FelO9ux0wxsA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=V8glGbnc2Ofi9Qvn3v5h:22 a=VnNF1IyMAAAA:8
- a=MOXgsU-1MZsgqN46v8YA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
-X-Proofpoint-GUID: ckjTMxoUwkLA0CuP0bdespoYdhlwuX4l
-X-Proofpoint-ORIG-GUID: upWfRYD4QUYHq4eldDYmwbKhho2zQjNJ
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjAxMDA5MSBTYWx0ZWRfXyDCIjMjnzxdH
- gTP7/OF/7KT6EIyUSVSx7DQSnFVWX3HqBKEng2AgLQCw5rsktpowNbiLg7TU7awM2UYwxltRcqg
- 5m1T8DrQrNUNPRCCkSnzTeTpbtU/1ZnbHPlE3dyvgg5X92RXqqROZd0BYBRliFHydlJteLjhmQo
- nLj72HuqQD2FtoZtZVuN7atUAX4yBRTXagVvCakr+J4MuC4U9O+vPWr5VpDkfFndfCEi4lrRqAm
- eBji08L187kEMi/9Y1Mh8Vm30Dhn8Sq3kYjY3QOhS42aiCOdFGxi4C4AMhFOaKYznb7fWRiwdWw
- mUja0Mm5ou7iNMCoBuXWazohFAX27l+Vi2R7MqUuSCBTfXOsB29Ex2MzJqtxKwDGFHcdWR0SFz9
- j1QwIvKSRCEc8juTVJoZ6HKLhQ6ZMQYQLHz/qBfnAStn8Ua6Nc+NBJ4Qipbk0oMnQrPxDfzVSWu
- 4J8RB+zxbF0syEz0yPw==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
- definitions=2026-06-01_02,2026-05-28_03,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- impostorscore=0 suspectscore=0 priorityscore=1501 bulkscore=0 clxscore=1015
- phishscore=0 spamscore=0 malwarescore=0 adultscore=0 lowpriorityscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2605210000 definitions=main-2606010091
+X-Originating-IP: [10.90.53.73]
+X-ClientProxiedBy: kwepems100002.china.huawei.com (7.221.188.206) To
+ dggpemf500011.china.huawei.com (7.185.36.131)
 
-Hi Venkat. Thanks for the report.
+The crash memory allocation, and the exclude of crashk_res, crashk_low_res
+and crashk_cma memory are almost identical across different architectures,
+This patch set handle them in crash core in a general way, which eliminate
+a lot of duplication code.
 
-+ mukesh, ritesh
+And add support for crashkernel CMA reservation for arm64 and riscv.
 
-On 6/1/26 12:11 PM, Venkat Rao Bagalkote wrote:
-> Greetings!!!
-> 
-> 
-> I hit a kernel BUG on a linux-next kernel running on ppc64le (Power11 
-> LPAR). The issue was observed once in CI (Avocado tests) and I haven’t 
-> been able to reproduce it reliably yet.
-> 
+Also add support for arm64 crash hotplug.
 
-Can you run with lockdep and see if you can hit it?
+This patch set is rebased on v7.1-rc1.
 
-> Architecture: ppc64le (Power11, pSeries)
-> Kernel: 7.1.0-rc5-next-20260529
-> Config: PREEMPT(lazy)
-> CPUs: large system (NR_CPUS=8192)
-> 
+Basic second kernel boot test were performed on QEMU platforms for x86,
+ARM64 and RISC-V architectures with the following parameters:
 
-This is with GENERIC_ENTRY.
+        "cma=256M crashkernel=4G crashkernel=64M,cma"
 
-> 
-> So far, I have not reproduced the crash, but I am trying to stress 
-> similar conditions using:
-> 
-> parallel read workloads (fio / dd)
-> memory pressure
-> 
-> 
-> Traces:
-> 
->   (5/8) /home/upstreamci/avocado-fvt-wrapper/tests/avocado-misc-tests/ 
-> cpu/ppc64_cpu_test.py:PPC64Test.test_smt_loop;run-run_type- 
-> upstream-9cfe: STARTED
-> [ 1885.176400] crash hp: kexec_trylock() failed, kdump image may be 
-> inaccurate
-> [ 1885.296164] crash hp: kexec_trylock() failed, kdump image may be 
-> inaccurate
-> [ 1885.386120] crash hp: kexec_trylock() failed, kdump image may be 
-> inaccurate
-> [ 1885.556134] crash hp: kexec_trylock() failed, kdump image may be 
-> inaccurate
-> [ 1886.576119] crash hp: kexec_trylock() failed, kdump image may be 
-> inaccurate
-> [ 1886.806060] crash hp: kexec_trylock() failed, kdump image may be 
-> inaccurate
-> [ 1887.026051] crash hp: kexec_trylock() failed, kdump image may be 
-> inaccurate
-> [ 1887.456075] ------------[ cut here ]------------
-> [ 1887.456101] kernel BUG at kernel/sched/core.c:7512!
-> [ 1887.456107] Oops: Exception in kernel mode, sig: 5 [#1]
-> [ 1887.456111] LE PAGE_SIZE=4K MMU=Radix  SMP NR_CPUS=8192 NUMA pSeries
-> [ 1887.456116] Modules linked in: nft_fib_inet nft_fib_ipv4 nft_fib_ipv6 
-> nft_fib nft_reject_inet nf_reject_ipv4 nf_reject_ipv6 nft_reject nft_ct 
-> nft_chain_nat nf_nat nf_conntrack nf_defrag_ipv6 nf_defrag_ipv4 bonding 
-> tls ip_set rfkill nf_tables fsdev_dax kmem device_dax pseries_rng 
-> vmx_crypto dax_pmem fuse ext4 crc16 mbcache jbd2 sd_mod nd_pmem papr_scm 
-> sg libnvdimm ibmvscsi ibmveth scsi_transport_srp pseries_wdt
-> [ 1887.456173] CPU: 28 UID: 0 PID: 85305 Comm: kexec Not tainted 7.1.0- 
-> rc5-next-20260529 #1 PREEMPT(lazy)
-> [ 1887.456180] Hardware name: IBM,9080-HEX Power11 (architected) 
-> 0x820200 0xf000007 of:IBM,FW1110.01 (NH1110_069) hv:phyp pSeries
-> [ 1887.456185] NIP:  c0000000013a8e8c LR: c0000000003483bc CTR: 
-> 0000000000000000
-> [ 1887.456190] REGS: c000000069f03070 TRAP: 0700   Not tainted (7.1.0- 
-> rc5-next-20260529)
-> [ 1887.456195] MSR:  8000000000029033 <SF,EE,ME,IR,DR,RI,LE>  CR: 
-> 24428222  XER: 0000005a
-> [ 1887.456208] CFAR: c0000000003483b8 IRQMASK: 0
-> [ 1887.456208] GPR00: c0000000003483bc c000000069f03330 c000000001a82100 
-> c000000069f033e0
-> [ 1887.456208] GPR04: 0000000000000000 0000000000000001 0000000000000001 
-> c000000006dd3b00
-> [ 1887.456208] GPR08: ffffffffffffff00 0000000000000001 0000000000000000 
-> 0000000024428220
-> [ 1887.456208] GPR12: 0000000000000300 c000000effdbef00 0000000000000000 
-> 0000000000000000
-> [ 1887.456208] GPR16: 0000000000000000 0000000000000000 0000000000000000 
-> 0000000000000000
-> [ 1887.456208] GPR20: 0000000000000000 0000000000000000 0000000000000000 
-> 0000000000000000
-> [ 1887.456208] GPR24: 0000000000000000 0000000000000000 0000000000000000 
-> 0000000000000000
-> [ 1887.456208] GPR28: 0000000000000000 0000000000000000 0000000000000000 
-> c000000069f033e0
-> [ 1887.456265] NIP [c0000000013a8e8c] preempt_schedule_irq+0x44/0x118
-> [ 1887.456274] LR [c0000000003483bc] 
-> dynamic_irqentry_exit_cond_resched+0x40/0x1a4
-> [ 1887.456282] Call Trace:
-> [ 1887.456284] [c000000069f03360] [c0000000003483bc] 
-> dynamic_irqentry_exit_cond_resched+0x40/0x1a4
-> [ 1887.456291] [c000000069f03380] [c00000000014f3bc] 
-> do_page_fault+0xc0/0x104
-> [ 1887.456298] [c000000069f033b0] [c000000000008be0] 
-> data_access_common_virt+0x210/0x220
-> [ 1887.456306] ---- interrupt: 300 at __copy_tofrom_user_base+0xac/0x5a4
-> [ 1887.456313] NIP:  c00000000017fc38 LR: c000000000aaa684 CTR: 
-> 0000000000000000
-> [ 1887.456317] REGS: c000000069f033e0 TRAP: 0300   Not tainted (7.1.0- 
-> rc5-next-20260529)
-> [ 1887.456322] MSR:  8000000002009033 <SF,VEC,EE,ME,IR,DR,RI,LE>  CR: 
-> 24428220  XER: 2004005a
-> [ 1887.456334] CFAR: c00000000017fc34 DAR: 00003fff879a8000 DSISR: 
-> 42000000 IRQMASK: 0
-> [ 1887.456334] GPR00: 0000000000000000 c000000069f036a0 c000000001a82100 
-> 00003fff879a8000
-> [ 1887.456334] GPR04: c0000000bb314ff0 0000000000001000 69f0000606480600 
-> 0200c4080368f028
-> [ 1887.456334] GPR08: 09036af00005d9c4 0600000200e80803 0000000000000000 
-> 0000000000000030
-> [ 1887.456334] GPR12: 0000000000000040 c000000effdbef00 0000000000000000 
-> 000000000000000e
-> [ 1887.456334] GPR16: 0000000004a00000 000000000000001f c000000069f038a0 
-> c00000006e73e500
-> [ 1887.456334] GPR20: c00000006f0ff6a8 0000000000000000 c00000006f0ff540 
-> 0000000000000001
-> [ 1887.456334] GPR24: 000000001816ce60 c0000000bb314000 c000000002e48730 
-> c000000069f03a30
-> [ 1887.456334] GPR28: c0000000bb314000 00003fff879a7010 0000000000000010 
-> 0000000000001000
-> [ 1887.456393] NIP [c00000000017fc38] __copy_tofrom_user_base+0xac/0x5a4
-> [ 1887.456399] LR [c000000000aaa684] raw_copy_to_user+0x12c/0x314
-> [ 1887.456405] ---- interrupt: 300
-> [ 1887.456408] [c000000069f036a0] [c000000000aaa5f4] 
-> raw_copy_to_user+0x9c/0x314 (unreliable)
-> [ 1887.456416] [c000000069f036e0] [c000000000aacd08] 
-> _copy_to_iter+0xe4/0x79c
-> [ 1887.456423] [c000000069f037a0] [c000000000ab01ec] 
-> copy_page_to_iter+0xd4/0x1a4
-> [ 1887.456429] [c000000069f037f0] [c0000000005ddc34] 
-> filemap_read+0x420/0x4f0
-> [ 1887.456436] [c000000069f039c0] [c0080000043443e0] 
-> ext4_file_read_iter+0x78/0x31c [ext4]
-> [ 1887.456517] [c000000069f03a10] [c000000000796498] vfs_read+0x2a8/0x3c8
-> [ 1887.456524] [c000000069f03ac0] [c00000000079726c] ksys_read+0x88/0x140
-> [ 1887.456530] [c000000069f03b10] [c000000000032f98] 
-> system_call_exception+0x198/0x4e0
-> [ 1887.456537] [c000000069f03e30] [c00000000000d05c] 
-> system_call_vectored_common+0x15c/0x2ec
-> [ 1887.456544] ---- interrupt: 3000 at 0x3fff9b133cf4
-> [ 1887.456549] NIP:  00003fff9b133cf4 LR: 00003fff9b133cf4 CTR: 
-> 0000000000000000
-> [ 1887.456554] REGS: c000000069f03e60 TRAP: 3000   Not tainted (7.1.0- 
-> rc5-next-20260529)
-> [ 1887.456558] MSR:  800000000000f033 <SF,EE,PR,FP,ME,IR,DR,RI,LE>  CR: 
-> 44424402  XER: 00000000
-> [ 1887.456572] IRQMASK: 0
-> [ 1887.456572] GPR00: 0000000000000003 00003fffe5fb4190 0000000105087f00 
-> 0000000000000003
-> [ 1887.456572] GPR04: 00003fff82e93010 000000001816ce60 0000000000000022 
-> 0000000000000000
-> [ 1887.456572] GPR08: 0000000000000000 0000000000000000 0000000000000000 
-> 0000000000000000
-> [ 1887.456572] GPR12: 0000000000000000 00003fff9b4cd860 000000010507f588 
-> 0000000000000000
-> [ 1887.456572] GPR16: ffffffffffffffff 0000000000000000 0000000000000006 
-> 0000000000000000
-> [ 1887.456572] GPR20: 0000000000000001 00003fff9b23039c 00003fff9b2303a0 
-> 00003fffe5fb5ee7
-> [ 1887.456572] GPR24: 0000000000000000 0000000000000000 00003fffe5fb5ee7 
-> 00003fffe5fb42d0
-> [ 1887.456572] GPR28: 0000000000000003 00003fff82e93010 000000001816ce60 
-> 0000000000000000
-> [ 1887.456626] NIP [00003fff9b133cf4] 0x3fff9b133cf4
-> [ 1887.456630] LR [00003fff9b133cf4] 0x3fff9b133cf4
-> [ 1887.456634] ---- interrupt: 3000
-> [ 1887.456637] Code: fbe1fff8 e92d0128 f8010010 f821ffd1 81490000 
-> 39200001 2c0a0000 40820014 892d0152 552907fe 7d290034 5529d97e 
-> <0b090000> 60000000 3bc00000 ebed0128
-> [ 1887.456657] ---[ end trace 0000000000000000 ]---
-> 
-> 
-> If you happen to fix this, please add below tag.
-> 
-> Reported-by: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
-> 
+For first kernel, there will be such log:
 
-Ritesh, Mukesh, Is below possible scenario?
+        # dmesg | grep crash
+        [    0.000000] crashkernel low memory reserved: 0xe8000000 - 0xf0000000 (128 MB)
+        [    0.000000] crashkernel reserved: 0x000000023e600000 - 0x000000033e600000 (4096 MB)
+        [    0.000000] crashkernel CMA reserved: 64 MB in 1 ranges
 
-do_page_fault seems to enable irq's in the interrupt handler?
-is that expected? if so, one might see
+        # dmesg | grep cma
+        [    0.000000] cma: Reserved 256 MiB at 0x00000000f0000000
+        [    0.000000] cma: Reserved 64 MiB at 0x0000000100000000
 
--- do_page_fault (enter kernel mode)
-    -- enables interrupts
-    -- gets interrupt - Sets need_resched.
-       -- irqentry_exit - Sees it is kernel mode. Just checks preempt count
-			 and calls preempt_schedule_irq, which catches both
-			 preempt_count and !irqs_disabled. Hence the panic?
+For second kernel, there will be such log:
 
-Should do_page_fault do preempt_disable when it enables the interrupts?
+        [    0.000000] OF: fdt: Looking for usable-memory-range property...
+        [    0.000000] OF: fdt: cap_mem_regions[0]: base=0x000000023e600000, size=0x0000000100000000
+        [    0.000000] OF: fdt: cap_mem_regions[1]: base=0x00000000e8000000, size=0x0000000008000000
+        [    0.000000] OF: fdt: cap_mem_regions[2]: base=0x0000000100000000, size=0x0000000004000000
+
+Changes in v15:
+- Unify the subject prefix formats as Huacai suggested.
+- Fix powerpc pre-existing NULL pointer dereference [Sashiko [1]]
+- Fix powerpc pre-existing __merge_memory_ranges() memory range
+  truncation [Sashiko [1]].
+- Fix pre-existing arm64 CMA page leaks [Sashiko[2]].
+- Fix pre-existing crash_load_dm_crypt_keys() Use-After-Free and
+  Double Free issue [Sashiko[3]].
+- Fix vfree(headers) and uninitialized variables issue
+  and simplify the fix [Sashiko[2]].
+- As walk_system_ram_res() and for_each_mem_range() use different
+  lock, unify and simplify the fix of TOCTOU buffer overflow via memory
+  region padding [Sashiko[4]].
+- Fix the arm64 crash dump issues in Sashiko[5].
+- Link to v14: https://lore.kernel.org/all/20260525084932.934910-1-ruanjinjie@huawei.com/
+
+[1]: https://lore.kernel.org/all/20260525092207.96B9D1F000E9@smtp.kernel.org/
+[2]: https://lore.kernel.org/all/20260525091149.1A1E01F00A3D@smtp.kernel.org/
+[3]: https://lore.kernel.org/all/20260525105227.3C2421F000E9@smtp.kernel.org/
+[4]: https://lore.kernel.org/all/20260525095447.944E11F000E9@smtp.kernel.org/
+[5]: https://lore.kernel.org/all/20260525101746.9959D1F000E9@smtp.kernel.org/
+
+Changes in v14:
+- Fix image->elf_headers memory leak during retry loop for arm64 as Sashiko
+  AI code review pointed out.
+- Solve the hotplug notifier arch_crash_handle_hotplug_event() AA
+  self-deadlock problem as Sashiko AI code review pointed out.
+- Fix the TOCTOU issue in prepare_elf_headers() by get_online_mems().
+- -ENOMEM -> -EAGAIN as Breno suggested.
+- Add support for arm64 crash hotplug.
+- Link to v13: https://lore.kernel.org/all/20260511030454.1730881-1-ruanjinjie@huawei.com/
+
+Changes in v13:
+- Rebased on v7.1-rc1.
+- Update the commit message.
+- Add Reviewed-by.
+- Link to v12: https://lore.kernel.org/all/20260402072701.628293-1-ruanjinjie@huawei.com/
+
+Changes in v12:
+- Remove the unused "nr_mem_ranges" for x86.
+- Add "Fix crashk_low_res not exclude bug" test log.
+- Provide a separate patch for each architecture for using
+  crash_prepare_headers(), which will make the review more convenient.
+- Add Reviewed-by and Tested-by.
+- Link to v11: https://lore.kernel.org/all/20260328074013.3589544-1-ruanjinjie@huawei.com/
+
+Changes in v11:
+- Avoid silently drop crash memory if the crash kernel is built without
+  CONFIG_CMA.
+- Remove unnecessary "cmem->nr_ranges = 0" for arch_crash_populate_cmem()
+  as we use kvzalloc().
+- Provide a separate patch for each architecture to fix the existing
+  buffer overflow issue.
+- Add Acked-bys for arm64.
+
+Changes in v10:
+- Fix crashk_low_res not excluded bug in the existing
+  RISC-V code.
+- Fix an existing memory leak issue in the existing PowerPC code.
+- Fix the ordering issue of adding CMA ranges to
+  "linux,usable-memory-range".
+- Fix an existing concurrency issue. A Concurrent memory hotplug may occur
+  between reading memblock and attempting to fill cmem during kexec_load()
+  for almost all existing architectures.
+- Link to v9: https://lore.kernel.org/all/20260323072745.2481719-1-ruanjinjie@huawei.com/
+
+Changes in v9:
+- Collect Reviewed-by and Acked-by, and prepare for Sashiko AI review.
+- Link to v8: https://lore.kernel.org/all/20260302035315.3892241-1-ruanjinjie@huawei.com/
+
+Changes in v8:
+- Fix the build issues reported by kernel test robot and Sourabh.
+- Link to v7: https://lore.kernel.org/all/20260226130437.1867658-1-ruanjinjie@huawei.com/
+
+Changes in v7:
+- Correct the inclusion of CMA-reserved ranges for kdump kernel in of/kexec
+  for arm64 and riscv.
+- Add Acked-by.
+- Link to v6: https://lore.kernel.org/all/20260224085342.387996-1-ruanjinjie@huawei.com/
+
+Changes in v6:
+- Update the crash core exclude code as Mike suggested.
+- Rebased on v7.0-rc1.
+- Add acked-by.
+- Link to v5: https://lore.kernel.org/all/20260212101001.343158-1-ruanjinjie@huawei.com/
+
+Jinjie Ruan (22):
+  riscv: kexec_file: Fix crashk_low_res not exclude bug
+  powerpc/crash: Fix possible memory leak in update_crash_elfcorehdr()
+  powerpc/kexec_file: Fix NULL pointer dereference in
+    kexec_extra_fdt_size_ppc64()
+  powerpc/kexec_file: Fix memory range truncation in
+    __merge_memory_ranges()
+  kexec: Extract kexec_free_segment_cma() from kimage_free_cma()
+  arm64: kexec_file: Fix CMA page leaks during segment placement retry
+    loops
+  arm64: kexec_file: Fix image->elf_headers memory leak during retry
+    loop
+  kexec: Fix UAF and Double Free in crash_load_dm_crypt_keys()
+  crash_core: Introduce CRASH_HOTPLUG_SAFETY_PADDING for memory hotplug
+    safety
+  x86: kexec_file: Fix TOCTOU buffer overflow via memory region padding
+  arm64: kexec_file: Fix TOCTOU buffer overflow via memory region
+    padding
+  riscv: kexec_file: Fix TOCTOU buffer overflow via memory region
+    padding
+  LoongArch: kexec_file: Fix TOCTOU buffer overflow via memory region
+    padding
+  crash: Add crash_prepare_headers() to exclude crash kernel memory
+  arm64: kexec_file: Use crash_prepare_headers() helper to simplify code
+  x86: kexec_file: Use crash_prepare_headers() helper to simplify code
+  riscv: kexec_file: Use crash_prepare_headers() helper to simplify code
+  LoongArch: kexec_file: Use crash_prepare_headers() helper to simplify
+    code
+  powerpc/kexec_file: Use crash_exclude_core_ranges() helper
+  arm64: kexec_file: Add support for crashkernel CMA reservation
+  riscv: kexec_file: Add support for crashkernel CMA reservation
+  arm64: crash: Add crash hotplug support
+
+Sourabh Jain (1):
+  powerpc/crash: sort crash memory ranges before preparing elfcorehdr
+
+ .../admin-guide/kernel-parameters.txt         |  16 +-
+ arch/arm64/Kconfig                            |   3 +
+ arch/arm64/include/asm/kexec.h                |  13 ++
+ arch/arm64/kernel/Makefile                    |   2 +-
+ arch/arm64/kernel/crash.c                     | 152 ++++++++++++++++++
+ arch/arm64/kernel/kexec_image.c               |  34 ++++
+ arch/arm64/kernel/machine_kexec_file.c        |  78 ++-------
+ arch/arm64/mm/init.c                          |   5 +-
+ arch/loongarch/kernel/machine_kexec_file.c    |  44 ++---
+ arch/powerpc/include/asm/kexec_ranges.h       |   1 -
+ arch/powerpc/kexec/crash.c                    |   7 +-
+ arch/powerpc/kexec/file_load_64.c             |   3 +
+ arch/powerpc/kexec/ranges.c                   | 113 ++-----------
+ arch/riscv/kernel/machine_kexec_file.c        |  43 ++---
+ arch/riscv/mm/init.c                          |   5 +-
+ arch/x86/kernel/crash.c                       |  92 ++---------
+ drivers/of/fdt.c                              |   9 +-
+ drivers/of/kexec.c                            |   9 ++
+ include/linux/crash_core.h                    |  15 ++
+ include/linux/crash_reserve.h                 |   4 +-
+ include/linux/kexec.h                         |   2 +
+ kernel/crash_core.c                           |  89 +++++++++-
+ kernel/crash_dump_dm_crypt.c                  |   4 +-
+ kernel/kexec_core.c                           |  25 +--
+ 24 files changed, 430 insertions(+), 338 deletions(-)
+ create mode 100644 arch/arm64/kernel/crash.c
+
+-- 
+2.34.1
+
 
