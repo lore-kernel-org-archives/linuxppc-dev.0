@@ -1,47 +1,58 @@
-Return-Path: <linuxppc-dev+bounces-21818-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21819-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9DEDBCD5BD1
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Jun 2026 15:29:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C097CCD5BD1
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Jun 2026 17:45:22 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gTdDl5n7Vz2xqn;
-	Tue, 02 Jun 2026 01:29:43 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=213.95.11.211
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780327783;
-	cv=none; b=WRzrKqFlS0d4Zph0diiCH2gO181LaxvdqqhJ+JSpUh3+XhsXpIY5ef9RwibC3j9b8zMSnYWfK/wcqnLhRS3J0en3zWvhi926ZVS+ov01MvtTBsIbG8FOkPTfYP3SoJ6qLnwcP6Wr6tlir/g59PTnututnANN8ovKU5w9q/BKrQfv7rIQSrcl1mOi5fBBV0MZrLiej/hnjd7zqqpQ9IWUfuvW5JeyQt0FZXdg05CZztzg6MVjcuj8WAqEVJVRIJmb0M7uYeeFvAvvV/IrIQFs/w495Osa4r5zJWnq47b3Zpw1O6UUd8D4ZcKmQXGwutWt0WwDsykfpy+JB7evQY/oOA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gThFF0nH8z2ysb;
+	Tue, 02 Jun 2026 03:45:21 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780335921;
+	cv=none; b=dkukZdawNdTfDyp/ZxdUkUnIZh1lQSQ89YQRdt5SBt++YCyVWkCWwQyxQQVJSILQsl7JD9+4BApbjE2WNWjnpO/eGY7WNRzOLAc3RW5WYL5xGYJ+V6a0TuLxxcF09vL49mVMqfTQu3O0lxmQsMFEF70lb7Me5Leh0txxpC/eOt76DZzNuzKK13ffKC9CXv09DeMKQjT+RP3p9tGPaH2+lKTAoEysUv+lvZG27ZPHqM+iseuGw/74ZWTv0yoBxbJbjOuKxeL9x1XM5jmitPlYuTxS6QnsslRfkg0GXLYvqWvdZ9bVWcAe2plfW8mZQSPe4y+azDupAZjQOjUEw31XAQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1780327783; c=relaxed/relaxed;
-	bh=tWtcDYW8t9tbo1A0H7nK13BcgPLS6WqiwxOLb05uxLk=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=MZC43REroRMwrSdoGPjAOWmvsRWvtKZ0xFwLN8D0AWMQfLfeEln5smiFxM7jSWWePYrCzbF3PHI/JgSEN3wchtH44g0EHE/S/XVm7cW0iKU4tUmxbvcK0ZmhA0nKDohAbUxU8da/Le38t70pqtuRk8t832dx/4XpBDc5euIDS4XxJrimnffPI78w4VzVRxbcsqcgbgzufc0QzWdXH/vPAoufdRQfueqcJAWaN4i21lRdIGSrgV+YAEnkrgubW/8AJYzypSZDeR1oFst0OtdAiwUQyRTeRhdTEktQwXmCppDG79KqbkXKN9UPoGprTacLskJ9QDomqzD8uMREGyZ9fQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=lst.de; spf=pass (client-ip=213.95.11.211; helo=verein.lst.de; envelope-from=hch@lst.de; receiver=lists.ozlabs.org) smtp.mailfrom=lst.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=lst.de
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=lst.de (client-ip=213.95.11.211; helo=verein.lst.de; envelope-from=hch@lst.de; receiver=lists.ozlabs.org)
-Received: from verein.lst.de (verein.lst.de [213.95.11.211])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	t=1780335921; c=relaxed/relaxed;
+	bh=NQXET+HIwUHzkASejrWXITD/EhCJ1l5nthigBOUX5B4=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=mkfrYPqkNqu97voPRwBM4YTRjqf8jeXJmtQDYtmvruFHHzmqQmaMZxhtz3vLSf+2dfSTSy6+VebU4VM3iazl9bI9oZ/VvXxoP72INViOXaRTZXgoopTQYlNph2JrxhF348b8/9EEHYUnwiJplRx2ZeRSutm3gCv6PT4juk/opLN3ugsgUG/26B7ZGUmT0UFCsGOL2a9Rj4me+ok9wIrWW9MQCa7BH1sfHaE0qfatcqd58GV7CpS0Bso65rEZUJVAhDny0tlcgK91eVgw6wtgV2CjMvSUVhQnkwenBUK93flDSnVAg0aVNJhnIcqSElWgl14zfIlSNJlPNN6n9xTzNw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=gjGRHh/A; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=rafael@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=gjGRHh/A;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=rafael@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gTdDj4TyGz2xdh
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 02 Jun 2026 01:29:40 +1000 (AEST)
-Received: by verein.lst.de (Postfix, from userid 2407)
-	id C677A68BFE; Mon,  1 Jun 2026 17:29:33 +0200 (CEST)
-Date: Mon, 1 Jun 2026 17:29:33 +0200
-From: Christoph Hellwig <hch@lst.de>
-To: kernel test robot <lkp@intel.com>
-Cc: Christoph Hellwig <hch@lst.de>, oe-kbuild-all@lists.linux.dev,
-	Jens Axboe <axboe@kernel.dk>, Eric Biggers <ebiggers@kernel.org>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	linuxppc-dev@lists.ozlabs.org
-Subject: Re: [axboe:for-7.0/block 19/138]
- block/blk-crypto-fallback.c:154:17: sparse: sparse: cast from
- restricted blk_status_t
-Message-ID: <20260601152933.GA6444@lst.de>
-References: <202606012339.rZAl6Xq8-lkp@intel.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gThFC4zV9z2xdh
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 02 Jun 2026 03:45:19 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with ESMTP id 7F96944621
+	for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Jun 2026 17:45:16 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 567021F00A11
+	for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Jun 2026 17:45:16 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1780335916;
+	bh=NQXET+HIwUHzkASejrWXITD/EhCJ1l5nthigBOUX5B4=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc;
+	b=gjGRHh/AejulXxkNQAjfjV93VMiqgdq6wRmZ7BNSN1UHb97WguW4+/ZA+WuQC6Kll
+	 yhn3UxrX6XHEvJlmkImSQf3opqad40WQNxo0e446ikygz1JQuNxXlxEupqUOOMotfi
+	 QZ7zNwyi6Ev4WkeVDBku7OIdn6/NnCxDJfGGNtSBSMm42l8FYQ3sk4gJGLxT/hbqCe
+	 K0vFWgCVQinuD4UcX6ltdXhdbZf0cM4k6OQ10FtXjpLK4tNUvA3GQZ7EyhXiE2tkMT
+	 OVYBnp+ntfYpsvWr85EAbNEvk2fl/CVRUiYB0mkIo2usdhpYSJ7vIUPsX5pwj59Gzk
+	 lW6qoYjQk8e7g==
+Received: by mail-lf1-f44.google.com with SMTP id 2adb3069b0e04-5aa6792e7b8so1524169e87.1
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 01 Jun 2026 10:45:16 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AFNElJ8H/oZtc25IVCwG6GndIt3N40v7l4lHa2ELmHzr/tC1XAxiZmZ/xZWoCCwjbaQdB5wN9as4QbobYkT8jEA=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YxH+pEz4V/gevolh2Y8Ivoxx+y0GdSnfxHZDQrMoc743QQKwMDM
+	hQK/vLLV5QoC2aTVWWDWWouZ60IQweU0C8x7xk/wgaxXNDVGwCAXsWx7J+dI4FOV9NxEQsyowwW
+	XK/lxzgmYXohYCLl6HIU+2WLS33iFsuw=
+X-Received: by 2002:a05:6512:3b97:b0:5aa:6e86:55c8 with SMTP id
+ 2adb3069b0e04-5aa6e8657c0mr1302970e87.12.1780335912894; Mon, 01 Jun 2026
+ 10:45:12 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -55,55 +66,92 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <202606012339.rZAl6Xq8-lkp@intel.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+References: <20260528183625.870813-1-ynorov@nvidia.com> <20260528183625.870813-6-ynorov@nvidia.com>
+In-Reply-To: <20260528183625.870813-6-ynorov@nvidia.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Date: Mon, 1 Jun 2026 19:45:01 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0gPZL7Cmi7Sm5pVN01AG7rb8NiwWkUJ9X6gwim67EUZPQ@mail.gmail.com>
+X-Gm-Features: AVHnY4L1KYHIevdOf61kuP7a6ocAZfa6dkfv0T6IORvr_Om4IsQ3giCPU7iBHEE
+Message-ID: <CAJZ5v0gPZL7Cmi7Sm5pVN01AG7rb8NiwWkUJ9X6gwim67EUZPQ@mail.gmail.com>
+Subject: Re: [PATCH 05/16] ACPI: pad: Use sysfs_emit() for idlecpus show
+To: Yury Norov <ynorov@nvidia.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Rasmus Villemoes <linux@rasmusvillemoes.dk>, 
+	Russell King <linux@armlinux.org.uk>, Frank Li <Frank.Li@nxp.com>, 
+	Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix Kernel Team <kernel@pengutronix.de>, 
+	Fabio Estevam <festevam@gmail.com>, Madhavan Srinivasan <maddy@linux.ibm.com>, 
+	Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, Peter Zijlstra <peterz@infradead.org>, 
+	Ingo Molnar <mingo@redhat.com>, Arnaldo Carvalho de Melo <acme@kernel.org>, Namhyung Kim <namhyung@kernel.org>, 
+	Mark Rutland <mark.rutland@arm.com>, 
+	Alexander Shishkin <alexander.shishkin@linux.intel.com>, Jiri Olsa <jolsa@kernel.org>, 
+	Ian Rogers <irogers@google.com>, Adrian Hunter <adrian.hunter@intel.com>, 
+	James Clark <james.clark@linaro.org>, Thomas Gleixner <tglx@kernel.org>, Borislav Petkov <bp@alien8.de>, 
+	Dave Hansen <dave.hansen@linux.intel.com>, "H. Peter Anvin" <hpa@zytor.com>, 
+	"Rafael J. Wysocki" <rafael@kernel.org>, Len Brown <lenb@kernel.org>, 
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Danilo Krummrich <dakr@kernel.org>, 
+	Chanwoo Choi <cw00.choi@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, 
+	Kyungmin Park <kyungmin.park@samsung.com>, Heiko Stuebner <heiko@sntech.de>, 
+	Lorenzo Pieralisi <lpieralisi@kernel.org>, Xu Yilun <yilun.xu@intel.com>, Tom Rix <trix@redhat.com>, 
+	Moritz Fischer <mdf@kernel.org>, Yicong Yang <yangyicong@hisilicon.com>, 
+	Jonathan Cameron <jic23@kernel.org>, 
+	Dennis Dalessandro <dennis.dalessandro@cornelisnetworks.com>, Jason Gunthorpe <jgg@ziepe.ca>, 
+	Leon Romanovsky <leon@kernel.org>, Dan Williams <djbw@kernel.org>, 
+	Vishal Verma <vishal.l.verma@intel.com>, Dave Jiang <dave.jiang@intel.com>, 
+	Ira Weiny <ira.weiny@intel.com>, Bjorn Helgaas <bhelgaas@google.com>, 
+	Shuai Xue <xueshuai@linux.alibaba.com>, Will Deacon <will@kernel.org>, 
+	Jiucheng Xu <jiucheng.xu@amlogic.com>, Neil Armstrong <neil.armstrong@linaro.org>, 
+	Kevin Hilman <khilman@baylibre.com>, Jerome Brunet <jbrunet@baylibre.com>, 
+	Martin Blumenstingl <martin.blumenstingl@googlemail.com>, Robin Murphy <robin.murphy@arm.com>, 
+	Jing Zhang <renyu.zj@linux.alibaba.com>, Xu Yang <xu.yang_2@nxp.com>, 
+	Linu Cherian <lcherian@marvell.com>, Gowthami Thiagarajan <gthiagarajan@marvell.com>, 
+	Ji Sheng Teoh <jisheng.teoh@starfivetech.com>, Khuong Dinh <khuong@os.amperecomputing.com>, 
+	Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>, 
+	Lukasz Luba <lukasz.luba@arm.com>, Yury Norov <yury.norov@gmail.com>, Kees Cook <kees@kernel.org>, 
+	=?UTF-8?Q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>, 
+	Aboorva Devarajan <aboorvad@linux.ibm.com>, "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>, 
+	Ilkka Koskinen <ilkka@os.amperecomputing.com>, Besar Wicaksono <bwicaksono@nvidia.com>, 
+	Ma Ke <make24@iscas.ac.cn>, Chengwen Feng <fengchengwen@huawei.com>, 
+	linux-arm-kernel@lists.infradead.org, imx@lists.linux.dev, 
+	linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
+	linux-perf-users@vger.kernel.org, linux-acpi@vger.kernel.org, 
+	driver-core@lists.linux.dev, linux-pm@vger.kernel.org, 
+	linux-rockchip@lists.infradead.org, linux-fpga@vger.kernel.org, 
+	linux-rdma@vger.kernel.org, nvdimm@lists.linux.dev, linux-pci@vger.kernel.org, 
+	linux-amlogic@lists.infradead.org, linux-cxl@vger.kernel.org, 
+	linux-arm-msm@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-I think powerpc really need to pick the tricks from other architectures
-to make cmpxchg work on __bitwise fields.
-
-On Mon, Jun 01, 2026 at 11:26:16PM +0800, kernel test robot wrote:
-> tree:   https://git.kernel.org/pub/scm/linux/kernel/git/axboe/linux.git for-7.0/block
-> head:   72f4d6fca699a1e35b39c5e5dacac2926d254135
-> commit: b37fbce460ad60b0c4449c1c7566cf24f3016713 [19/138] blk-crypto: optimize bio splitting in blk_crypto_fallback_encrypt_bio
-> config: powerpc64-randconfig-r111-20260601 (https://download.01.org/0day-ci/archive/20260601/202606012339.rZAl6Xq8-lkp@intel.com/config)
-> compiler: powerpc64-linux-gcc (GCC) 8.5.0
-> sparse: v0.6.5-rc1
-> reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20260601/202606012339.rZAl6Xq8-lkp@intel.com/reproduce)
-> 
-> If you fix the issue in a separate patch/commit (i.e. not just a new version of
-> the same patch/commit), kindly add following tags
-> | Reported-by: kernel test robot <lkp@intel.com>
-> | Closes: https://lore.kernel.org/oe-kbuild-all/202606012339.rZAl6Xq8-lkp@intel.com/
-> 
-> sparse warnings: (new ones prefixed by >>)
-> >> block/blk-crypto-fallback.c:154:17: sparse: sparse: cast from restricted blk_status_t
-> >> block/blk-crypto-fallback.c:154:17: sparse: sparse: cast from restricted blk_status_t
->    block/blk-crypto-fallback.c:154:17: sparse: sparse: cast to restricted blk_status_t
-> 
-> vim +154 block/blk-crypto-fallback.c
-> 
->    143	
->    144	static void blk_crypto_fallback_encrypt_endio(struct bio *enc_bio)
->    145	{
->    146		struct bio *src_bio = enc_bio->bi_private;
->    147		int i;
->    148	
->    149		for (i = 0; i < enc_bio->bi_vcnt; i++)
->    150			mempool_free(enc_bio->bi_io_vec[i].bv_page,
->    151				     blk_crypto_bounce_page_pool);
->    152	
->    153		if (enc_bio->bi_status)
->  > 154			cmpxchg(&src_bio->bi_status, 0, enc_bio->bi_status);
->    155	
->    156		bio_put(enc_bio);
->    157		bio_endio(src_bio);
->    158	}
->    159	
-> 
+On Thu, May 28, 2026 at 8:36=E2=80=AFPM Yury Norov <ynorov@nvidia.com> wrot=
+e:
+>
+> idlecpus_show() is a sysfs show callback. Use sysfs_emit() and
+> cpumask_pr_args() to emit the mask.
+>
+> This prepares for removing cpumap_print_to_pagebuf().
+>
+> Signed-off-by: Yury Norov <ynorov@nvidia.com>
+> ---
+>  drivers/acpi/acpi_pad.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+>
+> diff --git a/drivers/acpi/acpi_pad.c b/drivers/acpi/acpi_pad.c
+> index ec94b09bb747..04d61a6cc95f 100644
+> --- a/drivers/acpi/acpi_pad.c
+> +++ b/drivers/acpi/acpi_pad.c
+> @@ -334,8 +334,8 @@ static ssize_t idlecpus_store(struct device *dev,
+>  static ssize_t idlecpus_show(struct device *dev,
+>         struct device_attribute *attr, char *buf)
+>  {
+> -       return cpumap_print_to_pagebuf(false, buf,
+> -                                      to_cpumask(pad_busy_cpus_bits));
+> +       return sysfs_emit(buf, "%*pb\n",
+> +                         cpumask_pr_args(to_cpumask(pad_busy_cpus_bits))=
+);
+>  }
+>
+>  static DEVICE_ATTR_RW(idlecpus);
 > --
-> 0-DAY CI Kernel Test Service
-> https://github.com/intel/lkp-tests/wiki
----end quoted text---
+
+Applied (with a tweaked subject) as 7.2 material, thanks!
 
