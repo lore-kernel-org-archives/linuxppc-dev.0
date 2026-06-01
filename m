@@ -1,64 +1,45 @@
-Return-Path: <linuxppc-dev+bounces-21807-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21808-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D0FE1CD5BD1
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Jun 2026 09:56:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A0893CD6E56
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Jun 2026 10:43:38 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gTTqv3cP7z2ytV;
-	Mon, 01 Jun 2026 19:56:11 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:8b0:10b:1:d65d:64ff:fe57:4e05"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780307771;
-	cv=none; b=LdgtWtydrV+FVNtLQcB+dXUYom7ciBClntO5JPOoZYgn9DYFUcGR+mrWoCZ/NeF6Zl56Uq4WnFCJ1wC//Hzi8ooEEI/Vau/5penhhxw6dM5hFpei+E8xOqR922U3JI296JpbQUaPeq1MjdU8Vc96BTEzsp+o/LejnlPR/H/BRRjfhz8ugjPtdna+KFIPbcFGTdhi5rODHea9OQWFRx8QwCRuvU2TOdmLidFPguFRFr1nBKF0DE4PYiWXQvzANX2xe4it/iLFLlBntd+ktJjVXuNvxZ7iZ/orYmF6eUQWaNrHrexWMEO6dj5bRnnPuHP/0W2xpfl1WB4/XFxvWWoBFQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gTVtd1Jlnz2xqn;
+	Mon, 01 Jun 2026 20:43:37 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.140.110.172
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780310617;
+	cv=none; b=QES0Om5i1VE32eSWeeyLgRVK69k03H4UQxPEav3TNUfsJJMvO+H90yaLkEuXva1JnjYPT0UWMnay1/gL7tJp1uJaFyFMYXC8qDR6qnNa5s4LkiArMu0RH8ssMOAVR6k5fVMcG/U4CrLwtjli35BJPRUwC+ob/BV1YpaSJEIIMfdoyRQc2O1gv3uazSdiLsUdNSCq+ujgL7x1YAsasJMw6p2NHvqKETfoXGuNKMqf5vKShHXxB84PlZNXQnPORds9W39t1ol2W0HbaTwgPLz0NZvh5+rWF2tGSwzwkbblKLY4cN/PSgEpMT/MRNmqIN+NIJbJDOC6kAP91PQqycbx8Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1780307771; c=relaxed/relaxed;
-	bh=ZlMyHu3BbzXPD3yTxJTwuhSJEfIF8/AcS4QYjKsn584=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=CjLXOlBBOWx/OVMpI6fk0pEE9C9OTwQ6TZ5UOOj1LhLi3eQyBpcnb0RYblhHbwR1lp/2bfcfOffvxq7TsKD4Q/cnXAo12y7Dou8RKu7ffehvsxBF5tSqh+okAIiMqPNXfb2WInrkbZiy/bzkfMq8w7rroOfViroF4Qt9elXWN36V0GCb33DFT3vr+F6CJhRP9Nl/n1R97GrV3xUyAZ04WLGpbQN0g9rqfjqA+C/4RCEouBCKnWAvjdE5IW93HEnQ0eMTrUWBD3YGex2epyHulntqVckp+Hlub6RR+WBlzTnEp/G7O8bSLl918gYUNRXXoLb2c4ZKlEqRKkkwHhsxxw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=infradead.org; dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=desiato.20200630 header.b=ktCYaxpp; dkim-atps=neutral; spf=pass (client-ip=2001:8b0:10b:1:d65d:64ff:fe57:4e05; helo=desiato.infradead.org; envelope-from=peterz@infradead.org; receiver=lists.ozlabs.org) smtp.mailfrom=infradead.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=infradead.org
+	t=1780310617; c=relaxed/relaxed;
+	bh=w+Nusdc80UxxlxkRbJQVlsMrz4yOsTaBzGC7whbZUGQ=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=HbH9uvFTKEHb1QimXTr47Rv3vVxPfgXsxIu8THybVNJZjNWhzit7c+jGD44AlbWJo/Kk4ZzHVmaJmbcz3Cko7+THZqoxFmNS60tdSvFsMK5WBqhGUW89XosngJofuzX5xrQ4BRxfWKZj64oP9BS2HZ0z86e4Q0/KOUWKv4chYLlaTQN+GCwyt+Y71LhxJ7lCtSJjOjSGv0uEMQYIdLloGyc0ExsLMVvT9d+Ry09XgB7HPvGtxg5mY4EwkTCl+ipDZ7HjUI/dyKEeZ49INbgwJ1YfrWuFTLSsev4qE91jKWUARz8/+QXe9gp6dGApyluTeBTxkaOQjXBxzAlbnA4Wrg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=L7vvyWyP; dkim-atps=neutral; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=kevin.brodsky@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=desiato.20200630 header.b=ktCYaxpp;
+	dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=L7vvyWyP;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=infradead.org (client-ip=2001:8b0:10b:1:d65d:64ff:fe57:4e05; helo=desiato.infradead.org; envelope-from=peterz@infradead.org; receiver=lists.ozlabs.org)
-Received: from desiato.infradead.org (desiato.infradead.org [IPv6:2001:8b0:10b:1:d65d:64ff:fe57:4e05])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gTTqn5WLCz2ysb
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 01 Jun 2026 19:56:04 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=desiato.20200630; h=In-Reply-To:Content-Type:MIME-Version:
-	References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
-	Content-Transfer-Encoding:Content-ID:Content-Description;
-	bh=ZlMyHu3BbzXPD3yTxJTwuhSJEfIF8/AcS4QYjKsn584=; b=ktCYaxpp58lXdrmnQHlo87Gp1s
-	N6MDXY6IPPxiXE/N3ALh3O6z6PiGKjQd4H7MS/rQU8v45IydRc4GeOVmaZgFnNMVjuNjnAkvpvily
-	IzAW2iLH4R0uw6fqE7OrKnDGnGYYgfyz6swYKwyuJmtdCp02MkrFYN6H2eMhc71DhBRrAzwdoaruh
-	G4Qt8BSpsq82ackG+GgoW+H4sZ4yYQo48X/K+55QQ/HkAdgz6ADpFSqElT9HotGFXzTl5hQNKpCY+
-	8PEkRw48oT6ep+1xcpYZNwm7etR0JNyjcp3wnZdpLRb2kV1B4IDvSdWVXc5GUmCNaI95rTo9ELCvS
-	AuuQqy9w==;
-Received: from 77-249-17-252.cable.dynamic.v4.ziggo.nl ([77.249.17.252] helo=noisy.programming.kicks-ass.net)
-	by desiato.infradead.org with esmtpsa (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wTzNJ-00000006JL6-3shb;
-	Mon, 01 Jun 2026 09:56:02 +0000
-Received: by noisy.programming.kicks-ass.net (Postfix, from userid 1000)
-	id 9C602300454; Mon, 01 Jun 2026 11:56:01 +0200 (CEST)
-Date: Mon, 1 Jun 2026 11:56:01 +0200
-From: Peter Zijlstra <peterz@infradead.org>
-To: Shrikanth Hegde <sshegde@linux.ibm.com>
-Cc: Venkat Rao Bagalkote <venkat88@linux.ibm.com>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Mukesh Kumar Chaurasiya <mchauras@linux.ibm.com>,
-	Ritesh Harjani <ritesh.list@gmail.com>,
-	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
-	LKML <linux-kernel@vger.kernel.org>,
-	Srikar Dronamraju <srikar@linux.ibm.com>
-Subject: Re: [linux-next20260529] kernel BUG at kernel/sched/core.c:7512!
-Message-ID: <20260601095601.GN3102624@noisy.programming.kicks-ass.net>
-References: <7904105b-9dfa-4efd-a5ef-bc0276ed255d@linux.ibm.com>
- <2f8c3d75-de2c-48bf-bd05-46b816d55c69@linux.ibm.com>
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=kevin.brodsky@arm.com; receiver=lists.ozlabs.org)
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gTVtZ5b06z2xdb
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 01 Jun 2026 20:43:32 +1000 (AEST)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 2DF0B1516;
+	Mon,  1 Jun 2026 03:42:55 -0700 (PDT)
+Received: from [10.57.94.8] (unknown [10.57.94.8])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id CE8AB3F905;
+	Mon,  1 Jun 2026 03:42:55 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
+	t=1780310580; bh=Surtzdfsfons0Igc45K6QS/muGPLmDhB31E+s1aspA8=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=L7vvyWyP5yYoDEKRDyQEcn+KUcyIZLm2/zPqf2mFWbJd8f5vtwRD9mJ+gjQLemSmG
+	 61GJ7fElvuDmqzB0boUzsETOcCIg+LT5X96dfHbuAGeuIYJbp6tPCru3g6Uz1zZTsM
+	 dtan6SzPh6XJ40fqoV65vNcSw4ucQjj+39rNxGKw=
+Message-ID: <502eadae-089f-41cb-a871-9ad6b8169e0d@arm.com>
+Date: Mon, 1 Jun 2026 12:42:52 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -72,33 +53,130 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <2f8c3d75-de2c-48bf-bd05-46b816d55c69@linux.ibm.com>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v7 07/15] arm64: kfence: Avoid NOMAP tricks when mapping
+ the early pool
+To: Ard Biesheuvel <ardb+git@google.com>, linux-arm-kernel@lists.infradead.org
+Cc: linux-kernel@vger.kernel.org, will@kernel.org, catalin.marinas@arm.com,
+ mark.rutland@arm.com, Ard Biesheuvel <ardb@kernel.org>,
+ Ryan Roberts <ryan.roberts@arm.com>,
+ Anshuman Khandual <anshuman.khandual@arm.com>,
+ Liz Prucka <lizprucka@google.com>, Seth Jenkins <sethjenkins@google.com>,
+ Kees Cook <kees@kernel.org>, Mike Rapoport <rppt@kernel.org>,
+ David Hildenbrand <david@kernel.org>,
+ Andrew Morton <akpm@linux-foundation.org>, Jann Horn <jannh@google.com>,
+ linux-mm@kvack.org, linux-hardening@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-sh@vger.kernel.org
+References: <20260529150150.1670604-17-ardb+git@google.com>
+ <20260529150150.1670604-24-ardb+git@google.com>
+From: Kevin Brodsky <kevin.brodsky@arm.com>
+Content-Language: en-GB
+In-Reply-To: <20260529150150.1670604-24-ardb+git@google.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-On Mon, Jun 01, 2026 at 02:46:24PM +0530, Shrikanth Hegde wrote:
+On 29/05/2026 17:01, Ard Biesheuvel wrote:
+> From: Ard Biesheuvel <ardb@kernel.org>
+>
+> Now that the map_mem() routines respect existing page mappings and
+> contiguous granule sized blocks with the contiguous bit cleared, there
+> is no longer a reason to play tricks with the memblock NOMAP attribute.
+>
+> Instead, the kfence pool can be allocated and mapped with page
+> granularity first, and this granularity will be respected when the rest
+> of DRAM is mapped later, even if block and contiguous mappings are
+> allowed for the remainder of those mappings.
+>
+> Add the NO_EXEC_MAPPINGS flag to ensure that hierarchical XN attributes
+> are set on the intermediate page tables that are allocated when mapping
+> the pool.
+>
+> Signed-off-by: Ard Biesheuvel <ardb@kernel.org>
 
-> Ritesh, Mukesh, Is below possible scenario?
-> 
-> do_page_fault seems to enable irq's in the interrupt handler?
-> is that expected? if so, one might see
-> 
-> -- do_page_fault (enter kernel mode)
->    -- enables interrupts
->    -- gets interrupt - Sets need_resched.
->       -- irqentry_exit - Sees it is kernel mode. Just checks preempt count
-> 			 and calls preempt_schedule_irq, which catches both
-> 			 preempt_count and !irqs_disabled. Hence the panic?
-> 
-> Should do_page_fault do preempt_disable when it enables the interrupts?
+Reviewed-by: Kevin Brodsky <kevin.brodsky@arm.com>
 
-No, it is expected for page-fault to be able to schedule. Specifically,
-it must be able to sleep to support loading pages from disk.
-
-Please check the value of preempt_count() (does it perchance have
-HARDIRQ_OFFSET?). Also, if the fault handler does enable IRQs, it must
-also disable them again once done.
-
-Notably, I see ___do_page_fault() do interrupt_cond_loadl_irq_enable(),
-but I'm not seeing a local_irq_disable() to match!
+> ---
+>  arch/arm64/mm/mmu.c | 27 +++++---------------
+>  1 file changed, 6 insertions(+), 21 deletions(-)
+>
+> diff --git a/arch/arm64/mm/mmu.c b/arch/arm64/mm/mmu.c
+> index d7a6991e1844..cdf8b3510229 100644
+> --- a/arch/arm64/mm/mmu.c
+> +++ b/arch/arm64/mm/mmu.c
+> @@ -1083,36 +1083,24 @@ static int __init parse_kfence_early_init(char *arg)
+>  }
+>  early_param("kfence.sample_interval", parse_kfence_early_init);
+>  
+> -static phys_addr_t __init arm64_kfence_alloc_pool(void)
+> +static void __init arm64_kfence_map_pool(void)
+>  {
+>  	phys_addr_t kfence_pool;
+>  
+>  	if (!kfence_early_init)
+> -		return 0;
+> +		return;
+>  
+>  	kfence_pool = memblock_phys_alloc(KFENCE_POOL_SIZE, PAGE_SIZE);
+>  	if (!kfence_pool) {
+>  		pr_err("failed to allocate kfence pool\n");
+>  		kfence_early_init = false;
+> -		return 0;
+> -	}
+> -
+> -	/* Temporarily mark as NOMAP. */
+> -	memblock_mark_nomap(kfence_pool, KFENCE_POOL_SIZE);
+> -
+> -	return kfence_pool;
+> -}
+> -
+> -static void __init arm64_kfence_map_pool(phys_addr_t kfence_pool)
+> -{
+> -	if (!kfence_pool)
+>  		return;
+> +	}
+>  
+>  	/* KFENCE pool needs page-level mapping. */
+>  	__map_memblock(kfence_pool, kfence_pool + KFENCE_POOL_SIZE,
+>  			pgprot_tagged(PAGE_KERNEL),
+> -			NO_BLOCK_MAPPINGS | NO_CONT_MAPPINGS);
+> -	memblock_clear_nomap(kfence_pool, KFENCE_POOL_SIZE);
+> +			NO_BLOCK_MAPPINGS | NO_CONT_MAPPINGS | NO_EXEC_MAPPINGS);
+>  	__kfence_pool = phys_to_virt(kfence_pool);
+>  }
+>  
+> @@ -1144,8 +1132,7 @@ bool arch_kfence_init_pool(void)
+>  }
+>  #else /* CONFIG_KFENCE */
+>  
+> -static inline phys_addr_t arm64_kfence_alloc_pool(void) { return 0; }
+> -static inline void arm64_kfence_map_pool(phys_addr_t kfence_pool) { }
+> +static inline void arm64_kfence_map_pool(void) { }
+>  
+>  #endif /* CONFIG_KFENCE */
+>  
+> @@ -1155,7 +1142,6 @@ static void __init map_mem(void)
+>  	phys_addr_t kernel_start = __pa_symbol(_text);
+>  	phys_addr_t kernel_end = __pa_symbol(__init_begin);
+>  	phys_addr_t start, end;
+> -	phys_addr_t early_kfence_pool;
+>  	int flags = NO_EXEC_MAPPINGS;
+>  	u64 i;
+>  
+> @@ -1172,7 +1158,7 @@ static void __init map_mem(void)
+>  	BUILD_BUG_ON(pgd_index(direct_map_end - 1) == pgd_index(direct_map_end) &&
+>  		     pgd_index(_PAGE_OFFSET(VA_BITS_MIN)) != PTRS_PER_PGD - 1);
+>  
+> -	early_kfence_pool = arm64_kfence_alloc_pool();
+> +	arm64_kfence_map_pool();
+>  
+>  	linear_map_requires_bbml2 = !force_pte_mapping() && can_set_direct_map();
+>  
+> @@ -1210,7 +1196,6 @@ static void __init map_mem(void)
+>  	 */
+>  	__map_memblock(kernel_start, kernel_end, PAGE_KERNEL, NO_CONT_MAPPINGS);
+>  	memblock_clear_nomap(kernel_start, kernel_end - kernel_start);
+> -	arm64_kfence_map_pool(early_kfence_pool);
+>  }
+>  
+>  void mark_rodata_ro(void)
 
