@@ -1,51 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-21787-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21788-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D3B96CD5BD1
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Jun 2026 09:49:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E2CCCCD6E60
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Jun 2026 09:49:23 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gTTgS73QLz2yb9;
-	Mon, 01 Jun 2026 19:48:52 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=113.46.200.220
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780307332;
-	cv=none; b=GvjOJEZCEtOPxdJdcCM8Cqnmci+Y857TDWYR1p/YKw04Oukmn9qBoInJNKDmjDAcux5q18rF5+ewqvFc2/elOe8m/4CEbCoshk7WO09poqTkbP7W1ZPVhrobUm6yuDc2pbKg3uvW5QAMnQMf9njuCInFORnHVt3phzJDV1cVQLg68f5u3FiWRmbABVX+dx49V6WBouBrhQh+XsKLzMakncGyc2AIK1uNnniUzFDeoY2KB4MYjQb9eFTnQszsY/M3i3t7M1cmida1S/M5h+oUd5gHJdn3b3xGzfAe/SiJAMbtjYWXVTeeivDb/hB0E/wLN2zTnRAq2777nXykxnnArg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gTTgY5VTxz2ysW;
+	Mon, 01 Jun 2026 19:48:57 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=113.46.200.219
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780307337;
+	cv=none; b=CEd1cTOd+94uYaqh5lP/qYX50R+vnTm1kOhpyedWvDm+kgkApVXmgSRHxb2Orap4kkebfo3FsK93JTXLFnwmPJLawEn10dVgCaX3MH+Xid54AJVgxoIm+HlTxJxTYJqBGc4tFkNGCGpUIXvI+MjLxFBZlpHh/uJgUbQyGf2fP0DgXCm9eCYoJMkcZLmw4H0M2qLnASnG57Q/R7fYNfyzgXwMTCSh83o2aIa9JUoEVm+ZegSydhAjJsJyo8zfUmzrcmPIBaG2oGclx6s/UoZZund8ti3gMOshA5HWHqN34BsER4S99tfCy6lG/wbfsGki/4IMEabT8z3YnM6yK8hB1A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1780307332; c=relaxed/relaxed;
-	bh=8EnmU9JMCid8f25OUQXP00boV0OiTYhaVmjNgi7O15U=;
+	t=1780307337; c=relaxed/relaxed;
+	bh=dtc4/NrtG2M2/NTu9Dfj4w1EdTwFqK3w2EGmJt3YJfk=;
 	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=AhFYMoM6SPhiUBuD0iIV2mK9ujUTCzC9l3Qy5I5PtCgU7T/rOXTBPWK+XgcqT1TcAtr1J9KgmU/be1wEAyn545zzfobVYt4qq0ZfWg3R9CvfrG5Kxlb760iy8T9Qu55mj84361JtJIEGuV8LcgoL5+8dP+iN4QloQM0z4R0Xqw+cAkYrz1kHF7fUlxQhOcRN76VfOcf5v8fUkPCzGUGBPADkr/kwPljruyMUAKTVOM+d0vmD8YxqxiFjLoupd5sz4riVTqk+9wcLLQU7WNlCVINxGPZFLIziKEnbq70LI4f0RIUn8vCIMhIPPrHxV6fFvGbsMtAJgTi8d+caeCf7bA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=Fxpfysxr; dkim-atps=neutral; spf=pass (client-ip=113.46.200.220; helo=canpmsgout05.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
+	 MIME-Version:Content-Type; b=b2QqY/uFNgxPgfmTCLtvaX5k1bvBmkCTyf2acIrv/RIyiEG6Av1ZxH07RaVV35KMMqYqYPsfBwwQ6mltKSnX6Y0C6PZIr/a5aE3/VE5XLsTCkDG2/3lu3YmIMnKQAmBc4jvpWIiBaE7cSAhtev315yUwXl4lofsIj5U84uIrY9l/cph/+IJ+A/eeakgXJrm+NXfl/du3B1RlnVQ76LaNWA6RHVVUu1J01uL8xgBoTrewnmOe8BIFJeUaUIsGW2uEIM44Ln1+nfUgOjGTt4qKpO/cmaPwgp3nAl4dBmia1eZiiqvQdKzbUizSIDxh4yLfuMLK8IZ09xYqGUkHg88JAw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=LSORrdH1; dkim-atps=neutral; spf=pass (client-ip=113.46.200.219; helo=canpmsgout04.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=Fxpfysxr;
+	dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=LSORrdH1;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=113.46.200.220; helo=canpmsgout05.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org)
-Received: from canpmsgout05.his.huawei.com (canpmsgout05.his.huawei.com [113.46.200.220])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=113.46.200.219; helo=canpmsgout04.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org)
+Received: from canpmsgout04.his.huawei.com (canpmsgout04.his.huawei.com [113.46.200.219])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gTTgS1Yk6z2ytj
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 01 Jun 2026 19:48:52 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gTTgX5Zdyz2ytj
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 01 Jun 2026 19:48:56 +1000 (AEST)
 dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
 	c=relaxed/relaxed; q=dns/txt;
 	h=From;
-	bh=8EnmU9JMCid8f25OUQXP00boV0OiTYhaVmjNgi7O15U=;
-	b=FxpfysxrDR9Z3N/z2FzLQ1redjsb8v9bYZrgwkOLY1V7vvU9WSoFF5k9qkeJwx1wfpRWLcpVx
-	swZvy2I8bsFWOiKD4o+W6S6rk20znDPInkJynNfB+gPu1Dd8JseMuHQSc1kNWZ6yZFBauRJxmHj
-	33qeJTuPJ77dl1V2na7GErY=
-Received: from mail.maildlp.com (unknown [172.19.162.140])
-	by canpmsgout05.his.huawei.com (SkyGuard) with ESMTPS id 4gTTVD753tz12LGX;
-	Mon,  1 Jun 2026 17:40:52 +0800 (CST)
+	bh=dtc4/NrtG2M2/NTu9Dfj4w1EdTwFqK3w2EGmJt3YJfk=;
+	b=LSORrdH1lNoFWXXQS9gOPZ3GNVa3ecvXGMA9ld+M6rLgHx2sr5j7Fq2G0Wi2rHMgU+0UGbsOM
+	dS8uEqVPnjdLyyFxwclLxewkwC9sqLElnsjtJmnFBkcp9voEWnKOmHq5Vy30shiuwvA3BSKUFr0
+	oyz/nZ4BOYaUsS8XJXrrKsw=
+Received: from mail.maildlp.com (unknown [172.19.163.0])
+	by canpmsgout04.his.huawei.com (SkyGuard) with ESMTPS id 4gTTVQ4JpJz1prM3;
+	Mon,  1 Jun 2026 17:41:02 +0800 (CST)
 Received: from dggpemf500011.china.huawei.com (unknown [7.185.36.131])
-	by mail.maildlp.com (Postfix) with ESMTPS id CDEA2201E9;
-	Mon,  1 Jun 2026 17:48:49 +0800 (CST)
+	by mail.maildlp.com (Postfix) with ESMTPS id CD07140561;
+	Mon,  1 Jun 2026 17:48:53 +0800 (CST)
 Received: from huawei.com (10.90.53.73) by dggpemf500011.china.huawei.com
  (7.185.36.131) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.11; Mon, 1 Jun
- 2026 17:48:45 +0800
+ 2026 17:48:49 +0800
 From: Jinjie Ruan <ruanjinjie@huawei.com>
 To: <corbet@lwn.net>, <skhan@linuxfoundation.org>, <catalin.marinas@arm.com>,
 	<will@kernel.org>, <chenhuacai@kernel.org>, <kernel@xen0n.name>,
@@ -80,9 +80,9 @@ To: <corbet@lwn.net>, <skhan@linuxfoundation.org>, <catalin.marinas@arm.com>,
 	<linux-riscv@lists.infradead.org>, <devicetree@vger.kernel.org>,
 	<kexec@lists.infradead.org>
 CC: <ruanjinjie@huawei.com>
-Subject: [PATCH v15 04/23] powerpc/kexec_file: Fix memory range truncation in __merge_memory_ranges()
-Date: Mon, 1 Jun 2026 17:47:46 +0800
-Message-ID: <20260601094805.2928614-5-ruanjinjie@huawei.com>
+Subject: [PATCH v15 05/23] powerpc/crash: sort crash memory ranges before preparing elfcorehdr
+Date: Mon, 1 Jun 2026 17:47:47 +0800
+Message-ID: <20260601094805.2928614-6-ruanjinjie@huawei.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20260601094805.2928614-1-ruanjinjie@huawei.com>
 References: <20260601094805.2928614-1-ruanjinjie@huawei.com>
@@ -105,90 +105,191 @@ X-Originating-IP: [10.90.53.73]
 X-ClientProxiedBy: kwepems100002.china.huawei.com (7.221.188.206) To
  dggpemf500011.china.huawei.com (7.185.36.131)
 
-Sashiko AI review pointed out the following issue.
+From: Sourabh Jain <sourabhjain@linux.ibm.com>
 
-The __merge_memory_ranges() function incorrectly handles overlapping
-memory ranges when merging them. Although sort_memory_ranges() sorts all
-ranges by their start address in ascending order beforehand, the merge
-logic remains defective in two ways:
+During a memory hot-remove event, the elfcorehdr is rebuilt to exclude
+the removed memory. While updating the crash memory ranges for this
+operation, the crash memory ranges array can become unsorted. This
+happens because remove_mem_range() may split a memory range into two
+parts and append the higher-address part as a separate range at the end
+of the array.
 
-1. It compares the current range's start against the previous element (i-1)
-   instead of the running target index (idx)
+So far, no issues have been observed due to the unsorted crash memory
+ranges. However, this could lead to problems once crash memory range
+removal is handled by generic code, as introduced in the upcoming
+patches in this series.
 
-2. It unconditionally overwrites 'ranges[idx].end' with 'ranges[i].end'.
+Currently, powerpc uses a platform-specific function,
+remove_mem_range(), to exclude hot-removed memory from the crash memory
+ranges. This function performs the same task as the generic
+crash_exclude_mem_range() in crash_core.c. The generic helper also
+ensures that the crash memory ranges remain sorted. So remove the
+redundant powerpc-specific implementation and instead call
+crash_exclude_mem_range_guarded() (which internally calls
+crash_exclude_mem_range()) to exclude the hot-removed memory ranges.
 
-This logic flaw leads to critical memory truncation when a larger memory
-range completely subsumes subsequent smaller ranges.
-
-For example, consider a sorted input array with three ranges:
-  Range A (idx=0): [0x1000 - 0x9000]
-  Range B (i=1):   [0x2000 - 0x5000] (completely inside Range A)
-  Range C (i=2):   [0x6000 - 0x8000] (completely inside Range A)
-
-1. When i=1 (Range B):
-   ranges[1].start (0x2000) <= ranges[0].end + 1 (0x9001) is TRUE.
-   The code executes: ranges[0].end = ranges[1].end, which erroneously
-   shrinks Range A's end from 0x9000 down to 0x5000.
-
-2. When i=2 (Range C):
-   ranges[2].start (0x6000) <= ranges[1].end + 1 (0x5001) is FALSE.
-   The code falls into the else block, creating a broken new range.
-
-As a result, valid memory fragments [0x5001 - 0x5fff] and [0x8001 - 0x9000]
-are completely lost from the kexec exclude lists, potentially allowing
-the crash kernel to overwrite active memory, causing data corruption
-or crashes.
-
-Fix this by ensuring the start of the current range is compared against the
-end of the active merged range (idx), and use max() to safely prevent the
-outer boundary from being truncated.
-
-Cc: Sourabh Jain <sourabhjain@linux.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Baoquan he <bhe@redhat.com>
+Cc: Jinjie Ruan <ruanjinjie@huawei.com>
 Cc: Hari Bathini <hbathini@linux.ibm.com>
+Cc: Madhavan Srinivasan <maddy@linux.ibm.com>
+Cc: Mahesh Salgaonkar <mahesh@linux.ibm.com>
 Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: stable@vger.kernel.org
-Fixes: 180adfc532a8 ("powerpc/kexec_file: Add helper functions for getting memory ranges")
+Cc: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+Cc: Shivang Upadhyay <shivangu@linux.ibm.com>
+Cc: linux-kernel@vger.kernel.org
+Acked-by: Baoquan He <bhe@redhat.com>
+Reviewed-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+Acked-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
+Signed-off-by: Sourabh Jain <sourabhjain@linux.ibm.com>
 Signed-off-by: Jinjie Ruan <ruanjinjie@huawei.com>
 ---
- arch/powerpc/kexec/ranges.c | 12 +++++-------
- 1 file changed, 5 insertions(+), 7 deletions(-)
+ arch/powerpc/include/asm/kexec_ranges.h |  4 +-
+ arch/powerpc/kexec/crash.c              |  5 +-
+ arch/powerpc/kexec/ranges.c             | 87 +------------------------
+ 3 files changed, 7 insertions(+), 89 deletions(-)
 
+diff --git a/arch/powerpc/include/asm/kexec_ranges.h b/arch/powerpc/include/asm/kexec_ranges.h
+index 14055896cbcb..ad95e3792d10 100644
+--- a/arch/powerpc/include/asm/kexec_ranges.h
++++ b/arch/powerpc/include/asm/kexec_ranges.h
+@@ -7,7 +7,9 @@
+ void sort_memory_ranges(struct crash_mem *mrngs, bool merge);
+ struct crash_mem *realloc_mem_ranges(struct crash_mem **mem_ranges);
+ int add_mem_range(struct crash_mem **mem_ranges, u64 base, u64 size);
+-int remove_mem_range(struct crash_mem **mem_ranges, u64 base, u64 size);
++int crash_exclude_mem_range_guarded(struct crash_mem **mem_ranges,
++				    unsigned long long mstart,
++				    unsigned long long mend);
+ int get_exclude_memory_ranges(struct crash_mem **mem_ranges);
+ int get_reserved_memory_ranges(struct crash_mem **mem_ranges);
+ int get_crash_memory_ranges(struct crash_mem **mem_ranges);
+diff --git a/arch/powerpc/kexec/crash.c b/arch/powerpc/kexec/crash.c
+index a520f851c3a6..d634db67becc 100644
+--- a/arch/powerpc/kexec/crash.c
++++ b/arch/powerpc/kexec/crash.c
+@@ -493,7 +493,7 @@ static void update_crash_elfcorehdr(struct kimage *image, struct memory_notify *
+ 	struct crash_mem *cmem = NULL;
+ 	struct kexec_segment *ksegment;
+ 	void *ptr, *mem, *elfbuf = NULL;
+-	unsigned long elfsz, memsz, base_addr, size;
++	unsigned long elfsz, memsz, base_addr, size, end;
+ 
+ 	ksegment = &image->segment[image->elfcorehdr_index];
+ 	mem = (void *) ksegment->mem;
+@@ -512,7 +512,8 @@ static void update_crash_elfcorehdr(struct kimage *image, struct memory_notify *
+ 	if (image->hp_action == KEXEC_CRASH_HP_REMOVE_MEMORY) {
+ 		base_addr = PFN_PHYS(mn->start_pfn);
+ 		size = mn->nr_pages * PAGE_SIZE;
+-		ret = remove_mem_range(&cmem, base_addr, size);
++		end = base_addr + size - 1;
++		ret = crash_exclude_mem_range_guarded(&cmem, base_addr, end);
+ 		if (ret) {
+ 			pr_err("Failed to remove hot-unplugged memory from crash memory ranges\n");
+ 			goto out;
 diff --git a/arch/powerpc/kexec/ranges.c b/arch/powerpc/kexec/ranges.c
-index 867135560e5c..eb45e89502ca 100644
+index eb45e89502ca..b2fb78562cdc 100644
 --- a/arch/powerpc/kexec/ranges.c
 +++ b/arch/powerpc/kexec/ranges.c
-@@ -21,6 +21,7 @@
- #include <linux/of.h>
- #include <linux/slab.h>
- #include <linux/memblock.h>
-+#include <linux/minmax.h>
- #include <linux/crash_core.h>
- #include <asm/sections.h>
- #include <asm/kexec_ranges.h>
-@@ -105,19 +106,16 @@ static void __merge_memory_ranges(struct crash_mem *mem_rngs)
- 	struct range *ranges;
- 	int i, idx;
+@@ -551,7 +551,7 @@ int get_usable_memory_ranges(struct crash_mem **mem_ranges)
+ #endif /* CONFIG_KEXEC_FILE */
  
--	if (!mem_rngs)
-+	if (!mem_rngs || mem_rngs->nr_ranges <= 1)
- 		return;
- 
- 	idx = 0;
--	ranges = &(mem_rngs->ranges[0]);
-+	ranges = mem_rngs->ranges;
- 	for (i = 1; i < mem_rngs->nr_ranges; i++) {
--		if (ranges[i].start <= (ranges[i-1].end + 1))
--			ranges[idx].end = ranges[i].end;
-+		if (ranges[i].start <= (ranges[idx].end + 1))
-+			ranges[idx].end = max(ranges[idx].end, ranges[i].end);
- 		else {
- 			idx++;
--			if (i == idx)
--				continue;
+ #ifdef CONFIG_CRASH_DUMP
+-static int crash_exclude_mem_range_guarded(struct crash_mem **mem_ranges,
++int crash_exclude_mem_range_guarded(struct crash_mem **mem_ranges,
+ 					   unsigned long long mstart,
+ 					   unsigned long long mend)
+ {
+@@ -639,89 +639,4 @@ int get_crash_memory_ranges(struct crash_mem **mem_ranges)
+ 		pr_err("Failed to setup crash memory ranges\n");
+ 	return ret;
+ }
 -
- 			ranges[idx] = ranges[i];
- 		}
- 	}
+-/**
+- * remove_mem_range - Removes the given memory range from the range list.
+- * @mem_ranges:    Range list to remove the memory range to.
+- * @base:          Base address of the range to remove.
+- * @size:          Size of the memory range to remove.
+- *
+- * (Re)allocates memory, if needed.
+- *
+- * Returns 0 on success, negative errno on error.
+- */
+-int remove_mem_range(struct crash_mem **mem_ranges, u64 base, u64 size)
+-{
+-	u64 end;
+-	int ret = 0;
+-	unsigned int i;
+-	u64 mstart, mend;
+-	struct crash_mem *mem_rngs = *mem_ranges;
+-
+-	if (!size)
+-		return 0;
+-
+-	/*
+-	 * Memory range are stored as start and end address, use
+-	 * the same format to do remove operation.
+-	 */
+-	end = base + size - 1;
+-
+-	for (i = 0; i < mem_rngs->nr_ranges; i++) {
+-		mstart = mem_rngs->ranges[i].start;
+-		mend = mem_rngs->ranges[i].end;
+-
+-		/*
+-		 * Memory range to remove is not part of this range entry
+-		 * in the memory range list
+-		 */
+-		if (!(base >= mstart && end <= mend))
+-			continue;
+-
+-		/*
+-		 * Memory range to remove is equivalent to this entry in the
+-		 * memory range list. Remove the range entry from the list.
+-		 */
+-		if (base == mstart && end == mend) {
+-			for (; i < mem_rngs->nr_ranges - 1; i++) {
+-				mem_rngs->ranges[i].start = mem_rngs->ranges[i+1].start;
+-				mem_rngs->ranges[i].end = mem_rngs->ranges[i+1].end;
+-			}
+-			mem_rngs->nr_ranges--;
+-			goto out;
+-		}
+-		/*
+-		 * Start address of the memory range to remove and the
+-		 * current memory range entry in the list is same. Just
+-		 * move the start address of the current memory range
+-		 * entry in the list to end + 1.
+-		 */
+-		else if (base == mstart) {
+-			mem_rngs->ranges[i].start = end + 1;
+-			goto out;
+-		}
+-		/*
+-		 * End address of the memory range to remove and the
+-		 * current memory range entry in the list is same.
+-		 * Just move the end address of the current memory
+-		 * range entry in the list to base - 1.
+-		 */
+-		else if (end == mend)  {
+-			mem_rngs->ranges[i].end = base - 1;
+-			goto out;
+-		}
+-		/*
+-		 * Memory range to remove is not at the edge of current
+-		 * memory range entry. Split the current memory entry into
+-		 * two half.
+-		 */
+-		else {
+-			size = mem_rngs->ranges[i].end - end + 1;
+-			mem_rngs->ranges[i].end = base - 1;
+-			ret = add_mem_range(mem_ranges, end + 1, size);
+-		}
+-	}
+-out:
+-	return ret;
+-}
+ #endif /* CONFIG_CRASH_DUMP */
 -- 
 2.34.1
 
