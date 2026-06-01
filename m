@@ -1,78 +1,60 @@
-Return-Path: <linuxppc-dev+bounces-21773-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21774-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2F54DCD6E52
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 31 May 2026 21:05:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0BE90CD6E4C
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Jun 2026 06:22:09 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gT8km4dvxz2y7r;
-	Mon, 01 Jun 2026 07:05:36 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::62a"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780238200;
-	cv=none; b=PsyEaaOo+2BHWp+Mn8BYr+d6Z0zceCrCeVNBB5tJnc/MKjJl6juNFRcUYlzTy6PjJbXF2ipFt6+8udmzxJgo0cSeVc9gndcowsdE2W1GIiSga31ycMAdJcdrbBCHBdCNUA8PVMWloyI407ArUWeVWClPP047vk0OavZdY+Hx+aaMPmnc3SrMhgPPrGKTRm9OnwGFkeXPN1VbxSAnmusIW9UoKupCrXD1oqVKXCAWBirqFD1mwZAtjhRMzkuFXqUb/AjzfaDG40uTB5lOaT2YkYHJVHzGVHlKxVGQ1X0wVX+ULAs2uvJPyc6CEbcK6pGs54RpIE8ux4L9HycVEIPlbA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gTP4w0z93z2y8p;
+	Mon, 01 Jun 2026 16:22:08 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780294928;
+	cv=none; b=bRrOznd6DBBcNoyrx1OJWnTQY1nCxN1S0hFphX+vuxRHYHleOYh/eCI/ZT4GFQvlxMzS58Mq55YvroUjIk1IAxwEO4TW4QIqGxEjkUNSniGnQ8qNZaULk/b30DDBRD+OiVKigCauZJwo6HJKcSLGniQN792nG7FHNDV3eSChwKS7eCQtnZcTtK/xueXeBe5ulW1GuZqSFFIQnGUwciL9wGtNo9gs/p/WHRYjB2004Aox+Qrg4xbvA7BS4R4MR1P4svQpQYZSdJJ58NiyPnoC/MNrguXU4R3mfmQf1giNJcaNI0126OP217soiN2DA7AFxS20ITDXo5BTsGtQ6Pq08A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1780238200; c=relaxed/relaxed;
-	bh=RAmB6qU0tUcDyuQM8cPLpHCE5VdrhYXfLUEjav8vq/s=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=jwfAnswwmNhaT0VeP+74kwsnwR3q1SBoO9EtDy0R8XC7CRXoOBItj1rxiZJ9HOBL/HhyTTQvd4npUQLl974JXeen/bkxIkDTb3I7vraR3vPSp7ldphZLKm1kbS5U5TMiWUfU78vDrXjQviGeHbb6dGcU4PnbIsTfdewyEA1kWvUgJN6/Sb4AerD9wbYYTvSt9pMKk2kC2N9g0rTuMntcMsXbvlxK4AWy+SWYrEsDEAgIMpTSXK9zw3AvMNX1BF8LXGks5cw0brNs8POSyge2+RSDyeujYpqRRSya54C7XhfbHs9QeplDEv61kyCdW+ZyxGwfaEsAzRj/53Q7BukyLA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=ALDBqczu; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::62a; helo=mail-pl1-x62a.google.com; envelope-from=isyanfei.xu@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1780294928; c=relaxed/relaxed;
+	bh=JC8ooVvP2VP/aGda96PWkp1u1gfkWKF0V7K4OvYMrQ0=;
+	h=Date:From:To:Cc:Subject:Message-Id:In-Reply-To:References:
+	 Mime-Version:Content-Type; b=GYXirF2eOIfNCFYHs3z+Fq54pCVSVV3PYmDkm6wxFw2AYIOkQ0BA2jfI0dJkQrIw3Y6zBkN+XUQ3Vvd4J79nbDhTfvDL5ehHMQ9HIWGw7lnh91N/oBuXiLTuxZMgRCmQETEKCQgP6inxZagi+zC4aQI4pBOU04+31DtHr2fQSZS71l3Vsl5dFuvI7u49q1Wi+jo/uKDAqzEQnm+XbGnAonWRj9WkIgCmoO6wlJZX7OpBJtveiR4nkv/R+GHpyhUWAFkq3b0qNNjW8Rg1nQCHV5ip/vbGB1Gx74xmbHbISFX8QcH6EWIZwu6qIJ08iV14e83gQmYYEoMLtx95UM5Osw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org; dkim=pass (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=korg header.b=fW0n2LvL; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=akpm@linux-foundation.org; receiver=lists.ozlabs.org) smtp.mailfrom=linux-foundation.org
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=ALDBqczu;
+	dkim=pass (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=korg header.b=fW0n2LvL;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::62a; helo=mail-pl1-x62a.google.com; envelope-from=isyanfei.xu@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pl1-x62a.google.com (mail-pl1-x62a.google.com [IPv6:2607:f8b0:4864:20::62a])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux-foundation.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=akpm@linux-foundation.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gT05z1Mkvz2xK4
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 01 Jun 2026 00:36:38 +1000 (AEST)
-Received: by mail-pl1-x62a.google.com with SMTP id d9443c01a7336-2bea7176c72so77231955ad.0
-        for <linuxppc-dev@lists.ozlabs.org>; Sun, 31 May 2026 07:36:38 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gTP4t1xy1z2xYg
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 01 Jun 2026 16:22:05 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id 6066A60018;
+	Mon,  1 Jun 2026 06:22:02 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9C6EF1F00893;
+	Mon,  1 Jun 2026 06:22:01 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1780238196; x=1780842996; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to:subject
-         :user-agent:mime-version:date:message-id:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=RAmB6qU0tUcDyuQM8cPLpHCE5VdrhYXfLUEjav8vq/s=;
-        b=ALDBqczu5B//59CimmQMed7XeKgU1rdeDezltCmosvyvabW3LFnstjW7lpaWusrZDS
-         EkDkop0o8Wk2sXFmQ0Lb5hlVi1/uO74E0EyDrs0jU9MOWsINwkfaLBJp30Jv7+HGyrfO
-         oO7AVGrn7t0K01IvMeVs2eR9zH3ldp6BBqeiSugO7e3QzjXAmw9TsvlkZvz7gF5J5JTK
-         ngTFvCKzcT4PHXfTZJqnkxqGwD+/hA14oIWUulY2/TWkWY1iTOnX3H+4P6Yls372ZKb/
-         Oy+5Rid42pR0LxJeXNPxE0vWF4l7c0iNkgTdKlnQeOV08AozNitr7zd2QWxfxPw8Q0+g
-         oOCw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1780238196; x=1780842996;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to:subject
-         :user-agent:mime-version:date:message-id:x-gm-gg:x-gm-message-state
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=RAmB6qU0tUcDyuQM8cPLpHCE5VdrhYXfLUEjav8vq/s=;
-        b=JhHVFdMTo6pxEX5FOOz6Bg6JvC8u46fzbUgVzYrGLtJOjS72qAv7VUAJg3NLTj7OUY
-         EIhsNrG403wOB4gkcZda823hRahQ47mXZg7DRS1+qq1lFCci4rAzZhivw2p3rXk2cZGj
-         2kDC8pXb4R7UAVFUJQ6TrkV6cjN/tq5ucQqEVmIQEaxwkTdqCX+IMmu9vmGID4SKXJhi
-         vyNeiS7pgaInwwfsmj0uFodDT5nUHUPEbmJNi76ZJ2ayTxdNagZIqjBp6vCe8/FpUUxg
-         gctTRoLQsyJYSUy2vYCKjjC4+idWdtZH8lYUQeYur7vUcVx0YBXMZrXJ/oSJzYqwJdl6
-         TE3w==
-X-Forwarded-Encrypted: i=1; AFNElJ+yF9O21S/+Q0e8G9oRg/R4NQke0qxG2+3/MyR34uEkPgrpgyTdkrbzXEqDNW1nYV+CuGpcM8VWoJSUAzQ=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yz9ENpFV+eb3eHoLkpXYHHJzjxNWbxy5unAtefp2mL91eQKgnO9
-	47IcpbB8Je++xNFmpxz1dVZcdr12wNo37GmBaCmhvBTHcmJQWk5eOmrW
-X-Gm-Gg: Acq92OGmVh1hw00tbtVqiZmQUs1IGASiDUjNL7eZt7niIbkmKrn7bWwzWYeYJqI9rZh
-	xf+it6oz18+uV+7ZzXtI97gAbN69roFw1doNcBqOZmNati7TREBKLa/dS+XQs99MsP/1VJwj5fK
-	flLMAllgR6LEPRErQtJ8SIorVqeA5OFOWTp6QbIiYsvjI6vdjqx5RuN0RCDGoAnlBLQ/t1TRoC5
-	6fi+BKrXRcZ32vtkRVN+UzciejFzPG0VoVi9ciWxEAAF8zamzcMYVDfiW8Xv7v6YWHcgVvNE+3O
-	XFFlkLwgBS3Qx94YL/+m0YYUB4nbj0VtHJMYNt7Jdq3UGd5ChEu2PQD7hNWpuQhSZESGQNfZxrM
-	K5Unx7nLdrA47Ol79vHQ7tCBPiYPL2zrOpuqC69n4RpE6+HFD+hulf73q/bqTmfOdt2Ntvw6LSh
-	Rc+MASuF3y0UDXgyE73c4plF1up3vM476tvEirE8kZ9L7m2EY=
-X-Received: by 2002:a17:903:3585:b0:2bf:160f:7038 with SMTP id d9443c01a7336-2bf367c1435mr92914815ad.12.1780238196196;
-        Sun, 31 May 2026 07:36:36 -0700 (PDT)
-Received: from [10.4.72.5] ([139.177.225.241])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2bf23b0121fsm77749365ad.49.2026.05.31.07.36.29
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Sun, 31 May 2026 07:36:35 -0700 (PDT)
-Message-ID: <5ee310d9-d432-400d-8506-751ee4a41fc6@gmail.com>
-Date: Sun, 31 May 2026 22:36:27 +0800
+	d=linux-foundation.org; s=korg; t=1780294922;
+	bh=JC8ooVvP2VP/aGda96PWkp1u1gfkWKF0V7K4OvYMrQ0=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:References;
+	b=fW0n2LvLA05tb2iQ906w0acukFZB8rLE3cTd1M/E6TWaNZTa7efwKjZR2iJ/XTWtD
+	 AfsMdMqXq0uzEb+suh5q0lWPl5L7N40QUUeZM7mMmFZ+mWQdCXweHKjMUM4MaZtfCa
+	 a9cfW5u2ZJd7OM7vWe3vuxhUGSm7LI+8uJL4Tss0=
+Date: Sun, 31 May 2026 23:22:01 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Pavithra <pavrampu@linux.ibm.com>
+Cc: shuah@kernel.org, linux-kselftest@vger.kernel.org, linux-mm@kvack.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ ritesh.list@gmail.com, david@kernel.org, ziy@nvidia.com, mhocko@kernel.org,
+ osalvador@suse.de, lorenzo.stoakes@oracle.com, dev.jain@arm.com,
+ Liam.Howlett@oracle.com, linmiaohe@huawei.com
+Subject: Re: [PATCH] selftests/mm/run_vmtests.sh: Fix protection_keys binary
+ name in run_vmtests.sh
+Message-Id: <20260531232201.7613f20b850f0bff4f133f3b@linux-foundation.org>
+In-Reply-To: <20260601061314.898388-1-pavrampu@linux.ibm.com>
+References: <20260601061314.898388-1-pavrampu@linux.ibm.com>
+X-Mailer: Sylpheed 3.8.0beta1 (GTK+ 2.24.33; x86_64-pc-linux-gnu)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -85,42 +67,27 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [v2 0/2] KVM: Validate irqchip index in routing entries
-To: Greg KH <gregkh@linuxfoundation.org>, Yanfei Xu <yanfei.xu@bytedance.com>
-Cc: harshpb@linux.ibm.com, zhaotianrui@loongson.cn, maobibo@loongson.cn,
- chenhuacai@kernel.org, maddy@linux.ibm.com, npiggin@gmail.com,
- sashiko-reviews@lists.linux.dev, seanjc@google.com, pbonzini@redhat.com,
- kvm@vger.kernel.org, stable@vger.kernel.org, loongarch@lists.linux.dev,
- linuxppc-dev@lists.ozlabs.org, caixiangfeng@bytedance.com,
- fangying.tommy@bytedance.com
-References: <20260531135326.2238555-1-yanfei.xu@bytedance.com>
- <2026053158-cussed-outweigh-6f0f@gregkh>
-From: Yanfei Xu <isyanfei.xu@gmail.com>
-In-Reply-To: <2026053158-cussed-outweigh-6f0f@gregkh>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 
+On Mon,  1 Jun 2026 11:43:14 +0530 Pavithra <pavrampu@linux.ibm.com> wrote:
 
-On 2026/5/31 22:15, Greg KH wrote:
->> -- 
->> 2.20.1
->>
-> <formletter>
->
-> This is not the correct way to submit patches for inclusion in the
-> stable kernel tree.  Please read:
->      https://www.kernel.org/doc/html/latest/process/stable-kernel-rules.html
-> for how to do this properly.
->
-> </formletter>
+> we have protection_keys_32 and protection_keys_64 tests mentioned in
+> run_vmtests.sh but the binary name is protection_keys with current
+> kernel,
 
-Thanks for pointing out the correct process. I saw
-that PPC maintainer added "Cc: stable@vger.kernel.org"
-on v1, so I mistakenly thought v2 should cc...
+Is it?
 
-Thanks,
-Yanfei
+Makefile has:
+
+VMTARGETS := protection_keys
+VMTARGETS += pkey_sighandler_tests
+BINARIES_32 := $(VMTARGETS:%=%_32)
+BINARIES_64 := $(VMTARGETS:%=%_64)
+
+hp2:/usr/src/mm/tools/testing/selftests/mm> ls -l prot*
+-rwxrwxr-x 1 akpm akpm 117792 May 31 23:20 protection_keys_64
+-rw-rw-r-- 1 akpm akpm  48448 May 31 21:54 protection_keys.c
 
 
