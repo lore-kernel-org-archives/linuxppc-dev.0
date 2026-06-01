@@ -1,51 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-21789-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21790-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C23B0CD6E56
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Jun 2026 09:49:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A5170CD6E56
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Jun 2026 09:49:39 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gTTgc70fnz2ytj;
-	Mon, 01 Jun 2026 19:49:00 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=113.46.200.217
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780307340;
-	cv=none; b=VLmVU329XDokGPuZ1U28SgOIAuFwM9b6zdMrrFwcsLkPT/fk2Q3y4T3wFNkzd5myvPFh/xLsCjnAfGweXi9arjx61xAEsdEmh/pa+9kWNfjoW3uvXBwC3DgTRRx8m724vWqUa/gxeuQx4/xaRIF3ZnekHhXU1SZctVsHUY3yILjsaXoLLChRJJ99u9/JMZuRakwhXTQo1sfJ6Y22DNVf76f4T7YWUCXr+BLl8mpsyN/wgNPXRNg+shg09o+2L4P4Mr/cfcPz80JkXmjxfjXm5CvAeIJ6g76Fnmm3A+utyp17lCriP4gvTJ4KiJ4vLP5H+bOialGjMEAdQ9qtgb5+2Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gTTgj6wCKz2yth;
+	Mon, 01 Jun 2026 19:49:05 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=113.46.200.221
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780307345;
+	cv=none; b=M2kT7QzgiswiqW1M9EhoWsBcM7FmVRKagVxPB4C/ybQS66J5TK6kJV1sXkcp2YhByzMl515JtaLyoBscmljlrMweYHNBA3m+/+a3zX2VTV8+ez3xYgS2T9ZyvFU4St+uvOBnwQB/AgvSBRaycQ9ZNo2hIC9R3vYl3k8sBzUi2GmEeStZgm9ZBXgfIfh9noNLlvdMXIktmdSKlOjawsbU3Af0iPTfE+r76Brv2o13C8w8RzF/5lSJuzpjBeCO9ZPz/uhHlyT7+45moSYEXtkBv6HpyaDC5JrqGyeeHa640m6PLeuOpvR2N/Bq6WL/j0iRVGaiIU24zOXbE975SAeNXg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1780307340; c=relaxed/relaxed;
-	bh=FoTEQM/LHeMQktZIXiOh72cymJcqDmq0T6smro86PHs=;
+	t=1780307345; c=relaxed/relaxed;
+	bh=3CM+Au3SXosW29XrHZBLTzStvKPXPYXLJ81pyBZwyQo=;
 	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=o0qSsfagoxoOkRwNeJWVQh7QN1QQ2EOpC64mrPa1FYzgyMPulJPqmfFc+o97aQ6K7lBm27HF2cjJcrkdcWuGCicJsrwXkosyQtjMV+fiJyy/HoHNDY/V+HuEX3Qs1fDRc1CgH7Gm9jJ+b1HnqFkqDPsanCCDR0IkHszPglAkiqYjRpQh0t+stQPLliYvwuIpXVtmZgp/u3dl++zuSIRSRDwbbyeYcFnJ4Z7hveHoS0NMII0qQQl6EpZNL7oPyLOqmjvymxiHolq2aIpaDTwYtt7kn4OJlZupfvXksi+spDhc/WDvNFVtw2BcAl/0dvrJ5YoEXQ4XyLBfg35Ar2fzfA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=MP/a67Lp; dkim-atps=neutral; spf=pass (client-ip=113.46.200.217; helo=canpmsgout02.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
+	 MIME-Version:Content-Type; b=Pn0yT81ZWssGdWihWMqqB5MTBm0jlS39eXl78T5qWjgX3tqBiLSasmjZ7VPZmHzvoDH2U2sWRG89DyUVJT4jL8ZLkTwyWonFAsnKzwG8FZbpkNqoSGUIJlohspKZQ13yGt1f3INSRXeecfrk4jASnQF6vN2x4VdR/UkDConxLqdsy3wCOoxOD5LOGhR/pnHFjs90cevxUg5BthmEfwZKuy8bUDbuo++mXy0j4MddChCpCsB3tcgQmyzdzJx0Z1WeEhqrnJsw8LOikxxS2GEVDp15OpB/qIPjJzjgwrjJsE+fMDFukeo59W0he3f3JWsDWSOSAQI60sL0yjkjgjZz/A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=K+9Cpzom; dkim-atps=neutral; spf=pass (client-ip=113.46.200.221; helo=canpmsgout06.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=MP/a67Lp;
+	dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=K+9Cpzom;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=113.46.200.217; helo=canpmsgout02.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org)
-Received: from canpmsgout02.his.huawei.com (canpmsgout02.his.huawei.com [113.46.200.217])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=113.46.200.221; helo=canpmsgout06.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org)
+Received: from canpmsgout06.his.huawei.com (canpmsgout06.his.huawei.com [113.46.200.221])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gTTgc0YY9z2ytJ
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 01 Jun 2026 19:49:00 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gTTgj0WMlz2ytJ
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 01 Jun 2026 19:49:04 +1000 (AEST)
 dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
 	c=relaxed/relaxed; q=dns/txt;
 	h=From;
-	bh=FoTEQM/LHeMQktZIXiOh72cymJcqDmq0T6smro86PHs=;
-	b=MP/a67LplmOvMEmzF3qOent0LLi5OYYNL1s93hEe9QYI7yu5Jz6/lbnpd46Gp8VzrkTtl5xL6
-	vHjF/YT0QhU/knfEZRlmG4hUtG590RYYLpqwIB5HGbsdbiPp/AdeGF+aZYEJpysjcRwsMaYBX8o
-	edIQvxdYlCHGBMJuccpHPJc=
-Received: from mail.maildlp.com (unknown [172.19.162.144])
-	by canpmsgout02.his.huawei.com (SkyGuard) with ESMTPS id 4gTTVQ02Lzzcb1n;
-	Mon,  1 Jun 2026 17:41:02 +0800 (CST)
+	bh=3CM+Au3SXosW29XrHZBLTzStvKPXPYXLJ81pyBZwyQo=;
+	b=K+9Cpzombw+R1hz+4oTY8H0FgupdRElbxcNkGJexiHXFS/yuEYiEV0xUzMPD0jBtDpTNTrOUd
+	5pjSAy+NXj9LNHESyhBYSfroq164Dq/6YwKWnvf9H9/9K0QFK3HcM9jHW3afdFVuVnBCUGVg5Sa
+	pJKFnhLybZVSXQuwmunxwx0=
+Received: from mail.maildlp.com (unknown [172.19.162.140])
+	by canpmsgout06.his.huawei.com (SkyGuard) with ESMTPS id 4gTTVd1hx6zRhQr;
+	Mon,  1 Jun 2026 17:41:13 +0800 (CST)
 Received: from dggpemf500011.china.huawei.com (unknown [7.185.36.131])
-	by mail.maildlp.com (Postfix) with ESMTPS id B0AFE40538;
-	Mon,  1 Jun 2026 17:48:57 +0800 (CST)
+	by mail.maildlp.com (Postfix) with ESMTPS id 98392201E9;
+	Mon,  1 Jun 2026 17:49:01 +0800 (CST)
 Received: from huawei.com (10.90.53.73) by dggpemf500011.china.huawei.com
  (7.185.36.131) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.11; Mon, 1 Jun
- 2026 17:48:53 +0800
+ 2026 17:48:57 +0800
 From: Jinjie Ruan <ruanjinjie@huawei.com>
 To: <corbet@lwn.net>, <skhan@linuxfoundation.org>, <catalin.marinas@arm.com>,
 	<will@kernel.org>, <chenhuacai@kernel.org>, <kernel@xen0n.name>,
@@ -80,9 +80,9 @@ To: <corbet@lwn.net>, <skhan@linuxfoundation.org>, <catalin.marinas@arm.com>,
 	<linux-riscv@lists.infradead.org>, <devicetree@vger.kernel.org>,
 	<kexec@lists.infradead.org>
 CC: <ruanjinjie@huawei.com>
-Subject: [PATCH v15 06/23] kexec: Extract kexec_free_segment_cma() from kimage_free_cma()
-Date: Mon, 1 Jun 2026 17:47:48 +0800
-Message-ID: <20260601094805.2928614-7-ruanjinjie@huawei.com>
+Subject: [PATCH v15 07/23] arm64: kexec_file: Fix CMA page leaks during segment placement retry loops
+Date: Mon, 1 Jun 2026 17:47:49 +0800
+Message-ID: <20260601094805.2928614-8-ruanjinjie@huawei.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20260601094805.2928614-1-ruanjinjie@huawei.com>
 References: <20260601094805.2928614-1-ruanjinjie@huawei.com>
@@ -105,89 +105,85 @@ X-Originating-IP: [10.90.53.73]
 X-ClientProxiedBy: kwepems100002.china.huawei.com (7.221.188.206) To
  dggpemf500011.china.huawei.com (7.185.36.131)
 
-The generic kimage_free_cma() relies on `image->nr_segments` to iterate
-and free allocated CMA pages. However, during architecture-specific
-segment placement retry loops (e.g., arm64's image_load()), a mid-way
-failure will truncate `image->nr_segments` back to its initial value.
-This truncation permanently hides any CMA pages allocated outside the
-new boundary from global cleanup, causing silent background memory leaks.
+Sashiko AI code review pointed out, during arm64 kexec image placement
+retry loops in image_load(), the loader repeatedly attempts to find
+a suitable memory hole for the kernel and its associated segments
+(initrd, dtb, etc.). When a placement attempt fails midway, the core
+framework rolls back `image->nr_segments` to its initial state to purge
+the failed segments logically.
 
-To allow architecture-specific loaders to execute fine-grained memory
-reclamation before truncation occurs, extract the single-pass CMA release
-logic into a dedicated and exported helper:
+However, this truncation causes a severe background memory leak. Any CMA
+pages successfully allocated via kexec_add_buffer() during the failed
+attempt are recorded in the `image->segment_cma` array. Since
+the subsequent global kimage_free_cma() cleanup only iterates up to
+the truncated (smaller) `nr_segments` boundary, these allocated CMA pages
+outside the new boundary become completely orphaned and permanently leaked.
 
-	void kexec_free_segment_cma(struct kimage *image, unsigned long idx);
+Fix this by leverage the newly introduced generic kexec_free_segment_cma()
+helper to execute fine-grained memory reclamation before any truncation
+occurs:
 
-Refactor the main kimage_free_cma() to invoke this helper sequentially
-to maintain backward compatibility while expanding single-slot flexibility.
+1. In image_load(), explicitly invoke kexec_free_segment_cma() to release
+   the CMA buffer allocated for the current failed kernel segment before
+   decrementing `image->nr_segments`.
 
+2. In the error path of load_other_segments(), iterate backward from the
+   failed segment index down to `orig_segments`, sequentially freeing each
+   orphan CMA segment allocation before restoring the initial segment
+   count.
+
+This guarantees that all temporary CMA pages allocated during placement
+failures are cleanly returned to the contiguous memory allocator,
+eliminating silent background memory leaks across all retry paths.
+
+Cc: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Will Deacon <will@kernel.org>
+Cc: Breno Leitao <leitao@debian.org>
+Cc: Pratyush Yadav <pratyush@kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Yeoreum Yun <yeoreum.yun@arm.com>
+Cc: Kees Cook <kees@kernel.org>
+Cc: "Rob Herring (Arm)" <robh@kernel.org>
+Cc: Baoquan He <bhe@redhat.com>
+Cc: Coiby Xu <coxu@redhat.com>
+Cc: Alexander Graf <graf@amazon.com>
+Cc: Pasha Tatashin <pasha.tatashin@soleen.com>
+Cc: stable@vger.kernel.org
+Fixes: 07d24902977e4 ("kexec: enable CMA based contiguous allocation")
 Signed-off-by: Jinjie Ruan <ruanjinjie@huawei.com>
 ---
- include/linux/kexec.h |  2 ++
- kernel/kexec_core.c   | 25 ++++++++++++++-----------
- 2 files changed, 16 insertions(+), 11 deletions(-)
+ arch/arm64/kernel/kexec_image.c        | 1 +
+ arch/arm64/kernel/machine_kexec_file.c | 5 ++++-
+ 2 files changed, 5 insertions(+), 1 deletion(-)
 
-diff --git a/include/linux/kexec.h b/include/linux/kexec.h
-index 8a22bc9b8c6c..6f1eabda0300 100644
---- a/include/linux/kexec.h
-+++ b/include/linux/kexec.h
-@@ -532,6 +532,7 @@ extern bool kexec_file_dbg_print;
+diff --git a/arch/arm64/kernel/kexec_image.c b/arch/arm64/kernel/kexec_image.c
+index b70f4df15a1a..ffcb7f9075e6 100644
+--- a/arch/arm64/kernel/kexec_image.c
++++ b/arch/arm64/kernel/kexec_image.c
+@@ -107,6 +107,7 @@ static void *image_load(struct kimage *image,
+ 		 * We couldn't find space for the other segments; erase the
+ 		 * kernel segment and try the next available hole.
+ 		 */
++		kexec_free_segment_cma(image, kernel_segment_number);
+ 		image->nr_segments -= 1;
+ 		kbuf.buf_min = kernel_segment->mem + kernel_segment->memsz;
+ 		kbuf.mem = KEXEC_BUF_MEM_UNKNOWN;
+diff --git a/arch/arm64/kernel/machine_kexec_file.c b/arch/arm64/kernel/machine_kexec_file.c
+index e31fabed378a..13c247c28866 100644
+--- a/arch/arm64/kernel/machine_kexec_file.c
++++ b/arch/arm64/kernel/machine_kexec_file.c
+@@ -195,7 +195,10 @@ int load_other_segments(struct kimage *image,
+ 	return 0;
  
- extern void *kimage_map_segment(struct kimage *image, int idx);
- extern void kimage_unmap_segment(void *buffer);
-+extern void kexec_free_segment_cma(struct kimage *image, unsigned long idx);
- #else /* !CONFIG_KEXEC_CORE */
- struct pt_regs;
- struct task_struct;
-@@ -543,6 +544,7 @@ static inline int kexec_crash_loaded(void) { return 0; }
- static inline void *kimage_map_segment(struct kimage *image, int idx)
- { return NULL; }
- static inline void kimage_unmap_segment(void *buffer) { }
-+static inline void kexec_free_segment_cma(struct kimage *image, unsigned long idx) { }
- #define kexec_in_progress false
- #endif /* CONFIG_KEXEC_CORE */
- 
-diff --git a/kernel/kexec_core.c b/kernel/kexec_core.c
-index a43d2da0fe3e..9195f81e53c4 100644
---- a/kernel/kexec_core.c
-+++ b/kernel/kexec_core.c
-@@ -554,22 +554,25 @@ static void kimage_free_entry(kimage_entry_t entry)
- 	kimage_free_pages(page);
+ out_err:
+-	image->nr_segments = orig_segments;
++	while (image->nr_segments > orig_segments) {
++		kexec_free_segment_cma(image, image->nr_segments - 1);
++		image->nr_segments--;
++	}
+ 	kvfree(dtb);
+ 	return ret;
  }
- 
--static void kimage_free_cma(struct kimage *image)
-+void kexec_free_segment_cma(struct kimage *image, unsigned long idx)
- {
--	unsigned long i;
-+	u32 nr_pages = image->segment[idx].memsz >> PAGE_SHIFT;
-+	struct page *cma = image->segment_cma[idx];
- 
--	for (i = 0; i < image->nr_segments; i++) {
--		struct page *cma = image->segment_cma[i];
--		u32 nr_pages = image->segment[i].memsz >> PAGE_SHIFT;
-+	if (!cma)
-+		return;
- 
--		if (!cma)
--			continue;
-+	arch_kexec_pre_free_pages(page_address(cma), nr_pages);
-+	dma_release_from_contiguous(NULL, cma, nr_pages);
-+	image->segment_cma[idx] = NULL;
-+}
- 
--		arch_kexec_pre_free_pages(page_address(cma), nr_pages);
--		dma_release_from_contiguous(NULL, cma, nr_pages);
--		image->segment_cma[i] = NULL;
--	}
-+static void kimage_free_cma(struct kimage *image)
-+{
-+	unsigned long i;
- 
-+	for (i = 0; i < image->nr_segments; i++)
-+		kexec_free_segment_cma(image, i);
- }
- 
- void kimage_free(struct kimage *image)
 -- 
 2.34.1
 
