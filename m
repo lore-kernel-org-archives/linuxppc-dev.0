@@ -1,84 +1,68 @@
-Return-Path: <linuxppc-dev+bounces-21778-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21779-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D4358CD6E4C
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Jun 2026 07:58:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C5DC5CD6E4C
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Jun 2026 08:12:06 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gTRDd45YQz2xqn;
-	Mon, 01 Jun 2026 17:58:57 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c201::6" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780297583;
-	cv=pass; b=VOEXVAFrJmdeoWULM/U+sCyQc1yqviUihhKwcUtjOQGSjrd7dVrU8jBNuUUpyiKHr49fVu6J6fvLtRSWkxaLPdxZbk8dF4evnhEQXTyjD3UWxXN1gu2KsGyt6l9dlbwL7CKbiZ8f7mtyq3Rk+NXeu+xuYaE/5qvq3HgLMtAC/RhpmtamU1qB3j8gyrbkKgRY/BttSLHw9NZBbHYL2PIKz2/z/nRtBp7a0azjgOdlWPF5zt5LAdOdNcC8afqrh/21zXcodVS2uQAw4ngXe9MQixcCO9Rrctw2nB0TOkUpfStNtJGJJszRRCLLAqTnMzuenr/xnVuQL2rJgQEPmKRIZw==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1780297583; c=relaxed/relaxed;
-	bh=UO46UUMm5RHzo76c0Yd/ZCJl++PZbkL87KqWnIzfEfk=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=R8CnYxSjaQp13QTr+XNrBmSjMM8jlcK4CRbBVT2Pft2NWqhT7BDRUktA8c8TU+cAnr+qYbsi8QxCmWSPUvDWqwnFXUlSP9SVhIy65RGA+LPJlrnOAU0JPR0BPjiP25egLjG5ZaMnY81ofBohe3Wp1pJxEalkSslbw0SNMppoWKH8RS3hp4LA0PpGGCfnWjUjr0ztvZ1i735C6tJ8cFkgAG2Hiju6mKmp8zrCLgJm0Jlfc4qyQgyLUvE8YCsxv39oRaywUJ5mP8ODPKJT6u4y6AHChTfxZbfQEeKLIFvrRBw86ORJF6WkyVRTu8R8mi/PEksTewInaswdgKRb305Dxw==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=oss.nxp.com; dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=cK3PgJxy; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c201::6; helo=am0pr02cu008.outbound.protection.outlook.com; envelope-from=chancel.liu@oss.nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=oss.nxp.com
-Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=oss.nxp.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=cK3PgJxy;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=oss.nxp.com (client-ip=2a01:111:f403:c201::6; helo=am0pr02cu008.outbound.protection.outlook.com; envelope-from=chancel.liu@oss.nxp.com; receiver=lists.ozlabs.org)
-Received: from AM0PR02CU008.outbound.protection.outlook.com (mail-westeuropeazlp170130006.outbound.protection.outlook.com [IPv6:2a01:111:f403:c201::6])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gTRWn0sG1z2xqn;
+	Mon, 01 Jun 2026 18:12:05 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=209.85.222.43
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780301525;
+	cv=none; b=djPcXb69yqrrG4r3KW+rG0PgOUCJiayky9usvRq0KkoLAc+3VV7gEqQr7OPWlP4s/2bWSrnwkdgW//nS+QJpwwHuk2NopMNScYrbbMuZFZN2PeWA3m8BvY4r1dqRKelwX+nQxtyitFsvK3TMD7mm3tWU8eeZvvA/eDjRwhfmWyl1K/Y+5DLFIJ4cmnClfHjVk5BZ/I7DZHSNTReFirjuuBS2/EbY0bOx3k4dxrOECIj2SP3hV9miME/CSsYsdzJ6iBxCW+U0ojioJF4NfloPESZrV9OmTB5GKKCEcclAVt4azmqIl7S8IRvKiz5/fQAnGiGaE0qJ++IkoE6hHFZD8A==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1780301525; c=relaxed/relaxed;
+	bh=Z6bsjRyMlYCGVZWYk2Y60sUCqRedkIR0Vi6kAvx0wUs=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=HMqt87k7XWjJk8QF+/4adGspoR4JJc+E/WxJ+pbbscTK7/L37L9Y4aymXyXYVL+7tIrWsdN2kw9e09ws59SXzOsR3FVSuyA7WX+boabOqoOgsANyIcqa40gRTRrsoSb1fUYJjrNaX95JDoUU1UdReIODQZiwcwsJ93Ub/6AzpFb7XO7TmAtG5jAxwpMpcdIPdG3MJQGKBOh/OAZMz20MPukZwNe3jJ2lEezMEMnLipAktkpqs64YVkJreDOchxq64gByEY68Z74TrZOuxi10vv5DGMh2gNoVKY5mzLE7wpuMx3fow23j3CAo+KjMlInjACxjISgaWWVcoVu2ApNX4A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass (client-ip=209.85.222.43; helo=mail-ua1-f43.google.com; envelope-from=geert.uytterhoeven@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.222.43; helo=mail-ua1-f43.google.com; envelope-from=geert.uytterhoeven@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-ua1-f43.google.com (mail-ua1-f43.google.com [209.85.222.43])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gTQ3x4hS8z2xMW
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 01 Jun 2026 17:06:20 +1000 (AEST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=lngu8U/Xk2l8xHFcEmQFoYuOZWziyypLxQnKnIg/fEUwblX1XjMuKLo5KGzTPCLY7YH0ltNoQlDAmGEgGuvPmNfGhV3Sz/AOfVZd1+o08CaMIpunZFpI8OsaytcMWTnDZ0D/5TYS7mzrQDbJ7BiQ9QjrdaqegXptmc4qPsRj8WCTEkGKcNYniXcu7Ieet5y3YUJxV8fjlIe14GvLN6XVx9aYSRQTZboGo6I60i2ztrgAwBqjPmu4rg4Jc95Tv7+FXOcD36fuyhNppmj+N74RCQk5ygqRjty02G54sUlEKgPKyyCzhPnNgtB2+WQe/d6Yxb5rXHKIn60xhruTKbDlig==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=UO46UUMm5RHzo76c0Yd/ZCJl++PZbkL87KqWnIzfEfk=;
- b=BQ1XBnORNr9u9Hcxf2fPLP92knryV90+1Jjr2fXI3Vz6AFFn5K3BrfMPf+BtBuTIKCqSqbAZDE/9bZmy6LbQ5GPNjvuoPM0y+uzkIWmhPl9Qnb6tLC/PnnMa8d1etLFL2Oet9gZJSkNyrhIfe+vnXAXmzK3MKJ4hEtNXwNx3MBVH1AxrblevZvZgZa37oxMWNiB3kkxfJPIEiP91JRFViqI8mvj+usY52JZ+qsN0MOhPMKhzB6IzkwI8R3Xndwdk8H2Tdbm5FoEKIahbIG3bsheDO4XugNEkLf4I15kXO1/ZPEY15G8CCGScsxRq9Q/XxLLqI1uyl8tQph2nL64rlA==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=oss.nxp.com; dmarc=pass action=none header.from=oss.nxp.com;
- dkim=pass header.d=oss.nxp.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=NXP1.onmicrosoft.com;
- s=selector1-NXP1-onmicrosoft-com;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=UO46UUMm5RHzo76c0Yd/ZCJl++PZbkL87KqWnIzfEfk=;
- b=cK3PgJxy4ZRZBo62GdTkqCm3hyObM684Neb/vDibGR4gA6tZtIJ6+n3oh5kWq5UU5tQ45vA/PyJZYI3tZmsvYvjxSeEfOHPo5LW6JXj+fRoLv1yemmv1oKoNjOvB5h/alrat4G0NEQV4uAdlFc429X/eTE9WmN3FYCX7cCFi2pw7x3oAVOk7kPnzl16ms0BVPQWhmH+CPQ0BAzuijIbJ7ueuHesdjC07HQeK9h59wK8y08nzfjMiITp998VHicS+Oni3Xvpk7quNOObrogwJh1Js6N1wpVCNSlXAUSvSXUcIh0qS1kIgkh5gJMehSOaroGdvQWUzNsfi/GVy1+Gxvg==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=oss.nxp.com;
-Received: from GVXPR04MB10021.eurprd04.prod.outlook.com
- (2603:10a6:150:112::20) by GV4PR04MB11403.eurprd04.prod.outlook.com
- (2603:10a6:150:29a::16) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.71.16; Mon, 1 Jun 2026
- 07:05:49 +0000
-Received: from GVXPR04MB10021.eurprd04.prod.outlook.com
- ([fe80::d247:853:3e16:1994]) by GVXPR04MB10021.eurprd04.prod.outlook.com
- ([fe80::d247:853:3e16:1994%5]) with mapi id 15.21.0071.015; Mon, 1 Jun 2026
- 07:05:49 +0000
-From: chancel.liu@oss.nxp.com
-To: shengjiu.wang@gmail.com,
-	Xiubo.Lee@gmail.com,
-	festevam@gmail.com,
-	nicoleotsuka@gmail.com,
-	lgirdwood@gmail.com,
-	broonie@kernel.org,
-	perex@perex.cz,
-	tiwai@suse.com
-Cc: linux-kernel@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-sound@vger.kernel.org,
-	stable@vger.kernel.org
-Subject: [PATCH v2] ASoC: fsl_sai: Fix 32 slots TDM broken by integer shift UB in xMR write
-Date: Mon,  1 Jun 2026 16:05:43 +0900
-Message-ID: <20260601070543.1351629-1-chancel.liu@oss.nxp.com>
-X-Mailer: git-send-email 2.50.1
-In-Reply-To: <20260529085020.3727790-1-chancel.liu@nxp.com>
-References: <20260529085020.3727790-1-chancel.liu@nxp.com>
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-ClientProxiedBy: SE2P216CA0110.KORP216.PROD.OUTLOOK.COM
- (2603:1096:101:2c4::10) To GVXPR04MB10021.eurprd04.prod.outlook.com
- (2603:10a6:150:112::20)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gTRWl1lPkz2xdh
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 01 Jun 2026 18:12:02 +1000 (AEST)
+Received: by mail-ua1-f43.google.com with SMTP id a1e0cc1a2514c-9639d7daff3so2262495241.1
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 01 Jun 2026 01:12:02 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1780301519; x=1780906319;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=Z6bsjRyMlYCGVZWYk2Y60sUCqRedkIR0Vi6kAvx0wUs=;
+        b=eyD6HJM0CHx0OlF2jdCYGgzUwtH0g4dUlsq8vB4IP35j5zJ0nRW+AiPkwM3QWi38yq
+         bRyVGX36b8FJusJPLlHM7Hr7GItWJek1pS3uqON3EzTX9dAxSwFo00aVjhDagPCrVVLF
+         ZgRaUVj5WBg5mU1QvnYWwi0PJ9nrffvfImomcilomw9v0FnPDEWhyTDnKcMUQ9UQ4bcW
+         35T2MtzQJ30APv/qPoQKM12O9odTeNdNgOydJSN+87+xSwXYorYLwlMmn2ZQc/O1brRS
+         YudMZ+nUE14kvgA4nEjxvsQI/VS8NZpUtKL9QI38hF74Yd566luIH+qaiRm7wRISK9jY
+         b6Hg==
+X-Forwarded-Encrypted: i=1; AFNElJ+sDpqgbI4l5r4XDp3bx3263P93jHLNJd5ucb8e330z/BPCyqY1RxXkMeeWtlXTZpp6K1HA7+VDcBQnTg4=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YzWINxjSbskdUSfWP0kbPffYizwCRwu+GA6ydKrRwkv2TdYlaD4
+	RoH/XvdaPQNAG0/xI4FzccAYv7PpEFzX/JCLY0QrCiyggQ8qj4LWFNzPEUnv1ox+
+X-Gm-Gg: Acq92OGDdRCYHIzhtqgAoCpa1zMzcbue8hBOezg8R3YcPNkvX6xZy+GU4NNMuVHl9Kt
+	WUyiYHLpf64cHAq8FgEJZue2cQaMbNsXJzTbxD+7yzkyq1uC0fzjE1vPH0js+9FK/3FfrWJkAUJ
+	yCAO4P/2bOkYJMjGs+AnXNj+tl4Y8bUK4+ZdhgDErbM+DpHSuSTZpJQ5e5w49vyt0gO/6Pwvrad
+	kWzqU6HVGWNTs2FoWWoOWwRINgKY/IMvagjKOBml25RqwD45OWCYMh/ubdZRT4FmGivEXWH9YEy
+	9cfhWwqP5l2+iHb4iiCictyXoTjIKa1Ho+n1/WWz8ebOFCMT1R7iB0SFbiP8/TwL4Cur7rb+UI+
+	8n4as60oYvFz/hIN3VCjS1IYYQCAnVpaYj0qVYxUWntHOHK9FXrjXicGvB1ev7HTHoo5Enme7sz
+	jX0cgaYm7RmsZx+tuAhOQYr3DGd5etfqmPZsFbgh97l4QlE2ud2gyQE4P/1UH/m62SJw286/0=
+X-Received: by 2002:a05:6102:4194:b0:631:2a82:111f with SMTP id ada2fe7eead31-6c6849db841mr4077985137.17.1780301518787;
+        Mon, 01 Jun 2026 01:11:58 -0700 (PDT)
+Received: from mail-ua1-f52.google.com (mail-ua1-f52.google.com. [209.85.222.52])
+        by smtp.gmail.com with ESMTPSA id a1e0cc1a2514c-963aba26091sm5576967241.1.2026.06.01.01.11.58
+        for <linuxppc-dev@lists.ozlabs.org>
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 01 Jun 2026 01:11:58 -0700 (PDT)
+Received: by mail-ua1-f52.google.com with SMTP id a1e0cc1a2514c-963d7e5ffddso598804241.2
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 01 Jun 2026 01:11:58 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AFNElJ+VrJiJjvGRmFe5u+45cDvdCvXQvFrtjP6VEuZRnuN7bQ+70V47t7MD/Oz6Lq8o5kSTh2ri7EonMGH/EhY=@lists.ozlabs.org
+X-Received: by 2002:a05:6102:3ed4:b0:639:4bb7:c916 with SMTP id
+ ada2fe7eead31-6c67682807bmr3734166137.3.1780301518249; Mon, 01 Jun 2026
+ 01:11:58 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -92,99 +76,60 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: GVXPR04MB10021:EE_|GV4PR04MB11403:EE_
-X-MS-Office365-Filtering-Correlation-Id: 286326d0-16c3-41be-9013-08debfac35f9
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|1800799024|376014|7416014|366016|19092799006|22082099003|18002099003|11063799006|56012099006;
-X-Microsoft-Antispam-Message-Info:
-	9cwpCjsyLe4Lo1ntdGfmQpBow6zamnU/SE3dOCBWlFFx1vO1o6FfQLCrrhIexaGulicX+k/DRMtmJGaZq41uZHE7n35+MdZunV1yktGET4WRwE5LAqwHMGHUArkizCWtoeMRGVO1x4AP7Gi1K9P/gBeWZGGiXRvsDNgSQFocbUsNkMR7JeiJmMacPDi3ew7INYN1fBakgknkvv8o+uVi75P7yI7AvN373AZIYSHSF60X9N0qyA1ilrmSpQSVXrNS6iQJkcLpyacx4sJ/zKDtPylRhLQOULgdDPtrBh2a8v7S9/IjAth4UlSAEoYX7AOh2FImGhWYJTgU6JoIiqZM7I8hKNCuTsTIqfo+Pblix+lf2/MuZKlPhljm89yxhqmbzMfv7IsAXxf+rekCVU55Z73uzoJcGbJ732G99HBF8I2vUKa/PUmAekEc6dYDqSGbPHF9Ty9PllOLzsvKI70M3TSbpeMDn6x41ZLq5YiSj3siR9Ox0y8riSpqTCDC23HWQqQqe3O5QLFXK9E+LuAzukGSeHLLQ5C5lujwnMVEYwXpKpNv0IcPmutrlIw7KLTW/RcaO7SZNgjM8yRKQYriN4Efri/AOncr5hqBR6rn5oS4qfp3nZ84C8YRnurxuXn/OWgarOdoOB8xnsdBE67ExKwE0kKyF8abSS4771bzAkCYl7vwOfA53cf/6ezP8cMJ
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:GVXPR04MB10021.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(376014)(7416014)(366016)(19092799006)(22082099003)(18002099003)(11063799006)(56012099006);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?EEokBmbxZjrkas0XnbQtTVlHdLkqlCvwgp1SRf1ny/s3k06nxML4iUlHq572?=
- =?us-ascii?Q?tDGSiCro4WMJs+Fuvqyr/A8QIb+8JW5yVYrflaWsdJ0CtX9B98jX/dNiLHLe?=
- =?us-ascii?Q?AxQDoqdrFww3boZNV0iyKnpj5yBtXbluysI0XhkYTW4EY1DwNDZfLX/QVFOF?=
- =?us-ascii?Q?Qz2jijQ9RBY16ZZHUCjvkiriG90WQepHeMgtogW35r4eIq1EDLLDBEUXhOOy?=
- =?us-ascii?Q?RkncRfSux9LEqdUH8vMY0+LnC8FD3eU6OCEaW3lQTw1SxowMoN6a36fPygYC?=
- =?us-ascii?Q?2sPvlC1LGtRDF/iEpr3ATN5xC+kiUiyOnUhqyDH9eubLS4BM0LXGXcneAR9Y?=
- =?us-ascii?Q?NcqDxPDGvVJvGll0BYs2U+oXpVrTpWcS2iqydjxD1kxsk0ZueRARnUYSBit+?=
- =?us-ascii?Q?hqnZ8nNgQEwTZp+iF5EoK2gDKvrpGwCunQQ9aeivmOtFNSvVuzdekp4Lx3BY?=
- =?us-ascii?Q?wR+RC+VK8pAaVnP7kTl6sPs4OjflCG0T2DqGtMaM01IFBeChdGWxDow6zFrb?=
- =?us-ascii?Q?FIm/r7rplSD9dEwWF5Gb82gy76dZAZkf7etUHVPXyqXiDnAOg7g0U/tNaquv?=
- =?us-ascii?Q?KYY99Qazfaa9A76ARj8pNEMYPBKdgH/+7xbPDDbdaBCGtsWQwiP3P79sCfS+?=
- =?us-ascii?Q?3rBdIzJMD2lDmr56qgcMeiw00GXSiwKCnA+zyEjJdUk73jbDWPwL8RtfrYQu?=
- =?us-ascii?Q?t/D66uarWN9ze4yaXTNIQtXf4EtoMp6SaAMClR0q02E4LYzTEYD6jbI7dZ0W?=
- =?us-ascii?Q?grhgtFIM+YboSq6LyI/SdgsfM4g3eOfqVNd31TTSNXWP9w33arFIPR+Lxtsp?=
- =?us-ascii?Q?Xl0RmoYG29ipDaZ4Ci5sXg9z78MooXTayWyhYsJflLiT8B43HM0R/aflsr/c?=
- =?us-ascii?Q?NJFaq9SAG9hyhNtBCxFCJN9afo4KJADdwsR+P66DgiDzpAtFjiTAJD3Bdq1B?=
- =?us-ascii?Q?2PHTdYllPavEns++S+SjlCdQdQS0UAjuBWhCTh1c9CgbJRZ+GnAGD85yyw18?=
- =?us-ascii?Q?W2t4c4O8r35WFvL+39+Sd7yPS4sNAmI8K59CB4DVs4IaK9X7KNVsQOEflRxx?=
- =?us-ascii?Q?dfRxZKC/c7l7JQLuy9RG8/8DUSwZtmEpJeOnCoriKo8Z/jjpf3vHNO6gGPS2?=
- =?us-ascii?Q?mi+1l8E0d4ouXpnntgn57O2pDmILiD5NGLvW8sY/X1nsovTgjIPUKG3jOm+5?=
- =?us-ascii?Q?aKvI9F8/YrDzNeIzyeezpdpFwRTSElHT5m8vGcYkSFsQ2j6rf4wsxgp/Qwct?=
- =?us-ascii?Q?UbKHZMMSH4iGBZcUbDQQ3k0Z8TuOvGUWti40GnbwrftdveZXZl8RJkQt+ZEA?=
- =?us-ascii?Q?W3dCTrWnEwIabyqMAFGVm/hGPJeVNq1VDFikA+zNHPEKoTKsMwSenPO9nGtK?=
- =?us-ascii?Q?0jqKLWtDPen502xrd2id2woInaZneO/LVxnChplFP6IhVCHrDx0Hite8135f?=
- =?us-ascii?Q?9lqcwx9CqZNU4XruCxTJ1HhzU5Y1cjGYnLfhtxjmfLwkmHDLG2Qhete9nTny?=
- =?us-ascii?Q?N4IFEorH56Z5HKAqW8/T2gPwWIdrjeRoKFYTFWXtM6QZVgyeWVs2X/Jsihhc?=
- =?us-ascii?Q?nTU4UsdhIS/XaE7QdQ+6V4nLe1O4gDWVNifbA4NbDzj/F7apihZEOKBkVmy+?=
- =?us-ascii?Q?9n6wQU0x02ewVpeE0cfD0/ozKvp7bLuaW9x8L3WRKNlRIM92itoKbllmU642?=
- =?us-ascii?Q?KuZQfjCtklD0k9K1Q81k8IWMOlSFZsYrtrDXfu1mtBfAe15QLEiiMgLcpKGv?=
- =?us-ascii?Q?EqknPG14SSZD5tBTf4qg0XA4nFGt+UxxElcNZDnD7O7muXI/hSt/?=
-X-OriginatorOrg: oss.nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 286326d0-16c3-41be-9013-08debfac35f9
-X-MS-Exchange-CrossTenant-AuthSource: GVXPR04MB10021.eurprd04.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 01 Jun 2026 07:05:49.5535
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: KPFbfPZNhRWXMtCcuzHC1eOXo354dy5+Cyx04YVh3F19eyjhI6g4HJggP+vgkPowNyIW4N9vRyOVUMaBoMxv1gXcNiSjL4o46Jx/3NfBSwwBayJNcKrGglVGuYzR+nT3
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: GV4PR04MB11403
+References: <20260529150150.1670604-17-ardb+git@google.com> <20260529150150.1670604-29-ardb+git@google.com>
+In-Reply-To: <20260529150150.1670604-29-ardb+git@google.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Mon, 1 Jun 2026 10:11:45 +0200
+X-Gmail-Original-Message-ID: <CAMuHMdXp0qp38vHJTDFMrY-AUDXPSJtc5Dds_qu58FSeS_242w@mail.gmail.com>
+X-Gm-Features: AVHnY4I0grL2HGASleAgF6ybT4VX0NqDy8gokQJ4KkNhvH_ouOMg7ryFWIbyvcA
+Message-ID: <CAMuHMdXp0qp38vHJTDFMrY-AUDXPSJtc5Dds_qu58FSeS_242w@mail.gmail.com>
+Subject: Re: [PATCH v7 12/15] sh: Drop cache flush of the zero page at boot
+To: Ard Biesheuvel <ardb+git@google.com>
+Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, 
+	will@kernel.org, catalin.marinas@arm.com, mark.rutland@arm.com, 
+	Ard Biesheuvel <ardb@kernel.org>, Ryan Roberts <ryan.roberts@arm.com>, 
+	Anshuman Khandual <anshuman.khandual@arm.com>, Kevin Brodsky <kevin.brodsky@arm.com>, 
+	Liz Prucka <lizprucka@google.com>, Seth Jenkins <sethjenkins@google.com>, 
+	Kees Cook <kees@kernel.org>, Mike Rapoport <rppt@kernel.org>, David Hildenbrand <david@kernel.org>, 
+	Andrew Morton <akpm@linux-foundation.org>, Jann Horn <jannh@google.com>, linux-mm@kvack.org, 
+	linux-hardening@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
+	linux-sh@vger.kernel.org, Yoshinori Sato <ysato@users.sourceforge.jp>, 
+	Rich Felker <dalias@libc.org>, John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, 
+	Geert Uytterhoeven <geert+renesas@glider.be>
+Content-Type: text/plain; charset="UTF-8"
 
-From: Chancel Liu <chancel.liu@nxp.com>
+On Fri, 29 May 2026 at 17:02, Ard Biesheuvel <ardb+git@google.com> wrote:
+> From: Ard Biesheuvel <ardb@kernel.org>
+>
+> SuperH performs cache maintenance on the zero page during boot,
+> presumably because before commit
+>
+>   6215d9f4470f ("arch, mm: consolidate empty_zero_page")
+>
+> the zero page did double duty as a boot params region, and was cleared
+> separately, as it was not part of BSS. The memset() in question was
+> dropped by that commit, but the __flush_wback_region() call remained.
+>
+> As empty_zero_page[] has been moved to BSS, it can be treated as any
+> other BSS memory, and so the cache flush can be dropped.
+>
+> Cc: Yoshinori Sato <ysato@users.sourceforge.jp>
+> Cc: Rich Felker <dalias@libc.org>
+> Cc: John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>
+> Cc: Mike Rapoport <rppt@kernel.org>
+> Cc: Geert Uytterhoeven <geert+renesas@glider.be>
+> Signed-off-by: Ard Biesheuvel <ardb@kernel.org>
 
-When configuring 32 slots TDM (channels == slots == 32), the xMR
-(Mask Register) write used:
-~0UL - ((1 << min(channels, slots)) - 1)
+Reviewed-by: Geert Uytterhoeven <geert+renesas@glider.be>
 
-The literal "1" is a signed 32-bit int. Shifting it by 32 positions is
-undefined behaviour which may set this register to 0xFFFFFFFF, masking
-all 32 slots.
+Gr{oetje,eeting}s,
 
-Use GENMASK_U32() macro instead. For 32 slots this produces a zero mask:
-~GENMASK_U32(31, 0) = ~0xFFFFFFFF = 0x00000000
-Behaviour for fewer than 32 slots is unchanged.
+                        Geert
 
-Fixes: 770f58d7d2c5 ("ASoC: fsl_sai: Support multiple data channel enable bits")
-Cc: stable@vger.kernel.org
-Signed-off-by: Chancel Liu <chancel.liu@nxp.com>
----
-Changes in v2
-- Use GENMASK_U32() macro instead to make it clearer and safer
+-- 
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
- sound/soc/fsl/fsl_sai.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/sound/soc/fsl/fsl_sai.c b/sound/soc/fsl/fsl_sai.c
-index 821e3bd51b6e..9661602b53c5 100644
---- a/sound/soc/fsl/fsl_sai.c
-+++ b/sound/soc/fsl/fsl_sai.c
-@@ -797,7 +797,7 @@ static int fsl_sai_hw_params(struct snd_pcm_substream *substream,
- 				   FSL_SAI_CR4_FSD_MSTR, FSL_SAI_CR4_FSD_MSTR);
-
- 	regmap_write(sai->regmap, FSL_SAI_xMR(tx),
--		     ~0ULL - ((1ULL << min(channels, slots)) - 1));
-+		     ~GENMASK_U32(min(channels, slots) - 1, 0));
-
- 	return 0;
- }
---
-2.50.1
-
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
 
