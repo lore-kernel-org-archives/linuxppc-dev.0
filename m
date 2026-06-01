@@ -1,51 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-21790-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21791-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A5170CD6E56
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Jun 2026 09:49:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 140E7CD5BD1
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Jun 2026 09:49:48 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gTTgj6wCKz2yth;
-	Mon, 01 Jun 2026 19:49:05 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=113.46.200.221
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780307345;
-	cv=none; b=M2kT7QzgiswiqW1M9EhoWsBcM7FmVRKagVxPB4C/ybQS66J5TK6kJV1sXkcp2YhByzMl515JtaLyoBscmljlrMweYHNBA3m+/+a3zX2VTV8+ez3xYgS2T9ZyvFU4St+uvOBnwQB/AgvSBRaycQ9ZNo2hIC9R3vYl3k8sBzUi2GmEeStZgm9ZBXgfIfh9noNLlvdMXIktmdSKlOjawsbU3Af0iPTfE+r76Brv2o13C8w8RzF/5lSJuzpjBeCO9ZPz/uhHlyT7+45moSYEXtkBv6HpyaDC5JrqGyeeHa640m6PLeuOpvR2N/Bq6WL/j0iRVGaiIU24zOXbE975SAeNXg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gTTgn1GPhz2yv0;
+	Mon, 01 Jun 2026 19:49:09 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=113.46.200.219
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780307349;
+	cv=none; b=EhrlifVzTVjf2c5fPV2R/Bt99Favml75N9HrxMyusMv2D8nxkfoav/K5Klbc+WnO17wy4cELbfEcajOOyJLxbEWYxtghmo+lz2ZwCAGEpQVDesgSkiLjph3CvtcjkWpHdwqavwt+IxnqTTB42A7AeshpR6gBvJA/95OTP/oeBTyrkq5l7uvxltsuVlykZ0ZuCNbzhpUqgbtzqEakO7sYqHZR4+4tU16YGtF/ev7bMnKCMIdgZcwq8RfxOEaSN/jRYyF4FJ3yIKY8F8WTRtPETjJny59sSKIfd7RLxMkD6LA491z5GK5IoLq0GhWzRmzduc+sgbjo65KvUIwBhBr1bw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1780307345; c=relaxed/relaxed;
-	bh=3CM+Au3SXosW29XrHZBLTzStvKPXPYXLJ81pyBZwyQo=;
+	t=1780307349; c=relaxed/relaxed;
+	bh=mhbjseTwLH5bkq29znj9WodUduQsJ+dnwL0KiZfm0D0=;
 	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=Pn0yT81ZWssGdWihWMqqB5MTBm0jlS39eXl78T5qWjgX3tqBiLSasmjZ7VPZmHzvoDH2U2sWRG89DyUVJT4jL8ZLkTwyWonFAsnKzwG8FZbpkNqoSGUIJlohspKZQ13yGt1f3INSRXeecfrk4jASnQF6vN2x4VdR/UkDConxLqdsy3wCOoxOD5LOGhR/pnHFjs90cevxUg5BthmEfwZKuy8bUDbuo++mXy0j4MddChCpCsB3tcgQmyzdzJx0Z1WeEhqrnJsw8LOikxxS2GEVDp15OpB/qIPjJzjgwrjJsE+fMDFukeo59W0he3f3JWsDWSOSAQI60sL0yjkjgjZz/A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=K+9Cpzom; dkim-atps=neutral; spf=pass (client-ip=113.46.200.221; helo=canpmsgout06.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
+	 MIME-Version:Content-Type; b=GmvKgnEuI78PpuhC/xU9lV96y/q5kstND9+gihMCS6G69qIX9+Az559oUbk2n24BCCSXjtdJOQKS5XkR2fY+atPLugHyYzqhdzDQRp5y7lbCglnUVmVkkDzIyvEZaEA1oLZIsuNumtas5HkKHMDzzWZR2DFL1G95Y25Y0Jhie/NKFsv3ySt2NhgJ4yI9STvQU0xX8DHBlIEgoyWoWs1cpEPGzP2jI4hQ8vPpL2t8zgiRVIRazzQLlid38ZEbEN50nx73XQTsziUSkNlzIxth5IJRP+uxDZWFgDtxECNdOULhatMqbllSUKLGb5JmzCQYSW5t12n89imUod/T04483g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=bFXrEAmx; dkim-atps=neutral; spf=pass (client-ip=113.46.200.219; helo=canpmsgout04.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=K+9Cpzom;
+	dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=bFXrEAmx;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=113.46.200.221; helo=canpmsgout06.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org)
-Received: from canpmsgout06.his.huawei.com (canpmsgout06.his.huawei.com [113.46.200.221])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=113.46.200.219; helo=canpmsgout04.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org)
+Received: from canpmsgout04.his.huawei.com (canpmsgout04.his.huawei.com [113.46.200.219])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gTTgj0WMlz2ytJ
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 01 Jun 2026 19:49:04 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gTTgm1W9hz2ytJ
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 01 Jun 2026 19:49:08 +1000 (AEST)
 dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
 	c=relaxed/relaxed; q=dns/txt;
 	h=From;
-	bh=3CM+Au3SXosW29XrHZBLTzStvKPXPYXLJ81pyBZwyQo=;
-	b=K+9Cpzombw+R1hz+4oTY8H0FgupdRElbxcNkGJexiHXFS/yuEYiEV0xUzMPD0jBtDpTNTrOUd
-	5pjSAy+NXj9LNHESyhBYSfroq164Dq/6YwKWnvf9H9/9K0QFK3HcM9jHW3afdFVuVnBCUGVg5Sa
-	pJKFnhLybZVSXQuwmunxwx0=
-Received: from mail.maildlp.com (unknown [172.19.162.140])
-	by canpmsgout06.his.huawei.com (SkyGuard) with ESMTPS id 4gTTVd1hx6zRhQr;
-	Mon,  1 Jun 2026 17:41:13 +0800 (CST)
+	bh=mhbjseTwLH5bkq29znj9WodUduQsJ+dnwL0KiZfm0D0=;
+	b=bFXrEAmxNUF6FjQBgDHXLvQgRz1WzTvJpan8xYXPMuWfugdqx4Wk0Iq4YlyEzum2/zn00Si80
+	OoGDUvHH6r0WlRCzADhKozhdYN/ZsA3n/2DN5UKl/Z8ZltJVBpyZZVb/hA66rwLSaJ7innpLd3l
+	iqivnTTAbyDpUGrGO3E1rrc=
+Received: from mail.maildlp.com (unknown [172.19.163.104])
+	by canpmsgout04.his.huawei.com (SkyGuard) with ESMTPS id 4gTTVf21jPz1prLw;
+	Mon,  1 Jun 2026 17:41:14 +0800 (CST)
 Received: from dggpemf500011.china.huawei.com (unknown [7.185.36.131])
-	by mail.maildlp.com (Postfix) with ESMTPS id 98392201E9;
-	Mon,  1 Jun 2026 17:49:01 +0800 (CST)
+	by mail.maildlp.com (Postfix) with ESMTPS id 86E714048F;
+	Mon,  1 Jun 2026 17:49:05 +0800 (CST)
 Received: from huawei.com (10.90.53.73) by dggpemf500011.china.huawei.com
  (7.185.36.131) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.11; Mon, 1 Jun
- 2026 17:48:57 +0800
+ 2026 17:49:01 +0800
 From: Jinjie Ruan <ruanjinjie@huawei.com>
 To: <corbet@lwn.net>, <skhan@linuxfoundation.org>, <catalin.marinas@arm.com>,
 	<will@kernel.org>, <chenhuacai@kernel.org>, <kernel@xen0n.name>,
@@ -80,9 +80,9 @@ To: <corbet@lwn.net>, <skhan@linuxfoundation.org>, <catalin.marinas@arm.com>,
 	<linux-riscv@lists.infradead.org>, <devicetree@vger.kernel.org>,
 	<kexec@lists.infradead.org>
 CC: <ruanjinjie@huawei.com>
-Subject: [PATCH v15 07/23] arm64: kexec_file: Fix CMA page leaks during segment placement retry loops
-Date: Mon, 1 Jun 2026 17:47:49 +0800
-Message-ID: <20260601094805.2928614-8-ruanjinjie@huawei.com>
+Subject: [PATCH v15 08/23] arm64: kexec_file: Fix image->elf_headers memory leak during retry loop
+Date: Mon, 1 Jun 2026 17:47:50 +0800
+Message-ID: <20260601094805.2928614-9-ruanjinjie@huawei.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20260601094805.2928614-1-ruanjinjie@huawei.com>
 References: <20260601094805.2928614-1-ruanjinjie@huawei.com>
@@ -105,85 +105,154 @@ X-Originating-IP: [10.90.53.73]
 X-ClientProxiedBy: kwepems100002.china.huawei.com (7.221.188.206) To
  dggpemf500011.china.huawei.com (7.185.36.131)
 
-Sashiko AI code review pointed out, during arm64 kexec image placement
-retry loops in image_load(), the loader repeatedly attempts to find
-a suitable memory hole for the kernel and its associated segments
-(initrd, dtb, etc.). When a placement attempt fails midway, the core
-framework rolls back `image->nr_segments` to its initial state to purge
-the failed segments logically.
+Sashiko AI code review pointed out a potential memory leak of
+image->elf_headers when load_other_segments() fails on error paths.
 
-However, this truncation causes a severe background memory leak. Any CMA
-pages successfully allocated via kexec_add_buffer() during the failed
-attempt are recorded in the `image->segment_cma` array. Since
-the subsequent global kimage_free_cma() cleanup only iterates up to
-the truncated (smaller) `nr_segments` boundary, these allocated CMA pages
-outside the new boundary become completely orphaned and permanently leaked.
+In the arm64 kexec_file file-load path, kexec_image.c runs a retry loop
+calling kexec_add_buffer() to find a suitable location for the kernel
+segment. On each iteration, load_other_segments() is invoked to allocate
+and populate alternative segments such as initrd, DTB, and ELF headers.
 
-Fix this by leverage the newly introduced generic kexec_free_segment_cma()
-helper to execute fine-grained memory reclamation before any truncation
-occurs:
+However, if a placement or allocation failure occurs later in
+load_other_segments() (e.g., when adding initrd or dtb), the execution
+jumps to the out_err label. While this path restores image->nr_segments
+via orig_segments, it returns an error back to the caller without freeing
+the previously allocated image->elf_headers vmalloc buffer.
 
-1. In image_load(), explicitly invoke kexec_free_segment_cma() to release
-   the CMA buffer allocated for the current failed kernel segment before
-   decrementing `image->nr_segments`.
+As a result, the retry loop in image_load() unconditionally allocates
+new ELF headers on the next iteration and overwrites image->elf_headers,
+permanently leaking the memory blocks allocated in previous iterations.
 
-2. In the error path of load_other_segments(), iterate backward from the
-   failed segment index down to `orig_segments`, sequentially freeing each
-   orphan CMA segment allocation before restoring the initial segment
-   count.
+To fix this, decouple the ELF header allocation from the target-seeking
+retry loop. Since the contents and size of ELF headers only depend on
+the host memory layout and do not change with the kernel's physical
+placement, move prepare_elf_headers() completely outside and prior to
+the while retry loop in image_load().
 
-This guarantees that all temporary CMA pages allocated during placement
-failures are cleanly returned to the contiguous memory allocator,
-eliminating silent background memory leaks across all retry paths.
+And if kexec_add_buffer() for elf headers fails, not need to vfree
+headers, because the err path will vfree `image->elf_headers` by calling
+arch_kimage_file_post_load_cleanup().
+
+This optimization eliminates redundant memory allocation/deallocation
+overhead during kexec placement retries and eradicates the Use-After-Free
+and memory leak risk.
+
+Concurrently, remove the prepare_elf_headers() call from inside
+load_other_segments() and have it directly reuse the single, pre-allocated
+image->elf_headers.
 
 Cc: Catalin Marinas <catalin.marinas@arm.com>
 Cc: Will Deacon <will@kernel.org>
+Cc: Thomas Huth <thuth@redhat.com>
 Cc: Breno Leitao <leitao@debian.org>
-Cc: Pratyush Yadav <pratyush@kernel.org>
 Cc: Andrew Morton <akpm@linux-foundation.org>
 Cc: Yeoreum Yun <yeoreum.yun@arm.com>
-Cc: Kees Cook <kees@kernel.org>
-Cc: "Rob Herring (Arm)" <robh@kernel.org>
-Cc: Baoquan He <bhe@redhat.com>
 Cc: Coiby Xu <coxu@redhat.com>
-Cc: Alexander Graf <graf@amazon.com>
-Cc: Pasha Tatashin <pasha.tatashin@soleen.com>
+Cc: Baoquan He <bhe@redhat.com>
+Cc: Kees Cook <kees@kernel.org>
+Cc: Benjamin Gwin <bgwin@google.com>
 Cc: stable@vger.kernel.org
-Fixes: 07d24902977e4 ("kexec: enable CMA based contiguous allocation")
+Fixes: 108aa503657e ("arm64: kexec_file: try more regions if loading segments fails")
 Signed-off-by: Jinjie Ruan <ruanjinjie@huawei.com>
 ---
- arch/arm64/kernel/kexec_image.c        | 1 +
- arch/arm64/kernel/machine_kexec_file.c | 5 ++++-
- 2 files changed, 5 insertions(+), 1 deletion(-)
+v15:
+- Use image->elf_headers and image->elf_headers_sz instead of adding function
+  parameters for load_other_segments() to simplify the fix.
+---
+ arch/arm64/include/asm/kexec.h         |  1 +
+ arch/arm64/kernel/kexec_image.c        | 16 ++++++++++++++++
+ arch/arm64/kernel/machine_kexec_file.c | 23 +++++------------------
+ 3 files changed, 22 insertions(+), 18 deletions(-)
 
+diff --git a/arch/arm64/include/asm/kexec.h b/arch/arm64/include/asm/kexec.h
+index 892e5bebda95..7ffa2ff5fcfd 100644
+--- a/arch/arm64/include/asm/kexec.h
++++ b/arch/arm64/include/asm/kexec.h
+@@ -128,6 +128,7 @@ extern int load_other_segments(struct kimage *image,
+ 		unsigned long kernel_load_addr, unsigned long kernel_size,
+ 		char *initrd, unsigned long initrd_len,
+ 		char *cmdline);
++extern int prepare_elf_headers(void **addr, unsigned long *sz);
+ #endif
+ 
+ #endif /* __ASSEMBLER__ */
 diff --git a/arch/arm64/kernel/kexec_image.c b/arch/arm64/kernel/kexec_image.c
-index b70f4df15a1a..ffcb7f9075e6 100644
+index ffcb7f9075e6..424b9527db09 100644
 --- a/arch/arm64/kernel/kexec_image.c
 +++ b/arch/arm64/kernel/kexec_image.c
-@@ -107,6 +107,7 @@ static void *image_load(struct kimage *image,
- 		 * We couldn't find space for the other segments; erase the
- 		 * kernel segment and try the next available hole.
- 		 */
-+		kexec_free_segment_cma(image, kernel_segment_number);
- 		image->nr_segments -= 1;
- 		kbuf.buf_min = kernel_segment->mem + kernel_segment->memsz;
- 		kbuf.mem = KEXEC_BUF_MEM_UNKNOWN;
+@@ -89,6 +89,22 @@ static void *image_load(struct kimage *image,
+ 
+ 	kernel_segment_number = image->nr_segments;
+ 
++#ifdef CONFIG_CRASH_DUMP
++	if (image->type == KEXEC_TYPE_CRASH) {
++		/* load elf core header */
++		unsigned long headers_sz;
++		void *headers;
++
++		ret = prepare_elf_headers(&headers, &headers_sz);
++		if (ret) {
++			pr_err("Preparing elf core header failed\n");
++			return ERR_PTR(ret);
++		}
++		image->elf_headers = headers;
++		image->elf_headers_sz = headers_sz;
++	}
++#endif
++
+ 	/*
+ 	 * The location of the kernel segment may make it impossible to satisfy
+ 	 * the other segment requirements, so we try repeatedly to find a
 diff --git a/arch/arm64/kernel/machine_kexec_file.c b/arch/arm64/kernel/machine_kexec_file.c
-index e31fabed378a..13c247c28866 100644
+index 13c247c28866..4cbb71e1f8ed 100644
 --- a/arch/arm64/kernel/machine_kexec_file.c
 +++ b/arch/arm64/kernel/machine_kexec_file.c
-@@ -195,7 +195,10 @@ int load_other_segments(struct kimage *image,
- 	return 0;
- 
- out_err:
--	image->nr_segments = orig_segments;
-+	while (image->nr_segments > orig_segments) {
-+		kexec_free_segment_cma(image, image->nr_segments - 1);
-+		image->nr_segments--;
-+	}
- 	kvfree(dtb);
- 	return ret;
+@@ -40,7 +40,7 @@ int arch_kimage_file_post_load_cleanup(struct kimage *image)
  }
+ 
+ #ifdef CONFIG_CRASH_DUMP
+-static int prepare_elf_headers(void **addr, unsigned long *sz)
++int prepare_elf_headers(void **addr, unsigned long *sz)
+ {
+ 	struct crash_mem *cmem;
+ 	unsigned int nr_ranges;
+@@ -105,32 +105,19 @@ int load_other_segments(struct kimage *image,
+ 	kbuf.buf_min = kernel_load_addr + kernel_size;
+ 
+ #ifdef CONFIG_CRASH_DUMP
+-	/* load elf core header */
+-	void *headers;
+-	unsigned long headers_sz;
+ 	if (image->type == KEXEC_TYPE_CRASH) {
+-		ret = prepare_elf_headers(&headers, &headers_sz);
+-		if (ret) {
+-			pr_err("Preparing elf core header failed\n");
+-			goto out_err;
+-		}
+-
+-		kbuf.buffer = headers;
+-		kbuf.bufsz = headers_sz;
++		kbuf.buffer = image->elf_headers;
++		kbuf.bufsz = image->elf_headers_sz;
+ 		kbuf.mem = KEXEC_BUF_MEM_UNKNOWN;
+-		kbuf.memsz = headers_sz;
++		kbuf.memsz = image->elf_headers_sz;
+ 		kbuf.buf_align = SZ_64K; /* largest supported page size */
+ 		kbuf.buf_max = ULONG_MAX;
+ 		kbuf.top_down = true;
+ 
+ 		ret = kexec_add_buffer(&kbuf);
+-		if (ret) {
+-			vfree(headers);
++		if (ret)
+ 			goto out_err;
+-		}
+-		image->elf_headers = headers;
+ 		image->elf_load_addr = kbuf.mem;
+-		image->elf_headers_sz = headers_sz;
+ 
+ 		kexec_dprintk("Loaded elf core header at 0x%lx bufsz=0x%lx memsz=0x%lx\n",
+ 			      image->elf_load_addr, kbuf.bufsz, kbuf.memsz);
 -- 
 2.34.1
 
