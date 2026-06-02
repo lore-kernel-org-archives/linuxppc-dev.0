@@ -1,73 +1,89 @@
-Return-Path: <linuxppc-dev+bounces-21830-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21831-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id F3611C5DF71
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Jun 2026 03:58:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A09DCCD6E4A
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Jun 2026 05:01:57 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gTxrK3xtlz2xdh;
-	Tue, 02 Jun 2026 13:58:09 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780372689;
-	cv=none; b=lOGrpYiKAsGhcoyu9WrBHocvX04f/bxjZxFmsSU5qIMTQVoxSQzd4Uw5jrJAlBWDVtLDkd+MuTuUF37+qiNI+9xZtCLMjCTxkXk9i58RtiQrZxTQMKBSVhBYcGre7c2WpU68adVSeBFuuL/XO9DZqsaE3vkAnJLQHjJk/LjTuyqDChTOfoLJeOX976mTZcrXldhxPpVzI+ZiJ3WubduCmPOMBUUg2jre/lK578BGp9IuhjQgviRETnSzesDpQ7oxPFGHpnJba9xDmE5un7nkTQpUlosXUUOX1oOSyhWomJlr0hfqSM5atv9LP8gsFCPxUANilGErv7KcKL88mjq15w==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gTzFw22Phz2yRC;
+	Tue, 02 Jun 2026 15:01:56 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::530"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780376516;
+	cv=none; b=DMhED5hhLlY1CoPc9rrGa5hmSu6SZ29duP5pWodDn8Iar8zHSBwyEAVtEz0C7yZRxMlXYX0FFe0YTsmX1xyt82jp3qTmbkJc80A5wOHh9+4yEtzCpfkUIE9Jy6M82AwWHKBm/ZAB1ePERobmIJKCYT18W8nG+NYxDs93mLfpMKlbODQITNbceOpMe01QnzDiQDRuTzHzvBK8KY7cpC9kLjUoOYwBLaHkqwumb9jpGoLx4jDxuIVK5U1yYNuTaX/WybU+EZTjzET3lDJjev/wsApmwW6tiid8pF7zPOL4Y5dpfLg+QWGndgXMpyrnRcAht5A9ubnkuBWYvj1jx4HajQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1780372689; c=relaxed/relaxed;
-	bh=dxqZbtMkUiQKoR/A2aNyvpQnHr42VkTyPXiK7mzC0PI=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=SP9AwjL2caEV/WxmmH2SFl2DUaKdOVEs8njE2Sle+jEUXc/0v4GUJzYmYMi9PwL20exR7qSPlO6Q1z31MjiwakKRj6efvpfXvR8bqIfFVD6HB4EQv96mxz2yIlYN2PQPxkeebd1+ah/TR+bbusr4v8iNxfJrjp4hjxU90Fih4nmQS7+7VH7/kwB+GVQIxdYAi9C4+7kCtsD1B6BoMdGSSn5+hj954hB0CpEf3LwKZj2+YyoXamoyM202ZHxpmaC3p8vzNXN7p4TOW1TEERglmwHhWHczy14QH2GQsnOA1Y7I6nu44zSOgz4H7MjpifF6t845m8RcqxI90P3NiBjz1A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=mcdSanWG; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=harshpb@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1780376516; c=relaxed/relaxed;
+	bh=l9UBbJFTl4BJCNOtay024UeZbTsRkAab8z+DA8cu9aI=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=k5P6GekUrsxOxlQ/IH9b3FQi7PdIV43VaQ+TNXlIme88Kbx0Q1KgcH/PJqmWWO5jsX6TQufnYWxF4+IU/Ia6tmVatqfKtQWLC83X0/V5Cj8KoEpnpqTNe4Kj24ZyaTdOCIvTSxxxkjROcB3sY2nN0DfuSXufAme4thTBR1I0LsynOGJpI1I5VPh5QimwU69zQCU7VXhXnquwkG/qzzFH4SceTB0qsKGFQbyDga6VFahf80K7r1Kb6NaKek75Jnt6MnkPzaEORDXM3lTK2+/VdNJ0EhUIuFNIqIpKUATkPTRskgxbruOkOVrB7qYmDQgKx3uoL35SI2ilFR+/EkwXew==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=dtmiCT/3; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::530; helo=mail-pg1-x530.google.com; envelope-from=rosenp@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=mcdSanWG;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=dtmiCT/3;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=harshpb@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::530; helo=mail-pg1-x530.google.com; envelope-from=rosenp@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pg1-x530.google.com (mail-pg1-x530.google.com [IPv6:2607:f8b0:4864:20::530])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gTxrJ0qJFz2xdb
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 02 Jun 2026 13:58:07 +1000 (AEST)
-Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 651FAH4l2665699
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 2 Jun 2026 03:58:04 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=dxqZbt
-	MkUiQKoR/A2aNyvpQnHr42VkTyPXiK7mzC0PI=; b=mcdSanWGgCdlKu9Yy8kcF4
-	P6zge/g0XkkeR9rzqjb9cmwU/PVaKyYmX6i9R/us9ohauCsULsqX0Gt1R0V8vebH
-	qUHQ+dnKWBedfAacrHwAqMikoRuifs7i+DwZ8ooUpFIVSb2xVb3vK0K5h2BQt+Ng
-	mDDD0xHYrMwX8KkBtlb8YNDkbazYDpXpGwPFyzSnqc/FnIAU8s1UPiwe+ZNBSR42
-	Kls3Q9FtsW1BEf2nUBpxVS5wrZPw+MDOL9syUu0KV7q3mGdyWySMFKEB/CtDVlso
-	t4mBGDNoA7fQ0xbYk4Oq1fFVTUzG9ZcbM8qg/dZGL9Uip3wqEFxylKRV+3xTbrmQ
-	==
-Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4efqht3m1v-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 02 Jun 2026 03:58:03 +0000 (GMT)
-Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma11.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 6523s81N009259;
-	Tue, 2 Jun 2026 03:58:03 GMT
-Received: from smtprelay03.wdc07v.mail.ibm.com ([172.16.1.70])
-	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4egcwy93tg-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 02 Jun 2026 03:58:03 +0000 (GMT)
-Received: from smtpav04.dal12v.mail.ibm.com (smtpav04.dal12v.mail.ibm.com [10.241.53.103])
-	by smtprelay03.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6523vVLJ31523562
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 2 Jun 2026 03:57:31 GMT
-Received: from smtpav04.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 4022958056;
-	Tue,  2 Jun 2026 03:58:01 +0000 (GMT)
-Received: from smtpav04.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 87BC958052;
-	Tue,  2 Jun 2026 03:57:58 +0000 (GMT)
-Received: from [9.123.0.169] (unknown [9.123.0.169])
-	by smtpav04.dal12v.mail.ibm.com (Postfix) with ESMTP;
-	Tue,  2 Jun 2026 03:57:58 +0000 (GMT)
-Message-ID: <b2232da2-25e0-4436-86ad-4cb6d57dcab1@linux.ibm.com>
-Date: Tue, 2 Jun 2026 09:27:56 +0530
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gTzFt4b6zz2xdh
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 02 Jun 2026 15:01:54 +1000 (AEST)
+Received: by mail-pg1-x530.google.com with SMTP id 41be03b00d2f7-c8532ba6c95so3182676a12.0
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 01 Jun 2026 22:01:53 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1780376512; x=1780981312; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=l9UBbJFTl4BJCNOtay024UeZbTsRkAab8z+DA8cu9aI=;
+        b=dtmiCT/3oKDHsIgpMM8cviexC1VnJxLK4LHPF5ZWtYgAAXhRfCa9pIAi9BjNPvv040
+         hJX8YrdUBq2um6CUsFsZXGMTALW3jjzh0azzXC/hTPLYDltYx2wAY7QswOwJEhreBUWp
+         ID5MZGgcU4NJ+jbWZj4OTLRsHOKq0atx7ukHci7Z+AxfS3mMEbqOLp4sjncyZNXBrt3k
+         9dxn7gm7UlXV+AWsjcHiV+0uguD6nvvFlPs/qZ8ev1HBugYTlQ6plLqxo/7FdudkFr78
+         8kntpY9nBhE/Sf0zcsALYnKPBY89KXY1fOydoJv94GG9HIICQyyYTHoqyMshoeQvSwI9
+         H3bA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1780376512; x=1780981312;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=l9UBbJFTl4BJCNOtay024UeZbTsRkAab8z+DA8cu9aI=;
+        b=WAbMl65Rm94Dm06ENm0cN9zxZkIAx/0dBCvA+JFIStIXlyDlUrelycp5LCXCWnEApv
+         IUODkCnoZkrlA7kQFg4a+Phu5manPFNTLqx+b4H8yiUeVehLOjp8/v8N9SMKwCvG9FlR
+         ezhWAAgDeOwVX8d24IrK2/4tL9reuQS62bf/vo2/TOh/0/JV63j2vwLcxgztTTOow76s
+         4zKuCeqv+B0OuFLGqMtdSlGAyTsvK9mbtgiwQfZ3t6UeyMkKPIYUwP1mmltYzjp/QSHJ
+         kMRT5yq0hztlMEkKtpTLPwa+yy3eGRBH6eKm5d7R5NKhJZ2qdIv39qcUNy18fvnC/W1s
+         vNgA==
+X-Forwarded-Encrypted: i=1; AFNElJ9Vh/Vfsp5n4tohP1EGFH+P1tT093kXwiscwM1w4p/ddx/Goj/+3t5AavAlma6hbVPOyI/VK+oOCJSkabQ=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YwC4hmTQd8X3LTQftn0wFk17xCWjJ/O/iN70yvReImgeiTEiSE7
+	niGSsJao04ltE8Lvq0zlYKAp0D9aluqCN5o8xtu+tZprUJea4l7Hhh18
+X-Gm-Gg: Acq92OFGhnjjO2R1tSbbOmiUj+z+DcX+KsrNT8DtXiBZz6PVnVPd+AaP18aAcYIFV28
+	EzCrlVYtD6Y/jQW/X3/pN/1jomg4iUgiKPPeB9ucWICW7WR4JVY7RvE/25rwJZsk0yVAhfQvp8v
+	xU+CDB3l30xqfdEB2E+D+50inG+oMc/leqV30SSD0QYWiFusL7IEjTRNzQ7y8aIor0HkPfSDPIQ
+	sIcKqAboa7v5I9pA/h0IV832agw3OW0mLKkpp+R8/OzEC3UzVnFdzPMNZWIgMs5YXiOUMdbPHKM
+	CrIqAXipDm0g/WG4pyt6pWsVUz17YoWj0Kfdpae8LI5PVVHWBVN4O4DKIjlYKN6z/Ip8eHlwIhv
+	IcXm2oL7fkeofKMHBsIxxwDCzbV+ThYOKJ9q7ec9gIEtAMYxRK9c/nFC/TMRllmKxDgvUuN5oCQ
+	Dv2GscvXsG9lxay/Po733XuRFj0PCBzgBawppl07/xmnq0Mp+1xGWZxlJYzSF14qqssJdpKf6Oz
+	CzJR1mMVJ5OGd+6A0PqFSyDgIdNtMk8CPY0xAgfFOY+fQ==
+X-Received: by 2002:a05:6a20:6f06:b0:39c:787:f197 with SMTP id adf61e73a8af0-3b427f33690mr14407222637.36.1780376511958;
+        Mon, 01 Jun 2026 22:01:51 -0700 (PDT)
+Received: from ryzen ([2601:644:8000:5b5d:7285:c2ff:fe45:8a32])
+        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-c8589d055c7sm8958467a12.9.2026.06.01.22.01.48
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 01 Jun 2026 22:01:50 -0700 (PDT)
+From: Rosen Penev <rosenp@gmail.com>
+To: linux-gpio@vger.kernel.org
+Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
+	chleroy@kernel.org,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Linus Walleij <linusw@kernel.org>,
+	Bartosz Golaszewski <brgl@kernel.org>,
+	linuxppc-dev@lists.ozlabs.org (open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)),
+	linux-kernel@vger.kernel.org (open list)
+Subject: [PATCH 0/7] gpio: move ppc4xx driver to drivers/gpio and modernize
+Date: Mon,  1 Jun 2026 22:01:24 -0700
+Message-ID: <20260602050131.856789-1-rosenp@gmail.com>
+X-Mailer: git-send-email 2.54.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -81,299 +97,41 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3] powerpc/pseries/iommu: Add TCEs for 16GB pages when
- RAM is pre-mapped
-Content-Language: en-GB
-To: Gaurav Batra <gbatra@linux.ibm.com>, maddy@linux.ibm.com,
-        Venkat Rao Bagalkote <venkat88@linux.ibm.com>, sbhat@linux.ibm.com
-Cc: linuxppc-dev@lists.ozlabs.org, ritesh.list@gmail.com,
-        vaibhav@linux.ibm.com, donettom@linux.ibm.com
-References: <20260515155143.39050-1-gbatra@linux.ibm.com>
- <f7e3e2ec-5cbc-4ccc-bbc3-ec3ddd4e8b62@linux.ibm.com>
- <2a1694c2-d3ed-475b-a4a6-2383d6229c3b@linux.ibm.com>
-From: Harsh Prateek Bora <harshpb@linux.ibm.com>
-In-Reply-To: <2a1694c2-d3ed-475b-a4a6-2383d6229c3b@linux.ibm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-GUID: l-4rzMbEGFQ6BZVXjrebwTM6DFBD5yS2
-X-Authority-Analysis: v=2.4 cv=fv/sol4f c=1 sm=1 tr=0 ts=6a1e54cc cx=c_pps
- a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
- a=IkcTkHD0fZMA:10 a=FelO9ux0wxsA:10 a=f7IdgyKtn90A:10
- a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22 a=RzCfie-kr_QcCd8fBx8p:22
- a=VnNF1IyMAAAA:8 a=puncKrRR0_aNKyd3GSwA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjAyMDAyOSBTYWx0ZWRfX3OAFGEvnDGsK
- gQd+wqy/00LYKwu34EburCRLGxqeKv6JyLzrf+/g+1pL55SyYXu16uFNUlaPdZCnO5mZF12NlPI
- LrAzLg4AM59bEjmtSJfONhJ/nZhzaLWpgpuC0/4W9rLNEji6xLyxYVM1Y3m1v4PPzcklsVzIpAX
- NkM4k0es5u3+DPV1YeSBMCUrAyKspa1RxVewvdmrLWM6SYlBFclCSvZZlsRwo2Y7eKatXOo+Tge
- aox/bPoc5Z+43wCTOtjvzSipcMV6sy0iLjMj6k50pDJbzG0JUfS+H7/wC4nFFMCHUbrVIBKdRJT
- G62n5o8Dy1c1zofHz1Y9xTo8d0swA/HuiOd9dyOkuK87h70CyM/n3N260jM6VWxcehnV2cjV2Dt
- cDPVqs/qWvB25lx/P0M43q1jYCdfcOhz+ypZcKxQpRCm/chMfPggJPLA47TDCLQMb7kBesR+lV5
- YBl9yHECKm2PWnO3/lA==
-X-Proofpoint-ORIG-GUID: 8mijcYxsMzcIjS01Oivs4oRPNzyX2nXH
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
- definitions=2026-06-01_07,2026-05-28_03,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- adultscore=0 priorityscore=1501 spamscore=0 phishscore=0 clxscore=1015
- impostorscore=0 suspectscore=0 bulkscore=0 lowpriorityscore=0 malwarescore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2605210000 definitions=main-2606020029
 
+This series moves the ppc4xx GPIO driver from arch/powerpc to
+drivers/gpio, converts it to be a proper platform driver using
+generic MMIO helpers, drops architecture-specific accessors, and
+prepares it for module build and COMPILE_TEST.
 
+Patches 1-4 move the driver and convert it to standard platform
+driver infrastructure. Patch 5 switches to generic MMIO helpers.
+Patch 6 drops PPC-specific IO accessors and enables COMPILE_TEST.
+Patch 7 adds the missing MODULE metadata so the driver can actually
+be built as a module.
 
-On 01/06/26 11:33 pm, Gaurav Batra wrote:
-> Hello Harsh,
-> 
-> 
-> response is inline
-> 
-> 
-> On 5/31/26 12:48 PM, Harsh Prateek Bora wrote:
->> + Venkat
->>
->> Hi Gaurav,
->> Would just like to confirm if it is tested with multiple iterations of 
->> hotplug of RAM (DLPAR) as well?
-> I tested the patch with both DLPAR of RAM and adapter, for 100 
-> iterations each.
+Rosen Penev (7):
+  gpio: move ppc4xx gpio driver from arch/powerpc to drivers/gpio
+  gpio: ppc44x: Use module platform driver helper for GPIO
+  gpio: ppc44x: Set GPIO chip firmware node
+  gpio: ppc44x: Use platform resource helper for GPIO MMIO
+  gpio: ppc44x: Convert GPIO to generic MMIO
+  gpio: ppc44x: drop PPC-specific IO helpers and rename to ppc44x
+  gpio: ppc44x: add MODULE info
 
-Thanks for confirming! Feel free to add:
+ arch/powerpc/configs/44x/warp_defconfig |   2 +-
+ arch/powerpc/configs/ppc44x_defconfig   |   2 +-
+ arch/powerpc/platforms/44x/Kconfig      |   7 -
+ arch/powerpc/platforms/44x/Makefile     |   2 +-
+ arch/powerpc/platforms/44x/gpio.c       | 210 -----------------------
+ drivers/gpio/Kconfig                    |   7 +
+ drivers/gpio/Makefile                   |   1 +
+ drivers/gpio/gpio-ppc44x.c              | 217 ++++++++++++++++++++++++
+ 8 files changed, 228 insertions(+), 220 deletions(-)
+ delete mode 100644 arch/powerpc/platforms/44x/gpio.c
+ create mode 100644 drivers/gpio/gpio-ppc44x.c
 
-Reviewed-by: Harsh Prateek Bora <harshpb@linux.ibm.com>
-
->>
->> Hi Venkat,
->> Could you please help validate the patch for above-mentioned scenario 
->> as well?
->>
->> Hi Shivaprasad,
->> Please share your review feedback or any additional testing scenarios 
->> needed?
->>
->> Thanks
->> Harsh
->>
->> On 15/05/26 9:21 pm, Gaurav Batra wrote:
->>> In powerPC, if Dynamic DMA Window is big enough, RAM is pre-mapped. To
->>> determine the size of RAM, a PAPR+ property "ibm,lrdr-capacity" is used.
->>> This OF property dictates what is the max size of RAM an LPAR can have,
->>> including DR added memory.
->>>
->>> In PowerPC, 16GB pages can be allocated at machine level and then
->>> assigned to LPARs. These 16GB pages are added to LPAR memory at the time
->>> of boot. The address range for these 16GB pages is above MAX RAM an LPAR
->>> can have (ibm,lrdr-capacity). In the current implementation, these 16GB
->>> pages are being excluded from pre-mapped TCEs. A driver can have DMA
->>> buffers allocated from 16GB pages. This results in platform to raise an
->>> EEH when DMA is attempted on buffers in 16GB memory range.
->>>
->>> commit 6aa989ab2bd0 ("powerpc/pseries/iommu: memory notifier incorrectly
->>> adds TCEs for pmemory")
->>>
->>> Prior to the above patch, memblock_end_of_DRAM() was being used to
->>> determine the MAX memory of an LPAR. This included 16GB pages as well.
->>> The issue with using memblock_end_of_DRAM() is that when pmemory is
->>> converted to RAM via daxctl command, the DDW engine will incorrectly try
->>> to add TCEs for pmemory as well.
->>>
->>> Below is the address distribution of RAM, 16GB pages and pmemory for an
->>> LPAR with max memory of 256GB, memory allocated 64GB, 2 16GB pages and
->>> assigned pmemory of 8GB.
->>>
->>> RANGE                                 SIZE  STATE REMOVABLE BLOCK
->>> 0x0000000000000000-0x0000000fffffffff  64G online       yes 0-255
->>> 0x0000004000000000-0x00000047ffffffff  32G online       yes 1024-1151
->>>
->>> cat /sys/bus/nd/devices/region0/resource
->>> 0x40100000000
->>> cat /sys/bus/nd/devices/region0/size
->>> 8589934592
->>>
->>> The approach to fix this problem is to revert back the code changes
->>> introduced by the above patch and to stash away the MAX memory of an
->>> LPAR, including 16GB pages, at the LPAR boot time. This value is then
->>> used whenever TCEs are needed to be pre-mapped - enable_DDW() or,
->>> iommu_mem_notifier()
->>>
->>> Fixes: 6aa989ab2bd0 ("powerpc/pseries/iommu: memory notifier 
->>> incorrectly adds TCEs for pmemory")
->>> Signed-off-by: Gaurav Batra <gbatra@linux.ibm.com>
->>> ---
->>>
->>> Change log:
->>>
->>> V2 -> V3
->>>
->>> 1. Harsh: Remove R-b tags from the change log
->>>
->>>     Response: Incorporated changes
->>>
->>> 2. Harsh: Change WARN_ON() to WARN_ONCE()
->>>
->>>     Response: Incorporated changes
->>>
->>> 3. Harsh: Fix indendation
->>>
->>>     Response: Incorporated changes
->>>
->>> 4. Harsh: Replace comment with a log if limit < arg->nr_pages ?
->>>
->>>     Response: Doesn't seems to be needed since the WARN_ONCE() will 
->>> log this
->>>     scenario. I removed the comment instead.
->>>
->>> V1 -> V2
->>>
->>> 1. Harsh: Not only start_pfn, but end_pfn also needs to be within 
->>> allowed
->>>     range, which may require clamping arg->nr_pages if crossing the 
->>> limits.
->>>
->>>     Response: Incorporated changes.
->>>
->>>   arch/powerpc/platforms/pseries/iommu.c | 58 ++++++++++++++++++--------
->>>   1 file changed, 41 insertions(+), 17 deletions(-)
->>>
->>> diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/ 
->>> platforms/pseries/iommu.c
->>> index 3e1f915fe4f6..7bbe070006fa 100644
->>> --- a/arch/powerpc/platforms/pseries/iommu.c
->>> +++ b/arch/powerpc/platforms/pseries/iommu.c
->>> @@ -69,6 +69,8 @@ static struct iommu_table 
->>> *iommu_pseries_alloc_table(int node)
->>>       return tbl;
->>>   }
->>>   +static phys_addr_t pseries_ddw_max_ram;
->>> +
->>>   #ifdef CONFIG_IOMMU_API
->>>   static struct iommu_table_group_ops spapr_tce_table_group_ops;
->>>   #endif
->>> @@ -1285,13 +1287,17 @@ static LIST_HEAD(failed_ddw_pdn_list);
->>>     static phys_addr_t ddw_memory_hotplug_max(void)
->>>   {
->>> -    resource_size_t max_addr;
->>> +    resource_size_t max_addr = memory_hotplug_max();
->>> +    struct device_node *memory;
->>>   -#if defined(CONFIG_NUMA) && defined(CONFIG_MEMORY_HOTPLUG)
->>> -    max_addr = hot_add_drconf_memory_max();
->>> -#else
->>> -    max_addr = memblock_end_of_DRAM();
->>> -#endif
->>> +    for_each_node_by_type(memory, "memory") {
->>> +        struct resource res;
->>> +
->>> +        if (of_address_to_resource(memory, 0, &res))
->>> +            continue;
->>> +
->>> +        max_addr = max_t(resource_size_t, max_addr, res.end + 1);
->>> +    }
->>>         return max_addr;
->>>   }
->>> @@ -1446,7 +1452,7 @@ static struct property 
->>> *ddw_property_create(const char *propname, u32 liobn, u64
->>>   static bool enable_ddw(struct pci_dev *dev, struct device_node 
->>> *pdn, u64 dma_mask)
->>>   {
->>>       int len = 0, ret;
->>> -    int max_ram_len = order_base_2(ddw_memory_hotplug_max());
->>> +    int max_ram_len = order_base_2(pseries_ddw_max_ram);
->>>       struct ddw_query_response query;
->>>       struct ddw_create_response create;
->>>       int page_shift;
->>> @@ -1668,7 +1674,7 @@ static bool enable_ddw(struct pci_dev *dev, 
->>> struct device_node *pdn, u64 dma_mas
->>>         if (direct_mapping) {
->>>           /* DDW maps the whole partition, so enable direct DMA 
->>> mapping */
->>> -        ret = walk_system_ram_range(0, ddw_memory_hotplug_max() >> 
->>> PAGE_SHIFT,
->>> +        ret = walk_system_ram_range(0, pseries_ddw_max_ram >> 
->>> PAGE_SHIFT,
->>>                           win64->value, 
->>> tce_setrange_multi_pSeriesLP_walk);
->>>           if (ret) {
->>>               dev_info(&dev->dev, "failed to map DMA window for %pOF: 
->>> %d\n",
->>> @@ -2419,23 +2425,35 @@ static int iommu_mem_notifier(struct 
->>> notifier_block *nb, unsigned long action,
->>>   {
->>>       struct dma_win *window;
->>>       struct memory_notify *arg = data;
->>> +    unsigned long limit = arg->nr_pages;
->>> +    unsigned long max_ram_pages = pseries_ddw_max_ram >> PAGE_SHIFT;
->>>       int ret = 0;
->>>         /* This notifier can get called when onlining persistent 
->>> memory as well.
->>>        * TCEs are not pre-mapped for persistent memory. Persistent 
->>> memory will
->>> -     * always be above ddw_memory_hotplug_max()
->>> +     * always be above pseries_ddw_max_ram
->>>        */
->>> +    if (arg->start_pfn >= max_ram_pages)
->>> +        return NOTIFY_OK;
->>> +
->>> +    /* RAM is being DLPAR'ed. The range should never exceed max ram.
->>> +     * Just in case, clamp the range and throw a warning.
->>> +     */
->>> +    if (arg->start_pfn + limit > max_ram_pages) {
->>> +        limit = max_ram_pages - arg->start_pfn;
->>> +        WARN_ONCE(1, "Limiting Page Range %lx - %lx to Max Mem 
->>> Pages: %lx\n",
->>> +                    arg->start_pfn, arg->start_pfn + arg->nr_pages,
->>> +                    max_ram_pages);
->>> +    }
->>>         switch (action) {
->>>       case MEM_GOING_ONLINE:
->>>           spin_lock(&dma_win_list_lock);
->>>           list_for_each_entry(window, &dma_win_list, list) {
->>> -            if (window->direct && (arg->start_pfn << PAGE_SHIFT) <
->>> -                ddw_memory_hotplug_max()) {
->>> +            if (window->direct) {
->>>                   ret |= tce_setrange_multi_pSeriesLP(arg->start_pfn,
->>> -                        arg->nr_pages, window->prop);
->>> +                        limit, window->prop);
->>>               }
->>> -            /* XXX log error */
->>>           }
->>>           spin_unlock(&dma_win_list_lock);
->>>           break;
->>> @@ -2443,12 +2461,10 @@ static int iommu_mem_notifier(struct 
->>> notifier_block *nb, unsigned long action,
->>>       case MEM_OFFLINE:
->>>           spin_lock(&dma_win_list_lock);
->>>           list_for_each_entry(window, &dma_win_list, list) {
->>> -            if (window->direct && (arg->start_pfn << PAGE_SHIFT) <
->>> -                ddw_memory_hotplug_max()) {
->>> +            if (window->direct) {
->>>                   ret |= tce_clearrange_multi_pSeriesLP(arg->start_pfn,
->>> -                        arg->nr_pages, window->prop);
->>> +                        limit, window->prop);
->>>               }
->>> -            /* XXX log error */
->>>           }
->>>           spin_unlock(&dma_win_list_lock);
->>>           break;
->>> @@ -2532,6 +2548,14 @@ void __init iommu_init_early_pSeries(void)
->>>       register_memory_notifier(&iommu_mem_nb);
->>>         set_pci_dma_ops(&dma_iommu_ops);
->>> +
->>> +    /* During init determine the max memory an LPAR can have and set 
->>> it. This
->>> +     * will be used for pre-mapping RAM in DDW. 
->>> memblock_end_of_DRAM() can
->>> +     * change during the running of LPAR - daxctl can add pmemory as
->>> +     * "system-ram". This memory range should not be pre-mapped in 
->>> DDW since
->>> +     * the address of pmemory can be much higher than the DDW size.
->>> +     */
->>> +    pseries_ddw_max_ram = ddw_memory_hotplug_max();
->>>   }
->>>     static int __init disable_multitce(char *str)
->>>
->>> base-commit: 6d35786de28116ecf78797a62b84e6bf3c45aa5a
->>
+-- 
+2.54.0
 
 
