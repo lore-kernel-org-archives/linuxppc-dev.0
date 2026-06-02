@@ -1,66 +1,95 @@
-Return-Path: <linuxppc-dev+bounces-21854-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21855-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D7999C5DF71
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Jun 2026 08:18:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2BE08C5DF71
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Jun 2026 08:43:07 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gV3dF1BdLz2xdh;
-	Tue, 02 Jun 2026 18:18:57 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:8b0:10b:1236::1"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780388337;
-	cv=none; b=lqqCIrY1w7qt30Cs1qtfKu6T7xETxSYGkEehhiaFdCS2Qjdw0VBpHPNWIi9JD7RcUhmH5+FQsVNHAR54CkG141jHblUxGwaVSDBfc9TI/vmHw7QSgexpGmDYIp8+Xuo+/TUldt8GsvwL92tC1yZxuIl6kmH7iVF+d/WsLgNtlXQobj5l3ykWD9LwP0TTmEG4nSPlUR9MxJ1wPkUCyotkVCcEotGZugHkcJPcqj3R2nPbLYRIFyQiEsYlWGuHJ9339Kcj+86XWrJRDYQGUAYleGZ9PHmlSf07dcTgfAwJcTVVV+oc++VU0upv+J5f3NjBOejnpuBTIfX4elbX9AmMVQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gV4962ppmz2xdh;
+	Tue, 02 Jun 2026 18:43:06 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a0a:edc0:2:b01:1d::104"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780389786;
+	cv=none; b=IGHrKaWWHNBG6OVJ8EjuiBIgP3ebCbrPfieLi/V7340ugLS6g89UnuJdWI+6UWVl29ejZhL93OuKl0c3vQqyhnmpjoke3SrIt4fsJ0f5QrDU1eJ6ilXjmvHZT5mx0kZNvIp74J0vzhw7sqdkxzlZBYmUHqCwJiLLQN8ynEe6KZSQhBl0129UwaURjA5nbO6DZKpY9G1v/YQKkXZhvZsYyBF1YJyExm2RPuPZ6N6Ulfz9p/jHgT2PLuO140NT7ORhLPALFkpox2qRsjTrOdOlNhfGsbGgyAv2l8TI7E8Ja5RKatR9Q9qSztVKDz9ljy5ugmFw8Cg1+9T14PNMGGCNFA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1780388337; c=relaxed/relaxed;
-	bh=Eth7fFuHYGEZavWHClP4kKTw0ybwZVVXf+qx1PULgMA=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=gnX6BaAYllmZtxaq0l7Hp9r4YjNePl4EwI1k8PVvkchwCgP6h3GM8EpJGVu0OuMHnTRx3lRt7D7bd39m1A1VSs7kvETctwHsInQJW0N/Eek/bmFmLOpaK41f+OO4pniAYFLumSdq0MzgSNNI4TeRKM+TObSAqCYfG3tZSoPNLbNzkmJM8Vy3Dh7fcgcPsTwmHNu3dlIov0p8yMXt0Zn+BTxgkQ35TJgG2A5+u7MckD9n95mnKnwRz0oTf9UgtibndSVluDU+F+CjQ3Dyffd6DbPbe9YmmRyTkTPrR8X8X94dNIg6hI1SeKtGfiOwKsc+fQd89wc6xrwycpJB3360JA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=infradead.org; dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=NcOUVdW8; dkim-atps=neutral; spf=pass (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org; envelope-from=peterz@infradead.org; receiver=lists.ozlabs.org) smtp.mailfrom=infradead.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=infradead.org
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=NcOUVdW8;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=infradead.org (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org; envelope-from=peterz@infradead.org; receiver=lists.ozlabs.org)
-Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
+	t=1780389786; c=relaxed/relaxed;
+	bh=cG2FOui7i+lA5s8fhvbUYPfTDlnL7xDX3J+MPsr/8tk=;
+	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=lTTq0Ce18vzh7WYBVnS6Yt+xDE3luwEC6/FZIhTDylZqLeZ8uyAE0Wf2Z487Nlwl/xo/JFsMQPZsUvtlEbz1BBwk6WkE43iIfgA9HJyjK7HwFCop9aO4pOaSyr4WS5wdpFfhRz3gt/vfd0rCOW50hU4vYf5j2HAyM8qjW4TGvaMfAdADypocsaG6TF0V1Hbg0o49rBB+w83kZAhc4I/wDyGmeC5cAofygqv6q1deKDwiCHsXkTCjqzahATBLImxYGdS7M4dXe637Y0NeAa6lfwZEgwz3j/OkS+ZLTrP3ZQgS+EBbTmCxu9ud0ZmLaC3KZydW7q3kwDwUn471+yeFyQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=pengutronix.de; spf=pass (client-ip=2a0a:edc0:2:b01:1d::104; helo=metis.whiteo.stw.pengutronix.de; envelope-from=p.zabel@pengutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=pengutronix.de
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=pengutronix.de
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=pengutronix.de (client-ip=2a0a:edc0:2:b01:1d::104; helo=metis.whiteo.stw.pengutronix.de; envelope-from=p.zabel@pengutronix.de; receiver=lists.ozlabs.org)
+X-Greylist: delayed 1033 seconds by postgrey-1.37 at boromir; Tue, 02 Jun 2026 18:43:05 AEST
+Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [IPv6:2a0a:edc0:2:b01:1d::104])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gV3dB5Ym6z2xLm
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 02 Jun 2026 18:18:52 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=casper.20170209; h=In-Reply-To:Content-Type:MIME-Version:
-	References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
-	Content-Transfer-Encoding:Content-ID:Content-Description;
-	bh=Eth7fFuHYGEZavWHClP4kKTw0ybwZVVXf+qx1PULgMA=; b=NcOUVdW8szMDtLxDzpaGR6UHW7
-	Y/vUvQRtcMzM8uhu831Jz3DjkIPF1hzpOfmjmBR71LEO5UXP1tPjbkKur/wR/8NOEq+kEDz+CpWun
-	aDEfM+JP9qtT95fpyCQQvd4Q77xAAGyXWBSbZ1zuhD7uevnURoy+uiZ/luwhfpaK26OL8nCUKjNsm
-	nbjGqsudOI/0OyVavlAv6ytSu7PoQBUv2VYIZcNhiLQRzVev1c9utwS7vikufn+WaN5oLzJRtinWz
-	m9LOeCNEGC9vm4JJf27iZ/tgpTduIn8rCE/YG8hSamktxApepqQWAop1cx9HyooK3RPlWtaEroCj5
-	/abVELdA==;
-Received: from 77-249-17-252.cable.dynamic.v4.ziggo.nl ([77.249.17.252] helo=noisy.programming.kicks-ass.net)
-	by casper.infradead.org with esmtpsa (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wUKKk-00000001akl-33HV;
-	Tue, 02 Jun 2026 08:18:47 +0000
-Received: by noisy.programming.kicks-ass.net (Postfix, from userid 1000)
-	id E542630019E; Tue, 02 Jun 2026 10:18:45 +0200 (CEST)
-Date: Tue, 2 Jun 2026 10:18:45 +0200
-From: Peter Zijlstra <peterz@infradead.org>
-To: Shrikanth Hegde <sshegde@linux.ibm.com>
-Cc: Venkat Rao Bagalkote <venkat88@linux.ibm.com>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Mukesh Kumar Chaurasiya <mchauras@linux.ibm.com>,
-	Ritesh Harjani <ritesh.list@gmail.com>,
-	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
-	LKML <linux-kernel@vger.kernel.org>,
-	Srikar Dronamraju <srikar@linux.ibm.com>
-Subject: Re: [linux-next20260529] kernel BUG at kernel/sched/core.c:7512!
-Message-ID: <20260602081845.GX3126523@noisy.programming.kicks-ass.net>
-References: <7904105b-9dfa-4efd-a5ef-bc0276ed255d@linux.ibm.com>
- <2f8c3d75-de2c-48bf-bd05-46b816d55c69@linux.ibm.com>
- <20260601095601.GN3102624@noisy.programming.kicks-ass.net>
- <37e69c39-564b-4ca9-bb27-1b99faab540c@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gV4951X5Wz2xLm
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 02 Jun 2026 18:43:04 +1000 (AEST)
+Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
+	by metis.whiteo.stw.pengutronix.de with esmtp (Exim 4.92)
+	(envelope-from <p.zabel@pengutronix.de>)
+	id 1wUKQZ-0001Gf-0T; Tue, 02 Jun 2026 10:24:47 +0200
+Received: from lupine.office.stw.pengutronix.de ([2a0a:edc0:0:900:1d::4e] helo=lupine)
+	by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+	(Exim 4.96)
+	(envelope-from <p.zabel@pengutronix.de>)
+	id 1wUKQT-000iZa-13;
+	Tue, 02 Jun 2026 10:24:41 +0200
+Received: from pza by lupine with local (Exim 4.98.2)
+	(envelope-from <p.zabel@pengutronix.de>)
+	id 1wUKQT-000000003ba-0TqR;
+	Tue, 02 Jun 2026 10:24:41 +0200
+Message-ID: <6af284545729f03a60d06479339862a2f08c6b7e.camel@pengutronix.de>
+Subject: Re: [PATCH 22/23] reset: rzg2l: use
+ platform_device_set_of_node_from_dev()
+From: Philipp Zabel <p.zabel@pengutronix.de>
+To: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>, Lee Jones	
+ <lee@kernel.org>, Mark Brown <broonie@opensource.wolfsonmicro.com>, Thierry
+ Reding <thierry.reding@avionic-design.de>, Sebastian Hesselbarth	
+ <sebastian.hesselbarth@gmail.com>, Andrew Lunn <andrew+netdev@lunn.ch>, 
+ "David S. Miller" <davem@davemloft.net>, Eric Dumazet
+ <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>, Paolo Abeni
+ <pabeni@redhat.com>, Srinivas Kandagatla <srini@kernel.org>, Greg
+ Kroah-Hartman	 <gregkh@linuxfoundation.org>, Vinod Koul <vkoul@kernel.org>,
+ "Rafael J. Wysocki" <rafael@kernel.org>, Danilo Krummrich
+ <dakr@kernel.org>, Rob Herring <robh@kernel.org>,  Saravana Kannan
+ <saravanak@kernel.org>, Madhavan Srinivasan <maddy@linux.ibm.com>, Michael
+ Ellerman	 <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
+ "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, Andi Shyti
+ <andi.shyti@kernel.org>, Andy Shevchenko	
+ <andriy.shevchenko@linux.intel.com>, Joerg Roedel <joro@8bytes.org>, Will
+ Deacon <will@kernel.org>, Robin Murphy <robin.murphy@arm.com>, Doug Berger
+ <opendmb@gmail.com>,  Florian Fainelli <florian.fainelli@broadcom.com>,
+ Broadcom internal kernel review list	
+ <bcm-kernel-feedback-list@broadcom.com>, Ulf Hansson <ulfh@kernel.org>, 
+ Frank Li <Frank.Li@nxp.com>, Sascha Hauer <s.hauer@pengutronix.de>,
+ Pengutronix Kernel Team	 <kernel@pengutronix.de>, Fabio Estevam
+ <festevam@gmail.com>, Matthew Brost	 <matthew.brost@intel.com>, Thomas
+ =?ISO-8859-1?Q?Hellstr=F6m?=	 <thomas.hellstrom@linux.intel.com>, Rodrigo
+ Vivi <rodrigo.vivi@intel.com>,  David Airlie <airlied@gmail.com>, Simona
+ Vetter <simona@ffwll.ch>, Peter Chen <peter.chen@kernel.org>,  Paul
+ Cercueil <paul@crapouillou.net>, Bin Liu <b-liu@ti.com>, Maximilian Luz
+ <luzmaximilian@gmail.com>, Hans de Goede <hansg@kernel.org>, Ilpo
+ =?ISO-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@linux.intel.com>,  Krzysztof
+ Kozlowski	 <krzk@kernel.org>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>
+Cc: brgl@kernel.org, linux-kernel@vger.kernel.org, netdev@vger.kernel.org, 
+	linux-arm-msm@vger.kernel.org, linux-sound@vger.kernel.org, 
+	driver-core@lists.linux.dev, devicetree@vger.kernel.org, 
+	linuxppc-dev@lists.ozlabs.org, linux-i2c@vger.kernel.org,
+ iommu@lists.linux.dev, 	linux-pm@vger.kernel.org, imx@lists.linux.dev, 
+	linux-arm-kernel@lists.infradead.org, intel-xe@lists.freedesktop.org, 
+	dri-devel@lists.freedesktop.org, linux-usb@vger.kernel.org, 
+	linux-mips@vger.kernel.org, platform-driver-x86@vger.kernel.org
+Date: Tue, 02 Jun 2026 10:24:41 +0200
+In-Reply-To: <20260521-pdev-fwnode-ref-v1-22-88c324a1b8d2@oss.qualcomm.com>
+References: <20260521-pdev-fwnode-ref-v1-0-88c324a1b8d2@oss.qualcomm.com>
+	 <20260521-pdev-fwnode-ref-v1-22-88c324a1b8d2@oss.qualcomm.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+User-Agent: Evolution 3.56.2-0+deb13u1 
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -74,116 +103,40 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <37e69c39-564b-4ca9-bb27-1b99faab540c@linux.ibm.com>
+X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
+X-SA-Exim-Mail-From: p.zabel@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.whiteo.stw.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linuxppc-dev@lists.ozlabs.org
 
-On Tue, Jun 02, 2026 at 01:26:48PM +0530, Shrikanth Hegde wrote:
-> 
-> 
-> On 6/1/26 3:26 PM, Peter Zijlstra wrote:
-> > On Mon, Jun 01, 2026 at 02:46:24PM +0530, Shrikanth Hegde wrote:
-> > 
-> > > Ritesh, Mukesh, Is below possible scenario?
-> > > 
-> > > do_page_fault seems to enable irq's in the interrupt handler?
-> > > is that expected? if so, one might see
-> > > 
-> > > -- do_page_fault (enter kernel mode)
-> > >     -- enables interrupts
-> > >     -- gets interrupt - Sets need_resched.
-> > >        -- irqentry_exit - Sees it is kernel mode. Just checks preempt count
-> > > 			 and calls preempt_schedule_irq, which catches both
-> > > 			 preempt_count and !irqs_disabled. Hence the panic?
-> > > 
-> > > Should do_page_fault do preempt_disable when it enables the interrupts?
-> > 
-> > No, it is expected for page-fault to be able to schedule. Specifically,
-> > it must be able to sleep to support loading pages from disk.
-> 
-> Oh yes. Ok. Thanks for taking a look.
-> 
-> > 
-> > Please check the value of preempt_count() (does it perchance have
-> > HARDIRQ_OFFSET?). Also, if the fault handler does enable IRQs, it must
-> > also disable them again once done.
-> 
-> Will check it.
-> 
-> > 
-> > Notably, I see ___do_page_fault() do interrupt_cond_loadl_irq_enable(),
-> > but I'm not seeing a local_irq_disable() to match!
-> 
-> Yes, that's likely the culprit. It is possible that ___do_page_fault runs for longer
-> and it may set need_resched. If it was in kernel mode, then it may not disable the
-> interrupt and then subsequent irqentry_exit panics.
-> 
-> BTW I was able to consistently repro this on P9 with hackbench as below.
-> 
-> for i in {0..10}; do ./hackbench 10 process 10000 loops; done;
-> for i in {0..10}; do ./hackbench 20 process 10000 loops; done;
-> for i in {0..10}; do ./hackbench 30 process 10000 loops; done;
-> for i in {0..10}; do ./hackbench 40 process 10000 loops; done;    << usually panics here.
-> for i in {0..10}; do ./hackbench 10 thread 10000 loops; done;
-> for i in {0..10}; do ./hackbench 20 thread 10000 loops; done;
-> for i in {0..10}; do ./hackbench -pipe 10 process 10000 loops; done;
-> for i in {0..10}; do ./hackbench -pipe 20 process 10000 loops; done;
-> for i in {0..10}; do ./hackbench -pipe 30 process 10000 loops; done;
-> for i in {0..10}; do ./hackbench -pipe 40 process 10000 loops; done;
-> for i in {0..10}; do ./hackbench -pipe 10 thread 10000 loops; done;
-> for i in {0..10}; do ./hackbench -pipe 20 thread 10000 loops; done;
-> 
-> Note, if i run ./hackbench 40 process 10000 loops alone, it doesn't panic.
-> Likely some continous stressing needed to get into this case.
-> 
-> Below diff helps to fix it. With it see test passes. Hackbench numbers aren't super happy
-> about it. It is regressing a bit compared to baseline. But no panic atleast.
-> AND i have changed the BUG_ON to WARN_ON as irq_disabled right after. We could still fix the
-> call sites if the warning is seen.
-> 
-> diff --git a/arch/powerpc/include/asm/entry-common.h b/arch/powerpc/include/asm/entry-common.h
-> index de5601282755..7da373a56813 100644
-> --- a/arch/powerpc/include/asm/entry-common.h
-> +++ b/arch/powerpc/include/asm/entry-common.h
-> @@ -253,16 +253,17 @@ static inline void arch_interrupt_enter_prepare(struct pt_regs *regs)
->  static inline void arch_interrupt_exit_prepare(struct pt_regs *regs)
->  {
->         if (user_mode(regs)) {
-> -               BUG_ON(regs_is_unrecoverable(regs));
-> -               BUG_ON(regs_irqs_disabled(regs));
-> +               WARN_ON(regs_is_unrecoverable(regs));
-> +               WARN_ON(regs_irqs_disabled(regs));
->                 /*
->                  * We don't need to restore AMR on the way back to userspace for KUAP.
->                  * AMR can only have been unlocked if we interrupted the kernel.
->                  */
->                 kuap_assert_locked();
-> -
-> -               local_irq_disable();
->         }
-> +
-> +       /* irqentry_exit expects to be called with interrupts disabled */
-> +       local_irq_disable();
->  }
->  static inline void arch_interrupt_async_enter_prepare(struct pt_regs *regs)
-> 
+On Do, 2026-05-21 at 10:36 +0200, Bartosz Golaszewski wrote:
+> Ahead of reworking the reference counting logic for platform devices,
+> encapsulate the assignment of the OF node from another device for
+> dynamically allocated platform devices with the provided helper.
+>=20
+> Signed-off-by: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
+> ---
+>  drivers/reset/reset-rzg2l-usbphy-ctrl.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>=20
+> diff --git a/drivers/reset/reset-rzg2l-usbphy-ctrl.c b/drivers/reset/rese=
+t-rzg2l-usbphy-ctrl.c
+> index fd75d9601a3bfde7b7e3f6db287ec8c5c45a20ab..f003b360629c90bb37ed0ade7=
+a675b5b0f28fa7e 100644
+> --- a/drivers/reset/reset-rzg2l-usbphy-ctrl.c
+> +++ b/drivers/reset/reset-rzg2l-usbphy-ctrl.c
+> @@ -249,7 +249,7 @@ static int rzg2l_usbphy_ctrl_probe(struct platform_de=
+vice *pdev)
+>  	vdev->dev.parent =3D dev;
+>  	priv->vdev =3D vdev;
+> =20
+> -	device_set_of_node_from_dev(&vdev->dev, dev);
+> +	platform_device_set_of_node_from_dev(vdev, dev);
+>  	error =3D platform_device_add(vdev);
+>  	if (error)
+>  		goto err_device_put;
 
-I would suggest trying something a little more focussed like so:
+Acked-by: Philipp Zabel <p.zabel@pengutronix.de>
 
-diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
-index 806c74e0d5ab..b002c179415c 100644
---- a/arch/powerpc/mm/fault.c
-+++ b/arch/powerpc/mm/fault.c
-@@ -589,6 +589,7 @@ static __always_inline void __do_page_fault(struct pt_regs *regs)
- 	err = ___do_page_fault(regs, regs->dar, regs->dsisr);
- 	if (unlikely(err))
- 		bad_page_fault(regs, err);
-+	local_irq_disable();
- }
- 
- DEFINE_INTERRUPT_HANDLER(do_page_fault)
-
-Since only ___do_page_fault() will enable interrupts, you only need to
-disable them again on its return path. 
-
+regards
+Philipp
 
