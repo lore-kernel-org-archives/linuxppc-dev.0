@@ -1,142 +1,151 @@
-Return-Path: <linuxppc-dev+bounces-21904-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21905-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A1E80CD6E4A
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Jun 2026 13:05:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6A79BCD6E60
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Jun 2026 14:25:08 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gV9zL0w82z2yFK;
-	Tue, 02 Jun 2026 23:05:02 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::32e"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780405502;
-	cv=none; b=kYe7ZLDOJoHbcYzfMGJ0a4ulqSwBfIuijqgFiXFYO8zIDagAX5B24V4lN2Pd+ZYCMozH4VcIXhL0KDQ9VHeTOCugTJWHPjUlhot11IUyez1IiXF9KJ8YEiqGCiLuB9Z7p3/gLoDZBYYz30s4Q4P3Vj7WM8OxNiSJKXSXBewP7vcQOYBcgMQ3VbSsWUprjNAiL236zeULP/04rwGlKgfKrLaXkxS9U6hER7Qj1Qmj2T7tjN141qtW8/rC/bZa2+ZKXaEQ2CWKzfRHHdgnZhEaJhBwIOEZ+ntQyg/c+hN89Yt9K4y09v6f9pKWwqpd+QKz/bX0tpldWyh7n7R70KVqRw==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1780405502; c=relaxed/relaxed;
-	bh=H/8nMdqnIqVIuE86ZCCEmz0EQ1iXOszPXfKX9VZoGH4=;
-	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=VWdW5lpkl6GqgfpI86UJ1nTXeWH1HKAmR3PusieLHreX3wU3y7I30H+wvkOpDkyESc6DiT3Zq9PHSoI0f3Kz13gvqiAgMK+MdVu3ux44e/Ge3mxh6mMekgHblb1CLH53PkPe5L2zwUEjCtc3HQbOS8s+WwZXD1dUGNyLIdIgG19GQu89eSQRi5GWVbCujUueMpOoCwLXbIlitDm202lEfhYqzb/YvydvZKUT28uRRJXPYc2ZoLJey0TuggXc+eiI6cih+jcBAj9MpOMXgvwigqzCSX6K2zcF8t0QlhZHqa/sSn2MwCB8XqssA/KT+o+EQQvujg3rXHGD/XnGNSbxug==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=ifZKqIb0; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::32e; helo=mail-wm1-x32e.google.com; envelope-from=david.laight.linux@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gVClk4x2Mz2xLm;
+	Wed, 03 Jun 2026 00:25:06 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:d107::1" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780410306;
+	cv=pass; b=Zgmb4Y2d/VmDOm01GYLGE/DhYHp7xk+dxQyjDCnVdGU6L4UdJ1h/dScsrLo/h1ebvFhVVZSXB6lFObce6qbZEh39PTQEJgDQ3xET91uyySocW4+02XZJVukjOZubvpoegCgWBjcWSLwKVB6tGrTulGfxawX/1/qONf/4ArCez9MYhc6NvnpAgBfaGQ/K7kh1wgkuhrb1KoPb+TMa2zfB1XNEeZoCaCgefgxsAcS0r6WOmkqy2kJjkj8GY3+oNs110J6amm30KU4N3CrerQRdubsSVIppBvakzThjCNPviCKRoSd9k4SIH2naF6QJ9757EbTatRmZ9LPMe9tZzNRRng==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1780410306; c=relaxed/relaxed;
+	bh=VniBiCCvYeTRsch0Z+wguVQDokgskI/0HVYhOI9nXlk=;
+	h=From:To:CC:Subject:Date:Message-ID:References:In-Reply-To:
+	 Content-Type:MIME-Version; b=l73x3eURpmgCx1H77t1zqyIFAYoJAopI0s6bitpFni73a6IvlIb04Awk6K5fdnki6qRpTGk5nKnfI6UT9bp4NXdSimBd0/BNnPYRlMmrICDGFArgnGPZxoMEn6QlUr8p6Hrln+9CeNqjUgl9OuORgP6gzH1TMThszUawZlrGTPe2bRYAJfgrIVBpwUFoP2LNUQ7dCvc6taQXTwRtwPAwkLxB6QTalCKhAgXENCkAdKfDsI8zZ+1+RIK3Z2biBLHxp9HNYS6mhHxM2qDRq1oh6sNuAiond8RMp5fU5tsO+g5JjQyEBnKDz2QjrsF6y1zCbjGWJ8K43jC+OQeV+h6s6w==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=outlook.com; dkim=pass (2048-bit key; unprotected) header.d=outlook.com header.i=@outlook.com header.a=rsa-sha256 header.s=selector1 header.b=JELa3IOQ; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:d107::1; helo=dm5pr21cu001.outbound.protection.outlook.com; envelope-from=mhklinux@outlook.com; receiver=lists.ozlabs.org) smtp.mailfrom=outlook.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=outlook.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=ifZKqIb0;
+	dkim=pass (2048-bit key; unprotected) header.d=outlook.com header.i=@outlook.com header.a=rsa-sha256 header.s=selector1 header.b=JELa3IOQ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::32e; helo=mail-wm1-x32e.google.com; envelope-from=david.laight.linux@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-wm1-x32e.google.com (mail-wm1-x32e.google.com [IPv6:2a00:1450:4864:20::32e])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=outlook.com (client-ip=2a01:111:f403:d107::1; helo=dm5pr21cu001.outbound.protection.outlook.com; envelope-from=mhklinux@outlook.com; receiver=lists.ozlabs.org)
+Received: from DM5PR21CU001.outbound.protection.outlook.com (mail-centralusazolkn190110001.outbound.protection.outlook.com [IPv6:2a01:111:f403:d107::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gV9zH708qz2xLm
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 02 Jun 2026 23:04:59 +1000 (AEST)
-Received: by mail-wm1-x32e.google.com with SMTP id 5b1f17b1804b1-4906869f0cbso106713175e9.1
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 02 Jun 2026 06:04:58 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1780405496; x=1781010296; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:subject:cc:to:from:date:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=H/8nMdqnIqVIuE86ZCCEmz0EQ1iXOszPXfKX9VZoGH4=;
-        b=ifZKqIb0V6Qk7lmCSJ7Ib+imxBZCbArfW8gRBpT1+KnPm0stcDNMXlzL4RXk2lS0hP
-         W1sY1DYORg2IRwAwSGmr5a14UZ6/2tTYJZKM7P9k15p6LrH4RzRvK8dgiswsAmFk4Z/D
-         BRPQu3laj9lBTRUarqg2/4ObBFFcDHPpj6S6R8qE5zfDFPsxNMe1in6c8d/zZ/QEDlWO
-         YB3SeT+uQ6RXAhonz4WU9k27LI5HswsgqMep/e+ciKQekYKrjKt2EvBtqPM2QThWoqSD
-         F2kbmSwNIdK1xh/7bedJx2kObm4G1JOtwwcGrv5XE4QROw9kON6PbavnNUqLDJc6jV55
-         lUzA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1780405496; x=1781010296;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=H/8nMdqnIqVIuE86ZCCEmz0EQ1iXOszPXfKX9VZoGH4=;
-        b=n446tf1NZtdEOWmk6J4GvKnIDY2f054fNIDTfWFISZbIcGNUPZ2sIEKbLmhadlG/ZX
-         Uw9LEllub+GTUcWWUNDNnkWef0LtuyEwKnz+hDFhbGilIK8zNDfe63WipOeucYYm/Lhg
-         ORZlxe89Iha13vmQxB7Fmw5pzl8lOoAQ9mAxRMzsYuqm90VWvSi1TBq3x/W13ZyhKcpx
-         SAgWYY1xJTbM0DCXoukzvVcxzxGXro/hY7EjqILKLPpq9fZ9SCF2DZMhSXdrN/yrLf2q
-         LnrIShp2yWd4+YRDdO91RDmbFcoBkNwc0hFh72eoqjY11YbeIcST+XFxu4aKzX2H14x4
-         ef+g==
-X-Forwarded-Encrypted: i=1; AFNElJ85FCPwT/Toq45nogToyfJGNJO+YyK5B91xiMVsC+XdNcSQpazQ17p6Yljz6mP0sHK5wQ4mspYXX5gZCPE=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yx5gOeMn1UfAK+uS62p/xKTzsvhtILBgqQRt9wfYVM1M5y2e+i8
-	89RUYG/gt7iG6M48JmWkDkjLB3UyJtbwV1t+QqYy0A8WnA9LWG/F753P
-X-Gm-Gg: Acq92OH7y62HHvg9Om/KgWqJFu130p9NaArlY3P0tuMoxuWfoX9dXDZyv0VwGPQm6ag
-	+WorhASPNOa4jJIEHAueyN2pMpTWPki2dUej1yYAEVbhazbwCA8LmtOdivEqaDbi4z0wsEnfKRL
-	DUAwcJ8v9lSnpLzYcTH1MFE2xwTz1m3+XgwrJGyVZFS96Bdo25wmwHffqkT0vC5gSVu43YH3Cl7
-	mJ//jPcZP8ZRVX70Mjqnsqh/ug0eRuRoqXk3tdxhaN3tXhz1+rNDVof+1o/INqodxWXdzT7uQSG
-	FM3eUuthJjYtZMqKixY4thUbISxzhrzaxSLispvkJ6yVmLox8x+He79GqtV3kVGaaDIPZXyFauw
-	ryNgNvdt5BOwoQvVvYdTP9sL7moTlZlIDfEhO8y/8AcTAbOQlFVJNJZcyZ//Cna38YRzCNd+ITW
-	tg5f7dcKYjF8E7r5tdIldIKwPeS49udwYFEwY9zfX6wGBlU4HFcXv/4KoobnGgN7OrWkaP0y5BR
-	PNvbBFeDw==
-X-Received: by 2002:a05:600c:8105:b0:490:b072:1be6 with SMTP id 5b1f17b1804b1-490b0721e0amr76565325e9.25.1780405495119;
-        Tue, 02 Jun 2026 06:04:55 -0700 (PDT)
-Received: from pumpkin (82-69-66-36.dsl.in-addr.zen.co.uk. [82.69.66.36])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-45ef34b834esm33184301f8f.11.2026.06.02.06.04.53
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 02 Jun 2026 06:04:54 -0700 (PDT)
-Date: Tue, 2 Jun 2026 14:04:51 +0100
-From: David Laight <david.laight.linux@gmail.com>
-To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Cc: Kees Cook <kees@kernel.org>, Luis Chamberlain <mcgrof@kernel.org>,
- Pengpeng Hou <pengpeng@iscas.ac.cn>, stable@vger.kernel.org, Petr Pavlu
- <petr.pavlu@suse.com>, Richard Weinberger <richard@nod.at>, Anton Ivanov
- <anton.ivanov@cambridgegreys.com>, Johannes Berg
- <johannes@sipsolutions.net>, "Rafael J. Wysocki" <rafael@kernel.org>, Len
- Brown <lenb@kernel.org>, Corey Minyard <corey@minyard.net>, Gabriel Somlo
- <somlo@cmu.edu>, "Michael S. Tsirkin" <mst@redhat.com>, Jani Nikula
- <jani.nikula@linux.intel.com>, Joonas Lahtinen
- <joonas.lahtinen@linux.intel.com>, Rodrigo Vivi <rodrigo.vivi@intel.com>,
- Tvrtko Ursulin <tursulin@ursulin.net>, David Airlie <airlied@gmail.com>,
- Simona Vetter <simona@ffwll.ch>, Bart Van Assche <bvanassche@acm.org>,
- Jason Gunthorpe <jgg@ziepe.ca>, Leon Romanovsky <leon@kernel.org>, Laurent
- Pinchart <laurent.pinchart@ideasonboard.com>, Hans de Goede
- <hansg@kernel.org>, Mauro Carvalho Chehab <mchehab@kernel.org>, Bjorn
- Helgaas <bhelgaas@google.com>, Hannes Reinecke <hare@suse.de>, "James E.J.
- Bottomley" <James.Bottomley@hansenpartnership.com>, "Martin K. Petersen"
- <martin.petersen@oracle.com>, Daniel Lezcano <daniel.lezcano@kernel.org>,
- Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>, Greg
- Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby
- <jirislaby@kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Jason Wang
- <jasowang@redhat.com>, Xuan Zhuo <xuanzhuo@linux.alibaba.com>, Eugenio
- =?UTF-8?B?UMOpcmV6?= <eperezma@redhat.com>, Jason Baron
- <jbaron@akamai.com>, Jim Cromie <jim.cromie@gmail.com>, Tiwei Bie
- <tiwei.btw@antgroup.com>, Benjamin Berg <benjamin.berg@intel.com>, Ilpo
- =?UTF-8?B?SsOkcnZpbmVu?= <ilpo.jarvinen@linux.intel.com>, "David E. Box"
- <david.e.box@linux.intel.com>, "Maciej W. Rozycki" <macro@orcam.me.uk>,
- Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Peter Zijlstra
- <peterz@infradead.org>, Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik
- <gor@linux.ibm.com>, Sean Christopherson <seanjc@google.com>, Paolo Bonzini
- <pbonzini@redhat.com>, Thomas Gleixner <tglx@kernel.org>, Ingo Molnar
- <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, Dave Hansen
- <dave.hansen@linux.intel.com>, x86@kernel.org, "H. Peter Anvin"
- <hpa@zytor.com>, Vinod Koul <vkoul@kernel.org>, Frank Li
- <Frank.Li@kernel.org>, Daniel Gomez <da.gomez@kernel.org>, Sami Tolvanen
- <samitolvanen@google.com>, Aaron Tomlin <atomlin@atomlin.com>, Alexander
- Potapenko <glider@google.com>, Marco Elver <elver@google.com>, Dmitry
- Vyukov <dvyukov@google.com>, Andrew Morton <akpm@linux-foundation.org>,
- John Johansen <john.johansen@canonical.com>, Paul Moore
- <paul@paul-moore.com>, James Morris <jmorris@namei.org>, "Serge E. Hallyn"
- <serge@hallyn.com>, Georgia Garcia <georgia.garcia@canonical.com>,
- kvm@vger.kernel.org, dmaengine@vger.kernel.org,
- linux-modules@vger.kernel.org, kasan-dev@googlegroups.com,
- linux-mm@kvack.org, apparmor@lists.ubuntu.com,
- linux-security-module@vger.kernel.org, linux-um@lists.infradead.org,
- linux-acpi@vger.kernel.org, openipmi-developer@lists.sourceforge.net,
- qemu-devel@nongnu.org, intel-gfx@lists.freedesktop.org,
- dri-devel@lists.freedesktop.org, linux-rdma@vger.kernel.org,
- linux-media@vger.kernel.org, linux-pci@vger.kernel.org,
- linux-scsi@vger.kernel.org, linux-pm@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-serial@vger.kernel.org,
- linux-usb@vger.kernel.org, usb-storage@lists.one-eyed-alien.net,
- virtualization@lists.linux.dev, linux-kernel@vger.kernel.org,
- linux-arch@vger.kernel.org, netdev@vger.kernel.org,
- linux-fsdevel@vger.kernel.org, linux-hardening@vger.kernel.org
-Subject: Re: [PATCH 01/11] params: bound array element output to the
- caller's page buffer
-Message-ID: <20260602140451.2e3e6622@pumpkin>
-In-Reply-To: <ah699hwLxIIOZ0-7@ashevche-desk.local>
-References: <20260521133315.work.845-kees@kernel.org>
-	<20260521133326.2465264-1-kees@kernel.org>
-	<ah699hwLxIIOZ0-7@ashevche-desk.local>
-X-Mailer: Claws Mail 4.1.1 (GTK 3.24.38; arm-unknown-linux-gnueabihf)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gVClj2kNgz2xLk
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 03 Jun 2026 00:25:05 +1000 (AEST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=VBC033oA9MPG1vtI4+LptIJCefcQ/pINudkC3nFOT0fSih/IB5u/K4Lcn9prGhTeJpMwQ1qNZG1Hy18WMPu3WPI380RXqMVvg1jNVU3kaMBwkH86zMhcIBDzgJrTnnOy9bStxQSoYHGXm/lR2tb1LGntMh5EAWttwR8LI/R4WiPjw+ixeOqh/ADTqyfjsgDq3Gv9hrWWVGg9AcN0s9tLmDaB7rDgXMLdobQfC90y8TdHOW0fnv3YpSZBoZkH2Z++Y3wzGbyQGwa4Jv3V3txtiyQ/6xML4cU/s7zDR+nS3u3m4uIubli0drAR27sj3apc0YPE07UBENo8iCdBxl8xZQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=VniBiCCvYeTRsch0Z+wguVQDokgskI/0HVYhOI9nXlk=;
+ b=wL1bDkNburTMBBqHAL/QfjIX8forsowDPZWMzDjPo+xr6dMog9boLwxphu6p49sQYjoRbBccgVTEsSiBDCN0qAr+x/mMwn45lVPe4CFH0E2G7aob24XGWDeYmcYI/zBw1jrvalLFPStjolVogcQaWFSI3dLTAmXTLoiIHlaAcAVVMV2BKIPOgnsVXGmAPqPRfs0d1cbEKgoTNNRWfYObWciomukdtnygVhHIYduaAttmAPmh6hiNPPiba6pkOcak7Mjjkms9zdFAwFylWw3apLqwuzJC1HesFEPYjqa/kCrSZSHTg8TCFy4ffRSk3K9HBxE6HwihssyZBcxZp5pnLA==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=none; dmarc=none;
+ dkim=none; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=outlook.com;
+ s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=VniBiCCvYeTRsch0Z+wguVQDokgskI/0HVYhOI9nXlk=;
+ b=JELa3IOQSZ41stzKB+oh4OB8qtcrkAGO1ASrPezCN6QBNa5fFKqtjQklz01zyzZA5qy4EwWYi1XaNogke8sYWVcnZsJcHrXEz1UIwPO0s3ThSHHAW0vJyKTV3hMd+t5trPpD6twKyoY23kk7NROJzufC/jIswFiA0rN1KSFwS73jlo037OBKpLUoqHP8sub8SXO9rNbN0BipTLWzefTwL89zs+gF/DQmjpB0wI0CiWFAo7svFfEIJsyXT1ZJVx8Nz6FXmOOoK1liECfAt0OvTI6ZdHav9xdKkIuZxWJSGmeKu2vsmQddqC0WkV2uQ1PTe4SCWVWjLGY/39DXIx7mEQ==
+Received: from SN6PR02MB4157.namprd02.prod.outlook.com (2603:10b6:805:33::23)
+ by IA1PR02MB9494.namprd02.prod.outlook.com (2603:10b6:208:3f4::9) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.92.7; Tue, 2 Jun 2026
+ 14:24:41 +0000
+Received: from SN6PR02MB4157.namprd02.prod.outlook.com
+ ([fe80::900:1ccf:2b1e:52b6]) by SN6PR02MB4157.namprd02.prod.outlook.com
+ ([fe80::900:1ccf:2b1e:52b6%3]) with mapi id 15.21.0071.014; Tue, 2 Jun 2026
+ 14:24:41 +0000
+From: Michael Kelley <mhklinux@outlook.com>
+To: Aneesh Kumar K.V <aneesh.kumar@kernel.org>, "iommu@lists.linux.dev"
+	<iommu@lists.linux.dev>, "linux-arm-kernel@lists.infradead.org"
+	<linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org"
+	<linux-kernel@vger.kernel.org>, "linux-coco@lists.linux.dev"
+	<linux-coco@lists.linux.dev>
+CC: Robin Murphy <robin.murphy@arm.com>, Marek Szyprowski
+	<m.szyprowski@samsung.com>, Will Deacon <will@kernel.org>, Marc Zyngier
+	<maz@kernel.org>, Steven Price <steven.price@arm.com>, Suzuki K Poulose
+	<Suzuki.Poulose@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, Jiri
+ Pirko <jiri@resnulli.us>, Jason Gunthorpe <jgg@ziepe.ca>, Mostafa Saleh
+	<smostafa@google.com>, Petr Tesarik <ptesarik@suse.com>, Alexey Kardashevskiy
+	<aik@amd.com>, Dan Williams <dan.j.williams@intel.com>, Xu Yilun
+	<yilun.xu@linux.intel.com>, "linuxppc-dev@lists.ozlabs.org"
+	<linuxppc-dev@lists.ozlabs.org>, "linux-s390@vger.kernel.org"
+	<linux-s390@vger.kernel.org>, Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, Alexander Gordeev
+	<agordeev@linux.ibm.com>, Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
+	Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>,
+	Christian Borntraeger <borntraeger@linux.ibm.com>, Sven Schnelle
+	<svens@linux.ibm.com>, "x86@kernel.org" <x86@kernel.org>, Jiri Pirko
+	<jiri@nvidia.com>
+Subject: RE: [PATCH v5 05/20] dma-pool: track decrypted atomic pools and
+ select them via attrs
+Thread-Topic: [PATCH v5 05/20] dma-pool: track decrypted atomic pools and
+ select them via attrs
+Thread-Index: AQHp6tfu5DGfxW+HBL9src0vNhss0QGjMATQtfypCTCABxNTgIAAi4fg
+Date: Tue, 2 Jun 2026 14:24:40 +0000
+Message-ID:
+ <SN6PR02MB4157D9955A93244014AB7978D4122@SN6PR02MB4157.namprd02.prod.outlook.com>
+References: <20260522042815.370873-1-aneesh.kumar@kernel.org>
+ <20260522042815.370873-6-aneesh.kumar@kernel.org>
+ <SN6PR02MB415754E94A9505C2B9739E4DD4092@SN6PR02MB4157.namprd02.prod.outlook.com>
+ <yq5afr35sciu.fsf@kernel.org>
+In-Reply-To: <yq5afr35sciu.fsf@kernel.org>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach:
+X-MS-TNEF-Correlator:
+x-ms-publictraffictype: Email
+x-ms-traffictypediagnostic: SN6PR02MB4157:EE_|IA1PR02MB9494:EE_
+x-ms-office365-filtering-correlation-id: f04ac679-8342-4fa0-c472-08dec0b2af26
+x-microsoft-antispam:
+ BCL:0;ARA:14566002|8062599012|19110799012|13091999003|37011999003|8060799015|51005399006|15080799012|12121999013|19101099003|31061999003|41001999006|440099028|3412199025|12091999003|102099032|40105399003;
+x-microsoft-antispam-message-info:
+ =?us-ascii?Q?JfXcuCE9SVQbW7c0ZKHSuAAPiV68XlWtLXAPE/YfMoCMoe3GPJVk/thU4hAz?=
+ =?us-ascii?Q?VTWDKbXPp1YuxM+RceAJ4fsOVJ9Nvtgd2xUa+seWhizCLU6fxkzz4hzLVs+7?=
+ =?us-ascii?Q?BWSnDi+kVPKAD3Yw3su8nl6a6aANIMGIOSLDuMYyQBd/ZX+l0fknaJiD7w72?=
+ =?us-ascii?Q?RttW4b0o5LsRdE29aDFb/dPoEjy3bScOvRe8ZkhFHcmfGfJLV3b68kG1xTPw?=
+ =?us-ascii?Q?vJlrZB6SIEdhGhp7kF8bA94xvs5iKbjW3rCLb+TVD/x96nZ7g3UWsc2Rwd0E?=
+ =?us-ascii?Q?8F2USFsP07VSdR3xB4NvGoyHpo5MQIO3K4mav00uVKPdoR+8/TA5jGyyVGOX?=
+ =?us-ascii?Q?mDc1cI8HFpMdbt1/ZeSaevsdnvmNhqOyaNo5EK8kVU2s3zlz1cefXd0/Ldh9?=
+ =?us-ascii?Q?953KqSDpWyY3JyhPKL0fHeghVhxskxxQHFLEcxseSuSyCEKwdXS9+2O2nPIh?=
+ =?us-ascii?Q?Hh2wBazEBO2ffE/WyxmcBKHgOHlTear57Q+iS0lHznReLj35RhNeueEsqprW?=
+ =?us-ascii?Q?7YQ/g4WKXNaUFdEyluAo5m8CKHmgDLnH9g8Ybtjv9hlYytbkd5v2cjZfHgjv?=
+ =?us-ascii?Q?3JaLFM/SIMvV8YZangXScYMte7kD+LE6QhLkResx7ZAuDfnLLBlNhAhlLWCj?=
+ =?us-ascii?Q?vRdj+/aX3fjb2n6hOJ2I0TMlk+GihhlD/XvpmwocTYrJFrJ20XOGl+ZD0F3q?=
+ =?us-ascii?Q?N2wjMSoLS2QYiq2jdHC76tvYp0eftgqOsCkoDKAscQNyZCVYicZthkFspfnN?=
+ =?us-ascii?Q?IgHVxG4dP282REzIOKJVbx5Nro3q20OOxr+SdFaOwm3O3BAtB7NegnkQrBYe?=
+ =?us-ascii?Q?VaaqBbkvKo6RikokmWoy9+ZDjW1iktjagDmz678P9MJArWmqnQrYPcz7nRHI?=
+ =?us-ascii?Q?RWovAArzCcHmLZRgVt1bCGto4NOzWDrmm+4yfN2iIOemUHsELPi/h6Oj7Zjx?=
+ =?us-ascii?Q?YIbQt1Hq6QXNdBMwYipbG5D6QTZ9HxnO+rlnKvGykq9r9J71IsfMpT3ayJu9?=
+ =?us-ascii?Q?eZndAPT3O7PNO3VgDW88yXwfCYZOydNQkS0BlCd0MAMAR0kVOJG1rMvv/qvA?=
+ =?us-ascii?Q?G3X9uVDixXvAU82sMKrQDqqC2oDNhahw0E+Y3NKI2BFcNhPxWy4=3D?=
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0:
+ =?us-ascii?Q?QJFSkC6L/BO/GF2jjDeJyFEFNSCCpXecuWZ9sSp5Uh73GwxqItc9Ypwe7xjM?=
+ =?us-ascii?Q?1ZjRf5oFRZLd8+HTMoWCugLOCBDUOvmIpbsNpeCXkSA8WapzU62QS163FXLn?=
+ =?us-ascii?Q?ImKZ1vujDR/8TNK5v95N9x8OaSpSDhcIvaUXO1+inkwObZe8HQhPD/DtRI93?=
+ =?us-ascii?Q?RIKTh1KqkiwDvWbkLi5vMe1g3046Hz/AHK5WAySW1zQmqAInnnnZxQWDLM7d?=
+ =?us-ascii?Q?dZqBtNxgs7fFUGyAY7d5upJiAj//XoPSbGtWchWxMCOQ2P58Iobqf9atzyFs?=
+ =?us-ascii?Q?PCCQLaaDohuX9o4mExzN9oOKpCvw7GkI8Ex0rOIlCrEE0lFgVKiKGHxJy6ns?=
+ =?us-ascii?Q?48F/oIsNSwQsiwZTcE/KpKCGXdUMJhteJJDuP8odfkevtrQi+kq2coNmJyZS?=
+ =?us-ascii?Q?Bs3r7slgh1pHvVbkyCbNnj6q8PctBGWVfRmYYOB/vbie9H28xix3AoT0LwZd?=
+ =?us-ascii?Q?gUIl1VZj4Mkrcb9yMMGJC/4XQ1cPDn5Wb2MFibkf02r0Cv7PUy/IRZgzfBD2?=
+ =?us-ascii?Q?IaHmTg+MNeYlG82ZcQHvUHv0qVJznZIHdgpa6lD9UdKw9yqnRYRhy+b/BAWM?=
+ =?us-ascii?Q?f+kbyGkdQllA9u0tzzoUHxptsDQ6Qo/AsHqeRea5hTLrfA4VmyvuDzZM5X/X?=
+ =?us-ascii?Q?aRwGVt1RJJyRjI+i6YLNj91OrABEqlEVW40Cm5JNhLLbLHEVL4TAfMiAk651?=
+ =?us-ascii?Q?2BYW7RRIUmmgTqMj1UAIRScCBmPYiELrLQ8XGQIrfZEqSJbQIoDprrtnevJa?=
+ =?us-ascii?Q?iIETSZF87IfrzXhmWujW16z50jvcYoJjeWBcz9zOQ23Z1lrNP51GBMRk1vH9?=
+ =?us-ascii?Q?K1Zvep2fX03rcDr4lrTy6gQlb4mkNUzmhkFRElv5G3Eii/Yc105guXCiHkFZ?=
+ =?us-ascii?Q?i7l/sDw4qcmWxKkbH4ssRRVqhhdCcyhmKni0U/TCZblRmU2XRpvQHuLyHKdO?=
+ =?us-ascii?Q?Lj6dcqxO06NKdHkP77hsODk5CkV6zIqW/kauOiezD0D8pNCGSg7sCYQRSpnd?=
+ =?us-ascii?Q?H4J1bxMET1b3Yo4flUNwJLD2R4FpvGbT9GLvvS5GLTCFMsiVGe1NhzO87hem?=
+ =?us-ascii?Q?VKQWPiRg0up2ech7nFUD5KRMSN8ZeS8o4+SvpOPc6VQ6ob1ovPjhCVYfgWLi?=
+ =?us-ascii?Q?YmOBII05PnhcYX8IZJ7LIat3IGauJy+72Wute9vLUhcdi6+AltiDI1WXoxQg?=
+ =?us-ascii?Q?6T+PnP6lD44UdtG28XeUZosxIkzghf2Q6WSSvP+1cp0pRtZ/BJw0mYA2o6aJ?=
+ =?us-ascii?Q?sOVX7v3Fs4U3amAKeZMt+10+dqiE/hvkpEY4R+dnv581jugxm9WiqxNK5krR?=
+ =?us-ascii?Q?s0WQkujSZoQuqw/ctaGLHh8E54trfs0IGa9rmfDvW27xKzlIekiNUXP1sIL5?=
+ =?us-ascii?Q?FXV+uIEkAWxw4mP1zvCJwab2JIpAEMySFBImasH/Ed7MG38lsI1nQz07RaEw?=
+ =?us-ascii?Q?7V+rYJy1otM=3D?=
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -150,81 +159,148 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+X-OriginatorOrg: outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: SN6PR02MB4157.namprd02.prod.outlook.com
+X-MS-Exchange-CrossTenant-RMS-PersistedConsumerOrg: 00000000-0000-0000-0000-000000000000
+X-MS-Exchange-CrossTenant-Network-Message-Id: f04ac679-8342-4fa0-c472-08dec0b2af26
+X-MS-Exchange-CrossTenant-originalarrivaltime: 02 Jun 2026 14:24:40.8420
+ (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 84df9e7f-e9f6-40af-b435-aaaaaaaaaaaa
+X-MS-Exchange-CrossTenant-rms-persistedconsumerorg: 00000000-0000-0000-0000-000000000000
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: IA1PR02MB9494
 
-On Tue, 2 Jun 2026 14:26:46 +0300
-Andy Shevchenko <andriy.shevchenko@linux.intel.com> wrote:
+From: Aneesh Kumar K.V <aneesh.kumar@kernel.org> Sent: Monday, June 1, 2026=
+ 11:05 PM
+>=20
+> Michael Kelley <mhklinux@outlook.com> writes:
+>=20
+> > From: Aneesh Kumar K.V (Arm) <aneesh.kumar@kernel.org>Sent: Thursday, M=
+ay 21, 2026 9:28 PM
+> >>
+> >> Teach the atomic DMA pool code to distinguish between encrypted and
+> >> unencrypted pools, and make pool allocation select the matching pool b=
+ased
+> >> on DMA attributes.
+> >>
+> >> Introduce a dma_gen_pool wrapper that records whether a pool is
+> >> unencrypted, initialize that state when the atomic pools are created, =
+and
+> >> use it when expanding and resizing the pools. Update dma_alloc_from_po=
+ol()
+> >> to take attrs and skip pools whose encrypted state does not match
+> >> DMA_ATTR_CC_SHARED. Update dma_free_from_pool() accordingly.
+> >>
+> >> Also pass DMA_ATTR_CC_SHARED from the swiotlb atomic allocation path s=
+o
+> >> decrypted swiotlb allocations are taken from the correct atomic pool.
+> >>
+> >> Tested-by: Jiri Pirko <jiri@nvidia.com>
+> >> Reviewed-by: Mostafa Saleh <smostafa@google.com>
+> >> Signed-off-by: Aneesh Kumar K.V (Arm) <aneesh.kumar@kernel.org>
+> >> ---
+> >>  drivers/iommu/dma-iommu.c   |   2 +-
+> >>  include/linux/dma-map-ops.h |   2 +-
+> >>  kernel/dma/direct.c         |  11 ++-
+> >>  kernel/dma/pool.c           | 167 +++++++++++++++++++++++------------=
+-
+> >>  kernel/dma/swiotlb.c        |   7 +-
+> >>  5 files changed, 123 insertions(+), 66 deletions(-)
+> >>
+> >
+> > [snip]
+> >
+> >> +static __init struct dma_gen_pool *__dma_atomic_pool_init(struct dma_=
+gen_pool *dma_pool,
+> >> +		size_t pool_size, gfp_t gfp)
+> >>  {
+> >> -	struct gen_pool *pool;
+> >>  	int ret;
+> >>
+> >> -	pool =3D gen_pool_create(PAGE_SHIFT, NUMA_NO_NODE);
+> >> -	if (!pool)
+> >> +	dma_pool->pool =3D gen_pool_create(PAGE_SHIFT, NUMA_NO_NODE);
+> >> +	if (!dma_pool->pool)
+> >>  		return NULL;
+> >>
+> >> -	gen_pool_set_algo(pool, gen_pool_first_fit_order_align, NULL);
+> >> +	gen_pool_set_algo(dma_pool->pool, gen_pool_first_fit_order_align, NU=
+LL);
+> >> +
+> >> +	/* if platform is using memory encryption atomic pools are by defaul=
+t decrypted. */
+> >> +	if (cc_platform_has(CC_ATTR_MEM_ENCRYPT))
+> >> +		dma_pool->unencrypted =3D true;
+> >> +	else
+> >> +		dma_pool->unencrypted =3D false;
+> >
+> > I'm curious about the name of the "unencrypted" field in struct dma_gen=
+_pool,
+> > and similarly in Patch 7 of the series for the swiotlb struct io_tlb_po=
+ol and
+> > struct io_tlb_mem. Up through v3 of this series, you used "decrypted", =
+but
+> > starting in v4 switched to "unencrypted".
+> >
+> > To me, the above "if" statement has some cognitive dissonance in that i=
+f
+> > CC_ATTR_MEM_ENCRYPT is false (i.e., a normal VM), "unencrypted" is set
+> > to false. But I think of memory in a normal VM as "unencrypted" since i=
+t
+> > was never encrypted. A similar "if" statement occurs in your swiotlb ch=
+anges.
+> >
+> > Two related concepts are captured by the field:
+> > 1) Is some action needed to put the memory into the unencrypted state,
+> > and to remove it from that state? This applies when assigning memory to=
+ the
+> > pool, or freeing the memory in the pool.
+> > 2) Is the memory currently in the unencrypted state? This applies when
+> > allocating memory from the pool to a caller.
+> >
+> > It's hard to capture all that in a short field name. But I think I pref=
+er "decrypted"
+> > over "unencrypted".  The former implies that some action was taken. It'=
+s a
+> > little easier to think of a normal VM as *not* having decrypted memory.=
+ The
+> > memory was never encrypted in the first place, so no decryption action =
+was taken.
+> >
+> > Throughout the kernel, "decrypted" occurs much more frequently than
+> > "unencrypted".  We have set_memory_encrypted() and set_memory_decrypted=
+()
+> > that are "take action" names.  But we also have force_dma_unencrypted()=
+,
+> > phys_to_dma_unencrypted(), and dma_addr_unencrypted(). So it's a bit
+> > of a mess.
+> >
+> >
+> > But maybe there's more background here that led to the change
+> > between your v3 and v4.
+> >
+> > Michael
+>=20
+> The current APIs, phys_to_dma_unencrypted() and dma_addr_unencrypted(),
+> are the reason I changed the pool attribute name from decrypted to
+> unencrypted. The rationale was that nobody actually decrypted the
+> memory; the memory was already in an unencrypted state.
+>=20
+> In other words, the DMA pool did not contain encrypted content that was
+> later decrypted. Rather, the DMA pool itself was in an unencrypted
+> state.
+>=20
+> IMHO, set_memory_decrypted()/set_memory_encrypted() is the right naming
+> because those APIs describe an operation that transitions memory between
+> states. In contrast, the pool attribute describes the state of the
+> memory itself, which is why I used unencrypted rather than decrypted.
+>
 
-> On Thu, May 21, 2026 at 06:33:14AM -0700, Kees Cook wrote:
-> > 
-> > param_array_get() appends each element's string representation into the
-> > shared sysfs page buffer by passing buffer + off to the element getter.
-> > 
-> > That works for getters that only write a small bounded string, but
-> > param_get_charp() and similar helpers format against PAGE_SIZE from the
-> > pointer they receive. Once off is non-zero, an element getter can
-> > therefore write past the end of the original sysfs page buffer.
-> > 
-> > Collect each element into a temporary PAGE_SIZE buffer first and then
-> > copy only the remaining space into the caller's page buffer.  
-> 
-> ...
-> 
-> > +	elem_buf = kmalloc(PAGE_SIZE, GFP_KERNEL);  
-> 
-> get_free_page() (or how it is called)?
+Except that in a normal VM, the "unencrypted" pool attribute does *not*
+describe the state of the memory itself.  In a normal VM, the memory is
+unencrypted, but the "unencrypted" pool attribute is false. That
+contradiction is the essence of my concern.
 
-The kmalloc() should be faster and I think has to be aligned.
-There is another patch set to replace get_free_pages() with kmalloc().
-
-Although all these 'show' functions should really head to using a safer
-interface.
-Although, at the moment, it is really difficult to find the ones that
-are guaranteed to be passed a page aligned buffer.
-
--- David
-
-> 
-> > +	if (!elem_buf)
-> > +		return -ENOMEM;
-> > +
-> >  	for (i = off = 0; i < (arr->num ? *arr->num : arr->max); i++) {
-> > -		/* Replace \n with comma */
-> > -		if (i)
-> > -			buffer[off - 1] = ',';
-> >  		p.arg = arr->elem + arr->elemsize * i;
-> >  		check_kparam_locked(p.mod);
-> > -		ret = arr->ops->get(buffer + off, &p);
-> > +		ret = arr->ops->get(elem_buf, &p);
-> >  		if (ret < 0)
-> > -			return ret;
-> > +			goto out;
-> > +		ret = min(ret, (int)(PAGE_SIZE - 1 - off));  
-> 
-> It's usually discouraged to use castings in min/max/clamp. Can we make ret long
-> or do something different here?
-> 
-> > +		if (!ret)
-> > +			break;  
-> 
-> > +		/* Replace the previous element's trailing newline with a comma. */
-> > +		if (i)
-> > +			buffer[off - 1] = ',';  
-> 
-> Can't we do this after with help of strreplace()?
-> 
-> > +		memcpy(buffer + off, elem_buf, ret);
-> >  		off += ret;
-> > +		if (off == PAGE_SIZE - 1)
-> > +			break;
-> >  	}
-> >  	buffer[off] = '\0';
-> > -	return off;
-> > +	ret = off;
-> > +out:
-> > +	kfree(elem_buf);
-> > +	return ret;  
-> 
-
+Michael
 
