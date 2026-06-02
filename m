@@ -1,71 +1,139 @@
-Return-Path: <linuxppc-dev+bounces-21895-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21896-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8D4AECD6E57
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Jun 2026 10:35:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 53881CD6E57
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Jun 2026 11:27:20 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gV6fJ1vpBz2xy3;
-	Tue, 02 Jun 2026 20:35:04 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780396504;
-	cv=none; b=To4XCNkUnNxS8i2r8Qh5wQkzhsLhXgJtPVpdo3/F0RhxWHP2hiCVPJDwve1LNd53CUb7pPE3dxNPpGL/m+rzhEAun9vLAK9AT8Iw/DU0AXxywRm4nQzRUuN+wESrfOOS9su9ax/kA6dcu+puL+5576LFY3Oat+Gt4GFAzQR0NoY983hNA7a5Q0/PT85GfajVHokAGLzzav89xUSjWXPElPBUXJ5fhYV9dCScp5rOcxq0DbG8zhwRKlAH1YIy0RkgrW7EXjQL7+aXrxyWXcpjqBBCDSzmQVw0gLgRhohK2eokRAX92pc7eT8z6vky7Quh0YRVi4SEEAhYETfX2PZfLA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gV7pZ45TVz2xmV;
+	Tue, 02 Jun 2026 21:27:18 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=198.175.65.15
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780399638;
+	cv=none; b=C1dU1RVwJc78nN8w5dsnJiUr5qh5uryBbSQzKZfQXldaD8su3DpogCaXvDwJg1cFIeY4pzisVprt9foyS2U0UNylW8w29jnDHavpbi6WIsPBvUoX+mz19IA1d8PgT2OvARFHqQtBqX9HgWINpawVbuExGB9f7cosig7a37CxlWzhfuUmf6Ri3+tN8HoaoMdKjNwPNk/vIiRSN/V/ty9hk5EUcP9wPIwXBnayOnTlnoCXzW6lv5r3mWkLhlN1oQfdRgMewjY5v/erdzKZYq0EYOE7WiBXiH5R+59kEwOf7BGgjzhtis0FyWosruTl4vmQ6h8TDhN1T+jSN86NkUIwsA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1780396504; c=relaxed/relaxed;
-	bh=NHXix/NGhOLLtCdUv2aad3HZZ/2TZlL5M+MCPpjSxAY=;
+	t=1780399638; c=relaxed/relaxed;
+	bh=CP93nlQssNvYpFC8rnfGZuXcUdBpP5yef/5fnF6hzcI=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=k7WgTvd2UnkEqWGBsie+dqUgy5pzIYntJRCvgSEKKxaXdVhK7a0BcC+c+ixdnhkRyIClaO12NaGI1rCZ2oQ9Mcblsc9XxGmwwTf9vFfJSErBPVONhlCvmO+LtGw8ZVgeXQSegyRxA2KI+Tvl98SP4HmazX8mpvWwhyi93jl2sWaQS+BoJsVjrqSo/pBia0/cJs6kHSx2uflEnun1xVMX7Er+akbRwKJ0S849uhS8YBOArFdk8yyRL2p+0TGBWuj9vRx2luhP9RauIGWfxv4n5sDdmkL4QetLINSyIxw4xSMvDIFic/NvttBO46X/xlqKtfVxxYn/3qu5k4rlHlAeiA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=A1QPNacF; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=osalvador@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	 Content-Type:Content-Disposition:In-Reply-To; b=CrlD/m/tAJOa5j0zJNaCpY9uU+mMkYLTSvA9vnU5zPG4eu/hkCkPgGSiqSv8hi8uo6GK4clVITceQ4icUeeYO1kH1y4LFdrpEQOKf8vzhzJlSeP72YP6jaePkSyDAAQybMyXViyZGfrP16PAsznRZ+c37k3kgJyGpfFqQuFAiJIf3CqHhYsUH2+p0nWGKkFKUZNfg4uBykjdv8J0a2eOBErreKozg3gjjNsJ2pROcrzVmLutr7fIaN/7dq85Krn4qLTOAFteHQufSpWGsdxRcVpfbobFjnTOjUquI56v7PnBIqhnwxY5iQZAr/5COPuNls+4qRodTzcuqQRABeeY/A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=bl1UOhv7; dkim-atps=neutral; spf=pass (client-ip=198.175.65.15; helo=mgamail.intel.com; envelope-from=andriy.shevchenko@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=A1QPNacF;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=bl1UOhv7;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=osalvador@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.intel.com (client-ip=198.175.65.15; helo=mgamail.intel.com; envelope-from=andriy.shevchenko@linux.intel.com; receiver=lists.ozlabs.org)
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.15])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gV6fH3qb1z2xmX
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 02 Jun 2026 20:35:03 +1000 (AEST)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 5ECD460123;
-	Tue,  2 Jun 2026 10:35:01 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9728A1F00893;
-	Tue,  2 Jun 2026 10:34:56 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1780396501;
-	bh=NHXix/NGhOLLtCdUv2aad3HZZ/2TZlL5M+MCPpjSxAY=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=A1QPNacFkmg/7zJxu6QOoX2GLYdw8tN33sDhuF92H1qLfcTPze8uiEv4QVMkInXcc
-	 p9pu34+MWZbcdPFg+NR/XlWuMXNpzYreR3Z3Vy13x9TyTxX1wOL4KAu/35VBLtKoBU
-	 TZc4gZLNF0b9luIcu02EYrIcomeY+Tg5+pJ4lglUn14MxH8riPDALVgjqdj73Z269B
-	 cqEHsLPfk/lTVJu/4H6gr7Z5o6jTnxyrJfv+/rUVctLv+Yd5h5I5RDvcLqKk71Pj1f
-	 trWavw/23hF66wXucjmfX+h/dpFh7Dtyuum8smZ2OghhDhLGP2EioJab2DJwURImTf
-	 eWBZ+7zJk6KQA==
-Date: Tue, 2 Jun 2026 12:34:53 +0200
-From: "Oscar Salvador (SUSE)" <osalvador@kernel.org>
-To: Muchun Song <songmuchun@bytedance.com>
-Cc: Oscar Salvador <osalvador@suse.de>,
-	David Hildenbrand <david@kernel.org>,
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gV7pV4f80z2xLm
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 02 Jun 2026 21:27:12 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1780399635; x=1811935635;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=vFe0YHJbZeLES+sUauMUh5hZ46dD8ew9Ej6lDFLoT9Q=;
+  b=bl1UOhv7Q9gpXvwgwKZ1jNAzV5kowazLl6JqPZuE/SzAIfdVJwx/t8QC
+   Q8tod5a+rJxlOTmKiPGMBdowlUXqBfkDdvoAvtPm0Yae/3bw8l/jVmnTt
+   KBFa+5du142RqZN8LN+XWf6u8PJvH5XFrMrCCDSRtPg+vHes82yV3BDf3
+   55o2ID+67I4l1KojRTSZZ5iKlCpKrG7mkLuozKpn5WIIYiFO4JugaSCVl
+   Zj/PgyH20zswL/pN7jPn/VLSGuePe9RdPip7rWeqqfiKLXdIyM1Fvf/4x
+   xXl+twz0F29eP66F/QBG4OHwurWUpjApLh2kOokJi+fhCJiHsy1BOaAJt
+   Q==;
+X-CSE-ConnectionGUID: Ur56BX40Sfiv/jpJBLvcpQ==
+X-CSE-MsgGUID: yfaKReo/THeZ8HVfNJPECg==
+X-IronPort-AV: E=McAfee;i="6800,10657,11804"; a="84805001"
+X-IronPort-AV: E=Sophos;i="6.24,183,1774335600"; 
+   d="scan'208";a="84805001"
+Received: from fmviesa007.fm.intel.com ([10.60.135.147])
+  by orvoesa107.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 02 Jun 2026 04:27:08 -0700
+X-CSE-ConnectionGUID: 57WJuzJhQk+bJIT4F8AZnw==
+X-CSE-MsgGUID: InV+5AxmRSKrEz4WoNh7bQ==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.24,183,1774335600"; 
+   d="scan'208";a="240879149"
+Received: from mkosciow-mobl1.ger.corp.intel.com (HELO localhost) ([10.245.245.229])
+  by fmviesa007-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 02 Jun 2026 04:26:48 -0700
+Date: Tue, 2 Jun 2026 14:26:46 +0300
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+To: Kees Cook <kees@kernel.org>
+Cc: Luis Chamberlain <mcgrof@kernel.org>,
+	Pengpeng Hou <pengpeng@iscas.ac.cn>, stable@vger.kernel.org,
+	Petr Pavlu <petr.pavlu@suse.com>,
+	Richard Weinberger <richard@nod.at>,
+	Anton Ivanov <anton.ivanov@cambridgegreys.com>,
+	Johannes Berg <johannes@sipsolutions.net>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Len Brown <lenb@kernel.org>, Corey Minyard <corey@minyard.net>,
+	Gabriel Somlo <somlo@cmu.edu>,
+	"Michael S. Tsirkin" <mst@redhat.com>,
+	Jani Nikula <jani.nikula@linux.intel.com>,
+	Joonas Lahtinen <joonas.lahtinen@linux.intel.com>,
+	Rodrigo Vivi <rodrigo.vivi@intel.com>,
+	Tvrtko Ursulin <tursulin@ursulin.net>,
+	David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
+	Bart Van Assche <bvanassche@acm.org>,
+	Jason Gunthorpe <jgg@ziepe.ca>, Leon Romanovsky <leon@kernel.org>,
+	Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
+	Hans de Goede <hansg@kernel.org>,
+	Mauro Carvalho Chehab <mchehab@kernel.org>,
+	Bjorn Helgaas <bhelgaas@google.com>, Hannes Reinecke <hare@suse.de>,
+	"James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
+	"Martin K. Petersen" <martin.petersen@oracle.com>,
+	Daniel Lezcano <daniel.lezcano@kernel.org>,
+	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Jiri Slaby <jirislaby@kernel.org>,
+	Alan Stern <stern@rowland.harvard.edu>,
+	Jason Wang <jasowang@redhat.com>,
+	Xuan Zhuo <xuanzhuo@linux.alibaba.com>,
+	Eugenio =?iso-8859-1?Q?P=E9rez?= <eperezma@redhat.com>,
+	Jason Baron <jbaron@akamai.com>, Jim Cromie <jim.cromie@gmail.com>,
+	Tiwei Bie <tiwei.btw@antgroup.com>,
+	Benjamin Berg <benjamin.berg@intel.com>,
+	Ilpo =?iso-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@linux.intel.com>,
+	"David E. Box" <david.e.box@linux.intel.com>,
+	"Maciej W. Rozycki" <macro@orcam.me.uk>,
+	Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+	Peter Zijlstra <peterz@infradead.org>,
+	Heiko Carstens <hca@linux.ibm.com>,
+	Vasily Gorbik <gor@linux.ibm.com>,
+	Sean Christopherson <seanjc@google.com>,
+	Paolo Bonzini <pbonzini@redhat.com>,
+	Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>,
+	Borislav Petkov <bp@alien8.de>,
+	Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
+	"H. Peter Anvin" <hpa@zytor.com>, Vinod Koul <vkoul@kernel.org>,
+	Frank Li <Frank.Li@kernel.org>, Daniel Gomez <da.gomez@kernel.org>,
+	Sami Tolvanen <samitolvanen@google.com>,
+	Aaron Tomlin <atomlin@atomlin.com>,
+	Alexander Potapenko <glider@google.com>,
+	Marco Elver <elver@google.com>, Dmitry Vyukov <dvyukov@google.com>,
 	Andrew Morton <akpm@linux-foundation.org>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Muchun Song <muchun.song@linux.dev>,
-	Mike Rapoport <rppt@kernel.org>, Lorenzo Stoakes <ljs@kernel.org>,
-	"Liam R. Howlett" <liam@infradead.org>,
-	Vlastimil Babka <vbabka@kernel.org>, linux-mm@kvack.org,
-	linux-kernel@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
-	"Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
-	linuxppc-dev@lists.ozlabs.org,
-	Mike Kravetz <mike.kravetz@oracle.com>
-Subject: Re: [PATCH v3 00/19] mm: Refactor bootmem gigantic hugepage
- allocation
-Message-ID: <ah6xzZBh8IysNXpI@localhost.localdomain>
-References: <20260602101039.1867613-1-songmuchun@bytedance.com>
+	John Johansen <john.johansen@canonical.com>,
+	Paul Moore <paul@paul-moore.com>, James Morris <jmorris@namei.org>,
+	"Serge E. Hallyn" <serge@hallyn.com>,
+	Georgia Garcia <georgia.garcia@canonical.com>, kvm@vger.kernel.org,
+	dmaengine@vger.kernel.org, linux-modules@vger.kernel.org,
+	kasan-dev@googlegroups.com, linux-mm@kvack.org,
+	apparmor@lists.ubuntu.com, linux-security-module@vger.kernel.org,
+	linux-um@lists.infradead.org, linux-acpi@vger.kernel.org,
+	openipmi-developer@lists.sourceforge.net, qemu-devel@nongnu.org,
+	intel-gfx@lists.freedesktop.org, dri-devel@lists.freedesktop.org,
+	linux-rdma@vger.kernel.org, linux-media@vger.kernel.org,
+	linux-pci@vger.kernel.org, linux-scsi@vger.kernel.org,
+	linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+	linux-serial@vger.kernel.org, linux-usb@vger.kernel.org,
+	usb-storage@lists.one-eyed-alien.net,
+	virtualization@lists.linux.dev, linux-kernel@vger.kernel.org,
+	linux-arch@vger.kernel.org, netdev@vger.kernel.org,
+	linux-fsdevel@vger.kernel.org, linux-hardening@vger.kernel.org
+Subject: Re: [PATCH 01/11] params: bound array element output to the caller's
+ page buffer
+Message-ID: <ah699hwLxIIOZ0-7@ashevche-desk.local>
+References: <20260521133315.work.845-kees@kernel.org>
+ <20260521133326.2465264-1-kees@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -81,22 +149,72 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20260602101039.1867613-1-songmuchun@bytedance.com>
+In-Reply-To: <20260521133326.2465264-1-kees@kernel.org>
+Organization: Intel Finland Oy - BIC 0357606-4 - c/o Alberga Business Park, 6
+ krs, Bertel Jungin Aukio 5, 02600 Espoo
 
-On Tue, Jun 02, 2026 at 06:10:20PM +0800, Muchun Song wrote:
-> This series is split out from the earlier larger series "mm: Generalize
-> HVO for HugeTLB and device DAX" [1]. It collects the first 19 patches of
-> that series as a standalone set of fixes and preparatory cleanups around
-> bootmem HugeTLB handling, sparse initialization ordering, and related
-> vmemmap setup.
+On Thu, May 21, 2026 at 06:33:14AM -0700, Kees Cook wrote:
+> 
+> param_array_get() appends each element's string representation into the
+> shared sysfs page buffer by passing buffer + off to the element getter.
+> 
+> That works for getters that only write a small bounded string, but
+> param_get_charp() and similar helpers format against PAGE_SIZE from the
+> pointer they receive. Once off is non-zero, an element getter can
+> therefore write past the end of the original sysfs page buffer.
+> 
+> Collect each element into a temporary PAGE_SIZE buffer first and then
+> copy only the remaining space into the caller's page buffer.
 
-Thanks Munchun, this split out really helps easing the review.
-I think not so many patches from this series scaped review, but I shall
-get back ot it later this week.
+...
 
- 
+> +	elem_buf = kmalloc(PAGE_SIZE, GFP_KERNEL);
+
+get_free_page() (or how it is called)?
+
+> +	if (!elem_buf)
+> +		return -ENOMEM;
+> +
+>  	for (i = off = 0; i < (arr->num ? *arr->num : arr->max); i++) {
+> -		/* Replace \n with comma */
+> -		if (i)
+> -			buffer[off - 1] = ',';
+>  		p.arg = arr->elem + arr->elemsize * i;
+>  		check_kparam_locked(p.mod);
+> -		ret = arr->ops->get(buffer + off, &p);
+> +		ret = arr->ops->get(elem_buf, &p);
+>  		if (ret < 0)
+> -			return ret;
+> +			goto out;
+> +		ret = min(ret, (int)(PAGE_SIZE - 1 - off));
+
+It's usually discouraged to use castings in min/max/clamp. Can we make ret long
+or do something different here?
+
+> +		if (!ret)
+> +			break;
+
+> +		/* Replace the previous element's trailing newline with a comma. */
+> +		if (i)
+> +			buffer[off - 1] = ',';
+
+Can't we do this after with help of strreplace()?
+
+> +		memcpy(buffer + off, elem_buf, ret);
+>  		off += ret;
+> +		if (off == PAGE_SIZE - 1)
+> +			break;
+>  	}
+>  	buffer[off] = '\0';
+> -	return off;
+> +	ret = off;
+> +out:
+> +	kfree(elem_buf);
+> +	return ret;
 
 -- 
-Oscar Salvador
-SUSE Labs
+With Best Regards,
+Andy Shevchenko
+
+
 
