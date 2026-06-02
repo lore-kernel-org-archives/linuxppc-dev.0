@@ -1,64 +1,63 @@
-Return-Path: <linuxppc-dev+bounces-21926-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21927-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9FE4FCD6E60
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Jun 2026 21:51:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0AD06CD5BD1
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Jun 2026 21:53:15 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gVPfX2Wrrz2xRs;
-	Wed, 03 Jun 2026 07:51:16 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=192.198.163.13
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780437076;
-	cv=none; b=ZsAKS7YTzoHJMuWCmZQ0XgE7CbhwykgS15JVxkZSPM3WoqOBAakxlODyKlNzeS6KIkPqCDTAnTRY9GWCUqITZBvLiLoLmiKGCVfYRVvWCrRtgQupBYXgESQoR+BNpPmXa1oBpWMbvPAiLsRzmHsAOqIXjs5BCn78IKHB+DofGVZ2d6VFzgakVuaNfrvwQsV8NiZnqSAkzscLbAK5tpagxL7+4oHMV12J1r5acVKNLlq4wWrdqDPN6F+h+k6oK+lfZVpPrlgQTOjO5q+QSylQ6p5mo7diM73U95PDl3xExQtqse31fZy5oOYvZQpKpyMmoCyY61xaB2Z+mO3SbQ1IBg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gVPhp32p9z2xRs;
+	Wed, 03 Jun 2026 07:53:14 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=198.175.65.21
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780437194;
+	cv=none; b=VkNQCZjAF+y3EOb+ujjJPZpI1CTBqMORILJz6pJGqzZkrkCVDiBNF5iXsiCgr4m2AHNImLqS+5HrewClp3wanTAIrCA+SyjqQS/aS0eEFKuL/6VO+nwSiLaIpIPq1wmsUStpiVX2bsxG8m2sje15Up6D43IiUGr2dGAGiFj1pnQstmm4GHxifhCDLdblBHUaxmxYejPES9XGoyYB/EZy9C1KzpObZLVrTN1iLfKYp9PLC/PhIIUSllJWi3YpQg/wFRtspfV3t2I3+ZQjZBYKvCgiiwoyBw+f2qK3ifzYBnRww+8sgXAB5SfUluESxm7YdKYvpxZy2YBQ+t410yQmnQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1780437076; c=relaxed/relaxed;
-	bh=9qKsAUvbqh1wLzMOHRYxSQPc2R9C8SarCpvCJ5CtQsY=;
+	t=1780437194; c=relaxed/relaxed;
+	bh=rAcnmSoQfQEIHH4dt0wFm47EyDqd8YMJ5BxWBIR0S+4=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=VBmCuC04FNdThymGn3mRP3qHSr6SFMTyj/7vGgtHaGHMvnAUe4uGpogcSJI1goK/a3y3ddqCSKMo7lcWm8XwJcfmoanYs5rEeW1COiuXMqsGEHOuM6f7t7u5tPjfRbS1x358+qw3nnIG4Fq8HurdG2gydO5ONykoFw6U+OAcEgQhzqpT45FnVJCVJ6TGRRICqVQYuNXnl2aUjYA1k0jww3oNt9nBDzrhGE/g/ROhVZraulCJOgZXObCh/lAd5gLEs67rl45mw0OAcgjScplxSDSVYeLsWGQ0+AuErwduDDJy0ZcZtJSbu08/w1g/fAqmIEi/sCeniAt5RpmGsm5nyA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=awejKdLY; dkim-atps=neutral; spf=pass (client-ip=192.198.163.13; helo=mgamail.intel.com; envelope-from=andriy.shevchenko@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
+	 Content-Type:Content-Disposition:In-Reply-To; b=SA7pYNZ0Oazu0aGldtW++JRf3KOdkI/BBktSJJgZHsRSd6uhJFkYQ67+AxG6gtJpHtWacMz0mM4/wP82q5H17HiYWmS9CLYNozYevPnNW98iZt6KISynceQKJi2oDGCphj22VlfNppM9TN3Pio7U71Sl95Bjqn/b2x7xrxwzEFXKmvZ+xqjq8cmNtFa6ntlSyY3OPkfEk015doB0ijbhlNS3zazRlVxMpxFCqSAzkbUI8IVlHDCp7/QQ5CFBwo0RvL1HsP1i32hmAXXhWymyqA97WI8kZdpNyhJXSI0FBVToe58LV9x5A/AVfKk3tCQZo1UL1vlTdAmTXm7iO97OdQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=KtNHrXSH; dkim-atps=neutral; spf=pass (client-ip=198.175.65.21; helo=mgamail.intel.com; envelope-from=andriy.shevchenko@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=awejKdLY;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=KtNHrXSH;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.intel.com (client-ip=192.198.163.13; helo=mgamail.intel.com; envelope-from=andriy.shevchenko@linux.intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.13])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.intel.com (client-ip=198.175.65.21; helo=mgamail.intel.com; envelope-from=andriy.shevchenko@linux.intel.com; receiver=lists.ozlabs.org)
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.21])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gVPfW05jmz2xLk
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 03 Jun 2026 07:51:14 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gVPhn12YBz2xLk
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 03 Jun 2026 07:53:12 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1780437076; x=1811973076;
+  t=1780437194; x=1811973194;
   h=date:from:to:cc:subject:message-id:references:
    mime-version:in-reply-to;
-  bh=EMtJZdqo1l7PuMgqUpWruKxuLAbCNmct3ry5I+xdaqs=;
-  b=awejKdLYYQ1YPmTP8S+MhVPDWluwoAgL0dM2DZgqRw7o+4m/SiJQnKh1
-   ijKbJQ98MV5FoJW30rdc7MrzXDcLs2So7f5Nw+adwAzYOHN+HR5XbOD3u
-   AYH9OSNPZ7TsQ7jBUTMOGpfx6pyJbx5PFIh39kkYDrhATMcrRrnhOOBSW
-   NgJhb6Ft3XRiGNkGqdrjBjSnuYAT52ToJRrM6VAMQwgdUAbZqJl1HKC8X
-   kvKbONFnmsyAfbOr1eFNyzKXPpeNCfBcBKDFxanFFb1nR4lkcz8CC+kWu
-   PRhrRp2NuE840SUOkXy5qNwH5JFF+eL2DY63UyCp+hzMHI5Hh4U+c1CO7
+  bh=U2Ci0y5zstQSqkf04hmNdjkbNsyqDpkboO1KnVKRMOs=;
+  b=KtNHrXSHFKxx47fLEHjhiCw53eZ91R+EqlGHLL2qvytQoqmEjqo715oV
+   N/Ks8YpNRITeIZyRgnRxd32xnSDbpMvkBhDJmckjnkTrMoz5RW5tEcuVC
+   8vizP/sxBmlk8btCcjUjCn5NBMJ5TNVxpOeXyq9CslVRA9ZLGQamIVFwP
+   4Myf4NU84aH3SyH4IRk6mdcyJA7ogHzAJTX3qdvc+qIkjp4ZtG8DPfe/J
+   w2jdum/ZwH74hmecYoqVJPrtAkYJOyIuQGYGp3aliiQGEtZMHoimGPskX
+   HEk0iZ1u4IWlXlix5KkOhIK4QGJqh4cT7Rh0o0HSIEQ+V6/yPa3YKJ5jo
    A==;
-X-CSE-ConnectionGUID: W/I77ZApQyqd9dpzi5jkHg==
-X-CSE-MsgGUID: dR6EY4KoQhOiODYyuq1JDA==
-X-IronPort-AV: E=McAfee;i="6800,10657,11805"; a="83817692"
+X-CSE-ConnectionGUID: Z0ECVimMQn21O8Dz17Am4A==
+X-CSE-MsgGUID: VcGT4Hk2Qee56WIghy/VgA==
+X-IronPort-AV: E=McAfee;i="6800,10657,11805"; a="81139233"
 X-IronPort-AV: E=Sophos;i="6.24,183,1774335600"; 
-   d="scan'208";a="83817692"
-Received: from orviesa003.jf.intel.com ([10.64.159.143])
-  by fmvoesa107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 02 Jun 2026 14:51:12 -0700
-X-CSE-ConnectionGUID: FxauZrTcR3yWYpT8wIOh2g==
-X-CSE-MsgGUID: NogLWkvFSvK+PRofa+0loQ==
+   d="scan'208";a="81139233"
+Received: from fmviesa003.fm.intel.com ([10.60.135.143])
+  by orvoesa113.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 02 Jun 2026 14:53:09 -0700
+X-CSE-ConnectionGUID: YYc13f2oRhu39dVGUvMdoA==
+X-CSE-MsgGUID: IznHTBKXQ4W8nlCW1v1K1g==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.24,183,1774335600"; 
-   d="scan'208";a="247977591"
 Received: from pgcooper-mobl3.ger.corp.intel.com (HELO localhost) ([10.245.244.116])
-  by ORVIESA003-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 02 Jun 2026 14:50:56 -0700
-Date: Wed, 3 Jun 2026 00:50:54 +0300
+  by fmviesa003-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 02 Jun 2026 14:52:54 -0700
+Date: Wed, 3 Jun 2026 00:52:52 +0300
 From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-To: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
-Cc: Lee Jones <lee@kernel.org>,
+To: Philipp Zabel <p.zabel@pengutronix.de>
+Cc: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>,
+	Lee Jones <lee@kernel.org>,
 	Mark Brown <broonie@opensource.wolfsonmicro.com>,
 	Thierry Reding <thierry.reding@avionic-design.de>,
 	Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>,
@@ -91,7 +90,6 @@ Cc: Lee Jones <lee@kernel.org>,
 	David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
 	Peter Chen <peter.chen@kernel.org>,
 	Paul Cercueil <paul@crapouillou.net>, Bin Liu <b-liu@ti.com>,
-	Philipp Zabel <p.zabel@pengutronix.de>,
 	Maximilian Luz <luzmaximilian@gmail.com>,
 	Hans de Goede <hansg@kernel.org>,
 	Ilpo =?iso-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@linux.intel.com>,
@@ -106,11 +104,12 @@ Cc: Lee Jones <lee@kernel.org>,
 	intel-xe@lists.freedesktop.org, dri-devel@lists.freedesktop.org,
 	linux-usb@vger.kernel.org, linux-mips@vger.kernel.org,
 	platform-driver-x86@vger.kernel.org
-Subject: Re: [PATCH 21/23] usb: musb: use
+Subject: Re: [PATCH 22/23] reset: rzg2l: use
  platform_device_set_of_node_from_dev()
-Message-ID: <ah9QPgco9BxEix7T@ashevche-desk.local>
+Message-ID: <ah9QtExF2rUUTMNo@ashevche-desk.local>
 References: <20260521-pdev-fwnode-ref-v1-0-88c324a1b8d2@oss.qualcomm.com>
- <20260521-pdev-fwnode-ref-v1-21-88c324a1b8d2@oss.qualcomm.com>
+ <20260521-pdev-fwnode-ref-v1-22-88c324a1b8d2@oss.qualcomm.com>
+ <6af284545729f03a60d06479339862a2f08c6b7e.camel@pengutronix.de>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -126,18 +125,24 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20260521-pdev-fwnode-ref-v1-21-88c324a1b8d2@oss.qualcomm.com>
+In-Reply-To: <6af284545729f03a60d06479339862a2f08c6b7e.camel@pengutronix.de>
 Organization: Intel Finland Oy - BIC 0357606-4 - c/o Alberga Business Park, 6
  krs, Bertel Jungin Aukio 5, 02600 Espoo
 
-On Thu, May 21, 2026 at 10:36:44AM +0200, Bartosz Golaszewski wrote:
-> Ahead of reworking the reference counting logic for platform devices,
-> encapsulate the assignment of the OF node from another device for
-> dynamically allocated platform devices with the provided helper.
+On Tue, Jun 02, 2026 at 10:24:41AM +0200, Philipp Zabel wrote:
+> On Do, 2026-05-21 at 10:36 +0200, Bartosz Golaszewski wrote:
+> > Ahead of reworking the reference counting logic for platform devices,
+> > encapsulate the assignment of the OF node from another device for
+> > dynamically allocated platform devices with the provided helper.
 
-Same Q as per chipidea. Do they provide a pin control facility at the same time?
+...
 
-Otherwise simple device_set_node() or whatever platform analogue should suffice.
+> > -	device_set_of_node_from_dev(&vdev->dev, dev);
+> > +	platform_device_set_of_node_from_dev(vdev, dev);
+
+Same Q here, why it uses inherited call? Cargo cult?
+
+'reused' flag is solely pin control (provider!) thingy as far as I remember.
 
 -- 
 With Best Regards,
