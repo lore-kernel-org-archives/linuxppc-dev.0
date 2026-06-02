@@ -1,83 +1,160 @@
-Return-Path: <linuxppc-dev+bounces-21902-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21903-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 94588CD6E4A
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Jun 2026 12:22:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0F1D3CD6E60
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Jun 2026 12:33:52 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gV9291gspz2xy3;
-	Tue, 02 Jun 2026 22:22:25 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780402945;
-	cv=none; b=HyGB8BiMTFWA9bPHDDecTm/YFERdQnKHo6kFiUe9h1h/p5cG34TPmCZ9bi3Z9tgToO4y1m66F15t9vSo2w8ZlVUNOKZSI+Z5l0DR4eRjXokwR+i2QYXGZUzCpXwkOXJIomeb/5AexqrgixC9jAZoH42i4K60BJxf12xbzOz3BjUjKvVgNZVqYK2oxSkEjm1U2dOdOWbKjjZqhPXvcwfWGGq5lMkITRHyCwSspW/HVNJfMMEk35ge50v07ad7kPOpQc+qnkcigVRrloJw2tV8kRxeLwOxgwheo9YJ++vFZAOBoViXMN2e7Rc/7omkq4minVXjmFUri4Gw1Jk4rzytYA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gV9HM4p4nz2xy3;
+	Tue, 02 Jun 2026 22:33:51 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::82e"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780403631;
+	cv=none; b=aK7SBEEht62l3NZNU0RjiWyZdoA4IfUsWcpsQfYyvyahQ45q1ebQj79ehLe9QrIRloFXD+y7AkWBGUrWmvjm1vgHpffmZBl+rYUXVaTDXo1VEdZXSy09jmWcjigrkHESYzP+E0U0MBsZK8zjbeQNALd79mIiTy4uVAswu6Wa5edJ8+RirAVkBCNc69G1lV+eAUgiPeQEja0n8fyZQfiuy8lfZJNI6HETs77fNe3fXfpPtp4fwtRDbEtMm6zEgJqwZXJypoPj5SaUD1hP51amIsNGQAeu1JHcqAa6pB343r1XJAAPhGjMdUGkwS/w8ntr6JR5x9Ods6UmNN2ismJZag==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1780402945; c=relaxed/relaxed;
-	bh=WvpItkIxk7O+KSLlxiz4ovif/KSLN+p/7G84lynS3r0=;
+	t=1780403631; c=relaxed/relaxed;
+	bh=3fuMy8ZTlB4sZmM4SRNfS45Rtpr0e2y/Uhs3uZMD108=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=C4YCBpY8kOc0wkdxd3eYj66hijgqW86TNH7/FTHVucjweLyggGvm9zL6a9FukLPSV3gn25xaRkuIqbU7SmgAlHX+EzEJCpJRbMTrV8PoP86CNr9dDTsBIza36AfFHn1k2RrcQRm3ckD6sztG0KrRtx4KKztxdEy7sE0ZrR1f1aoZ3FFzGIpbxh2aDfF5NGQLr4mwIX5//2R4fr+JlcOwJgYB4m0Yuo/+r1egYjJfP9sjZuvFGNDSvPLgpj+V0hQoVZMtC6pr+RTLofuv6O2zlSFxIA/TDj9yGkqKO5D24dXu/Y1ugRrOPlxHyO5TjdC6RcxuKjZMmsPFjY8/oenDJw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=bAPvDEDR; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=gautam@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	 Content-Type:Content-Disposition:In-Reply-To; b=RKw3NqKApY6tv/7b/HLnCYZcIarxbhT672vovMrBujP7yORSW3LaTSKn/f0sN5/kMswboNjV8UOPp3n1Sb7Iks11JYhkIxMBbyuenQ+/HQkDUan/a6rl1jq+F/eYtRkE3IkgTVerZYEx2ZJBKeRHLjsEcYdxB5QaiKG1z3g6cTGBtPphkBnLUoCcf4aO1jjoGZtQuIkpuOl5QAp0SSLMP9sodtM2Z/BVA4asj/0mBjsal6igAitQ7tsWeUupOyuDkuTIiAKGub0S4agR3Y9QEkcjHIt4fGxxSAHeXzBdBMiUlK/QyHrKCR8F2dKSEjHnXm8Za8Bf28PxT/cO+QV0pA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ziepe.ca; dkim=pass (2048-bit key; secure) header.d=ziepe.ca header.i=@ziepe.ca header.a=rsa-sha256 header.s=google header.b=pD32zQjS; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::82e; helo=mail-qt1-x82e.google.com; envelope-from=jgg@ziepe.ca; receiver=lists.ozlabs.org) smtp.mailfrom=ziepe.ca
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ziepe.ca
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=bAPvDEDR;
+	dkim=pass (2048-bit key; secure) header.d=ziepe.ca header.i=@ziepe.ca header.a=rsa-sha256 header.s=google header.b=pD32zQjS;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=gautam@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=ziepe.ca (client-ip=2607:f8b0:4864:20::82e; helo=mail-qt1-x82e.google.com; envelope-from=jgg@ziepe.ca; receiver=lists.ozlabs.org)
+Received: from mail-qt1-x82e.google.com (mail-qt1-x82e.google.com [IPv6:2607:f8b0:4864:20::82e])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gV92674S0z2xmV
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 02 Jun 2026 22:22:22 +1000 (AEST)
-Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6526Omu82292567;
-	Tue, 2 Jun 2026 12:22:10 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-type:date:from:in-reply-to:message-id:mime-version
-	:references:subject:to; s=pp1; bh=WvpItkIxk7O+KSLlxiz4ovif/KSLN+
-	p/7G84lynS3r0=; b=bAPvDEDRzjsNC8ctlZP53zdyFTGgAmELukpaARgAQOQFH9
-	jb0njRksh7SrrPFkYKU9mUAbASkHb4VzNCvQlqLrfOR+7ukf/5+0esNSvK+C1kgu
-	NlbbO1LgOXub7Y4ubtDRYLC7VLX6rGoxK8mpCGBs/ctyqy2pAvSuR0dbm8UX7Ufs
-	owsTUF76FWl65xHXIRqdvv2jJc0gw9AUs9TO18et1YSRW78pBqyQlwlmF2QJwtPY
-	Z9k1en5SQf7y9yGWzEQDNltqerwAC+HVuAsIsbVqkPWK8vFkAmgUybfbFnqW1Ofm
-	PK73kWHPrGcVaHvSkIl1CtFoxnPjoEpPIcNXZlcA==
-Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4efqjq5sn8-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 02 Jun 2026 12:22:10 +0000 (GMT)
-Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma21.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 652C9AvU023497;
-	Tue, 2 Jun 2026 12:22:09 GMT
-Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
-	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4egb7k3690-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 02 Jun 2026 12:22:08 +0000 (GMT)
-Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
-	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 652CM7ir53412202
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 2 Jun 2026 12:22:07 GMT
-Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id EDE4E20043;
-	Tue,  2 Jun 2026 12:22:06 +0000 (GMT)
-Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 741A620040;
-	Tue,  2 Jun 2026 12:22:04 +0000 (GMT)
-Received: from mac.bl1-in.ibm.com (unknown [9.123.11.154])
-	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTPS;
-	Tue,  2 Jun 2026 12:22:04 +0000 (GMT)
-Date: Tue, 2 Jun 2026 17:51:58 +0530
-From: Gautam Menghani <gautam@linux.ibm.com>
-To: peterz@infradead.org, mingo@redhat.com, acme@kernel.org,
-        namhyung@kernel.org, mark.rutland@arm.com,
-        alexander.shishkin@linux.intel.com, jolsa@kernel.org,
-        irogers@google.com, adrian.hunter@intel.com, james.clark@linaro.org,
-        atrajeev@linux.ibm.com
-Cc: linuxppc-dev@lists.ozlabs.org, linux-perf-users@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2] perf kvm stat: Add missing mappings for PPC kvm exit
- reasons
-Message-ID: <ah7K5vMDDiOPTn0V@mac.bl1-in.ibm.com>
-References: <20260518125041.39286-1-gautam@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gV9HL0CJFz2xmV
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 02 Jun 2026 22:33:48 +1000 (AEST)
+Received: by mail-qt1-x82e.google.com with SMTP id d75a77b69052e-5175b6c4e19so15977701cf.0
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 02 Jun 2026 05:33:48 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=ziepe.ca; s=google; t=1780403626; x=1781008426; darn=lists.ozlabs.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=3fuMy8ZTlB4sZmM4SRNfS45Rtpr0e2y/Uhs3uZMD108=;
+        b=pD32zQjSMdGqOztiWgD0N2j6OGg6XK78KLhKR2NKbyVogEUjz25cMgfPiY29IfGfKU
+         kYML7gVr1drxR3VrefOR7vEnUKm8VXJHZZ7Yjaifi/WhL+MBR3AVuGKdpKMCYYG8JVCI
+         mEQehgpA86aMYjeYTEPL3cS0MrzAHl8/fKLZ8AjN/thm/IJ2+wFIKCmi9FDTmSfNJXBz
+         yHKwHStqPcgUVUtmoRtpJOWc3x61vL0urCt7EPKWdalwD+a8vpTiHmUXG9Y7Mck+o1Lu
+         vUgf8dK4xQhOOrvYDgNeMTrq2quBr3pVJbT4Mec8rn51MdZLW6wnK9GYSE1i2Er2bjJk
+         TMlQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1780403626; x=1781008426;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=3fuMy8ZTlB4sZmM4SRNfS45Rtpr0e2y/Uhs3uZMD108=;
+        b=D9EXKGTpn4FLTmNiaeD7Fo9krVVtWOhKAeFvmTXbIbRGZwP5/aifWkuibEom8HwTN5
+         FqGH8bTAXKZjJNzKn8ooQqU5z5wTIfhSqKrXPt13r19mMcdZeNbrC+Su80F8Zt21jEoQ
+         M9ub5hznX/y911pii4klC79IJiZ6CwJP/+bwGrEXUGvqCo41DLIv+7N6QPJQi83Fmzkz
+         /iKHJGRrP0raWyr2PFm21O6o4yjJZ1fqKl76tkkfXvTllnrcowKlLby0nzQx1ks5aBZD
+         4SBHJuieOOy1g20rQz0XZyZ/Il+Oh46C043o4Ey4Imw45oUWXAmDvjk+jxT5bs3yL6zk
+         J1bQ==
+X-Forwarded-Encrypted: i=1; AFNElJ9uezKRdqcKc5iALGjsSkQl3YqrxiPxTqWviy0HpGOHo4EvWIgV3lL8szZh6OurpS7QS6niLp9FMfRGITI=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YxtivenvcKtln0O5aYIuCNEW6TW786hWDVyKCCotkDZr6mi1tn+
+	6g4ua8DJJZPBTEyvF+DQjSIn2d1PDO9vNSjUuMa/g/K4a4X1MaFfrpdY2KlD6ycEtzY=
+X-Gm-Gg: Acq92OGeOLmCZE4hwvro8GEdpzUsJ2Y9UApeC9uvc7ocDKP/lpKOi90/IW6hgjMJv7K
+	cNauRuO1gU1RF1vxHjdoOMAJB/qB3hUz1GEB5aAEg8pc7I4hOXxmH3v9EGVJ9fjmUZxjH5Liuor
+	a950o9sCByRM0ynekb64f25fDL9OKOO5Im/M8ChUAEHSrGwpDR/zeJ8Qb/RnBNJRO3A2GXi5sgV
+	Y6I2dAE9tPohB1MD/NFfPOqRAtIlnxJfzoR1pg9tvulQpzMBtEVkNn+HFWzX7d6LgkoFOmq23T0
+	UFE7fdQkNQIKVA1pI1cJEGiNDyjGGB82bLlmCpRQWNXoxHxia6rmOQiQXQYFMYa9LMPpTCSrjjn
+	QSRyhvnTKJrdfzwzLMuTItm3rvAdlYzp/cu4s69VHj0pIBb/wBWGzAuhztBbPrrYDyYA0ca0EKb
+	5wMYgQEI3nUIipnVSsDpX11ldOtTpnd7ehR9eKbgx9kvYYuM9CeUgPw9pVudaEwJmnzTNHpegaA
+	dlnk5p4QBKvHO8t
+X-Received: by 2002:a05:622a:190a:b0:509:2527:d789 with SMTP id d75a77b69052e-5173a5c05ecmr228232631cf.6.1780403625864;
+        Tue, 02 Jun 2026 05:33:45 -0700 (PDT)
+Received: from ziepe.ca (crbknf0213w-47-54-130-67.pppoe-dynamic.high-speed.nl.bellaliant.net. [47.54.130.67])
+        by smtp.gmail.com with ESMTPSA id d75a77b69052e-51741d6a240sm78686221cf.18.2026.06.02.05.33.45
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 02 Jun 2026 05:33:45 -0700 (PDT)
+Received: from jgg by wakko with local (Exim 4.97)
+	(envelope-from <jgg@ziepe.ca>)
+	id 1wUOJU-00000003m5x-3DKO;
+	Tue, 02 Jun 2026 09:33:44 -0300
+Date: Tue, 2 Jun 2026 09:33:44 -0300
+From: Jason Gunthorpe <jgg@ziepe.ca>
+To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Cc: Kees Cook <kees@kernel.org>, Luis Chamberlain <mcgrof@kernel.org>,
+	Pengpeng Hou <pengpeng@iscas.ac.cn>, stable@vger.kernel.org,
+	Petr Pavlu <petr.pavlu@suse.com>,
+	Richard Weinberger <richard@nod.at>,
+	Anton Ivanov <anton.ivanov@cambridgegreys.com>,
+	Johannes Berg <johannes@sipsolutions.net>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Len Brown <lenb@kernel.org>, Corey Minyard <corey@minyard.net>,
+	Gabriel Somlo <somlo@cmu.edu>,
+	"Michael S. Tsirkin" <mst@redhat.com>,
+	Jani Nikula <jani.nikula@linux.intel.com>,
+	Joonas Lahtinen <joonas.lahtinen@linux.intel.com>,
+	Rodrigo Vivi <rodrigo.vivi@intel.com>,
+	Tvrtko Ursulin <tursulin@ursulin.net>,
+	David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
+	Bart Van Assche <bvanassche@acm.org>,
+	Leon Romanovsky <leon@kernel.org>,
+	Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
+	Hans de Goede <hansg@kernel.org>,
+	Mauro Carvalho Chehab <mchehab@kernel.org>,
+	Bjorn Helgaas <bhelgaas@google.com>, Hannes Reinecke <hare@suse.de>,
+	"James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
+	"Martin K. Petersen" <martin.petersen@oracle.com>,
+	Daniel Lezcano <daniel.lezcano@kernel.org>,
+	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Jiri Slaby <jirislaby@kernel.org>,
+	Alan Stern <stern@rowland.harvard.edu>,
+	Jason Wang <jasowang@redhat.com>,
+	Xuan Zhuo <xuanzhuo@linux.alibaba.com>,
+	Eugenio =?utf-8?B?UMOpcmV6?= <eperezma@redhat.com>,
+	Jason Baron <jbaron@akamai.com>, Jim Cromie <jim.cromie@gmail.com>,
+	Tiwei Bie <tiwei.btw@antgroup.com>,
+	Benjamin Berg <benjamin.berg@intel.com>,
+	Ilpo =?utf-8?B?SsOkcnZpbmVu?= <ilpo.jarvinen@linux.intel.com>,
+	"David E. Box" <david.e.box@linux.intel.com>,
+	"Maciej W. Rozycki" <macro@orcam.me.uk>,
+	Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+	Peter Zijlstra <peterz@infradead.org>,
+	Heiko Carstens <hca@linux.ibm.com>,
+	Vasily Gorbik <gor@linux.ibm.com>,
+	Sean Christopherson <seanjc@google.com>,
+	Paolo Bonzini <pbonzini@redhat.com>,
+	Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>,
+	Borislav Petkov <bp@alien8.de>,
+	Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
+	"H. Peter Anvin" <hpa@zytor.com>, Vinod Koul <vkoul@kernel.org>,
+	Frank Li <Frank.Li@kernel.org>, Daniel Gomez <da.gomez@kernel.org>,
+	Sami Tolvanen <samitolvanen@google.com>,
+	Aaron Tomlin <atomlin@atomlin.com>,
+	Alexander Potapenko <glider@google.com>,
+	Marco Elver <elver@google.com>, Dmitry Vyukov <dvyukov@google.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	John Johansen <john.johansen@canonical.com>,
+	Paul Moore <paul@paul-moore.com>, James Morris <jmorris@namei.org>,
+	"Serge E. Hallyn" <serge@hallyn.com>,
+	Georgia Garcia <georgia.garcia@canonical.com>, kvm@vger.kernel.org,
+	dmaengine@vger.kernel.org, linux-modules@vger.kernel.org,
+	kasan-dev@googlegroups.com, linux-mm@kvack.org,
+	apparmor@lists.ubuntu.com, linux-security-module@vger.kernel.org,
+	linux-um@lists.infradead.org, linux-acpi@vger.kernel.org,
+	openipmi-developer@lists.sourceforge.net, qemu-devel@nongnu.org,
+	intel-gfx@lists.freedesktop.org, dri-devel@lists.freedesktop.org,
+	linux-rdma@vger.kernel.org, linux-media@vger.kernel.org,
+	linux-pci@vger.kernel.org, linux-scsi@vger.kernel.org,
+	linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+	linux-serial@vger.kernel.org, linux-usb@vger.kernel.org,
+	usb-storage@lists.one-eyed-alien.net,
+	virtualization@lists.linux.dev, linux-kernel@vger.kernel.org,
+	linux-arch@vger.kernel.org, netdev@vger.kernel.org,
+	linux-fsdevel@vger.kernel.org, linux-hardening@vger.kernel.org
+Subject: Re: [PATCH 01/11] params: bound array element output to the caller's
+ page buffer
+Message-ID: <20260602123344.GG2487554@ziepe.ca>
+References: <20260521133315.work.845-kees@kernel.org>
+ <20260521133326.2465264-1-kees@kernel.org>
+ <ah699hwLxIIOZ0-7@ashevche-desk.local>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -93,69 +170,30 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20260518125041.39286-1-gautam@linux.ibm.com>
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-ORIG-GUID: Tk7D4a_Htk6jOPGOgc8f3kj8fCqAmXI7
-X-Proofpoint-GUID: ihViwG1SwYWkBn98Vbdzm9Y9lrnyJgSH
-X-Authority-Analysis: v=2.4 cv=bcVbluPB c=1 sm=1 tr=0 ts=6a1ecaf2 cx=c_pps
- a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
- a=kj9zAlcOel0A:10 a=FelO9ux0wxsA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=uAbxVGIbfxUO_5tXvNgY:22 a=VnNF1IyMAAAA:8
- a=HR90um4bXCwT2XOkuecA:9 a=CjuIK1q_8ugA:10
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjAyMDExNiBTYWx0ZWRfX39orDy2nf3QN
- Ilzrpalc4r9Gux7s6SR3vAoESVYxaDaGr7eOdnzM08PonXnunpcCOjvcIC06so41Z3Ww1hA9kXs
- oogmu/IDSpU9bl3cCrxiUvUxhdDoYdIZWhx94LuOoE7AnWEKHIS56WqOBUroYFkrVieb4lpjxze
- D1kYNm2qKqLi/xiar9mjLodgJr+sHSxk750bXJaXY7sNXJw0nkEfE7SefEbgQJbVwATSeZOHpbe
- ApjiOAW++Y3wFXwzWdDlu/Udau6KpkmgFneXz6+h43njEanhaLjciAKV2yUvNop1yL/JI9KchXi
- g3kJ9ek7PDRL5ljG3uMGLe4glHvxs+VQfaoUhMWsABSItdkPQYm3EBNCmzu8bJKQSXVq0kcW/4c
- 3AhDPtNauD9U6+pOMp4Q41u2xlzcJ7nCttmwKjXkDl1uYjKnY1pYVwm8GLLj3tAT44Y+GdUa+zS
- XKZJ1HoC1pFRQr/YRow==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
- definitions=2026-06-02_01,2026-05-28_03,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- impostorscore=0 clxscore=1015 adultscore=0 priorityscore=1501 phishscore=0
- lowpriorityscore=0 bulkscore=0 malwarescore=0 spamscore=0 suspectscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2605210000 definitions=main-2606020116
+In-Reply-To: <ah699hwLxIIOZ0-7@ashevche-desk.local>
 
-On Mon, May 18, 2026 at 06:20:38PM +0530, Gautam Menghani wrote:
-> The macro kvm_trace_symbol_exit is used for providing the mappings
-> for the exit trap vectors and their names. Add mappings for H_FAC_UNAVAIL
-> and H_VIRT so that exit reasons are displayed as string instead of
-> vector numbers when using perf kvm stat.
+On Tue, Jun 02, 2026 at 02:26:46PM +0300, Andy Shevchenko wrote:
+> On Thu, May 21, 2026 at 06:33:14AM -0700, Kees Cook wrote:
+> > 
+> > param_array_get() appends each element's string representation into the
+> > shared sysfs page buffer by passing buffer + off to the element getter.
+> > 
+> > That works for getters that only write a small bounded string, but
+> > param_get_charp() and similar helpers format against PAGE_SIZE from the
+> > pointer they receive. Once off is non-zero, an element getter can
+> > therefore write past the end of the original sysfs page buffer.
+> > 
+> > Collect each element into a temporary PAGE_SIZE buffer first and then
+> > copy only the remaining space into the caller's page buffer.
 > 
-> Signed-off-by: Gautam Menghani <gautam@linux.ibm.com>
-> ---
-> v1 -> v2:
-> 1. Update the patch title and description to remove dependency on
-> another file trace_book3s.h
+> ...
 > 
->  tools/perf/util/kvm-stat-arch/book3s_hv_exits.h | 4 +++-
->  1 file changed, 3 insertions(+), 1 deletion(-)
+> > +	elem_buf = kmalloc(PAGE_SIZE, GFP_KERNEL);
 > 
-> diff --git a/tools/perf/util/kvm-stat-arch/book3s_hv_exits.h b/tools/perf/util/kvm-stat-arch/book3s_hv_exits.h
-> index 2011376c7ab5..2688ca7d0399 100644
-> --- a/tools/perf/util/kvm-stat-arch/book3s_hv_exits.h
-> +++ b/tools/perf/util/kvm-stat-arch/book3s_hv_exits.h
-> @@ -26,8 +26,10 @@
->  	{0xe00, "H_DATA_STORAGE"}, \
->  	{0xe20, "H_INST_STORAGE"}, \
->  	{0xe40, "H_EMUL_ASSIST"}, \
-> +	{0xea0, "H_VIRT"}, \
->  	{0xf00, "PERFMON"}, \
->  	{0xf20, "ALTIVEC"}, \
-> -	{0xf40, "VSX"}
-> +	{0xf40, "VSX"}, \
-> +	{0xf80, "H_FAC_UNAVAIL"}
->  
->  #endif
-> -- 
+> get_free_page() (or how it is called)?
 
-Hi,
+I thought modern mm guidance was to use kmalloc whenever possible and
+not use get_free_page() unless you intend to use the struct page bits?
 
-Please review this and let me known if any changes are needed.
-
-Thanks
+Jason
 
