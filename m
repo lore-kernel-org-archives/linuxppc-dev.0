@@ -1,76 +1,76 @@
-Return-Path: <linuxppc-dev+bounces-21892-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21893-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 126A2CD6E57
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Jun 2026 10:12:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0F97BCD6E57
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Jun 2026 10:13:00 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gV68F3QYDz3brN;
-	Tue, 02 Jun 2026 20:12:29 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::42b"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780395149;
-	cv=none; b=Np1ZsAtek9ksECtkLNvxpOJYm2Pg09/Fmv9+pzNAjfXsJIVv6HwtQpchwqfGCt+6meKsyJpoLjeeMqvUT3DdLploT6Nh/D5+ns5lOuv6yLa+RsxAz1bwLvatwQQsLm+iKwE8jrMOaN/xnWPaW/WFzcLJz8Y0jkQ5KIbGq0XdQAG1O62YaoR3zLJ98PWCzuitZZzkGdGv3FgGVOqpGdT9Ee0VeHZxTmwZb28f+1JmWDq+tevXnFzzvc4jdgHTtnbuT+S33RK8zucH1g3kNpBloykHn9DUOLCx8Zkp5i/VnGu/3LalTjPiMKFy3btcgPuwWyqyujvh2s5PP3VOpcUXJQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gV68L4xvvz3cFf;
+	Tue, 02 Jun 2026 20:12:34 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::42e"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780395154;
+	cv=none; b=jJr4mdnWVsDdoTMsu135kSFs6kGBI2BBYNQo9zwL5aafXLPgAqx38PF3wpOTL8vqIqnm1J6a2O1RYDoxjc7qA7EBLSBYgtU4MiUPXqOAdOnEcSWDlfyDx+heVZv/kZntmbMOiTaRPk/l6C1u9tIZiIReGwNeQqbLqVjpb37oybDGy67Y5Ujysq2fiSFopKk13J8mWEQi6sSjkJY2EFlaoaAWsoBcjvvDcLjVcFJjVjff9VsyhRamuxzXQJEJrJNXfg3tbdrvvHELoA4bmZ6Viks3g9vOfqStCom+whB2P9nwrmCuHE+J8o7gY1c1I+lDx99tbxuDZfs3pCTpqonQNg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1780395149; c=relaxed/relaxed;
-	bh=26MXCqLFrwb2c3VcF20KKUb5g0TkMABKfAG/bHmkXiE=;
+	t=1780395154; c=relaxed/relaxed;
+	bh=1RCwi6UfDOd+MCdFxykpsofvVeescXETLa8L+kiLjU4=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=dG83jDxpHF84VCU4347eOMAjNbRbaJglXJCX/7pMipYSaBFUyD7CMyi4tus7VMHtigF6QjXEENllzf5U0h7+Tq6mSKItDdIs3SCFzILavj4oTq+Bxo0n/nA8gWEETPFjOpR7qU3X742KwYUHJ3IQUfcZJw07ocjJVwe+kimljxZipC9pzN4IcIG+TUQxJ3ZckotD9Lnk29lViyeDPuA+s4zrSUNRLtKtFLMEB3ueBIE+blU9q4Mw46eVjQwfhJKpeeG/jzIl7uTC4SVTPvoy/lOBYhWZomQxFX0KWRe9iQiioH3oU3P4vc5p8T5qxo5wKV81bNwKqwrfWQ+m5D238A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=bytedance.com; dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=O/Tj/JEc; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::42b; helo=mail-pf1-x42b.google.com; envelope-from=songmuchun@bytedance.com; receiver=lists.ozlabs.org) smtp.mailfrom=bytedance.com
+	 MIME-Version; b=THX3MXPZcXnFeYG7cDRxskInVXw+mvnEwujjz5pOtF3XUYbfuJNYRVVtVUT15/pmaqNt16NDE3bcg/LnlpihNW48YBF+WxQUdCRPzjfr0Qz9gcATR1rhk14ix28dFc7YSoxjGJ8Sk7pYR3a26Ct1nEhSlBbvW6aiQdZhnyHjDJVnYH2anwaTvKVgS+bglo/sBvgk8lNqq/VJ+5cDbmKLiLiM6BW38O+tKEL0wqXr1BSc/l/jS7O0Fz7u1qgTG3yZcWjLfu53tpcqd8TUy+GjqxIOxQCtoILUanLdWSrp5ktaK9ZBA0yPNaWd8zLdRyth1JlUmok3L3rlxLAuNr6bJA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=bytedance.com; dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=R8bZ5Uih; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::42e; helo=mail-pf1-x42e.google.com; envelope-from=songmuchun@bytedance.com; receiver=lists.ozlabs.org) smtp.mailfrom=bytedance.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=bytedance.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=O/Tj/JEc;
+	dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=R8bZ5Uih;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bytedance.com (client-ip=2607:f8b0:4864:20::42b; helo=mail-pf1-x42b.google.com; envelope-from=songmuchun@bytedance.com; receiver=lists.ozlabs.org)
-Received: from mail-pf1-x42b.google.com (mail-pf1-x42b.google.com [IPv6:2607:f8b0:4864:20::42b])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bytedance.com (client-ip=2607:f8b0:4864:20::42e; helo=mail-pf1-x42e.google.com; envelope-from=songmuchun@bytedance.com; receiver=lists.ozlabs.org)
+Received: from mail-pf1-x42e.google.com (mail-pf1-x42e.google.com [IPv6:2607:f8b0:4864:20::42e])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gV68D5Jzvz3brH
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 02 Jun 2026 20:12:28 +1000 (AEST)
-Received: by mail-pf1-x42b.google.com with SMTP id d2e1a72fcca58-8422f148dfcso1273924b3a.3
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 02 Jun 2026 03:12:28 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gV68L0YGjz2xmX
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 02 Jun 2026 20:12:33 +1000 (AEST)
+Received: by mail-pf1-x42e.google.com with SMTP id d2e1a72fcca58-8423f1e2f8eso1696554b3a.1
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 02 Jun 2026 03:12:33 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=bytedance.com; s=google; t=1780395147; x=1780999947; darn=lists.ozlabs.org;
+        d=bytedance.com; s=google; t=1780395152; x=1780999952; darn=lists.ozlabs.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=26MXCqLFrwb2c3VcF20KKUb5g0TkMABKfAG/bHmkXiE=;
-        b=O/Tj/JEc4rxEfGwpYR/n1ux456XGHw2m4or13YMI3ArMGlEnpL6/UlyWlVQXfntc39
-         s8lPwLmWmXuE6Ewks43gs80u8G6yXf9SiP86D1MUorXbxLP4YeFO6oT4xbvVtIC7jcrb
-         E6eBHBN24tudQRZ+u5X4eHhDodvgbNorzIqg/vshtO0oFrCIncUEKbL1YMyRMPVKVbQF
-         nEBaFu4WYQ6MGjLZ61BycFw/qrUQxO2ze+HujfxEsxDETpb7zxhzazim56t99lk36XbT
-         Q/OY2q9GrT9Gd9bcCyegDuO7Zj/TGga4BmRxMU/7tSU/69dS9c5FNKe35pn5SBoR7sWF
-         AJfw==
+        bh=1RCwi6UfDOd+MCdFxykpsofvVeescXETLa8L+kiLjU4=;
+        b=R8bZ5UihaeIVqr2OXaLkYSRgCWPhcO7pq/bAzMy1pijYEa00fwEbsb3tTCpYgo2Ll/
+         45vHexFHTqQoXd/1uZr3nGS9F1ogYih4TTt/IMci+EeSQukMTcJWtzaZ2XPhGdD9O6fW
+         DCurDJxDB6lwmgmhaisjc43V4xy1/5iq7PlCzpDmytO+wtwGJmfp7ZwqzdZ2TaymAOyc
+         M1oa4og0YJb3g48z7rDFGs6zI1ZueD6CXMR5eV61fxUydTkKShjDZ/Z3C7Iupy6U6vkw
+         YiiOrCudyfuK0WOJ4Lbipovjip8XLAo2M23ZHixBIO3cwpuRLa4ftkEXmRQdLdqBcit0
+         02HQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1780395147; x=1780999947;
+        d=1e100.net; s=20251104; t=1780395152; x=1780999952;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to;
-        bh=26MXCqLFrwb2c3VcF20KKUb5g0TkMABKfAG/bHmkXiE=;
-        b=sGxTbvfNkW1mTaBz70GcrOD/MuKkERNedumcyq//pNhLNyao13szXzWFZucPtRcGeS
-         f2H3n78/3O+s6IIOdWdreWy5nXo8CpMYhMB1O2YsoP9rlYPDkM/YyTsZpcaHnKu7rGSg
-         Kwr0ByLto8FhI6ChtZH4KGtR6LxMtyOlt5crHvfQytR7U51yUU7d/fz5d4vlXl8mXvtx
-         +QkUvgtOzSZqb7MRemrAvkh48WN2QNpdGvImiYhFnX9zQlqfzMHQoUxkAJPQ8h86MItO
-         B998iiw4TrDvhp03686kYH0ErbDoHLwZiaI1uPTq+LNO/8gQ2rcvwOO86dP9Va1QS/Fy
-         S5pA==
-X-Forwarded-Encrypted: i=1; AFNElJ8VvDJu+GsE7++oOOSsZsb7r9h8Rv9dLv57I6tnyOYsitke85iy/qoixksPwMSClLKaXKbXA1eEio/ACLQ=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YyyyXVbA3dJ0vihoaLxBDWi5gN0mE8OfzarG0/kW+cDH3jqIejt
-	Zf1fPqGCVQ3SCYLfYHBeiNPMCMU/amSJShGuO3YnA3SL6IhHVkrB1CNXArkCqNssV/M=
-X-Gm-Gg: Acq92OEPGvwFT7tc4lnXNukHpZY6jF1EmIrprU4Tp2w3uhIsUyroiqaQ8kltGK0CI/U
-	ePShIKizaf+j6QMpZ08lN6XGliX7SB9tetcRZADqyGize8BLZ2duxTD2hQAEj3dV09K4n7J1gJi
-	bEo/BvtvP8GU0UV4xsN9X7p6Yo3XVBrKXzgvYzAVVxfzxSpF41dMRCEOfdnfBtkzghwBVmDqqo9
-	j0ZTBB/B9xGks9h3BwINsJqsYF/rZH3PWaQZNjJ96GlmNolm2rcziwle6pkCdlXuJQmB0cG85u+
-	3EdN4vH4hQ84PTUsAa/KIn3yIWnUcgF+Ji+hdXF+Irtxao1NWsXhxEDd6dJfH6Yvkif1/Gyf53p
-	/y1jgRcN3OPN8Og2vdSGhR9Ox6+LTHP++ZgSGv04QVV0R/j/FceyGaqkIrQuyKZ210AjQAo0+Wg
-	9eJjvGSC0O7wqu7xPlRlzEcBGn8FIPUBTvyK/TlNSzVeCrSRuCeiuAFKk=
-X-Received: by 2002:a05:6a00:4c8b:b0:842:43d1:4b41 with SMTP id d2e1a72fcca58-84243d15007mr9808067b3a.47.1780395146453;
-        Tue, 02 Jun 2026 03:12:26 -0700 (PDT)
+        bh=1RCwi6UfDOd+MCdFxykpsofvVeescXETLa8L+kiLjU4=;
+        b=dx9Oz2QrycvaBoMGhKd0GkrQWSX2QI2jCxSFGamzcAmTdM2hqYgfpni10jItIJRenV
+         PRH0nsbtdX0P8iuNiKzH1Z1GqBp/2gEcWzRqNMe9zLnwM0kJwqfbT0hpUq/TiweHjAZP
+         mm94S1o67JYeOhoP31YTHOWaA3lj4M50A6MbSZUq1/L9kGbz/w5ppt40FmU0ucS1rZaq
+         MHvQtK4bzKKvnK9i5g8i8Eb1e0cAfVlD3+z/k/zNXELuvuAmp+NMAA/wSaqs0TZSvApo
+         NHwumcjNZYmoweb1fvqxceCE/b7VuWZe2Lu0zfQ0SSQLIbie7gWFISL01oKr0QNzjqDO
+         ebDw==
+X-Forwarded-Encrypted: i=1; AFNElJ9cqaqUO76XW0+EiP61if0UDLi1bWaw+XWsqncAm2B7ZiHb4a6/LhfcjSeW4jU7IkValLHzDX5lN5PZNZU=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YxUoT7g7zyS88VX4UYfk54/La8kBfP3IS+RmZXhV3GLoP01Rjhg
+	fPLENVyioh8ehAaDU/OkKFio5LbslKLjLR7H1Zarn5q48c3FlgtCXML2a/O4y5+qFuc=
+X-Gm-Gg: Acq92OF0Atr63/d/KeKU9Lq/hCXcIEpVT0CZ/1ZkmWMrqtKiH8iGjKrSmKO+qg+QkyL
+	xi1i2+D/WGEUFF3xduZMuH0GTLwdOeId83Y+rz4kixw2hwX+WTFyA25CuWtL7dB4mt6+hv3I2sk
+	2IMt00IcMDEl0pmHWGCf9Gynfoq8u3WZ2pIB7nkqj2r2QLsaYjG21XNCHMUqQHO3X1fhFqORwXo
+	7snxfIAwp/ngnnbWtKCKgVtTBYrsc3XSh8PQZbPSZQs9ZOVa0U7cvi1uC50ukQHSsaF8oR6Jyhh
+	daHLwb5HUvd0LgYp1ArDjeO/RfEexYAiXFAwt+INnF/XTmgygLq/rymzWx5EEOK9RoXs3W0xNlG
+	RR9TwBZvacM/M6Mzz1Bk0QhpDD5Y0JX+9+TK0fBaIWojdxweodI0LE13mbG/ckibPTIc0QA1VmO
+	cDPk1DJsu8ipFNXM6cM+CUHPZX5ZTyFlxcKm+4o8od3tip1dS81oa3g/M=
+X-Received: by 2002:a05:6a00:3c91:b0:841:58b0:82c7 with SMTP id d2e1a72fcca58-84225327e9amr13634126b3a.8.1780395152058;
+        Tue, 02 Jun 2026 03:12:32 -0700 (PDT)
 Received: from n232-176-004.byted.org ([36.110.163.102])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-84214d018fcsm12015507b3a.60.2026.06.02.03.12.21
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-84214d018fcsm12015507b3a.60.2026.06.02.03.12.26
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 02 Jun 2026 03:12:25 -0700 (PDT)
+        Tue, 02 Jun 2026 03:12:31 -0700 (PDT)
 From: Muchun Song <songmuchun@bytedance.com>
 To: Oscar Salvador <osalvador@suse.de>,
 	David Hildenbrand <david@kernel.org>,
@@ -91,9 +91,9 @@ Cc: Muchun Song <muchun.song@linux.dev>,
 	linuxppc-dev@lists.ozlabs.org,
 	Mike Kravetz <mike.kravetz@oracle.com>,
 	Muchun Song <songmuchun@bytedance.com>
-Subject: [PATCH v3 17/19] mm/sparse-vmemmap: Remove sparse_vmemmap_init_nid_late()
-Date: Tue,  2 Jun 2026 18:10:37 +0800
-Message-ID: <20260602101039.1867613-18-songmuchun@bytedance.com>
+Subject: [PATCH v3 18/19] mm/hugetlb: Remove unused bootmem cma field
+Date: Tue,  2 Jun 2026 18:10:38 +0800
+Message-ID: <20260602101039.1867613-19-songmuchun@bytedance.com>
 X-Mailer: git-send-email 2.54.0
 In-Reply-To: <20260602101039.1867613-1-songmuchun@bytedance.com>
 References: <20260602101039.1867613-1-songmuchun@bytedance.com>
@@ -112,122 +112,99 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-hugetlb_vmemmap_init_late() no longer has any users, so the remaining
-late-init path in sparse_vmemmap_init_nid_late() is dead code.
+struct huge_bootmem_page no longer needs to keep the CMA pointer. The
+bootmem path only needs to remember whether a huge page came from CMA,
+which is already encoded in the flags field.
 
-Remove sparse_vmemmap_init_nid_late() and its declarations.
+Set HUGE_BOOTMEM_CMA when the page is allocated and drop the unused cma
+field together with the redundant assignments.
 
 Signed-off-by: Muchun Song <songmuchun@bytedance.com>
 ---
- include/linux/mmzone.h |  7 -------
- mm/hugetlb_vmemmap.c   |  4 ----
- mm/hugetlb_vmemmap.h   |  5 -----
- mm/sparse-vmemmap.c    | 11 -----------
- mm/sparse.c            |  1 -
- 5 files changed, 28 deletions(-)
+ mm/hugetlb.c     |  5 +----
+ mm/hugetlb_cma.c | 29 +++++++++++------------------
+ mm/internal.h    |  2 --
+ 3 files changed, 12 insertions(+), 24 deletions(-)
 
-diff --git a/include/linux/mmzone.h b/include/linux/mmzone.h
-index 1331a7b93f33..72883df17c72 100644
---- a/include/linux/mmzone.h
-+++ b/include/linux/mmzone.h
-@@ -2170,8 +2170,6 @@ static inline int preinited_vmemmap_section(const struct mem_section *section)
- }
+diff --git a/mm/hugetlb.c b/mm/hugetlb.c
+index 47c3d6d11c58..fb7ad2a4a26b 100644
+--- a/mm/hugetlb.c
++++ b/mm/hugetlb.c
+@@ -3076,10 +3076,7 @@ static bool __init alloc_bootmem_huge_page(struct hstate *h, int nid)
+ 	 */
+ 	INIT_LIST_HEAD(&m->list);
+ 	m->hstate = h;
+-	if (!hugetlb_early_cma(h)) {
+-		m->cma = NULL;
+-		m->flags = 0;
+-	}
++	m->flags = hugetlb_early_cma(h) ? HUGE_BOOTMEM_CMA : 0;
  
- void sparse_vmemmap_init_nid_early(int nid);
--void sparse_vmemmap_init_nid_late(int nid);
--
- #else
- static inline int preinited_vmemmap_section(const struct mem_section *section)
+ 	/* CMA pages: zone-crossing is validated in hugetlb_cma_reserve(). */
+ 	if (!hugetlb_early_cma(h) &&
+diff --git a/mm/hugetlb_cma.c b/mm/hugetlb_cma.c
+index e487d0ffffc0..4dfce68b354a 100644
+--- a/mm/hugetlb_cma.c
++++ b/mm/hugetlb_cma.c
+@@ -59,31 +59,24 @@ struct folio *hugetlb_cma_alloc_frozen_folio(int order, gfp_t gfp_mask,
+ void * __init hugetlb_cma_alloc_bootmem(struct hstate *h, int nid, bool node_exact)
  {
-@@ -2180,10 +2178,6 @@ static inline int preinited_vmemmap_section(const struct mem_section *section)
- static inline void sparse_vmemmap_init_nid_early(int nid)
- {
- }
+ 	struct cma *cma;
+-	struct huge_bootmem_page *m;
++	void *m;
+ 	int node;
+ 
+ 	cma = hugetlb_cma[nid];
+ 	m = cma_reserve_early(cma, huge_page_size(h));
+-	if (!m) {
+-		if (node_exact)
+-			return NULL;
++	if (m || node_exact)
++		return m;
+ 
+-		for_each_node_mask(node, hugetlb_bootmem_nodes) {
+-			cma = hugetlb_cma[node];
+-			if (!cma || node == nid)
+-				continue;
+-			m = cma_reserve_early(cma, huge_page_size(h));
+-			if (m)
+-				break;
+-		}
+-	}
 -
--static inline void sparse_vmemmap_init_nid_late(int nid)
--{
--}
- #endif
- 
- static inline int online_section_nr(unsigned long nr)
-@@ -2388,7 +2382,6 @@ static inline unsigned long next_present_section_nr(unsigned long section_nr)
- 
- #else
- #define sparse_vmemmap_init_nid_early(_nid) do {} while (0)
--#define sparse_vmemmap_init_nid_late(_nid) do {} while (0)
- #define pfn_in_present_section pfn_valid
- #endif /* CONFIG_SPARSEMEM */
- 
-diff --git a/mm/hugetlb_vmemmap.c b/mm/hugetlb_vmemmap.c
-index 464578ee246e..cde6f3aba87b 100644
---- a/mm/hugetlb_vmemmap.c
-+++ b/mm/hugetlb_vmemmap.c
-@@ -810,10 +810,6 @@ static struct zone *pfn_to_zone(unsigned nid, unsigned long pfn)
- 
- 	return NULL;
- }
--
--void __init hugetlb_vmemmap_init_late(int nid)
--{
--}
- #endif
- 
- static const struct ctl_table hugetlb_vmemmap_sysctls[] = {
-diff --git a/mm/hugetlb_vmemmap.h b/mm/hugetlb_vmemmap.h
-index 18b490825215..7ac49c52457d 100644
---- a/mm/hugetlb_vmemmap.h
-+++ b/mm/hugetlb_vmemmap.h
-@@ -29,7 +29,6 @@ void hugetlb_vmemmap_optimize_folios(struct hstate *h, struct list_head *folio_l
- void hugetlb_vmemmap_optimize_bootmem_folios(struct hstate *h, struct list_head *folio_list);
- #ifdef CONFIG_SPARSEMEM_VMEMMAP_PREINIT
- void hugetlb_vmemmap_init_early(int nid);
--void hugetlb_vmemmap_init_late(int nid);
- #endif
- 
- 
-@@ -81,10 +80,6 @@ static inline void hugetlb_vmemmap_init_early(int nid)
- {
- }
- 
--static inline void hugetlb_vmemmap_init_late(int nid)
--{
--}
--
- static inline unsigned int hugetlb_vmemmap_optimizable_size(const struct hstate *h)
- {
- 	return 0;
-diff --git a/mm/sparse-vmemmap.c b/mm/sparse-vmemmap.c
-index 3b036251a2f4..077686af394b 100644
---- a/mm/sparse-vmemmap.c
-+++ b/mm/sparse-vmemmap.c
-@@ -574,17 +574,6 @@ void __init sparse_vmemmap_init_nid_early(int nid)
- {
- 	hugetlb_vmemmap_init_early(nid);
- }
--
--/*
-- * This is called just before the initialization of page structures
-- * through memmap_init. Zones are now initialized, so any work that
-- * needs to be done that needs zone information can be done from
-- * here.
-- */
--void __init sparse_vmemmap_init_nid_late(int nid)
--{
--	hugetlb_vmemmap_init_late(nid);
--}
- #endif
- 
- static void subsection_mask_set(unsigned long *map, unsigned long pfn,
-diff --git a/mm/sparse.c b/mm/sparse.c
-index 3917a47153d8..324213d8bdcb 100644
---- a/mm/sparse.c
-+++ b/mm/sparse.c
-@@ -320,7 +320,6 @@ static void __init sparse_init_nid(int nid, unsigned long pnum_begin,
- 		}
+-	if (m) {
+-		m->flags = HUGE_BOOTMEM_CMA;
+-		m->cma = cma;
++	for_each_node_mask(node, hugetlb_bootmem_nodes) {
++		cma = hugetlb_cma[node];
++		if (!cma || node == nid)
++			continue;
++		m = cma_reserve_early(cma, huge_page_size(h));
++		if (m)
++			return m;
  	}
- 	sparse_usage_fini();
--	sparse_vmemmap_init_nid_late(nid);
+ 
+-	return m;
++	return NULL;
  }
+ 
+ static int __init cmdline_parse_hugetlb_cma(char *p)
+diff --git a/mm/internal.h b/mm/internal.h
+index 6b9802460a7c..8497673d0ac3 100644
+--- a/mm/internal.h
++++ b/mm/internal.h
+@@ -24,13 +24,11 @@
+ 
+ struct folio_batch;
+ struct hstate;
+-struct cma;
+ 
+ struct huge_bootmem_page {
+ 	struct list_head list;
+ 	struct hstate *hstate;
+ 	unsigned long flags;
+-	struct cma *cma;
+ };
  
  /*
 -- 
