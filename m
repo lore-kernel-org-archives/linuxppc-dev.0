@@ -1,93 +1,91 @@
-Return-Path: <linuxppc-dev+bounces-21838-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21839-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 78D61C5DF71
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Jun 2026 05:02:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id ABA2CC5DF71
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Jun 2026 06:05:32 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gTzGB3Yg9z3btq;
-	Tue, 02 Jun 2026 15:02:10 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::102c"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780376530;
-	cv=none; b=nkEKhuebbXo3LyljYiJk4R3FkhBhAjpbuTNLiTMGjPJhHbV0F6I34yGPDjtJne4HZKUDEZk1x+Ha/TpIAPLbq/SiDeqM+zUa8VhV4PgBgxCmneRWu7h8mV8YrB9c4uo+tl0hZdP+w2U+qfnRVG7iTAzuC4v0KcMOwO8P0C9o14h8J+n5q1YwkFNvOqA6sBBriaK0nRdipQxY2bLjdseYl9gNuq2akAbP8Rr0PSp/4JgvNUmIu0/rQodX7lT1yd5D159yOcWhZ16kQPUgTfcdvMr2QGgbfhTt/ujP9i5LPsxSwsewntZhZOejHWoO9fAVjQYAl5mRYDDFE3gnY+x6xA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gV0gG6r38z2xmX;
+	Tue, 02 Jun 2026 16:05:30 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780380330;
+	cv=none; b=U6iKs7HUT3LpBZTsbXBAjztHuB0wrJCc3nueP/uRWB+Y0qOrXeZIqOwZ8iGKXYODXw84vMX3cWbhQztHEq4X5l6MKAC6uvFM0DPD6Piqaf5wHHtdKDVtjEKsBiUuAtNBvZfBJ/d3Z+1daSjVbHRdXAgM5m6PKj3X81y4tCYMKq6rcYU51LHI3VKg8EiBF72TdqsoQhE1bf5Hqr7N4NzMCIYlHx5F5OqdAIh5GiYbxTQ9vcvY6MX2nFPanhW41eYeRmfwGf2qWPYoe6MAZ7DpOn+SpOlbXa7C+HLl3tv5pv6pOSIPxfZ1YM2oBScIOJSVvlOZhRa22ck4sQUFq5WtVg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1780376530; c=relaxed/relaxed;
-	bh=7Rc5e+pcCQNLSk7M/61K5VybU7Xya1+dcR9m3vlqSb4=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=H2lX/VL3EeNyG8FZpLR0tijCwWadFCBl6znepbmbdmgO2fndPpHcPGCCkfMVIJrAKuYrOcyA5Hmkcm6KaRwRU0z/uE8bTXPUqEKvzyTgTHzU6TkJc0sM8fQUbmDZy+DF63KVZmBT2eyEEwn/9a0xhmND/bvEBOpDO214PUiYyLWz2ibFuTaL+vW30CMCIlzSHD4XEmqbj1LICsTbjXh5aqE0cibq2u1WwGvyyKvKeWiyGyRGGcUY/Ch8+jJJm5E+xDbUPgNc/s/M+XZ25Aa3r5LO85FLOzbw6CMHsAu1gDgX5py3fHpXfAGAozvQfwBID/Qw2AN8u3fKs0nRS/rl1g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=eRATI/iG; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::102c; helo=mail-pj1-x102c.google.com; envelope-from=rosenp@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1780380330; c=relaxed/relaxed;
+	bh=cAu2ieVtzIhvmbt6JTRjoa4pjjACO3xCWLdKRptxTOw=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
+	 MIME-Version:Content-Type; b=hfHnmP5LFiR93z2uycstnf0I1TWYnVA+CkxsIOgQ0MKOnetl3hsLtIjlOcMuM+tPeuWaMqE9wiIeQJDwR6+6QXZ1Hn+FgXfcrkwPrSnlycc/wrvTtg3o82+eg2ktAmo62+YAhuMAUkWQJW0KnpkgQeiV0se/7LDTFZ5HplLzuiznqfhzHHgH5K8qSkjY43YfI+VDJL0mla5QP6en/mX2Apw+TR0D0qUWX/a3baooeAd54QO9lA/0VZHqCpJh3/iZ00rKdJcxHlf3av/IuUoIbZlJjTvqBk4EG08z8C7wLzNdLOCZd31TKjda56UkDrMJXq+XykTawWHyAiFEvrrYOQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ejiohwvK; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=aneesh.kumar@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=eRATI/iG;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ejiohwvK;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::102c; helo=mail-pj1-x102c.google.com; envelope-from=rosenp@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pj1-x102c.google.com (mail-pj1-x102c.google.com [IPv6:2607:f8b0:4864:20::102c])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=aneesh.kumar@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gTzG96Gk6z2ytJ
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 02 Jun 2026 15:02:09 +1000 (AEST)
-Received: by mail-pj1-x102c.google.com with SMTP id 98e67ed59e1d1-36c68964315so1504548a91.2
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 01 Jun 2026 22:02:09 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1780376528; x=1780981328; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=7Rc5e+pcCQNLSk7M/61K5VybU7Xya1+dcR9m3vlqSb4=;
-        b=eRATI/iGtnj6P7Od2gVx0I6E2j9IQQnwvFYzhOotppiqW87SEslHzvd1y/E+DmECTb
-         GTEiFH4fqKeYEmAtjn95LFW3W8qg/ZD7olxAxvcKjdxhU/0+yMOwbT5GlWfanbw2whXW
-         ynmjda92dP3nHWXVzcAh9F+g3ZwcaB83dgwR0nbW+bDcczFdaNgWv9XTN3d+1qeGUHGU
-         pPkQgn5/zUMa//AqGdL6k5ozZ5Ch8DwbWokP+ibT0S7jb0dRMQYRX0KGR5F9rfnVXOF2
-         oaEg1DduXAeXJQRAfLmFnH7yA7C97/HL+IhWfnMT8e8W767bRku85BW1Xo2Zaq+JZh4n
-         EF8w==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1780376528; x=1780981328;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=7Rc5e+pcCQNLSk7M/61K5VybU7Xya1+dcR9m3vlqSb4=;
-        b=Y2UM42EkA210FV+M0ITl/tyfFbi5kNzeMvalLlSedQa2d9Asxm1xgIxGesTVNW8Ist
-         txZlVPBEyp89OEy7xq7kaXfxaQNziBOO4Wdruc/p154Se6k9A7SscoXjIKlkxcUUCcO5
-         9tx16wpBGVM3ZzeLdFD17WHUBnlixqY7jxNfz+fPF/Nc1SqpRXdBnjkLDrvWx9Bx1VSI
-         LkLZW5T+UBioWOgY+PxGEFa7EGSulDYItE6oMXgyYUOF4rDinCsOpBhPoJaITL52vbNd
-         ESWXG5kd1cwk6ocvQ3m7BTg/N9/PK+OyWBPcIgNKEt/HuoXiq/JH94FwjF+BpiaQYbO5
-         HCog==
-X-Forwarded-Encrypted: i=1; AFNElJ8WZcs30xlPDCdT2idfOC+on7BipDcU1FQLkrlGE8iOZ96DxmAR1Szp2w87dHtsPopC2YevtjWZHDDsVO8=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YwxtYgpehTjJa+QlgX6BDZRGQDDUnY6/qWtdD0naTkP2XfFaLzc
-	QxSbPo6kHq/5Gi7U/pDFv2/CAsqfMHaOKqwBjPqTY8ra/f+uMCFz15bB
-X-Gm-Gg: Acq92OEgQ//kQ7WBOA0C+c+c2cYcpXk7bkGdEJcSJ69BcT1cVXPCpdY6B9idZTznUt/
-	mybFyEdZPSn7wxkhU+cvQlQIUoSMwt2q/MKs6+ONcoVk3V5+la3iybPsdfNVEfaFcnVmYANJYKQ
-	vmnnKT+QzcHRDfjH7Pqm3yi4SSSRZ9Tk/40vtDXOBzJjW+VgNJXnzXNuq5TGP2qHOjVPrxtHJgv
-	xDvMSYse5MT6yxVSlz6Fpi4fSgyPXGXB1X0yQ4kZHd3El+E/cz8exjjhLCfa02RERcXs+vk1c1W
-	g4BSwKlWuWNMLNBbwm3u8cznfoSKu1r++DxLxzVzvs4Gj+BuxYD271AMe708T+uvh2vvKtkC/qc
-	yN9sknCyF8E2z2J1uW82gYfVFMe8llKmxVlNTqDV8lcuC+0RNTJAp57p5i/+8Naha8cLvYfTbnI
-	4jtn65tD8hkCfsQkZJ2k5XkQJv4O9IPHIyWrPXTXrX27284GmgpUBcZJ+tlNKwMOh75aKN/mF/l
-	jIpdBCHY5+nEbmJLgUoA4pV3QrujBj2sVJpySBTAhJofQ==
-X-Received: by 2002:a17:90b:540c:b0:36d:c159:8f11 with SMTP id 98e67ed59e1d1-36dc159997amr5795090a91.26.1780376527983;
-        Mon, 01 Jun 2026 22:02:07 -0700 (PDT)
-Received: from ryzen ([2601:644:8000:5b5d:7285:c2ff:fe45:8a32])
-        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-c8589d055c7sm8958467a12.9.2026.06.01.22.02.04
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 01 Jun 2026 22:02:06 -0700 (PDT)
-From: Rosen Penev <rosenp@gmail.com>
-To: linux-gpio@vger.kernel.org
-Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
-	chleroy@kernel.org,
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gV0gF4CYdz2xmV
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 02 Jun 2026 16:05:29 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with ESMTP id 3430B40D61;
+	Tue,  2 Jun 2026 06:05:26 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E7D3E1F00893;
+	Tue,  2 Jun 2026 06:05:16 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1780380326;
+	bh=cAu2ieVtzIhvmbt6JTRjoa4pjjACO3xCWLdKRptxTOw=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date;
+	b=ejiohwvKFgfnFx2XmQJmWogP6srPvXp1qAFLczY5GJb2HIDlqC3HdYIisxlQOoTDQ
+	 9d0+q911Tt8whJu2idWQDouQLkgMw3HeyJvVoxRRyBIgLaKly8hsqH4jEpW+7FZx3s
+	 uW8DJTgURj2lZ3d9qzDtsfpCLzCdGNUwL+gJXBSvIFJFhxQx9XD/vL5XTqzERi1f3r
+	 PDVdUnUWGoUUukbyfqIke1SklIUshmo3/e0PrLxKpBC+oHEhWRrh8oC5zA+uiWqHfP
+	 vDywZwBvCrB+DEAZKH4p7uw+B8oQEoDGQq3nD2heY/9UFLiC0v8sbZ1HIQJgro2CaY
+	 kqhJ0j5Dfw4Lg==
+X-Mailer: emacs 30.2 (via feedmail 11-beta-1 I)
+From: Aneesh Kumar K.V <aneesh.kumar@kernel.org>
+To: Michael Kelley <mhklinux@outlook.com>,
+	"iommu@lists.linux.dev" <iommu@lists.linux.dev>,
+	"linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+	"linux-coco@lists.linux.dev" <linux-coco@lists.linux.dev>
+Cc: Robin Murphy <robin.murphy@arm.com>,
+	Marek Szyprowski <m.szyprowski@samsung.com>,
+	Will Deacon <will@kernel.org>, Marc Zyngier <maz@kernel.org>,
+	Steven Price <steven.price@arm.com>,
+	Suzuki K Poulose <Suzuki.Poulose@arm.com>,
+	Catalin Marinas <catalin.marinas@arm.com>,
+	Jiri Pirko <jiri@resnulli.us>,
+	Jason Gunthorpe <jgg@ziepe.ca>,
+	Mostafa Saleh <smostafa@google.com>,
+	Petr Tesarik <ptesarik@suse.com>,
+	Alexey Kardashevskiy <aik@amd.com>,
+	Dan Williams <dan.j.williams@intel.com>,
+	Xu Yilun <yilun.xu@linux.intel.com>,
+	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+	"linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
 	Michael Ellerman <mpe@ellerman.id.au>,
 	Nicholas Piggin <npiggin@gmail.com>,
-	Linus Walleij <linusw@kernel.org>,
-	Bartosz Golaszewski <brgl@kernel.org>,
-	linuxppc-dev@lists.ozlabs.org (open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)),
-	linux-kernel@vger.kernel.org (open list)
-Subject: [PATCH 7/7] gpio: ppc44x: add MODULE info
-Date: Mon,  1 Jun 2026 22:01:31 -0700
-Message-ID: <20260602050131.856789-8-rosenp@gmail.com>
-X-Mailer: git-send-email 2.54.0
-In-Reply-To: <20260602050131.856789-1-rosenp@gmail.com>
-References: <20260602050131.856789-1-rosenp@gmail.com>
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	Alexander Gordeev <agordeev@linux.ibm.com>,
+	Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
+	Heiko Carstens <hca@linux.ibm.com>,
+	Vasily Gorbik <gor@linux.ibm.com>,
+	Christian Borntraeger <borntraeger@linux.ibm.com>,
+	Sven Schnelle <svens@linux.ibm.com>,
+	"x86@kernel.org" <x86@kernel.org>,
+	Jiri Pirko <jiri@nvidia.com>
+Subject: RE: [PATCH v5 05/20] dma-pool: track decrypted atomic pools and
+ select them via attrs
+In-Reply-To: <SN6PR02MB415754E94A9505C2B9739E4DD4092@SN6PR02MB4157.namprd02.prod.outlook.com>
+References: <20260522042815.370873-1-aneesh.kumar@kernel.org>
+ <20260522042815.370873-6-aneesh.kumar@kernel.org>
+ <SN6PR02MB415754E94A9505C2B9739E4DD4092@SN6PR02MB4157.namprd02.prod.outlook.com>
+Date: Tue, 02 Jun 2026 11:35:13 +0530
+Message-ID: <yq5afr35sciu.fsf@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -101,32 +99,107 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
 
-Fixes:
+Michael Kelley <mhklinux@outlook.com> writes:
 
-ERROR: modpost: missing MODULE_LICENSE() in drivers/gpio/gpio-ppc44x.o
-WARNING: modpost: missing MODULE_DESCRIPTION() in drivers/gpio/gpio-ppc44x.o
+> From: Aneesh Kumar K.V (Arm) <aneesh.kumar@kernel.org>Sent: Thursday, May 21, 2026 9:28 PM
+>> 
+>> Teach the atomic DMA pool code to distinguish between encrypted and
+>> unencrypted pools, and make pool allocation select the matching pool based
+>> on DMA attributes.
+>> 
+>> Introduce a dma_gen_pool wrapper that records whether a pool is
+>> unencrypted, initialize that state when the atomic pools are created, and
+>> use it when expanding and resizing the pools. Update dma_alloc_from_pool()
+>> to take attrs and skip pools whose encrypted state does not match
+>> DMA_ATTR_CC_SHARED. Update dma_free_from_pool() accordingly.
+>> 
+>> Also pass DMA_ATTR_CC_SHARED from the swiotlb atomic allocation path so
+>> decrypted swiotlb allocations are taken from the correct atomic pool.
+>> 
+>> Tested-by: Jiri Pirko <jiri@nvidia.com>
+>> Reviewed-by: Mostafa Saleh <smostafa@google.com>
+>> Signed-off-by: Aneesh Kumar K.V (Arm) <aneesh.kumar@kernel.org>
+>> ---
+>>  drivers/iommu/dma-iommu.c   |   2 +-
+>>  include/linux/dma-map-ops.h |   2 +-
+>>  kernel/dma/direct.c         |  11 ++-
+>>  kernel/dma/pool.c           | 167 +++++++++++++++++++++++-------------
+>>  kernel/dma/swiotlb.c        |   7 +-
+>>  5 files changed, 123 insertions(+), 66 deletions(-)
+>>
+>
+> [snip]
+>  
+>> +static __init struct dma_gen_pool *__dma_atomic_pool_init(struct dma_gen_pool *dma_pool,
+>> +		size_t pool_size, gfp_t gfp)
+>>  {
+>> -	struct gen_pool *pool;
+>>  	int ret;
+>> 
+>> -	pool = gen_pool_create(PAGE_SHIFT, NUMA_NO_NODE);
+>> -	if (!pool)
+>> +	dma_pool->pool = gen_pool_create(PAGE_SHIFT, NUMA_NO_NODE);
+>> +	if (!dma_pool->pool)
+>>  		return NULL;
+>> 
+>> -	gen_pool_set_algo(pool, gen_pool_first_fit_order_align, NULL);
+>> +	gen_pool_set_algo(dma_pool->pool, gen_pool_first_fit_order_align, NULL);
+>> +
+>> +	/* if platform is using memory encryption atomic pools are by default decrypted. */
+>> +	if (cc_platform_has(CC_ATTR_MEM_ENCRYPT))
+>> +		dma_pool->unencrypted = true;
+>> +	else
+>> +		dma_pool->unencrypted = false;
+>
+> I'm curious about the name of the "unencrypted" field in struct dma_gen_pool,
+> and similarly in Patch 7 of the series for the swiotlb struct io_tlb_pool and
+> struct io_tlb_mem. Up through v3 of this series, you used "decrypted", but
+> starting in v4 switched to "unencrypted".
+>
+> To me, the above "if" statement has some cognitive dissonance in that if
+> CC_ATTR_MEM_ENCRYPT is false (i.e., a normal VM), "unencrypted" is set
+> to false. But I think of memory in a normal VM as "unencrypted" since it
+> was never encrypted. A similar "if" statement occurs in your swiotlb changes.
+>
+> Two related concepts are captured by the field:
+> 1) Is some action needed to put the memory into the unencrypted state,
+> and to remove it from that state? This applies when assigning memory to the
+> pool, or freeing the memory in the pool.
+> 2) Is the memory currently in the unencrypted state? This applies when
+> allocating memory from the pool to a caller.
+>
+> It's hard to capture all that in a short field name. But I think I prefer "decrypted"
+> over "unencrypted".  The former implies that some action was taken. It's a
+> little easier to think of a normal VM as *not* having decrypted memory. The
+> memory was never encrypted in the first place, so no decryption action was taken.
+>
+> Throughout the kernel, "decrypted" occurs much more frequently than
+> "unencrypted".  We have set_memory_encrypted() and set_memory_decrypted()
+> that are "take action" names.  But we also have force_dma_unencrypted(),
+> phys_to_dma_unencrypted(), and dma_addr_unencrypted(). So it's a bit
+> of a mess.
+>
+>
+> But maybe there's more background here that led to the change
+> between your v3 and v4.
+>
+> Michael
 
-Assisted-by: opencode:big-pickle
-Signed-off-by: Rosen Penev <rosenp@gmail.com>
----
- drivers/gpio/gpio-ppc44x.c | 3 +++
- 1 file changed, 3 insertions(+)
+The current APIs, phys_to_dma_unencrypted() and dma_addr_unencrypted(),
+are the reason I changed the pool attribute name from decrypted to
+unencrypted. The rationale was that nobody actually decrypted the
+memory; the memory was already in an unencrypted state.
 
-diff --git a/drivers/gpio/gpio-ppc44x.c b/drivers/gpio/gpio-ppc44x.c
-index cc7796e0cfbd..425ccbc234c8 100644
---- a/drivers/gpio/gpio-ppc44x.c
-+++ b/drivers/gpio/gpio-ppc44x.c
-@@ -211,4 +211,7 @@ static struct platform_driver ppc44x_gpio_driver = {
- 	},
- };
- 
-+MODULE_DESCRIPTION("PPC44x gpio driver");
-+MODULE_LICENSE("GPL");
-+
- module_platform_driver(ppc44x_gpio_driver);
--- 
-2.54.0
+In other words, the DMA pool did not contain encrypted content that was
+later decrypted. Rather, the DMA pool itself was in an unencrypted
+state.
 
+IMHO, set_memory_decrypted()/set_memory_encrypted() is the right naming
+because those APIs describe an operation that transitions memory between
+states. In contrast, the pool attribute describes the state of the
+memory itself, which is why I used unencrypted rather than decrypted.
+
+-aneesh
 
