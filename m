@@ -1,78 +1,58 @@
-Return-Path: <linuxppc-dev+bounces-21919-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21920-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 26BEACD6E60
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Jun 2026 20:34:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 863CDCD6E5D
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Jun 2026 20:51:40 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gVMyR3M6Vz2xRs;
-	Wed, 03 Jun 2026 06:34:55 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780432495;
-	cv=none; b=lv5e63CDMceaHVgupp48ikzGOMBoFOQwm41e6tcwirrUlpEjPZ6ifm659l+TNKgqUWRqVAIteVK4FwZb56QCoSakQ6GAaAwcCNJPvTy5efBc96Ss1QlzCA7+jcoNoc6kkcNhQDUIubjTWqq5coSow5OC8/JRjNSxQ4yLpf4VYk8rA3FTD4nIKB0rmUd/aTYBHs4/3TlRUD/CfV0ySEaGlBXaKKq17RA27+ZcQt9yUmm8N/BBPY+pQZ1wMKnvOCFGkPApqCcbZY5trwq0CVSVZyY5hwzktrpZuDBn5kOlxrmkzsgUvYfN7PSgEVW93EEvNvwN8+IwLQvdM7r1kML8FA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gVNKk5c06z2xRs;
+	Wed, 03 Jun 2026 06:51:38 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780433498;
+	cv=none; b=N0599MbNENDoKrSfRY5VSE9Pu4lHapeBhkuz6KQVpbcwfkw4al+jQSaYXea1NAEexy/IJJ0UIAe0ZXnABzBMJno2LNskgyAU2Q+ITDzpWrwGQxPZcvAoJjlO8GVfpzx6BqEuXTuOX0dbdpN5V282QAJ2mMgQ5jvCZmZ/3G8u43ebDCDOzMDQ1B+Ar056cB6/PJUNS7LszTv0fifjVbO0ziUuAVzK8oKZnEk1+yuiZg5EzNWzOyr0Oznk74WmuEVYexMbW5IawYvVwKATkTuRz3TGI6QPoRd1V0fZEjs5ArkWvSI4toeOlNYHfM3CGuq3L7vpsD5wEfgnufrCiSx3Iw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1780432495; c=relaxed/relaxed;
-	bh=S//fEDteJ4rzTnDBScY4eGHQWJlVMyyy6h7anmp3x+k=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=KdHNeEPU0koovU2Bg2x+OcHyj3JHSXtEJuhxxDlwXcPWlM4FU2YIOY7aiDslnXkdEYH4gKFqCeDpF8FHpu46LV6CCG3eQK0nA8smpaNYePXkC4fUV46MxOArBB+Etm3bnslCYjF1tGGD1JJVs4M18APhyLd4jkSsush3G7ilZBH856WRW57OMn29Brn5TukMeWVAEix0O7ywUmasxvocKyS9zXR0WRcvLfTSFe6eAVi1yh9q9cKYSySbHKKO/VSwM7cFGoKbjdh0J9voSMKGw1XC77HAW2nC5b5Klon6X+0Av+XnUkNlTz6Xe4GfwBJdZSvRf8S52vzHiDx9qU/vdw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ZxfxWfdM; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=will@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1780433498; c=relaxed/relaxed;
+	bh=G6rZ7t6/DhXfpQVj0UlyYqS4gIMH66eg2Oc1gFXbhJ0=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=baiBhdf4yILj1w4yZNX4ljOafftm+zWUemhuDMCKo/TOHpdZXaIwE0gp+ba9E71RC9XOAwqGTpXnCm6Tf4IqHhlqJF3Zh5d9fqSumKOs3hwLLWHl14ic+Hmt6RqPE4lmqXqvOGGZ4YTxqrgadK+Wdn+1dYhIZN75NzSMnDzoq07KyefMzm1BnpGh3IiFH0ZhUEwdP5vS8g8X3GD8boX93CO46TjEWlP5BbU3Gxy+Rm+mnMrvom9HLKBE0uzs8toIliXYygp2EM/4A5li8GPVKqIPR8OZJ6d0/e0hCtpvm8QdqpkOh99pVE4s+hoYs/evVY+tsAcRxVuDVBprFQlVmw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=WsQo944G; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=timur@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ZxfxWfdM;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=WsQo944G;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=will@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=timur@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gVMyP42Bjz2xLm
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 03 Jun 2026 06:34:53 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gVNKj5Q31z2xLm
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 03 Jun 2026 06:51:37 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 311214174C;
-	Tue,  2 Jun 2026 20:34:50 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1437C1F00893;
-	Tue,  2 Jun 2026 20:34:45 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 35A7D601DE
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Jun 2026 20:51:35 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id BE4A11F0089C
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Jun 2026 20:51:34 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1780432490;
-	bh=S//fEDteJ4rzTnDBScY4eGHQWJlVMyyy6h7anmp3x+k=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=ZxfxWfdMQ3+Vq+Ma03V2QSXlB3XRJ2M5Did8lMtEII0G+3I0Mn+KoGSxk5Mbv0z3I
-	 eSifAuVTOlBV98gSsIUbmj8ujq+U/KmlZ/dQP7pUzZjY04CU58Y+sgkwr1wg6evnYM
-	 IVoXvJxep7VzxPFXOGANf1mU6ye3Mafv+WmYKvzi7at8qUa+iZFeY7zqiUxCEvZFM/
-	 fjusegJTSCUmjBP7CA/qHQtB8wTK8Jc4dadNTvYGMtjatVjBZN4rZEnYKHGBQHPrCt
-	 j6I3SYxIA9f1IMqxFo73y3NYXAPu3pvvOvODplkrV/iUNmLrtqWvgusvQ/0MXkcYQw
-	 RZn0bqJ/It5Ww==
-From: Will Deacon <will@kernel.org>
-To: linux-arm-kernel@lists.infradead.org,
-	Ard Biesheuvel <ardb+git@google.com>
-Cc: catalin.marinas@arm.com,
-	kernel-team@android.com,
-	Will Deacon <will@kernel.org>,
-	linux-kernel@vger.kernel.org,
-	mark.rutland@arm.com,
-	Ard Biesheuvel <ardb@kernel.org>,
-	Ryan Roberts <ryan.roberts@arm.com>,
-	Anshuman Khandual <anshuman.khandual@arm.com>,
-	Kevin Brodsky <kevin.brodsky@arm.com>,
-	Liz Prucka <lizprucka@google.com>,
-	Seth Jenkins <sethjenkins@google.com>,
-	Kees Cook <kees@kernel.org>,
-	Mike Rapoport <rppt@kernel.org>,
-	David Hildenbrand <david@kernel.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Jann Horn <jannh@google.com>,
-	linux-mm@kvack.org,
-	linux-hardening@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-sh@vger.kernel.org
-Subject: Re: [PATCH v7 00/15] arm64: Unmap linear alias of kernel data/bss
-Date: Tue,  2 Jun 2026 21:34:36 +0100
-Message-ID: <178041415770.4024555.11336437584927054639.b4-ty@kernel.org>
-X-Mailer: git-send-email 2.47.3
-In-Reply-To: <20260529150150.1670604-17-ardb+git@google.com>
-References: <20260529150150.1670604-17-ardb+git@google.com>
+	s=k20260515; t=1780433494;
+	bh=G6rZ7t6/DhXfpQVj0UlyYqS4gIMH66eg2Oc1gFXbhJ0=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc;
+	b=WsQo944GDchg/wLfBxF995MDsIQlWR94qpNUGNWfmtj0cc9Cm6IAvLYK49Jz+sub+
+	 cCz9hX3qvk2i7XzqttjMLfpB2FTj81X0WI8T9GOEFst61x7uetTvHoQlZHBhkw3wj+
+	 pWEXAl35dtpSL5N9q+XzcWkaBdzolGpamWnG3Ut+8eiWiblT+djxuby3gRu3VBbNTW
+	 b5gX5xDdjGnEk3Uf3Rhjs7eEYv4grJDMr3ZOHMMp2kabifDBAot1ZDAITd3RH9n/oV
+	 ENGlOonCAxXOF1Zy8Nr8B/0OQsXqHHxsvHFgQOc4sUtBFr0j9jX5I0vS+C7g/hnM3X
+	 sTT2vS+XYtAaA==
+Received: by mail-yw1-f176.google.com with SMTP id 00721157ae682-7e2f3646c10so38383067b3.0
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 02 Jun 2026 13:51:34 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AFNElJ/e13GS8vrN+CR+ymiANG/dL4yENRNUgAx57yTo9JpvDJZiMdSmyAxksZgpGD7F80B2uIk47Xg+QaVlaK0=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YwS+tHZE9WQW0jLV1Nra+f0HXIjZ6df9mReoZSNIbF91hsD0EHP
+	WC7OzFEYZ+RcjUbYKomqjRNo1ytGOqdldgj9K7nxz8kfabNk/90QFAnmBKPj5OAoDVzY1wrYd4i
+	ww5LgjwY7oOmoK8vNPGj8R8W4IJW40JQ=
+X-Received: by 2002:a05:690c:620f:b0:7b3:edc7:9b97 with SMTP id
+ 00721157ae682-7ea4400dc8fmr7795367b3.0.1780433493990; Tue, 02 Jun 2026
+ 13:51:33 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -86,62 +66,70 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+References: <20260304-gpio-of-kconfig-v1-0-d597916e79e7@oss.qualcomm.com> <20260304-gpio-of-kconfig-v1-7-d597916e79e7@oss.qualcomm.com>
+In-Reply-To: <20260304-gpio-of-kconfig-v1-7-d597916e79e7@oss.qualcomm.com>
+From: Timur Tabi <timur@kernel.org>
+Date: Tue, 2 Jun 2026 15:50:57 -0500
+X-Gmail-Original-Message-ID: <CAOZdJXXetr-FPZUSX_nzS5nZc+bbv5b1m78sCcZzrDJi7C05vw@mail.gmail.com>
+X-Gm-Features: AVHnY4IltjGxIj5Fh6-JK6uSKIHTP0yZBU085pIyp8WmlCvLfmlYl2sow6Y3Jn0
+Message-ID: <CAOZdJXXetr-FPZUSX_nzS5nZc+bbv5b1m78sCcZzrDJi7C05vw@mail.gmail.com>
+Subject: Re: [PATCH 07/14] pinctrl: Kconfig: drop unneeded dependencies on OF_GPIO
+To: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
+Cc: Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>, 
+	Alexey Brodkin <abrodkin@synopsys.com>, Vineet Gupta <vgupta@kernel.org>, Scott Wood <oss@buserror.net>, 
+	Madhavan Srinivasan <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, 
+	Nicholas Piggin <npiggin@gmail.com>, "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, Andrew Lunn <andrew@lunn.ch>, 
+	Heiner Kallweit <hkallweit1@gmail.com>, Russell King <linux@armlinux.org.uk>, 
+	"David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, 
+	Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, Liam Girdwood <lgirdwood@gmail.com>, 
+	Mark Brown <broonie@kernel.org>, Linus Walleij <linusw@kernel.org>, 
+	Bartosz Golaszewski <brgl@kernel.org>, Neil Armstrong <neil.armstrong@linaro.org>, 
+	Kevin Hilman <khilman@baylibre.com>, Jerome Brunet <jbrunet@baylibre.com>, 
+	Martin Blumenstingl <martin.blumenstingl@googlemail.com>, Dvorkin Dmitry <dvorkin@tibbo.com>, 
+	Wells Lu <wellslutw@gmail.com>, Lee Jones <lee@kernel.org>, Pavel Machek <pavel@kernel.org>, 
+	Guenter Roeck <linux@roeck-us.net>, Wim Van Sebroeck <wim@linux-watchdog.org>, 
+	Mauro Carvalho Chehab <mchehab@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
+	Sebastian Reichel <sre@kernel.org>, linux-arm-kernel@lists.infradead.org, 
+	linux-kernel@vger.kernel.org, linux-snps-arc@lists.infradead.org, 
+	linuxppc-dev@lists.ozlabs.org, netdev@vger.kernel.org, 
+	linux-gpio@vger.kernel.org, linux-amlogic@lists.infradead.org, 
+	linux-leds@vger.kernel.org, linux-hwmon@vger.kernel.org, 
+	linux-watchdog@vger.kernel.org, linux-media@vger.kernel.org, 
+	linux-staging@lists.linux.dev, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On Fri, 29 May 2026 17:01:51 +0200, Ard Biesheuvel wrote:
-> One of the reasons the lack of randomization of the linear map on arm64
-> is considered problematic is the fact that bootloaders adhering to the
-> original arm64 boot protocol (i.e., a substantial fraction of all
-> Android phones) may place the kernel at the base of DRAM, and therefore
-> at the base of the non-randomized linear map. This puts a writable alias
-> of the kernel's data and bss regions at a predictable location, removing
-> the need for an attacker to guess where KASLR mapped the kernel.
-> 
-> [...]
+On Wed, Mar 4, 2026 at 3:07=E2=80=AFAM Bartosz Golaszewski
+<bartosz.golaszewski@oss.qualcomm.com> wrote:
+>
+> @@ -557,7 +549,6 @@ config PINCTRL_ST
+>  config PINCTRL_STMFX
+>         tristate "STMicroelectronics STMFX GPIO expander pinctrl driver"
+>         depends on I2C
+> -       depends on OF_GPIO
+>         depends on HAS_IOMEM
+>         select GENERIC_PINCONF
+>         select GPIOLIB_IRQCHIP
 
-It would've been nice to hear from the ppc folks on patch 11, but I've
-picked it up on the assumption that they'll love the negative diff stat.
-Worst case, we can drop/revert stuff if they have late objections.
+This change causes the following warning on builds:
 
-Applied to arm64 (for-next/mm), thanks!
+WARNING: unmet direct dependencies detected for MFD_STMFX
+Depends on [n]: HAS_IOMEM [=3Dy] && I2C [=3Dy] && OF [=3Dn]
+Selected by [m]:
+- PINCTRL_STMFX [=3Dm] && PINCTRL [=3Dy] && I2C [=3Dy] && HAS_IOMEM [=3Dy]
 
-[01/15] arm64: mm: Remove bogus stop condition from map_mem() loop
-        https://git.kernel.org/arm64/c/36ca7f4be809
-[02/15] arm64: mm: Drop redundant pgd_t* argument from map_mem()
-        https://git.kernel.org/arm64/c/2e527667a3b9
-[03/15] arm64: mm: Check for pud_/pmd_set_huge() failures on kernel mappings
-        https://git.kernel.org/arm64/c/8dd640d9233d
-[04/15] arm64: mm: Preserve existing table mappings when mapping DRAM
-        https://git.kernel.org/arm64/c/a64293e993f6
-[05/15] arm64: mm: Preserve non-contiguous descriptors when mapping DRAM
-        https://git.kernel.org/arm64/c/ecda73ae92ca
-[06/15] arm64: mm: Permit contiguous descriptors to be manipulated
-        https://git.kernel.org/arm64/c/05c5c31e9d8d
-[07/15] arm64: kfence: Avoid NOMAP tricks when mapping the early pool
-        https://git.kernel.org/arm64/c/dfd73e574d38
-[08/15] arm64: mm: Permit contiguous attribute for preliminary mappings
-        https://git.kernel.org/arm64/c/28becb2c1d74
-[09/15] arm64: Move fixmap and kasan page tables to end of kernel image
-        https://git.kernel.org/arm64/c/382a03e12eba
-[10/15] arm64: mm: Don't abuse memblock NOMAP to check for overlaps
-        https://git.kernel.org/arm64/c/d672a4b72c95
-[11/15] powerpc/code-patching: Avoid r/w mapping of the zero page
-        https://git.kernel.org/arm64/c/c0693153fb17
-[12/15] sh: Drop cache flush of the zero page at boot
-        https://git.kernel.org/arm64/c/99bad3e992e2
-[13/15] mm: Make empty_zero_page[] const
-        https://git.kernel.org/arm64/c/0aae825f1ed7
-[14/15] arm64: mm: Map the kernel data/bss read-only in the linear map
-        https://git.kernel.org/arm64/c/f2ba877402e5
-[15/15] arm64: mm: Unmap kernel data/bss entirely from the linear map
-        https://git.kernel.org/arm64/c/63e0b6a5b693
+WARNING: unmet direct dependencies detected for MFD_STMFX
+Depends on [n]: HAS_IOMEM [=3Dy] && I2C [=3Dy] && OF [=3Dn]
+Selected by [m]:
+- PINCTRL_STMFX [=3Dm] && PINCTRL [=3Dy] && I2C [=3Dy] && HAS_IOMEM [=3Dy]
 
-Cheers,
--- 
-Will
+I believe the proper fix is to have PINCTRL_STMFX depend on CONFIG_OF,
+since this driver actually does depend on CONFIG_OF.  The warning
+comes because if CONFIG_OF is disabled, PINCTRL_STMFX can still be
+enabled, but in doing so it selects MFD_STMFX which does depend on
+CONFIG_OF.
 
-https://fixes.arm64.dev
-https://next.arm64.dev
-https://will.arm64.dev
+Adding "depends on OF" to "config PINCTRL_STMFX" seems to fix the
+problem, but I'm not familiar with this driver so I'm not sure this is
+the right fix.  I'll post a patch.
 
