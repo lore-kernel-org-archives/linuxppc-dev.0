@@ -1,82 +1,98 @@
-Return-Path: <linuxppc-dev+bounces-21874-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21875-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9360DCD6E4A
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Jun 2026 10:06:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A7F9FCD6E61
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Jun 2026 10:10:54 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gV61c5jQMz3bpm;
-	Tue, 02 Jun 2026 20:06:44 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780382961;
-	cv=none; b=ofGGQx0O5nwfgkKXP+wqtC0ik4kLnpfncahUbrQQ4oJmQNhit/ZM/fZ/RtabCxuPzFfqE7WNGQQpHpRQ1m5tZwhwHnTZEh9DIQIuO88Oo7/L+kidQMDNUNLUEhaSZMH6qyf6B96U54yrY2JygrIbDF+if/NiG4uRbS858fIfTdDsR7wpWcCZOYx1CnJJfmrv/mdXstJFsMX31fse73IHrTyPsRmquMJDw9RY21PNLbPrvN9AC33xBUFx226qvcYBlRJ0Stmsy9U48bG6ncwAYjj/8VZELpihEB6PjIzORBaaiBzAN1JvEKDOGKYknLkfqhM+RdD6lIXTc9JvH/S2CQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gV66P2l6zz2yv2;
+	Tue, 02 Jun 2026 20:10:53 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::433"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780395053;
+	cv=none; b=m9+n0uuKyfV1pOVSFmdbw5qe1I40Ge5U8ELcaDikFlYOd09C444ZtNXKV5D/dTEBMRDXw87u0N0Np9I+p+ongyLOdLvm1IvAeJcjeHTEiA+FXthsFIi75VUrCrwxbvkbkUkFHkg4PR5hZUYKfLgizPByIaii5cr+Bt5TE0pnOVUH6YrvJpcnmWKkJAZJn7WELZRmCNZ4KvhNGQFdTkKkRpVxd8CR/KMsFiPgxbWJ3F2UCIVnOUKFJ6lWglQp4uyCmq9XNJN/zcT0p1NvFQG87yfS7e+VqQo3xXwPB79ymZfKXwS+DwBXV/jUhL15kqUPxVl9XtwUcYMp8PQWvd7JUQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1780382961; c=relaxed/relaxed;
-	bh=dm2g3erC5LRLaOjDzxw99Gc2WDh2rkAjBrkirLhX0jg=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=VrPi7RiuGGy/vQUFdE9O/dQnMiYJp6GsCajAoKOoyF+2f8WaXU2+Xf0mYHShW+PoK2VbU8DRk9ukroPBkSQw+/wAqC0gvjlhnvQ3OIElxTDgq3HDcdv3sIgt9yfup24E7DjEINOsAMgTFsewtxka/C6F81QCDlmNs2AOhG4/IX5eVS6bErG0hjNvFJMZbfVh2DXNLNSEQlfWNN25MF3JezqM9nJjiumy5kPRBp27XVQmoaXqNDvBbQ3XK3YGlt+d+usagTFtW7GiB71R69oYKPmNmO0dYX5wek6Q2Z/zUv5yYLHnwoVjATM7KnldLPkwV5a1XPdv160Y7aUh62Vjdw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=QOMckw/y; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=rathc@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1780395053; c=relaxed/relaxed;
+	bh=zNGpJprl3yzyJVtHG2aqs675IpD1ef+Hoi2rqDj3HMc=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=kWLhRlPEDu9iiUrMLr+BBGGumIpOU2GfAmQYYA/d1YSnul3dJExFwwbJQ7TdHhaStTdKziR5Nyvpbew2/oPPwiWwFgE75Dzd4eV817A/oSKCx6LAE6/uw5u9Y/scSGrslrsmPTJCvcAkYlV9f2tCmDUl7cs+e06B9LLco/FHtIIeta5yf1PQm4QVSfUyg6a6Lo38GWvLhPSqGLM+fgKk+xn2Ps6lDOAthSDV4K7zcrdSEg/6Hxadu7ly8We//xMqXHf6UzC2ezo2TZ38kpWPUQ5EczLJOtaRfaCrXqVOKog7It8ey9BCX2QKntv1fnAjwZZS5ElovRxKGvUevGAMBA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=bytedance.com; dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=Mu2pth7K; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::433; helo=mail-pf1-x433.google.com; envelope-from=songmuchun@bytedance.com; receiver=lists.ozlabs.org) smtp.mailfrom=bytedance.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=bytedance.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=QOMckw/y;
+	dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=Mu2pth7K;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=rathc@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bytedance.com (client-ip=2607:f8b0:4864:20::433; helo=mail-pf1-x433.google.com; envelope-from=songmuchun@bytedance.com; receiver=lists.ozlabs.org)
+Received: from mail-pf1-x433.google.com (mail-pf1-x433.google.com [IPv6:2607:f8b0:4864:20::433])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gV1dr4HCtz2xmX
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 02 Jun 2026 16:49:20 +1000 (AEST)
-Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 651LGMNs3717409;
-	Tue, 2 Jun 2026 06:49:11 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=pp1; bh=dm2g3erC5LRLaOjDz
-	xw99Gc2WDh2rkAjBrkirLhX0jg=; b=QOMckw/y/4nTRvqbsqgVVFQ/M6CGIo+cz
-	+usyDB7oLFW5+vUWIFOoGILGWlja/agFzdyRBWSiPPk5h5lz9AObCrY5X5NWAAEJ
-	xU3R9HY1di9ulzwnbU7jcFKV1AamH6FDeMyki8ls9ltSAAXGr+UtW5IDPAP5dsyQ
-	zK0IgcE9xDip3V8XnDGbC4RA5IDr9jh4o5UltO5zIGtNg80glVucPvOCUSDdJGxF
-	cywlTk4TBWOZCPvHrOcajVoMvW0z52DWRnqIP23CZNJZmVRL47JRRykKjp9qPTbw
-	Y8tvceaTwz8MvImBe6ZxIz7UfDr7T6oC9chhYdm6WggaM9rSod9lA==
-Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4efnahmdmk-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 02 Jun 2026 06:49:10 +0000 (GMT)
-Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma12.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 6526dA5o028808;
-	Tue, 2 Jun 2026 06:49:10 GMT
-Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
-	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 4ega7qa5ty-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 02 Jun 2026 06:49:09 +0000 (GMT)
-Received: from smtpav07.fra02v.mail.ibm.com (smtpav07.fra02v.mail.ibm.com [10.20.54.106])
-	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6526n6vY50331912
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 2 Jun 2026 06:49:06 GMT
-Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 8311820043;
-	Tue,  2 Jun 2026 06:49:06 +0000 (GMT)
-Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id A4D9520040;
-	Tue,  2 Jun 2026 06:49:03 +0000 (GMT)
-Received: from li-18a0a34c-33fc-11b2-a85c-d9f1631c5692.bl1-in.ibm.com (unknown [9.123.8.229])
-	by smtpav07.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Tue,  2 Jun 2026 06:49:03 +0000 (GMT)
-From: Chinmay Rath <rathc@linux.ibm.com>
-To: thuth@redhat.com
-Cc: npiggin@gmail.com, harshpb@linux.ibm.com, lvivier@redhat.com,
-        linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org,
-        andrew.jones@linux.dev, sbhat@linux.ibm.com,
-        Chinmay Rath <rathc@linux.ibm.com>
-Subject: [kvm-unit-tests RFC PATCH 6/6] powerpc: Add a panic test
-Date: Tue,  2 Jun 2026 12:18:06 +0530
-Message-ID: <20260602064806.3101025-7-rathc@linux.ibm.com>
-X-Mailer: git-send-email 2.53.0
-In-Reply-To: <20260602064806.3101025-1-rathc@linux.ibm.com>
-References: <20260602064806.3101025-1-rathc@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gV66L6Rp2z2xdh
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 02 Jun 2026 20:10:50 +1000 (AEST)
+Received: by mail-pf1-x433.google.com with SMTP id d2e1a72fcca58-84234c83142so985697b3a.1
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 02 Jun 2026 03:10:50 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=bytedance.com; s=google; t=1780395048; x=1780999848; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=zNGpJprl3yzyJVtHG2aqs675IpD1ef+Hoi2rqDj3HMc=;
+        b=Mu2pth7Kgl83adAgTH5bFz8qv8QmO03NPE9YrXCK+hteacEyTd+/Ri+EsBpponIfHN
+         dgzIeQ9wIyJSZeHxb+KlBnk3nzZCb6WPOBxuzlYoJuRWEgQ++e5ioQOQj82pFKW+V4i+
+         ee7jCSbIVC6Ave66mUzvO/PrRLF1huav1eJV7fY9Nhh9t7yCGBITSffzlvuhHTegEHP4
+         tOJumTsQ1zjw9FYG3bNYEvwyUwDadNHZBOd31mFB3ytPY1RiXCz8zfIfErPGsOTPoU18
+         BgXB6WT5PAD+mE4W2C/0nG5wz8T9N6a6sXaKkuIjG4682ArM+QFsY1qVPTNzNe0+LvRm
+         6V9Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1780395048; x=1780999848;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=zNGpJprl3yzyJVtHG2aqs675IpD1ef+Hoi2rqDj3HMc=;
+        b=GT4e7gn1wHhgmS62qSMCAy7pgXw/ZtKqbZTvrP3xraMcG8E3QmLAGppqU0tN1cqaf9
+         qyS7UUs6QEChdnIcdyeaZlcGVpO/Jt4pPLQycW6rzMqP5fN1CXBo4y7VSQIfwWMbKdU1
+         qFc1KaaZFou9FBLh9m3t6NY3hxz5QPrJTrgTEixr2UgLZ7Tm/5k7aOXS9c/nwUsFcCmx
+         r/w9UqT3QZr8j2OP3iGBravY5/R7GENMiK6LIForVjFSIjBxlDyxRPgmnH/kBTE6T+4m
+         szQNrYbaZpVqZY91jnHt189El1L3yxRkVyoLkKopzUqAI7ycHYyHhsMPfykaJPrZtbNC
+         o9JQ==
+X-Forwarded-Encrypted: i=1; AFNElJ+wYryfRAO49mWaM8UW3VxsEWrpXUQekKgTvfVUldesGh+VgfsQQyALGrIvWDhI1TfMDsTwG/t17YA4JYo=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YwC7gP+VuUiMh5YCZPQzo+6rJXNPKUA0ngoiH39CBUQN13icj0X
+	9kmzweRUSYtP1iaZg62rloHHLGkz1ul0RUw/ZMshvplrsp260TxF27YYtD5jbp4mM5I=
+X-Gm-Gg: Acq92OFq5PU+LyX7qJKSdHWf0/FvAVnHpHv0MKFtKiLMQO+m6iHd4qGR5CSBulBAlQz
+	Xw4h6O93TMNb2AF4sav2lxEZ2pNz3w0mhnSHuihkkS2JHHe0Mn7Ypj9GuJKWap1fWTyFrfWPrmN
+	n8Ui3q8HCtJRmBrBSij7xbNXUi8UyI4V0zibvsQ0U1s6W5P98DP8QUccqnzd24r7f7yqUsq/9IE
+	ekM3Vj+B4B5TmSGyjphMZnLMQVEABEgIjqvqbC8smAbwLWt270j8PbGbXZVEPtHnaMWM5pDoTH/
+	FlgK8+5dpLkBReVSj1JCBO0ajTIT2rnqXhMTeEZR+5DUrjvnKtzGZyCAvjqbintQs6w0sAi7l7F
+	6gJIVUhPomDV9hFFq9DKC372Pl4iUwXI3YtZzdQs4piKDNk3rV85wdagrKwx2SLOJ8B39Hil48L
+	vz2wOZHFsR7GrF/TQSKhGojmSwUGfkcHS3Uf6MBuhs6xsFGw8edH9acsQ=
+X-Received: by 2002:a05:6a00:6f50:b0:842:2ae0:968d with SMTP id d2e1a72fcca58-8422ae09a48mr11734407b3a.32.1780395048489;
+        Tue, 02 Jun 2026 03:10:48 -0700 (PDT)
+Received: from n232-176-004.byted.org ([36.110.163.102])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-84214d018fcsm12015507b3a.60.2026.06.02.03.10.43
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 02 Jun 2026 03:10:47 -0700 (PDT)
+From: Muchun Song <songmuchun@bytedance.com>
+To: Oscar Salvador <osalvador@suse.de>,
+	David Hildenbrand <david@kernel.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>
+Cc: Muchun Song <muchun.song@linux.dev>,
+	Mike Rapoport <rppt@kernel.org>,
+	Lorenzo Stoakes <ljs@kernel.org>,
+	"Liam R. Howlett" <liam@infradead.org>,
+	Vlastimil Babka <vbabka@kernel.org>,
+	linux-mm@kvack.org,
+	linux-kernel@vger.kernel.org,
+	Nicholas Piggin <npiggin@gmail.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
+	"Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
+	linuxppc-dev@lists.ozlabs.org,
+	Mike Kravetz <mike.kravetz@oracle.com>,
+	Muchun Song <songmuchun@bytedance.com>
+Subject: [PATCH v3 00/19] mm: Refactor bootmem gigantic hugepage allocation
+Date: Tue,  2 Jun 2026 18:10:20 +0800
+Message-ID: <20260602101039.1867613-1-songmuchun@bytedance.com>
+X-Mailer: git-send-email 2.54.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -91,157 +107,81 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjAyMDA1OSBTYWx0ZWRfXxcVHmJT7C1Cy
- ZjNR8hRtuWl7MfFo5R+9n3ov14AOjLOv7M3zNt7DnYpnfq/JOnSFI6wukbaa4g6oYRZ/lMAIhEn
- VFmdb1wcwWnmDqBgomu8L+DGLKKx4Rqti1Bb6tKTyOZSRVg+3MSQpkJqGEkqoJC94aX4mTqXmb1
- c+u0vXPpaNSNZ1Ni5GGGewzejs3VkCc8v7tqNfyZie4PwRO5/vDomEV95b4e+ZmY08fOGpFPtO5
- sQEWIz2gonrqk3HaqPKlhn/A+Mlw1Uwi/hRBSLz0cm/DQ935AGPBXktM/xREzsa+Vgu3Ck7Zfuf
- o67vFLkSY2YEEXQa+okglCgncgHY6ILg8I61tUF/9Rz1pMgjPrqxzJqEV47Wbs8rzaO9U6OZ66U
- 8ykSlNngJAhCQeuz2DRgxMzy9cs+6zV79DdKr80Wb1umPbMp8kownknafdlkrzWrReeQPTJn+Cx
- pCBaFoUjlRbQO10GGaA==
-X-Proofpoint-ORIG-GUID: qjLoDP_gsXm6Alr-SGRxPn_65a74ShpF
-X-Authority-Analysis: v=2.4 cv=cOzQdFeN c=1 sm=1 tr=0 ts=6a1e7ce7 cx=c_pps
- a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17
- a=FelO9ux0wxsA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=Y2IxJ9c9Rs8Kov3niI8_:22 a=pGLkceISAAAA:8 a=20KFwNOVAAAA:8 a=VnNF1IyMAAAA:8
- a=8EgYE67y1SrcKmc73U4A:9
-X-Proofpoint-GUID: cbsenqb9khnex6cEo2_jhblo8datPq5U
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
- definitions=2026-06-01_07,2026-05-28_03,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1015 impostorscore=0 lowpriorityscore=0 spamscore=0 bulkscore=0
- malwarescore=0 phishscore=0 suspectscore=0 priorityscore=1501 adultscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2605210000 definitions=main-2606020059
 
-From: Nicholas Piggin <npiggin@gmail.com>
+This series is split out from the earlier larger series "mm: Generalize
+HVO for HugeTLB and device DAX" [1]. It collects the first 19 patches of
+that series as a standalone set of fixes and preparatory cleanups around
+bootmem HugeTLB handling, sparse initialization ordering, and related
+vmemmap setup.
 
-This adds a simple panic test for pseries that works with
-TCG (unlike the s390x panic tests), making it easier to test
-this part of the harness code.
+The first patches fix a few bugs found while reviewing the existing
+code, including incorrect bootmem HVO handling, wrong vmemmap
+registration arguments, a powerpc compound-vmemmap tracking bug, and
+too-late initialization of gigantic bootmem HugeTLB struct pages.
 
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-Reviewed-by: Thomas Huth <thuth@redhat.com>
-Signed-off-by: Chinmay Rath <rathc@linux.ibm.com>
----
- lib/powerpc/asm/rtas.h |  1 +
- lib/powerpc/rtas.c     | 16 ++++++++++++++++
- powerpc/run            |  2 +-
- powerpc/selftest.c     | 17 ++++++++++++++++-
- powerpc/unittests.cfg  |  5 +++++
- 5 files changed, 39 insertions(+), 2 deletions(-)
+The rest of the series reorders early memory initialization so the
+relevant zone state is available before sparse and HugeTLB boot-time
+setup runs, then simplifies the remaining bootmem gigantic hugepage
+allocation path and removes code made obsolete by that rework.
 
-diff --git a/lib/powerpc/asm/rtas.h b/lib/powerpc/asm/rtas.h
-index 989b21bd..fdb3c544 100644
---- a/lib/powerpc/asm/rtas.h
-+++ b/lib/powerpc/asm/rtas.h
-@@ -26,6 +26,7 @@ extern int rtas_call(int token, int nargs, int nret, int *outputs, ...);
- extern int rtas_call_unlocked(struct rtas_args *args, int token, int nargs, int nret, int *outputs, ...);
- 
- extern void rtas_power_off(void);
-+extern void rtas_os_panic(void);
- extern void rtas_stop_self(void);
- #endif /* __ASSEMBLER__ */
- 
-diff --git a/lib/powerpc/rtas.c b/lib/powerpc/rtas.c
-index 9c1e0aff..98eee24f 100644
---- a/lib/powerpc/rtas.c
-+++ b/lib/powerpc/rtas.c
-@@ -182,3 +182,19 @@ void rtas_power_off(void)
- 	ret = rtas_call_unlocked(&args, token, 2, 1, NULL, -1, -1);
- 	printf("RTAS power-off returned %d\n", ret);
- }
-+
-+void rtas_os_panic(void)
-+{
-+	struct rtas_args args;
-+	uint32_t token;
-+	int ret;
-+
-+	ret = rtas_token("ibm,os-term", &token);
-+	if (ret) {
-+		puts("RTAS ibm,os-term not available\n");
-+		return;
-+	}
-+
-+	ret = rtas_call_unlocked(&args, token, 1, 1, NULL, "rtas_os_panic");
-+	printf("RTAS ibm,os-term returned %d\n", ret);
-+}
-diff --git a/powerpc/run b/powerpc/run
-index 06657764..718f08cb 100755
---- a/powerpc/run
-+++ b/powerpc/run
-@@ -57,7 +57,7 @@ fi
- 
- command="$qemu -nodefaults $A $M $B $D"
- command+=" -display none -serial stdio -kernel"
--command="$(migration_cmd) $(timeout_cmd) $command"
-+command="$(panic_cmd) $(migration_cmd) $(timeout_cmd) $command"
- 
- # powerpc tests currently exit with rtas-poweroff, which exits with 0.
- # run_test treats that as a failure exit and returns 1, so we need
-diff --git a/powerpc/selftest.c b/powerpc/selftest.c
-index 8d1a2c76..f6f24d6a 100644
---- a/powerpc/selftest.c
-+++ b/powerpc/selftest.c
-@@ -7,6 +7,7 @@
-  */
- #include <libcflat.h>
- #include <util.h>
-+#include <asm/rtas.h>
- #include <asm/setup.h>
- #include <asm/smp.h>
- 
-@@ -47,6 +48,17 @@ static void check_setup(int argc, char **argv)
- 		report_abort("missing input");
- }
- 
-+static void do_panic(void)
-+{
-+	if (machine_is_pseries()) {
-+		rtas_os_panic();
-+	} else {
-+		/* Cause a checkstop with MSR[ME] disabled */
-+		*((char *)0x10000000000) = 0;
-+	}
-+	report_fail("survived panic");
-+}
-+
- int main(int argc, char **argv)
- {
- 	report_prefix_push("selftest");
-@@ -60,7 +72,10 @@ int main(int argc, char **argv)
- 
- 		check_setup(argc-2, &argv[2]);
- 
-+	} else if (strcmp(argv[1], "panic") == 0) {
-+		do_panic();
-+	} else {
-+		report_abort("unknown test %s", argv[1]);
- 	}
--
- 	return report_summary();
- }
-diff --git a/powerpc/unittests.cfg b/powerpc/unittests.cfg
-index 168af206..d1395464 100644
---- a/powerpc/unittests.cfg
-+++ b/powerpc/unittests.cfg
-@@ -19,6 +19,11 @@ test_args = 'setup smp=2 mem=1024'
- qemu_params = -m 1g
- groups = selftest gitlab-ci
- 
-+[selftest-panic]
-+file = selftest.elf
-+extra_params = -append 'panic'
-+groups = selftest panic gitlab-ci
-+
- [selftest-migration]
- file = selftest-migration.elf
- machine = pseries
+At a high level:
+  - patches [1-4] fix boot-time and arch-specific bugs
+  - patches [5-12] reorder and simplify sparse/mm/hugetlb early init
+  - patches [13-19] refactor bootmem gigantic hugepage allocation and
+    remove obsolete helpers and state
+
+Changes since v2:
+  - patch 1: add a comment explaining why shared tail pages must be
+    initialized from gather_bootmem_prealloc() before
+    hugetlb_vmemmap_init() runs
+  - patch 1: update the stale sparse-vmemmap comment to point to
+    gather_bootmem_prealloc() as the shared-tail initialization site
+  - patch 2: collect Acked-by from Oscar Salvador
+  - patch 19: fold __init_page_from_nid() into __init_deferred_page()
+    instead of only making it static
+
+[1] https://lore.kernel.org/linux-mm/20260513130542.35604-1-songmuchun@bytedance.com/
+
+Muchun Song (19):
+  mm/hugetlb: Fix boot panic with CONFIG_DEBUG_VM and HVO bootmem pages
+  mm/hugetlb_vmemmap: Fix __hugetlb_vmemmap_optimize_folios()
+  powerpc/mm: Fix wrong addr_pfn tracking in compound vmemmap population
+  mm/hugetlb: Initialize gigantic bootmem hugepage struct pages earlier
+  mm/mm_init: Simplify deferred_free_pages() migratetype init
+  mm/sparse: Panic on memmap and usemap allocation failure
+  mm/sparse: Move subsection_map_init() into sparse_init()
+  mm/mm_init: Defer sparse_init() until after zone initialization
+  mm/mm_init: Defer hugetlb reservation until after zone initialization
+  mm/mm_init: Remove set_pageblock_order() call from sparse_init()
+  mm/sparse: Move sparse_vmemmap_init_nid_late() into sparse_init_nid()
+  mm/hugetlb_cma: Validate hugetlb CMA range by zone at reserve time
+  mm/hugetlb: Refactor early boot gigantic hugepage allocation
+  mm/hugetlb: Free cross-zone bootmem gigantic pages after allocation
+  mm/hugetlb_vmemmap: Move bootmem HVO setup to early init
+  mm/hugetlb: Remove obsolete bootmem cross-zone checks
+  mm/sparse-vmemmap: Remove sparse_vmemmap_init_nid_late()
+  mm/hugetlb: Remove unused bootmem cma field
+  mm/mm_init: Fold __init_page_from_nid() into __init_deferred_page()
+
+ arch/powerpc/mm/book3s64/radix_pgtable.c |   7 +-
+ arch/powerpc/mm/hugetlbpage.c            |  13 +-
+ include/linux/hugetlb.h                  |  24 +--
+ include/linux/mmzone.h                   |   7 -
+ mm/cma.c                                 |   3 +-
+ mm/hugetlb.c                             | 259 +++++++++++------------
+ mm/hugetlb_cma.c                         |  44 ++--
+ mm/hugetlb_cma.h                         |   8 +-
+ mm/hugetlb_vmemmap.c                     |  94 ++------
+ mm/hugetlb_vmemmap.h                     |   5 -
+ mm/internal.h                            |  14 +-
+ mm/mm_init.c                             |  88 +++-----
+ mm/sparse-vmemmap.c                      |  26 ++-
+ mm/sparse.c                              |  48 +----
+ 14 files changed, 241 insertions(+), 399 deletions(-)
+
+
+base-commit: 08484c504b55a98bd100527fbe10a3caf55ff3ff
 -- 
-2.53.0
+2.54.0
 
 
