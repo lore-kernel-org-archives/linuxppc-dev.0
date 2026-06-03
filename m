@@ -1,59 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-21966-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21967-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 59E4ECD6E64
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Jun 2026 10:20:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4853ECD6E55
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Jun 2026 10:56:54 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gVkHD755Bz2ybQ;
-	Wed, 03 Jun 2026 20:20:40 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780482040;
-	cv=none; b=HvIN37ImMWwNXdHZkqaM4vKoL3wo7IgvPw+hbASH9jzAFIF8O6xQJQEp3Kkt4/3tiFsuBpgDIAftzkQgI26yhsOfNDQvDeF2JaR3e3+tOX/r9gH5MQwQJpiqVUOoOoL0biHUHeh+XOMiGb/BkMz+3DSUJJzQO+pL6ZnCp7wrcXUWXTNBkt2e6aavyu5LAeGqJKmRXjw4AsBlwgJFaQ5FIa6xDv6shGkmGz8IOd6reokqwvvyUCuQwvFiw+HnFzHE9CSlIhfk5Z9973Gk+XQRjO3GKwZvon01F1phmgbhtgtIFbEXE1pHas0BPG5JUYb1CT37q0YToSLBHwiCCsODQg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gVl504V3Mz2yZZ;
+	Wed, 03 Jun 2026 20:56:52 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780484212;
+	cv=none; b=gfOgR0+BW+YJFd/8L9BqA60v5KnvVekAXVzLg/PBCbtON9wsu94H5rD4c//c75h6Ya+U67oDou+Z04ChLm0QzLDmxu3CWaTYrDE7XyFB9bgSwD2ODd07cJhr5oSkYwtOZimTfFHU+6VlTb+WhU6S9JESBcsCyB1GtcNpoinn+INuuLlRZbF43n2rp7FfMqXzLcqQxjsYLcZSwbp5IZj8+5NGf1ssh752IBzqLUeq8Z9JzVDugmbMEHr9T5YvOl0quOnCVgvjXXRzi8OEjmvlnLJ0BXBjkpqt3UmCFUhdpiY1r24X56SyQnwG0KHkjVioNL+yNf+BeIU0WApJKNndsA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1780482040; c=relaxed/relaxed;
-	bh=oR/k1mVyyfu6WyTJCC0me1TnDDk1gSjioq9kNyproS4=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=dnIynustxcar6YDwQmdQDL8UqCpxx38xZACPb0sz3BkEbT8U0rsTktm91pBNsGU3xIEsnur8U9x125Pb7rQau/Z2WeJfhE/dqDq6JVxoGlJpx4zVtRPvI59+XA8YlD1ct+/SRJ6i+wdiOp3PFQvneyRGdGJc9ACMbZGA4Hp5xk9ZPxZnbpF43zj0T+c2diVG8jF+m+EeCpZAXzDz4JsXijlX6T2pmD3iyyU3Yg1vLpCfePErqJqud1n2wEBCQ9WALdz6ucKd31CyfJIGjDVxPXGf6qpasDZqt+A5BtyShdU0VmxsH37SChoO4rvwhTvxRgfiTyinQ61QeX0IekKLuA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Ix9CYaI5; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1780484212; c=relaxed/relaxed;
+	bh=itkTAHASZK2OQqLGjrU2zc88p58uCLzscZjgdkGwxXQ=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=SQPpVApTG8DMPbxr5Vo1CxiDq83wKTvaFDbndrzhuJaXct1w10FeA6IH9G48Rt88CJwCuMKzjWcoVQ0N8f+9ay/0uHAiFFIxDEubDQ0+0wedk1S44knvjAg3h4EbzvQB710N8XDBeMnpwXwDUR3m2zx98kFfit/YcNwA11LOE9U85rlTlyadswSBGNM2le0zGqQz1J7mwEEzGMHXXrSqVkAXDLohHo1lEXHSatMgUqbyNLdGYP36FL07woS7DcpjmyTjljy4Scg9LqQhatqC1l8svP4yKDkuawcuMLld7mkA0nJjJoTw9ezmWSsP8giEn2JxfhJNZRIB60qINl1sng==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=sKontEXL; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sbhat@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Ix9CYaI5;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=sKontEXL;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sbhat@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gVkHD0Mmrz2y8W
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 03 Jun 2026 20:20:39 +1000 (AEST)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 8C6286021C;
-	Wed,  3 Jun 2026 10:20:37 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id C6E681F00893;
-	Wed,  3 Jun 2026 10:20:35 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1780482037;
-	bh=oR/k1mVyyfu6WyTJCC0me1TnDDk1gSjioq9kNyproS4=;
-	h=From:To:Cc:Subject:Date;
-	b=Ix9CYaI5S2BEqTLsfDrNc/2TI9ZoY1r1vbNrc5JX+DpaSyOpGMyESjqcO5r9r6Sid
-	 3aIVwjGPzfgGQwyXr/O7E5qkTafepGTna/0NSSZov0IQuRyw9zRqdv2ZEJ5ybKQYiy
-	 HgszeYCKhtYkYMyRNUo4TmUm3vGp8pRdAeprTwekzG8P4wo6g2/5TU3WsCi35AzhTv
-	 QhWquJgREAu6acdiMr/STUDpJJfnC/3jsC90qUVpIUMIVr26Zv9tlUa2EE4zgiv/sP
-	 oEH/Oc7FlMSvIXuj1qG63yvh8Now+Mv0ccK3f9jTV/8U7SujDupjTz2viGKdPOzV43
-	 vgj7qZMtI6O0g==
-From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-To: Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>
-Cc: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	linux-kernel@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v4] powerpc: Simplify access_ok()
-Date: Wed,  3 Jun 2026 12:20:14 +0200
-Message-ID: <f496ba4f309a2fb9fd0d8811e941bbcaf5d196cf.1780482002.git.chleroy@kernel.org>
-X-Mailer: git-send-email 2.54.0
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gVl4z3XN2z2xk7
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 03 Jun 2026 20:56:50 +1000 (AEST)
+Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 652JdW1b1276410;
+	Wed, 3 Jun 2026 10:56:47 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=itkTAH
+	ASZK2OQqLGjrU2zc88p58uCLzscZjgdkGwxXQ=; b=sKontEXLXj/EkcVZLWDnrC
+	pTOJdWMTnwKHhpb8qjyzwRQngW+Qt9fTqt17cAViGaW7mqC6Qbz5nYHN1s91rvtH
+	xKS1GvzLHg/7RdUwffQnFk8f8X4jDDPp3twqK4u2YFT1vcFkcPfExOleu53QUqf6
+	Oc0TLva+cSHR/edYbkk/kC4jR9kesRkzG0jqYcXEI0wZroSZjg0wyxbObJCzBHoH
+	JAJIy7kvovToTPX6XjbdVpeb/k/AtN8ifF6DdCH5F6KOM/Wq0P8he4FtfKKQKgv9
+	ecc2+WNeUHBhgwwAqzPZsRgOdwdfZyEmayG5LrjNugwba986sf+n+AALrPWFidNQ
+	==
+Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4efqm52evk-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 03 Jun 2026 10:56:47 +0000 (GMT)
+Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma22.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 653AsIKK017636;
+	Wed, 3 Jun 2026 10:56:46 GMT
+Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
+	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4egakvywrf-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 03 Jun 2026 10:56:45 +0000 (GMT)
+Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com [10.20.54.104])
+	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 653Aue6125625156
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Wed, 3 Jun 2026 10:56:40 GMT
+Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 2EE7E2004E;
+	Wed,  3 Jun 2026 10:56:40 +0000 (GMT)
+Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id BB1D92004B;
+	Wed,  3 Jun 2026 10:56:37 +0000 (GMT)
+Received: from [9.39.23.37] (unknown [9.39.23.37])
+	by smtpav05.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Wed,  3 Jun 2026 10:56:37 +0000 (GMT)
+Message-ID: <5124c4ea-743a-4047-9d5e-990a7e9907aa@linux.ibm.com>
+Date: Wed, 3 Jun 2026 16:26:36 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -67,79 +81,126 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=2694; i=chleroy@kernel.org; h=from:subject:message-id; bh=AFmg1cR5zKlOZUDdLC9Yafo7y1A+dPJ/ppORVoEg91Q=; b=owGbwMvMwCV2d0KB2p7V54MZT6slMWTJ/3/UUz5b9bB0j3tNYuCnwjcCvDlej6y3PfwxpyhVh iPe56xaRykLgxgXg6yYIsvx/9y7ZnR9Sc2fuksfZg4rE8gQBi5OAZhIlxkjw+yFu7U3Ckd4tKmp iz83lWlWNfNKbHqfff35ns13ar8crmFk2MjQevp20sq+l2LXwlLNuqP2Luid2RypuKnA7u4+Zfd CDgA=
-X-Developer-Key: i=chleroy@kernel.org; a=openpgp; fpr=10FFE6F8B390DE17ACC2632368A92FEB01B8DD78
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] [SCSI] qla2xxx: Handle the INTx not connected while
+ passing through
+To: Madhavan Srinivasan <maddy@linux.ibm.com>, njavali@marvell.com,
+        GR-QLogic-Storage-Upstream@marvell.com,
+        James.Bottomley@HansenPartnership.com, martin.petersen@oracle.com,
+        Kyle.Mahlkuch@ibm.com
+Cc: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+        alex.williamson@nvidia.com,
+        linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, harshpb@linux.ibm.com
+References: <177885270578.1573.14283751510936407585.stgit@linux.ibm.com>
+ <66039318-07c0-4453-a295-bc39a2a5b8ec@linux.ibm.com>
+Content-Language: en-US
+From: Shivaprasad G Bhat <sbhat@linux.ibm.com>
+In-Reply-To: <66039318-07c0-4453-a295-bc39a2a5b8ec@linux.ibm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: MCVu_sUZo1C-csPGwBHbygqPTh7FtzWY
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjAzMDEwMiBTYWx0ZWRfX6JxFg+ZsWBxT
+ fWDNU3zOxEQ1hB5jwQhvs38CYftcsoMWSR7cQNbQkFWGitsMWmpdrKJVXkVpBROg82Kmy4Uric6
+ wT0mZx2nN3K+JvdRAq9MeUmH01lFAC/6GNlPlyrsl6tQf1jxKFW0V0GezhuPHONb6d+hsXDw+cH
+ sjkQf5OlCU10DcjCrrMi9MzRQBoaUNsmhky/ZGPkVbKMDD0WDeFs6s3Njbr686aJMS6n579l3iE
+ wy1/lY9Q7IQQRjXHEuiBiBolU3stQ9OcQvpV/cw+HLW9W2sM5GOs4XfRXg2rSVUz7bHq+cpArZO
+ xzHvnf4smAMW7uDokOXOMGV7pVjR9bYsyYvGpETlamrIa9oFZQdea4kdO25oyKZwev32LeB7VkL
+ l92n1I6LbFWpXgADM47qHWCCOPnkgCyJk6e4qM/WJDXFUhoxwtteQUH5hCRWLtpD+N+qDWNprIq
+ Zk8NSyMWE19JCCLJSkQ==
+X-Proofpoint-ORIG-GUID: MCVu_sUZo1C-csPGwBHbygqPTh7FtzWY
+X-Authority-Analysis: v=2.4 cv=Vf3H+lp9 c=1 sm=1 tr=0 ts=6a20086f cx=c_pps
+ a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
+ a=IkcTkHD0fZMA:10 a=FelO9ux0wxsA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=U7nrCbtTmkRpXpFmAIza:22 a=VnNF1IyMAAAA:8
+ a=enu2mHtoF2I52F_0tAQA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
+ definitions=2026-06-03_04,2026-05-28_03,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501 suspectscore=0 adultscore=0 bulkscore=0 impostorscore=0
+ phishscore=0 lowpriorityscore=0 malwarescore=0 clxscore=1015 spamscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2605210000 definitions=main-2606030102
 
-With the implementation of masked user access, we always have a memory
-gap between user memory space and kernel memory space, so use it to
-simplify access_ok() by relying on access fault in case of an access
-in the gap.
+On 6/3/26 1:42 PM, Madhavan Srinivasan wrote:
+>
+> On 5/15/26 7:15 PM, Shivaprasad G Bhat wrote:
+>> The PCI_INTERRUPT_PIN reports if the device supports the INTx.
+>> However, when the device is assigned to a guest via vfio, the
+>> PCI_INTERRUPT_PIN is set to 0(i.e none) if the line is not
+>> connected and|or the platform cannot route the interrupt.
+>>
+>> In such cases, the guest PCI_INTERRUPT_PIN is 0 and the port
+>> number becomes -1(255, uint8_t underflow) for qla[25|27|28]xx and
+>> qla2031 devices. The flt_region_nvram is never set, and subsequently
+>> the lun detection fails. Below warnings show the NVRAM configuration
+>> failure.
+>>
+>>   []-0073:1: Inconsistent NVRAM checksum=0xffffffc0 id=HCAM 
+>> version=0x100.
+>>   []-0074:1: Falling back to functioning (yet invalid -- WWPN) defaults.
+>>   []-0076:1: NVRAM configuration failed.
+>>
+>> The patch handles the case, and sets the port_no to devfn like
+>> its done everywhere else.
+>
+> Any update on this? do you have any comments/concerns that should be 
+> addressed
+>
+Hi Maddy,
 
-Most of the time the size is known at build time.
 
-On powerpc64, the kernel space starts at 0x8000000000000000 which is
-always more than two times TASK_USER_MAX so when the size is known at
-build time and lower than TASK_USER_MAX, only the address needs to be
-verified. If not, a binary or of address and size must be lower than
-TASK_USER_MAX. As TASK_USER_MAX is a power of 2, just check that
-there is no bit set outside of TASK_USER_MAX - 1 mask.
+Priya has tested this already. I have requested Kyle to help with 
+reviewing this patch.
 
-On powerpc32, there is a garanteed gap of 128KB so when the size is
-known at build time and not greater than 128KB, just check that the
-address is below TASK_SIZE. Otherwise use the original formula.
+Meanwhile, would request Nilesh, James or Martin to provide feedback, if 
+any.
 
-Signed-off-by: Christophe Leroy (CS GROUP) <chleroy@kernel.org>
----
-v2: Fix build failure following untested last minute change :(
 
-v3: Using statically_true() following comment from David.
+Thanks,
 
-v4: Rebased on top of today's powerpc/merge branch 3af068d1f05b ("Automatic merge of 'next' into merge (2026-05-22 09:59)")
----
- arch/powerpc/include/asm/uaccess.h | 26 ++++++++++++++++++++++++++
- 1 file changed, 26 insertions(+)
+Shivaprasad
 
-diff --git a/arch/powerpc/include/asm/uaccess.h b/arch/powerpc/include/asm/uaccess.h
-index e98c628e3899..7b8c56962c31 100644
---- a/arch/powerpc/include/asm/uaccess.h
-+++ b/arch/powerpc/include/asm/uaccess.h
-@@ -18,8 +18,34 @@
- /* Threshold above which VMX copy path is used */
- #define VMX_COPY_THRESHOLD 3328
- 
-+#define __access_ok __access_ok
-+
- #include <asm-generic/access_ok.h>
- 
-+/*
-+ * On powerpc64, TASK_SIZE_MAX is 0x0010000000000000 then even if both ptr and size
-+ * are TASK_SIZE_MAX we are still inside the memory gap. So make it simple.
-+ */
-+static __always_inline int __access_ok(const void __user *ptr, unsigned long size)
-+{
-+	unsigned long addr = (unsigned long)ptr;
-+
-+	if (IS_ENABLED(CONFIG_PPC64)) {
-+		BUILD_BUG_ON(!is_power_of_2(TASK_SIZE_MAX));
-+		BUILD_BUG_ON(TASK_SIZE_MAX > 0x0010000000000000);
-+
-+		if (statically_true(size > TASK_SIZE_MAX))
-+			return false;
-+		if (statically_true(size <= TASK_SIZE_MAX))
-+			return !(addr & ~(TASK_SIZE_MAX - 1));
-+		return !((size | addr) & ~(TASK_SIZE_MAX - 1));
-+	} else {
-+		if (statically_true(size <= SZ_128K))
-+			return addr < TASK_SIZE;
-+		return size <= TASK_SIZE && addr <= TASK_SIZE - size;
-+	}
-+}
-+
- /*
-  * These are the main single-value transfer routines.  They automatically
-  * use the right size if we just have the right pointer type.
--- 
-2.54.0
 
+
+> Maddy
+>
+>> Reference: commit 2bd42b03ab6b ("vfio/pci: Virtualize zero INTx PIN 
+>> if no pdev->irq")
+>> Signed-off-by: Shivaprasad G Bhat <sbhat@linux.ibm.com>
+>> ---
+>>   drivers/scsi/qla2xxx/qla_os.c |   15 ++++++++++-----
+>>   1 file changed, 10 insertions(+), 5 deletions(-)
+>>
+>> diff --git a/drivers/scsi/qla2xxx/qla_os.c 
+>> b/drivers/scsi/qla2xxx/qla_os.c
+>> index 72b1c28e4dae..a8d6a0a021f4 100644
+>> --- a/drivers/scsi/qla2xxx/qla_os.c
+>> +++ b/drivers/scsi/qla2xxx/qla_os.c
+>> @@ -2803,11 +2803,16 @@ qla2x00_set_isp_flags(struct qla_hw_data *ha)
+>>       else {
+>>           /* Get adapter physical port no from interrupt pin 
+>> register. */
+>>           pci_read_config_byte(ha->pdev, PCI_INTERRUPT_PIN, 
+>> &ha->port_no);
+>> -        if (IS_QLA25XX(ha) || IS_QLA2031(ha) ||
+>> -            IS_QLA27XX(ha) || IS_QLA28XX(ha))
+>> -            ha->port_no--;
+>> -        else
+>> -            ha->port_no = !(ha->port_no & 1);
+>> +        if (ha->port_no == 0) {
+>> +            /* None of INT[A|B|C|D], may be virtualized by vfio */
+>> +            ha->port_no = PCI_FUNC(ha->pdev->devfn);
+>> +        } else {
+>> +            if (IS_QLA25XX(ha) || IS_QLA2031(ha) ||
+>> +                IS_QLA27XX(ha) || IS_QLA28XX(ha))
+>> +                ha->port_no--;
+>> +            else
+>> +                ha->port_no = !(ha->port_no & 1);
+>> +        }
+>>       }
+>>         ql_dbg_pci(ql_dbg_init, ha->pdev, 0x000b,
+>>
+>>
 
