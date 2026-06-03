@@ -1,92 +1,80 @@
-Return-Path: <linuxppc-dev+bounces-21947-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21948-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 24C9CCD6E55
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Jun 2026 06:17:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 52F34CD6E4A
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Jun 2026 06:27:19 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gVct95wgsz3bpM;
-	Wed, 03 Jun 2026 16:17:05 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780467425;
-	cv=none; b=GLMZCieEomXH1hejdtaq2Xv/3pUEHwVxDFZm/9IPtGC/D6f6HHmrBaUGtkQYH0iPe60bRNg7THhgsrC84vlOF+EPizxo5OhWVC9N5ZvhyOek/G3hJmwomz8STLcNlcAxBR6QaJWPjfdPdRS+KerF0XHCZ53zN/UyvFKKLSBNcJ+EAUKpwK97dvz3wY1NonB6jghGPyPo4IQNtIVZCPrD0FrIpe5ZfV9SXagt0c2gIh5tUlKahEfwqPTpo5djV0HQEGfdR5XqDlLxXMdSQYcmvDc7MRjm3s2JwYjPcEqXf3DyvVl6kl/dYMxcGq5Mi9qFdExlv/d4wJzLwui3xD/bpA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gVd5y3Bf9z2yNn;
+	Wed, 03 Jun 2026 16:27:18 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::62d"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780468038;
+	cv=none; b=fGl24hhnRJxUrD+hkOCBHvvg4/6Yf+5zd+AQbIrRW4v6qRC9/hOUFv1EITs+KyQ+7JjMmEa+SgApdbOQe9qhCKVQB7WgxvpfwCEfHr+2K5A4+zcDgIqwq/WNxjk6ew7G6wwP2jTDL6gtcPWU/Zaah5eUiDqeEFgpFkPEMl3hUAghTgm+2AHUZWOgtYFfi8+YCj92p/cgvhDPR0kfMSJEtWLz0u3cje7jpOElUeK43ShfPyz+raHduOKstRfJ4ZPdW3JiCIqfu50UNpZu9/xHdT2CFRqDovJ4qDfLvrv53EKLp5NwMkMubOJeEBbcN5KD1kNej4WLVq5EHYwk7g+nkg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1780467425; c=relaxed/relaxed;
-	bh=sjD8vMoitFU1Sh31xveubUPLg+R9PP3P/awfzsy3Sho=;
-	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=Cy3k49TbKVtoYMM345piDy+9bFD2tCRy9Np2hnKeT5fNdmcwhXluUlwDXAEuVxLXedHLVPwAC5vdkAomaIi2RZkYvZRl0zeS/DU7aNcJgU/UnmLe/SaWkERJsFSDrC5cOIM3C3HRXlh27zkdkM+PnMFfEH4M0HL3LOmDBW2vvuJz7KitO8ppFonMAMyS1QpSpBbdPlsyfS0jWo9cR1DuKILzyLU6kkAD1KFi0BE1fpGezi5VunDG93UVyG5vGe3NbOu+dHj2AWM4ODKGfWTuMam/PSK3xXT86Mg+84yLgWZe4Zfy3VQ6ljC6I5gz2yMTDKAtaikQ9z6TLCWDafsABQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=molII2hO; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=aboorvad@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1780468038; c=relaxed/relaxed;
+	bh=FsWw+BRaEfTe2BSzSpq066D0ULR8rb3630HXbbNfz04=;
+	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References; b=nfIQFWV3OvyffdZXk0aofn8vWPBRRJjvdoyVOe8s1R/iPH93JQUrIXJz7tp0FbosKF4XloPVujhrYy1nWdbzQcaKe5XgdVzWzVHZsxcY2raxnHqOdYuPoVK1C3WRqBWgpzm4I0trXBSBUt3VLoqk5oHUuPZGt//oAhoJzLVoLm6/IS5yYv/xaSULXGfgy+0vH3xAo/Y/Kgtl4H7UR9WN1Z8azb7BkZmoj0IyCid/ZhEo+rrO0b0hHArYH0wRxmGsLgcceA4VwjgB1jxVN2aFSVM+ovcO/NRW05Au3ezViqhUo4QNb4hV0rYQCyPUXI/zudj00MuqZxLGRDvaiT1hfw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=sqr2Socz; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::62d; helo=mail-pl1-x62d.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=molII2hO;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=sqr2Socz;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=aboorvad@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::62d; helo=mail-pl1-x62d.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pl1-x62d.google.com (mail-pl1-x62d.google.com [IPv6:2607:f8b0:4864:20::62d])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gVct91L0Nz2xc2
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 03 Jun 2026 16:17:05 +1000 (AEST)
-Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 652HMsKg633201;
-	Wed, 3 Jun 2026 06:17:02 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=sjD8vM
-	oitFU1Sh31xveubUPLg+R9PP3P/awfzsy3Sho=; b=molII2hOtYsv3+asXAWHoI
-	jXr6c7q/2/ZzN6Hy9xD8f9Z9TtVLFGM2pbKOLCjVP8xFvXx0zCYVfvTFFINXVKKi
-	X+q56t66CGG4TSlBdv0j1Zti/dZ4+n90UzQeEGtcyvTE/9HXbNfmAolMO7AKCobK
-	SOm0ZeDQtzdHKzGXsFSoPs6n11SA1UDQtVb1ddceAV0JcDwzhU/caZW9SbIhQjhh
-	2QyfsXWzgQ7xK2/xMLzwzCFBZlAbmexv/jJBO8Zy+uNbGQ6hJlQwztRXVr4UZieu
-	0QEiWiPvSYO8F5QHk9RxLjtfuftfxJpdG1+YU+n8keb1MF9cDEaaMI1UF3+HsyKQ
-	==
-Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4efqjq9e8p-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 03 Jun 2026 06:17:02 +0000 (GMT)
-Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma22.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 6535sJ6W022773;
-	Wed, 3 Jun 2026 06:17:00 GMT
-Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
-	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4egakvxy30-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 03 Jun 2026 06:17:00 +0000 (GMT)
-Received: from smtpav04.fra02v.mail.ibm.com (smtpav04.fra02v.mail.ibm.com [10.20.54.103])
-	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6536GvxL31457928
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 3 Jun 2026 06:16:57 GMT
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id EF9AF2004D;
-	Wed,  3 Jun 2026 06:16:56 +0000 (GMT)
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 4239220040;
-	Wed,  3 Jun 2026 06:16:54 +0000 (GMT)
-Received: from aboo.ibm.com (unknown [9.39.24.39])
-	by smtpav04.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Wed,  3 Jun 2026 06:16:53 +0000 (GMT)
-Message-ID: <7d7c24d7900a30f53820feae952e2c2bd92d0a42.camel@linux.ibm.com>
-Subject: Re: [PATCH 0/3] powerpc: fix preempt_count imbalances in perf and
- kexec paths
-From: Aboorva Devarajan <aboorvad@linux.ibm.com>
-To: Shrikanth Hegde <sshegde@linux.ibm.com>,
-        Madhavan Srinivasan
-	 <maddy@linux.ibm.com>,
-        linuxppc-dev@lists.ozlabs.org
-Cc: Athira Rajeev <atrajeev@linux.vnet.ibm.com>,
-        Christophe Leroy
-	 <chleroy@kernel.org>, linux-kernel@vger.kernel.org,
-        Sourabh Jain
-	 <sourabhjain@linux.ibm.com>,
-        Ritesh Harjani <ritesh.list@gmail.com>
-Date: Wed, 03 Jun 2026 11:46:52 +0530
-In-Reply-To: <0c6d2855-61df-4fd2-bede-0c204f4fd2b1@linux.ibm.com>
-References: <20260518050855.1147242-1-aboorvad@linux.ibm.com>
-	 <0c6d2855-61df-4fd2-bede-0c204f4fd2b1@linux.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.60.1 (3.60.1-1.fc44) 
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gVd5x1Hmtz2xc2
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 03 Jun 2026 16:27:16 +1000 (AEST)
+Received: by mail-pl1-x62d.google.com with SMTP id d9443c01a7336-2bf114b0cf9so35203585ad.2
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 02 Jun 2026 23:27:16 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1780468033; x=1781072833; darn=lists.ozlabs.org;
+        h=references:message-id:date:in-reply-to:subject:cc:to:from:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=FsWw+BRaEfTe2BSzSpq066D0ULR8rb3630HXbbNfz04=;
+        b=sqr2SoczUyiEFW3S2pZH+J7ncBIlZT7rvJLmstfczbgLFVk7CBy1Nn84ZjOFEfHVA/
+         ofNN+V16m36hTLo0M7rZbGC1Ejv1dlPFTasRMpnUZZE2biuSqgpj9N+h31nOIwgM1YOO
+         mFnkYEfDcdggMYu26EGko5ADb+aH4ejYQfvAJwyU/F8kQGOoALKh3d1MvqreZNEWjR7m
+         vVyWlLNaUjOPcUfS9rY4SCjhrWenIcWyJld4Rp0+AkND+6nT1bnlNR4XepeCqpo5lCjo
+         vlXyRrDmj90Q9ARq1i8gCE9RNYpzzrvePEz6C6ocVuZMra7u6fklZlEXIkpD0LMqYa14
+         xBtQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1780468033; x=1781072833;
+        h=references:message-id:date:in-reply-to:subject:cc:to:from:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=FsWw+BRaEfTe2BSzSpq066D0ULR8rb3630HXbbNfz04=;
+        b=r9SGvNR76svlQbHtJVtjeAQsm+9fG3+e5oGeceaMbPYCkyWxiDIkOAGpl9UyY8Rtj8
+         fux8IDrbxwHN2wiGgRiJnIYawdaXGnWWb9x2rJYlX1TsETh446ywlVZbqlEg/QAzJ+aN
+         +E3f1jSlUyyGTMANH2oX0Rltqze8M1IhjSPXY7+OQNiAczAVy6wX/wsPv+Mj1riAuOJQ
+         i/YhWm4l2rbBjuJuzSfUOMrpzvCGzdDooqqDTy2e+FzAxP/S/aXGY1WxedJiy0JS2Kc4
+         OHbJZlxZlVllar1+Gi8tlUJu6Uj8RAGC0LNUQARQoTELTJvqp2NxZ8cDfybNcU2ChSoP
+         Ry7A==
+X-Gm-Message-State: AOJu0Ywx1ltfHVeDg8fPmM2x+q6VHNvwxSsiySSK9ffYn/3lVH7+W5yU
+	Jt5zxYyG0l6+O0uq4lTiHXI0aRPxJ8EyDE1qKbD8kR23Sy7hu4OlO95P
+X-Gm-Gg: Acq92OF+jBctWMBl1VRQTKquyaHpGKhPm92W43loaVrIXG9HQwZyh1U1QUGAgqoiZJk
+	mpzTbZHHEXT2rwxz3R09UydLP1qB7Mco4sCDOqMaPIV2NknYIorU45r++5FilDScOh+37lHnZaT
+	FvDeNNTUJPssoFFvBrDDKwzK8tYk3EB4Fc6C60tgseXLcaMJeNQhtDKHrWmzXQUOwo2mForRbx+
+	3G+5Wuus2u/cZ6rtzxrWzjvuGO7kn0kg+YW10fBf1lVAxylp1NGLYEjGywXAcoZ/l0iZP1he5P5
+	lSSfLe9XBqAgG+9lXKYtCK0aNSAVgxFLkR3ssmGti6VxWPAv0pxWtA8+Lii8Z7+CcfeiaLJueVt
+	KFK3bsJl4GoMJELDc1NbGa0bk3pH97kM9TPqy+QupvsbCPp1DCm7IK9lLykC/DO1uH+38uHq6Eo
+	k3gmoURVWtGkL4N6swU8+PW4BfJiVantIN
+X-Received: by 2002:a17:903:3c45:b0:2c0:bb2d:a30b with SMTP id d9443c01a7336-2c1644ae17fmr20198585ad.32.1780468033143;
+        Tue, 02 Jun 2026 23:27:13 -0700 (PDT)
+Received: from pve-server ([49.205.216.49])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2c16629cfb4sm12978885ad.59.2026.06.02.23.27.07
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 02 Jun 2026 23:27:12 -0700 (PDT)
+From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+To: Harsh Prateek Bora <harshpb@linux.ibm.com>, Madhavan Srinivasan <maddy@linux.ibm.com>, Vaibhav Jain <vaibhav@linux.ibm.com>, Amit Machhiwal <amachhiw@linux.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Anushree Mathur <anushree.mathur@linux.ibm.com>, Paolo Bonzini <pbonzini@redhat.com>, Nicholas Piggin <npiggin@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>, "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, Jonathan Corbet <corbet@lwn.net>, Shuah Khan <skhan@linuxfoundation.org>, kvm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, lkp@intel.com
+Subject: Re: [PATCH v3 1/5] KVM: PPC: Book3S HV: Validate arch_compat against host compatibility mode
+In-Reply-To: <56c84e26-69ed-433b-baaf-7b53acc60391@linux.ibm.com>
+Date: Wed, 03 Jun 2026 11:35:55 +0530
+Message-ID: <bjdsw43g.ritesh.list@gmail.com>
+References: <20260522152744.55251-1-amachhiw@linux.ibm.com> <20260522152744.55251-2-amachhiw@linux.ibm.com> <pl2g6xbz.ritesh.list@gmail.com> <20260529141530.fc225a67-e9-amachhiw@linux.ibm.com> <cxyewhx8.ritesh.list@gmail.com> <87se74z4a6.fsf@vajain21.in.ibm.com> <72ef4cdb-8d9e-4319-9c94-b9a46a6f6194@linux.ibm.com> <56c84e26-69ed-433b-baaf-7b53acc60391@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -99,66 +87,42 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-ORIG-GUID: s13eGU7E7RevYS-DINJTz19-UrQ8R0ih
-X-Proofpoint-GUID: T9YiJhovfMG7_oLb5jfUlzOXhombNN_c
-X-Authority-Analysis: v=2.4 cv=bcVbluPB c=1 sm=1 tr=0 ts=6a1fc6de cx=c_pps
- a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
- a=IkcTkHD0fZMA:10 a=FelO9ux0wxsA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=uAbxVGIbfxUO_5tXvNgY:22 a=SyrEavi5T-EveYA-VyoA:9
- a=QEXdDO2ut3YA:10
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjAzMDA1NiBTYWx0ZWRfX7ytuOsw+Sav8
- X3q+LyHB3JRW9J9e1nbOKYhsQ1Tr9O54SXqhd0x4/7nE9c0baYkeLJFPbcY48IYB/3eIfnBr9Kq
- ei4z2p1fo9qL9Yi3ilCnlCbJnklEyfvApjRClGP0LQyO5riWek7VBBdixTaQc43h63UyuP/vl+E
- GfFo7Ndl0hx7feXGWd6CDxzyIUcc9wdeu73AT0wZRB9y447sLYxxZYdXA9uLqfu3wKA5pPO3JYY
- BEFqt55BNkdxftf7ufn+zO7UFwHLe78wEQzB6mWlCVyi4uZo8KR2eOsQtOIqcp3s+q/uYS2JwDN
- T2h2NqyHsV+DOicAlxsFbQ3q3Yj57IeooWFoCMm3zMupeSIZU8LF7qGSo+HvzwhMw9qbXwalzvn
- b62GZIewPrZMDoWCVQZxsSZaaGcd0JTkAAcO730rk/CcR67DvCloPkWi1d5sI/5H1RU19YSvRS7
- kNGjcIXrNEmtMo6Ua4A==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
- definitions=2026-06-03_02,2026-05-28_03,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- impostorscore=0 clxscore=1015 adultscore=0 priorityscore=1501 phishscore=0
- lowpriorityscore=0 bulkscore=0 malwarescore=0 spamscore=0 suspectscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2605210000 definitions=main-2606030056
 
-On Mon, 2026-05-18 at 13:38 +0530, Shrikanth Hegde wrote:
-> Hi Aboorva,
->=20
-> On 5/18/26 10:38 AM, Aboorva Devarajan wrote:
-> > Hi all,
-> >=20
-> > This patch series fixes some minor preempt_count bookkeeping issues in
-> > arch/powerpc/ found during a preemption leak audit prompted by the
-> > lazy/full preemption model changes. These are get_cpu/put_cpu and
-> > get_cpu_var/put_cpu_var pairing errors that leave preempt_count
-> > incorrectly elevated or underflowed.
-> >=20
->=20
-> Thanks for fixing some of these.
->=20
-> while we do this, Can you fix these mismatch in preempt disable/enable in
-> below files as well.
->=20
-> 1. kernel/kprobes.c - kprobe_handler - Does disable, but doesn't enable i=
-n some return paths.
-> =C2=A0=C2=A0=C2=A0 A definite leak.
->=20
-> 2. Maybe platforms/pseries/lpar.c and platforms/powernv/opal-tracepoints.=
-c.
-> =C2=A0=C2=A0=C2=A0 In __trace_hcall_entry/exit.=C2=A0 It maybe a very cor=
-ner case,
-> =C2=A0=C2=A0=C2=A0 I don't see a big concern there. But it may be remotel=
-y possible.
-> =C2=A0=C2=A0=C2=A0 Need to evaluate whether it should be fixed or not.
+Harsh Prateek Bora <harshpb@linux.ibm.com> writes:
+
+>> amit, can you just post this alone as a separate patch, so that we could
+>> pull it for 7.2 merge?
+>> 
+>
+> FWIW, b4 am -P1 <mbox> should fetch this patch alone (and not the entire 
+> series), See b4 am --help for more options to select a subset of patches.
+>
+
+I agree, however as an FYI in this case -
+I had few review comments on PATCH-1 here [1] - which along with the
+commit msg changes, also had a code change involved, so IMO, it's still
+a good idea if Amit can test and send an updated patch separately for this -
+to be pulled in for 7.2.
+
+[1]: https://lore.kernel.org/linuxppc-dev/pl2g6xbz.ritesh.list@gmail.com/
 
 
-Thanks for the pointers. I'll go through these and get back.
+Replying to Vaibhav comment here so that we can reach to the conclusion
+at one place.
 
-Regards,
-Aboorva
+> Hence IMHO, this patch can be marked for stable tree and potential
+> candidate for 7.2 merge window. But dont see applicability of a 'fixes'
+> tag to this patch
+
+I agree, we need not use a fixes tag then. So, we shall mark this
+with v6.10 tag then.
+
+Cc: stable@vger.kernel.org # v6.10+
+
+(I calculated this based on when Power11 was added: 
+git tag --contains c2ed087ed35ca    | grep -E "^v" |head -1
+v6.10
+)
+
+-ritesh
 
