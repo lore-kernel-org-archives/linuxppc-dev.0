@@ -1,81 +1,115 @@
-Return-Path: <linuxppc-dev+bounces-21982-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21983-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0D228CD6E55
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Jun 2026 15:24:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6F950CD6E57
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Jun 2026 15:37:07 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gVs1h1ksPz2ySJ;
-	Thu, 04 Jun 2026 01:24:24 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::534"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780500264;
-	cv=none; b=WX2ipyOtOEnKF2QJ6VnMfTc5vZtcRfVmoNU96ocnWk2gkT+Mbhnj3yf1NyJ+35vfutR3QhvXsDtw+dlc0fDIvSkW4Es6mO141eE2Al+hLIeX/qxix1JmR2r9jPmvCDxD/zY0IP+57BN8K4ky7rcx+jBn0//qQD2LJpwlwubV+9vh0ZnAJz20XrH3h86NaxfnN6lyZv/KaZsYWu0kx3txbqkJpNCoG6F5aWuY5op7Sqh//84VAwJLIJ7iv1yLQxMo+rNugy7277B7ambKjWAg1H6IE2eq4YXgJ5/qD+sophMnVaqqE2WQcQ370qGsvfYDtZ9xGUJZTGNaZP5c3en/8w==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1780500264; c=relaxed/relaxed;
-	bh=acwBnprFgwqGQFKcy6Zu5y1vKCe+2/zpivoZrYetfHk=;
-	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References; b=FtumcXNN3GP+i433iqhMrqHDaQTziqsneuA/WzBHI7+WfSxBSKkfAt1nCSyxx13i/7hheRXMsUQIr4L1d3fAsgUIfLdF5VNvUn346bvap3E8vy71MizhW70CIyLLAxStWzxTICjhjEf68yGyMFskavIoW9ZG5wiLy9WhSSXqLiY3QMJRoPkT5mETMIWy8ELkMdSzocmgdnC3KxcGV08va6aTFihvkpDlKanSjXEXqpCE970nRL3IjdJwx+vSKuSGz9FQ+Yeo9StSbi3dh/bvWxMgSBCuJOd9lNc1Wj2P8k7ouZ0gP14NI3LN7wUmX8Ahe4xcZ6zZ+j45KmUw5CJDxQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=T5Hdz/TH; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::534; helo=mail-pg1-x534.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gVsJK6TtTz2ySJ;
+	Thu, 04 Jun 2026 01:37:05 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip=205.220.177.32 arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780501025;
+	cv=pass; b=FVFVlRxxYvE7zQbwKBCJpMQlFlmQtXugJsilq07kz87JN7DG0n+D/cj8BUaV3L0QzmM9fiusSca7OrbWwTSj49wdbbmufoxYyarJE/TtVvG+QBKtRw7dt4Du7DI/p+p+lNwP9yJ0VG1JCwi/rsVW0esyKrYtoS26x5C4fEzBAyDirpP9fikjUs5y28jMmrR9WDnnaC2Qxc68zWa0T9/K/4tDrT+o6JC1CrhzRscX9g9ZCBdbKmWT+gLK23TrycvSeyKqPyfrmIRpgNo1M24ZcF+P8BrHPmqbAo7ITgz7+Ct7/7GlbCzLPL12FiGdodI64ndHXIdi3GNaI6uBwLXEeg==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1780501025; c=relaxed/relaxed;
+	bh=bnPNcoFBRsvUiw+chf5t2WIjaGxo5fpEFT8z99hN6iQ=;
+	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
+	 Content-Type:MIME-Version; b=jsV/0P+xCU57CZXhhRX+8n+fYz8byCS2lE2NCFyImhgXOLXwFIitABcixgf8hA5gefjYVuhEZ6TZVPacZdrZ5dMVWqZSNO4IP5Q2snfGw+XoOGuncY1T6VCyIQdAFPiVNXVRfFqak4mR8rCvWD95feuqrT74mlYBRjxhJJmJfQIHu3xSEocatjcF3ETVSsjB+GmfoNCHAxQ7yKE9/zpgaRXrbj93ko2QzY507RKBH98oa0i0LJXxkX6gkmR+tqitBKJVgRxI2Hm18zNz9J3IhzJVJfloz71WOit9SoElAO1c9dUdlcoUIehAfryVnQc5kv1p0sAEcKPwzutAdGgyUA==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=oracle.com; dkim=pass (2048-bit key; unprotected) header.d=oracle.com header.i=@oracle.com header.a=rsa-sha256 header.s=corp-2025-04-25 header.b=niZMKySv; dkim=pass (1024-bit key; unprotected) header.d=oracle.onmicrosoft.com header.i=@oracle.onmicrosoft.com header.a=rsa-sha256 header.s=selector2-oracle-onmicrosoft-com header.b=H5EsW/dA; dkim-atps=neutral; spf=pass (client-ip=205.220.177.32; helo=mx0b-00069f02.pphosted.com; envelope-from=john.g.garry@oracle.com; receiver=lists.ozlabs.org) smtp.mailfrom=oracle.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=oracle.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=T5Hdz/TH;
+	dkim=pass (2048-bit key; unprotected) header.d=oracle.com header.i=@oracle.com header.a=rsa-sha256 header.s=corp-2025-04-25 header.b=niZMKySv;
+	dkim=pass (1024-bit key; unprotected) header.d=oracle.onmicrosoft.com header.i=@oracle.onmicrosoft.com header.a=rsa-sha256 header.s=selector2-oracle-onmicrosoft-com header.b=H5EsW/dA;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::534; helo=mail-pg1-x534.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pg1-x534.google.com (mail-pg1-x534.google.com [IPv6:2607:f8b0:4864:20::534])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=oracle.com (client-ip=205.220.177.32; helo=mx0b-00069f02.pphosted.com; envelope-from=john.g.garry@oracle.com; receiver=lists.ozlabs.org)
+Received: from mx0b-00069f02.pphosted.com (mx0b-00069f02.pphosted.com [205.220.177.32])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gVs1g09Dzz2yQL
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 04 Jun 2026 01:24:21 +1000 (AEST)
-Received: by mail-pg1-x534.google.com with SMTP id 41be03b00d2f7-c8585ecdd71so1851931a12.0
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 03 Jun 2026 08:24:21 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gVsJG4SGfz2xMQ
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 04 Jun 2026 01:37:01 +1000 (AEST)
+Received: from pps.filterd (m0246630.ppops.net [127.0.0.1])
+	by mx0b-00069f02.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 653F7TsI1188768;
+	Wed, 3 Jun 2026 15:36:30 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=
+	corp-2025-04-25; bh=bnPNcoFBRsvUiw+chf5t2WIjaGxo5fpEFT8z99hN6iQ=; b=
+	niZMKySv84cNcNvXzzvk/830EDiWhdlI35OKvTUZKHqhOj+8qNdqjwBYaaCjt1+s
+	EWdHsOQRzoxanArqzfAWvXuyPiWDR0ltXKIBedBzkl1jpEJVossJu5Slhvux8xmB
+	I6T1Aoa/HRLVC7a1HkYrVgTJFV4Jq/Y3UerqNHwGn3jrb9j9+dWODqOZKwls/yH/
+	EErG7F3SY1Fi2xPfjMYYgmBQpJqAra8uc2m9Q4QMGiG039Rp2xhpY1txVCB+WS76
+	GSw3tZ2G/j+LW+pP4jZ2+mqyaqsUCfLzuwPxyciKbd9YtN/4wOMX1MM2qErBhkST
+	0Dbg9wdu3A7DBrNyfr5xUw==
+Received: from iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (iadpaimrmta02.appoci.oracle.com [147.154.18.20])
+	by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 4efpaaxga3-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Wed, 03 Jun 2026 15:36:29 +0000 (GMT)
+Received: from pps.filterd (iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com [127.0.0.1])
+	by iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (8.18.1.7/8.18.1.7) with ESMTP id 653FZJXr019058;
+	Wed, 3 Jun 2026 15:36:29 GMT
+Received: from ph8pr06cu001.outbound.protection.outlook.com (mail-westus3azon11012042.outbound.protection.outlook.com [40.107.209.42])
+	by iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTPS id 4efpbsnwke-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Wed, 03 Jun 2026 15:36:29 +0000 (GMT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=r6BhHq1Z2zBWHMb2bSO9LwDcWujn0v+cUnM23dVyHs+vbM02/UUaqrvA/aYLGWvBkmT6/09A+yF0Y4CQjfTsrnTTXBxGuRBEhKv85aFYIE5KrwR8kv0TmMqrTavY6JT3WtWP+Up/tHm+QqNG0Sw9CxMSXjJSpL4h3uVomvTLb67v1WJcvFJx911qo5PqNC0I2w9oC1vwpjt6/DZRWV54zi++TnB20GF3n11R2kxYPqz0hk4o8zOI4ZzoPjM0FkJqMJhJk2w4QO1od6cBAYAb1unn2AHxfWBQKJXzJ4hGhdoU8kqFFk6ZioJb/2q4lzsVCgf4lZDS7Nkyo4HjvJ9QMQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=bnPNcoFBRsvUiw+chf5t2WIjaGxo5fpEFT8z99hN6iQ=;
+ b=mMZAjtx2kwOMWtAzB6wcSWHH6AQLXVCGcRf2wg54R4DL22UlcD49kggwzBvDsF6FKAJgpfuCXq+OSKXqYuimpt8Cpv3pxF4GRRu6ctWCHSY8slhYZGyqhMtgmQj1y74LAJSl1aWWPUiL+XY3c6fTjBSv3cpNmf7T3ukaREXbF/gqa1r8Me9pWmVCrDeDfE3DI5i2dPpyle+1O38gBleyuDkof464it6VJ72lUElZtX01iggKfWK/3qpqTvoAEQ+V0pGr8O6NZNCr0FWy4JX81puSNqm6s2sUFoPWOTG86nKvYCXoiozLIKJxaJAr/0H5lTVH7hst7Wfk0vcbYA36kg==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=oracle.com; dmarc=pass action=none header.from=oracle.com;
+ dkim=pass header.d=oracle.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1780500259; x=1781105059; darn=lists.ozlabs.org;
-        h=references:message-id:date:in-reply-to:subject:cc:to:from:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=acwBnprFgwqGQFKcy6Zu5y1vKCe+2/zpivoZrYetfHk=;
-        b=T5Hdz/THV2PKOmtcGOeE96HScc5UwKxx+/lr2hcgy3RhFtEYgLW8oxjfQiMazGfNTb
-         laz6xyxfaHPl2EXt+90PlM5S64H0AkmB2IOkIwcX/bRnDuiVM0dFZsa5j04e8oJTFafW
-         XSvKWttu6TR4KlEvUEkwsrjOZsJkCBIO/DG1wAGY5jW3KYpzBMqBgnd0GXP3/YJmngih
-         xDnMeo2a12Relb5GG3wLUNTB0tNzktotWcvS65Y4DrkTUtF8KNA/43HSQgFKiuac9u46
-         q+hocKan7Oc06ydQOB+qXY3g/GB2NRub+uQC8lm7r1ZUyqLutylVpp2Kj7TfU9YbbTB4
-         Euag==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1780500259; x=1781105059;
-        h=references:message-id:date:in-reply-to:subject:cc:to:from:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=acwBnprFgwqGQFKcy6Zu5y1vKCe+2/zpivoZrYetfHk=;
-        b=Hws9VGoOWPJ7OSrkgTUJ3wS2JE1tjpc5xv20+z/wdH0Wzn5LzV/lI/7DbOCgP8y7VR
-         LitESLx6qQYdc0ie2MyCV3t5p0D38N9p5dNT2+5cp4fgTL/i8IWtnX0nezQE6mzqE5aZ
-         /i0M5UuPgbBvKWieFq8adZDWdhJ/d68vYW3gK2r4mFGnlxILx6DChmRFXBpfUBX+lWqw
-         WzpR9qSa5fEjbIrOBxmLmaF8SssSZn6x+9uVhofghpAyopKemz5ltsYhiGs9EBNA0xwc
-         G88dyAem/sIGVh3ahDhczBNK0QtJTYlDxHt637f0U0e1Kh+nIR+Qm0Dd72LuVxUHCbh/
-         K/Ag==
-X-Forwarded-Encrypted: i=1; AFNElJ8SYPe5pYPAklA7JWKIblGQTBdBlLYKIhcWTRBsK7el8flKfxskEUO3BLSqZGW4/FPm5TU8mb/D/BbBuLY=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yxrd5PWgMKWMDoWp8HNEEPvndJ6XAysPH6ygdN/SN6dCqFD2B1x
-	ZM6LywhfaVwTyuqt0B1t1I5MI7xwWw5rvU+mEos9DMZz4NhQnMOA7WY4
-X-Gm-Gg: Acq92OF/WmrVnN1/Q5e3gDXle7su1t/nzlERciXHkR09ZidcDtGzbW6zw9vMGby8V7v
-	4UmZpEjOCS4fO58OMfYhLqEJFg7fsj6kKdZ+6UM4fLZSaKMF/rp/InSG6Zz0rVBstCj3PtzlsaM
-	HRX4Udck+exiy52CKN1ZccyyflT0Ka0DSNSacw9XMJlLG6MUOybkmpK+lzWy0YapGYPZbr0RE+l
-	Iqie/0CjZjg+nOyMVDqbbuti86geMxyzKhpbrJWq7MtyBMZyj41ZgHr8YDa2E44vppt67m8dpCd
-	54da/4OntsYLB2rSZLYHzoDerT0/qfoy2ZxUP6tOlvwKasskIO+aHrlmtsVbdjBjLwFAhhQ6TOY
-	YfRtYWYu4uH/CL23PUNQa4BpVy6uyx1tU0290NZG+kAONwJ+o+w9TtOvRm7gYIzZc5tOMJul/ms
-	G1Dan3GmxgRp6+AnE/N9tFKAFdfazHlG/7
-X-Received: by 2002:a05:6a21:691:b0:3a2:d68d:9e78 with SMTP id adf61e73a8af0-3b49732971emr4778730637.4.1780500258903;
-        Wed, 03 Jun 2026 08:24:18 -0700 (PDT)
-Received: from pve-server ([49.205.216.49])
-        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-c85df043ce0sm2671767a12.11.2026.06.03.08.24.14
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 03 Jun 2026 08:24:18 -0700 (PDT)
-From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-To: Amit Machhiwal <amachhiw@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org, Madhavan Srinivasan <maddy@linux.ibm.com>
-Cc: Amit Machhiwal <amachhiw@linux.ibm.com>, Vaibhav Jain <vaibhav@linux.ibm.com>, Harsh Prateek Bora <harshpb@linux.ibm.com>, Anushree Mathur <anushree.mathur@linux.ibm.com>, Nicholas Piggin <npiggin@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>, "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, kvm@vger.kernel.org, stable@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] KVM: PPC: Book3S HV: Validate arch_compat against host compatibility mode
-In-Reply-To: <20260603141539.47620-1-amachhiw@linux.ibm.com>
-Date: Wed, 03 Jun 2026 20:41:15 +0530
-Message-ID: <pl278xrg.ritesh.list@gmail.com>
-References: <20260603141539.47620-1-amachhiw@linux.ibm.com>
+ d=oracle.onmicrosoft.com; s=selector2-oracle-onmicrosoft-com;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=bnPNcoFBRsvUiw+chf5t2WIjaGxo5fpEFT8z99hN6iQ=;
+ b=H5EsW/dAPYx0roP271RCUiiNEpRitUw7AjHL5O2fQ3mAa/H7NsyAp7mdVzbnzFEVAqCppGrmezmH1nJKHDPE8m5dfmr5SOw0IK4p1Gh6JKP1bIbMTdD3fYvlxUH285TwA8/+HXOGYRw2WmCL+/Y0HNBNSBNxOjgQwBNzft2THWs=
+Received: from DS4PPFEAFA21C69.namprd10.prod.outlook.com
+ (2603:10b6:f:fc00::d54) by CO1PR10MB4739.namprd10.prod.outlook.com
+ (2603:10b6:303:96::7) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.92.7; Wed, 3 Jun 2026
+ 15:36:22 +0000
+Received: from DS4PPFEAFA21C69.namprd10.prod.outlook.com
+ ([fe80::9da2:46fe:4d63:a74b]) by DS4PPFEAFA21C69.namprd10.prod.outlook.com
+ ([fe80::9da2:46fe:4d63:a74b%7]) with mapi id 15.21.0092.006; Wed, 3 Jun 2026
+ 15:36:21 +0000
+Message-ID: <ff3229e1-94ec-4cb8-8597-0cd978dc158e@oracle.com>
+Date: Wed, 3 Jun 2026 16:36:16 +0100
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2] scsi: core: Remove remaining references to the pktcdvd
+ driver
+To: Catalin Iacob <iacobcatalin@gmail.com>,
+        Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+        Madhavan Srinivasan <maddy@linux.ibm.com>,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        Nicholas Piggin <npiggin@gmail.com>,
+        "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+        Rich Felker <dalias@libc.org>,
+        John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
+        "David S. Miller" <davem@davemloft.net>,
+        Andreas Larsson <andreas@gaisler.com>,
+        "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
+        "Martin K. Petersen" <martin.petersen@oracle.com>,
+        Jens Axboe <axboe@kernel.dk>
+Cc: linux-mips@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linuxppc-dev@lists.ozlabs.org, linux-sh@vger.kernel.org,
+        sparclinux@vger.kernel.org, linux-scsi@vger.kernel.org
+References: <20260530-remove-pktcdvd-references-v1-1-aa56941d4315@gmail.com>
+ <20260603-remove-pktcdvd-references-v2-1-c4402154d53a@gmail.com>
+Content-Language: en-US
+From: John Garry <john.g.garry@oracle.com>
+Organization: Oracle Corporation
+In-Reply-To: <20260603-remove-pktcdvd-references-v2-1-c4402154d53a@gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-ClientProxiedBy: FR0P281CA0179.DEUP281.PROD.OUTLOOK.COM
+ (2603:10a6:d10:b4::19) To DS4PPFEAFA21C69.namprd10.prod.outlook.com
+ (2603:10b6:f:fc00::d54)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -88,62 +122,160 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
+MIME-Version: 1.0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: DS4PPFEAFA21C69:EE_|CO1PR10MB4739:EE_
+X-MS-Office365-Filtering-Correlation-Id: 2a84dc33-5ae3-44c7-e3ac-08dec185dd0b
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|376014|7416014|1800799024|366016|921020|56012099006|4143699003|22082099003|18002099003;
+X-Microsoft-Antispam-Message-Info:
+	XithDC6MKkvLeTLP2wIpGkuGIViQ9NIypjfdfa+SOE5pHY/mtYzT376e0AixzKvLdU3nBef38miQOKOw11gZQ0KEmJZ4bK1Zj930tcXNoXlCaToA3zgSgtSuzjAHb4KMezNjYphRBeluKTV5S31wq/H8tZiwxlbd8ga/aeCd8mm2rSpPnuWO3RJqqwivt/nWqj6+38w2mFsi0vfPhDfTSa/Q6Y34S7cvWZrSYFHYprpxb3towtGVF9VlLoyX+X/0IxXoaq8kBrULES3dIdaIfT2QaRhudYbHWlOU0PW5lnuErgfFr688/N216jw8j57k3xQLQ4x0HsNXFmX322dpGUc5Gx15eDNb5Uv9NjEVfdPq0hLzuBxJJpLWOuiHQvHRtBwo8qTbgeBP26PiikD/t2dSu6UTe+ZvPlmKRnzbw1PoQEBfWw3KNM0GypAUHv/ttPP/CZFKfEY697+ValLnZ7JBPVB57PYdn+RZl/nPh6v6nATbkRHVPnyYw56kvQAubTr810zqmvkoNmahYKiKddDaWOOKVKOOeBMDMhG0BlXLnUeAXY4ol7mU9KL0OPkOIGWCbchh5PqL7O0RB2g7kh8JAB1r0QMWbvn2L0rFEJ6KjE7AHByj+uGysnbk2ippL92tyd1DuAs5SLLcCnEUPJe1PPaOmMCj4kXXS10hdpTbtTFYvrx+c0X19vtUO+kE
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DS4PPFEAFA21C69.namprd10.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(376014)(7416014)(1800799024)(366016)(921020)(56012099006)(4143699003)(22082099003)(18002099003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?utf-8?B?WVo0QXFUVVVUd2NqNWNsZ25pU0NHSXVtanFVS3dtOVc2ckcrQUlUS3VDaFFn?=
+ =?utf-8?B?R0I3UDlVQ0lOTTRCb0FMTDBiMGoybGVuUncxNFB5TzdWL2h6MXlTZzAvdi85?=
+ =?utf-8?B?WDdUa1hPS25XZTU0MGVkcGdpckdRb2V1UmEzQ2dlQWxmd3BwYy95K3JsR2JE?=
+ =?utf-8?B?NUN3eEpYMDVPbGZDa0RPRW9xVm04UkxtMHM0aktHaGxSY0orNzRmcXorUE5h?=
+ =?utf-8?B?V0xzUEFobDBKdFpSNVpLd1UwN3E4ZzhPQ05Vejl3VmdOQktMUzFKeXUzZW93?=
+ =?utf-8?B?aWVBN0hOOWJHRUd6M20walI1QTk0dWN6NENNckl3Z3M2SlozYURkMm1yMHJ0?=
+ =?utf-8?B?K3N5b0MzWWFhOFowUnl0L3JKUWFNbUlhT2ZYc3NFYmNpdkZUeFFmK21UOE1i?=
+ =?utf-8?B?SXFjeDFYRGpXb3djYkw4NFFoMTdIRGpqZE1kOGJMZzkweUlMQm5wNTQ1WlFt?=
+ =?utf-8?B?NGhGeDQxV2JFcExUQzlwOXpuZVlJYWprY1YvZlZxL2hyTXA2Rno3MlJ6ZnlF?=
+ =?utf-8?B?bUI4RDB0Zzczbnc0Z094Y3I4OGtNMHlBdWVSZTZMVWcrZS9TZGQreml5ODgx?=
+ =?utf-8?B?LzE0Q0kwTzBIRG1icTVlQ1Y4SzFrNEl3dUt6ZjlkdGt1NzE3U3I4NFM0NWN0?=
+ =?utf-8?B?Q0Q3c3NDWVpKNHdVTHMxWWx0RSsraEtNcjJXRW5yL0J2Z3k1ZzFuTEdJVzVy?=
+ =?utf-8?B?MEJUU0NpRVk4dzd6R2hqYmlZc3JONFY4dlZVT1lkMForWk9oekFiVzdjRVp6?=
+ =?utf-8?B?UDlvQytIUnYwQ0pCUk9sNDl6V1dDZHAyYTA5MkJWQUNtNFg5Vmc0a2tXeTFk?=
+ =?utf-8?B?VHRaMmhxWEJIYmNYRnhZZUx5QTFxSzBIUVI3VzhYK25hT0NCa2owWlpoUkxX?=
+ =?utf-8?B?YTZ0V0Q5Ny9hMVB3NDNWWENlTnlpOHBnMGNydUI3RWVNcUFlcTBMTjdDMis2?=
+ =?utf-8?B?cytCYzFxM2s3Vnh0bWxNbWxnMmZZUmUzYXFnZ2FEL1ZBNlN1eW9neDgwMTZx?=
+ =?utf-8?B?SGJPWmtaUmEweUo2aWU5aWpYeStxdDZ5K1JTOFM1aTBxbkRQZ0ZOZG10L0c4?=
+ =?utf-8?B?QloxdG9kRDZPN2dqMnBTbFRKQUt3eUVGUUgvQVQ0WDJIVWd2VmZWWUFLLzRN?=
+ =?utf-8?B?WE04OWJ6NVJCVjBWQWRjdU9YVXVRNzkweGlxYWtCQWplcFU4dTdDeHpVNjlm?=
+ =?utf-8?B?bU5ZcDFvRDhVSlE3TndBNlV3b0g4RkNYbmhHWkdVZk4zSXdTd0lsNUY2VE1F?=
+ =?utf-8?B?Q3o1WUdUeDVSQUxBVVBpVUJEWjJrcTZiVGErd2U4RTdaRTdxNEx4VWIxNjlq?=
+ =?utf-8?B?THJpdmxjRzh1RXdoUGRRNGFqQUlDUVVmcHBtZU5kYVFlVjlpOERmK0h6bmFJ?=
+ =?utf-8?B?TEJDazJmZG5tSks2U0l2RUxEV2RNN1cySnlHV3h4Qk1ycXJ0VUM3aUFTQ1pM?=
+ =?utf-8?B?WDU0Y252UytwTlR5bGdpRklHWGNGT0RqS0xFY2FoSlhzL2xyaFgxajlyTzM1?=
+ =?utf-8?B?U3M0YS9PY011VnJpNXZKdFZ5dk1YK2haenBnSU11QXhtcnZGejNNSFNJRkJD?=
+ =?utf-8?B?VjhHSjF3Mmxib3pzeDYrTDl0WG1jN29mK0xDZmMxNkJDWVFnMXN1dkNXYVd3?=
+ =?utf-8?B?dHRUUTYvUWtIcWlVYytNS2MwOUs0RXliOHFNQVUxYVRzTUU1eHhLamF4T0w0?=
+ =?utf-8?B?Ri9hQ1RlNGN6Ly9YNmgwSGRlL1hBMEFTVHRjR1pMUCtCakhSVVpHWEYrb21J?=
+ =?utf-8?B?S3lUclpQTmYyak04cWwwM291cWlWdU5PZ0dZVSt6czM0eHd3QTVFdmdtM1k0?=
+ =?utf-8?B?YkNwTkpNenJBNHBkL3pSTXRnakZyNUF2Q0xqUXRlaTZ0T0QxOS9wcUJoeVhp?=
+ =?utf-8?B?czlRMFQycGEySDhFTFF0Ky8zd0k5TnBXbGhnUHFzVW93cXA4ejRnM2ZHTWVI?=
+ =?utf-8?B?c3lzMXNnYWdsZERLUlYvZUxHZ0FVS0N4OEhIZ1Q4cHJYMVcyY3dnajNkNjBo?=
+ =?utf-8?B?anI2K05HOXU1RTV6V1YrYVJTZyt0Q3ZyMWUveGlTbXE0L2RYRWVTb2dHdTlj?=
+ =?utf-8?B?RTVCekZPUTBHQ2VBb3VkZVVqZHo3dmRPRHVTaTIvQWF4UDQ5RG4zaEdMRHp0?=
+ =?utf-8?B?bTE2eS9tQjdvYy9ZOUdEM1NTSllhaWl1VGVDc0Z2T3RQbXovYTV1N2pWVUNo?=
+ =?utf-8?B?OExxSmlJa0VwZEs5blBEaGR0V3NxblhXQlZUTThFVkNQYVQ5OS9aOVA2STJ0?=
+ =?utf-8?B?d2RaMUR6cmV6bmpWNjVKTFZmb2FyYm9XODN2V3BtZEdyNW9JazR2endCbS9P?=
+ =?utf-8?B?RmdLS0lqbmZsSWZZSWVlaU5GMFIrQmlpbVkxNU94aW9iS0VIUlBydz09?=
+X-Exchange-RoutingPolicyChecked:
+	Dz5Cpp3G1PQBjBaq6QjF3dLz++da495bUM7KB2YQ8E5thuLMi0i/ZTLYEZT3gwqVcrtH66XZCdtpHmuzMAiKKEaJ0OJ0pXkRVzKVPq2osNtaEc1bIZQCuteaiwvCWf7nSXwFOcEbLxb5RMpPqCmvW/mCgO6vh0IGDisJ3CMg8vJnELmJHAltILGUfz302rHC+Ie1SbJGaEtJ8zwaxCy4emq70zqx1Xrabt3u54XuCDc0iEe17yj5wLK6qMMCZx8BYVtB2caDh8FmLnhTmhT+TVRsxdFYJlG7u4f4zWKxpI0EEyt/YI2WDI3+GqemBT94gncPWg+/5jIzIUGmfaZo4Q==
+X-MS-Exchange-AntiSpam-ExternalHop-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-ExternalHop-MessageData-0:
+	AJbdf6ZoJzFcoHTJ2oiOQU4nVl0SvqcDAQJM4sjB35hfUBIB8hkLgsW4bhjiQk8yIWCbQNjry+CrntEdp95HEpkVW8N62FXznWKJad0Tvgxk5m6TduIbVNQ9ZmtkmoOXeTza+SG4+L4G2fH8LNNdWQvwqJPHsbBBFDACjf5jWCfl4/aQ6+8Qo2QA+aptU8/JUVJcWu/AWX/PT630tVAKbotPDr3TZHYNSIcxoKY/N0fWggariToCsrYXfCKJBbvTtopdofVI2TafW17mZM39IihCEpoBL77cvOv7qkaLZhN9m2cUHTGdhumB5QDp/RryXscYs29kkSrgznHD+O4jn2Y/xpruW5t7gL09YEZe+zQ309XCPncR8d7D6AIdq7jcDbGGSlVWgsJcq2GBbDPj1FtrdC5qoM/1f4ICChraIybvU46iWxyt5Nky6n3j7bIhVdkZCnZKwiwt2o/SsyH/qcgeeKP2HlNQnZQlzVuSNpdDrJ+sZ4qNnmwk+moEumwHhlke+/B1gA3cf1cvZoMbuhyp/2XLxdI9jUa/+R28InxzOWNhYdMmv7DD4Ah8Ba0v7KXtEkmbNmIOkGbUgRilcyubOaKW1U6qmQUYDU0j/6E=
+X-OriginatorOrg: oracle.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 2a84dc33-5ae3-44c7-e3ac-08dec185dd0b
+X-MS-Exchange-CrossTenant-AuthSource: DS4PPFEAFA21C69.namprd10.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 03 Jun 2026 15:36:21.8182
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 4e2c6054-71cb-48f1-bd6c-3a9705aca71b
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: sQUyVVJlGgaapW7ePXkBsO3z4XaF67nURzjmfWrxmGXCLExSlApCfrZsOfUoFD1vPm8JWEyjpvbOEwe4cu9Kgg==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: CO1PR10MB4739
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
+ definitions=2026-06-03_05,2026-05-28_03,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 mlxscore=0
+ mlxlogscore=999 bulkscore=0 suspectscore=0 phishscore=0 spamscore=0
+ adultscore=0 malwarescore=0 lowpriorityscore=0 classifier=spam adjust=0
+ reason=mlx scancount=1 engine=8.19.0-2605130000 definitions=main-2606030150
+X-Authority-Analysis: v=2.4 cv=T/S8ifKQ c=1 sm=1 tr=0 ts=6a2049fe b=1 cx=c_pps
+ a=e1sVV491RgrpLwSTMOnk8w==:117 a=e1sVV491RgrpLwSTMOnk8w==:17
+ a=6eWqkTHjU83fiwn7nKZWdM+Sl24=:19 a=z/mQ4Ysz8XfWz/Q5cLBRGdckG28=:19
+ a=lCpzRmAYbLLaTzLvsPZ7Mbvzbb8=:19 a=xqWC_Br6kY4A:10 a=IkcTkHD0fZMA:10
+ a=FelO9ux0wxsA:10 a=GoEa3M9JfhUA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=jiCTI4zE5U7BLdzWsZGv:22 a=x4eqshVgHu-cdnggieHk:22 a=bC-a23v3AAAA:8
+ a=pGLkceISAAAA:8 a=YM9pCLempioJBWB_ZgsA:9 a=QEXdDO2ut3YA:10
+ a=FO4_E8m0qiDe52t0p3_H:22 a=5yU3S35YU4bGjq-dph-N:22 a=Bho9c0fBagfJEIQBS7DQ:22
+ cc=ntf awl=host:13714
+X-Proofpoint-ORIG-GUID: 9rvYy_GbkDTemNg5t4PLRhm3of3mg9fJ
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjAzMDE1MCBTYWx0ZWRfX6Dgtw6AfMHOQ
+ lc4EViNIebnykyvMvHFcUmnEub8j86/haq0gX7B3Sx8vf8gYmMLbjJs4E99YkiiMv7G0g7BRVpt
+ yn+22c2UzQ0YpEcvtlwK2laI7QW0RztM/l6/yuCBB8sSPzxi1De35IkKZfbXbYNzpRM/P/oE8Lk
+ SnrbZ+J0lsh1bhHBv/fGVjBkgHXHMzf0LuX6X3wex22QgVg+g3QYeKXqiJcgPIRhaB6D1Bbd+N5
+ PVd1xXcDPR/VlMkAeIiIJlfVQZrrN6bACUrnxByA/e624fIEsBrHp6yQyASJcqWU4pWIp8lD8Jy
+ Tn5+M9JiUPO57L0dCQ67ENolW+3AhxKENPqebQb6SCIzWDkgHBMI/7huf0CyePR10YO6JLxRSvF
+ 2y3DL8nAaso0GAB439xw4UHkfDz5UtXXhfaLydH7lEfSN3PwHNf0dBV3MQ1Ec5U2QRgtvV5AMZV
+ NfnPCeiUSC2On2s3GMVnAkRfzH9x9pFyPg6btXp8=
+X-Proofpoint-GUID: 9rvYy_GbkDTemNg5t4PLRhm3of3mg9fJ
 
-Amit Machhiwal <amachhiw@linux.ibm.com> writes:
-
-> On IBM POWER systems, newer processor generations can operate in
-> compatibility modes corresponding to earlier generations. This becomes
-> relevant for nested virtualization, where nested KVM guests may need to
-> run with a specific processor compatibility level.
->
-> Currently, when running a nested KVM guest (L2) inside a Power11 pSeries
-> logical partition (L1) booted in Power10 compatibility mode, the guest
-> fails to boot while setting 'arch_compat'. This happens because the CPU
-> class is derived from the hardware PVR (via mfspr()), which reflects the
-> physical processor generation (Power11), rather than the effective
-> compatibility mode (Power10).
->
-> As a result, userspace may request a Power11 arch_compat for the L2
-> guest. However, the L1 partition, running in Power10 compatibility, has
-> only negotiated support up to Power10 with the Power Hypervisor (L0).
-> When H_GUEST_SET_STATE is invoked with a Power11 Logical PVR, the
-> hypervisor rejects the request, leading to a late guest boot failure:
->
->   KVM-NESTEDv2: couldn't set guest wide elements
->   [..KVM reg dump..]
->
-
-Thanks! It make sense to return a proper error code to the user (VMM)
-while the VM/VCPU are being initialized, rather then the guest failing
-to boot with a weird error like this, at the time when kernel makes this
-H_GUEST_SET_STATE hcall.
-
-> This situation should be detected earlier. Rejecting unsupported
-> 'arch_compat' values in 'kvmppc_set_arch_compat()' avoids issuing an
-> invalid H_GUEST_SET_STATE hcall and provides a clearer failure mode.
->
-> Add a check to reject Power11 'arch_compat' requests when the host is
-> running in Power10 compatibility mode, returning -EINVAL early instead
-> of deferring the failure to the hypervisor.
->
-> Suggested-by: Vaibhav Jain <vaibhav@linux.ibm.com>
-> Tested-by: Anushree Mathur <anushree.mathur@linux.ibm.com>
-> Cc: <stable@vger.kernel.org> # v6.13+
-
-Sure, v6.13 sounds fair as you pointed out.
-
-> Signed-off-by: Amit Machhiwal <amachhiw@linux.ibm.com>
+On 03/06/2026 14:27, Catalin Iacob wrote:
+> Commit 1cea5180f2f8 ("block: remove pktcdvd driver") left behind some
+> CONFIG_CONFIG_CDROM_PKTCDVD* references in defconfigs and around an
+> export. Remove them.
+> 
+> Signed-off-by: Catalin Iacob<iacobcatalin@gmail.com>
 > ---
-> Changelog:
->
-> * Moved this patch out of the v3 series [1] as discussed here [2]
-> * Addressed below review comments from Ritesh:
->   - Based the PVR validation on cpu features
->   - Fixed hcall name typo
->   - Stable backport
+> Found this incidentally while looking at kernel sources to understand
+> what pktcdvd is
+> ---
+> Changes in v2:
+> - Reworded commit message on John Paul Adrian's suggestion to be about
+>    the removed references not the export symbol
+> - Link to v1:https://patch.msgid.link/20260530-remove-pktcdvd-references-v1-1- 
+> aa56941d4315@gmail.com
+> ---
+>   arch/mips/configs/fuloong2e_defconfig    | 1 -
+>   arch/mips/configs/ip22_defconfig         | 1 -
+>   arch/mips/configs/ip27_defconfig         | 1 -
+>   arch/mips/configs/ip30_defconfig         | 1 -
+>   arch/mips/configs/jazz_defconfig         | 1 -
+>   arch/mips/configs/malta_defconfig        | 1 -
+>   arch/mips/configs/malta_kvm_defconfig    | 1 -
+>   arch/mips/configs/maltaup_xpa_defconfig  | 1 -
+>   arch/mips/configs/rm200_defconfig        | 1 -
+>   arch/mips/configs/sb1250_swarm_defconfig | 1 -
+>   arch/powerpc/configs/g5_defconfig        | 1 -
+>   arch/powerpc/configs/ppc6xx_defconfig    | 1 -
+>   arch/sh/configs/sh2007_defconfig         | 1 -
+>   arch/sparc/configs/sparc64_defconfig     | 2 --
 
-The changes looks good to me. Please feel free to add:
+Obviously none of the changes above are related to scsi core, so they 
+can be made separately
 
-Reviewed-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+>   drivers/scsi/scsi_lib.c                  | 8 --------
+>   15 files changed, 23 deletions(-)
+> diff --git a/drivers/scsi/scsi_lib.c b/drivers/scsi/scsi_lib.c
+> index 85eef401925a..b67f0dc79499 100644
+> --- a/drivers/scsi/scsi_lib.c
+> +++ b/drivers/scsi/scsi_lib.c
+> @@ -2224,14 +2224,6 @@ struct scsi_device *scsi_device_from_queue(struct request_queue *q)
+>   
+>   	return sdev;
+>   }
+> -/*
+> - * pktcdvd should have been integrated into the SCSI layers, but for historical
+> - * reasons like the old IDE driver it isn't.  This export allows it to safely
+> - * probe if a given device is a SCSI one and only attach to that.
+> - */
+> -#ifdef CONFIG_CDROM_PKTCDVD_MODULE
+> -EXPORT_SYMBOL_GPL(scsi_device_from_queue);
+> -#endif
+>   
+
+I also think that the prototype of scsi_device_from_queue can be 
+relocated from include/scsi/scsi_device.h to drivers/scsi/scsi_priv.h
+
+>   /**
+>    * scsi_block_requests - Utility function used by low-level drivers to prevent
 
 
