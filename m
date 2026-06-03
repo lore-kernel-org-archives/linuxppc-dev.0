@@ -1,94 +1,78 @@
-Return-Path: <linuxppc-dev+bounces-21963-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21964-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4BE31CD6E55
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Jun 2026 09:39:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CB714CD6E64
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Jun 2026 09:56:02 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gVjMK5XYvz2ybQ;
-	Wed, 03 Jun 2026 19:39:09 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a00:1450:4864:20::530" arc.chain=google.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780479549;
-	cv=pass; b=K8KMObbDJ0mR9jdNylBqlgEFd/tV2nHSAyQ3Boc+HMDYny/TTDi2Sape1Cq1OZM5VNbJNHQYnpT546hH+QEHMCLLFNPuZUXm1kcMhrP1J+aMK5mgidcZpMfD7svd9eAJh5LdUYS37cXEgBkwwnqx0gGgvIltDS7h+XqNUvC2vVOJBAP7VP+CDpf2G/1QjX1Fpb+4OwmAnm3ZO3KZae3rqfiJcMKSkh29ojEmHuTh+AOYjXPj4dwXljQtPuqLKh+MtaFo6r/XWP7b+DP2fj4/piPiF9m8MtY0wvdklkNKcIii+/IjhgULl2j2m2A3cFu0wQEXow62CMpfNqup5modew==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1780479549; c=relaxed/relaxed;
-	bh=SwXKhIJjZGWqX6uBB2vnznJQiVYEOuhYWUEkVzvu58Y=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=SugNPJQbiapS0ui4CdSJEBW7lLhpAcsdAWtySEDdY2POJBa6VfFmmBlMa/+BXdejhudR+KI3Z3uGB8xdh/lMVWjlHrB/alg23p9d67Ukkki9pKDZZv75iTnNDqj3ZFCRxMJR8uRFAWJg1QSRYJtMGdesJOHA4cFCcMxpViHevXlak+87KpIXc+4Dq+K1/7n7B+2qx6/wfYlcTEp8ypkl2wfY/kiHd6pXtBIOGdbSC8gUO+ecVA/CdPBdcx8n27OCTtYdVLeyi3onjmCP/BapS20m0j3+jX+XoDisfSmvFgVoHUkwM8Hyk+22SzISIuduA+BahHHAvrU3iOKgtQSDVA==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=F0Fsg1e9; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::530; helo=mail-ed1-x530.google.com; envelope-from=rosenp@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gVjkm6N6sz2ybQ;
+	Wed, 03 Jun 2026 19:56:00 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780480560;
+	cv=none; b=HF53GNecOCQh39ObWSuEi6V7xNTXybgX7PyRPVS2HvAIK4HKLlFCzKwur6t7L2+COHzpONxDdbS+d2vU4jFpzm0uJ8q+2t/RbbfwxmwC1tHLyam2TIaON+M88aCkQjnW5HF56EIYPkATw2vDZfxo//aNHp6K9GddpvORrg9Yh9ECCoGD9VGsKg5/mWvOdc6t/is3cZT/pC/SQQ5oupD/DTljlbhM/NxlE+K6uJatmwH7l8P1nMd/F+VMBsJNvEpuEDntFA9Nrncks2pEjThlkDLN00NGwmVm9ZVx5kGu9EnBU0L+IpU/MQGX670kp7oQoM2DPY/oZsbOUJQsugt1fQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1780480560; c=relaxed/relaxed;
+	bh=8TEqP1Cdjl0Ym7Vnz3eHq0DDUmmsFYCrSXTH1xfg5gE=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=iCMb6kcDx/vm1nyP7TusABsuT+qp+dxcXF9/CH6a2d3I4d/mLvZuJx/TaV2UqheuptT2g3rgplwPwjzX8MWaczViZLB4eygePAuXUXtX1I6n8hfxvN2asAPWz28glglkLTCA3yK2Bhb+32Y7QEGZx+t9sUYYYsHdIDNtfkHeJzefY1hwlqvy9MoaAcAZxMbe/cp/yOlKgwDV6vPbVgYUMbRqDryqjKEYUWUZ2EbyOAhwvGaMM3Txhl2mEFhO071sQXmpxfWbLv5rrtssZoszkYivUAOT8tTDrfKjpJwqDn+KlVS6JAGxn/IRE4yXpZ+CN27syVwSV5/0JDvmqNsUdQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=oO1v7VkR; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=F0Fsg1e9;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=oO1v7VkR;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::530; helo=mail-ed1-x530.google.com; envelope-from=rosenp@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-ed1-x530.google.com (mail-ed1-x530.google.com [IPv6:2a00:1450:4864:20::530])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gVjMH4s2Gz2yH5
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 03 Jun 2026 19:39:06 +1000 (AEST)
-Received: by mail-ed1-x530.google.com with SMTP id 4fb4d7f45d1cf-68d234218bcso83053a12.2
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 03 Jun 2026 02:39:06 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1780479542; cv=none;
-        d=google.com; s=arc-20240605;
-        b=Xt+sXADFLelMPB/vKw7VEhaIITpM1CvQrnAbyBQRcF3pdzq9RfPjchh46AomyHWTaS
-         v5f2RyWGTRNDQdO1pTY5glJKi0cHsHlWOpUBCwTfzRcZiLVAzYJgAHZWAXlgMbYd9mwr
-         /s3FWgUPFTzNXpHhSjDqq9yhZ7TjIMSlyPkoOoSEj9c2dPkjpcEXYaYYzCGB6Y4htLBJ
-         Du1oxjpb97XrDBZut9fZlevbeynaN8/7EY6wwHWn2VjV7h7iX8orlYsPia40Ph9EnVH1
-         iLxD8Lr4KSEDoSh1zpdPPeJ7hRQW7ZePBh6oO1HzSSZFa+esAm/BYtUcAOzSHDUxrZmV
-         C75Q==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=SwXKhIJjZGWqX6uBB2vnznJQiVYEOuhYWUEkVzvu58Y=;
-        fh=bkj6a8IB4luldzIviUmhWb6PSfuwcvxY/UwHXPTfYMk=;
-        b=HIYrgLYpRzjXckaEcaMCHXenbsUxgQpfqaeExOuMp/6r4NswBqbqg/2HkaHYnDssPA
-         kL2rBL6467Or7mUFZd7DUe2mWO8xumr1at7bEeFrL8bUSKRBfzkQbGMplp7hEszTRmJQ
-         uYKfZe4jAufJ5UJsWZ9/FqvvQM6tOizvT5dPH9oduYbq0NkljHjqFOABNuYDfVWGcBpv
-         1Lc91vLwf1qi1wsGVdBtNAK/fYhm/rH/97/rgC4Je/oEjMLLrGNysX+rKDve3DfO41iY
-         vsf20Xdgb2E37cJ0JRqsPOCD/A9/1+hMJiw13J/AGqQIgf4RnjIET7xViWXnVIRgMh3M
-         FbQA==;
-        darn=lists.ozlabs.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1780479542; x=1781084342; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=SwXKhIJjZGWqX6uBB2vnznJQiVYEOuhYWUEkVzvu58Y=;
-        b=F0Fsg1e9/9rG/RyU7d2CaRt6Rhm1PnKFQ1ksAFqPkmSCp7/FD8xNuYarzrC9M/apP9
-         iyVqKCeNHwMSfZIobnXNRvig4BJmXVYROE82Qp/Bj1hX8mHM81WaXcoVJY7vw4DickVL
-         /3PFs4/SPMVLNUrNdNKOisYHRzVSKre1VKqf+ilfFh7gxtvAohxxSxUrVItFUJKbwxXx
-         N2geed5oLQBmszk+HmvC2GuA+PNthsnx/CHbgGyYN64cw7x2WvvDkLvIyjJKy37TB0OR
-         NcC08/Hr9AE0eszZHu8rbBcdTRk30CCIB7j+hKv9UmooPLdvEsBFDrRzEaKyLnWg0mje
-         BUEw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1780479542; x=1781084342;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=SwXKhIJjZGWqX6uBB2vnznJQiVYEOuhYWUEkVzvu58Y=;
-        b=DLaEUAHBgoy0Hl+ruls0z5BE9XXnz2pgivzk3Up/mzldVOaXLiAlczlhrRhK/6uNfO
-         HuUd1Ah0df58BWbcfPZkL4bnCukoDpUu7uifFGcxgwiqrd9g27mRzeYolP6ZUzkrGp0B
-         GJpReGc8FtvodPJfWl6bT5x331XUArmzYSDYDu8ZSwDXSt+2rmQplv6br6TpqTDhhNdO
-         HVZCZlh3mpUEitucQQuNMJJXI8CToEV8jW3u7JVV0nyHZ6IdfaRdkvxpG5jMJszYeNAa
-         qTXXF7PIGQ06nzmoQWZY/Qo/e9h6QvNVBZkMhCm1MM+1x0PZbux9rnumWg42kTkyHlw1
-         Wa5Q==
-X-Forwarded-Encrypted: i=1; AFNElJ9rMno7cPMvUNMjcV7PtDIaYHLIwTWbustZ6T2EraFrrzXm3Ivn4mtAiSKQWhO3W1V78ZZjIgBZSZRfcFE=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yz0+iARLPyQz9g16l4D7pfPyQyDUDi/dVZC52cvV0gycDGmdKqX
-	XZb1YwJMVNP/2wD14bIZ9jsOBGkLf/yyoun2e6L77HUVdon9Ghbcf8VunZ8UlSx6kvPKAIJUs8+
-	24TIf/LmFY6hfee/je2tL+k+t+NaEFHM=
-X-Gm-Gg: Acq92OESd8OItTGjIayh6Fv9Jhhx4aBP4k2tHd2bTnJAszzbY/puk6dYsX86/IhgK9j
-	gFCJ6XR1Spdnq0x0BGzRx2m0jRAUBhduMcojOHkbET9uS6RNScF6UqQcYOpWEZMsa9Lk1F7X9yG
-	9HUaA4N9GuRvPkCd7CJnjAzG0jslW1UdNpJC5taUTFslLHCjyQDwhL0dYkGLEIM28BfLmqlOfRC
-	2dtfm3k7W7taiGFcpPHbh/GZbiTD69Q/xkwWIp5MK3T/rttBvBMzZELQ5HrwoqougzwSf78pP9G
-	bCDFlroz6Okw65naRqujvIaIEo/WgB0bzf6K/3XwODzVg6TyeGcLyGnosYPVakPGJwL/jax/EDc
-	LlOAH92/EoCP9RIjpTDuARircS1zL99j45nNwK55XztpF+UkyAHASJzDNnyMeWBxNr7af
-X-Received: by 2002:a05:6402:1589:b0:68c:3424:af6c with SMTP id
- 4fb4d7f45d1cf-68e710f7416mr1164077a12.20.1780479542040; Wed, 03 Jun 2026
- 02:39:02 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gVjkl1dGJz2yL8
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 03 Jun 2026 19:55:58 +1000 (AEST)
+Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 65370QHK3707938;
+	Wed, 3 Jun 2026 09:55:48 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:date:from:message-id:mime-version
+	:subject:to; s=pp1; bh=8TEqP1Cdjl0Ym7Vnz3eHq0DDUmmsFYCrSXTH1xfg5
+	gE=; b=oO1v7VkR6HVnNXAu1cEVyczhKJzlN+ZNpdgJkv9ss3e30Q0+8utzIoOfr
+	5exWimX13pyrdAheH3eDBu3W2/IUkp/Fj2L29eB9qwfsDb8vM/OQtjkqPSbezJM6
+	JXYIjIyRjh9kKhvcDzlK8TfM+nMHNU/7fIYsYagNQN1zvvrXAWSlQ+qHvO/9bGIY
+	nL0FHnQBofUcVW6nJlRmwOx1//m7X/wK8Qq939y4Bq/kENI9Cu68y/VQSHnA0ZMt
+	cN0QnbV6FOAyuEWdnnTLP3cWZqAqSzU1cyoTQu5LJJr7nXNo6YcUCzKlzRN/Bn2v
+	OqA0ZlRAGvsRC0yVdQpK5Q9BOM+Vw==
+Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4efpae9sj1-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 03 Jun 2026 09:55:47 +0000 (GMT)
+Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma22.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 6539s9jX016257;
+	Wed, 3 Jun 2026 09:55:47 GMT
+Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
+	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4egakvypng-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 03 Jun 2026 09:55:47 +0000 (GMT)
+Received: from smtpav07.fra02v.mail.ibm.com (smtpav07.fra02v.mail.ibm.com [10.20.54.106])
+	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6539tgiX39518648
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Wed, 3 Jun 2026 09:55:42 GMT
+Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 4068F2004D;
+	Wed,  3 Jun 2026 09:55:42 +0000 (GMT)
+Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 79DDD2004E;
+	Wed,  3 Jun 2026 09:55:39 +0000 (GMT)
+Received: from li-7bb28a4c-2dab-11b2-a85c-887b5c60d769.ibm.com.com (unknown [9.124.223.153])
+	by smtpav07.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Wed,  3 Jun 2026 09:55:39 +0000 (GMT)
+From: Shrikanth Hegde <sshegde@linux.ibm.com>
+To: maddy@linux.ibm.com, linuxppc-dev@lists.ozlabs.org
+Cc: sshegde@linux.ibm.com, peterz@infradead.org, tglx@kernel.org,
+        christophe.leroy@csgroup.eu, linux-kernel@vger.kernel.org,
+        venkat88@linux.ibm.com, mkchauras@gmail.com
+Subject: [PATCH] powerpc/entry: Disable interrupts before irqentry_exit
+Date: Wed,  3 Jun 2026 15:25:21 +0530
+Message-ID: <20260603095521.198267-1-sshegde@linux.ibm.com>
+X-Mailer: git-send-email 2.54.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -102,65 +86,95 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20260603005455.226882-1-rosenp@gmail.com> <63476872-b3be-4564-a748-74757130c50a@kernel.org>
-In-Reply-To: <63476872-b3be-4564-a748-74757130c50a@kernel.org>
-From: Rosen Penev <rosenp@gmail.com>
-Date: Wed, 3 Jun 2026 02:38:50 -0700
-X-Gm-Features: AVHnY4JOPde6EcbhbVP7kQ6u8j7UMFPXiaRnZA5NqzesPep85f7PtCeO2ye9Qog
-Message-ID: <CAKxU2N8UBXMqeOoKOTy20ZL4sK8JNQfuamWP-_nMyxS3EH5oSg@mail.gmail.com>
-Subject: Re: [PATCH] i2c: cpm: Use platform_get_irq() to retrieve interrupt
-To: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-Cc: linux-i2c@vger.kernel.org, Jochen Friedrich <jochen@scram.de>, 
-	Andi Shyti <andi.shyti@kernel.org>, 
-	"open list:FREESCALE I2C CPM DRIVER" <linuxppc-dev@lists.ozlabs.org>, open list <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Authority-Analysis: v=2.4 cv=Zt3d7d7G c=1 sm=1 tr=0 ts=6a1ffa24 cx=c_pps
+ a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
+ a=FelO9ux0wxsA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
+ a=V8glGbnc2Ofi9Qvn3v5h:22 a=VwQbUJbxAAAA:8 a=VnNF1IyMAAAA:8
+ a=ZcPFttQkb1t9wctH9vwA:9
+X-Proofpoint-GUID: 4SRcU2V-rmNWWlu_PJO-ZdMYeSVQnTs9
+X-Proofpoint-ORIG-GUID: UrbO6C0mW4RdetaAR0QuhswaWa4j37cT
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjAzMDA5MiBTYWx0ZWRfX7dOtxJV8PCDh
+ SHkSKZHqoQfEQ0QNxTD00VV62LJUaklaOcZVaRGYWc9x2o8g4zFqUqvf+fPawqt7to4qTxiWwbK
+ VCfuwa/JoP6ulZK2OzvD9x1K6dTJGX5vv0odGq8UTxPKlKdUqcX+MX+khDRGf+7SiLwzljbdsOQ
+ L9TG1ZJrS/DtVj5jNjZi0Dcy+eMaa4kiJl0VtrwdeC8+D/qeZQCM95rTHoSn5QXUfyVRpOYhqWL
+ yRUs0xm3C8p6roI0itssNsl0e/1Kk4RMmbsKLrNxczOIF4yxK1evSpRuYiIgNUMuABrVNhS9PdA
+ 6opHeOQn/JQHOOAI+dw5RzirXxtQTJa3YsuQGwdEVEYESthWbAPSMCSYmO6DWDNcCHqoF9ANVxo
+ Ca75QW3uIcb0rZ8XgKyeYIBdl3QI8KIF1niQ3IwWSZG3SStC7DySH4NYMpSfVAbl89zq6sNVB5j
+ ybA0MpVDKpTY0Mz1lVw==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
+ definitions=2026-06-03_03,2026-05-28_03,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ impostorscore=0 suspectscore=0 priorityscore=1501 bulkscore=0 clxscore=1015
+ phishscore=0 spamscore=0 malwarescore=0 adultscore=0 lowpriorityscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2605210000 definitions=main-2606030092
 
-On Wed, Jun 3, 2026 at 1:15=E2=80=AFAM Christophe Leroy (CS GROUP)
-<chleroy@kernel.org> wrote:
->
->
->
-> Le 03/06/2026 =C3=A0 02:54, Rosen Penev a =C3=A9crit :
-> > Replace irq_of_parse_and_map() with platform_get_irq() as recommended
-> > for device-managed IRQ lookup. Properly propagate any errors returned
-> > from platform_get_irq(). irq_of_parse_and_map() requires
-> > ire_dispose_mapping(), which is missing.
->
-> irq_of_parse_and_map() and platform_get_irq() look pretty different, can
-> you give more details on how one can replace the other ? (I don't mean
-> this is wrong, just I don't have enough details).
-My understanding is the latter is higher level and doesn't require
-mapping. Just a request from the platform_device machinery for an irq
-that it already mapped.
+Venkat reported a panic on powerpc-next tree where GENERIC_ENTRY has
+been enabled.
 
-It also supports -EPROBE_DEFER. Probably not relevant here but could
-be some day.
->
-> >
-> > Assisted-by: opencode:big-pickle
-> > Signed-off-by: Rosen Penev <rosenp@gmail.com>
-> > ---
-> >   drivers/i2c/busses/i2c-cpm.c | 6 +++---
-> >   1 file changed, 3 insertions(+), 3 deletions(-)
-> >
-> > diff --git a/drivers/i2c/busses/i2c-cpm.c b/drivers/i2c/busses/i2c-cpm.=
-c
-> > index 2cb6a233d313..23679c192edc 100644
-> > --- a/drivers/i2c/busses/i2c-cpm.c
-> > +++ b/drivers/i2c/busses/i2c-cpm.c
-> > @@ -434,9 +434,9 @@ static int cpm_i2c_setup(struct cpm_i2c *cpm)
-> >
-> >       init_waitqueue_head(&cpm->i2c_wait);
-> >
-> > -     cpm->irq =3D irq_of_parse_and_map(ofdev->dev.of_node, 0);
-> > -     if (!cpm->irq)
-> > -             return -EINVAL;
-> > +     cpm->irq =3D platform_get_irq(ofdev, 0);
-> > +     if (cpm->irq < 0)
-> > +             return cpm->irq;
-> >
-> >       /* Install interrupt handler. */
-> >       ret =3D request_irq(cpm->irq, cpm_i2c_interrupt, 0, "cpm_i2c",
->
+kernel BUG at kernel/sched/core.c:7512!
+NIP  preempt_schedule_irq+0x44/0x118
+LR   dynamic_irqentry_exit_cond_resched+0x40/0x1a4
+Call Trace:
+ dynamic_irqentry_exit_cond_resched+0x40/0x1a4
+ do_page_fault+0xc0/0x104
+ data_access_common_virt+0x210/0x220
+
+This happens since __do_page_fault ends up enabling the interrupts and
+it could take significant time such that need_resched could be set. This
+leads to schedule call in irqentry_exit leading to the bug.
+
+There are many such irq handlers which enables the interrupts.
+Fix it by disabling the irq before calling irqentry_exit. The same
+pattern exists today in interrupt_exit_kernel_prepare.
+
+While there, make those BUG_ON into WARN_ON. Interrupt is disabled right
+after so it is not that severe. This will still help to catch the
+offending callsites.
+
+Fixes: bee25f97ad24 ("powerpc: Enable GENERIC_ENTRY feature")
+Reported-by: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
+Closes: https://lore.kernel.org/all/7904105b-9dfa-4efd-a5ef-bc0276ed255d@linux.ibm.com/
+Signed-off-by: Shrikanth Hegde <sshegde@linux.ibm.com>
+---
+
+This applies on top on powerpc/next tree.
+base: 6ed60999d33d '("powerpc: Remove unused functions")'
+
+ arch/powerpc/include/asm/entry-common.h | 9 +++++----
+ 1 file changed, 5 insertions(+), 4 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/entry-common.h b/arch/powerpc/include/asm/entry-common.h
+index de5601282755..7da373a56813 100644
+--- a/arch/powerpc/include/asm/entry-common.h
++++ b/arch/powerpc/include/asm/entry-common.h
+@@ -253,16 +253,17 @@ static inline void arch_interrupt_enter_prepare(struct pt_regs *regs)
+ static inline void arch_interrupt_exit_prepare(struct pt_regs *regs)
+ {
+ 	if (user_mode(regs)) {
+-		BUG_ON(regs_is_unrecoverable(regs));
+-		BUG_ON(regs_irqs_disabled(regs));
++		WARN_ON(regs_is_unrecoverable(regs));
++		WARN_ON(regs_irqs_disabled(regs));
+ 		/*
+ 		 * We don't need to restore AMR on the way back to userspace for KUAP.
+ 		 * AMR can only have been unlocked if we interrupted the kernel.
+ 		 */
+ 		kuap_assert_locked();
+-
+-		local_irq_disable();
+ 	}
++
++	/* irqentry_exit expects to be called with interrupts disabled */
++	local_irq_disable();
+ }
+ 
+ static inline void arch_interrupt_async_enter_prepare(struct pt_regs *regs)
+-- 
+2.47.3
+
 
