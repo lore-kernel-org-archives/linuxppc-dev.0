@@ -1,81 +1,81 @@
-Return-Path: <linuxppc-dev+bounces-21981-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21982-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 46775CD6E57
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Jun 2026 15:09:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0D228CD6E55
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Jun 2026 15:24:25 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gVrhG5NC1z2ySJ;
-	Thu, 04 Jun 2026 01:09:18 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::62d"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780499358;
-	cv=none; b=mXo94YMLKPbRtdLCE3QpiqaWCpZjhJKlFF5MqjOGbxU5wossvTQB6EAacU7DJUbZSpVG0pjB7CKuHUByvS0R1wgaggbS3oWU+ieLqJnHYSjme3wj9mSvYnx2ek9CtOySOey3aX+/y8Boh4n1f3KmDG1jujDgtkdbcGM6Eqrtwt64A4xIsK45r/NWvWSl1p98YVX4uM0NYK7O8ZQvJIxx+HmFtdUF5EpZHx+65R0aaPT6qkzmi4hP2ipiS5Qx3uNrXapZc9iyp4RdJe8RNPYNcg0t3KHPH9p7250+ptKPDJG421XZapuBYBepz19UUYKWFD2sFJ+CHa/Nx1obicKA5g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gVs1h1ksPz2ySJ;
+	Thu, 04 Jun 2026 01:24:24 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::534"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780500264;
+	cv=none; b=WX2ipyOtOEnKF2QJ6VnMfTc5vZtcRfVmoNU96ocnWk2gkT+Mbhnj3yf1NyJ+35vfutR3QhvXsDtw+dlc0fDIvSkW4Es6mO141eE2Al+hLIeX/qxix1JmR2r9jPmvCDxD/zY0IP+57BN8K4ky7rcx+jBn0//qQD2LJpwlwubV+9vh0ZnAJz20XrH3h86NaxfnN6lyZv/KaZsYWu0kx3txbqkJpNCoG6F5aWuY5op7Sqh//84VAwJLIJ7iv1yLQxMo+rNugy7277B7ambKjWAg1H6IE2eq4YXgJ5/qD+sophMnVaqqE2WQcQ370qGsvfYDtZ9xGUJZTGNaZP5c3en/8w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1780499358; c=relaxed/relaxed;
-	bh=bndY4Rtt+kF0HA5uw8ulEDrFOIX6yTjDL3dqjriePQQ=;
-	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References; b=WdWtIQjCo6wRf5/tBvxZRT6rd0wWTnvRN57b7lj6PWWW9GdwzdcXv8HWmc5inuEb4jXxN3yN6Bp2fO9cfhB0fRudzyJKoElMGVuq5eYyZogXx8ciyl8IJ5dFJsolMdc9vbW1yTxC2QK8oJUewt2xVDWdBHSQA2qHRqaVsKohaw7lm8Y9ByFVlwLsEA77NLbBDmhjLris1Sn0O0g9fK8BoiaFJ0IXkRgJ9MJ4/V8U/1vaTAm9pC6oW/r4Ohx4sed4sJ0grgLMkYUyRXRmp2w35K7G36hiJ8yyQlJLinXy7vmGLmEnVaj/zTb9s4hB++TZAOp0yXBRQExfVvM556V53g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=XCEQ4jud; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::62d; helo=mail-pl1-x62d.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	t=1780500264; c=relaxed/relaxed;
+	bh=acwBnprFgwqGQFKcy6Zu5y1vKCe+2/zpivoZrYetfHk=;
+	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References; b=FtumcXNN3GP+i433iqhMrqHDaQTziqsneuA/WzBHI7+WfSxBSKkfAt1nCSyxx13i/7hheRXMsUQIr4L1d3fAsgUIfLdF5VNvUn346bvap3E8vy71MizhW70CIyLLAxStWzxTICjhjEf68yGyMFskavIoW9ZG5wiLy9WhSSXqLiY3QMJRoPkT5mETMIWy8ELkMdSzocmgdnC3KxcGV08va6aTFihvkpDlKanSjXEXqpCE970nRL3IjdJwx+vSKuSGz9FQ+Yeo9StSbi3dh/bvWxMgSBCuJOd9lNc1Wj2P8k7ouZ0gP14NI3LN7wUmX8Ahe4xcZ6zZ+j45KmUw5CJDxQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=T5Hdz/TH; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::534; helo=mail-pg1-x534.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=XCEQ4jud;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=T5Hdz/TH;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::62d; helo=mail-pl1-x62d.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pl1-x62d.google.com (mail-pl1-x62d.google.com [IPv6:2607:f8b0:4864:20::62d])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::534; helo=mail-pg1-x534.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pg1-x534.google.com (mail-pg1-x534.google.com [IPv6:2607:f8b0:4864:20::534])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gVrhD6zPNz2yQL
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 04 Jun 2026 01:09:15 +1000 (AEST)
-Received: by mail-pl1-x62d.google.com with SMTP id d9443c01a7336-2c0a5354da1so7183395ad.0
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 03 Jun 2026 08:09:15 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gVs1g09Dzz2yQL
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 04 Jun 2026 01:24:21 +1000 (AEST)
+Received: by mail-pg1-x534.google.com with SMTP id 41be03b00d2f7-c8585ecdd71so1851931a12.0
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 03 Jun 2026 08:24:21 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1780499353; x=1781104153; darn=lists.ozlabs.org;
+        d=gmail.com; s=20251104; t=1780500259; x=1781105059; darn=lists.ozlabs.org;
         h=references:message-id:date:in-reply-to:subject:cc:to:from:from:to
          :cc:subject:date:message-id:reply-to;
-        bh=bndY4Rtt+kF0HA5uw8ulEDrFOIX6yTjDL3dqjriePQQ=;
-        b=XCEQ4juduNeX0VhAmh1RWQNRrSZt777j3D3t+px/muqNo0IjhYT6VMm75oCTADcLsO
-         Ps/cEn1q8R7DCs8tfIYhOHOSEhbnv2yJBdAK/3A6GHNYkQbU+jnMQsTgu7a3BG+/meFh
-         mvCj7gI/B5Tc+IFnNWvGiRs6rnStTsWo/35i0gyjqzAetUZgRIROS4FXL8XCWOWBLV7s
-         7mJa2lRfdQBRy5Z6dk82MGGSxFtMCEv4xA/nPxQAhnvOlMhKle73QodBO/iJ140P4AdV
-         Ju8wiFP619/j7lwXe2aSeTAKfQT7WQT1km1ErwkXgFBn2/t0IcBn7+M9vyvZH3MUGtSM
-         +LQQ==
+        bh=acwBnprFgwqGQFKcy6Zu5y1vKCe+2/zpivoZrYetfHk=;
+        b=T5Hdz/THV2PKOmtcGOeE96HScc5UwKxx+/lr2hcgy3RhFtEYgLW8oxjfQiMazGfNTb
+         laz6xyxfaHPl2EXt+90PlM5S64H0AkmB2IOkIwcX/bRnDuiVM0dFZsa5j04e8oJTFafW
+         XSvKWttu6TR4KlEvUEkwsrjOZsJkCBIO/DG1wAGY5jW3KYpzBMqBgnd0GXP3/YJmngih
+         xDnMeo2a12Relb5GG3wLUNTB0tNzktotWcvS65Y4DrkTUtF8KNA/43HSQgFKiuac9u46
+         q+hocKan7Oc06ydQOB+qXY3g/GB2NRub+uQC8lm7r1ZUyqLutylVpp2Kj7TfU9YbbTB4
+         Euag==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1780499353; x=1781104153;
+        d=1e100.net; s=20251104; t=1780500259; x=1781105059;
         h=references:message-id:date:in-reply-to:subject:cc:to:from:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=bndY4Rtt+kF0HA5uw8ulEDrFOIX6yTjDL3dqjriePQQ=;
-        b=J7Wt7C6CiWeLUaeZ6rjCqESOxDR+CugFpj25JqaHw5AXTvRUd980FUUBD2CHVF3fNC
-         zsxvW4NhDBONWkeNYvwZOsWzpRuEoDo+wX5zGagdo/HBSi4zG55ywi5IgpXCUQCryhi1
-         622t8zQllnldzbzrX5yvdR+BJSJM5DjHgeHrsFQ5ab0Dum4Z3s43BOu4Yv+edjb+LJBF
-         jsTJvjbVxkGeX4W0Y6RRQW8makddnglLu1W/XETJixh8ToFIpPvIdg6LYlDJPkKWjQus
-         jxW72+V9dv6TFxg/2WCueUK603H8Ja6vri4J6LAotMPt4DLjyjt+AEYNCcMbXSl58NLx
-         /ppQ==
-X-Forwarded-Encrypted: i=1; AFNElJ9UWtJHfMJ8EaoO2BfCL1T5PScz3NAJ7jvqYRyVK6kWDwq3uop1hapoHsTVXpHOlhL0WmL182A2FEI1IRg=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yw68On5BstVbrSHksIbwtENWhaNtoounQUp6Z73+6+E4/t4HRHK
-	c+Bxu4x49L8wUtWUV3m5DNFkA5QlgBdQsu/70wR+hfLOpp8s6qWZQdoe
-X-Gm-Gg: Acq92OEMVyDfqUbv1XjFHPqtuh6HSTg1a3up63SLX96fTEmo+p2UGwxTALYOXvokdpC
-	j82I98aoT4Kl7EEZReMtHyUHXaLAXIwc2vdBje8Y0k3CLAj31EPoxNyWL94LeqhKZ2tNAmrSlWv
-	aqi9We19BNALx5RBG5lLQiloTvre3vQ8K278CLEd6tkWl+0oxgvIuC/m0uvTE51zwZJ8mSb4GEk
-	wMgMRRIbnjn1z1QM/spW3gjiMFUtHOL06s3FU1nWTmfYLN23B1JuVzZaGzJNfHgMaEnXm46/Jy5
-	GQLbNqNMMcAtxqtO5zGoVqZ2HYLzv9H4HiOxYCqZkzk4l8WHHHHgPqtOAL++N241DF6R9YZi2dI
-	Sg246aG0YcZa0nZJqonVBH/FsGTwJmoAW1ZMg+xjE9XEpV0AWStg6EjdMftU4kpXKfhdx3HxkQF
-	ZsGxTOZxJAHSrWttV6pLLIXRute6HdKGhV
-X-Received: by 2002:a17:903:22cc:b0:2c0:af09:f3d4 with SMTP id d9443c01a7336-2c164d5f70emr29441875ad.27.1780499353373;
-        Wed, 03 Jun 2026 08:09:13 -0700 (PDT)
+        bh=acwBnprFgwqGQFKcy6Zu5y1vKCe+2/zpivoZrYetfHk=;
+        b=Hws9VGoOWPJ7OSrkgTUJ3wS2JE1tjpc5xv20+z/wdH0Wzn5LzV/lI/7DbOCgP8y7VR
+         LitESLx6qQYdc0ie2MyCV3t5p0D38N9p5dNT2+5cp4fgTL/i8IWtnX0nezQE6mzqE5aZ
+         /i0M5UuPgbBvKWieFq8adZDWdhJ/d68vYW3gK2r4mFGnlxILx6DChmRFXBpfUBX+lWqw
+         WzpR9qSa5fEjbIrOBxmLmaF8SssSZn6x+9uVhofghpAyopKemz5ltsYhiGs9EBNA0xwc
+         G88dyAem/sIGVh3ahDhczBNK0QtJTYlDxHt637f0U0e1Kh+nIR+Qm0Dd72LuVxUHCbh/
+         K/Ag==
+X-Forwarded-Encrypted: i=1; AFNElJ8SYPe5pYPAklA7JWKIblGQTBdBlLYKIhcWTRBsK7el8flKfxskEUO3BLSqZGW4/FPm5TU8mb/D/BbBuLY=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yxrd5PWgMKWMDoWp8HNEEPvndJ6XAysPH6ygdN/SN6dCqFD2B1x
+	ZM6LywhfaVwTyuqt0B1t1I5MI7xwWw5rvU+mEos9DMZz4NhQnMOA7WY4
+X-Gm-Gg: Acq92OF/WmrVnN1/Q5e3gDXle7su1t/nzlERciXHkR09ZidcDtGzbW6zw9vMGby8V7v
+	4UmZpEjOCS4fO58OMfYhLqEJFg7fsj6kKdZ+6UM4fLZSaKMF/rp/InSG6Zz0rVBstCj3PtzlsaM
+	HRX4Udck+exiy52CKN1ZccyyflT0Ka0DSNSacw9XMJlLG6MUOybkmpK+lzWy0YapGYPZbr0RE+l
+	Iqie/0CjZjg+nOyMVDqbbuti86geMxyzKhpbrJWq7MtyBMZyj41ZgHr8YDa2E44vppt67m8dpCd
+	54da/4OntsYLB2rSZLYHzoDerT0/qfoy2ZxUP6tOlvwKasskIO+aHrlmtsVbdjBjLwFAhhQ6TOY
+	YfRtYWYu4uH/CL23PUNQa4BpVy6uyx1tU0290NZG+kAONwJ+o+w9TtOvRm7gYIzZc5tOMJul/ms
+	G1Dan3GmxgRp6+AnE/N9tFKAFdfazHlG/7
+X-Received: by 2002:a05:6a21:691:b0:3a2:d68d:9e78 with SMTP id adf61e73a8af0-3b49732971emr4778730637.4.1780500258903;
+        Wed, 03 Jun 2026 08:24:18 -0700 (PDT)
 Received: from pve-server ([49.205.216.49])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2c164f6d2bbsm29577905ad.1.2026.06.03.08.09.07
+        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-c85df043ce0sm2671767a12.11.2026.06.03.08.24.14
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 03 Jun 2026 08:09:12 -0700 (PDT)
+        Wed, 03 Jun 2026 08:24:18 -0700 (PDT)
 From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-To: Muchun Song <songmuchun@bytedance.com>, Oscar Salvador <osalvador@suse.de>, David Hildenbrand <david@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Madhavan Srinivasan <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>
-Cc: Muchun Song <muchun.song@linux.dev>, Mike Rapoport <rppt@kernel.org>, Lorenzo Stoakes <ljs@kernel.org>, "Liam R. Howlett" <liam@infradead.org>, Vlastimil Babka <vbabka@kernel.org>, linux-mm@kvack.org, linux-kernel@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>, "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org, Mike Kravetz <mike.kravetz@oracle.com>, Muchun Song <songmuchun@bytedance.com>
-Subject: Re: [PATCH v3 03/19] powerpc/mm: Fix wrong addr_pfn tracking in compound vmemmap population
-In-Reply-To: <20260602101039.1867613-4-songmuchun@bytedance.com>
-Date: Wed, 03 Jun 2026 20:06:35 +0530
-Message-ID: <a4tbwv0s.ritesh.list@gmail.com>
-References: <20260602101039.1867613-1-songmuchun@bytedance.com> <20260602101039.1867613-4-songmuchun@bytedance.com>
+To: Amit Machhiwal <amachhiw@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org, Madhavan Srinivasan <maddy@linux.ibm.com>
+Cc: Amit Machhiwal <amachhiw@linux.ibm.com>, Vaibhav Jain <vaibhav@linux.ibm.com>, Harsh Prateek Bora <harshpb@linux.ibm.com>, Anushree Mathur <anushree.mathur@linux.ibm.com>, Nicholas Piggin <npiggin@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>, "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, kvm@vger.kernel.org, stable@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] KVM: PPC: Book3S HV: Validate arch_compat against host compatibility mode
+In-Reply-To: <20260603141539.47620-1-amachhiw@linux.ibm.com>
+Date: Wed, 03 Jun 2026 20:41:15 +0530
+Message-ID: <pl278xrg.ritesh.list@gmail.com>
+References: <20260603141539.47620-1-amachhiw@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -89,45 +89,61 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 
-Muchun Song <songmuchun@bytedance.com> writes:
+Amit Machhiwal <amachhiw@linux.ibm.com> writes:
 
-> vmemmap_populate_compound_pages() uses addr_pfn to determine the PFN
-> offset within a compound page and to decide whether the current
-> vmemmap slot should be populated as a head page mapping or should reuse
-> a tail page mapping.
+> On IBM POWER systems, newer processor generations can operate in
+> compatibility modes corresponding to earlier generations. This becomes
+> relevant for nested virtualization, where nested KVM guests may need to
+> run with a specific processor compatibility level.
 >
-> However, addr_pfn is advanced manually in parallel with addr.  The loop
-> itself progresses in vmemmap address space, so each PAGE_SIZE step in
-> addr covers PAGE_SIZE / sizeof(struct page) struct page slots.  Since
-> addr_pfn is compared against nr_pages in data-PFN units, it should
-> advance by the same number of PFNs.  The existing manual increments do
-> not match that and therefore do not reliably track the PFN
-> corresponding to the current addr.
+> Currently, when running a nested KVM guest (L2) inside a Power11 pSeries
+> logical partition (L1) booted in Power10 compatibility mode, the guest
+> fails to boot while setting 'arch_compat'. This happens because the CPU
+> class is derived from the hardware PVR (via mfspr()), which reflects the
+> physical processor generation (Power11), rather than the effective
+> compatibility mode (Power10).
 >
-> As a result, pfn_offset can be computed from the wrong PFN and the code
-> can make the head/tail decision for the wrong compound-page position.
+> As a result, userspace may request a Power11 arch_compat for the L2
+> guest. However, the L1 partition, running in Power10 compatibility, has
+> only negotiated support up to Power10 with the Power Hypervisor (L0).
+> When H_GUEST_SET_STATE is invoked with a Power11 Logical PVR, the
+> hypervisor rejects the request, leading to a late guest boot failure:
 >
-> Fix this by deriving addr_pfn directly from the current vmemmap address
-> instead of carrying it as loop state.
+>   KVM-NESTEDv2: couldn't set guest wide elements
+>   [..KVM reg dump..]
 >
-> Fixes: f2b79c0d7968 ("powerpc/book3s64/radix: add support for vmemmap optimization for radix")
-> Signed-off-by: Muchun Song <songmuchun@bytedance.com>
-> Acked-by: Oscar Salvador <osalvador@suse.de>
 
-Thanks for fixing it. I guess this was not caught because section size
-on powerpc is 16MB and with 64K pagesize we have 256 pfns to map. The
-vmemmap size required for this is 256*sizeof(struct page) = 16KB which
-is < 64K (pagesize). So basically we never loop in
-vmemmap_populate_compound_page(), because
-next = addr+PAGE_SIZE will be > end after the 1st iteration itself.
+Thanks! It make sense to return a proper error code to the user (VMM)
+while the VM/VCPU are being initialized, rather then the guest failing
+to boot with a weird error like this, at the time when kernel makes this
+H_GUEST_SET_STATE hcall.
 
-But I agree this is a bug which needs fixing and it can be easily caught
-with 4K pagesize, where we have 4096 pfns to map within a 16MB section.
+> This situation should be detected earlier. Rejecting unsupported
+> 'arch_compat' values in 'kvmppc_set_arch_compat()' avoids issuing an
+> invalid H_GUEST_SET_STATE hcall and provides a clearer failure mode.
+>
+> Add a check to reject Power11 'arch_compat' requests when the host is
+> running in Power10 compatibility mode, returning -EINVAL early instead
+> of deferring the failure to the hypervisor.
+>
+> Suggested-by: Vaibhav Jain <vaibhav@linux.ibm.com>
+> Tested-by: Anushree Mathur <anushree.mathur@linux.ibm.com>
+> Cc: <stable@vger.kernel.org> # v6.13+
 
+Sure, v6.13 sounds fair as you pointed out.
 
-The change looks good to me. Can we please add stable tag too?
-Cc: stable@kernel.org
+> Signed-off-by: Amit Machhiwal <amachhiw@linux.ibm.com>
+> ---
+> Changelog:
+>
+> * Moved this patch out of the v3 series [1] as discussed here [2]
+> * Addressed below review comments from Ritesh:
+>   - Based the PVR validation on cpu features
+>   - Fixed hcall name typo
+>   - Stable backport
 
-Also, feel free to add:
+The changes looks good to me. Please feel free to add:
+
 Reviewed-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+
 
