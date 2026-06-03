@@ -1,76 +1,94 @@
-Return-Path: <linuxppc-dev+bounces-21962-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21963-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8F890CD6E69
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Jun 2026 08:58:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4BE31CD6E55
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Jun 2026 09:39:11 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gVhS84Qcvz2ybQ;
-	Wed, 03 Jun 2026 18:58:16 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780477096;
-	cv=none; b=gerdxUvfrUq8zLZDMd51uEakihvY2mFrK+ri1OKDxUXHAkPbZwFpJskf40Qk8ffx0hKsxIIK7aG+cxhZky/DaJ//dloWOxssWCKeC4RBx8lTwN3ixEmicVJui/KgS9C4rPYRcXaQd0hcRKjyboOyQcadUzUH0gplKddsSQe/1GysfmqjJ/PsMDxG5MWcPFYKbQG7HYmksJ1SkHpZtOHkMukpAQvCEWe63N7jRVlQpIWvXEMXxYGW93+Q2fV9YRH8HckYEk2gbPcoFAVhR7tU0MilwMKHT8uq8Utyc8wNHTbBdCEiVMLDuoxU8qTjLvXXtqQw9UBizsbmFs4r7Yn4Jg==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1780477096; c=relaxed/relaxed;
-	bh=HNO5aQb0rtRKtux/wu+5AcytYSH9RtOlt3U0qrUIzPI=;
-	h=MIME-Version:Date:From:To:Cc:Message-Id:In-Reply-To:References:
-	 Subject:Content-Type; b=SQgWR7/y5Ej/0Pu/FJSIGLSEEdhHCgCTIC/t9wEm8O2kwjrbazev23CZHuI8PsXBaY2Z/E2vGywCghf+pRtexUu1b5lKidpVWoV7ukEuKX93zw2FpjkBfs8LXhiVPnCO1vOI689n1iGJw2PFd3e/HGoqw+HT74Pxjtqk01ZarpGWaMiA1R0KJ3rq4t6NNp8o/UMlyhPEexcrMRW4/XFg/DDTbZbxPJb+E3zXWt7vHn019WQJv5E6GoExzty4NiUGbfxMotZkaQE/xBgOIXYTKQ5CfYeJjOhjRsVaTmtOj16mNLXxRHCvsW4xTTrPE4oBhl9H3LeYGR+ormlYoqZBMQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=mnPkKyEg; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ardb@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gVjMK5XYvz2ybQ;
+	Wed, 03 Jun 2026 19:39:09 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a00:1450:4864:20::530" arc.chain=google.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780479549;
+	cv=pass; b=K8KMObbDJ0mR9jdNylBqlgEFd/tV2nHSAyQ3Boc+HMDYny/TTDi2Sape1Cq1OZM5VNbJNHQYnpT546hH+QEHMCLLFNPuZUXm1kcMhrP1J+aMK5mgidcZpMfD7svd9eAJh5LdUYS37cXEgBkwwnqx0gGgvIltDS7h+XqNUvC2vVOJBAP7VP+CDpf2G/1QjX1Fpb+4OwmAnm3ZO3KZae3rqfiJcMKSkh29ojEmHuTh+AOYjXPj4dwXljQtPuqLKh+MtaFo6r/XWP7b+DP2fj4/piPiF9m8MtY0wvdklkNKcIii+/IjhgULl2j2m2A3cFu0wQEXow62CMpfNqup5modew==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1780479549; c=relaxed/relaxed;
+	bh=SwXKhIJjZGWqX6uBB2vnznJQiVYEOuhYWUEkVzvu58Y=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=SugNPJQbiapS0ui4CdSJEBW7lLhpAcsdAWtySEDdY2POJBa6VfFmmBlMa/+BXdejhudR+KI3Z3uGB8xdh/lMVWjlHrB/alg23p9d67Ukkki9pKDZZv75iTnNDqj3ZFCRxMJR8uRFAWJg1QSRYJtMGdesJOHA4cFCcMxpViHevXlak+87KpIXc+4Dq+K1/7n7B+2qx6/wfYlcTEp8ypkl2wfY/kiHd6pXtBIOGdbSC8gUO+ecVA/CdPBdcx8n27OCTtYdVLeyi3onjmCP/BapS20m0j3+jX+XoDisfSmvFgVoHUkwM8Hyk+22SzISIuduA+BahHHAvrU3iOKgtQSDVA==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=F0Fsg1e9; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::530; helo=mail-ed1-x530.google.com; envelope-from=rosenp@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=mnPkKyEg;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=F0Fsg1e9;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ardb@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::530; helo=mail-ed1-x530.google.com; envelope-from=rosenp@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-ed1-x530.google.com (mail-ed1-x530.google.com [IPv6:2a00:1450:4864:20::530])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gVhS73Km3z2y8W
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 03 Jun 2026 18:58:15 +1000 (AEST)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 9E82C40B56;
-	Wed,  3 Jun 2026 08:58:12 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8EE4A1F00893;
-	Wed,  3 Jun 2026 08:58:11 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1780477092;
-	bh=HNO5aQb0rtRKtux/wu+5AcytYSH9RtOlt3U0qrUIzPI=;
-	h=Date:From:To:Cc:In-Reply-To:References:Subject;
-	b=mnPkKyEgBAoJhHyCjKocF+n+JqkHcWSmPH184p/CrskKjSd4JLPoFSBGrYLKU9Mar
-	 B1hI8HW9H+53ks3lghDx4U+J6rNa6f8KquouzDq0+DM7/4ZBRzC0AuXQVPvI5bKqkY
-	 NglLbcu+ZBDleA+IgNkKfEKOPcXRhxVfSNk8lTpECqvKoBh+iHSyU2ZFRwFPFE4daX
-	 kw0WCczgVzTNS8Nry/XjBs//vr21nJLOAmz9iMERtpe8gUl3WYdzTVYvcHDMtqVnlJ
-	 wu/GIoZWa0/6+fA9X2Sm0u6y0MnNMo3tVdcswt4ZtD+mHXcn/QmWy2xNCp5hUrCygR
-	 dCBoxrKjfQI+w==
-Received: from phl-compute-01.internal (phl-compute-01.internal [10.202.2.41])
-	by mailfauth.phl.internal (Postfix) with ESMTP id 9E4CDF40075;
-	Wed,  3 Jun 2026 04:58:10 -0400 (EDT)
-Received: from phl-imap-05 ([10.202.2.95])
-  by phl-compute-01.internal (MEProxy); Wed, 03 Jun 2026 04:58:10 -0400
-X-ME-Sender: <xms:ouwfaqCSomCUHn2Pcxt39NzT6QrYDOwoUaHjVutpQNUu0GYFMZl_Ig>
-    <xme:ouwfavUBA_wa0-Kl0rwIin5phZ0Xk0GMcV5YCAKgwCXtZX9t6zPJc0f21igxmxdFZ
-    el9mEG9Na6KsRXZeOce-ahEOIXmRVtrBYvtLtWGWDsGbs4lRkjjK10>
-X-ME-Proxy-Cause: dmFkZTGr2weDGKBa0sUCUcj036iLL5Y1yiuWXtlNLmEI4O4KffGEG7mKCI4rtXP1Kjy/sC
-    Vn4JLRDUw3n/LlH/P7ldcJy2f2NLMW7zEwQdl58eFGDw13Gd7uBwZtBFefeubqM57vT7KW
-    gxI5DHTPlMa9V7t7GBAVKnyC4disspoUcyOJuYcuXeoXUDa8M5AS9XNNfwK+hXW4k6RRKP
-    P+HnepDfV9Ly2SCGeboQtn62xJxY4OofV3op27GBS756vLSUraZsZIubTiRwHvbO7GWFg8
-    TN89ZhNEjfm9JCDm1LdV/dDNhv9gsSNYWX/LbCMQhfYJTNEbDdYGKUoqZbehxmbuTXbkFU
-    XnaKhsn2lQq7XiJ+YTNPtHlw97iNDWbeNZirflpUY26TpW4YlC0yGx1F2Pdjov4xxyaUZd
-    nGZuSrO0ofec6SMf5X9bTikzbc7jU39nUFa8+EDOEs+sLMDgAb7Jfbkdo1r3Pi14q8HECl
-    WOyAkHMSoapVwjPlMra4gfnE/Sq1KO70VhXXH61epQ6Rh+aRLmPHQfsv+x4lMOk7iiwpsY
-    2Ln1UDislceGN/Gw4GkBXiCXnvOln8phYiq7SJoKkYgBG145jAMq3GJUgudNXhcY+kY+fP
-    qpGcyL1cKdvM1YoB3pTqsi5xKVO8SJQEPQQW/+ABFCEXztbk2H+BY/x90g+g
-X-ME-Proxy: <xmx:ouwfam3-PZsrAVqqiP-EfVs-0jTgxsPILW5ya_Lkxs4FNvUMV00I3A>
-    <xmx:ouwfaqtJQPQRdRGCSDlzv7oyJj2hWevC-qAmYiniqjt8Bubu_25WPg>
-    <xmx:ouwfai_l9FuzR3F73C0xJHJLI6BrnbgCXaJCGZTs31csy6qmGWmmEQ>
-    <xmx:ouwfauR1k_z1hiMDOUWOdTJsWToATwu--U1XlEgRSm3i3JLjPhl_jg>
-    <xmx:ouwfaoCm3jrQTsvC8JSjjw2cVnzpsLJPRFYPY4I2sfuqg_7otMeSlp9g>
-Feedback-ID: ice86485a:Fastmail
-Received: by mailuser.phl.internal (Postfix, from userid 501)
-	id 77D33182007A; Wed,  3 Jun 2026 04:58:10 -0400 (EDT)
-X-Mailer: MessagingEngine.com Webmail Interface
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gVjMH4s2Gz2yH5
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 03 Jun 2026 19:39:06 +1000 (AEST)
+Received: by mail-ed1-x530.google.com with SMTP id 4fb4d7f45d1cf-68d234218bcso83053a12.2
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 03 Jun 2026 02:39:06 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1780479542; cv=none;
+        d=google.com; s=arc-20240605;
+        b=Xt+sXADFLelMPB/vKw7VEhaIITpM1CvQrnAbyBQRcF3pdzq9RfPjchh46AomyHWTaS
+         v5f2RyWGTRNDQdO1pTY5glJKi0cHsHlWOpUBCwTfzRcZiLVAzYJgAHZWAXlgMbYd9mwr
+         /s3FWgUPFTzNXpHhSjDqq9yhZ7TjIMSlyPkoOoSEj9c2dPkjpcEXYaYYzCGB6Y4htLBJ
+         Du1oxjpb97XrDBZut9fZlevbeynaN8/7EY6wwHWn2VjV7h7iX8orlYsPia40Ph9EnVH1
+         iLxD8Lr4KSEDoSh1zpdPPeJ7hRQW7ZePBh6oO1HzSSZFa+esAm/BYtUcAOzSHDUxrZmV
+         C75Q==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=SwXKhIJjZGWqX6uBB2vnznJQiVYEOuhYWUEkVzvu58Y=;
+        fh=bkj6a8IB4luldzIviUmhWb6PSfuwcvxY/UwHXPTfYMk=;
+        b=HIYrgLYpRzjXckaEcaMCHXenbsUxgQpfqaeExOuMp/6r4NswBqbqg/2HkaHYnDssPA
+         kL2rBL6467Or7mUFZd7DUe2mWO8xumr1at7bEeFrL8bUSKRBfzkQbGMplp7hEszTRmJQ
+         uYKfZe4jAufJ5UJsWZ9/FqvvQM6tOizvT5dPH9oduYbq0NkljHjqFOABNuYDfVWGcBpv
+         1Lc91vLwf1qi1wsGVdBtNAK/fYhm/rH/97/rgC4Je/oEjMLLrGNysX+rKDve3DfO41iY
+         vsf20Xdgb2E37cJ0JRqsPOCD/A9/1+hMJiw13J/AGqQIgf4RnjIET7xViWXnVIRgMh3M
+         FbQA==;
+        darn=lists.ozlabs.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1780479542; x=1781084342; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=SwXKhIJjZGWqX6uBB2vnznJQiVYEOuhYWUEkVzvu58Y=;
+        b=F0Fsg1e9/9rG/RyU7d2CaRt6Rhm1PnKFQ1ksAFqPkmSCp7/FD8xNuYarzrC9M/apP9
+         iyVqKCeNHwMSfZIobnXNRvig4BJmXVYROE82Qp/Bj1hX8mHM81WaXcoVJY7vw4DickVL
+         /3PFs4/SPMVLNUrNdNKOisYHRzVSKre1VKqf+ilfFh7gxtvAohxxSxUrVItFUJKbwxXx
+         N2geed5oLQBmszk+HmvC2GuA+PNthsnx/CHbgGyYN64cw7x2WvvDkLvIyjJKy37TB0OR
+         NcC08/Hr9AE0eszZHu8rbBcdTRk30CCIB7j+hKv9UmooPLdvEsBFDrRzEaKyLnWg0mje
+         BUEw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1780479542; x=1781084342;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=SwXKhIJjZGWqX6uBB2vnznJQiVYEOuhYWUEkVzvu58Y=;
+        b=DLaEUAHBgoy0Hl+ruls0z5BE9XXnz2pgivzk3Up/mzldVOaXLiAlczlhrRhK/6uNfO
+         HuUd1Ah0df58BWbcfPZkL4bnCukoDpUu7uifFGcxgwiqrd9g27mRzeYolP6ZUzkrGp0B
+         GJpReGc8FtvodPJfWl6bT5x331XUArmzYSDYDu8ZSwDXSt+2rmQplv6br6TpqTDhhNdO
+         HVZCZlh3mpUEitucQQuNMJJXI8CToEV8jW3u7JVV0nyHZ6IdfaRdkvxpG5jMJszYeNAa
+         qTXXF7PIGQ06nzmoQWZY/Qo/e9h6QvNVBZkMhCm1MM+1x0PZbux9rnumWg42kTkyHlw1
+         Wa5Q==
+X-Forwarded-Encrypted: i=1; AFNElJ9rMno7cPMvUNMjcV7PtDIaYHLIwTWbustZ6T2EraFrrzXm3Ivn4mtAiSKQWhO3W1V78ZZjIgBZSZRfcFE=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yz0+iARLPyQz9g16l4D7pfPyQyDUDi/dVZC52cvV0gycDGmdKqX
+	XZb1YwJMVNP/2wD14bIZ9jsOBGkLf/yyoun2e6L77HUVdon9Ghbcf8VunZ8UlSx6kvPKAIJUs8+
+	24TIf/LmFY6hfee/je2tL+k+t+NaEFHM=
+X-Gm-Gg: Acq92OESd8OItTGjIayh6Fv9Jhhx4aBP4k2tHd2bTnJAszzbY/puk6dYsX86/IhgK9j
+	gFCJ6XR1Spdnq0x0BGzRx2m0jRAUBhduMcojOHkbET9uS6RNScF6UqQcYOpWEZMsa9Lk1F7X9yG
+	9HUaA4N9GuRvPkCd7CJnjAzG0jslW1UdNpJC5taUTFslLHCjyQDwhL0dYkGLEIM28BfLmqlOfRC
+	2dtfm3k7W7taiGFcpPHbh/GZbiTD69Q/xkwWIp5MK3T/rttBvBMzZELQ5HrwoqougzwSf78pP9G
+	bCDFlroz6Okw65naRqujvIaIEo/WgB0bzf6K/3XwODzVg6TyeGcLyGnosYPVakPGJwL/jax/EDc
+	LlOAH92/EoCP9RIjpTDuARircS1zL99j45nNwK55XztpF+UkyAHASJzDNnyMeWBxNr7af
+X-Received: by 2002:a05:6402:1589:b0:68c:3424:af6c with SMTP id
+ 4fb4d7f45d1cf-68e710f7416mr1164077a12.20.1780479542040; Wed, 03 Jun 2026
+ 02:39:02 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -84,101 +102,65 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Date: Wed, 03 Jun 2026 10:57:49 +0200
-From: "Ard Biesheuvel" <ardb@kernel.org>
-To: "Will Deacon" <will@kernel.org>, linux-arm-kernel@lists.infradead.org,
- "Ard Biesheuvel" <ardb+git@google.com>
-Cc: "Catalin Marinas" <catalin.marinas@arm.com>, kernel-team@android.com,
- linux-kernel@vger.kernel.org, "Mark Rutland" <mark.rutland@arm.com>,
- "Ryan Roberts" <ryan.roberts@arm.com>,
- "Anshuman Khandual" <anshuman.khandual@arm.com>,
- "Kevin Brodsky" <kevin.brodsky@arm.com>, "Liz Prucka" <lizprucka@google.com>,
- "Seth Jenkins" <sethjenkins@google.com>, "Kees Cook" <kees@kernel.org>,
- "Mike Rapoport" <rppt@kernel.org>, "David Hildenbrand" <david@kernel.org>,
- "Andrew Morton" <akpm@linux-foundation.org>, "Jann Horn" <jannh@google.com>,
- linux-mm@kvack.org, linux-hardening@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-sh@vger.kernel.org, maz@kernel.org
-Message-Id: <2c7929d4-6622-475d-af1b-bcd0cd997cd3@app.fastmail.com>
-In-Reply-To: <178041415770.4024555.11336437584927054639.b4-ty@kernel.org>
-References: <20260529150150.1670604-17-ardb+git@google.com>
- <178041415770.4024555.11336437584927054639.b4-ty@kernel.org>
-Subject: Re: [PATCH v7 00/15] arm64: Unmap linear alias of kernel data/bss
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+References: <20260603005455.226882-1-rosenp@gmail.com> <63476872-b3be-4564-a748-74757130c50a@kernel.org>
+In-Reply-To: <63476872-b3be-4564-a748-74757130c50a@kernel.org>
+From: Rosen Penev <rosenp@gmail.com>
+Date: Wed, 3 Jun 2026 02:38:50 -0700
+X-Gm-Features: AVHnY4JOPde6EcbhbVP7kQ6u8j7UMFPXiaRnZA5NqzesPep85f7PtCeO2ye9Qog
+Message-ID: <CAKxU2N8UBXMqeOoKOTy20ZL4sK8JNQfuamWP-_nMyxS3EH5oSg@mail.gmail.com>
+Subject: Re: [PATCH] i2c: cpm: Use platform_get_irq() to retrieve interrupt
+To: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+Cc: linux-i2c@vger.kernel.org, Jochen Friedrich <jochen@scram.de>, 
+	Andi Shyti <andi.shyti@kernel.org>, 
+	"open list:FREESCALE I2C CPM DRIVER" <linuxppc-dev@lists.ozlabs.org>, open list <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-(cc Marc)
-
-On Tue, 2 Jun 2026, at 22:34, Will Deacon wrote:
-> On Fri, 29 May 2026 17:01:51 +0200, Ard Biesheuvel wrote:
->> One of the reasons the lack of randomization of the linear map on arm64
->> is considered problematic is the fact that bootloaders adhering to the
->> original arm64 boot protocol (i.e., a substantial fraction of all
->> Android phones) may place the kernel at the base of DRAM, and therefore
->> at the base of the non-randomized linear map. This puts a writable alias
->> of the kernel's data and bss regions at a predictable location, removing
->> the need for an attacker to guess where KASLR mapped the kernel.
->> 
->> [...]
+On Wed, Jun 3, 2026 at 1:15=E2=80=AFAM Christophe Leroy (CS GROUP)
+<chleroy@kernel.org> wrote:
 >
-> It would've been nice to hear from the ppc folks on patch 11, but I've
-> picked it up on the assumption that they'll love the negative diff stat.
-> Worst case, we can drop/revert stuff if they have late objections.
 >
+>
+> Le 03/06/2026 =C3=A0 02:54, Rosen Penev a =C3=A9crit :
+> > Replace irq_of_parse_and_map() with platform_get_irq() as recommended
+> > for device-managed IRQ lookup. Properly propagate any errors returned
+> > from platform_get_irq(). irq_of_parse_and_map() requires
+> > ire_dispose_mapping(), which is missing.
+>
+> irq_of_parse_and_map() and platform_get_irq() look pretty different, can
+> you give more details on how one can replace the other ? (I don't mean
+> this is wrong, just I don't have enough details).
+My understanding is the latter is higher level and doesn't require
+mapping. Just a request from the platform_device machinery for an irq
+that it already mapped.
 
-Thanks.
-
-There is a de facto ack from Michael Ellerman in the Link:, which is why
-I included it.
-
-Note that Sashiko found an issue with KVM+MTE, where a read-only mapping
-of the zero page in the linear map may result in issues:
-
-"""
-Does moving the zero page to .rodata (or unmapping/read-only mapping its
-linear alias) expose a guest-to-host denial of service with KVM and MTE?
-When an MTE-enabled KVM guest reads an unmapped memory address, KVM handles
-the stage-2 fault by mapping the host's shared zero page. KVM will then
-call sanitise_mte_tags() in arch/arm64/kvm/mmu.c.
-Since the PG_mte_tagged flag is never set on the zero page, KVM's
-try_page_mte_tagging() succeeds, and it calls mte_clear_page_tags().
-This executes the STGM instruction using the zero page's linear map alias.
-If this alias is read-only or unmapped, won't the STGM instruction trigger
-a synchronous permission fault or translation fault in EL1, causing a host
-kernel panic?
-"""
-
-Marc seems to think it is legit, so I came up with the following (I'll send
-it out separately with another pair of tweaks):
-
--------8<------------
-From: Ard Biesheuvel <ardb@kernel.org>
-Subject: [PATCH] arm64: mte: Disregard the zero page explicitly for
- manipulating tags
-
-The zero page is conceptually immutable, and will be moved into .rodata
-to prevent inadvertent corruption.
-
-Prepare the MTE code for this, by ensuring that the zero page is never
-taken into account for tag manipulation, given that those actions will
-no longer be permitted on the read-only alias of .rodata in the linear
-map.
-
-Signed-off-by: Ard Biesheuvel <ardb@kernel.org>
-
-diff --git a/arch/arm64/include/asm/mte.h b/arch/arm64/include/asm/mte.h
-index 7f7b97e09996..093b34944aee 100644
---- a/arch/arm64/include/asm/mte.h
-+++ b/arch/arm64/include/asm/mte.h
-@@ -80,6 +80,11 @@ static inline bool page_mte_tagged(struct page *page)
-  */
- static inline bool try_page_mte_tagging(struct page *page)
- {
-+       extern struct page *__zero_page;
-+
-+       if (page == __zero_page)
-+               return false;
-+
-        VM_WARN_ON_ONCE(folio_test_hugetlb(page_folio(page)));
- 
-        if (!test_and_set_bit(PG_mte_lock, &page->flags.f))
+It also supports -EPROBE_DEFER. Probably not relevant here but could
+be some day.
+>
+> >
+> > Assisted-by: opencode:big-pickle
+> > Signed-off-by: Rosen Penev <rosenp@gmail.com>
+> > ---
+> >   drivers/i2c/busses/i2c-cpm.c | 6 +++---
+> >   1 file changed, 3 insertions(+), 3 deletions(-)
+> >
+> > diff --git a/drivers/i2c/busses/i2c-cpm.c b/drivers/i2c/busses/i2c-cpm.=
+c
+> > index 2cb6a233d313..23679c192edc 100644
+> > --- a/drivers/i2c/busses/i2c-cpm.c
+> > +++ b/drivers/i2c/busses/i2c-cpm.c
+> > @@ -434,9 +434,9 @@ static int cpm_i2c_setup(struct cpm_i2c *cpm)
+> >
+> >       init_waitqueue_head(&cpm->i2c_wait);
+> >
+> > -     cpm->irq =3D irq_of_parse_and_map(ofdev->dev.of_node, 0);
+> > -     if (!cpm->irq)
+> > -             return -EINVAL;
+> > +     cpm->irq =3D platform_get_irq(ofdev, 0);
+> > +     if (cpm->irq < 0)
+> > +             return cpm->irq;
+> >
+> >       /* Install interrupt handler. */
+> >       ret =3D request_irq(cpm->irq, cpm_i2c_interrupt, 0, "cpm_i2c",
+>
 
