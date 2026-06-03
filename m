@@ -1,69 +1,70 @@
-Return-Path: <linuxppc-dev+bounces-21949-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21950-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id F013BCD6E55
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Jun 2026 06:28:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 340B5CD6E55
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Jun 2026 06:28:09 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gVd6q4llqz2yNn;
-	Wed, 03 Jun 2026 16:28:03 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gVd6v39NPz3bpM;
+	Wed, 03 Jun 2026 16:28:07 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780468083;
-	cv=none; b=bxeEvB1gzGeyGjVO/u2lkyGafudSk5mIjsvXvlwAAkvNEd9gbR82h5BLeCc4aUE5+OGzCHeGLrJEdzaL3RbG34XZn1/ccaH6UtcscxO4M6OZ/PHSLgYJ3FWFDoPibNSWda5TJT3GXWwKbvfQJvBFkblNnMZpTsEXXUuqy8ds+yIa17G5cq5cp+XrbgLgcPfPor3Mh6X6d932F7htUQCPo1OjGMKyZG/w3QLRZKug87LgDWVOyKvsrZJYWG8SNX6E8k6eKQwIYKTrq/rIvboqdEewkeYX+Ev4jn80nNNhSMveRC2Fr6MJ/FlajGOjZJqsEGJweP81KM2miLqDT7GHpw==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780468087;
+	cv=none; b=GujpU0ngv+JgpPG4L6wBLlLhoCUzAUeN7Ow9rSoCPZksxEun2KMOpERqRUayjmNLAxsuoIwR3O3qzdH/E9NgU/tYnEhggRTpWdUAeMWFBkYS1vpyn2ltYvGkPvL54EI1t5GG5AVqiWe9P6oTSy+y34Bm3OrDiXFrVO5osHib+eA9sr4eCEKSyYSsZylmAxNbrprl2yl2VVQausseS9dhXft8Ue4OECuBfiIkKsi21nCO3hL10zR4oTFeJYJGsf3O9fYw/T4eRdbR6wOPRGdcm0o9pmRhXDLVvhECHbmrumJ46WbsX6OEWzBOyEsVwzJSIAxxjUhUqp3tt8DtHR4J8A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1780468083; c=relaxed/relaxed;
-	bh=ubK824ZkBVyARGvt1b8MoeFNF2vITyoABnTOG6lEDuc=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=QE27B9CJNaZPdSD3Iey1lkQ7Zx9v5vPmfDWx11IbLNskGPSMXrcHoz24TbojletS73MSGfByeoUVfH+Dwo9BArjrLpi3qDudRz29ngasf4YXtJQh42sm7ox7vowLJlbPzN+kOXYEHxYF6aL8nsdqGwkyITMxPaW5H7q/+ThbuhE/nCMuOBr+GO4z6WyM9uCI7pTazKolN/UlRcshw4SukMv2kENSz1avtpuodsoRpaw4ClhtBeunUqB7lwQHToh3v9GrTnSldXBjZQc47SZE8OfXJPMWpEfar79k2mLYsLbwlHf28ISxNoGMQ31Uz30LgqE5/nrUI4O5bb3eu98Qlw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=WkGQJFil; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=aboorvad@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	t=1780468087; c=relaxed/relaxed;
+	bh=8+nYoA+x/dvSBguuBiHUHAojnvr48ap391q1RsglkA4=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=JwZDA0al3gn6DipP0/EL57BbHGsBQ3Elx1ahfBFIlQXlTQbmVWddJXuow2xPec033CtPCQa5MQ+KOJvTl64mndcBEZOVw6yId/ct5uTiWNZh/BWkAkyunQOvF68ywwbVO2cx/1sgiSmWP99/6pw4okXdAF8AZ+/27KTHUegTt6Ai/WtgB60ZYFSfMy2BTz7b7geiYMcnwkI18zqT98Cc7loxZ0S6mp4n3anzawehgR41kjYZWV3Cw0I8ovPjuMfw5WBP82KbWSAYKd9bECycqGGnj/TPjXIREfr7B1x4980HJsgux+Hl1ESTljBBAzX1/IC9SBl6f853VcWEHND2/A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Tvm2SjJv; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=aboorvad@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=WkGQJFil;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Tvm2SjJv;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=aboorvad@linux.ibm.com; receiver=lists.ozlabs.org)
 Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gVd6p5fgqz2xc2
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 03 Jun 2026 16:28:02 +1000 (AEST)
-Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 652H8a3j2252299;
-	Wed, 3 Jun 2026 06:27:58 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gVd6t5LnZz2xc2
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 03 Jun 2026 16:28:06 +1000 (AEST)
+Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 652GCjjp3293619;
+	Wed, 3 Jun 2026 06:28:03 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:message-id:mime-version
-	:subject:to; s=pp1; bh=ubK824ZkBVyARGvt1b8MoeFNF2vITyoABnTOG6lED
-	uc=; b=WkGQJFillfMpUwgMBM/ryaAxvPJVMlaIQ4Fh41gYI/b1xliPilTJm4QXB
-	LTqkkhyfyBmL+SCxUHwNo2H5NP7fSkDr5fs8BkbPw7xZTJoSujrQIFj4SQZYcA3z
-	CqTWtLpe1/AuXkm6LhMV+23XwUMNyJ3pe6sqsZR+EVbxquWaUrn+E2FVyvwrtWVi
-	DxIDf/1HYQA1DBuFPZ598PaTgqzPSnOGvm7ftQd4+g5xxfJqytXvHl/yOTWmSdaT
-	+BcwnJrmgCmMhcpwNj2ZaAU1/o0xuWNtRV6mxOvWXVIy9NfVFetLTNVNm1XP5EUI
-	GkAGTBo7foqJD8085pjZlLEO+E8Vw==
+	:content-transfer-encoding:date:from:in-reply-to:message-id
+	:mime-version:references:subject:to; s=pp1; bh=8+nYoA+x/dvSBguuB
+	iHUHAojnvr48ap391q1RsglkA4=; b=Tvm2SjJv/7UvcCGNIGzeB6yZcwmdy34Tx
+	ZwhkwXp+2KABbifjFaNYATQbNurDSgkl5ajzU0zTJmgTM9TneTj/eF4UiqPe+aiK
+	/ATbkw1DMwey+FkJ6mfKfiLjFDF858ut1QKfeZ/aaJkFo84MfPbNIefns2FyGlT9
+	NXzR/5hz50rKw0AZtbiowdlxC1uFJW89i6MMh56zkAUuYjYVR7C8q4PceGb/FWi7
+	ubOuzUu5XcSHmga0e625K37R/KfVXkfOajlodK9vmVqHCGNtHCrsgEZDqgNKReg/
+	LnsZdOZvIKGu3riBdmtT9+iaQMopYfGjD0w4oLSsQk1gPljRIu84g==
 Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4efpae91tm-1
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4efnahs64n-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 03 Jun 2026 06:27:58 +0000 (GMT)
+	Wed, 03 Jun 2026 06:28:02 +0000 (GMT)
 Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma23.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 6536O5H6021173;
-	Wed, 3 Jun 2026 06:27:57 GMT
-Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
-	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4egbqhescf-1
+	by ppma23.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 6536OAS7021196;
+	Wed, 3 Jun 2026 06:28:01 GMT
+Received: from smtprelay01.fra02v.mail.ibm.com ([9.218.2.227])
+	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4egbqhescm-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 03 Jun 2026 06:27:57 +0000 (GMT)
+	Wed, 03 Jun 2026 06:28:01 +0000 (GMT)
 Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
-	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6536RrO745089106
+	by smtprelay01.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6536Rv4E30278130
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 3 Jun 2026 06:27:53 GMT
+	Wed, 3 Jun 2026 06:27:57 GMT
 Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id C2FDD20043;
-	Wed,  3 Jun 2026 06:27:53 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 7BF642004B;
+	Wed,  3 Jun 2026 06:27:57 +0000 (GMT)
 Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 65CCD20040;
-	Wed,  3 Jun 2026 06:27:50 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 62AD320040;
+	Wed,  3 Jun 2026 06:27:54 +0000 (GMT)
 Received: from aboo.ibm.com.com (unknown [9.39.24.39])
 	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Wed,  3 Jun 2026 06:27:50 +0000 (GMT)
+	Wed,  3 Jun 2026 06:27:54 +0000 (GMT)
 From: Aboorva Devarajan <aboorvad@linux.ibm.com>
 To: Madhavan Srinivasan <maddy@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
 Cc: Athira Rajeev <atrajeev@linux.vnet.ibm.com>,
@@ -72,10 +73,12 @@ Cc: Athira Rajeev <atrajeev@linux.vnet.ibm.com>,
         Sourabh Jain <sourabhjain@linux.ibm.com>,
         Ritesh Harjani <ritesh.list@gmail.com>,
         Shrikanth Hegde <sshegde@linux.ibm.com>
-Subject: [PATCH v2 0/3] powerpc: fix preempt_count imbalances in perf and kexec paths
-Date: Wed,  3 Jun 2026 11:57:40 +0530
-Message-ID: <20260603062743.1152253-1-aboorvad@linux.ibm.com>
+Subject: [PATCH 1/3] powerpc/perf: fix preempt count underflow in fsl_emb_pmu_del
+Date: Wed,  3 Jun 2026 11:57:41 +0530
+Message-ID: <20260603062743.1152253-2-aboorvad@linux.ibm.com>
 X-Mailer: git-send-email 2.54.0
+In-Reply-To: <20260603062743.1152253-1-aboorvad@linux.ibm.com>
+References: <20260603062743.1152253-1-aboorvad@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -92,76 +95,65 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
 X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Authority-Analysis: v=2.4 cv=Zt3d7d7G c=1 sm=1 tr=0 ts=6a1fc96e cx=c_pps
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjAzMDA1NiBTYWx0ZWRfX4c1QArWfljhH
+ o9R9K7dW9Pey/MGA9b+oGdXCI+tuKtbmTAXv8oe0dgw2Gj/lBO6dz2++Wqgo/l0L+zke/q6WgeH
+ /nxmYQq3kPO2A8R5ZorDcKTXnq5Rk+LyRGdGZ6FJD2n4pwruApBYyRNJLoIM2Cd2rdlRfYoJNYk
+ Mt5bz9PFZOP/tH0meTptlyaBExOCxMcMqdKO869z4zqnhFhx4w8GQUdiBzjsP8Lqt5JQGm57bkL
+ 1byzGJYLEPZrHtRS3Or1A0SBqyaQ8XctF5ZqvtBA4ip/qJhV6xg+RhrwaspBtFPwIyKsQQ3oEDp
+ e5DWT8cq+n9mOF8O9F1zuO6e2hTCg0PHBId4NkXyYpUIZ1HIXcX+rNxTPk8Xln628CCCPCqUXdu
+ XXtkpnLJj3clKp6KIcTNCaecHWa6EreaVw7hzgY7sMPu7PrMnrZOg9kOIrJRAMeHG2h2Wz9cmDC
+ 6QFSyc07BWaJlUhgzRQ==
+X-Proofpoint-ORIG-GUID: xs-p6tdLRBKDoLyAJ8WU9_8v9dRYH4Cc
+X-Authority-Analysis: v=2.4 cv=cOzQdFeN c=1 sm=1 tr=0 ts=6a1fc972 cx=c_pps
  a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
  a=FelO9ux0wxsA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=V8glGbnc2Ofi9Qvn3v5h:22 a=VwQbUJbxAAAA:8 a=VnNF1IyMAAAA:8
- a=EHRFYB8xNeBlr5IdY6MA:9
-X-Proofpoint-GUID: Tkkwab5r0hhCwwOAkKCB6xIHKnMW8LEI
-X-Proofpoint-ORIG-GUID: fYOsCkLXsSYfDrmSSXsLGwlgzP_21SqN
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjAzMDA1NiBTYWx0ZWRfX6C4Ap57hfJ42
- OykgRKSgyfIhhSrpFV/SZ4FwLg/LbNwVXuJbNE/A//Se9z01RpyKJuNF3qn0R1F+zy6b3EkdEko
- iq8itIudR7TRfm+VlNsL7wT+0QdtZiHCm55L1atbaJS8NKAmyi0SNiQn8/NukVRQNbFsLDCq8X4
- Zyp3cFAh8f23j7LxRodWFaz+uWkFnFIQGaI4UFBCIjuhlXdNkjSQodRYuyM92IP3jWbCcVjNRwa
- 6yYpENP6/qwP6AhAb4OBkw+gN+mPOmoH+xFaa7d7itoc9pbUHGpH+/DRbj/l7eQYQmABr5/wrrB
- XSxtXtAhHOuAIKvyhzbsBMH2FTr4YJGHofAZW/SAE3BPoPKvQqpBCXSiDX2ybCVsAxqiqlUHS8g
- 1WXxWewp2vfsrsYM5BByZfvvGsccwrw+u2iqDafFFBbNzCdLxlQ/xwsMAWqU3Pg22XwrNN2IESC
- RYnldTs2Uo0OrpFoC9g==
+ a=Y2IxJ9c9Rs8Kov3niI8_:22 a=VnNF1IyMAAAA:8 a=-qzNKB2iBSQ2TZesQmUA:9
+X-Proofpoint-GUID: pbHtMBC4par7jfvnfN5FHAKH4ZukmdfW
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
  definitions=2026-06-03_02,2026-05-28_03,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- impostorscore=0 suspectscore=0 priorityscore=1501 bulkscore=0 clxscore=1015
- phishscore=0 spamscore=0 malwarescore=0 adultscore=0 lowpriorityscore=0
+ clxscore=1015 impostorscore=0 lowpriorityscore=0 spamscore=0 bulkscore=0
+ malwarescore=0 phishscore=0 suspectscore=0 priorityscore=1501 adultscore=0
  classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
  reason=mlx scancount=1 engine=8.22.0-2605210000 definitions=main-2606030056
 
-Hi all,
+fsl_emb_pmu_del() unconditionally calls put_cpu_var(cpu_hw_events) at
+the 'out:' label, but only calls the matching get_cpu_var() after the
+'i < 0' early-return check. When event->hw.idx is negative the
+function jumps to 'out:' without having taken get_cpu_var(), and the
+trailing put_cpu_var() then issues an unmatched preempt_enable(),
+underflowing preempt_count.
 
-This patch series fixes some minor preempt_count bookkeeping issues in
-arch/powerpc/ found during a preemption leak audit prompted by the
-lazy/full preemption model changes. These are get_cpu/put_cpu and
-get_cpu_var/put_cpu_var pairing errors that leave preempt_count
-incorrectly elevated or underflowed.
+On a CONFIG_PREEMPT=y kernel preempt_count would underflow and
+eventually present as a 'scheduling while atomic' BUG.
 
-v1: https://lore.kernel.org/all/20260518050855.1147242-1-aboorvad@linux.ibm.com/
+Move put_cpu_var() to pair with get_cpu_var() so the percpu access is
+correctly bracketed and the 'out:' label only handles perf_pmu_enable.
 
-v1 -> v2:
- - Patch 1 (fsl_emb_pmu_del): no functional change; picked up
-   Shrikanth's Reviewed-by.
- - Patch 2 (pnv_kexec_wait_secondaries_down): per Shrikanth's review,
-   use smp_processor_id() instead of raw_smp_processor_id(). The kexec/
-   crash teardown path runs with IRQs disabled so it is safe.
- - Patch 3 (kexec_prepare_cpus): per Shrikanth's review, dropped the
-   approach of passing the cpu id through kexec_prepare_cpus_wait() as
-   a parameter. kexec_prepare_cpus() already runs local_irq_disable()/
-   hard_irq_disable() before the wait, so get_cpu()/put_cpu() is
-   unnecessary: just read the cpu id in kexec_prepare_cpus_wait() and
-   drop the trailing put_cpu(). This keeps the function signature
-   unchanged. smp_processor_id() is used here too, consistent with patch 2.
+Fixes: a11106544f33 ("powerpc/perf: e500 support")
+Reviewed-by: Shrikanth Hegde <sshegde@linux.ibm.com>
+Signed-off-by: Aboorva Devarajan <aboorvad@linux.ibm.com>
+---
+ arch/powerpc/perf/core-fsl-emb.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-Testing:
- - Patch 1: compile-tested only (ppc64e_defconfig + CONFIG_FSL_EMB_PERFMON);
-   no e500/fsl_emb hardware to runtime-test so far.
- - Patches 2 and 3: kexec boot-tested on PowerNV (powernv_defconfig)
-   and pseries (pseries_defconfig).
-
-Please let me know your comments.
-
-Thanks,
-Aboorva
-
-Aboorva Devarajan (3):
-  powerpc/perf: fix preempt count underflow in fsl_emb_pmu_del
-  powerpc/powernv: fix preempt count leak in
-    pnv_kexec_wait_secondaries_down
-  powerpc/kexec: fix double get_cpu() imbalance in kexec_prepare_cpus
-
- arch/powerpc/kexec/core_64.c           | 4 +---
- arch/powerpc/perf/core-fsl-emb.c       | 3 ++-
- arch/powerpc/platforms/powernv/setup.c | 2 +-
- 3 files changed, 4 insertions(+), 5 deletions(-)
-
+diff --git a/arch/powerpc/perf/core-fsl-emb.c b/arch/powerpc/perf/core-fsl-emb.c
+index 7120ab20cbfe..02b5dd74c187 100644
+--- a/arch/powerpc/perf/core-fsl-emb.c
++++ b/arch/powerpc/perf/core-fsl-emb.c
+@@ -366,9 +366,10 @@ static void fsl_emb_pmu_del(struct perf_event *event, int flags)
+ 
+ 	cpuhw->n_events--;
+ 
++	put_cpu_var(cpu_hw_events);
++
+  out:
+ 	perf_pmu_enable(event->pmu);
+-	put_cpu_var(cpu_hw_events);
+ }
+ 
+ static void fsl_emb_pmu_start(struct perf_event *event, int ef_flags)
 -- 
 2.54.0
 
