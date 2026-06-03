@@ -1,80 +1,85 @@
-Return-Path: <linuxppc-dev+bounces-21978-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21979-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 75C99CD6E55
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Jun 2026 13:26:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6F7EFCD6E57
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Jun 2026 14:16:15 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gVpPc106Kz2ySJ;
-	Wed, 03 Jun 2026 23:26:28 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::429"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780493188;
-	cv=none; b=e6g/HWu0RqCor60GLQPCyYrmGl/N5zosiLbotboV0HGnMOB6q7Jlm0A5POHf3jhaAXAHPydKfEozxyoGBHO7aKUdr/6MUuVt9Yjap7N1QwpSdbPYYCkiMe+K3hpOuNeSUWDWGpHokCvR5JktmAnuJbmoXkDLghiHg9Q10fzA4mY3Zt5sKmu4CvNdadWgmzrDA7/9JQlxaKggr/wjfZkDX4/uPT5yz9F4HqGxIaQTupRwapdTi7eQrmz2KrMLpy09blYWClfDT2EXudfUw8JnRIXEtIVuGZJOjnC43KjNLnMA1YlBM4H4zGqJjOxOji0BYpcmW60R/kV8luhiCC6MIQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gVqW14GRhz2ySJ;
+	Thu, 04 Jun 2026 00:16:13 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780496173;
+	cv=none; b=RP7TkKgbdoc12bGESyZAee7SbJAmt30I+Rde40pJxQC4mu0lffj6QmcV7TpvyP04AGOdcNcERF/vP7wlvJ7lSetXq83jM30/5Ub2UodqEfXjnTB0lK3bfiQfOyM3hU14ZpsV4WrrBRHmAoC5TquDQVoAP8SuGs3Em9qLNjZ8E0IJQrRZiJGAbvyxtAZ5w9IrYhsuUv0usF88GtqrtL181cFupCTFpceQTrqngQHrzjWcuBFpLYKrMiuuHiC7RLAI29ARSvCZOOI/BWVeJ/ZVPd9nSjLZmXcZ3XB9mIi4Nq1WqdgtQ7mwYbrt6bUr+Jir8eqkzqY22M0dHjty2PHGBA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1780493188; c=relaxed/relaxed;
-	bh=utDwPV/p1t0/Jmc7E5OVVroM+Yd4IFrNq2llOGm4i1I=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:
-	 In-Reply-To:References:To:Cc; b=JdfJJw140Iekdykep229s76XgdiUMJwuWP+Jkh8O+TM97G+LM2VD/QXP66ECfSfOqpqxcklESWsWmqAak1klj/FKxFZOoeE24pwXLwp8V/6suemLikUaIaSP9esFuWKMwsPZSBbkfBtTqnxWcC851KVRyZtNyT6P8IGoSg1Twflm/jhSImKs8DDNAVjYKLYhmmSZqaiYc0Q2A4DxzPydTbc84ZKmNJY8BmfahC3PCnb+FPAJMpC5vnX2UzWmE55ybey1SPcakPviD3QN6W/2HEKjpGgmu9/eWRvTp7yhIBDoCqiKYZ76dJDexKAeBQQ15Dr4oWDpBj1J+z8KFM1CTw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=UJ+y7Wpy; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::429; helo=mail-wr1-x429.google.com; envelope-from=iacobcatalin@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1780496173; c=relaxed/relaxed;
+	bh=F1bCpJrGMayffkxKESwEy89wGfZqbjQXhYCNeMH4m8o=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=V28a6uTgji48wuvY3WNYlMTbMcxnT64nQT7yC6ZQ+3KyvvRFEO9QrnATfbXyZrpFzAvwJ3DCjgCzCnCcc2uCehHbrwmRgqGOgOtkqdlT1/Q02OIhMySxrH2kkITvVPaKpIKMi1n2vlOVbJ0+0uR7RwgFTxrdTE7iqWlsh+ScZQzfRh6FHj5gE1vfHqDoLMeW49W7egbcSs5nXDmb4/G9nMhSwvZ1ua629fs/JNlov4TRVGmmT9mlevGg3vV/FDHCOQHT0aLckf1+rV2hVTKLf1cpCnGyh/F6Ilw0CcwHJ+peimDT1dR/dxEyYrP2QmdKUH9/1/zxiheSRqdV6Q8fGA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=OXpNl8Af; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=UJ+y7Wpy;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=OXpNl8Af;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::429; helo=mail-wr1-x429.google.com; envelope-from=iacobcatalin@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-wr1-x429.google.com (mail-wr1-x429.google.com [IPv6:2a00:1450:4864:20::429])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gVpPY72kzz2xMQ
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 03 Jun 2026 23:26:25 +1000 (AEST)
-Received: by mail-wr1-x429.google.com with SMTP id ffacd0b85a97d-45eee266c6cso4960234f8f.1
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 03 Jun 2026 06:26:25 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1780493181; x=1781097981; darn=lists.ozlabs.org;
-        h=cc:to:references:in-reply-to:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=utDwPV/p1t0/Jmc7E5OVVroM+Yd4IFrNq2llOGm4i1I=;
-        b=UJ+y7WpyE3rDzmCp3YMJvZ4rvfK3IM6XM7Wtn8Q3wABn7H6Ry5k3zwj+sXpGS6OVZ6
-         SoI2+sLnCS33zIhApRpGU39LI6Xq4zyvCOh8H0a+5X2vYVGzOekEfXpSS6QCvOE7S67N
-         i8buGv/Q02DXcK7Ibxgq5aV7LDb5QIOi2lZhve336p8eGQmtaaLOaMq54p6tI4myWsfW
-         qBgd6qI/YK46F+bzIsyqS1ZTfmJOUsc61YKFFwY0Xi4XLYiA10lAFzR2KVtQNyqf/RVM
-         XMDfay/Bq/KY+VS4S/fix7jC0yk88XvPLg6WYnQvWoMZS6jJLoZAhJYCnQ/ba8rTsF2t
-         +VsQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1780493181; x=1781097981;
-        h=cc:to:references:in-reply-to:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:x-gm-gg:x-gm-message-state:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=utDwPV/p1t0/Jmc7E5OVVroM+Yd4IFrNq2llOGm4i1I=;
-        b=qmkAHABCeb9WxwL+QPv0iEvmZEHGj3RQm48+Q6b6gaMT52hUOSv+0QUoMpxtaoV+wM
-         I+9RNrInZzBeLDZDp90JQurbPzv1sRzY6a+rbwJYOPg9sSi+j0HDTLrvjvyVuZ8+ppF+
-         J/6Vnq3Y1ThUwUplSeIdoIUerqin3tee5Np5zRiPCIod/1CPYSc1m9au7+6gEA2Jxl8P
-         bEvOO1/S674hFgNXSnJn0wRPHHPR+xIQovPoIcnJWmhYaAtGKW5+LZpGxwgmTLEtREvU
-         f7dRV1ezTx5/UL00Eb3eph6+9zienpiOMhs6npCvZtQoQLwekDS5KsxsTHKiIStZW3uQ
-         Emow==
-X-Forwarded-Encrypted: i=1; AFNElJ8xv58IOQQpOQkXuvy8wUbYT4ceq+n3bS2G5IQiAOfVZTp5JrW6HHeKEfYSrl+70iDIJHbs0RXdKyhwpf8=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YwRcoji/zasAqwFEoVDzFuUn2A4FadRyMHGVkY7GCtR3E2LdbQ+
-	kXjl0aG8bZ+e4ixXLs98D4ZO957Qp8GP6MLn/9H0rwCL4qtNpgWukpRD
-X-Gm-Gg: Acq92OH99drFSOg6vzt8PaDRppR8uvAyxnZRmLa8hab98iLblyEVuSQDzYRKV5Lw6WZ
-	42SSyEMWD/U3aiYzq1WDGI+jPqNGHWWemDOn9UcMNbdHcVw1oAr4CJuqLcMT2g4bCSngEvP0X+A
-	cDZm8u55Cne8Bh/p3+6ejeUJ9hwzVu7Lo7ZM5BED+m4g5LOYCag5+g0Vs2uC2VL/tExmXsOxnz5
-	T3Sp+wdH5ThHH6MvnI0WNL7COX62E0IuLh9HeUOPBnfh9Ns7qrQp43+IDMQLzj8FgtcXpIkB54A
-	ekmTcNZGWkdIqVl7Omsjq/Onss1qLXy3kPXW5aDbp4JFMn9qIg2Y1v02W7ovuzcfLkAJuIlB7T6
-	07QDePdazz7YO9C7x6601zJVdL4vzAxajdr+XU8prRJC6sLFTVRdk5S+2MZM5wjJXh7nWc5hQcd
-	+NTcrA7Jd0T9jrh93fUK5s9k7jdB2xZleU
-X-Received: by 2002:a5d:63c8:0:b0:43d:69ff:6898 with SMTP id ffacd0b85a97d-460218c57f8mr3748207f8f.9.1780493180903;
-        Wed, 03 Jun 2026 06:26:20 -0700 (PDT)
-Received: from localhost ([94.53.77.213])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-4601f35fd33sm8224614f8f.35.2026.06.03.06.26.19
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 03 Jun 2026 06:26:20 -0700 (PDT)
-From: Catalin Iacob <iacobcatalin@gmail.com>
-Date: Wed, 03 Jun 2026 16:27:09 +0300
-Subject: [PATCH v2] scsi: core: Remove remaining references to the pktcdvd
- driver
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gVqW00DPmz2xMQ
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 04 Jun 2026 00:16:11 +1000 (AEST)
+Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6535a1lH3708001;
+	Wed, 3 Jun 2026 14:15:53 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:date:from:message-id:mime-version
+	:subject:to; s=pp1; bh=F1bCpJrGMayffkxKESwEy89wGfZqbjQXhYCNeMH4m
+	8o=; b=OXpNl8AfgIC3enEhRAken53IjjrZeTsl6nU3J8a51jqnZy5JMOYLvvvoW
+	RNebtLzciiPcllR5c5sJOFu5Leoamnnet3cvpYQMW5f2QPK7BnZqJ0o8ea9Z1qB8
+	t5ZXKCZvuSXnGGztEMtoNuAidE8Zim1688SFlp5a/zP/wcE7zSbZN8q9G16q4XoN
+	uuXn7RM0WabkTKWDK62pGNZbiTvoGaIr0P5dsnSDskHBzNgWKN0LsX2rfExDE7pX
+	l+a+L5QSG80nPKNwpm2HzPirHmgJox2mxuXjk8G4Jew0lRFmpadCFy3ujThHczYM
+	6Z98MUfcekfFhVUF+mymqAIEuBHuw==
+Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4efpaeat3n-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 03 Jun 2026 14:15:52 +0000 (GMT)
+Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma23.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 653E977k028270;
+	Wed, 3 Jun 2026 14:15:51 GMT
+Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
+	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4egbqhge0y-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 03 Jun 2026 14:15:51 +0000 (GMT)
+Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com [10.20.54.104])
+	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 653EFlsd31064404
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Wed, 3 Jun 2026 14:15:47 GMT
+Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id C27C72004D;
+	Wed,  3 Jun 2026 14:15:47 +0000 (GMT)
+Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id CD56B20040;
+	Wed,  3 Jun 2026 14:15:44 +0000 (GMT)
+Received: from localhost.localdomain (unknown [9.39.24.49])
+	by smtpav05.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Wed,  3 Jun 2026 14:15:44 +0000 (GMT)
+From: Amit Machhiwal <amachhiw@linux.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org, Madhavan Srinivasan <maddy@linux.ibm.com>
+Cc: Amit Machhiwal <amachhiw@linux.ibm.com>,
+        Vaibhav Jain <vaibhav@linux.ibm.com>,
+        Harsh Prateek Bora <harshpb@linux.ibm.com>,
+        Ritesh Harjani <ritesh.list@gmail.com>,
+        Anushree Mathur <anushree.mathur@linux.ibm.com>,
+        Nicholas Piggin <npiggin@gmail.com>,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+        kvm@vger.kernel.org, stable@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Subject: [PATCH] KVM: PPC: Book3S HV: Validate arch_compat against host compatibility mode
+Date: Wed,  3 Jun 2026 19:45:39 +0530
+Message-ID: <20260603141539.47620-1-amachhiw@linux.ibm.com>
+X-Mailer: git-send-email 2.50.1
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -88,268 +93,106 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260603-remove-pktcdvd-references-v2-1-c4402154d53a@gmail.com>
-X-B4-Tracking: v=1; b=H4sIAAAAAAAC/42NTQ7CIBBGr9LMWkyhhaSuvIfpAmFsR21poBJNw
- 92FegGXL9/P2yCgJwxwqjbwGCmQmzOIQwVm1POAjGxmELVQtWxq5nFyEdnyWI2NNuMNPc4GA+u
- sNKpRQkuLkPdLzui9f1/6H4fX9Y5mLYelMVJYnf/s8shL7x9P5IwzraXqWm7bhsvzMGl6Ho2bo
- E8pfQGcBljc1AAAAA==
-X-Change-ID: 20260530-remove-pktcdvd-references-9d5c6362a5de
-In-Reply-To: <20260530-remove-pktcdvd-references-v1-1-aa56941d4315@gmail.com>
-References: <20260530-remove-pktcdvd-references-v1-1-aa56941d4315@gmail.com>
-To: Thomas Bogendoerfer <tsbogend@alpha.franken.de>, 
- Madhavan Srinivasan <maddy@linux.ibm.com>, 
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
- "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, 
- Rich Felker <dalias@libc.org>, 
- John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, 
- "David S. Miller" <davem@davemloft.net>, 
- Andreas Larsson <andreas@gaisler.com>, 
- "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>, 
- "Martin K. Petersen" <martin.petersen@oracle.com>, 
- Jens Axboe <axboe@kernel.dk>
-Cc: linux-mips@vger.kernel.org, linux-kernel@vger.kernel.org, 
- linuxppc-dev@lists.ozlabs.org, linux-sh@vger.kernel.org, 
- sparclinux@vger.kernel.org, linux-scsi@vger.kernel.org, 
- Catalin Iacob <iacobcatalin@gmail.com>
-X-Mailer: b4 0.16-dev
-X-Developer-Signature: v=1; a=openpgp-sha256; l=8092;
- i=iacobcatalin@gmail.com; h=from:subject:message-id;
- bh=JbV17MusThKsX/XfftOIwSTO4Uf9F1T1idPmFAgjMao=;
- b=owGbwMvMwCX261qtXAKXKjvjabUkhiwF7Z0Rd7zbzT7PWVCVdOLs2+ecMmtY1H+fmOClXXHz/
- +VtSxMkOkpZGMS4GGTFFFlenLvetmHPmYB7SXYtMHNYmUCGMHBxCsBETnczMjx8vTAkU2vFIgUt
- wa99KhvEpBP/7NO6YmXjZW0g8kf+0CZGhpnHb/w+9dDUNKA7w6SpS32pg/clzj2bgnWfOzFdK70
- QyggA
-X-Developer-Key: i=iacobcatalin@gmail.com; a=openpgp;
- fpr=F609BFABD84EB5C9DDDC37EDE89C6A3571CD0E33
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Authority-Analysis: v=2.4 cv=Zt3d7d7G c=1 sm=1 tr=0 ts=6a203718 cx=c_pps
+ a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
+ a=FelO9ux0wxsA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
+ a=V8glGbnc2Ofi9Qvn3v5h:22 a=VwQbUJbxAAAA:8 a=VnNF1IyMAAAA:8
+ a=9nGdcix9NZkGgJ1vRr8A:9
+X-Proofpoint-GUID: KByeJRv7OplG_laWcGHPeUMbQA1popcP
+X-Proofpoint-ORIG-GUID: 32BC2DOvRklg3hef9YvCfmhZHLxjtdYO
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjAzMDEzNiBTYWx0ZWRfX9/ReuZZWpXFM
+ pRk589GcemCfXWOuYftpujfWFrw/PUy1ShP6BBfPoH7rLnW9Shzp6yZuzXR2Dmm8p6U9Iu5e3RO
+ cQlhYB98XQgjnmBxHWcsaK1sY1RybOQmLyDHOiZCjnfia72EvPG0dHv9A/pFFj3N5bxNQsLCltS
+ T8A6AlnTbg4EycAdSY5o2IWqswfBjUmVTAWywq9VTPoU2qTOsSwiV5hqCbp0ngazYyqWtObmDVg
+ K8FnPLqbLnBEZHBXdsBbf4huht16pmdznyqXV6EbyyS0qozlg5INKmUNZERh4VqZPMQ3K6zUsD/
+ UMvxxbnQN+4F0uP4RIy+8ekXx1kKkVev7DOLogMfRWGntqu7YYB4bnQ0W26YqXsmKbF5yhmPzt3
+ WlNnQN1C++IsBcbMZr8yTNyovJ2jkKRno13uJLQMrqf0aR7tWetztr3NcqX8xJfSsiEZ+fWeucK
+ DuA7vbMNXt7lwPqRrlA==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
+ definitions=2026-06-03_04,2026-05-28_03,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ impostorscore=0 suspectscore=0 priorityscore=1501 bulkscore=0 clxscore=1015
+ phishscore=0 spamscore=0 malwarescore=0 adultscore=0 lowpriorityscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2605210000 definitions=main-2606030136
 
-Commit 1cea5180f2f8 ("block: remove pktcdvd driver") left behind some
-CONFIG_CONFIG_CDROM_PKTCDVD* references in defconfigs and around an
-export. Remove them.
+On IBM POWER systems, newer processor generations can operate in
+compatibility modes corresponding to earlier generations. This becomes
+relevant for nested virtualization, where nested KVM guests may need to
+run with a specific processor compatibility level.
 
-Signed-off-by: Catalin Iacob <iacobcatalin@gmail.com>
+Currently, when running a nested KVM guest (L2) inside a Power11 pSeries
+logical partition (L1) booted in Power10 compatibility mode, the guest
+fails to boot while setting 'arch_compat'. This happens because the CPU
+class is derived from the hardware PVR (via mfspr()), which reflects the
+physical processor generation (Power11), rather than the effective
+compatibility mode (Power10).
+
+As a result, userspace may request a Power11 arch_compat for the L2
+guest. However, the L1 partition, running in Power10 compatibility, has
+only negotiated support up to Power10 with the Power Hypervisor (L0).
+When H_GUEST_SET_STATE is invoked with a Power11 Logical PVR, the
+hypervisor rejects the request, leading to a late guest boot failure:
+
+  KVM-NESTEDv2: couldn't set guest wide elements
+  [..KVM reg dump..]
+
+This situation should be detected earlier. Rejecting unsupported
+'arch_compat' values in 'kvmppc_set_arch_compat()' avoids issuing an
+invalid H_GUEST_SET_STATE hcall and provides a clearer failure mode.
+
+Add a check to reject Power11 'arch_compat' requests when the host is
+running in Power10 compatibility mode, returning -EINVAL early instead
+of deferring the failure to the hypervisor.
+
+Suggested-by: Vaibhav Jain <vaibhav@linux.ibm.com>
+Tested-by: Anushree Mathur <anushree.mathur@linux.ibm.com>
+Cc: <stable@vger.kernel.org> # v6.13+
+Signed-off-by: Amit Machhiwal <amachhiw@linux.ibm.com>
 ---
-Found this incidentally while looking at kernel sources to understand
-what pktcdvd is
----
-Changes in v2:
-- Reworded commit message on John Paul Adrian's suggestion to be about
-  the removed references not the export symbol
-- Link to v1: https://patch.msgid.link/20260530-remove-pktcdvd-references-v1-1-aa56941d4315@gmail.com
----
- arch/mips/configs/fuloong2e_defconfig    | 1 -
- arch/mips/configs/ip22_defconfig         | 1 -
- arch/mips/configs/ip27_defconfig         | 1 -
- arch/mips/configs/ip30_defconfig         | 1 -
- arch/mips/configs/jazz_defconfig         | 1 -
- arch/mips/configs/malta_defconfig        | 1 -
- arch/mips/configs/malta_kvm_defconfig    | 1 -
- arch/mips/configs/maltaup_xpa_defconfig  | 1 -
- arch/mips/configs/rm200_defconfig        | 1 -
- arch/mips/configs/sb1250_swarm_defconfig | 1 -
- arch/powerpc/configs/g5_defconfig        | 1 -
- arch/powerpc/configs/ppc6xx_defconfig    | 1 -
- arch/sh/configs/sh2007_defconfig         | 1 -
- arch/sparc/configs/sparc64_defconfig     | 2 --
- drivers/scsi/scsi_lib.c                  | 8 --------
- 15 files changed, 23 deletions(-)
+Changelog:
 
-diff --git a/arch/mips/configs/fuloong2e_defconfig b/arch/mips/configs/fuloong2e_defconfig
-index b6fe3c962464..840130a73992 100644
---- a/arch/mips/configs/fuloong2e_defconfig
-+++ b/arch/mips/configs/fuloong2e_defconfig
-@@ -89,7 +89,6 @@ CONFIG_MTD_CFI_STAA=m
- CONFIG_MTD_PHYSMAP=m
- CONFIG_BLK_DEV_LOOP=y
- CONFIG_BLK_DEV_RAM=m
--CONFIG_CDROM_PKTCDVD=m
- CONFIG_ATA_OVER_ETH=m
- CONFIG_BLK_DEV_SD=y
- CONFIG_BLK_DEV_SR=y
-diff --git a/arch/mips/configs/ip22_defconfig b/arch/mips/configs/ip22_defconfig
-index e123848f94ab..61f09cc9ac12 100644
---- a/arch/mips/configs/ip22_defconfig
-+++ b/arch/mips/configs/ip22_defconfig
-@@ -177,7 +177,6 @@ CONFIG_NET_ACT_SIMP=m
- CONFIG_NET_ACT_SKBEDIT=m
- CONFIG_RFKILL=m
- CONFIG_CONNECTOR=m
--CONFIG_CDROM_PKTCDVD=m
- CONFIG_ATA_OVER_ETH=m
- CONFIG_RAID_ATTRS=m
- CONFIG_SCSI=y
-diff --git a/arch/mips/configs/ip27_defconfig b/arch/mips/configs/ip27_defconfig
-index fea0ccee6948..60da9cf71b72 100644
---- a/arch/mips/configs/ip27_defconfig
-+++ b/arch/mips/configs/ip27_defconfig
-@@ -83,7 +83,6 @@ CONFIG_CFG80211=m
- CONFIG_MAC80211=m
- CONFIG_RFKILL=m
- CONFIG_BLK_DEV_LOOP=y
--CONFIG_CDROM_PKTCDVD=m
- CONFIG_ATA_OVER_ETH=m
- CONFIG_SCSI=y
- CONFIG_BLK_DEV_SD=y
-diff --git a/arch/mips/configs/ip30_defconfig b/arch/mips/configs/ip30_defconfig
-index 718f3060d9fa..5c2911ff9a87 100644
---- a/arch/mips/configs/ip30_defconfig
-+++ b/arch/mips/configs/ip30_defconfig
-@@ -77,7 +77,6 @@ CONFIG_NET_ACT_PEDIT=m
- CONFIG_NET_ACT_SKBEDIT=m
- # CONFIG_VGA_ARB is not set
- CONFIG_BLK_DEV_LOOP=y
--CONFIG_CDROM_PKTCDVD=m
- CONFIG_ATA_OVER_ETH=m
- CONFIG_SCSI=y
- CONFIG_BLK_DEV_SD=y
-diff --git a/arch/mips/configs/jazz_defconfig b/arch/mips/configs/jazz_defconfig
-index a790c2610fd3..dd3486b8d1fc 100644
---- a/arch/mips/configs/jazz_defconfig
-+++ b/arch/mips/configs/jazz_defconfig
-@@ -33,7 +33,6 @@ CONFIG_BLK_DEV_FD=m
- CONFIG_BLK_DEV_LOOP=m
- CONFIG_BLK_DEV_NBD=m
- CONFIG_BLK_DEV_RAM=m
--CONFIG_CDROM_PKTCDVD=m
- CONFIG_ATA_OVER_ETH=m
- CONFIG_RAID_ATTRS=m
- CONFIG_SCSI=y
-diff --git a/arch/mips/configs/malta_defconfig b/arch/mips/configs/malta_defconfig
-index 81704ec67f09..b10dac71f400 100644
---- a/arch/mips/configs/malta_defconfig
-+++ b/arch/mips/configs/malta_defconfig
-@@ -224,7 +224,6 @@ CONFIG_BLK_DEV_FD=m
- CONFIG_BLK_DEV_LOOP=m
- CONFIG_BLK_DEV_NBD=m
- CONFIG_BLK_DEV_RAM=y
--CONFIG_CDROM_PKTCDVD=m
- CONFIG_ATA_OVER_ETH=m
- CONFIG_RAID_ATTRS=m
- CONFIG_BLK_DEV_SD=y
-diff --git a/arch/mips/configs/malta_kvm_defconfig b/arch/mips/configs/malta_kvm_defconfig
-index 82a97f58bce1..bdd5d99884e3 100644
---- a/arch/mips/configs/malta_kvm_defconfig
-+++ b/arch/mips/configs/malta_kvm_defconfig
-@@ -228,7 +228,6 @@ CONFIG_BLK_DEV_FD=m
- CONFIG_BLK_DEV_LOOP=m
- CONFIG_BLK_DEV_NBD=m
- CONFIG_BLK_DEV_RAM=y
--CONFIG_CDROM_PKTCDVD=m
- CONFIG_ATA_OVER_ETH=m
- CONFIG_RAID_ATTRS=m
- CONFIG_BLK_DEV_SD=y
-diff --git a/arch/mips/configs/maltaup_xpa_defconfig b/arch/mips/configs/maltaup_xpa_defconfig
-index 0f9ef20744f9..523c0ff329ac 100644
---- a/arch/mips/configs/maltaup_xpa_defconfig
-+++ b/arch/mips/configs/maltaup_xpa_defconfig
-@@ -226,7 +226,6 @@ CONFIG_BLK_DEV_FD=m
- CONFIG_BLK_DEV_LOOP=m
- CONFIG_BLK_DEV_NBD=m
- CONFIG_BLK_DEV_RAM=y
--CONFIG_CDROM_PKTCDVD=m
- CONFIG_ATA_OVER_ETH=m
- CONFIG_RAID_ATTRS=m
- CONFIG_BLK_DEV_SD=y
-diff --git a/arch/mips/configs/rm200_defconfig b/arch/mips/configs/rm200_defconfig
-index ad9fbd0cbb38..60054e54bc5a 100644
---- a/arch/mips/configs/rm200_defconfig
-+++ b/arch/mips/configs/rm200_defconfig
-@@ -177,7 +177,6 @@ CONFIG_PARIDE_ON26=m
- CONFIG_BLK_DEV_LOOP=m
- CONFIG_BLK_DEV_NBD=m
- CONFIG_BLK_DEV_RAM=m
--CONFIG_CDROM_PKTCDVD=m
- CONFIG_ATA_OVER_ETH=m
- CONFIG_RAID_ATTRS=m
- CONFIG_SCSI=y
-diff --git a/arch/mips/configs/sb1250_swarm_defconfig b/arch/mips/configs/sb1250_swarm_defconfig
-index 4a25b8d3e507..a50a7c097542 100644
---- a/arch/mips/configs/sb1250_swarm_defconfig
-+++ b/arch/mips/configs/sb1250_swarm_defconfig
-@@ -43,7 +43,6 @@ CONFIG_FW_LOADER=m
- CONFIG_CONNECTOR=m
- CONFIG_BLK_DEV_RAM=y
- CONFIG_BLK_DEV_RAM_SIZE=9220
--CONFIG_CDROM_PKTCDVD=m
- CONFIG_ATA_OVER_ETH=m
- CONFIG_RAID_ATTRS=m
- CONFIG_BLK_DEV_SD=y
-diff --git a/arch/powerpc/configs/g5_defconfig b/arch/powerpc/configs/g5_defconfig
-index 5ca1676e6058..647775f6d174 100644
---- a/arch/powerpc/configs/g5_defconfig
-+++ b/arch/powerpc/configs/g5_defconfig
-@@ -57,7 +57,6 @@ CONFIG_BLK_DEV_LOOP=y
- CONFIG_BLK_DEV_NBD=m
- CONFIG_BLK_DEV_RAM=y
- CONFIG_BLK_DEV_RAM_SIZE=65536
--CONFIG_CDROM_PKTCDVD=m
- CONFIG_BLK_DEV_SD=y
- CONFIG_CHR_DEV_ST=y
- CONFIG_BLK_DEV_SR=y
-diff --git a/arch/powerpc/configs/ppc6xx_defconfig b/arch/powerpc/configs/ppc6xx_defconfig
-index eda1fec7ffd9..5c3e25fd8edd 100644
---- a/arch/powerpc/configs/ppc6xx_defconfig
-+++ b/arch/powerpc/configs/ppc6xx_defconfig
-@@ -306,7 +306,6 @@ CONFIG_BLK_DEV_LOOP=m
- CONFIG_BLK_DEV_NBD=m
- CONFIG_BLK_DEV_RAM=y
- CONFIG_BLK_DEV_RAM_SIZE=16384
--CONFIG_CDROM_PKTCDVD=m
- CONFIG_VIRTIO_BLK=m
- CONFIG_ENCLOSURE_SERVICES=m
- CONFIG_SENSORS_TSL2550=m
-diff --git a/arch/sh/configs/sh2007_defconfig b/arch/sh/configs/sh2007_defconfig
-index 5d9080499485..f287a41cd38c 100644
---- a/arch/sh/configs/sh2007_defconfig
-+++ b/arch/sh/configs/sh2007_defconfig
-@@ -45,7 +45,6 @@ CONFIG_NETWORK_SECMARK=y
- CONFIG_NET_PKTGEN=y
- CONFIG_BLK_DEV_LOOP=y
- CONFIG_BLK_DEV_RAM=y
--CONFIG_CDROM_PKTCDVD=y
- CONFIG_RAID_ATTRS=y
- CONFIG_SCSI=y
- CONFIG_BLK_DEV_SD=y
-diff --git a/arch/sparc/configs/sparc64_defconfig b/arch/sparc/configs/sparc64_defconfig
-index 632081a262ba..4abea39281cd 100644
---- a/arch/sparc/configs/sparc64_defconfig
-+++ b/arch/sparc/configs/sparc64_defconfig
-@@ -60,8 +60,6 @@ CONFIG_CONNECTOR=m
- CONFIG_BLK_DEV_LOOP=m
- CONFIG_BLK_DEV_CRYPTOLOOP=m
- CONFIG_BLK_DEV_NBD=m
--CONFIG_CDROM_PKTCDVD=m
--CONFIG_CDROM_PKTCDVD_WCACHE=y
- CONFIG_ATA_OVER_ETH=m
- CONFIG_SUNVDC=m
- CONFIG_ATA=y
-diff --git a/drivers/scsi/scsi_lib.c b/drivers/scsi/scsi_lib.c
-index 85eef401925a..b67f0dc79499 100644
---- a/drivers/scsi/scsi_lib.c
-+++ b/drivers/scsi/scsi_lib.c
-@@ -2224,14 +2224,6 @@ struct scsi_device *scsi_device_from_queue(struct request_queue *q)
- 
- 	return sdev;
- }
--/*
-- * pktcdvd should have been integrated into the SCSI layers, but for historical
-- * reasons like the old IDE driver it isn't.  This export allows it to safely
-- * probe if a given device is a SCSI one and only attach to that.
-- */
--#ifdef CONFIG_CDROM_PKTCDVD_MODULE
--EXPORT_SYMBOL_GPL(scsi_device_from_queue);
--#endif
- 
- /**
-  * scsi_block_requests - Utility function used by low-level drivers to prevent
+* Moved this patch out of the v3 series [1] as discussed here [2]
+* Addressed below review comments from Ritesh:
+  - Based the PVR validation on cpu features
+  - Fixed hcall name typo
+  - Stable backport
 
+[1] https://lore.kernel.org/all/20260522152744.55251-1-amachhiw@linux.ibm.com/
+[2] https://lore.kernel.org/all/20260522152744.55251-2-amachhiw@linux.ibm.com/
 ---
-base-commit: e43ffb69e0438cddd72aaa30898b4dc446f664f8
-change-id: 20260530-remove-pktcdvd-references-9d5c6362a5de
+ arch/powerpc/kvm/book3s_hv.c | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
 
-Best regards,
---  
-Catalin Iacob <iacobcatalin@gmail.com>
+diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
+index 61dbeea317f3..e16dbb199366 100644
+--- a/arch/powerpc/kvm/book3s_hv.c
++++ b/arch/powerpc/kvm/book3s_hv.c
+@@ -446,7 +446,17 @@ static int kvmppc_set_arch_compat(struct kvm_vcpu *vcpu, u32 arch_compat)
+ 			guest_pcr_bit = PCR_ARCH_300;
+ 			break;
+ 		case PVR_ARCH_31:
++			guest_pcr_bit = PCR_ARCH_31;
++			break;
+ 		case PVR_ARCH_31_P11:
++			/*
++			 * Need to check this for ISA 3.1, as Power10 and
++			 * Power11 share the same PCR. For any subsequent ISA
++			 * versions, this will be taken care of by the guest vs
++			 * host PCR comparison below.
++			 */
++			if (!cpu_has_feature(CPU_FTR_P11_PVR))
++				return -EINVAL;
+ 			guest_pcr_bit = PCR_ARCH_31;
+ 			break;
+ 		default:
+
+base-commit: ba3e43a9e601636f5edb54e259a74f96ca3b8fd8
+-- 
+2.50.1 (Apple Git-155)
 
 
