@@ -1,57 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-21958-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21959-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 984C2CD6E4A
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Jun 2026 07:42:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 14A50CD6E55
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Jun 2026 08:12:56 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gVfmC0w9Zz2yH5;
-	Wed, 03 Jun 2026 17:42:03 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780472523;
-	cv=none; b=FT9LGONKalYUGhDmy+o4JrWDW6o0pcSamvNN5aWAJkambxJXJnz0M+ogTBpCA6L1JbBYA1ExEmFK4EJA1FZEpdwMxWs1Sb+xhHjVgtC56jp08tMSjtxRo4Oec+PAoj7XWQk3Wv/izqGKzIYA429F2JnSIH7kGGeIFP04kn1mgSQMZdCm/8YQA+6YQkfIh7wS0IumEKhiEP7hPGEXmaSTo477jLDccu5aonxBC6NJEqGh71tyXFPLBolkMFOLtgSFebVPGYxAOeSWgx6ltZ/l7aW/YihQc++Zkwp1tYilZ9cXtOgYJ6KF6/FwoPOWDWpsXy/BU2RqADRmFgK4PKwTZQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gVgRp34crz2ybQ;
+	Wed, 03 Jun 2026 18:12:54 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780474374;
+	cv=none; b=Nfm9UVgYlKw/F1kXqAkGbW3HZ6XdTKZVpqm3Kvr9apQVrztAQ5SprrX8U1Iiz6ci+M5Tn7HL5Cpu6uBr7K+7BxEPWPPH9ACVQN0O+SGBZiQjxHkC/jaU80tpI3NL147J+uQXw7460sgo5t5E0awh5tCOkyCkofl0gXreTqKWCZlc8x1TJTJCDpUMYlwUuj9nkP6fPQ1SBKewbMljgXQLyoGfyhiQYn8lCFDnrHDqL78pKyY60ex7wZE7Z+CEv+aXlBBb8/1OU32ToBcybvPs4Q6/XZxReUYXMcdsFH2eQrcmOE6e95JoBoPCC9IpzoH1/oMoAeYcbXTQTtTvf0XvIg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1780472523; c=relaxed/relaxed;
-	bh=iIWCNeOlHWpHrU2XHMhyzU74jL/SRw5S/1AXW3LPs8s=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=oS6vxW93EqQ49sjyPLwFDdBcp8p5mPs3OwxNEle/zLJMIvy6lKgg2HuCkK19YogXKfwAAZVRlO29KLKblW3vp7fzZacDUEb6Q837ykChk3Y4eiZPQssl6HS86DPjOOANzICCkeiWuDbFRABSxyAoMi8xYQbXwV2g7ui6n5m5etUVtZrR6f9DTKl8zSou0QNcJrxfiZdlBRvolSWbVtktyH855p3IXwj1+zqNKL6hVioJGuayUKhAsExcLzmqr0UwQJY9Y/I6xEUsS2VsDmOtUl9SFrsEQqArAuMocQGMezTJx6bHVLznQ+LchxZRbekZKb7kuROg2aYz9m1rl1XCzg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ep7dnyWo; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1780474374; c=relaxed/relaxed;
+	bh=NFJOufvQt8BD8lEftdSQx0McGoMPi5Wr6OjcZr1fq7A=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=R964zJu39o8asJcrF/hT/IhFmhSBm9EQjQGCpHTUSFLDUvslupCbRLjFmNfBj6EgdsklYk/zQ3LE+otgfFoJRM4hRga62h4wN9RkYPefpKdNDOROIv+wdMt2+9mVrMEIcDXLFHti2ZgxnWu0U2GbkpJZPYHpjacyJmBUSuhIihvBRGUx4GWOwiPMQHtwRzZXqKAi4XAr2IfU1n/zSXSLdBdqg4TQ+21HKYSK+raFRGWNHGf9y9vMzWliSJ5enq+xEuigi513ZcIjsWsj5ir2C7DgNju2fpNvC0HCIVtWSntfGgV9y4zJUBBndS4U41pc1jTerXDDu0jcAjufvIVyUw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=nCcPMvPN; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ep7dnyWo;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=nCcPMvPN;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gVfmB1Tbxz2yFK
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 03 Jun 2026 17:42:02 +1000 (AEST)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id AFE9060222;
-	Wed,  3 Jun 2026 07:41:59 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 518271F00893;
-	Wed,  3 Jun 2026 07:41:59 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1780472519;
-	bh=iIWCNeOlHWpHrU2XHMhyzU74jL/SRw5S/1AXW3LPs8s=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=ep7dnyWouDjL/Gn6Tf8Rq5/PT6yyvwKIYN20BdfZFBICgvzu/eidLkIF0BUsvW3bE
-	 2rTck0ybwwSahYByvROtHbc/iYbIwMQexrOIZmLiAv32KfxqUqmL2NcgG1PkkXkINx
-	 tZelfbNBXCdDogSP9fCiMcfK8oxW80bYfk+4NuvN8YW89xEp1pTxXbfnLWuCDYwdkc
-	 /ogqCuOjgq42xDiDIgsgpeTZGOfVIG7yg83pQebJJRtsg9NnS+s6FtRNMhIxT8N1jR
-	 NccMD27gpNfG8IqWQjqblUCP40RbZifCeHwa2OjDiNQhIelAqvCG/WRsYF0ambufj8
-	 H3HRLYvLRkeKA==
-Date: Wed, 3 Jun 2026 00:40:35 -0700
-From: Eric Biggers <ebiggers@kernel.org>
-To: Vaibhav Jain <vaibhav@linux.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org
-Subject: Re: ppc64le kunit test failure: guest_state_buffer_test
-Message-ID: <20260603074035.GA1148188@sol>
-References: <20260603064225.GC18149@sol>
- <87ecioyt6y.fsf@vajain21.in.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gVgRn3mzkz2xjN
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 03 Jun 2026 18:12:52 +1000 (AEST)
+Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 65370QAF3707938;
+	Wed, 3 Jun 2026 08:12:49 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=NFJOuf
+	vQt8BD8lEftdSQx0McGoMPi5Wr6OjcZr1fq7A=; b=nCcPMvPNXzjcBtHepmvH4V
+	MAo37apCc7qk0E+K5O3E8r/GF6WzBFA9wAlFnm2CgNMTmLUnFdX1A1apCYiauuyE
+	szMHAP3hbw5vJkJEIir9rwq02j89JJ1piXTz5mNuFWYBA5KO5IZPvrbTAGjxD8t5
+	YuRKDO7P0QbNh5R7Y3cDGqcQvWCkmuSITjKMmgJM9wbAqnvvvD17Be8sxZZMxBGw
+	2wi8EJ/Izc72AoyTHWzVIoNJU/1V3RIUwecvoOTCU6r7Zy1zZxAKOz9+/5q4y7vO
+	W9rw3xQ0X5MBPIhFjaIbcKnCeo+yqMKSdkxKS5tEHSaeuj+pXPB7L4m14Qn5xY6Q
+	==
+Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4efpae9ds3-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 03 Jun 2026 08:12:49 +0000 (GMT)
+Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma12.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 65389DQc000587;
+	Wed, 3 Jun 2026 08:12:48 GMT
+Received: from smtprelay02.dal12v.mail.ibm.com ([172.16.1.4])
+	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 4ega7qfe6h-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 03 Jun 2026 08:12:48 +0000 (GMT)
+Received: from smtpav02.dal12v.mail.ibm.com (smtpav02.dal12v.mail.ibm.com [10.241.53.101])
+	by smtprelay02.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6538Cl5B54133194
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Wed, 3 Jun 2026 08:12:47 GMT
+Received: from smtpav02.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 8666E5805E;
+	Wed,  3 Jun 2026 08:12:47 +0000 (GMT)
+Received: from smtpav02.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id EAC415805F;
+	Wed,  3 Jun 2026 08:12:43 +0000 (GMT)
+Received: from [9.43.74.208] (unknown [9.43.74.208])
+	by smtpav02.dal12v.mail.ibm.com (Postfix) with ESMTP;
+	Wed,  3 Jun 2026 08:12:43 +0000 (GMT)
+Message-ID: <66039318-07c0-4453-a295-bc39a2a5b8ec@linux.ibm.com>
+Date: Wed, 3 Jun 2026 13:42:42 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -65,27 +81,103 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <87ecioyt6y.fsf@vajain21.in.ibm.com>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] [SCSI] qla2xxx: Handle the INTx not connected while
+ passing through
+To: Shivaprasad G Bhat <sbhat@linux.ibm.com>, njavali@marvell.com,
+        GR-QLogic-Storage-Upstream@marvell.com,
+        James.Bottomley@HansenPartnership.com, martin.petersen@oracle.com
+Cc: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+        alex.williamson@nvidia.com, Kyle.Mahlkuch@ibm.com,
+        linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+References: <177885270578.1573.14283751510936407585.stgit@linux.ibm.com>
+Content-Language: en-US
+From: Madhavan Srinivasan <maddy@linux.ibm.com>
+In-Reply-To: <177885270578.1573.14283751510936407585.stgit@linux.ibm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Authority-Analysis: v=2.4 cv=Zt3d7d7G c=1 sm=1 tr=0 ts=6a1fe201 cx=c_pps
+ a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17
+ a=IkcTkHD0fZMA:10 a=FelO9ux0wxsA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=V8glGbnc2Ofi9Qvn3v5h:22 a=VnNF1IyMAAAA:8
+ a=5Kag_sxTX4npdQ8vrmgA:9 a=QEXdDO2ut3YA:10
+X-Proofpoint-GUID: DloX0hs752n9nOVtAfP7Ta6L2ag0gAsL
+X-Proofpoint-ORIG-GUID: DloX0hs752n9nOVtAfP7Ta6L2ag0gAsL
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjAzMDA3NiBTYWx0ZWRfXxeBod29K6jTk
+ F2FkP4wRX9UZQn192C/W2D3oFLNfAJRmoFNABWBdG2rLNNS6GslV5r6mrojSl5kX9kUnRiw7pX9
+ nlIij5m72UTWGCLFuHGVT1nrHVWpnUKKTFiLJOqAkV4J5/sBplEaFe+ZCC6GmvJPmrXjx2n43v0
+ PJUWqIsGRmSwW3Lr2Cd2iQI8QDuDfzQnMVsiDFMHzY7SFPqDJ9p2kXq2vSi3+c9YrakWW9pQYrP
+ MVxpapw7gAynJgVaDj3TVrz4bI3a+UKZYM3ha9rq09ctwy4TYgzUI9CHLO+01ECR0l8fMfXkBqq
+ xa/5zccuWSGLjH0s/do2Sw4lSh9UODpprLMX5cd1Nu5Ci3ixZJ+aDiH5drL7kk9C7All9kOTHn2
+ vZUTjpBrDfjal81gCn86zzZN93XJ/5uL8/ADNa1441JkyOh7vZnHMomZmdqTQFlInzLBvd9ObQP
+ yDc/M9YUSo31VgXvOVA==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
+ definitions=2026-06-03_03,2026-05-28_03,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ impostorscore=0 suspectscore=0 priorityscore=1501 bulkscore=0 clxscore=1011
+ phishscore=0 spamscore=0 malwarescore=0 adultscore=0 lowpriorityscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2605210000 definitions=main-2606030076
 
-On Wed, Jun 03, 2026 at 01:03:09PM +0530, Vaibhav Jain wrote:
-> Hi Eric,
-> 
-> Thanks for trying and reporting this. This kunit test depends on
-> availablility of Qemu commit 5f7d861e("spapr: nested: Add support for
-> reporting Hostwide state counter ") [1] that was merged in v10.0.0.
-> 
-> Since you havent mentioned the qemu version used I assume its a version
-> < v10.0.0 . With the qemu patch available you should see this test
-> passing with results similar to as originally described in original
-> cover letter of the patch series at [2] that introduced this kunit test.
-> 
-> [1] https://gitlab.com/qemu-project/qemu/-/commit/5f7d861e65d90e0446b8f22a0bc859a5d8058ea6
-> 
-> [2] https://lore.kernel.org/all/20250416162740.93143-1-vaibhav@linux.ibm.com/
 
-Nope, it fails even on the master branch of QEMU.
+On 5/15/26 7:15 PM, Shivaprasad G Bhat wrote:
+> The PCI_INTERRUPT_PIN reports if the device supports the INTx.
+> However, when the device is assigned to a guest via vfio, the
+> PCI_INTERRUPT_PIN is set to 0(i.e none) if the line is not
+> connected and|or the platform cannot route the interrupt.
+>
+> In such cases, the guest PCI_INTERRUPT_PIN is 0 and the port
+> number becomes -1(255, uint8_t underflow) for qla[25|27|28]xx and
+> qla2031 devices. The flt_region_nvram is never set, and subsequently
+> the lun detection fails. Below warnings show the NVRAM configuration
+> failure.
+>
+>   []-0073:1: Inconsistent NVRAM checksum=0xffffffc0 id=HCAM version=0x100.
+>   []-0074:1: Falling back to functioning (yet invalid -- WWPN) defaults.
+>   []-0076:1: NVRAM configuration failed.
+>
+> The patch handles the case, and sets the port_no to devfn like
+> its done everywhere else.
 
-- Eric
+Any update on this? do you have any comments/concerns that should be 
+addressed
+
+Maddy
+
+> Reference: commit 2bd42b03ab6b ("vfio/pci: Virtualize zero INTx PIN if no pdev->irq")
+> Signed-off-by: Shivaprasad G Bhat <sbhat@linux.ibm.com>
+> ---
+>   drivers/scsi/qla2xxx/qla_os.c |   15 ++++++++++-----
+>   1 file changed, 10 insertions(+), 5 deletions(-)
+>
+> diff --git a/drivers/scsi/qla2xxx/qla_os.c b/drivers/scsi/qla2xxx/qla_os.c
+> index 72b1c28e4dae..a8d6a0a021f4 100644
+> --- a/drivers/scsi/qla2xxx/qla_os.c
+> +++ b/drivers/scsi/qla2xxx/qla_os.c
+> @@ -2803,11 +2803,16 @@ qla2x00_set_isp_flags(struct qla_hw_data *ha)
+>   	else {
+>   		/* Get adapter physical port no from interrupt pin register. */
+>   		pci_read_config_byte(ha->pdev, PCI_INTERRUPT_PIN, &ha->port_no);
+> -		if (IS_QLA25XX(ha) || IS_QLA2031(ha) ||
+> -		    IS_QLA27XX(ha) || IS_QLA28XX(ha))
+> -			ha->port_no--;
+> -		else
+> -			ha->port_no = !(ha->port_no & 1);
+> +		if (ha->port_no == 0) {
+> +			/* None of INT[A|B|C|D], may be virtualized by vfio */
+> +			ha->port_no = PCI_FUNC(ha->pdev->devfn);
+> +		} else {
+> +			if (IS_QLA25XX(ha) || IS_QLA2031(ha) ||
+> +			    IS_QLA27XX(ha) || IS_QLA28XX(ha))
+> +				ha->port_no--;
+> +			else
+> +				ha->port_no = !(ha->port_no & 1);
+> +		}
+>   	}
+>   
+>   	ql_dbg_pci(ql_dbg_init, ha->pdev, 0x000b,
+>
+>
 
