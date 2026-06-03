@@ -1,88 +1,46 @@
-Return-Path: <linuxppc-dev+bounces-21930-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21931-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 519DCCD6E5D
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Jun 2026 01:44:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A2AFCCD6E5D
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Jun 2026 02:40:40 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gVVr956Tbz2xg3;
-	Wed, 03 Jun 2026 11:44:57 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=96.67.55.147
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780451097;
-	cv=none; b=YRh4kOgw1Dl1mhAdL+wyFFGbMKsoqkHfmsNmWgeSoY/c1+D9URxN/nr2XGBaho/CvL5T+njafJgJXj+QlAFActaKj+4eePNRSyjytV1Q2DDDiZ8FkVWrESGQrqZn7D0Sx2oyVKnnuUrvGGijhB/W8ELHyVH1bhH6k1GzdxKDvo9VcQ/pCVYgR/iWw/qhDJqfkPQ53kC6eWmUT817GydoJ4LhNaDsvnNIN8kvhX7F8Ga4+EYtIIm6Hb2dcg2WxJINAOrG89gln15Vy/ZHlk8fnGHo7mLEqOPieLbfJLIydHuDTon+rfhFC/bOs4NSoNtKfRIXgxqDS9WSQwPqE7RH3Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gVX4R1vZyz2yRF;
+	Wed, 03 Jun 2026 12:40:39 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=95.215.58.187
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780454439;
+	cv=none; b=DVNWf/epXg6Pc/QC1OHjJoT4QKikt2l8F80AUhq/MlgWlJ/P6oLzw+Cp4ExVNL4r5FDkbiEe20KrKuKtxUf/pvP0aja5MVNih2cLajM8wsgW00y3zxiF+WgE5QziimgHL8wkR4VW8cqf+L29XczEWg34aud4onFTZoJFofojd4gaJ8cMrMPRTuGWFyE4pq4itJr/Q8Mf8okJq+ctDGCcocQDIjmqkochl7Lc1PCDRtGSXj1MLcprbtOnMjzBmKAglVNbTk6mhwlJKthPAIvRSfml60MAgBSxVeGqbATpzggomynuKvjD/QGM7N5MuMs587JvHoq9CQxzkWBef1VLyw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1780451097; c=relaxed/relaxed;
-	bh=Lacip953XP38N5MCELHjfXIvYfPyP7yT4lfXMiE5OM8=;
-	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=LsbhAxt355zbC0jOVDFkw3Zj6JgzlfiyCEqb0fOdarjOda8Y3oGfCNwmyI+37ADOIAm+YmqXqoRbEXy1Ru5a3sgVPlJArEKoIkx6Ksbwxxdbi0llTSWguOsIPXg/LLseJowNIP6Wb8almQVITAE1MOBD8VvBInQ5Lu8UyAIlOrr1ukHhFh5Doo43DM0x8lUDrTizy6ZQu4TY2xMR9R1LDVhHoojUIj6MzUrawZLeZTBIwMcH8mQ82fienJRoaIwqkvBmRc/cjpI37MSkQOxOAEkLrKxjF/9XaVEnKl8L0hm2goQHVCHeig7aB2UN7B9t/LiiiB/apseIrjTOLUfgUQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=surriel.com; dkim=pass (2048-bit key; unprotected) header.d=surriel.com header.i=@surriel.com header.a=rsa-sha256 header.s=mail header.b=cuK/BFQX; dkim-atps=neutral; spf=pass (client-ip=96.67.55.147; helo=shelob.surriel.com; envelope-from=riel@surriel.com; receiver=lists.ozlabs.org) smtp.mailfrom=surriel.com
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=surriel.com
+	t=1780454439; c=relaxed/relaxed;
+	bh=enhp+3s0SIGEOwjQc/7W6s5wIzCQbFdyWa31w7PMhyM=;
+	h=Content-Type:Mime-Version:Subject:From:In-Reply-To:Date:Cc:
+	 Message-Id:References:To; b=KaFzngN2PtIGjJkgt6khkzkqbTj1b4wgLwBDSnCONiNo5sNl0FS8cGTOu89ypKoEGmYqwT14Zz2E7ahUwAgwy1AosFM0TrWHym9H5hXmFGEj91jWGjeOvoSG1W7XFBV8j2KYiw7G56jKOjP4sUrLjl3ryI0bbQDhw8iqbZyOu+lZ4obxVQxPgTqlr7dvauH9AHvLSotyn/nvBZff4+PePm8St1yAH8HGMCJzBtwWj4aEI9gguhk1ceNRH4nb4O47kNXmvGy4jycGhO7VZzc/yF2LX+9HEdXeH6qswhaKBzeDfcb0EbUNYDFfVU8z21xyilfXTyeBaxJCG1MWZHxE8Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=a6OO/AGV; dkim-atps=neutral; spf=pass (client-ip=95.215.58.187; helo=out-187.mta1.migadu.com; envelope-from=muchun.song@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=surriel.com header.i=@surriel.com header.a=rsa-sha256 header.s=mail header.b=cuK/BFQX;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=a6OO/AGV;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=surriel.com (client-ip=96.67.55.147; helo=shelob.surriel.com; envelope-from=riel@surriel.com; receiver=lists.ozlabs.org)
-X-Greylist: delayed 448 seconds by postgrey-1.37 at boromir; Wed, 03 Jun 2026 11:44:55 AEST
-Received: from shelob.surriel.com (shelob.surriel.com [96.67.55.147])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=95.215.58.187; helo=out-187.mta1.migadu.com; envelope-from=muchun.song@linux.dev; receiver=lists.ozlabs.org)
+Received: from out-187.mta1.migadu.com (out-187.mta1.migadu.com [95.215.58.187])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gVVr72zTXz2xc2
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 03 Jun 2026 11:44:55 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=surriel.com
-	; s=mail; h=MIME-Version:Content-Transfer-Encoding:Content-Type:References:
-	In-Reply-To:Date:Cc:To:From:Subject:Message-ID:Sender:Reply-To:Content-ID:
-	Content-Description:Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc
-	:Resent-Message-ID:List-Id:List-Help:List-Unsubscribe:List-Subscribe:
-	List-Post:List-Owner:List-Archive;
-	bh=Lacip953XP38N5MCELHjfXIvYfPyP7yT4lfXMiE5OM8=; b=cuK/BFQXO76YbSLRdTPN1GL4aO
-	bg/EXyiqpmw9ClbifPfiDaRZk84cdaPjk/XRTxvKegatIQJugFlnSB8SlrYHIeULDfZweNmBaHbSU
-	i9GWuZT5NQgMN6HnAm/C33h0aBDCMr4D9wZcPTiw/QW0sDiXglY/z/SHJn5QziOPhxy9WTCm+Rh37
-	VzhbNDLVIpluO6oVltagX1v2REwBYWiKEHG5rlz4bkgJu9XxfVfa0KkIasONMV9Qcskg0XES0a88x
-	ISwaBjTIqwRlDmKoSxPWWW3DgZfgkX7uZCZddJ44yvYLku2zDb3pxnYsvBMKwlFheyaSyC9X4Cqk7
-	TU1hFTzA==;
-Received: from fangorn.home.surriel.com ([10.0.13.7])
-	by shelob.surriel.com with esmtpsa  (TLS1.2) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
-	(Exim 4.97.1)
-	(envelope-from <riel@surriel.com>)
-	id 1wUaXX-000000001Fo-1MhZ;
-	Tue, 02 Jun 2026 21:37:03 -0400
-Message-ID: <5d88d3b1bd02b6583d8b66eedd9bf1fd96e6e788.camel@surriel.com>
-Subject: Re: [PATCH] smp: prevent soft lockup in smp_call_function_many_cond
-From: Rik van Riel <riel@surriel.com>
-To: Mark Tomlinson <mark.tomlinson@alliedtelesis.co.nz>, Madhavan Srinivasan
-	 <maddy@linux.ibm.com>, Thomas Gleixner <tglx@kernel.org>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Date: Tue, 02 Jun 2026 21:37:03 -0400
-In-Reply-To: <20260527031618.2940365-1-mark.tomlinson@alliedtelesis.co.nz>
-References: <20260527031618.2940365-1-mark.tomlinson@alliedtelesis.co.nz>
-Autocrypt: addr=riel@surriel.com; prefer-encrypt=mutual;
- keydata=mQENBFIt3aUBCADCK0LicyCYyMa0E1lodCDUBf6G+6C5UXKG1jEYwQu49cc/gUBTTk33A
- eo2hjn4JinVaPF3zfZprnKMEGGv4dHvEOCPWiNhlz5RtqH3SKJllq2dpeMS9RqbMvDA36rlJIIo47
- Z/nl6IA8MDhSqyqdnTY8z7LnQHqq16jAqwo7Ll9qALXz4yG1ZdSCmo80VPetBZZPw7WMjo+1hByv/
- lvdFnLfiQ52tayuuC1r9x2qZ/SYWd2M4p/f5CLmvG9UcnkbYFsKWz8bwOBWKg1PQcaYHLx06sHGdY
- dIDaeVvkIfMFwAprSo5EFU+aes2VB2ZjugOTbkkW2aPSWTRsBhPHhV6dABEBAAG0HlJpayB2YW4gU
- mllbCA8cmllbEByZWRoYXQuY29tPokBHwQwAQIACQUCW5LcVgIdIAAKCRDOed6ShMTeg05SB/986o
- gEgdq4byrtaBQKFg5LWfd8e+h+QzLOg/T8mSS3dJzFXe5JBOfvYg7Bj47xXi9I5sM+I9Lu9+1XVb/
- r2rGJrU1DwA09TnmyFtK76bgMF0sBEh1ECILYNQTEIemzNFwOWLZZlEhZFRJsZyX+mtEp/WQIygHV
- WjwuP69VJw+fPQvLOGn4j8W9QXuvhha7u1QJ7mYx4dLGHrZlHdwDsqpvWsW+3rsIqs1BBe5/Itz9o
- 6y9gLNtQzwmSDioV8KhF85VmYInslhv5tUtMEppfdTLyX4SUKh8ftNIVmH9mXyRCZclSoa6IMd635
- Jq1Pj2/Lp64tOzSvN5Y9zaiCc5FucXtB9SaWsgdmFuIFJpZWwgPHJpZWxAc3VycmllbC5jb20+iQE
- +BBMBAgAoBQJSLd2lAhsjBQkSzAMABgsJCAcDAgYVCAIJCgsEFgIDAQIeAQIXgAAKCRDOed6ShMTe
- g4PpB/0ZivKYFt0LaB22ssWUrBoeNWCP1NY/lkq2QbPhR3agLB7ZXI97PF2z/5QD9Fuy/FD/jddPx
- KRTvFCtHcEzTOcFjBmf52uqgt3U40H9GM++0IM0yHusd9EzlaWsbp09vsAV2DwdqS69x9RPbvE/Ne
- fO5subhocH76okcF/aQiQ+oj2j6LJZGBJBVigOHg+4zyzdDgKM+jp0bvDI51KQ4XfxV593OhvkS3z
- 3FPx0CE7l62WhWrieHyBblqvkTYgJ6dq4bsYpqxxGJOkQ47WpEUx6onH+rImWmPJbSYGhwBzTo0Mm
- G1Nb1qGPG+mTrSmJjDRxrwf1zjmYqQreWVSFEt26tBpSaWsgdmFuIFJpZWwgPHJpZWxAZmIuY29tP
- okBPgQTAQIAKAUCW5LbiAIbIwUJEswDAAYLCQgHAwIGFQgCCQoLBBYCAwECHgECF4AACgkQznneko
- TE3oOUEQgAsrGxjTC1bGtZyuvyQPcXclap11Ogib6rQywGYu6/Mnkbd6hbyY3wpdyQii/cas2S44N
- cQj8HkGv91JLVE24/Wt0gITPCH3rLVJJDGQxprHTVDs1t1RAbsbp0XTksZPCNWDGYIBo2aHDwErhI
- omYQ0Xluo1WBtH/UmHgirHvclsou1Ks9jyTxiPyUKRfae7GNOFiX99+ZlB27P3t8CjtSO831Ij0Ip
- QrfooZ21YVlUKw0Wy6Ll8EyefyrEYSh8KTm8dQj4O7xxvdg865TLeLpho5PwDRF+/mR3qi8CdGbkE
- c4pYZQO8UDXUN4S+pe0aTeTqlYw8rRHWF9TnvtpcNzZw==
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.56.2 (3.56.2-2.fc42) 
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gVX4M0LPxz2xg3
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 03 Jun 2026 12:40:33 +1000 (AEST)
+Content-Type: text/plain;
+	charset=us-ascii
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
+	t=1780454408;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=enhp+3s0SIGEOwjQc/7W6s5wIzCQbFdyWa31w7PMhyM=;
+	b=a6OO/AGVjZPTkYLmFE58mUZkc+Ig9OvucaVesgXboaIsfd35hyTrwEOUiKCMdq62BTHjWY
+	3iDA8+TOhj7GAKI9lEBKJK0ZAnOuZOAJh+A43sHVWZsP4eRe4lyDV6hA2e/VlitznVZPoQ
+	w1ZVN5buyzqpE2WMljQJpn7BDAJVmsc=
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -95,45 +53,75 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
+Mime-Version: 1.0 (Mac OS X Mail 16.0 \(3864.600.51.1.1\))
+Subject: Re: [PATCH v3 19/19] mm/mm_init: Fold __init_page_from_nid() into
+ __init_deferred_page()
+X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
+From: Muchun Song <muchun.song@linux.dev>
+In-Reply-To: <178041489408.457517.2991925440539441241.b4-review@b4>
+Date: Wed, 3 Jun 2026 10:39:20 +0800
+Cc: Muchun Song <songmuchun@bytedance.com>,
+ Oscar Salvador <osalvador@suse.de>,
+ David Hildenbrand <david@kernel.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Lorenzo Stoakes <ljs@kernel.org>,
+ "Liam R. Howlett" <liam@infradead.org>,
+ Vlastimil Babka <vbabka@kernel.org>,
+ linux-mm@kvack.org,
+ linux-kernel@vger.kernel.org,
+ Nicholas Piggin <npiggin@gmail.com>,
+ "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+ "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
+Content-Transfer-Encoding: quoted-printable
+Message-Id: <10D5F5E9-889C-4B4D-B104-A1579A771F45@linux.dev>
+References: <20260602101039.1867613-1-songmuchun@bytedance.com>
+ <20260602101039.1867613-20-songmuchun@bytedance.com>
+ <178041489408.457517.2991925440539441241.b4-review@b4>
+To: Mike Rapoport <rppt@kernel.org>
+X-Migadu-Flow: FLOW_OUT
 
-On Wed, 2026-05-27 at 15:16 +1200, Mark Tomlinson wrote:
-> Using the PowerPC P2040 (e500mc) CPU, soft lockups can occasionally
-> be
-> seen in smp_call_function_many_cond(). The conclusion is that this
-> CPU
-> does not process the doorbell interrupt while in a data-storage (MMU)
-> exception. If more than one CPU in a multi core environment is
-> calling
-> this function at the same time, it is possible for a deadlock to
-> occur.
 
-Does that mean if the CPU in question does not call
-smp_call_function_many_cond() while in a data-storage
-exception, the system might still hang?
 
-Not that there's anything wrong with reducing the
-frequency of what is (presumably) an already pretty
-rare hang.
+> On Jun 2, 2026, at 23:41, Mike Rapoport <rppt@kernel.org> wrote:
+>=20
+> On Tue, 02 Jun 2026 18:10:39 +0800, Muchun Song =
+<songmuchun@bytedance.com> wrote:
+>> diff --git a/mm/mm_init.c b/mm/mm_init.c
+>> index 41b83dd18c01..f1bbf3b9a321 100644
+>> --- a/mm/mm_init.c
+>> +++ b/mm/mm_init.c
+>> @@ -771,10 +746,27 @@ defer_init(int nid, unsigned long pfn, unsigned =
+long end_pfn)
+>>=20
+>> static void __meminit __init_deferred_page(unsigned long pfn, int =
+nid)
+>> {
+>> + 	pg_data_t *pgdat;
+>> + 	int zid;
+>> +
+>> 	if (early_page_initialised(pfn, nid))
+>> 		return;
+>>=20
+>> - 	__init_page_from_nid(pfn, nid);
+>> + 	pgdat =3D NODE_DATA(nid);
+>=20
+> Nit: we can initialize pgdat at declaration line, other than that
+
+Yes, will do next version.
 
 >=20
-> The fix for this is to call flush_smp_call_function_queue() before
-> waiting for responses from other CPUs. If there is something in the
-> queue, this is a good time to process it before busy-waiting on other
-> CPUs. On other architectures this call will quickly do nothing, as
-> the
-> queue will be empty.
+> Reviewed-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
 
-Agreed, this does look completely harmless at worst,
-and does look like it would at the very least improve
-that e500mc issue.
+Thanks.
 
 >=20
-> Signed-off-by: Mark Tomlinson <mark.tomlinson@alliedtelesis.co.nz>
+> --=20
+> Sincerely yours,
+> Mike.
 >=20
-Reviewed-by: Rik van Riel <riel@surriel.com>
 
-
---=20
-All Rights Reversed.
 
