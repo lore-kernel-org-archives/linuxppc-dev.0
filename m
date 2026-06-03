@@ -1,105 +1,81 @@
-Return-Path: <linuxppc-dev+bounces-21980-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21981-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7A48BCD6E55
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Jun 2026 14:26:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 46775CD6E57
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Jun 2026 15:09:20 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gVqkl69Qqz2ySJ;
-	Thu, 04 Jun 2026 00:26:23 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780496783;
-	cv=none; b=KwXmdvRIUUxUizHx1R9QlwlYbf2zaE9Bfkcq+ebVpRhctnE2weJTtePlq8QPpreUKnST7Ell/u3pOVfV9eKzPgawPBGC3hhoqE+vivmb98TADL5LflBxk52JU2L/Cg9JirCacviSKrF3GA8UysSRM2IzT6GS3BFeDvei64Acvlcexbj44fGcV5NCSZk6sIpgOdTdohvEDvcJk+dL8zGm0YADvUT50ei+QXdJyMGL/GGXU+Xpj3Hu/kR807g2KuKBAWPP+whuLs3us7JLRbUWVe0xoBCK+1WUuIqkMmPxx5jAZi3M1Qa3Q3U50dEaJN26bqoSGjmjRDiPOPhZWpsjOA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gVrhG5NC1z2ySJ;
+	Thu, 04 Jun 2026 01:09:18 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::62d"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780499358;
+	cv=none; b=mXo94YMLKPbRtdLCE3QpiqaWCpZjhJKlFF5MqjOGbxU5wossvTQB6EAacU7DJUbZSpVG0pjB7CKuHUByvS0R1wgaggbS3oWU+ieLqJnHYSjme3wj9mSvYnx2ek9CtOySOey3aX+/y8Boh4n1f3KmDG1jujDgtkdbcGM6Eqrtwt64A4xIsK45r/NWvWSl1p98YVX4uM0NYK7O8ZQvJIxx+HmFtdUF5EpZHx+65R0aaPT6qkzmi4hP2ipiS5Qx3uNrXapZc9iyp4RdJe8RNPYNcg0t3KHPH9p7250+ptKPDJG421XZapuBYBepz19UUYKWFD2sFJ+CHa/Nx1obicKA5g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1780496783; c=relaxed/relaxed;
-	bh=D3c3qVzMqoLf/cC8c1yv2aX8V7QliPT1+YNIojfmBbU=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Up4OFSkpSMEcGb96+W1WIvKeVjjftLE6Ebi3eeA8Z/vkLtAZiHgi2O/G1HxK03e3YANcm3KjUJTmREIkWwkFYn/aX4fSRIiNW7iIcYtyydSt5lQdIvmP33OKXCAvL/V92h0ICFFjg15ZImg4sj8t3y3zHcGOko0LY/hFYHsqrtxguPLVbOgzhIEcvjRy4O5pEigxY5yaAEsf+wKEcSIzzUVYwuk6KwQhn8rBV3juSiBqb55tqT8aJ3wCWCvZHnWHbncDZOsANbCUu9ifihDJxQKtzOXtrH1ABfp6OHIOjdUs/UJYgp30Ce2qEAQW0EOORB4gTwtv+QLy4L2OQm13ug==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ouwwIeFA; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1780499358; c=relaxed/relaxed;
+	bh=bndY4Rtt+kF0HA5uw8ulEDrFOIX6yTjDL3dqjriePQQ=;
+	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References; b=WdWtIQjCo6wRf5/tBvxZRT6rd0wWTnvRN57b7lj6PWWW9GdwzdcXv8HWmc5inuEb4jXxN3yN6Bp2fO9cfhB0fRudzyJKoElMGVuq5eYyZogXx8ciyl8IJ5dFJsolMdc9vbW1yTxC2QK8oJUewt2xVDWdBHSQA2qHRqaVsKohaw7lm8Y9ByFVlwLsEA77NLbBDmhjLris1Sn0O0g9fK8BoiaFJ0IXkRgJ9MJ4/V8U/1vaTAm9pC6oW/r4Ohx4sed4sJ0grgLMkYUyRXRmp2w35K7G36hiJ8yyQlJLinXy7vmGLmEnVaj/zTb9s4hB++TZAOp0yXBRQExfVvM556V53g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=XCEQ4jud; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::62d; helo=mail-pl1-x62d.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ouwwIeFA;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=XCEQ4jud;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::62d; helo=mail-pl1-x62d.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pl1-x62d.google.com (mail-pl1-x62d.google.com [IPv6:2607:f8b0:4864:20::62d])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gVqkl0B29z2xk7
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 04 Jun 2026 00:26:22 +1000 (AEST)
-Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6538OBOc1640981;
-	Wed, 3 Jun 2026 14:26:10 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-type:date:from:in-reply-to:message-id:mime-version
-	:references:subject:to; s=pp1; bh=D3c3qVzMqoLf/cC8c1yv2aX8V7QliP
-	T1+YNIojfmBbU=; b=ouwwIeFAXd+ijIDnWrcJNMyYcdSVa4q/v5UPwwfVzOcmmA
-	V/pj5lB9Z1EyTAUe6LSNdvrgE7Kpfqovjj31KHmiTPk+wpD5zmwsZOda5KxTF9xa
-	J+dF/KNx5FYzilBnFoUyQtMjr2VyiTDLgT4uDKQchcbY3QVH476VzpYlXkDKyWtO
-	XrnJeXW3Cgtn6zTd6p5Rmg/33ANs1ZspQ8nB4IEeOgO5SF9ERA+XO45fN0qxOBMJ
-	oyXGLBKENWA2EFElZMvfIdP1yytgFk4K7sQuvhqPMEWJmVIOZx5x84MPTCtdspFL
-	nst6KRrVNhrJCNPvESqz90cBHTiGCY1ffygFcRtg==
-Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4efnahtyrp-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 03 Jun 2026 14:26:09 +0000 (GMT)
-Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma12.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 653EPECu010968;
-	Wed, 3 Jun 2026 14:26:08 GMT
-Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
-	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 4ega7qgr1f-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 03 Jun 2026 14:26:08 +0000 (GMT)
-Received: from smtpav07.fra02v.mail.ibm.com (smtpav07.fra02v.mail.ibm.com [10.20.54.106])
-	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 653EQ5Lj51511648
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 3 Jun 2026 14:26:05 GMT
-Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 18A7B2004B;
-	Wed,  3 Jun 2026 14:26:05 +0000 (GMT)
-Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 3644F20040;
-	Wed,  3 Jun 2026 14:26:02 +0000 (GMT)
-Received: from fedora (unknown [9.5.7.39])
-	by smtpav07.fra02v.mail.ibm.com (Postfix) with ESMTPS;
-	Wed,  3 Jun 2026 14:26:02 +0000 (GMT)
-Date: Wed, 3 Jun 2026 19:56:00 +0530
-From: Amit Machhiwal <amachhiw@linux.ibm.com>
-To: Ritesh Harjani <ritesh.list@gmail.com>,
-        Madhavan Srinivasan <maddy@linux.ibm.com>
-Cc: Harsh Prateek Bora <harshpb@linux.ibm.com>,
-        Vaibhav Jain <vaibhav@linux.ibm.com>,
-        Amit Machhiwal <amachhiw@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
-        Anushree Mathur <anushree.mathur@linux.ibm.com>,
-        Paolo Bonzini <pbonzini@redhat.com>,
-        Nicholas Piggin <npiggin@gmail.com>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-        Jonathan Corbet <corbet@lwn.net>,
-        Shuah Khan <skhan@linuxfoundation.org>, kvm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, lkp@intel.com
-Subject: Re: [PATCH v3 1/5] KVM: PPC: Book3S HV: Validate arch_compat against
- host compatibility mode
-Message-ID: <20260603194919.ca2d31c0-17-amachhiw@linux.ibm.com>
-Mail-Followup-To: Ritesh Harjani <ritesh.list@gmail.com>, 
-	Madhavan Srinivasan <maddy@linux.ibm.com>, Harsh Prateek Bora <harshpb@linux.ibm.com>, 
-	Vaibhav Jain <vaibhav@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org, 
-	Anushree Mathur <anushree.mathur@linux.ibm.com>, Paolo Bonzini <pbonzini@redhat.com>, 
-	Nicholas Piggin <npiggin@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>, 
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, Jonathan Corbet <corbet@lwn.net>, 
-	Shuah Khan <skhan@linuxfoundation.org>, kvm@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	linux-doc@vger.kernel.org, lkp@intel.com
-References: <20260522152744.55251-1-amachhiw@linux.ibm.com>
- <20260522152744.55251-2-amachhiw@linux.ibm.com>
- <pl2g6xbz.ritesh.list@gmail.com>
- <20260529141530.fc225a67-e9-amachhiw@linux.ibm.com>
- <cxyewhx8.ritesh.list@gmail.com>
- <87se74z4a6.fsf@vajain21.in.ibm.com>
- <72ef4cdb-8d9e-4319-9c94-b9a46a6f6194@linux.ibm.com>
- <56c84e26-69ed-433b-baaf-7b53acc60391@linux.ibm.com>
- <bjdsw43g.ritesh.list@gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gVrhD6zPNz2yQL
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 04 Jun 2026 01:09:15 +1000 (AEST)
+Received: by mail-pl1-x62d.google.com with SMTP id d9443c01a7336-2c0a5354da1so7183395ad.0
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 03 Jun 2026 08:09:15 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1780499353; x=1781104153; darn=lists.ozlabs.org;
+        h=references:message-id:date:in-reply-to:subject:cc:to:from:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=bndY4Rtt+kF0HA5uw8ulEDrFOIX6yTjDL3dqjriePQQ=;
+        b=XCEQ4juduNeX0VhAmh1RWQNRrSZt777j3D3t+px/muqNo0IjhYT6VMm75oCTADcLsO
+         Ps/cEn1q8R7DCs8tfIYhOHOSEhbnv2yJBdAK/3A6GHNYkQbU+jnMQsTgu7a3BG+/meFh
+         mvCj7gI/B5Tc+IFnNWvGiRs6rnStTsWo/35i0gyjqzAetUZgRIROS4FXL8XCWOWBLV7s
+         7mJa2lRfdQBRy5Z6dk82MGGSxFtMCEv4xA/nPxQAhnvOlMhKle73QodBO/iJ140P4AdV
+         Ju8wiFP619/j7lwXe2aSeTAKfQT7WQT1km1ErwkXgFBn2/t0IcBn7+M9vyvZH3MUGtSM
+         +LQQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1780499353; x=1781104153;
+        h=references:message-id:date:in-reply-to:subject:cc:to:from:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=bndY4Rtt+kF0HA5uw8ulEDrFOIX6yTjDL3dqjriePQQ=;
+        b=J7Wt7C6CiWeLUaeZ6rjCqESOxDR+CugFpj25JqaHw5AXTvRUd980FUUBD2CHVF3fNC
+         zsxvW4NhDBONWkeNYvwZOsWzpRuEoDo+wX5zGagdo/HBSi4zG55ywi5IgpXCUQCryhi1
+         622t8zQllnldzbzrX5yvdR+BJSJM5DjHgeHrsFQ5ab0Dum4Z3s43BOu4Yv+edjb+LJBF
+         jsTJvjbVxkGeX4W0Y6RRQW8makddnglLu1W/XETJixh8ToFIpPvIdg6LYlDJPkKWjQus
+         jxW72+V9dv6TFxg/2WCueUK603H8Ja6vri4J6LAotMPt4DLjyjt+AEYNCcMbXSl58NLx
+         /ppQ==
+X-Forwarded-Encrypted: i=1; AFNElJ9UWtJHfMJ8EaoO2BfCL1T5PScz3NAJ7jvqYRyVK6kWDwq3uop1hapoHsTVXpHOlhL0WmL182A2FEI1IRg=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yw68On5BstVbrSHksIbwtENWhaNtoounQUp6Z73+6+E4/t4HRHK
+	c+Bxu4x49L8wUtWUV3m5DNFkA5QlgBdQsu/70wR+hfLOpp8s6qWZQdoe
+X-Gm-Gg: Acq92OEMVyDfqUbv1XjFHPqtuh6HSTg1a3up63SLX96fTEmo+p2UGwxTALYOXvokdpC
+	j82I98aoT4Kl7EEZReMtHyUHXaLAXIwc2vdBje8Y0k3CLAj31EPoxNyWL94LeqhKZ2tNAmrSlWv
+	aqi9We19BNALx5RBG5lLQiloTvre3vQ8K278CLEd6tkWl+0oxgvIuC/m0uvTE51zwZJ8mSb4GEk
+	wMgMRRIbnjn1z1QM/spW3gjiMFUtHOL06s3FU1nWTmfYLN23B1JuVzZaGzJNfHgMaEnXm46/Jy5
+	GQLbNqNMMcAtxqtO5zGoVqZ2HYLzv9H4HiOxYCqZkzk4l8WHHHHgPqtOAL++N241DF6R9YZi2dI
+	Sg246aG0YcZa0nZJqonVBH/FsGTwJmoAW1ZMg+xjE9XEpV0AWStg6EjdMftU4kpXKfhdx3HxkQF
+	ZsGxTOZxJAHSrWttV6pLLIXRute6HdKGhV
+X-Received: by 2002:a17:903:22cc:b0:2c0:af09:f3d4 with SMTP id d9443c01a7336-2c164d5f70emr29441875ad.27.1780499353373;
+        Wed, 03 Jun 2026 08:09:13 -0700 (PDT)
+Received: from pve-server ([49.205.216.49])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2c164f6d2bbsm29577905ad.1.2026.06.03.08.09.07
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 03 Jun 2026 08:09:12 -0700 (PDT)
+From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+To: Muchun Song <songmuchun@bytedance.com>, Oscar Salvador <osalvador@suse.de>, David Hildenbrand <david@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Madhavan Srinivasan <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>
+Cc: Muchun Song <muchun.song@linux.dev>, Mike Rapoport <rppt@kernel.org>, Lorenzo Stoakes <ljs@kernel.org>, "Liam R. Howlett" <liam@infradead.org>, Vlastimil Babka <vbabka@kernel.org>, linux-mm@kvack.org, linux-kernel@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>, "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org, Mike Kravetz <mike.kravetz@oracle.com>, Muchun Song <songmuchun@bytedance.com>
+Subject: Re: [PATCH v3 03/19] powerpc/mm: Fix wrong addr_pfn tracking in compound vmemmap population
+In-Reply-To: <20260602101039.1867613-4-songmuchun@bytedance.com>
+Date: Wed, 03 Jun 2026 20:06:35 +0530
+Message-ID: <a4tbwv0s.ritesh.list@gmail.com>
+References: <20260602101039.1867613-1-songmuchun@bytedance.com> <20260602101039.1867613-4-songmuchun@bytedance.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -112,59 +88,46 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <bjdsw43g.ritesh.list@gmail.com>
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjAzMDEzNiBTYWx0ZWRfX/QwTJz03YvEm
- tnycR05KaAFcuOcNHpoejZ6IIh+UigfTilSwx5QMy4TR/fb3T3nnsdjCkScPevJC7iq8kg7o/Ib
- BZOdVVIAQSEWsTLbm5JkibeEbyY76YvNycOZ1AbXrDCcXWoLRmyyNVeESjK1hwxv8iicqccho6q
- bw0M2elmleS2YzLqa+ooJEStZ1HERkg7kWJn9VQFC5xfpnmIxXKLA+zay9XlzSz4/1E7vSzr3uy
- rX4jTxMpp/ouvk2B4lAc6WYNDnjslQK+K8fvacktm78OV1NnZ97PzPE6lyEQPS/ynzJ6TSYuHZX
- UxU3oScsqwa/3xR1Gp3Sxy8dEjZq3M/Vd6eppK/2QAHRYkaoNkZNn7aLf2YtDK2Fi26PhIHAj0x
- cSKIE/Seck6pW5M+8det4XBtpkAumePRM6utxRT0J8Gw2uA4Y0kZEpWrK1txc42FAATyH2M7Zua
- iCAt4hj+s+3OIeGb8rw==
-X-Proofpoint-ORIG-GUID: tLYlDXtEPf68UXX27itDkXR-54AXc34Z
-X-Authority-Analysis: v=2.4 cv=cOzQdFeN c=1 sm=1 tr=0 ts=6a203982 cx=c_pps
- a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17
- a=kj9zAlcOel0A:10 a=FelO9ux0wxsA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=Y2IxJ9c9Rs8Kov3niI8_:22 a=VwQbUJbxAAAA:8
- a=VnNF1IyMAAAA:8 a=tBi8NAT1RsUeDLHYQY8A:9 a=CjuIK1q_8ugA:10
-X-Proofpoint-GUID: GLiYH9xarfqBmBAlgsiXZLR5YM2sYABO
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
- definitions=2026-06-03_04,2026-05-28_03,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1015 impostorscore=0 lowpriorityscore=0 spamscore=0 bulkscore=0
- malwarescore=0 phishscore=0 suspectscore=0 priorityscore=1501 adultscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2605210000 definitions=main-2606030136
 
-Hi Maddy, Ritesh,
+Muchun Song <songmuchun@bytedance.com> writes:
 
-I have made the suggested changes and posted the separate patch here:
+> vmemmap_populate_compound_pages() uses addr_pfn to determine the PFN
+> offset within a compound page and to decide whether the current
+> vmemmap slot should be populated as a head page mapping or should reuse
+> a tail page mapping.
+>
+> However, addr_pfn is advanced manually in parallel with addr.  The loop
+> itself progresses in vmemmap address space, so each PAGE_SIZE step in
+> addr covers PAGE_SIZE / sizeof(struct page) struct page slots.  Since
+> addr_pfn is compared against nr_pages in data-PFN units, it should
+> advance by the same number of PFNs.  The existing manual increments do
+> not match that and therefore do not reliably track the PFN
+> corresponding to the current addr.
+>
+> As a result, pfn_offset can be computed from the wrong PFN and the code
+> can make the head/tail decision for the wrong compound-page position.
+>
+> Fix this by deriving addr_pfn directly from the current vmemmap address
+> instead of carrying it as loop state.
+>
+> Fixes: f2b79c0d7968 ("powerpc/book3s64/radix: add support for vmemmap optimization for radix")
+> Signed-off-by: Muchun Song <songmuchun@bytedance.com>
+> Acked-by: Oscar Salvador <osalvador@suse.de>
 
- https://lore.kernel.org/all/20260603141539.47620-1-amachhiw@linux.ibm.com/
+Thanks for fixing it. I guess this was not caught because section size
+on powerpc is 16MB and with 64K pagesize we have 256 pfns to map. The
+vmemmap size required for this is 256*sizeof(struct page) = 16KB which
+is < 64K (pagesize). So basically we never loop in
+vmemmap_populate_compound_page(), because
+next = addr+PAGE_SIZE will be > end after the 1st iteration itself.
 
-<..snip..>
+But I agree this is a bug which needs fixing and it can be easily caught
+with 4K pagesize, where we have 4096 pfns to map within a 16MB section.
 
-> > Hence IMHO, this patch can be marked for stable tree and potential
-> > candidate for 7.2 merge window. But dont see applicability of a 'fixes'
-> > tag to this patch
-> 
-> I agree, we need not use a fixes tag then. So, we shall mark this
-> with v6.10 tag then.
-> 
-> Cc: stable@vger.kernel.org # v6.10+
 
-Please note that I have marked the patch for stable v6.13+ as the KVM
-support for Power11 was added via 96e266e3bcd6 ("KVM: PPC: Book3S HV:
-Add Power11 capability support for Nested PAPR guests"). Also, this
-commit had introduced CPU_FTR_P11_PVR on which the compat PVR check in
-the patch is based on.
+The change looks good to me. Can we please add stable tag too?
+Cc: stable@kernel.org
 
-Thanks,
-Amit
+Also, feel free to add:
+Reviewed-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
 
