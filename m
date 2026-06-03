@@ -1,80 +1,76 @@
-Return-Path: <linuxppc-dev+bounces-21969-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21970-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9590BCD6E56
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Jun 2026 11:25:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id ECCDECD6E4A
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Jun 2026 11:25:21 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gVljh0mb9z2yZZ;
-	Wed, 03 Jun 2026 21:25:12 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780485912;
-	cv=none; b=Tl061S/kTfZ7bIazqpW3aHfAgw59TmOyNTGI3nFlxbrflQkH6fMClA0VdClI/BlY0eXM+GM6PCS+q+AOyBYqVv5TtdkePaQc7dDoNetDlHn1+CyWiLvoBh9teyOADarjZrzZ3AGjG/MlVVbcSLAErwg2YRKV+2f/wezBdtmgvkn35te9xxIwVyZNo4Gly7Fqf1ICKt0kD0RjYS366oOkoAyjw6/zQSb4bcL5MVVoT0BOT8tCLWbg9gUoV+2inOVuEcj8piavkU3YqJQSFfGpN6QWsAjXSkU6nEQkAEKO0vUF/Hmp3RmREX3IflyeZOuJr9uZ6f3CF1hGWuaKcnZTAg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gVljr3h42z2yZZ;
+	Wed, 03 Jun 2026 21:25:20 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780485920;
+	cv=none; b=XIl9ylHhM9KHXjT1hYXh1kXZFEF/BgkbivBbWWAfGFjqzrrCwy5Jij3PhmmZ1Csu16rDApic7XbiGqIf2j9VPXbBLu60ynEyPjPgbWQ3GPR4KhPcg8U8RErMvjUd0G/PT3hrFP7wZWsstmKLxj2WNATj04MaPvw188vzwHFlVMNNDKmEAP7XJmgFjiUKgYa0jW5TSJA7X8/rqPaIb9oI5EP50vhwZng7QEApLtRMaLvklTUUanEvb7s9ZmB6YR3DBOQJJYOS2e6IXbbzq4hkYOglth3+u+I/0bXBJX+R1aoOCgnONoXG/6hJFiVXtXdlw0T5clo6Fw9o9OnFGCaI2A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1780485912; c=relaxed/relaxed;
-	bh=BD66DkEkpe+MLVUzgYeR064w0vRlJWvFVh3ZzZzAV00=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
-	 MIME-Version:Content-Type; b=AgErpLpRo1ZdEIPYtTRxRIVMzGLd87cJvvI0h9Ap5I/f0RhVmQbrKB3cL+h+5+4cVkwOWPKbMSsUvGJsCY6mS/XlC27hPwRQDybq5Jc2Qy9uqEFFncuCWCCWy7b3+iauGjkjtmHr924xz8agpemzbkNmqxXUBvrPzKA66rEUAq8+F/NhhyoZTEZbRmlG8a/TrFkEgR2d2zeUCuQwfLLHZB4HySpK7JzJ6xddFfsYQ0XKTSD92OSHDgnsOHr76YiTpyqzWODKqKtnaUaY2DlaxjxZldCSg5vvazJhtLZa24U3pFcMkpI+G3sP/0Td9JsIliFQINOr6+8m2C28f47lGw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=pWMzSYbH; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=vaibhav@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1780485920; c=relaxed/relaxed;
+	bh=Ej/A4bAeP3GRRv4aBL4VdTQbInf6PAP5PBV1hqxuGeU=;
+	h=MIME-Version:Date:From:To:Cc:Message-Id:In-Reply-To:References:
+	 Subject:Content-Type; b=VmL6vXPS8tccDmtVigMRTGI/ppgdpCWC3/RfWKhl63mdDmt7H0O2RhFaSahmUpbMzdT/g3tZpGJh7wDOFBrwLS5wHIGcVe7cOGolTga4JMSM/b0IDSnM93wcNWD5CkYxfh/xf/rTWC9zUnOMWu+L4635r8EpODu464Fb7NoI90V8CNUP/7CGUi2ucr5T3/FVwwnk9hyoG9di6iq5xMr+JufTYR21uCjEK9DVctx50PWmsiGQWx9xYIBzOQHtkDWu+/A8SO9fUwwC8m7MltmswtmsEUIn4jXNhd97yJZ21HXJIKNmNXXizoJg6Xr8v+W5z3dMD95kAFzlf+JuG3VDeQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=exw4XYzJ; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ardb@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=pWMzSYbH;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=exw4XYzJ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=vaibhav@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ardb@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gVljg2QlVz2yL8
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 03 Jun 2026 21:25:11 +1000 (AEST)
-Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6537b5481089524;
-	Wed, 3 Jun 2026 11:25:08 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-type:date:from:in-reply-to:message-id:mime-version
-	:references:subject:to; s=pp1; bh=BD66DkEkpe+MLVUzgYeR064w0vRlJW
-	vFVh3ZzZzAV00=; b=pWMzSYbHQv6S1Q6rN4BrZLF3rBfktxk6DMibcLwKIZxkF1
-	luu5P5EYtuhwF95rU6Ww2vtZm/RT0qk9N9Qz3pQ9K6GaYRWz3zLETw6emI0IrPed
-	oAbqUsgWrD8hvi2XDSSGmDeaY3Me3gprlfjXpDYif3+7RCpg7uIH2xhFrfn3Tpzn
-	OpGVKqRh58LvASPsec+Gv39HKq087xxkPLTf86hM8eJlPbD2TJOtqVvU1JX0Hyvo
-	zDueNo5gceVxslQaM4KSJ13asu0KQgKYKSH3gWWL3/36l5gDGol27wH3qcgUxzDV
-	hK4trPEjLPnAgAS0A3sXLC9QqGBjLdZZzFudGK2Q==
-Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4efqjqahqj-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 03 Jun 2026 11:25:07 +0000 (GMT)
-Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma21.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 653BOJ3f014297;
-	Wed, 3 Jun 2026 11:25:06 GMT
-Received: from smtprelay05.wdc07v.mail.ibm.com ([172.16.1.72])
-	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4egb7k7wrc-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 03 Jun 2026 11:25:06 +0000 (GMT)
-Received: from smtpav06.dal12v.mail.ibm.com (smtpav06.dal12v.mail.ibm.com [10.241.53.105])
-	by smtprelay05.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 653BP6KZ29884928
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 3 Jun 2026 11:25:06 GMT
-Received: from smtpav06.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id E03F258059;
-	Wed,  3 Jun 2026 11:25:05 +0000 (GMT)
-Received: from smtpav06.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 7F43D5805E;
-	Wed,  3 Jun 2026 11:25:03 +0000 (GMT)
-Received: from vaibhav?linux.ibm.com (unknown [9.39.22.158])
-	by smtpav06.dal12v.mail.ibm.com (Postfix) with SMTP;
-	Wed,  3 Jun 2026 11:25:03 +0000 (GMT)
-Received: by vaibhav@linux.ibm.com (sSMTP sendmail emulation); Wed, 03 Jun 2026 16:55:01 +0530
-From: Vaibhav Jain <vaibhav@linux.ibm.com>
-To: Eric Biggers <ebiggers@kernel.org>
-Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org
-Subject: Re: ppc64le kunit test failure: guest_state_buffer_test
-In-Reply-To: <20260603074035.GA1148188@sol>
-References: <20260603064225.GC18149@sol>
- <87ecioyt6y.fsf@vajain21.in.ibm.com> <20260603074035.GA1148188@sol>
-Date: Wed, 03 Jun 2026 16:55:01 +0530
-Message-ID: <87a4tbzx0y.fsf@vajain21.in.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gVljq4MmZz2yL8
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 03 Jun 2026 21:25:19 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with ESMTP id E880440A1D;
+	Wed,  3 Jun 2026 11:25:16 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 252B41F00899;
+	Wed,  3 Jun 2026 11:25:16 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1780485916;
+	bh=Ej/A4bAeP3GRRv4aBL4VdTQbInf6PAP5PBV1hqxuGeU=;
+	h=Date:From:To:Cc:In-Reply-To:References:Subject;
+	b=exw4XYzJHNx8NPTpD1SzdOEOLUIA0xbYO2jphTnpVII8b31Q/9zoA+W2Rvg/yhsRJ
+	 rEc/sWlhy60ka7H0KxygsKKzTfK2eoV1T3KYgDO6PTRuKF9q3CHlxXeAxdewT+ecHQ
+	 NBSd91h0blVNopV1S8MSD25RQBFS7xz5PlvkBpwHruhFkJ3FpKkcFYAWPIuu7rzfF6
+	 x+OGEki1CCoDqkOh1nrN5UKDwOjNctAtNOzcuXJvxl7TfG6lbZBxvDoShpMpgqqsJm
+	 3gltOvlx5FPE7bceYtY1n+j09Xo/ig1esnSx7M+rmwf6cTja4OnJ8sQgCh4Xrx7MK9
+	 Q3cwykG/gR1EA==
+Received: from phl-compute-01.internal (phl-compute-01.internal [10.202.2.41])
+	by mailfauth.phl.internal (Postfix) with ESMTP id 35B68F40070;
+	Wed,  3 Jun 2026 07:25:15 -0400 (EDT)
+Received: from phl-imap-05 ([10.202.2.95])
+  by phl-compute-01.internal (MEProxy); Wed, 03 Jun 2026 07:25:15 -0400
+X-ME-Sender: <xms:Gw8ganjrXz0JQ4a20pZ2keYgLL966sZB7ggcBghyxiZjOST0pbGkzg>
+    <xme:Gw8gau3lk00GKn5Y2in9l7RFhymSP38WEHp3EMZII2yHEoKx7m9e2_O1ItUdjYSaY
+    4mktIanZvMpp4BxKaVX3h41Qzq6CxeF-i3QeDrzyNPiZLrjovwMNSo>
+X-ME-Proxy-Cause: dmFkZTGk07hpe1NCwTVIzfP2HgIVR+mhM9tsG3G5fFNmt40ZyD0SKBCj9VlPFNEJ/mKYg+
+    yn9XCnk7DMqqvKhYAonBnb+EiK7yyt6XwsAKFP1NRUIxeRopUJbCzFAEtgdZwZ2syq6mLt
+    hIc8ns+tGdiT78GcOIddkRPvwXakkAXz6AaOGjfod1A73n2hhP0S+irMK6MY6pmOGSphLV
+    9LSrur6d22T4VrRb0o5gM+dJx+HdoAtQGS5mxYoTkKVSFjuFyOM+kuaRmHmk5SGbsP2X5U
+    zTfs5UQKk93YP1gI0iWsago6o9Zae+QmHbKuHZObMf4rdXX8pu80r92+oAHgcVeIlkcQDt
+    0QoJr48G7g3k7Axy3vrUiaTuSSNl5Y+BBkBWhf7/BIuAoakZ1dJtZrM+QYGf6QD0T7M/C0
+    ueKDXo5EQVNDoS+0A/91fYorYH01AUmS/P8O4XOQS5akirZ4o6R39OVDG5ahWkb2lF336H
+    YbIyD0BajwqJNC5uYkvP7UDCRsQcdeI+orDmIIjHhBz6YSpbphRyIkD91JJ5F8fMl9IFqF
+    a0YT3rtTfzLsSqiNI66DGkElA3Hc8cBk3YfeNWCCudJjd2gSSl3qVSUppja1jEfUb97L0h
+    hPAd/USZemqekfo8KMLkrAbpwvAtpzbyCrEKM6liYSn40sbEKKE762X7+RKw
+X-ME-Proxy: <xmx:Gw8gakVtaCK4ce7TGaafgWSRTK9aFbX2O3RU4WUOTM8sVh_nx1Wfeg>
+    <xmx:Gw8gaqOLByCdyD78lmI0iP9F3j-yUw1MG1v484Rm7MAoLd2u5zohIQ>
+    <xmx:Gw8gasfLsOXv2iWZ1GY4UgCbbbl1MSvSRNMh5lEG4-5iDY27pvISJw>
+    <xmx:Gw8gapw04dbEZ-YaSVuDJ6MnkCD0rEgcBTKMEm-QTUsw0wXutnCBoA>
+    <xmx:Gw8gatgq8miMnJmGvsy1x2eDW6BAFtzhVAqxtdrb0sGgeFGbLROK63AZ>
+Feedback-ID: ice86485a:Fastmail
+Received: by mailuser.phl.internal (Postfix, from userid 501)
+	id 0E8AE182007E; Wed,  3 Jun 2026 07:25:14 -0400 (EDT)
+X-Mailer: MessagingEngine.com Webmail Interface
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -88,120 +84,84 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+Date: Wed, 03 Jun 2026 13:24:53 +0200
+From: "Ard Biesheuvel" <ardb@kernel.org>
+To: "Will Deacon" <will@kernel.org>
+Cc: linux-arm-kernel@lists.infradead.org,
+ "Ard Biesheuvel" <ardb+git@google.com>,
+ "Catalin Marinas" <catalin.marinas@arm.com>, kernel-team@android.com,
+ linux-kernel@vger.kernel.org, "Mark Rutland" <mark.rutland@arm.com>,
+ "Ryan Roberts" <ryan.roberts@arm.com>,
+ "Anshuman Khandual" <anshuman.khandual@arm.com>,
+ "Kevin Brodsky" <kevin.brodsky@arm.com>, "Liz Prucka" <lizprucka@google.com>,
+ "Seth Jenkins" <sethjenkins@google.com>, "Kees Cook" <kees@kernel.org>,
+ "Mike Rapoport" <rppt@kernel.org>, "David Hildenbrand" <david@kernel.org>,
+ "Andrew Morton" <akpm@linux-foundation.org>, "Jann Horn" <jannh@google.com>,
+ linux-mm@kvack.org, linux-hardening@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-sh@vger.kernel.org, maz@kernel.org
+Message-Id: <d5186071-55dc-42b4-9e5a-b279a6ca1384@app.fastmail.com>
+In-Reply-To: <aiAOaYwPlGEG6FML@willie-the-truck>
+References: <20260529150150.1670604-17-ardb+git@google.com>
+ <178041415770.4024555.11336437584927054639.b4-ty@kernel.org>
+ <2c7929d4-6622-475d-af1b-bcd0cd997cd3@app.fastmail.com>
+ <aiAOaYwPlGEG6FML@willie-the-truck>
+Subject: Re: [PATCH v7 00/15] arm64: Unmap linear alias of kernel data/bss
 Content-Type: text/plain
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: OxqPfvJumCXsSGExPvWdG7jEGPfKMdKX
-X-Proofpoint-GUID: OxqPfvJumCXsSGExPvWdG7jEGPfKMdKX
-X-Authority-Analysis: v=2.4 cv=bcVbluPB c=1 sm=1 tr=0 ts=6a200f13 cx=c_pps
- a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
- a=FelO9ux0wxsA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=uAbxVGIbfxUO_5tXvNgY:22 a=NEAV23lmAAAA:8 a=p0WdMEafAAAA:8 a=VwQbUJbxAAAA:8
- a=VnNF1IyMAAAA:8 a=1mqWeeG4xpLTK_Yxio8A:9
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjAzMDEwNiBTYWx0ZWRfX0isWrKUe6+PE
- YxgawLfb5PyOdvhUjhMDQuO/O66upFdS/36f4zWFbJWrHMwfQI3uQSWtWOxzs2dlDOKxigs/5X0
- CWGXjlWuTGoAxgeNTQVFvK3/op4eydqwA5AJLcIdgQgdUcKXB7txzDgC5oDK776YVi6GoatDk0q
- oRZW7k/LU+KkPSE6yUVdVZ+cXhmU8aIPBSiUCsV7r6r5b3L1JCYLo+TdmYdnIdn2DWT0k4n2yQs
- XLzF+j37FPn4idljDWVPG1CLa1hHnlBfB+GgZ9PovotTGAED1NNiG1pxL77kwbiozXCURPytpXq
- B5hkVdmGnUAcuZpbbOTjx/RmZ605FZdr0kO4N4mU35FE13dgZrGvSIBy3fbxDrEArnHtojt7qLp
- Hy17ItvniNOb8dcManF91rqOpVAxxX0pCVGUdFuRWyBIKPGPR0DHiWaE5xYIU4Khk5IG0WlNSx0
- AwHvja7gSNXC92dBtqw==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
- definitions=2026-06-03_04,2026-05-28_03,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- impostorscore=0 clxscore=1015 adultscore=0 priorityscore=1501 phishscore=0
- lowpriorityscore=0 bulkscore=0 malwarescore=0 spamscore=0 suspectscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2605210000 definitions=main-2606030106
-
-Hi Eric,
-
-I just successfully tested this kunit test on kernel tag next-20260602
-and qemu master HEAD == 405c32d2b18a("Merge tag 'pull-tpm-2026-06-01-1'
-of https://github.com/stefanberger/qemu-tpm into staging") [1]
-
-If you are using Qemu >= v10.0.0 then the kunit test failure you
-reported is due to Qemu not enabling 'cap-nested-papr' capability which
-is needed to enable KVM-HV Apiv2 support in Qemu.
-
-Without 'cap-nested-papr' Qemu doesnt register the H_GUEST_GET_STATE
-Hcall which this kunit test relies on. Hence it returns -2 (H_FUNCTION)
-for this unsupported HCall. The failure of kunit 'test_gs_hostwide_msg'
-is expected as the underlying hypervisor doesnt have support nested-papr
-APIv2 capability.
-
-To fix this please enable qemu-system-ppc64 machine's capability
-cap-nested-papr to enable nested-papr APIv2 support.
-
-Below is the test log showing successful 'guest_state_buffer_test' kunit
-test passing :
-
-$ ./qemu-system-ppc64 --version
-QEMU emulator version 11.0.50 (v11.0.0-1621-g405c32d2b1)
-Copyright (c) 2003-2026 Fabrice Bellard and the QEMU Project developers
-
-# kunit test is specific to nested-papr APIv2 so qemu cap-nested-papr needs to be enabled
-$ ./qemu-system-ppc64 -display none -nographic -kernel ~/linux/vmlinux
--machine pseries,cap-nested-papr=true
-
-<snip>
-Booting from memory...                                       
-OF stdout device is: /vdevice/vty@71000000                                                                                       
-Preparing to boot Linux version 7.1.0-rc6-next-20260602 (vaibhav@*********) (gcc (GCC) 16.1.1 20260515 (Red Hat 16.1.1-2), GNU ld version 2.46-3.fc44) #2 SMP PREEMPT Wed Jun  3 04:11:38 CDT 2026
-Detected machine type: 0000000000000101
-
-<snip>
-[    4.335850][    T1]     KTAP version 1
-[    4.335896][    T1]     # Subtest: guest_state_buffer_test
-[    4.335946][    T1]     # module: test_guest_state_buffer
-[    4.335970][    T1]     1..7
-[    4.337296][    T1]     ok 1 test_creating_buffer
-[    4.338998][    T1]     ok 2 test_adding_element
-[    4.341996][    T1]     ok 3 test_gs_bitmap
-[    4.343406][    T1]     ok 4 test_gs_parsing
-[    4.345607][    T1]     ok 5 test_gs_msg
-[    4.347247][    T1]     ok 6 test_gs_hostwide_msg
-[    4.348012][  T131]     # test_gs_hostwide_counters: Guest Heap Size=0 bytes
-[    4.348183][  T131]     # test_gs_hostwide_counters: Guest Heap Size Max=0 bytes
-[    4.348350][  T131]     # test_gs_hostwide_counters: Guest Page-table Size=0 bytes
-[    4.348653][  T131]     # test_gs_hostwide_counters: Guest Page-table Size Max=0 bytes
-[    4.348813][  T131]     # test_gs_hostwide_counters: Guest Page-table Reclaim Size=0 bytes
-[    4.349354][    T1]     ok 7 test_gs_hostwide_counters
-[    4.349569][    T1] # guest_state_buffer_test: pass:7 fail:0 skip:0 total:7
-[    4.349635][    T1] # Totals: pass:7 fail:0 skip:0 total:7
-[    4.349708][    T1] ok 4 guest_state_buffer_test
+Content-Transfer-Encoding: 7bit
 
 
-Can you try adding 'cap-nested-papr=true' to the Qemu machine you are
-using and see if the problem resolves for you. If it persists can you
-please share the Qemu command line you are using.
 
-[1] https://gitlab.com/qemu-project/qemu/-/commit/405c32d2b18a683ba36301351af75125d9afda08
-
-
-Eric Biggers <ebiggers@kernel.org> writes:
-
-> On Wed, Jun 03, 2026 at 01:03:09PM +0530, Vaibhav Jain wrote:
->> Hi Eric,
+On Wed, 3 Jun 2026, at 13:22, Will Deacon wrote:
+> On Wed, Jun 03, 2026 at 10:57:49AM +0200, Ard Biesheuvel wrote:
+>> (cc Marc)
 >> 
->> Thanks for trying and reporting this. This kunit test depends on
->> availablility of Qemu commit 5f7d861e("spapr: nested: Add support for
->> reporting Hostwide state counter ") [1] that was merged in v10.0.0.
+>> On Tue, 2 Jun 2026, at 22:34, Will Deacon wrote:
+>> > On Fri, 29 May 2026 17:01:51 +0200, Ard Biesheuvel wrote:
+>> >> One of the reasons the lack of randomization of the linear map on arm64
+>> >> is considered problematic is the fact that bootloaders adhering to the
+>> >> original arm64 boot protocol (i.e., a substantial fraction of all
+>> >> Android phones) may place the kernel at the base of DRAM, and therefore
+>> >> at the base of the non-randomized linear map. This puts a writable alias
+>> >> of the kernel's data and bss regions at a predictable location, removing
+>> >> the need for an attacker to guess where KASLR mapped the kernel.
+>> >> 
+>> >> [...]
+>> >
+>> > It would've been nice to hear from the ppc folks on patch 11, but I've
+>> > picked it up on the assumption that they'll love the negative diff stat.
+>> > Worst case, we can drop/revert stuff if they have late objections.
+>> >
 >> 
->> Since you havent mentioned the qemu version used I assume its a version
->> < v10.0.0 . With the qemu patch available you should see this test
->> passing with results similar to as originally described in original
->> cover letter of the patch series at [2] that introduced this kunit test.
+>> Thanks.
 >> 
->> [1] https://gitlab.com/qemu-project/qemu/-/commit/5f7d861e65d90e0446b8f22a0bc859a5d8058ea6
+>> There is a de facto ack from Michael Ellerman in the Link:, which is why
+>> I included it.
 >> 
->> [2] https://lore.kernel.org/all/20250416162740.93143-1-vaibhav@linux.ibm.com/
+>> Note that Sashiko found an issue with KVM+MTE, where a read-only mapping
+>> of the zero page in the linear map may result in issues:
+>> 
+>> """
+>> Does moving the zero page to .rodata (or unmapping/read-only mapping its
+>> linear alias) expose a guest-to-host denial of service with KVM and MTE?
+>> When an MTE-enabled KVM guest reads an unmapped memory address, KVM handles
+>> the stage-2 fault by mapping the host's shared zero page. KVM will then
+>> call sanitise_mte_tags() in arch/arm64/kvm/mmu.c.
+>> Since the PG_mte_tagged flag is never set on the zero page, KVM's
+>> try_page_mte_tagging() succeeds, and it calls mte_clear_page_tags().
+>> This executes the STGM instruction using the zero page's linear map alias.
+>> If this alias is read-only or unmapped, won't the STGM instruction trigger
+>> a synchronous permission fault or translation fault in EL1, causing a host
+>> kernel panic?
+>> """
+>> 
+>> Marc seems to think it is legit, so I came up with the following (I'll send
+>> it out separately with another pair of tweaks):
 >
-> Nope, it fails even on the master branch of QEMU.
+> Thanks, it also looks like we're getting some early WARN_ON()s firing in
+> CI from split_kernel_leaf_mapping() after applying your changes:
 >
-> - Eric
+> https://s3.amazonaws.com/arr-cki-prod-trusted-artifacts/trusted-artifacts/2571596185/test_aarch64/14662134813/artifacts/jobwatch/logs/recipes/21399931/tasks/219104268/results/1007729692/logs/journalctl.log
+>
 
--- 
-Cheers
-~ Vaibhav
+OK I'll investigate
 
