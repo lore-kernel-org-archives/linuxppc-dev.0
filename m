@@ -1,97 +1,76 @@
-Return-Path: <linuxppc-dev+bounces-21961-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21962-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C3812CD6E64
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Jun 2026 08:26:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8F890CD6E69
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Jun 2026 08:58:18 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gVgll1J0xz2ybQ;
-	Wed, 03 Jun 2026 18:26:43 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=205.220.180.131
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780475203;
-	cv=none; b=Viw3gjy8AOxzvIgf6stEI709gqAmLyYcLIqE1oE3LDXojhGpnp/LwQp8xCLuqbQlCjGmySPjAPusf+XrBQBGpjsDpp1O9shL3Zjpn8lfLVKnKJ28xIVxWIm70wwNb2MlZ8AyOEXdQ5kj4a3q+U7dN6S/+Nmkw2bmHM8GEbqsGtwOnp0nc2iDI0jt67Xrj4L9Np2nYwlwvRBySsvi3AMk3SYaBlQug1F6TzuUM+guzt2lQFqQNgf372pnjT7YSKjdHJfr7MYOzc0aGo7hXcNY2XQ271V5BWqqFo6osBwQcn5zm8BQ1j5UTD+nzzOwWcFUqfJsniaPeK7Bvamdac2lEw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gVhS84Qcvz2ybQ;
+	Wed, 03 Jun 2026 18:58:16 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780477096;
+	cv=none; b=gerdxUvfrUq8zLZDMd51uEakihvY2mFrK+ri1OKDxUXHAkPbZwFpJskf40Qk8ffx0hKsxIIK7aG+cxhZky/DaJ//dloWOxssWCKeC4RBx8lTwN3ixEmicVJui/KgS9C4rPYRcXaQd0hcRKjyboOyQcadUzUH0gplKddsSQe/1GysfmqjJ/PsMDxG5MWcPFYKbQG7HYmksJ1SkHpZtOHkMukpAQvCEWe63N7jRVlQpIWvXEMXxYGW93+Q2fV9YRH8HckYEk2gbPcoFAVhR7tU0MilwMKHT8uq8Utyc8wNHTbBdCEiVMLDuoxU8qTjLvXXtqQw9UBizsbmFs4r7Yn4Jg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1780475203; c=relaxed/relaxed;
-	bh=e7muuFyxXzcqXgmNJOoai7dMFzqfIvKUobcfRRnVGpI=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=gYsQd9s7wviGigOdKCsVuJx0fMFsrEj09+939FlA4h4phUWqJg717xv2/uieN85hImLnLs48rHZr0wdMXVAAa9/c7mWl6kU/7CzkxoLtsh5I+X026bWWWLnqU+vQGofL/ESNk1lPPEzkAp+iTbgKN2o3OUxmweMq3Eev/QhpPzK4Tgqp2nM/sP6jGcKQ6lcfDWgH35ryIv0s8ZxTneb3Owv76kbuaXzNKkJG2HMMSM175R9pPHlYej4gdvTng2UFQl99jKjBq1DNgYmQ289ihybCjeUXtcmCjaB6Xb/ABpyjW+ztR9Ag6IkG+M/PMnNA1KVaqixVfj2hhRe8es3pTw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=QvFGzEIj; dkim=pass (2048-bit key; unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=TGJoBhxw; dkim-atps=neutral; spf=pass (client-ip=205.220.180.131; helo=mx0b-0031df01.pphosted.com; envelope-from=bartosz.golaszewski@oss.qualcomm.com; receiver=lists.ozlabs.org) smtp.mailfrom=oss.qualcomm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+	t=1780477096; c=relaxed/relaxed;
+	bh=HNO5aQb0rtRKtux/wu+5AcytYSH9RtOlt3U0qrUIzPI=;
+	h=MIME-Version:Date:From:To:Cc:Message-Id:In-Reply-To:References:
+	 Subject:Content-Type; b=SQgWR7/y5Ej/0Pu/FJSIGLSEEdhHCgCTIC/t9wEm8O2kwjrbazev23CZHuI8PsXBaY2Z/E2vGywCghf+pRtexUu1b5lKidpVWoV7ukEuKX93zw2FpjkBfs8LXhiVPnCO1vOI689n1iGJw2PFd3e/HGoqw+HT74Pxjtqk01ZarpGWaMiA1R0KJ3rq4t6NNp8o/UMlyhPEexcrMRW4/XFg/DDTbZbxPJb+E3zXWt7vHn019WQJv5E6GoExzty4NiUGbfxMotZkaQE/xBgOIXYTKQ5CfYeJjOhjRsVaTmtOj16mNLXxRHCvsW4xTTrPE4oBhl9H3LeYGR+ormlYoqZBMQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=mnPkKyEg; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ardb@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=QvFGzEIj;
-	dkim=pass (2048-bit key; unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=TGJoBhxw;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=mnPkKyEg;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=oss.qualcomm.com (client-ip=205.220.180.131; helo=mx0b-0031df01.pphosted.com; envelope-from=bartosz.golaszewski@oss.qualcomm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ardb@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gVglj5FFXz2xjN
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 03 Jun 2026 18:26:40 +1000 (AEST)
-Received: from pps.filterd (m0279872.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6536RHgK2076090
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 3 Jun 2026 08:26:37 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:message-id
-	:mime-version:subject:to; s=qcppdkim1; bh=e7muuFyxXzcqXgmNJOoai7
-	dMFzqfIvKUobcfRRnVGpI=; b=QvFGzEIjGuPGW6Bw5JOj4FXhVQLeJRWUVfzasG
-	soo45BgOozeAPPusy3EdwWNSJG0AVFbbXR797Rb0x1qHMX5RZlxl3Z4lmHMP7vQK
-	zLE9q+UsE1HZr3ha5I50tYVQWIwNbFwoGocHhIC59kJ5WG82bmselvDrCdeg/tg0
-	vXOvc5gNV8mi4UtKpKI+OXwmC+3O8VExV/cPuUutR3WYMYo9pq2cKtP5TsWOMo4P
-	2CnkqWQwErS5c24Hf/RMZ9+O76G1FO1FJ6PJNRLaPulfGfgoWSkDPyPKqLebx5R3
-	+Mu9ogUsAQjppsUX27q0wMK6yxd2oaJlUv+IBWg/14z5mHGg==
-Received: from mail-qt1-f199.google.com (mail-qt1-f199.google.com [209.85.160.199])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4ejev18hhw-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 03 Jun 2026 08:26:36 +0000 (GMT)
-Received: by mail-qt1-f199.google.com with SMTP id d75a77b69052e-5175a1e32e3so10111631cf.0
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 03 Jun 2026 01:26:36 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1780475196; x=1781079996; darn=lists.ozlabs.org;
-        h=cc:to:message-id:content-transfer-encoding:mime-version:subject
-         :date:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=e7muuFyxXzcqXgmNJOoai7dMFzqfIvKUobcfRRnVGpI=;
-        b=TGJoBhxwkTLPNKazi70ArJFqTJcjWC4apWceIOSZ/5/AhmPxTZBHQn3LaE+kV+jade
-         DkvNN8NIt0hIgReybvx3sbNdKD66kcgw9ErjNBw9ZMExmw/FceIgYuE1xJG8MGIggSS/
-         jB0fPAj/Pbtg/8nxIWlukCFN/IIssNQbZgYkvVAh4JUtU3wGpHrX8eiF7S999wpabiXS
-         1vrKEsIZtjyKschsEUk3H9Zd7kNsLp92mDQblDeIa69YoqinoW6rfQzBLZBP22vo9HmU
-         iYW0uk5DHNfohLufVudaLxCeWEovtawwojUjEIaHunsNrt40pzJhcg+fE+3chv1rquZe
-         uQZw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1780475196; x=1781079996;
-        h=cc:to:message-id:content-transfer-encoding:mime-version:subject
-         :date:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=e7muuFyxXzcqXgmNJOoai7dMFzqfIvKUobcfRRnVGpI=;
-        b=O89bdAdPUbuheM3+7jL7CTm3jXE7JXF/SUmLKzY62sjVb34mn4guzP+3vbk0FKlYgs
-         LOzoBxBxvWDRaBwpqjasW7jwhnQt/n8wogmvnvQ1oazb/dJtzsTw7SZSIuD0gc6YjWOi
-         bnpbbdCHCj4AlXRn549rlzNArWba48uLIeMjGV/IKG9oaXt431s6jGqLKpk+Guzdo8D1
-         G3J27tloSNJJ+rHD0RXXY6Eam4pGmPT0+vYTWG+3J8rQUtBT4dAB8++VsNo/9Z4UbwPJ
-         Qx0Omwq0551HWmgSm1HlWJpKh8J2rsqxV9twmUk412DfMcRnV0AE+FJBMqynWOcNe0Ce
-         +YWQ==
-X-Forwarded-Encrypted: i=1; AFNElJ8YpGDAU2kzG0p4ZGyoaIOG09Kh4KHvU6+s0UurDUGlXZ8a4WB06tA5d2OJzeJc+qfPaF5Od1mbUhdnLEE=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yy7Pq6h3IttXsoC5/5uZ0C2Hmgh++ZS/auLFjflLAxYaTWXahG+
-	plRjWcNJsEUxj1WLSCerxhhlGMzdmGlxoz9RSoZ5jz6/kDcNvyxVPWOmkOVbe/0pfRYUYylAjjG
-	qXVasVXyg+VbbCIjohDHb+dWgh0QGd9RiltZMiNWjUaUL3/T5YTl7+4gSpkXIK2bWWUGn
-X-Gm-Gg: Acq92OH+szWbTuP5F+cL/qhqJ6kqbgTs4hvPNi7t9oJUaib2MOvgC+Y4uKGNbTndCqM
-	127tHl7pN3qnMhRkEZDWUTzS8fO4QJpgAW+jOIbMrOHODpiummfu9J9Mv2ESg94LH6EVgF4ywmJ
-	e8rfcMRM0ghkA0GPh6YeDw816ma90Mf13tqi8zOb/sMSciNoukXO4lKe1/YrpfrRrtgMKjRVp2K
-	Ttpr85BfeBVi/gz2gIGp8nWfZyGYZ+Wfp1DtbpZFghoA7ausH20RcyxASsHY9xdVCEKlljZ8yeP
-	5903oaRccPXCN97ls9uiPlWgPrE/YkRdPVvwI4ZxSIBbEytcwXp1mjOeCkKsMa6OpcY1XKTbzF3
-	OO8rjy698DqVPcyfvhwV0C6vlbKjKFcCEArM3GxCFaoQanfWNI/65JLdgSiw4gIYDhvh2nEtb2c
-	CyJjE0mqfBG8E=
-X-Received: by 2002:ac8:5511:0:b0:517:7188:c47a with SMTP id d75a77b69052e-51778606842mr26226501cf.2.1780475196237;
-        Wed, 03 Jun 2026 01:26:36 -0700 (PDT)
-X-Received: by 2002:ac8:5511:0:b0:517:7188:c47a with SMTP id d75a77b69052e-51778606842mr26226301cf.2.1780475195867;
-        Wed, 03 Jun 2026 01:26:35 -0700 (PDT)
-Received: from brgl-qcom.local (206.107.204.77.rev.sfr.net. [77.204.107.206])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-490b0e20bacsm117036575e9.6.2026.06.03.01.26.34
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 03 Jun 2026 01:26:35 -0700 (PDT)
-From: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
-Date: Wed, 03 Jun 2026 10:26:26 +0200
-Subject: [PATCH RFT] powerpc/8xx: implement get_direction() in cpm1
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gVhS73Km3z2y8W
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 03 Jun 2026 18:58:15 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with ESMTP id 9E82C40B56;
+	Wed,  3 Jun 2026 08:58:12 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8EE4A1F00893;
+	Wed,  3 Jun 2026 08:58:11 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1780477092;
+	bh=HNO5aQb0rtRKtux/wu+5AcytYSH9RtOlt3U0qrUIzPI=;
+	h=Date:From:To:Cc:In-Reply-To:References:Subject;
+	b=mnPkKyEgBAoJhHyCjKocF+n+JqkHcWSmPH184p/CrskKjSd4JLPoFSBGrYLKU9Mar
+	 B1hI8HW9H+53ks3lghDx4U+J6rNa6f8KquouzDq0+DM7/4ZBRzC0AuXQVPvI5bKqkY
+	 NglLbcu+ZBDleA+IgNkKfEKOPcXRhxVfSNk8lTpECqvKoBh+iHSyU2ZFRwFPFE4daX
+	 kw0WCczgVzTNS8Nry/XjBs//vr21nJLOAmz9iMERtpe8gUl3WYdzTVYvcHDMtqVnlJ
+	 wu/GIoZWa0/6+fA9X2Sm0u6y0MnNMo3tVdcswt4ZtD+mHXcn/QmWy2xNCp5hUrCygR
+	 dCBoxrKjfQI+w==
+Received: from phl-compute-01.internal (phl-compute-01.internal [10.202.2.41])
+	by mailfauth.phl.internal (Postfix) with ESMTP id 9E4CDF40075;
+	Wed,  3 Jun 2026 04:58:10 -0400 (EDT)
+Received: from phl-imap-05 ([10.202.2.95])
+  by phl-compute-01.internal (MEProxy); Wed, 03 Jun 2026 04:58:10 -0400
+X-ME-Sender: <xms:ouwfaqCSomCUHn2Pcxt39NzT6QrYDOwoUaHjVutpQNUu0GYFMZl_Ig>
+    <xme:ouwfavUBA_wa0-Kl0rwIin5phZ0Xk0GMcV5YCAKgwCXtZX9t6zPJc0f21igxmxdFZ
+    el9mEG9Na6KsRXZeOce-ahEOIXmRVtrBYvtLtWGWDsGbs4lRkjjK10>
+X-ME-Proxy-Cause: dmFkZTGr2weDGKBa0sUCUcj036iLL5Y1yiuWXtlNLmEI4O4KffGEG7mKCI4rtXP1Kjy/sC
+    Vn4JLRDUw3n/LlH/P7ldcJy2f2NLMW7zEwQdl58eFGDw13Gd7uBwZtBFefeubqM57vT7KW
+    gxI5DHTPlMa9V7t7GBAVKnyC4disspoUcyOJuYcuXeoXUDa8M5AS9XNNfwK+hXW4k6RRKP
+    P+HnepDfV9Ly2SCGeboQtn62xJxY4OofV3op27GBS756vLSUraZsZIubTiRwHvbO7GWFg8
+    TN89ZhNEjfm9JCDm1LdV/dDNhv9gsSNYWX/LbCMQhfYJTNEbDdYGKUoqZbehxmbuTXbkFU
+    XnaKhsn2lQq7XiJ+YTNPtHlw97iNDWbeNZirflpUY26TpW4YlC0yGx1F2Pdjov4xxyaUZd
+    nGZuSrO0ofec6SMf5X9bTikzbc7jU39nUFa8+EDOEs+sLMDgAb7Jfbkdo1r3Pi14q8HECl
+    WOyAkHMSoapVwjPlMra4gfnE/Sq1KO70VhXXH61epQ6Rh+aRLmPHQfsv+x4lMOk7iiwpsY
+    2Ln1UDislceGN/Gw4GkBXiCXnvOln8phYiq7SJoKkYgBG145jAMq3GJUgudNXhcY+kY+fP
+    qpGcyL1cKdvM1YoB3pTqsi5xKVO8SJQEPQQW/+ABFCEXztbk2H+BY/x90g+g
+X-ME-Proxy: <xmx:ouwfam3-PZsrAVqqiP-EfVs-0jTgxsPILW5ya_Lkxs4FNvUMV00I3A>
+    <xmx:ouwfaqtJQPQRdRGCSDlzv7oyJj2hWevC-qAmYiniqjt8Bubu_25WPg>
+    <xmx:ouwfai_l9FuzR3F73C0xJHJLI6BrnbgCXaJCGZTs31csy6qmGWmmEQ>
+    <xmx:ouwfauR1k_z1hiMDOUWOdTJsWToATwu--U1XlEgRSm3i3JLjPhl_jg>
+    <xmx:ouwfaoCm3jrQTsvC8JSjjw2cVnzpsLJPRFYPY4I2sfuqg_7otMeSlp9g>
+Feedback-ID: ice86485a:Fastmail
+Received: by mailuser.phl.internal (Postfix, from userid 501)
+	id 77D33182007A; Wed,  3 Jun 2026 04:58:10 -0400 (EDT)
+X-Mailer: MessagingEngine.com Webmail Interface
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -105,144 +84,101 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Date: Wed, 03 Jun 2026 10:57:49 +0200
+From: "Ard Biesheuvel" <ardb@kernel.org>
+To: "Will Deacon" <will@kernel.org>, linux-arm-kernel@lists.infradead.org,
+ "Ard Biesheuvel" <ardb+git@google.com>
+Cc: "Catalin Marinas" <catalin.marinas@arm.com>, kernel-team@android.com,
+ linux-kernel@vger.kernel.org, "Mark Rutland" <mark.rutland@arm.com>,
+ "Ryan Roberts" <ryan.roberts@arm.com>,
+ "Anshuman Khandual" <anshuman.khandual@arm.com>,
+ "Kevin Brodsky" <kevin.brodsky@arm.com>, "Liz Prucka" <lizprucka@google.com>,
+ "Seth Jenkins" <sethjenkins@google.com>, "Kees Cook" <kees@kernel.org>,
+ "Mike Rapoport" <rppt@kernel.org>, "David Hildenbrand" <david@kernel.org>,
+ "Andrew Morton" <akpm@linux-foundation.org>, "Jann Horn" <jannh@google.com>,
+ linux-mm@kvack.org, linux-hardening@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-sh@vger.kernel.org, maz@kernel.org
+Message-Id: <2c7929d4-6622-475d-af1b-bcd0cd997cd3@app.fastmail.com>
+In-Reply-To: <178041415770.4024555.11336437584927054639.b4-ty@kernel.org>
+References: <20260529150150.1670604-17-ardb+git@google.com>
+ <178041415770.4024555.11336437584927054639.b4-ty@kernel.org>
+Subject: Re: [PATCH v7 00/15] arm64: Unmap linear alias of kernel data/bss
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260603-powerpc-8xx-cpm1-get-dir-v1-1-2ae1c9a5b992@oss.qualcomm.com>
-X-B4-Tracking: v=1; b=H4sIADHlH2oC/6tWKk4tykwtVrJSqFYqSi3LLM7MzwNyDHUUlJIzE
- vPSU3UzU4B8JSMDIzMDMwNj3YL88tSigmRdi4oK3eSCXEPd9NQS3ZTMIl0zS4vk1LRUSyMzE3M
- loPaCotS0zAqw0dFKQW4hSrG1tQD1+bzfbwAAAA==
-X-Change-ID: 20260603-powerpc-8xx-cpm1-get-dir-698cefe92647
-To: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-        Madhavan Srinivasan <maddy@linux.ibm.com>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        Nicholas Piggin <npiggin@gmail.com>, Linus Walleij <linusw@kernel.org>,
-        Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: brgl@kernel.org, linuxppc-dev@lists.ozlabs.org,
-        linux-kernel@vger.kernel.org,
-        Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
-X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=openpgp-sha256; l=2897;
- i=bartosz.golaszewski@oss.qualcomm.com; h=from:subject:message-id;
- bh=eTMsESb02191VBWAM3gdYrq7DArj7WqJXG0UaTF3UHk=;
- b=owEBbQKS/ZANAwAKAQWdLsv/NoTDAcsmYgBqH+U0cpm99RL77fqJl2Zh2p2iYRyx1qLUn9F/a
- uBbBTVY4QGJAjMEAAEKAB0WIQSR5RMt5bVGHXuiZfwFnS7L/zaEwwUCah/lNAAKCRAFnS7L/zaE
- wzEmD/901JUDy822gDnXxa3+xDHSz3iK5cA2S+i8lULkT81mGB3JDvrpH0EJOp+0Yrm+2RGMomt
- g6z5jVjzpAjuEEzzHHdaVrHw3sLlEyzrEl3v2DL3kGIbb3pL1HiIqURTjYymsgqIXk8Y1a3NBck
- EVx2cyXnxLp9YYIP0dLn93e3kvpbyFfUiiZMM1ZuzJ1pm+paANFTrUKFysHHHHigTNB83AjrV42
- LPDm+g+5dHqDAQ3mSKo4D9MbFRH7yzRWk2rM1ca3HSWrjkcEEzey2ObShUvbAcRhoMfXOMK4MyQ
- mhoB1AOv79/5U6g3GzB3ymZkJ3fsi/hA1682MUoAwf70R+1SAY5zr66qqySdq6nVClnZqw4LiX2
- ib7fxfPgnqhsBhcy9njBDyv3A0n63qr8db9ZOhpHtD3uzzTQNCJsXz7q5l5vGNZroXC2i0WdjqL
- VNVCdYlYTNB3pv9i3Fe7HBdcUYxTIy5vkOVTjVNRGaF4Pd8LeUq41+TqkPChJEqO2q4xfR1dazk
- hjTj5dVZj1yXKvkmPnhdlWBDln+8oMb80vM97h1sUA1xEOGmqJdcq5LWyFnGrKDomR5Kd+FyHJw
- 4pIcDNNvV4BkEfDbKSvTNfkJP9uLwFWQ4v4+LtzVb5wdAYCFi17kBhX9UPW4Of6PbC55fnVRaS+
- +OV1J0lYmYDbFvw==
-X-Developer-Key: i=bartosz.golaszewski@oss.qualcomm.com; a=openpgp;
- fpr=169DEB6C0BC3C46013D2C79F11A72EA01471D772
-X-Proofpoint-ORIG-GUID: 5xv8lEb4gvXmUgjVOyFgq5MCWwF4lE3e
-X-Authority-Analysis: v=2.4 cv=PNE/P/qC c=1 sm=1 tr=0 ts=6a1fe53c cx=c_pps
- a=WeENfcodrlLV9YRTxbY/uA==:117 a=KBhjw7w+/BNUhOyiMSe1Cw==:17
- a=IkcTkHD0fZMA:10 a=FelO9ux0wxsA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=yx91gb_oNiZeI1HMLzn7:22
- a=VwQbUJbxAAAA:8 a=EUspDBNiAAAA:8 a=IQRRjYDBaVz1tQnfht8A:9 a=QEXdDO2ut3YA:10
- a=kacYvNCVWA4VmyqE58fU:22
-X-Proofpoint-GUID: 5xv8lEb4gvXmUgjVOyFgq5MCWwF4lE3e
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjAzMDA4MCBTYWx0ZWRfXzszaE5V3EldU
- d+Y0ld11C1qMhKF5akXPj6mxQgCKSHeC/OykqVkTGS+VQX8xF5KU5eE4b8XSnmYBfPOpHy2xc7c
- FtHAmQI7CuMPW7+yNdD/pd10aLdq36XPcOYFgPIZ1oo+DCnXBits4nay0yGLr5G4X3LlI/fbYwT
- 3EeQuK9nw6XMKpizQSbE/VX6L/RVQ4txrt6E/HN6RAnlz0g+yPu4/6VgqiA7s39HBnP4ifBL9Eo
- TspVQ5u+N21y2qwpvi2c5XAQ7a+hgGq7Uq5Hr/pbKzOiThzzEgSPSBOXy/h6cclwsVluexOqf5c
- 9GQ6MZZ+Og+CB1xkeaKGUxiEUQTXUWYrSvPOKLA3HAQL/AELS2GJAxkMdNeYsR/4u6/RNq74F/n
- 5q1CoSBSZiUdu4KRDQBc6GYzZiJkGKD0nEbgjWfM0gnTTd26DpBZz1qDxgmsAygu+lh6vaI1Zsn
- Q+3htQRBlor++q5iDEw==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
- definitions=2026-06-03_03,2026-05-28_03,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- phishscore=0 bulkscore=0 clxscore=1015 malwarescore=0 spamscore=0
- adultscore=0 impostorscore=0 suspectscore=0 priorityscore=1501
- lowpriorityscore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2605210000
- definitions=main-2606030080
 
-The lack of get_direction() callbacks in this driver causes GPIOLIB to
-emit a warning. Implement them for 16- and 32-bit variants.
+(cc Marc)
 
-Reported-by: Christophe Leroy <chleroy@kernel.org>
-Closes: https://lore.kernel.org/all/63487206f6e5a93eaf9f41784317fe99d394312f.1780399750.git.chleroy@kernel.org/
-Fixes: ec2cceadfae7 ("gpiolib: normalize the return value of gc->get() on behalf of buggy drivers")
-Signed-off-by: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
----
-Hi Christophe, please test if this works for you to silence the warning
-from GPIO core.
----
- arch/powerpc/platforms/8xx/cpm1.c | 26 ++++++++++++++++++++++++++
- 1 file changed, 26 insertions(+)
+On Tue, 2 Jun 2026, at 22:34, Will Deacon wrote:
+> On Fri, 29 May 2026 17:01:51 +0200, Ard Biesheuvel wrote:
+>> One of the reasons the lack of randomization of the linear map on arm64
+>> is considered problematic is the fact that bootloaders adhering to the
+>> original arm64 boot protocol (i.e., a substantial fraction of all
+>> Android phones) may place the kernel at the base of DRAM, and therefore
+>> at the base of the non-randomized linear map. This puts a writable alias
+>> of the kernel's data and bss regions at a predictable location, removing
+>> the need for an attacker to guess where KASLR mapped the kernel.
+>> 
+>> [...]
+>
+> It would've been nice to hear from the ppc folks on patch 11, but I've
+> picked it up on the assumption that they'll love the negative diff stat.
+> Worst case, we can drop/revert stuff if they have late objections.
+>
 
-diff --git a/arch/powerpc/platforms/8xx/cpm1.c b/arch/powerpc/platforms/8xx/cpm1.c
-index f00734f0590cf7c7382f808dce27373d9ff3d8bc..b31376bf6778802a7f6b6b499066846b6b1f61e9 100644
---- a/arch/powerpc/platforms/8xx/cpm1.c
-+++ b/arch/powerpc/platforms/8xx/cpm1.c
-@@ -472,6 +472,18 @@ static int cpm1_gpio16_dir_in(struct gpio_chip *gc, unsigned int gpio)
- 	return 0;
- }
- 
-+static int cpm1_gpio16_get_direction(struct gpio_chip *gc, unsigned int gpio)
-+{
-+	struct cpm1_gpio16_chip *cpm1_gc = gpiochip_get_data(gc);
-+	struct cpm_ioport16 __iomem *iop = cpm1_gc->regs;
-+	u16 pin_mask = 1 << (15 - gpio);
-+
-+	if (in_be16(&iop->dir) & pin_mask)
-+		return GPIO_LINE_DIRECTION_OUT;
-+
-+	return GPIO_LINE_DIRECTION_IN;
-+}
-+
- int cpm1_gpiochip_add16(struct device *dev)
+Thanks.
+
+There is a de facto ack from Michael Ellerman in the Link:, which is why
+I included it.
+
+Note that Sashiko found an issue with KVM+MTE, where a read-only mapping
+of the zero page in the linear map may result in issues:
+
+"""
+Does moving the zero page to .rodata (or unmapping/read-only mapping its
+linear alias) expose a guest-to-host denial of service with KVM and MTE?
+When an MTE-enabled KVM guest reads an unmapped memory address, KVM handles
+the stage-2 fault by mapping the host's shared zero page. KVM will then
+call sanitise_mte_tags() in arch/arm64/kvm/mmu.c.
+Since the PG_mte_tagged flag is never set on the zero page, KVM's
+try_page_mte_tagging() succeeds, and it calls mte_clear_page_tags().
+This executes the STGM instruction using the zero page's linear map alias.
+If this alias is read-only or unmapped, won't the STGM instruction trigger
+a synchronous permission fault or translation fault in EL1, causing a host
+kernel panic?
+"""
+
+Marc seems to think it is legit, so I came up with the following (I'll send
+it out separately with another pair of tweaks):
+
+-------8<------------
+From: Ard Biesheuvel <ardb@kernel.org>
+Subject: [PATCH] arm64: mte: Disregard the zero page explicitly for
+ manipulating tags
+
+The zero page is conceptually immutable, and will be moved into .rodata
+to prevent inadvertent corruption.
+
+Prepare the MTE code for this, by ensuring that the zero page is never
+taken into account for tag manipulation, given that those actions will
+no longer be permitted on the read-only alias of .rodata in the linear
+map.
+
+Signed-off-by: Ard Biesheuvel <ardb@kernel.org>
+
+diff --git a/arch/arm64/include/asm/mte.h b/arch/arm64/include/asm/mte.h
+index 7f7b97e09996..093b34944aee 100644
+--- a/arch/arm64/include/asm/mte.h
++++ b/arch/arm64/include/asm/mte.h
+@@ -80,6 +80,11 @@ static inline bool page_mte_tagged(struct page *page)
+  */
+ static inline bool try_page_mte_tagging(struct page *page)
  {
- 	struct device_node *np = dev->of_node;
-@@ -498,6 +510,7 @@ int cpm1_gpiochip_add16(struct device *dev)
- 	gc->ngpio = 16;
- 	gc->direction_input = cpm1_gpio16_dir_in;
- 	gc->direction_output = cpm1_gpio16_dir_out;
-+	gc->get_direction = cpm1_gpio16_get_direction;
- 	gc->get = cpm1_gpio16_get;
- 	gc->set = cpm1_gpio16_set;
- 	gc->to_irq = cpm1_gpio16_to_irq;
-@@ -604,6 +617,18 @@ static int cpm1_gpio32_dir_in(struct gpio_chip *gc, unsigned int gpio)
- 	return 0;
- }
++       extern struct page *__zero_page;
++
++       if (page == __zero_page)
++               return false;
++
+        VM_WARN_ON_ONCE(folio_test_hugetlb(page_folio(page)));
  
-+static int cpm1_gpio32_get_direction(struct gpio_chip *gc, unsigned int gpio)
-+{
-+	struct cpm1_gpio32_chip *cpm1_gc = gpiochip_get_data(gc);
-+	struct cpm_ioport32b __iomem *iop = cpm1_gc->regs;
-+	u32 pin_mask = 1 << (31 - gpio);
-+
-+	if (in_be32(&iop->dir) & pin_mask)
-+		return GPIO_LINE_DIRECTION_OUT;
-+
-+	return GPIO_LINE_DIRECTION_IN;
-+}
-+
- int cpm1_gpiochip_add32(struct device *dev)
- {
- 	struct device_node *np = dev->of_node;
-@@ -621,6 +646,7 @@ int cpm1_gpiochip_add32(struct device *dev)
- 	gc->ngpio = 32;
- 	gc->direction_input = cpm1_gpio32_dir_in;
- 	gc->direction_output = cpm1_gpio32_dir_out;
-+	gc->get_direction = cpm1_gpio32_get_direction;
- 	gc->get = cpm1_gpio32_get;
- 	gc->set = cpm1_gpio32_set;
- 	gc->parent = dev;
-
----
-base-commit: b7bee4ca5688e30ca50fbc87b1b8f7eed7006c17
-change-id: 20260603-powerpc-8xx-cpm1-get-dir-698cefe92647
-
-Best regards,
--- 
-Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
-
+        if (!test_and_set_bit(PG_mte_lock, &page->flags.f))
 
