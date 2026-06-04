@@ -1,76 +1,76 @@
-Return-Path: <linuxppc-dev+bounces-22089-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22090-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C5A6FCD6E75
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Jun 2026 02:17:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3FABCCD6E6E
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Jun 2026 02:17:51 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gWlSy2z4Xz3brB;
-	Fri, 05 Jun 2026 12:17:38 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::632"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780585333;
-	cv=none; b=D0xOnmKfAqMQQjKXvpA8u+hSGW7wku2nmrBmhTsW/6z1YS8tkL1LYCAWzOo+5KwbUNRzsRQRRdEB78VW7kRQW0YLV/Yylkjbq0r3/Nww3mL+7lfkPT33daoN0R0wl/zLDFLE8TdbodhzI3KTG8xpzPyPUc0siHWtxVQnHhIq8vaW8hNoVuQXkfj51VBVVz6KWL1tmTsDRUl2a3pmfO0DBWEDDquxbr4/e+TADDu+ujdWsniOoYt4wb4TokzkamnkvUOlvynuGZlmx22DLTwFyNeCGO9rTOisYYI4VYd/N1Wf2G5D5XZD1JyW96pdooEpHrATr2NeZprsd4yfg0wN4w==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gWlT36JRrz3byh;
+	Fri, 05 Jun 2026 12:17:43 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::62f"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780585335;
+	cv=none; b=VnW4u2ws58QAhnaH6AiJMpiHgaKXJwcooTpkksIcOj4TJs9iu6eZp2/eDr0iGR/gGnGRW0fWiuyf1veSEshKXJCJjqngqtfT7O6kQWtOuZXXExTULAuulWwyltJxCNdkOXeP/7KH8KoS/yApb8QNSOGDa2znB01lmBKHYa7xRPPBhK3Z1lBX8RmccIKJ72bwDWL/SSVbPV4SZMrVEkP2q3xep5ai5rW5UuGKXvdhjS+qYwRXr7vOryq3PUGDfvYkRW2SAsmdZxJqJERtUemJ4nEXRUvGjDx0p5cCn42QuW956FoeK0PlwY41Wd9556qbc0C7dkxzODyZ4yHD6HEtbg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1780585333; c=relaxed/relaxed;
-	bh=DQ5QlRlqJf2BWfjEpgZtMhqYoBzzggdHeyuHigzWBDQ=;
+	t=1780585335; c=relaxed/relaxed;
+	bh=2Bo6bv9IyO26QNTtP+PpQ5foOOUKiHlTonbwk1FrZVg=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=J5tnDiASofAyX+4QHwpOgvItsc1t4iBdNq8Z6Z3BxIwOE0oyHRU4ua6E7l3NGlX2IjoBXbUfq6ewxxbrK2hESXCRHX+HZDQZz1CaRekoCx36+BDcpuVQ21CiQBZU2EutZWBlHMTTKUAYuZVAP4U4z8l+aZzvqjORaiDV7qCX0cwyNAt6/7ZjGugLpVScoCe2rDc8noASuFe3jcljtTGWPVJn9wx+bv2nfqIo14n1dbMAkxeONiIEtB1KyNyRSO1OqZimniJuRPGNjHdeOydYVwKu9JikqF0lF+NrGj3uLdGL7Ck/1xD52n2M7uRvgH0A+/Zhgjny3MRhunH6KdiyJg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=Z2An/deN; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::632; helo=mail-pl1-x632.google.com; envelope-from=dimitri.daskalakis1@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	 MIME-Version; b=N0ubqcUo+h/OZz9EnWkn3eqBET/v3WbYRQdOHgYLEcQJuMYcrWQZNQKoFEslC8fRiTPJmJ+zH4Fs+KO2rqdG6Wz+0G5/tF30yYWRBmLmdiTaHqMeWEuwQF5uDlGc80qG9gaJoGw7ibiMkVcorJAkaCyl0Rb0hJisNc67FssBji40opzqh0qTZDYZuozi40fJHVnRc+U7YG37LL6IwLnZ6zc5MuQuGmYIpDWEJmmcCxKXIram2AGlf1k7q82cBzgtlJJUsLNDEsrcoWXef2R5hN7d2AG8AJAodMC6iX0SsnMi3KZlVj4iZSHYlm8mtmtNanpj3DJK2EsuqVVikoP20w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=TLjTobT+; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::62f; helo=mail-pl1-x62f.google.com; envelope-from=dimitri.daskalakis1@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=Z2An/deN;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=TLjTobT+;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::632; helo=mail-pl1-x632.google.com; envelope-from=dimitri.daskalakis1@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pl1-x632.google.com (mail-pl1-x632.google.com [IPv6:2607:f8b0:4864:20::632])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::62f; helo=mail-pl1-x62f.google.com; envelope-from=dimitri.daskalakis1@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pl1-x62f.google.com (mail-pl1-x62f.google.com [IPv6:2607:f8b0:4864:20::62f])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gWSTc2CzSz2yT0
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Jun 2026 01:02:12 +1000 (AEST)
-Received: by mail-pl1-x632.google.com with SMTP id d9443c01a7336-2c0c1e0b0faso6078695ad.0
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 04 Jun 2026 08:02:12 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gWSTf3jxjz2y1Y
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Jun 2026 01:02:14 +1000 (AEST)
+Received: by mail-pl1-x62f.google.com with SMTP id d9443c01a7336-2bf3781ca51so9119955ad.0
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 04 Jun 2026 08:02:14 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1780585330; x=1781190130; darn=lists.ozlabs.org;
+        d=gmail.com; s=20251104; t=1780585332; x=1781190132; darn=lists.ozlabs.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=DQ5QlRlqJf2BWfjEpgZtMhqYoBzzggdHeyuHigzWBDQ=;
-        b=Z2An/deNVa839wXMut9cSmz+ZyRa9dqJErSLqlR18Cl062th7UBdMI86+d+06nGJ9W
-         dJWMqljRERW6dJA9zjfrSQ0pR7BSzTCi17Molh16TVeppumDgCRiq4GAowzP8oHJc3Us
-         MAZ1uz1I8LWGl+YWJ+kyybOlbCMYRc7UVtHzk8AUu+Qo6mVsY2vfJ8gokkYBLWnKA3YC
-         e7GXE3LYCaEf2uDGNsozHvWmPSugcrRWQuDjzbL80lSDLAQcNUJvNZTcJg7CfIegS64D
-         CTvdhadddTRgIn0/F4Rx4KYEVEmVk0VOpX+0rCktUXIVtcB1tJh4IApe/D73I5/V2FMr
-         m37w==
+        bh=2Bo6bv9IyO26QNTtP+PpQ5foOOUKiHlTonbwk1FrZVg=;
+        b=TLjTobT+Kr5/LRfZaZJFRGorIyZYzETRIpaOt3YlIadZGlAk2LaL2RAonPtfZt7jEo
+         RjU9Iw2PonSrq4Ty/ozPctY1xEhdltrRWGevzKzbTfZO6K5vCSyxusnDgxkFGH+aukuc
+         2Bnz7pmzMraJGsO9Yfw5mzg7qF9nNSfaHBi7eCoSM0j5zSOto6Hijrs92+xh80mZ5Av6
+         4XwJmE29Yl4UxhG5Lklz5Vjv9o+xJtC/U6aPfjiD7ZJmyFzmJ8YDcF+2rArGLO2KwY/D
+         v7BrRP7/OaEeqB1q6oFCHv/XjqHwg/Zh1j8bdttg104pw6wFey6ifKYvgVUEMBMq7GJo
+         EvDg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1780585330; x=1781190130;
+        d=1e100.net; s=20251104; t=1780585332; x=1781190132;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to;
-        bh=DQ5QlRlqJf2BWfjEpgZtMhqYoBzzggdHeyuHigzWBDQ=;
-        b=fBPcQzZv5+xUDHBeWnWrzHcvTVizEFDwfCxSCs2kgfQ+rx+G+NfZw9Lc6Dpyuly7ze
-         bc8apu4uOzmR9r8rMtJ9pWCwwsuDLJEVNkJV1NY2ybbK65LcWs6uAyH0U6pt9CewIvnR
-         HWq+Y2KZtj7fEMxiIuaGP7znfweb7oFz7T91M+ApEh0T37nQE6HRiQoU2eNTCEzR8T1B
-         ZSEt0qU5J5ByW9OA/1kMa4/DTCIabi1RZ6oGDLiFIG83N6u/QBphQIe+AVxMvDvdtLNr
-         gTjbP17yrzUOw0yweWcFgANxr4NY8w1AZPNyXLEoFZEfaFQwZIAg3xkqSK1KaUMSVE5R
-         bi5Q==
-X-Forwarded-Encrypted: i=1; AFNElJ+rdkzoxgQyo7Ak31WES0gbpUuHsS766B6hK5tADuG6wVdhUhMKPSBmW1rZo232baZO5Coop75y07a3uJs=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YwoAO7Q02DiaR7D5NjpHRVKRBk9wcw5a4Sa14k6UuwYxtJfk/dB
-	AMJpJXbyXNoaPBc5I/iXiOxqcNNSfIwDPIAqok8r624wQOtUWsIs8yDF
-X-Gm-Gg: Acq92OHZZQ5y93LD3c3tJJzVf1rgz053Pdl0I9FpD8vx5qtZeavpDN9rlUHsEiQtbqw
-	8PRkMx2kYcfhcBOSx6h+XkV+WCLyhvm0QkjzihxoirYna04fu1UCEDLmpJWIhiZ6v82otcwcbAf
-	hpjFwk7eZXotie1RfjvtcJSym/nXgj9erMXZHzCvAJbcuK1ULYLqeEM2K21QziTgC+BvxoidaaK
-	Ivx5mNCesej6PK5C4HwfRqBLu4eEkUYhNHAR/zJs747Qb2sbYffz7LFn1WvDDGT/FyDbfvAXPqN
-	/XRpEUGBv0BuPxDjoxuJMYF3oWQYfoWD4OXDV+2i/xO+hsWstBTQPasen35nQ5HKZkNrBo51h8u
-	IwjuqAB3dgklzIsTMj0oBw+BzqsxUdmxvHuZePbC2FnJgeXC11bb9NeYwE+xTD/veD4kAFkciwa
-	0ORni64uP1opgkHDFioL2VqgBHbgZIg3pFI+XYF3RQVknQFynN
-X-Received: by 2002:a17:903:1b07:b0:2c0:eee2:fc45 with SMTP id d9443c01a7336-2c163a28b9fmr86640905ad.4.1780585329440;
-        Thu, 04 Jun 2026 08:02:09 -0700 (PDT)
-Received: from localhost ([2a03:2880:7ff:1::])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2c16609df79sm62219485ad.42.2026.06.04.08.02.08
+        bh=2Bo6bv9IyO26QNTtP+PpQ5foOOUKiHlTonbwk1FrZVg=;
+        b=mglaK5KllSi284UQq+F2dblwTUfsE56ndqUfFbdllSkEC5dizPPi7U+WsYlyD+ozbY
+         Tokr2HuKl1ELzOK28xOnZz2hZRXtlmL0c11y0SlHrRqZri9nzqLjTVIBvJCY5Y0XJaN0
+         WP6nSK9KL/c+cKeK24su3tfFXFmRd1vYR3BzJiojIQFbCDDjDqQcdZZShn5lVxXpGafR
+         SxcvKo9tEOQbVbxsAE63O+GTuNbCzE6MGC08utuXm+Q15kW43mOHSOZRbp7/RuZaKXg9
+         MFzwUhNmJelAa3U8ignTuTQ0FvgW1IuEaB7vRPN+A+TVQ1OJqZPmS/vCDC6NloLJqQQw
+         Wxnw==
+X-Forwarded-Encrypted: i=1; AFNElJ8qZQjP3RWUo2zHa0N4Avel22sn9k6tTS90T+LRls4eAjwmTyBUqYOE8X1cY222kW/rpRXSaRrZsFRkAII=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YzZwe9to2KwPqaj4W2iUHYuKPgELaTAaTYPQOb269uEZLRbUGnf
+	VyuOuusdauwjqho+VXXbFrbQooJFBDB75xvidoLqd7oW/isI8uIgDt7r
+X-Gm-Gg: Acq92OFS66CIYQx9W8M4khFNUpLYu16JhM7bIGPkd3LzZI7+R9YraCYtszBwVcFhLWe
+	i/vQWZMtAyMcfe5C1EEiJByVp7xEgwNG6C6boT11Fyos9MqsEQMuTuDC41qCVqaVpnSjeql0Nxo
+	ygXpzj9T1MG1xeZy5tut8H9Ti9iYFYyrSb2M8QnJHxJEsE0XbVUORxsDJZL+H/Kzsh0v22MoS3E
+	j1HxviIavWzJuiW5KvH9XpeuKwu29TFt0ogNtaPI8v0ksqxFTA4ebKlxGdlzhL+iL57udtW/VcF
+	gvh03siZ9D+nA0HefSfM/32SKl/pMtQfWXyLfXNgMxJ+Daig2qCzbhsxBqVknMDcR4ysoZNBnvG
+	qvhlDoFIswUga/OPyK3De+7qPnT6c9+j8ISLTtyAFLpr9B8K1X4WM1/+sN1EFQk70RozxV/D572
+	qtOyqZ5d3WoZdF+L5nywOHfxRID1KI/M4FLyjo9IrpgrSh7L6Y
+X-Received: by 2002:a17:902:ced1:b0:2bd:5ab:af95 with SMTP id d9443c01a7336-2c1634f9212mr84880605ad.0.1780585331912;
+        Thu, 04 Jun 2026 08:02:11 -0700 (PDT)
+Received: from localhost ([2a03:2880:7ff:5::])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2c16609df79sm62220215ad.42.2026.06.04.08.02.10
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 04 Jun 2026 08:02:08 -0700 (PDT)
+        Thu, 04 Jun 2026 08:02:11 -0700 (PDT)
 From: Dimitri Daskalakis <dimitri.daskalakis1@gmail.com>
 To: Bjorn Helgaas <bhelgaas@google.com>
 Cc: linux-pci@vger.kernel.org,
@@ -103,9 +103,9 @@ Cc: linux-pci@vger.kernel.org,
 	linux-s390@vger.kernel.org,
 	kvm@vger.kernel.org,
 	xen-devel@lists.xenproject.org
-Subject: [RFC 09/12] PCI: Add helper to compute VF Routing ID to pci.h
-Date: Thu,  4 Jun 2026 08:01:50 -0700
-Message-ID: <20260604150153.3619662-10-dimitri.daskalakis1@gmail.com>
+Subject: [RFC 10/12] PCI: Add Scalable I/O Virtualization data structure definitions
+Date: Thu,  4 Jun 2026 08:01:51 -0700
+Message-ID: <20260604150153.3619662-11-dimitri.daskalakis1@gmail.com>
 X-Mailer: git-send-email 2.52.0
 In-Reply-To: <20260604150153.3619662-1-dimitri.daskalakis1@gmail.com>
 References: <20260604150153.3619662-1-dimitri.daskalakis1@gmail.com>
@@ -126,66 +126,156 @@ Content-Transfer-Encoding: 8bit
 
 From: Dimitri Daskalakis <daskald@meta.com>
 
-The VF RID computation is identical for SR-IOV and SIOV. Add a common
-helper so we can share the logic across both.
+Define the PCIe SIOV extended capability registers per the PCIe 7.0
+spec, and introduce the kernel-internal data structures needed to track
+SIOV state on a Physical Function. PCI-SIG members can access the spec
+here https://members.pcisig.com/wg/PCI-SIG/document/previewpdf/22464.
 
-No functional changes.
+The PCI_SIOV kconfig selects PCI_ATS rather than attempting to decouple
+the sriov/physfn union within struct pci_dev from CONFIG_PCI_ATS. If
+desired this can be done in the future, since ATS is optional
+for SR-IOV and SIOV.
+
+Inspired by struct pci_sriov, struct pci_siov records the
+capability position, total SDI count, routing ID offset/stride, and
+driver-configurable limits.
+
+Add an is_siov bit to struct pci_dev along with helpers to identify
+SIOV PFs/VFs.
 
 Assisted-by: Claude:claude-opus-4.7
 Signed-off-by: Dimitri Daskalakis <daskald@meta.com>
 ---
- drivers/pci/iov.c |  8 ++++----
- drivers/pci/pci.h | 12 ++++++++++++
- 2 files changed, 16 insertions(+), 4 deletions(-)
+ drivers/pci/Kconfig           | 11 +++++++++++
+ drivers/pci/pci.h             | 13 +++++++++++++
+ include/linux/pci.h           | 16 +++++++++++++++-
+ include/uapi/linux/pci_regs.h | 12 +++++++++++-
+ 4 files changed, 50 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/pci/iov.c b/drivers/pci/iov.c
-index 4aed4f6a42c3..5d65413ce98d 100644
---- a/drivers/pci/iov.c
-+++ b/drivers/pci/iov.c
-@@ -25,16 +25,16 @@ int pci_iov_virtfn_bus(struct pci_dev *dev, int vf_id)
- {
- 	if (!pci_is_sriov_physfn(dev))
- 		return -EINVAL;
--	return dev->bus->number + ((dev->devfn + dev->sriov->offset +
--				    dev->sriov->stride * vf_id) >> 8);
-+	return pci_virtfn_routing_id(dev, dev->sriov->offset,
-+				  dev->sriov->stride, vf_id) >> 8;
- }
+diff --git a/drivers/pci/Kconfig b/drivers/pci/Kconfig
+index 33c88432b728..930231835c40 100644
+--- a/drivers/pci/Kconfig
++++ b/drivers/pci/Kconfig
+@@ -164,6 +164,17 @@ config PCI_IOV
  
- int pci_iov_virtfn_devfn(struct pci_dev *dev, int vf_id)
- {
- 	if (!pci_is_sriov_physfn(dev))
- 		return -EINVAL;
--	return (dev->devfn + dev->sriov->offset +
--		dev->sriov->stride * vf_id) & 0xff;
-+	return pci_virtfn_routing_id(dev, dev->sriov->offset,
-+				  dev->sriov->stride, vf_id) & 0xff;
- }
- EXPORT_SYMBOL_GPL(pci_iov_virtfn_devfn);
+ 	  If unsure, say N.
  
++config PCI_SIOV
++	bool "PCI Scalable IOV support"
++	select PCI_ATS
++	help
++	  Scalable I/O Virtualization is a PCIe feature that allows devices
++	  to expose lightweight Scalable Device Interfaces (SDIs). Unlike
++	  SR-IOV Virtual Functions, SDIs have no config space or BARs and
++	  rely on software to compose the control path.
++
++	  If unsure, say N.
++
+ config PCI_NPEM
+ 	bool "Native PCIe Enclosure Management"
+ 	depends on LEDS_CLASS=y
 diff --git a/drivers/pci/pci.h b/drivers/pci/pci.h
-index 73b913bcb87a..45411960fd2e 100644
+index 45411960fd2e..fd7c04e26c16 100644
 --- a/drivers/pci/pci.h
 +++ b/drivers/pci/pci.h
-@@ -1017,6 +1017,18 @@ static inline int pci_resource_num_to_vf_bar(int resno)
- }
- #endif /* CONFIG_PCI_IOV */
+@@ -683,6 +683,19 @@ struct pci_sriov {
+ 	bool		drivers_autoprobe; /* Auto probing of VFs by driver */
+ };
  
-+#if defined(CONFIG_PCI_IOV) || defined(CONFIG_PCI_SIOV)
-+/*
-+ * Compute the Routing ID (bus/devfn) for a VF or SDI under @pf, given the
-+ * capability's offset and stride.
-+ */
-+static inline u16 pci_virtfn_routing_id(struct pci_dev *pf, u16 offset,
-+				     u16 stride, int id)
-+{
-+	return (pf->bus->number << 8) + pf->devfn + offset + stride * id;
-+}
-+#endif
++/* Scalable I/O Virtualization */
++struct pci_siov {
++	struct pci_dev	*self;		/* This PF */
++	u32		cap;		/* SIOV Capabilities */
++	u16		pos;		/* Capability position */
++	u16		total_SDIs;	/* Total SDIs associated with the PF */
++	u16		num_SDIs;	/* Number of SDIs currently enabled */
++	u16		offset;		/* First SDI Routing ID offset */
++	u16		stride;		/* Following SDI stride */
++	u16		driver_max_SDIs;/* Max num SDIs driver supports */
++	u8		max_SDI_buses;	/* Max buses consumed by SDIs */
++};
 +
- #ifdef CONFIG_PCIE_TPH
- void pci_restore_tph_state(struct pci_dev *dev);
- void pci_save_tph_state(struct pci_dev *dev);
+ #ifdef CONFIG_PCI_DOE
+ void pci_doe_init(struct pci_dev *pdev);
+ void pci_doe_destroy(struct pci_dev *pdev);
+diff --git a/include/linux/pci.h b/include/linux/pci.h
+index ca84f66425b2..eba562474017 100644
+--- a/include/linux/pci.h
++++ b/include/linux/pci.h
+@@ -480,6 +480,7 @@ struct pci_dev {
+ 	unsigned int	is_physfn:1;
+ 	unsigned int	is_virtfn:1;
+ 	unsigned int	is_sriov:1;		/* SR-IOV is enabled on this device (PF or VF) */
++	unsigned int	is_siov:1;		/* SIOV is enabled on this device (PF or VF/SDI) */
+ 	unsigned int	is_hotplug_bridge:1;
+ 	unsigned int	is_pciehp:1;
+ 	unsigned int	shpc_managed:1;		/* SHPC owned by shpchp */
+@@ -549,6 +550,9 @@ struct pci_dev {
+ 	u16		ats_cap;	/* ATS Capability offset */
+ 	u8		ats_stu;	/* ATS Smallest Translation Unit */
+ #endif
++#ifdef CONFIG_PCI_SIOV
++	struct pci_siov	*siov;		/* PF: Scalable IOV info */
++#endif
+ #ifdef CONFIG_PCI_PRI
+ 	u16		pri_cap;	/* PRI Capability offset */
+ 	u32		pri_reqs_alloc; /* Number of PRI requests allocated */
+@@ -598,7 +602,7 @@ struct pci_dev {
+ 
+ static inline struct pci_dev *pci_physfn(struct pci_dev *dev)
+ {
+-#ifdef CONFIG_PCI_IOV
++#if defined(CONFIG_PCI_IOV) || defined(CONFIG_PCI_SIOV)
+ 	if (dev->is_virtfn)
+ 		dev = dev->physfn;
+ #endif
+@@ -615,6 +619,16 @@ static inline bool pci_is_sriov_virtfn(const struct pci_dev *dev)
+ 	return dev->is_virtfn && dev->is_sriov;
+ }
+ 
++static inline bool pci_is_siov_physfn(const struct pci_dev *dev)
++{
++	return dev->is_physfn && dev->is_siov;
++}
++
++static inline bool pci_is_siov_virtfn(const struct pci_dev *dev)
++{
++	return dev->is_virtfn && dev->is_siov;
++}
++
+ struct pci_dev *pci_alloc_dev(struct pci_bus *bus);
+ 
+ #define	to_pci_dev(n) container_of(n, struct pci_dev, dev)
+diff --git a/include/uapi/linux/pci_regs.h b/include/uapi/linux/pci_regs.h
+index 14f634ab9350..0f81c8c72b05 100644
+--- a/include/uapi/linux/pci_regs.h
++++ b/include/uapi/linux/pci_regs.h
+@@ -763,7 +763,8 @@
+ #define PCI_EXT_CAP_ID_DEV3	0x2F	/* Device 3 Capability/Control/Status */
+ #define PCI_EXT_CAP_ID_IDE	0x30    /* Integrity and Data Encryption */
+ #define PCI_EXT_CAP_ID_PL_64GT	0x31	/* Physical Layer 64.0 GT/s */
+-#define PCI_EXT_CAP_ID_MAX	PCI_EXT_CAP_ID_PL_64GT
++#define PCI_EXT_CAP_ID_SIOV	0x38	/* Scalable I/O Virtualization */
++#define PCI_EXT_CAP_ID_MAX	PCI_EXT_CAP_ID_SIOV
+ 
+ #define PCI_EXT_CAP_DSN_SIZEOF	12
+ #define PCI_EXT_CAP_MCAST_ENDPOINT_SIZEOF 40
+@@ -1005,6 +1006,15 @@
+ #define  PCI_SRIOV_VFM_AV	0x3	/* Active.Available */
+ #define PCI_EXT_CAP_SRIOV_SIZEOF 0x40
+ 
++/* Scalable I/O Virtualization */
++#define PCI_SIOV_CAP		0x04	/* SIOV Capabilities */
++#define PCI_SIOV_TOTAL_SDI	0x08	/* Total SDIs */
++#define PCI_SIOV_STATUS		0x0B	/* SIOV Status */
++#define PCI_SIOV_STATUS_ENABLED 0x01	/* At least one SDI is enabled */
++#define PCI_SIOV_SDI_OFFSET	0x0C	/* First SDI Offset */
++#define PCI_SIOV_SDI_STRIDE	0x0E	/* SDI Stride */
++#define PCI_EXT_CAP_SIOV_SIZEOF	0x10
++
+ #define PCI_LTR_MAX_SNOOP_LAT	0x4
+ #define PCI_LTR_MAX_NOSNOOP_LAT	0x6
+ #define  PCI_LTR_VALUE_MASK	0x000003ff
 -- 
 2.52.0
 
