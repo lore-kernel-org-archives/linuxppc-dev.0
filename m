@@ -1,152 +1,66 @@
-Return-Path: <linuxppc-dev+bounces-22040-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22041-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2A9DBCD6E4A
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Jun 2026 14:06:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 37D9FCD6E6D
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Jun 2026 14:17:40 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gWRDt1sC0z2y1Y;
-	Fri, 05 Jun 2026 00:06:06 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:d107::1" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780581966;
-	cv=pass; b=oYzduboYz01jvhBkrc+SIfx9tl0IA21+LPwh3fJcMqBvaD0Otgh0j0SGu/7B7ZIS9thgDd4mvOg0t6BYG23l6kgFgKxJqspm4j9evk17GZf8OwhrA2ms9IXq/OaIiNrE/ZOGFldAXcsMnOmCd/BaVdl01CBZCb4qeZHQXIzZFiQ0exhimt/4xVdf03N51v7MOIq7D3f5ZRqPjJNRZ3gINp6uwx96V+E+mStRhYOc6OaK3BytCX1cds9hqYoWS6tk8g4icolG0JujNGH0/A7oV1dSstcYCMiwWhN0H9mdblOJCWDzavifcwnTdjmfDKSZi49byOVp0L+m3fxY2IDxuA==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1780581966; c=relaxed/relaxed;
-	bh=okbux3rK3OQBwN7csm0ykJnyvdY5GBjq7dyp5u3qLSU=;
-	h=From:To:CC:Subject:Date:Message-ID:References:In-Reply-To:
-	 Content-Type:MIME-Version; b=NSqWVsaQwO2FsR1A/Ww+o4V8MamUz5UjiiTK4sQIUUEgUDuOfJhSwGSyQ0h7c0QAFT8s62an9w7UjTSpztylz8gGXoYS1quz5QmjFoPtGi7GMAC7AmTKn59Asr9ZKLzWby83x8B8YWRqHob8s8J5YHSQTdgvciJSc+IcTSR4Md1fdIFFpNlTxewn0qLFAq9yyxP4H3xDV/TrzADxDxzT+05t58dOML5jFTQy5oxuMxWBGyyysuUI54yoEEsQUDfH/oxWKOhwMwkTTkLvTHLDoPdIKRiZFlAtxV7bWmIfPceUUswtrSzpziGbI8gbwFzlpdD1qERYxddFujsSEQxVqg==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=outlook.com; dkim=pass (2048-bit key; unprotected) header.d=outlook.com header.i=@outlook.com header.a=rsa-sha256 header.s=selector1 header.b=L86aRKID; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:d107::1; helo=dm5pr21cu001.outbound.protection.outlook.com; envelope-from=mhklinux@outlook.com; receiver=lists.ozlabs.org) smtp.mailfrom=outlook.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=outlook.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gWRV95M9mz2y1Y;
+	Fri, 05 Jun 2026 00:17:37 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780582657;
+	cv=none; b=gsddXjYXYAePSrgv32DCNB9alv8oN/7UIv4tPr/+x646pg+VWhpDDB5q98RoB4WyOhgxacDPoiijEMcORVG9vhYzK6Bo1GDY7QvwUg7MdPJ3L0ExW7EGeWqlN3CV/vy63ROWrbJlbXfFbOk5wZFgGzwRCbr0ZcZDkw1s+pEBikt+ey19IK2+vH2moP9N1UF5ZPewotess0iXLxSmFSTaQNmXPZxeeQvEZN/JOzD4JHPvxaTUdS84KwJrUOc/2rcBSL27idI+jKFkCfg8nwEf+Q72g+FH6wA3MEzQ1v0jNKaPNhNizgEUjHoxGRlnkJ1NpbR9Q0flwrdpQ+pqLmq4UA==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1780582657; c=relaxed/relaxed;
+	bh=a23fVnlClqzkGnu4H8lLPL7TNuMOc0N3Wpy71vcyZKw=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=UHYKkSHBXWXBKul+OH0RQfmv6Ys0c6V/reUCTIo0amT4jRrmvTF3hgpSpZFb19WocvysakFtnA3TWLg+UqPvt2yY9HfD/BHwBljftapCHlbBTA4r8aIZdKzu0vfIbZ0jPQftEvMgZkDMMFa3VbiYcnJwHr5KXNB11rjuRVALmU31Kl+y8cxPQeITwUwYFy3ijI25jyKKc/kYSZpjJwGy3oG1mOZegmwOLP3UByKW32weY8Us9Mu0ftyj7aHqz75qbD0KNwLXn11i+PhpzcN1pwCkTW0xNHhsmfQUFXBlmPfZsfdkg/5BcZCGcASr7kSX4rCkCWnZ+JFVwZ7kFqvTZw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=kCULlyQj; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=acme@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=outlook.com header.i=@outlook.com header.a=rsa-sha256 header.s=selector1 header.b=L86aRKID;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=kCULlyQj;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=outlook.com (client-ip=2a01:111:f403:d107::1; helo=dm5pr21cu001.outbound.protection.outlook.com; envelope-from=mhklinux@outlook.com; receiver=lists.ozlabs.org)
-Received: from DM5PR21CU001.outbound.protection.outlook.com (mail-centralusazolkn190110001.outbound.protection.outlook.com [IPv6:2a01:111:f403:d107::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=acme@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gWRDq1vcyz2xfB
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Jun 2026 00:06:02 +1000 (AEST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=CDQ89w4LCf9gb2RE9/uaK1aCA+Y/r/dBD3Rx52Spjbzf3DD3V5Fvzt9hmtOdTcl/XqzS+nwWleTgqdDdbZ6cSWxYUb0/Mn9b+ymsA6vxA/iFzYzTjkjWNPrCujbLyCTRUEQ8e3W1Tc3xyb3+K/f7MJuAfDajjjf0wZYLgZgtvt2PMLYn9HGczn9BPF8PJBbzCrD3sZ6iRu0PJ5wIK4WWB5t+rHgcA0JIr7nwnaJcmUC+czPdvY06djkyK7a3EAZdkw6blFC2dE5cO0oXXe8SV6guuZdO7FPeW5dKZ8PDLfP4rRiaivVOTyIKq7EtqaN6hE7jNPbmwhyALqp9226Zng==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=okbux3rK3OQBwN7csm0ykJnyvdY5GBjq7dyp5u3qLSU=;
- b=wceT+b9O2Rff5+YTLT9xcm4NH27/0gL0IrTqRTb/r9hCM4uvRRWGgTHUSa3EcVTbRlHpiqEBGv8G25Sh6dUp3DcIf17kTpdPKOTd7qVOA7q4QyTHoJauMc92v7M4TFI8nm2/y1OYTix3FhW2anjhigs3teNIZAk0r5SuOBn59DCcQq+9M+5q/PRv2JBVKqinoRFaJ0ls5cAi1/1E+VopVIdg1I7fp9BhyTMTH3S06ZQTJVxZhayZkVVR4VIwLzvVN6psNv0ZlCCRfR31lJyHYWp5VmxfVfORvC433G3L0jF4Sqhq6Uo/MHSFUjdA99knKLfVSIG0omWwifle48CBdA==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=none; dmarc=none;
- dkim=none; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=outlook.com;
- s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=okbux3rK3OQBwN7csm0ykJnyvdY5GBjq7dyp5u3qLSU=;
- b=L86aRKIDl/GqhSiANwPEpTn/kq60112lJpLH72LN6og4CookMCICkWcbJMXJGD8nat7lB7C5Z6DL1at1Ku3BS6+cirtWYwskQTih2QMa6utdgq8iof16ROKDlsVnbNSWefvoTwwUaAg0D1WCEGLFqw04/Ojs1BCpP83r8H0TGYXNlYKI7re8a+MZlxAJk+KB2ehWpepcpqyuJILkt9taBKf4QzN8WrOaaMk8U4qLb+wCRMrZXwSjiIHH+jS71iF1+BQH9rdiw7eNZdmdyVa75/9uHqFv4+u9JeGvQnWOox52F2oX3l95vN+O8MGGsGwvFd5wx/nOb91WdPNOXgm7bg==
-Received: from SN6PR02MB4157.namprd02.prod.outlook.com (2603:10b6:805:33::23)
- by CY8PR02MB9472.namprd02.prod.outlook.com (2603:10b6:930:71::17) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.92.8; Thu, 4 Jun 2026
- 14:05:35 +0000
-Received: from SN6PR02MB4157.namprd02.prod.outlook.com
- ([fe80::900:1ccf:2b1e:52b6]) by SN6PR02MB4157.namprd02.prod.outlook.com
- ([fe80::900:1ccf:2b1e:52b6%3]) with mapi id 15.21.0092.006; Thu, 4 Jun 2026
- 14:05:35 +0000
-From: Michael Kelley <mhklinux@outlook.com>
-To: Jason Gunthorpe <jgg@ziepe.ca>, Michael Kelley <mhklinux@outlook.com>
-CC: Aneesh Kumar K.V <aneesh.kumar@kernel.org>, "iommu@lists.linux.dev"
-	<iommu@lists.linux.dev>, "linux-arm-kernel@lists.infradead.org"
-	<linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org"
-	<linux-kernel@vger.kernel.org>, "linux-coco@lists.linux.dev"
-	<linux-coco@lists.linux.dev>, Robin Murphy <robin.murphy@arm.com>, Marek
- Szyprowski <m.szyprowski@samsung.com>, Will Deacon <will@kernel.org>, Marc
- Zyngier <maz@kernel.org>, Steven Price <steven.price@arm.com>, Suzuki K
- Poulose <Suzuki.Poulose@arm.com>, Catalin Marinas <catalin.marinas@arm.com>,
-	Jiri Pirko <jiri@resnulli.us>, Mostafa Saleh <smostafa@google.com>, Petr
- Tesarik <ptesarik@suse.com>, Alexey Kardashevskiy <aik@amd.com>, Dan Williams
-	<dan.j.williams@intel.com>, Xu Yilun <yilun.xu@linux.intel.com>,
-	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
-	"linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>, Madhavan
- Srinivasan <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>, "Christophe Leroy (CS GROUP)"
-	<chleroy@kernel.org>, Alexander Gordeev <agordeev@linux.ibm.com>, Gerald
- Schaefer <gerald.schaefer@linux.ibm.com>, Heiko Carstens <hca@linux.ibm.com>,
-	Vasily Gorbik <gor@linux.ibm.com>, Christian Borntraeger
-	<borntraeger@linux.ibm.com>, Sven Schnelle <svens@linux.ibm.com>,
-	"x86@kernel.org" <x86@kernel.org>, Jiri Pirko <jiri@nvidia.com>
-Subject: RE: [PATCH v5 05/20] dma-pool: track decrypted atomic pools and
- select them via attrs
-Thread-Topic: [PATCH v5 05/20] dma-pool: track decrypted atomic pools and
- select them via attrs
-Thread-Index:
- AQHp6tfu5DGfxW+HBL9src0vNhss0QGjMATQtfypCTCABxNTgIAAi4fggACwGwCAAm86IA==
-Date: Thu, 4 Jun 2026 14:05:35 +0000
-Message-ID:
- <SN6PR02MB4157F94C902B78E55E99372DD4102@SN6PR02MB4157.namprd02.prod.outlook.com>
-References: <20260522042815.370873-1-aneesh.kumar@kernel.org>
- <20260522042815.370873-6-aneesh.kumar@kernel.org>
- <SN6PR02MB415754E94A9505C2B9739E4DD4092@SN6PR02MB4157.namprd02.prod.outlook.com>
- <yq5afr35sciu.fsf@kernel.org>
- <SN6PR02MB4157D9955A93244014AB7978D4122@SN6PR02MB4157.namprd02.prod.outlook.com>
- <20260603005454.GM2487554@ziepe.ca>
-In-Reply-To: <20260603005454.GM2487554@ziepe.ca>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach:
-X-MS-TNEF-Correlator:
-x-ms-publictraffictype: Email
-x-ms-traffictypediagnostic: SN6PR02MB4157:EE_|CY8PR02MB9472:EE_
-x-ms-office365-filtering-correlation-id: 810ce470-eb1e-4737-c3a6-08dec2425917
-x-microsoft-antispam:
- BCL:0;ARA:14566002|31061999003|15080799012|51005399006|19101099003|37011999003|8062599012|8060799015|13091999003|19110799012|3412199025|440099028|102099032|40105399003|1710799026;
-x-microsoft-antispam-message-info:
- =?us-ascii?Q?ZGiFGkDWj57FMu840f0H846SezVXn+GpCaAcQX28p402GZ1NqeTE2X8xqfCD?=
- =?us-ascii?Q?Vjzws5JdRx4kCXZgZjWbujfG3uzVTFgfW5xD8V9MmEJyniAWFLwSamdaWQts?=
- =?us-ascii?Q?3DEHlqEMq209cNN2J4IxJr+0c1fR9hsa956LYlDWoBl6QidDJ1y7+TutmpRh?=
- =?us-ascii?Q?j60SOpmnXrhgJ9G23Ot4JpfEaQFDj7iJJa6qApyW5bG7NUol+sbpDOqvpUAO?=
- =?us-ascii?Q?VSeDJIx5ziGFDnGdcjgqlo0Zc1295EbUp3iuYfcDg4saScrsJVoCz4pEXfnz?=
- =?us-ascii?Q?ZTVFOOEFGWuZTwehCOaMx4aWHi1eDQUqhRv5R7FiR6LraMpFaSs+o+xQAud5?=
- =?us-ascii?Q?FIxI/J1s+j0l4naXGh4jjuGBOqEgS9abvKotkrmCl+2qlVR9aePfmi2rswzx?=
- =?us-ascii?Q?FFF/ehW709u4/Ed1MYkFCWDUEzTnbqA7nUJTxc5NmlBNwVRun3GOuqzRXvJ9?=
- =?us-ascii?Q?AIgyoAsey91PircZacYLCkxtLN01Q4LEsRwUiXIEXHb5dw7nq+QXc4IIhTpe?=
- =?us-ascii?Q?W4s67rgRuhqu8KJ6XvZJgYtfrV6iSPUwTJ7+wOJjtzTYRA3AYdrtoUMjNoZj?=
- =?us-ascii?Q?BsTyXOIJhnjaop57DARK/MeLBxfNc1rlvkjB8W/56a7pntll+s5IRALJmnAv?=
- =?us-ascii?Q?7+SYV27Dq4UW4Lq9KMD5gXcRSGQgc7o3FFD41knXbnhJ3i0Msz6zH5tWt+4N?=
- =?us-ascii?Q?e91Ym3kRv9Lcb/lD3zZwKWi8XqR2469jbVwmRrMnN/XhlwLkjX8MfXOKnvoY?=
- =?us-ascii?Q?nN03fTXMxiwCM9FMm2gRM4tjdBN/ubV33M+9YEHDxbExPgJhqqdNSQOpGc/f?=
- =?us-ascii?Q?8rPyeVZTkQ5hpnHUUT5GXY6dmKxtmAv120uYiluFpN01p/x8/Ltiha40ovHj?=
- =?us-ascii?Q?lRWl4O1zyNLT9QvDX0QPqvzKMhGCdeVwv3AG04xBsNzPttbVmVXdMzV5HhkZ?=
- =?us-ascii?Q?YFqvkTUj/OSnNAtbyw1OW5f6C4Gs7QjWRYlxviLk0EGH8hTR5EwUvMia5lw1?=
- =?us-ascii?Q?xCrD1dPHp87XDmPUmX2zP1cSZg=3D=3D?=
-x-ms-exchange-antispam-messagedata-chunkcount: 1
-x-ms-exchange-antispam-messagedata-0:
- =?us-ascii?Q?4EQy7lXQJNTfflP5XZ6fJxaOvf5bceIEuVrTyqs154+D5BBEfCoT8iboUyhZ?=
- =?us-ascii?Q?9ZW3UkaPQ3ViHQMZWyc8acylTi4AHTW+Ouu6Qm2lZBdB9jo8XOUZlzQ8yWhM?=
- =?us-ascii?Q?BK35QscyWnSwUoQXCt+9IhB/9iJEl0zw6xTUfVi14hVgbCuKcygctOCJgPa5?=
- =?us-ascii?Q?XbdnDDfwPtZf8FifrVhyJEHt7vBmX62csWe4yusaAyGdC1FjHReX/g9+MuR4?=
- =?us-ascii?Q?t4LbN2TiEFdjZKTIJrOkhE9fegXEcDMn0JdfEjqOX+3OncNvs97qQD+7i8eq?=
- =?us-ascii?Q?bmzpT90bSwtwmGblI51YfKeR1Ad9AC2lgu/ugfc0+B6Fk2y0Vown065AfVBD?=
- =?us-ascii?Q?4yzAgSs5d8P72UAUjyox8b4EBYp0iVff0sNem1esBdT3vfib9Gq/MAWErsdb?=
- =?us-ascii?Q?b/6JjalfT6x+HUv9YGEwC4y6GS3JUgaZYbSaH2UIioR+Q6EXrwBhecCGrR9C?=
- =?us-ascii?Q?bsCUm0+9h8pRnNRf1awG5vBYHCm85NjXD1MQicwLoma7obmvvt7ka3fF3Ctw?=
- =?us-ascii?Q?4okBcZFkBZSmJMluoSZ8I4yrNplgIt1OE2USMugTMV9Jx8xjQ9htD0O1ag7e?=
- =?us-ascii?Q?y+FZyfW2vnO4EaleyVdcMgKEt4KGBbsvEzp28TgdvgG1uDDSmQsLHgDZr7dg?=
- =?us-ascii?Q?kppPKdTNsd+lCOrurbVCLo/8mOSdEleG5Wv4FurLTT37fG/7XZ6DLLg4BCuL?=
- =?us-ascii?Q?JkrNc6T7l9AO84vcPUHcxc1GQ6vhUO4iRRDRQiR74dLLELpJOTxHVtMIr4up?=
- =?us-ascii?Q?l/B2VkqKvkoa3xL4HHA+7cejQC8ggvfIKqdqSFg7PTAFR1ecUodWszbjdYl0?=
- =?us-ascii?Q?V2HEN8sNYIMPuXoYrWvd/YK7vS+sfQERSdYExEzSkzLJbPCkypU44BqBkIsJ?=
- =?us-ascii?Q?eXEQouvYd9iFQZyOzW6bI460VTTXe5rbnqd+VBVKrTl6zujZ9kXPKVX8vGUY?=
- =?us-ascii?Q?6xPlqIda6rCIyBAviXizNMItP+JCUh/vN+W1MhYghwlrQSN394NvTvvqCr6D?=
- =?us-ascii?Q?vwLdQvtcBQCIXJPuFhDRRj6dtJfE+e334HzoUwCPnvRLhh7Pk3tP2Fpu72Yv?=
- =?us-ascii?Q?QH1IbBWb4FCkavtRSmVBKjIzN+djCmVik/i5sWkgKhL6PtamlwKeV/++ng8R?=
- =?us-ascii?Q?mhMJbi690eWwXrEhwXFvcsnE8vHy4UH4jJa7c12RVAkLrdWT7Ia9WHQt8FoJ?=
- =?us-ascii?Q?+wGzkVp+rrfx4AT3bpFy6mBNej46AoW06AIjnCp339695tgDJ3OmteDXy9zk?=
- =?us-ascii?Q?YrvxGh6qRzwOLqTZr4bk9ritF4oI5nKWW4LawTYDCp6I9K98prkGjRc3g/cX?=
- =?us-ascii?Q?EyUvw8ys3qwTW+5LhhYA/+DCZaLN8Djy1p0JJ9ViuFiO7tivY8rTWBvODOGE?=
- =?us-ascii?Q?+WHvfURyuqaLPcLj+CdjlmGOaBoNJZibkuG5AvZM4dNwaN+8nBrGHRsqwfmS?=
- =?us-ascii?Q?udkSVKblSAk=3D?=
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gWRV85j86z2xfB
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Jun 2026 00:17:36 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with ESMTP id 51B5043D2C;
+	Thu,  4 Jun 2026 14:17:34 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 924BC1F00893;
+	Thu,  4 Jun 2026 14:17:33 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1780582654;
+	bh=a23fVnlClqzkGnu4H8lLPL7TNuMOc0N3Wpy71vcyZKw=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=kCULlyQjFdpPWXG4ewMFzM0hHvfv3BE1jLMR+bCTDg8JrJS+unPBUzsVKE6FSqOLF
+	 HZW2H2Oxf9EvlUYAZkYnt7EVCN5/8MkRifh6WM0E1Rh3+k00kkZ5mLjO9O2B8rrz+m
+	 Xcs/a+EtIo2uHAgpwj+VowrzeTXQx0/qRkePtmVjkI7+pQmH+MKtg+H0/e9mBdkEQS
+	 YdjSrfyPrGRUGjIqGGMy3Sa/klvQOxGe74olONPff4xIk/6njjgbdbhn6SrNCM+oaO
+	 /fc3AeVL+stfr/0m2PdoLuR1OJf2edRFSZvEPuYXLh5yBQE0YtYhpmbrEvJSI5YfrH
+	 1tf577RlKgbVQ==
+Date: Thu, 4 Jun 2026 11:17:31 -0300
+From: Arnaldo Carvalho de Melo <acme@kernel.org>
+To: Athira Rajeev <atrajeev@linux.ibm.com>,
+	Anubhav Shelat <ashelat@redhat.com>
+Cc: Namhyung Kim <namhyung@kernel.org>, Ian Rogers <irogers@google.com>,
+	jolsa@kernel.org, adrian.hunter@intel.com, mpetlan@redhat.com,
+	tmricht@linux.ibm.com, maddy@linux.ibm.com,
+	linux-perf-users@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+	hbathini@linux.vnet.ibm.com, Tejas.Manhas1@ibm.com,
+	Tanushree.Shah@ibm.com, Shivani.Nittor@ibm.com
+Subject: Re: [PATCH] tools/perf/sched: Update process names of processes in
+ zombie state for both -s and -S options
+Message-ID: <aiGI--j2nJ_kas60@x1>
+References: <20260426093930.47809-1-atrajeev@linux.ibm.com>
+ <ae76k1BvfgcYI18K@google.com>
+ <230801A2-5F9C-42A6-9390-B44786309E30@linux.ibm.com>
+ <ag8UFqPmRu8v4g_9@x1>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -160,61 +74,105 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-OriginatorOrg: outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-AuthSource: SN6PR02MB4157.namprd02.prod.outlook.com
-X-MS-Exchange-CrossTenant-RMS-PersistedConsumerOrg: 00000000-0000-0000-0000-000000000000
-X-MS-Exchange-CrossTenant-Network-Message-Id: 810ce470-eb1e-4737-c3a6-08dec2425917
-X-MS-Exchange-CrossTenant-originalarrivaltime: 04 Jun 2026 14:05:35.1224
- (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 84df9e7f-e9f6-40af-b435-aaaaaaaaaaaa
-X-MS-Exchange-CrossTenant-rms-persistedconsumerorg: 00000000-0000-0000-0000-000000000000
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: CY8PR02MB9472
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <ag8UFqPmRu8v4g_9@x1>
 
-From: Jason Gunthorpe <jgg@ziepe.ca> Sent: Tuesday, June 2, 2026 5:55 PM
->=20
-> On Tue, Jun 02, 2026 at 02:24:40PM +0000, Michael Kelley wrote:
->=20
-> > Except that in a normal VM, the "unencrypted" pool attribute does *not*
-> > describe the state of the memory itself.  In a normal VM, the memory is
-> > unencrypted, but the "unencrypted" pool attribute is false. That
-> > contradiction is the essence of my concern.
->=20
-> I would argue no..
->=20
-> When CC is enabled the default state of memory in a Linux environment
-> is "encrypted". You have to take a special action to "decrypt" it.
->=20
-> Thus the default state of memory in a non-CC environment is also
-> paradoxically "encrypted" too.=20
+On Thu, May 21, 2026 at 11:17:58AM -0300, Arnaldo Carvalho de Melo wrote:
+> On Thu, May 21, 2026 at 02:02:53PM +0530, Athira Rajeev wrote:
+> > > On 27 Apr 2026, at 11:26 AM, Namhyung Kim <namhyung@kernel.org> wrote:
+> > > On Sun, Apr 26, 2026 at 03:09:30PM +0530, Athira Rajeev wrote:
+> > >> In redhat perftool testsuite, observed fail for this test:
+> > >>    -- [ FAIL ] -- perf_sched :: test_timehist :: --with-summary (output regexp parsing)
+> > >> 
+> > >> This led to analysis of "perf sched timehist" summary options.
+> > >> 
+> > >>  # perf sched record -a -o ./perf.data -- sleep 0.1
+> > >>   This will record using perf sched record
+> > >> 
+> > >> perf sched timeliest has two options "-s" and "-S"
+> > >>  # perf sched -i ./perf.data timehist -S
+> > >> -S : Captures summary also at the end
+> > >> 
+> > >>  # perf sched -i ./perf.data timehist -s
+> > >> -s : Captures only summary
+> > >> 
+> > >> The test saves -s result which has only summary and compares with
+> > >> summary which comes at the end from -S . Since there is a difference
+> > >> in these two, test fails.
+> > >> 
+> > >> Checking the behaviour change in -S and -s results, difference is:
+> > >> 
+> > >>                  rcu_sched[16]       2          4        0.013      0.001       0.003       0.006   33.23       0
+> > >>               migration/11[73]       2          1        0.006      0.006       0.006       0.006    0.00       0
+> > >>                migration/3[33]       2          1        0.006      0.006       0.006       0.006    0.00       0
+> > >> -               :216753[216753]      -1          1        0.041      0.041       0.041       0.041    0.00       0
+> > >> +                 sleep[216753]      -1          1        0.041      0.041       0.041       0.041    0.00       0
+> > >>                migration/8[58]       2          1        0.005      0.005       0.005       0.005    0.00       0
+> > >>            NetworkManager[811]       1          2        0.089      0.028       0.044       0.060   36.06       0
+> > >>               migration/13[83]       2          1        0.005      0.005       0.005       0.005    0.00       0
+> > >> 
+> > >> Here 216753 is pid for sleep which is a zombie process. This is
+> > >> happening in latest kernel due to an update in "-S" result.
+> > >> In -S, the process name appears in the results "sleep[216753]",
+> > >> where as in the -s, only pid is present in the summary result
+> > >> ":216753[216753]".
+> > >> 
+> > >> After commit 39f473f6d0b2 ("perf sched timehist: decode process names
+> > >> of processes in zombie state")
+> > >> for -S option, if process name is using pid, it uses different way to
+> > >> set it. So that we get the process name and not just Pid.
+> > >> 
+> > >> This change went in only for timehist_print_sample() function.
+> > >> Add this improvement in generic place so that even -s option (which
+> > >> captures summary) also will have meaningful information.
+> > >> 
+> > >> Signed-off-by: Athira Rajeev <atrajeev@linux.ibm.com>
+> > > 
+> > > Acked-by: Namhyung Kim <namhyung@kernel.org>
+> > > 
+> > > Thanks,
+> > > Namhyung
+> > Hi,
+> > 
+> > Can we please have this pulled in, if the patch looks fine ?
+> 
+> Can you please check applying it on top of current perf-tools-next?
 
-The need to have such an unnatural premise is usually an indication
-of a conceptual problem with the overall model, or perhaps just a
-terminology problem.=20
+So, this seems to be also addressed by:
 
-Here's a proposal. The new DMA attribute is DMA_ATTR_CC_SHARED.
-Name the pool attribute "cc_shared" instead of "unencrypted". Having
-"cc_shared" set to false in a normal VM doesn't lead to the non-sensical
-situation of claiming that a normal VM is encrypted. The boolean
-"unencrypted" parameter that has been added to various calls also
-becomes "cc_shared".  If "CC_SHARED" is a suitable name for the DMA
-attribute, it ought to be suitable as the pool attribute. And everything
-matches as well.
+commit 39f473f6d0b24cf375893f2110b1cc9d8a079a42
+Author: Anubhav Shelat <ashelat@redhat.com>
+Date:   Wed Jul 16 16:39:15 2025 -0400
 
-Michael =20
+    perf sched timehist: decode process names of processes in zombie state
+
+    Previously when running perf trace timehist --state, when recording
+    processes in the zombie state the process name would not be decoded
+    properly and appears with just the PID:
+
+    1140057.412177 [0006]  Mutter Input Th[3139/3104]          0.956      0.019      0.041      S
+    1140057.412222 [0012]  :1248612[1248612]                   0.000      0.000      0.332      Z
+    1140057.412275 [0004]  <idle>                              0.052      0.052      0.953      I
+    1140057.412284 [0008]  <idle>                              0.070      0.070      0.932      I
+    1140057.412333 [0004]  KMS thread[3126/3104]               0.953      0.112      0.058      S
+
+    Now some extra processing has been added to decode the process name:
+
+    1140057.412177 [0006]  Mutter Input Th[3139/3104]          0.956      0.019      0.041      S
+    1140057.412222 [0012]  sleep[1248612]                      0.000      0.000      0.332      Z
+    1140057.412275 [0004]  <idle>                              0.052      0.052      0.953      I
+    1140057.412284 [0008]  <idle>                              0.070      0.070      0.932      I
+    1140057.412333 [0004]  KMS thread[3126/3104]               0.953      0.112      0.058      S
+
+    Signed-off-by: Anubhav Shelat <ashelat@redhat.com>
+    Link: https://lore.kernel.org/r/20250716203914.45772-2-ashelat@redhat.com
+    Signed-off-by: Namhyung Kim <namhyung@kernel.org>
 
 
-> "decryption" is impossible.
->=20
-> Therefore the "unencrypted" state is a special state that only memory
-> inside a CC VM can have. A normal VM can never have "unencrypted"
-> memory at all, so having it be false in the pool is accurate as far as
-> the APIs go.
->=20
-> un-encrypted =3D true means "the memory in this pool was transformed with
-> set_memory_decrypted()" - which is impossible on a normal VM.
->=20
-> Jason
+No? It is not applying to perf-tools-next, a quick look found the patch
+above.
 
+- Arnaldo
 
