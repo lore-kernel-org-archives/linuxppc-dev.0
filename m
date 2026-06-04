@@ -1,75 +1,76 @@
-Return-Path: <linuxppc-dev+bounces-22087-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22088-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5D4BDCD6E75
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Jun 2026 02:17:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BBB3FCD6E6E
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Jun 2026 02:17:36 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gWlSl6Ghdz2xlw;
-	Fri, 05 Jun 2026 12:17:27 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1033"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780585330;
-	cv=none; b=Uizm6O62c02SmuzRH4UbMHdookF9wQ7P4OFX+kouvmN9DiCLguT3/DKWg5HEIIm/gx/nTRfZ5v6Kd69xBxDHvaCxnZ/kro4Ut+zlbXMZcUSQTlgavzoVCe4aAH/8vwwLHBYAs9/JAzPw9xKMdDTVRdwStryR3H7aWnQjnvQvFJr+04QFVb+QGJM5TxjeEsW9LB+dSXP1GWK5vAVfPaRo5EUdiE5+9R1vswYP9671aSL5MemcGHcp7pG8dTurm1Wm69wWiFb2P6YiLOoH5mPZStv9cbz58oLEkWjJD0NYDRBSVc0+BfULYLlrI1NsajvXVk+8s3KQeD8LxO3d/1BxGQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gWlSs4V5Rz3bqV;
+	Fri, 05 Jun 2026 12:17:33 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::635"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780585331;
+	cv=none; b=dwIJmKDCqdwqbh3fYdXNh4UCBatt7/0/ChN9hqy0xdF0yIq4rkAoFvXJZWOI/ZcSjEEC2F+di8K3gTDWpVf3AfqR04TAjX693qMvuVt+Q/JPxOp4mDAjq6GUMAHSxem8wtiKUWIzbIRj0Rjz2Wt/uOxiqS2ArLYYcbK47x5B56MxfBwqUpyfLq+rcl74TtUJvHQzSB9QQ/bsc18NF9fpUJUYdcMYsy49B/HxSHBGcYOsX6Xh3eloqrAqxH4CuJi4Gira1XcTHSyvceRiUiriZTMqO22Aga1toGvUCSowkl49r59BLssKxJfm3kaOh6gStt/3OV01LFtqSclfZdmrQg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1780585330; c=relaxed/relaxed;
-	bh=2hIFtvWihjq2T5uRD8ilA/smzXwEZg9tgf7CPYlO5lE=;
+	t=1780585331; c=relaxed/relaxed;
+	bh=WoqDAswymnFuDctzAHclbYUv6AH/JbUjYrzVeObwiVA=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=etfXi5XrimkeXFQTzW9gYiVEG+xi1GjFd8IoZm+0kqfk97cJ5RUvi7eL7pkK42Fooow2n4kjaf7SRrB5U2HrIN7dVpgtRkwDQd68JRsehZ7oSw8f1GnPt9AsQS5f4jGu4dfGdE8hNJxtqLftSkCQzF4uoTYVvYHLac1OZx2VcGfyQTUZsR+KBGu1SJY8mDo3de3XnVWaeiop9x1m0XFyJTVz+5lvFvdL2ibMLyJWXq6g64Ve5+Sx8/zKfSYDY8w0glBDGYamVSF9Q4zNT4MzJyeFRVxf2aR5prNDHF2wCGBPFtM+J4TV+zDrQRC4C0PkF8ZxUn+P2edBCqOXxF8Q0Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=QYATu6nE; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1033; helo=mail-pj1-x1033.google.com; envelope-from=dimitri.daskalakis1@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	 MIME-Version; b=f+45yDFqiZ5WriwKL4g2aAeVLTKKKxf///pfSVgaEZSqOeOfio0ez4dBtojFHcDqwmPyCumQgky4AF+hScDyXgslzztJzONcYbTK8Nh17bwmGJkkESrb2r93LLLXqW/1SK03UREL63KmuIAOmwBzweH9irxqRatNaLcNnyZQeFc9Y1l2ElwVzgRSOQwqbFxHRZnQ918NHBEbtfxlrQ01vU3VFSZIbP+439k9bon0uclV5Xu7KvMM0pjXIj2ziThkFFjPw2GjvksI+eewdajTDP27krz5FnOsPfnHHAcgyuHlZ6gjUxNx+BbQi1Lfyvhg/9/u1/a+y4hLJo4686Zk9w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=Wup4t0JP; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::635; helo=mail-pl1-x635.google.com; envelope-from=dimitri.daskalakis1@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=QYATu6nE;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=Wup4t0JP;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1033; helo=mail-pj1-x1033.google.com; envelope-from=dimitri.daskalakis1@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pj1-x1033.google.com (mail-pj1-x1033.google.com [IPv6:2607:f8b0:4864:20::1033])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::635; helo=mail-pl1-x635.google.com; envelope-from=dimitri.daskalakis1@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pl1-x635.google.com (mail-pl1-x635.google.com [IPv6:2607:f8b0:4864:20::635])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gWSTW53Qjz2yb9
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Jun 2026 01:02:07 +1000 (AEST)
-Received: by mail-pj1-x1033.google.com with SMTP id 98e67ed59e1d1-36b7b7b7a80so1079163a91.1
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 04 Jun 2026 08:02:07 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gWSTZ1CPCz2ybR
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Jun 2026 01:02:10 +1000 (AEST)
+Received: by mail-pl1-x635.google.com with SMTP id d9443c01a7336-2bf77d4a4e2so11469015ad.1
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 04 Jun 2026 08:02:09 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1780585326; x=1781190126; darn=lists.ozlabs.org;
+        d=gmail.com; s=20251104; t=1780585328; x=1781190128; darn=lists.ozlabs.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=2hIFtvWihjq2T5uRD8ilA/smzXwEZg9tgf7CPYlO5lE=;
-        b=QYATu6nENBUPO7vPnOmf16QP1bZuyYSSIZt/TPt8sh68FDNLp5Uo+3HrZWqWVtSyTT
-         7HrhVzfEaZyc5npH5A9+goEFmqV7v7XkME2LnkXGA7Z0cz0Ad8VZyvAmF+7VUxZ13ZI9
-         lEiHCvxg3viCGqLd42EvogSZXx0vMgxMXm43NlcMxDnELIgNWD7ZPpLnWa6tyPif9CJV
-         m07RTYmxRjwZTDHmu1Wkd6L7VvccEATSL+DRnPrrSU2Av4QUPga9tl68Yt3U4wKzBTTh
-         s93Fc8UlftGkkWAdDG6xsEQLPujpz3a37xx1YS7Jgrj18a646p4CZ05bb2h2oEtsABoM
-         9lmw==
+        bh=WoqDAswymnFuDctzAHclbYUv6AH/JbUjYrzVeObwiVA=;
+        b=Wup4t0JP7NowDs56RzaUGmPe6+kcx3+afCCgTL1C5yfo3q0Qio5jO5vUH7GQ+BSXg7
+         tKaXXr+6ALmiiJH7Kdu/EjNdVHs1QLuXOnJ0IYR+whD5RyD/WycVEwM51js7yuFrnitN
+         BasbuNsJXOexjFdEufFIMHhi2uagp9AsP6hBh0pkrFuFQU/SM6Pio0+eIomcU7LvXX4i
+         aO12SCy7jEOUX4aHpL9bnHIo3LiYfWBFKWhq7lI7OQLwkYgAKkakHDdv4JD8aq95gRH8
+         8UaRPoUyQXbb0fAZs3JQ3Ro027KccDIwWCNytNPnO4v9tlyp9qLSIio+js2cP+Z0I3yx
+         Ajpg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1780585326; x=1781190126;
+        d=1e100.net; s=20251104; t=1780585328; x=1781190128;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to;
-        bh=2hIFtvWihjq2T5uRD8ilA/smzXwEZg9tgf7CPYlO5lE=;
-        b=qASmacHfiC7BvJDCCucximV9pgavLZv80gI8lJjgpwa4JP+F808epBx/7zl4XPfRYR
-         5gTOzkATnXV8Kfz/6CBhgZM37EsA27ZsQDilQm9pLsoTtnMz/uESmBcL1UiGiap0MJlB
-         w/sMX/tKSWdj6nSP6B0D2C0OV4nskuCxKrpbAaom5Nthw+L56EOejhi/njCDjooY4sRe
-         ZqRUeWY45NNt5cOwbMErRlN0OLBX8xYBLVk8Makt+ZytRugvYXCrCgDaZNl9tGbYTLa6
-         yUY003Jwb4QXBMLFENJul2O+MijAaX+D0uJ0t+I2HCVw4XnHnuK3JmTqUCkVc3GJ/d3q
-         fLyQ==
-X-Forwarded-Encrypted: i=1; AFNElJ8x4YbSQ3qc8ePXapbfGdADgEPbkMYUZ8nA4cUMDYpcxmdaLylhI7uRFZYvrD5cKXEpV6jZdyaeDji2aag=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yw4VXMkQvMKEXzum5HiJiNoy4zA3E1r4FNY7OMo/BZempfe4NLm
-	2sbgbv4nvQkjguSbvH2fFYdfOwE4QTtEYRddbGpM5Nj2rpWrJmVDbACk
-X-Gm-Gg: Acq92OECm6GvaQEnNOYfzkybmh4Sd0W7VOsfXEftV1L3WvM+xDM1GfGAdTvuvw0fBoi
-	znjRUoZt88mR9WGuHL0PYggd8FtzRw7DC53t/WFhyDty433l5JDSBFf+jMVeA73pI/KJZUJIhks
-	rLZy5jb+iczQ8w9zlS8JpS1Yw811vGabEoZTD14U6leI6S8y5QrMQhLyKV+jsDLSalPZWMkUuJx
-	xSVV+uZsU5QgvhTk0ttB1FX93UG5ObQ7iKu/C27mtzIf52f8luxcvglQn1iIvonlAe6wmoXSbRJ
-	HduONKLFa9iCjg82KcobuqelTMhP+zlbahSqek26p/Li7m1dI9K9oriV+YFBWy6VPRBdMhNELh+
-	bzj5AchVkTQjmqUWLEMnz5Le6KLitwSVWKgcLDs0NfVtx6h+DkDeRrU/zeKvEwNzQYeY14VVF
-X-Received: by 2002:a17:90b:2b8c:b0:36a:8519:a4e9 with SMTP id 98e67ed59e1d1-36f7898e08dmr3643368a91.18.1780585325710;
-        Thu, 04 Jun 2026 08:02:05 -0700 (PDT)
-Received: from localhost ([2a03:2880:7ff:55::])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-36f711e7b53sm3448820a91.14.2026.06.04.08.02.04
+        bh=WoqDAswymnFuDctzAHclbYUv6AH/JbUjYrzVeObwiVA=;
+        b=ixQalHNwia/Yk7PlC05M9nuNonIOZHYPBkpxqAtSRRN8aNvqr2UEB4B2U603RfZuNw
+         6108rqyEXh4jDEVz9HCUUwwtsQHzhi+rGvH+hjoUhzkB8kNd9x8CuevIDcaIlKrBMlrH
+         nV+C49SJ5ow6ZWy3nBK3IgGq8c4apMq+jAcaiSfYnGx3YzQnDTmkNJgOoZvRigXapjnG
+         9OT6b9DsVWEy58KuJY+reXmIoOPHEX2vjJxU946iEF4p2nfG7D0qffSkcvyQ6mnqHmn7
+         5UUY/xE++wjGg2xVebhWXaj1zdUWyRohoGrRHPAXYi97v/GT3VLhsVKzxLnXxEEpEgMe
+         hbgA==
+X-Forwarded-Encrypted: i=1; AFNElJ/ssBqm1PnntFCpScgD7TI+QUaKoePk1It+oDVpieL8YgOgnWftKs3lAotCebqc4LYg7aKv7QWaQzDQIm0=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Ywcu8X9QJ5s8u61vD2iZAL0Ulr6KH1SYGABVerDmmg5ook2jOJw
+	VUkwChIzQtc+ej0/CA24PaDJkKPHqeCFRBKU4NQ7LcReWmz3Bsg9g7xJ
+X-Gm-Gg: Acq92OE29S+nfnXZDuVygsuhbq/EoAMl+TWhsuC2fx/i90JVS40sBUrEthD1++zpJbC
+	QpZMCZEQUalr/gAlEa626H2kz2U9JqkrLHGHXCfd9S8TokNdFJSYXOZzqpNs4ZGYdzfIMoVSAnZ
+	4Lj9TAipedr6uMRavd2WsX1msSCk8si+j5gexl7bIv2kdJNWm7K6MwkR8vrwWWsfoNrk27WS/V4
+	xckS96MDemVqdTPdgSyrqQqUpPXg7zGQ5RvA5A12Hp86npJgO+irw23K71M2xUL0PUZRXCc1Z49
+	NtPhIVhkx8zPj4TfHGtvZI/KJJOtDSlLKN+BwObOWr090vixR6NOWoqJp55P/fPQIXIGUBpeM/v
+	2gO+LyIyid2VBdv8WMsEe5iI1H+CQoOdpbL0wEpeNog9Wq8lgaok9kNfEZiIXihyvQ8QV0Jt+B9
+	DCnLoUv89pibSrXM0GTlRXpuQmK7vdogRBWIZ5NG4=
+X-Received: by 2002:a17:902:820e:b0:2c0:a858:8128 with SMTP id d9443c01a7336-2c197b1805fmr25629535ad.1.1780585327615;
+        Thu, 04 Jun 2026 08:02:07 -0700 (PDT)
+Received: from localhost ([2a03:2880:7ff:4d::])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2c16629d042sm63879855ad.60.2026.06.04.08.02.06
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 04 Jun 2026 08:02:05 -0700 (PDT)
+        Thu, 04 Jun 2026 08:02:06 -0700 (PDT)
 From: Dimitri Daskalakis <dimitri.daskalakis1@gmail.com>
 To: Bjorn Helgaas <bhelgaas@google.com>
 Cc: linux-pci@vger.kernel.org,
@@ -102,9 +103,9 @@ Cc: linux-pci@vger.kernel.org,
 	linux-s390@vger.kernel.org,
 	kvm@vger.kernel.org,
 	xen-devel@lists.xenproject.org
-Subject: [RFC 07/12] PCI: Convert xen-pciback and pci-driver to pci_is_sriov_* helpers
-Date: Thu,  4 Jun 2026 08:01:48 -0700
-Message-ID: <20260604150153.3619662-8-dimitri.daskalakis1@gmail.com>
+Subject: [RFC 08/12] PCI: Add is_sriov bit to struct pci_dev
+Date: Thu,  4 Jun 2026 08:01:49 -0700
+Message-ID: <20260604150153.3619662-9-dimitri.daskalakis1@gmail.com>
 X-Mailer: git-send-email 2.52.0
 In-Reply-To: <20260604150153.3619662-1-dimitri.daskalakis1@gmail.com>
 References: <20260604150153.3619662-1-dimitri.daskalakis1@gmail.com>
@@ -125,50 +126,99 @@ Content-Transfer-Encoding: 8bit
 
 From: Dimitri Daskalakis <daskald@meta.com>
 
-No functional changes.
+We need a way to disambiguate the virtualization type of a PF/VF.
+PFs may support multiple types of virtualization, while a VF should
+only support one.
+
+Tighten pci_is_sriov_physfn() / pci_is_sriov_virtfn() to ensure the
+is_sriov bit is set. This allows the existing is_physfn/is_virtfn
+bits to be agnostic of virtualization type.
+
+No functional changes for SR-IOV.
 
 Assisted-by: Claude:claude-opus-4.7
 Signed-off-by: Dimitri Daskalakis <daskald@meta.com>
 ---
- drivers/pci/pci-driver.c           | 4 ++--
- drivers/xen/xen-pciback/pci_stub.c | 2 +-
- 2 files changed, 3 insertions(+), 3 deletions(-)
+ arch/s390/pci/pci_iov.c | 1 +
+ drivers/pci/iov.c       | 4 ++++
+ include/linux/pci.h     | 5 +++--
+ 3 files changed, 8 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/pci/pci-driver.c b/drivers/pci/pci-driver.c
-index d10ece0889f0..926f80bccd70 100644
---- a/drivers/pci/pci-driver.c
-+++ b/drivers/pci/pci-driver.c
-@@ -357,7 +357,7 @@ static void local_pci_probe_callback(struct work_struct *work)
- static bool pci_physfn_is_probed(struct pci_dev *dev)
- {
- #ifdef CONFIG_PCI_IOV
--	return dev->is_virtfn && dev->physfn->is_probed;
-+	return pci_is_sriov_virtfn(dev) && dev->physfn->is_probed;
- #else
- 	return false;
- #endif
-@@ -453,7 +453,7 @@ static int __pci_device_probe(struct pci_driver *drv, struct pci_dev *pci_dev)
- #ifdef CONFIG_PCI_IOV
- static inline bool pci_device_can_probe(struct pci_dev *pdev)
- {
--	return (!pdev->is_virtfn || pdev->physfn->sriov->drivers_autoprobe ||
-+	return (!pci_is_sriov_virtfn(pdev) || pdev->physfn->sriov->drivers_autoprobe ||
- 		device_has_driver_override(&pdev->dev));
+diff --git a/arch/s390/pci/pci_iov.c b/arch/s390/pci/pci_iov.c
+index 13050ce5c3e9..82e9ef1f132f 100644
+--- a/arch/s390/pci/pci_iov.c
++++ b/arch/s390/pci/pci_iov.c
+@@ -53,6 +53,7 @@ static int zpci_iov_link_virtfn(struct pci_dev *pdev, struct pci_dev *virtfn, in
+ 		return rc;
+ 
+ 	virtfn->is_virtfn = 1;
++	virtfn->is_sriov = 1;
+ 	virtfn->multifunction = 0;
+ 	virtfn->physfn = pci_dev_get(pdev);
+ 
+diff --git a/drivers/pci/iov.c b/drivers/pci/iov.c
+index 5de26057b99a..4aed4f6a42c3 100644
+--- a/drivers/pci/iov.c
++++ b/drivers/pci/iov.c
+@@ -326,6 +326,7 @@ static struct pci_dev *pci_iov_scan_device(struct pci_dev *dev, int id,
+ 	virtfn->vendor = dev->vendor;
+ 	virtfn->device = iov->vf_device;
+ 	virtfn->is_virtfn = 1;
++	virtfn->is_sriov = 1;
+ 	virtfn->physfn = pci_dev_get(dev);
+ 	virtfn->no_command_memory = 1;
+ 
+@@ -897,6 +898,7 @@ static int sriov_init(struct pci_dev *dev, int pos)
+ 		iov->dev = dev;
+ 
+ 	dev->sriov = iov;
++	dev->is_sriov = 1;
+ 	dev->is_physfn = 1;
+ 	rc = compute_max_vf_buses(dev);
+ 	if (rc)
+@@ -906,6 +908,7 @@ static int sriov_init(struct pci_dev *dev, int pos)
+ 
+ fail_max_buses:
+ 	dev->sriov = NULL;
++	dev->is_sriov = 0;
+ 	dev->is_physfn = 0;
+ failed:
+ 	for (i = 0; i < PCI_SRIOV_NUM_BARS; i++) {
+@@ -926,6 +929,7 @@ static void sriov_release(struct pci_dev *dev)
+ 
+ 	kfree(dev->sriov);
+ 	dev->sriov = NULL;
++	dev->is_sriov = 0;
  }
- #else
-diff --git a/drivers/xen/xen-pciback/pci_stub.c b/drivers/xen/xen-pciback/pci_stub.c
-index 79a2b5dfd694..fd5a13f79fcf 100644
---- a/drivers/xen/xen-pciback/pci_stub.c
-+++ b/drivers/xen/xen-pciback/pci_stub.c
-@@ -1695,7 +1695,7 @@ static int pci_stub_notifier(struct notifier_block *nb,
- 	if (action != BUS_NOTIFY_UNBIND_DRIVER)
- 		return NOTIFY_DONE;
  
--	if (!pdev->is_physfn)
-+	if (!pci_is_sriov_physfn(pdev))
- 		return NOTIFY_DONE;
+ static void sriov_restore_vf_rebar_state(struct pci_dev *dev)
+diff --git a/include/linux/pci.h b/include/linux/pci.h
+index 28892243f49f..ca84f66425b2 100644
+--- a/include/linux/pci.h
++++ b/include/linux/pci.h
+@@ -479,6 +479,7 @@ struct pci_dev {
+ 	unsigned int	state_saved:1;
+ 	unsigned int	is_physfn:1;
+ 	unsigned int	is_virtfn:1;
++	unsigned int	is_sriov:1;		/* SR-IOV is enabled on this device (PF or VF) */
+ 	unsigned int	is_hotplug_bridge:1;
+ 	unsigned int	is_pciehp:1;
+ 	unsigned int	shpc_managed:1;		/* SHPC owned by shpchp */
+@@ -606,12 +607,12 @@ static inline struct pci_dev *pci_physfn(struct pci_dev *dev)
  
- 	for (;;) {
+ static inline bool pci_is_sriov_physfn(const struct pci_dev *dev)
+ {
+-	return dev->is_physfn;
++	return dev->is_physfn && dev->is_sriov;
+ }
+ 
+ static inline bool pci_is_sriov_virtfn(const struct pci_dev *dev)
+ {
+-	return dev->is_virtfn;
++	return dev->is_virtfn && dev->is_sriov;
+ }
+ 
+ struct pci_dev *pci_alloc_dev(struct pci_bus *bus);
 -- 
 2.52.0
 
