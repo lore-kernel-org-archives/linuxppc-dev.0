@@ -1,101 +1,152 @@
-Return-Path: <linuxppc-dev+bounces-22039-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22040-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8FD1ACD6E4A
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Jun 2026 13:57:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2A9DBCD6E4A
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Jun 2026 14:06:08 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gWR2k626Qz2y1Y;
-	Thu, 04 Jun 2026 23:57:18 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::f34"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780581438;
-	cv=none; b=RfTAVaO1EzqF+51V2c+EIvjDeQrhvdEwrHPzHVKZvYfKcbwxFV+odiavmerysJX2BQTbOg9PjC6JZzRhVhRrMlONygfyntjAIyF2XMPz0v9HXIXx5tVbTX0VOP0vm2kQ69WKoE7ghNo8JOG7qz1nNfh6fbcSDp3NPQuVROWMlnOBgLNJaBVQEa9bPhrng33GYrikH/rwWXUx5fCDgb9V8GxXtcqRbzkH327lH7LxsSDg3j2hoLnGReB5tn2NDY2VbdtFKWdBcx9B7ogibZrlueXPCaBOkHpBPiG+coiU6f8SYXS2NNxrwlxyf+vIOiwa5mjwNcssgJohO+EHKs0ntQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1780581438; c=relaxed/relaxed;
-	bh=xdOeHpgtDPCXpgtRakSCpJbRBMD6e6ZeQ1aGekC0AxI=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=NGiGVdriV2AukrQgBGnO6tgfmdH4pya1C75UsUZ/mOZyl2LxmNLdQooAnl3zO+txYlh5tSlLawlRcTvlQAM9tCYfhMlKjfT28m1oQATj5sCHapHybUmbSI6Ld7yVTGSQMsu4KumRktD1tGrIFGh5eqYmfj0zSv/iem41v61D4Te6H03HOVRP4my4YsRnGOkRiat2lbNNcRfqxNiVvhUIVc0W9TCxeYyRqOT0OB8DFuesJrdJfpfNHx6yGgwQKEl1C2R8X8HFPAsXQ8ZLFLdeSzIXDM78/MeVEOzLC9EsoLiIHJdGQUxppU11er6snL3+k9G6t+uCPY0k9FiEMjPP3g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ziepe.ca; dkim=pass (2048-bit key; secure) header.d=ziepe.ca header.i=@ziepe.ca header.a=rsa-sha256 header.s=google header.b=aMLQs2sN; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::f34; helo=mail-qv1-xf34.google.com; envelope-from=jgg@ziepe.ca; receiver=lists.ozlabs.org) smtp.mailfrom=ziepe.ca
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ziepe.ca
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gWRDt1sC0z2y1Y;
+	Fri, 05 Jun 2026 00:06:06 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:d107::1" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780581966;
+	cv=pass; b=oYzduboYz01jvhBkrc+SIfx9tl0IA21+LPwh3fJcMqBvaD0Otgh0j0SGu/7B7ZIS9thgDd4mvOg0t6BYG23l6kgFgKxJqspm4j9evk17GZf8OwhrA2ms9IXq/OaIiNrE/ZOGFldAXcsMnOmCd/BaVdl01CBZCb4qeZHQXIzZFiQ0exhimt/4xVdf03N51v7MOIq7D3f5ZRqPjJNRZ3gINp6uwx96V+E+mStRhYOc6OaK3BytCX1cds9hqYoWS6tk8g4icolG0JujNGH0/A7oV1dSstcYCMiwWhN0H9mdblOJCWDzavifcwnTdjmfDKSZi49byOVp0L+m3fxY2IDxuA==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1780581966; c=relaxed/relaxed;
+	bh=okbux3rK3OQBwN7csm0ykJnyvdY5GBjq7dyp5u3qLSU=;
+	h=From:To:CC:Subject:Date:Message-ID:References:In-Reply-To:
+	 Content-Type:MIME-Version; b=NSqWVsaQwO2FsR1A/Ww+o4V8MamUz5UjiiTK4sQIUUEgUDuOfJhSwGSyQ0h7c0QAFT8s62an9w7UjTSpztylz8gGXoYS1quz5QmjFoPtGi7GMAC7AmTKn59Asr9ZKLzWby83x8B8YWRqHob8s8J5YHSQTdgvciJSc+IcTSR4Md1fdIFFpNlTxewn0qLFAq9yyxP4H3xDV/TrzADxDxzT+05t58dOML5jFTQy5oxuMxWBGyyysuUI54yoEEsQUDfH/oxWKOhwMwkTTkLvTHLDoPdIKRiZFlAtxV7bWmIfPceUUswtrSzpziGbI8gbwFzlpdD1qERYxddFujsSEQxVqg==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=outlook.com; dkim=pass (2048-bit key; unprotected) header.d=outlook.com header.i=@outlook.com header.a=rsa-sha256 header.s=selector1 header.b=L86aRKID; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:d107::1; helo=dm5pr21cu001.outbound.protection.outlook.com; envelope-from=mhklinux@outlook.com; receiver=lists.ozlabs.org) smtp.mailfrom=outlook.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=outlook.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=ziepe.ca header.i=@ziepe.ca header.a=rsa-sha256 header.s=google header.b=aMLQs2sN;
+	dkim=pass (2048-bit key; unprotected) header.d=outlook.com header.i=@outlook.com header.a=rsa-sha256 header.s=selector1 header.b=L86aRKID;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=ziepe.ca (client-ip=2607:f8b0:4864:20::f34; helo=mail-qv1-xf34.google.com; envelope-from=jgg@ziepe.ca; receiver=lists.ozlabs.org)
-Received: from mail-qv1-xf34.google.com (mail-qv1-xf34.google.com [IPv6:2607:f8b0:4864:20::f34])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=outlook.com (client-ip=2a01:111:f403:d107::1; helo=dm5pr21cu001.outbound.protection.outlook.com; envelope-from=mhklinux@outlook.com; receiver=lists.ozlabs.org)
+Received: from DM5PR21CU001.outbound.protection.outlook.com (mail-centralusazolkn190110001.outbound.protection.outlook.com [IPv6:2a01:111:f403:d107::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gWR2j2fDcz2xfB
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 04 Jun 2026 23:57:16 +1000 (AEST)
-Received: by mail-qv1-xf34.google.com with SMTP id 6a1803df08f44-8ccea53f35cso8256156d6.1
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 04 Jun 2026 06:57:16 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ziepe.ca; s=google; t=1780581434; x=1781186234; darn=lists.ozlabs.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=xdOeHpgtDPCXpgtRakSCpJbRBMD6e6ZeQ1aGekC0AxI=;
-        b=aMLQs2sNHy7NRbJmqxXkr5zEJ97NSCYnwX69mfbaRynd0j9lFDt1tM7byuf2rrpmuO
-         nESzfE3cS8Dnh7xigO2Hs056GP4wh9LXBCTed7tP1s8AxrUUo49OJbymmBX4hEriIIBx
-         ar/v46U+BuVtp1J4aPWhoD638zljtspM7X4rIFZtyV5yERPXZhQRyqOrmdYNK8bOzT5R
-         pMhwKEY/82q0VXiNV9+g1MoaFN9aCVYReUndUN5HScMz1kcWEWLvbdci+g92X87/WMeo
-         gKZ70HIEurcKEwmsQQc8wJBm/QYb2Z9OODKLAefCXoQILdYZC7krtfc5OfDRiQuQvlwu
-         DAAw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1780581434; x=1781186234;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=xdOeHpgtDPCXpgtRakSCpJbRBMD6e6ZeQ1aGekC0AxI=;
-        b=BYF8L1WOwBaUTX2QahXmcqWnSgpPOVHsEw30eMQaM8dOn3WSK6E91Q+6p8h2hcyb1+
-         oYt/3b5ext3he2UE5y6HSXPcr2pplyoPHYpAvxF2pBxh1UZKMcD0dNPXEmcQTNRQhadT
-         smswCp4+sNw4oCUVfnmVpNTx57oBsfIJH7vWDhWOmUUWLJ3lDXEqsgnK4BocEPWLevYH
-         /ap4xwVuzoAWH8239hjB6kHwX1rq3fOrJfgbQZRSJsC845WqrPyj1XbMi7VXDvz9UZZA
-         wnlkkUehMFCRiWkR2zzjdpzD53d8oSwq7BflSvaNgEFF5+vVcwQqg/em70aN+pbu4iBs
-         xzcQ==
-X-Forwarded-Encrypted: i=1; AFNElJ/vb4jeQeAzWZsBNnYVc6hBnQ+awBgobydDGeyX0k2n6vKExfeg/GWbsqi8Fi4lWZl0ukz7o+q5f7Z7urk=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YylHbbheBqcRKpvi4C4lI6RgDgQ8H5Z0Q1LvwRSU6E4m2Bo0gJS
-	Tphq1x4tfc0d6NZwbpDu9MLridzVkweDxmOjW7coBbQMOvUz12xGywaFsFy0UdELqdU=
-X-Gm-Gg: Acq92OHs8Twmz4xnATAR2nU+bHsyw7wc4Wal7jU1Ieyz+iaQVoBldXkYy4w4+L6AIVv
-	1OZrUgelr4PMt3xYsgffnYZB+021ouQwYzy4US/2fVeGcO9KbxOZ8+3V0ZddqM2gKXjuC07KniF
-	kYL3oQN6EIyAOBC5IcbFviD7j6Hu4uuQKdndQl9Ek7u3geRvDsh1lrHy90+nzCMxIlK1lzuGp5g
-	MXI1yJXpOvE7MekGbPOXZ56G2tYCxy7v5SkukdX5nScfsg7jxCjUTE9Ifsv/LtSpVs0S965fEy0
-	nSF4uHhc/jnFlCLcVqK58Zc6VScW01yUQamGt70iTELafO2B27IKvKrkoWVRCPBMH4Khg6Lf84C
-	Q+eLjktKdF0X5VSu0lTnM+yOlEgQMxSn/VcFbRh+l2OhorTK57GUFV2OH2ulfic6P9GQfAXbZ9W
-	srHXM4U4lWYOOKdhZoJhkDiMFTLDuCMmrFYRQY0Fn1cg7hLJeE+BdU/UCPxRD0w0mqzE1w4bbmg
-	ktUVlxeRpFw2dBJlo88h1vCD5U=
-X-Received: by 2002:a05:6214:800c:b0:8ce:e098:d974 with SMTP id 6a1803df08f44-8cee098dc5emr22722786d6.6.1780581433691;
-        Thu, 04 Jun 2026 06:57:13 -0700 (PDT)
-Received: from ziepe.ca (crbknf0213w-47-54-130-67.pppoe-dynamic.high-speed.nl.bellaliant.net. [47.54.130.67])
-        by smtp.gmail.com with ESMTPSA id 6a1803df08f44-8cecd07629dsm53598296d6.39.2026.06.04.06.57.13
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 04 Jun 2026 06:57:13 -0700 (PDT)
-Received: from jgg by wakko with local (Exim 4.97)
-	(envelope-from <jgg@ziepe.ca>)
-	id 1wV8ZM-00000008FiY-2nrt;
-	Thu, 04 Jun 2026 10:57:12 -0300
-Date: Thu, 4 Jun 2026 10:57:12 -0300
-From: Jason Gunthorpe <jgg@ziepe.ca>
-To: Sumit Semwal <sumit.semwal@linaro.org>
-Cc: Maxime Ripard <mripard@kernel.org>, Jiri Pirko <jiri@resnulli.us>,
-	Christoph Hellwig <hch@infradead.org>,
-	"T.J. Mercier" <tjmercier@google.com>, maddy@linux.ibm.com,
-	mpe@ellerman.id.au, npiggin@gmail.com, chleroy@kernel.org,
-	linuxppc-dev@lists.ozlabs.org, lkp@intel.com,
-	linux-kernel@vger.kernel.org, iommu@lists.linux.dev,
-	linux-mm@kvack.org, agordeev@linux.ibm.com,
-	gerald.schaefer@linux.ibm.com, linux-s390@vger.kernel.org,
-	Dan Williams <djbw@kernel.org>,
-	Tom Lendacky <thomas.lendacky@amd.com>, x86@kernel.org
-Subject: Re: [PATCH] powerpc: Export set_memory_encrypted and
- set_memory_decrypted
-Message-ID: <20260604135712.GV2487554@ziepe.ca>
-References: <20260522225853.878411-1-tjmercier@google.com>
- <ahPqbfH54R3JJyaV@infradead.org>
- <20260527160716.GN2487554@ziepe.ca>
- <20260604-dangerous-tuatara-of-sympathy-28e05e@houat>
- <CAO_48GEJsg4X7++zg-ztQgVibY_FjjManaA5_W3usjicGUQPdg@mail.gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gWRDq1vcyz2xfB
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Jun 2026 00:06:02 +1000 (AEST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=CDQ89w4LCf9gb2RE9/uaK1aCA+Y/r/dBD3Rx52Spjbzf3DD3V5Fvzt9hmtOdTcl/XqzS+nwWleTgqdDdbZ6cSWxYUb0/Mn9b+ymsA6vxA/iFzYzTjkjWNPrCujbLyCTRUEQ8e3W1Tc3xyb3+K/f7MJuAfDajjjf0wZYLgZgtvt2PMLYn9HGczn9BPF8PJBbzCrD3sZ6iRu0PJ5wIK4WWB5t+rHgcA0JIr7nwnaJcmUC+czPdvY06djkyK7a3EAZdkw6blFC2dE5cO0oXXe8SV6guuZdO7FPeW5dKZ8PDLfP4rRiaivVOTyIKq7EtqaN6hE7jNPbmwhyALqp9226Zng==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=okbux3rK3OQBwN7csm0ykJnyvdY5GBjq7dyp5u3qLSU=;
+ b=wceT+b9O2Rff5+YTLT9xcm4NH27/0gL0IrTqRTb/r9hCM4uvRRWGgTHUSa3EcVTbRlHpiqEBGv8G25Sh6dUp3DcIf17kTpdPKOTd7qVOA7q4QyTHoJauMc92v7M4TFI8nm2/y1OYTix3FhW2anjhigs3teNIZAk0r5SuOBn59DCcQq+9M+5q/PRv2JBVKqinoRFaJ0ls5cAi1/1E+VopVIdg1I7fp9BhyTMTH3S06ZQTJVxZhayZkVVR4VIwLzvVN6psNv0ZlCCRfR31lJyHYWp5VmxfVfORvC433G3L0jF4Sqhq6Uo/MHSFUjdA99knKLfVSIG0omWwifle48CBdA==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=none; dmarc=none;
+ dkim=none; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=outlook.com;
+ s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=okbux3rK3OQBwN7csm0ykJnyvdY5GBjq7dyp5u3qLSU=;
+ b=L86aRKIDl/GqhSiANwPEpTn/kq60112lJpLH72LN6og4CookMCICkWcbJMXJGD8nat7lB7C5Z6DL1at1Ku3BS6+cirtWYwskQTih2QMa6utdgq8iof16ROKDlsVnbNSWefvoTwwUaAg0D1WCEGLFqw04/Ojs1BCpP83r8H0TGYXNlYKI7re8a+MZlxAJk+KB2ehWpepcpqyuJILkt9taBKf4QzN8WrOaaMk8U4qLb+wCRMrZXwSjiIHH+jS71iF1+BQH9rdiw7eNZdmdyVa75/9uHqFv4+u9JeGvQnWOox52F2oX3l95vN+O8MGGsGwvFd5wx/nOb91WdPNOXgm7bg==
+Received: from SN6PR02MB4157.namprd02.prod.outlook.com (2603:10b6:805:33::23)
+ by CY8PR02MB9472.namprd02.prod.outlook.com (2603:10b6:930:71::17) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.92.8; Thu, 4 Jun 2026
+ 14:05:35 +0000
+Received: from SN6PR02MB4157.namprd02.prod.outlook.com
+ ([fe80::900:1ccf:2b1e:52b6]) by SN6PR02MB4157.namprd02.prod.outlook.com
+ ([fe80::900:1ccf:2b1e:52b6%3]) with mapi id 15.21.0092.006; Thu, 4 Jun 2026
+ 14:05:35 +0000
+From: Michael Kelley <mhklinux@outlook.com>
+To: Jason Gunthorpe <jgg@ziepe.ca>, Michael Kelley <mhklinux@outlook.com>
+CC: Aneesh Kumar K.V <aneesh.kumar@kernel.org>, "iommu@lists.linux.dev"
+	<iommu@lists.linux.dev>, "linux-arm-kernel@lists.infradead.org"
+	<linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org"
+	<linux-kernel@vger.kernel.org>, "linux-coco@lists.linux.dev"
+	<linux-coco@lists.linux.dev>, Robin Murphy <robin.murphy@arm.com>, Marek
+ Szyprowski <m.szyprowski@samsung.com>, Will Deacon <will@kernel.org>, Marc
+ Zyngier <maz@kernel.org>, Steven Price <steven.price@arm.com>, Suzuki K
+ Poulose <Suzuki.Poulose@arm.com>, Catalin Marinas <catalin.marinas@arm.com>,
+	Jiri Pirko <jiri@resnulli.us>, Mostafa Saleh <smostafa@google.com>, Petr
+ Tesarik <ptesarik@suse.com>, Alexey Kardashevskiy <aik@amd.com>, Dan Williams
+	<dan.j.williams@intel.com>, Xu Yilun <yilun.xu@linux.intel.com>,
+	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+	"linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>, Madhavan
+ Srinivasan <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>, "Christophe Leroy (CS GROUP)"
+	<chleroy@kernel.org>, Alexander Gordeev <agordeev@linux.ibm.com>, Gerald
+ Schaefer <gerald.schaefer@linux.ibm.com>, Heiko Carstens <hca@linux.ibm.com>,
+	Vasily Gorbik <gor@linux.ibm.com>, Christian Borntraeger
+	<borntraeger@linux.ibm.com>, Sven Schnelle <svens@linux.ibm.com>,
+	"x86@kernel.org" <x86@kernel.org>, Jiri Pirko <jiri@nvidia.com>
+Subject: RE: [PATCH v5 05/20] dma-pool: track decrypted atomic pools and
+ select them via attrs
+Thread-Topic: [PATCH v5 05/20] dma-pool: track decrypted atomic pools and
+ select them via attrs
+Thread-Index:
+ AQHp6tfu5DGfxW+HBL9src0vNhss0QGjMATQtfypCTCABxNTgIAAi4fggACwGwCAAm86IA==
+Date: Thu, 4 Jun 2026 14:05:35 +0000
+Message-ID:
+ <SN6PR02MB4157F94C902B78E55E99372DD4102@SN6PR02MB4157.namprd02.prod.outlook.com>
+References: <20260522042815.370873-1-aneesh.kumar@kernel.org>
+ <20260522042815.370873-6-aneesh.kumar@kernel.org>
+ <SN6PR02MB415754E94A9505C2B9739E4DD4092@SN6PR02MB4157.namprd02.prod.outlook.com>
+ <yq5afr35sciu.fsf@kernel.org>
+ <SN6PR02MB4157D9955A93244014AB7978D4122@SN6PR02MB4157.namprd02.prod.outlook.com>
+ <20260603005454.GM2487554@ziepe.ca>
+In-Reply-To: <20260603005454.GM2487554@ziepe.ca>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach:
+X-MS-TNEF-Correlator:
+x-ms-publictraffictype: Email
+x-ms-traffictypediagnostic: SN6PR02MB4157:EE_|CY8PR02MB9472:EE_
+x-ms-office365-filtering-correlation-id: 810ce470-eb1e-4737-c3a6-08dec2425917
+x-microsoft-antispam:
+ BCL:0;ARA:14566002|31061999003|15080799012|51005399006|19101099003|37011999003|8062599012|8060799015|13091999003|19110799012|3412199025|440099028|102099032|40105399003|1710799026;
+x-microsoft-antispam-message-info:
+ =?us-ascii?Q?ZGiFGkDWj57FMu840f0H846SezVXn+GpCaAcQX28p402GZ1NqeTE2X8xqfCD?=
+ =?us-ascii?Q?Vjzws5JdRx4kCXZgZjWbujfG3uzVTFgfW5xD8V9MmEJyniAWFLwSamdaWQts?=
+ =?us-ascii?Q?3DEHlqEMq209cNN2J4IxJr+0c1fR9hsa956LYlDWoBl6QidDJ1y7+TutmpRh?=
+ =?us-ascii?Q?j60SOpmnXrhgJ9G23Ot4JpfEaQFDj7iJJa6qApyW5bG7NUol+sbpDOqvpUAO?=
+ =?us-ascii?Q?VSeDJIx5ziGFDnGdcjgqlo0Zc1295EbUp3iuYfcDg4saScrsJVoCz4pEXfnz?=
+ =?us-ascii?Q?ZTVFOOEFGWuZTwehCOaMx4aWHi1eDQUqhRv5R7FiR6LraMpFaSs+o+xQAud5?=
+ =?us-ascii?Q?FIxI/J1s+j0l4naXGh4jjuGBOqEgS9abvKotkrmCl+2qlVR9aePfmi2rswzx?=
+ =?us-ascii?Q?FFF/ehW709u4/Ed1MYkFCWDUEzTnbqA7nUJTxc5NmlBNwVRun3GOuqzRXvJ9?=
+ =?us-ascii?Q?AIgyoAsey91PircZacYLCkxtLN01Q4LEsRwUiXIEXHb5dw7nq+QXc4IIhTpe?=
+ =?us-ascii?Q?W4s67rgRuhqu8KJ6XvZJgYtfrV6iSPUwTJ7+wOJjtzTYRA3AYdrtoUMjNoZj?=
+ =?us-ascii?Q?BsTyXOIJhnjaop57DARK/MeLBxfNc1rlvkjB8W/56a7pntll+s5IRALJmnAv?=
+ =?us-ascii?Q?7+SYV27Dq4UW4Lq9KMD5gXcRSGQgc7o3FFD41knXbnhJ3i0Msz6zH5tWt+4N?=
+ =?us-ascii?Q?e91Ym3kRv9Lcb/lD3zZwKWi8XqR2469jbVwmRrMnN/XhlwLkjX8MfXOKnvoY?=
+ =?us-ascii?Q?nN03fTXMxiwCM9FMm2gRM4tjdBN/ubV33M+9YEHDxbExPgJhqqdNSQOpGc/f?=
+ =?us-ascii?Q?8rPyeVZTkQ5hpnHUUT5GXY6dmKxtmAv120uYiluFpN01p/x8/Ltiha40ovHj?=
+ =?us-ascii?Q?lRWl4O1zyNLT9QvDX0QPqvzKMhGCdeVwv3AG04xBsNzPttbVmVXdMzV5HhkZ?=
+ =?us-ascii?Q?YFqvkTUj/OSnNAtbyw1OW5f6C4Gs7QjWRYlxviLk0EGH8hTR5EwUvMia5lw1?=
+ =?us-ascii?Q?xCrD1dPHp87XDmPUmX2zP1cSZg=3D=3D?=
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0:
+ =?us-ascii?Q?4EQy7lXQJNTfflP5XZ6fJxaOvf5bceIEuVrTyqs154+D5BBEfCoT8iboUyhZ?=
+ =?us-ascii?Q?9ZW3UkaPQ3ViHQMZWyc8acylTi4AHTW+Ouu6Qm2lZBdB9jo8XOUZlzQ8yWhM?=
+ =?us-ascii?Q?BK35QscyWnSwUoQXCt+9IhB/9iJEl0zw6xTUfVi14hVgbCuKcygctOCJgPa5?=
+ =?us-ascii?Q?XbdnDDfwPtZf8FifrVhyJEHt7vBmX62csWe4yusaAyGdC1FjHReX/g9+MuR4?=
+ =?us-ascii?Q?t4LbN2TiEFdjZKTIJrOkhE9fegXEcDMn0JdfEjqOX+3OncNvs97qQD+7i8eq?=
+ =?us-ascii?Q?bmzpT90bSwtwmGblI51YfKeR1Ad9AC2lgu/ugfc0+B6Fk2y0Vown065AfVBD?=
+ =?us-ascii?Q?4yzAgSs5d8P72UAUjyox8b4EBYp0iVff0sNem1esBdT3vfib9Gq/MAWErsdb?=
+ =?us-ascii?Q?b/6JjalfT6x+HUv9YGEwC4y6GS3JUgaZYbSaH2UIioR+Q6EXrwBhecCGrR9C?=
+ =?us-ascii?Q?bsCUm0+9h8pRnNRf1awG5vBYHCm85NjXD1MQicwLoma7obmvvt7ka3fF3Ctw?=
+ =?us-ascii?Q?4okBcZFkBZSmJMluoSZ8I4yrNplgIt1OE2USMugTMV9Jx8xjQ9htD0O1ag7e?=
+ =?us-ascii?Q?y+FZyfW2vnO4EaleyVdcMgKEt4KGBbsvEzp28TgdvgG1uDDSmQsLHgDZr7dg?=
+ =?us-ascii?Q?kppPKdTNsd+lCOrurbVCLo/8mOSdEleG5Wv4FurLTT37fG/7XZ6DLLg4BCuL?=
+ =?us-ascii?Q?JkrNc6T7l9AO84vcPUHcxc1GQ6vhUO4iRRDRQiR74dLLELpJOTxHVtMIr4up?=
+ =?us-ascii?Q?l/B2VkqKvkoa3xL4HHA+7cejQC8ggvfIKqdqSFg7PTAFR1ecUodWszbjdYl0?=
+ =?us-ascii?Q?V2HEN8sNYIMPuXoYrWvd/YK7vS+sfQERSdYExEzSkzLJbPCkypU44BqBkIsJ?=
+ =?us-ascii?Q?eXEQouvYd9iFQZyOzW6bI460VTTXe5rbnqd+VBVKrTl6zujZ9kXPKVX8vGUY?=
+ =?us-ascii?Q?6xPlqIda6rCIyBAviXizNMItP+JCUh/vN+W1MhYghwlrQSN394NvTvvqCr6D?=
+ =?us-ascii?Q?vwLdQvtcBQCIXJPuFhDRRj6dtJfE+e334HzoUwCPnvRLhh7Pk3tP2Fpu72Yv?=
+ =?us-ascii?Q?QH1IbBWb4FCkavtRSmVBKjIzN+djCmVik/i5sWkgKhL6PtamlwKeV/++ng8R?=
+ =?us-ascii?Q?mhMJbi690eWwXrEhwXFvcsnE8vHy4UH4jJa7c12RVAkLrdWT7Ia9WHQt8FoJ?=
+ =?us-ascii?Q?+wGzkVp+rrfx4AT3bpFy6mBNej46AoW06AIjnCp339695tgDJ3OmteDXy9zk?=
+ =?us-ascii?Q?YrvxGh6qRzwOLqTZr4bk9ritF4oI5nKWW4LawTYDCp6I9K98prkGjRc3g/cX?=
+ =?us-ascii?Q?EyUvw8ys3qwTW+5LhhYA/+DCZaLN8Djy1p0JJ9ViuFiO7tivY8rTWBvODOGE?=
+ =?us-ascii?Q?+WHvfURyuqaLPcLj+CdjlmGOaBoNJZibkuG5AvZM4dNwaN+8nBrGHRsqwfmS?=
+ =?us-ascii?Q?udkSVKblSAk=3D?=
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -109,19 +160,61 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CAO_48GEJsg4X7++zg-ztQgVibY_FjjManaA5_W3usjicGUQPdg@mail.gmail.com>
+X-OriginatorOrg: outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: SN6PR02MB4157.namprd02.prod.outlook.com
+X-MS-Exchange-CrossTenant-RMS-PersistedConsumerOrg: 00000000-0000-0000-0000-000000000000
+X-MS-Exchange-CrossTenant-Network-Message-Id: 810ce470-eb1e-4737-c3a6-08dec2425917
+X-MS-Exchange-CrossTenant-originalarrivaltime: 04 Jun 2026 14:05:35.1224
+ (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 84df9e7f-e9f6-40af-b435-aaaaaaaaaaaa
+X-MS-Exchange-CrossTenant-rms-persistedconsumerorg: 00000000-0000-0000-0000-000000000000
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: CY8PR02MB9472
 
-On Thu, Jun 04, 2026 at 12:51:49PM +0530, Sumit Semwal wrote:
+From: Jason Gunthorpe <jgg@ziepe.ca> Sent: Tuesday, June 2, 2026 5:55 PM
+>=20
+> On Tue, Jun 02, 2026 at 02:24:40PM +0000, Michael Kelley wrote:
+>=20
+> > Except that in a normal VM, the "unencrypted" pool attribute does *not*
+> > describe the state of the memory itself.  In a normal VM, the memory is
+> > unencrypted, but the "unencrypted" pool attribute is false. That
+> > contradiction is the essence of my concern.
+>=20
+> I would argue no..
+>=20
+> When CC is enabled the default state of memory in a Linux environment
+> is "encrypted". You have to take a special action to "decrypt" it.
+>=20
+> Thus the default state of memory in a non-CC environment is also
+> paradoxically "encrypted" too.=20
 
-> Given that Christoph's objection is not really about the modules part,
-> but that the set_memory_{encrypted,decrypted} should not be used here,
-> one option is to revert 78b30c50a7ac until that issue is sorted out?
+The need to have such an unnatural premise is usually an indication
+of a conceptual problem with the overall model, or perhaps just a
+terminology problem.=20
 
-Please no, we have stuff already using this so it would be a
-functional regression. Revert making heaps into a module since that
-doesn't have a functional regression.
+Here's a proposal. The new DMA attribute is DMA_ATTR_CC_SHARED.
+Name the pool attribute "cc_shared" instead of "unencrypted". Having
+"cc_shared" set to false in a normal VM doesn't lead to the non-sensical
+situation of claiming that a normal VM is encrypted. The boolean
+"unencrypted" parameter that has been added to various calls also
+becomes "cc_shared".  If "CC_SHARED" is a suitable name for the DMA
+attribute, it ought to be suitable as the pool attribute. And everything
+matches as well.
 
-Jason
+Michael =20
+
+
+> "decryption" is impossible.
+>=20
+> Therefore the "unencrypted" state is a special state that only memory
+> inside a CC VM can have. A normal VM can never have "unencrypted"
+> memory at all, so having it be false in the pool is accurate as far as
+> the APIs go.
+>=20
+> un-encrypted =3D true means "the memory in this pool was transformed with
+> set_memory_decrypted()" - which is impossible on a normal VM.
+>=20
+> Jason
+
 
