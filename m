@@ -1,73 +1,79 @@
-Return-Path: <linuxppc-dev+bounces-22046-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22047-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8031DCD6E6D
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Jun 2026 15:09:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0B9E3CD6E4A
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Jun 2026 15:12:00 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gWSdk08bDz2yT0;
-	Fri, 05 Jun 2026 01:09:14 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780585753;
-	cv=none; b=I7OTj6VDV6dCjAJ80K5nyY6szQR2NYtPP0BjObOkFXd7Xre8CBJrCQpPigcuY8oVDNLNyiXvSvOgAd55SlQ4jNf5mweL9I6RUpy16cOXqLhPE/rMXIPyyI3BJeSpDHa1swFqqo/Tc9gNcvZ2qGVj7y3Z1I7HNfV367esD2bgwOcGLiugoNZGSiJD1X9p57RVL8Fpj9P48POMJ4hdthxWXqCg/hxOqW1SlQVOONXd7znt0FnbXrT41SxcT7idzpfxKLlpmQo9wjIanfUk8uxV4g69lhatElMQNCwUkyWgPi3AsuBdK6QcwErnElMGoIsl5QNByhxdZK9L0Tm1Aac6IQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gWShv4zbhz2yT0;
+	Fri, 05 Jun 2026 01:11:59 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::635"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780585919;
+	cv=none; b=GvngIPejg4Z+c9tdJB7PXLngIM/4cw8g5WJfMM26WMkaJWGobDL6L5NzVHt/WOVBOyPmZYS0we7JK0LNLeRgPPfV7FQPQkF/l0UosTKN00JM00SK9DRRtICjncdLvpiiqRQ1nQH9WpeDm9ZbU/TLNkK53O+vqN9OBMsv3TEQ0ZT4wG1ojayy0BFn+Z0kpHHv0+Fl9Qnd+ey5lQbsl0pQMHCfBJ9Q1RVDBQ+Yl/ENkF3W8FZHLIqK1w5eWqDT4HtwJQH/Q+rV6IbWDmgxRDlckofXLfqJNktXyhd1elRmLn75GD/zwf0o4JfhAmxQCkV+0aGKEneOiGLEPqT/ZfwzhA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1780585753; c=relaxed/relaxed;
-	bh=80v4uHqSQWjs1QUxSMf7ZHQ3G4mekbXDDvyja00+SQQ=;
-	h=Content-Type:Mime-Version:Subject:From:In-Reply-To:Date:Cc:
-	 Message-Id:References:To; b=mSGTadbSgqdHDfBiqnNttL53X4XJpkVjxOBfj7s3EFQBUOPzHlZNRiT0BxtS3f51pLIItlaB4+BWwkT6X7KjVgTZ3rw9MGHOrHFtPpqQAT4vBg8RROZRYOZ60VRNVuMn/7jl8xfKOyJO3bWCNkpSPZ0j4KHEqC/dddn30PMJDRM8lezjgr52A0kEpww93glzJsaqbEHLsh2MubVZcPzFKrmoeCJxyKYyixq+c2+f+QSpCp9fpDsATRCvweft5OTref1ZMlKHSbdjh5rF3rz7hmTZCqc5WrKfgX/rDiWGTmMokoM1ObcL3xZW9LIPLGhQ8pU16ZyGXdKXXCsuouwjgg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Zs03Dpbg; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=atrajeev@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1780585919; c=relaxed/relaxed;
+	bh=SmKzBru82MXbWfMD6jBKCeYD6cZ596fFD1Rlxx5mYrs=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=L5HEg1O/ah7mT0He4nM27lTIzKzLkqZHMrljo35a3D0eQcWokIpPd3EOXZW8FUYLyG9U1IniuU2Aon+YkPaz3TNuj1+fn/bC588aRFRdAfOmWOHXU6kgiRWL+FSC+tWWVafzBluCInPAZo3DB3k1xsGVSqx14tEyc7H0FD++j9RCzXX18qaBDtOKohBP0Q5+IfxnRAigU6Q8JwWEIuULNROAXpASWPf0TZNhD3RA0iz61ILLyPTjNWKulJRPWHlZJyTt2APRQvpscrTAV9/LxWm3kCYwcP/Dp6WHulPfJ+/x1rVSxSD9dC4lCJMEsmlmLjtuAlVtwoF22CdJuSpcaQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com; dkim=pass (2048-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=google header.b=FaNcsEyx; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::635; helo=mail-ej1-x635.google.com; envelope-from=jgross@suse.com; receiver=lists.ozlabs.org) smtp.mailfrom=suse.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Zs03Dpbg;
+	dkim=pass (2048-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=google header.b=FaNcsEyx;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=atrajeev@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.com (client-ip=2a00:1450:4864:20::635; helo=mail-ej1-x635.google.com; envelope-from=jgross@suse.com; receiver=lists.ozlabs.org)
+Received: from mail-ej1-x635.google.com (mail-ej1-x635.google.com [IPv6:2a00:1450:4864:20::635])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gWSdj1VTPz2y1Y
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Jun 2026 01:09:12 +1000 (AEST)
-Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 654Ax2VQ2292050;
-	Thu, 4 Jun 2026 15:09:09 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=80v4uH
-	qSQWjs1QUxSMf7ZHQ3G4mekbXDDvyja00+SQQ=; b=Zs03DpbgKMPWjgcFHncOZz
-	ly1DZK29DsL3ykX7o8zNpzyMiYAe3Ikmq4zf8c5Va9z/VK9IVczFKbxMuznttor0
-	vJKBeK5VMJrVvGWpk4yk3g5iNRPgarsxBqsmPlVqYE+Jdr1UCKbV4SKwqqmeUQRB
-	+7qCt0IugkxI4zc32X/3sXcelq5pEVlTEZnTsWaty7JRk1N7FmF57jmqXZll5nbn
-	IlwSykSw4Ixve8Vkihbw+M1WIiEY3u8S6xQGJ1QcZHgBfj3rTm1jJQMRBFrXAqto
-	PkO9uQhRa2nOqL1xbQrsFaXkifiwjMNNmc3fEqmjeoulwKFN4uSK/q3cAXVrNJrg
-	==
-Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4efqjqgcvt-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 04 Jun 2026 15:09:08 +0000 (GMT)
-Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma21.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 654F97OH030200;
-	Thu, 4 Jun 2026 15:09:07 GMT
-Received: from smtprelay01.fra02v.mail.ibm.com ([9.218.2.227])
-	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4egb7kdm6n-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 04 Jun 2026 15:09:07 +0000 (GMT)
-Received: from smtpav07.fra02v.mail.ibm.com (smtpav07.fra02v.mail.ibm.com [10.20.54.106])
-	by smtprelay01.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 654F935357278786
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 4 Jun 2026 15:09:03 GMT
-Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 2A3B220043;
-	Thu,  4 Jun 2026 15:09:03 +0000 (GMT)
-Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id B4F9F20040;
-	Thu,  4 Jun 2026 15:08:59 +0000 (GMT)
-Received: from smtpclient.apple (unknown [9.39.24.150])
-	by smtpav07.fra02v.mail.ibm.com (Postfix) with ESMTPS;
-	Thu,  4 Jun 2026 15:08:59 +0000 (GMT)
-Content-Type: text/plain;
-	charset=utf-8
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gWShs6SPkz2y1Y
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Jun 2026 01:11:56 +1000 (AEST)
+Received: by mail-ej1-x635.google.com with SMTP id a640c23a62f3a-beb8a08a6c8so117583066b.2
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 04 Jun 2026 08:11:56 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=suse.com; s=google; t=1780585909; x=1781190709; darn=lists.ozlabs.org;
+        h=in-reply-to:autocrypt:from:content-language:references:cc:to
+         :subject:user-agent:mime-version:date:message-id:from:to:cc:subject
+         :date:message-id:reply-to;
+        bh=SmKzBru82MXbWfMD6jBKCeYD6cZ596fFD1Rlxx5mYrs=;
+        b=FaNcsEyx6kEXgztDsHo0BmTIrNscluhqc91RSsiwqHzuxtqhEm/ki8BtyH52NtjJyU
+         cK8RsLAATja5VKTNLFE+wkHc2tVolf1LeUt9x9EuhXWgR2SW9ZAGinSasKOvBoqWia/3
+         Cts0LPPTQXlVmMImFqS+COjVfo2I9uXYXPCbVpasySuQ+7qjXph2FUa3nJJgLj4gRiPG
+         ENCmQWZSPAPNx1mVNa/A30mZe4k3JfQ5jYvA62xfx7FfyhY8eY+xxQ/nU/t4HtbXr5w5
+         7o3ZpfWef7TEXqpvPHM6rimQraT+X17gdutEq9HIi96vo9k4yYauv+TE6lnkqNWAjGGR
+         i0dw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1780585909; x=1781190709;
+        h=in-reply-to:autocrypt:from:content-language:references:cc:to
+         :subject:user-agent:mime-version:date:message-id:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=SmKzBru82MXbWfMD6jBKCeYD6cZ596fFD1Rlxx5mYrs=;
+        b=XYC4sQbW6S/aVzuxDXJc/cx0L48dWcwB8IMT6Wsd+5Jh540fRRneY6h/gJaXCmL9+n
+         jmPIjCh5lwqFeSjH8UlGFW/B3g3N/RppKqHv6eySVX7KbmdLzinUAT2MfoFzIbAekBIY
+         D6onu8MZg6MIiEEfpj5r1SwH+0BlULRHeECOmT5A2lIgIIyVfDSVQWOFZGKsfxHa2Qd6
+         2bFdaWr8gfLeO36G6NpqVD/LyzM+CQTjvr4COKSB0etRHvDMzyI43JDY/ck0OyBzSUux
+         KQl+ffbV8OsF/lqmIRKEYHLZP0wd3Kj9nqhpIbvtHNJvMj+J4ZzavBvllGftiQAEeePU
+         Pmxg==
+X-Forwarded-Encrypted: i=1; AFNElJ+ftCGjkYSpD0grnkFpY9xDb2PStW9ftXnE11z8WD2EYShAhigfhyIaN/iiRqLmqvftcbE0HouqJhdB4zQ=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YwfuMkYtLndRPjz6rsUaPWr4RGQZYH4hdSiWuIqQN+TV4ZRoFjy
+	+k0Iqa79TVS7dJzSjJBH0FNH75DeP++mZiSBX4cEuR9G39BBsXw/sWzVKBkUJE1/LaQ=
+X-Gm-Gg: Acq92OGJsidJpKoPn/paSMugoLN1lwri8IwldregAdx6AleM9dgF0/6GYEtN5M8gEJl
+	UFjl8lCi4ANvPtpUOCDMLWCiwmyx/0Kxq2TWDMRvKN/ibc3OjlsgC7beo3kzAryzve9Q5BT0YU/
+	IG/6CrQRxXZ0R6Nt0eUrDNZ2GumSb2tDe5GAk0oqAf1GbXImmv+IGFcoXXzeH7wZrUh1ck8rQ5B
+	q0Uhn+CG3P3qUu1fF8qoHn8w/SfzYtyvH8JWdgNci9zLpvKlsLmHDzzqTc7rxgS4IHmGaNwOkYE
+	G8axbo/Fb8QspIE0HinwwLNm1/65ZVq/bOyKzX1gL+BcbuWAg8vF15Ox1xwKubSNEoLrVRBgwQB
+	vmxhXgsjTUUe4GG2QsqwBN/A4UE5YfbRMPPiG/9otcqwtb8ihnYES1lxr/9wnJ+5D+8pxQkKARB
+	QbxflsBa3p82VxqRufv4lKNXNqv48J5PQgyYcDhpmdR+SNmEnIrjDZ9V/rc1/or5SQoR0jaNgn1
+	vSZxzS6mjwjPuYwrHc5pMzzJOJO2hUpvw7HwVrib15HZJPyp3Mw6PF1iLgiziES
+X-Received: by 2002:a17:907:cbc5:b0:bd4:f3e2:f1b with SMTP id a640c23a62f3a-bf0b2bd07e2mr457906866b.32.1780585908739;
+        Thu, 04 Jun 2026 08:11:48 -0700 (PDT)
+Received: from ?IPV6:2a00:12d0:af5d:ad01:5d3f:14e6:9bcb:5112? (2a00-12d0-af5d-ad01-5d3f-14e6-9bcb-5112.ip.tng.de. [2a00:12d0:af5d:ad01:5d3f:14e6:9bcb:5112])
+        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-bf051e9b1fasm324775966b.23.2026.06.04.08.11.47
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 04 Jun 2026 08:11:48 -0700 (PDT)
+Message-ID: <ce60e4dd-aedd-4376-9af1-cdae2f0d674b@suse.com>
+Date: Thu, 4 Jun 2026 17:11:47 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -80,197 +86,195 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-Mime-Version: 1.0 (Mac OS X Mail 16.0 \(3864.300.41.1.7\))
-Subject: Re: [PATCH] tools/perf/sched: Update process names of processes in
- zombie state for both -s and -S options
-From: Athira Rajeev <atrajeev@linux.ibm.com>
-In-Reply-To: <aiGI--j2nJ_kas60@x1>
-Date: Thu, 4 Jun 2026 20:38:46 +0530
-Cc: Anubhav Shelat <ashelat@redhat.com>, Namhyung Kim <namhyung@kernel.org>,
-        Ian Rogers <irogers@google.com>, jolsa@kernel.org,
-        adrian.hunter@intel.com, mpetlan@redhat.com, tmricht@linux.ibm.com,
-        maddy@linux.ibm.com, linux-perf-users@vger.kernel.org,
-        linuxppc-dev@lists.ozlabs.org, hbathini@linux.vnet.ibm.com,
-        Tejas.Manhas1@ibm.com, Tanushree.Shah@ibm.com, Shivani.Nittor@ibm.com
+MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [RFC 07/12] PCI: Convert xen-pciback and pci-driver to
+ pci_is_sriov_* helpers
+To: Dimitri Daskalakis <dimitri.daskalakis1@gmail.com>,
+ Bjorn Helgaas <bhelgaas@google.com>
+Cc: linux-pci@vger.kernel.org, Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
+ Christophe Leroy <chleroy@kernel.org>,
+ Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
+ Oliver O'Halloran <oohall@gmail.com>,
+ Niklas Schnelle <schnelle@linux.ibm.com>,
+ Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
+ Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>,
+ Alexander Gordeev <agordeev@linux.ibm.com>,
+ Christian Borntraeger <borntraeger@linux.ibm.com>,
+ Sven Schnelle <svens@linux.ibm.com>, Alex Williamson <alex@shazbot.org>,
+ Jason Gunthorpe <jgg@ziepe.ca>, Kevin Tian <kevin.tian@intel.com>,
+ Ankit Agrawal <ankita@nvidia.com>, Leon Romanovsky <leon@kernel.org>,
+ Stefano Stabellini <sstabellini@kernel.org>,
+ Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>,
+ Keith Busch <kbusch@kernel.org>, Alexander Duyck <alexanderduyck@fb.com>,
+ Jakub Kicinski <kuba@kernel.org>, Dimitri Daskalakis <daskald@meta.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ kvm@vger.kernel.org, xen-devel@lists.xenproject.org
+References: <20260604150153.3619662-1-dimitri.daskalakis1@gmail.com>
+ <20260604150153.3619662-8-dimitri.daskalakis1@gmail.com>
+Content-Language: en-US
+From: Juergen Gross <jgross@suse.com>
+Autocrypt: addr=jgross@suse.com; keydata=
+ xsBNBFOMcBYBCACgGjqjoGvbEouQZw/ToiBg9W98AlM2QHV+iNHsEs7kxWhKMjrioyspZKOB
+ ycWxw3ie3j9uvg9EOB3aN4xiTv4qbnGiTr3oJhkB1gsb6ToJQZ8uxGq2kaV2KL9650I1SJve
+ dYm8Of8Zd621lSmoKOwlNClALZNew72NjJLEzTalU1OdT7/i1TXkH09XSSI8mEQ/ouNcMvIJ
+ NwQpd369y9bfIhWUiVXEK7MlRgUG6MvIj6Y3Am/BBLUVbDa4+gmzDC9ezlZkTZG2t14zWPvx
+ XP3FAp2pkW0xqG7/377qptDmrk42GlSKN4z76ELnLxussxc7I2hx18NUcbP8+uty4bMxABEB
+ AAHNH0p1ZXJnZW4gR3Jvc3MgPGpncm9zc0BzdXNlLmNvbT7CwHkEEwECACMFAlOMcK8CGwMH
+ CwkIBwMCAQYVCAIJCgsEFgIDAQIeAQIXgAAKCRCw3p3WKL8TL8eZB/9G0juS/kDY9LhEXseh
+ mE9U+iA1VsLhgDqVbsOtZ/S14LRFHczNd/Lqkn7souCSoyWsBs3/wO+OjPvxf7m+Ef+sMtr0
+ G5lCWEWa9wa0IXx5HRPW/ScL+e4AVUbL7rurYMfwCzco+7TfjhMEOkC+va5gzi1KrErgNRHH
+ kg3PhlnRY0Udyqx++UYkAsN4TQuEhNN32MvN0Np3WlBJOgKcuXpIElmMM5f1BBzJSKBkW0Jc
+ Wy3h2Wy912vHKpPV/Xv7ZwVJ27v7KcuZcErtptDevAljxJtE7aJG6WiBzm+v9EswyWxwMCIO
+ RoVBYuiocc51872tRGywc03xaQydB+9R7BHPzsBNBFOMcBYBCADLMfoA44MwGOB9YT1V4KCy
+ vAfd7E0BTfaAurbG+Olacciz3yd09QOmejFZC6AnoykydyvTFLAWYcSCdISMr88COmmCbJzn
+ sHAogjexXiif6ANUUlHpjxlHCCcELmZUzomNDnEOTxZFeWMTFF9Rf2k2F0Tl4E5kmsNGgtSa
+ aMO0rNZoOEiD/7UfPP3dfh8JCQ1VtUUsQtT1sxos8Eb/HmriJhnaTZ7Hp3jtgTVkV0ybpgFg
+ w6WMaRkrBh17mV0z2ajjmabB7SJxcouSkR0hcpNl4oM74d2/VqoW4BxxxOD1FcNCObCELfIS
+ auZx+XT6s+CE7Qi/c44ibBMR7hyjdzWbABEBAAHCwF8EGAECAAkFAlOMcBYCGwwACgkQsN6d
+ 1ii/Ey9D+Af/WFr3q+bg/8v5tCknCtn92d5lyYTBNt7xgWzDZX8G6/pngzKyWfedArllp0Pn
+ fgIXtMNV+3t8Li1Tg843EXkP7+2+CQ98MB8XvvPLYAfW8nNDV85TyVgWlldNcgdv7nn1Sq8g
+ HwB2BHdIAkYce3hEoDQXt/mKlgEGsLpzJcnLKimtPXQQy9TxUaLBe9PInPd+Ohix0XOlY+Uk
+ QFEx50Ki3rSDl2Zt2tnkNYKUCvTJq7jvOlaPd6d/W0tZqpyy7KVay+K4aMobDsodB3dvEAs6
+ ScCnh03dDAFgIq5nsB11j3KPKdVoPlfucX2c7kGNH+LUMbzqV6beIENfNexkOfxHfw==
+In-Reply-To: <20260604150153.3619662-8-dimitri.daskalakis1@gmail.com>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="------------fDgbKYEUhquRvAN6UrfLuZuh"
+
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--------------fDgbKYEUhquRvAN6UrfLuZuh
+Content-Type: multipart/mixed; boundary="------------30t203kwaL3N2wp8gES1yCvp";
+ protected-headers="v1"
+From: Juergen Gross <jgross@suse.com>
+To: Dimitri Daskalakis <dimitri.daskalakis1@gmail.com>,
+ Bjorn Helgaas <bhelgaas@google.com>
+Cc: linux-pci@vger.kernel.org, Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
+ Christophe Leroy <chleroy@kernel.org>,
+ Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
+ Oliver O'Halloran <oohall@gmail.com>,
+ Niklas Schnelle <schnelle@linux.ibm.com>,
+ Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
+ Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>,
+ Alexander Gordeev <agordeev@linux.ibm.com>,
+ Christian Borntraeger <borntraeger@linux.ibm.com>,
+ Sven Schnelle <svens@linux.ibm.com>, Alex Williamson <alex@shazbot.org>,
+ Jason Gunthorpe <jgg@ziepe.ca>, Kevin Tian <kevin.tian@intel.com>,
+ Ankit Agrawal <ankita@nvidia.com>, Leon Romanovsky <leon@kernel.org>,
+ Stefano Stabellini <sstabellini@kernel.org>,
+ Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>,
+ Keith Busch <kbusch@kernel.org>, Alexander Duyck <alexanderduyck@fb.com>,
+ Jakub Kicinski <kuba@kernel.org>, Dimitri Daskalakis <daskald@meta.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ kvm@vger.kernel.org, xen-devel@lists.xenproject.org
+Message-ID: <ce60e4dd-aedd-4376-9af1-cdae2f0d674b@suse.com>
+Subject: Re: [RFC 07/12] PCI: Convert xen-pciback and pci-driver to
+ pci_is_sriov_* helpers
+References: <20260604150153.3619662-1-dimitri.daskalakis1@gmail.com>
+ <20260604150153.3619662-8-dimitri.daskalakis1@gmail.com>
+In-Reply-To: <20260604150153.3619662-8-dimitri.daskalakis1@gmail.com>
+
+--------------30t203kwaL3N2wp8gES1yCvp
+Content-Type: multipart/mixed; boundary="------------3qkLssp3MHU7hgnhd2uP8TB0"
+
+--------------3qkLssp3MHU7hgnhd2uP8TB0
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: base64
+
+T24gMDQuMDYuMjYgMTc6MDEsIERpbWl0cmkgRGFza2FsYWtpcyB3cm90ZToNCj4gRnJvbTog
+RGltaXRyaSBEYXNrYWxha2lzIDxkYXNrYWxkQG1ldGEuY29tPg0KPiANCj4gTm8gZnVuY3Rp
+b25hbCBjaGFuZ2VzLg0KPiANCj4gQXNzaXN0ZWQtYnk6IENsYXVkZTpjbGF1ZGUtb3B1cy00
+LjcNCj4gU2lnbmVkLW9mZi1ieTogRGltaXRyaSBEYXNrYWxha2lzIDxkYXNrYWxkQG1ldGEu
+Y29tPg0KDQpSZXZpZXdlZC1ieTogSnVlcmdlbiBHcm9zcyA8amdyb3NzQHN1c2UuY29tPg0K
+DQoNCkp1ZXJnZW4NCg==
+--------------3qkLssp3MHU7hgnhd2uP8TB0
+Content-Type: application/pgp-keys; name="OpenPGP_0xB0DE9DD628BF132F.asc"
+Content-Disposition: attachment; filename="OpenPGP_0xB0DE9DD628BF132F.asc"
+Content-Description: OpenPGP public key
 Content-Transfer-Encoding: quoted-printable
-Message-Id: <5ECBB4A2-57DE-48A0-BCFE-1B99DC4AABEE@linux.ibm.com>
-References: <20260426093930.47809-1-atrajeev@linux.ibm.com>
- <ae76k1BvfgcYI18K@google.com>
- <230801A2-5F9C-42A6-9390-B44786309E30@linux.ibm.com> <ag8UFqPmRu8v4g_9@x1>
- <aiGI--j2nJ_kas60@x1>
-To: Arnaldo Carvalho de Melo <acme@kernel.org>
-X-Mailer: Apple Mail (2.3864.300.41.1.7)
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-ORIG-GUID: AZngkdncW9jMhErMkJXV6V-Ku-RzAFVb
-X-Proofpoint-GUID: bXRfT7jvrwITSiD1bXE-5NQKXGBv6zdA
-X-Authority-Analysis: v=2.4 cv=bcVbluPB c=1 sm=1 tr=0 ts=6a219515 cx=c_pps
- a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
- a=x5QCPqNzQhPJdF4W:21 a=IkcTkHD0fZMA:10 a=FelO9ux0wxsA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22 a=uAbxVGIbfxUO_5tXvNgY:22
- a=VwQbUJbxAAAA:8 a=20KFwNOVAAAA:8 a=VnNF1IyMAAAA:8 a=E_gX7XLpPc_Ef3h5YmsA:9
- a=QEXdDO2ut3YA:10
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjA0MDE0NyBTYWx0ZWRfXyT+HBWZQL77H
- o3p3ki/AVl2IRZxnnCafyEpjqTWmlwahiDL25DjoP30vdxR1WAqPLZM5d/nhBB3SbuL56ITTj16
- 2cQ7vf3L7IQHaHVpaApb4/IHtuZI7iKuvFBplaQTX+fcyyQJ0BN63m4hGs3dAGXK8SJKsiq1boe
- 2KNrOyM+gjpTtkkPzthFoou79V6B3w+eVYO0a9Wtji93b3lSWIQjhOJscHIDU+eBWYdPl1ynnuM
- 5zP1Ql9fAOLPBXMNpGZrtVIwV68KPgzj3FFxd+P995+lTxNGyoHXNj9LfgxyA4ppjaMueX2c55T
- vyqTBtFOPqJNrDpAcwcuJEATM9aSgQI1PlxbZ2x6wORjK9GzaXAxAG27Wn2307MMynbJbe1Db7I
- psKib+PlPH6mtxGHNVC5VupQy24F8o4LUFuJ0uC62wWt2CNdNm++sJ1oq02QKnMH5GgVGCTnDXh
- OVkp3vXXnE9MHNuTZ8g==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
- definitions=2026-06-04_04,2026-05-28_03,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- impostorscore=0 clxscore=1011 adultscore=0 priorityscore=1501 phishscore=0
- lowpriorityscore=0 bulkscore=0 malwarescore=0 spamscore=0 suspectscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2605210000 definitions=main-2606040147
 
+-----BEGIN PGP PUBLIC KEY BLOCK-----
 
+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
+kt+z4drzFUyEjLM1vVvIMjkUoJs=3D
+=3DeeAB
+-----END PGP PUBLIC KEY BLOCK-----
 
-> On 4 Jun 2026, at 7:47=E2=80=AFPM, Arnaldo Carvalho de Melo =
-<acme@kernel.org> wrote:
->=20
-> On Thu, May 21, 2026 at 11:17:58AM -0300, Arnaldo Carvalho de Melo =
-wrote:
->> On Thu, May 21, 2026 at 02:02:53PM +0530, Athira Rajeev wrote:
->>>> On 27 Apr 2026, at 11:26=E2=80=AFAM, Namhyung Kim =
-<namhyung@kernel.org> wrote:
->>>> On Sun, Apr 26, 2026 at 03:09:30PM +0530, Athira Rajeev wrote:
->>>>> In redhat perftool testsuite, observed fail for this test:
->>>>>   -- [ FAIL ] -- perf_sched :: test_timehist :: --with-summary =
-(output regexp parsing)
->>>>>=20
->>>>> This led to analysis of "perf sched timehist" summary options.
->>>>>=20
->>>>> # perf sched record -a -o ./perf.data -- sleep 0.1
->>>>>  This will record using perf sched record
->>>>>=20
->>>>> perf sched timeliest has two options "-s" and "-S"
->>>>> # perf sched -i ./perf.data timehist -S
->>>>> -S : Captures summary also at the end
->>>>>=20
->>>>> # perf sched -i ./perf.data timehist -s
->>>>> -s : Captures only summary
->>>>>=20
->>>>> The test saves -s result which has only summary and compares with
->>>>> summary which comes at the end from -S . Since there is a =
-difference
->>>>> in these two, test fails.
->>>>>=20
->>>>> Checking the behaviour change in -S and -s results, difference is:
->>>>>=20
->>>>>                 rcu_sched[16]       2          4        0.013      =
-0.001       0.003       0.006   33.23       0
->>>>>              migration/11[73]       2          1        0.006      =
-0.006       0.006       0.006    0.00       0
->>>>>               migration/3[33]       2          1        0.006      =
-0.006       0.006       0.006    0.00       0
->>>>> -               :216753[216753]      -1          1        0.041    =
-  0.041       0.041       0.041    0.00       0
->>>>> +                 sleep[216753]      -1          1        0.041    =
-  0.041       0.041       0.041    0.00       0
->>>>>               migration/8[58]       2          1        0.005      =
-0.005       0.005       0.005    0.00       0
->>>>>           NetworkManager[811]       1          2        0.089      =
-0.028       0.044       0.060   36.06       0
->>>>>              migration/13[83]       2          1        0.005      =
-0.005       0.005       0.005    0.00       0
->>>>>=20
->>>>> Here 216753 is pid for sleep which is a zombie process. This is
->>>>> happening in latest kernel due to an update in "-S" result.
->>>>> In -S, the process name appears in the results "sleep[216753]",
->>>>> where as in the -s, only pid is present in the summary result
->>>>> ":216753[216753]".
->>>>>=20
->>>>> After commit 39f473f6d0b2 ("perf sched timehist: decode process =
-names
->>>>> of processes in zombie state")
->>>>> for -S option, if process name is using pid, it uses different way =
-to
->>>>> set it. So that we get the process name and not just Pid.
->>>>>=20
->>>>> This change went in only for timehist_print_sample() function.
->>>>> Add this improvement in generic place so that even -s option =
-(which
->>>>> captures summary) also will have meaningful information.
->>>>>=20
->>>>> Signed-off-by: Athira Rajeev <atrajeev@linux.ibm.com>
->>>>=20
->>>> Acked-by: Namhyung Kim <namhyung@kernel.org>
->>>>=20
->>>> Thanks,
->>>> Namhyung
->>> Hi,
->>>=20
->>> Can we please have this pulled in, if the patch looks fine ?
->>=20
->> Can you please check applying it on top of current perf-tools-next?
->=20
-> So, this seems to be also addressed by:
->=20
-> commit 39f473f6d0b24cf375893f2110b1cc9d8a079a42
-> Author: Anubhav Shelat <ashelat@redhat.com>
-> Date:   Wed Jul 16 16:39:15 2025 -0400
->=20
->    perf sched timehist: decode process names of processes in zombie =
-state
->=20
->    Previously when running perf trace timehist --state, when recording
->    processes in the zombie state the process name would not be decoded
->    properly and appears with just the PID:
->=20
->    1140057.412177 [0006]  Mutter Input Th[3139/3104]          0.956    =
-  0.019      0.041      S
->    1140057.412222 [0012]  :1248612[1248612]                   0.000    =
-  0.000      0.332      Z
->    1140057.412275 [0004]  <idle>                              0.052    =
-  0.052      0.953      I
->    1140057.412284 [0008]  <idle>                              0.070    =
-  0.070      0.932      I
->    1140057.412333 [0004]  KMS thread[3126/3104]               0.953    =
-  0.112      0.058      S
->=20
->    Now some extra processing has been added to decode the process =
-name:
->=20
->    1140057.412177 [0006]  Mutter Input Th[3139/3104]          0.956    =
-  0.019      0.041      S
->    1140057.412222 [0012]  sleep[1248612]                      0.000    =
-  0.000      0.332      Z
->    1140057.412275 [0004]  <idle>                              0.052    =
-  0.052      0.953      I
->    1140057.412284 [0008]  <idle>                              0.070    =
-  0.070      0.932      I
->    1140057.412333 [0004]  KMS thread[3126/3104]               0.953    =
-  0.112      0.058      S
->=20
->    Signed-off-by: Anubhav Shelat <ashelat@redhat.com>
->    Link: =
-https://lore.kernel.org/r/20250716203914.45772-2-ashelat@redhat.com
->    Signed-off-by: Namhyung Kim <namhyung@kernel.org>
->=20
->=20
-> No? It is not applying to perf-tools-next, a quick look found the =
-patch
-> above.
+--------------3qkLssp3MHU7hgnhd2uP8TB0--
 
-Hi Arnaldo
+--------------30t203kwaL3N2wp8gES1yCvp--
 
-commit 39f473f6d0b2 ("perf sched timehist: decode process names
-of processes in zombie state=E2=80=9D)
-added change for -S option. The patch I submitted is to add change in =
-process name for =E2=80=9C-s=E2=80=9D option as well
+--------------fDgbKYEUhquRvAN6UrfLuZuh
+Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="OpenPGP_signature.asc"
 
-I will check applying this on top of current perf-tools-next
+-----BEGIN PGP SIGNATURE-----
 
-Thanks
-Athira
+wsB5BAABCAAjFiEEhRJncuj2BJSl0Jf3sN6d1ii/Ey8FAmohlbMFAwAAAAAACgkQsN6d1ii/Ey/z
+Gwf+I6PwL/5jb3ILq2SuV4tHfCxc0VmbrFbnMM5EOsQMcaWg2dP5NKldVbe/9YglVn5+Q5ye46vE
+XWXGZO9zQwiZMhRcifnpcvOVrr8qkwJP/VMylckq5xoql5M1BUAHjlOhZ4wjFz+Wvpxj/fAAXbNT
+KXh52eS0zX0nLAOf6ZRstfv/HHNQv2rvD7EnS6xApQMbKtzalH2DDHU9TNN4oTpLPwt4mhak+XqC
+kY9uwtTRokCL5nZ2en1gTbsheVKCe185MbBsv5lJlm3VovgSNFTtkeId1Vx10tBQ9H/hLcNCAToO
+ihpK541tDD5nYCbj+fTEuEG4sW+f2H735xkmbz4oyw==
+=ZQpm
+-----END PGP SIGNATURE-----
 
-
->=20
-> - Arnaldo
-
-
+--------------fDgbKYEUhquRvAN6UrfLuZuh--
 
