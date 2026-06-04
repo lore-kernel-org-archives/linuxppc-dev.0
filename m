@@ -1,112 +1,123 @@
-Return-Path: <linuxppc-dev+bounces-22060-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22061-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 849FFCD6E77
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Jun 2026 18:20:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2972CCD6E75
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Jun 2026 18:24:25 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gWXtY5K53z2y8p;
-	Fri, 05 Jun 2026 04:20:37 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::72d"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780597237;
-	cv=none; b=G03dcM8IFBYMPt4wYeyG5l0zEl2lK32yqp9Pz2Rlj7YI0hxxSUzQgw5umi6o9i4y6fBgmI3n5QSwZgELeoFaaQMg0Gwz6vOnnHMF1vnXGAWwnBbG7BHQFsNnmayG4yFJHvROqCSo6RsUjN+HPcXdnv9yoH9mX6pjY1L0FZIpMj/VvblkIkOLWjJeRYK7SwZFZAk8a5aflthshdJXghM+2pSBaBO4ZVacGLzk1I7nklZUfYrCfA4uq9tw2YUsqbChvCW/P9IjH+AJpyyC9HAr9VC3b/ue4xD+b3CYpFmOzZFX2f5BDlVnWP/U03jSM4pN+aYkYzZngjGRXqR5wXNf3w==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gWXyw3v5zz2yRC;
+	Fri, 05 Jun 2026 04:24:24 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::831"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780597464;
+	cv=none; b=Wv+JBodSyan4Eo/XBUmuX5Jt9iXh4YetKZVIvJjhlpeMiDdV2n1t0UWagQEgGbeiCOJRmVSX5eF7jxIHH2m8Yvp2uZjMn3Lv+H86Gvv2hcARU67Q9TOTjvIE1TAJlVPSi7pN5hKfE/pdeQrkWzC4ctg6euSX9Sl7GtiVSY7SqI9R3zVZApiytugJRbg/GYZ3mL/7fNkYBaTq++eu5LkXpGsAMMx1boCNHfTYC3HnmF3DCr2nhp8yMwyAaa3EALJ+svx3LiTaaZgoVvTxiYTgFnk6lgiaxDkVKih08S18ubHgrUE72fBli+YYGxgkdTuEXy/su99sXOL7+wmlMDybfg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1780597237; c=relaxed/relaxed;
-	bh=cznawapF5vO4PWrDdsZF/fc6qNY58JTcnmMkw1TddjY=;
+	t=1780597464; c=relaxed/relaxed;
+	bh=nZk6YMYYl+ylqDKIH+EcQ0Ik0ycwrFRfvhKkDvlO978=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=XtkAfasbxX4Nlr5zc7Se3NPuNcv3mCvlWU5/Z0R8J3mANeihfSIfkEGwMbr5YGMnVA5BtKlxup19qzUhNsx8zw0m7iKqTYB5BRn7kL7FrqdQcXunUOYiz0XceEwdWVhDSgK4KLVsXRhCEpi8FOZjFtdYNE82nbTDadxrhiFaEKZa2/uCohYxdSP3MdIs8IdfpL3uoMc/ohQ8gp8p7N/NcWDFUvH7vLaxnexYUU3y6zc6M1Hym/Tb8rdKEfc0fgJTW5GACN4MIDp/6Cq2vBAo7tpESoeu9I8l8/CdBx4kHYHG8xWKAPXodt4YPbkGDXDz3J1ABPYBz8Xjc71N5BWKCQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ziepe.ca; dkim=pass (2048-bit key; secure) header.d=ziepe.ca header.i=@ziepe.ca header.a=rsa-sha256 header.s=google header.b=UGz/sfkn; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::72d; helo=mail-qk1-x72d.google.com; envelope-from=jgg@ziepe.ca; receiver=lists.ozlabs.org) smtp.mailfrom=ziepe.ca
+	 Content-Type:Content-Disposition:In-Reply-To; b=Y8FL6T6rGMUMkWXF3eLmtZCUuL/cozwOTpKzsk2CJo7ldoE5Ynsghb6mkN0RG8WYnmfdNanLk8m/ENPbDgjm53lbiruj0UrOGMjqd5CcX5H3LIuOZOix6+WHzfc7bF4C8aDNTo258RYL/Gi4HR5OKymYXLwz5bl/2LE8KOnYTAsDnzSizKydll4ZbZx37cHwIRs2XvTnY5yosuNB1ANQ0FsTXNVrdRJg3CvTbMHwr3aLrg8VQiqi/SGVWPjvG8yaen2+BktmAZaI4mXb2H6mjW0uAiG6KaZkaZ5acfRiz3My8TnAugbK+yN+rO/1GtwLuh4S/rMCnYl7YR1UBa2JaQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ziepe.ca; dkim=pass (2048-bit key; secure) header.d=ziepe.ca header.i=@ziepe.ca header.a=rsa-sha256 header.s=google header.b=J3n2fyP0; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::831; helo=mail-qt1-x831.google.com; envelope-from=jgg@ziepe.ca; receiver=lists.ozlabs.org) smtp.mailfrom=ziepe.ca
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ziepe.ca
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=ziepe.ca header.i=@ziepe.ca header.a=rsa-sha256 header.s=google header.b=UGz/sfkn;
+	dkim=pass (2048-bit key; secure) header.d=ziepe.ca header.i=@ziepe.ca header.a=rsa-sha256 header.s=google header.b=J3n2fyP0;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=ziepe.ca (client-ip=2607:f8b0:4864:20::72d; helo=mail-qk1-x72d.google.com; envelope-from=jgg@ziepe.ca; receiver=lists.ozlabs.org)
-Received: from mail-qk1-x72d.google.com (mail-qk1-x72d.google.com [IPv6:2607:f8b0:4864:20::72d])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=ziepe.ca (client-ip=2607:f8b0:4864:20::831; helo=mail-qt1-x831.google.com; envelope-from=jgg@ziepe.ca; receiver=lists.ozlabs.org)
+Received: from mail-qt1-x831.google.com (mail-qt1-x831.google.com [IPv6:2607:f8b0:4864:20::831])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gWXtX0FC3z2y1Y
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Jun 2026 04:20:35 +1000 (AEST)
-Received: by mail-qk1-x72d.google.com with SMTP id af79cd13be357-915906a4becso120866085a.2
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 04 Jun 2026 11:20:35 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gWXyv2trHz2y8p
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Jun 2026 04:24:23 +1000 (AEST)
+Received: by mail-qt1-x831.google.com with SMTP id d75a77b69052e-51778077b28so11330471cf.1
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 04 Jun 2026 11:24:23 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ziepe.ca; s=google; t=1780597233; x=1781202033; darn=lists.ozlabs.org;
+        d=ziepe.ca; s=google; t=1780597461; x=1781202261; darn=lists.ozlabs.org;
         h=in-reply-to:content-disposition:mime-version:references:message-id
          :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=cznawapF5vO4PWrDdsZF/fc6qNY58JTcnmMkw1TddjY=;
-        b=UGz/sfkn/GnMn4T1+s0o5VgTLcsY2O4sKe21H3uUyy4Xx2vDcAlhEMIIJ2Lp0rNahK
-         IYZG42uUMkzl5tKHiEHKxloQFCOdJ7wEPu7cVwlDbQ5/ZdJuluMTN1JWWHY5xGiNPTHT
-         oorlv9mhNlvvm8HKJNPV9+BOriDGiiLthlBndddave3WK8aVJD8YkCODQxW96kDsHrxU
-         8XvhYZ6owsnY/a++TM4Ch2EtxJP6769XCZxmS/bUl9pCu9soGNL/3t3qAnmKOcT47IS5
-         VsQ/T8oAFLyH7JMR4D0EPNSwKFIT1lKWsJfXhpHgKmN1Hdcj50gKaZVL/9qflT9IKhXx
-         RW0g==
+        bh=nZk6YMYYl+ylqDKIH+EcQ0Ik0ycwrFRfvhKkDvlO978=;
+        b=J3n2fyP0ojIk3OgKT3qD1WWhMhGrpcfNn2DNCoWtE8Oec3Fy4dxCYX2BJKlkg+ebvN
+         kaRGNEF2gHCR6tzelmpoiITKGx2wVeGGPD9yXCJti5srsvq3/PDsvA2kw+EtR8ydsKOA
+         sHqe1rSlVlUjrN5w5AB5sOfQu71UVEGvABIYPrd2147rrYOa0iE616U4nldokiaYZw3Y
+         6r+UuqVGCVakCNYVPzm2FemmfoPs0/59N9rCHys/9GqqiJ4t6D7/5AosuR6zOw20NDIO
+         pC95iDQHGgp4PerfdkzhGQXHM+jmfZKWP7920yt04wFvjiA5Mp7nsxYRPacCRZa393Kk
+         8EzQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1780597233; x=1781202033;
+        d=1e100.net; s=20251104; t=1780597461; x=1781202261;
         h=in-reply-to:content-disposition:mime-version:references:message-id
          :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=cznawapF5vO4PWrDdsZF/fc6qNY58JTcnmMkw1TddjY=;
-        b=X/RuOWdUbjP+YPUkHdn08gIxdByndwmWC7hLZCOLSi8DfO0faJpRTvN91dpKjHYKsX
-         7B7hECByjtxT8R9xH8C9+sUYZ7yqwlHuwXy/zXFN6j+mLcvzcmfUP1iVql8ofnMouRiH
-         KA1kvjqfAPWBSgQ6lFgx0tr5PL+kz+gEo0VvyHhciJeTlx5ROQ9TQELF8cBrmRofxnLG
-         ThsCGXuwxPCzOlMV3sWlV4l/P8Wcj5C3NmqEux9hcnE0xvHN3QxaTjLVd2r6kO00bfE9
-         iinPUY/UuJM997ahi0Kid+U769ZR4P7ditKLxpfH7WNfue5qe7HBceFXUErrHHLyAWIj
-         FNpA==
-X-Forwarded-Encrypted: i=1; AFNElJ/S4Xjlk6sCh3qPr9eOdbEOD17Lf1W0Czb6tcYHhEjmXS1Gkf3+puKC2TaVFoo24q1v61xBjljxqC6Btxs=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YwK7nAxg4slH7wDR4t3DwlLuH5iwmyxbyjmxmHjJ4VKnWgNd1/3
-	GgIu4YILrIVcgqAFLEuhDd583durXt+ORQPmL+Sf/5IhqnNRgMbaoJTBro8jfzWxlVg=
-X-Gm-Gg: Acq92OFXgiO+3bcxw+/h8DxfpDTfSmN7zt12tb0EVhsBRltEe81ARY5Ef3yZBTnC8Xs
-	JTbLe5eIvZpfI4Wt1oBO+PJgI+sMtuDoScp7HukXDwue2TvbZEYxPOo3MHYNBknMs0VqcHFXb5E
-	2QjM9PAao/+YsmiC+KSao+b9MeqwaN5C+/S4i2/BnvP/wFffQ/AgP5vQe0Rb6f4A/24SU8PvQdf
-	ucG2+l7nDDd0U1r6yO2VDJMGXUn0GgLtjioQ/df9Vy7IXiPSy2Q3HSs711ZIMEkWEiwsAGZERFu
-	EvRxw6GfMWUQb7XOotdKw4CnJnSj0PQ3eaEyELhTfvG+czAUq8m01A4VvQ8PXTh2l1Dw7UTQKlw
-	y8G9BnNk8jwG3q/mJWKeqL0pdMvwVH2FqDqkO9+APi9ucKm6WJLRWEjtx1hS7efCNTE6X83Ahq7
-	Ldhu2j0GWdFAfGxHNf4dzynZyczmsQnG7DSom6krvDYJznr6mX0f7CP2A4FN5ncdrQLJOQE1CE3
-	lcSoWb2AJp4SDf5
-X-Received: by 2002:a05:620a:a414:20b0:914:afc1:c66d with SMTP id af79cd13be357-915a9c75c96mr40356185a.11.1780597232897;
-        Thu, 04 Jun 2026 11:20:32 -0700 (PDT)
+        bh=nZk6YMYYl+ylqDKIH+EcQ0Ik0ycwrFRfvhKkDvlO978=;
+        b=XSEi2moACLCK3ZcuGEctIrMcHxXcLxiXNx1o5sWZ1xj4AJDvmdkYchpVWqSpeiMFnZ
+         iVJ/V6ffI6nybIxhkwDIL87NiODiU2256ETzXSeGTID6C/d5kyMhx2tf1ZBLZ9tLj5XL
+         WJ1bwOidPmRGnv0bvnw6yGBreW602xyaGNimrf3EOZ+DcVWbwuv+MGkJgVPCxSIemPA1
+         +i6w558pDISwn6imGt4Y9PgCS5JF6UYtHqICcJPTAzjfoOValAFW4KIzwkqjSR7XDAO2
+         jMSh65h+e2mALfQ2XjhHpS62IePAUrWnCvwd4dUdXfKYSJQL+I0u2njgq8A9DKfYThvM
+         A2rw==
+X-Forwarded-Encrypted: i=1; AFNElJ/aOHfLOdw0yXlX4rok34bS5oL8RF03ngHKJ6c7SInE6/hdJXEXbZbA81rCh/PyE5XcHJ64zUBDi9v4o10=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YwDfnzZzHKGL3MFIp8cS4bfcKly+QC8ir0uR6/2NK6qf0uBZs5g
+	85vatmNrXsMK3f7aOzVtoIa/Sg6k8m45M1oq29PrbmRT6sFd14Tf+7PuQQzM1vPa888=
+X-Gm-Gg: Acq92OGhpZBAeQ4IXsFDy5wVbi86iAkCk81Rba3Crm0c0zk1BtjgpGLwrfEFXWaMwyE
+	uRN5W/Z9cd+KAoUFUgzs7THjXTyaX/UVBjTj3Tghpe3Gzd/5vHLSNbUlZfeny3qdo8V0I3csvll
+	CPupCwf5Erm6W1JK1Xk4+LAX6+baaGa+L0zEHnMVuzeOB4qr4/YIhv9/DUYfUdS3g7z0xZu/BL+
+	+OICoxh1IiHtzkDulZlk81OU0SsKjluMghfbor8/AiA2GBBvQ6tUe+Ln/z9en6S76xX09YhYsD1
+	yER3KbEsw+bzPPVAbht0kMyAxhFi+H8Ue8sq4HLq2s0mgHCjMWmWIM+/n3udrOpA5WDwxgt+NO5
+	u7GBAxxtaT7S46VMTk/dr74HTkZ1zTiRlfC4XfU+C1JHKbmcA1dWBRmrYWtyCMJtTVdHhY14xcH
+	EoDXa23MqnKBWrK5wkC8/xQI8TzPgySWovMsI5ZOcGg9bY5L10FkLsdVBtii2vg7gJV7o1IS4Hu
+	w8GRnlDZRuNXVTc
+X-Received: by 2002:ac8:598a:0:b0:517:7277:9362 with SMTP id d75a77b69052e-51778751a59mr126094041cf.48.1780597460764;
+        Thu, 04 Jun 2026 11:24:20 -0700 (PDT)
 Received: from ziepe.ca (crbknf0213w-47-54-130-67.pppoe-dynamic.high-speed.nl.bellaliant.net. [47.54.130.67])
-        by smtp.gmail.com with ESMTPSA id 6a1803df08f44-8cecd051d61sm58430626d6.29.2026.06.04.11.20.32
+        by smtp.gmail.com with ESMTPSA id d75a77b69052e-51775dd2e53sm57509021cf.24.2026.06.04.11.24.20
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 04 Jun 2026 11:20:32 -0700 (PDT)
+        Thu, 04 Jun 2026 11:24:20 -0700 (PDT)
 Received: from jgg by wakko with local (Exim 4.97)
 	(envelope-from <jgg@ziepe.ca>)
-	id 1wVCgB-00000008erz-2jW4;
-	Thu, 04 Jun 2026 15:20:31 -0300
-Date: Thu, 4 Jun 2026 15:20:31 -0300
+	id 1wVCjr-00000008f4K-2dN0;
+	Thu, 04 Jun 2026 15:24:19 -0300
+Date: Thu, 4 Jun 2026 15:24:19 -0300
 From: Jason Gunthorpe <jgg@ziepe.ca>
-To: Dimitri Daskalakis <dimitri.daskalakis1@gmail.com>
-Cc: Bjorn Helgaas <bhelgaas@google.com>, linux-pci@vger.kernel.org,
+To: "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>
+Cc: Michael Kelley <mhklinux@outlook.com>,
+	"iommu@lists.linux.dev" <iommu@lists.linux.dev>,
+	"linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+	"linux-coco@lists.linux.dev" <linux-coco@lists.linux.dev>,
+	Robin Murphy <robin.murphy@arm.com>,
+	Marek Szyprowski <m.szyprowski@samsung.com>,
+	Will Deacon <will@kernel.org>, Marc Zyngier <maz@kernel.org>,
+	Steven Price <steven.price@arm.com>,
+	Suzuki K Poulose <Suzuki.Poulose@arm.com>,
+	Catalin Marinas <catalin.marinas@arm.com>,
+	Jiri Pirko <jiri@resnulli.us>, Mostafa Saleh <smostafa@google.com>,
+	Petr Tesarik <ptesarik@suse.com>,
+	Alexey Kardashevskiy <aik@amd.com>,
+	Dan Williams <dan.j.williams@intel.com>,
+	Xu Yilun <yilun.xu@linux.intel.com>,
+	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+	"linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
 	Madhavan Srinivasan <maddy@linux.ibm.com>,
 	Michael Ellerman <mpe@ellerman.id.au>,
 	Nicholas Piggin <npiggin@gmail.com>,
-	Christophe Leroy <chleroy@kernel.org>,
-	Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
-	Oliver O'Halloran <oohall@gmail.com>,
-	Niklas Schnelle <schnelle@linux.ibm.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	Alexander Gordeev <agordeev@linux.ibm.com>,
 	Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
 	Heiko Carstens <hca@linux.ibm.com>,
 	Vasily Gorbik <gor@linux.ibm.com>,
-	Alexander Gordeev <agordeev@linux.ibm.com>,
 	Christian Borntraeger <borntraeger@linux.ibm.com>,
 	Sven Schnelle <svens@linux.ibm.com>,
-	Alex Williamson <alex@shazbot.org>,
-	Kevin Tian <kevin.tian@intel.com>,
-	Ankit Agrawal <ankita@nvidia.com>,
-	Leon Romanovsky <leon@kernel.org>, Juergen Gross <jgross@suse.com>,
-	Stefano Stabellini <sstabellini@kernel.org>,
-	Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>,
-	Keith Busch <kbusch@kernel.org>,
-	Alexander Duyck <alexanderduyck@fb.com>,
-	Jakub Kicinski <kuba@kernel.org>,
-	Dimitri Daskalakis <daskald@meta.com>,
-	linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
-	kvm@vger.kernel.org, xen-devel@lists.xenproject.org
-Subject: Re: [RFC 00/12] PCI: Add support for Scalable I/O Virtualization
-Message-ID: <20260604182031.GB2487554@ziepe.ca>
-References: <20260604150153.3619662-1-dimitri.daskalakis1@gmail.com>
+	"x86@kernel.org" <x86@kernel.org>, Jiri Pirko <jiri@nvidia.com>
+Subject: Re: [PATCH v5 05/20] dma-pool: track decrypted atomic pools and
+ select them via attrs
+Message-ID: <20260604182419.GC2487554@ziepe.ca>
+References: <20260522042815.370873-1-aneesh.kumar@kernel.org>
+ <20260522042815.370873-6-aneesh.kumar@kernel.org>
+ <SN6PR02MB415754E94A9505C2B9739E4DD4092@SN6PR02MB4157.namprd02.prod.outlook.com>
+ <yq5afr35sciu.fsf@kernel.org>
+ <SN6PR02MB4157D9955A93244014AB7978D4122@SN6PR02MB4157.namprd02.prod.outlook.com>
+ <20260603005454.GM2487554@ziepe.ca>
+ <SN6PR02MB4157F94C902B78E55E99372DD4102@SN6PR02MB4157.namprd02.prod.outlook.com>
+ <yq5apl26qrof.fsf@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -122,32 +133,17 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20260604150153.3619662-1-dimitri.daskalakis1@gmail.com>
+In-Reply-To: <yq5apl26qrof.fsf@kernel.org>
 
-On Thu, Jun 04, 2026 at 08:01:41AM -0700, Dimitri Daskalakis wrote:
-> With this patchset core enumarates the SIOV capability and can identify
-> SIOV PFs. But there is no central mechanism to allocate/manage SIOV VFs.
-> To support device pass through, devices will need to add a vfio-mdev
-> driver with IOMMUFD support (or something similar).
+On Thu, Jun 04, 2026 at 08:27:36PM +0530, Aneesh Kumar K.V wrote:
+> I already sent a v6 in the hope of getting this merged for the next
+> merge window. Should I send a v7, or would you prefer that I do the
+> rename on top of v6?
 
-There is an enormous amount of missing work to do something useful
-with the SIOVr2 stuff. IIRC there is even supposed to be BIOS
-components in this plan and there are some missing PCI SIG topics too
-IIRC.
-
-So, I'm not sure how much value there is in merging just the cap
-discovery without a roadmap for the missing parts..
-
-Also, I'm quite surprised to see this out of the blue, there is an OCP
-workstream that was building out a standard that outlines how all the
-different components have to act to successfully implement it.  What
-is in PCI SIG was just some minor foundational adjustments without any
-context on how to form them into a solution.
-
-I think it is extremely premature to merge anything related to SIOV to
-the kernel. Join the OCP work stream if you are interested. I think
-the general feeling was there is not sufficient interest in the
-industry to do this and it has gone quiet.
+I think it is too late for such a major change, but this should be
+imaginged to be for rc2ish next cycle. You also have to spell out how
+the pkvm patch will get sequenced as well, it would be best to push
+that it gets picked up right away.
 
 Jason
 
