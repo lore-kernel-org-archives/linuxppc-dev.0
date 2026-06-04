@@ -1,46 +1,88 @@
-Return-Path: <linuxppc-dev+bounces-21990-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21991-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DFF05CD6E4A
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Jun 2026 02:10:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B131FCD6E68
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Jun 2026 04:33:35 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gW7M56lCSz2xll;
-	Thu, 04 Jun 2026 12:10:25 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:41d0:203:375::aa"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780539025;
-	cv=none; b=IdcHbsbQSj+Jg28NLeG4gMAC6NMPS/VOkPya0pZfjOJCOJlCz3qTbr2SYWcEsOVILsCHwxRHDjCkAdOx5WW6vPXiHJrroSrr/2fAsqSfZelNAfvXsV/P1+ZaURMtevEGMkEJrNBYGbs//ltdFpE7LV7GHk/slEeqPL7Q8ZYaaIxB04CTv3iHC02puRHHW7HcAyvTuQ+NndpIkbyfyBWDaL9tYiHqztq6wKxQIVmCc4PknWashCYw61IqTZ2zyITwakWD2k0Zz2iNRrjKJTa6VKT8mOmj0wgVjTYbsJT9wRj0cHWK9LPit6oCGO6ca3wVMQkrqsDgxwrcV1tRZe3mSA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gWBXF5tk8z2xrC;
+	Thu, 04 Jun 2026 14:33:33 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::629"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780547613;
+	cv=none; b=RoKQ5fdcM2llWglcicXNWKeNFaTpWo/MrciFk2kmmBDrPEBHEYO5DFVyCSv5FfPqA2Z9xq4cEItP0mupRhqajtezHcwUMIKyVGSjMX3Hw/dYWSaRCbw7u61sXc3vXs4iq4cx+NluVFIePqkGDNWWC5YEh4IQrO9Wwa07U2dNg4+OhTewwIodWYBoqHBVvvsR1195lKI8Tx2lwydXwFHdHtbPa9XsRcUsFOOsTbut448Zk63Vla2vPmczS/eI57eo+51EOBI3QKI6EY/54OENTi+otCSFE3TPqfb8UpXQyY4kx574HK3+UQX9CaSr4BThKi6skp/dj8WYZdzKXHjWRw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1780539025; c=relaxed/relaxed;
-	bh=SYYlpuIZtVb2DJ6ddOz5+v3tiHxrY2b/L9P1iXO5xQw=;
-	h=Content-Type:Mime-Version:Subject:From:In-Reply-To:Date:Cc:
-	 Message-Id:References:To; b=aWQmFJBtLSSGVCTn4gGhEmjmxNKwmtOZxSzHLfifh3UkPPSD1BvYWo1rf9SOCVgK5+WcQd6YSfjIjBgvH6XA//eRfm7SI1/3ocNwv7Hfx8DhHo8odJAUZUOZAuJTHVnmGIp9HZKsuGp0nUcfwLuN5Xvuxt3xrRM35ROmydX3DzE73ii19sUzqVdehbeYUIqYWb+huJjfUUZ5POqW+KhAvVrpc2V54B2Mx5L5w6+J+X31h2OLXwV8+zhtmylRTgsVQCxAtYppiARuHNiT921iSM/ClsKmiTW1nSM4HBi0+3O5ACgM3WUePyMYUVAHG6Th84ubgGHsE1Y+OpqhwkZ5Dw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=BVM+v5AS; dkim-atps=neutral; spf=pass (client-ip=2001:41d0:203:375::aa; helo=out-170.mta1.migadu.com; envelope-from=muchun.song@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
+	t=1780547613; c=relaxed/relaxed;
+	bh=nzzlPlmRDjR3Sm37Uj3XzYfzUGKs2aHK4Uo/5tRTKUQ=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=SGKRJVrdL450RZ8//N5llxkmnX/anmsrjWHD46mYuoA4302iGQ28UD76hr5vaIlvH1k/PtqzWbkSWZ8jjgRFJsSeIyh/wfDj0iIrWimd3R/21diya2Dq3zQwadWXvrcr6Q8HnQJ0ZvpewHB7CpJiuZXiqnAny6bl3ryrNp4j23BN08MT2vYK161maOrab12nK/6SNavlrGpYraBl4XhNo8JGdY8Euab5x0kJgehe4kUSGZNKhfAbdWaacHSwrRYq9sz7SNUVZRMWBDLXAf3sXGQd79M4p0OLKtIJFYKs6L53Laba3YOO8kPfRnk7v5OX6QLTHJWK+IFmjd7eyO/Zjg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=Cp835Bpr; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::629; helo=mail-pl1-x629.google.com; envelope-from=rosenp@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=BVM+v5AS;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=Cp835Bpr;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=2001:41d0:203:375::aa; helo=out-170.mta1.migadu.com; envelope-from=muchun.song@linux.dev; receiver=lists.ozlabs.org)
-Received: from out-170.mta1.migadu.com (out-170.mta1.migadu.com [IPv6:2001:41d0:203:375::aa])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::629; helo=mail-pl1-x629.google.com; envelope-from=rosenp@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pl1-x629.google.com (mail-pl1-x629.google.com [IPv6:2607:f8b0:4864:20::629])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gW7M06gzQz2xMQ
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 04 Jun 2026 12:10:17 +1000 (AEST)
-Content-Type: text/plain;
-	charset=us-ascii
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
-	t=1780538996;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=SYYlpuIZtVb2DJ6ddOz5+v3tiHxrY2b/L9P1iXO5xQw=;
-	b=BVM+v5ASLEaiZ4JQLzfJvFLqOPWTDAaGV3KSPFn4gTmSu1BmjE3O6M4yv4EtfiH47FXbD2
-	cmbSuWpxrMaBHktf3GQUIFVP8zvy+XElWOSf4Sdq+OWHkKiqyLF/NSOOby8Y92bPZLZcGe
-	WIdlju8y8/J0hbvxMAfo8q7jpk0gJzE=
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gWBXD3wGLz2xF8
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 04 Jun 2026 14:33:31 +1000 (AEST)
+Received: by mail-pl1-x629.google.com with SMTP id d9443c01a7336-2c0c35980fdso2698155ad.2
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 03 Jun 2026 21:33:31 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1780547608; x=1781152408; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=nzzlPlmRDjR3Sm37Uj3XzYfzUGKs2aHK4Uo/5tRTKUQ=;
+        b=Cp835Bprzvihv9xyHpkOgnkggQQBGwkeJxn7phVqVsKfny+XmzErbBFjg8rJZD8OLh
+         4hqas0RAstjpeJFUxA5qttgUjGwm1CjJwiK2HrgEI8QASWH+uViTZFEfCDdTn8iuDXPH
+         vYVMAJqAcO54JrPqiorVOuG7VzqycBmK6Q4l0BiOvoBIbBY+SGxT0c0XaBO0wfPKI7zn
+         +hCQMP1dmaOhkSzBPihod4t+3ZZcuybNiVe6Dgx+E9CdVxOLeh0H1yiXwHnp3njHRnsi
+         5516jwfl0j0CvBhgk3gaZAZQ/KSxJEaM19TKY7icel0sJ81o608Mtju60wSZfFXTVQJg
+         36Mw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1780547608; x=1781152408;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=nzzlPlmRDjR3Sm37Uj3XzYfzUGKs2aHK4Uo/5tRTKUQ=;
+        b=VgDLJvK2YvHxTW65eD7qNNmjXQRH9uWxEMJgY5e2ZlxCx+7iWkrudMMgYMex0Z/G3O
+         M/IYEcW/lczfcKkpGP+s9IAtvE1oNTOOqgnu1AY41DwxYnE/6oWV6HlLBXV5EZ9rvxyt
+         j3tlw1+QlmCUbMAPO2F6C+JB1szeIsytWrDBfobA7fc5Sb2WLoEIpjCA5dmEy/dsBp3Q
+         /PAwXruHKyS2oNXgOQtO8oMckQFE1MINBwezbwiOF/SXaq+GAQ6YCzNvExnfOotplFwn
+         MLn2D6d3Kl0V0p1d4pk0VVWjWBZbYHnrjrplAksSEkuEJW9UPiADhKGS8DZVlItXLy3t
+         rUBA==
+X-Gm-Message-State: AOJu0YzjnqHhXD2Lr7ALXR8sf7+QJOJqE4StabBqnFgA8RjvEZi68YJ3
+	7L/+tr3QWPnTjJkF7SNNCbF8CyCJfyz4b2km1G9W6TLcIaAHtvj1g6a2jRlf/9Yk
+X-Gm-Gg: Acq92OFKE5ixEk91qhSVlrNt+oosRSu5lCDkrmZdxgRxNkYzniW5ogjuYd7PWxgbB3j
+	DOsaaVdwHWYVF6zQSHIdE2tHLuhQcMtaAe7HdlMgbJGY91VcY1moWaebr3eCDC+X+RGbqdP9z3j
+	9dR231M2qa3W7kzGSuPA0gWET8zYDcTfvYWYng1qdusa/fSztvL18UFdzNw+i/yJ4PVNr2LNMyZ
+	rCcr40zkYTywzTEi8rlLYslBhHCoCcT+9R01sUQLsiCBJeqT5rOwa2Mp2LsdzLUGaIg+z7Tu6Js
+	HFJv4XQGN/pa/uSRpzQzSAEC+IApsi+suyIN4DnF/9+GNNdbIR7p5VXHbt/FLQOWzhyt7nCroXO
+	YmIQ0VXJXAztNBV04NQDwnkrD9CgJNawHYN8JcPQgOfyuck5QRPzeJdylrg+hIFYtzkPzuZQVHs
+	PeOc25UwnZ0PsllNicK0DD3VJx1ruDHxzeHIqfffOmqtyb5MU9b8N+iSs+NWruPhDhxRV0KLj61
+	/ch4YFTKtTGJFQE/F4cBd1Z3Ulcs6cMz5vr01HHJprl/rWtkHXL6BEP
+X-Received: by 2002:a17:903:1786:b0:2c0:c38d:9d37 with SMTP id d9443c01a7336-2c163d92f23mr64816865ad.25.1780547608050;
+        Wed, 03 Jun 2026 21:33:28 -0700 (PDT)
+Received: from ryzen ([2601:644:8000:5b5d:7285:c2ff:fe45:8a32])
+        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-c85df0a63b3sm3503663a12.21.2026.06.03.21.33.26
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 03 Jun 2026 21:33:27 -0700 (PDT)
+From: Rosen Penev <rosenp@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Scott Wood <oss@buserror.net>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	Frank Li <Frank.Li@nxp.com>,
+	Li Yang <leoyang.li@nxp.com>,
+	linux-kernel@vger.kernel.org (open list)
+Subject: [PATCH] powerpc/85xx: Add fsl,ifc to common device ids
+Date: Wed,  3 Jun 2026 21:33:09 -0700
+Message-ID: <20260604043309.91280-1-rosenp@gmail.com>
+X-Mailer: git-send-email 2.54.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -53,98 +95,37 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-Mime-Version: 1.0 (Mac OS X Mail 16.0 \(3864.600.51.1.1\))
-Subject: Re: [PATCH v3 03/19] powerpc/mm: Fix wrong addr_pfn tracking in
- compound vmemmap population
-X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
-From: Muchun Song <muchun.song@linux.dev>
-In-Reply-To: <a4tbwv0s.ritesh.list@gmail.com>
-Date: Thu, 4 Jun 2026 10:09:05 +0800
-Cc: Muchun Song <songmuchun@bytedance.com>,
- Oscar Salvador <osalvador@suse.de>,
- David Hildenbrand <david@kernel.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- Madhavan Srinivasan <maddy@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Mike Rapoport <rppt@kernel.org>,
- Lorenzo Stoakes <ljs@kernel.org>,
- "Liam R. Howlett" <liam@infradead.org>,
- Vlastimil Babka <vbabka@kernel.org>,
- linux-mm@kvack.org,
- linux-kernel@vger.kernel.org,
- Nicholas Piggin <npiggin@gmail.com>,
- "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
- linuxppc-dev@lists.ozlabs.org,
- Mike Kravetz <mike.kravetz@oracle.com>
-Content-Transfer-Encoding: quoted-printable
-Message-Id: <4242FACE-1A30-4EE9-8679-A0B6284BB0B9@linux.dev>
-References: <20260602101039.1867613-1-songmuchun@bytedance.com>
- <20260602101039.1867613-4-songmuchun@bytedance.com>
- <a4tbwv0s.ritesh.list@gmail.com>
-To: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
-X-Migadu-Flow: FLOW_OUT
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 
+Add fsl,ifc to mpc85xx_common_ids so that of_platform_bus_probe
+creates a platform device for the IFC node even without 'simple-bus'
+in its compatible property. On P1010 and similar platforms the IFC
+node is a direct child of the root, so it must be explicitly matched
+to be populated.
 
+Fixes: 0bf51cc9e9e5 ("powerpc: dts: mpc85xx: remove simple-bus compatible from ifc node")
 
-> On Jun 3, 2026, at 22:36, Ritesh Harjani (IBM) <ritesh.list@gmail.com> =
-wrote:
->=20
-> Muchun Song <songmuchun@bytedance.com> writes:
->=20
->> vmemmap_populate_compound_pages() uses addr_pfn to determine the PFN
->> offset within a compound page and to decide whether the current
->> vmemmap slot should be populated as a head page mapping or should =
-reuse
->> a tail page mapping.
->>=20
->> However, addr_pfn is advanced manually in parallel with addr.  The =
-loop
->> itself progresses in vmemmap address space, so each PAGE_SIZE step in
->> addr covers PAGE_SIZE / sizeof(struct page) struct page slots.  Since
->> addr_pfn is compared against nr_pages in data-PFN units, it should
->> advance by the same number of PFNs.  The existing manual increments =
-do
->> not match that and therefore do not reliably track the PFN
->> corresponding to the current addr.
->>=20
->> As a result, pfn_offset can be computed from the wrong PFN and the =
-code
->> can make the head/tail decision for the wrong compound-page position.
->>=20
->> Fix this by deriving addr_pfn directly from the current vmemmap =
-address
->> instead of carrying it as loop state.
->>=20
->> Fixes: f2b79c0d7968 ("powerpc/book3s64/radix: add support for vmemmap =
-optimization for radix")
->> Signed-off-by: Muchun Song <songmuchun@bytedance.com>
->> Acked-by: Oscar Salvador <osalvador@suse.de>
->=20
-> Thanks for fixing it. I guess this was not caught because section size
-> on powerpc is 16MB and with 64K pagesize we have 256 pfns to map. The
-> vmemmap size required for this is 256*sizeof(struct page) =3D 16KB =
-which
-> is < 64K (pagesize). So basically we never loop in
-> vmemmap_populate_compound_page(), because
-> next =3D addr+PAGE_SIZE will be > end after the 1st iteration itself.
->=20
-> But I agree this is a bug which needs fixing and it can be easily =
-caught
-> with 4K pagesize, where we have 4096 pfns to map within a 16MB =
-section.
->=20
->=20
-> The change looks good to me. Can we please add stable tag too?
-> Cc: stable@kernel.org
+Assisted-by: opencode:big-pickle
+Signed-off-by: Rosen Penev <rosenp@gmail.com>
+---
+ arch/powerpc/platforms/85xx/common.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-Yes. I'll add it next version.
-
->=20
-> Also, feel free to add:
-> Reviewed-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-
-Thanks.
-
+diff --git a/arch/powerpc/platforms/85xx/common.c b/arch/powerpc/platforms/85xx/common.c
+index 757811155587..c11deb2f50ed 100644
+--- a/arch/powerpc/platforms/85xx/common.c
++++ b/arch/powerpc/platforms/85xx/common.c
+@@ -42,6 +42,8 @@ static const struct of_device_id mpc85xx_common_ids[] __initconst = {
+ 	{ .compatible = "fsl,qoriq-pcie-v2.3", },
+ 	{ .compatible = "fsl,qoriq-pcie-v2.2", },
+ 	{ .compatible = "fsl,fman", },
++	/* IFC NAND and NOR controllers */
++	{ .compatible = "fsl,ifc", },
+ 	{},
+ };
+ 
+-- 
+2.54.0
 
 
