@@ -1,92 +1,61 @@
-Return-Path: <linuxppc-dev+bounces-22062-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22063-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 26DE9CD6E6E
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Jun 2026 20:58:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D473CCD6E75
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Jun 2026 21:17:40 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gWcP03wfZz2yQG;
-	Fri, 05 Jun 2026 06:58:44 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::330"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780606724;
-	cv=none; b=VkpYIkbeNq7YnMJ+nYGLWszckH5Io1DujVhVnuDtCPqa2gyknRzHSCdbsb2M7RK9OT3weOydufIEZrdH3jska7LPr1QrrBcWrEZpXt7ZXvfs8ZQ/StuWKuUeRf8i45lbxOS7vkldr2scFEL3RdATrYU04zEkwSEIEpErEXTp3Kcl6KN9J00uP8C2XAoVJPeI3gK+FI5N1XKjYExgdhN1xVFGr2/9UidW/sq0WRBdadKJER9266TPGhH6ioT4pjQZyhCUpdq5lsaFIIZww0oYYypgLcCSq0XDoP5If5IXlNRjI/h/3thj7sP4jKI7ClI/8ZqLSZ3FwiwtOqNAGBHaZg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gWcpq2sqNz2yQG;
+	Fri, 05 Jun 2026 07:17:39 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=199.89.1.16
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780607859;
+	cv=none; b=cKawvGjP47eCZ0NB/ni3P0LLB0RvF4ySgozip3lopSXtux0Pb40hQyKgbiVx+cZz+yzel3aKk/VcydWsHNRZHFHmli68PyipO9q/MKZmmY0qHVqlgVqATJmiREAm4x5XAVDw/sf8JN9DxN18d7DRqvznXUC3CtXYXFQw3gYewW6Z/HMgtlJnVpES+Z6sYP7uwYbrWbYc+sDOv+sCnc4+aEgaOAzr+wSRGE3NyyeoiZfxUOOzShuIoxGK1vwxPKWh31ueIR29tttiJvM1ADDu43xFcExb876aqo6+jAah0FJnpZ9QjEO2nqtsY/K/QlvC/AqTvzKw4A3HOD5ie6mwhQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1780606724; c=relaxed/relaxed;
-	bh=DQTkf1lHMIqbwK47/czYzHj+glOCSShwPoAIlDnSnRw=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=HlmPsVPuxN4VAFw3Vch1zvkMjRergN2qA+ZLSVSvC/JVz/UE4TcUQViqNMzqp0/ZKridb7npnqHa2aAqPQuuD9/9uBckWuCbq+TeG754Y08vwaxDA22Kjge2T+D8OsagYvOVwTxobCZyYpYreqBxAjQlY8whIHDh0uKCwRRPsJG52ffuEf7+tl2OH/4M0DUw+FfiuaaOClvr+m3n7dCfwkgogk3ZhmVx8H8LT/bNuRAEeXpurX52jswdcdb4CbF1lxltT4+/gdW2DXY7YUix235V/JTl7Ubpr/AzLcj2xoMONDW2yyOwt2h331zy6U0iMiTocA7xMuJGWw47+iAnSQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=UgGXGgCY; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::330; helo=mail-wm1-x330.google.com; envelope-from=iacobcatalin@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1780607859; c=relaxed/relaxed;
+	bh=xb19kbWiqrpSFbyUlwb6WaMy4XfoRK0lb/vr/qLyz9c=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=QPIBLhCNwzWJbntUzyVc+al+67q1b3Xooz0MIEANGhAgndy6VfnifMZF0JAwolJQ0ATdDugIY1nvIu8HUhno//Wo7OY/XiE3hjOpzV/9mJA/Un0v6YhDd6iZGrqV48RiUPkbpG239GUBmU3fONtqXZ+h8q8F1r8P48YjqGKZ0uazzclKwVuxHPIn0mzB4l+aC+8Bs7i1v18arPhUQzMgOP15ho/xYUf+A2ATYYPYK7yGpXp2Zh+mc9wGIVNdY+gITxdT9qUtJB/Uy0utow71tHdYmH9iKXA7fWJzSDDvi8rb/bsoa/fP1lp3itefmgiZvWLhIzGsVC6+EpCoXod6Tw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=acm.org; dkim=pass (2048-bit key; unprotected) header.d=acm.org header.i=@acm.org header.a=rsa-sha256 header.s=mr01 header.b=CptyadUw; dkim-atps=neutral; spf=pass (client-ip=199.89.1.16; helo=013.lax.mailroute.net; envelope-from=bvanassche@acm.org; receiver=lists.ozlabs.org) smtp.mailfrom=acm.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=acm.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=UgGXGgCY;
+	dkim=pass (2048-bit key; unprotected) header.d=acm.org header.i=@acm.org header.a=rsa-sha256 header.s=mr01 header.b=CptyadUw;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::330; helo=mail-wm1-x330.google.com; envelope-from=iacobcatalin@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-wm1-x330.google.com (mail-wm1-x330.google.com [IPv6:2a00:1450:4864:20::330])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=acm.org (client-ip=199.89.1.16; helo=013.lax.mailroute.net; envelope-from=bvanassche@acm.org; receiver=lists.ozlabs.org)
+Received: from 013.lax.mailroute.net (013.lax.mailroute.net [199.89.1.16])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gWcNy5N1Vz2y8p
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Jun 2026 06:58:41 +1000 (AEST)
-Received: by mail-wm1-x330.google.com with SMTP id 5b1f17b1804b1-490af320e2aso14117075e9.2
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 04 Jun 2026 13:58:41 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1780606718; x=1781211518; darn=lists.ozlabs.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=DQTkf1lHMIqbwK47/czYzHj+glOCSShwPoAIlDnSnRw=;
-        b=UgGXGgCY4oyGsnaSBSl5/qeDkGbsRW+kwM+8D6iIGd+uEkCq1GmlBAv8/SqWPXulYa
-         xbxRTYlkcdFppOHqUkFZTj99F0I3P8r1PS0oNEA3XX/2IjIsaKRKZO/ArRTp6c1tMJs+
-         2qAv1YhD2NR6dmuOh6SA1OAxMMqynqTWBfwqie31JVuxPtE87eRBO04RBh2J3Np6uW8T
-         ZlTW3bi1cl3CQfFzE8I492OMY016u/igY2h7D3o1msK3JBrtvemmdLMVFTj3h+jAyBrL
-         JvqxulacEUoH1YT54snw3K6EJ5vqxT34h3vdh+oEFkgyDJZOC4q9/DHdzcwOQAgFA7zR
-         8zBQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1780606718; x=1781211518;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=DQTkf1lHMIqbwK47/czYzHj+glOCSShwPoAIlDnSnRw=;
-        b=nENlomKzlnpyrC9TPHUNMDW9gIkcrGj6Qbm3i1+HR9MQv4OePZk0EX3N9YbOXtRsGn
-         nzBAZillwkcR6/bMaWun2vgTDy8T+IyW++GlJiPLjBHlJJZ8PZD4sQ7tWUeK/UXxloob
-         I48FNhd6wcmAb21URtCD15piKggRh/aOwwoIYCf8zQ6IzeAlKJbvJPnl5LADnjEOqrM8
-         kHV8qoZwDtuXYLTaaHTA9qO4Du0ZMiZvbbKJrcrLKMJTwgFmyZmANVWbyTeCOlBASbG+
-         UV+kY+gscnINdsg59kO5h5jnc3WpL5H0/yKi25pzrYZti6hToIN5qS4rXSFjZsYzsdzt
-         +LIg==
-X-Forwarded-Encrypted: i=1; AFNElJ9VqkTnTm1YuRNW+IavKCrm79BX2GqANoY4q3tqpIXIH3Defar1cI6IhxGQgKinMcBaqQDigeINjZ+ndOQ=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YzwA2FEAKA6iLq/veNme1ty5hMLBgPSLYgPpSez/+cYFtPsNEtu
-	jCXxTGhDE30yXAdf5Vz2vBjKVrjR4oE7JI1SPDVsYPsFMKLv61w5BXpG
-X-Gm-Gg: Acq92OHBCXUtJBFpzl2gSHdGVKUE4gA54O+lmiR9JaDRrYevjeeriATZxEhXhqYKwrB
-	H9nfWSfXDe7/2aVQiNj6DNJSxdxctQOWEL7uOwNi090kDVkJIWc6FL4mi+LTHQuWXC23uTBs+Rw
-	CKznpCQjMRRImPziJ2DyclyxETxFnjUuwIznD8preAL5l72IL8z59SfmVRJ27BSZwLtGWWzJnON
-	F699VvDUGtRLMITWWTZUnx/27BpdLPPxoyd0BV9udSYx6XIl0TC6iMW+ymT8zMFdoYxrfh1hPER
-	xZClJcLlFVh+krMuE3bsIvzywRX1l309TyDBUvteBp8ITE3tpodLddAnbp4thd/yozY2l7BdSMw
-	MU9bl+ccQfhb5HQOTpxnK51d5ojF3okp1m9rjL07J5GzjJFxbAmxLhG1r7NgZ26oM2Q+nQgkyV0
-	6KXmq3aT3HVqs/3jxtgqOBJhwqVugR3lrT
-X-Received: by 2002:a05:600c:83c3:b0:48f:d612:3c59 with SMTP id 5b1f17b1804b1-490c25a21a9mr4351475e9.9.1780606717742;
-        Thu, 04 Jun 2026 13:58:37 -0700 (PDT)
-Received: from localhost ([94.53.77.213])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-490bc413adbsm100278155e9.15.2026.06.04.13.58.35
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 04 Jun 2026 13:58:36 -0700 (PDT)
-Date: Thu, 4 Jun 2026 23:59:21 +0300
-From: Catalin Iacob <iacobcatalin@gmail.com>
-To: Bart Van Assche <bvanassche@acm.org>
-Cc: Thomas Bogendoerfer <tsbogend@alpha.franken.de>, 
-	Madhavan Srinivasan <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, 
-	Nicholas Piggin <npiggin@gmail.com>, "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, 
-	Rich Felker <dalias@libc.org>, John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, 
-	"David S. Miller" <davem@davemloft.net>, Andreas Larsson <andreas@gaisler.com>, 
-	"James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>, "Martin K. Petersen" <martin.petersen@oracle.com>, 
-	Jens Axboe <axboe@kernel.dk>, Yoshinori Sato <ysato@users.sourceforge.jp>, 
-	linux-mips@vger.kernel.org, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
-	linux-sh@vger.kernel.org, sparclinux@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: Re: [PATCH v3 0/6] Remove remaining references to the pktcdvd driver
-Message-ID: <aiHbj0zn4y9X6qV2@toolbx>
-References: <20260530-remove-pktcdvd-references-v1-1-aa56941d4315@gmail.com>
- <20260604-remove-pktcdvd-references-v3-0-e2f06fb4eef4@gmail.com>
- <96a48e65-6ee2-4b81-91f8-821a2de707db@acm.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gWcpn3L4Jz2y8p
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Jun 2026 07:17:36 +1000 (AEST)
+Received: from localhost (localhost [127.0.0.1])
+	by 013.lax.mailroute.net (Postfix) with ESMTP id 4gWcpj1s8Rzlgtd3;
+	Thu,  4 Jun 2026 21:17:33 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=acm.org; h=
+	content-transfer-encoding:content-type:content-type:in-reply-to
+	:from:from:content-language:references:subject:subject
+	:user-agent:mime-version:date:date:message-id:received:received;
+	 s=mr01; t=1780607843; x=1783199844; bh=xb19kbWiqrpSFbyUlwb6WaMy
+	4XfoRK0lb/vr/qLyz9c=; b=CptyadUwIPy8kaG7jLQ+DM8ZF1tvdDQR49aNulrh
+	biH5o5y8+awSGeH7xaIZj701xjLsC1bHmc42FVzVlpTIh2OS3Peu/J3qE2vTgqUj
+	WJfPQ8IiwOfAoJTyGBKQby/pVQ+vc0RAWGKj17HfYY0rgOM0PJ1HGGwVZsdk0pKH
+	meGPJvZL7KzYbTsEN/KB/WvbFufh6zwd9oG3uVsF4x7VmHPXxVgH//3XfzkGvOKc
+	2Sr4BitSc4ofZicGR45Q6f13yrmVZ9DqpsIJg7pLZzntbpDTtkAf5IZYA/2iU6Qa
+	JRodaXwS6v4/BTVYf2M7DcaY3SHOb9/dTVQCz5Rq0puSqg==
+X-Virus-Scanned: by MailRoute
+Received: from 013.lax.mailroute.net ([127.0.0.1])
+ by localhost (013.lax [127.0.0.1]) (mroute_mailscanner, port 10029) with LMTP
+ id 2cgALRHoL-Mr; Thu,  4 Jun 2026 21:17:23 +0000 (UTC)
+Received: from [100.119.48.131] (unknown [104.135.180.219])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	(Authenticated sender: bvanassche@acm.org)
+	by 013.lax.mailroute.net (Postfix) with ESMTPSA id 4gWcpQ0CxzzlgtdF;
+	Thu,  4 Jun 2026 21:17:17 +0000 (UTC)
+Message-ID: <99f038f8-04a9-40a0-9520-8df3dd1e609b@acm.org>
+Date: Thu, 4 Jun 2026 14:17:16 -0700
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -100,31 +69,61 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <96a48e65-6ee2-4b81-91f8-821a2de707db@acm.org>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v3 0/6] Remove remaining references to the pktcdvd driver
+To: Catalin Iacob <iacobcatalin@gmail.com>
+Cc: Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+ Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
+ "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+ Rich Felker <dalias@libc.org>,
+ John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
+ "David S. Miller" <davem@davemloft.net>,
+ Andreas Larsson <andreas@gaisler.com>,
+ "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
+ "Martin K. Petersen" <martin.petersen@oracle.com>,
+ Jens Axboe <axboe@kernel.dk>, Yoshinori Sato <ysato@users.sourceforge.jp>,
+ linux-mips@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-sh@vger.kernel.org,
+ sparclinux@vger.kernel.org, linux-scsi@vger.kernel.org
+References: <20260530-remove-pktcdvd-references-v1-1-aa56941d4315@gmail.com>
+ <20260604-remove-pktcdvd-references-v3-0-e2f06fb4eef4@gmail.com>
+ <96a48e65-6ee2-4b81-91f8-821a2de707db@acm.org> <aiHbj0zn4y9X6qV2@toolbx>
+Content-Language: en-US
+From: Bart Van Assche <bvanassche@acm.org>
+In-Reply-To: <aiHbj0zn4y9X6qV2@toolbx>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-On Thu, Jun 04, 2026 at 08:50:22AM -0700, Bart Van Assche wrote:
-> If this series is reposted, please combine patches 1/6 and 2/6. Anyway,
-> this series looks good to me.
 
-Thanks for taking a look.
+On 6/4/26 1:59 PM, Catalin Iacob wrote:
+> For learning purposes, do you mind quickly sharing your rationale for
+> combining 1 and 2? To me they are in the same area but still separate
+> things: one removes dead code, the other increases encapsulation. Each
+> is a small but worthwhile cleanup, they can be applied in any order and
+> each can be applied without the other. It's true that, while patch 2
+> without patch 1 works, it would increase confusion but I find that an
+> argument to order 2 after 1, not to say they are one thing.
+> 
+> I'd also find it hard to describe what that combined patch does except
+> by calling out two things: "remove dead code and move the declaration".
+> Your suggested "unexport" seems more confusing than clarifying, I'd
+> argue that today the symbol is not exported since that ifdef always
+> compiles the export out.
 
-I will repost in a few days when back to a computer to fix the subject
-of patch 2 since you are right, it does wrongly suggest that the
-implementation is moved.
+"Unexport" is commonly used terminology in the Linux kernel for removing
+EXPORT_SYMBOL*().
 
-For learning purposes, do you mind quickly sharing your rationale for
-combining 1 and 2? To me they are in the same area but still separate
-things: one removes dead code, the other increases encapsulation. Each
-is a small but worthwhile cleanup, they can be applied in any order and
-each can be applied without the other. It's true that, while patch 2
-without patch 1 works, it would increase confusion but I find that an
-argument to order 2 after 1, not to say they are one thing.
+I proposed to combine patches 1 and 2 because it is normal that the
+declaration of a function is moved from a public to a private header
+file if it is unexported.
 
-I'd also find it hard to describe what that combined patch does except
-by calling out two things: "remove dead code and move the declaration".
-Your suggested "unexport" seems more confusing than clarifying, I'd
-argue that today the symbol is not exported since that ifdef always
-compiles the export out.
+If patches 1 and 2 are combined, the most important change is removal
+of EXPORT_SYMBOL_GPL(). So I think that "Unexport
+scsi_device_from_queue()" would still be an appropriate description for
+such a patch.
+
+Thanks,
+
+Bart.
 
