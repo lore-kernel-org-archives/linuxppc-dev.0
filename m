@@ -1,58 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-21998-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21999-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AD240CD6E68
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Jun 2026 08:20:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B96A9CD6E4A
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Jun 2026 08:24:37 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gWHYt2spHz2y1Y;
-	Thu, 04 Jun 2026 18:20:18 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780561218;
-	cv=none; b=Cxa68xLCwaEt7z+TLIvYpaf4k9MwL0IQObZQak+14Lrla5iKLJuNImaPJBWcK8m5sagv/+6OQoZtpvrbdXTxCzIsClXR9pmlLw7FCA1EDdQo2/FJ1OJ/eAf84KjRVMow35xQqaMUplcUpkXCxMOcChrcTsRqQTvEnReMoutvtFX54pKk/cWoTSej2u2DAEefgr6yXAWRwqgyLa4M6rjxGSiB+PqUEUt2O5gyZYOGzkJAHGbQwMxLQ7MTfwZVaqBp4+9oEF6YV+ZV5IzsAF/M7A9s3zpDUzpcZ5+6oZNCvwrfUvbnjPbUtbQiYtzHcmDtsRqqXUPEC7orNCTXwdyskw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gWHfr1jDnz2y1Y;
+	Thu, 04 Jun 2026 18:24:36 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780561476;
+	cv=none; b=eSqMNEBlC9jxlgOLexL8IjA31iYTdLuxfxk/2h5IxcGQ0Oxpsx1G6stlK9ItdHmzdBo+otgXLfPvIaQKr+bt4JGZ4q6WOJIh3Istxh1lsjx0CNtdvDCRFNXcRsxG5BuAmnQshf+IneZyVAWbJgoRsnVxa1eQLl2MUCXWDrDRKWvXJHrLJUfrw3Xac3rvQrDVJZyOa8G/F6ilPcnDY0qEdcmDHDnWLqHh0E0FIqaT72XCMgOXc2oH9yYnJDJQaPYHGWkoQhmht+khqKsOwrGLa/a/yWqW+qfBOWmJeenaQKjf645QIptH97gnxqk+8iFpAxX/VKgt43BMnKxgEuSo4Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1780561218; c=relaxed/relaxed;
-	bh=Tz1t+xbkaHzNyGYZ8QczxzF6igOnGE2Og4Cr5SOUj/c=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=Ol41BW770DoZzy7juM/L/ddGO6cKvR3BPo34yt3NzhzEWkey8bVnW7Msodn0P2aYqWxBI1x2UDI8aCuuPSu3bLmj/RSM5Yn7QnS76qRPdS8YrVP/SiPYz4MWrO4Q0ze5aQf0rzVqFmLjK5Fal1fJ8QDBfvbdYGY09MABjQU9PEQDpNHzixgTWARcbBHvH9/IAlLM5Kq2YGoXiOd2sdRZ++5wBsRVU9IhceSSVz6OGYCajttxj2eAueysATHSU0TalbD6LJoZ+BRctCyh9Bly8QYbMWpZ7Qhi3mFok1ufnvlY/MTSt7G5eA/apO9QwG+6/LHvRzoUEn/uut23o53rEQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=fTBjid6p; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=linusw@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1780561476; c=relaxed/relaxed;
+	bh=JulNNZEEG3FJVfWHiYWEV4D4RkEJCs5RPOKvt/BEQdw=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=amSJWmrFCAn1+bPtjuiTPuQq2SoMcJ/fzjtKgN6rZ9ktdulWuF+i9aGMXb3QqS9dMfnKK9O8v6HKyhvgJT4JfdlyVUTeaWr+2ZlgCaPX/3fnpcDLn0qmWhsf2bE/5kSss/Pbs3tnLViP9+pDDUUjncRxWwtmjXmxjfZGIMrGhm4qlLZOLD50hXP7yuVr1kgNEDCsFd9U7Hv1C+p+OjbSCNWZCxyzzeuxaHKeNMOb3N68+RuIaPJM7Mkuv4h4IHakSkT7XG70QWgZk1DqxwnYE+3vWaUfw8tmL46dmO0LAWqjFYY425uND0mwlhMlXIQtsJLt8Y97sek++4iUkvzpwg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=a/S06ixk; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=fTBjid6p;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=a/S06ixk;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=linusw@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gWHYs5jDZz2xrC
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 04 Jun 2026 18:20:17 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gWHfq2tDmz2xrC
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 04 Jun 2026 18:24:35 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id DBAC8601D6
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Jun 2026 08:20:15 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 950121F00898
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Jun 2026 08:20:15 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 03C574092C;
+	Thu,  4 Jun 2026 08:24:33 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D57C41F00893;
+	Thu,  4 Jun 2026 08:24:29 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1780561215;
-	bh=Tz1t+xbkaHzNyGYZ8QczxzF6igOnGE2Og4Cr5SOUj/c=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=fTBjid6pIuosV4e8R6lPetOV2dH7lxq/T5zbVqQlHIQKAwNfe63HNOThEbabEkEMz
-	 VTH56ZD3eDvrnjG0K5G3e8KlcDSRewJ926stxKGu4snyjObiEZ/xooKs3Koe3o/Z1l
-	 TRzXruRNltb3ptO+W72QUjRPa5/trwoLdvTncC2N4EIBMnaTBO5wZxPDKa/iQ/dtYL
-	 jBc60S5P/M0/4ATJi8zedKZjxzxLS+5AwIGot9dPjpHcpyilIOMAyifb+JQNaf49bP
-	 aj4Nb7rsGjMJdqybz+kngVOjLLOtGOY+MvBTj41kchaNK+LedI/A0GVLJ2RKEV5rj2
-	 yZCMcJrlFFypA==
-Received: by mail-lf1-f41.google.com with SMTP id 2adb3069b0e04-5aa6c66e6c5so208400e87.2
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 04 Jun 2026 01:20:15 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AFNElJ8XcqlgS86Q8mOiTIVDEN2lIywbffBsgC+SAxF7rRhv20r1yjC/ujNhhdHI3MEdR61UA6KURK6M5Ghcy2c=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YwGCtdZIOs+51v42IQO9ENz5z3NGrHEzdcNtByGUWhEjdXonIJE
-	seRcUhzCt5/G1GQvY4uILXbqLgkYf/0ZtQUvlahb8WEO8oNKoeex1D8aSppQfN9G/Bv9xAkKxV6
-	zHGaQ7LymSm93jG3v0TOVmUR+BXoYgFA=
-X-Received: by 2002:ac2:51ca:0:b0:5aa:6cfc:a208 with SMTP id
- 2adb3069b0e04-5aa7c09b983mr2472657e87.15.1780561214410; Thu, 04 Jun 2026
- 01:20:14 -0700 (PDT)
+	s=k20260515; t=1780561472;
+	bh=JulNNZEEG3FJVfWHiYWEV4D4RkEJCs5RPOKvt/BEQdw=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To;
+	b=a/S06ixk9dWQIHc+etNiH+Ckg+Uy1+kmYNwhxpL8UXxHFP7vqj5yUug4wb89eRy7E
+	 GBG6SUyNby291WPZ3wohMz0vfGCTNbXLpW9LBNTKlkf+jB7sfTC/pFftlBH+FouM2i
+	 3BqCd6MnISoNUXNLo7JqdKi7G6dDCyPUOImVXD/UuC8ZcvqLxCfCyDnOaIn/4tNR+W
+	 QkaKEq33zvhwz/QrCaZTyzmvr5r74wHSqiRDie31jZ0Sq7d3I/dQb7Cm7cpcd/bOaB
+	 VM3ZZIxS6UOxKDxmOR+R6kDMFt9drWPsF+DaXhHSXgBZaCK6NgHVBjsppxzlPR0Ht8
+	 xXKPXWMVvMtfg==
+Message-ID: <8a5a1bce-b841-4eff-ab3c-4f09a7ba3b60@kernel.org>
+Date: Thu, 4 Jun 2026 10:24:27 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -66,37 +59,106 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20260603-powerpc-8xx-cpm1-get-dir-v1-1-2ae1c9a5b992@oss.qualcomm.com>
-In-Reply-To: <20260603-powerpc-8xx-cpm1-get-dir-v1-1-2ae1c9a5b992@oss.qualcomm.com>
-From: Linus Walleij <linusw@kernel.org>
-Date: Thu, 4 Jun 2026 10:20:02 +0200
-X-Gmail-Original-Message-ID: <CAD++jLkxaohgsMiEdGRMY0nHJGcWK5wQMge3p3Teo03XeG4q3A@mail.gmail.com>
-X-Gm-Features: AVVi8Ceml-RDzZwBfWKtfi2K8JN2CfSPBZqQp4CLD_TvOmhwVEJuRjqGMto0QtI
-Message-ID: <CAD++jLkxaohgsMiEdGRMY0nHJGcWK5wQMge3p3Teo03XeG4q3A@mail.gmail.com>
+User-Agent: Mozilla Thunderbird
 Subject: Re: [PATCH RFT] powerpc/8xx: implement get_direction() in cpm1
-To: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
-Cc: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, Madhavan Srinivasan <maddy@linux.ibm.com>, 
-	Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
-	Dmitry Torokhov <dmitry.torokhov@gmail.com>, brgl@kernel.org, linuxppc-dev@lists.ozlabs.org, 
-	linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+To: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>,
+ Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
+ Linus Walleij <linusw@kernel.org>,
+ Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: brgl@kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+References: <20260603-powerpc-8xx-cpm1-get-dir-v1-1-2ae1c9a5b992@oss.qualcomm.com>
+Content-Language: fr-FR
+From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+In-Reply-To: <20260603-powerpc-8xx-cpm1-get-dir-v1-1-2ae1c9a5b992@oss.qualcomm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 
-On Wed, Jun 3, 2026 at 10:26=E2=80=AFAM Bartosz Golaszewski
-<bartosz.golaszewski@oss.qualcomm.com> wrote:
 
+
+Le 03/06/2026 à 10:26, Bartosz Golaszewski a écrit :
 > The lack of get_direction() callbacks in this driver causes GPIOLIB to
 > emit a warning. Implement them for 16- and 32-bit variants.
->
+> 
 > Reported-by: Christophe Leroy <chleroy@kernel.org>
-> Closes: https://lore.kernel.org/all/63487206f6e5a93eaf9f41784317fe99d3943=
-12f.1780399750.git.chleroy@kernel.org/
-> Fixes: ec2cceadfae7 ("gpiolib: normalize the return value of gc->get() on=
- behalf of buggy drivers")
+> Closes: https://eur01.safelinks.protection.outlook.com/?url=https%3A%2F%2Flore.kernel.org%2Fall%2F63487206f6e5a93eaf9f41784317fe99d394312f.1780399750.git.chleroy%40kernel.org%2F&data=05%7C02%7Cchristophe.leroy%40csgroup.eu%7C67d2207e02454f2ecf0008dec149d67c%7C8b87af7d86474dc78df45f69a2011bb5%7C0%7C0%7C639160720043016747%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=k6%2FENNl94WS7QvRdhhmx8VvDyZKMNW8sAlKEq3AtQe4%3D&reserved=0
+> Fixes: ec2cceadfae7 ("gpiolib: normalize the return value of gc->get() on behalf of buggy drivers")
+
+Isn't it e623c4303ed1 ("gpiolib: sanitize the return value of 
+gpio_chip::get_direction()") ?
+
 > Signed-off-by: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
+> ---
+> Hi Christophe, please test if this works for you to silence the warning
+> from GPIO core.
+> ---
+>   arch/powerpc/platforms/8xx/cpm1.c | 26 ++++++++++++++++++++++++++
+>   1 file changed, 26 insertions(+)
+> 
+> diff --git a/arch/powerpc/platforms/8xx/cpm1.c b/arch/powerpc/platforms/8xx/cpm1.c
+> index f00734f0590cf7c7382f808dce27373d9ff3d8bc..b31376bf6778802a7f6b6b499066846b6b1f61e9 100644
+> --- a/arch/powerpc/platforms/8xx/cpm1.c
+> +++ b/arch/powerpc/platforms/8xx/cpm1.c
+> @@ -472,6 +472,18 @@ static int cpm1_gpio16_dir_in(struct gpio_chip *gc, unsigned int gpio)
+>   	return 0;
+>   }
+>   
+> +static int cpm1_gpio16_get_direction(struct gpio_chip *gc, unsigned int gpio)
+> +{
+> +	struct cpm1_gpio16_chip *cpm1_gc = gpiochip_get_data(gc);
+> +	struct cpm_ioport16 __iomem *iop = cpm1_gc->regs;
+> +	u16 pin_mask = 1 << (15 - gpio);
+> +
+> +	if (in_be16(&iop->dir) & pin_mask)
+> +		return GPIO_LINE_DIRECTION_OUT;
+> +
+> +	return GPIO_LINE_DIRECTION_IN;
+> +}
+> +
+>   int cpm1_gpiochip_add16(struct device *dev)
+>   {
+>   	struct device_node *np = dev->of_node;
+> @@ -498,6 +510,7 @@ int cpm1_gpiochip_add16(struct device *dev)
+>   	gc->ngpio = 16;
+>   	gc->direction_input = cpm1_gpio16_dir_in;
+>   	gc->direction_output = cpm1_gpio16_dir_out;
+> +	gc->get_direction = cpm1_gpio16_get_direction;
+>   	gc->get = cpm1_gpio16_get;
+>   	gc->set = cpm1_gpio16_set;
+>   	gc->to_irq = cpm1_gpio16_to_irq;
+> @@ -604,6 +617,18 @@ static int cpm1_gpio32_dir_in(struct gpio_chip *gc, unsigned int gpio)
+>   	return 0;
+>   }
+>   
+> +static int cpm1_gpio32_get_direction(struct gpio_chip *gc, unsigned int gpio)
+> +{
+> +	struct cpm1_gpio32_chip *cpm1_gc = gpiochip_get_data(gc);
+> +	struct cpm_ioport32b __iomem *iop = cpm1_gc->regs;
+> +	u32 pin_mask = 1 << (31 - gpio);
+> +
+> +	if (in_be32(&iop->dir) & pin_mask)
+> +		return GPIO_LINE_DIRECTION_OUT;
+> +
+> +	return GPIO_LINE_DIRECTION_IN;
+> +}
+> +
+>   int cpm1_gpiochip_add32(struct device *dev)
+>   {
+>   	struct device_node *np = dev->of_node;
+> @@ -621,6 +646,7 @@ int cpm1_gpiochip_add32(struct device *dev)
+>   	gc->ngpio = 32;
+>   	gc->direction_input = cpm1_gpio32_dir_in;
+>   	gc->direction_output = cpm1_gpio32_dir_out;
+> +	gc->get_direction = cpm1_gpio32_get_direction;
+>   	gc->get = cpm1_gpio32_get;
+>   	gc->set = cpm1_gpio32_set;
+>   	gc->parent = dev;
+> 
+> ---
+> base-commit: b7bee4ca5688e30ca50fbc87b1b8f7eed7006c17
+> change-id: 20260603-powerpc-8xx-cpm1-get-dir-698cefe92647
+> 
+> Best regards,
 
-Reviewed-by: Linus Walleij <linusw@kernel.org>
-
-Yours,
-Linus Walleij
 
