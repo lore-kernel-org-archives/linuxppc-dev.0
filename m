@@ -1,81 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-21993-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-21994-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CF819CD6E68
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Jun 2026 06:56:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5D85DCD6E6B
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Jun 2026 07:43:32 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gWFhk6rljz2y1Y;
-	Thu, 04 Jun 2026 16:56:06 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780556166;
-	cv=none; b=cEas7ctBq+k798HzERgtMJv1X+mWptd0xd/Bq10eNgJul1fbkZfrFMBgqrUYDQvBhDUUZaxIl4BorCwzN11KB4l5wTzPAfcSH8imtMCJ9dAYcWzSku7tHByeld24SsVhvDYcAqEU/Dm9A8cA1F8d2sF7g1I0ZqyEhV+A7G4MSMkP8E4iU+G8QEurYTABcFOCdxXfg7leIlmblUVI6BG7GrTKDv1E74NJ6/SNGz1Iq4M4VPGN4HSJTO/MIVQbtcXExPDCbacT7/x8M8nKTWbSUO4MkebhT+bVTjx1Uo74M9FaATYUG7DM6XMub+IocyAvBF+Aw5/YHsWx6msd7h14nQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gWGlQ5wqJz2y1Y;
+	Thu, 04 Jun 2026 17:43:30 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780559010;
+	cv=none; b=GQaM8PSCqVYuoWiJ9KyO5RxGL3FmqympTkhKeETFgaQ+Q2R9Ig8FnlENCPGSxZuYMaTyc7CdXV7F6pkOo79ijF73o2T02rIyAPfuRptwuUm0AKBn23iloFdm+f9r2EC1mLgVjUETBh55ZHkjiOuL2GyfGF76tnMZbi6sJ0IKK+vOIKoUuE5HBKng57GdA6mluks7INyY4xme3QFKRZ9SpfPJ4DKygRo7qwNYtFG68fbv2eW0T9wFS2nNVmfDMNdBlAIvqFo94xCrzQ1NzCh5aXai9e5ahH60Ba55m0QGLEcRqJsoJvkoNABHmuAfuCQyTtsippZfI71FiWCZLtn6BA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1780556166; c=relaxed/relaxed;
-	bh=v7q8lGE5veN+Zy2Yq8Lm666Ruc/DM2nucqA19GrYgQU=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=KHAKPuGuK3ShpobGK2wTvhCSvIE5LhttACAyD0zpM2nJ2K7RY0Tf4ph7k7oQn23W/Cz+YN90fTZRqYyvoQuTuccb1bkHNCU4zLm3Oibbdmh26XNAlQsW3ozDhS64GivqGzthAHRWgIbQKb4NRCAKm3GwhkhIpV8VYxIzayrH08hnVYf6tCOgqxQvKi8EdXd7YIeoK2FjJ2U4agRvtKKwlded+pn1+LrQYzRAv2MD9uhMg9H6LeCt58SIHBFsKYFrNEZ439admTxGgEkdiSb+3scIBOEl+1wGWfNVEHj2Tp56ATX+Ah3Zskl9DDyxo7PZv8Xn1FkNpm6Zo31P1fS4cA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=nAy0wTlP; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=tshah@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1780559010; c=relaxed/relaxed;
+	bh=FcphQ0Rw2o1L4ixWXv1z/UyHZdPxmHTlt/k525r269U=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=WY0hnvAk8nHokKL08YmTSA7l29EUUEc1O4hyjbipBkCmFhpND6XccRpzXQwbHSoSHUD8acw9DeprQ6mGOleyhYJbNU/vs6NGXBYqBEYNEv56DedvXqw/+384iY5DY1tR3LMZMA7WDEhB/Am+oOFwu4tAZlvTTCgD4t0ZAOb9fAbbnAzSprFhIP6vcE80aASdE5tcgDih5oscGvn2iS8RoVjt9CT3bT6p3jUPzACD1J5tD9fb/UtL/VbPUQCCiAoRbwbGAJac7jKomc60Vu+PfbZQP+aqbchFX/v3JKzGx4prOT+Y1fAZoiLxADX2oFVGCcprsQVMF0GyCRcPseErGw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=FP8b2xGD; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=nAy0wTlP;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=FP8b2xGD;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=tshah@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gWFhg0z2tz2xF8
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 04 Jun 2026 16:56:02 +1000 (AEST)
-Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 653LeEhp2223981;
-	Thu, 4 Jun 2026 06:55:57 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:message-id:mime-version
-	:subject:to; s=pp1; bh=v7q8lGE5veN+Zy2Yq8Lm666Ruc/DM2nucqA19GrYg
-	QU=; b=nAy0wTlPB7epWS3ciKMbEyLbBRU401ZBQOGfjqGXrK7/R30sphV47zZmJ
-	DNe5+1mpjrR4x8LQCbEUqIBr6xV+rtlnkSVOeAeZFKmYV3al8TRMFXBk7+iRkCpj
-	HEXbkuDTk5X6DnAEAo3lp1ZAsS3mrvAtdcXxDu0wiLhpIToSt2zdsVq2MmxQlcFx
-	0E6mXpFORTKmA3gRw4uDDdk3DbpQv48zwUx2aw8sM8uStVeqkMWVVsvtP/0kHByk
-	klYAc0uLjhSPFhhE/tyZMBjU6RfQ0zDOxmPd5TCuf0gQjd367ZTuRJYaui0dD7Tm
-	8ewJ79Uq8kjloLK5UMh49kclvShfQ==
-Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4efqd4ep7y-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 04 Jun 2026 06:55:56 +0000 (GMT)
-Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma23.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 6546sB70028157;
-	Thu, 4 Jun 2026 06:55:55 GMT
-Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
-	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4egbqhktxd-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 04 Jun 2026 06:55:55 +0000 (GMT)
-Received: from smtpav04.fra02v.mail.ibm.com (smtpav04.fra02v.mail.ibm.com [10.20.54.103])
-	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6546toTf23331152
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 4 Jun 2026 06:55:51 GMT
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id DAB8920043;
-	Thu,  4 Jun 2026 06:55:50 +0000 (GMT)
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id A3A0220040;
-	Thu,  4 Jun 2026 06:55:45 +0000 (GMT)
-Received: from li-4c4c4544-0047-4210-804e-b5c04f423534.ibm.com.com (unknown [9.124.210.20])
-	by smtpav04.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Thu,  4 Jun 2026 06:55:45 +0000 (GMT)
-From: Tanushree Shah <tshah@linux.ibm.com>
-To: acme@kernel.org, jolsa@kernel.org, adrian.hunter@intel.com,
-        vmolnaro@redhat.com, mpetlan@redhat.com, tmricht@linux.ibm.com,
-        maddy@linux.ibm.com, irogers@google.com, namhyung@kernel.org
-Cc: linux-perf-users@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-        atrajeev@linux.ibm.com, hbathini@linux.ibm.com, Tejas.Manhas1@ibm.com,
-        Tanushree.Shah@ibm.com, Shivani.Nittor@ibm.com,
-        Tanushree Shah <tshah@linux.ibm.com>
-Subject: [PATCH] perf data convert json: Fix trace_seq memory leak in process_sample_event()
-Date: Thu,  4 Jun 2026 12:25:19 +0530
-Message-ID: <20260604065519.112101-1-tshah@linux.ibm.com>
-X-Mailer: git-send-email 2.53.0
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gWGlP4F0Kz2xHF
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 04 Jun 2026 17:43:29 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id 0E62760126;
+	Thu,  4 Jun 2026 07:43:27 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 93BE01F00893;
+	Thu,  4 Jun 2026 07:43:21 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1780559006;
+	bh=FcphQ0Rw2o1L4ixWXv1z/UyHZdPxmHTlt/k525r269U=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To;
+	b=FP8b2xGDkzxHJ7n2qYYxpH1CybRl8kL3CD+0OVxwkPI/nHpC05YEnca4gvdN7gNb/
+	 lNynqq4CtTAoVYy5gcVYxgxcyR+ySL7wGXlUJl7SXYUt+iBE7iVmXvpBBM+2ZqjF6g
+	 S6HCf1RdhXjHRVgAnWsNT2IkrrMof03Tzon8NrSOG7oG6Q7iIrM9GW/GzpfWV+Z0QD
+	 x0c9tYofo+wlJFnOT8RyGrdU6BkUBheELnytF2mQlTwMYTlA7KUDyyB2PVRQFlSBgg
+	 rBdpIxXTBVVqbhtHf77+iowcjPoA1Dv5MyERvxzSPC/DKi6Z0ThqJoDesIlgePnZYK
+	 2LCn5WB81zLvw==
+Message-ID: <11d2f0bd-baca-42aa-89ce-328a9d555f7e@kernel.org>
+Date: Thu, 4 Jun 2026 09:43:19 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -89,67 +59,146 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v7 11/15] powerpc/code-patching: Avoid r/w mapping of the
+ zero page
+To: Ard Biesheuvel <ardb+git@google.com>, linux-arm-kernel@lists.infradead.org
+Cc: linux-kernel@vger.kernel.org, will@kernel.org, catalin.marinas@arm.com,
+ mark.rutland@arm.com, Ard Biesheuvel <ardb@kernel.org>,
+ Ryan Roberts <ryan.roberts@arm.com>,
+ Anshuman Khandual <anshuman.khandual@arm.com>,
+ Kevin Brodsky <kevin.brodsky@arm.com>, Liz Prucka <lizprucka@google.com>,
+ Seth Jenkins <sethjenkins@google.com>, Kees Cook <kees@kernel.org>,
+ Mike Rapoport <rppt@kernel.org>, David Hildenbrand <david@kernel.org>,
+ Andrew Morton <akpm@linux-foundation.org>, Jann Horn <jannh@google.com>,
+ linux-mm@kvack.org, linux-hardening@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-sh@vger.kernel.org,
+ Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>
+References: <20260529150150.1670604-17-ardb+git@google.com>
+ <20260529150150.1670604-28-ardb+git@google.com>
+Content-Language: fr-FR
+From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+In-Reply-To: <20260529150150.1670604-28-ardb+git@google.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjA0MDA2MiBTYWx0ZWRfX/oCjBzRrb5No
- uayxiaNhgf5UYzf71bybru8TfKUwpBdfwU7CntxGEY85AbONISN8Yt9VajNncyA00lzjeIBRVLV
- vzMlswQvL6P0JxhJBQaXp/rT3/TmxAH9Wx6RvAxhvcstmfnrSvEVl64QACR4n8IQK0HQI+R+fjR
- ySvsgS1VCo+VDhbqPWF82oLKvIFFRt4dcLIuVRJ6tfPXLCWcQyAJjqopzsH9Q16YpMgNg1cHmVM
- geSj93lFhs3zKfgelJiIWlyVrUbjKo6M4bYr1a6dzUd4JKvSyKRM1R3WyHWDUYk7N6lHULeQtod
- bNvsGIenbIpTRzdaLcnKzSm/3HErkXseA99cjIfbJKyLGIT9FkBSkd98Ccz02qeBRmRyIeuyX6x
- dyT9pV0GaLDtoaQ4nnbCpAExxvJ7nd+V3/ZHSlcQTQB5zSv3GKNXg85e9jA5S7Xwb/yK1Z7xTrg
- 4O/8MGofM6rK3OoLzBQ==
-X-Proofpoint-GUID: zt4s_CatP7Ff5t38XY6C0Dc18WjjcIEQ
-X-Proofpoint-ORIG-GUID: 3AT3m9-D5EmDiNatLrnIoKrIPfXmyOXF
-X-Authority-Analysis: v=2.4 cv=DZknbPtW c=1 sm=1 tr=0 ts=6a21217d cx=c_pps
- a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
- a=FelO9ux0wxsA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=iQ6ETzBq9ecOQQE5vZCe:22 a=VnNF1IyMAAAA:8 a=Nc15H_VyoKEvSVhrjhoA:9
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
- definitions=2026-06-04_02,2026-05-28_03,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- spamscore=0 clxscore=1011 suspectscore=0 impostorscore=0 lowpriorityscore=0
- phishscore=0 malwarescore=0 priorityscore=1501 bulkscore=0 adultscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2605210000 definitions=main-2606040062
 
-Unlike the in-kernel trace_seq which uses a statically allocated buffer,
-the userspace traceevent library's trace_seq uses a dynamically allocated
-one. Therefore, every trace_seq_init() call must be paired with a
-trace_seq_destroy(), otherwise it produces a memory leak.
 
-In process_sample_event(), a trace_seq is initialized for each field when
-formatting tracepoint raw_data, but the matching trace_seq_destroy() is
-never called, leaking memory for every field of every sample processed.
 
-Add the missing trace_seq_destroy() after using the trace_seq buffer to
-properly free the allocated memory.
+Le 29/05/2026 à 17:02, Ard Biesheuvel a écrit :
+> From: Ard Biesheuvel <ardb@kernel.org>
+> 
+> The only remaining use of map_patch_area() is mapping the zero page, and
+> immediately unmapping it again so that the intermediate page table
+> levels are all guaranteed to be populated.
+> 
+> The use of the zero page here is completely arbitrary, and not harmful
+> per se, but currently, it creates a writable mapping, and does so in a
+> manner that requires that the empty_zero_page[] symbol is not
+> const-qualified.
+> 
+> Given that this is about to change, and that map_patch_area() now never
+> maps anything other than the zero page, let's simplify the code and
+> - remove the helpers and call [un]map_kernel_page() directly
+> - take the PA of empty_zero_page directly
+> - create a read-only temporary mapping.
+> 
+> This allows empty_zero_page[] to be repainted as const u8[] in a
+> subsequent patch, without making substantial changes to this code
+> patching logic.
+> 
+> Cc: Madhavan Srinivasan <maddy@linux.ibm.com>
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> Cc: Nicholas Piggin <npiggin@gmail.com>
+> Cc: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+> Link: https://eur01.safelinks.protection.outlook.com/?url=https%3A%2F%2Flore.kernel.org%2Fall%2F20260520085423.485402-1-ardb%40kernel.org%2F&data=05%7C02%7Cchristophe.leroy%40csgroup.eu%7Ca75a9b5e25f14d0d9b2208debd935266%7C8b87af7d86474dc78df45f69a2011bb5%7C0%7C0%7C639156637598013085%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=Q82ykchJOsuWlbmq%2BKFb2cTWIU4wGXbR53VQjNvgOCk%3D&reserved=0
+> Signed-off-by: Ard Biesheuvel <ardb@kernel.org>
 
-Detected with Valgrind on a perf.data file with 2,729 tracepoint samples:
-  Before: definitely lost: 55,537,664 bytes in 13,559 blocks
-  After:  definitely lost: 0 bytes in 0 blocks
+Reviewed-by: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
 
-Fixes: 9d895e468429 ("perf data: Add tracepoint fields when converting to JSON")
-Signed-off-by: Tanushree Shah <tshah@linux.ibm.com>
----
- tools/perf/util/data-convert-json.c | 1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/tools/perf/util/data-convert-json.c b/tools/perf/util/data-convert-json.c
-index d526c91312ed..6dd9349ab10f 100644
---- a/tools/perf/util/data-convert-json.c
-+++ b/tools/perf/util/data-convert-json.c
-@@ -257,6 +257,7 @@ static int process_sample_event(const struct perf_tool *tool,
- 				trace_seq_init(&s);
- 				tep_print_field(&s, sample->raw_data, fields[i]);
- 				output_json_key_string(out, true, 3, fields[i]->name, s.buffer);
-+				trace_seq_destroy(&s);
- 
- 				i++;
- 			}
--- 
-2.47.3
+> ---
+>   arch/powerpc/lib/code-patching.c | 52 +-------------------
+>   1 file changed, 2 insertions(+), 50 deletions(-)
+> 
+> diff --git a/arch/powerpc/lib/code-patching.c b/arch/powerpc/lib/code-patching.c
+> index f84e0337cc02..44ff9f684bef 100644
+> --- a/arch/powerpc/lib/code-patching.c
+> +++ b/arch/powerpc/lib/code-patching.c
+> @@ -60,9 +60,6 @@ struct patch_context {
+>   
+>   static DEFINE_PER_CPU(struct patch_context, cpu_patching_context);
+>   
+> -static int map_patch_area(void *addr, unsigned long text_poke_addr);
+> -static void unmap_patch_area(unsigned long addr);
+> -
+>   static bool mm_patch_enabled(void)
+>   {
+>   	return IS_ENABLED(CONFIG_SMP) && radix_enabled();
+> @@ -117,11 +114,11 @@ static int text_area_cpu_up(unsigned int cpu)
+>   
+>   	// Map/unmap the area to ensure all page tables are pre-allocated
+>   	addr = (unsigned long)area->addr;
+> -	err = map_patch_area(empty_zero_page, addr);
+> +	err = map_kernel_page(addr, __pa_symbol(empty_zero_page), PAGE_KERNEL_RO);
+>   	if (err)
+>   		return err;
+>   
+> -	unmap_patch_area(addr);
+> +	unmap_kernel_page(addr);
+>   
+>   	this_cpu_write(cpu_patching_context.area, area);
+>   	this_cpu_write(cpu_patching_context.addr, addr);
+> @@ -233,51 +230,6 @@ static unsigned long get_patch_pfn(void *addr)
+>   		return __pa_symbol(addr) >> PAGE_SHIFT;
+>   }
+>   
+> -/*
+> - * This can be called for kernel text or a module.
+> - */
+> -static int map_patch_area(void *addr, unsigned long text_poke_addr)
+> -{
+> -	unsigned long pfn = get_patch_pfn(addr);
+> -
+> -	return map_kernel_page(text_poke_addr, (pfn << PAGE_SHIFT), PAGE_KERNEL);
+> -}
+> -
+> -static void unmap_patch_area(unsigned long addr)
+> -{
+> -	pte_t *ptep;
+> -	pmd_t *pmdp;
+> -	pud_t *pudp;
+> -	p4d_t *p4dp;
+> -	pgd_t *pgdp;
+> -
+> -	pgdp = pgd_offset_k(addr);
+> -	if (WARN_ON(pgd_none(*pgdp)))
+> -		return;
+> -
+> -	p4dp = p4d_offset(pgdp, addr);
+> -	if (WARN_ON(p4d_none(*p4dp)))
+> -		return;
+> -
+> -	pudp = pud_offset(p4dp, addr);
+> -	if (WARN_ON(pud_none(*pudp)))
+> -		return;
+> -
+> -	pmdp = pmd_offset(pudp, addr);
+> -	if (WARN_ON(pmd_none(*pmdp)))
+> -		return;
+> -
+> -	ptep = pte_offset_kernel(pmdp, addr);
+> -	if (WARN_ON(pte_none(*ptep)))
+> -		return;
+> -
+> -	/*
+> -	 * In hash, pte_clear flushes the tlb, in radix, we have to
+> -	 */
+> -	pte_clear(&init_mm, addr, ptep);
+> -	flush_tlb_kernel_range(addr, addr + PAGE_SIZE);
+> -}
+> -
+>   static int __do_patch_mem_mm(void *addr, unsigned long val, bool is_dword)
+>   {
+>   	int err;
 
 
