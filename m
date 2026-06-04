@@ -1,49 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-22017-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22018-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5501DCD6E57
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Jun 2026 08:42:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EE180CD6E68
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Jun 2026 08:43:02 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gWJ3w057wz3bsT;
-	Thu, 04 Jun 2026 18:42:52 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780562571;
-	cv=none; b=c0UmJPYkThC7PQ67nmcXHTKeswhVupX2hrMAKlgV+JZT0F9fJc6RUPNkiaGdOGFmpIYaVmwsvaNOc4K9WlR6H5s94Tg3WyJ4EeMRKgv0LebgrsTN18xh/COX2/wD1KBBrXI/s1vsAi53auBswrz6znSmuenQtrZGWqyNaOe5WECLA25o9e6iMAYWqKpllkgwCbJLwLKxXjdGGJx+6gotTPHh0ZmVRuc8luBHQ0luH1keETuWhnC9J3FO6anj3U/xsWJ8B4IkWJdFmFkgDNi+J97b6JuPqbbRnh+ixrI6VPSD0nhkUARcADLcQRLSzLM/SL2/g+1lkSHnsybBAGbSOQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gWJ454PR0z3bsf;
+	Thu, 04 Jun 2026 18:43:01 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780562581;
+	cv=none; b=lT/+SUx5d7yEEaGIWRBsydeKsZ8GgJatNOYGrLhiDBR3xDBay1izAURspm3TGPauw/KcFzYFyiqyDFY7gylW6WqRGZxE9pyK/ri6l3yXb3uNJSJVEJu93GYthfPCUu7qf2nRs/ltrmHQm6TWkPihfeKhKnuVCaVHqhr+o9QDBcdAZ+pS+gxFwLbcAgkeibADLWfJfNUYBsPYJwkuz741qJKSbZcTqwtCvNTG8pfqzf/bhqduXUg0Cd3PMl9UFb6or4qDms0X6cstfAnC9Snebtrs6R96kpBrRg92XipYZiSRYUXTVZ+PLfYf4BVuWftG34mpx/B17M6/zDbK54GsJA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1780562571; c=relaxed/relaxed;
-	bh=gIe+3PDvKixXDpYuwkSkDBkDRMcsfcae67VvbDIqkSI=;
+	t=1780562581; c=relaxed/relaxed;
+	bh=5WeykkaLRY84/gMTdzzVPplQJSrHkGjIEUjp2FUb45E=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=B/BrDaCFqAdJtkW0waZ1LF3iZZHpKyf+cRw9Btho24zFV3HP2sLeK3yLliNwHSRnQVffWu0p69M0e/paBXbgw3QL7GQvahh7eFVVCdyfB/FeKBCOIdDkGFLD3f9kmvSuxrPQjDiBiyoWrbuPBfJCsODUwZBXiJvhFJS/13miHpRo4BOzzLv1HtGrqBvDLf9T9FuXfJyDpoNn5kHHxXu+G5COEV7SYJJEAZqtpgSVE4U7+6QoNkR0sPuZx7ESQ7xeioBRh4LRw8rbf/CsYTv+DV0DzamlxpLSgnzGBFgr4NURTBfbIpGNVHxGlfyqUzPK40mna1yGi7p4A2gqS5BrIw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=JMeQpZtx; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=aneesh.kumar@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=ViR0pdPC6si3nTEYzW31VDyHL6suFldtX73rN9b/0lvVaoqmdFh2H0c0A7zdfOzkS/GlD+8rrYqjq9+DlDiE551xf1OZ4n1yQ46bmylXI6p/4DMKbckouP/8zj/c63o7pZVC4fMVqS4UFy1tcCdntd+AO7YBxhtBGhFEd4fw5ldIyYakYC96DqO88hXp0DkKTrOBG7wt7FizpCfxYc114nrTJxT99T76Lz67gnN3GGI/u2OXEex5Tmg9mfOgN56myjIqLCfbOL5uYrhMSanPQ5++S9fSasCJb06d4Dy5T7owTBcW0zw4TMWujDF/nfqbgDvVWonxxrXCakJrA65ikA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=kPwkUEOk; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=aneesh.kumar@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=JMeQpZtx;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=kPwkUEOk;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=aneesh.kumar@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=aneesh.kumar@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gWJ3v27bTz3bsS
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 04 Jun 2026 18:42:51 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gWJ44640xz3bsd
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 04 Jun 2026 18:43:00 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id C391443953;
-	Thu,  4 Jun 2026 08:42:49 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3DE9C1F00893;
-	Thu,  4 Jun 2026 08:42:41 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id F1FC1601D6;
+	Thu,  4 Jun 2026 08:42:58 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 415181F00898;
+	Thu,  4 Jun 2026 08:42:50 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1780562569;
-	bh=gIe+3PDvKixXDpYuwkSkDBkDRMcsfcae67VvbDIqkSI=;
+	s=k20260515; t=1780562578;
+	bh=5WeykkaLRY84/gMTdzzVPplQJSrHkGjIEUjp2FUb45E=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=JMeQpZtxD/t4LMxT6bBk+abdMJwCuKqMUOI6LvMDUxWqbk+0W2lPCQfnGRvNn3zEQ
-	 TnhynEd0A/26RsZBz5Wi/aXFtvcyKim0I0BgjVd41z0HT6Q6gyfgRtfAnix5YH85wK
-	 MptdDvq+fGlCB1kxIMuGgqi+Fp1PJdHzxWsb4W4zztFWd8e46Oul8/Y4fketumkxtU
-	 TIVLEkVW+udRm4S6dxNrYVlOtARRFNIt+IE9hJR9xUin0J+piQQaLPZmmukIendJMh
-	 Il0qYnbhukAyR37QM4G67V3ADzyJXlSyMEOL16DX6Y3vkmLnThquWduHSfZsVbFft2
-	 /5M5gp/Mvw0lA==
+	b=kPwkUEOk1WgnrF0lOV0PcG8AQaiVhngfx/W0TVtjGwpDNk1Baj72OsUUlUxaxIdxt
+	 GCMc3uO9dZ0y+4DmEajexLfTCy0njgJdDKWFY9hNA6cHq5Mr0VzYb075IVKnz09ylZ
+	 mhURdS/1AaP9I7PUlOb/20/S5Qac8flUQ4Ku/7TmUPowi2LXf/qpYsGBY67dQRdlSr
+	 BJppQVtzWfkLsFwBGMpoLv4SBMYJXdg+a+LtnxbzH90+JUMUfoODtJ8bcesSA/7/Q7
+	 ep7tfYzuBiwuLbY57SGVqmXpr1NYNfK8KsDo5ZI/oY1hIt+e9hbCAbrkFpKYImCFdg
+	 JlZGreIpvlfMA==
 From: "Aneesh Kumar K.V (Arm)" <aneesh.kumar@kernel.org>
 To: iommu@lists.linux.dev,
 	linux-arm-kernel@lists.infradead.org,
@@ -78,9 +78,9 @@ Cc: "Aneesh Kumar K.V (Arm)" <aneesh.kumar@kernel.org>,
 	Sven Schnelle <svens@linux.ibm.com>,
 	x86@kernel.org,
 	Michael Kelley <mhklinux@outlook.com>
-Subject: [PATCH v6 17/20] dma: swiotlb: handle set_memory_decrypted() failures
-Date: Thu,  4 Jun 2026 14:09:56 +0530
-Message-ID: <20260604083959.1265923-18-aneesh.kumar@kernel.org>
+Subject: [PATCH v6 18/20] dma: free atomic pool pages by physical address
+Date: Thu,  4 Jun 2026 14:09:57 +0530
+Message-ID: <20260604083959.1265923-19-aneesh.kumar@kernel.org>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20260604083959.1265923-1-aneesh.kumar@kernel.org>
 References: <20260604083959.1265923-1-aneesh.kumar@kernel.org>
@@ -99,190 +99,122 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Check the return value when converting swiotlb pools between encrypted and
-decrypted mappings. If the default pool cannot be decrypted after early
-initialization, mark the pool fully used so it cannot satisfy future bounce
-allocations.
+dma_direct_alloc_pages() may satisfy atomic allocations from the coherent
+atomic pools. The pool allocation is keyed by the virtual address stored in
+the gen_pool, but the pages API returns only the backing struct page.
 
-For late initialization, return the `set_memory_decrypted()` failure. For
-restricted DMA pools, fail device initialization if the reserved pool
-cannot be decrypted.
+On architectures with CONFIG_DMA_DIRECT_REMAP, atomic pool chunks are added
+to the gen_pool using their remapped virtual address.
+dma_direct_free_pages() reconstructs a linear-map address with
+page_address(page) and passes that to dma_free_from_pool(). That address
+does not match the gen_pool virtual range, so the pool lookup can fail and
+the code can fall through to freeing a pool-owned page through the normal
+page allocator path.
 
-This prevents swiotlb from using pools whose encryption attributes do not
-match their metadata, and avoids returning pages with uncertain encryption
-state back to the allocator.
+Add a page-based pool free helper that looks up the owning pool chunk by
+physical address, translates it back to the gen_pool virtual address, and
+frees that address to the pool. Use it from dma_direct_free_pages() while
+keeping the existing virtual-address helper for coherent allocation frees.
 
 Tested-by: Michael Kelley <mhklinux@outlook.com>
 Tested-by: Mostafa Saleh <smostafa@google.com>
 Signed-off-by: Aneesh Kumar K.V (Arm) <aneesh.kumar@kernel.org>
 ---
- kernel/dma/swiotlb.c | 80 +++++++++++++++++++++++++++++++++++---------
- 1 file changed, 65 insertions(+), 15 deletions(-)
+ include/linux/dma-map-ops.h |  1 +
+ kernel/dma/direct.c         |  4 +--
+ kernel/dma/pool.c           | 54 +++++++++++++++++++++++++++++++++++++
+ 3 files changed, 57 insertions(+), 2 deletions(-)
 
-diff --git a/kernel/dma/swiotlb.c b/kernel/dma/swiotlb.c
-index 4c56f64602ea..14d834ca298b 100644
---- a/kernel/dma/swiotlb.c
-+++ b/kernel/dma/swiotlb.c
-@@ -248,6 +248,23 @@ static inline unsigned long nr_slots(u64 val)
- 	return DIV_ROUND_UP(val, IO_TLB_SIZE);
- }
+diff --git a/include/linux/dma-map-ops.h b/include/linux/dma-map-ops.h
+index 696b2c3a2305..8be059e69935 100644
+--- a/include/linux/dma-map-ops.h
++++ b/include/linux/dma-map-ops.h
+@@ -215,6 +215,7 @@ struct page *dma_alloc_from_pool(struct device *dev, size_t size,
+ 		void **cpu_addr, gfp_t flags, unsigned long attrs,
+ 		bool (*phys_addr_ok)(struct device *, phys_addr_t, size_t));
+ bool dma_free_from_pool(struct device *dev, void *start, size_t size);
++bool dma_free_from_pool_page(struct device *dev, struct page *page, size_t size);
  
-+static void swiotlb_mark_pool_used(struct io_tlb_pool *pool)
+ int dma_direct_set_offset(struct device *dev, phys_addr_t cpu_start,
+ 		dma_addr_t dma_start, u64 size);
+diff --git a/kernel/dma/direct.c b/kernel/dma/direct.c
+index e0ab9ff3f1d6..58f7ea1be963 100644
+--- a/kernel/dma/direct.c
++++ b/kernel/dma/direct.c
+@@ -488,9 +488,9 @@ void dma_direct_free_pages(struct device *dev, size_t size,
+ 	 */
+ 	bool mark_mem_encrypted = force_dma_unencrypted(dev);
+ 
+-	/* If cpu_addr is not from an atomic pool, dma_free_from_pool() fails */
++	/* If page is not from an atomic pool, dma_free_from_pool_page() fails */
+ 	if (IS_ENABLED(CONFIG_DMA_COHERENT_POOL) &&
+-	    dma_free_from_pool(dev, vaddr, size))
++	    dma_free_from_pool_page(dev, page, size))
+ 		return;
+ 
+ 	phys = page_to_phys(page);
+diff --git a/kernel/dma/pool.c b/kernel/dma/pool.c
+index e7df8d279e75..43b8101d860f 100644
+--- a/kernel/dma/pool.c
++++ b/kernel/dma/pool.c
+@@ -356,3 +356,57 @@ bool dma_free_from_pool(struct device *dev, void *start, size_t size)
+ 
+ 	return false;
+ }
++
++struct dma_pool_phys_match {
++	phys_addr_t phys;
++	size_t size;
++	unsigned long addr;
++	bool found;
++};
++
++static void dma_pool_find_phys(struct gen_pool *pool, struct gen_pool_chunk *chunk,
++			       void *data)
 +{
-+	unsigned long i;
++	struct dma_pool_phys_match *match = data;
++	phys_addr_t end = match->phys + match->size - 1;
++	phys_addr_t chunk_end;
 +
-+	for (i = 0; i < pool->nareas; i++) {
-+		pool->areas[i].index = 0;
-+		pool->areas[i].used = pool->area_nslabs;
-+	}
++	if (match->found)
++		return;
 +
-+	for (i = 0; i < pool->nslabs; i++) {
-+		pool->slots[i].list = 0;
-+		pool->slots[i].orig_addr = INVALID_PHYS_ADDR;
-+		pool->slots[i].alloc_size = 0;
-+		pool->slots[i].pad_slots = 0;
-+	}
++	chunk_end = chunk->phys_addr + (chunk->end_addr - chunk->start_addr);
++	if (match->phys < chunk->phys_addr || end > chunk_end)
++		return;
++
++	match->addr = chunk->start_addr + (match->phys - chunk->phys_addr);
++	match->found = true;
 +}
 +
- /*
-  * Early SWIOTLB allocation may be too early to allow an architecture to
-  * perform the desired operations.  This function allows the architecture to
-@@ -272,8 +289,16 @@ void __init swiotlb_update_mem_attributes(void)
- 		return;
- 	bytes = PAGE_ALIGN(mem->nslabs << IO_TLB_SHIFT);
- 
--	if (io_tlb_default_mem.unencrypted)
--		set_memory_decrypted((unsigned long)mem->vaddr, bytes >> PAGE_SHIFT);
-+	if (io_tlb_default_mem.unencrypted) {
-+		int ret;
++static bool dma_free_from_pool_phys(struct dma_gen_pool *dma_pool, phys_addr_t phys,
++				    size_t size)
++{
++	struct dma_pool_phys_match match = {
++		.phys = phys,
++		.size = size,
++	};
 +
-+		ret = set_memory_decrypted((unsigned long)mem->vaddr,
-+					   bytes >> PAGE_SHIFT);
-+		if (ret) {
-+			pr_warn("Failed to decrypt default memory pool, disabling it\n");
-+			swiotlb_mark_pool_used(mem);
-+		}
-+	}
- }
- 
- static void swiotlb_init_io_tlb_pool(struct io_tlb_pool *mem, phys_addr_t start,
-@@ -442,9 +467,10 @@ int swiotlb_init_late(size_t size, gfp_t gfp_mask,
- {
- 	struct io_tlb_pool *mem = &io_tlb_default_mem.defpool;
- 	unsigned long nslabs = ALIGN(size >> IO_TLB_SHIFT, IO_TLB_SEGSIZE);
-+	unsigned int order, area_order, slot_order;
-+	bool leak_pages = false;
- 	unsigned int nareas;
- 	unsigned char *vstart = NULL;
--	unsigned int order, area_order;
- 	bool retried = false;
- 	int rc = 0;
- 
-@@ -504,6 +530,7 @@ int swiotlb_init_late(size_t size, gfp_t gfp_mask,
- 			(PAGE_SIZE << order) >> 20);
- 	}
- 
-+	rc = -ENOMEM;
- 	nareas = limit_nareas(default_nareas, nslabs);
- 	area_order = get_order(array_size(sizeof(*mem->areas), nareas));
- 	mem->areas = (struct io_tlb_area *)
-@@ -511,14 +538,20 @@ int swiotlb_init_late(size_t size, gfp_t gfp_mask,
- 	if (!mem->areas)
- 		goto error_area;
- 
-+	slot_order = get_order(array_size(sizeof(*mem->slots), nslabs));
- 	mem->slots = (void *)__get_free_pages(GFP_KERNEL | __GFP_ZERO,
--		get_order(array_size(sizeof(*mem->slots), nslabs)));
-+					      slot_order);
- 	if (!mem->slots)
- 		goto error_slots;
- 
--	if (io_tlb_default_mem.unencrypted)
--		set_memory_decrypted((unsigned long)vstart,
--				     (nslabs << IO_TLB_SHIFT) >> PAGE_SHIFT);
-+	if (io_tlb_default_mem.unencrypted) {
-+		rc = set_memory_decrypted((unsigned long)vstart,
-+					  (nslabs << IO_TLB_SHIFT) >> PAGE_SHIFT);
-+		if (rc) {
-+			leak_pages = true;
-+			goto error_decrypt;
-+		}
-+	}
- 
- 	swiotlb_init_io_tlb_pool(mem, virt_to_phys(vstart), nslabs, true,
- 				 nareas);
-@@ -527,16 +560,20 @@ int swiotlb_init_late(size_t size, gfp_t gfp_mask,
- 	swiotlb_print_info();
- 	return 0;
- 
-+error_decrypt:
-+	free_pages((unsigned long)mem->slots, slot_order);
- error_slots:
- 	free_pages((unsigned long)mem->areas, area_order);
- error_area:
--	free_pages((unsigned long)vstart, order);
--	return -ENOMEM;
-+	if (!leak_pages)
-+		free_pages((unsigned long)vstart, order);
-+	return rc;
- }
- 
- void __init swiotlb_exit(void)
- {
- 	struct io_tlb_pool *mem = &io_tlb_default_mem.defpool;
-+	bool leak_pages = false;
- 	unsigned long tbl_vaddr;
- 	size_t tbl_size, slots_size;
- 	unsigned int area_order;
-@@ -552,19 +589,23 @@ void __init swiotlb_exit(void)
- 	tbl_size = PAGE_ALIGN(mem->end - mem->start);
- 	slots_size = PAGE_ALIGN(array_size(sizeof(*mem->slots), mem->nslabs));
- 
--	if (io_tlb_default_mem.unencrypted)
--		set_memory_encrypted(tbl_vaddr, tbl_size >> PAGE_SHIFT);
-+	if (io_tlb_default_mem.unencrypted) {
-+		if (set_memory_encrypted(tbl_vaddr, tbl_size >> PAGE_SHIFT))
-+			leak_pages = true;
-+	}
- 
- 	if (mem->late_alloc) {
- 		area_order = get_order(array_size(sizeof(*mem->areas),
- 			mem->nareas));
- 		free_pages((unsigned long)mem->areas, area_order);
--		free_pages(tbl_vaddr, get_order(tbl_size));
-+		if (!leak_pages)
-+			free_pages(tbl_vaddr, get_order(tbl_size));
- 		free_pages((unsigned long)mem->slots, get_order(slots_size));
- 	} else {
- 		memblock_free(mem->areas,
- 			array_size(sizeof(*mem->areas), mem->nareas));
--		memblock_phys_free(mem->start, tbl_size);
-+		if (!leak_pages)
-+			memblock_phys_free(mem->start, tbl_size);
- 		memblock_free(mem->slots, slots_size);
- 	}
- 
-@@ -1938,9 +1979,18 @@ static int rmem_swiotlb_device_init(struct reserved_mem *rmem,
- 		 * restricted mem pool is decrypted by default
- 		 */
- 		if (cc_platform_has(CC_ATTR_MEM_ENCRYPT)) {
-+			int ret;
++	gen_pool_for_each_chunk(dma_pool->pool, dma_pool_find_phys, &match);
++	if (!match.found)
++		return false;
 +
- 			mem->unencrypted = true;
--			set_memory_decrypted((unsigned long)phys_to_virt(rmem->base),
--					     rmem->size >> PAGE_SHIFT);
-+			ret = set_memory_decrypted((unsigned long)phys_to_virt(rmem->base),
-+						   rmem->size >> PAGE_SHIFT);
-+			if (ret) {
-+				dev_err(dev, "Failed to decrypt restricted DMA pool\n");
-+				kfree(pool->areas);
-+				kfree(pool->slots);
-+				kfree(mem);
-+				return ret;
-+			}
- 		} else {
- 			mem->unencrypted = false;
- 		}
++	gen_pool_free(dma_pool->pool, match.addr, size);
++	return true;
++}
++
++bool dma_free_from_pool_page(struct device *dev, struct page *page, size_t size)
++{
++	struct dma_gen_pool *dma_pool = NULL;
++	phys_addr_t phys = page_to_phys(page);
++
++	while ((dma_pool = dma_guess_pool(dma_pool, 0))) {
++		if (dma_free_from_pool_phys(dma_pool, phys, size))
++			return true;
++	}
++
++	return false;
++}
 -- 
 2.43.0
 
