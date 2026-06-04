@@ -1,66 +1,87 @@
-Return-Path: <linuxppc-dev+bounces-22041-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22042-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 37D9FCD6E6D
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Jun 2026 14:17:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 977F9CD6E6D
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Jun 2026 14:21:13 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gWRV95M9mz2y1Y;
-	Fri, 05 Jun 2026 00:17:37 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780582657;
-	cv=none; b=gsddXjYXYAePSrgv32DCNB9alv8oN/7UIv4tPr/+x646pg+VWhpDDB5q98RoB4WyOhgxacDPoiijEMcORVG9vhYzK6Bo1GDY7QvwUg7MdPJ3L0ExW7EGeWqlN3CV/vy63ROWrbJlbXfFbOk5wZFgGzwRCbr0ZcZDkw1s+pEBikt+ey19IK2+vH2moP9N1UF5ZPewotess0iXLxSmFSTaQNmXPZxeeQvEZN/JOzD4JHPvxaTUdS84KwJrUOc/2rcBSL27idI+jKFkCfg8nwEf+Q72g+FH6wA3MEzQ1v0jNKaPNhNizgEUjHoxGRlnkJ1NpbR9Q0flwrdpQ+pqLmq4UA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gWRZJ1DQkz2y1Y;
+	Fri, 05 Jun 2026 00:21:12 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780582872;
+	cv=none; b=BObh+v5zeTltXTKAwMAKqQZcxHt9BTsSrhKEJl3iBXDKEcbKqJYE32VgBJv4Kefmjx/pUammxUim+wwHikqvgWKvbSEONYth0F0PWHMSSt1Gqs4ay3Pwamw4gS6NDWxFfhsjM/3evDjEQLHhf3rKcyLkOC2NwQWwvkz6u7Gqo2WCH2mT9NKiVz1EHyFQPLmysdmCt6gg7XZqpfZSXJvOlN1Pst+dTzKDTLK3aNiZXC6XngoktPBTpgkNAwHZpculHBWaIAChnKOLM1Rsh4JdIsGHLgb52WHhVJtJorCDVSn2eIg79qrNFwz8yrQjY4oaZwynpDscq/ZU+yJng/+zOA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1780582657; c=relaxed/relaxed;
-	bh=a23fVnlClqzkGnu4H8lLPL7TNuMOc0N3Wpy71vcyZKw=;
+	t=1780582872; c=relaxed/relaxed;
+	bh=oE0Ub0olB6h34lpMKP3FAs17XdIpchi8PZ9K85+6noE=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=UHYKkSHBXWXBKul+OH0RQfmv6Ys0c6V/reUCTIo0amT4jRrmvTF3hgpSpZFb19WocvysakFtnA3TWLg+UqPvt2yY9HfD/BHwBljftapCHlbBTA4r8aIZdKzu0vfIbZ0jPQftEvMgZkDMMFa3VbiYcnJwHr5KXNB11rjuRVALmU31Kl+y8cxPQeITwUwYFy3ijI25jyKKc/kYSZpjJwGy3oG1mOZegmwOLP3UByKW32weY8Us9Mu0ftyj7aHqz75qbD0KNwLXn11i+PhpzcN1pwCkTW0xNHhsmfQUFXBlmPfZsfdkg/5BcZCGcASr7kSX4rCkCWnZ+JFVwZ7kFqvTZw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=kCULlyQj; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=acme@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	 Content-Type:Content-Disposition:In-Reply-To; b=GC7s+2mJt0SXT8aBD50Y1wVEh37qXYYpRVkT7aJK0sog6po08RWYlNSisIDJrtRpbTdVJIymyUUzKF5gVauhTJ/g515LfhCWWwGI1O42J2T8EFaYADDtDhhImR+Nj3I8ZZeeb9qPzW6cx38zvCS9tah412TStORXp2kAqv68ycpGwA34Qm9C0+2SsOxbHEjeruLSk027e+o4zdfzX6RgNCTZJ/he0GYmF63xEMagwkopz1RcSOAx1ywhrpJaa9YPfT3rU87zQ+i+DlRWi3TqQ/AGFgbjWNjFItJ/D9JCpuJXLf/XgsKcICQHHgHpn8WbtweV/kRwjHyjdXms4MN4Wg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=OxoJsAw3; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=gautam@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=kCULlyQj;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=OxoJsAw3;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=acme@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=gautam@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gWRV85j86z2xfB
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Jun 2026 00:17:36 +1000 (AEST)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 51B5043D2C;
-	Thu,  4 Jun 2026 14:17:34 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 924BC1F00893;
-	Thu,  4 Jun 2026 14:17:33 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1780582654;
-	bh=a23fVnlClqzkGnu4H8lLPL7TNuMOc0N3Wpy71vcyZKw=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=kCULlyQjFdpPWXG4ewMFzM0hHvfv3BE1jLMR+bCTDg8JrJS+unPBUzsVKE6FSqOLF
-	 HZW2H2Oxf9EvlUYAZkYnt7EVCN5/8MkRifh6WM0E1Rh3+k00kkZ5mLjO9O2B8rrz+m
-	 Xcs/a+EtIo2uHAgpwj+VowrzeTXQx0/qRkePtmVjkI7+pQmH+MKtg+H0/e9mBdkEQS
-	 YdjSrfyPrGRUGjIqGGMy3Sa/klvQOxGe74olONPff4xIk/6njjgbdbhn6SrNCM+oaO
-	 /fc3AeVL+stfr/0m2PdoLuR1OJf2edRFSZvEPuYXLh5yBQE0YtYhpmbrEvJSI5YfrH
-	 1tf577RlKgbVQ==
-Date: Thu, 4 Jun 2026 11:17:31 -0300
-From: Arnaldo Carvalho de Melo <acme@kernel.org>
-To: Athira Rajeev <atrajeev@linux.ibm.com>,
-	Anubhav Shelat <ashelat@redhat.com>
-Cc: Namhyung Kim <namhyung@kernel.org>, Ian Rogers <irogers@google.com>,
-	jolsa@kernel.org, adrian.hunter@intel.com, mpetlan@redhat.com,
-	tmricht@linux.ibm.com, maddy@linux.ibm.com,
-	linux-perf-users@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-	hbathini@linux.vnet.ibm.com, Tejas.Manhas1@ibm.com,
-	Tanushree.Shah@ibm.com, Shivani.Nittor@ibm.com
-Subject: Re: [PATCH] tools/perf/sched: Update process names of processes in
- zombie state for both -s and -S options
-Message-ID: <aiGI--j2nJ_kas60@x1>
-References: <20260426093930.47809-1-atrajeev@linux.ibm.com>
- <ae76k1BvfgcYI18K@google.com>
- <230801A2-5F9C-42A6-9390-B44786309E30@linux.ibm.com>
- <ag8UFqPmRu8v4g_9@x1>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gWRZH0sgYz2xfB
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Jun 2026 00:21:10 +1000 (AEST)
+Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6549oGpF1890877;
+	Thu, 4 Jun 2026 14:21:01 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-type:date:from:in-reply-to:message-id:mime-version
+	:references:subject:to; s=pp1; bh=oE0Ub0olB6h34lpMKP3FAs17XdIpch
+	i8PZ9K85+6noE=; b=OxoJsAw3XZwodkdDZlwccDgexpShEPCh3wKk+p6fjiqnM2
+	KctBJkUW+/MgJ97rz7gQ+Xqnoj5uoW2J8iA/Y6oAaxqgbGCVNsobzdRxuO+uCpWD
+	Bretcv2cxIzCeSaiWRhjxVPCSyi5Y1knwxuR+AyoKhKhqGHLaW5cLQ8vdMqO2Ys8
+	ZN3WCzeZwFHiDqPK6rxe8EU/y0krt/eJJhXLOmwJZF3/KCCzuvKNW++Oz4s8c/vD
+	EqcMxesSGOWAGtmw54Z8HOcU2Mgu8AW6Oxx/h1Deh02IZY6671Zs6Dl4fCl7AkiM
+	MhGcjIhViZDAcqRnibVGIQPRrhjLPiE+mN4qf7wQ==
+Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4efqd4g9ey-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 04 Jun 2026 14:21:00 +0000 (GMT)
+Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma23.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 654E99jp029170;
+	Thu, 4 Jun 2026 14:20:59 GMT
+Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
+	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4egbqhn9ns-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 04 Jun 2026 14:20:58 +0000 (GMT)
+Received: from smtpav01.fra02v.mail.ibm.com (smtpav01.fra02v.mail.ibm.com [10.20.54.100])
+	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 654EKs8t29950262
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Thu, 4 Jun 2026 14:20:54 GMT
+Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id C45C220040;
+	Thu,  4 Jun 2026 14:20:54 +0000 (GMT)
+Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 482562004B;
+	Thu,  4 Jun 2026 14:20:52 +0000 (GMT)
+Received: from mac.bl1-in.ibm.com (unknown [9.123.11.154])
+	by smtpav01.fra02v.mail.ibm.com (Postfix) with ESMTPS;
+	Thu,  4 Jun 2026 14:20:52 +0000 (GMT)
+Date: Thu, 4 Jun 2026 19:50:45 +0530
+From: Gautam Menghani <gautam@linux.ibm.com>
+To: Amit Machhiwal <amachhiw@linux.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Madhavan Srinivasan <maddy@linux.ibm.com>,
+        Vaibhav Jain <vaibhav@linux.ibm.com>,
+        Harsh Prateek Bora <harshpb@linux.ibm.com>,
+        Ritesh Harjani <ritesh.list@gmail.com>,
+        Anushree Mathur <anushree.mathur@linux.ibm.com>,
+        Nicholas Piggin <npiggin@gmail.com>,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+        kvm@vger.kernel.org, stable@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] KVM: PPC: Book3S HV: Validate arch_compat against host
+ compatibility mode
+Message-ID: <aiGJvUqgjUo6M5et@mac.bl1-in.ibm.com>
+References: <20260603141539.47620-1-amachhiw@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -74,105 +95,116 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <ag8UFqPmRu8v4g_9@x1>
+In-Reply-To: <20260603141539.47620-1-amachhiw@linux.ibm.com>
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjA0MDEzOCBTYWx0ZWRfX5xhC4Mz3d6an
+ BJxgiXnUtvLEqaBbl4Hf2Vc5O7Pb+5rZppFkgw1GtJVIHSySOcWUmC12P8D98e9mmPBvI4/T3Hp
+ aduOR964X9E78QJOeFgs7mtxWbcI2jCIcpGBSbVKl4UTXJamwsFUfEOAlMqOzQdmCtg/iWqH1Qj
+ vZdQbx6Vq+xwa30sKkbofvb010aD9qSSTmXUIkrTkS4dtFb2oHh12NxFrKqGN6U1UGG8IPZ5GBW
+ Ee6OBbLEntui7Ot60xBi/b6JLWQlc64m9TZjiZmVgGZ3BoaeFsIX1+FB+c/2O+dc1TpG5teCOFv
+ GMlUhfpZZtJPygzwTlLJzEqOJZOvvTgfiCoGT7jJ9AqTNjZDxpIH73AXSbCTndI3EFLfdRGvXJk
+ 2uQEgSoIpVuk0tHBurXoPpfIXr0/8l+qTJpTYWfvBrCuvS2TtLHx7EFuSKEpx0TEiRAicsbMy9K
+ Y6bKuJavI1ONz/gkmag==
+X-Proofpoint-GUID: m2gMSzyPMp6m9AQfn3fjhHuiZuAtmOL6
+X-Proofpoint-ORIG-GUID: 1_mAQCX0EMZ7eKCbvkx9xww1sMZMd9r2
+X-Authority-Analysis: v=2.4 cv=DZknbPtW c=1 sm=1 tr=0 ts=6a2189cc cx=c_pps
+ a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
+ a=kj9zAlcOel0A:10 a=FelO9ux0wxsA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=iQ6ETzBq9ecOQQE5vZCe:22 a=VwQbUJbxAAAA:8
+ a=VnNF1IyMAAAA:8 a=qdroVii9w7lgXkXXhtMA:9 a=CjuIK1q_8ugA:10
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
+ definitions=2026-06-04_04,2026-05-28_03,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ spamscore=0 clxscore=1015 suspectscore=0 impostorscore=0 lowpriorityscore=0
+ phishscore=0 malwarescore=0 priorityscore=1501 bulkscore=0 adultscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2605210000 definitions=main-2606040138
 
-On Thu, May 21, 2026 at 11:17:58AM -0300, Arnaldo Carvalho de Melo wrote:
-> On Thu, May 21, 2026 at 02:02:53PM +0530, Athira Rajeev wrote:
-> > > On 27 Apr 2026, at 11:26 AM, Namhyung Kim <namhyung@kernel.org> wrote:
-> > > On Sun, Apr 26, 2026 at 03:09:30PM +0530, Athira Rajeev wrote:
-> > >> In redhat perftool testsuite, observed fail for this test:
-> > >>    -- [ FAIL ] -- perf_sched :: test_timehist :: --with-summary (output regexp parsing)
-> > >> 
-> > >> This led to analysis of "perf sched timehist" summary options.
-> > >> 
-> > >>  # perf sched record -a -o ./perf.data -- sleep 0.1
-> > >>   This will record using perf sched record
-> > >> 
-> > >> perf sched timeliest has two options "-s" and "-S"
-> > >>  # perf sched -i ./perf.data timehist -S
-> > >> -S : Captures summary also at the end
-> > >> 
-> > >>  # perf sched -i ./perf.data timehist -s
-> > >> -s : Captures only summary
-> > >> 
-> > >> The test saves -s result which has only summary and compares with
-> > >> summary which comes at the end from -S . Since there is a difference
-> > >> in these two, test fails.
-> > >> 
-> > >> Checking the behaviour change in -S and -s results, difference is:
-> > >> 
-> > >>                  rcu_sched[16]       2          4        0.013      0.001       0.003       0.006   33.23       0
-> > >>               migration/11[73]       2          1        0.006      0.006       0.006       0.006    0.00       0
-> > >>                migration/3[33]       2          1        0.006      0.006       0.006       0.006    0.00       0
-> > >> -               :216753[216753]      -1          1        0.041      0.041       0.041       0.041    0.00       0
-> > >> +                 sleep[216753]      -1          1        0.041      0.041       0.041       0.041    0.00       0
-> > >>                migration/8[58]       2          1        0.005      0.005       0.005       0.005    0.00       0
-> > >>            NetworkManager[811]       1          2        0.089      0.028       0.044       0.060   36.06       0
-> > >>               migration/13[83]       2          1        0.005      0.005       0.005       0.005    0.00       0
-> > >> 
-> > >> Here 216753 is pid for sleep which is a zombie process. This is
-> > >> happening in latest kernel due to an update in "-S" result.
-> > >> In -S, the process name appears in the results "sleep[216753]",
-> > >> where as in the -s, only pid is present in the summary result
-> > >> ":216753[216753]".
-> > >> 
-> > >> After commit 39f473f6d0b2 ("perf sched timehist: decode process names
-> > >> of processes in zombie state")
-> > >> for -S option, if process name is using pid, it uses different way to
-> > >> set it. So that we get the process name and not just Pid.
-> > >> 
-> > >> This change went in only for timehist_print_sample() function.
-> > >> Add this improvement in generic place so that even -s option (which
-> > >> captures summary) also will have meaningful information.
-> > >> 
-> > >> Signed-off-by: Athira Rajeev <atrajeev@linux.ibm.com>
-> > > 
-> > > Acked-by: Namhyung Kim <namhyung@kernel.org>
-> > > 
-> > > Thanks,
-> > > Namhyung
-> > Hi,
-> > 
-> > Can we please have this pulled in, if the patch looks fine ?
+On Wed, Jun 03, 2026 at 07:45:39PM +0530, Amit Machhiwal wrote:
+> On IBM POWER systems, newer processor generations can operate in
+> compatibility modes corresponding to earlier generations. This becomes
+> relevant for nested virtualization, where nested KVM guests may need to
+> run with a specific processor compatibility level.
 > 
-> Can you please check applying it on top of current perf-tools-next?
+> Currently, when running a nested KVM guest (L2) inside a Power11 pSeries
+> logical partition (L1) booted in Power10 compatibility mode, the guest
+> fails to boot while setting 'arch_compat'. This happens because the CPU
+> class is derived from the hardware PVR (via mfspr()), which reflects the
+> physical processor generation (Power11), rather than the effective
+> compatibility mode (Power10).
+> 
+> As a result, userspace may request a Power11 arch_compat for the L2
+> guest. However, the L1 partition, running in Power10 compatibility, has
+> only negotiated support up to Power10 with the Power Hypervisor (L0).
+> When H_GUEST_SET_STATE is invoked with a Power11 Logical PVR, the
+> hypervisor rejects the request, leading to a late guest boot failure:
+> 
+>   KVM-NESTEDv2: couldn't set guest wide elements
+>   [..KVM reg dump..]
+> 
+> This situation should be detected earlier. Rejecting unsupported
+> 'arch_compat' values in 'kvmppc_set_arch_compat()' avoids issuing an
+> invalid H_GUEST_SET_STATE hcall and provides a clearer failure mode.
+> 
+> Add a check to reject Power11 'arch_compat' requests when the host is
+> running in Power10 compatibility mode, returning -EINVAL early instead
+> of deferring the failure to the hypervisor.
+> 
+> Suggested-by: Vaibhav Jain <vaibhav@linux.ibm.com>
+> Tested-by: Anushree Mathur <anushree.mathur@linux.ibm.com>
+> Cc: <stable@vger.kernel.org> # v6.13+
+> Signed-off-by: Amit Machhiwal <amachhiw@linux.ibm.com>
+> ---
+> Changelog:
+> 
+> * Moved this patch out of the v3 series [1] as discussed here [2]
+> * Addressed below review comments from Ritesh:
+>   - Based the PVR validation on cpu features
+>   - Fixed hcall name typo
+>   - Stable backport
+> 
+> [1] https://lore.kernel.org/all/20260522152744.55251-1-amachhiw@linux.ibm.com/
+> [2] https://lore.kernel.org/all/20260522152744.55251-2-amachhiw@linux.ibm.com/
+> ---
+>  arch/powerpc/kvm/book3s_hv.c | 10 ++++++++++
+>  1 file changed, 10 insertions(+)
+> 
+> diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
+> index 61dbeea317f3..e16dbb199366 100644
+> --- a/arch/powerpc/kvm/book3s_hv.c
+> +++ b/arch/powerpc/kvm/book3s_hv.c
+> @@ -446,7 +446,17 @@ static int kvmppc_set_arch_compat(struct kvm_vcpu *vcpu, u32 arch_compat)
+>  			guest_pcr_bit = PCR_ARCH_300;
+>  			break;
+>  		case PVR_ARCH_31:
+> +			guest_pcr_bit = PCR_ARCH_31;
+> +			break;
+>  		case PVR_ARCH_31_P11:
+> +			/*
+> +			 * Need to check this for ISA 3.1, as Power10 and
+> +			 * Power11 share the same PCR. For any subsequent ISA
+> +			 * versions, this will be taken care of by the guest vs
+> +			 * host PCR comparison below.
+> +			 */
+> +			if (!cpu_has_feature(CPU_FTR_P11_PVR))
+> +				return -EINVAL;
+>  			guest_pcr_bit = PCR_ARCH_31;
+>  			break;
+>  		default:
+> 
+> base-commit: ba3e43a9e601636f5edb54e259a74f96ca3b8fd8
+> -- 
+> 2.50.1 (Apple Git-155)
+> 
 
-So, this seems to be also addressed by:
+I booted a KVM guest on LPAR with this patch in the following scenarios:
+1. P10 guest on P10 host: No error observed
+2. P11 guest on P11 host: No error observed
+3. P11 guest on P11 host booted in P10 compat mode: No error observed
 
-commit 39f473f6d0b24cf375893f2110b1cc9d8a079a42
-Author: Anubhav Shelat <ashelat@redhat.com>
-Date:   Wed Jul 16 16:39:15 2025 -0400
-
-    perf sched timehist: decode process names of processes in zombie state
-
-    Previously when running perf trace timehist --state, when recording
-    processes in the zombie state the process name would not be decoded
-    properly and appears with just the PID:
-
-    1140057.412177 [0006]  Mutter Input Th[3139/3104]          0.956      0.019      0.041      S
-    1140057.412222 [0012]  :1248612[1248612]                   0.000      0.000      0.332      Z
-    1140057.412275 [0004]  <idle>                              0.052      0.052      0.953      I
-    1140057.412284 [0008]  <idle>                              0.070      0.070      0.932      I
-    1140057.412333 [0004]  KMS thread[3126/3104]               0.953      0.112      0.058      S
-
-    Now some extra processing has been added to decode the process name:
-
-    1140057.412177 [0006]  Mutter Input Th[3139/3104]          0.956      0.019      0.041      S
-    1140057.412222 [0012]  sleep[1248612]                      0.000      0.000      0.332      Z
-    1140057.412275 [0004]  <idle>                              0.052      0.052      0.953      I
-    1140057.412284 [0008]  <idle>                              0.070      0.070      0.932      I
-    1140057.412333 [0004]  KMS thread[3126/3104]               0.953      0.112      0.058      S
-
-    Signed-off-by: Anubhav Shelat <ashelat@redhat.com>
-    Link: https://lore.kernel.org/r/20250716203914.45772-2-ashelat@redhat.com
-    Signed-off-by: Namhyung Kim <namhyung@kernel.org>
-
-
-No? It is not applying to perf-tools-next, a quick look found the patch
-above.
-
-- Arnaldo
+Tested-by: Gautam Menghani <gautam@linux.ibm.com>
 
