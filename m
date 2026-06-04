@@ -1,64 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-22023-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22024-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id F21FFCD6E57
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Jun 2026 09:53:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EAFF0CD6E57
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Jun 2026 10:07:57 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gWKdw3l0jz2y1Y;
-	Thu, 04 Jun 2026 19:53:56 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780566836;
-	cv=none; b=ZMP9H58wWjsUHfSR5FYjs6o6Oghw+1fgfH9eZrNI7bkf5vKbHz9o92wXxG+kHoiGxAwds/vk8EXMxj1R4CLzS/59lxuuqJ2AWyYkPzSXqP0htYYMmeY9jrN5Sj+G38bDUbBKIuz2sqewjYTnWTR9u6SNGUlf5kLfospXVWws8pOvmX6VptMmKXm4sq2rAVCee5cLVAJqNzrRt4rhzU2bB70sxGvwhZenpOPDrAukGVgUJTMvH3rus9GU6Z52rDt9jHjUAjr5/z92U9uVwcI84XVtAu/k4jzkThb+OBBeWBNuxKNeEmzIaqsc2nYJ1745fkkiSJRQ8LuWJVhYLijxjg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gWKy44CMhz2yRn;
+	Thu, 04 Jun 2026 20:07:56 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780567676;
+	cv=none; b=hGxAEp3A/cqzMqkE2e+maUqo792AoTJmvdQ5hfz099ID6XozG7S/U+/wHk1BHFtQ/Og58QttH5BLiSGuCTlM3jT3NigpnibUFMxwOMc3vD8aHHJ8yNQXXFMM1SsmLSrvTpkrxGdCeEhu7ILASWRFnEWyXtV/s47IA5PSehAE0weHItRTqaZvFE4VRIyDou5iw1fDXBHOlYlKfxaNYEy6S910NChKB7NhdktMiwhAef15gMj3E4QPbi0QCy2FMhkkMneQkNCl9x/04hnc3A9R53ueZ9YBh9en2QgDszMjydYFFlc2VwXz1+14DX2aOwnmLFdV9mzK/QDSgtMCeffRWw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1780566836; c=relaxed/relaxed;
-	bh=2uCjD0xm1ymgL+GWw5DNnhm3VBIHO+FoDldCalZypWs=;
-	h=From:In-Reply-To:MIME-Version:References:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=NksV8uaDHQDHhQW6b031vTYrrd3P8hLxBb3hw2ClBMZsLZQlYILWBS5kJxXyvvvwpkN2EC9Md7yoAFmUJfQ5Jz5PNC6uUNk2KtISyrYF/XJ5NJ+OqkT2y1jhN7LWlTZeRsMeI8sDg+9PAraIhdgbsfyV4qxBtwRXg284H5S9hLcXQzjqny4uW4RNvtO3I14Z1FBHFvmZngy0W2mNiGmnz8Tf61YlTPA4+cAoBWa85g3Qhzff2jBreHE0EuPCV8Ovs1iHFweABhEcxzGxa8CK/DIadkp47huZYHelWFiPEFze71WarNmk9gxg0TQZ+rOL3gGR5R7EbW7zuKSG75T6JA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=mArXRRw4; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=brgl@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1780567676; c=relaxed/relaxed;
+	bh=fY8792ZE1BP7gPWmzXejL4aYfAPt6W6e5+24pISv2II=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=TRcZ8ga492evib1pU9LRpNdUa7iaxg8RbxcPekyb3ZGA9XfzggIpxfWeH80hgDeDSJ1/NDXYAyajFjXFekrT5/TTOB2x6aW6PNU/Y2Nv5o8/vXeN3Qh9l9qW32LgJUixXZHlayRZKXy0GSwDR5aSN/EXdG7xqcALhIRpIXAeZ22XUeY7Gh7REGts70lxSKiuRj3Ibe/DmMCKOC8/x0Oj8x6qGh7oZBtjaYrZtK6bCCZckN/UIC7d7RtvTQKZD24j1PNmdNRlaYOLZOnRhNbTjMsWbGLj4NoFmHxW/9Ti7DKPcTc7GHwKuRVRtm6jpkwSR6YQmp+h43doFNaZ2uYUSw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=hy56kqBc; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=mArXRRw4;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=hy56kqBc;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=brgl@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gWKdv0TNzz2xHF
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 04 Jun 2026 19:53:54 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gWKy35FrPz2yQL
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 04 Jun 2026 20:07:55 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id E68DC60210
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Jun 2026 09:53:51 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A06EA1F00893
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Jun 2026 09:53:51 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 2193660220;
+	Thu,  4 Jun 2026 10:07:53 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C41FB1F00898;
+	Thu,  4 Jun 2026 10:07:50 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1780566831;
-	bh=2uCjD0xm1ymgL+GWw5DNnhm3VBIHO+FoDldCalZypWs=;
-	h=From:In-Reply-To:References:Date:Subject:To:Cc;
-	b=mArXRRw4CTaqdAd/r8413dV8lfbzLiplqXqlK7Y3SkrSEP7EUjbLGEJqCo1E8zuqp
-	 C4zlR8SpWv/YQPx+8/O0B7EdyBUwRsOBlw5zf4+RSLvVYFIsDnCJDtQSLF4A3DIEwt
-	 hdpuymdIw2bJNgLM9sT6ueDqYDmgBTbEz6Ieuj9KIs+JPr4vaHwoicyhDGAtJ0tXRO
-	 lTKYyOIn8fkBy3XaT/pUMuHlZFvna9dIRN5J+jnOcyyNDoz6bsGibJDefwJJDzggx/
-	 P65YpLnjH/UVUqnmoyZT1DltyzHrgF66nOru8xrzip+HX11Nm0Ix/PfAQii8/HWLg7
-	 O1S85yKVnXuQQ==
-Received: by mail-lj1-f182.google.com with SMTP id 38308e7fff4ca-395f24a5f2cso4232701fa.2
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 04 Jun 2026 02:53:51 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AFNElJ/mv0ooXu/kNAe8vdpguWSSQ/5Q3ejTjxAQ3IrHpoVvTCQfEOriiZFqDTDocpUHmlo+FbtCuQePECg7fSI=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YxxF7/X4hoUSoGI/ZPBvEBN2nJyo/cUTSmCJ7wo4VZZkjD+++sW
-	xDBas/wXhfldH3asWO+EmdLSZDs3f1G0nNRwwoT1EDo1sCl7VqpJbP7mwC84Lx7KEZD2qbVOvVM
-	DhJnm6XBp3f05TVWXx+005ZrniPlzqs7qm5HKxlXIaw==
-X-Received: by 2002:a2e:bc83:0:b0:396:6b67:b53e with SMTP id
- 38308e7fff4ca-396af195d1dmr24345291fa.17.1780566830309; Thu, 04 Jun 2026
- 02:53:50 -0700 (PDT)
-Received: from 969154062570 named unknown by gmailapi.google.com with
- HTTPREST; Thu, 4 Jun 2026 02:53:47 -0700
-Received: from 969154062570 named unknown by gmailapi.google.com with
- HTTPREST; Thu, 4 Jun 2026 02:53:47 -0700
-From: Bartosz Golaszewski <brgl@kernel.org>
-In-Reply-To: <8a5a1bce-b841-4eff-ab3c-4f09a7ba3b60@kernel.org>
+	s=k20260515; t=1780567672;
+	bh=fY8792ZE1BP7gPWmzXejL4aYfAPt6W6e5+24pISv2II=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To;
+	b=hy56kqBck/YQl3WKGdZ2T8ttwcobp3++Pdf19f16BWU8t4NEGP1NsR2agZH1/t3D5
+	 vc5WsTHmAHhBKkvWc/URg61QvH5+2Vp7qDgEpFVdkRec+iXiO4bdgE9fiuHZ65r8A5
+	 DOo3iJ0QfVtsSI4w3WHL1KirvV2BFVKEbxBnqlmyJIYGadhcRO44QHK03Dq3QZ6T1U
+	 wv95LiQThk022jkgzJCTCD9zQnbhK05Ai4dCgf9GmNLAF1RiZlCf+VqIVqS6z9AuGN
+	 p/xR4Poy0lH+gxHKgJrNHMdPMSDhiA3Zxm6wYdp8rf2iUrvRkH37CCE2asyVf+an73
+	 XsElxA4rqCosw==
+Message-ID: <6f8df5e0-f630-40da-b94e-77202028d687@kernel.org>
+Date: Thu, 4 Jun 2026 12:07:48 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -72,54 +59,57 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH RFT] powerpc/8xx: implement get_direction() in cpm1
+To: Bartosz Golaszewski <brgl@kernel.org>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>,
+ Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
+ Linus Walleij <linusw@kernel.org>,
+ Dmitry Torokhov <dmitry.torokhov@gmail.com>
 References: <20260603-powerpc-8xx-cpm1-get-dir-v1-1-2ae1c9a5b992@oss.qualcomm.com>
  <8a5a1bce-b841-4eff-ab3c-4f09a7ba3b60@kernel.org>
-Date: Thu, 4 Jun 2026 02:53:47 -0700
-X-Gmail-Original-Message-ID: <CAMRc=Mf-AeKDn6hi_jM99BLPaDXd04pgkUyuncuUBb2Kn-1mMw@mail.gmail.com>
-X-Gm-Features: AVHnY4KRs4rFY4_SpE3tqyam64hs_cj386wQGFeugWEgFiFcCFth-bDqR8z9Oo4
-Message-ID: <CAMRc=Mf-AeKDn6hi_jM99BLPaDXd04pgkUyuncuUBb2Kn-1mMw@mail.gmail.com>
-Subject: Re: [PATCH RFT] powerpc/8xx: implement get_direction() in cpm1
-To: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-Cc: brgl@kernel.org, linuxppc-dev@lists.ozlabs.org, 
-	linux-kernel@vger.kernel.org, 
-	Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>, 
-	Madhavan Srinivasan <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, 
-	Nicholas Piggin <npiggin@gmail.com>, Linus Walleij <linusw@kernel.org>, 
-	Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+ <CAMRc=Mf-AeKDn6hi_jM99BLPaDXd04pgkUyuncuUBb2Kn-1mMw@mail.gmail.com>
+Content-Language: fr-FR
+From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+In-Reply-To: <CAMRc=Mf-AeKDn6hi_jM99BLPaDXd04pgkUyuncuUBb2Kn-1mMw@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 
-On Thu, 4 Jun 2026 10:24:27 +0200, "Christophe Leroy (CS GROUP)"
-<chleroy@kernel.org> said:
->
->
-> Le 03/06/2026 =C3=A0 10:26, Bartosz Golaszewski a =C3=A9crit=C2=A0:
->> The lack of get_direction() callbacks in this driver causes GPIOLIB to
->> emit a warning. Implement them for 16- and 32-bit variants.
+
+
+Le 04/06/2026 à 11:53, Bartosz Golaszewski a écrit :
+> On Thu, 4 Jun 2026 10:24:27 +0200, "Christophe Leroy (CS GROUP)"
+> <chleroy@kernel.org> said:
 >>
->> Reported-by: Christophe Leroy <chleroy@kernel.org>
->> Closes: https://eur01.safelinks.protection.outlook.com/?url=3Dhttps%3A%2=
-F%2Flore.kernel.org%2Fall%2F63487206f6e5a93eaf9f41784317fe99d394312f.178039=
-9750.git.chleroy%40kernel.org%2F&data=3D05%7C02%7Cchristophe.leroy%40csgrou=
-p.eu%7C67d2207e02454f2ecf0008dec149d67c%7C8b87af7d86474dc78df45f69a2011bb5%=
-7C0%7C0%7C639160720043016747%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydW=
-UsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%=
-7C%7C%7C&sdata=3Dk6%2FENNl94WS7QvRdhhmx8VvDyZKMNW8sAlKEq3AtQe4%3D&reserved=
-=3D0
+>>
+>> Le 03/06/2026 à 10:26, Bartosz Golaszewski a écrit :
+>>> The lack of get_direction() callbacks in this driver causes GPIOLIB to
+>>> emit a warning. Implement them for 16- and 32-bit variants.
+>>>
+>>> Reported-by: Christophe Leroy <chleroy@kernel.org>
+>>> Closes: https://eur01.safelinks.protection.outlook.com/?url=https%3A%2F%2Flore.kernel.org%2Fall%2F63487206f6e5a93eaf9f41784317fe99d394312f.1780399750.git.chleroy%40kernel.org%2F&data=05%7C02%7Cchristophe.leroy%40csgroup.eu%7C94897fc3d78242b6193308dec21f300e%7C8b87af7d86474dc78df45f69a2011bb5%7C0%7C0%7C639161636389791222%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=an4ji%2Bk24tiNfOASUmnvOyp6kLJzRlH8qhihSkGp%2BVc%3D&reserved=0
+> 
+> What happened here??
 
-What happened here??
+Ask Bill Gates.
 
->> Fixes: ec2cceadfae7 ("gpiolib: normalize the return value of gc->get() o=
-n behalf of buggy drivers")
->
-> Isn't it e623c4303ed1 ("gpiolib: sanitize the return value of
-> gpio_chip::get_direction()") ?
->
+My company uses Microsoft 365 outlook, it mangles all links included in 
+emails for security reasons they say, to minimise phishing.
 
-Sure, can be:
+> 
+>>> Fixes: ec2cceadfae7 ("gpiolib: normalize the return value of gc->get() on behalf of buggy drivers")
+>>
+>> Isn't it e623c4303ed1 ("gpiolib: sanitize the return value of
+>> gpio_chip::get_direction()") ?
+>>
+> 
+> Sure, can be:
+> 
+> Fixes: e623c4303ed1 ("gpiolib: sanitize the return value of
+> gpio_chip::get_direction()")
+> 
+> Bart
 
-Fixes: e623c4303ed1 ("gpiolib: sanitize the return value of
-gpio_chip::get_direction()")
-
-Bart
 
