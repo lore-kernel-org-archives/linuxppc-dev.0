@@ -1,93 +1,64 @@
-Return-Path: <linuxppc-dev+bounces-22022-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22023-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DF141CD6E57
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Jun 2026 09:37:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F21FFCD6E57
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Jun 2026 09:53:57 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gWKGr1ShJz2y1Y;
-	Thu, 04 Jun 2026 19:37:24 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::42c" arc.chain=google.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780565844;
-	cv=pass; b=cLPBLJjK/IdhIIzQZnH90aBHEyG7w13qb/xdJzW8kB/LY9S8rUj2IPpt8ZOLazHf7fhM9dwxBPA3NyudwrpJEOw6OIe6lGfeJMZ99nV1ePRKnu6jSY+TqQtE3btGG8/Ep9TRPyj2HZmM3vwXgHf1PAiAp75zu9sVYbwfB22LhFQ2RbJjXGkwKfHx5KhL7k0h3kFLoaSUNyUHnQ2g7b6U7VucXIQYMu/xJShnOoViQBFnsA7260kbM81x9SG8u0LcmISBoxj/tVmO608nmbJQOlwEUP6p5zRDLnbBDOmrSnyI2km0o01E2yV0MEMQRhjA5qOZ8Xca2Y5hehCyHRCadQ==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1780565844; c=relaxed/relaxed;
-	bh=WAE5dsUcOf+50j6c1n0GmreYE4E4GrWSX2T6ZZrsAus=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=AZLVBBRXTZI/yIy6SrFGjzjmuRjmzs/esMq77Z0/aUI30THPC9/ZNyYLuBv1l63h1B+G2NkNwxHscamkD7mpvFZvOXX+mdrQ+1QuL0NhRs6I+CGdJJeJfRjkmWP3KcX8qBIlZAXbc3FMNq0PKgcmOfOsm4c1y62j1htVotk6hjKuRosgmyQQOCub430/mHO3uwNVrE1SjItvJ0EbSLFv9AiTrWWk1bxkDWSAgS5vX7lcxCl8eGZK5BFHftQ8FQm+e+Wwr7Z3/BSPkZ8keBlQAfeydWrojwW6eVO2c8uI/MkYGugIyEM47UadrpDMxtRPf+vi0/VW1GRJxPKISeafag==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=aslWqwwg; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::42c; helo=mail-pf1-x42c.google.com; envelope-from=shengjiu.wang@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gWKdw3l0jz2y1Y;
+	Thu, 04 Jun 2026 19:53:56 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780566836;
+	cv=none; b=ZMP9H58wWjsUHfSR5FYjs6o6Oghw+1fgfH9eZrNI7bkf5vKbHz9o92wXxG+kHoiGxAwds/vk8EXMxj1R4CLzS/59lxuuqJ2AWyYkPzSXqP0htYYMmeY9jrN5Sj+G38bDUbBKIuz2sqewjYTnWTR9u6SNGUlf5kLfospXVWws8pOvmX6VptMmKXm4sq2rAVCee5cLVAJqNzrRt4rhzU2bB70sxGvwhZenpOPDrAukGVgUJTMvH3rus9GU6Z52rDt9jHjUAjr5/z92U9uVwcI84XVtAu/k4jzkThb+OBBeWBNuxKNeEmzIaqsc2nYJ1745fkkiSJRQ8LuWJVhYLijxjg==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1780566836; c=relaxed/relaxed;
+	bh=2uCjD0xm1ymgL+GWw5DNnhm3VBIHO+FoDldCalZypWs=;
+	h=From:In-Reply-To:MIME-Version:References:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=NksV8uaDHQDHhQW6b031vTYrrd3P8hLxBb3hw2ClBMZsLZQlYILWBS5kJxXyvvvwpkN2EC9Md7yoAFmUJfQ5Jz5PNC6uUNk2KtISyrYF/XJ5NJ+OqkT2y1jhN7LWlTZeRsMeI8sDg+9PAraIhdgbsfyV4qxBtwRXg284H5S9hLcXQzjqny4uW4RNvtO3I14Z1FBHFvmZngy0W2mNiGmnz8Tf61YlTPA4+cAoBWa85g3Qhzff2jBreHE0EuPCV8Ovs1iHFweABhEcxzGxa8CK/DIadkp47huZYHelWFiPEFze71WarNmk9gxg0TQZ+rOL3gGR5R7EbW7zuKSG75T6JA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=mArXRRw4; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=brgl@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=aslWqwwg;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=mArXRRw4;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::42c; helo=mail-pf1-x42c.google.com; envelope-from=shengjiu.wang@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pf1-x42c.google.com (mail-pf1-x42c.google.com [IPv6:2607:f8b0:4864:20::42c])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=brgl@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gWKGq1z2Zz2xHF
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 04 Jun 2026 19:37:22 +1000 (AEST)
-Received: by mail-pf1-x42c.google.com with SMTP id d2e1a72fcca58-8423efd76c8so348003b3a.0
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 04 Jun 2026 02:37:22 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1780565839; cv=none;
-        d=google.com; s=arc-20240605;
-        b=SjdWYltoqZ5GkD8GrNUJLgX7OhDxS9lVX28Uz3m98IJP/JxqCpmSbymzlNZ/mDLH5u
-         pyUa0Qll6aYX2hTXvWtjoLSxJV0PWc8lqrAMr6wPBHc92JG7Sa04hP0HUM8K0qMiSYfJ
-         lL8G+Me6LNyWInXWGxdv2gTVJcHufl3NOJkiS7Uvd66+khfnWRaSunvaT12z2Ma+0U3Y
-         8AaAKsA7kysJj7mEuURbidAavm9TaX6bp4dNGuHr/xEfl7iEAwnadkfef5vyWp3MHM/y
-         I5/BjOTFT6SxD5aSQPgqaOe1h8PMecoGZoL7u9fvUaqZNRuZlYYFegkhAYE3l/R+uqAQ
-         ECRw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=WAE5dsUcOf+50j6c1n0GmreYE4E4GrWSX2T6ZZrsAus=;
-        fh=hRmWoR7kI/EAnl+3auN0U0KFI7Hhe7h4P5pGRsNsjos=;
-        b=ScE2BgbdVlZ3iUTpdtE+BljGwnBUe4Z1nlTIpPAoCmcUZJVDBj01qY7FIwBILw3ArP
-         dqQxoRA/zzmbCjdhfg/EwjaY/BfOwpx1oMEvcjhUhe9cTWd044GbUf+VVaHod7H7DmvB
-         eoYtex3oz3OzFSlqOzlGSoQ+f5e5oly5NIja8nQ0KdyARnt6v48orJSWNfxkhFisNq8n
-         S88xyAJD7XOnsIRRiBWgpaOlXMb99yAfEykLk/7mAy9arns87c7l7+lL3Lc891p+XOTB
-         tINr6Inq05Lw4nHNqs/i1da+6vKOme0i3zhrDJMX7Uxtiydsfsv4rvxo9DVOWN6eX9jx
-         vDfQ==;
-        darn=lists.ozlabs.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1780565839; x=1781170639; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=WAE5dsUcOf+50j6c1n0GmreYE4E4GrWSX2T6ZZrsAus=;
-        b=aslWqwwgYZgmS+22zaxcpwk1SUiPbZNv9oh6EpFXLtkvutKBaU3khC8b3v3suk8IN4
-         dnZkZQzdee3D+Qfp+iEco/V36ScQYykwmOyRY/NpkK1e2zaYqfr9XtF+sWWkH6Qcuzef
-         WJ3+wEJ2uR+P6aoYoBCmo3QaYqgGrgvp0+ugTWVnMzeafxKCdYBlRjejTN9qYO9HZF3V
-         VyZ7CxDiFAs2DpaYMbGcJbSCt5Vy9vCgOSZhOHeRJ5zAiVd05NcdpruJ6dN//Yg+lvpS
-         q8qhZSejKjnf+HGEex4y0WiYvSL17xtq4Oxnme/jeOM3bBsesEHFWc7hA/f1yqJjUWa0
-         fYIw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1780565839; x=1781170639;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=WAE5dsUcOf+50j6c1n0GmreYE4E4GrWSX2T6ZZrsAus=;
-        b=mUp6tn1fMibJPzEE8KfrTiB5sj4izv+2op0K1rXBXy7s3+hA/33zVDV8Qhx5cZAXHH
-         7+PxOE4QCJ3j1RjfRDtWU6GyyIqDSUJkXpDwoq7TKKRlnF0nuoxD/f2Q2rlw6r11Fi45
-         rfnklp24vp3GbuVo98Pnrhxwgkd/Jtr7z7ORI8fEYtWUYBPXuUiTnjfptatvFVJm+uiu
-         j0CXOTSZOwrFNm2zZNVg7LZ4DlhESjKEthP6FOY9MQLfcdUNSptXV4M4MmC2G0GMOLUx
-         KDUDWC5dL6RONkVn1ZTqhsJhzvmuqg9H17EctX/L5iI0eCUbWoaCvZsZkVcoE6/3agjm
-         3Uxw==
-X-Forwarded-Encrypted: i=1; AFNElJ8VRPQz1QcHkgXMT7M+zMl4eAWzq1guXekhaR1Kdvq7d0nJKPTWxUxVTYh/c5pDPpy6VbDjAAsXjqHg0ak=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YxPYmThxFyy9BUWNDneBdIIDx7ovz9SY54b/xC0S7BYC8UOQaej
-	jAFsyNXLxwfI5bV4+imjojd5YZwrKvgAUXQB8DeixIla5H5wpLsduQYoh6IrXxln8Wv137eplG6
-	uyKFVXf6q28iTSXAh3jPHg0Z9iqXBSWM=
-X-Gm-Gg: Acq92OGvVWTVkGAqx2dpu1ifEnJ9p7bRXa/AO7RjAGGCtVXz1Igx/SIeGxolvkO5jEM
-	hKI3EqiauHruo/I6mJZLwA3lyxTCQrSrHkduo05BZCEHaaliJjIIVPflDmBmJ4hXikTZtIu/d77
-	K5ie7XdlrDsUEk5Tip0wCIk8Xiap0lQcau8YKo/+c15D5cYij/VWDLNvMD7DJRfyqtmjZO1t8D7
-	ARxbtP66z0wK5WuPe/iJz4UxoRJKEVsLI4vB6Ta1iDExgAgKqEYjNpZ/pDOEVtQSkXmZ6kVSKLz
-	i3zTvsyuc5efFxT7Ww==
-X-Received: by 2002:a05:6a00:4191:b0:842:65f8:bb3a with SMTP id
- d2e1a72fcca58-84284dc1e20mr7432079b3a.19.1780565839303; Thu, 04 Jun 2026
- 02:37:19 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gWKdv0TNzz2xHF
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 04 Jun 2026 19:53:54 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id E68DC60210
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Jun 2026 09:53:51 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id A06EA1F00893
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Jun 2026 09:53:51 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1780566831;
+	bh=2uCjD0xm1ymgL+GWw5DNnhm3VBIHO+FoDldCalZypWs=;
+	h=From:In-Reply-To:References:Date:Subject:To:Cc;
+	b=mArXRRw4CTaqdAd/r8413dV8lfbzLiplqXqlK7Y3SkrSEP7EUjbLGEJqCo1E8zuqp
+	 C4zlR8SpWv/YQPx+8/O0B7EdyBUwRsOBlw5zf4+RSLvVYFIsDnCJDtQSLF4A3DIEwt
+	 hdpuymdIw2bJNgLM9sT6ueDqYDmgBTbEz6Ieuj9KIs+JPr4vaHwoicyhDGAtJ0tXRO
+	 lTKYyOIn8fkBy3XaT/pUMuHlZFvna9dIRN5J+jnOcyyNDoz6bsGibJDefwJJDzggx/
+	 P65YpLnjH/UVUqnmoyZT1DltyzHrgF66nOru8xrzip+HX11Nm0Ix/PfAQii8/HWLg7
+	 O1S85yKVnXuQQ==
+Received: by mail-lj1-f182.google.com with SMTP id 38308e7fff4ca-395f24a5f2cso4232701fa.2
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 04 Jun 2026 02:53:51 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AFNElJ/mv0ooXu/kNAe8vdpguWSSQ/5Q3ejTjxAQ3IrHpoVvTCQfEOriiZFqDTDocpUHmlo+FbtCuQePECg7fSI=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YxxF7/X4hoUSoGI/ZPBvEBN2nJyo/cUTSmCJ7wo4VZZkjD+++sW
+	xDBas/wXhfldH3asWO+EmdLSZDs3f1G0nNRwwoT1EDo1sCl7VqpJbP7mwC84Lx7KEZD2qbVOvVM
+	DhJnm6XBp3f05TVWXx+005ZrniPlzqs7qm5HKxlXIaw==
+X-Received: by 2002:a2e:bc83:0:b0:396:6b67:b53e with SMTP id
+ 38308e7fff4ca-396af195d1dmr24345291fa.17.1780566830309; Thu, 04 Jun 2026
+ 02:53:50 -0700 (PDT)
+Received: from 969154062570 named unknown by gmailapi.google.com with
+ HTTPREST; Thu, 4 Jun 2026 02:53:47 -0700
+Received: from 969154062570 named unknown by gmailapi.google.com with
+ HTTPREST; Thu, 4 Jun 2026 02:53:47 -0700
+From: Bartosz Golaszewski <brgl@kernel.org>
+In-Reply-To: <8a5a1bce-b841-4eff-ab3c-4f09a7ba3b60@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -101,73 +72,54 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20260601083327.1535185-1-chancel.liu@oss.nxp.com>
-In-Reply-To: <20260601083327.1535185-1-chancel.liu@oss.nxp.com>
-From: Shengjiu Wang <shengjiu.wang@gmail.com>
-Date: Thu, 4 Jun 2026 17:37:07 +0800
-X-Gm-Features: AVHnY4K0i1x-lAIE5B37fSqEfd9RBkopGxh1S9hjIVvMEyOSCUjsLJScERtWN3E
-Message-ID: <CAA+D8AMEv4++ZC_xgXxiLrWWBmJS2Xo10Bj9pboDQ3mFh9STfw@mail.gmail.com>
-Subject: Re: [PATCH v3] ASoC: fsl_sai: Fix 32 slots TDM broken by integer
- shift UB in xMR write
-To: chancel.liu@oss.nxp.com
-Cc: Xiubo.Lee@gmail.com, festevam@gmail.com, nicoleotsuka@gmail.com, 
-	lgirdwood@gmail.com, broonie@kernel.org, perex@perex.cz, tiwai@suse.com, 
-	linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
-	linux-sound@vger.kernel.org, stable@vger.kernel.org
+References: <20260603-powerpc-8xx-cpm1-get-dir-v1-1-2ae1c9a5b992@oss.qualcomm.com>
+ <8a5a1bce-b841-4eff-ab3c-4f09a7ba3b60@kernel.org>
+Date: Thu, 4 Jun 2026 02:53:47 -0700
+X-Gmail-Original-Message-ID: <CAMRc=Mf-AeKDn6hi_jM99BLPaDXd04pgkUyuncuUBb2Kn-1mMw@mail.gmail.com>
+X-Gm-Features: AVHnY4KRs4rFY4_SpE3tqyam64hs_cj386wQGFeugWEgFiFcCFth-bDqR8z9Oo4
+Message-ID: <CAMRc=Mf-AeKDn6hi_jM99BLPaDXd04pgkUyuncuUBb2Kn-1mMw@mail.gmail.com>
+Subject: Re: [PATCH RFT] powerpc/8xx: implement get_direction() in cpm1
+To: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+Cc: brgl@kernel.org, linuxppc-dev@lists.ozlabs.org, 
+	linux-kernel@vger.kernel.org, 
+	Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>, 
+	Madhavan Srinivasan <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, 
+	Nicholas Piggin <npiggin@gmail.com>, Linus Walleij <linusw@kernel.org>, 
+	Dmitry Torokhov <dmitry.torokhov@gmail.com>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Mon, Jun 1, 2026 at 4:33=E2=80=AFPM <chancel.liu@oss.nxp.com> wrote:
+On Thu, 4 Jun 2026 10:24:27 +0200, "Christophe Leroy (CS GROUP)"
+<chleroy@kernel.org> said:
 >
-> From: Chancel Liu <chancel.liu@nxp.com>
 >
-> When configuring 32 slots TDM (channels =3D=3D slots =3D=3D 32), the xMR
-> (Mask Register) write used:
-> ~0UL - ((1 << min(channels, slots)) - 1)
->
-> The literal "1" is a signed 32-bit int. Shifting it by 32 positions is
-> undefined behaviour which may set this register to 0xFFFFFFFF, masking
-> all 32 slots.
->
-> Use GENMASK_U32() macro instead. For 32 slots this produces a zero mask:
-> ~GENMASK_U32(31, 0) =3D ~0xFFFFFFFF =3D 0x00000000
-> Behaviour for fewer than 32 slots is unchanged.
->
-> Fixes: 770f58d7d2c5 ("ASoC: fsl_sai: Support multiple data channel enable=
- bits")
-> Cc: stable@vger.kernel.org
-> Signed-off-by: Chancel Liu <chancel.liu@nxp.com>
+> Le 03/06/2026 =C3=A0 10:26, Bartosz Golaszewski a =C3=A9crit=C2=A0:
+>> The lack of get_direction() callbacks in this driver causes GPIOLIB to
+>> emit a warning. Implement them for 16- and 32-bit variants.
+>>
+>> Reported-by: Christophe Leroy <chleroy@kernel.org>
+>> Closes: https://eur01.safelinks.protection.outlook.com/?url=3Dhttps%3A%2=
+F%2Flore.kernel.org%2Fall%2F63487206f6e5a93eaf9f41784317fe99d394312f.178039=
+9750.git.chleroy%40kernel.org%2F&data=3D05%7C02%7Cchristophe.leroy%40csgrou=
+p.eu%7C67d2207e02454f2ecf0008dec149d67c%7C8b87af7d86474dc78df45f69a2011bb5%=
+7C0%7C0%7C639160720043016747%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydW=
+UsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%=
+7C%7C%7C&sdata=3Dk6%2FENNl94WS7QvRdhhmx8VvDyZKMNW8sAlKEq3AtQe4%3D&reserved=
+=3D0
 
-Reviewed-by: Shengjiu Wang <shengjiu.wang@gmail.com>
+What happened here??
 
-Best regards
-Shengjiu Wang
-> ---
-> Changes in v3
-> - Fix patch can't be applied
+>> Fixes: ec2cceadfae7 ("gpiolib: normalize the return value of gc->get() o=
+n behalf of buggy drivers")
 >
-> Changes in v2
-> - Use GENMASK_U32() macro instead to make it clearer and safer
+> Isn't it e623c4303ed1 ("gpiolib: sanitize the return value of
+> gpio_chip::get_direction()") ?
 >
->  sound/soc/fsl/fsl_sai.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->
-> diff --git a/sound/soc/fsl/fsl_sai.c b/sound/soc/fsl/fsl_sai.c
-> index d6dd95680892..9661602b53c5 100644
-> --- a/sound/soc/fsl/fsl_sai.c
-> +++ b/sound/soc/fsl/fsl_sai.c
-> @@ -797,7 +797,7 @@ static int fsl_sai_hw_params(struct snd_pcm_substream=
- *substream,
->                                    FSL_SAI_CR4_FSD_MSTR, FSL_SAI_CR4_FSD_=
-MSTR);
->
->         regmap_write(sai->regmap, FSL_SAI_xMR(tx),
-> -                    ~0UL - ((1 << min(channels, slots)) - 1));
-> +                    ~GENMASK_U32(min(channels, slots) - 1, 0));
->
->         return 0;
->  }
-> --
-> 2.50.1
->
+
+Sure, can be:
+
+Fixes: e623c4303ed1 ("gpiolib: sanitize the return value of
+gpio_chip::get_direction()")
+
+Bart
 
