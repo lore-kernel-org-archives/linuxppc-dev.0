@@ -1,61 +1,63 @@
-Return-Path: <linuxppc-dev+bounces-22063-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22064-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D473CCD6E75
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Jun 2026 21:17:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 37D03CD6E6E
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Jun 2026 21:29:13 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gWcpq2sqNz2yQG;
-	Fri, 05 Jun 2026 07:17:39 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=199.89.1.16
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780607859;
-	cv=none; b=cKawvGjP47eCZ0NB/ni3P0LLB0RvF4ySgozip3lopSXtux0Pb40hQyKgbiVx+cZz+yzel3aKk/VcydWsHNRZHFHmli68PyipO9q/MKZmmY0qHVqlgVqATJmiREAm4x5XAVDw/sf8JN9DxN18d7DRqvznXUC3CtXYXFQw3gYewW6Z/HMgtlJnVpES+Z6sYP7uwYbrWbYc+sDOv+sCnc4+aEgaOAzr+wSRGE3NyyeoiZfxUOOzShuIoxGK1vwxPKWh31ueIR29tttiJvM1ADDu43xFcExb876aqo6+jAah0FJnpZ9QjEO2nqtsY/K/QlvC/AqTvzKw4A3HOD5ie6mwhQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gWd473zcpz2yQG;
+	Fri, 05 Jun 2026 07:29:11 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780608551;
+	cv=none; b=W+XPgoTVRH6nQnopQgvivt1XazqjHTeMkfuZx7CMt3IFY+7NNbDIgkRFTEK7v1muGVQTibRPcfoJtclz0SYzsfvpcJC1Lrvx8crxm3cicmreJjqGmg2p404gwzch9arHp/9wdeEjUNTraQoGE8WidI1WSOTJqmaVx6f0jFthHKPi3otDQuTcfrCkUaZo+omLqmRUkps0xLV8tZteSfrokQ5o3IK0i3SRzhm6w2tGU2ENqM6o4/wN/M/lkF48zwxJMFMVeF8t1Ci1EXmWwnje+fHJu17emg03gk5hNK2W3JzT2dk3OCcidlfrQ4Sv94ONMKwm/1jrs9Lx1upoffpz9w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1780607859; c=relaxed/relaxed;
-	bh=xb19kbWiqrpSFbyUlwb6WaMy4XfoRK0lb/vr/qLyz9c=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=QPIBLhCNwzWJbntUzyVc+al+67q1b3Xooz0MIEANGhAgndy6VfnifMZF0JAwolJQ0ATdDugIY1nvIu8HUhno//Wo7OY/XiE3hjOpzV/9mJA/Un0v6YhDd6iZGrqV48RiUPkbpG239GUBmU3fONtqXZ+h8q8F1r8P48YjqGKZ0uazzclKwVuxHPIn0mzB4l+aC+8Bs7i1v18arPhUQzMgOP15ho/xYUf+A2ATYYPYK7yGpXp2Zh+mc9wGIVNdY+gITxdT9qUtJB/Uy0utow71tHdYmH9iKXA7fWJzSDDvi8rb/bsoa/fP1lp3itefmgiZvWLhIzGsVC6+EpCoXod6Tw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=acm.org; dkim=pass (2048-bit key; unprotected) header.d=acm.org header.i=@acm.org header.a=rsa-sha256 header.s=mr01 header.b=CptyadUw; dkim-atps=neutral; spf=pass (client-ip=199.89.1.16; helo=013.lax.mailroute.net; envelope-from=bvanassche@acm.org; receiver=lists.ozlabs.org) smtp.mailfrom=acm.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=acm.org
+	t=1780608551; c=relaxed/relaxed;
+	bh=c6ckXz0jHSF7OlhU8goFIPNCoGt+kO4377K8w7qudg0=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=jDjHuIq+1sG0Qqde5ZLbO1xS93z2rpb4v6dl0GlsugT/iMp+BeDZkaOR9df/ZgBwCiknmr4Z6G9Z3gxGcKSikP9jlgIry3A6ukY/vNGT06PYDHXCDC223j2o/ROxxiUr82WqjIy05HoOJ5izP6tKCt1I9K3e3ESEwQnI17QYHjlUd/S8lBSLIh5+Urp9jT9Yz8zLrvTD1bFFjUxW0QyIinj69cSdBw8ezIPJTLfbFrf2dSMnRxh3L7kBDJGPPYTO2sRQ8JLUO5b4Kot6e/i+N3LpM/aBX1tfY16iE1/ajTT8pH6N/M9Mml0Lfb925C49FIazIXWluFmSqCBhVsJu9w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=gK5jpFJe; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=acme@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=acm.org header.i=@acm.org header.a=rsa-sha256 header.s=mr01 header.b=CptyadUw;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=gK5jpFJe;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=acm.org (client-ip=199.89.1.16; helo=013.lax.mailroute.net; envelope-from=bvanassche@acm.org; receiver=lists.ozlabs.org)
-Received: from 013.lax.mailroute.net (013.lax.mailroute.net [199.89.1.16])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=acme@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gWcpn3L4Jz2y8p
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Jun 2026 07:17:36 +1000 (AEST)
-Received: from localhost (localhost [127.0.0.1])
-	by 013.lax.mailroute.net (Postfix) with ESMTP id 4gWcpj1s8Rzlgtd3;
-	Thu,  4 Jun 2026 21:17:33 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=acm.org; h=
-	content-transfer-encoding:content-type:content-type:in-reply-to
-	:from:from:content-language:references:subject:subject
-	:user-agent:mime-version:date:date:message-id:received:received;
-	 s=mr01; t=1780607843; x=1783199844; bh=xb19kbWiqrpSFbyUlwb6WaMy
-	4XfoRK0lb/vr/qLyz9c=; b=CptyadUwIPy8kaG7jLQ+DM8ZF1tvdDQR49aNulrh
-	biH5o5y8+awSGeH7xaIZj701xjLsC1bHmc42FVzVlpTIh2OS3Peu/J3qE2vTgqUj
-	WJfPQ8IiwOfAoJTyGBKQby/pVQ+vc0RAWGKj17HfYY0rgOM0PJ1HGGwVZsdk0pKH
-	meGPJvZL7KzYbTsEN/KB/WvbFufh6zwd9oG3uVsF4x7VmHPXxVgH//3XfzkGvOKc
-	2Sr4BitSc4ofZicGR45Q6f13yrmVZ9DqpsIJg7pLZzntbpDTtkAf5IZYA/2iU6Qa
-	JRodaXwS6v4/BTVYf2M7DcaY3SHOb9/dTVQCz5Rq0puSqg==
-X-Virus-Scanned: by MailRoute
-Received: from 013.lax.mailroute.net ([127.0.0.1])
- by localhost (013.lax [127.0.0.1]) (mroute_mailscanner, port 10029) with LMTP
- id 2cgALRHoL-Mr; Thu,  4 Jun 2026 21:17:23 +0000 (UTC)
-Received: from [100.119.48.131] (unknown [104.135.180.219])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	(Authenticated sender: bvanassche@acm.org)
-	by 013.lax.mailroute.net (Postfix) with ESMTPSA id 4gWcpQ0CxzzlgtdF;
-	Thu,  4 Jun 2026 21:17:17 +0000 (UTC)
-Message-ID: <99f038f8-04a9-40a0-9520-8df3dd1e609b@acm.org>
-Date: Thu, 4 Jun 2026 14:17:16 -0700
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gWd465rDZz2yH5
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Jun 2026 07:29:10 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id E2AE760052;
+	Thu,  4 Jun 2026 21:29:07 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0483A1F00893;
+	Thu,  4 Jun 2026 21:29:06 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1780608547;
+	bh=c6ckXz0jHSF7OlhU8goFIPNCoGt+kO4377K8w7qudg0=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=gK5jpFJer05CeHIirHxe9UPKOJ6T5GPCa3iSNqlkx7TksW9YKGzBHWezDJrSeEETS
+	 qwTI1ZR2jMJPv8Aza2SoSZnxJXb+hrpcnVb3Xxj0yvhFXieHoJNcYQcqIYMshrRTBh
+	 q2MxsFDH/17We1QV0FxywgE+OwFg3VLih228G5tRmJHdXy5fm8cvhbfWD3k13eihQO
+	 mr+AN4G8ef36B/B85WZe/oIIBW19HoVZKK+1z/ZjHFbtTnLOOJR23J9Ec8f56I0fvO
+	 o1P3JhzrMr8AnQPpqcu2ezRSlg4itkyQ5c9ICBq34a8oTHDDNMr23IXjTC14zRYhxu
+	 QU2do/HWbwvUw==
+Date: Thu, 4 Jun 2026 18:29:04 -0300
+From: Arnaldo Carvalho de Melo <acme@kernel.org>
+To: Tanushree Shah <tshah@linux.ibm.com>
+Cc: jolsa@kernel.org, adrian.hunter@intel.com, vmolnaro@redhat.com,
+	mpetlan@redhat.com, tmricht@linux.ibm.com, maddy@linux.ibm.com,
+	irogers@google.com, namhyung@kernel.org,
+	linux-perf-users@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+	atrajeev@linux.ibm.com, hbathini@linux.ibm.com,
+	Tejas.Manhas1@ibm.com, Tanushree.Shah@ibm.com,
+	Shivani.Nittor@ibm.com
+Subject: Re: [PATCH] perf data convert json: Fix trace_seq memory leak in
+ process_sample_event()
+Message-ID: <aiHuIBAIgv3L6TI7@x1>
+References: <20260604065519.112101-1-tshah@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -69,61 +71,49 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 0/6] Remove remaining references to the pktcdvd driver
-To: Catalin Iacob <iacobcatalin@gmail.com>
-Cc: Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
- Madhavan Srinivasan <maddy@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
- "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
- Rich Felker <dalias@libc.org>,
- John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
- "David S. Miller" <davem@davemloft.net>,
- Andreas Larsson <andreas@gaisler.com>,
- "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
- "Martin K. Petersen" <martin.petersen@oracle.com>,
- Jens Axboe <axboe@kernel.dk>, Yoshinori Sato <ysato@users.sourceforge.jp>,
- linux-mips@vger.kernel.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-sh@vger.kernel.org,
- sparclinux@vger.kernel.org, linux-scsi@vger.kernel.org
-References: <20260530-remove-pktcdvd-references-v1-1-aa56941d4315@gmail.com>
- <20260604-remove-pktcdvd-references-v3-0-e2f06fb4eef4@gmail.com>
- <96a48e65-6ee2-4b81-91f8-821a2de707db@acm.org> <aiHbj0zn4y9X6qV2@toolbx>
-Content-Language: en-US
-From: Bart Van Assche <bvanassche@acm.org>
-In-Reply-To: <aiHbj0zn4y9X6qV2@toolbx>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260604065519.112101-1-tshah@linux.ibm.com>
 
-
-On 6/4/26 1:59 PM, Catalin Iacob wrote:
-> For learning purposes, do you mind quickly sharing your rationale for
-> combining 1 and 2? To me they are in the same area but still separate
-> things: one removes dead code, the other increases encapsulation. Each
-> is a small but worthwhile cleanup, they can be applied in any order and
-> each can be applied without the other. It's true that, while patch 2
-> without patch 1 works, it would increase confusion but I find that an
-> argument to order 2 after 1, not to say they are one thing.
+On Thu, Jun 04, 2026 at 12:25:19PM +0530, Tanushree Shah wrote:
+> Unlike the in-kernel trace_seq which uses a statically allocated buffer,
+> the userspace traceevent library's trace_seq uses a dynamically allocated
+> one. Therefore, every trace_seq_init() call must be paired with a
+> trace_seq_destroy(), otherwise it produces a memory leak.
 > 
-> I'd also find it hard to describe what that combined patch does except
-> by calling out two things: "remove dead code and move the declaration".
-> Your suggested "unexport" seems more confusing than clarifying, I'd
-> argue that today the symbol is not exported since that ifdef always
-> compiles the export out.
+> In process_sample_event(), a trace_seq is initialized for each field when
+> formatting tracepoint raw_data, but the matching trace_seq_destroy() is
+> never called, leaking memory for every field of every sample processed.
+> 
+> Add the missing trace_seq_destroy() after using the trace_seq buffer to
+> properly free the allocated memory.
+> 
+> Detected with Valgrind on a perf.data file with 2,729 tracepoint samples:
+>   Before: definitely lost: 55,537,664 bytes in 13,559 blocks
+>   After:  definitely lost: 0 bytes in 0 blocks
 
-"Unexport" is commonly used terminology in the Linux kernel for removing
-EXPORT_SYMBOL*().
+Thanks, applied to perf-tools-next, for v7.2.
 
-I proposed to combine patches 1 and 2 because it is normal that the
-declaration of a function is moved from a public to a private header
-file if it is unexported.
-
-If patches 1 and 2 are combined, the most important change is removal
-of EXPORT_SYMBOL_GPL(). So I think that "Unexport
-scsi_device_from_queue()" would still be an appropriate description for
-such a patch.
-
-Thanks,
-
-Bart.
+- Arnaldo
+ 
+> Fixes: 9d895e468429 ("perf data: Add tracepoint fields when converting to JSON")
+> Signed-off-by: Tanushree Shah <tshah@linux.ibm.com>
+> ---
+>  tools/perf/util/data-convert-json.c | 1 +
+>  1 file changed, 1 insertion(+)
+> 
+> diff --git a/tools/perf/util/data-convert-json.c b/tools/perf/util/data-convert-json.c
+> index d526c91312ed..6dd9349ab10f 100644
+> --- a/tools/perf/util/data-convert-json.c
+> +++ b/tools/perf/util/data-convert-json.c
+> @@ -257,6 +257,7 @@ static int process_sample_event(const struct perf_tool *tool,
+>  				trace_seq_init(&s);
+>  				tep_print_field(&s, sample->raw_data, fields[i]);
+>  				output_json_key_string(out, true, 3, fields[i]->name, s.buffer);
+> +				trace_seq_destroy(&s);
+>  
+>  				i++;
+>  			}
+> -- 
+> 2.47.3
 
