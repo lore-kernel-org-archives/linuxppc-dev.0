@@ -1,119 +1,45 @@
-Return-Path: <linuxppc-dev+bounces-22109-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22110-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9114ECD6E74
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Jun 2026 07:32:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 15887CD6E6B
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Jun 2026 07:33:43 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gWtRy28Ztz2yR5;
-	Fri, 05 Jun 2026 17:32:14 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=192.198.163.16
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780644734;
-	cv=none; b=YUNWK7XdOzAVEORlBhGE1w2uS/34kYtoah1IhUKezsq7in4TuSxtel56Uto73AtZRj+ksr8THeqOEhPN/pS0NAp2CKw+r86iI6lWS7Bl8FoHjSqQDOHTe5C98eqI/Q7AaDjGb+xmPzdqN3jQZX51EXpzr2bSOq4ldx2mRAsQbXHFpzvkxrTc4eyoBcmQw/QBQpZMjG4REXYAmy59PKCUHH4gxtmB4ReiMMWA39x/pk0CDrxnJ2VuYItl/YU+sdgBmjOvEbVBx1wUHAQlR+Rlti5QTHAj5RIiVija5Kixv8+EJpC2AIosbZ9cgoG7oM2FL0alsMgQyOCGhp2gE8wcMg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gWtTd2Xtsz2yR5;
+	Fri, 05 Jun 2026 17:33:41 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=115.124.30.131
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780644821;
+	cv=none; b=kEOQIJ4kvdJ/cg6xYH3eSWpQ2XE5I9g0Dfhkp2lJIWK6KZidtX31E+UxTsTfqK1KopDdY0jPYzpcCXTQp1mn9k6Qx7juy91/7JZLzluxnWy9NKf/m81n43D9xJoRldAbQElPBhEID+TfMyEs+Ny7fdBvV+l5RjcEP8j6n94yMk0++bvLbgJLyKqAUDgUzaJPN5VoQfrCBSfo61kjn3NafN1VOZ8j/yXc8wBh07Qfl7y9iMr9t5CFbjVvTf6zyLWuveKxTFUGxC4QiI6pjEqMRfe+QI1PDtlH9C996XQVo9NNIeNtww1OmBx6kqbCNj2a1+BFEU984y1C5uiYI3sbaQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1780644734; c=relaxed/relaxed;
-	bh=sIiuR/e1ev9wCB772nA3Hxgw0IeY90JsT8siiqW4vek=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=AWIS0+5jYzb2vXbr0Ei+qP+aSc85iyBxIAb2iJ2iMZBbcLKghC1OegNWULxY2MNfUV2Ug6Un+OEr9cQ7qJXK59h3OfbWqZHnYKrue3rWGHuc6exPjT+ZZoitIfaiSjkfTOReLjZ7XAe0hf/xBpmjcmN0+WP7YyXG1PV/8V0RTaibPmGQTRD+dQAWBvBQSBhBJvt20nR3MgRBKUVUXcj1j48GDcgUW2Zl5kyr1Up8VpArvVb2ovtEKCAhPznwhLf2MlCKAGaxcP5lYIAG9DG0z8RssAY3HQhhCX6kLcJGbg7M5dBJlIC6vk3hQaHRZdmtNKz9f5he+qLSnayDgxoqPw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=Sj1vcjY8; dkim-atps=neutral; spf=pass (client-ip=192.198.163.16; helo=mgamail.intel.com; envelope-from=andriy.shevchenko@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+	t=1780644821; c=relaxed/relaxed;
+	bh=gFofL9NNUik43SvjpCa1eU2XJouBI66k3k4iLFF666I=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=EBJi9lBRwCDLdcGJzGW598vchpYQ23EKMkN5rLTfeBplP+wTXUZkIE40zxG0S0UUpACgh1w0lzyDZwgtG35OC7nhSfaTeDxNTXsdVuUjKZXOYaSOi1Sd3Ma9NwaKppucgWVl78ig6yYWYO6s4Xan2gm7/LjCoUkvz4XMrx6eHOoZjd6R35T6MVkskLrnr5uHazpZrWVj0kO6ORYkNeXxCnOohCRXKyO051ONMJbQFuq6hDw2T7H2JiOsdHxgLzznuf9lguJhVgnuXLVWmTkR/MBW2EaN5uXiWHWcfLU9A0k1U2PsFJCBxiFl7ASmeloNhy3evpitmuq3akJTEDlG+g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.alibaba.com; dkim=pass (1024-bit key; unprotected) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.a=rsa-sha256 header.s=default header.b=gBUSiMMk; dkim-atps=neutral; spf=pass (client-ip=115.124.30.131; helo=out30-131.freemail.mail.aliyun.com; envelope-from=tianruidong@linux.alibaba.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.alibaba.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.alibaba.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=Sj1vcjY8;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.a=rsa-sha256 header.s=default header.b=gBUSiMMk;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.intel.com (client-ip=192.198.163.16; helo=mgamail.intel.com; envelope-from=andriy.shevchenko@linux.intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.16])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.alibaba.com (client-ip=115.124.30.131; helo=out30-131.freemail.mail.aliyun.com; envelope-from=tianruidong@linux.alibaba.com; receiver=lists.ozlabs.org)
+Received: from out30-131.freemail.mail.aliyun.com (out30-131.freemail.mail.aliyun.com [115.124.30.131])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gWtRv1dngz2xnK
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Jun 2026 17:32:09 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1780644732; x=1812180732;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=c30wbulhkBn1BOKZ95h66WcDcHsR2Lig8B6kzzR9otg=;
-  b=Sj1vcjY8npSaOzB0Qj1LtGh7dKfUjh+t3ntcmaEZon8gDQWPWTovzv3j
-   r2QQMWNnYCKIbL50v/r2ple0152nsUsYci/CnU7BziLxEsQphGbmNeTC2
-   d9edvq7TolvF0lKFM4PK9FiRLwGKwnfKfD+Z4CKNXypCEWDQzgiv/gh9O
-   eEtwcUzAC5IXEiDOni6FZO/KEDk141IbDtaucuvWKqAX0SWxwkPPCeD7M
-   HzjGU7u2FuiFOinRwxm6PvvPA9MVsRnv/gCqNiAjzSCLjeGNeCc5tAdCG
-   pXBT2NiLypXtFpJ2pNO+JTDWLNLYfqnbvSmr4h0TRgQx/QpiPImFmE1iV
-   A==;
-X-CSE-ConnectionGUID: JTkawUETSfyDUA/QqodXNQ==
-X-CSE-MsgGUID: pgz3eUWJTgGOKwrv53rHLQ==
-X-IronPort-AV: E=McAfee;i="6800,10657,11807"; a="69012004"
-X-IronPort-AV: E=Sophos;i="6.24,188,1774335600"; 
-   d="scan'208";a="69012004"
-Received: from orviesa005.jf.intel.com ([10.64.159.145])
-  by fmvoesa110.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 05 Jun 2026 00:32:05 -0700
-X-CSE-ConnectionGUID: dgmCPLzkTKmMjNLLI2/dBg==
-X-CSE-MsgGUID: q1Bd7HPvQi+WKekTT+SBKg==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.24,188,1774335600"; 
-   d="scan'208";a="249704712"
-Received: from ettammin-mobl2.ger.corp.intel.com (HELO localhost) ([10.245.245.178])
-  by orviesa005-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 05 Jun 2026 00:31:50 -0700
-Date: Fri, 5 Jun 2026 10:31:48 +0300
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-To: "Peter Chen (CIX)" <peter.chen@kernel.org>
-Cc: Bartosz Golaszewski <brgl@kernel.org>, Lee Jones <lee@kernel.org>,
-	Mark Brown <broonie@opensource.wolfsonmicro.com>,
-	Thierry Reding <thierry.reding@avionic-design.de>,
-	Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>,
-	Andrew Lunn <andrew+netdev@lunn.ch>,
-	"David S. Miller" <davem@davemloft.net>,
-	Eric Dumazet <edumazet@google.com>,
-	Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
-	Srinivas Kandagatla <srini@kernel.org>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Vinod Koul <vkoul@kernel.org>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Danilo Krummrich <dakr@kernel.org>, Rob Herring <robh@kernel.org>,
-	Saravana Kannan <saravanak@kernel.org>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	Andi Shyti <andi.shyti@kernel.org>, Joerg Roedel <joro@8bytes.org>,
-	Will Deacon <will@kernel.org>, Robin Murphy <robin.murphy@arm.com>,
-	Doug Berger <opendmb@gmail.com>,
-	Florian Fainelli <florian.fainelli@broadcom.com>,
-	Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>,
-	Ulf Hansson <ulfh@kernel.org>, Frank Li <Frank.Li@nxp.com>,
-	Sascha Hauer <s.hauer@pengutronix.de>,
-	Pengutronix Kernel Team <kernel@pengutronix.de>,
-	Fabio Estevam <festevam@gmail.com>,
-	Matthew Brost <matthew.brost@intel.com>,
-	Thomas =?iso-8859-1?Q?Hellstr=F6m?= <thomas.hellstrom@linux.intel.com>,
-	Rodrigo Vivi <rodrigo.vivi@intel.com>,
-	David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
-	Paul Cercueil <paul@crapouillou.net>, Bin Liu <b-liu@ti.com>,
-	Philipp Zabel <p.zabel@pengutronix.de>,
-	Maximilian Luz <luzmaximilian@gmail.com>,
-	Hans de Goede <hansg@kernel.org>,
-	Ilpo =?iso-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@linux.intel.com>,
-	Krzysztof Kozlowski <krzk@kernel.org>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-	linux-arm-msm@vger.kernel.org, linux-sound@vger.kernel.org,
-	driver-core@lists.linux.dev, devicetree@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org, linux-i2c@vger.kernel.org,
-	iommu@lists.linux.dev, linux-pm@vger.kernel.org,
-	imx@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
-	intel-xe@lists.freedesktop.org, dri-devel@lists.freedesktop.org,
-	linux-usb@vger.kernel.org, linux-mips@vger.kernel.org,
-	platform-driver-x86@vger.kernel.org,
-	Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
-Subject: Re: [PATCH 20/23] usb: chipidea: use
- platform_device_set_of_node_from_dev()
-Message-ID: <aiJ7ZB-J-TyJEwBb@ashevche-desk.local>
-References: <20260521-pdev-fwnode-ref-v1-0-88c324a1b8d2@oss.qualcomm.com>
- <20260521-pdev-fwnode-ref-v1-20-88c324a1b8d2@oss.qualcomm.com>
- <ah9P6Xt9SyKgc2oJ@ashevche-desk.local>
- <CAMRc=MdhjZhGL9tEx9WEjn2f95d=ObNM0AtBNpcevm6aHgpj+Q@mail.gmail.com>
- <aiJz6Ys4gE998ULp@nchen-desktop>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gWtTZ4vFkz2xnK
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Jun 2026 17:33:37 +1000 (AEST)
+DKIM-Signature:v=1; a=rsa-sha256; c=relaxed/relaxed;
+	d=linux.alibaba.com; s=default;
+	t=1780644813; h=Message-ID:Date:MIME-Version:Subject:To:From:Content-Type;
+	bh=gFofL9NNUik43SvjpCa1eU2XJouBI66k3k4iLFF666I=;
+	b=gBUSiMMkbwvbToKZghV1kTSpytcATdi9jW1RDnESszKUPuVUY9Pxzfk9WezlfyExIdaVCLUZnlXpFz1jrXHZItKCS+S3U/oWHvljS8teFygQdusOW22uK+mq3RjcvAyWqt4iUiSv1Iz5rVel6SP/P+6IpAytYwl9Oqo2EwrxsZA=
+X-Alimail-AntiSpam:AC=PASS;BC=-1|-1;BR=01201311R111e4;CH=green;DM=||false|;DS=||;FP=0|-1|-1|-1|0|-1|-1|-1;HT=maildocker-contentspam011083073210;MF=tianruidong@linux.alibaba.com;NM=1;PH=DS;RN=28;SR=0;TI=SMTPD_---0X4CVYt4_1780644807;
+Received: from 30.74.145.98(mailfrom:tianruidong@linux.alibaba.com fp:SMTPD_---0X4CVYt4_1780644807 cluster:ay36)
+          by smtp.aliyun-inc.com;
+          Fri, 05 Jun 2026 15:33:28 +0800
+Message-ID: <022690f8-5d8f-4a98-9647-1b6bd3c2188e@linux.alibaba.com>
+Date: Fri, 5 Jun 2026 15:33:25 +0800
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -127,49 +53,354 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <aiJz6Ys4gE998ULp@nchen-desktop>
-Organization: Intel Finland Oy - BIC 0357606-4 - c/o Alberga Business Park, 6
- krs, Bertel Jungin Aukio 5, 02600 Espoo
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v14 0/8] arm64: add ARCH_HAS_COPY_MC support
+To: Kefeng Wang <wangkefeng.wang@huawei.com>, catalin.marinas@arm.com,
+ will@kernel.org, rafael@kernel.org, tony.luck@intel.com,
+ guohanjun@huawei.com, mchehab@kernel.org, xueshuai@linux.alibaba.com,
+ tongtiangen@huawei.com, james.morse@arm.com, robin.murphy@arm.com,
+ andreyknvl@gmail.com, dvyukov@google.com, vincenzo.frascino@arm.com,
+ mpe@ellerman.id.au, npiggin@gmail.com, ryabinin.a.a@gmail.com,
+ glider@google.com, christophe.leroy@csgroup.eu, aneesh.kumar@kernel.org,
+ naveen.n.rao@linux.ibm.com, tglx@linutronix.de, mingo@redhat.com
+Cc: linux-arm-kernel@lists.infradead.org, linux-mm@kvack.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ kasan-dev@googlegroups.com
+References: <20260518084956.2538442-1-tianruidong@linux.alibaba.com>
+ <f115ceaa-4573-41c0-8c8d-5f4fb1b017f2@huawei.com>
+From: Ruidong Tian <tianruidong@linux.alibaba.com>
+In-Reply-To: <f115ceaa-4573-41c0-8c8d-5f4fb1b017f2@huawei.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 
-On Fri, Jun 05, 2026 at 02:59:53PM +0800, Peter Chen (CIX) wrote:
-> On 26-06-04 08:34:16, Bartosz Golaszewski wrote:
-> > On Tue, 2 Jun 2026 23:49:29 +0200, Andy Shevchenko
-> > <andriy.shevchenko@linux.intel.com> said:
-> > > On Thu, May 21, 2026 at 10:36:43AM +0200, Bartosz Golaszewski wrote:
 
-...
 
-> > >>  	pdev->dev.parent = dev;
-> > >> -	device_set_of_node_from_dev(&pdev->dev, dev);
-> > >> +	platform_device_set_of_node_from_dev(pdev, dev);
-> > >
-> > > Why do they even do that? Do they have a USB connected pin control?
-> > 
-> > I don't know. I can't test it so I don't want to break it. If they don't need
-> > it, the person who can test it, can remove it later.
+在 2026/5/18 23:05, Kefeng Wang 写道:
 > 
-> It was introduced by below commits:
 > 
-> commit 0f153a1b8193ce768be4df0400aeb2c8f2a3b3da
-> Author: Rob Herring <robh@kernel.org>
-> Date:   Wed Dec 15 16:56:46 2021 -0600
+> On 5/18/2026 4:49 PM, Ruidong Tian wrote:
+>> This series continues Tong Tiangen's work on arm64 ARCH_HAS_COPY_MC
+>> support. We encounter the same problem, and from a forward-looking
+>> perspective, large-memory ARM machines such as Grace and Vera will suffer
+>> more from this class of issues, which motivates us to push this feature
+>> upstream.
+>>
+>> Problem
+>> =========
+>> With the increase of memory capacity and density, the probability of 
+>> memory
+>> error also increases. The increasing size and density of server RAM in 
+>> data
+>> centers and clouds have shown increased uncorrectable memory errors.
+>>
+>> Currently, more and more scenarios that can tolerate memory errors, 
+>> such as
+>> COW[1,2], KSM copy[3], coredump copy[4], khugepaged[5,6], uaccess 
+>> copy[7],
+>> etc.
 > 
->     usb: chipidea: Set the DT node on the child device
+> We have encountered more scenarios and have made more enhancements, eg,
 > 
->     The ChipIdea glue drivers just copy the glue resources to the "ci_hdrc"
->     child device. Instead, set the child device's DT node pointer to the
->     parent device's node so that platform_get_irq() can find the IRQ
->     resources in the DT. This removes the need for statically populating the
->     IRQ resources from the DT which has been deprecated for some time.
+>   658be46520ce mm: support poison recovery from copy_present_page()
+>   aa549f923f5e mm: support poison recovery from do_cow_fault()
+>   f00b295b9b61 fs: hugetlbfs: support poisoned recover from 
+> hugetlbfs_migrate_folio()
+>   060913999d7a mm: migrate: support poisoned recover from migrate folio
+> 
+> Hope that the architecture-related sections can receive relevant reviews 
+> and responses.
+> 
+> Thanks.
 
-This doesn't explain why the node marked as reused. device_set_node() fits
-the above description. Rob?
+Thanks for the additional examples and for bringing up these scenarios.
 
--- 
-With Best Regards,
-Andy Shevchenko
-
+Ruidong.>   > Solution
+>> =========
+>>
+>> This patchset introduces a new processing framework on ARM64, which 
+>> enables
+>> ARM64 to support error recovery in the above scenarios, and more 
+>> scenarios
+>> can be expanded based on this in the future.
+>>
+>> In arm64, memory error handling in do_sea(), which is divided into two 
+>> cases:
+>>   1. If the user state consumed the memory errors, the solution is to 
+>> kill
+>>      the user process and isolate the error page.
+>>   2. If the kernel state consumed the memory errors, the solution is to
+>>      panic.
+>>
+>> For case 2, Undifferentiated panic may not be the optimal choice, as 
+>> it can
+>> be handled better. In some scenarios, we can avoid panic, such as 
+>> uaccess,
+>> if the uaccess fails due to memory error, only the user process will be
+>> affected, returning an error to the caller and isolating the user page 
+>> with
+>> hardware memory errors is a better choice.
+>>
+>> [1] commit d302c2398ba2 ("mm, hwpoison: when copy-on-write hits 
+>> poison, take page offline")
+>> [2] commit 1cb9dc4b475c ("mm: hwpoison: support recovery from HugePage 
+>> copy-on-write faults")
+>> [3] commit 6b970599e807 ("mm: hwpoison: support recovery from 
+>> ksm_might_need_to_copy()")
+>> [4] commit 245f09226893 ("mm: hwpoison: coredump: support recovery 
+>> from dump_user_range()")
+>> [5] commit 98c76c9f1ef7 ("mm/khugepaged: recover from poisoned 
+>> anonymous memory")
+>> [6] commit 12904d953364 ("mm/khugepaged: recover from poisoned file- 
+>> backed memory")
+>> [7] commit 278b917f8cb9 ("x86/mce: Add _ASM_EXTABLE_CPY for copy user 
+>> access")
+>>
+>> ------------------
+>> Test result:
+>>
+>> Tested on Kunpeng 920.
+>>
+>> 1. copy_page(), copy_mc_page() basic function test pass, and the 
+>> disassembly
+>>     contents remains the same before and after refactor.
+>>
+>> 2. copy_to/from_user() access kernel NULL pointer raise translation fault
+>>     and dump error message then die(), test pass.
+>>
+>> 3. Test following scenarios: copy_from_user(), get_user(), COW.
+>>
+>>     Before patched: trigger a hardware memory error then panic.
+>>     After  patched: trigger a hardware memory error without panic.
+>>
+>>     Testing step:
+>>     step1. start an user-process.
+>>     step2. poison(einj) the user-process's page.
+>>     step3: user-process access the poison page in kernel mode, then 
+>> trigger SEA.
+>>     step4: the kernel will not panic, only the user process is killed, 
+>> the poison
+>>            page is isolated. (before patched, the kernel will panic in 
+>> do_sea())
+>>
+>>     The above tests can also be reproduced using ras-tools, which 
+>> provides
+>>     einj-based injection and validation for uaccess and COW scenarios.
+>>     Example usage:
+>>
+>>       einj_mem_uc futex          # get_user
+>>       einj_mem_uc copyin         # copy_to_user
+>>       einj_mem_uc copy-on-write  # COW
+>>
+>>     Link: https://git.kernel.org/pub/scm/linux/kernel/git/aegl/ras- 
+>> tools.git
+>>
+>> ------------------
+>>
+>> Benefits
+>> =========
+>> According to Huawei's statistics from their storage products, memory 
+>> errors
+>> triggered in kernel-mode by COW and page cache read (uaccess) scenarios
+>> account for more than 50%. With this patchset deployed, all kernel panics
+>> caused by COW and page cache memory errors are eliminated.
+>> Alibaba Cloud has also observed memory errors occurring in uaccess 
+>> contexts.
+>>
+>> Since V13:
+>> 1. Changed MC-safe functions to return an error rather than kill the user
+>>     process. When a user program invokes a syscall and the kernel 
+>> encounters
+>>     a memory error during uaccess, killing the process is unexpected; the
+>>     syscall should return an error.
+>> 2. Added FEAT_MOPS support for the copy_page_mc paths.
+>> 3. Refactored copy_page() and memcpy() on top of the shared 
+>> memcpy_template,
+>>     reducing duplicated assembly code.
+>>
+>> Since v12:
+>> Thanks to the suggestions of Jonathan, Mark, and Mauro, the following 
+>> modifications
+>> are made:
+>> 1. Rebase to latest kernel version.
+>> 2. Patch1, add Jonathan's and Mauro's review-by.
+>> 3. Patch2, modified do_apei_claim_sea() according to Mark's and 
+>> Jonathan's suggestions,
+>>     and optimized the commit message according to Mark's 
+>> suggestions(Added description of
+>>     the impact on regular copy_to_user()).
+>> 4. Patch3, optimized the commit message according to Mauro's 
+>> suggestions and add Jonathan's
+>>     review-by.
+>> 5. Patch4, modified copy_mc_user_highpage() and Optimized the commit 
+>> message according to
+>>     Jonathan's suggestions(no functional changes).
+>> 6. Patch5, optimized the commit message according to Mauro's suggestions.
+>> 7. Patch4/5, FEAT_MOPS is added to the code logic. Currently, the 
+>> fixup is not performed
+>>     on the MOPS instruction.
+>> 8. Remove patch6 in v12 according to Jonathan's suggestions.
+>>
+>> Since v11:
+>> 1. Rebase to latest kernel version 6.9-rc1.
+>> 2. Add patch 5, Since the problem described in "Since V10 Besides 3" has
+>>     been solved in a50026bdb867 ('iov_iter: get rid of 'copy_mc' flag').
+>> 3. Add the benefit of applying the patch set to our company to the 
+>> description of patch0.
+>>
+>> Since V10:
+>>   Accroding Mark's suggestion:
+>>   1. Merge V10's patch2 and patch3 to V11's patch2.
+>>   2. Patch2(V11): use new fixup_type for ld* in copy_to_user(), fix fatal
+>>      issues (NULL kernel pointeraccess) been fixup incorrectly.
+>>   3. Patch2(V11): refactoring the logic of do_sea().
+>>   4. Patch4(V11): Remove duplicate assembly logic and remove do_mte().
+>>
+>>   Besides:
+>>   1. Patch2(V11): remove st* insn's fixup, st* generally not trigger 
+>> memory error.
+>>   2. Split a part of the logic of patch2(V11) to patch5(V11), for detail,
+>>      see patch5(V11)'s commit msg.
+>>   3. Remove patch6(v10) “arm64: introduce copy_mc_to_kernel() 
+>> implementation”.
+>>      During modification, some problems that cannot be solved in a short
+>>      period are found. The patch will be released after the problems are
+>>      solved.
+>>   4. Add test result in this patch.
+>>   5. Modify patchset title, do not use machine check and remove "-next".
+>>
+>> Since V9:
+>>   1. Rebase to latest kernel version 6.8-rc2.
+>>   2. Add patch 6/6 to support copy_mc_to_kernel().
+>>
+>> Since V8:
+>>   1. Rebase to latest kernel version and fix topo in some of the patches.
+>>   2. According to the suggestion of Catalin, I attempted to modify the
+>>      return value of function copy_mc_[user]_highpage() to bytes not 
+>> copied.
+>>      During the modification process, I found that it would be more
+>>      reasonable to return -EFAULT when copy error occurs (referring to 
+>> the
+>>      newly added patch 4).
+>>
+>>      For ARM64, the implementation of copy_mc_[user]_highpage() needs to
+>>      consider MTE. Considering the scenario where data copying is 
+>> successful
+>>      but the MTE tag copying fails, it is also not reasonable to return
+>>      bytes not copied.
+>>   3. Considering the recent addition of machine check safe support for
+>>      multiple scenarios, modify commit message for patch 5 (patch 4 
+>> for V8).
+>>
+>> Since V7:
+>>   Currently, there are patches supporting recover from poison
+>>   consumption for the cow scenario[1]. Therefore, Supporting cow
+>>   scenario under the arm64 architecture only needs to modify the relevant
+>>   code under the arch/.
+>>   [1]https://lore.kernel.org/lkml/20221031201029.102123-1- 
+>> tony.luck@intel.com/
+>>
+>> Since V6:
+>>   Resend patches that are not merged into the mainline in V6.
+>>
+>> Since V5:
+>>   1. Add patch2/3 to add uaccess assembly helpers.
+>>   2. Optimize the implementation logic of arm64_do_kernel_sea() in 
+>> patch8.
+>>   3. Remove kernel access fixup in patch9.
+>>   All suggestion are from Mark.
+>>
+>> Since V4:
+>>   1. According Michael's suggestion, add patch5.
+>>   2. According Mark's suggestiog, do some restructuring to arm64
+>>   extable, then a new adaptation of machine check safe support is made 
+>> based
+>>   on this.
+>>   3. According Mark's suggestion, support machine check safe in 
+>> do_mte() in
+>>   cow scene.
+>>   4. In V4, two patches have been merged into -next, so V5 not send these
+>>   two patches.
+>>
+>> Since V3:
+>>   1. According to Robin's suggestion, direct modify user_ldst and
+>>   user_ldp in asm-uaccess.h and modify mte.S.
+>>   2. Add new macro USER_MC in asm-uaccess.h, used in copy_from_user.S
+>>   and copy_to_user.S.
+>>   3. According to Robin's suggestion, using micro in copy_page_mc.S to
+>>   simplify code.
+>>   4. According to KeFeng's suggestion, modify powerpc code in patch1.
+>>   5. According to KeFeng's suggestion, modify mm/extable.c and some code
+>>   optimization.
+>>
+>> Since V2:
+>>   1. According to Mark's suggestion, all uaccess can be recovered due to
+>>      memory error.
+>>   2. Scenario pagecache reading is also supported as part of uaccess
+>>      (copy_to_user()) and duplication code problem is also solved.
+>>      Thanks for Robin's suggestion.
+>>   3. According Mark's suggestion, update commit message of patch 2/5.
+>>   4. According Borisllav's suggestion, update commit message of patch 
+>> 1/5.
+>>
+>> Since V1:
+>>   1.Consistent with PPC/x86, Using CONFIG_ARCH_HAS_COPY_MC instead of
+>>     ARM64_UCE_KERNEL_RECOVERY.
+>>   2.Add two new scenes, cow and pagecache reading.
+>>   3.Fix two small bug(the first two patch).
+>>
+>> V1 in here:
+>> https://lore.kernel.org/lkml/20220323033705.3966643-1- 
+>> tongtiangen@huawei.com/
+>>
+>> Ruidong Tian (3):
+>>    ACPI: APEI: GHES: use exception context to gate SIGBUS on poison
+>>      consumption
+>>    lib/test: memcpy_kunit: add copy_page() and copy_mc_page() tests
+>>    lib/tests: memcpy_kunit: add memcpy_mc() and memcpy_mc_large() test
+>>
+>> Tong Tiangen (5):
+>>    uaccess: add generic fallback version of copy_mc_to_user()
+>>    arm64: add support for ARCH_HAS_COPY_MC
+>>    mm/hwpoison: return -EFAULT when copy fail in
+>>      copy_mc_[user]_highpage()
+>>    arm64: support copy_mc_[user]_highpage()
+>>    arm64: introduce copy_mc_to_kernel() implementation
+>>
+>>   arch/arm64/Kconfig                   |   1 +
+>>   arch/arm64/include/asm/asm-extable.h |  22 ++-
+>>   arch/arm64/include/asm/asm-uaccess.h |   4 +
+>>   arch/arm64/include/asm/extable.h     |   1 +
+>>   arch/arm64/include/asm/mte.h         |   9 +
+>>   arch/arm64/include/asm/page.h        |  10 ++
+>>   arch/arm64/include/asm/string.h      |   5 +
+>>   arch/arm64/include/asm/uaccess.h     |  17 ++
+>>   arch/arm64/kernel/acpi.c             |   2 +-
+>>   arch/arm64/lib/Makefile              |   2 +
+>>   arch/arm64/lib/copy_mc_page.S        |  44 +++++
+>>   arch/arm64/lib/copy_page.S           |  62 +------
+>>   arch/arm64/lib/copy_page_template.S  |  71 ++++++++
+>>   arch/arm64/lib/copy_to_user.S        |  10 +-
+>>   arch/arm64/lib/memcpy.S              | 253 ++-------------------------
+>>   arch/arm64/lib/memcpy_mc.S           |  56 ++++++
+>>   arch/arm64/lib/memcpy_template.S     | 249 ++++++++++++++++++++++++++
+>>   arch/arm64/lib/mte.S                 |  29 +++
+>>   arch/arm64/mm/copypage.c             |  75 ++++++++
+>>   arch/arm64/mm/extable.c              |  21 +++
+>>   arch/arm64/mm/fault.c                |  30 +++-
+>>   arch/powerpc/include/asm/uaccess.h   |   1 +
+>>   arch/x86/include/asm/uaccess.h       |   1 +
+>>   drivers/acpi/apei/ghes.c             |  36 ++--
+>>   include/acpi/ghes.h                  |   6 +-
+>>   include/linux/highmem.h              |  16 +-
+>>   include/linux/uaccess.h              |   8 +
+>>   lib/tests/memcpy_kunit.c             | 178 ++++++++++++++++++-
+>>   mm/kasan/shadow.c                    |  12 ++
+>>   mm/khugepaged.c                      |   4 +-
+>>   30 files changed, 904 insertions(+), 331 deletions(-)
+>>   create mode 100644 arch/arm64/lib/copy_mc_page.S
+>>   create mode 100644 arch/arm64/lib/copy_page_template.S
+>>   create mode 100644 arch/arm64/lib/memcpy_mc.S
+>>   create mode 100644 arch/arm64/lib/memcpy_template.S
+>>
 
 
