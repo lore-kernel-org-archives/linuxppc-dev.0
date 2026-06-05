@@ -1,81 +1,83 @@
-Return-Path: <linuxppc-dev+bounces-22148-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22149-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 792BACD8C88
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Jun 2026 03:22:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 474C5CD6E55
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Jun 2026 04:15:14 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gXNsY6LNcz2xM7;
-	Sat, 06 Jun 2026 13:22:41 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::102b"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780716161;
-	cv=none; b=J9ZQOL+cegtzmw82S4x7bRKjW3xWLHyldkF/T6AKKxCHKban/PXcHQqotpczOFjd7lNnwqPwjt9p4YTmMVJfWDekLhKC2bid3lD86gpqGIiX4XLpfEFVHyOuvPncj3LoEZMTgOAqkZ3S1+9Wg+V3M9Kpv/HXddS8T87i6IuAzgfOAh4Ui5pL4KWPERNakZ3SLNQUT0wjSciZilooov7pI6zmR6ny27rDgvxThDdY2PwjhOS+Gss8oqJ3VdWrvfPQI2Rpb7+siGvFTA7N4CPfgTjsHXdv2GkiE52KCdNBatf7I54UyuTTbIAwRL/QatzUyGjrg6sSjSY3p/UYkHZYXQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1780716161; c=relaxed/relaxed;
-	bh=jbPgsrbK1K1b0DlYJTMCLHsCDahXSKwxCMeJ1Uav9D4=;
-	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References; b=V8gp2G5rILsyb0XbtgmNecNhGb/4V/HdTIyl1BQ0zvTATt4OeEVxmsz/afsBBDkH90alGW7xSPfzDlQEDA0MbR58ZH078W46dbrqrEEkQEZB7b8scLDrnrQBfHLbk7HJgsMku4KPrVGGhpXpWzUv2WBBTsVHzEO8sC609NChPfhkqJe4ZEcBedpTTy5g4rWe8BvQ5/UacznrctDqHdnvItoi7nGSoGY2lRe1XemBBhWeo5clq2SEkx17OYWAaudrhlSajgIMqRnP51ncnWg/qx4lr0571yJrKAzYSdBcjx6pHUpTIzJr8p557y3szYP+yT4LgscOxpzShS1PR4e82w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=DoibHwHv; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::102b; helo=mail-pj1-x102b.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gXQ284dwzz2xM7;
+	Sat, 06 Jun 2026 14:15:12 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c200::5" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780699583;
+	cv=pass; b=OLIrFtAxaIDDIVkl69yKr2WkyCnqT4u4GZa7Kp/VhAMjpVrnUFq4zMg7kgdebN/PaCpKcH4RMVG8YwkDWgjkOMGvRvYjZRJpP4++lH70MiRhz9rp4mZOeijz1tbN/dzdeY056N/PSpjRN9CBBCBzWc+L46Yoa1zsOowX+Ks7hJcn/RwfHmpjz6npRraWxhAE/bZw1ffWvOiurqueu5H3RnFtRlqP7WkFOa7MYRDscG+Emyvg//wf1qeeCd7WGlc1WQUs3h3hrqpN+kzr5le+gAg2WnRcQVZnba/kpF5kUdj+SguFC1Z2Gbeyry5cOXG2zpcpwRN2vNo3Tx5mQpU5Sg==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1780699583; c=relaxed/relaxed;
+	bh=OzD8p+ZP9oH4tn8n7RoXC0+U3KcdSRMTDqRB3hhFLic=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:Content-Type:
+	 Content-Disposition:In-Reply-To:MIME-Version; b=c9J8FtKUd3hFJAykrBeW5iYr6ik73U20vBjxujRn3KuKdWnG26VYA0HALswnSWbx9EKb0GOTHD4JKmSWMdVMJrPzfdJKZtBemzy4TXmxGgys2f8Mea/TmgsX1LZO7tf59zfgZY5LaKgSec5YVPnRYqN4yTOjZgJtuTv8VtzkXzVIDwuX+/xc7riRKnsVMmGVlNba7644L0cFGHa0j9UuNpQZ42DoGNYkLyNeR1xBl0fcA/L6cSUT6jfjbgTlJNA1EU+0BuayNs4+TXXohL23KqEdX+myZ3hqRCrPHQlC1znhMA66ZjD3EUvRnQw9zB/zo4VfzP4KYQZR7Wu3hynqoA==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=oss.nxp.com; dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=Oz2U/PRL; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c200::5; helo=duzpr83cu001.outbound.protection.outlook.com; envelope-from=frank.li@oss.nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=oss.nxp.com
+Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=oss.nxp.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=DoibHwHv;
+	dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=Oz2U/PRL;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::102b; helo=mail-pj1-x102b.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pj1-x102b.google.com (mail-pj1-x102b.google.com [IPv6:2607:f8b0:4864:20::102b])
+Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=oss.nxp.com (client-ip=2a01:111:f403:c200::5; helo=duzpr83cu001.outbound.protection.outlook.com; envelope-from=frank.li@oss.nxp.com; receiver=lists.ozlabs.org)
+Received: from DUZPR83CU001.outbound.protection.outlook.com (mail-northeuropeazlp170120005.outbound.protection.outlook.com [IPv6:2a01:111:f403:c200::5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gXNsX1rbHz2xHK
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 06 Jun 2026 13:22:39 +1000 (AEST)
-Received: by mail-pj1-x102b.google.com with SMTP id 98e67ed59e1d1-36d8b644473so2633143a91.3
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Jun 2026 20:22:39 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1780716156; x=1781320956; darn=lists.ozlabs.org;
-        h=references:message-id:date:in-reply-to:subject:cc:to:from:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=jbPgsrbK1K1b0DlYJTMCLHsCDahXSKwxCMeJ1Uav9D4=;
-        b=DoibHwHvDS8k93b9F19D8xkwjfhLEtVR9g9ixhSJmKaJvzwbe4t/kfU+XdGyculy5P
-         UjtQ1VETrz5HD100jD1mkdSPRy5Pdte0APfRPYdP37/2lt2lKRzvhN0YWRYgwe7nG7mt
-         293VtZrrmCCY4kXqSRqkQgkPrHNgLahyeTTgrf0GBaum851u2po7eXXPRnICYxknosx4
-         7Pean3rwhDXHQJdI13exDcdZnnpm2luh1NJw35W7znzwEfmxd+TtvB4Jy3jHnbRMKuI0
-         9POMlvsakHlm41abznhjsrnFLIrWb2jmDaAe1suvQ6lQjHELEDgTeZl6vcVSjeZ2OLxx
-         EwiQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1780716156; x=1781320956;
-        h=references:message-id:date:in-reply-to:subject:cc:to:from:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=jbPgsrbK1K1b0DlYJTMCLHsCDahXSKwxCMeJ1Uav9D4=;
-        b=FwhiRGd4XoOCee1k4PDoBvpKRK66b34/ZVdjwJogwPAHs8SrYJIv7JSDmgCI3oRNSE
-         eBXXJQs4WSQeOZR0GG2FUw0U/hOzUX1WlC5HptUI8+/qrXrYHuphJF5+mwhhfWvHTwrK
-         UCn/kgP5VOcM4YyHYzcRuhmou5xYJAw0tf45eYpzkakN0CTeMw9ZPi5M0xnw+soVhzSQ
-         sdksPGf4t7a7cNjSyJxzVBluGiD7rPptDCDqrD0vawmpHpizqJtcSCvaWCKvao8POnoM
-         kvr5aauvrfDxK7Ph16WXrLeMkX1E81eFBxFJiND+yLSXg8XGZUgQyzzr8N4ch0yvEWRs
-         16Gg==
-X-Forwarded-Encrypted: i=1; AFNElJ+uUElS3AH8EF9j/eI+st/sSUEOk3ufCHzeFDLq/cFsYdeNLtLEIx3+7ckp9LwVET4AnyHahM4X8UBmKIU=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YxtQIwbYLB1v7WjCJvKk1I9RwRAfeNrzofjTI8nOhilZTViUn7J
-	H4Mcck2Yg5KKAlukT9oeFI6HcB2SycU10HGhgfjEo9k8khlmHdmgeMkc
-X-Gm-Gg: Acq92OGM21eg08YyQoK1ng51R3ZGtzqDAdCmgUaVRbdASGMFTH8OSOSbAXsSG246eyT
-	mTZjLg3J+o0lF3YvaoA06ePMJMHKqbkbsIIgr+4def2tZmvrvf51frSJFol928m67bsRUguthQK
-	tAstyv4QxEVzI0Uov6x3b0dpMOmbjkKTOXcNvxRiZrhTdLlzpZMMlrLtyTedlTyq+KUbC4r4Tt6
-	Y/Mdp1nowKc4Kj1sTBBWIvOHsnU1k7UWFESw6B+VV2VrgOiYrJfUIhetSf6htQd4E1YWMs6xLnD
-	KMa5Rc/yER1JWF21GUPjg0F2jBnRPCU97jWoMaq/rJE7aG3/jZveCgseClPcIbguF0Yj7S8Jd8o
-	UOUdSGbhUEvqBLOq1++8pBn82HaQu7ggVghti4hynAD1gizQvUeCHThaFVrDyyQAPyEc+RAGx+b
-	1I73M3XvXWia2aV3wzAHGaRn9gTXkXia0k
-X-Received: by 2002:a17:90b:35c1:b0:36b:9daf:1504 with SMTP id 98e67ed59e1d1-370f0772850mr6916406a91.14.1780716156242;
-        Fri, 05 Jun 2026 20:22:36 -0700 (PDT)
-Received: from pve-server ([49.205.216.49])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-371341170c7sm2319688a91.1.2026.06.05.20.22.32
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 05 Jun 2026 20:22:35 -0700 (PDT)
-From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-To: Gautam Menghani <gautam@linux.ibm.com>, maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com, chleroy@kernel.org
-Cc: Gautam Menghani <gautam@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, harshpb@linux.ibm.com, stable@vger.kernel.org, Sean Christopherson <seanjc@google.com>
-Subject: Re: [PATCH v4] powerpc/pseries/Kconfig: Enable CONFIG_VPA_PMU to be used with KVM
-In-Reply-To: <20260602121706.8423-1-gautam@linux.ibm.com>
-Date: Sat, 06 Jun 2026 08:37:49 +0530
-Message-ID: <o6ho8iyi.ritesh.list@gmail.com>
-References: <20260602121706.8423-1-gautam@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gXGkk6xj8z3brt
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 06 Jun 2026 08:46:22 +1000 (AEST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=RskioeM2e8bdDeVuMyDRdY0a6XVMDhQv7rYti0tJW2GyJKel32rkzZWjE98cS5PwpKCsnQxR9hUDrPTODA/+HLtl8CiiUCcpTjNVyI+8YiXxQ3AXcnLGfH2NryNNN8wKbeYdt1zplJEheCWnaLYPpaCf+92bsZMJKZjBw7ijeO4Z5SQq2TApUrolKzrTLz8bYMjbnw84wc+3rSbn/M9OPwiPIbEJo/GBIyTpEslJA+oKwS0Gx/RzxX/iTgIS97ubUoYUWUdhdnqT5VrkLr507YE7IRhHgfktq5Q9F4GoQDWUUNSx07GNmzOalWV/k1IiSQ35CzHL9SjBrLp7cBu7+w==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=OzD8p+ZP9oH4tn8n7RoXC0+U3KcdSRMTDqRB3hhFLic=;
+ b=v5Ow0Tl4fn/2XOgGn2GkVLKQ38Pt+nJ2lgwfaJ+DaMMwmn0VG48Re8x0E/5EJ7g7HUyRXgZzV4YfHTjwqf2tgNKejxFKX9MaBpR5pLrnS9mFYIPP/YPZa7PVBBtVREQzC6cmzg5qOWuCSYWZas/FPQb4YjUn3GvP4Uk2IIi87Zub7TvQ9L9tLyE5pu55SB2uigP1Woqpe9xe4SlqCJ884Hvds5Q9FyVU7H4wHJ2JBb3K4NZKWqgAZnCYDdzSxXY57irFHBFCjSNmQvNAGiq/CGCkBJWjvV3/wVidvH7Hf3qsDAotQQ0/KmL218Aeo7Ns33Ex2dGjiMD+VL6BF5MZBQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=oss.nxp.com; dmarc=pass action=none header.from=oss.nxp.com;
+ dkim=pass header.d=oss.nxp.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=NXP1.onmicrosoft.com;
+ s=selector1-NXP1-onmicrosoft-com;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=OzD8p+ZP9oH4tn8n7RoXC0+U3KcdSRMTDqRB3hhFLic=;
+ b=Oz2U/PRL+ij9JuSZNT/AXSWfP61HA4qbFsnzXQlknAChScnlYg4XN/LTAD1y3kd6hzMIiT0sQW3Lc8FAPxKRCWBYJ4KyYos9Xfq1lPIGAyqUsOkTVLSbzjfWcm6VPWipomyE1L5ErtJhlrtu0vzxTBgjXjq8sGEq8771aRlOmYOqCidAQVjAogn1hCRqXZiISsZM1sI5hGx/eQrZEKYqTXvkxsT+eWhBz+bjaz3kFu9ZNvAGTNk7U/4DcW6dvSwzKCF0KcCy2pUwbILerV0Biq4l5jn7H3aRzLqQm9Beb1ffs+3Dw6BV+qFcx70MsLx8p8XcmeppLhh9/LrNS/iG6g==
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=oss.nxp.com;
+Received: from GV2PR04MB11799.eurprd04.prod.outlook.com (2603:10a6:150:2cf::9)
+ by PR3PR04MB7257.eurprd04.prod.outlook.com (2603:10a6:102:93::14) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.92.8; Fri, 5 Jun 2026
+ 22:45:59 +0000
+Received: from GV2PR04MB11799.eurprd04.prod.outlook.com
+ ([fe80::2146:83a2:5329:b7c]) by GV2PR04MB11799.eurprd04.prod.outlook.com
+ ([fe80::2146:83a2:5329:b7c%6]) with mapi id 15.21.0092.007; Fri, 5 Jun 2026
+ 22:45:59 +0000
+Date: Fri, 5 Jun 2026 17:45:50 -0500
+From: Frank Li <Frank.li@oss.nxp.com>
+To: Rosen Penev <rosenp@gmail.com>
+Cc: dmaengine@vger.kernel.org, Vinod Koul <vkoul@kernel.org>,
+	Frank Li <Frank.Li@kernel.org>, Zhang Wei <zw@zh-kernel.org>,
+	Nathan Chancellor <nathan@kernel.org>,
+	Nick Desaulniers <nick.desaulniers+lkml@gmail.com>,
+	Bill Wendling <morbo@google.com>,
+	Justin Stitt <justinstitt@google.com>,
+	open list <linux-kernel@vger.kernel.org>,
+	"open list:FREESCALE DMA DRIVER" <linuxppc-dev@lists.ozlabs.org>,
+	"open list:CLANG/LLVM BUILD SUPPORT:Keyword:b(?i:clang|llvm)b" <llvm@lists.linux.dev>
+Subject: Re: [PATCH 06/10] dmaengine: fsldma: convert channel allocation to
+ devm_kzalloc
+Message-ID: <aiNRnj8YJoZhCeAJ@SMW015318>
+References: <20260605220134.43295-1-rosenp@gmail.com>
+ <20260605220134.43295-7-rosenp@gmail.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260605220134.43295-7-rosenp@gmail.com>
+X-ClientProxiedBy: PH7P221CA0016.NAMP221.PROD.OUTLOOK.COM
+ (2603:10b6:510:32a::20) To GV2PR04MB11799.eurprd04.prod.outlook.com
+ (2603:10a6:150:2cf::9)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -88,24 +90,118 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
+MIME-Version: 1.0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: GV2PR04MB11799:EE_|PR3PR04MB7257:EE_
+X-MS-Office365-Filtering-Correlation-Id: 2fc950d5-cb41-4987-71bb-08dec3543683
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|7416014|376014|366016|19092799006|1800799024|18002099003|22082099003|11063799006|4143699003|56012099006;
+X-Microsoft-Antispam-Message-Info:
+	ao5WTxejsyjuhDPREnRC+J/axyn78A1LlzydKtJso11y5/VSGr+3/M+jstMHCwtO+ruHMUBYZMiSHNbnMFQUZcPr+d9NLg0/gCPeY4dEmVuGK8e+JiP/CNX5Cgta3upqpIpV6w85v5zd0TEr2g8Zg7WoRJUHRY8t1yeNQpmNyvV/MLpG+EuFbf5cTaoXeus4aclb4sC/Xm9h7sSsdesLGlq7tCEej42YrphQtZCakoM6UvyIRg7SrsXSUlQJ0H8Yq8G69JO16v6E3C8yXhSCcYLA+BCoOi9hrI4X2vny8HILcBov4zpkg8RTzS77kB3tjKITjNKxA4P8W52GaOFZaGBogN/rICbfk4/k3SshTz/hbedzVFYuffeX1U6U7sPrnG1ecNuYpxedJJPiq0oPhnBo4oZIKC0jb9I3M31aAGzqrR1HBwssAHlkRrbiAJ3tAAIQkDDxwvlF+yVtp9q+bjVgFP1hi4KCy3b2qCOGe9vTXgFJHcQ0NCQjqZkKHSrMV8D8yEp7wjQnv9XKOAEqMN+z44JSqOmmyElV2WzTRBqslus+EHyKfXUJNMZ78On+MsuCLCc1Oyt7wUH5pGYoFnj/+6Xfvxp3lpVL9FV4KliHZrVJlzLN8tozcr8dF6njlRSdVoaN/RyfZy1+4bX1J9qww8CY5W1Tgj1M1i0cs6nWvQsHOXlTC+VENyBFoDo8
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:GV2PR04MB11799.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(7416014)(376014)(366016)(19092799006)(1800799024)(18002099003)(22082099003)(11063799006)(4143699003)(56012099006);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?us-ascii?Q?1DWOt/+yu8WOipbj0nuzypl/VanpYJDUazzwNDHVERmmjDILNPQW1heGDiIM?=
+ =?us-ascii?Q?Q1EkFDknk7Y6CPsvxoqFB4wTefks2Xy4rbNXC/7KCSEw8WS+jf7ROp5EWQCL?=
+ =?us-ascii?Q?zu6KfrMrTx7v5jmYlJ6MF50XVlBpgNDG4U8fMZNKWu6hVjJ7a6I+YHgPYKe4?=
+ =?us-ascii?Q?QfGqjZswV8jwLPpfZqCEJzbDzlBSWij1u7NNaRNmCXNlHkPRLzWABgw8sBYv?=
+ =?us-ascii?Q?7Db7wTt+rhdwKG4L8m7fZgkxKT3Kq3i0x1yXWnKGbqKXaNhobQ2oAtcy9JrI?=
+ =?us-ascii?Q?kIQUA5DJBDsk/rnqG6T5VIpr+eUfRnb09R77VSmoNHU5Yy7wm63d8GfYw/5j?=
+ =?us-ascii?Q?hORZ0tCy826p1UgqRAK3ZNexsKJnizWcYnehKHzOShfH74z1GTkm9gdGpNzP?=
+ =?us-ascii?Q?BykEemc0G3LOk/LB8VVf585vTOGWWGTq5FwFUPm6AwcgLcgHg0KqZLp/QCMb?=
+ =?us-ascii?Q?oCmgmJyCZ7j99c1lACQlFbEF/gYX32GDES7sF0E2aP5EnrER3MzGAR6RFT8f?=
+ =?us-ascii?Q?Bu5QGHyQk/Obg6tUupMSZ+UFoDJBE96ZijGEKTJ6RYvCr59B8NRst+4QyHRg?=
+ =?us-ascii?Q?SdEdQgrTUZZMJyWXICE8z+1bgRC5ItH75c9LFYR3qkhwArBSbbs8clfHtu9s?=
+ =?us-ascii?Q?jEbhHMn8Mc5H2wCuoa+3OaGqvUSA13fTp+w5LxXhfUz7a06OBDx1vJHBsWk9?=
+ =?us-ascii?Q?ga3ckd0g7TQUasQEolKAo5fyUN/QCLVnyulreu8DIYT/F6JLfwRE5PZQF3zH?=
+ =?us-ascii?Q?Xi3vcN6pQA2iDkNCO3YbrxDwtk9/dHNmdeM6R+SEEOkdlcsDAv7V+dGHPsBz?=
+ =?us-ascii?Q?6sXg6Nxpq76+Jr21J+qvCFPOcQvIV9Hk1xP9ywQDGwwlxkubuVglU87ZrwpP?=
+ =?us-ascii?Q?h6SnyGTjoU7+X7KRXVz6YDbILm+BHKbAXytKr3veB24tqd2A0YmL0JZlfukq?=
+ =?us-ascii?Q?5UDxNa5selg3m/YGgaEJJK9heS9FzqXGgf76Wx0uoEI8YBXgC7WYhGM5yKK5?=
+ =?us-ascii?Q?2Q9lFOCKqdq7mymsfZrPfjvMjijZzUKUKKbN8XcHq7fS16Ch0dIlgwZl/tCT?=
+ =?us-ascii?Q?u4xUr0jLUAEY+/Xo0qLklRMA2EfQ9NtWrxs7sigcW/HEN7E+rSZPT4QHJ+7D?=
+ =?us-ascii?Q?WHEVgWdUe9tFQcBGkr9FB8ViZt/+fEUF+jkMEO8EpFLIp5DdMebOeVXUXGoS?=
+ =?us-ascii?Q?jmcPHvNYYuhdZoIiq555/jA1Ah6ZwYUz9EeP4YeGOaU2ILAD+fl+nA3+i1c9?=
+ =?us-ascii?Q?JXN2hRE1njzOKfkvqKxX2j7KIPX9Z8AxuTI8+KCUI6GtAV9paQjnxY7njLj+?=
+ =?us-ascii?Q?yvRQDA8GSyo7e2ptNso/bCKZtrhLcpnCkGAehQx99zhLIqXe9tSr/5hhzbsK?=
+ =?us-ascii?Q?ITS3HMchHJ11V+/L8TQBFoAEGMBnq1CBpj1dS8RmsFHVrhF45nWn7Pbjgduh?=
+ =?us-ascii?Q?JKueMasEn1ZG9Mmczx3tUzT+TQfHmV1kZCI8tLRRLHntuEprDikbmuL21zzX?=
+ =?us-ascii?Q?Nn3rRx3B2Y9Luyg5VUTH+1ocFcia6aC8EE0PaDz1q+5SyuvlDsqX0SfvimNN?=
+ =?us-ascii?Q?54AlBBp4BJjJU+hgMs0/p2VFd0SJuRdWEMhNMpiRZiTYocoUaPI30g5hs90k?=
+ =?us-ascii?Q?buNUYX2UB17/EQGbVZspK6T+Pg9fHt6U8kNmst2VNYSryxvLvvAuimoGgLmT?=
+ =?us-ascii?Q?BkCZNk3GfWF+ZavCnQOB1kYj9BDMWjMjllraLxSjPBuurBnV36wDrTH8tIDb?=
+ =?us-ascii?Q?p5KZbjvansmdcSNFuMWUjrzxJWThQPQFXo4rff20J9U+/NzqOhkY?=
+X-OriginatorOrg: oss.nxp.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 2fc950d5-cb41-4987-71bb-08dec3543683
+X-MS-Exchange-CrossTenant-AuthSource: GV2PR04MB11799.eurprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 05 Jun 2026 22:45:59.6035
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: KZJ0W4Wr4qMhj2B0Qcly1jI+vLW9JEqWoRCKvgiGxn1Zl4DuR6E9wdcqNyz8+PATsZOMvIrz8W7kWviJtTgtEVN+D9sJliLuS4Y/iCGaLBEjIwGcc77BCVQgRJKp9O1l
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: PR3PR04MB7257
 
-Gautam Menghani <gautam@linux.ibm.com> writes:
-
-> Currently, CONFIG_VPA_PMU is not enabled by default, and consequently
-> cannot be used for KVM guests at all, unless explicitly enabled on
-> host kernel.
+On Fri, Jun 05, 2026 at 03:01:30PM -0700, Rosen Penev wrote:
 >
-> Mark CONFIG_VPA_PMU as "default m" to ensure it is available when KVM is
-> being used.
+> Convert fsl_dma_chan_probe from kzalloc_obj to devm_kzalloc, tying
+> the channel lifetime to the parent DMA device. This removes the
+
+Nit: Remove kfree(chan) in ..
+
+Reviewed-by: Frank Li <Frank.Li@nxp.com>
+
+> need for kfree(chan) in both the probe error path and the remove
+> function.
 >
-> Fixes: 176cda0619b6c ("powerpc/perf: Add perf interface to expose vpa counters")
-
-Not really a fix per-se. So we need not add this fixes tag.
-
-> Cc: stable@vger.kernel.org # v6.13+
-
-I think the stable tag like above is sufficient for stable tree
-maintainers to pick this up.
-
--ritesh
+> Assisted-by: opencode:big-pickle
+> Signed-off-by: Rosen Penev <rosenp@gmail.com>
+> ---
+>  drivers/dma/fsldma.c | 12 +++---------
+>  1 file changed, 3 insertions(+), 9 deletions(-)
+>
+> diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
+> index 2a6a247761a4..ee6e595c2972 100644
+> --- a/drivers/dma/fsldma.c
+> +++ b/drivers/dma/fsldma.c
+> @@ -1111,11 +1111,9 @@ static int fsl_dma_chan_probe(struct fsldma_device *fdev,
+>         int err;
+>
+>         /* alloc channel */
+> -       chan = kzalloc_obj(*chan);
+> -       if (!chan) {
+> -               err = -ENOMEM;
+> -               goto out_return;
+> -       }
+> +       chan = devm_kzalloc(fdev->dev, sizeof(*chan), GFP_KERNEL);
+> +       if (!chan)
+> +               return -ENOMEM;
+>
+>         /* ioremap registers for use */
+>         chan->regs = of_iomap(node, 0);
+> @@ -1197,9 +1195,6 @@ static int fsl_dma_chan_probe(struct fsldma_device *fdev,
+>
+>  out_iounmap_regs:
+>         iounmap(chan->regs);
+> -out_free_chan:
+> -       kfree(chan);
+> -out_return:
+>         return err;
+>  }
+>
+> @@ -1208,7 +1203,6 @@ static void fsl_dma_chan_remove(struct fsldma_chan *chan)
+>         tasklet_kill(&chan->tasklet);
+>         list_del(&chan->common.device_node);
+>         iounmap(chan->regs);
+> -       kfree(chan);
+>  }
+>
+>  static int fsldma_of_probe(struct platform_device *op)
+> --
+> 2.54.0
+>
 
