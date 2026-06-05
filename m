@@ -1,80 +1,95 @@
-Return-Path: <linuxppc-dev+bounces-22105-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22106-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 91ED0CD6E74
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Jun 2026 06:27:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E4F1CCD6E6B
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Jun 2026 07:27:03 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gWs1W6DW3z2yR5;
-	Fri, 05 Jun 2026 16:27:43 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780640863;
-	cv=none; b=fJryq/8/RXlthkFTGk/rd5OoVQAVzGGvnV1+ii6DbIG30yvCyKKkQYfPvP6bE7grNY3XuhVRmNoQUcoHRsvYAPuFQQIS95lHkU3A4yHbE0zL+TmfRGI8RjD5lHFNv7moonUIXxSlhgKMbCAYWbZKBI8ljaYyn4onJw04DsNo0k/mgGWv3XuSaipjMkw52r24r0MMBUgHAjI8lvwsHJ/OG2MCLguxqrKqkqnonIN7Qd1YXwU7njOKvIW+7KXv8IIXbiGvdU7yC7pvHfXqPv8LShVqGT3g21y/ByCPKJGwApZKwAYwoLZcBcxvXXMXGCfv0HeF6F7mvylGn0rApOIeBw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gWtKy1dFhz2yR5;
+	Fri, 05 Jun 2026 17:27:02 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780644422;
+	cv=none; b=QjiZU/pkNelen/HTav58NTWvRAJaik8wSeEvSRaib9uVq8cMleqhCML+2D8IGZ5G1lhZlxNDIg8Mq7P00aaTD1Gqm7N8sLlBafTw21YLe2Ls7N9YjjuHrqMvtMFuT/UdZ6tOO/KWlLd3QaCx0DtKTmQ1pHqCH1JPwuMOqKDjuXN7fYBe7308wOfrc3Ef3oJezox6PETGqDL/uxq8H4+skMn9NUrxi1ioyyrfyc96NbPQtdZsfFV32c0XGC0oBClAX86lHklijekasDtt91EtdNZnQwzrIx6AjF+dXsQtqctA6ijId7CIJ3w6/timME052bldzPhONUCTtt8C8VE95g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1780640863; c=relaxed/relaxed;
-	bh=/TvZyBYfiwgAkrVUxgA0davqC3k8R0etHNYu91uISXo=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=EZXp4imJ0jxqcDek9JeikM1GBteRbURV8slDeM5umTeJFZK9B9xd/mzIoZMEmF7KHKO3ZxuKqIxgjZyARHIAPnOcQ0YXoBSMT7BuWI7THbefzAiolK8CHUXsZpcwRwkfvZrMpYzFE9LM/Ii8VParzB8QrwWK/hvTL4ol8IUqtYnB2YgdD9/ttDDWW1BuehVRhy2NSTKQ/KOAXbILhMlKxyjsMVaKzDbhV3CYt8Xbg+EPWfNdO5nzA2Z2stndlD1TwtjxtwHHpknCkYcmUFsAsoa5tStWizIoMCNJ/jiJcNakjnJKWa5Tuy73Ld035pytxCE5epAGUpKaMGr9GfgYCw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=FfdHPFD8; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=shivani@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	t=1780644422; c=relaxed/relaxed;
+	bh=pXmeAa6A0eeMzf8oUA1hZUGnWx8n3BF7bgiV9ST3KOw=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
+	 MIME-Version:Content-Type; b=XOwyCUVzq2ZT7b7FB2gCNpVSCrZSRav9FquvO+Mr3ZDnFPj6alk2UDGCVKaVJQrJUR49vlKRX7TB3zW/tAMh+TwQUHwXILjcCRczf6QJZomOzU8UlBXMJYjDXjeab+fB+Bd/L3VflWXrL0OAE2t2WgOLdfZxkVlLfW5nbEXjhk6+t+1G27bs/oe7Cos2pZMli3pt6tW4UVxMBQSn+jJcM4GuTCZGXONsvjs2J4PIerDVNcSzjwof0nZHcMJuYNz2FeEVZlLiqdnnaKNP4nvPbzXs5c6QfACOhsLrr3h/yrJpmSTcoVesbqP85U4f+k2079cxW5jicP8oksm3TqwIBA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=gItBPrx+; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=vaibhav@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=FfdHPFD8;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=gItBPrx+;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=shivani@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=vaibhav@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gWs1W0qlrz2yNn
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Jun 2026 16:27:42 +1000 (AEST)
-Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6551Ja5A518996;
-	Fri, 5 Jun 2026 06:27:37 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gWtKx32j7z2xnK
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Jun 2026 17:27:01 +1000 (AEST)
+Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6551Ykn82667091;
+	Fri, 5 Jun 2026 07:26:03 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:message-id:mime-version
-	:subject:to; s=pp1; bh=/TvZyBYfiwgAkrVUxgA0davqC3k8R0etHNYu91uIS
-	Xo=; b=FfdHPFD8Sijh0bHJFbBO+JERYb1Tb3fDpmDsFBtPIN3Os568f+zJUO8um
-	AID60E8p7UDI+tQEuCNM5PltK6A8nxJrzNrm3IyHsID8sAbyp/KBqB4cNYzOLvMx
-	MQi7GoUPQPNtc9k7VraeeelrsScBH80Eyt90WMt0dJnVsnx9bC3uylCesaOn2f1u
-	OT+XQGR2v1KDSmp7AnFV7yDjxEMfur5XK4WCOsVa9GEGGqragftq2yObbovmBRA5
-	zNiNatVV2DBArcyJOxor06IjsQYgkZsByoRnLnhfkyB1jFj23m90ghdE4M965eyP
-	h+Xin/yBWQra1lWDd7XpSBr4j21Gg==
-Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4efqm5b3vy-1
+	:content-type:date:from:in-reply-to:message-id:mime-version
+	:references:subject:to; s=pp1; bh=pXmeAa6A0eeMzf8oUA1hZUGnWx8n3B
+	F7bgiV9ST3KOw=; b=gItBPrx+ngfuGpceIaKc2zCi9Nsw5e6pI2NzJxqID8ukrd
+	/jgFa5ecopku7FitiQhk8ITzvTsPeXkamQkRcUKnAqZ/feDv9/BjxW+eyespoka0
+	b/t95uK1vftmtRLjuVpzcMommP5PShvMOM/vNSq6KtOql5v2mFOdpBEHFzvVWSZl
+	WL8s32Jl72L640EZQ/g2S33HOEGvBuyDq2yN+Q38y06PT+prj+uUcyhqhN8TQQL/
+	LrOTd7pjIN3LsJl9ppql/kc2nMzuuFt/OnE5le5ZAgNzS63Qy2NqXehL98bTNlSi
+	5d/o4/DVQMD3GM4qqAItzRIujWT6buaDfLdGenTQ==
+Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4efqhtjn3y-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 05 Jun 2026 06:27:36 +0000 (GMT)
-Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma13.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 6556OWZr030735;
-	Fri, 5 Jun 2026 06:27:36 GMT
-Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
-	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4egceh07qd-1
+	Fri, 05 Jun 2026 07:26:03 +0000 (GMT)
+Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma22.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 6557OEaV031539;
+	Fri, 5 Jun 2026 07:26:02 GMT
+Received: from smtprelay05.wdc07v.mail.ibm.com ([172.16.1.72])
+	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4egakw8qsf-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 05 Jun 2026 06:27:35 +0000 (GMT)
-Received: from smtpav04.fra02v.mail.ibm.com (smtpav04.fra02v.mail.ibm.com [10.20.54.103])
-	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6556RWLO47645116
+	Fri, 05 Jun 2026 07:26:02 +0000 (GMT)
+Received: from smtpav02.dal12v.mail.ibm.com (smtpav02.dal12v.mail.ibm.com [10.241.53.101])
+	by smtprelay05.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6557Q1W633227496
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 5 Jun 2026 06:27:32 GMT
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 64D4F20040;
-	Fri,  5 Jun 2026 06:27:32 +0000 (GMT)
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 0D74720043;
-	Fri,  5 Jun 2026 06:27:28 +0000 (GMT)
-Received: from Mac.ibm.com (unknown [9.39.24.40])
-	by smtpav04.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Fri,  5 Jun 2026 06:27:27 +0000 (GMT)
-From: Shivani Nittor <shivani@linux.ibm.com>
-To: acme@kernel.org, jolsa@kernel.org, adrian.hunter@intel.com,
-        mpetlan@redhat.com, tmricht@linux.ibm.com, maddy@linux.ibm.com,
-        irogers@google.com, namhyung@kernel.org, ravi.bangoria@amd.com
-Cc: linux-perf-users@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-        atrajeev@linux.ibm.com, hbathini@linux.vnet.ibm.com,
-        Tejas.Manhas1@ibm.com, Tanushree.Shah@ibm.com, shivani@linux.ibm.com
-Subject: [PATCH] perf scripts: Add configurable sorting option to powerpc-hcalls
-Date: Fri,  5 Jun 2026 11:57:17 +0530
-Message-ID: <20260605062717.24982-1-shivani@linux.ibm.com>
-X-Mailer: git-send-email 2.50.1
+	Fri, 5 Jun 2026 07:26:01 GMT
+Received: from smtpav02.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 1520F5806F;
+	Fri,  5 Jun 2026 07:26:01 +0000 (GMT)
+Received: from smtpav02.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 86A5C58060;
+	Fri,  5 Jun 2026 07:25:54 +0000 (GMT)
+Received: from vaibhav?linux.ibm.com (unknown [9.124.210.197])
+	by smtpav02.dal12v.mail.ibm.com (Postfix) with SMTP;
+	Fri,  5 Jun 2026 07:25:54 +0000 (GMT)
+Received: by vaibhav@linux.ibm.com (sSMTP sendmail emulation); Fri, 05 Jun 2026 12:55:51 +0530
+From: Vaibhav Jain <vaibhav@linux.ibm.com>
+To: Gautam Menghani <gautam@linux.ibm.com>,
+        Amit Machhiwal
+ <amachhiw@linux.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Madhavan Srinivasan
+ <maddy@linux.ibm.com>,
+        Harsh Prateek Bora <harshpb@linux.ibm.com>,
+        Ritesh
+ Harjani <ritesh.list@gmail.com>,
+        Anushree Mathur
+ <anushree.mathur@linux.ibm.com>,
+        Nicholas Piggin <npiggin@gmail.com>,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        "Christophe Leroy (CS GROUP)"
+ <chleroy@kernel.org>,
+        kvm@vger.kernel.org, stable@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] KVM: PPC: Book3S HV: Validate arch_compat against host
+ compatibility mode
+In-Reply-To: <aiGJvUqgjUo6M5et@mac.bl1-in.ibm.com>
+References: <20260603141539.47620-1-amachhiw@linux.ibm.com>
+ <aiGJvUqgjUo6M5et@mac.bl1-in.ibm.com>
+Date: Fri, 05 Jun 2026 12:55:50 +0530
+Message-ID: <87ldctmosh.fsf@vajain21.in.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -88,129 +103,58 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
 X-TM-AS-GCONF: 00
 X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-GUID: eSijdZ5xjZt9X6PM_LH0xsgP54uN9xO0
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjA1MDA1NiBTYWx0ZWRfX+el2/2x+rrlq
- TBte7qdtniS9Nfmmg0f7AfDK9f/PE9zRnb/D+ofwI2FbfWjnAg6tEWJK+/eE3ouqPYzmYiKclo+
- TWBNbzlR3MK5rW+RkUPQvqHrp6M93OAHZDnX3WvtTI+b0faWp+TkUW8pRq/+mhaeScDht2IYMgq
- 5JX69bWJmlDxdWjCe8QB/mcq94p8ZQv1EZigvHpEdBXPKzszyswcIdnHi33TgTLB1XKgDZSX/3C
- sPp8s4eIUqM5ngzK1dBRuZOAr0nWDzV5OF2UR19RNjyhRwtfJo5EZ2T74hf8SwgQq/GNZZzMrKQ
- CuONBcUi/dP8UmYrn3ArroHIBLkcrrEPZRSuaRXdI/PMk92UF83AyDGthEJwYwrt3Hto0liQenT
- Ht8ExIDUnOvE70IifEWVfg9VFezHsTgiYlh+Fuqg7uM8bx6ZJn9OGh0WO2fqaTrtMNdOVAlsplj
- Rie3tlLYjj5iCClsLEQ==
-X-Proofpoint-ORIG-GUID: eRtIVGCl-PVjeJxsz9qjGpi1YbeIv0AC
-X-Authority-Analysis: v=2.4 cv=Vf3H+lp9 c=1 sm=1 tr=0 ts=6a226c59 cx=c_pps
- a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
+X-Proofpoint-GUID: dv5klJ00atjHlKCI-UFdB4mmsQNPGgcc
+X-Authority-Analysis: v=2.4 cv=fv/sol4f c=1 sm=1 tr=0 ts=6a227a0b cx=c_pps
+ a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
  a=FelO9ux0wxsA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=U7nrCbtTmkRpXpFmAIza:22 a=VnNF1IyMAAAA:8 a=PuGCGJEl-EjltSXZxTIA:9
+ a=RzCfie-kr_QcCd8fBx8p:22 a=VnNF1IyMAAAA:8 a=HbV5RZ6GBX0UAL49VfYA:9
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjA1MDA2NyBTYWx0ZWRfX6Pauc09m9wfW
+ lREhGXSC8k5WPPwar/rFBYTfumn2ZYC3/MwHi9xgcEYsqVQVtBxgHNnpkhaz/yZAEYbmTy47MuZ
+ x/sx2lERWbF2y1ZBoXsujP5svAqfBwCfJakcmyb0I2BUll5rkiMmTsHSOaC0Hu+c/NkDY9oqrOI
+ s39QtqcCuwZ+I+qHP2te4N0jMMV/uUnLHdAQat2ZG7Kchw3sYPWQnJK/93wMZAEiUmL7+PWUA34
+ MoAhH4X/kQmJpfh+knmjXh+NecJPZC1Jy+8qp1lXwGTtDowoEtIuY575Y0RFCtV0TXYd+KxDk/3
+ 04eJ/gf8igbFUSeZoA+GDel9SMgQfEkK2Ud5J1O0xZrrVQ4RWe2vb+UmVO/5Z+8ZvEbF1MbmMGs
+ vyzV06dynj+qrNr012r6q68Xz0F7++fqGlSDWbsrl8ppR/6I3uIyxa+6uiYPuGZhCEJgC+8UldR
+ rnvAejQtL9DB/VSIc1w==
+X-Proofpoint-ORIG-GUID: tTAjuvZJ11_b-xicIG6gnOOavGc8y1HC
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
- definitions=2026-06-04_07,2026-05-28_03,2025-10-01_01
+ definitions=2026-06-05_01,2026-05-28_03,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501 suspectscore=0 adultscore=0 bulkscore=0 impostorscore=0
- phishscore=0 lowpriorityscore=0 malwarescore=0 clxscore=1011 spamscore=0
+ adultscore=0 priorityscore=1501 spamscore=0 phishscore=0 clxscore=1011
+ impostorscore=0 suspectscore=0 bulkscore=0 lowpriorityscore=0 malwarescore=0
  classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2605210000 definitions=main-2606050056
+ reason=mlx scancount=1 engine=8.22.0-2605210000 definitions=main-2606050067
 
-The powerpc-hcalls.py script currently prints hypercall
-statistics in a fixed sort order based on the number of
-hcall occurrences, making it difficult to analyze hcalls
-from different execution characteristics.
+Hi Gautam,
 
-Add support for runtime-configurable sorting so users
-can order hypercall statistics by count, minimum
-latency, maximum latency, or average latency using
-a --sort option.
+Thanks for testing this patch. Few questions:
+Gautam Menghani <gautam@linux.ibm.com> writes:
 
-Parse arguments through sys.argv to support perf script
-argument passing semantics.
+> On Wed, Jun 03, 2026 at 07:45:39PM +0530, Amit Machhiwal wrote:
+>> On IBM POWER systems, newer processor generations can operate in
+>> compatibility modes corresponding to earlier generations. This becomes
+>> relevant for nested virtualization, where nested KVM guests may need to
+>> run with a specific processor compatibility level.
+>> 
+<snip>
+>
+> I booted a KVM guest on LPAR with this patch in the following scenarios:
+<snip>
 
-Example:
+> 3. P11 guest on P11 host booted in P10 compat mode: No error observed
+This should have resulted in an error since booting a P11 guest on P10
+compat mode host is not allowed with/without this patch. Can you please
+check your test env and share the boot results.
 
-perf record -a -e powerpc* sleep 10
 
-perf script -s ./powerpc-hcalls.py -i ./perf.data -- --sort=max
+>
+> Tested-by: Gautam Menghani <gautam@linux.ibm.com>
 
-SORT KEY = max
-hcall                            count   min(ns)   max(ns)   avg(ns)
-
-H_SEND_LOGICAL_LAN                  47      7380     40148      8739
-H_VIO_SIGNAL                       706       880     17454      1911
-H_RANDOM                             1     15176     15176     15176
-H_PUT_TCE_INDIRECT                   4      3032     10444      4956
-H_ADD_LOGICAL_LAN_BUFFER           363      1250      8716      1534
-H_SEND_CRQ                           8      2086      6846      3044
-H_PUT_TCE                            9      1284      4932      2646
-H_STUFF_TCE                         13      1620      3962      2358
-
-This makes it easier to identify frequently occurring
-or high-latency hypercalls depending on the analysis
-being performed.
-
-Signed-off-by: Shivani Nittor <shivani@linux.ibm.com>
----
- tools/perf/scripts/python/powerpc-hcalls.py | 35 ++++++++++++++++++++-
- 1 file changed, 34 insertions(+), 1 deletion(-)
-
-diff --git a/tools/perf/scripts/python/powerpc-hcalls.py b/tools/perf/scripts/python/powerpc-hcalls.py
-index 8b78dc790adb..df7b83ab0b6e 100644
---- a/tools/perf/scripts/python/powerpc-hcalls.py
-+++ b/tools/perf/scripts/python/powerpc-hcalls.py
-@@ -25,6 +25,7 @@ from Util import *
- #	} ...
- # }
- output = {}
-+sort_key = 'count'
- 
- # d_enter: {
- #	cpu: {
-@@ -158,10 +159,42 @@ def hcall_table_lookup(opcode):
- 
- print_ptrn = '%-28s%10s%10s%10s%10s'
- 
-+def sort_output(opcode):
-+	stats = output[opcode]
-+
-+	if sort_key == 'min':
-+		return stats['min']
-+	if sort_key == 'max':
-+		return stats['max']
-+	if sort_key == 'avg':
-+		return stats['time'] // stats['cnt']
-+
-+	return stats['cnt']
-+
-+def trace_begin():
-+    global sort_key
-+
-+    i = 1
-+    while i < len(sys.argv):
-+        arg = sys.argv[i]
-+
-+        if arg == '-s' or arg == '--sort':
-+            sort_key = sys.argv[i + 1]
-+            i += 2
-+            continue
-+
-+        if arg.startswith('--sort='):
-+            sort_key = arg.split('=', 1)[1]
-+
-+        i += 1
-+
-+    print("SORT KEY =", sort_key)
-+
- def trace_end():
- 	print(print_ptrn % ('hcall', 'count', 'min(ns)', 'max(ns)', 'avg(ns)'))
- 	print('-' * 68)
--	for opcode in output:
-+	for opcode in sorted(output, key = sort_output,
-+                            reverse=True):
- 		h_name = hcall_table_lookup(opcode)
- 		time = output[opcode]['time']
- 		cnt = output[opcode]['cnt']
 -- 
-2.53.0
-
+Cheers
+~ Vaibhav
 
