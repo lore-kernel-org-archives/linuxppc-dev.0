@@ -1,57 +1,58 @@
-Return-Path: <linuxppc-dev+bounces-22125-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22126-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 12861CD6E79
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Jun 2026 12:16:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 08612CD6E7D
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Jun 2026 12:18:56 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gX0ls3VLdz2yN8;
-	Fri, 05 Jun 2026 22:16:25 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gX0pl4xvHz2yN8;
+	Fri, 05 Jun 2026 22:18:55 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780661785;
-	cv=none; b=NKMWfrf8+iIvY2Cx1gNCOP/ucGVlpd0iT/ilCMnv8xO2vyubqpc89/ZEndHRhcz9tk4x/NCz9/RU3KQ9kRF+z5LjdUVi5VdVTydPzwgyLD813pR/39dHZaFvvuhQ8t9lTS/iNRD84pOa+uNYfxWpVYuIguzqWWa1rAG93fmU4pP3g6E4u97x7ST+PW3wzB61HjwfFQgPdJERm3CnknBDJJdr9aLZ8gXJCN2XHTTd1NsGi/QwZJoddLmpGiBNToFIDc/PUfmBNfgw93szJDnHFVduVbyiElt06kILvrXEFVSPtOHlcL2gqG4vOy8eIpB84+PglsK0haP5xJ4gPk0HOg==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780661935;
+	cv=none; b=BO1SImpf27vZ1nXKxE4X3etOLEYzc29tCO0vijsdUvN1A7BbJUYNnH1kUv6N7kBPAYGLEj6wKnRnVPDjldvvqyz+8dssYRtvBFE4H3euawDBRHLqpTTdyLBbyVXsJn1Sq2D4I0C3b5AGLLDT3omvnGwfuo2Bxs61Hb4H+m3ZHI9vxwyfw7Ilqq3oocjMsBHPzjVpKXweWrRS55d+Y5XHlFv0X01SjmRDQSLHkb8JodkQZB4o4Roaoo4Ohu9v7zA2GZ2+Vx4sxDS/XFTJCJpoEqJj9LOddUam6eGRsx07DxPY4DcCX7VckGsoJimymITbMWA7GfqIHhgUEOSYng/cJw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1780661785; c=relaxed/relaxed;
-	bh=N6eF1GWUd29h7zy7BTjjZPmBC+K5GJ6gDgFk0aS492o=;
+	t=1780661935; c=relaxed/relaxed;
+	bh=/HjuMOk3WVgtMcDzTwNBYPhsQV9U+DIpa82b0vn61Cw=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=IuEKN9/iAgF2Y+TrvBtpUDFxPbv/VWNEFf6FS+BFCRujlj/yLkTuSO7H0ZlM8emdSslidcM4Kp17sNgPPhz9SozwQQ9AIWPXZ5Tf7KGlGU4gfUvibaqQcs41uxxr7BH8toZKes0RVWxIutGI7x4IKRPInH3UcTiohKi7HaC98mRcllGhRVYPZdsHzVe/KLr5NR+7I2iv6IhJh5b9/vHWEFEMx/5ZqbklDPNs9yYYIwRGrrZ7jkJhx7oTs1D0z5kNJ6p/LsHi+NrRO9GcNcc4RIfySwSW0cW0j7pFt5ZqMkL2UfDU8/jzj2CMLUEPLagIo4+eimZaLdqhXNV1OHhYvw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=VOFT+2Ov; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=johan@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 Content-Type:Content-Disposition:In-Reply-To; b=KDowcgf49tg8QJmo8AeZyD8b1Dq5+gnr2gRa2Yo0cx/H+csHygeamQPrdL5Dr9WmWK3jenuk5BItIcHY8lZroLkLmUeXeMK8qQ0ei24rWwJtwzhuYNGl5Yasyp5GQSGXmdTu/to/DwYKLuQ282crSF4tEGoTPbBM9o1+OEvZOZeyrqU9ndCe21Eakn7y4n7CtC73B1O4J/4G8G7XGyYRHbGi8Wy9bhhnirjmQaERaoPR5tI8S7efqbGplyLRJ+CjKtNtM54AhnCEXAf6Y7ho4wCt5gQhoguzT6mRFSUell8vRrLLJC2o5wTyY8hcjxc1mV3SYV++Yy2DDNADQpgEaA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=B6ZbiSx0; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=johan@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=VOFT+2Ov;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=B6ZbiSx0;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=johan@kernel.org; receiver=lists.ozlabs.org)
 Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gX0lr1J7cz2xdb
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Jun 2026 22:16:24 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gX0pk5pvxz2xdb
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Jun 2026 22:18:54 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id CC3F2601F5;
-	Fri,  5 Jun 2026 12:16:20 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 70CFA1F00893;
-	Fri,  5 Jun 2026 12:16:20 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 9320E601E3;
+	Fri,  5 Jun 2026 12:18:52 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3680B1F00893;
+	Fri,  5 Jun 2026 12:18:52 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1780661780;
-	bh=N6eF1GWUd29h7zy7BTjjZPmBC+K5GJ6gDgFk0aS492o=;
+	s=k20260515; t=1780661932;
+	bh=/HjuMOk3WVgtMcDzTwNBYPhsQV9U+DIpa82b0vn61Cw=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=VOFT+2OvlBtpNuDhZERoNGbVhpyXK6pZJaP6rLVUG6qpUcQs6j+Omao1sssQRncQY
-	 1m9NFiMYSj7IQbmefSmJytF0dsrP5YNKZatB6uNwDtchw3h+govcw9EbPZmh3kcHF6
-	 0oPamZY3TdW+5YHiyKa9spHJ423FECL3kGkLDkWSGouMiQgdlI0n6DLVv4mRJtjmth
-	 lo5m/tghSaeN6MiAweXSHu5BOAT0zLd9n+spOEroR9P+r/gYh4RPjWwNlfvbQ/+cga
-	 JCtQ7c+84t3He6vUTed8SdwPpe+dWk28+7O7g4XOlwkdOG88pDfVyTVdJtZr12BUg+
-	 Ff43G7q8d2huw==
+	b=B6ZbiSx05oBJ7chQvQ/ntllvANNBFEMa9EcOIiJSVjAP/OKFNkFGomFVwuLIbEh+S
+	 20kIDl7Ha3LYle9T/0PSzWzaCdc5fZcxNiJ+ZJmhkm8/XR0hsoDMz0IvlyzEPadr35
+	 B2APB6kQVq6vujpiHLQ9XGq4k/2xwAVP0hGJlMMDE7JgpUoN8S88GU32fCFiZ7KPhJ
+	 5aHdZm6VNXpv0qJRoypblDiKXMIeOyKzQoPRJIPp5ZLuwnSs6kmXI7+nhiCVs/dUo5
+	 dzZdsgrBxQRdtTMmm690hmi5h0XAzX6HCHrWvz8VYLGFbLK2G/Ky5ioKkoR2keR14J
+	 lAcFAh/v+L/ZA==
 Received: from johan by xi.lan with local (Exim 4.99.3)
 	(envelope-from <johan@kernel.org>)
-	id 1wVTTF-00000000DVf-0HM4;
-	Fri, 05 Jun 2026 14:16:17 +0200
-Date: Fri, 5 Jun 2026 14:16:17 +0200
+	id 1wVTVh-00000000DXZ-0P54;
+	Fri, 05 Jun 2026 14:18:49 +0200
+Date: Fri, 5 Jun 2026 14:18:49 +0200
 From: Johan Hovold <johan@kernel.org>
 To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Cc: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>,
+Cc: Philipp Zabel <p.zabel@pengutronix.de>,
+	Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>,
 	Lee Jones <lee@kernel.org>,
 	Mark Brown <broonie@opensource.wolfsonmicro.com>,
 	Thierry Reding <thierry.reding@avionic-design.de>,
@@ -85,7 +86,6 @@ Cc: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>,
 	David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
 	Peter Chen <peter.chen@kernel.org>,
 	Paul Cercueil <paul@crapouillou.net>, Bin Liu <b-liu@ti.com>,
-	Philipp Zabel <p.zabel@pengutronix.de>,
 	Maximilian Luz <luzmaximilian@gmail.com>,
 	Hans de Goede <hansg@kernel.org>,
 	Ilpo =?utf-8?B?SsOkcnZpbmVu?= <ilpo.jarvinen@linux.intel.com>,
@@ -100,12 +100,13 @@ Cc: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>,
 	intel-xe@lists.freedesktop.org, dri-devel@lists.freedesktop.org,
 	linux-usb@vger.kernel.org, linux-mips@vger.kernel.org,
 	platform-driver-x86@vger.kernel.org
-Subject: Re: [PATCH 08/23] driver core: platform: provide
+Subject: Re: [PATCH 22/23] reset: rzg2l: use
  platform_device_set_of_node_from_dev()
-Message-ID: <aiK-EXwp_xhcbty9@hovoldconsulting.com>
+Message-ID: <aiK-qZqpuC-OEigf@hovoldconsulting.com>
 References: <20260521-pdev-fwnode-ref-v1-0-88c324a1b8d2@oss.qualcomm.com>
- <20260521-pdev-fwnode-ref-v1-8-88c324a1b8d2@oss.qualcomm.com>
- <ah9O15bMlAYgSlHx@ashevche-desk.local>
+ <20260521-pdev-fwnode-ref-v1-22-88c324a1b8d2@oss.qualcomm.com>
+ <6af284545729f03a60d06479339862a2f08c6b7e.camel@pengutronix.de>
+ <ah9QtExF2rUUTMNo@ashevche-desk.local>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -121,20 +122,26 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <ah9O15bMlAYgSlHx@ashevche-desk.local>
+In-Reply-To: <ah9QtExF2rUUTMNo@ashevche-desk.local>
 
-On Wed, Jun 03, 2026 at 12:44:55AM +0300, Andy Shevchenko wrote:
-> On Thu, May 21, 2026 at 10:36:31AM +0200, Bartosz Golaszewski wrote:
-> > Provide a platform-specific variant of device_set_of_node_from_dev(). In
-> > addition to bumping the reference count of the OF node being assigned,
-> > it also assigns the fwnode of the platform device.
+On Wed, Jun 03, 2026 at 12:52:52AM +0300, Andy Shevchenko wrote:
+> On Tue, Jun 02, 2026 at 10:24:41AM +0200, Philipp Zabel wrote:
+> > On Do, 2026-05-21 at 10:36 +0200, Bartosz Golaszewski wrote:
+> > > Ahead of reworking the reference counting logic for platform devices,
+> > > encapsulate the assignment of the OF node from another device for
+> > > dynamically allocated platform devices with the provided helper.
 > 
-> Can we rather investigate the way how to make that of node reuse thingy
-> (which is used solely by pin control) differently and then drop this confusing
-> device_set_of_node_from_dev() call altogether?
+> ...
+> 
+> > > -	device_set_of_node_from_dev(&vdev->dev, dev);
+> > > +	platform_device_set_of_node_from_dev(vdev, dev);
+> 
+> Same Q here, why it uses inherited call? Cargo cult?
+> 
+> 'reused' flag is solely pin control (provider!) thingy as far as I remember.
 
-No, that call is needed. See commit 4e75e1d7dac9 ("driver core: add
-helper to reuse a device-tree node") for details.
+No, it's needed for pin control *consumers*, which can be any device,
+and potentially any other resource managed by driver core or bus code.
 
 Johan
 
