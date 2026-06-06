@@ -1,73 +1,81 @@
-Return-Path: <linuxppc-dev+bounces-22147-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22148-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 991A1CD6E7B
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Jun 2026 00:35:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 792BACD8C88
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Jun 2026 03:22:43 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gXK8Y6d6Wz2yMn;
-	Sat, 06 Jun 2026 10:35:25 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780706125;
-	cv=none; b=iZt7+YEpIzYYtXSgYnfOew05HU0rlfDdm/+M3DN0e1mPpcVL8Q2QKGkKkLjYwfY7tCVk1EK/yu1mbGmk/d4zvMmRR72tiVXz1m7J0BDHbbjXoIiq41kxlG7umv6+B4rValSQ6TPPjPFVYuTscwsSbKVeIEobIXNIzHgEmE72SppDt63WqTB7E2+23bd6R5cLDF+4bbC9QBjW1LvWMD+uf4oEvDFA/3uXOukYiiZ3KE6P3IoJf67+1Ya+0cIhR55O+GBbyJyQHBblW/weIhzAG5OES0bqji3ozkTyQQMCXRNeiwfiN+j4MIcHGRQFFn9puNe5bykoiv0aGC7xMGd8Ww==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gXNsY6LNcz2xM7;
+	Sat, 06 Jun 2026 13:22:41 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::102b"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780716161;
+	cv=none; b=J9ZQOL+cegtzmw82S4x7bRKjW3xWLHyldkF/T6AKKxCHKban/PXcHQqotpczOFjd7lNnwqPwjt9p4YTmMVJfWDekLhKC2bid3lD86gpqGIiX4XLpfEFVHyOuvPncj3LoEZMTgOAqkZ3S1+9Wg+V3M9Kpv/HXddS8T87i6IuAzgfOAh4Ui5pL4KWPERNakZ3SLNQUT0wjSciZilooov7pI6zmR6ny27rDgvxThDdY2PwjhOS+Gss8oqJ3VdWrvfPQI2Rpb7+siGvFTA7N4CPfgTjsHXdv2GkiE52KCdNBatf7I54UyuTTbIAwRL/QatzUyGjrg6sSjSY3p/UYkHZYXQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1780706125; c=relaxed/relaxed;
-	bh=10R7bpEJTdOdzVayFD9Q6l+SCZSwLyUlb7ZztL7dxms=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=BHK1+rhS9EImEJr0XSjIalDOuyOXy4H15kkO6O6lZ2QKSI3qBtKmEVSSZRJALo7HWpg6ZaO9r0/NnjJJY02PquJrJ4T2CC+VAdCAPCAG/tLIWDylFi/jwGPbVqcLrsZ2X5gsAY6LVE24yAM7BDdZKGLBmUb5XDIXmo9Y+Td+5jwlKmr2GKngnurQm9YG2HvK9xIYJlyYKL0BcJwG2/Bzz24KPywkiDs2EsBMzT5SpdAKc+RPn2g7l8LYME/puoOA39ai8s4IA6Ck+n1YmT9eQBjRVSV5p8erCDVBqb5MSOkdR5QEkht6nHtZ5LJGEk8+ZVbIA6OO2wKWdB00vyEOSg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=RoUHrZSB; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=jhkim@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1780716161; c=relaxed/relaxed;
+	bh=jbPgsrbK1K1b0DlYJTMCLHsCDahXSKwxCMeJ1Uav9D4=;
+	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References; b=V8gp2G5rILsyb0XbtgmNecNhGb/4V/HdTIyl1BQ0zvTATt4OeEVxmsz/afsBBDkH90alGW7xSPfzDlQEDA0MbR58ZH078W46dbrqrEEkQEZB7b8scLDrnrQBfHLbk7HJgsMku4KPrVGGhpXpWzUv2WBBTsVHzEO8sC609NChPfhkqJe4ZEcBedpTTy5g4rWe8BvQ5/UacznrctDqHdnvItoi7nGSoGY2lRe1XemBBhWeo5clq2SEkx17OYWAaudrhlSajgIMqRnP51ncnWg/qx4lr0571yJrKAzYSdBcjx6pHUpTIzJr8p557y3szYP+yT4LgscOxpzShS1PR4e82w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=DoibHwHv; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::102b; helo=mail-pj1-x102b.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=RoUHrZSB;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=DoibHwHv;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=jhkim@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::102b; helo=mail-pj1-x102b.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pj1-x102b.google.com (mail-pj1-x102b.google.com [IPv6:2607:f8b0:4864:20::102b])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gXK8Y08BNz2xMW
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 06 Jun 2026 10:35:24 +1000 (AEST)
-Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 655KPGLH3165334;
-	Sat, 6 Jun 2026 00:34:50 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=10R7bp
-	EJTdOdzVayFD9Q6l+SCZSwLyUlb7ZztL7dxms=; b=RoUHrZSBgzuGWiJYOobbkB
-	/uQkABo/YV4/wSRYGiwn9Ynd3JL66r4IQeDQvzBMEgK3kIX0ZxDPjx2aNkSaTOVs
-	gTquWUfkdJp4D41f8WqPwCGXecmnbTJYjOSAkisQRTD5eWdvIlADCk0h+ymg9sqe
-	ytafL6jBkxQn3Y+qxgVP9e42FMaX1eCiCBRPx1sy0V7uItqD3CJWavhEiEclAYIN
-	4+mS9hCXrkzBjH0VZP3xbY4y4HCfp9bXE2sYFBWify0bxsKhFP/TJoNtj1tuq+VE
-	4ytyKsZpXDnSEN1FkNsq/pCg6+k3ih0UWLoz7Bz8L5CZGjM0/fACZpgM+qBmTn5w
-	==
-Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4efpaep0sr-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Sat, 06 Jun 2026 00:34:49 +0000 (GMT)
-Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma12.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 6560O6gk027834;
-	Sat, 6 Jun 2026 00:34:48 GMT
-Received: from smtprelay05.dal12v.mail.ibm.com ([172.16.1.7])
-	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 4ega7qv6fn-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Sat, 06 Jun 2026 00:34:48 +0000 (GMT)
-Received: from smtpav01.wdc07v.mail.ibm.com (smtpav01.wdc07v.mail.ibm.com [10.39.53.228])
-	by smtprelay05.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6560YlZk30933536
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Sat, 6 Jun 2026 00:34:47 GMT
-Received: from smtpav01.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id B8FA95804B;
-	Sat,  6 Jun 2026 00:34:46 +0000 (GMT)
-Received: from smtpav01.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 147E058063;
-	Sat,  6 Jun 2026 00:34:45 +0000 (GMT)
-Received: from [9.61.255.106] (unknown [9.61.255.106])
-	by smtpav01.wdc07v.mail.ibm.com (Postfix) with ESMTP;
-	Sat,  6 Jun 2026 00:34:44 +0000 (GMT)
-Message-ID: <fbf37e22-8698-4688-9fe2-9e38658920cb@linux.ibm.com>
-Date: Fri, 5 Jun 2026 19:34:43 -0500
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gXNsX1rbHz2xHK
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 06 Jun 2026 13:22:39 +1000 (AEST)
+Received: by mail-pj1-x102b.google.com with SMTP id 98e67ed59e1d1-36d8b644473so2633143a91.3
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Jun 2026 20:22:39 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1780716156; x=1781320956; darn=lists.ozlabs.org;
+        h=references:message-id:date:in-reply-to:subject:cc:to:from:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=jbPgsrbK1K1b0DlYJTMCLHsCDahXSKwxCMeJ1Uav9D4=;
+        b=DoibHwHvDS8k93b9F19D8xkwjfhLEtVR9g9ixhSJmKaJvzwbe4t/kfU+XdGyculy5P
+         UjtQ1VETrz5HD100jD1mkdSPRy5Pdte0APfRPYdP37/2lt2lKRzvhN0YWRYgwe7nG7mt
+         293VtZrrmCCY4kXqSRqkQgkPrHNgLahyeTTgrf0GBaum851u2po7eXXPRnICYxknosx4
+         7Pean3rwhDXHQJdI13exDcdZnnpm2luh1NJw35W7znzwEfmxd+TtvB4Jy3jHnbRMKuI0
+         9POMlvsakHlm41abznhjsrnFLIrWb2jmDaAe1suvQ6lQjHELEDgTeZl6vcVSjeZ2OLxx
+         EwiQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1780716156; x=1781320956;
+        h=references:message-id:date:in-reply-to:subject:cc:to:from:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=jbPgsrbK1K1b0DlYJTMCLHsCDahXSKwxCMeJ1Uav9D4=;
+        b=FwhiRGd4XoOCee1k4PDoBvpKRK66b34/ZVdjwJogwPAHs8SrYJIv7JSDmgCI3oRNSE
+         eBXXJQs4WSQeOZR0GG2FUw0U/hOzUX1WlC5HptUI8+/qrXrYHuphJF5+mwhhfWvHTwrK
+         UCn/kgP5VOcM4YyHYzcRuhmou5xYJAw0tf45eYpzkakN0CTeMw9ZPi5M0xnw+soVhzSQ
+         sdksPGf4t7a7cNjSyJxzVBluGiD7rPptDCDqrD0vawmpHpizqJtcSCvaWCKvao8POnoM
+         kvr5aauvrfDxK7Ph16WXrLeMkX1E81eFBxFJiND+yLSXg8XGZUgQyzzr8N4ch0yvEWRs
+         16Gg==
+X-Forwarded-Encrypted: i=1; AFNElJ+uUElS3AH8EF9j/eI+st/sSUEOk3ufCHzeFDLq/cFsYdeNLtLEIx3+7ckp9LwVET4AnyHahM4X8UBmKIU=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YxtQIwbYLB1v7WjCJvKk1I9RwRAfeNrzofjTI8nOhilZTViUn7J
+	H4Mcck2Yg5KKAlukT9oeFI6HcB2SycU10HGhgfjEo9k8khlmHdmgeMkc
+X-Gm-Gg: Acq92OGM21eg08YyQoK1ng51R3ZGtzqDAdCmgUaVRbdASGMFTH8OSOSbAXsSG246eyT
+	mTZjLg3J+o0lF3YvaoA06ePMJMHKqbkbsIIgr+4def2tZmvrvf51frSJFol928m67bsRUguthQK
+	tAstyv4QxEVzI0Uov6x3b0dpMOmbjkKTOXcNvxRiZrhTdLlzpZMMlrLtyTedlTyq+KUbC4r4Tt6
+	Y/Mdp1nowKc4Kj1sTBBWIvOHsnU1k7UWFESw6B+VV2VrgOiYrJfUIhetSf6htQd4E1YWMs6xLnD
+	KMa5Rc/yER1JWF21GUPjg0F2jBnRPCU97jWoMaq/rJE7aG3/jZveCgseClPcIbguF0Yj7S8Jd8o
+	UOUdSGbhUEvqBLOq1++8pBn82HaQu7ggVghti4hynAD1gizQvUeCHThaFVrDyyQAPyEc+RAGx+b
+	1I73M3XvXWia2aV3wzAHGaRn9gTXkXia0k
+X-Received: by 2002:a17:90b:35c1:b0:36b:9daf:1504 with SMTP id 98e67ed59e1d1-370f0772850mr6916406a91.14.1780716156242;
+        Fri, 05 Jun 2026 20:22:36 -0700 (PDT)
+Received: from pve-server ([49.205.216.49])
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-371341170c7sm2319688a91.1.2026.06.05.20.22.32
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 05 Jun 2026 20:22:35 -0700 (PDT)
+From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+To: Gautam Menghani <gautam@linux.ibm.com>, maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com, chleroy@kernel.org
+Cc: Gautam Menghani <gautam@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, harshpb@linux.ibm.com, stable@vger.kernel.org, Sean Christopherson <seanjc@google.com>
+Subject: Re: [PATCH v4] powerpc/pseries/Kconfig: Enable CONFIG_VPA_PMU to be used with KVM
+In-Reply-To: <20260602121706.8423-1-gautam@linux.ibm.com>
+Date: Sat, 06 Jun 2026 08:37:49 +0530
+Message-ID: <o6ho8iyi.ritesh.list@gmail.com>
+References: <20260602121706.8423-1-gautam@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -80,142 +88,24 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v6 01/20] s390: Expose protected virtualization through
- cc_platform_has()
-To: "Aneesh Kumar K.V (Arm)" <aneesh.kumar@kernel.org>, iommu@lists.linux.dev,
-        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-        linux-coco@lists.linux.dev
-Cc: Robin Murphy <robin.murphy@arm.com>,
-        Marek Szyprowski <m.szyprowski@samsung.com>,
-        Will Deacon <will@kernel.org>, Marc Zyngier <maz@kernel.org>,
-        Steven Price <steven.price@arm.com>,
-        Suzuki K Poulose <Suzuki.Poulose@arm.com>,
-        Catalin Marinas <catalin.marinas@arm.com>,
-        Jiri Pirko <jiri@resnulli.us>, Jason Gunthorpe <jgg@ziepe.ca>,
-        Mostafa Saleh <smostafa@google.com>, Petr Tesarik <ptesarik@suse.com>,
-        Alexey Kardashevskiy <aik@amd.com>,
-        Dan Williams <dan.j.williams@intel.com>,
-        Xu Yilun
- <yilun.xu@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
-        linux-s390@vger.kernel.org, Madhavan Srinivasan <maddy@linux.ibm.com>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        Nicholas Piggin <npiggin@gmail.com>,
-        "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-        Alexander Gordeev <agordeev@linux.ibm.com>,
-        Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
-        Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>,
-        Christian Borntraeger <borntraeger@linux.ibm.com>,
-        Sven Schnelle <svens@linux.ibm.com>, x86@kernel.org,
-        Halil Pasic <pasic@linux.ibm.com>,
-        Matthew Rosato <mjrosato@linux.ibm.com>
-References: <20260604083959.1265923-1-aneesh.kumar@kernel.org>
- <20260604083959.1265923-2-aneesh.kumar@kernel.org>
-Content-Language: en-US
-From: JAEHOON KIM <jhkim@linux.ibm.com>
-In-Reply-To: <20260604083959.1265923-2-aneesh.kumar@kernel.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Authority-Analysis: v=2.4 cv=Zt3d7d7G c=1 sm=1 tr=0 ts=6a236b29 cx=c_pps
- a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17
- a=IkcTkHD0fZMA:10 a=FelO9ux0wxsA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=V8glGbnc2Ofi9Qvn3v5h:22 a=VwQbUJbxAAAA:8
- a=VnNF1IyMAAAA:8 a=blRdvrxeXnuE--CKtYQA:9 a=QEXdDO2ut3YA:10
-X-Proofpoint-GUID: ggpQfBSPHMe1E8vMi3W1YAcBxeGqHkU7
-X-Proofpoint-ORIG-GUID: R-cCnVSeKSEuXI4kZncs7oFO8xtbizvI
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjA1MDIzOCBTYWx0ZWRfX9CWxwkp73QOf
- ZCH4PcwFj7hkSywfl53gPqnUYZONt+fisFvoWdZOYTyT/hiKmJ9eU+cj3qU6bOdD1JUJjUTnFwa
- ucoZ3M+XIX/H7cgV5kPBdBK5BaKIZSeRJbxRpdepy5t8VxGknQ853KyhwMtTE/YQ2FN+AFuAGWL
- d9i4B/tfPrel1DUWKv+3FV71IZJI4IX6EyXoSz/8AnFWX1hASHDLUA/+OpTgKTnZkjMBBvWY4az
- ooWmu/2NwO95b7RZWbB5O/Pj1qgGuwwJZtlZkf6UxLW9lLcU9vvHHM201Mu0ZikAVCd0fMGCHHp
- 9ns2dJJMnWbtvb2lhH1iR2pZGU73I+zgWWuTpgupFrYDkoYrbQCdgou2J4ENmDyinF5Jimv+1Yl
- JX76uXu3wzudOrj/Ql4gsBnWAA+lAuSIXm00ffyXp7fu1ZI0zbiwzHJS/MepnwU8HYqA7viDiba
- mDkSbz2OSX92hxN+c4w==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
- definitions=2026-06-05_05,2026-06-05_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- impostorscore=0 suspectscore=0 priorityscore=1501 bulkscore=0 clxscore=1015
- phishscore=0 spamscore=0 malwarescore=0 adultscore=0 lowpriorityscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2605210000 definitions=main-2606050238
 
-On 6/4/2026 3:39 AM, Aneesh Kumar K.V (Arm) wrote:
-> Protected virtualization guests use memory encryption, so advertise that to
-> the rest of the kernel through cc_platform_has(CC_ATTR_MEM_ENCRYPT).
+Gautam Menghani <gautam@linux.ibm.com> writes:
+
+> Currently, CONFIG_VPA_PMU is not enabled by default, and consequently
+> cannot be used for KVM guests at all, unless explicitly enabled on
+> host kernel.
 >
-> s390 already forces DMA mappings to be unencrypted for protected
-> virtualization guests through force_dma_unencrypted(). Add
-> ARCH_HAS_CC_PLATFORM and provide the matching cc_platform_has()
-> implementation
+> Mark CONFIG_VPA_PMU as "default m" to ensure it is available when KVM is
+> being used.
 >
-> Signed-off-by: Aneesh Kumar K.V (Arm) <aneesh.kumar@kernel.org>
+> Fixes: 176cda0619b6c ("powerpc/perf: Add perf interface to expose vpa counters")
 
-Tested-by: Jaehoon Kim <jhkim@linux.ibm.com>
+Not really a fix per-se. So we need not add this fixes tag.
 
-Tested on s390 PV guest with swiotlb_dynamic configuration. SWIOTLB
-bounce buffer allocation and dynamic pool management work correctly.
-Also concurrent I/O stress completed successfully.
+> Cc: stable@vger.kernel.org # v6.13+
 
-Thanks,
-Jaehoon.
+I think the stable tag like above is sufficient for stable tree
+maintainers to pick this up.
 
-> ---
-> Cc: Halil Pasic <pasic@linux.ibm.com>
-> Cc: Matthew Rosato <mjrosato@linux.ibm.com>
-> Cc: Jaehoon  Kim <jhkim@linux.ibm.com>
-> ---
->   arch/s390/Kconfig   |  1 +
->   arch/s390/mm/init.c | 14 ++++++++++++++
->   2 files changed, 15 insertions(+)
->
-> diff --git a/arch/s390/Kconfig b/arch/s390/Kconfig
-> index ecbcbb781e40..9b5e6029e043 100644
-> --- a/arch/s390/Kconfig
-> +++ b/arch/s390/Kconfig
-> @@ -87,6 +87,7 @@ config S390
->   	select ARCH_ENABLE_SPLIT_PMD_PTLOCK if PGTABLE_LEVELS > 2
->   	select ARCH_ENABLE_THP_MIGRATION if TRANSPARENT_HUGEPAGE
->   	select ARCH_HAS_CC_CAN_LINK
-> +	select ARCH_HAS_CC_PLATFORM
->   	select ARCH_HAS_CPU_FINALIZE_INIT
->   	select ARCH_HAS_CURRENT_STACK_POINTER
->   	select ARCH_HAS_DEBUG_VIRTUAL
-> diff --git a/arch/s390/mm/init.c b/arch/s390/mm/init.c
-> index 1f72efc2a579..ad3c6d92b801 100644
-> --- a/arch/s390/mm/init.c
-> +++ b/arch/s390/mm/init.c
-> @@ -50,6 +50,7 @@
->   #include <linux/virtio_anchor.h>
->   #include <linux/virtio_config.h>
->   #include <linux/execmem.h>
-> +#include <linux/cc_platform.h>
->   
->   pgd_t swapper_pg_dir[PTRS_PER_PGD] __section(".bss..swapper_pg_dir");
->   pgd_t invalid_pg_dir[PTRS_PER_PGD] __section(".bss..invalid_pg_dir");
-> @@ -140,6 +141,19 @@ bool force_dma_unencrypted(struct device *dev)
->   	return is_prot_virt_guest();
->   }
->   
-> +
-> +bool cc_platform_has(enum cc_attr attr)
-> +{
-> +	switch (attr) {
-> +	case CC_ATTR_MEM_ENCRYPT:
-> +		return is_prot_virt_guest();
-> +
-> +	default:
-> +		return false;
-> +	}
-> +}
-> +EXPORT_SYMBOL_GPL(cc_platform_has);
-> +
->   /* protected virtualization */
->   static void __init pv_init(void)
->   {
-
-
+-ritesh
 
