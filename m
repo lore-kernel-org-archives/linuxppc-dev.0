@@ -1,83 +1,81 @@
-Return-Path: <linuxppc-dev+bounces-22149-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22150-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 474C5CD6E55
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Jun 2026 04:15:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2816ACD8C8C
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Jun 2026 12:20:37 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gXQ284dwzz2xM7;
-	Sat, 06 Jun 2026 14:15:12 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c200::5" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780699583;
-	cv=pass; b=OLIrFtAxaIDDIVkl69yKr2WkyCnqT4u4GZa7Kp/VhAMjpVrnUFq4zMg7kgdebN/PaCpKcH4RMVG8YwkDWgjkOMGvRvYjZRJpP4++lH70MiRhz9rp4mZOeijz1tbN/dzdeY056N/PSpjRN9CBBCBzWc+L46Yoa1zsOowX+Ks7hJcn/RwfHmpjz6npRraWxhAE/bZw1ffWvOiurqueu5H3RnFtRlqP7WkFOa7MYRDscG+Emyvg//wf1qeeCd7WGlc1WQUs3h3hrqpN+kzr5le+gAg2WnRcQVZnba/kpF5kUdj+SguFC1Z2Gbeyry5cOXG2zpcpwRN2vNo3Tx5mQpU5Sg==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1780699583; c=relaxed/relaxed;
-	bh=OzD8p+ZP9oH4tn8n7RoXC0+U3KcdSRMTDqRB3hhFLic=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:Content-Type:
-	 Content-Disposition:In-Reply-To:MIME-Version; b=c9J8FtKUd3hFJAykrBeW5iYr6ik73U20vBjxujRn3KuKdWnG26VYA0HALswnSWbx9EKb0GOTHD4JKmSWMdVMJrPzfdJKZtBemzy4TXmxGgys2f8Mea/TmgsX1LZO7tf59zfgZY5LaKgSec5YVPnRYqN4yTOjZgJtuTv8VtzkXzVIDwuX+/xc7riRKnsVMmGVlNba7644L0cFGHa0j9UuNpQZ42DoGNYkLyNeR1xBl0fcA/L6cSUT6jfjbgTlJNA1EU+0BuayNs4+TXXohL23KqEdX+myZ3hqRCrPHQlC1znhMA66ZjD3EUvRnQw9zB/zo4VfzP4KYQZR7Wu3hynqoA==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=oss.nxp.com; dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=Oz2U/PRL; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c200::5; helo=duzpr83cu001.outbound.protection.outlook.com; envelope-from=frank.li@oss.nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=oss.nxp.com
-Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=oss.nxp.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gXcpC3Kwwz2yS6;
+	Sat, 06 Jun 2026 22:20:35 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780748435;
+	cv=none; b=jNjT0EMg6+YiFwH1ZJYBI2ODYUuQ3G7d1fyadpZFbIYMfQfjHaP03zeemFvZJcwM2P1ZNIlLbJ70wiKN0wUQjX+8wVM0E44Cu3UqL/ib/x+QOF+KBLCP/ayTPixftyZVHZGCKmgKhKVjK562a0vrHhjywR2ll0L3aGPhimx3kUbjtkVJCWLZGAam5ec8SmgwE59ZobjvKrkxA1Z8i7ivSpTkwTa9fOtoBMIuAnJKjeccuSBK5hk2FVQRXAxFXwoIjR2DniYATaedcgSakl5/Vul+3DipcYwIR3Dej3AZ0VlRZcmpf0yVs75EJ/U04cBJgJzH/FfAwk0xKYKA8E7p1g==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1780748435; c=relaxed/relaxed;
+	bh=fLwS1YIxOJfufyjYhB52Uo0u9IFZTzVVV64omQWyYzo=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=m9eIb5gQESaK80M3ScsqGL6gCdDHkFhXQQSX9B3GLHw+kYguZFqUPVhiGGwcearWWhmYle3YRjhYf40t9nvCZ/RsMl7fAv61eVXLx6l8hhwDht5f1Np7tarwbIVapvaveCwOkpqBjqUtZdPxuZpXnddNkNFg8d7hQKgZa7teYEyXN/MwrUmiKhlAHlsl7/6cCutbyEbCVtJaRrS2jwTQi87pHXwEvwQwxaqaQcRooIt66RJ2CO3dcJjFZV55G+jZJqiPxahryKdsf0F5dujXCwwJJxu4Ue4x21IyMkRynsUGfKGvDvZuO2EEPXusY+AaL2M8hfuRrtt2RQdu6+s7bg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=LVxdZk3Y; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=tshah@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=Oz2U/PRL;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=LVxdZk3Y;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=oss.nxp.com (client-ip=2a01:111:f403:c200::5; helo=duzpr83cu001.outbound.protection.outlook.com; envelope-from=frank.li@oss.nxp.com; receiver=lists.ozlabs.org)
-Received: from DUZPR83CU001.outbound.protection.outlook.com (mail-northeuropeazlp170120005.outbound.protection.outlook.com [IPv6:2a01:111:f403:c200::5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=tshah@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gXGkk6xj8z3brt
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 06 Jun 2026 08:46:22 +1000 (AEST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=RskioeM2e8bdDeVuMyDRdY0a6XVMDhQv7rYti0tJW2GyJKel32rkzZWjE98cS5PwpKCsnQxR9hUDrPTODA/+HLtl8CiiUCcpTjNVyI+8YiXxQ3AXcnLGfH2NryNNN8wKbeYdt1zplJEheCWnaLYPpaCf+92bsZMJKZjBw7ijeO4Z5SQq2TApUrolKzrTLz8bYMjbnw84wc+3rSbn/M9OPwiPIbEJo/GBIyTpEslJA+oKwS0Gx/RzxX/iTgIS97ubUoYUWUdhdnqT5VrkLr507YE7IRhHgfktq5Q9F4GoQDWUUNSx07GNmzOalWV/k1IiSQ35CzHL9SjBrLp7cBu7+w==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=OzD8p+ZP9oH4tn8n7RoXC0+U3KcdSRMTDqRB3hhFLic=;
- b=v5Ow0Tl4fn/2XOgGn2GkVLKQ38Pt+nJ2lgwfaJ+DaMMwmn0VG48Re8x0E/5EJ7g7HUyRXgZzV4YfHTjwqf2tgNKejxFKX9MaBpR5pLrnS9mFYIPP/YPZa7PVBBtVREQzC6cmzg5qOWuCSYWZas/FPQb4YjUn3GvP4Uk2IIi87Zub7TvQ9L9tLyE5pu55SB2uigP1Woqpe9xe4SlqCJ884Hvds5Q9FyVU7H4wHJ2JBb3K4NZKWqgAZnCYDdzSxXY57irFHBFCjSNmQvNAGiq/CGCkBJWjvV3/wVidvH7Hf3qsDAotQQ0/KmL218Aeo7Ns33Ex2dGjiMD+VL6BF5MZBQ==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=oss.nxp.com; dmarc=pass action=none header.from=oss.nxp.com;
- dkim=pass header.d=oss.nxp.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=NXP1.onmicrosoft.com;
- s=selector1-NXP1-onmicrosoft-com;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=OzD8p+ZP9oH4tn8n7RoXC0+U3KcdSRMTDqRB3hhFLic=;
- b=Oz2U/PRL+ij9JuSZNT/AXSWfP61HA4qbFsnzXQlknAChScnlYg4XN/LTAD1y3kd6hzMIiT0sQW3Lc8FAPxKRCWBYJ4KyYos9Xfq1lPIGAyqUsOkTVLSbzjfWcm6VPWipomyE1L5ErtJhlrtu0vzxTBgjXjq8sGEq8771aRlOmYOqCidAQVjAogn1hCRqXZiISsZM1sI5hGx/eQrZEKYqTXvkxsT+eWhBz+bjaz3kFu9ZNvAGTNk7U/4DcW6dvSwzKCF0KcCy2pUwbILerV0Biq4l5jn7H3aRzLqQm9Beb1ffs+3Dw6BV+qFcx70MsLx8p8XcmeppLhh9/LrNS/iG6g==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=oss.nxp.com;
-Received: from GV2PR04MB11799.eurprd04.prod.outlook.com (2603:10a6:150:2cf::9)
- by PR3PR04MB7257.eurprd04.prod.outlook.com (2603:10a6:102:93::14) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.92.8; Fri, 5 Jun 2026
- 22:45:59 +0000
-Received: from GV2PR04MB11799.eurprd04.prod.outlook.com
- ([fe80::2146:83a2:5329:b7c]) by GV2PR04MB11799.eurprd04.prod.outlook.com
- ([fe80::2146:83a2:5329:b7c%6]) with mapi id 15.21.0092.007; Fri, 5 Jun 2026
- 22:45:59 +0000
-Date: Fri, 5 Jun 2026 17:45:50 -0500
-From: Frank Li <Frank.li@oss.nxp.com>
-To: Rosen Penev <rosenp@gmail.com>
-Cc: dmaengine@vger.kernel.org, Vinod Koul <vkoul@kernel.org>,
-	Frank Li <Frank.Li@kernel.org>, Zhang Wei <zw@zh-kernel.org>,
-	Nathan Chancellor <nathan@kernel.org>,
-	Nick Desaulniers <nick.desaulniers+lkml@gmail.com>,
-	Bill Wendling <morbo@google.com>,
-	Justin Stitt <justinstitt@google.com>,
-	open list <linux-kernel@vger.kernel.org>,
-	"open list:FREESCALE DMA DRIVER" <linuxppc-dev@lists.ozlabs.org>,
-	"open list:CLANG/LLVM BUILD SUPPORT:Keyword:b(?i:clang|llvm)b" <llvm@lists.linux.dev>
-Subject: Re: [PATCH 06/10] dmaengine: fsldma: convert channel allocation to
- devm_kzalloc
-Message-ID: <aiNRnj8YJoZhCeAJ@SMW015318>
-References: <20260605220134.43295-1-rosenp@gmail.com>
- <20260605220134.43295-7-rosenp@gmail.com>
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260605220134.43295-7-rosenp@gmail.com>
-X-ClientProxiedBy: PH7P221CA0016.NAMP221.PROD.OUTLOOK.COM
- (2603:10b6:510:32a::20) To GV2PR04MB11799.eurprd04.prod.outlook.com
- (2603:10a6:150:2cf::9)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gXcpB2J2sz2xHK
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 06 Jun 2026 22:20:33 +1000 (AEST)
+Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 656AIBab690954;
+	Sat, 6 Jun 2026 12:20:27 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:date:from:message-id:mime-version
+	:subject:to; s=pp1; bh=fLwS1YIxOJfufyjYhB52Uo0u9IFZTzVVV64omQWyY
+	zo=; b=LVxdZk3YVzY6aUMp4wOqhdoklVmsOYF0zkUh6Peb/OXa4Vsd47dI5Gi7E
+	Rh/Lnp2nwcIF35j952KppJTBVabnd6XHxUwWS8RyzTVwQJl1uqTMc9TG2tGeJ84u
+	QH1PBeXCxj5YT4SSwW8+RkQCCl8PxvI5jCjjnk+MMzhCADKkw7pBgJbo1YyaI3s2
+	z676XPt9RovE2qkdjGpE+/DMN82/phC5ofZVlbswFyjo2/5khiB53K+346hal5Hn
+	OiLGvnbvsCzm4q7cGcsBSwyB4zeTs6NqPLn4P+O9pfQjlJmi0Hd3X6cdCZW1GtZj
+	BiJWyVAMtr0wlCStqmyitZV3fGSjQ==
+Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4em9yds4m4-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Sat, 06 Jun 2026 12:20:27 +0000 (GMT)
+Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma12.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 656C4Zhx019232;
+	Sat, 6 Jun 2026 12:20:26 GMT
+Received: from smtprelay01.fra02v.mail.ibm.com ([9.218.2.227])
+	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 4ega7qwtq6-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Sat, 06 Jun 2026 12:20:26 +0000 (GMT)
+Received: from smtpav06.fra02v.mail.ibm.com (smtpav06.fra02v.mail.ibm.com [10.20.54.105])
+	by smtprelay01.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 656CKNTg59572716
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Sat, 6 Jun 2026 12:20:23 GMT
+Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id F24B22004B;
+	Sat,  6 Jun 2026 12:20:22 +0000 (GMT)
+Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 5F68D20049;
+	Sat,  6 Jun 2026 12:20:17 +0000 (GMT)
+Received: from li-4c4c4544-0047-4210-804e-b5c04f423534.ibm.com.com (unknown [9.39.26.37])
+	by smtpav06.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Sat,  6 Jun 2026 12:20:17 +0000 (GMT)
+From: Tanushree Shah <tshah@linux.ibm.com>
+To: acme@kernel.org, jolsa@kernel.org, adrian.hunter@intel.com,
+        vmolnaro@redhat.com, mpetlan@redhat.com, tmricht@linux.ibm.com,
+        maddy@linux.ibm.com, irogers@google.com, namhyung@kernel.org
+Cc: linux-perf-users@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+        atrajeev@linux.ibm.com, hbathini@linux.ibm.com, Tejas.Manhas1@ibm.com,
+        Tanushree.Shah@ibm.com, Shivani.Nittor@ibm.com,
+        Tanushree Shah <tshah@linux.ibm.com>
+Subject: [PATCH] perf data convert json: Fix addr_location leak on time-filtered samples
+Date: Sat,  6 Jun 2026 17:45:29 +0530
+Message-ID: <20260606121528.406919-2-tshah@linux.ibm.com>
+X-Mailer: git-send-email 2.53.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -91,117 +89,58 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: GV2PR04MB11799:EE_|PR3PR04MB7257:EE_
-X-MS-Office365-Filtering-Correlation-Id: 2fc950d5-cb41-4987-71bb-08dec3543683
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|7416014|376014|366016|19092799006|1800799024|18002099003|22082099003|11063799006|4143699003|56012099006;
-X-Microsoft-Antispam-Message-Info:
-	ao5WTxejsyjuhDPREnRC+J/axyn78A1LlzydKtJso11y5/VSGr+3/M+jstMHCwtO+ruHMUBYZMiSHNbnMFQUZcPr+d9NLg0/gCPeY4dEmVuGK8e+JiP/CNX5Cgta3upqpIpV6w85v5zd0TEr2g8Zg7WoRJUHRY8t1yeNQpmNyvV/MLpG+EuFbf5cTaoXeus4aclb4sC/Xm9h7sSsdesLGlq7tCEej42YrphQtZCakoM6UvyIRg7SrsXSUlQJ0H8Yq8G69JO16v6E3C8yXhSCcYLA+BCoOi9hrI4X2vny8HILcBov4zpkg8RTzS77kB3tjKITjNKxA4P8W52GaOFZaGBogN/rICbfk4/k3SshTz/hbedzVFYuffeX1U6U7sPrnG1ecNuYpxedJJPiq0oPhnBo4oZIKC0jb9I3M31aAGzqrR1HBwssAHlkRrbiAJ3tAAIQkDDxwvlF+yVtp9q+bjVgFP1hi4KCy3b2qCOGe9vTXgFJHcQ0NCQjqZkKHSrMV8D8yEp7wjQnv9XKOAEqMN+z44JSqOmmyElV2WzTRBqslus+EHyKfXUJNMZ78On+MsuCLCc1Oyt7wUH5pGYoFnj/+6Xfvxp3lpVL9FV4KliHZrVJlzLN8tozcr8dF6njlRSdVoaN/RyfZy1+4bX1J9qww8CY5W1Tgj1M1i0cs6nWvQsHOXlTC+VENyBFoDo8
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:GV2PR04MB11799.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(7416014)(376014)(366016)(19092799006)(1800799024)(18002099003)(22082099003)(11063799006)(4143699003)(56012099006);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?1DWOt/+yu8WOipbj0nuzypl/VanpYJDUazzwNDHVERmmjDILNPQW1heGDiIM?=
- =?us-ascii?Q?Q1EkFDknk7Y6CPsvxoqFB4wTefks2Xy4rbNXC/7KCSEw8WS+jf7ROp5EWQCL?=
- =?us-ascii?Q?zu6KfrMrTx7v5jmYlJ6MF50XVlBpgNDG4U8fMZNKWu6hVjJ7a6I+YHgPYKe4?=
- =?us-ascii?Q?QfGqjZswV8jwLPpfZqCEJzbDzlBSWij1u7NNaRNmCXNlHkPRLzWABgw8sBYv?=
- =?us-ascii?Q?7Db7wTt+rhdwKG4L8m7fZgkxKT3Kq3i0x1yXWnKGbqKXaNhobQ2oAtcy9JrI?=
- =?us-ascii?Q?kIQUA5DJBDsk/rnqG6T5VIpr+eUfRnb09R77VSmoNHU5Yy7wm63d8GfYw/5j?=
- =?us-ascii?Q?hORZ0tCy826p1UgqRAK3ZNexsKJnizWcYnehKHzOShfH74z1GTkm9gdGpNzP?=
- =?us-ascii?Q?BykEemc0G3LOk/LB8VVf585vTOGWWGTq5FwFUPm6AwcgLcgHg0KqZLp/QCMb?=
- =?us-ascii?Q?oCmgmJyCZ7j99c1lACQlFbEF/gYX32GDES7sF0E2aP5EnrER3MzGAR6RFT8f?=
- =?us-ascii?Q?Bu5QGHyQk/Obg6tUupMSZ+UFoDJBE96ZijGEKTJ6RYvCr59B8NRst+4QyHRg?=
- =?us-ascii?Q?SdEdQgrTUZZMJyWXICE8z+1bgRC5ItH75c9LFYR3qkhwArBSbbs8clfHtu9s?=
- =?us-ascii?Q?jEbhHMn8Mc5H2wCuoa+3OaGqvUSA13fTp+w5LxXhfUz7a06OBDx1vJHBsWk9?=
- =?us-ascii?Q?ga3ckd0g7TQUasQEolKAo5fyUN/QCLVnyulreu8DIYT/F6JLfwRE5PZQF3zH?=
- =?us-ascii?Q?Xi3vcN6pQA2iDkNCO3YbrxDwtk9/dHNmdeM6R+SEEOkdlcsDAv7V+dGHPsBz?=
- =?us-ascii?Q?6sXg6Nxpq76+Jr21J+qvCFPOcQvIV9Hk1xP9ywQDGwwlxkubuVglU87ZrwpP?=
- =?us-ascii?Q?h6SnyGTjoU7+X7KRXVz6YDbILm+BHKbAXytKr3veB24tqd2A0YmL0JZlfukq?=
- =?us-ascii?Q?5UDxNa5selg3m/YGgaEJJK9heS9FzqXGgf76Wx0uoEI8YBXgC7WYhGM5yKK5?=
- =?us-ascii?Q?2Q9lFOCKqdq7mymsfZrPfjvMjijZzUKUKKbN8XcHq7fS16Ch0dIlgwZl/tCT?=
- =?us-ascii?Q?u4xUr0jLUAEY+/Xo0qLklRMA2EfQ9NtWrxs7sigcW/HEN7E+rSZPT4QHJ+7D?=
- =?us-ascii?Q?WHEVgWdUe9tFQcBGkr9FB8ViZt/+fEUF+jkMEO8EpFLIp5DdMebOeVXUXGoS?=
- =?us-ascii?Q?jmcPHvNYYuhdZoIiq555/jA1Ah6ZwYUz9EeP4YeGOaU2ILAD+fl+nA3+i1c9?=
- =?us-ascii?Q?JXN2hRE1njzOKfkvqKxX2j7KIPX9Z8AxuTI8+KCUI6GtAV9paQjnxY7njLj+?=
- =?us-ascii?Q?yvRQDA8GSyo7e2ptNso/bCKZtrhLcpnCkGAehQx99zhLIqXe9tSr/5hhzbsK?=
- =?us-ascii?Q?ITS3HMchHJ11V+/L8TQBFoAEGMBnq1CBpj1dS8RmsFHVrhF45nWn7Pbjgduh?=
- =?us-ascii?Q?JKueMasEn1ZG9Mmczx3tUzT+TQfHmV1kZCI8tLRRLHntuEprDikbmuL21zzX?=
- =?us-ascii?Q?Nn3rRx3B2Y9Luyg5VUTH+1ocFcia6aC8EE0PaDz1q+5SyuvlDsqX0SfvimNN?=
- =?us-ascii?Q?54AlBBp4BJjJU+hgMs0/p2VFd0SJuRdWEMhNMpiRZiTYocoUaPI30g5hs90k?=
- =?us-ascii?Q?buNUYX2UB17/EQGbVZspK6T+Pg9fHt6U8kNmst2VNYSryxvLvvAuimoGgLmT?=
- =?us-ascii?Q?BkCZNk3GfWF+ZavCnQOB1kYj9BDMWjMjllraLxSjPBuurBnV36wDrTH8tIDb?=
- =?us-ascii?Q?p5KZbjvansmdcSNFuMWUjrzxJWThQPQFXo4rff20J9U+/NzqOhkY?=
-X-OriginatorOrg: oss.nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 2fc950d5-cb41-4987-71bb-08dec3543683
-X-MS-Exchange-CrossTenant-AuthSource: GV2PR04MB11799.eurprd04.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 05 Jun 2026 22:45:59.6035
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: KZJ0W4Wr4qMhj2B0Qcly1jI+vLW9JEqWoRCKvgiGxn1Zl4DuR6E9wdcqNyz8+PATsZOMvIrz8W7kWviJtTgtEVN+D9sJliLuS4Y/iCGaLBEjIwGcc77BCVQgRJKp9O1l
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: PR3PR04MB7257
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjA2MDEyMSBTYWx0ZWRfX8Iw0SN3iFMPH
+ wguFV9Ws3di2OXsJNfhYZHrpNGTaGowB68+1Kjprz/x49/de5iE02z/u+VlC1gOukNrXR3DXnaX
+ SDLrLKPT1QRkiP9GxsKd7xSEj3lyzuwuD7M4YgVHW0BUR5/7ckBorQI5qdSlrPMgNbavVee2NcV
+ RWeLG4zeVXTvtMKuxvfdSu4uFKTlCvhpMmFBXnMhgytFnx2l2jUeR2DG3AEgfEx4tsYHwqsRrLS
+ m6yInnVW06MGcGshficDPUX7sL0t1f0nGn7m4M8xGLBK2BYjNOMKeqiOUnTeFTRHMEQfZCRaOXb
+ hoQPrrzDKwYmHNqnvfm5sHnu1nwesCq8cFgLaSOrMVkNPgYHTtxMubXTuNQkCLaiOTWAsYdCfiq
+ PO8REQHjsVSW9ovPVQ44LStrIAYVOZds6LSwuV/DoE9pDrnHnkw0mIKNcUMKmDwOf9KYgeVZHJ3
+ S6fDNAbzNch1EAeeeoA==
+X-Authority-Analysis: v=2.4 cv=QKhYgALL c=1 sm=1 tr=0 ts=6a24108b cx=c_pps
+ a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17
+ a=FelO9ux0wxsA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
+ a=V8glGbnc2Ofi9Qvn3v5h:22 a=VnNF1IyMAAAA:8 a=Ty57jLF3Lfqec-trjoQA:9
+X-Proofpoint-GUID: rHho-ua72mM_R4wr9ymYhgyxrzht8VKz
+X-Proofpoint-ORIG-GUID: Kyj7MI4yhoK0fw0vmueOMv-Vmd6nQHRU
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
+ definitions=2026-06-06_03,2026-06-05_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501 lowpriorityscore=0 bulkscore=0 adultscore=0 phishscore=0
+ malwarescore=0 impostorscore=0 suspectscore=0 spamscore=0 clxscore=1015
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2605210000 definitions=main-2606060121
 
-On Fri, Jun 05, 2026 at 03:01:30PM -0700, Rosen Penev wrote:
->
-> Convert fsl_dma_chan_probe from kzalloc_obj to devm_kzalloc, tying
-> the channel lifetime to the parent DMA device. This removes the
+When samples are skipped due to time filtering in process_sample_event(),
+the early return path bypasses addr_location__exit(), causing memory leaks
+of thread, map, and maps references acquired by machine__resolve().
 
-Nit: Remove kfree(chan) in ..
+These references must be released through addr_location__exit() before
+returning.
 
-Reviewed-by: Frank Li <Frank.Li@nxp.com>
+Fixes: 8e746e95c3e4 ("perf data: Allow filtering conversion by time range")
+Signed-off-by: Tanushree Shah <tshah@linux.ibm.com>
+---
+ tools/perf/util/data-convert-json.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-> need for kfree(chan) in both the probe error path and the remove
-> function.
->
-> Assisted-by: opencode:big-pickle
-> Signed-off-by: Rosen Penev <rosenp@gmail.com>
-> ---
->  drivers/dma/fsldma.c | 12 +++---------
->  1 file changed, 3 insertions(+), 9 deletions(-)
->
-> diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
-> index 2a6a247761a4..ee6e595c2972 100644
-> --- a/drivers/dma/fsldma.c
-> +++ b/drivers/dma/fsldma.c
-> @@ -1111,11 +1111,9 @@ static int fsl_dma_chan_probe(struct fsldma_device *fdev,
->         int err;
->
->         /* alloc channel */
-> -       chan = kzalloc_obj(*chan);
-> -       if (!chan) {
-> -               err = -ENOMEM;
-> -               goto out_return;
-> -       }
-> +       chan = devm_kzalloc(fdev->dev, sizeof(*chan), GFP_KERNEL);
-> +       if (!chan)
-> +               return -ENOMEM;
->
->         /* ioremap registers for use */
->         chan->regs = of_iomap(node, 0);
-> @@ -1197,9 +1195,6 @@ static int fsl_dma_chan_probe(struct fsldma_device *fdev,
->
->  out_iounmap_regs:
->         iounmap(chan->regs);
-> -out_free_chan:
-> -       kfree(chan);
-> -out_return:
->         return err;
->  }
->
-> @@ -1208,7 +1203,6 @@ static void fsl_dma_chan_remove(struct fsldma_chan *chan)
->         tasklet_kill(&chan->tasklet);
->         list_del(&chan->common.device_node);
->         iounmap(chan->regs);
-> -       kfree(chan);
->  }
->
->  static int fsldma_of_probe(struct platform_device *op)
-> --
-> 2.54.0
->
+diff --git a/tools/perf/util/data-convert-json.c b/tools/perf/util/data-convert-json.c
+index d526c91312ed..6a8d00c80394 100644
+--- a/tools/perf/util/data-convert-json.c
++++ b/tools/perf/util/data-convert-json.c
+@@ -177,6 +177,7 @@ static int process_sample_event(const struct perf_tool *tool,
+ 
+ 	if (perf_time__ranges_skip_sample(c->ptime_range, c->range_num, sample->time)) {
+ 		++c->skipped;
++		addr_location__exit(&al);
+ 		return 0;
+ 	}
+ 
+-- 
+2.47.3
+
 
