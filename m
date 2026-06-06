@@ -1,82 +1,93 @@
-Return-Path: <linuxppc-dev+bounces-22152-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22153-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 403FFCD8C8C
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Jun 2026 15:18:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BAE28CD8C88
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Jun 2026 15:47:56 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gXhlM5BPcz3bqD;
-	Sun, 07 Jun 2026 01:18:23 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780759103;
-	cv=none; b=ILzJH4oDoHXX99r2mv+kUgWW+vAcPaK+I2uDjU81GCG5LU5etn+cGZlCMyb40za/RYQcpINoT24YPQGS/0mZqwLgHzQ7SKlX7hZRFANcFU8h6NHS+fBYQcUSY7WRmZ0XgkBhyVxF843GkiUBhpBtWlq8yJqi7VfPoOC1O8I2CNMMHFw37FwSzvPco/24SyppnznNBIC3MGhyvwd/TbbduLbzYwB4mELx2cakDcnu1KOOO8Q5T+jGwYSenGCkpy7cUO9OrccyMCS8kdMdhm66RUyhO6ToaJQWjpFwAGARFWczHfDKZ9jUdltYdxFLhmI2QTJWFbctNXmDbm6bdvXTvA==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1780759103; c=relaxed/relaxed;
-	bh=3ArlLswGmfQemCZGM37g2kUcXqZDo2XdqvnR9GVoxQY=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=CgLMWtTuzN1Q63qzDHa8RJ5oGilTMawSAg8PVYLnNHJf8zgyUCyCR94RuwswKOMMSLBDag+a3sbpVFo0fiaH1XWFbL7zD2tRrAkl1epBGROaZ5ODRRGjyTB8tX3e4E4xx1UAyBu+rLB5/5enn77VGamshSOeD9XHmnSv2+mxMl7hzDPhynQ1aGeDc3cjc3hWtmwPFiHY8XVT77km76zK9UbqcT663/AIRLpgPjlLghKX60gNAUqjIKRrFt7TZAmcfA+MHvR5fqojuPPFJpmoUSb8827O64Jxig5E2ktvGIwwKESALOrM3he0pBYnSsK35bisIE/dtOQ1N3VWQKri2Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=fHpnslB3; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gXjPR0588z2yRM;
+	Sun, 07 Jun 2026 01:47:55 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::630" arc.chain=google.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780760874;
+	cv=pass; b=W+ETekJY3jyFHZ4Qd6dshdhpvd2sdMmAiPd8rloW0o9VXxPFzKKMnKFT+00+PndpCtI1oSqmEJOK03FzfjZvXwwppKPoMJ8zGsiWCeAX5+SKaAToz9p3cb8ZIrDLXm6ZSPyLSRjTJfeMnTOaGah5hkIgyrq8L8NEVUq7ecJ4wiTMfGevMd2kONr/224zhxppvNMZvQ6XsgguFEAAlZufWk4YJbpjWghenRjdoCBwwcGpssMriGFqWbj3k7tsldvPhLFFq/vPvB+/xko3vtpxM0xBP4wVzBlVohjxBy9+4yjPje2xnpr7TckZ4zBmJnKqlCjZ10X7XlbsKRn/KMOaaw==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1780760874; c=relaxed/relaxed;
+	bh=5GJqqoNLqYQ4v0lJXutWeKyal4BUzmhJxcxqQU5UVJs=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=SgjiyFstcR/SMT+qXwNP4/BIbjKSUEEI0KzgRAVkyDi/eK0w/W97HlPMjXaxhuq7LiuUPovJ5qkb7hUJlgUUNy3J/gBvpHjcnFjfh4DvYKfKYROKBL8dexKcto2O3e/21/vJWJgGdANmoR6awsIMcojU7vdilPaT4eIaj/32ODTlGXiBTJrO7JF30sHpb61qUcKVnDi1GtlKzgdEI4UFBMU9MLvejwY4jTCTeX6S+TfHk4wZikMjMuMTaVwZeAUxHP77EpwpVRRwMnbthjOfsfKo1PanOZFGU1Z6CIZmhf2RTn50UdCfZ2Ew+hBhxy2KZBAKAwa51jDYG3gI3nmyyw==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=RMDdkIaO; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::630; helo=mail-pl1-x630.google.com; envelope-from=irogers@google.com; receiver=lists.ozlabs.org) smtp.mailfrom=google.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=fHpnslB3;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=RMDdkIaO;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::630; helo=mail-pl1-x630.google.com; envelope-from=irogers@google.com; receiver=lists.ozlabs.org)
+Received: from mail-pl1-x630.google.com (mail-pl1-x630.google.com [IPv6:2607:f8b0:4864:20::630])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gXhlL6RlXz2xLk
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 07 Jun 2026 01:18:22 +1000 (AEST)
-Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 656BtZlS476871;
-	Sat, 6 Jun 2026 15:18:13 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=pp1; bh=3ArlLswGmfQemCZGM
-	37g2kUcXqZDo2XdqvnR9GVoxQY=; b=fHpnslB3P/Gb564DUJXpHhh8wzBz03Gu/
-	KLNiYlwdR8QSL5bmGSQe+KwzYGuvqz17tyjlh8Jt/7ufWkuwRzgKlGepvTkzzd+v
-	MVWM9rkPAwe2pF1CPfhRZhahZoIWQXDebhQU+ARJX0Nh8gsXWLyX7Nv0tjp+BAjw
-	vCvp471KsoDLEw9+zu/aI4mwGLjfgqRnxr03LPpUU/3rtZopUeIOGFWxp73r3tVe
-	BtxA70pakFSyHPLnQuioYS5ab1Y5uuXIM1pBGp5nEjPzKLtmNWlBUX7PyZ8A+syO
-	RJQ+N+6Rebf9Axe6MveIzI2pYL3UEGFJjzhZ8WbvtysOH/y2ttCPQ==
-Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4em8yhhkue-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Sat, 06 Jun 2026 15:18:13 +0000 (GMT)
-Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma21.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 656F54sk012524;
-	Sat, 6 Jun 2026 15:18:12 GMT
-Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
-	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4egb7kp48u-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Sat, 06 Jun 2026 15:18:12 +0000 (GMT)
-Received: from smtpav01.fra02v.mail.ibm.com (smtpav01.fra02v.mail.ibm.com [10.20.54.100])
-	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 656FI8dQ49218012
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Sat, 6 Jun 2026 15:18:08 GMT
-Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 5543520043;
-	Sat,  6 Jun 2026 15:18:08 +0000 (GMT)
-Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 5593320040;
-	Sat,  6 Jun 2026 15:18:03 +0000 (GMT)
-Received: from li-4f5ba44c-27d4-11b2-a85c-a08f5b49eada.ibm.com.com (unknown [9.124.211.229])
-	by smtpav01.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Sat,  6 Jun 2026 15:18:03 +0000 (GMT)
-From: Sourabh Jain <sourabhjain@linux.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, maddy@linux.ibm.com, mpe@ellerman.id.au
-Cc: npiggin@gmail.com, chleroy@kernel.org, ritesh.list@gmail.com,
-        shivangu@linux.ibm.com, hbathini@linux.ibm.com, mahesh@linux.ibm.com,
-        adityag@linux.ibm.com, venkat88@linux.ibm.com,
-        sourabhjain@linux.ibm.com, avnish@linux.ibm.com, sayalip@linux.ibm.com
-Subject: [RFC PATCH 1/1] powerpc/fadump: move crash memory reservation to middle of RAM
-Date: Sat,  6 Jun 2026 20:47:39 +0530
-Message-ID: <20260606151739.1720246-2-sourabhjain@linux.ibm.com>
-X-Mailer: git-send-email 2.52.0
-In-Reply-To: <20260606151739.1720246-1-sourabhjain@linux.ibm.com>
-References: <20260606151739.1720246-1-sourabhjain@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gXjPP00J2z2xHF
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 07 Jun 2026 01:47:52 +1000 (AEST)
+Received: by mail-pl1-x630.google.com with SMTP id d9443c01a7336-2c0b1a48855so218485ad.0
+        for <linuxppc-dev@lists.ozlabs.org>; Sat, 06 Jun 2026 08:47:52 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1780760870; cv=none;
+        d=google.com; s=arc-20240605;
+        b=fb+NL01DQv/RLYJkBPBJFDG4HAGZ6ItBvGKfuNX/O0USOY7eflv0bB3//axR79gMPl
+         twBIfccVHE0Jq4Eh5oSzgoh51qkYQCiWYP+FnstppLTkC8s8W8p5opwdiX7J5lMO6v/c
+         cTosE2TrUO8lt80eKeUkUUNdlUquChkuI+bxDio77E0HM1rnvg57QgI6RC4isfRigSUl
+         9CxL8An2Z6Oxb/FOY70SfG5PcICEGgNUW+qW+ctRgSvj49toTup/4Ht0ULfQyaOqzrHg
+         FnZ4ONI9coivYqBkmhLHsZWecuWrareTcBb50PYdcUWvJbC83Oh83nuqQivRCQmmVxD1
+         lvhw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=5GJqqoNLqYQ4v0lJXutWeKyal4BUzmhJxcxqQU5UVJs=;
+        fh=0ZpdunZjj5bZ4GyLxgbNK5bzTTqGiIOmEcEvk1O5wKg=;
+        b=ahwdkA4UrLWMENNmGIAHqtdeB2Sj/9FKjP12SW0HsVFptaYp3Nu5x2C8TOUz+GvhPd
+         fohPOu/tblYyVuAxlHbnHs595Em+W3h0NDeJdY/DPQnOk9saRPQ2nF2ifeUMgOsP+Bih
+         nJqwJCJrLgC5U4vPNUiR0IDtLCQQr4dDd6R3s3cQSRxi3LR/bZxuIr/gRioJXBYDsulV
+         PIdstMKw9zHHja9yXME7BME6KuQ6xMOblsZX2UxAo5p7XcuyfKeyKHlFiI0osJeKDEcF
+         Ga7KSkFCSIuIWj7T75X4DHWzcvi2RwENvxeOXemc/jl9c2AoXVkksigiPAvZ9+I70NH0
+         pdYw==;
+        darn=lists.ozlabs.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20251104; t=1780760870; x=1781365670; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=5GJqqoNLqYQ4v0lJXutWeKyal4BUzmhJxcxqQU5UVJs=;
+        b=RMDdkIaOCE7NfmBv3mZh0+ZnS7RxbitshKCBIUD1O/ShsPUaSc5OERrKfR1UzdCZG1
+         43AYsyf/bOR31hkYQMMuz1XRd8TXUtS7tzPuTXlWznJu90owYsfjMUNjfdaPLgKF3TKm
+         k7RBoHBeLH7plfkZ1LbmPvDy2TjzI5feUxAoy8Na19e06403GlWUWKS+o+LOeX+KGxf0
+         zhXlI9VEszFv+0g1qk+AqQMczZOjkvtMH9vxsNKM18UcQ0gaUn+dnRmlROk4lM+9KMnA
+         3yu1hfKPUpvyvwZxIEu54fDwxlt7r4MW8I/0B/q4inLaS8ivN+Zbvf1taC6Ei+KrMPLV
+         Bbsg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1780760870; x=1781365670;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=5GJqqoNLqYQ4v0lJXutWeKyal4BUzmhJxcxqQU5UVJs=;
+        b=cjVKJL/lg5a128BXpafN6Eiek9MlnkkxaJRD0igjpOXvjHNwV3mv32411EUvhHL6pG
+         vZPeUngrlFDCPcZiKmogXfXm9W0Yxb8r+IdFERTJvB5h3LHRl5j8sxm8mTsBIaE7aVT0
+         s0MZpNOKhIwYRPbyBPBgozVAHPvA41n5k2lQo63Au2dkVAFaZqvBf32SPg8nlaXBjl9F
+         Msnb2nFcSfxGNfFTIpo7nXE7UfpHKGE4IuR1SawSizm0W9a4tImqFWNV7W0aczx+J2WB
+         +w4kGFiNhYl5ojDpVddfPvOlL1xjd16PRFqe0Mn3aM4TQPxLaiEvM2lQTV2poS0O1dnc
+         YIig==
+X-Forwarded-Encrypted: i=1; AFNElJ9pQNndNWwwDy5HvYuxGxWZLiyYFHc9uv84mXZHixVvWhmiRwmVFmDCOG9ZWZluNsau6FsYDVxROIZBQzM=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YzVzbVMr63JwLQIVNy6EFg8j5hu4zdixY+Xt1AqKoBtNkVZJE3X
+	F7B0A35LEYoLevhBaA+i7NPrzTYOGCv7KOkoMIHPZy9CQRfiJJN6BMylGcEZ34gcRsdXms2MPa8
+	6Ij9HaD91cADhD9RG1nSA4yvXRdw0hon2fBE0CWL8
+X-Gm-Gg: Acq92OGkZHwkLBTe+w4DFNgUFF8GgxLpUKTyqfdLpiuow+O9VFwI48RDKW29IlYPdVf
+	HcumL5xVGjQPfV3ofBy/s3pmYa0Co5YOHleesj7eggxwofnypIdc89MHeCnc9useKIaHLymqtcj
+	oon+wB+DE8mn30guDn+qzMJlyAl5XGHdSEseYa6eC0XqGohYLaXiwpOWxdrUiRpCmAytEFDTRMn
+	xFcwnMBDWouSxSBiwQn0Idl7tv1cpChGhTIr546u7RPIHYZnBM8rOTWf5yJUyYliJOAW6JoI0Eq
+	eXs2ub6QLE74d1BzDGE=
+X-Received: by 2002:a17:902:f708:b0:2c1:ee6e:be23 with SMTP id
+ d9443c01a7336-2c1ee6ec5ebmr2669175ad.33.1780760869291; Sat, 06 Jun 2026
+ 08:47:49 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -90,79 +101,63 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjA2MDE1NCBTYWx0ZWRfXyt5F4+8TVJa0
- 4tsscnHZy+gE2Zl2xCRrSwusYLZfUtO6eyyJJ/cCaIthMoJgaA2KPkaIpAJbtt8R+CiCWmK1mQH
- GOlgCDGuogQDDvcHYOyvnWSlNn1dMBsEBYMSlT6oXSHCettMISU0TlATZYhYcNl/oinnEmJbNgi
- jHme8AsjDDzHtLinQBOUjouSzrT5YXiHLelR1BXHqm0ZtPCi/Cnfs6tqqTNr2J0FowK0qD1pSzA
- PbIc1VW38M5XJ+13McDlmje1/pXgbLvpKuQ7iY4lUTMMqX2y4YyVE1z3dmuwStZ+brXtabr/qI1
- rGmR6RTC+Jiml9gVTzysDodAup0J5hN2R6zjhTeGt1b+CAToFhZZqj+eRlq1xxKVsStg9rjb5d5
- BErxLr7Y4aOL3QI4RzzOmQN+KURmtPTtAlNrzhqMBeeMLy2jZtLKhsWbD1OLm3BxoTucfyzsYIp
- GLiSQqBhcdL/ty1lhkg==
-X-Authority-Analysis: v=2.4 cv=HvFG3UTS c=1 sm=1 tr=0 ts=6a243a35 cx=c_pps
- a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
- a=FelO9ux0wxsA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=Y2IxJ9c9Rs8Kov3niI8_:22 a=VnNF1IyMAAAA:8 a=-mTSyfWIt07sbQz3qQAA:9
-X-Proofpoint-ORIG-GUID: x9r-Re_jZ07cJNhNttXP5V_tkNuEzEqb
-X-Proofpoint-GUID: OtK9_b7vAfLsu3QImBUOrG8MXFUq_uT7
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
- definitions=2026-06-06_04,2026-06-05_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- impostorscore=0 clxscore=1015 lowpriorityscore=0 adultscore=0 suspectscore=0
- spamscore=0 priorityscore=1501 phishscore=0 malwarescore=0 bulkscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2605210000 definitions=main-2606060154
+References: <20260606121528.406919-2-tshah@linux.ibm.com>
+In-Reply-To: <20260606121528.406919-2-tshah@linux.ibm.com>
+From: Ian Rogers <irogers@google.com>
+Date: Sat, 6 Jun 2026 08:47:37 -0700
+X-Gm-Features: AVVi8CerL-6KbYuo2zlnlU9te7dDWQC60u93ZneUxymer8R9JGeLarJSQShqAs0
+Message-ID: <CAP-5=fUOUtbfXXtGdSYrg1SfuTryNqFPknKWDc=4MxK==m6+VQ@mail.gmail.com>
+Subject: Re: [PATCH] perf data convert json: Fix addr_location leak on
+ time-filtered samples
+To: Tanushree Shah <tshah@linux.ibm.com>
+Cc: acme@kernel.org, jolsa@kernel.org, adrian.hunter@intel.com, 
+	vmolnaro@redhat.com, mpetlan@redhat.com, tmricht@linux.ibm.com, 
+	maddy@linux.ibm.com, namhyung@kernel.org, linux-perf-users@vger.kernel.org, 
+	linuxppc-dev@lists.ozlabs.org, atrajeev@linux.ibm.com, hbathini@linux.ibm.com, 
+	Tejas.Manhas1@ibm.com, Tanushree.Shah@ibm.com, Shivani.Nittor@ibm.com
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Currently, the fadump crash memory reservation base is derived from
-the crashkernel reservation size. For example, with crashkernel=768M,
-the crash memory area is preferably placed at 768M physical address.
-If a suitable reservation area is not available due to memory holes or
-reserved ranges, the base address is adjusted accordingly.
+On Sat, Jun 6, 2026 at 5:20=E2=80=AFAM Tanushree Shah <tshah@linux.ibm.com>=
+ wrote:
+>
+> When samples are skipped due to time filtering in process_sample_event(),
+> the early return path bypasses addr_location__exit(), causing memory leak=
+s
+> of thread, map, and maps references acquired by machine__resolve().
+>
+> These references must be released through addr_location__exit() before
+> returning.
+>
+> Fixes: 8e746e95c3e4 ("perf data: Allow filtering conversion by time range=
+")
+> Signed-off-by: Tanushree Shah <tshah@linux.ibm.com>
 
-When a kernel crashes with fadump enabled, the system performs a reboot
-and the next kernel boots with special device tree properties added by
-firmware to indicate an active dump. During this reboot flow, GRUB is
-invoked again before the capture kernel boots.
+Reviewed-by: Ian Rogers <irogers@google.com>
 
-To preserve the crashed kernel memory, GRUB operation must stay below
-the fadump crash memory reservation area. Currently this works because
-fadump requires a minimum crashkernel reservation of 768M, which ensures
-that the fadump memory reservation base address is at least 768M.
+Thanks,
+Ian
 
-However, if GRUB increases its memory access range in future, it may
-overwrite the preserved crash memory before the capture kernel boots,
-resulting in dump corruption.
-
-Avoid this dependency by moving the fadump crash memory reservation
-base to the middle of system RAM instead of deriving it from the
-crashkernel reservation size.
-
-Signed-off-by: Sourabh Jain <sourabhjain@linux.ibm.com>
----
- arch/powerpc/kernel/fadump.c | 6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/kernel/fadump.c b/arch/powerpc/kernel/fadump.c
-index 501d43bf18f3..1b4a330b7de0 100644
---- a/arch/powerpc/kernel/fadump.c
-+++ b/arch/powerpc/kernel/fadump.c
-@@ -586,7 +586,11 @@ int __init fadump_reserve_mem(void)
- 	else
- 		mem_boundary = memblock_end_of_DRAM();
- 
--	base = fw_dump.boot_mem_top;
-+	if (fw_dump.dump_active)
-+		base = fw_dump.boot_mem_top;
-+	else
-+		base = mem_boundary / 2;
-+
- 	size = get_fadump_area_size();
- 	fw_dump.reserve_dump_area_size = size;
- 	if (fw_dump.dump_active) {
--- 
-2.52.0
-
+> ---
+>  tools/perf/util/data-convert-json.c | 1 +
+>  1 file changed, 1 insertion(+)
+>
+> diff --git a/tools/perf/util/data-convert-json.c b/tools/perf/util/data-c=
+onvert-json.c
+> index d526c91312ed..6a8d00c80394 100644
+> --- a/tools/perf/util/data-convert-json.c
+> +++ b/tools/perf/util/data-convert-json.c
+> @@ -177,6 +177,7 @@ static int process_sample_event(const struct perf_too=
+l *tool,
+>
+>         if (perf_time__ranges_skip_sample(c->ptime_range, c->range_num, s=
+ample->time)) {
+>                 ++c->skipped;
+> +               addr_location__exit(&al);
+>                 return 0;
+>         }
+>
+> --
+> 2.47.3
+>
 
