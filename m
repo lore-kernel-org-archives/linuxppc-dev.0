@@ -1,34 +1,34 @@
-Return-Path: <linuxppc-dev+bounces-22212-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22213-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A69F2CD8C92
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jun 2026 14:52:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 29301CD8C9D
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jun 2026 14:52:39 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gYw4G2VNtz3bsP;
-	Tue, 09 Jun 2026 00:52:14 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gYw4H3VpJz3bsn;
+	Tue, 09 Jun 2026 00:52:15 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a01:238:42d9:3f00:e505:6202:4f0c:f051"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780930334;
-	cv=none; b=kARrnvnDTllbVKwo4bJ3S311Dh/vyE6GVSOWVc1/ocmSkv2kreixJwo+hNPxGoMKyYigAcm2hcx4tblxczlor9hBpnshkMWoy9g0srY/e0081zxGPezJ5LVfrTNP0IZzRgyDJZ9jo5z+mEoWozHULNUKEKBxTy6pkei62OdJWJBD9fyZswTcvsR6Su+CtYIpTDX22Z2rxnztgHbqQ9VN8FiqtQ11r9PBOJwfveIYx+RnM+cJ5dHbM8/do7c0y3VrGxn2MXjrgI7v8ADGL8IgP7eFfL8Q794Xa1AQc4P1kQueCKZXVwhFsv8JfaWxK84MZtU/VaaQrb3+0Ol+2T20qQ==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780930335;
+	cv=none; b=UoJ8miKWEnM0kHinFpssMepAZuJx31E/1T/18wOb5YaK9Ar89C2HQElsfHwvxICpF3XT9DcSj7EzqCFB6exTf0HhiR6KvVFDKljA/xfKhGFChgf/SdxIPijACTvlqxBCDyGM9So8BvfhiheIKZ1urryguCbZ+dUI2CQNkp3ut4ld3LDxcezZrZiuciiD16JB/D20R5MgAzWHsP4KPoCzxeg1XzOCHA7ghador+W0fNYFV2OszUTfUXaoW2Ev5fUioo6nUz1KHyv54KzY+a6ob4mugx+Fbmkqpts4ZtkgxvqZZCdQrolb2DalIN5t4QOE3gP+YmI6yB3GWgt0rARlqg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1780930334; c=relaxed/relaxed;
-	bh=OA/Qd+jF0Q1QozMre9m+KdODkx0ma/FNTcWiPF5Ir44=;
+	t=1780930335; c=relaxed/relaxed;
+	bh=gq8rN47S5nTE90wJ+1WWKBTYBGL2Ei1Ka/v76Pzjg/8=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=mjHNyGUcGbm0pDoCTRcXAs+TLr7sU7Qcd9/z5soBDuMlaKTOFpigPANjer0n6PdCNnO4pQZBDjRgowxa6kiDPRp4g8ANhBljoFVWEvSAEdvbzqIhX/pPQwXtWKlif0pzIjMe3aVafs/crbUG6kwy5BZO4vH84w0ViqyL15z6wBmf9zQy+em01riYAs3meBeI/orG1EyFt0Ql6B0LofPV5CzngzkEKdAq4RcIIZbfL79KAQOK8BYPBhVOxlsv/2xDt9Jizqa9YQvgAEe2VaTSY4PUwmr48uzakxI91DfOr6Og5+Nu/yfDScapWr42f00968bi2YOMLm0CAvRiy3HLUw==
+	 MIME-Version; b=V26Hm8Q4x/0HQLA608OhqClvMSet5C1nDPEx5/XxloampUc2OH2v+bYFB75ZsjTbFd0yK74xXsemDFVgZThUQqWsntot0UWdtoyfhtMmgb4DmJv7/8NieBa1ky0FgCdG17xrhKLSGcNAlSo08u0DY+FYS7scLpuzFVXNkNTrD4mip9/AU9VA+epNJEnjR8ELzhgiXG+Baa+MHmkQb1nn9mWIdwaROeFVEwi4idktkj6QdU5DBwoXf2sn0JqrAOLXKeIbztwPsHS87g/XO14pSBmKDpXBqgmkbAs9TNrsGUbDPt9w1J8/jw8RlNZPHD71PajEFpmLU2VPTnoYQ4AwVg==
 ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=8bytes.org; spf=pass (client-ip=2a01:238:42d9:3f00:e505:6202:4f0c:f051; helo=mail.8bytes.org; envelope-from=joro@8bytes.org; receiver=lists.ozlabs.org) smtp.mailfrom=8bytes.org
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=8bytes.org
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=8bytes.org (client-ip=2a01:238:42d9:3f00:e505:6202:4f0c:f051; helo=mail.8bytes.org; envelope-from=joro@8bytes.org; receiver=lists.ozlabs.org)
 Received: from mail.8bytes.org (mail.8bytes.org [IPv6:2a01:238:42d9:3f00:e505:6202:4f0c:f051])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gYw483R2gz2yS0
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Jun 2026 00:52:07 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gYw4C2mcYz3brC
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Jun 2026 00:52:11 +1000 (AEST)
 Received: from io.home.8bytes.org (p4ffe1d30.dip0.t-ipconnect.de [79.254.29.48])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.8bytes.org (Postfix) with ESMTPSA id 7319F2028CA;
-	Mon,  8 Jun 2026 16:43:13 +0200 (CEST)
+	by mail.8bytes.org (Postfix) with ESMTPSA id BB2242028DE;
+	Mon,  8 Jun 2026 16:43:17 +0200 (CEST)
 From: =?UTF-8?q?J=C3=B6rg=20R=C3=B6del?= <joro@8bytes.org>
 To: Paolo Bonzini <pbonzini@redhat.com>,
 	Sean Christopherson <seanjc@google.com>
@@ -49,9 +49,9 @@ Cc: Tom Lendacky <thomas.lendacky@amd.com>,
 	x86@kernel.org,
 	coconut-svsm@lists.linux.dev,
 	joerg.roedel@amd.com
-Subject: [PATCH 39/60] kvm: Make KVM_SET_GSI_ROUTING per plane
-Date: Mon,  8 Jun 2026 16:42:31 +0200
-Message-ID: <20260608144252.351443-40-joro@8bytes.org>
+Subject: [PATCH 59/60] kvm: svm: Implement max_planes x86 operation
+Date: Mon,  8 Jun 2026 16:42:51 +0200
+Message-ID: <20260608144252.351443-60-joro@8bytes.org>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20260608144252.351443-1-joro@8bytes.org>
 References: <20260608144252.351443-1-joro@8bytes.org>
@@ -70,232 +70,114 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-From: Joerg Roedel <joerg.roedel@amd.com>
+From: Tom Lendacky <thomas.lendacky@amd.com>
 
-Allow the KVM_SET_GSI_ROUTING on each plane. There is still only one
-GSI routing table maintained per VM by the KVM module, the plane this
-IOCTL was last issued at will get all GSI interrupts.
+Report the number of VMPL levels supported by SEV-SNP guests.
 
+Signed-off-by: Tom Lendacky <thomas.lendacky@amd.com>
+Co-developed-by: Joerg Roedel <joerg.roedel@amd.com>
 Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
 ---
- arch/arm64/kvm/vgic/vgic-irqfd.c  |  2 +-
- arch/loongarch/kvm/intc/pch_pic.c |  2 +-
- arch/powerpc/kvm/mpic.c           |  2 +-
- arch/riscv/kvm/vm.c               |  2 +-
- arch/x86/kvm/irq.c                |  2 +-
- include/linux/kvm_host.h          |  3 +-
- virt/kvm/irqchip.c                | 10 +++--
- virt/kvm/kvm_main.c               | 62 +++++++++++++++----------------
- 8 files changed, 44 insertions(+), 41 deletions(-)
+ arch/x86/kvm/svm/sev.c | 14 ++++++++++++--
+ arch/x86/kvm/svm/svm.c | 12 +++++++++++-
+ arch/x86/kvm/svm/svm.h |  3 +++
+ 3 files changed, 26 insertions(+), 3 deletions(-)
 
-diff --git a/arch/arm64/kvm/vgic/vgic-irqfd.c b/arch/arm64/kvm/vgic/vgic-irqfd.c
-index 53e5fcc591d7..96981dd29a6e 100644
---- a/arch/arm64/kvm/vgic/vgic-irqfd.c
-+++ b/arch/arm64/kvm/vgic/vgic-irqfd.c
-@@ -153,7 +153,7 @@ int kvm_vgic_setup_default_irq_routing(struct kvm *kvm)
- 		entries[i].u.irqchip.irqchip = 0;
- 		entries[i].u.irqchip.pin = i;
- 	}
--	ret = kvm_set_irq_routing(kvm, entries, nr, 0);
-+	ret = kvm_set_irq_routing(kvm, entries, nr, 0, 0);
- 	kfree(entries);
- 	return ret;
- }
-diff --git a/arch/loongarch/kvm/intc/pch_pic.c b/arch/loongarch/kvm/intc/pch_pic.c
-index aa0ed59ae8cf..a0d04ffa8a71 100644
---- a/arch/loongarch/kvm/intc/pch_pic.c
-+++ b/arch/loongarch/kvm/intc/pch_pic.c
-@@ -423,7 +423,7 @@ static int kvm_setup_default_irq_routing(struct kvm *kvm)
- 		entries[i].u.irqchip.irqchip = 0;
- 		entries[i].u.irqchip.pin = i;
- 	}
--	ret = kvm_set_irq_routing(kvm, entries, nr, 0);
-+	ret = kvm_set_irq_routing(kvm, entries, nr, 0, 0);
- 	kfree(entries);
+diff --git a/arch/x86/kvm/svm/sev.c b/arch/x86/kvm/svm/sev.c
+index b67566fcb69e..528c8bd3e8fc 100644
+--- a/arch/x86/kvm/svm/sev.c
++++ b/arch/x86/kvm/svm/sev.c
+@@ -114,6 +114,7 @@ static unsigned long sev_me_mask;
+ static unsigned int nr_asids;
+ static unsigned long *sev_asid_bitmap;
+ static unsigned long *sev_reclaim_asid_bitmap;
++static unsigned int vmpl_levels;
  
- 	return ret;
-diff --git a/arch/powerpc/kvm/mpic.c b/arch/powerpc/kvm/mpic.c
-index 6b6eba7fbf75..1e493179ee4f 100644
---- a/arch/powerpc/kvm/mpic.c
-+++ b/arch/powerpc/kvm/mpic.c
-@@ -1646,7 +1646,7 @@ static int mpic_set_default_irq_routing(struct openpic *opp)
- 	if (!routing)
- 		return -ENOMEM;
- 
--	kvm_set_irq_routing(opp->kvm, routing, 0, 0);
-+	kvm_set_irq_routing(opp->kvm, routing, 0, 0, 0);
- 
- 	kfree(routing);
- 	return 0;
-diff --git a/arch/riscv/kvm/vm.c b/arch/riscv/kvm/vm.c
-index 6b3c8a0e74e2..bd9ab3240e4f 100644
---- a/arch/riscv/kvm/vm.c
-+++ b/arch/riscv/kvm/vm.c
-@@ -105,7 +105,7 @@ int kvm_riscv_setup_default_irq_routing(struct kvm *kvm, u32 lines)
- 		ents[i].u.irqchip.irqchip = 0;
- 		ents[i].u.irqchip.pin = i;
- 	}
--	rc = kvm_set_irq_routing(kvm, ents, lines, 0);
-+	rc = kvm_set_irq_routing(kvm, ents, lines, 0, 0);
- 	kfree(ents);
- 
- 	return rc;
-diff --git a/arch/x86/kvm/irq.c b/arch/x86/kvm/irq.c
-index d2ecfd54d57a..90e2d2db2123 100644
---- a/arch/x86/kvm/irq.c
-+++ b/arch/x86/kvm/irq.c
-@@ -576,7 +576,7 @@ static const struct kvm_irq_routing_entry default_routing[] = {
- int kvm_setup_default_ioapic_and_pic_routing(struct kvm *kvm)
+ static __always_inline void kvm_lockdep_assert_sev_lock_held(struct kvm *kvm)
  {
- 	return kvm_set_irq_routing(kvm, default_routing,
--				   ARRAY_SIZE(default_routing), 0);
-+				   ARRAY_SIZE(default_routing), 0, 0);
- }
+@@ -3103,6 +3104,9 @@ void __init sev_hardware_setup(void)
+ 	/* Set encryption bit location for SEV-ES guests */
+ 	sev_enc_bit = ebx & 0x3f;
  
- int kvm_vm_ioctl_get_irqchip(struct kvm *kvm, struct kvm_irqchip *chip)
-diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
-index 05a10836d92d..3b62fb354267 100644
---- a/include/linux/kvm_host.h
-+++ b/include/linux/kvm_host.h
-@@ -2351,7 +2351,8 @@ bool kvm_arch_can_set_irq_routing(struct kvm *kvm);
- int kvm_set_irq_routing(struct kvm *kvm,
- 			const struct kvm_irq_routing_entry *entries,
- 			unsigned nr,
--			unsigned flags);
-+			unsigned flags,
-+			unsigned plane_level);
- int kvm_init_irq_routing(struct kvm *kvm);
- int kvm_set_routing_entry(struct kvm *kvm,
- 			  struct kvm_kernel_irq_routing_entry *e,
-diff --git a/virt/kvm/irqchip.c b/virt/kvm/irqchip.c
-index a4fea7d8dde6..e0793ae0c719 100644
---- a/virt/kvm/irqchip.c
-+++ b/virt/kvm/irqchip.c
-@@ -128,7 +128,8 @@ void kvm_free_irq_routing(struct kvm *kvm)
- static int setup_routing_entry(struct kvm *kvm,
- 			       struct kvm_irq_routing_table *rt,
- 			       struct kvm_kernel_irq_routing_entry *e,
--			       const struct kvm_irq_routing_entry *ue)
-+			       const struct kvm_irq_routing_entry *ue,
-+			       unsigned plane_level)
- {
- 	struct kvm_kernel_irq_routing_entry *ei;
- 	int r;
-@@ -146,7 +147,7 @@ static int setup_routing_entry(struct kvm *kvm,
- 
- 	e->gsi = gsi;
- 	e->type = ue->type;
--	r = kvm_set_routing_entry(kvm, e, ue, 0);
-+	r = kvm_set_routing_entry(kvm, e, ue, plane_level);
- 	if (r)
- 		return r;
- 	if (e->type == KVM_IRQ_ROUTING_IRQCHIP)
-@@ -169,7 +170,8 @@ bool __weak kvm_arch_can_set_irq_routing(struct kvm *kvm)
- int kvm_set_irq_routing(struct kvm *kvm,
- 			const struct kvm_irq_routing_entry *ue,
- 			unsigned nr,
--			unsigned flags)
-+			unsigned flags,
-+			unsigned plane_level)
- {
- 	struct kvm_irq_routing_table *new, *old;
- 	struct kvm_kernel_irq_routing_entry *e;
-@@ -210,7 +212,7 @@ int kvm_set_irq_routing(struct kvm *kvm,
- 				goto free_entry;
- 			break;
- 		}
--		r = setup_routing_entry(kvm, new, e, ue);
-+		r = setup_routing_entry(kvm, new, e, ue, plane_level);
- 		if (r)
- 			goto free_entry;
- 		++ue;
-diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-index dc59f2f9d405..a6d7601c3412 100644
---- a/virt/kvm/kvm_main.c
-+++ b/virt/kvm/kvm_main.c
-@@ -4918,6 +4918,34 @@ static long __kvm_plane_ioctl(struct kvm_plane *plane, unsigned int ioctl, unsig
- 		break;
- 	}
- #endif
-+#ifdef CONFIG_HAVE_KVM_IRQ_ROUTING
-+	case KVM_SET_GSI_ROUTING: {
-+		void __user *argp = (void __user *)arg;
-+		struct kvm_irq_routing routing;
-+		struct kvm_irq_routing __user *urouting;
-+		struct kvm_irq_routing_entry *entries = NULL;
++	/* Get the number of supported VMPL levels */
++	vmpl_levels = (ebx >> 12) & 0xf;
 +
-+		if (copy_from_user(&routing, argp, sizeof(routing)))
-+			return -EFAULT;
-+		if (!kvm_arch_can_set_irq_routing(plane->kvm) ||
-+		    routing.nr > KVM_MAX_IRQ_ROUTES ||
-+		    routing.flags)
-+			return -EINVAL;
-+		if (routing.nr) {
-+			urouting = argp;
-+			entries = vmemdup_array_user(urouting->entries,
-+						     routing.nr, sizeof(*entries));
-+			if (IS_ERR(entries)) {
-+				r = PTR_ERR(entries);
-+				return r;
-+			}
-+		}
-+		r = kvm_set_irq_routing(plane->kvm, entries, routing.nr,
-+					routing.flags, plane->level);
-+		kvfree(entries);
-+		break;
-+	}
-+#endif /* CONFIG_HAVE_KVM_IRQ_ROUTING */
- 	default:
- 		r = -ENOTTY;
- 	}
-@@ -5506,6 +5534,9 @@ static long kvm_vm_ioctl(struct file *filp,
- 	case KVM_CREATE_VCPU:
- #ifdef CONFIG_HAVE_KVM_MSI
- 	case KVM_SIGNAL_MSI:
+ 	/* Maximum number of encrypted guests supported simultaneously */
+ 	max_sev_asid = ecx;
+ 	if (!max_sev_asid)
+@@ -3217,9 +3221,10 @@ void __init sev_hardware_setup(void)
+ 										"disabled",
+ 			min_sev_es_asid, max_sev_es_asid);
+ 	if (boot_cpu_has(X86_FEATURE_SEV_SNP))
+-		pr_info("SEV-SNP %s (ASIDs %u - %u)\n",
++		pr_info("SEV-SNP %s (ASIDs %u - %u), VMPL Levels %u\n",
+ 			str_enabled_disabled(sev_snp_supported),
+-			min_snp_asid, max_snp_asid);
++			min_snp_asid, max_snp_asid,
++			vmpl_levels);
+ 
+ 	sev_enabled = sev_supported;
+ 	sev_es_enabled = sev_es_supported;
+@@ -5852,3 +5857,8 @@ bool sev_snp_blocked(enum inject_type type, struct kvm_vcpu *vcpu)
+ 
+ 	return blocked;
+ }
++
++int sev_snp_max_planes(struct kvm *kvm)
++{
++	return vmpl_levels;
++}
+diff --git a/arch/x86/kvm/svm/svm.c b/arch/x86/kvm/svm/svm.c
+index 2ae82dc058c9..705063c7f0f0 100644
+--- a/arch/x86/kvm/svm/svm.c
++++ b/arch/x86/kvm/svm/svm.c
+@@ -5321,6 +5321,16 @@ static void svm_free_plane(struct kvm_plane *plane)
+ 	kfree(svm_plane);
+ }
+ 
++static unsigned svm_max_planes(struct kvm *kvm)
++{
++#ifdef CONFIG_KVM_AMD_SEV
++	if (____sev_snp_guest(kvm))
++		return sev_snp_max_planes(kvm);
 +#endif
-+#ifdef CONFIG_HAVE_KVM_IRQ_ROUTING
-+	case KVM_SET_GSI_ROUTING:
++
++	return kvm_x86_default_max_planes(kvm);
++}
++
+ struct kvm_x86_ops svm_x86_ops __initdata = {
+ 	.name = KBUILD_MODNAME,
+ 
+@@ -5465,7 +5475,7 @@ struct kvm_x86_ops svm_x86_ops __initdata = {
+ 
+ 	.alloc_plane = svm_alloc_plane,
+ 	.free_plane = svm_free_plane,
+-	.max_planes = kvm_x86_default_max_planes,
++	.max_planes = svm_max_planes,
+ };
+ 
+ /*
+diff --git a/arch/x86/kvm/svm/svm.h b/arch/x86/kvm/svm/svm.h
+index 7e860f2abafb..7aba2cceb44d 100644
+--- a/arch/x86/kvm/svm/svm.h
++++ b/arch/x86/kvm/svm/svm.h
+@@ -1008,6 +1008,8 @@ static inline bool sev_snp_is_rinj_active(struct kvm_vcpu *vcpu)
+ 	return is_sev_snp_guest(vcpu) &&
+ 		(sev->vmsa_features & SVM_SEV_FEAT_RESTRICTED_INJECTION);
+ };
++int sev_nr_vcpu_planes(struct kvm *kvm);
++int sev_snp_max_planes(struct kvm *kvm);
+ #else
+ static inline struct page *snp_safe_alloc_page_node(int node, gfp_t gfp)
+ {
+@@ -1051,6 +1053,7 @@ static inline bool sev_snp_inject(enum inject_type type, struct kvm_vcpu *vcpu)
+ static inline void sev_snp_cancel_injection(struct kvm_vcpu *vcpu) {}
+ static inline bool sev_snp_blocked(enum inject_type type, struct kvm_vcpu *vcpu) { return false; }
+ static inline bool sev_snp_is_rinj_active(struct kvm_vcpu *vcpu) { return false; }
++static inline unsigned sev_snp_max_planes(struct kvm *kvm) { return 1; }
  #endif
- 		r = __kvm_plane_ioctl(kvm->planes[0], ioctl, arg);
- 		break;
-@@ -5635,37 +5666,6 @@ static long kvm_vm_ioctl(struct file *filp,
- 		break;
- 	}
- #endif
--#ifdef CONFIG_HAVE_KVM_IRQ_ROUTING
--	case KVM_SET_GSI_ROUTING: {
--		struct kvm_irq_routing routing;
--		struct kvm_irq_routing __user *urouting;
--		struct kvm_irq_routing_entry *entries = NULL;
--
--		r = -EFAULT;
--		if (copy_from_user(&routing, argp, sizeof(routing)))
--			goto out;
--		r = -EINVAL;
--		if (!kvm_arch_can_set_irq_routing(kvm))
--			goto out;
--		if (routing.nr > KVM_MAX_IRQ_ROUTES)
--			goto out;
--		if (routing.flags)
--			goto out;
--		if (routing.nr) {
--			urouting = argp;
--			entries = vmemdup_array_user(urouting->entries,
--						     routing.nr, sizeof(*entries));
--			if (IS_ERR(entries)) {
--				r = PTR_ERR(entries);
--				goto out;
--			}
--		}
--		r = kvm_set_irq_routing(kvm, entries, routing.nr,
--					routing.flags);
--		kvfree(entries);
--		break;
--	}
--#endif /* CONFIG_HAVE_KVM_IRQ_ROUTING */
- #ifdef CONFIG_KVM_GENERIC_MEMORY_ATTRIBUTES
- 	case KVM_SET_MEMORY_ATTRIBUTES: {
- 		struct kvm_memory_attributes attrs;
+ 
+ /* vmenter.S */
 -- 
 2.53.0
 
