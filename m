@@ -1,34 +1,34 @@
-Return-Path: <linuxppc-dev+bounces-22250-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22251-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E345FCD8C9D
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jun 2026 14:56:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 945D5CD8C92
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jun 2026 14:56:46 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gYw4w2Lrvz3f1V;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gYw4w3tJTz3f1Y;
 	Tue, 09 Jun 2026 00:52:48 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a01:238:42d9:3f00:e505:6202:4f0c:f051"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780930365;
-	cv=none; b=JD3FKl8ehDdQ0N2nzpvAQgPBruiZ6MCkq+OvqpKFkbGQyUDsp9YfbpFc2rYYOBQHI4g3aTaqfJ/L9aIGpNX8eFfUwa3kXdzAfgW8hj+xddbVfx4DUjyjS3bvZ0BocpRubtdwL5cNs8id/fpcX1B5XhD7OqW2MpmeFbatQnto/ufsta1tVYUA5eKUDr7Kc0Ep4tB2ySK8SLhwaKcmCKZATyDJJSc5p4gR7kEyhZ7F+G3tosV+lpEqCzubYk6Y0wTVuvUu3fHhQG7gJuLnyn6aknXfAXtX2FaGM5G93o3htm+ogw1w59CbA5gQc//xm61CSbBETl5w4XHkjX5ZhSCzFA==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780930367;
+	cv=none; b=fP00lsKVu/iIucBE40Lmfbtdshtcy93S8U+QrvB+67dgjhr2CxeP/xB7PjBACkz+PWjlm7peUj7DXh4VZr/GQ9TRFKvzGoVeF4o3oq3vwmbwG4eNXUzrL3s07wL8y7HEZ30ZyHnFwmWfwoZeJhmG3skUWkq9eucevmFRMSt/zNXD0zFHM8GMOgZY/ej6L/kYi+5nptMzKG7kTWogkwrEOvxm5wYuVnmiMQT2nhIYocx1RqdApwRjAp0QsKLeri/xCoi/xoSMOPDIp6DSH9LXXM/Vk8cY9Brle4tS6TuM4cQMmntRrp/YTuQojv933T54HbVuC/F24aVxAsWqbYDb7g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1780930365; c=relaxed/relaxed;
-	bh=O6s+nvXflwj+FymmVzEPXkJpjjuKOl1q9oWG4hp5lSs=;
+	t=1780930367; c=relaxed/relaxed;
+	bh=zyze+5GxnwdaVMD4xhEmNY4OHrCpgPCWpLdtZY58lFg=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=BUJhftoCaq1RYqWIsDhf87fTP1uikhdzCIqrsKV80GKiExtAmuMfgpAjftpmSfxSzOhlSy5xvbVkKhhX2mrsnZLYShD2H99wEaB3RjJxLdk1TeLLhUOlrnppDqj8WbSBIbUL5SAmXN9es9/u6PQ3NjW/1l9gLJ9oKkLD2Q9qnXhsY5JECRfA/1IlCQjicYjAWnra6FN2kSD1M5sBLDBgiNGbRZzO+N5nPcuvkMJcqYJGwR8HDZoQnBzoEvVvYdB/ISy6VxIHYzGZxX3asmWFqy1D6qa6w9HfQF0HlIrJgoqqJ32shAuPi75wWNb32djlyE0ed5Npkok9d640g8EE4g==
+	 MIME-Version; b=OMQur4zhV0Z2IS0zdLRJj3SOfa+N37MRkGsJn+nqruN8iEMKsjofj38g0/WXduNgrAz0PgZ/DmHMjUYtnZre/e+V8KS6bT2hKb5R9m2JN/xSiUU4uM1pGxFmPs/8ZY3lb/Qwb9dwBCTmbjcSDXRuWV6WZxMlbDOpu8wRiE9Qrav1Ps1ZiqrlHGtR2cwRjprdSSJffsg4ESgRX/uusV1Y1MeuBIDDSEeRJgWMOR3xlFWg4JRabibrDn2WScy49RT+dNg4rn1v10Qfy9010GewjSKKWM9dxKiYOYTyYXi+yjw5SECe5qBxLuINlCooCRrGwdaT0LsfycmiJWfO1UozSw==
 ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=8bytes.org; spf=pass (client-ip=2a01:238:42d9:3f00:e505:6202:4f0c:f051; helo=mail.8bytes.org; envelope-from=joro@8bytes.org; receiver=lists.ozlabs.org) smtp.mailfrom=8bytes.org
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=8bytes.org
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=8bytes.org (client-ip=2a01:238:42d9:3f00:e505:6202:4f0c:f051; helo=mail.8bytes.org; envelope-from=joro@8bytes.org; receiver=lists.ozlabs.org)
 Received: from mail.8bytes.org (mail.8bytes.org [IPv6:2a01:238:42d9:3f00:e505:6202:4f0c:f051])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gYw4Z28cqz3cQf
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Jun 2026 00:52:30 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gYw4Y0hLcz3bpP
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Jun 2026 00:52:28 +1000 (AEST)
 Received: from io.home.8bytes.org (p4ffe1d30.dip0.t-ipconnect.de [79.254.29.48])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.8bytes.org (Postfix) with ESMTPSA id 94CCC2028D4;
-	Mon,  8 Jun 2026 16:43:15 +0200 (CEST)
+	by mail.8bytes.org (Postfix) with ESMTPSA id 265112028BA;
+	Mon,  8 Jun 2026 16:43:09 +0200 (CEST)
 From: =?UTF-8?q?J=C3=B6rg=20R=C3=B6del?= <joro@8bytes.org>
 To: Paolo Bonzini <pbonzini@redhat.com>,
 	Sean Christopherson <seanjc@google.com>
@@ -49,9 +49,9 @@ Cc: Tom Lendacky <thomas.lendacky@amd.com>,
 	x86@kernel.org,
 	coconut-svsm@lists.linux.dev,
 	joerg.roedel@amd.com
-Subject: [PATCH 49/60] kvm: x86: Allow hardware backend to overwrite struct kvm_plane allocation
-Date: Mon,  8 Jun 2026 16:42:41 +0200
-Message-ID: <20260608144252.351443-50-joro@8bytes.org>
+Subject: [PATCH 19/60] kvm: Introduce accessors for kvm_vcpu->mode
+Date: Mon,  8 Jun 2026 16:42:11 +0200
+Message-ID: <20260608144252.351443-20-joro@8bytes.org>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20260608144252.351443-1-joro@8bytes.org>
 References: <20260608144252.351443-1-joro@8bytes.org>
@@ -72,127 +72,338 @@ Content-Transfer-Encoding: 8bit
 
 From: Joerg Roedel <joerg.roedel@amd.com>
 
-Allow the hardware backend implementations to allocate the struct
-kvm_plane instances so that they can carry hardware specific
-information along them.
+Introduce accessors to make it easier to move this member of struct
+kvm_vcpu.
 
 Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
 ---
- arch/x86/include/asm/kvm-x86-ops.h |  2 ++
- arch/x86/include/asm/kvm_host.h    |  3 +++
- arch/x86/kvm/svm/svm.c             |  3 +++
- arch/x86/kvm/vmx/main.c            |  5 ++++-
- arch/x86/kvm/x86.c                 | 16 ++++++++++++++--
- arch/x86/kvm/x86.h                 |  4 ++++
- 6 files changed, 30 insertions(+), 3 deletions(-)
+ arch/arm64/kvm/arm.c         |  6 +++---
+ arch/loongarch/kvm/vcpu.c    |  6 +++---
+ arch/mips/kvm/mips.c         |  6 +++---
+ arch/powerpc/kvm/book3s_pr.c |  2 +-
+ arch/powerpc/kvm/booke.c     |  2 +-
+ arch/powerpc/kvm/powerpc.c   |  2 +-
+ arch/riscv/kvm/vcpu.c        |  6 +++---
+ arch/x86/kvm/lapic.c         |  3 ++-
+ arch/x86/kvm/mmu/mmu.c       |  4 ++--
+ arch/x86/kvm/svm/svm.c       |  2 +-
+ arch/x86/kvm/vmx/common.h    |  2 +-
+ arch/x86/kvm/x86.c           |  8 ++++----
+ include/linux/kvm_host.h     | 25 +++++++++++++++++++++++++
+ virt/kvm/kvm_main.c          |  4 ++--
+ 14 files changed, 52 insertions(+), 26 deletions(-)
 
-diff --git a/arch/x86/include/asm/kvm-x86-ops.h b/arch/x86/include/asm/kvm-x86-ops.h
-index c8bff1e9325e..207d56d12459 100644
---- a/arch/x86/include/asm/kvm-x86-ops.h
-+++ b/arch/x86/include/asm/kvm-x86-ops.h
-@@ -150,6 +150,8 @@ KVM_X86_OP_OPTIONAL(alloc_apic_backing_page)
- KVM_X86_OP_OPTIONAL_RET0(gmem_prepare)
- KVM_X86_OP_OPTIONAL_RET0(gmem_max_mapping_level)
- KVM_X86_OP_OPTIONAL(gmem_invalidate)
-+KVM_X86_OP(alloc_plane)
-+KVM_X86_OP(free_plane)
+diff --git a/arch/arm64/kvm/arm.c b/arch/arm64/kvm/arm.c
+index 295d7f19e4de..001f83f737ea 100644
+--- a/arch/arm64/kvm/arm.c
++++ b/arch/arm64/kvm/arm.c
+@@ -1298,10 +1298,10 @@ int kvm_arch_vcpu_ioctl_run(struct kvm_vcpu *vcpu)
+ 		 * See the comment in kvm_vcpu_exiting_guest_mode() and
+ 		 * Documentation/virt/kvm/vcpu-requests.rst
+ 		 */
+-		smp_store_mb(vcpu->mode, IN_GUEST_MODE);
++		kvm_vcpu_set_mode_mb(vcpu, IN_GUEST_MODE);
+ 
+ 		if (ret <= 0 || kvm_vcpu_exit_request(vcpu, &ret)) {
+-			vcpu->mode = OUTSIDE_GUEST_MODE;
++			kvm_vcpu_set_mode(vcpu, OUTSIDE_GUEST_MODE);
+ 			isb(); /* Ensure work in x_flush_hwstate is committed */
+ 			if (kvm_vcpu_has_pmu(vcpu))
+ 				kvm_pmu_sync_hwstate(vcpu);
+@@ -1323,7 +1323,7 @@ int kvm_arch_vcpu_ioctl_run(struct kvm_vcpu *vcpu)
+ 
+ 		ret = kvm_arm_vcpu_enter_exit(vcpu);
+ 
+-		vcpu->mode = OUTSIDE_GUEST_MODE;
++		kvm_vcpu_set_mode(vcpu, OUTSIDE_GUEST_MODE);
+ 		vcpu->stat.exits++;
+ 		/*
+ 		 * Back from guest
+diff --git a/arch/loongarch/kvm/vcpu.c b/arch/loongarch/kvm/vcpu.c
+index bde8b68b8273..bab3c66ae58d 100644
+--- a/arch/loongarch/kvm/vcpu.c
++++ b/arch/loongarch/kvm/vcpu.c
+@@ -311,7 +311,7 @@ static int kvm_pre_enter_guest(struct kvm_vcpu *vcpu)
+ 		kvm_deliver_intr(vcpu);
+ 		kvm_deliver_exception(vcpu);
+ 		/* Make sure the vcpu mode has been written */
+-		smp_store_mb(vcpu->mode, IN_GUEST_MODE);
++		kvm_vcpu_set_mode_mb(vcpu, IN_GUEST_MODE);
+ 		kvm_check_vpid(vcpu);
+ 
+ 		/*
+@@ -329,7 +329,7 @@ static int kvm_pre_enter_guest(struct kvm_vcpu *vcpu)
+ 				kvm_make_request(KVM_REQ_PMU, vcpu);
+ 			}
+ 			/* make sure the vcpu mode has been written */
+-			smp_store_mb(vcpu->mode, OUTSIDE_GUEST_MODE);
++			kvm_vcpu_set_mode_mb(vcpu, OUTSIDE_GUEST_MODE);
+ 			local_irq_enable();
+ 			ret = -EAGAIN;
+ 		}
+@@ -348,7 +348,7 @@ static int kvm_handle_exit(struct kvm_run *run, struct kvm_vcpu *vcpu)
+ 	u32 intr = estat & CSR_ESTAT_IS;
+ 	u32 ecode = (estat & CSR_ESTAT_EXC) >> CSR_ESTAT_EXC_SHIFT;
+ 
+-	vcpu->mode = OUTSIDE_GUEST_MODE;
++	kvm_vcpu_set_mode(vcpu, OUTSIDE_GUEST_MODE);
+ 
+ 	/* Set a default exit reason */
+ 	run->exit_reason = KVM_EXIT_UNKNOWN;
+diff --git a/arch/mips/kvm/mips.c b/arch/mips/kvm/mips.c
+index 6469ec246dd6..776aba0af096 100644
+--- a/arch/mips/kvm/mips.c
++++ b/arch/mips/kvm/mips.c
+@@ -448,7 +448,7 @@ int kvm_arch_vcpu_ioctl_run(struct kvm_vcpu *vcpu)
+ 	 * flush request while the requester sees the VCPU as outside of guest
+ 	 * mode and not needing an IPI.
+ 	 */
+-	smp_store_mb(vcpu->mode, IN_GUEST_MODE);
++	kvm_vcpu_set_mode_mb(vcpu, IN_GUEST_MODE);
+ 
+ 	r = kvm_mips_vcpu_enter_exit(vcpu);
+ 
+@@ -1175,7 +1175,7 @@ static int __kvm_mips_handle_exit(struct kvm_vcpu *vcpu)
+ 	u32 inst;
+ 	int ret = RESUME_GUEST;
+ 
+-	vcpu->mode = OUTSIDE_GUEST_MODE;
++	kvm_vcpu_set_mode(vcpu, OUTSIDE_GUEST_MODE);
+ 
+ 	/* Set a default exit reason */
+ 	run->exit_reason = KVM_EXIT_UNKNOWN;
+@@ -1329,7 +1329,7 @@ static int __kvm_mips_handle_exit(struct kvm_vcpu *vcpu)
+ 		 * or we could miss a TLB flush request while the requester sees
+ 		 * the VCPU as outside of guest mode and not needing an IPI.
+ 		 */
+-		smp_store_mb(vcpu->mode, IN_GUEST_MODE);
++		kvm_vcpu_set_mode_mb(vcpu, IN_GUEST_MODE);
+ 
+ 		kvm_mips_callbacks->vcpu_reenter(vcpu);
+ 
+diff --git a/arch/powerpc/kvm/book3s_pr.c b/arch/powerpc/kvm/book3s_pr.c
+index 2ba2dd26a7ea..0a14870f1d33 100644
+--- a/arch/powerpc/kvm/book3s_pr.c
++++ b/arch/powerpc/kvm/book3s_pr.c
+@@ -1852,7 +1852,7 @@ static int kvmppc_vcpu_run_pr(struct kvm_vcpu *vcpu)
+ 
+ 	srr_regs_clobbered();
+ out:
+-	vcpu->mode = OUTSIDE_GUEST_MODE;
++	kvm_vcpu_set_mode(vcpu, OUTSIDE_GUEST_MODE);
+ 	return ret;
+ }
+ 
+diff --git a/arch/powerpc/kvm/booke.c b/arch/powerpc/kvm/booke.c
+index f3ddb24ece74..08b3180adc83 100644
+--- a/arch/powerpc/kvm/booke.c
++++ b/arch/powerpc/kvm/booke.c
+@@ -823,7 +823,7 @@ int kvmppc_vcpu_run(struct kvm_vcpu *vcpu)
  #endif
  
- #undef KVM_X86_OP
-diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
-index c2651774d785..0955097aca9c 100644
---- a/arch/x86/include/asm/kvm_host.h
-+++ b/arch/x86/include/asm/kvm_host.h
-@@ -2011,6 +2011,9 @@ struct kvm_x86_ops {
- 	int (*gmem_prepare)(struct kvm *kvm, kvm_pfn_t pfn, gfn_t gfn, int max_order);
- 	void (*gmem_invalidate)(kvm_pfn_t start, kvm_pfn_t end);
- 	int (*gmem_max_mapping_level)(struct kvm *kvm, kvm_pfn_t pfn, bool is_private);
-+
-+	struct kvm_plane *(*alloc_plane)(void);
-+	void (*free_plane)(struct kvm_plane *);
- };
+ out:
+-	vcpu->mode = OUTSIDE_GUEST_MODE;
++	kvm_vcpu_set_mode(vcpu, OUTSIDE_GUEST_MODE);
+ 	return ret;
+ }
  
- struct kvm_x86_nested_ops {
+diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
+index 800867c164c6..5d94e0f676ec 100644
+--- a/arch/powerpc/kvm/powerpc.c
++++ b/arch/powerpc/kvm/powerpc.c
+@@ -98,7 +98,7 @@ int kvmppc_prepare_to_enter(struct kvm_vcpu *vcpu)
+ 			break;
+ 		}
+ 
+-		vcpu->mode = IN_GUEST_MODE;
++		kvm_vcpu_set_mode(vcpu, IN_GUEST_MODE);
+ 
+ 		/*
+ 		 * Reading vcpu->requests must happen after setting vcpu->mode,
+diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
+index 8519a5bfbdc4..66cde226eb87 100644
+--- a/arch/riscv/kvm/vcpu.c
++++ b/arch/riscv/kvm/vcpu.c
+@@ -903,7 +903,7 @@ int kvm_arch_vcpu_ioctl_run(struct kvm_vcpu *vcpu)
+ 		 * See the comment in kvm_vcpu_exiting_guest_mode() and
+ 		 * Documentation/virt/kvm/vcpu-requests.rst
+ 		 */
+-		vcpu->mode = IN_GUEST_MODE;
++		kvm_vcpu_set_mode(vcpu, IN_GUEST_MODE);
+ 
+ 		kvm_vcpu_srcu_read_unlock(vcpu);
+ 		smp_mb__after_srcu_read_unlock();
+@@ -920,7 +920,7 @@ int kvm_arch_vcpu_ioctl_run(struct kvm_vcpu *vcpu)
+ 		if (kvm_riscv_gstage_vmid_ver_changed(&vcpu->kvm->arch.vmid) ||
+ 		    kvm_request_pending(vcpu) ||
+ 		    xfer_to_guest_mode_work_pending()) {
+-			vcpu->mode = OUTSIDE_GUEST_MODE;
++			kvm_vcpu_set_mode(vcpu, OUTSIDE_GUEST_MODE);
+ 			local_irq_enable();
+ 			preempt_enable();
+ 			kvm_vcpu_srcu_read_lock(vcpu);
+@@ -941,7 +941,7 @@ int kvm_arch_vcpu_ioctl_run(struct kvm_vcpu *vcpu)
+ 
+ 		kvm_riscv_vcpu_enter_exit(vcpu, &trap);
+ 
+-		vcpu->mode = OUTSIDE_GUEST_MODE;
++		kvm_vcpu_set_mode(vcpu, OUTSIDE_GUEST_MODE);
+ 		vcpu->stat.exits++;
+ 
+ 		/* Syncup interrupts state with HW */
+diff --git a/arch/x86/kvm/lapic.c b/arch/x86/kvm/lapic.c
+index ab40a2e4ab9d..1b763f164951 100644
+--- a/arch/x86/kvm/lapic.c
++++ b/arch/x86/kvm/lapic.c
+@@ -200,7 +200,8 @@ static bool kvm_can_use_hv_timer(struct kvm_vcpu *vcpu)
+ 
+ static bool kvm_use_posted_timer_interrupt(struct kvm_vcpu *vcpu)
+ {
+-	return kvm_can_post_timer_interrupt(vcpu) && vcpu->mode == IN_GUEST_MODE;
++	return kvm_can_post_timer_interrupt(vcpu) &&
++	       kvm_vcpu_mode(vcpu) == IN_GUEST_MODE;
+ }
+ 
+ static inline u32 kvm_apic_calc_x2apic_ldr(u32 id)
+diff --git a/arch/x86/kvm/mmu/mmu.c b/arch/x86/kvm/mmu/mmu.c
+index f0144ae8d891..0cec559f59b1 100644
+--- a/arch/x86/kvm/mmu/mmu.c
++++ b/arch/x86/kvm/mmu/mmu.c
+@@ -574,7 +574,7 @@ static void walk_shadow_page_lockless_begin(struct kvm_vcpu *vcpu)
+ 		 * Make sure a following spte read is not reordered ahead of the write
+ 		 * to vcpu->mode.
+ 		 */
+-		smp_store_mb(vcpu->mode, READING_SHADOW_PAGE_TABLES);
++		kvm_vcpu_set_mode_mb(vcpu, READING_SHADOW_PAGE_TABLES);
+ 	}
+ }
+ 
+@@ -588,7 +588,7 @@ static void walk_shadow_page_lockless_end(struct kvm_vcpu *vcpu)
+ 		 * reads to sptes.  If it does, kvm_mmu_commit_zap_page() can see us
+ 		 * OUTSIDE_GUEST_MODE and proceed to free the shadow page table.
+ 		 */
+-		smp_store_release(&vcpu->mode, OUTSIDE_GUEST_MODE);
++		kvm_vcpu_set_mode_release(vcpu, OUTSIDE_GUEST_MODE);
+ 		local_irq_enable();
+ 	}
+ }
 diff --git a/arch/x86/kvm/svm/svm.c b/arch/x86/kvm/svm/svm.c
-index 0b57dde29e40..2a92d8d18d7c 100644
+index f5cc30a6732f..e8ad880a4266 100644
 --- a/arch/x86/kvm/svm/svm.c
 +++ b/arch/x86/kvm/svm/svm.c
-@@ -5445,6 +5445,9 @@ struct kvm_x86_ops svm_x86_ops __initdata = {
- 	.gmem_prepare = sev_gmem_prepare,
- 	.gmem_invalidate = sev_gmem_invalidate,
- 	.gmem_max_mapping_level = sev_gmem_max_mapping_level,
-+
-+	.alloc_plane = x86_alloc_plane,
-+	.free_plane = x86_free_plane,
- };
+@@ -3870,7 +3870,7 @@ void svm_complete_interrupt_delivery(struct kvm_vcpu *vcpu, int delivery_mode,
+ 	 * apic->apicv_active must be read after vcpu->mode.
+ 	 * Pairs with smp_store_release in vcpu_enter_guest.
+ 	 */
+-	bool in_guest_mode = (smp_load_acquire(&vcpu->mode) == IN_GUEST_MODE);
++	bool in_guest_mode = (kvm_vcpu_mode_acquire(vcpu) == IN_GUEST_MODE);
  
- /*
-diff --git a/arch/x86/kvm/vmx/main.c b/arch/x86/kvm/vmx/main.c
-index f9c4703dda54..a2fc4eeeca1d 100644
---- a/arch/x86/kvm/vmx/main.c
-+++ b/arch/x86/kvm/vmx/main.c
-@@ -1030,7 +1030,10 @@ struct kvm_x86_ops vt_x86_ops __initdata = {
- 	.vcpu_mem_enc_ioctl = vt_op_tdx_only(vcpu_mem_enc_ioctl),
- 	.vcpu_mem_enc_unlocked_ioctl = vt_op_tdx_only(vcpu_mem_enc_unlocked_ioctl),
- 
--	.gmem_max_mapping_level = vt_op_tdx_only(gmem_max_mapping_level)
-+	.gmem_max_mapping_level = vt_op_tdx_only(gmem_max_mapping_level),
-+
-+	.alloc_plane = x86_alloc_plane,
-+	.free_plane = x86_free_plane,
- };
- 
- struct kvm_x86_init_ops vt_init_ops __initdata = {
+ 	/* Note, this is called iff the local APIC is in-kernel. */
+ 	if (!READ_ONCE(vcpu->arch.apic->apicv_active)) {
+diff --git a/arch/x86/kvm/vmx/common.h b/arch/x86/kvm/vmx/common.h
+index 412d0829d7a2..fe480f7cf55e 100644
+--- a/arch/x86/kvm/vmx/common.h
++++ b/arch/x86/kvm/vmx/common.h
+@@ -112,7 +112,7 @@ static inline void kvm_vcpu_trigger_posted_interrupt(struct kvm_vcpu *vcpu,
+ 						     int pi_vec)
+ {
+ #ifdef CONFIG_SMP
+-	if (vcpu->mode == IN_GUEST_MODE) {
++	if (kvm_vcpu_mode(vcpu) == IN_GUEST_MODE) {
+ 		/*
+ 		 * The vector of the virtual has already been set in the PIR.
+ 		 * Send a notification event to deliver the virtual interrupt
 diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index b9828cd31136..5f48392d4738 100644
+index 2a87359cf42f..50601ac2828f 100644
 --- a/arch/x86/kvm/x86.c
 +++ b/arch/x86/kvm/x86.c
-@@ -487,18 +487,30 @@ unsigned kvm_arch_max_planes(struct kvm *kvm)
- 	return 1;
- }
- 
--struct kvm_plane *kvm_alloc_plane(void)
-+struct kvm_plane *x86_alloc_plane(void)
+@@ -2272,7 +2272,7 @@ static inline bool kvm_vcpu_exit_request(struct kvm_vcpu *vcpu)
  {
- 	/* For better type checking, do not return kzalloc() value directly */
- 	struct kvm_plane *plane = kzalloc(sizeof(*plane), GFP_KERNEL_ACCOUNT);
+ 	xfer_to_guest_mode_prepare();
  
- 	return plane;
+-	return READ_ONCE(vcpu->mode) == EXITING_GUEST_MODE ||
++	return kvm_vcpu_mode(vcpu) == EXITING_GUEST_MODE ||
+ 	       kvm_request_pending(vcpu) || xfer_to_guest_mode_work_pending();
  }
-+EXPORT_SYMBOL_FOR_KVM_INTERNAL(x86_alloc_plane);
  
--void kvm_free_plane(struct kvm_plane *plane)
-+void x86_free_plane(struct kvm_plane *plane)
- {
- 	kfree(plane);
+@@ -11391,7 +11391,7 @@ static int vcpu_enter_guest(struct kvm_vcpu *vcpu)
+ 	local_irq_disable();
+ 
+ 	/* Store vcpu->apicv_active before vcpu->mode.  */
+-	smp_store_release(&vcpu->mode, IN_GUEST_MODE);
++	kvm_vcpu_set_mode_release(vcpu, IN_GUEST_MODE);
+ 
+ 	kvm_vcpu_srcu_read_unlock(vcpu);
+ 
+@@ -11420,7 +11420,7 @@ static int vcpu_enter_guest(struct kvm_vcpu *vcpu)
+ 		kvm_x86_call(sync_pir_to_irr)(vcpu);
+ 
+ 	if (kvm_vcpu_exit_request(vcpu)) {
+-		vcpu->mode = OUTSIDE_GUEST_MODE;
++		kvm_vcpu_set_mode(vcpu, OUTSIDE_GUEST_MODE);
+ 		smp_wmb();
+ 		local_irq_enable();
+ 		preempt_enable();
+@@ -11539,7 +11539,7 @@ static int vcpu_enter_guest(struct kvm_vcpu *vcpu)
+ 	vcpu->arch.last_vmentry_cpu = vcpu->cpu;
+ 	vcpu->arch.last_guest_tsc = kvm_read_l1_tsc(vcpu, rdtsc());
+ 
+-	vcpu->mode = OUTSIDE_GUEST_MODE;
++	kvm_vcpu_set_mode(vcpu, OUTSIDE_GUEST_MODE);
+ 	smp_wmb();
+ 
+ 	kvm_load_xfeatures(vcpu, false);
+diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
+index c08ede1cefd2..45286b3b35c9 100644
+--- a/include/linux/kvm_host.h
++++ b/include/linux/kvm_host.h
+@@ -440,6 +440,31 @@ static inline bool kvm_vcpu_scheduled_out(struct kvm_vcpu *vcpu)
+ 	return vcpu->common->scheduled_out;
  }
-+EXPORT_SYMBOL_FOR_KVM_INTERNAL(x86_free_plane);
-+
-+struct kvm_plane *kvm_alloc_plane(void)
+ 
++static inline int kvm_vcpu_mode(struct kvm_vcpu *vcpu)
 +{
-+	return kvm_x86_call(alloc_plane)();
++	return vcpu->mode;
 +}
 +
-+void kvm_free_plane(struct kvm_plane *plane)
++static inline int kvm_vcpu_mode_acquire(struct kvm_vcpu *vcpu)
 +{
-+	kvm_x86_call(free_plane)(plane);
++	return smp_load_acquire(&vcpu->mode);
 +}
- 
++
++static inline void kvm_vcpu_set_mode(struct kvm_vcpu *vcpu, int mode)
++{
++	vcpu->mode = mode;
++}
++
++static inline void kvm_vcpu_set_mode_mb(struct kvm_vcpu *vcpu, int mode)
++{
++	smp_store_mb(vcpu->mode, mode);
++}
++
++static inline void kvm_vcpu_set_mode_release(struct kvm_vcpu *vcpu, int mode)
++{
++	smp_store_release(&vcpu->mode, mode);
++}
++
  /*
-  * All feature MSRs except uCode revID, which tracks the currently loaded uCode
-diff --git a/arch/x86/kvm/x86.h b/arch/x86/kvm/x86.h
-index 38a905fa86de..812bd6004a4c 100644
---- a/arch/x86/kvm/x86.h
-+++ b/arch/x86/kvm/x86.h
-@@ -797,4 +797,8 @@ static inline bool kvm_is_valid_u_s_cet(struct kvm_vcpu *vcpu, u64 data)
+  * Start accounting time towards a guest.
+  * Must be called before entering guest context.
+diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+index 11e0d4af82df..7ea20d96bc89 100644
+--- a/virt/kvm/kvm_main.c
++++ b/virt/kvm/kvm_main.c
+@@ -3960,8 +3960,8 @@ void __kvm_vcpu_kick(struct kvm_vcpu *vcpu, bool wait)
+ 	 * within the vCPU thread itself.
+ 	 */
+ 	if (vcpu == kvm_get_running_vcpu()) {
+-		if (vcpu->mode == IN_GUEST_MODE)
+-			WRITE_ONCE(vcpu->mode, EXITING_GUEST_MODE);
++		if (kvm_vcpu_mode(vcpu) == IN_GUEST_MODE)
++			kvm_vcpu_set_mode(vcpu, EXITING_GUEST_MODE);
+ 		goto out;
+ 	}
  
- 	return true;
- }
-+
-+struct kvm_plane *x86_alloc_plane(void);
-+void x86_free_plane(struct kvm_plane *plane);
-+
- #endif
 -- 
 2.53.0
 
