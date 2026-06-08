@@ -1,96 +1,95 @@
-Return-Path: <linuxppc-dev+bounces-22201-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22202-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A2513CD8C9D
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jun 2026 13:57:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C0DE7CD8C9D
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jun 2026 14:19:56 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gYts90L6Wz2yS0;
-	Mon, 08 Jun 2026 23:57:33 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=170.10.133.124
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780927052;
-	cv=none; b=dYukRsVGeT7lGpteapJ80o9TMwQ8YK2zrhKg9xGfSOaftPeboRYoxQgIxbtEw1O1Hf9iBNYYfLN7pLtbnnRilIqOiap7iQ+SQyRs8reuJDxJL9U2xlvtGqTMwpMWZgUFx2zmzdOwIZa75bCs0mOqZg1YN/6vMvjU6QY00AbLpAO2biXPOAbjyiVKBI2lZzptQ8E697b10ULLyrC3EEMS3C33OO/UKGHT9wahBXJQoO10LCPC3AkAmpLz2ooVh3U989GK4m3HU8Ah59G0C2qHknuURbQcoj+Wl2n7NzhICKe0f5Z6DxnXBTv9MJv72EfbKpsRQD7NC/5VdJ4QA1pkyA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gYvLz0d2nz2yS0;
+	Tue, 09 Jun 2026 00:19:55 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780928394;
+	cv=none; b=a1Wjk0WSeB0Wbz03jkaHJN+2AIvWYaKbr+/qyyuNZdqUARf/gMmFM/sEkBL5AKn7aE/JioA1FcyZHtYqdEQ363zrVXdTmzFfrZQZT+CRGEY7APbld4TKciP/EkBB8IaoZBTnixIQzDEHmEaW1l/TGtmExYU+NPqnNoNRgpx2lLDis4aby87nSnpUCQwnD3oweVbA1PAO3TpYs4cSa5XnVpI9c4NqNEldT7qreg6gWgyFfP8GhHyWwC3F7g4nnPlg593fnxvLBbiqTumiW4J6H2k9nzFPuOMCKr7t0bEGzLCe3DS10QGARkek2A+lofrhu4/y0YS666zH2KCEWBA8HQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1780927052; c=relaxed/relaxed;
-	bh=3QZwl1Yn9MoZg35gakkX81ZZXe4u4EcmIxBYNzqBHiw=;
-	h=Message-ID:Date:MIME-Version:Subject:From:To:Cc:References:
-	 In-Reply-To:Content-Type; b=Hq6/ar97Tqpil6mebtba4Ar7SHkYXccIc56RiZR5VMpEl4NUbaIfw05D/wACZp/N+PLf0XZwpDmL8fkBc9qIKHK9RN8OheduINwHSP4o8NXwtWDBW+5kRENXeBh61ilV5BcFdIGXdGN4tDZT3iH5hQ5N7WDURjfMm/E+y55evKXuR19Um+7cH49fK2dlsEC3Zc3KxZjO5BJmN7GHB1FQqS3dfJwNdMVWs7bfk3EU4+4uf2hURAQuTOUD7nNVmfrFJ2eHpbpdYp8Kn/ipKt1S25HSdnAUolsVOS2WkvHaLNL2QGuR6aPYjHpi2cJVgpLDpkfl983zBM232maoi37f2A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=e6vVR6Lf; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=V16x2U05; dkim-atps=neutral; spf=pass (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=thuth@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
+	t=1780928394; c=relaxed/relaxed;
+	bh=pTnj5hc2AGLIaTtiaPIpTmrWWo1jdcJMYBjGgCDyyjs=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
+	 MIME-Version:Content-Type; b=hRAQ8g8ieVD/2R4jffN09K2m8i2D79HlR+GQcQ+abrxcyxbNi62mmwr2tuOAJw3Bj8fab1TVENceF+BYSWU35EyetFMTBDpX9UPC2+gM+RSCc8hSeryeTVWpO1qTP5WFh9qR0mJDRHPbnMG+KL2kI5Uefex6LBsv8fTEYjfwvxTiPs1sWS4LNBOoxWtDHBZzl2jTeNlfnwIC0DKAdTujIF7DBxKaO3hPL82jGY2cVQDRCsQJ0MeCYZzIaoizQGXSQHpc3WjyHGlskrldjtlvfstMWv9U8Yzx6ZlbP+fIr/m2Sl83yE9j8jacn6HAxbwXdy2TzJS4UNVJr0Ph1rvqfQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Kv2q8G4S; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=vaibhav@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=e6vVR6Lf;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=V16x2U05;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Kv2q8G4S;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=thuth@redhat.com; receiver=lists.ozlabs.org)
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=vaibhav@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gYts74G5wz2yRM
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 08 Jun 2026 23:57:29 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1780927045;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=3QZwl1Yn9MoZg35gakkX81ZZXe4u4EcmIxBYNzqBHiw=;
-	b=e6vVR6Lf1nDszuE3FklvJPAz0A4C/fTXkDsepIfVZrKhLKK9QGZa60Yq4z1yanUn76Eru9
-	/se4qve9qpdy2x0MIcR2OITgn2nVvzIMHpq50AdCseJ6qHyfjOqCv0TV9t20tIEScKejmX
-	VpID4N94rQaS8yXQYy//L+K+9au0LX4=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1780927046;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=3QZwl1Yn9MoZg35gakkX81ZZXe4u4EcmIxBYNzqBHiw=;
-	b=V16x2U05GT0Z47vD8JZ/jpSBFYjgKQx1JozSe7FVStZCaCq7cYw+4jYSCjRwCy9sZATswx
-	okX4A0MuBgg8eqWwOYleWppRiAxFxCaswnKeIsfjMD9hAHazFmpenoYBUfcRqOmD8wROkR
-	09y2f46t3kLniV13aYjTM4lzcsZY2Hs=
-Received: from mail-wr1-f70.google.com (mail-wr1-f70.google.com
- [209.85.221.70]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-694-UefaeTqkPN-O5bMLucd3SQ-1; Mon, 08 Jun 2026 09:57:18 -0400
-X-MC-Unique: UefaeTqkPN-O5bMLucd3SQ-1
-X-Mimecast-MFC-AGG-ID: UefaeTqkPN-O5bMLucd3SQ_1780927037
-Received: by mail-wr1-f70.google.com with SMTP id ffacd0b85a97d-4600cf05f07so2115813f8f.2
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 08 Jun 2026 06:57:18 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1780927037; x=1781531837;
-        h=content-transfer-encoding:in-reply-to:autocrypt:content-language
-         :references:cc:to:from:subject:user-agent:mime-version:date
-         :message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=3QZwl1Yn9MoZg35gakkX81ZZXe4u4EcmIxBYNzqBHiw=;
-        b=fH779+oPi++4aH9i64f6Af9m6r16oFC8tziaNVA2Sv6/Ul9CQHOnu2I3Q5dm1TIhNo
-         HhkJmobtFn47q6Gswd+Jcp8cD30gogPrMu69cMixQ7xHGUk8gDYhbiIYduqws2bZgCFi
-         HBNYGR88OQd0l0/bBBrYUTvS+9dGE64OKCpXDJZP9R78Q+PgY76klpCi89J6E10iPE0X
-         1zZsTVXszkyrhbqtvf4WQNBKaN0W2M1PQKtA/AEgBPyaYxlUXPny4CsH0eGDVhTF02qy
-         kmFTCsNM6rq+D09nCQwr7+UgH/ulteeCLX2DV1NAtItzTjSas8969GSogbIzZCZnFHUI
-         H7Dg==
-X-Forwarded-Encrypted: i=1; AFNElJ/AgXwtmgPiw7tVgxs2KVaFk9Jz6kZOAc0BZv/jsYe+rGY2NS8vlcISDiNggD3Xjlw+zpp9AOC+DezIP3M=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yyn0Pxwp7p/R6kEj1MySEoBF51FOP0ssDX5mLQCF6kCCB+e5kov
-	H5z1+UN52xN5U9fAkUGABkmTwRpqA0xEcjENKlMl+UrEi1JvdPb7S0K0hfBgZrmWxBfOabyTKwM
-	VYg+jI5PQN7tTzLWjSGWTZlEWNtAmKIhjE3IHiEAEtkmikb0Wd5vpK/3YQ+/0eiG+kU0=
-X-Gm-Gg: Acq92OG27Wk8VqAABhBCYLKwe1HmYZI4Yi8NLpQyQCYPrk8f2CrvDATOvJwsgyhozUt
-	/k1Vf0Eq/ilkF3iSXlCnYZOmDB/028YryTeGNth9vCVv+hhEzL8uqie36SQg0Gu9NsT1P+p1Q0e
-	LvHZJc/621KvGavhbbNIngwkPcBIA22/B4yhxnPcsVkIRsKzAY37ENnmUvu2Xfc4Qgq/1uXWIXY
-	2fv/2wycinORA4ZeYNgqvRP1WAy9rgRtMMOXlCaS/nAJDokuSieZUDvWJB4BLrWP1WSvEcfqzkL
-	SCwaD4XCtUmcAkWMeZ8EgoD0ruryoINQxq68ZVeT75WfjDBUzNdbMhJk3cKTOfIOZkb6g2fxLRv
-	vfAbt40uKhn/t+iLD1hvqHQ90Ov5yfg==
-X-Received: by 2002:a05:600c:620c:b0:490:b28d:a6f9 with SMTP id 5b1f17b1804b1-490c256f1f1mr258398395e9.8.1780927037302;
-        Mon, 08 Jun 2026 06:57:17 -0700 (PDT)
-X-Received: by 2002:a05:600c:620c:b0:490:b28d:a6f9 with SMTP id 5b1f17b1804b1-490c256f1f1mr258398055e9.8.1780927036954;
-        Mon, 08 Jun 2026 06:57:16 -0700 (PDT)
-Received: from [192.168.0.9] ([47.64.115.148])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-4601f2e4b18sm40542835f8f.10.2026.06.08.06.57.15
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 08 Jun 2026 06:57:16 -0700 (PDT)
-Message-ID: <0c95c25f-1400-4912-befc-c5b32968d9ab@redhat.com>
-Date: Mon, 8 Jun 2026 15:57:15 +0200
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gYvLx5gTPz2yRM
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Jun 2026 00:19:52 +1000 (AEST)
+Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6588A7i91458768;
+	Mon, 8 Jun 2026 14:19:36 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-type:date:from:in-reply-to:message-id:mime-version
+	:references:subject:to; s=pp1; bh=pTnj5hc2AGLIaTtiaPIpTmrWWo1jdc
+	JMYBjGgCDyyjs=; b=Kv2q8G4SKMkysAkJbBslHkb5PPRE3mJDxWiQ3cLgS3TK3G
+	CVxKz/xk7dwvU/sN5JEnyd+oX8gVFE422M9b9V1W7JOLoxcMu07mW5gSeWiWS5Te
+	N7Ia1GITDv+Lck+8yu3SNXU7fZ4arSA989yvWA2TlvIPrn86j9EHo126o3aFSrUD
+	+SRaUloFIfkjGc6eLFSeYb2dHbw24HVh8xovpQFm7lAKm32ZCGS7Dhy4ihBTriFG
+	Q+1luifPjiY0gyH1dQ0YsJovPIkGs8XRCPFOBa+xtlbFsd89mL9rKdeE3FpXqXiI
+	Z3op3V0W5+9uaP40C4KOqflfLYohTJxy9ImHwEOg==
+Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4emb957nvv-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 08 Jun 2026 14:19:35 +0000 (GMT)
+Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma12.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 658E4baE005680;
+	Mon, 8 Jun 2026 14:19:35 GMT
+Received: from smtprelay02.wdc07v.mail.ibm.com ([172.16.1.69])
+	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 4emwvpwt7x-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 08 Jun 2026 14:19:35 +0000 (GMT)
+Received: from smtpav04.dal12v.mail.ibm.com (smtpav04.dal12v.mail.ibm.com [10.241.53.103])
+	by smtprelay02.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 658EJXOH25821920
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Mon, 8 Jun 2026 14:19:33 GMT
+Received: from smtpav04.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 122C358056;
+	Mon,  8 Jun 2026 14:19:33 +0000 (GMT)
+Received: from smtpav04.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 060B058052;
+	Mon,  8 Jun 2026 14:19:27 +0000 (GMT)
+Received: from vaibhav?linux.ibm.com (unknown [9.39.27.161])
+	by smtpav04.dal12v.mail.ibm.com (Postfix) with SMTP;
+	Mon,  8 Jun 2026 14:19:26 +0000 (GMT)
+Received: by vaibhav@linux.ibm.com (sSMTP sendmail emulation); Mon, 08 Jun 2026 19:49:25 +0530
+From: Vaibhav Jain <vaibhav@linux.ibm.com>
+To: Gautam Menghani <gautam@linux.ibm.com>
+Cc: Amit Machhiwal <amachhiw@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+        Madhavan Srinivasan <maddy@linux.ibm.com>,
+        Harsh Prateek Bora
+ <harshpb@linux.ibm.com>,
+        Ritesh Harjani <ritesh.list@gmail.com>,
+        Anushree
+ Mathur <anushree.mathur@linux.ibm.com>,
+        Nicholas Piggin
+ <npiggin@gmail.com>,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        "Christophe
+ Leroy (CS GROUP)" <chleroy@kernel.org>,
+        kvm@vger.kernel.org, stable@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] KVM: PPC: Book3S HV: Validate arch_compat against host
+ compatibility mode
+In-Reply-To: <aiaAPQmWG7JXGoGn@Gautams-MacBook-Pro.local>
+References: <20260603141539.47620-1-amachhiw@linux.ibm.com>
+ <aiGJvUqgjUo6M5et@mac.bl1-in.ibm.com> <87ldctmosh.fsf@vajain21.in.ibm.com>
+ <aiaAPQmWG7JXGoGn@Gautams-MacBook-Pro.local>
+Date: Mon, 08 Jun 2026 19:49:25 +0530
+Message-ID: <877bo9m7wy.fsf@vajain21.in.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -104,114 +103,109 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [kvm-unit-tests RFC PATCH 1/6] powerpc: add pmu tests
-From: Thomas Huth <thuth@redhat.com>
-To: Chinmay Rath <rathc@linux.ibm.com>
-Cc: npiggin@gmail.com, harshpb@linux.ibm.com, lvivier@redhat.com,
- linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, andrew.jones@linux.dev,
- sbhat@linux.ibm.com
-References: <20260602064806.3101025-1-rathc@linux.ibm.com>
- <20260602064806.3101025-2-rathc@linux.ibm.com>
- <b7aa2c73-be32-47e2-8452-e626845f4d3e@redhat.com>
-Autocrypt: addr=thuth@redhat.com; keydata=
- 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
-In-Reply-To: <b7aa2c73-be32-47e2-8452-e626845f4d3e@redhat.com>
-X-Mimecast-Spam-Score: 0
-X-Mimecast-MFC-PROC-ID: l-a4K0OHOWZC3uFJf1zzuPoqZCHe8qQAw8EZSXMQV_U_1780927037
-X-Mimecast-Originator: redhat.com
-Content-Language: en-US
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Authority-Analysis: v=2.4 cv=N4UZ0W9B c=1 sm=1 tr=0 ts=6a26cf78 cx=c_pps
+ a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17
+ a=FelO9ux0wxsA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
+ a=U7nrCbtTmkRpXpFmAIza:22 a=VwQbUJbxAAAA:8 a=VnNF1IyMAAAA:8
+ a=FEvzW7QgZIPG8QhEdCYA:9
+X-Proofpoint-ORIG-GUID: IAcZRhrd19hqH9tIBTGj-YEn3gPFGtPn
+X-Proofpoint-GUID: 334FODx7fJ4QzIEJE24es4nh5iroqIfR
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjA4MDEzNCBTYWx0ZWRfXylAXCFV89dhV
+ h3DNgITWM2xtuWmkgirPy1GBkIstat3tS0bbwOP6pFg0W7epEjmPogLG+49+SVmgT5o8R2kaKA8
+ BcnYW5fRkD1YcRbac6Fkget9AhawkCvWLuia7SF2XcEYkaohaiMjdFgaKO81cTrPv82Ec0lPTEP
+ YdNKRzsL65uq4+nOJSYSCAMcO6KXVozVhw8WK/6vIhoDNlW1n+wvWCyrWBlZh9DgipxZ6i9/x7s
+ WCVxXDeuKYbzYgAZcjnHeP3v283XEWZ/h43rBO3I8fK5XQ6m3Ocu1RGBTwH4IqOx4wFxcGPcoUe
+ VTO4J3b7jFYrK1ompMK2bobCbqF48BHCsCpS9LJDkLjtIOQTcQP4F6pdLHzVrMAPMuHwIgA7+dS
+ UBwKhdV4pWGY3McmyGpPcGmh5h5523bNRHcYNp92at38+nJbBuLRqrl30eP8lhSK7KTJebDta8x
+ Rem2ZlEwDleecsuhwzQ==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
+ definitions=2026-06-08_03,2026-06-05_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ bulkscore=0 malwarescore=0 spamscore=0 clxscore=1015 lowpriorityscore=0
+ phishscore=0 impostorscore=0 adultscore=0 priorityscore=1501 suspectscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2605210000 definitions=main-2606080134
 
-On 08/06/2026 14.45, Thomas Huth wrote:
-> On 02/06/2026 08.48, Chinmay Rath wrote:
->> From: Nicholas Piggin <npiggin@gmail.com>
->>
->> Add some initial PMU testing.
->>
->> - PMC5/6 tests
->> - PMAE / PMI test
->> - BHRB basic tests
->>
->> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
->> Signed-off-by: Chinmay Rath <rathc@linux.ibm.com>
->> ---
->>   lib/powerpc/asm/processor.h |   2 +
->>   lib/powerpc/asm/reg.h       |   9 +
->>   lib/powerpc/asm/setup.h     |   1 +
->>   lib/powerpc/setup.c         |  20 ++
->>   powerpc/Makefile.common     |   3 +-
->>   powerpc/pmu.c               | 567 ++++++++++++++++++++++++++++++++++++
->>   powerpc/unittests.cfg       |   3 +
->>   7 files changed, 604 insertions(+), 1 deletion(-)
->>   create mode 100644 powerpc/pmu.c
-> 
->   Hi Chinmay,
-> 
-> the problem with Clang on Travis [*] still seems to persist:
-> 
->   https://app.travis-ci.com/github/huth/kvm-unit-tests/jobs/639614142
-> 
-> Could you please have a look?
-> 
->   Thanks,
->    Thomas
-> 
-> 
-> [*] This already happened with Nicolas' last version:
-> 
->   https://www.spinics.net/lists/kvm/msg351218.html
+Gautam Menghani <gautam@linux.ibm.com> writes:
 
-I managed to get access to a ppc64 machine. The error is:
+> On Fri, Jun 05, 2026 at 12:55:50PM +0530, Vaibhav Jain wrote:
+>> Hi Gautam,
+>> 
+>> Thanks for testing this patch. Few questions:
+>> Gautam Menghani <gautam@linux.ibm.com> writes:
+>> 
+>> > On Wed, Jun 03, 2026 at 07:45:39PM +0530, Amit Machhiwal wrote:
+>> >> On IBM POWER systems, newer processor generations can operate in
+>> >> compatibility modes corresponding to earlier generations. This becomes
+>> >> relevant for nested virtualization, where nested KVM guests may need to
+>> >> run with a specific processor compatibility level.
+>> >> 
+>> <snip>
+>> >
+>> > I booted a KVM guest on LPAR with this patch in the following scenarios:
+>> <snip>
+>> 
+>> > 3. P11 guest on P11 host booted in P10 compat mode: No error observed
+>> This should have resulted in an error since booting a P11 guest on P10
+>> compat mode host is not allowed with/without this patch. Can you please
+>> check your test env and share the boot results.
+>
+> - lscpu output (host P11 LPAR booted in p10 compat mode)
+> # lscpu                                                                                                                                                   03:35:13 [3/3]
+> Architecture:                ppc64le
+>   Byte Order:                Little Endian
+> CPU(s):                      960
+>   On-line CPU(s) list:       0-959
+> Model name:                  POWER10 (architected), altivec supported
+>   Model:                     2.0 (pvr 0082 0200)
+>   Thread(s) per core:        8
+>   Core(s) per socket:        15
+>   Socket(s):                 8
+>   Physical sockets:          4
+>   Physical chips:            2
+>   Physical cores/chip:       16
+>
+>
+> - lscpu output from guest
+> # lscpu
+> Architecture:             ppc64le
+>   Byte Order:             Little Endian
+> CPU(s):                   4
+>   On-line CPU(s) list:    0-3
+> Model name:               Power11 (raw), altivec supported
+>   Model:                  2.0 (pvr 0082 0200)
+>   Thread(s) per core:     1
+>   Core(s) per socket:     4
+>   Socket(s):              1
+>
+Argh, this doesnt look right. The kernel patch should have prevented the
+P11 compat guest boot on P10 compat host. Looks like you havent used the
+corrosponding Qemu patch [1] that could have prevented this from
+happening.
 
-/tmp/pmu-eab466.s: Assembler messages:
-/tmp/pmu-eab466.s:1649: Error: unrecognized opcode: `ldat'
-clang: error: assembler command failed with exit code 1 (use -v to see 
-invocation)
-make: *** [<builtin>: powerpc/pmu.o] Error 1
+Had a off mailing list discussion with Amit on how to address this issue
+and he will be sending a new version of the patch to address this issue.
 
-  HTH,
-   Thomas
 
+[1] https://lore.kernel.org/all/20260502140021.69712-2-amachhiw@linux.ibm.com/
+
+>
+>
+> - QEMU command line
+> /usr/bin/qemu-system-ppc64 -device virtio-blk-pci,drive=drive0,id=virtblk0 \
+>     -drive file=/home/gautam/images/fc41.qcow2,format=qcow2,if=none,id=drive0 \
+>     -m 100G -smp 4 -cpu host -nographic -machine pseries,ic-mode=xics -accel kvm
+>
+>
+> Thanks,
+> Gautam
+>
+
+-- 
+Cheers
+~ Vaibhav
 
