@@ -1,60 +1,92 @@
-Return-Path: <linuxppc-dev+bounces-22268-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22270-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 80F36CD8C92
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jun 2026 14:58:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4F0B3CD8C92
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jun 2026 15:17:34 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gYw594j7hz3fMm;
-	Tue, 09 Jun 2026 00:53:01 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=85.214.250.239
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780930381;
-	cv=none; b=aWUKH9LgdSdTfGz4Onwmg4oXvER7DFKS53IR9JCbvbA6AxsHVL4iLZXoXEeZE5sDzIg1N08IfcY6Ho/o4RPjIN8gyvQnt8EfnWFr3CJufnPHu34meo0EDtsiix0ALSGb0sko83we3VjMRp34KeQvcpji5h0vJtP4m/fj3o4KyRpfu9lufvBtcXak26wnYaPxHvTh699FwcaFw5HSBbZacxJyogGbbGQ27dTMOIt0B0Akcu7F/ALtt9sNxnnguLL1Z3FBw8N5kBLuCysBxCDUT/y1T0KngXR8BAnlJgj0XKv3raBfjgUCysii6mdmttt8VYqt65SlCITdA4wmVkGElQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1780930381; c=relaxed/relaxed;
-	bh=e9HuO56Ih0GiZjQIv1KoGyUvXWBxNwDCasQo8Rno9zw=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=AFta7ExLYJHTJhBJQpaSb5GXK+XJofxCplgTlktqVqwoQCK97HzVuZEvIcAwY4u88gnhhndoABfM0QHJtR5Shv3vCr2eWEM8x7EgM6snwJU3Xd1H4JzkuxdPYFcTm8wKw2uW4v/TR/2KLvdaEIXZjFYp/MiaglXfofo95jkT3YLJLOiFJPEEpEXgp6OJ3Z1VRLXzrNPKWB5oDrrrN0XBzhG3usN8PocpN/MUTK+ws4s2Xm9/wP++8tkL2VjUcz2Gdd1xBp+59dBQL4o1QGErq+oztnAL+hAKNSR3/0Jftu88PJWJmZ4tE4pXs8rciEu9ET5+U8ErsWwGj1JX4gqBFQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=8bytes.org; spf=pass (client-ip=85.214.250.239; helo=mail.8bytes.org; envelope-from=joro@8bytes.org; receiver=lists.ozlabs.org) smtp.mailfrom=8bytes.org
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=8bytes.org
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=8bytes.org (client-ip=85.214.250.239; helo=mail.8bytes.org; envelope-from=joro@8bytes.org; receiver=lists.ozlabs.org)
-Received: from mail.8bytes.org (mail.8bytes.org [85.214.250.239])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gYw4s52Cyz3dhY
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Jun 2026 00:52:45 +1000 (AEST)
-Received: from io.home.8bytes.org (p4ffe1d30.dip0.t-ipconnect.de [79.254.29.48])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gYwdS6KRTz2yS4;
+	Tue, 09 Jun 2026 01:17:32 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a00:1450:4864:20::631" arc.chain=google.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780931852;
+	cv=pass; b=Hd1sN+/+q2OR+V3KecImkTLA+PbOjX/YLiB8JOxpZsFwpDSxsZHHF+TAVmEZ4v2oH5afacWgedu8Pv76G9CbyrTOsmu9dCsIZ636xmy9cC4ezhWLrPwaCwjBLgWNpaGtUnR2ZnkeaJ56Mqm+X8jJtDKx8WKElGXHsdVaRRqshp5VVfRN97/iUTVFFICLLH6w2Kc7fH9ZDLl6sTanh21BfoahjxugPglOijnJDdV8PlpRTJgiio64LPmwB25qH0JexFdjqUA8KrMPU67IDQawZP9HoB8Fy4e7qA5mKjq35WpIk98vSl32cTp+eA68uWzzl60FV98bWGO4kpyErWM30g==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1780931852; c=relaxed/relaxed;
+	bh=yOZ7AW/TQxNVQJPSlsPWX5PMQzNffbEW+fgTz/Ammvw=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=UXBzIUG7gfHENI9QVcfAsQtepTG2WlawozYffQZHfdd8JDEsN3ixOyp7AZUPl4aCmcDrhJPQjBKy03x2whA1s4nc+DGOcBJi5YbTq4e8e6UmNi9eV734wiclwCTR7PLLdPbyTOTy3unqBZNX/N8HwLOeYG+vN6f0vRmsVUO7sAHY4lCSopPB2vbiLF3Rx2hzbsE0pGWHzkYzWaQog8EAw46+Jmxp/tcDi5nL7pgxYHAjYTYcTcCpAR18kEm0TYrxEwu6xxOxSYSPKDfVSsr5CEVtoM74KMcFTn/4g/OIKwfuUAqsE30WQKy+Zcb7nLcsb6KKRh8qfjr8jpWtBUDDqg==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linaro.org; dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=pVbAo7aT; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::631; helo=mail-ej1-x631.google.com; envelope-from=sumit.semwal@linaro.org; receiver=lists.ozlabs.org) smtp.mailfrom=linaro.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=pVbAo7aT;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linaro.org (client-ip=2a00:1450:4864:20::631; helo=mail-ej1-x631.google.com; envelope-from=sumit.semwal@linaro.org; receiver=lists.ozlabs.org)
+Received: from mail-ej1-x631.google.com (mail-ej1-x631.google.com [IPv6:2a00:1450:4864:20::631])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.8bytes.org (Postfix) with ESMTPSA id DAF792028CC;
-	Mon,  8 Jun 2026 16:43:13 +0200 (CEST)
-From: =?UTF-8?q?J=C3=B6rg=20R=C3=B6del?= <joro@8bytes.org>
-To: Paolo Bonzini <pbonzini@redhat.com>,
-	Sean Christopherson <seanjc@google.com>
-Cc: Tom Lendacky <thomas.lendacky@amd.com>,
-	ashish.kalra@amd.com,
-	michael.roth@amd.com,
-	nsaenz@amazon.com,
-	anelkz@amazon.de,
-	James.Bottomley@HansenPartnership.com,
-	Melody Wang <huibo.wang@amd.com>,
-	kvm@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	kvmarm@lists.linux.dev,
-	loongarch@lists.linux.dev,
-	linux-mips@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org,
-	kvm-riscv@lists.infradead.org,
-	x86@kernel.org,
-	coconut-svsm@lists.linux.dev,
-	joerg.roedel@amd.com
-Subject: [PATCH 41/60] kvm: x86: Make apic_map per plane
-Date: Mon,  8 Jun 2026 16:42:33 +0200
-Message-ID: <20260608144252.351443-42-joro@8bytes.org>
-X-Mailer: git-send-email 2.53.0
-In-Reply-To: <20260608144252.351443-1-joro@8bytes.org>
-References: <20260608144252.351443-1-joro@8bytes.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gYwdR1nJnz2yS0
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Jun 2026 01:17:29 +1000 (AEST)
+Received: by mail-ej1-x631.google.com with SMTP id a640c23a62f3a-bf0170c80f7so732158066b.3
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 08 Jun 2026 08:17:29 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1780931847; cv=none;
+        d=google.com; s=arc-20240605;
+        b=k8wYwlXrZZRbA5tvRg7XZqtn9x5f0h/H3ZcrYL0fbVQ9N+mt91ZqgpU8EzqJ75JKCh
+         iHmUNLIc3mwRKfVtndUgBLy2IVAgYgZBjXYOpOtXDKIlhl399m7jBIMbphhNKjTbkYCE
+         MofNUp9UXC3z2u+bAa0K73BpNHnLmrbxpT+QzwSpBhK3aTBLMG4YfyGQNmKgv7FmoS7g
+         jTZJpWYKYBKc8bZJNbkwfnExFcvsDsLNyC8Z2LfCZBBSKKl3V3USdO+m/Vcpw1nrisVl
+         Hbmv3KJMDjhpWfuUtikTYc3tw1vXL1cN2Wi9R80aEG1lkdU+HDX0fs99nRpujWwnmejP
+         uvdQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:dkim-signature;
+        bh=yOZ7AW/TQxNVQJPSlsPWX5PMQzNffbEW+fgTz/Ammvw=;
+        fh=fZrWn1q5df4/gJCHNU9Qs8ifunqjnPJ6bku4hi+D4VU=;
+        b=TdCujs/d/7DF2ueS5YJdjg5HoH1cIgyDxVVYczI8m9mIjZCMChhYwQSqJEFd4vanV/
+         szg5OupiK5QkPuv+/Y7QmkJvy+DS0LoOS/8LfoutbewVaUzUp+i2eZAn7TI7iYWxJ7Zb
+         WWOq8GjjrlaTHHCcNW3if0Q02eOAdQk8BhOhUK4PIel/RcDZwUEdU2ovFmC1FdZ6edJ4
+         SVQb0gVbprjArkQ16HssEXnZx1Wn15bKWeepWaulXm7q/Hbbq8GSO9u/Pq+omaxKdC9E
+         wTlKScDCtzWYsATEc9zBd3/iM3dtDikOO4XdZjPcKiYTUYpJ0FPGTisHyHpakAop8xK3
+         /oLg==;
+        darn=lists.ozlabs.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1780931847; x=1781536647; darn=lists.ozlabs.org;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date:message-id:reply-to;
+        bh=yOZ7AW/TQxNVQJPSlsPWX5PMQzNffbEW+fgTz/Ammvw=;
+        b=pVbAo7aTPtsGbjQfuhFVcr3+lCg1Hom0vdpaDN70VK2IRwlCHut2OnMIkh/NQBQyiC
+         MtYy4t/VFN//VmA88cp50XoLvL+H27X38wEvhoDIcNuetQazPYxmPs/ofFDoy47Ta8OC
+         pOdAz+ap8lLbHqqFsk/Bwq7zcDzbBUBq+tClh5jjY4L9L93Cq6mCphdGqzd1pP/MQIxC
+         TQPo/TfVbnvmIUEwYSy03PqTJa6njnoAzwmPxgoPtKcS6BqDMnqGHL9xCew8g903OyBR
+         XAlKOscFsywqCYVjr+ZPZacZyaOJWIreh3CjHBrI+I2K2rhTN6++r+4FigMEFo8WtUtj
+         zVPg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1780931847; x=1781536647;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=yOZ7AW/TQxNVQJPSlsPWX5PMQzNffbEW+fgTz/Ammvw=;
+        b=eL1Wy+pHqPVdeBa2WW0//e8roEM7rjnzqupMltpnafA+RRF0FLdYJ09Y0Qrdvd0fq/
+         u4zonI90FAQOuPDhOGPrLce1KOvNYZ/SSQCiL+OkpTOpgcoNMpo7oABzXY7qFEiMnMiV
+         vIWS0NrUw2NP1hBS6XFv/q5HztNSyYgdQwxldhsdQdSHMqJFUVBf6yJZsTLwm0FBeA+8
+         bdK+9O+Rz2NpSILUPhRAFYOk3wzoi1VQvbbhFQlet76N+7jtlho8wGVNwrToy4ZMcZog
+         5QL2fm3QWkZxdB66DTYl7X8qh2OLGCblhn20hqXio9tqswM5S/fcC7PCYYQPrNJL6NP2
+         9M3w==
+X-Forwarded-Encrypted: i=1; AFNElJ9n/ASn98eEp3c1kutTWGT2YjdoJ5tOA2hn5ZS90z6TFEZBJ6uQMOyCtybWAa3EvJ6FNT+gn5wyWkPKdY4=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yxjbq/ie1RUKNRfi+p8R38CGSLjCTSXqFxMWqWOBaSpWyMIZKWw
+	lWKiGlvvrAgewLukytgiT/4sTp7/l6FpyRLY4jf2Z4Lw9BXO33X89CuKVet2c4VgAoF46bugq9s
+	X5m8wN0Maf0HVbCZo9x45NFXTyEY3CqJDkI5SjyLs+g==
+X-Gm-Gg: Acq92OFxKd3cb/5Euw6A/PeeETmWQV09iokI3ey0JD31NvCX3cpPbir21VNAAOnARzY
+	0LeWIPE+7o2+Ucl/GpQ/JkV8AZf+2BFKpR3n2b9WFZX5bDHql0ilEx0hZ3buG/orJEcj50j429a
+	Ogycf1PRU91211Y8WWDvqXl9AezmCXBC3uCbCi2bL+9Oq2+iUqIEIYGm38aIGqNMX4YqgnRKrSW
+	TgyYfYzaPLweB9qDQApZMagvl6VZa/CAIYiDZoA0K7K87hpVTp8JT29eZ5ncK1j5fUivY6BnIhv
+	iJQTdQpgpHDcE+diY6d2ejF77lVbtNEgz1Bbns7Rb2R742Sf7YwnO9hYASc=
+X-Received: by 2002:a17:907:c22:b0:bec:d077:c4e1 with SMTP id
+ a640c23a62f3a-bf373ff1dbdmr731904466b.47.1780931846675; Mon, 08 Jun 2026
+ 08:17:26 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -68,384 +100,64 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20260522225853.878411-1-tjmercier@google.com> <ahPqbfH54R3JJyaV@infradead.org>
+ <20260527160716.GN2487554@ziepe.ca> <20260604-dangerous-tuatara-of-sympathy-28e05e@houat>
+ <CAO_48GEJsg4X7++zg-ztQgVibY_FjjManaA5_W3usjicGUQPdg@mail.gmail.com> <20260604135712.GV2487554@ziepe.ca>
+In-Reply-To: <20260604135712.GV2487554@ziepe.ca>
+From: Sumit Semwal <sumit.semwal@linaro.org>
+Date: Mon, 8 Jun 2026 20:47:15 +0530
+X-Gm-Features: AVVi8CdcrMng9NlewA5irjsXERkw9Ix0pSFdV0gf1_HiahCuxCNItaDbqkFH3sQ
+Message-ID: <CAO_48GH3NP09U6TdB5drbKY0TpwvtBXwrf=Jajsr5ttNbC_u9g@mail.gmail.com>
+Subject: Re: [PATCH] powerpc: Export set_memory_encrypted and set_memory_decrypted
+To: Jason Gunthorpe <jgg@ziepe.ca>
+Cc: Maxime Ripard <mripard@kernel.org>, Jiri Pirko <jiri@resnulli.us>, 
+	Christoph Hellwig <hch@infradead.org>, "T.J. Mercier" <tjmercier@google.com>, maddy@linux.ibm.com, 
+	mpe@ellerman.id.au, npiggin@gmail.com, chleroy@kernel.org, 
+	linuxppc-dev@lists.ozlabs.org, lkp@intel.com, linux-kernel@vger.kernel.org, 
+	iommu@lists.linux.dev, linux-mm@kvack.org, agordeev@linux.ibm.com, 
+	gerald.schaefer@linux.ibm.com, linux-s390@vger.kernel.org, 
+	Dan Williams <djbw@kernel.org>, Tom Lendacky <thomas.lendacky@amd.com>, x86@kernel.org, 
+	Arnd Bergmann <arnd@linaro.org>
+Content-Type: text/plain; charset="UTF-8"
 
-From: Paolo Bonzini <pbonzini@redhat.com>
+Hi Jason,
 
-Signed-off-by: Paolo Bonzini <pbonzini@redhat.com>
-Co-developed-by: Joerg Roedel <joerg.roedel@amd.com>
-Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
----
- arch/x86/include/asm/kvm_host.h | 24 +++++------
- arch/x86/kvm/i8254.c            |  2 +-
- arch/x86/kvm/lapic.c            | 71 +++++++++++++++++----------------
- arch/x86/kvm/x86.c              | 18 +++++++--
- 4 files changed, 61 insertions(+), 54 deletions(-)
+On Thu, 4 Jun 2026 at 19:27, Jason Gunthorpe <jgg@ziepe.ca> wrote:
+>
+> On Thu, Jun 04, 2026 at 12:51:49PM +0530, Sumit Semwal wrote:
+>
+> > Given that Christoph's objection is not really about the modules part,
+> > but that the set_memory_{encrypted,decrypted} should not be used here,
+> > one option is to revert 78b30c50a7ac until that issue is sorted out?
+>
+> Please no, we have stuff already using this so it would be a
+> functional regression. Revert making heaps into a module since that
+> doesn't have a functional regression.
 
-diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
-index 134bc02962fd..11e52f8bb2c2 100644
---- a/arch/x86/include/asm/kvm_host.h
-+++ b/arch/x86/include/asm/kvm_host.h
-@@ -1418,16 +1418,17 @@ enum kvm_mmu_type {
- };
- 
- /* Per-plane state of VM */
--struct kvm_arch_plane {};
-+struct kvm_arch_plane {
-+	atomic_t vapics_in_nmi_mode;
- 
--static inline int kvm_arch_plane_init(struct kvm *kvm,
--				      struct kvm_plane *plane,
--				      unsigned plane_level)
--{
--	return 0;
--}
-+	struct mutex apic_map_lock;
-+	struct kvm_apic_map __rcu *apic_map;
-+	atomic_t apic_map_dirty;
-+};
- 
--static inline void kvm_arch_plane_destroy(struct kvm_plane *plane) {}
-+int kvm_arch_plane_init(struct kvm *kvm, struct kvm_plane *plane,
-+			unsigned plane_level);
-+void kvm_arch_plane_destroy(struct kvm_plane *plane);
- 
- struct kvm_arch {
- 	unsigned long n_used_mmu_pages;
-@@ -1465,11 +1466,6 @@ struct kvm_arch {
- 	struct kvm_ioapic *vioapic;
- 	struct kvm_pit *vpit;
- #endif
--	atomic_t vapics_in_nmi_mode;
--
--	struct mutex apic_map_lock;
--	struct kvm_apic_map __rcu *apic_map;
--	atomic_t apic_map_dirty;
- 
- 	bool apic_access_memslot_enabled;
- 	bool apic_access_memslot_inhibited;
-@@ -2458,7 +2454,7 @@ int kvm_cpu_get_extint(struct kvm_vcpu *v);
- int kvm_cpu_get_interrupt(struct kvm_vcpu *v);
- void kvm_vcpu_reset(struct kvm_vcpu *vcpu, bool init_event);
- 
--int kvm_pv_send_ipi(struct kvm *kvm, unsigned long ipi_bitmap_low,
-+int kvm_pv_send_ipi(struct kvm_vcpu *kvm_vcpu, unsigned long ipi_bitmap_low,
- 		    unsigned long ipi_bitmap_high, u32 min,
- 		    unsigned long icr, int op_64_bit);
- 
-diff --git a/arch/x86/kvm/i8254.c b/arch/x86/kvm/i8254.c
-index 1982b0077ddd..bfe590378bd2 100644
---- a/arch/x86/kvm/i8254.c
-+++ b/arch/x86/kvm/i8254.c
-@@ -260,7 +260,7 @@ static void pit_do_work(struct kthread_work *work)
- 	 * VCPUs and only when LVT0 is in NMI mode.  The interrupt can
- 	 * also be simultaneously delivered through PIC and IOAPIC.
- 	 */
--	if (atomic_read(&kvm->arch.vapics_in_nmi_mode) > 0)
-+	if (atomic_read(&kvm->planes[0]->arch.vapics_in_nmi_mode) > 0)
- 		kvm_for_each_vcpu(i, vcpu, kvm)
- 			kvm_apic_nmi_wd_deliver(vcpu);
- }
-diff --git a/arch/x86/kvm/lapic.c b/arch/x86/kvm/lapic.c
-index 1b763f164951..06a12b49fafa 100644
---- a/arch/x86/kvm/lapic.c
-+++ b/arch/x86/kvm/lapic.c
-@@ -403,36 +403,37 @@ enum {
- 	DIRTY
- };
- 
--static void kvm_recalculate_apic_map(struct kvm *kvm)
-+static void kvm_recalculate_apic_map(struct kvm_plane *plane)
- {
- 	struct kvm_apic_map *new, *old = NULL;
-+	struct kvm *kvm = plane->kvm;
- 	struct kvm_vcpu *vcpu;
- 	unsigned long i;
- 	u32 max_id = 255; /* enough space for any xAPIC ID */
- 	bool xapic_id_mismatch;
- 	int r;
- 
--	/* Read kvm->arch.apic_map_dirty before kvm->arch.apic_map.  */
--	if (atomic_read_acquire(&kvm->arch.apic_map_dirty) == CLEAN)
-+	/* Read plane->arch.apic_map_dirty before plane->arch.apic_map.  */
-+	if (atomic_read_acquire(&plane->arch.apic_map_dirty) == CLEAN)
- 		return;
- 
--	WARN_ONCE(!irqchip_in_kernel(kvm),
-+	WARN_ONCE(!irqchip_in_kernel(plane->kvm),
- 		  "Dirty APIC map without an in-kernel local APIC");
- 
--	mutex_lock(&kvm->arch.apic_map_lock);
-+	mutex_lock(&plane->arch.apic_map_lock);
- 
- retry:
- 	/*
--	 * Read kvm->arch.apic_map_dirty before kvm->arch.apic_map (if clean)
-+	 * Read plane->arch.apic_map_dirty before plane->arch.apic_map (if clean)
- 	 * or the APIC registers (if dirty).  Note, on retry the map may have
- 	 * not yet been marked dirty by whatever task changed a vCPU's x2APIC
- 	 * ID, i.e. the map may still show up as in-progress.  In that case
- 	 * this task still needs to retry and complete its calculation.
- 	 */
--	if (atomic_cmpxchg_acquire(&kvm->arch.apic_map_dirty,
-+	if (atomic_cmpxchg_acquire(&plane->arch.apic_map_dirty,
- 				   DIRTY, UPDATE_IN_PROGRESS) == CLEAN) {
- 		/* Someone else has updated the map. */
--		mutex_unlock(&kvm->arch.apic_map_lock);
-+		mutex_unlock(&plane->arch.apic_map_lock);
- 		return;
- 	}
- 
-@@ -445,7 +446,7 @@ static void kvm_recalculate_apic_map(struct kvm *kvm)
- 	 */
- 	xapic_id_mismatch = false;
- 
--	kvm_for_each_vcpu(i, vcpu, kvm)
-+	plane_for_each_vcpu(i, vcpu, plane)
- 		if (kvm_apic_present(vcpu))
- 			max_id = max(max_id, kvm_x2apic_id(vcpu->arch.apic));
- 
-@@ -459,7 +460,7 @@ static void kvm_recalculate_apic_map(struct kvm *kvm)
- 	new->max_apic_id = max_id;
- 	new->logical_mode = KVM_APIC_MODE_SW_DISABLED;
- 
--	kvm_for_each_vcpu(i, vcpu, kvm) {
-+	plane_for_each_vcpu(i, vcpu, plane) {
- 		if (!kvm_apic_present(vcpu))
- 			continue;
- 
-@@ -498,16 +499,16 @@ static void kvm_recalculate_apic_map(struct kvm *kvm)
- 	else
- 		kvm_clear_apicv_inhibit(kvm, APICV_INHIBIT_REASON_APIC_ID_MODIFIED);
- 
--	old = rcu_dereference_protected(kvm->arch.apic_map,
--			lockdep_is_held(&kvm->arch.apic_map_lock));
--	rcu_assign_pointer(kvm->arch.apic_map, new);
-+	old = rcu_dereference_protected(plane->arch.apic_map,
-+			lockdep_is_held(&plane->arch.apic_map_lock));
-+	rcu_assign_pointer(plane->arch.apic_map, new);
- 	/*
--	 * Write kvm->arch.apic_map before clearing apic->apic_map_dirty.
-+	 * Write kvm->arch.apic_map before clearing plane->apic_map_dirty.
- 	 * If another update has come in, leave it DIRTY.
- 	 */
--	atomic_cmpxchg_release(&kvm->arch.apic_map_dirty,
-+	atomic_cmpxchg_release(&plane->arch.apic_map_dirty,
- 			       UPDATE_IN_PROGRESS, CLEAN);
--	mutex_unlock(&kvm->arch.apic_map_lock);
-+	mutex_unlock(&plane->arch.apic_map_lock);
- 
- 	if (old)
- 		kvfree_rcu(old, rcu);
-@@ -528,7 +529,7 @@ static inline void apic_set_spiv(struct kvm_lapic *apic, u32 val)
- 		else
- 			static_branch_inc(&apic_sw_disabled.key);
- 
--		atomic_set_release(&apic->vcpu->kvm->arch.apic_map_dirty, DIRTY);
-+		atomic_set_release(&apic->vcpu->plane->arch.apic_map_dirty, DIRTY);
- 	}
- 
- 	/* Check if there are APF page ready requests pending */
-@@ -541,19 +542,19 @@ static inline void apic_set_spiv(struct kvm_lapic *apic, u32 val)
- static inline void kvm_apic_set_xapic_id(struct kvm_lapic *apic, u8 id)
- {
- 	kvm_lapic_set_reg(apic, APIC_ID, id << 24);
--	atomic_set_release(&apic->vcpu->kvm->arch.apic_map_dirty, DIRTY);
-+	atomic_set_release(&apic->vcpu->plane->arch.apic_map_dirty, DIRTY);
- }
- 
- static inline void kvm_apic_set_ldr(struct kvm_lapic *apic, u32 id)
- {
- 	kvm_lapic_set_reg(apic, APIC_LDR, id);
--	atomic_set_release(&apic->vcpu->kvm->arch.apic_map_dirty, DIRTY);
-+	atomic_set_release(&apic->vcpu->plane->arch.apic_map_dirty, DIRTY);
- }
- 
- static inline void kvm_apic_set_dfr(struct kvm_lapic *apic, u32 val)
- {
- 	kvm_lapic_set_reg(apic, APIC_DFR, val);
--	atomic_set_release(&apic->vcpu->kvm->arch.apic_map_dirty, DIRTY);
-+	atomic_set_release(&apic->vcpu->plane->arch.apic_map_dirty, DIRTY);
- }
- 
- static inline void kvm_apic_set_x2apic_id(struct kvm_lapic *apic, u32 id)
-@@ -564,7 +565,7 @@ static inline void kvm_apic_set_x2apic_id(struct kvm_lapic *apic, u32 id)
- 
- 	kvm_lapic_set_reg(apic, APIC_ID, id);
- 	kvm_lapic_set_reg(apic, APIC_LDR, ldr);
--	atomic_set_release(&apic->vcpu->kvm->arch.apic_map_dirty, DIRTY);
-+	atomic_set_release(&apic->vcpu->plane->arch.apic_map_dirty, DIRTY);
- }
- 
- static inline int apic_lvt_enabled(struct kvm_lapic *apic, int lvt_type)
-@@ -860,7 +861,7 @@ static int __pv_send_ipi(unsigned long *ipi_bitmap, struct kvm_apic_map *map,
- 	return count;
- }
- 
--int kvm_pv_send_ipi(struct kvm *kvm, unsigned long ipi_bitmap_low,
-+int kvm_pv_send_ipi(struct kvm_vcpu *vcpu, unsigned long ipi_bitmap_low,
- 		    unsigned long ipi_bitmap_high, u32 min,
- 		    unsigned long icr, int op_64_bit)
- {
-@@ -878,7 +879,7 @@ int kvm_pv_send_ipi(struct kvm *kvm, unsigned long ipi_bitmap_low,
- 	irq.trig_mode = icr & APIC_INT_LEVELTRIG;
- 
- 	rcu_read_lock();
--	map = rcu_dereference(kvm->arch.apic_map);
-+	map = rcu_dereference(vcpu->plane->arch.apic_map);
- 
- 	count = -EOPNOTSUPP;
- 	if (likely(map)) {
-@@ -1240,7 +1241,7 @@ static bool __kvm_irq_delivery_to_apic_fast(struct kvm *kvm, struct kvm_lapic *s
- 	}
- 
- 	rcu_read_lock();
--	map = rcu_dereference(kvm->arch.apic_map);
-+	map = rcu_dereference(kvm->planes[0]->arch.apic_map);
- 
- 	ret = kvm_apic_map_get_dest_lapic(kvm, &src, irq, map, &dst, &bitmap);
- 	if (ret) {
-@@ -1290,7 +1291,7 @@ static bool kvm_intr_is_single_vcpu_fast(struct kvm *kvm,
- 		return false;
- 
- 	rcu_read_lock();
--	map = rcu_dereference(kvm->arch.apic_map);
-+	map = rcu_dereference(kvm->planes[0]->arch.apic_map);
- 
- 	if (kvm_apic_map_get_dest_lapic(kvm, NULL, irq, map, &dst, &bitmap) &&
- 			hweight16(bitmap) == 1) {
-@@ -1511,7 +1512,7 @@ void kvm_bitmap_or_dest_vcpus(struct kvm *kvm, struct kvm_lapic_irq *irq,
- 	bool ret;
- 
- 	rcu_read_lock();
--	map = rcu_dereference(kvm->arch.apic_map);
-+	map = rcu_dereference(kvm->planes[0]->arch.apic_map);
- 
- 	ret = kvm_apic_map_get_dest_lapic(kvm, &src, irq, map, &dest_vcpu,
- 					  &bitmap);
-@@ -2389,9 +2390,9 @@ static void apic_manage_nmi_watchdog(struct kvm_lapic *apic, u32 lvt0_val)
- 	if (apic->lvt0_in_nmi_mode != lvt0_in_nmi_mode) {
- 		apic->lvt0_in_nmi_mode = lvt0_in_nmi_mode;
- 		if (lvt0_in_nmi_mode) {
--			atomic_inc(&apic->vcpu->kvm->arch.vapics_in_nmi_mode);
-+			atomic_inc(&apic->vcpu->plane->arch.vapics_in_nmi_mode);
- 		} else
--			atomic_dec(&apic->vcpu->kvm->arch.vapics_in_nmi_mode);
-+			atomic_dec(&apic->vcpu->plane->arch.vapics_in_nmi_mode);
- 	}
- }
- 
-@@ -2551,7 +2552,7 @@ static int kvm_lapic_reg_write(struct kvm_lapic *apic, u32 reg, u32 val)
- 	 * was toggled, the APIC ID changed, etc...   The maps are marked dirty
- 	 * on relevant changes, i.e. this is a nop for most writes.
- 	 */
--	kvm_recalculate_apic_map(apic->vcpu->kvm);
-+	kvm_recalculate_apic_map(apic->vcpu->plane);
- 
- 	return ret;
- }
-@@ -2767,7 +2768,7 @@ static void __kvm_apic_set_base(struct kvm_vcpu *vcpu, u64 value)
- 			kvm_make_request(KVM_REQ_APF_READY, vcpu);
- 		} else {
- 			static_branch_inc(&apic_hw_disabled.key);
--			atomic_set_release(&apic->vcpu->kvm->arch.apic_map_dirty, DIRTY);
-+			atomic_set_release(&apic->vcpu->plane->arch.apic_map_dirty, DIRTY);
- 		}
- 	}
- 
-@@ -2814,7 +2815,7 @@ int kvm_apic_set_base(struct kvm_vcpu *vcpu, u64 value, bool host_initiated)
- 	}
- 
- 	__kvm_apic_set_base(vcpu, value);
--	kvm_recalculate_apic_map(vcpu->kvm);
-+	kvm_recalculate_apic_map(vcpu->plane);
- 	return 0;
- }
- EXPORT_SYMBOL_FOR_KVM_INTERNAL(kvm_apic_set_base);
-@@ -2983,7 +2984,7 @@ void kvm_lapic_reset(struct kvm_vcpu *vcpu, bool init_event)
- 	vcpu->arch.apic_arb_prio = 0;
- 	vcpu->arch.apic_attention = 0;
- 
--	kvm_recalculate_apic_map(vcpu->kvm);
-+	kvm_recalculate_apic_map(vcpu->plane);
- }
- 
- /*
-@@ -3271,13 +3272,13 @@ int kvm_apic_set_state(struct kvm_vcpu *vcpu, struct kvm_lapic_state *s)
- 
- 	r = kvm_apic_state_fixup(vcpu, s, true);
- 	if (r) {
--		kvm_recalculate_apic_map(vcpu->kvm);
-+		kvm_recalculate_apic_map(vcpu->plane);
- 		return r;
- 	}
- 	memcpy(vcpu->arch.apic->regs, s->regs, sizeof(*s));
- 
--	atomic_set_release(&apic->vcpu->kvm->arch.apic_map_dirty, DIRTY);
--	kvm_recalculate_apic_map(vcpu->kvm);
-+	atomic_set_release(&apic->vcpu->plane->arch.apic_map_dirty, DIRTY);
-+	kvm_recalculate_apic_map(vcpu->plane);
- 	kvm_apic_set_version(vcpu);
- 
- 	apic_update_ppr(apic);
-diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index a158740a6fc1..070f87ae23eb 100644
---- a/arch/x86/kvm/x86.c
-+++ b/arch/x86/kvm/x86.c
-@@ -10441,7 +10441,7 @@ static void kvm_sched_yield(struct kvm_vcpu *vcpu, unsigned long dest_id)
- 		goto no_yield;
- 
- 	rcu_read_lock();
--	map = rcu_dereference(vcpu->kvm->arch.apic_map);
-+	map = rcu_dereference(vcpu->plane->arch.apic_map);
- 
- 	if (likely(map) && dest_id <= map->max_apic_id) {
- 		dest_id = array_index_nospec(dest_id, map->max_apic_id + 1);
-@@ -10528,7 +10528,7 @@ int ____kvm_emulate_hypercall(struct kvm_vcpu *vcpu, int cpl,
- 		if (!guest_pv_has(vcpu, KVM_FEATURE_PV_SEND_IPI))
- 			break;
- 
--		ret = kvm_pv_send_ipi(vcpu->kvm, a0, a1, a2, a3, op_64_bit);
-+		ret = kvm_pv_send_ipi(vcpu, a0, a1, a2, a3, op_64_bit);
- 		break;
- 	case KVM_HC_SCHED_YIELD:
- 		if (!guest_pv_has(vcpu, KVM_FEATURE_PV_SCHED_YIELD))
-@@ -13397,6 +13397,18 @@ void kvm_arch_free_vm(struct kvm *kvm)
- 	__kvm_arch_free_vm(kvm);
- }
- 
-+int kvm_arch_plane_init(struct kvm *kvm, struct kvm_plane *plane,
-+			unsigned plane_level)
-+{
-+	mutex_init(&plane->arch.apic_map_lock);
-+
-+	return 0;
-+}
-+
-+void kvm_arch_plane_destroy(struct kvm_plane *plane)
-+{
-+	kvfree(rcu_dereference_check(plane->arch.apic_map, 1));
-+}
- 
- int kvm_arch_init_vm(struct kvm *kvm, unsigned long type)
- {
-@@ -13429,7 +13441,6 @@ int kvm_arch_init_vm(struct kvm *kvm, unsigned long type)
- 	atomic_set(&kvm->arch.noncoherent_dma_count, 0);
- 
- 	raw_spin_lock_init(&kvm->arch.tsc_write_lock);
--	mutex_init(&kvm->arch.apic_map_lock);
- 	seqcount_raw_spinlock_init(&kvm->arch.pvclock_sc, &kvm->arch.tsc_write_lock);
- 	ratelimit_state_init(&kvm->arch.kvmclock_update_rs, HZ, 10);
- 	ratelimit_set_flags(&kvm->arch.kvmclock_update_rs, RATELIMIT_MSG_ON_RELEASE);
-@@ -13587,7 +13598,6 @@ void kvm_arch_destroy_vm(struct kvm *kvm)
- 	kvm_pic_destroy(kvm);
- 	kvm_ioapic_destroy(kvm);
- #endif
--	kvfree(rcu_dereference_check(kvm->arch.apic_map, 1));
- 	kfree(srcu_dereference_check(kvm->arch.pmu_event_filter, &kvm->srcu, 1));
- 	kvm_mmu_uninit_vm(kvm);
- 	kvm_page_track_cleanup(kvm);
--- 
-2.53.0
+Thanks for your comments.
 
+To me, it looks like while system and system_cc_shared heaps share a
+lot of code, their user bases have different needs. It's apparent that
+system_cc_heap users don't care about it being a module while system
+heap users would very much like so.
+
+I also discussed this with Arnd, and he suggested we could rearrange
+the code so that system_heap_cc_shared_priv depends on a new Kconfig
+symbol like
+
+config DMABUF_HEAPS_CC_SYSTEM
+        bool "DMA-BUF System Heap for memory encryption"
+        depends on ARCH_HAS_MEM_ENCRYPT && DMABUF_HEAPS_SYSTEM=y
+
+This allows building both into the kernel or leave encryption choice
+up to the consumers of the system heap.
+
+If this is agreeable to everyone, I can post Arnd's patch.
+
+>
+> Jason
+
+
+Best,
+Sumit.
 
