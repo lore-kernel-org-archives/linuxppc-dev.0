@@ -1,64 +1,93 @@
-Return-Path: <linuxppc-dev+bounces-22273-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22274-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 02D39CD8C9D
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jun 2026 15:39:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A17A7CD8C92
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jun 2026 16:04:56 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gYx7F2mTWz2ytj;
-	Tue, 09 Jun 2026 01:39:53 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780933193;
-	cv=none; b=UAJwyavOJ9CI0Kz3HRzbOaCI2yeIpPUHUaOFCy4PhZF/snCJHCJNiaUjeMKorZufeYuFd0fgvgclECVw02EWsERSaOqbxvna+5F7DnP309c+MI38E/I1VSOivUKmtXVPEy4QlKg9IKrqT9Y8enykxKPAtrZz+0HXoZMFjDJz2BOd5PMBIwCIn2n4ketI+qQqAVMs+ga4Q1hcM0ye8XEhCAZHAQ/lANQCvdj4rROZStMqSwaVWpiprCH4gyx9bynNpiY3eSyLaboa9uTDQ5ey94J+ZDGHsKDuFsv/jhVttLNYfcbc5u8V7MKIdbMdXC5Q1rKmN/ya75E72dEtRz7IXA==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1780933193; c=relaxed/relaxed;
-	bh=N3oy4xmq4C4ND1356+b9YpxpOAFUgRGxgZuuCWGlALs=;
-	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type:
-	 Content-Disposition:In-Reply-To; b=g0pNJGx15LrwOE7wwy4E2hm/n5olmF4Rg5aO4ptB338NkrdvZGVOMvSJiB8MAw0rmZPcqO7LkSkKEHLUxhmE8dOgVcLKsjUaVI1f6d0AmBKnDGEbYNFo6QMqYRJOQ4N2J/4icIQiPeJO/XTr1BBuve8l0tc8+RKaN9CGpWDGPrL+M6W1g1C4B5Wj4mvlsxxEaQY28/HIP6/pg4x3c6DKGMZlDvLZCh94UON2dcB64Cbqi6KM3JUID0VRERwcVeRejIZ8CXv8CIvOdgFZkpIsX1QfFuh2nsJVOO8xweGUowpyFECbUoHrFWqshuBWUeodA9VsUfBvPllpP3Yp7XzOJA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ASw9aDWd; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=helgaas@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gYxh6759wz30FP;
+	Tue, 09 Jun 2026 02:04:54 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a00:1450:4864:20::330" arc.chain=google.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780934694;
+	cv=pass; b=T6c9gbNIa8PtUHfLxA/VD0DS35nq6otRDuZKs55noCZhsFiH5H//W8bspFvBkuukrCT+JxATWYrXIvdCERck3pD4Pb4jMiWf58FmHLyaOUdFH3KFlfPpMPjyZ7W9b87oOfzoHivdh/Xv7SUjbsKOmGIbDdtSNqjSawgHy4/Lu1tpHvLb6N/Q5+sPMJB2E3WZLtR2HJ3oQNRTxot7NXKYiv+pKKDNJuxagLNGZVehYoprpP+AFqYzap/Ix71SRO5PxUod1uudsa0Benw/ekxms2pyDJlTpWFRcE5B+H8aUWHDrY0cJu53kv2uVe1PjfrFfrB5NEBEBkFcQB/vY4+dGA==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1780934694; c=relaxed/relaxed;
+	bh=CDdhbWCx9VsAlPpkbZ7T/pVekmt8/mWg3u3kSPoOV2c=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=JVPWCcjx1NagNblUMNwf/nZpzhguI7QVAundOW+0LnW2BUOC5RHnacvf/iBS3JDVG4iXL+C14c5xI/YyIb8tT4e2tKTh9+Cls1k5f7p+kscFif3RvTNcP3fXRPjQM7Afy1kis6EmD2NDUtjQjc6G2hwZRcQCDVBGFezO/HQgcUSV/GXEgv91TAWAOPcIbmkbKf5il1mlQiRR8alh5/iWmYd9/AZUt/u3i1CMSHMADRJLOwfoG8VzKEmI/GmpRp9M4uswaBObTtn3UH4b8xqloTMJyZk3FLZBi8uPG6LdWigT5/DJQpOdO3jubj3g9jWhxJuutQMRFXaiZjDmKskalA==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=Ebv3X4j0; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::330; helo=mail-wm1-x330.google.com; envelope-from=tjmercier@google.com; receiver=lists.ozlabs.org) smtp.mailfrom=google.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ASw9aDWd;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=Ebv3X4j0;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=helgaas@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2a00:1450:4864:20::330; helo=mail-wm1-x330.google.com; envelope-from=tjmercier@google.com; receiver=lists.ozlabs.org)
+Received: from mail-wm1-x330.google.com (mail-wm1-x330.google.com [IPv6:2a00:1450:4864:20::330])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with UTF8SMTPS id 4gYx7D1k4sz2ytV
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Jun 2026 01:39:52 +1000 (AEST)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with UTF8SMTP id AFA4543BDF;
-	Mon,  8 Jun 2026 15:39:49 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with UTF8SMTPSA id 5FC471F00893;
-	Mon,  8 Jun 2026 15:39:49 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1780933189;
-	bh=N3oy4xmq4C4ND1356+b9YpxpOAFUgRGxgZuuCWGlALs=;
-	h=Date:From:To:Cc:Subject:In-Reply-To;
-	b=ASw9aDWdRcO7+VnSW2ORQGoUq5sR68vKzzC5eSwoopKcdBsNabRop9c+64TT3Q8q1
-	 OZCkT82Xu3lHjUeb11mlsrsVw/S45chKYAyMTNAUji+8Avn2GqonWR3Sdt9keDJ9K3
-	 Rp0phRCU8VvKmlicMoRxl//sXnhu7b5+p/bD8/F2m/nbRZIRLOPxtHG86//XU8uEBv
-	 oBf1QOqvaL4iOZWjBEpnxN48WixHqyPmOeujDfNFZPGzT+snWhA7HvTTN2EI1eSAbS
-	 eJ4DEznL5qblmRj9QvlrobqcL8e2eADX0spcyGJpnwwD3I9K2Nmb4P0g8f8+9PXLib
-	 ve9A0Eri3Z+Yg==
-Date: Mon, 8 Jun 2026 10:39:48 -0500
-From: Bjorn Helgaas <helgaas@kernel.org>
-To: Aditya Gupta <adityag@linux.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Timothy Pearson <tpearson@raptorengineering.com>,
-	Bjorn Helgaas <bhelgaas@google.com>,
-	Shawn Anastasio <sanastasio@raptorengineering.com>,
-	sashiko-bot@kernel.org, linux-pci@vger.kernel.org,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	stable@vger.kernel.org
-Subject: Re: [PATCH v2 1/3] ppc/pnv: Add null checks for OpenCapi PHBs
-Message-ID: <20260608153948.GA36499@bhelgaas>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gYxh51bvsz2yv2
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Jun 2026 02:04:52 +1000 (AEST)
+Received: by mail-wm1-x330.google.com with SMTP id 5b1f17b1804b1-4891b4934ffso227755e9.0
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 08 Jun 2026 09:04:52 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1780934688; cv=none;
+        d=google.com; s=arc-20240605;
+        b=V400OKmlT1HOMHv44+npjxBKWIEYeFyey1WAbNANp9mOKQbpSPWTCelO27XcinwTbA
+         52d/8UeiUnwIUNgZAYQMZiIph1AYupdDwkQwBN58T5zO7rXvGEAOSSD3qDnAbpPllkEK
+         pp9x3S+pzhYvbwz5AApZMFCGW5uPFXiI+VR4ejN3yGfW9cwBQzTYXlZ4/4RsGRwr0FN3
+         gJvrH8f/JDoaCNdoQQW4gV3oRmPnanvw5cyVDjNsNZIrdPqNiewZdjRFraKo7g50aq84
+         FHoHsTnC+76lrNyd2giMQ2p+E5qR5tFuRoRgf4K81pMQklgEkgY8z3k6BuLl5PMPfoBT
+         XLCg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=CDdhbWCx9VsAlPpkbZ7T/pVekmt8/mWg3u3kSPoOV2c=;
+        fh=WkI97jiQHL9xGIKlJh7xbKFtVz7m5FPtl5EbGWVePcU=;
+        b=KdsMzXki6rqcq2b5PJJ1qX7fbFTOYkh4GoxWRjDF4397DY62BlKvnQu5oubtnsSNoM
+         CyXZqAc9ekO+tUOIaUK4/d8yAhbzorAoxhnsV7f16HAphWwpv9GAP82IWM0MTEdSjiTV
+         52W5gLHon3tObQAoXlq+CpCwQDjkE1SQcBqDC7hV24vpEEuLxua2c6WQy5nLknXua+0F
+         mBxx4LL6jzqczI6ANEk0zvxOXBuTVEiOjK9u78l5wjNp4L/r8UQDuwSAYFKKWptBwx+a
+         PFH4DDi/T2ovVLmYL9o0govpaKAXHOXC+gZXNK7Hw5jz0X9XRbggGmE/TVc3f49JbINm
+         ndnQ==;
+        darn=lists.ozlabs.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20251104; t=1780934688; x=1781539488; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=CDdhbWCx9VsAlPpkbZ7T/pVekmt8/mWg3u3kSPoOV2c=;
+        b=Ebv3X4j0uVcUMx63xlNruNnbUEfxQzYr2LvKQbecHcSl4Ak8BqPq8XQ4U//s0w4B9L
+         uwrgk0SfsflLz9pZQMxQrHd/m1izuk6VUs2QQAAzrkyMEBEEospw5mtYI1kSb5NCPT67
+         3qRcmZyJP82PrnMq8qV8iVycIIrbIUhZr3ge4gyYOMMZie46FwU6X/v1AvUUhkUKELFx
+         827c5BSBJfHGppiq2X+fHj7o3qraJcVb+uffga9NaORXhfNLm5JXRT3LrNLOH11Kei5W
+         TIGYXQZm9cGakAH+oyWA84xZ5FQEKs1FvqWwOY5MpB0wGVNR4q2yHS8aVNXp5PxIeAU1
+         5qZA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1780934688; x=1781539488;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=CDdhbWCx9VsAlPpkbZ7T/pVekmt8/mWg3u3kSPoOV2c=;
+        b=FfPaBjE6+eDjouAwT0u/4uetqOsKKx9aANLx8OvX5LhV3b82gIHorq5WafXCTLj6Gi
+         LbcMlmU4RHAw3jkLkrglDYUGodSFttU5MkoGzlvoEj2MAo8XYe1i1E15SCeihrTu5SRd
+         WuAjTNYT67f2A0Z+0fjq1LQAFVyuSrTQe1HUJ6EC6JzUpdRR9hv1BxSwbsXvI3ADdkGL
+         lEM+SAwk7BjEVt6BdCB3GidFDyIOcRXaDWkE+eabHLGadqo3TkeU/Yt3A6cuUo4RPYC/
+         edaHyzMn6z2gYUE6n29bUI1gmwJhEMGY0AlkLPZu6ABdFeeBC22yHrgGJ8k26JM6wfgB
+         khKQ==
+X-Forwarded-Encrypted: i=1; AFNElJ97dAoSvgjJVJq20H3IiwDfwD7lqjpM1zO0+G2VGEok2iSLJ0Y0o9GTdQOSCINjRX8b89o7tQKwg4hq/vs=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yw4VeKXD56k+bRAxIVTY1sfDItyY7fZfsx94hll88I+vEe07dMt
+	2Jgfsr1qCviWIpdNwCdQuZ2PD2thP8V3WatQc3sTHxvP1NUPSZz6s7cTBTjah6QXpgRBeu8P+3r
+	bapHspRO3YXJ2/5R21lY5TJO+uAn50smOgbfuSzLX
+X-Gm-Gg: Acq92OEipN+Gm51ObHDApP63WrQDCFF4cswRedtRhejocpqYTVPWQxpILHlZj2sEbPF
+	0Hmud7WcM8BypDGWQ0XtnACTcqfjQWSkRLDhreC1niO6oDppGs46E6mufWL5SFoPGMIdkgTUFSa
+	MrsInWJG8OmiYXUYP3JatsGY7WT7x8D6YSz33ldpYZ5e6piuy1qu74kRr6C0kuwmnZrbXI+ns9C
+	voDsbfn4H87pXR/JJYaj4ZAV2zAOvTstHFdofZX1bA7MSxGGKdT5E/iNxpQNhnOpRPLTd7zILKO
+	ineg0pwHCgrxQgH91m4caP1Yy7O6b1TCBs80Np6EPHCJrri8
+X-Received: by 2002:a05:600c:3495:b0:490:b0f1:3422 with SMTP id
+ 5b1f17b1804b1-490c2ca21f1mr5078185e9.10.1780934688036; Mon, 08 Jun 2026
+ 09:04:48 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -72,72 +101,76 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260527180816.2749186-2-adityag@linux.ibm.com>
+References: <20260522225853.878411-1-tjmercier@google.com> <ahPqbfH54R3JJyaV@infradead.org>
+ <20260527160716.GN2487554@ziepe.ca> <20260604-dangerous-tuatara-of-sympathy-28e05e@houat>
+ <CAO_48GEJsg4X7++zg-ztQgVibY_FjjManaA5_W3usjicGUQPdg@mail.gmail.com>
+ <20260604135712.GV2487554@ziepe.ca> <CAO_48GH3NP09U6TdB5drbKY0TpwvtBXwrf=Jajsr5ttNbC_u9g@mail.gmail.com>
+ <20260608152743.GD2764304@ziepe.ca>
+In-Reply-To: <20260608152743.GD2764304@ziepe.ca>
+From: "T.J. Mercier" <tjmercier@google.com>
+Date: Mon, 8 Jun 2026 09:04:35 -0700
+X-Gm-Features: AVVi8CdkX2dlLd8iv_kbStMI93TXdDT01BqcU1-TGKHekXSJtH26ENHtm_IhVVA
+Message-ID: <CABdmKX18EXsL48Cv1Kxrp0g6bVndZfU9b5pfeGgQyvMREk5PSA@mail.gmail.com>
+Subject: Re: [PATCH] powerpc: Export set_memory_encrypted and set_memory_decrypted
+To: Jason Gunthorpe <jgg@ziepe.ca>
+Cc: Sumit Semwal <sumit.semwal@linaro.org>, Jiri Pirko <jiri@resnulli.us>, 
+	Maxime Ripard <mripard@kernel.org>, Christoph Hellwig <hch@infradead.org>, maddy@linux.ibm.com, 
+	mpe@ellerman.id.au, npiggin@gmail.com, chleroy@kernel.org, 
+	linuxppc-dev@lists.ozlabs.org, lkp@intel.com, linux-kernel@vger.kernel.org, 
+	iommu@lists.linux.dev, linux-mm@kvack.org, agordeev@linux.ibm.com, 
+	gerald.schaefer@linux.ibm.com, linux-s390@vger.kernel.org, 
+	Dan Williams <djbw@kernel.org>, Tom Lendacky <thomas.lendacky@amd.com>, x86@kernel.org, 
+	Arnd Bergmann <arnd@linaro.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On Wed, May 27, 2026 at 11:38:14PM +0530, Aditya Gupta wrote:
-> For opencapi phb direct slots, the .pdev for php_slots will be NULL
-> 
-> Various sections of the code in pnv_php can do a null dereference and
-> crash the kernel.
-> 
-> Originally, the issue was hit during boot:
-> 
->     [    1.568588] PowerPC PowerNV PCI Hotplug Driver version: 0.1
->     [    1.569722] BUG: Kernel NULL pointer dereference at 0x00000074
->     [    1.569811] Faulting instruction address: 0xc000000000b75fd0
->     [    1.569890] Oops: Kernel access of bad area, sig: 11 [#1]
->     [    1.569963] LE PAGE_SIZE=64K MMU=Hash  SMP NR_CPUS=2048 NUMA PowerNV
->     ...
->     [    1.571492] NIP [c000000000b75fd0] pnv_php_get_adapter_state+0x60/0x154
->     [    1.571604] LR [c000000000b75fbc] pnv_php_get_adapter_state+0x4c/0x154
->     [    1.571690] Call Trace:
->     [    1.571725] [c000c0000688f990] [c000000000b75fbc] pnv_php_get_adapter_state+0x4c/0x154 (unreliable)
->     [    1.571783] [c000c0000688fa20] [c000000000b78bd0] pnv_php_enable+0x94/0x378
->     [    1.571951] [c000c0000688fac0] [c000000000b7912c] pnv_php_register_one.isra.0+0x11c/0x1e0
+On Mon, Jun 8, 2026 at 8:27=E2=80=AFAM Jason Gunthorpe <jgg@ziepe.ca> wrote=
+:
+>
+> On Mon, Jun 08, 2026 at 08:47:15PM +0530, Sumit Semwal wrote:
+> > Hi Jason,
+> >
+> > On Thu, 4 Jun 2026 at 19:27, Jason Gunthorpe <jgg@ziepe.ca> wrote:
+> > >
+> > > On Thu, Jun 04, 2026 at 12:51:49PM +0530, Sumit Semwal wrote:
+> > >
+> > > > Given that Christoph's objection is not really about the modules pa=
+rt,
+> > > > but that the set_memory_{encrypted,decrypted} should not be used he=
+re,
+> > > > one option is to revert 78b30c50a7ac until that issue is sorted out=
+?
+> > >
+> > > Please no, we have stuff already using this so it would be a
+> > > functional regression. Revert making heaps into a module since that
+> > > doesn't have a functional regression.
+> >
+> > Thanks for your comments.
+> >
+> > To me, it looks like while system and system_cc_shared heaps share a
+> > lot of code, their user bases have different needs. It's apparent that
+> > system_cc_heap users don't care about it being a module while system
+> > heap users would very much like so.
+> >
+> > I also discussed this with Arnd, and he suggested we could rearrange
+> > the code so that system_heap_cc_shared_priv depends on a new Kconfig
+> > symbol like
+> >
+> > config DMABUF_HEAPS_CC_SYSTEM
+> >         bool "DMA-BUF System Heap for memory encryption"
+> >         depends on ARCH_HAS_MEM_ENCRYPT && DMABUF_HEAPS_SYSTEM=3Dy
+> >
+> > This allows building both into the kernel or leave encryption choice
+> > up to the consumers of the system heap.
+> >
+> > If this is agreeable to everyone, I can post Arnd's patch.
+>
+> Yeah, that's fine for me for now
+>
+> Jason
 
-Drop timestamps since they don't add useful information.
++1 SGTM
 
-Indent quoted material by two spaces to reduce wrapping.
-
-Run "git log --oneline drivers/pci/hotplug/pnv_php.c" and "git log
---oneline drivers/pci/hotplug/" and match subject line style.
-
-> This occurs for hotplug slots on root buses where bus->self == NULL,
-> such as OpenCAPI PHB direct slots. An added debug print (not part of
-> this patch) confirmed it was opencapi:
-
-Style "OpenCAPI" and "PHB" consistently in commit log and subject.
-
->     [    1.617227] pnv_php: slot 'OPENCAPI-0009' has NULL pdev (bus 0009:00, parent=NO (root bus))
->     [    1.617308] pnv_php: slot 'OPENCAPI-0009' dn->full_name='pciex@603a000000000', compatible='ibm,power10-pau-opencapi-pciex'
-> 
-> This only required null check in 'pnv_php_get_adapter_state', which
-> caused the kernel to boot.
-> 
-> Even with 'pnv_php_get_adapter_state' null check, there are more
-> possible null dereferences pointed by sashiko, including cases where
-> userspace crashes the kernel, such as:
-> 
->     $ cat /sys/bus/pci/slots/*/attention
->     ...
->     [  557.036295] Kernel attempted to read user page (6e) - exploit attempt? (uid: 0)
->     [  557.036354] BUG: Kernel NULL pointer dereference on read at 0x0000006e
->     [  557.036383] Faulting instruction address: 0xc000000000a83334
->     [  557.036413] Oops: Kernel access of bad area, sig: 11 [#1]
->     [  557.036449] LE PAGE_SIZE=64K MMU=Hash  SMP NR_CPUS=2048 NUMA PowerNV
->     ...
->     [  557.037749] [c000000046707a20] [c000000046707b90] 0xc000000046707b90 (unreliable)
->     [  557.037795] [c000000046707a70] [0000000000000001] 0x1
->     [  557.037850] [c000000046707ab0] [c000000000acb00c] attention_read_file+0x54/0xa8
->     [  557.037910] [c000000046707b30] [c000000000abfbfc] pci_slot_attr_show+0x3c/0x58
->     [  557.037977] [c000000046707b50] [c0000000008181ec] sysfs_kf_seq_show+0xd4/0x204
->     [  557.038022] [c000000046707be0] [c000000000815004] kernfs_seq_show+0x44/0x58
-> 
-> Add null checks to prevent the null dereferences.
-> 
-> Cc: stable@vger.kernel.org
-> Fixes: 80f9fc236279 ("PCI: pnv_php: Work around switches with broken presence detection")
-> Signed-off-by: Aditya Gupta <adityag@linux.ibm.com>
+Thanks,
+T.J.
 
