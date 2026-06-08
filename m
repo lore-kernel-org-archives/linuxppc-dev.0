@@ -1,34 +1,34 @@
-Return-Path: <linuxppc-dev+bounces-22262-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22260-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 708D6CD8C92
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jun 2026 14:57:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D1D43CD8C92
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jun 2026 14:57:40 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gYw5545B6z3fJt;
-	Tue, 09 Jun 2026 00:52:57 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=85.214.250.239
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gYw530sCbz3fFF;
+	Tue, 09 Jun 2026 00:52:55 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a01:238:42d9:3f00:e505:6202:4f0c:f051"
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780930374;
-	cv=none; b=AsUsfs2w1Hjfhh/FJMzNDvWlraAF7L7Vg9ZHyE2xSdf33Z99lDJ2r+l8+hc76NAt9/NUxwSt/PDFkUcuWjVc9UgQ+egnF3Cju9PB4HA/cPGkjXUyfpKEVT1kAG5O5Kv3cZIUtRlitRoXbgmFBgQn+6CKUoKEzBsWX5dyCj0Dr8PC4V45kXI/JVP9FfifU3EOsh9dvcI8R4ppXcjrCSjAhKRkmbvaCvler8stVD+1hkvHjsvJRVU5Dbte8gyjo1PnHeS10dGiJ95OsKOxM1Rm2aBQW7iIky7oMvGPq9RdNQe7zV6d0Rd4Qsc1hhFilPSTgkVXUg7/xPjybnAVf8bY2Q==
+	cv=none; b=fqQd6sIkRJdUH1U+7gqLg8xqjVm9THULheykW6l4juuatZWnYnN4D2Oa6yQe+0UlS2mjKJm40GZCijmYJwb5qr8XaNa2ARCaR4RPfm2+JRsi75g+XZDcvkK8zpupqFDoHbYjd9mX+EXOV4rFRtH5YUfLfmdLInUI7LBtKQoj7r9unpBi3XowybjddG8kmHf3CfCU+UfVIp4hlBcKAWDriehKwBCP5Oggv0X1FWQsUw7t8536nyCV9CkYLs+dJcatHL8RvS0bM0l0+MthYwTMFi85ZUcvm+cs7nDTZ/qyQohxUXKVTFwETKZ1zPyPIi87B/IZM3JclGQuhDs+MYY54g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1780930374; c=relaxed/relaxed;
-	bh=jQyUbKQoEFr/9MDxZCu9r0fj6XLauxRqD1O3YRqiugQ=;
+	bh=lr2e6Ht2+WgwLxD0HIpYiGzQa8c2EXG1Z+pPNDKI/qg=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=D4oAalfFVX0RscEybySCRQ3QkVwbwHGXwzxv5Mz1xaN78/A5erjbtxnUokFbSRQo948TMbGZL1XiowjjIHERO7laf5KI30GUvuTwJ0Uv2NGxqFYhl9q2+I/1B29gcsNOIU95mTXudOZglXZZLCd/LWD3CntgclUvA2RfNFjSiL4fzsFS0ss0SaO66Lrk+XAC9piyYJ0/vL9ziDKKKsyBxJVMAcCesMZ1llNl6htg6/m6fXPk7aMjfP/kxlvQkzBNs2pTJ8ocOIjD9DRKpaJ3yQw1GF6Vg0Qh8K37JQZxjZ1YlfDiXgkHnJcUsAyd8MYMIQG93G86FtP5ACJL6SBv3g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=8bytes.org; spf=pass (client-ip=85.214.250.239; helo=mail.8bytes.org; envelope-from=joro@8bytes.org; receiver=lists.ozlabs.org) smtp.mailfrom=8bytes.org
+	 MIME-Version; b=dejYnNmWzabT0WQSMMUZSAsCgo6t4PefHDoc/asuKWYEzYzLBry3Orzyz7xOktDUxu/3r/TT65ZcJ8MRoJ9gvFR62T2lFPaURlARmkWGGixfE88U2sKJoTRbhpZuej+cloCYf1aoj6FAXGtpE9vL2ONawogxAffK39Dz9N84FxkxmRQ6jM0UpgcvySh/el43h73SCBo69l2Gl+aK2ftJ8v0en518FUJPexJuxSlUDIL4qmdU/keCzu6xansRy98dTUXxkUkBxyyVjnRmyg5EE6EvfJ8sHH0tJLCS8iL+zIJg8/vx919AAzmoumrZzyK052CMyOZ13NoQW0sIKbvCqw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=8bytes.org; spf=pass (client-ip=2a01:238:42d9:3f00:e505:6202:4f0c:f051; helo=mail.8bytes.org; envelope-from=joro@8bytes.org; receiver=lists.ozlabs.org) smtp.mailfrom=8bytes.org
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=8bytes.org
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=8bytes.org (client-ip=85.214.250.239; helo=mail.8bytes.org; envelope-from=joro@8bytes.org; receiver=lists.ozlabs.org)
-Received: from mail.8bytes.org (mail.8bytes.org [85.214.250.239])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gYw4j70Ljz3c2l
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Jun 2026 00:52:37 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=8bytes.org (client-ip=2a01:238:42d9:3f00:e505:6202:4f0c:f051; helo=mail.8bytes.org; envelope-from=joro@8bytes.org; receiver=lists.ozlabs.org)
+Received: from mail.8bytes.org (mail.8bytes.org [IPv6:2a01:238:42d9:3f00:e505:6202:4f0c:f051])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gYw4l1Fgbz3byZ
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Jun 2026 00:52:39 +1000 (AEST)
 Received: from io.home.8bytes.org (p4ffe1d30.dip0.t-ipconnect.de [79.254.29.48])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.8bytes.org (Postfix) with ESMTPSA id A453A2028A6;
-	Mon,  8 Jun 2026 16:43:05 +0200 (CEST)
+	by mail.8bytes.org (Postfix) with ESMTPSA id 072512028D6;
+	Mon,  8 Jun 2026 16:43:16 +0200 (CEST)
 From: =?UTF-8?q?J=C3=B6rg=20R=C3=B6del?= <joro@8bytes.org>
 To: Paolo Bonzini <pbonzini@redhat.com>,
 	Sean Christopherson <seanjc@google.com>
@@ -49,9 +49,9 @@ Cc: Tom Lendacky <thomas.lendacky@amd.com>,
 	x86@kernel.org,
 	coconut-svsm@lists.linux.dev,
 	joerg.roedel@amd.com
-Subject: [PATCH 03/60] KVM: SVM: Inject #HV when Restricted Injection is active
-Date: Mon,  8 Jun 2026 16:41:55 +0200
-Message-ID: <20260608144252.351443-4-joro@8bytes.org>
+Subject: [PATCH 51/60] kvm: x86: Share pio_data across planes
+Date: Mon,  8 Jun 2026 16:42:43 +0200
+Message-ID: <20260608144252.351443-52-joro@8bytes.org>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20260608144252.351443-1-joro@8bytes.org>
 References: <20260608144252.351443-1-joro@8bytes.org>
@@ -70,287 +70,113 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-From: Melody Wang <huibo.wang@amd.com>
+From: Joerg Roedel <joerg.roedel@amd.com>
 
-When Restricted Injection is active, only #HV exceptions can be injected into
-the SEV-SNP guest. Detect that, and then follow the #HV doorbell communication
-from the GHCB specification to inject the interrupt or exception.
+The vcpu->arch.pio_data pointer is memory mapped to user-space
+alongside the kvm_run page. So it also needs to be common across all
+planes for a given VCPU index.
 
-Co-developed-by: Thomas Lendacky <thomas.lendacky@amd.com>
-Signed-off-by: Thomas Lendacky <thomas.lendacky@amd.com>
-Signed-off-by: Melody Wang <huibo.wang@amd.com>
 Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
 ---
- arch/x86/kvm/svm/sev.c | 164 +++++++++++++++++++++++++++++++++++++++++
- arch/x86/kvm/svm/svm.c |  14 +++-
- arch/x86/kvm/svm/svm.h |  21 ++++++
- 3 files changed, 197 insertions(+), 2 deletions(-)
+ arch/x86/include/asm/kvm_host.h |  2 ++
+ arch/x86/kvm/x86.c              | 20 +++++++++++---------
+ virt/kvm/kvm_main.c             |  2 +-
+ 3 files changed, 14 insertions(+), 10 deletions(-)
 
-diff --git a/arch/x86/kvm/svm/sev.c b/arch/x86/kvm/svm/sev.c
-index b9ad1169cb2c..f2f40f81ba86 100644
---- a/arch/x86/kvm/svm/sev.c
-+++ b/arch/x86/kvm/svm/sev.c
-@@ -5380,3 +5380,167 @@ void sev_free_decrypted_vmsa(struct kvm_vcpu *vcpu, struct vmcb_save_area *vmsa)
+diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
+index 0327b77e56b7..1b7aa48c961e 100644
+--- a/arch/x86/include/asm/kvm_host.h
++++ b/arch/x86/include/asm/kvm_host.h
+@@ -801,6 +801,8 @@ struct kvm_vcpu_arch_common {
+ 	bool cpuid_dynamic_bits_dirty;
+ 	bool is_amd_compatible;
  
- 	free_page((unsigned long)vmsa);
- }
++	void *pio_data;
 +
-+static void prepare_hv_injection(struct vcpu_svm *svm, struct hvdb *hvdb)
-+{
-+	if (hvdb->events.no_further_signal)
-+		return;
-+
-+	svm->vmcb->control.event_inj = HV_VECTOR |
-+				       SVM_EVTINJ_TYPE_EXEPT |
-+				       SVM_EVTINJ_VALID;
-+	svm->vmcb->control.event_inj_err = 0;
-+
-+	hvdb->events.no_further_signal = 1;
-+}
-+
-+static void unmap_hvdb(struct kvm_vcpu *vcpu, struct kvm_host_map *map)
-+{
-+	kvm_vcpu_unmap(vcpu, map);
-+}
-+
-+static struct hvdb *map_hvdb(struct kvm_vcpu *vcpu, struct kvm_host_map *map)
-+{
-+	struct vcpu_svm *svm = to_svm(vcpu);
-+
-+	if (!VALID_PAGE(svm->sev_es.hvdb_gpa))
-+		return NULL;
-+
-+	if (kvm_vcpu_map(vcpu, gpa_to_gfn(svm->sev_es.hvdb_gpa), map)) {
-+		vcpu_unimpl(vcpu, "snp: error mapping #HV doorbell page [%#llx] from guest\n",
-+			    svm->sev_es.hvdb_gpa);
-+
-+		return NULL;
-+	}
-+
-+	return map->hva;
-+}
-+
-+static void __sev_snp_inject(enum inject_type type, struct kvm_vcpu *vcpu)
-+{
-+	struct vcpu_svm *svm = to_svm(vcpu);
-+	struct kvm_host_map hvdb_map;
-+	struct hvdb *hvdb;
-+
-+	hvdb = map_hvdb(vcpu, &hvdb_map);
-+	if (!hvdb) {
-+		WARN_ONCE(1, "Restricted Injection enabled, hvdb page mapping failed\n");
-+		return;
-+	}
-+
-+	hvdb->events.vector = vcpu->arch.interrupt.nr;
-+
-+	prepare_hv_injection(svm, hvdb);
-+
-+	unmap_hvdb(vcpu, &hvdb_map);
-+}
-+
-+bool sev_snp_queue_exception(struct kvm_vcpu *vcpu)
-+{
-+	struct vcpu_svm *svm = to_svm(vcpu);
-+
-+	if (!sev_snp_is_rinj_active(vcpu))
-+		return false;
-+
-+	/*
-+	 * Restricted Injection is enabled, only #HV is supported.
-+	 * If the vector is not HV_VECTOR, do not inject the exception,
-+	 * then return true to skip the original injection path.
-+	 */
-+	if (WARN_ONCE(vcpu->arch.exception.vector != HV_VECTOR,
-+		      "Restricted Injection enabled, exception vector %u injection not supported\n",
-+		      vcpu->arch.exception.vector))
-+		return true;
-+
-+	/*
-+	 * An intercept likely occurred during #HV delivery, so re-inject it
-+	 * using the current HVDB pending event values.
-+	 */
-+	svm->vmcb->control.event_inj = HV_VECTOR |
-+				       SVM_EVTINJ_TYPE_EXEPT |
-+				       SVM_EVTINJ_VALID;
-+	svm->vmcb->control.event_inj_err = 0;
-+
-+	return true;
-+}
-+
-+bool sev_snp_inject(enum inject_type type, struct kvm_vcpu *vcpu)
-+{
-+	if (!sev_snp_is_rinj_active(vcpu))
-+		return false;
-+
-+	__sev_snp_inject(type, vcpu);
-+
-+	return true;
-+}
-+
-+void sev_snp_cancel_injection(struct kvm_vcpu *vcpu)
-+{
-+	struct vcpu_svm *svm = to_svm(vcpu);
-+	struct kvm_host_map hvdb_map;
-+	struct hvdb *hvdb;
-+
-+	if (!sev_snp_is_rinj_active(vcpu))
-+		return;
-+
-+	if (!svm->vmcb->control.event_inj)
-+		return;
-+
-+	if (WARN_ONCE((svm->vmcb->control.event_inj & SVM_EVTINJ_VEC_MASK) != HV_VECTOR,
-+			"Restricted Injection enabled,  %u vector not supported\n",
-+			svm->vmcb->control.event_inj & SVM_EVTINJ_VEC_MASK))
-+		return;
-+
-+	/*
-+	 * Copy the information in the doorbell page into the event injection
-+	 * fields to complete the cancellation flow.
-+	 */
-+	hvdb = map_hvdb(vcpu, &hvdb_map);
-+	if (!hvdb)
-+		return;
-+
-+	if (!hvdb->events.pending_events) {
-+		/* No pending events, then event_inj field should be 0 */
-+		WARN_ON_ONCE(svm->vmcb->control.event_inj);
-+		goto out;
-+	}
-+
-+	/* Copy info back into event_inj field (replaces #HV) */
-+	svm->vmcb->control.event_inj = SVM_EVTINJ_VALID;
-+
-+	if (hvdb->events.vector)
-+		svm->vmcb->control.event_inj |= hvdb->events.vector |
-+						SVM_EVTINJ_TYPE_INTR;
-+
-+	hvdb->events.pending_events = 0;
-+
-+out:
-+	unmap_hvdb(vcpu, &hvdb_map);
-+}
-+
-+/*
-+ * sev_snp_blocked() is for each vector - interrupt, NMI and MCE.  It is
-+ * checking if there is an interrupt handled by the guest when
-+ * another interrupt is pending. So hvdb->events.vector will be used for
-+ * checking while no_further_signal is signaling to the guest that a #HV
-+ * is presented by the hypervisor. So no_further_signal is checked when
-+ * a #HV needs to be presented to the guest.
-+ */
-+bool sev_snp_blocked(enum inject_type type, struct kvm_vcpu *vcpu)
-+{
-+	struct kvm_host_map hvdb_map;
-+	struct hvdb *hvdb;
-+	bool blocked;
-+
-+	/* Indicate interrupts are blocked if doorbell page can't be mapped */
-+	hvdb = map_hvdb(vcpu, &hvdb_map);
-+	if (!hvdb)
-+		return true;
-+
-+	/* Indicate interrupts blocked based on guest acknowledgment */
-+	blocked = !!hvdb->events.vector;
-+
-+	unmap_hvdb(vcpu, &hvdb_map);
-+
-+	return blocked;
-+}
-diff --git a/arch/x86/kvm/svm/svm.c b/arch/x86/kvm/svm/svm.c
-index 7981e7583384..7253936c460c 100644
---- a/arch/x86/kvm/svm/svm.c
-+++ b/arch/x86/kvm/svm/svm.c
-@@ -392,6 +392,9 @@ static void svm_inject_exception(struct kvm_vcpu *vcpu)
- 	    svm_update_soft_interrupt_rip(vcpu, ex->vector))
- 		return;
- 
-+	if (sev_snp_queue_exception(vcpu))
-+		return;
-+
- 	svm->vmcb->control.event_inj = ex->vector
- 		| SVM_EVTINJ_VALID
- 		| (ex->has_error_code ? SVM_EVTINJ_VALID_ERR : 0)
-@@ -3818,9 +3821,11 @@ static void svm_inject_irq(struct kvm_vcpu *vcpu, bool reinjected)
- 	}
- 
- 	trace_kvm_inj_virq(intr->nr, intr->soft, reinjected);
--	++vcpu->stat.irq_injections;
- 
--	svm->vmcb->control.event_inj = intr->nr | SVM_EVTINJ_VALID | type;
-+	if (!sev_snp_inject(INJECT_IRQ, vcpu))
-+		svm->vmcb->control.event_inj = intr->nr | SVM_EVTINJ_VALID | type;
-+
-+	++vcpu->stat.irq_injections;
+ 	/*
+ 	 * cpu_caps holds the effective guest capabilities, i.e. the features
+ 	 * the vCPU is allowed to use.  Typically, but not always, features can
+diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+index 5f48392d4738..08fe65b8d57d 100644
+--- a/arch/x86/kvm/x86.c
++++ b/arch/x86/kvm/x86.c
+@@ -8532,7 +8532,7 @@ static int emulator_pio_in_out(struct kvm_vcpu *vcpu, int size,
  }
  
- static void svm_fixup_nested_rips(struct kvm_vcpu *vcpu)
-@@ -3995,6 +4000,9 @@ bool svm_interrupt_blocked(struct kvm_vcpu *vcpu)
- 	if (!gif_set(svm))
- 		return true;
- 
-+	if (sev_snp_is_rinj_active(vcpu))
-+		return sev_snp_blocked(INJECT_IRQ, vcpu);
-+
- 	if (is_guest_mode(vcpu)) {
- 		/* As long as interrupts are being delivered...  */
- 		if ((svm->nested.ctl.int_ctl & V_INTR_MASKING_MASK)
-@@ -4345,6 +4353,8 @@ static void svm_cancel_injection(struct kvm_vcpu *vcpu)
- 	struct vcpu_svm *svm = to_svm(vcpu);
- 	struct vmcb_control_area *control = &svm->vmcb->control;
- 
-+	sev_snp_cancel_injection(vcpu);
-+
- 	control->exit_int_info = control->event_inj;
- 	control->exit_int_info_err = control->event_inj_err;
- 	control->event_inj = 0;
-diff --git a/arch/x86/kvm/svm/svm.h b/arch/x86/kvm/svm/svm.h
-index fb956c37c941..a22ad5de03ea 100644
---- a/arch/x86/kvm/svm/svm.h
-+++ b/arch/x86/kvm/svm/svm.h
-@@ -55,6 +55,10 @@ extern int tsc_aux_uret_slot __ro_after_init;
- 
- extern struct kvm_x86_ops svm_x86_ops __initdata;
- 
-+enum inject_type {
-+	INJECT_IRQ,
-+};
-+
- /*
-  * Clean bits in VMCB.
-  * VMCB_ALL_CLEAN_MASK might also need to
-@@ -971,6 +975,17 @@ void sev_gmem_invalidate(kvm_pfn_t start, kvm_pfn_t end);
- int sev_gmem_max_mapping_level(struct kvm *kvm, kvm_pfn_t pfn, bool is_private);
- struct vmcb_save_area *sev_decrypt_vmsa(struct kvm_vcpu *vcpu);
- void sev_free_decrypted_vmsa(struct kvm_vcpu *vcpu, struct vmcb_save_area *vmsa);
-+bool sev_snp_queue_exception(struct kvm_vcpu *vcpu);
-+bool sev_snp_inject(enum inject_type type, struct kvm_vcpu *vcpu);
-+void sev_snp_cancel_injection(struct kvm_vcpu *vcpu);
-+bool sev_snp_blocked(enum inject_type type, struct kvm_vcpu *vcpu);
-+static inline bool sev_snp_is_rinj_active(struct kvm_vcpu *vcpu)
-+{
-+	struct kvm_sev_info *sev = &to_kvm_svm(vcpu->kvm)->sev_info;
-+
-+	return is_sev_snp_guest(vcpu) &&
-+		(sev->vmsa_features & SVM_SEV_FEAT_RESTRICTED_INJECTION);
-+};
- #else
- static inline struct page *snp_safe_alloc_page_node(int node, gfp_t gfp)
+ static int emulator_pio_in(struct kvm_vcpu *vcpu, int size,
+-      			   unsigned short port, void *val, unsigned int count)
++			   unsigned short port, void *val, unsigned int count)
  {
-@@ -1008,6 +1023,12 @@ static inline struct vmcb_save_area *sev_decrypt_vmsa(struct kvm_vcpu *vcpu)
- 	return NULL;
- }
- static inline void sev_free_decrypted_vmsa(struct kvm_vcpu *vcpu, struct vmcb_save_area *vmsa) {}
-+
-+static inline bool sev_snp_queue_exception(struct kvm_vcpu *vcpu) { return false; }
-+static inline bool sev_snp_inject(enum inject_type type, struct kvm_vcpu *vcpu) { return false; }
-+static inline void sev_snp_cancel_injection(struct kvm_vcpu *vcpu) {}
-+static inline bool sev_snp_blocked(enum inject_type type, struct kvm_vcpu *vcpu) { return false; }
-+static inline bool sev_snp_is_rinj_active(struct kvm_vcpu *vcpu) { return false; }
- #endif
+ 	int r = emulator_pio_in_out(vcpu, size, port, val, count, true);
+ 	if (r)
+@@ -12936,7 +12936,6 @@ int kvm_arch_vcpu_precreate(struct kvm *kvm, unsigned int id)
  
- /* vmenter.S */
+ int kvm_arch_vcpu_create(struct kvm_vcpu *vcpu)
+ {
+-	struct page *page;
+ 	int r;
+ 
+ 	vcpu->arch.last_vmentry_cpu = -1;
+@@ -12960,10 +12959,7 @@ int kvm_arch_vcpu_create(struct kvm_vcpu *vcpu)
+ 
+ 	r = -ENOMEM;
+ 
+-	page = alloc_page(GFP_KERNEL_ACCOUNT | __GFP_ZERO);
+-	if (!page)
+-		goto fail_free_lapic;
+-	vcpu->arch.pio_data = page_address(page);
++	vcpu->arch.pio_data = vcpu->common->arch.pio_data;
+ 
+ 	vcpu->arch.mce_banks = kcalloc(KVM_MAX_MCE_BANKS * 4, sizeof(u64),
+ 				       GFP_KERNEL_ACCOUNT);
+@@ -13023,8 +13019,6 @@ int kvm_arch_vcpu_create(struct kvm_vcpu *vcpu)
+ fail_free_mce_banks:
+ 	kfree(vcpu->arch.mce_banks);
+ 	kfree(vcpu->arch.mci_ctl2_banks);
+-	free_page((unsigned long)vcpu->arch.pio_data);
+-fail_free_lapic:
+ 	kvm_free_lapic(vcpu);
+ fail_mmu_destroy:
+ 	kvm_mmu_destroy(vcpu);
+@@ -13072,16 +13066,24 @@ void kvm_arch_vcpu_destroy(struct kvm_vcpu *vcpu)
+ 	idx = srcu_read_lock(&vcpu->kvm->srcu);
+ 	kvm_mmu_destroy(vcpu);
+ 	srcu_read_unlock(&vcpu->kvm->srcu, idx);
+-	free_page((unsigned long)vcpu->arch.pio_data);
+ }
+ 
+ int kvm_arch_vcpu_common_init(struct kvm_vcpu_common *common)
+ {
++	struct page *page;
++
++	page = alloc_page(GFP_KERNEL_ACCOUNT | __GFP_ZERO);
++	if (!page)
++		return -ENOMEM;
++
++	common->arch.pio_data = page_address(page);
++
+ 	return 0;
+ }
+ 
+ void kvm_arch_vcpu_common_destroy(struct kvm_vcpu_common *common)
+ {
++	free_page((unsigned long)common->arch.pio_data);
+ 	kvfree(common->arch.cpuid_entries);
+ }
+ 
+diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+index a6d7601c3412..8f1a16af519a 100644
+--- a/virt/kvm/kvm_main.c
++++ b/virt/kvm/kvm_main.c
+@@ -4250,7 +4250,7 @@ static vm_fault_t kvm_vcpu_fault(struct vm_fault *vmf)
+ 		page = virt_to_page(vcpu->run);
+ #ifdef CONFIG_X86
+ 	else if (vmf->pgoff == KVM_PIO_PAGE_OFFSET)
+-		page = virt_to_page(vcpu->arch.pio_data);
++		page = virt_to_page(vcpu->common->arch.pio_data);
+ #endif
+ #ifdef CONFIG_KVM_MMIO
+ 	else if (vmf->pgoff == KVM_COALESCED_MMIO_PAGE_OFFSET)
 -- 
 2.53.0
 
