@@ -1,80 +1,80 @@
-Return-Path: <linuxppc-dev+bounces-22198-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22199-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 99F48CD8C9F
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jun 2026 13:39:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AF184CD8C9D
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jun 2026 13:40:01 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gYtSk6vL2z3bqh;
-	Mon, 08 Jun 2026 23:39:50 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::122c"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780925990;
-	cv=none; b=Sp4IQCOuL1b/xUe657pqd/TZNck5kdJazn7SFUjtLVWtGqPEIev+HNmkx9iUHpcwQiSoSNZEiqZBriVb+M9d14Ht3qEusz+r5xnCynDe1To2G1nuSdHgeZ5qroM7NQtv9JeCdMhWP6uEb+entQhJ9XtTJPoiA4WgWY0X75qlbrU8P+pb0dWO6idGWLz/6CavcyqSvqUZx0qES05ylmAW4fvmZXdEyXzcWTA8/YYenuj0EcgF3NkASbGS2UOc2AxjQukmuYnTZGB1oaOrRyOaayWAr4iLIdvfr2s4hOry7d+0kgYQH6w6HralWa4Wy6aFw0LjEXp3gLvcfLMbb5hpPg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gYtSs066Nz2ytj;
+	Mon, 08 Jun 2026 23:39:57 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::132f"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780925996;
+	cv=none; b=clOudt7DrZBZ8KgGrxa5nKHVu0u+CpAMfLP3XneliVG4FnRObT+yzQLq4PS3udD/fgQIngB3RlAjqxW948K7nPbqLQcTkaiwJi6FixZRNYfcSV0ryYuNpNOwFfRhLJloc+CkLmj8b1pLwX1pC/A9Xk+b58/H04DqgGrDf4hwUOQ/2/ks3k9H3zgv4K2Rvp3LY9UyYeTKEIljg5TikOqHNNjLRwz6K+guHSsr169PRRQOX0mrHJ/njDsQ0nqDurEzx2UNEfT6ar1rffhwno8eOVqbhZEEuo/cb/5xop54YYYkmjrXIi1rqm2Dui9TxLB1XewJvvtMSI7b8XcuZmAoRA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1780925990; c=relaxed/relaxed;
-	bh=YBhrbnQZkkDV1+28VAJe073K28r+xjYcWQgKCYCLNoY=;
+	t=1780925996; c=relaxed/relaxed;
+	bh=v5KkougDEniPNaB4zp+jheULTstkgfTv6Bq66fUj4K0=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=dC1xROLAHEWJ8wrqeq/l+WYcVAnlY7RGEv8fHu+21loNN6a0DcuWfJzsVCraeq2B9eCU+t3yqiAzShUtQ0neiVKb08UuD8oIS1l1+fL/97azvn/5bdIU4AKumQyDIF6twZcVtR6CzKUwLYvkYMgxAAT6HGugxzjb94BjiSNd3R87qXQNM72PabpkoXlTJQuaFqyEDKTFadvbLTf6lYJe+fv684r/lbqGfJ7i819jOxa9B2+IQl290KBM7hWUWUXUyUK5urAV3JhOKaSKg2WFP/lDxPT/i4wDodCiyylgGe1UFNxHh02H2qsH/o+Z8lhaWUJBazYvAPSrs/PW52SzFQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=B/VbGz+O; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::122c; helo=mail-dl1-x122c.google.com; envelope-from=cassiogabrielcontato@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	 In-Reply-To:To:Cc; b=ZeNApFVtjDR3NA/wLjrbO20oV3RjvfWY12hdcd/7Ss8U9074s0MKZj2+6arzEtuDd+YywnIShXNA/1l1sgCyyDidK2UZcxBAtGiggsrp4co4rqkMUPz6FrWYxsQI6bJRLGt8nI2bsQryLfSHzHkF0QwfCr0NBPQf9bUX5+JBXac+2ol1iV3FK3GyTFyrCrqut4BXuAngT27dltpAwNmlq3t+oiaXESBR1hPPAJsQCu470DrnP+Bx9lNokyhEBxFMYSQK3OQcqPi3eGR6swu2H3G3LObT3DEiJmGWpwnEaOk9fV8zJG/jtut0YApKL7jtgoqGFZwyIfNbX7o5tF29Pg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=Ypq3V6Km; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::132f; helo=mail-dy1-x132f.google.com; envelope-from=cassiogabrielcontato@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=B/VbGz+O;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=Ypq3V6Km;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::122c; helo=mail-dl1-x122c.google.com; envelope-from=cassiogabrielcontato@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-dl1-x122c.google.com (mail-dl1-x122c.google.com [IPv6:2607:f8b0:4864:20::122c])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::132f; helo=mail-dy1-x132f.google.com; envelope-from=cassiogabrielcontato@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-dy1-x132f.google.com (mail-dy1-x132f.google.com [IPv6:2607:f8b0:4864:20::132f])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gYtSk1q3pz2yQH
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 08 Jun 2026 23:39:50 +1000 (AEST)
-Received: by mail-dl1-x122c.google.com with SMTP id a92af1059eb24-137dd523634so6721133c88.1
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 08 Jun 2026 06:39:50 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gYtSr2G1wz2yQH
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 08 Jun 2026 23:39:56 +1000 (AEST)
+Received: by mail-dy1-x132f.google.com with SMTP id 5a478bee46e88-304cf518c9dso5175677eec.1
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 08 Jun 2026 06:39:56 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1780925988; x=1781530788; darn=lists.ozlabs.org;
+        d=gmail.com; s=20251104; t=1780925994; x=1781530794; darn=lists.ozlabs.org;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=YBhrbnQZkkDV1+28VAJe073K28r+xjYcWQgKCYCLNoY=;
-        b=B/VbGz+O23Xy1kvh2XnTY3EBdzymRByP+hEQjdL/T4Hkd6goaQOtOKdeMz+5MLgxE+
-         dKIMMH7/ZTxSTxUsw374JEz+mc/+Io+RA3WP1Lm7Ypiyp7wt0ytCzZ+dfX1qb4QeJkp8
-         u6Uhyk1FxKtkE/T0RFl4AA0VkUxjiEElhmbeP4lyT1/95b8MsnTws9BEEweNd2IM5rdu
-         sQw0RuT5/qJurquaTj7rAytpfcpb6aIsTO3Yx2a8y86Peu+EcaXPGhgUuGwt+Uu14Aej
-         UXZ4l8AgcUTa797KfUwwFCzWPFi6bS6DLxmzWSHG8PHiXXc6C1a5fcjlbaH0xZAT7R7f
-         k1LA==
+        bh=v5KkougDEniPNaB4zp+jheULTstkgfTv6Bq66fUj4K0=;
+        b=Ypq3V6Kmeil/WWH1Ja3Sbf6cbDu3cV5dw1lUPJThQDgBhsexluICphw7SGzqXJ6iLy
+         smxfBs9SZa1K7shyKF14ARIy6sNZ3W+1zl6lAgTp5L+vCwuCE6eodCAwN1eiUbVQgLmp
+         /jxg73sNg3/6Nv1uo4gRSwJHNlYwzzInzPOCp8NeuWlx0ZlfgjgufkIY2656GPcRRMG1
+         IZRZZ0Bn1sHvM15B7Hxh1MqnYZuf1hl/Phu6Te+alIrch/e7DzZB8/HDmnjfTThlozP0
+         6shveA9w6ecrj3LmGhW3RzIznPZ0p6CYM9gXwIhBy/fxq1K03mRhMbHGCYrwGGDzPklh
+         Tx7Q==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1780925988; x=1781530788;
+        d=1e100.net; s=20251104; t=1780925994; x=1781530794;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:x-gm-gg:x-gm-message-state:from:to
          :cc:subject:date:message-id:reply-to;
-        bh=YBhrbnQZkkDV1+28VAJe073K28r+xjYcWQgKCYCLNoY=;
-        b=ryvDQ6cQvYu79O3D5sEbEAwZqm09h/XU3C3tLejkA0mC7s7Pp6FI0rdvuEzfjwhYJo
-         piXqQ2jVmtbb+piOV+CrsKkkuQKwBhYtSB1wE+/39gwZ855GFABy9KYONgIQtrJUTgzO
-         0KQYUIspejsNQa1SJONE9KcaUrwRznbsDPWXujQOJIKy0g8KSTVBpIx2cGZNBi7MeOJl
-         9T8yfoZVX90oTWvlZvlmKTp3IZez4NLn7QMxi4hpigWX5zYaxCnauS6QzNMqvIou6LAm
-         dMRvqFfyfSNvxfV43zYlLJj6r/7QnP4HjsX7xYyUS04QEN70Gn3A4O3mi72JmiEV9egH
-         6NRQ==
-X-Forwarded-Encrypted: i=1; AFNElJ/lMoOVBBSU2xCTr9bVRva7phuGom4rvNrFDKqfdBcwy5ustNh7+YLX/wt31qfXP1yk5ytsKD7yyIRRhjQ=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YxJm3weDShN2rD9gT9NEOfjFD/YFSkX4aZRk9oudVR71+IkwmDL
-	ejPhBrnoavitluIBiO3BEZsg1jGzHxnZJd3E6b8sXgrAOidalG08/4Oc
-X-Gm-Gg: Acq92OG/eQP1N/ImEX4Z197reUPSay7P9soPiSxMBonZP1iCYq/rR4QeTVp5MomfgZu
-	WBSDtrhRSFHsrpQQ1/SUqnJrrvKE3zV8Vq9GN0vpYdRpC+nKdTt6C45ymnBMgq8Tkr7JrDzUiJ2
-	ZEqSUCkXMeqhXLxC20yC/ipZ8CxQFQZ3h8jb6Yzn+m2AS6Y9E+d4STLkqyywZUcBby/YWuGZ2KA
-	RdF/094wfv0gPY6FfVhxVeAqcSVMqbgXdwaEhIlg+2zTk+/ywlcojJ7817Wd074o1Y90ch7liz4
-	K9nOhBK6pjavz/jJxVIwO2m36wFoaNMXe4Ms+ayKw6pOZTV9DqjgNvaRvDKXVdTOJAVvoRRhjcC
-	2cpnQnWm+TNLRWFSEN4Evs4jWzPtQSOaA7pAkQZMawxQyFuic5b3MU+GFdHHZJu7FucH9WKskOd
-	gs0fapK+tjrbA/cDWI9iR1SEw34DpCsEtm6wZdV4fiz4aK+JWTtL7KgRf1Oq44erV8VsXMVaz1x
-	7s8oJxLcixkNTcAqQNw0bM=
-X-Received: by 2002:a05:7300:230b:b0:304:2eb0:2726 with SMTP id 5a478bee46e88-3077b22df0fmr7429361eec.25.1780925987987;
-        Mon, 08 Jun 2026 06:39:47 -0700 (PDT)
+        bh=v5KkougDEniPNaB4zp+jheULTstkgfTv6Bq66fUj4K0=;
+        b=hJMXqW+aFoBzS9CXOoyQod5yhJIn8gvAuuP5r6KYwB5GovKb09ylZwd4frCowZyf4f
+         oIGTC6war0GWMCBtYeKuINcYrukIugvsUHB+TDhhpXpT4GetPtbISSPVH9BcY5bjUw8g
+         ncGE6DdenDQhW5d5yv6VKcWV4FW8YRK/ArveQhZqi0gISfw0bjRMwTVKy+PStolSca0d
+         lvTv+FzWbqCSd+plo1Hfz4oVLa5im5mPXRM2WpufJr4/+7eqDeaxz/qtbNoUQCxGXLCI
+         Ejg4uPUxr0hYMemmUybOpSGzH+I7KphZSxVoGI3aeJGrNWu+0I9+S762MEDhLieXLOg3
+         ZsBw==
+X-Forwarded-Encrypted: i=1; AFNElJ8lAXvq2ipZUHYP98ECMmrKAZgDc04tgHqD3DrAfVeX+mXr3MovzTZkMyT0YrtZRXM2+t83I6eOf4UKwjg=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YzEN1ki9/SF7rUtIiOkHysOQHENWxz4jNVPopJuFCS7VkChxXDw
+	JnUWm47u7s9mE3uiBWTOnSAHom5bSHmQcRIfAy/Iyix62f7NXfwE4sft
+X-Gm-Gg: Acq92OHLbUQg16OcocRtW+OOGELm7xmeRnqO3wV2fId5SEVZypLsc73JtyhbR8XxB11
+	0zu8/Rd0jhmNZ/r6h7iRXzZruZPMgLKZ24QtOKlXZtDtzSryP1yv+eugjyGzG0qoRTQDQsRng2a
+	yZm4W+/0V50RRgIsiX7wqYCfQBmKiHyxoUmaL7o3pC7PhUgMHZBDFFEn2NwcpBW2GLIl8Rswzvt
+	BUPgOTqW0GqXzIn/K16sVm6+4fMe0LKO8zGVOpoKRChztZ2hCotoSAP7lPS4zxTnnD1O6E7ovdw
+	RLQ8dT4/mi8rrB3x0/SzMRmSn2phSh/LP0CaDwuFV7JC5lSwAZ/snzDE6fNZKu9xzHWl5eTlVsq
+	wAsn7mWOBG8aRQgaRcpiLZssPYEb/9nnWaR+3TUjd+FJrn7GEPoPbMjIUeTr3byakWRyFdcf71K
+	lUuq2WJfkeOjPQgzf7OcG8cmRmseHZXaVhAo/oiOjoqmhPlGaz15qn6aEjWjS6PKbH/YPR5zl6G
+	YZQIAyPJnXq
+X-Received: by 2002:a05:693c:3003:b0:304:d835:27f with SMTP id 5a478bee46e88-3077b15d304mr7307289eec.22.1780925994137;
+        Mon, 08 Jun 2026 06:39:54 -0700 (PDT)
 Received: from [192.168.1.18] (177-4-161-23.user3p.v-tal.net.br. [177.4.161.23])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-3074db560d7sm23893449eec.5.2026.06.08.06.39.42
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-3074db560d7sm23893449eec.5.2026.06.08.06.39.48
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 08 Jun 2026 06:39:47 -0700 (PDT)
+        Mon, 08 Jun 2026 06:39:53 -0700 (PDT)
 From: =?utf-8?q?C=C3=A1ssio_Gabriel?= <cassiogabrielcontato@gmail.com>
-Date: Mon, 08 Jun 2026 10:39:11 -0300
-Subject: [PATCH 1/3] ASoC: qcom: common: use scoped OF node handling
+Date: Mon, 08 Jun 2026 10:39:12 -0300
+Subject: [PATCH 2/3] ASoC: fsl: fsl_qmc_audio: use scoped child node loop
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -90,7 +90,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20260608-asoc-of-node-scoped-cleanup-v1-1-9e3ac518dc2e@gmail.com>
+Message-Id: <20260608-asoc-of-node-scoped-cleanup-v1-2-9e3ac518dc2e@gmail.com>
 References: <20260608-asoc-of-node-scoped-cleanup-v1-0-9e3ac518dc2e@gmail.com>
 In-Reply-To: <20260608-asoc-of-node-scoped-cleanup-v1-0-9e3ac518dc2e@gmail.com>
 To: Srinivas Kandagatla <srini@kernel.org>, Mark Brown <broonie@kernel.org>, 
@@ -105,148 +105,55 @@ Cc: linux-sound@vger.kernel.org, linux-arm-msm@vger.kernel.org,
  linux-arm-kernel@lists.infradead.org, notify@kernel.org, 
  =?utf-8?q?C=C3=A1ssio_Gabriel?= <cassiogabrielcontato@gmail.com>
 X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=openpgp-sha256; l=4019;
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1261;
  i=cassiogabrielcontato@gmail.com; h=from:subject:message-id;
- bh=Fku3y1CGF4nhcunbUPtMiClanJb89VvqUuwkh2+knqc=;
- b=owGbwMvMwCV2IdZeKur/u2bG02pJDFlqxySsmP6Uc+po3Tn/8kP/s2fH8w/HHkoXC4xxXeCRb
- /CAZ39pRykLgxgXg6yYIsvqpEWWe7oeXK2PW+EBM4eVCWQIAxenAEzk1y+GPxwrOKKqzBacSJxt
- 9/tcgR5Dgp68lparbeMO/TVCrQstljMynC35KmN89b1HxdbVHh9ufDaRTzlueZRld/yU+ZP/P/X
- ewwAA
+ bh=MCx2N3prAUvO8MqB4noVmeheqznOyy7WsBMuY4aEAtk=;
+ b=owGbwMvMwCV2IdZeKur/u2bG02pJDFlqxyQ6WbXOHZl573lk8fKZWS9rEjeZ7J/2YxvT62vSk
+ utzDuowdZSyMIhxMciKKbKsTlpkuafrwdX6uBUeMHNYmUCGMHBxCsBE3n5k+Mm48r9C6PqddYW7
+ uKUX3W660TnB1a/qr6303zidBctYjqoxMuyLmB/7u3zl96m+jSwPQpazaHlsyeq94VPsoy/x/EV
+ /FzcA
 X-Developer-Key: i=cassiogabrielcontato@gmail.com; a=openpgp;
  fpr=AB62A239BC8AE0D57F5EA848D05D3F1A5AFFEE83
 
-qcom_snd_parse_of() manually drops the link child node and the
-cpu/platform/codec child nodes on error paths and at the end of each
-iteration.
+qmc_audio_probe() manually puts the current child node before returning
+from the DAI parsing loop on error.
 
-Use for_each_available_child_of_node_scoped() for the link node and
-__free(device_node) for the named child nodes. This keeps the existing
-ownership rules for DAI component phandle references, while removing the
-manual cleanup labels from a path that has previously needed OF refcount
-fixes.
+Use for_each_available_child_of_node_scoped() so the current child node is
+released automatically on early return and normal loop exit.
 
 Signed-off-by: Cássio Gabriel <cassiogabrielcontato@gmail.com>
 ---
- sound/soc/qcom/common.c | 47 +++++++++++++++--------------------------------
- 1 file changed, 15 insertions(+), 32 deletions(-)
+ sound/soc/fsl/fsl_qmc_audio.c | 7 ++-----
+ 1 file changed, 2 insertions(+), 5 deletions(-)
 
-diff --git a/sound/soc/qcom/common.c b/sound/soc/qcom/common.c
-index cf1f3a767cee..edc4611691f7 100644
---- a/sound/soc/qcom/common.c
-+++ b/sound/soc/qcom/common.c
-@@ -25,10 +25,6 @@ static const struct snd_soc_dapm_widget qcom_jack_snd_widgets[] = {
- 
- int qcom_snd_parse_of(struct snd_soc_card *card)
+diff --git a/sound/soc/fsl/fsl_qmc_audio.c b/sound/soc/fsl/fsl_qmc_audio.c
+index 76e014dfb6d7..d0f644573f49 100644
+--- a/sound/soc/fsl/fsl_qmc_audio.c
++++ b/sound/soc/fsl/fsl_qmc_audio.c
+@@ -905,7 +905,6 @@ static int qmc_audio_probe(struct platform_device *pdev)
  {
--	struct device_node *np;
--	struct device_node *codec = NULL;
--	struct device_node *platform = NULL;
--	struct device_node *cpu = NULL;
- 	struct device *dev = card->dev;
- 	struct snd_soc_dai_link *link;
- 	struct of_phandle_args args;
-@@ -82,12 +78,10 @@ int qcom_snd_parse_of(struct snd_soc_card *card)
- 	card->num_links = num_links;
- 	link = card->dai_link;
+ 	struct device_node *np = pdev->dev.of_node;
+ 	struct qmc_audio *qmc_audio;
+-	struct device_node *child;
+ 	unsigned int i;
+ 	int ret;
  
--	for_each_available_child_of_node(dev->of_node, np) {
-+	for_each_available_child_of_node_scoped(dev->of_node, np) {
- 		dlc = devm_kcalloc(dev, 2, sizeof(*dlc), GFP_KERNEL);
--		if (!dlc) {
--			ret = -ENOMEM;
--			goto err_put_np;
+@@ -931,14 +930,12 @@ static int qmc_audio_probe(struct platform_device *pdev)
+ 	}
+ 
+ 	i = 0;
+-	for_each_available_child_of_node(np, child) {
++	for_each_available_child_of_node_scoped(np, child) {
+ 		ret = qmc_audio_dai_parse(qmc_audio, child,
+ 					  qmc_audio->dais + i,
+ 					  qmc_audio->dai_drivers + i);
+-		if (ret) {
+-			of_node_put(child);
++		if (ret)
+ 			return ret;
 -		}
-+		if (!dlc)
-+			return -ENOMEM;
- 
- 		link->cpus	= &dlc[0];
- 		link->platforms	= &dlc[1];
-@@ -98,32 +92,33 @@ int qcom_snd_parse_of(struct snd_soc_card *card)
- 		ret = of_property_read_string(np, "link-name", &link->name);
- 		if (ret) {
- 			dev_err(card->dev, "error getting codec dai_link name\n");
--			goto err_put_np;
-+			return ret;
- 		}
- 
--		cpu = of_get_child_by_name(np, "cpu");
--		platform = of_get_child_by_name(np, "platform");
--		codec = of_get_child_by_name(np, "codec");
-+		struct device_node *cpu __free(device_node) =
-+			of_get_child_by_name(np, "cpu");
-+		struct device_node *platform __free(device_node) =
-+			of_get_child_by_name(np, "platform");
-+		struct device_node *codec __free(device_node) =
-+			of_get_child_by_name(np, "codec");
- 
- 		if (!cpu) {
- 			dev_err(dev, "%s: Can't find cpu DT node\n", link->name);
--			ret = -EINVAL;
--			goto err;
-+			return -EINVAL;
- 		}
- 
- 		ret = snd_soc_of_get_dlc(cpu, &args, link->cpus, 0);
- 		if (ret) {
- 			dev_err_probe(card->dev, ret,
- 				      "%s: error getting cpu dai name\n", link->name);
--			goto err;
-+			return ret;
- 		}
- 
- 		link->id = args.args[0];
- 
- 		if (link->id >= LPASS_MAX_PORT) {
- 			dev_err(dev, "%s: Invalid cpu dai id %d\n", link->name, link->id);
--			ret = -EINVAL;
--			goto err;
-+			return -EINVAL;
- 		}
- 
- 		if (platform) {
-@@ -132,8 +127,7 @@ int qcom_snd_parse_of(struct snd_soc_card *card)
- 					0);
- 			if (!link->platforms->of_node) {
- 				dev_err(card->dev, "%s: platform dai not found\n", link->name);
--				ret = -EINVAL;
--				goto err;
-+				return -EINVAL;
- 			}
- 		} else {
- 			link->platforms->of_node = link->cpus->of_node;
-@@ -144,7 +138,7 @@ int qcom_snd_parse_of(struct snd_soc_card *card)
- 			if (ret < 0) {
- 				dev_err_probe(card->dev, ret,
- 					      "%s: codec dai not found\n", link->name);
--				goto err;
-+				return ret;
- 			}
- 
- 			if (platform) {
-@@ -167,10 +161,6 @@ int qcom_snd_parse_of(struct snd_soc_card *card)
- 
- 		link->stream_name = link->name;
- 		link++;
--
--		of_node_put(cpu);
--		of_node_put(codec);
--		of_node_put(platform);
+ 		i++;
  	}
- 
- 	if (!card->dapm_widgets) {
-@@ -179,13 +169,6 @@ int qcom_snd_parse_of(struct snd_soc_card *card)
- 	}
- 
- 	return 0;
--err:
--	of_node_put(cpu);
--	of_node_put(codec);
--	of_node_put(platform);
--err_put_np:
--	of_node_put(np);
--	return ret;
- }
- EXPORT_SYMBOL_GPL(qcom_snd_parse_of);
  
 
 -- 
