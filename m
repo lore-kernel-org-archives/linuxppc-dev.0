@@ -1,34 +1,34 @@
-Return-Path: <linuxppc-dev+bounces-22257-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22259-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 28009CD8C92
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B8262CD8C9F
 	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jun 2026 14:56:53 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gYw503HHWz3f7V;
-	Tue, 09 Jun 2026 00:52:52 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=85.214.250.239
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780930371;
-	cv=none; b=OyvLI2XEDEpAgI/Mf46G7BR1ywLW57qfXZAM+ACSUyCSzRAmCtFNSnm41q5mQGbaeNEdnqOKPQPThnnrU0vFO3P8c4/4JJJwW0UE9xU2kM7gEnBKQ6N6ZGoULY6b+jjtrcfkp/zm+m4H+2Wg85JVZ9i2v/r+DEVPag9dQkzmDUQ0o7m5qPKwXuAJlCTMjGPlQ6nyIN+Gn4WAYQPW2fDZ+xEKLHCEJZ1bQny16uEtHF6TWmMdLFrqI2xqMbB7Ngc/dWbIxz1vY1ZB4bx4s6EKuanVlB4fBb7NYNkP60tuuTwwX1GxabsF5zMo8n9FRW9tr5PrU0gM9lF7f9B8H9SvZQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gYw522SnBz3fDD;
+	Tue, 09 Jun 2026 00:52:54 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a01:238:42d9:3f00:e505:6202:4f0c:f051"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780930370;
+	cv=none; b=MBE6G/LIpUTeTVsDdoQwsgu24KZhwUAp47afS7cam0hB4lYOkBwqX8MGywjCp8YXpXAFagW2JOl2rzbyXeVots7sZbJIHGBmKZzr+H90Qenm7h8K3F3uhU6a0PU1oetWhVy2k+/R3G5sRhDNfYKAjMqskaLJyN0Nt+yVnvodcRyexyWFL+1U4V8SuVP6CVP7u2Kg/m32ueo/cV2DSqqOxQoRYuw1tdXtt/ZrNntv4j/2CY0R8SEuEp1L1mqnC9xJuyMzDPv4t60eQnFukIoGmZiXK9s4BUAcgCAB9GNCx5xU1eZJrUUtcYBCWLrIecVbnftSetyYJ7ZWh08Fsgo6Mw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1780930371; c=relaxed/relaxed;
-	bh=qhXIZn2iNOpxOTHTwlYy27ejC1w4zAgv6hKbWt9T82E=;
+	t=1780930370; c=relaxed/relaxed;
+	bh=DOmiMCQRUCV3y/c7Lio5rGAJjflaL7PaWSGf3wYl13I=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=duHEZ9mf6ny1qsyyCOMy0aE6bIHZY9s46SkZvVpafAYASSN6+3bUVmxdlcRTbgg/azJqhWhOlnHBLsOkgQceylR8qlYBQu4xbeQyCcrG/8ve+Nu8vCAocWmH+YYezRPaP5YGx4LX85p0vh3YGUr3CtushQ29oXaI5tgNaXF6sTvVQm4iTiyl69S/S4M8s0+dzqWTSoEz+BTYtjnKUQJcbHOW+QO+4NkJSUDAie/8vP/7VgIXhErZw50hVUgdJxjT5EE6CAUcKvm1O9dYyZb/jfy565INba5NT9nBlRaWtZ/h2KXaNGGQAWM2PRi008CYsCgT195GVoTWABNl8ySDRA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=8bytes.org; spf=pass (client-ip=85.214.250.239; helo=mail.8bytes.org; envelope-from=joro@8bytes.org; receiver=lists.ozlabs.org) smtp.mailfrom=8bytes.org
+	 MIME-Version; b=cxb+D05W4j789vulANp3QFwKXcirTDwzUO/Zuh2AuYuIXz9eahMF6DCd53h6a62VaZcKCpqYuWJpWWXD+yY1SQGN7bqOAeFWFNaULYlNDvTNrooVBb20RBbfW65cjvOWqI5shK0FNr0h79w0bPn6m3JRM8IG/RiJzIgAz85Ug4haIORzMQKhwSGXQ2FKCtJOBOpmAFFaW8QQXycqD158O0066dqhpnPRBj6KL86OicYjFXKgZEEsrZo1+3/lVEzGwEcIOSu45fRHgJJ5BObPENLk9zuMIJ+xvr0UdU7fkJseJK9KWBJOMSy4MwHsRUt4ey6qAieX6W0J7NCZ1Lvwrw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=8bytes.org; spf=pass (client-ip=2a01:238:42d9:3f00:e505:6202:4f0c:f051; helo=mail.8bytes.org; envelope-from=joro@8bytes.org; receiver=lists.ozlabs.org) smtp.mailfrom=8bytes.org
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=8bytes.org
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=8bytes.org (client-ip=85.214.250.239; helo=mail.8bytes.org; envelope-from=joro@8bytes.org; receiver=lists.ozlabs.org)
-Received: from mail.8bytes.org (mail.8bytes.org [85.214.250.239])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gYw4h13Y5z3d8N
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Jun 2026 00:52:35 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=8bytes.org (client-ip=2a01:238:42d9:3f00:e505:6202:4f0c:f051; helo=mail.8bytes.org; envelope-from=joro@8bytes.org; receiver=lists.ozlabs.org)
+Received: from mail.8bytes.org (mail.8bytes.org [IPv6:2a01:238:42d9:3f00:e505:6202:4f0c:f051])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gYw4h1MK9z3d8T
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Jun 2026 00:52:36 +1000 (AEST)
 Received: from io.home.8bytes.org (p4ffe1d30.dip0.t-ipconnect.de [79.254.29.48])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.8bytes.org (Postfix) with ESMTPSA id C4D122028C7;
-	Mon,  8 Jun 2026 16:43:12 +0200 (CEST)
+	by mail.8bytes.org (Postfix) with ESMTPSA id C82252028D5;
+	Mon,  8 Jun 2026 16:43:15 +0200 (CEST)
 From: =?UTF-8?q?J=C3=B6rg=20R=C3=B6del?= <joro@8bytes.org>
 To: Paolo Bonzini <pbonzini@redhat.com>,
 	Sean Christopherson <seanjc@google.com>
@@ -49,9 +49,9 @@ Cc: Tom Lendacky <thomas.lendacky@amd.com>,
 	x86@kernel.org,
 	coconut-svsm@lists.linux.dev,
 	joerg.roedel@amd.com
-Subject: [PATCH 36/60] kvm: Add plane_level to kvm_kernel_irq_routing_entry
-Date: Mon,  8 Jun 2026 16:42:28 +0200
-Message-ID: <20260608144252.351443-37-joro@8bytes.org>
+Subject: [PATCH 50/60] kvm: x86: Make KVM_REQ_UPDATE_PROTECTED_GUEST_STATE per plane
+Date: Mon,  8 Jun 2026 16:42:42 +0200
+Message-ID: <20260608144252.351443-51-joro@8bytes.org>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20260608144252.351443-1-joro@8bytes.org>
 References: <20260608144252.351443-1-joro@8bytes.org>
@@ -72,105 +72,26 @@ Content-Transfer-Encoding: 8bit
 
 From: Joerg Roedel <joerg.roedel@amd.com>
 
-Track the target plane-level of MSI irqs in struct
-kvm_kernel_irq_routing_entry. This will be used to send MSI IRQs to
-the right plane-level once planes are supported.
+The VMSAs are per plane, so this request must be too.
 
 Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
 ---
- arch/arm64/kvm/vgic/vgic-irqfd.c | 1 +
- arch/loongarch/kvm/irqfd.c       | 1 +
- arch/powerpc/kvm/mpic.c          | 1 +
- arch/riscv/kvm/vm.c              | 1 +
- arch/x86/kvm/irq.c               | 1 +
- include/linux/kvm_host.h         | 1 +
- virt/kvm/irqchip.c               | 1 +
- 7 files changed, 7 insertions(+)
+ arch/x86/include/asm/kvm_host.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/arm64/kvm/vgic/vgic-irqfd.c b/arch/arm64/kvm/vgic/vgic-irqfd.c
-index b9b86e3a6c86..479b896c8954 100644
---- a/arch/arm64/kvm/vgic/vgic-irqfd.c
-+++ b/arch/arm64/kvm/vgic/vgic-irqfd.c
-@@ -57,6 +57,7 @@ int kvm_set_routing_entry(struct kvm *kvm,
- 		e->msi.data = ue->u.msi.data;
- 		e->msi.flags = ue->flags;
- 		e->msi.devid = ue->u.msi.devid;
-+		e->msi.plane_level = 0;
- 		break;
- 	default:
- 		goto out;
-diff --git a/arch/loongarch/kvm/irqfd.c b/arch/loongarch/kvm/irqfd.c
-index f4f953b22419..50f0c32df46c 100644
---- a/arch/loongarch/kvm/irqfd.c
-+++ b/arch/loongarch/kvm/irqfd.c
-@@ -60,6 +60,7 @@ int kvm_set_routing_entry(struct kvm *kvm,
- 		e->msi.address_lo = ue->u.msi.address_lo;
- 		e->msi.address_hi = ue->u.msi.address_hi;
- 		e->msi.data = ue->u.msi.data;
-+		e->msi.plane_level = 0;
- 		return 0;
- 	default:
- 		return -EINVAL;
-diff --git a/arch/powerpc/kvm/mpic.c b/arch/powerpc/kvm/mpic.c
-index 3070f36d9fb8..0f568f5fff8b 100644
---- a/arch/powerpc/kvm/mpic.c
-+++ b/arch/powerpc/kvm/mpic.c
-@@ -1841,6 +1841,7 @@ int kvm_set_routing_entry(struct kvm *kvm,
- 		e->msi.address_lo = ue->u.msi.address_lo;
- 		e->msi.address_hi = ue->u.msi.address_hi;
- 		e->msi.data = ue->u.msi.data;
-+		e->msi.plane_level = 0;
- 		break;
- 	default:
- 		goto out;
-diff --git a/arch/riscv/kvm/vm.c b/arch/riscv/kvm/vm.c
-index a9f083feeb76..f518247e699b 100644
---- a/arch/riscv/kvm/vm.c
-+++ b/arch/riscv/kvm/vm.c
-@@ -138,6 +138,7 @@ int kvm_set_routing_entry(struct kvm *kvm,
- 		e->msi.data = ue->u.msi.data;
- 		e->msi.flags = ue->flags;
- 		e->msi.devid = ue->u.msi.devid;
-+		e->msi.plane_level = 0;
- 		break;
- 	default:
- 		goto out;
-diff --git a/arch/x86/kvm/irq.c b/arch/x86/kvm/irq.c
-index 9519fec09ee6..b7e08eddb765 100644
---- a/arch/x86/kvm/irq.c
-+++ b/arch/x86/kvm/irq.c
-@@ -332,6 +332,7 @@ int kvm_set_routing_entry(struct kvm *kvm,
- 		e->msi.address_lo = ue->u.msi.address_lo;
- 		e->msi.address_hi = ue->u.msi.address_hi;
- 		e->msi.data = ue->u.msi.data;
-+		e->msi.plane_level = 0;
+diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
+index 0955097aca9c..0327b77e56b7 100644
+--- a/arch/x86/include/asm/kvm_host.h
++++ b/arch/x86/include/asm/kvm_host.h
+@@ -129,7 +129,7 @@
+ #define KVM_REQ_HV_TLB_FLUSH \
+ 	KVM_ARCH_REQ_FLAGS(32, KVM_REQUEST_WAIT | KVM_REQUEST_NO_WAKEUP)
+ #define KVM_REQ_UPDATE_PROTECTED_GUEST_STATE \
+-	KVM_ARCH_REQ_FLAGS(34, KVM_REQUEST_WAIT)
++	KVM_ARCH_REQ_FLAGS(34, KVM_REQUEST_WAIT | KVM_REQUEST_PER_PLANE)
  
- 		if (kvm_msi_route_invalid(kvm, e))
- 			return -EINVAL;
-diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
-index e3611e6cc3e4..16dcca3132d3 100644
---- a/include/linux/kvm_host.h
-+++ b/include/linux/kvm_host.h
-@@ -782,6 +782,7 @@ struct kvm_kernel_irq_routing_entry {
- 			u32 data;
- 			u32 flags;
- 			u32 devid;
-+			unsigned plane_level;
- 		} msi;
- 		struct kvm_s390_adapter_int adapter;
- 		struct kvm_hv_sint hv_sint;
-diff --git a/virt/kvm/irqchip.c b/virt/kvm/irqchip.c
-index 462c70621247..ae47e56176f1 100644
---- a/virt/kvm/irqchip.c
-+++ b/virt/kvm/irqchip.c
-@@ -57,6 +57,7 @@ int kvm_send_userspace_msi(struct kvm *kvm, struct kvm_msi *msi)
- 	route.msi.data = msi->data;
- 	route.msi.flags = msi->flags;
- 	route.msi.devid = msi->devid;
-+	route.msi.plane_level = 0;
- 
- 	return kvm_set_msi(&route, kvm, KVM_USERSPACE_IRQ_SOURCE_ID, 1, false);
- }
+ #define CR0_RESERVED_BITS                                               \
+ 	(~(unsigned long)(X86_CR0_PE | X86_CR0_MP | X86_CR0_EM | X86_CR0_TS \
 -- 
 2.53.0
 
