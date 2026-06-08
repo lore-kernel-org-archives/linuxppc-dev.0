@@ -1,34 +1,34 @@
-Return-Path: <linuxppc-dev+bounces-22256-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22262-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9B243CD8C9D
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jun 2026 14:57:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 708D6CD8C92
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jun 2026 14:57:29 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gYw502BDJz3f7H;
-	Tue, 09 Jun 2026 00:52:52 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a01:238:42d9:3f00:e505:6202:4f0c:f051"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780930372;
-	cv=none; b=F59MQBOn0ZfUZ2lJGF9Qnl4fs2JkxcjXKqAFsGvMBlSu84WR6IzK4U2TLpDx58F6yIV+HQFkrLKwVQHZrxnDtiv+FT1W2QPE5tO9mACerFO1A1b9mSJ+XBkILkrAuC0p51VsBapudxah1oRHukTqQkikoE8I38g33grr6/rh8gOMjXlxD3jVwO8KTifMykHkwQt8cH5yu1yJlD9XxhChDoRypILP1ufq5yPyj3HVCmKrP3Kz5QF9EPKXtBgp/DgR181C3OMuvdhJzYXqTftrQvqAXhmrb3KVy8BB4/bMcdNgvk6Ibaswm5zIzPucaBWcVziu8U3RmrbOQWx40v/MQQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gYw5545B6z3fJt;
+	Tue, 09 Jun 2026 00:52:57 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=85.214.250.239
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780930374;
+	cv=none; b=AsUsfs2w1Hjfhh/FJMzNDvWlraAF7L7Vg9ZHyE2xSdf33Z99lDJ2r+l8+hc76NAt9/NUxwSt/PDFkUcuWjVc9UgQ+egnF3Cju9PB4HA/cPGkjXUyfpKEVT1kAG5O5Kv3cZIUtRlitRoXbgmFBgQn+6CKUoKEzBsWX5dyCj0Dr8PC4V45kXI/JVP9FfifU3EOsh9dvcI8R4ppXcjrCSjAhKRkmbvaCvler8stVD+1hkvHjsvJRVU5Dbte8gyjo1PnHeS10dGiJ95OsKOxM1Rm2aBQW7iIky7oMvGPq9RdNQe7zV6d0Rd4Qsc1hhFilPSTgkVXUg7/xPjybnAVf8bY2Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1780930372; c=relaxed/relaxed;
-	bh=hNQP7/EdSG3cCeW6Faawmy/E0oUQJiBDgFzOTeJqXM8=;
+	t=1780930374; c=relaxed/relaxed;
+	bh=jQyUbKQoEFr/9MDxZCu9r0fj6XLauxRqD1O3YRqiugQ=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=KwBmkWVViLP0xG2SGYnde5EL9GH8R1v26zk1RMh3UOmsb5pBT/KckFyklKluyCD+35wF6p8Hev73kab6plgj3r2cMQVqLJLJNvMJgg4++F1tREVBk9X+Z6yObJtbI+C8FFBH/A7myTTZXSYRkWjKvhBuz596knoxn0oT+h+m2eET5qkYAxOc4mr/hLvmqT9pC50b/dSjfM5bwfwuQkJUzfCOQTZ6JxLbc+nRhpaERsrCCWppRFl0/QrNSbUWsc87184N5/4Br0QNKp5zarp+y0JeEoy/J+UVrpmNUOZDnXSVss/EtC6Y1BoHf0/EFDCnFAgPy/LfBCubpJnqq3v9TA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=8bytes.org; spf=pass (client-ip=2a01:238:42d9:3f00:e505:6202:4f0c:f051; helo=mail.8bytes.org; envelope-from=joro@8bytes.org; receiver=lists.ozlabs.org) smtp.mailfrom=8bytes.org
+	 MIME-Version; b=D4oAalfFVX0RscEybySCRQ3QkVwbwHGXwzxv5Mz1xaN78/A5erjbtxnUokFbSRQo948TMbGZL1XiowjjIHERO7laf5KI30GUvuTwJ0Uv2NGxqFYhl9q2+I/1B29gcsNOIU95mTXudOZglXZZLCd/LWD3CntgclUvA2RfNFjSiL4fzsFS0ss0SaO66Lrk+XAC9piyYJ0/vL9ziDKKKsyBxJVMAcCesMZ1llNl6htg6/m6fXPk7aMjfP/kxlvQkzBNs2pTJ8ocOIjD9DRKpaJ3yQw1GF6Vg0Qh8K37JQZxjZ1YlfDiXgkHnJcUsAyd8MYMIQG93G86FtP5ACJL6SBv3g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=8bytes.org; spf=pass (client-ip=85.214.250.239; helo=mail.8bytes.org; envelope-from=joro@8bytes.org; receiver=lists.ozlabs.org) smtp.mailfrom=8bytes.org
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=8bytes.org
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=8bytes.org (client-ip=2a01:238:42d9:3f00:e505:6202:4f0c:f051; helo=mail.8bytes.org; envelope-from=joro@8bytes.org; receiver=lists.ozlabs.org)
-Received: from mail.8bytes.org (mail.8bytes.org [IPv6:2a01:238:42d9:3f00:e505:6202:4f0c:f051])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gYw4f4Wlqz3chX
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Jun 2026 00:52:34 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=8bytes.org (client-ip=85.214.250.239; helo=mail.8bytes.org; envelope-from=joro@8bytes.org; receiver=lists.ozlabs.org)
+Received: from mail.8bytes.org (mail.8bytes.org [85.214.250.239])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gYw4j70Ljz3c2l
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Jun 2026 00:52:37 +1000 (AEST)
 Received: from io.home.8bytes.org (p4ffe1d30.dip0.t-ipconnect.de [79.254.29.48])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.8bytes.org (Postfix) with ESMTPSA id 337162028BB;
-	Mon,  8 Jun 2026 16:43:10 +0200 (CEST)
+	by mail.8bytes.org (Postfix) with ESMTPSA id A453A2028A6;
+	Mon,  8 Jun 2026 16:43:05 +0200 (CEST)
 From: =?UTF-8?q?J=C3=B6rg=20R=C3=B6del?= <joro@8bytes.org>
 To: Paolo Bonzini <pbonzini@redhat.com>,
 	Sean Christopherson <seanjc@google.com>
@@ -49,9 +49,9 @@ Cc: Tom Lendacky <thomas.lendacky@amd.com>,
 	x86@kernel.org,
 	coconut-svsm@lists.linux.dev,
 	joerg.roedel@amd.com
-Subject: [PATCH 24/60] kvm: Move kvm_vcpu spinloop members to struct kvm_vcpu_common
-Date: Mon,  8 Jun 2026 16:42:16 +0200
-Message-ID: <20260608144252.351443-25-joro@8bytes.org>
+Subject: [PATCH 03/60] KVM: SVM: Inject #HV when Restricted Injection is active
+Date: Mon,  8 Jun 2026 16:41:55 +0200
+Message-ID: <20260608144252.351443-4-joro@8bytes.org>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20260608144252.351443-1-joro@8bytes.org>
 References: <20260608144252.351443-1-joro@8bytes.org>
@@ -70,216 +70,287 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-From: Joerg Roedel <joerg.roedel@amd.com>
+From: Melody Wang <huibo.wang@amd.com>
 
-Onlyh one struct kvm_vcpu across all planes can be in a spin-loop.
-Move the state to struct kvm_vcpu_common to make detection independent
-of the active struct kvm_vcpu.
+When Restricted Injection is active, only #HV exceptions can be injected into
+the SEV-SNP guest. Detect that, and then follow the #HV doorbell communication
+from the GHCB specification to inject the interrupt or exception.
 
+Co-developed-by: Thomas Lendacky <thomas.lendacky@amd.com>
+Signed-off-by: Thomas Lendacky <thomas.lendacky@amd.com>
+Signed-off-by: Melody Wang <huibo.wang@amd.com>
 Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
 ---
- include/linux/kvm_host.h | 32 +++++++++++++++----------------
- virt/kvm/kvm_main.c      | 41 ++++++++++++++++++++++------------------
- 2 files changed, 39 insertions(+), 34 deletions(-)
+ arch/x86/kvm/svm/sev.c | 164 +++++++++++++++++++++++++++++++++++++++++
+ arch/x86/kvm/svm/svm.c |  14 +++-
+ arch/x86/kvm/svm/svm.h |  21 ++++++
+ 3 files changed, 197 insertions(+), 2 deletions(-)
 
-diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
-index 9220c452aa3a..f6e8a0b653b3 100644
---- a/include/linux/kvm_host.h
-+++ b/include/linux/kvm_host.h
-@@ -350,6 +350,20 @@ struct kvm_vcpu_common {
- 	rwlock_t pid_lock;
- 	int sigset_active;
- 	sigset_t sigset;
-+	unsigned int halt_poll_ns;
+diff --git a/arch/x86/kvm/svm/sev.c b/arch/x86/kvm/svm/sev.c
+index b9ad1169cb2c..f2f40f81ba86 100644
+--- a/arch/x86/kvm/svm/sev.c
++++ b/arch/x86/kvm/svm/sev.c
+@@ -5380,3 +5380,167 @@ void sev_free_decrypted_vmsa(struct kvm_vcpu *vcpu, struct vmcb_save_area *vmsa)
+ 
+ 	free_page((unsigned long)vmsa);
+ }
 +
-+#ifdef CONFIG_HAVE_KVM_CPU_RELAX_INTERCEPT
++static void prepare_hv_injection(struct vcpu_svm *svm, struct hvdb *hvdb)
++{
++	if (hvdb->events.no_further_signal)
++		return;
++
++	svm->vmcb->control.event_inj = HV_VECTOR |
++				       SVM_EVTINJ_TYPE_EXEPT |
++				       SVM_EVTINJ_VALID;
++	svm->vmcb->control.event_inj_err = 0;
++
++	hvdb->events.no_further_signal = 1;
++}
++
++static void unmap_hvdb(struct kvm_vcpu *vcpu, struct kvm_host_map *map)
++{
++	kvm_vcpu_unmap(vcpu, map);
++}
++
++static struct hvdb *map_hvdb(struct kvm_vcpu *vcpu, struct kvm_host_map *map)
++{
++	struct vcpu_svm *svm = to_svm(vcpu);
++
++	if (!VALID_PAGE(svm->sev_es.hvdb_gpa))
++		return NULL;
++
++	if (kvm_vcpu_map(vcpu, gpa_to_gfn(svm->sev_es.hvdb_gpa), map)) {
++		vcpu_unimpl(vcpu, "snp: error mapping #HV doorbell page [%#llx] from guest\n",
++			    svm->sev_es.hvdb_gpa);
++
++		return NULL;
++	}
++
++	return map->hva;
++}
++
++static void __sev_snp_inject(enum inject_type type, struct kvm_vcpu *vcpu)
++{
++	struct vcpu_svm *svm = to_svm(vcpu);
++	struct kvm_host_map hvdb_map;
++	struct hvdb *hvdb;
++
++	hvdb = map_hvdb(vcpu, &hvdb_map);
++	if (!hvdb) {
++		WARN_ONCE(1, "Restricted Injection enabled, hvdb page mapping failed\n");
++		return;
++	}
++
++	hvdb->events.vector = vcpu->arch.interrupt.nr;
++
++	prepare_hv_injection(svm, hvdb);
++
++	unmap_hvdb(vcpu, &hvdb_map);
++}
++
++bool sev_snp_queue_exception(struct kvm_vcpu *vcpu)
++{
++	struct vcpu_svm *svm = to_svm(vcpu);
++
++	if (!sev_snp_is_rinj_active(vcpu))
++		return false;
++
 +	/*
-+	 * Cpu relax intercept or pause loop exit optimization
-+	 * in_spin_loop: set when a vcpu does a pause loop exit
-+	 *  or cpu relax intercepted.
-+	 * dy_eligible: indicates whether vcpu is eligible for directed yield.
++	 * Restricted Injection is enabled, only #HV is supported.
++	 * If the vector is not HV_VECTOR, do not inject the exception,
++	 * then return true to skip the original injection path.
 +	 */
-+	struct {
-+		bool in_spin_loop;
-+		bool dy_eligible;
-+	} spin_loop;
-+#endif
- 
- 	/* Scheduling state */
- #ifdef CONFIG_PREEMPT_NOTIFIERS
-@@ -373,8 +387,6 @@ struct kvm_vcpu {
- 
- 	struct kvm_run *run;
- 
--	unsigned int halt_poll_ns;
--
- 	u64 plane_requests;
- 
- 	/* S390 only */
-@@ -398,18 +410,6 @@ struct kvm_vcpu {
- 	} async_pf;
- #endif
- 
--#ifdef CONFIG_HAVE_KVM_CPU_RELAX_INTERCEPT
--	/*
--	 * Cpu relax intercept or pause loop exit optimization
--	 * in_spin_loop: set when a vcpu does a pause loop exit
--	 *  or cpu relax intercepted.
--	 * dy_eligible: indicates whether vcpu is eligible for directed yield.
--	 */
--	struct {
--		bool in_spin_loop;
--		bool dy_eligible;
--	} spin_loop;
--#endif
- 	struct kvm_vcpu_arch arch;
- 	struct kvm_vcpu_stat stat;
- 	char stats_id[KVM_STATS_NAME_SIZE];
-@@ -2500,11 +2500,11 @@ extern struct kvm_device_ops kvm_arm_vgic_v5_ops;
- 
- static inline void kvm_vcpu_set_in_spin_loop(struct kvm_vcpu *vcpu, bool val)
- {
--	vcpu->spin_loop.in_spin_loop = val;
-+	vcpu->common->spin_loop.in_spin_loop = val;
- }
- static inline void kvm_vcpu_set_dy_eligible(struct kvm_vcpu *vcpu, bool val)
- {
--	vcpu->spin_loop.dy_eligible = val;
-+	vcpu->common->spin_loop.dy_eligible = val;
- }
- 
- #else /* !CONFIG_HAVE_KVM_CPU_RELAX_INTERCEPT */
-diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-index 1858880ee3d3..24ff8748a317 100644
---- a/virt/kvm/kvm_main.c
-+++ b/virt/kvm/kvm_main.c
-@@ -485,6 +485,9 @@ static int kvm_vcpu_init_common(struct kvm_vcpu *vcpu, struct kvm *kvm, unsigned
- 
- 	vcpu->common = no_free_ptr(common);
- 
-+	kvm_vcpu_set_in_spin_loop(vcpu, false);
-+	kvm_vcpu_set_dy_eligible(vcpu, false);
++	if (WARN_ONCE(vcpu->arch.exception.vector != HV_VECTOR,
++		      "Restricted Injection enabled, exception vector %u injection not supported\n",
++		      vcpu->arch.exception.vector))
++		return true;
 +
- 	return 0;
++	/*
++	 * An intercept likely occurred during #HV delivery, so re-inject it
++	 * using the current HVDB pending event values.
++	 */
++	svm->vmcb->control.event_inj = HV_VECTOR |
++				       SVM_EVTINJ_TYPE_EXEPT |
++				       SVM_EVTINJ_VALID;
++	svm->vmcb->control.event_inj_err = 0;
++
++	return true;
++}
++
++bool sev_snp_inject(enum inject_type type, struct kvm_vcpu *vcpu)
++{
++	if (!sev_snp_is_rinj_active(vcpu))
++		return false;
++
++	__sev_snp_inject(type, vcpu);
++
++	return true;
++}
++
++void sev_snp_cancel_injection(struct kvm_vcpu *vcpu)
++{
++	struct vcpu_svm *svm = to_svm(vcpu);
++	struct kvm_host_map hvdb_map;
++	struct hvdb *hvdb;
++
++	if (!sev_snp_is_rinj_active(vcpu))
++		return;
++
++	if (!svm->vmcb->control.event_inj)
++		return;
++
++	if (WARN_ONCE((svm->vmcb->control.event_inj & SVM_EVTINJ_VEC_MASK) != HV_VECTOR,
++			"Restricted Injection enabled,  %u vector not supported\n",
++			svm->vmcb->control.event_inj & SVM_EVTINJ_VEC_MASK))
++		return;
++
++	/*
++	 * Copy the information in the doorbell page into the event injection
++	 * fields to complete the cancellation flow.
++	 */
++	hvdb = map_hvdb(vcpu, &hvdb_map);
++	if (!hvdb)
++		return;
++
++	if (!hvdb->events.pending_events) {
++		/* No pending events, then event_inj field should be 0 */
++		WARN_ON_ONCE(svm->vmcb->control.event_inj);
++		goto out;
++	}
++
++	/* Copy info back into event_inj field (replaces #HV) */
++	svm->vmcb->control.event_inj = SVM_EVTINJ_VALID;
++
++	if (hvdb->events.vector)
++		svm->vmcb->control.event_inj |= hvdb->events.vector |
++						SVM_EVTINJ_TYPE_INTR;
++
++	hvdb->events.pending_events = 0;
++
++out:
++	unmap_hvdb(vcpu, &hvdb_map);
++}
++
++/*
++ * sev_snp_blocked() is for each vector - interrupt, NMI and MCE.  It is
++ * checking if there is an interrupt handled by the guest when
++ * another interrupt is pending. So hvdb->events.vector will be used for
++ * checking while no_further_signal is signaling to the guest that a #HV
++ * is presented by the hypervisor. So no_further_signal is checked when
++ * a #HV needs to be presented to the guest.
++ */
++bool sev_snp_blocked(enum inject_type type, struct kvm_vcpu *vcpu)
++{
++	struct kvm_host_map hvdb_map;
++	struct hvdb *hvdb;
++	bool blocked;
++
++	/* Indicate interrupts are blocked if doorbell page can't be mapped */
++	hvdb = map_hvdb(vcpu, &hvdb_map);
++	if (!hvdb)
++		return true;
++
++	/* Indicate interrupts blocked based on guest acknowledgment */
++	blocked = !!hvdb->events.vector;
++
++	unmap_hvdb(vcpu, &hvdb_map);
++
++	return blocked;
++}
+diff --git a/arch/x86/kvm/svm/svm.c b/arch/x86/kvm/svm/svm.c
+index 7981e7583384..7253936c460c 100644
+--- a/arch/x86/kvm/svm/svm.c
++++ b/arch/x86/kvm/svm/svm.c
+@@ -392,6 +392,9 @@ static void svm_inject_exception(struct kvm_vcpu *vcpu)
+ 	    svm_update_soft_interrupt_rip(vcpu, ex->vector))
+ 		return;
  
- out_drop_counter:
-@@ -515,8 +518,6 @@ static void kvm_vcpu_init(struct kvm_vcpu *vcpu, struct kvm *kvm, unsigned id)
- 	vcpu->vcpu_id = id;
- 	kvm_async_pf_vcpu_init(vcpu);
- 
--	kvm_vcpu_set_in_spin_loop(vcpu, false);
--	kvm_vcpu_set_dy_eligible(vcpu, false);
- 	vcpu->last_used_slot = NULL;
- 
- 	vcpu->plane_level = 0;
-@@ -3721,9 +3722,10 @@ void kvm_sigset_deactivate(struct kvm_vcpu *vcpu)
- 
- static void grow_halt_poll_ns(struct kvm_vcpu *vcpu)
- {
-+	struct kvm_vcpu_common *common = vcpu->common;
- 	unsigned int old, val, grow, grow_start;
- 
--	old = val = vcpu->halt_poll_ns;
-+	old = val = common->halt_poll_ns;
- 	grow_start = READ_ONCE(halt_poll_ns_grow_start);
- 	grow = READ_ONCE(halt_poll_ns_grow);
- 	if (!grow)
-@@ -3733,16 +3735,17 @@ static void grow_halt_poll_ns(struct kvm_vcpu *vcpu)
- 	if (val < grow_start)
- 		val = grow_start;
- 
--	vcpu->halt_poll_ns = val;
-+	common->halt_poll_ns = val;
- out:
- 	trace_kvm_halt_poll_ns_grow(vcpu->vcpu_id, val, old);
- }
- 
- static void shrink_halt_poll_ns(struct kvm_vcpu *vcpu)
- {
-+	struct kvm_vcpu_common *common = vcpu->common;
- 	unsigned int old, val, shrink, grow_start;
- 
--	old = val = vcpu->halt_poll_ns;
-+	old = val = common->halt_poll_ns;
- 	shrink = READ_ONCE(halt_poll_ns_shrink);
- 	grow_start = READ_ONCE(halt_poll_ns_grow_start);
- 	if (shrink == 0)
-@@ -3753,7 +3756,7 @@ static void shrink_halt_poll_ns(struct kvm_vcpu *vcpu)
- 	if (val < grow_start)
- 		val = 0;
- 
--	vcpu->halt_poll_ns = val;
-+	common->halt_poll_ns = val;
- 	trace_kvm_halt_poll_ns_shrink(vcpu->vcpu_id, val, old);
- }
- 
-@@ -3864,19 +3867,20 @@ void kvm_vcpu_halt(struct kvm_vcpu *vcpu)
- {
- 	unsigned int max_halt_poll_ns = kvm_vcpu_max_halt_poll_ns(vcpu);
- 	bool halt_poll_allowed = !kvm_arch_no_poll(vcpu);
-+	struct kvm_vcpu_common *common = vcpu->common;
- 	ktime_t start, cur, poll_end;
- 	bool waited = false;
- 	bool do_halt_poll;
- 	u64 halt_ns;
- 
--	if (vcpu->halt_poll_ns > max_halt_poll_ns)
--		vcpu->halt_poll_ns = max_halt_poll_ns;
-+	if (common->halt_poll_ns > max_halt_poll_ns)
-+		common->halt_poll_ns = max_halt_poll_ns;
- 
--	do_halt_poll = halt_poll_allowed && vcpu->halt_poll_ns;
-+	do_halt_poll = halt_poll_allowed && common->halt_poll_ns;
- 
- 	start = cur = poll_end = ktime_get();
- 	if (do_halt_poll) {
--		ktime_t stop = ktime_add_ns(start, vcpu->halt_poll_ns);
-+		ktime_t stop = ktime_add_ns(start, common->halt_poll_ns);
- 
- 		do {
- 			if (kvm_vcpu_check_block(vcpu) < 0)
-@@ -3914,18 +3918,18 @@ void kvm_vcpu_halt(struct kvm_vcpu *vcpu)
- 		if (!vcpu_valid_wakeup(vcpu)) {
- 			shrink_halt_poll_ns(vcpu);
- 		} else if (max_halt_poll_ns) {
--			if (halt_ns <= vcpu->halt_poll_ns)
-+			if (halt_ns <= common->halt_poll_ns)
- 				;
- 			/* we had a long block, shrink polling */
--			else if (vcpu->halt_poll_ns &&
-+			else if (common->halt_poll_ns &&
- 				 halt_ns > max_halt_poll_ns)
- 				shrink_halt_poll_ns(vcpu);
- 			/* we had a short halt and our poll time is too small */
--			else if (vcpu->halt_poll_ns < max_halt_poll_ns &&
-+			else if (common->halt_poll_ns < max_halt_poll_ns &&
- 				 halt_ns < max_halt_poll_ns)
- 				grow_halt_poll_ns(vcpu);
- 		} else {
--			vcpu->halt_poll_ns = 0;
-+			common->halt_poll_ns = 0;
- 		}
++	if (sev_snp_queue_exception(vcpu))
++		return;
++
+ 	svm->vmcb->control.event_inj = ex->vector
+ 		| SVM_EVTINJ_VALID
+ 		| (ex->has_error_code ? SVM_EVTINJ_VALID_ERR : 0)
+@@ -3818,9 +3821,11 @@ static void svm_inject_irq(struct kvm_vcpu *vcpu, bool reinjected)
  	}
  
-@@ -4046,13 +4050,14 @@ EXPORT_SYMBOL_FOR_KVM_INTERNAL(kvm_vcpu_yield_to);
- static bool kvm_vcpu_eligible_for_directed_yield(struct kvm_vcpu *vcpu)
- {
- #ifdef CONFIG_HAVE_KVM_CPU_RELAX_INTERCEPT
-+	struct kvm_vcpu_common *common = vcpu->common;
- 	bool eligible;
+ 	trace_kvm_inj_virq(intr->nr, intr->soft, reinjected);
+-	++vcpu->stat.irq_injections;
  
--	eligible = !vcpu->spin_loop.in_spin_loop ||
--		    vcpu->spin_loop.dy_eligible;
-+	eligible = !common->spin_loop.in_spin_loop ||
-+		    common->spin_loop.dy_eligible;
+-	svm->vmcb->control.event_inj = intr->nr | SVM_EVTINJ_VALID | type;
++	if (!sev_snp_inject(INJECT_IRQ, vcpu))
++		svm->vmcb->control.event_inj = intr->nr | SVM_EVTINJ_VALID | type;
++
++	++vcpu->stat.irq_injections;
+ }
  
--	if (vcpu->spin_loop.in_spin_loop)
--		kvm_vcpu_set_dy_eligible(vcpu, !vcpu->spin_loop.dy_eligible);
-+	if (common->spin_loop.in_spin_loop)
-+		kvm_vcpu_set_dy_eligible(vcpu, !common->spin_loop.dy_eligible);
+ static void svm_fixup_nested_rips(struct kvm_vcpu *vcpu)
+@@ -3995,6 +4000,9 @@ bool svm_interrupt_blocked(struct kvm_vcpu *vcpu)
+ 	if (!gif_set(svm))
+ 		return true;
  
- 	return eligible;
++	if (sev_snp_is_rinj_active(vcpu))
++		return sev_snp_blocked(INJECT_IRQ, vcpu);
++
+ 	if (is_guest_mode(vcpu)) {
+ 		/* As long as interrupts are being delivered...  */
+ 		if ((svm->nested.ctl.int_ctl & V_INTR_MASKING_MASK)
+@@ -4345,6 +4353,8 @@ static void svm_cancel_injection(struct kvm_vcpu *vcpu)
+ 	struct vcpu_svm *svm = to_svm(vcpu);
+ 	struct vmcb_control_area *control = &svm->vmcb->control;
+ 
++	sev_snp_cancel_injection(vcpu);
++
+ 	control->exit_int_info = control->event_inj;
+ 	control->exit_int_info_err = control->event_inj_err;
+ 	control->event_inj = 0;
+diff --git a/arch/x86/kvm/svm/svm.h b/arch/x86/kvm/svm/svm.h
+index fb956c37c941..a22ad5de03ea 100644
+--- a/arch/x86/kvm/svm/svm.h
++++ b/arch/x86/kvm/svm/svm.h
+@@ -55,6 +55,10 @@ extern int tsc_aux_uret_slot __ro_after_init;
+ 
+ extern struct kvm_x86_ops svm_x86_ops __initdata;
+ 
++enum inject_type {
++	INJECT_IRQ,
++};
++
+ /*
+  * Clean bits in VMCB.
+  * VMCB_ALL_CLEAN_MASK might also need to
+@@ -971,6 +975,17 @@ void sev_gmem_invalidate(kvm_pfn_t start, kvm_pfn_t end);
+ int sev_gmem_max_mapping_level(struct kvm *kvm, kvm_pfn_t pfn, bool is_private);
+ struct vmcb_save_area *sev_decrypt_vmsa(struct kvm_vcpu *vcpu);
+ void sev_free_decrypted_vmsa(struct kvm_vcpu *vcpu, struct vmcb_save_area *vmsa);
++bool sev_snp_queue_exception(struct kvm_vcpu *vcpu);
++bool sev_snp_inject(enum inject_type type, struct kvm_vcpu *vcpu);
++void sev_snp_cancel_injection(struct kvm_vcpu *vcpu);
++bool sev_snp_blocked(enum inject_type type, struct kvm_vcpu *vcpu);
++static inline bool sev_snp_is_rinj_active(struct kvm_vcpu *vcpu)
++{
++	struct kvm_sev_info *sev = &to_kvm_svm(vcpu->kvm)->sev_info;
++
++	return is_sev_snp_guest(vcpu) &&
++		(sev->vmsa_features & SVM_SEV_FEAT_RESTRICTED_INJECTION);
++};
  #else
+ static inline struct page *snp_safe_alloc_page_node(int node, gfp_t gfp)
+ {
+@@ -1008,6 +1023,12 @@ static inline struct vmcb_save_area *sev_decrypt_vmsa(struct kvm_vcpu *vcpu)
+ 	return NULL;
+ }
+ static inline void sev_free_decrypted_vmsa(struct kvm_vcpu *vcpu, struct vmcb_save_area *vmsa) {}
++
++static inline bool sev_snp_queue_exception(struct kvm_vcpu *vcpu) { return false; }
++static inline bool sev_snp_inject(enum inject_type type, struct kvm_vcpu *vcpu) { return false; }
++static inline void sev_snp_cancel_injection(struct kvm_vcpu *vcpu) {}
++static inline bool sev_snp_blocked(enum inject_type type, struct kvm_vcpu *vcpu) { return false; }
++static inline bool sev_snp_is_rinj_active(struct kvm_vcpu *vcpu) { return false; }
+ #endif
+ 
+ /* vmenter.S */
 -- 
 2.53.0
 
