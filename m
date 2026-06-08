@@ -1,34 +1,34 @@
-Return-Path: <linuxppc-dev+bounces-22269-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22268-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BF386CD8C9D
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jun 2026 14:58:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 80F36CD8C92
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jun 2026 14:58:13 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gYw5B0v9Fz3fNd;
-	Tue, 09 Jun 2026 00:53:02 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a01:238:42d9:3f00:e505:6202:4f0c:f051"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780930380;
-	cv=none; b=BS9XY9K6qk29Iv0r/gn4Y36Z6m9HxKrma/ITc7FG5cETiUKwerMTHpHYkNntnUj1vCzAlb+M4IaV8HGBRdOoHynmiENFjzX0bYRdTMOCqhInfIpPC2HQetbn+T/oiLjyJlX6/whIqGHo2g+VS47MDLnBVcbbMjJGUNAQ140M6q4Coj5UcsQ4V4cykoZ56L3xpcrXAQZNOsY+3Htl9iUSyy7k7GVHm3n5nsVxzYHeZmBZtrPzHijfQlbpvpH84q5rz0kAPLWb0Fvc0P27gTW0L7C3t1lG3uvmdHSB69F3Mp4/dFoUGV9mXTjEjYAkOn/9lgx64fmF3zbpG1lcVG9rHw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gYw594j7hz3fMm;
+	Tue, 09 Jun 2026 00:53:01 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=85.214.250.239
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780930381;
+	cv=none; b=aWUKH9LgdSdTfGz4Onwmg4oXvER7DFKS53IR9JCbvbA6AxsHVL4iLZXoXEeZE5sDzIg1N08IfcY6Ho/o4RPjIN8gyvQnt8EfnWFr3CJufnPHu34meo0EDtsiix0ALSGb0sko83we3VjMRp34KeQvcpji5h0vJtP4m/fj3o4KyRpfu9lufvBtcXak26wnYaPxHvTh699FwcaFw5HSBbZacxJyogGbbGQ27dTMOIt0B0Akcu7F/ALtt9sNxnnguLL1Z3FBw8N5kBLuCysBxCDUT/y1T0KngXR8BAnlJgj0XKv3raBfjgUCysii6mdmttt8VYqt65SlCITdA4wmVkGElQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1780930380; c=relaxed/relaxed;
-	bh=IQVvPGHJGdKrENP/iTp5FAPDw3c3hMze2t29/y8qAkQ=;
+	t=1780930381; c=relaxed/relaxed;
+	bh=e9HuO56Ih0GiZjQIv1KoGyUvXWBxNwDCasQo8Rno9zw=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=hpkGhNXGeK3LQ1iGPg1osUMcExBBG0zMMK1mwnX4AoecBVi6TFFF/LGqD6k8JSA8ClghpglkcgmQvpSTqUMAqURNv58fvGWc1eiGP7TWo6rtGUnj1rMBi+VQEbo8w5gGLVo+ZtmeBZfQoFgjXyf8dMY59A9OcMWUG1DKzT2HhceA3S1UcrDqjbutkdne8Ct4ABT7FB8cevKKQHGDTkJAVwLWRGOHBG6uxZlnLGuMyGyCDLaSM8EfQRhhqmLroBmfG1vbIqadIKXt7o2m6XoHIYwH3kuvbSHRX830bNsjcegrGkHLNkfCrWnIhom4MkpCHyqeMTSJQx8BXhPultwXJg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=8bytes.org; spf=pass (client-ip=2a01:238:42d9:3f00:e505:6202:4f0c:f051; helo=mail.8bytes.org; envelope-from=joro@8bytes.org; receiver=lists.ozlabs.org) smtp.mailfrom=8bytes.org
+	 MIME-Version; b=AFta7ExLYJHTJhBJQpaSb5GXK+XJofxCplgTlktqVqwoQCK97HzVuZEvIcAwY4u88gnhhndoABfM0QHJtR5Shv3vCr2eWEM8x7EgM6snwJU3Xd1H4JzkuxdPYFcTm8wKw2uW4v/TR/2KLvdaEIXZjFYp/MiaglXfofo95jkT3YLJLOiFJPEEpEXgp6OJ3Z1VRLXzrNPKWB5oDrrrN0XBzhG3usN8PocpN/MUTK+ws4s2Xm9/wP++8tkL2VjUcz2Gdd1xBp+59dBQL4o1QGErq+oztnAL+hAKNSR3/0Jftu88PJWJmZ4tE4pXs8rciEu9ET5+U8ErsWwGj1JX4gqBFQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=8bytes.org; spf=pass (client-ip=85.214.250.239; helo=mail.8bytes.org; envelope-from=joro@8bytes.org; receiver=lists.ozlabs.org) smtp.mailfrom=8bytes.org
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=8bytes.org
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=8bytes.org (client-ip=2a01:238:42d9:3f00:e505:6202:4f0c:f051; helo=mail.8bytes.org; envelope-from=joro@8bytes.org; receiver=lists.ozlabs.org)
-Received: from mail.8bytes.org (mail.8bytes.org [IPv6:2a01:238:42d9:3f00:e505:6202:4f0c:f051])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gYw4s4VfVz3dh2
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=8bytes.org (client-ip=85.214.250.239; helo=mail.8bytes.org; envelope-from=joro@8bytes.org; receiver=lists.ozlabs.org)
+Received: from mail.8bytes.org (mail.8bytes.org [85.214.250.239])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gYw4s52Cyz3dhY
 	for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Jun 2026 00:52:45 +1000 (AEST)
 Received: from io.home.8bytes.org (p4ffe1d30.dip0.t-ipconnect.de [79.254.29.48])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.8bytes.org (Postfix) with ESMTPSA id D1CDA2028B0;
-	Mon,  8 Jun 2026 16:43:07 +0200 (CEST)
+	by mail.8bytes.org (Postfix) with ESMTPSA id DAF792028CC;
+	Mon,  8 Jun 2026 16:43:13 +0200 (CEST)
 From: =?UTF-8?q?J=C3=B6rg=20R=C3=B6del?= <joro@8bytes.org>
 To: Paolo Bonzini <pbonzini@redhat.com>,
 	Sean Christopherson <seanjc@google.com>
@@ -49,9 +49,9 @@ Cc: Tom Lendacky <thomas.lendacky@amd.com>,
 	x86@kernel.org,
 	coconut-svsm@lists.linux.dev,
 	joerg.roedel@amd.com
-Subject: [PATCH 13/60] kvm: Add read accessors for kvm_vcpu scheduling state
-Date: Mon,  8 Jun 2026 16:42:05 +0200
-Message-ID: <20260608144252.351443-14-joro@8bytes.org>
+Subject: [PATCH 41/60] kvm: x86: Make apic_map per plane
+Date: Mon,  8 Jun 2026 16:42:33 +0200
+Message-ID: <20260608144252.351443-42-joro@8bytes.org>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20260608144252.351443-1-joro@8bytes.org>
 References: <20260608144252.351443-1-joro@8bytes.org>
@@ -70,303 +70,381 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-From: Joerg Roedel <joerg.roedel@amd.com>
+From: Paolo Bonzini <pbonzini@redhat.com>
 
-Introduce accessor functions for the scheduling state in struct
-kvm_vcpu to make it easier to move these fields to struct
-kvm_vcpu_common.
-
+Signed-off-by: Paolo Bonzini <pbonzini@redhat.com>
+Co-developed-by: Joerg Roedel <joerg.roedel@amd.com>
 Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
 ---
- arch/arm64/kvm/arm.c           |  2 +-
- arch/arm64/kvm/nested.c        |  2 +-
- arch/loongarch/kvm/vcpu.c      |  5 +++--
- arch/mips/kvm/mips.c           |  2 +-
- arch/powerpc/kvm/powerpc.c     |  2 +-
- arch/riscv/kvm/vcpu.c          |  2 +-
- arch/s390/kvm/kvm-s390.c       |  2 +-
- arch/x86/kvm/svm/svm.c         |  2 +-
- arch/x86/kvm/vmx/posted_intr.c |  2 +-
- arch/x86/kvm/vmx/vmx.c         |  2 +-
- arch/x86/kvm/x86.c             | 12 ++++++------
- arch/x86/kvm/xen.h             |  2 +-
- include/linux/kvm_host.h       | 20 ++++++++++++++++++++
- virt/kvm/kvm_main.c            |  6 +++---
- 14 files changed, 42 insertions(+), 21 deletions(-)
+ arch/x86/include/asm/kvm_host.h | 24 +++++------
+ arch/x86/kvm/i8254.c            |  2 +-
+ arch/x86/kvm/lapic.c            | 71 +++++++++++++++++----------------
+ arch/x86/kvm/x86.c              | 18 +++++++--
+ 4 files changed, 61 insertions(+), 54 deletions(-)
 
-diff --git a/arch/arm64/kvm/arm.c b/arch/arm64/kvm/arm.c
-index 9453321ef8c6..de00088c9a80 100644
---- a/arch/arm64/kvm/arm.c
-+++ b/arch/arm64/kvm/arm.c
-@@ -1253,7 +1253,7 @@ int kvm_arch_vcpu_ioctl_run(struct kvm_vcpu *vcpu)
- 
- 	vcpu_load(vcpu);
- 
--	if (!vcpu->wants_to_run) {
-+	if (!kvm_vcpu_wants_to_run(vcpu)) {
- 		ret = -EINTR;
- 		goto out;
- 	}
-diff --git a/arch/arm64/kvm/nested.c b/arch/arm64/kvm/nested.c
-index 6f7bc9a9992e..b84b1edb02d8 100644
---- a/arch/arm64/kvm/nested.c
-+++ b/arch/arm64/kvm/nested.c
-@@ -822,7 +822,7 @@ void kvm_vcpu_put_hw_mmu(struct kvm_vcpu *vcpu)
- 	 * scheduling out and not in WFI emulation, suggesting it is likely to
- 	 * reuse the MMU sometime soon.
- 	 */
--	if (vcpu->scheduled_out && !vcpu_get_flag(vcpu, IN_WFI))
-+	if (kvm_vcpu_scheduled_out(vcpu) && !vcpu_get_flag(vcpu, IN_WFI))
- 		return;
- 
- 	if (kvm_is_nested_s2_mmu(vcpu->kvm, vcpu->arch.hw_mmu))
-diff --git a/arch/loongarch/kvm/vcpu.c b/arch/loongarch/kvm/vcpu.c
-index e28084c49e68..bde8b68b8273 100644
---- a/arch/loongarch/kvm/vcpu.c
-+++ b/arch/loongarch/kvm/vcpu.c
-@@ -1847,7 +1847,8 @@ void kvm_arch_vcpu_put(struct kvm_vcpu *vcpu)
- 	int cpu, idx;
- 	unsigned long flags;
- 
--	if (vcpu->preempted && kvm_guest_has_pv_feature(vcpu, KVM_FEATURE_PREEMPT)) {
-+	if (kvm_vcpu_preempted(vcpu) &&
-+	    kvm_guest_has_pv_feature(vcpu, KVM_FEATURE_PREEMPT)) {
- 		/*
- 		 * Take the srcu lock as memslots will be accessed to check
- 		 * the gfn cache generation against the memslots generation.
-@@ -1887,7 +1888,7 @@ int kvm_arch_vcpu_ioctl_run(struct kvm_vcpu *vcpu)
- 		break;
- 	}
- 
--	if (!vcpu->wants_to_run)
-+	if (!kvm_vcpu_wants_to_run(vcpu))
- 		return r;
- 
- 	/* Clear exit_reason */
-diff --git a/arch/mips/kvm/mips.c b/arch/mips/kvm/mips.c
-index a53abbba43ea..f928ba105104 100644
---- a/arch/mips/kvm/mips.c
-+++ b/arch/mips/kvm/mips.c
-@@ -433,7 +433,7 @@ int kvm_arch_vcpu_ioctl_run(struct kvm_vcpu *vcpu)
- 		vcpu->mmio_needed = 0;
- 	}
- 
--	if (!vcpu->wants_to_run)
-+	if (!kvm_vcpu_wants_to_run(vcpu))
- 		goto out;
- 
- 	lose_fpu(1);
-diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
-index 00302399fc37..800867c164c6 100644
---- a/arch/powerpc/kvm/powerpc.c
-+++ b/arch/powerpc/kvm/powerpc.c
-@@ -1840,7 +1840,7 @@ int kvm_arch_vcpu_ioctl_run(struct kvm_vcpu *vcpu)
- 
- 	kvm_sigset_activate(vcpu);
- 
--	if (!vcpu->wants_to_run)
-+	if (!kvm_vcpu_wants_to_run(vcpu))
- 		r = -EINTR;
- 	else
- 		r = kvmppc_vcpu_run(vcpu);
-diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
-index a73690eda84b..8519a5bfbdc4 100644
---- a/arch/riscv/kvm/vcpu.c
-+++ b/arch/riscv/kvm/vcpu.c
-@@ -862,7 +862,7 @@ int kvm_arch_vcpu_ioctl_run(struct kvm_vcpu *vcpu)
- 		return ret;
- 	}
- 
--	if (!vcpu->wants_to_run) {
-+	if (!kvm_vcpu_wants_to_run(vcpu)) {
- 		kvm_vcpu_srcu_read_unlock(vcpu);
- 		return -EINTR;
- 	}
-diff --git a/arch/s390/kvm/kvm-s390.c b/arch/s390/kvm/kvm-s390.c
-index ffb20a64d328..8401bcad1f37 100644
---- a/arch/s390/kvm/kvm-s390.c
-+++ b/arch/s390/kvm/kvm-s390.c
-@@ -4954,7 +4954,7 @@ int kvm_arch_vcpu_ioctl_run(struct kvm_vcpu *vcpu)
- 	if (vcpu->kvm->arch.pv.dumping)
- 		return -EINVAL;
- 
--	if (!vcpu->wants_to_run)
-+	if (!kvm_vcpu_wants_to_run(vcpu))
- 		return -EINTR;
- 
- 	if (kvm_run->kvm_valid_regs & ~KVM_SYNC_S390_VALID_FIELDS ||
-diff --git a/arch/x86/kvm/svm/svm.c b/arch/x86/kvm/svm/svm.c
-index 295e02c17b9b..1524c1bb4f37 100644
---- a/arch/x86/kvm/svm/svm.c
-+++ b/arch/x86/kvm/svm/svm.c
-@@ -1475,7 +1475,7 @@ static void svm_prepare_host_switch(struct kvm_vcpu *vcpu)
- 
- static void svm_vcpu_load(struct kvm_vcpu *vcpu, int cpu)
- {
--	if (vcpu->scheduled_out && !kvm_pause_in_guest(vcpu->kvm))
-+	if (kvm_vcpu_scheduled_out(vcpu) && !kvm_pause_in_guest(vcpu->kvm))
- 		shrink_ple_window(vcpu);
- 
- 	if (kvm_vcpu_apicv_active(vcpu))
-diff --git a/arch/x86/kvm/vmx/posted_intr.c b/arch/x86/kvm/vmx/posted_intr.c
-index 4a6d9a17da23..cba1e6346fc5 100644
---- a/arch/x86/kvm/vmx/posted_intr.c
-+++ b/arch/x86/kvm/vmx/posted_intr.c
-@@ -239,7 +239,7 @@ void vmx_vcpu_pi_put(struct kvm_vcpu *vcpu)
- 	 * the cost of propagating PIR.IRR to PID.ON is negligible compared to
- 	 * the cost of a spurious IRQ, and vCPU put/load is a slow path.
- 	 */
--	if (!vcpu->preempted && kvm_vcpu_is_blocking(vcpu) &&
-+	if (!kvm_vcpu_preempted(vcpu) && kvm_vcpu_is_blocking(vcpu) &&
- 	    ((is_td_vcpu(vcpu) && tdx_interrupt_allowed(vcpu)) ||
- 	     (!is_td_vcpu(vcpu) && !vmx_interrupt_blocked(vcpu))))
- 		pi_enable_wakeup_handler(vcpu);
-diff --git a/arch/x86/kvm/vmx/vmx.c b/arch/x86/kvm/vmx/vmx.c
-index a82a4197d18a..20262855bfe8 100644
---- a/arch/x86/kvm/vmx/vmx.c
-+++ b/arch/x86/kvm/vmx/vmx.c
-@@ -1552,7 +1552,7 @@ void vmx_vcpu_load_vmcs(struct kvm_vcpu *vcpu, int cpu)
-  */
- void vmx_vcpu_load(struct kvm_vcpu *vcpu, int cpu)
- {
--	if (vcpu->scheduled_out && !kvm_pause_in_guest(vcpu->kvm))
-+	if (kvm_vcpu_scheduled_out(vcpu) && !kvm_pause_in_guest(vcpu->kvm))
- 		shrink_ple_window(vcpu);
- 
- 	vmx_vcpu_load_vmcs(vcpu, cpu);
-diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index 4b6b628efa21..6355fe7f546f 100644
---- a/arch/x86/kvm/x86.c
-+++ b/arch/x86/kvm/x86.c
-@@ -5168,7 +5168,7 @@ void kvm_arch_vcpu_load(struct kvm_vcpu *vcpu, int cpu)
- 
- 	kvm_request_l1tf_flush_l1d();
- 
--	if (vcpu->scheduled_out && pmu->version && pmu->event_count) {
-+	if (kvm_vcpu_scheduled_out(vcpu) && pmu->version && pmu->event_count) {
- 		pmu->need_cleanup = true;
- 		kvm_make_request(KVM_REQ_PMU, vcpu);
- 	}
-@@ -5293,7 +5293,7 @@ void kvm_arch_vcpu_put(struct kvm_vcpu *vcpu)
- {
- 	int idx;
- 
--	if (vcpu->preempted) {
-+	if (kvm_vcpu_preempted(vcpu)) {
- 		/*
- 		 * Assume protected guests are in-kernel.  Inefficient yielding
- 		 * due to false positives is preferable to never yielding due
-@@ -10404,7 +10404,7 @@ static void kvm_sched_yield(struct kvm_vcpu *vcpu, unsigned long dest_id)
- 
- 	rcu_read_unlock();
- 
--	if (!target || !READ_ONCE(target->ready))
-+	if (!target || !kvm_vcpu_ready(target))
- 		goto no_yield;
- 
- 	/* Ignore requests to yield to self */
-@@ -12041,7 +12041,7 @@ int kvm_arch_vcpu_ioctl_run(struct kvm_vcpu *vcpu)
- 
- 	kvm_vcpu_srcu_read_lock(vcpu);
- 	if (unlikely(vcpu->arch.mp_state == KVM_MP_STATE_UNINITIALIZED)) {
--		if (!vcpu->wants_to_run) {
-+		if (!kvm_vcpu_wants_to_run(vcpu)) {
- 			r = -EINTR;
- 			goto out;
- 		}
-@@ -12120,7 +12120,7 @@ int kvm_arch_vcpu_ioctl_run(struct kvm_vcpu *vcpu)
- 		WARN_ON_ONCE(vcpu->mmio_needed);
- 	}
- 
--	if (!vcpu->wants_to_run) {
-+	if (!kvm_vcpu_wants_to_run(vcpu)) {
- 		r = -EINTR;
- 		goto out;
- 	}
-@@ -13021,7 +13021,7 @@ static void kvm_xstate_reset(struct kvm_vcpu *vcpu, bool init_event)
- 	 * only path that can trigger INIT emulation _and_ loads FPU state, and
- 	 * KVM_RUN should _always_ load FPU state.
- 	 */
--	WARN_ON_ONCE(vcpu->wants_to_run != fpstate->in_use);
-+	WARN_ON_ONCE(kvm_vcpu_wants_to_run(vcpu) != fpstate->in_use);
- 	fpu_in_use = fpstate->in_use;
- 	if (fpu_in_use)
- 		kvm_put_guest_fpu(vcpu);
-diff --git a/arch/x86/kvm/xen.h b/arch/x86/kvm/xen.h
-index 59e6128a7bd3..78793c1ac913 100644
---- a/arch/x86/kvm/xen.h
-+++ b/arch/x86/kvm/xen.h
-@@ -206,7 +206,7 @@ static inline void kvm_xen_runstate_set_preempted(struct kvm_vcpu *vcpu)
- 	 * behalf of the vCPU. Only if the VMM does actually block
- 	 * does it need to enter RUNSTATE_blocked.
- 	 */
--	if (WARN_ON_ONCE(!vcpu->preempted))
-+	if (WARN_ON_ONCE(!kvm_vcpu_preempted(vcpu)))
- 		return;
- 
- 	kvm_xen_update_runstate(vcpu, RUNSTATE_runnable);
-diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
-index 47144a83f9c5..b334c15d834e 100644
---- a/include/linux/kvm_host.h
-+++ b/include/linux/kvm_host.h
-@@ -414,6 +414,26 @@ struct kvm_vcpu {
- 	unsigned plane_level;
+diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
+index 134bc02962fd..11e52f8bb2c2 100644
+--- a/arch/x86/include/asm/kvm_host.h
++++ b/arch/x86/include/asm/kvm_host.h
+@@ -1418,16 +1418,17 @@ enum kvm_mmu_type {
  };
  
-+static inline bool kvm_vcpu_wants_to_run(struct kvm_vcpu *vcpu)
-+{
-+	return vcpu->wants_to_run;
-+}
-+
-+static inline bool kvm_vcpu_preempted(struct kvm_vcpu *vcpu)
-+{
-+	return READ_ONCE(vcpu->preempted);
-+}
-+
-+static inline bool kvm_vcpu_ready(struct kvm_vcpu *vcpu)
-+{
-+	return READ_ONCE(vcpu->ready);
-+}
-+
-+static inline bool kvm_vcpu_scheduled_out(struct kvm_vcpu *vcpu)
-+{
-+	return vcpu->scheduled_out;
-+}
-+
- /*
-  * Start accounting time towards a guest.
-  * Must be called before entering guest context.
-diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-index 14e74cdc4709..2c16e124a507 100644
---- a/virt/kvm/kvm_main.c
-+++ b/virt/kvm/kvm_main.c
-@@ -4132,7 +4132,7 @@ void kvm_vcpu_on_spin(struct kvm_vcpu *me, bool yield_to_kernel_mode)
- 			continue;
+ /* Per-plane state of VM */
+-struct kvm_arch_plane {};
++struct kvm_arch_plane {
++	atomic_t vapics_in_nmi_mode;
  
- 		vcpu = xa_load(&kvm->planes[0]->vcpu_array, idx);
--		if (!READ_ONCE(vcpu->ready))
-+		if (!kvm_vcpu_ready(vcpu))
- 			continue;
- 		if (kvm_vcpu_is_blocking(vcpu) && !vcpu_dy_runnable(vcpu))
- 			continue;
-@@ -4143,7 +4143,7 @@ void kvm_vcpu_on_spin(struct kvm_vcpu *me, bool yield_to_kernel_mode)
- 		 * waiting on IPI delivery, i.e. the target vCPU is in-kernel
- 		 * for the purposes of directed yield.
- 		 */
--		if (READ_ONCE(vcpu->preempted) && yield_to_kernel_mode &&
-+		if (kvm_vcpu_preempted(vcpu) && yield_to_kernel_mode &&
- 		    !kvm_arch_dy_has_pending_interrupt(vcpu) &&
- 		    !kvm_arch_vcpu_preempted_in_kernel(vcpu))
- 			continue;
-@@ -6513,7 +6513,7 @@ static void kvm_sched_out(struct preempt_notifier *pn,
+-static inline int kvm_arch_plane_init(struct kvm *kvm,
+-				      struct kvm_plane *plane,
+-				      unsigned plane_level)
+-{
+-	return 0;
+-}
++	struct mutex apic_map_lock;
++	struct kvm_apic_map __rcu *apic_map;
++	atomic_t apic_map_dirty;
++};
  
- 	WRITE_ONCE(vcpu->scheduled_out, true);
+-static inline void kvm_arch_plane_destroy(struct kvm_plane *plane) {}
++int kvm_arch_plane_init(struct kvm *kvm, struct kvm_plane *plane,
++			unsigned plane_level);
++void kvm_arch_plane_destroy(struct kvm_plane *plane);
  
--	if (task_is_runnable(current) && vcpu->wants_to_run) {
-+	if (task_is_runnable(current) && kvm_vcpu_wants_to_run(vcpu)) {
- 		WRITE_ONCE(vcpu->preempted, true);
- 		WRITE_ONCE(vcpu->ready, true);
+ struct kvm_arch {
+ 	unsigned long n_used_mmu_pages;
+@@ -1465,11 +1466,6 @@ struct kvm_arch {
+ 	struct kvm_ioapic *vioapic;
+ 	struct kvm_pit *vpit;
+ #endif
+-	atomic_t vapics_in_nmi_mode;
+-
+-	struct mutex apic_map_lock;
+-	struct kvm_apic_map __rcu *apic_map;
+-	atomic_t apic_map_dirty;
+ 
+ 	bool apic_access_memslot_enabled;
+ 	bool apic_access_memslot_inhibited;
+@@ -2458,7 +2454,7 @@ int kvm_cpu_get_extint(struct kvm_vcpu *v);
+ int kvm_cpu_get_interrupt(struct kvm_vcpu *v);
+ void kvm_vcpu_reset(struct kvm_vcpu *vcpu, bool init_event);
+ 
+-int kvm_pv_send_ipi(struct kvm *kvm, unsigned long ipi_bitmap_low,
++int kvm_pv_send_ipi(struct kvm_vcpu *kvm_vcpu, unsigned long ipi_bitmap_low,
+ 		    unsigned long ipi_bitmap_high, u32 min,
+ 		    unsigned long icr, int op_64_bit);
+ 
+diff --git a/arch/x86/kvm/i8254.c b/arch/x86/kvm/i8254.c
+index 1982b0077ddd..bfe590378bd2 100644
+--- a/arch/x86/kvm/i8254.c
++++ b/arch/x86/kvm/i8254.c
+@@ -260,7 +260,7 @@ static void pit_do_work(struct kthread_work *work)
+ 	 * VCPUs and only when LVT0 is in NMI mode.  The interrupt can
+ 	 * also be simultaneously delivered through PIC and IOAPIC.
+ 	 */
+-	if (atomic_read(&kvm->arch.vapics_in_nmi_mode) > 0)
++	if (atomic_read(&kvm->planes[0]->arch.vapics_in_nmi_mode) > 0)
+ 		kvm_for_each_vcpu(i, vcpu, kvm)
+ 			kvm_apic_nmi_wd_deliver(vcpu);
+ }
+diff --git a/arch/x86/kvm/lapic.c b/arch/x86/kvm/lapic.c
+index 1b763f164951..06a12b49fafa 100644
+--- a/arch/x86/kvm/lapic.c
++++ b/arch/x86/kvm/lapic.c
+@@ -403,36 +403,37 @@ enum {
+ 	DIRTY
+ };
+ 
+-static void kvm_recalculate_apic_map(struct kvm *kvm)
++static void kvm_recalculate_apic_map(struct kvm_plane *plane)
+ {
+ 	struct kvm_apic_map *new, *old = NULL;
++	struct kvm *kvm = plane->kvm;
+ 	struct kvm_vcpu *vcpu;
+ 	unsigned long i;
+ 	u32 max_id = 255; /* enough space for any xAPIC ID */
+ 	bool xapic_id_mismatch;
+ 	int r;
+ 
+-	/* Read kvm->arch.apic_map_dirty before kvm->arch.apic_map.  */
+-	if (atomic_read_acquire(&kvm->arch.apic_map_dirty) == CLEAN)
++	/* Read plane->arch.apic_map_dirty before plane->arch.apic_map.  */
++	if (atomic_read_acquire(&plane->arch.apic_map_dirty) == CLEAN)
+ 		return;
+ 
+-	WARN_ONCE(!irqchip_in_kernel(kvm),
++	WARN_ONCE(!irqchip_in_kernel(plane->kvm),
+ 		  "Dirty APIC map without an in-kernel local APIC");
+ 
+-	mutex_lock(&kvm->arch.apic_map_lock);
++	mutex_lock(&plane->arch.apic_map_lock);
+ 
+ retry:
+ 	/*
+-	 * Read kvm->arch.apic_map_dirty before kvm->arch.apic_map (if clean)
++	 * Read plane->arch.apic_map_dirty before plane->arch.apic_map (if clean)
+ 	 * or the APIC registers (if dirty).  Note, on retry the map may have
+ 	 * not yet been marked dirty by whatever task changed a vCPU's x2APIC
+ 	 * ID, i.e. the map may still show up as in-progress.  In that case
+ 	 * this task still needs to retry and complete its calculation.
+ 	 */
+-	if (atomic_cmpxchg_acquire(&kvm->arch.apic_map_dirty,
++	if (atomic_cmpxchg_acquire(&plane->arch.apic_map_dirty,
+ 				   DIRTY, UPDATE_IN_PROGRESS) == CLEAN) {
+ 		/* Someone else has updated the map. */
+-		mutex_unlock(&kvm->arch.apic_map_lock);
++		mutex_unlock(&plane->arch.apic_map_lock);
+ 		return;
  	}
+ 
+@@ -445,7 +446,7 @@ static void kvm_recalculate_apic_map(struct kvm *kvm)
+ 	 */
+ 	xapic_id_mismatch = false;
+ 
+-	kvm_for_each_vcpu(i, vcpu, kvm)
++	plane_for_each_vcpu(i, vcpu, plane)
+ 		if (kvm_apic_present(vcpu))
+ 			max_id = max(max_id, kvm_x2apic_id(vcpu->arch.apic));
+ 
+@@ -459,7 +460,7 @@ static void kvm_recalculate_apic_map(struct kvm *kvm)
+ 	new->max_apic_id = max_id;
+ 	new->logical_mode = KVM_APIC_MODE_SW_DISABLED;
+ 
+-	kvm_for_each_vcpu(i, vcpu, kvm) {
++	plane_for_each_vcpu(i, vcpu, plane) {
+ 		if (!kvm_apic_present(vcpu))
+ 			continue;
+ 
+@@ -498,16 +499,16 @@ static void kvm_recalculate_apic_map(struct kvm *kvm)
+ 	else
+ 		kvm_clear_apicv_inhibit(kvm, APICV_INHIBIT_REASON_APIC_ID_MODIFIED);
+ 
+-	old = rcu_dereference_protected(kvm->arch.apic_map,
+-			lockdep_is_held(&kvm->arch.apic_map_lock));
+-	rcu_assign_pointer(kvm->arch.apic_map, new);
++	old = rcu_dereference_protected(plane->arch.apic_map,
++			lockdep_is_held(&plane->arch.apic_map_lock));
++	rcu_assign_pointer(plane->arch.apic_map, new);
+ 	/*
+-	 * Write kvm->arch.apic_map before clearing apic->apic_map_dirty.
++	 * Write kvm->arch.apic_map before clearing plane->apic_map_dirty.
+ 	 * If another update has come in, leave it DIRTY.
+ 	 */
+-	atomic_cmpxchg_release(&kvm->arch.apic_map_dirty,
++	atomic_cmpxchg_release(&plane->arch.apic_map_dirty,
+ 			       UPDATE_IN_PROGRESS, CLEAN);
+-	mutex_unlock(&kvm->arch.apic_map_lock);
++	mutex_unlock(&plane->arch.apic_map_lock);
+ 
+ 	if (old)
+ 		kvfree_rcu(old, rcu);
+@@ -528,7 +529,7 @@ static inline void apic_set_spiv(struct kvm_lapic *apic, u32 val)
+ 		else
+ 			static_branch_inc(&apic_sw_disabled.key);
+ 
+-		atomic_set_release(&apic->vcpu->kvm->arch.apic_map_dirty, DIRTY);
++		atomic_set_release(&apic->vcpu->plane->arch.apic_map_dirty, DIRTY);
+ 	}
+ 
+ 	/* Check if there are APF page ready requests pending */
+@@ -541,19 +542,19 @@ static inline void apic_set_spiv(struct kvm_lapic *apic, u32 val)
+ static inline void kvm_apic_set_xapic_id(struct kvm_lapic *apic, u8 id)
+ {
+ 	kvm_lapic_set_reg(apic, APIC_ID, id << 24);
+-	atomic_set_release(&apic->vcpu->kvm->arch.apic_map_dirty, DIRTY);
++	atomic_set_release(&apic->vcpu->plane->arch.apic_map_dirty, DIRTY);
+ }
+ 
+ static inline void kvm_apic_set_ldr(struct kvm_lapic *apic, u32 id)
+ {
+ 	kvm_lapic_set_reg(apic, APIC_LDR, id);
+-	atomic_set_release(&apic->vcpu->kvm->arch.apic_map_dirty, DIRTY);
++	atomic_set_release(&apic->vcpu->plane->arch.apic_map_dirty, DIRTY);
+ }
+ 
+ static inline void kvm_apic_set_dfr(struct kvm_lapic *apic, u32 val)
+ {
+ 	kvm_lapic_set_reg(apic, APIC_DFR, val);
+-	atomic_set_release(&apic->vcpu->kvm->arch.apic_map_dirty, DIRTY);
++	atomic_set_release(&apic->vcpu->plane->arch.apic_map_dirty, DIRTY);
+ }
+ 
+ static inline void kvm_apic_set_x2apic_id(struct kvm_lapic *apic, u32 id)
+@@ -564,7 +565,7 @@ static inline void kvm_apic_set_x2apic_id(struct kvm_lapic *apic, u32 id)
+ 
+ 	kvm_lapic_set_reg(apic, APIC_ID, id);
+ 	kvm_lapic_set_reg(apic, APIC_LDR, ldr);
+-	atomic_set_release(&apic->vcpu->kvm->arch.apic_map_dirty, DIRTY);
++	atomic_set_release(&apic->vcpu->plane->arch.apic_map_dirty, DIRTY);
+ }
+ 
+ static inline int apic_lvt_enabled(struct kvm_lapic *apic, int lvt_type)
+@@ -860,7 +861,7 @@ static int __pv_send_ipi(unsigned long *ipi_bitmap, struct kvm_apic_map *map,
+ 	return count;
+ }
+ 
+-int kvm_pv_send_ipi(struct kvm *kvm, unsigned long ipi_bitmap_low,
++int kvm_pv_send_ipi(struct kvm_vcpu *vcpu, unsigned long ipi_bitmap_low,
+ 		    unsigned long ipi_bitmap_high, u32 min,
+ 		    unsigned long icr, int op_64_bit)
+ {
+@@ -878,7 +879,7 @@ int kvm_pv_send_ipi(struct kvm *kvm, unsigned long ipi_bitmap_low,
+ 	irq.trig_mode = icr & APIC_INT_LEVELTRIG;
+ 
+ 	rcu_read_lock();
+-	map = rcu_dereference(kvm->arch.apic_map);
++	map = rcu_dereference(vcpu->plane->arch.apic_map);
+ 
+ 	count = -EOPNOTSUPP;
+ 	if (likely(map)) {
+@@ -1240,7 +1241,7 @@ static bool __kvm_irq_delivery_to_apic_fast(struct kvm *kvm, struct kvm_lapic *s
+ 	}
+ 
+ 	rcu_read_lock();
+-	map = rcu_dereference(kvm->arch.apic_map);
++	map = rcu_dereference(kvm->planes[0]->arch.apic_map);
+ 
+ 	ret = kvm_apic_map_get_dest_lapic(kvm, &src, irq, map, &dst, &bitmap);
+ 	if (ret) {
+@@ -1290,7 +1291,7 @@ static bool kvm_intr_is_single_vcpu_fast(struct kvm *kvm,
+ 		return false;
+ 
+ 	rcu_read_lock();
+-	map = rcu_dereference(kvm->arch.apic_map);
++	map = rcu_dereference(kvm->planes[0]->arch.apic_map);
+ 
+ 	if (kvm_apic_map_get_dest_lapic(kvm, NULL, irq, map, &dst, &bitmap) &&
+ 			hweight16(bitmap) == 1) {
+@@ -1511,7 +1512,7 @@ void kvm_bitmap_or_dest_vcpus(struct kvm *kvm, struct kvm_lapic_irq *irq,
+ 	bool ret;
+ 
+ 	rcu_read_lock();
+-	map = rcu_dereference(kvm->arch.apic_map);
++	map = rcu_dereference(kvm->planes[0]->arch.apic_map);
+ 
+ 	ret = kvm_apic_map_get_dest_lapic(kvm, &src, irq, map, &dest_vcpu,
+ 					  &bitmap);
+@@ -2389,9 +2390,9 @@ static void apic_manage_nmi_watchdog(struct kvm_lapic *apic, u32 lvt0_val)
+ 	if (apic->lvt0_in_nmi_mode != lvt0_in_nmi_mode) {
+ 		apic->lvt0_in_nmi_mode = lvt0_in_nmi_mode;
+ 		if (lvt0_in_nmi_mode) {
+-			atomic_inc(&apic->vcpu->kvm->arch.vapics_in_nmi_mode);
++			atomic_inc(&apic->vcpu->plane->arch.vapics_in_nmi_mode);
+ 		} else
+-			atomic_dec(&apic->vcpu->kvm->arch.vapics_in_nmi_mode);
++			atomic_dec(&apic->vcpu->plane->arch.vapics_in_nmi_mode);
+ 	}
+ }
+ 
+@@ -2551,7 +2552,7 @@ static int kvm_lapic_reg_write(struct kvm_lapic *apic, u32 reg, u32 val)
+ 	 * was toggled, the APIC ID changed, etc...   The maps are marked dirty
+ 	 * on relevant changes, i.e. this is a nop for most writes.
+ 	 */
+-	kvm_recalculate_apic_map(apic->vcpu->kvm);
++	kvm_recalculate_apic_map(apic->vcpu->plane);
+ 
+ 	return ret;
+ }
+@@ -2767,7 +2768,7 @@ static void __kvm_apic_set_base(struct kvm_vcpu *vcpu, u64 value)
+ 			kvm_make_request(KVM_REQ_APF_READY, vcpu);
+ 		} else {
+ 			static_branch_inc(&apic_hw_disabled.key);
+-			atomic_set_release(&apic->vcpu->kvm->arch.apic_map_dirty, DIRTY);
++			atomic_set_release(&apic->vcpu->plane->arch.apic_map_dirty, DIRTY);
+ 		}
+ 	}
+ 
+@@ -2814,7 +2815,7 @@ int kvm_apic_set_base(struct kvm_vcpu *vcpu, u64 value, bool host_initiated)
+ 	}
+ 
+ 	__kvm_apic_set_base(vcpu, value);
+-	kvm_recalculate_apic_map(vcpu->kvm);
++	kvm_recalculate_apic_map(vcpu->plane);
+ 	return 0;
+ }
+ EXPORT_SYMBOL_FOR_KVM_INTERNAL(kvm_apic_set_base);
+@@ -2983,7 +2984,7 @@ void kvm_lapic_reset(struct kvm_vcpu *vcpu, bool init_event)
+ 	vcpu->arch.apic_arb_prio = 0;
+ 	vcpu->arch.apic_attention = 0;
+ 
+-	kvm_recalculate_apic_map(vcpu->kvm);
++	kvm_recalculate_apic_map(vcpu->plane);
+ }
+ 
+ /*
+@@ -3271,13 +3272,13 @@ int kvm_apic_set_state(struct kvm_vcpu *vcpu, struct kvm_lapic_state *s)
+ 
+ 	r = kvm_apic_state_fixup(vcpu, s, true);
+ 	if (r) {
+-		kvm_recalculate_apic_map(vcpu->kvm);
++		kvm_recalculate_apic_map(vcpu->plane);
+ 		return r;
+ 	}
+ 	memcpy(vcpu->arch.apic->regs, s->regs, sizeof(*s));
+ 
+-	atomic_set_release(&apic->vcpu->kvm->arch.apic_map_dirty, DIRTY);
+-	kvm_recalculate_apic_map(vcpu->kvm);
++	atomic_set_release(&apic->vcpu->plane->arch.apic_map_dirty, DIRTY);
++	kvm_recalculate_apic_map(vcpu->plane);
+ 	kvm_apic_set_version(vcpu);
+ 
+ 	apic_update_ppr(apic);
+diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+index a158740a6fc1..070f87ae23eb 100644
+--- a/arch/x86/kvm/x86.c
++++ b/arch/x86/kvm/x86.c
+@@ -10441,7 +10441,7 @@ static void kvm_sched_yield(struct kvm_vcpu *vcpu, unsigned long dest_id)
+ 		goto no_yield;
+ 
+ 	rcu_read_lock();
+-	map = rcu_dereference(vcpu->kvm->arch.apic_map);
++	map = rcu_dereference(vcpu->plane->arch.apic_map);
+ 
+ 	if (likely(map) && dest_id <= map->max_apic_id) {
+ 		dest_id = array_index_nospec(dest_id, map->max_apic_id + 1);
+@@ -10528,7 +10528,7 @@ int ____kvm_emulate_hypercall(struct kvm_vcpu *vcpu, int cpl,
+ 		if (!guest_pv_has(vcpu, KVM_FEATURE_PV_SEND_IPI))
+ 			break;
+ 
+-		ret = kvm_pv_send_ipi(vcpu->kvm, a0, a1, a2, a3, op_64_bit);
++		ret = kvm_pv_send_ipi(vcpu, a0, a1, a2, a3, op_64_bit);
+ 		break;
+ 	case KVM_HC_SCHED_YIELD:
+ 		if (!guest_pv_has(vcpu, KVM_FEATURE_PV_SCHED_YIELD))
+@@ -13397,6 +13397,18 @@ void kvm_arch_free_vm(struct kvm *kvm)
+ 	__kvm_arch_free_vm(kvm);
+ }
+ 
++int kvm_arch_plane_init(struct kvm *kvm, struct kvm_plane *plane,
++			unsigned plane_level)
++{
++	mutex_init(&plane->arch.apic_map_lock);
++
++	return 0;
++}
++
++void kvm_arch_plane_destroy(struct kvm_plane *plane)
++{
++	kvfree(rcu_dereference_check(plane->arch.apic_map, 1));
++}
+ 
+ int kvm_arch_init_vm(struct kvm *kvm, unsigned long type)
+ {
+@@ -13429,7 +13441,6 @@ int kvm_arch_init_vm(struct kvm *kvm, unsigned long type)
+ 	atomic_set(&kvm->arch.noncoherent_dma_count, 0);
+ 
+ 	raw_spin_lock_init(&kvm->arch.tsc_write_lock);
+-	mutex_init(&kvm->arch.apic_map_lock);
+ 	seqcount_raw_spinlock_init(&kvm->arch.pvclock_sc, &kvm->arch.tsc_write_lock);
+ 	ratelimit_state_init(&kvm->arch.kvmclock_update_rs, HZ, 10);
+ 	ratelimit_set_flags(&kvm->arch.kvmclock_update_rs, RATELIMIT_MSG_ON_RELEASE);
+@@ -13587,7 +13598,6 @@ void kvm_arch_destroy_vm(struct kvm *kvm)
+ 	kvm_pic_destroy(kvm);
+ 	kvm_ioapic_destroy(kvm);
+ #endif
+-	kvfree(rcu_dereference_check(kvm->arch.apic_map, 1));
+ 	kfree(srcu_dereference_check(kvm->arch.pmu_event_filter, &kvm->srcu, 1));
+ 	kvm_mmu_uninit_vm(kvm);
+ 	kvm_page_track_cleanup(kvm);
 -- 
 2.53.0
 
