@@ -1,34 +1,34 @@
-Return-Path: <linuxppc-dev+bounces-22238-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22239-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5DD50CD8C92
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jun 2026 14:54:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D4645CD8C9D
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jun 2026 14:54:53 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gYw4j49M6z3dHc;
-	Tue, 09 Jun 2026 00:52:37 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=85.214.250.239
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780930354;
-	cv=none; b=UiuMBVkJMdCWpb5GtSbEEg2M3Pcr2mYaJyzk6nHrq3OI3jifLlD/WLDHlYEAa1TqbE6HNgAcSJJACNs8eJ0UbRrfHXHi492NDz6se9/0Kpb1h5eUJf8znHCUiJbx4Xxkdol/71wS2Q3qMGmG3Qc2vo0+OrFYj6Vxywk+jFBrsafGcs5CUYKEYhCF3dMJhhHOAazNK+YQB66wL/jX5wchf5fU1/1hyC7tIo6t5/+R02I21igz4sSAa12IVST4FTv374fuD2170v4+HJ8S9N/20+tZhmuEkgXJkw0Pju0/yogHoIk+0zxZw6M/+8khjxre1gV4ttayYlCL35stOk85CA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gYw4l07Whz3dKc;
+	Tue, 09 Jun 2026 00:52:39 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a01:238:42d9:3f00:e505:6202:4f0c:f051"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780930358;
+	cv=none; b=RTrzZRcL9//7ySrw5tMDC4Kx7Fwl8CVO6kSBZy3tQS6nhnFqMn/yd57mx2b44vIETjVWInj+R2y1GWWNYA2ndoeQOj4TIpTezJs7Ma2jVFmDitbGa8aJMT6vy80XzDJHqVeZfnQjZiqeO3zSlP/RUbzadiB23mrFQNXnqqiq6Ezq6n5oRuqKE1u21WSx4AMwR756rxkyL9L56P8vlkQt7x7rXHzo84IKm5qzri+rM7Auq8q6nsOON243vDC122Cqj5O7CuthGEgMjbnc1Vy0gX9k7CXhfJyNtIZT2XqD45i9BZ/Z04eKbFka6yysGLG8yImlKPvLQu/4IAlzLhYy4g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1780930354; c=relaxed/relaxed;
-	bh=xPy/a2evO56iISUey6hMITHDSlt7ojykGtQqTg5ULm4=;
+	t=1780930358; c=relaxed/relaxed;
+	bh=QsYplZ1HRXjd8HRC57G4eyJFUWV8N1eu/ti4WWatSIA=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=TrqOEGJmEPYDJ+0VooEomhx14bD96A5srZeWXVGpgTeDAQyOjS8bv79+VupNT27PkB+2g4WFITs2PQv6oEojF5iiosVALAugAlKdutSyFIKOre3KHdyuhIeEznNkDMUNlUQtV3HHBni16l3FqNs6tt91lDTBbLiwvllGMOXvrD/YeYrQ+wRNFlRhFXoJpyp3hdT5wbGosRt+uET2nPL0cENjQolvzdbcPsu7W1X137Yw01Qg3GTYWkV8Sz+xgxIu7bftHmxJPIxBkviXP5yOOyi/iXBRG7kHoRdClaEfvMYHt5gtKDN/pq/rrpEakYgmMKdqI+Se8pfZ7AhLYVMqag==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=8bytes.org; spf=pass (client-ip=85.214.250.239; helo=mail.8bytes.org; envelope-from=joro@8bytes.org; receiver=lists.ozlabs.org) smtp.mailfrom=8bytes.org
+	 MIME-Version:Content-Type; b=cJncLBAgyNCDJWnOZd1JKlka1sAoD2XWtrylwlhywVD7guX8s5NgO1dSdhfjUrdItpXe4Gn1MDM7TPjWBGAyipNXxeScGwhUaZ9fA8wENdSpEd1JHTaIx+JgSjOwLuLoMQ2927oR0v+ggL5ZV6aRhHCyGHxHdreqoZ2w6+PsQtKfWce3gEOzCuKah10CaOsePNxmc+lduDcLr4MBF8g6bC7DYXjunSQMjFRmWR9dPEW6d8372w/fN0TGb4Pz+8qLTiaV0Vpn92j2KLWcFYJUSUCuywi4iQPWPlWQqBXazN53YUhtBeBe5aPvf00ygv33Mz4etUAMBAhFDIUo28MU4w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=8bytes.org; spf=pass (client-ip=2a01:238:42d9:3f00:e505:6202:4f0c:f051; helo=mail.8bytes.org; envelope-from=joro@8bytes.org; receiver=lists.ozlabs.org) smtp.mailfrom=8bytes.org
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=8bytes.org
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=8bytes.org (client-ip=85.214.250.239; helo=mail.8bytes.org; envelope-from=joro@8bytes.org; receiver=lists.ozlabs.org)
-Received: from mail.8bytes.org (mail.8bytes.org [85.214.250.239])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gYw4Q6rGqz3c4d
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Jun 2026 00:52:22 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=8bytes.org (client-ip=2a01:238:42d9:3f00:e505:6202:4f0c:f051; helo=mail.8bytes.org; envelope-from=joro@8bytes.org; receiver=lists.ozlabs.org)
+Received: from mail.8bytes.org (mail.8bytes.org [IPv6:2a01:238:42d9:3f00:e505:6202:4f0c:f051])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gYw4R5vLqz3c5X
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Jun 2026 00:52:23 +1000 (AEST)
 Received: from io.home.8bytes.org (p4ffe1d30.dip0.t-ipconnect.de [79.254.29.48])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.8bytes.org (Postfix) with ESMTPSA id 4B2B22028B2;
-	Mon,  8 Jun 2026 16:43:08 +0200 (CEST)
+	by mail.8bytes.org (Postfix) with ESMTPSA id 28B6D2028C4;
+	Mon,  8 Jun 2026 16:43:12 +0200 (CEST)
 From: =?UTF-8?q?J=C3=B6rg=20R=C3=B6del?= <joro@8bytes.org>
 To: Paolo Bonzini <pbonzini@redhat.com>,
 	Sean Christopherson <seanjc@google.com>
@@ -48,10 +48,11 @@ Cc: Tom Lendacky <thomas.lendacky@amd.com>,
 	kvm-riscv@lists.infradead.org,
 	x86@kernel.org,
 	coconut-svsm@lists.linux.dev,
-	joerg.roedel@amd.com
-Subject: [PATCH 15/60] kvm: Move VCPU scheduling state to struct kvm_vcpu_common
-Date: Mon,  8 Jun 2026 16:42:07 +0200
-Message-ID: <20260608144252.351443-16-joro@8bytes.org>
+	joerg.roedel@amd.com,
+	=?UTF-8?q?Carlos=20L=C3=B3pez?= <clopez@suse.de>
+Subject: [PATCH 33/60] KVM: Implement KVM_CREATE_VCPU ioctl for planes
+Date: Mon,  8 Jun 2026 16:42:25 +0200
+Message-ID: <20260608144252.351443-34-joro@8bytes.org>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20260608144252.351443-1-joro@8bytes.org>
 References: <20260608144252.351443-1-joro@8bytes.org>
@@ -68,217 +69,417 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
 From: Joerg Roedel <joerg.roedel@amd.com>
 
-The scheduling state of the KVM VCPU is shared between all per-plane
-VCPU objects. Move it to struct kvm_vcpu_common.
+Implement the KVM_CREATE_VCPU ioctl per plane. Also introduce an
+empty IOCTL path for the plane-vcpus, including per-architecture
+call-backs.
 
+Co-developed-by: Carlos López <clopez@suse.de>
 Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
 ---
- arch/x86/kvm/svm/svm.c   |  2 +-
- include/linux/kvm_host.h | 24 ++++++++++----------
- virt/kvm/kvm_main.c      | 47 +++++++++++++++++++++-------------------
- 3 files changed, 39 insertions(+), 34 deletions(-)
+ arch/arm64/kvm/arm.c       |  5 ++
+ arch/loongarch/kvm/vcpu.c  |  5 ++
+ arch/mips/kvm/mips.c       |  5 ++
+ arch/powerpc/kvm/powerpc.c |  5 ++
+ arch/riscv/kvm/vcpu.c      |  5 ++
+ arch/s390/kvm/kvm-s390.c   |  5 ++
+ arch/x86/kvm/x86.c         | 29 ++++++++++++
+ include/linux/kvm_host.h   | 12 +++--
+ virt/kvm/kvm_main.c        | 97 ++++++++++++++++++++++++++++----------
+ 9 files changed, 141 insertions(+), 27 deletions(-)
 
-diff --git a/arch/x86/kvm/svm/svm.c b/arch/x86/kvm/svm/svm.c
-index 1524c1bb4f37..f5cc30a6732f 100644
---- a/arch/x86/kvm/svm/svm.c
-+++ b/arch/x86/kvm/svm/svm.c
-@@ -229,7 +229,7 @@ int svm_set_efer(struct kvm_vcpu *vcpu, u64 efer)
- 			 * and only if the vCPU is actively running, e.g. to
- 			 * avoid positives if userspace is stuffing state.
- 			 */
--			if (is_guest_mode(vcpu) && vcpu->wants_to_run)
-+			if (is_guest_mode(vcpu) && vcpu->common->wants_to_run)
- 				kvm_make_request(KVM_REQ_TRIPLE_FAULT, vcpu);
+diff --git a/arch/arm64/kvm/arm.c b/arch/arm64/kvm/arm.c
+index d7a4b9b239dc..b2bfea5df7e0 100644
+--- a/arch/arm64/kvm/arm.c
++++ b/arch/arm64/kvm/arm.c
+@@ -1824,6 +1824,11 @@ static int kvm_arm_vcpu_set_events(struct kvm_vcpu *vcpu,
+ 	return __kvm_arm_vcpu_set_events(vcpu, events);
+ }
  
- 			svm_leave_nested(vcpu);
++bool kvm_arch_is_vcpu_plane_ioctl(unsigned ioctl)
++{
++	return false;
++}
++
+ long kvm_arch_vcpu_ioctl(struct file *filp,
+ 			 unsigned int ioctl, unsigned long arg)
+ {
+diff --git a/arch/loongarch/kvm/vcpu.c b/arch/loongarch/kvm/vcpu.c
+index bab3c66ae58d..0b66b8186923 100644
+--- a/arch/loongarch/kvm/vcpu.c
++++ b/arch/loongarch/kvm/vcpu.c
+@@ -1232,6 +1232,11 @@ static int kvm_loongarch_vcpu_set_attr(struct kvm_vcpu *vcpu,
+ 	return ret;
+ }
+ 
++bool kvm_arch_is_vcpu_plane_ioctl(unsigned ioctl)
++{
++	return false;
++}
++
+ long kvm_arch_vcpu_ioctl(struct file *filp,
+ 			 unsigned int ioctl, unsigned long arg)
+ {
+diff --git a/arch/mips/kvm/mips.c b/arch/mips/kvm/mips.c
+index e22d2a267e03..28795bad178b 100644
+--- a/arch/mips/kvm/mips.c
++++ b/arch/mips/kvm/mips.c
+@@ -933,6 +933,11 @@ long kvm_arch_vcpu_unlocked_ioctl(struct file *filp, unsigned int ioctl,
+ 	return -ENOIOCTLCMD;
+ }
+ 
++bool kvm_arch_is_vcpu_plane_ioctl(unsigned ioctl)
++{
++	return false;
++}
++
+ long kvm_arch_vcpu_ioctl(struct file *filp, unsigned int ioctl,
+ 			 unsigned long arg)
+ {
+diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
+index 35658cded0cb..476f7ea02c79 100644
+--- a/arch/powerpc/kvm/powerpc.c
++++ b/arch/powerpc/kvm/powerpc.c
+@@ -2055,6 +2055,11 @@ long kvm_arch_vcpu_unlocked_ioctl(struct file *filp, unsigned int ioctl,
+ 	return -ENOIOCTLCMD;
+ }
+ 
++bool kvm_arch_is_vcpu_plane_ioctl(unsigned ioctl)
++{
++	return false;
++}
++
+ long kvm_arch_vcpu_ioctl(struct file *filp,
+                          unsigned int ioctl, unsigned long arg)
+ {
+diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
+index 66cde226eb87..17680b659bdd 100644
+--- a/arch/riscv/kvm/vcpu.c
++++ b/arch/riscv/kvm/vcpu.c
+@@ -263,6 +263,11 @@ long kvm_arch_vcpu_unlocked_ioctl(struct file *filp, unsigned int ioctl,
+ 	return -ENOIOCTLCMD;
+ }
+ 
++bool kvm_arch_is_vcpu_plane_ioctl(unsigned ioctl)
++{
++	return false;
++}
++
+ long kvm_arch_vcpu_ioctl(struct file *filp,
+ 			 unsigned int ioctl, unsigned long arg)
+ {
+diff --git a/arch/s390/kvm/kvm-s390.c b/arch/s390/kvm/kvm-s390.c
+index 94c40b2aa759..261859cb1bb6 100644
+--- a/arch/s390/kvm/kvm-s390.c
++++ b/arch/s390/kvm/kvm-s390.c
+@@ -5454,6 +5454,11 @@ static int kvm_s390_handle_pv_vcpu_dump(struct kvm_vcpu *vcpu,
+ 	return ret;
+ }
+ 
++bool kvm_arch_is_vcpu_plane_ioctl(unsigned ioctl)
++{
++	return false;
++}
++
+ long kvm_arch_vcpu_ioctl(struct file *filp,
+ 			 unsigned int ioctl, unsigned long arg)
+ {
+diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+index d6bf0425525c..623838885753 100644
+--- a/arch/x86/kvm/x86.c
++++ b/arch/x86/kvm/x86.c
+@@ -6227,6 +6227,35 @@ static int kvm_get_reg_list(struct kvm_vcpu *vcpu,
+ 	return 0;
+ }
+ 
++bool kvm_arch_is_vcpu_plane_ioctl(unsigned ioctl)
++{
++	switch (ioctl) {
++	case KVM_GET_DEBUGREGS:
++	case KVM_SET_DEBUGREGS:
++	case KVM_GET_LAPIC:
++	case KVM_SET_LAPIC:
++	case KVM_GET_MSRS:
++	case KVM_SET_MSRS:
++	case KVM_GET_NESTED_STATE:
++	case KVM_SET_NESTED_STATE:
++	case KVM_GET_ONE_REG:
++	case KVM_SET_ONE_REG:
++	case KVM_GET_SREGS2:
++	case KVM_SET_SREGS2:
++	case KVM_GET_VCPU_EVENTS:
++	case KVM_SET_VCPU_EVENTS:
++	case KVM_GET_XCRS:
++	case KVM_SET_XCRS:
++	case KVM_GET_XSAVE:
++	case KVM_GET_XSAVE2:
++	case KVM_SET_XSAVE:
++	case KVM_GET_REG_LIST:
++		return true;
++	default:
++		return false;
++	}
++}
++
+ long kvm_arch_vcpu_ioctl(struct file *filp,
+ 			 unsigned int ioctl, unsigned long arg)
+ {
 diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
-index d54f299218a4..a6aacd507c02 100644
+index 385e1ee8fd3a..b8c3f8f11cb4 100644
 --- a/include/linux/kvm_host.h
 +++ b/include/linux/kvm_host.h
-@@ -329,15 +329,21 @@ struct kvm_vcpu_common {
+@@ -1126,7 +1126,7 @@ static inline struct kvm_vcpu *kvm_get_vcpu(struct kvm *kvm, int i)
+ #define kvm_for_each_vcpu(idx, vcpup, kvm)					\
+ 	plane_for_each_vcpu(idx, vcpup, kvm->planes[0])
  
- 	/* Currently active VCPU */
- 	struct kvm_vcpu *current_vcpu;
+-static inline struct kvm_vcpu *kvm_get_vcpu_by_id(struct kvm *kvm, int id)
++static inline struct kvm_vcpu *plane_get_vcpu_by_id(struct kvm_plane *plane, int id)
+ {
+ 	struct kvm_vcpu *vcpu = NULL;
+ 	unsigned long i;
+@@ -1134,15 +1134,20 @@ static inline struct kvm_vcpu *kvm_get_vcpu_by_id(struct kvm *kvm, int id)
+ 	if (id < 0)
+ 		return NULL;
+ 	if (id < KVM_MAX_VCPUS)
+-		vcpu = kvm_get_vcpu(kvm, id);
++		vcpu = plane_get_vcpu(plane, id);
+ 	if (vcpu && vcpu->vcpu_id == id)
+ 		return vcpu;
+-	kvm_for_each_vcpu(i, vcpu, kvm)
++	plane_for_each_vcpu(i, vcpu, plane)
+ 		if (vcpu->vcpu_id == id)
+ 			return vcpu;
+ 	return NULL;
+ }
+ 
++static inline struct kvm_vcpu *kvm_get_vcpu_by_id(struct kvm *kvm, int id)
++{
++	return plane_get_vcpu_by_id(kvm->planes[0], id);
++}
 +
-+	/* Scheduling state */
-+#ifdef CONFIG_PREEMPT_NOTIFIERS
-+	struct preempt_notifier preempt_notifier;
-+#endif
-+	bool wants_to_run;
-+	bool preempted;
-+	bool ready;
-+	bool scheduled_out;
- };
- 
- struct kvm_vcpu {
- 	struct kvm *kvm;
- 	struct kvm_plane *plane;
- 
--#ifdef CONFIG_PREEMPT_NOTIFIERS
--	struct preempt_notifier preempt_notifier;
--#endif
- 	int cpu;
- 	int vcpu_id; /* id given by userspace at creation */
- 	int vcpu_idx; /* index into kvm->planes[]->vcpu_array */
-@@ -392,10 +398,6 @@ struct kvm_vcpu {
- 		bool dy_eligible;
- 	} spin_loop;
- #endif
--	bool wants_to_run;
--	bool preempted;
--	bool ready;
--	bool scheduled_out;
- 	struct kvm_vcpu_arch arch;
- 	struct kvm_vcpu_stat stat;
- 	char stats_id[KVM_STATS_NAME_SIZE];
-@@ -416,22 +418,22 @@ struct kvm_vcpu {
- 
- static inline bool kvm_vcpu_wants_to_run(struct kvm_vcpu *vcpu)
+ static inline bool kvm_is_vcpu_creation_in_progress(struct kvm *kvm)
  {
--	return vcpu->wants_to_run;
-+	return vcpu->common->wants_to_run;
- }
+ 	lockdep_assert_held(&kvm->lock);
+@@ -1688,6 +1693,7 @@ bool kvm_mmu_unmap_gfn_range(struct kvm *kvm, struct kvm_gfn_range *range);
  
- static inline bool kvm_vcpu_preempted(struct kvm_vcpu *vcpu)
- {
--	return READ_ONCE(vcpu->preempted);
-+	return READ_ONCE(vcpu->common->preempted);
- }
- 
- static inline bool kvm_vcpu_ready(struct kvm_vcpu *vcpu)
- {
--	return READ_ONCE(vcpu->ready);
-+	return READ_ONCE(vcpu->common->ready);
- }
- 
- static inline bool kvm_vcpu_scheduled_out(struct kvm_vcpu *vcpu)
- {
--	return vcpu->scheduled_out;
-+	return vcpu->common->scheduled_out;
- }
- 
- /*
+ long kvm_arch_dev_ioctl(struct file *filp,
+ 			unsigned int ioctl, unsigned long arg);
++bool kvm_arch_is_vcpu_plane_ioctl(unsigned ioctl);
+ long kvm_arch_vcpu_ioctl(struct file *filp,
+ 			 unsigned int ioctl, unsigned long arg);
+ long kvm_arch_vcpu_unlocked_ioctl(struct file *filp,
 diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-index 9c07321e30f4..a44f8dc8418a 100644
+index 2d0d5f4fd356..8839f91fd15e 100644
 --- a/virt/kvm/kvm_main.c
 +++ b/virt/kvm/kvm_main.c
-@@ -166,7 +166,7 @@ void vcpu_load(struct kvm_vcpu *vcpu)
- 	int cpu = get_cpu();
- 
- 	__this_cpu_write(kvm_running_vcpu, vcpu->common);
--	preempt_notifier_register(&vcpu->preempt_notifier);
-+	preempt_notifier_register(&vcpu->common->preempt_notifier);
- 	kvm_arch_vcpu_load(vcpu, cpu);
- 	put_cpu();
- }
-@@ -176,7 +176,7 @@ void vcpu_put(struct kvm_vcpu *vcpu)
+@@ -538,14 +538,11 @@ static void kvm_vcpu_init(struct kvm_vcpu *vcpu, struct kvm *kvm, unsigned id)
  {
- 	preempt_disable();
- 	kvm_arch_vcpu_put(vcpu);
--	preempt_notifier_unregister(&vcpu->preempt_notifier);
-+	preempt_notifier_unregister(&vcpu->common->preempt_notifier);
- 	__this_cpu_write(kvm_running_vcpu, NULL);
- 	preempt_enable();
- }
-@@ -468,6 +468,12 @@ static int kvm_vcpu_init_common(struct kvm_vcpu *vcpu, struct kvm *kvm, unsigned
+ 	vcpu->cpu = -1;
+ 	vcpu->kvm = kvm;
+-	vcpu->plane = kvm->planes[0];
+ 	vcpu->vcpu_id = id;
+ 	kvm_async_pf_vcpu_init(vcpu);
  
- 	common->kvm = kvm;
- 	common->current_vcpu = vcpu;
-+
-+	common->wants_to_run = false;
-+	common->preempted = false;
-+	common->ready = false;
-+	preempt_notifier_init(&common->preempt_notifier, &kvm_preempt_ops);
-+
- 	vcpu->common = no_free_ptr(common);
- 
- 	return 0;
-@@ -508,9 +514,6 @@ static void kvm_vcpu_init(struct kvm_vcpu *vcpu, struct kvm *kvm, unsigned id)
- 
- 	kvm_vcpu_set_in_spin_loop(vcpu, false);
- 	kvm_vcpu_set_dy_eligible(vcpu, false);
--	vcpu->preempted = false;
--	vcpu->ready = false;
--	preempt_notifier_init(&vcpu->preempt_notifier, &kvm_preempt_ops);
  	vcpu->last_used_slot = NULL;
  
- 	vcpu->plane_level = 0;
-@@ -3927,7 +3930,7 @@ EXPORT_SYMBOL_FOR_KVM_INTERNAL(kvm_vcpu_halt);
- bool kvm_vcpu_wake_up(struct kvm_vcpu *vcpu)
+-	vcpu->plane_level = 0;
+-
+ 	/* Fill the stats id string for the vcpu */
+ 	snprintf(vcpu->stats_id, sizeof(vcpu->stats_id), "kvm-%d/vcpu-%d",
+ 		 task_pid_nr(current), id);
+@@ -4306,9 +4303,13 @@ static struct file_operations kvm_vcpu_fops = {
+  */
+ static int create_vcpu_fd(struct kvm_vcpu *vcpu)
  {
- 	if (__kvm_vcpu_wake_up(vcpu)) {
--		WRITE_ONCE(vcpu->ready, true);
-+		WRITE_ONCE(vcpu->common->ready, true);
- 		++vcpu->stat.generic.halt_wakeup;
- 		return true;
- 	}
-@@ -4580,9 +4583,9 @@ static long kvm_vcpu_ioctl(struct file *filp,
+-	char name[8 + 1 + ITOA_MAX_LEN + 1];
++	char name[14 + 1 + (2 * ITOA_MAX_LEN) + 1];
++
++	if (vcpu->plane_level == 0)
++		snprintf(name, sizeof(name), "kvm-vcpu:%d", vcpu->vcpu_id);
++	else
++		snprintf(name, sizeof(name), "kvm-vcpu-plane%d:%d", vcpu->plane_level, vcpu->vcpu_id);
  
- 			put_pid(oldpid);
- 		}
--		vcpu->wants_to_run = !READ_ONCE(vcpu->run->immediate_exit__unsafe);
-+		vcpu->common->wants_to_run = !READ_ONCE(vcpu->run->immediate_exit__unsafe);
- 		r = kvm_arch_vcpu_ioctl_run(vcpu);
--		vcpu->wants_to_run = false;
-+		vcpu->common->wants_to_run = false;
- 
- 		/*
- 		 * FIXME: Remove this hack once all KVM architectures
-@@ -6488,36 +6491,36 @@ static void kvm_init_debug(void)
+-	snprintf(name, sizeof(name), "kvm-vcpu:%d", vcpu->vcpu_id);
+ 	return anon_inode_getfd(name, &kvm_vcpu_fops, vcpu, O_RDWR | O_CLOEXEC);
  }
  
- static inline
--struct kvm_vcpu *preempt_notifier_to_vcpu(struct preempt_notifier *pn)
-+struct kvm_vcpu_common *preempt_notifier_to_vcpu_common(struct preempt_notifier *pn)
+@@ -4327,13 +4328,17 @@ DEFINE_SIMPLE_ATTRIBUTE(vcpu_get_pid_fops, vcpu_get_pid, NULL, "%llu\n");
+ 
+ static void kvm_create_vcpu_debugfs(struct kvm_vcpu *vcpu)
  {
--	return container_of(pn, struct kvm_vcpu, preempt_notifier);
-+	return container_of(pn, struct kvm_vcpu_common, preempt_notifier);
++	char dir_name[10 + (2 * ITOA_MAX_LEN) + 1];
+ 	struct dentry *debugfs_dentry;
+-	char dir_name[ITOA_MAX_LEN * 2];
+ 
+ 	if (!debugfs_initialized())
+ 		return;
+ 
+-	snprintf(dir_name, sizeof(dir_name), "vcpu%d", vcpu->vcpu_id);
++	if (vcpu->plane_level == 0)
++		snprintf(dir_name, sizeof(dir_name), "vcpu%d", vcpu->vcpu_id);
++	else
++		snprintf(dir_name, sizeof(dir_name), "vcpu%d-plane%d", vcpu->plane_level, vcpu->vcpu_id);
++
+ 	debugfs_dentry = debugfs_create_dir(dir_name,
+ 					    vcpu->kvm->debugfs_dentry);
+ 	debugfs_create_file("pid", 0444, debugfs_dentry, vcpu,
+@@ -4346,10 +4351,11 @@ static void kvm_create_vcpu_debugfs(struct kvm_vcpu *vcpu)
+ /*
+  * Creates some virtual cpus.  Good luck creating more than one.
+  */
+-static int kvm_vm_ioctl_create_vcpu(struct kvm *kvm, unsigned long id)
++static int kvm_plane_ioctl_create_vcpu(struct kvm_plane *plane, unsigned long id)
+ {
+-	int r = -EINVAL;
++	struct kvm *kvm = plane->kvm;
+ 	struct kvm_vcpu *vcpu;
++	int r;
+ 
+ 	mutex_lock(&kvm->lock);
+ 	if (kvm->created_vcpus >= kvm->max_vcpus) {
+@@ -4366,11 +4372,28 @@ static int kvm_vm_ioctl_create_vcpu(struct kvm *kvm, unsigned long id)
+ 	if (!vcpu)
+ 		return -ENOMEM;
+ 
+-	r = kvm_vcpu_init_common(vcpu, kvm, id);
+-	if (r)
++	r = -EEXIST;
++	if (plane_get_vcpu_by_id(plane, id))
+ 		goto vcpu_free;
+ 
++	if (plane->level > 0) {
++		struct kvm_vcpu *vcpu_plane0 = kvm_get_vcpu_by_id(kvm, id);
++
++		/* Plane0 VCPU must exist before creating non-plane0 VCPUs */
++		r = -EINVAL;
++		if (vcpu_plane0 == NULL)
++			goto vcpu_free;
++
++		vcpu->common = vcpu_plane0->common;
++	} else {
++		r = kvm_vcpu_init_common(vcpu, kvm, id);
++		if (r)
++			goto vcpu_free;
++	}
++
+ 	vcpu->vcpu_idx = vcpu->common->vcpu_idx;
++	vcpu->plane = plane;
++	vcpu->plane_level = plane->level;
+ 	vcpu->run = vcpu->common->run;
+ 
+ 	kvm_vcpu_init(vcpu, kvm, id);
+@@ -4381,12 +4404,7 @@ static int kvm_vm_ioctl_create_vcpu(struct kvm *kvm, unsigned long id)
+ 
+ 	mutex_lock(&kvm->lock);
+ 
+-	if (kvm_get_vcpu_by_id(kvm, id)) {
+-		r = -EEXIST;
+-		goto unlock_vcpu_destroy;
+-	}
+-
+-	r = xa_insert(&kvm->planes[0]->vcpu_array, vcpu->vcpu_idx, vcpu, GFP_KERNEL_ACCOUNT);
++	r = xa_insert(&plane->vcpu_array, vcpu->vcpu_idx, vcpu, GFP_KERNEL_ACCOUNT);
+ 	WARN_ON_ONCE(r == -EBUSY);
+ 	if (r)
+ 		goto unlock_vcpu_destroy;
+@@ -4416,7 +4434,7 @@ static int kvm_vm_ioctl_create_vcpu(struct kvm *kvm, unsigned long id)
+ kvm_put_xa_erase:
+ 	kvm_vcpu_unlock(vcpu);
+ 	kvm_put_kvm_no_destroy(kvm);
+-	xa_erase(&kvm->planes[0]->vcpu_array, vcpu->vcpu_idx);
++	xa_erase(&plane->vcpu_array, vcpu->vcpu_idx);
+ unlock_vcpu_destroy:
+ 	mutex_unlock(&kvm->lock);
+ 	kvm_arch_vcpu_destroy(vcpu);
+@@ -4550,7 +4568,7 @@ static int kvm_wait_for_vcpu_online(struct kvm_vcpu *vcpu)
+ 
+ 	/*
+ 	 * Acquire and release the vCPU's mutex to wait for vCPU creation to
+-	 * complete (kvm_vm_ioctl_create_vcpu() holds the mutex until the vCPU
++	 * complete (kvm_plane_ioctl_create_vcpu() holds the mutex until the vCPU
+ 	 * is fully online).
+ 	 */
+ 	if (mutex_lock_killable(kvm_vcpu_mutex(vcpu)))
+@@ -4564,6 +4582,22 @@ static int kvm_wait_for_vcpu_online(struct kvm_vcpu *vcpu)
+ 	return 0;
  }
  
- static void kvm_sched_in(struct preempt_notifier *pn, int cpu)
++static inline bool kvm_is_vcpu_plane_ioctl(unsigned ioctl)
++{
++	switch (ioctl) {
++	case KVM_GET_FPU:
++	case KVM_SET_FPU:
++	case KVM_GET_REGS:
++	case KVM_SET_REGS:
++	case KVM_GET_SREGS:
++	case KVM_SET_SREGS:
++	case KVM_TRANSLATE:
++		return true;
++	default:
++		return kvm_arch_is_vcpu_plane_ioctl(ioctl);
++	}
++}
++
+ static long kvm_vcpu_ioctl(struct file *filp,
+ 			   unsigned int ioctl, unsigned long arg)
  {
--	struct kvm_vcpu *vcpu = preempt_notifier_to_vcpu(pn);
-+	struct kvm_vcpu_common *common = preempt_notifier_to_vcpu_common(pn);
+@@ -4576,6 +4610,9 @@ static long kvm_vcpu_ioctl(struct file *filp,
+ 	if (vcpu->kvm->mm != current->mm || vcpu->kvm->vm_dead)
+ 		return -EIO;
  
--	WRITE_ONCE(vcpu->preempted, false);
--	WRITE_ONCE(vcpu->ready, false);
-+	WRITE_ONCE(common->preempted, false);
-+	WRITE_ONCE(common->ready, false);
++	if (vcpu->plane_level > 0 && !kvm_is_vcpu_plane_ioctl(ioctl))
++		return -EINVAL;
++
+ 	if (unlikely(_IOC_TYPE(ioctl) != KVMIO))
+ 		return -EINVAL;
  
--	__this_cpu_write(kvm_running_vcpu, vcpu->common);
--	kvm_arch_vcpu_load(vcpu, cpu);
-+	__this_cpu_write(kvm_running_vcpu, common);
-+	kvm_arch_vcpu_load(common->current_vcpu, cpu);
+@@ -4858,6 +4895,21 @@ static long kvm_vcpu_compat_ioctl(struct file *filp,
+ }
+ #endif
  
--	WRITE_ONCE(vcpu->scheduled_out, false);
-+	WRITE_ONCE(common->scheduled_out, false);
++static long __kvm_plane_ioctl(struct kvm_plane *plane, unsigned int ioctl, unsigned long arg)
++{
++	long r;
++
++	switch (ioctl) {
++	case KVM_CREATE_VCPU:
++		r = kvm_plane_ioctl_create_vcpu(plane, arg);
++		break;
++	default:
++		r = -ENOTTY;
++	}
++
++	return r;
++}
++
+ static long kvm_plane_ioctl(struct file *filp, unsigned int ioctl,
+ 			    unsigned long arg)
+ {
+@@ -4866,10 +4918,7 @@ static long kvm_plane_ioctl(struct file *filp, unsigned int ioctl,
+ 	if (plane->kvm->mm != current->mm || plane->kvm->vm_dead)
+ 		return -EIO;
+ 
+-	switch (ioctl) {
+-	default:
+-		return -ENOTTY;
+-	}
++	return __kvm_plane_ioctl(plane, ioctl, arg);
  }
  
- static void kvm_sched_out(struct preempt_notifier *pn,
- 			  struct task_struct *next)
- {
--	struct kvm_vcpu *vcpu = preempt_notifier_to_vcpu(pn);
-+	struct kvm_vcpu_common *common = preempt_notifier_to_vcpu_common(pn);
- 
--	WRITE_ONCE(vcpu->scheduled_out, true);
-+	WRITE_ONCE(common->scheduled_out, true);
- 
--	if (task_is_runnable(current) && kvm_vcpu_wants_to_run(vcpu)) {
--		WRITE_ONCE(vcpu->preempted, true);
--		WRITE_ONCE(vcpu->ready, true);
-+	if (task_is_runnable(current) && common->wants_to_run) {
-+		WRITE_ONCE(common->preempted, true);
-+		WRITE_ONCE(common->ready, true);
- 	}
--	kvm_arch_vcpu_put(vcpu);
-+	kvm_arch_vcpu_put(common->current_vcpu);
- 	__this_cpu_write(kvm_running_vcpu, NULL);
- }
- 
+ static int kvm_plane_release(struct inode *inode, struct file *filp)
+@@ -5396,7 +5445,7 @@ static long kvm_vm_ioctl(struct file *filp,
+ 		r = kvm_vm_ioctl_create_plane(kvm, arg);
+ 		break;
+ 	case KVM_CREATE_VCPU:
+-		r = kvm_vm_ioctl_create_vcpu(kvm, arg);
++		r = __kvm_plane_ioctl(kvm->planes[0], ioctl, arg);
+ 		break;
+ 	case KVM_ENABLE_CAP: {
+ 		struct kvm_enable_cap cap;
 -- 
 2.53.0
 
