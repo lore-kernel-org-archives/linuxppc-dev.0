@@ -1,34 +1,35 @@
-Return-Path: <linuxppc-dev+bounces-22213-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22214-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 29301CD8C9D
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jun 2026 14:52:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 73C7BCD8C9F
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jun 2026 14:52:40 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gYw4H3VpJz3bsn;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gYw4H4hhdz3bsy;
 	Tue, 09 Jun 2026 00:52:15 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a01:238:42d9:3f00:e505:6202:4f0c:f051"
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780930335;
-	cv=none; b=UoJ8miKWEnM0kHinFpssMepAZuJx31E/1T/18wOb5YaK9Ar89C2HQElsfHwvxICpF3XT9DcSj7EzqCFB6exTf0HhiR6KvVFDKljA/xfKhGFChgf/SdxIPijACTvlqxBCDyGM9So8BvfhiheIKZ1urryguCbZ+dUI2CQNkp3ut4ld3LDxcezZrZiuciiD16JB/D20R5MgAzWHsP4KPoCzxeg1XzOCHA7ghador+W0fNYFV2OszUTfUXaoW2Ev5fUioo6nUz1KHyv54KzY+a6ob4mugx+Fbmkqpts4ZtkgxvqZZCdQrolb2DalIN5t4QOE3gP+YmI6yB3GWgt0rARlqg==
+	cv=none; b=hm72EP6YVlwgLEKwEMgDWL2oee5NQbr8lUhFSGTre3UucV/sYWFmKG0it3MOqrRxQc34s3u/89GazyWyl1sCFqoAjYaTYd/75Loy0C2O7QHiys8qpgwdtGTDYPGuiW6TeeDhjpwHePyk2ZX5+zlMR+HKfU2kEJcrMmO7AUO0S1/hfsOGVhjy2lBuU3Bv+a6/ziyDtFv3uKT3sMfczu8Og3VRmPm4Khmd7BTRFdw44vApGqslHi0yWsOMZnqR25/ScgXcNs3rmfiXM6aKYiPaiOdDe5FkKJFi8gtwGmFVzOXmeFzmH3nImOQjrIpJ+asC5CkD7SaCG99jDQhZj/aonQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1780930335; c=relaxed/relaxed;
-	bh=gq8rN47S5nTE90wJ+1WWKBTYBGL2Ei1Ka/v76Pzjg/8=;
+	bh=FXwqiTqr6Re9/Vhu7FGUY6ou3l2zXU3wnhiKUENj4pk=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=V26Hm8Q4x/0HQLA608OhqClvMSet5C1nDPEx5/XxloampUc2OH2v+bYFB75ZsjTbFd0yK74xXsemDFVgZThUQqWsntot0UWdtoyfhtMmgb4DmJv7/8NieBa1ky0FgCdG17xrhKLSGcNAlSo08u0DY+FYS7scLpuzFVXNkNTrD4mip9/AU9VA+epNJEnjR8ELzhgiXG+Baa+MHmkQb1nn9mWIdwaROeFVEwi4idktkj6QdU5DBwoXf2sn0JqrAOLXKeIbztwPsHS87g/XO14pSBmKDpXBqgmkbAs9TNrsGUbDPt9w1J8/jw8RlNZPHD71PajEFpmLU2VPTnoYQ4AwVg==
+	 MIME-Version; b=SiaJM8+BlWJQwn+99QpXcar5mMJYW7oJAauQ+y//rLNiTE10HqQrxxs1znuOlpDGEIykuN7a39Y4wWF2HNF0kb3f6uxNjw1cqhueyY5tkW4YXliwlSL05pNdPRrvDvXNmup1maNkAh4DReY1o3EwIskH1IkXTvqWPeSkknTiR8796QBebbjs8SWKE3302/bqO6lUGxx1NhoHqFdwxfDbI0N1uw4QO0kfranOAuXeNQQFsQ7fyTwweF5Svg67me2v4aKuYXgbTdvvnaMArf83uDB8YFo8NJlbHWrMspKRko1rcHVECVwhxBuXJ06n360A346uCs80xh9WmNNUY+OZTw==
 ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=8bytes.org; spf=pass (client-ip=2a01:238:42d9:3f00:e505:6202:4f0c:f051; helo=mail.8bytes.org; envelope-from=joro@8bytes.org; receiver=lists.ozlabs.org) smtp.mailfrom=8bytes.org
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=8bytes.org
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=8bytes.org (client-ip=2a01:238:42d9:3f00:e505:6202:4f0c:f051; helo=mail.8bytes.org; envelope-from=joro@8bytes.org; receiver=lists.ozlabs.org)
+X-Greylist: delayed 538 seconds by postgrey-1.37 at boromir; Tue, 09 Jun 2026 00:52:08 AEST
 Received: from mail.8bytes.org (mail.8bytes.org [IPv6:2a01:238:42d9:3f00:e505:6202:4f0c:f051])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gYw4C2mcYz3brC
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Jun 2026 00:52:11 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gYw483Lcyz2yRM
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Jun 2026 00:52:07 +1000 (AEST)
 Received: from io.home.8bytes.org (p4ffe1d30.dip0.t-ipconnect.de [79.254.29.48])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.8bytes.org (Postfix) with ESMTPSA id BB2242028DE;
-	Mon,  8 Jun 2026 16:43:17 +0200 (CEST)
+	by mail.8bytes.org (Postfix) with ESMTPSA id 7E4DA2028B3;
+	Mon,  8 Jun 2026 16:43:08 +0200 (CEST)
 From: =?UTF-8?q?J=C3=B6rg=20R=C3=B6del?= <joro@8bytes.org>
 To: Paolo Bonzini <pbonzini@redhat.com>,
 	Sean Christopherson <seanjc@google.com>
@@ -49,9 +50,9 @@ Cc: Tom Lendacky <thomas.lendacky@amd.com>,
 	x86@kernel.org,
 	coconut-svsm@lists.linux.dev,
 	joerg.roedel@amd.com
-Subject: [PATCH 59/60] kvm: svm: Implement max_planes x86 operation
-Date: Mon,  8 Jun 2026 16:42:51 +0200
-Message-ID: <20260608144252.351443-60-joro@8bytes.org>
+Subject: [PATCH 16/60] kvm: Add accessors for kvm_vcpu->mutex
+Date: Mon,  8 Jun 2026 16:42:08 +0200
+Message-ID: <20260608144252.351443-17-joro@8bytes.org>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20260608144252.351443-1-joro@8bytes.org>
 References: <20260608144252.351443-1-joro@8bytes.org>
@@ -70,114 +71,401 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-From: Tom Lendacky <thomas.lendacky@amd.com>
+From: Joerg Roedel <joerg.roedel@amd.com>
 
-Report the number of VMPL levels supported by SEV-SNP guests.
+Use accessors to manage the mutex so it is easier to move it to
+another struct.
 
-Signed-off-by: Tom Lendacky <thomas.lendacky@amd.com>
-Co-developed-by: Joerg Roedel <joerg.roedel@amd.com>
 Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
 ---
- arch/x86/kvm/svm/sev.c | 14 ++++++++++++--
- arch/x86/kvm/svm/svm.c | 12 +++++++++++-
- arch/x86/kvm/svm/svm.h |  3 +++
- 3 files changed, 26 insertions(+), 3 deletions(-)
+ arch/arm64/kvm/arm.c                  |  4 ++--
+ arch/arm64/kvm/inject_fault.c         |  4 ++--
+ arch/powerpc/kvm/book3s_xics.c        |  4 ++--
+ arch/powerpc/kvm/book3s_xive.c        |  4 ++--
+ arch/powerpc/kvm/book3s_xive_native.c |  4 ++--
+ arch/riscv/kvm/aia_device.c           |  4 ++--
+ arch/s390/kvm/interrupt.c             |  8 ++++----
+ arch/s390/kvm/kvm-s390.c              |  8 ++++----
+ arch/s390/kvm/pv.c                    |  2 +-
+ arch/x86/kvm/svm/sev.c                |  2 +-
+ arch/x86/kvm/vmx/nested.h             |  4 ++--
+ arch/x86/kvm/x86.c                    |  4 ++--
+ include/linux/kvm_host.h              | 15 +++++++++++++++
+ virt/kvm/kvm_main.c                   | 24 ++++++++++++------------
+ 14 files changed, 53 insertions(+), 38 deletions(-)
 
-diff --git a/arch/x86/kvm/svm/sev.c b/arch/x86/kvm/svm/sev.c
-index b67566fcb69e..528c8bd3e8fc 100644
---- a/arch/x86/kvm/svm/sev.c
-+++ b/arch/x86/kvm/svm/sev.c
-@@ -114,6 +114,7 @@ static unsigned long sev_me_mask;
- static unsigned int nr_asids;
- static unsigned long *sev_asid_bitmap;
- static unsigned long *sev_reclaim_asid_bitmap;
-+static unsigned int vmpl_levels;
+diff --git a/arch/arm64/kvm/arm.c b/arch/arm64/kvm/arm.c
+index de00088c9a80..295d7f19e4de 100644
+--- a/arch/arm64/kvm/arm.c
++++ b/arch/arm64/kvm/arm.c
+@@ -527,10 +527,10 @@ int kvm_arch_vcpu_create(struct kvm_vcpu *vcpu)
  
- static __always_inline void kvm_lockdep_assert_sev_lock_held(struct kvm *kvm)
- {
-@@ -3103,6 +3104,9 @@ void __init sev_hardware_setup(void)
- 	/* Set encryption bit location for SEV-ES guests */
- 	sev_enc_bit = ebx & 0x3f;
- 
-+	/* Get the number of supported VMPL levels */
-+	vmpl_levels = (ebx >> 12) & 0xf;
-+
- 	/* Maximum number of encrypted guests supported simultaneously */
- 	max_sev_asid = ecx;
- 	if (!max_sev_asid)
-@@ -3217,9 +3221,10 @@ void __init sev_hardware_setup(void)
- 										"disabled",
- 			min_sev_es_asid, max_sev_es_asid);
- 	if (boot_cpu_has(X86_FEATURE_SEV_SNP))
--		pr_info("SEV-SNP %s (ASIDs %u - %u)\n",
-+		pr_info("SEV-SNP %s (ASIDs %u - %u), VMPL Levels %u\n",
- 			str_enabled_disabled(sev_snp_supported),
--			min_snp_asid, max_snp_asid);
-+			min_snp_asid, max_snp_asid,
-+			vmpl_levels);
- 
- 	sev_enabled = sev_supported;
- 	sev_es_enabled = sev_es_supported;
-@@ -5852,3 +5857,8 @@ bool sev_snp_blocked(enum inject_type type, struct kvm_vcpu *vcpu)
- 
- 	return blocked;
- }
-+
-+int sev_snp_max_planes(struct kvm *kvm)
-+{
-+	return vmpl_levels;
-+}
-diff --git a/arch/x86/kvm/svm/svm.c b/arch/x86/kvm/svm/svm.c
-index 2ae82dc058c9..705063c7f0f0 100644
---- a/arch/x86/kvm/svm/svm.c
-+++ b/arch/x86/kvm/svm/svm.c
-@@ -5321,6 +5321,16 @@ static void svm_free_plane(struct kvm_plane *plane)
- 	kfree(svm_plane);
- }
- 
-+static unsigned svm_max_planes(struct kvm *kvm)
-+{
-+#ifdef CONFIG_KVM_AMD_SEV
-+	if (____sev_snp_guest(kvm))
-+		return sev_snp_max_planes(kvm);
-+#endif
-+
-+	return kvm_x86_default_max_planes(kvm);
-+}
-+
- struct kvm_x86_ops svm_x86_ops __initdata = {
- 	.name = KBUILD_MODNAME,
- 
-@@ -5465,7 +5475,7 @@ struct kvm_x86_ops svm_x86_ops __initdata = {
- 
- 	.alloc_plane = svm_alloc_plane,
- 	.free_plane = svm_free_plane,
--	.max_planes = kvm_x86_default_max_planes,
-+	.max_planes = svm_max_planes,
- };
- 
- /*
-diff --git a/arch/x86/kvm/svm/svm.h b/arch/x86/kvm/svm/svm.h
-index 7e860f2abafb..7aba2cceb44d 100644
---- a/arch/x86/kvm/svm/svm.h
-+++ b/arch/x86/kvm/svm/svm.h
-@@ -1008,6 +1008,8 @@ static inline bool sev_snp_is_rinj_active(struct kvm_vcpu *vcpu)
- 	return is_sev_snp_guest(vcpu) &&
- 		(sev->vmsa_features & SVM_SEV_FEAT_RESTRICTED_INJECTION);
- };
-+int sev_nr_vcpu_planes(struct kvm *kvm);
-+int sev_snp_max_planes(struct kvm *kvm);
- #else
- static inline struct page *snp_safe_alloc_page_node(int node, gfp_t gfp)
- {
-@@ -1051,6 +1053,7 @@ static inline bool sev_snp_inject(enum inject_type type, struct kvm_vcpu *vcpu)
- static inline void sev_snp_cancel_injection(struct kvm_vcpu *vcpu) {}
- static inline bool sev_snp_blocked(enum inject_type type, struct kvm_vcpu *vcpu) { return false; }
- static inline bool sev_snp_is_rinj_active(struct kvm_vcpu *vcpu) { return false; }
-+static inline unsigned sev_snp_max_planes(struct kvm *kvm) { return 1; }
+ #ifdef CONFIG_LOCKDEP
+ 	/* Inform lockdep that the config_lock is acquired after vcpu->mutex */
+-	mutex_lock(&vcpu->mutex);
++	kvm_vcpu_lock(vcpu);
+ 	mutex_lock(&vcpu->kvm->arch.config_lock);
+ 	mutex_unlock(&vcpu->kvm->arch.config_lock);
+-	mutex_unlock(&vcpu->mutex);
++	kvm_vcpu_unlock(vcpu);
  #endif
  
- /* vmenter.S */
+ 	/* Force users to call KVM_ARM_VCPU_INIT */
+diff --git a/arch/arm64/kvm/inject_fault.c b/arch/arm64/kvm/inject_fault.c
+index 89982bd3345f..000d94ed7948 100644
+--- a/arch/arm64/kvm/inject_fault.c
++++ b/arch/arm64/kvm/inject_fault.c
+@@ -248,7 +248,7 @@ static bool kvm_sea_target_is_el2(struct kvm_vcpu *vcpu)
+ 
+ int kvm_inject_sea(struct kvm_vcpu *vcpu, bool iabt, u64 addr)
+ {
+-	lockdep_assert_held(&vcpu->mutex);
++	lockdep_assert_held(kvm_vcpu_mutex(vcpu));
+ 
+ 	if (is_nested_ctxt(vcpu) && kvm_sea_target_is_el2(vcpu))
+ 		return kvm_inject_nested_sea(vcpu, iabt, addr);
+@@ -367,7 +367,7 @@ static bool kvm_serror_undeliverable_at_el2(struct kvm_vcpu *vcpu)
+ 
+ int kvm_inject_serror_esr(struct kvm_vcpu *vcpu, u64 esr)
+ {
+-	lockdep_assert_held(&vcpu->mutex);
++	lockdep_assert_held(kvm_vcpu_mutex(vcpu));
+ 
+ 	if (is_nested_ctxt(vcpu) && kvm_serror_target_is_el2(vcpu))
+ 		return kvm_inject_nested_serror(vcpu, esr);
+diff --git a/arch/powerpc/kvm/book3s_xics.c b/arch/powerpc/kvm/book3s_xics.c
+index 74a44fa702b0..a9afd9df2690 100644
+--- a/arch/powerpc/kvm/book3s_xics.c
++++ b/arch/powerpc/kvm/book3s_xics.c
+@@ -1361,9 +1361,9 @@ static void kvmppc_xics_release(struct kvm_device *dev)
+ 		 * have been cleared and the vcpu will not be going into the
+ 		 * XICS code anymore.
+ 		 */
+-		mutex_lock(&vcpu->mutex);
++		kvm_vcpu_lock(vcpu);
+ 		kvmppc_xics_free_icp(vcpu);
+-		mutex_unlock(&vcpu->mutex);
++		kvm_vcpu_unlock(vcpu);
+ 	}
+ 
+ 	if (kvm)
+diff --git a/arch/powerpc/kvm/book3s_xive.c b/arch/powerpc/kvm/book3s_xive.c
+index 1d67237783b7..e0c68e86f951 100644
+--- a/arch/powerpc/kvm/book3s_xive.c
++++ b/arch/powerpc/kvm/book3s_xive.c
+@@ -2668,9 +2668,9 @@ static void kvmppc_xive_release(struct kvm_device *dev)
+ 		 * be executing the XIVE push or pull code or accessing
+ 		 * the XIVE MMIO regions.
+ 		 */
+-		mutex_lock(&vcpu->mutex);
++		kvm_vcpu_lock(vcpu);
+ 		kvmppc_xive_cleanup_vcpu(vcpu);
+-		mutex_unlock(&vcpu->mutex);
++		kvm_vcpu_unlock(vcpu);
+ 	}
+ 
+ 	/*
+diff --git a/arch/powerpc/kvm/book3s_xive_native.c b/arch/powerpc/kvm/book3s_xive_native.c
+index 728b5606dd14..40e93ac5fc2f 100644
+--- a/arch/powerpc/kvm/book3s_xive_native.c
++++ b/arch/powerpc/kvm/book3s_xive_native.c
+@@ -1052,9 +1052,9 @@ static void kvmppc_xive_native_release(struct kvm_device *dev)
+ 		 * be executing the XIVE push or pull code or accessing
+ 		 * the XIVE MMIO regions.
+ 		 */
+-		mutex_lock(&vcpu->mutex);
++		kvm_vcpu_lock(vcpu);
+ 		kvmppc_xive_native_cleanup_vcpu(vcpu);
+-		mutex_unlock(&vcpu->mutex);
++		kvm_vcpu_unlock(vcpu);
+ 	}
+ 
+ 	/*
+diff --git a/arch/riscv/kvm/aia_device.c b/arch/riscv/kvm/aia_device.c
+index 3d1e81e2a36b..d98c8fddc89d 100644
+--- a/arch/riscv/kvm/aia_device.c
++++ b/arch/riscv/kvm/aia_device.c
+@@ -181,12 +181,12 @@ static int aia_imsic_addr(struct kvm *kvm, u64 *addr,
+ 			return -EINVAL;
+ 	}
+ 
+-	mutex_lock(&vcpu->mutex);
++	kvm_vcpu_lock(vcpu);
+ 	if (write)
+ 		vcpu_aia->imsic_addr = *addr;
+ 	else
+ 		*addr = vcpu_aia->imsic_addr;
+-	mutex_unlock(&vcpu->mutex);
++	kvm_vcpu_unlock(vcpu);
+ 
+ 	return 0;
+ }
+diff --git a/arch/s390/kvm/interrupt.c b/arch/s390/kvm/interrupt.c
+index 3bcdbbbb6891..1d66ef9f7527 100644
+--- a/arch/s390/kvm/interrupt.c
++++ b/arch/s390/kvm/interrupt.c
+@@ -3176,12 +3176,12 @@ void kvm_s390_gisa_enable(struct kvm *kvm)
+ 	if (!gisa_desc)
+ 		return;
+ 	kvm_for_each_vcpu(i, vcpu, kvm) {
+-		mutex_lock(&vcpu->mutex);
++		kvm_vcpu_lock(vcpu);
+ 		vcpu->arch.sie_block->gd = gisa_desc;
+ 		vcpu->arch.sie_block->eca |= ECA_AIV;
+ 		VCPU_EVENT(vcpu, 3, "AIV gisa format-%u enabled for cpu %03u",
+ 			   vcpu->arch.sie_block->gd & 0x3, vcpu->vcpu_id);
+-		mutex_unlock(&vcpu->mutex);
++		kvm_vcpu_unlock(vcpu);
+ 	}
+ }
+ 
+@@ -3212,10 +3212,10 @@ void kvm_s390_gisa_disable(struct kvm *kvm)
+ 	if (!gi->origin)
+ 		return;
+ 	kvm_for_each_vcpu(i, vcpu, kvm) {
+-		mutex_lock(&vcpu->mutex);
++		kvm_vcpu_lock(vcpu);
+ 		vcpu->arch.sie_block->eca &= ~ECA_AIV;
+ 		vcpu->arch.sie_block->gd = 0U;
+-		mutex_unlock(&vcpu->mutex);
++		kvm_vcpu_unlock(vcpu);
+ 		VCPU_EVENT(vcpu, 3, "AIV disabled for cpu %03u", vcpu->vcpu_id);
+ 	}
+ 	kvm_s390_gisa_destroy(kvm);
+diff --git a/arch/s390/kvm/kvm-s390.c b/arch/s390/kvm/kvm-s390.c
+index 8401bcad1f37..e6fe83da172f 100644
+--- a/arch/s390/kvm/kvm-s390.c
++++ b/arch/s390/kvm/kvm-s390.c
+@@ -2360,13 +2360,13 @@ int kvm_s390_cpus_from_pv(struct kvm *kvm, u16 *rc, u16 *rrc)
+ 	 * We want to return the first failure rc and rrc, though.
+ 	 */
+ 	kvm_for_each_vcpu(i, vcpu, kvm) {
+-		mutex_lock(&vcpu->mutex);
++		kvm_vcpu_lock(vcpu);
+ 		if (kvm_s390_pv_destroy_cpu(vcpu, &_rc, &_rrc) && !ret) {
+ 			*rc = _rc;
+ 			*rrc = _rrc;
+ 			ret = -EIO;
+ 		}
+-		mutex_unlock(&vcpu->mutex);
++		kvm_vcpu_unlock(vcpu);
+ 	}
+ 	/* Ensure that we re-enable gisa if the non-PV guest used it but the PV guest did not. */
+ 	if (use_gisa)
+@@ -2398,9 +2398,9 @@ static int kvm_s390_cpus_to_pv(struct kvm *kvm, u16 *rc, u16 *rrc)
+ 		kvm_s390_gisa_disable(kvm);
+ 
+ 	kvm_for_each_vcpu(i, vcpu, kvm) {
+-		mutex_lock(&vcpu->mutex);
++		kvm_vcpu_lock(vcpu);
+ 		r = kvm_s390_pv_create_cpu(vcpu, rc, rrc);
+-		mutex_unlock(&vcpu->mutex);
++		kvm_vcpu_unlock(vcpu);
+ 		if (r)
+ 			break;
+ 	}
+diff --git a/arch/s390/kvm/pv.c b/arch/s390/kvm/pv.c
+index 4b865e75351c..4661cbf28199 100644
+--- a/arch/s390/kvm/pv.c
++++ b/arch/s390/kvm/pv.c
+@@ -33,7 +33,7 @@ EXPORT_SYMBOL_GPL(kvm_s390_pv_is_protected);
+ 
+ bool kvm_s390_pv_cpu_is_protected(struct kvm_vcpu *vcpu)
+ {
+-	lockdep_assert_held(&vcpu->mutex);
++	lockdep_assert_held(kvm_vcpu_mutex(vcpu));
+ 	return !!kvm_s390_pv_cpu_get_handle(vcpu);
+ }
+ EXPORT_SYMBOL_GPL(kvm_s390_pv_cpu_is_protected);
+diff --git a/arch/x86/kvm/svm/sev.c b/arch/x86/kvm/svm/sev.c
+index d04f71836ef7..a23dcb081751 100644
+--- a/arch/x86/kvm/svm/sev.c
++++ b/arch/x86/kvm/svm/sev.c
+@@ -938,7 +938,7 @@ static int sev_es_sync_vmsa(struct vcpu_svm *svm)
+ 	u8 *d;
+ 	int i;
+ 
+-	lockdep_assert_held(&vcpu->mutex);
++	lockdep_assert_held(kvm_vcpu_mutex(vcpu));
+ 
+ 	if (vcpu->arch.guest_state_protected)
+ 		return -EINVAL;
+diff --git a/arch/x86/kvm/vmx/nested.h b/arch/x86/kvm/vmx/nested.h
+index 213a448104af..7677dff127f1 100644
+--- a/arch/x86/kvm/vmx/nested.h
++++ b/arch/x86/kvm/vmx/nested.h
+@@ -57,7 +57,7 @@ bool nested_vmx_check_io_bitmaps(struct kvm_vcpu *vcpu, unsigned int port,
+ 
+ static inline struct vmcs12 *get_vmcs12(struct kvm_vcpu *vcpu)
+ {
+-	lockdep_assert_once(lockdep_is_held(&vcpu->mutex) ||
++	lockdep_assert_once(lockdep_is_held(kvm_vcpu_mutex(vcpu)) ||
+ 			    !refcount_read(&vcpu->kvm->users_count));
+ 
+ 	return to_vmx(vcpu)->nested.cached_vmcs12;
+@@ -65,7 +65,7 @@ static inline struct vmcs12 *get_vmcs12(struct kvm_vcpu *vcpu)
+ 
+ static inline struct vmcs12 *get_shadow_vmcs12(struct kvm_vcpu *vcpu)
+ {
+-	lockdep_assert_once(lockdep_is_held(&vcpu->mutex) ||
++	lockdep_assert_once(lockdep_is_held(kvm_vcpu_mutex(vcpu)) ||
+ 			    !refcount_read(&vcpu->kvm->users_count));
+ 
+ 	return to_vmx(vcpu)->nested.cached_shadow_vmcs12;
+diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+index 6355fe7f546f..2a87359cf42f 100644
+--- a/arch/x86/kvm/x86.c
++++ b/arch/x86/kvm/x86.c
+@@ -12941,7 +12941,7 @@ int kvm_arch_vcpu_create(struct kvm_vcpu *vcpu)
+ 
+ void kvm_arch_vcpu_postcreate(struct kvm_vcpu *vcpu)
+ {
+-	if (mutex_lock_killable(&vcpu->mutex))
++	if (mutex_lock_killable(kvm_vcpu_mutex(vcpu)))
+ 		return;
+ 	vcpu_load(vcpu);
+ 	kvm_synchronize_tsc(vcpu, NULL);
+@@ -12950,7 +12950,7 @@ void kvm_arch_vcpu_postcreate(struct kvm_vcpu *vcpu)
+ 	/* poll control enabled by default */
+ 	vcpu->arch.msr_kvm_poll_control = 1;
+ 
+-	mutex_unlock(&vcpu->mutex);
++	kvm_vcpu_unlock(vcpu);
+ }
+ 
+ void kvm_arch_vcpu_destroy(struct kvm_vcpu *vcpu)
+diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
+index a6aacd507c02..611bba515ac0 100644
+--- a/include/linux/kvm_host.h
++++ b/include/linux/kvm_host.h
+@@ -999,6 +999,21 @@ static inline void kvm_vm_bugged(struct kvm *kvm)
+ 	unlikely(__ret);					\
+ })
+ 
++static inline void kvm_vcpu_lock(struct kvm_vcpu *vcpu)
++{
++	mutex_lock(&vcpu->mutex);
++}
++
++static inline void kvm_vcpu_unlock(struct kvm_vcpu *vcpu)
++{
++	mutex_unlock(&vcpu->mutex);
++}
++
++static inline struct mutex *kvm_vcpu_mutex(struct kvm_vcpu *vcpu)
++{
++	return &vcpu->mutex;
++}
++
+ static inline void kvm_vcpu_srcu_read_lock(struct kvm_vcpu *vcpu)
+ {
+ #ifdef CONFIG_PROVE_RCU
+diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+index a44f8dc8418a..d6975a5c60b4 100644
+--- a/virt/kvm/kvm_main.c
++++ b/virt/kvm/kvm_main.c
+@@ -1499,7 +1499,7 @@ int kvm_trylock_all_vcpus(struct kvm *kvm)
+ 	lockdep_assert_held(&kvm->lock);
+ 
+ 	kvm_for_each_vcpu(i, vcpu, kvm)
+-		if (!mutex_trylock_nest_lock(&vcpu->mutex, &kvm->lock))
++		if (!mutex_trylock_nest_lock(kvm_vcpu_mutex(vcpu), &kvm->lock))
+ 			goto out_unlock;
+ 	return 0;
+ 
+@@ -1507,7 +1507,7 @@ int kvm_trylock_all_vcpus(struct kvm *kvm)
+ 	kvm_for_each_vcpu(j, vcpu, kvm) {
+ 		if (i == j)
+ 			break;
+-		mutex_unlock(&vcpu->mutex);
++		kvm_vcpu_unlock(vcpu);
+ 	}
+ 	return -EINTR;
+ }
+@@ -1522,7 +1522,7 @@ int kvm_lock_all_vcpus(struct kvm *kvm)
+ 	lockdep_assert_held(&kvm->lock);
+ 
+ 	kvm_for_each_vcpu(i, vcpu, kvm) {
+-		r = mutex_lock_killable_nest_lock(&vcpu->mutex, &kvm->lock);
++		r = mutex_lock_killable_nest_lock(kvm_vcpu_mutex(vcpu), &kvm->lock);
+ 		if (r)
+ 			goto out_unlock;
+ 	}
+@@ -1532,7 +1532,7 @@ int kvm_lock_all_vcpus(struct kvm *kvm)
+ 	kvm_for_each_vcpu(j, vcpu, kvm) {
+ 		if (i == j)
+ 			break;
+-		mutex_unlock(&vcpu->mutex);
++		kvm_vcpu_unlock(vcpu);
+ 	}
+ 	return r;
+ }
+@@ -1546,7 +1546,7 @@ void kvm_unlock_all_vcpus(struct kvm *kvm)
+ 	lockdep_assert_held(&kvm->lock);
+ 
+ 	kvm_for_each_vcpu(i, vcpu, kvm)
+-		mutex_unlock(&vcpu->mutex);
++		kvm_vcpu_unlock(vcpu);
+ }
+ EXPORT_SYMBOL_FOR_KVM_INTERNAL(kvm_unlock_all_vcpus);
+ 
+@@ -4353,14 +4353,14 @@ static int kvm_vm_ioctl_create_vcpu(struct kvm *kvm, unsigned long id)
+ 	 * vCPU doesn't exist.  As a bonus, taking vcpu->mutex ensures lockdep
+ 	 * knows it's taken *inside* kvm->lock.
+ 	 */
+-	mutex_lock(&vcpu->mutex);
++	kvm_vcpu_lock(vcpu);
+ 	kvm_get_kvm(kvm);
+ 	r = create_vcpu_fd(vcpu);
+ 	if (r < 0)
+ 		goto kvm_put_xa_erase;
+ 
+ 	kvm_vcpu_finish_common(vcpu);
+-	mutex_unlock(&vcpu->mutex);
++	kvm_vcpu_unlock(vcpu);
+ 
+ 	mutex_unlock(&kvm->lock);
+ 	kvm_arch_vcpu_postcreate(vcpu);
+@@ -4368,7 +4368,7 @@ static int kvm_vm_ioctl_create_vcpu(struct kvm *kvm, unsigned long id)
+ 	return r;
+ 
+ kvm_put_xa_erase:
+-	mutex_unlock(&vcpu->mutex);
++	kvm_vcpu_unlock(vcpu);
+ 	kvm_put_kvm_no_destroy(kvm);
+ 	xa_erase(&kvm->planes[0]->vcpu_array, vcpu->vcpu_idx);
+ unlock_vcpu_destroy:
+@@ -4509,10 +4509,10 @@ static int kvm_wait_for_vcpu_online(struct kvm_vcpu *vcpu)
+ 	 * complete (kvm_vm_ioctl_create_vcpu() holds the mutex until the vCPU
+ 	 * is fully online).
+ 	 */
+-	if (mutex_lock_killable(&vcpu->mutex))
++	if (mutex_lock_killable(kvm_vcpu_mutex(vcpu)))
+ 		return -EINTR;
+ 
+-	mutex_unlock(&vcpu->mutex);
++	kvm_vcpu_unlock(vcpu);
+ 
+ 	if (WARN_ON_ONCE(!kvm_get_vcpu(kvm, vcpu->vcpu_idx)))
+ 		return -EIO;
+@@ -4552,7 +4552,7 @@ static long kvm_vcpu_ioctl(struct file *filp,
+ 	if (r != -ENOIOCTLCMD)
+ 		return r;
+ 
+-	if (mutex_lock_killable(&vcpu->mutex))
++	if (mutex_lock_killable(kvm_vcpu_mutex(vcpu)))
+ 		return -EINTR;
+ 	switch (ioctl) {
+ 	case KVM_RUN: {
+@@ -4764,7 +4764,7 @@ static long kvm_vcpu_ioctl(struct file *filp,
+ 		r = kvm_arch_vcpu_ioctl(filp, ioctl, arg);
+ 	}
+ out:
+-	mutex_unlock(&vcpu->mutex);
++	kvm_vcpu_unlock(vcpu);
+ 	kfree(fpu);
+ 	kfree(kvm_sregs);
+ 	return r;
 -- 
 2.53.0
 
