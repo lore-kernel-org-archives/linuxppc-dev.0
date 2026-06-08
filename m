@@ -1,92 +1,93 @@
-Return-Path: <linuxppc-dev+bounces-22270-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22271-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4F0B3CD8C92
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jun 2026 15:17:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1A923CD8C9D
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jun 2026 15:18:45 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gYwdS6KRTz2yS4;
-	Tue, 09 Jun 2026 01:17:32 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a00:1450:4864:20::631" arc.chain=google.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780931852;
-	cv=pass; b=Hd1sN+/+q2OR+V3KecImkTLA+PbOjX/YLiB8JOxpZsFwpDSxsZHHF+TAVmEZ4v2oH5afacWgedu8Pv76G9CbyrTOsmu9dCsIZ636xmy9cC4ezhWLrPwaCwjBLgWNpaGtUnR2ZnkeaJ56Mqm+X8jJtDKx8WKElGXHsdVaRRqshp5VVfRN97/iUTVFFICLLH6w2Kc7fH9ZDLl6sTanh21BfoahjxugPglOijnJDdV8PlpRTJgiio64LPmwB25qH0JexFdjqUA8KrMPU67IDQawZP9HoB8Fy4e7qA5mKjq35WpIk98vSl32cTp+eA68uWzzl60FV98bWGO4kpyErWM30g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gYwfq4ygLz3bpP;
+	Tue, 09 Jun 2026 01:18:43 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::62b" arc.chain=google.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780931923;
+	cv=pass; b=TI/QHW/4bLKaf8dOQWE15Lve9MUR3Wp+IMq6NDTPskONBM56JcHwkRyhIVK2OEKmQRkJWu5n8CuB08znhMgR1lHeVB7/2/sqimqR+OoVilTHYDHjmdyCNryd6boGGN+bE4myv9HAXCXxlpyXyX/YZUtNBPsZhKkvMWCKN5pBWH+xmOx/+CU8biTorJGXcnAfgT3HCGeISonAdodXxnMGvmgEQnf5Al/KDTdy8Oer8Fawm7QsLo7hAqIdQteIs0x2x3URL92yByuFkJowyMM4PKlg5kh9p6yOFopCy96vKw17ycEW+y4Jpj35j626LZgODrRXXyvQCocHOrDcG3K4dQ==
 ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1780931852; c=relaxed/relaxed;
-	bh=yOZ7AW/TQxNVQJPSlsPWX5PMQzNffbEW+fgTz/Ammvw=;
+	t=1780931923; c=relaxed/relaxed;
+	bh=TrIxg69gImaQo8ODOgcEAFRUbnotycj+tq5RTmAqHIs=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=UXBzIUG7gfHENI9QVcfAsQtepTG2WlawozYffQZHfdd8JDEsN3ixOyp7AZUPl4aCmcDrhJPQjBKy03x2whA1s4nc+DGOcBJi5YbTq4e8e6UmNi9eV734wiclwCTR7PLLdPbyTOTy3unqBZNX/N8HwLOeYG+vN6f0vRmsVUO7sAHY4lCSopPB2vbiLF3Rx2hzbsE0pGWHzkYzWaQog8EAw46+Jmxp/tcDi5nL7pgxYHAjYTYcTcCpAR18kEm0TYrxEwu6xxOxSYSPKDfVSsr5CEVtoM74KMcFTn/4g/OIKwfuUAqsE30WQKy+Zcb7nLcsb6KKRh8qfjr8jpWtBUDDqg==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linaro.org; dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=pVbAo7aT; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::631; helo=mail-ej1-x631.google.com; envelope-from=sumit.semwal@linaro.org; receiver=lists.ozlabs.org) smtp.mailfrom=linaro.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+	 To:Cc:Content-Type; b=jVXEnaJ4qY4c0jOvNQIjo3LdN+fyd/E2DtJuMcQ2RV6W/ere2VvQIeWEghYA15ftCE3+4mKCQu/+i0pP8NQGd+5EoJ7CyRohwSfhmNb+NWjUqVOc5/uCZnhzG0s58sWopLdKYk6gBcF2AsgY+kaPl29sc37bHhR8uwbqAEc2D8KswmW43cKMzThdQSVTmgk85vJ/S1wkTfEYGjKBrjqBZ+WCc0G7xysj1ApBe7fYTYkv2LEogUbjqnRWJMTFV5Q2tWxkFFbL2eociJynHXziz8Vox8c5c0Owi1M82Jn1yKfQZ2nfbhyZniPoKMzo8BNJwtWfRe1s/8E4MfjYHzHnUg==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=JW2eJJ9b; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::62b; helo=mail-pl1-x62b.google.com; envelope-from=irogers@google.com; receiver=lists.ozlabs.org) smtp.mailfrom=google.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=pVbAo7aT;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=JW2eJJ9b;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linaro.org (client-ip=2a00:1450:4864:20::631; helo=mail-ej1-x631.google.com; envelope-from=sumit.semwal@linaro.org; receiver=lists.ozlabs.org)
-Received: from mail-ej1-x631.google.com (mail-ej1-x631.google.com [IPv6:2a00:1450:4864:20::631])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::62b; helo=mail-pl1-x62b.google.com; envelope-from=irogers@google.com; receiver=lists.ozlabs.org)
+Received: from mail-pl1-x62b.google.com (mail-pl1-x62b.google.com [IPv6:2607:f8b0:4864:20::62b])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gYwdR1nJnz2yS0
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Jun 2026 01:17:29 +1000 (AEST)
-Received: by mail-ej1-x631.google.com with SMTP id a640c23a62f3a-bf0170c80f7so732158066b.3
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 08 Jun 2026 08:17:29 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1780931847; cv=none;
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gYwfn6mZjz2ytj
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Jun 2026 01:18:41 +1000 (AEST)
+Received: by mail-pl1-x62b.google.com with SMTP id d9443c01a7336-2c0b1a48855so392475ad.0
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 08 Jun 2026 08:18:41 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1780931919; cv=none;
         d=google.com; s=arc-20240605;
-        b=k8wYwlXrZZRbA5tvRg7XZqtn9x5f0h/H3ZcrYL0fbVQ9N+mt91ZqgpU8EzqJ75JKCh
-         iHmUNLIc3mwRKfVtndUgBLy2IVAgYgZBjXYOpOtXDKIlhl399m7jBIMbphhNKjTbkYCE
-         MofNUp9UXC3z2u+bAa0K73BpNHnLmrbxpT+QzwSpBhK3aTBLMG4YfyGQNmKgv7FmoS7g
-         jTZJpWYKYBKc8bZJNbkwfnExFcvsDsLNyC8Z2LfCZBBSKKl3V3USdO+m/Vcpw1nrisVl
-         Hbmv3KJMDjhpWfuUtikTYc3tw1vXL1cN2Wi9R80aEG1lkdU+HDX0fs99nRpujWwnmejP
-         uvdQ==
+        b=OezptlKF6RK4ohJ6IsZIa1qcYs+8E7/uduyixXMlzLDqQQo40AkLoYdAZJR+JfSmnf
+         mGTT7MMzWoSsTrpZMNtMznVHixbQrV25/7DTq4Uzbw+bimImpgydTlukSq/Hj3DT70Ha
+         55537Gi6RiIJGUQmckz4MYvrQI7WNBG5Gd0zgvSvVbIaiHE7WElNUE4ogYP2r9QduaTl
+         11SqqLSCGKqAhH5fqlchk86VV+eSDO3DSJZvOFlgNfmCp0jnrbt2sODs/J3nJ53wlsQW
+         ZNadLQKg1lrI98XUKZ7n1LEu65HGWdXRswjyQYAd/yUptvUVlvTuJD+FTXu70VoO17HC
+         a6IQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:dkim-signature;
-        bh=yOZ7AW/TQxNVQJPSlsPWX5PMQzNffbEW+fgTz/Ammvw=;
-        fh=fZrWn1q5df4/gJCHNU9Qs8ifunqjnPJ6bku4hi+D4VU=;
-        b=TdCujs/d/7DF2ueS5YJdjg5HoH1cIgyDxVVYczI8m9mIjZCMChhYwQSqJEFd4vanV/
-         szg5OupiK5QkPuv+/Y7QmkJvy+DS0LoOS/8LfoutbewVaUzUp+i2eZAn7TI7iYWxJ7Zb
-         WWOq8GjjrlaTHHCcNW3if0Q02eOAdQk8BhOhUK4PIel/RcDZwUEdU2ovFmC1FdZ6edJ4
-         SVQb0gVbprjArkQ16HssEXnZx1Wn15bKWeepWaulXm7q/Hbbq8GSO9u/Pq+omaxKdC9E
-         wTlKScDCtzWYsATEc9zBd3/iM3dtDikOO4XdZjPcKiYTUYpJ0FPGTisHyHpakAop8xK3
-         /oLg==;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=TrIxg69gImaQo8ODOgcEAFRUbnotycj+tq5RTmAqHIs=;
+        fh=mKpLFDGGVsuQzXOTfWOc8aYCjvtg0PIUeDHUO0sUoYQ=;
+        b=LY2asbtikdrjTL5VG7ezdlg/ZhHhZvyjnIISqRFtAlASDqEt2oLsM5VePohDcknbmO
+         ApmLYRyC7WGASqQcUO6WU86pFYC41jrCZsGqPV6JEQGPdRb700vT3mFEwXrVmt0wNaci
+         O5rQq7UZhmb+mME2uwcC/4JUHXvV7SraZi/HLtXCvF7T5J8KjE9cnoghTr0g7JelQ1Eq
+         y2ypqFBFJVxkKzOLA7TYocE4fcDC4qS62rW/pVOvjHVk/xbSPUPfuwTLUaAjBobjjhSN
+         Bj9B/YsGskYEA6G6BR1nGAuXmMV6QyWfrZVrxWstXzbbeVXN8nbTv9vUtSFAJOr3D8ka
+         pWdw==;
         darn=lists.ozlabs.org
 ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1780931847; x=1781536647; darn=lists.ozlabs.org;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=yOZ7AW/TQxNVQJPSlsPWX5PMQzNffbEW+fgTz/Ammvw=;
-        b=pVbAo7aTPtsGbjQfuhFVcr3+lCg1Hom0vdpaDN70VK2IRwlCHut2OnMIkh/NQBQyiC
-         MtYy4t/VFN//VmA88cp50XoLvL+H27X38wEvhoDIcNuetQazPYxmPs/ofFDoy47Ta8OC
-         pOdAz+ap8lLbHqqFsk/Bwq7zcDzbBUBq+tClh5jjY4L9L93Cq6mCphdGqzd1pP/MQIxC
-         TQPo/TfVbnvmIUEwYSy03PqTJa6njnoAzwmPxgoPtKcS6BqDMnqGHL9xCew8g903OyBR
-         XAlKOscFsywqCYVjr+ZPZacZyaOJWIreh3CjHBrI+I2K2rhTN6++r+4FigMEFo8WtUtj
-         zVPg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1780931847; x=1781536647;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+        d=google.com; s=20251104; t=1780931919; x=1781536719; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=yOZ7AW/TQxNVQJPSlsPWX5PMQzNffbEW+fgTz/Ammvw=;
-        b=eL1Wy+pHqPVdeBa2WW0//e8roEM7rjnzqupMltpnafA+RRF0FLdYJ09Y0Qrdvd0fq/
-         u4zonI90FAQOuPDhOGPrLce1KOvNYZ/SSQCiL+OkpTOpgcoNMpo7oABzXY7qFEiMnMiV
-         vIWS0NrUw2NP1hBS6XFv/q5HztNSyYgdQwxldhsdQdSHMqJFUVBf6yJZsTLwm0FBeA+8
-         bdK+9O+Rz2NpSILUPhRAFYOk3wzoi1VQvbbhFQlet76N+7jtlho8wGVNwrToy4ZMcZog
-         5QL2fm3QWkZxdB66DTYl7X8qh2OLGCblhn20hqXio9tqswM5S/fcC7PCYYQPrNJL6NP2
-         9M3w==
-X-Forwarded-Encrypted: i=1; AFNElJ9n/ASn98eEp3c1kutTWGT2YjdoJ5tOA2hn5ZS90z6TFEZBJ6uQMOyCtybWAa3EvJ6FNT+gn5wyWkPKdY4=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yxjbq/ie1RUKNRfi+p8R38CGSLjCTSXqFxMWqWOBaSpWyMIZKWw
-	lWKiGlvvrAgewLukytgiT/4sTp7/l6FpyRLY4jf2Z4Lw9BXO33X89CuKVet2c4VgAoF46bugq9s
-	X5m8wN0Maf0HVbCZo9x45NFXTyEY3CqJDkI5SjyLs+g==
-X-Gm-Gg: Acq92OFxKd3cb/5Euw6A/PeeETmWQV09iokI3ey0JD31NvCX3cpPbir21VNAAOnARzY
-	0LeWIPE+7o2+Ucl/GpQ/JkV8AZf+2BFKpR3n2b9WFZX5bDHql0ilEx0hZ3buG/orJEcj50j429a
-	Ogycf1PRU91211Y8WWDvqXl9AezmCXBC3uCbCi2bL+9Oq2+iUqIEIYGm38aIGqNMX4YqgnRKrSW
-	TgyYfYzaPLweB9qDQApZMagvl6VZa/CAIYiDZoA0K7K87hpVTp8JT29eZ5ncK1j5fUivY6BnIhv
-	iJQTdQpgpHDcE+diY6d2ejF77lVbtNEgz1Bbns7Rb2R742Sf7YwnO9hYASc=
-X-Received: by 2002:a17:907:c22:b0:bec:d077:c4e1 with SMTP id
- a640c23a62f3a-bf373ff1dbdmr731904466b.47.1780931846675; Mon, 08 Jun 2026
- 08:17:26 -0700 (PDT)
+        bh=TrIxg69gImaQo8ODOgcEAFRUbnotycj+tq5RTmAqHIs=;
+        b=JW2eJJ9bWRbAQZWM0mazB4oZCLsLubITP41wnGqpVcCG334fPi6mL0fLXTxmXko4Gr
+         9kMQLQK+6MDOIucUy6tEG2sapdNXR5AKyXNak3hTE9IzkyXcl0/Il3/4a/jnBOaUk7ua
+         1OwNSemtQ209RNxQFCTiVgOOau76JftNGgDZkaaU6ax5rxAbfhZluEoE7kQc0JFkIgGC
+         NudWjjDXj3Jjr9J1tr9lfe2o5S/As18VLxD9GKm5WZV13Xx3y4gku6sWqMEpmMLZEw7Z
+         +0d2dD3b2oeLsiq7u61/X33WLnU4wfWAdMk5wuZ1W+ODGLUf7ANcJrTKyRaGE1nIIyFo
+         Zj5A==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1780931919; x=1781536719;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=TrIxg69gImaQo8ODOgcEAFRUbnotycj+tq5RTmAqHIs=;
+        b=MinYglwBcsiW5hBqj+iWYfA3XsSXJWdeELDK4N0bGB/su6S9sGp9svQPhSV/uos/uM
+         I1mwHVl7Hql/QVoVZ+djTBvd30jrM87GLAJH1wFO/U7PQL5nPKBZaOIevNH05zj9uIPg
+         agwLHloFX4p+UkIGPuK5C2i8JWVkb84uuBQ2xUvKqAq0sWChi57Y1wU1rGVxystxwBNU
+         zQwkivEIBPy/1JSw8AvfVL9U5uvKTKme4YIVP3dnz3sibT+hJFu05Utyq8JJZ09Sazbn
+         YbAJjx9pxrAfjcxG9q0x5K7qdR3Y16sQAJJIHYBKXPYK9UcLJjqhYMVOhg863bUPVKqD
+         IuAg==
+X-Forwarded-Encrypted: i=1; AFNElJ9fYODKw54tWUNj2w3r+WyKB0DhAPpVWG07RV1LpvfftsAFS6W5FMLOvqXEaVOOKSyjCWS3Af06MmlcLZs=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YytW3RXY+S5tnx6VcWavtKJEtqAa30WfgJ1VIj/EgRF3qiTXNac
+	VOwdzDRLCgYype7Diu8cJ9Ebf2x/ZwFffNLYiJ/wyIIE3hBJr3bv5xpR5zYmYfFVD/m4vcJuWlB
+	zMGHEnXmRaOZWuXu1bEVEeP3aSG9u2U9cVdQfh6QR
+X-Gm-Gg: Acq92OFxUnWetGjCH3i/wPHjNDZzlJAbgPxboD3w6yY+KeFzfZPP6JKdOspTEVB+SYS
+	0Ms+gXNziSCzyEd5XUWmg9E81KczG8UMRk7bXJe/GMQ1q1QISyTMilrvtVUzPdzyGfNpzGjUKsj
+	jC58vFLzTfoF/MkrXJXI9neOZdl1DIeywHuZt2ZsFVNjS8H03xLHe28zligw45i5QijI0tOobe6
+	T0Y1twB9R8RCc39OBE58JKjZT0Jc5uxFeOoqdtZBEsRt5X4AmrVtDqLwHpPzCl+7tczzg1rED1K
+	4hOuVehNckfoKzEqnzYVoVk1dxMeYF2Ub0Xh0V2KdJIjoNI=
+X-Received: by 2002:a17:902:cf0b:b0:2c1:68ba:aa7b with SMTP id
+ d9443c01a7336-2c1ebfd6b21mr4979645ad.20.1780931918327; Mon, 08 Jun 2026
+ 08:18:38 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -100,64 +101,230 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20260522225853.878411-1-tjmercier@google.com> <ahPqbfH54R3JJyaV@infradead.org>
- <20260527160716.GN2487554@ziepe.ca> <20260604-dangerous-tuatara-of-sympathy-28e05e@houat>
- <CAO_48GEJsg4X7++zg-ztQgVibY_FjjManaA5_W3usjicGUQPdg@mail.gmail.com> <20260604135712.GV2487554@ziepe.ca>
-In-Reply-To: <20260604135712.GV2487554@ziepe.ca>
-From: Sumit Semwal <sumit.semwal@linaro.org>
-Date: Mon, 8 Jun 2026 20:47:15 +0530
-X-Gm-Features: AVVi8CdcrMng9NlewA5irjsXERkw9Ix0pSFdV0gf1_HiahCuxCNItaDbqkFH3sQ
-Message-ID: <CAO_48GH3NP09U6TdB5drbKY0TpwvtBXwrf=Jajsr5ttNbC_u9g@mail.gmail.com>
-Subject: Re: [PATCH] powerpc: Export set_memory_encrypted and set_memory_decrypted
-To: Jason Gunthorpe <jgg@ziepe.ca>
-Cc: Maxime Ripard <mripard@kernel.org>, Jiri Pirko <jiri@resnulli.us>, 
-	Christoph Hellwig <hch@infradead.org>, "T.J. Mercier" <tjmercier@google.com>, maddy@linux.ibm.com, 
-	mpe@ellerman.id.au, npiggin@gmail.com, chleroy@kernel.org, 
-	linuxppc-dev@lists.ozlabs.org, lkp@intel.com, linux-kernel@vger.kernel.org, 
-	iommu@lists.linux.dev, linux-mm@kvack.org, agordeev@linux.ibm.com, 
-	gerald.schaefer@linux.ibm.com, linux-s390@vger.kernel.org, 
-	Dan Williams <djbw@kernel.org>, Tom Lendacky <thomas.lendacky@amd.com>, x86@kernel.org, 
-	Arnd Bergmann <arnd@linaro.org>
+References: <20260608125951.90425-2-tshah@linux.ibm.com>
+In-Reply-To: <20260608125951.90425-2-tshah@linux.ibm.com>
+From: Ian Rogers <irogers@google.com>
+Date: Mon, 8 Jun 2026 08:18:26 -0700
+X-Gm-Features: AVVi8Ccbl3xR6n4R1G4IBDcL4ljsGEMowhTpXPvSlvHHfbFgDr6fr_hFW1gbXG4
+Message-ID: <CAP-5=fWbaEB=8niBhrUz6TLB2dgWv=kjrH8-Hn_PAmpUwqQThg@mail.gmail.com>
+Subject: Re: [RFC PATCH 0/4] perf: Add perf.data tracepoint events to
+ trace.dat conversion
+To: Tanushree Shah <tshah@linux.ibm.com>
+Cc: acme@kernel.org, jolsa@kernel.org, adrian.hunter@intel.com, 
+	vmolnaro@redhat.com, mpetlan@redhat.com, tmricht@linux.ibm.com, 
+	maddy@linux.ibm.com, namhyung@kernel.org, linux-kernel@vger.kernel.org, 
+	linux-perf-users@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
+	atrajeev@linux.ibm.com, hbathini@linux.ibm.com, Tejas.Manhas1@ibm.com, 
+	Tanushree.Shah@ibm.com, Shivani.Nittor@ibm.com
 Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Hi Jason,
-
-On Thu, 4 Jun 2026 at 19:27, Jason Gunthorpe <jgg@ziepe.ca> wrote:
+On Mon, Jun 8, 2026 at 6:00=E2=80=AFAM Tanushree Shah <tshah@linux.ibm.com>=
+ wrote:
 >
-> On Thu, Jun 04, 2026 at 12:51:49PM +0530, Sumit Semwal wrote:
->
-> > Given that Christoph's objection is not really about the modules part,
-> > but that the set_memory_{encrypted,decrypted} should not be used here,
-> > one option is to revert 78b30c50a7ac until that issue is sorted out?
->
-> Please no, we have stuff already using this so it would be a
-> functional regression. Revert making heaps into a module since that
-> doesn't have a functional regression.
+> This RFC patch series introduces support for converting perf.data files
+> containing tracepoint events into trace.dat format, enabling seamless
+> visualization and analysis using KerneShark.
 
-Thanks for your comments.
+Thanks for doing this, this is a useful feature!
 
-To me, it looks like while system and system_cc_shared heaps share a
-lot of code, their user bases have different needs. It's apparent that
-system_cc_heap users don't care about it being a module while system
-heap users would very much like so.
-
-I also discussed this with Arnd, and he suggested we could rearrange
-the code so that system_heap_cc_shared_priv depends on a new Kconfig
-symbol like
-
-config DMABUF_HEAPS_CC_SYSTEM
-        bool "DMA-BUF System Heap for memory encryption"
-        depends on ARCH_HAS_MEM_ENCRYPT && DMABUF_HEAPS_SYSTEM=y
-
-This allows building both into the kernel or leave encryption choice
-up to the consumers of the system heap.
-
-If this is agreeable to everyone, I can post Arnd's patch.
+nit: typo KernelShark
 
 >
-> Jason
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> Background and Motivation
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+>
+> Currently, perf and trace-cmd operate as separate tracing ecosystems with
+> incompatible data formats. Users who collect tracepoint data with
+> 'perf record' cannot easily visualize it in KernelShark's graphical
+> timeline view or leverage trace-cmd's analysis capabilities.
+>
+> This creates workflow friction when users need to:
+>
+> - Visualize perf tracepoint data in KernelShark's interactive graphical
+>   timeline
+> - Share trace data between perf and trace-cmd workflows and toolchains
+> - Perform architecture-independent conversion and analysis of traces
+>
+> This conversion bridge eliminates these barriers by enabling seamless
+> data exchange between perf and trace-cmd ecosystems, allowing users to
+> choose the best tool for each analysis phase.
+>
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> Implementation Overview
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+>
+> The series implements the trace.dat file format specification (version 7)
+> within perf's data conversion framework.
+>
+> **Patch 1/4: Core trace.dat Export Infrastructure**
+> Introduces util/trace-dat.c and util/trace-dat.h implementing:
+> - Per-CPU raw event buffer management (init, collect, free)
+> - Ftrace ring buffer page construction
+> - trace.dat section writers (strings, options, flyrecord sections)
+>
+> **Patch 2/4: Metadata Integration**
+> Extends util/trace-event-read.c to write trace.dat metadata during
+> perf.data
+> parsing:
+> - Initial format header (magic, version, endian, page size, compression)
+> - Section 16: HEADER INFO (header_page + header_event)
+> - Section 17: FTRACE EVENT FORMATS
+> - Section 18: EVENT FORMATS (per system/event format files)
+> - Section 19: KALLSYMS
+> - Section 21: CMDLINES
+> - Section 15: STRINGS (written last after all sections)
+>
+> **Patch 3/4: Conversion Backend**
+> Implements util/data-convert-trace.c with trace_convert__perf2dat()
+> function:
+> - Processes PERF_TYPE_TRACEPOINT samples via process_sample_event()
+> - Collects raw event data per-CPU using trace_dat__collect_cpu_event()
+> - Writes OPTIONS sections (CPUCOUNT, TRACECLOCK, metadata offsets)
+> - Writes FLYRECORD section with per-CPU ring buffer pages
+>
+> **Patch 4/4: User Interface**
+> Extends tools/perf/builtin-data.c with --to-trace-dat option:
+> - Adds command-line option for trace.dat output
+> - Mutually exclusive with --to-ctf and --to-json
+> - Calls trace_convert__perf2dat() to perform conversion
+>
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> Current Implementation Details
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+>
+> **trace.dat Format Version:**
+> The implementation currently targets trace.dat format version 7, which
+> is the stable version supported by current trace-cmd releases (v3.x).
+> This version is hardcoded to ensure compatibility with existing
+> trace-cmd and KernelShark installations. Future enhancements could add
+> version negotiation or support for newer format versions as they become
+> standardized.
+>
+> **Compression Strategy:**
+> Compression is explicitly disabled (set to NONE) in the generated
+> trace.dat files.
+> This design choice:
+> - Simplifies the initial implementation and testing
+> - Ensures maximum compatibility across trace-cmd versions
+> - Avoids external compression library dependencies
+>
+> Future work could add support for various compression algorithms (zlib,
+> zstd, lz4) with runtime selection via command-line options, significantly
+> reducing file sizes for large traces.
+>
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> Usage Example
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+>
+> ```bash
+> *Record tracepoint events with perf*
+> perf record -e sched:sched_switch -e sched:sched_wakeup -a sleep 10
+>
+> *Convert to trace.dat format*
+> perf data convert --to-trace-dat=3Doutput.dat
+>
+> *Verify trace.dat structure*
+> trace-cmd dump --summary output.dat
+>
+> *Analyze with trace-cmd*
+> trace-cmd report output.dat
+>
+> *Visualize in KernelShark*
+> kernelshark output.dat
+> ```
+>
+> **Conversion Output:**
+> ```
+> [ perf data convert: Converted 'perf.data' into trace.dat format
+> 'output.dat' ]
+> [ perf data convert: Converted 2684 events ]
+> ```
+> **trace-cmd dump --summary Output:**
+> ```
+>  Tracing meta data in file output.dat:
+>         [Initial format]
+>                 7       [Version]
+>                 0       [Little endian]
+>                 8       [Bytes in a long]
+>                 65536   [Page size, bytes]
+>                 none    [Compression algorithm]
+>                         [Compression version]
+>         [buffer "", "local" clock, 65536 page size, 16 cpus, 1048576 byte=
+s
+>     flyrecord data]
+>         [10 options]
+>         [Saved command lines, 0 bytes]
+>         [Kallsyms, 0 bytes]
+>         [Ftrace format, 0 events]
+>         [Header page, 206 bytes]
+>         [Header event, 205 bytes]
+>         [Events format, 1 systems]
+>         [9 sections]
+> ```
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> Testing and Verification
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+>
+> The series has been extensively tested with:
+> - Various tracepoint events (sched, irq, syscalls, block I/O)
+> - Mixed recordings containing both tracepoint and non-tracepoint events
+>   only tracepoints converted)
+> - Verification with trace-cmd report and KernelShark visualization
+> - Memory leak testing with Valgrind (0 bytes leaked)
+> - Cross-architecture testing (x86_64, ppc64le)
 
+It seems that some of this could be a test to give coverage of the
+feature. We have similar tests for other convertors:
+https://web.git.kernel.org/pub/scm/linux/kernel/git/perf/perf-tools-next.gi=
+t/tree/tools/perf/tests/shell/test_perf_data_converter_ctf.sh?h=3Dperf-tool=
+s-next
+https://web.git.kernel.org/pub/scm/linux/kernel/git/perf/perf-tools-next.gi=
+t/tree/tools/perf/tests/shell/test_perf_data_converter_json.sh?h=3Dperf-too=
+ls-next
 
-Best,
-Sumit.
+I think Sashiko has caught some coding issues, so I'll hold off on a
+full review until the churn from Sashiko subsides.
+
+Thanks!
+Ian
+
+> All generated trace.dat files successfully open in:
+> - trace-cmd report (v3.1+)
+> - KernelShark (v2.0+)
+>
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> Next Steps
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+>
+> We would highly appreciate reviews, comments, and feedback on:
+> - The overall architectural approach and integration points
+> - Compatibility considerations with trace-cmd ecosystem
+> - Performance characteristics for large-scale traces
+> - Additional use cases or workflow scenarios
+> - Future enhancement priorities
+>
+> Tanushree Shah (4):
+>   perf/trace-dat: Add trace.dat export infrastructure
+>   perf/trace-event: Write trace.dat metadata sections during parsing
+>   perf data-convert: Add perf.data to trace.dat conversion backend
+>   perf data: Add --to-trace-dat option for converting perf.data
+>     tracepoint events into trace.dat format
+>
+>  tools/perf/builtin-data.c            |  38 +-
+>  tools/perf/util/Build                |   2 +
+>  tools/perf/util/data-convert-trace.c | 152 ++++++
+>  tools/perf/util/data-convert.h       |   4 +
+>  tools/perf/util/trace-dat.c          | 705 +++++++++++++++++++++++++++
+>  tools/perf/util/trace-dat.h          |  79 +++
+>  tools/perf/util/trace-event-read.c   | 259 +++++++++-
+>  7 files changed, 1230 insertions(+), 9 deletions(-)
+>  create mode 100644 tools/perf/util/data-convert-trace.c
+>  create mode 100644 tools/perf/util/trace-dat.c
+>  create mode 100644 tools/perf/util/trace-dat.h
+>
+> --
+> 2.53.0
+>
 
