@@ -1,34 +1,34 @@
-Return-Path: <linuxppc-dev+bounces-22221-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22222-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 83EAECD8C92
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jun 2026 14:53:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EEE72CD8C9D
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jun 2026 14:53:20 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gYw4Q5sFfz3c4P;
-	Tue, 09 Jun 2026 00:52:22 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=85.214.250.239
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780930341;
-	cv=none; b=I595dpDchJfy+aoTz4E//GVl5y5v5dzz9q0ufn6Eo/2tRvgIOX7A8rasrvvvSMiqiPyqDxGkPUkV3wpnUQpPlF6gK11FBEZ7ss3Tbes+eL+QsQ2PDAoDMW34JFzl3OmWuGkh/MqkwwwWTW3Q9r7SdNdZ/fmUJTi3yku+LygLLgp0r4QkR3znlLMVchtFVmB5gRZH7rg91f+sIT5zECz9siV22ibtXFBwCBvafkvfAy+rJ9477RaV/fxoiHgfrUXIaDGOQvCh3k3ixTjR8c3pmKS9qbBpFNclkxZ/wq+uJBSuopOYUba41D8HfHGv25Hx/6SgTvBB1Gj/oewqY79/EQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gYw4R4nFxz3c5J;
+	Tue, 09 Jun 2026 00:52:23 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a01:238:42d9:3f00:e505:6202:4f0c:f051"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780930342;
+	cv=none; b=lvt1n+mGhcCl3Hm4YGoTqKdknhpdTEqTM1NaT/PoH5jgpKGyRi5Cd40/hPQddPMdZN+E4ADjww/c3Pdf9LO6Of7Ny7PoaWnUAXIQSkjPh+unyUPAec+7Qgav3DjFCTJuVcXkC+YoKM8C/u28OQ4Rvri0xzS1Dlk4S+7aWZD+Yhq4X9ghvWGZ1DioBtI03c/xMFcmp4U7Vj14S9EPqSVqi6F4POuKAKju65/A0KGqKolbLlJGEMp59qGg2YSyVIOV17E6VnxNa4CD4ri997sOKWlxXZF9FwvUOsMh/5lzkT/zrPjyWsQMM95evM3y8oD2iwXLav7yboR0cDPC89nktA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1780930341; c=relaxed/relaxed;
-	bh=PpRlZ8bHsEQcofpcprV068i76l8p2Ooj1Jvugv2drxc=;
+	t=1780930342; c=relaxed/relaxed;
+	bh=rt1rp+CREwIHUhdETzqNqnn91aXd15btjFtTngyGv/8=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=ZFY432KhCgceqyNqSTGyN3V9kTJNFbIEBXoqYX2VWFFBvl7AOe2llbfvG4z5mu8xGyfyWFEUyU24u//R6DErdGVQpo/aq9OrMtlgaM/y4EJ6HozJwxWb5bkxzBYFKYt82Ad9uR1KWpnm99QHpqIF7awgsFh7nQgegm52o5d4rpQzDW0wYMhKQBB+0VJZlGLLWWboWCtE6MP2clnOq/4Qn8TSXhFrC0Esdhu7WMYjqvRaD6GWSuj3jflG6dh7GjModDjw5Z2enqxKy/7cajQVNwV4eKeQfxRdbePnEmFwgEMK7MRLXDxNZFT3Hl7/O3+ITvH4uUaDVWSVpuu8AEnGRg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=8bytes.org; spf=pass (client-ip=85.214.250.239; helo=mail.8bytes.org; envelope-from=joro@8bytes.org; receiver=lists.ozlabs.org) smtp.mailfrom=8bytes.org
+	 MIME-Version; b=cqOmT2RtsG0egZ2TmZoqXXwdBp2NBT5+Kg3xNvBlb3RrNOG2Fh77Sy+zzel1FLioEOXFs1M7VJ7TS/V3kiUVpai/EaBHg7ZmIIkrwdWC9CYOz1eltj4SzyRydqJ9fMCCU3Vy7ybD0jfmNI1HN/STwaEDnIHje1igqqtry2vV51h8kkswNFxiMJaclZsoQJXLfJa/u3rzoesgbps0pUUxEZHfKj09wA/WJT/Bm4EXc03afjMvZZGMut8nWsCgH4SlhK7hBpeynMUkYl/lo5PpJC+PqyGbuWFjBDr0Xx9RzMe/4b1ZL+dtnPJ1+cnK3ux+cyx3cZtDQoLZTs8PSb+KRA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=8bytes.org; spf=pass (client-ip=2a01:238:42d9:3f00:e505:6202:4f0c:f051; helo=mail.8bytes.org; envelope-from=joro@8bytes.org; receiver=lists.ozlabs.org) smtp.mailfrom=8bytes.org
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=8bytes.org
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=8bytes.org (client-ip=85.214.250.239; helo=mail.8bytes.org; envelope-from=joro@8bytes.org; receiver=lists.ozlabs.org)
-Received: from mail.8bytes.org (mail.8bytes.org [85.214.250.239])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gYw4J0sMCz3btR
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=8bytes.org (client-ip=2a01:238:42d9:3f00:e505:6202:4f0c:f051; helo=mail.8bytes.org; envelope-from=joro@8bytes.org; receiver=lists.ozlabs.org)
+Received: from mail.8bytes.org (mail.8bytes.org [IPv6:2a01:238:42d9:3f00:e505:6202:4f0c:f051])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gYw4J4p3hz3btj
 	for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Jun 2026 00:52:15 +1000 (AEST)
 Received: from io.home.8bytes.org (p4ffe1d30.dip0.t-ipconnect.de [79.254.29.48])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.8bytes.org (Postfix) with ESMTPSA id 8C9352028B7;
-	Mon,  8 Jun 2026 16:43:09 +0200 (CEST)
+	by mail.8bytes.org (Postfix) with ESMTPSA id 841DF2028DD;
+	Mon,  8 Jun 2026 16:43:17 +0200 (CEST)
 From: =?UTF-8?q?J=C3=B6rg=20R=C3=B6del?= <joro@8bytes.org>
 To: Paolo Bonzini <pbonzini@redhat.com>,
 	Sean Christopherson <seanjc@google.com>
@@ -49,9 +49,9 @@ Cc: Tom Lendacky <thomas.lendacky@amd.com>,
 	x86@kernel.org,
 	coconut-svsm@lists.linux.dev,
 	joerg.roedel@amd.com
-Subject: [PATCH 21/60] kvm: Introduce per-plane VCPU requests
-Date: Mon,  8 Jun 2026 16:42:13 +0200
-Message-ID: <20260608144252.351443-22-joro@8bytes.org>
+Subject: [PATCH 58/60] kvm: svm: Invoke a specified VMPL level VMSA for the vCPU
+Date: Mon,  8 Jun 2026 16:42:50 +0200
+Message-ID: <20260608144252.351443-59-joro@8bytes.org>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20260608144252.351443-1-joro@8bytes.org>
 References: <20260608144252.351443-1-joro@8bytes.org>
@@ -70,87 +70,147 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-From: Joerg Roedel <joerg.roedel@amd.com>
+From: Tom Lendacky <thomas.lendacky@amd.com>
 
-The bitfield layout is shared with the global vcpu->common->requests
-field. A new flag will indicate in which bitmap the request will be
-set.
+Implement the SNP Run VMPL NAE event and MSR protocol to allow a guest to
+request a different VMPL level VMSA be run for the vCPU. This allows the
+guest to "call" an SVSM to process an SVSM request.
 
+Signed-off-by: Tom Lendacky <thomas.lendacky@amd.com>
+Co-developed-by: Joerg Roedel <joerg.roedel@amd.com>
 Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
 ---
- include/linux/kvm_host.h | 23 +++++++++++++++++++----
- 1 file changed, 19 insertions(+), 4 deletions(-)
+ arch/x86/include/asm/sev-common.h |  6 +++
+ arch/x86/kvm/svm/sev.c            | 71 +++++++++++++++++++++++++++++++
+ 2 files changed, 77 insertions(+)
 
-diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
-index 7704820986da..3c72a462ccfa 100644
---- a/include/linux/kvm_host.h
-+++ b/include/linux/kvm_host.h
-@@ -159,6 +159,7 @@ static inline bool kvm_is_error_gpa(gpa_t gpa)
- #define KVM_REQUEST_NO_WAKEUP      BIT(8)
- #define KVM_REQUEST_WAIT           BIT(9)
- #define KVM_REQUEST_NO_ACTION      BIT(10)
-+#define KVM_REQUEST_PER_PLANE      BIT(11)
- /*
-  * Architecture-independent vcpu->requests bit members
-  * Bits 3-7 are reserved for more arch-independent bits.
-@@ -184,6 +185,7 @@ static inline bool kvm_is_error_gpa(gpa_t gpa)
- 	(unsigned)(((nr) + KVM_REQUEST_ARCH_BASE) | (flags)); \
- })
- #define KVM_ARCH_REQ(nr)           KVM_ARCH_REQ_FLAGS(nr, 0)
-+#define KVM_ARCH_PLANE_REQ(nr)     KVM_ARCH_REQ_FLAGS(nr, KVM_REQUEST_PER_PLANE)
+diff --git a/arch/x86/include/asm/sev-common.h b/arch/x86/include/asm/sev-common.h
+index cedb7ea91da5..a09cf5690aba 100644
+--- a/arch/x86/include/asm/sev-common.h
++++ b/arch/x86/include/asm/sev-common.h
+@@ -114,6 +114,8 @@ enum psc_op {
  
- bool kvm_make_vcpus_request_mask(struct kvm *kvm, unsigned int req,
- 				 unsigned long *vcpu_bitmap);
-@@ -371,6 +373,10 @@ struct kvm_vcpu {
- 	int sigset_active;
- 	sigset_t sigset;
- 	unsigned int halt_poll_ns;
+ /* GHCB Run at VMPL Request/Response */
+ #define GHCB_MSR_VMPL_REQ		0x016
++#define GHCB_MSR_VMPL_LEVEL_POS		32
++#define GHCB_MSR_VMPL_LEVEL_MASK	GENMASK_ULL(7, 0)
+ #define GHCB_MSR_VMPL_REQ_LEVEL(v)			\
+ 	/* GHCBData[39:32] */				\
+ 	((((u64)(v) & GENMASK_ULL(7, 0)) << 32) |	\
+@@ -121,6 +123,10 @@ enum psc_op {
+ 	GHCB_MSR_VMPL_REQ)
+ 
+ #define GHCB_MSR_VMPL_RESP		0x017
++#define GHCB_MSR_VMPL_ERROR_POS		32
++#define GHCB_MSR_VMPL_ERROR_MASK	GENMASK_ULL(31, 0)
++#define GHCB_MSR_VMPL_RSVD_POS		12
++#define GHCB_MSR_VMPL_RSVD_MASK		GENMASK_ULL(19, 0)
+ #define GHCB_MSR_VMPL_RESP_VAL(v)			\
+ 	/* GHCBData[63:32] */				\
+ 	(((u64)(v) & GENMASK_ULL(63, 32)) >> 32)
+diff --git a/arch/x86/kvm/svm/sev.c b/arch/x86/kvm/svm/sev.c
+index 53cd3aba7368..b67566fcb69e 100644
+--- a/arch/x86/kvm/svm/sev.c
++++ b/arch/x86/kvm/svm/sev.c
+@@ -3556,6 +3556,10 @@ static int sev_es_validate_vmgexit(struct vcpu_svm *svm)
+ 		if (!sev_snp_guest(vcpu->kvm))
+ 			goto vmgexit_err;
+ 		break;
++	case SVM_VMGEXIT_SNP_RUN_VMPL:
++		if (!sev_snp_guest(vcpu->kvm))
++			goto vmgexit_err;
++		break;
+ 	default:
+ 		reason = GHCB_ERR_INVALID_EVENT;
+ 		goto vmgexit_err;
+@@ -4593,6 +4597,45 @@ static void sev_get_apic_ids(struct vcpu_svm *svm)
+ 	kvfree(desc);
+ }
+ 
++static int __sev_snp_run_vmpl(struct vcpu_svm *svm, unsigned int vmpl)
++{
++	struct kvm_vcpu *vcpu = &svm->vcpu;
++	struct kvm_vcpu *target = vcpu->common->vcpus[vmpl];
++	struct vcpu_svm *target_svm = to_svm(target);
 +
-+	u64 plane_requests;
++	if (!target)
++		return -EINVAL;
 +
-+	/* S390 only */
- 	bool valid_wakeup;
- 
- #ifdef CONFIG_HAS_IOMEM
-@@ -2356,7 +2362,10 @@ static inline void __kvm_make_request(int req, struct kvm_vcpu *vcpu)
- 	 * caller.  Paired with the smp_mb__after_atomic in kvm_check_request.
- 	 */
- 	smp_wmb();
--	set_bit(req & KVM_REQUEST_MASK, (void *)&vcpu->common->requests);
-+	if (req & KVM_REQUEST_PER_PLANE)
-+		set_bit(req & KVM_REQUEST_MASK, (void *)&vcpu->plane_requests);
-+	else
-+		set_bit(req & KVM_REQUEST_MASK, (void *)&vcpu->common->requests);
- }
- 
- static __always_inline void kvm_make_request(int req, struct kvm_vcpu *vcpu)
-@@ -2382,17 +2391,23 @@ static inline void kvm_make_request_and_kick(int req, struct kvm_vcpu *vcpu)
- 
- static inline bool kvm_request_pending(struct kvm_vcpu *vcpu)
++	/* Mark current plane as stopped so it is not selected */
++	kvm_set_mp_state(target, KVM_MP_STATE_RUNNABLE);
++	/* In case KVM_REQ_UPDATE_PROTECTED_GUEST_STATE is set - mark the new VMSA as runnable */
++	target_svm->sev_es.snp_ap_runnable = true;
++	kvm_vcpu_set_plane_runnable(target);
++	kvm_vcpu_set_plane_stopped(vcpu);
++
++	kvm_make_request(KVM_REQ_PLANE_RESCHED, vcpu);
++
++	return 1;
++}
++
++static int sev_snp_run_vmpl(struct vcpu_svm *svm)
++{
++	struct ghcb *ghcb = svm->sev_es.ghcb;
++	struct kvm_vcpu *vcpu = &svm->vcpu;
++	unsigned int vmpl;
++
++	vmpl = lower_32_bits(svm->vmcb->control.exit_info_1);
++	if (vmpl >= SVM_SEV_VMPL_MAX) {
++		vcpu_unimpl(vcpu, "vmgexit: invalid VMPL level [%u] from guest\n", vmpl);
++		return -EINVAL;
++	}
++
++	ghcb_set_sw_exit_info_1(ghcb, 0);
++	ghcb_set_sw_exit_info_2(ghcb, 0);
++
++	return __sev_snp_run_vmpl(svm, vmpl);
++}
++
+ static int sev_handle_vmgexit_msr_protocol(struct vcpu_svm *svm)
  {
--	return READ_ONCE(vcpu->common->requests);
-+	return READ_ONCE(vcpu->common->requests) || READ_ONCE(vcpu->plane_requests);
- }
+ 	struct vmcb_control_area *control = &svm->vmcb->control;
+@@ -4704,6 +4747,27 @@ static int sev_handle_vmgexit_msr_protocol(struct vcpu_svm *svm)
  
- static inline bool kvm_test_request(int req, struct kvm_vcpu *vcpu)
- {
--	return test_bit(req & KVM_REQUEST_MASK, (void *)&vcpu->common->requests);
-+	if (req & KVM_REQUEST_PER_PLANE)
-+		return test_bit(req & KVM_REQUEST_MASK, (void *)&vcpu->plane_requests);
-+	else
-+		return test_bit(req & KVM_REQUEST_MASK, (void *)&vcpu->common->requests);
- }
+ 		ret = snp_begin_psc_msr(svm, control->ghcb_gpa);
+ 		break;
++	case GHCB_MSR_VMPL_REQ: {
++		unsigned int vmpl;
++
++		if (!sev_snp_guest(vcpu->kvm))
++			goto out_terminate;
++
++		vmpl = get_ghcb_msr_bits(svm, GHCB_MSR_VMPL_LEVEL_MASK, GHCB_MSR_VMPL_LEVEL_POS);
++
++		set_ghcb_msr_bits(svm, 0, GHCB_MSR_VMPL_ERROR_MASK, GHCB_MSR_VMPL_ERROR_POS);
++		set_ghcb_msr_bits(svm, 0, GHCB_MSR_VMPL_RSVD_MASK, GHCB_MSR_VMPL_RSVD_POS);
++		set_ghcb_msr_bits(svm, GHCB_MSR_VMPL_RESP, GHCB_MSR_INFO_MASK, GHCB_MSR_INFO_POS);
++
++		if (vmpl >= SVM_SEV_VMPL_MAX) {
++			vcpu_unimpl(vcpu, "vmgexit: invalid VMPL level [%u] from guest\n", vmpl);
++			set_ghcb_msr_bits(svm, 1, GHCB_MSR_VMPL_ERROR_MASK, GHCB_MSR_VMPL_ERROR_POS);
++			break;
++		}
++
++		ret = __sev_snp_run_vmpl(svm, vmpl);
++		break;
++	}
+ 	case GHCB_MSR_TERM_REQ: {
+ 		u64 reason_set, reason_code;
  
- static inline void kvm_clear_request(int req, struct kvm_vcpu *vcpu)
- {
--	clear_bit(req & KVM_REQUEST_MASK, (void *)&vcpu->common->requests);
-+	if (req & KVM_REQUEST_PER_PLANE)
-+		clear_bit(req & KVM_REQUEST_MASK, (void *)&vcpu->plane_requests);
-+	else
-+		clear_bit(req & KVM_REQUEST_MASK, (void *)&vcpu->common->requests);
- }
- 
- static inline bool kvm_check_request(int req, struct kvm_vcpu *vcpu)
+@@ -4887,6 +4951,13 @@ int sev_handle_vmgexit(struct kvm_vcpu *vcpu)
+ 		sev_get_apic_ids(svm);
+ 		ret = 1;
+ 		break;
++	case SVM_VMGEXIT_SNP_RUN_VMPL:
++		ret = sev_snp_run_vmpl(svm);
++		if (ret < 0) {
++			svm_vmgexit_bad_input(svm, GHCB_ERR_INVALID_INPUT);
++			ret = 1;
++		}
++		break;
+ 	case SVM_VMGEXIT_UNSUPPORTED_EVENT:
+ 		vcpu_unimpl(vcpu,
+ 			    "vmgexit: unsupported event - exit_info_1=%#llx, exit_info_2=%#llx\n",
 -- 
 2.53.0
 
