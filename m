@@ -1,34 +1,34 @@
-Return-Path: <linuxppc-dev+bounces-22264-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22263-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 70F93CD8C9D
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jun 2026 14:57:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5C997CD8C9D
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jun 2026 14:58:00 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gYw566tQcz3byZ;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gYw564cnzz3fKp;
 	Tue, 09 Jun 2026 00:52:58 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a01:238:42d9:3f00:e505:6202:4f0c:f051"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780930376;
-	cv=none; b=KfBafXnwgnSSAzDbf8mHMLmiFQssGTSuvIruJcBpTOsiatVWnGNhpKLhB9PycqgGp94E7jaRmlsmAXzGMqgiw2bRVwVY5sCb8uKhlws4dWArUcGe/HVZPVmJfTWjuhqmQXTU+sTgKux9br4jBi+qaP68fUppFRIMaEzWFL1+GgnxL/vl5OFU7N3iM3BsYppZYHCTGgDlWA4pEDFYjp0ddMo06fa3DrxRbIPcC9fNr7bIJNGjYH9XDVxqvFpWnWo2/BHOr0DX9HLh0u/dJZkm7WcEfZCe34l5LLLBgB9SqnBEf1SlBQ5O3Fz+PWxoPuC6hmgGmkjk5I9YeWPpcltwPw==
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=85.214.250.239
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780930378;
+	cv=none; b=NHTPRn+meoawzylOlGA9UOwRSfzAE4cjM7Y8hxkmnIRwwp61FhOQ0Uh/nWaHlDcLlbCsQrktM6+ylzWmwrrdOhQ6N9qoyqYo6w6Vo3jZgfjyH0yNqP+kCq23fm1oh7yJaXDGCmtpiDrmXKFa3vF8QI4LLSOsFXnh/eOeDfZauYsD9sFrK2khZu9VZx0PkUBsEQsA48koHwUFnuVbvcw6MKrAS4aWA7QfRIlelmyrzdZxbJzQ1TS4ffDrgbdOJshtBTjllucQ5tIvo6OManRBYDXgIuvTNucpy7J+dQXaCsiMGN8OwdZfKxLh2fgnD4GbfHdcAZy4ESzqxyFCxOebpw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1780930376; c=relaxed/relaxed;
-	bh=B4TPHsOFU5hYJFIPX5DPiI3ud4wMiZHZZqUv89SH48U=;
+	t=1780930378; c=relaxed/relaxed;
+	bh=SVB1ywYkKrpSLx+oS3dk3EKQnmBS3axVzKuaF35WWos=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=WQi5grUhB0TZxm45SenBU3uI4KVVXAUHxzw8a8aKiVIFWZHFUWXaQD+vGP50ywyOpAOQFK50oli1MhPwUga7WebVJcJQ2NDXGdN3VALNeC1bHMbFJ5ZtQWCtsBY0QtsHiHpAKd/osfw9Ekefwpd7bhqvtdrmPIg+9/p1UD+JrELq/GazbjxcvOeD9YGxZXJvU2I0x2TEuUj+Pju8ny9kV08eV+O9PJnvn+xX9HDvHU09uCq9hGZ3HTnh7rXVimJXyPbpiiHqIQwJiHCSqa7X0htLSetEhTLDqT7qx8smLebFcL9loIHqxYyFLCH/H5wyuKgnYs6fhYlQmMBCQ9g0ww==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=8bytes.org; spf=pass (client-ip=2a01:238:42d9:3f00:e505:6202:4f0c:f051; helo=mail.8bytes.org; envelope-from=joro@8bytes.org; receiver=lists.ozlabs.org) smtp.mailfrom=8bytes.org
+	 MIME-Version; b=c3nd+byEt9XhvzBkyWTTtDqXpfX35LMes8YnMdDcN6mGtSL+DzcU6Wc9HXcddtcm5soWJUXMRh1PsSbHyUy/hB/awWt+w5mL9R2ckFwvPH2vDzfHR1248mLOBmhuoZo51xG4DOwEaNViYT58J1mDS5DVv8g5au77DKRy29ZQZ8hRXkUNJt46MQX3nCCH3XqY31j9OADyWtanSi5O5sFTBiCIpkw0uXVLtXT/MkWPHYmSA5ENEvQAF6pNz+1YHVJdQ5cTHVp9f+dZ/0c1VkL46kM23YfIKr/+wusuVGkrY+emwIby647evLY8cvwRfvVEZxpLxdgMrYtTwodCREp+Iw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=8bytes.org; spf=pass (client-ip=85.214.250.239; helo=mail.8bytes.org; envelope-from=joro@8bytes.org; receiver=lists.ozlabs.org) smtp.mailfrom=8bytes.org
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=8bytes.org
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=8bytes.org (client-ip=2a01:238:42d9:3f00:e505:6202:4f0c:f051; helo=mail.8bytes.org; envelope-from=joro@8bytes.org; receiver=lists.ozlabs.org)
-Received: from mail.8bytes.org (mail.8bytes.org [IPv6:2a01:238:42d9:3f00:e505:6202:4f0c:f051])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gYw4m4VgDz3dRj
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Jun 2026 00:52:40 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=8bytes.org (client-ip=85.214.250.239; helo=mail.8bytes.org; envelope-from=joro@8bytes.org; receiver=lists.ozlabs.org)
+Received: from mail.8bytes.org (mail.8bytes.org [85.214.250.239])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gYw4p5x8Cz3dWW
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Jun 2026 00:52:42 +1000 (AEST)
 Received: from io.home.8bytes.org (p4ffe1d30.dip0.t-ipconnect.de [79.254.29.48])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.8bytes.org (Postfix) with ESMTPSA id 0BE7C2028C8;
-	Mon,  8 Jun 2026 16:43:13 +0200 (CEST)
+	by mail.8bytes.org (Postfix) with ESMTPSA id D5A362028A7;
+	Mon,  8 Jun 2026 16:43:05 +0200 (CEST)
 From: =?UTF-8?q?J=C3=B6rg=20R=C3=B6del?= <joro@8bytes.org>
 To: Paolo Bonzini <pbonzini@redhat.com>,
 	Sean Christopherson <seanjc@google.com>
@@ -49,9 +49,9 @@ Cc: Tom Lendacky <thomas.lendacky@amd.com>,
 	x86@kernel.org,
 	coconut-svsm@lists.linux.dev,
 	joerg.roedel@amd.com
-Subject: [PATCH 37/60] kvm: Pass plane_level to kvm_set_routing_entry()
-Date: Mon,  8 Jun 2026 16:42:29 +0200
-Message-ID: <20260608144252.351443-38-joro@8bytes.org>
+Subject: [PATCH 04/60] KVM: SVM: Inject NMIs when Restricted Injection is active
+Date: Mon,  8 Jun 2026 16:41:56 +0200
+Message-ID: <20260608144252.351443-5-joro@8bytes.org>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20260608144252.351443-1-joro@8bytes.org>
 References: <20260608144252.351443-1-joro@8bytes.org>
@@ -70,197 +70,117 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-From: Joerg Roedel <joerg.roedel@amd.com>
+From: Melody Wang <huibo.wang@amd.com>
 
-The plane_level is used to route MSI IRQs to the correct plane.
+When Restricted Injection is active, only #HV exceptions can be injected
+into the SEV-SNP guest.
 
+Detect that, and then follow the #HV doorbell communication from the GHCB
+specification to inject NMIs.
+
+Co-developed-by: Thomas Lendacky <thomas.lendacky@amd.com>
+Signed-off-by: Thomas Lendacky <thomas.lendacky@amd.com>
+Signed-off-by: Melody Wang <huibo.wang@amd.com>
 Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
 ---
- arch/arm64/kvm/vgic/vgic-irqfd.c | 6 ++++--
- arch/loongarch/kvm/irqfd.c       | 6 ++++--
- arch/powerpc/kvm/mpic.c          | 5 +++--
- arch/riscv/kvm/vm.c              | 5 +++--
- arch/s390/kvm/interrupt.c        | 3 ++-
- arch/x86/kvm/irq.c               | 7 ++++---
- include/linux/kvm_host.h         | 3 ++-
- virt/kvm/irqchip.c               | 2 +-
- 8 files changed, 23 insertions(+), 14 deletions(-)
+ arch/x86/kvm/svm/sev.c | 19 ++++++++++++++++---
+ arch/x86/kvm/svm/svm.c |  8 ++++++++
+ arch/x86/kvm/svm/svm.h |  1 +
+ 3 files changed, 25 insertions(+), 3 deletions(-)
 
-diff --git a/arch/arm64/kvm/vgic/vgic-irqfd.c b/arch/arm64/kvm/vgic/vgic-irqfd.c
-index 479b896c8954..53e5fcc591d7 100644
---- a/arch/arm64/kvm/vgic/vgic-irqfd.c
-+++ b/arch/arm64/kvm/vgic/vgic-irqfd.c
-@@ -33,11 +33,13 @@ static int vgic_irqfd_set_irq(struct kvm_kernel_irq_routing_entry *e,
-  * @kvm: the VM this entry is applied to
-  * @e: kvm kernel routing entry handle
-  * @ue: user api routing entry handle
-+ * @plane_level: target plane level
-  * return 0 on success, -EINVAL on errors.
-  */
- int kvm_set_routing_entry(struct kvm *kvm,
- 			  struct kvm_kernel_irq_routing_entry *e,
--			  const struct kvm_irq_routing_entry *ue)
-+			  const struct kvm_irq_routing_entry *ue,
-+			  unsigned plane_level)
+diff --git a/arch/x86/kvm/svm/sev.c b/arch/x86/kvm/svm/sev.c
+index f2f40f81ba86..b48745fad8c5 100644
+--- a/arch/x86/kvm/svm/sev.c
++++ b/arch/x86/kvm/svm/sev.c
+@@ -5428,7 +5428,10 @@ static void __sev_snp_inject(enum inject_type type, struct kvm_vcpu *vcpu)
+ 		return;
+ 	}
+ 
+-	hvdb->events.vector = vcpu->arch.interrupt.nr;
++	if (type == INJECT_NMI)
++		hvdb->events.nmi = 1;
++	else
++		hvdb->events.vector = vcpu->arch.interrupt.nr;
+ 
+ 	prepare_hv_injection(svm, hvdb);
+ 
+@@ -5508,10 +5511,17 @@ void sev_snp_cancel_injection(struct kvm_vcpu *vcpu)
+ 	/* Copy info back into event_inj field (replaces #HV) */
+ 	svm->vmcb->control.event_inj = SVM_EVTINJ_VALID;
+ 
++	/*
++	 * KVM only injects a single event each time (prepare_hv_injection),
++	 * so when events.nmi is true, the vector will be zero
++	 */
+ 	if (hvdb->events.vector)
+ 		svm->vmcb->control.event_inj |= hvdb->events.vector |
+ 						SVM_EVTINJ_TYPE_INTR;
+ 
++	if (hvdb->events.nmi)
++		svm->vmcb->control.event_inj |= SVM_EVTINJ_TYPE_NMI;
++
+ 	hvdb->events.pending_events = 0;
+ 
+ out:
+@@ -5537,8 +5547,11 @@ bool sev_snp_blocked(enum inject_type type, struct kvm_vcpu *vcpu)
+ 	if (!hvdb)
+ 		return true;
+ 
+-	/* Indicate interrupts blocked based on guest acknowledgment */
+-	blocked = !!hvdb->events.vector;
++	/* Indicate NMIs and interrupts blocked based on guest acknowledgment */
++	if (type == INJECT_NMI)
++		blocked = hvdb->events.nmi;
++	else
++		blocked = !!hvdb->events.vector;
+ 
+ 	unmap_hvdb(vcpu, &hvdb_map);
+ 
+diff --git a/arch/x86/kvm/svm/svm.c b/arch/x86/kvm/svm/svm.c
+index 7253936c460c..5255393986cc 100644
+--- a/arch/x86/kvm/svm/svm.c
++++ b/arch/x86/kvm/svm/svm.c
+@@ -3738,6 +3738,9 @@ static void svm_inject_nmi(struct kvm_vcpu *vcpu)
  {
- 	int r = -EINVAL;
+ 	struct vcpu_svm *svm = to_svm(vcpu);
  
-@@ -57,7 +59,7 @@ int kvm_set_routing_entry(struct kvm *kvm,
- 		e->msi.data = ue->u.msi.data;
- 		e->msi.flags = ue->flags;
- 		e->msi.devid = ue->u.msi.devid;
--		e->msi.plane_level = 0;
-+		e->msi.plane_level = plane_level;
- 		break;
- 	default:
- 		goto out;
-diff --git a/arch/loongarch/kvm/irqfd.c b/arch/loongarch/kvm/irqfd.c
-index 50f0c32df46c..a36a8a9d8a66 100644
---- a/arch/loongarch/kvm/irqfd.c
-+++ b/arch/loongarch/kvm/irqfd.c
-@@ -39,11 +39,13 @@ int kvm_set_msi(struct kvm_kernel_irq_routing_entry *e,
-  * @kvm: the VM this entry is applied to
-  * @e: kvm kernel routing entry handle
-  * @ue: user api routing entry handle
-+ * @plane_level: target plane level
-  * return 0 on success, -EINVAL on errors.
-  */
- int kvm_set_routing_entry(struct kvm *kvm,
- 			struct kvm_kernel_irq_routing_entry *e,
--			const struct kvm_irq_routing_entry *ue)
-+			const struct kvm_irq_routing_entry *ue,
-+			unsigned plane_level)
- {
- 	switch (ue->type) {
- 	case KVM_IRQ_ROUTING_IRQCHIP:
-@@ -60,7 +62,7 @@ int kvm_set_routing_entry(struct kvm *kvm,
- 		e->msi.address_lo = ue->u.msi.address_lo;
- 		e->msi.address_hi = ue->u.msi.address_hi;
- 		e->msi.data = ue->u.msi.data;
--		e->msi.plane_level = 0;
-+		e->msi.plane_level = plane_level;
- 		return 0;
- 	default:
- 		return -EINVAL;
-diff --git a/arch/powerpc/kvm/mpic.c b/arch/powerpc/kvm/mpic.c
-index 0f568f5fff8b..6b6eba7fbf75 100644
---- a/arch/powerpc/kvm/mpic.c
-+++ b/arch/powerpc/kvm/mpic.c
-@@ -1824,7 +1824,8 @@ int kvm_set_msi(struct kvm_kernel_irq_routing_entry *e,
++	if (sev_snp_inject(INJECT_NMI, vcpu))
++		goto status;
++
+ 	svm->vmcb->control.event_inj = SVM_EVTINJ_VALID | SVM_EVTINJ_TYPE_NMI;
  
- int kvm_set_routing_entry(struct kvm *kvm,
- 			  struct kvm_kernel_irq_routing_entry *e,
--			  const struct kvm_irq_routing_entry *ue)
-+			  const struct kvm_irq_routing_entry *ue,
-+			  unsigned plane_level)
- {
- 	int r = -EINVAL;
+ 	if (svm->nmi_l1_to_l2)
+@@ -3752,6 +3755,8 @@ static void svm_inject_nmi(struct kvm_vcpu *vcpu)
+ 		svm->nmi_masked = true;
+ 		svm_set_iret_intercept(svm);
+ 	}
++
++status:
+ 	++vcpu->stat.nmi_injections;
+ }
  
-@@ -1841,7 +1842,7 @@ int kvm_set_routing_entry(struct kvm *kvm,
- 		e->msi.address_lo = ue->u.msi.address_lo;
- 		e->msi.address_hi = ue->u.msi.address_hi;
- 		e->msi.data = ue->u.msi.data;
--		e->msi.plane_level = 0;
-+		e->msi.plane_level = plane_level;
- 		break;
- 	default:
- 		goto out;
-diff --git a/arch/riscv/kvm/vm.c b/arch/riscv/kvm/vm.c
-index f518247e699b..6b3c8a0e74e2 100644
---- a/arch/riscv/kvm/vm.c
-+++ b/arch/riscv/kvm/vm.c
-@@ -118,7 +118,8 @@ bool kvm_arch_can_set_irq_routing(struct kvm *kvm)
+@@ -3968,6 +3973,9 @@ bool svm_nmi_blocked(struct kvm_vcpu *vcpu)
+ 	if (!gif_set(svm))
+ 		return true;
  
- int kvm_set_routing_entry(struct kvm *kvm,
- 			  struct kvm_kernel_irq_routing_entry *e,
--			  const struct kvm_irq_routing_entry *ue)
-+			  const struct kvm_irq_routing_entry *ue,
-+			  unsigned plane_level)
- {
- 	int r = -EINVAL;
++	if (sev_snp_is_rinj_active(vcpu))
++		return sev_snp_blocked(INJECT_NMI, vcpu);
++
+ 	if (is_guest_mode(vcpu) && nested_exit_on_nmi(svm))
+ 		return false;
  
-@@ -138,7 +139,7 @@ int kvm_set_routing_entry(struct kvm *kvm,
- 		e->msi.data = ue->u.msi.data;
- 		e->msi.flags = ue->flags;
- 		e->msi.devid = ue->u.msi.devid;
--		e->msi.plane_level = 0;
-+		e->msi.plane_level = plane_level;
- 		break;
- 	default:
- 		goto out;
-diff --git a/arch/s390/kvm/interrupt.c b/arch/s390/kvm/interrupt.c
-index 1d66ef9f7527..dbd6029773aa 100644
---- a/arch/s390/kvm/interrupt.c
-+++ b/arch/s390/kvm/interrupt.c
-@@ -2862,7 +2862,8 @@ void kvm_s390_reinject_machine_check(struct kvm_vcpu *vcpu,
+diff --git a/arch/x86/kvm/svm/svm.h b/arch/x86/kvm/svm/svm.h
+index a22ad5de03ea..bb0e5bfdb9a6 100644
+--- a/arch/x86/kvm/svm/svm.h
++++ b/arch/x86/kvm/svm/svm.h
+@@ -57,6 +57,7 @@ extern struct kvm_x86_ops svm_x86_ops __initdata;
  
- int kvm_set_routing_entry(struct kvm *kvm,
- 			  struct kvm_kernel_irq_routing_entry *e,
--			  const struct kvm_irq_routing_entry *ue)
-+			  const struct kvm_irq_routing_entry *ue,
-+			  unsigned plane_level)
- {
- 	const struct kvm_irq_routing_s390_adapter *adapter;
- 	u64 uaddr_s, uaddr_i;
-diff --git a/arch/x86/kvm/irq.c b/arch/x86/kvm/irq.c
-index b7e08eddb765..d2ecfd54d57a 100644
---- a/arch/x86/kvm/irq.c
-+++ b/arch/x86/kvm/irq.c
-@@ -295,7 +295,8 @@ bool kvm_arch_can_set_irq_routing(struct kvm *kvm)
+ enum inject_type {
+ 	INJECT_IRQ,
++	INJECT_NMI,
+ };
  
- int kvm_set_routing_entry(struct kvm *kvm,
- 			  struct kvm_kernel_irq_routing_entry *e,
--			  const struct kvm_irq_routing_entry *ue)
-+			  const struct kvm_irq_routing_entry *ue,
-+			  unsigned plane_level)
- {
- 	/* We can't check irqchip_in_kernel() here as some callers are
- 	 * currently initializing the irqchip. Other callers should therefore
-@@ -304,7 +305,7 @@ int kvm_set_routing_entry(struct kvm *kvm,
- 	switch (ue->type) {
- #ifdef CONFIG_KVM_IOAPIC
- 	case KVM_IRQ_ROUTING_IRQCHIP:
--		if (irqchip_split(kvm))
-+		if (irqchip_split(kvm) || plane_level != 0)
- 			return -EINVAL;
- 		e->irqchip.pin = ue->u.irqchip.pin;
- 		switch (ue->u.irqchip.irqchip) {
-@@ -332,7 +333,7 @@ int kvm_set_routing_entry(struct kvm *kvm,
- 		e->msi.address_lo = ue->u.msi.address_lo;
- 		e->msi.address_hi = ue->u.msi.address_hi;
- 		e->msi.data = ue->u.msi.data;
--		e->msi.plane_level = 0;
-+		e->msi.plane_level = plane_level;
- 
- 		if (kvm_msi_route_invalid(kvm, e))
- 			return -EINVAL;
-diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
-index 16dcca3132d3..cfb6911d6771 100644
---- a/include/linux/kvm_host.h
-+++ b/include/linux/kvm_host.h
-@@ -2355,7 +2355,8 @@ int kvm_set_irq_routing(struct kvm *kvm,
- int kvm_init_irq_routing(struct kvm *kvm);
- int kvm_set_routing_entry(struct kvm *kvm,
- 			  struct kvm_kernel_irq_routing_entry *e,
--			  const struct kvm_irq_routing_entry *ue);
-+			  const struct kvm_irq_routing_entry *ue,
-+			  unsigned plane_level);
- void kvm_free_irq_routing(struct kvm *kvm);
- 
- #else
-diff --git a/virt/kvm/irqchip.c b/virt/kvm/irqchip.c
-index ae47e56176f1..14480d1df4f9 100644
---- a/virt/kvm/irqchip.c
-+++ b/virt/kvm/irqchip.c
-@@ -146,7 +146,7 @@ static int setup_routing_entry(struct kvm *kvm,
- 
- 	e->gsi = gsi;
- 	e->type = ue->type;
--	r = kvm_set_routing_entry(kvm, e, ue);
-+	r = kvm_set_routing_entry(kvm, e, ue, 0);
- 	if (r)
- 		return r;
- 	if (e->type == KVM_IRQ_ROUTING_IRQCHIP)
+ /*
 -- 
 2.53.0
 
