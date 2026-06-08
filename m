@@ -1,34 +1,34 @@
-Return-Path: <linuxppc-dev+bounces-22247-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22253-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 82118CD8C9F
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jun 2026 14:56:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EAFB0CD8C9D
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jun 2026 14:56:32 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gYw4t1Cp5z3dpC;
-	Tue, 09 Jun 2026 00:52:46 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gYw4y6ptCz3f4Z;
+	Tue, 09 Jun 2026 00:52:50 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=85.214.250.239
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780930365;
-	cv=none; b=Oz+j4lMCZR5mESoekRNJiIf0NF0z9Q8Cb1HO4iH9glUanbMfwM9o8zSo1idiBMz8YCaH3LVFlp+vWDd9RAq7JZPmotbas2q+8fGCDLyCSCuoxS0ZlkntQ1Uz5HY7pxzAuUtcbkbRtSkiAP7w8mIp6t52SS8zNmFa0ONf57XkNCtS+2ne+E6KOxz3v03IbmimkpgJnTJVmFBvp+glLBUr+Xw0tA7dLg8RX/Kz5lcM7RA2u+mPBYattwUjyM5sjEowlo03pymKeiCVKgEmf2/KwPtWFn7uahr/Ib5xHe7clhflB1cKWfl1CwHxhu0WvwgZlmHjFIGI4cfSNv0NCYXYSQ==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780930369;
+	cv=none; b=Cs94fFC6YOs7t3/j2TCVJMNtJoAbzXr9UDp8ZXYng+yKZcCnenEdYCkpEOBv0814pcHW75hSnfLdWXQr47UGjGAQX/LwNzDfGzS7uN6wb6KNkSY1gUeMHnEFfn0XuSMB+lZGUKZs5BlTf2iVWb9vZHrXm1e6VsauVUQgtYfBFT7aSpvFcH5ac8Z6vKlJ7kcqv4XAir1yCGyQ66gkmM+AO6q6lQ7bUehaFoM2byghhpEL8HrxWAVHeJI2IgeR8XAV+u3I3cSIwQf3sOIHBWka+B8kqCaBgNfsjV3jwXoFlN2Fa0MCKfBmhRKcOi1YF9nn9v2gPiDZeRUapQ8m420dqQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1780930365; c=relaxed/relaxed;
-	bh=Yyu45SRK+NkOP+mRQ3mcGXs5yYvAkBVhVTdqsNED6A0=;
+	t=1780930369; c=relaxed/relaxed;
+	bh=d7cVvrLPT1nDfeX/sab2rzFk0HpH+ccX3/IETQ9g3FU=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=OoPEM3omZ3DrciXXuc0BnEVpmulzPjfVywMhiwPyzIWjoo3SwdtCvgcAehUUwrmTT0iimj5ZAwPyv+TJiHypkjrkQ/U8Ukli+3urNm9sOGHSpLYc0oHJiCPs0ddk0NhTkXNf+xhYfeu8Gk05jZStta6l78o6b0kST2RUx/tKmCfTe4mNfb0BwHFm7gd0NfLRVa6D3KbpNvOHB7TC6SN6M7YZL7+3X529WkEtmhrFKWzddrnk/RxdtkRxtHNp9uj/PsBxMXFMexzM/5Jr0Pp2ll4NN4qEyEaVlJlIViTFTn0YQqAfj2joLubsDuw93RfuUZ2Zl/r5GOBunTUZjqpUaQ==
+	 MIME-Version; b=iKYuDs7epV4HvUJuSmU3yAasfZZTUzEuMwmwQqZPMW3WiCUljeYUNfPt0e1i+rwxX2KN7OuW7WlO6No+PiXsl7GgNUr5O3VtkapgNf+FPDez9ooI6H34JC2Y5RoK3g+7HVbSqrrYWQhKPyKpVGkQYK9cwbf7OlzXRnU3IdihGctK6hP8hEHPDorO3O40WQgjQSVQLZr0bJO/onY0z2/YMP6rnKS/Y7iULVO9KH1Cuf6KIQCQUEnFii4m2lwiM6SetFFZM6NlhHzc2pnrIeTiSbd12V97oBxzgKOgqfnXoCpG0fvZt4EtCV9f2vAyJm9p1jtP00ZKeVvRqQ6zE8xUpQ==
 ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=8bytes.org; spf=pass (client-ip=85.214.250.239; helo=mail.8bytes.org; envelope-from=joro@8bytes.org; receiver=lists.ozlabs.org) smtp.mailfrom=8bytes.org
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=8bytes.org
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=8bytes.org (client-ip=85.214.250.239; helo=mail.8bytes.org; envelope-from=joro@8bytes.org; receiver=lists.ozlabs.org)
 Received: from mail.8bytes.org (mail.8bytes.org [85.214.250.239])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gYw4W4yfKz3cDt
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Jun 2026 00:52:27 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gYw4Z4zlNz3cVZ
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Jun 2026 00:52:30 +1000 (AEST)
 Received: from io.home.8bytes.org (p4ffe1d30.dip0.t-ipconnect.de [79.254.29.48])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.8bytes.org (Postfix) with ESMTPSA id 15F052028A8;
-	Mon,  8 Jun 2026 16:43:06 +0200 (CEST)
+	by mail.8bytes.org (Postfix) with ESMTPSA id 9C7712028BD;
+	Mon,  8 Jun 2026 16:43:10 +0200 (CEST)
 From: =?UTF-8?q?J=C3=B6rg=20R=C3=B6del?= <joro@8bytes.org>
 To: Paolo Bonzini <pbonzini@redhat.com>,
 	Sean Christopherson <seanjc@google.com>
@@ -49,9 +49,9 @@ Cc: Tom Lendacky <thomas.lendacky@amd.com>,
 	x86@kernel.org,
 	coconut-svsm@lists.linux.dev,
 	joerg.roedel@amd.com
-Subject: [PATCH 05/60] KVM: SVM: Inject MCEs when Restricted Injection is active
-Date: Mon,  8 Jun 2026 16:41:57 +0200
-Message-ID: <20260608144252.351443-6-joro@8bytes.org>
+Subject: [PATCH 26/60] kvm: Introduce arch-specific plane state
+Date: Mon,  8 Jun 2026 16:42:18 +0200
+Message-ID: <20260608144252.351443-27-joro@8bytes.org>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20260608144252.351443-1-joro@8bytes.org>
 References: <20260608144252.351443-1-joro@8bytes.org>
@@ -70,247 +70,238 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-From: Melody Wang <huibo.wang@amd.com>
+From: Joerg Roedel <joerg.roedel@amd.com>
 
-When Restricted Injection is active, only #HV exceptions can be injected
-into the SEV-SNP guest.
+Introduce struct kvm_arch_plane which is per architecture and will be
+used to store architecture-specific per-plane state.
 
-Detect that, and then follow the #HV doorbell communication from the
-GHCB specification to inject the MCEs.
-
-Co-developed-by: Thomas Lendacky <thomas.lendacky@amd.com>
-Signed-off-by: Thomas Lendacky <thomas.lendacky@amd.com>
-Signed-off-by: Melody Wang <huibo.wang@amd.com>
 Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
 ---
- arch/x86/include/asm/kvm-x86-ops.h |  1 +
- arch/x86/include/asm/kvm_host.h    |  1 +
- arch/x86/kvm/svm/sev.c             | 16 ++++++++++++++--
- arch/x86/kvm/svm/svm.c             | 17 +++++++++++++++++
- arch/x86/kvm/svm/svm.h             |  2 ++
- arch/x86/kvm/vmx/main.c            | 10 ++++++++++
- arch/x86/kvm/vmx/vmx.c             |  5 +++++
- arch/x86/kvm/vmx/x86_ops.h         |  1 +
- arch/x86/kvm/x86.c                 |  7 +++++++
- 9 files changed, 58 insertions(+), 2 deletions(-)
+ arch/arm64/include/asm/kvm_host.h     | 12 ++++++++++++
+ arch/loongarch/include/asm/kvm_host.h | 12 ++++++++++++
+ arch/mips/include/asm/kvm_host.h      | 12 ++++++++++++
+ arch/powerpc/include/asm/kvm_host.h   | 12 ++++++++++++
+ arch/riscv/include/asm/kvm_host.h     | 12 ++++++++++++
+ arch/s390/include/asm/kvm_host.h      | 12 ++++++++++++
+ arch/x86/include/asm/kvm_host.h       | 12 ++++++++++++
+ include/linux/kvm_host.h              |  2 ++
+ include/linux/kvm_types.h             |  1 +
+ virt/kvm/kvm_main.c                   |  9 +++++++++
+ 10 files changed, 96 insertions(+)
 
-diff --git a/arch/x86/include/asm/kvm-x86-ops.h b/arch/x86/include/asm/kvm-x86-ops.h
-index 3776cf5382a2..c8bff1e9325e 100644
---- a/arch/x86/include/asm/kvm-x86-ops.h
-+++ b/arch/x86/include/asm/kvm-x86-ops.h
-@@ -79,6 +79,7 @@ KVM_X86_OP(inject_exception)
- KVM_X86_OP(cancel_injection)
- KVM_X86_OP(interrupt_allowed)
- KVM_X86_OP(nmi_allowed)
-+KVM_X86_OP_OPTIONAL(mce_allowed)
- KVM_X86_OP(get_nmi_mask)
- KVM_X86_OP(set_nmi_mask)
- KVM_X86_OP(enable_nmi_window)
-diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
-index f14009f25a3b..43c92f0ada1e 100644
---- a/arch/x86/include/asm/kvm_host.h
-+++ b/arch/x86/include/asm/kvm_host.h
-@@ -1861,6 +1861,7 @@ struct kvm_x86_ops {
- 	void (*cancel_injection)(struct kvm_vcpu *vcpu);
- 	int (*interrupt_allowed)(struct kvm_vcpu *vcpu, bool for_injection);
- 	int (*nmi_allowed)(struct kvm_vcpu *vcpu, bool for_injection);
-+	int (*mce_allowed)(struct kvm_vcpu *vcpu);
- 	bool (*get_nmi_mask)(struct kvm_vcpu *vcpu);
- 	void (*set_nmi_mask)(struct kvm_vcpu *vcpu, bool masked);
- 	/* Whether or not a virtual NMI is pending in hardware. */
-diff --git a/arch/x86/kvm/svm/sev.c b/arch/x86/kvm/svm/sev.c
-index b48745fad8c5..6d5d66563b0d 100644
---- a/arch/x86/kvm/svm/sev.c
-+++ b/arch/x86/kvm/svm/sev.c
-@@ -5430,6 +5430,8 @@ static void __sev_snp_inject(enum inject_type type, struct kvm_vcpu *vcpu)
- 
- 	if (type == INJECT_NMI)
- 		hvdb->events.nmi = 1;
-+	else if (type == INJECT_MCE)
-+		hvdb->events.mce = 1;
- 	else
- 		hvdb->events.vector = vcpu->arch.interrupt.nr;
- 
-@@ -5445,6 +5447,11 @@ bool sev_snp_queue_exception(struct kvm_vcpu *vcpu)
- 	if (!sev_snp_is_rinj_active(vcpu))
- 		return false;
- 
-+	if (vcpu->arch.exception.vector == MC_VECTOR) {
-+		__sev_snp_inject(INJECT_MCE, vcpu);
-+		return true;
-+	}
-+
- 	/*
- 	 * Restricted Injection is enabled, only #HV is supported.
- 	 * If the vector is not HV_VECTOR, do not inject the exception,
-@@ -5513,7 +5520,7 @@ void sev_snp_cancel_injection(struct kvm_vcpu *vcpu)
- 
- 	/*
- 	 * KVM only injects a single event each time (prepare_hv_injection),
--	 * so when events.nmi is true, the vector will be zero
-+	 * so when events.nmi is true, the MCE and vector will be zero.
- 	 */
- 	if (hvdb->events.vector)
- 		svm->vmcb->control.event_inj |= hvdb->events.vector |
-@@ -5522,6 +5529,9 @@ void sev_snp_cancel_injection(struct kvm_vcpu *vcpu)
- 	if (hvdb->events.nmi)
- 		svm->vmcb->control.event_inj |= SVM_EVTINJ_TYPE_NMI;
- 
-+	if (hvdb->events.mce)
-+		svm->vmcb->control.event_inj |= MC_VECTOR | SVM_EVTINJ_TYPE_EXEPT;
-+
- 	hvdb->events.pending_events = 0;
- 
- out:
-@@ -5547,9 +5557,11 @@ bool sev_snp_blocked(enum inject_type type, struct kvm_vcpu *vcpu)
- 	if (!hvdb)
- 		return true;
- 
--	/* Indicate NMIs and interrupts blocked based on guest acknowledgment */
-+	/* Indicate NMIs, MCEs and interrupts blocked based on guest acknowledgment */
- 	if (type == INJECT_NMI)
- 		blocked = hvdb->events.nmi;
-+	else if (type == INJECT_MCE)
-+		blocked = hvdb->events.mce;
- 	else
- 		blocked = !!hvdb->events.vector;
- 
-diff --git a/arch/x86/kvm/svm/svm.c b/arch/x86/kvm/svm/svm.c
-index 5255393986cc..295e02c17b9b 100644
---- a/arch/x86/kvm/svm/svm.c
-+++ b/arch/x86/kvm/svm/svm.c
-@@ -4049,6 +4049,22 @@ static int svm_interrupt_allowed(struct kvm_vcpu *vcpu, bool for_injection)
- 	return 1;
- }
- 
-+bool svm_mce_blocked(struct kvm_vcpu *vcpu)
-+{
-+	if (sev_snp_is_rinj_active(vcpu))
-+		return sev_snp_blocked(INJECT_MCE, vcpu);
-+
-+	return false;
-+}
-+
-+static int svm_mce_allowed(struct kvm_vcpu *vcpu)
-+{
-+	if (svm_mce_blocked(vcpu))
-+		return 0;
-+
-+	return 1;
-+}
-+
- static void svm_enable_irq_window(struct kvm_vcpu *vcpu)
- {
- 	struct vcpu_svm *svm = to_svm(vcpu);
-@@ -5362,6 +5378,7 @@ struct kvm_x86_ops svm_x86_ops __initdata = {
- 	.cancel_injection = svm_cancel_injection,
- 	.interrupt_allowed = svm_interrupt_allowed,
- 	.nmi_allowed = svm_nmi_allowed,
-+	.mce_allowed = svm_mce_allowed,
- 	.get_nmi_mask = svm_get_nmi_mask,
- 	.set_nmi_mask = svm_set_nmi_mask,
- 	.enable_nmi_window = svm_enable_nmi_window,
-diff --git a/arch/x86/kvm/svm/svm.h b/arch/x86/kvm/svm/svm.h
-index bb0e5bfdb9a6..7d27ed7099a8 100644
---- a/arch/x86/kvm/svm/svm.h
-+++ b/arch/x86/kvm/svm/svm.h
-@@ -58,6 +58,7 @@ extern struct kvm_x86_ops svm_x86_ops __initdata;
- enum inject_type {
- 	INJECT_IRQ,
- 	INJECT_NMI,
-+	INJECT_MCE,
+diff --git a/arch/arm64/include/asm/kvm_host.h b/arch/arm64/include/asm/kvm_host.h
+index 32dc484781f0..e9cca2adb371 100644
+--- a/arch/arm64/include/asm/kvm_host.h
++++ b/arch/arm64/include/asm/kvm_host.h
+@@ -306,6 +306,18 @@ enum fgt_group_id {
+ 	__NR_FGT_GROUP_IDS__
  };
  
- /*
-@@ -801,6 +802,7 @@ void svm_set_cr4(struct kvm_vcpu *vcpu, unsigned long cr4);
- void disable_nmi_singlestep(struct vcpu_svm *svm);
- bool svm_smi_blocked(struct kvm_vcpu *vcpu);
- bool svm_nmi_blocked(struct kvm_vcpu *vcpu);
-+bool svm_mce_blocked(struct kvm_vcpu *vcpu);
- bool svm_interrupt_blocked(struct kvm_vcpu *vcpu);
- void svm_set_gif(struct vcpu_svm *svm, bool value);
- int svm_invoke_exit_handler(struct kvm_vcpu *vcpu, u64 exit_code);
-diff --git a/arch/x86/kvm/vmx/main.c b/arch/x86/kvm/vmx/main.c
-index dbebddf648be..f9c4703dda54 100644
---- a/arch/x86/kvm/vmx/main.c
-+++ b/arch/x86/kvm/vmx/main.c
-@@ -812,6 +812,15 @@ static void vt_cancel_hv_timer(struct kvm_vcpu *vcpu)
- }
++/* Per-plane state of VM */
++struct kvm_arch_plane {};
++
++static inline int kvm_arch_plane_init(struct kvm *kvm,
++				      struct kvm_plane *plane,
++				      unsigned plane_level)
++{
++	return 0;
++}
++
++static inline void kvm_arch_plane_destroy(struct kvm_plane *plane) {}
++
+ struct kvm_arch {
+ 	struct kvm_s2_mmu mmu;
+ 
+diff --git a/arch/loongarch/include/asm/kvm_host.h b/arch/loongarch/include/asm/kvm_host.h
+index 776bc487a705..225aa87ebbdd 100644
+--- a/arch/loongarch/include/asm/kvm_host.h
++++ b/arch/loongarch/include/asm/kvm_host.h
+@@ -116,6 +116,18 @@ struct kvm_phyid_map {
+ 	struct kvm_phyid_info phys_map[KVM_MAX_PHYID];
+ };
+ 
++/* Per-plane state of VM */
++struct kvm_arch_plane {};
++
++static inline int kvm_arch_plane_init(struct kvm *kvm,
++				      struct kvm_plane *plane,
++				      unsigned plane_level)
++{
++	return 0;
++}
++
++static inline void kvm_arch_plane_destroy(struct kvm_plane *plane) {}
++
+ struct kvm_arch {
+ 	/* Guest physical mm */
+ 	kvm_pte_t *pgd;
+diff --git a/arch/mips/include/asm/kvm_host.h b/arch/mips/include/asm/kvm_host.h
+index c14b10821817..b01911eb9064 100644
+--- a/arch/mips/include/asm/kvm_host.h
++++ b/arch/mips/include/asm/kvm_host.h
+@@ -172,6 +172,18 @@ struct loongson_kvm_ipi {
+ };
  #endif
  
-+static int vt_mce_allowed(struct kvm_vcpu *vcpu)
-+{
-+	if (is_td_vcpu(vcpu))
-+		return 0;
++/* Per-plane state of VM */
++struct kvm_arch_plane {};
 +
-+	return vmx_mce_allowed(vcpu);
++static inline int kvm_arch_plane_init(struct kvm *kvm,
++				      struct kvm_plane *plane,
++				      unsigned plane_level)
++{
++	return 0;
 +}
 +
++static inline void kvm_arch_plane_destroy(struct kvm_plane *plane) {}
 +
- static void vt_setup_mce(struct kvm_vcpu *vcpu)
- {
- 	if (is_td_vcpu(vcpu))
-@@ -945,6 +954,7 @@ struct kvm_x86_ops vt_x86_ops __initdata = {
- 	.cancel_injection = vt_op(cancel_injection),
- 	.interrupt_allowed = vt_op(interrupt_allowed),
- 	.nmi_allowed = vt_op(nmi_allowed),
-+	.mce_allowed = vt_op(mce_allowed),
- 	.get_nmi_mask = vt_op(get_nmi_mask),
- 	.set_nmi_mask = vt_op(set_nmi_mask),
- 	.enable_nmi_window = vt_op(enable_nmi_window),
-diff --git a/arch/x86/kvm/vmx/vmx.c b/arch/x86/kvm/vmx/vmx.c
-index b9103de01428..a82a4197d18a 100644
---- a/arch/x86/kvm/vmx/vmx.c
-+++ b/arch/x86/kvm/vmx/vmx.c
-@@ -5220,6 +5220,11 @@ int vmx_interrupt_allowed(struct kvm_vcpu *vcpu, bool for_injection)
- 	return !vmx_interrupt_blocked(vcpu);
+ struct kvm_arch {
+ 	/* Guest physical mm */
+ 	struct mm_struct gpa_mm;
+diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
+index 2d139c807577..c5b9fbaf34f3 100644
+--- a/arch/powerpc/include/asm/kvm_host.h
++++ b/arch/powerpc/include/asm/kvm_host.h
+@@ -269,6 +269,18 @@ struct kvm_hpt_info {
+ 
+ struct kvm_resize_hpt;
+ 
++/* Per-plane state of VM */
++struct kvm_arch_plane {};
++
++static inline int kvm_arch_plane_init(struct kvm *kvm,
++				      struct kvm_plane *plane,
++				      unsigned plane_level)
++{
++	return 0;
++}
++
++static inline void kvm_arch_plane_destroy(struct kvm_plane *plane) {}
++
+ /* Flag values for kvm_arch.secure_guest */
+ #define KVMPPC_SECURE_INIT_START 0x1 /* H_SVM_INIT_START has been called */
+ #define KVMPPC_SECURE_INIT_DONE  0x2 /* H_SVM_INIT_DONE completed */
+diff --git a/arch/riscv/include/asm/kvm_host.h b/arch/riscv/include/asm/kvm_host.h
+index 75b0a951c1bc..bcbf487d4cb7 100644
+--- a/arch/riscv/include/asm/kvm_host.h
++++ b/arch/riscv/include/asm/kvm_host.h
+@@ -76,6 +76,18 @@ struct kvm_vcpu_stat {
+ struct kvm_arch_memory_slot {
+ };
+ 
++/* Per-plane state of VM */
++struct kvm_arch_plane {};
++
++static inline int kvm_arch_plane_init(struct kvm *kvm,
++				      struct kvm_plane *plane,
++				      unsigned plane_level)
++{
++	return 0;
++}
++
++static inline void kvm_arch_plane_destroy(struct kvm_plane *plane) {}
++
+ struct kvm_arch {
+ 	/* G-stage vmid */
+ 	struct kvm_vmid vmid;
+diff --git a/arch/s390/include/asm/kvm_host.h b/arch/s390/include/asm/kvm_host.h
+index 8a4f4a39f7a2..bb3bfbfd35d8 100644
+--- a/arch/s390/include/asm/kvm_host.h
++++ b/arch/s390/include/asm/kvm_host.h
+@@ -638,6 +638,18 @@ struct kvm_s390_pv {
+ 
+ struct kvm_s390_mmu_cache;
+ 
++/* Per-plane state of VM */
++struct kvm_arch_plane {};
++
++static inline int kvm_arch_plane_init(struct kvm *kvm,
++				      struct kvm_plane *plane,
++				      unsigned plane_level)
++{
++	return 0;
++}
++
++static inline void kvm_arch_plane_destroy(struct kvm_plane *plane) {}
++
+ struct kvm_arch {
+ 	struct esca_block *sca;
+ 	debug_info_t *dbf;
+diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
+index 43c92f0ada1e..dd95c70bfdba 100644
+--- a/arch/x86/include/asm/kvm_host.h
++++ b/arch/x86/include/asm/kvm_host.h
+@@ -1412,6 +1412,18 @@ enum kvm_mmu_type {
+ 	KVM_NR_MMU_TYPES,
+ };
+ 
++/* Per-plane state of VM */
++struct kvm_arch_plane {};
++
++static inline int kvm_arch_plane_init(struct kvm *kvm,
++				      struct kvm_plane *plane,
++				      unsigned plane_level)
++{
++	return 0;
++}
++
++static inline void kvm_arch_plane_destroy(struct kvm_plane *plane) {}
++
+ struct kvm_arch {
+ 	unsigned long n_used_mmu_pages;
+ 	unsigned long n_requested_mmu_pages;
+diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
+index 7d06459a06f3..4a0eaa1de479 100644
+--- a/include/linux/kvm_host.h
++++ b/include/linux/kvm_host.h
+@@ -847,6 +847,8 @@ struct kvm_plane {
+ 
+ 	/* Per-Plane VCPU array */
+ 	struct xarray vcpu_array;
++
++	struct kvm_arch_plane arch;
+ };
+ 
+ struct kvm {
+diff --git a/include/linux/kvm_types.h b/include/linux/kvm_types.h
+index a568d8e6f4e8..07e82928c948 100644
+--- a/include/linux/kvm_types.h
++++ b/include/linux/kvm_types.h
+@@ -42,6 +42,7 @@ struct kvm_interrupt;
+ struct kvm_irq_routing_table;
+ struct kvm_memory_slot;
+ struct kvm_one_reg;
++struct kvm_plane;
+ struct kvm_run;
+ struct kvm_userspace_memory_region;
+ struct kvm_vcpu;
+diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+index f85ddb0fc781..91fb9abf9b31 100644
+--- a/virt/kvm/kvm_main.c
++++ b/virt/kvm/kvm_main.c
+@@ -1211,13 +1211,22 @@ static struct kvm_plane *kvm_create_plane(struct kvm *kvm, unsigned plane_level)
+ 
+ 	xa_init(&plane->vcpu_array);
+ 
++	if (kvm_arch_plane_init(kvm, plane, plane_level))
++		goto out_free_plane;
++
+ 	kvm->planes[plane_level] = plane;
+ 
+ 	return plane;
++
++out_free_plane:
++	kfree(plane);
++
++	return NULL;
  }
  
-+int vmx_mce_allowed(struct kvm_vcpu *vcpu)
-+{
-+	return 1;
-+}
-+
- int vmx_set_tss_addr(struct kvm *kvm, unsigned int addr)
+ static void kvm_destroy_one_plane(struct kvm_plane *plane)
  {
- 	void __user *ret;
-diff --git a/arch/x86/kvm/vmx/x86_ops.h b/arch/x86/kvm/vmx/x86_ops.h
-index d09abeac2b56..b75dfe7f039d 100644
---- a/arch/x86/kvm/vmx/x86_ops.h
-+++ b/arch/x86/kvm/vmx/x86_ops.h
-@@ -92,6 +92,7 @@ void vmx_inject_exception(struct kvm_vcpu *vcpu);
- void vmx_cancel_injection(struct kvm_vcpu *vcpu);
- int vmx_interrupt_allowed(struct kvm_vcpu *vcpu, bool for_injection);
- int vmx_nmi_allowed(struct kvm_vcpu *vcpu, bool for_injection);
-+int vmx_mce_allowed(struct kvm_vcpu *vcpu);
- bool vmx_get_nmi_mask(struct kvm_vcpu *vcpu);
- void vmx_set_nmi_mask(struct kvm_vcpu *vcpu, bool masked);
- void vmx_enable_nmi_window(struct kvm_vcpu *vcpu);
-diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index 0550359ed798..4b6b628efa21 100644
---- a/arch/x86/kvm/x86.c
-+++ b/arch/x86/kvm/x86.c
-@@ -10794,6 +10794,12 @@ static int kvm_check_and_inject_events(struct kvm_vcpu *vcpu,
- 			kvm_update_dr7(vcpu);
- 		}
++	kvm_arch_plane_destroy(plane);
+ 	kfree(plane);
+ }
  
-+		if (vcpu->arch.exception.vector == MC_VECTOR) {
-+			r = static_call(kvm_x86_mce_allowed)(vcpu);
-+			if (!r)
-+				goto out_except;
-+		}
-+
- 		kvm_inject_exception(vcpu);
- 
- 		vcpu->arch.exception.pending = false;
-@@ -10801,6 +10807,7 @@ static int kvm_check_and_inject_events(struct kvm_vcpu *vcpu,
- 
- 		can_inject = false;
- 	}
-+out_except:
- 
- 	/* Don't inject interrupts if the user asked to avoid doing so */
- 	if (vcpu->guest_debug & KVM_GUESTDBG_BLOCKIRQ)
 -- 
 2.53.0
 
