@@ -1,58 +1,57 @@
-Return-Path: <linuxppc-dev+bounces-22161-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22162-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9D2D4CD8C8E
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jun 2026 06:53:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 12AA1CD8C9D
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jun 2026 07:03:10 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gYjRR5jYTz2yRF;
-	Mon, 08 Jun 2026 16:53:07 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780901587;
-	cv=none; b=k6zcHLLDAB2yKuPkYbnzRS9vCkoPdAbd7RyAKSJ6pklLTVomHrUAbuI6rTpY9giezEptJHLHkEbhYgjwSkWgCIfQ3gPSyI4HV3d4+Z37j4n1s52AXZqbZemlX/tq0bVfDxxwJroySrtUGtS3lL9yT257ROPpY8OW0Olvr79chFdqquksWS1JPGcWItBKnFnb8xJ8DaD++zSXOGNvXfrJY32kAbHCcf+cMcMJ9IQETwnT/cC/rvnwWd0uASS11wxojLh8kNGhR6LvSPrRhpZyZ6fdTDnjidYP9Oq3ghtD5rOyfjwIk5P0s3BjzogBRi9yv6qFAiJTEeR6Cx9mugblRw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gYjg11k3Kz2yRF;
+	Mon, 08 Jun 2026 17:03:09 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780902189;
+	cv=none; b=Jdi6etaSpwXS+9x/U5tZuOTEpttoToD2eMBNPNyDNn0mgLdbIigu0gRuXRjm9EsXiq0YufVkQnUTKoHsRO1smOIaCL2oU82HoNC0V2c2Qh2TUH4P/ztsPE/t2NnlZR1EIx5dcSftatHTOE17Ao52tI8HUtKB12aU0zYMdrBzb4sEmoYGkuAKCwn2YDqF5AbDz4yfnYM/tUj4dGTQh5V1xCgtDIlGKUd2GKgAniv6AZemqiPaIWU3zIbSRjWqlF4j2EqLceNugJw/qnP9Rh2SSQlU6to8Os38nVV5SOys9CcyHdtZp+C8IiNQM3YgCaFB37mXt9fsZMYLJZSE02Su8Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1780901587; c=relaxed/relaxed;
-	bh=havdYnCEiwh5vTCKe1DHbkaoT5AWDXTLJ1Y7Ln7iWgw=;
+	t=1780902189; c=relaxed/relaxed;
+	bh=10dFrUC/6z32jGP8zynGCsubM/uQN+Pn4UzSAjajejM=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Tmg+VVxeH6xD72io+tbzx2bLB1gFx909Vkhd79oUNcQeDKv/TUFAg+LgNY5LZ2SUxXO2biLg7qX0MkNFyZvDmPtDiDK1F45X2rCnXPv0h5eR+HDDzVe+JZ9slGQfrhjSberv4gpqvHDUZuARisTrMfFtYpAy0ONrXMNMkK1TiFZkmrwvxRWUiMRwe+vLzfkpAHL5CmSo1uFAIABy3Mi+JU1/ovwLRXDnHLqIysD1VM+DC1EPAuY6k62qCdvZzV91oCoTM7SBYQyg5abhclMmSP8km5DgBFjztLrviiSuMpFPsuaF1U4RFRpZejKXpwuAQOr2XH1E0R3zdBpw1doAOw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=L1813wxY; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=johan@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 Content-Type:Content-Disposition:In-Reply-To; b=fv7s6pX86BM4stv803FXkHfFy6Q/8aCcX/tYwiYzhmNmUZ9bxMG2+4IUhJWiZokOR50efFXjiMg51gHJPKqRFcppLCayI6IaYIABSI+NMkzgVyDu9y7/vLzblWOnrIxdXn0gqnXLFQu5BMV60+L0+zZta9qeweYqNrPBFOOA7S3oeSlpDW2APrLE9rCz1kQMXLSCwZ90iexBqJp/NtCMD41M/WhefB/F7wKhOtNjSjM3Qmyz/pcWMAavD+EWbiEx8EAI/3NbJS/ME+vqwUeDl8zuKp+H7Ark8Y7e+n8Jxeu8Uhi+H0OFFLXxADCIqw92Bb22EAY9lmfGqt8lEgAS5Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Ds8FYyBn; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=johan@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=L1813wxY;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Ds8FYyBn;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=johan@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=johan@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gYjRQ30Vhz2xRs
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 08 Jun 2026 16:53:06 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gYjg033w0z2xRs
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 08 Jun 2026 17:03:08 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 313B943A31;
-	Mon,  8 Jun 2026 06:53:03 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id EC2AF1F00893;
-	Mon,  8 Jun 2026 06:53:02 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id C8DA242DD2;
+	Mon,  8 Jun 2026 07:03:05 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 980A31F0089A;
+	Mon,  8 Jun 2026 07:03:05 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1780901583;
-	bh=havdYnCEiwh5vTCKe1DHbkaoT5AWDXTLJ1Y7Ln7iWgw=;
+	s=k20260515; t=1780902185;
+	bh=10dFrUC/6z32jGP8zynGCsubM/uQN+Pn4UzSAjajejM=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=L1813wxYCSG23bMqgH0ctBCaj9Bpvn+Mzei1rNqsq0WCcwGOsXm6XM2KGxAXsFIYY
-	 PNDm8BVVIy+mxZVPKU4wVu6h4p0KPjoC1XxutYgkz/tkmmhAG8rVrOOKTNPIdmEki7
-	 ZhxSUdrBlMWLeL8QBDbyNq9XDMsiOMNBfZ2GhLV/YwyVuA/eN004Tel/YWmS0caTVI
-	 1Ki3J3QunXEpB3QhQYJVMtlF0mA4AxTKTG00ZLd+5TQtr+P/xrxmp+UI8GKHBADra+
-	 51Vuz5yLHqFvIOweKB/4wkDinKL1buqvy1wE9fbYOVn6sWyc24920VQdY8amOd7RLf
-	 3b6jOlh5wB1iw==
+	b=Ds8FYyBnv2B771u4jaYArIjXJx5UpC1WUxFyjTQDVhtf+l1qYyu5NwqVY+oOzuc6C
+	 YgqUxqU4gV2VnsPffdjORqDHElM1kd63ltUYUyVdF4TYaUEWtF2JD2pU6poVM1ArWL
+	 lMUinVJ6futH/7sdnAjzkFIuaCbufZx8fG+uk80ePL2EOH8cH49KxCDKv1sJ8txsUy
+	 Qpsb63Y/49p0ZHrtiY6ZwtKegiVpiUrgHwkrzV4CAq0F0zJwJnRUTZXAStb/+L2/kr
+	 FA/3lev2TYsrVndJqyIIwBECwbTBWrmYCkIgZRjk+HnLbC8Mzg1CGk5xkLhbQhHDnH
+	 KQOX+wjtpEfGA==
 Received: from johan by xi.lan with local (Exim 4.99.3)
 	(envelope-from <johan@kernel.org>)
-	id 1wWTr1-00000000Lrw-2QFM;
-	Mon, 08 Jun 2026 08:52:59 +0200
-Date: Mon, 8 Jun 2026 08:52:59 +0200
+	id 1wWU0k-00000000LzQ-1V0O;
+	Mon, 08 Jun 2026 09:03:02 +0200
+Date: Mon, 8 Jun 2026 09:03:02 +0200
 From: Johan Hovold <johan@kernel.org>
 To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Cc: Philipp Zabel <p.zabel@pengutronix.de>,
-	Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>,
+Cc: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>,
 	Lee Jones <lee@kernel.org>,
 	Mark Brown <broonie@opensource.wolfsonmicro.com>,
 	Thierry Reding <thierry.reding@avionic-design.de>,
@@ -86,6 +85,7 @@ Cc: Philipp Zabel <p.zabel@pengutronix.de>,
 	David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
 	Peter Chen <peter.chen@kernel.org>,
 	Paul Cercueil <paul@crapouillou.net>, Bin Liu <b-liu@ti.com>,
+	Philipp Zabel <p.zabel@pengutronix.de>,
 	Maximilian Luz <luzmaximilian@gmail.com>,
 	Hans de Goede <hansg@kernel.org>,
 	Ilpo =?utf-8?B?SsOkcnZpbmVu?= <ilpo.jarvinen@linux.intel.com>,
@@ -100,15 +100,14 @@ Cc: Philipp Zabel <p.zabel@pengutronix.de>,
 	intel-xe@lists.freedesktop.org, dri-devel@lists.freedesktop.org,
 	linux-usb@vger.kernel.org, linux-mips@vger.kernel.org,
 	platform-driver-x86@vger.kernel.org
-Subject: Re: [PATCH 22/23] reset: rzg2l: use
+Subject: Re: [PATCH 08/23] driver core: platform: provide
  platform_device_set_of_node_from_dev()
-Message-ID: <aiZmy1lxcYzMF78e@hovoldconsulting.com>
+Message-ID: <aiZpJkQBXg2pcczy@hovoldconsulting.com>
 References: <20260521-pdev-fwnode-ref-v1-0-88c324a1b8d2@oss.qualcomm.com>
- <20260521-pdev-fwnode-ref-v1-22-88c324a1b8d2@oss.qualcomm.com>
- <6af284545729f03a60d06479339862a2f08c6b7e.camel@pengutronix.de>
- <ah9QtExF2rUUTMNo@ashevche-desk.local>
- <aiK-qZqpuC-OEigf@hovoldconsulting.com>
- <aiLjE0SLwrDytyw0@ashevche-desk.local>
+ <20260521-pdev-fwnode-ref-v1-8-88c324a1b8d2@oss.qualcomm.com>
+ <ah9O15bMlAYgSlHx@ashevche-desk.local>
+ <aiK-EXwp_xhcbty9@hovoldconsulting.com>
+ <aiLi0KZskrCyEYO5@ashevche-desk.local>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -124,32 +123,38 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <aiLjE0SLwrDytyw0@ashevche-desk.local>
+In-Reply-To: <aiLi0KZskrCyEYO5@ashevche-desk.local>
 
-On Fri, Jun 05, 2026 at 05:54:11PM +0300, Andy Shevchenko wrote:
-> On Fri, Jun 05, 2026 at 02:18:49PM +0200, Johan Hovold wrote:
-> > On Wed, Jun 03, 2026 at 12:52:52AM +0300, Andy Shevchenko wrote:
-> > > On Tue, Jun 02, 2026 at 10:24:41AM +0200, Philipp Zabel wrote:
-> > > > On Do, 2026-05-21 at 10:36 +0200, Bartosz Golaszewski wrote:
-> 
-> ...
-> 
-> > > > > -	device_set_of_node_from_dev(&vdev->dev, dev);
-> > > > > +	platform_device_set_of_node_from_dev(vdev, dev);
+On Fri, Jun 05, 2026 at 05:53:04PM +0300, Andy Shevchenko wrote:
+> On Fri, Jun 05, 2026 at 02:16:17PM +0200, Johan Hovold wrote:
+> > On Wed, Jun 03, 2026 at 12:44:55AM +0300, Andy Shevchenko wrote:
+> > > On Thu, May 21, 2026 at 10:36:31AM +0200, Bartosz Golaszewski wrote:
+> > > > Provide a platform-specific variant of device_set_of_node_from_dev(). In
+> > > > addition to bumping the reference count of the OF node being assigned,
+> > > > it also assigns the fwnode of the platform device.
 > > > 
-> > > Same Q here, why it uses inherited call? Cargo cult?
-> > > 
-> > > 'reused' flag is solely pin control (provider!) thingy as far as I remember.
+> > > Can we rather investigate the way how to make that of node reuse thingy
+> > > (which is used solely by pin control) differently and then drop this confusing
+> > > device_set_of_node_from_dev() call altogether?
 > > 
-> > No, it's needed for pin control *consumers*, which can be any device,
-> > and potentially any other resource managed by driver core or bus code.
+> > No, that call is needed. See commit 4e75e1d7dac9 ("driver core: add
+> > helper to reuse a device-tree node") for details.
 > 
-> Why don't we set it for every pin control consumer automatically?
+> Bart fixes the problem with the platform driver. At the result this will be
+> the only device_set_node() + 'reused = true'.  As for 'reused' flag, the need
+> is only for pinmux/pin control stuff.
 
-It must only be set on the second (child) one to prevent driver core
-from trying to acquire resources already claimed by the parent.
+And any other resource which may (eventually) be claimed by driver core
+or bus code.
 
-Setting it on both would break things.
+> The question here is if there is a better
+> way to make that 'reused' be done automatically without need of setting some
+> flag explicitly.
+
+That's not really relevant to the series at hand.
+
+If this is something we want to merge then you need to continue setting
+the flag in order not to cause regressions.
 
 Johan
 
