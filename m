@@ -1,60 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-22276-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22277-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6D4E7CD6E79
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jun 2026 16:39:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D9573CD6E79
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jun 2026 16:48:20 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gYyS83Syjz2yS4;
-	Tue, 09 Jun 2026 02:39:36 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780936776;
-	cv=none; b=kW0P1B9XoiUk5nyvHVizXcQK/Y2i6MWADpdkMCdIWUDU8UJ/0ldY9YRF3rC9b7nFA0MK/wFum9cbI9ylXg+bRTYeBeQHEhpzNiSVz+KwNYyk0zgdo0dsKKiOdrbn2pfbBZKfqUdO3QgOBuvR+8eTP76+feBp0xy9K6iF/sXxRom9Z73si8W7SwOMsmc8e3KiuAIlLOVyScX9jibaMl/yJyAp2rhsZ+Lue9GDi7JpDFp6lWStDWZLRN3lrITHE8ZC+tcvOFTHYRunqGlpV0/YnPqcJLDTQD0H8/vJMJSjiCyyEnghKFwxXX/YJZi94H8i7ndYiXSNOE3S5hnr3z5XwA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gYyfC2KqFz30FP;
+	Tue, 09 Jun 2026 02:48:19 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=170.10.133.124
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780937299;
+	cv=none; b=K7Y4HeEQYPrqZCJ5atigPqe/ZRNfsG3qXVntH6mnHCZ8B60PV0PDlIku+cYi1dNtP+qJYZb+WCcUvTN50pOp96AHraWLAveOQu00FVLvIZKrpVp+4NF1W7F0UQi5BcKtIDRuiQYBJcWT7x1gEvqm/ZgWOWQCMGn/P+JLLJSEJdFIKwGcdLuc62xqw12MzHs3kk64GIcMrKulB4pGi0HoTTL2vc2xF8Mgx/y7Ahg9VweAy2PAdCCkrBX68Y4kYO/LK9IEWT4iQZoYKhWV20jXgOsbbV5ceoxJqJJjpVrcmnNGU/HB6j4SBtS6ocNxjYy5d9tTk0tNcJ9Zd8u5ieCHHQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1780936776; c=relaxed/relaxed;
-	bh=ZmDVilafDDCM2XqVR6EfCFicwygqY5GOG2RzM018ZT4=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=c8At7J17qZgIb8vTKs+nwWZfdkYCBinjTVAh8UFeALucXuNYCsVVmelUHnOpSk6TDEaoCL1ApXsbrmeqvXv+/uZFzx1ZdkgXeJQGhHyv9ULDA7E7uwYpyId6PavFDkUoqTqtr+ooeyNjDXBZI79rWcPzybtkRd0OadfF0BNEWKZHCzYfXtTKkZx1pHsWcT/slnT65t/yjTi0ZPzl/b2q9+UBY0U0FV6BLPoShdLC66cog8jhifm18896QtVlnwvDnz+rUhDI47MRISb68ZXl+BkY4q7o0+QUBKlg3A/+z6t7cX432WVVKMhnm8Nyu3WRMyZvmNjdMN7zGlTI1dYa9A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=CNOSsxJ+; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1780937299; c=relaxed/relaxed;
+	bh=HO1z1hECglS3oHNycHe52C8L+SIuRFyFX5+d24s3Qxo=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=j4GDidRp7U3e4S70upjO5uc6WKaq182hJthDqMe7WOTou3IcNyUvz4TDFMOKIfAV9e/L65ZMx5abopaRbJxF9TxHVul2gkZf4hLx8fZLjBHZT/oDOhXzyJnzBC9wzA+EN12DkwDJ6Tk/pChZPvlu9tsVag9RD9O+hTINgB7b+PzGXfy2sqRsSyzGSDvZGi8UxAynXfHKI6pdofaMpJRwL+KMk1t7nzsyHr6DaZd2zM9Jr7UiRASyDwqCvH+bg+T5M7HmDAM3F1r+XY9KnyBFGBiGnIpYlEpmBmGL63y1zQUjVQyrux25pEQ7HwI/k40qE8GaRlQ5vER35sgtWE26+g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=YJIHycls; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=YJIHycls; dkim-atps=neutral; spf=pass (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=pbonzini@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=CNOSsxJ+;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=YJIHycls;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=YJIHycls;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=pbonzini@redhat.com; receiver=lists.ozlabs.org)
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gYyS72sCZz2yS0
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Jun 2026 02:39:35 +1000 (AEST)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id C248360098;
-	Mon,  8 Jun 2026 16:39:32 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 06E8E1F00898;
-	Mon,  8 Jun 2026 16:39:30 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1780936772;
-	bh=ZmDVilafDDCM2XqVR6EfCFicwygqY5GOG2RzM018ZT4=;
-	h=From:To:Cc:Subject:Date;
-	b=CNOSsxJ+RafDxN1eTev0RKIF56jqPnJbRZ8KT8k4byoIuCb2klRaBtIGere13Vvk2
-	 qF5MRIf0tqqpEr7qq8LAL/9HNUN5bJKuFsFUvaLMThmmr/WM4cEd2oNU0c09dl7r0k
-	 tjRGlBtEsup8HLRRuv5QNc5tIibniQmMMqpG36WPJ9ooBIOeWEfOo2iT62gY6g7tU9
-	 7pJ6K8O8AZg7VtZ2ShNoMo5h/7i7WQMqIYCNIQJy1zwqgrviAxTukWQX09ceoldyqZ
-	 UOdTBx14jgXHL+fm4TwLz/jftOYybus8FKgJ3yqE8N+JUHSD5M4F8DIqfwamMOdBbH
-	 KpZvmtBi+qSug==
-From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-To: Paul Louvel <paul.louvel@bootlin.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>
-Cc: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	linux-kernel@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc: Move CONFIG_QE_GPIO to SoC
-Date: Mon,  8 Jun 2026 18:39:17 +0200
-Message-ID: <16a187116511f5c844c43a12d09f263e77f4fd60.1780936729.git.chleroy@kernel.org>
-X-Mailer: git-send-email 2.54.0
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gYyfB11rWz2yS4
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Jun 2026 02:48:15 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1780937292;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=HO1z1hECglS3oHNycHe52C8L+SIuRFyFX5+d24s3Qxo=;
+	b=YJIHyclsOEpdvlbkL9MnVzeLwUZQ1tYB8f1mUqP77Aq5m4E+4M6kOQ5SWzUn6/Kwb+nV7z
+	qFHYSEEdaLHH01o7K9k1EN7mjvRPPSnRwneI82+NJG0O4BS5KThj0wdJyJ1+Yx+14aqA79
+	esZZmog9szW3a5zJkLFoIbbtz0roRgs=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1780937292;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=HO1z1hECglS3oHNycHe52C8L+SIuRFyFX5+d24s3Qxo=;
+	b=YJIHyclsOEpdvlbkL9MnVzeLwUZQ1tYB8f1mUqP77Aq5m4E+4M6kOQ5SWzUn6/Kwb+nV7z
+	qFHYSEEdaLHH01o7K9k1EN7mjvRPPSnRwneI82+NJG0O4BS5KThj0wdJyJ1+Yx+14aqA79
+	esZZmog9szW3a5zJkLFoIbbtz0roRgs=
+Received: from mx-prod-mc-06.mail-002.prod.us-west-2.aws.redhat.com
+ (ec2-35-165-154-97.us-west-2.compute.amazonaws.com [35.165.154.97]) by
+ relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
+ cipher=TLS_AES_256_GCM_SHA384) id us-mta-664-jTkQIDEiMJ6cjZxqb-ZLkw-1; Mon,
+ 08 Jun 2026 12:48:07 -0400
+X-MC-Unique: jTkQIDEiMJ6cjZxqb-ZLkw-1
+X-Mimecast-MFC-AGG-ID: jTkQIDEiMJ6cjZxqb-ZLkw_1780937285
+Received: from mx-prod-int-08.mail-002.prod.us-west-2.aws.redhat.com (mx-prod-int-08.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.111])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mx-prod-mc-06.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id 0DA901800605;
+	Mon,  8 Jun 2026 16:48:04 +0000 (UTC)
+Received: from [10.44.48.99] (unknown [10.44.48.99])
+	by mx-prod-int-08.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTP id A13881800664;
+	Mon,  8 Jun 2026 16:47:56 +0000 (UTC)
+Message-ID: <e7eb0dba-790a-4644-9895-5c9a7420d7fe@redhat.com>
+Date: Mon, 8 Jun 2026 18:47:54 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -68,66 +81,210 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1939; i=chleroy@kernel.org; h=from:subject:message-id; bh=Z85Pe7Na13Vg562A+bBvxzrw3YJK8fRR3FwUv4hmTr4=; b=owGbwMvMwCV2d0KB2p7V54MZT6slMWSpfbBQ9DW6Mkn4sdCyF1fFbps6XCxX37uhtdVJsfSws ckEHgfTjlIWBjEuBlkxRZbj/7l3zej6kpo/dZc+zBxWJpAhDFycAjCRj8cZ/hnnW5izRm/8wD8r 1d/m3gfDnHPHFiwIeNIfvlNznzVjzxSGf5bJGl6Pmnc/0q/lcVLuzV2yT8vi+6QpO/KmxnbsDGP +xwEA
-X-Developer-Key: i=chleroy@kernel.org; a=openpgp; fpr=10FFE6F8B390DE17ACC2632368A92FEB01B8DD78
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 35/60] kvm: Add VCPU plane-scheduling state and helpers
+To: =?UTF-8?B?SsO2cmcgUsO2ZGVs?= <joro@8bytes.org>,
+ Sean Christopherson <seanjc@google.com>
+Cc: Tom Lendacky <thomas.lendacky@amd.com>, ashish.kalra@amd.com,
+ michael.roth@amd.com, nsaenz@amazon.com, anelkz@amazon.de,
+ James.Bottomley@HansenPartnership.com, Melody Wang <huibo.wang@amd.com>,
+ kvm@vger.kernel.org, linux-kernel@vger.kernel.org, kvmarm@lists.linux.dev,
+ loongarch@lists.linux.dev, linux-mips@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, kvm-riscv@lists.infradead.org,
+ x86@kernel.org, coconut-svsm@lists.linux.dev, joerg.roedel@amd.com
+References: <20260608144252.351443-1-joro@8bytes.org>
+ <20260608144252.351443-36-joro@8bytes.org>
+From: Paolo Bonzini <pbonzini@redhat.com>
+Autocrypt: addr=pbonzini@redhat.com; keydata=
+ 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
+In-Reply-To: <20260608144252.351443-36-joro@8bytes.org>
+X-Scanned-By: MIMEDefang 3.4.1 on 10.30.177.111
+X-Mimecast-MFC-PROC-ID: ZQGHZFk7G5iYkKLCccpdLdJP4MySTr590NjwzC5-OzM_1780937285
+X-Mimecast-Originator: redhat.com
+Content-Language: en-US
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 
-Commit 7aa1aa6ecec2 ("QE: Move QE from arch/powerpc to drivers/soc")
-moved QE into drivers/soc including gpio.c but left CONFIG_QE_GPIO
-in powerpc's Kconfig.
+On 6/8/26 16:42, Jörg Rödel wrote:
+> From: Joerg Roedel <joerg.roedel@amd.com>
+> 
+> The algorithm is to always run the lowest runnable plane. Plane
+> switches are done by stopping the current plane and setting another
+> runnable.
+> 
+> Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
 
-Move it to SoC as well as it is the only place it is used:
+This was left arbitrary in my version because for example Hyper-V VTLs 
+use highest-runnable instead.  It also made pure userspace scheduling 
+possible, though that may not be very important in the grand scheme of 
+things.
 
-  drivers/soc/fsl/qe/Makefile:obj-$(CONFIG_QE_GPIO)       += gpio.o qe_ports_ic.o
-  include/soc/fsl/qe/qe.h:#ifdef CONFIG_QE_GPIO
-  include/soc/fsl/qe/qe.h:#endif /* CONFIG_QE_GPIO */
+Did you drop it because it didn't work, or just for simplicity?
 
-Signed-off-by: Christophe Leroy (CS GROUP) <chleroy@kernel.org>
----
-maddy I'm wondering if you can take it for 7.2 so that I can then take for 7.3 a series in preparation by Paul Louvel without impact on powerpc tree.
+Paolo
 
-If it is too late can you send me you Ack and I'll take it for 7.3 in soc/fsl tree.
----
- arch/powerpc/platforms/Kconfig | 8 --------
- drivers/soc/fsl/qe/Kconfig     | 8 ++++++++
- 2 files changed, 8 insertions(+), 8 deletions(-)
-
-diff --git a/arch/powerpc/platforms/Kconfig b/arch/powerpc/platforms/Kconfig
-index c4e61843d9d9..2f797ac6f1b3 100644
---- a/arch/powerpc/platforms/Kconfig
-+++ b/arch/powerpc/platforms/Kconfig
-@@ -228,14 +228,6 @@ config TAU_AVERAGE
- 
- 	  If in doubt, say N here.
- 
--config QE_GPIO
--	bool "QE GPIO support"
--	depends on QUICC_ENGINE
--	select GPIOLIB
--	help
--	  Say Y here if you're going to use hardware that connects to the
--	  QE GPIOs.
--
- config CPM2
- 	bool "Enable support for the CPM2 (Communications Processor Module)"
- 	depends on (FSL_SOC_BOOKE && PPC32) || PPC_82xx
-diff --git a/drivers/soc/fsl/qe/Kconfig b/drivers/soc/fsl/qe/Kconfig
-index eb03f42ab978..b35a8fd30ebf 100644
---- a/drivers/soc/fsl/qe/Kconfig
-+++ b/drivers/soc/fsl/qe/Kconfig
-@@ -67,3 +67,11 @@ config QE_USB
- 	default y if USB_FSL_QE
- 	help
- 	  QE USB Controller support
-+
-+config QE_GPIO
-+	bool "QE GPIO support"
-+	depends on QUICC_ENGINE
-+	select GPIOLIB
-+	help
-+	  Say Y here if you're going to use hardware that connects to the
-+	  QE GPIOs.
--- 
-2.54.0
+> ---
+>   include/linux/kvm_host.h | 16 ++++++++++++++
+>   virt/kvm/kvm_main.c      | 45 ++++++++++++++++++++++++++++++++++++++++
+>   2 files changed, 61 insertions(+)
+> 
+> diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
+> index 5c3f9dfa15ea..e3611e6cc3e4 100644
+> --- a/include/linux/kvm_host.h
+> +++ b/include/linux/kvm_host.h
+> @@ -168,6 +168,7 @@ static inline bool kvm_is_error_gpa(gpa_t gpa)
+>   #define KVM_REQ_VM_DEAD			(1 | KVM_REQUEST_WAIT | KVM_REQUEST_NO_WAKEUP)
+>   #define KVM_REQ_UNBLOCK			2
+>   #define KVM_REQ_DIRTY_RING_SOFT_FULL	3
+> +#define KVM_REQ_PLANE_RESCHED		4
+>   #define KVM_REQUEST_ARCH_BASE		8
+>   
+>   /*
+> @@ -324,6 +325,8 @@ struct kvm_mmio_fragment {
+>   	unsigned int len;
+>   };
+>   
+> +
+> +
+>   struct kvm_vcpu_common {
+>   	struct kvm *kvm;
+>   
+> @@ -381,6 +384,8 @@ struct kvm_vcpu_common {
+>   
+>   	struct kvm_dirty_ring dirty_ring;
+>   
+> +	bool plane_switch;
+> +
+>   	struct kvm_vcpu_arch_common arch;
+>   };
+>   
+> @@ -388,6 +393,12 @@ struct kvm_vcpu_common {
+>   	for ((i) = 0; (i) < KVM_MAX_PLANES; ++(i))		\
+>   		if (((v) = common->vcpus[(i)]) != NULL)
+>   
+> +/* Tracked per plane-VCPU - used for deciding which plane-vcpu to run */
+> +enum kvm_vcpu_state {
+> +	STOPPED,
+> +	RUNNABLE,
+> +};
+> +
+>   struct kvm_vcpu {
+>   	struct kvm *kvm;
+>   	struct kvm_plane *plane;
+> @@ -401,6 +412,7 @@ struct kvm_vcpu {
+>   	struct kvm_run *run;
+>   
+>   	u64 plane_requests;
+> +	enum kvm_vcpu_state plane_state;
+>   
+>   	/* S390 only */
+>   	bool valid_wakeup;
+> @@ -440,6 +452,10 @@ struct kvm_vcpu {
+>   	unsigned plane_level;
+>   };
+>   
+> +void kvm_vcpu_set_plane_runnable(struct kvm_vcpu *vcpu);
+> +void kvm_vcpu_set_plane_stopped(struct kvm_vcpu *vcpu);
+> +struct kvm_vcpu *kvm_vcpu_select_plane(struct kvm_vcpu *vcpu);
+> +
+>   static inline bool kvm_vcpu_wants_to_run(struct kvm_vcpu *vcpu)
+>   {
+>   	return vcpu->common->wants_to_run;
+> diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+> index 9d30fd85ce5f..a30123b77112 100644
+> --- a/virt/kvm/kvm_main.c
+> +++ b/virt/kvm/kvm_main.c
+> @@ -4397,6 +4397,7 @@ static int kvm_plane_ioctl_create_vcpu(struct kvm_plane *plane, unsigned long id
+>   	vcpu->vcpu_idx = vcpu->common->vcpu_idx;
+>   	vcpu->plane = plane;
+>   	vcpu->plane_level = plane->level;
+> +	vcpu->plane_state = STOPPED;
+>   	vcpu->run = vcpu->common->run;
+>   
+>   	kvm_vcpu_init(vcpu, kvm, id);
+> @@ -4938,6 +4939,50 @@ static struct file_operations kvm_plane_fops = {
+>   	KVM_COMPAT(kvm_plane_ioctl),
+>   };
+>   
+> +void kvm_vcpu_set_plane_runnable(struct kvm_vcpu *vcpu)
+> +{
+> +	vcpu->plane_state = RUNNABLE;
+> +	vcpu->common->plane_switch = true;
+> +	kvm_make_request(KVM_REQ_PLANE_RESCHED, vcpu);
+> +}
+> +EXPORT_SYMBOL_FOR_KVM_INTERNAL(kvm_vcpu_set_plane_runnable);
+> +
+> +void kvm_vcpu_set_plane_stopped(struct kvm_vcpu *vcpu)
+> +{
+> +	vcpu->plane_state = STOPPED;
+> +	kvm_make_request(KVM_REQ_PLANE_RESCHED, vcpu);
+> +}
+> +EXPORT_SYMBOL_FOR_KVM_INTERNAL(kvm_vcpu_set_plane_stopped);
+> +
+> +struct kvm_vcpu *kvm_vcpu_select_plane(struct kvm_vcpu *vcpu)
+> +{
+> +	struct kvm_vcpu_common *common = vcpu->common;
+> +	struct kvm_vcpu *ret = NULL;
+> +	unsigned i;
+> +
+> +	for (i = 0; i < KVM_MAX_PLANES; i++) {
+> +		if (common->vcpus[i] == NULL)
+> +			continue;
+> +
+> +		if (common->vcpus[i]->plane_state == RUNNABLE) {
+> +			ret = common->vcpus[i];
+> +			break;
+> +		}
+> +	}
+> +
+> +	if (ret == NULL) {
+> +		ret = common->vcpus[0];
+> +		ret->plane_state = RUNNABLE;
+> +	}
+> +
+> +	common->current_vcpu = ret;
+> +
+> +	common->plane_switch = false;
+> +
+> +	return ret;
+> +}
+> +EXPORT_SYMBOL_FOR_KVM_INTERNAL(kvm_vcpu_select_plane);
+> +
+>   static int kvm_device_mmap(struct file *filp, struct vm_area_struct *vma)
+>   {
+>   	struct kvm_device *dev = filp->private_data;
 
 
