@@ -1,80 +1,80 @@
-Return-Path: <linuxppc-dev+bounces-22206-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22207-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 058CECD8C92
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jun 2026 14:28:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E1082CD8C9D
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jun 2026 14:28:44 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gYvXj3TT6z3bsX;
-	Tue, 09 Jun 2026 00:28:21 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::42f"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780928901;
-	cv=none; b=TboFOMeVrCltlVAPnaquLejDDp3vztYqUEBVCh3QKmtpPyg+lZUlVCsU19+l/ZE0AxsQ5CNRMumkpkn5cF/5dTYYiMow7qyaeYHDoMcJJlluZUvUMuF85/MYPVnC3l91EFDwXDGxKaaPSf5vTcY2+CSDzPkar6CMZ/ir+W9YsPEg1QQ+PygQCgOd6uV+HMgaqh2cGBqVBSPUPrGeXnW/+2JVAFYt0QSMZk3Sw+ABA3Hv4qQCozXL77Ri5kZoZb/29S4C/zWS8xQYZQ9WZ9lV5cOkMKnJY+XjNrb6eHAfp+1p7ybw9BiyeuxY+dFvgklq0zxe5bZs1PZpDFihuwiqhg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gYvXk2H43z3bt2;
+	Tue, 09 Jun 2026 00:28:22 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::42d"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780928902;
+	cv=none; b=hHdYA52OqXT2xOktBh7B+6kXb7kFxkppEQFnbAdnWJQQXm7GHcqThkHd9amMpPdgndovNHaBmsjFMNN5AYCYPYqUPJF+k26Lgip1x0rISf9DtYpVqxeJsJ+4uwTrFwiP5A/1ZwyTt2efPuKk8Ej7sZkaBXXfNKNhrJANvN7vRP+tMPAyL6Ycc3EXZmTfFR4SkzKUfEKmgdmsQcs3an2KJT2hOrZjCc/weA+//ObVS+fSHJo/NxG3wthWTcQFFqGnDLYCKrpH/WDCJn7TQLmD/fIPoUYoFX2/vCZvzPC1U0tT29HH0Z6dFoJLt282U5/idDANlO6lG7aK1Gz7tvJWzA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1780928901; c=relaxed/relaxed;
-	bh=qohYqz4B4PBn5o3+UkMj6t+aWtH9uwOMAfqBpeAnghs=;
+	t=1780928902; c=relaxed/relaxed;
+	bh=fx/LUhwU/PuBYtkBp+ygwfhlhplOE7zsRH3troT6KA8=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=ZGRr9QxLO14he41dCfVBpBZ5hlz+P0Ni5SAOZz4ow1qO1TtG/+r/lYdUgVbzIkGvo7iK/ximY31ee2Lk6cBDwDjeN28H+RZutY7VB8WeRo1skeumcTbKdsOZAjpAwOqSLTXreWKoeVLsy7qwYfx/sf3kgniMSkadQaBck6xkeoN57+8JxtQCMvcIVib/yl/UGtJfFhorxenaYLHPqbJ8kOxFg7ZpslDMMeuNBgEAuez/LWXWhkkWUFMz6DH4IlOXdE7isxozrztleRA/BOoacWwFDtjkGGewWkHslVo+pDDyeR0VRacCczDlDu85GXvEnKs0yvaAMWQtKYfSKO8hKg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=FnD47Cxv; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::42f; helo=mail-wr1-x42f.google.com; envelope-from=iacobcatalin@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	 In-Reply-To:To:Cc; b=ZWW1siX7xNTAh9G8uYHhdcqBsY6hAUmeoiFGTQOARIXRPLBinSkrJn+Qdti5TXO/tAsiO1gusy9dQN8Cy8C+rsYKWHFPrDI+iNbJ3O/zKwtD7I4WLqAN/xU1mj/BmKLi8ldLpx0dZyZJU5TxHUmVChZ+fDelv3RxfAFlOSwXj0BdQe04OMpRKzhxX2M81wRu0pq7WyqS3aSdGpg9kQmin95mg29Kp6TLpHJfvt2LPq8W9Gr7WmXRHmtgrRWI7+1zYfGgzLVtBOnuqInC3W/7PdnrjPEhKWIej0rPAzw0z7sQfi7zdV7DlbDLdPydEvIernANN8O+cIqrXg7n0ZUtYg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=r+IoZAcu; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::42d; helo=mail-wr1-x42d.google.com; envelope-from=iacobcatalin@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=FnD47Cxv;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=r+IoZAcu;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::42f; helo=mail-wr1-x42f.google.com; envelope-from=iacobcatalin@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-wr1-x42f.google.com (mail-wr1-x42f.google.com [IPv6:2a00:1450:4864:20::42f])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::42d; helo=mail-wr1-x42d.google.com; envelope-from=iacobcatalin@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-wr1-x42d.google.com (mail-wr1-x42d.google.com [IPv6:2a00:1450:4864:20::42d])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gYvXh2sMKz3brN
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Jun 2026 00:28:20 +1000 (AEST)
-Received: by mail-wr1-x42f.google.com with SMTP id ffacd0b85a97d-45f3cf907ceso2064287f8f.2
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 08 Jun 2026 07:28:19 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gYvXj2wzMz3bsS
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Jun 2026 00:28:21 +1000 (AEST)
+Received: by mail-wr1-x42d.google.com with SMTP id ffacd0b85a97d-45f3cf907ceso2064308f8f.2
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 08 Jun 2026 07:28:21 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1780928897; x=1781533697; darn=lists.ozlabs.org;
+        d=gmail.com; s=20251104; t=1780928898; x=1781533698; darn=lists.ozlabs.org;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=qohYqz4B4PBn5o3+UkMj6t+aWtH9uwOMAfqBpeAnghs=;
-        b=FnD47Cxv/elMANaTOBidF19X1MpYf4OKjHhHqL9Oyg7tM70AOBJOkBUnxpvL+ybxXA
-         O69Sb4FKqzeEVdo+T9GexhmvsXyJXrsceUlugXpoHhtasT11U9JwgIove99pqYion+MY
-         N3akazZzYnVxdzFSmCKFgcVBC2vH/vK+ZUf/oVw3gqdvLTCpHvhU5uZ5O/TpR32S82YD
-         tCKo+x8S88K56HmZNRp5cC+9XlZ3XQpzWieb74OE5CFpMlnbGF/C+Kl5kZ4BxA9hhsQY
-         BQHLLZXmL9bz8T/3fcJVmiI23acoZ4OBuPy+PM4KpTm/n1ZxGUed7A3tABMQm+TGuTTi
-         Pwtg==
+        bh=fx/LUhwU/PuBYtkBp+ygwfhlhplOE7zsRH3troT6KA8=;
+        b=r+IoZAcunkwkiME9hoXzNzJ+n+SVgh7Ocg64s3e8wOLeXhoWcieFdboxJ94zQzObOu
+         RvzvDUwuvSs9ti18c57gW+qA1wWyziB5Ol6ldMBFuvSNCB+xHu6ccuW37ZgmOAVrhrSw
+         WZqwft7Z0qpDf44ToIvy/EeJkSGvch9j4VUCNK/US7bPfxga0Ebk6LN7kvCcqHUvXgyc
+         ixEqEqYFS/6xnUMT9JGMqoq0l0FAU0pvrRzIojVfSsfwrTRFM0CR03Ax2NPGK1OCmIqt
+         fdE6Zzb2pZPH3rP1mCZ7VjfOVUKF50vmrOguIbxalsl915g/2aLTDSG/+7+O6vMGRaOm
+         OJFQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1780928897; x=1781533697;
+        d=1e100.net; s=20251104; t=1780928898; x=1781533698;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:x-gm-gg:x-gm-message-state:from:to
          :cc:subject:date:message-id:reply-to;
-        bh=qohYqz4B4PBn5o3+UkMj6t+aWtH9uwOMAfqBpeAnghs=;
-        b=kyUFn0mlsLJOVwP+VoPnoPFkTzNzOBra2uFXbW+LpxhfRl2fwzarB1syZHW3y/RPey
-         Kbt4a1P4CCkOjL73iy27XRAgzl6QuYXyMjKsO/4kvlFaGJbiphFSH6FSrC6D5a9z6FlG
-         mfEH/19Af+sFXL+l9GzKjPSKBJ8nUJJ5f+LUETZRIURUbFEM+G/FcuEzJbVvLHqj2+na
-         76dKlku3Y3zVEVJas0P23nLNDivuH5I0FIOeZnBQdgmJZwUy9EqwW5KVTjICSARdBikV
-         vKDm+3GqpsVZEnUjN0c5mKyhKmbf43m3zS2iN3csNtA5ThAgpub7GYcQ210JBVeHwXQx
-         BOSQ==
-X-Forwarded-Encrypted: i=1; AFNElJ8g2bRwX/QWkLyNMYPljA+67c7spHArvvWdw73NKZxInn11v93nIuy0KetqNT1b3+asQG1DGESWsPH0Y+E=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YzYnR0BDT5w2iDJxCXnn3JXWFIUzDuzhMbEVd4bgwjZen8y/NxY
-	tGQhoKcaBItxy7rplelOJoSf23QeNFxZ2y0ochqcZBfTul7DMySemrwQ
-X-Gm-Gg: Acq92OGXjiSdjP9pQYNWrufL7WS7knlSVUPJmNe7gnXktZKEKZCXuxFkFwtvDgDDOR9
-	y0vzit1DcAfv7rCJCP/5EGO9MVKpFfR34q8nEOi8Ijx72o6Y4ibvqBv27/8S98XxwSZZE+QqJYI
-	JT3ah/Q+8jISTL8pnxzqvLngN8Cxz/J2i8ln22v55dY4MIuB79uu5915Jo6uOMo6Ph+jw9C9h6d
-	EYqOBoKkx2cb+De+TvolgGqokTNVpVH9gvSYp2LRrv+nzQmh+AHGU/bxY62yCnf+rZ3wzVNR1ai
-	biA8hNCGVoaVpvH2DB2qI7lllj8SGpCEJgJ8eRvRmyduJbtMWpXjY0DgCMkPogUaSQZ9MxofKkq
-	SnIhGU/wa46j5aQncLpn+T0WRAQNPeoVX+GHNwZ2dCuuqo98iALLfj5WFU9Nld7DAKilwaH3S6J
-	rIEKXd61s0YBeYYk9sw/GwJLO9Wgo80AdA
-X-Received: by 2002:a05:600c:1d29:b0:490:50eb:b777 with SMTP id 5b1f17b1804b1-490c2597822mr265428775e9.5.1780928896699;
-        Mon, 08 Jun 2026 07:28:16 -0700 (PDT)
+        bh=fx/LUhwU/PuBYtkBp+ygwfhlhplOE7zsRH3troT6KA8=;
+        b=rooIpXoFMhYnXz0UYCnCBUa4ipfu7XWkkZMElqgpfFMZwGexEMF7E5uKjq4eEjVgcF
+         /YzhJ8EjwWn7Q2WrhH/Jwe1JCBDN9GjVUxBakuJYak+ZaCW2seMiuFOzgy7lNbfFWUhR
+         +Cz/pIwkCH8UlQ6KJjs4xnCewdJS2suOnT3fZjUVAqEO7WsfnzxCTYER5j/RKw9UXLNm
+         pYfZxLWeDMREgJF/23ZezDvx+eSMFkbqqZWpCoVaBRn1xNs2mcRzjZcwMnhRdY+APO/u
+         aWGTVg7L0uUWX+8elR7Oyi2N8Im6ek2j4V6rZzmWKxWudq08190UuRDlooJIHDN9tqje
+         iTcg==
+X-Forwarded-Encrypted: i=1; AFNElJ+aUWwwu8QtDGXkFSih0ytZxq04i1C937BbMA2Zd6OWsH1/T6g9tOS5vQRkbAbyJdCylLtyfquDw04nZbA=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YzUfs+0LI0WTHjRmAuBbqGmrgvr4pfHGqaGpEIWgIA3Ayx5JYO1
+	lOv+81zYuok9feTdvWbrEYM7Hoba8y0CrPQnyvCwFXuQsyntoojzmvQK
+X-Gm-Gg: Acq92OHqZCxCX4Z/KlhpDatEOHn3SXo21fkBUlMHJjEaDXwTtJj5klJQ0iLF7siuXbf
+	5Gw/nW1hfuWUtbMevp1tL58Qnx8DKaYDYUY3xHj10LRW4avxhjd06AZt+3txTR/LMhLsz5HMBoN
+	UQbWbetzw0IfzCQgcxK4xmNe4vfJQzHJzT5U40rTm/JmC9zEuwXnIFedsdbZt80L8iJMjX0c0Wu
+	WEDGY0f5ldmIZlvsM37MAjkuKtkdMvsEVMOPoNRoJ/8KMERWqPDxjlBR7jm38JmkzZ2U/GmbAQF
+	dFz7JfMiQd0xBuiY9AlsHcMWioi1iELP8aFy40M9N2oEZbQpg2d0gzr7kUnGICXy3m4dHjLBIV+
+	tDYTrIhbzpTmKxf/BCRgLCCXb40MOcn4Nd/FVrERwYSSCdUKaG72zPuZq7U6zh9AOS5wMdooaQ4
+	5k6PLaRzqewBxzjxY7xCx8NhlGdBW15lfe
+X-Received: by 2002:a5d:4688:0:b0:45e:da9b:97d6 with SMTP id ffacd0b85a97d-4603061e47amr18261428f8f.27.1780928898275;
+        Mon, 08 Jun 2026 07:28:18 -0700 (PDT)
 Received: from localhost ([94.53.77.213])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-4601f2dcad5sm58108978f8f.5.2026.06.08.07.28.16
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-4601f35eae5sm53479588f8f.33.2026.06.08.07.28.17
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 08 Jun 2026 07:28:16 -0700 (PDT)
+        Mon, 08 Jun 2026 07:28:17 -0700 (PDT)
 From: Catalin Iacob <iacobcatalin@gmail.com>
-Date: Mon, 08 Jun 2026 17:29:18 +0300
-Subject: [PATCH v4 3/5] powerpc: Remove remaining defconfig references to
- the pktcdvd driver
+Date: Mon, 08 Jun 2026 17:29:19 +0300
+Subject: [PATCH v4 4/5] sh: Remove remaining defconfig reference to the
+ pktcdvd driver
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -90,7 +90,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260608-remove-pktcdvd-references-v4-3-72f88b04cc87@gmail.com>
+Message-Id: <20260608-remove-pktcdvd-references-v4-4-72f88b04cc87@gmail.com>
 References: <20260608-remove-pktcdvd-references-v4-0-72f88b04cc87@gmail.com>
 In-Reply-To: <20260608-remove-pktcdvd-references-v4-0-72f88b04cc87@gmail.com>
 To: Thomas Bogendoerfer <tsbogend@alpha.franken.de>, 
@@ -109,49 +109,35 @@ Cc: linux-mips@vger.kernel.org, linux-kernel@vger.kernel.org,
  sparclinux@vger.kernel.org, linux-scsi@vger.kernel.org, 
  Catalin Iacob <iacobcatalin@gmail.com>
 X-Mailer: b4 0.16-dev
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1209;
- i=iacobcatalin@gmail.com; h=from:subject:message-id;
- bh=gzHc6gkZVQYvB/HNV+tpD+0yf/PTlunsXEIfWYwA01U=;
- b=owGbwMvMwCX261qtXAKXKjvjabUkhiy1iwfmTElx/xK55o6i86kC379LZn9k10kzaVc99Njd3
- jPQfnZYRykLgxgXg6yYIsuLc9fbNuw5E3Avya4FZg4rE8gQBi5OAZjIVFGG/1EhNZ1mKjOin/vU
- q7bP1LpQFJ4t+z+hMjdmjWGLWsGTowx/xW85dQpMajBlsOM6uceUz326+1uFPIOPe7lffQvjmFj
- PDwA=
+X-Developer-Signature: v=1; a=openpgp-sha256; l=686; i=iacobcatalin@gmail.com;
+ h=from:subject:message-id; bh=qLq31BYjVwoita8p3VYbMVHsnGBFQquUbQzcOZAQW8k=;
+ b=owGbwMvMwCX261qtXAKXKjvjabUkhiy1iwcM25Xkd7+XZ3G9wyYlevnK8Zv9mgt/OF0QYeZ7+
+ P0Jb8vnjlIWBjEuBlkxRZYX5663bdhzJuBekl0LzBxWJpAhDFycAjCRzYGMDJ+t787f9PvFqugg
+ 5uYn71v4UnluLU1gP+LcFD053+vXsV8Mf+WeCd1hD5963TmiXkXBOS3zxWLWM2JmYbsczBx3M8p
+ t4wIA
 X-Developer-Key: i=iacobcatalin@gmail.com; a=openpgp;
  fpr=F609BFABD84EB5C9DDDC37EDE89C6A3571CD0E33
 
-Commit 1cea5180f2f8 ("block: remove pktcdvd driver") left behind some
-CONFIG_CONFIG_CDROM_PKTCDVD references in defconfigs. Remove them.
+Commit 1cea5180f2f8 ("block: remove pktcdvd driver") left behind a
+CONFIG_CONFIG_CDROM_PKTCDVD reference in defconfigs. Remove it.
 
 Signed-off-by: Catalin Iacob <iacobcatalin@gmail.com>
 ---
- arch/powerpc/configs/g5_defconfig     | 1 -
- arch/powerpc/configs/ppc6xx_defconfig | 1 -
- 2 files changed, 2 deletions(-)
+ arch/sh/configs/sh2007_defconfig | 1 -
+ 1 file changed, 1 deletion(-)
 
-diff --git a/arch/powerpc/configs/g5_defconfig b/arch/powerpc/configs/g5_defconfig
-index 5ca1676e6058..647775f6d174 100644
---- a/arch/powerpc/configs/g5_defconfig
-+++ b/arch/powerpc/configs/g5_defconfig
-@@ -57,7 +57,6 @@ CONFIG_BLK_DEV_LOOP=y
- CONFIG_BLK_DEV_NBD=m
+diff --git a/arch/sh/configs/sh2007_defconfig b/arch/sh/configs/sh2007_defconfig
+index 5d9080499485..f287a41cd38c 100644
+--- a/arch/sh/configs/sh2007_defconfig
++++ b/arch/sh/configs/sh2007_defconfig
+@@ -45,7 +45,6 @@ CONFIG_NETWORK_SECMARK=y
+ CONFIG_NET_PKTGEN=y
+ CONFIG_BLK_DEV_LOOP=y
  CONFIG_BLK_DEV_RAM=y
- CONFIG_BLK_DEV_RAM_SIZE=65536
--CONFIG_CDROM_PKTCDVD=m
+-CONFIG_CDROM_PKTCDVD=y
+ CONFIG_RAID_ATTRS=y
+ CONFIG_SCSI=y
  CONFIG_BLK_DEV_SD=y
- CONFIG_CHR_DEV_ST=y
- CONFIG_BLK_DEV_SR=y
-diff --git a/arch/powerpc/configs/ppc6xx_defconfig b/arch/powerpc/configs/ppc6xx_defconfig
-index eda1fec7ffd9..5c3e25fd8edd 100644
---- a/arch/powerpc/configs/ppc6xx_defconfig
-+++ b/arch/powerpc/configs/ppc6xx_defconfig
-@@ -306,7 +306,6 @@ CONFIG_BLK_DEV_LOOP=m
- CONFIG_BLK_DEV_NBD=m
- CONFIG_BLK_DEV_RAM=y
- CONFIG_BLK_DEV_RAM_SIZE=16384
--CONFIG_CDROM_PKTCDVD=m
- CONFIG_VIRTIO_BLK=m
- CONFIG_ENCLOSURE_SERVICES=m
- CONFIG_SENSORS_TSL2550=m
 
 -- 
 2.54.0
