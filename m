@@ -1,34 +1,34 @@
-Return-Path: <linuxppc-dev+bounces-22237-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22238-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 44D78CD8C9D
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jun 2026 14:54:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5DD50CD8C92
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jun 2026 14:54:48 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gYw4j2mjZz3dHL;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gYw4j49M6z3dHc;
 	Tue, 09 Jun 2026 00:52:37 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a01:238:42d9:3f00:e505:6202:4f0c:f051"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780930357;
-	cv=none; b=JQ7sX8KJC12XxKHOrc752u7Wib8pxjCk2HVrYdHW1F7McrXErLD4JrYHrBIaDohYZkC0uauIFxvO+AYifTHJ0UBaGHURkxMhx4W5PUiKrFpwNmPxOd2OvEd2njOS60loSsNwk2T1H4H0uYsDOIUdKYdWDvGE8xH4YFAzNlh22f+uLwpUZGi/ovhCZukuIvbNu27ckm3IUctHsLlfLXcmzMb51vnx94hpsQLw+PDESQ9CTyxTQtmrjv3i4rZeiV7hRRWs6alPf5EdCsNC7fWRwhXR56+CU6REoCq39nZfECwXQIVzdEDCJycz4ozgrynTAhwyTbEvq4+FmjsFbt967w==
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=85.214.250.239
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780930354;
+	cv=none; b=UiuMBVkJMdCWpb5GtSbEEg2M3Pcr2mYaJyzk6nHrq3OI3jifLlD/WLDHlYEAa1TqbE6HNgAcSJJACNs8eJ0UbRrfHXHi492NDz6se9/0Kpb1h5eUJf8znHCUiJbx4Xxkdol/71wS2Q3qMGmG3Qc2vo0+OrFYj6Vxywk+jFBrsafGcs5CUYKEYhCF3dMJhhHOAazNK+YQB66wL/jX5wchf5fU1/1hyC7tIo6t5/+R02I21igz4sSAa12IVST4FTv374fuD2170v4+HJ8S9N/20+tZhmuEkgXJkw0Pju0/yogHoIk+0zxZw6M/+8khjxre1gV4ttayYlCL35stOk85CA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1780930357; c=relaxed/relaxed;
-	bh=kInqm4b3jrtfDlRUKu74lGBs0vISMO/cT7wXbEJxP8U=;
+	t=1780930354; c=relaxed/relaxed;
+	bh=xPy/a2evO56iISUey6hMITHDSlt7ojykGtQqTg5ULm4=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=FUQupsuTKnKFkBeffuWGfVrwFuYAxtNqeQKToG5XCxFyQCd/DCXm8wM9gYIMXQGSrK5AQ/N0weoaWVXcjWff9kRvg9mg4yNQRBbA4WErNegt8Ng9cllmZLQs9n3Ekj+pdoXa6T34JkqjjPgxibATrujqYTJgMbq4wvn7NyzdzqmhrdvEFwWBN6SkF1oNjM+NXieB37dXEVI/K7unjAJXuO2zkxHxhdDtHs9R34IcZE+DUaXYYpoaS1s1YE3Sh90zdisX9ngx5wLFpLp2bzB/68134GbIsLoqrfaveBYUITYGwjM34aOLQSc3iiIge3Ix2Bfd78/SIFKcqgq8kVrSvQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=8bytes.org; spf=pass (client-ip=2a01:238:42d9:3f00:e505:6202:4f0c:f051; helo=mail.8bytes.org; envelope-from=joro@8bytes.org; receiver=lists.ozlabs.org) smtp.mailfrom=8bytes.org
+	 MIME-Version; b=TrqOEGJmEPYDJ+0VooEomhx14bD96A5srZeWXVGpgTeDAQyOjS8bv79+VupNT27PkB+2g4WFITs2PQv6oEojF5iiosVALAugAlKdutSyFIKOre3KHdyuhIeEznNkDMUNlUQtV3HHBni16l3FqNs6tt91lDTBbLiwvllGMOXvrD/YeYrQ+wRNFlRhFXoJpyp3hdT5wbGosRt+uET2nPL0cENjQolvzdbcPsu7W1X137Yw01Qg3GTYWkV8Sz+xgxIu7bftHmxJPIxBkviXP5yOOyi/iXBRG7kHoRdClaEfvMYHt5gtKDN/pq/rrpEakYgmMKdqI+Se8pfZ7AhLYVMqag==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=8bytes.org; spf=pass (client-ip=85.214.250.239; helo=mail.8bytes.org; envelope-from=joro@8bytes.org; receiver=lists.ozlabs.org) smtp.mailfrom=8bytes.org
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=8bytes.org
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=8bytes.org (client-ip=2a01:238:42d9:3f00:e505:6202:4f0c:f051; helo=mail.8bytes.org; envelope-from=joro@8bytes.org; receiver=lists.ozlabs.org)
-Received: from mail.8bytes.org (mail.8bytes.org [IPv6:2a01:238:42d9:3f00:e505:6202:4f0c:f051])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gYw4R3jWzz3c54
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Jun 2026 00:52:23 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=8bytes.org (client-ip=85.214.250.239; helo=mail.8bytes.org; envelope-from=joro@8bytes.org; receiver=lists.ozlabs.org)
+Received: from mail.8bytes.org (mail.8bytes.org [85.214.250.239])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gYw4Q6rGqz3c4d
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Jun 2026 00:52:22 +1000 (AEST)
 Received: from io.home.8bytes.org (p4ffe1d30.dip0.t-ipconnect.de [79.254.29.48])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.8bytes.org (Postfix) with ESMTPSA id 50CD62028CE;
-	Mon,  8 Jun 2026 16:43:14 +0200 (CEST)
+	by mail.8bytes.org (Postfix) with ESMTPSA id 4B2B22028B2;
+	Mon,  8 Jun 2026 16:43:08 +0200 (CEST)
 From: =?UTF-8?q?J=C3=B6rg=20R=C3=B6del?= <joro@8bytes.org>
 To: Paolo Bonzini <pbonzini@redhat.com>,
 	Sean Christopherson <seanjc@google.com>
@@ -49,9 +49,9 @@ Cc: Tom Lendacky <thomas.lendacky@amd.com>,
 	x86@kernel.org,
 	coconut-svsm@lists.linux.dev,
 	joerg.roedel@amd.com
-Subject: [PATCH 43/60] kvm: x86: Move CPUID state to struct kvm_vcpu_arch_common
-Date: Mon,  8 Jun 2026 16:42:35 +0200
-Message-ID: <20260608144252.351443-44-joro@8bytes.org>
+Subject: [PATCH 15/60] kvm: Move VCPU scheduling state to struct kvm_vcpu_common
+Date: Mon,  8 Jun 2026 16:42:07 +0200
+Message-ID: <20260608144252.351443-16-joro@8bytes.org>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20260608144252.351443-1-joro@8bytes.org>
 References: <20260608144252.351443-1-joro@8bytes.org>
@@ -72,330 +72,213 @@ Content-Transfer-Encoding: 8bit
 
 From: Joerg Roedel <joerg.roedel@amd.com>
 
-The CPUID state is shared across all planes, so move it to struct
-kvm_vcpu_arch_common.
+The scheduling state of the KVM VCPU is shared between all per-plane
+VCPU objects. Move it to struct kvm_vcpu_common.
 
 Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
 ---
- arch/x86/include/asm/kvm_host.h | 17 ++++++++--------
- arch/x86/kvm/cpuid.c            | 36 +++++++++++++++++++--------------
- arch/x86/kvm/cpuid.h            | 14 ++++++++++---
- arch/x86/kvm/lapic.c            |  2 +-
- arch/x86/kvm/smm.c              |  2 +-
- arch/x86/kvm/svm/svm.c          |  2 +-
- arch/x86/kvm/vmx/vmx.c          |  2 +-
- arch/x86/kvm/x86.c              | 17 ++++++++++++----
- 8 files changed, 58 insertions(+), 34 deletions(-)
+ arch/x86/kvm/svm/svm.c   |  2 +-
+ include/linux/kvm_host.h | 24 ++++++++++----------
+ virt/kvm/kvm_main.c      | 47 +++++++++++++++++++++-------------------
+ 3 files changed, 39 insertions(+), 34 deletions(-)
 
-diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
-index 11e52f8bb2c2..3a64bdae6e23 100644
---- a/arch/x86/include/asm/kvm_host.h
-+++ b/arch/x86/include/asm/kvm_host.h
-@@ -794,10 +794,16 @@ enum kvm_only_cpuid_leafs {
- 	NKVMCAPINTS = NR_KVM_CPU_CAPS - NCAPINTS,
- };
- 
--struct kvm_vcpu_arch_common {};
-+struct kvm_vcpu_arch_common {
-+	/* CPUID related state */
-+	int cpuid_nent;
-+	struct kvm_cpuid_entry2 *cpuid_entries;
-+	bool cpuid_dynamic_bits_dirty;
-+	bool is_amd_compatible;
-+};
- 
--static inline int kvm_arch_vcpu_common_init(struct kvm_vcpu_common *common) { return 0; }
--static inline void kvm_arch_vcpu_common_destroy(struct kvm_vcpu_common *common) {}
-+int kvm_arch_vcpu_common_init(struct kvm_vcpu_common *common);
-+void kvm_arch_vcpu_common_destroy(struct kvm_vcpu_common *common);
- 
- struct kvm_vcpu_arch {
- 	/*
-@@ -919,11 +925,6 @@ struct kvm_vcpu_arch {
- 
- 	int halt_request; /* real mode on Intel only */
- 
--	int cpuid_nent;
--	struct kvm_cpuid_entry2 *cpuid_entries;
--	bool cpuid_dynamic_bits_dirty;
--	bool is_amd_compatible;
--
- 	/*
- 	 * cpu_caps holds the effective guest capabilities, i.e. the features
- 	 * the vCPU is allowed to use.  Typically, but not always, features can
-diff --git a/arch/x86/kvm/cpuid.c b/arch/x86/kvm/cpuid.c
-index e69156b54cff..6d948d63306c 100644
---- a/arch/x86/kvm/cpuid.c
-+++ b/arch/x86/kvm/cpuid.c
-@@ -176,6 +176,7 @@ static void kvm_update_cpuid_runtime(struct kvm_vcpu *vcpu);
- static int kvm_cpuid_check_equal(struct kvm_vcpu *vcpu, struct kvm_cpuid_entry2 *e2,
- 				 int nent)
- {
-+	struct kvm_vcpu_common *common = vcpu->common;
- 	struct kvm_cpuid_entry2 *orig;
- 	int i;
- 
-@@ -188,11 +189,11 @@ static int kvm_cpuid_check_equal(struct kvm_vcpu *vcpu, struct kvm_cpuid_entry2
- 	kvm_update_cpuid_runtime(vcpu);
- 	kvm_apply_cpuid_pv_features_quirk(vcpu);
- 
--	if (nent != vcpu->arch.cpuid_nent)
-+	if (nent != common->arch.cpuid_nent)
- 		return -EINVAL;
- 
- 	for (i = 0; i < nent; i++) {
--		orig = &vcpu->arch.cpuid_entries[i];
-+		orig = &common->arch.cpuid_entries[i];
- 		if (e2[i].function != orig->function ||
- 		    e2[i].index != orig->index ||
- 		    e2[i].flags != orig->flags ||
-@@ -290,7 +291,7 @@ static void kvm_update_cpuid_runtime(struct kvm_vcpu *vcpu)
- {
- 	struct kvm_cpuid_entry2 *best;
- 
--	vcpu->arch.cpuid_dynamic_bits_dirty = false;
-+	vcpu->common->arch.cpuid_dynamic_bits_dirty = false;
- 
- 	best = kvm_find_cpuid_entry(vcpu, 1);
- 	if (best) {
-@@ -374,6 +375,7 @@ static int cpuid_func_emulated(struct kvm_cpuid_entry2 *entry, u32 func,
- 
- void kvm_vcpu_after_set_cpuid(struct kvm_vcpu *vcpu)
- {
-+	struct kvm_vcpu_common *common = vcpu->common;
- 	struct kvm_lapic *apic = vcpu->arch.apic;
- 	struct kvm_cpuid_entry2 *best;
- 	struct kvm_cpuid_entry2 *entry;
-@@ -443,7 +445,7 @@ void kvm_vcpu_after_set_cpuid(struct kvm_vcpu *vcpu)
- 
- 	vcpu->arch.pv_cpuid.features = kvm_apply_cpuid_pv_features_quirk(vcpu);
- 
--	vcpu->arch.is_amd_compatible = guest_cpuid_is_amd_or_hygon(vcpu);
-+	common->arch.is_amd_compatible = guest_cpuid_is_amd_or_hygon(vcpu);
- 	vcpu->arch.maxphyaddr = cpuid_query_maxphyaddr(vcpu);
- 	vcpu->arch.reserved_gpa_bits = kvm_vcpu_reserved_gpa_bits_raw(vcpu);
- 
-@@ -509,6 +511,7 @@ u64 kvm_vcpu_reserved_gpa_bits_raw(struct kvm_vcpu *vcpu)
- static int kvm_set_cpuid(struct kvm_vcpu *vcpu, struct kvm_cpuid_entry2 *e2,
-                         int nent)
- {
-+	struct kvm_vcpu_common *common = vcpu->common;
- 	u32 vcpu_caps[NR_KVM_CPU_CAPS];
- 	int r;
- 
-@@ -516,7 +519,7 @@ static int kvm_set_cpuid(struct kvm_vcpu *vcpu, struct kvm_cpuid_entry2 *e2,
- 	 * Apply pending runtime CPUID updates to the current CPUID entries to
- 	 * avoid false positives due to mismatches on KVM-owned feature flags.
- 	 */
--	if (vcpu->arch.cpuid_dynamic_bits_dirty)
-+	if (common->arch.cpuid_dynamic_bits_dirty)
- 		kvm_update_cpuid_runtime(vcpu);
- 
- 	/*
-@@ -530,8 +533,8 @@ static int kvm_set_cpuid(struct kvm_vcpu *vcpu, struct kvm_cpuid_entry2 *e2,
- 	 * updates.  Full initialization is done if and only if the vCPU hasn't
- 	 * run, i.e. only if userspace is potentially changing CPUID features.
- 	 */
--	swap(vcpu->arch.cpuid_entries, e2);
--	swap(vcpu->arch.cpuid_nent, nent);
-+	swap(common->arch.cpuid_entries, e2);
-+	swap(common->arch.cpuid_nent, nent);
- 
- 	memcpy(vcpu_caps, vcpu->arch.cpu_caps, sizeof(vcpu_caps));
- 	BUILD_BUG_ON(sizeof(vcpu_caps) != sizeof(vcpu->arch.cpu_caps));
-@@ -580,8 +583,8 @@ static int kvm_set_cpuid(struct kvm_vcpu *vcpu, struct kvm_cpuid_entry2 *e2,
- 
- err:
- 	memcpy(vcpu->arch.cpu_caps, vcpu_caps, sizeof(vcpu_caps));
--	swap(vcpu->arch.cpuid_entries, e2);
--	swap(vcpu->arch.cpuid_nent, nent);
-+	swap(common->arch.cpuid_entries, e2);
-+	swap(common->arch.cpuid_nent, nent);
- 	return r;
- }
- 
-@@ -658,17 +661,19 @@ int kvm_vcpu_ioctl_get_cpuid2(struct kvm_vcpu *vcpu,
- 			      struct kvm_cpuid2 *cpuid,
- 			      struct kvm_cpuid_entry2 __user *entries)
- {
--	if (cpuid->nent < vcpu->arch.cpuid_nent)
-+	struct kvm_vcpu_common *common = vcpu->common;
-+
-+	if (cpuid->nent < common->arch.cpuid_nent)
- 		return -E2BIG;
- 
--	if (vcpu->arch.cpuid_dynamic_bits_dirty)
-+	if (common->arch.cpuid_dynamic_bits_dirty)
- 		kvm_update_cpuid_runtime(vcpu);
- 
--	if (copy_to_user(entries, vcpu->arch.cpuid_entries,
--			 vcpu->arch.cpuid_nent * sizeof(struct kvm_cpuid_entry2)))
-+	if (copy_to_user(entries, common->arch.cpuid_entries,
-+			 common->arch.cpuid_nent * sizeof(struct kvm_cpuid_entry2)))
- 		return -EFAULT;
- 
--	cpuid->nent = vcpu->arch.cpuid_nent;
-+	cpuid->nent = common->arch.cpuid_nent;
- 	return 0;
- }
- 
-@@ -2089,10 +2094,11 @@ bool kvm_cpuid(struct kvm_vcpu *vcpu, u32 *eax, u32 *ebx,
- 	       u32 *ecx, u32 *edx, bool exact_only)
- {
- 	u32 orig_function = *eax, function = *eax, index = *ecx;
-+	struct kvm_vcpu_common *common = vcpu->common;
- 	struct kvm_cpuid_entry2 *entry;
- 	bool exact, used_max_basic = false;
- 
--	if (vcpu->arch.cpuid_dynamic_bits_dirty)
-+	if (common->arch.cpuid_dynamic_bits_dirty)
- 		kvm_update_cpuid_runtime(vcpu);
- 
- 	entry = kvm_find_cpuid_entry_index(vcpu, function, index);
-diff --git a/arch/x86/kvm/cpuid.h b/arch/x86/kvm/cpuid.h
-index 039b8e6f40ba..143ea8531611 100644
---- a/arch/x86/kvm/cpuid.h
-+++ b/arch/x86/kvm/cpuid.h
-@@ -36,14 +36,18 @@ struct kvm_cpuid_entry2 *kvm_find_cpuid_entry2(struct kvm_cpuid_entry2 *entries,
- static inline struct kvm_cpuid_entry2 *kvm_find_cpuid_entry_index(struct kvm_vcpu *vcpu,
- 								  u32 function, u32 index)
- {
--	return kvm_find_cpuid_entry2(vcpu->arch.cpuid_entries, vcpu->arch.cpuid_nent,
-+	struct kvm_vcpu_common *common = vcpu->common;
-+
-+	return kvm_find_cpuid_entry2(common->arch.cpuid_entries, common->arch.cpuid_nent,
- 				     function, index);
- }
- 
- static inline struct kvm_cpuid_entry2 *kvm_find_cpuid_entry(struct kvm_vcpu *vcpu,
- 							    u32 function)
- {
--	return kvm_find_cpuid_entry2(vcpu->arch.cpuid_entries, vcpu->arch.cpuid_nent,
-+	struct kvm_vcpu_common *common = vcpu->common;
-+
-+	return kvm_find_cpuid_entry2(common->arch.cpuid_entries, common->arch.cpuid_nent,
- 				     function, KVM_CPUID_INDEX_NOT_SIGNIFICANT);
- }
- 
-@@ -135,7 +139,7 @@ static __always_inline bool guest_cpuid_has(struct kvm_vcpu *vcpu,
- 
- static inline bool guest_cpuid_is_amd_compatible(struct kvm_vcpu *vcpu)
- {
--	return vcpu->arch.is_amd_compatible;
-+	return vcpu->common->arch.is_amd_compatible;
- }
- 
- static inline bool guest_cpuid_is_intel_compatible(struct kvm_vcpu *vcpu)
-@@ -300,4 +304,8 @@ static inline bool guest_has_pred_cmd_msr(struct kvm_vcpu *vcpu)
- 		guest_cpu_cap_has(vcpu, X86_FEATURE_SBPB));
- }
- 
-+static inline void cpuid_set_dirty(struct kvm_vcpu *vcpu)
-+{
-+	vcpu->common->arch.cpuid_dynamic_bits_dirty = true;
-+}
- #endif
-diff --git a/arch/x86/kvm/lapic.c b/arch/x86/kvm/lapic.c
-index cac076445472..dc7a08831a54 100644
---- a/arch/x86/kvm/lapic.c
-+++ b/arch/x86/kvm/lapic.c
-@@ -2754,7 +2754,7 @@ static void __kvm_apic_set_base(struct kvm_vcpu *vcpu, u64 value)
- 	vcpu->arch.apic_base = value;
- 
- 	if ((old_value ^ value) & MSR_IA32_APICBASE_ENABLE)
--		vcpu->arch.cpuid_dynamic_bits_dirty = true;
-+		cpuid_set_dirty(vcpu);
- 
- 	if (!apic)
- 		return;
-diff --git a/arch/x86/kvm/smm.c b/arch/x86/kvm/smm.c
-index f623c5986119..736ab345b9fd 100644
---- a/arch/x86/kvm/smm.c
-+++ b/arch/x86/kvm/smm.c
-@@ -363,7 +363,7 @@ void enter_smm(struct kvm_vcpu *vcpu)
- 			goto error;
- #endif
- 
--	vcpu->arch.cpuid_dynamic_bits_dirty = true;
-+	cpuid_set_dirty(vcpu);
- 	kvm_mmu_reset_context(vcpu);
- 	return;
- error:
 diff --git a/arch/x86/kvm/svm/svm.c b/arch/x86/kvm/svm/svm.c
-index e8ad880a4266..612db7ad8b2a 100644
+index 1524c1bb4f37..f5cc30a6732f 100644
 --- a/arch/x86/kvm/svm/svm.c
 +++ b/arch/x86/kvm/svm/svm.c
-@@ -1848,7 +1848,7 @@ void svm_set_cr4(struct kvm_vcpu *vcpu, unsigned long cr4)
- 	vmcb_mark_dirty(to_svm(vcpu)->vmcb, VMCB_CR);
+@@ -229,7 +229,7 @@ int svm_set_efer(struct kvm_vcpu *vcpu, u64 efer)
+ 			 * and only if the vCPU is actively running, e.g. to
+ 			 * avoid positives if userspace is stuffing state.
+ 			 */
+-			if (is_guest_mode(vcpu) && vcpu->wants_to_run)
++			if (is_guest_mode(vcpu) && vcpu->common->wants_to_run)
+ 				kvm_make_request(KVM_REQ_TRIPLE_FAULT, vcpu);
  
- 	if ((cr4 ^ old_cr4) & (X86_CR4_OSXSAVE | X86_CR4_PKE))
--		vcpu->arch.cpuid_dynamic_bits_dirty = true;
-+		cpuid_set_dirty(vcpu);
+ 			svm_leave_nested(vcpu);
+diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
+index d54f299218a4..a6aacd507c02 100644
+--- a/include/linux/kvm_host.h
++++ b/include/linux/kvm_host.h
+@@ -329,15 +329,21 @@ struct kvm_vcpu_common {
+ 
+ 	/* Currently active VCPU */
+ 	struct kvm_vcpu *current_vcpu;
++
++	/* Scheduling state */
++#ifdef CONFIG_PREEMPT_NOTIFIERS
++	struct preempt_notifier preempt_notifier;
++#endif
++	bool wants_to_run;
++	bool preempted;
++	bool ready;
++	bool scheduled_out;
+ };
+ 
+ struct kvm_vcpu {
+ 	struct kvm *kvm;
+ 	struct kvm_plane *plane;
+ 
+-#ifdef CONFIG_PREEMPT_NOTIFIERS
+-	struct preempt_notifier preempt_notifier;
+-#endif
+ 	int cpu;
+ 	int vcpu_id; /* id given by userspace at creation */
+ 	int vcpu_idx; /* index into kvm->planes[]->vcpu_array */
+@@ -392,10 +398,6 @@ struct kvm_vcpu {
+ 		bool dy_eligible;
+ 	} spin_loop;
+ #endif
+-	bool wants_to_run;
+-	bool preempted;
+-	bool ready;
+-	bool scheduled_out;
+ 	struct kvm_vcpu_arch arch;
+ 	struct kvm_vcpu_stat stat;
+ 	char stats_id[KVM_STATS_NAME_SIZE];
+@@ -416,22 +418,22 @@ struct kvm_vcpu {
+ 
+ static inline bool kvm_vcpu_wants_to_run(struct kvm_vcpu *vcpu)
+ {
+-	return vcpu->wants_to_run;
++	return vcpu->common->wants_to_run;
  }
  
- static void svm_set_segment(struct kvm_vcpu *vcpu,
-diff --git a/arch/x86/kvm/vmx/vmx.c b/arch/x86/kvm/vmx/vmx.c
-index 20262855bfe8..62e180651143 100644
---- a/arch/x86/kvm/vmx/vmx.c
-+++ b/arch/x86/kvm/vmx/vmx.c
-@@ -3595,7 +3595,7 @@ void vmx_set_cr4(struct kvm_vcpu *vcpu, unsigned long cr4)
- 	vmcs_writel(GUEST_CR4, hw_cr4);
- 
- 	if ((cr4 ^ old_cr4) & (X86_CR4_OSXSAVE | X86_CR4_PKE))
--		vcpu->arch.cpuid_dynamic_bits_dirty = true;
-+		cpuid_set_dirty(vcpu);
+ static inline bool kvm_vcpu_preempted(struct kvm_vcpu *vcpu)
+ {
+-	return READ_ONCE(vcpu->preempted);
++	return READ_ONCE(vcpu->common->preempted);
  }
  
- void vmx_get_segment(struct kvm_vcpu *vcpu, struct kvm_segment *var, int seg)
-diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index 7fc08df245bd..7e94a378b3d2 100644
---- a/arch/x86/kvm/x86.c
-+++ b/arch/x86/kvm/x86.c
-@@ -1322,7 +1322,7 @@ int __kvm_set_xcr(struct kvm_vcpu *vcpu, u32 index, u64 xcr)
- 	vcpu->arch.xcr0 = xcr0;
+ static inline bool kvm_vcpu_ready(struct kvm_vcpu *vcpu)
+ {
+-	return READ_ONCE(vcpu->ready);
++	return READ_ONCE(vcpu->common->ready);
+ }
  
- 	if ((xcr0 ^ old_xcr0) & XFEATURE_MASK_EXTEND)
--		vcpu->arch.cpuid_dynamic_bits_dirty = true;
-+		cpuid_set_dirty(vcpu);
+ static inline bool kvm_vcpu_scheduled_out(struct kvm_vcpu *vcpu)
+ {
+-	return vcpu->scheduled_out;
++	return vcpu->common->scheduled_out;
+ }
+ 
+ /*
+diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+index 9c07321e30f4..a44f8dc8418a 100644
+--- a/virt/kvm/kvm_main.c
++++ b/virt/kvm/kvm_main.c
+@@ -166,7 +166,7 @@ void vcpu_load(struct kvm_vcpu *vcpu)
+ 	int cpu = get_cpu();
+ 
+ 	__this_cpu_write(kvm_running_vcpu, vcpu->common);
+-	preempt_notifier_register(&vcpu->preempt_notifier);
++	preempt_notifier_register(&vcpu->common->preempt_notifier);
+ 	kvm_arch_vcpu_load(vcpu, cpu);
+ 	put_cpu();
+ }
+@@ -176,7 +176,7 @@ void vcpu_put(struct kvm_vcpu *vcpu)
+ {
+ 	preempt_disable();
+ 	kvm_arch_vcpu_put(vcpu);
+-	preempt_notifier_unregister(&vcpu->preempt_notifier);
++	preempt_notifier_unregister(&vcpu->common->preempt_notifier);
+ 	__this_cpu_write(kvm_running_vcpu, NULL);
+ 	preempt_enable();
+ }
+@@ -468,6 +468,12 @@ static int kvm_vcpu_init_common(struct kvm_vcpu *vcpu, struct kvm *kvm, unsigned
+ 
+ 	common->kvm = kvm;
+ 	common->current_vcpu = vcpu;
++
++	common->wants_to_run = false;
++	common->preempted = false;
++	common->ready = false;
++	preempt_notifier_init(&common->preempt_notifier, &kvm_preempt_ops);
++
+ 	vcpu->common = no_free_ptr(common);
+ 
  	return 0;
- }
- EXPORT_SYMBOL_FOR_KVM_INTERNAL(__kvm_set_xcr);
-@@ -4089,7 +4089,7 @@ int kvm_set_msr_common(struct kvm_vcpu *vcpu, struct msr_data *msr_info)
- 			if (!guest_cpu_cap_has(vcpu, X86_FEATURE_XMM3))
- 				return 1;
- 			vcpu->arch.ia32_misc_enable_msr = data;
--			vcpu->arch.cpuid_dynamic_bits_dirty = true;
-+			cpuid_set_dirty(vcpu);
- 		} else {
- 			vcpu->arch.ia32_misc_enable_msr = data;
+@@ -508,9 +514,6 @@ static void kvm_vcpu_init(struct kvm_vcpu *vcpu, struct kvm *kvm, unsigned id)
+ 
+ 	kvm_vcpu_set_in_spin_loop(vcpu, false);
+ 	kvm_vcpu_set_dy_eligible(vcpu, false);
+-	vcpu->preempted = false;
+-	vcpu->ready = false;
+-	preempt_notifier_init(&vcpu->preempt_notifier, &kvm_preempt_ops);
+ 	vcpu->last_used_slot = NULL;
+ 
+ 	vcpu->plane_level = 0;
+@@ -3927,7 +3930,7 @@ EXPORT_SYMBOL_FOR_KVM_INTERNAL(kvm_vcpu_halt);
+ bool kvm_vcpu_wake_up(struct kvm_vcpu *vcpu)
+ {
+ 	if (__kvm_vcpu_wake_up(vcpu)) {
+-		WRITE_ONCE(vcpu->ready, true);
++		WRITE_ONCE(vcpu->common->ready, true);
+ 		++vcpu->stat.generic.halt_wakeup;
+ 		return true;
+ 	}
+@@ -4580,9 +4583,9 @@ static long kvm_vcpu_ioctl(struct file *filp,
+ 
+ 			put_pid(oldpid);
  		}
-@@ -4121,7 +4121,7 @@ int kvm_set_msr_common(struct kvm_vcpu *vcpu, struct msr_data *msr_info)
- 		if (vcpu->arch.ia32_xss == data)
- 			break;
- 		vcpu->arch.ia32_xss = data;
--		vcpu->arch.cpuid_dynamic_bits_dirty = true;
-+		cpuid_set_dirty(vcpu);
- 		break;
- 	case MSR_SMI_COUNT:
- 		if (!msr_info->host_initiated)
-@@ -13034,7 +13034,16 @@ void kvm_arch_vcpu_destroy(struct kvm_vcpu *vcpu)
- 	kvm_mmu_destroy(vcpu);
- 	srcu_read_unlock(&vcpu->kvm->srcu, idx);
- 	free_page((unsigned long)vcpu->arch.pio_data);
--	kvfree(vcpu->arch.cpuid_entries);
-+}
-+
-+int kvm_arch_vcpu_common_init(struct kvm_vcpu_common *common)
-+{
-+	return 0;
-+}
-+
-+void kvm_arch_vcpu_common_destroy(struct kvm_vcpu_common *common)
-+{
-+	kvfree(common->arch.cpuid_entries);
+-		vcpu->wants_to_run = !READ_ONCE(vcpu->run->immediate_exit__unsafe);
++		vcpu->common->wants_to_run = !READ_ONCE(vcpu->run->immediate_exit__unsafe);
+ 		r = kvm_arch_vcpu_ioctl_run(vcpu);
+-		vcpu->wants_to_run = false;
++		vcpu->common->wants_to_run = false;
+ 
+ 		/*
+ 		 * FIXME: Remove this hack once all KVM architectures
+@@ -6488,36 +6491,36 @@ static void kvm_init_debug(void)
  }
  
- static void kvm_xstate_reset(struct kvm_vcpu *vcpu, bool init_event)
+ static inline
+-struct kvm_vcpu *preempt_notifier_to_vcpu(struct preempt_notifier *pn)
++struct kvm_vcpu_common *preempt_notifier_to_vcpu_common(struct preempt_notifier *pn)
+ {
+-	return container_of(pn, struct kvm_vcpu, preempt_notifier);
++	return container_of(pn, struct kvm_vcpu_common, preempt_notifier);
+ }
+ 
+ static void kvm_sched_in(struct preempt_notifier *pn, int cpu)
+ {
+-	struct kvm_vcpu *vcpu = preempt_notifier_to_vcpu(pn);
++	struct kvm_vcpu_common *common = preempt_notifier_to_vcpu_common(pn);
+ 
+-	WRITE_ONCE(vcpu->preempted, false);
+-	WRITE_ONCE(vcpu->ready, false);
++	WRITE_ONCE(common->preempted, false);
++	WRITE_ONCE(common->ready, false);
+ 
+-	__this_cpu_write(kvm_running_vcpu, vcpu->common);
+-	kvm_arch_vcpu_load(vcpu, cpu);
++	__this_cpu_write(kvm_running_vcpu, common);
++	kvm_arch_vcpu_load(common->current_vcpu, cpu);
+ 
+-	WRITE_ONCE(vcpu->scheduled_out, false);
++	WRITE_ONCE(common->scheduled_out, false);
+ }
+ 
+ static void kvm_sched_out(struct preempt_notifier *pn,
+ 			  struct task_struct *next)
+ {
+-	struct kvm_vcpu *vcpu = preempt_notifier_to_vcpu(pn);
++	struct kvm_vcpu_common *common = preempt_notifier_to_vcpu_common(pn);
+ 
+-	WRITE_ONCE(vcpu->scheduled_out, true);
++	WRITE_ONCE(common->scheduled_out, true);
+ 
+-	if (task_is_runnable(current) && kvm_vcpu_wants_to_run(vcpu)) {
+-		WRITE_ONCE(vcpu->preempted, true);
+-		WRITE_ONCE(vcpu->ready, true);
++	if (task_is_runnable(current) && common->wants_to_run) {
++		WRITE_ONCE(common->preempted, true);
++		WRITE_ONCE(common->ready, true);
+ 	}
+-	kvm_arch_vcpu_put(vcpu);
++	kvm_arch_vcpu_put(common->current_vcpu);
+ 	__this_cpu_write(kvm_running_vcpu, NULL);
+ }
+ 
 -- 
 2.53.0
 
