@@ -1,95 +1,80 @@
-Return-Path: <linuxppc-dev+bounces-22202-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22203-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C0DE7CD8C9D
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jun 2026 14:19:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C5CBFCD8C92
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jun 2026 14:28:20 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gYvLz0d2nz2yS0;
-	Tue, 09 Jun 2026 00:19:55 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780928394;
-	cv=none; b=a1Wjk0WSeB0Wbz03jkaHJN+2AIvWYaKbr+/qyyuNZdqUARf/gMmFM/sEkBL5AKn7aE/JioA1FcyZHtYqdEQ363zrVXdTmzFfrZQZT+CRGEY7APbld4TKciP/EkBB8IaoZBTnixIQzDEHmEaW1l/TGtmExYU+NPqnNoNRgpx2lLDis4aby87nSnpUCQwnD3oweVbA1PAO3TpYs4cSa5XnVpI9c4NqNEldT7qreg6gWgyFfP8GhHyWwC3F7g4nnPlg593fnxvLBbiqTumiW4J6H2k9nzFPuOMCKr7t0bEGzLCe3DS10QGARkek2A+lofrhu4/y0YS666zH2KCEWBA8HQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gYvXg0Cbbz2ytj;
+	Tue, 09 Jun 2026 00:28:19 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::32c"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780928898;
+	cv=none; b=CJKX+QcVk51KTmQIiuUb75Z8hx+s+wDhRIMOXJxTCH6dYvOGYbm76P3ZX5Wv5XD/0GBy8FlG2osx6769Xyt0/1URerNBofKlwijnhAnUs84JEgEfK1ZzsP4t8xaU/TS6yMheOT+9Z+TyXjNTGndtABYFWj8n5ZSYN5/uAMtZpKRXLHii3bGJpfDC2SxRpzkI+mg/sq+gQ0D3vKZsX3rRCQgFRYEaFVXiO1dFAfYatodb5fIWW6eS9Yqh579QnLVjyYZXl3f/B3j1vva1wNTX/I+HM1gPh39YwZdmNzpsUfJHC2DcDjc+r+mnRhfSmr3kvP53JBAPCYvByWILmISHIA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1780928394; c=relaxed/relaxed;
-	bh=pTnj5hc2AGLIaTtiaPIpTmrWWo1jdcJMYBjGgCDyyjs=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
-	 MIME-Version:Content-Type; b=hRAQ8g8ieVD/2R4jffN09K2m8i2D79HlR+GQcQ+abrxcyxbNi62mmwr2tuOAJw3Bj8fab1TVENceF+BYSWU35EyetFMTBDpX9UPC2+gM+RSCc8hSeryeTVWpO1qTP5WFh9qR0mJDRHPbnMG+KL2kI5Uefex6LBsv8fTEYjfwvxTiPs1sWS4LNBOoxWtDHBZzl2jTeNlfnwIC0DKAdTujIF7DBxKaO3hPL82jGY2cVQDRCsQJ0MeCYZzIaoizQGXSQHpc3WjyHGlskrldjtlvfstMWv9U8Yzx6ZlbP+fIr/m2Sl83yE9j8jacn6HAxbwXdy2TzJS4UNVJr0Ph1rvqfQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Kv2q8G4S; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=vaibhav@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1780928898; c=relaxed/relaxed;
+	bh=Sp2ANuSp/GV260EEmEmdmugr8RRzCxVHzflIi+KBBt8=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=KRxaGKTX1mZv0msdNO2HZZ/VAL4g1R7hRBny9M1T5qj8Krz3xj1PxMokOSj1q0bxQyDVvRlDT2ZlFPkMo9q1Swg3xyzXIiMdubq2xNRH8tlDN9DT/bvtkNEnAgoiv8rdmZb0LN7pVFHdqvGjlvQOWpEqagvbpp1MoH4bmhGGaOSp9Uk1xRfuZGwxoN3XqpqWuXhZw43r5qeQbB13FDcXnCyV/F80lE0NeV3vbb6RR7HZ3wYglUHYrqg9mjNytNqD/ROakqLdkzBmHkOwJvoeQZGlEcC4Tffl1xkQa6t8PbCN0EYuMP4UCpftLJ7PBzspNmy40lVnAv14l6MQVEhAbQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=m8CNSG39; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::32c; helo=mail-wm1-x32c.google.com; envelope-from=iacobcatalin@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Kv2q8G4S;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=m8CNSG39;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=vaibhav@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::32c; helo=mail-wm1-x32c.google.com; envelope-from=iacobcatalin@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-wm1-x32c.google.com (mail-wm1-x32c.google.com [IPv6:2a00:1450:4864:20::32c])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gYvLx5gTPz2yRM
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Jun 2026 00:19:52 +1000 (AEST)
-Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6588A7i91458768;
-	Mon, 8 Jun 2026 14:19:36 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-type:date:from:in-reply-to:message-id:mime-version
-	:references:subject:to; s=pp1; bh=pTnj5hc2AGLIaTtiaPIpTmrWWo1jdc
-	JMYBjGgCDyyjs=; b=Kv2q8G4SKMkysAkJbBslHkb5PPRE3mJDxWiQ3cLgS3TK3G
-	CVxKz/xk7dwvU/sN5JEnyd+oX8gVFE422M9b9V1W7JOLoxcMu07mW5gSeWiWS5Te
-	N7Ia1GITDv+Lck+8yu3SNXU7fZ4arSA989yvWA2TlvIPrn86j9EHo126o3aFSrUD
-	+SRaUloFIfkjGc6eLFSeYb2dHbw24HVh8xovpQFm7lAKm32ZCGS7Dhy4ihBTriFG
-	Q+1luifPjiY0gyH1dQ0YsJovPIkGs8XRCPFOBa+xtlbFsd89mL9rKdeE3FpXqXiI
-	Z3op3V0W5+9uaP40C4KOqflfLYohTJxy9ImHwEOg==
-Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4emb957nvv-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 08 Jun 2026 14:19:35 +0000 (GMT)
-Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma12.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 658E4baE005680;
-	Mon, 8 Jun 2026 14:19:35 GMT
-Received: from smtprelay02.wdc07v.mail.ibm.com ([172.16.1.69])
-	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 4emwvpwt7x-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 08 Jun 2026 14:19:35 +0000 (GMT)
-Received: from smtpav04.dal12v.mail.ibm.com (smtpav04.dal12v.mail.ibm.com [10.241.53.103])
-	by smtprelay02.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 658EJXOH25821920
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 8 Jun 2026 14:19:33 GMT
-Received: from smtpav04.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 122C358056;
-	Mon,  8 Jun 2026 14:19:33 +0000 (GMT)
-Received: from smtpav04.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 060B058052;
-	Mon,  8 Jun 2026 14:19:27 +0000 (GMT)
-Received: from vaibhav?linux.ibm.com (unknown [9.39.27.161])
-	by smtpav04.dal12v.mail.ibm.com (Postfix) with SMTP;
-	Mon,  8 Jun 2026 14:19:26 +0000 (GMT)
-Received: by vaibhav@linux.ibm.com (sSMTP sendmail emulation); Mon, 08 Jun 2026 19:49:25 +0530
-From: Vaibhav Jain <vaibhav@linux.ibm.com>
-To: Gautam Menghani <gautam@linux.ibm.com>
-Cc: Amit Machhiwal <amachhiw@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
-        Madhavan Srinivasan <maddy@linux.ibm.com>,
-        Harsh Prateek Bora
- <harshpb@linux.ibm.com>,
-        Ritesh Harjani <ritesh.list@gmail.com>,
-        Anushree
- Mathur <anushree.mathur@linux.ibm.com>,
-        Nicholas Piggin
- <npiggin@gmail.com>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        "Christophe
- Leroy (CS GROUP)" <chleroy@kernel.org>,
-        kvm@vger.kernel.org, stable@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] KVM: PPC: Book3S HV: Validate arch_compat against host
- compatibility mode
-In-Reply-To: <aiaAPQmWG7JXGoGn@Gautams-MacBook-Pro.local>
-References: <20260603141539.47620-1-amachhiw@linux.ibm.com>
- <aiGJvUqgjUo6M5et@mac.bl1-in.ibm.com> <87ldctmosh.fsf@vajain21.in.ibm.com>
- <aiaAPQmWG7JXGoGn@Gautams-MacBook-Pro.local>
-Date: Mon, 08 Jun 2026 19:49:25 +0530
-Message-ID: <877bo9m7wy.fsf@vajain21.in.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gYvXd5jSVz2yRM
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Jun 2026 00:28:16 +1000 (AEST)
+Received: by mail-wm1-x32c.google.com with SMTP id 5b1f17b1804b1-490be29c1c5so56886785e9.2
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 08 Jun 2026 07:28:16 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1780928893; x=1781533693; darn=lists.ozlabs.org;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=Sp2ANuSp/GV260EEmEmdmugr8RRzCxVHzflIi+KBBt8=;
+        b=m8CNSG39N5nHlh1RbvD1xl6Jlt/9HshJJEgSYc6X35vw2d2D98jcpci//XZLDrx9Gq
+         kPxPd0R5Ev9e31tp2hWOSy+pTlNulJr0aANQSta1W414P0OFQ5ACtNJQ1FxBhNYAGgF3
+         hyKvj/6TZPclt739jPsv5k33L/itvPmohazpXmTaDm6EwV7/0LfQfKwd07iJYmMcpzqT
+         9bFeZ3BcMYYYg36zTGACGrCEGWmPRjAnb/cwqFC8u8HT/GUa1nVWTqZyQf4U/tOv9yv5
+         AuX2SCp9YjiRCI+nMTR5hpZD7TMp+d18PKA2IDX2OPn31hvmt1OUq4jiULfUmUvdIkwq
+         MzpQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1780928893; x=1781533693;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:x-gm-gg:x-gm-message-state:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=Sp2ANuSp/GV260EEmEmdmugr8RRzCxVHzflIi+KBBt8=;
+        b=HAei1dcsy1AZ2FK7A8vlf5CDYmP6ryN+kTtMDVa7a2RWnfLhIKapVbr9adqrwWzIxL
+         uZ9tnc66bkaLp6paezdysM5sPCc3kzNTq3WhU4H8vi2+8GxlkHCXMKU6uyQKsAx5cbdI
+         fLMsJ3ihIrVONtfT6NgIS64+FOwhkDOW3CBurO3prGjoC62oDmr/YJLn2FDmBeK67jwv
+         TPGABL3x8WY8iIK2OTvtCccG53PSCWQBxv3LTSwuUXPhz/6SyVH1iRKyKWvN+WN/Trkn
+         kVJB1NtAS4IjvhF6uSC3y7O8IZtCoxZtuNqXIOrXx4s9GGEY0niUTCcYCkLi7oqzYd2e
+         Q7GA==
+X-Forwarded-Encrypted: i=1; AFNElJ+ZadZIpm/4eJ/kx9T43YfyAwpku1fbwmt0T/0FoMh6Fx2mOMLQPxxSFY/qnDAlF+RGdEcGl0Lr1Ycbjqo=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YydnNMysqiUKegx46xgBWmqJC6jbiEhHenROmuw+zLr7qrp59Gb
+	B8P9cN9glD6qU+rJBz+L8nHCk0cmyp4XrBp5SzyxJ5qpBz2PSpYYo0YR
+X-Gm-Gg: Acq92OExPE4tu+9EpUSnDIxiQLHyl+S3VI4icudAzrvAU974pO9otMbjbpzbCF7kCTH
+	vmasKh01Y6i5aLR/8XsLmbH3H3jacWkpaZr4oipVT3gYy2Sug3OH9U2SaPIuGJdu7b3OtXCo77v
+	ze25aehg1piDmUzQMtLAmCP7k93s1PVs+5X6Ejb/ZhayjDCNWFiOrgpPs/qNEWww/guKmYUrkVX
+	re0FZ2Z45l2mFemZrbrE6LUOF3f7ph7VH3Ne/ivuLl+IRZmpvLxdHc3iUpRcKooELr0eF/nMclv
+	pOEPTmCinIb+Qof4w4esEk6JsLv5bW2w8rJHfJB3ER0NFdD0bCc9wnlI786JcPfCC3/XGapHKVq
+	z8dBqsGDqp84fOSxtNNydiewD/Ibq2ItK2rMiUXjVv21KhJ78e9n/GWv6WkIIHvxE8uC7dmRDJC
+	UCJKuH6XuNJq0P9Kj5JU4LhQaWuIwStnDD
+X-Received: by 2002:a05:600c:34cb:b0:48e:6db3:ff3a with SMTP id 5b1f17b1804b1-490c25b09a2mr267979525e9.16.1780928893422;
+        Mon, 08 Jun 2026 07:28:13 -0700 (PDT)
+Received: from localhost ([94.53.77.213])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-490bc3cbfe4sm407415735e9.7.2026.06.08.07.28.12
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 08 Jun 2026 07:28:13 -0700 (PDT)
+From: Catalin Iacob <iacobcatalin@gmail.com>
+Date: Mon, 08 Jun 2026 17:29:16 +0300
+Subject: [PATCH v4 1/5] scsi: core: Remove export for
+ scsi_device_from_queue()
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -103,109 +88,93 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Authority-Analysis: v=2.4 cv=N4UZ0W9B c=1 sm=1 tr=0 ts=6a26cf78 cx=c_pps
- a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17
- a=FelO9ux0wxsA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=U7nrCbtTmkRpXpFmAIza:22 a=VwQbUJbxAAAA:8 a=VnNF1IyMAAAA:8
- a=FEvzW7QgZIPG8QhEdCYA:9
-X-Proofpoint-ORIG-GUID: IAcZRhrd19hqH9tIBTGj-YEn3gPFGtPn
-X-Proofpoint-GUID: 334FODx7fJ4QzIEJE24es4nh5iroqIfR
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjA4MDEzNCBTYWx0ZWRfXylAXCFV89dhV
- h3DNgITWM2xtuWmkgirPy1GBkIstat3tS0bbwOP6pFg0W7epEjmPogLG+49+SVmgT5o8R2kaKA8
- BcnYW5fRkD1YcRbac6Fkget9AhawkCvWLuia7SF2XcEYkaohaiMjdFgaKO81cTrPv82Ec0lPTEP
- YdNKRzsL65uq4+nOJSYSCAMcO6KXVozVhw8WK/6vIhoDNlW1n+wvWCyrWBlZh9DgipxZ6i9/x7s
- WCVxXDeuKYbzYgAZcjnHeP3v283XEWZ/h43rBO3I8fK5XQ6m3Ocu1RGBTwH4IqOx4wFxcGPcoUe
- VTO4J3b7jFYrK1ompMK2bobCbqF48BHCsCpS9LJDkLjtIOQTcQP4F6pdLHzVrMAPMuHwIgA7+dS
- UBwKhdV4pWGY3McmyGpPcGmh5h5523bNRHcYNp92at38+nJbBuLRqrl30eP8lhSK7KTJebDta8x
- Rem2ZlEwDleecsuhwzQ==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
- definitions=2026-06-08_03,2026-06-05_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- bulkscore=0 malwarescore=0 spamscore=0 clxscore=1015 lowpriorityscore=0
- phishscore=0 impostorscore=0 adultscore=0 priorityscore=1501 suspectscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2605210000 definitions=main-2606080134
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20260608-remove-pktcdvd-references-v4-1-72f88b04cc87@gmail.com>
+References: <20260608-remove-pktcdvd-references-v4-0-72f88b04cc87@gmail.com>
+In-Reply-To: <20260608-remove-pktcdvd-references-v4-0-72f88b04cc87@gmail.com>
+To: Thomas Bogendoerfer <tsbogend@alpha.franken.de>, 
+ Madhavan Srinivasan <maddy@linux.ibm.com>, 
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
+ "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, 
+ Rich Felker <dalias@libc.org>, 
+ John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, 
+ "David S. Miller" <davem@davemloft.net>, 
+ Andreas Larsson <andreas@gaisler.com>, 
+ "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>, 
+ "Martin K. Petersen" <martin.petersen@oracle.com>, 
+ Jens Axboe <axboe@kernel.dk>
+Cc: linux-mips@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ linuxppc-dev@lists.ozlabs.org, linux-sh@vger.kernel.org, 
+ sparclinux@vger.kernel.org, linux-scsi@vger.kernel.org, 
+ Catalin Iacob <iacobcatalin@gmail.com>
+X-Mailer: b4 0.16-dev
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2345;
+ i=iacobcatalin@gmail.com; h=from:subject:message-id;
+ bh=LvrQuMufMa2jstaWqw8VwauAYnxPiY07NBjKrPJoU1M=;
+ b=owGbwMvMwCX261qtXAKXKjvjabUkhiy1i/trmY8wXFU74qot2bFMQKYllkdpZl28/6LcZt/OR
+ qdEq6qOUhYGMS4GWTFFlhfnrrdt2HMm4F6SXQvMHFYmkCEMXJwCMBGLYEaGGddjWhj5Nom9NZZx
+ dnsg6qDb+vSPoVpBs3Rha/1MyRkLGBm+xtTJSfmev1K2/2Tr4t/P9C4Ibt+n+LLSJ2aHYv+PR4K
+ sAA==
+X-Developer-Key: i=iacobcatalin@gmail.com; a=openpgp;
+ fpr=F609BFABD84EB5C9DDDC37EDE89C6A3571CD0E33
 
-Gautam Menghani <gautam@linux.ibm.com> writes:
+Commit 1cea5180f2f8 ("block: remove pktcdvd driver") left behind an
+export that is now dead code. Remove it and move the declaration of
+scsi_device_from_queue() to drivers/scsi/scsi_priv.h.
 
-> On Fri, Jun 05, 2026 at 12:55:50PM +0530, Vaibhav Jain wrote:
->> Hi Gautam,
->> 
->> Thanks for testing this patch. Few questions:
->> Gautam Menghani <gautam@linux.ibm.com> writes:
->> 
->> > On Wed, Jun 03, 2026 at 07:45:39PM +0530, Amit Machhiwal wrote:
->> >> On IBM POWER systems, newer processor generations can operate in
->> >> compatibility modes corresponding to earlier generations. This becomes
->> >> relevant for nested virtualization, where nested KVM guests may need to
->> >> run with a specific processor compatibility level.
->> >> 
->> <snip>
->> >
->> > I booted a KVM guest on LPAR with this patch in the following scenarios:
->> <snip>
->> 
->> > 3. P11 guest on P11 host booted in P10 compat mode: No error observed
->> This should have resulted in an error since booting a P11 guest on P10
->> compat mode host is not allowed with/without this patch. Can you please
->> check your test env and share the boot results.
->
-> - lscpu output (host P11 LPAR booted in p10 compat mode)
-> # lscpu                                                                                                                                                   03:35:13 [3/3]
-> Architecture:                ppc64le
->   Byte Order:                Little Endian
-> CPU(s):                      960
->   On-line CPU(s) list:       0-959
-> Model name:                  POWER10 (architected), altivec supported
->   Model:                     2.0 (pvr 0082 0200)
->   Thread(s) per core:        8
->   Core(s) per socket:        15
->   Socket(s):                 8
->   Physical sockets:          4
->   Physical chips:            2
->   Physical cores/chip:       16
->
->
-> - lscpu output from guest
-> # lscpu
-> Architecture:             ppc64le
->   Byte Order:             Little Endian
-> CPU(s):                   4
->   On-line CPU(s) list:    0-3
-> Model name:               Power11 (raw), altivec supported
->   Model:                  2.0 (pvr 0082 0200)
->   Thread(s) per core:     1
->   Core(s) per socket:     4
->   Socket(s):              1
->
-Argh, this doesnt look right. The kernel patch should have prevented the
-P11 compat guest boot on P10 compat host. Looks like you havent used the
-corrosponding Qemu patch [1] that could have prevented this from
-happening.
+Signed-off-by: Catalin Iacob <iacobcatalin@gmail.com>
+---
+ drivers/scsi/scsi_lib.c    | 8 --------
+ drivers/scsi/scsi_priv.h   | 1 +
+ include/scsi/scsi_device.h | 1 -
+ 3 files changed, 1 insertion(+), 9 deletions(-)
 
-Had a off mailing list discussion with Amit on how to address this issue
-and he will be sending a new version of the patch to address this issue.
-
-
-[1] https://lore.kernel.org/all/20260502140021.69712-2-amachhiw@linux.ibm.com/
-
->
->
-> - QEMU command line
-> /usr/bin/qemu-system-ppc64 -device virtio-blk-pci,drive=drive0,id=virtblk0 \
->     -drive file=/home/gautam/images/fc41.qcow2,format=qcow2,if=none,id=drive0 \
->     -m 100G -smp 4 -cpu host -nographic -machine pseries,ic-mode=xics -accel kvm
->
->
-> Thanks,
-> Gautam
->
+diff --git a/drivers/scsi/scsi_lib.c b/drivers/scsi/scsi_lib.c
+index 85eef401925a..b67f0dc79499 100644
+--- a/drivers/scsi/scsi_lib.c
++++ b/drivers/scsi/scsi_lib.c
+@@ -2224,14 +2224,6 @@ struct scsi_device *scsi_device_from_queue(struct request_queue *q)
+ 
+ 	return sdev;
+ }
+-/*
+- * pktcdvd should have been integrated into the SCSI layers, but for historical
+- * reasons like the old IDE driver it isn't.  This export allows it to safely
+- * probe if a given device is a SCSI one and only attach to that.
+- */
+-#ifdef CONFIG_CDROM_PKTCDVD_MODULE
+-EXPORT_SYMBOL_GPL(scsi_device_from_queue);
+-#endif
+ 
+ /**
+  * scsi_block_requests - Utility function used by low-level drivers to prevent
+diff --git a/drivers/scsi/scsi_priv.h b/drivers/scsi/scsi_priv.h
+index 7a193cc04e5b..37e5601be2b8 100644
+--- a/drivers/scsi/scsi_priv.h
++++ b/drivers/scsi/scsi_priv.h
+@@ -102,6 +102,7 @@ void scsi_eh_done(struct scsi_cmnd *scmd);
+ 
+ /* scsi_lib.c */
+ extern void scsi_device_unbusy(struct scsi_device *sdev, struct scsi_cmnd *cmd);
++extern struct scsi_device *scsi_device_from_queue(struct request_queue *q);
+ extern void scsi_queue_insert(struct scsi_cmnd *cmd,
+ 			      enum scsi_qc_status reason);
+ extern void scsi_io_completion(struct scsi_cmnd *, unsigned int);
+diff --git a/include/scsi/scsi_device.h b/include/scsi/scsi_device.h
+index 9c2a7bbe5891..9f716497a959 100644
+--- a/include/scsi/scsi_device.h
++++ b/include/scsi/scsi_device.h
+@@ -407,7 +407,6 @@ void scsi_attach_vpd(struct scsi_device *sdev);
+ void scsi_cdl_check(struct scsi_device *sdev);
+ int scsi_cdl_enable(struct scsi_device *sdev, bool enable);
+ 
+-extern struct scsi_device *scsi_device_from_queue(struct request_queue *q);
+ extern int __must_check scsi_device_get(struct scsi_device *);
+ extern void scsi_device_put(struct scsi_device *);
+ extern struct scsi_device *scsi_device_lookup(struct Scsi_Host *,
 
 -- 
-Cheers
-~ Vaibhav
+2.54.0
+
 
