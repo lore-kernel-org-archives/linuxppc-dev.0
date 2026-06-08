@@ -1,34 +1,34 @@
-Return-Path: <linuxppc-dev+bounces-22210-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22211-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1BCCFCD8C9F
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jun 2026 14:52:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E764BCD8C9D
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jun 2026 14:52:31 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gYw4B2T34z3bpG;
-	Tue, 09 Jun 2026 00:52:10 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gYw4F3hdtz2ytV;
+	Tue, 09 Jun 2026 00:52:13 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a01:238:42d9:3f00:e505:6202:4f0c:f051"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780930330;
-	cv=none; b=VPY5n6oOMvlqGb5IxcV3MY5/foKYC2sJEKWtSmAL/+/uScBuNqsaZAgohAlr+fa3M3Bcn26rKXZl7VJWq7iobo5ACQjv6IkQDMnCbQ8rgbZYq8teqKj0n3bhzn3NJkV15OOrgAfUFk8PJHsOVCNAqAU6ALRftGphktY3gwQzt78xlj8GnahWpF+yEyUzTfr+aL2+CkKilFP+nNjuIY8crxEG04PjKIApV4q14cFPINTYEA3aej/b5ikGAkU0j0pmf3vI9GTZeJXHqZvDBYC3Ib/UvqJjnEViSVaAmpoYczsYGVHU/KOMSsS+96jUcLd2aWkvPFLzMFQaKtf2wRLhgQ==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780930333;
+	cv=none; b=gUMbAeKBUkLCpvI0xF/hZoElQwWPvy6WdmvVua8+5U2qmWfrdRrET+6eXbU04l4LWfC9opKOoRoaPkqXEQCiZbm9gF1VRBSMo2qLPzj29hWYsdRfpn0x/So4lhC/jRm33uVvVKIkDN0yD8NROuBY3n4UrwVxgfrYlg03IgxnMFCicFTrirTjDVqxT1vuG0RtdbWtk1rABeouZbIgYt/z7pzrHl/dsaCKbit5dSfSzO3y93uVeiGGGQ1PudWPvHZ5rhL22xN1obe0Xy89v8DD6py5ld86DupJDOc724IiATLHIsgQgDJq0EwQYBxr3gpcseMpkEo0qZ3EoS+jGUWkFQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1780930330; c=relaxed/relaxed;
-	bh=GK3GGE9DhTl+C9mVcDok7LIpbBsR+s/tVCtGWQo3hTs=;
+	t=1780930333; c=relaxed/relaxed;
+	bh=SFY8osBOGiT7rOUrtwhyKbRMW9LibB8EPQscRy+C6vc=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=SkbUx0oGip2uXoU6MDlZ5le931HM94Igdvm/jQGQ0/iPW26CkvANSwZZr518K6IxhNA3GVQULPDNspJSwVgsca26xhFziiZ/znzC+InjRcmtIHmbxkUmK19VvhlMhKWqq5VS42ijhkWERgU3KiVYdiOQUqg/aAVHJAkHkrRT8lEnnPw0khLCjdXZB8ye/F0e/4G8fw77jY1/Tk5Vyfe7iiHpRHf2tPnRpArWErZ7H8XDq2uooilI+QOz3IZjMV/j2y0Qnlb1fE/3pTjk2X2ZQ+oZu8EtBh/ekwwqDAI1CW4F8T0Zt8Osre+ihnzw7A8YE7kLQaEsDOFtullzcuCi3g==
+	 MIME-Version; b=bGbl+k1gessS7yu3ux9GJwd9LUncGliz2ZzmWibjMr/BXlq3HRw5mxIJ3AiUokeoRTr/W38rYNsMe26YQgzBwebDrCArwzJhlvlDy4YZiBGeF/uJu9CWFrLf0ePvBYVi2kOek8ZtUvog5MUuwKcDq6d3ijE8Vch0pSh6iUSvWlKCf//RC79np286g20pBU/sL37q2oLaNQ6Plz/7LCHHSmasO2WIPJ6WK7BpdDIwMZRCxefA3hn7gaDdqrMdJcPSGhO4QwG91RAHMHQ293OyKkpFK+G03jpZULaqiiGWPkwZrYRcyykrBfdLjReycgWyCer+B37v3i7AmfIBALLtPA==
 ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=8bytes.org; spf=pass (client-ip=2a01:238:42d9:3f00:e505:6202:4f0c:f051; helo=mail.8bytes.org; envelope-from=joro@8bytes.org; receiver=lists.ozlabs.org) smtp.mailfrom=8bytes.org
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=8bytes.org
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=8bytes.org (client-ip=2a01:238:42d9:3f00:e505:6202:4f0c:f051; helo=mail.8bytes.org; envelope-from=joro@8bytes.org; receiver=lists.ozlabs.org)
 Received: from mail.8bytes.org (mail.8bytes.org [IPv6:2a01:238:42d9:3f00:e505:6202:4f0c:f051])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gYw483Xytz2ytV
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gYw483YzTz2ytj
 	for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Jun 2026 00:52:07 +1000 (AEST)
 Received: from io.home.8bytes.org (p4ffe1d30.dip0.t-ipconnect.de [79.254.29.48])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.8bytes.org (Postfix) with ESMTPSA id BF5B22028B8;
-	Mon,  8 Jun 2026 16:43:09 +0200 (CEST)
+	by mail.8bytes.org (Postfix) with ESMTPSA id 7F2382028AA;
+	Mon,  8 Jun 2026 16:43:06 +0200 (CEST)
 From: =?UTF-8?q?J=C3=B6rg=20R=C3=B6del?= <joro@8bytes.org>
 To: Paolo Bonzini <pbonzini@redhat.com>,
 	Sean Christopherson <seanjc@google.com>
@@ -49,9 +49,9 @@ Cc: Tom Lendacky <thomas.lendacky@amd.com>,
 	x86@kernel.org,
 	coconut-svsm@lists.linux.dev,
 	joerg.roedel@amd.com
-Subject: [PATCH 22/60] kvm: Move kvm_vcpu pid members to struct kvm_vcpu_common
-Date: Mon,  8 Jun 2026 16:42:14 +0200
-Message-ID: <20260608144252.351443-23-joro@8bytes.org>
+Subject: [PATCH 07/60] KVM: SVM: Add support for the SEV-SNP #HV IPI NAE event
+Date: Mon,  8 Jun 2026 16:41:59 +0200
+Message-ID: <20260608144252.351443-8-joro@8bytes.org>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20260608144252.351443-1-joro@8bytes.org>
 References: <20260608144252.351443-1-joro@8bytes.org>
@@ -70,190 +70,147 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-From: Joerg Roedel <joerg.roedel@amd.com>
+From: Melody Wang <huibo.wang@amd.com>
 
-These are the same across all planes for one VCPU, so make then
-shared.
+The #HV IPI NAE event allows the guest to send an IPI to other vCPUs in the
+guest when the Restricted Injection feature is enabled. Implement the NAE
+event as per GHCB specification.
 
+Co-developed-by: Thomas Lendacky <thomas.lendacky@amd.com>
+Signed-off-by: Thomas Lendacky <thomas.lendacky@amd.com>
+Signed-off-by: Melody Wang <huibo.wang@amd.com>
 Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
 ---
- arch/arm64/include/asm/kvm_host.h |  2 +-
- arch/arm64/kvm/arm.c              |  2 +-
- include/linux/kvm_host.h          |  5 ++--
- virt/kvm/kvm_main.c               | 44 ++++++++++++++++---------------
- 4 files changed, 28 insertions(+), 25 deletions(-)
+ arch/x86/include/uapi/asm/svm.h |  1 +
+ arch/x86/kvm/lapic.c            | 24 +++++++++++++++++++++++-
+ arch/x86/kvm/lapic.h            |  2 ++
+ arch/x86/kvm/svm/sev.c          | 28 ++++++++++++++++++++++++++++
+ 4 files changed, 54 insertions(+), 1 deletion(-)
 
-diff --git a/arch/arm64/include/asm/kvm_host.h b/arch/arm64/include/asm/kvm_host.h
-index a49042bfa801..32dc484781f0 100644
---- a/arch/arm64/include/asm/kvm_host.h
-+++ b/arch/arm64/include/asm/kvm_host.h
-@@ -1270,7 +1270,7 @@ int __kvm_arm_vcpu_set_events(struct kvm_vcpu *vcpu,
- void kvm_arm_halt_guest(struct kvm *kvm);
- void kvm_arm_resume_guest(struct kvm *kvm);
- 
--#define vcpu_has_run_once(vcpu)	(!!READ_ONCE((vcpu)->pid))
-+#define vcpu_has_run_once(vcpu)	(!!READ_ONCE((vcpu)->common->pid))
- 
- #ifndef __KVM_NVHE_HYPERVISOR__
- #define kvm_call_hyp_nvhe(f, ...)						\
-diff --git a/arch/arm64/kvm/arm.c b/arch/arm64/kvm/arm.c
-index 001f83f737ea..1e2f42134b74 100644
---- a/arch/arm64/kvm/arm.c
-+++ b/arch/arm64/kvm/arm.c
-@@ -726,7 +726,7 @@ void kvm_arch_vcpu_load(struct kvm_vcpu *vcpu, int cpu)
- 	if (!cpumask_test_cpu(cpu, vcpu->kvm->arch.supported_cpus))
- 		vcpu_set_on_unsupported_cpu(vcpu);
- 
--	vcpu->arch.pid = pid_nr(vcpu->pid);
-+	vcpu->arch.pid = pid_nr(vcpu->common->pid);
- }
- 
- void kvm_arch_vcpu_put(struct kvm_vcpu *vcpu)
-diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
-index 3c72a462ccfa..73786712495d 100644
---- a/include/linux/kvm_host.h
-+++ b/include/linux/kvm_host.h
-@@ -346,6 +346,9 @@ struct kvm_vcpu_common {
- 	int mode;
- 	u64 requests;
- 
-+	struct pid *pid;
-+	rwlock_t pid_lock;
-+
- 	/* Scheduling state */
- #ifdef CONFIG_PREEMPT_NOTIFIERS
- 	struct preempt_notifier preempt_notifier;
-@@ -368,8 +371,6 @@ struct kvm_vcpu {
- 
- 	struct kvm_run *run;
- 
--	struct pid *pid;
--	rwlock_t pid_lock;
- 	int sigset_active;
- 	sigset_t sigset;
- 	unsigned int halt_poll_ns;
-diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-index 7ea20d96bc89..af3c4e0081b8 100644
---- a/virt/kvm/kvm_main.c
-+++ b/virt/kvm/kvm_main.c
-@@ -475,6 +475,9 @@ static int kvm_vcpu_init_common(struct kvm_vcpu *vcpu, struct kvm *kvm, unsigned
- 	common->kvm = kvm;
- 	common->current_vcpu = vcpu;
- 
-+	common->pid = NULL;
-+	rwlock_init(&common->pid_lock);
-+
- 	common->wants_to_run = false;
- 	common->preempted = false;
- 	common->ready = false;
-@@ -510,8 +513,6 @@ static void kvm_vcpu_init(struct kvm_vcpu *vcpu, struct kvm *kvm, unsigned id)
- 	vcpu->kvm = kvm;
- 	vcpu->plane = kvm->planes[0];
- 	vcpu->vcpu_id = id;
--	vcpu->pid = NULL;
--	rwlock_init(&vcpu->pid_lock);
- 	kvm_async_pf_vcpu_init(vcpu);
- 
- 	kvm_vcpu_set_in_spin_loop(vcpu, false);
-@@ -539,6 +540,12 @@ static void kvm_vcpu_common_destroy(struct kvm_vcpu *vcpu)
- 	kvm->created_vcpus--;
- 	mutex_unlock(&common->kvm->lock);
- 
-+	/*
-+	 * No need for rcu_read_lock as VCPU_RUN is the only place that changes
-+	 * the common->pid pointer, and at destruction time all file descriptors
-+	 * are already gone.
-+	 */
-+	put_pid(common->pid);
- 	kfree(common);
- }
- 
-@@ -549,13 +556,6 @@ static void kvm_vcpu_destroy(struct kvm_vcpu *vcpu)
- 	kvm_vcpu_common_destroy(vcpu);
- 	kvm_dirty_ring_free(&vcpu->dirty_ring);
- 
--	/*
--	 * No need for rcu_read_lock as VCPU_RUN is the only place that changes
--	 * the vcpu->pid pointer, and at destruction time all file descriptors
--	 * are already gone.
--	 */
--	put_pid(vcpu->pid);
--
- 	free_page((unsigned long)vcpu->run);
- 	kmem_cache_free(kvm_vcpu_cache, vcpu);
- }
-@@ -3996,16 +3996,17 @@ EXPORT_SYMBOL_FOR_KVM_INTERNAL(__kvm_vcpu_kick);
- 
- int kvm_vcpu_yield_to(struct kvm_vcpu *target)
+diff --git a/arch/x86/include/uapi/asm/svm.h b/arch/x86/include/uapi/asm/svm.h
+index d84a13ac4627..d281dd21c540 100644
+--- a/arch/x86/include/uapi/asm/svm.h
++++ b/arch/x86/include/uapi/asm/svm.h
+@@ -122,6 +122,7 @@
+ #define SVM_VMGEXIT_HVDB_SET			1
+ #define SVM_VMGEXIT_HVDB_QUERY			2
+ #define SVM_VMGEXIT_HVDB_CLEAR			3
++#define SVM_VMGEXIT_HV_IPI                      0x80000015ull
+ #define SVM_VMGEXIT_SNP_RUN_VMPL		0x80000018ull
+ #define SVM_VMGEXIT_SAVIC			0x8000001aull
+ #define SVM_VMGEXIT_SAVIC_REGISTER_GPA		0
+diff --git a/arch/x86/kvm/lapic.c b/arch/x86/kvm/lapic.c
+index 4078e624ca66..ab40a2e4ab9d 100644
+--- a/arch/x86/kvm/lapic.c
++++ b/arch/x86/kvm/lapic.c
+@@ -2558,7 +2558,7 @@ static int kvm_lapic_reg_write(struct kvm_lapic *apic, u32 reg, u32 val)
+ static int apic_mmio_write(struct kvm_vcpu *vcpu, struct kvm_io_device *this,
+ 			    gpa_t address, int len, const void *data)
  {
-+	struct kvm_vcpu_common *common = target->common;
- 	struct task_struct *task = NULL;
- 	int ret;
+-	struct kvm_lapic *apic = to_lapic(this);
++	struct kvm_lapic *apic = this ? to_lapic(this) : vcpu->arch.apic;
+ 	unsigned int offset = address - apic->base_address;
+ 	u32 val;
  
--	if (!read_trylock(&target->pid_lock))
-+	if (!read_trylock(&common->pid_lock))
- 		return 0;
+@@ -3583,3 +3583,25 @@ void kvm_lapic_exit(void)
+ 	static_key_deferred_flush(&apic_sw_disabled);
+ 	WARN_ON(static_branch_unlikely(&apic_sw_disabled.key));
+ }
++
++/* Send IPI by writing ICR with MSR write when X2APIC enabled, with mmio write when XAPIC enabled */
++int kvm_xapic_x2apic_send_ipi(struct kvm_vcpu *vcpu, u64 data)
++{
++	u32 icr_msr_addr = APIC_BASE_MSR + (APIC_ICR >> 4);
++	struct kvm_lapic *apic = vcpu->arch.apic;
++	gpa_t gpa = apic->base_address + APIC_ICR;
++
++	if (!kvm_lapic_enabled(vcpu))
++		return 1;
++
++	if (vcpu->arch.apic_base & X2APIC_ENABLE) {
++		if (!kvm_x2apic_msr_write(vcpu, icr_msr_addr, data))
++			return 0;
++	} else {
++		if (!apic_mmio_write(vcpu, NULL, gpa, 4, &data))
++			return 0;
++	}
++
++	return 1;
++}
++EXPORT_SYMBOL_FOR_KVM_INTERNAL(kvm_xapic_x2apic_send_ipi);
+diff --git a/arch/x86/kvm/lapic.h b/arch/x86/kvm/lapic.h
+index 274885af4ebc..afd440c88981 100644
+--- a/arch/x86/kvm/lapic.h
++++ b/arch/x86/kvm/lapic.h
+@@ -156,6 +156,8 @@ int kvm_hv_vapic_msr_read(struct kvm_vcpu *vcpu, u32 msr, u64 *data);
+ int kvm_lapic_set_pv_eoi(struct kvm_vcpu *vcpu, u64 data, unsigned long len);
+ void kvm_lapic_exit(void);
  
--	if (target->pid)
--		task = get_pid_task(target->pid, PIDTYPE_PID);
-+	if (common->pid)
-+		task = get_pid_task(common->pid, PIDTYPE_PID);
++int kvm_xapic_x2apic_send_ipi(struct kvm_vcpu *vcpu, u64 data);
++
+ u64 kvm_lapic_readable_reg_mask(struct kvm_lapic *apic);
  
--	read_unlock(&target->pid_lock);
-+	read_unlock(&common->pid_lock);
+ static inline void kvm_lapic_set_irr(int vec, struct kvm_lapic *apic)
+diff --git a/arch/x86/kvm/svm/sev.c b/arch/x86/kvm/svm/sev.c
+index 369fb1e36f58..d04f71836ef7 100644
+--- a/arch/x86/kvm/svm/sev.c
++++ b/arch/x86/kvm/svm/sev.c
+@@ -35,6 +35,7 @@
+ #include "svm_ops.h"
+ #include "cpuid.h"
+ #include "trace.h"
++#include "lapic.h"
  
- 	if (!task)
- 		return 0;
-@@ -4258,9 +4259,9 @@ static int vcpu_get_pid(void *data, u64 *val)
- {
- 	struct kvm_vcpu *vcpu = data;
- 
--	read_lock(&vcpu->pid_lock);
--	*val = pid_nr(vcpu->pid);
--	read_unlock(&vcpu->pid_lock);
-+	read_lock(&vcpu->common->pid_lock);
-+	*val = pid_nr(vcpu->common->pid);
-+	read_unlock(&vcpu->common->pid_lock);
+ #define GHCB_VERSION_MAX	2ULL
+ #define GHCB_VERSION_MIN	1ULL
+@@ -3538,6 +3539,10 @@ static int sev_es_validate_vmgexit(struct vcpu_svm *svm)
+ 		if (!is_sev_snp_guest(vcpu))
+ 			goto vmgexit_err;
+ 		break;
++	case SVM_VMGEXIT_HV_IPI:
++		if (!sev_snp_guest(vcpu->kvm))
++			goto vmgexit_err;
++		break;
+ 	default:
+ 		reason = GHCB_ERR_INVALID_EVENT;
+ 		goto vmgexit_err;
+@@ -4416,6 +4421,22 @@ static int sev_snp_hv_doorbell_page(struct vcpu_svm *svm)
  	return 0;
  }
  
-@@ -4558,6 +4559,7 @@ static long kvm_vcpu_ioctl(struct file *filp,
- 		return -EINTR;
- 	switch (ioctl) {
- 	case KVM_RUN: {
-+		struct kvm_vcpu_common *common = vcpu->common;
- 		struct pid *oldpid;
- 		r = -EINVAL;
- 		if (arg)
-@@ -4569,7 +4571,7 @@ static long kvm_vcpu_ioctl(struct file *filp,
- 		 * read vcpu->pid while this vCPU is in KVM_RUN, e.g. to yield
- 		 * directly to this vCPU
- 		 */
--		oldpid = vcpu->pid;
-+		oldpid = common->pid;
- 		if (unlikely(oldpid != task_pid(current))) {
- 			/* The thread running this VCPU changed. */
- 			struct pid *newpid;
-@@ -4579,15 +4581,15 @@ static long kvm_vcpu_ioctl(struct file *filp,
- 				break;
- 
- 			newpid = get_task_pid(current, PIDTYPE_PID);
--			write_lock(&vcpu->pid_lock);
--			vcpu->pid = newpid;
--			write_unlock(&vcpu->pid_lock);
-+			write_lock(&common->pid_lock);
-+			common->pid = newpid;
-+			write_unlock(&common->pid_lock);
- 
- 			put_pid(oldpid);
++static int sev_snp_hv_ipi(struct vcpu_svm *svm)
++{
++	struct kvm_vcpu *vcpu = &svm->vcpu;
++	u64 icr_info;
++
++	if (!sev_snp_guest(vcpu->kvm))
++		return -EINVAL;
++
++	icr_info = svm->vmcb->control.exit_info_1;
++
++	if (kvm_xapic_x2apic_send_ipi(vcpu, icr_info))
++		return -EINVAL;
++
++	return 0;
++}
++
+ static int sev_handle_vmgexit_msr_protocol(struct vcpu_svm *svm)
+ {
+ 	struct vmcb_control_area *control = &svm->vmcb->control;
+@@ -4698,6 +4719,13 @@ int sev_handle_vmgexit(struct kvm_vcpu *vcpu)
+ 			ghcb_set_sw_exit_info_2(svm->sev_es.ghcb, GHCB_ERR_INVALID_INPUT);
  		}
- 		vcpu->common->wants_to_run = !READ_ONCE(vcpu->run->immediate_exit__unsafe);
- 		r = kvm_arch_vcpu_ioctl_run(vcpu);
--		vcpu->common->wants_to_run = false;
-+		common->wants_to_run = false;
  
- 		/*
- 		 * FIXME: Remove this hack once all KVM architectures
++		ret = 1;
++		break;
++	case SVM_VMGEXIT_HV_IPI:
++		if (sev_snp_hv_ipi(svm)) {
++			ghcb_set_sw_exit_info_1(svm->sev_es.ghcb, 2);
++			ghcb_set_sw_exit_info_2(svm->sev_es.ghcb, GHCB_ERR_INVALID_INPUT);
++		}
+ 		ret = 1;
+ 		break;
+ 	case SVM_VMGEXIT_UNSUPPORTED_EVENT:
 -- 
 2.53.0
 
