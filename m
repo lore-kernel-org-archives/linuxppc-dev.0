@@ -1,34 +1,34 @@
-Return-Path: <linuxppc-dev+bounces-22226-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22227-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 17291CD8C92
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jun 2026 14:53:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EF79CCD8C92
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jun 2026 14:53:58 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gYw4W2X2nz3cCt;
-	Tue, 09 Jun 2026 00:52:27 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=85.214.250.239
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gYw4Z2k90z3cVK;
+	Tue, 09 Jun 2026 00:52:30 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a01:238:42d9:3f00:e505:6202:4f0c:f051"
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780930345;
-	cv=none; b=GRb+x/+beRhQar+2DbbgZoIzJnKtWRBDxxc7BIrRHZiParSoNcrsMtv2ByPcuYhT7QYjSWIGE2rV17KrH1NUIz/I4FFEi6nvfj9SokP4DRtsJBy2jAclcTLaX4xco9Kdm70WiqwvQPqQjit1Wq1NK0DRq/XVOyY37QvIEq3CX6dLQu1MiRBhuBvvN5vSnUbmDGtE3BW111KMdxqnyPIY/4a/h+vp8A6rd2AWnMYo3/SzkgPeugmR8QgV0g2l3NAZmk+lVhKMTHnYusTQZL7G93MObcEO4XwRa7nvcZIvIRLiGiar1wPilCUhS+3hWER5q1aezgz4zVm9vJLZz2qPPg==
+	cv=none; b=RUG9FnYmbb68ImPRGmNU9Ju/yKtwlP97sKjVOdgCHS+iMYVXeFCb88bIEes+3D5h5ep0Ht8CBh8V0Abi7/n9aZDuIvVs8AftxsFqnenZ4InDPcCtls7TvSR8kwTLv08VLw3SCQfXMdEZJ7LlZqLN/WH3bUyQnqA5RC9w3l9Cb2sbHUtRNQuoxq2R/BuG1B4nJzhyIuQOa14R2QnWkWj/nPIwANT1HAY1/djmPPi0waScpcvWclWLu1ma3nJ1JtIYrBI6PvDF2tIi1qXKy61Iy63BS6PjnxBxDvgHXr8iHK1yuQzu9PUOzBUuwx6p0SVDPDYiY7qFMWMseso830USpA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1780930345; c=relaxed/relaxed;
-	bh=mbEehg9LdTGdSOiAAIn3KdGBhg9eDEx+AekEW+rMGwM=;
+	bh=UOIkUwmlgWfSL8sxyeuEERr3mzauhqFvvM/fkgZD0Lo=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=DzPqgvQmu9Wi62HPO6sL7Td1bMgd1bV7BY2kn20DMBXJq+5DPzlwNFajcJ7VqW5KoE3/sXd14KajP8VCln0P0vqdU17zu+0c9ypKhpiDKCWS15+9QPQOwKY8aAhSKIsJkoXdN2Y0MnvdQYPgtbmHdZyBDKwP8/tuRX1/12NLn9GqBkAcW3IujXGG0JXLFZ1ismAlqDdnyHUYlQqY2ddRWoSzgmIib5LtfJuf9dcl/3o7DYaUEMC7HgzpLGaYkGdPOnWxpxqzYDYkz6vf3vq9WjDVCqV2+EsP2I1HV6+Ap6P1hUA0h08rcX2SMJheKYmgA62JJgk05TM0roQ2sUHX7A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=8bytes.org; spf=pass (client-ip=85.214.250.239; helo=mail.8bytes.org; envelope-from=joro@8bytes.org; receiver=lists.ozlabs.org) smtp.mailfrom=8bytes.org
+	 MIME-Version:Content-Type; b=l7a4jcLB0qUn24Y/EL2RP256TkO+/wv0U5N+h3l6Zv1G26ebwBMGFgYdza9zIPhpDS+efx54C7+0KqMlNVDDw/R+2zi7uPG6+z2HldjEo1JFm2VPN5HEUdS4WS3sfXDBKrvRVhWtbJhhOagrGH1fOXMG+M2tAHqrIogAhC0wfMhxZeUYXknkWkCmVLDD/fxzMWuajubpQIGeiWxyKleI0dtgdnAvg0KckU7EORU+TpAdUdnCD+oZsLh9IualK/y07RPoxVecWOYAnRL3g1Eu67Uiri/wV6c6+REsxpikqYhSvDopzkXCmj8e3isSNzxxaMIjY71DPQIk5qUbmi4iUA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=8bytes.org; spf=pass (client-ip=2a01:238:42d9:3f00:e505:6202:4f0c:f051; helo=mail.8bytes.org; envelope-from=joro@8bytes.org; receiver=lists.ozlabs.org) smtp.mailfrom=8bytes.org
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=8bytes.org
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=8bytes.org (client-ip=85.214.250.239; helo=mail.8bytes.org; envelope-from=joro@8bytes.org; receiver=lists.ozlabs.org)
-Received: from mail.8bytes.org (mail.8bytes.org [85.214.250.239])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gYw4L19j1z3bwp
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Jun 2026 00:52:17 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=8bytes.org (client-ip=2a01:238:42d9:3f00:e505:6202:4f0c:f051; helo=mail.8bytes.org; envelope-from=joro@8bytes.org; receiver=lists.ozlabs.org)
+Received: from mail.8bytes.org (mail.8bytes.org [IPv6:2a01:238:42d9:3f00:e505:6202:4f0c:f051])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gYw4J5rtRz3btm
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Jun 2026 00:52:16 +1000 (AEST)
 Received: from io.home.8bytes.org (p4ffe1d30.dip0.t-ipconnect.de [79.254.29.48])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.8bytes.org (Postfix) with ESMTPSA id 67A2E2028BC;
-	Mon,  8 Jun 2026 16:43:10 +0200 (CEST)
+	by mail.8bytes.org (Postfix) with ESMTPSA id 8D3EE2028AF;
+	Mon,  8 Jun 2026 16:43:07 +0200 (CEST)
 From: =?UTF-8?q?J=C3=B6rg=20R=C3=B6del?= <joro@8bytes.org>
 To: Paolo Bonzini <pbonzini@redhat.com>,
 	Sean Christopherson <seanjc@google.com>
@@ -48,10 +48,11 @@ Cc: Tom Lendacky <thomas.lendacky@amd.com>,
 	kvm-riscv@lists.infradead.org,
 	x86@kernel.org,
 	coconut-svsm@lists.linux.dev,
-	joerg.roedel@amd.com
-Subject: [PATCH 25/60] kvm: Move kvm_vcpu->dirty_ring to struct kvm_vcpu_common
-Date: Mon,  8 Jun 2026 16:42:17 +0200
-Message-ID: <20260608144252.351443-26-joro@8bytes.org>
+	joerg.roedel@amd.com,
+	=?UTF-8?q?Carlos=20L=C3=B3pez?= <clopez@suse.de>
+Subject: [PATCH 12/60] kvm: Move vcpu accounting to struct kvm_vcpu_common
+Date: Mon,  8 Jun 2026 16:42:04 +0200
+Message-ID: <20260608144252.351443-13-joro@8bytes.org>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20260608144252.351443-1-joro@8bytes.org>
 References: <20260608144252.351443-1-joro@8bytes.org>
@@ -68,138 +69,214 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
 From: Joerg Roedel <joerg.roedel@amd.com>
 
-The dirty tracking should happen across all planes of a given VCPU, so
-move the dirty_ring to struct kvm_vcpu_common.
+Do the accounting of created vcpus and the sanity checks only once per
+plane.
 
+Co-developed-by: Carlos López <clopez@suse.de>
 Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
 ---
- include/linux/kvm_host.h |  3 ++-
- virt/kvm/dirty_ring.c    |  4 ++--
- virt/kvm/kvm_main.c      | 22 ++++++++++------------
- 3 files changed, 14 insertions(+), 15 deletions(-)
+ include/linux/kvm_host.h |   2 +
+ virt/kvm/kvm_main.c      | 108 ++++++++++++++++++++++++---------------
+ 2 files changed, 68 insertions(+), 42 deletions(-)
 
 diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
-index f6e8a0b653b3..7d06459a06f3 100644
+index c4c4922df965..47144a83f9c5 100644
 --- a/include/linux/kvm_host.h
 +++ b/include/linux/kvm_host.h
-@@ -373,6 +373,8 @@ struct kvm_vcpu_common {
- 	bool preempted;
- 	bool ready;
- 	bool scheduled_out;
+@@ -325,6 +325,8 @@ struct kvm_mmio_fragment {
+ struct kvm_vcpu_common {
+ 	struct kvm *kvm;
+ 
++	int vcpu_idx; /* index into kvm->planes[]->vcpu_array */
 +
-+	struct kvm_dirty_ring dirty_ring;
+ 	/* Currently active VCPU */
+ 	struct kvm_vcpu *current_vcpu;
  };
- 
- struct kvm_vcpu {
-@@ -413,7 +415,6 @@ struct kvm_vcpu {
- 	struct kvm_vcpu_arch arch;
- 	struct kvm_vcpu_stat stat;
- 	char stats_id[KVM_STATS_NAME_SIZE];
--	struct kvm_dirty_ring dirty_ring;
- 
- 	/*
- 	 * The most recently used memslot by this vCPU and the slots generation
-diff --git a/virt/kvm/dirty_ring.c b/virt/kvm/dirty_ring.c
-index 572b854edf74..c6f46b93bddb 100644
---- a/virt/kvm/dirty_ring.c
-+++ b/virt/kvm/dirty_ring.c
-@@ -218,7 +218,7 @@ int kvm_dirty_ring_reset(struct kvm *kvm, struct kvm_dirty_ring *ring,
- 
- void kvm_dirty_ring_push(struct kvm_vcpu *vcpu, u32 slot, u64 offset)
- {
--	struct kvm_dirty_ring *ring = &vcpu->dirty_ring;
-+	struct kvm_dirty_ring *ring = &vcpu->common->dirty_ring;
- 	struct kvm_dirty_gfn *entry;
- 
- 	/* It should never get full */
-@@ -250,7 +250,7 @@ bool kvm_dirty_ring_check_request(struct kvm_vcpu *vcpu)
- 	 * the dirty ring is reset by userspace.
- 	 */
- 	if (kvm_check_request(KVM_REQ_DIRTY_RING_SOFT_FULL, vcpu) &&
--	    kvm_dirty_ring_soft_full(&vcpu->dirty_ring)) {
-+	    kvm_dirty_ring_soft_full(&vcpu->common->dirty_ring)) {
- 		kvm_make_request(KVM_REQ_DIRTY_RING_SOFT_FULL, vcpu);
- 		vcpu->run->exit_reason = KVM_EXIT_DIRTY_RING_FULL;
- 		trace_kvm_dirty_ring_exit(vcpu);
 diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-index 24ff8748a317..f85ddb0fc781 100644
+index fb840d029c56..14e74cdc4709 100644
 --- a/virt/kvm/kvm_main.c
 +++ b/virt/kvm/kvm_main.c
-@@ -483,6 +483,13 @@ static int kvm_vcpu_init_common(struct kvm_vcpu *vcpu, struct kvm *kvm, unsigned
- 	common->ready = false;
- 	preempt_notifier_init(&common->preempt_notifier, &kvm_preempt_ops);
+@@ -438,18 +438,58 @@ void *kvm_mmu_memory_cache_alloc(struct kvm_mmu_memory_cache *mc)
+ }
+ #endif
  
-+	if (kvm->dirty_ring_size) {
-+		r = kvm_dirty_ring_alloc(kvm, &common->dirty_ring,
-+					 id, kvm->dirty_ring_size);
-+		if (r)
-+			goto out_drop_counter;
+-static int kvm_vcpu_init_common(struct kvm_vcpu *vcpu, struct kvm *kvm)
++static int kvm_vcpu_init_common(struct kvm_vcpu *vcpu, struct kvm *kvm, unsigned long id)
+ {
+-	struct kvm_vcpu_common *common = kzalloc(sizeof(*common), GFP_KERNEL_ACCOUNT);
++	struct kvm_vcpu_common *common __free(kfree) = kzalloc(sizeof(*common), GFP_KERNEL_ACCOUNT);
++	int r;
+ 
+-	if (common == NULL)
+-		return -ENOMEM;
++	/*
++	 * KVM tracks vCPU IDs as 'int', be kind to userspace and reject
++	 * too-large values instead of silently truncating.
++	 *
++	 * Ensure KVM_MAX_VCPU_IDS isn't pushed above INT_MAX without first
++	 * changing the storage type (at the very least, IDs should be tracked
++	 * as unsigned ints).
++	 */
++	BUILD_BUG_ON(KVM_MAX_VCPU_IDS > INT_MAX);
++	if (id >= KVM_MAX_VCPU_IDS)
++		return -EINVAL;
++
++	mutex_lock(&kvm->lock);
++	kvm->created_vcpus++;
++	mutex_unlock(&kvm->lock);
++
++	if (common == NULL) {
++		r = -ENOMEM;
++		goto out_drop_counter;
 +	}
 +
- 	vcpu->common = no_free_ptr(common);
++	common->vcpu_idx = atomic_read(&kvm->online_vcpus);
  
- 	kvm_vcpu_set_in_spin_loop(vcpu, false);
-@@ -547,6 +554,7 @@ static void kvm_vcpu_common_destroy(struct kvm_vcpu *vcpu)
- 	 * are already gone.
- 	 */
- 	put_pid(common->pid);
-+	kvm_dirty_ring_free(&common->dirty_ring);
- 	kfree(common);
+ 	common->kvm = kvm;
+ 	common->current_vcpu = vcpu;
+-	vcpu->common = common;
++	vcpu->common = no_free_ptr(common);
+ 
+ 	return 0;
++
++out_drop_counter:
++	mutex_lock(&kvm->lock);
++	kvm->created_vcpus--;
++	mutex_unlock(&kvm->lock);
++
++	return r;
++}
++
++static void kvm_vcpu_finish_common(struct kvm_vcpu *vcpu)
++{
++	smp_wmb();
++	if (vcpu->plane_level == 0) {
++		/*
++		 * Pairs with smp_rmb() in kvm_get_vcpu.  Store the vcpu
++		 * pointer before kvm->online_vcpu's incremented value.
++		 */
++		atomic_inc(&vcpu->kvm->online_vcpus);
++	}
  }
  
-@@ -555,7 +563,6 @@ static void kvm_vcpu_destroy(struct kvm_vcpu *vcpu)
- 	kvm_arch_vcpu_destroy(vcpu);
+ static void kvm_vcpu_init(struct kvm_vcpu *vcpu, struct kvm *kvm, unsigned id)
+@@ -482,10 +522,19 @@ static void kvm_vcpu_init(struct kvm_vcpu *vcpu, struct kvm *kvm, unsigned id)
  
- 	kvm_vcpu_common_destroy(vcpu);
--	kvm_dirty_ring_free(&vcpu->dirty_ring);
+ static void kvm_vcpu_common_destroy(struct kvm_vcpu *vcpu)
+ {
+-	if (vcpu->plane_level == 0)
+-		kfree(vcpu->common);
++	struct kvm_vcpu_common *common = vcpu->common;
++	struct kvm *kvm = common->kvm;
  
- 	free_page((unsigned long)vcpu->run);
- 	kmem_cache_free(kvm_vcpu_cache, vcpu);
-@@ -4209,7 +4216,7 @@ static vm_fault_t kvm_vcpu_fault(struct vm_fault *vmf)
- #endif
- 	else if (kvm_page_in_dirty_ring(vcpu->kvm, vmf->pgoff))
- 		page = kvm_dirty_ring_get_page(
--		    &vcpu->dirty_ring,
-+		    &vcpu->common->dirty_ring,
- 		    vmf->pgoff - KVM_DIRTY_LOG_PAGE_OFFSET);
- 	else
- 		return kvm_arch_vcpu_fault(vcpu, vmf);
-@@ -4338,13 +4345,6 @@ static int kvm_vm_ioctl_create_vcpu(struct kvm *kvm, unsigned long id)
- 	if (r)
- 		goto vcpu_free_run_page;
+ 	vcpu->common = NULL;
++
++	if (vcpu->plane_level != 0)
++	       return;
++
++	mutex_lock(&common->kvm->lock);
++	kvm->created_vcpus--;
++	mutex_unlock(&common->kvm->lock);
++
++	kfree(common);
+ }
  
--	if (kvm->dirty_ring_size) {
--		r = kvm_dirty_ring_alloc(kvm, &vcpu->dirty_ring,
--					 id, kvm->dirty_ring_size);
--		if (r)
--			goto arch_vcpu_destroy;
--	}
+ static void kvm_vcpu_destroy(struct kvm_vcpu *vcpu)
+@@ -4235,22 +4284,10 @@ static void kvm_create_vcpu_debugfs(struct kvm_vcpu *vcpu)
+  */
+ static int kvm_vm_ioctl_create_vcpu(struct kvm *kvm, unsigned long id)
+ {
+-	int r;
++	int r = -EINVAL;
+ 	struct kvm_vcpu *vcpu;
+ 	struct page *page;
+ 
+-	/*
+-	 * KVM tracks vCPU IDs as 'int', be kind to userspace and reject
+-	 * too-large values instead of silently truncating.
+-	 *
+-	 * Ensure KVM_MAX_VCPU_IDS isn't pushed above INT_MAX without first
+-	 * changing the storage type (at the very least, IDs should be tracked
+-	 * as unsigned ints).
+-	 */
+-	BUILD_BUG_ON(KVM_MAX_VCPU_IDS > INT_MAX);
+-	if (id >= KVM_MAX_VCPU_IDS)
+-		return -EINVAL;
 -
  	mutex_lock(&kvm->lock);
- 
- 	if (kvm_get_vcpu_by_id(kvm, id)) {
-@@ -4385,8 +4385,6 @@ static int kvm_vm_ioctl_create_vcpu(struct kvm *kvm, unsigned long id)
- 	xa_erase(&kvm->planes[0]->vcpu_array, vcpu->vcpu_idx);
- unlock_vcpu_destroy:
- 	mutex_unlock(&kvm->lock);
--	kvm_dirty_ring_free(&vcpu->dirty_ring);
--arch_vcpu_destroy:
- 	kvm_arch_vcpu_destroy(vcpu);
- vcpu_free_run_page:
- 	free_page((unsigned long)vcpu->run);
-@@ -5120,7 +5118,7 @@ static int kvm_vm_ioctl_reset_dirty_pages(struct kvm *kvm)
- 	mutex_lock(&kvm->slots_lock);
- 
- 	kvm_for_each_vcpu(i, vcpu, kvm) {
--		r = kvm_dirty_ring_reset(vcpu->kvm, &vcpu->dirty_ring, &cleared);
-+		r = kvm_dirty_ring_reset(vcpu->kvm, &vcpu->common->dirty_ring, &cleared);
- 		if (r)
- 			break;
+ 	if (kvm->created_vcpus >= kvm->max_vcpus) {
+ 		mutex_unlock(&kvm->lock);
+@@ -4258,24 +4295,20 @@ static int kvm_vm_ioctl_create_vcpu(struct kvm *kvm, unsigned long id)
  	}
+ 
+ 	r = kvm_arch_vcpu_precreate(kvm, id);
+-	if (r) {
+-		mutex_unlock(&kvm->lock);
+-		return r;
+-	}
+-
+-	kvm->created_vcpus++;
+ 	mutex_unlock(&kvm->lock);
++	if (r)
++		return r;
+ 
+ 	vcpu = kmem_cache_zalloc(kvm_vcpu_cache, GFP_KERNEL_ACCOUNT);
+-	if (!vcpu) {
+-		r = -ENOMEM;
+-		goto vcpu_decrement;
+-	}
++	if (!vcpu)
++		return -ENOMEM;
+ 
+-	r = kvm_vcpu_init_common(vcpu, kvm);
++	r = kvm_vcpu_init_common(vcpu, kvm, id);
+ 	if (r)
+ 		goto vcpu_free;
+ 
++	vcpu->vcpu_idx = vcpu->common->vcpu_idx;
++
+ 	BUILD_BUG_ON(sizeof(struct kvm_run) > PAGE_SIZE);
+ 	page = alloc_page(GFP_KERNEL_ACCOUNT | __GFP_ZERO);
+ 	if (!page) {
+@@ -4304,7 +4337,6 @@ static int kvm_vm_ioctl_create_vcpu(struct kvm *kvm, unsigned long id)
+ 		goto unlock_vcpu_destroy;
+ 	}
+ 
+-	vcpu->vcpu_idx = atomic_read(&kvm->online_vcpus);
+ 	r = xa_insert(&kvm->planes[0]->vcpu_array, vcpu->vcpu_idx, vcpu, GFP_KERNEL_ACCOUNT);
+ 	WARN_ON_ONCE(r == -EBUSY);
+ 	if (r)
+@@ -4324,12 +4356,7 @@ static int kvm_vm_ioctl_create_vcpu(struct kvm *kvm, unsigned long id)
+ 	if (r < 0)
+ 		goto kvm_put_xa_erase;
+ 
+-	/*
+-	 * Pairs with smp_rmb() in kvm_get_vcpu.  Store the vcpu
+-	 * pointer before kvm->online_vcpu's incremented value.
+-	 */
+-	smp_wmb();
+-	atomic_inc(&kvm->online_vcpus);
++	kvm_vcpu_finish_common(vcpu);
+ 	mutex_unlock(&vcpu->mutex);
+ 
+ 	mutex_unlock(&kvm->lock);
+@@ -4352,10 +4379,7 @@ static int kvm_vm_ioctl_create_vcpu(struct kvm *kvm, unsigned long id)
+ 	kvm_vcpu_common_destroy(vcpu);
+ vcpu_free:
+ 	kmem_cache_free(kvm_vcpu_cache, vcpu);
+-vcpu_decrement:
+-	mutex_lock(&kvm->lock);
+-	kvm->created_vcpus--;
+-	mutex_unlock(&kvm->lock);
++
+ 	return r;
+ }
+ 
 -- 
 2.53.0
 
