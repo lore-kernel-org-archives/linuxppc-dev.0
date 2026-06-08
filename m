@@ -1,34 +1,34 @@
-Return-Path: <linuxppc-dev+bounces-22267-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22266-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5B036CD8C9D
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F2854CD8C9F
 	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jun 2026 14:57:47 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gYw584Sclz3fM3;
-	Tue, 09 Jun 2026 00:53:00 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=85.214.250.239
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gYw572gJgz3fLD;
+	Tue, 09 Jun 2026 00:52:59 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a01:238:42d9:3f00:e505:6202:4f0c:f051"
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780930379;
-	cv=none; b=f3iOyXku3esScE8NBtzzhXQsQleKgYiPIG6ncsK1SNKhf4+YKHkMurdjg2ucGTHM48VQ7huFbQDTG26yCIXyaa71fTQXRst8ZRNB4suqvoiiaFUwC61wdDNqDhzn7Oxc/8C/8WJZWSTzFn/biRNmrukvTBvC/DmOgY4XxI3A1gOomkMYKeLjaKAgpDHksgwpmr5B7xOqXdPEcnVoK4Dq+quv1lVY6DD6cRXv684HkXWzFPRiXD3o9vbn548+Rfn27PhnKk3e/gtDCGYkI+SEM2J/mBz8O6gOkQF90zq8RGJoklwTQCyaDwtytXJQeU+iqWx51RqKj6Ja6drMl8Qgsg==
+	cv=none; b=Lc9Y6DJ4WV0o3hU/4onptfG8lCm7FAYaH8JFdKXtE5eX7v78pFPJPJqXliRBsbfZfcBqqnbgdkcw6xvi7LPKJOWLLtY9HCpNGbVmld5bRtywU17+VvgzS0AqmZtoLjT5EWznbTMZyPVcHALggwH5GfmFUrs2Pap540hqKvRKa7gqiIV2tM8hTwrQgbzJuk/SEY8QJCTLZzFNDdc0/YAc14crhSf/N7RwMOln1X2TfSIMg7lTwJD5A23ZTsPXdSWtzj1njnzlVIbMs2MpbNg/cM29uwsVMDpffOxfrAGj15f8WtGZNeZ2+s0nsNUm6pxl/0AYukhYsxXIvOx5Qorjww==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1780930379; c=relaxed/relaxed;
-	bh=OA+8JHuLaM5UvW2gO/S/amZB7s61iYVyWjXtASLST60=;
+	bh=uQ3zW9Vgqh5W4t5KVU2ZZStOCGQFFBvGu3oKMCf1P/A=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=fD1B1wLzsu4FiFLwEy4WlqJXOj+k/4FntB0nVGxcbDwKwkwO5LDcY6wEWVx68H8l/smnHT4y3T/2OTtv70zqQpLotd8zp4x3+sRWOxo3LJjdm8PLIML9/19Sa4Dtg6tzBHZ6aUmHrlcnWb2S8bZ4y2MX1+4LZrgZNI+jvrTl8Wsg1AWznnTFvtsF2TbDkZ3odFG8i08YUw9RSDN5K9aiyo5ZwncEoByxoqyGgUrpfOP2A2crjWb/cH7G3yeyyxAI+V0X7xmX2vCrwK12nHfSoR7B0zHirsCFTKigVWy34WYTGNytg/JWYq3DHAs5a/sOGJsZ1SO3GIhQ1HlZbunxDw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=8bytes.org; spf=pass (client-ip=85.214.250.239; helo=mail.8bytes.org; envelope-from=joro@8bytes.org; receiver=lists.ozlabs.org) smtp.mailfrom=8bytes.org
+	 MIME-Version; b=DM3O97qSZ4mhLvgTSLSqAg/GkOmg5hfbywtozCY7jXZdZr1hMgdpURlZklYBqBlDkG8a+zR80kWRQ2C5bN/vJ2sjHbM5BTCugsBN4qYzzLSWfTRqwTeBvfnn9Zh5irB1x1Ub0vXn8o2mg48+a4wlBc32+xff3yaAi354Sma5X81d1F6uMxGA1oUCgDzQbrIrdvCXJrxzJW3FyNMWG0V8FoA1eBebQLtL9xD+cayG+TAWCn/zbbfMwX98ED50jnqNHFSN/Zunxqa120oBwDG7lxXYfpy2jgI46UYl/pkA/MKHAVXnILHA5Mm6Fe6V9fmrxfZqdOdYiMNaUyCJzi4imA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=8bytes.org; spf=pass (client-ip=2a01:238:42d9:3f00:e505:6202:4f0c:f051; helo=mail.8bytes.org; envelope-from=joro@8bytes.org; receiver=lists.ozlabs.org) smtp.mailfrom=8bytes.org
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=8bytes.org
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=8bytes.org (client-ip=85.214.250.239; helo=mail.8bytes.org; envelope-from=joro@8bytes.org; receiver=lists.ozlabs.org)
-Received: from mail.8bytes.org (mail.8bytes.org [85.214.250.239])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gYw4s416Nz3dfy
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Jun 2026 00:52:45 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=8bytes.org (client-ip=2a01:238:42d9:3f00:e505:6202:4f0c:f051; helo=mail.8bytes.org; envelope-from=joro@8bytes.org; receiver=lists.ozlabs.org)
+Received: from mail.8bytes.org (mail.8bytes.org [IPv6:2a01:238:42d9:3f00:e505:6202:4f0c:f051])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gYw4n4WPZz3dVq
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Jun 2026 00:52:41 +1000 (AEST)
 Received: from io.home.8bytes.org (p4ffe1d30.dip0.t-ipconnect.de [79.254.29.48])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.8bytes.org (Postfix) with ESMTPSA id D09802028BE;
-	Mon,  8 Jun 2026 16:43:10 +0200 (CEST)
+	by mail.8bytes.org (Postfix) with ESMTPSA id D88B92028DA;
+	Mon,  8 Jun 2026 16:43:16 +0200 (CEST)
 From: =?UTF-8?q?J=C3=B6rg=20R=C3=B6del?= <joro@8bytes.org>
 To: Paolo Bonzini <pbonzini@redhat.com>,
 	Sean Christopherson <seanjc@google.com>
@@ -49,9 +49,9 @@ Cc: Tom Lendacky <thomas.lendacky@amd.com>,
 	x86@kernel.org,
 	coconut-svsm@lists.linux.dev,
 	joerg.roedel@amd.com
-Subject: [PATCH 27/60] kvm: Introduce arch-specific part of struct kvm_vcpu_common
-Date: Mon,  8 Jun 2026 16:42:19 +0200
-Message-ID: <20260608144252.351443-28-joro@8bytes.org>
+Subject: [PATCH 55/60] kvm: svm: Track vmsa_features per plane
+Date: Mon,  8 Jun 2026 16:42:47 +0200
+Message-ID: <20260608144252.351443-56-joro@8bytes.org>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20260608144252.351443-1-joro@8bytes.org>
 References: <20260608144252.351443-1-joro@8bytes.org>
@@ -72,193 +72,260 @@ Content-Transfer-Encoding: 8bit
 
 From: Joerg Roedel <joerg.roedel@amd.com>
 
-Give architectures a place to store their VCPU state which is shared
-across all planes.
+Planes can have different set of SEV features enabled. Track the
+enabled features per plane instead of per VM.
 
 Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
 ---
- arch/arm64/include/asm/kvm_host.h     | 5 +++++
- arch/loongarch/include/asm/kvm_host.h | 5 +++++
- arch/mips/include/asm/kvm_host.h      | 5 +++++
- arch/powerpc/include/asm/kvm_host.h   | 5 +++++
- arch/riscv/include/asm/kvm_host.h     | 5 +++++
- arch/s390/include/asm/kvm_host.h      | 5 +++++
- arch/x86/include/asm/kvm_host.h       | 5 +++++
- include/linux/kvm_host.h              | 2 ++
- include/linux/kvm_types.h             | 1 +
- virt/kvm/kvm_main.c                   | 8 ++++++++
- 10 files changed, 46 insertions(+)
+ arch/x86/kvm/svm/sev.c | 37 ++++++++++++++++++++-----------------
+ arch/x86/kvm/svm/svm.c | 21 +++++++++++++++++++--
+ arch/x86/kvm/svm/svm.h | 24 +++++++++++++++++++++---
+ 3 files changed, 60 insertions(+), 22 deletions(-)
 
-diff --git a/arch/arm64/include/asm/kvm_host.h b/arch/arm64/include/asm/kvm_host.h
-index e9cca2adb371..de9ca00ce4f4 100644
---- a/arch/arm64/include/asm/kvm_host.h
-+++ b/arch/arm64/include/asm/kvm_host.h
-@@ -869,6 +869,11 @@ struct vcpu_reset_state {
+diff --git a/arch/x86/kvm/svm/sev.c b/arch/x86/kvm/svm/sev.c
+index a23dcb081751..12b039823c1c 100644
+--- a/arch/x86/kvm/svm/sev.c
++++ b/arch/x86/kvm/svm/sev.c
+@@ -204,17 +204,16 @@ static inline bool is_mirroring_enc_context(struct kvm *kvm)
  
- struct vncr_tlb;
+ static bool sev_vcpu_has_debug_swap(struct vcpu_svm *svm)
+ {
+-	struct kvm_vcpu *vcpu = &svm->vcpu;
+-	struct kvm_sev_info *sev = to_kvm_sev_info(vcpu->kvm);
++	struct kvm_sev_info_plane *sev_plane = to_kvm_sev_info_plane(svm->vcpu.plane);
  
-+struct kvm_vcpu_arch_common {};
-+
-+static inline int kvm_arch_vcpu_common_init(struct kvm_vcpu_common *common) { return 0; }
-+static inline void kvm_arch_vcpu_common_destroy(struct kvm_vcpu_common *common) {}
-+
- struct kvm_vcpu_arch {
- 	struct kvm_cpu_context ctxt;
+-	return sev->vmsa_features & SVM_SEV_FEAT_DEBUG_SWAP;
++	return sev_plane->vmsa_features & SVM_SEV_FEAT_DEBUG_SWAP;
+ }
  
-diff --git a/arch/loongarch/include/asm/kvm_host.h b/arch/loongarch/include/asm/kvm_host.h
-index 225aa87ebbdd..7317dceda6b4 100644
---- a/arch/loongarch/include/asm/kvm_host.h
-+++ b/arch/loongarch/include/asm/kvm_host.h
-@@ -150,6 +150,11 @@ struct kvm_arch {
- 	struct loongarch_pch_pic *pch_pic;
- };
+ static bool snp_is_secure_tsc_enabled(struct kvm *kvm)
+ {
+-	struct kvm_sev_info *sev = to_kvm_sev_info(kvm);
++	struct kvm_sev_info_plane *sev_plane = to_kvm_sev_info_plane(kvm->planes[0]);
  
-+struct kvm_vcpu_arch_common {};
-+
-+static inline int kvm_arch_vcpu_common_init(struct kvm_vcpu_common *common) { return 0; }
-+static inline void kvm_arch_vcpu_common_destroy(struct kvm_vcpu_common *common) {}
-+
- #define CSR_MAX_NUMS		0x800
+-	return (sev->vmsa_features & SVM_SEV_FEAT_SECURE_TSC) &&
++	return (sev_plane->vmsa_features & SVM_SEV_FEAT_SECURE_TSC) &&
+ 	       !WARN_ON_ONCE(!sev_snp_guest(kvm));
+ }
  
- struct loongarch_csrs {
-diff --git a/arch/mips/include/asm/kvm_host.h b/arch/mips/include/asm/kvm_host.h
-index b01911eb9064..c48bca79207b 100644
---- a/arch/mips/include/asm/kvm_host.h
-+++ b/arch/mips/include/asm/kvm_host.h
-@@ -194,6 +194,11 @@ struct kvm_arch {
- #endif
- };
+@@ -496,6 +495,7 @@ static int __sev_guest_init(struct kvm *kvm, struct kvm_sev_cmd *argp,
+ 			    struct kvm_sev_init *data,
+ 			    unsigned long vm_type)
+ {
++	struct kvm_sev_info_plane *sev_plane = to_kvm_sev_info_plane(kvm->planes[0]);
+ 	struct kvm_sev_info *sev = to_kvm_sev_info(kvm);
+ 	struct sev_platform_init_args init_args = {0};
+ 	bool es_active = vm_type != KVM_X86_SEV_VM;
+@@ -534,11 +534,11 @@ static int __sev_guest_init(struct kvm *kvm, struct kvm_sev_cmd *argp,
  
-+struct kvm_vcpu_arch_common {};
-+
-+static inline int kvm_arch_vcpu_common_init(struct kvm_vcpu_common *common) { return 0; }
-+static inline void kvm_arch_vcpu_common_destroy(struct kvm_vcpu_common *common) {}
-+
- #define N_MIPS_COPROC_REGS	32
- #define N_MIPS_COPROC_SEL	8
+ 	sev->active = true;
+ 	sev->es_active = es_active;
+-	sev->vmsa_features = data->vmsa_features;
++	sev_plane->vmsa_features = data->vmsa_features;
+ 	sev->ghcb_version = data->ghcb_version;
  
-diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
-index c5b9fbaf34f3..47d9900c4f85 100644
---- a/arch/powerpc/include/asm/kvm_host.h
-+++ b/arch/powerpc/include/asm/kvm_host.h
-@@ -349,6 +349,11 @@ struct kvm_arch {
- #endif
- };
+ 	if (snp_active)
+-		sev->vmsa_features |= SVM_SEV_FEAT_SNP_ACTIVE;
++		sev_plane->vmsa_features |= SVM_SEV_FEAT_SNP_ACTIVE;
  
-+struct kvm_vcpu_arch_common {};
-+
-+static inline int kvm_arch_vcpu_common_init(struct kvm_vcpu_common *common) { return 0; }
-+static inline void kvm_arch_vcpu_common_destroy(struct kvm_vcpu_common *common) {}
-+
- #define VCORE_ENTRY_MAP(vc)	((vc)->entry_exit_map & 0xff)
- #define VCORE_EXIT_MAP(vc)	((vc)->entry_exit_map >> 8)
- #define VCORE_IS_EXITING(vc)	(VCORE_EXIT_MAP(vc) != 0)
-diff --git a/arch/riscv/include/asm/kvm_host.h b/arch/riscv/include/asm/kvm_host.h
-index bcbf487d4cb7..397491587f5b 100644
---- a/arch/riscv/include/asm/kvm_host.h
-+++ b/arch/riscv/include/asm/kvm_host.h
-@@ -107,6 +107,11 @@ struct kvm_arch {
- 	bool mp_state_reset;
- };
+ 	ret = sev_asid_new(sev, vm_type);
+ 	if (ret)
+@@ -576,7 +576,7 @@ static int __sev_guest_init(struct kvm *kvm, struct kvm_sev_cmd *argp,
+ 	sev_asid_free(sev);
+ 	sev->asid = 0;
+ e_no_asid:
+-	sev->vmsa_features = 0;
++	sev_plane->vmsa_features = 0;
+ 	sev->es_active = false;
+ 	sev->active = false;
+ 	return ret;
+@@ -931,7 +931,7 @@ static int sev_launch_update_data(struct kvm *kvm, struct kvm_sev_cmd *argp)
+ static int sev_es_sync_vmsa(struct vcpu_svm *svm)
+ {
+ 	struct kvm_vcpu *vcpu = &svm->vcpu;
+-	struct kvm_sev_info *sev = to_kvm_sev_info(vcpu->kvm);
++	struct kvm_sev_info_plane *sev_plane = to_kvm_sev_info_plane(vcpu->plane);
+ 	struct sev_es_save_area *save = svm->sev_es.vmsa;
+ 	struct xregs_state *xsave;
+ 	const u8 *s;
+@@ -982,7 +982,7 @@ static int sev_es_sync_vmsa(struct vcpu_svm *svm)
+ 	save->xss  = svm->vcpu.arch.ia32_xss;
+ 	save->dr6  = svm->vcpu.arch.dr6;
  
-+struct kvm_vcpu_arch_common {};
-+
-+static inline int kvm_arch_vcpu_common_init(struct kvm_vcpu_common *common) { return 0; }
-+static inline void kvm_arch_vcpu_common_destroy(struct kvm_vcpu_common *common) {}
-+
- struct kvm_cpu_trap {
- 	unsigned long sepc;
- 	unsigned long scause;
-diff --git a/arch/s390/include/asm/kvm_host.h b/arch/s390/include/asm/kvm_host.h
-index bb3bfbfd35d8..90fd8c0f1a2b 100644
---- a/arch/s390/include/asm/kvm_host.h
-+++ b/arch/s390/include/asm/kvm_host.h
-@@ -413,6 +413,11 @@ struct kvm_s390_pv_vcpu {
- 	unsigned long stor_base;
- };
+-	save->sev_features = sev->vmsa_features;
++	save->sev_features = sev_plane->vmsa_features;
  
-+struct kvm_vcpu_arch_common {};
-+
-+static inline int kvm_arch_vcpu_common_init(struct kvm_vcpu_common *common) { return 0; }
-+static inline void kvm_arch_vcpu_common_destroy(struct kvm_vcpu_common *common) {}
-+
- struct kvm_vcpu_arch {
- 	struct kvm_s390_sie_block *sie_block;
- 	/* if vsie is active, currently executed shadow sie control block */
-diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
-index dd95c70bfdba..1393566741a0 100644
---- a/arch/x86/include/asm/kvm_host.h
-+++ b/arch/x86/include/asm/kvm_host.h
-@@ -794,6 +794,11 @@ enum kvm_only_cpuid_leafs {
- 	NKVMCAPINTS = NR_KVM_CPU_CAPS - NCAPINTS,
- };
- 
-+struct kvm_vcpu_arch_common {};
-+
-+static inline int kvm_arch_vcpu_common_init(struct kvm_vcpu_common *common) { return 0; }
-+static inline void kvm_arch_vcpu_common_destroy(struct kvm_vcpu_common *common) {}
-+
- struct kvm_vcpu_arch {
  	/*
- 	 * rip and regs accesses must go through
-diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
-index 4a0eaa1de479..291bccce9b74 100644
---- a/include/linux/kvm_host.h
-+++ b/include/linux/kvm_host.h
-@@ -375,6 +375,8 @@ struct kvm_vcpu_common {
- 	bool scheduled_out;
+ 	 * Skip FPU and AVX setup with KVM_SEV_ES_INIT to avoid
+@@ -2026,6 +2026,8 @@ static void sev_unlock_two_vms(struct kvm *dst_kvm, struct kvm *src_kvm)
  
- 	struct kvm_dirty_ring dirty_ring;
-+
-+	struct kvm_vcpu_arch_common arch;
- };
+ static void sev_migrate_from(struct kvm *dst_kvm, struct kvm *src_kvm)
+ {
++	struct kvm_sev_info_plane *dst_plane = to_kvm_sev_info_plane(dst_kvm->planes[0]);
++	struct kvm_sev_info_plane *src_plane = to_kvm_sev_info_plane(src_kvm->planes[0]);
+ 	struct kvm_sev_info *dst = to_kvm_sev_info(dst_kvm);
+ 	struct kvm_sev_info *src = to_kvm_sev_info(src_kvm);
+ 	struct kvm_vcpu *dst_vcpu, *src_vcpu;
+@@ -2039,7 +2041,7 @@ static void sev_migrate_from(struct kvm *dst_kvm, struct kvm *src_kvm)
+ 	dst->pages_locked = src->pages_locked;
+ 	dst->enc_context_owner = src->enc_context_owner;
+ 	dst->es_active = src->es_active;
+-	dst->vmsa_features = src->vmsa_features;
++	dst_plane->vmsa_features = src_plane->vmsa_features;
  
- struct kvm_vcpu {
-diff --git a/include/linux/kvm_types.h b/include/linux/kvm_types.h
-index 07e82928c948..06799efe6a12 100644
---- a/include/linux/kvm_types.h
-+++ b/include/linux/kvm_types.h
-@@ -46,6 +46,7 @@ struct kvm_plane;
- struct kvm_run;
- struct kvm_userspace_memory_region;
- struct kvm_vcpu;
-+struct kvm_vcpu_common;
- struct kvm_vcpu_init;
- struct kvm_memslots;
+ 	src->asid = 0;
+ 	src->active = false;
+@@ -4157,7 +4159,7 @@ static void sev_snp_init_protected_guest_state(struct kvm_vcpu *vcpu)
  
-diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-index 91fb9abf9b31..7a0b632e3ac0 100644
---- a/virt/kvm/kvm_main.c
-+++ b/virt/kvm/kvm_main.c
-@@ -490,6 +490,10 @@ static int kvm_vcpu_init_common(struct kvm_vcpu *vcpu, struct kvm *kvm, unsigned
- 			goto out_drop_counter;
+ static int sev_snp_ap_creation(struct vcpu_svm *svm)
+ {
+-	struct kvm_sev_info *sev = to_kvm_sev_info(svm->vcpu.kvm);
++	struct kvm_sev_info_plane *sev_plane = to_kvm_sev_info_plane(svm->vcpu.plane);
+ 	struct kvm_vcpu *vcpu = &svm->vcpu;
+ 	struct kvm_vcpu *target_vcpu;
+ 	struct vcpu_svm *target_svm;
+@@ -4182,9 +4184,9 @@ static int sev_snp_ap_creation(struct vcpu_svm *svm)
+ 	switch (request) {
+ 	case SVM_VMGEXIT_AP_CREATE_ON_INIT:
+ 	case SVM_VMGEXIT_AP_CREATE:
+-		if (vcpu->arch.regs[VCPU_REGS_RAX] != sev->vmsa_features) {
++		if (vcpu->arch.regs[VCPU_REGS_RAX] != sev_plane->vmsa_features) {
+ 			vcpu_unimpl(vcpu, "vmgexit: mismatched AP sev_features [%#lx] != [%#llx] from guest\n",
+-				    vcpu->arch.regs[VCPU_REGS_RAX], sev->vmsa_features);
++				    vcpu->arch.regs[VCPU_REGS_RAX], sev_plane->vmsa_features);
+ 			return -EINVAL;
+ 		}
+ 
+@@ -4815,15 +4817,16 @@ void sev_vcpu_after_set_cpuid(struct vcpu_svm *svm)
+ 
+ static void sev_snp_init_vmcb(struct vcpu_svm *svm)
+ {
+-	struct kvm_sev_info *sev = &to_kvm_svm(svm->vcpu.kvm)->sev_info;
++	struct kvm_sev_info_plane *sev_plane = &to_kvm_svm_plane(svm->vcpu.plane)->sev_info_plane;
+ 
+ 	/* V_NMI is not supported when Restricted Injection is enabled */
+-	if (sev->vmsa_features & SVM_SEV_FEAT_RESTRICTED_INJECTION)
++	if (sev_plane->vmsa_features & SVM_SEV_FEAT_RESTRICTED_INJECTION)
+ 		svm->vmcb->control.int_ctl &= ~V_NMI_ENABLE_MASK;
+ }
+ 
+ static void sev_es_init_vmcb(struct vcpu_svm *svm, bool init_event)
+ {
++	struct kvm_sev_info_plane *sev_plane = to_kvm_sev_info_plane(svm->vcpu.plane);
+ 	struct kvm_sev_info *sev = to_kvm_sev_info(svm->vcpu.kvm);
+ 	struct vmcb *vmcb = svm->vmcb01.ptr;
+ 	struct kvm_vcpu *vcpu = &svm->vcpu;
+@@ -4845,7 +4848,7 @@ static void sev_es_init_vmcb(struct vcpu_svm *svm, bool init_event)
  	}
  
-+	r = kvm_arch_vcpu_common_init(common);
-+	if (r)
-+		goto out_free_dirty_ring;
+ 	if (cpu_feature_enabled(X86_FEATURE_ALLOWED_SEV_FEATURES))
+-		svm->vmcb->control.allowed_sev_features = sev->vmsa_features |
++		svm->vmcb->control.allowed_sev_features = sev_plane->vmsa_features |
+ 							  VMCB_ALLOWED_SEV_FEATURES_VALID;
+ 
+ 	/* Can't intercept CR register access, HV can't modify CR registers */
+diff --git a/arch/x86/kvm/svm/svm.c b/arch/x86/kvm/svm/svm.c
+index 99357de14034..2ae82dc058c9 100644
+--- a/arch/x86/kvm/svm/svm.c
++++ b/arch/x86/kvm/svm/svm.c
+@@ -5304,6 +5304,23 @@ static void *svm_alloc_apic_backing_page(struct kvm_vcpu *vcpu)
+ 	return page_address(page);
+ }
+ 
++static struct kvm_plane *svm_alloc_plane(void)
++{
++	struct kvm_svm_plane *svm_plane = kzalloc(sizeof(*svm_plane), GFP_KERNEL_ACCOUNT);
 +
- 	vcpu->common = no_free_ptr(common);
- 
- 	kvm_vcpu_set_in_spin_loop(vcpu, false);
-@@ -497,6 +501,8 @@ static int kvm_vcpu_init_common(struct kvm_vcpu *vcpu, struct kvm *kvm, unsigned
- 
- 	return 0;
- 
-+out_free_dirty_ring:
-+	kvm_dirty_ring_free(&common->dirty_ring);
- out_drop_counter:
- 	mutex_lock(&kvm->lock);
- 	kvm->created_vcpus--;
-@@ -548,6 +554,8 @@ static void kvm_vcpu_common_destroy(struct kvm_vcpu *vcpu)
- 	kvm->created_vcpus--;
- 	mutex_unlock(&common->kvm->lock);
- 
-+	kvm_arch_vcpu_common_destroy(common);
++	if (svm_plane)
++		return &svm_plane->plane;
 +
- 	/*
- 	 * No need for rcu_read_lock as VCPU_RUN is the only place that changes
- 	 * the common->pid pointer, and at destruction time all file descriptors
++	return NULL;
++}
++
++static void svm_free_plane(struct kvm_plane *plane)
++{
++	struct kvm_svm_plane *svm_plane = to_kvm_svm_plane(plane);
++
++	kfree(svm_plane);
++}
++
+ struct kvm_x86_ops svm_x86_ops __initdata = {
+ 	.name = KBUILD_MODNAME,
+ 
+@@ -5446,8 +5463,8 @@ struct kvm_x86_ops svm_x86_ops __initdata = {
+ 	.gmem_invalidate = sev_gmem_invalidate,
+ 	.gmem_max_mapping_level = sev_gmem_max_mapping_level,
+ 
+-	.alloc_plane = x86_alloc_plane,
+-	.free_plane = x86_free_plane,
++	.alloc_plane = svm_alloc_plane,
++	.free_plane = svm_free_plane,
+ 	.max_planes = kvm_x86_default_max_planes,
+ };
+ 
+diff --git a/arch/x86/kvm/svm/svm.h b/arch/x86/kvm/svm/svm.h
+index 7d27ed7099a8..57033922ddcf 100644
+--- a/arch/x86/kvm/svm/svm.h
++++ b/arch/x86/kvm/svm/svm.h
+@@ -110,7 +110,6 @@ struct kvm_sev_info {
+ 	unsigned long pages_locked; /* Number of pages locked */
+ 	struct list_head regions_list;  /* List of registered regions */
+ 	u64 ap_jump_table;	/* SEV-ES AP Jump Table address */
+-	u64 vmsa_features;
+ 	u16 ghcb_version;	/* Highest guest GHCB protocol version allowed */
+ 	struct kvm *enc_context_owner; /* Owner of copied encryption context */
+ 	struct list_head mirror_vms; /* List of VMs mirroring */
+@@ -140,6 +139,15 @@ struct kvm_svm {
+ #endif
+ };
+ 
++struct kvm_sev_info_plane {
++	u64 vmsa_features;
++};
++
++struct kvm_svm_plane {
++	struct kvm_plane plane;
++	struct kvm_sev_info_plane sev_info_plane;
++};
++
+ struct kvm_vcpu;
+ 
+ struct kvm_vmcb_info {
+@@ -394,6 +402,16 @@ static __always_inline struct kvm_svm *to_kvm_svm(struct kvm *kvm)
+ 	return container_of(kvm, struct kvm_svm, kvm);
+ }
+ 
++static __always_inline struct kvm_svm_plane *to_kvm_svm_plane(struct kvm_plane *plane)
++{
++	return container_of(plane, struct kvm_svm_plane, plane);
++}
++
++static __always_inline struct kvm_sev_info_plane *to_kvm_sev_info_plane(struct kvm_plane *plane)
++{
++	return &to_kvm_svm_plane(plane)->sev_info_plane;
++}
++
+ #ifdef CONFIG_KVM_AMD_SEV
+ static __always_inline struct kvm_sev_info *to_kvm_sev_info(struct kvm *kvm)
+ {
+@@ -413,7 +431,7 @@ static __always_inline bool ____sev_es_guest(struct kvm *kvm)
+ 
+ static __always_inline bool ____sev_snp_guest(struct kvm *kvm)
+ {
+-	struct kvm_sev_info *sev = to_kvm_sev_info(kvm);
++	struct kvm_sev_info_plane *sev = to_kvm_sev_info_plane(kvm->planes[0]);
+ 
+ 	return (sev->vmsa_features & SVM_SEV_FEAT_SNP_ACTIVE) &&
+ 	       !WARN_ON_ONCE(!____sev_es_guest(kvm));
+@@ -984,7 +1002,7 @@ void sev_snp_cancel_injection(struct kvm_vcpu *vcpu);
+ bool sev_snp_blocked(enum inject_type type, struct kvm_vcpu *vcpu);
+ static inline bool sev_snp_is_rinj_active(struct kvm_vcpu *vcpu)
+ {
+-	struct kvm_sev_info *sev = &to_kvm_svm(vcpu->kvm)->sev_info;
++	struct kvm_sev_info_plane *sev = &to_kvm_svm_plane(vcpu->plane)->sev_info_plane;
+ 
+ 	return is_sev_snp_guest(vcpu) &&
+ 		(sev->vmsa_features & SVM_SEV_FEAT_RESTRICTED_INJECTION);
 -- 
 2.53.0
 
