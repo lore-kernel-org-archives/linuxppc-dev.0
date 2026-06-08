@@ -1,34 +1,34 @@
-Return-Path: <linuxppc-dev+bounces-22240-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22236-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4F72ACD8C92
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jun 2026 14:54:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0881BCD8C9D
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jun 2026 14:55:02 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gYw4l1YbPz3dKp;
-	Tue, 09 Jun 2026 00:52:39 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gYw4f6kBVz3cl0;
+	Tue, 09 Jun 2026 00:52:34 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a01:238:42d9:3f00:e505:6202:4f0c:f051"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780930355;
-	cv=none; b=jtYaZss45hkwFD6PZR4wFrbuHqLyfGChvneJoTHTRb8xdC/mQuzJri/9/7P8AMiL+cmVa67Y3/KCKas0QNiK1k/NZdmSzi5r4p2ZfTVXeKARP6wIblBog0AoSIUCkTlQilpztPLPJCUgmBPYdt8m0xqoIOiPz46xFEqCyjwZbGhaaGi9EzK+sBdOo2V7V399ikj39xRmXZL/I+IuKGdEKzNEjZugYcA0EOHmwQgw3CLYr1Q5B2vuHB0LrH4lkI+mV0n/a2RJzTCHbI9sXIlhqFGo1UTHyP/y1npVzLCvDEwq91GOCXql1iwAbmx18lprZz7wBz9LvTHzwKs53dVfhQ==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780930354;
+	cv=none; b=Jf8iWpdGoaHyOsNibUAsLrBajzqQUWICDwC6xEZ6NJeM9PP2+UOzbVZyyjZvOfDEiihCnYbGuyZjWHE1mvxuAfXSp74yAL1cNCnLM7LhLMatIYUr4u8UR/qNUgMI7+avbzAzFtWsoCZ1/OARAeZjatkOlJmKWnJK71RtYOxiM3yJbZ/ORBJGytuwlQWDaHGitpsOYDJM+z9wAGK2RMRqNsLn2cw8MOta732acEdusny6wxbudf0YbqcZCTqruq+UBk1awmtOeTECidv1TfiZW18+vmL6K66tQEG8c7cyyeM8HMZ2aN0ZhLRNXa9f2WjhgHTA3rdDjBy7mFFSlNqHLg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1780930355; c=relaxed/relaxed;
-	bh=FApctmXSOWQlguPD6JpSsINvS7PM1nCubPR/NRCvmM4=;
+	t=1780930354; c=relaxed/relaxed;
+	bh=w2wOtB+H+7tYH/SgOF5B2ImHSWgqkED4rE1OPpJqxyU=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=DKelf6mE2e/5oW0ws7j/QY8oBa6rPufjpmVRqxoR2JeJ/T+46p0reT1QmziS/EDOjx2rdxeXS2PoMzBAkSPPZJAMWH/h7BM9I3pkdKQttwic0bZ2T2UTciQO55IdXysXeHBbUvtASX4LywoujF5NJdb8U//XlpeyQUqPYYvdP/Jk+LcuGXtIj2kB9nzhTRs/qp6WQqETg+kYXfsnKJ/ZdZ/bj6Hnd11G0LCMj37zXL1jjuw19fP07aq9LVQybfKc5eIb/Pgmej7L1+QMeFwns2riHgn8N2sAiUT4zLZJpfMQfXdmNJN2kW2ekPm17wO3HoMBjVeNSmf3AIO0FRS6TA==
+	 MIME-Version; b=n/7Jk9EtygJbKII3kJ8HqeihX6GWWl42l1TiT4heFhYWmY/d+mBimVp50X9HQblV+RTawtXF2uX4NnIqoPtDa6v/RW+S8ppf1/3ZhdOACtppkrXNAmnY4Ln0n/2b9MdXPuQcn1yqPb+eaCnLbcQOJl1pmxZ9E/LaisB/e7fRdoHrDiK1CW+NKAvu6ANC5jRajuSc5UGP3VonKREsg6CGI0CclBMUjG2IKrS7hXoyx2llbcexeN3aPY+CfZehLEwuJBLhXQMAH0KU0q8NajwFd6mfZuOLEL9p8ibVEXqmPochEYWZf2qz7DS0LacWqq9Cd3kei3PiHdn6+IK/cD6Lbg==
 ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=8bytes.org; spf=pass (client-ip=2a01:238:42d9:3f00:e505:6202:4f0c:f051; helo=mail.8bytes.org; envelope-from=joro@8bytes.org; receiver=lists.ozlabs.org) smtp.mailfrom=8bytes.org
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=8bytes.org
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=8bytes.org (client-ip=2a01:238:42d9:3f00:e505:6202:4f0c:f051; helo=mail.8bytes.org; envelope-from=joro@8bytes.org; receiver=lists.ozlabs.org)
 Received: from mail.8bytes.org (mail.8bytes.org [IPv6:2a01:238:42d9:3f00:e505:6202:4f0c:f051])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gYw4Q2dqrz3brC
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Jun 2026 00:52:21 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gYw4R38PJz3c52
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Jun 2026 00:52:23 +1000 (AEST)
 Received: from io.home.8bytes.org (p4ffe1d30.dip0.t-ipconnect.de [79.254.29.48])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.8bytes.org (Postfix) with ESMTPSA id 4DE0B2028DC;
-	Mon,  8 Jun 2026 16:43:17 +0200 (CEST)
+	by mail.8bytes.org (Postfix) with ESMTPSA id 4A0A72028A9;
+	Mon,  8 Jun 2026 16:43:06 +0200 (CEST)
 From: =?UTF-8?q?J=C3=B6rg=20R=C3=B6del?= <joro@8bytes.org>
 To: Paolo Bonzini <pbonzini@redhat.com>,
 	Sean Christopherson <seanjc@google.com>
@@ -49,9 +49,9 @@ Cc: Tom Lendacky <thomas.lendacky@amd.com>,
 	x86@kernel.org,
 	coconut-svsm@lists.linux.dev,
 	joerg.roedel@amd.com
-Subject: [PATCH 57/60] kvm: sev: Allow for VMPL level specification in AP create
-Date: Mon,  8 Jun 2026 16:42:49 +0200
-Message-ID: <20260608144252.351443-58-joro@8bytes.org>
+Subject: [PATCH 06/60] KVM: SVM: Enable Restricted Injection for an SEV-SNP guest
+Date: Mon,  8 Jun 2026 16:41:58 +0200
+Message-ID: <20260608144252.351443-7-joro@8bytes.org>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20260608144252.351443-1-joro@8bytes.org>
 References: <20260608144252.351443-1-joro@8bytes.org>
@@ -70,301 +70,116 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-From: Tom Lendacky <thomas.lendacky@amd.com>
+From: Melody Wang <huibo.wang@amd.com>
 
-Update AP creation to support ADD/DESTROY of VMSAs at levels other than
-VMPL0 in order to run under an SVSM at VMPL1 or lower. To maintain
-backwards compatibility, the VMPL is specified in bits 16 to 19 of the
-AP Creation request in SW_EXITINFO1 of the GHCB.
+Enable Restricted Injection in an SEV-SNP guest by setting the corresponding
+bit in the VMSA SEV features field (SEV_FEATURES[3]) from QEMU.
 
-In order to track the VMSAs at different levels, create arrays for the
-VMSAs, GHCBs, registered GHCBs and others. When switching VMPL levels,
-these entries will be used to set the VMSA and GHCB physical addresses
-in the VMCB for the VMPL level.
+Add Restricted Injection to the supported hypervisor features.
 
-In order ensure that the proper responses are returned in the proper GHCB,
-the GHCB must be unmapped at the current level and saved for restoration
-later when switching back to that VMPL level.
-
-Additional checks are applied to prevent a non-VMPL0 vCPU from being able
-to perform an AP creation request at VMPL0. Additionally, a vCPU cannot
-replace its own VMSA.
-
-Signed-off-by: Tom Lendacky <thomas.lendacky@amd.com>
-Co-developed-by: Joerg Roedel <joerg.roedel@amd.com>
+Co-developed-by: Thomas Lendacky <thomas.lendacky@amd.com>
+Signed-off-by: Thomas Lendacky <thomas.lendacky@amd.com>
+Signed-off-by: Melody Wang <huibo.wang@amd.com>
 Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
 ---
- arch/x86/include/asm/svm.h      |   9 +++
- arch/x86/include/uapi/asm/svm.h |   2 +
- arch/x86/kvm/svm/sev.c          | 134 +++++++++++++++++++++++++-------
- arch/x86/kvm/svm/svm.h          |   1 +
- arch/x86/kvm/x86.c              |   9 +++
- 5 files changed, 126 insertions(+), 29 deletions(-)
+ arch/x86/include/asm/cpufeatures.h |  1 +
+ arch/x86/include/asm/sev-common.h  |  1 +
+ arch/x86/kvm/svm/sev.c             | 26 +++++++++++++++++++++++++-
+ 3 files changed, 27 insertions(+), 1 deletion(-)
 
-diff --git a/arch/x86/include/asm/svm.h b/arch/x86/include/asm/svm.h
-index 9822b0b346ae..32a35ee10bce 100644
---- a/arch/x86/include/asm/svm.h
-+++ b/arch/x86/include/asm/svm.h
-@@ -345,6 +345,15 @@ static_assert((X2AVIC_4K_MAX_PHYSICAL_ID & AVIC_PHYSICAL_MAX_INDEX_MASK) == X2AV
+diff --git a/arch/x86/include/asm/cpufeatures.h b/arch/x86/include/asm/cpufeatures.h
+index 1d506e5d6f46..41af7bd2473c 100644
+--- a/arch/x86/include/asm/cpufeatures.h
++++ b/arch/x86/include/asm/cpufeatures.h
+@@ -453,6 +453,7 @@
+ #define X86_FEATURE_SNP_SECURE_TSC	(19*32+ 8) /* SEV-SNP Secure TSC */
+ #define X86_FEATURE_V_TSC_AUX		(19*32+ 9) /* Virtual TSC_AUX */
+ #define X86_FEATURE_SME_COHERENT	(19*32+10) /* hardware-enforced cache coherency */
++#define X86_FEATURE_RESTRICTED_INJECTION (19*32+12) /* Restricted Injection */
+ #define X86_FEATURE_DEBUG_SWAP		(19*32+14) /* "debug_swap" SEV-ES full debug state swap support */
+ #define X86_FEATURE_RMPREAD		(19*32+21) /* RMPREAD instruction */
+ #define X86_FEATURE_SEGMENTED_RMP	(19*32+23) /* Segmented RMP support */
+diff --git a/arch/x86/include/asm/sev-common.h b/arch/x86/include/asm/sev-common.h
+index 01a6e4dbe423..ee17a3541b55 100644
+--- a/arch/x86/include/asm/sev-common.h
++++ b/arch/x86/include/asm/sev-common.h
+@@ -136,6 +136,7 @@ enum psc_op {
  
- #define VMCB_ALLOWED_SEV_FEATURES_VALID			BIT_ULL(63)
+ #define GHCB_HV_FT_SNP			BIT_ULL(0)
+ #define GHCB_HV_FT_SNP_AP_CREATION	BIT_ULL(1)
++#define GHCB_HV_FT_SNP_RINJ		(BIT_ULL(2) | GHCB_HV_FT_SNP_AP_CREATION)
+ #define GHCB_HV_FT_SNP_MULTI_VMPL	BIT_ULL(5)
  
-+enum {
-+	SVM_SEV_VMPL0 = 0,
-+	SVM_SEV_VMPL1,
-+	SVM_SEV_VMPL2,
-+	SVM_SEV_VMPL3,
-+
-+	SVM_SEV_VMPL_MAX
-+};
-+
- struct vmcb_seg {
- 	u16 selector;
- 	u16 attrib;
-diff --git a/arch/x86/include/uapi/asm/svm.h b/arch/x86/include/uapi/asm/svm.h
-index 91395b82eadd..60b7a52f6f7e 100644
---- a/arch/x86/include/uapi/asm/svm.h
-+++ b/arch/x86/include/uapi/asm/svm.h
-@@ -123,6 +123,8 @@
- #define SVM_VMGEXIT_HVDB_QUERY			2
- #define SVM_VMGEXIT_HVDB_CLEAR			3
- #define SVM_VMGEXIT_HV_IPI                      0x80000015ull
-+#define SVM_VMGEXIT_AP_VMPL_MASK		GENMASK(19, 16)
-+#define SVM_VMGEXIT_AP_VMPL_SHIFT		16
- #define SVM_VMGEXIT_GET_APIC_IDS		0x80000017ull
- #define SVM_VMGEXIT_SNP_RUN_VMPL		0x80000018ull
- #define SVM_VMGEXIT_SAVIC			0x8000001aull
+ /*
 diff --git a/arch/x86/kvm/svm/sev.c b/arch/x86/kvm/svm/sev.c
-index c0b2879f8e9f..53cd3aba7368 100644
+index 6d5d66563b0d..369fb1e36f58 100644
 --- a/arch/x86/kvm/svm/sev.c
 +++ b/arch/x86/kvm/svm/sev.c
-@@ -3512,13 +3512,19 @@ static int sev_es_validate_vmgexit(struct vcpu_svm *svm)
- 		if (!kvm_ghcb_sw_scratch_is_valid(svm))
- 			goto vmgexit_err;
- 		break;
--	case SVM_VMGEXIT_AP_CREATION:
-+	case SVM_VMGEXIT_AP_CREATION: {
-+		unsigned int request;
-+
- 		if (!is_sev_snp_guest(vcpu))
- 			goto vmgexit_err;
--		if (lower_32_bits(control->exit_info_1) != SVM_VMGEXIT_AP_DESTROY)
-+
-+		request = lower_32_bits(control->exit_info_1);
-+		request &= ~SVM_VMGEXIT_AP_VMPL_MASK;
-+		if (request != SVM_VMGEXIT_AP_DESTROY)
- 			if (!kvm_ghcb_rax_is_valid(svm))
- 				goto vmgexit_err;
- 		break;
-+	}
- 	case SVM_VMGEXIT_GET_APIC_IDS:
- 		if (!kvm_ghcb_rax_is_valid(svm))
- 			goto vmgexit_err;
-@@ -4151,8 +4157,26 @@ static void sev_snp_init_protected_guest_state(struct kvm_vcpu *vcpu)
- 	/* Use the new VMSA */
- 	svm->vmcb->control.vmsa_pa = pfn_to_hpa(pfn);
+@@ -39,7 +39,9 @@
+ #define GHCB_VERSION_MAX	2ULL
+ #define GHCB_VERSION_MIN	1ULL
  
-+	/*
-+	 * The vCPU may not have gone through the LAUNCH_UPDATE process, so mark
-+	 * the guest state as protected.
-+	 */
-+	vcpu->arch.guest_state_protected = true;
-+
-+	/*
-+	 * SEV-ES guest mandates LBR Virtualization to be _always_ ON. Enable it
-+	 * only after setting guest_state_protected because KVM_SET_MSRS allows
-+	 * dynamic toggling of LBRV (for performance reason) on write access to
-+	 * MSR_IA32_DEBUGCTLMSR when guest_state_protected is not set.
-+	 */
-+	svm_enable_lbrv(vcpu);
-+
- 	/* Mark the vCPU as runnable */
--	kvm_set_mp_state(vcpu, KVM_MP_STATE_RUNNABLE);
-+	if (svm->sev_es.snp_ap_runnable) {
-+		kvm_set_mp_state(vcpu, KVM_MP_STATE_RUNNABLE);
-+	} else {
-+		kvm_set_mp_state(vcpu, KVM_MP_STATE_UNINITIALIZED);
-+	}
+-#define GHCB_HV_FT_SUPPORTED	(GHCB_HV_FT_SNP | GHCB_HV_FT_SNP_AP_CREATION)
++#define GHCB_HV_FT_SUPPORTED	(GHCB_HV_FT_SNP |		\
++				 GHCB_HV_FT_SNP_AP_CREATION |	\
++				 GHCB_HV_FT_SNP_RINJ)
  
- 	/*
- 	 * gmem pages aren't currently migratable, but if this ever changes
-@@ -4162,36 +4186,87 @@ static void sev_snp_init_protected_guest_state(struct kvm_vcpu *vcpu)
- 	kvm_release_page_clean(page);
+ /*
+  * The GHCB spec essentially states that all non-zero error codes other than
+@@ -63,6 +65,10 @@ module_param_named(sev_es, sev_es_enabled, bool, 0444);
+ static bool __ro_after_init sev_snp_enabled = true;
+ module_param_named(sev_snp, sev_snp_enabled, bool, 0444);
+ 
++/* enable/disable SEV-SNP Restricted Injection support */
++static bool sev_snp_restricted_injection_enabled = true;
++module_param_named(restricted_injection, sev_snp_restricted_injection_enabled, bool, 0444);
++
+ static unsigned int __ro_after_init nr_ciphertext_hiding_asids;
+ module_param_named(ciphertext_hiding_asids, nr_ciphertext_hiding_asids, uint, 0444);
+ 
+@@ -3223,6 +3229,12 @@ void __init sev_hardware_setup(void)
+ 
+ 	if (sev_snp_enabled && tsc_khz && cpu_feature_enabled(X86_FEATURE_SNP_SECURE_TSC))
+ 		sev_supported_vmsa_features |= SVM_SEV_FEAT_SECURE_TSC;
++
++	if (!sev_snp_enabled || !cpu_feature_enabled(X86_FEATURE_RESTRICTED_INJECTION))
++		sev_snp_restricted_injection_enabled = false;
++
++	if (sev_snp_restricted_injection_enabled)
++		sev_supported_vmsa_features |= SVM_SEV_FEAT_RESTRICTED_INJECTION;
  }
  
--static int sev_snp_ap_creation(struct vcpu_svm *svm)
-+static unsigned int get_ap_creation_request(struct vcpu_svm *svm)
+ void sev_hardware_unsetup(void)
+@@ -4773,10 +4785,20 @@ void sev_vcpu_after_set_cpuid(struct vcpu_svm *svm)
+ 		vcpu->arch.reserved_gpa_bits &= ~(1UL << (best->ebx & 0x3f));
+ }
+ 
++static void sev_snp_init_vmcb(struct vcpu_svm *svm)
++{
++	struct kvm_sev_info *sev = &to_kvm_svm(svm->vcpu.kvm)->sev_info;
++
++	/* V_NMI is not supported when Restricted Injection is enabled */
++	if (sev->vmsa_features & SVM_SEV_FEAT_RESTRICTED_INJECTION)
++		svm->vmcb->control.int_ctl &= ~V_NMI_ENABLE_MASK;
++}
++
+ static void sev_es_init_vmcb(struct vcpu_svm *svm, bool init_event)
  {
--	struct kvm_sev_info_plane *sev_plane = to_kvm_sev_info_plane(svm->vcpu.plane);
--	struct kvm_vcpu *vcpu = &svm->vcpu;
--	struct kvm_vcpu *target_vcpu;
--	struct vcpu_svm *target_svm;
--	unsigned int request;
-+//	struct kvm_sev_info_plane *sev_plane = to_kvm_sev_info_plane(svm->vcpu.plane);
-+//	struct kvm_vcpu *vcpu = &svm->vcpu;
-+	unsigned int req = lower_32_bits(svm->vmcb->control.exit_info_1);
-+
-+	return req & ~SVM_VMGEXIT_AP_VMPL_MASK;
-+}
-+
-+static unsigned int get_ap_creation_vmpl(struct vcpu_svm *svm)
-+{
-+	unsigned int req = lower_32_bits(svm->vmcb->control.exit_info_1);
-+
-+	return (req & SVM_VMGEXIT_AP_VMPL_MASK) >> SVM_VMGEXIT_AP_VMPL_SHIFT;
-+}
-+
-+static unsigned int get_ap_creation_apic_id(struct vcpu_svm *svm)
-+{
-+	return upper_32_bits(svm->vmcb->control.exit_info_1);
-+}
-+
-+#define SVM_SEV_VMPL_MAX	4
-+
-+static int sev_snp_ap_creation(struct kvm_vcpu *vcpu)
-+{
-+	struct vcpu_svm *target_svm = NULL, *svm = to_svm(vcpu);
-+	struct kvm_sev_info_plane *target_sev_plane = NULL;
-+	struct kvm_plane *target_plane = NULL;
-+	struct kvm_vcpu *target_vcpu = NULL;
- 	unsigned int apic_id;
-+	unsigned int request;
-+	unsigned int vmpl;
+ 	struct kvm_sev_info *sev = to_kvm_sev_info(svm->vcpu.kvm);
+ 	struct vmcb *vmcb = svm->vmcb01.ptr;
++	struct kvm_vcpu *vcpu = &svm->vcpu;
  
--	request = lower_32_bits(svm->vmcb->control.exit_info_1);
--	apic_id = upper_32_bits(svm->vmcb->control.exit_info_1);
-+	request = get_ap_creation_request(svm);
-+	apic_id = get_ap_creation_apic_id(svm);
-+	vmpl = get_ap_creation_vmpl(svm);
+ 	svm->vmcb->control.misc_ctl |= SVM_MISC_ENABLE_SEV_ES;
  
--	/* Validate the APIC ID */
--	target_vcpu = kvm_get_vcpu_by_id(vcpu->kvm, apic_id);
--	if (!target_vcpu) {
--		vcpu_unimpl(vcpu, "vmgexit: invalid AP APIC ID [%#x] from guest\n",
--			    apic_id);
-+	/* Validate the requested VMPL level */
-+	if (vmpl >= SVM_SEV_VMPL_MAX) {
-+		vcpu_unimpl(vcpu, "vmgexit: invalid VMPL level [%u] from guest\n",
-+			    vmpl);
- 		return -EINVAL;
- 	}
-+	vmpl = array_index_nospec(vmpl, SVM_SEV_VMPL_MAX);
-+
-+	/* Obtain the target plane and vCPU */
-+	target_plane = vcpu->kvm->planes[vmpl];
-+	if (target_plane) {
-+		target_vcpu = plane_get_vcpu(target_plane, apic_id);
-+	} else {
-+		target_vcpu = NULL;
-+	}
-+
-+	/* Request user-space to create target plane VCPU if it does not exist */
-+	if (!target_plane || !target_vcpu) {
-+		vcpu->arch.complete_userspace_io = sev_snp_ap_creation;
-+		return kvm_request_create_plane(vcpu, vmpl, apic_id);
-+	}
- 
- 	target_svm = to_svm(target_vcpu);
-+	target_sev_plane = &to_kvm_svm_plane(target_svm->vcpu.plane)->sev_info_plane;
- 
- 	guard(mutex)(&target_svm->sev_es.snp_vmsa_mutex);
- 
-+	/* VMPL0 can only be replaced by another vCPU running VMPL0 */
-+	if (vmpl == SVM_SEV_VMPL0 &&
-+	    (vcpu == target_vcpu || vcpu->plane_level != SVM_SEV_VMPL0)) {
-+		vcpu_unimpl(vcpu, "vmgexit: VMPL0 AP action not allowed\n");
-+		return -EINVAL;
-+	}
-+
- 	switch (request) {
- 	case SVM_VMGEXIT_AP_CREATE_ON_INIT:
- 	case SVM_VMGEXIT_AP_CREATE:
--		if (vcpu->arch.regs[VCPU_REGS_RAX] != sev_plane->vmsa_features) {
-+		/* Initialize target planes SEV features if necessary */
-+		if (target_sev_plane->vmsa_features == 0)
-+			target_sev_plane->vmsa_features = vcpu->arch.regs[VCPU_REGS_RAX];
-+
-+		if (vcpu->arch.regs[VCPU_REGS_RAX] != target_sev_plane->vmsa_features) {
- 			vcpu_unimpl(vcpu, "vmgexit: mismatched AP sev_features [%#lx] != [%#llx] from guest\n",
--				    vcpu->arch.regs[VCPU_REGS_RAX], sev_plane->vmsa_features);
-+				    vcpu->arch.regs[VCPU_REGS_RAX], target_sev_plane->vmsa_features);
- 			return -EINVAL;
- 		}
- 
-@@ -4226,16 +4301,18 @@ static int sev_snp_ap_creation(struct vcpu_svm *svm)
- 		return -EINVAL;
- 	}
- 
-+	/* Signal the vCPU to update its state */
-+	kvm_make_request(KVM_REQ_UPDATE_PROTECTED_GUEST_STATE, target_vcpu);
-+
- 	target_svm->sev_es.snp_ap_waiting_for_reset = true;
-+	target_svm->sev_es.snp_ap_runnable = (request == SVM_VMGEXIT_AP_CREATE);
- 
--	/*
--	 * Unless Creation is deferred until INIT, signal the vCPU to update
--	 * its state.
--	 */
--	if (request != SVM_VMGEXIT_AP_CREATE_ON_INIT)
--		kvm_make_request_and_kick(KVM_REQ_UPDATE_PROTECTED_GUEST_STATE, target_vcpu);
-+	if (request == SVM_VMGEXIT_AP_CREATE)
-+		kvm_make_request(KVM_REQ_PLANE_RESCHED, target_vcpu);
- 
--	return 0;
-+	kvm_vcpu_kick(target_vcpu);
-+
-+	return 1;
+@@ -4843,6 +4865,8 @@ static void sev_es_init_vmcb(struct vcpu_svm *svm, bool init_event)
+ 		set_ghcb_msr(svm, GHCB_MSR_SEV_INFO((__u64)sev->ghcb_version,
+ 						    GHCB_VERSION_MIN,
+ 						    sev_enc_bit));
++	if (is_sev_snp_guest(vcpu))
++		sev_snp_init_vmcb(svm);
  }
  
- static int snp_handle_guest_req(struct vcpu_svm *svm, gpa_t req_gpa, gpa_t resp_gpa)
-@@ -4779,12 +4856,11 @@ int sev_handle_vmgexit(struct kvm_vcpu *vcpu)
- 		ret = snp_begin_psc(svm);
- 		break;
- 	case SVM_VMGEXIT_AP_CREATION:
--		ret = sev_snp_ap_creation(svm);
--		if (ret) {
-+		ret = sev_snp_ap_creation(vcpu);
-+		if (ret < 0) {
- 			svm_vmgexit_bad_input(svm, GHCB_ERR_INVALID_INPUT);
-+			ret = 1;
- 		}
--
--		ret = 1;
- 		break;
- 	case SVM_VMGEXIT_GUEST_REQUEST:
- 		ret = snp_handle_guest_req(svm, control->exit_info_1, control->exit_info_2);
-diff --git a/arch/x86/kvm/svm/svm.h b/arch/x86/kvm/svm/svm.h
-index 57033922ddcf..7e860f2abafb 100644
---- a/arch/x86/kvm/svm/svm.h
-+++ b/arch/x86/kvm/svm/svm.h
-@@ -282,6 +282,7 @@ struct vcpu_sev_es_state {
- 
- 	struct mutex snp_vmsa_mutex; /* Used to handle concurrent updates of VMSA. */
- 	gpa_t snp_vmsa_gpa;
-+	bool snp_ap_runnable;
- 	bool snp_ap_waiting_for_reset;
- 	bool snp_has_guest_vmsa;
- 
-diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index 0b9fa1059481..ad05350bb393 100644
---- a/arch/x86/kvm/x86.c
-+++ b/arch/x86/kvm/x86.c
-@@ -12165,6 +12165,15 @@ static int __kvm_arch_vcpu_ioctl_run(struct kvm_vcpu *vcpu)
- 		kvm_vcpu_block(vcpu);
- 		kvm_vcpu_srcu_read_lock(vcpu);
- 
-+		/*
-+		 * It is possible that the vCPU has never run before. If the
-+		 * request is to update the protected guest state (AP Create),
-+		 * then ensure that the vCPU can now run.
-+		 */
-+		if (kvm_test_request(KVM_REQ_UPDATE_PROTECTED_GUEST_STATE, vcpu) &&
-+		    vcpu->arch.mp_state == KVM_MP_STATE_UNINITIALIZED)
-+			vcpu->arch.mp_state = KVM_MP_STATE_RUNNABLE;
-+
- 		if (kvm_apic_accept_events(vcpu) < 0) {
- 			r = 0;
- 			goto out;
+ void sev_init_vmcb(struct vcpu_svm *svm, bool init_event)
 -- 
 2.53.0
 
