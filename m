@@ -1,34 +1,34 @@
-Return-Path: <linuxppc-dev+bounces-22261-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22267-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 058A7CD8C9D
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jun 2026 14:57:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5B036CD8C9D
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jun 2026 14:57:47 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gYw5523dFz3fJk;
-	Tue, 09 Jun 2026 00:52:57 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gYw584Sclz3fM3;
+	Tue, 09 Jun 2026 00:53:00 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=85.214.250.239
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780930373;
-	cv=none; b=HGej9XJVV8uVc29vwIpvG1l8voNZD+qMDUCd9vQiPD7GNd01gvKuoH4bAFvtfXt6n5+EPomegQ0F6eTFNg0PjmSHBnEe/s/FNO3etD27gyBBjkqqG6cSzUIZLT2aiep4OnNndd/wEVjXl19bNISgwrCkkzrVwRlH44xGlCv+fHMYN/Sj96gNUYQnI9EDMmxjLu0tjCxLLZ592nmN/meDvaHKQLc6IvlGkx2lJlKmKOVOx++8lRJtre4nSXbNGlo7YJIL6AFTxYVNG3vom1sUktfrW5bI6T14RFC3CB/OcizFVWrLZsHl0ogIxgG2xFtvce+tPcEtIl93fPxN8Si5uQ==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780930379;
+	cv=none; b=f3iOyXku3esScE8NBtzzhXQsQleKgYiPIG6ncsK1SNKhf4+YKHkMurdjg2ucGTHM48VQ7huFbQDTG26yCIXyaa71fTQXRst8ZRNB4suqvoiiaFUwC61wdDNqDhzn7Oxc/8C/8WJZWSTzFn/biRNmrukvTBvC/DmOgY4XxI3A1gOomkMYKeLjaKAgpDHksgwpmr5B7xOqXdPEcnVoK4Dq+quv1lVY6DD6cRXv684HkXWzFPRiXD3o9vbn548+Rfn27PhnKk3e/gtDCGYkI+SEM2J/mBz8O6gOkQF90zq8RGJoklwTQCyaDwtytXJQeU+iqWx51RqKj6Ja6drMl8Qgsg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1780930373; c=relaxed/relaxed;
-	bh=Sqz6oc6V65sByVcNtBRvB28gocilrV2AZxK4TPrvyCY=;
+	t=1780930379; c=relaxed/relaxed;
+	bh=OA+8JHuLaM5UvW2gO/S/amZB7s61iYVyWjXtASLST60=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=UmxdNvE/zjKa+K0ZVFDc81ozEIg+CLIjvI+z0SDW0LKde2n7vtmP6WtFsCnB0tRYrqsX5lXtYvC9uWWlP8pIW8NEktKD8k9MPza6afnenl9QsCXzppSM6Y91iyFpqa+iDAxPQCGjnQ+9rlThezZ/BNFdSAEbUCQmrmMe49ubpmbZ0+/dzl7OiGxlEH+IVq6Rja1x/ulGltczajV3zRVoPiEdEBZwa31Sz4kaIBKNzPEpkRJjaW+hmS1JlAMDClZYUxAACZo6/VwoSp7cyaiDK7rK1ItvwG9y5Vq8zWMe3JtRyJ/e91Sr56jOkWdZFpEEbecT6i6+nNl7TAyETiVp7g==
+	 MIME-Version; b=fD1B1wLzsu4FiFLwEy4WlqJXOj+k/4FntB0nVGxcbDwKwkwO5LDcY6wEWVx68H8l/smnHT4y3T/2OTtv70zqQpLotd8zp4x3+sRWOxo3LJjdm8PLIML9/19Sa4Dtg6tzBHZ6aUmHrlcnWb2S8bZ4y2MX1+4LZrgZNI+jvrTl8Wsg1AWznnTFvtsF2TbDkZ3odFG8i08YUw9RSDN5K9aiyo5ZwncEoByxoqyGgUrpfOP2A2crjWb/cH7G3yeyyxAI+V0X7xmX2vCrwK12nHfSoR7B0zHirsCFTKigVWy34WYTGNytg/JWYq3DHAs5a/sOGJsZ1SO3GIhQ1HlZbunxDw==
 ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=8bytes.org; spf=pass (client-ip=85.214.250.239; helo=mail.8bytes.org; envelope-from=joro@8bytes.org; receiver=lists.ozlabs.org) smtp.mailfrom=8bytes.org
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=8bytes.org
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=8bytes.org (client-ip=85.214.250.239; helo=mail.8bytes.org; envelope-from=joro@8bytes.org; receiver=lists.ozlabs.org)
 Received: from mail.8bytes.org (mail.8bytes.org [85.214.250.239])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gYw4k0FXPz3dJq
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Jun 2026 00:52:37 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gYw4s416Nz3dfy
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Jun 2026 00:52:45 +1000 (AEST)
 Received: from io.home.8bytes.org (p4ffe1d30.dip0.t-ipconnect.de [79.254.29.48])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.8bytes.org (Postfix) with ESMTPSA id A4CBA2028D9;
-	Mon,  8 Jun 2026 16:43:16 +0200 (CEST)
+	by mail.8bytes.org (Postfix) with ESMTPSA id D09802028BE;
+	Mon,  8 Jun 2026 16:43:10 +0200 (CEST)
 From: =?UTF-8?q?J=C3=B6rg=20R=C3=B6del?= <joro@8bytes.org>
 To: Paolo Bonzini <pbonzini@redhat.com>,
 	Sean Christopherson <seanjc@google.com>
@@ -49,9 +49,9 @@ Cc: Tom Lendacky <thomas.lendacky@amd.com>,
 	x86@kernel.org,
 	coconut-svsm@lists.linux.dev,
 	joerg.roedel@amd.com
-Subject: [PATCH 54/60] kvm: x86: Restrict KVM planes support to KVM_IRQCHIP_SPLIT
-Date: Mon,  8 Jun 2026 16:42:46 +0200
-Message-ID: <20260608144252.351443-55-joro@8bytes.org>
+Subject: [PATCH 27/60] kvm: Introduce arch-specific part of struct kvm_vcpu_common
+Date: Mon,  8 Jun 2026 16:42:19 +0200
+Message-ID: <20260608144252.351443-28-joro@8bytes.org>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20260608144252.351443-1-joro@8bytes.org>
 References: <20260608144252.351443-1-joro@8bytes.org>
@@ -72,84 +72,193 @@ Content-Transfer-Encoding: 8bit
 
 From: Joerg Roedel <joerg.roedel@amd.com>
 
-The code right now only supports plane-aware IOAPIC IRQ routing for
-IRQ-chip in split mode. Enforce that restriction in the KVM x86 code.
+Give architectures a place to store their VCPU state which is shared
+across all planes.
 
 Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
 ---
- arch/x86/kvm/x86.c       | 8 ++++++--
- include/linux/kvm_host.h | 1 +
- virt/kvm/kvm_main.c      | 5 +++++
- 3 files changed, 12 insertions(+), 2 deletions(-)
+ arch/arm64/include/asm/kvm_host.h     | 5 +++++
+ arch/loongarch/include/asm/kvm_host.h | 5 +++++
+ arch/mips/include/asm/kvm_host.h      | 5 +++++
+ arch/powerpc/include/asm/kvm_host.h   | 5 +++++
+ arch/riscv/include/asm/kvm_host.h     | 5 +++++
+ arch/s390/include/asm/kvm_host.h      | 5 +++++
+ arch/x86/include/asm/kvm_host.h       | 5 +++++
+ include/linux/kvm_host.h              | 2 ++
+ include/linux/kvm_types.h             | 1 +
+ virt/kvm/kvm_main.c                   | 8 ++++++++
+ 10 files changed, 46 insertions(+)
 
-diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index c6910356b061..0b9fa1059481 100644
---- a/arch/x86/kvm/x86.c
-+++ b/arch/x86/kvm/x86.c
-@@ -490,6 +490,10 @@ EXPORT_SYMBOL_FOR_KVM_INTERNAL(kvm_x86_default_max_planes);
+diff --git a/arch/arm64/include/asm/kvm_host.h b/arch/arm64/include/asm/kvm_host.h
+index e9cca2adb371..de9ca00ce4f4 100644
+--- a/arch/arm64/include/asm/kvm_host.h
++++ b/arch/arm64/include/asm/kvm_host.h
+@@ -869,6 +869,11 @@ struct vcpu_reset_state {
  
- unsigned kvm_arch_max_planes(struct kvm *kvm)
- {
-+	/* For now, planes are only supported with irqchip=split */
-+	if (!irqchip_split(kvm))
-+		return 1;
+ struct vncr_tlb;
+ 
++struct kvm_vcpu_arch_common {};
 +
- 	return kvm_x86_call(max_planes)(kvm);
- }
++static inline int kvm_arch_vcpu_common_init(struct kvm_vcpu_common *common) { return 0; }
++static inline void kvm_arch_vcpu_common_destroy(struct kvm_vcpu_common *common) {}
++
+ struct kvm_vcpu_arch {
+ 	struct kvm_cpu_context ctxt;
  
-@@ -6833,7 +6837,7 @@ int kvm_vm_ioctl_enable_cap(struct kvm *kvm,
- 		if (cap->args[0] > KVM_MAX_IRQ_ROUTES)
- 			goto split_irqchip_unlock;
- 		r = -EEXIST;
--		if (irqchip_in_kernel(kvm))
-+		if (irqchip_in_kernel(kvm) || kvm->has_planes)
- 			goto split_irqchip_unlock;
- 		if (kvm->created_vcpus)
- 			goto split_irqchip_unlock;
-@@ -7398,7 +7402,7 @@ int kvm_arch_vm_ioctl(struct file *filp, unsigned int ioctl, unsigned long arg)
- 			goto create_irqchip_unlock;
+diff --git a/arch/loongarch/include/asm/kvm_host.h b/arch/loongarch/include/asm/kvm_host.h
+index 225aa87ebbdd..7317dceda6b4 100644
+--- a/arch/loongarch/include/asm/kvm_host.h
++++ b/arch/loongarch/include/asm/kvm_host.h
+@@ -150,6 +150,11 @@ struct kvm_arch {
+ 	struct loongarch_pch_pic *pch_pic;
+ };
  
- 		r = -EINVAL;
--		if (kvm->created_vcpus)
-+		if (kvm->created_vcpus || kvm->has_planes)
- 			goto create_irqchip_unlock;
++struct kvm_vcpu_arch_common {};
++
++static inline int kvm_arch_vcpu_common_init(struct kvm_vcpu_common *common) { return 0; }
++static inline void kvm_arch_vcpu_common_destroy(struct kvm_vcpu_common *common) {}
++
+ #define CSR_MAX_NUMS		0x800
  
- 		r = kvm_pic_init(kvm);
+ struct loongarch_csrs {
+diff --git a/arch/mips/include/asm/kvm_host.h b/arch/mips/include/asm/kvm_host.h
+index b01911eb9064..c48bca79207b 100644
+--- a/arch/mips/include/asm/kvm_host.h
++++ b/arch/mips/include/asm/kvm_host.h
+@@ -194,6 +194,11 @@ struct kvm_arch {
+ #endif
+ };
+ 
++struct kvm_vcpu_arch_common {};
++
++static inline int kvm_arch_vcpu_common_init(struct kvm_vcpu_common *common) { return 0; }
++static inline void kvm_arch_vcpu_common_destroy(struct kvm_vcpu_common *common) {}
++
+ #define N_MIPS_COPROC_REGS	32
+ #define N_MIPS_COPROC_SEL	8
+ 
+diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
+index c5b9fbaf34f3..47d9900c4f85 100644
+--- a/arch/powerpc/include/asm/kvm_host.h
++++ b/arch/powerpc/include/asm/kvm_host.h
+@@ -349,6 +349,11 @@ struct kvm_arch {
+ #endif
+ };
+ 
++struct kvm_vcpu_arch_common {};
++
++static inline int kvm_arch_vcpu_common_init(struct kvm_vcpu_common *common) { return 0; }
++static inline void kvm_arch_vcpu_common_destroy(struct kvm_vcpu_common *common) {}
++
+ #define VCORE_ENTRY_MAP(vc)	((vc)->entry_exit_map & 0xff)
+ #define VCORE_EXIT_MAP(vc)	((vc)->entry_exit_map >> 8)
+ #define VCORE_IS_EXITING(vc)	(VCORE_EXIT_MAP(vc) != 0)
+diff --git a/arch/riscv/include/asm/kvm_host.h b/arch/riscv/include/asm/kvm_host.h
+index bcbf487d4cb7..397491587f5b 100644
+--- a/arch/riscv/include/asm/kvm_host.h
++++ b/arch/riscv/include/asm/kvm_host.h
+@@ -107,6 +107,11 @@ struct kvm_arch {
+ 	bool mp_state_reset;
+ };
+ 
++struct kvm_vcpu_arch_common {};
++
++static inline int kvm_arch_vcpu_common_init(struct kvm_vcpu_common *common) { return 0; }
++static inline void kvm_arch_vcpu_common_destroy(struct kvm_vcpu_common *common) {}
++
+ struct kvm_cpu_trap {
+ 	unsigned long sepc;
+ 	unsigned long scause;
+diff --git a/arch/s390/include/asm/kvm_host.h b/arch/s390/include/asm/kvm_host.h
+index bb3bfbfd35d8..90fd8c0f1a2b 100644
+--- a/arch/s390/include/asm/kvm_host.h
++++ b/arch/s390/include/asm/kvm_host.h
+@@ -413,6 +413,11 @@ struct kvm_s390_pv_vcpu {
+ 	unsigned long stor_base;
+ };
+ 
++struct kvm_vcpu_arch_common {};
++
++static inline int kvm_arch_vcpu_common_init(struct kvm_vcpu_common *common) { return 0; }
++static inline void kvm_arch_vcpu_common_destroy(struct kvm_vcpu_common *common) {}
++
+ struct kvm_vcpu_arch {
+ 	struct kvm_s390_sie_block *sie_block;
+ 	/* if vsie is active, currently executed shadow sie control block */
+diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
+index dd95c70bfdba..1393566741a0 100644
+--- a/arch/x86/include/asm/kvm_host.h
++++ b/arch/x86/include/asm/kvm_host.h
+@@ -794,6 +794,11 @@ enum kvm_only_cpuid_leafs {
+ 	NKVMCAPINTS = NR_KVM_CPU_CAPS - NCAPINTS,
+ };
+ 
++struct kvm_vcpu_arch_common {};
++
++static inline int kvm_arch_vcpu_common_init(struct kvm_vcpu_common *common) { return 0; }
++static inline void kvm_arch_vcpu_common_destroy(struct kvm_vcpu_common *common) {}
++
+ struct kvm_vcpu_arch {
+ 	/*
+ 	 * rip and regs accesses must go through
 diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
-index 3b62fb354267..dbf81e2520f2 100644
+index 4a0eaa1de479..291bccce9b74 100644
 --- a/include/linux/kvm_host.h
 +++ b/include/linux/kvm_host.h
-@@ -918,6 +918,7 @@ struct kvm {
- 	struct list_head gpc_list;
+@@ -375,6 +375,8 @@ struct kvm_vcpu_common {
+ 	bool scheduled_out;
  
- 	struct kvm_plane *planes[KVM_MAX_PLANES];
-+	bool has_planes;
+ 	struct kvm_dirty_ring dirty_ring;
++
++	struct kvm_vcpu_arch_common arch;
+ };
  
- 	/*
- 	 * created_vcpus is protected by kvm->lock, and is incremented
+ struct kvm_vcpu {
+diff --git a/include/linux/kvm_types.h b/include/linux/kvm_types.h
+index 07e82928c948..06799efe6a12 100644
+--- a/include/linux/kvm_types.h
++++ b/include/linux/kvm_types.h
+@@ -46,6 +46,7 @@ struct kvm_plane;
+ struct kvm_run;
+ struct kvm_userspace_memory_region;
+ struct kvm_vcpu;
++struct kvm_vcpu_common;
+ struct kvm_vcpu_init;
+ struct kvm_memslots;
+ 
 diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-index 8f1a16af519a..ff27cdbe8d92 100644
+index 91fb9abf9b31..7a0b632e3ac0 100644
 --- a/virt/kvm/kvm_main.c
 +++ b/virt/kvm/kvm_main.c
-@@ -5477,6 +5477,10 @@ static int kvm_vm_ioctl_create_plane(struct kvm *kvm, unsigned id)
- 	    WARN_ON_ONCE(id >= KVM_MAX_PLANES))
- 		return -EINVAL;
- 
-+	/* Planes are only supported with in-kernel IRQ-chip */
-+	if (!kvm_arch_irqchip_in_kernel(kvm))
-+		return -EINVAL;
-+
- 	guard(mutex)(&kvm->lock);
- 	if (kvm->planes[id])
- 		return -EEXIST;
-@@ -5498,6 +5502,7 @@ static int kvm_vm_ioctl_create_plane(struct kvm *kvm, unsigned id)
- 		goto put_kvm;
+@@ -490,6 +490,10 @@ static int kvm_vcpu_init_common(struct kvm_vcpu *vcpu, struct kvm *kvm, unsigned
+ 			goto out_drop_counter;
  	}
  
-+	kvm->has_planes = true;
- 	fd_install(fd, file);
- 	return fd;
++	r = kvm_arch_vcpu_common_init(common);
++	if (r)
++		goto out_free_dirty_ring;
++
+ 	vcpu->common = no_free_ptr(common);
  
+ 	kvm_vcpu_set_in_spin_loop(vcpu, false);
+@@ -497,6 +501,8 @@ static int kvm_vcpu_init_common(struct kvm_vcpu *vcpu, struct kvm *kvm, unsigned
+ 
+ 	return 0;
+ 
++out_free_dirty_ring:
++	kvm_dirty_ring_free(&common->dirty_ring);
+ out_drop_counter:
+ 	mutex_lock(&kvm->lock);
+ 	kvm->created_vcpus--;
+@@ -548,6 +554,8 @@ static void kvm_vcpu_common_destroy(struct kvm_vcpu *vcpu)
+ 	kvm->created_vcpus--;
+ 	mutex_unlock(&common->kvm->lock);
+ 
++	kvm_arch_vcpu_common_destroy(common);
++
+ 	/*
+ 	 * No need for rcu_read_lock as VCPU_RUN is the only place that changes
+ 	 * the common->pid pointer, and at destruction time all file descriptors
 -- 
 2.53.0
 
