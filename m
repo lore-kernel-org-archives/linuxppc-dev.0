@@ -1,34 +1,34 @@
-Return-Path: <linuxppc-dev+bounces-22211-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22212-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E764BCD8C9D
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jun 2026 14:52:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A69F2CD8C92
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jun 2026 14:52:35 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gYw4F3hdtz2ytV;
-	Tue, 09 Jun 2026 00:52:13 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gYw4G2VNtz3bsP;
+	Tue, 09 Jun 2026 00:52:14 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a01:238:42d9:3f00:e505:6202:4f0c:f051"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780930333;
-	cv=none; b=gUMbAeKBUkLCpvI0xF/hZoElQwWPvy6WdmvVua8+5U2qmWfrdRrET+6eXbU04l4LWfC9opKOoRoaPkqXEQCiZbm9gF1VRBSMo2qLPzj29hWYsdRfpn0x/So4lhC/jRm33uVvVKIkDN0yD8NROuBY3n4UrwVxgfrYlg03IgxnMFCicFTrirTjDVqxT1vuG0RtdbWtk1rABeouZbIgYt/z7pzrHl/dsaCKbit5dSfSzO3y93uVeiGGGQ1PudWPvHZ5rhL22xN1obe0Xy89v8DD6py5ld86DupJDOc724IiATLHIsgQgDJq0EwQYBxr3gpcseMpkEo0qZ3EoS+jGUWkFQ==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780930334;
+	cv=none; b=kARrnvnDTllbVKwo4bJ3S311Dh/vyE6GVSOWVc1/ocmSkv2kreixJwo+hNPxGoMKyYigAcm2hcx4tblxczlor9hBpnshkMWoy9g0srY/e0081zxGPezJ5LVfrTNP0IZzRgyDJZ9jo5z+mEoWozHULNUKEKBxTy6pkei62OdJWJBD9fyZswTcvsR6Su+CtYIpTDX22Z2rxnztgHbqQ9VN8FiqtQ11r9PBOJwfveIYx+RnM+cJ5dHbM8/do7c0y3VrGxn2MXjrgI7v8ADGL8IgP7eFfL8Q794Xa1AQc4P1kQueCKZXVwhFsv8JfaWxK84MZtU/VaaQrb3+0Ol+2T20qQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1780930333; c=relaxed/relaxed;
-	bh=SFY8osBOGiT7rOUrtwhyKbRMW9LibB8EPQscRy+C6vc=;
+	t=1780930334; c=relaxed/relaxed;
+	bh=OA/Qd+jF0Q1QozMre9m+KdODkx0ma/FNTcWiPF5Ir44=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=bGbl+k1gessS7yu3ux9GJwd9LUncGliz2ZzmWibjMr/BXlq3HRw5mxIJ3AiUokeoRTr/W38rYNsMe26YQgzBwebDrCArwzJhlvlDy4YZiBGeF/uJu9CWFrLf0ePvBYVi2kOek8ZtUvog5MUuwKcDq6d3ijE8Vch0pSh6iUSvWlKCf//RC79np286g20pBU/sL37q2oLaNQ6Plz/7LCHHSmasO2WIPJ6WK7BpdDIwMZRCxefA3hn7gaDdqrMdJcPSGhO4QwG91RAHMHQ293OyKkpFK+G03jpZULaqiiGWPkwZrYRcyykrBfdLjReycgWyCer+B37v3i7AmfIBALLtPA==
+	 MIME-Version; b=mjHNyGUcGbm0pDoCTRcXAs+TLr7sU7Qcd9/z5soBDuMlaKTOFpigPANjer0n6PdCNnO4pQZBDjRgowxa6kiDPRp4g8ANhBljoFVWEvSAEdvbzqIhX/pPQwXtWKlif0pzIjMe3aVafs/crbUG6kwy5BZO4vH84w0ViqyL15z6wBmf9zQy+em01riYAs3meBeI/orG1EyFt0Ql6B0LofPV5CzngzkEKdAq4RcIIZbfL79KAQOK8BYPBhVOxlsv/2xDt9Jizqa9YQvgAEe2VaTSY4PUwmr48uzakxI91DfOr6Og5+Nu/yfDScapWr42f00968bi2YOMLm0CAvRiy3HLUw==
 ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=8bytes.org; spf=pass (client-ip=2a01:238:42d9:3f00:e505:6202:4f0c:f051; helo=mail.8bytes.org; envelope-from=joro@8bytes.org; receiver=lists.ozlabs.org) smtp.mailfrom=8bytes.org
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=8bytes.org
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=8bytes.org (client-ip=2a01:238:42d9:3f00:e505:6202:4f0c:f051; helo=mail.8bytes.org; envelope-from=joro@8bytes.org; receiver=lists.ozlabs.org)
 Received: from mail.8bytes.org (mail.8bytes.org [IPv6:2a01:238:42d9:3f00:e505:6202:4f0c:f051])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gYw483YzTz2ytj
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gYw483R2gz2yS0
 	for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Jun 2026 00:52:07 +1000 (AEST)
 Received: from io.home.8bytes.org (p4ffe1d30.dip0.t-ipconnect.de [79.254.29.48])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.8bytes.org (Postfix) with ESMTPSA id 7F2382028AA;
-	Mon,  8 Jun 2026 16:43:06 +0200 (CEST)
+	by mail.8bytes.org (Postfix) with ESMTPSA id 7319F2028CA;
+	Mon,  8 Jun 2026 16:43:13 +0200 (CEST)
 From: =?UTF-8?q?J=C3=B6rg=20R=C3=B6del?= <joro@8bytes.org>
 To: Paolo Bonzini <pbonzini@redhat.com>,
 	Sean Christopherson <seanjc@google.com>
@@ -49,9 +49,9 @@ Cc: Tom Lendacky <thomas.lendacky@amd.com>,
 	x86@kernel.org,
 	coconut-svsm@lists.linux.dev,
 	joerg.roedel@amd.com
-Subject: [PATCH 07/60] KVM: SVM: Add support for the SEV-SNP #HV IPI NAE event
-Date: Mon,  8 Jun 2026 16:41:59 +0200
-Message-ID: <20260608144252.351443-8-joro@8bytes.org>
+Subject: [PATCH 39/60] kvm: Make KVM_SET_GSI_ROUTING per plane
+Date: Mon,  8 Jun 2026 16:42:31 +0200
+Message-ID: <20260608144252.351443-40-joro@8bytes.org>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20260608144252.351443-1-joro@8bytes.org>
 References: <20260608144252.351443-1-joro@8bytes.org>
@@ -70,147 +70,232 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-From: Melody Wang <huibo.wang@amd.com>
+From: Joerg Roedel <joerg.roedel@amd.com>
 
-The #HV IPI NAE event allows the guest to send an IPI to other vCPUs in the
-guest when the Restricted Injection feature is enabled. Implement the NAE
-event as per GHCB specification.
+Allow the KVM_SET_GSI_ROUTING on each plane. There is still only one
+GSI routing table maintained per VM by the KVM module, the plane this
+IOCTL was last issued at will get all GSI interrupts.
 
-Co-developed-by: Thomas Lendacky <thomas.lendacky@amd.com>
-Signed-off-by: Thomas Lendacky <thomas.lendacky@amd.com>
-Signed-off-by: Melody Wang <huibo.wang@amd.com>
 Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
 ---
- arch/x86/include/uapi/asm/svm.h |  1 +
- arch/x86/kvm/lapic.c            | 24 +++++++++++++++++++++++-
- arch/x86/kvm/lapic.h            |  2 ++
- arch/x86/kvm/svm/sev.c          | 28 ++++++++++++++++++++++++++++
- 4 files changed, 54 insertions(+), 1 deletion(-)
+ arch/arm64/kvm/vgic/vgic-irqfd.c  |  2 +-
+ arch/loongarch/kvm/intc/pch_pic.c |  2 +-
+ arch/powerpc/kvm/mpic.c           |  2 +-
+ arch/riscv/kvm/vm.c               |  2 +-
+ arch/x86/kvm/irq.c                |  2 +-
+ include/linux/kvm_host.h          |  3 +-
+ virt/kvm/irqchip.c                | 10 +++--
+ virt/kvm/kvm_main.c               | 62 +++++++++++++++----------------
+ 8 files changed, 44 insertions(+), 41 deletions(-)
 
-diff --git a/arch/x86/include/uapi/asm/svm.h b/arch/x86/include/uapi/asm/svm.h
-index d84a13ac4627..d281dd21c540 100644
---- a/arch/x86/include/uapi/asm/svm.h
-+++ b/arch/x86/include/uapi/asm/svm.h
-@@ -122,6 +122,7 @@
- #define SVM_VMGEXIT_HVDB_SET			1
- #define SVM_VMGEXIT_HVDB_QUERY			2
- #define SVM_VMGEXIT_HVDB_CLEAR			3
-+#define SVM_VMGEXIT_HV_IPI                      0x80000015ull
- #define SVM_VMGEXIT_SNP_RUN_VMPL		0x80000018ull
- #define SVM_VMGEXIT_SAVIC			0x8000001aull
- #define SVM_VMGEXIT_SAVIC_REGISTER_GPA		0
-diff --git a/arch/x86/kvm/lapic.c b/arch/x86/kvm/lapic.c
-index 4078e624ca66..ab40a2e4ab9d 100644
---- a/arch/x86/kvm/lapic.c
-+++ b/arch/x86/kvm/lapic.c
-@@ -2558,7 +2558,7 @@ static int kvm_lapic_reg_write(struct kvm_lapic *apic, u32 reg, u32 val)
- static int apic_mmio_write(struct kvm_vcpu *vcpu, struct kvm_io_device *this,
- 			    gpa_t address, int len, const void *data)
- {
--	struct kvm_lapic *apic = to_lapic(this);
-+	struct kvm_lapic *apic = this ? to_lapic(this) : vcpu->arch.apic;
- 	unsigned int offset = address - apic->base_address;
- 	u32 val;
- 
-@@ -3583,3 +3583,25 @@ void kvm_lapic_exit(void)
- 	static_key_deferred_flush(&apic_sw_disabled);
- 	WARN_ON(static_branch_unlikely(&apic_sw_disabled.key));
+diff --git a/arch/arm64/kvm/vgic/vgic-irqfd.c b/arch/arm64/kvm/vgic/vgic-irqfd.c
+index 53e5fcc591d7..96981dd29a6e 100644
+--- a/arch/arm64/kvm/vgic/vgic-irqfd.c
++++ b/arch/arm64/kvm/vgic/vgic-irqfd.c
+@@ -153,7 +153,7 @@ int kvm_vgic_setup_default_irq_routing(struct kvm *kvm)
+ 		entries[i].u.irqchip.irqchip = 0;
+ 		entries[i].u.irqchip.pin = i;
+ 	}
+-	ret = kvm_set_irq_routing(kvm, entries, nr, 0);
++	ret = kvm_set_irq_routing(kvm, entries, nr, 0, 0);
+ 	kfree(entries);
+ 	return ret;
  }
-+
-+/* Send IPI by writing ICR with MSR write when X2APIC enabled, with mmio write when XAPIC enabled */
-+int kvm_xapic_x2apic_send_ipi(struct kvm_vcpu *vcpu, u64 data)
-+{
-+	u32 icr_msr_addr = APIC_BASE_MSR + (APIC_ICR >> 4);
-+	struct kvm_lapic *apic = vcpu->arch.apic;
-+	gpa_t gpa = apic->base_address + APIC_ICR;
-+
-+	if (!kvm_lapic_enabled(vcpu))
-+		return 1;
-+
-+	if (vcpu->arch.apic_base & X2APIC_ENABLE) {
-+		if (!kvm_x2apic_msr_write(vcpu, icr_msr_addr, data))
-+			return 0;
-+	} else {
-+		if (!apic_mmio_write(vcpu, NULL, gpa, 4, &data))
-+			return 0;
-+	}
-+
-+	return 1;
-+}
-+EXPORT_SYMBOL_FOR_KVM_INTERNAL(kvm_xapic_x2apic_send_ipi);
-diff --git a/arch/x86/kvm/lapic.h b/arch/x86/kvm/lapic.h
-index 274885af4ebc..afd440c88981 100644
---- a/arch/x86/kvm/lapic.h
-+++ b/arch/x86/kvm/lapic.h
-@@ -156,6 +156,8 @@ int kvm_hv_vapic_msr_read(struct kvm_vcpu *vcpu, u32 msr, u64 *data);
- int kvm_lapic_set_pv_eoi(struct kvm_vcpu *vcpu, u64 data, unsigned long len);
- void kvm_lapic_exit(void);
+diff --git a/arch/loongarch/kvm/intc/pch_pic.c b/arch/loongarch/kvm/intc/pch_pic.c
+index aa0ed59ae8cf..a0d04ffa8a71 100644
+--- a/arch/loongarch/kvm/intc/pch_pic.c
++++ b/arch/loongarch/kvm/intc/pch_pic.c
+@@ -423,7 +423,7 @@ static int kvm_setup_default_irq_routing(struct kvm *kvm)
+ 		entries[i].u.irqchip.irqchip = 0;
+ 		entries[i].u.irqchip.pin = i;
+ 	}
+-	ret = kvm_set_irq_routing(kvm, entries, nr, 0);
++	ret = kvm_set_irq_routing(kvm, entries, nr, 0, 0);
+ 	kfree(entries);
  
-+int kvm_xapic_x2apic_send_ipi(struct kvm_vcpu *vcpu, u64 data);
-+
- u64 kvm_lapic_readable_reg_mask(struct kvm_lapic *apic);
+ 	return ret;
+diff --git a/arch/powerpc/kvm/mpic.c b/arch/powerpc/kvm/mpic.c
+index 6b6eba7fbf75..1e493179ee4f 100644
+--- a/arch/powerpc/kvm/mpic.c
++++ b/arch/powerpc/kvm/mpic.c
+@@ -1646,7 +1646,7 @@ static int mpic_set_default_irq_routing(struct openpic *opp)
+ 	if (!routing)
+ 		return -ENOMEM;
  
- static inline void kvm_lapic_set_irr(int vec, struct kvm_lapic *apic)
-diff --git a/arch/x86/kvm/svm/sev.c b/arch/x86/kvm/svm/sev.c
-index 369fb1e36f58..d04f71836ef7 100644
---- a/arch/x86/kvm/svm/sev.c
-+++ b/arch/x86/kvm/svm/sev.c
-@@ -35,6 +35,7 @@
- #include "svm_ops.h"
- #include "cpuid.h"
- #include "trace.h"
-+#include "lapic.h"
+-	kvm_set_irq_routing(opp->kvm, routing, 0, 0);
++	kvm_set_irq_routing(opp->kvm, routing, 0, 0, 0);
  
- #define GHCB_VERSION_MAX	2ULL
- #define GHCB_VERSION_MIN	1ULL
-@@ -3538,6 +3539,10 @@ static int sev_es_validate_vmgexit(struct vcpu_svm *svm)
- 		if (!is_sev_snp_guest(vcpu))
- 			goto vmgexit_err;
- 		break;
-+	case SVM_VMGEXIT_HV_IPI:
-+		if (!sev_snp_guest(vcpu->kvm))
-+			goto vmgexit_err;
-+		break;
- 	default:
- 		reason = GHCB_ERR_INVALID_EVENT;
- 		goto vmgexit_err;
-@@ -4416,6 +4421,22 @@ static int sev_snp_hv_doorbell_page(struct vcpu_svm *svm)
+ 	kfree(routing);
  	return 0;
+diff --git a/arch/riscv/kvm/vm.c b/arch/riscv/kvm/vm.c
+index 6b3c8a0e74e2..bd9ab3240e4f 100644
+--- a/arch/riscv/kvm/vm.c
++++ b/arch/riscv/kvm/vm.c
+@@ -105,7 +105,7 @@ int kvm_riscv_setup_default_irq_routing(struct kvm *kvm, u32 lines)
+ 		ents[i].u.irqchip.irqchip = 0;
+ 		ents[i].u.irqchip.pin = i;
+ 	}
+-	rc = kvm_set_irq_routing(kvm, ents, lines, 0);
++	rc = kvm_set_irq_routing(kvm, ents, lines, 0, 0);
+ 	kfree(ents);
+ 
+ 	return rc;
+diff --git a/arch/x86/kvm/irq.c b/arch/x86/kvm/irq.c
+index d2ecfd54d57a..90e2d2db2123 100644
+--- a/arch/x86/kvm/irq.c
++++ b/arch/x86/kvm/irq.c
+@@ -576,7 +576,7 @@ static const struct kvm_irq_routing_entry default_routing[] = {
+ int kvm_setup_default_ioapic_and_pic_routing(struct kvm *kvm)
+ {
+ 	return kvm_set_irq_routing(kvm, default_routing,
+-				   ARRAY_SIZE(default_routing), 0);
++				   ARRAY_SIZE(default_routing), 0, 0);
  }
  
-+static int sev_snp_hv_ipi(struct vcpu_svm *svm)
-+{
-+	struct kvm_vcpu *vcpu = &svm->vcpu;
-+	u64 icr_info;
-+
-+	if (!sev_snp_guest(vcpu->kvm))
-+		return -EINVAL;
-+
-+	icr_info = svm->vmcb->control.exit_info_1;
-+
-+	if (kvm_xapic_x2apic_send_ipi(vcpu, icr_info))
-+		return -EINVAL;
-+
-+	return 0;
-+}
-+
- static int sev_handle_vmgexit_msr_protocol(struct vcpu_svm *svm)
+ int kvm_vm_ioctl_get_irqchip(struct kvm *kvm, struct kvm_irqchip *chip)
+diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
+index 05a10836d92d..3b62fb354267 100644
+--- a/include/linux/kvm_host.h
++++ b/include/linux/kvm_host.h
+@@ -2351,7 +2351,8 @@ bool kvm_arch_can_set_irq_routing(struct kvm *kvm);
+ int kvm_set_irq_routing(struct kvm *kvm,
+ 			const struct kvm_irq_routing_entry *entries,
+ 			unsigned nr,
+-			unsigned flags);
++			unsigned flags,
++			unsigned plane_level);
+ int kvm_init_irq_routing(struct kvm *kvm);
+ int kvm_set_routing_entry(struct kvm *kvm,
+ 			  struct kvm_kernel_irq_routing_entry *e,
+diff --git a/virt/kvm/irqchip.c b/virt/kvm/irqchip.c
+index a4fea7d8dde6..e0793ae0c719 100644
+--- a/virt/kvm/irqchip.c
++++ b/virt/kvm/irqchip.c
+@@ -128,7 +128,8 @@ void kvm_free_irq_routing(struct kvm *kvm)
+ static int setup_routing_entry(struct kvm *kvm,
+ 			       struct kvm_irq_routing_table *rt,
+ 			       struct kvm_kernel_irq_routing_entry *e,
+-			       const struct kvm_irq_routing_entry *ue)
++			       const struct kvm_irq_routing_entry *ue,
++			       unsigned plane_level)
  {
- 	struct vmcb_control_area *control = &svm->vmcb->control;
-@@ -4698,6 +4719,13 @@ int sev_handle_vmgexit(struct kvm_vcpu *vcpu)
- 			ghcb_set_sw_exit_info_2(svm->sev_es.ghcb, GHCB_ERR_INVALID_INPUT);
- 		}
+ 	struct kvm_kernel_irq_routing_entry *ei;
+ 	int r;
+@@ -146,7 +147,7 @@ static int setup_routing_entry(struct kvm *kvm,
  
-+		ret = 1;
-+		break;
-+	case SVM_VMGEXIT_HV_IPI:
-+		if (sev_snp_hv_ipi(svm)) {
-+			ghcb_set_sw_exit_info_1(svm->sev_es.ghcb, 2);
-+			ghcb_set_sw_exit_info_2(svm->sev_es.ghcb, GHCB_ERR_INVALID_INPUT);
-+		}
- 		ret = 1;
+ 	e->gsi = gsi;
+ 	e->type = ue->type;
+-	r = kvm_set_routing_entry(kvm, e, ue, 0);
++	r = kvm_set_routing_entry(kvm, e, ue, plane_level);
+ 	if (r)
+ 		return r;
+ 	if (e->type == KVM_IRQ_ROUTING_IRQCHIP)
+@@ -169,7 +170,8 @@ bool __weak kvm_arch_can_set_irq_routing(struct kvm *kvm)
+ int kvm_set_irq_routing(struct kvm *kvm,
+ 			const struct kvm_irq_routing_entry *ue,
+ 			unsigned nr,
+-			unsigned flags)
++			unsigned flags,
++			unsigned plane_level)
+ {
+ 	struct kvm_irq_routing_table *new, *old;
+ 	struct kvm_kernel_irq_routing_entry *e;
+@@ -210,7 +212,7 @@ int kvm_set_irq_routing(struct kvm *kvm,
+ 				goto free_entry;
+ 			break;
+ 		}
+-		r = setup_routing_entry(kvm, new, e, ue);
++		r = setup_routing_entry(kvm, new, e, ue, plane_level);
+ 		if (r)
+ 			goto free_entry;
+ 		++ue;
+diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+index dc59f2f9d405..a6d7601c3412 100644
+--- a/virt/kvm/kvm_main.c
++++ b/virt/kvm/kvm_main.c
+@@ -4918,6 +4918,34 @@ static long __kvm_plane_ioctl(struct kvm_plane *plane, unsigned int ioctl, unsig
  		break;
- 	case SVM_VMGEXIT_UNSUPPORTED_EVENT:
+ 	}
+ #endif
++#ifdef CONFIG_HAVE_KVM_IRQ_ROUTING
++	case KVM_SET_GSI_ROUTING: {
++		void __user *argp = (void __user *)arg;
++		struct kvm_irq_routing routing;
++		struct kvm_irq_routing __user *urouting;
++		struct kvm_irq_routing_entry *entries = NULL;
++
++		if (copy_from_user(&routing, argp, sizeof(routing)))
++			return -EFAULT;
++		if (!kvm_arch_can_set_irq_routing(plane->kvm) ||
++		    routing.nr > KVM_MAX_IRQ_ROUTES ||
++		    routing.flags)
++			return -EINVAL;
++		if (routing.nr) {
++			urouting = argp;
++			entries = vmemdup_array_user(urouting->entries,
++						     routing.nr, sizeof(*entries));
++			if (IS_ERR(entries)) {
++				r = PTR_ERR(entries);
++				return r;
++			}
++		}
++		r = kvm_set_irq_routing(plane->kvm, entries, routing.nr,
++					routing.flags, plane->level);
++		kvfree(entries);
++		break;
++	}
++#endif /* CONFIG_HAVE_KVM_IRQ_ROUTING */
+ 	default:
+ 		r = -ENOTTY;
+ 	}
+@@ -5506,6 +5534,9 @@ static long kvm_vm_ioctl(struct file *filp,
+ 	case KVM_CREATE_VCPU:
+ #ifdef CONFIG_HAVE_KVM_MSI
+ 	case KVM_SIGNAL_MSI:
++#endif
++#ifdef CONFIG_HAVE_KVM_IRQ_ROUTING
++	case KVM_SET_GSI_ROUTING:
+ #endif
+ 		r = __kvm_plane_ioctl(kvm->planes[0], ioctl, arg);
+ 		break;
+@@ -5635,37 +5666,6 @@ static long kvm_vm_ioctl(struct file *filp,
+ 		break;
+ 	}
+ #endif
+-#ifdef CONFIG_HAVE_KVM_IRQ_ROUTING
+-	case KVM_SET_GSI_ROUTING: {
+-		struct kvm_irq_routing routing;
+-		struct kvm_irq_routing __user *urouting;
+-		struct kvm_irq_routing_entry *entries = NULL;
+-
+-		r = -EFAULT;
+-		if (copy_from_user(&routing, argp, sizeof(routing)))
+-			goto out;
+-		r = -EINVAL;
+-		if (!kvm_arch_can_set_irq_routing(kvm))
+-			goto out;
+-		if (routing.nr > KVM_MAX_IRQ_ROUTES)
+-			goto out;
+-		if (routing.flags)
+-			goto out;
+-		if (routing.nr) {
+-			urouting = argp;
+-			entries = vmemdup_array_user(urouting->entries,
+-						     routing.nr, sizeof(*entries));
+-			if (IS_ERR(entries)) {
+-				r = PTR_ERR(entries);
+-				goto out;
+-			}
+-		}
+-		r = kvm_set_irq_routing(kvm, entries, routing.nr,
+-					routing.flags);
+-		kvfree(entries);
+-		break;
+-	}
+-#endif /* CONFIG_HAVE_KVM_IRQ_ROUTING */
+ #ifdef CONFIG_KVM_GENERIC_MEMORY_ATTRIBUTES
+ 	case KVM_SET_MEMORY_ATTRIBUTES: {
+ 		struct kvm_memory_attributes attrs;
 -- 
 2.53.0
 
