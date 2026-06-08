@@ -1,34 +1,34 @@
-Return-Path: <linuxppc-dev+bounces-22245-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22241-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7D4A5CD8C9D
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jun 2026 14:55:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A8FBFCD8C9F
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jun 2026 14:55:47 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gYw4p6H6Jz3dWX;
-	Tue, 09 Jun 2026 00:52:42 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a01:238:42d9:3f00:e505:6202:4f0c:f051"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780930361;
-	cv=none; b=HJrirmxHlwrTdDjIMqUlATjbOw01Wm65eG2/jDGx2zTRHPOsmSZlFPiCIdCBHHOxbsLzegkPHzKz3t7E2uLnXNFcL+KASLTA+Jj3lPrEt7OKPHG4YPPdBS3n6Tg8GjGUojjy1CZ2AAs9PbmQl/bEUjhWsm6vBkVF+cWnzai6e97TilGYfm63GsLSN2oQAPYUrGA88MZ1c60jI71IB/GaRm7Xl0UQwKsDF1jTCWS8OqAGfeC5CrLhArG44cC0+A/48r6TR4NnmRvA5ECkuLaDY8mjJxlRPWZOIg0ig18P/8R+HtvYABSEjA2qTi+ghAszo1dLmFXH0Vl0+YIMjOO5ZA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gYw4l2CKQz3dKy;
+	Tue, 09 Jun 2026 00:52:39 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=85.214.250.239
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780930357;
+	cv=none; b=MSnnB35LCYpc9FSc5WYgIAxGiSb1YO0II8R13jUA3SoELmaKf/mV3/EFRClIgVyO5wyFWiNSCmttZPICiLsltq1p2LeiisJl2I4U1IxycHQF1lRHq6Z3o/W40bJv0NKj1VntGpUpzuMExkcvPVcQIaJerxOIw+YvA8yrWjinY3UUhFZ8ltJ08h/jDoqL803DxCLim9AxVOLqj5aL7Itwb3cPfKe5rzDVohSaI7ktbCtv3mJlkiJDcEsAnasoIn3CZUl4b3O7jF+Xo9YHbx3KF1Spq9w1+GFHY7nELzJfJjaW6WbMIU8g2l/IYDYLpsYDROh04zuotCnAPgcgcDXa2Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1780930361; c=relaxed/relaxed;
-	bh=m0vec3q2r87JZbYocmzbbn8eTYWjMJPhatmO8uxz9Rk=;
+	t=1780930357; c=relaxed/relaxed;
+	bh=MfYNjrc8e3AQ4A6uiFeqmsM1a/1IAn7LvcJsUFQdDsI=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=WcnEtWA6GGPSlGJlBtqz7xdmVTzsCp1OHyEqJuh7hOXvgmiLPwraZ4Dxq2cGZBvPqGUe2SPW4+NLaKereFzR1wwCC/3Azz9N42iSaNArQLb8XsO+QjeHEyzozm22k7Yl/G139etUARmByZAvn7gzPIFbucYeu1HbxLKRlKjPT+/upe3SPQIgOnUGuQ1M6/Wod5n953gsj9x2weOwTaZeJ8OV6Nb4ep7MxRpUce8f0Z8i0OPqNkvoxrqmoyUkX0xM8eHQ+i42eyArBZxA1MPbobIXMPaLROUQT0RSxWN31wDwmIDjOogQuVrNay6w7wx4vaKDLqR6MU6DjIcfCkuiBQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=8bytes.org; spf=pass (client-ip=2a01:238:42d9:3f00:e505:6202:4f0c:f051; helo=mail.8bytes.org; envelope-from=joro@8bytes.org; receiver=lists.ozlabs.org) smtp.mailfrom=8bytes.org
+	 MIME-Version:Content-Type; b=cbx3mu40yTBexrkX87+9gkx5da94SD5pGD+++d47M7LV7lStutRyOR9ymHjQ8lpPknzp0pum994SqQbHBeufmtVF+dmd50WAsyB5DqfzBhbixya3FdEiEkNCwQNBwNmNYoCASfXqbezw6GaGmTOTtSbk5yxZgfXE2+xV2//d/8ueCq5np+x7w6TkPZZf1G7QkXxGUHxXM15UcMwHS/s8SBDv+7BGlBDp1MaZVyRIkuvNCBTE1bk2kg/Dt1yo7FnMPKFBxNOCokkhCobWcv7fCLRJ0RmMK7MUNvVlTuZZcxbqds+Kr3ovUedMZH11aYvfTQQePy6S44mYCa3FQmQzVQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=8bytes.org; spf=pass (client-ip=85.214.250.239; helo=mail.8bytes.org; envelope-from=joro@8bytes.org; receiver=lists.ozlabs.org) smtp.mailfrom=8bytes.org
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=8bytes.org
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=8bytes.org (client-ip=2a01:238:42d9:3f00:e505:6202:4f0c:f051; helo=mail.8bytes.org; envelope-from=joro@8bytes.org; receiver=lists.ozlabs.org)
-Received: from mail.8bytes.org (mail.8bytes.org [IPv6:2a01:238:42d9:3f00:e505:6202:4f0c:f051])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gYw4V292Sz3c9g
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Jun 2026 00:52:25 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=8bytes.org (client-ip=85.214.250.239; helo=mail.8bytes.org; envelope-from=joro@8bytes.org; receiver=lists.ozlabs.org)
+Received: from mail.8bytes.org (mail.8bytes.org [85.214.250.239])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gYw4S5nz0z3c7H
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Jun 2026 00:52:24 +1000 (AEST)
 Received: from io.home.8bytes.org (p4ffe1d30.dip0.t-ipconnect.de [79.254.29.48])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.8bytes.org (Postfix) with ESMTPSA id 5A8A72028B6;
-	Mon,  8 Jun 2026 16:43:09 +0200 (CEST)
+	by mail.8bytes.org (Postfix) with ESMTPSA id 579A02028AE;
+	Mon,  8 Jun 2026 16:43:07 +0200 (CEST)
 From: =?UTF-8?q?J=C3=B6rg=20R=C3=B6del?= <joro@8bytes.org>
 To: Paolo Bonzini <pbonzini@redhat.com>,
 	Sean Christopherson <seanjc@google.com>
@@ -48,10 +48,11 @@ Cc: Tom Lendacky <thomas.lendacky@amd.com>,
 	kvm-riscv@lists.infradead.org,
 	x86@kernel.org,
 	coconut-svsm@lists.linux.dev,
-	joerg.roedel@amd.com
-Subject: [PATCH 20/60] kvm: Move kvm_vcpu mode and requests field to struct kvm_vcpu_common
-Date: Mon,  8 Jun 2026 16:42:12 +0200
-Message-ID: <20260608144252.351443-21-joro@8bytes.org>
+	joerg.roedel@amd.com,
+	=?UTF-8?q?Carlos=20L=C3=B3pez?= <clopez@suse.de>
+Subject: [PATCH 11/60] kvm: Introduce struct kvm_vcpu_common
+Date: Mon,  8 Jun 2026 16:42:03 +0200
+Message-ID: <20260608144252.351443-12-joro@8bytes.org>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20260608144252.351443-1-joro@8bytes.org>
 References: <20260608144252.351443-1-joro@8bytes.org>
@@ -68,149 +69,138 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
 From: Joerg Roedel <joerg.roedel@amd.com>
 
-These fields must be shared across all planes of a given VCPU.
+When creating one VCPU object per plane there is still a lot of VCPU
+state which needes to be shared across all planes. Create struct
+kvm_vcpu_common as a container for this shared state.
 
+Co-developed-by: Carlos López <clopez@suse.de>
 Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
 ---
- arch/powerpc/kvm/trace.h |  2 +-
- arch/x86/kvm/trace.h     |  2 +-
- include/linux/kvm_host.h | 27 ++++++++++++++-------------
- 3 files changed, 16 insertions(+), 15 deletions(-)
+ include/linux/kvm_host.h | 10 ++++++++++
+ virt/kvm/kvm_main.c      | 36 ++++++++++++++++++++++++++++++++++--
+ 2 files changed, 44 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/kvm/trace.h b/arch/powerpc/kvm/trace.h
-index ea1d7c808319..35c000d918bb 100644
---- a/arch/powerpc/kvm/trace.h
-+++ b/arch/powerpc/kvm/trace.h
-@@ -108,7 +108,7 @@ TRACE_EVENT(kvm_check_requests,
- 
- 	TP_fast_assign(
- 		__entry->cpu_nr		= vcpu->vcpu_id;
--		__entry->requests	= vcpu->requests;
-+		__entry->requests	= vcpu->common->requests;
- 	),
- 
- 	TP_printk("vcpu=%x requests=%x",
-diff --git a/arch/x86/kvm/trace.h b/arch/x86/kvm/trace.h
-index 0db25bba17f6..0d2dd25bed12 100644
---- a/arch/x86/kvm/trace.h
-+++ b/arch/x86/kvm/trace.h
-@@ -409,7 +409,7 @@ TRACE_EVENT(name,							     \
- 		__entry->guest_rip	= tracing_kvm_rip_read(vcpu);		     \
- 		__entry->isa            = isa;				     \
- 		__entry->vcpu_id        = vcpu->vcpu_id;		     \
--		__entry->requests       = READ_ONCE(vcpu->requests);	     \
-+		__entry->requests       = READ_ONCE(vcpu->common->requests); \
- 		kvm_x86_call(get_exit_info)(vcpu,			     \
- 					    &__entry->exit_reason,	     \
- 					    &__entry->info1,		     \
 diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
-index 45286b3b35c9..7704820986da 100644
+index 5a72f73a2f31..c4c4922df965 100644
 --- a/include/linux/kvm_host.h
 +++ b/include/linux/kvm_host.h
-@@ -180,7 +180,7 @@ static inline bool kvm_is_error_gpa(gpa_t gpa)
- #define KVM_REQ_OUTSIDE_GUEST_MODE	(KVM_REQUEST_NO_ACTION | KVM_REQUEST_WAIT | KVM_REQUEST_NO_WAKEUP)
+@@ -322,6 +322,13 @@ struct kvm_mmio_fragment {
+ 	unsigned int len;
+ };
  
- #define KVM_ARCH_REQ_FLAGS(nr, flags) ({ \
--	BUILD_BUG_ON((unsigned)(nr) >= (sizeof_field(struct kvm_vcpu, requests) * 8) - KVM_REQUEST_ARCH_BASE); \
-+	BUILD_BUG_ON((unsigned)(nr) >= (sizeof_field(struct kvm_vcpu_common, requests) * 8) - KVM_REQUEST_ARCH_BASE); \
- 	(unsigned)(((nr) + KVM_REQUEST_ARCH_BASE) | (flags)); \
- })
- #define KVM_ARCH_REQ(nr)           KVM_ARCH_REQ_FLAGS(nr, 0)
-@@ -341,6 +341,9 @@ struct kvm_vcpu_common {
- 	struct rcuwait wait;
++struct kvm_vcpu_common {
++	struct kvm *kvm;
++
++	/* Currently active VCPU */
++	struct kvm_vcpu *current_vcpu;
++};
++
+ struct kvm_vcpu {
+ 	struct kvm *kvm;
+ 	struct kvm_plane *plane;
+@@ -400,6 +407,9 @@ struct kvm_vcpu {
+ 	 */
+ 	struct kvm_memory_slot *last_used_slot;
+ 	u64 last_used_slot_gen;
++
++	struct kvm_vcpu_common *common;
++	unsigned plane_level;
+ };
+ 
+ /*
+diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+index 668645dd3945..fb840d029c56 100644
+--- a/virt/kvm/kvm_main.c
++++ b/virt/kvm/kvm_main.c
+@@ -438,6 +438,20 @@ void *kvm_mmu_memory_cache_alloc(struct kvm_mmu_memory_cache *mc)
+ }
  #endif
  
-+	int mode;
-+	u64 requests;
++static int kvm_vcpu_init_common(struct kvm_vcpu *vcpu, struct kvm *kvm)
++{
++	struct kvm_vcpu_common *common = kzalloc(sizeof(*common), GFP_KERNEL_ACCOUNT);
 +
- 	/* Scheduling state */
- #ifdef CONFIG_PREEMPT_NOTIFIERS
- 	struct preempt_notifier preempt_notifier;
-@@ -359,8 +362,6 @@ struct kvm_vcpu {
- 	int vcpu_id; /* id given by userspace at creation */
- 	int vcpu_idx; /* index into kvm->planes[]->vcpu_array */
- 
--	int mode;
--	u64 requests;
- 	unsigned long guest_debug;
- 
- 	struct kvm_run *run;
-@@ -442,27 +443,27 @@ static inline bool kvm_vcpu_scheduled_out(struct kvm_vcpu *vcpu)
- 
- static inline int kvm_vcpu_mode(struct kvm_vcpu *vcpu)
++	if (common == NULL)
++		return -ENOMEM;
++
++	common->kvm = kvm;
++	common->current_vcpu = vcpu;
++	vcpu->common = common;
++
++	return 0;
++}
++
+ static void kvm_vcpu_init(struct kvm_vcpu *vcpu, struct kvm *kvm, unsigned id)
  {
--	return vcpu->mode;
-+	return vcpu->common->mode;
+ 	mutex_init(&vcpu->mutex);
+@@ -459,14 +473,26 @@ static void kvm_vcpu_init(struct kvm_vcpu *vcpu, struct kvm *kvm, unsigned id)
+ 	preempt_notifier_init(&vcpu->preempt_notifier, &kvm_preempt_ops);
+ 	vcpu->last_used_slot = NULL;
+ 
++	vcpu->plane_level = 0;
++
+ 	/* Fill the stats id string for the vcpu */
+ 	snprintf(vcpu->stats_id, sizeof(vcpu->stats_id), "kvm-%d/vcpu-%d",
+ 		 task_pid_nr(current), id);
  }
  
- static inline int kvm_vcpu_mode_acquire(struct kvm_vcpu *vcpu)
++static void kvm_vcpu_common_destroy(struct kvm_vcpu *vcpu)
++{
++	if (vcpu->plane_level == 0)
++		kfree(vcpu->common);
++
++	vcpu->common = NULL;
++}
++
+ static void kvm_vcpu_destroy(struct kvm_vcpu *vcpu)
  {
--	return smp_load_acquire(&vcpu->mode);
-+	return smp_load_acquire(&vcpu->common->mode);
- }
+ 	kvm_arch_vcpu_destroy(vcpu);
++
++	kvm_vcpu_common_destroy(vcpu);
+ 	kvm_dirty_ring_free(&vcpu->dirty_ring);
  
- static inline void kvm_vcpu_set_mode(struct kvm_vcpu *vcpu, int mode)
- {
--	vcpu->mode = mode;
-+	vcpu->common->mode = mode;
- }
+ 	/*
+@@ -1360,8 +1386,8 @@ static void kvm_destroy_vm(struct kvm *kvm)
+ #ifdef CONFIG_KVM_GENERIC_MEMORY_ATTRIBUTES
+ 	xa_destroy(&kvm->mem_attr_array);
+ #endif
+-	kvm_arch_free_vm(kvm);
+ 	kvm_destroy_planes(kvm);
++	kvm_arch_free_vm(kvm);
+ 	preempt_notifier_dec();
+ 	kvm_disable_virtualization();
+ 	mmdrop(mm);
+@@ -4246,11 +4272,15 @@ static int kvm_vm_ioctl_create_vcpu(struct kvm *kvm, unsigned long id)
+ 		goto vcpu_decrement;
+ 	}
  
- static inline void kvm_vcpu_set_mode_mb(struct kvm_vcpu *vcpu, int mode)
- {
--	smp_store_mb(vcpu->mode, mode);
-+	smp_store_mb(vcpu->common->mode, mode);
- }
++	r = kvm_vcpu_init_common(vcpu, kvm);
++	if (r)
++		goto vcpu_free;
++
+ 	BUILD_BUG_ON(sizeof(struct kvm_run) > PAGE_SIZE);
+ 	page = alloc_page(GFP_KERNEL_ACCOUNT | __GFP_ZERO);
+ 	if (!page) {
+ 		r = -ENOMEM;
+-		goto vcpu_free;
++		goto vcpu_free_common;
+ 	}
+ 	vcpu->run = page_address(page);
  
- static inline void kvm_vcpu_set_mode_release(struct kvm_vcpu *vcpu, int mode)
- {
--	smp_store_release(&vcpu->mode, mode);
-+	smp_store_release(&vcpu->common->mode, mode);
- }
- 
- /*
-@@ -630,7 +631,7 @@ static inline int kvm_vcpu_exiting_guest_mode(struct kvm_vcpu *vcpu)
- 	 * memory barrier following the write of vcpu->mode in VCPU RUN.
- 	 */
- 	smp_mb__before_atomic();
--	return cmpxchg(&vcpu->mode, IN_GUEST_MODE, EXITING_GUEST_MODE);
-+	return cmpxchg(&vcpu->common->mode, IN_GUEST_MODE, EXITING_GUEST_MODE);
- }
- 
- /*
-@@ -2355,7 +2356,7 @@ static inline void __kvm_make_request(int req, struct kvm_vcpu *vcpu)
- 	 * caller.  Paired with the smp_mb__after_atomic in kvm_check_request.
- 	 */
- 	smp_wmb();
--	set_bit(req & KVM_REQUEST_MASK, (void *)&vcpu->requests);
-+	set_bit(req & KVM_REQUEST_MASK, (void *)&vcpu->common->requests);
- }
- 
- static __always_inline void kvm_make_request(int req, struct kvm_vcpu *vcpu)
-@@ -2381,17 +2382,17 @@ static inline void kvm_make_request_and_kick(int req, struct kvm_vcpu *vcpu)
- 
- static inline bool kvm_request_pending(struct kvm_vcpu *vcpu)
- {
--	return READ_ONCE(vcpu->requests);
-+	return READ_ONCE(vcpu->common->requests);
- }
- 
- static inline bool kvm_test_request(int req, struct kvm_vcpu *vcpu)
- {
--	return test_bit(req & KVM_REQUEST_MASK, (void *)&vcpu->requests);
-+	return test_bit(req & KVM_REQUEST_MASK, (void *)&vcpu->common->requests);
- }
- 
- static inline void kvm_clear_request(int req, struct kvm_vcpu *vcpu)
- {
--	clear_bit(req & KVM_REQUEST_MASK, (void *)&vcpu->requests);
-+	clear_bit(req & KVM_REQUEST_MASK, (void *)&vcpu->common->requests);
- }
- 
- static inline bool kvm_check_request(int req, struct kvm_vcpu *vcpu)
+@@ -4318,6 +4348,8 @@ static int kvm_vm_ioctl_create_vcpu(struct kvm *kvm, unsigned long id)
+ 	kvm_arch_vcpu_destroy(vcpu);
+ vcpu_free_run_page:
+ 	free_page((unsigned long)vcpu->run);
++vcpu_free_common:
++	kvm_vcpu_common_destroy(vcpu);
+ vcpu_free:
+ 	kmem_cache_free(kvm_vcpu_cache, vcpu);
+ vcpu_decrement:
 -- 
 2.53.0
 
