@@ -1,80 +1,60 @@
-Return-Path: <linuxppc-dev+bounces-22208-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22209-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C0E6ECD8C92
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jun 2026 14:28:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 24602CD8C92
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jun 2026 14:52:12 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gYvXl4kSXz3bsS;
-	Tue, 09 Jun 2026 00:28:23 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::332"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780928903;
-	cv=none; b=bQZmpcwg6FTSJ7M61A414veCOZa6jsraY5XwGi+DtRGhv9nmeEOE9c+yo/Btj7W0BQde0yPxbSAnAYnESeQuUuadaXyVH7CbqlUQim6hjDi+RcfJd4dzKd6V4RxtD/sIU/nPe1KYOplz61NkdEcDSrVTz0ksjtkXTfXe/RHeCHcrSexPcup+2i6ZtPJZkKqeNZ2jWmIoRvmCOYWkn4JxfaK/8XSVzBmmohRYchQzBc0PU7Sc3Hi3vK1QnndoMldxLBKrya63kMc0wW0LMQCZIB+mZ3wou0iNJ1MM1ni/LqCIKnytPM6Q+Nx/xpXK83XKPb4WZtaVIjnp1IIdstcCuA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gYw4B06w6z2yv2;
+	Tue, 09 Jun 2026 00:52:10 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a01:238:42d9:3f00:e505:6202:4f0c:f051"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780930329;
+	cv=none; b=bxCt0lxn0fz7Nz1faW4deimZZBZ1yMppqPbC0NqOq3enXlXFcFsBQc8ppP+G2P0O96CgkS2pFdAg71NM94gLiziHyKbKe1qewhuzJMIsCcu5k89u3KrXW0JntkN5zmMKEZG9oPP7FIeAC9SH/d3CRqcU/YCJRK3+lejjqhYqJBtyiVd4Lixs2LFBUa/N8rpWDg3tiLPmtgo+WB96m8DIwkd2X3WH5z/bO4MGVzTT4Fo9co3xpEID5du9P6I/LlzH/1H7n6q90jfl3UUfTXNaBm47e1LkcjYiKL+e4obo081tp/53zpsWLmQPKz3fTYeFAfBIbEsq6d5w04GICYb71g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1780928903; c=relaxed/relaxed;
-	bh=nCy5icZAFPKbCxn3K3WrZKHkVhOrNfCywaz2Tw/0Yng=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=mg/RXN6d3rwWiQ4XsFjEeNTdMbo2w6S+LcYgDokAN8LLKi7PnBV3SlkeHuDyQ6+1wtQzNCl5thwlUmvL7XTRKG0lhMVSJ32O/rBinmlB7Ed/2G2eLUSkqxCMBngJhPjgsrgJHENASbIu498gVLG6OvwV+HiGdCOHdcsxAa+IhJKEai9dGgwNzjWsu2kIdy9WlxIBm8Z+bf4b1xx+wxp++zKKuK/zWMHOaxfex7S3jLx7/F+g+BGU9+2uEQRsioo6KM2KCjNyb1HvG1+XPniJLGvjKCH+bkBrML7sAKboRo7uv0x96Gz0eCe/WX9uEuD4w/ciFpA6IZ+oEL9AUFBAow==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=Xy7PSRrz; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::332; helo=mail-wm1-x332.google.com; envelope-from=iacobcatalin@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=Xy7PSRrz;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::332; helo=mail-wm1-x332.google.com; envelope-from=iacobcatalin@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-wm1-x332.google.com (mail-wm1-x332.google.com [IPv6:2a00:1450:4864:20::332])
+	t=1780930329; c=relaxed/relaxed;
+	bh=TsY8PFH6mjuuhNLAgryFJthFUEMRXvNuzSHKevD19kA=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=CYniPx1qV6CfMbYydZ/COgzrrYQpRAPTP4W4VDm5AaWJgl2SaKpPAxGlvdBdPyXeuMitMG6ZEiN4tlHedpG/h9/aZqdf9l0Eo3O5lhYcN/QCx/D9GFHzFHv+oTJvYEpc65h3A0Yt8j0QcpvhhKZiiyYPRvb31z1hLyv01WhVU/JO8TDu0GU2V0Db/NIquhp9WrzTwCqiJBJHkrvtuWRp2VnIBtr7Bxgm4sY1Tpcz/VNvMGVNGqdxE3JfAcTiHoA0Wz7sSybX3IFtDRbYqIBhC12jAdqsfjkt/+rP9aoMqQ2rpks9gvGgDhY4fFKXFiXTc5phOAI1LPJ4nbPPmVzz8A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=8bytes.org; spf=pass (client-ip=2a01:238:42d9:3f00:e505:6202:4f0c:f051; helo=mail.8bytes.org; envelope-from=joro@8bytes.org; receiver=lists.ozlabs.org) smtp.mailfrom=8bytes.org
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=8bytes.org
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=8bytes.org (client-ip=2a01:238:42d9:3f00:e505:6202:4f0c:f051; helo=mail.8bytes.org; envelope-from=joro@8bytes.org; receiver=lists.ozlabs.org)
+Received: from mail.8bytes.org (mail.8bytes.org [IPv6:2a01:238:42d9:3f00:e505:6202:4f0c:f051])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gYw483V1hz2yS4
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Jun 2026 00:52:07 +1000 (AEST)
+Received: from io.home.8bytes.org (p4ffe1d30.dip0.t-ipconnect.de [79.254.29.48])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gYvXk5hxjz3btk
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Jun 2026 00:28:22 +1000 (AEST)
-Received: by mail-wm1-x332.google.com with SMTP id 5b1f17b1804b1-490b9318997so32538835e9.2
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 08 Jun 2026 07:28:22 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1780928900; x=1781533700; darn=lists.ozlabs.org;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=nCy5icZAFPKbCxn3K3WrZKHkVhOrNfCywaz2Tw/0Yng=;
-        b=Xy7PSRrzj6NiNwAHO1NGlV44+jJVFq9m4PEeLyF6+Oamu9VYzDhatiOdovjxLEU04c
-         3SNMLHC+kDmnV/B3vcUIM5KgjH6Qo8HD9AxCD7Xeyftam3kv3WdB2TYaYvpZ3u05LZ0S
-         u/qiYSTuofosyRNFSxYImn217aSdFjFcv7O64JHAhC5yo7GZAjY07fsQ8lfWfpkyaUGn
-         I29QSDHcCPZvxrdLFFvCKSpW8Wem5SMb3KBX26dw5C26VU+Sd+Icls3GN03Y3g4hO80p
-         q58lxfBsUKjTHHilO86yLicBk8v+vXygsIZ5KSO2mDkSOaVAaw+NrweToB5kxVgedzSs
-         IDMw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1780928900; x=1781533700;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:x-gm-gg:x-gm-message-state:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=nCy5icZAFPKbCxn3K3WrZKHkVhOrNfCywaz2Tw/0Yng=;
-        b=DrU5Qh1bD6zC3eqUMdeubv/Il2W8ZZfrfq0xS5UYs7U1UopvDCutsRD2JeWyliGqfc
-         otHBcj4S6u1mgsizPeVtUl6GZyxR9vFQdAyH+uqwBFPNGY0BPBeB4qVL9piCwBX9d+Ms
-         EhANFQiGwx7djO2JwYYApz2QH5xN2pIgTWlUApZ0NpLuSkU+aE66Sm+GvpMX3/oQeUQ6
-         0zTpDmzm9OkmabOTPUP/RL8yi9sxzZSCBCzf4+yDV2vrzRPpKNBPCjPa3seV7Nfy/QgE
-         iig4yoj365h5rhkQj8IHQdc1GKoAq2n3dHmcTo8TDpnGnUOAOXeoohFkpY8MksI6ls3C
-         5FuQ==
-X-Forwarded-Encrypted: i=1; AFNElJ8QKeFE1KY+twG67/5dI2Yj/jUVrYUKANjbzGUJHuEOJcYeB1Rstrt05SZNcMIxayKtZt24abzFJQR9IyQ=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YylRiehK8RyHW0sWNDiz07UVIpqfgWgjRr6EgDOUfRM7orANFkG
-	x3iLRYe644oqf9eaQaVCQAe2W7IEU9D/ryT4VV/qwptat1+W17jq+OOc
-X-Gm-Gg: Acq92OHhs1JvaAXMI0CwTEphi+jjQ57ji1IraQlNYVDG54GC+PUAb/hdfJXABVVW7eX
-	5qvs7GyOhYKuOxt5GFRge5Pke17QwIB9OweLdmiUHaofhYcVUrpT/DUebela0+crxHWU1SDMlj0
-	mi7O0/mHmru+Hxp05Bs5wvIJ9QnXJlU0CXO35Kl/FafgDAQnb82NoODs3NXojtBlZWgNCv+2HSs
-	A4Fb9PbNdJYQR+ilyJal/8qxJXpjtTQsSUKxGV72z5UjlcS4i+8J1bX6BEJb/lXCHGvJ/49ELS5
-	2KAVTmLi+gF2o3eraiN9gZLr2Hxksl2nRygz6koey2+xf9A/J3bWp1uK0hG64teWCyd3oFPT4Hz
-	86t6GPp5IzXawQUsSUutV9divrh06su1yY4VXYOMT7cua9GF5z8rKvuMWM6ODbJoXuWO45MJyjL
-	EYKUBLKHs08FU7F0wkNXa/hLsIvCK10rO/
-X-Received: by 2002:a05:600c:1c13:b0:490:a646:9d75 with SMTP id 5b1f17b1804b1-490c25acd23mr285116345e9.9.1780928899673;
-        Mon, 08 Jun 2026 07:28:19 -0700 (PDT)
-Received: from localhost ([94.53.77.213])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-4602cda3651sm41300869f8f.32.2026.06.08.07.28.19
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 08 Jun 2026 07:28:19 -0700 (PDT)
-From: Catalin Iacob <iacobcatalin@gmail.com>
-Date: Mon, 08 Jun 2026 17:29:20 +0300
-Subject: [PATCH v4 5/5] sparc: Remove remaining defconfig references to the
- pktcdvd driver
+	by mail.8bytes.org (Postfix) with ESMTPSA id 725222028A5;
+	Mon,  8 Jun 2026 16:43:05 +0200 (CEST)
+From: =?UTF-8?q?J=C3=B6rg=20R=C3=B6del?= <joro@8bytes.org>
+To: Paolo Bonzini <pbonzini@redhat.com>,
+	Sean Christopherson <seanjc@google.com>
+Cc: Tom Lendacky <thomas.lendacky@amd.com>,
+	ashish.kalra@amd.com,
+	michael.roth@amd.com,
+	nsaenz@amazon.com,
+	anelkz@amazon.de,
+	James.Bottomley@HansenPartnership.com,
+	Melody Wang <huibo.wang@amd.com>,
+	kvm@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	kvmarm@lists.linux.dev,
+	loongarch@lists.linux.dev,
+	linux-mips@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org,
+	kvm-riscv@lists.infradead.org,
+	x86@kernel.org,
+	coconut-svsm@lists.linux.dev,
+	joerg.roedel@amd.com
+Subject: [PATCH 02/60] KVM: SVM: Add support for the SEV-SNP #HV doorbell page NAE event
+Date: Mon,  8 Jun 2026 16:41:54 +0200
+Message-ID: <20260608144252.351443-3-joro@8bytes.org>
+X-Mailer: git-send-email 2.53.0
+In-Reply-To: <20260608144252.351443-1-joro@8bytes.org>
+References: <20260608144252.351443-1-joro@8bytes.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -88,59 +68,167 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260608-remove-pktcdvd-references-v4-5-72f88b04cc87@gmail.com>
-References: <20260608-remove-pktcdvd-references-v4-0-72f88b04cc87@gmail.com>
-In-Reply-To: <20260608-remove-pktcdvd-references-v4-0-72f88b04cc87@gmail.com>
-To: Thomas Bogendoerfer <tsbogend@alpha.franken.de>, 
- Madhavan Srinivasan <maddy@linux.ibm.com>, 
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
- "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, 
- Rich Felker <dalias@libc.org>, 
- John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, 
- "David S. Miller" <davem@davemloft.net>, 
- Andreas Larsson <andreas@gaisler.com>, 
- "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>, 
- "Martin K. Petersen" <martin.petersen@oracle.com>, 
- Jens Axboe <axboe@kernel.dk>
-Cc: linux-mips@vger.kernel.org, linux-kernel@vger.kernel.org, 
- linuxppc-dev@lists.ozlabs.org, linux-sh@vger.kernel.org, 
- sparclinux@vger.kernel.org, linux-scsi@vger.kernel.org, 
- Catalin Iacob <iacobcatalin@gmail.com>
-X-Mailer: b4 0.16-dev
-X-Developer-Signature: v=1; a=openpgp-sha256; l=746; i=iacobcatalin@gmail.com;
- h=from:subject:message-id; bh=T2wQkK65vboZ4IeGnr4NbeD+9D8laMYxlcwY9lW95Qo=;
- b=owGbwMvMwCX261qtXAKXKjvjabUkhiy1iwe+fN176W16YWiVeI9314lb07p6Lzj+3W/788muq
- H+7k59N6ShlYRDjYpAVU2R5ce5624Y9ZwLuJdm1wMxhZQIZwsDFKQAT2fWHkWHapXnibIku550W
- mbk6q0jxNRhGT0j+lmLZuitp3hHHL9sYGWbP0NXee8F19p7y7cxsz/zmV57RcN3f5PimMlXv5Um
- OFi4A
-X-Developer-Key: i=iacobcatalin@gmail.com; a=openpgp;
- fpr=F609BFABD84EB5C9DDDC37EDE89C6A3571CD0E33
+Content-Transfer-Encoding: 8bit
 
-Commit 1cea5180f2f8 ("block: remove pktcdvd driver") left behind some
-CONFIG_CONFIG_CDROM_PKTCDVD* references in defconfigs. Remove them.
+From: Melody Wang <huibo.wang@amd.com>
 
-Signed-off-by: Catalin Iacob <iacobcatalin@gmail.com>
+To support Restricted Injection, the SEV-SNP guest must register a doorbell
+page for use with #HV. This is done using the #HV doorbell page NAE event.
+
+This event consists of four actions: GET_PREFERRED, SET, QUERY, CLEAR.
+Implement it per the GHCB specification.
+
+Co-developed-by: Thomas Lendacky <thomas.lendacky@amd.com>
+Signed-off-by: Thomas Lendacky <thomas.lendacky@amd.com>
+Signed-off-by: Melody Wang <huibo.wang@amd.com>
+Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
 ---
- arch/sparc/configs/sparc64_defconfig | 2 --
- 1 file changed, 2 deletions(-)
+ arch/x86/include/uapi/asm/svm.h |  5 +++
+ arch/x86/kvm/svm/sev.c          | 71 +++++++++++++++++++++++++++++++++
+ arch/x86/kvm/svm/svm.c          |  3 ++
+ arch/x86/kvm/svm/svm.h          |  2 +
+ 4 files changed, 81 insertions(+)
 
-diff --git a/arch/sparc/configs/sparc64_defconfig b/arch/sparc/configs/sparc64_defconfig
-index 632081a262ba..4abea39281cd 100644
---- a/arch/sparc/configs/sparc64_defconfig
-+++ b/arch/sparc/configs/sparc64_defconfig
-@@ -60,8 +60,6 @@ CONFIG_CONNECTOR=m
- CONFIG_BLK_DEV_LOOP=m
- CONFIG_BLK_DEV_CRYPTOLOOP=m
- CONFIG_BLK_DEV_NBD=m
--CONFIG_CDROM_PKTCDVD=m
--CONFIG_CDROM_PKTCDVD_WCACHE=y
- CONFIG_ATA_OVER_ETH=m
- CONFIG_SUNVDC=m
- CONFIG_ATA=y
-
+diff --git a/arch/x86/include/uapi/asm/svm.h b/arch/x86/include/uapi/asm/svm.h
+index 010a45c9f614..d84a13ac4627 100644
+--- a/arch/x86/include/uapi/asm/svm.h
++++ b/arch/x86/include/uapi/asm/svm.h
+@@ -117,6 +117,11 @@
+ #define SVM_VMGEXIT_AP_CREATE_ON_INIT		0
+ #define SVM_VMGEXIT_AP_CREATE			1
+ #define SVM_VMGEXIT_AP_DESTROY			2
++#define SVM_VMGEXIT_HVDB_PAGE			0x80000014ull
++#define SVM_VMGEXIT_HVDB_GET_PREFERRED		0
++#define SVM_VMGEXIT_HVDB_SET			1
++#define SVM_VMGEXIT_HVDB_QUERY			2
++#define SVM_VMGEXIT_HVDB_CLEAR			3
+ #define SVM_VMGEXIT_SNP_RUN_VMPL		0x80000018ull
+ #define SVM_VMGEXIT_SAVIC			0x8000001aull
+ #define SVM_VMGEXIT_SAVIC_REGISTER_GPA		0
+diff --git a/arch/x86/kvm/svm/sev.c b/arch/x86/kvm/svm/sev.c
+index 6c6a6d663e29..b9ad1169cb2c 100644
+--- a/arch/x86/kvm/svm/sev.c
++++ b/arch/x86/kvm/svm/sev.c
+@@ -3522,6 +3522,10 @@ static int sev_es_validate_vmgexit(struct vcpu_svm *svm)
+ 		    control->exit_info_1 == control->exit_info_2)
+ 			goto vmgexit_err;
+ 		break;
++	case SVM_VMGEXIT_HVDB_PAGE:
++		if (!is_sev_snp_guest(vcpu))
++			goto vmgexit_err;
++		break;
+ 	default:
+ 		reason = GHCB_ERR_INVALID_EVENT;
+ 		goto vmgexit_err;
+@@ -4341,6 +4345,65 @@ static int snp_handle_ext_guest_req(struct vcpu_svm *svm, gpa_t req_gpa, gpa_t r
+ 	return 1; /* resume guest */
+ }
+ 
++static int sev_snp_hv_doorbell_page(struct vcpu_svm *svm)
++{
++	struct kvm_vcpu *vcpu = &svm->vcpu;
++	struct kvm_host_map hvdb_map;
++	gpa_t hvdb_gpa;
++	u64 request;
++
++	if (!is_sev_snp_guest(vcpu))
++		return -EINVAL;
++
++	request = svm->vmcb->control.exit_info_1;
++	hvdb_gpa = svm->vmcb->control.exit_info_2;
++
++	switch (request) {
++	case SVM_VMGEXIT_HVDB_GET_PREFERRED:
++		ghcb_set_sw_exit_info_2(svm->sev_es.ghcb, ~0ULL);
++		break;
++	case SVM_VMGEXIT_HVDB_SET:
++		svm->sev_es.hvdb_gpa = INVALID_PAGE;
++
++		if (!PAGE_ALIGNED(hvdb_gpa)) {
++			vcpu_unimpl(vcpu, "vmgexit: unaligned #HV doorbell page address [%#llx] from guest\n",
++				    hvdb_gpa);
++			return -EINVAL;
++		}
++
++		if (!page_address_valid(vcpu, hvdb_gpa)) {
++			vcpu_unimpl(vcpu, "vmgexit: invalid #HV doorbell page address [%#llx] from guest\n",
++				    hvdb_gpa);
++			return -EINVAL;
++		}
++
++		/* Map and unmap the GPA just to be sure the GPA is valid */
++		if (kvm_vcpu_map(vcpu, gpa_to_gfn(hvdb_gpa), &hvdb_map)) {
++			vcpu_unimpl(vcpu, "vmgexit: error mapping #HV doorbell page [%#llx] from guest\n",
++				    hvdb_gpa);
++			return -EINVAL;
++		}
++		kvm_vcpu_unmap(vcpu, &hvdb_map);
++
++		svm->sev_es.hvdb_gpa = hvdb_gpa;
++		fallthrough;
++	case SVM_VMGEXIT_HVDB_QUERY:
++		ghcb_set_sw_exit_info_2(svm->sev_es.ghcb, svm->sev_es.hvdb_gpa);
++		break;
++	case SVM_VMGEXIT_HVDB_CLEAR:
++		svm->sev_es.hvdb_gpa = INVALID_PAGE;
++		break;
++	default:
++		svm->sev_es.hvdb_gpa = INVALID_PAGE;
++
++		vcpu_unimpl(vcpu, "vmgexit: invalid #HV doorbell page request [%#llx] from guest\n",
++			    request);
++		return -EINVAL;
++	}
++
++	return 0;
++}
++
+ static int sev_handle_vmgexit_msr_protocol(struct vcpu_svm *svm)
+ {
+ 	struct vmcb_control_area *control = &svm->vmcb->control;
+@@ -4617,6 +4680,14 @@ int sev_handle_vmgexit(struct kvm_vcpu *vcpu)
+ 	case SVM_VMGEXIT_EXT_GUEST_REQUEST:
+ 		ret = snp_handle_ext_guest_req(svm, control->exit_info_1, control->exit_info_2);
+ 		break;
++	case SVM_VMGEXIT_HVDB_PAGE:
++		if (sev_snp_hv_doorbell_page(svm)) {
++			ghcb_set_sw_exit_info_1(svm->sev_es.ghcb, 2);
++			ghcb_set_sw_exit_info_2(svm->sev_es.ghcb, GHCB_ERR_INVALID_INPUT);
++		}
++
++		ret = 1;
++		break;
+ 	case SVM_VMGEXIT_UNSUPPORTED_EVENT:
+ 		vcpu_unimpl(vcpu,
+ 			    "vmgexit: unsupported event - exit_info_1=%#llx, exit_info_2=%#llx\n",
+diff --git a/arch/x86/kvm/svm/svm.c b/arch/x86/kvm/svm/svm.c
+index e02a38da5296..7981e7583384 100644
+--- a/arch/x86/kvm/svm/svm.c
++++ b/arch/x86/kvm/svm/svm.c
+@@ -1277,6 +1277,9 @@ static void __svm_vcpu_reset(struct kvm_vcpu *vcpu)
+ 
+ 	svm->nmi_masked = false;
+ 	svm->awaiting_iret_completion = false;
++
++	if (is_sev_es_guest(vcpu))
++		svm->sev_es.hvdb_gpa = INVALID_PAGE;
+ }
+ 
+ static void svm_vcpu_reset(struct kvm_vcpu *vcpu, bool init_event)
+diff --git a/arch/x86/kvm/svm/svm.h b/arch/x86/kvm/svm/svm.h
+index 5137416be593..fb956c37c941 100644
+--- a/arch/x86/kvm/svm/svm.h
++++ b/arch/x86/kvm/svm/svm.h
+@@ -270,6 +270,8 @@ struct vcpu_sev_es_state {
+ 	gpa_t snp_vmsa_gpa;
+ 	bool snp_ap_waiting_for_reset;
+ 	bool snp_has_guest_vmsa;
++
++	gpa_t hvdb_gpa;
+ };
+ 
+ struct vcpu_svm {
 -- 
-2.54.0
+2.53.0
 
 
