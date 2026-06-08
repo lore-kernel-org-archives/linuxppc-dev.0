@@ -1,80 +1,54 @@
-Return-Path: <linuxppc-dev+bounces-22289-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22290-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3BE08CD8CA4
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jun 2026 19:00:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 976DBCD8CA4
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jun 2026 19:32:38 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gZ1b84hYqz2yS4;
-	Tue, 09 Jun 2026 05:00:52 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780945252;
-	cv=none; b=gzfQHDig+oCAoOzs+p1eF6xG8FyDU6eULZ2/jUrbFZWpTdN0GLB/iEIg6rwxTFnpALhWCY/GCcWC3rgF5F1l9zDxcm7+eTyAdASZYqpQ75/Mf3dvHZ997roRpqdcHpGfAy4WWhNFAL/RT9rCAIF12px9grPjYevB9ZNLEwdiVVaAXb9k92K/0FpocSjipOlyiUp4p+Jh39foXl67ZLaq0cBVxJHUxGjyKyviEbtR4+siVMwvN9CNeiir3+/nBhgoQTGa1jY3sjgawfQNn3XGwzr4tLeryF/dOPQkow4VpXmvVj45WtqcsoAfhR773wOGpAwyjHP9/KQrUMUhBLZ+eA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gZ2Hm6Fs7z2yS4;
+	Tue, 09 Jun 2026 05:32:36 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=91.218.175.170
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780947156;
+	cv=none; b=WK23AyqDWYeA2ujjay1Hb5tP+Gu9JSIIfpUSB8vOd9HhigPRRnEbzze3TFuaC2Pm+jzirfoY9fASZlGCDBAmVbcoivwCIL9kZakaW0tsbvWEJh68DIOhKk7YoPtPsJO9uOJdNblPiCirmgVDqdYwBVe3DQgUBLpGAdBjQkYuWe9XJgn6BRjZYBfCh14vNlRDVYJd+v+PEELec04PmwyP04W9YAOzXOGSNP5o4K+pmAycWZadANHYn96x7WNvXGnXElX/Qq65TPFmxkhqMXTrbUg1iMmua7m2zMqlWVxRgfD5r3lovfLONfSH2jIJSAZe28QIkgwHU1JEePSDKnMdeA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1780945252; c=relaxed/relaxed;
-	bh=BoJRT4fDwZJIZj1sKJWduqL1Uc3KtHVy4pz1d5Skq5E=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=g20YgpfuF1kYlNLpV5Iq/GF9FoXX8HEtmAs0lNKfcQ5WiUQaiG5CS0oA8HBT27duOlBSt+yA4mQ1NOcCIrIVaQr1vb7VZUIog6lDVX4OOPRQEizYi3Iay3FqOXDyWUZ5dclgtAELWi9P/7VUkGNaX30lftxw+MPLCj4iywnpOLQ2iVnwMm73XUBYLHVMmINAqwDKRi235Bzq1aICGFznj39Z0xbccnHMiZl+0WEOcIAOj4sv8+rOvDs2xDM88HsXckI0tXVD8x0ERLd13QYZTxZgAW/aiCFgtQZ4+kXx6UM0AXsnJZJ67lWUoCpLZhe+rkkuu6GgSXHasn2xUGbHCQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=KfHoG14j; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1780947156; c=relaxed/relaxed;
+	bh=/QZ5Q/NLP6mi0bFSin+pLXDHZVfutJQsDeBxQFEW0TM=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=h7dc+MQvZOpulDoWMjX78BtQo0+CWSQMyhrY6hvWIapDXU7FLlWLEs4o9eZy9O7Aw9+6bV2Nij4ofD1LGOzGwf+IwOUBoEZOySQ47opgXKuBVvo4q1oeUcyHy4fEGcXf7hiM3Q+lujl/O7zusyq7sYd+mhNrVvgrdJtpCVqZ3Lsg1rBtFfUce3nvCepkDifKqTgOgmCD/H8RsrpQz9NxTVoGmc1E3uguwSzb1xVaZSEsCQ/qcGaLi26Euq3Ovw0O1GzatEEpFhlohMYPeL3sd3ThnL6vXHPQB1jCUV6CugjDOqtWrrGNw795WJcapY3u7bgwI2EHEZPBT8qzn9jagg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=YoU9pd2w; dkim-atps=neutral; spf=pass (client-ip=91.218.175.170; helo=out-170.mta0.migadu.com; envelope-from=thorsten.blum@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=KfHoG14j;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=YoU9pd2w;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=91.218.175.170; helo=out-170.mta0.migadu.com; envelope-from=thorsten.blum@linux.dev; receiver=lists.ozlabs.org)
+Received: from out-170.mta0.migadu.com (out-170.mta0.migadu.com [91.218.175.170])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gZ1b42hP0z2xwH
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Jun 2026 05:00:48 +1000 (AEST)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 9FA2A43B45;
-	Mon,  8 Jun 2026 19:00:45 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 086C71F00893;
-	Mon,  8 Jun 2026 19:00:25 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1780945245;
-	bh=BoJRT4fDwZJIZj1sKJWduqL1Uc3KtHVy4pz1d5Skq5E=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=KfHoG14jTkmfniNdtVxNENuQMvpWd/NiZFxhjbAOH2qflTZKJQmKrpo5v28Wi+WAs
-	 KVXrcoLV9U6kz2x6PapzUAFAESu9QX1LfppzjVC8N46Zjz4Z7sNH1yZ4d/WStaY/Db
-	 /X0KZN7bD6W6UX1cOzLU6ci7UDbYfFPVdFgj4ieVJdmN5wwduOPBAUYDy3CVZ0PKTV
-	 7jDWA8qALbwrzMysH63nL/ognc+jgZzyQkks66irzQLutLZp6uiVnUjco/Ovf8T61F
-	 Hl+i3nfOLaRFfs63ImgogaFfuCOgrM1qeCvRY3e4N9d9jlLv5gNamEcIoZ6c2B1GDW
-	 t1bYS9/awuJHw==
-Date: Mon, 8 Jun 2026 22:00:22 +0300
-From: Mike Rapoport <rppt@kernel.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Jinjie Ruan <ruanjinjie@huawei.com>, corbet@lwn.net,
-	skhan@linuxfoundation.org, catalin.marinas@arm.com, will@kernel.org,
-	chenhuacai@kernel.org, kernel@xen0n.name, maddy@linux.ibm.com,
-	mpe@ellerman.id.au, npiggin@gmail.com, chleroy@kernel.org,
-	pjw@kernel.org, palmer@dabbelt.com, aou@eecs.berkeley.edu,
-	alex@ghiti.fr, tglx@kernel.org, mingo@redhat.com, bp@alien8.de,
-	dave.hansen@linux.intel.com, hpa@zytor.com, robh@kernel.org,
-	saravanak@kernel.org, bhe@redhat.com, pasha.tatashin@soleen.com,
-	pratyush@kernel.org, ruirui.yang@linux.dev, rdunlap@infradead.org,
-	peterz@infradead.org, feng.tang@linux.alibaba.com,
-	dapeng1.mi@linux.intel.com, kees@kernel.org, elver@google.com,
-	kuba@kernel.org, lirongqing@baidu.com, ebiggers@kernel.org,
-	paulmck@kernel.org, leitao@debian.org, coxu@redhat.com,
-	Liam.Howlett@oracle.com, ryan.roberts@arm.com, osandov@fb.com,
-	jbohac@suse.cz, cfsworks@gmail.com, tangyouling@kylinos.cn,
-	sourabhjain@linux.ibm.com, ritesh.list@gmail.com,
-	adityag@linux.ibm.com, liaoyuanhong@vivo.com, seanjc@google.com,
-	fuqiang.wang@easystack.cn, ardb@kernel.org, chenjiahao16@huawei.com,
-	guoren@kernel.org, x86@kernel.org, linux-doc@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-	loongarch@lists.linux.dev, linuxppc-dev@lists.ozlabs.org,
-	linux-riscv@lists.infradead.org, devicetree@vger.kernel.org,
-	kexec@lists.infradead.org
-Subject: Re: [PATCH v16 00/10] arm64/riscv: Add support for crashkernel CMA
- reservation
-Message-ID: <aicRRrAmuCkTI68e@kernel.org>
-References: <20260608073459.3119290-1-ruanjinjie@huawei.com>
- <20260608091000.d88d7f5cc1bc4fa17f5774fe@linux-foundation.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gZ2Hj6767z2yRM
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Jun 2026 05:32:32 +1000 (AEST)
+X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
+	t=1780947132;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=/QZ5Q/NLP6mi0bFSin+pLXDHZVfutJQsDeBxQFEW0TM=;
+	b=YoU9pd2wBL/0d9aROLd4wz97VZahlzwxoGnL1ptmbq5uLKQHyEREDvtxEZvM11kpyglrdn
+	7MFuvG2j+BqjYkQcxpeYGqtyksuHu/g/pSWl+iQE33GkBWbytCgtWmU5jTL4PowraqQJFc
+	7IyOJ7O3Zz3gwcZYRCNw+AlYrPYEzDg=
+From: Thorsten Blum <thorsten.blum@linux.dev>
+To: Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+Cc: Thorsten Blum <thorsten.blum@linux.dev>,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH] powerpc: replace strlcat to simplify ppc_kallsyms_lookup_name
+Date: Mon,  8 Jun 2026 21:32:03 +0200
+Message-ID: <20260608193203.163266-2-thorsten.blum@linux.dev>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -88,29 +62,55 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260608091000.d88d7f5cc1bc4fa17f5774fe@linux-foundation.org>
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1639; i=thorsten.blum@linux.dev; h=from:subject; bh=aEF6WPdcapxB9O1OP0x5DNXuOONQzmwjEmpk8Q0Akrw=; b=owGbwMvMwCUWt7pQ4caZUj3G02pJDFnqEpv39sgcWdsjxlR3sW+93WthxZSaNzd2c4vcPd3PH rvuwteujlIWBjEuBlkxRZYHs37M8C2tqdxkErETZg4rE8gQBi5OAZhI4juG/35Tn7qebSpVUVon r7i35aaW97ez1SXXLat9Nu8s7fTgqWVk6NrtFn5xRUPffM7buWFPG7efszwtecDWiXf6red3H2l n8AIA
+X-Developer-Key: i=thorsten.blum@linux.dev; a=openpgp; fpr=1D60735E8AEF3BE473B69D84733678FD8DFEEAD4
+Content-Transfer-Encoding: 8bit
+X-Migadu-Flow: FLOW_OUT
 
-On Mon, Jun 08, 2026 at 09:10:00AM -0700, Andrew Morton wrote:
-> On Mon, 8 Jun 2026 15:34:49 +0800 Jinjie Ruan <ruanjinjie@huawei.com> wrote:
-> 
-> > The crash memory allocation, and the exclude of crashk_res, crashk_low_res
-> > and crashk_cma memory are almost identical across different architectures,
-> > This patch set handle them in crash core in a general way, which eliminate
-> > a lot of duplication code.
-> > 
-> > And add support for crashkernel CMA reservation for arm64 and riscv.
-> 
-> fyi, AI review might have found a bunch of issues in arch-specific
-> code, all of them pre-existing.
+strlcat() should not be used anymore (see fortify-string.h), and since
+name is guaranteed to be NUL-terminated within KSYM_NAME_LEN bytes, use
+memcpy() instead.
 
-v15 grew to 23 patches because of them and Baoquan suggested to split the
-fixes into a separate series.
+Rename dot_appended to the semantically clearer prepend_dot while at it.
+
+Signed-off-by: Thorsten Blum <thorsten.blum@linux.dev>
+---
+ arch/powerpc/include/asm/text-patching.h | 17 ++++++++---------
+ 1 file changed, 8 insertions(+), 9 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/text-patching.h b/arch/powerpc/include/asm/text-patching.h
+index e7f14720f630..c47b813bd067 100644
+--- a/arch/powerpc/include/asm/text-patching.h
++++ b/arch/powerpc/include/asm/text-patching.h
+@@ -227,22 +227,21 @@ static inline unsigned long ppc_kallsyms_lookup_name(const char *name)
+ #ifdef CONFIG_PPC64_ELF_ABI_V1
+ 	/* check for dot variant */
+ 	char dot_name[1 + KSYM_NAME_LEN];
+-	bool dot_appended = false;
++	bool prepend_dot = name[0] != '.';
++	size_t len = strnlen(name, KSYM_NAME_LEN);
  
-> 	https://sashiko.dev/#/patchset/20260608073459.3119290-1-ruanjinjie@huawei.com
-
--- 
-Sincerely yours,
-Mike.
+-	if (strnlen(name, KSYM_NAME_LEN) >= KSYM_NAME_LEN)
++	if (len == KSYM_NAME_LEN)
+ 		return 0;
+ 
+-	if (name[0] != '.') {
++	if (prepend_dot) {
+ 		dot_name[0] = '.';
+-		dot_name[1] = '\0';
+-		strlcat(dot_name, name, sizeof(dot_name));
+-		dot_appended = true;
++		memcpy(dot_name + 1, name, len + 1);
+ 	} else {
+-		dot_name[0] = '\0';
+-		strlcat(dot_name, name, sizeof(dot_name));
++		memcpy(dot_name, name, len + 1);
+ 	}
++
+ 	addr = kallsyms_lookup_name(dot_name);
+-	if (!addr && dot_appended)
++	if (!addr && prepend_dot)
+ 		/* Let's try the original non-dot symbol lookup	*/
+ 		addr = kallsyms_lookup_name(name);
+ #elif defined(CONFIG_PPC64_ELF_ABI_V2)
 
