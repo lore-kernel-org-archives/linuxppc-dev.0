@@ -1,84 +1,101 @@
-Return-Path: <linuxppc-dev+bounces-22343-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22344-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5444ACD8CA4
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Jun 2026 13:44:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AE0B3CD8CAA
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Jun 2026 13:44:41 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gZVW01kbrz2ySf;
-	Tue, 09 Jun 2026 23:43:56 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781012636;
-	cv=none; b=ak+p2KWowLhNqdaGnXBnFCmufCeA9Uuomkj9s1UOPg3dZ8mcIEtp+oJvjQI4SGwXQpTLqeUCKk9NIShu5YcE5kg2CoIlYZ61Pl/lZcaoG0zsdLeguFm1F7ex2D7cWDwo1PGafq2o+ulSvvdzv0moX1BWMfyPm9CMwACRN7R8BVskXbHbSwOBC8GL2lSvrAqWv/b4dVbzRhKj/0A8gmYbIAABbHCpmaPHXheBLJo79Rc1ADSABRRFPuh8oK4oIxRFG3PfYzqxUCvJIIIckaCVxqgIVmoeuJUrEOP/MX3O+S9VRFP1+rMgh1mbTtFywwseEMDNBlU7nMKCQas7S0tbDQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gZVWr3Qjbz2ytV;
+	Tue, 09 Jun 2026 23:44:40 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::434"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781012680;
+	cv=none; b=ZkHYysWSIZK2NlTTvnwuAeEyhrA1QPwf/Due3bEAvMbT48plqQwFtb/LHKuiBwEY8FPryhQ2aF1v7IeC/tLS/z8CYnmZBdQjnJQbiGNZlhSaTcDPiq75HS5IL6Yc8Gwxw3t5/3PXP0whL8y3rh63pJBnwxH+Vr8QjU+kZP8qi/rr/xYOrxsjgMQspGhnzcjyLXT75eewgsivk4Wqih+W/MT8cvtcezfyYbTH56d5IgTm9NCOx1RDfaalsFmpiqahXIzCKhMc7ce4n5c77b1F0BqgSsWYgUSi6dYbSOJ3gbTUOlNAdoHwwJ5clFPtoy9L/6LD+l80XNlIWBYc6+kbBA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1781012636; c=relaxed/relaxed;
-	bh=n5wdM0/zC/cVn6lHUiSP2g6mJ+f9fXS6xsLZ/DmTrgo=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=asvBv8n9qLXaaEuQGO7trry8LjngGGU1Mh9xevVXzHETKoK7e2xhZyEQTIZIBs0EssKXsyamTcwdNViQuzq7zKMynjm42eM40fwx+znea9BMn+6PzL+GJ5m1akuDXYFjMcBOBs81aHF8m8d4Ww75wPa3JRVcw252T4muPfEv3+0aynMHVmf4rNjcB4zCIJCYEid3PuqMkwhpsS/eYP7WL4FEnoeY4Taqta6IdGcRzcZ9BdbltXtRfQ99td8PbDUCY5+6kMk1la/QMuWSjIxM3v5vZbUyfF5/eZ2XVB8WKNte/1FDJEAqyCLM76Npu+uYoC89DJaI/lmfANVUyIwucA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=AfKj6YSp; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=atrajeev@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1781012680; c=relaxed/relaxed;
+	bh=l00W81UYsyqDsSVEFT5iHHagCSaGJS6VwfSu9rBGR+c=;
+	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=DcMpw+IgWum+HA9uu4dQ8vk/enQzD/IzEVA+os24uvQyEKaIgU7DsBedMOfOjcbs75CZBDw7Fc85SzR5k2aTULRfSC6OCsCgcUYGxuW0dtXiiMZDQIlPNiiF75n3ZFuSZf12ENwvcy5xnRuZ9XnYyzOn5A+JijIYNuVfJhZXPYIC734z6hPImMiYiOF+/5a7WViuOfuV8rhPNCyKWYiQU+1mZtx3F0cKaorhnzSunM1u/P2TDhjL+BR8p9mLjHHnMusROGQ7xvSe2Qm20lgGmRUzkfhEr7EaRziyMmcA4jYUfVcr7VHyKvNyuuc7/8OeGlNuOphn+v46XIMpIw1JSw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com; dkim=pass (2048-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=google header.b=OKBTCr2b; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::434; helo=mail-wr1-x434.google.com; envelope-from=ptesarik@suse.com; receiver=lists.ozlabs.org) smtp.mailfrom=suse.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=AfKj6YSp;
+	dkim=pass (2048-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=google header.b=OKBTCr2b;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=atrajeev@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.com (client-ip=2a00:1450:4864:20::434; helo=mail-wr1-x434.google.com; envelope-from=ptesarik@suse.com; receiver=lists.ozlabs.org)
+Received: from mail-wr1-x434.google.com (mail-wr1-x434.google.com [IPv6:2a00:1450:4864:20::434])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gZVVz0jcZz2xll
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Jun 2026 23:43:54 +1000 (AEST)
-Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 659D9Ub22767293;
-	Tue, 9 Jun 2026 13:43:51 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=pp1; bh=n5wdM0/zC/cVn6lHU
-	iSP2g6mJ+f9fXS6xsLZ/DmTrgo=; b=AfKj6YSp2hU2DPdIYAXNlw0szxZqRTTw8
-	TBNSEjgzYO0ugtEnfwPCrOhIVpSoAbnwzv8ceA5Sc6oyq1xpwkU1odW37m8IHvFc
-	FW+vLgEk6n6DohRQTrDZXbaX93EsMuN+1X4yPxMOQEmC4vKizXcVRnDll+zAdxdR
-	3w1iEflgUg21wva0Yc4cdYph1W+xL1SIUMfvfO9ITKgDKGC29WEogZja2sDSugbE
-	giFMVJarI959o6e3OEMG+P2bpvDhNNA8wtMIKmqNXBUExM1iByZN9o0NJbIw8/Kx
-	DoDeCVq1aNtI8RFOz9ZAiKtiR0Z7smNqv8ZhgyRzFY4mdmobz/j9Q==
-Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4emb23vf12-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 09 Jun 2026 13:43:50 +0000 (GMT)
-Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma23.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 659DYcgr016085;
-	Tue, 9 Jun 2026 13:43:49 GMT
-Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
-	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4emych24es-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 09 Jun 2026 13:43:49 +0000 (GMT)
-Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com [10.20.54.104])
-	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 659DhkXs18219368
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 9 Jun 2026 13:43:46 GMT
-Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id DF98F2004B;
-	Tue,  9 Jun 2026 13:43:45 +0000 (GMT)
-Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 39F6820043;
-	Tue,  9 Jun 2026 13:43:42 +0000 (GMT)
-Received: from localhost.localdomain (unknown [9.124.212.142])
-	by smtpav05.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Tue,  9 Jun 2026 13:43:41 +0000 (GMT)
-From: Athira Rajeev <atrajeev@linux.ibm.com>
-To: acme@kernel.org, jolsa@kernel.org, adrian.hunter@intel.com,
-        mpetlan@redhat.com, tmricht@linux.ibm.com, maddy@linux.ibm.com,
-        irogers@google.com, namhyung@kernel.org
-Cc: linux-perf-users@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-        atrajeev@linux.ibm.com, hbathini@linux.vnet.ibm.com,
-        Tejas.Manhas1@ibm.com, Tanushree.Shah@ibm.com, shivani@linux.ibm.com,
-        venkat88@linux.ibm.com
-Subject: [PATCH V5 2/2] tools/perf: Use scnprintf in buffer offset calculations
-Date: Tue,  9 Jun 2026 19:13:32 +0530
-Message-Id: <20260609134332.97954-2-atrajeev@linux.ibm.com>
-X-Mailer: git-send-email 2.39.5 (Apple Git-154)
-In-Reply-To: <20260609134332.97954-1-atrajeev@linux.ibm.com>
-References: <20260609134332.97954-1-atrajeev@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gZVWq42PQz2xll
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Jun 2026 23:44:39 +1000 (AEST)
+Received: by mail-wr1-x434.google.com with SMTP id ffacd0b85a97d-45ef14d4200so521660f8f.2
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Jun 2026 06:44:39 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=suse.com; s=google; t=1781012677; x=1781617477; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:subject:cc:to:from:date:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=l00W81UYsyqDsSVEFT5iHHagCSaGJS6VwfSu9rBGR+c=;
+        b=OKBTCr2bBHtrNllwMWnFwgDn1vBHkYKkBStBymjpgyE8bQ6eXIXJ9fMe8wWnJ4eM8j
+         1Cp2HqBCJZDYCRT2mN5FnL6rHpTgR06snuGFzf/H3S+R/OUGpDuSdgUyBm2q52HZWy9A
+         btNPJF1wi57Gr9og6ILPm62MaBnIGEoMn/H+fKK5L3xOhcp+uUKEr+g9L0Qpbi6xeQvg
+         /+WjDjymBnoK+W2R3rpvVbxksgHH+1kSDt9w8FGrMt6hUe6znH2Rfj2txNunE86fXaRo
+         DEFbh1tV5fUCpnPoYAEAtVkbMEITifMsbtZugjxk1dz1s4ODYMWFKZVObRHhG0+HkAGB
+         /a+w==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1781012677; x=1781617477;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=l00W81UYsyqDsSVEFT5iHHagCSaGJS6VwfSu9rBGR+c=;
+        b=P/SsJ/gjR7btmurW1oDKtIj0qI7AlYimMDgSU3m7iH7WYP8VryxCuneyJ9FmLcH5Pv
+         N5wOPyEK9wIECw6qjTAxzktdLxiMnRZ90m2H8rfG+aUgrKVHAJtPMlLIQF+ibSEEt0E8
+         HO4Fxxmj9hCQyK++MdWgewlUUL/hlxwEDJOf9MhskvO7uCdHzCWIU95q+JNfinZnCmOg
+         T9w+rYqZXVz5+vFwqkaCIVa2HINj+WNOv+k4opcSgkPRR3DljYuofC7S4ID+ZcPOi+8O
+         1CeUgGRKUDlvdVvKY78OxulvrOx/X2SkHps/VMcvabziUmN7bvl11c+4TIr0DNpuGSIP
+         SosQ==
+X-Forwarded-Encrypted: i=1; AFNElJ+h/5JG0B/oESWJMjCdBuV4BA9jSAvaAWEYR/mUHpWZQmCKx15FMpq8ZNm37BJFil6ItAk9mSbmkrsw+wk=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YwFZzWfIvTq7XtQYaoLiwGIQC6kqEDgFp4iwVK68lYtp58lx/mk
+	6XGPiOM6ufCfRIPBPuvHBjZw4+Ks5VlbVamoAKT5HongA1iYO2EhZRYW7DMP900M6fM=
+X-Gm-Gg: Acq92OEMdgybuTMkHyu6itghludBoXlaSL6cRX8XdBAWVzID3IQLA/VJJc71A0ijxJY
+	+KRTt6s+kCmHqBXS1zUNXYvBhj2r915WnYRkRKYYO3AZfx+VKImvkQxazc8sDtJHfYRRWPefACk
+	iUiugcrkY/jAYXOWEjnzXT8xBR9gQ4U/1V8/62P00fbMMsS3CNvF7GNmQB81VYM017MyOEGROcD
+	bmlprzRZe9aK/hpK8lHw3h8iY6FcwfUOqaNSPaYsQ6EapRrzkMzWXT4JDYyuCGpvxzHzJr3yiEg
+	mTYkrdd+7zMTgNMiPTZoRCuV9jnmL2+J5GbE6HWfs/qU7sQ07Mb/vUH/8t0LdfxhF3/mO0oCadx
+	KQSOG2AA60nW7FnLAb3FJId3ON/zJxbn5bJ6ZT3BX+25cxyF7Pvzx2+PLax1oSnAw14jqWcaKVx
+	K76c9B8MhF319lDJZGGGjOtMEz9fcEJoDLDw==
+X-Received: by 2002:a05:6000:715:b0:441:1c35:4b79 with SMTP id ffacd0b85a97d-4603076f62bmr12393402f8f.8.1781012676663;
+        Tue, 09 Jun 2026 06:44:36 -0700 (PDT)
+Received: from mordecai ([62.77.90.70])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-4601f360bd6sm66805957f8f.36.2026.06.09.06.44.35
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 09 Jun 2026 06:44:36 -0700 (PDT)
+Date: Tue, 9 Jun 2026 15:44:34 +0200
+From: Petr Tesarik <ptesarik@suse.com>
+To: "Aneesh Kumar K.V (Arm)" <aneesh.kumar@kernel.org>
+Cc: iommu@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
+ linux-kernel@vger.kernel.org, linux-coco@lists.linux.dev, Robin Murphy
+ <robin.murphy@arm.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Will
+ Deacon <will@kernel.org>, Marc Zyngier <maz@kernel.org>, Steven Price
+ <steven.price@arm.com>, Suzuki K Poulose <Suzuki.Poulose@arm.com>, Catalin
+ Marinas <catalin.marinas@arm.com>, Jiri Pirko <jiri@resnulli.us>, Jason
+ Gunthorpe <jgg@ziepe.ca>, Mostafa Saleh <smostafa@google.com>, Alexey
+ Kardashevskiy <aik@amd.com>, Dan Williams <dan.j.williams@intel.com>, Xu
+ Yilun <yilun.xu@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
+ "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, Alexander Gordeev
+ <agordeev@linux.ibm.com>, Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
+ Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>,
+ Christian Borntraeger <borntraeger@linux.ibm.com>, Sven Schnelle
+ <svens@linux.ibm.com>, x86@kernel.org
+Subject: Re: [PATCH v6 20/20] swiotlb: remove unused SWIOTLB_FORCE flag
+Message-ID: <20260609154434.13dba7b9@mordecai>
+In-Reply-To: <20260604083959.1265923-21-aneesh.kumar@kernel.org>
+References: <20260604083959.1265923-1-aneesh.kumar@kernel.org>
+	<20260604083959.1265923-21-aneesh.kumar@kernel.org>
+X-Mailer: Claws Mail 4.4.0 (GTK 3.24.52; x86_64-suse-linux-gnu)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -92,154 +109,61 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Authority-Analysis: v=2.4 cv=b4uCJNGx c=1 sm=1 tr=0 ts=6a281897 cx=c_pps
- a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
- a=FelO9ux0wxsA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=iQ6ETzBq9ecOQQE5vZCe:22 a=VnNF1IyMAAAA:8 a=WyRFSl7gUU5P16mftmoA:9
-X-Proofpoint-ORIG-GUID: e4xnjBYQmxAmkGcDwiyNijty783hbBsO
-X-Proofpoint-GUID: ZZRcWtHt6qDAS8jksY030hSmBd92NL8k
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjA5MDEyOSBTYWx0ZWRfX+ojTLPxOzVYL
- s9t4yJUhukOIdoM1IrISxnjBIussJTEAkHh8Ald2dU54iQB3SeKcEQ4nJkZfapI23223I6cf/pE
- IceV4YMAzoj05TPyFq5EO0Z++EqVYK8PLa802ID8G5SPOgcTF55JCVh48buHYDh7+MPUToFECXY
- b3IxuZhldsYXsv5A6ZQtJqReqTbovkxFDwfODOA6VPpGtHPVXnUV6gUClQCGF9KFIf999ldnMRV
- NA87qWwLUTaDquhXHvFOBRli4hmKSxpgIZX3xX/8DYRQu7kjtQ5ZtexnpM/aa6Ui8xipk5ogFu9
- hpmMQ9jih53xlnnDsa+7PSefvSaczzQ/rBXBnqSMMyDTPn/S3cechk8Rim6JDkuEpna5MaZq3aj
- RFYHtAmhXNT78mv6AQfdjJWh44wkvrgOkf2Qe6SReZYCSIyILcEhAqEOQ+JEyNS9VVxKXGe5dpN
- dP3XLsYkar/TO8sihVg==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
- definitions=2026-06-09_03,2026-06-09_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1015 spamscore=0 bulkscore=0 phishscore=0 priorityscore=1501
- lowpriorityscore=0 adultscore=0 malwarescore=0 impostorscore=0 suspectscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2605210000 definitions=main-2606090129
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 
-Replace snprintf with scnprintf in buffer offset calculations to
-ensure the 'used' count will not exceed the "len".
+On Thu,  4 Jun 2026 14:09:59 +0530
+"Aneesh Kumar K.V (Arm)" <aneesh.kumar@kernel.org> wrote:
 
-The current logic in perf_pmu__for_each_event uses an unconditional
-+ 1 increment to buf_used to account for null terminators. This can
-cause a stack buffer overflow in the subsequent scnprintf call.
-When the local stack buffer buf (1024 bytes) is full, buf_used can
-reach 1025. This causes the subsequent remaining space calculation
-sizeof(buf) - buf_used to underflow.
+> SWIOTLB_FORCE has no remaining in-tree users. Forced bouncing is now
+> controlled through the swiotlb=force command line option via
+> swiotlb_force_bounce.
+> 
+> Remove the unused flag and simplify the force_bounce initialization.
+> 
+> Signed-off-by: Aneesh Kumar K.V (Arm) <aneesh.kumar@kernel.org>
+> ---
+>  include/linux/swiotlb.h | 1 -
+>  kernel/dma/swiotlb.c    | 3 +--
+>  2 files changed, 1 insertion(+), 3 deletions(-)
+> 
+> diff --git a/include/linux/swiotlb.h b/include/linux/swiotlb.h
+> index 526f82e9da45..af88ca7182f4 100644
+> --- a/include/linux/swiotlb.h
+> +++ b/include/linux/swiotlb.h
+> @@ -15,7 +15,6 @@ struct page;
+>  struct scatterlist;
+>  
+>  #define SWIOTLB_VERBOSE	(1 << 0) /* verbose initialization */
+> -#define SWIOTLB_FORCE	(1 << 1) /* force bounce buffering */
+>  #define SWIOTLB_ANY	(1 << 2) /* allow any memory for the buffer */
 
-Use sub_non_neg() to see if space actually existed, and only
-increment the offset if remaining space is present.
+These constants are kernel-internal, so let's not leave a hole in the
+bitmask... I mean, what about changing SWIOTLB_ANY to (1 << 1) after
+you remove SWIOTLB_FORCE?
 
-Changes includes:
-- Use sub_non_neg to check if space exists
-- Replacing snprintf with scnprintf to ensure the return value
-reflects the actual bytes written into the buffer.
-- Only increment buf_used by 1 if space exists
-- If a parameterized event uses a built-in perf keyword for its
-parameter name (eg, config=?), the lexer parses it as a predefined
-term token, which sets term->config to NULL. Add check to use
-parse_events__term_type_str() if term->config is NULL.
+Other than that, LGTM.
 
-Signed-off-by: Athira Rajeev <atrajeev@linux.ibm.com>
----
-Changelog:
-v4 -> v5:
-Addressed review comment from Namhyung in buf_used variable
-to use return from scnprintf since cannot return a number
-greater than or equal to argument
+I consider this whole series a big step towards saner handling of
+encrypted/decrypted memory for DMA buffers. Thank you for your effort!
 
-v2 -> v3:
-- Split the scnprintf related changes in separate patch
-- Handle the overflow issues and unconditional increment
-wrapped around sub_non_neg addressing review comment from Sashiko
+Petr T
 
- tools/perf/util/pmu.c | 40 +++++++++++++++++++++++++++++-----------
- 1 file changed, 29 insertions(+), 11 deletions(-)
-
-diff --git a/tools/perf/util/pmu.c b/tools/perf/util/pmu.c
-index e765a7ffb0d6..1539960ba23b 100644
---- a/tools/perf/util/pmu.c
-+++ b/tools/perf/util/pmu.c
-@@ -2146,15 +2146,19 @@ static char *format_alias(char *buf, int len, const struct perf_pmu *pmu,
- 		pr_err("Failure to parse '%s' terms '%s': %d\n",
- 			alias->name, alias->terms, ret);
- 		parse_events_terms__exit(&terms);
--		snprintf(buf, len, "%.*s/%s/", (int)pmu_name_len, pmu->name, alias->name);
-+		scnprintf(buf, len, "%.*s/%s/", (int)pmu_name_len, pmu->name, alias->name);
- 		return buf;
- 	}
--	used = snprintf(buf, len, "%.*s/%s", (int)pmu_name_len, pmu->name, alias->name);
-+	used = scnprintf(buf, len, "%.*s/%s", (int)pmu_name_len, pmu->name, alias->name);
- 
- 	list_for_each_entry(term, &terms.terms, list) {
-+		const char *name = term->config;
-+
-+		if (!name)
-+			name = parse_events__term_type_str(term->type_term);
- 		if (term->type_val == PARSE_EVENTS__TERM_TYPE_STR)
--			used += snprintf(buf + used, sub_non_neg(len, used),
--					",%s=%s", term->config,
-+			used += scnprintf(buf + used, sub_non_neg(len, used),
-+					",%s=%s", name,
- 					term->val.str);
- 	}
- 	parse_events_terms__exit(&terms);
-@@ -2218,6 +2222,7 @@ int perf_pmu__for_each_event(struct perf_pmu *pmu, bool skip_duplicate_pmus,
- 	int ret = 0;
- 	struct hashmap_entry *entry;
- 	size_t bkt;
-+	size_t size_rem;
- 
- 	if (perf_pmu__is_tracepoint(pmu))
- 		return tp_pmu__for_each_event(pmu, state, cb);
-@@ -2251,17 +2256,30 @@ int perf_pmu__for_each_event(struct perf_pmu *pmu, bool skip_duplicate_pmus,
- 			}
- 			buf_used = strlen(buf) + 1;
- 		}
-+
- 		info.scale_unit = NULL;
- 		if (strlen(event->unit) || event->scale != 1.0) {
--			info.scale_unit = buf + buf_used;
--			buf_used += snprintf(buf + buf_used, sizeof(buf) - buf_used,
--					"%G%s", event->scale, event->unit) + 1;
-+			/* Check the remaining space */
-+			size_rem = sub_non_neg(sizeof(buf), buf_used);
-+
-+			if (size_rem > 0) {
-+				info.scale_unit = buf + buf_used;
-+				buf_used += scnprintf(buf + buf_used, size_rem, "%G%s",
-+						event->scale, event->unit) + 1;
-+			}
- 		}
- 		info.desc = event->desc;
- 		info.long_desc = event->long_desc;
--		info.encoding_desc = buf + buf_used;
--		buf_used += snprintf(buf + buf_used, sizeof(buf) - buf_used,
--				"%.*s/%s/", (int)pmu_name_len, info.pmu_name, event->terms) + 1;
-+		info.encoding_desc = NULL;
-+
-+		/* Check the remaining space */
-+		size_rem = sub_non_neg(sizeof(buf), buf_used);
-+		if (size_rem > 0) {
-+			info.encoding_desc = buf + buf_used;
-+			buf_used += scnprintf(buf + buf_used, size_rem, "%.*s/%s/",
-+					(int)pmu_name_len, info.pmu_name, event->terms) + 1;
-+		}
-+
- 		info.str = event->terms;
- 		info.topic = event->topic;
- 		info.deprecated = perf_pmu_alias__check_deprecated(pmu, event);
-@@ -2271,7 +2289,7 @@ int perf_pmu__for_each_event(struct perf_pmu *pmu, bool skip_duplicate_pmus,
- 	}
- 	if (pmu->selectable) {
- 		info.name = buf;
--		snprintf(buf, sizeof(buf), "%s//", pmu->name);
-+		scnprintf(buf, sizeof(buf), "%s//", pmu->name);
- 		info.alias = NULL;
- 		info.scale_unit = NULL;
- 		info.desc = NULL;
--- 
-2.52.0
+>  
+>  /*
+> diff --git a/kernel/dma/swiotlb.c b/kernel/dma/swiotlb.c
+> index e4bd8c9eaeda..81cc4928e949 100644
+> --- a/kernel/dma/swiotlb.c
+> +++ b/kernel/dma/swiotlb.c
+> @@ -400,8 +400,7 @@ void __init swiotlb_init_remap(bool addressing_limit, unsigned int flags,
+>  	if (swiotlb_force_disable)
+>  		return;
+>  
+> -	io_tlb_default_mem.force_bounce =
+> -		swiotlb_force_bounce || (flags & SWIOTLB_FORCE);
+> +	io_tlb_default_mem.force_bounce = swiotlb_force_bounce;
+>  
+>  #ifdef CONFIG_SWIOTLB_DYNAMIC
+>  	if (!remap)
 
 
