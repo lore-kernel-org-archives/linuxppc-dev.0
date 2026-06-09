@@ -1,60 +1,60 @@
-Return-Path: <linuxppc-dev+bounces-22304-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22305-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5DBB3CD8C85
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Jun 2026 03:28:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BEB2BCD8C85
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Jun 2026 03:28:24 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gZDrC57KXz3c2Z;
-	Tue, 09 Jun 2026 13:27:55 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gZDrF0469z3bpG;
+	Tue, 09 Jun 2026 13:27:57 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c20a::7" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780975675;
-	cv=pass; b=X4k1bCEiAuOXEsjkZA5W8wnOG8piFkWYWGj/M+QzrAzOCPj2KOV1MjdKgu9vOPj7CcuTpxI+0hfJHNNGdoOuQd/gMq8uCek/WVXrkSLQNYZsbAfkorUrRSJ6kA0yv2F2oXX2RmTT+zeIOR3maVuZ87CUOdAQTGYvdv1Xufoc8z58LewYgqitdeCXODgrybBpyY+Pkc3ytavkIBktjWWeIo3TtnmDsvnyvP1MLnTO9w0VZT8xG4SHfWF9vKSV4lX72I6OfIUHYX4HaGttHpVcIoejBbq+rUcNU+EPr71Yn++EXKUs1OUWVj4KjJ0/SmqTcZe5cwupdU4qNhJx5O2XLQ==
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780975676;
+	cv=pass; b=dJEhKHbsiNbVpNiYguaShMo/OrlBZfuXJLVsJ97sXVBvTx28QlhHvaXFGxfYdrnJQyRzb3A4JKX4rS/DWO8z618gubTK5oAoA4aHRuND003nu+M6Y5nuygMzBL+KlD2KGLlf3XApiwMRUmOsG3DGDn9zrPcwN+BOtN5hRsE5hqheTkxhOkgD6JkvBySS1L0J7KaRF6586b//oPmf73mr/yN5LB/xHTo29286kGWneXOG5dbe2VyP/VQtOXWqqxcDJGdDlficPf6jpegcTnVXXweALctqeQaRnnaJFSjVm8dnmn06jpSPZxgLS4WpfY8ETKloSBeyn8CbyrOfuNS8vQ==
 ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1780975675; c=relaxed/relaxed;
-	bh=ZaSRD3huykSTRQv/ntNUnxiA8EIMXKb5/7uswP/uUvk=;
+	t=1780975676; c=relaxed/relaxed;
+	bh=c3wZ2J0bG5FHp8ZaFE9Fot88k5dKTeGOujpGuBDm9Yc=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=dR5950LE1gy/E4uELbwV0yzMXtWT2FWEMWwCh2madw7fdosVCbfaFAs6gWp+N+iCjTPRdc7FFvE7zYC+HniTsxkkRB3t9A9YghxuncmQXlcoBz3VKT7nhs5Be2AmybzRU3d83H7ABme4aiisRMtwvBGwnjunZQwC08DDR8G3NfzOsnS7zTLKY0oa/T8A2C31siXQkCgE/5nSBVb2iX5JKdyTgiibsr+2POONMJZuR46qFDVYZA4mvG5wL4WqWlsp1e/f0BzpkatiH8+99cLI9/ZV/Fz5E3onD5UjitBKSawjVNfa4WNVMcV9tjT8IpMzsj4IdcdaEioPy37ulrQxEw==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=oss.nxp.com; dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=sW1lPQ4I; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c20a::7; helo=pa4pr04cu001.outbound.protection.outlook.com; envelope-from=wei.fang@oss.nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=oss.nxp.com
+	 Content-Type:MIME-Version; b=SkdNKfYPB4/rC8eD9AOffhvbYxHeUR502XfZFs34EB5nNWUxegeYgnxguOOxa9DlUJyoSHltdLF3iUylIwGN/FnoZbBDPvgbq0q2NJw9TclQsknsUChd/VdI8jfYYhAMPUH+htQVQyh6hwl3hDWFbQiTeLS8BoEAeCZuNu0Q8Exh3JX/j09uwwNmVNQXtGpJRWu/7LyqDLe1KdjnGFh7qsY0v00VH++doj9n0GxqmL2IkVG4CR5X+rCOYAp56Jv0L4rZdg8/hx1F+HHZunBD7Xv0U0PTeOV5mvNf0QvBTIPMUpnduUklX0YhQ2LQU/iM0sp2Zq/PbDpf38+1YAzT6g==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=oss.nxp.com; dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=MBUOKbbe; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c20a::7; helo=pa4pr04cu001.outbound.protection.outlook.com; envelope-from=wei.fang@oss.nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=oss.nxp.com
 Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=oss.nxp.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=sW1lPQ4I;
+	dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=MBUOKbbe;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=oss.nxp.com (client-ip=2a01:111:f403:c20a::7; helo=pa4pr04cu001.outbound.protection.outlook.com; envelope-from=wei.fang@oss.nxp.com; receiver=lists.ozlabs.org)
 Received: from PA4PR04CU001.outbound.protection.outlook.com (mail-francecentralazlp170130007.outbound.protection.outlook.com [IPv6:2a01:111:f403:c20a::7])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gZDrB2YCdz3c1L
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Jun 2026 13:27:54 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gZDrC6l77z3c2t
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Jun 2026 13:27:55 +1000 (AEST)
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=taNlt6+p32J7m2ioxDGRY5DVatjrXLQ4fuzsjyMNnNjIixm6uIrsIuvIYArd5IbOsprWg9sa3zIDKS+vm14ZuMr1rqqAebRdSQL7GN/EhCXTFM4/wQu8rkqTW0EiHhFDbPGoA77ZO1dqpG6cYcAzv+5KEhJaL3x4hCTCPkVwNbXH0tLlEqP2pS2t12E9qMAlKgsiDaHSL2jzzNihI/VI2X7pyE3qHMlESKvUeNt44anY89G2q8GXppYO+7WTkRvIUFyWMrgr9IoJq86fwUYvZxZsmieWrVY0Q1CA3sgOo5/8T9SGqVerYeBHYmP7HQf5+Wt/v8RDDEnkZ0CYW4uyyQ==
+ b=ZdWOSE9ZWm0afZA0CZQkb7IonI4KDLgeybx/oDNsfS065l8c54oNkBSAE51FQTa/HKonl5fVsr400VcqXpXOJHzWgFu5echvN3Zc9YiPSmxcXhv1w2cwuMotvD0yurkNI+w3iafmAVHYjqt8HXeYRwPHbwhWxw8Vi2f7So4MfekIAeaX5osMgFfR4p66aq+lYYA8v8YqOSssSp3vRb2ZvcPrJclrwJNJ1JXZ9hNsXoy4mkzT81OQ/rjM5FkeTIwbB/i62k2/zYEs2MRRnEVG0+dY4ru6ADf4HX++wLEn/ylacq1+M+6CmnpNN378gu9x9+H1MrtbZShXA2nJGL9/tg==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=ZaSRD3huykSTRQv/ntNUnxiA8EIMXKb5/7uswP/uUvk=;
- b=iJU+QJDqKXEf4aQ6rJ4xj7AMR+vfgsYjjrTrzriinchykdyZPeekyf+Cb/Azkw/tT4d4pnzN+SO+YOFQ5kLErmuDPse3FMailD/z1D9teec89VoaH3Z01lX/FE7fddcLS1sRnz/oK8bj4S6+fIQA5uSRxxrqOnoYuCz1dSXuQEZd5yxkUQG0UVL5j2NfvnZv1pZwh+xo5ay7FFiEml4VthfUHHh/hHppyE1g+ViFfYYF5rlmiMq492i1L6JGtLFj5HOGeQC2fhHYUY0LBzsShqGS3q1sOEQZYEN4S3DBzgbFW9v0vohVdia+PN/U39y8EkDyY0RY2Wp7FJJ6VgUcxQ==
+ bh=c3wZ2J0bG5FHp8ZaFE9Fot88k5dKTeGOujpGuBDm9Yc=;
+ b=CKByrtvHc8ElCEzxd848FbGH8nthSOT/Jyt4cRQj+vex4G/dJKa80FIS5bPpIiqQedz9W02C12p80i5+tJUor03dw86m9FTRsbmj47n4UAYV9N+jyhI5NiTMi5RCzusUBz1F9JwVr7F1rqXD8TPaWUb8SaP7scrAhWAmMWQRlSNqdjR+lweW5VLuWXFdP3zLB90ANGVTPAPga5LUi4g2f+Eyx3x0Nx40AEdLdeFS9zm/K1gCl49Ln0jEZ06rJrZIlyVPy/2dNv9ZmMvOQm3nHbdva3zuDuZGrkkvM81xCeCJSzOHAJck3z1D486MKqCzIAUIFNl8yVphMphQ2SPVBg==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
  smtp.mailfrom=oss.nxp.com; dmarc=pass action=none header.from=oss.nxp.com;
  dkim=pass header.d=oss.nxp.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=NXP1.onmicrosoft.com;
  s=selector1-NXP1-onmicrosoft-com;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=ZaSRD3huykSTRQv/ntNUnxiA8EIMXKb5/7uswP/uUvk=;
- b=sW1lPQ4IUTwOBiIbs9YNeJ3CKSyaTLCkZxKvCEy33QLJ5wf/eT6W1jNM9BSb7yObFgsUelnY/qJABwByQUNaNc+cxX+Rzas4yoH0JsQcsaNQmc3bnWh3mG1YE9TKnfVxCgooJ1ixg25uEwlc/H/wc7g3KiRZOMg9wRbPHMOoMGSMAUo6ht2jz3DSO9UoUGavfkM3HP8EoBNgsYBMQM0hU05X82WPZ314/bkzgoY8Y71ryKcrGeFcqbQi7GTPOobcvPzBaPOEX2kM2lFypfbuxx5TM4VyjG0Jf7iTN4qggk00AeFgkRKZfLJbuRhmweRbnHXEa41w47OQ8p2Psfm5Gw==
+ bh=c3wZ2J0bG5FHp8ZaFE9Fot88k5dKTeGOujpGuBDm9Yc=;
+ b=MBUOKbbeRosAI67hoid3T910PlX2nOtk87pEDIJh4jMDXCmrYd8is+E3CsHkVTIxLPIqCORYMwISiqVM34eg7cXuS7wHNaw203Pc9TzcRyyCxQUww9wF32HVrDsZ/AyvNXRFMHYo85K4IpxdPLcbSb3o/bZIbfJUQlFLuPlWROjA3ACaUFH0nA1YnRibuuP/It2xnBb4hVJhnmHg3rhybSnozv47ntI71bLdys7k9YnZy6SVpV9XfNqGaDzU3fB3iCSM9ZguzUNQ5rJRvksUoGJtN0pmF1o84G0VErmWXbPlEsR2kK6AyQBySYWnrvbKMjNDbx4HiwDEFY0WbLx4uQ==
 Authentication-Results: dkim=none (message not signed)
  header.d=none;dmarc=none action=none header.from=oss.nxp.com;
 Received: from VE1PR04MB7216.eurprd04.prod.outlook.com (2603:10a6:800:1b0::22)
  by AS8PR04MB8946.eurprd04.prod.outlook.com (2603:10a6:20b:42d::18) with
  Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9891.15; Tue, 9 Jun
- 2026 03:27:45 +0000
+ 2026 03:27:52 +0000
 Received: from VE1PR04MB7216.eurprd04.prod.outlook.com
  ([fe80::a9a5:cf83:dbe8:1f74]) by VE1PR04MB7216.eurprd04.prod.outlook.com
  ([fe80::a9a5:cf83:dbe8:1f74%3]) with mapi id 15.21.0092.011; Tue, 9 Jun 2026
- 03:27:45 +0000
+ 03:27:51 +0000
 From: wei.fang@oss.nxp.com
 To: claudiu.manoil@nxp.com,
 	vladimir.oltean@nxp.com,
@@ -74,16 +74,16 @@ Cc: wei.fang@nxp.com,
 	linux-kernel@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org,
 	linux-arm-kernel@lists.infradead.org
-Subject: [PATCH v4 net-next 8/9] net: dsa: netc: add bridge mode support
-Date: Tue,  9 Jun 2026 11:29:54 +0800
-Message-Id: <20260609032955.2066089-9-wei.fang@oss.nxp.com>
+Subject: [PATCH v4 net-next 9/9] net: dsa: netc: implement dynamic FDB entry ageing
+Date: Tue,  9 Jun 2026 11:29:55 +0800
+Message-Id: <20260609032955.2066089-10-wei.fang@oss.nxp.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20260609032955.2066089-1-wei.fang@oss.nxp.com>
 References: <20260609032955.2066089-1-wei.fang@oss.nxp.com>
 Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
-X-ClientProxiedBy: MA5PR01CA0191.INDPRD01.PROD.OUTLOOK.COM
- (2603:1096:a01:1b2::14) To VE1PR04MB7216.eurprd04.prod.outlook.com
+X-ClientProxiedBy: SI1PR02CA0033.apcprd02.prod.outlook.com
+ (2603:1096:4:1f6::14) To VE1PR04MB7216.eurprd04.prod.outlook.com
  (2603:10a6:800:1b0::22)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -100,650 +100,249 @@ Precedence: list
 MIME-Version: 1.0
 X-MS-PublicTrafficType: Email
 X-MS-TrafficTypeDiagnostic: VE1PR04MB7216:EE_|AS8PR04MB8946:EE_
-X-MS-Office365-Filtering-Correlation-Id: df32f346-b041-4148-520f-08dec5d7126f
+X-MS-Office365-Filtering-Correlation-Id: e3f3efa0-3504-4634-f376-08dec5d7166c
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|366016|376014|19092799006|7416014|1800799024|3023799007|22082099003|18002099003|921020|11063799006|56012099006|6133799003|5023799004;
+	BCL:0;ARA:13230040|366016|376014|19092799006|7416014|1800799024|3023799007|22082099003|18002099003|921020|11063799006|56012099006;
 X-Microsoft-Antispam-Message-Info:
-	dzgn+HisdUMiI7rUY5xBlElbUoCIE8RtOpXrLRF2FlMqRiKOVWO+MFoEZsfP0gHGqZf/iAP9JCibsY5R2uDXqJTCbIJFd9kXjuC5+AdX8T1vKCcA6/j7cAsdACP3kPqqTU5s/ScH62O5wgJMnOlXvD4E9nzArzTXvdEM93XeRDL1R4ArsRCKyrNYbnsSLW5AZgYyYjiESTPXX8+BFbb0ZlIkbwwxSieQgz/Uf8mkWAki/vZNArv5kpj68UzVpJrinuVxRrwREzxH3zzE+SLGeul2tZk2T6Jv25l6MfrFMzv8UeHNNOdM3YOGPe1LNz1utEMODiy42KnO57z5Yut0Gks0q7/WvbifZWihOxrKpy5P1DoZAb0ropBPqsRtbSb2lqgBtvtjHd4df59uMxN0dBtsY2ZsCfDpY3oxWMvln82/Vy9My7JSjorYI4blNk+Z2YaXAFzL2sLIxn7qxSA6dcK3beNxnWzVjg3p/H6swFvS0HlbsCXlxhRdxS41vNAcCTzKrZH0OaUyKGbzTvsCbufLiDNsIzJFCTkWpQi80igw5aMHhopsVZyRuPD4PTA+B+H3ApAhkhLKlCXXabcrtj29OYCFWiCpfHdtVpkTg6QSalWw7zLQzTj0/bxLH8uiy9D34Q5BsJyuzMwLBVlenf9TuaKArvygWHRgDq9NNcUL1dE64m2pTIy/7QvtifswGkC6ULHJCD/DK4aB1yAuX6F+8sNA6QQTBsf+TrrVmbk=
+	ocFaiceIkUOeXFCugFWnn2Omry9Ba5YvJj4Q5+YisR7qZc1K4pyZaCikTGk3Vm/udXpJd7u2Fc23OTbk0mOB8WD+49FgZz+xJy5CzPJL2DrrovaeSLRN7ALSFzK9g+zHcrRXMxZPZMWRtKC3Eyv3bnhMbpZ8rc4OhXH15EN1p90rj+xtkWsCQFZwUSkHQmedY5NJNpy11eePmtwuzssoFrwxvq4aBP0O20+6ggxXBg77KZc+DyyfMy4U0Z6XsWzAcVL7tuHu9kCSOqD+40DKhFRTWAgGxspOdIlIp7vjTirHz8kjJtelblHMUPYWiYwAn0NsgsUl2F4roxBOujTPAyOi20AnmqeV48lO/KKr8WnOg80I4Z6ZADsEaNcfiHtpYk3Yz7oabLi8Dp7rBTkF8ipTQtpam5ki3dH0ZoG4fE6KGnvacMTLciB/KjXAVwUyfgQC1tChbvvc9aJdYGSRjrEhxzZZsSUmS5BTCoa8fqpfIPdrsL29CPLwYQvSMegq5pdxI4SWp7irvXCt67A7qfwB3JahRqY0TMfAF8pqxd+EzNLj5gj72mHMlkmH93orB5XOmGyFw58iPNQA0YJyre42OwteXe2pBpPvkG37wbPlhnmqMbIWLE8c+fxQ2sal4djVrQCZH9XQ3VwaROlLbITq5aQM9XhdojtCa52fzQDOTYYd4H8+R2L+MyaeEJQ7Ni/2nI8cW0BegdX7FhHtiwO84k0orPpq5grIn0Qzt/I=
 X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:VE1PR04MB7216.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(376014)(19092799006)(7416014)(1800799024)(3023799007)(22082099003)(18002099003)(921020)(11063799006)(56012099006)(6133799003)(5023799004);DIR:OUT;SFP:1101;
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:VE1PR04MB7216.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(376014)(19092799006)(7416014)(1800799024)(3023799007)(22082099003)(18002099003)(921020)(11063799006)(56012099006);DIR:OUT;SFP:1101;
 X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
 X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?flfJ31GFe4U+GcrsAI54fFsIfB+17dRp3o3L2cbB0XALzBNBrWt2kiZltILa?=
- =?us-ascii?Q?RGCFA1s2PZjA4xjQ5RvoOyG/GliAPSLunD9+5y6yggXY2F6hxdD9HVXfjNni?=
- =?us-ascii?Q?3a4YVqsXNtLh90TBCnZqhYx6YScPw4R7/TElwtzsBwV0BSVYq3cCKx/1n12S?=
- =?us-ascii?Q?nEagnmzIMbpJ0ivM6NTYkhpj87Mh+0ej1fJEzVMZlI2uI+OY12amlPQ3omiz?=
- =?us-ascii?Q?Iu7wmwJakbt1Pe2Vd9UdquocNzxnX5AhVXwG4ktKDpmrFkWqXuoys4uppaGE?=
- =?us-ascii?Q?Ml27ercolqblDsx64zt6sroOwGzrnaEeabqw1mcaBHh85GyMQmjyZjLzTf6e?=
- =?us-ascii?Q?OsoREEW9Y9ofoEff9NqtV8+8LAPZRMEoB2qAH0asogRpMJRmKmdle2Hh3Ip5?=
- =?us-ascii?Q?Zk0pzkj9RVkkib1y6emRSlinh7qy7TrKQ9+YgTJwF/LivxrPDI4wqi2gH34Z?=
- =?us-ascii?Q?TfxNwotRuJmhYI0VF0BBGemmN2ZQTk0vCEZ4v3PiazrW7noeibnmGC2dpob1?=
- =?us-ascii?Q?HbiC0y7lCueUUM6PtSkiPCMNdmDfuVl1ipV1qKVLIF5HHdfJKpnx6zqrKtIx?=
- =?us-ascii?Q?LmymtnNqGG0rdH9z3WvKao2mINgm1A7645UqWITgJBTjV0a4qcQPsCRq2fX8?=
- =?us-ascii?Q?dDtkRmE10zFzGkVELoDsVTxZ2G6qlnltXx68AR1duqZrtMX9IzNP4z8IVxVb?=
- =?us-ascii?Q?Qa57PJnmTjboALZ7qc1/imhySnW6iHul7Q//NmlwGvECeCEz59QsYUANN5ih?=
- =?us-ascii?Q?hmwaOnOmEFr8N2NXkAezYthdRSrMcHfXj+RaHtdHqkzYCDewf8JWBmr8GZz7?=
- =?us-ascii?Q?zaB3btbOmo+oht16ovMzuZs2szNkVADKV1LiWdCI5S1aCkcD0m282STZfZh+?=
- =?us-ascii?Q?j8kXTqJdOBJK3wLdc1oBFpN71NnBgZVHCo5eZQ56AVBjMwMlX/I0YiZpjBIj?=
- =?us-ascii?Q?FkjTABGKEQmrcsn4CX5pc2Mri3vOPbJbBoTngOFO8DxYYiuOF8rywqZxUHoT?=
- =?us-ascii?Q?gzV+dMxpRcRTQ6q/FFpjQHObv+Gjf0lGimHnvr6ox1RCmBMtVnYenTNA9163?=
- =?us-ascii?Q?PLo3UzkuhkARI1V6gm342un9QeIUNtq6sbgkiP3Bl8WuTNHASJbbx5/FsUnN?=
- =?us-ascii?Q?Uv05fEUSyf4Rpt4LxGLyLDTMAp45axktTCejkNSkCCL5VzNFfPRqPeuxLK95?=
- =?us-ascii?Q?6Bf70GUNoydvTvAB9dBaZdF+H3c2htNqJ0r600JLDtkdEHlgIG2i+rkg80Gx?=
- =?us-ascii?Q?voa0opdnn9yUZeRHNfnwZLnosmG6U0LJJ5GyTMxyK4SS6cU8hhjaJ+JEvFyb?=
- =?us-ascii?Q?4+zi+1A3YxkhGl6Pt9VjLj+VovMdZP87ecdeR7GqwXfb2yNVv8sCeolNwr+t?=
- =?us-ascii?Q?HgoFpmRWT5bt2336vnjgBD5c8JcBw+WvEssWtcaaNR8j6AylaJrmiLsxEaD0?=
- =?us-ascii?Q?IFJ39RRjJyxvFQJiAQH0KN7xXsIux6ccRsXlpfesS6VcqiwVFsz4eGYWkM0E?=
- =?us-ascii?Q?q2HPyuGLyKc2KaSS8I+mZoPYCuOrThK3J8dxL8BfqFrsoVCgfh6hG28cAcka?=
- =?us-ascii?Q?ahERzgndVpGx62ffzadHW3to4FTvj3+eHH0+aiE1jSxOts90wsOZzKsbn0Sq?=
- =?us-ascii?Q?QvsgME4NC5iDHS2s7Y9Fg4FJmYpIh3qLpyvQVTqCq1oILOCDbLjWrHSIclSl?=
- =?us-ascii?Q?IuzThgD6o+luqoPYvyiJp3xVDO9pQih9FX9vEnh1Crxi93xTXMmTYZhvRWh1?=
- =?us-ascii?Q?NDWBU0EOeCCPQQsoFDYj+jStY6Dw1YAeIqHl9TCTz9Pncn8kOhgq?=
+	=?us-ascii?Q?yMuBkH3cq+Q9+7dKmN2oyiWy8iwXsOIsvHkQdDOzeKqRJ4c2CiHEgveR5nZX?=
+ =?us-ascii?Q?ZcVe9+Ssl0e8gVuwpsOw8VfdGAUfvKWCeuSOpjSCptEqLHxm1JFIPMRNvwIt?=
+ =?us-ascii?Q?hCsIxtWOmKEdDiSQ1SHK23z/Ocb9CgUE2BFmBti3HwPL3rTLDNFm9xrYG/62?=
+ =?us-ascii?Q?Ko3pQkXfZIqn7f8x5j8FBJ1ops6n3/QSWLDaYU4PpoT5nwkWxOJOizfQL3Ou?=
+ =?us-ascii?Q?a33CL3uXmSAu/9xnTquDt9UWpiVXHU1uvgMbK7GrcY/LIWB6Tw3ro5Iw9vf9?=
+ =?us-ascii?Q?ilOIpG1T+YolwaHACWkkWbaD3GRmx0K8MqEmP1iBvhtkt48SykNnjvHWQqZ/?=
+ =?us-ascii?Q?Gp9k8ZBWOCXHPUOkMMveNYIv/9ayCcZ2Em/2pv7uqde3YDv5VTWSNiAHY1w2?=
+ =?us-ascii?Q?YiQRjllaKhbQxuQc6czbm2uvgvRzkL77SMhtk7TVPpw4WPFtJ9yzgZbHg18M?=
+ =?us-ascii?Q?CiNHe95VMIrtO+tkjjLQQWvApkdirgz7XRN7V+EFDIqpEJzfLvUKjf/rEaiv?=
+ =?us-ascii?Q?eD5XiIHLfaGiXJvmHmczz32CvCYYisrR34g3xhhMzc7njxzX7Mit7oENiB5b?=
+ =?us-ascii?Q?/HRZEue9Q7DIXiMRmXUZqDF4LpyMGseHsNZaQRW1oZleOP2EechO+IEeuY+I?=
+ =?us-ascii?Q?FmIXrx5etPwnALKgLsrPW4Y9rzpmZrHVwccg38671XiIXPYPMMFK50v7PRiP?=
+ =?us-ascii?Q?tI1fyecCgcE3x0YTGeuCUSHinoXOzkFjkw7EGqiJIImFkD7SZASRtAIgS6jM?=
+ =?us-ascii?Q?OFnJ/Aazb3NSFScmT3geNkPkd3eRXtrCuZXloXuMHb/MyPOR7OZwjBoB5Ew1?=
+ =?us-ascii?Q?ookG6rIwkySIEzJ3Zgl3DPLlbTMaGi9YYp/SZ6CnJ8JQE18NsUoOJntWK9cn?=
+ =?us-ascii?Q?i7qe3Qwlx83lPWAIJZaE0DX8c9wDlJ9DZgckGSL9Ze3nzDZ/PnrBKyLnGNLP?=
+ =?us-ascii?Q?d9wNM3886np5yqSbiVjDivognZpdFE6xkAOqnj4RZ1pfs8U9ctyxb7LJOsWR?=
+ =?us-ascii?Q?BdvvJJjECCdO84Glt0HffsI1iNrZB/ahGaCFKMWqTPB6kaLkoQH3R+Mrkq9U?=
+ =?us-ascii?Q?6/ahVPWMJ401WIk8UP2750do7DOb0pdtNbrYU/mzzs8P9Ig07xOUvgcOfbPB?=
+ =?us-ascii?Q?D/6sXUFTRUhR2fDj32FaFpqyy8lbqOEDZsskjmnoupAWJoaszRU2HK6HwOIF?=
+ =?us-ascii?Q?XRvlUaHVJx5M0QWa58XRB1NLgsruun0bpe5nFi17BS3I50juKQm2uyZ3j+/5?=
+ =?us-ascii?Q?LRQlJLBrqWYQAGNG/S3ozpocXrvqbiEM07fsFtyhGPiFfOGR/Ug7M6Rj/33A?=
+ =?us-ascii?Q?VzSyHj1TqxOkeya9raJs8ciTawZJDqVNc2EsGXm6818SK9Qpk4XYqSz8xy9L?=
+ =?us-ascii?Q?H22jIq+P8pOJ9d211vc+V4jdhtDWD9bOHpEcVS03u0RY8UXUGRF+G9rx+W8h?=
+ =?us-ascii?Q?4kZAmtQWrjjAJK/NYrccbOnVBT/wrGutk8mpYwlekeNjoGIf70QDhDWVj8bj?=
+ =?us-ascii?Q?nvl5WCfN4mUgPZEqRyCBjtPJA4dybsXPoMvtBiya7j6hw5TigzxxpplxomSJ?=
+ =?us-ascii?Q?YjyP5zTRY4P8JxY2hQDXrNlwnoODB4AyDc29x9iLzyKmJYwRWLnYeaQgiRti?=
+ =?us-ascii?Q?R/MrGmyNWgnYThSzO8EA5s9juSx6p1nFaqXpBJ61ZUnLZqePwHFFFWwNI8xk?=
+ =?us-ascii?Q?Uq6uGfjxJFWVtFZ7AoIbXo1mMO8ZU7cgKzESOiX4GAyc+kOIClAHsdfmcfb9?=
+ =?us-ascii?Q?j7np/tVch9ee7tIWaqjoelNyS3alprVSve91dLjpscVZmssmvShi?=
 X-OriginatorOrg: oss.nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: df32f346-b041-4148-520f-08dec5d7126f
+X-MS-Exchange-CrossTenant-Network-Message-Id: e3f3efa0-3504-4634-f376-08dec5d7166c
 X-MS-Exchange-CrossTenant-AuthSource: VE1PR04MB7216.eurprd04.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 09 Jun 2026 03:27:45.3416
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 09 Jun 2026 03:27:51.9150
  (UTC)
 X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
 X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
 X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: lNrLXBfWnLMdn0e+JX+sPv/enzAAb5TBumtWhHrFZci7LbxZ6Ud+tTlirRKu9TVSuu9kmnz/L9aTG2NqPY4yBDr005rm/WIXjfo7oLLXWUzdvK8hnIVoRruMrptE6ZxS
+X-MS-Exchange-CrossTenant-UserPrincipalName: 0mVLnAEyHT3H5F9jtRZ+lI0ioJwLq5ZXBKKnbu8MHUf6J1P2T3c+1Il3oAQfnYcrnQ0y9yDOYKAH7DE3chqos4J1ovhSZtxrzFOFEUzJEq9Rt9+QgPFOKhLs7jVq6QbH
 X-MS-Exchange-Transport-CrossTenantHeadersStamped: AS8PR04MB8946
 
 From: Wei Fang <wei.fang@nxp.com>
 
-Wire up the port_bridge_join, port_bridge_leave and port_vlan_filtering
-DSA callbacks to support both VLAN-unaware and VLAN-aware bridge modes.
+The NETC switch does not age out dynamic FDB entries automatically.
+Without software management, stale entries persist after topology
+changes and cause incorrect forwarding.
 
-For VLAN-unaware bridges, each bridge instance is assigned a dedicated
-internal PVID via NETC_VLAN_UNAWARE_PVID(bridge.num), counting down
-from VID 4095. A VFT entry is created for this PVID with hardware MAC
-learning and flood-on-miss forwarding enabled. The CPU port is included
-as a VFT member so frames can reach the host. The reserved VID range is
-blocked in port_vlan_add to prevent user-space conflicts.
+Add a delayed work that periodically removes entries that have not been
+refreshed within the specified cycles. The effective ageing time is:
 
-Only one VLAN-aware bridge is supported at a time; this constraint is
-enforced in port_bridge_join and port_vlan_filtering. The per-port PVID
-is tracked in software and written to the BPDVR register whenever VLAN
-filtering is active.
+  ageing_time = fdbt_ageing_delay * 100
 
-When a port leaves the bridge, its dynamic FDB entries are flushed right
-away in port_bridge_leave(), without waiting for the ageing cycle. When
-a link down event occurs on a port, netc_mac_link_down() will also clear
-the port's dynamic FDB entries via netc_port_remove_dynamic_entries().
-Non-bridge ports have no dynamic FDB entries, so this call is always
-safe. Additionally, .port_fast_age() callback is added to flush the
-dynamic FDB entries associated to a port.
+Default values are 3s interval and 100 cycles (300s total), matching
+the IEEE 802.1Q default ageing time. The work starts when the first
+port joins a bridge (tracked via br_cnt) and is cancelled when the
+last port leaves. All FDB operations are serialized under fdbt_lock.
 
-Host flood rules are removed from the ingress port filter table when a
-port joins a bridge to avoid bypassing FDB lookup and MAC learning.
+Implement .set_ageing_time() to allow the bridge layer to reconfigure
+ageing parameters on demand.
 
 Signed-off-by: Wei Fang <wei.fang@nxp.com>
 ---
- drivers/net/dsa/netc/netc_main.c   | 377 +++++++++++++++++++++++++++--
- drivers/net/dsa/netc/netc_switch.h |   2 +
- 2 files changed, 363 insertions(+), 16 deletions(-)
+ drivers/net/dsa/netc/netc_main.c   | 67 ++++++++++++++++++++++++++++++
+ drivers/net/dsa/netc/netc_switch.h |  7 ++++
+ 2 files changed, 74 insertions(+)
 
 diff --git a/drivers/net/dsa/netc/netc_main.c b/drivers/net/dsa/netc/netc_main.c
-index fcca22da08d8..299a9e76b9aa 100644
+index 299a9e76b9aa..c6082c6f8fd9 100644
 --- a/drivers/net/dsa/netc/netc_main.c
 +++ b/drivers/net/dsa/netc/netc_main.c
-@@ -509,6 +509,17 @@ static void netc_port_set_mlo(struct netc_port *np, enum netc_mlo mlo)
- 	netc_port_rmw(np, NETC_BPCR, BPCR_MLO, FIELD_PREP(BPCR_MLO, mlo));
+@@ -447,6 +447,25 @@ static void netc_free_ntmp_user(struct netc_switch *priv)
+ 	netc_free_ntmp_bitmaps(priv);
  }
  
-+static void netc_port_set_pvid(struct netc_port *np, u16 pvid)
++static void netc_clean_fdbt_ageing_entries(struct work_struct *work)
 +{
-+	netc_port_rmw(np, NETC_BPDVR, BPDVR_VID, pvid);
-+}
++	struct delayed_work *dwork = to_delayed_work(work);
++	struct netc_switch *priv;
 +
-+static void netc_port_set_vlan_aware(struct netc_port *np, bool aware)
-+{
-+	netc_port_rmw(np, NETC_BPDVR, BPDVR_RXVAM,
-+		      aware ? 0 : BPDVR_RXVAM);
-+}
++	priv = container_of(dwork, struct netc_switch, fdbt_ageing_work);
 +
- static void netc_port_fixed_config(struct netc_port *np)
- {
- 	/* Default IPV and DR setting */
-@@ -534,7 +545,7 @@ static void netc_port_default_config(struct netc_port *np)
- 	netc_port_fixed_config(np);
- 
- 	/* Default VLAN unaware */
--	netc_port_rmw(np, NETC_BPDVR, BPDVR_RXVAM, BPDVR_RXVAM);
-+	netc_port_set_vlan_aware(np, false);
- 
- 	if (dsa_port_is_cpu(np->dp))
- 		/* For CPU port, source port pruning is disabled */
-@@ -695,10 +706,16 @@ static int netc_port_del_fdb_entry(struct netc_port *np,
- 
- 	entry = netc_lookup_fdb_entry(priv, addr, vid);
- 	if (unlikely(!entry))
--		/* Currently only single port mode is supported, MAC learning
--		 * is disabled, so there is no dynamically learned FDB entry.
--		 * We need to support deleting dynamically FDB entry when the
--		 * bridge mode is supported.
-+		/* The hardware-learned dynamic FDB entries cannot be deleted
-+		 * through .port_fdb_del() interface.
-+		 * For NTF_MASTER path: Since hardware-learned dynamic FDB
-+		 * entries are never synchronized back to the bridge software
-+		 * database. br_fdb_delete() -> br_fdb_find() cannot find the
-+		 * FDB entry, so .port_fdb_del() will not be called.
-+		 * For NTF_SELF path: dsa_user_netdev_ops does not implement
-+		 * ndo_fdb_del(), so rtnl_fdb_del() falls back to
-+		 * ndo_dflt_fdb_del(), which only supports NUD_PERMANENT static
-+		 * entries and rejects all others with -EINVAL.
- 		 */
- 		goto unlock_fdbt;
- 
-@@ -1277,6 +1294,16 @@ static int netc_port_add_vlan_entry(struct netc_port *np, u16 vid,
- 	entry->ect_gid = NTMP_NULL_ENTRY_ID;
- 
- 	bitmap_stg = BIT(index) | VFT_STG_ID(0);
-+	/* If the VID is a VLAN-unaware PVID, the CPU port needs to be
-+	 * a member of this VLAN.
-+	 */
-+	if (dsa_port_is_user(np->dp) &&
-+	    vid >= NETC_VLAN_UNAWARE_PVID(priv->ds->max_num_bridges)) {
-+		struct dsa_port *cpu_dp = np->dp->cpu_dp;
-+
-+		bitmap_stg |= BIT(cpu_dp->index);
-+	}
-+
- 	cfg = FIELD_PREP(VFT_MLO, MLO_HW) |
- 	      FIELD_PREP(VFT_MFO, MFO_NO_MATCH_FLOOD);
- 
-@@ -1314,11 +1341,16 @@ static int netc_port_add_vlan_entry(struct netc_port *np, u16 vid,
- 	return err;
- }
- 
--static bool netc_port_vlan_egress_rule_changed(struct netc_vlan_entry *entry,
-+static bool netc_port_vlan_egress_rule_changed(struct netc_switch *priv,
-+					       struct netc_vlan_entry *entry,
- 					       int port, bool untagged)
- {
- 	bool old_untagged = !!(entry->untagged_port_bitmap & BIT(port));
- 
-+	/* VLAN-unaware VIDs have no egress rules, so return 'false' */
-+	if (entry->vid >= NETC_VLAN_UNAWARE_PVID(priv->ds->max_num_bridges))
-+		return false;
-+
- 	return old_untagged != untagged;
- }
- 
-@@ -1341,7 +1373,8 @@ static int netc_port_set_vlan_entry(struct netc_port *np, u16 vid,
- 	}
- 
- 	/* Check whether the egress VLAN rule is changed */
--	changed = netc_port_vlan_egress_rule_changed(entry, port, untagged);
-+	changed = netc_port_vlan_egress_rule_changed(priv, entry, port,
-+						     untagged);
- 	if (changed) {
- 		entry->untagged_port_bitmap ^= BIT(port);
- 		err = netc_port_update_vlan_egress_rule(np, entry);
-@@ -1405,6 +1438,17 @@ static int netc_port_del_vlan_entry(struct netc_port *np, u16 vid)
- 	cfge = &entry->cfge;
- 	vlan_port_bitmap = FIELD_GET(VFT_PORT_MEMBERSHIP,
- 				     le32_to_cpu(cfge->bitmap_stg));
-+	/* If the VID is a VLAN-unaware PVID, we need to clear the CPU
-+	 * port bit of vlan_port_bitmap, so that the VLAN entry can be
-+	 * deleted if no user ports use this VLAN.
-+	 */
-+	if (dsa_port_is_user(np->dp) &&
-+	    vid >= NETC_VLAN_UNAWARE_PVID(priv->ds->max_num_bridges)) {
-+		struct dsa_port *cpu_dp = np->dp->cpu_dp;
-+
-+		vlan_port_bitmap &= ~BIT(cpu_dp->index);
-+	}
-+
- 	/* If the VLAN only belongs to the current port */
- 	if (vlan_port_bitmap == BIT(port)) {
- 		err = ntmp_vft_delete_entry(&priv->ntmp, vid);
-@@ -1510,17 +1554,50 @@ static int netc_port_max_mtu(struct dsa_switch *ds, int port)
- 	return NETC_MAX_FRAME_LEN - VLAN_ETH_HLEN - ETH_FCS_LEN;
- }
- 
-+static struct net_device *netc_classify_db(struct dsa_db db)
-+{
-+	switch (db.type) {
-+	case DSA_DB_PORT:
-+		return NULL;
-+	case DSA_DB_BRIDGE:
-+		return db.bridge.dev;
-+	default:
-+		return ERR_PTR(-EOPNOTSUPP);
-+	}
-+}
-+
-+static u16 netc_vlan_unaware_pvid(struct dsa_bridge *bridge)
-+{
-+	u32 br_num;
-+
-+	if (!bridge)
-+		return NETC_STANDALONE_PVID;
-+
-+	br_num = bridge->num;
-+
-+	/* The br_num is supposed to be 1 ~ ds->max_num_bridges, see
-+	 * dsa_bridge_num_get(). Since max_num_bridges is non-zero,
-+	 * so dsa_port_bridge_create() will return an error if
-+	 * dsa_bridge_num_get() returns 0.
-+	 */
-+	if (WARN_ON(!br_num))
-+		return NETC_STANDALONE_PVID;
-+
-+	return NETC_VLAN_UNAWARE_PVID(br_num);
-+}
-+
- static int netc_port_fdb_add(struct dsa_switch *ds, int port,
- 			     const unsigned char *addr, u16 vid,
- 			     struct dsa_db db)
- {
-+	struct net_device *br_ndev = netc_classify_db(db);
- 	struct netc_port *np = NETC_PORT(ds, port);
- 
--	/* Currently, only support standalone port mode, so only
--	 * NETC_STANDALONE_PVID (= 0) is supported here.
--	 */
--	if (vid != NETC_STANDALONE_PVID)
--		return -EOPNOTSUPP;
-+	if (IS_ERR(br_ndev))
-+		return PTR_ERR(br_ndev);
-+
-+	if (!vid)
-+		vid = netc_vlan_unaware_pvid(br_ndev ? &db.bridge : NULL);
- 
- 	return netc_port_set_fdb_entry(np, addr, vid);
- }
-@@ -1529,10 +1606,14 @@ static int netc_port_fdb_del(struct dsa_switch *ds, int port,
- 			     const unsigned char *addr, u16 vid,
- 			     struct dsa_db db)
- {
-+	struct net_device *br_ndev = netc_classify_db(db);
- 	struct netc_port *np = NETC_PORT(ds, port);
- 
--	if (vid != NETC_STANDALONE_PVID)
--		return -EOPNOTSUPP;
-+	if (IS_ERR(br_ndev))
-+		return PTR_ERR(br_ndev);
-+
-+	if (!vid)
-+		vid = netc_vlan_unaware_pvid(br_ndev ? &db.bridge : NULL);
- 
- 	return netc_port_del_fdb_entry(np, addr, vid);
- }
-@@ -1568,6 +1649,8 @@ static int netc_port_fdb_dump(struct dsa_switch *ds, int port,
- 		cfg = le32_to_cpu(cfge->cfg);
- 		is_static = (cfg & FDBT_DYNAMIC) ? false : true;
- 		vid = le16_to_cpu(keye->fid);
-+		if (vid >= NETC_VLAN_UNAWARE_PVID(ds->max_num_bridges))
-+			vid = 0;
- 
- 		err = cb(keye->mac_addr, vid, is_static, data);
- 		if (err)
-@@ -1670,12 +1753,23 @@ static void netc_port_remove_host_flood(struct netc_port *np,
- 					struct ipft_entry_data *host_flood)
- {
- 	struct netc_switch *priv = np->switch_priv;
-+	bool disable_host_flood = false;
- 
- 	if (!host_flood)
- 		return;
- 
-+	if (np->host_flood == host_flood)
-+		disable_host_flood = true;
-+
- 	ntmp_ipft_delete_entry(&priv->ntmp, host_flood->entry_id);
- 	kfree(host_flood);
-+
-+	if (disable_host_flood) {
-+		np->host_flood = NULL;
-+		np->uc = false;
-+		np->mc = false;
-+		netc_port_wr(np, NETC_PIPFCR, 0);
-+	}
- }
- 
- static void netc_port_set_host_flood(struct dsa_switch *ds, int port,
-@@ -1684,6 +1778,17 @@ static void netc_port_set_host_flood(struct dsa_switch *ds, int port,
- 	struct netc_port *np = NETC_PORT(ds, port);
- 	struct ipft_entry_data *old_host_flood;
- 
-+	/* Do not add host flood rule to ingress port filter table when
-+	 * the port has joined a bridge. Otherwise, the ingress frames
-+	 * will bypass FDB table lookup and MAC learning, so the frames
-+	 * will be redirected directly to the CPU port.
-+	 */
-+	if (dsa_port_bridge_dev_get(np->dp)) {
-+		netc_port_remove_host_flood(np, np->host_flood);
-+
-+		return;
-+	}
-+
- 	if (np->uc == uc && np->mc == mc)
- 		return;
- 
-@@ -1705,12 +1810,90 @@ static void netc_port_set_host_flood(struct dsa_switch *ds, int port,
- 	netc_port_remove_host_flood(np, old_host_flood);
- }
- 
-+static int netc_single_vlan_aware_bridge(struct dsa_switch *ds,
-+					 struct netlink_ext_ack *extack)
-+{
-+	struct net_device *br_ndev = NULL;
-+	struct dsa_port *dp;
-+
-+	dsa_switch_for_each_available_port(dp, ds) {
-+		struct net_device *port_br = dsa_port_bridge_dev_get(dp);
-+
-+		if (!port_br || !br_vlan_enabled(port_br))
-+			continue;
-+
-+		if (!br_ndev) {
-+			br_ndev = port_br;
-+			continue;
-+		}
-+
-+		if (br_ndev == port_br)
-+			continue;
-+
-+		NL_SET_ERR_MSG_MOD(extack,
-+				   "Only one VLAN-aware bridge is supported");
-+
-+		return -EBUSY;
-+	}
-+
-+	return 0;
-+}
-+
-+static int netc_port_vlan_filtering(struct dsa_switch *ds,
-+				    int port, bool vlan_aware,
-+				    struct netlink_ext_ack *extack)
-+{
-+	struct netc_port *np = NETC_PORT(ds, port);
-+	u16 pvid;
-+	int err;
-+
-+	/* Before calling port_vlan_filtering(), br_vlan_filter_toggle() has
-+	 * already updated the BROPT_VLAN_ENABLED bit of br->options. So the
-+	 * VLAN filtering status of the switch ports can be checked by the
-+	 * br_vlan_enabled() function.
-+	 */
-+	err = netc_single_vlan_aware_bridge(ds, extack);
-+	if (err)
-+		return err;
-+
-+	pvid = netc_vlan_unaware_pvid(np->dp->bridge);
-+	if (pvid == NETC_STANDALONE_PVID) {
-+		vlan_aware = false;
-+		goto bpdvr_config;
-+	}
-+
-+	if (vlan_aware) {
-+		/* The FDB entries associated with unaware_pvid do not need
-+		 * to be deleted, so that when switching from VLAN-aware to
-+		 * VLAN-unaware mode, these FDB entries do not need to be
-+		 * re-added.
-+		 */
-+		err = netc_port_del_vlan_entry(np, pvid);
-+		if (err)
-+			return err;
-+
-+		pvid = np->pvid;
-+	} else {
-+		err = netc_port_set_vlan_entry(np, pvid, false);
-+		if (err)
-+			return err;
-+	}
-+
-+bpdvr_config:
-+	netc_port_set_vlan_aware(np, vlan_aware);
-+	netc_port_set_pvid(np, pvid);
-+
-+	return 0;
-+}
-+
- static int netc_port_vlan_add(struct dsa_switch *ds, int port,
- 			      const struct switchdev_obj_port_vlan *vlan,
- 			      struct netlink_ext_ack *extack)
- {
- 	struct netc_port *np = NETC_PORT(ds, port);
-+	struct dsa_port *dp = np->dp;
- 	bool untagged;
-+	int err;
- 
- 	/* The 8021q layer may attempt to change NETC_STANDALONE_PVID
- 	 * (VID 0), so we need to ignore it.
-@@ -1718,20 +1901,176 @@ static int netc_port_vlan_add(struct dsa_switch *ds, int port,
- 	if (vlan->vid == NETC_STANDALONE_PVID)
- 		return 0;
- 
-+	if (vlan->vid >= NETC_VLAN_UNAWARE_PVID(ds->max_num_bridges)) {
-+		NL_SET_ERR_MSG_FMT_MOD(extack,
-+				       "VID %d~4095 reserved for VLAN-unaware bridge",
-+				       NETC_VLAN_UNAWARE_PVID(ds->max_num_bridges));
-+		return -EINVAL;
-+	}
-+
- 	untagged = !!(vlan->flags & BRIDGE_VLAN_INFO_UNTAGGED);
-+	err = netc_port_set_vlan_entry(np, vlan->vid, untagged);
-+	if (err)
-+		return err;
-+
-+	if (vlan->flags & BRIDGE_VLAN_INFO_PVID) {
-+		np->pvid = vlan->vid;
-+		if (dsa_port_is_vlan_filtering(dp))
-+			netc_port_set_pvid(np, vlan->vid);
- 
--	return netc_port_set_vlan_entry(np, vlan->vid, untagged);
-+		return 0;
-+	}
-+
-+	if (np->pvid != vlan->vid)
-+		return 0;
-+
-+	/* Delete PVID */
-+	np->pvid = NETC_STANDALONE_PVID;
-+	if (dsa_port_is_vlan_filtering(dp))
-+		netc_port_set_pvid(np, NETC_STANDALONE_PVID);
-+
-+	return 0;
- }
- 
- static int netc_port_vlan_del(struct dsa_switch *ds, int port,
- 			      const struct switchdev_obj_port_vlan *vlan)
- {
- 	struct netc_port *np = NETC_PORT(ds, port);
-+	int err;
- 
- 	if (vlan->vid == NETC_STANDALONE_PVID)
- 		return 0;
- 
--	return netc_port_del_vlan_entry(np, vlan->vid);
-+	if (vlan->vid >= NETC_VLAN_UNAWARE_PVID(ds->max_num_bridges))
-+		return -EINVAL;
-+
-+	err = netc_port_del_vlan_entry(np, vlan->vid);
-+	if (err)
-+		return err;
-+
-+	if (np->pvid == vlan->vid) {
-+		np->pvid = NETC_STANDALONE_PVID;
-+
-+		/* Set the port PVID to NETC_STANDALONE_PVID if the VLAN-aware
-+		 * bridge port has no PVID. The untagged frames will not be
-+		 * forwarded to other user ports, as NETC_STANDALONE_PVID VLAN
-+		 * entry has disabled MAC learning and flooding, and other user
-+		 * ports do not have FDB entries with NETC_STANDALONE_PVID.
-+		 */
-+		if (dsa_port_is_vlan_filtering(np->dp))
-+			netc_port_set_pvid(np, NETC_STANDALONE_PVID);
-+	}
-+
-+	return 0;
-+}
-+
-+static int netc_port_bridge_join(struct dsa_switch *ds, int port,
-+				 struct dsa_bridge bridge,
-+				 bool *tx_fwd_offload,
-+				 struct netlink_ext_ack *extack)
-+{
-+	struct netc_port *np = NETC_PORT(ds, port);
-+	u16 vlan_unaware_pvid;
-+	int err;
-+
-+	if (!bridge.num) {
-+		NL_SET_ERR_MSG_MOD(extack, "Bridge number 0 is unsupported");
-+		return -EINVAL;
-+	}
-+
-+	err = netc_single_vlan_aware_bridge(ds, extack);
-+	if (err)
-+		return err;
-+
-+	netc_port_set_mlo(np, MLO_NOT_OVERRIDE);
-+
-+	if (br_vlan_enabled(bridge.dev))
-+		goto out;
-+
-+	vlan_unaware_pvid = NETC_VLAN_UNAWARE_PVID(bridge.num);
-+	err = netc_port_set_vlan_entry(np, vlan_unaware_pvid, false);
-+	if (err)
-+		goto disable_mlo;
-+
-+	netc_port_set_pvid(np, vlan_unaware_pvid);
-+
-+out:
-+	netc_port_remove_host_flood(np, np->host_flood);
-+
-+	return 0;
-+
-+disable_mlo:
-+	netc_port_set_mlo(np, MLO_DISABLE);
-+
-+	return err;
-+}
-+
-+static void netc_port_remove_dynamic_entries(struct netc_port *np)
-+{
-+	struct netc_switch *priv = np->switch_priv;
-+
-+	/* Return if the port is not available */
-+	if (!np->dp)
-+		return;
-+
++	/* Update the activity element in FDB table */
 +	mutex_lock(&priv->fdbt_lock);
-+	ntmp_fdbt_delete_port_dynamic_entries(&priv->ntmp, np->dp->index);
++	ntmp_fdbt_update_activity_element(&priv->ntmp);
++	/* Delete the ageing entries after the activity element is updated */
++	ntmp_fdbt_delete_ageing_entries(&priv->ntmp, NETC_FDBT_AGEING_THRESH);
 +	mutex_unlock(&priv->fdbt_lock);
++
++	if (atomic_read(&priv->br_cnt))
++		schedule_delayed_work(&priv->fdbt_ageing_work,
++				      READ_ONCE(priv->fdbt_ageing_delay));
 +}
 +
-+static void netc_port_bridge_leave(struct dsa_switch *ds, int port,
-+				   struct dsa_bridge bridge)
+ static void netc_switch_dos_default_config(struct netc_switch *priv)
+ {
+ 	struct netc_switch_regs *regs = &priv->regs;
+@@ -872,6 +891,10 @@ static int netc_setup(struct dsa_switch *ds)
+ 
+ 	INIT_HLIST_HEAD(&priv->fdb_list);
+ 	mutex_init(&priv->fdbt_lock);
++	priv->fdbt_ageing_delay = NETC_FDBT_AGEING_DELAY;
++	atomic_set(&priv->br_cnt, 0);
++	INIT_DELAYED_WORK(&priv->fdbt_ageing_work,
++			  netc_clean_fdbt_ageing_entries);
+ 	INIT_HLIST_HEAD(&priv->vlan_list);
+ 	mutex_init(&priv->vft_lock);
+ 
+@@ -936,6 +959,7 @@ static void netc_teardown(struct dsa_switch *ds)
+ {
+ 	struct netc_switch *priv = ds->priv;
+ 
++	disable_delayed_work_sync(&priv->fdbt_ageing_work);
+ 	netc_destroy_all_lists(priv);
+ 	netc_free_host_flood_rules(priv);
+ 	netc_free_ntmp_user(priv);
+@@ -1970,6 +1994,7 @@ static int netc_port_bridge_join(struct dsa_switch *ds, int port,
+ 				 struct netlink_ext_ack *extack)
+ {
+ 	struct netc_port *np = NETC_PORT(ds, port);
++	struct netc_switch *priv = ds->priv;
+ 	u16 vlan_unaware_pvid;
+ 	int err;
+ 
+@@ -1997,6 +2022,10 @@ static int netc_port_bridge_join(struct dsa_switch *ds, int port,
+ out:
+ 	netc_port_remove_host_flood(np, np->host_flood);
+ 
++	if (atomic_inc_return(&priv->br_cnt) == 1)
++		schedule_delayed_work(&priv->fdbt_ageing_work,
++				      READ_ONCE(priv->fdbt_ageing_delay));
++
+ 	return 0;
+ 
+ disable_mlo:
+@@ -2023,6 +2052,7 @@ static void netc_port_bridge_leave(struct dsa_switch *ds, int port,
+ {
+ 	struct netc_port *np = NETC_PORT(ds, port);
+ 	struct net_device *ndev = np->dp->user;
++	struct netc_switch *priv = ds->priv;
+ 	u16 vlan_unaware_pvid;
+ 	bool mc, uc;
+ 
+@@ -2030,6 +2060,9 @@ static void netc_port_bridge_leave(struct dsa_switch *ds, int port,
+ 	netc_port_set_pvid(np, NETC_STANDALONE_PVID);
+ 	np->pvid = NETC_STANDALONE_PVID;
+ 
++	if (atomic_dec_and_test(&priv->br_cnt))
++		cancel_delayed_work_sync(&priv->fdbt_ageing_work);
++
+ 	netc_port_remove_dynamic_entries(np);
+ 	uc = ndev->flags & IFF_PROMISC;
+ 	mc = ndev->flags & (IFF_PROMISC | IFF_ALLMULTI);
+@@ -2066,6 +2099,37 @@ static void netc_port_bridge_leave(struct dsa_switch *ds, int port,
+ 	netc_port_del_vlan_entry(np, vlan_unaware_pvid);
+ }
+ 
++static int netc_set_ageing_time(struct dsa_switch *ds, unsigned int msecs)
 +{
-+	struct netc_port *np = NETC_PORT(ds, port);
-+	struct net_device *ndev = np->dp->user;
-+	u16 vlan_unaware_pvid;
-+	bool mc, uc;
++	struct netc_switch *priv = ds->priv;
++	unsigned long delay_jiffies;
 +
-+	netc_port_set_mlo(np, MLO_DISABLE);
-+	netc_port_set_pvid(np, NETC_STANDALONE_PVID);
-+	np->pvid = NETC_STANDALONE_PVID;
-+
-+	netc_port_remove_dynamic_entries(np);
-+	uc = ndev->flags & IFF_PROMISC;
-+	mc = ndev->flags & (IFF_PROMISC | IFF_ALLMULTI);
-+
-+	if (netc_port_add_host_flood_rule(np, uc, mc))
-+		dev_warn(ds->dev,
-+			 "Failed to restore host flood rule on port %d\n",
-+			 port);
-+
-+	/* When a port leaves a VLAN-aware bridge, dsa_port_bridge_leave()
-+	 * follows the sequence below:
++	/* The dynamic FDB entry is deleted when its activity counter reaches
++	 * NETC_FDBT_AGEING_THRESH (100). Each delayed_work tick increments
++	 * the counter by 1 if the entry is inactive.
 +	 *
-+	 * 1. dsa_port_bridge_destroy() is called to set dp->bridge to NULL.
-+	 * 2. dsa_broadcast() is called, which eventually invokes
-+	 *    ds->ops->port_bridge_leave()
-+	 * 3. dsa_port_switchdev_unsync_attrs() is called, which triggers
-+	 *    dsa_port_reset_vlan_filtering() and ultimately calls
-+	 *    ds->ops->port_vlan_filtering() to transition the port from
-+	 *    VLAN-aware mode to VLAN-unaware mode.
++	 * Therefore:
++	 *   msecs (ms)    = NETC_FDBT_AGEING_THRESH * delay_ms (ms)
++	 *   delay_ms      = msecs / NETC_FDBT_AGEING_THRESH
++	 *   delay_jiffies = (delay_ms / 1000) * HZ
++	 *                 = (msecs * HZ) / (1000 * NETC_FDBT_AGEING_THRESH)
 +	 *
-+	 * At step 3, since dp->bridge has already been set to NULL in step 1,
-+	 * netc_port_vlan_filtering() will detect this and skip the creation
-+	 * of an unaware PVID entry in the VLAN filter table. Therefore, it is
-+	 * safe to return directly here.
++	 * Use DIV_ROUND_CLOSEST_ULL to perform a single nearest-jiffy
++	 * rounding, avoiding the two-step rounding error of the intermediate
++	 * delay_ms approach.
++	 *   Maximum error = +/-0.5 jiffy * 100 = +/-50000/HZ ms.
 +	 */
-+	if (br_vlan_enabled(bridge.dev))
-+		return;
++	delay_jiffies = DIV_ROUND_CLOSEST_ULL((u64)msecs * HZ,
++					      1000 * NETC_FDBT_AGEING_THRESH);
++	WRITE_ONCE(priv->fdbt_ageing_delay, delay_jiffies);
 +
-+	vlan_unaware_pvid = NETC_VLAN_UNAWARE_PVID(bridge.num);
-+	/* There is no need to check the return value even if it fails.
-+	 * Because the PVID has been set to NETC_STANDALONE_PVID, the
-+	 * frames will not match this VLAN entry.
-+	 */
-+	netc_port_del_vlan_entry(np, vlan_unaware_pvid);
++	if (atomic_read(&priv->br_cnt))
++		mod_delayed_work(system_percpu_wq, &priv->fdbt_ageing_work,
++				 READ_ONCE(priv->fdbt_ageing_delay));
++
++	return 0;
 +}
 +
-+static void netc_port_fast_age(struct dsa_switch *ds, int port)
-+{
-+	struct netc_port *np = NETC_PORT(ds, port);
-+
-+	netc_port_remove_dynamic_entries(np);
- }
- 
- static void netc_phylink_get_caps(struct dsa_switch *ds, int port,
-@@ -1988,6 +2327,7 @@ static void netc_mac_link_down(struct phylink_config *config,
- 	np = NETC_PORT(dp->ds, dp->index);
- 	netc_port_mac_rx_graceful_stop(np);
- 	netc_port_mac_tx_graceful_stop(np);
-+	netc_port_remove_dynamic_entries(np);
- }
- 
- static const struct phylink_mac_ops netc_phylink_mac_ops = {
-@@ -2012,8 +2352,12 @@ static const struct dsa_switch_ops netc_switch_ops = {
- 	.port_mdb_add			= netc_port_mdb_add,
- 	.port_mdb_del			= netc_port_mdb_del,
- 	.port_set_host_flood		= netc_port_set_host_flood,
-+	.port_vlan_filtering		= netc_port_vlan_filtering,
- 	.port_vlan_add			= netc_port_vlan_add,
+ static void netc_port_fast_age(struct dsa_switch *ds, int port)
+ {
+ 	struct netc_port *np = NETC_PORT(ds, port);
+@@ -2357,6 +2421,7 @@ static const struct dsa_switch_ops netc_switch_ops = {
  	.port_vlan_del			= netc_port_vlan_del,
-+	.port_bridge_join		= netc_port_bridge_join,
-+	.port_bridge_leave		= netc_port_bridge_leave,
-+	.port_fast_age			= netc_port_fast_age,
+ 	.port_bridge_join		= netc_port_bridge_join,
+ 	.port_bridge_leave		= netc_port_bridge_leave,
++	.set_ageing_time		= netc_set_ageing_time,
+ 	.port_fast_age			= netc_port_fast_age,
  	.get_pause_stats		= netc_port_get_pause_stats,
  	.get_rmon_stats			= netc_port_get_rmon_stats,
- 	.get_eth_ctrl_stats		= netc_port_get_eth_ctrl_stats,
-@@ -2061,6 +2405,7 @@ static int netc_switch_probe(struct pci_dev *pdev,
- 	ds->ops = &netc_switch_ops;
+@@ -2406,6 +2471,8 @@ static int netc_switch_probe(struct pci_dev *pdev,
  	ds->phylink_mac_ops = &netc_phylink_mac_ops;
  	ds->fdb_isolation = true;
-+	ds->max_num_bridges = priv->info->num_ports - 1;
+ 	ds->max_num_bridges = priv->info->num_ports - 1;
++	ds->ageing_time_min = 1000;
++	ds->ageing_time_max = U32_MAX;
  	ds->priv = priv;
  	priv->ds = ds;
  
 diff --git a/drivers/net/dsa/netc/netc_switch.h b/drivers/net/dsa/netc/netc_switch.h
-index 9ff334301fbc..982c8d3a3fbf 100644
+index 982c8d3a3fbf..305f2a92e2f9 100644
 --- a/drivers/net/dsa/netc/netc_switch.h
 +++ b/drivers/net/dsa/netc/netc_switch.h
-@@ -33,6 +33,7 @@
- #define NETC_MAX_FRAME_LEN		9600
+@@ -50,6 +50,9 @@
+ /* PAUSE refresh threshold: send refresh when timer reaches this value */
+ #define NETC_PAUSE_THRESH		0x7FFF
  
- #define NETC_STANDALONE_PVID		0
-+#define NETC_VLAN_UNAWARE_PVID(br_id)	(4096 - (br_id))
++#define NETC_FDBT_AGEING_DELAY		(3 * HZ)
++#define NETC_FDBT_AGEING_THRESH		100
++
+ struct netc_switch;
  
- /* Threshold format: MANT (bits 11:4) * 2^EXP (bits 3:0)
-  * Unit: Memory words (average of 20 bytes each)
-@@ -79,6 +80,7 @@ struct netc_port {
- 	u16 enable:1;
- 	u16 uc:1;
- 	u16 mc:1;
-+	u16 pvid;
- 	struct ipft_entry_data *host_flood;
- };
+ struct netc_switch_info {
+@@ -124,6 +127,10 @@ struct netc_switch {
+ 	struct ntmp_user ntmp;
+ 	struct hlist_head fdb_list;
+ 	struct mutex fdbt_lock; /* FDB table lock */
++	struct delayed_work fdbt_ageing_work;
++	/* (fdbt_ageing_delay * NETC_FDBT_AGEING_THRESH) is ageing time */
++	unsigned long fdbt_ageing_delay;
++	atomic_t br_cnt;
+ 	struct hlist_head vlan_list;
+ 	struct mutex vft_lock; /* VLAN filter table lock */
  
 -- 
 2.34.1
