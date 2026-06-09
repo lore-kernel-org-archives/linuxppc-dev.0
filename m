@@ -1,77 +1,77 @@
-Return-Path: <linuxppc-dev+bounces-22355-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22356-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C0ECACD8CB2
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Jun 2026 22:19:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 22626CD8CAD
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Jun 2026 22:20:02 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gZjyK4zL6z2xll;
-	Wed, 10 Jun 2026 08:19:53 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::532"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781043593;
-	cv=none; b=D1RKHdpJjvKTb/Nfokt4Rx0QDiIuQHQDeeb0IebQ9LspKniyNv3dGDnIdD0DPPR1U9NI4ASytlQQ2jgo842rU3zkC6mzwxnfQnHv54+7WYGb2wbZlqUzpMArZ7qnz0cMtuWT+cUl1DURRdVZ9ZP804+O0TZl4A3H2uueqHZflU++vO3u2lJKNge2S0l+1Zanc90MP3BpPjoqPnjZOCaeIvKND8TyLKVRxz2EZQYGXtbio0WtUrqdbvba/iU2+AlpIX3gNAkhZFYxmWR69H74WgL8nbNjTQ4JsGwcYIR9ZzLF+t9JKBOviY9Pn+HdaqLYYKB+AUuSGx0Zpa/CnhyX+w==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gZjyL35QZz2ykX;
+	Wed, 10 Jun 2026 08:19:54 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::536"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781043594;
+	cv=none; b=kXnZyvu6msQer8nzBKZbfGHcFVnutC5My3DUEWtXbWA1EyXZHhkfg0ZItxZYfOZ2gL28UF+BIm1umH/6tN0HCLkXUVIBYJxxPy0M06nNTqNdlX7XyjH9rpwPFICiYopi7l0i45M0U4wfEOJYEBuTls7IzI/YZZd5ng3GMtsskAm3oBiUgsmbYKMWHdcmozCPLAUWYCfQqA9mXvdfL9w4EUL8UoXqG9C7jSIthcUybbRsj4pd5nSgBK5ahKg7neiTWs9lfNJShueW054gzA+QJIx81djZIClVc6NuyntsveZTUW4OhybP/oAMbbX8ygNfJCJnyQMV0X/9gVSWKH5DeQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1781043593; c=relaxed/relaxed;
-	bh=VabrJGQKyMUS5+LwCSzuBvRxZba7atk/VeVHPvy/VCE=;
+	t=1781043594; c=relaxed/relaxed;
+	bh=twBxGuT7Vyeqc2tSt+1Cu5dVnnD709Tu79Udll0+igY=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=lJq/Ta2CQ6jWJb9t+mtj6rhcmACMLa55tWkhgOHbDrY7+TcbDXjxZUFsJk0xoPvyWLinj90kw4R3XqejMSm9xEuzvN2Qpx3vANhbP+3D6sCmHh8RBeDGYWkgxt+q8uchEkxNY8W9xLCcMILULyQ5G/oGhySqiZQStg6KjnHtjcX5WHL8/jx2BzBcZ0wc9G1bPrEK7sGnXE9wS+R6hMo5wa1VQJbnUiEpQzsG7oWwu8t/Ix6SV8DV1IhvlSJ/AaENVsAo3JXXi2Nuwczg/PQFD2pqKKvSQi6CXdVGEROEuXdSRCyeuWjWU7z3WByUGnZV+xPNrS2tZmch5mSpG/wVfw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=KkNX93ww; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::532; helo=mail-pg1-x532.google.com; envelope-from=rosenp@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	 MIME-Version; b=fPJNhvMfsaoAHvlEVAhQNMSVpEeDLt+2XuCsByK+aDDIAWXq7H6QPAuv36Vhp9QK8W7GBK90qbYVHXWFAPHm94r/RwpBai79TW81uCFy2ggOOhaRmHKeg2chVImaakgRgr97K3AqjRPRP4xw9hqkUP9DeYnWZtHuAq6zeb6QiaGqQStthEdfsGMjdpWZMbg5lJOuJuHVMU8AnC93XCLFEyzw4nS9ngvhiUiGIby5Y1BG1tmsLY3FgoPBwytY9tY0+D2GfTvwmwVFAx1eGYIJg3cvLJO14iuQC2fXINSgsckqJEMD5ZNrHildkMkPlB00fnsKm8bcLggouORqimUVMw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=Znu4Wjg4; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::536; helo=mail-pg1-x536.google.com; envelope-from=rosenp@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=KkNX93ww;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=Znu4Wjg4;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::532; helo=mail-pg1-x532.google.com; envelope-from=rosenp@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pg1-x532.google.com (mail-pg1-x532.google.com [IPv6:2607:f8b0:4864:20::532])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::536; helo=mail-pg1-x536.google.com; envelope-from=rosenp@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pg1-x536.google.com (mail-pg1-x536.google.com [IPv6:2607:f8b0:4864:20::536])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gZjyG6pBLz2xWP
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jun 2026 08:19:50 +1000 (AEST)
-Received: by mail-pg1-x532.google.com with SMTP id 41be03b00d2f7-c8584bbbf2cso3969601a12.3
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Jun 2026 15:19:49 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gZjyJ3jqxz2xk7
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jun 2026 08:19:52 +1000 (AEST)
+Received: by mail-pg1-x536.google.com with SMTP id 41be03b00d2f7-c85a297d2d2so3589618a12.0
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Jun 2026 15:19:52 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1781043588; x=1781648388; darn=lists.ozlabs.org;
+        d=gmail.com; s=20251104; t=1781043590; x=1781648390; darn=lists.ozlabs.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=VabrJGQKyMUS5+LwCSzuBvRxZba7atk/VeVHPvy/VCE=;
-        b=KkNX93wwcEnA0VpBa/V7qtbJO/ILIme19glrLU2h+sylxemiIE8lFrNWRup+XQd3gk
-         8mdVRgwFjhgPqNJzMRiQlAe5p05gycn3h2sCKR1Y5F5OAc/ab9BBS7zyBHKP6uSNxINE
-         Uf6p4OqpXKq2yFDaV8SqxoIGR8vJ7qs+fU5QGf+QCEtQN8SYmZrbIX330zJDkWu9H516
-         np1QFgmqag/oLe9/85BA42zm7BwgzOhPx/oAEJTaUm6M7ZYIG4rTuBQaLkaB44uTq/TC
-         ptqFppTyN8/r5NiP9fvF7xRsuWxjjp3uRFgL6YtY4WkBmwlqUUHC4fmK4LQkj0XagWDT
-         oLRA==
+        bh=twBxGuT7Vyeqc2tSt+1Cu5dVnnD709Tu79Udll0+igY=;
+        b=Znu4Wjg4it+s75YbKsmPy0ZggejsXYkT33d6l3Y7D8EXT9NGvV33zQCRZz9TmTjnlE
+         W+YJVrjDNJyTQGwIEv8f7WpwG7TszSy67CYAPullMpTO5mibm3mLeZqgDNIjS0OhsKRM
+         rAroNW09EUrrgZwGCTV3FmDa1zpQIRQF2PRe9XGUfLLva0NlMGnDYFBdP++2LIu2+4tv
+         dv0a1RboRoBtA/B+JbgQ5cnANOnZ1JTE1hq2Z+Md7UU2mvThI7L+bE5RBwWw/r1pMT9A
+         Ue2n/1evAtgBMJ/GmAsYOyQFeHw099DJWNobyH3Yax28ud6XPaBYx9v8+/iG/Xckn+rJ
+         upug==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1781043588; x=1781648388;
+        d=1e100.net; s=20251104; t=1781043590; x=1781648390;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to;
-        bh=VabrJGQKyMUS5+LwCSzuBvRxZba7atk/VeVHPvy/VCE=;
-        b=qqzPOG768Kf5f0bJuA7tvuptghZeoz3bYsvc20qpoSQ9AJnHzSUe61kphmEDHYu2dO
-         vOX8UX0NY2yw/iG9gNVe4iAKH5fTf+AqT4vWA6rup2jKwnbkAJq6q44kZFsQqjsoY8tw
-         uuVTVNZoMZ1yHzYtfTozKvcDZRbJVagwdAe2UkcP1bZ24C/P8bZKjOLk8o630kQ2roSr
-         Wb1HwTiESWQjA5k5tyak20eu3HMctjgdPR+Li0YvZxT/31K1ywwSr4qeABPPYvmRWoIw
-         uFUNUF/iCJKbUXkW3j4Ci82+i6TJYHdIPL8CkPUdJmU8TEUYfspCwtpmh3i6MDMSdq8b
-         J1tA==
-X-Forwarded-Encrypted: i=1; AFNElJ+pdJJobQpjQl0IvwuVWk3bnDVWRk8Tl+qWJwwpeFHPawNwrZrPWKPAhmXncCD+AMxhSbXyMd1l29zapLA=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YxTCauOIUQyw+HXcCaoUB8ZowQnskIT5irwvbMAgDoFRrjykT8r
-	YNF0z1/IYKw7U3/ooTed6U7sIbcH8BKZn8jZX2I8c6KhTQz5uUz2XegG
-X-Gm-Gg: Acq92OF3gk07RgygEVuQ24IA4EjF/br1nnPGB9BWNy5mmaURTu67lyiZVp1Pxox1tNn
-	cTgmeRttRctS9DTy32FM3c76WxICZ08elPdzGEguCeCWJkMYrr/j+4oxIwWHDkw7Fe9TNn/Q2Gd
-	/ZebSLUaAxGZg5hdYl+rdC3mVeBLOyAOepQhlbtgowPPMaB8V5+zlEG4O0o1+cMj/n2zHkxYlrr
-	RfAyFAGpo0xdpBlEuBFdAWNf+t1tSdN2mNUQ8PyX55enjh662NegGV0GIPBkdXowAd0kW4fdoCS
-	yOAsitt3Hr8Jz77EGE3sz8ZwbtQimUpqoSvvSSb0xf/aeGPu9NucLwHDF8rvkEQ6/lqZm1d9bmS
-	gLSRlEjWGLyJuWUHSdsqKOySedN6DucMhQf42NA28Gcr303iKP6d3LZz+2Fue94z1cRHf4gmZP/
-	XSW5IrA0fWi5LnHw2BwUVumyRZrtkzCsBoECNrpRFRxOzUoyqiXdfwCVQ7AMFPhlcaME2+ar2Ws
-	zJtuvkQngALdiz8jesbE3tTTTvLWZJ5hlXDZANWmfIh2Q==
-X-Received: by 2002:a05:6a21:a07:b0:3b4:85db:1bdb with SMTP id adf61e73a8af0-3b4cd0801bfmr27114883637.44.1781043587709;
-        Tue, 09 Jun 2026 15:19:47 -0700 (PDT)
+        bh=twBxGuT7Vyeqc2tSt+1Cu5dVnnD709Tu79Udll0+igY=;
+        b=Mjw25naSd9Tfeewm4IEXv7f+XP/k0Yn2NgcGH2Z7KMqUNxKukKwSa0iiz/Sm36VM3y
+         0AbC1OiVhR6SXBtr0Ig4qmjkuJ3oe9fry7K/75ApeLFdYG4zFY/R437D/EPBTPFXfGs6
+         ArAHy13q5TXCG/4z5qXdYpDDxUExfUcBz68IxRYMqbUJu5Bbg7yNE6f5bSLwz4eaL6NT
+         quwONnMzd5yp0HOgAYb4Wp39ML0iZQS8v9QcjSLtVIAJo4YoUAumDFv7i/T6bMnRiznq
+         8M4r3JGpVOcuipfbiTvlWjCTwscth6irHqh8MtAVmrj2gBLhccV5+EKSNdOGCAFx4XjK
+         DA8g==
+X-Forwarded-Encrypted: i=1; AFNElJ8cdw/WR5zAjHfS0NYVNqTyKJ9NaYoKK5rysSup9ZZ2eQ9mWTBgu7Fzx1tMfe0Qdr3fa/q1EYY53kddTvQ=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yxfvb1OPI7hNCsMlivjWg8wCqgtyZevdZMX2//i6+v0XM0lMV/H
+	AC5nCf0OTDhxBUJP/mF5xUWE4+pROPFIGGCc3nBoRWOWM1DOQFaK+EoA
+X-Gm-Gg: Acq92OHufLjsSW3HiFsgZnENHdsFqU9stQMNQhETq6SZut9aCwamWT29D9TpF5KGC4M
+	UThbnsyhwU2yPhbMd3HyHxPxNlMKQFGlowmDJdFe7vLiQRtFjw9btYSm3G0BbidjwzwgmuIcmUE
+	NA7fJQ6ccwKbs253OKTWHrPeEPRdm13f58moMNchaxwCk9jgncCmh2r9C39Ab56itR2zyTpY6Tn
+	z3S6KDL91pk55+4Omql7bJ0qXcjpcAa8ux8ANA8uyuVFipwSLYPeqwPCTAdvCrmglLxyGzGGtNR
+	Wgrb0ecZ8P9KGbnouqdiwtgTdrxZftrHnKY/EttFkEXG+uzAF/+v8yBMzrabF8pp6IhMSHg82v9
+	GbGoxICpHbhe/P79v6fSAjLybfwIlA+PmC/QtxNyFv7dz0MzbznVO0lilCNnrH4+tqc73sIXwGm
+	dS9T61+bZQaI4IPK0VdO1ZWdjXWc8u+RwkelfYAkJdlgTFKiipH2MY0f4ol37YBR9h1Vx2K1yEE
+	9MNv3u9SNclKPgGTvxRMPcrrXAIirpkUocUaNqa1uhqng==
+X-Received: by 2002:a05:6a20:1609:b0:39f:3ca8:a33b with SMTP id adf61e73a8af0-3b4ccd764e8mr27610402637.17.1781043590415;
+        Tue, 09 Jun 2026 15:19:50 -0700 (PDT)
 Received: from ryzen ([2601:644:8000:5b5d:7285:c2ff:fe45:8a32])
-        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-c85df04ff24sm19661834a12.14.2026.06.09.15.19.44
+        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-c85df04ff24sm19661834a12.14.2026.06.09.15.19.47
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 09 Jun 2026 15:19:46 -0700 (PDT)
+        Tue, 09 Jun 2026 15:19:49 -0700 (PDT)
 From: Rosen Penev <rosenp@gmail.com>
 To: dmaengine@vger.kernel.org
 Cc: Vinod Koul <vkoul@kernel.org>,
@@ -84,9 +84,9 @@ Cc: Vinod Koul <vkoul@kernel.org>,
 	linux-kernel@vger.kernel.org (open list),
 	linuxppc-dev@lists.ozlabs.org (open list:FREESCALE DMA DRIVER),
 	llvm@lists.linux.dev (open list:CLANG/LLVM BUILD SUPPORT:Keyword:\b(?i:clang|llvm)\b)
-Subject: [PATCHv3 01/15] dmaengine: fsldma: kill tasklet before removing channel
-Date: Tue,  9 Jun 2026 15:19:12 -0700
-Message-ID: <20260609221926.35538-2-rosenp@gmail.com>
+Subject: [PATCHv3 02/15] dmaengine: fsldma: drop desc_lock before invoking client callback
+Date: Tue,  9 Jun 2026 15:19:13 -0700
+Message-ID: <20260609221926.35538-3-rosenp@gmail.com>
 X-Mailer: git-send-email 2.54.0
 In-Reply-To: <20260609221926.35538-1-rosenp@gmail.com>
 References: <20260609221926.35538-1-rosenp@gmail.com>
@@ -105,28 +105,181 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Add tasklet_kill() in fsl_dma_chan_remove() to prevent a race
-where the tasklet, scheduled by the IRQ handler, runs after
-the channel has been freed.
+fsldma_run_tx_complete_actions() calls dmaengine_desc_get_callback_invoke()
+while still holding chan->desc_lock.  If the client submits a new
+transaction from their completion callback, fsl_dma_tx_submit()
+tries to acquire the same non-recursive spinlock, causing a
+self-deadlock.
+
+Fix by extracting the callback info under the lock, removing the
+descriptor from ld_running, dropping the lock, then invoking the
+callback and running dependencies outside the lock.
 
 Assisted-by: opencode:big-pickle
 Signed-off-by: Rosen Penev <rosenp@gmail.com>
 ---
- drivers/dma/fsldma.c | 1 +
- 1 file changed, 1 insertion(+)
+ drivers/dma/fsldma.c | 108 ++++++++++++++++++++++---------------------
+ 1 file changed, 55 insertions(+), 53 deletions(-)
 
 diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
-index 22d62d958abd..0e2f84862261 100644
+index 0e2f84862261..455d21d738de 100644
 --- a/drivers/dma/fsldma.c
 +++ b/drivers/dma/fsldma.c
-@@ -1205,6 +1205,7 @@ static int fsl_dma_chan_probe(struct fsldma_device *fdev,
+@@ -496,16 +496,19 @@ static void fsldma_clean_completed_descriptor(struct fsldma_chan *chan)
+ }
  
- static void fsl_dma_chan_remove(struct fsldma_chan *chan)
+ /**
+- * fsldma_run_tx_complete_actions - cleanup a single link descriptor
++ * fsldma_run_tx_complete_actions - unmap and extract callback from a descriptor
+  * @chan: Freescale DMA channel
+- * @desc: descriptor to cleanup and free
++ * @desc: descriptor to process
+  * @cookie: Freescale DMA transaction identifier
++ * @cb: returned callback information
+  *
+- * This function is used on a descriptor which has been executed by the DMA
+- * controller. It will run any callbacks, submit any dependencies.
++ * Unmap the descriptor if it has been submitted and extract its callback
++ * into @cb.  The caller must invoke the callback and run dependencies
++ * after releasing chan->desc_lock.
+  */
+ static dma_cookie_t fsldma_run_tx_complete_actions(struct fsldma_chan *chan,
+-		struct fsl_desc_sw *desc, dma_cookie_t cookie)
++		struct fsl_desc_sw *desc, dma_cookie_t cookie,
++		struct dmaengine_desc_callback *cb)
  {
-+	tasklet_kill(&chan->tasklet);
- 	irq_dispose_mapping(chan->irq);
- 	list_del(&chan->common.device_node);
- 	iounmap(chan->regs);
+ 	struct dma_async_tx_descriptor *txd = &desc->async_tx;
+ 	dma_cookie_t ret = cookie;
+@@ -514,49 +517,14 @@ static dma_cookie_t fsldma_run_tx_complete_actions(struct fsldma_chan *chan,
+ 
+ 	if (txd->cookie > 0) {
+ 		ret = txd->cookie;
+-
+ 		dma_descriptor_unmap(txd);
+-		/* Run the link descriptor callback function */
+-		dmaengine_desc_get_callback_invoke(txd, NULL);
+ 	}
+ 
+-	/* Run any dependencies */
+-	dma_run_dependencies(txd);
++	dmaengine_desc_get_callback(txd, cb);
+ 
+ 	return ret;
+ }
+ 
+-/**
+- * fsldma_clean_running_descriptor - move the completed descriptor from
+- * ld_running to ld_completed
+- * @chan: Freescale DMA channel
+- * @desc: the descriptor which is completed
+- *
+- * Free the descriptor directly if acked by async_tx api, or move it to
+- * queue ld_completed.
+- */
+-static void fsldma_clean_running_descriptor(struct fsldma_chan *chan,
+-		struct fsl_desc_sw *desc)
+-{
+-	/* Remove from the list of transactions */
+-	list_del(&desc->node);
+-
+-	/*
+-	 * the client is allowed to attach dependent operations
+-	 * until 'ack' is set
+-	 */
+-	if (!async_tx_test_ack(&desc->async_tx)) {
+-		/*
+-		 * Move this descriptor to the list of descriptors which is
+-		 * completed, but still awaiting the 'ack' bit to be set.
+-		 */
+-		list_add_tail(&desc->node, &chan->ld_completed);
+-		return;
+-	}
+-
+-	dma_pool_free(chan->desc_pool, desc, desc->async_tx.phys);
+-}
+-
+ /**
+  * fsl_chan_xfer_ld_queue - transfer any pending transactions
+  * @chan : Freescale DMA channel
+@@ -635,22 +603,23 @@ static void fsl_chan_xfer_ld_queue(struct fsldma_chan *chan)
+  */
+ static void fsldma_cleanup_descriptors(struct fsldma_chan *chan)
+ {
+-	struct fsl_desc_sw *desc, *_desc;
++	struct fsl_desc_sw *desc;
+ 	dma_cookie_t cookie = 0;
+ 	dma_addr_t curr_phys = get_cdar(chan);
+ 	int seen_current = 0;
+ 
+ 	fsldma_clean_completed_descriptor(chan);
+ 
+-	/* Run the callback for each descriptor, in order */
+-	list_for_each_entry_safe(desc, _desc, &chan->ld_running, node) {
+-		/*
+-		 * do not advance past the current descriptor loaded into the
+-		 * hardware channel, subsequent descriptors are either in
+-		 * process or have not been submitted
+-		 */
+-		if (seen_current)
+-			break;
++	/*
++	 * Take descriptors one at a time from the front of the running
++	 * queue.  We re-read the list each iteration so that we don't
++	 * chase a stale next pointer across the lock-drop below.
++	 */
++	while (!seen_current && !list_empty(&chan->ld_running)) {
++		struct dmaengine_desc_callback cb;
++
++		desc = list_first_entry(&chan->ld_running,
++					struct fsl_desc_sw, node);
+ 
+ 		/*
+ 		 * stop the search if we reach the current descriptor and the
+@@ -662,9 +631,42 @@ static void fsldma_cleanup_descriptors(struct fsldma_chan *chan)
+ 				break;
+ 		}
+ 
+-		cookie = fsldma_run_tx_complete_actions(chan, desc, cookie);
++		cookie = fsldma_run_tx_complete_actions(chan, desc, cookie, &cb);
+ 
+-		fsldma_clean_running_descriptor(chan, desc);
++		/*
++		 * Remove from the running list before dropping the lock so
++		 * that terminate_all cannot free this descriptor while we
++		 * call into the client below.
++		 */
++		list_del(&desc->node);
++
++		/*
++		 * Prevent dma_run_dependencies() from calling
++		 * fsl_chan_xfer_ld_queue() while we are not holding the
++		 * lock.  That would splice pending descriptors into
++		 * ld_running before they have been completed by hardware.
++		 * fsl_chan_xfer_ld_queue at the end of this function will
++		 * re-evaluate the situation.
++		 */
++		chan->idle = false;
++
++		/*
++		 * Drop the lock before invoking the client callback, since
++		 * the DMAengine API explicitly allows clients to submit new
++		 * transactions from their completion callback.  Otherwise
++		 * we self-deadlock on chan->desc_lock.
++		 */
++		spin_unlock(&chan->desc_lock);
++		dmaengine_desc_callback_invoke(&cb, NULL);
++		dma_run_dependencies(&desc->async_tx);
++		spin_lock(&chan->desc_lock);
++
++		chan->idle = true;
++
++		if (!async_tx_test_ack(&desc->async_tx))
++			list_add_tail(&desc->node, &chan->ld_completed);
++		else
++			dma_pool_free(chan->desc_pool, desc, desc->async_tx.phys);
+ 	}
+ 
+ 	/*
 -- 
 2.54.0
 
