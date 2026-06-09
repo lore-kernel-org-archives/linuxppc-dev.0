@@ -1,95 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-22318-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22319-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5FE45CD8CA8
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Jun 2026 11:44:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6B30FCD8CA4
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Jun 2026 12:14:38 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gZRrf4dnMz2xk7;
-	Tue, 09 Jun 2026 21:44:02 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::336"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781005442;
-	cv=none; b=kKRJB52L6QyAoUQnMbwtJCrti6BcrN31FF6m+fReJ3qHY8wOb5FypBXw0QrEi5ctgT43suM5XmTNjH49l50yUabJYFXpepKUz/XpYyH+6rpdYrcI9go5I/vVYYM2y63PaLiH3D9Pp03QSti2lCabd+C8d3RaVPsRdF7D8409kFmOURF7BQ4nhixc50hvFjERao8Mpix5wWzMa6ush0MXCQR/4GsTfPP76Qt0TTDneoMS0BC1X+m5F0ZNrzT1NrXK9YfK/lbju6Qkt5NSJ+R9klo+ckc5kz11GstBse9FAu1gqtQeXW3GWbYLJ4nYnx7BtNt602O9kGP9saiSegtzTQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gZSWw6skJz2yv2;
+	Tue, 09 Jun 2026 22:14:36 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781007276;
+	cv=none; b=bXm7LhF2CpQsvTQBgZjxbJGBpB7FZqFnMZCSTG3v4+0QqlF0aIFIJDBKZLLS2sNUg0a+HjCjRHiJJtxZEB2otgj+lUiRHEDsUfVJ42gJQyFAYuWkY2pWu7dsgiogt5F2+U1fWcVs3h+WTKjf7yrEukvo7PkTtoco8UbsBMhhP4XzDQoIH04yLjJ7LNHpYpEeaw3wMinp1DQj0IMzboY6YHzLojo3pSpuYwvi7KDZ5BZkOLN+LRDBOV+gbaQL2Hnyzs4U1ogaYmtJB+pWT6vL8BP0W+QVLu2EP6NPUiXRM+kHA8Eapv4jssJdTs2ZAkVya1K0WkCK2f2V8HgiaW5CSw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1781005442; c=relaxed/relaxed;
-	bh=h2j6CzARsoMyv7N0DLitThZjZq+4w2DpaYqL8Xb2hr4=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=cTlf8kU2jwU7bp71PLwfDd0Kyk5nap+WI6scQw8C4q31VwY+All7qEGzvz7gKGxgA1SUBZ8B73PtqaoZRy/gB+1FWYRDCkRjuwy/ebgIbl+Qww2P5k9IitexuZOF0Qt/CThxTTfK9JZ0shli6FE8ik5hco5XGLZi4IVFb3mpCWpfFCN+z7ToPb9R5+Sp3SDyUyZy3fAdLniItjAan9QsWGoiVGN/KJK3cr4eh2f7rYy5p0caKdFZnG1NBERbz1mqbwwHyW5LwyF1K1J0+0bam1uE/Bt608frUhb9pVyLt3mmR0OSayAHs1ktqslQUMJHNz8iQv9mJvqRJ9syMA/xhA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=resnulli.us; dkim=pass (2048-bit key; unprotected) header.d=resnulli-us.20251104.gappssmtp.com header.i=@resnulli-us.20251104.gappssmtp.com header.a=rsa-sha256 header.s=20251104 header.b=d20PHj6O; dkim-atps=neutral; spf=none (client-ip=2a00:1450:4864:20::336; helo=mail-wm1-x336.google.com; envelope-from=jiri@resnulli.us; receiver=lists.ozlabs.org) smtp.mailfrom=resnulli.us
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=resnulli.us
+	t=1781007276; c=relaxed/relaxed;
+	bh=57Yx+iqumQuBEpoVCz+tbrxnNc/RDV5vHnP2PPk7DVc=;
+	h=Content-Type:Mime-Version:Subject:From:In-Reply-To:Date:Cc:
+	 Message-Id:References:To; b=a0vPSD6aYZ9o1sJDD+W+49FYdSK3YT49lrE9FF5pNIfpYt5o5HA/x60bog8GQB3Lepyojo9vB+j747DT54cAJx1zX+0lgwqF6e0RnZ6IVJi+HemTlhrUYMutvdSZE9ykn5NpZRl+M9yAoGdchVivFNxjH1+l0n/Z/UMsUTbwozfYQQyt4Jrk8jFa7p4S3V3NxhpIsIAW/xNmW2hYAaSAKCKZwUd0t5i/R0JRZQHgG+7a0dMP17GT4FGktnf1/mL9R3pXtkrELc4GbjbttOe+Rx3kqHNC/u5by8AKkDaA1eVmGL7VIiUlPwzMoLjlj9reXhOwPeXT0NGTLLBtzslI2w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=h3LKVma/; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=atrajeev@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=resnulli-us.20251104.gappssmtp.com header.i=@resnulli-us.20251104.gappssmtp.com header.a=rsa-sha256 header.s=20251104 header.b=d20PHj6O;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=h3LKVma/;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=resnulli.us (client-ip=2a00:1450:4864:20::336; helo=mail-wm1-x336.google.com; envelope-from=jiri@resnulli.us; receiver=lists.ozlabs.org)
-Received: from mail-wm1-x336.google.com (mail-wm1-x336.google.com [IPv6:2a00:1450:4864:20::336])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=atrajeev@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gZRrZ6sB0z2xJT
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Jun 2026 21:43:56 +1000 (AEST)
-Received: by mail-wm1-x336.google.com with SMTP id 5b1f17b1804b1-490abf12f0fso28411175e9.0
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Jun 2026 04:43:56 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=resnulli-us.20251104.gappssmtp.com; s=20251104; t=1781005434; x=1781610234; darn=lists.ozlabs.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=h2j6CzARsoMyv7N0DLitThZjZq+4w2DpaYqL8Xb2hr4=;
-        b=d20PHj6OXBaZib4TJ4o3aOTN/7EZqIfnCotaNqG8jLgjdnzAhTYAXjX4MldakaxM57
-         gIrmu4tnP1I2rALKu0n4Y0fqVu4Zh3ZAWyjheVFk0UU/RB7pWPD/6ZLtZ4CNh9DrpvlU
-         eFDvB+PbCB/tHYya95WCsEBpFk066NOz8Q/xtnPoPKtvxgKP5A4+Pbem4roM3nO2s/XZ
-         elGJT2iHV291JPztwkckvHQuTrZDO5zfGHgGhP2P8CXwig4FB2KF8jTzHqD36RRcVUc2
-         AGEUtJPLV/w+lQIxW4p4WW9Tr8UfCU7bsJKGb45vIjVrtzxYgoM5xEs+1Ji8O5ieK8mb
-         2l+g==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1781005434; x=1781610234;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=h2j6CzARsoMyv7N0DLitThZjZq+4w2DpaYqL8Xb2hr4=;
-        b=plt5NAdRfgC4p4rnb0yLjv0KWkS/eXy3zV1389PHysD4G6F/JFyi45q09BgaMbjb61
-         e2hovpYytnCw6pE2hsLeKtKHr1KiAs8TFOQM14lV2Kjuh2hDMpPI0/A9nOYqy0sFUe6S
-         0nnFtAaB0pQigS2A/qob5snxw9Gnzc5HAn3SqivKxO4urUFIMMmIyPseIV8tKdh2ANlY
-         mx99I5V0oJuzEBuV/GIOT3OA3+86EvqO/iY/ZLylgz3YWUWjG61Nfq1O90MreZ94u0K2
-         eUDf9/xeaClM2tyNf6CRg9pMx8/7WUBGBx0krZ1ICKKMAyrdmReczdBxnU1hGHbRWWdk
-         OS+w==
-X-Forwarded-Encrypted: i=1; AFNElJ957ZNcGB0N8y1Qx+CQWYiGHtHdQ/27Z7vSODurv4iN8o8t5gYlSuQuPdO131X/ARbJVUK+XjravRw+IDw=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YzOWp0sV3lUsXb7NoyJUXmO3iSVk8v8WJz0kDXriVR7x3XB01FW
-	YkG3lZGXYYoQ+FIlOjOImgXHfdUaTxV2ZRay49n4wuLFKnqSsqlDFTzT+syZTuDP0Yk=
-X-Gm-Gg: Acq92OGG5RgEj6twmXFGNiIzUii0giRewTPeGL1iJxAsnJp0gx1zlk/NelQPw+ixk7x
-	QbgxUognxojlrmggNI3bWIDM7oNDS7Cyixd6XzYoGQNaUSOO8tWyKYXajYh1fEeHFrY4cfC8jiW
-	h/KxRbb94dCspjFh4f1L77wVdpw2MF1YoNj0o8eqNh4JklJVQJ8sN9IU0+jpA/1ITx0DK3b6bfp
-	vS1cHCn2A6++SOl3xZZFy9+vqkj/jOWiTQMMNUC75WN4wgIzHBYUzDC+L2rmOmIXgzeDQd97YZt
-	TsH+nFmlI7Th+ndQratRibPCyFcZxhmRKVZUPdixzvPK/MyNbCGAKubsICRs86ic67RtXlzZsgD
-	DcFsHGcyWlJzEC6XO7AAXj5SVMsUpxsRR8BF70jD3t3sf7jtATfyi3CY7oFXbPvZKNjp9YV37J2
-	NfKgmZQOFqp4AmHQdyCV/KR4mEjuIYQcSyOJypxDDqiQAbbiS3BXmnYA==
-X-Received: by 2002:a05:600c:4750:b0:490:9dc3:3483 with SMTP id 5b1f17b1804b1-490c2cb81fbmr232851615e9.2.1781005433488;
-        Tue, 09 Jun 2026 04:43:53 -0700 (PDT)
-Received: from localhost ([140.209.217.212])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-490bc3b5b06sm432012895e9.3.2026.06.09.04.43.51
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 09 Jun 2026 04:43:53 -0700 (PDT)
-Date: Tue, 9 Jun 2026 13:43:33 +0200
-From: Jiri Pirko <jiri@resnulli.us>
-To: Sumit Semwal <sumit.semwal@linaro.org>
-Cc: Jason Gunthorpe <jgg@ziepe.ca>, Maxime Ripard <mripard@kernel.org>, 
-	Christoph Hellwig <hch@infradead.org>, "T.J. Mercier" <tjmercier@google.com>, maddy@linux.ibm.com, 
-	mpe@ellerman.id.au, npiggin@gmail.com, chleroy@kernel.org, 
-	linuxppc-dev@lists.ozlabs.org, lkp@intel.com, linux-kernel@vger.kernel.org, 
-	iommu@lists.linux.dev, linux-mm@kvack.org, agordeev@linux.ibm.com, 
-	gerald.schaefer@linux.ibm.com, linux-s390@vger.kernel.org, Dan Williams <djbw@kernel.org>, 
-	Tom Lendacky <thomas.lendacky@amd.com>, x86@kernel.org, Arnd Bergmann <arnd@linaro.org>
-Subject: Re: [PATCH] powerpc: Export set_memory_encrypted and
- set_memory_decrypted
-Message-ID: <aif8V0kHzv5CYIox@FV6GYCPJ69>
-References: <20260522225853.878411-1-tjmercier@google.com>
- <ahPqbfH54R3JJyaV@infradead.org>
- <20260527160716.GN2487554@ziepe.ca>
- <20260604-dangerous-tuatara-of-sympathy-28e05e@houat>
- <CAO_48GEJsg4X7++zg-ztQgVibY_FjjManaA5_W3usjicGUQPdg@mail.gmail.com>
- <20260604135712.GV2487554@ziepe.ca>
- <CAO_48GH3NP09U6TdB5drbKY0TpwvtBXwrf=Jajsr5ttNbC_u9g@mail.gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gZSWv2GR3z2ytV
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Jun 2026 22:14:34 +1000 (AEST)
+Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 658NeRma3804276;
+	Tue, 9 Jun 2026 12:14:31 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=57Yx+i
+	qumQuBEpoVCz+tbrxnNc/RDV5vHnP2PPk7DVc=; b=h3LKVma/myCflykoSBeQuX
+	IpeFtLXCaVNqnSRbLeeKhoomznCdL1LMHv3ZupbFAuiygCA9IaoKASUAPhsKNrYA
+	t1uGGeyuXQFGdVb5syka+l9HmXx3yytuFBGDWSby2IvlU2nVo8YWirdztYYslccK
+	/J5cfXZBUq/zvaDKPp3lFq7XcV6yE5KXt9wOZzCuTVo5YTwWVtnwzqdcVCU47OD0
+	383aOTCSKFAHE2KTHc8z1Er0wr/VF2couMVo0nijsrWOjnayCWvpxiMsUWllBcVU
+	/ifCtJAMv/6dKDkRLnGnDbOjeJ0abq+G4rbDcTaF50sn0AqMssAYKei2LB72loXg
+	==
+Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4em9ye3v4f-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 09 Jun 2026 12:14:31 +0000 (GMT)
+Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma13.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 659C4dvB015587;
+	Tue, 9 Jun 2026 12:14:30 GMT
+Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
+	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4en03g1p6g-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 09 Jun 2026 12:14:30 +0000 (GMT)
+Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
+	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 659CETV051052824
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Tue, 9 Jun 2026 12:14:29 GMT
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id E46B62004B;
+	Tue,  9 Jun 2026 12:14:28 +0000 (GMT)
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id E1E1A20040;
+	Tue,  9 Jun 2026 12:14:25 +0000 (GMT)
+Received: from smtpclient.apple (unknown [9.124.212.142])
+	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTPS;
+	Tue,  9 Jun 2026 12:14:25 +0000 (GMT)
+Content-Type: text/plain;
+	charset=utf-8
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -102,45 +80,204 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CAO_48GH3NP09U6TdB5drbKY0TpwvtBXwrf=Jajsr5ttNbC_u9g@mail.gmail.com>
+Mime-Version: 1.0 (Mac OS X Mail 16.0 \(3864.300.41.1.7\))
+Subject: Re: [PATCH V4 2/2] tools/perf: Use scnprintf in buffer offset
+ calculations
+From: Athira Rajeev <atrajeev@linux.ibm.com>
+In-Reply-To: <aiH2BnKXmur79SSR@google.com>
+Date: Tue, 9 Jun 2026 17:44:13 +0530
+Cc: acme@kernel.org, jolsa@kernel.org, adrian.hunter@intel.com,
+        mpetlan@redhat.com, tmricht@linux.ibm.com, maddy@linux.ibm.com,
+        irogers@google.com, linux-perf-users@vger.kernel.org,
+        linuxppc-dev@lists.ozlabs.org, hbathini@linux.vnet.ibm.com,
+        Tejas.Manhas1@ibm.com, Tanushree.Shah@ibm.com, shivani@linux.ibm.com
+Content-Transfer-Encoding: quoted-printable
+Message-Id: <F1A886CC-5C1C-4BA7-9F1D-56356281DC28@linux.ibm.com>
+References: <20260504154205.21394-1-atrajeev@linux.ibm.com>
+ <20260504154205.21394-2-atrajeev@linux.ibm.com> <aiH2BnKXmur79SSR@google.com>
+To: Namhyung Kim <namhyung@kernel.org>
+X-Mailer: Apple Mail (2.3864.300.41.1.7)
+X-TM-AS-GCONF: 00
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjA5MDExNCBTYWx0ZWRfX3mrKSriTwtCn
+ lEdAOBBA0ZaK95Du2tsQ3YCT8y4foST7E57pRv7WkwMt4PMSVKE/lcoFv8YzmNJKLF6IucIQxo5
+ C5JNG6Z5JywCb1OnX32BLvYWkY6fDA5l8yfAhGnQCJ5Z8aJjSzoIf5HcmBgxcn1FN+1wi9qhDXn
+ bvjDXWd3Z/AwRP99U1JzffO6J1ypmxHYAuHP6bSrqur4JcgxMqJDfMOtq5A1kVBbB/tJ6QuDigR
+ Iw6Fu1BIK1TXYNVY7ASKL9RTH7Sth093DwvUYY27UKUDBN261gcSaC+dphZwcXeYh+nHLAsLWwl
+ hCV221m/jGVVV+AC0hNMiZsN4i22uMi6tsBCdm0btMa/tUl3jsFj2TCXzffVQ2O+9Mp5ziU4HZw
+ fBlz20aO2jomVVJLMxcJ6qXhC1I3xGtkWvrJBCBGx0EOus49PN44NgRw/9kPIBOYmdHPEHAikys
+ ku+xlRyzcNaOgBjvmww==
+X-Authority-Analysis: v=2.4 cv=QKhYgALL c=1 sm=1 tr=0 ts=6a2803a7 cx=c_pps
+ a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
+ a=IkcTkHD0fZMA:10 a=FelO9ux0wxsA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=V8glGbnc2Ofi9Qvn3v5h:22 a=VwQbUJbxAAAA:8
+ a=VnNF1IyMAAAA:8 a=yDw2nYwaqeuPlelgnKwA:9 a=QEXdDO2ut3YA:10
+X-Proofpoint-GUID: g7jEU3E_DzTwddrYo3arXrvUaMaGxeNy
+X-Proofpoint-ORIG-GUID: g7jEU3E_DzTwddrYo3arXrvUaMaGxeNy
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
+ definitions=2026-06-09_02,2026-06-09_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501 lowpriorityscore=0 bulkscore=0 adultscore=0 phishscore=0
+ malwarescore=0 impostorscore=0 suspectscore=0 spamscore=0 clxscore=1015
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2605210000 definitions=main-2606090114
 
-Mon, Jun 08, 2026 at 05:17:15PM +0200, sumit.semwal@linaro.org wrote:
->Hi Jason,
->
->On Thu, 4 Jun 2026 at 19:27, Jason Gunthorpe <jgg@ziepe.ca> wrote:
->>
->> On Thu, Jun 04, 2026 at 12:51:49PM +0530, Sumit Semwal wrote:
->>
->> > Given that Christoph's objection is not really about the modules part,
->> > but that the set_memory_{encrypted,decrypted} should not be used here,
->> > one option is to revert 78b30c50a7ac until that issue is sorted out?
->>
->> Please no, we have stuff already using this so it would be a
->> functional regression. Revert making heaps into a module since that
->> doesn't have a functional regression.
->
->Thanks for your comments.
->
->To me, it looks like while system and system_cc_shared heaps share a
->lot of code, their user bases have different needs. It's apparent that
->system_cc_heap users don't care about it being a module while system
->heap users would very much like so.
->
->I also discussed this with Arnd, and he suggested we could rearrange
->the code so that system_heap_cc_shared_priv depends on a new Kconfig
->symbol like
->
->config DMABUF_HEAPS_CC_SYSTEM
->        bool "DMA-BUF System Heap for memory encryption"
->        depends on ARCH_HAS_MEM_ENCRYPT && DMABUF_HEAPS_SYSTEM=y
->
->This allows building both into the kernel or leave encryption choice
->up to the consumers of the system heap.
->
->If this is agreeable to everyone, I can post Arnd's patch.
 
-Sounds good to me. Thanks!
+
+> On 5 Jun 2026, at 3:32=E2=80=AFAM, Namhyung Kim <namhyung@kernel.org> =
+wrote:
+>=20
+> On Mon, May 04, 2026 at 09:12:05PM +0530, Athira Rajeev wrote:
+>> Replace snprintf with scnprintf in buffer offset calculations to
+>> ensure the 'used' count will not exceed the "len".
+>>=20
+>> The current logic in perf_pmu__for_each_event uses an unconditional
+>> + 1 increment to buf_used to account for null terminators. This can
+>> cause a a stack buffer overflow in the subsequent scnprintf call.
+>> When the local stack buffer buf (1024 bytes) is full, buf_used can
+>> reach 1025. This causes the subsequent remaining space calculation
+>> sizeof(buf) - buf_used to underflow.
+>>=20
+>> Use sub_non_neg() to see if space actually existed, and only
+>> increment the offset if remaning space is present.
+>>=20
+>> Changes includes:
+>> - Use sub_non_neg to check if space exists
+>> - Replacing snprintf with scnprintf to ensure the return value
+>> reflects the actual bytes written into the buffer.
+>> - Only increment buf_used by 1 if space exists
+>> - If a parameterized event uses a built-in perf keyword for its
+>> parameter name (eg, config=3D?), the lexer parses it as a predefined
+>> term token, which sets term->config to NULL. Add check to use
+>> parse_events__term_type_str() if term->config is NULL.
+>>=20
+>> Signed-off-by: Athira Rajeev <atrajeev@linux.ibm.com>
+>> ---
+>> Changelog:
+>> v2 -> v3:
+>> - Split the scnprintf related changes in separate patch
+>> - Handle the overflow issues and unconditional increment
+>> wrapped around sub_non_neg addressing review comment from Sashiko
+>>=20
+>> tools/perf/util/pmu.c | 46 =
+++++++++++++++++++++++++++++++++-----------
+>> 1 file changed, 35 insertions(+), 11 deletions(-)
+>>=20
+>> diff --git a/tools/perf/util/pmu.c b/tools/perf/util/pmu.c
+>> index 0b8d58543f17..4b9ade1a4cf9 100644
+>> --- a/tools/perf/util/pmu.c
+>> +++ b/tools/perf/util/pmu.c
+>> @@ -2129,15 +2129,19 @@ static char *format_alias(char *buf, int len, =
+const struct perf_pmu *pmu,
+>> pr_err("Failure to parse '%s' terms '%s': %d\n",
+>> alias->name, alias->terms, ret);
+>> parse_events_terms__exit(&terms);
+>> - snprintf(buf, len, "%.*s/%s/", (int)pmu_name_len, pmu->name, =
+alias->name);
+>> + scnprintf(buf, len, "%.*s/%s/", (int)pmu_name_len, pmu->name, =
+alias->name);
+>> return buf;
+>> }
+>> - used =3D snprintf(buf, len, "%.*s/%s", (int)pmu_name_len, =
+pmu->name, alias->name);
+>> + used =3D scnprintf(buf, len, "%.*s/%s", (int)pmu_name_len, =
+pmu->name, alias->name);
+>>=20
+>> list_for_each_entry(term, &terms.terms, list) {
+>> + const char *name =3D term->config;
+>> +
+>> + if (!name)
+>> + name =3D parse_events__term_type_str(term->type_term);
+>> if (term->type_val =3D=3D PARSE_EVENTS__TERM_TYPE_STR)
+>> - used +=3D snprintf(buf + used, sub_non_neg(len, used),
+>> - ",%s=3D%s", term->config,
+>> + used +=3D scnprintf(buf + used, sub_non_neg(len, used),
+>> + ",%s=3D%s", name,
+>> term->val.str);
+>> }
+>> parse_events_terms__exit(&terms);
+>> @@ -2201,6 +2205,7 @@ int perf_pmu__for_each_event(struct perf_pmu =
+*pmu, bool skip_duplicate_pmus,
+>> int ret =3D 0;
+>> struct hashmap_entry *entry;
+>> size_t bkt;
+>> + size_t size_rem, len;
+>>=20
+>> if (perf_pmu__is_tracepoint(pmu))
+>> return tp_pmu__for_each_event(pmu, state, cb);
+>> @@ -2234,17 +2239,36 @@ int perf_pmu__for_each_event(struct perf_pmu =
+*pmu, bool skip_duplicate_pmus,
+>> }
+>> buf_used =3D strlen(buf) + 1;
+>> }
+>> +
+>> info.scale_unit =3D NULL;
+>> if (strlen(event->unit) || event->scale !=3D 1.0) {
+>> - info.scale_unit =3D buf + buf_used;
+>> - buf_used +=3D snprintf(buf + buf_used, sizeof(buf) - buf_used,
+>> - "%G%s", event->scale, event->unit) + 1;
+>> + /* Check the remaining space */
+>> + size_rem =3D sub_non_neg(sizeof(buf), buf_used);
+>> +
+>> + if (size_rem > 0) {
+>> + info.scale_unit =3D buf + buf_used;
+>> + len =3D scnprintf(buf + buf_used, size_rem, "%G%s",
+>> + event->scale, event->unit);
+>> + /*
+>> +  * Increment buf_used by 1 only if
+>> +  * it fits remaining space
+>> +  */
+>> + buf_used +=3D min(len + 1, size_rem);
+>=20
+> Hmm.. it seems scnprintf() cannot return a number greater than or =
+equal
+> to size_rem.  Can we just do like this?
+>=20
+> buf_used +=3D scnprintf(...) + 1;
+>=20
+> Thanks,
+> Namhyung
+
+Sure
+
+I will address this change in next version
+
+Thanks
+Athira
+>=20
+>> + }
+>> }
+>> info.desc =3D event->desc;
+>> info.long_desc =3D event->long_desc;
+>> - info.encoding_desc =3D buf + buf_used;
+>> - buf_used +=3D snprintf(buf + buf_used, sizeof(buf) - buf_used,
+>> - "%.*s/%s/", (int)pmu_name_len, info.pmu_name, event->terms) + 1;
+>> + info.encoding_desc =3D NULL;
+>> +
+>> + /* Check the remaining space */
+>> + size_rem =3D sub_non_neg(sizeof(buf), buf_used);
+>> + if (size_rem > 0) {
+>> + info.encoding_desc =3D buf + buf_used;
+>> + len =3D scnprintf(buf + buf_used, size_rem, "%.*s/%s/",
+>> + (int)pmu_name_len, info.pmu_name, event->terms);
+>> + buf_used +=3D min(len + 1, size_rem);
+>> + }
+>> +
+>> info.str =3D event->terms;
+>> info.topic =3D event->topic;
+>> info.deprecated =3D perf_pmu_alias__check_deprecated(pmu, event);
+>> @@ -2254,7 +2278,7 @@ int perf_pmu__for_each_event(struct perf_pmu =
+*pmu, bool skip_duplicate_pmus,
+>> }
+>> if (pmu->selectable) {
+>> info.name =3D buf;
+>> - snprintf(buf, sizeof(buf), "%s//", pmu->name);
+>> + scnprintf(buf, sizeof(buf), "%s//", pmu->name);
+>> info.alias =3D NULL;
+>> info.scale_unit =3D NULL;
+>> info.desc =3D NULL;
+>> --=20
+>> 2.47.3
+
+
 
