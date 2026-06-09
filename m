@@ -1,60 +1,60 @@
-Return-Path: <linuxppc-dev+bounces-22303-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22304-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 095D3CD6E79
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Jun 2026 03:28:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5DBB3CD8C85
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Jun 2026 03:28:17 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gZDrB0hmfz2y8p;
-	Tue, 09 Jun 2026 13:27:54 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gZDrC57KXz3c2Z;
+	Tue, 09 Jun 2026 13:27:55 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c20a::7" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780975674;
-	cv=pass; b=OlLllV3QhCJ5/MlC+IKRJ3boU0dACD8/T5/BrXuJ9cTeApvVG1+jRJFmb7d7NBTiWRvlGvsURFNcHdAj4KhljxYNcCmOZUniQC/0XTCaRA11j+YO4ERxmn9h4/ggUa+7n8KQfhn2+G5npwP6QVuBHr1ggq89Hdt1poS1sdkE6ixIII0OfHad7Jske3m5HEnlpZaKm2cRP8k0QFDGbU3j+iYxfnrQlmbnhzG/MAy4alhclnYa8RAc6XigZHkm9mP+wecmpRSkivCSygO4KoiEc8JRzSx6TnSt0EXNixPnRm0lU6Qal6aJmkjXze/QfI6T5Abkh5mSrQ8gIN/t23rzlw==
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780975675;
+	cv=pass; b=X4k1bCEiAuOXEsjkZA5W8wnOG8piFkWYWGj/M+QzrAzOCPj2KOV1MjdKgu9vOPj7CcuTpxI+0hfJHNNGdoOuQd/gMq8uCek/WVXrkSLQNYZsbAfkorUrRSJ6kA0yv2F2oXX2RmTT+zeIOR3maVuZ87CUOdAQTGYvdv1Xufoc8z58LewYgqitdeCXODgrybBpyY+Pkc3ytavkIBktjWWeIo3TtnmDsvnyvP1MLnTO9w0VZT8xG4SHfWF9vKSV4lX72I6OfIUHYX4HaGttHpVcIoejBbq+rUcNU+EPr71Yn++EXKUs1OUWVj4KjJ0/SmqTcZe5cwupdU4qNhJx5O2XLQ==
 ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1780975674; c=relaxed/relaxed;
-	bh=4rHrE+7W60vAJkUcdjAU+tu/c8FX/Xei1qeZIF62BNs=;
+	t=1780975675; c=relaxed/relaxed;
+	bh=ZaSRD3huykSTRQv/ntNUnxiA8EIMXKb5/7uswP/uUvk=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=MeXpAidWWjgf7+6vmPKcKMrQuJXkEoNNsNboBWj8gAuQLfM0ogC2GDiFYnTlYtn1DmyRjesgX5wr0C0q0B9pn6/dZGDPe4MXAk7LW2f3cteuDeiaPoSMg3BMOvuj9xMFPhnriGO4Yr2STCx0SC0yKtyk1Iy17gi3cC/lYV8BrbxVbHSZ6b3t71P+TTYgpt1xFJ4yAccO1lFnjOaFmofb9yqFsjExE+koEmkLWeeepbWfbPlt26luPbt+BnAOLKrvX69mS6ZggdF54G1dOS2IHUxo56qdK7725uEEMhrZNl8cZrngC9yX/kmxVLttwzQA4kBwQYJlb+q9kvVPd8KKdg==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=oss.nxp.com; dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=qYnCzJV2; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c20a::7; helo=pa4pr04cu001.outbound.protection.outlook.com; envelope-from=wei.fang@oss.nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=oss.nxp.com
+	 Content-Type:MIME-Version; b=dR5950LE1gy/E4uELbwV0yzMXtWT2FWEMWwCh2madw7fdosVCbfaFAs6gWp+N+iCjTPRdc7FFvE7zYC+HniTsxkkRB3t9A9YghxuncmQXlcoBz3VKT7nhs5Be2AmybzRU3d83H7ABme4aiisRMtwvBGwnjunZQwC08DDR8G3NfzOsnS7zTLKY0oa/T8A2C31siXQkCgE/5nSBVb2iX5JKdyTgiibsr+2POONMJZuR46qFDVYZA4mvG5wL4WqWlsp1e/f0BzpkatiH8+99cLI9/ZV/Fz5E3onD5UjitBKSawjVNfa4WNVMcV9tjT8IpMzsj4IdcdaEioPy37ulrQxEw==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=oss.nxp.com; dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=sW1lPQ4I; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c20a::7; helo=pa4pr04cu001.outbound.protection.outlook.com; envelope-from=wei.fang@oss.nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=oss.nxp.com
 Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=oss.nxp.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=qYnCzJV2;
+	dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=sW1lPQ4I;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=oss.nxp.com (client-ip=2a01:111:f403:c20a::7; helo=pa4pr04cu001.outbound.protection.outlook.com; envelope-from=wei.fang@oss.nxp.com; receiver=lists.ozlabs.org)
 Received: from PA4PR04CU001.outbound.protection.outlook.com (mail-francecentralazlp170130007.outbound.protection.outlook.com [IPv6:2a01:111:f403:c20a::7])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gZDr85bStz3bwd
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Jun 2026 13:27:52 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gZDrB2YCdz3c1L
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Jun 2026 13:27:54 +1000 (AEST)
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=BFBDfCBXekQ1cuWQXSof5f684rfmv2r2/20kTWiT8Tsf2Mswq1BK2yDhZK/bmPoecx8hEwTfmnvUiu2GnDgnUSgl+yLB0fzywqkj2rDphWGl0tblXrPzpgvztUFSRK1mUUDqWlRiGiomZCYzZw5vmIf8n4R9xvUypzGygBGZkmkdOLbz2cyipsJjyyQUwFZiE9P/W+T9vzNzFVWe13BSzzF/CqnpnozIblGUniEI+hwCI3QXwe5joy4pCFhfz0+9GExeeP90Kyt9qC3sqLMk8fh6JLjA0ru7KpaXdoQw+tgszw1vpvZgZ9khvheawTHc+1dlsyCYgh+RFF/WbVzK9A==
+ b=taNlt6+p32J7m2ioxDGRY5DVatjrXLQ4fuzsjyMNnNjIixm6uIrsIuvIYArd5IbOsprWg9sa3zIDKS+vm14ZuMr1rqqAebRdSQL7GN/EhCXTFM4/wQu8rkqTW0EiHhFDbPGoA77ZO1dqpG6cYcAzv+5KEhJaL3x4hCTCPkVwNbXH0tLlEqP2pS2t12E9qMAlKgsiDaHSL2jzzNihI/VI2X7pyE3qHMlESKvUeNt44anY89G2q8GXppYO+7WTkRvIUFyWMrgr9IoJq86fwUYvZxZsmieWrVY0Q1CA3sgOo5/8T9SGqVerYeBHYmP7HQf5+Wt/v8RDDEnkZ0CYW4uyyQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=4rHrE+7W60vAJkUcdjAU+tu/c8FX/Xei1qeZIF62BNs=;
- b=CcByg3n8NV75RvXUjoHbmpV/zBuM2WhmOXAD0bT5jzwHMogPHY1oocamuvC/MrO0JtGGos7dSZC6opRDqZRIPr8+/sAqmt6QIpy9eGxew/VPQoWrQVTNnA3g6r9KujFrU/fwUNx3WXtPvX7vfTROqwNTJsZjCVcm5DevFnC8Z1CfI7p0dUbhWR11yBfAHLBUGkzfEzMC3McTDBk0VPBGZ3fd17TiJJFtOY5gC2UgyYEzOLKmOml9R+pm/CoGtQqJhv6klAuO7oc1VxhLGcLgCTTxGQ6tgiimAMT8uWRzAoVzm9PM2+f9QkboqstSqJvIeGd1pBggwLfIe+kPqtpNmg==
+ bh=ZaSRD3huykSTRQv/ntNUnxiA8EIMXKb5/7uswP/uUvk=;
+ b=iJU+QJDqKXEf4aQ6rJ4xj7AMR+vfgsYjjrTrzriinchykdyZPeekyf+Cb/Azkw/tT4d4pnzN+SO+YOFQ5kLErmuDPse3FMailD/z1D9teec89VoaH3Z01lX/FE7fddcLS1sRnz/oK8bj4S6+fIQA5uSRxxrqOnoYuCz1dSXuQEZd5yxkUQG0UVL5j2NfvnZv1pZwh+xo5ay7FFiEml4VthfUHHh/hHppyE1g+ViFfYYF5rlmiMq492i1L6JGtLFj5HOGeQC2fhHYUY0LBzsShqGS3q1sOEQZYEN4S3DBzgbFW9v0vohVdia+PN/U39y8EkDyY0RY2Wp7FJJ6VgUcxQ==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
  smtp.mailfrom=oss.nxp.com; dmarc=pass action=none header.from=oss.nxp.com;
  dkim=pass header.d=oss.nxp.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=NXP1.onmicrosoft.com;
  s=selector1-NXP1-onmicrosoft-com;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=4rHrE+7W60vAJkUcdjAU+tu/c8FX/Xei1qeZIF62BNs=;
- b=qYnCzJV25rukHkohETIMA5sAFSvdCEz+fFq+e6mCIFJnCzRf/xHxLqcPWpn1Mv1BjtNs+rF3SI95jgTWxkbWL102pAankftjq/NxNaZGQqowMIKiUMSoJgV7gr0PdjOzCZDvl4GHB5YR0esZOllEZVnMLmNzmJtXKSu/2sqMGDaJyp+dL3drWdHuPDvY0yUyXGHsVpa+l9wSMaRAA44QiuGKDu+UoiiSPnRvUIQ/WExVbQlQtWuZiGhh1YGDnsy1nMp98m2BMyOgxtpAbdB/Y+VRmhCWalj4PBmEA/qaXc6/6oKjShqFHg3uWfvrf++gFIAUVUFBPcXxSlhw3sg+xQ==
+ bh=ZaSRD3huykSTRQv/ntNUnxiA8EIMXKb5/7uswP/uUvk=;
+ b=sW1lPQ4IUTwOBiIbs9YNeJ3CKSyaTLCkZxKvCEy33QLJ5wf/eT6W1jNM9BSb7yObFgsUelnY/qJABwByQUNaNc+cxX+Rzas4yoH0JsQcsaNQmc3bnWh3mG1YE9TKnfVxCgooJ1ixg25uEwlc/H/wc7g3KiRZOMg9wRbPHMOoMGSMAUo6ht2jz3DSO9UoUGavfkM3HP8EoBNgsYBMQM0hU05X82WPZ314/bkzgoY8Y71ryKcrGeFcqbQi7GTPOobcvPzBaPOEX2kM2lFypfbuxx5TM4VyjG0Jf7iTN4qggk00AeFgkRKZfLJbuRhmweRbnHXEa41w47OQ8p2Psfm5Gw==
 Authentication-Results: dkim=none (message not signed)
  header.d=none;dmarc=none action=none header.from=oss.nxp.com;
 Received: from VE1PR04MB7216.eurprd04.prod.outlook.com (2603:10a6:800:1b0::22)
  by AS8PR04MB8946.eurprd04.prod.outlook.com (2603:10a6:20b:42d::18) with
  Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9891.15; Tue, 9 Jun
- 2026 03:27:39 +0000
+ 2026 03:27:45 +0000
 Received: from VE1PR04MB7216.eurprd04.prod.outlook.com
  ([fe80::a9a5:cf83:dbe8:1f74]) by VE1PR04MB7216.eurprd04.prod.outlook.com
  ([fe80::a9a5:cf83:dbe8:1f74%3]) with mapi id 15.21.0092.011; Tue, 9 Jun 2026
- 03:27:39 +0000
+ 03:27:45 +0000
 From: wei.fang@oss.nxp.com
 To: claudiu.manoil@nxp.com,
 	vladimir.oltean@nxp.com,
@@ -74,16 +74,16 @@ Cc: wei.fang@nxp.com,
 	linux-kernel@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org,
 	linux-arm-kernel@lists.infradead.org
-Subject: [PATCH v4 net-next 7/9] net: dsa: netc: add VLAN filter table and egress treatment management
-Date: Tue,  9 Jun 2026 11:29:53 +0800
-Message-Id: <20260609032955.2066089-8-wei.fang@oss.nxp.com>
+Subject: [PATCH v4 net-next 8/9] net: dsa: netc: add bridge mode support
+Date: Tue,  9 Jun 2026 11:29:54 +0800
+Message-Id: <20260609032955.2066089-9-wei.fang@oss.nxp.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20260609032955.2066089-1-wei.fang@oss.nxp.com>
 References: <20260609032955.2066089-1-wei.fang@oss.nxp.com>
 Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
-X-ClientProxiedBy: MA0PR01CA0062.INDPRD01.PROD.OUTLOOK.COM
- (2603:1096:a01:ac::20) To VE1PR04MB7216.eurprd04.prod.outlook.com
+X-ClientProxiedBy: MA5PR01CA0191.INDPRD01.PROD.OUTLOOK.COM
+ (2603:1096:a01:1b2::14) To VE1PR04MB7216.eurprd04.prod.outlook.com
  (2603:10a6:800:1b0::22)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -100,683 +100,651 @@ Precedence: list
 MIME-Version: 1.0
 X-MS-PublicTrafficType: Email
 X-MS-TrafficTypeDiagnostic: VE1PR04MB7216:EE_|AS8PR04MB8946:EE_
-X-MS-Office365-Filtering-Correlation-Id: 0387c609-094e-4954-36e2-08dec5d70ec3
+X-MS-Office365-Filtering-Correlation-Id: df32f346-b041-4148-520f-08dec5d7126f
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|366016|376014|19092799006|7416014|1800799024|3023799007|22082099003|18002099003|921020|11063799006|56012099006|6133799003;
+	BCL:0;ARA:13230040|366016|376014|19092799006|7416014|1800799024|3023799007|22082099003|18002099003|921020|11063799006|56012099006|6133799003|5023799004;
 X-Microsoft-Antispam-Message-Info:
-	oJKuX+uq6MihhuFa2Bf0yNJE7+Ub3Ys89D8wTw9FsviZIG4HJDCg78f6lDOdY05IrsflNQKVw22ausYsVAglmuSntiCi3WXyeFGwEQzT+h0YRfelodKRxswz8BVWc/CsvpeDFwFQWUR1IptWDQ8zhdd7eBzEMAMbsDbQEk+NH4JccTIMqsNPv6gMh5ds97HByRAQH3B+BRq0yxjFhJebUmda2zrrXmQea3JT4CpuARU1UZ0JE8mzpOAzMdp/IWeJ1tk6yHlRD64bjKpwSwsdoserJf1ytgetBujkwg/2br8gSWiPG7Wvs6upnZPJzzqICpjngyzqpIpKjZP1XvrjQOTv6iiVu92cgUEMTCOmGZZoGfyhMeFWYujESVnAU/Dx9BFuFOajjw928bF0QvseyRRrXTRNrhp/icXcSX0h14gGocUbRdOSjF8MAXphn+nWbi4iJuGxl6mmSqEfeQiwUtxIGjEbSntn7kK8P9id8J7F8J7jtT8OitfBDOzHH4PROZs8ZVUHJpQBjmGomV9sBNS9hp1YL+/0LhoULTlU5c680Qmgj43lYTqG+/wbPRpQuvxPNvNKy8x1LezpiyClMqexWKSKPl0174N+DTrm3aVqn0le+kIPvUl+V8K1UrtDwVSXlF+22ADX8jboEaD1dwL7cjI1gvPhXZt/ZgAzIHALqxbz6IxGeJPALtrB5G+gjY1nNgQWeoJBxSSvPcBZMD6FxRqMhwIX0OajZYo/qEo=
+	dzgn+HisdUMiI7rUY5xBlElbUoCIE8RtOpXrLRF2FlMqRiKOVWO+MFoEZsfP0gHGqZf/iAP9JCibsY5R2uDXqJTCbIJFd9kXjuC5+AdX8T1vKCcA6/j7cAsdACP3kPqqTU5s/ScH62O5wgJMnOlXvD4E9nzArzTXvdEM93XeRDL1R4ArsRCKyrNYbnsSLW5AZgYyYjiESTPXX8+BFbb0ZlIkbwwxSieQgz/Uf8mkWAki/vZNArv5kpj68UzVpJrinuVxRrwREzxH3zzE+SLGeul2tZk2T6Jv25l6MfrFMzv8UeHNNOdM3YOGPe1LNz1utEMODiy42KnO57z5Yut0Gks0q7/WvbifZWihOxrKpy5P1DoZAb0ropBPqsRtbSb2lqgBtvtjHd4df59uMxN0dBtsY2ZsCfDpY3oxWMvln82/Vy9My7JSjorYI4blNk+Z2YaXAFzL2sLIxn7qxSA6dcK3beNxnWzVjg3p/H6swFvS0HlbsCXlxhRdxS41vNAcCTzKrZH0OaUyKGbzTvsCbufLiDNsIzJFCTkWpQi80igw5aMHhopsVZyRuPD4PTA+B+H3ApAhkhLKlCXXabcrtj29OYCFWiCpfHdtVpkTg6QSalWw7zLQzTj0/bxLH8uiy9D34Q5BsJyuzMwLBVlenf9TuaKArvygWHRgDq9NNcUL1dE64m2pTIy/7QvtifswGkC6ULHJCD/DK4aB1yAuX6F+8sNA6QQTBsf+TrrVmbk=
 X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:VE1PR04MB7216.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(376014)(19092799006)(7416014)(1800799024)(3023799007)(22082099003)(18002099003)(921020)(11063799006)(56012099006)(6133799003);DIR:OUT;SFP:1101;
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:VE1PR04MB7216.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(376014)(19092799006)(7416014)(1800799024)(3023799007)(22082099003)(18002099003)(921020)(11063799006)(56012099006)(6133799003)(5023799004);DIR:OUT;SFP:1101;
 X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
 X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?y5K7dz8HrT3/HxGeNY4VfnYDRqQThHnP6w/xtdEM4VDE7YDs4JkJmC3UlSIH?=
- =?us-ascii?Q?4ync/4bsg5DnZHUJrFeQN/MnQ9LG5OZMXszGDGtj/fr+RxvYJeRARFs7dZjG?=
- =?us-ascii?Q?Aki/coqDdtDQbL4K2s6t/uAIj+rAZ8fw1cmq2FQEnrJCB0iEw0LdkXzJoYWu?=
- =?us-ascii?Q?0b5QmjZVUawNvO0rJpT18T3HNr8IXIIgy71EKmTXmu9oEJITsptrYBYUz+ne?=
- =?us-ascii?Q?YgNWJXnV05+i6S5TMQS6a913Ubsdmw0BQPHtX392BLmd6YlwoniUdWtCgpdh?=
- =?us-ascii?Q?vgcgdaPlVAqF5mNrmvUNfkEqjQlm0FiEZN+7YHpDjmRINa9Vg7NANCCmuofQ?=
- =?us-ascii?Q?k1t3d6xwOBywNYNknWdc3jbYcpS+WSlOnS8faYJYDh3sgNHcA3ON5OIcydHe?=
- =?us-ascii?Q?ozKtzAnrY3MmRgDjer1CMU+Jyo8774OaPDUB37iHA6ZfsOFC5FtTlywfj1tf?=
- =?us-ascii?Q?QWb1/mI7h7qDZ5mRz77PwxQmF6uEBFv8bKF1QT6ND6SC3d/MbV9H1rRlkT6h?=
- =?us-ascii?Q?NW2etIc65/0NV+cG9zMJbjQhkMLB+Eyo81dHTVkYLxgYbSA/rjSAX6NEy8au?=
- =?us-ascii?Q?Acf7Gi2/rrI1E3RFAT/C/XQXEfc0i3oiVsVmugeTB9PVrSbWX/7Qdm3ltqrs?=
- =?us-ascii?Q?GjOrfJkXMeqQMW7eCXtuTfgJAwieMZL6mHoc34RdiByjO6mZQOuoZcf5ZNt2?=
- =?us-ascii?Q?KPTC3ikLLRhjSlTgdrvpsqO1GmkmgwBoILu2xp7fC0+ZJMMJd7W1eOLWXBPg?=
- =?us-ascii?Q?tiLZVNyk6On+cZ0ckqIcCwSu55xYVw4Zi3nTOoQKdyvjo2qsYl4qI8pCzrkR?=
- =?us-ascii?Q?HcBKTNhVhzmev1GSX5ZqX0o0kaGumcGOuZ2IrmM0yrgDtQd8lx7MqPewZGLn?=
- =?us-ascii?Q?qyYJhjcUvgqagH5CXh0frFxYjxD4614e7wchAy/AuQm4G2CFE/CIxxb6Fhj+?=
- =?us-ascii?Q?PHALQzoAvRQENzw1OleRgB52bak/ypBAJ4flurih0HSZj0MV/QfjazhyMKkU?=
- =?us-ascii?Q?dvfej02nvwuK6zzKOLn2FmLRGnFypCCOKDb2XmoeuuyOsiFPsyF986pKjoTB?=
- =?us-ascii?Q?9jS8OLKmZdKG2BMp0HoX84Dc/S/obCOATFKM4T/PNK297RqY+x2l7vOrJepl?=
- =?us-ascii?Q?20/IQcY5pPw1+yQ5VX+W/mZPRq4yWkJnmgWeoNFYiZBAruIWkFkI1PN6RLNP?=
- =?us-ascii?Q?H8hOHhOgauhqe8JN5zqaINWKBJkg4H/k8AQ5yNbpXKxNgaMWWyEO606fX4jd?=
- =?us-ascii?Q?6+80TSEY6PeEiu27B2yI06Ka6IzpZzdkvwjP2SXZniQP8rByIgFaVGzZwhgq?=
- =?us-ascii?Q?KLDNtcRoSnX0mzsTaBY9AsgLnd6OspTqKITO669ep9+Ekad3K7orxg8ovjxi?=
- =?us-ascii?Q?AO7W6sQOtv3vCrzf/CN2WcCch3fKxZ4dC0goI8t42TwlboTV7uSnsW74QLVv?=
- =?us-ascii?Q?pq/sfqu03pCRIvw2J2l3MgZXoEx6xY3/dov077G1KngJKJyTM48RLPwrked+?=
- =?us-ascii?Q?tZDj31IiJCZ5ION+9iHfcM85kTt2o33p4bXu+A3oljuLuItXeETm9K1uMRLv?=
- =?us-ascii?Q?y0DngPY5IjXdYTlgYOdCx65SnWYfttR69Hn2URui3+XgO9pIfKtB4UNDAIM9?=
- =?us-ascii?Q?T7AmRffqocAu38aNeVdRoy1FXLJiVyiR76cmvCMSZkMCdVam+nzBzTrRS4Xy?=
- =?us-ascii?Q?kPKDN3YZBaJ3PhIx8++BuC6KpBygbgbUk0P1g43zF7nXRUGvDc5+MJ0gNm4f?=
- =?us-ascii?Q?12UTgYW8cuiYrSq0ukvFIzZcphxd4Q6nMjXKUUqwVAcNCF63GFBB?=
+	=?us-ascii?Q?flfJ31GFe4U+GcrsAI54fFsIfB+17dRp3o3L2cbB0XALzBNBrWt2kiZltILa?=
+ =?us-ascii?Q?RGCFA1s2PZjA4xjQ5RvoOyG/GliAPSLunD9+5y6yggXY2F6hxdD9HVXfjNni?=
+ =?us-ascii?Q?3a4YVqsXNtLh90TBCnZqhYx6YScPw4R7/TElwtzsBwV0BSVYq3cCKx/1n12S?=
+ =?us-ascii?Q?nEagnmzIMbpJ0ivM6NTYkhpj87Mh+0ej1fJEzVMZlI2uI+OY12amlPQ3omiz?=
+ =?us-ascii?Q?Iu7wmwJakbt1Pe2Vd9UdquocNzxnX5AhVXwG4ktKDpmrFkWqXuoys4uppaGE?=
+ =?us-ascii?Q?Ml27ercolqblDsx64zt6sroOwGzrnaEeabqw1mcaBHh85GyMQmjyZjLzTf6e?=
+ =?us-ascii?Q?OsoREEW9Y9ofoEff9NqtV8+8LAPZRMEoB2qAH0asogRpMJRmKmdle2Hh3Ip5?=
+ =?us-ascii?Q?Zk0pzkj9RVkkib1y6emRSlinh7qy7TrKQ9+YgTJwF/LivxrPDI4wqi2gH34Z?=
+ =?us-ascii?Q?TfxNwotRuJmhYI0VF0BBGemmN2ZQTk0vCEZ4v3PiazrW7noeibnmGC2dpob1?=
+ =?us-ascii?Q?HbiC0y7lCueUUM6PtSkiPCMNdmDfuVl1ipV1qKVLIF5HHdfJKpnx6zqrKtIx?=
+ =?us-ascii?Q?LmymtnNqGG0rdH9z3WvKao2mINgm1A7645UqWITgJBTjV0a4qcQPsCRq2fX8?=
+ =?us-ascii?Q?dDtkRmE10zFzGkVELoDsVTxZ2G6qlnltXx68AR1duqZrtMX9IzNP4z8IVxVb?=
+ =?us-ascii?Q?Qa57PJnmTjboALZ7qc1/imhySnW6iHul7Q//NmlwGvECeCEz59QsYUANN5ih?=
+ =?us-ascii?Q?hmwaOnOmEFr8N2NXkAezYthdRSrMcHfXj+RaHtdHqkzYCDewf8JWBmr8GZz7?=
+ =?us-ascii?Q?zaB3btbOmo+oht16ovMzuZs2szNkVADKV1LiWdCI5S1aCkcD0m282STZfZh+?=
+ =?us-ascii?Q?j8kXTqJdOBJK3wLdc1oBFpN71NnBgZVHCo5eZQ56AVBjMwMlX/I0YiZpjBIj?=
+ =?us-ascii?Q?FkjTABGKEQmrcsn4CX5pc2Mri3vOPbJbBoTngOFO8DxYYiuOF8rywqZxUHoT?=
+ =?us-ascii?Q?gzV+dMxpRcRTQ6q/FFpjQHObv+Gjf0lGimHnvr6ox1RCmBMtVnYenTNA9163?=
+ =?us-ascii?Q?PLo3UzkuhkARI1V6gm342un9QeIUNtq6sbgkiP3Bl8WuTNHASJbbx5/FsUnN?=
+ =?us-ascii?Q?Uv05fEUSyf4Rpt4LxGLyLDTMAp45axktTCejkNSkCCL5VzNFfPRqPeuxLK95?=
+ =?us-ascii?Q?6Bf70GUNoydvTvAB9dBaZdF+H3c2htNqJ0r600JLDtkdEHlgIG2i+rkg80Gx?=
+ =?us-ascii?Q?voa0opdnn9yUZeRHNfnwZLnosmG6U0LJJ5GyTMxyK4SS6cU8hhjaJ+JEvFyb?=
+ =?us-ascii?Q?4+zi+1A3YxkhGl6Pt9VjLj+VovMdZP87ecdeR7GqwXfb2yNVv8sCeolNwr+t?=
+ =?us-ascii?Q?HgoFpmRWT5bt2336vnjgBD5c8JcBw+WvEssWtcaaNR8j6AylaJrmiLsxEaD0?=
+ =?us-ascii?Q?IFJ39RRjJyxvFQJiAQH0KN7xXsIux6ccRsXlpfesS6VcqiwVFsz4eGYWkM0E?=
+ =?us-ascii?Q?q2HPyuGLyKc2KaSS8I+mZoPYCuOrThK3J8dxL8BfqFrsoVCgfh6hG28cAcka?=
+ =?us-ascii?Q?ahERzgndVpGx62ffzadHW3to4FTvj3+eHH0+aiE1jSxOts90wsOZzKsbn0Sq?=
+ =?us-ascii?Q?QvsgME4NC5iDHS2s7Y9Fg4FJmYpIh3qLpyvQVTqCq1oILOCDbLjWrHSIclSl?=
+ =?us-ascii?Q?IuzThgD6o+luqoPYvyiJp3xVDO9pQih9FX9vEnh1Crxi93xTXMmTYZhvRWh1?=
+ =?us-ascii?Q?NDWBU0EOeCCPQQsoFDYj+jStY6Dw1YAeIqHl9TCTz9Pncn8kOhgq?=
 X-OriginatorOrg: oss.nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 0387c609-094e-4954-36e2-08dec5d70ec3
+X-MS-Exchange-CrossTenant-Network-Message-Id: df32f346-b041-4148-520f-08dec5d7126f
 X-MS-Exchange-CrossTenant-AuthSource: VE1PR04MB7216.eurprd04.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 09 Jun 2026 03:27:39.1769
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 09 Jun 2026 03:27:45.3416
  (UTC)
 X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
 X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
 X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: +o7xdbw2UxQvPzU+Gyor7LggHkIiioZqtGB1K66Esvm1/urxGjyCenKQ32EhXJ526pDX8JDI71aq3nVmNNhquOkah9Oe/EbIzAmgsBiqf9I5vwknrpxD3fTjAsQ73Soo
+X-MS-Exchange-CrossTenant-UserPrincipalName: lNrLXBfWnLMdn0e+JX+sPv/enzAAb5TBumtWhHrFZci7LbxZ6Ud+tTlirRKu9TVSuu9kmnz/L9aTG2NqPY4yBDr005rm/WIXjfo7oLLXWUzdvK8hnIVoRruMrptE6ZxS
 X-MS-Exchange-Transport-CrossTenantHeadersStamped: AS8PR04MB8946
 
 From: Wei Fang <wei.fang@nxp.com>
 
-Implement the DSA .port_vlan_add and .port_vlan_del operations to enable
-VLAN-aware bridge offloading on the NETC switch.
+Wire up the port_bridge_join, port_bridge_leave and port_vlan_filtering
+DSA callbacks to support both VLAN-unaware and VLAN-aware bridge modes.
 
-VLAN membership is maintained in the VLAN Filter Table (VFT). Adding the
-first port to a VLAN creates a new VFT entry with hardware MAC learning
-and flood-on-miss forwarding; subsequent ports update the existing
-entry's membership bitmap. Removing the last port deletes the entry.
+For VLAN-unaware bridges, each bridge instance is assigned a dedicated
+internal PVID via NETC_VLAN_UNAWARE_PVID(bridge.num), counting down
+from VID 4095. A VFT entry is created for this PVID with hardware MAC
+learning and flood-on-miss forwarding enabled. The CPU port is included
+as a VFT member so frames can reach the host. The reserved VID range is
+blocked in port_vlan_add to prevent user-space conflicts.
 
-Egress tagging is handled through the Egress Treatment Table (ETT). Each
-VLAN is allocated a group of ETT entries, one per available port. Ports
-are assigned a sequential ett_offset during initialisation, used to
-address each port's entry within the group. Untagged ports configure the
-ETT to strip the outer VLAN tag; tagged ports pass frames through
-unmodified. Each ETT group is optionally paired with an Egress Counter
-Table (ECT) group for per-port frame counting, allocated on a best-effort
-basis. When the egress rule of an ETT entry changes, the counter of the
-corresponding ECT entry will be recounted to track the number of frames
-that match the new egress rule.
+Only one VLAN-aware bridge is supported at a time; this constraint is
+enforced in port_bridge_join and port_vlan_filtering. The per-port PVID
+is tracked in software and written to the BPDVR register whenever VLAN
+filtering is active.
 
-A software shadow list serialised by vft_lock tracks active VLAN state
-across both port membership and egress tagging. VID 0 is used for single
-port mode and is ignored by both callbacks.
+When a port leaves the bridge, its dynamic FDB entries are flushed right
+away in port_bridge_leave(), without waiting for the ageing cycle. When
+a link down event occurs on a port, netc_mac_link_down() will also clear
+the port's dynamic FDB entries via netc_port_remove_dynamic_entries().
+Non-bridge ports have no dynamic FDB entries, so this call is always
+safe. Additionally, .port_fast_age() callback is added to flush the
+dynamic FDB entries associated to a port.
+
+Host flood rules are removed from the ingress port filter table when a
+port joins a bridge to avoid bypassing FDB lookup and MAC learning.
 
 Signed-off-by: Wei Fang <wei.fang@nxp.com>
 ---
- drivers/net/dsa/netc/netc_main.c   | 439 +++++++++++++++++++++++++++++
- drivers/net/dsa/netc/netc_switch.h |  24 ++
- include/linux/fsl/ntmp.h           |  15 +
- 3 files changed, 478 insertions(+)
+ drivers/net/dsa/netc/netc_main.c   | 377 +++++++++++++++++++++++++++--
+ drivers/net/dsa/netc/netc_switch.h |   2 +
+ 2 files changed, 363 insertions(+), 16 deletions(-)
 
 diff --git a/drivers/net/dsa/netc/netc_main.c b/drivers/net/dsa/netc/netc_main.c
-index d4475ad7ed6c..fcca22da08d8 100644
+index fcca22da08d8..299a9e76b9aa 100644
 --- a/drivers/net/dsa/netc/netc_main.c
 +++ b/drivers/net/dsa/netc/netc_main.c
-@@ -37,6 +37,27 @@ static void netc_destroy_fdb_list(struct netc_switch *priv)
- 		netc_del_fdb_entry(entry);
+@@ -509,6 +509,17 @@ static void netc_port_set_mlo(struct netc_port *np, enum netc_mlo mlo)
+ 	netc_port_rmw(np, NETC_BPCR, BPCR_MLO, FIELD_PREP(BPCR_MLO, mlo));
  }
  
-+static struct netc_vlan_entry *
-+netc_lookup_vlan_entry(struct netc_switch *priv, u16 vid)
++static void netc_port_set_pvid(struct netc_port *np, u16 pvid)
 +{
-+	struct netc_vlan_entry *entry;
-+
-+	hlist_for_each_entry(entry, &priv->vlan_list, node)
-+		if (entry->vid == vid)
-+			return entry;
-+
-+	return NULL;
++	netc_port_rmw(np, NETC_BPDVR, BPDVR_VID, pvid);
 +}
 +
-+static void netc_destroy_vlan_list(struct netc_switch *priv)
++static void netc_port_set_vlan_aware(struct netc_port *np, bool aware)
 +{
-+	struct netc_vlan_entry *entry;
-+	struct hlist_node *tmp;
-+
-+	hlist_for_each_entry_safe(entry, tmp, &priv->vlan_list, node)
-+		netc_del_vlan_entry(entry);
++	netc_port_rmw(np, NETC_BPDVR, BPDVR_RXVAM,
++		      aware ? 0 : BPDVR_RXVAM);
 +}
 +
- static enum dsa_tag_protocol
- netc_get_tag_protocol(struct dsa_switch *ds, int port,
- 		      enum dsa_tag_protocol mprot)
-@@ -222,6 +243,7 @@ static int netc_init_all_ports(struct netc_switch *priv)
- 	struct device *dev = priv->dev;
- 	struct netc_port *np;
- 	struct dsa_port *dp;
-+	int ett_offset = 0;
- 	int err;
+ static void netc_port_fixed_config(struct netc_port *np)
+ {
+ 	/* Default IPV and DR setting */
+@@ -534,7 +545,7 @@ static void netc_port_default_config(struct netc_port *np)
+ 	netc_port_fixed_config(np);
  
- 	priv->ports = devm_kcalloc(dev, priv->info->num_ports,
-@@ -251,6 +273,8 @@ static int netc_init_all_ports(struct netc_switch *priv)
- 	dsa_switch_for_each_available_port(dp, priv->ds) {
- 		np = priv->ports[dp->index];
- 		np->dp = dp;
-+		np->ett_offset = ett_offset++;
-+		priv->port_bitmap |= BIT(dp->index);
+ 	/* Default VLAN unaware */
+-	netc_port_rmw(np, NETC_BPDVR, BPDVR_RXVAM, BPDVR_RXVAM);
++	netc_port_set_vlan_aware(np, false);
  
- 		err = netc_port_get_info_from_dt(np, dp->dn, dev);
- 		if (err)
-@@ -831,6 +855,8 @@ static int netc_setup(struct dsa_switch *ds)
+ 	if (dsa_port_is_cpu(np->dp))
+ 		/* For CPU port, source port pruning is disabled */
+@@ -695,10 +706,16 @@ static int netc_port_del_fdb_entry(struct netc_port *np,
  
- 	INIT_HLIST_HEAD(&priv->fdb_list);
- 	mutex_init(&priv->fdbt_lock);
-+	INIT_HLIST_HEAD(&priv->vlan_list);
-+	mutex_init(&priv->vft_lock);
+ 	entry = netc_lookup_fdb_entry(priv, addr, vid);
+ 	if (unlikely(!entry))
+-		/* Currently only single port mode is supported, MAC learning
+-		 * is disabled, so there is no dynamically learned FDB entry.
+-		 * We need to support deleting dynamically FDB entry when the
+-		 * bridge mode is supported.
++		/* The hardware-learned dynamic FDB entries cannot be deleted
++		 * through .port_fdb_del() interface.
++		 * For NTF_MASTER path: Since hardware-learned dynamic FDB
++		 * entries are never synchronized back to the bridge software
++		 * database. br_fdb_delete() -> br_fdb_find() cannot find the
++		 * FDB entry, so .port_fdb_del() will not be called.
++		 * For NTF_SELF path: dsa_user_netdev_ops does not implement
++		 * ndo_fdb_del(), so rtnl_fdb_del() falls back to
++		 * ndo_dflt_fdb_del(), which only supports NUD_PERMANENT static
++		 * entries and rejects all others with -EINVAL.
+ 		 */
+ 		goto unlock_fdbt;
  
- 	netc_switch_fixed_config(priv);
+@@ -1277,6 +1294,16 @@ static int netc_port_add_vlan_entry(struct netc_port *np, u16 vid,
+ 	entry->ect_gid = NTMP_NULL_ENTRY_ID;
  
-@@ -858,6 +884,7 @@ static int netc_setup(struct dsa_switch *ds)
- 	 * hardware state.
- 	 */
- 	mutex_destroy(&priv->fdbt_lock);
-+	mutex_destroy(&priv->vft_lock);
- 	netc_free_ntmp_user(priv);
+ 	bitmap_stg = BIT(index) | VFT_STG_ID(0);
++	/* If the VID is a VLAN-unaware PVID, the CPU port needs to be
++	 * a member of this VLAN.
++	 */
++	if (dsa_port_is_user(np->dp) &&
++	    vid >= NETC_VLAN_UNAWARE_PVID(priv->ds->max_num_bridges)) {
++		struct dsa_port *cpu_dp = np->dp->cpu_dp;
++
++		bitmap_stg |= BIT(cpu_dp->index);
++	}
++
+ 	cfg = FIELD_PREP(VFT_MLO, MLO_HW) |
+ 	      FIELD_PREP(VFT_MFO, MFO_NO_MATCH_FLOOD);
  
+@@ -1314,11 +1341,16 @@ static int netc_port_add_vlan_entry(struct netc_port *np, u16 vid,
  	return err;
-@@ -867,6 +894,8 @@ static void netc_destroy_all_lists(struct netc_switch *priv)
- {
- 	netc_destroy_fdb_list(priv);
- 	mutex_destroy(&priv->fdbt_lock);
-+	netc_destroy_vlan_list(priv);
-+	mutex_destroy(&priv->vft_lock);
  }
  
- static void netc_free_host_flood_rules(struct netc_switch *priv)
-@@ -1025,6 +1054,385 @@ static void netc_switch_get_ip_revision(struct netc_switch *priv)
- 	priv->revision = FIELD_GET(IPBRR0_IP_REV, val);
+-static bool netc_port_vlan_egress_rule_changed(struct netc_vlan_entry *entry,
++static bool netc_port_vlan_egress_rule_changed(struct netc_switch *priv,
++					       struct netc_vlan_entry *entry,
+ 					       int port, bool untagged)
+ {
+ 	bool old_untagged = !!(entry->untagged_port_bitmap & BIT(port));
+ 
++	/* VLAN-unaware VIDs have no egress rules, so return 'false' */
++	if (entry->vid >= NETC_VLAN_UNAWARE_PVID(priv->ds->max_num_bridges))
++		return false;
++
+ 	return old_untagged != untagged;
  }
  
-+static void netc_init_ett_cfge(struct ett_cfge_data *cfge,
-+			       bool untagged, u32 ect_eid)
-+{
-+	u32 vuda_sqta = FMTEID_VUDA_SQTA;
-+	u16 efm_cfg = 0;
-+
-+	if (ect_eid != NTMP_NULL_ENTRY_ID) {
-+		/* Increase egress frame counter */
-+		efm_cfg |= FIELD_PREP(ETT_ECA, ETT_ECA_INC);
-+		cfge->ec_eid = cpu_to_le32(ect_eid);
-+	}
-+
-+	/* If egress rule is VLAN untagged */
-+	if (untagged) {
-+		/* delete outer VLAN tag */
-+		vuda_sqta |= FIELD_PREP(FMTEID_VUDA, FMTEID_VUDA_DEL_OTAG);
-+		/* length change: twos-complement notation */
-+		efm_cfg |= FIELD_PREP(ETT_EFM_LEN_CHANGE,
-+				      ETT_FRM_LEN_DEL_VLAN);
-+	}
-+
-+	cfge->efm_eid = cpu_to_le32(vuda_sqta);
-+	cfge->efm_cfg = cpu_to_le16(efm_cfg);
-+}
-+
-+static int netc_add_ett_entry(struct netc_switch *priv, bool untagged,
-+			      u32 ett_eid, u32 ect_eid)
-+{
-+	struct ntmp_user *ntmp = &priv->ntmp;
-+	struct ett_cfge_data cfge = {};
-+
-+	netc_init_ett_cfge(&cfge, untagged, ect_eid);
-+
-+	return ntmp_ett_add_entry(ntmp, ett_eid, &cfge);
-+}
-+
-+static int netc_update_ett_entry(struct netc_switch *priv, bool untagged,
-+				 u32 ett_eid, u32 ect_eid)
-+{
-+	struct ntmp_user *ntmp = &priv->ntmp;
-+	struct ett_cfge_data cfge = {};
-+
-+	netc_init_ett_cfge(&cfge, untagged, ect_eid);
-+
-+	return ntmp_ett_update_entry(ntmp, ett_eid, &cfge);
-+}
-+
-+static int netc_add_ett_group_entries(struct netc_switch *priv,
-+				      u32 untagged_port_bitmap,
-+				      u32 ett_base_eid,
-+				      u32 ect_base_eid)
-+{
-+	struct netc_port **ports = priv->ports;
-+	u32 ett_eid, ect_eid;
-+	bool untagged;
-+	int i, err;
-+
-+	for (i = 0; i < priv->info->num_ports; i++) {
-+		if (!ports[i]->dp)
-+			continue;
-+
-+		untagged = !!(untagged_port_bitmap & BIT(i));
-+		ett_eid = ett_base_eid + ports[i]->ett_offset;
-+		ect_eid = NTMP_NULL_ENTRY_ID;
-+		if (ect_base_eid != NTMP_NULL_ENTRY_ID)
-+			ect_eid = ect_base_eid + ports[i]->ett_offset;
-+
-+		err = netc_add_ett_entry(priv, untagged, ett_eid, ect_eid);
-+		if (err)
-+			goto clear_ett_entries;
-+	}
-+
-+	return 0;
-+
-+clear_ett_entries:
-+	while (--i >= 0) {
-+		if (!ports[i]->dp)
-+			continue;
-+
-+		ett_eid = ett_base_eid + ports[i]->ett_offset;
-+		ntmp_ett_delete_entry(&priv->ntmp, ett_eid);
-+	}
-+
-+	return err;
-+}
-+
-+static int netc_add_vlan_egress_rule(struct netc_switch *priv,
-+				     struct netc_vlan_entry *entry)
-+{
-+	u32 num_ports = netc_num_available_ports(priv);
-+	struct ntmp_user *ntmp = &priv->ntmp;
-+	u32 ect_eid = NTMP_NULL_ENTRY_ID;
-+	u32 ett_eid, ett_gid, ect_gid;
-+	int err;
-+
-+	/* Step 1: Find available egress counter table entries and update
-+	 * these entries.
+@@ -1341,7 +1373,8 @@ static int netc_port_set_vlan_entry(struct netc_port *np, u16 vid,
+ 	}
+ 
+ 	/* Check whether the egress VLAN rule is changed */
+-	changed = netc_port_vlan_egress_rule_changed(entry, port, untagged);
++	changed = netc_port_vlan_egress_rule_changed(priv, entry, port,
++						     untagged);
+ 	if (changed) {
+ 		entry->untagged_port_bitmap ^= BIT(port);
+ 		err = netc_port_update_vlan_egress_rule(np, entry);
+@@ -1405,6 +1438,17 @@ static int netc_port_del_vlan_entry(struct netc_port *np, u16 vid)
+ 	cfge = &entry->cfge;
+ 	vlan_port_bitmap = FIELD_GET(VFT_PORT_MEMBERSHIP,
+ 				     le32_to_cpu(cfge->bitmap_stg));
++	/* If the VID is a VLAN-unaware PVID, we need to clear the CPU
++	 * port bit of vlan_port_bitmap, so that the VLAN entry can be
++	 * deleted if no user ports use this VLAN.
 +	 */
-+	ect_gid = ntmp_lookup_free_eid(ntmp->ect_gid_bitmap,
-+				       ntmp->ect_bitmap_size);
-+	if (ect_gid == NTMP_NULL_ENTRY_ID) {
-+		dev_info(priv->dev,
-+			 "No egress counter table entries available\n");
-+	} else {
-+		ect_eid = ect_gid * num_ports;
-+		for (int i = 0; i < num_ports; i++)
-+			/* There is no need to check the return value, the only
-+			 * issue is that the entry's counter might be inaccurate,
-+			 * but it will not affect the functionality, it is only
-+			 * for future debugging.
-+			 */
-+			ntmp_ect_update_entry(ntmp, ect_eid + i);
++	if (dsa_port_is_user(np->dp) &&
++	    vid >= NETC_VLAN_UNAWARE_PVID(priv->ds->max_num_bridges)) {
++		struct dsa_port *cpu_dp = np->dp->cpu_dp;
++
++		vlan_port_bitmap &= ~BIT(cpu_dp->index);
 +	}
 +
-+	/* Step 2: Find available egress treatment table entries and add
-+	 * these entries.
+ 	/* If the VLAN only belongs to the current port */
+ 	if (vlan_port_bitmap == BIT(port)) {
+ 		err = ntmp_vft_delete_entry(&priv->ntmp, vid);
+@@ -1510,17 +1554,50 @@ static int netc_port_max_mtu(struct dsa_switch *ds, int port)
+ 	return NETC_MAX_FRAME_LEN - VLAN_ETH_HLEN - ETH_FCS_LEN;
+ }
+ 
++static struct net_device *netc_classify_db(struct dsa_db db)
++{
++	switch (db.type) {
++	case DSA_DB_PORT:
++		return NULL;
++	case DSA_DB_BRIDGE:
++		return db.bridge.dev;
++	default:
++		return ERR_PTR(-EOPNOTSUPP);
++	}
++}
++
++static u16 netc_vlan_unaware_pvid(struct dsa_bridge *bridge)
++{
++	u32 br_num;
++
++	if (!bridge)
++		return NETC_STANDALONE_PVID;
++
++	br_num = bridge->num;
++
++	/* The br_num is supposed to be 1 ~ ds->max_num_bridges, see
++	 * dsa_bridge_num_get(). Since max_num_bridges is non-zero,
++	 * so dsa_port_bridge_create() will return an error if
++	 * dsa_bridge_num_get() returns 0.
 +	 */
-+	ett_gid = ntmp_lookup_free_eid(ntmp->ett_gid_bitmap,
-+				       ntmp->ett_bitmap_size);
-+	if (ett_gid == NTMP_NULL_ENTRY_ID) {
-+		dev_err(priv->dev,
-+			"No egress treatment table entries available\n");
-+		err = -ENOSPC;
-+		goto clear_ect_gid;
-+	}
++	if (WARN_ON(!br_num))
++		return NETC_STANDALONE_PVID;
 +
-+	ett_eid = ett_gid * num_ports;
-+	err = netc_add_ett_group_entries(priv, entry->untagged_port_bitmap,
-+					 ett_eid, ect_eid);
-+	if (err)
-+		goto clear_ett_gid;
-+
-+	entry->cfge.et_eid = cpu_to_le32(ett_eid);
-+	entry->ect_gid = ect_gid;
-+
-+	return 0;
-+
-+clear_ett_gid:
-+	ntmp_clear_eid_bitmap(ntmp->ett_gid_bitmap, ett_gid);
-+
-+clear_ect_gid:
-+	if (ect_gid != NTMP_NULL_ENTRY_ID)
-+		ntmp_clear_eid_bitmap(ntmp->ect_gid_bitmap, ect_gid);
-+
-+	return err;
++	return NETC_VLAN_UNAWARE_PVID(br_num);
 +}
 +
-+static void netc_delete_vlan_egress_rule(struct netc_switch *priv,
-+					 struct netc_vlan_entry *entry)
-+{
-+	u32 num_ports = netc_num_available_ports(priv);
-+	struct ntmp_user *ntmp = &priv->ntmp;
-+	u32 ett_eid, ett_gid;
-+
-+	ett_eid = le32_to_cpu(entry->cfge.et_eid);
-+	if (ett_eid == NTMP_NULL_ENTRY_ID)
-+		return;
-+
-+	ett_gid = ett_eid / num_ports;
-+	ntmp_clear_eid_bitmap(ntmp->ett_gid_bitmap, ett_gid);
-+	for (int i = 0; i < num_ports; i++)
-+		ntmp_ett_delete_entry(ntmp, ett_eid + i);
-+
-+	if (entry->ect_gid == NTMP_NULL_ENTRY_ID)
-+		return;
-+
-+	ntmp_clear_eid_bitmap(ntmp->ect_gid_bitmap, entry->ect_gid);
-+}
-+
-+static int netc_port_update_vlan_egress_rule(struct netc_port *np,
-+					     struct netc_vlan_entry *entry)
-+{
-+	bool untagged = !!(entry->untagged_port_bitmap & BIT(np->dp->index));
-+	u32 num_ports = netc_num_available_ports(np->switch_priv);
-+	u32 ett_eid = le32_to_cpu(entry->cfge.et_eid);
-+	struct netc_switch *priv = np->switch_priv;
-+	u32 ect_eid = NTMP_NULL_ENTRY_ID;
-+	int err;
-+
-+	if (ett_eid == NTMP_NULL_ENTRY_ID)
-+		return 0;
-+
-+	if (entry->ect_gid != NTMP_NULL_ENTRY_ID)
-+		/* Each ETT entry maps to an ECT entry if ect_gid is not NULL
-+		 * entry ID. The offset of the ECT entry corresponding to the
-+		 * port in the group is equal to ett_offset.
-+		 */
-+		ect_eid = entry->ect_gid * num_ports + np->ett_offset;
-+
-+	ett_eid += np->ett_offset;
-+	err = netc_update_ett_entry(priv, untagged, ett_eid, ect_eid);
-+	if (err) {
-+		dev_err(priv->dev,
-+			"Failed to update VLAN %u egress rule on port %d\n",
-+			entry->vid, np->dp->index);
-+		return err;
-+	}
-+
-+	if (ett_eid != NTMP_NULL_ENTRY_ID)
-+		ntmp_ect_update_entry(&priv->ntmp, ect_eid);
-+
-+	return 0;
-+}
-+
-+static int netc_port_add_vlan_entry(struct netc_port *np, u16 vid,
-+				    bool untagged)
-+{
-+	struct netc_switch *priv = np->switch_priv;
-+	struct netc_vlan_entry *entry;
-+	struct vft_cfge_data *cfge;
-+	u32 index = np->dp->index;
-+	u32 bitmap_stg;
-+	int err;
-+	u16 cfg;
-+
-+	entry = kzalloc_obj(*entry);
-+	if (!entry)
-+		return -ENOMEM;
-+
-+	entry->vid = vid;
-+	entry->ect_gid = NTMP_NULL_ENTRY_ID;
-+
-+	bitmap_stg = BIT(index) | VFT_STG_ID(0);
-+	cfg = FIELD_PREP(VFT_MLO, MLO_HW) |
-+	      FIELD_PREP(VFT_MFO, MFO_NO_MATCH_FLOOD);
-+
-+	cfge = &entry->cfge;
-+	cfge->et_eid = cpu_to_le32(NTMP_NULL_ENTRY_ID);
-+	cfge->bitmap_stg = cpu_to_le32(bitmap_stg);
-+	cfge->fid = cpu_to_le16(vid);
-+	cfge->cfg = cpu_to_le16(cfg);
-+	cfge->eta_port_bitmap = cpu_to_le32(priv->port_bitmap);
-+
-+	if (untagged)
-+		entry->untagged_port_bitmap = BIT(index);
-+
-+	err = netc_add_vlan_egress_rule(priv, entry);
-+	if (err)
-+		goto free_vlan_entry;
-+
-+	err = ntmp_vft_add_entry(&priv->ntmp, vid, cfge);
-+	if (err) {
-+		dev_err(priv->dev,
-+			"Failed to add VLAN %u entry on port %d\n",
-+			vid, index);
-+		goto delete_vlan_egress_rule;
-+	}
-+
-+	netc_add_vlan_entry(priv, entry);
-+
-+	return 0;
-+
-+delete_vlan_egress_rule:
-+	netc_delete_vlan_egress_rule(priv, entry);
-+free_vlan_entry:
-+	kfree(entry);
-+
-+	return err;
-+}
-+
-+static bool netc_port_vlan_egress_rule_changed(struct netc_vlan_entry *entry,
-+					       int port, bool untagged)
-+{
-+	bool old_untagged = !!(entry->untagged_port_bitmap & BIT(port));
-+
-+	return old_untagged != untagged;
-+}
-+
-+static int netc_port_set_vlan_entry(struct netc_port *np, u16 vid,
-+				    bool untagged)
-+{
-+	struct netc_switch *priv = np->switch_priv;
-+	struct netc_vlan_entry *entry;
-+	struct vft_cfge_data *cfge;
-+	int port = np->dp->index;
-+	bool changed;
-+	int err = 0;
-+
-+	mutex_lock(&priv->vft_lock);
-+
-+	entry = netc_lookup_vlan_entry(priv, vid);
-+	if (!entry) {
-+		err = netc_port_add_vlan_entry(np, vid, untagged);
-+		goto unlock_vft;
-+	}
-+
-+	/* Check whether the egress VLAN rule is changed */
-+	changed = netc_port_vlan_egress_rule_changed(entry, port, untagged);
-+	if (changed) {
-+		entry->untagged_port_bitmap ^= BIT(port);
-+		err = netc_port_update_vlan_egress_rule(np, entry);
-+		if (err) {
-+			entry->untagged_port_bitmap ^= BIT(port);
-+			goto unlock_vft;
-+		}
-+	}
-+
-+	cfge = &entry->cfge;
-+	if (cfge->bitmap_stg & cpu_to_le32(BIT(port)))
-+		goto unlock_vft;
-+
-+	cfge->bitmap_stg |= cpu_to_le32(BIT(port));
-+	err = ntmp_vft_update_entry(&priv->ntmp, vid, cfge);
-+	if (err) {
-+		dev_err(priv->dev,
-+			"Failed to update VLAN %u entry on port %d\n",
-+			vid, port);
-+
-+		goto restore_bitmap_stg;
-+	}
-+
-+	mutex_unlock(&priv->vft_lock);
-+
-+	return 0;
-+
-+restore_bitmap_stg:
-+	cfge->bitmap_stg &= cpu_to_le32(~BIT(port));
-+	if (changed) {
-+		entry->untagged_port_bitmap ^= BIT(port);
-+		/* Recover the corresponding ETT entry. It doesn't matter
-+		 * if it fails because the bit corresponding to the port
-+		 * in the port bitmap of the VFT entry is not set. so the
-+		 * frame will not match that ETT entry.
-+		 */
-+		if (netc_port_update_vlan_egress_rule(np, entry))
-+			entry->untagged_port_bitmap ^= BIT(port);
-+	}
-+unlock_vft:
-+	mutex_unlock(&priv->vft_lock);
-+
-+	return err;
-+}
-+
-+static int netc_port_del_vlan_entry(struct netc_port *np, u16 vid)
-+{
-+	struct netc_switch *priv = np->switch_priv;
-+	struct netc_vlan_entry *entry;
-+	struct vft_cfge_data *cfge;
-+	int port = np->dp->index;
-+	u32 vlan_port_bitmap;
-+	int err = 0;
-+
-+	mutex_lock(&priv->vft_lock);
-+
-+	entry = netc_lookup_vlan_entry(priv, vid);
-+	if (!entry)
-+		goto unlock_vft;
-+
-+	cfge = &entry->cfge;
-+	vlan_port_bitmap = FIELD_GET(VFT_PORT_MEMBERSHIP,
-+				     le32_to_cpu(cfge->bitmap_stg));
-+	/* If the VLAN only belongs to the current port */
-+	if (vlan_port_bitmap == BIT(port)) {
-+		err = ntmp_vft_delete_entry(&priv->ntmp, vid);
-+		if (err)
-+			goto unlock_vft;
-+
-+		netc_delete_vlan_egress_rule(priv, entry);
-+		netc_del_vlan_entry(entry);
-+
-+		goto unlock_vft;
-+	}
-+
-+	if (!(vlan_port_bitmap & BIT(port)))
-+		goto unlock_vft;
-+
-+	cfge->bitmap_stg &= cpu_to_le32(~BIT(port));
-+	err = ntmp_vft_update_entry(&priv->ntmp, vid, cfge);
-+	if (err) {
-+		cfge->bitmap_stg |= cpu_to_le32(BIT(port));
-+		goto unlock_vft;
-+	}
-+
-+unlock_vft:
-+	mutex_unlock(&priv->vft_lock);
-+
-+	return err;
-+}
-+
- static int netc_port_enable(struct dsa_switch *ds, int port,
- 			    struct phy_device *phy)
+ static int netc_port_fdb_add(struct dsa_switch *ds, int port,
+ 			     const unsigned char *addr, u16 vid,
+ 			     struct dsa_db db)
  {
-@@ -1297,6 +1705,35 @@ static void netc_port_set_host_flood(struct dsa_switch *ds, int port,
++	struct net_device *br_ndev = netc_classify_db(db);
+ 	struct netc_port *np = NETC_PORT(ds, port);
+ 
+-	/* Currently, only support standalone port mode, so only
+-	 * NETC_STANDALONE_PVID (= 0) is supported here.
+-	 */
+-	if (vid != NETC_STANDALONE_PVID)
+-		return -EOPNOTSUPP;
++	if (IS_ERR(br_ndev))
++		return PTR_ERR(br_ndev);
++
++	if (!vid)
++		vid = netc_vlan_unaware_pvid(br_ndev ? &db.bridge : NULL);
+ 
+ 	return netc_port_set_fdb_entry(np, addr, vid);
+ }
+@@ -1529,10 +1606,14 @@ static int netc_port_fdb_del(struct dsa_switch *ds, int port,
+ 			     const unsigned char *addr, u16 vid,
+ 			     struct dsa_db db)
+ {
++	struct net_device *br_ndev = netc_classify_db(db);
+ 	struct netc_port *np = NETC_PORT(ds, port);
+ 
+-	if (vid != NETC_STANDALONE_PVID)
+-		return -EOPNOTSUPP;
++	if (IS_ERR(br_ndev))
++		return PTR_ERR(br_ndev);
++
++	if (!vid)
++		vid = netc_vlan_unaware_pvid(br_ndev ? &db.bridge : NULL);
+ 
+ 	return netc_port_del_fdb_entry(np, addr, vid);
+ }
+@@ -1568,6 +1649,8 @@ static int netc_port_fdb_dump(struct dsa_switch *ds, int port,
+ 		cfg = le32_to_cpu(cfge->cfg);
+ 		is_static = (cfg & FDBT_DYNAMIC) ? false : true;
+ 		vid = le16_to_cpu(keye->fid);
++		if (vid >= NETC_VLAN_UNAWARE_PVID(ds->max_num_bridges))
++			vid = 0;
+ 
+ 		err = cb(keye->mac_addr, vid, is_static, data);
+ 		if (err)
+@@ -1670,12 +1753,23 @@ static void netc_port_remove_host_flood(struct netc_port *np,
+ 					struct ipft_entry_data *host_flood)
+ {
+ 	struct netc_switch *priv = np->switch_priv;
++	bool disable_host_flood = false;
+ 
+ 	if (!host_flood)
+ 		return;
+ 
++	if (np->host_flood == host_flood)
++		disable_host_flood = true;
++
+ 	ntmp_ipft_delete_entry(&priv->ntmp, host_flood->entry_id);
+ 	kfree(host_flood);
++
++	if (disable_host_flood) {
++		np->host_flood = NULL;
++		np->uc = false;
++		np->mc = false;
++		netc_port_wr(np, NETC_PIPFCR, 0);
++	}
+ }
+ 
+ static void netc_port_set_host_flood(struct dsa_switch *ds, int port,
+@@ -1684,6 +1778,17 @@ static void netc_port_set_host_flood(struct dsa_switch *ds, int port,
+ 	struct netc_port *np = NETC_PORT(ds, port);
+ 	struct ipft_entry_data *old_host_flood;
+ 
++	/* Do not add host flood rule to ingress port filter table when
++	 * the port has joined a bridge. Otherwise, the ingress frames
++	 * will bypass FDB table lookup and MAC learning, so the frames
++	 * will be redirected directly to the CPU port.
++	 */
++	if (dsa_port_bridge_dev_get(np->dp)) {
++		netc_port_remove_host_flood(np, np->host_flood);
++
++		return;
++	}
++
+ 	if (np->uc == uc && np->mc == mc)
+ 		return;
+ 
+@@ -1705,12 +1810,90 @@ static void netc_port_set_host_flood(struct dsa_switch *ds, int port,
  	netc_port_remove_host_flood(np, old_host_flood);
  }
  
-+static int netc_port_vlan_add(struct dsa_switch *ds, int port,
-+			      const struct switchdev_obj_port_vlan *vlan,
-+			      struct netlink_ext_ack *extack)
++static int netc_single_vlan_aware_bridge(struct dsa_switch *ds,
++					 struct netlink_ext_ack *extack)
++{
++	struct net_device *br_ndev = NULL;
++	struct dsa_port *dp;
++
++	dsa_switch_for_each_available_port(dp, ds) {
++		struct net_device *port_br = dsa_port_bridge_dev_get(dp);
++
++		if (!port_br || !br_vlan_enabled(port_br))
++			continue;
++
++		if (!br_ndev) {
++			br_ndev = port_br;
++			continue;
++		}
++
++		if (br_ndev == port_br)
++			continue;
++
++		NL_SET_ERR_MSG_MOD(extack,
++				   "Only one VLAN-aware bridge is supported");
++
++		return -EBUSY;
++	}
++
++	return 0;
++}
++
++static int netc_port_vlan_filtering(struct dsa_switch *ds,
++				    int port, bool vlan_aware,
++				    struct netlink_ext_ack *extack)
 +{
 +	struct netc_port *np = NETC_PORT(ds, port);
-+	bool untagged;
++	u16 pvid;
++	int err;
 +
-+	/* The 8021q layer may attempt to change NETC_STANDALONE_PVID
-+	 * (VID 0), so we need to ignore it.
++	/* Before calling port_vlan_filtering(), br_vlan_filter_toggle() has
++	 * already updated the BROPT_VLAN_ENABLED bit of br->options. So the
++	 * VLAN filtering status of the switch ports can be checked by the
++	 * br_vlan_enabled() function.
 +	 */
-+	if (vlan->vid == NETC_STANDALONE_PVID)
-+		return 0;
++	err = netc_single_vlan_aware_bridge(ds, extack);
++	if (err)
++		return err;
 +
-+	untagged = !!(vlan->flags & BRIDGE_VLAN_INFO_UNTAGGED);
++	pvid = netc_vlan_unaware_pvid(np->dp->bridge);
++	if (pvid == NETC_STANDALONE_PVID) {
++		vlan_aware = false;
++		goto bpdvr_config;
++	}
 +
-+	return netc_port_set_vlan_entry(np, vlan->vid, untagged);
++	if (vlan_aware) {
++		/* The FDB entries associated with unaware_pvid do not need
++		 * to be deleted, so that when switching from VLAN-aware to
++		 * VLAN-unaware mode, these FDB entries do not need to be
++		 * re-added.
++		 */
++		err = netc_port_del_vlan_entry(np, pvid);
++		if (err)
++			return err;
++
++		pvid = np->pvid;
++	} else {
++		err = netc_port_set_vlan_entry(np, pvid, false);
++		if (err)
++			return err;
++	}
++
++bpdvr_config:
++	netc_port_set_vlan_aware(np, vlan_aware);
++	netc_port_set_pvid(np, pvid);
++
++	return 0;
 +}
 +
-+static int netc_port_vlan_del(struct dsa_switch *ds, int port,
-+			      const struct switchdev_obj_port_vlan *vlan)
+ static int netc_port_vlan_add(struct dsa_switch *ds, int port,
+ 			      const struct switchdev_obj_port_vlan *vlan,
+ 			      struct netlink_ext_ack *extack)
+ {
+ 	struct netc_port *np = NETC_PORT(ds, port);
++	struct dsa_port *dp = np->dp;
+ 	bool untagged;
++	int err;
+ 
+ 	/* The 8021q layer may attempt to change NETC_STANDALONE_PVID
+ 	 * (VID 0), so we need to ignore it.
+@@ -1718,20 +1901,176 @@ static int netc_port_vlan_add(struct dsa_switch *ds, int port,
+ 	if (vlan->vid == NETC_STANDALONE_PVID)
+ 		return 0;
+ 
++	if (vlan->vid >= NETC_VLAN_UNAWARE_PVID(ds->max_num_bridges)) {
++		NL_SET_ERR_MSG_FMT_MOD(extack,
++				       "VID %d~4095 reserved for VLAN-unaware bridge",
++				       NETC_VLAN_UNAWARE_PVID(ds->max_num_bridges));
++		return -EINVAL;
++	}
++
+ 	untagged = !!(vlan->flags & BRIDGE_VLAN_INFO_UNTAGGED);
++	err = netc_port_set_vlan_entry(np, vlan->vid, untagged);
++	if (err)
++		return err;
++
++	if (vlan->flags & BRIDGE_VLAN_INFO_PVID) {
++		np->pvid = vlan->vid;
++		if (dsa_port_is_vlan_filtering(dp))
++			netc_port_set_pvid(np, vlan->vid);
+ 
+-	return netc_port_set_vlan_entry(np, vlan->vid, untagged);
++		return 0;
++	}
++
++	if (np->pvid != vlan->vid)
++		return 0;
++
++	/* Delete PVID */
++	np->pvid = NETC_STANDALONE_PVID;
++	if (dsa_port_is_vlan_filtering(dp))
++		netc_port_set_pvid(np, NETC_STANDALONE_PVID);
++
++	return 0;
+ }
+ 
+ static int netc_port_vlan_del(struct dsa_switch *ds, int port,
+ 			      const struct switchdev_obj_port_vlan *vlan)
+ {
+ 	struct netc_port *np = NETC_PORT(ds, port);
++	int err;
+ 
+ 	if (vlan->vid == NETC_STANDALONE_PVID)
+ 		return 0;
+ 
+-	return netc_port_del_vlan_entry(np, vlan->vid);
++	if (vlan->vid >= NETC_VLAN_UNAWARE_PVID(ds->max_num_bridges))
++		return -EINVAL;
++
++	err = netc_port_del_vlan_entry(np, vlan->vid);
++	if (err)
++		return err;
++
++	if (np->pvid == vlan->vid) {
++		np->pvid = NETC_STANDALONE_PVID;
++
++		/* Set the port PVID to NETC_STANDALONE_PVID if the VLAN-aware
++		 * bridge port has no PVID. The untagged frames will not be
++		 * forwarded to other user ports, as NETC_STANDALONE_PVID VLAN
++		 * entry has disabled MAC learning and flooding, and other user
++		 * ports do not have FDB entries with NETC_STANDALONE_PVID.
++		 */
++		if (dsa_port_is_vlan_filtering(np->dp))
++			netc_port_set_pvid(np, NETC_STANDALONE_PVID);
++	}
++
++	return 0;
++}
++
++static int netc_port_bridge_join(struct dsa_switch *ds, int port,
++				 struct dsa_bridge bridge,
++				 bool *tx_fwd_offload,
++				 struct netlink_ext_ack *extack)
++{
++	struct netc_port *np = NETC_PORT(ds, port);
++	u16 vlan_unaware_pvid;
++	int err;
++
++	if (!bridge.num) {
++		NL_SET_ERR_MSG_MOD(extack, "Bridge number 0 is unsupported");
++		return -EINVAL;
++	}
++
++	err = netc_single_vlan_aware_bridge(ds, extack);
++	if (err)
++		return err;
++
++	netc_port_set_mlo(np, MLO_NOT_OVERRIDE);
++
++	if (br_vlan_enabled(bridge.dev))
++		goto out;
++
++	vlan_unaware_pvid = NETC_VLAN_UNAWARE_PVID(bridge.num);
++	err = netc_port_set_vlan_entry(np, vlan_unaware_pvid, false);
++	if (err)
++		goto disable_mlo;
++
++	netc_port_set_pvid(np, vlan_unaware_pvid);
++
++out:
++	netc_port_remove_host_flood(np, np->host_flood);
++
++	return 0;
++
++disable_mlo:
++	netc_port_set_mlo(np, MLO_DISABLE);
++
++	return err;
++}
++
++static void netc_port_remove_dynamic_entries(struct netc_port *np)
++{
++	struct netc_switch *priv = np->switch_priv;
++
++	/* Return if the port is not available */
++	if (!np->dp)
++		return;
++
++	mutex_lock(&priv->fdbt_lock);
++	ntmp_fdbt_delete_port_dynamic_entries(&priv->ntmp, np->dp->index);
++	mutex_unlock(&priv->fdbt_lock);
++}
++
++static void netc_port_bridge_leave(struct dsa_switch *ds, int port,
++				   struct dsa_bridge bridge)
++{
++	struct netc_port *np = NETC_PORT(ds, port);
++	struct net_device *ndev = np->dp->user;
++	u16 vlan_unaware_pvid;
++	bool mc, uc;
++
++	netc_port_set_mlo(np, MLO_DISABLE);
++	netc_port_set_pvid(np, NETC_STANDALONE_PVID);
++	np->pvid = NETC_STANDALONE_PVID;
++
++	netc_port_remove_dynamic_entries(np);
++	uc = ndev->flags & IFF_PROMISC;
++	mc = ndev->flags & (IFF_PROMISC | IFF_ALLMULTI);
++
++	if (netc_port_add_host_flood_rule(np, uc, mc))
++		dev_warn(ds->dev,
++			 "Failed to restore host flood rule on port %d\n",
++			 port);
++
++	/* When a port leaves a VLAN-aware bridge, dsa_port_bridge_leave()
++	 * follows the sequence below:
++	 *
++	 * 1. dsa_port_bridge_destroy() is called to set dp->bridge to NULL.
++	 * 2. dsa_broadcast() is called, which eventually invokes
++	 *    ds->ops->port_bridge_leave()
++	 * 3. dsa_port_switchdev_unsync_attrs() is called, which triggers
++	 *    dsa_port_reset_vlan_filtering() and ultimately calls
++	 *    ds->ops->port_vlan_filtering() to transition the port from
++	 *    VLAN-aware mode to VLAN-unaware mode.
++	 *
++	 * At step 3, since dp->bridge has already been set to NULL in step 1,
++	 * netc_port_vlan_filtering() will detect this and skip the creation
++	 * of an unaware PVID entry in the VLAN filter table. Therefore, it is
++	 * safe to return directly here.
++	 */
++	if (br_vlan_enabled(bridge.dev))
++		return;
++
++	vlan_unaware_pvid = NETC_VLAN_UNAWARE_PVID(bridge.num);
++	/* There is no need to check the return value even if it fails.
++	 * Because the PVID has been set to NETC_STANDALONE_PVID, the
++	 * frames will not match this VLAN entry.
++	 */
++	netc_port_del_vlan_entry(np, vlan_unaware_pvid);
++}
++
++static void netc_port_fast_age(struct dsa_switch *ds, int port)
 +{
 +	struct netc_port *np = NETC_PORT(ds, port);
 +
-+	if (vlan->vid == NETC_STANDALONE_PVID)
-+		return 0;
-+
-+	return netc_port_del_vlan_entry(np, vlan->vid);
-+}
-+
++	netc_port_remove_dynamic_entries(np);
+ }
+ 
  static void netc_phylink_get_caps(struct dsa_switch *ds, int port,
- 				  struct phylink_config *config)
- {
-@@ -1575,6 +2012,8 @@ static const struct dsa_switch_ops netc_switch_ops = {
+@@ -1988,6 +2327,7 @@ static void netc_mac_link_down(struct phylink_config *config,
+ 	np = NETC_PORT(dp->ds, dp->index);
+ 	netc_port_mac_rx_graceful_stop(np);
+ 	netc_port_mac_tx_graceful_stop(np);
++	netc_port_remove_dynamic_entries(np);
+ }
+ 
+ static const struct phylink_mac_ops netc_phylink_mac_ops = {
+@@ -2012,8 +2352,12 @@ static const struct dsa_switch_ops netc_switch_ops = {
  	.port_mdb_add			= netc_port_mdb_add,
  	.port_mdb_del			= netc_port_mdb_del,
  	.port_set_host_flood		= netc_port_set_host_flood,
-+	.port_vlan_add			= netc_port_vlan_add,
-+	.port_vlan_del			= netc_port_vlan_del,
++	.port_vlan_filtering		= netc_port_vlan_filtering,
+ 	.port_vlan_add			= netc_port_vlan_add,
+ 	.port_vlan_del			= netc_port_vlan_del,
++	.port_bridge_join		= netc_port_bridge_join,
++	.port_bridge_leave		= netc_port_bridge_leave,
++	.port_fast_age			= netc_port_fast_age,
  	.get_pause_stats		= netc_port_get_pause_stats,
  	.get_rmon_stats			= netc_port_get_rmon_stats,
  	.get_eth_ctrl_stats		= netc_port_get_eth_ctrl_stats,
+@@ -2061,6 +2405,7 @@ static int netc_switch_probe(struct pci_dev *pdev,
+ 	ds->ops = &netc_switch_ops;
+ 	ds->phylink_mac_ops = &netc_phylink_mac_ops;
+ 	ds->fdb_isolation = true;
++	ds->max_num_bridges = priv->info->num_ports - 1;
+ 	ds->priv = priv;
+ 	priv->ds = ds;
+ 
 diff --git a/drivers/net/dsa/netc/netc_switch.h b/drivers/net/dsa/netc/netc_switch.h
-index 4fbd12825b67..9ff334301fbc 100644
+index 9ff334301fbc..982c8d3a3fbf 100644
 --- a/drivers/net/dsa/netc/netc_switch.h
 +++ b/drivers/net/dsa/netc/netc_switch.h
-@@ -74,6 +74,7 @@ struct netc_port {
- 	struct dsa_port *dp;
- 	struct clk *ref_clk; /* RGMII/RMII reference clock */
- 	struct mii_bus *emdio;
-+	int ett_offset;
+@@ -33,6 +33,7 @@
+ #define NETC_MAX_FRAME_LEN		9600
  
+ #define NETC_STANDALONE_PVID		0
++#define NETC_VLAN_UNAWARE_PVID(br_id)	(4096 - (br_id))
+ 
+ /* Threshold format: MANT (bits 11:4) * 2^EXP (bits 3:0)
+  * Unit: Memory words (average of 20 bytes each)
+@@ -79,6 +80,7 @@ struct netc_port {
  	u16 enable:1;
  	u16 uc:1;
-@@ -94,6 +95,14 @@ struct netc_fdb_entry {
- 	struct hlist_node node;
+ 	u16 mc:1;
++	u16 pvid;
+ 	struct ipft_entry_data *host_flood;
  };
  
-+struct netc_vlan_entry {
-+	u16 vid;
-+	u32 ect_gid;
-+	u32 untagged_port_bitmap;
-+	struct vft_cfge_data cfge;
-+	struct hlist_node node;
-+};
-+
- struct netc_port_stat {
- 	int reg;
- 	char name[ETH_GSTRING_LEN] __nonstring;
-@@ -108,10 +117,13 @@ struct netc_switch {
- 	const struct netc_switch_info *info;
- 	struct netc_switch_regs regs;
- 	struct netc_port **ports;
-+	u32 port_bitmap; /* bitmap of available ports */
- 
- 	struct ntmp_user ntmp;
- 	struct hlist_head fdb_list;
- 	struct mutex fdbt_lock; /* FDB table lock */
-+	struct hlist_head vlan_list;
-+	struct mutex vft_lock; /* VLAN filter table lock */
- 
- 	/* Switch hardware capabilities */
- 	u32 htmcapr_num_words;
-@@ -153,6 +165,18 @@ static inline void netc_del_fdb_entry(struct netc_fdb_entry *entry)
- 	kfree(entry);
- }
- 
-+static inline void netc_add_vlan_entry(struct netc_switch *priv,
-+				       struct netc_vlan_entry *entry)
-+{
-+	hlist_add_head(&entry->node, &priv->vlan_list);
-+}
-+
-+static inline void netc_del_vlan_entry(struct netc_vlan_entry *entry)
-+{
-+	hlist_del(&entry->node);
-+	kfree(entry);
-+}
-+
- int netc_switch_platform_probe(struct netc_switch *priv);
- 
- /* ethtool APIs */
-diff --git a/include/linux/fsl/ntmp.h b/include/linux/fsl/ntmp.h
-index 4d329488763d..d3b6c476b91a 100644
---- a/include/linux/fsl/ntmp.h
-+++ b/include/linux/fsl/ntmp.h
-@@ -262,6 +262,21 @@ struct bpt_cfge_data {
- 	__le32 fc_ports;
- };
- 
-+union ntmp_fmt_eid {
-+	__le32 index;
-+#define	FMTEID_INDEX		GENMASK(12, 0)
-+	__le32 vuda_sqta;
-+#define FMTEID_VUDA		GENMASK(1, 0)
-+#define FMTEID_VUDA_DEL_OTAG	2
-+#define FMTEID_SQTA		GENMASK(4, 2)
-+#define FMTEID_SQTA_DEL		2
-+#define FMTEID_VUDA_SQTA	BIT(13)
-+	__le32 vara_vid;
-+#define FMTEID_VID		GENMASK(11, 0)
-+#define FMTEID_VARA		GENMASK(13, 12)
-+#define FMTEID_VARA_VID		BIT(14)
-+};
-+
- #if IS_ENABLED(CONFIG_NXP_NETC_LIB)
- int ntmp_init_cbdr(struct netc_cbdr *cbdr, struct device *dev,
- 		   const struct netc_cbdr_regs *regs);
 -- 
 2.34.1
 
