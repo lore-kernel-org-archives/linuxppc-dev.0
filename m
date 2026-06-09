@@ -1,87 +1,54 @@
-Return-Path: <linuxppc-dev+bounces-22308-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22309-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BA6A3CD8CAE
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Jun 2026 05:33:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 55902CD8CAE
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Jun 2026 06:22:45 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gZHdc1gRrz2xR4;
-	Tue, 09 Jun 2026 15:33:56 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780983236;
-	cv=none; b=BESjYgQpjZtK3G7Z2m05Z0ZWTJWV0Q7nlWd/hcnUb251ms4pfbf2PMGIRre+PCm9bApbnWALGx1lLP7EtOIp+IrDeZHD4GLhIXqVjzXYPhbTu2AuYFbz8IIu/c1JHkxu+MQEiVtviG9QKOxbFFTXsS1cReP45XdaUb62F+O2BALY/R9ybm41rLv8HKvUd4IpJHJM87gngR+gzD6N1LeLgRoTx8/zGmN6XOHYsRrtvYReLDcfK8nYf8CVeb9FOJp91U6H3H5S8zSvQjv20W0NZ5I8wuzyTdq1Q6vVtKUxOxz5Y4q8FlVEFMqqfJXmSofCJLGR+95j/OuV6ncBnI2Nmg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gZJjv5l8Gz2xR4;
+	Tue, 09 Jun 2026 16:22:43 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=210.118.77.12
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780986163;
+	cv=none; b=n7qAcUULsBuEt94pdORPi7DcputWBshYzy3RRMd8inIaZq3i0kuk1BeoLWN3iDlabEy1HVwuYEMd4MlhKG+9It6TIazj8plma9Nq8T7PLN1w1QJvKRZIjS4J2boyT953ZinFQnbiHOIqzEfhQOHmVcPtG6XM5MwVgqv49PV4itkrIxM+Mbt/r3dFBJy7/WAlEI5ofoeJ6iTZx9mJm91o54SlIlnRcbMx/E7WyzVHCec/1N+J3ZonQKIma/MYH+3IrcMcPjSq+nPWmKBQFlh6zt/PqMHE1KM03WTEvr+xm16Zu0Z/HqnWQfATsudnCpwKFPMnUExrv29ht4oqGh5tvg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1780983236; c=relaxed/relaxed;
-	bh=h4U6Sbjjrq8q50+0voNxs+9I89BkWMApufobEZSOseY=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=kXFaD8ajlbDFDiOg0JcEXmJnwBUVQyscbGwd9BD8P6c8j5VypiUkffKyi3QXxJfj8IOYARdEIqOulIyJQZ2sITL5/NEYYt2l2QFoxrFq2RPYm/0V8JcbYOTRwqqdCtYMeNv/lFsC2kFRsOmB4rvQc5q4aelczmQn/cXttI6W3DABk/Edb02w78m3T7CF55a85dQHqsuOgGBeSy5JgcssP2lR0fpCN+ln10P9DPTbZI5xMAYTkw8yrfuvxUWu1r4sAI1clFAVK1WLAqZOOSXZR8I70K5a5zk6n5IFAetAxjuWx4Ps5CMqfRcDZGW3v5oJfXuJpmXEGF6dz2njsB/7vQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=WTkXIqXO; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1780986163; c=relaxed/relaxed;
+	bh=QNLMOTRHBXi4Z84O461LhX+rEh9cZpG943Cj00l7pcg=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:From:In-Reply-To:
+	 Content-Type:References; b=d0egSVstKTSFvQGXjHFSzMHEKa0V9NMZs+kry2cZYc/g4qgOfRwyrxOrtAOdWFiXWCEdqU0Ni26Ktx0ZvvkPgQqv/MOGvN3EnznTQvRrwU4adn4OgMdNiX+kDHwn1oWbR86o1AmtGcDd/SmjyxU/iLYTFgCziIVZ63P6hHRllhpHVYAz9HPUIo0vqZ6TKZwnq9fZcwfic0HfTtpnL+DRVoVfVoYh82znXv3AoVxr6E9ckTDdxk/w7bMnmqNVoX6ra8yxtPdKNyuRBhRc7droPo8rq07eFIRZQUz+4FpXxtq71rxSyCYLO5IRY2zmj7xNdAeePlPh00xv3S92d3LSUA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=samsung.com; dkim=pass (1024-bit key; unprotected) header.d=samsung.com header.i=@samsung.com header.a=rsa-sha256 header.s=mail20170921 header.b=kEkid4Lc; dkim-atps=neutral; spf=pass (client-ip=210.118.77.12; helo=mailout2.w1.samsung.com; envelope-from=m.szyprowski@samsung.com; receiver=lists.ozlabs.org) smtp.mailfrom=samsung.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=samsung.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=WTkXIqXO;
+	dkim=pass (1024-bit key; unprotected) header.d=samsung.com header.i=@samsung.com header.a=rsa-sha256 header.s=mail20170921 header.b=kEkid4Lc;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=samsung.com (client-ip=210.118.77.12; helo=mailout2.w1.samsung.com; envelope-from=m.szyprowski@samsung.com; receiver=lists.ozlabs.org)
+Received: from mailout2.w1.samsung.com (mailout2.w1.samsung.com [210.118.77.12])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gZHdZ6QNjz2xM7
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Jun 2026 15:33:54 +1000 (AEST)
-Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 658FcVTs139779;
-	Tue, 9 Jun 2026 05:33:45 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:message-id:mime-version
-	:subject:to; s=pp1; bh=h4U6Sbjjrq8q50+0voNxs+9I89BkWMApufobEZSOs
-	eY=; b=WTkXIqXOIp7vGG6m/VRV2E7KyK2ZxccWIAIahwQMYxuANJ6DStL71NXEI
-	oKu4RZHfM6rMB5yqE1iIAtjgohz+ZXjfWJYQbH5momnnxLm1yErkGLPJTN1JwFvG
-	6q6QK+qZmFk/0GrD5kK+a2oU/SDDvNt0v121Kce7DsQRtHdHE70kYI8k46dC7/BZ
-	rzl96jyGcsBenuNqEads5X0OVIMGWLppbqnUJRCdo2Uqj11FB0cQ3aLlYATdZWXj
-	JzOeQoKAO7aMnQUxFHvswQHmTBQuAOSjXUhMwYMaUe2wM4ZxYghAnbSzbiNDsDpi
-	dIGP2n1B65cvf0Ob4Kkw056fnvULQ==
-Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4emb23tkqk-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 09 Jun 2026 05:33:44 +0000 (GMT)
-Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma12.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 6595JdiT018444;
-	Tue, 9 Jun 2026 05:33:43 GMT
-Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
-	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 4emwvq0qqe-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 09 Jun 2026 05:33:43 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
-	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6595Xd9s51314964
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 9 Jun 2026 05:33:40 GMT
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id D8EDE2004E;
-	Tue,  9 Jun 2026 05:33:39 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id CF83320040;
-	Tue,  9 Jun 2026 05:33:35 +0000 (GMT)
-Received: from localhost.localdomain (unknown [9.124.212.145])
-	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Tue,  9 Jun 2026 05:33:35 +0000 (GMT)
-From: Amit Machhiwal <amachhiw@linux.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, Madhavan Srinivasan <maddy@linux.ibm.com>
-Cc: Amit Machhiwal <amachhiw@linux.ibm.com>,
-        Vaibhav Jain <vaibhav@linux.ibm.com>,
-        Harsh Prateek Bora <harshpb@linux.ibm.com>,
-        Ritesh Harjani <ritesh.list@gmail.com>,
-        Anushree Mathur <anushree.mathur@linux.ibm.com>,
-        Gautam Menghani <gautam@linux.ibm.com>,
-        Mukesh Kumar Chaurasiya <mkchauras@gmail.com>,
-        Nicholas Piggin <npiggin@gmail.com>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-        Thomas Huth <thuth@redhat.com>, kvm@vger.kernel.org,
-        stable@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH v3] KVM: PPC: Book3S HV: Validate arch_compat against host compatibility mode
-Date: Tue,  9 Jun 2026 11:03:27 +0530
-Message-ID: <20260609053327.61563-1-amachhiw@linux.ibm.com>
-X-Mailer: git-send-email 2.50.1
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gZJjq6X74z2xKh
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Jun 2026 16:22:38 +1000 (AEST)
+Received: from eucas1p2.samsung.com (unknown [182.198.249.207])
+	by mailout2.w1.samsung.com (KnoxPortal) with ESMTP id 20260609062228euoutp02e10bf543cbd1d48eb62d25f1c08d951d~3VXdY51c91040010400euoutp02F
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Jun 2026 06:22:28 +0000 (GMT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mailout2.w1.samsung.com 20260609062228euoutp02e10bf543cbd1d48eb62d25f1c08d951d~3VXdY51c91040010400euoutp02F
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
+	s=mail20170921; t=1780986148;
+	bh=QNLMOTRHBXi4Z84O461LhX+rEh9cZpG943Cj00l7pcg=;
+	h=Date:Subject:To:Cc:From:In-Reply-To:References:From;
+	b=kEkid4Lc9CpRO/3yyOzVz5QUMceUdCkVZHKebqPeaNlT6tnzDo5I4F3ZPZBXOk8On
+	 5gBBhxvU8QM/nU5ODXUfDdfNgxHBxvxHcEGaliaAtVjJolwf72MxHzOQWCQV2TKj7I
+	 EB7BWOaYJ7qI4rHEe7WKsSSL3IF4YpJayVXGNTyo=
+Received: from eusmtip2.samsung.com (unknown [203.254.199.222]) by
+	eucas1p2.samsung.com (KnoxPortal) with ESMTPA id
+	20260609062228eucas1p211850bcf6ea79ef270bc6fbe29ffafdb~3VXdClAs70378003780eucas1p2G;
+	Tue,  9 Jun 2026 06:22:28 +0000 (GMT)
+Received: from [106.210.134.192] (unknown [106.210.134.192]) by
+	eusmtip2.samsung.com (KnoxPortal) with ESMTPA id
+	20260609062227eusmtip2cece3df82958ee4950f41c056ec8da55~3VXb-fGd70969909699eusmtip2E;
+	Tue,  9 Jun 2026 06:22:27 +0000 (GMT)
+Message-ID: <a1b27e97-182c-485d-a448-56c19c5de2c2@samsung.com>
+Date: Tue, 9 Jun 2026 08:22:26 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -95,185 +62,191 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+User-Agent: Betterbird (Windows)
+Subject: Re: [PATCH v7 15/15] arm64: mm: Unmap kernel data/bss entirely from
+ the linear map
+To: Ard Biesheuvel <ardb+git@google.com>,
+	linux-arm-kernel@lists.infradead.org
+Cc: linux-kernel@vger.kernel.org, will@kernel.org, catalin.marinas@arm.com,
+	mark.rutland@arm.com, Ard Biesheuvel <ardb@kernel.org>, Ryan Roberts
+	<ryan.roberts@arm.com>, Anshuman Khandual <anshuman.khandual@arm.com>, Kevin
+	Brodsky <kevin.brodsky@arm.com>, Liz Prucka <lizprucka@google.com>, Seth
+	Jenkins <sethjenkins@google.com>, Kees Cook <kees@kernel.org>, Mike Rapoport
+	<rppt@kernel.org>, David Hildenbrand <david@kernel.org>, Andrew Morton
+	<akpm@linux-foundation.org>, Jann Horn <jannh@google.com>,
+	linux-mm@kvack.org, linux-hardening@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org, linux-sh@vger.kernel.org
+Content-Language: en-US
+From: Marek Szyprowski <m.szyprowski@samsung.com>
+In-Reply-To: <20260529150150.1670604-32-ardb+git@google.com>
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Authority-Analysis: v=2.4 cv=b4uCJNGx c=1 sm=1 tr=0 ts=6a27a5b8 cx=c_pps
- a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17
- a=FelO9ux0wxsA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=iQ6ETzBq9ecOQQE5vZCe:22 a=VwQbUJbxAAAA:8 a=VnNF1IyMAAAA:8
- a=Drpfxw2PEthCErt8fbUA:9
-X-Proofpoint-ORIG-GUID: FnS8ySaMDMFt4SGTpO6-l0R7p3Stm2C_
-X-Proofpoint-GUID: h726DytJXdfuSgLf2XerRB22UhvfLa7Z
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjA5MDA0NCBTYWx0ZWRfX1cmhVe4ZcRB7
- raGOFDuChSgX1bKihF9baVdt7LYEu/XCljX1h1+/AgngB+ytLEtPLOGYC03P1X3p+cX4GzZUg3K
- Aiauuel3HHZwB+6MTzgWB7nNBpXigI9rgtviG6AK+9/dk2gLsF3Wzji9rfQdl2ZvQnEQtDjrlmn
- ePnwqXneggzHoRW6owVRVa4K8N84iz304zOt3E95EyQf6vJ05ule15k5R0QUFRfoJ/tyzgZgkgL
- 472hPmQwC8wYtoYbHIuUJu4XPZ0jVvuUC1L7w2L4tdiiyC9NOKWaKspUafJvP87pxdMZkXSWESq
- dI4obv8JXk9qoze0JRzb9ocGEzb5kkbDhUOKNRtpsm2BpzcBlhCWRbJ0IZ1TPVnt7WCQlc2K5Rb
- IDpLyOSiIo3OUAX7GtTYRx5BtH3lX9F7W+3hCFHw0YmlUJnKCpuRvGMqmcojohhsc16cFQBE3A/
- gyfOK+OtLpVUMuah8pA==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
- definitions=2026-06-09_01,2026-06-09_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1015 spamscore=0 bulkscore=0 phishscore=0 priorityscore=1501
- lowpriorityscore=0 adultscore=0 malwarescore=0 impostorscore=0 suspectscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2605210000 definitions=main-2606090044
+X-CMS-MailID: 20260609062228eucas1p211850bcf6ea79ef270bc6fbe29ffafdb
+X-Msg-Generator: CA
+Content-Type: text/plain; charset="utf-8"
+X-RootMTR: 20260609062228eucas1p211850bcf6ea79ef270bc6fbe29ffafdb
+X-EPHeader: CA
+X-CMS-RootMailID: 20260609062228eucas1p211850bcf6ea79ef270bc6fbe29ffafdb
+References: <20260529150150.1670604-17-ardb+git@google.com>
+	<20260529150150.1670604-32-ardb+git@google.com>
+	<CGME20260609062228eucas1p211850bcf6ea79ef270bc6fbe29ffafdb@eucas1p2.samsung.com>
 
-On IBM POWER systems, newer processor generations can operate in
-compatibility modes corresponding to earlier generations. This becomes
-relevant for nested virtualization, where nested KVM guests may need to
-run with a specific processor compatibility level.
+Dear All,
 
-Currently, when running a nested KVM guest (L2) inside a Power11 pSeries
-logical partition (L1) booted in Power10 compatibility mode, the guest
-fails to boot while setting 'arch_compat'. This happens because the CPU
-class is derived from the hardware PVR (via mfspr()), which reflects the
-physical processor generation (Power11), rather than the effective
-compatibility mode (Power10).
+On 29.05.2026 17:02, Ard Biesheuvel wrote:
+> From: Ard Biesheuvel <ardb@kernel.org>
+>
+> The linear aliases of the kernel text and rodata are also mapped
+> read-only in the linear map. Given that the contents of these regions
+> are mostly identical to the version in the loadable image, mapping them
+> read-only and leaving their contents visible is a reasonable hardening
+> measure.
+>
+> Data and bss, however, are now also mapped read-only but the contents of
+> these regions are more likely to contain data that we'd rather not leak.
+> So let's unmap these entirely in the linear map when the kernel is
+> running normally.
+>
+> When going into hibernation or waking up from it, these regions need to
+> be mapped, so map the region initially, and toggle the valid bit so
+> map/unmap the region as needed.
+>
+> Doing so is required because pages covering the kernel image are marked
+> as PageReserved, and therefore disregarded for snapshotting by the
+> hibernate logic unless they are mapped.
+>
+> Signed-off-by: Ard Biesheuvel <ardb@kernel.org>
+This commit landed in yesterday's linux-next as commit 63e0b6a5b693
+("arm64: mm: Unmap kernel data/bss entirely from the linear map").
+In my tests I found that it breaks booting of RaspberryPi3 and
+RaspberryPi4 boards with the following kernel panic:
 
-As a result, userspace may request a Power11 arch_compat for the L2
-guest. However, the L1 partition, running in Power10 compatibility, has
-only negotiated support up to Power10 with the Power Hypervisor (L0).
-When H_GUEST_SET_STATE is invoked with a Power11 Logical PVR, the
-hypervisor rejects the request, leading to a late guest boot failure:
+kvm [1]: nv: 570 coarse grained trap handlers
+kvm [1]: nv: 710 fine grained trap handlers
+kvm [1]: IPA Size Limit: 40 bits
+Unable to handle kernel paging request at virtual address ffff000003a23000
+Mem abort info:
+  ESR = 0x0000000096000147
+  EC = 0x25: DABT (current EL), IL = 32 bits
+  SET = 0, FnV = 0
+  EA = 0, S1PTW = 0
+  FSC = 0x07: level 3 translation fault
+Data abort info:
+  ISV = 0, ISS = 0x00000147, ISS2 = 0x00000000
+  CM = 1, WnR = 1, TnD = 0, TagAccess = 0
+  GCS = 0, Overlay = 0, DirtyBit = 0, Xs = 0
+swapper pgtable: 4k pages, 48-bit VAs, pgdp=0000000002609000
+[ffff000003a23000] pgd=0000000000000000, p4d=180000003b3ff403, pud=180000003b3fe403, pmd=180000003b3e6403, pte=00e8000003a23f06
+Internal error: Oops: 0000000096000147 [#1]  SMP
+Modules linked in:
+CPU: 3 UID: 0 PID: 1 Comm: swapper/0 Not tainted 7.1.0-rc1+ #16768 PREEMPT
+Hardware name: Raspberry Pi 3 Model B (DT)
+pstate: 80000005 (Nzcv daif -PAN -UAO -TCO -DIT -SSBS BTYPE=--)
+pc : dcache_clean_inval_poc+0x24/0x48
+lr : kvm_arm_init+0xa8c/0x165c
+sp : ffff8000844bbd00
+...
+Call trace:
+ dcache_clean_inval_poc+0x24/0x48 (P)
+ do_one_initcall+0x68/0x4f4
+ kernel_init_freeable+0x24c/0x360
+ kernel_init+0x24/0x1dc
+ ret_from_fork+0x10/0x20
+Code: 9ac32042 d1000443 8a230000 d503201f (d50b7e20)
+---[ end trace 0000000000000000 ]---
+Kernel panic - not syncing: Attempted to kill init! exitcode=0x0000000b
+SMP: stopping secondary CPUs
+Kernel Offset: disabled
+CPU features: 0x00000000,03000008,00040000,0400421b
+Memory Limit: none
+---[ end Kernel panic - not syncing: Attempted to kill init! exitcode=0x0000000b ]---
 
-  KVM-NESTEDv2: couldn't set guest wide elements
-  [..KVM reg dump..]
 
-This situation should be detected earlier and rejected by KVM. Without
-proper validation, if userspace ignores the error, the guest may continue
-to boot in Power11 raw mode on a Power10 compatibility host, which should
-not be allowed.
 
-Introduce a validation mechanism that detects unsupported arch_compat
-values early in the guest initialization path. When an unsupported
-arch_compat is requested (e.g., Power11 on a Power10 compatibility mode
-host), kvmppc_set_arch_compat() uses cpu_has_feature(CPU_FTR_P11_PVR) to
-detect the mismatch and sets arch_compat to PVR_ARCH_INVALID. This
-triggers kvmppc_sanity_check() to mark the vCPU as invalid by setting
-vcpu->arch.sane to false. On the next vCPU run, kvmppc_vcpu_run_hv()
-checks this flag and returns -EINVAL, preventing the guest from running
-with an invalid processor compatibility configuration.
+> ---
+>  arch/arm64/mm/mmu.c | 45 ++++++++++++++++++--
+>  1 file changed, 41 insertions(+), 4 deletions(-)
+>
+> diff --git a/arch/arm64/mm/mmu.c b/arch/arm64/mm/mmu.c
+> index 7b18dc2f1721..07a6fa210171 100644
+> --- a/arch/arm64/mm/mmu.c
+> +++ b/arch/arm64/mm/mmu.c
+> @@ -24,6 +24,7 @@
+>  #include <linux/mm.h>
+>  #include <linux/vmalloc.h>
+>  #include <linux/set_memory.h>
+> +#include <linux/suspend.h>
+>  #include <linux/kfence.h>
+>  #include <linux/pkeys.h>
+>  #include <linux/mm_inline.h>
+> @@ -1056,6 +1057,29 @@ static void __init __map_memblock(phys_addr_t start, phys_addr_t end,
+>  				 end - start, prot, early_pgtable_alloc, flags);
+>  }
+>  
+> +static void mark_linear_data_alias_valid(bool valid)
+> +{
+> +	set_memory_valid((unsigned long)lm_alias(__init_end),
+> +			 (unsigned long)(__bss_stop - __init_end) / PAGE_SIZE,
+> +			 valid);
+> +}
+> +
+> +static int arm64_hibernate_pm_notify(struct notifier_block *nb,
+> +				     unsigned long mode, void *unused)
+> +{
+> +	switch (mode) {
+> +	default:
+> +		break;
+> +	case PM_POST_HIBERNATION:
+> +		mark_linear_data_alias_valid(false);
+> +		break;
+> +	case PM_HIBERNATION_PREPARE:
+> +		mark_linear_data_alias_valid(true);
+> +		break;
+> +	}
+> +	return 0;
+> +}
+> +
+>  void __init mark_linear_text_alias_ro(void)
+>  {
+>  	/*
+> @@ -1064,6 +1088,21 @@ void __init mark_linear_text_alias_ro(void)
+>  	update_mapping_prot(__pa_symbol(_text), (unsigned long)lm_alias(_text),
+>  			    (unsigned long)__init_begin - (unsigned long)_text,
+>  			    PAGE_KERNEL_RO);
+> +
+> +	/*
+> +	 * Register a PM notifier to remap the linear alias of data/bss as
+> +	 * valid read-only before hibernation. This is needed because the
+> +	 * snapshot logic disregards PageReserved pages (such as the ones
+> +	 * covering the kernel image) unless they are mapped in the linear
+> +	 * map.
+> +	 */
+> +	if (IS_ENABLED(CONFIG_HIBERNATION)) {
+> +		static struct notifier_block nb = {
+> +			.notifier_call = arm64_hibernate_pm_notify
+> +		};
+> +
+> +		register_pm_notifier(&nb);
+> +	}
+>  }
+>  
+>  #ifdef CONFIG_KFENCE
+> @@ -1193,10 +1232,8 @@ static void __init map_mem(void)
+>  			       flags);
+>  	}
+>  
+> -	/* Map the kernel data/bss read-only in the linear map */
+> -	__map_memblock(init_end, kernel_end, PAGE_KERNEL_RO, flags);
+> -	flush_tlb_kernel_range((unsigned long)lm_alias(__init_end),
+> -			       (unsigned long)lm_alias(__bss_stop));
+> +	/* Map the kernel data/bss as invalid in the linear map */
+> +	mark_linear_data_alias_valid(false);
+>  }
+>  
+>  void mark_rodata_ro(void)
 
-With this, when a Power11 arch_compat is requested on a Power10
-compatibility mode host, the guest fails early during boot with:
-
-  error: kvm run failed Invalid argument
-
-This provides a much clearer failure mode compared to the previous
-behavior where the guest could boot in Power11 raw mode (if userspace
-ignored the error) or fail late during H_GUEST_SET_STATE.
-
-Suggested-by: Vaibhav Jain <vaibhav@linux.ibm.com>
-Reviewed-by: Vaibhav Jain <vaibhav@linux.ibm.com>
-Cc: stable@vger.kernel.org # v6.13+
-Signed-off-by: Amit Machhiwal <amachhiw@linux.ibm.com>
----
-Changes in v3:
-* Fixed null pointer dereference in kvmppc_sanity_check(): added check for
-  vcpu->arch.vcore before accessing arch_compat, as vcore is NULL for Book3S
-  PR and BookE guests (only Book3S HV uses vcore) [Reported by Sashiko AI]
-* Added Reviewed-by tag from Vaibhav
-
-Changes in v2:
-* Fixed issue where v1 allowed guest to boot in Power11 raw mode when
-  userspace ignored the error, by adding validation in kvmppc_sanity_check()
-  to ensure early failure during vCPU run [Found the issue after posting v1,
-  also reported by Gautam.]
-* Introduced PVR_ARCH_INVALID constant for marking invalid arch_compat
-* Dropped all Reviewed-by and Tested-by tags due to code changes; requesting
-  fresh reviews
-* v1: https://lore.kernel.org/all/20260603141539.47620-1-amachhiw@linux.ibm.com/
-
-Changes in v1:
-* Moved this patch out of the v3 series [1] as discussed here [2]
-* Addressed below review comments from Ritesh:
-  - Based the PVR validation on cpu features
-  - Fixed hcall name typo
-  - Stable backport
-
-[1] https://lore.kernel.org/all/20260522152744.55251-1-amachhiw@linux.ibm.com/
-[2] https://lore.kernel.org/all/20260522152744.55251-2-amachhiw@linux.ibm.com/
----
- arch/powerpc/include/asm/reg.h |  1 +
- arch/powerpc/kvm/book3s_hv.c   | 15 ++++++++++++++-
- arch/powerpc/kvm/powerpc.c     |  4 ++++
- 3 files changed, 19 insertions(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
-index 3449dd2b577d..7472b9522f71 100644
---- a/arch/powerpc/include/asm/reg.h
-+++ b/arch/powerpc/include/asm/reg.h
-@@ -1356,6 +1356,7 @@
- #define PVR_ARCH_300	0x0f000005
- #define PVR_ARCH_31	0x0f000006
- #define PVR_ARCH_31_P11	0x0f000007
-+#define PVR_ARCH_INVALID	0xffffffff
- 
- /* Macros for setting and retrieving special purpose registers */
- #ifndef __ASSEMBLER__
-diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-index 61dbeea317f3..f9380ef65750 100644
---- a/arch/powerpc/kvm/book3s_hv.c
-+++ b/arch/powerpc/kvm/book3s_hv.c
-@@ -446,7 +446,19 @@ static int kvmppc_set_arch_compat(struct kvm_vcpu *vcpu, u32 arch_compat)
- 			guest_pcr_bit = PCR_ARCH_300;
- 			break;
- 		case PVR_ARCH_31:
-+			guest_pcr_bit = PCR_ARCH_31;
-+			break;
- 		case PVR_ARCH_31_P11:
-+			/*
-+			 * Need to check this for ISA 3.1, as Power10 and
-+			 * Power11 share the same PCR. For any subsequent ISA
-+			 * versions, this will be taken care of by the guest vs
-+			 * host PCR comparison below.
-+			 */
-+			if (!cpu_has_feature(CPU_FTR_P11_PVR)) {
-+				arch_compat = PVR_ARCH_INVALID;
-+				goto out;
-+			}
- 			guest_pcr_bit = PCR_ARCH_31;
- 			break;
- 		default:
-@@ -469,6 +481,7 @@ static int kvmppc_set_arch_compat(struct kvm_vcpu *vcpu, u32 arch_compat)
- 			return -EINVAL;
- 	}
- 
-+out:
- 	spin_lock(&vc->lock);
- 	vc->arch_compat = arch_compat;
- 	kvmhv_nestedv2_mark_dirty(vcpu, KVMPPC_GSID_LOGICAL_PVR);
-@@ -479,7 +492,7 @@ static int kvmppc_set_arch_compat(struct kvm_vcpu *vcpu, u32 arch_compat)
- 	vc->pcr = (host_pcr_bit - guest_pcr_bit) | PCR_MASK;
- 	spin_unlock(&vc->lock);
- 
--	return 0;
-+	return kvmppc_sanity_check(vcpu);
- }
- 
- static void kvmppc_dump_regs(struct kvm_vcpu *vcpu)
-diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
-index 00302399fc37..98de68379b18 100644
---- a/arch/powerpc/kvm/powerpc.c
-+++ b/arch/powerpc/kvm/powerpc.c
-@@ -258,6 +258,10 @@ int kvmppc_sanity_check(struct kvm_vcpu *vcpu)
- 	if (!vcpu->arch.pvr)
- 		goto out;
- 
-+	if (vcpu->arch.vcore &&
-+		vcpu->arch.vcore->arch_compat == PVR_ARCH_INVALID)
-+		goto out;
-+
- 	/* PAPR only works with book3s_64 */
- 	if ((vcpu->arch.cpu_type != KVM_CPU_3S_64) && vcpu->arch.papr_enabled)
- 		goto out;
-
-base-commit: 2d3090a8aeb596a26935db0955d46c9a5db5c6ce
+Best regards
 -- 
-2.50.1 (Apple Git-155)
+Marek Szyprowski, PhD
+Samsung R&D Institute Poland
 
 
