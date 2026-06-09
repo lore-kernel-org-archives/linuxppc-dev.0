@@ -1,79 +1,91 @@
-Return-Path: <linuxppc-dev+bounces-22353-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22354-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 01444CD8CB9
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Jun 2026 15:06:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A9290CD8CAD
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Jun 2026 22:19:55 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gZXLG48jCz2ySf;
-	Wed, 10 Jun 2026 01:06:30 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=198.37.111.173
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781017590;
-	cv=none; b=ji/Fg0bAyW13kCqoXHAPdsXAOI6/yvpGj74Fv1+V6NSWoMMWmBblS1iKTqeEY92H1En+ZOdTucuyEKwcMeWgkBfwhCEaq89Lrl6i8a3uTk+aRJWXrgSaLoEGAgQDPg/PJXA/CkJlzA3OB8Gq58/FILBwhG42WoZ20Ipo3Byh4I81oS7tTzNLRCbxEyoJbp39SBpOyEpyqjYutlHDBQDXOc5glZKp+nV4deV4KnYdGThQI1VOCeVLWOlmOHa8g217ORkay30kMXQA+WxOuST6NDGibXzGqFUwwlCZgOpWgJvd+gBBD2paTgjPensBA5f0suolVWCPBi/HdjXUgcIPTQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gZjyK3lCfz2xl5;
+	Wed, 10 Jun 2026 08:19:53 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::52d"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781043593;
+	cv=none; b=AcMo+7ocin+t8ZwLjfWKrJ55CaNS8/0JXXRDGhCghDiasUp5xM4QRsXzAVjoeyIGqwTgxWfPMTRXh13UHvuAEn8528h6aYVHEodKG+zMERbEkZKEWlvWv1XPahev7ipfUiCj8mk8J2d7OGODtP6WpWkxGgDgavmMY/AsZJOoy41Z+V9KbYypQeOXUQ37SYOI8j2U87DGy36dx20j7/z3Tikn42618CtgntoqBZzjuqYD3vHObwa1yfypNIMYV44Yqq/cfgFe0JkIe7uXOX6rhbPcnNkESJ/cfNTCECNzQ/O0oaMB5L5zfAikdubsM7rWsv/q0n4Cw8aLAE1xNpel4Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1781017590; c=relaxed/relaxed;
-	bh=N3LFzZzcRHL6hFrJ8llj7BXsLJtaaduZzVIYsATvU0o=;
-	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=QRTnGlF3PocUBv2YV4QRT3G/vRRMDx8RQehIS8dv5o11Zi8AzgNPF2C9rr6oy+ioogEq6iRZMY+BGYkBRU4rdgExvc5aFQMRZm6VKl1e6oD6u+X2x4Q1Kupzlz5OhCYSlmAjSpJoZ8n/0P01g6FUOjMneQilDyaUi2glQCMdYy8SOPyQEyqrXDVDDil8DNYLAnefrc6D+6YTnlUS82F8KvZm00gVYHzxA4o1Uu2Mncb+7CI+m/BcPhw/d/egyCGs65jf9v4lIh+dMZtyTVrIkNY7f5drjPkcz2sEhlT167yP1iRQ+5zF1MCD9bkveLZqIxPxrnZr3OHHqw7Z+9nQEw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=HansenPartnership.com; dkim=pass (1024-bit key; secure) header.d=hansenpartnership.com header.i=@hansenpartnership.com header.a=rsa-sha256 header.s=20151216 header.b=tlAO8Olg; dkim-atps=neutral; spf=pass (client-ip=198.37.111.173; helo=lamorak.hansenpartnership.com; envelope-from=james.bottomley@hansenpartnership.com; receiver=lists.ozlabs.org) smtp.mailfrom=hansenpartnership.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=HansenPartnership.com
+	t=1781043593; c=relaxed/relaxed;
+	bh=u+enzAQ5tSvqZYMQTM27Sa9xGue4NUeyFXwU532vPXo=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=f5PNKqfxMeQ+sOQfpJbJRdXHC6ANXxNbGNxwXqc8aZRBqvSaRdGzZY3DOd4NOiejVWvoB+vyzZFvpC1vhh4iBPuLwFaVgqQI+kAKyLefdoQa78PkHvg3CK8XeBfJmYn/Ntf8S11hSs4T6V9WFYSWEhWxPe+ZTNiqMDT//nKbSHQpMFKDJUL6ifr3GaN1EVT6kG8uV8uk1j1pvGL56BBYQtx+Hjve8ugkqMPIiQi1XcBs7Xjp//a3Endwn4xbXU+eS8E67SIfHiRW4CvvIY6BSEvoBbNkdqxFkSAr379L4VvZbVKx2y5ob77cEyx5up/7NkqMx+ZvYy3U3ZM+l3jjBw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=emRNjRKj; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::52d; helo=mail-pg1-x52d.google.com; envelope-from=rosenp@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; secure) header.d=hansenpartnership.com header.i=@hansenpartnership.com header.a=rsa-sha256 header.s=20151216 header.b=tlAO8Olg;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=emRNjRKj;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=hansenpartnership.com (client-ip=198.37.111.173; helo=lamorak.hansenpartnership.com; envelope-from=james.bottomley@hansenpartnership.com; receiver=lists.ozlabs.org)
-Received: from lamorak.hansenpartnership.com (lamorak.hansenpartnership.com [198.37.111.173])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::52d; helo=mail-pg1-x52d.google.com; envelope-from=rosenp@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pg1-x52d.google.com (mail-pg1-x52d.google.com [IPv6:2607:f8b0:4864:20::52d])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gZXLD6D82z2xll
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jun 2026 01:06:27 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-	d=hansenpartnership.com; s=20151216; t=1781017583;
-	bh=tahiq5O3Nk1z/G0wQjDJovGejhaXM1BRoXxE5UiALoQ=;
-	h=Message-ID:Subject:From:To:Date:In-Reply-To:References:From;
-	b=tlAO8OlgAX05/6tP1FR2knGIZtZwIFb3h31+k9n7KMcWdukoze2koL4BfIfbLQMkV
-	 aNF2zSICFs6pMb445F8009JRZ1BLGr/C6ydJtK8MbkQY+L4bJbEYIzmJEcpHkY6wyN
-	 vDw5+b8hXKJQmcxQ6hoOsVteNRXqMijKqWlBGPb8=
-Received: from lingrow.int.hansenpartnership.com (unknown [IPv6:2601:5c4:4300:d341::8c71])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by lamorak.hansenpartnership.com (Postfix) with ESMTPSA id 40EE61C0381;
-	Tue, 09 Jun 2026 11:06:23 -0400 (EDT)
-Message-ID: <c44907bbee9807787ba785e89fadad15f1222aeb.camel@HansenPartnership.com>
-Subject: Re: [PATCH 35/60] kvm: Add VCPU plane-scheduling state and helpers
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: =?ISO-8859-1?Q?J=F6rg_R=F6del?= <joro@8bytes.org>
-Cc: Paolo Bonzini <pbonzini@redhat.com>, Sean Christopherson
- <seanjc@google.com>,  Tom Lendacky <thomas.lendacky@amd.com>,
- ashish.kalra@amd.com, michael.roth@amd.com, nsaenz@amazon.com, 
- anelkz@amazon.de, Melody Wang <huibo.wang@amd.com>, kvm@vger.kernel.org, 
- linux-kernel@vger.kernel.org, kvmarm@lists.linux.dev,
- loongarch@lists.linux.dev,  linux-mips@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org,  kvm-riscv@lists.infradead.org,
- x86@kernel.org, coconut-svsm@lists.linux.dev,  joerg.roedel@amd.com
-Date: Tue, 09 Jun 2026 11:06:22 -0400
-In-Reply-To: <aigifVmRZA0TXIrK@8bytes.org>
-References: <20260608144252.351443-1-joro@8bytes.org>
-	 <20260608144252.351443-36-joro@8bytes.org>
-	 <e7eb0dba-790a-4644-9895-5c9a7420d7fe@redhat.com>
-	 <aib8n5lO6HKbLC4Y@8bytes.org>
-	 <CABgObfbUsDeStnZF-7oyR-W-Bvd4qTMoeUwGizgn10UTdKtZ2A@mail.gmail.com>
-	 <aigE2EvJyZlYDz0V@8bytes.org>
-	 <51421426e0d4b154281e80d9f1c6c9a628d21c94.camel@HansenPartnership.com>
-	 <aigifVmRZA0TXIrK@8bytes.org>
-Autocrypt: addr=James.Bottomley@HansenPartnership.com;
- keydata=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
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.50.3 
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gZjyH4z2Tz2xd2
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jun 2026 08:19:51 +1000 (AEST)
+Received: by mail-pg1-x52d.google.com with SMTP id 41be03b00d2f7-c858d69bde9so2540297a12.1
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Jun 2026 15:19:51 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1781043584; x=1781648384; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=u+enzAQ5tSvqZYMQTM27Sa9xGue4NUeyFXwU532vPXo=;
+        b=emRNjRKjMm9S8LpHn1KO5UPbskfqOzuuefpIxsI5YtsbFil/h1nPGkD/ufAHUI8qQa
+         moqyacrLuW5ZvDPEgN297s5ZqvkSXCRm6tjeSBJ045QeJ3y2553IxzM8BSmVx/E5/sue
+         lRnQzsmsT9TVtf9OT8F2CjRu2Ysgb/BSNWn+HwlLUyl79FmrZBe8v8Z4Lv9/57PVGw/C
+         E2IK31xgybwr8bP51YJVzhIKgfxEHB90GPGMCvZpR/YLbl3WxQ2mJ6TwCIeyZVdjIp8B
+         N9XALjLxF6zn3oyhJ/1tO+YntEvcfWlNGA54K1bFTE67wTZtQPlnRfw2O4P0V3vU5v0x
+         w4PA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1781043584; x=1781648384;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=u+enzAQ5tSvqZYMQTM27Sa9xGue4NUeyFXwU532vPXo=;
+        b=MQF4lV3RYxarzxZC+QFqMY8cIW9hgYi6hPXlozRHqqjXp5MHrvkroZws8GCcmsBjHH
+         3M+L0jbQvY4Acy/g8yW680e7MHq4NpE0UhE8nbc1Ia/CNxrvDe4z5Ihpn782szSntDgl
+         PQp2Sb8PX+bgzNVezsuzQTcOQjw/ulcf2ZpP/qpE4IWK5+sjnwbqkSzfpZ09GolA5hHi
+         rnWfVz1TJ8GKxYw5S0UWeyZgwRo4qWQgoSJHXgYHTg8oOm1aqxOiQJJ5AkQHhZ8PFhfH
+         PaOKzUVIpw9uocj5HNLekBMUCE2eiKrqdNla0txAdq2IOH4Q7Z+8ja6s+vkWIk8FCqvZ
+         7kEg==
+X-Forwarded-Encrypted: i=1; AFNElJ+z701pSlm/H/wxsg7r8ZtH8OmdpjX6OZllM4uF5dxI3CMslNQHsr4VLr5UDpoX4o39AT79GLfRG+ybPhg=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YzC+YnUH74lR5lypBHwHbenCopH25pgOy03d4WnhrJ/n65jwFrZ
+	nsANX2OU3azeqNon+s9ySgvnR6avOtM9tNLSnSDXZfF1jWLAe+r7cHlD
+X-Gm-Gg: Acq92OHL8C3K9Zddz38dk1Ed7J56oVMLetUMLV5OmwQAyGGxwK6UKzt3t8E63SK328Z
+	ss9b+hbGXLduuAtjyQ1BRUyLRSil0JC89+zLGF/1PYXkhA7VsIgXoFURuykkhSD82aZOc9EsSy+
+	vQQmN8gxDX58Wk8/Dr+Q7r6uEcyxpvzjow8IyvHBmBd5o5hxpkDnt0fCEfpHQxsyobVfuyx/iMF
+	gqIFf5MrcTvugZ4VFoo/vsMWqtnbgS3Djx/2M3yle/NA/nyXzL5Hmb0/iyz46wV2ehJR4rTJ1/s
+	xDqNLU5jth1WhjZnIrj7dJOSRgzYHYd70EA6+FhRCvvBd2C880vhh0XjjYilrPCX5XQ+n4I5QZ+
+	t5dKCfLERW3vN0cWMYn2FfUi8LBICLjng3Nkydj7JHq18pc127wb/D4KQVQ8PV02vmZs8hfCPak
+	+f0eYhZcgI5uQ0eOMpBaWcs3NdcW1iYegmGDj5Xmgt/ZWdKh+wA8TWKgfwHRLty6eGoQeJfPFU7
+	/j8BUtaRB/XYqwb97vwCpIXXJRaZyOuNViSlaRIOAncQg==
+X-Received: by 2002:a05:6a20:158c:b0:3a2:d838:bfca with SMTP id adf61e73a8af0-3b4cccfdeb8mr26870997637.3.1781043584305;
+        Tue, 09 Jun 2026 15:19:44 -0700 (PDT)
+Received: from ryzen ([2601:644:8000:5b5d:7285:c2ff:fe45:8a32])
+        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-c85df04ff24sm19661834a12.14.2026.06.09.15.19.43
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 09 Jun 2026 15:19:43 -0700 (PDT)
+From: Rosen Penev <rosenp@gmail.com>
+To: dmaengine@vger.kernel.org
+Cc: Vinod Koul <vkoul@kernel.org>,
+	Frank Li <Frank.Li@kernel.org>,
+	Zhang Wei <zw@zh-kernel.org>,
+	Nathan Chancellor <nathan@kernel.org>,
+	Nick Desaulniers <nick.desaulniers+lkml@gmail.com>,
+	Bill Wendling <morbo@google.com>,
+	Justin Stitt <justinstitt@google.com>,
+	linux-kernel@vger.kernel.org (open list),
+	linuxppc-dev@lists.ozlabs.org (open list:FREESCALE DMA DRIVER),
+	llvm@lists.linux.dev (open list:CLANG/LLVM BUILD SUPPORT:Keyword:\b(?i:clang|llvm)\b)
+Subject: [PATCHv3 00/15] dmaengine: fsldma: devm conversion, fixups, and cleanups
+Date: Tue,  9 Jun 2026 15:19:11 -0700
+Message-ID: <20260609221926.35538-1-rosenp@gmail.com>
+X-Mailer: git-send-email 2.54.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -87,29 +99,46 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 
-On Tue, 2026-06-09 at 16:27 +0200, J=C3=B6rg R=C3=B6del wrote:
-> Hi James,
->=20
-> On Tue, Jun 09, 2026 at 08:59:02AM -0400, James Bottomley wrote:
-> > Are the details of this anywhere?=C2=A0 The last PUCK information I saw
-> > on the kvm list was the cancellation of the March and April calls.
->=20
-> Here is the calendar link I use, which has the appointments GMeet
-> links:
->=20
-> https://calendar.google.com/calendar/embed?src=3Dc_61a5b1f644739bf5bed7e5=
-ea5fc3669ce32a2544c5db1c7c891702ca5090c7d5%40group.calendar.google.com
+  - Kill the channel tasklet before removal to prevent a race with
+    the IRQ handler.
+  - Check the return value of dma_async_device_register() instead
+    of silently returning success.
+  - Replace the powerpc-specific I/O accessors with portable
+    generic ones so the driver can be built on non-powerpc
+    architectures.
 
-Thanks.  For people who don't use gmail, google does have a well hidden
-ical link:
+Build-tested with LLVM=1 ARCH=powerpc allmodconfig
 
-https://calendar.google.com/calendar/ical/c_61a5b1f644739bf5bed7e5ea5fc3669=
-ce32a2544c5db1c7c891702ca5090c7d5%40group.calendar.google.com/public/basic.=
-ics
+v3: even more sashiko fixes
+v2: add extra fixes to satisfy sashiko
 
-Regards,
+Rosen Penev (15):
+  dmaengine: fsldma: kill tasklet before removing channel
+  dmaengine: fsldma: drop desc_lock before invoking client callback
+  dmaengine: fsldma: halt DMA engine before freeing resources
+  dmaengine: fsldma: provide device_release callback
+  dmaengine: fsldma: check dma_async_device_register() return value
+  dmaengine: fsldma: fix probe error path not freeing IRQs
+  dmaengine: fsldma: fix request_irqs unwind freeing unregistered IRQ
+  dmaengine: fsldma: convert to platform_get_irq_optional()
+  dmaengine: fsldma: use devm for kzalloc()
+  dmaengine: fsldma: use devm_platform_ioremap_resource()
+  dmaengine: fsldma: convert channel allocation to devm_kzalloc()
+  dmaengine: fsldma: use devm for of_iomap()
+  dmaengine: fsldma: replace irq_of_parse_and_map with of_irq_get
+  dmaengine: fsldma: replace ppc-specific accessors with portable
+    generic ones
+  dmaengine: fsldma: fix kernel-doc param names to match function
+    signatures
 
-James
+ drivers/dma/Kconfig  |   2 +-
+ drivers/dma/fsldma.c | 253 +++++++++++++++++++++++--------------------
+ drivers/dma/fsldma.h |  35 +++++-
+ 3 files changed, 167 insertions(+), 123 deletions(-)
+
+--
+2.54.0
 
 
