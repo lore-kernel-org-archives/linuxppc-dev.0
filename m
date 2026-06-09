@@ -1,48 +1,174 @@
-Return-Path: <linuxppc-dev+bounces-22379-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22380-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 29DE3CD8CB9
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jun 2026 04:37:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4CB76CD8C90
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jun 2026 04:39:26 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gZtLQ3HHJz2xl6;
-	Wed, 10 Jun 2026 14:37:50 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=209.85.161.69
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780997357;
-	cv=none; b=KpwhC47dnarWF1O55pU0PZSNkMY8ulsUU3Zn0XIdJfzmWlMhYWBTu+n1j7w7RdZqVfdkQGEWR/Fm4OrdVYSg/kHv+u+MkdzmOkkEbGYZhDnLZo6295/pkcnjPWj+cegFUP4HiPwWphuRdqhvM62AjECGOug0y8DkKHcjlZjCrL1LA+xe2iWrK/5DF6tubBiCUhPKuhjMF6Tyzr779qsCb6clqLDienSArW3sagwf29gKNZPtUhwfHyOmawg2ch5EePN93V+uq/2mHOMea+FU+05OXXbD+t95EnpnPUAVfbpmS9ohluGXpMosV+cXW1VIKoHHU+oa6Aqkv/sI2Y+G1Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gZtND4T8Tz2xl6;
+	Wed, 10 Jun 2026 14:39:24 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1061"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781005725;
+	cv=none; b=H3eJ+dOOuWlN1tz9KWPmY6SudODK440IE05vOHu0mQWDnKgYFrMIBrrQlNa5gbQbNXDwjen/YbJuT3GN+PVX4ZtBBVuZ64DnKFA9taU6EZDNZaym5M5HFaH4m0a+ZEPXmyUuQp9JfpS6zR14CnFzIJ2tnPkVDi0Y+9OPC53J0bxE8eOMagfcyueH7LVA7rGgE0OS0F+3RtD6Gbb4Y4Bep2sSOan1VhAeLgYmFRuC2ovRuMkA71Fu/jDNQhJfbOy2MEyQvQfHv8sNXPqrqvm14XwU+u/JS7LNFWSvrBhIlFmqquKy1G628RCeYq4UwadbpK+tVk/852Au6nTqQd0ACA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1780997357; c=relaxed/relaxed;
-	bh=tDtntZKOvf+QgM91JxUiEGn+OVlpeQ6B56aULm94QfI=;
-	h=MIME-Version:Date:In-Reply-To:Message-ID:Subject:From:To:Cc:
-	 Content-Type; b=KZC5jcBHcQJkK8K8OFh7esukiEvYkH9uC8smyrVgfie7lqn+b9ApNy8AucglqJLbd0MvrPuiLukTh2lTkITOACbm72ELF2veaThZdJUtiQxGl+ayeexsTChZsCRfaf/XHcsMYMIhIyBxNbaXDPETNeU5ZIxlxGzD/kGzsjwi0UNc7piqrm3/xNhKvmyXX+oNqElboLBENrxa/8H/grdeLodFIyG1dviX0piyhEFs66daoeR05/1G0fkgrggH/rq/+XjsGmZCNR61ZEhyZNEbuhVcMqrifj0Iz04an+Rs74OW7+M85XZfEDZL2zeq4UTHONRFzYdFJewnFGqVqMUO5w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=syzkaller.appspotmail.com; spf=pass (client-ip=209.85.161.69; helo=mail-oo1-f69.google.com; envelope-from=35nwnagkbajuhno9zaa3gzee72.5dd5a3jh3g1dci3ci.1db@m3kw2wvrgufz5godrsrytgd7.apphosting.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=m3kw2wvrgufz5godrsrytgd7.apphosting.bounces.google.com
-Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=syzkaller.appspotmail.com
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=m3kw2wvrgufz5godrsrytgd7.apphosting.bounces.google.com (client-ip=209.85.161.69; helo=mail-oo1-f69.google.com; envelope-from=35nwnagkbajuhno9zaa3gzee72.5dd5a3jh3g1dci3ci.1db@m3kw2wvrgufz5godrsrytgd7.apphosting.bounces.google.com; receiver=lists.ozlabs.org)
-Received: from mail-oo1-f69.google.com (mail-oo1-f69.google.com [209.85.161.69])
+	t=1781005725; c=relaxed/relaxed;
+	bh=2GtwyftxDgDxHf00TNmN+7bsJSzsnvSjUZVIyovfOvI=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=HIBLXOnT6Q5CZEDkfWWc2oJ27lkovPMuCbrQqLDjE/ekDmThOOnH1v7+/nPK2KJYYXIjOiKnvuuBOXOx/YvgER9MvHMgqTM3sQlvY0k7xFF0fp7ZGfu1L+U8mCjhnt4QQDws6WjKCvw7viusyKJBrHLpU7eg7nIdI8S4uGItHuaU0utJkt5MnkA3CB8ew5Rs8WbQFuBEw9tCGmcGRV2r06yZGduRXY9KG9rxaUDWh1RBMHPoUUXsoE64mkEUcYk8xd4g5LMDkSeVfGCezG89RB6mYqTPwtW8D4AM+RB7rgspWD5D/MZ3qu6WaHOOxUKmY4jyKGt6W2iE8AFlhxaNqQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=broadcom.com; dkim=pass (1024-bit key; unprotected) header.d=broadcom.com header.i=@broadcom.com header.a=rsa-sha256 header.s=google header.b=Mv3lNaG5; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1061; helo=mail-pj1-x1061.google.com; envelope-from=sumit.saxena@broadcom.com; receiver=lists.ozlabs.org) smtp.mailfrom=broadcom.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=broadcom.com
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (1024-bit key; unprotected) header.d=broadcom.com header.i=@broadcom.com header.a=rsa-sha256 header.s=google header.b=Mv3lNaG5;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=broadcom.com (client-ip=2607:f8b0:4864:20::1061; helo=mail-pj1-x1061.google.com; envelope-from=sumit.saxena@broadcom.com; receiver=lists.ozlabs.org)
+Received: from mail-pj1-x1061.google.com (mail-pj1-x1061.google.com [IPv6:2607:f8b0:4864:20::1061])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gZNs36wTlz2xM7
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Jun 2026 19:29:11 +1000 (AEST)
-Received: by mail-oo1-f69.google.com with SMTP id 006d021491bc7-69e412347c1so7619550eaf.3
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Jun 2026 02:29:11 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gZRy34w23z2ySf
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Jun 2026 21:48:42 +1000 (AEST)
+Received: by mail-pj1-x1061.google.com with SMTP id 98e67ed59e1d1-36ba706ab46so3657333a91.1
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Jun 2026 04:48:42 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1780997348; x=1781602148;
-        h=cc:to:from:subject:message-id:in-reply-to:date:mime-version
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=tDtntZKOvf+QgM91JxUiEGn+OVlpeQ6B56aULm94QfI=;
-        b=r3Psbq/6d7b4QP0Vyp/TWXrxEoK61GIiecTRO0C+k12C25DVnE80fAmDYBD3tWWfED
-         lB4hIr7FCXlmZfPK1a2Gwj6P7nEBSd3nx2cppCv2/tDQgTKo7IlJ6Wu7XvesOxK/+TXF
-         lO19CGoVqtOHvHAEos6Z1X3SMPzo6fY/6LT+0i/xwVmYDROrl77ypX2kiWOxBSjKSQcV
-         UB9TSn3tvfsw8Y1/1Ml8j+IKCXGRi1oF8GbsH2mGvBWV+/lnOMfW2OJi/CLxz3BBoTQS
-         iFsDgmIORU2iGGaS5aubplsv+6sHkzCgxNpfTZbhHCJhtSOe+Kr5MTvw4GJ+5qwA9Spb
-         YPOg==
-X-Forwarded-Encrypted: i=1; AFNElJ9ezdYEnMCxUUqZ0ATy8BQC9mW8vP0HIdVV4lsP4xt35YYYW8ugqz2kN0cx1M84S33LMboAmsGswa7wW3g=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YzdiSs1KhNyMllo36vgXvNgnAlXhNjPR49YRNRcY5PhmFQSbA8U
-	B1DIzvPmEJxmS1/utWdx1M8YGbYw5h5uMmfemX7Q4NwuOcJ6GM/wTvMkEtSlyAXrkvy76ARBE4y
-	bF1SnHsTyHuT9d/ZHMjSy6jTsDkaE6O/vPv+a8HRlcJ6WdHmwxDqL69LyD+s=
+        d=1e100.net; s=20251104; t=1781005720; x=1781610520;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:dkim-signature:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=2GtwyftxDgDxHf00TNmN+7bsJSzsnvSjUZVIyovfOvI=;
+        b=bmJx3HHVzijwxh3thBgNiJVsSw3RsnV8wMilM4GGKdJGbnvv7hKi1YSgMEmRcOIidQ
+         GGQgmjJ1jvoYJH+k40VnNI3zMEBbHH9ChBJkoFXBz5RCHFDe2ghnGbB+30njoVPBrN0f
+         SaDrTftmQWgctQSJyFnRAfk1yIWgC7iNPQZrw1UE+AayG9Td/yuJ6zqfWTdyAFTzA0c3
+         zfUtw3bokuTb0d4DXdCz7YVJGiieumYd4GVWIWAg6ANma9q28gta31Q+AUexiaes3Aao
+         NVmGLkHGBAXpVQR82YGKblvHGYa1L0sH+n0YD8aA18nrCDZ73ysFo6eKa1wg9FmawZEN
+         dSAQ==
+X-Forwarded-Encrypted: i=1; AFNElJ+quhcSQjcazgFTyNUh0IWQMpk7ag+PKxsPmHgFcKeM5R9Nx66gdgd4lKSPjV8BlkheRDiUlu1YlC7pvgE=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YybjNz7AixuqnTb4EgNeF4GTCZw2Sztve+VM0f/7ME7ZvE0h+Fv
+	VSeosEuwE4aC/lKnVS+P7xtLVliSwaHE5kbkZjkIrjrEXsvpWctif6LnOb7OUR0yXOI/kG1Pz3i
+	m2O2ctoXC//k9nzWB3ZpLzlNiyBd1ansZi2SsqPNB0EBUzR6vPn6tAJdJDT7hOc0d/G5r0s8qNr
+	O6Mnt9fe9SPjMpKS5OaAsXJUM7MZoe3BY2zsk42Evl1BYNBdX2PN+Q0ey7z7mE/JKJrfaHf2H0j
+	sEYBpug31zdXZEs/qJ1
+X-Gm-Gg: Acq92OGc0fEbCCTptssrc49L2O8JeadoaEdu8NSx9PQD44kzngqG5IyuH73nrb1MmxL
+	GnBwaw0WV2KxAprdWphYjsFXnkvRjMKq0pDGbgnpcVuNbobqHoEKB8+H3R7DO0s9lMXx5KTDnGR
+	YD/EIeJ4prdCxlEqaCQ056s9DG1M8YohrVcszOrxCw0Lk8L9AWE7ATYbqz9h4Vzd+/t3FQZoxwI
+	tPcNePimr8KX78r9F7UTLTRgZ5UwkTHqUviKOUIg9FdfT7RyPl6MXEPnyDVQ7/lAdz0BhcCG02g
+	2fOFyiUzBECNkusv2c3EzzXrHCseDZkysyeGgL4B5cR0Z4FoDZKxafqVpBcGqzKURiwI26IN0dX
+	kl4zBs+5QEIJ+W79abnhX0wBHj8XYWnGzFIGUsoWrA/lYytRldAYx3FR87FUGVxhq2p4/PkK8UA
+	X9+4E+nCRdt6aOiuiHUfdy90V3xVjzs1I7UNHiixU8lWhigYxOQ3xhMPEd8eoWAndc7LpTcg==
+X-Received: by 2002:a17:90b:3f88:b0:36d:e051:7b6a with SMTP id 98e67ed59e1d1-370ef1f3c52mr20436488a91.12.1781005719654;
+        Tue, 09 Jun 2026 04:48:39 -0700 (PDT)
+Received: from smtp-us-east1-p01-i01-si01.dlp.protect.broadcom.com (address-144-49-247-118.dlp.protect.broadcom.com. [144.49.247.118])
+        by smtp-relay.gmail.com with ESMTPS id 98e67ed59e1d1-36f6c377847sm1901208a91.2.2026.06.09.04.48.39
+        for <linuxppc-dev@lists.ozlabs.org>
+        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
+        Tue, 09 Jun 2026 04:48:39 -0700 (PDT)
+X-Relaying-Domain: broadcom.com
+X-CFilter-Loop: Reflected
+Received: by mail-pj1-f71.google.com with SMTP id 98e67ed59e1d1-36bbcd40642so4149103a91.0
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Jun 2026 04:48:38 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=broadcom.com; s=google; t=1781005718; x=1781610518; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=2GtwyftxDgDxHf00TNmN+7bsJSzsnvSjUZVIyovfOvI=;
+        b=Mv3lNaG5+9N7w5cNF2awB2Sua5HNdEBQxRWWcfC8B7UyQIbPSqBQUMmy3Wioal8T6Y
+         7MxZW/A0aKjIC1pZ2mT/LSlOosXPtZoSNOPEYkDsCf5it3YgaV9GX7/kewK2jx5MJ4p9
+         eEnyfIjpSFPjNmwxTI+XXP+jQzjpw3mSmsfJ8=
+X-Forwarded-Encrypted: i=1; AFNElJ8Q0MX9iqg/TOngJsjzdA/9AMmUbhBGMO7+jqRoTcROJthB1IC64Tv/s512mmmHVhsCIesXf7mWK8tFlyw=@lists.ozlabs.org
+X-Received: by 2002:a17:90b:5783:b0:36a:4074:9aa6 with SMTP id 98e67ed59e1d1-370ee82fcb9mr19842180a91.6.1781005717464;
+        Tue, 09 Jun 2026 04:48:37 -0700 (PDT)
+X-Received: by 2002:a17:90b:5783:b0:36a:4074:9aa6 with SMTP id 98e67ed59e1d1-370ee82fcb9mr19842127a91.6.1781005716916;
+        Tue, 09 Jun 2026 04:48:36 -0700 (PDT)
+Received: from sumit_ws.dhcp.broadcom.net ([192.19.234.250])
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-36f6bf903fasm18898075a91.2.2026.06.09.04.48.15
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 09 Jun 2026 04:48:36 -0700 (PDT)
+From: Sumit Saxena <sumit.saxena@broadcom.com>
+To: "Martin K . Petersen" <martin.petersen@oracle.com>,
+	Jens Axboe <axboe@kernel.dk>
+Cc: "James E . J . Bottomley" <James.Bottomley@HansenPartnership.com>,
+	linux-scsi@vger.kernel.org,
+	linux-block@vger.kernel.org,
+	Adam Radford <aradford@gmail.com>,
+	Khalid Aziz <khalid@gonehiking.org>,
+	Adaptec OEM Raid Solutions <aacraid@microsemi.com>,
+	Matthew Wilcox <willy@infradead.org>,
+	Hannes Reinecke <hare@suse.com>,
+	"Juergen E . Fischer" <fischer@norbit.de>,
+	Russell King <linux@armlinux.org.uk>,
+	linux-arm-kernel@lists.infradead.org,
+	Finn Thain <fthain@linux-m68k.org>,
+	Michael Schmitz <schmitzmic@gmail.com>,
+	Anil Gurumurthy <anil.gurumurthy@qlogic.com>,
+	Sudarsana Kalluru <sudarsana.kalluru@qlogic.com>,
+	Oliver Neukum <oliver@neukum.org>,
+	Ali Akcaagac <aliakc@web.de>,
+	Jamie Lenehan <lenehan@twibble.org>,
+	Ram Vegesna <ram.vegesna@broadcom.com>,
+	target-devel@vger.kernel.org,
+	Bradley Grove <linuxdrivers@attotech.com>,
+	Satish Kharat <satishkh@cisco.com>,
+	Sesidhar Baddela <sebaddel@cisco.com>,
+	Karan Tilak Kumar <kartilak@cisco.com>,
+	Yihang Li <liyihang9@h-partners.com>,
+	Don Brace <don.brace@microchip.com>,
+	storagedev@microchip.com,
+	HighPoint Linux Team <linux@highpoint-tech.com>,
+	Tyrel Datwyler <tyreld@linux.ibm.com>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Christophe Leroy <chleroy@kernel.org>,
+	linuxppc-dev@lists.ozlabs.org,
+	Brian King <brking@us.ibm.com>,
+	Lee Duncan <lduncan@suse.com>,
+	Chris Leech <cleech@redhat.com>,
+	Mike Christie <michael.christie@oracle.com>,
+	open-iscsi@googlegroups.com,
+	Justin Tee <justin.tee@broadcom.com>,
+	Paul Ely <paul.ely@broadcom.com>,
+	Kashyap Desai <kashyap.desai@broadcom.com>,
+	Shivasharan S <shivasharan.srikanteshwara@broadcom.com>,
+	Chandrakanth Patil <chandrakanth.patil@broadcom.com>,
+	megaraidlinux.pdl@broadcom.com,
+	Sathya Prakash Veerichetty <sathya.prakash@broadcom.com>,
+	Sreekanth Reddy <sreekanth.reddy@broadcom.com>,
+	mpi3mr-linuxdrv.pdl@broadcom.com,
+	Suganath Prabu Subramani <suganath-prabu.subramani@broadcom.com>,
+	Ranjan Kumar <ranjan.kumar@broadcom.com>,
+	MPT-FusionLinux.pdl@broadcom.com,
+	Daniel Palmer <daniel@thingy.jp>,
+	GOTO Masanori <gotom@debian.or.jp>,
+	YOKOTA Hiroshi <yokota@netlab.is.tsukuba.ac.jp>,
+	Jack Wang <jinpu.wang@cloud.ionos.com>,
+	Geoff Levand <geoff@infradead.org>,
+	Michael Reed <mdr@sgi.com>,
+	Nilesh Javali <njavali@marvell.com>,
+	GR-QLogic-Storage-Upstream@marvell.com,
+	Narsimhulu Musini <nmusini@cisco.com>,
+	"K . Y . Srinivasan" <kys@microsoft.com>,
+	Haiyang Zhang <haiyangz@microsoft.com>,
+	Wei Liu <wei.liu@kernel.org>,
+	Dexuan Cui <decui@microsoft.com>,
+	Long Li <longli@microsoft.com>,
+	linux-hyperv@vger.kernel.org,
+	"Michael S . Tsirkin" <mst@redhat.com>,
+	Jason Wang <jasowang@redhat.com>,
+	Paolo Bonzini <pbonzini@redhat.com>,
+	Stefan Hajnoczi <stefanha@redhat.com>,
+	Eugenio Perez <eperezma@redhat.com>,
+	virtualization@lists.linux.dev,
+	Vishal Bhakta <vishal.bhakta@broadcom.com>,
+	bcm-kernel-feedback-list@broadcom.com,
+	Juergen Gross <jgross@suse.com>,
+	Stefano Stabellini <sstabellini@kernel.org>,
+	Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>,
+	xen-devel@lists.xenproject.org,
+	Sumit Saxena <sumit.saxena@broadcom.com>
+Subject: [PATCH v3 0/4] scsi/block: NUMA-local scan allocations, shared-tag path cleanup, and SCSI I/O counters
+Date: Tue,  9 Jun 2026 17:47:59 +0530
+Message-ID: <20260609121806.2121755-1-sumit.saxena@broadcom.com>
+X-Mailer: git-send-email 2.43.7
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -56,162 +182,199 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-Received: by 2002:a05:6820:818f:b0:69e:424a:8df1 with SMTP id
- 006d021491bc7-69e68b4b285mr10545972eaf.19.1780997348483; Tue, 09 Jun 2026
- 02:29:08 -0700 (PDT)
-Date: Tue, 09 Jun 2026 02:29:08 -0700
-In-Reply-To: <20260608144252.351443-1-joro@8bytes.org>
-X-Google-Appengine-App-Id: s~syzkaller
-X-Google-Appengine-App-Id-Alias: syzkaller
-Message-ID: <6a27dce4.39669fcc.33b062.0090.GAE@google.com>
-Subject: [syzbot ci] Re: KVM Planes + SEV-SNP Support
-From: syzbot ci <syzbot+ci5127b91b8837842d@syzkaller.appspotmail.com>
-To: anelkz@amazon.de, ashish.kalra@amd.com, clopez@suse.de, 
-	coconut-svsm@lists.linux.dev, huibo.wang@amd.com, 
-	james.bottomley@hansenpartnership.com, joerg.roedel@amd.com, joro@8bytes.org, 
-	kvm-riscv@lists.infradead.org, kvm@vger.kernel.org, kvmarm@lists.linux.dev, 
-	linux-kernel@vger.kernel.org, linux-mips@vger.kernel.org, 
-	linuxppc-dev@lists.ozlabs.org, loongarch@lists.linux.dev, 
-	michael.roth@amd.com, nsaenz@amazon.com, pbonzini@redhat.com, 
-	seanjc@google.com, thomas.lendacky@amd.com, x86@kernel.org
-Cc: syzbot@lists.linux.dev, syzkaller-bugs@googlegroups.com
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-DetectorID-Processed: b00c1d49-9d2e-4205-b15f-d015386d3d5e
 
-syzbot ci has tested the following series
+This series contains three performance improvements targeting the SCSI
+and block layers on multi-socket NUMA and heavily loaded SMP systems.
 
-[v1] KVM Planes + SEV-SNP Support
-https://lore.kernel.org/all/20260608144252.351443-1-joro@8bytes.org
-* [PATCH 01/60] x86/sev: Define the #HV doorbell page structure
-* [PATCH 02/60] KVM: SVM: Add support for the SEV-SNP #HV doorbell page NAE event
-* [PATCH 03/60] KVM: SVM: Inject #HV when Restricted Injection is active
-* [PATCH 04/60] KVM: SVM: Inject NMIs when Restricted Injection is active
-* [PATCH 05/60] KVM: SVM: Inject MCEs when Restricted Injection is active
-* [PATCH 06/60] KVM: SVM: Enable Restricted Injection for an SEV-SNP guest
-* [PATCH 07/60] KVM: SVM: Add support for the SEV-SNP #HV IPI NAE event
-* [PATCH 08/60] Documentation: kvm: introduce "VM plane" concept
-* [PATCH 09/60] kvm: Introduce struct kvm_plane
-* [PATCH 10/60] kvm: Move vcpu_array to struct kvm_plane
-* [PATCH 11/60] kvm: Introduce struct kvm_vcpu_common
-* [PATCH 12/60] kvm: Move vcpu accounting to struct kvm_vcpu_common
-* [PATCH 13/60] kvm: Add read accessors for kvm_vcpu scheduling state
-* [PATCH 14/60] kvm: Make kvm_running_vcpus point to struct kvm_vcpu_common
-* [PATCH 15/60] kvm: Move VCPU scheduling state to struct kvm_vcpu_common
-* [PATCH 16/60] kvm: Add accessors for kvm_vcpu->mutex
-* [PATCH 17/60] kvm: Move VCPU locking to struct kvm_vcpu_common
-* [PATCH 18/60] kvm: Move kvm_vcpu->rcuwait to struct kvm_vcpu_common
-* [PATCH 19/60] kvm: Introduce accessors for kvm_vcpu->mode
-* [PATCH 20/60] kvm: Move kvm_vcpu mode and requests field to struct kvm_vcpu_common
-* [PATCH 21/60] kvm: Introduce per-plane VCPU requests
-* [PATCH 22/60] kvm: Move kvm_vcpu pid members to struct kvm_vcpu_common
-* [PATCH 23/60] kvm: Move kvm_vcpu sigset members to struct kvm_vcpu_common
-* [PATCH 24/60] kvm: Move kvm_vcpu spinloop members to struct kvm_vcpu_common
-* [PATCH 25/60] kvm: Move kvm_vcpu->dirty_ring to struct kvm_vcpu_common
-* [PATCH 26/60] kvm: Introduce arch-specific plane state
-* [PATCH 27/60] kvm: Introduce arch-specific part of struct kvm_vcpu_common
-* [PATCH 28/60] kvm: Implement KVM_CAP_PLANES
-* [PATCH 29/60] kvm: Implement KVM_CREATE_PLANE ioctl
-* [PATCH 30/60] kvm: Add KVM_EXIT_PLANE_EVENT
-* [PATCH 31/60] kvm: Allocate struct kvm_plane in architecture code
-* [PATCH 32/60] kvm: Allocate struct kvm_run only for struct kvm_vcpu_common
-* [PATCH 33/60] KVM: Implement KVM_CREATE_VCPU ioctl for planes
-* [PATCH 34/60] kvm: Keep track of plane VCPUs in struct kvm_vcpu_common
-* [PATCH 35/60] kvm: Add VCPU plane-scheduling state and helpers
-* [PATCH 36/60] kvm: Add plane_level to kvm_kernel_irq_routing_entry
-* [PATCH 37/60] kvm: Pass plane_level to kvm_set_routing_entry()
-* [PATCH 38/60] kvm: Make KVM_SIGNAL_MSI per plane
-* [PATCH 39/60] kvm: Make KVM_SET_GSI_ROUTING per plane
-* [PATCH 40/60] kvm: x86: Handle IOAPIC EOIs per plane
-* [PATCH 41/60] kvm: x86: Make apic_map per plane
-* [PATCH 42/60] kvm: x86: Make local APIC code aware of planes
-* [PATCH 43/60] kvm: x86: Move CPUID state to struct kvm_vcpu_arch_common
-* [PATCH 44/60] kvm: x86: Move cpu_caps to struct kvm_vcpu_arch_common
-* [PATCH 45/60] kvm: x86: Update state for all plane VCPUs after CPUID update
-* [PATCH 46/60] kvm: x86: Share MTRR state across planes
-* [PATCH 47/60] kvm: x86: Select a plane to run
-* [PATCH 48/60] kvm: x86: Make event injection VCPU requests per-plane
-* [PATCH 49/60] kvm: x86: Allow hardware backend to overwrite struct kvm_plane allocation
-* [PATCH 50/60] kvm: x86: Make KVM_REQ_UPDATE_PROTECTED_GUEST_STATE per plane
-* [PATCH 51/60] kvm: x86: Share pio_data across planes
-* [PATCH 52/60] kvm: x86: Switch to plane0 if it has events
-* [PATCH 53/60] kvm: x86: Introduce max_planes x86-op
-* [PATCH 54/60] kvm: x86: Restrict KVM planes support to KVM_IRQCHIP_SPLIT
-* [PATCH 55/60] kvm: svm: Track vmsa_features per plane
-* [PATCH 56/60] kvm: svm: Implement GET_AP_APIC_IDS NAE event
-* [PATCH 57/60] kvm: sev: Allow for VMPL level specification in AP create
-* [PATCH 58/60] kvm: svm: Invoke a specified VMPL level VMSA for the vCPU
-* [PATCH 59/60] kvm: svm: Implement max_planes x86 operation
-* [PATCH 60/60] kvm: svm: Advertise full multi-VMPL support to the SNP guest
+On multi-socket NUMA systems we observed extreme I/O throughput variance
+of 50-60% between runs.  This series identifies and fixes two root causes:
+cross-node memory accesses due to NUMA-unaware allocations in the scan
+path, and false sharing between hot atomic counters in struct request_queue
+and struct scsi_device.
 
-and found the following issue:
-WARNING in __kvm_plane_ioctl
+Performance notes:
 
-Full report is available here:
-https://ci.syzbot.org/series/7426b4e7-e1df-4f2e-8464-acda36316e29
+Tested on a dual-socket NUMA system (2x 32-core, 256 GB/socket) with
+an mpi3mr HBA, running fio (random read, 4K, QD 64, 16 jobs, 60 s,
+direct I/O).  IOPS figures are in KIOPS (thousands of IOPS):
 
-***
+  Configuration                    Avg KIOPS   Range (KIOPS)   Spread
+  Baseline                         6,255       4,200 - 6,700   ~37%
+  Baseline + all patches           7,350       7,000 - 7,700    ~10%
 
-WARNING in __kvm_plane_ioctl
+Key findings:
 
-tree:      torvalds
-URL:       https://kernel.googlesource.com/pub/scm/linux/kernel/git/torvalds/linux
-base:      2d3090a8aeb596a26935db0955d46c9a5db5c6ce
-arch:      amd64
-compiler:  Debian clang version 21.1.8 (++20251221033036+2078da43e25a-1~exp1~20251221153213.50), Debian LLD 21.1.8
-config:    https://ci.syzbot.org/builds/f9f7af87-a544-413f-b7e0-662f92794f11/config
-syz repro: https://ci.syzbot.org/findings/751865bf-494c-4000-9b11-d8aa15f03893/syz_repro
+These patches combinedly reduces the observed 50-60% run-to-run variance
+to under 10%, significantly improving workload predictability and
+improves IOPs by 16-18%.
 
-------------[ cut here ]------------
-r == -EBUSY
-WARNING: arch/x86/kvm/../../../virt/kvm/kvm_main.c:4412 at kvm_plane_ioctl_create_vcpu virt/kvm/kvm_main.c:4412 [inline], CPU#1: syz.2.19/5809
-WARNING: arch/x86/kvm/../../../virt/kvm/kvm_main.c:4412 at __kvm_plane_ioctl+0x8bd/0xa70 virt/kvm/kvm_main.c:4908, CPU#1: syz.2.19/5809
-Modules linked in:
-CPU: 1 UID: 0 PID: 5809 Comm: syz.2.19 Not tainted syzkaller #0 PREEMPT(full) 
-Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.16.2-debian-1.16.2-1 04/01/2014
-RIP: 0010:kvm_plane_ioctl_create_vcpu virt/kvm/kvm_main.c:4412 [inline]
-RIP: 0010:__kvm_plane_ioctl+0x8bd/0xa70 virt/kvm/kvm_main.c:4908
-Code: e8 c8 0a 09 00 4c 89 f7 e8 80 a3 ff ff 48 8b 3d a9 a8 fd 11 4c 89 f6 e8 c1 35 e7 00 49 63 c7 e9 8c fc ff ff e8 94 2f 87 00 90 <0f> 0b 90 41 bf f0 ff ff ff eb bc e8 e3 eb 68 0a 89 f9 80 e1 07 80
-RSP: 0018:ffffc9000318f940 EFLAGS: 00010293
-RAX: ffffffff813f480c RBX: ffff8881ba113410 RCX: ffff88810d4f4a80
-RDX: 0000000000000000 RSI: ffffffff8e6fa0b0 RDI: 00000000fffffff0
-RBP: ffffc9000318fa70 R08: ffff88810d4f4a80 R09: 0000000000000002
-R10: 00000000fffffff0 R11: 0000000000000000 R12: 1ffff92000631f34
-R13: dffffc0000000000 R14: ffff8881b446cb18 R15: 00000000fffffff0
-FS:  00007f13e64ad6c0(0000) GS:ffff8882a929c000(0000) knlGS:0000000000000000
-CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-CR2: 00007f13e64acff8 CR3: 00000001a6053000 CR4: 0000000000352ef0
-Call Trace:
- <TASK>
- kvm_vm_ioctl+0x88e/0xbf0 virt/kvm/kvm_main.c:5546
- vfs_ioctl fs/ioctl.c:51 [inline]
- __do_sys_ioctl fs/ioctl.c:597 [inline]
- __se_sys_ioctl+0xfc/0x170 fs/ioctl.c:583
- do_syscall_x64 arch/x86/entry/syscall_64.c:63 [inline]
- do_syscall_64+0x174/0x580 arch/x86/entry/syscall_64.c:94
- entry_SYSCALL_64_after_hwframe+0x77/0x7f
-RIP: 0033:0x7f13e559ce59
-Code: ff c3 66 2e 0f 1f 84 00 00 00 00 00 0f 1f 44 00 00 48 89 f8 48 89 f7 48 89 d6 48 89 ca 4d 89 c2 4d 89 c8 4c 8b 4c 24 08 0f 05 <48> 3d 01 f0 ff ff 73 01 c3 48 c7 c1 e8 ff ff ff f7 d8 64 89 01 48
-RSP: 002b:00007f13e64ad028 EFLAGS: 00000246 ORIG_RAX: 0000000000000010
-RAX: ffffffffffffffda RBX: 00007f13e5816090 RCX: 00007f13e559ce59
-RDX: 0000000000000000 RSI: 000000000000ae41 RDI: 0000000000000004
-RBP: 00007f13e5632d6f R08: 0000000000000000 R09: 0000000000000000
-R10: 0000000000000000 R11: 0000000000000246 R12: 0000000000000000
-R13: 00007f13e5816128 R14: 00007f13e5816090 R15: 00007fff90c39748
- </TASK>
+No functional regressions observed.
 
+Changes in v3
+-------------
+-Handled feedback from Bart Van Assche and John Garry.
+-Added a patch for shost local NUMA allocation.
+-Converted ioerr_cnt and iotmo_cnt atomic counters into per-cpu counters. 
 
-***
+Changes in v2
+--------------
 
-If these findings have caused you to resend the series or submit a
-separate fix, please add the following tag to your commit message:
-  Tested-by: syzbot@syzkaller.appspotmail.com
+  Patch 1 — Same functional goal as v1 patch 1: NUMA-local scsi_device /
+  scsi_target allocations in the scan path so steady-state I/O does not
+  habitually touch remote memory when the host has a fixed DMA/NUMA
+  affinity.
 
----
-This report is generated by a bot. It may contain errors.
-syzbot ci engineers can be reached at syzkaller@googlegroups.com.
+  Patch 2 — Replaces v1’s ____cacheline_aligned_in_smp on
+  nr_active_requests_shared_tags with removal of the shared-tag fairness
+  throttling machinery (including hctx_may_queue(), blk_mq_hw_ctx.nr_active,
+  and request_queue.nr_active_requests_shared_tags and their updates).
+  This follows the earlier standalone proposal by Bart Van Assche [1],
+  rebased for the current tree; it removes the high-frequency atomic
+  accounting that motivated the v1 false-sharing workaround and, in our
+  testing, improves IOPS on the order of roughly 16–18% for the shared-tag
+  workload exercised.
 
-To test a patch for this bug, please reply with `#syz test`
-(should be on a separate line).
+  Patch 3 — Replaces v1’s cache-line padding of iodone_cnt with
+  percpu_counter for both iorequest_cnt and iodone_cnt, so submission and
+  completion paths mostly update CPU-local state instead of bouncing a
+  single cache line, without inflating struct scsi_device for SMP
+  alignment.
 
-The patch should be attached to the email.
-Note: arguments like custom git repos and branches are not supported.
+Merge / review hints
+--------------------
+
+Patch 3 touches the block layer and should have block maintainer review;
+rest of patches are SCSI-oriented.  Please route or Ack as your subsystem
+workflow requires.
+
+Bart Van Assche (1):
+  block: drop shared-tag fairness throttling
+
+James Rizzo (1):
+  scsi: scan: allocate sdev and starget on the NUMA node of the host
+    adapter
+
+Sumit Saxena (2):
+  scsi: host: allocate struct Scsi_Host on the NUMA node of the host
+    adapter
+  scsi: use percpu counters for iostat counters in struct scsi_device
+
+ block/blk-core.c                          |   2 -
+ block/blk-mq-debugfs.c                    |  22 ++++-
+ block/blk-mq-tag.c                        |   4 -
+ block/blk-mq.c                            |  17 +---
+ block/blk-mq.h                            | 100 ----------------------
+ drivers/scsi/3w-9xxx.c                    |   2 +-
+ drivers/scsi/3w-sas.c                     |   2 +-
+ drivers/scsi/3w-xxxx.c                    |   2 +-
+ drivers/scsi/53c700.c                     |   2 +-
+ drivers/scsi/BusLogic.c                   |   2 +-
+ drivers/scsi/a100u2w.c                    |   2 +-
+ drivers/scsi/a2091.c                      |   2 +-
+ drivers/scsi/a3000.c                      |   2 +-
+ drivers/scsi/aacraid/linit.c              |   2 +-
+ drivers/scsi/advansys.c                   |   6 +-
+ drivers/scsi/aha152x.c                    |   2 +-
+ drivers/scsi/aha1542.c                    |   2 +-
+ drivers/scsi/aha1740.c                    |   2 +-
+ drivers/scsi/aic7xxx/aic79xx_osm.c        |   2 +-
+ drivers/scsi/aic7xxx/aic7xxx_osm.c        |   2 +-
+ drivers/scsi/aic94xx/aic94xx_init.c       |   2 +-
+ drivers/scsi/am53c974.c                   |   2 +-
+ drivers/scsi/arcmsr/arcmsr_hba.c          |   3 +-
+ drivers/scsi/arm/acornscsi.c              |   2 +-
+ drivers/scsi/arm/arxescsi.c               |   2 +-
+ drivers/scsi/arm/cumana_1.c               |   2 +-
+ drivers/scsi/arm/cumana_2.c               |   2 +-
+ drivers/scsi/arm/eesox.c                  |   2 +-
+ drivers/scsi/arm/oak.c                    |   2 +-
+ drivers/scsi/arm/powertec.c               |   2 +-
+ drivers/scsi/atari_scsi.c                 |   2 +-
+ drivers/scsi/atp870u.c                    |   2 +-
+ drivers/scsi/bfa/bfad_im.c                |   2 +-
+ drivers/scsi/csiostor/csio_init.c         |   4 +-
+ drivers/scsi/dc395x.c                     |   2 +-
+ drivers/scsi/dmx3191d.c                   |   2 +-
+ drivers/scsi/elx/efct/efct_xport.c        |   4 +-
+ drivers/scsi/esas2r/esas2r_main.c         |   2 +-
+ drivers/scsi/fdomain.c                    |   2 +-
+ drivers/scsi/fnic/fnic_main.c             |   2 +-
+ drivers/scsi/g_NCR5380.c                  |   2 +-
+ drivers/scsi/gvp11.c                      |   2 +-
+ drivers/scsi/hisi_sas/hisi_sas_main.c     |   2 +-
+ drivers/scsi/hisi_sas/hisi_sas_v3_hw.c    |   2 +-
+ drivers/scsi/hosts.c                      |   6 +-
+ drivers/scsi/hpsa.c                       |   2 +-
+ drivers/scsi/hptiop.c                     |   2 +-
+ drivers/scsi/ibmvscsi/ibmvfc.c            |   2 +-
+ drivers/scsi/ibmvscsi/ibmvscsi.c          |   2 +-
+ drivers/scsi/imm.c                        |   2 +-
+ drivers/scsi/initio.c                     |   2 +-
+ drivers/scsi/ipr.c                        |   2 +-
+ drivers/scsi/ips.c                        |   2 +-
+ drivers/scsi/isci/init.c                  |   2 +-
+ drivers/scsi/jazz_esp.c                   |   2 +-
+ drivers/scsi/libiscsi.c                   |   2 +-
+ drivers/scsi/lpfc/lpfc_init.c             |   2 +-
+ drivers/scsi/mac53c94.c                   |   2 +-
+ drivers/scsi/mac_esp.c                    |   2 +-
+ drivers/scsi/mac_scsi.c                   |   2 +-
+ drivers/scsi/megaraid.c                   |   2 +-
+ drivers/scsi/megaraid/megaraid_mbox.c     |   2 +-
+ drivers/scsi/megaraid/megaraid_sas_base.c |   2 +-
+ drivers/scsi/mesh.c                       |   2 +-
+ drivers/scsi/mpi3mr/mpi3mr_os.c           |   2 +-
+ drivers/scsi/mpt3sas/mpt3sas_scsih.c      |   4 +-
+ drivers/scsi/mvme147.c                    |   2 +-
+ drivers/scsi/mvsas/mv_init.c              |   2 +-
+ drivers/scsi/mvumi.c                      |   2 +-
+ drivers/scsi/myrb.c                       |   2 +-
+ drivers/scsi/myrs.c                       |   2 +-
+ drivers/scsi/ncr53c8xx.c                  |   2 +-
+ drivers/scsi/nsp32.c                      |   2 +-
+ drivers/scsi/pcmcia/nsp_cs.c              |   2 +-
+ drivers/scsi/pcmcia/qlogic_stub.c         |   2 +-
+ drivers/scsi/pcmcia/sym53c500_cs.c        |   2 +-
+ drivers/scsi/pm8001/pm8001_init.c         |   2 +-
+ drivers/scsi/pmcraid.c                    |   2 +-
+ drivers/scsi/ppa.c                        |   2 +-
+ drivers/scsi/ps3rom.c                     |   2 +-
+ drivers/scsi/qla1280.c                    |   2 +-
+ drivers/scsi/qla2xxx/qla_mid.c            |   2 +-
+ drivers/scsi/qla2xxx/qla_os.c             |   2 +-
+ drivers/scsi/qlogicfas.c                  |   2 +-
+ drivers/scsi/qlogicpti.c                  |   2 +-
+ drivers/scsi/scsi_debug.c                 |   2 +-
+ drivers/scsi/scsi_error.c                 |   4 +-
+ drivers/scsi/scsi_lib.c                   |  10 +--
+ drivers/scsi/scsi_scan.c                  |  15 +++-
+ drivers/scsi/scsi_sysfs.c                 |  23 +++--
+ drivers/scsi/sd.c                         |   2 +-
+ drivers/scsi/sgiwd93.c                    |   2 +-
+ drivers/scsi/smartpqi/smartpqi_init.c     |   2 +-
+ drivers/scsi/snic/snic_main.c             |   2 +-
+ drivers/scsi/stex.c                       |   2 +-
+ drivers/scsi/storvsc_drv.c                |   2 +-
+ drivers/scsi/sun3_scsi.c                  |   2 +-
+ drivers/scsi/sun3x_esp.c                  |   2 +-
+ drivers/scsi/sun_esp.c                    |   2 +-
+ drivers/scsi/sym53c8xx_2/sym_glue.c       |   2 +-
+ drivers/scsi/virtio_scsi.c                |   2 +-
+ drivers/scsi/vmw_pvscsi.c                 |   2 +-
+ drivers/scsi/wd719x.c                     |   2 +-
+ drivers/scsi/xen-scsifront.c              |   2 +-
+ drivers/scsi/zorro_esp.c                  |   2 +-
+ include/linux/blk-mq.h                    |   6 --
+ include/linux/blkdev.h                    |   2 -
+ include/scsi/libfc.h                      |   2 +-
+ include/scsi/scsi_device.h                |   9 +-
+ include/scsi/scsi_host.h                  |   3 +-
+ 110 files changed, 168 insertions(+), 258 deletions(-)
+
+-- 
+2.43.7
+
 
