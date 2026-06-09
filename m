@@ -1,73 +1,69 @@
-Return-Path: <linuxppc-dev+bounces-22316-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22317-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0C77CCD6E79
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Jun 2026 08:52:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3A943CD8CAC
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Jun 2026 09:55:35 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gZN2W3tN9z2y8p;
-	Tue, 09 Jun 2026 18:52:19 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780995139;
-	cv=none; b=g6WpYQaZnsnYS0F4xU8N43EHyZR0ATF+0exPDQ+5KKBrPs7qno7nBIBsu6zVMLh3Tl1Mg7GyUp6f2G2/5zokTqNzkHcycerzk6X1wV1GzDOwpVG3nwdZSHtPun71HT8Fnmzfbc5FsHHUsaWo9YqiN2Aao/H8u6yy/R1ou4tYQnBdgRaKdIMYEva49p1MRMMquJUBWWhMlstUL6veVVh2PqcWG4Re/BwIKuhA40q/sD2V+aHXX7BbWIOkQoUmrJ7/38awmry9PfzkxFXYZE+ewbL1lwx5dp8YERPK+RFHfT3gUQlBYGUgeeJinwCvVDjdqtA5yvbFmGrWLtKA0HBt1A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gZPRT5m0Rz2y8p;
+	Tue, 09 Jun 2026 19:55:33 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=209.85.221.169
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780998933;
+	cv=none; b=LRuGqKEB7U/4D6sxaNZiIhU5K3Jb4w+9NtMYXBxw/Mc9l4YVR0Iad+P5pWVwv5GntekQfO/MtHiLf+FnEJ5bBsr2YuqJ8DMDY+ipeIKWFxryAVA8+ipZ52HlKPusUH3gM1HLHJQHsizkAn+WgYEedJDmpvJ2mrzbdEZrcgq5GHXcxKH9K8Z3HXILphIrc22wJ6tnGzWT/16hALfa6nZy93br19gcubd3U+o99HiFzXUbdqRFCjhR7u5Wnk9cn7aWV+X4SPaj6I66gkz06/8At+sT7f+xYQ77NZY+h8YxPlHs/CBBksVXNyYbJHBYrRutUhykT5FBbnzZdkTy7Rm1Kw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1780995139; c=relaxed/relaxed;
-	bh=hzQkxtLiQbdGFSPIIPPk/CiCMxvTXLlsB5s/Ud+eU1c=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=HU2EaP5rFazQuyLy+aPeEHDDLLyY+oSiSILyyKQs4PLXEj2V29yuywuBBXvbruuAiyOxqCIxtKyda35gIdHyb2pGEJBR1sxKTMZ4UKNg7VygKtFaGI/ds3uEXuHnIEdwLKzAAimjqbcpckckKWo5dwqO/U8NDMC0wscqOSMdbA141xuCagoN9o0HSue1FEO7lULjNF9witnOh+5Lek/HIqhiKBeIfd9lXWGRhg2Tp+FJ8YlqrQMyellCqAYmXoAA8yXHiUCroXV/bpp36xKzGuSHqp1BNZ2BqBcHhLIrENfS+FcmLICGpBt4xDk02ypUu+B7FVT4XTZpITyYtvCRhQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=O+6FtgrJ; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=adityag@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=O+6FtgrJ;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=adityag@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+	t=1780998933; c=relaxed/relaxed;
+	bh=J/QDHCd1pzNPKIKT6XsNCXh/My/ujozGgvsOiDCA3LA=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=DmoEVt+rhfk7bGHYraeGrmagT17kqRXBga0UhFW1MBuwvRi/vRfxhRhFTwkX8OEunqVD1DsBFP0XN2ELDKksKqwdAc90opQ+r0wGVul0hmURWPsG6sdIR3mXN8+FHwRBFJKlmcrlpS82tsGJDCY2MB+ir5VZBgJs5CsqWiDH/vQWEbsg+G16HBV8r72TjeN+iYrRqkqzEBGQlhYJMOEOxSrPsgJ/p2X/jbl+ogSEwH1XjUZej2Dgh+dpCPjz3GEV8NwOw3U6NoVLAB2CQmGzzApl6b4RzveQnC2VQJ+CffJHh97roLReVMH6u6hEIfgABCdskabenmhGUiKSDsDmig==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass (client-ip=209.85.221.169; helo=mail-vk1-f169.google.com; envelope-from=geert.uytterhoeven@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.221.169; helo=mail-vk1-f169.google.com; envelope-from=geert.uytterhoeven@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-vk1-f169.google.com (mail-vk1-f169.google.com [209.85.221.169])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gZN2V4WXfz2xR4
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Jun 2026 18:52:18 +1000 (AEST)
-Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 658N9jpR2451177;
-	Tue, 9 Jun 2026 08:52:10 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=hzQkxt
-	LiQbdGFSPIIPPk/CiCMxvTXLlsB5s/Ud+eU1c=; b=O+6FtgrJ5O/BQorDeShVu2
-	1aclM9gJgpmB7UWGT7xk+pt+le+PdN99ZtH5BeXQrJdRGX/RxlBBLehHIY7dp3xW
-	bcqubr7QPF3nWjNSK0epyGhoLvrXplGfF4etGk5QlHsrA/XuUIaKYLjLZlMB3Bt5
-	k7tBQUapNPuPTgnWFkGsb0zWvTZP/j0l0Z+E8NcUDheSx/3nyto7vGdI32KOKnZH
-	NyIcTp4rXjb2YUf53Yu6E6+JNdczLiykz3XfIKcujWe6uqAkqsgOA9xCBak07C0I
-	tSSio5kCVEakVudKmMV2a3QNec7rGKCvAF1NlSaV2wOebpM2BdISm3Z6T1C3LjXg
-	==
-Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4emb7qk8tn-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 09 Jun 2026 08:52:09 +0000 (GMT)
-Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma11.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 6598nd0H006203;
-	Tue, 9 Jun 2026 08:52:08 GMT
-Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
-	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4en0jy8xu6-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 09 Jun 2026 08:52:08 +0000 (GMT)
-Received: from smtpav06.fra02v.mail.ibm.com (smtpav06.fra02v.mail.ibm.com [10.20.54.105])
-	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6598q4fp35717512
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 9 Jun 2026 08:52:04 GMT
-Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 84C0C20049;
-	Tue,  9 Jun 2026 08:52:04 +0000 (GMT)
-Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 406EE20040;
-	Tue,  9 Jun 2026 08:52:01 +0000 (GMT)
-Received: from [9.123.10.203] (unknown [9.123.10.203])
-	by smtpav06.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Tue,  9 Jun 2026 08:52:00 +0000 (GMT)
-Message-ID: <f6766e0b-2c69-42cd-b628-76eb3a770852@linux.ibm.com>
-Date: Tue, 9 Jun 2026 14:21:59 +0530
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gZPRS0Wg5z2xll
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Jun 2026 19:55:31 +1000 (AEST)
+Received: by mail-vk1-f169.google.com with SMTP id 71dfb90a1353d-59d07df448bso4175944e0c.0
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Jun 2026 02:55:31 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1780998929; x=1781603729;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=J/QDHCd1pzNPKIKT6XsNCXh/My/ujozGgvsOiDCA3LA=;
+        b=iRmXAIyTVYY5dAy656KmcMBUb43Tj1jlVbS9tu7Av9MD5aC8mFckS9o0QCx0RSV0YY
+         0L9iKpCnRm74+bxTp8Gq+IIJlU/+nen9JMGCvC/egMjzJIoHlylWhKbYtMu4KoILlv6S
+         YuqyN6L+ko23SCf5nHgirlLegnUAFB/U++GQo/1Y/G9FvDmccrtp8lQJFOyOcm3TV9OM
+         8KuSPLUujby+m5F3kFK43fu/iOhuzIe6KrUOKdRgOhPeuUx8eRnK7VOGper20bVh9pmd
+         SGBhJ5XOVc0d0RAwCsueeRmCqLGHIINckTniGAdIGibgeM4q/mjAiEdk/N5qpYiqI2k9
+         w9KA==
+X-Forwarded-Encrypted: i=1; AFNElJ89hPWVQybfjoDQ48FRowqrzQgr4WqKTCGW7ul92c0iM1nxL30xrVd8ts6AOTnusp53TWEUtXQezHpsyK4=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yzk1O099+3BTdDyen3+EBB2MJ4DLC31t9iO74C7z4N2u6glmZiT
+	K1y/ntjB1sFh+Qahy54PR8Q6wfC12taVW/f4PFEEPTqYPVgcpXus2XgmMKMeCZfP
+X-Gm-Gg: Acq92OEGSLaDG3y3v+vx0KLl4W/WsokLue3vt54u0Vikaay7MCRcBYMnZyRamGtSV12
+	jhqiLETcEoiqSU6/JOhP0taTDzzVrxSY02KPCUnGNAeg7fv4JZ680yFNhfP0yNgtKP0AjkaSHUK
+	LQG7DaOBnHcz06ZHOKjxM6FA0QKkVzYx6Ya/OUzQVd6SXH+xWW6083k4igfxs2DnluVO6Zn+QET
+	yeGrNevdll6BiM++mdiVh8Rsc6+5uDeXOJfjVEPFjvBCBZxsa8KAuKnkXRmLZadGFsuPjxDN+g4
+	gLYxnp1OjTy9HmHzPzVs93K/Dc9EkAnW7X4ICDfJOiKYbeGGPavyf0uaaaKX62V+Wobwhxn6NW0
+	35AuYeNdQ4JxbmCuuPwBsxuFaUR6K/x/qiiRwgLAiiOn8Gbxuy0hYY/0WTLSBrrfAV/FNyAdWME
+	jA2QBnmaiGCijsNVl89/hngG9gNRHiH23mQVRRLKpAOOGGuSz2hsyOZ4vkrNkU4nrgLjEYSchb5
+	r4=
+X-Received: by 2002:a05:6102:c53:b0:65b:47:2c8 with SMTP id ada2fe7eead31-6feef48deafmr10334442137.10.1780998928716;
+        Tue, 09 Jun 2026 02:55:28 -0700 (PDT)
+Received: from mail-vk1-f174.google.com (mail-vk1-f174.google.com. [209.85.221.174])
+        by smtp.gmail.com with ESMTPSA id ada2fe7eead31-6eb66965b8bsm16844173137.12.2026.06.09.02.55.25
+        for <linuxppc-dev@lists.ozlabs.org>
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 09 Jun 2026 02:55:26 -0700 (PDT)
+Received: by mail-vk1-f174.google.com with SMTP id 71dfb90a1353d-5b22b023e1dso1438953e0c.2
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Jun 2026 02:55:25 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AFNElJ9ac0Rf+7QAfC/iXmJQtfK8fUF+6GEZ8tzWKCSER5pehghlZzorNqWLAR1Pl3g5k7fVGM1hwbtYopaNntQ=@lists.ozlabs.org
+X-Received: by 2002:a05:6102:149a:b0:636:984a:1e5d with SMTP id
+ ada2fe7eead31-6fef05f052fmr11135049137.11.1780998924802; Tue, 09 Jun 2026
+ 02:55:24 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -81,94 +77,75 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 1/3] ppc/pnv: Add null checks for OpenCapi PHBs
-To: Bjorn Helgaas <helgaas@kernel.org>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-        Madhavan Srinivasan <maddy@linux.ibm.com>,
-        Timothy Pearson <tpearson@raptorengineering.com>,
-        Bjorn Helgaas <bhelgaas@google.com>,
-        Shawn Anastasio <sanastasio@raptorengineering.com>,
-        sashiko-bot@kernel.org, linux-pci@vger.kernel.org,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        Nicholas Piggin <npiggin@gmail.com>,
-        "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-        stable@vger.kernel.org
-References: <20260608153948.GA36499@bhelgaas>
-Content-Language: en-US
-From: Aditya Gupta <adityag@linux.ibm.com>
-In-Reply-To: <20260608153948.GA36499@bhelgaas>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Authority-Analysis: v=2.4 cv=HppG3UTS c=1 sm=1 tr=0 ts=6a27d43a cx=c_pps
- a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
- a=IkcTkHD0fZMA:10 a=FelO9ux0wxsA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=uAbxVGIbfxUO_5tXvNgY:22 a=jDEF8yXcYhEeGhTqFzAA:9
- a=QEXdDO2ut3YA:10
-X-Proofpoint-GUID: uy5uA-4LAkQXosgRLeYKG9__XiD3wO41
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjA5MDA3OSBTYWx0ZWRfX1LnRsX/NslW6
- 10Kx6AfRwuDC7yqNSV+PtaezZSUOJDVDq6q3XnXnzbRlJRjpCtT1oklrDK7q+VkLgMaKH/HX1Tk
- sMxdgQi3xva78lBGS65KWRSTw2S6Fd5lInhoYTGOOzyPAsxwXD45x4qiM6Z+CaUAoup/Yl5kgFO
- PPEyoQaMcSgn+LDoqb6OxTi6dBbzzaMy4mx4LUFNNeY9XkI3issRge1Wd4NF9gUdP5HWdtS8oW/
- 5/2/qPQq67is8P7wW0AgUKPOncjeXYW64q+Be8cFrMgYeStTk6VYNod/tAyQUqRq6qW6O7J08KB
- fpbt0rn3Y+vu4duyRQc2nD6ppmvz92i7kPjiipGMS+EzX041vQw00sgXaUB0b7ywyIgTFyPpkju
- TqGxWethQMS3UEjpwL6yo9YYTh+pTT27uZunERfXhZ2Xg91zVHY8fajLwTfP6TAIRXwPFZNsHwU
- 3TeaMPSXZI3DsLHaPqg==
-X-Proofpoint-ORIG-GUID: l1yAjDp3acC5UYb8nk8EW-AoTRozIh-V
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
- definitions=2026-06-09_02,2026-06-09_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- lowpriorityscore=0 adultscore=0 phishscore=0 malwarescore=0 impostorscore=0
- priorityscore=1501 clxscore=1015 bulkscore=0 spamscore=0 suspectscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2605210000 definitions=main-2606090079
+References: <20260529150150.1670604-17-ardb+git@google.com>
+ <20260529150150.1670604-32-ardb+git@google.com> <CGME20260609062840eucas1p1d49831bfdb3447e38a3cadc803a9afc0@eucas1p1.samsung.com>
+ <a1b27e97-182c-485d-a448-56c19c5de2c2@samsung.com> <6a9c0f55-fe98-4063-864b-8f7e1f4fefd7@samsung.com>
+In-Reply-To: <6a9c0f55-fe98-4063-864b-8f7e1f4fefd7@samsung.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Tue, 9 Jun 2026 11:55:13 +0200
+X-Gmail-Original-Message-ID: <CAMuHMdV-rH7s6GD4FtiKP9++3c2ojwZKm=YGLM_S_+nkj+EBtw@mail.gmail.com>
+X-Gm-Features: AVVi8CfDur0wzec2mY_1awm30cbHrLvunVYojJnvz6Cb53IUltKkdZGFSORVN6A
+Message-ID: <CAMuHMdV-rH7s6GD4FtiKP9++3c2ojwZKm=YGLM_S_+nkj+EBtw@mail.gmail.com>
+Subject: Re: [PATCH v7 15/15] arm64: mm: Unmap kernel data/bss entirely from
+ the linear map
+To: Marek Szyprowski <m.szyprowski@samsung.com>
+Cc: Ard Biesheuvel <ardb+git@google.com>, linux-arm-kernel@lists.infradead.org, 
+	linux-kernel@vger.kernel.org, will@kernel.org, catalin.marinas@arm.com, 
+	mark.rutland@arm.com, Ard Biesheuvel <ardb@kernel.org>, Ryan Roberts <ryan.roberts@arm.com>, 
+	Anshuman Khandual <anshuman.khandual@arm.com>, Kevin Brodsky <kevin.brodsky@arm.com>, 
+	Liz Prucka <lizprucka@google.com>, Seth Jenkins <sethjenkins@google.com>, 
+	Kees Cook <kees@kernel.org>, Mike Rapoport <rppt@kernel.org>, David Hildenbrand <david@kernel.org>, 
+	Andrew Morton <akpm@linux-foundation.org>, Jann Horn <jannh@google.com>, linux-mm@kvack.org, 
+	linux-hardening@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
+	linux-sh@vger.kernel.org, Linux-Renesas <linux-renesas-soc@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 
-On 08/06/26 21:09, Bjorn Helgaas wrote:
+On Tue, 9 Jun 2026 at 08:28, Marek Szyprowski <m.szyprowski@samsung.com> wrote:
+> On 09.06.2026 08:22, Marek Szyprowski wrote:
+> > On 29.05.2026 17:02, Ard Biesheuvel wrote:
+> >> From: Ard Biesheuvel <ardb@kernel.org>
+> >>
+> >> The linear aliases of the kernel text and rodata are also mapped
+> >> read-only in the linear map. Given that the contents of these regions
+> >> are mostly identical to the version in the loadable image, mapping them
+> >> read-only and leaving their contents visible is a reasonable hardening
+> >> measure.
+> >>
+> >> Data and bss, however, are now also mapped read-only but the contents of
+> >> these regions are more likely to contain data that we'd rather not leak.
+> >> So let's unmap these entirely in the linear map when the kernel is
+> >> running normally.
+> >>
+> >> When going into hibernation or waking up from it, these regions need to
+> >> be mapped, so map the region initially, and toggle the valid bit so
+> >> map/unmap the region as needed.
+> >>
+> >> Doing so is required because pages covering the kernel image are marked
+> >> as PageReserved, and therefore disregarded for snapshotting by the
+> >> hibernate logic unless they are mapped.
+> >>
+> >> Signed-off-by: Ard Biesheuvel <ardb@kernel.org>
+> > This commit landed in yesterday's linux-next as commit 63e0b6a5b693
+> > ("arm64: mm: Unmap kernel data/bss entirely from the linear map").
+> > In my tests I found that it breaks booting of RaspberryPi3 and
+> > RaspberryPi4 boards with the following kernel panic:
 
-> On Wed, May 27, 2026 at 11:38:14PM +0530, Aditya Gupta wrote:
->> For opencapi phb direct slots, the .pdev for php_slots will be NULL
->>
->> Various sections of the code in pnv_php can do a null dereference and
->> crash the kernel.
->>
->> Originally, the issue was hit during boot:
->>
->>      [    1.568588] PowerPC PowerNV PCI Hotplug Driver version: 0.1
->>      [    1.569722] BUG: Kernel NULL pointer dereference at 0x00000074
->>      [    1.569811] Faulting instruction address: 0xc000000000b75fd0
->>      [    1.569890] Oops: Kernel access of bad area, sig: 11 [#1]
->>      [    1.569963] LE PAGE_SIZE=64K MMU=Hash  SMP NR_CPUS=2048 NUMA PowerNV
->>      ...
->>      [    1.571492] NIP [c000000000b75fd0] pnv_php_get_adapter_state+0x60/0x154
->>      [    1.571604] LR [c000000000b75fbc] pnv_php_get_adapter_state+0x4c/0x154
->>      [    1.571690] Call Trace:
->>      [    1.571725] [c000c0000688f990] [c000000000b75fbc] pnv_php_get_adapter_state+0x4c/0x154 (unreliable)
->>      [    1.571783] [c000c0000688fa20] [c000000000b78bd0] pnv_php_enable+0x94/0x378
->>      [    1.571951] [c000c0000688fac0] [c000000000b7912c] pnv_php_register_one.isra.0+0x11c/0x1e0
-> Drop timestamps since they don't add useful information.
->
-> Indent quoted material by two spaces to reduce wrapping.
->
-> Run "git log --oneline drivers/pci/hotplug/pnv_php.c" and "git log
-> --oneline drivers/pci/hotplug/" and match subject line style.
->
->> This occurs for hotplug slots on root buses where bus->self == NULL,
->> such as OpenCAPI PHB direct slots. An added debug print (not part of
->> this patch) confirmed it was opencapi:
-> Style "OpenCAPI" and "PHB" consistently in commit log and subject.
+Seeing the same panic on R-Car H3 ES2.0 (Cortex A57/A53), but not
+on R-Car V4M (Cortex A76).
 
-Thanks for the review Bjorn, fixed the description and have sent the 
-patch again as v3.
+> One more comment - reverting 63e0b6a5b693 and 53205d56212c (dependent
+> change) on top of next-20260608 fixes this issue.
 
-In v3, I have sent the patch #1 independently for rc, and will send the 
-rework patches (patches #2 and #3) separately, since I have to do extra 
-fixes for pre-existing issues pointed by sashiko.
+Confirmed, too.
 
-Thanks,
-- Aditya G
+Gr{oetje,eeting}s,
 
+                        Geert
 
+-- 
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
 
