@@ -1,73 +1,103 @@
-Return-Path: <linuxppc-dev+bounces-22319-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22320-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6B30FCD8CA4
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Jun 2026 12:14:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B12DBCD8CA4
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Jun 2026 12:16:05 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gZSWw6skJz2yv2;
-	Tue, 09 Jun 2026 22:14:36 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781007276;
-	cv=none; b=bXm7LhF2CpQsvTQBgZjxbJGBpB7FZqFnMZCSTG3v4+0QqlF0aIFIJDBKZLLS2sNUg0a+HjCjRHiJJtxZEB2otgj+lUiRHEDsUfVJ42gJQyFAYuWkY2pWu7dsgiogt5F2+U1fWcVs3h+WTKjf7yrEukvo7PkTtoco8UbsBMhhP4XzDQoIH04yLjJ7LNHpYpEeaw3wMinp1DQj0IMzboY6YHzLojo3pSpuYwvi7KDZ5BZkOLN+LRDBOV+gbaQL2Hnyzs4U1ogaYmtJB+pWT6vL8BP0W+QVLu2EP6NPUiXRM+kHA8Eapv4jssJdTs2ZAkVya1K0WkCK2f2V8HgiaW5CSw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gZSYc0jcSz2yv2;
+	Tue, 09 Jun 2026 22:16:04 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::32f"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781007364;
+	cv=none; b=S1Pa3XHFueNNv+EOoFI1BoJK8i7Hyrg/iFsj6AHPQA8xAKr/5kQOoZDpVgLKvFtrrynxqqAYQii8RhBkKuQYkwwe9JpZFJAfVjddAD26vdcFfuwu5Hin08FZ1Tk7mTHyI/nCIuhRyq/DiW2iOCldCILRGuicoQisSVrafSy73wFDo982GyvIailrZbRl8RM/PpjvbVKZ8qyK8AxHIMUYd1V8y8n2cXy0KPSVmpk1qRpxhtyrCoFLaYDUZ3D0FhCmZpFQHy0//UdljmnhWlP/s2df30t/fHDOPtV08gqOvU/aNs5TAL/CW/HckFL3IJtLqcwwxm2DDKODVgYDwVN9Cw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1781007276; c=relaxed/relaxed;
-	bh=57Yx+iqumQuBEpoVCz+tbrxnNc/RDV5vHnP2PPk7DVc=;
-	h=Content-Type:Mime-Version:Subject:From:In-Reply-To:Date:Cc:
-	 Message-Id:References:To; b=a0vPSD6aYZ9o1sJDD+W+49FYdSK3YT49lrE9FF5pNIfpYt5o5HA/x60bog8GQB3Lepyojo9vB+j747DT54cAJx1zX+0lgwqF6e0RnZ6IVJi+HemTlhrUYMutvdSZE9ykn5NpZRl+M9yAoGdchVivFNxjH1+l0n/Z/UMsUTbwozfYQQyt4Jrk8jFa7p4S3V3NxhpIsIAW/xNmW2hYAaSAKCKZwUd0t5i/R0JRZQHgG+7a0dMP17GT4FGktnf1/mL9R3pXtkrELc4GbjbttOe+Rx3kqHNC/u5by8AKkDaA1eVmGL7VIiUlPwzMoLjlj9reXhOwPeXT0NGTLLBtzslI2w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=h3LKVma/; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=atrajeev@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1781007364; c=relaxed/relaxed;
+	bh=d7sN51CIvQwRuTJi3qMza06o4wJMznBiMEkiJVIlNBs=;
+	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=coQojdRe26ttp6KikIQiNcZG/he69eVPIoPLOB6PguLxUZE5pXuDqeDVWxIJgdXaxRadwT08cR2G93W2Qql6zQuSGSk9PVZYMUDGYA18wcVGP+OiR8Nbd0tlsrG942Q48caxPQ3d/NjStF2TqM1lp1C3lYXdO83Tff3q2CXzz77uV7Ha06KnxOAZrtFneZT71emQGj7gDdIUMOBJNO3k0wffsm2gK9rZFq11SI1h+RPo1SKWB0yyUxAoHKy0bkqyNPmJJPujagw+6UUVvTAZlShhigtDYSl0KnTKsGbcgfIb6FfTeAS5PFrk0sJR5eu46iLgtUDSas/5yfA4kZvP5A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com; dkim=pass (2048-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=google header.b=Amz6BF3/; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::32f; helo=mail-wm1-x32f.google.com; envelope-from=ptesarik@suse.com; receiver=lists.ozlabs.org) smtp.mailfrom=suse.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=h3LKVma/;
+	dkim=pass (2048-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=google header.b=Amz6BF3/;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=atrajeev@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.com (client-ip=2a00:1450:4864:20::32f; helo=mail-wm1-x32f.google.com; envelope-from=ptesarik@suse.com; receiver=lists.ozlabs.org)
+Received: from mail-wm1-x32f.google.com (mail-wm1-x32f.google.com [IPv6:2a00:1450:4864:20::32f])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gZSWv2GR3z2ytV
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Jun 2026 22:14:34 +1000 (AEST)
-Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 658NeRma3804276;
-	Tue, 9 Jun 2026 12:14:31 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=57Yx+i
-	qumQuBEpoVCz+tbrxnNc/RDV5vHnP2PPk7DVc=; b=h3LKVma/myCflykoSBeQuX
-	IpeFtLXCaVNqnSRbLeeKhoomznCdL1LMHv3ZupbFAuiygCA9IaoKASUAPhsKNrYA
-	t1uGGeyuXQFGdVb5syka+l9HmXx3yytuFBGDWSby2IvlU2nVo8YWirdztYYslccK
-	/J5cfXZBUq/zvaDKPp3lFq7XcV6yE5KXt9wOZzCuTVo5YTwWVtnwzqdcVCU47OD0
-	383aOTCSKFAHE2KTHc8z1Er0wr/VF2couMVo0nijsrWOjnayCWvpxiMsUWllBcVU
-	/ifCtJAMv/6dKDkRLnGnDbOjeJ0abq+G4rbDcTaF50sn0AqMssAYKei2LB72loXg
-	==
-Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4em9ye3v4f-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 09 Jun 2026 12:14:31 +0000 (GMT)
-Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma13.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 659C4dvB015587;
-	Tue, 9 Jun 2026 12:14:30 GMT
-Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
-	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4en03g1p6g-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 09 Jun 2026 12:14:30 +0000 (GMT)
-Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
-	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 659CETV051052824
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 9 Jun 2026 12:14:29 GMT
-Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id E46B62004B;
-	Tue,  9 Jun 2026 12:14:28 +0000 (GMT)
-Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id E1E1A20040;
-	Tue,  9 Jun 2026 12:14:25 +0000 (GMT)
-Received: from smtpclient.apple (unknown [9.124.212.142])
-	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTPS;
-	Tue,  9 Jun 2026 12:14:25 +0000 (GMT)
-Content-Type: text/plain;
-	charset=utf-8
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gZSYY5Lf6z2ytV
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Jun 2026 22:16:01 +1000 (AEST)
+Received: by mail-wm1-x32f.google.com with SMTP id 5b1f17b1804b1-490a767521dso6059075e9.1
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Jun 2026 05:16:01 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=suse.com; s=google; t=1781007357; x=1781612157; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:subject:cc:to:from:date:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=d7sN51CIvQwRuTJi3qMza06o4wJMznBiMEkiJVIlNBs=;
+        b=Amz6BF3/jiXjKuajEOkesWrIZOYpjpGYS+WAhrw5TJE1eHmqmcT5RD1BFxzECZW78w
+         9StVxhGiulAX5Qmfq148xO+HaNgwUTUK9GbMcgE7vZSOJJSVLQ7+OeiLYx9gBaGp53vU
+         UpQlwCDxSgq/8IUlu56thDUkJfgPkByflUW+4ZCbYrGFcRt8cuJVaU/WfbbzoiGs2tzL
+         eNVD//wOkADUMm1CwEp4Lwfp9kkgvqX8MAQx440HtLaOO2UMNEv0maMgVMlIDdiU3Vba
+         QYiICcgw2+Cxk0lFbX54Ew8o8cyzKyWeieml2RnmYDGeNjSWh7R7jzXZUgkqHgoiZUT1
+         bN3A==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1781007357; x=1781612157;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=d7sN51CIvQwRuTJi3qMza06o4wJMznBiMEkiJVIlNBs=;
+        b=s59vbUbjQAFMJ5yLVt+E9bwik/YIMnCh1ffXU3vxYDweBbZwi25zELIE3JhdScljNZ
+         ezuNSGlzrpQX+0SOEneUQs0Nf91fuD4nj52GoTn18P0/ydK+0GBVlvmsqImx4VlcRlO+
+         dX/ZhOH2EMN/3CD7UYgcANw7S6nzKrK2mpp9AUpAP+PYRClK2FuMk6ZWEWYIkeVK3Ens
+         hXLVMXwrANcq9xh0FxxwN/0fkz+1sA5U12B4ercY40fgRlhrgQ/w/KyoaVAfwcbO4HjS
+         wSt+p0P7KE6LzdcC/0cr3OogG27Qylx7cWyn/sqEFxPlWVd2j59ZGOINHRnergKkpjyU
+         UZVg==
+X-Forwarded-Encrypted: i=1; AFNElJ/HNoAh9NJfC+J/XvuUBXjTTeCJC1EiVmwQvJy6rpos2Vb4M/jtDFPPduGMk0RsgIxwsuWTD/gshFIrUVw=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YyzWTent7hOTQJz3klcKP9jCp5BToIUqOmT4/nzdOPcpV1eDTal
+	pC1xrh4iBe3ajI6O+O5EKIrmAxa1LqqDkiB11zAueLXrvOr0QgI0o3IZNHud7JfDbMo=
+X-Gm-Gg: Acq92OGedOweVf4ns8Oqhc0jkRH3oBpD0ya0TMs8OKYyWBBGou61QAFilyVjYYZ3+bP
+	TFlT46eNYpzZhF34n9qG4t4myrgZzp3EQf/Et2LIuXZGOG+5jQ6n/4tjbZfvUYwvtauCpBJ4KyR
+	gZwzeasfLrQEq1tbt5b2p6iuRLH7LlhGUK3zdv6GcZiQFg8S6XcGswdw8JvPNc07vy1VHle4jT8
+	N2QNDw/WCm+Akb7UJRyH9ONy20g1zaw39cCMmlSmrtdx7L/rMkGXVkCH0MRdWftFSmGI2WPSOEK
+	Z85lI0N6DzgI8ug9sTskNzQ5y7FOAGWtR/HnfUh5zcLWeX7f1ioGBKgdqjGEuk5wcRO6FRPq8NI
+	GNYSCCpIWNWycWGWlUiSEaqTg6ZJmUKwugno4J2H+q7AlgFF/DbxvWL2iMWALJj5irIpFL2sHOJ
+	1GZ1Xy4AkhHobT/066Zc2s014=
+X-Received: by 2002:a05:600c:620d:b0:48d:1021:e5d1 with SMTP id 5b1f17b1804b1-490c25f597emr139602585e9.3.1781007356518;
+        Tue, 09 Jun 2026 05:15:56 -0700 (PDT)
+Received: from mordecai ([62.77.90.70])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-490bc3e5a00sm473055565e9.15.2026.06.09.05.15.54
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 09 Jun 2026 05:15:55 -0700 (PDT)
+Date: Tue, 9 Jun 2026 14:15:48 +0200
+From: Petr Tesarik <ptesarik@suse.com>
+To: "Aneesh Kumar K.V (Arm)" <aneesh.kumar@kernel.org>
+Cc: iommu@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
+ linux-kernel@vger.kernel.org, linux-coco@lists.linux.dev, Robin Murphy
+ <robin.murphy@arm.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Will
+ Deacon <will@kernel.org>, Marc Zyngier <maz@kernel.org>, Steven Price
+ <steven.price@arm.com>, Suzuki K Poulose <Suzuki.Poulose@arm.com>, Catalin
+ Marinas <catalin.marinas@arm.com>, Jiri Pirko <jiri@resnulli.us>, Jason
+ Gunthorpe <jgg@ziepe.ca>, Mostafa Saleh <smostafa@google.com>, Alexey
+ Kardashevskiy <aik@amd.com>, Dan Williams <dan.j.williams@intel.com>, Xu
+ Yilun <yilun.xu@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
+ "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, Alexander Gordeev
+ <agordeev@linux.ibm.com>, Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
+ Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>,
+ Christian Borntraeger <borntraeger@linux.ibm.com>, Sven Schnelle
+ <svens@linux.ibm.com>, x86@kernel.org, Jiri Pirko <jiri@nvidia.com>,
+ Michael Kelley <mhklinux@outlook.com>
+Subject: Re: [PATCH v6 02/20] dma-direct: swiotlb: handle swiotlb alloc/free
+ outside __dma_direct_alloc_pages
+Message-ID: <20260609141548.70a5848d@mordecai>
+In-Reply-To: <20260604083959.1265923-3-aneesh.kumar@kernel.org>
+References: <20260604083959.1265923-1-aneesh.kumar@kernel.org>
+	<20260604083959.1265923-3-aneesh.kumar@kernel.org>
+X-Mailer: Claws Mail 4.4.0 (GTK 3.24.52; x86_64-suse-linux-gnu)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -80,204 +110,265 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-Mime-Version: 1.0 (Mac OS X Mail 16.0 \(3864.300.41.1.7\))
-Subject: Re: [PATCH V4 2/2] tools/perf: Use scnprintf in buffer offset
- calculations
-From: Athira Rajeev <atrajeev@linux.ibm.com>
-In-Reply-To: <aiH2BnKXmur79SSR@google.com>
-Date: Tue, 9 Jun 2026 17:44:13 +0530
-Cc: acme@kernel.org, jolsa@kernel.org, adrian.hunter@intel.com,
-        mpetlan@redhat.com, tmricht@linux.ibm.com, maddy@linux.ibm.com,
-        irogers@google.com, linux-perf-users@vger.kernel.org,
-        linuxppc-dev@lists.ozlabs.org, hbathini@linux.vnet.ibm.com,
-        Tejas.Manhas1@ibm.com, Tanushree.Shah@ibm.com, shivani@linux.ibm.com
-Content-Transfer-Encoding: quoted-printable
-Message-Id: <F1A886CC-5C1C-4BA7-9F1D-56356281DC28@linux.ibm.com>
-References: <20260504154205.21394-1-atrajeev@linux.ibm.com>
- <20260504154205.21394-2-atrajeev@linux.ibm.com> <aiH2BnKXmur79SSR@google.com>
-To: Namhyung Kim <namhyung@kernel.org>
-X-Mailer: Apple Mail (2.3864.300.41.1.7)
-X-TM-AS-GCONF: 00
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjA5MDExNCBTYWx0ZWRfX3mrKSriTwtCn
- lEdAOBBA0ZaK95Du2tsQ3YCT8y4foST7E57pRv7WkwMt4PMSVKE/lcoFv8YzmNJKLF6IucIQxo5
- C5JNG6Z5JywCb1OnX32BLvYWkY6fDA5l8yfAhGnQCJ5Z8aJjSzoIf5HcmBgxcn1FN+1wi9qhDXn
- bvjDXWd3Z/AwRP99U1JzffO6J1ypmxHYAuHP6bSrqur4JcgxMqJDfMOtq5A1kVBbB/tJ6QuDigR
- Iw6Fu1BIK1TXYNVY7ASKL9RTH7Sth093DwvUYY27UKUDBN261gcSaC+dphZwcXeYh+nHLAsLWwl
- hCV221m/jGVVV+AC0hNMiZsN4i22uMi6tsBCdm0btMa/tUl3jsFj2TCXzffVQ2O+9Mp5ziU4HZw
- fBlz20aO2jomVVJLMxcJ6qXhC1I3xGtkWvrJBCBGx0EOus49PN44NgRw/9kPIBOYmdHPEHAikys
- ku+xlRyzcNaOgBjvmww==
-X-Authority-Analysis: v=2.4 cv=QKhYgALL c=1 sm=1 tr=0 ts=6a2803a7 cx=c_pps
- a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
- a=IkcTkHD0fZMA:10 a=FelO9ux0wxsA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=V8glGbnc2Ofi9Qvn3v5h:22 a=VwQbUJbxAAAA:8
- a=VnNF1IyMAAAA:8 a=yDw2nYwaqeuPlelgnKwA:9 a=QEXdDO2ut3YA:10
-X-Proofpoint-GUID: g7jEU3E_DzTwddrYo3arXrvUaMaGxeNy
-X-Proofpoint-ORIG-GUID: g7jEU3E_DzTwddrYo3arXrvUaMaGxeNy
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
- definitions=2026-06-09_02,2026-06-09_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501 lowpriorityscore=0 bulkscore=0 adultscore=0 phishscore=0
- malwarescore=0 impostorscore=0 suspectscore=0 spamscore=0 clxscore=1015
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2605210000 definitions=main-2606090114
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 
+On Thu,  4 Jun 2026 14:09:41 +0530
+"Aneesh Kumar K.V (Arm)" <aneesh.kumar@kernel.org> wrote:
 
+> Move swiotlb allocation out of __dma_direct_alloc_pages() and handle it in
+> dma_direct_alloc() / dma_direct_alloc_pages().
+> 
+> This is needed for follow-up changes that simplify the handling of
+> memory encryption/decryption based on the DMA attribute flags.
+> 
+> swiotlb backing pages are already mapped decrypted by
+> swiotlb_update_mem_attributes() and rmem_swiotlb_device_init(), so
+> dma-direct should not call dma_set_decrypted() on allocation nor
+> dma_set_encrypted() on free for swiotlb-backed memory.
+> 
+> Update alloc/free paths to detect swiotlb-backed pages and skip
+> encrypt/decrypt transitions for those paths. Keep the existing highmem
+> rejection in dma_direct_alloc_pages() for swiotlb allocations.
+> 
+> Only for "restricted-dma-pool", we currently set `for_alloc = true`, while
+> rmem_swiotlb_device_init() decrypts the whole pool up front. This pool is
+> typically used together with "shared-dma-pool", where the shared region is
+> accessed after remap/ioremap and the returned address is suitable for
+> decrypted memory access. So existing code paths remain valid.
+> 
+> Tested-by: Jiri Pirko <jiri@nvidia.com>
+> Tested-by: Michael Kelley <mhklinux@outlook.com>
+> Tested-by: Mostafa Saleh <smostafa@google.com>
+> Signed-off-by: Aneesh Kumar K.V (Arm) <aneesh.kumar@kernel.org>
+> ---
+>  include/linux/swiotlb.h |  6 ++++
+>  kernel/dma/direct.c     | 71 ++++++++++++++++++++++++++++++-----------
+>  kernel/dma/swiotlb.c    |  6 ++++
+>  3 files changed, 65 insertions(+), 18 deletions(-)
+> 
+> diff --git a/include/linux/swiotlb.h b/include/linux/swiotlb.h
+> index 3dae0f592063..133bb8ca9032 100644
+> --- a/include/linux/swiotlb.h
+> +++ b/include/linux/swiotlb.h
+> @@ -284,6 +284,8 @@ extern void swiotlb_print_info(void);
+>  #ifdef CONFIG_DMA_RESTRICTED_POOL
+>  struct page *swiotlb_alloc(struct device *dev, size_t size);
+>  bool swiotlb_free(struct device *dev, struct page *page, size_t size);
+> +void swiotlb_free_from_pool(struct device *dev, phys_addr_t tlb_addr,
+> +		size_t size, struct io_tlb_pool *pool);
+>  
+>  static inline bool is_swiotlb_for_alloc(struct device *dev)
+>  {
+> @@ -299,6 +301,10 @@ static inline bool swiotlb_free(struct device *dev, struct page *page,
+>  {
+>  	return false;
+>  }
+> +static inline void swiotlb_free_from_pool(struct device *dev, phys_addr_t tlb_addr,
+> +		size_t size, struct io_tlb_pool *pool)
+> +{
+> +}
+>  static inline bool is_swiotlb_for_alloc(struct device *dev)
+>  {
+>  	return false;
+> diff --git a/kernel/dma/direct.c b/kernel/dma/direct.c
+> index 583c5922bca2..a741c8a2ee66 100644
+> --- a/kernel/dma/direct.c
+> +++ b/kernel/dma/direct.c
+> @@ -96,14 +96,6 @@ static int dma_set_encrypted(struct device *dev, void *vaddr, size_t size)
+>  	return ret;
+>  }
+>  
+> -static void __dma_direct_free_pages(struct device *dev, struct page *page,
+> -				    size_t size)
+> -{
+> -	if (swiotlb_free(dev, page, size))
+> -		return;
+> -	dma_free_contiguous(dev, page, size);
+> -}
+> -
+>  static struct page *dma_direct_alloc_swiotlb(struct device *dev, size_t size)
+>  {
+>  	struct page *page = swiotlb_alloc(dev, size);
+> @@ -125,9 +117,6 @@ static struct page *__dma_direct_alloc_pages(struct device *dev, size_t size,
+>  
+>  	WARN_ON_ONCE(!PAGE_ALIGNED(size));
+>  
+> -	if (is_swiotlb_for_alloc(dev))
+> -		return dma_direct_alloc_swiotlb(dev, size);
+> -
+>  	gfp |= dma_direct_optimal_gfp_mask(dev, &phys_limit);
+>  	page = dma_alloc_contiguous(dev, size, gfp);
+>  	if (page) {
+> @@ -204,6 +193,7 @@ void *dma_direct_alloc(struct device *dev, size_t size,
+>  		dma_addr_t *dma_handle, gfp_t gfp, unsigned long attrs)
+>  {
+>  	bool remap = false, set_uncached = false;
+> +	bool mark_mem_decrypt = true;
+>  	struct page *page;
+>  	void *ret;
+>  
+> @@ -250,11 +240,21 @@ void *dma_direct_alloc(struct device *dev, size_t size,
+>  	    dma_direct_use_pool(dev, gfp))
+>  		return dma_direct_alloc_from_pool(dev, size, dma_handle, gfp);
+>  
+> +	if (is_swiotlb_for_alloc(dev)) {
+> +		page = dma_direct_alloc_swiotlb(dev, size);
+> +		if (page) {
+> +			mark_mem_decrypt = false;
+> +			goto setup_page;
+> +		}
+> +		return NULL;
+> +	}
+> +
+>  	/* we always manually zero the memory once we are done */
+>  	page = __dma_direct_alloc_pages(dev, size, gfp & ~__GFP_ZERO, true);
+>  	if (!page)
+>  		return NULL;
+>  
+> +setup_page:
+>  	/*
+>  	 * dma_alloc_contiguous can return highmem pages depending on a
+>  	 * combination the cma= arguments and per-arch setup.  These need to be
+> @@ -281,7 +281,7 @@ void *dma_direct_alloc(struct device *dev, size_t size,
+>  			goto out_free_pages;
+>  	} else {
+>  		ret = page_address(page);
+> -		if (dma_set_decrypted(dev, ret, size))
+> +		if (mark_mem_decrypt && dma_set_decrypted(dev, ret, size))
+>  			goto out_leak_pages;
+>  	}
+>  
+> @@ -298,10 +298,11 @@ void *dma_direct_alloc(struct device *dev, size_t size,
+>  	return ret;
+>  
+>  out_encrypt_pages:
+> -	if (dma_set_encrypted(dev, page_address(page), size))
+> +	if (mark_mem_decrypt && dma_set_encrypted(dev, page_address(page), size))
+>  		return NULL;
+>  out_free_pages:
+> -	__dma_direct_free_pages(dev, page, size);
+> +	if (!swiotlb_free(dev, page, size))
+> +		dma_free_contiguous(dev, page, size);
+>  	return NULL;
+>  out_leak_pages:
+>  	return NULL;
+> @@ -310,6 +311,9 @@ void *dma_direct_alloc(struct device *dev, size_t size,
+>  void dma_direct_free(struct device *dev, size_t size,
+>  		void *cpu_addr, dma_addr_t dma_addr, unsigned long attrs)
+>  {
+> +	phys_addr_t phys;
+> +	bool mark_mem_encrypted = true;
+> +	struct io_tlb_pool *swiotlb_pool;
+>  	unsigned int page_order = get_order(size);
+>  
+>  	if ((attrs & DMA_ATTR_NO_KERNEL_MAPPING) &&
+> @@ -338,16 +342,25 @@ void dma_direct_free(struct device *dev, size_t size,
+>  	    dma_free_from_pool(dev, cpu_addr, PAGE_ALIGN(size)))
+>  		return;
+>  
+> +	phys = dma_to_phys(dev, dma_addr);
+> +	swiotlb_pool = swiotlb_find_pool(dev, phys);
+> +	if (swiotlb_pool)
+> +		/* Swiotlb doesn't need a page attribute update on free */
+> +		mark_mem_encrypted = false;
+> +
+>  	if (is_vmalloc_addr(cpu_addr)) {
+>  		vunmap(cpu_addr);
+>  	} else {
+>  		if (IS_ENABLED(CONFIG_ARCH_HAS_DMA_CLEAR_UNCACHED))
+>  			arch_dma_clear_uncached(cpu_addr, size);
+> -		if (dma_set_encrypted(dev, cpu_addr, size))
+> +		if (mark_mem_encrypted && dma_set_encrypted(dev, cpu_addr, size))
+>  			return;
+>  	}
+>  
+> -	__dma_direct_free_pages(dev, dma_direct_to_page(dev, dma_addr), size);
+> +	if (swiotlb_pool)
+> +		swiotlb_free_from_pool(dev, phys, size, swiotlb_pool);
+> +	else
+> +		dma_free_contiguous(dev, dma_direct_to_page(dev, dma_addr), size);
+>  }
+>  
+>  struct page *dma_direct_alloc_pages(struct device *dev, size_t size,
+> @@ -359,6 +372,15 @@ struct page *dma_direct_alloc_pages(struct device *dev, size_t size,
+>  	if (force_dma_unencrypted(dev) && dma_direct_use_pool(dev, gfp))
+>  		return dma_direct_alloc_from_pool(dev, size, dma_handle, gfp);
+>  
+> +	if (is_swiotlb_for_alloc(dev)) {
+> +		page = dma_direct_alloc_swiotlb(dev, size);
+> +		if (!page)
+> +			return NULL;
+> +
+> +		ret = page_address(page);
+> +		goto setup_page;
+> +	}
+> +
+>  	page = __dma_direct_alloc_pages(dev, size, gfp, false);
+>  	if (!page)
+>  		return NULL;
+> @@ -366,6 +388,7 @@ struct page *dma_direct_alloc_pages(struct device *dev, size_t size,
+>  	ret = page_address(page);
+>  	if (dma_set_decrypted(dev, ret, size))
+>  		goto out_leak_pages;
+> +setup_page:
+>  	memset(ret, 0, size);
+>  	*dma_handle = phys_to_dma_direct(dev, page_to_phys(page));
+>  	return page;
+> @@ -377,16 +400,28 @@ void dma_direct_free_pages(struct device *dev, size_t size,
+>  		struct page *page, dma_addr_t dma_addr,
+>  		enum dma_data_direction dir)
+>  {
+> +	phys_addr_t phys;
+>  	void *vaddr = page_address(page);
+> +	struct io_tlb_pool *swiotlb_pool;
+> +	bool mark_mem_encrypted = true;
+>  
+>  	/* If cpu_addr is not from an atomic pool, dma_free_from_pool() fails */
+>  	if (IS_ENABLED(CONFIG_DMA_COHERENT_POOL) &&
+>  	    dma_free_from_pool(dev, vaddr, size))
+>  		return;
+>  
+> -	if (dma_set_encrypted(dev, vaddr, size))
+> +	phys = page_to_phys(page);
+> +	swiotlb_pool = swiotlb_find_pool(dev, phys);
+> +	if (swiotlb_pool)
+> +		mark_mem_encrypted = false;
+> +
+> +	if (mark_mem_encrypted && dma_set_encrypted(dev, vaddr, size))
+>  		return;
+> -	__dma_direct_free_pages(dev, page, size);
+> +
+> +	if (swiotlb_pool)
+> +		swiotlb_free_from_pool(dev, phys, size, swiotlb_pool);
+> +	else
+> +		dma_free_contiguous(dev, page, size);
+>  }
+>  
+>  #if defined(CONFIG_ARCH_HAS_SYNC_DMA_FOR_DEVICE) || \
+> diff --git a/kernel/dma/swiotlb.c b/kernel/dma/swiotlb.c
+> index 1abd3e6146f4..ac03a6856c2e 100644
+> --- a/kernel/dma/swiotlb.c
+> +++ b/kernel/dma/swiotlb.c
+> @@ -1809,6 +1809,12 @@ bool swiotlb_free(struct device *dev, struct page *page, size_t size)
+>  	return true;
+>  }
+>  
+> +void swiotlb_free_from_pool(struct device *dev, phys_addr_t tlb_addr, size_t size,
+> +		struct io_tlb_pool *pool)
 
-> On 5 Jun 2026, at 3:32=E2=80=AFAM, Namhyung Kim <namhyung@kernel.org> =
-wrote:
->=20
-> On Mon, May 04, 2026 at 09:12:05PM +0530, Athira Rajeev wrote:
->> Replace snprintf with scnprintf in buffer offset calculations to
->> ensure the 'used' count will not exceed the "len".
->>=20
->> The current logic in perf_pmu__for_each_event uses an unconditional
->> + 1 increment to buf_used to account for null terminators. This can
->> cause a a stack buffer overflow in the subsequent scnprintf call.
->> When the local stack buffer buf (1024 bytes) is full, buf_used can
->> reach 1025. This causes the subsequent remaining space calculation
->> sizeof(buf) - buf_used to underflow.
->>=20
->> Use sub_non_neg() to see if space actually existed, and only
->> increment the offset if remaning space is present.
->>=20
->> Changes includes:
->> - Use sub_non_neg to check if space exists
->> - Replacing snprintf with scnprintf to ensure the return value
->> reflects the actual bytes written into the buffer.
->> - Only increment buf_used by 1 if space exists
->> - If a parameterized event uses a built-in perf keyword for its
->> parameter name (eg, config=3D?), the lexer parses it as a predefined
->> term token, which sets term->config to NULL. Add check to use
->> parse_events__term_type_str() if term->config is NULL.
->>=20
->> Signed-off-by: Athira Rajeev <atrajeev@linux.ibm.com>
->> ---
->> Changelog:
->> v2 -> v3:
->> - Split the scnprintf related changes in separate patch
->> - Handle the overflow issues and unconditional increment
->> wrapped around sub_non_neg addressing review comment from Sashiko
->>=20
->> tools/perf/util/pmu.c | 46 =
-++++++++++++++++++++++++++++++++-----------
->> 1 file changed, 35 insertions(+), 11 deletions(-)
->>=20
->> diff --git a/tools/perf/util/pmu.c b/tools/perf/util/pmu.c
->> index 0b8d58543f17..4b9ade1a4cf9 100644
->> --- a/tools/perf/util/pmu.c
->> +++ b/tools/perf/util/pmu.c
->> @@ -2129,15 +2129,19 @@ static char *format_alias(char *buf, int len, =
-const struct perf_pmu *pmu,
->> pr_err("Failure to parse '%s' terms '%s': %d\n",
->> alias->name, alias->terms, ret);
->> parse_events_terms__exit(&terms);
->> - snprintf(buf, len, "%.*s/%s/", (int)pmu_name_len, pmu->name, =
-alias->name);
->> + scnprintf(buf, len, "%.*s/%s/", (int)pmu_name_len, pmu->name, =
-alias->name);
->> return buf;
->> }
->> - used =3D snprintf(buf, len, "%.*s/%s", (int)pmu_name_len, =
-pmu->name, alias->name);
->> + used =3D scnprintf(buf, len, "%.*s/%s", (int)pmu_name_len, =
-pmu->name, alias->name);
->>=20
->> list_for_each_entry(term, &terms.terms, list) {
->> + const char *name =3D term->config;
->> +
->> + if (!name)
->> + name =3D parse_events__term_type_str(term->type_term);
->> if (term->type_val =3D=3D PARSE_EVENTS__TERM_TYPE_STR)
->> - used +=3D snprintf(buf + used, sub_non_neg(len, used),
->> - ",%s=3D%s", term->config,
->> + used +=3D scnprintf(buf + used, sub_non_neg(len, used),
->> + ",%s=3D%s", name,
->> term->val.str);
->> }
->> parse_events_terms__exit(&terms);
->> @@ -2201,6 +2205,7 @@ int perf_pmu__for_each_event(struct perf_pmu =
-*pmu, bool skip_duplicate_pmus,
->> int ret =3D 0;
->> struct hashmap_entry *entry;
->> size_t bkt;
->> + size_t size_rem, len;
->>=20
->> if (perf_pmu__is_tracepoint(pmu))
->> return tp_pmu__for_each_event(pmu, state, cb);
->> @@ -2234,17 +2239,36 @@ int perf_pmu__for_each_event(struct perf_pmu =
-*pmu, bool skip_duplicate_pmus,
->> }
->> buf_used =3D strlen(buf) + 1;
->> }
->> +
->> info.scale_unit =3D NULL;
->> if (strlen(event->unit) || event->scale !=3D 1.0) {
->> - info.scale_unit =3D buf + buf_used;
->> - buf_used +=3D snprintf(buf + buf_used, sizeof(buf) - buf_used,
->> - "%G%s", event->scale, event->unit) + 1;
->> + /* Check the remaining space */
->> + size_rem =3D sub_non_neg(sizeof(buf), buf_used);
->> +
->> + if (size_rem > 0) {
->> + info.scale_unit =3D buf + buf_used;
->> + len =3D scnprintf(buf + buf_used, size_rem, "%G%s",
->> + event->scale, event->unit);
->> + /*
->> +  * Increment buf_used by 1 only if
->> +  * it fits remaining space
->> +  */
->> + buf_used +=3D min(len + 1, size_rem);
->=20
-> Hmm.. it seems scnprintf() cannot return a number greater than or =
-equal
-> to size_rem.  Can we just do like this?
->=20
-> buf_used +=3D scnprintf(...) + 1;
->=20
-> Thanks,
-> Namhyung
+What's the reason to pass the buffer size if it's not used?
 
-Sure
+Other than that, this patch looks good to me.
 
-I will address this change in next version
+Petr T
 
-Thanks
-Athira
->=20
->> + }
->> }
->> info.desc =3D event->desc;
->> info.long_desc =3D event->long_desc;
->> - info.encoding_desc =3D buf + buf_used;
->> - buf_used +=3D snprintf(buf + buf_used, sizeof(buf) - buf_used,
->> - "%.*s/%s/", (int)pmu_name_len, info.pmu_name, event->terms) + 1;
->> + info.encoding_desc =3D NULL;
->> +
->> + /* Check the remaining space */
->> + size_rem =3D sub_non_neg(sizeof(buf), buf_used);
->> + if (size_rem > 0) {
->> + info.encoding_desc =3D buf + buf_used;
->> + len =3D scnprintf(buf + buf_used, size_rem, "%.*s/%s/",
->> + (int)pmu_name_len, info.pmu_name, event->terms);
->> + buf_used +=3D min(len + 1, size_rem);
->> + }
->> +
->> info.str =3D event->terms;
->> info.topic =3D event->topic;
->> info.deprecated =3D perf_pmu_alias__check_deprecated(pmu, event);
->> @@ -2254,7 +2278,7 @@ int perf_pmu__for_each_event(struct perf_pmu =
-*pmu, bool skip_duplicate_pmus,
->> }
->> if (pmu->selectable) {
->> info.name =3D buf;
->> - snprintf(buf, sizeof(buf), "%s//", pmu->name);
->> + scnprintf(buf, sizeof(buf), "%s//", pmu->name);
->> info.alias =3D NULL;
->> info.scale_unit =3D NULL;
->> info.desc =3D NULL;
->> --=20
->> 2.47.3
-
-
+> +{
+> +	swiotlb_release_slots(dev, tlb_addr, pool);
+> +}
+> +
+>  static int rmem_swiotlb_device_init(struct reserved_mem *rmem,
+>  				    struct device *dev)
+>  {
 
