@@ -1,94 +1,81 @@
-Return-Path: <linuxppc-dev+bounces-22391-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22392-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AE657CD8CB9
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jun 2026 06:21:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 136A2CD8CB9
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jun 2026 06:29:56 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gZwdv1HpNz2xl6;
-	Wed, 10 Jun 2026 16:21:23 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=195.135.223.130
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781072483;
-	cv=none; b=VTDOSGP5RB1/ylkPY3r8Ymz3wSKwsj+8X6NZmnQFO9Gj1PVmxk/a3XB5IogaShL2Hk3gQXTXJo7xRv2N8LxkkDktTYFi9XMfNPLA94IMB52nZKJwovMNIHunLEG2EEykiloyR+8CJ0r3REreXvZzUBUU28Z0tBWX7PUDv3/VWhd9b6xMA2k+YCuul5/Dil85FsiW93c/IckGQWDCESXC63s/DDiPlYVadhReEa2lI3xqCtVf0MbYPg7bg/mOA9/OzICS2z7QDdHTpB6BCZuivgS8RjOZfPRnMuwL6ijHx3VpGP6+iWQUUMzVUHU/Za150l7zV9WTTGCRu8rtdLvvgg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gZwqk1bKgz2y1Y;
+	Wed, 10 Jun 2026 16:29:54 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::536"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781072994;
+	cv=none; b=J1g+14AvogQhfO5OvhdECGy63YhxyUa6i44dJZXlqpA6qx9t3A6aTSCUPg4OkkGoIpW7LsY3xXh71fnV9lrcgAhF9IguWVa/p4HFEqkhL3FGsM6XHQZ3I4VkrldGLVztFrQ6J/edHNw+RStq7S2fQY4pQLv6YyWKpupXmvruqpNhEWMHpKj5964ga1HMAq8M/Lr6rIF6MU0uUvP6TONosnDM3J7iPOkz0GL3AwQFeNut8zQdT1rsv0k+u3R0PR7oeJapxevYtCGdHtgZD3UiKXEKKfh8360Tvqt+YOAv6iK1hcasRX/fgS3O071CeJ6wBNCrFwC67VA6INIFwQTscw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1781072483; c=relaxed/relaxed;
-	bh=WbCQ0d3zTQZ6CGG+6Az/23i9L/arq92TNEcy3sEelj0=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=R12A5S9/WBt2y3Ctq8um4CyC/PH2u3BcHgfaaN5D5Dd+OaJXU/2g/vYF7G1+s2orFRt9zd60bO/TnVLuWCe2q0YwxWRRoQMDksTrMKHqSZZDMAMNS2j6ipuMxcILksoL6d5JXeNJRjh/4jttQIjjMWVatKePhhxsmt7Lw5illitm4Z3CfNGduPUVfBtiswo3kh87pSAW6d2tSV+nmnyLEa2H+1b5+cGz6ui1rZUROtCbYR9UI8YYIPCoJRk4bgp+v81KNTt41BDT3ptZV+qbyc0LGTqgZarX9XG5hxyazWjC8/x+44xoQvLHTsRHX5k5nSbvofGwOozmOBZzByoGQw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de; dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=kK/LCh7D; dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=QXOni70R; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=waHJe4W/; dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=U6EAtjYv; dkim-atps=neutral; spf=pass (client-ip=195.135.223.130; helo=smtp-out1.suse.de; envelope-from=hare@suse.de; receiver=lists.ozlabs.org) smtp.mailfrom=suse.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de
+	t=1781072994; c=relaxed/relaxed;
+	bh=nXhoKBKFsBSVgBh+Kydkjm+k3Aw/b2vmM+J6r2LJmuo=;
+	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References; b=XQh/92HJk9yu7SKb9r3Tl2GFlJvPHJbGgm3es17Bq8mmVguIb6lDHP5ufVaHTlu4/BCxTIUZCDhIhs+aJVj6/QmFe2V/OBSf6ahVL8VyGMLHYFUuf4bcmDGFt0oHDU18c2FjjHSDga5s2iwaaI3+2RpA1FR7boxuZ8bGAeSne18OewRt5Jj1Kvq7uSSaIrFBxn0eUfvTnD2ELEjEXlsvzABQ8kUtktWtMwEVMn5zTpQt+WrikRVUy1t15hjaB6+bUmSX/j2rr5uljOB7GI5sfV9PXQygZxzZLtJXqU268vbA/56K91WJJDUIf1u9g/gzmOciLUVCO/0vBtwGSd6BxA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=HvozhdCN; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::536; helo=mail-pg1-x536.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=kK/LCh7D;
-	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=QXOni70R;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=waHJe4W/;
-	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=U6EAtjYv;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=HvozhdCN;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=195.135.223.130; helo=smtp-out1.suse.de; envelope-from=hare@suse.de; receiver=lists.ozlabs.org)
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::536; helo=mail-pg1-x536.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pg1-x536.google.com (mail-pg1-x536.google.com [IPv6:2607:f8b0:4864:20::536])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gZwds4CB9z2xjN
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jun 2026 16:21:21 +1000 (AEST)
-Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id C66016A901;
-	Wed, 10 Jun 2026 06:21:10 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1781072471; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=WbCQ0d3zTQZ6CGG+6Az/23i9L/arq92TNEcy3sEelj0=;
-	b=kK/LCh7DC5z9PCHBhHtrcYqfPUIFZaxHoWYTst7kWk2DY22sG4ILEbfxJ225bLwv52Imfd
-	uKFOdpNkBnDaULH+4CDaI2up/l1VU0xj99rOTUygOwtjJof4pJjAnYUz2zYn69EFrIoYu3
-	UTarOT0XfKRaRqLCmTyO1ahgnIpS9SE=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1781072471;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=WbCQ0d3zTQZ6CGG+6Az/23i9L/arq92TNEcy3sEelj0=;
-	b=QXOni70R4TgKlcDEP6Sg+u7z6e4mtu6AOIgsD4dTCJCaxCDxQI2i8scIwV8+n4HXEzjh64
-	nyYPuxnLkK7nF3Ag==
-Authentication-Results: smtp-out1.suse.de;
-	dkim=pass header.d=suse.de header.s=susede2_rsa header.b="waHJe4W/";
-	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=U6EAtjYv
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1781072470; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=WbCQ0d3zTQZ6CGG+6Az/23i9L/arq92TNEcy3sEelj0=;
-	b=waHJe4W/QB/axCJtQRgAST3/L1ZffdvaSfCdsCopUjv8covGVV5Mu6HHQ5ZlTpiH9EpD9Q
-	zRFQa5HcZmyHm4tz927PKTsOEuhqSbWWv79hnw/iiQtLMoT8Yx5PxmoLIYnQrbZ7E69uds
-	o9AhwRFbIjTMQJ64sGTeky5eMDj3n/c=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1781072470;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=WbCQ0d3zTQZ6CGG+6Az/23i9L/arq92TNEcy3sEelj0=;
-	b=U6EAtjYvBU2LDrzfCGj83Db9o2/YQoljDhw02wO4Suo5f/iMj8UC41aU4G/FsxU6Rl43RT
-	YPgghOAwmqZuiBCQ==
-Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 35718779A7;
-	Wed, 10 Jun 2026 06:21:08 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
-	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id cGvRC1QCKWqkfwAAD6G6ig
-	(envelope-from <hare@suse.de>); Wed, 10 Jun 2026 06:21:08 +0000
-Message-ID: <ca44e52a-ddf7-4bf8-9634-5afaf7413176@suse.de>
-Date: Wed, 10 Jun 2026 08:21:07 +0200
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gZwqg6R6wz2xl6
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jun 2026 16:29:50 +1000 (AEST)
+Received: by mail-pg1-x536.google.com with SMTP id 41be03b00d2f7-c859a374903so2238173a12.3
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Jun 2026 23:29:50 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1781072989; x=1781677789; darn=lists.ozlabs.org;
+        h=references:message-id:date:in-reply-to:subject:cc:to:from:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=nXhoKBKFsBSVgBh+Kydkjm+k3Aw/b2vmM+J6r2LJmuo=;
+        b=HvozhdCNNebcepdhrhWJf1K2BcCs86MhommLXOZV6tu2rgaGjk8QLLKgWzUVQbnSrj
+         th0X981+KZOcQ2IeU2tYe5XcGhXIIVv/LAEW1NbI5ylmRidqtk7XmimhDFWx7XVu191J
+         Obpzzvju9fvlAWy1MiOvQTZLwh+Lf1ll9vTRZuBeiEsMoQZdk0cZ4ehf2yiw/PPC0EL2
+         3fmOdw/jouyOQvTvo0DEIQ4aFiJIidw61QG174fN8zQUZmKivbRpyEwYN0aF4hhV3Sx/
+         uqlDB4bPxaj6CShJqhdtl7K8xqDYbi7wbevYTuxzeE5JSThQw5Z906mV2dSGBZL6Qp/h
+         U25A==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1781072989; x=1781677789;
+        h=references:message-id:date:in-reply-to:subject:cc:to:from:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=nXhoKBKFsBSVgBh+Kydkjm+k3Aw/b2vmM+J6r2LJmuo=;
+        b=bl3cAg/SkCP23LKgVtRNbGUBhBrknOexS9GGuht56X+9LBO/Nn0F+1httUnDwwq5wS
+         C77VPhgZqa33l18qLcYvU1jX6EDmAjSYzsb0DA0snebOun1nvPd8fY977eb8lnMPD0rD
+         E2dPSAO327Ml5wNdlb4Z5KX3qfbI90dwU69UuOLVveBBVyVbVZfc4SXbdinO7Ha1IHya
+         n6t6MGiQtgNtQqZZ7O/jRLjltfK88jIdR2YZnImFhV+FgAB4rTp7RRrQtkPyZu03kvma
+         ZZrjJ6fLMaiUGYd6yX478PDuQly0XE3M1lDpYC2j1hMP+SQ7OPJfMq1VoO6CVMoJ5Err
+         z1Og==
+X-Forwarded-Encrypted: i=1; AFNElJ9jLHv9fZORb3fPruOMFfCYtUA3ros+tLd61AYzm7ES/XO1rT4qvs8/LNQ8dj0cTsHPgLpN9EhVAXm0AIo=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yx1NoB4P+YHV03Z3W4R95+ZpvPFZBEQlZ1puT3V76rJpTF+0QCz
+	rrzeSAyXVsM1oq+JYIv1YqPoRqLAqQB9Ls/dEziZHbvT8Qw01LsCYZq1
+X-Gm-Gg: Acq92OHb/AGO5p7NmhuG7ovCejTN9drbFx7aPbqs9O6bYl3iE2/oj7arSjcgpDbWoWi
+	Lx+dubWxCfu5m3KBm20Oyu603oVvZ6zqFAb2AXljYu9gu0TgluWOwCR0MtPIfL+jm/+Rq4TM8EK
+	hckOuKFSe7XXIw75ykBb+mNFRpQZCQfcwKBTTLX3++mUpa4PTbXrf4wADeobU5DX4UYXGmuTIpV
+	D07EC/iRdeOZnBONSVGN7Ktyh7OoDJ0c8rzrV14BOX6a+ibuQmnhTu+7wwGDZaJFz4vYCX3epPX
+	Garkr+1qiKYJQBOQbG1S9jdvvsiv1Fe1XfUH+cj7G47UY8SuwGZFtoT40rpEkqTMzapLmfPzXQO
+	WNNxe3heVeb0XfTdTKdFbF51Xt/H7NCq/Wbtb4n5HuCLfRrMARKs3XUveQEGBAJglA+UUEfMblZ
+	P1e5+PVi1tXbzJQctJvWyalPhx2EUHneu0
+X-Received: by 2002:a05:6a20:1615:b0:3b3:1951:489b with SMTP id adf61e73a8af0-3b53bf75f2amr8504650637.45.1781072988909;
+        Tue, 09 Jun 2026 23:29:48 -0700 (PDT)
+Received: from pve-server ([49.205.216.49])
+        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-c85df04a0e9sm17535932a12.13.2026.06.09.23.29.42
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 09 Jun 2026 23:29:48 -0700 (PDT)
+From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+To: YoungJun Park <youngjun.park@lge.com>
+Cc: linux-mm@kvack.org, Madhavan Srinivasan <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <chleroy@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Chris Li <chrisl@kernel.org>, Kairui Song <kasong@tencent.com>, Kemeng Shi <shikemeng@huaweicloud.com>, Nhat Pham <nphamcs@gmail.com>, Baoquan He <baoquan.he@linux.dev>, Barry Song <baohua@kernel.org>, David Hildenbrand <david@kernel.org>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, Sayali Patil <sayalip@linux.ibm.com>
+Subject: Re: [RFC 0/4] mm, swap: Enable THP SWAP for PowerPC Book3S64
+In-Reply-To: <aig3PFm9jst8cHxn@yjaykim-PowerEdge-T330>
+Date: Wed, 10 Jun 2026 11:00:43 +0530
+Message-ID: <pl1zdksc.ritesh.list@gmail.com>
+References: <cover.1781000840.git.ritesh.list@gmail.com> <aig3PFm9jst8cHxn@yjaykim-PowerEdge-T330>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -101,132 +88,113 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 4/4] scsi: use percpu counters for iostat counters in
- struct scsi_device
-To: Sumit Saxena <sumit.saxena@broadcom.com>,
- "Martin K . Petersen" <martin.petersen@oracle.com>,
- Jens Axboe <axboe@kernel.dk>
-Cc: "James E . J . Bottomley" <James.Bottomley@HansenPartnership.com>,
- linux-scsi@vger.kernel.org, linux-block@vger.kernel.org,
- Adam Radford <aradford@gmail.com>, Khalid Aziz <khalid@gonehiking.org>,
- Adaptec OEM Raid Solutions <aacraid@microsemi.com>,
- Matthew Wilcox <willy@infradead.org>, Hannes Reinecke <hare@suse.com>,
- "Juergen E . Fischer" <fischer@norbit.de>,
- Russell King <linux@armlinux.org.uk>, linux-arm-kernel@lists.infradead.org,
- Finn Thain <fthain@linux-m68k.org>, Michael Schmitz <schmitzmic@gmail.com>,
- Anil Gurumurthy <anil.gurumurthy@qlogic.com>,
- Sudarsana Kalluru <sudarsana.kalluru@qlogic.com>,
- Oliver Neukum <oliver@neukum.org>, Ali Akcaagac <aliakc@web.de>,
- Jamie Lenehan <lenehan@twibble.org>, Ram Vegesna <ram.vegesna@broadcom.com>,
- target-devel@vger.kernel.org, Bradley Grove <linuxdrivers@attotech.com>,
- Satish Kharat <satishkh@cisco.com>, Sesidhar Baddela <sebaddel@cisco.com>,
- Karan Tilak Kumar <kartilak@cisco.com>, Yihang Li
- <liyihang9@h-partners.com>, Don Brace <don.brace@microchip.com>,
- storagedev@microchip.com, HighPoint Linux Team <linux@highpoint-tech.com>,
- Tyrel Datwyler <tyreld@linux.ibm.com>,
- Madhavan Srinivasan <maddy@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
- Christophe Leroy <chleroy@kernel.org>, linuxppc-dev@lists.ozlabs.org,
- Brian King <brking@us.ibm.com>, Lee Duncan <lduncan@suse.com>,
- Chris Leech <cleech@redhat.com>, Mike Christie
- <michael.christie@oracle.com>, open-iscsi@googlegroups.com,
- Justin Tee <justin.tee@broadcom.com>, Paul Ely <paul.ely@broadcom.com>,
- Kashyap Desai <kashyap.desai@broadcom.com>,
- Shivasharan S <shivasharan.srikanteshwara@broadcom.com>,
- Chandrakanth Patil <chandrakanth.patil@broadcom.com>,
- megaraidlinux.pdl@broadcom.com,
- Sathya Prakash Veerichetty <sathya.prakash@broadcom.com>,
- Sreekanth Reddy <sreekanth.reddy@broadcom.com>,
- mpi3mr-linuxdrv.pdl@broadcom.com,
- Suganath Prabu Subramani <suganath-prabu.subramani@broadcom.com>,
- Ranjan Kumar <ranjan.kumar@broadcom.com>, MPT-FusionLinux.pdl@broadcom.com,
- Daniel Palmer <daniel@thingy.jp>, GOTO Masanori <gotom@debian.or.jp>,
- YOKOTA Hiroshi <yokota@netlab.is.tsukuba.ac.jp>,
- Jack Wang <jinpu.wang@cloud.ionos.com>, Geoff Levand <geoff@infradead.org>,
- Michael Reed <mdr@sgi.com>, Nilesh Javali <njavali@marvell.com>,
- GR-QLogic-Storage-Upstream@marvell.com, Narsimhulu Musini
- <nmusini@cisco.com>, "K . Y . Srinivasan" <kys@microsoft.com>,
- Haiyang Zhang <haiyangz@microsoft.com>, Wei Liu <wei.liu@kernel.org>,
- Dexuan Cui <decui@microsoft.com>, Long Li <longli@microsoft.com>,
- linux-hyperv@vger.kernel.org, "Michael S . Tsirkin" <mst@redhat.com>,
- Jason Wang <jasowang@redhat.com>, Paolo Bonzini <pbonzini@redhat.com>,
- Stefan Hajnoczi <stefanha@redhat.com>, Eugenio Perez <eperezma@redhat.com>,
- virtualization@lists.linux.dev, Vishal Bhakta <vishal.bhakta@broadcom.com>,
- bcm-kernel-feedback-list@broadcom.com, Juergen Gross <jgross@suse.com>,
- Stefano Stabellini <sstabellini@kernel.org>,
- Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>,
- xen-devel@lists.xenproject.org, John Garry <john.g.garry@oracle.com>
-References: <20260609121806.2121755-1-sumit.saxena@broadcom.com>
- <20260609121806.2121755-5-sumit.saxena@broadcom.com>
-Content-Language: en-US
-From: Hannes Reinecke <hare@suse.de>
-In-Reply-To: <20260609121806.2121755-5-sumit.saxena@broadcom.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Rspamd-Action: no action
-X-Rspamd-Queue-Id: C66016A901
-X-Spamd-Result: default: False [-4.51 / 50.00];
-	BAYES_HAM(-3.00)[100.00%];
-	NEURAL_HAM_LONG(-1.00)[-1.000];
-	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	NEURAL_HAM_SHORT(-0.20)[-1.000];
-	MIME_GOOD(-0.10)[text/plain];
-	MX_GOOD(-0.01)[];
-	FREEMAIL_CC(0.00)[HansenPartnership.com,vger.kernel.org,gmail.com,gonehiking.org,microsemi.com,infradead.org,suse.com,norbit.de,armlinux.org.uk,lists.infradead.org,linux-m68k.org,qlogic.com,neukum.org,web.de,twibble.org,broadcom.com,attotech.com,cisco.com,h-partners.com,microchip.com,highpoint-tech.com,linux.ibm.com,ellerman.id.au,kernel.org,lists.ozlabs.org,us.ibm.com,redhat.com,oracle.com,googlegroups.com,thingy.jp,debian.or.jp,netlab.is.tsukuba.ac.jp,cloud.ionos.com,sgi.com,marvell.com,microsoft.com,lists.linux.dev,epam.com,lists.xenproject.org];
-	RCVD_TLS_ALL(0.00)[];
-	FREEMAIL_ENVRCPT(0.00)[gmail.com];
-	FUZZY_RATELIMITED(0.00)[rspamd.com];
-	MIME_TRACE(0.00)[0:+];
-	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	ARC_NA(0.00)[];
-	RBL_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:104:10:150:64:97:from];
-	DKIM_TRACE(0.00)[suse.de:+];
-	R_RATELIMIT(0.00)[to_ip_from(RL4wz7gy1ms4azqntyx4t734n7)];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	RCVD_COUNT_TWO(0.00)[2];
-	FROM_EQ_ENVFROM(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	TO_DN_SOME(0.00)[];
-	TO_MATCH_ENVRCPT_SOME(0.00)[];
-	MID_RHS_MATCH_FROM(0.00)[];
-	RCPT_COUNT_GT_50(0.00)[82];
-	RECEIVED_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:106:10:150:64:167:received];
-	DWL_DNSWL_BLOCKED(0.00)[suse.de:dkim];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[imap1.dmz-prg2.suse.org:rdns,imap1.dmz-prg2.suse.org:helo,suse.de:dkim,suse.de:email,suse.de:mid,broadcom.com:email]
-X-Rspamd-Server: rspamd1.dmz-prg2.suse.org
 
-On 6/9/26 14:18, Sumit Saxena wrote:
-> iorequest_cnt and iodone_cnt are updated on every command dispatch and
-> completion, often from different CPUs on high queue depth workloads.
-> Using adjacent atomic_t fields causes cache line contention between the
-> submission and completion paths.
-> 
-> Extend the same treatment to ioerr_cnt and iotmo_cnt so all four iostat
-> counters in struct scsi_device use struct percpu_counter.
-> 
-> Suggested-by: John Garry <john.g.garry@oracle.com>
-> Signed-off-by: Sumit Saxena <sumit.saxena@broadcom.com>
-> ---
->   drivers/scsi/scsi_error.c  |  4 ++--
->   drivers/scsi/scsi_lib.c    | 10 +++++-----
->   drivers/scsi/scsi_scan.c   |  8 ++++++++
->   drivers/scsi/scsi_sysfs.c  | 23 ++++++++++++++---------
->   drivers/scsi/sd.c          |  2 +-
->   include/scsi/scsi_device.h |  9 +++++----
->   6 files changed, 35 insertions(+), 21 deletions(-)
-> 
-Good idea.
+YoungJun Park <youngjun.park@lge.com> writes:
 
-Reviewed-by: Hannes Reinecke <hare@kernel.org>
+> On Tue, Jun 09, 2026 at 06:49:30PM +0530, Ritesh Harjani (IBM) wrote:
+>> On PowerPC Book3S64, MMU is selected at runtime, so macros like PMD_SHIFT are
+>> effectively runtime variables in the Book3S64 code. THP swap code uses these
+>> macros for e.g. to size some of its array data structures based on PMD_ORDER.
+>> This patch series makes that usage dependent on the runtime variable.
+>> 
+>> Sayali did some performance runs of this on Book3S64 with Radix and it gives
+>> 40-50% performance improvement. We also plan to run it with Hash, will soon
+>> update the results.
+>> 
+>> Note that this patch series is based out of linux-next (next-20260608).
+>> 
+>> Ritesh Harjani (IBM) (4):
+>>   include/linux/swap.h: Remove unused leftovers
+>>   mm, swap: make SWAPFILE_CLUSTER runtime
+>>   mm, swap: make SWAP_NR_ORDERS runtime
+>>   powerpc: Kconfig: Enable THP_SWAP on Book3S64
+>> 
+>>  arch/powerpc/platforms/Kconfig.cputype |   1 +
+>>  include/linux/swap.h                   |  17 +---
+>>  mm/swap.h                              |   5 +-
+>>  mm/swap_table.h                        |   6 +-
+>>  mm/swapfile.c                          | 132 ++++++++++++++++++-------
+>>  5 files changed, 106 insertions(+), 55 deletions(-)
+>> 
+>> --
+>> 2.39.5
+>>
+> Hello!
+>
 
-Cheers,
+Thanks for taking a look at this.
 
-Hannes
--- 
-Dr. Hannes Reinecke                  Kernel Storage Architect
-hare@suse.de                                +49 911 74053 688
-SUSE Software Solutions GmbH, Frankenstr. 146, 90461 Nürnberg
-HRB 36809 (AG Nürnberg), GF: I. Totev, A. McDonald, W. Knoblich
+> Instead of making SWAP_NR_ORDERS fully runtime, could we set it to the max
+> PMD_ORDER possible on PowerPC Book3S64 as a compile-time constant in the
+> swap.h ifdef block? (My assumtion is PMD_ORDER max not too big.)
+>
+> I think the general runtime version adds cost. It impacts all other archs.
+> percpu_swap_cluster needs a runtime alloc,
+> the si/offset and nonfull/frag arrays become separate pointers, and some
+> accesses get one more indirection. And for nr_orders=1, the allocation
+> itself is just waste. 
+>
+> With a compile-time possible max constant, the only downside is some acceptable amount of
+> wasted bytes per CPU / per device on Book3S64 (the unused entries in the swap
+> offset cache and the nonfull/frag lists), with no perf impact. the perf
+> improvement comes from THP swap itself, right? Other arches see no
+> impact at all.
+>
+
+I looked into the memory waste comparison between static v/s runtime
+alloc. And the wastage for per-cpu alloc data structures (with Radix
+MMU) will be 0, because we use kcalloc_node() which will use kmalloc-64
+slab. So slab padding would anyway add some memory waste. So it is as
+good as using static arrays with some max PMD_ORDER for the
+percpu_swap_cluster.
+
+For the other lists you mentioned, it anyways adds a onetime negligible
+cost which isn't worth for making SWAP_NR_ORDERS runtime. 
+
+> patch 2 looks fine as is. SWAPFILE_CLUSTER backs much bigger per-cluster
+> arrays, so runtime sizing makes sense there, and it looks like no impact to
+> other arches or the current code.
+>
+
+yup. That make sense. 
+
+
+So, unless someone else raises any objection - I will give this a try
+instead of patch-3 in this series and will get back with v2.
+
+
+diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
+index e67e64ac6e8c..57abd8b2c9a1 100644
+--- a/arch/powerpc/include/asm/book3s/64/pgtable.h
++++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
+@@ -204,6 +204,9 @@ extern unsigned long __pmd_frag_size_shift;
+ #define MAX_PTRS_PER_PGD       (1 << (H_PGD_INDEX_SIZE > RADIX_PGD_INDEX_SIZE ? \
+                                       H_PGD_INDEX_SIZE : RADIX_PGD_INDEX_SIZE))
+
++#define ARCH_MAX_PMD_ORDER ((H_PTE_INDEX_SIZE > RADIX_PTE_INDEX_SIZE) ? \
++                               H_PTE_INDEX_SIZE : RADIX_PTE_INDEX_SIZE)
++
+ /* PMD_SHIFT determines what a second-level page table entry can map */
+ #define PMD_SHIFT      (PAGE_SHIFT + PTE_INDEX_SIZE)
+ #define PMD_SIZE       (1UL << PMD_SHIFT)
+diff --git a/include/linux/swap.h b/include/linux/swap.h
+index 46c25523d7b8..5f1451f8f266 100644
+--- a/include/linux/swap.h
++++ b/include/linux/swap.h
+@@ -224,10 +224,14 @@ enum {
+ #define SWAP_ENTRY_INVALID     0
+
+ #ifdef CONFIG_THP_SWAP
++#ifdef ARCH_MAX_PMD_ORDER
++#define SWAP_NR_ORDERS         (ARCH_MAX_PMD_ORDER + 1)
++#else
+ #define SWAP_NR_ORDERS         (PMD_ORDER + 1)
++#endif /* ARCH_MAX_PMD_ORDER */
+ #else
+ #define SWAP_NR_ORDERS         1
+-#endif
++#endif /* CONFIG_THP_SWAP */
+
+
+-ritesh
 
