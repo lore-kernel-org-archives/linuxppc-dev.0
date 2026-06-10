@@ -1,81 +1,87 @@
-Return-Path: <linuxppc-dev+bounces-22392-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22393-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 136A2CD8CB9
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jun 2026 06:29:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 99D9BCD98C7
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jun 2026 08:07:43 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gZwqk1bKgz2y1Y;
-	Wed, 10 Jun 2026 16:29:54 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::536"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781072994;
-	cv=none; b=J1g+14AvogQhfO5OvhdECGy63YhxyUa6i44dJZXlqpA6qx9t3A6aTSCUPg4OkkGoIpW7LsY3xXh71fnV9lrcgAhF9IguWVa/p4HFEqkhL3FGsM6XHQZ3I4VkrldGLVztFrQ6J/edHNw+RStq7S2fQY4pQLv6YyWKpupXmvruqpNhEWMHpKj5964ga1HMAq8M/Lr6rIF6MU0uUvP6TONosnDM3J7iPOkz0GL3AwQFeNut8zQdT1rsv0k+u3R0PR7oeJapxevYtCGdHtgZD3UiKXEKKfh8360Tvqt+YOAv6iK1hcasRX/fgS3O071CeJ6wBNCrFwC67VA6INIFwQTscw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gZz0Y63ZNz2ySl;
+	Wed, 10 Jun 2026 18:07:41 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781078861;
+	cv=none; b=kJ0Ee6QMw6V573iywEVlSTrD1p+OB40s9PDE47xxj40GIFUROIB7tGrV+lfS486l58zDYDhWr14aQuES+579J4DSiiJ75eFmZCrg8hA4XYS3dXo7TdIltU91EEqn8cNTKrlxvDKv4pj6BY9yZfZTNTAJEjanWqo+ZW9pT9ZfcJQp9Wo00Z/ny2ZFid+mjihZPrPybSHIlupxcbAhmwg0LTGFGhdwRhc1Gw2QLyGPprjlfqOvU7vFYbhA5Z3dxFOFqbkWPpcCj4cQ1LvC6ac5Kp8ZQYX1cqqEEFD/RPPlK7MpF+dSt5QwovVzmtLUqQe4dKezHfxAr3Z0uKG8VeodUg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1781072994; c=relaxed/relaxed;
-	bh=nXhoKBKFsBSVgBh+Kydkjm+k3Aw/b2vmM+J6r2LJmuo=;
-	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References; b=XQh/92HJk9yu7SKb9r3Tl2GFlJvPHJbGgm3es17Bq8mmVguIb6lDHP5ufVaHTlu4/BCxTIUZCDhIhs+aJVj6/QmFe2V/OBSf6ahVL8VyGMLHYFUuf4bcmDGFt0oHDU18c2FjjHSDga5s2iwaaI3+2RpA1FR7boxuZ8bGAeSne18OewRt5Jj1Kvq7uSSaIrFBxn0eUfvTnD2ELEjEXlsvzABQ8kUtktWtMwEVMn5zTpQt+WrikRVUy1t15hjaB6+bUmSX/j2rr5uljOB7GI5sfV9PXQygZxzZLtJXqU268vbA/56K91WJJDUIf1u9g/gzmOciLUVCO/0vBtwGSd6BxA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=HvozhdCN; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::536; helo=mail-pg1-x536.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1781078861; c=relaxed/relaxed;
+	bh=0QHcq+ldvvjOXKYe7v0SGXcqZmQygGGJknrasUV2jDg=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
+	 MIME-Version:Content-Type; b=ZSiLKmqreFXyEvg49aqvdwlpsW6v9nP1AzNjDEQiNwpKfu0vlJTm357xWLYqPU/bYV9rZO+PeePfGWDxI6lMHJMtta7bxH5CmNDABtd/5alZx22k/h1XDoL5uI07bkqLusrHFeBAsUVN6U6LvEWC/Wqt2hvZRqk6yI3KkcfS3fU9S6ulIUZOyv/EvyAlwLvLlZOjw4JPCuGY2WO+uM9r27hEv2qGGuWxroYv0RGYp8xS7B4y5aP6b/fN428qvmB2b0J7xYvZeY2BQxX4t4/yNcL67hR1tFjluTuTdguYhe+jP4+6U7J2bvjr8WzxukBS/RXyLqkq8tJVXGQ4MeOiaw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=UZtvV0j4; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=aneesh.kumar@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=HvozhdCN;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=UZtvV0j4;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::536; helo=mail-pg1-x536.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pg1-x536.google.com (mail-pg1-x536.google.com [IPv6:2607:f8b0:4864:20::536])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=aneesh.kumar@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gZwqg6R6wz2xl6
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jun 2026 16:29:50 +1000 (AEST)
-Received: by mail-pg1-x536.google.com with SMTP id 41be03b00d2f7-c859a374903so2238173a12.3
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Jun 2026 23:29:50 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1781072989; x=1781677789; darn=lists.ozlabs.org;
-        h=references:message-id:date:in-reply-to:subject:cc:to:from:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=nXhoKBKFsBSVgBh+Kydkjm+k3Aw/b2vmM+J6r2LJmuo=;
-        b=HvozhdCNNebcepdhrhWJf1K2BcCs86MhommLXOZV6tu2rgaGjk8QLLKgWzUVQbnSrj
-         th0X981+KZOcQ2IeU2tYe5XcGhXIIVv/LAEW1NbI5ylmRidqtk7XmimhDFWx7XVu191J
-         Obpzzvju9fvlAWy1MiOvQTZLwh+Lf1ll9vTRZuBeiEsMoQZdk0cZ4ehf2yiw/PPC0EL2
-         3fmOdw/jouyOQvTvo0DEIQ4aFiJIidw61QG174fN8zQUZmKivbRpyEwYN0aF4hhV3Sx/
-         uqlDB4bPxaj6CShJqhdtl7K8xqDYbi7wbevYTuxzeE5JSThQw5Z906mV2dSGBZL6Qp/h
-         U25A==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1781072989; x=1781677789;
-        h=references:message-id:date:in-reply-to:subject:cc:to:from:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=nXhoKBKFsBSVgBh+Kydkjm+k3Aw/b2vmM+J6r2LJmuo=;
-        b=bl3cAg/SkCP23LKgVtRNbGUBhBrknOexS9GGuht56X+9LBO/Nn0F+1httUnDwwq5wS
-         C77VPhgZqa33l18qLcYvU1jX6EDmAjSYzsb0DA0snebOun1nvPd8fY977eb8lnMPD0rD
-         E2dPSAO327Ml5wNdlb4Z5KX3qfbI90dwU69UuOLVveBBVyVbVZfc4SXbdinO7Ha1IHya
-         n6t6MGiQtgNtQqZZ7O/jRLjltfK88jIdR2YZnImFhV+FgAB4rTp7RRrQtkPyZu03kvma
-         ZZrjJ6fLMaiUGYd6yX478PDuQly0XE3M1lDpYC2j1hMP+SQ7OPJfMq1VoO6CVMoJ5Err
-         z1Og==
-X-Forwarded-Encrypted: i=1; AFNElJ9jLHv9fZORb3fPruOMFfCYtUA3ros+tLd61AYzm7ES/XO1rT4qvs8/LNQ8dj0cTsHPgLpN9EhVAXm0AIo=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yx1NoB4P+YHV03Z3W4R95+ZpvPFZBEQlZ1puT3V76rJpTF+0QCz
-	rrzeSAyXVsM1oq+JYIv1YqPoRqLAqQB9Ls/dEziZHbvT8Qw01LsCYZq1
-X-Gm-Gg: Acq92OHb/AGO5p7NmhuG7ovCejTN9drbFx7aPbqs9O6bYl3iE2/oj7arSjcgpDbWoWi
-	Lx+dubWxCfu5m3KBm20Oyu603oVvZ6zqFAb2AXljYu9gu0TgluWOwCR0MtPIfL+jm/+Rq4TM8EK
-	hckOuKFSe7XXIw75ykBb+mNFRpQZCQfcwKBTTLX3++mUpa4PTbXrf4wADeobU5DX4UYXGmuTIpV
-	D07EC/iRdeOZnBONSVGN7Ktyh7OoDJ0c8rzrV14BOX6a+ibuQmnhTu+7wwGDZaJFz4vYCX3epPX
-	Garkr+1qiKYJQBOQbG1S9jdvvsiv1Fe1XfUH+cj7G47UY8SuwGZFtoT40rpEkqTMzapLmfPzXQO
-	WNNxe3heVeb0XfTdTKdFbF51Xt/H7NCq/Wbtb4n5HuCLfRrMARKs3XUveQEGBAJglA+UUEfMblZ
-	P1e5+PVi1tXbzJQctJvWyalPhx2EUHneu0
-X-Received: by 2002:a05:6a20:1615:b0:3b3:1951:489b with SMTP id adf61e73a8af0-3b53bf75f2amr8504650637.45.1781072988909;
-        Tue, 09 Jun 2026 23:29:48 -0700 (PDT)
-Received: from pve-server ([49.205.216.49])
-        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-c85df04a0e9sm17535932a12.13.2026.06.09.23.29.42
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 09 Jun 2026 23:29:48 -0700 (PDT)
-From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-To: YoungJun Park <youngjun.park@lge.com>
-Cc: linux-mm@kvack.org, Madhavan Srinivasan <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <chleroy@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Chris Li <chrisl@kernel.org>, Kairui Song <kasong@tencent.com>, Kemeng Shi <shikemeng@huaweicloud.com>, Nhat Pham <nphamcs@gmail.com>, Baoquan He <baoquan.he@linux.dev>, Barry Song <baohua@kernel.org>, David Hildenbrand <david@kernel.org>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, Sayali Patil <sayalip@linux.ibm.com>
-Subject: Re: [RFC 0/4] mm, swap: Enable THP SWAP for PowerPC Book3S64
-In-Reply-To: <aig3PFm9jst8cHxn@yjaykim-PowerEdge-T330>
-Date: Wed, 10 Jun 2026 11:00:43 +0530
-Message-ID: <pl1zdksc.ritesh.list@gmail.com>
-References: <cover.1781000840.git.ritesh.list@gmail.com> <aig3PFm9jst8cHxn@yjaykim-PowerEdge-T330>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gZz0X5W70z2yS4
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jun 2026 18:07:40 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with ESMTP id 8CCC5416F7;
+	Wed, 10 Jun 2026 08:07:38 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id AF4241F00893;
+	Wed, 10 Jun 2026 08:07:29 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1781078858;
+	bh=0QHcq+ldvvjOXKYe7v0SGXcqZmQygGGJknrasUV2jDg=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date;
+	b=UZtvV0j4JPtGHjZWg1UsD2g+GxuSXIcXg6UMmssH9fOxo7BYN9s2Ha3MdttDa9dbZ
+	 Y3LzCfYH3mse4KAw7UN/JV6C0wueAFYRrIGQ2UJ5pq6jRXX5P53Ch4aOs4N4umLYYs
+	 nxpDHYwre7gShpAf+irvZS6VbqPnGX2pway8OyS6BalzGhpCmqjZn2itF7oRY6PEU+
+	 SWXC9gxC0MFuAqRGUuuWYv1ujhTOYVz8b0PbDvuNVvVsTNPknSMUQy9Bm3/tqwgaF8
+	 CI7mgB3EIJsBnPozx7Kng480IYc8IOGEBcGtUzsuIOR3Srq3phPC6r3VzcvBTdg+8I
+	 keGWA+6ChZARA==
+X-Mailer: emacs 30.2 (via feedmail 11-beta-1 I)
+From: Aneesh Kumar K.V <aneesh.kumar@kernel.org>
+To: Jason Gunthorpe <jgg@ziepe.ca>
+Cc: iommu@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
+	linux-kernel@vger.kernel.org, linux-coco@lists.linux.dev,
+	Robin Murphy <robin.murphy@arm.com>,
+	Marek Szyprowski <m.szyprowski@samsung.com>,
+	Will Deacon <will@kernel.org>, Marc Zyngier <maz@kernel.org>,
+	Steven Price <steven.price@arm.com>,
+	Suzuki K Poulose <Suzuki.Poulose@arm.com>,
+	Catalin Marinas <catalin.marinas@arm.com>,
+	Jiri Pirko <jiri@resnulli.us>,
+	Mostafa Saleh <smostafa@google.com>,
+	Petr Tesarik <ptesarik@suse.com>,
+	Alexey Kardashevskiy <aik@amd.com>,
+	Dan Williams <dan.j.williams@intel.com>,
+	Xu Yilun <yilun.xu@linux.intel.com>,
+	linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	Alexander Gordeev <agordeev@linux.ibm.com>,
+	Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
+	Heiko Carstens <hca@linux.ibm.com>,
+	Vasily Gorbik <gor@linux.ibm.com>,
+	Christian Borntraeger <borntraeger@linux.ibm.com>,
+	Sven Schnelle <svens@linux.ibm.com>, x86@kernel.org,
+	Jiri Pirko <jiri@nvidia.com>,
+	Michael Kelley <mhklinux@outlook.com>
+Subject: Re: [PATCH v6 04/20] dma-pool: track decrypted atomic pools and
+ select them via attrs
+In-Reply-To: <20260609143242.GK2764304@ziepe.ca>
+References: <20260604083959.1265923-1-aneesh.kumar@kernel.org>
+ <20260604083959.1265923-5-aneesh.kumar@kernel.org>
+ <20260609143242.GK2764304@ziepe.ca>
+Date: Wed, 10 Jun 2026 13:37:26 +0530
+Message-ID: <yq5afr2uzum9.fsf@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -88,113 +94,78 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
+MIME-Version: 1.0
+Content-Type: text/plain
 
-YoungJun Park <youngjun.park@lge.com> writes:
+Jason Gunthorpe <jgg@ziepe.ca> writes:
 
-> On Tue, Jun 09, 2026 at 06:49:30PM +0530, Ritesh Harjani (IBM) wrote:
->> On PowerPC Book3S64, MMU is selected at runtime, so macros like PMD_SHIFT are
->> effectively runtime variables in the Book3S64 code. THP swap code uses these
->> macros for e.g. to size some of its array data structures based on PMD_ORDER.
->> This patch series makes that usage dependent on the runtime variable.
->> 
->> Sayali did some performance runs of this on Book3S64 with Radix and it gives
->> 40-50% performance improvement. We also plan to run it with Hash, will soon
->> update the results.
->> 
->> Note that this patch series is based out of linux-next (next-20260608).
->> 
->> Ritesh Harjani (IBM) (4):
->>   include/linux/swap.h: Remove unused leftovers
->>   mm, swap: make SWAPFILE_CLUSTER runtime
->>   mm, swap: make SWAP_NR_ORDERS runtime
->>   powerpc: Kconfig: Enable THP_SWAP on Book3S64
->> 
->>  arch/powerpc/platforms/Kconfig.cputype |   1 +
->>  include/linux/swap.h                   |  17 +---
->>  mm/swap.h                              |   5 +-
->>  mm/swap_table.h                        |   6 +-
->>  mm/swapfile.c                          | 132 ++++++++++++++++++-------
->>  5 files changed, 106 insertions(+), 55 deletions(-)
->> 
->> --
->> 2.39.5
->>
-> Hello!
+> On Thu, Jun 04, 2026 at 02:09:43PM +0530, Aneesh Kumar K.V (Arm) wrote:
+>>  struct page *dma_alloc_from_pool(struct device *dev, size_t size,
+>> -		void **cpu_addr, gfp_t gfp,
+>> +		void **cpu_addr, gfp_t gfp, unsigned long attrs,
+>>  		bool (*phys_addr_ok)(struct device *, phys_addr_t, size_t))
+>>  {
+>> -	struct gen_pool *pool = NULL;
+>> +	struct dma_gen_pool *dma_pool = NULL;
+>>  	struct page *page;
+>>  	bool pool_found = false;
+>>  
+>> -	while ((pool = dma_guess_pool(pool, gfp))) {
+>> +	while ((dma_pool = dma_guess_pool(dma_pool, gfp))) {
+>> +
+>> +		if (dma_pool->unencrypted != !!(attrs & DMA_ATTR_CC_SHARED))
+>> +			continue;
+>
+> I don't think you should be overloading DMA_ATTR_CC_SHARED like this.
+>
+> 	/*
+> 	 * DMA_ATTR_CC_SHARED is not a caller-visible dma_alloc_*()
+> 	 * attribute. The direct allocator uses it internally after it has
+> 	 * decided that the backing pages must be shared/decrypted, so the
+> 	 * rest of the allocation path can consistently select DMA addresses,
+> 	 * choose compatible pools and restore encryption on free.
+> 	 */
+> 	if (attrs & DMA_ATTR_CC_SHARED)
+> 		return NULL;
+>
+> 	if (force_dma_unencrypted(dev)) {
+> 		attrs |= DMA_ATTR_CC_SHARED;
+> 		mark_mem_decrypt = true;
+> 	}
+>
+> It is fine to have a bit inside the attrs that is only used by the
+> internal logic, but it needs to have a clearer name
+> __DMA_ATTR_REQUIRE_CC_SHARED perhaps.
 >
 
-Thanks for taking a look at this.
+Are you suggesting adding another attribute in addition to
+DMA_ATTR_CC_SHARED?
 
-> Instead of making SWAP_NR_ORDERS fully runtime, could we set it to the max
-> PMD_ORDER possible on PowerPC Book3S64 as a compile-time constant in the
-> swap.h ifdef block? (My assumtion is PMD_ORDER max not too big.)
+Is the idea that __DMA_ATTR_REQUIRE_CC_SHARED would be used in the
+allocation path to request a CC_SHARED allocation, while
+DMA_ATTR_CC_SHARED would be used in the mapping path to describe the
+attribute of the address?
+
+
+
 >
-> I think the general runtime version adds cost. It impacts all other archs.
-> percpu_swap_cluster needs a runtime alloc,
-> the si/offset and nonfull/frag arrays become separate pointers, and some
-> accesses get one more indirection. And for nr_orders=1, the allocation
-> itself is just waste. 
+> The sashiko note does look legit though:
 >
-> With a compile-time possible max constant, the only downside is some acceptable amount of
-> wasted bytes per CPU / per device on Book3S64 (the unused entries in the swap
-> offset cache and the nonfull/frag lists), with no perf impact. the perf
-> improvement comes from THP swap itself, right? Other arches see no
-> impact at all.
+> 	if (IS_ENABLED(CONFIG_DMA_DIRECT_REMAP) &&
+> 	    !gfpflags_allow_blocking(gfp) && !coherent) {
+> 		page = dma_alloc_from_pool(dev, PAGE_ALIGN(size), &cpu_addr,
+> 					   gfp, attrs, NULL);
+> 		if (!page)
+> 			return NULL;
 >
-
-I looked into the memory waste comparison between static v/s runtime
-alloc. And the wastage for per-cpu alloc data structures (with Radix
-MMU) will be 0, because we use kcalloc_node() which will use kmalloc-64
-slab. So slab padding would anyway add some memory waste. So it is as
-good as using static arrays with some max PMD_ORDER for the
-percpu_swap_cluster.
-
-For the other lists you mentioned, it anyways adds a onetime negligible
-cost which isn't worth for making SWAP_NR_ORDERS runtime. 
-
-> patch 2 looks fine as is. SWAPFILE_CLUSTER backs much bigger per-cluster
-> arrays, so runtime sizing makes sense there, and it looks like no impact to
-> other arches or the current code.
+> I don't see anything doing the force_dma_unencrypted test along this
+> callchain..
+>
+> I guess it should be done one step up in dma_alloc_attrs() instead of
+> in dma_direct_alloc()?
 >
 
-yup. That make sense. 
+Yes, I'll move it there.
 
-
-So, unless someone else raises any objection - I will give this a try
-instead of patch-3 in this series and will get back with v2.
-
-
-diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
-index e67e64ac6e8c..57abd8b2c9a1 100644
---- a/arch/powerpc/include/asm/book3s/64/pgtable.h
-+++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
-@@ -204,6 +204,9 @@ extern unsigned long __pmd_frag_size_shift;
- #define MAX_PTRS_PER_PGD       (1 << (H_PGD_INDEX_SIZE > RADIX_PGD_INDEX_SIZE ? \
-                                       H_PGD_INDEX_SIZE : RADIX_PGD_INDEX_SIZE))
-
-+#define ARCH_MAX_PMD_ORDER ((H_PTE_INDEX_SIZE > RADIX_PTE_INDEX_SIZE) ? \
-+                               H_PTE_INDEX_SIZE : RADIX_PTE_INDEX_SIZE)
-+
- /* PMD_SHIFT determines what a second-level page table entry can map */
- #define PMD_SHIFT      (PAGE_SHIFT + PTE_INDEX_SIZE)
- #define PMD_SIZE       (1UL << PMD_SHIFT)
-diff --git a/include/linux/swap.h b/include/linux/swap.h
-index 46c25523d7b8..5f1451f8f266 100644
---- a/include/linux/swap.h
-+++ b/include/linux/swap.h
-@@ -224,10 +224,14 @@ enum {
- #define SWAP_ENTRY_INVALID     0
-
- #ifdef CONFIG_THP_SWAP
-+#ifdef ARCH_MAX_PMD_ORDER
-+#define SWAP_NR_ORDERS         (ARCH_MAX_PMD_ORDER + 1)
-+#else
- #define SWAP_NR_ORDERS         (PMD_ORDER + 1)
-+#endif /* ARCH_MAX_PMD_ORDER */
- #else
- #define SWAP_NR_ORDERS         1
--#endif
-+#endif /* CONFIG_THP_SWAP */
-
-
--ritesh
+-aneesh
 
