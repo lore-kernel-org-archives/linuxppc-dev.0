@@ -1,115 +1,68 @@
-Return-Path: <linuxppc-dev+bounces-22426-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22427-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0D62ACD8CB2
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jun 2026 16:42:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 74676CD8CB9
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jun 2026 17:59:26 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gbBPz3mWXz2yv2;
-	Thu, 11 Jun 2026 02:41:59 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::735"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781109719;
-	cv=none; b=Fvz2/ox1yxeuwjFIvb5TiOco0Y0Npj9QmspyTixETGahWdapllmsV1Myx+vi0+f8c12kAOpkXZzIQZH9c94jybik+zqQRCuQb8wnvoqck7+Y12kN8jBY/FpSmbT7pddnReAoctN3XikJYwc0EG6DfcBiFgiuBrGS+qw7/e5gsPxzm7pH81PrKujkrk+DbfSRO7t/9PU1DIp9yVHA499V6G66sGT3DX1y6diQKGW5JCh/ICYW9am6AjHa6K8yT9/+3zbNtr7H8tMB0I8iqOnKc/c7zCGXbY+B5lJD7KlvmYKQ+WP3bZzzAivoPTAyOHXSexpyLdeXzPuZERZOo6qyvw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gbD7J4lpcz2ysW;
+	Thu, 11 Jun 2026 03:59:24 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::54a"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781114364;
+	cv=none; b=hMU6FQL+0n3PmwH5raqNFDRbimymW0vaO/FXiXj78aaF6L5QsQOJMo1eVxb4FgvvWXHDAVETjmznwVJv87iPaliqeaNR6IMR0lxMDNVVuOwikaqd3yvB1qV2z1S4Unb+rl2Azi+uJmRm8tVsBFgZf2l3MuqbZjDkYGrc9sEhtywlOlR82+E2j4QPVVNQXjS1CUorKaxppUUiidpuQ/bi481MWiDXNNSfM0eUsvdYCkdogbMKowUGy5IBnKIbswtq3WF5hjBYubquorY2mLPZHFgRlHcTbykSmA6jn12z5M7+ppSOuDmH2zFZ5rJbDJON2D1lf1gS/xqzWX6cldhsRQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1781109719; c=relaxed/relaxed;
-	bh=DeYS8psnLhx+0nTbu07Q/N5cf93jt28LjVA9fcxz2cA=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Y7vrsN1+vPMNjEFwL7iRND5WfG959uql7cSVoGaNE5u/CeFVtGYuhVVehL6MDIN8g35CmEmf0BsMu7d7D7IUHqs/gZCPgZORWV3SXgFT4PoXr5maO1oUOLDYlHzP1ltquWrughE8HgpFRwmvV5AjBCfoOPaQdwblKmJlIHGa9GSE/ME6tvxS1zj/QoVsj2X0odV/p/wm1L1W8ekDvlbBNNK4nsIgS1JVgNfaxjAy1yUbpMpp4ohE99khnC1tJjchZhW2KCsrA69Pb5gxe3XRr7ivBYZHXq8hqg7tPLiIFAy81q8D7Y1+kzARxvqBdVXotQ+to8W8H3Of620gZc+dTw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ziepe.ca; dkim=pass (2048-bit key; secure) header.d=ziepe.ca header.i=@ziepe.ca header.a=rsa-sha256 header.s=google header.b=gUF8luCI; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::735; helo=mail-qk1-x735.google.com; envelope-from=jgg@ziepe.ca; receiver=lists.ozlabs.org) smtp.mailfrom=ziepe.ca
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ziepe.ca
+	t=1781114364; c=relaxed/relaxed;
+	bh=eUrC+jAn2iYzK3cyoAqLDZt/8SWBUONJdIH1jABrZ7Y=;
+	h=Date:In-Reply-To:Mime-Version:References:Message-ID:Subject:From:
+	 To:Cc:Content-Type; b=cMqtHQ0fFnZz6hPdwQ3zxVZJj/YfPuSMhbHnXA2ag3bUbrtBvJnM+5s636y83a9t481i9zx6dC+ySys17n92YHIbfeeHvq3RwaLqUbhc2vktFde5IIcsIPMtxu2Kze5Ho8ylN8nPP/MEytidIgQYEt6XWvkCJpDLtBZQBTAjVRr9KrOfNb9InRps2yFJQWYxyG9WDk0IRiDqyB2DktpotSzohVWyp5y5GivWM+JSNgbvNL21bR+7i6g5zY4JS7OmlCIjulYi7gP13p+50g0s1mZ/7qOhbT8hKg5pIjHImlgbOvaOMJeU1eeHlYI7dhyskfqMVuWZsEMq0DIHLVw/9Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=Kq/N3IUU; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::54a; helo=mail-pg1-x54a.google.com; envelope-from=396upagykdeiwierngksskpi.gsqpmry1ttg-hizpmwxw.s3pefw.svk@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=flex--seanjc.bounces.google.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=ziepe.ca header.i=@ziepe.ca header.a=rsa-sha256 header.s=google header.b=gUF8luCI;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=Kq/N3IUU;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=ziepe.ca (client-ip=2607:f8b0:4864:20::735; helo=mail-qk1-x735.google.com; envelope-from=jgg@ziepe.ca; receiver=lists.ozlabs.org)
-Received: from mail-qk1-x735.google.com (mail-qk1-x735.google.com [IPv6:2607:f8b0:4864:20::735])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--seanjc.bounces.google.com (client-ip=2607:f8b0:4864:20::54a; helo=mail-pg1-x54a.google.com; envelope-from=396upagykdeiwierngksskpi.gsqpmry1ttg-hizpmwxw.s3pefw.svk@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org)
+Received: from mail-pg1-x54a.google.com (mail-pg1-x54a.google.com [IPv6:2607:f8b0:4864:20::54a])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gbBPx5s9Sz2ysW
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jun 2026 02:41:57 +1000 (AEST)
-Received: by mail-qk1-x735.google.com with SMTP id af79cd13be357-91587626ae1so785793085a.3
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jun 2026 09:41:57 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gbD7G6wYtz2y2B
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jun 2026 03:59:22 +1000 (AEST)
+Received: by mail-pg1-x54a.google.com with SMTP id 41be03b00d2f7-c8611b27631so65977a12.0
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jun 2026 10:59:22 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ziepe.ca; s=google; t=1781109715; x=1781714515; darn=lists.ozlabs.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=DeYS8psnLhx+0nTbu07Q/N5cf93jt28LjVA9fcxz2cA=;
-        b=gUF8luCIttfc5v5mIhLJzwNYNxslKmqWw7GLmFKXgOz72u+0aIYKmB8ld9JR9ama9G
-         SSehF9wjPrf8Vt60rmsBkK0EJ1OEm6WWNFVzOtQjc9rc2cFO5bNr9S3RLXZVJ15J1lrw
-         CVH3sX0j0yDaW6j2fQtqNhr+v5M0r7m2WXSVTE97fj+vSEtsPYB5+rpIpCZMp/3CWW10
-         q0q34TYuwOspwjUn1cVCf5wBHe3dsPiWYh9w/tMyRkIWX8kqxD0++1SaUfV/LjiThPUv
-         njyOko7QC6wgIp5AdtJCPu1fZZXZrsLkAn+RTuB9otG76Zo8ZJjvjWfsO1usKjc9hsBc
-         +iJg==
+        d=google.com; s=20251104; t=1781114360; x=1781719160; darn=lists.ozlabs.org;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:from:to:cc:subject:date:message-id:reply-to;
+        bh=eUrC+jAn2iYzK3cyoAqLDZt/8SWBUONJdIH1jABrZ7Y=;
+        b=Kq/N3IUUnZr0CwkZumrL6+Mgdkct5KxUE9bNiuv1+SChu2f5PMbTcY32B+pP/qV6N2
+         VvP/sGAND7pK/zKwHHnXUMJg5pBcGS+8z1ziB5kvzzb6gH45PKa8wa1K5KJF26/+3I87
+         Lx/FBQhtGDl9Ru8WuRTGCisx1zU8GTZ7Lr1JXBqiMis1UDpYq3+5s188iL7Aw13nVfGN
+         aiQVneFC77KR0D2Ke2Onr1UtAQKGNnajS/x7E1UFBfEYBrz/XHpvAo5+mzCRMuO7l5NW
+         EwFOSxWJw2TxU6Ed6jtmO8ToMgHNqSpuZz88kCHGhID0Co1tj7HuGcKliK7Yi6wXs23b
+         bkPw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1781109715; x=1781714515;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=DeYS8psnLhx+0nTbu07Q/N5cf93jt28LjVA9fcxz2cA=;
-        b=MyLXQgYPAiSl/wJ0cvApLzumtLGNxV1bQOSYVioLue62s1wOm1l3tk2sp5GU1k09YK
-         yaV61dQDevoQwO2nrDFrY9m1CpWEJIN17/AzqM0aE70g02IWXKGGCTzsI9SLosiR82ts
-         4pXMif23c+sbSAES1awi9L2/y0fW5R2/Sr5OWX4YAIVzCOM1kOuueBhU9a6jVAtRmZmY
-         LwuN8g3Cg+3ynOPfaiM6lrJIP8s+OmdCUBkCcJUvSxBYX3YH0simMM7yFRdu89d+eql9
-         M2kxk3E6QGxnB0gOm3GWoqbuA5fPWZ0qrWiMKx4sRgvVmKH6PRWtswoSTKFtpZ49yJ9F
-         2pXA==
-X-Forwarded-Encrypted: i=1; AFNElJ9eaRXxSpqwuJE5h+1iNmsQ0HKEVk4xlNTEXoURETTzxLUmWoQ2Zz2KRBdpvUdJqFPlBQ5usJHMWLew5no=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YzjknVIwOgOzBtND7kf35AbhduKaFdNzIKe2fIrw+DcEeL4Gj/u
-	GYg7oul1Iol693qsyIWXJWlZIQnHj+fe0gZRtObos5AO35UXxTHhm+7XsUuWZkN4SAs=
-X-Gm-Gg: Acq92OEoc3Kl3TEEuOqu9JcVKauEGN9SC8ZHuYw3tiOsS8opvjv8BjCX4V9T3qnpj8f
-	OKVAUqfocOZwAmO++vQ0poLs/OYk8pefbQlHrgOYeJMtBYYPXe/t0gu0QCPRroFlI775S0vOv3I
-	C3GegDv6pmHTkhN7Izapzm0kIMaoZ38DkK3Ci56OPInmsOsB0pzPPb3CKN4yQHFVBkSzVWMxJia
-	U1bMEG0BcvSlSJCXyUN2RotA+tNhTeOZokC29OrP8/6T8rEJ1J1xnUPzgw1yPR60RD/NT00BFCb
-	ghSmstVeKkob84TxPhiwLBzdNTaiHs83SXiWD32Hm8w1mEiSBYlFuTBfsyAhS4vvKcIMKIlb+e5
-	wJCPsGBh+4UbUkMzfEqg7fgsc0PN2HAX8bZdRp40XL+urKWnXpg4WCiMNmAIqAIrQjUuG9pogOV
-	ROKOzWlTJPQIuvuTQwcZD55ZEbN6Mnm3Gq/6UgbH8plzA6Thk2hL0DNOk2s+K7eltiAuGp2gjWM
-	36cx+UndFw3qC4M
-X-Received: by 2002:a05:620a:a414:20b0:914:afc1:c66d with SMTP id af79cd13be357-915a9c75c96mr3039706285a.11.1781109715064;
-        Wed, 10 Jun 2026 09:41:55 -0700 (PDT)
-Received: from ziepe.ca (crbknf0213w-47-54-130-67.pppoe-dynamic.high-speed.nl.bellaliant.net. [47.54.130.67])
-        by smtp.gmail.com with ESMTPSA id af79cd13be357-9158a22dbbesm2438570085a.13.2026.06.10.09.41.54
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 10 Jun 2026 09:41:54 -0700 (PDT)
-Received: from jgg by wakko with local (Exim 4.97)
-	(envelope-from <jgg@ziepe.ca>)
-	id 1wXM01-000000048i4-3DtT;
-	Wed, 10 Jun 2026 13:41:53 -0300
-Date: Wed, 10 Jun 2026 13:41:53 -0300
-From: Jason Gunthorpe <jgg@ziepe.ca>
-To: "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>
-Cc: iommu@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
-	linux-kernel@vger.kernel.org, linux-coco@lists.linux.dev,
-	Robin Murphy <robin.murphy@arm.com>,
-	Marek Szyprowski <m.szyprowski@samsung.com>,
-	Will Deacon <will@kernel.org>, Marc Zyngier <maz@kernel.org>,
-	Steven Price <steven.price@arm.com>,
-	Suzuki K Poulose <Suzuki.Poulose@arm.com>,
-	Catalin Marinas <catalin.marinas@arm.com>,
-	Jiri Pirko <jiri@resnulli.us>, Mostafa Saleh <smostafa@google.com>,
-	Petr Tesarik <ptesarik@suse.com>,
-	Alexey Kardashevskiy <aik@amd.com>,
-	Dan Williams <dan.j.williams@intel.com>,
-	Xu Yilun <yilun.xu@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
-	linux-s390@vger.kernel.org,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	Alexander Gordeev <agordeev@linux.ibm.com>,
-	Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
-	Heiko Carstens <hca@linux.ibm.com>,
-	Vasily Gorbik <gor@linux.ibm.com>,
-	Christian Borntraeger <borntraeger@linux.ibm.com>,
-	Sven Schnelle <svens@linux.ibm.com>, x86@kernel.org,
-	Jiri Pirko <jiri@nvidia.com>, Michael Kelley <mhklinux@outlook.com>
-Subject: Re: [PATCH v6 04/20] dma-pool: track decrypted atomic pools and
- select them via attrs
-Message-ID: <20260610164153.GQ2764304@ziepe.ca>
-References: <20260604083959.1265923-1-aneesh.kumar@kernel.org>
- <20260604083959.1265923-5-aneesh.kumar@kernel.org>
- <20260609143242.GK2764304@ziepe.ca>
- <yq5afr2uzum9.fsf@kernel.org>
+        d=1e100.net; s=20251104; t=1781114360; x=1781719160;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=eUrC+jAn2iYzK3cyoAqLDZt/8SWBUONJdIH1jABrZ7Y=;
+        b=Nfqttkr3QgxusnRu3JR+Rz9Gl+cleeROWH3oLwlZF4ONAWOE7oRQJCh3nACvVpi2AA
+         G65h3hZE3ygTzn6P6011iIWpMlFefI6mqlURZOkaYXT8df9NGeyKVxHPMyhoxB1F6bQR
+         L+EMFyHPHh3WvnK3uhO7Us0XqSfHfep5t5VQAmKyLeIoBcjJL311Mx5OlDxa/MUHmtfu
+         3mNYaO94kf913N4tnejKp1YXARVM/WYeJzrpGPXG5oY9yLXmJA0OPAxfk5TSPf/uwM4c
+         Z1skpdIuCFoyAaeSDUjW3BqVHIFOIt/stdY6h9uQpf3LGvGXIz0/rUs5S1dOiG9HUUg7
+         AQ9g==
+X-Forwarded-Encrypted: i=1; AFNElJ/CIA3QdKbjXMw1J1LDdqTmMU6+SS3SMh5PXs6dJ+JptsHEBPKTpw897Fw1+nvrLf8KcmQccJpvvLMkgA4=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yyqb6kvx7h8QixXhaq+wCUoKWMvoCrzoDApvrwzRYL8/pj6hCWw
+	MSePQoe+S3u6+wSldqMCXcFUsqRRXlUPSKjYD/8zQJo/a6nB7oRAHc6z7/CXSQCrMWq/FfQ3bAc
+	DW+nBTg==
+X-Received: from pjut3.prod.google.com ([2002:a17:90a:d503:b0:36b:bc13:f5a6])
+ (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a17:90b:3f46:b0:35f:b9f1:fded
+ with SMTP id 98e67ed59e1d1-3713336f91fmr19807082a91.12.1781114359586; Wed, 10
+ Jun 2026 10:59:19 -0700 (PDT)
+Date: Wed, 10 Jun 2026 10:59:18 -0700
+In-Reply-To: <ed1d75f27a3b02897a8f54721d9f7f21bb163d9c.1781093720.git.ritesh.list@gmail.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -122,73 +75,32 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <yq5afr2uzum9.fsf@kernel.org>
+Mime-Version: 1.0
+References: <cover.1781093720.git.ritesh.list@gmail.com> <ed1d75f27a3b02897a8f54721d9f7f21bb163d9c.1781093720.git.ritesh.list@gmail.com>
+Message-ID: <aiml9iB_vUASRRQV@google.com>
+Subject: Re: [PATCH v3 RESEND 04/10] KVM: PPC: selftests: powerpc enable
+ kvm_create_max_vcpus test
+From: Sean Christopherson <seanjc@google.com>
+To: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
+Cc: kvm@vger.kernel.org, Paolo Bonzini <pbonzini@redhat.com>, linuxppc-dev@lists.ozlabs.org, 
+	linux-kernel@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>, 
+	Christophe Leroy <chleroy@kernel.org>, Anushree Mathur <anushree.mathur@linux.ibm.com>, 
+	Venkat Rao Bagalkote <venkat88@linux.ibm.com>, Harsh Prateek Bora <harshpb@linux.ibm.com>, 
+	Ackerley Tng <ackerleytng@google.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, 
+	Claudio Imbrenda <imbrenda@linux.ibm.com>, Nicholas Piggin <npiggin@gmail.com>
+Content-Type: text/plain; charset="us-ascii"
 
-On Wed, Jun 10, 2026 at 01:37:26PM +0530, Aneesh Kumar K.V wrote:
-> Jason Gunthorpe <jgg@ziepe.ca> writes:
+On Wed, Jun 10, 2026, Ritesh Harjani (IBM) wrote:
+> From: Nicholas Piggin <npiggin@gmail.com>
 > 
-> > On Thu, Jun 04, 2026 at 02:09:43PM +0530, Aneesh Kumar K.V (Arm) wrote:
-> >>  struct page *dma_alloc_from_pool(struct device *dev, size_t size,
-> >> -		void **cpu_addr, gfp_t gfp,
-> >> +		void **cpu_addr, gfp_t gfp, unsigned long attrs,
-> >>  		bool (*phys_addr_ok)(struct device *, phys_addr_t, size_t))
-> >>  {
-> >> -	struct gen_pool *pool = NULL;
-> >> +	struct dma_gen_pool *dma_pool = NULL;
-> >>  	struct page *page;
-> >>  	bool pool_found = false;
-> >>  
-> >> -	while ((pool = dma_guess_pool(pool, gfp))) {
-> >> +	while ((dma_pool = dma_guess_pool(dma_pool, gfp))) {
-> >> +
-> >> +		if (dma_pool->unencrypted != !!(attrs & DMA_ATTR_CC_SHARED))
-> >> +			continue;
-> >
-> > I don't think you should be overloading DMA_ATTR_CC_SHARED like this.
-> >
-> > 	/*
-> > 	 * DMA_ATTR_CC_SHARED is not a caller-visible dma_alloc_*()
-> > 	 * attribute. The direct allocator uses it internally after it has
-> > 	 * decided that the backing pages must be shared/decrypted, so the
-> > 	 * rest of the allocation path can consistently select DMA addresses,
-> > 	 * choose compatible pools and restore encryption on free.
-> > 	 */
-> > 	if (attrs & DMA_ATTR_CC_SHARED)
-> > 		return NULL;
-> >
-> > 	if (force_dma_unencrypted(dev)) {
-> > 		attrs |= DMA_ATTR_CC_SHARED;
-> > 		mark_mem_decrypt = true;
-> > 	}
-> >
-> > It is fine to have a bit inside the attrs that is only used by the
-> > internal logic, but it needs to have a clearer name
-> > __DMA_ATTR_REQUIRE_CC_SHARED perhaps.
-> >
+> powerpc's maximum permitted vCPU ID depends on the VM's SMT mode, and
+> the maximum reported by KVM_CAP_MAX_VCPU_ID exceeds a simple non-SMT
+> VM's limit.
 > 
-> Are you suggesting adding another attribute in addition to
-> DMA_ATTR_CC_SHARED?
-> 
-> Is the idea that __DMA_ATTR_REQUIRE_CC_SHARED would be used in the
-> allocation path to request a CC_SHARED allocation, while
-> DMA_ATTR_CC_SHARED would be used in the mapping path to describe the
-> attribute of the address?
+> The powerpc KVM selftest port uses non-SMT VMs, so add a workaround
+> to the kvm_create_max_vcpus test case to limit vCPU IDs to
+> KVM_CAP_MAX_VCPUS on powerpc.
 
-Yeah, it is a thought at least
-
-Maybe a comment is good enough.
-
-I just find it hard to follow when we have this dual usage. Like the
-code above for dma_pool->unencrypted is completely wrong if it is an
-"attribute of an address". Easy to cut & paste that into the wrong
-context.
-
-Especially if you move things up higher.. having the alloc set both
-CC_SHARED and REQUIRE_CC_SHARED or maybe ALLOC_CC_SHARED would make it
-clearer that the alloc code lives under that callchain
-
-Jason
+How is this not a KVM bug?  Literally the reason this test exists is to validate
+KVM's advertised KVM_CAP_MAX_VCPU_ID and KVM_CAP_MAX_VCPUS.
 
