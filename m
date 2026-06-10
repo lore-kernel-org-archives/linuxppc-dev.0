@@ -1,96 +1,68 @@
-Return-Path: <linuxppc-dev+bounces-22421-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22422-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 876F6CD8CB2
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jun 2026 15:53:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 40E7BCD8CB2
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jun 2026 16:18:36 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gb9L61dttz2yrX;
-	Thu, 11 Jun 2026 01:53:34 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781106814;
-	cv=none; b=VdTiCo+nMqpGQKJHfxrfoKWIO/4wYBqXZ8G/mZAOq+fdvLgt5d+aTyb7RsVBhU1BObPjrS4uc6CY1f47o2xbNtTmbDA6e9sLwZWh1T7zJY2tA2tITnqn06pvizsekS2vtswmNDJbVrMnJbj12nqMGYd84WOvkm7HuqqvGssZ0DZxOVygtP2jvnk3dK6/RnH7GrkznmSTkyEOHwY7woRU9mWzeDivFzX1PR0LrWtp9LP3sG8ZuLxUak6I7IUQMKrqF9edOnqsG31N07su92W8XDX3mLqHqbP3qLPs7lExeAUkKyyT7SBvwIMz+TnAw6j5K83IWrH7BFR9KuIqlG9vBA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gb9ty6Sklz30FP;
+	Thu, 11 Jun 2026 02:18:34 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::649"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781108314;
+	cv=none; b=J5IG3dO32a9J2ZLIpvPTc20kdtp8CttL3NBWRR7Ptd31Q7nP3pv7bMpYlLGtJMvr485swacwIyF8xW8hWs17MklsqQDtoSGJy4wUB/zFljuutDHyjK8Xbe1Dnmn6pvWpFxxk1cRZ1RJTWCRfMCQynEkPcAZvltYDmZPOVPhw+fs1MzgN6GHhd1+0KaqZEQxznFXz/xEXQof90AuwzmlOBmvB5bptGGe38hw8ITl9va52exJ7QP2w4bmDwu9iGWDQ+hJ+se0aSamOSCrcE8TwY712NGPyBJI1tWAPZGYatUV/6Lacz02+I/963SbHJIENtOvw8p4V1GEFDjDF+6CAaQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1781106814; c=relaxed/relaxed;
-	bh=g2E5FiZ63LRQIjfKGaaxoNu3uHCI5b0O4yQZ5HCqp38=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=eryQuBnjPWYpMZEx1M7t+FAmUOAKj5i3BQWJ09xZifXvQkwsLyM6GMoUBMpOz/7VyiqHAr597ycQj8prQQc32wv+sE7GjfRA21vp+edUT9+8+fT5gpSiDDwb/1y9IhzC18GI0WByYsiO6TIeVWIIu14G4Q7D8/9T+oW196ZSRlgIH6qwrZ28rcuxRsxEhj/6JTQfXDyThORbcwkwwTzrM4btRWok4aSHD+AJlAg/rGEpC01U9FX+zhmr1atHvcRoQsEmOmXsfdM7P0my2YngvkbnAiwgFwfXDapQlmku4e7IF2t5YqAABq2lYIFt7z3aRBbqu16PeNpadx52+Yg6eg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=bF+TY6su; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1781108314; c=relaxed/relaxed;
+	bh=tYkb0fEp3Wc9CbFkLlm6u5HgKSmOOMvt3al7TMw8h4Q=;
+	h=Date:In-Reply-To:Mime-Version:References:Message-ID:Subject:From:
+	 To:Cc:Content-Type; b=hY5tJEvP4Vx4VKBo9WVZATP1epCBRJYXynMYthwkBVCCHD8chwCuuom+w6KMO8poF6YW74I14dnfDLSEKtZ3QBAmRu+AXG6aGcJR0UZCIN44fksEY69ODraGWPXk+ToNlmj+YV+4yUxRpgODYtFlXAfqLivi0iB6T6zEIgwC6L8f+QrtoPqqU4d+Wi0GNdZTkInN3sY/oaBmk2acZ/Qv3WaXi44Gt3mPhHV2OwtUCPxLAIs6GbEe+SbrGw6mny0hFM0GWEaF06BXlBCOLzgFxRjwOoBhaYbIibswpDwpPUFh9W8juD1Iu5sCvTCrI6VhBT8fDXU7aEYoyggOFoIBHA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=fcF4KarN; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::649; helo=mail-pl1-x649.google.com; envelope-from=3vo4pagykdhehtpcyrvddvat.rdbaxcjmeer-stkaxhih.doapqh.dgv@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=flex--seanjc.bounces.google.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=bF+TY6su;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=fcF4KarN;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--seanjc.bounces.google.com (client-ip=2607:f8b0:4864:20::649; helo=mail-pl1-x649.google.com; envelope-from=3vo4pagykdhehtpcyrvddvat.rdbaxcjmeer-stkaxhih.doapqh.dgv@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org)
+Received: from mail-pl1-x649.google.com (mail-pl1-x649.google.com [IPv6:2607:f8b0:4864:20::649])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gb9L53nWLz2ykX
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jun 2026 01:53:32 +1000 (AEST)
-Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 65A7m09X3513101;
-	Wed, 10 Jun 2026 15:53:23 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-type:date:from:in-reply-to:message-id:mime-version
-	:references:subject:to; s=pp1; bh=g2E5FiZ63LRQIjfKGaaxoNu3uHCI5b
-	0O4yQZ5HCqp38=; b=bF+TY6suCU7NSUN42/xQ8hAiMiLkJ/omkP9OHFZtm6ufnm
-	oX8ejIdjOM7Vi7w+4ADrs71k99YhZLCe4I9UfZQh9GKAdLhlZl9zr/fL/YhPfD6J
-	DfcseSLIJXvANMmdwu0L4D2hSVAONj8sdlFJBfIpu1KRBodBNEHzyLVyz2wUgJjX
-	sEw9KnhsdIMQ8zBFZOcv7cXng+y0FQqjGO3cqS6ul59v4e80+RoQkDeoSh3xM8tS
-	JuYGDkbPgRSmU+q5nWQgBESFJZWvcAAUGqiuu63tUAxIaSLzbTzVI2KXZFJQKPzE
-	mvJvks8NCtcyUsc2dW9XPgPJvqxLBar7B3R41Y7w==
-Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4emb241xt5-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 10 Jun 2026 15:53:22 +0000 (GMT)
-Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma13.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 65AFntBE004934;
-	Wed, 10 Jun 2026 15:53:21 GMT
-Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
-	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4en03g73b5-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 10 Jun 2026 15:53:21 +0000 (GMT)
-Received: from smtpav06.fra02v.mail.ibm.com (smtpav06.fra02v.mail.ibm.com [10.20.54.105])
-	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 65AFrIe044368306
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 10 Jun 2026 15:53:18 GMT
-Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 4FF8920049;
-	Wed, 10 Jun 2026 15:53:18 +0000 (GMT)
-Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 9C79E20040;
-	Wed, 10 Jun 2026 15:53:15 +0000 (GMT)
-Received: from fedora (unknown [9.5.7.39])
-	by smtpav06.fra02v.mail.ibm.com (Postfix) with ESMTPS;
-	Wed, 10 Jun 2026 15:53:15 +0000 (GMT)
-Date: Wed, 10 Jun 2026 21:23:17 +0530
-From: Amit Machhiwal <amachhiw@linux.ibm.com>
-To: Vaibhav Jain <vaibhav@linux.ibm.com>
-Cc: Amit Machhiwal <amachhiw@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
-        Madhavan Srinivasan <maddy@linux.ibm.com>,
-        Anushree Mathur <anushree.mathur@linux.ibm.com>,
-        Paolo Bonzini <pbonzini@redhat.com>,
-        Nicholas Piggin <npiggin@gmail.com>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-        Jonathan Corbet <corbet@lwn.net>,
-        Shuah Khan <skhan@linuxfoundation.org>, kvm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, lkp@intel.com
-Subject: Re: [PATCH v3 4/5] KVM: PPC: Book3S HV: Add support for compat CPU
- capabilities for KVM on PowerNV
-Message-ID: <20260610212254.3cec19b0-ef-amachhiw@linux.ibm.com>
-Mail-Followup-To: Vaibhav Jain <vaibhav@linux.ibm.com>, 
-	linuxppc-dev@lists.ozlabs.org, Madhavan Srinivasan <maddy@linux.ibm.com>, 
-	Anushree Mathur <anushree.mathur@linux.ibm.com>, Paolo Bonzini <pbonzini@redhat.com>, 
-	Nicholas Piggin <npiggin@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>, 
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, Jonathan Corbet <corbet@lwn.net>, 
-	Shuah Khan <skhan@linuxfoundation.org>, kvm@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	linux-doc@vger.kernel.org, lkp@intel.com
-References: <20260522152744.55251-1-amachhiw@linux.ibm.com>
- <20260522152744.55251-5-amachhiw@linux.ibm.com>
- <87jysgz292.fsf@vajain21.in.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gb9tx4vL7z2yv0
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jun 2026 02:18:33 +1000 (AEST)
+Received: by mail-pl1-x649.google.com with SMTP id d9443c01a7336-2c0532a6588so64642165ad.0
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jun 2026 09:18:32 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20251104; t=1781108311; x=1781713111; darn=lists.ozlabs.org;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:from:to:cc:subject:date:message-id:reply-to;
+        bh=tYkb0fEp3Wc9CbFkLlm6u5HgKSmOOMvt3al7TMw8h4Q=;
+        b=fcF4KarNVmj5sw+tjvZcAugECUBAuS8X2Sgd1NxnNrBMaPJF95Xw3AkuHZvOprT50a
+         zGZQZxD7zyb8iW3AIsSKA4hNfHqbfWdhZ4omMvFkc4aCJX1j3Iy5dgawVHt11UOPhtDX
+         ou5WiJKFDrNOkyyw0Ue35lCizljNK3D1mU2JV24ucvNZ/Os5+o/aT3DpQ3A8L+HEvk2n
+         gALP2zvDvn2nz1iUzb7k19QVKJZ5kQF2R2jORWat1Z5qzFT4tN8viTOUsSHTmZ71/fcQ
+         J53bZQak0863RqewZuWwPweZD/djQngwmAn7bkFFVxcyN84Nqeg2qCYntySwDgYeGtzv
+         gNrA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1781108311; x=1781713111;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=tYkb0fEp3Wc9CbFkLlm6u5HgKSmOOMvt3al7TMw8h4Q=;
+        b=StSperq6zlwsgDsnaNxrhepw9QOzPW4deCrAxrApTP9BURyLJ0U7kwAEJhc5DGJMJc
+         jCkX3ZrNWr/WuVns+s+QOt8ahGNITlg/IzB3OV0lW8vnolpe7tWsSsip8Xvx6Ekx0Dhc
+         iCrSVfpLpMHnl1iZ0+ppP0mz3F9Xb+dD3sz+U1+t6Fdy3A7zuOpiUGHbZDy0oC6IayFd
+         SvylKTNDV1cGfX3M6tBqpGjx555gnx/A9patyz/H4XNsmfb9wikVc7iUfjbp+eor8N8p
+         KsClss52Tcjm/fvnXTO20RNGsHGTCYLmwEEfNQYxfZ3Rmtat309EBauqOjvxqpCbqN0L
+         duKA==
+X-Forwarded-Encrypted: i=1; AFNElJ9tmWhXJ2VfNHNfshorF2Wh4ps/IA+lpkWCvJ6FLeNuXOdmLG6b3d0he3Gt4s/wyEh5fOLn7c9+f9iS6i4=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YyYq0HDui+OxO+Awujgy0h+6xh5u+e22H8oYqddznABznlkYojG
+	eNG5dgmlJ15LRk+KnFW/I7XYVZnDyMt2qbNipGuVQWxxxQaS6+U2hPrfap2BaK7BjLjET1/z77s
+	l444YTA==
+X-Received: from plcx2.prod.google.com ([2002:a17:903:c2:b0:2c1:13e7:a57d])
+ (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a17:903:1aef:b0:2c2:7e17:39f6
+ with SMTP id d9443c01a7336-2c27e173ecfmr158975595ad.36.1781108310808; Wed, 10
+ Jun 2026 09:18:30 -0700 (PDT)
+Date: Wed, 10 Jun 2026 09:18:30 -0700
+In-Reply-To: <df86b5ccdbdafc3509d9538bd5e6796737bab2db.1781093720.git.ritesh.list@gmail.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -103,148 +75,221 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <87jysgz292.fsf@vajain21.in.ibm.com>
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Authority-Analysis: v=2.4 cv=b4uCJNGx c=1 sm=1 tr=0 ts=6a298873 cx=c_pps
- a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
- a=kj9zAlcOel0A:10 a=FelO9ux0wxsA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=iQ6ETzBq9ecOQQE5vZCe:22 a=VnNF1IyMAAAA:8
- a=C8Vz2Ujs2r1iiY_tozkA:9 a=CjuIK1q_8ugA:10
-X-Proofpoint-ORIG-GUID: QS9JKwRuI7EoydCswWm4uUnL-s98AkHl
-X-Proofpoint-GUID: 3aN2sU-fgy2MYeKTz0nVVxtBonT1tyqA
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjEwMDE0OCBTYWx0ZWRfX1EnIf+YbxpRy
- 5srb6zES9vsIinzvkbAQkr395H2uGvsOyOp8qiVIgTFdPlCiMkyHXSyJ+Eqgtb0XhTyD8j5PtzR
- v98Zcfe72P8lCipU5X0KKLmMWKNmW2wUoUXmDVOJe8eIyha+SglKBFqSW+WSQEV/sEhl9o9kIxY
- ezjZUxxJ5bqT+zOd8W+J0YvcWhjygs5yN5lcPfCFbtEdtBjWE1d1re/XzzsvPmvAQd8ZyofOsNm
- 9uTlFEWoal7hLg36rY9pJkjIFIQ6+MKrT7xxw2wn3Q79v9+9TUa07640Rt/6J/ERJhjoiiPyUmD
- vuwCIZ/aCOWo3jZV3zNhrf6eli+Au9Bovsm7MFIlTNSd9/JkDpOi5xlTgUkOmWx90kygmxwyy6K
- SLnwb9VKDgy0bPTGMRKYrvG+ZUEvEqbuxcUQZjDs8xMG22BN0ho20SHOnNYpByh6z1jPDSy64k+
- tZxQSK7Sig5c87Dp0jg==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
- definitions=2026-06-10_03,2026-06-09_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1015 spamscore=0 bulkscore=0 phishscore=0 priorityscore=1501
- lowpriorityscore=0 adultscore=0 malwarescore=0 impostorscore=0 suspectscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2605210000 definitions=main-2606100148
+Mime-Version: 1.0
+References: <cover.1781093720.git.ritesh.list@gmail.com> <df86b5ccdbdafc3509d9538bd5e6796737bab2db.1781093720.git.ritesh.list@gmail.com>
+Message-ID: <aimOVomL2RzYt2J4@google.com>
+Subject: Re: [PATCH v3 RESEND 02/10] KVM: selftests: Add aligned guest
+ physical page allocator
+From: Sean Christopherson <seanjc@google.com>
+To: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
+Cc: kvm@vger.kernel.org, Paolo Bonzini <pbonzini@redhat.com>, linuxppc-dev@lists.ozlabs.org, 
+	linux-kernel@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>, 
+	Christophe Leroy <chleroy@kernel.org>, Anushree Mathur <anushree.mathur@linux.ibm.com>, 
+	Venkat Rao Bagalkote <venkat88@linux.ibm.com>, Harsh Prateek Bora <harshpb@linux.ibm.com>, 
+	Ackerley Tng <ackerleytng@google.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, 
+	Claudio Imbrenda <imbrenda@linux.ibm.com>, Nicholas Piggin <npiggin@gmail.com>
+Content-Type: text/plain; charset="us-ascii"
 
-On 2026/06/03 09:47 AM, Vaibhav Jain wrote:
-> Hi Amit,
+On Wed, Jun 10, 2026, Ritesh Harjani (IBM) wrote:
+> From: Nicholas Piggin <npiggin@gmail.com>
 > 
-> Thanks for the patch. My review comments inline:
+> powerpc will require this to allocate MMU tables in guest memory that
+> are larger than guest base page size.
 > 
-> Amit Machhiwal <amachhiw@linux.ibm.com> writes:
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> [Rebased to latest mainline tree]
+> Signed-off-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+> ---
+>  .../testing/selftests/kvm/include/kvm_util.h  | 20 +++++++++--
+>  tools/testing/selftests/kvm/lib/kvm_util.c    | 33 +++++++++----------
+>  2 files changed, 33 insertions(+), 20 deletions(-)
 > 
-> > Currently, when booting a compatibility-mode KVM guest (L1) on a PowerNV
-> > hypervisor (L0), the guest runs with the expected processor
-> > compatibility level. However, when booting a nested KVM guest (L2)
-> > inside the L1, QEMU derives the CPU model from the raw host PVR and
-> > attempts to run the nested guest at that level, instead of honoring the
-> > compatibility mode of the L1.
-> >
-> > Extend host CPU compatibility capability reporting to support nested
-> > virtualization on PowerNV systems (PAPR nested API v1).
-> >
-> > For nested API v2 (PowerVM), compatibility capabilities are obtained
-> > from the hypervisor via the H_GUEST_GET_CAPABILITIES hcall. This
-> > information is not available on PowerNV systems.
-> >
-> > For nested API v1, derive the compatibility capabilities from the L1
-> > guest by reading the "cpu-version" property from the device tree, which
-> > reflects the effective (logical) processor compatibility level. Map this
-> > value to the corresponding compatibility capability bitmap.
-> >
-> > Introduce a helper to translate CPU version values into compatibility
-> > capability bits and integrate it into kvmppc_get_compat_cpu_caps().
-> >
-> > This allows userspace to query host CPU compatibility modes on both
-> > PowerVM and PowerNV platforms via the KVM_PPC_GET_COMPAT_CAPS ioctl.
-> >
-> > Suggested-by: Vaibhav Jain <vaibhav@linux.ibm.com>
-> > Tested-by: Anushree Mathur <anushree.mathur@linux.ibm.com>
-> > Signed-off-by: Amit Machhiwal <amachhiw@linux.ibm.com>
-> > ---
-> >  arch/powerpc/kvm/book3s_hv.c | 37 +++++++++++++++++++++++++++++++++++-
-> >  1 file changed, 36 insertions(+), 1 deletion(-)
-> >
-> > diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-> > index 38de7040e2b7..18774c49af85 100644
-> > --- a/arch/powerpc/kvm/book3s_hv.c
-> > +++ b/arch/powerpc/kvm/book3s_hv.c
-> > @@ -6522,15 +6522,50 @@ static bool kvmppc_hash_v3_possible(void)
-> >  	return true;
-> >  }
-> >  
-> > +static int kvmppc_map_compat_capabilities(const __be32 cpu_version,
-> > +				      unsigned long *capabilities)
-> > +{
-> > +	switch (cpu_version) {
-> > +	case PVR_ARCH_31_P11:
-> > +		*capabilities |= H_GUEST_CAP_POWER11;
-> > +		break;
-> > +	case PVR_ARCH_31:
-> > +		*capabilities |= H_GUEST_CAP_POWER10;
-> > +		break;
-> > +	case PVR_ARCH_300:
-> > +		*capabilities |= H_GUEST_CAP_POWER9;
-> > +		break;
-> > +	default:
-> > +		return -EINVAL;
-> > +	}
-> > +
-> > +	return 0;
-> > +}
-> >  
-> >  static int kvmppc_get_compat_cpu_caps(struct kvm_ppc_compat_caps *host_caps)
-> >  {
-> > +	struct device_node *np;
-> >  	unsigned long capabilities = 0;
-> > +	const __be32 *prop = NULL;
-> >  	long rc = -EINVAL;
-> > +	u32 cpu_version;
-> >  
-> >  	if (kvmhv_on_pseries()) {
-> > -		if (kvmhv_is_nestedv2())
-> > +		if (kvmhv_is_nestedv2()) {
-> >  			rc = plpar_guest_get_capabilities(0,
-> >  	&capabilities);
-> Need to mask capabilities as mentioned in the review comments for
-> previous patch. I would suggest creating a helper that performs the
-> hcall and applies the mask which can then be used at
-> plpar_guest_get_capabilities() call sites.
+> diff --git a/tools/testing/selftests/kvm/include/kvm_util.h b/tools/testing/selftests/kvm/include/kvm_util.h
+> index 3666a8530f31..c515c918c2c9 100644
+> --- a/tools/testing/selftests/kvm/include/kvm_util.h
+> +++ b/tools/testing/selftests/kvm/include/kvm_util.h
+> @@ -991,8 +991,8 @@ void kvm_gsi_routing_write(struct kvm_vm *vm, struct kvm_irq_routing *routing);
+>  const char *exit_reason_str(unsigned int exit_reason);
+>  
+>  gpa_t vm_phy_page_alloc(struct kvm_vm *vm, gpa_t min_gpa, u32 memslot);
+> -gpa_t __vm_phy_pages_alloc(struct kvm_vm *vm, size_t num, gpa_t min_gpa,
+> -			   u32 memslot, bool protected);
+> +gpa_t __vm_phy_pages_alloc(struct kvm_vm *vm, size_t num, size_t align,
+> +			   gpa_t min_gpa, u32 memslot, bool protected);
+>  gpa_t vm_alloc_page_table(struct kvm_vm *vm);
+>  
+>  static inline gpa_t vm_phy_pages_alloc(struct kvm_vm *vm, size_t num,
+> @@ -1003,10 +1003,24 @@ static inline gpa_t vm_phy_pages_alloc(struct kvm_vm *vm, size_t num,
+>  	 * protected memory, as the majority of memory for such VMs is
+>  	 * protected, i.e. using shared memory is effectively opt-in.
+>  	 */
+> -	return __vm_phy_pages_alloc(vm, num, min_gpa, memslot,
+> +	return __vm_phy_pages_alloc(vm, num, 1, min_gpa, memslot,
+>  				    vm_arch_has_protected_memory(vm));
+>  }
+>  
+> +static inline gpa_t vm_phy_pages_alloc_align(struct kvm_vm *vm, size_t num,
+> +					     size_t align, gpa_t min_gpa,
+> +					     u32 memslot)
 
-Sure, will do.
+Given that the PPC usage is all for naturally aligned allocations, I think it
+makes sense for that to be the API, i.e. have "bool naturally_aligned" instead
+of an arbitrary alignment.
 
-Thanks,
-Amit
+> +{
+> +	/*
+> +	 * By default, allocate memory as protected for VMs that support
+> +	 * protected memory, as the majority of memory for such VMs is
+> +	 * protected, i.e. using shared memory is effectively opt-in.
+> +	 */
 
-> 
-> > +		} else {
-> > +			for_each_node_by_type(np, "cpu") {
-> > +				prop = of_get_property(np, "cpu-version", NULL);
-> > +				if (prop) {
-> > +					cpu_version = be32_to_cpup(prop);
-> > +					break;
-> > +				}
-> > +			}
-> > +			if (!prop)
-> > +				return -EINVAL;
-> > +			rc = kvmppc_map_compat_capabilities(cpu_version,
-> > +								&capabilities);
-> > +		}
-> >  		host_caps->compat_capabilities = capabilities;
-> >  	}
-> >  
-> > -- 
-> > 2.50.1 (Apple Git-155)
-> >
-> 
+Duplicating this big comment is very ugly.  In general, these APIs could use
+some love.  E.g. taking in @memslot is essentially a historical wart that isn't
+necessary except for literally just memslot_perf_test.c, which allocates memory
+in a huge number of memslots.
+
+If we rework the APIs to take the memory region type instead of the memslot, then
+we can kill many birds with one stone.  It takes quite a bit of cleanup to throw
+that one stone, but I think the end result can be quite nice.
+
+Compile tested only at this point, but I now have a series of ~17 patches to yield:
+
+  __weak bool kvm_arch_needs_naturally_aligned_page_tables(void)
+  {
+	return false;
+  }
+
+  gpa_t __vm_phy_pages_alloc(struct kvm_vm *vm, size_t nr_pages,
+			   enum kvm_mem_region_type type, bool protected)
+  {
+	struct userspace_mem_region *region = vm_get_mem_region(vm, type);
+	bool naturally_aligned = false;
+	gpa_t min_gpa;
+
+	TEST_ASSERT(region, "No region for type '%u', memslot '%u'",
+		    type, vm->memslots[type]);
+
+	switch (type) {
+	case MEM_REGION_CODE:
+	case MEM_REGION_DATA:
+	case MEM_REGION_TEST_DATA:
+		/*
+		 * If the region is backed by the default memslot (id=0), use
+		 * selftests' hardcoded minimum PFN, otherwise use the base of
+		 * the custom memory slot that backs the region.
+		 */
+		if (!vm->memslots[type])
+			min_gpa = KVM_UTIL_MIN_PFN * vm->page_size;
+		else
+			min_gpa = region->region.guest_phys_addr;
+		break;
+	case MEM_REGION_PT:
+		min_gpa = KVM_GUEST_PAGE_TABLE_MIN_PADDR;
+		naturally_aligned = kvm_arch_needs_naturally_aligned_page_tables();
+		break;
+	case MEM_REGION_TEST_EXTRA:
+		min_gpa = region->region.guest_phys_addr;
+		break;
+	default:
+		TEST_FAIL("Invalid memory region type '%u'", type);
+		break;
+	}
+
+	return ____vm_phy_pages_alloc(vm, nr_pages, min_gpa, vm->memslots[type],
+				      protected, naturally_aligned);
+  }
+
+with convenience wrappers:
+
+  static inline gpa_t vm_phy_pages_alloc(struct kvm_vm *vm, size_t nr_pages,
+				       enum kvm_mem_region_type type)
+  {
+	/*
+	 * By default, allocate memory as protected for VMs that support
+	 * protected memory, as the majority of memory for such VMs is
+	 * protected, i.e. using shared memory is effectively opt-in.
+	 */
+	return __vm_phy_pages_alloc(vm, nr_pages, type,
+				    vm_arch_has_protected_memory(vm));
+  }
+
+  static inline gpa_t vm_phy_page_alloc(struct kvm_vm *vm,
+				      enum kvm_mem_region_type type)
+  {
+	return vm_phy_pages_alloc(vm, 1, type);
+  }
+
+  static inline gpa_t vm_alloc_page_table_pages(struct kvm_vm *vm, size_t nr_pages)
+  {
+	return vm_phy_page_alloc(vm, MEM_REGION_PT);
+  }
+
+  static inline gpa_t vm_alloc_page_table(struct kvm_vm *vm)
+  {
+	return vm_alloc_page_table_pages(vm, 1);
+  }
+
+That way we don't need to add yet another rarely used param to the APIs, and
+PPC just needs to define kvm_arch_needs_naturally_aligned_page_tables().  The
+bonus is that @min_gpa goes away too.
+
+It'll probably take me a few days/weeks, but I'll try get a series posted before
+the 7.2 merge window closes, so that you can build on top to get the PPC selftests
+support landed in 7.3.
+
+> @@ -2039,23 +2039,22 @@ gpa_t __vm_phy_pages_alloc(struct kvm_vm *vm, size_t num,
+>  	TEST_ASSERT(!protected || region->protected_phy_pages,
+>  		    "Region doesn't support protected memory");
+>  
+> -	base = pg = min_gpa >> vm->page_shift;
+> -	do {
+> -		for (; pg < base + num; ++pg) {
+> -			if (!sparsebit_is_set(region->unused_phy_pages, pg)) {
+> -				base = pg = sparsebit_next_set(region->unused_phy_pages, pg);
+> -				break;
+> +	base = min_gpa >> vm->page_shift;
+> +again:
+> +	base = (base + align - 1) & ~(align - 1);
+> +	for (pg = base; pg < base + num; ++pg) {
+> +		if (!sparsebit_is_set(region->unused_phy_pages, pg)) {
+> +			base = sparsebit_next_set(region->unused_phy_pages, pg);
+> +			if (!base) {
+> +				fprintf(stderr, "No guest physical page available, "
+> +					"min_gpa: 0x%lx page_size: 0x%x memslot: %u\n",
+> +					min_gpa, vm->page_size, memslot);
+> +				fputs("---- vm dump ----\n", stderr);
+> +				vm_dump(stderr, vm, 2);
+> +				abort();
+>  			}
+> +			goto again;
+>  		}
+> -	} while (pg && pg != base + num);
+> -
+> -	if (pg == 0) {
+> -		fprintf(stderr, "No guest physical page available, "
+> -			"min_gpa: 0x%lx page_size: 0x%x memslot: %u\n",
+> -			min_gpa, vm->page_size, memslot);
+> -		fputs("---- vm dump ----\n", stderr);
+> -		vm_dump(stderr, vm, 2);
+> -		abort();
+>  	}
+
+This is unnecessary churn.  I'm not saying the current code is pretty or anything,
+but unless I'm missing something, this can simply be:
+
+@@ -2025,7 +2027,7 @@ gpa_t __vm_phy_pages_alloc(struct kvm_vm *vm, size_t nr_pages, gpa_t min_gpa,
+        TEST_ASSERT(!protected || region->protected_phy_pages,
+                    "Region doesn't support protected memory");
+ 
+-       base = pg = min_gpa >> vm->page_shift;
++       base = pg = ALIGN(min_gpa >> vm->page_shift, alignment);
+        do {
+                for (; pg < base + nr_pages; ++pg) {
+                        if (!sparsebit_is_set(region->unused_phy_pages, pg)) {
+
+>  
+>  	for (pg = base; pg < base + num; ++pg) {
 > -- 
-> Cheers
-> ~ Vaibhav
+> 2.50.1 (Apple Git-155)
+> 
 
