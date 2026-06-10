@@ -1,83 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-22376-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22377-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 001EBCD8CA8
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jun 2026 02:59:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 76493CD8CA8
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jun 2026 03:27:56 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gZr8f2m7Vz2xjN;
-	Wed, 10 Jun 2026 12:59:14 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c207::3" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781060354;
-	cv=pass; b=B5JNmBImgT51slVAfXNxfVer8aC0ZJRtIFi6McSa8eLU2lNYcgcyCqPC8SlLI3jQWXS2PTos4/k3HDO55sDW6P2/4LjTY05ucgr9Kdu97Hokz4Jk2UMlRX6KEI9HaX/e7LeuKuWZx1621Btqtxy4O8faxRQge/9wfVoeVNnQJERe3Yu8w+6RMKREI9f0itYXCcXNCxl1FBbdFAXkeDGCpseVV/2NutqmMV33SduEtegbcepVe17yhzsCewlUTGFSDtJIpRqc8TwDTJEoepZzKreJnSz08JzsxzYGXI8bT2ydjrfRS/8RQMEXx0gZ3J8jaExcOycHdtw1pfAwsLxk7Q==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1781060354; c=relaxed/relaxed;
-	bh=D2Xna/3EzXRvr46eLiAm0p3QN0qbDLihzDgmMdSMZ/o=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:Content-Type:
-	 Content-Disposition:In-Reply-To:MIME-Version; b=CyRTFoKmlqh5Z1QGiK9pksS898MXfo5a4B+BFfFmWhuDuKIOtIbRbeyhcQwWPedz5pMq6mdYWr/r3um8hr3IgXxjT7+rN06u4N5BEEA5DRuZW35W1ohJWjAczBf5ymgaIoLOs22rKaG+u1HlmGr3Ipr/KIEF0XiCtR6yEvcqD90qOp7ADfbzFbt/nKhqFtnhABcA3vusOSOhoW8ClXvBp62TRt2CpcrXgei8uXtjkqwkTe1Wgc44plubXM/0bWi8Io0z0+MnFM2PNM38KNMW7saKr+P9EGPi0lFKAwXtb/FzXOzsHwXZapeqE894PZEqp8/5dv2I3G9RBHjMbBPXAg==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=oss.nxp.com; dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=IqD3B9l1; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c207::3; helo=mrwpr03cu001.outbound.protection.outlook.com; envelope-from=frank.li@oss.nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=oss.nxp.com
-Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=oss.nxp.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gZrnl020kz2xjN;
+	Wed, 10 Jun 2026 13:27:55 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781062074;
+	cv=none; b=Nupr3Gr3WeSCYWM3hPIJxvIz96DpAbkSZZJIJJSiYSpu/L/r/rYoSUjPhkNZbMg4+ZyucHDB9BLNZ9FRkEZgKDtkHFtJMcie4cvGgP+3czHelJAX5tfqdwEYBBbcggyq7DlnAxpv2ugUE0Ki0xvHDemAkJdql0DO1qmOVm7IsmsbiuIneV7GDifn85Ax4qlGHmMmvNmyzSmeEJihPgw6Ltr/gOyLnWh3DL3Akn7olKYnlqC3S8lwdMlplRcRCKh3Lf133VfWad0aeikQ4cUfuQqIbcPa3Wi6xS0kt07O+JbvYuZHg88TFK/DXTfC/F7Rl1cquSR44a/rdy/qYy0oYw==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1781062074; c=relaxed/relaxed;
+	bh=t7XENIVf0zxZMc5dYQEhCjed03kxPleg5s3aznuIQKI=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=bK3B2x2GbeH0VRjGwIMjSYZo6vBJbg2b24EC6f80vEoeN7v+GCkugXuzJ6NbQyF/vCFWS3W88Hzs0gEpxaV2DpR8swP9PYsS8p0gYrAe9p3e9DnE4zg+de1IQVObAW9XjdXgQA3zvPqG1r7F4/Q5K0PNpdT8OSyP8XdTQC/umBQH7UkGlNhicCKPMcZuv68zv3TH4wHRoBXsj+2BopgfIP39pBbbDsr+hN+EciyJBNIMf72BQN4Eep6LY+iZ6Eli0YXVg5DvMiiMzwhHrLb/j9Kz4ZQ9oLAPpjqJwnDBGdJJir0dEPSkQ3hi2AJwNYoTkR1QPmhqn6X12ZR39zTM5w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=m0t5W4Sa; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=IqD3B9l1;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=m0t5W4Sa;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=oss.nxp.com (client-ip=2a01:111:f403:c207::3; helo=mrwpr03cu001.outbound.protection.outlook.com; envelope-from=frank.li@oss.nxp.com; receiver=lists.ozlabs.org)
-Received: from MRWPR03CU001.outbound.protection.outlook.com (mail-francesouthazlp170110003.outbound.protection.outlook.com [IPv6:2a01:111:f403:c207::3])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gZr8d4hV8z2xdb
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jun 2026 12:59:13 +1000 (AEST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=VR+UlKw+inq5lclzZ5iWMpTe9r0hsTZBmr5ad1gg6CM9TWGKvd3OupS8LEFZo9wyZUM7ygoAbwksjCssCquyJV27Q8zNCEhq2SBwwC9ZaL1mRwHfYRGpOVVx4jnGMnW6Y8yJOWgwoT5y/vPcNwkhU+a+ewudhGFtgZCx8HGmHYXPowRVLOouUYnjm7XzcjfdPKZCcgi2LyWERWj4Fy43yHRrnEG32EfRaJNlUI7u3MjXyd4n+KAEWEvhZb/eTIj0js/EsgzD+sUWa+De6/2hO3O+ccSY3gDf+CknPqWQ9e0l2OlO315m+eYhYknhUqqDk8ivJoI5T8FxlFDzPKKyag==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=D2Xna/3EzXRvr46eLiAm0p3QN0qbDLihzDgmMdSMZ/o=;
- b=xLNxpY1k9lXCeYSY5q3CHfkcuZafqAa64bAULoJsDvLPSBxFIcNIx+yqiSRRq5fPl39KsSX4E2BnH6nZ0UGQCLvW71Hxp/ZvqFwgHZiWCSdOYfga81vkQ1qehhq6OSajwbiP/a/YLW5jXwyXN1LObbRpVPHGGTheE93+vNHGX/bOwQ53dzQSVb/++EsJF0Mrpmhmiv0KSkcHTY8VBB59TRxOJmSrCn/1mBgVpXbWX8A2lbqbsHbBOiL+I736lyfQWj0NUeLVQD6I2BLd+VGczw8tcNkVI0EA+LhUaO3QYHREFSAi21S8mn1wMrbXJw0yEFW74vdByFA58K/mYahOKw==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=oss.nxp.com; dmarc=pass action=none header.from=oss.nxp.com;
- dkim=pass header.d=oss.nxp.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=NXP1.onmicrosoft.com;
- s=selector1-NXP1-onmicrosoft-com;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=D2Xna/3EzXRvr46eLiAm0p3QN0qbDLihzDgmMdSMZ/o=;
- b=IqD3B9l1bNvejycj/LU0eQK+U9bMt/MxchSZYGYiBI0WES+E5tmG4MSc15p1evWC5iYjnrnxJkS3VUfe2tFgx3uutIQcN7cy8wVlZy2xB1X/sHfNzLgFzNryez0C3nW2ACSCknYByCIa+pcyLyUt6U9k9b3HEoi0orl3pmZQwoxJCfuQJb4HNmwPLD0feBfpZaBR0Vwppezi0yvcgQD5JlXqkqqKB6/is/UdiiGVatSxn7sFDoXxi1L1a3eap949lVfsU7yE70Bqgp8n0lmx4JKFfbIIPIAbDZVr0n7+xN/sxX+HEiM2k07bkQa/G+C2ReeOck1oY4N7QGRwDPW0Jg==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=oss.nxp.com;
-Received: from GV2PR04MB11799.eurprd04.prod.outlook.com (2603:10a6:150:2cf::9)
- by AM0PR04MB7105.eurprd04.prod.outlook.com (2603:10a6:208:19b::17) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.113.11; Wed, 10 Jun
- 2026 02:58:44 +0000
-Received: from GV2PR04MB11799.eurprd04.prod.outlook.com
- ([fe80::2146:83a2:5329:b7c]) by GV2PR04MB11799.eurprd04.prod.outlook.com
- ([fe80::2146:83a2:5329:b7c%6]) with mapi id 15.21.0092.011; Wed, 10 Jun 2026
- 02:58:44 +0000
-Date: Tue, 9 Jun 2026 21:58:19 -0500
-From: Frank Li <Frank.li@oss.nxp.com>
-To: Rosen Penev <rosenp@gmail.com>
-Cc: dmaengine@vger.kernel.org, Vinod Koul <vkoul@kernel.org>,
-	Frank Li <Frank.Li@kernel.org>, Zhang Wei <zw@zh-kernel.org>,
-	Nathan Chancellor <nathan@kernel.org>,
-	Nick Desaulniers <nick.desaulniers+lkml@gmail.com>,
-	Bill Wendling <morbo@google.com>,
-	Justin Stitt <justinstitt@google.com>,
-	open list <linux-kernel@vger.kernel.org>,
-	"open list:FREESCALE DMA DRIVER" <linuxppc-dev@lists.ozlabs.org>,
-	"open list:CLANG/LLVM BUILD SUPPORT:Keyword:b(?i:clang|llvm)b" <llvm@lists.linux.dev>
-Subject: Re: [PATCHv3 08/15] dmaengine: fsldma: convert to
- platform_get_irq_optional()
-Message-ID: <aijSy4Diinx4LBRL@SMW015318>
-References: <20260609221926.35538-1-rosenp@gmail.com>
- <20260609221926.35538-9-rosenp@gmail.com>
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260609221926.35538-9-rosenp@gmail.com>
-X-ClientProxiedBy: SA1PR04CA0012.namprd04.prod.outlook.com
- (2603:10b6:806:2ce::15) To GV2PR04MB11799.eurprd04.prod.outlook.com
- (2603:10a6:150:2cf::9)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gZrnj2yB2z2xdb
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jun 2026 13:27:52 +1000 (AEST)
+Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 659KOurP1207171;
+	Wed, 10 Jun 2026 03:27:33 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=t7XENI
+	Vf0zxZMc5dYQEhCjed03kxPleg5s3aznuIQKI=; b=m0t5W4SaXnWGY6yFpEkh9y
+	tk2aZi1FplDb6l0j0RlGOTsULarc3hSDcIkW7w/aeOH29laNiBgYqJB6c+mSnBGO
+	LfZFotizpdzxZzMrlgeVtwV9+rbDKciHiacFOiFHuaaKAKqwte331lK2YlN1ur2l
+	kui4TzSdTuncuA02K5vK33NqHeHD5o+xKDy/qX3oOrKOsAu0TYJPwhaF0N4dBrtn
+	aMvDEsyQheh6av6fnJd8tG8RIA/KMmUrlg/uZj/uUKdO6yAkr/UIs9KXXSOMp53n
+	LNlYdUHdnHfiF/OZXKH6AJsonMQpqUY5VFgnbU6vcq5bXuU7MAMQNI0BWP+ZvlIA
+	==
+Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4emb6sxub8-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 10 Jun 2026 03:27:32 +0000 (GMT)
+Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma13.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 65A3Ja2b001326;
+	Wed, 10 Jun 2026 03:27:32 GMT
+Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
+	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4en03g4q2h-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 10 Jun 2026 03:27:31 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
+	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 65A3RSw913500788
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Wed, 10 Jun 2026 03:27:28 GMT
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 598ED20043;
+	Wed, 10 Jun 2026 03:27:28 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 147F520040;
+	Wed, 10 Jun 2026 03:27:25 +0000 (GMT)
+Received: from [9.123.14.142] (unknown [9.123.14.142])
+	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Wed, 10 Jun 2026 03:27:24 +0000 (GMT)
+Message-ID: <fd32da15-9952-4d46-9c28-5c2aa87fad0c@linux.ibm.com>
+Date: Wed, 10 Jun 2026 08:57:16 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -91,132 +81,163 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: GV2PR04MB11799:EE_|AM0PR04MB7105:EE_
-X-MS-Office365-Filtering-Correlation-Id: 2d4fe80a-b349-4550-e00c-08dec69c2f2b
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|23010399003|1800799024|376014|7416014|366016|19092799006|22082099003|18002099003|56012099006|11063799006|4143699003;
-X-Microsoft-Antispam-Message-Info:
-	wKvsj8m3qEr/QHczH0qlSZBzg+b2nNEa8dDU6uWluXWqPrcM4YT77Lclrw6wgJ5DJS0muveDcY6pO8NyUL9UIHpYwwk+0QOGOMZ+jvvPtnRLbDJYPk3BOMSV3V3cOT61DGDgAS7Aah4yO1UiqWZuayEwQFIegekpxGM4DlXnURaCHOF5OQ2n8+CZg5n1AgQoZGm+xqTscNnJhPwZCy5cARfOkxiQYfGuPby2WH52wpQ6GQeKBrj8WW2fgAswawjkTDQuZ3XD4zJCPv0ASQIsQfqsTPHJTPFTRvvU/v3xuWK18Ey1chPCHPpEfzHgdRYHYS2GFJbqwucggSS+ZkssP1C8NsyRrX1ZCD563Vdwhmp9nOvEsNXop02akEoIovwnar0THcucwLT/Oi6NXXUB9DVX5zIPwpelvVykBN8l5/p2nxagQnobpiVgzlz/ATtaNNm6NPp8XHu6QazfTJJ0UQjtUafhKQEBMDem7l28DP5tBmglBKRv5e2tOxyhexL7reqq+j1MzMJZvxTrjOjwQyPtdXNor8X2fuJWoh24KRFdeRiUQ/XgCxrPERKrKTZ9Nykz5Uurrqiemvj4LByqZtvCFeS+hVK9mswAXVHOChZyEwaUs2v2KwmuwWTFiw2vLzABRblqSQtihUGbP/fAjC1J/d8xL7E6psrCj41uhAJahYi3GKfEZ74ANjL5Z5sh
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:GV2PR04MB11799.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(23010399003)(1800799024)(376014)(7416014)(366016)(19092799006)(22082099003)(18002099003)(56012099006)(11063799006)(4143699003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?EM2tx3h8Ybiswi6Dfw08JJ3Ppi04jQG1NxFNkmzNyl/1+2jEZze1GiXG6k6+?=
- =?us-ascii?Q?pcG0ISLoBCTRFvUDRpv6JAAZXdPb+qFQUyyg86dQeAYAqkAGXc+Uun4QdI42?=
- =?us-ascii?Q?9Gn6R5Pa8JYAK8Em+ccnr6MtA2rsNcFsSFFPEfwSfAHIC5Rt/yapFFDAqH0k?=
- =?us-ascii?Q?rrgg4+BaK7CxRnStCqDi2P672vVZoORiko5wM2yM4Z1irVEpKmaU7wM5Emrv?=
- =?us-ascii?Q?IP1ig7JTzZDRj9+hHLhMV5ztmWeDq6UAeYZwYtHTPBzHKiQKoxpP5H/whbqK?=
- =?us-ascii?Q?xcTp2y5wbsa5z4IRlLSZACHbnfVFRzlYDAp+nwhMykiO5Q0qSGyAfNuMnSBD?=
- =?us-ascii?Q?dpXKWj13XDLvHqNjrj1+HpZx9K4UqVed61UB0y6tG9kKL/1HsOGCQ1JTAu7z?=
- =?us-ascii?Q?k1OZ7MOTPeTKhhsxO1ekwkS5/WsmrWfd20kXoMwdjnZJQ4s/xcod049PXKYr?=
- =?us-ascii?Q?tCus0zkcGDND0r6NVkGps76l7jigzeCuLVgobuEqv86/5vrdCGSGSu/Ea3Pw?=
- =?us-ascii?Q?Axf03DkReEebW1KcJh5fGsstmqTDtf+L6BEDvvI27KDeKkeEQxpz8nfNuyEr?=
- =?us-ascii?Q?E5Dlg0m3aXn2H7+GAkN2WbVWvtTY5xxxoJm4tMlcp7ngvzJhEaCN9S4AXRSU?=
- =?us-ascii?Q?yN4nedSy24SPMTHjn5qOkiYCm2LGU3czcbCyBp9HFTzAP96sbjeaPoBZnPXY?=
- =?us-ascii?Q?pKq8SL81LoxrdRAZjd21qEUXwVG6+X2Ky+geZrKa8SCkiJ83sE4lrnJcyCp7?=
- =?us-ascii?Q?uHdlcrcsO1W+da2Zu+33gd15sAlOTW/Ewo/EJqpO/okfmV1zkds4c3dfl0G6?=
- =?us-ascii?Q?kQMTKqYr/0JUaOg7EaNJHmUFJPCZKTHcePeoXDckvawyxa5PswZSiBkmIMMS?=
- =?us-ascii?Q?Z9bmMdZkKsy+THV2XDZtJ8j37kf4zaz1yPI9DZFPPoTYbElIGEZWbAMg8U3G?=
- =?us-ascii?Q?2fYUwVwWBnu05N1eUISAhqSw6fQ8hO5F7vY71KiKrCYIN+cbi1I97oJ8N5Pt?=
- =?us-ascii?Q?1wWqV1T0kPhLEAWVV00rOCsVAs+0WVeMJ0Smq03xDy5XpjMKuqARaqPysgj9?=
- =?us-ascii?Q?htdiG+l9n0VsrBU48EWDNTmx+2jOg87tn2vTpFWiNo2F757wqu0bHtXHdz2Y?=
- =?us-ascii?Q?WEFKYcNgYJQCwZqGgsB0Af5uhRbben2CeVnT2Apm0l4VJWZT9/5af9qHNq37?=
- =?us-ascii?Q?A4Ex15x1sN6yIWP6bM6i+/WUzSYhgtP8w/9ZzcSl4VUVxe6a37Rcl9h5TWvy?=
- =?us-ascii?Q?MiaUAqGPFq9M5km4jEn8zBmnmxm8NSlJsG7iwgkc1k2rjXk0gvgjY+C25O/p?=
- =?us-ascii?Q?YR7080oneadBAy2MlpikoLAAC2UazOQ5T1w9ctYMo29ALF7v4Ho4vuXoZbrb?=
- =?us-ascii?Q?KnVJiaT7v//J8PJ7RLQQZNry5IV2r+viTtpSocLm2qXvi59JuLQfIBHEn6a1?=
- =?us-ascii?Q?eO7wml3Qt4BcIqUwSqn/yBVcnlZgeWTiAMxmcA9xb6QIvlvYa66YiUrdKOSg?=
- =?us-ascii?Q?NLilTtQ3nCw8XBZgQCIdXFJlvnrOtt2zDvg3gBROPZHPzAUFZHa6/LreWXhW?=
- =?us-ascii?Q?pnVLPENL///9oHDpoccK6i7j8Ru0VrM9MQbdgdgb9rLso9wDZALNL8LNo0jc?=
- =?us-ascii?Q?Qz2TZ936gglVu825W/mKAz1eZMs+8dYm2aisgYVLkQXr/f/9INuKT+lkFZjD?=
- =?us-ascii?Q?7P5KehF/WYKAocUT2btckjNljeE+jVCABVxEWTyWe3bs4NUpitE1TJpXctzK?=
- =?us-ascii?Q?QdjralQqxsqZAUfM48aFQZiRKbXL8r+wbc/9uiuBGhuZ7oEgKoWM?=
-X-OriginatorOrg: oss.nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 2d4fe80a-b349-4550-e00c-08dec69c2f2b
-X-MS-Exchange-CrossTenant-AuthSource: GV2PR04MB11799.eurprd04.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 10 Jun 2026 02:58:44.5126
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: JBWe16WL/lGC7MVZ5HDf4RiJ7jhSYvI/ni9OlD+PXFq+Yy7Y0geYuqUF6Gfif6W7L6p7kTY+5A0+dWT4G6dkrj2At91PEDvm36tP48YNGpExJQUBtZCNdnHfyR5yNqCC
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: AM0PR04MB7105
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2 2/5] powerpc/pseries: Add RTAS error injection buffer
+ infrastructure
+To: Narayana Murty N <nnmlinux@linux.ibm.com>, mahesh@linux.ibm.com,
+        maddy@linux.ibm.com, mpe@ellerman.id.au, christophe.leroy@csgroup.eu,
+        gregkh@linuxfoundation.org, oohall@gmail.com, npiggin@gmail.com
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+        tyreld@linux.ibm.com, vaibhav@linux.ibm.com, sbhat@linux.ibm.com,
+        ganeshgr@linux.ibm.com, haren@linux.ibm.com, thuth@redhat.com
+References: <20260527072433.94510-1-nnmlinux@linux.ibm.com>
+ <20260527072433.94510-3-nnmlinux@linux.ibm.com>
+Content-Language: en-US
+From: Sourabh Jain <sourabhjain@linux.ibm.com>
+In-Reply-To: <20260527072433.94510-3-nnmlinux@linux.ibm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-ORIG-GUID: Rte-Ya6BT5T-kDB2zWOQz-S6bAuDn2FS
+X-Proofpoint-GUID: Lr8Gg_g1RzjGkY32IhuujpCQF74zzeBT
+X-Authority-Analysis: v=2.4 cv=ZbEt8MVA c=1 sm=1 tr=0 ts=6a28d9a5 cx=c_pps
+ a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
+ a=IkcTkHD0fZMA:10 a=FelO9ux0wxsA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=RzCfie-kr_QcCd8fBx8p:22 a=VnNF1IyMAAAA:8
+ a=-4-zj0xmguQsN-WDZPEA:9 a=QEXdDO2ut3YA:10
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjEwMDAyNiBTYWx0ZWRfX5Nh8bKYVZ/SJ
+ bbVujHEwiARN7YLS1ej2t/H93LitrWIUtGsiav/G/Kjs3RWIrlmVqJRImE+bihV4gunMlg22pdk
+ zymQamH+owHhdx28Co2M95kI1S0TM0krH/hztjsYxANUUJSkRoJxLyRoVk85gMcV2m5VzsiXTw6
+ PKMbxI/QW70sUUrzam7kAC/j1rBo8Wi69oaXysxmjSEKcH4riIn5UmTdM+QQbn+QibEzWrnnkbU
+ dTUAhAfYabX4jqeQs2NRzrl4lZPX2u9c1JDJEELmQTaIvmS6p199SC7GO1Xj3CWQCsyg+OulvkB
+ LrV65gOf1PfEHLIbVHfukk0FsJN1DzE1g0/XYJw27+/QyWt9J2wG/n7ShP1amJMNNpnN97pz3dV
+ Ngu0zie2RAQITlh3BQibs0NjaiYlaizqCbRIkIUP0rx0ouqu7qNjT9F/zqWUWsiGoYS8NKGzVlE
+ JH1hxZUl6V0UKC37sKA==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
+ definitions=2026-06-10_01,2026-06-09_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ suspectscore=0 impostorscore=0 malwarescore=0 lowpriorityscore=0
+ clxscore=1015 adultscore=0 spamscore=0 priorityscore=1501 bulkscore=0
+ phishscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2605210000
+ definitions=main-2606100026
 
-On Tue, Jun 09, 2026 at 03:19:19PM -0700, Rosen Penev wrote:
-> Replace the per-controller irq_of_parse_and_map() call with
-> platform_get_irq_optional(). The controller IRQ is optional -- when
-> absent (-ENXIO) the driver falls back to per-channel IRQs.
 
-Nit: The controller IRQ is optional when absent (-ENXIO) and driver falls back
-to use per-channel IRQs.
 
-> Any other
-> error is treated as fatal. The corresponding irq_dispose_mapping()
-> calls in the probe error path and remove function are removed.
+On 27/05/26 12:54, Narayana Murty N wrote:
+> Adds global infrastructure required by the injection engine:
+>   - a 1KB aligned RTAS working buffer in rtas.c
+>   - a spinlock to serialize buffer access
+>   - UAPI definitions for error-injection tokens (added to eeh.h)
 >
-> The per-channel IRQ mapping in fsl_dma_chan_probe() uses a child
-> device_node rather than the platform device's of_node, so it is not
-> converted here.
->
-> Assisted-by: opencode:big-pickle
-> Signed-off-by: Rosen Penev <rosenp@gmail.com>
-
-Reviewed-by: Frank Li <Frank.Li@nxp.com>
-
+> Signed-off-by: Narayana Murty N <nnmlinux@linux.ibm.com>
 > ---
->  drivers/dma/fsldma.c | 13 +++++++++----
->  1 file changed, 9 insertions(+), 4 deletions(-)
+>   arch/powerpc/include/asm/rtas.h     | 21 +++++++++++++++++++++
+>   arch/powerpc/include/uapi/asm/eeh.h | 18 ++++++++++++++++++
+>   arch/powerpc/kernel/rtas.c          | 12 ++++++++++++
+>   3 files changed, 51 insertions(+)
 >
-> diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
-> index c04a7fbd2ed0..eba194d64105 100644
-> --- a/drivers/dma/fsldma.c
-> +++ b/drivers/dma/fsldma.c
-> @@ -1213,7 +1213,6 @@ static void fsl_dma_chan_remove(struct fsldma_chan *chan)
->  	spin_unlock_bh(&chan->desc_lock);
->
->  	tasklet_kill(&chan->tasklet);
-> -	irq_dispose_mapping(chan->irq);
->  	list_del(&chan->common.device_node);
->  	iounmap(chan->regs);
->  	kfree(chan);
-> @@ -1248,7 +1247,14 @@ static int fsldma_of_probe(struct platform_device *op)
->  	}
->
->  	/* map the channel IRQ if it exists, but don't hookup the handler yet */
-> -	fdev->irq = irq_of_parse_and_map(op->dev.of_node, 0);
-> +	fdev->irq = platform_get_irq_optional(op, 0);
-> +	if (fdev->irq < 0) {
-> +		if (fdev->irq != -ENXIO) {
-> +			err = fdev->irq;
-> +			goto out_iounmap;
-> +		}
-> +		fdev->irq = 0;
-> +	}
->
->  	dma_cap_set(DMA_MEMCPY, fdev->common.cap_mask);
->  	dma_cap_set(DMA_SLAVE, fdev->common.cap_mask);
-> @@ -1317,7 +1323,7 @@ static int fsldma_of_probe(struct platform_device *op)
->  		if (fdev->chan[i])
->  			fsl_dma_chan_remove(fdev->chan[i]);
->  	}
-> -	irq_dispose_mapping(fdev->irq);
-> +out_iounmap:
->  	iounmap(fdev->regs);
->  out_free:
->  	kfree(fdev);
-> @@ -1353,7 +1359,6 @@ static void fsldma_of_remove(struct platform_device *op)
->  		if (chans[i])
->  			fsl_dma_chan_remove(chans[i]);
->  	}
-> -	irq_dispose_mapping(fdev->irq);
->
->  	iounmap(fdev->regs);
->  	kfree(fdev);
-> --
-> 2.54.0
->
+> diff --git a/arch/powerpc/include/asm/rtas.h b/arch/powerpc/include/asm/rtas.h
+> index d046bbd5017d..82512f822c7a 100644
+> --- a/arch/powerpc/include/asm/rtas.h
+> +++ b/arch/powerpc/include/asm/rtas.h
+> @@ -519,6 +519,27 @@ int rtas_get_error_log_max(void);
+>   extern spinlock_t rtas_data_buf_lock;
+>   extern char rtas_data_buf[RTAS_DATA_BUF_SIZE];
+>   
+> +/*
+> + * RTAS Error Injection Buffer (PAPR-compliant)
+> + * ============================================
+> + *
+> + * 1KB aligned, zero-initialized buffer for ibm,errinjct RTAS work area.
+> + * Protected by rtas_errinjct_buf_lock for concurrent access safety.
+> + *
+> + * PAPR Requirement: ibm,errinjct requires a caller-allocated buffer passed
+> + * via physical address. Buffer must accommodate largest error type layouts:
+> + * - IOA bus error (64-bit): 8x32-bit words (32 bytes)
+> + * - All other types: <=4x32-bit words (16 bytes)
+> + *
+> + * Usage:
+> + * prepare_errinjct_buffer() -> spin_lock() -> rtas_call() -> spin_unlock()
+> + *
+> + * Alignment: SZ_1K ensures PAPR firmware requirements and cache-line safety.
+> + */
+> +#define RTAS_ERRINJCT_BUF_SIZE 1024
+> +extern spinlock_t rtas_errinjct_buf_lock;
+> +extern char rtas_errinjct_buf[RTAS_ERRINJCT_BUF_SIZE];
+
+The kernel has a similar buffer for userspace (named rtas_rmo_buf),
+which is allocated in the range (0, min(ppc64_rma_size, 
+RTAS_INSTANTIATE_MAX)).
+
+Whereas, the base address of the statically allocated rtas_errinjct_buf 
+array
+depends on the location at which the kernel is loaded, which could be 
+higher than
+RTAS_INSTANTIATE_MAX.
+
+Also, things will break if the base address of rtas_errinjct_buf is 
+greater than
+4 GB. In that case, the kernel will send a truncated address, and RTAS may
+corrupt memory as a result.
+
+Why don't we allocate rtas_errinjct_buf in the same range where
+rtas_rmo_buf is allocated?
+> +
+>   /* RMO buffer reserved for user-space RTAS use */
+>   extern unsigned long rtas_rmo_buf;
+>   
+> diff --git a/arch/powerpc/include/uapi/asm/eeh.h b/arch/powerpc/include/uapi/asm/eeh.h
+> index 3b5c47ff3fc4..86645cab2827 100644
+> --- a/arch/powerpc/include/uapi/asm/eeh.h
+> +++ b/arch/powerpc/include/uapi/asm/eeh.h
+> @@ -41,4 +41,22 @@
+>   #define EEH_ERR_FUNC_DMA_WR_TARGET	19
+>   #define EEH_ERR_FUNC_MAX		19
+>   
+> +/* RTAS PCI Error Injection Token Types */
+> +#define RTAS_ERR_TYPE_FATAL                     0x1
+> +#define RTAS_ERR_TYPE_RECOVERED_RANDOM_EVENT    0x2
+> +#define RTAS_ERR_TYPE_RECOVERED_SPECIAL_EVENT   0x3
+> +#define RTAS_ERR_TYPE_CORRUPTED_PAGE            0x4
+> +#define RTAS_ERR_TYPE_CORRUPTED_SLB             0x5
+> +#define RTAS_ERR_TYPE_TRANSLATOR_FAILURE        0x6
+> +#define RTAS_ERR_TYPE_IOA_BUS_ERROR             0x7
+> +#define RTAS_ERR_TYPE_PLATFORM_SPECIFIC         0x8
+> +#define RTAS_ERR_TYPE_CORRUPTED_DCACHE_START    0x9
+> +#define RTAS_ERR_TYPE_CORRUPTED_DCACHE_END      0xA
+> +#define RTAS_ERR_TYPE_CORRUPTED_ICACHE_START    0xB
+> +#define RTAS_ERR_TYPE_CORRUPTED_ICACHE_END      0xC
+> +#define RTAS_ERR_TYPE_CORRUPTED_TLB_START       0xD
+> +#define RTAS_ERR_TYPE_CORRUPTED_TLB_END         0xE
+> +#define RTAS_ERR_TYPE_IOA_BUS_ERROR_64          0xF
+> +#define RTAS_ERR_TYPE_UPSTREAM_IO_ERROR         0x10
+> +
+>   #endif /* _ASM_POWERPC_EEH_H */
+> diff --git a/arch/powerpc/kernel/rtas.c b/arch/powerpc/kernel/rtas.c
+> index a2dd94eed9d0..c110965ea1d9 100644
+> --- a/arch/powerpc/kernel/rtas.c
+> +++ b/arch/powerpc/kernel/rtas.c
+> @@ -769,6 +769,18 @@ EXPORT_SYMBOL_GPL(rtas_data_buf);
+>   
+>   unsigned long rtas_rmo_buf;
+>   
+> +/*
+> + * RTAS Error Injection Buffer - Global Definitions
+> + * Global 1KB buffer and spinlock for ibm,errinjct RTAS service.
+> + * Exported for pseries EEH error injection usage.
+> + */
+> +
+> +DEFINE_SPINLOCK(rtas_errinjct_buf_lock);
+> +EXPORT_SYMBOL_GPL(rtas_errinjct_buf_lock);
+> +
+> +char rtas_errinjct_buf[1024] __aligned(SZ_1K);
+> +EXPORT_SYMBOL_GPL(rtas_errinjct_buf);
+> +
+>   /*
+>    * If non-NULL, this gets called when the kernel terminates.
+>    * This is done like this so rtas_flash can be a module.
+
 
