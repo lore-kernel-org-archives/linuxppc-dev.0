@@ -1,79 +1,79 @@
-Return-Path: <linuxppc-dev+bounces-22387-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22388-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B0372CD8CB9
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jun 2026 06:00:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id ABBF1CD8CB9
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jun 2026 06:00:44 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gZw9N6GH4z3bp7;
-	Wed, 10 Jun 2026 16:00:08 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::32e"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781071208;
-	cv=none; b=grXDyknr13msW0yFH+VBW/HREeeCI5nr8ivQxlGzXn4/CG70BxE8BKBrRJZ9mURnM6fjXKOlthaTO8hk3zzkYJ5+9TeKOqjWUT+0vOzGmghnexsFJSB0Nj4xu30p9ZBPzHUOglw3iGqg3lFDU+CCSazv863e4eEyyKxsQfUbE6Lfzoi1JXoUn80Xt193TEHhdFGBvEVFvL1+zOSlAKbJgpsfcd0cHYkW4zF+mDQi0MyVFkBa5DzR7T/LfiS+j3GYleMeWYjsb1DEIJIAD9qoO/sQoLMSRttxzWf0Utj9eI5CCHa+/xt1BsygE7OtUk5hjizYLD1d0oyXLcHpuTdr7g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gZwB30MHbz3brL;
+	Wed, 10 Jun 2026 16:00:43 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::231"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781071242;
+	cv=none; b=OMGktbfaR3gapgs0A6ZslPEv17RdXhqhpewMaTT1iXJVFjXv95h3ksv/YFisoZQn6tJ8itbkuCa1UhqrkUDIV+P2YIhFihDWFT4rkFqaTaxa/MTmU3NMuHnNe9y5sesfEC7kklek1rCRpRD0oFc6bfRZvlKrnTDAPNf7t1PJaQxnn86ye/FKntfeEnjMxSw6qBe7e43DhFJ5MXDb+eMPFgzND5ZlqMdm+osuR4gUmHR+sSwoZ4qILlDZvqgdTomghsvYGyBXhei9kd5mHvmiuZfdz60H3gFopuf5z6atXVAj52FuvK40lhcvBMKn/LLAP8Zj6pmqtoDd999UBIy4Ww==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1781071208; c=relaxed/relaxed;
-	bh=0eeq4qUemue69ATVH9Hc0G+s1EX6SM4VcPKiJpjYoUk=;
+	t=1781071242; c=relaxed/relaxed;
+	bh=gj0YYK+8W8BmuuGLUjKiEFrVEApz47d5/8fZSNVUxGs=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=Bczk4gu0B0zvonmmDu+qOGQ8av8TB5gQUYVowa/Z3sSR93EDBFCmbHqPGTMBrHsUv9LJ3W3ZtjruaZPxpGG/MsXVzgnLBRc3AMgeAzl4vAo/Tr0/iM2fKzLQ4WcJ5uUDih2D8YB0aOALtuz8nCtY+NFpyd7e/TzT9DeFITfXF3TgJ7a99R/zDg6U/ksAw7nfnY/qrZ6bsmO0VDZaruovxdlPxUdT/Ex07Y/R03vFS8ZF3odc5IsoSo8jdjvFiPHZAQKqJ0hh+hOdlE0zgS2ADJ2AVyHOCu0daEhB18/0OuRUN73UP1LL1f+btAN1I/PoAc/+lDkOsQQwg+wBCIH5gw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com; dkim=pass (2048-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=google header.b=Qy3+WbJn; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::32e; helo=mail-wm1-x32e.google.com; envelope-from=hare@suse.com; receiver=lists.ozlabs.org) smtp.mailfrom=suse.com
+	 In-Reply-To:Content-Type; b=nSf1u3qf7iGbvpvhA7hFWyQMx7G6ZTVlYXjl/VAlJCoYSIJwN+wxHjICHH4RhdCd2fWoLzkh4FLLeaswlYedXzpDPSR05grdlAUjgWU4FYqIfHhxdrkHp1hBPuJTE9AgVa+lrt5mhwW2xxSbNzjm7s4T8buYo+fodq84XDbeHIKqVrEjNgdmvQgiuRND02b9/GtqdbUPzkMwd9GN8Z6hRr9x9j7NofNKDW2V3IwWn2cr5f7krNH7N5Ll4F1kVhbK3xvRhQu2xhaVxH95lV6xPsVTQw6rCKq39P0W78kwqrfGcp5Buj+NgFzt0m3KaQ+pzGWlKPVhGv3UnP0ovza2Eg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com; dkim=pass (2048-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=google header.b=HLcedWbl; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::231; helo=mail-lj1-x231.google.com; envelope-from=hare@suse.com; receiver=lists.ozlabs.org) smtp.mailfrom=suse.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=google header.b=Qy3+WbJn;
+	dkim=pass (2048-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=google header.b=HLcedWbl;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.com (client-ip=2a00:1450:4864:20::32e; helo=mail-wm1-x32e.google.com; envelope-from=hare@suse.com; receiver=lists.ozlabs.org)
-Received: from mail-wm1-x32e.google.com (mail-wm1-x32e.google.com [IPv6:2a00:1450:4864:20::32e])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.com (client-ip=2a00:1450:4864:20::231; helo=mail-lj1-x231.google.com; envelope-from=hare@suse.com; receiver=lists.ozlabs.org)
+Received: from mail-lj1-x231.google.com (mail-lj1-x231.google.com [IPv6:2a00:1450:4864:20::231])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gZw9L57xLz2ysW
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jun 2026 16:00:05 +1000 (AEST)
-Received: by mail-wm1-x32e.google.com with SMTP id 5b1f17b1804b1-490d1e54b3bso25545955e9.1
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Jun 2026 23:00:04 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gZwB148JCz3btt
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jun 2026 16:00:41 +1000 (AEST)
+Received: by mail-lj1-x231.google.com with SMTP id 38308e7fff4ca-39661f81eacso68365101fa.0
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Jun 2026 23:00:41 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=suse.com; s=google; t=1781071201; x=1781676001; darn=lists.ozlabs.org;
+        d=suse.com; s=google; t=1781071238; x=1781676038; darn=lists.ozlabs.org;
         h=content-transfer-encoding:in-reply-to:from:content-language
          :references:cc:to:subject:user-agent:mime-version:date:message-id
          :from:to:cc:subject:date:message-id:reply-to;
-        bh=0eeq4qUemue69ATVH9Hc0G+s1EX6SM4VcPKiJpjYoUk=;
-        b=Qy3+WbJnPRHz0619jf0QFRp6ZqNmfsPt+j9uKbYjc/7ak5GmTh6t2Dq7IA2iIGCjJy
-         /n9lnB+bs+mmDclYE1rF6y5FD8u6FLMxMC/CFdoV+l4rDHFSr2pMkFWPoAkVZ8/KW2SP
-         x3kIlVKvvcIVlIaavyW9Jv2So2MK0oIl2NZlUecWQwny6e6hPsEE8OHmnAFy7dTMGkk9
-         xpgjujSGdmzExRrp7QYN8DbCtDmtAHYYKC6m3354UppvMJhvl2M7nQ4jk+N+Yn1RVnc5
-         Xr5vrh2Pfu2NuHJupYy2QLoow4t89tL+597lB0Qbhk+oQLQyilLdD60I0N8b5OirMOJ/
-         Vllg==
+        bh=gj0YYK+8W8BmuuGLUjKiEFrVEApz47d5/8fZSNVUxGs=;
+        b=HLcedWblZXNzcKo6uuFDGPt3N/9rzXWAZc4yuoCqpIQGxd1OMm2vWZpTKNporQuJFY
+         i4vOI9b/6fh3MolLJmcpwfshgtaeL3UtlAWvII235L6bQEN4C9/q71+2WzGE1SyRrerB
+         Ti9rKqsRg2ckh7VJPypT6bViU0Kh9PO7ar7E52f31xbKpyFMFN9dJlEHoQmPHyGiDcBm
+         57nqiQUiAFSKf5n6llgVukczLIvGEzvmmgeGy+yQzg1qPAmPWwXcxc3S9m118vVd0IWe
+         ZaO9zO7HuYQkG308Lb1PzP6rYUhRwer4RuCGUTqff7M+M7rstawESuBJ9WW29oQuxY4U
+         6Alw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1781071201; x=1781676001;
+        d=1e100.net; s=20251104; t=1781071238; x=1781676038;
         h=content-transfer-encoding:in-reply-to:from:content-language
          :references:cc:to:subject:user-agent:mime-version:date:message-id
          :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=0eeq4qUemue69ATVH9Hc0G+s1EX6SM4VcPKiJpjYoUk=;
-        b=q7RwgWIVd/LzNFVu9keqLgcEtNJXHZY2GJLbL6ycbRJvjYCHdFc6ipx3zEmiqRinny
-         Y5oL5kZg6wUrrYg/T5RXWTWzxGPV8LPawzIXuX1ivAihVx87bWjo+iUbW8kgsLm97Hzz
-         uHTlTkUIKadjPGLII5MFMAliFuiUCyKwqyRUjJwPnqNaaIOYuOZgDMeUc3PQUPuUV3pK
-         73urE7ZVLsUBpuAydeoQBeMZGu9D7xi+x3WWLiwC3UM76gmMXrvr6B8i4MKEGfGUdyKj
-         dZrOpLkF4fEUGtAOMlLbfZmdjy3OwguaqlqfTraEBch3mCYbs2bYQGagKpexcetj+Qbl
-         GXTw==
-X-Forwarded-Encrypted: i=1; AFNElJ9NLm4bJQw9crBLD8/ZIDPCmnUuMjR5E3bb1oYpHLdH16LGMStUYnJ2iPwIqrV7I2qwxgdpaHOlwPxdOgI=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yy0GEhncbQMFLs88y363zfNSrfTOf9Mb3wqZncWwl2GzUMpoYk8
-	JQOu4nfs54SCrXVO4vYskYrHiFwUP7hECdGt2YbPx21x18oS0L6eyGdKKPk/qsYB43s=
-X-Gm-Gg: Acq92OEY8rTRm6dKtRb56fyQ1ewrqBMJPIyHVQkrCK53joZhIXylnITCBOY1sps+HCt
-	65PwMeUfv9Qr9bXiuKqXEiLWXMqGHnFYmyO/bJmAaX/5pi8fBVYZeNNTSQgORCybXgAVaVYh8EM
-	VuQ39sHlDce2qKpfM1Boh7xFDXSI7UzvBsutWIT0L5Kq3PiEZumCTGwQxv5/ISppFBllFVk3UR8
-	MXtpJbLCX9wKrKp0wQyFw2h8pDe6OLFTaVOrzvy1iHll4PUkf3U/y4zt5miWNO8pkNWlhQrPPUA
-	P6F9asZnUgzElj8eFWtkvbMz6+p1kiG5kxAj2BOQTe5UzhIzC55sSpS/AWo0UzDoAK8PElUY6m7
-	ZOaf9OvEE5EP0LNtRv4YX5fOuCQe2l1ofsTP0uLF9Ic8HrGAhTITxfO5eJOGc20R9ZB57xdn2fa
-	9d0tKGggUG86OT+B7DswYGpbjUe0itVINbo0Ob/20A7uJQd3YxOFpbOgE9F7u5e82B6p9e9Tk=
-X-Received: by 2002:a05:600c:8285:b0:490:abef:dae6 with SMTP id 5b1f17b1804b1-490c25b09bcmr392960895e9.19.1781071200857;
-        Tue, 09 Jun 2026 23:00:00 -0700 (PDT)
+        bh=gj0YYK+8W8BmuuGLUjKiEFrVEApz47d5/8fZSNVUxGs=;
+        b=rkfnh8VkNayPKrL8r3mfeH1Ft1vNTI17TJRQrRly+rG25tUKNzs+tNJjjJGKNvMAjZ
+         5VbuZvifM182R9yMhM5eA45r/gom64AMjMsB9leHGH2srkBlo9UoxYrvBHk+J5pRaBOZ
+         C5UGnsycmGiXcVv/TxTUUUBA4y9GW4gCcU00X+eqGj8ynNOmhybg2xzNR7r8EefBjGUR
+         6hflv8hVmdHInIF6FgKr8g3LklQ8s7KDEp8NPqo3nrF5FQoH/vg0BV/OoQgDVo2fBUsr
+         f5Olrs+w9LgES9UtHZY/t7EZU59kcO2uaMIMGlhqfG6SfEAvSDeuDlWbbowxQzeBkW6y
+         h4xw==
+X-Forwarded-Encrypted: i=1; AFNElJ/l5nq+hlQkw07CfvAyZ6zTasxps8iqBsYrBH+fmVvM0oOoDGWadkwfzw164qoY/8p7xPp0LPxXJD0cJA4=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YwpeZvhfmzD8TiGo7rLFyQNJuEL7XB+/Qmvw/f9w2G57QXyd+py
+	P1dKniBfa9UjAUJWKM0xYLy6Lox/f6iWpPb7GHpR8cQQ+zXX8TIurC86jhYq+qhMFP8=
+X-Gm-Gg: Acq92OGG1HPjfIT4OywcmlxGlfaeY2yPZSRvU7u/4sjFIg4HgsfxFViR/vTVJUsVHTv
+	gC2VdiTo837GK7LoobZe/9W0OUlwoVx0cIpU2ypEfJ9oOosbPiyEcldLIVz9dsj2JO+bagcT5P+
+	8YcHlfJQMgAGj+e6bYScmtVSreDoc6Qvi3bpDVaPjfxx0CSXO6gsYR9Up4waL7GhU4EqW34mhHd
+	xdPf266VqLDb+OX5uGF3a3HqD8H+XVYItGSDEQWJHuHYjaZ1DRTj2KdZbRVCnwzVjbOGC0SuHp6
+	+JUUL9WpqHfF4jD6BPi1HNn0nOYs4TJa2Ziq5e8Lzy6ITx3VdGrj5+TsM56531uPihJnbQO5k8q
+	x3Ohk78QmU82PI7WSjMasQIrcUzNCFlgnyU758cgFJFEA8D83pA72PFFm2vVMVGF0GKQtHKT5pV
+	3PQblPn//5VMz71160EE87XIIcxK0ThTbVTv1/L7pbxbhvjZkOjk1M147/mnMtp7ZgUVrRuXs=
+X-Received: by 2002:a2e:b8cd:0:b0:396:a647:76f5 with SMTP id 38308e7fff4ca-396d285f55dmr58137321fa.5.1781071237888;
+        Tue, 09 Jun 2026 23:00:37 -0700 (PDT)
 Received: from ?IPV6:2001:a62:1439:d001:a0af:1164:c6fd:8c51? ([2001:a62:1439:d001:a0af:1164:c6fd:8c51])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-4601f35eae5sm69552212f8f.33.2026.06.09.22.59.58
+        by smtp.gmail.com with ESMTPSA id 38308e7fff4ca-396abd6cbe6sm59530741fa.0.2026.06.09.23.00.32
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 09 Jun 2026 23:00:00 -0700 (PDT)
-Message-ID: <e2a61373-0c27-41c3-b0ca-836a4727a3b5@suse.com>
-Date: Wed, 10 Jun 2026 07:59:57 +0200
+        Tue, 09 Jun 2026 23:00:36 -0700 (PDT)
+Message-ID: <21746ee7-cff3-4db8-959d-dd693389492d@suse.com>
+Date: Wed, 10 Jun 2026 08:00:30 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -88,7 +88,7 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 2/4] scsi: host: allocate struct Scsi_Host on the NUMA
+Subject: Re: [PATCH v3 1/4] scsi: scan: allocate sdev and starget on the NUMA
  node of the host adapter
 To: Sumit Saxena <sumit.saxena@broadcom.com>,
  "Martin K . Petersen" <martin.petersen@oracle.com>,
@@ -142,143 +142,34 @@ Cc: "James E . J . Bottomley" <James.Bottomley@HansenPartnership.com>,
  bcm-kernel-feedback-list@broadcom.com, Juergen Gross <jgross@suse.com>,
  Stefano Stabellini <sstabellini@kernel.org>,
  Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>,
- xen-devel@lists.xenproject.org, John Garry <john.g.garry@oracle.com>
+ xen-devel@lists.xenproject.org, James Rizzo <james.rizzo@broadcom.com>
 References: <20260609121806.2121755-1-sumit.saxena@broadcom.com>
- <20260609121806.2121755-3-sumit.saxena@broadcom.com>
+ <20260609121806.2121755-2-sumit.saxena@broadcom.com>
 Content-Language: en-US
 From: Hannes Reinecke <hare@suse.com>
-In-Reply-To: <20260609121806.2121755-3-sumit.saxena@broadcom.com>
+In-Reply-To: <20260609121806.2121755-2-sumit.saxena@broadcom.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 
 On 6/9/26 14:18, Sumit Saxena wrote:
-> scsi_host_alloc() used kzalloc(), which always picks an arbitrary node.
-> Extend the function to accept a 'struct device *dev' parameter and use
-> kzalloc_node() with dev_to_node(dev) so the Scsi_Host struct lands on
-> the same NUMA node as the HBA, mirroring the treatment already applied
-> to struct scsi_device, struct scsi_target, and shost_data.
+> From: James Rizzo <james.rizzo@broadcom.com>
 > 
-> When dev is NULL (legacy ISA/platform drivers without a dma_dev) the
-> allocation falls back to NUMA_NO_NODE, preserving existing behaviour.
+> When a host adapter is attached to a specific NUMA node, allocating
+> scsi_device and scsi_target via kzalloc() may place them on a remote
+> node.  All hot-path I/O accesses to these structures then cross the NUMA
+> interconnect, adding latency and consuming inter-node bandwidth.
 > 
-> Update all in-tree callers:
->    - PCI-based HBA drivers pass &pdev->dev (or the equivalent struct
->      member such as &phba->pcidev->dev, &h->pdev->dev, &ha->pdev->dev)
->      so their host struct is placed on the adapter's node.
->    - Non-PCI drivers (ISA, Amiga, ARM PCMCIA, virtio, Hyper-V, PS3, …)
->      pass NULL.
->    - libfc's libfc_host_alloc() inline helper passes NULL; FC drivers
->      that want NUMA awareness can open-code the call with their pdev.
+> Use kzalloc_node() with dev_to_node(shost->dma_dev) so allocations land
+> on the same node as the HBA, reducing cross-node traffic and improving
+> I/O performance on NUMA systems.
 > 
-> Suggested-by: John Garry <john.g.garry@oracle.com>
+> Signed-off-by: James Rizzo <james.rizzo@broadcom.com>
 > Signed-off-by: Sumit Saxena <sumit.saxena@broadcom.com>
 > ---
->   drivers/scsi/3w-9xxx.c                    | 2 +-
->   drivers/scsi/3w-sas.c                     | 2 +-
->   drivers/scsi/3w-xxxx.c                    | 2 +-
->   drivers/scsi/53c700.c                     | 2 +-
->   drivers/scsi/BusLogic.c                   | 2 +-
->   drivers/scsi/a100u2w.c                    | 2 +-
->   drivers/scsi/a2091.c                      | 2 +-
->   drivers/scsi/a3000.c                      | 2 +-
->   drivers/scsi/aacraid/linit.c              | 2 +-
->   drivers/scsi/advansys.c                   | 6 +++---
->   drivers/scsi/aha152x.c                    | 2 +-
->   drivers/scsi/aha1542.c                    | 2 +-
->   drivers/scsi/aha1740.c                    | 2 +-
->   drivers/scsi/aic7xxx/aic79xx_osm.c        | 2 +-
->   drivers/scsi/aic7xxx/aic7xxx_osm.c        | 2 +-
->   drivers/scsi/aic94xx/aic94xx_init.c       | 2 +-
->   drivers/scsi/am53c974.c                   | 2 +-
->   drivers/scsi/arcmsr/arcmsr_hba.c          | 3 ++-
->   drivers/scsi/arm/acornscsi.c              | 2 +-
->   drivers/scsi/arm/arxescsi.c               | 2 +-
->   drivers/scsi/arm/cumana_1.c               | 2 +-
->   drivers/scsi/arm/cumana_2.c               | 2 +-
->   drivers/scsi/arm/eesox.c                  | 2 +-
->   drivers/scsi/arm/oak.c                    | 2 +-
->   drivers/scsi/arm/powertec.c               | 2 +-
->   drivers/scsi/atari_scsi.c                 | 2 +-
->   drivers/scsi/atp870u.c                    | 2 +-
->   drivers/scsi/bfa/bfad_im.c                | 2 +-
->   drivers/scsi/csiostor/csio_init.c         | 4 ++--
->   drivers/scsi/dc395x.c                     | 2 +-
->   drivers/scsi/dmx3191d.c                   | 2 +-
->   drivers/scsi/elx/efct/efct_xport.c        | 4 ++--
->   drivers/scsi/esas2r/esas2r_main.c         | 2 +-
->   drivers/scsi/fdomain.c                    | 2 +-
->   drivers/scsi/fnic/fnic_main.c             | 2 +-
->   drivers/scsi/g_NCR5380.c                  | 2 +-
->   drivers/scsi/gvp11.c                      | 2 +-
->   drivers/scsi/hisi_sas/hisi_sas_main.c     | 2 +-
->   drivers/scsi/hisi_sas/hisi_sas_v3_hw.c    | 2 +-
->   drivers/scsi/hosts.c                      | 6 ++++--
->   drivers/scsi/hpsa.c                       | 2 +-
->   drivers/scsi/hptiop.c                     | 2 +-
->   drivers/scsi/ibmvscsi/ibmvfc.c            | 2 +-
->   drivers/scsi/ibmvscsi/ibmvscsi.c          | 2 +-
->   drivers/scsi/imm.c                        | 2 +-
->   drivers/scsi/initio.c                     | 2 +-
->   drivers/scsi/ipr.c                        | 2 +-
->   drivers/scsi/ips.c                        | 2 +-
->   drivers/scsi/isci/init.c                  | 2 +-
->   drivers/scsi/jazz_esp.c                   | 2 +-
->   drivers/scsi/libiscsi.c                   | 2 +-
->   drivers/scsi/lpfc/lpfc_init.c             | 2 +-
->   drivers/scsi/mac53c94.c                   | 2 +-
->   drivers/scsi/mac_esp.c                    | 2 +-
->   drivers/scsi/mac_scsi.c                   | 2 +-
->   drivers/scsi/megaraid.c                   | 2 +-
->   drivers/scsi/megaraid/megaraid_mbox.c     | 2 +-
->   drivers/scsi/megaraid/megaraid_sas_base.c | 2 +-
->   drivers/scsi/mesh.c                       | 2 +-
->   drivers/scsi/mpi3mr/mpi3mr_os.c           | 2 +-
->   drivers/scsi/mpt3sas/mpt3sas_scsih.c      | 4 ++--
->   drivers/scsi/mvme147.c                    | 2 +-
->   drivers/scsi/mvsas/mv_init.c              | 2 +-
->   drivers/scsi/mvumi.c                      | 2 +-
->   drivers/scsi/myrb.c                       | 2 +-
->   drivers/scsi/myrs.c                       | 2 +-
->   drivers/scsi/ncr53c8xx.c                  | 2 +-
->   drivers/scsi/nsp32.c                      | 2 +-
->   drivers/scsi/pcmcia/nsp_cs.c              | 2 +-
->   drivers/scsi/pcmcia/qlogic_stub.c         | 2 +-
->   drivers/scsi/pcmcia/sym53c500_cs.c        | 2 +-
->   drivers/scsi/pm8001/pm8001_init.c         | 2 +-
->   drivers/scsi/pmcraid.c                    | 2 +-
->   drivers/scsi/ppa.c                        | 2 +-
->   drivers/scsi/ps3rom.c                     | 2 +-
->   drivers/scsi/qla1280.c                    | 2 +-
->   drivers/scsi/qla2xxx/qla_mid.c            | 2 +-
->   drivers/scsi/qla2xxx/qla_os.c             | 2 +-
->   drivers/scsi/qlogicfas.c                  | 2 +-
->   drivers/scsi/qlogicpti.c                  | 2 +-
->   drivers/scsi/scsi_debug.c                 | 2 +-
->   drivers/scsi/sgiwd93.c                    | 2 +-
->   drivers/scsi/smartpqi/smartpqi_init.c     | 2 +-
->   drivers/scsi/snic/snic_main.c             | 2 +-
->   drivers/scsi/stex.c                       | 2 +-
->   drivers/scsi/storvsc_drv.c                | 2 +-
->   drivers/scsi/sun3_scsi.c                  | 2 +-
->   drivers/scsi/sun3x_esp.c                  | 2 +-
->   drivers/scsi/sun_esp.c                    | 2 +-
->   drivers/scsi/sym53c8xx_2/sym_glue.c       | 2 +-
->   drivers/scsi/virtio_scsi.c                | 2 +-
->   drivers/scsi/vmw_pvscsi.c                 | 2 +-
->   drivers/scsi/wd719x.c                     | 2 +-
->   drivers/scsi/xen-scsifront.c              | 2 +-
->   drivers/scsi/zorro_esp.c                  | 2 +-
->   include/scsi/libfc.h                      | 2 +-
->   include/scsi/scsi_host.h                  | 3 ++-
->   97 files changed, 107 insertions(+), 103 deletions(-)
+>   drivers/scsi/scsi_scan.c | 7 ++++---
+>   1 file changed, 4 insertions(+), 3 deletions(-)
 > 
-Quite a lot of churn for such a (relatively) simple change.
-
-I think it might be better to introduce a new function
-(scsi_host_alloc_node() ?) with the additional parameter,
-and make scsi_host_alloc() a wrapper around that.
-
-That will reduce the size of this patch immensely.
+Reviewed-by: Hannes Reinecke <hare@kernel.org>
 
 Cheers,
 
