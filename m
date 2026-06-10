@@ -1,94 +1,96 @@
-Return-Path: <linuxppc-dev+bounces-22418-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22419-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6D932CD8CB2
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jun 2026 15:23:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 39EC7CD8CB9
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jun 2026 15:47:43 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gb8gh5LbRz2yfD;
-	Thu, 11 Jun 2026 01:23:44 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a00:1450:4864:20::330" arc.chain=google.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781105024;
-	cv=pass; b=PLOG1ALF1mH47vpWfC0vyB05X1aHliK851VlGlLgtDf8mPjKOLmlsHWGvC7BnsTj4I6ggc6u7V9WZaoNuBpb/l1CYV5hkAwLaA2ZIL1mWj+gI1t4L0/8yy/bKx+JQ8zJ18ZhY3sx3RIxWERd6e9OaG5dFZ7pCKq8Qxl0YKQ0gHMu9LlJhDgxbITHlHGrlWinZSiRCuasDBTuEnV0CQ2ltRkJq0mNytWKEKA3hJZcLz/LwRI+PWY1jaSTMuay+fT/G3Tv0kpcbqWv58+riuX7zlNdyDnsma1vh7SpEdUw8XRWZtmpEk4rawwZMNf+BLN2pA/5WTRUC8Ip3LyRX602fA==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1781105024; c=relaxed/relaxed;
-	bh=HLSNIkxH7X+mkcTC4TNft77b6jFG+UTH6aJ4cVsmWLs=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=AB3yicm8lTR6ujnthnh1JlCftDOX3NcIqF/6wn+QVMhljEVSH+sH4603qY6pBDi8hUkCDBku12b3BLsga7zS7kl/PBjuEm3tvdUY2dQ2Vr/XKBvVS9nFB5pBOqhEh1rXe3VLDR7slZenEAPBL6YJoB2/fdvF698jrrlECrHl7C4IKuHiNFfcvDkX1oUDY4YqgERYV0eucZ/1TFAOTpJTt4rBIiZkrgb/znggUPkQ4VnVwRBHCHzFsABqSsbCPQ/3sMHcjgoQ7qcZqHJNi7wamBLKjqehlqu5HY4xO4iPoOeSDehv8N7PM9+z68Oaf8uqOrdzVl8Ma77DAIOkBNDSSA==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=bKW7Kqjn; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::330; helo=mail-wm1-x330.google.com; envelope-from=tjmercier@google.com; receiver=lists.ozlabs.org) smtp.mailfrom=google.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gb9CK5fGqz2yrX;
+	Thu, 11 Jun 2026 01:47:41 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781106461;
+	cv=none; b=IbLX1bbphThh87wzDZCxkc3lHU3d3Lq8C/v0byBC9zpGSVltlj+CMrvrQvIzOFj2gkPvN9v4/MZ3p0yJu6/8TiL5RDNJKmY4KD2qNQtbbzu23NFkQ5hSeF+qvCgjZNr39zsMF3lYcCtfLwXJZWwD16oNoww+/MJwWVPhwxxYq/eU1LWsSj4WvYuHEABwOiLsFCuBLfL2gjMCD3t42epZvirBXmUOrWQvXgzvI2S0rqUGvJiVpcQ1D9cC8fZQRgR4RycWBpUZ3liXY+q1MafJZ5mc1951uObKn782GSkD7fVpfAers54jOb4i/pXG+ctSsFP58gsTNguO+NBKUvSs2A==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1781106461; c=relaxed/relaxed;
+	bh=F9Hypa89gAReOQHmEvxQjPNyohIgM32phqPh11LBjt8=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=NUB/5Z1C7Q4plRItnOidaJoFkLgnu7j8r5rMqeQVdnURFlZWD6yoMyR8XOni9S/zrlbLoG6uHTwiSUAPe7oKOTqnR5+L8kNipe0C5oNpIzOrhWGSWCtJZ+M0kxDG8t+LQiuavivdGboog+RYP5KnLYyIorvoMNrQ5GOlG5nED0Jy3ps3l8yhqudw+vSdqXbAbpC1qz90A4SKtLKF3WS5mnrBOhpIfuB6BGu8vB7sy+c6aOTWTsf7hvgdgq93AkkyPx0RW7spjnMuQjaes8GhUNBqwK9YH7a/0SLxX3NjoYIGYkBqmDQnvIjTQk9s7QAIZzkp+SCyqvZxsCD6jO7ZRg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=pa6SHsBT; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=bKW7Kqjn;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=pa6SHsBT;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2a00:1450:4864:20::330; helo=mail-wm1-x330.google.com; envelope-from=tjmercier@google.com; receiver=lists.ozlabs.org)
-Received: from mail-wm1-x330.google.com (mail-wm1-x330.google.com [IPv6:2a00:1450:4864:20::330])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gb8gf75ZZz2yNn
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jun 2026 01:23:42 +1000 (AEST)
-Received: by mail-wm1-x330.google.com with SMTP id 5b1f17b1804b1-490b23c828aso57415e9.1
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jun 2026 08:23:42 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1781105019; cv=none;
-        d=google.com; s=arc-20240605;
-        b=lCTZkTErxoe+b3BGGE70p0yddwu73L1RsIhMCvLWriVHEw3LLhTlBioWsDVnAVaPwi
-         /YwjP3ixZCDDQa02GSmfjPRyK1sOT3RkIsUNPtPMzPG5985X0nvBF1YG7vFZaEhEgC75
-         nwe436DKMzKarapg7svG1KSruORqncZgUfXS2UDzY5RW4/AbVNAif5BMhMHAn+z5TNh4
-         x1X+4j0EFBmC7w1aPMDXwamaXF38Vt7s/mIz07Tvbmh7LyTRyywTNAman0VdhlCnk+P+
-         HSBQ/SG9ZhIJjGXIACvzO+DFjysKTwSeFiWF3oPVIyhb1rhZa2gqcrLnJ9dg9Irjrxa9
-         Ot9g==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=HLSNIkxH7X+mkcTC4TNft77b6jFG+UTH6aJ4cVsmWLs=;
-        fh=ch/DcCoTRuj3sHoMbrm9DOaBgrRDI3N1JbiGgSkp460=;
-        b=Gwu+B6NTLPSpNLPL+VIkSfIaTDEgaJK0bj9KryJ9GJFDssXIyZ6X+sRxDD99cFeVwi
-         bjggJ6YXild4PWv6Fpu1qjYe30dMYTom2Dy55/UMB140UCdv6iVgILjGIoDe+doHLLrc
-         njMadnLLE161eIpxEui+i1YRyQPuXD2XE4l21FF+o2D9IvCyJkl7Qwo5gjfWWEQxKBV5
-         zqqS355FFIn2K0VHb2OECUoDegHZ3ozFmpGH+8BFfVsJHwttdWzIlaMnWEtj+zeLMhLc
-         GmWMnbHWQPm+iiqkLl9cc3cZ6GKqiGBe97x4eECRoka6fTi3oYwKpVkRRYpjgChVdFEf
-         LeLw==;
-        darn=lists.ozlabs.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20251104; t=1781105019; x=1781709819; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=HLSNIkxH7X+mkcTC4TNft77b6jFG+UTH6aJ4cVsmWLs=;
-        b=bKW7Kqjn0+eoKd7LfjsmREzS6i1O9Yad4zBo7g1evRZPikpe7Lwcjqo9NGtBcFXxRI
-         qpElLk1trU49sMqzqvq3iMTjhmt4YAvSXc5NjUJMogQvztV5BSywzHfSuK38H5/x8v1w
-         x+igJhwpOwL6OK4+bIwGwjuAK07OdAuZC1znMxLo974wJ0dsVv3P2ZfEyGDxt/xy7UID
-         krkaStMqREdI/clzlOZRNRcjMZXgOOPeqv5z7ENAtu6rZKWM4o+8jv6CSqsUJ1gj/3Du
-         z/qKI0UiOM44BthNe+0w4RD6TUAkq7ZGR2K1UUljLcNm6l0bppTKq88u/j1rQcD2aJUs
-         sI+w==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1781105019; x=1781709819;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=HLSNIkxH7X+mkcTC4TNft77b6jFG+UTH6aJ4cVsmWLs=;
-        b=C+jOTz0kyT6YGpAXBjB2+O5VaSNEG2QFTWfnzo8LwWDB8yIja3fGwwcyLAf/VIoUl3
-         /zAZ9Mux5W67DKtrmlg+1iaXYe8slLHdzatDDL8xlNO2Z0I0zHPcb+5z68t2hSs8i9+4
-         dWhbeOszqemzR88E5rTRk5MAuKmdg5FhH2V+i/dPOy/QjYCAUpjCxPSgdGdS7kyJg6te
-         Lu/PWWZH9jLTJXE+gS2TsIiKIDSLYDeHD839OhiEXmbJDteUOG8bhX8DEZKNH/DitB+d
-         uofpTHAJoN32ZRYfe00MzvBFnUqRLQfkPQfnLVEXgNHDXTF/x1QHgaxhZxpG3AT+LOW3
-         ut7Q==
-X-Forwarded-Encrypted: i=1; AFNElJ+XSdrIhtA4CzmJxGACCBzlLixQuQBRgWEdlSJ8y3Qod0gOrBwUgRKzOBUqSPWgFQ1TRBp2xZMfFtwkiNc=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YzRpj+yRqMIkwgL6cJgc+RZwZEgBY3V2gCt+7FAvxdH5zSD3XX0
-	9wNbgFKC+qCMdh6SjjRGkgJkeD3RS6vnVHgKLQ9ad8jWzWBwWkFoRlPlm1bQ+wvK9KCjsfEVcp2
-	VcQ73W5zK+TXf0Ee6uz0s7cFIDgO6wavRZv52trVy
-X-Gm-Gg: Acq92OF0o6iTy6Hm8ef/n321k8FobF7X+JfepPhuJBI1JB3IDwqqDcvYq5A+Z0YEFTL
-	4d+TpzBuQ28pcSkV0IDvDLBvviPB51NmeOhRNcSz0pkSgBpenzfVyyYx1v+K4gzZLo824mh02nJ
-	T27oqCCA0OL7UyvO/2YnjyWZH8loF66pIRzeVLlIC4gvSNVWUciZzRVrz8lhbWrW2pmsvneEaEL
-	W0t/MExcS+4j9xxR9UAXwiMc87yZDqONmo6LiEKUQKuuEyhShYNG+6oERKR0oOL41OCJH+GAvev
-	7+m/vZVmYnAo0GO5iJYYcUW67u0OEnvt9UhHEv/Pvf2VBacji/GnyuVQJWj9rcub7Ae6HQE7jxb
-	JfIob
-X-Received: by 2002:a7b:c055:0:b0:48a:5aa3:ac1e with SMTP id
- 5b1f17b1804b1-490e250419dmr39465e9.3.1781105018413; Wed, 10 Jun 2026 08:23:38
- -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gb9CJ61JDz2ykX
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jun 2026 01:47:40 +1000 (AEST)
+Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 65AEdhiv2688319;
+	Wed, 10 Jun 2026 15:47:21 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-type:date:from:in-reply-to:message-id:mime-version
+	:references:subject:to; s=pp1; bh=F9Hypa89gAReOQHmEvxQjPNyohIgM3
+	2phqPh11LBjt8=; b=pa6SHsBTWp0nMu3fzJxb/bGwc6BJK7ZKhF9FaR1fx0Ufxk
+	rfdJFLbpIXl5HUaoXnD1POVpjGUYYAUGd5TrphQJkqyKG72gBTMJD1CrIlcPFAkg
+	SqNgUpblFlpwtXh8Z5UNooPnAg00vjUlJCAKBLtGxruWOCrMhP+IPFLZ/YPzL/4e
+	y6ZayUbGAV4CU+gfALJthW45f77J4vY8j8XaKSghp811f0v0/q5nM7xsETIQcml5
+	mVXA0ros/AD2AbjeGkETiMQYG5KB6sDlM5yQY7B6WILm6KDlRiNSAtiao4t0H0Qa
+	f6khlivQ7ZyMpt+Qgwdl/l0o8mMihtWIzXVC5e9A==
+Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4em9ye9gg6-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 10 Jun 2026 15:47:21 +0000 (GMT)
+Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma11.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 65AFYZbQ024799;
+	Wed, 10 Jun 2026 15:47:20 GMT
+Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
+	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4en0jyf15t-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 10 Jun 2026 15:47:20 +0000 (GMT)
+Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com [10.20.54.104])
+	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 65AFlGNp42402180
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Wed, 10 Jun 2026 15:47:16 GMT
+Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 619D720043;
+	Wed, 10 Jun 2026 15:47:16 +0000 (GMT)
+Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id B4F3620040;
+	Wed, 10 Jun 2026 15:47:13 +0000 (GMT)
+Received: from fedora (unknown [9.5.7.39])
+	by smtpav05.fra02v.mail.ibm.com (Postfix) with ESMTPS;
+	Wed, 10 Jun 2026 15:47:13 +0000 (GMT)
+Date: Wed, 10 Jun 2026 21:17:15 +0530
+From: Amit Machhiwal <amachhiw@linux.ibm.com>
+To: Vaibhav Jain <vaibhav@linux.ibm.com>
+Cc: Amit Machhiwal <amachhiw@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+        Madhavan Srinivasan <maddy@linux.ibm.com>,
+        Anushree Mathur <anushree.mathur@linux.ibm.com>,
+        Paolo Bonzini <pbonzini@redhat.com>,
+        Nicholas Piggin <npiggin@gmail.com>,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+        Jonathan Corbet <corbet@lwn.net>,
+        Shuah Khan <skhan@linuxfoundation.org>, kvm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, lkp@intel.com
+Subject: Re: [PATCH v3 2/5] KVM: PPC: Introduce KVM_CAP_PPC_COMPAT_CAPS and
+ wire up ioctl
+Message-ID: <20260610211350.ff62b2d0-b2-amachhiw@linux.ibm.com>
+Mail-Followup-To: Vaibhav Jain <vaibhav@linux.ibm.com>, 
+	linuxppc-dev@lists.ozlabs.org, Madhavan Srinivasan <maddy@linux.ibm.com>, 
+	Anushree Mathur <anushree.mathur@linux.ibm.com>, Paolo Bonzini <pbonzini@redhat.com>, 
+	Nicholas Piggin <npiggin@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>, 
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, Jonathan Corbet <corbet@lwn.net>, 
+	Shuah Khan <skhan@linuxfoundation.org>, kvm@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	linux-doc@vger.kernel.org, lkp@intel.com
+References: <20260522152744.55251-1-amachhiw@linux.ibm.com>
+ <20260522152744.55251-3-amachhiw@linux.ibm.com>
+ <87pl28z3nx.fsf@vajain21.in.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -102,51 +104,199 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20260610142329.3836808-1-sumit.semwal@linaro.org>
-In-Reply-To: <20260610142329.3836808-1-sumit.semwal@linaro.org>
-From: "T.J. Mercier" <tjmercier@google.com>
-Date: Wed, 10 Jun 2026 08:23:24 -0700
-X-Gm-Features: AVVi8CeKPjOw-ulqerfXTIRQXgt0wS2BLRdaHk4b32zpbgZavKZyW6IeEygncls
-Message-ID: <CABdmKX0K22aaPTrk7Xs_8859ePYQsPNuqcG3v4oMZHK3T0xqKQ@mail.gmail.com>
-Subject: Re: [PATCH] dma-buf: move system_cc_shared heap under separate Kconfig
-To: Sumit Semwal <sumit.semwal@linaro.org>
-Cc: christian.koenig@amd.com, jgg@ziepe.ca, jiri@resnulli.us, 
-	hch@infradead.org, maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com, 
-	chleroy@kernel.org, linuxppc-dev@lists.ozlabs.org, lkp@intel.com, 
-	agordeev@linux.ibm.com, gerald.schaefer@linux.ibm.com, 
-	linux-s390@vger.kernel.org, djbw@kernel.org, thomas.lendacky@amd.com, 
-	x86@kernel.org, arnd@linaro.org, benjamin.gaignard@collabora.com, 
-	Brian.Starkey@arm.com, jstultz@google.com, mripard@kernel.org, afd@ti.com, 
-	linux-media@vger.kernel.org, dri-devel@lists.freedesktop.org, 
-	linaro-mm-sig@lists.linaro.org, linux-kernel@vger.kernel.org, 
-	Arnd Bergmann <arnd@arndb.de>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <87pl28z3nx.fsf@vajain21.in.ibm.com>
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjEwMDE0OCBTYWx0ZWRfX0C6egcHhst3L
+ HPev97mR/2sUqiVqHluSoCUveOzqLg8IUomZovfeYzm6hzgIHu4DXlwtxctQQudS24RYcKOiISF
+ vxAk6y+SGRbFbr0RiBLAT8aJgcR4OTl/yewY5V2mJ6d15SOblnxYbYw4UjfsZZtQMuNULCpRW5d
+ b2YeiKI67pxJykJuP+br70Lmt9dWvfolBLElepOvQ6UbC0PBFerRFqALJzSZlQ97HqyGrASieov
+ np8jpNPJGr0loGmY/6qGdI45uCURc0QN2B5n9XVVkbf4/RzCdxpeGm52HGwah9QQ1c5+tHtBR3U
+ A9maXK3pi8Cc1zB2gaXhMipifU45oK9r/CEXYC7jzFTTWJrGPLpixclq/lPrA8HcH2i1oJzHFHc
+ Kad1IscooJZgFrZSAjaYVhF+J3C19epnKJC/heAEvPC6qkFvBif7rgW6ZvqQVGihCmkatcx/ksO
+ WDYOc2yhIXFYjAaZ+kw==
+X-Authority-Analysis: v=2.4 cv=QKhYgALL c=1 sm=1 tr=0 ts=6a298709 cx=c_pps
+ a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
+ a=kj9zAlcOel0A:10 a=FelO9ux0wxsA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=V8glGbnc2Ofi9Qvn3v5h:22 a=VnNF1IyMAAAA:8
+ a=hyIHeesGBAN42lQhcX0A:9 a=CjuIK1q_8ugA:10
+X-Proofpoint-GUID: LyhLHReaSS3CryATyGIns3pCiYTxPKyl
+X-Proofpoint-ORIG-GUID: RF6bcsE0KgeEwzTJaYnq6IRHeV7H30aj
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
+ definitions=2026-06-10_03,2026-06-09_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501 lowpriorityscore=0 bulkscore=0 adultscore=0 phishscore=0
+ malwarescore=0 impostorscore=0 suspectscore=0 spamscore=0 clxscore=1015
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2605210000 definitions=main-2606100148
 
-On Wed, Jun 10, 2026 at 7:23=E2=80=AFAM Sumit Semwal <sumit.semwal@linaro.o=
-rg> wrote:
->
-> From: Arnd Bergmann <arnd@arndb.de>
->
-> While system heap and system_cc_shared heap share a lot of code
-> and hence the same source file, their users have different needs.
->
-> system heap users need it to be a loadable module, while
-> system_cc_shared heap users don't.
->
-> Building as a loadable module breaks system_cc_shared heap on
-> powerpc and s390 due to un-exported set_memory_encrypted /
-> set_memory_decrypted functions.
->
-> Fix these by reorganising code to put the system_cc_shared heap
-> under a new Kconfig symbol, which allows either building both
-> into the kernel, or leave encryption up to the consumers of the
-> system heap.
->
-> Fixes: fd55edff8a0a ("dma-buf: heaps: system: Turn the heap into a module=
-")
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-> Signed-off-by: Sumit Semwal <sumit.semwal@linaro.org>
+Hi Vaibhav,
 
-Reviewed-by: T.J. Mercier <tjmercier@google.com>
+Thanks for reviewing the patches. Please find my response inline.
+
+On 2026/06/03 09:16 AM, Vaibhav Jain wrote:
+> Hi Amit,
+> 
+> Thanks for this patch. Few review comments below:
+> 
+> Amit Machhiwal <amachhiw@linux.ibm.com> writes:
+> 
+> > Introduce a new capability and ioctl to expose CPU compatibility modes
+> > supported by the host processor for nested guests.
+> >
+> > On IBM POWER systems, newer processor generations (N) can operate in
+> > compatibility modes corresponding to earlier generations, like (N-1) and
+> > (N-2). This is particularly relevant for nested virtualization, where
+> > nested KVM guests may need to run with a specific processor compatibility
+> > level.
+> >
+> > Introduce KVM_CAP_PPC_COMPAT_CAPS capability and the corresponding
+> > KVM_PPC_GET_COMPAT_CAPS vm ioctl. The ioctl returns a bitmap describing
+> > the compatibility modes supported by the host in respective bit numbers,
+> > allowing userspace (e.g., QEMU) to select an appropriate compatibility
+> > level when configuring nested KVM guests.
+> >
+> > The ioctl handling is added in kvm_arch_vm_ioctl() and retrieves host
+> > CPU compatibility capabilities via a PowerPC-specific backend
+> > implementation when available. If the capability is not supported, the
+> > ioctl returns success with no capabilities set, allowing userspace to
+> > fall back gracefully.
+> >
+> > Suggested-by: Vaibhav Jain <vaibhav@linux.ibm.com>
+> > Tested-by: Anushree Mathur <anushree.mathur@linux.ibm.com>
+> > Signed-off-by: Amit Machhiwal <amachhiw@linux.ibm.com>
+> > ---
+> >  arch/powerpc/include/asm/kvm_ppc.h  |  1 +
+> >  arch/powerpc/include/uapi/asm/kvm.h |  6 ++++++
+> >  arch/powerpc/kvm/powerpc.c          | 21 +++++++++++++++++++++
+> >  include/uapi/linux/kvm.h            |  4 ++++
+> >  4 files changed, 32 insertions(+)
+> >
+> > diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include/asm/kvm_ppc.h
+> > index 0953f2daa466..cadfb839e836 100644
+> > --- a/arch/powerpc/include/asm/kvm_ppc.h
+> > +++ b/arch/powerpc/include/asm/kvm_ppc.h
+> > @@ -319,6 +319,7 @@ struct kvmppc_ops {
+> >  	bool (*hash_v3_possible)(void);
+> >  	int (*create_vm_debugfs)(struct kvm *kvm);
+> >  	int (*create_vcpu_debugfs)(struct kvm_vcpu *vcpu, struct dentry *debugfs_dentry);
+> > +	int (*get_compat_cpu_ver)(struct kvm_ppc_compat_caps *host_caps);
+> >  };
+> >  
+> >  extern struct kvmppc_ops *kvmppc_hv_ops;
+> > diff --git a/arch/powerpc/include/uapi/asm/kvm.h b/arch/powerpc/include/uapi/asm/kvm.h
+> > index 077c5437f521..081d6c7f7f70 100644
+> > --- a/arch/powerpc/include/uapi/asm/kvm.h
+> > +++ b/arch/powerpc/include/uapi/asm/kvm.h
+> > @@ -437,6 +437,12 @@ struct kvm_ppc_cpu_char {
+> >  	__u64	behaviour_mask;		/* valid bits in behaviour */
+> >  };
+> >  
+> > +/* For KVM_PPC_GET_COMPAT_CAPS */
+> > +struct kvm_ppc_compat_caps {
+> > +	__u64	flags;			/* Reserved for future use */
+> Please introduce a size field also for the UAPI so that in this
+> structure can evolve in future without breaking kernel ABI.
+
+Sure, adding a size field for validations and future extensibility makes
+sense. I'll add it in the next version.
+
+> 
+> > +	__u64	compat_capabilities;	/* Capabilities supported by the host */
+> > +};
+> > +
+> >  /*
+> >   * Values for character and character_mask.
+> >   * These are identical to the values used by H_GET_CPU_CHARACTERISTICS.
+> > diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
+> > index 00302399fc37..02b834ebd8d3 100644
+> > --- a/arch/powerpc/kvm/powerpc.c
+> > +++ b/arch/powerpc/kvm/powerpc.c
+> > @@ -697,6 +697,13 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
+> >  			}
+> >  		}
+> >  		break;
+> > +#if defined(CONFIG_KVM_BOOK3S_HV_POSSIBLE)
+> > +	case KVM_CAP_PPC_COMPAT_CAPS:
+> > +		r = 0;
+> > +		if (kvmhv_on_pseries())
+> > +			r = 1;
+> > +		break;
+> > +#endif /* CONFIG_KVM_BOOK3S_HV_POSSIBLE */
+> >  	default:
+> >  		r = 0;
+> >  		break;
+> > @@ -2463,6 +2470,20 @@ int kvm_arch_vm_ioctl(struct file *filp, unsigned int ioctl, unsigned long arg)
+> >  		r = kvm->arch.kvm_ops->svm_off(kvm);
+> >  		break;
+> >  	}
+> > +	case KVM_PPC_GET_COMPAT_CAPS: {
+> > +		struct kvm_ppc_compat_caps host_caps;
+> > +
+> > +		r = -ENOTTY;
+> > +		memset(&host_caps, 0, sizeof(host_caps));
+> > +		if (!kvm->arch.kvm_ops->get_compat_cpu_ver)
+> > +			goto out;
+> > +
+> > +		r = kvm->arch.kvm_ops->get_compat_cpu_ver(&host_caps);
+> > +		if (!r && copy_to_user(argp, &host_caps,
+> > +				     sizeof(host_caps)))
+> As mentioned above please introduce a size field in the structure thats
+> being copied to the userspace and use the size field to copy the
+> apporiate structure to the userspace. Otherwise a future kernel may
+> unintentionally overwrite unintended userspace memory if it happens to
+> be using a  larger structure size then what VMM knows about.
+
+Sure, I'll add a validation around the structure size.
+
+> 
+> > +			r = -EFAULT;
+> > +		break;
+> > +	}
+> >  	default: {
+> >  		struct kvm *kvm = filp->private_data;
+> >  		r = kvm->arch.kvm_ops->arch_vm_ioctl(filp, ioctl, arg);
+> > diff --git a/include/uapi/linux/kvm.h b/include/uapi/linux/kvm.h
+> > index 6c8afa2047bf..1788a0068662 100644
+> > --- a/include/uapi/linux/kvm.h
+> > +++ b/include/uapi/linux/kvm.h
+> > @@ -996,6 +996,7 @@ struct kvm_enable_cap {
+> >  #define KVM_CAP_S390_USER_OPEREXEC 246
+> >  #define KVM_CAP_S390_KEYOP 247
+> >  #define KVM_CAP_S390_VSIE_ESAMODE 248
+> > +#define KVM_CAP_PPC_COMPAT_CAPS 249
+> >  
+> >  struct kvm_irq_routing_irqchip {
+> >  	__u32 irqchip;
+> > @@ -1349,6 +1350,9 @@ struct kvm_s390_keyop {
+> >  #define KVM_GET_DEVICE_ATTR	  _IOW(KVMIO,  0xe2, struct kvm_device_attr)
+> >  #define KVM_HAS_DEVICE_ATTR	  _IOW(KVMIO,  0xe3, struct kvm_device_attr)
+> >  
+> > +/* Available with KVM_CAP_PPC_COMPAT_CAPS */
+> > +#define KVM_PPC_GET_COMPAT_CAPS	_IOR(KVMIO,  0xe4, struct
+> > kvm_ppc_compat_caps)
+> Minor: you may want to align the name of the newly introduced kvmppc_ops
+> to KVM CAP you are introducing here.
+
+Will do.
+
+Thanks,
+Amit
+
+> 
+> > +
+> >  /*
+> >   * ioctls for vcpu fds
+> >   */
+> > -- 
+> > 2.50.1 (Apple Git-155)
+> >
+> >
+> 
+> -- 
+> Cheers
+> ~ Vaibhav
 
