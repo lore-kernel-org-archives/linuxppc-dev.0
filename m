@@ -1,75 +1,75 @@
-Return-Path: <linuxppc-dev+bounces-22401-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22402-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3AEC3CD8CB9
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jun 2026 12:47:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A20EDCD8CB9
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jun 2026 12:48:04 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gb5Cr29P2z2yfD;
-	Wed, 10 Jun 2026 22:47:52 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::102c"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781095672;
-	cv=none; b=Zq+qAK+ls9gEeCHLPJFfp/5JCDT50iPEsDw5+u5bCEKzWwm1LlNmpKL2TQ5TX1IBRg0F0pqWHWf2SnuiJ+1YGefPB4L4EosGaP6T7H8VFajgGwGxgMTAcrAOUypYaeauxYU3P0bEIKjO7bbcQdItuM2+1MOyeTY9SfmrmhG5QpVJ1XROAkLgnvVBi81qstnafRxQwvHJjd0ZAXc2uUtzHiYFEUVWvF1NPfPQ/IeGowBaSyejjsUZMnIyxjk8HxtM8EZHj+8OfCWoXNH+SMMxCGcoRVR0Qmhg4W/etT9r8PRP7LBr6l6yuQuSXGk6T/sQE4p/eNrCiAG7JwnSOSjXwQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gb5Cz6Nvhz2ysW;
+	Wed, 10 Jun 2026 22:47:59 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1034"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781095679;
+	cv=none; b=oLx69Ezmi6maqLmWPFvPDAbRoPiZT3zEXxTSsBRpM9trcGMiDm6C63U9uu+wELwL0r0fUl7lPuU2x4kHSxvSshEPYz3CVAf1stqA5N5+4xHgGYPEt8JKdSK9ymWZNBFCP0u7LuhyDKVLX7Dm5qnr7Tf24L9uSGMemOfiEHZQcV4qrFJR+tJxpGHpo1+ybzmRO9qSLJrkHH2pzK5GBWXQcQDdWvraGP7k5KavkBYAHYMWh1MmImgKYjoVyFLRSBjbJp0/UGoNKLkwhs4kaEA35e55UE5/6xUW+qHL3YYOzHx170hffn4+TCbpZFqSItY4Cki8VEgWDQls7BO7ZX/dmQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1781095672; c=relaxed/relaxed;
-	bh=k0vOlqOnh5jkFuU9tmOA1F8NP87zeNaswUFOalPtmFY=;
+	t=1781095679; c=relaxed/relaxed;
+	bh=0HOmh8/TqX53kInZOvT6+JJKg38oaNPkoSuIN+cgTZA=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=lr4qyQlEpwX3OtS4bSTr0HYJ8R5dFsS0CGadoYuVoh9/n7SymZAwPr/+MiX4HRdKJ735el+Y0txXvjZ5w0s6LTha3wyMhYFdPR+K9UZVwu7AZ+eBqgxJ7SbyFE5VUB+kC0PMn6VNNKhQI5v6BbmaarE6DAh96nmyYzbzZ/+NSg731Vu6Svpjj/mL2N2nwsI5pmMQO0Um4RHA4ZGNl4OzWVYMcX6NbG+QZ6wrBZgsY791MtaPcQHSUIImVXsHh6/VokgYxOorRVoT4a+Tg/oml3vFyTnMkvjmtipJQBoa5xhPtik5wspJWePquHcqiM8pXZ1pO7ZbNho2bPaYZNlyZA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=JHcrqEsP; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::102c; helo=mail-pj1-x102c.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	 MIME-Version; b=FFA+knLRVdDSXGqQJLOi2LEo5w8ENm3vRsTEiBGPzurvFe/hFA+YhPw5dODhIXUokfjquy8N1/owu4TO7Y8ACExHL1gnE5k+ZhwXf4gbZ5ZdsVuVhmAHFHP0gSfnYVBbEzwWRMqgs2f1HiIfa4plHLT+1aBanQmijJMA86DKq5oCffdwPMEfdhG4LEZ5KfoQOrNUA1J5oNkpgGH+JoU2a8FSGZuWViw+XTO6C4bOSIpQyXtqW18ynw+HORw+S6jIiyiYbXDI+HWxsUtsCltFo8U8r5s9Nv9/9YoefVgvfWv+2VwfBNWqwlvXwM6nNBloGS7nE0NfNRUa+tMT1XiYbg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=hTOOFMPm; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1034; helo=mail-pj1-x1034.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=JHcrqEsP;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=hTOOFMPm;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::102c; helo=mail-pj1-x102c.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pj1-x102c.google.com (mail-pj1-x102c.google.com [IPv6:2607:f8b0:4864:20::102c])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1034; helo=mail-pj1-x1034.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pj1-x1034.google.com (mail-pj1-x1034.google.com [IPv6:2607:f8b0:4864:20::1034])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gb5Cq44cMz2xdb
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jun 2026 22:47:51 +1000 (AEST)
-Received: by mail-pj1-x102c.google.com with SMTP id 98e67ed59e1d1-36d98c9b596so4226951a91.3
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jun 2026 05:47:51 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gb5Cy1S7Gz2xdb
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jun 2026 22:47:58 +1000 (AEST)
+Received: by mail-pj1-x1034.google.com with SMTP id 98e67ed59e1d1-36bcf3d2565so4670230a91.3
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jun 2026 05:47:57 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1781095670; x=1781700470; darn=lists.ozlabs.org;
+        d=gmail.com; s=20251104; t=1781095676; x=1781700476; darn=lists.ozlabs.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=k0vOlqOnh5jkFuU9tmOA1F8NP87zeNaswUFOalPtmFY=;
-        b=JHcrqEsPPCOlSj5/nWA4hiQYGuvobKAW0f/Nr8lSBn7QuePpZysLRn58aPfMUItWQ1
-         js32+rEGCGpUg8jombG8tkJth/23rJY0/KcBOikatcyLrI/vTzzC8DGm/76ujjGu1YLS
-         b32qKiex5kw2JoX1hStC8kIuExDcFSZCdb8ICbku1rTDiLjDR72qnR9HrBCI11C/3iwl
-         VTTujb9/UL6T6Hrdcmy9wIM1HhFJd0en9nbg90FNkjnt7j6ZUlYsN7EADLdPtW102o5B
-         ySgqmsBIDdF2Dt7jwc1EyM9LS+TeE1Ch8nt1ENFG0uB2plyLkeVI6zCU2cpxBC4jGx3X
-         EHvQ==
+        bh=0HOmh8/TqX53kInZOvT6+JJKg38oaNPkoSuIN+cgTZA=;
+        b=hTOOFMPmAaVvGK+FgvTQdw+HwEVYnv8dfwQTYxYjAt5wK0DZbMr4e3Sx5FeUjFvK3Q
+         L/fWi+5dSdJlRCX1TJr9+whbCdS7wu0eMmunxNV367WFlE+GvAeo8MqdOv943DlU7TtS
+         ujmVySrJizV+99kjncJkgMXrzhz2+dF0ZJSTbV8oO7D7ynOAbelhR61Mhp3aZYlxyF/e
+         cWGhzyCmXFQ/XL3lJXmNDr1dxW9j8Ssj8FuulMxj5wnNUwNMtXFUpvZMC9fTB8chy/wn
+         cqsyO9vDulb6k2A+4nzdITHr9jlX62cC/k2yXIZlxFA4Yofor0z6KMS7d6EWO/MckAeH
+         9eqQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1781095670; x=1781700470;
+        d=1e100.net; s=20251104; t=1781095676; x=1781700476;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to;
-        bh=k0vOlqOnh5jkFuU9tmOA1F8NP87zeNaswUFOalPtmFY=;
-        b=Sphk0teUBxDoYN6/neVNdip4dIe8CkYX1ECIwICYKZcdp6fI7/gM+23w5AiJxR5KTe
-         oinr1NXIUd02SEMJca3ZZu97Nub4Zv+nDi8dOHtXwVa+DVmcjw6sxC0b5qeoJjdWf7l/
-         Kpnz3MBazbI2zTmTu7zJcKcyWV5mU5tnmmzZuHx1nK48U0R+LdabcNrkctItRYtoQjrw
-         2uJF6Elt4KeCR5f2MXNNHyCyfuycNSX30DIFZMIkRvzu3+Bjhv3AFnuUlXE3xa7Wp32g
-         uQmmjAygm4+rs2kftNBCsDZj4nkK5QKGQhbKCT/yv/nr0AmAy4+7ff98Dl6duS5fSwX4
-         BWwg==
-X-Gm-Message-State: AOJu0YynXrvpygZcEqnq41LR9BgkZ01oCU7G9yrZQlTDeb8Y+zPiPHEA
-	gv9ZesT/gPvDjonTkx9YOHRSq6+vW/o48AslLbwrQyBBavB+P3FzVNr7
-X-Gm-Gg: Acq92OFa2sMR6VP2pLf+d7VAjyP5TL5zPj9AAPrNk6jluPCJukV2OQDI0OW31MPrsOH
-	s0xJX+t1WAJw19xIe05Hi6oJIsMkPu4fpJcA2kvl9RFc7rnQOFXvVfhC+rtf8AKiz7R2b/Az+qV
-	iNWlTJAnVkYKQpPkQ139CZNoI5bbQrhLuy09F0Wl+SXmyJUcxa5wm0bAgi+TwGO5v7hz3i9dbys
-	H0/PCDMTBkbLQX4L5MgLFAmfTEsezLdPkHxVQ84bo8kQO7yGuiVJ8X+L5XfgSBZCSjCx7eLWNUW
-	z9vdMWTV44sc+8Cr7wh1lEgfu2VTXj3U7Ecn8R6xgsGjm2wUnZZVdlcmZ2skNd8bFb0VrtLPEOp
-	cludBFDMBR+IyoeaFjh4zxE5pfqs29391udy4dsfgbSJKJ4CdcEx5Kby63O7+c95RmqwCKOaCJe
-	359ykCJb2E8hXs7xTq1fRnmj1rx48xVhmXBZQCJVtl9SievRfbQUJS/KdWDblYHg==
-X-Received: by 2002:a17:90b:2f85:b0:368:147f:bd2b with SMTP id 98e67ed59e1d1-370f0e488f3mr28109280a91.23.1781095669630;
-        Wed, 10 Jun 2026 05:47:49 -0700 (PDT)
+        bh=0HOmh8/TqX53kInZOvT6+JJKg38oaNPkoSuIN+cgTZA=;
+        b=Hxs14rOpUJp2xUJGIUybPkJqMp5wpkWMGmzk0yUVejbLH1GgwQ1OJEiNZMCl2uJnpw
+         eQ0Mf4b4AYGGuNTrmE92G+fHqtbp4Z5Z4Daf1Xus6V9SnAUEBi7RVEq+4TaMvJsvccq6
+         aNCgrBwo2pRRKgyGF0L61zutdk/vBWsg3QUqwxyCYx03fOoYhcT8wTzDT8nGwKOpcFDN
+         6rXYKdNzT06a7meeXkR5Fjjzc58JIuarbLWP3j4yACk4FMqKsbTCT13vOsZ9d2TLpgSV
+         NqZ2CPufob2mxGtT/ZWUZ0c6rbdJEBkF19bQmzJKwTRec/JdIbNS9gSqlWgoNtBzQZ/e
+         GaAg==
+X-Gm-Message-State: AOJu0YzNsWKdmS37E15wdJReHmUTDqgTv309gpgHLYogDg7KQbXMNR/4
+	4mUJ6e1qxXYDBiuSzSNys1SdjdbjtX/jfEegYcj/6YNEPoTWF148L2KR
+X-Gm-Gg: Acq92OG/e8Um7wqBDHut8LcN+JgXtAGBUJ5GAoDXdpfbyi1UxJYHs7B/zSzG9Uq+xjp
+	Nwbk2M/OwXZOkttOrOw1JpG/yE1xzm7k5G6CSZoNAvjHEMH3gZ2enPtYd2y1Ap0pNKxe+hEk9sO
+	Rp4BxTzE/9TbBXw5yu+3XSlpO2HCK2ZgPydJOkQKawwy40sCJa73JzySPnr7f/QSR6gftdXYgBV
+	uAhCI/RigcVKzGvZQtoA+InilzBNKIzNMMucSNOusxhSx6oz0siesjDRe/P+VppAfUNxjrPKqAw
+	Av8ibvfhkbBVkYCChILeZvbqrTAKjoqOGJsT5cnXfkoI5PO/EeCKP1UDVEJVM3F4wygePwWe3XP
+	hnwLCXeDz/AD3gxJlurHrJrxR3WvDOnJ+W94dH+T5FMng42zsccj1om8NWNQQdl6TlrgxSUHoVn
+	jS/JYZQ6eBNtFCwzL3WUA0KQqMvaBV7FHMbwXkbYQ1dL4ZhLhIUFc3RbUPw3E48g==
+X-Received: by 2002:a17:90b:584f:b0:36d:8e6f:8d94 with SMTP id 98e67ed59e1d1-370f0284ae5mr24715094a91.15.1781095675914;
+        Wed, 10 Jun 2026 05:47:55 -0700 (PDT)
 Received: from localhost.localdomain ([171.76.83.25])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-37624b83589sm3783554a91.16.2026.06.10.05.47.44
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-37624b83589sm3783554a91.16.2026.06.10.05.47.50
         (version=TLS1_3 cipher=TLS_CHACHA20_POLY1305_SHA256 bits=256/256);
-        Wed, 10 Jun 2026 05:47:48 -0700 (PDT)
+        Wed, 10 Jun 2026 05:47:54 -0700 (PDT)
 From: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
 To: kvm@vger.kernel.org,
 	Paolo Bonzini <pbonzini@redhat.com>
@@ -86,9 +86,9 @@ Cc: linuxppc-dev@lists.ozlabs.org,
 	Claudio Imbrenda <imbrenda@linux.ibm.com>,
 	Nicholas Piggin <npiggin@gmail.com>,
 	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
-Subject: [PATCH v3 RESEND 02/10] KVM: selftests: Add aligned guest physical page allocator
-Date: Wed, 10 Jun 2026 18:17:18 +0530
-Message-ID: <df86b5ccdbdafc3509d9538bd5e6796737bab2db.1781093720.git.ritesh.list@gmail.com>
+Subject: [PATCH v3 RESEND 03/10] KVM: PPC: selftests: add support for powerpc
+Date: Wed, 10 Jun 2026 18:17:19 +0530
+Message-ID: <d745b1faadb914e4f349f53f12d33d7235b2b193.1781093720.git.ritesh.list@gmail.com>
 X-Mailer: git-send-email 2.50.1
 In-Reply-To: <cover.1781093720.git.ritesh.list@gmail.com>
 References: <cover.1781093720.git.ritesh.list@gmail.com>
@@ -109,118 +109,1038 @@ Content-Transfer-Encoding: 8bit
 
 From: Nicholas Piggin <npiggin@gmail.com>
 
-powerpc will require this to allocate MMU tables in guest memory that
-are larger than guest base page size.
+Implement KVM selftests support for powerpc (Book3S-64).
+
+ucalls are implemented with an unsupported PAPR hcall number which will
+always cause KVM to exit to userspace.
+
+Virtual memory is implemented for the radix MMU, and only a base page
+size is supported (both 4K and 64K).
+
+Guest interrupts are taken in real-mode, so require a page allocated at
+gRA 0x0. Interrupt entry is complicated because gVA:gRA is not 1:1
+mapped (like the kernel is), so the MMU can not just be switched on and
+off.
+
+[Rebased to latest mainline tree, "cc" to clobber list, fix the
+size calculation in kvm_arch_vm_post_create()]
 
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-[Rebased to latest mainline tree]
 Signed-off-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
 ---
- .../testing/selftests/kvm/include/kvm_util.h  | 20 +++++++++--
- tools/testing/selftests/kvm/lib/kvm_util.c    | 33 +++++++++----------
- 2 files changed, 33 insertions(+), 20 deletions(-)
+ MAINTAINERS                                   |   2 +
+ tools/testing/selftests/kvm/Makefile          |   2 +-
+ tools/testing/selftests/kvm/Makefile.kvm      |  10 +
+ .../testing/selftests/kvm/include/kvm_util.h  |   9 +
+ .../selftests/kvm/include/powerpc/hcall.h     |  17 +
+ .../kvm/include/powerpc/kvm_util_arch.h       |  22 +
+ .../selftests/kvm/include/powerpc/ppc_asm.h   |  32 ++
+ .../selftests/kvm/include/powerpc/processor.h |  38 ++
+ .../selftests/kvm/include/powerpc/ucall.h     |  21 +
+ tools/testing/selftests/kvm/lib/guest_modes.c |  20 +-
+ tools/testing/selftests/kvm/lib/kvm_util.c    |   8 +
+ .../selftests/kvm/lib/powerpc/handlers.S      |  93 ++++
+ .../testing/selftests/kvm/lib/powerpc/hcall.c |  45 ++
+ .../selftests/kvm/lib/powerpc/processor.c     | 483 ++++++++++++++++++
+ .../testing/selftests/kvm/lib/powerpc/ucall.c |  22 +
+ 15 files changed, 821 insertions(+), 3 deletions(-)
+ create mode 100644 tools/testing/selftests/kvm/include/powerpc/hcall.h
+ create mode 100644 tools/testing/selftests/kvm/include/powerpc/kvm_util_arch.h
+ create mode 100644 tools/testing/selftests/kvm/include/powerpc/ppc_asm.h
+ create mode 100644 tools/testing/selftests/kvm/include/powerpc/processor.h
+ create mode 100644 tools/testing/selftests/kvm/include/powerpc/ucall.h
+ create mode 100644 tools/testing/selftests/kvm/lib/powerpc/handlers.S
+ create mode 100644 tools/testing/selftests/kvm/lib/powerpc/hcall.c
+ create mode 100644 tools/testing/selftests/kvm/lib/powerpc/processor.c
+ create mode 100644 tools/testing/selftests/kvm/lib/powerpc/ucall.c
 
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 355e4ab2f9e5..9848e8d6ae04 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -14119,6 +14119,8 @@ F:	arch/powerpc/include/asm/kvm*
+ F:	arch/powerpc/include/uapi/asm/kvm*
+ F:	arch/powerpc/kernel/kvm*
+ F:	arch/powerpc/kvm/
++F:	tools/testing/selftests/kvm/*/powerpc/
++F:	tools/testing/selftests/kvm/powerpc/
+ 
+ KERNEL VIRTUAL MACHINE FOR RISC-V (KVM/riscv)
+ M:	Anup Patel <anup@brainfault.org>
+diff --git a/tools/testing/selftests/kvm/Makefile b/tools/testing/selftests/kvm/Makefile
+index f2b223072b62..03d91f00092f 100644
+--- a/tools/testing/selftests/kvm/Makefile
++++ b/tools/testing/selftests/kvm/Makefile
+@@ -3,7 +3,7 @@ top_srcdir = ../../../..
+ include $(top_srcdir)/scripts/subarch.include
+ ARCH            ?= $(SUBARCH)
+ 
+-ifeq ($(ARCH),$(filter $(ARCH),arm64 s390 riscv x86 x86_64 loongarch))
++ifeq ($(ARCH),$(filter $(ARCH),arm64 s390 riscv x86 x86_64 loongarch powerpc))
+ # Top-level selftests allows ARCH=x86_64 :-(
+ ifeq ($(ARCH),x86_64)
+ 	override ARCH := x86
+diff --git a/tools/testing/selftests/kvm/Makefile.kvm b/tools/testing/selftests/kvm/Makefile.kvm
+index 9118a5a51b89..825bea7f851d 100644
+--- a/tools/testing/selftests/kvm/Makefile.kvm
++++ b/tools/testing/selftests/kvm/Makefile.kvm
+@@ -52,6 +52,11 @@ LIBKVM_loongarch += lib/loongarch/processor.c
+ LIBKVM_loongarch += lib/loongarch/ucall.c
+ LIBKVM_loongarch += lib/loongarch/exception.S
+ 
++LIBKVM_powerpc += lib/powerpc/handlers.S
++LIBKVM_powerpc += lib/powerpc/processor.c
++LIBKVM_powerpc += lib/powerpc/ucall.c
++LIBKVM_powerpc += lib/powerpc/hcall.c
++
+ # Non-compiled test targets
+ TEST_PROGS_x86 += x86/nx_huge_pages_test.sh
+ 
+@@ -239,6 +244,11 @@ TEST_GEN_PROGS_loongarch += memslot_perf_test
+ TEST_GEN_PROGS_loongarch += set_memory_region_test
+ TEST_GEN_PROGS_loongarch += steal_time
+ 
++TEST_GEN_PROGS_powerpc = $(TEST_GEN_PROGS_COMMON)
++TEST_GEN_PROGS_powerpc += access_tracking_perf_test
++TEST_GEN_PROGS_powerpc += dirty_log_perf_test
++TEST_GEN_PROGS_powerpc += hardware_disable_test
++
+ SPLIT_TESTS += arch_timer
+ SPLIT_TESTS += get-reg-list
+ 
 diff --git a/tools/testing/selftests/kvm/include/kvm_util.h b/tools/testing/selftests/kvm/include/kvm_util.h
-index 3666a8530f31..c515c918c2c9 100644
+index c515c918c2c9..10f03a182c8b 100644
 --- a/tools/testing/selftests/kvm/include/kvm_util.h
 +++ b/tools/testing/selftests/kvm/include/kvm_util.h
-@@ -991,8 +991,8 @@ void kvm_gsi_routing_write(struct kvm_vm *vm, struct kvm_irq_routing *routing);
- const char *exit_reason_str(unsigned int exit_reason);
+@@ -209,6 +209,9 @@ enum vm_guest_mode {
+ 	VM_MODE_P41V48_4K,
+ 	VM_MODE_P41V39_4K,
  
- gpa_t vm_phy_page_alloc(struct kvm_vm *vm, gpa_t min_gpa, u32 memslot);
--gpa_t __vm_phy_pages_alloc(struct kvm_vm *vm, size_t num, gpa_t min_gpa,
--			   u32 memslot, bool protected);
-+gpa_t __vm_phy_pages_alloc(struct kvm_vm *vm, size_t num, size_t align,
-+			   gpa_t min_gpa, u32 memslot, bool protected);
- gpa_t vm_alloc_page_table(struct kvm_vm *vm);
++	VM_MODE_P52V52_4K,	/* For powerpc64 */
++	VM_MODE_P52V52_64K,
++
+ 	NUM_VM_MODES,
+ };
  
- static inline gpa_t vm_phy_pages_alloc(struct kvm_vm *vm, size_t num,
-@@ -1003,10 +1003,24 @@ static inline gpa_t vm_phy_pages_alloc(struct kvm_vm *vm, size_t num,
- 	 * protected memory, as the majority of memory for such VMs is
- 	 * protected, i.e. using shared memory is effectively opt-in.
- 	 */
--	return __vm_phy_pages_alloc(vm, num, min_gpa, memslot,
-+	return __vm_phy_pages_alloc(vm, num, 1, min_gpa, memslot,
- 				    vm_arch_has_protected_memory(vm));
- }
+@@ -268,6 +271,12 @@ extern enum vm_guest_mode vm_mode_default;
+ #define MIN_PAGE_SHIFT			12U
+ #define ptes_per_page(page_size)	((page_size) / 8)
  
-+static inline gpa_t vm_phy_pages_alloc_align(struct kvm_vm *vm, size_t num,
-+					     size_t align, gpa_t min_gpa,
-+					     u32 memslot)
++#elif defined(__powerpc64__)
++
++#define VM_MODE_DEFAULT			vm_mode_default
++#define MIN_PAGE_SHIFT			12U
++#define ptes_per_page(page_size)	((page_size) / 8)
++
+ #endif
+ 
+ #define VM_SHAPE_DEFAULT	VM_SHAPE(VM_MODE_DEFAULT)
+diff --git a/tools/testing/selftests/kvm/include/powerpc/hcall.h b/tools/testing/selftests/kvm/include/powerpc/hcall.h
+new file mode 100644
+index 000000000000..4028baa6c5d8
+--- /dev/null
++++ b/tools/testing/selftests/kvm/include/powerpc/hcall.h
+@@ -0,0 +1,17 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++/*
++ * powerpc hcall defines
++ */
++#ifndef SELFTEST_KVM_HCALL_H
++#define SELFTEST_KVM_HCALL_H
++
++#include <linux/compiler.h>
++
++/* Ucalls use unimplemented PAPR hcall 0 which exits KVM */
++#define H_UCALL	0
++
++int64_t hcall0(uint64_t token);
++int64_t hcall1(uint64_t token, uint64_t arg1);
++int64_t hcall2(uint64_t token, uint64_t arg1, uint64_t arg2);
++
++#endif
+diff --git a/tools/testing/selftests/kvm/include/powerpc/kvm_util_arch.h b/tools/testing/selftests/kvm/include/powerpc/kvm_util_arch.h
+new file mode 100644
+index 000000000000..5d45c25cd299
+--- /dev/null
++++ b/tools/testing/selftests/kvm/include/powerpc/kvm_util_arch.h
+@@ -0,0 +1,22 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++#ifndef SELFTEST_KVM_UTIL_ARCH_H
++#define SELFTEST_KVM_UTIL_ARCH_H
++
++#include <stdint.h>
++
++#include "kvm_util_types.h"
++
++struct kvm_mmu_arch {};
++
++/* Page table fragment cache for guest page tables < page size */
++struct vm_pt_frag_cache {
++	gpa_t page;
++	size_t page_nr_used;
++};
++
++struct kvm_vm_arch {
++	gpa_t prtb; /* process table */
++	struct vm_pt_frag_cache pt_frag_cache[2]; /* 256B and 4KB PT caches */
++};
++
++#endif  /* SELFTEST_KVM_UTIL_ARCH_H */
+diff --git a/tools/testing/selftests/kvm/include/powerpc/ppc_asm.h b/tools/testing/selftests/kvm/include/powerpc/ppc_asm.h
+new file mode 100644
+index 000000000000..b9df64659792
+--- /dev/null
++++ b/tools/testing/selftests/kvm/include/powerpc/ppc_asm.h
+@@ -0,0 +1,32 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++/*
++ * powerpc asm specific defines
++ */
++#ifndef SELFTEST_KVM_PPC_ASM_H
++#define SELFTEST_KVM_PPC_ASM_H
++
++#define STACK_FRAME_MIN_SIZE	112 /* Could be 32 on ELFv2 */
++#define STACK_REDZONE_SIZE	512
++
++#define INT_FRAME_SIZE		(STACK_FRAME_MIN_SIZE + STACK_REDZONE_SIZE)
++
++#define SPR_SRR0	0x01a
++#define SPR_SRR1	0x01b
++#define SPR_CFAR	0x01c
++
++#define MSR_SF		0x8000000000000000ULL
++#define MSR_HV		0x1000000000000000ULL
++#define MSR_VEC		0x0000000002000000ULL
++#define MSR_VSX		0x0000000000800000ULL
++#define MSR_EE		0x0000000000008000ULL
++#define MSR_PR		0x0000000000004000ULL
++#define MSR_FP		0x0000000000002000ULL
++#define MSR_ME		0x0000000000001000ULL
++#define MSR_IR		0x0000000000000020ULL
++#define MSR_DR		0x0000000000000010ULL
++#define MSR_RI		0x0000000000000002ULL
++#define MSR_LE		0x0000000000000001ULL
++
++#define LPCR_ILE	0x0000000002000000ULL
++
++#endif
+diff --git a/tools/testing/selftests/kvm/include/powerpc/processor.h b/tools/testing/selftests/kvm/include/powerpc/processor.h
+new file mode 100644
+index 000000000000..cb75b77c33bb
+--- /dev/null
++++ b/tools/testing/selftests/kvm/include/powerpc/processor.h
+@@ -0,0 +1,38 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++/*
++ * powerpc processor specific defines
++ */
++#ifndef SELFTEST_KVM_PROCESSOR_H
++#define SELFTEST_KVM_PROCESSOR_H
++
++#include <linux/compiler.h>
++#include "ppc_asm.h"
++
++extern unsigned char __interrupts_start[];
++extern unsigned char __interrupts_end[];
++
++struct kvm_vm;
++struct kvm_vcpu;
++
++struct ex_regs {
++	uint64_t	gprs[32];
++	uint64_t	nia;
++	uint64_t	msr;
++	uint64_t	cfar;
++	uint64_t	lr;
++	uint64_t	ctr;
++	uint64_t	xer;
++	uint32_t	cr;
++	uint32_t	trap;
++	uint64_t	vaddr; /* vaddr of this struct */
++};
++
++void vm_install_exception_handler(struct kvm_vm *vm, int vector,
++			void (*handler)(struct ex_regs *));
++
++static inline void cpu_relax(void)
 +{
-+	/*
-+	 * By default, allocate memory as protected for VMs that support
-+	 * protected memory, as the majority of memory for such VMs is
-+	 * protected, i.e. using shared memory is effectively opt-in.
-+	 */
-+	return __vm_phy_pages_alloc(vm, num, align, min_gpa, memslot,
-+				    vm_arch_has_protected_memory(vm));
++	asm volatile("" ::: "memory");
 +}
 +
++#endif
+diff --git a/tools/testing/selftests/kvm/include/powerpc/ucall.h b/tools/testing/selftests/kvm/include/powerpc/ucall.h
+new file mode 100644
+index 000000000000..e0dbe91e8848
+--- /dev/null
++++ b/tools/testing/selftests/kvm/include/powerpc/ucall.h
+@@ -0,0 +1,21 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++#ifndef SELFTEST_KVM_UCALL_H
++#define SELFTEST_KVM_UCALL_H
 +
- /*
-  * ____vm_create() does KVM_CREATE_VM and little else.  __vm_create() also
-  * loads the test binary into guest memory and creates an IRQ chip (x86 only).
++#include "hcall.h"
++
++#define UCALL_EXIT_REASON	KVM_EXIT_PAPR_HCALL
++
++#define UCALL_R4_UCALL	0x5715 /* regular ucall, r5 contains ucall pointer */
++#define UCALL_R4_SIMPLE	0x0000 /* simple exit usable by asm with no ucall data */
++
++static inline void ucall_arch_init(struct kvm_vm *vm, gpa_t mmio_gpa)
++{
++}
++
++static inline void ucall_arch_do_ucall(gva_t uc)
++{
++	hcall2(H_UCALL, UCALL_R4_UCALL, (uintptr_t)(uc));
++}
++
++#endif
+diff --git a/tools/testing/selftests/kvm/lib/guest_modes.c b/tools/testing/selftests/kvm/lib/guest_modes.c
+index 7a96c43b5704..439766fad693 100644
+--- a/tools/testing/selftests/kvm/lib/guest_modes.c
++++ b/tools/testing/selftests/kvm/lib/guest_modes.c
+@@ -4,16 +4,20 @@
+  */
+ #include "guest_modes.h"
+ 
+-#if defined(__aarch64__) || defined(__riscv)
++#if defined(__aarch64__) || defined(__riscv) || defined(__powerpc64__)
+ #include "processor.h"
+ enum vm_guest_mode vm_mode_default;
+ #endif
+ 
++#if defined(__powerpc64__)
++#include <unistd.h>
++#endif
++
+ struct guest_mode guest_modes[NUM_VM_MODES];
+ 
+ void guest_modes_append_default(void)
+ {
+-#if !defined(__aarch64__) && !defined(__riscv)
++#if !defined(__aarch64__) && !defined(__riscv) && !defined(__powerpc64__)
+ 	guest_mode_append(VM_MODE_DEFAULT, true);
+ #endif
+ 
+@@ -108,6 +112,18 @@ void guest_modes_append_default(void)
+ 		TEST_ASSERT(vm_mode_default != NUM_VM_MODES, "No supported mode!");
+ 	}
+ #endif
++#ifdef __powerpc64__
++	{
++		TEST_REQUIRE(kvm_has_cap(KVM_CAP_PPC_MMU_RADIX));
++		/* Radix guest EA and RA are 52-bit on POWER9 and POWER10 */
++		if (sysconf(_SC_PAGESIZE) == 4096)
++			vm_mode_default = VM_MODE_P52V52_4K;
++		else
++			vm_mode_default = VM_MODE_P52V52_64K;
++		guest_mode_append(VM_MODE_P52V52_4K, true);
++		guest_mode_append(VM_MODE_P52V52_64K, true);
++	}
++#endif
+ }
+ 
+ void for_each_guest_mode(void (*func)(enum vm_guest_mode, void *), void *arg)
 diff --git a/tools/testing/selftests/kvm/lib/kvm_util.c b/tools/testing/selftests/kvm/lib/kvm_util.c
-index e08967ef7b7b..ac7215824203 100644
+index ac7215824203..e00a25f59416 100644
 --- a/tools/testing/selftests/kvm/lib/kvm_util.c
 +++ b/tools/testing/selftests/kvm/lib/kvm_util.c
-@@ -1442,7 +1442,7 @@ static gva_t ____vm_alloc(struct kvm_vm *vm, size_t sz, gva_t min_gva,
- 	u64 pages = (sz >> vm->page_shift) + ((sz % vm->page_size) != 0);
- 
- 	virt_pgd_alloc(vm);
--	gpa_t gpa = __vm_phy_pages_alloc(vm, pages,
-+	gpa_t gpa = __vm_phy_pages_alloc(vm, pages, 1,
- 					   KVM_UTIL_MIN_PFN * vm->page_size,
- 					   vm->memslots[type], protected);
- 
-@@ -2021,7 +2021,7 @@ const char *exit_reason_str(unsigned int exit_reason)
-  * and their base address is returned. A TEST_ASSERT failure occurs if
-  * not enough pages are available at or above min_gpa.
-  */
--gpa_t __vm_phy_pages_alloc(struct kvm_vm *vm, size_t num,
-+gpa_t __vm_phy_pages_alloc(struct kvm_vm *vm, size_t num, size_t align,
- 			   gpa_t min_gpa, u32 memslot,
- 			   bool protected)
- {
-@@ -2039,23 +2039,22 @@ gpa_t __vm_phy_pages_alloc(struct kvm_vm *vm, size_t num,
- 	TEST_ASSERT(!protected || region->protected_phy_pages,
- 		    "Region doesn't support protected memory");
- 
--	base = pg = min_gpa >> vm->page_shift;
--	do {
--		for (; pg < base + num; ++pg) {
--			if (!sparsebit_is_set(region->unused_phy_pages, pg)) {
--				base = pg = sparsebit_next_set(region->unused_phy_pages, pg);
--				break;
-+	base = min_gpa >> vm->page_shift;
-+again:
-+	base = (base + align - 1) & ~(align - 1);
-+	for (pg = base; pg < base + num; ++pg) {
-+		if (!sparsebit_is_set(region->unused_phy_pages, pg)) {
-+			base = sparsebit_next_set(region->unused_phy_pages, pg);
-+			if (!base) {
-+				fprintf(stderr, "No guest physical page available, "
-+					"min_gpa: 0x%lx page_size: 0x%x memslot: %u\n",
-+					min_gpa, vm->page_size, memslot);
-+				fputs("---- vm dump ----\n", stderr);
-+				vm_dump(stderr, vm, 2);
-+				abort();
- 			}
-+			goto again;
- 		}
--	} while (pg && pg != base + num);
--
--	if (pg == 0) {
--		fprintf(stderr, "No guest physical page available, "
--			"min_gpa: 0x%lx page_size: 0x%x memslot: %u\n",
--			min_gpa, vm->page_size, memslot);
--		fputs("---- vm dump ----\n", stderr);
--		vm_dump(stderr, vm, 2);
--		abort();
+@@ -218,6 +218,8 @@ const char *vm_guest_mode_string(u32 i)
+ 		[VM_MODE_P41V57_4K]	= "PA-bits:41,  VA-bits:57,  4K pages",
+ 		[VM_MODE_P41V48_4K]	= "PA-bits:41,  VA-bits:48,  4K pages",
+ 		[VM_MODE_P41V39_4K]	= "PA-bits:41,  VA-bits:39,  4K pages",
++		[VM_MODE_P52V52_4K]	= "PA-bits:52,  VA-bits:52,  4K pages",
++		[VM_MODE_P52V52_64K]	= "PA-bits:52,  VA-bits:52, 64K pages",
+ 	};
+ 	_Static_assert(sizeof(strings)/sizeof(char *) == NUM_VM_MODES,
+ 		       "Missing new mode strings?");
+@@ -254,6 +256,8 @@ const struct vm_guest_mode_params vm_guest_mode_params[] = {
+ 	[VM_MODE_P41V57_4K]	= { 41, 57,  0x1000, 12 },
+ 	[VM_MODE_P41V48_4K]	= { 41, 48,  0x1000, 12 },
+ 	[VM_MODE_P41V39_4K]	= { 41, 39,  0x1000, 12 },
++	[VM_MODE_P52V52_4K]	= { 52, 52,  0x1000, 12 },
++	[VM_MODE_P52V52_64K]	= { 52, 52, 0x10000, 16 },
+ };
+ _Static_assert(sizeof(vm_guest_mode_params)/sizeof(struct vm_guest_mode_params) == NUM_VM_MODES,
+ 	       "Missing new mode params?");
+@@ -371,6 +375,10 @@ struct kvm_vm *____vm_create(struct vm_shape shape)
+ 	case VM_MODE_P41V39_4K:
+ 		vm->mmu.pgtable_levels = 3;
+ 		break;
++	case VM_MODE_P52V52_4K:
++	case VM_MODE_P52V52_64K:
++		vm->mmu.pgtable_levels = 4;
++		break;
+ 	default:
+ 		TEST_FAIL("Unknown guest mode: 0x%x", vm->mode);
  	}
- 
- 	for (pg = base; pg < base + num; ++pg) {
+diff --git a/tools/testing/selftests/kvm/lib/powerpc/handlers.S b/tools/testing/selftests/kvm/lib/powerpc/handlers.S
+new file mode 100644
+index 000000000000..b860f6a520a1
+--- /dev/null
++++ b/tools/testing/selftests/kvm/lib/powerpc/handlers.S
+@@ -0,0 +1,93 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++
++#include <ppc_asm.h>
++
++.macro INTERRUPT vec
++. = __interrupts_start + \vec
++	std	%r0,(0*8)(%r13)
++	std	%r3,(3*8)(%r13)
++	mfspr	%r0,SPR_CFAR
++	li	%r3,\vec
++	b	handle_interrupt
++.endm
++
++.balign 0x1000
++.global __interrupts_start
++__interrupts_start:
++INTERRUPT 0x100
++INTERRUPT 0x200
++INTERRUPT 0x300
++INTERRUPT 0x380
++INTERRUPT 0x400
++INTERRUPT 0x480
++INTERRUPT 0x500
++INTERRUPT 0x600
++INTERRUPT 0x700
++INTERRUPT 0x800
++INTERRUPT 0x900
++INTERRUPT 0xa00
++INTERRUPT 0xc00
++INTERRUPT 0xd00
++INTERRUPT 0xf00
++INTERRUPT 0xf20
++INTERRUPT 0xf40
++INTERRUPT 0xf60
++
++virt_handle_interrupt:
++	stdu	%r1,-INT_FRAME_SIZE(%r1)
++	mr	%r3,%r31
++	bl	route_interrupt
++	ld	%r4,(32*8)(%r31) /* NIA */
++	ld	%r5,(33*8)(%r31) /* MSR */
++	ld	%r6,(35*8)(%r31) /* LR */
++	ld	%r7,(36*8)(%r31) /* CTR */
++	ld	%r8,(37*8)(%r31) /* XER */
++	lwz	%r9,(38*8)(%r31) /* CR */
++	mtspr	SPR_SRR0,%r4
++	mtspr	SPR_SRR1,%r5
++	mtlr	%r6
++	mtctr	%r7
++	mtxer	%r8
++	mtcr	%r9
++reg=4
++	ld	%r0,(0*8)(%r31)
++	ld	%r3,(3*8)(%r31)
++.rept 28
++	ld	reg,(reg*8)(%r31)
++	reg=reg+1
++.endr
++	addi	%r1,%r1,INT_FRAME_SIZE
++	rfid
++
++virt_handle_interrupt_p:
++	.llong virt_handle_interrupt
++
++handle_interrupt:
++reg=4
++.rept 28
++	std	reg,(reg*8)(%r13)
++	reg=reg+1
++.endr
++	mfspr	%r4,SPR_SRR0
++	mfspr	%r5,SPR_SRR1
++	mflr	%r6
++	mfctr	%r7
++	mfxer	%r8
++	mfcr	%r9
++	std	%r4,(32*8)(%r13) /* NIA */
++	std	%r5,(33*8)(%r13) /* MSR */
++	std	%r0,(34*8)(%r13) /* CFAR */
++	std	%r6,(35*8)(%r13) /* LR */
++	std	%r7,(36*8)(%r13) /* CTR */
++	std	%r8,(37*8)(%r13) /* XER */
++	stw	%r9,(38*8 + 0)(%r13) /* CR */
++	stw	%r3,(38*8 + 4)(%r13) /* TRAP */
++
++	ld	%r31,(39*8)(%r13) /* vaddr */
++	ld	%r4,virt_handle_interrupt_p - __interrupts_start(0)
++	mtspr	SPR_SRR0,%r4
++	/* Reuse SRR1 */
++
++	rfid
++.global __interrupts_end
++__interrupts_end:
+diff --git a/tools/testing/selftests/kvm/lib/powerpc/hcall.c b/tools/testing/selftests/kvm/lib/powerpc/hcall.c
+new file mode 100644
+index 000000000000..efb4318252be
+--- /dev/null
++++ b/tools/testing/selftests/kvm/lib/powerpc/hcall.c
+@@ -0,0 +1,45 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * PAPR (pseries) hcall support.
++ */
++#include "kvm_util.h"
++#include "hcall.h"
++
++int64_t hcall0(uint64_t token)
++{
++	register uintptr_t r3 asm ("r3") = token;
++
++	asm volatile("sc 1" : "+r"(r3) :
++			    : "r0", "r4", "r5", "r6", "r7", "r8", "r9",
++			      "r10", "r11", "r12", "ctr", "xer",
++			      "cc", "memory");
++
++	return r3;
++}
++
++int64_t hcall1(uint64_t token, uint64_t arg1)
++{
++	register uintptr_t r3 asm ("r3") = token;
++	register uintptr_t r4 asm ("r4") = arg1;
++
++	asm volatile("sc 1" : "+r"(r3), "+r"(r4) :
++			    : "r0", "r5", "r6", "r7", "r8", "r9",
++			      "r10", "r11", "r12", "ctr", "xer",
++			      "cc", "memory");
++
++	return r3;
++}
++
++int64_t hcall2(uint64_t token, uint64_t arg1, uint64_t arg2)
++{
++	register uintptr_t r3 asm ("r3") = token;
++	register uintptr_t r4 asm ("r4") = arg1;
++	register uintptr_t r5 asm ("r5") = arg2;
++
++	asm volatile("sc 1" : "+r"(r3), "+r"(r4), "+r"(r5) :
++			    : "r0", "r6", "r7", "r8", "r9",
++			      "r10", "r11", "r12", "ctr", "xer",
++			      "cc", "memory");
++
++	return r3;
++}
+diff --git a/tools/testing/selftests/kvm/lib/powerpc/processor.c b/tools/testing/selftests/kvm/lib/powerpc/processor.c
+new file mode 100644
+index 000000000000..9846ec26a32a
+--- /dev/null
++++ b/tools/testing/selftests/kvm/lib/powerpc/processor.c
+@@ -0,0 +1,483 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/*
++ * KVM selftest powerpc library code - CPU-related functions (page tables...)
++ */
++
++#include <linux/sizes.h>
++
++#include "processor.h"
++#include "kvm_util.h"
++#include "ucall_common.h"
++#include "guest_modes.h"
++#include "hcall.h"
++
++#define RADIX_TREE_SIZE ((0x2UL << 61) | (0x5UL << 5)) /* 52-bits */
++#define RADIX_PGD_INDEX_SIZE 13
++
++static void set_proc_table(struct kvm_vm *vm, int pid, uint64_t dw0, uint64_t dw1)
++{
++	uint64_t *proc_table;
++
++	proc_table = addr_gpa2hva(vm, vm->arch.prtb);
++	proc_table[pid * 2 + 0] = cpu_to_be64(dw0);
++	proc_table[pid * 2 + 1] = cpu_to_be64(dw1);
++}
++
++static void set_radix_proc_table(struct kvm_vm *vm, int pid, gpa_t pgd)
++{
++	set_proc_table(vm, pid, pgd | RADIX_TREE_SIZE | RADIX_PGD_INDEX_SIZE, 0);
++}
++
++void virt_arch_pgd_alloc(struct kvm_vm *vm)
++{
++	struct kvm_ppc_mmuv3_cfg mmu_cfg;
++	gpa_t prtb, pgtb;
++	size_t pgd_pages;
++
++	TEST_ASSERT((vm->mode == VM_MODE_P52V52_4K) ||
++		    (vm->mode == VM_MODE_P52V52_64K),
++		    "Unsupported guest mode, mode: 0x%x", vm->mode);
++
++	prtb = vm_phy_page_alloc(vm, KVM_GUEST_PAGE_TABLE_MIN_PADDR,
++				 vm->memslots[MEM_REGION_PT]);
++	vm->arch.prtb = prtb;
++
++	pgd_pages = (1UL << (RADIX_PGD_INDEX_SIZE + 3)) >> vm->page_shift;
++	if (!pgd_pages)
++		pgd_pages = 1;
++	pgtb = vm_phy_pages_alloc_align(vm, pgd_pages, pgd_pages,
++					KVM_GUEST_PAGE_TABLE_MIN_PADDR,
++					vm->memslots[MEM_REGION_PT]);
++	vm->mmu.pgd = pgtb;
++
++	/* Set the base page directory in the proc table */
++	set_radix_proc_table(vm, 0, pgtb);
++
++	if (vm->mode == VM_MODE_P52V52_4K)
++		mmu_cfg.process_table = prtb | 0x8000000000000000UL | 0x0; /* 4K size */
++	else /* vm->mode == VM_MODE_P52V52_64K */
++		mmu_cfg.process_table = prtb | 0x8000000000000000UL | 0x4; /* 64K size */
++	mmu_cfg.flags = KVM_PPC_MMUV3_RADIX | KVM_PPC_MMUV3_GTSE;
++
++	vm_ioctl(vm, KVM_PPC_CONFIGURE_V3_MMU, &mmu_cfg);
++}
++
++static int pt_shift(struct kvm_vm *vm, int level)
++{
++	switch (level) {
++	case 1:
++		return 13;
++	case 2:
++	case 3:
++		return 9;
++	case 4:
++		if (vm->mode == VM_MODE_P52V52_4K)
++			return 9;
++		else /* vm->mode == VM_MODE_P52V52_64K */
++			return 5;
++	default:
++		TEST_ASSERT(false, "Invalid page table level %d\n", level);
++		return 0;
++	}
++}
++
++static uint64_t pt_entry_coverage(struct kvm_vm *vm, int level)
++{
++	uint64_t size = vm->page_size;
++
++	if (level == 4)
++		return size;
++	size <<= pt_shift(vm, 4);
++	if (level == 3)
++		return size;
++	size <<= pt_shift(vm, 3);
++	if (level == 2)
++		return size;
++	size <<= pt_shift(vm, 2);
++	return size;
++}
++
++static int pt_idx(struct kvm_vm *vm, uint64_t vaddr, int level, uint64_t *nls)
++{
++	switch (level) {
++	case 1:
++		if (nls)
++			*nls = 0x9;
++		return (vaddr >> 39) & 0x1fff;
++	case 2:
++		if (nls)
++			*nls = 0x9;
++		return (vaddr >> 30) & 0x1ff;
++	case 3:
++		if (vm->mode == VM_MODE_P52V52_4K) {
++			if (nls)
++				*nls = 0x9;
++		} else { /* vm->mode == VM_MODE_P52V52_64K */
++			if (nls)
++				*nls = 0x5;
++		}
++		return (vaddr >> 21) & 0x1ff;
++	case 4:
++		if (vm->mode == VM_MODE_P52V52_4K)
++			return (vaddr >> 12) & 0x1ff;
++		else /* vm->mode == VM_MODE_P52V52_64K */
++			return (vaddr >> 16) & 0x1f;
++	default:
++		TEST_ASSERT(false, "Invalid page table level %d\n", level);
++		return 0;
++	}
++}
++
++static uint64_t *virt_get_pte(struct kvm_vm *vm, gpa_t pt,
++			  uint64_t vaddr, int level, uint64_t *nls)
++{
++	int idx = pt_idx(vm, vaddr, level, nls);
++	uint64_t *ptep = addr_gpa2hva(vm, pt + idx * 8);
++
++	return ptep;
++}
++
++#define PTE_VALID	0x8000000000000000ull
++#define PTE_LEAF	0x4000000000000000ull
++#define PTE_REFERENCED	0x0000000000000100ull
++#define PTE_CHANGED	0x0000000000000080ull
++#define PTE_PRIV	0x0000000000000008ull
++#define PTE_READ	0x0000000000000004ull
++#define PTE_RW		0x0000000000000002ull
++#define PTE_EXEC	0x0000000000000001ull
++#define PTE_PAGE_MASK	0x01fffffffffff000ull
++
++#define PDE_VALID	PTE_VALID
++#define PDE_NLS		0x0000000000000011ull
++#define PDE_PT_MASK	0x0fffffffffffff00ull
++
++static gpa_t __vm_alloc_pt(struct kvm_vm *vm, uint64_t pt_shift)
++{
++	gpa_t pt;
++
++	if (pt_shift >= vm->page_shift) {
++		size_t pt_pages = 1ULL << (pt_shift - vm->page_shift);
++
++		pt = vm_phy_pages_alloc_align(vm, pt_pages, pt_pages,
++					KVM_GUEST_PAGE_TABLE_MIN_PADDR,
++					vm->memslots[MEM_REGION_PT]);
++	} else {
++		struct vm_pt_frag_cache *pt_frag_cache;
++
++		if (pt_shift == 8) {
++			pt_frag_cache = &vm->arch.pt_frag_cache[0];
++		} else if (pt_shift == 12) {
++			pt_frag_cache = &vm->arch.pt_frag_cache[1];
++		} else {
++			TEST_ASSERT(0, "Invalid pt_shift:%lu\n", pt_shift);
++			return 0;
++		}
++
++		if (!pt_frag_cache->page) {
++			pt_frag_cache->page = vm_phy_pages_alloc_align(vm, 1, 1,
++						KVM_GUEST_PAGE_TABLE_MIN_PADDR,
++						vm->memslots[MEM_REGION_PT]);
++		}
++		pt = pt_frag_cache->page + pt_frag_cache->page_nr_used;
++		pt_frag_cache->page_nr_used += (1 << pt_shift);
++		if (pt_frag_cache->page_nr_used == vm->page_size) {
++			pt_frag_cache->page = 0;
++			pt_frag_cache->page_nr_used = 0;
++		}
++	}
++
++	return pt;
++}
++
++void virt_arch_pg_map(struct kvm_vm *vm, uint64_t gva, uint64_t gpa)
++{
++	gpa_t pt = vm->mmu.pgd;
++	uint64_t *ptep, pte;
++	int level;
++
++	for (level = 1; level <= 3; level++) {
++		uint64_t nls;
++		uint64_t *pdep = virt_get_pte(vm, pt, gva, level, &nls);
++		uint64_t pde = be64_to_cpu(*pdep);
++
++		if (pde) {
++			TEST_ASSERT((pde & PDE_VALID) && !(pde & PTE_LEAF),
++				    "Invalid PDE at level: %u gva: 0x%lx pde:0x%lx\n",
++				    level, gva, pde);
++			pt = pde & PDE_PT_MASK;
++			continue;
++		}
++
++		pt = __vm_alloc_pt(vm, nls + 3);
++		pde = PDE_VALID | nls | pt;
++		*pdep = cpu_to_be64(pde);
++	}
++
++	ptep = virt_get_pte(vm, pt, gva, level, NULL);
++	pte = be64_to_cpu(*ptep);
++
++	TEST_ASSERT(!pte, "PTE already present at level: %u gva: 0x%lx pte:0x%lx\n",
++		    level, gva, pte);
++
++	pte = PTE_VALID | PTE_LEAF | PTE_REFERENCED | PTE_CHANGED | PTE_PRIV |
++	      PTE_READ | PTE_RW | PTE_EXEC | (gpa & PTE_PAGE_MASK);
++	*ptep = cpu_to_be64(pte);
++}
++
++gpa_t addr_arch_gva2gpa(struct kvm_vm *vm, gva_t gva)
++{
++	gpa_t pt = vm->mmu.pgd;
++	uint64_t *ptep, pte;
++	int level;
++
++	for (level = 1; level <= 3; level++) {
++		uint64_t nls;
++		uint64_t *pdep = virt_get_pte(vm, pt, gva, level, &nls);
++		uint64_t pde = be64_to_cpu(*pdep);
++
++		TEST_ASSERT((pde & PDE_VALID) && !(pde & PTE_LEAF),
++			"PDE not present at level: %u gva: 0x%lx pde:0x%lx\n",
++			level, gva, pde);
++		pt = pde & PDE_PT_MASK;
++	}
++
++	ptep = virt_get_pte(vm, pt, gva, level, NULL);
++	pte = be64_to_cpu(*ptep);
++
++	TEST_ASSERT(pte,
++		"PTE not present at level: %u gva: 0x%lx pte:0x%lx\n",
++		level, gva, pte);
++
++	TEST_ASSERT((pte & PTE_VALID) && (pte & PTE_LEAF),
++		    "PTE not valid at level: %u gva: 0x%lx pte:0x%lx\n",
++		    level, gva, pte);
++
++	return (pte & PTE_PAGE_MASK) + (gva & (vm->page_size - 1));
++}
++
++static void virt_dump_pt(FILE *stream, struct kvm_vm *vm, gpa_t pt,
++			 gva_t va, int level, uint8_t indent)
++{
++	int size, idx;
++
++	size = 1U << (pt_shift(vm, level) + 3);
++
++	for (idx = 0; idx < size; idx += 8, va += pt_entry_coverage(vm, level)) {
++		uint64_t *page_table = addr_gpa2hva(vm, pt + idx);
++		uint64_t pte = be64_to_cpu(*page_table);
++
++		if (!(pte & PTE_VALID))
++			continue;
++
++		if (pte & PTE_LEAF) {
++			fprintf(stream,
++				"%*s PTE[%d] gVA:0x%016lx -> gRA:0x%016llx\n",
++				indent, "", idx / 8, va, pte & PTE_PAGE_MASK);
++		} else {
++			fprintf(stream, "%*sPDE%d[%d] gVA:0x%016lx\n",
++				indent, "", level, idx / 8, va);
++			virt_dump_pt(stream, vm, pte & PDE_PT_MASK, va,
++				     level + 1, indent + 2);
++		}
++	}
++
++}
++
++void virt_arch_dump(FILE *stream, struct kvm_vm *vm, uint8_t indent)
++{
++	gpa_t pt = vm->mmu.pgd;
++
++	if (!vm->mmu.pgd_created)
++		return;
++
++	virt_dump_pt(stream, vm, pt, 0, 1, indent);
++}
++
++static unsigned long get_r2(void)
++{
++	unsigned long r2;
++
++	asm("mr %0,%%r2" : "=r"(r2));
++
++	return r2;
++}
++
++void vcpu_arch_set_entry_point(struct kvm_vcpu *vcpu, void *guest_code)
++{
++	struct kvm_regs regs;
++
++	vcpu_regs_get(vcpu, &regs);
++	regs.pc = (uintptr_t)guest_code;
++	regs.gpr[12] = (uintptr_t)guest_code;
++	vcpu_regs_set(vcpu, &regs);
++}
++
++struct kvm_vcpu *vm_arch_vcpu_add(struct kvm_vm *vm, uint32_t vcpu_id)
++{
++	const size_t stack_size = SZ_64K;
++	gva_t stack_vaddr, ex_regs_vaddr;
++	gpa_t ex_regs_paddr;
++	struct ex_regs *ex_regs;
++	struct kvm_regs regs;
++	struct kvm_vcpu *vcpu;
++	uint64_t lpcr;
++
++	stack_vaddr = __vm_alloc(vm, stack_size,
++				       DEFAULT_GUEST_STACK_VADDR_MIN,
++				       MEM_REGION_DATA);
++
++	ex_regs_vaddr = __vm_alloc(vm, stack_size,
++				       DEFAULT_GUEST_STACK_VADDR_MIN,
++				       MEM_REGION_DATA);
++	ex_regs_paddr = addr_gva2gpa(vm, ex_regs_vaddr);
++	ex_regs = addr_gpa2hva(vm, ex_regs_paddr);
++	ex_regs->vaddr = ex_regs_vaddr;
++
++	vcpu = __vm_vcpu_add(vm, vcpu_id);
++
++	vcpu_enable_cap(vcpu, KVM_CAP_PPC_PAPR, 1);
++
++	/* Setup guest registers */
++	vcpu_regs_get(vcpu, &regs);
++	lpcr = vcpu_get_reg(vcpu, KVM_REG_PPC_LPCR_64);
++
++	regs.gpr[1] = stack_vaddr + stack_size - 256;
++	regs.gpr[2] = (uintptr_t)get_r2();
++	regs.gpr[13] = (uintptr_t)ex_regs_paddr;
++
++	regs.msr = MSR_SF | MSR_VEC | MSR_VSX | MSR_FP |
++		   MSR_ME | MSR_IR | MSR_DR | MSR_RI;
++
++	if (BYTE_ORDER == LITTLE_ENDIAN) {
++		regs.msr |= MSR_LE;
++		lpcr |= LPCR_ILE;
++	} else {
++		lpcr &= ~LPCR_ILE;
++	}
++
++	vcpu_regs_set(vcpu, &regs);
++	vcpu_set_reg(vcpu, KVM_REG_PPC_LPCR_64, lpcr);
++
++	return vcpu;
++}
++
++void vcpu_args_set(struct kvm_vcpu *vcpu, unsigned int num, ...)
++{
++	va_list ap;
++	struct kvm_regs regs;
++	int i;
++
++	TEST_ASSERT(num >= 1 && num <= 5, "Unsupported number of args: %u\n",
++		    num);
++
++	va_start(ap, num);
++	vcpu_regs_get(vcpu, &regs);
++
++	for (i = 0; i < num; i++)
++		regs.gpr[i + 3] = va_arg(ap, uint64_t);
++
++	vcpu_regs_set(vcpu, &regs);
++	va_end(ap);
++}
++
++void vcpu_arch_dump(FILE *stream, struct kvm_vcpu *vcpu, uint8_t indent)
++{
++	struct kvm_regs regs;
++
++	vcpu_regs_get(vcpu, &regs);
++
++	fprintf(stream, "%*sNIA: 0x%016llx  MSR: 0x%016llx\n",
++			indent, "", regs.pc, regs.msr);
++	fprintf(stream, "%*sLR:  0x%016llx  CTR :0x%016llx\n",
++			indent, "", regs.lr, regs.ctr);
++	fprintf(stream, "%*sCR:  0x%08llx          XER :0x%016llx\n",
++			indent, "", regs.cr, regs.xer);
++}
++
++void kvm_arch_vm_post_create(struct kvm_vm *vm, unsigned int nr_vcpus)
++{
++	size_t excp_size = __interrupts_end - __interrupts_start;
++	size_t excp_pages = (excp_size + vm->page_size - 1) / vm->page_size;
++	gpa_t excp_paddr;
++	void *mem;
++
++	excp_paddr = vm_phy_pages_alloc(vm, excp_pages, 0,
++					vm->memslots[MEM_REGION_DATA]);
++
++	TEST_ASSERT(excp_paddr == 0,
++		    "Interrupt vectors not allocated at gPA address 0: (0x%lx)",
++		    excp_paddr);
++
++	mem = addr_gpa2hva(vm, excp_paddr);
++	memcpy(mem, __interrupts_start, excp_size);
++}
++
++void assert_on_unhandled_exception(struct kvm_vcpu *vcpu)
++{
++	struct ucall uc;
++
++	if (get_ucall(vcpu, &uc) == UCALL_UNHANDLED) {
++		gpa_t ex_regs_paddr;
++		struct ex_regs *ex_regs;
++		struct kvm_regs regs;
++
++		vcpu_regs_get(vcpu, &regs);
++		ex_regs_paddr = (gpa_t)regs.gpr[13];
++		ex_regs = addr_gpa2hva(vcpu->vm, ex_regs_paddr);
++
++		TEST_FAIL("Unexpected interrupt in guest NIA:0x%016lx MSR:0x%016lx TRAP:0x%04x",
++			  ex_regs->nia, ex_regs->msr, ex_regs->trap);
++	}
++}
++
++struct handler {
++	void (*fn)(struct ex_regs *regs);
++	int trap;
++};
++
++#define NR_HANDLERS	10
++static struct handler handlers[NR_HANDLERS];
++
++void route_interrupt(struct ex_regs *regs)
++{
++	int i;
++
++	for (i = 0; i < NR_HANDLERS; i++) {
++		if (handlers[i].trap == regs->trap) {
++			handlers[i].fn(regs);
++			return;
++		}
++	}
++
++	ucall(UCALL_UNHANDLED, 0);
++}
++
++void vm_install_exception_handler(struct kvm_vm *vm, int trap,
++			       void (*fn)(struct ex_regs *))
++{
++	int i;
++
++	for (i = 0; i < NR_HANDLERS; i++) {
++		if (!handlers[i].trap || handlers[i].trap == trap) {
++			if (fn == NULL)
++				trap = 0; /* Clear handler */
++			handlers[i].trap = trap;
++			handlers[i].fn = fn;
++			sync_global_to_guest(vm, handlers[i]);
++			return;
++		}
++	}
++
++	TEST_FAIL("Out of exception handlers");
++}
++
++void kvm_selftest_arch_init(void)
++{
++	TEST_REQUIRE(kvm_has_cap(KVM_CAP_PPC_MMU_RADIX));
++
++	/*
++	 * powerpc default mode is set by host page size and not static,
++	 * so start by computing that early.
++	 */
++	guest_modes_append_default();
++}
+diff --git a/tools/testing/selftests/kvm/lib/powerpc/ucall.c b/tools/testing/selftests/kvm/lib/powerpc/ucall.c
+new file mode 100644
+index 000000000000..3481a7a0b850
+--- /dev/null
++++ b/tools/testing/selftests/kvm/lib/powerpc/ucall.c
+@@ -0,0 +1,22 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * ucall support. A ucall is a "hypercall to host userspace".
++ */
++#include "kvm_util.h"
++#include "ucall_common.h"
++#include "hcall.h"
++
++void *ucall_arch_get_ucall(struct kvm_vcpu *vcpu)
++{
++	struct kvm_run *run = vcpu->run;
++
++	if (run->exit_reason == UCALL_EXIT_REASON &&
++	    run->papr_hcall.nr == H_UCALL) {
++		struct kvm_regs regs;
++
++		vcpu_regs_get(vcpu, &regs);
++		if (regs.gpr[4] == UCALL_R4_UCALL)
++			return (void *)regs.gpr[5];
++	}
++	return NULL;
++}
 -- 
 2.50.1 (Apple Git-155)
 
