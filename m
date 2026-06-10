@@ -1,68 +1,81 @@
-Return-Path: <linuxppc-dev+bounces-22411-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22412-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E8431CD8CB2
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jun 2026 12:59:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 82542CD8CB2
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jun 2026 13:05:08 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gb5TH3j8Cz2yfD;
-	Wed, 10 Jun 2026 22:59:31 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::44a"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781096371;
-	cv=none; b=YeOEfGxyTSfIAjsfHO8RwYLVWjzDFX4U0XCARUq0LiqAqsOfFg+LXobO1TPc1GVcfzbMKbWilpdxyEBPYQYu0RI4a4U9rGK4NIylHTVPqJmqjk9uVnJDESMhO33KLEzyI9wLSrTFiJNQr9MOjj/L7stY7XTrZEMfwGRg4hXiGfv8tnee9s4MygyIU5XuMPV3lpJ4sT2AcjnmLZtqjx5M0XE2uZ4qaXtf026egpKkt3ptPcvbUzvYSAd1DZyoVPPxvnmARElTS+W6IzqSwXJYSIbwg7MzQujo2EKFaMtTltPv+XA03pmsQwS5x4/DqH2JDTxAtuCdNQw5bi1Fq+/i0g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gb5bl1sG8z2yfD;
+	Wed, 10 Jun 2026 23:05:07 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1030"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781096707;
+	cv=none; b=f3FOQllAxQ63IXMo29WlJjTHu7OuF4KRJUsvIqojJdG/pFe0PnUZpogU9D7KB3C3mygXM3h44gmk2hELBpSn/vAP20LUnkeRHj969ZRSRzriRLBxkYCfj+/JZrlaUHVYQSFuyQRjzS77TX9IANB+AsXwYm6BxamYkNfp2uc6bexXrI9fTm4/DLMucWOo0q5sW/5qMwRyyYL9dAtyzb2k1fxqj714PPUEzNZbicApCiC+SHThe2f5ULUz5NtQCPaIpxIIqmYTJBn+Rm4Mi3dU2i12QdYsn+rRMQtHD4W1uDPeq6qR3yfkjbrjiLCpMBg5buDrkB+PtkrIxlcOpikqgQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1781096371; c=relaxed/relaxed;
-	bh=1NbKBk0OFMtK3aDv+gUztpO8HwlNLStu40uQDPANIdU=;
-	h=Date:In-Reply-To:Mime-Version:References:Message-ID:Subject:From:
-	 To:Cc:Content-Type; b=eQ2jTaRyF22gLAtIIxc+nKlBQH5awiw5WDNmICZ3E8/gNyOcMsrb1BUNrhESJKd3Yw4ZBuF8KioNUZRDLO2KQgWBiCu9jfh28GeqP5NhMC9l3MUq3xuT4SuB/sQcGLcR9pfsglBlaTZsz2FzhkzVKyXsruhHR/Kctv3j+wDRIOArrYWfzCdk8U/ALF/LiFcg288pQVbbnjErbofP6KsCl4JFYUOrlMlXN+6wVi4C0EK4gYXB5pgj16giBbpTNkn7QNDQlCQ2SQT0Eikx1WBMRcOnz5YJ33+a60c/5hqiC/uIBlzNo+6p+toPZAKohEEy5yzm3Ezta3TXheinDG9+4w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=KGHW1To/; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::44a; helo=mail-pf1-x44a.google.com; envelope-from=3rl8pagykdgsbnjwslpxxpun.lxvurwdgyyl-mneurbcb.xiujkb.xap@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=flex--seanjc.bounces.google.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
+	t=1781096707; c=relaxed/relaxed;
+	bh=BhOF/rw2NLmHZ4tMIcOqKhkPNZ2ah5k2exN/z5Da1iM=;
+	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References; b=jOf9ispUz1af4B+7uM2SpDsM7IRIG53OSXmmYzXZ1YxKRPNQ+u7lSpn482cx46CsPQ9GGy7FI36fn20hk0aRFPs+8ZQHQEeKGGq0gJNo40DqipwcH/5d5AWKvMk8oUMU+m0XvuW+OFFuArDC/cpZOSXpTREmA3WRbQg6Nfp39ww1mZ9sxFHHglXzoJt63eQyDGRI+Qz7NxEleceGmw8pHcCU5kuYP+Du9bFaFYyrw6zPCLQslMKofJuRSTpd8WsUQeQ72vC5bokLDBgsuYKmEpZuVMkCLRfAzhP2koTIBhGQxj0udftdTX+7gJ0i2USj6lKRm41xtbO78NX7eFMSYw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=HySVIF+Z; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1030; helo=mail-pj1-x1030.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=KGHW1To/;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=HySVIF+Z;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--seanjc.bounces.google.com (client-ip=2607:f8b0:4864:20::44a; helo=mail-pf1-x44a.google.com; envelope-from=3rl8pagykdgsbnjwslpxxpun.lxvurwdgyyl-mneurbcb.xiujkb.xap@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org)
-Received: from mail-pf1-x44a.google.com (mail-pf1-x44a.google.com [IPv6:2607:f8b0:4864:20::44a])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1030; helo=mail-pj1-x1030.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pj1-x1030.google.com (mail-pj1-x1030.google.com [IPv6:2607:f8b0:4864:20::1030])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gb5TG2xcnz2yNn
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jun 2026 22:59:29 +1000 (AEST)
-Received: by mail-pf1-x44a.google.com with SMTP id d2e1a72fcca58-8425a9979e1so4621373b3a.2
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jun 2026 05:59:29 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gb5bk2Mh4z2yNn
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jun 2026 23:05:05 +1000 (AEST)
+Received: by mail-pj1-x1030.google.com with SMTP id 98e67ed59e1d1-36d630c0e35so7267755a91.3
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jun 2026 06:05:05 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20251104; t=1781096367; x=1781701167; darn=lists.ozlabs.org;
-        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
-         :date:from:to:cc:subject:date:message-id:reply-to;
-        bh=1NbKBk0OFMtK3aDv+gUztpO8HwlNLStu40uQDPANIdU=;
-        b=KGHW1To/3+HJLjcxGLu2EcVXbPrWZQspxdNYjnL7BvDMrGXt4rk9DYjmhjAXQzQIkn
-         yK7wNEH2Ftt1daKxj0FvS8rr1QDdw/EpwGTYzJaDOTfFeQHYDW/3UItJmg20oet+kTxV
-         aXupKHV44P+2c1wr+5EbhsBD2D86lBiNj/HCWFk1sdAThufDRBsbQgKFh5hbC1EZtSK4
-         6G6s49451q9+MYYHqk4nul91UtVoMIqwxVRxJxJf9Xgr9n/ma9lW3XkjQuNhyVA0DRDK
-         CkTvmQVKyeNLjXuISYDULu87ZWFVisN7zE3tpFZzQ2yPEuGavs8Il15PYxgURJGKl7D/
-         UNeQ==
+        d=gmail.com; s=20251104; t=1781096703; x=1781701503; darn=lists.ozlabs.org;
+        h=references:message-id:date:in-reply-to:subject:cc:to:from:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=BhOF/rw2NLmHZ4tMIcOqKhkPNZ2ah5k2exN/z5Da1iM=;
+        b=HySVIF+Zh5gad2rCLtru6ONBmgQdDMpHOoCCllVfFK9FxSy7eyBRMENkxqf1g6k8t4
+         znxxyfjSt3/N82i4Xjwdc6lIPeKzEC6xeDJ0gqBcYrfRpxRy/sNvPzb9FkV2Vo8jNQHs
+         Xqkw50WgSndiiJbPV0oTBCpsjVX9D8+kOa0oAUpi5jpPBgrav5dI4UEcekt4HhpCrhSJ
+         9GlVrr9xMKOH2exs/PFjjx/MhuoOJnqFNMb9b+mT8PG9eQyfdwDY+7QF3t9bII5Ub4b2
+         2lEYHYSdYdaSAh9PXd0HJoP0W4DucTGWBxKuW9pWzwhE0ZmcbEODxm2c0kjLs8w6pdwQ
+         ooTA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1781096367; x=1781701167;
-        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
-         :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=1NbKBk0OFMtK3aDv+gUztpO8HwlNLStu40uQDPANIdU=;
-        b=Zc3Sv8AgpzwzYpv3YBlXGPEod9wWBgFtRsUeR44XcoVHqaYnv0BcgB+69055QlGNND
-         3pfVDDWFIQy2fTYsTtXoVRsUFEftdE8//jggaXSM8gF+k5nvcoP7t5vo6u8IzB8ALzd9
-         +LtGPxf+tBPfQeWJEmAyUk5/uemGPxkCm8y4FN2R9/WMK3pdxnNCxCqkV5hHefdR+L+P
-         fhK2gOR9LnkMQzlfO67O72M4ivWOioAWwPD/iTE6YPOFb5lme9VTHQ1qyT5nMSsss8EB
-         HYD0Tj3BKzAY+dTBMLPCSJPDbvwb1WkwQ5lXjeJmKhcuwzAwk/BRbMtFgqzmwZ84v4T8
-         gUqQ==
-X-Forwarded-Encrypted: i=1; AFNElJ9z318qPGs4wYqa5lR3SEwKMFC3iy/FxXy19x/tOwBRPXe5DDIsKMEyiy+TMlS1KLqSHKztO9ZJo083C9Y=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YxM9GMItB92oZmgosOfhUdnN3w/WpMIv0q2SNeI6fI+GJkveel3
-	bAMyA3r13s3KFoouP7GmuWQ2wsTYkkcrQXr24eZ40pvl8FKjeAT64O8EFEIJ+IPUaO2gwVi1jeM
-	6Ruo6Og==
-X-Received: from pfrg6.prod.google.com ([2002:aa7:9f06:0:b0:83f:1941:b9bc])
- (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a05:6a00:4c85:b0:842:48ae:1d56
- with SMTP id d2e1a72fcca58-8430a742437mr8863146b3a.35.1781096366425; Wed, 10
- Jun 2026 05:59:26 -0700 (PDT)
-Date: Wed, 10 Jun 2026 05:59:25 -0700
-In-Reply-To: <2d2c46be7f051c7f1c645afaec67f57067d37a81.1781093720.git.ritesh.list@gmail.com>
+        d=1e100.net; s=20251104; t=1781096703; x=1781701503;
+        h=references:message-id:date:in-reply-to:subject:cc:to:from:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=BhOF/rw2NLmHZ4tMIcOqKhkPNZ2ah5k2exN/z5Da1iM=;
+        b=s+2+RJkWgRy6TQzZSArjxIZ2j5euSkZDHNqcRyBFZ/fuhIV+1QQCcyjU7bQCI7CwHK
+         7nusVG2MbTKxJUYM5YGx2UoiOrM+fIU94lsLL33ijRvfYhlD0yBRaf70yBWm/QHUgqnu
+         i1CKwGYHdA5NoOITXchF8+I5ryHvJ19Ib9XGIoOUS1Q3CnRE131CbqKJvoyI9DBmnYlo
+         NybsYn+vh7cddP9ih9kxhnQSfszBGxnS25ykaFYPJ+Yu2wVcy6tlcqh/q5RBqphxPc3K
+         saDcPs9Mvw7Hxv14s6uNwV/6jW4FVMqNLtgHs6iC9xgUU7sL8jkXDpGRUtM1bO4sqVCs
+         ARTg==
+X-Forwarded-Encrypted: i=1; AFNElJ+0aJ6ViR5k3jsRnZm7tJamHQbLj2uHCMkCe3dsSctOZnhyDWnm9IeT5IuIAzzO69cHAr3ZYfInq3AQyX8=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YzFRcGcTctzH2/EolJvAO6YlsrowqXQ48AbtAVHwLJmoH1nNW4u
+	IByJFlm44s1pdwoiE+lyhttY5ajhkDKx3+bXlhHVeAl1ESc4PrBxDmr4
+X-Gm-Gg: Acq92OEJTiqJnaumth/22TrQQ7lC5kDUwVcIkktpg5LxzHJ6RWZdaRL4o/lX7t/C7aJ
+	SHL8SDwp2FLhWeQjpemT1kbqngB49sGJ0lSAf+alG4ScDQ2qyuX9V3KA/i3WKWaijKbHIIEwvvV
+	mg74z4GCxv5CBXfTCTKNYKoG9GSy/N5RZJydymttELuuPObIsRxFI3T+hRPBbYeCrTZ9w3BGmFv
+	Vnys/p7J2zX5uLzkyLd3hofPM95ohDQzu/ffGL+4uOzNUk2vazReNs9jWwx8puCjWLsl8a909Pe
+	GH3AiJI1WjNDXvrGaYPM8Na+T3hB6K8OUt8CrfiWfesTF7M31kMrY/zv45fqhVuon3nzGKUt8rS
+	PS0M1Bn/MTw2ActbZlckoftE3FnFG5Ry4SonYBonk9rQuwvS0CSiGxLO2dTEPSmhqbWI9CMbVmK
+	asnjmCKs+yvMPG29KEu4lZlE9DQxk07W0R
+X-Received: by 2002:a17:90b:54ce:b0:36a:a16b:5f6d with SMTP id 98e67ed59e1d1-370ee82fe77mr27086714a91.7.1781096703627;
+        Wed, 10 Jun 2026 06:05:03 -0700 (PDT)
+Received: from pve-server ([49.205.216.49])
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-37625ecfed4sm1493221a91.0.2026.06.10.06.04.58
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 10 Jun 2026 06:05:02 -0700 (PDT)
+From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+To: Sean Christopherson <seanjc@google.com>
+Cc: kvm@vger.kernel.org, Paolo Bonzini <pbonzini@redhat.com>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>, Christophe Leroy <chleroy@kernel.org>, Anushree Mathur <anushree.mathur@linux.ibm.com>, Venkat Rao Bagalkote <venkat88@linux.ibm.com>, Harsh Prateek Bora <harshpb@linux.ibm.com>, Ackerley Tng <ackerleytng@google.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, Claudio Imbrenda <imbrenda@linux.ibm.com>
+Subject: Re: [PATCH v3 RESEND 00/10] KVM: selftests: add powerpc support
+In-Reply-To: <aildxtZhqEFYygp2@google.com>
+Date: Wed, 10 Jun 2026 18:23:48 +0530
+Message-ID: <o6hieeub.ritesh.list@gmail.com>
+References: <cover.1781093720.git.ritesh.list@gmail.com> <aildxtZhqEFYygp2@google.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -75,52 +88,37 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-Mime-Version: 1.0
-References: <cover.1781093720.git.ritesh.list@gmail.com> <2d2c46be7f051c7f1c645afaec67f57067d37a81.1781093720.git.ritesh.list@gmail.com>
-Message-ID: <ailfrWKNI9SfBNRh@google.com>
-Subject: Re: [PATCH v3 RESEND 05/10] KVM: selftests: Print the vcpu_id when
- KVM_CREATE_VCPU ioctl fails
-From: Sean Christopherson <seanjc@google.com>
-To: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
-Cc: kvm@vger.kernel.org, Paolo Bonzini <pbonzini@redhat.com>, linuxppc-dev@lists.ozlabs.org, 
-	linux-kernel@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>, 
-	Christophe Leroy <chleroy@kernel.org>, Anushree Mathur <anushree.mathur@linux.ibm.com>, 
-	Venkat Rao Bagalkote <venkat88@linux.ibm.com>, Harsh Prateek Bora <harshpb@linux.ibm.com>, 
-	Ackerley Tng <ackerleytng@google.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, 
-	Claudio Imbrenda <imbrenda@linux.ibm.com>
-Content-Type: text/plain; charset="us-ascii"
 
-On Wed, Jun 10, 2026, Ritesh Harjani (IBM) wrote:
-> Print the vcpu_id and errno when the KVM_CREATE_VCPU ioctl fails, for
-> debug purposes.
-> This helped in debugging an issue with KVM on PowerVM, where KVM_CREATE_VCPU
-> only supports max 2048 vcpus, because the PAPR_HCALL H_GUEST_CREATE_VCPU
-> ("Documentation/arch/powerpc/kvm-nested.rst") supports only up to 0-2047
-> vcpu_id. However KVM_CAP_MAX_VCPUS capability extension always reports max_vcpus
-> as NR_CPUS of the host.
-> 
-> Signed-off-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-> ---
->  tools/testing/selftests/kvm/lib/kvm_util.c | 7 +++++++
->  1 file changed, 7 insertions(+)
-> 
-> diff --git a/tools/testing/selftests/kvm/lib/kvm_util.c b/tools/testing/selftests/kvm/lib/kvm_util.c
-> index e00a25f59416..6319e2037882 100644
-> --- a/tools/testing/selftests/kvm/lib/kvm_util.c
-> +++ b/tools/testing/selftests/kvm/lib/kvm_util.c
-> @@ -1354,6 +1354,13 @@ struct kvm_vcpu *__vm_vcpu_add(struct kvm_vm *vm, u32 vcpu_id)
->  	vcpu->vm = vm;
->  	vcpu->id = vcpu_id;
->  	vcpu->fd = __vm_ioctl(vm, KVM_CREATE_VCPU, (void *)(unsigned long)vcpu_id);
-> +	if (vcpu->fd < 0) {
-> +		int saved_errno = errno;
-> +
-> +		pr_info("Failed KVM_CREATE_VCPU for vcpu_id %u with errno %d\n",
-> +			vcpu_id, saved_errno);
-> +		errno = saved_errno;
+Sean Christopherson <seanjc@google.com> writes:
 
-Sorry, but NAK.  There are myriad failures where printing extra information can
-help debug a failure/assert, I don't want to create a slippery slope where the
-codebase is littered with extra print statements that someone found useful at
-some point.
+> On Wed, Jun 10, 2026, Ritesh Harjani (IBM) wrote:
+>> Nicholas Piggin (4):
+>>   KVM: selftests: Move pgd_created check into virt_pgd_alloc
+>>   KVM: selftests: Add aligned guest physical page allocator
+>>   KVM: PPC: selftests: add support for powerpc
+>>   KVM: PPC: selftests: powerpc enable kvm_create_max_vcpus test
+>> 
+>> Ritesh Harjani (IBM) (6):
+>>   KVM: selftests: Print the vcpu_id when KVM_CREATE_VCPU ioctl fails
+>>   KVM: PPC: selftests: Use u64 instead of uint64_t
+>>   KVM: PPC: selftests: Use s64 instead of int64_t
+>>   KVM: PPC: selftests: Use u32 instead of uint32_t
+>>   KVM: PPC: selftests: Use u8 instead of uint8_t
+>>   KVM: PPC: selftests: Replace u64 gpa, u64 gva|vaddr with gpa_t and
+>>     gva_t
+>
+> Squash these typedef changes into the patch where the "bad" typedefs are used.
+> Give yourself attribution for Co-developed-by if desired, but don't introduce
+> code only to immediately fix it.
+
+This was noticed only later in v2->v3, and I wanted to keep the original
+patch from Nick the same. But no issues, I can squash this in the main
+patch in the next revision.
+
+However I was hoping if I can get some feedback on the overall patch
+series as well especially the non-powerpc patches (1,2).
+One other question - Should this go via powerpc tree or via kvm tree?
+
+-ritesh
+
 
