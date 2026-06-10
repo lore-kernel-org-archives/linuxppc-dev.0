@@ -1,93 +1,115 @@
-Return-Path: <linuxppc-dev+bounces-22425-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22426-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 82FC1CD8CB2
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jun 2026 16:41:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0D62ACD8CB2
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jun 2026 16:42:01 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gbBPW0Dqrz2yv2;
-	Thu, 11 Jun 2026 02:41:35 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a00:1450:4864:20::42f" arc.chain=google.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781109694;
-	cv=pass; b=Hz2aV6bjbADqSo6ACRZhcGFAOubgjCjlYjvNZGsmRnc00Pyn8Qj4Wpgi2PWhAkuQOd6InjpERfMGPBPI8+/hSGFSEhwz2RkICjt/1KBPjufKfGKlHi7Y1CID+j4hG5W8zfcfkcE6kBUcULsvbQZTNHeg+opN5EL/EKpepQMP6/x+xpm8BHBD1pCUEp65unk9un/Xffchwm9yY2rnPVVE7jxtjT8clWXYzWLwWuXNlSKY9kNQ1bjNtNfNspkTibwHseocLI3BGEQcjOOro2RP2Ty1G7NU5Ki8akKn6Cd08Har9N2Tt8FUvTiCqlqY2a4OzaYn9VhoJOjlyXSSj8yFjA==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1781109694; c=relaxed/relaxed;
-	bh=PT+PY78KXxofjyRxno52RBKQ5jXbpc7xwPRRoOZh6d8=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=mGvkMKwSSe8RM2MXW88LpbtfLImBb87V1+pkoSa7ExV4svUQtcKFQsAKxEOox96QcaYCZM2FbZfx+1eivXQf7FB8I8ykx6ZypIWNH0+FFITrI4MYBzsAAcojB6WMzZslM6Bl8OWn2dfofel8/dIC/EaCLet/jX9ugjiE/LdQIeENh+iuClVSOViP+1yi3Vi+8SmBg5qWVYC30/NfT+dIdLq4llCXGmwKkz9y+2becxbKwWU2zDXFuQAlnZ36VZFPHqINnAaxdG+uvucAuElaCBsBZhFaJAY1k1CIxb8WkMyExdqVI9Qr5eozzm1HINHUbQc2sYhLvLr0LGS+QyqCQA==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=IeLgGi9v; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::42f; helo=mail-wr1-x42f.google.com; envelope-from=nphamcs@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gbBPz3mWXz2yv2;
+	Thu, 11 Jun 2026 02:41:59 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::735"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781109719;
+	cv=none; b=Fvz2/ox1yxeuwjFIvb5TiOco0Y0Npj9QmspyTixETGahWdapllmsV1Myx+vi0+f8c12kAOpkXZzIQZH9c94jybik+zqQRCuQb8wnvoqck7+Y12kN8jBY/FpSmbT7pddnReAoctN3XikJYwc0EG6DfcBiFgiuBrGS+qw7/e5gsPxzm7pH81PrKujkrk+DbfSRO7t/9PU1DIp9yVHA499V6G66sGT3DX1y6diQKGW5JCh/ICYW9am6AjHa6K8yT9/+3zbNtr7H8tMB0I8iqOnKc/c7zCGXbY+B5lJD7KlvmYKQ+WP3bZzzAivoPTAyOHXSexpyLdeXzPuZERZOo6qyvw==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1781109719; c=relaxed/relaxed;
+	bh=DeYS8psnLhx+0nTbu07Q/N5cf93jt28LjVA9fcxz2cA=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=Y7vrsN1+vPMNjEFwL7iRND5WfG959uql7cSVoGaNE5u/CeFVtGYuhVVehL6MDIN8g35CmEmf0BsMu7d7D7IUHqs/gZCPgZORWV3SXgFT4PoXr5maO1oUOLDYlHzP1ltquWrughE8HgpFRwmvV5AjBCfoOPaQdwblKmJlIHGa9GSE/ME6tvxS1zj/QoVsj2X0odV/p/wm1L1W8ekDvlbBNNK4nsIgS1JVgNfaxjAy1yUbpMpp4ohE99khnC1tJjchZhW2KCsrA69Pb5gxe3XRr7ivBYZHXq8hqg7tPLiIFAy81q8D7Y1+kzARxvqBdVXotQ+to8W8H3Of620gZc+dTw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ziepe.ca; dkim=pass (2048-bit key; secure) header.d=ziepe.ca header.i=@ziepe.ca header.a=rsa-sha256 header.s=google header.b=gUF8luCI; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::735; helo=mail-qk1-x735.google.com; envelope-from=jgg@ziepe.ca; receiver=lists.ozlabs.org) smtp.mailfrom=ziepe.ca
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ziepe.ca
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=IeLgGi9v;
+	dkim=pass (2048-bit key; secure) header.d=ziepe.ca header.i=@ziepe.ca header.a=rsa-sha256 header.s=google header.b=gUF8luCI;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::42f; helo=mail-wr1-x42f.google.com; envelope-from=nphamcs@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-wr1-x42f.google.com (mail-wr1-x42f.google.com [IPv6:2a00:1450:4864:20::42f])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=ziepe.ca (client-ip=2607:f8b0:4864:20::735; helo=mail-qk1-x735.google.com; envelope-from=jgg@ziepe.ca; receiver=lists.ozlabs.org)
+Received: from mail-qk1-x735.google.com (mail-qk1-x735.google.com [IPv6:2607:f8b0:4864:20::735])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gbBPT6g4Gz2ysW
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jun 2026 02:41:33 +1000 (AEST)
-Received: by mail-wr1-x42f.google.com with SMTP id ffacd0b85a97d-45eedc94d37so3626028f8f.3
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jun 2026 09:41:32 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1781109690; cv=none;
-        d=google.com; s=arc-20240605;
-        b=Op948lgiPUNkl34OtxaZP54Zd7J2PEPPyXJoaNbe3Zs0T0Q68HMO1RT4S3NikMDD4i
-         aOfjVHCSaJp1uBTHlf/vDQTvbie57GMGvW1QSU4lXBqhfJ24bec+8Rj2HIlELxvnaCbD
-         QB7tPqT65arymCDDu0ABDFRno4gSNNZnTBYqXswvCgxnnBWUpztdJlEzPQUs9t01ZNC3
-         4melwKOzIHN5YJRspCN5QtRY+rjfKdbpf/HvFNrx0DzhVkTi/rJCoHXmA5/LALGgttsG
-         ljBKkjMHcbRj85+cmcjW16Mo6IsE8ATDxOI6uWg12xDdN6Eh2fO+awhCFLYDIc6tByOj
-         AdfQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=PT+PY78KXxofjyRxno52RBKQ5jXbpc7xwPRRoOZh6d8=;
-        fh=BHjbAZ5TcI/WGP6eAqOqbm28t9Th/PxI5PunpnkKybk=;
-        b=Xl82tPqosVkuPpYOS7Oj4CUZmK7KT6F0Ook5CT7E9HcGCL2kPpemUx6OuolMv8Th7I
-         lJACqXsZ6q26vbkP7p8Xq2OwEIKrB0vjMym71xCsVQlvSRcFY4Bqx94iWbJfqvAKQaLR
-         EvDDubF5YD7xFRHwzevfbP/6Vdo0/16dViJbEjNiVrpoBXjy1q4mmlW6kGJzv42/SA/L
-         iYg094wfFljl9Iy48fb31yIE2EsEVjLsl19dkZVRxmbkZzg1K99e88Jv+FZrptX/tbwe
-         /whEYMw9WwqiytAiwuq6WJ7pvIbAlOqKpZk6Sct1ZgNCZIAp29ec2O5C0lkjIF+6zFAK
-         5WIA==;
-        darn=lists.ozlabs.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gbBPx5s9Sz2ysW
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jun 2026 02:41:57 +1000 (AEST)
+Received: by mail-qk1-x735.google.com with SMTP id af79cd13be357-91587626ae1so785793085a.3
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jun 2026 09:41:57 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1781109690; x=1781714490; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=PT+PY78KXxofjyRxno52RBKQ5jXbpc7xwPRRoOZh6d8=;
-        b=IeLgGi9vImpPAwUxE07BwA+0PYMcJ9zyg18X1ZPZEjjSV/CQt9lLuaZ7G44nSHFVU4
-         wpNBaYFTuDB4tq2c6jFnmaIHnq8A3fNS8r/5kHeJjn/TAflzgp49+dgAgKx8H97TuNRi
-         JU2g7EGGAek5O58pFfLioGZLLTI12tpWWVmncoYDpNbLcJTddrwPvaX+eBX7tyHluxWN
-         4YjQRtx0yDJDSw3hsvkHNgiIffp0H+LODg1vI52Z+b1UFUXc6LwHb2LBv5Egbz/qY3rA
-         x14rYoB340KSEvLk+hRHpkrBJKpIVZkeymBOLRaP/NeqIou1Dc/eWpI0Y8T/N61pvrEK
-         PgAA==
+        d=ziepe.ca; s=google; t=1781109715; x=1781714515; darn=lists.ozlabs.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=DeYS8psnLhx+0nTbu07Q/N5cf93jt28LjVA9fcxz2cA=;
+        b=gUF8luCIttfc5v5mIhLJzwNYNxslKmqWw7GLmFKXgOz72u+0aIYKmB8ld9JR9ama9G
+         SSehF9wjPrf8Vt60rmsBkK0EJ1OEm6WWNFVzOtQjc9rc2cFO5bNr9S3RLXZVJ15J1lrw
+         CVH3sX0j0yDaW6j2fQtqNhr+v5M0r7m2WXSVTE97fj+vSEtsPYB5+rpIpCZMp/3CWW10
+         q0q34TYuwOspwjUn1cVCf5wBHe3dsPiWYh9w/tMyRkIWX8kqxD0++1SaUfV/LjiThPUv
+         njyOko7QC6wgIp5AdtJCPu1fZZXZrsLkAn+RTuB9otG76Zo8ZJjvjWfsO1usKjc9hsBc
+         +iJg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1781109690; x=1781714490;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=PT+PY78KXxofjyRxno52RBKQ5jXbpc7xwPRRoOZh6d8=;
-        b=iewHHMT8WtYmxGYqkU151J1A+nhnAghcyOLEa3/MEuTB+o0n/tT+vqWZzWBETP20YU
-         8g5SWSzI+jOby87RCPjdLYK5i5sIYzbNfiU80IvqRdUZsmR3McT2r3837ICwWM0Vjq2W
-         stjZWYc8v9DJUsEP4EZpoAcOxNVZUCwuBrclM5ndiVVn8fDLOCh9dPiRhPbQ2+tniXR7
-         4QjharMWFeRwY6HAcW2Sw/tdMAWZFOAcdo1XMj4nEBkW6WhmrJcTSMSMuFS9GaDF3YJ3
-         QOmkC7IAzYaosnI01dzkybgglnWfGE3Q9yR0WdcsmPkQc/1kMKNJuqyDDxJr33jGG1rE
-         vEpg==
-X-Forwarded-Encrypted: i=1; AFNElJ8FgxEfzQnNODruJuLlaGX5CVl530EOUh/b/rElojXa+XXRhXNBDoqX9MJSZtZ9Xj3UX223bM3wPEPbQ1g=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YyQfjpaEMl/taS8XiLSLuG+fWLkBPzABUGrIlFOx8PUUcfHzt/P
-	JImPSJ+SUGd1x7S8xSK1uJ84WKNtWp/SfqZMijaMvHQXkk185MDyDyheTOpbePf2psYQsOh0Dg7
-	Enru0NpRAZ9SSQ4Gpybk8PBa0+2oekMU=
-X-Gm-Gg: Acq92OFAoCqHtq/B2t+qqRjQR7lRTCkz+MxAVAU2S1fWSw1vXSIVFVZ2/e1S+FB1uf0
-	kmYQ8Klsvzrjp4SCbJaVhQGuXQXSDAAFEUJkPMlcSLhI3qLpWJV9+DXrZcaEkBVCkwyP+4t5xNm
-	ors7i1IYoKBxYdSmyaEBz7s+W8Z0Un3SWznHwESR439hF9HGynKAmWykh9b6ljrvGbentWHNPqU
-	DFCsXOZ/ZEUk9huvvGz5KnKa2M+t700qm/J1zSLu4y11YMnwzhOeQ+bGkxIfDv8FRq0Bo1Vxg7w
-	aA3hEiR+J7SN8wYUOEduEdIyO0sctWygZ4m9+bEozkje+pLHj9wFiwKo54Hs38D9YQ==
-X-Received: by 2002:a05:6000:178e:b0:45e:f52b:f4b7 with SMTP id
- ffacd0b85a97d-4605668e61cmr11443793f8f.17.1781109690091; Wed, 10 Jun 2026
- 09:41:30 -0700 (PDT)
+        d=1e100.net; s=20251104; t=1781109715; x=1781714515;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=DeYS8psnLhx+0nTbu07Q/N5cf93jt28LjVA9fcxz2cA=;
+        b=MyLXQgYPAiSl/wJ0cvApLzumtLGNxV1bQOSYVioLue62s1wOm1l3tk2sp5GU1k09YK
+         yaV61dQDevoQwO2nrDFrY9m1CpWEJIN17/AzqM0aE70g02IWXKGGCTzsI9SLosiR82ts
+         4pXMif23c+sbSAES1awi9L2/y0fW5R2/Sr5OWX4YAIVzCOM1kOuueBhU9a6jVAtRmZmY
+         LwuN8g3Cg+3ynOPfaiM6lrJIP8s+OmdCUBkCcJUvSxBYX3YH0simMM7yFRdu89d+eql9
+         M2kxk3E6QGxnB0gOm3GWoqbuA5fPWZ0qrWiMKx4sRgvVmKH6PRWtswoSTKFtpZ49yJ9F
+         2pXA==
+X-Forwarded-Encrypted: i=1; AFNElJ9eaRXxSpqwuJE5h+1iNmsQ0HKEVk4xlNTEXoURETTzxLUmWoQ2Zz2KRBdpvUdJqFPlBQ5usJHMWLew5no=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YzjknVIwOgOzBtND7kf35AbhduKaFdNzIKe2fIrw+DcEeL4Gj/u
+	GYg7oul1Iol693qsyIWXJWlZIQnHj+fe0gZRtObos5AO35UXxTHhm+7XsUuWZkN4SAs=
+X-Gm-Gg: Acq92OEoc3Kl3TEEuOqu9JcVKauEGN9SC8ZHuYw3tiOsS8opvjv8BjCX4V9T3qnpj8f
+	OKVAUqfocOZwAmO++vQ0poLs/OYk8pefbQlHrgOYeJMtBYYPXe/t0gu0QCPRroFlI775S0vOv3I
+	C3GegDv6pmHTkhN7Izapzm0kIMaoZ38DkK3Ci56OPInmsOsB0pzPPb3CKN4yQHFVBkSzVWMxJia
+	U1bMEG0BcvSlSJCXyUN2RotA+tNhTeOZokC29OrP8/6T8rEJ1J1xnUPzgw1yPR60RD/NT00BFCb
+	ghSmstVeKkob84TxPhiwLBzdNTaiHs83SXiWD32Hm8w1mEiSBYlFuTBfsyAhS4vvKcIMKIlb+e5
+	wJCPsGBh+4UbUkMzfEqg7fgsc0PN2HAX8bZdRp40XL+urKWnXpg4WCiMNmAIqAIrQjUuG9pogOV
+	ROKOzWlTJPQIuvuTQwcZD55ZEbN6Mnm3Gq/6UgbH8plzA6Thk2hL0DNOk2s+K7eltiAuGp2gjWM
+	36cx+UndFw3qC4M
+X-Received: by 2002:a05:620a:a414:20b0:914:afc1:c66d with SMTP id af79cd13be357-915a9c75c96mr3039706285a.11.1781109715064;
+        Wed, 10 Jun 2026 09:41:55 -0700 (PDT)
+Received: from ziepe.ca (crbknf0213w-47-54-130-67.pppoe-dynamic.high-speed.nl.bellaliant.net. [47.54.130.67])
+        by smtp.gmail.com with ESMTPSA id af79cd13be357-9158a22dbbesm2438570085a.13.2026.06.10.09.41.54
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 10 Jun 2026 09:41:54 -0700 (PDT)
+Received: from jgg by wakko with local (Exim 4.97)
+	(envelope-from <jgg@ziepe.ca>)
+	id 1wXM01-000000048i4-3DtT;
+	Wed, 10 Jun 2026 13:41:53 -0300
+Date: Wed, 10 Jun 2026 13:41:53 -0300
+From: Jason Gunthorpe <jgg@ziepe.ca>
+To: "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>
+Cc: iommu@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
+	linux-kernel@vger.kernel.org, linux-coco@lists.linux.dev,
+	Robin Murphy <robin.murphy@arm.com>,
+	Marek Szyprowski <m.szyprowski@samsung.com>,
+	Will Deacon <will@kernel.org>, Marc Zyngier <maz@kernel.org>,
+	Steven Price <steven.price@arm.com>,
+	Suzuki K Poulose <Suzuki.Poulose@arm.com>,
+	Catalin Marinas <catalin.marinas@arm.com>,
+	Jiri Pirko <jiri@resnulli.us>, Mostafa Saleh <smostafa@google.com>,
+	Petr Tesarik <ptesarik@suse.com>,
+	Alexey Kardashevskiy <aik@amd.com>,
+	Dan Williams <dan.j.williams@intel.com>,
+	Xu Yilun <yilun.xu@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
+	linux-s390@vger.kernel.org,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	Alexander Gordeev <agordeev@linux.ibm.com>,
+	Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
+	Heiko Carstens <hca@linux.ibm.com>,
+	Vasily Gorbik <gor@linux.ibm.com>,
+	Christian Borntraeger <borntraeger@linux.ibm.com>,
+	Sven Schnelle <svens@linux.ibm.com>, x86@kernel.org,
+	Jiri Pirko <jiri@nvidia.com>, Michael Kelley <mhklinux@outlook.com>
+Subject: Re: [PATCH v6 04/20] dma-pool: track decrypted atomic pools and
+ select them via attrs
+Message-ID: <20260610164153.GQ2764304@ziepe.ca>
+References: <20260604083959.1265923-1-aneesh.kumar@kernel.org>
+ <20260604083959.1265923-5-aneesh.kumar@kernel.org>
+ <20260609143242.GK2764304@ziepe.ca>
+ <yq5afr2uzum9.fsf@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -101,38 +123,72 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <cover.1781000840.git.ritesh.list@gmail.com> <68591daf0d679e5a0072d63751f187d14613e2b0.1781000840.git.ritesh.list@gmail.com>
-In-Reply-To: <68591daf0d679e5a0072d63751f187d14613e2b0.1781000840.git.ritesh.list@gmail.com>
-From: Nhat Pham <nphamcs@gmail.com>
-Date: Wed, 10 Jun 2026 09:41:18 -0700
-X-Gm-Features: AVVi8Cd2j8ucYOyrC_mYn3R-SWWpqfSCH5PoEKv3S1kL1-SjdJ4cmU7YlrR2bZw
-Message-ID: <CAKEwX=NCB6yrf4Dc0yU_CwZWi0Kk3tBup7yvP7EUz2k7_CR2RA@mail.gmail.com>
-Subject: Re: [RFC 1/4] include/linux/swap.h: Remove unused leftovers
-To: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
-Cc: linux-mm@kvack.org, Madhavan Srinivasan <maddy@linux.ibm.com>, 
-	Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
-	Christophe Leroy <chleroy@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, 
-	Chris Li <chrisl@kernel.org>, Kairui Song <kasong@tencent.com>, 
-	Kemeng Shi <shikemeng@huaweicloud.com>, Baoquan He <baoquan.he@linux.dev>, 
-	Barry Song <baohua@kernel.org>, Youngjun Park <youngjun.park@lge.com>, 
-	David Hildenbrand <david@kernel.org>, linuxppc-dev@lists.ozlabs.org, 
-	linux-kernel@vger.kernel.org, Sayali Patil <sayalip@linux.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <yq5afr2uzum9.fsf@kernel.org>
 
-On Tue, Jun 9, 2026 at 6:20=E2=80=AFAM Ritesh Harjani (IBM)
-<ritesh.list@gmail.com> wrote:
->
-> This removed unused leftovers most of them are forward structure
-> declarations. Also removes SWAP_BATCH macro which isn't used any
-> where in the code.
->
-> Found these during manual code review.
->
-> Signed-off-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-> ---
->  include/linux/swap.h | 7 -------
->  1 file changed, 7 deletions(-)
+On Wed, Jun 10, 2026 at 01:37:26PM +0530, Aneesh Kumar K.V wrote:
+> Jason Gunthorpe <jgg@ziepe.ca> writes:
+> 
+> > On Thu, Jun 04, 2026 at 02:09:43PM +0530, Aneesh Kumar K.V (Arm) wrote:
+> >>  struct page *dma_alloc_from_pool(struct device *dev, size_t size,
+> >> -		void **cpu_addr, gfp_t gfp,
+> >> +		void **cpu_addr, gfp_t gfp, unsigned long attrs,
+> >>  		bool (*phys_addr_ok)(struct device *, phys_addr_t, size_t))
+> >>  {
+> >> -	struct gen_pool *pool = NULL;
+> >> +	struct dma_gen_pool *dma_pool = NULL;
+> >>  	struct page *page;
+> >>  	bool pool_found = false;
+> >>  
+> >> -	while ((pool = dma_guess_pool(pool, gfp))) {
+> >> +	while ((dma_pool = dma_guess_pool(dma_pool, gfp))) {
+> >> +
+> >> +		if (dma_pool->unencrypted != !!(attrs & DMA_ATTR_CC_SHARED))
+> >> +			continue;
+> >
+> > I don't think you should be overloading DMA_ATTR_CC_SHARED like this.
+> >
+> > 	/*
+> > 	 * DMA_ATTR_CC_SHARED is not a caller-visible dma_alloc_*()
+> > 	 * attribute. The direct allocator uses it internally after it has
+> > 	 * decided that the backing pages must be shared/decrypted, so the
+> > 	 * rest of the allocation path can consistently select DMA addresses,
+> > 	 * choose compatible pools and restore encryption on free.
+> > 	 */
+> > 	if (attrs & DMA_ATTR_CC_SHARED)
+> > 		return NULL;
+> >
+> > 	if (force_dma_unencrypted(dev)) {
+> > 		attrs |= DMA_ATTR_CC_SHARED;
+> > 		mark_mem_decrypt = true;
+> > 	}
+> >
+> > It is fine to have a bit inside the attrs that is only used by the
+> > internal logic, but it needs to have a clearer name
+> > __DMA_ATTR_REQUIRE_CC_SHARED perhaps.
+> >
+> 
+> Are you suggesting adding another attribute in addition to
+> DMA_ATTR_CC_SHARED?
+> 
+> Is the idea that __DMA_ATTR_REQUIRE_CC_SHARED would be used in the
+> allocation path to request a CC_SHARED allocation, while
+> DMA_ATTR_CC_SHARED would be used in the mapping path to describe the
+> attribute of the address?
 
-Seems like this can be submitted independently of this patch series right?
+Yeah, it is a thought at least
+
+Maybe a comment is good enough.
+
+I just find it hard to follow when we have this dual usage. Like the
+code above for dma_pool->unencrypted is completely wrong if it is an
+"attribute of an address". Easy to cut & paste that into the wrong
+context.
+
+Especially if you move things up higher.. having the alloc set both
+CC_SHARED and REQUIRE_CC_SHARED or maybe ALLOC_CC_SHARED would make it
+clearer that the alloc code lives under that callchain
+
+Jason
 
