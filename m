@@ -1,75 +1,75 @@
-Return-Path: <linuxppc-dev+bounces-22404-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22405-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 02D9FCD8CB9
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jun 2026 12:48:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DCDC2CD8CB9
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jun 2026 12:48:24 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gb5DB2j0yz2xdb;
-	Wed, 10 Jun 2026 22:48:10 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::102e"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781095690;
-	cv=none; b=cqefEdCleJsigEVo0/YMhOFb65IfcKKaz2RbJyqKxh8eSZJiAsUcqH9BPvNB+HDcmTDUPNiiK4bBxOZUCk32KfU5q7uPmvJFgjd7wztcWVCjAVyXI2IglQ4ghRIbREVEl7Iy7R/TRafMNkCRpaSu6X58cTCzI7fS7ngvKwMD7UYzhjJ8Jsa6/R335ZY15tMjMx28alNCvwVDX23+64KJ5NnFjlc0ZIGllbv57HgAfJGEq8WC7oxRK7b1ag1KxpZbKLQd3FoKbPwi+oyEFs4rOwDJNpRFGpK5sia85TVerQ/0MZipvEDVDC/SUebEfnP7mPbLfSCG37b+aWm8nbS3KQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gb5DJ3y2lz3bwR;
+	Wed, 10 Jun 2026 22:48:16 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1036"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781095696;
+	cv=none; b=Jv9V/vV9Af0jO4t+wfNBO7PyZLH+vmSLJGC5A2C0Bwve2jQnqrvpiTxCNAjzkG5XDNE+i1GPt9O/cKE/gAduHh/IDtKNgB7lqY/utIl1FQFNVlVp0nHUOTpC/Nx1uOBJloCKCSa387hG47ErPqL4BEHpP5Hy49U40itGmWxLrGMy3u5kHyRjJjtMhL7Cw9qWkVn5YPASVaPHrfj40erTUh000etHNNAAZOb7ilposJ2BfhH3sf4MdoZJ9nGalErWzYdPmjPXYp7W3BxaCTIqCFQz+tFwye+NSmFTW9eF5wC6TxAuJIiNsZnDlfwEnIt4DNc1lM/h89EZpfFzZit30Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1781095690; c=relaxed/relaxed;
-	bh=VrxTcenItW2gu16uj0ViHf2ekVBrXj9Zuq6BUQC9S+E=;
+	t=1781095696; c=relaxed/relaxed;
+	bh=nqa48U7Zo36zEODVSIgL4W0ts+Mysp9P11byxscZfNU=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=hs0OS2Uv2VmVCt+Z2duuf9Yi+S+CbaynU8ENaAc5ZAyO9OodqxivKhLbLBOo5LVOZPFke5G0dYkQfCTN+7+DpihwaEaaM6Bt3qNduwyxpxeuOtNd06qFNrF61j9w256DTj2XhFLxreBZu0eAmaChLA0y2WeO69FQOm/CEVjLeR384JyvOyQ4QYVWm5YJL/juMII7fp54dBvwukCEM7NxujDNR8+vkn7vHOBybbzwMvr0Q7p5wbWY8M+7fqyFN98Vjwmr2VPc9rUSriHu/1AGgHy0HbDikHcXbtEnm+YU+LobfHwHmPRNBzBjb96pBBU52es7qc8ORFRKQQPnmIu5CQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=YfyfTpj2; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::102e; helo=mail-pj1-x102e.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	 MIME-Version; b=OjcrFT3uxA04BjHPbrsSvu5KJzkk2J15hBhcHuYOXQJKmQpWthT798DLorl5LC1wwyqNhpADutNaTlgn3LONHj5fUYI/JFhPw/xpRPQAcmDb53o0ru31X21HvhGnITdePayS4l+2p3mSPHEc6NlaeDucw92h0DhAaHVccqc2nC5hP8Qa7ji6nbY/N/ZqfkBn2LeK7UeSHzVYCwxF9jiJjiuM4raw5cqD7JsfAI5XVtZ1cxLrrGGAhy8dM8Xv2vWdvHsqShgjECh8PpClRzFbGI/O+bZF/r6ZmnjcLw0//TbLD4jPE3K92DrNApiUy7l/Ez1RsjJcBMasgDbTmgTa/g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=ACPD1/On; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1036; helo=mail-pj1-x1036.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=YfyfTpj2;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=ACPD1/On;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::102e; helo=mail-pj1-x102e.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pj1-x102e.google.com (mail-pj1-x102e.google.com [IPv6:2607:f8b0:4864:20::102e])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1036; helo=mail-pj1-x1036.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pj1-x1036.google.com (mail-pj1-x1036.google.com [IPv6:2607:f8b0:4864:20::1036])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gb5D94GQCz3bpM
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jun 2026 22:48:09 +1000 (AEST)
-Received: by mail-pj1-x102e.google.com with SMTP id 98e67ed59e1d1-36dd65b95f2so4805551a91.0
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jun 2026 05:48:09 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gb5DH5Wfnz3bpm
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jun 2026 22:48:15 +1000 (AEST)
+Received: by mail-pj1-x1036.google.com with SMTP id 98e67ed59e1d1-36dac5d5da0so3510053a91.2
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jun 2026 05:48:15 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1781095688; x=1781700488; darn=lists.ozlabs.org;
+        d=gmail.com; s=20251104; t=1781095694; x=1781700494; darn=lists.ozlabs.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=VrxTcenItW2gu16uj0ViHf2ekVBrXj9Zuq6BUQC9S+E=;
-        b=YfyfTpj2TJRfCNTAzwF9mWypbrUzw1LobGv7aeu1oZuI1ujQLE8fPkZqPKDBPvVwuv
-         /W3twhuuFHVCbyl8Bo5qCE8jPJ2d0EcUwTxikzSLe9ScADcL69i4tOmCGOG1CIXJ5sIo
-         UB0E9b/C9iOCQ9qwFRhC8htlAQzYJhzzW4uxOlvcs4T74pUw/O7rIObhbX1CkBSBcFBS
-         NVwKtq6NOJ9v9j/Ik8bYhi+EGsDEQfrEurOtZ5kaA6Z3QVlo5A/zXsovKdE3bousgNgM
-         tXBu9LJ5N+jsKLx1XwGxoZhdjkBqXmDdm+INvGQ0pvsA8j9ldhHLq0ldF57suoj2zJKo
-         cYGg==
+        bh=nqa48U7Zo36zEODVSIgL4W0ts+Mysp9P11byxscZfNU=;
+        b=ACPD1/Onb4ribYvTLpL7eZSBy8kiBu2reVkgCLpQvknNgqMY06T2fU9fBSCc0nbzsU
+         nNHRbg+7cPT9aaSiOBmiMPMClpyBXX1fgqk9kMqtM48FOSS+vo/vsFd9CC55+cVa17Fq
+         YA8c6kzPgtyQtJbbbeyCOkIkagadm+vhf8CM497fAFRzZ5mT3q5GBefhKtqa9JHCZTav
+         ozndBH2sKDLJLdB+N38wWVhiVLLK//CT1h4rJK+9EyLupu8wEYZpiVxRDfslGykVzjeq
+         fzRlZRdq5YVcRSUSTEuclqk4O/x4wvnJLh2Vjlorm4QTa+DxjfN0Qaa+5pgNBiKvEIz8
+         6A/w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1781095688; x=1781700488;
+        d=1e100.net; s=20251104; t=1781095694; x=1781700494;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to;
-        bh=VrxTcenItW2gu16uj0ViHf2ekVBrXj9Zuq6BUQC9S+E=;
-        b=VNbnp6vO9e6386O1QqgUk+qf15B7Zwsz1z/p0+mT/MM4mRkbRpboGU8fnlQDodROWZ
-         7uonsuJBIrWB3kuphldlljcxFc0Bub3XTZR/9JiDIZjndBb9G9UIwHiaKLrWv4YHxcSX
-         unuEZ9SIEWmob2f7NJ+NBOK5OMpG/mIWKE8SxAf+WYSjRZO3P6npGj7e3k3627zV0Lwi
-         mUeS+jxzEEKwOG4F4DDNr9kkdDU7A8rq9Mu6utyOgajqxAu4TE+Jnq2YAWL+u+KU1xrU
-         N6fxALg8J8+lMABmFLBDYq0IpuigtS43XCywW3ujrF0kKVdPngjYQNCIke/YAbMH+yrd
-         /pUg==
-X-Gm-Message-State: AOJu0Yw8R2EO83CXz2bgueAClqI37vijglI8srgm+TVOM4Nb5aeOLr+3
-	ysA4aZ7n/bIBRZwj3xV2fmmt/aWL8FTEOsEJlQ2daxB8kcsObF+OfNSo
-X-Gm-Gg: Acq92OE2GXza/Gwnyq+rUQZ7BDEKX9aYlNW/wGeh9JS+zQE6njSAAfpfCEuUiStA3Md
-	/S5tkdDfDhe4OWvXhRNvmM+NqSj9eHUfHBo1y13blaJUZQz6fOagtxGIFB/J8Ukr27+3j5WrvZG
-	BpgB4IWdFGPQrqkkjUurCKmKgKxotY/DNUcqJaTeaJ8IwILirlrKaliUWvcM3L5rwNJCUmI4Aa5
-	brWb0OrLqQz4EB1MCmLtau25t2OH05IfIxjPuYuC07O5U1K3S/JVMEieu9D4EBWe1orAWhkv2fl
-	68X5nsQaiT5n40V5yzcwFCcVEsC98MdPlM2gK2H48JFq/6wrt0EXVE6rPjMRmSGfK3j/I2C2MIP
-	UAg74q8nj5EN4N0lGB8xK99x8yMPBBxfkAYTlllV5iWhskGbhDm52SRlDF+DDmky3AwZs74j+1E
-	jQvzU/zwlZAKOWBPVkmzzPKQLysjiQ+M7LtCJtQ2u92qKoH4N944D31kOv5clyJw==
-X-Received: by 2002:a17:90b:560d:b0:36d:630a:c4e4 with SMTP id 98e67ed59e1d1-3712ffaa11fmr18804464a91.3.1781095687672;
-        Wed, 10 Jun 2026 05:48:07 -0700 (PDT)
+        bh=nqa48U7Zo36zEODVSIgL4W0ts+Mysp9P11byxscZfNU=;
+        b=H9QjPozpbDozlSZK7eCQ0Zx9u6F01aLeOz7KVf+4QfSPjRJybGT2QVAH6jmmenQoPI
+         HnIO4HGnDbuv3dRFZNYqylNVpohsGD+bTk/1fGytccet9N3XNZj86DJhSIGZFK+y4NgA
+         Okfe+1vZVMwPihDZadO5HFsuD+c85Tb+S72zTiny00u2Y/WgbtcbGCvOiO/TKVdfqYwf
+         L5KBgnGlDmFIeZYngw43P7mLb7xGyBBs6fa9MF7OabspgkbKav+PY93rjaXJvRIvS/QJ
+         oWfihU3q9AF2nKziq8W2sZcXgOy6ZFYJzYLJtObhv7tA9vlwa1Wk++M2jHgMzYYuLbDg
+         MGEg==
+X-Gm-Message-State: AOJu0Yxc0Tsh4Mf3g2oObCsVZ2/ebY/gViiYrbRcqV1O+Ab/TK9sdZs0
+	OBzFXyTseSzhpZz9Px92ca1aBNbB4ag4V979J1ZW29gt8nKUzmQjbGLk
+X-Gm-Gg: Acq92OHaF08v+HsMI6nznKJIQxqLTenMazKeHyYQ4nJHg2Ra4GBw+ACTlccy5/6UpW2
+	rMs+lvAexrs7xHdyQEqjmlzUPHikoFmOPpTNNjwavJOthSQFYc9SqpKSEUn/2CKM5k4Uf0e8BRD
+	zelZIDaor2IPwE+G4N9A/qtyD53unFAVuRiDgqgRM+KI4sUQS+TASZLp3ktvbbgagk9wXp1XiST
+	CcKKS+Ts69gYgEvZkwBFEA5Pvq5LCx3vO572Av+FoEib3u+ihvopPeymaiMekp3FwrN3IH3AJNj
+	ONcTqIQcBorOILKf2OF1Jww/gcv8QoYgBtqrcDeZhGW01nlSzrzmPu+3GrjRk5Hgli22BahRIZ+
+	SH62tNcW2TgkJwtTnlhBzwQBEPliFEkq6CIJKIVWSYy5QlFBKsHutSQYPbCtTfOI4o1vwhhQrbl
+	k2c6NO6x5xXvbr0BE/QbriYYNRW1vX/wllVRVIX0RiA6zFcQrNpthtQPxgX/mu4g==
+X-Received: by 2002:a17:90b:2706:b0:36b:ad81:c134 with SMTP id 98e67ed59e1d1-370ee928d34mr26496639a91.10.1781095693483;
+        Wed, 10 Jun 2026 05:48:13 -0700 (PDT)
 Received: from localhost.localdomain ([171.76.83.25])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-37624b83589sm3783554a91.16.2026.06.10.05.48.02
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-37624b83589sm3783554a91.16.2026.06.10.05.48.08
         (version=TLS1_3 cipher=TLS_CHACHA20_POLY1305_SHA256 bits=256/256);
-        Wed, 10 Jun 2026 05:48:06 -0700 (PDT)
+        Wed, 10 Jun 2026 05:48:12 -0700 (PDT)
 From: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
 To: kvm@vger.kernel.org,
 	Paolo Bonzini <pbonzini@redhat.com>
@@ -85,9 +85,9 @@ Cc: linuxppc-dev@lists.ozlabs.org,
 	Christian Borntraeger <borntraeger@linux.ibm.com>,
 	Claudio Imbrenda <imbrenda@linux.ibm.com>,
 	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
-Subject: [PATCH v3 RESEND 05/10] KVM: selftests: Print the vcpu_id when KVM_CREATE_VCPU ioctl fails
-Date: Wed, 10 Jun 2026 18:17:21 +0530
-Message-ID: <2d2c46be7f051c7f1c645afaec67f57067d37a81.1781093720.git.ritesh.list@gmail.com>
+Subject: [PATCH v3 RESEND 06/10] KVM: PPC: selftests: Use u64 instead of uint64_t
+Date: Wed, 10 Jun 2026 18:17:22 +0530
+Message-ID: <a09b26fcaceb79693b38af9c6ece9a8a9a4b93a9.1781093720.git.ritesh.list@gmail.com>
 X-Mailer: git-send-email 2.50.1
 In-Reply-To: <cover.1781093720.git.ritesh.list@gmail.com>
 References: <cover.1781093720.git.ritesh.list@gmail.com>
@@ -106,37 +106,225 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Print the vcpu_id and errno when the KVM_CREATE_VCPU ioctl fails, for
-debug purposes.
-This helped in debugging an issue with KVM on PowerVM, where KVM_CREATE_VCPU
-only supports max 2048 vcpus, because the PAPR_HCALL H_GUEST_CREATE_VCPU
-("Documentation/arch/powerpc/kvm-nested.rst") supports only up to 0-2047
-vcpu_id. However KVM_CAP_MAX_VCPUS capability extension always reports max_vcpus
-as NR_CPUS of the host.
+commit 26f8453288d4c ("KVM: selftests: Use u64 instead of uint64_t")
+made this change from uint64_t -> u64 for all other kvm selftests.
+
+Do the same for powerpc as well. No functional changes expected.
 
 Signed-off-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
 ---
- tools/testing/selftests/kvm/lib/kvm_util.c | 7 +++++++
- 1 file changed, 7 insertions(+)
+ .../selftests/kvm/include/powerpc/hcall.h     |  6 +--
+ .../selftests/kvm/include/powerpc/processor.h | 16 +++----
+ .../testing/selftests/kvm/lib/powerpc/hcall.c |  6 +--
+ .../selftests/kvm/lib/powerpc/processor.c     | 44 +++++++++----------
+ 4 files changed, 36 insertions(+), 36 deletions(-)
 
-diff --git a/tools/testing/selftests/kvm/lib/kvm_util.c b/tools/testing/selftests/kvm/lib/kvm_util.c
-index e00a25f59416..6319e2037882 100644
---- a/tools/testing/selftests/kvm/lib/kvm_util.c
-+++ b/tools/testing/selftests/kvm/lib/kvm_util.c
-@@ -1354,6 +1354,13 @@ struct kvm_vcpu *__vm_vcpu_add(struct kvm_vm *vm, u32 vcpu_id)
- 	vcpu->vm = vm;
- 	vcpu->id = vcpu_id;
- 	vcpu->fd = __vm_ioctl(vm, KVM_CREATE_VCPU, (void *)(unsigned long)vcpu_id);
-+	if (vcpu->fd < 0) {
-+		int saved_errno = errno;
-+
-+		pr_info("Failed KVM_CREATE_VCPU for vcpu_id %u with errno %d\n",
-+			vcpu_id, saved_errno);
-+		errno = saved_errno;
-+	}
- 	TEST_ASSERT_VM_VCPU_IOCTL(vcpu->fd >= 0, KVM_CREATE_VCPU, vcpu->fd, vm);
+diff --git a/tools/testing/selftests/kvm/include/powerpc/hcall.h b/tools/testing/selftests/kvm/include/powerpc/hcall.h
+index 4028baa6c5d8..f923b3f5e233 100644
+--- a/tools/testing/selftests/kvm/include/powerpc/hcall.h
++++ b/tools/testing/selftests/kvm/include/powerpc/hcall.h
+@@ -10,8 +10,8 @@
+ /* Ucalls use unimplemented PAPR hcall 0 which exits KVM */
+ #define H_UCALL	0
  
- 	TEST_ASSERT(vcpu_mmap_sz() >= sizeof(*vcpu->run), "vcpu mmap size "
+-int64_t hcall0(uint64_t token);
+-int64_t hcall1(uint64_t token, uint64_t arg1);
+-int64_t hcall2(uint64_t token, uint64_t arg1, uint64_t arg2);
++int64_t hcall0(u64 token);
++int64_t hcall1(u64 token, u64 arg1);
++int64_t hcall2(u64 token, u64 arg1, u64 arg2);
+ 
+ #endif
+diff --git a/tools/testing/selftests/kvm/include/powerpc/processor.h b/tools/testing/selftests/kvm/include/powerpc/processor.h
+index cb75b77c33bb..cbbe390ae244 100644
+--- a/tools/testing/selftests/kvm/include/powerpc/processor.h
++++ b/tools/testing/selftests/kvm/include/powerpc/processor.h
+@@ -15,16 +15,16 @@ struct kvm_vm;
+ struct kvm_vcpu;
+ 
+ struct ex_regs {
+-	uint64_t	gprs[32];
+-	uint64_t	nia;
+-	uint64_t	msr;
+-	uint64_t	cfar;
+-	uint64_t	lr;
+-	uint64_t	ctr;
+-	uint64_t	xer;
++	u64	gprs[32];
++	u64	nia;
++	u64	msr;
++	u64	cfar;
++	u64	lr;
++	u64	ctr;
++	u64	xer;
+ 	uint32_t	cr;
+ 	uint32_t	trap;
+-	uint64_t	vaddr; /* vaddr of this struct */
++	u64	vaddr; /* vaddr of this struct */
+ };
+ 
+ void vm_install_exception_handler(struct kvm_vm *vm, int vector,
+diff --git a/tools/testing/selftests/kvm/lib/powerpc/hcall.c b/tools/testing/selftests/kvm/lib/powerpc/hcall.c
+index efb4318252be..cd10022572a5 100644
+--- a/tools/testing/selftests/kvm/lib/powerpc/hcall.c
++++ b/tools/testing/selftests/kvm/lib/powerpc/hcall.c
+@@ -5,7 +5,7 @@
+ #include "kvm_util.h"
+ #include "hcall.h"
+ 
+-int64_t hcall0(uint64_t token)
++int64_t hcall0(u64 token)
+ {
+ 	register uintptr_t r3 asm ("r3") = token;
+ 
+@@ -17,7 +17,7 @@ int64_t hcall0(uint64_t token)
+ 	return r3;
+ }
+ 
+-int64_t hcall1(uint64_t token, uint64_t arg1)
++int64_t hcall1(u64 token, u64 arg1)
+ {
+ 	register uintptr_t r3 asm ("r3") = token;
+ 	register uintptr_t r4 asm ("r4") = arg1;
+@@ -30,7 +30,7 @@ int64_t hcall1(uint64_t token, uint64_t arg1)
+ 	return r3;
+ }
+ 
+-int64_t hcall2(uint64_t token, uint64_t arg1, uint64_t arg2)
++int64_t hcall2(u64 token, u64 arg1, u64 arg2)
+ {
+ 	register uintptr_t r3 asm ("r3") = token;
+ 	register uintptr_t r4 asm ("r4") = arg1;
+diff --git a/tools/testing/selftests/kvm/lib/powerpc/processor.c b/tools/testing/selftests/kvm/lib/powerpc/processor.c
+index 9846ec26a32a..ac5c3421ec81 100644
+--- a/tools/testing/selftests/kvm/lib/powerpc/processor.c
++++ b/tools/testing/selftests/kvm/lib/powerpc/processor.c
+@@ -14,9 +14,9 @@
+ #define RADIX_TREE_SIZE ((0x2UL << 61) | (0x5UL << 5)) /* 52-bits */
+ #define RADIX_PGD_INDEX_SIZE 13
+ 
+-static void set_proc_table(struct kvm_vm *vm, int pid, uint64_t dw0, uint64_t dw1)
++static void set_proc_table(struct kvm_vm *vm, int pid, u64 dw0, u64 dw1)
+ {
+-	uint64_t *proc_table;
++	u64 *proc_table;
+ 
+ 	proc_table = addr_gpa2hva(vm, vm->arch.prtb);
+ 	proc_table[pid * 2 + 0] = cpu_to_be64(dw0);
+@@ -81,9 +81,9 @@ static int pt_shift(struct kvm_vm *vm, int level)
+ 	}
+ }
+ 
+-static uint64_t pt_entry_coverage(struct kvm_vm *vm, int level)
++static u64 pt_entry_coverage(struct kvm_vm *vm, int level)
+ {
+-	uint64_t size = vm->page_size;
++	u64 size = vm->page_size;
+ 
+ 	if (level == 4)
+ 		return size;
+@@ -97,7 +97,7 @@ static uint64_t pt_entry_coverage(struct kvm_vm *vm, int level)
+ 	return size;
+ }
+ 
+-static int pt_idx(struct kvm_vm *vm, uint64_t vaddr, int level, uint64_t *nls)
++static int pt_idx(struct kvm_vm *vm, u64 vaddr, int level, u64 *nls)
+ {
+ 	switch (level) {
+ 	case 1:
+@@ -128,11 +128,11 @@ static int pt_idx(struct kvm_vm *vm, uint64_t vaddr, int level, uint64_t *nls)
+ 	}
+ }
+ 
+-static uint64_t *virt_get_pte(struct kvm_vm *vm, gpa_t pt,
+-			  uint64_t vaddr, int level, uint64_t *nls)
++static u64 *virt_get_pte(struct kvm_vm *vm, gpa_t pt,
++			  u64 vaddr, int level, u64 *nls)
+ {
+ 	int idx = pt_idx(vm, vaddr, level, nls);
+-	uint64_t *ptep = addr_gpa2hva(vm, pt + idx * 8);
++	u64 *ptep = addr_gpa2hva(vm, pt + idx * 8);
+ 
+ 	return ptep;
+ }
+@@ -151,7 +151,7 @@ static uint64_t *virt_get_pte(struct kvm_vm *vm, gpa_t pt,
+ #define PDE_NLS		0x0000000000000011ull
+ #define PDE_PT_MASK	0x0fffffffffffff00ull
+ 
+-static gpa_t __vm_alloc_pt(struct kvm_vm *vm, uint64_t pt_shift)
++static gpa_t __vm_alloc_pt(struct kvm_vm *vm, u64 pt_shift)
+ {
+ 	gpa_t pt;
+ 
+@@ -189,16 +189,16 @@ static gpa_t __vm_alloc_pt(struct kvm_vm *vm, uint64_t pt_shift)
+ 	return pt;
+ }
+ 
+-void virt_arch_pg_map(struct kvm_vm *vm, uint64_t gva, uint64_t gpa)
++void virt_arch_pg_map(struct kvm_vm *vm, u64 gva, u64 gpa)
+ {
+ 	gpa_t pt = vm->mmu.pgd;
+-	uint64_t *ptep, pte;
++	u64 *ptep, pte;
+ 	int level;
+ 
+ 	for (level = 1; level <= 3; level++) {
+-		uint64_t nls;
+-		uint64_t *pdep = virt_get_pte(vm, pt, gva, level, &nls);
+-		uint64_t pde = be64_to_cpu(*pdep);
++		u64 nls;
++		u64 *pdep = virt_get_pte(vm, pt, gva, level, &nls);
++		u64 pde = be64_to_cpu(*pdep);
+ 
+ 		if (pde) {
+ 			TEST_ASSERT((pde & PDE_VALID) && !(pde & PTE_LEAF),
+@@ -227,13 +227,13 @@ void virt_arch_pg_map(struct kvm_vm *vm, uint64_t gva, uint64_t gpa)
+ gpa_t addr_arch_gva2gpa(struct kvm_vm *vm, gva_t gva)
+ {
+ 	gpa_t pt = vm->mmu.pgd;
+-	uint64_t *ptep, pte;
++	u64 *ptep, pte;
+ 	int level;
+ 
+ 	for (level = 1; level <= 3; level++) {
+-		uint64_t nls;
+-		uint64_t *pdep = virt_get_pte(vm, pt, gva, level, &nls);
+-		uint64_t pde = be64_to_cpu(*pdep);
++		u64 nls;
++		u64 *pdep = virt_get_pte(vm, pt, gva, level, &nls);
++		u64 pde = be64_to_cpu(*pdep);
+ 
+ 		TEST_ASSERT((pde & PDE_VALID) && !(pde & PTE_LEAF),
+ 			"PDE not present at level: %u gva: 0x%lx pde:0x%lx\n",
+@@ -263,8 +263,8 @@ static void virt_dump_pt(FILE *stream, struct kvm_vm *vm, gpa_t pt,
+ 	size = 1U << (pt_shift(vm, level) + 3);
+ 
+ 	for (idx = 0; idx < size; idx += 8, va += pt_entry_coverage(vm, level)) {
+-		uint64_t *page_table = addr_gpa2hva(vm, pt + idx);
+-		uint64_t pte = be64_to_cpu(*page_table);
++		u64 *page_table = addr_gpa2hva(vm, pt + idx);
++		u64 pte = be64_to_cpu(*page_table);
+ 
+ 		if (!(pte & PTE_VALID))
+ 			continue;
+@@ -320,7 +320,7 @@ struct kvm_vcpu *vm_arch_vcpu_add(struct kvm_vm *vm, uint32_t vcpu_id)
+ 	struct ex_regs *ex_regs;
+ 	struct kvm_regs regs;
+ 	struct kvm_vcpu *vcpu;
+-	uint64_t lpcr;
++	u64 lpcr;
+ 
+ 	stack_vaddr = __vm_alloc(vm, stack_size,
+ 				       DEFAULT_GUEST_STACK_VADDR_MIN,
+@@ -374,7 +374,7 @@ void vcpu_args_set(struct kvm_vcpu *vcpu, unsigned int num, ...)
+ 	vcpu_regs_get(vcpu, &regs);
+ 
+ 	for (i = 0; i < num; i++)
+-		regs.gpr[i + 3] = va_arg(ap, uint64_t);
++		regs.gpr[i + 3] = va_arg(ap, u64);
+ 
+ 	vcpu_regs_set(vcpu, &regs);
+ 	va_end(ap);
 -- 
 2.50.1 (Apple Git-155)
 
