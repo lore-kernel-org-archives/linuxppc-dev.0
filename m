@@ -1,73 +1,146 @@
-Return-Path: <linuxppc-dev+bounces-22494-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22495-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D58C4CD98CE
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Jun 2026 12:51:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6BFEECD98CE
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Jun 2026 13:39:34 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gbjFS14mmz3br5;
-	Thu, 11 Jun 2026 22:51:24 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781182284;
-	cv=none; b=JEu2n0m3ehb9h5ti57oxCSpNsydwG4yWbIZyoBCJCvB8Xez0MxSpDBC6k3dS8HEzgY+tRUp4EsE3Gt0YazGNVRnrzFmQvuFMUMYA7cUrARF7TXd7rWfw9Vrgamhxo/9wTJ8snrlYdYOvyoHICH95NCvvnieinEw0vHYHxCkZ7171T3232+5LNovLEG5k29MU/GGL1tOu2ykbKt7y5C6TBGBj1wJpKtZfHLys8iWrNuYElnyLpWXJ+1aTUobk4V7FJaWaEa2yxxHcwNQESDvNONISbbdcoV+lRJM/deqhBloIqOoFOsqA2oHMz8Eqe0k34n0ZN2JMWVY1TCRrMfD8/w==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gbkK074jlz3br5;
+	Thu, 11 Jun 2026 23:39:32 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=170.10.129.124
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781182689;
+	cv=none; b=Xq/pUBa5++cYA8H6E3DThJeVC3WMsBVBEYA6TRsskgkMVjtOVxr5iVrcXy/exZhnJhAjhyPsnb3Ng2OXq9v9cuvlgJDhIPqfDxtb6KP41dKZczBcV4hB4svsEKe4Ljtu1n44WKCuw30BTEqlKOgqqeMaJVSn81vmJ/0wD9fueAuMBp62TuhbvlpfJ8t3oz4rYv0zoL1BfH6Kw4lr6UAjEbxhdM+01lFjD9PqgHk28Ma5ftFewxAVVROON3JklWLNJ7bV/eFCOTzz1/XcCEMSm5j+3A8FNYvHiPVTNNuW3mPORGb8V8NeZ09CoGpla3XT/7iuN34AIh2FWhPcj0WytA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1781182284; c=relaxed/relaxed;
-	bh=18nZfrkXlHqAXNQXmjvYjPTOr6OF8vSx+TEkfpYAIII=;
-	h=Content-Type:Mime-Version:Subject:From:In-Reply-To:Date:Cc:
-	 Message-Id:References:To; b=CkBCIX8I71mIZI6HyqiwaYnPhCofZpaAiRHiZGWMM+sY2Y4d9xVYQ3On4AXrVf2KXSARJ7deZ2Q3gNYLFVOzvL8s6GsWaIxgaZqJe8jNP6fJkG5Tn3xizJWjvvgOLyaRyp4q7UnAPTi466i52855lQ0sk/zC8yo29Mev2b5TDWiU8K8R6xSYeGBY8M7Thi0dYU3aw99hQ5qAEvf3ccN0f4ZNp7FqQ7mbly9yvpc67101SPy200/OW5UEwd3oiarVO1vZj/eYxNgbmjdjCa+7yFVRTpX3y59vn6MZ3J8+n/63Vr9AFAWgiUqalh0vv4zRRZ/Se1PIb4e8b1m5YsIjvQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=U3PZacQR; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=atrajeev@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1781182689; c=relaxed/relaxed;
+	bh=wutI1NEOrxe0Ga9sQ5pG620uXi0d0C5Aj7NTI3FNepo=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=WkKHvKlSv0wknjMpG1JNmX0qBPxcFF2lX4p+i8tew2EH4mjV6S7oTty9vJ4SkkGxCqB/dPyV9vU+7FHiSmPxEps8JByoxFbKFK5io9M/0c5bcRBoXOd/64BpnxR+AXXUZ3cYdN7rFu1bBQSldST07YcY2o43J5fN+UDqgVoZTIqxdZmehEuO1NEiX0qw/aiyd+WHFF1mApvIvia7d5PC4GeknFfHKeli1bGx9KcCBH6tyx2O1j4gip6FtHKRnDPIiVVayLTNmNsRCXyGUQ8npO3wAdG12//+nv60//YcJ1orpdlNzY/LY1MpsHcEjzZO1HXGYZDOO0+4ZNni+S4ZLA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=I7EfXrH8; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=I7EfXrH8; dkim-atps=neutral; spf=pass (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=stefanha@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=U3PZacQR;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=I7EfXrH8;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=I7EfXrH8;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=atrajeev@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=stefanha@redhat.com; receiver=lists.ozlabs.org)
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gbjFQ5c0Zz3bpP
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jun 2026 22:51:21 +1000 (AEST)
-Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 65BCCX791742452;
-	Thu, 11 Jun 2026 12:51:16 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=18nZfr
-	kXlHqAXNQXmjvYjPTOr6OF8vSx+TEkfpYAIII=; b=U3PZacQRmVXjPmUw+u6aqk
-	U0L8lieMx+uaSXloxiP4ZGKbxZhA+GOO8xrFLkLjlbv22brq2sc33IvN9FyEYDSw
-	ak/TvS0lemeSeZxeYSsmefeZ6RmtrsSY8mkYyOYYFMmxWKLpeBumHHsXHd5hefOB
-	+jvMV4Cfqlp3/HppwFzpsnxrq0sCcC8i/BJqd5oblBM23D1anhB0EpbNgqb2bNLn
-	KZJa3VqD1S3QNAQvgpx6Kw1E/Z8JYCFBHbbiMyOZvCYG59X+dKjDHhW0r9cU9I87
-	aP99F32YNaDw4QkMZn0p6F4VgFK3FUAwUs5j9if25s/2ttRWprsljxXEt2M8gApg
-	==
-Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4eqe8bkdqd-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 11 Jun 2026 12:51:16 +0000 (GMT)
-Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma13.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 65BCYssC004073;
-	Thu, 11 Jun 2026 12:51:15 GMT
-Received: from smtprelay01.fra02v.mail.ibm.com ([9.218.2.227])
-	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4eqe09u6tk-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 11 Jun 2026 12:51:15 +0000 (GMT)
-Received: from smtpav07.fra02v.mail.ibm.com (smtpav07.fra02v.mail.ibm.com [10.20.54.106])
-	by smtprelay01.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 65BCpBfG60817722
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 11 Jun 2026 12:51:11 GMT
-Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 8F0D02004D;
-	Thu, 11 Jun 2026 12:51:11 +0000 (GMT)
-Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 743872004B;
-	Thu, 11 Jun 2026 12:51:08 +0000 (GMT)
-Received: from smtpclient.apple (unknown [9.124.213.187])
-	by smtpav07.fra02v.mail.ibm.com (Postfix) with ESMTPS;
-	Thu, 11 Jun 2026 12:51:08 +0000 (GMT)
-Content-Type: text/plain;
-	charset=utf-8
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gbjPD3Gkfz3bpP
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jun 2026 22:58:06 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1781182681;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=wutI1NEOrxe0Ga9sQ5pG620uXi0d0C5Aj7NTI3FNepo=;
+	b=I7EfXrH8kohE14HB0nZNWq1/JiZfahM+QDz7GcGZsiSFQsf82GNGFHNgPZ0wgONIS+0qln
+	4IK10V4m5HXi1IDleMDi9GAie+6oCvy4JqhZ15LiwlPPPP/Cu6TyMKJEq0KnQIqQ+/op51
+	aPHWp+f9+JcjUxKvjejYU19YOkKB4Wo=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1781182681;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=wutI1NEOrxe0Ga9sQ5pG620uXi0d0C5Aj7NTI3FNepo=;
+	b=I7EfXrH8kohE14HB0nZNWq1/JiZfahM+QDz7GcGZsiSFQsf82GNGFHNgPZ0wgONIS+0qln
+	4IK10V4m5HXi1IDleMDi9GAie+6oCvy4JqhZ15LiwlPPPP/Cu6TyMKJEq0KnQIqQ+/op51
+	aPHWp+f9+JcjUxKvjejYU19YOkKB4Wo=
+Received: from mx-prod-mc-03.mail-002.prod.us-west-2.aws.redhat.com
+ (ec2-54-186-198-63.us-west-2.compute.amazonaws.com [54.186.198.63]) by
+ relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
+ cipher=TLS_AES_256_GCM_SHA384) id us-mta-359-ljIudu3YMUiI3vj_euAS4A-1; Thu,
+ 11 Jun 2026 08:57:57 -0400
+X-MC-Unique: ljIudu3YMUiI3vj_euAS4A-1
+X-Mimecast-MFC-AGG-ID: ljIudu3YMUiI3vj_euAS4A_1781182671
+Received: from mx-prod-int-06.mail-002.prod.us-west-2.aws.redhat.com (mx-prod-int-06.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.93])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mx-prod-mc-03.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id 193FA18D65C3;
+	Thu, 11 Jun 2026 12:57:48 +0000 (UTC)
+Received: from localhost (unknown [10.2.16.137])
+	by mx-prod-int-06.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTP id 179B1180057F;
+	Thu, 11 Jun 2026 12:57:43 +0000 (UTC)
+Date: Wed, 10 Jun 2026 11:37:47 -0400
+From: Stefan Hajnoczi <stefanha@redhat.com>
+To: Sumit Saxena <sumit.saxena@broadcom.com>,
+	"Michael S. Tsirkin" <mst@redhat.com>
+Cc: "Martin K . Petersen" <martin.petersen@oracle.com>,
+	Jens Axboe <axboe@kernel.dk>,
+	"James E . J . Bottomley" <James.Bottomley@hansenpartnership.com>,
+	linux-scsi@vger.kernel.org, linux-block@vger.kernel.org,
+	Adam Radford <aradford@gmail.com>,
+	Khalid Aziz <khalid@gonehiking.org>,
+	Adaptec OEM Raid Solutions <aacraid@microsemi.com>,
+	Matthew Wilcox <willy@infradead.org>,
+	Hannes Reinecke <hare@suse.com>,
+	"Juergen E . Fischer" <fischer@norbit.de>,
+	Russell King <linux@armlinux.org.uk>,
+	linux-arm-kernel@lists.infradead.org,
+	Finn Thain <fthain@linux-m68k.org>,
+	Michael Schmitz <schmitzmic@gmail.com>,
+	Anil Gurumurthy <anil.gurumurthy@qlogic.com>,
+	Sudarsana Kalluru <sudarsana.kalluru@qlogic.com>,
+	Oliver Neukum <oliver@neukum.org>, Ali Akcaagac <aliakc@web.de>,
+	Jamie Lenehan <lenehan@twibble.org>,
+	Ram Vegesna <ram.vegesna@broadcom.com>,
+	target-devel@vger.kernel.org,
+	Bradley Grove <linuxdrivers@attotech.com>,
+	Satish Kharat <satishkh@cisco.com>,
+	Sesidhar Baddela <sebaddel@cisco.com>,
+	Karan Tilak Kumar <kartilak@cisco.com>,
+	Yihang Li <liyihang9@h-partners.com>,
+	Don Brace <don.brace@microchip.com>, storagedev@microchip.com,
+	HighPoint Linux Team <linux@highpoint-tech.com>,
+	Tyrel Datwyler <tyreld@linux.ibm.com>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Christophe Leroy <chleroy@kernel.org>,
+	linuxppc-dev@lists.ozlabs.org, Brian King <brking@us.ibm.com>,
+	Lee Duncan <lduncan@suse.com>, Chris Leech <cleech@redhat.com>,
+	Mike Christie <michael.christie@oracle.com>,
+	open-iscsi@googlegroups.com, Justin Tee <justin.tee@broadcom.com>,
+	Paul Ely <paul.ely@broadcom.com>,
+	Kashyap Desai <kashyap.desai@broadcom.com>,
+	Shivasharan S <shivasharan.srikanteshwara@broadcom.com>,
+	Chandrakanth Patil <chandrakanth.patil@broadcom.com>,
+	megaraidlinux.pdl@broadcom.com,
+	Sathya Prakash Veerichetty <sathya.prakash@broadcom.com>,
+	Sreekanth Reddy <sreekanth.reddy@broadcom.com>,
+	mpi3mr-linuxdrv.pdl@broadcom.com,
+	Suganath Prabu Subramani <suganath-prabu.subramani@broadcom.com>,
+	Ranjan Kumar <ranjan.kumar@broadcom.com>,
+	MPT-FusionLinux.pdl@broadcom.com, Daniel Palmer <daniel@thingy.jp>,
+	GOTO Masanori <gotom@debian.or.jp>,
+	Jack Wang <jinpu.wang@cloud.ionos.com>,
+	Geoff Levand <geoff@infradead.org>, Michael Reed <mdr@sgi.com>,
+	Nilesh Javali <njavali@marvell.com>,
+	GR-QLogic-Storage-Upstream@marvell.com,
+	Narsimhulu Musini <nmusini@cisco.com>,
+	"K . Y . Srinivasan" <kys@microsoft.com>,
+	Haiyang Zhang <haiyangz@microsoft.com>,
+	Wei Liu <wei.liu@kernel.org>, Dexuan Cui <decui@microsoft.com>,
+	Long Li <longli@microsoft.com>, linux-hyperv@vger.kernel.org,
+	"Michael S . Tsirkin" <mst@redhat.com>,
+	Jason Wang <jasowang@redhat.com>,
+	Paolo Bonzini <pbonzini@redhat.com>,
+	Eugenio Perez <eperezma@redhat.com>, virtualization@lists.linux.dev,
+	Vishal Bhakta <vishal.bhakta@broadcom.com>,
+	bcm-kernel-feedback-list@broadcom.com,
+	Juergen Gross <jgross@suse.com>,
+	Stefano Stabellini <sstabellini@kernel.org>,
+	Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>,
+	xen-devel@lists.xenproject.org,
+	John Garry <john.g.garry@oracle.com>
+Subject: Re: [PATCH v3 2/4] scsi: host: allocate struct Scsi_Host on the NUMA
+ node of the host adapter
+Message-ID: <20260610153747.GA121666@fedora>
+References: <20260609121806.2121755-1-sumit.saxena@broadcom.com>
+ <20260609121806.2121755-3-sumit.saxena@broadcom.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -80,70 +153,55 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-Mime-Version: 1.0 (Mac OS X Mail 16.0 \(3864.300.41.1.7\))
-Subject: Re: [PATCH V5 1/2] tools/perf: Fix the check for parameterized field
- in event term
-From: Athira Rajeev <atrajeev@linux.ibm.com>
-In-Reply-To: <ainEHlAh0aJ7zSyH@x1>
-Date: Thu, 11 Jun 2026 18:20:55 +0530
-Cc: jolsa@kernel.org, adrian.hunter@intel.com, mpetlan@redhat.com,
-        tmricht@linux.ibm.com, maddy@linux.ibm.com, irogers@google.com,
-        namhyung@kernel.org, linux-perf-users@vger.kernel.org,
-        linuxppc-dev@lists.ozlabs.org, hbathini@linux.vnet.ibm.com,
-        Tejas.Manhas1@ibm.com, Tanushree.Shah@ibm.com, shivani@linux.ibm.com,
-        venkat88@linux.ibm.com
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="57Se20/pMUpk+P8R"
+Content-Disposition: inline
+In-Reply-To: <20260609121806.2121755-3-sumit.saxena@broadcom.com>
+X-Scanned-By: MIMEDefang 3.4.1 on 10.30.177.93
+
+
+--57Se20/pMUpk+P8R
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
-Message-Id: <6C24D6E1-28BB-4F43-8EA5-6B4E06014923@linux.ibm.com>
-References: <20260609134332.97954-1-atrajeev@linux.ibm.com>
- <ainEHlAh0aJ7zSyH@x1>
-To: Arnaldo Carvalho de Melo <acme@kernel.org>
-X-Mailer: Apple Mail (2.3864.300.41.1.7)
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Authority-Analysis: v=2.4 cv=Xfa5Co55 c=1 sm=1 tr=0 ts=6a2aaf44 cx=c_pps
- a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
- a=KlCRr-_lrQmZq1rU:21 a=IkcTkHD0fZMA:10 a=FelO9ux0wxsA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22 a=V8glGbnc2Ofi9Qvn3v5h:22
- a=VwQbUJbxAAAA:8 a=Rlq1kauLLktXqVg0nm8A:9 a=QEXdDO2ut3YA:10
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjExMDEyNyBTYWx0ZWRfX0k84lfHFQEu5
- pexGO0KoDWg26QasZApp+VAgRvXOp5XoakzQ/I+6B+QkiX8buRvsAHNoMoxlZSGYIUVNuvFtzCA
- i0kDfP8utcXZaQQk+C64hXOQvEnKcsEQHGMADK6zBER1Rhl3ioGqSpmojw0eLvOWG0tZM/+IFmZ
- FT9Im1jNURvKVAiOknapG+l6bhKfct8T5sBgafsxxHioQ73cnaAXd3lCJV/MSu52PZrvADKyDbv
- 8E9Iv7m5bkYew5CWwzWo/72bHPuyqS2xruGU3ZojXVoNFuazFEv1EMzuoWu6Mpo1XyXv61Yu6YU
- X6K52u+y1FguzvDY6GgijbUvIuy8/z4ICPFZu2L2nqHHfxfNqSo+T/binpNBbGk4owEMfIZghCr
- FddQAdcdbGNQEUk01Eg/fiXj1zipm1Cocgr35XNhqZloSChjQW2F+sJbX5oXEDepVl8yy72zpQv
- CHhq58rdIyA2IAtZvTw==
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNjExMDEyNyBTYWx0ZWRfX4o7RmcQyhH/c
- MwD44ej+0NmRdtafFW4DF6eqSC1Fr/5X0llf01PaA4BgFxF4DEYKuAyjeyeQ1eAGkc3U5YESgp5
- iGTbSSFN1X/py1povnyqbW49BuxV0lE=
-X-Proofpoint-ORIG-GUID: 1j94Gt6hXZWuMpSAbV5x7IC-P-9TNfss
-X-Proofpoint-GUID: FXsLwx4CEpiahbDtdv6Mv1cNXEGJrt4J
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
- definitions=2026-06-11_02,2026-06-11_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- malwarescore=0 spamscore=0 bulkscore=0 priorityscore=1501 lowpriorityscore=0
- impostorscore=0 suspectscore=0 clxscore=1015 phishscore=0 adultscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606040000 definitions=main-2606110127
 
+On Tue, Jun 09, 2026 at 05:48:01PM +0530, Sumit Saxena wrote:
+> diff --git a/drivers/scsi/virtio_scsi.c b/drivers/scsi/virtio_scsi.c
+> index 5fdaa71f0652..88375574cb18 100644
+> --- a/drivers/scsi/virtio_scsi.c
+> +++ b/drivers/scsi/virtio_scsi.c
+> @@ -929,7 +929,7 @@ static int virtscsi_probe(struct virtio_device *vdev)
+>  	num_targets =3D virtscsi_config_get(vdev, max_target) + 1;
+> =20
+>  	shost =3D scsi_host_alloc(&virtscsi_host_template,
+> -				struct_size(vscsi, req_vqs, num_queues));
+> +				struct_size(vscsi, req_vqs, num_queues), NULL);
 
+A virtio_device has a parent (this is the virtio transport, like
+virtio_pci) and that may have NUMA node.
 
-> On 11 Jun 2026, at 1:37=E2=80=AFAM, Arnaldo Carvalho de Melo =
-<acme@kernel.org> wrote:
->=20
-> On Tue, Jun 09, 2026 at 07:13:31PM +0530, Athira Rajeev wrote:
->> The format_alias() function in util/pmu.c has a check to
->> detect whether the event has parameterized field ( =3D? ).
->> The string alias->terms contains the event and if the event
->> has user configurable parameter, there will be presence of
->> sub string "=3D?" in the alias->terms.
->=20
-> Thanks, applied to perf-tools-next, for v7.2.
->=20
-> - Arnaldo
-Thanks Arnaldo
+drivers/virtio/virtio.c:register_virtio_device() could call
+set_dev_node(dev, dev_to_node(dev->parent)) to propagate the NUMA node
+to the virtio_device if it is not already automatically propagated.
 
-Athira
+Stefan
+
+--57Se20/pMUpk+P8R
+Content-Type: application/pgp-signature; name=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAEBCgAdFiEEhpWov9P5fNqsNXdanKSrs4Grc8gFAmophMsACgkQnKSrs4Gr
+c8h+7Af/Yl5xc4DOlpzwRNKEPqqogmtmADQbRI91eNljCoArG1qdxcTTSKksIgWC
+5g0jjNOCwbOatljS+FxPkDgpPYoZbsIv+K4p/D6UyHLP+Dff2FQhwPaAKkOvJi6k
+9BoNOORgp8ZKrf0RrCTr2M5clKgG0GT+5WxgezSZtTh6wSoN0ksL5kwqx+8B4sWw
+irnTFz4hZhKlUsYHWWYvNhiq0ChdmzYMdxw6GFwIWrRpNcElfSmOAMBE12bJeqIi
+u2/3ah3cSSanhmuITCC+dXImHUlYtxtFRBowqsxCEtdiRFs5srPStR/WW8yyZoXe
+mhXbMPjGmQXNdAT61yT9lw+ZVx2y1w==
+=kfg0
+-----END PGP SIGNATURE-----
+
+--57Se20/pMUpk+P8R--
 
 
