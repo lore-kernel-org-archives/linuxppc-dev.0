@@ -1,68 +1,129 @@
-Return-Path: <linuxppc-dev+bounces-22423-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22424-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C2680CD8CB9
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jun 2026 16:19:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 752A1CD8CB2
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jun 2026 16:36:09 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gb9vy3WG3z30FP;
-	Thu, 11 Jun 2026 02:19:26 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::549"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781108366;
-	cv=none; b=WNXbJKsSoxjpI5PFgtaLYRrdA30+jiXKDgZ5rVqEjFZXaM+QGitjjsNmDcg72/Qx8tNcMaQ9yHWa7g47MSgso8I5rO9e8ax7AfW3sPZWTEigmbkwI3UjCY9aJjb56LLAHUqIguUuvJj3s1EOMh0kwpUNXhgifJoS7hLEX+O0MoWFr3Uc6FEmQ6AVl3kw0Ympyf24OOWvq0dx2/zZo5v3VIYzQcFtFePhY49Ho88bD/VczZ9sApUDwQoELY4lxMcnIV24oc32fe080Z4KD7y2G0WI5ghfujojXCIxXhfV7KAEi3vDPFzZPsV/L96zH3CoVo7bQE3zwyr1BXHck0n61A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gbBHC6xGQz2yv2;
+	Thu, 11 Jun 2026 02:36:07 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781109367;
+	cv=none; b=CRds8efDW0F6oIhcJs8Fm++10tP7d1n0roUD/Nx5i6aWJVQ8llqEqwg1Incc1anyF/P3jlEseCWQnN8Fa+TIooqICRj3YAvnlgC6E5UhfrLFLug6RY0MLtd2d/4+NXeR9iYU09ivRTLpqpqbvaPvUXbPdgLjGcKB8VnT0jq5E2/86EEewX80C6ZNn5U/t1P5+WAGQfgYQVxyILoB2mLHHsl6qv1XWVLD93VGSxuSSEwl5WZcile+Ljsb4wQTFbU+0wtMtVbqcuur132zRP23tbVkt7FhFa9Lh0k9crpLoMNU4cJrhxP1LXEy7xo/k7KPQuKRaxHyAyoQTnSr9Pa3gA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1781108366; c=relaxed/relaxed;
-	bh=cnizVXfGyNcDUoAO1/Ywbc3+WVGGnQ910kBuW5FEIt8=;
-	h=Date:In-Reply-To:Mime-Version:References:Message-ID:Subject:From:
-	 To:Cc:Content-Type; b=GM+VE8C7MYs26UeEZiIf/rVO70lW6ojCEkv61gsYWi26SJXqos78lr1gqDLHAoycVkYiGW9T/GvuYYrEWxyn0k3w5G7dN0Dp324SrfUdDAh3JbYduzvSX+khz8OZhML3y+C8rTD0q9IcgL+3ODNrsbndMnNhiWK0xtL3p+FbiJBBgXWMPxzcizDeN/RanjYOtd97AgFzCOpri79bwsEmVodqA4tjSKc3+n1TdmDphGOnrxPi9kkkb7GTmbGmj+HXuZ0MkrERgyziubEuhIl7dRvRlD7FyF3Oe01N1vQA5e5zKyAffeT6V1kll1umANDbL9lddK3POLypkH9aNJtOFA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=gkyzwRYd; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::549; helo=mail-pg1-x549.google.com; envelope-from=3i44pagykdkyykgtpimuumrk.iusrotadvvi-jkbroyzy.ufrghy.uxm@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=flex--seanjc.bounces.google.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
+	t=1781109367; c=relaxed/relaxed;
+	bh=nh8wY943fEj9O68DsnnpwY2/V+toQvePmwkX7p5hMSw=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=i91mdnAP/YVgR/vY8II6DbGAQNeUL635Me2GLtUjSQCHzV6LD18yatrLnvtNNrUKaw1xTlFFtyzT371sPBt0pQYuL+aNglRmUaRjRNbhnL+EvXB36x6whIxEyGNV3HhCFjL5gwU4Tyl1bDhp0bCT9YGjiVVK68RIYZHpwdzOKQ8YiUV4kcMjIuYPEjONrdst4OhWnnMrcmRv8QIoCGRLyifItLgJieuUCyxiEyth3ZwqEpy87ndc9pLsMJ8rK+SBPAwZ9T3DjOlfpcMRUw9jGBJWi0e8ryoa9uqAoh5lsAKnSAafRrxFK0q7IRBp1FXUc/44XTildB3Vjy3xHyN9+g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=dYINVrSZ; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=kbusch@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=gkyzwRYd;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=dYINVrSZ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--seanjc.bounces.google.com (client-ip=2607:f8b0:4864:20::549; helo=mail-pg1-x549.google.com; envelope-from=3i44pagykdkyykgtpimuumrk.iusrotadvvi-jkbroyzy.ufrghy.uxm@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org)
-Received: from mail-pg1-x549.google.com (mail-pg1-x549.google.com [IPv6:2607:f8b0:4864:20::549])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=kbusch@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gb9vx5C16z2yv0
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jun 2026 02:19:25 +1000 (AEST)
-Received: by mail-pg1-x549.google.com with SMTP id 41be03b00d2f7-c85a298cd62so4603735a12.0
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jun 2026 09:19:25 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20251104; t=1781108364; x=1781713164; darn=lists.ozlabs.org;
-        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
-         :date:from:to:cc:subject:date:message-id:reply-to;
-        bh=cnizVXfGyNcDUoAO1/Ywbc3+WVGGnQ910kBuW5FEIt8=;
-        b=gkyzwRYd5XlFpIyaw/RBnBxFp3NHMQnL+k0pKO1r9jDacuQ+h2N3RkBoJUU3D5VCgZ
-         okRly/FvtyTxBONcONbngnuMlFLeBgkSwcpmWOi2pJQSJuzr4zL0xJTPzIGkND1l84f6
-         3AWcPL4RD4dtUdFBm8HxKlqg+PBHeTMt8oPVHYOR/D6ejusZShHt/CPNdSBSEm3U1ZJx
-         oZkb0bbqeMTCQNSJb+bLafvzp0W9zVSiOvQMxEKbpDPBs1GEvloYWoKBBYZSDzCXU/hc
-         IZWxQlX4NRXAFtuJsG4r46reBS+NzwYg/ethjg9+0cGIXZyfrbckzNucfDWl19i5BwLw
-         0aig==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1781108364; x=1781713164;
-        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
-         :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=cnizVXfGyNcDUoAO1/Ywbc3+WVGGnQ910kBuW5FEIt8=;
-        b=QTNjXt913lImgt12D1go3sivnDNbvkoI1PDzqNBJaFlNllwGU9Y0ta6XCPLPxA8L1M
-         qK+dc94ybfr3Gzfvk8z74EtnySJNSUm/yGUyatTsAB16G7nsJdOhk3vZDvBpWD2c/5GN
-         WSXeM4e6A8jfl2ASzK8PpCRHiNcIvxP/gTNmvjRIbwe1OL16hjis58h+Qc59qR9+7fzl
-         HH6keZq0mWIENnMMxO6QNlprZXPJBA0uS7hZ65WSKCQUSeHy44UUjt+YpxqnKB2ZIh0R
-         aGfbPQqYfAOKuVbzSCZwoN0mFX6o828mHMdblXEhctwaKAwEh1kmRCvY5sxCR2nyIA7I
-         6Bkw==
-X-Forwarded-Encrypted: i=1; AFNElJ8QjMeJgbabD+mO1vSi+n8ogSTa2SO8+afa8xcJTfM1O0GNyZ5lpAVfrafU3oCBRI/afq8Yy9152ScUZkI=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YxV+Mm5S2vS0ZPAwoA8vTVUOPPrI3sDmEd1JiFqhkox+bBdEt3j
-	OnZb6Piid+BcltZWNZRvHpwkijXIzw2otEQtKKKe8wn+WAda2qRgtqiCtk8EOPUNt9ICPrdyupA
-	oZx0qFg==
-X-Received: from pgbdp7.prod.google.com ([2002:a05:6a02:f07:b0:c82:354b:8e38])
- (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a05:6a21:1f8c:b0:3b2:86e8:a817
- with SMTP id adf61e73a8af0-3b4ccf7f0d7mr31791362637.31.1781108363531; Wed, 10
- Jun 2026 09:19:23 -0700 (PDT)
-Date: Wed, 10 Jun 2026 09:19:22 -0700
-In-Reply-To: <o6hieeub.ritesh.list@gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gbBHB5bCvz2ysW
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jun 2026 02:36:06 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with ESMTP id 6EF3743DF2;
+	Wed, 10 Jun 2026 16:36:04 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E40111F00893;
+	Wed, 10 Jun 2026 16:36:00 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1781109364;
+	bh=nh8wY943fEj9O68DsnnpwY2/V+toQvePmwkX7p5hMSw=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=dYINVrSZftHL1+14yqMRRxzqdHQ5Aru2hX4Xj5usxEkwHzPmZX+0xwOsW6Dztp5wP
+	 buvP2PuA+QV5xPj78OletWBvmwhb43jqvV5GFsrZnuZuAMghgSwQoh0S8sgN+S9BTm
+	 ixgW2hKOY1IFxC79EBrsQJFmBJhTgHzktayoDV1vYQ6PUatVZ8z/Tcr6XFUKU/a9/Z
+	 pheURjB4DZFygToELeoT3p6Kl+8pJ6zz/rbZLD4ZtWjHEo3RFM2sDUxPLErYC7D1UE
+	 E752J6xO3yZ8ppjwDDHNoD60M4V39r80G3RPynl7+S0nx3QFq8NW+mgS9cg+pAi3HA
+	 Rq8MlrT88sswQ==
+Date: Wed, 10 Jun 2026 10:35:59 -0600
+From: Keith Busch <kbusch@kernel.org>
+To: Sumit Saxena <sumit.saxena@broadcom.com>
+Cc: Christoph Hellwig <hch@infradead.org>,
+	"Martin K . Petersen" <martin.petersen@oracle.com>,
+	Jens Axboe <axboe@kernel.dk>,
+	"James E . J . Bottomley" <James.Bottomley@hansenpartnership.com>,
+	linux-scsi@vger.kernel.org, linux-block@vger.kernel.org,
+	Adam Radford <aradford@gmail.com>,
+	Khalid Aziz <khalid@gonehiking.org>,
+	Adaptec OEM Raid Solutions <aacraid@microsemi.com>,
+	Matthew Wilcox <willy@infradead.org>,
+	Hannes Reinecke <hare@suse.com>,
+	"Juergen E . Fischer" <fischer@norbit.de>,
+	Russell King <linux@armlinux.org.uk>,
+	linux-arm-kernel@lists.infradead.org,
+	Finn Thain <fthain@linux-m68k.org>,
+	Michael Schmitz <schmitzmic@gmail.com>,
+	Anil Gurumurthy <anil.gurumurthy@qlogic.com>,
+	Sudarsana Kalluru <sudarsana.kalluru@qlogic.com>,
+	Oliver Neukum <oliver@neukum.org>, Ali Akcaagac <aliakc@web.de>,
+	Jamie Lenehan <lenehan@twibble.org>,
+	Ram Vegesna <ram.vegesna@broadcom.com>,
+	target-devel@vger.kernel.org,
+	Bradley Grove <linuxdrivers@attotech.com>,
+	Satish Kharat <satishkh@cisco.com>,
+	Sesidhar Baddela <sebaddel@cisco.com>,
+	Karan Tilak Kumar <kartilak@cisco.com>,
+	Yihang Li <liyihang9@h-partners.com>,
+	Don Brace <don.brace@microchip.com>, storagedev@microchip.com,
+	HighPoint Linux Team <linux@highpoint-tech.com>,
+	Tyrel Datwyler <tyreld@linux.ibm.com>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Christophe Leroy <chleroy@kernel.org>,
+	linuxppc-dev@lists.ozlabs.org, Brian King <brking@us.ibm.com>,
+	Lee Duncan <lduncan@suse.com>, Chris Leech <cleech@redhat.com>,
+	Mike Christie <michael.christie@oracle.com>,
+	open-iscsi@googlegroups.com, Justin Tee <justin.tee@broadcom.com>,
+	Paul Ely <paul.ely@broadcom.com>,
+	Kashyap Desai <kashyap.desai@broadcom.com>,
+	Shivasharan S <shivasharan.srikanteshwara@broadcom.com>,
+	Chandrakanth Patil <chandrakanth.patil@broadcom.com>,
+	megaraidlinux.pdl@broadcom.com,
+	Sathya Prakash Veerichetty <sathya.prakash@broadcom.com>,
+	Sreekanth Reddy <sreekanth.reddy@broadcom.com>,
+	mpi3mr-linuxdrv.pdl@broadcom.com,
+	Suganath Prabu Subramani <suganath-prabu.subramani@broadcom.com>,
+	Ranjan Kumar <ranjan.kumar@broadcom.com>,
+	MPT-FusionLinux.pdl@broadcom.com, Daniel Palmer <daniel@thingy.jp>,
+	GOTO Masanori <gotom@debian.or.jp>,
+	YOKOTA Hiroshi <yokota@netlab.is.tsukuba.ac.jp>,
+	Jack Wang <jinpu.wang@cloud.ionos.com>,
+	Geoff Levand <geoff@infradead.org>, Michael Reed <mdr@sgi.com>,
+	Nilesh Javali <njavali@marvell.com>,
+	GR-QLogic-Storage-Upstream@marvell.com,
+	Narsimhulu Musini <nmusini@cisco.com>,
+	"K . Y . Srinivasan" <kys@microsoft.com>,
+	Haiyang Zhang <haiyangz@microsoft.com>,
+	Wei Liu <wei.liu@kernel.org>, Dexuan Cui <decui@microsoft.com>,
+	Long Li <longli@microsoft.com>, linux-hyperv@vger.kernel.org,
+	"Michael S . Tsirkin" <mst@redhat.com>,
+	Jason Wang <jasowang@redhat.com>,
+	Paolo Bonzini <pbonzini@redhat.com>,
+	Stefan Hajnoczi <stefanha@redhat.com>,
+	Eugenio Perez <eperezma@redhat.com>, virtualization@lists.linux.dev,
+	Vishal Bhakta <vishal.bhakta@broadcom.com>,
+	bcm-kernel-feedback-list@broadcom.com,
+	Juergen Gross <jgross@suse.com>,
+	Stefano Stabellini <sstabellini@kernel.org>,
+	Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>,
+	xen-devel@lists.xenproject.org,
+	Bart Van Assche <bvanassche@acm.org>
+Subject: Re: [PATCH v3 3/4] block: drop shared-tag fairness throttling
+Message-ID: <aimSb9I0Vl-68hy9@kbusch-mbp>
+References: <20260609121806.2121755-1-sumit.saxena@broadcom.com>
+ <20260609121806.2121755-4-sumit.saxena@broadcom.com>
+ <aikAs4X-2NWTuwCc@infradead.org>
+ <CAL2rwxr1uGshb1o=jvP2OnBffNz2cKXj8tHuAUCN5HFuy2vB_g@mail.gmail.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -75,23 +136,32 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-Mime-Version: 1.0
-References: <cover.1781093720.git.ritesh.list@gmail.com> <aildxtZhqEFYygp2@google.com>
- <o6hieeub.ritesh.list@gmail.com>
-Message-ID: <aimOihmFdNIK9TIc@google.com>
-Subject: Re: [PATCH v3 RESEND 00/10] KVM: selftests: add powerpc support
-From: Sean Christopherson <seanjc@google.com>
-To: Ritesh Harjani <ritesh.list@gmail.com>
-Cc: kvm@vger.kernel.org, Paolo Bonzini <pbonzini@redhat.com>, linuxppc-dev@lists.ozlabs.org, 
-	linux-kernel@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>, 
-	Christophe Leroy <chleroy@kernel.org>, Anushree Mathur <anushree.mathur@linux.ibm.com>, 
-	Venkat Rao Bagalkote <venkat88@linux.ibm.com>, Harsh Prateek Bora <harshpb@linux.ibm.com>, 
-	Ackerley Tng <ackerleytng@google.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, 
-	Claudio Imbrenda <imbrenda@linux.ibm.com>
-Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <CAL2rwxr1uGshb1o=jvP2OnBffNz2cKXj8tHuAUCN5HFuy2vB_g@mail.gmail.com>
 
-On Wed, Jun 10, 2026, Ritesh Harjani wrote:
-> One other question - Should this go via powerpc tree or via kvm tree?
+On Wed, Jun 10, 2026 at 09:16:11PM +0530, Sumit Saxena wrote:
+> The motivation for this change stems from performance issue we
+> encountered due to false sharing of the 'nr_active_requests_shared_tags'
+> counter
+> on certain CPU architectures. I initially submitted a patch to move that
+> counter to
+> its own cache line to avoid conflicts with 'nr_requests' and other hot
+> fields
+> (see:
+> https://patchwork.kernel.org/project/linux-scsi/patch/20260402074637.92417-3-sumit.saxena@broadcom.com/
+> ).
+> 
+> During the review, Bart shared his work, which eliminates the
+> counter entirely by removing the fairness throttling. My testing confirmed
+> that
+> this approach resolved the performance issues and improved IOPS.
+> This patch is part of a larger set, and I have reported the cumulative
+> performance
+> improvements in the cover letter.
 
-Definitely the KVM tree.
+So the problem is just the atomic operation accounting overhead? I
+previously thought the device just really needed to consume all the tags
+to hit performance.
 
