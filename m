@@ -1,117 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-22480-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22481-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AE5B4CD98D2
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Jun 2026 11:30:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8C50DCD98D2
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Jun 2026 11:35:25 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gbgSV5R3qz3brC;
-	Thu, 11 Jun 2026 21:30:50 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::836"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781177450;
-	cv=none; b=doLZkHpH2hnNSojlqlD6jgM9QABce2yXgGYDsXtlI8DaVzEtIYM45ZMi7JBsWrBry6tmgRQtqa4kRsfcw3SISyu+iaFGs50hpwZcP5zHBEzhTVVLjhuZSAPpaDhFjTGnc7mi3llulXxFsQlCyEH6lGeBOXczPUWgWB0Ro7bjHJK6bbBx9vAvgDwRTTqOSlDjNaF6pvfUVrkaNRQ4KIcbU3Ho4/+sXB4zn+6UYv0rmCsGD8cg+MDpyx5flNpY2RhjOqr+8iLG1hQRxiPDJTqMMV9AAbNgLCfXQ+l45+nxc2CUUkgHrbGLjyR1GYlzh2gIPVu3DC1Famzxy7UKuCWcbA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gbgYl59phz3brD;
+	Thu, 11 Jun 2026 21:35:23 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781177723;
+	cv=none; b=EYytDsrDLGqu5kDslW5lkr1aBgehzRNJV3eA1vu5BaEh9p1id+aNpQ0glNHvP4qI5ZVrSn3vAS8WF4BOfk/gn0E1RE8ptZ0PB7Hc9InOOxVAlqs1LASnT5PoXgiIEW6OIes58eQZqlbm8alSlTpE1tfXqKQoiPT/IkdEJrD/VgFJEpcK+pOVnw/NmLSh9rt0oQORPH025pU24E7WLZL9IRAaxAY6dkH2aBfDtLuTtQ2CAOJokvOKsY3BrEtxJzVRG3ZWEqiLRtOUtIY5GIcaB0Vr0l/cxT6SSzfW47oKVxL2zoa+i6JREP1NM4fAPL3K907S+eMwpW1sQ0cBKMpUdw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1781177450; c=relaxed/relaxed;
-	bh=haH/H6OcYua3Z5rTl0sktjLmKVSLqKAqacU21OYuo/8=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=IMGJgdLp9kZ6K3idtB4Y0h5kxzQ/c8qzsVXwDwTJ0AFzk73t0wgq/IUULkq57CawRMlnRyLA++gjhIGyFTNN9LH485eyW1DSIyY0ZA0uQsMIChUiXJdz8vXSiVk8+QDK6EHzswEnfBlyoCPjWgRAA2en8EGFVK5s3pQKorg7BRmHLTE1E8rcpSkdtSqCOiT1PNUZgL44X74hN348rGHMAq2ndgpaIwB9LUhB65JTzaXoI9KOg5ZtinPsrU0FOyJpOjPYiGjZetTKf5rWIDB7ch3hvqQ8TTa7M7A5PzP+geziILDC/O7nupOgFz5gSdRpyhwBamg5oQphZ8jCGiFMVg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ziepe.ca; dkim=pass (2048-bit key; secure) header.d=ziepe.ca header.i=@ziepe.ca header.a=rsa-sha256 header.s=google header.b=FvW+obO6; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::836; helo=mail-qt1-x836.google.com; envelope-from=jgg@ziepe.ca; receiver=lists.ozlabs.org) smtp.mailfrom=ziepe.ca
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ziepe.ca
+	t=1781177723; c=relaxed/relaxed;
+	bh=M1dIK9h9F6B8P6ZX2JnxaAmWQ2iiYkZNoF+WtZ1ufdw=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=fq1Ya+FXfYglVT0ZLoZOxJzs5tAiPW/rIVzxYIPWKaBT+M4It8c292WsRDchz7uveD11MdD+v+g290W9fx6IBu7R+LqLFYalrnk7ZkvdHd0crlAPsbSvgdJckQRuouO6sFtrGw8ae0vA3pW9NgEkw6wmut+Pwvc0zffxdANHiuPXiHhZAmT4qnDfoOTfKlCmDuY82axMWRL6mEZe7XQEix8ABuQSl1WRXtYHJaSBi9ZgM+TlR0AWf5MJAYstSYuCdk4XkeOatpyVWIdy4eW0hSOumpC3k9x7Apf86SajWPVTLLYdGfRV/F1dfFzFsEfZ6YYzeeR7rKEMfZFPDbSPPg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=j0ALYO+c; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=ziepe.ca header.i=@ziepe.ca header.a=rsa-sha256 header.s=google header.b=FvW+obO6;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=j0ALYO+c;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=ziepe.ca (client-ip=2607:f8b0:4864:20::836; helo=mail-qt1-x836.google.com; envelope-from=jgg@ziepe.ca; receiver=lists.ozlabs.org)
-Received: from mail-qt1-x836.google.com (mail-qt1-x836.google.com [IPv6:2607:f8b0:4864:20::836])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gbgST0fBXz2yQH
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jun 2026 21:30:48 +1000 (AEST)
-Received: by mail-qt1-x836.google.com with SMTP id d75a77b69052e-517583cb07aso84173781cf.2
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jun 2026 04:30:48 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ziepe.ca; s=google; t=1781177445; x=1781782245; darn=lists.ozlabs.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=haH/H6OcYua3Z5rTl0sktjLmKVSLqKAqacU21OYuo/8=;
-        b=FvW+obO66FICl1tLc2lBtJ1DLTSs3i3ILkmcOchJOVQzLWuVOTEalzpLptjrjs5dT0
-         TBVMSmcH8DYEmQIdsijkhe/xSTzwAiPNkcj3iwhrmtXyX+TkGieqMOwFfGqGgUoubZ0D
-         4h09qigsp/05Y7GjwnTJmBa4TFq1nMCPQu3Y05e10dmpls4RcpgsrbnLq7v+rZ0NzaJq
-         rGVf4JEG6uqTD3qs1f6qfbkkWOwny6jq2TX5W8JFEDuPbxGgmaM/XiCddeKHQHnF0Tfl
-         ntQfpnodwef9YFQR/sojctDbfuK/Z1aDQVnBnR1zmMh0H1gzv7VrgH4I2d9ySCnScAiU
-         suOg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1781177445; x=1781782245;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=haH/H6OcYua3Z5rTl0sktjLmKVSLqKAqacU21OYuo/8=;
-        b=X2JcM3n1KrBk3EGk0R5V6xXGcBlvssGPIDY7jBVdi3CKYm2PQGoE7y1a016v3HrVdk
-         OxU8ypJsukn64dJfK0kMrPHPxlVLQzV08iL13E4E34K/aAcEM9TOxnIUbwquvIsWwuLP
-         uE5yLrJIts50mIlktZlehsK+UgqlbFVENCvJrQ+eSHo/3eJBBq+nV19rPT48+euCz1Dl
-         hIH1/wTaILYVvwkXR9Cgr/Q5L7dSrMlgHCpynzO04e8ZoQzATS0M79g4ezjOaSbNd2GK
-         w6F9dTtSP8xzuBDzluYp9yWHjsjOvRc/0ieJ69aGd3n23d3OJpPbDEp9vQtzHLhKQazx
-         BhYg==
-X-Forwarded-Encrypted: i=1; AFNElJ+C1DWD223cfR4jyW+VSTsoWo6klG77K3kY/8EdF0MeCI2MBflGaEtB4zRMi8VEe2xA/EWGXcV8h68ktJc=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YynQ0jc6w+OqfMfYlaxMojlZk5FGm0m6dSUOwIWKFdIugGKXTik
-	nr7Y3YpAgNjkQZ4q0WbN9ib7739uoSGwIFpmQxiWMG3xKyhVyj0IPrFPB7UpLYkyMws=
-X-Gm-Gg: Acq92OES+UKkOYVpGnCeARIM/HpTNMsK+3FNN01ohFOMaO3+OMwrk79rhccmupcshff
-	q2a/S8kAzEtfcW/hqgl++kOLZSBFfibmg8w138KxfH1pcZ2P+0ApzGNul+nAYEXwvyMmahbXCJh
-	TVrX6m3f2BqitaBTS/XNff+vwQ6fjJdT+XySqpmZbkVeOMvvHMwkqddGbBSZcK5MGQHreUMog8Q
-	zqXIdNONME7GVaGTxsXDT4p9pz0Udjh+qH9rp/eiQ7UjbIuwdeK+fZikx+krvriE98rKQ/3sGgD
-	ARNQHBJFoDw3wBvjVHST8j8K5KzLxwDlyIqm/22o0lWlyEu2C9sggPVkVk5mL+NpFGhlHGyANFf
-	CZQm7d/BqgDaYDZ6xFXcx0YeBIRicobvkaPi1AKqMy9NpkviEAI7dcZw9QGCCc3oWzYlxZCAB3l
-	32IVawyzKMcsPOmiBPacxWxIlYu8lxrm18cbeaV/d9qX0AjPQY/GgaL/PijwouxTNlIs9EqF4Ho
-	Kh8tXBTLfx1LWyl
-X-Received: by 2002:a05:622a:354:b0:517:875a:d619 with SMTP id d75a77b69052e-517ede4125cmr35159281cf.6.1781177440327;
-        Thu, 11 Jun 2026 04:30:40 -0700 (PDT)
-Received: from ziepe.ca (crbknf0213w-47-54-130-67.pppoe-dynamic.high-speed.nl.bellaliant.net. [47.54.130.67])
-        by smtp.gmail.com with ESMTPSA id d75a77b69052e-517ef61dfeasm14521801cf.24.2026.06.11.04.30.38
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 11 Jun 2026 04:30:39 -0700 (PDT)
-Received: from jgg by wakko with local (Exim 4.97)
-	(envelope-from <jgg@ziepe.ca>)
-	id 1wXdcM-00000005deq-1WZO;
-	Thu, 11 Jun 2026 08:30:38 -0300
-Date: Thu, 11 Jun 2026 08:30:38 -0300
-From: Jason Gunthorpe <jgg@ziepe.ca>
-To: "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>
-Cc: iommu@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
-	linux-kernel@vger.kernel.org, linux-coco@lists.linux.dev,
-	Robin Murphy <robin.murphy@arm.com>,
-	Marek Szyprowski <m.szyprowski@samsung.com>,
-	Will Deacon <will@kernel.org>, Marc Zyngier <maz@kernel.org>,
-	Steven Price <steven.price@arm.com>,
-	Suzuki K Poulose <Suzuki.Poulose@arm.com>,
-	Catalin Marinas <catalin.marinas@arm.com>,
-	Jiri Pirko <jiri@resnulli.us>, Mostafa Saleh <smostafa@google.com>,
-	Petr Tesarik <ptesarik@suse.com>,
-	Alexey Kardashevskiy <aik@amd.com>,
-	Dan Williams <dan.j.williams@intel.com>,
-	Xu Yilun <yilun.xu@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
-	linux-s390@vger.kernel.org,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	Alexander Gordeev <agordeev@linux.ibm.com>,
-	Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
-	Heiko Carstens <hca@linux.ibm.com>,
-	Vasily Gorbik <gor@linux.ibm.com>,
-	Christian Borntraeger <borntraeger@linux.ibm.com>,
-	Sven Schnelle <svens@linux.ibm.com>, x86@kernel.org,
-	Jiri Pirko <jiri@nvidia.com>, Michael Kelley <mhklinux@outlook.com>
-Subject: Re: [PATCH v6 04/20] dma-pool: track decrypted atomic pools and
- select them via attrs
-Message-ID: <20260611113038.GA1066031@ziepe.ca>
-References: <20260604083959.1265923-1-aneesh.kumar@kernel.org>
- <20260604083959.1265923-5-aneesh.kumar@kernel.org>
- <20260609143242.GK2764304@ziepe.ca>
- <yq5afr2uzum9.fsf@kernel.org>
- <20260610164153.GQ2764304@ziepe.ca>
- <yq5acxxxn0gp.fsf@kernel.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gbgYk64q2z3brC
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jun 2026 21:35:22 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with ESMTP id 5408E40DFB;
+	Thu, 11 Jun 2026 11:35:20 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C2EDD1F00893;
+	Thu, 11 Jun 2026 11:35:16 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1781177720;
+	bh=M1dIK9h9F6B8P6ZX2JnxaAmWQ2iiYkZNoF+WtZ1ufdw=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To;
+	b=j0ALYO+cihXouwnl9RlcxbW7fllqBCjrCwcZErhIN0bfaGBRL0YmxYlVYuRYuO04q
+	 8GQLKZ/RokYGc00ft/MTqoAFCVr+dhfUNUn3kB4uuXDPco+dVj7dKAiJYY5jXS5TK3
+	 mLxsauYdIbmMFkw/hJ7tLRld3I/om5FqlhlZOn20zL9t5ruKAULsZxF8jqRP0TZfoz
+	 lNYX2zjQx4/pij6lpt8mdehMD2f9iD9C13rCZD3awXD8V4Dp/MOYuOfQBgT2BCyLwz
+	 ol9/4VltxlAota3ZBfgMLtr/cDxM5NMb9Q6d7HIaSghu3OsYHf6mhP6sAOoxh3I71B
+	 z43yyz6W/Ir9g==
+Message-ID: <7c9f0524-edff-4186-9e28-866e00136543@kernel.org>
+Date: Thu, 11 Jun 2026 13:35:14 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -125,56 +59,83 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <yq5acxxxn0gp.fsf@kernel.org>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2] include/linux/swap.h: Remove unused leftovers
+To: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>, linux-mm@kvack.org
+Cc: Andrew Morton <akpm@linux-foundation.org>, Chris Li <chrisl@kernel.org>,
+ Kairui Song <kasong@tencent.com>, Kemeng Shi <shikemeng@huaweicloud.com>,
+ Nhat Pham <nphamcs@gmail.com>, Baoquan He <baoquan.he@linux.dev>,
+ Barry Song <baohua@kernel.org>, Youngjun Park <youngjun.park@lge.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Sayali Patil <sayalip@linux.ibm.com>
+References: <68591daf0d679e5a0072d63751f187d14613e2b0.1781146877.git.ritesh.list@gmail.com>
+From: "David Hildenbrand (Arm)" <david@kernel.org>
+Content-Language: en-US
+Autocrypt: addr=david@kernel.org; keydata=
+ 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
+ qIws/H2t
+In-Reply-To: <68591daf0d679e5a0072d63751f187d14613e2b0.1781146877.git.ritesh.list@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-On Thu, Jun 11, 2026 at 10:21:50AM +0530, Aneesh Kumar K.V wrote:
+On 6/11/26 05:09, Ritesh Harjani (IBM) wrote:
+> This removed unused leftovers, most of them are forward structure
+> declarations. Also removes SWAP_BATCH macro which isn't used any
+> where in the code.
+> 
+> Found these during manual code review.
+> 
+> Reviewed-by: Barry Song <baohua@kernel.org>
+> Signed-off-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+> ---
 
-> If we are adding DMA_ATTR_ALLOC_SHARED, should we also allow
-> dma_alloc_attrs() to take that attribute value?
+If it compiles we're good :)
 
-I don't think we should..
+Acked-by: David Hildenbrand (Arm) <david@kernel.org>
 
-It is hard to see any reason to allocate shared memory through the DMA
-API. The way the DMA API works only the device that it is allocated
-for can access that memory, so it is effectively private to the
-device. Thus what purpose is shared device private memory?
+-- 
+Cheers,
 
-> +DMA_ATTR_CC_SHARED
-> +------------------
-> +
-> +This attribute indicates that a DMA mapping is shared, or decrypted, for
-> +confidential computing guests. For normal system memory, the caller must
-> +already have marked the memory decrypted with set_memory_decrypted(). CPU
-> +PTEs for the mapping must use pgprot_decrypted(), and the same shared
-> +semantic may be passed to a vIOMMU when it sets up the IOPTE.
-> +
-> +This attribute describes an existing mapping. It does not allocate shared
-> +backing pages and must not be passed to dma_alloc_attrs(). For MMIO, use
-> +this together with DMA_ATTR_MMIO to indicate shared MMIO. Unless
-> +DMA_ATTR_MMIO is provided, the mapping requires a struct page.
-
-Yes, though we need to fix a few ATTR_MMIO users to make this
-statement true
-
-> +DMA_ATTR_ALLOC_CC_SHARED
-> +------------------------
-> +
-> +This attribute indicates that a dma_alloc_attrs() allocation must use
-> +shared, or decrypted, backing pages for confidential computing guests.
-> +Allocation paths use this request when they select shared DMA pools,
-> +decrypt newly allocated pages or restore encryption on free.
-> +
-> +DMA_ATTR_ALLOC_CC_SHARED differs from DMA_ATTR_CC_SHARED in that it
-> +requests shared backing memory from the allocation path. DMA_ATTR_CC_SHARED
-> +describes an already-shared mapping and requires the caller to have
-> +prepared normal system memory before mapping it. Callers that need shared
-> +memory from dma_alloc_attrs() should request DMA_ATTR_ALLOC_CC_SHARED
-> +instead of DMA_ATTR_CC_SHARED.
-
-The semantic is right, but I would make it a private attribute since
-no driver should use it.
-
-Jason
+David
 
