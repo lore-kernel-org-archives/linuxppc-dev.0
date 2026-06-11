@@ -1,94 +1,81 @@
-Return-Path: <linuxppc-dev+bounces-22513-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22514-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 45F07CD98C7
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Jun 2026 16:37:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B02B3CD98C7
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Jun 2026 17:12:15 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gbpG070X7z3brC;
-	Fri, 12 Jun 2026 02:37:12 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a00:1450:4864:20::52f" arc.chain=google.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781195832;
-	cv=pass; b=dRKz9N0Fv16JMwQOK0rud9WoDGrFFDLZflm3V755RWfy+RB0oJnQRpykRtWuOJdPxTYScCIqZXI7Y7g95hgDhlXA0gXeygpieX7cXkVmE4N7GpL4qtP+G4Dtwgb7nHegWqEPDWm3AKE15HYP3vIG857c7K7qnXah2HeEt21a3VLVb5DryMKBefloCrA3HPuqgDcO8Ot58i2kfmqmuvZvCG4W2cMlDX4iXnQSno36Qybf3jbh6G3ov6P2+/p8R+CnmPd2uifODYgK5YUWbAY5GICGYf8pVDc9N9fPSSgfyZ4+x9PmdyEsRV//mbooBXwuBdpjOLOsETIWGI89E2zOlA==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1781195832; c=relaxed/relaxed;
-	bh=4DStYhYQsSipTicO46WKSDE7hgZDuh6T94LBB/5C16M=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=SwcY3yi5bbDV0ueBwatbHkbZgoKpqrLI1agoBgnIikPa8RBFaWPhou8iYtrQk3Zym6c7nGRmlzlJ/sfSd8/ma4SypnVrS0xTpY/fFwU8lByPApopPJw40+wAZXE+uNqCS4OGyQp1kkzhq20orF3+wqMS6KX+KhwlX0YfgfxZNX+aBRf6+Ka+RN/XBVKromy6B7tKWadNp74tvkOQfLWJ5SRqD8sE1tsP+pkAcfcSK8GIhFYEX4IktWz1NaOJNJZJ/GB2TiW3WySf9CR9kbcTWBZK9uIeyEQOhgf6Xda7wqw5ZEkWe7U8hJIZoZSCXsHzwwXKA0e6Fl74q2/LdkRC6A==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=K5qX7sC5; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::52f; helo=mail-ed1-x52f.google.com; envelope-from=rosenp@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gbq2Q1nlwz3bqh;
+	Fri, 12 Jun 2026 03:12:14 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::102d"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781197934;
+	cv=none; b=Kie9tWt2BIfMQVJU+7gIgTVcskcPJ83nmrnPCGR/noUslK2+QeYYZScyNFcwHWkMXtTEn4Ru82mQIg7S6K+S/gfoS956FAcv+qSjP2ctdQ9Dh5aoY1TSTHqzPAyebVvGbM5+DfMDeM4QAjVqZRBcSXfOQpTb7WHH+ikMvHlv82xs5qoZ9hmMoZpFXiZIaMYITKQRfSVT4eQRgohC63hrDgCHQS/Ozma1nChAbB+jxqbFRDxNF1otk0HOEALU3kpV2cNbCTo4ocn9r/XKyQLvbCJ34LRvjo+6cWFhVo30P5sNtraEWo3XZWAcAPGHzS075UZth5TxWK/PowEJ5B5Ecw==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1781197934; c=relaxed/relaxed;
+	bh=QUhb0LXL29TRj1XmX4fg/eZOCymWXris1Gg/NE+c6fU=;
+	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References; b=QCvQHyb8yjjv9xGDZWb7xYhnK2CkT8mIsYSWFVpkD+40g5YiaTH9FaletGWnYuB/cv8rRjhyHfFC2EYot2aHumMvtA+iMwut3EqtYYPL2HS41j7BPiqJbM4wADlZQplysGr3EgcU1xVM+qyo9X9ALDjD9Zy61SOE7EMLip2Py4PPinn9JeJSbLUjp8o+sii7NgpBZvNGBE8UVCZ+cxdL26PQGYBFF/pha+qrmoE8qz7+IODXB0TxH6ZaFvludoSXIpXsjwbduHPxr8gFdSye/eCFHAlKRkxzzVKI2XU3Y3L3LVH05yIF/iHfu1Cm2MqjH2xAZd0znZACcWEyQtXRUg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=DgT2Xvpu; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::102d; helo=mail-pj1-x102d.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=K5qX7sC5;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=DgT2Xvpu;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::52f; helo=mail-ed1-x52f.google.com; envelope-from=rosenp@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-ed1-x52f.google.com (mail-ed1-x52f.google.com [IPv6:2a00:1450:4864:20::52f])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::102d; helo=mail-pj1-x102d.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pj1-x102d.google.com (mail-pj1-x102d.google.com [IPv6:2607:f8b0:4864:20::102d])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gbpFz6K8vz3bpP
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jun 2026 02:37:11 +1000 (AEST)
-Received: by mail-ed1-x52f.google.com with SMTP id 4fb4d7f45d1cf-6912f4acca4so68136a12.1
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jun 2026 09:37:10 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1781195828; cv=none;
-        d=google.com; s=arc-20240605;
-        b=cYxOpqiCp2o4H59XaniLB2O7Ts7TbvmFhuNXrscY5sQitKDlFshfqes2BuU4F6gN5T
-         FQupSYty9+XRmLf3azVCdsSSwacVJREMEO2fiK79ar2hHyJXr4CTkoEpeUPMYxKXIeOZ
-         Zy0ZBhv9MMWlHAoVpW8JYvyyU2kEIZziFRfYIzJo/hPwHzp+jlRh2/MORUSP+IjhVBuA
-         tOzMPT2y4Kl83ZhQfALp9lu1AJmoxD6lxjItONbauEDSAgiV3XCN4zXe8bi467Vq1PlK
-         08j1UUkWIKxQUwdMlFzpwuxqRG68YipfpaTNp2/929miNhOLIftsFpC30B22IpUjYCUP
-         OE8g==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=4DStYhYQsSipTicO46WKSDE7hgZDuh6T94LBB/5C16M=;
-        fh=yBO99/lG4je4I9D+58WuzJHmoTy6q3hmEXfZR5DdUu0=;
-        b=XmxPGluBkzsnaDRppsg+a7Uq96o8O7cOGqZUqMEcbAXWi8GG8wmPwLK12vw+tCeoJH
-         zws3GITySosbkdeRjLif7Pu6/zjMyDrOfOooNmT0AhKdCCI4r7FnIyJ7I2bdYb+tLFMO
-         4IUUgKAfSwjmDKdz5S5Sd7/Bd3Z96nXgDh4hU9qo45nhaWHxoMU5RAPQEi4J+fiFqxcB
-         AJhUpZUakmDFSmyzWiuHr9dLlygZCUg3bdmKr2YjYbFgcD9egDgUZZyD18IDIBN+BGQl
-         cEssioHeQQrqfbbWculDq47n5goY3K0gXHUraz/is2A114aeSWlg//aWoCI6X01j57ob
-         KYrw==;
-        darn=lists.ozlabs.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gbq2N5pVRz3bpP
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jun 2026 03:12:11 +1000 (AEST)
+Received: by mail-pj1-x102d.google.com with SMTP id 98e67ed59e1d1-36bb3551f6eso171528a91.1
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jun 2026 10:12:11 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1781195828; x=1781800628; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=4DStYhYQsSipTicO46WKSDE7hgZDuh6T94LBB/5C16M=;
-        b=K5qX7sC5RvGtrIYA+kjBinLZnNvLvHyMp2i/4NPzcZwYUb+IdBOJdXpnVNkJGGj9Pd
-         solK2bdzy/jUiTnSK9MyJFJgnQLuT2Zl1/ihExk/q8B5tGJ0NM0crpJBQHk48VZQVFpK
-         E/moYWr7iMPKAk7PCbnCVYCZk+TcdiiZi5n8No6IR+BFbzcTE+lI3ygpIu5bPE1fjToz
-         beeORYyLauc/8jDJCtsRXb23qfXF03ECshorGXcd9vo/PzawFVpYOGFBiEq0taVMZqcl
-         W+p7hBj9Vome1R4n32Y2NfuzPZyi0rFiGoJIo4SZMytBwmaVgrVjsZ0K+97zSlHjQuyV
-         Lamw==
+        d=gmail.com; s=20251104; t=1781197929; x=1781802729; darn=lists.ozlabs.org;
+        h=references:message-id:date:in-reply-to:subject:cc:to:from:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=QUhb0LXL29TRj1XmX4fg/eZOCymWXris1Gg/NE+c6fU=;
+        b=DgT2XvpuJGs7+ii63XXOPSEtruyaMM8T2Y3TaqWJyXRBDjZLeIpnfqs3YZQ2gFKHC+
+         k5kujvu017vuev+7hlOLVu8x1kKPN6F2KJBKtL21B7+XKWWYeUsZtud/acAGZqYXqxWu
+         VUfI/YHr4ZDeCMGZPCAoWR4A807183q5bKfrLN/LP0HvLm0tpzArLU7gGNIRdil+qK+e
+         khmdc26tMxbraZZKYvA3LtQnfQGW21PqIuR8kBBirbR4JvvQHHySPXkbPKoGFTuMNxNd
+         rwSQK0vVeA//ewLmYfyi665+uUfwxRMISiyTfJEnDRGc+bfx4ZlklZi28di1NPXIibKM
+         r5mA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1781195828; x=1781800628;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=4DStYhYQsSipTicO46WKSDE7hgZDuh6T94LBB/5C16M=;
-        b=DMzyv+3/qRA3eHRvXHF2hDapkZ8wQXcZsJMXT2yJRKlQSSXqS9lAiVhEp9snhd5gTw
-         k1ZCLG5k2eN/8fSotwP7Al2eGbwQGk8qxlvn9pZCC2rofuqdUhVPEP2+2OkljlcEhpNa
-         4hPndfWgThtkMl0t8VY/pk4Fr3EkxTHilJl2kqzjo6KlnUT2/8+IhNeoT/Qok8F0wetD
-         9cX6dkxa8Be8msjp5NtYpZRX8zmWqbnyhsBKLpCVchMbB3TB5XGKJ9cj0hQKvQmxrYUq
-         ImS5LBLqUPOqwsevoYRzAWS4sgtIUHAfrJuh60I/mTMKpNQDjm/cIUW1TRyC1KpnAUWS
-         +YGQ==
-X-Forwarded-Encrypted: i=1; AFNElJ8dEV4xu0hE20wSBR2XG93iA4ZjZCPSG/wqfEgUctkitntAyEuBrYFDThpdEQiJHb8hMpAt7nj7GI4gkU4=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YysPvw7x0ezY7yFaK11Bdo96U1XWhi4hUWp3P/B9OuwpPo8iEbq
-	kFhSM/IiUhUvJB9zYp4OYrxniZNEEVDsaKdWuSvhPv7xhmuOA968V5GZWXZgIm0QWYFJkDBdDKy
-	aAnDI41aff50/4gwIHlAtyiz8wkSAUeyxoA==
-X-Gm-Gg: Acq92OEVf4S0JX0KlKjZkLdTomx4yd46O/y5b0s2cC/mCHfqwAFVMP77/M2Nu0qGXE2
-	vVQY6/BHdhABjatWXUJjOYN9jSFCE9k3A3O0CxwwKAbCG2hboE/2uHejQJhzOxywFBAvH5Q9kd4
-	o8SgjiyujX/cjzsdguZR/x/r85wZgamj7sipHUjGut8Z8K7WO/3WbCvdUqdMHC3n6ItkbkVjVRv
-	DE9dKRrQfS0NG6JmcDtzWySxrTU7LxvIe5mr/hwBGWtLN+edx225P7oEpO1Emy1FDL1aVfm9TW1
-	JygBDIPT+fO8hj7b3k1lgPi4EJJLSmN2sV2DoSTNzEpe4K6B3lquFk9iCZu5ujBh0CGG+pKyG9b
-	dcKX5GRF4Ave9TtZFDQ/qU/rRBDmwCib9WkO3TVr+Swmist9vbDf9ZL8y
-X-Received: by 2002:a05:6402:358d:b0:687:1c98:a19a with SMTP id
- 4fb4d7f45d1cf-6930e2b5e6fmr2054888a12.13.1781195827845; Thu, 11 Jun 2026
- 09:37:07 -0700 (PDT)
+        d=1e100.net; s=20251104; t=1781197929; x=1781802729;
+        h=references:message-id:date:in-reply-to:subject:cc:to:from:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=QUhb0LXL29TRj1XmX4fg/eZOCymWXris1Gg/NE+c6fU=;
+        b=HfkiW/PYchtmw6i+d+59wlK8lF8Zyaqmgi0yRdKtwqa11KIumZ6U5c/OxrUO6dPfU3
+         YvX45VwkfYDepFS1vloXHLkFa3V8v2ebNiX/htjQMYJyA6zSNIZ6A3sepKxDNX/j3dyt
+         rrTZQpE99GrqrjkVpfFyLZxj8W9yihex3oL1PE5pzvmQn5YreMkrZ/Qah7DHZ5tuqtZk
+         X6vEfmNi1WKhnSIcAJi7qZ0BNUik/8Hg299/zSKgYSdxHiOa01gGixrdiN/8iNyAYz+L
+         /pgY6LcCBIMB4w+BRIJJMIT3LUGOk6Das6AyVBrLq2qjOMx+3LDV4JM+AZMU7DPIk+tU
+         B3Lg==
+X-Forwarded-Encrypted: i=1; AFNElJ8+GyoK4u6aagZoOU3kIRL859oLLPWTfPqiyGeVoAdpa93vPtmQBIkLZQGE6vFQwmkm+W21Vqhy7qwr/dI=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YzqGW0GpDVHn7eV+Abf37Qu73fusjl6Pax7LyL6F8inP6oUqOOm
+	JZBvcgSOpjfsOpZTpr3bSk2io1juoBwOLeVbM2sAaXenMmNIc6cOimq8
+X-Gm-Gg: Acq92OFN/+K5CUdUnl3HQJY5BwEY7aAXKMJjIW609sgmoxr6H9DLIgkpwoKk3pToxll
+	g9RrUowmN4Ra4M9Wc+gL2PXxiEK6Nwh6nIMMHllZbPm4wOIHe8LzmZDcrG4FZ8yVPMhhQUOJhkB
+	DQuGItFj6OtcpcS5t1Ewmd+zm9TH+WaNr3vxuOTWCA0sKCTx0xuYbJYxK+9xmqMRZ3IKNvjfCpK
+	yupsYdEricD838iSMBIiAqsfUfspCdeus45VpFmwsp43qdUDrxLcOhqnSqHfdy9IGN9mlDQc6jt
+	j8JMivUAZYF9fnYRg3tOux4E6j7m/wyTVIs8UyPIr3hTiHurKtDPnHXSn/srtQpdky8eQBqUnKw
+	L2082IFywkvNpMYudd6FTb0zQ1JxYjrNqFWzfiyUI3EpQpFkKBnZdup7IRwkb91p3iFi4fB56ak
+	oXGbg2q5JFdzWfxUyOnBIQJhTwJYQAEWwRvmVc
+X-Received: by 2002:a17:90a:e185:b0:36a:f612:e6a3 with SMTP id 98e67ed59e1d1-377a8bd3113mr4246286a91.17.1781197928626;
+        Thu, 11 Jun 2026 10:12:08 -0700 (PDT)
+Received: from pve-server ([49.205.216.49])
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3775549af60sm3035656a91.12.2026.06.11.10.12.03
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 11 Jun 2026 10:12:07 -0700 (PDT)
+From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+To: Sean Christopherson <seanjc@google.com>
+Cc: kvm@vger.kernel.org, Paolo Bonzini <pbonzini@redhat.com>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>, Christophe Leroy <chleroy@kernel.org>, Anushree Mathur <anushree.mathur@linux.ibm.com>, Venkat Rao Bagalkote <venkat88@linux.ibm.com>, Harsh Prateek Bora <harshpb@linux.ibm.com>, Ackerley Tng <ackerleytng@google.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, Claudio Imbrenda <imbrenda@linux.ibm.com>, Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [PATCH v3 RESEND 02/10] KVM: selftests: Add aligned guest physical page allocator
+In-Reply-To: <aimOVomL2RzYt2J4@google.com>
+Date: Thu, 11 Jun 2026 22:00:19 +0530
+Message-ID: <ldcldopw.ritesh.list@gmail.com>
+References: <cover.1781093720.git.ritesh.list@gmail.com> <df86b5ccdbdafc3509d9538bd5e6796737bab2db.1781093720.git.ritesh.list@gmail.com> <aimOVomL2RzYt2J4@google.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -101,112 +88,261 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-References: <20260611035245.13439-1-rosenp@gmail.com> <20260611035245.13439-12-rosenp@gmail.com>
- <airV8Wm3yyY4hTQP@lizhi-Precision-Tower-5810> <CAKxU2N9QNMo9u0s_MfYG8qfiWsHqwuB9ax_qbf6gbxA0syOiaw@mail.gmail.com>
- <airjMsF-YPGSt3-S@lizhi-Precision-Tower-5810>
-In-Reply-To: <airjMsF-YPGSt3-S@lizhi-Precision-Tower-5810>
-From: Rosen Penev <rosenp@gmail.com>
-Date: Thu, 11 Jun 2026 09:36:56 -0700
-X-Gm-Features: AVVi8CdY6DBOq_Kf9XCWgkvqCE4_jbHsMoVYEFsNT-EymPwcj5ekivftZTICTTw
-Message-ID: <CAKxU2N9aaQhtmYjA+sQqSmgGDoeqEJc=8WFppWN=Q-i=0oPRMA@mail.gmail.com>
-Subject: Re: [PATCHv4 11/15] dmaengine: fsldma: convert channel allocation to devm_kzalloc()
-To: Frank Li <Frank.li@oss.nxp.com>
-Cc: dmaengine@vger.kernel.org, Vinod Koul <vkoul@kernel.org>, 
-	Frank Li <Frank.Li@kernel.org>, Zhang Wei <zw@zh-kernel.org>, 
-	Nathan Chancellor <nathan@kernel.org>, Nick Desaulniers <nick.desaulniers+lkml@gmail.com>, 
-	Bill Wendling <morbo@google.com>, Justin Stitt <justinstitt@google.com>, 
-	open list <linux-kernel@vger.kernel.org>, 
-	"open list:FREESCALE DMA DRIVER" <linuxppc-dev@lists.ozlabs.org>, 
-	"open list:CLANG/LLVM BUILD SUPPORT:Keyword:b(?i:clang|llvm)b" <llvm@lists.linux.dev>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
 
-On Thu, Jun 11, 2026 at 9:33=E2=80=AFAM Frank Li <Frank.li@oss.nxp.com> wro=
-te:
+Sean Christopherson <seanjc@google.com> writes:
+
+> On Wed, Jun 10, 2026, Ritesh Harjani (IBM) wrote:
+>> From: Nicholas Piggin <npiggin@gmail.com>
+>> 
+>> powerpc will require this to allocate MMU tables in guest memory that
+>> are larger than guest base page size.
+>> 
+>> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+>> [Rebased to latest mainline tree]
+>> Signed-off-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+>> ---
+>>  .../testing/selftests/kvm/include/kvm_util.h  | 20 +++++++++--
+>>  tools/testing/selftests/kvm/lib/kvm_util.c    | 33 +++++++++----------
+>>  2 files changed, 33 insertions(+), 20 deletions(-)
+>> 
+>> diff --git a/tools/testing/selftests/kvm/include/kvm_util.h b/tools/testing/selftests/kvm/include/kvm_util.h
+>> index 3666a8530f31..c515c918c2c9 100644
+>> --- a/tools/testing/selftests/kvm/include/kvm_util.h
+>> +++ b/tools/testing/selftests/kvm/include/kvm_util.h
+>> @@ -991,8 +991,8 @@ void kvm_gsi_routing_write(struct kvm_vm *vm, struct kvm_irq_routing *routing);
+>>  const char *exit_reason_str(unsigned int exit_reason);
+>>  
+>>  gpa_t vm_phy_page_alloc(struct kvm_vm *vm, gpa_t min_gpa, u32 memslot);
+>> -gpa_t __vm_phy_pages_alloc(struct kvm_vm *vm, size_t num, gpa_t min_gpa,
+>> -			   u32 memslot, bool protected);
+>> +gpa_t __vm_phy_pages_alloc(struct kvm_vm *vm, size_t num, size_t align,
+>> +			   gpa_t min_gpa, u32 memslot, bool protected);
+>>  gpa_t vm_alloc_page_table(struct kvm_vm *vm);
+>>  
+>>  static inline gpa_t vm_phy_pages_alloc(struct kvm_vm *vm, size_t num,
+>> @@ -1003,10 +1003,24 @@ static inline gpa_t vm_phy_pages_alloc(struct kvm_vm *vm, size_t num,
+>>  	 * protected memory, as the majority of memory for such VMs is
+>>  	 * protected, i.e. using shared memory is effectively opt-in.
+>>  	 */
+>> -	return __vm_phy_pages_alloc(vm, num, min_gpa, memslot,
+>> +	return __vm_phy_pages_alloc(vm, num, 1, min_gpa, memslot,
+>>  				    vm_arch_has_protected_memory(vm));
+>>  }
+>>  
+>> +static inline gpa_t vm_phy_pages_alloc_align(struct kvm_vm *vm, size_t num,
+>> +					     size_t align, gpa_t min_gpa,
+>> +					     u32 memslot)
 >
-> On Thu, Jun 11, 2026 at 09:08:32AM -0700, Rosen Penev wrote:
-> > On Thu, Jun 11, 2026 at 8:36=E2=80=AFAM Frank Li <Frank.li@oss.nxp.com>=
- wrote:
-> > >
-> > > On Wed, Jun 10, 2026 at 08:52:41PM -0700, Rosen Penev wrote:
-> > > > Convert fsl_dma_chan_probe from kzalloc_obj() to devm_kzalloc(), ty=
-ing
-> > > > the channel lifetime to the parent DMA device. Remove kfree(chan) i=
-n both
-> > > > the probe error path and the remove function.
-> > > >
-> > > > Assisted-by: opencode:big-pickle
-> > > > Signed-off-by: Rosen Penev <rosenp@gmail.com>
-> > > > ---
-> > >
-> > > If use flexible array, needn't allocate channel
-> > Not sure what you mean. A regular array avoids that as well.
+> Given that the PPC usage is all for naturally aligned allocations, I think it
+> makes sense for that to be the API, i.e. have "bool naturally_aligned" instead
+> of an arbitrary alignment.
 >
-> Yes, consider only max 8 channel. Now the common method is
+
+I would still prefer passing an explicit align value to the allocator,
+because IMHO that's a useful allocator interface to have.
+
+However, if we do want to go down this road than I don't have any strong
+objection either, since as you mentioned powerpc mostly just needs
+natual alignment for it's page table region. So alignment can be
+extracted from the region type as you described below, so no need to
+pass it all the time.
+
+>> +{
+>> +	/*
+>> +	 * By default, allocate memory as protected for VMs that support
+>> +	 * protected memory, as the majority of memory for such VMs is
+>> +	 * protected, i.e. using shared memory is effectively opt-in.
+>> +	 */
 >
-> fsl
-> {
->         ....
->         int chan_count;
->         fsl_chan chan[] __count_by can_count;
-> }
+> Duplicating this big comment is very ugly.
+
+yes, my bad. I should have removed one copy of the comment.
+
+> In general, these APIs could use
+> some love.  E.g. taking in @memslot is essentially a historical wart that isn't
+> necessary except for literally just memslot_perf_test.c, which allocates memory
+> in a huge number of memslots.
 >
-> scan children node to get total number
-right. allocation happens on two compatible strings currently. I guess
-it's safe to assume one of each is present in each child.
+> If we rework the APIs to take the memory region type instead of the memslot, then
+> we can kill many birds with one stone.  It takes quite a bit of cleanup to throw
+> that one stone, but I think the end result can be quite nice.
 >
-> devm_kzalloc(..., struct_size(fsl, chan_count)) ...
+> Compile tested only at this point, but I now have a series of ~17 patches to yield:
 >
-> Frank
+>   __weak bool kvm_arch_needs_naturally_aligned_page_tables(void)
+>   {
+> 	return false;
+>   }
 >
-> > >
-> > > Frank
-> > >
-> > > >  drivers/dma/fsldma.c | 12 +++---------
-> > > >  1 file changed, 3 insertions(+), 9 deletions(-)
-> > > >
-> > > > diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
-> > > > index e4a3315a7d9d..0df09789187d 100644
-> > > > --- a/drivers/dma/fsldma.c
-> > > > +++ b/drivers/dma/fsldma.c
-> > > > @@ -1114,11 +1114,9 @@ static int fsl_dma_chan_probe(struct fsldma_=
-device *fdev,
-> > > >       int err;
-> > > >
-> > > >       /* alloc channel */
-> > > > -     chan =3D kzalloc_obj(*chan);
-> > > > -     if (!chan) {
-> > > > -             err =3D -ENOMEM;
-> > > > -             goto out_return;
-> > > > -     }
-> > > > +     chan =3D devm_kzalloc(fdev->dev, sizeof(*chan), GFP_KERNEL);
-> > > > +     if (!chan)
-> > > > +             return -ENOMEM;
-> > > >
-> > > >       /* ioremap registers for use */
-> > > >       chan->regs =3D of_iomap(node, 0);
-> > > > @@ -1200,9 +1198,6 @@ static int fsl_dma_chan_probe(struct fsldma_d=
-evice *fdev,
-> > > >
-> > > >  out_iounmap_regs:
-> > > >       iounmap(chan->regs);
-> > > > -out_free_chan:
-> > > > -     kfree(chan);
-> > > > -out_return:
-> > > >       return err;
-> > > >  }
-> > > >
-> > > > @@ -1215,7 +1210,6 @@ static void fsl_dma_chan_remove(struct fsldma=
-_chan *chan)
-> > > >       tasklet_kill(&chan->tasklet);
-> > > >       list_del(&chan->common.device_node);
-> > > >       iounmap(chan->regs);
-> > > > -     kfree(chan);
-> > > >  }
-> > > >
-> > > >  static void fsldma_device_release(struct dma_device *dma_dev);
-> > > > --
-> > > > 2.54.0
-> > > >
+>   gpa_t __vm_phy_pages_alloc(struct kvm_vm *vm, size_t nr_pages,
+> 			   enum kvm_mem_region_type type, bool protected)
+>   {
+> 	struct userspace_mem_region *region = vm_get_mem_region(vm, type);
+> 	bool naturally_aligned = false;
+> 	gpa_t min_gpa;
+>
+> 	TEST_ASSERT(region, "No region for type '%u', memslot '%u'",
+> 		    type, vm->memslots[type]);
+>
+> 	switch (type) {
+> 	case MEM_REGION_CODE:
+> 	case MEM_REGION_DATA:
+> 	case MEM_REGION_TEST_DATA:
+> 		/*
+> 		 * If the region is backed by the default memslot (id=0), use
+> 		 * selftests' hardcoded minimum PFN, otherwise use the base of
+> 		 * the custom memory slot that backs the region.
+> 		 */
+> 		if (!vm->memslots[type])
+> 			min_gpa = KVM_UTIL_MIN_PFN * vm->page_size;
+> 		else
+> 			min_gpa = region->region.guest_phys_addr;
+> 		break;
+> 	case MEM_REGION_PT:
+> 		min_gpa = KVM_GUEST_PAGE_TABLE_MIN_PADDR;
+> 		naturally_aligned = kvm_arch_needs_naturally_aligned_page_tables();
+> 		break;
+> 	case MEM_REGION_TEST_EXTRA:
+> 		min_gpa = region->region.guest_phys_addr;
+> 		break;
+> 	default:
+> 		TEST_FAIL("Invalid memory region type '%u'", type);
+> 		break;
+> 	}
+>
+> 	return ____vm_phy_pages_alloc(vm, nr_pages, min_gpa, vm->memslots[type],
+> 				      protected, naturally_aligned);
+>   }
+>
+> with convenience wrappers:
+>
+>   static inline gpa_t vm_phy_pages_alloc(struct kvm_vm *vm, size_t nr_pages,
+> 				       enum kvm_mem_region_type type)
+>   {
+> 	/*
+> 	 * By default, allocate memory as protected for VMs that support
+> 	 * protected memory, as the majority of memory for such VMs is
+> 	 * protected, i.e. using shared memory is effectively opt-in.
+> 	 */
+> 	return __vm_phy_pages_alloc(vm, nr_pages, type,
+> 				    vm_arch_has_protected_memory(vm));
+>   }
+>
+>   static inline gpa_t vm_phy_page_alloc(struct kvm_vm *vm,
+> 				      enum kvm_mem_region_type type)
+>   {
+> 	return vm_phy_pages_alloc(vm, 1, type);
+>   }
+>
+>   static inline gpa_t vm_alloc_page_table_pages(struct kvm_vm *vm, size_t nr_pages)
+>   {
+> 	return vm_phy_page_alloc(vm, MEM_REGION_PT);
+>   }
+>
+>   static inline gpa_t vm_alloc_page_table(struct kvm_vm *vm)
+>   {
+> 	return vm_alloc_page_table_pages(vm, 1);
+>   }
+>
+> That way we don't need to add yet another rarely used param to the APIs, and
+> PPC just needs to define
+> kvm_arch_needs_naturally_aligned_page_tables().
+
+yup, looks good.
+
+> The bonus is that @min_gpa goes away too.
+
+powerpc needs min_gpa for it's exception handling pages. see.
+
+	excp_paddr = vm_phy_pages_alloc(vm, excp_pages, 0,
+					vm->memslots[MEM_REGION_DATA]);
+
+	TEST_ASSERT(excp_paddr == 0,
+		    "Interrupt vectors not allocated at gPA address 0: (0x%lx)",
+		    excp_paddr);
+
+So, will arch still have an access to the API for passing min_gpa = 0
+for cases like above?
+
+>
+> It'll probably take me a few days/weeks, but I'll try get a series posted before
+> the 7.2 merge window closes, so that you can build on top to get the PPC selftests
+> support landed in 7.3.
+>
+
+Thanks Sean for your help! Yes, landing kvm selftests for powerpc will
+be definitely helpful to verify against any kvm regressions.
+
+BTW, I was thinking whether landing powerpc first will be easier for you
+to consider all the API requirements from all users / usecases?  But
+either way is fine please. I can work on top of your changes too and if
+something is missing for powerpc, we can add / modify on top, once your
+series is finished.
+
+
+>> @@ -2039,23 +2039,22 @@ gpa_t __vm_phy_pages_alloc(struct kvm_vm *vm, size_t num,
+>>  	TEST_ASSERT(!protected || region->protected_phy_pages,
+>>  		    "Region doesn't support protected memory");
+>>  
+>> -	base = pg = min_gpa >> vm->page_shift;
+>> -	do {
+>> -		for (; pg < base + num; ++pg) {
+>> -			if (!sparsebit_is_set(region->unused_phy_pages, pg)) {
+>> -				base = pg = sparsebit_next_set(region->unused_phy_pages, pg);
+>> -				break;
+>> +	base = min_gpa >> vm->page_shift;
+>> +again:
+>> +	base = (base + align - 1) & ~(align - 1);
+>> +	for (pg = base; pg < base + num; ++pg) {
+>> +		if (!sparsebit_is_set(region->unused_phy_pages, pg)) {
+>> +			base = sparsebit_next_set(region->unused_phy_pages, pg);
+>> +			if (!base) {
+>> +				fprintf(stderr, "No guest physical page available, "
+>> +					"min_gpa: 0x%lx page_size: 0x%x memslot: %u\n",
+>> +					min_gpa, vm->page_size, memslot);
+>> +				fputs("---- vm dump ----\n", stderr);
+>> +				vm_dump(stderr, vm, 2);
+>> +				abort();
+>>  			}
+>> +			goto again;
+>>  		}
+>> -	} while (pg && pg != base + num);
+>> -
+>> -	if (pg == 0) {
+>> -		fprintf(stderr, "No guest physical page available, "
+>> -			"min_gpa: 0x%lx page_size: 0x%x memslot: %u\n",
+>> -			min_gpa, vm->page_size, memslot);
+>> -		fputs("---- vm dump ----\n", stderr);
+>> -		vm_dump(stderr, vm, 2);
+>> -		abort();
+>>  	}
+>
+> This is unnecessary churn.  I'm not saying the current code is pretty or anything,
+> but unless I'm missing something, this can simply be:
+>
+
+Not really, we need the base to be aligned everytime, that's why the
+goto again loop aligns the base in the new code. Plus I feel the above
+refactoring also simplifies the special handling of pg == 0 case, which
+earlier was being handled separately after the loop ends.
+
+> @@ -2025,7 +2027,7 @@ gpa_t __vm_phy_pages_alloc(struct kvm_vm *vm, size_t nr_pages, gpa_t min_gpa,
+>         TEST_ASSERT(!protected || region->protected_phy_pages,
+>                     "Region doesn't support protected memory");
+>  
+> -       base = pg = min_gpa >> vm->page_shift;
+> +       base = pg = ALIGN(min_gpa >> vm->page_shift, alignment);
+>         do {
+>                 for (; pg < base + nr_pages; ++pg) {
+>                         if (!sparsebit_is_set(region->unused_phy_pages, pg)) {
+>
+>>  
+>>  	for (pg = base; pg < base + num; ++pg) {
+>> -- 
+>> 2.50.1 (Apple Git-155)
+>> 
+
+Thanks once again for your help with this!
+
+-ritesh
 
