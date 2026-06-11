@@ -1,83 +1,94 @@
-Return-Path: <linuxppc-dev+bounces-22509-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22510-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6D754CD98CE
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Jun 2026 15:45:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1CFCDCD98CE
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Jun 2026 16:08:56 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gbn6b6lbMz3brM;
-	Fri, 12 Jun 2026 01:45:43 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c200::1" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781192743;
-	cv=pass; b=Jp8siw5wPDnafqMyXJdVAm0SyeS7k39fYO/WsrwSGOoiIUZSCEnApBiyepL3k5fk0RaVzPQ40sZIUspEkpzbbzPNJxRAjyli/Anoeg0xbuaBtRx9EXe/qc9IN6jCfs/GIB+L+1yhobb9GRTQ5hgojJB3Nu/Ur+8oGkbWo1QxMAReJR6zBObb8sQV2bo7AgpAszFHSfvLwPKjl05i0ldqz2cVmykZm05KP4XbNKZYAMVWmnua2t4mNaJVYjTkv1cxGPoR4jQvUjZ7rd/NamCx5g/co7bse0pb8JH01TwQLuyr9PflkqVfwhZ0B2iadHR2BrlJX6Rme2eW0vI9pf99Ag==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gbndL5jtNz2xfB;
+	Fri, 12 Jun 2026 02:08:54 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a00:1450:4864:20::62f" arc.chain=google.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781194134;
+	cv=pass; b=JJPgIdm7wIIR9+pqgQR+cmJWf2ndp6Lhr52znF5W6wh1NFy3VgPc0xf7zp6SFpAiKiO+x0r+TfONow6eXrpEc7PZk3h2n7LXp9h5h+r2/oOxRWgPLZV4e9PQSma9YfnO2FxcGR5XgIWZXX4qb9wInJy7utIjfFFKSITX7Re7gsEgcoETXptUuN2XBnpUOryqV5b/YswpbyYqmJW6CaYwroj0U3UynRiAK+sI822qoBcxk2mbGDrQpa4dxd3GjxCpBcyqNrf2liNRlGfbQ0S++vtrly/anjzAqHm5I72gSeahHvpnVxDJWH7081B7IjNjqND3TO3vnMLgC5VUd5+Yxg==
 ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1781192743; c=relaxed/relaxed;
-	bh=6GGJwsI09XMkzHEzZvSHf1Qgbz8pv17gqZJ2Fx5SNHY=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:Content-Type:
-	 Content-Disposition:In-Reply-To:MIME-Version; b=oojq9KagusDZG+6JEsbPwTgCMUAzczG/bXCFfPiIG5Kv0iS8V9iclOL52lLO7Xc46/Ao/SdegmDEIglkchUGcp0dMRHZ4oWLMopZVcOFVLcX5aMdpfO7Sdzlvk+6jQQu097FffZcxaIf8fxPciioGHTi48OfAV+iWKe6WuesBPLAkVi0YNbOCIMihh8Xd2ZqjUrRg9ZmgWcZd5HH4aeqa5d7sJq67JHMNPRk8CL8F/a0Hd+PUYizq/Z+VAzAhUlOz5bf6C7TDkQV/4Iqi2Ylnye7Id80Vq7xg5rpt8uTZFHVYR3BHNJqjgIA6P8rkSBl/Oyfl84RaLuyKAz3B5prRg==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=oss.nxp.com; dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=acuPsDlD; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c200::1; helo=db3pr0202cu003.outbound.protection.outlook.com; envelope-from=frank.li@oss.nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=oss.nxp.com
-Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=oss.nxp.com
+	t=1781194134; c=relaxed/relaxed;
+	bh=0BPhvT50VQuK2+y7zbXq9J0IJLvfRaU5Y2kOZciKetk=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=Wp70eaFwp9dyJ8nHZ1A/ID1Ek4avu+BZF8y+BJ32airYfHgZifEMb45eTn5Rlmq+9JBlA9NmvHAsnrJpnCHvnOdt4/4SRXBWAVJM9k2qFB+J0PBggozMoYgcGhlb2618liTAFWWZSRUJMtLVDYGVZs2OFHisdByq/ezcjYVQmDWGzsmmJe8JL6anO/5bcfuxdOaiaQWuJAmIQe7F92r6Ak/2Z2gAPj9gbGRD9WHEozWwtCVLDIXEMmwh55k45GKi7HKmfFHfkt4iD1HrOeAB9CWiOeas+iEPaN31xXYCW9C/ATowoO9/xYexAE9uFiz+sixZyqWHOetr05ubY9pwDw==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=pxM+hCZG; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::62f; helo=mail-ej1-x62f.google.com; envelope-from=rosenp@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=acuPsDlD;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=pxM+hCZG;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=oss.nxp.com (client-ip=2a01:111:f403:c200::1; helo=db3pr0202cu003.outbound.protection.outlook.com; envelope-from=frank.li@oss.nxp.com; receiver=lists.ozlabs.org)
-Received: from DB3PR0202CU003.outbound.protection.outlook.com (mail-northeuropeazlp170100001.outbound.protection.outlook.com [IPv6:2a01:111:f403:c200::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::62f; helo=mail-ej1-x62f.google.com; envelope-from=rosenp@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-ej1-x62f.google.com (mail-ej1-x62f.google.com [IPv6:2a00:1450:4864:20::62f])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gbn6b1htwz2xJT
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jun 2026 01:45:43 +1000 (AEST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=kqGBDwSy57vc6XmH7/4I/oaKZz+SwoOfJh/0QkHiX/UFeeLp7vYlWx06DL3OrnjLymJWMRj85XHw9sp/Am2q6hWiTa4ToN6Ul3OdmmCibALrqEr9fKs+VTWyOOSP6zwP7EO/X8Yw7zi49qt0oP20dka4WtFDdCssx9NWOgCHVHoSdThRzKFg2j4gmMGOrdE/q2d08YdX3OmA6pOK+JEQAxPC3gmJmgjsSEg7u5JIFI+cJRcns0QE5VjiUDPKliqShQG7TrUfIA/wK79eQklpFJvwRuVjcnOHuo3hW8gpX+M2tI9RNQkCBTZu7echvAozE0zSKj0C+NVWI0RRVVEJXA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=6GGJwsI09XMkzHEzZvSHf1Qgbz8pv17gqZJ2Fx5SNHY=;
- b=RfSHUqBll2HtRvsk3s6qOV1h/sQC1VI3lByOarzSl3JV+0zlkYqorKXKnKhzil18bbREy/ake0RRlufAEf4QJjJrYIxAg/OpGK8FEk2+1omKZk7I9P/DDUFUdx6eP9XRWsxLmmSr1loCI2MktifSIrXt6SkAhxNYX463iL3Af0e50oMlCEkoai/nc63hO7zJxyNkxjEYbpYrdf80McDHOXSkjJ5PRzAFbXdf1IAyjM0bKUgQ1dIwo20tte1u0afrFlx9NFERSbe4t1KdTIiAERqRvBu+I+qaKtoIn5+LOTOmOTqIHjoDdlsjEFFwFOG+W/ckMOd1hywNqNHCSJ7DVQ==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=oss.nxp.com; dmarc=pass action=none header.from=oss.nxp.com;
- dkim=pass header.d=oss.nxp.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=NXP1.onmicrosoft.com;
- s=selector1-NXP1-onmicrosoft-com;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=6GGJwsI09XMkzHEzZvSHf1Qgbz8pv17gqZJ2Fx5SNHY=;
- b=acuPsDlD3wUlixvx+rBhfI8ALIZzrTenb5JWA6cz7gUwUh8p5K4SfUTqUdGsdnGIF8OuG39XOwnvjHmqnPbsFkochhtOwhRpxDddjw5f28V2xojHCEmRK3Qe3yl6eyVL8ku5q8+aywpfZjzi3HGc2NnYx5fSQMHsSsP3dUfeYVd8xWCimJOTx8P18Yo0hWLK5uHcV2WioZzKZMVUO76sOflL2wNopYKrUt98TY/T2K6S/XwgcEJ1achseOo3OKpHA0yxSMyl8R2NsSu2JycLJoyxswdU1jCjbClVgoKe1UNywXsK7O0vkLhRYrta9GwqeRRLHctdZ8cZn1MYlvTHAQ==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=oss.nxp.com;
-Received: from GV2PR04MB11799.eurprd04.prod.outlook.com (2603:10a6:150:2cf::9)
- by VI0PR04MB11818.eurprd04.prod.outlook.com (2603:10a6:800:2ee::13) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.92.17; Thu, 11 Jun
- 2026 15:45:20 +0000
-Received: from GV2PR04MB11799.eurprd04.prod.outlook.com
- ([fe80::2146:83a2:5329:b7c]) by GV2PR04MB11799.eurprd04.prod.outlook.com
- ([fe80::2146:83a2:5329:b7c%6]) with mapi id 15.21.0092.016; Thu, 11 Jun 2026
- 15:45:20 +0000
-Date: Thu, 11 Jun 2026 11:45:09 -0400
-From: Frank Li <Frank.li@oss.nxp.com>
-To: Rosen Penev <rosenp@gmail.com>
-Cc: dmaengine@vger.kernel.org, Vinod Koul <vkoul@kernel.org>,
-	Frank Li <Frank.Li@kernel.org>, Zhang Wei <zw@zh-kernel.org>,
-	Nathan Chancellor <nathan@kernel.org>,
-	Nick Desaulniers <nick.desaulniers+lkml@gmail.com>,
-	Bill Wendling <morbo@google.com>,
-	Justin Stitt <justinstitt@google.com>,
-	open list <linux-kernel@vger.kernel.org>,
-	"open list:FREESCALE DMA DRIVER" <linuxppc-dev@lists.ozlabs.org>,
-	"open list:CLANG/LLVM BUILD SUPPORT:Keyword:b(?i:clang|llvm)b" <llvm@lists.linux.dev>
-Subject: Re: [PATCHv4 15/15] dmaengine: fsldma: fix kernel-doc param names to
- match function signatures
-Message-ID: <airYBcTxaSuCMIhj@lizhi-Precision-Tower-5810>
-References: <20260611035245.13439-1-rosenp@gmail.com>
- <20260611035245.13439-16-rosenp@gmail.com>
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260611035245.13439-16-rosenp@gmail.com>
-X-ClientProxiedBy: SA0PR11CA0076.namprd11.prod.outlook.com
- (2603:10b6:806:d2::21) To GV2PR04MB11799.eurprd04.prod.outlook.com
- (2603:10a6:150:2cf::9)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gbndK1nLWz2xJT
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jun 2026 02:08:52 +1000 (AEST)
+Received: by mail-ej1-x62f.google.com with SMTP id a640c23a62f3a-bed2b9bfa02so861166b.1
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jun 2026 09:08:52 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1781194125; cv=none;
+        d=google.com; s=arc-20240605;
+        b=RhdQpyrwkP9WoodULGZstU5d1RLjYhiQr09RyMwOk/wvENocLIDuIrd2nF4MkweJdl
+         ctPwvh5yKqTlDz7NaD9ILRs2p02t5iS78I6k65FVGBiOvWys+jo7MvyE6hPIdm7it3Zj
+         3Dx7CgKb2nbN73jybB8Hpwks++XcLGiKqRP36NfJ2no0mzqM6a6vGaFKUy6qhtN8rlNb
+         nZnoZOGAbpNQvGsdrRjLKA+KNT446MQvE63UPU7BngpyZy/b/Y0mQgdwyVCPqupssWqX
+         rDVR3lKfAZUoJnijpR3e/f2/QnWFQnSGAbXWNasSVKbcewqgpZ0sxFVTQBv3K+P4hKCi
+         Lgpw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=0BPhvT50VQuK2+y7zbXq9J0IJLvfRaU5Y2kOZciKetk=;
+        fh=t20Iac9UkHx2QXbvof4BY1HebMbjKOt5g4aHtio7VAw=;
+        b=T2js24nLxrKlB4kCnAV6yZES63CJbdt9UtfCbiPEubF8y8eCdBU3oGFmWorOjL7vsh
+         qzUs2gl+xhr6mKR9GKqlTZVi4rc2W/pgBBLdwgjiDd5xxb+QscxpcbNtXKBSnHLa+Ket
+         W5XO7G1rkBWqlZbd1A+qPUYzvXF2bYmDBlPMYpCHK2XskTmsVesN/eejRheUGIF1hCPg
+         AGZo2uKdExqRfoL23DvOmdcqbA3khYz/5zI09W2X7y5rXygYzuXHJEMAO2CGStN++lzx
+         VunBf07gu0NAO1f9MlKxPyyl0Ewhm+CK+yi879yTA8mIDzE8K3re3kCxOASWLors5QwV
+         YR5g==;
+        darn=lists.ozlabs.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1781194125; x=1781798925; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=0BPhvT50VQuK2+y7zbXq9J0IJLvfRaU5Y2kOZciKetk=;
+        b=pxM+hCZGgnzi3TgJgpUqWVTVnPyQlB9uHEj2C+HB+DRaY9l/KK2Hpxd0jbEhuBtVCB
+         v8a9Yxl2MKgA+DTAljJTZ6ySrheBkEne4RvaFW7BCgSu1EyDsc9lDfnwm05OYn9UQ0mL
+         LEzi+YRDcznFPg2q0yDqyC8OvIN+HxMcOArpVSvh9vZNSbmws+LEJXrYoCoFECeHQ/rr
+         LcLWfQ1o8LN2GGkX41rR0W6BL71NQai6tnawIEpnXMw0jRSSt9XIi6Ci2byWUYq6ZvbW
+         0u/u4H3nz/Lm6sJKHAjlYadzymZh4pE1UJmsiA2hAeAMoaB9QjdwTRg0D/tS3/1iFZwO
+         QVrw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1781194125; x=1781798925;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=0BPhvT50VQuK2+y7zbXq9J0IJLvfRaU5Y2kOZciKetk=;
+        b=qQrv3p9EBP13be+sqF3YjimDkO9u+MhhYQ8PcXGSgAeanXQZIGyzMMmGM0ivAbLGed
+         4bpHVkvfY7JEvoOJBI0A6LC8bPeFiGEmHLgoo2mnXCp+AP0TtwqDC8bxhJ/OFdM3y54O
+         rc+NrgGG5OWp9Z2WXingIVextXOeoQgmDc6ihlalu7DyFsos49gSs5ZbnTVEtueNo02K
+         59qYfjbXpxWWVYaqaxN3UKUlKoY1dCe35r9x1I71MpzBcW5aSyvOf4dotM0hi9boZE/Y
+         uYhTG3Dhytds5DiZst2gSsb8fWeEmHbAqW9fPDvRu7nTr7i8V766nz+VkD2uRir0+pLD
+         Wpzw==
+X-Forwarded-Encrypted: i=1; AFNElJ8QOtLDH3DuJU2z1QAMVAlFpWsk1Kzz4kZ2T149wprK0xDd8zeNsOfN6D62zrLiDDU4aicX8N42fVebCGE=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yx+Hpv2iedcjZqmGEYgHUpV9n/FiTKBjJTkXU6xR9QUeP0UgvHc
+	DSakVsbC0eOH3ZAMuLXUrik2bCWuThUVL2GjqYhbGIK9VnppQCgqeaSEVDhASQEqEcEbDZw1Pf2
+	AbJd1culapIGtoeI46VuP+Pf2lA6/Isk=
+X-Gm-Gg: Acq92OEp1I/2bxbJYzvCbtKXAQERBmttzJKBUjhZqpgOvY3wpSQf05kxFAjK4GmnNBo
+	Hv3sAGMHYY3SkCa5QymOvu4mS3NtW2llzWtAT0GPmlXgQsxSuIzEN1/3bT5DWyYwdijKcL1i+bb
+	MLFToMsG0qYon8TY2DWd317fwjCT3lP1TXucgCJ07DZ2A2kj3dOEbuE2aRxSgNuj9Z4Ob7UezyQ
+	fjvzf0/iTNumUFBm/8REbUn1EWXAzt+dyv8a5rec4pVsDHK5jmMbWgaPWIXihvnwnDnT0+1vp/t
+	V6oFNcyOf5OCC3ndu9pZ3BbMBQnh0s2YPtpUAvtyKLYsOuBluji7rDG6/2hCgIAFtaVNvIggp1C
+	CNfBNcc2nTrsDb/dxaGcSG+/emN8K5qTtnYXJKMYrb3pRvjAXHJDbwvSc
+X-Received: by 2002:a17:907:1dd8:b0:bec:f0bb:66f5 with SMTP id
+ a640c23a62f3a-bfc87c0cb2bmr131123066b.30.1781194124409; Thu, 11 Jun 2026
+ 09:08:44 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -91,126 +102,87 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: GV2PR04MB11799:EE_|VI0PR04MB11818:EE_
-X-MS-Office365-Filtering-Correlation-Id: f3db80cc-e9e8-4053-0c89-08dec7d07121
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|19092799006|376014|7416014|23010399003|366016|1800799024|56012099006|3023799007|6133799003|11063799006|4143699003|18002099003|22082099003;
-X-Microsoft-Antispam-Message-Info:
-	YKzBi0nhiH1IcFIWgeQ9B07hSJiwUROgDe6ohVp2Nb7YclaJ5vsCwsnO9afiagdcuYOulODDqODhoqwu0MPH0Ryg/XGGwLYi3rym7w+x1JPbe/rwfyS+uFoWyW1QsQjtmM8NHyBXr9peRUnoAzRocg7seDX2VWy+IBJ7GrEqeZityKqjvTAkSTP4oHCwjOf2HVqfcY4LZ2sWusk2QuARfo7AxF/PCFo0ixXdgf4TB0e7Hz+YWErCmuhXHRuZLtoGkKke503jXcWbSLPJuxcTUdPnFOjaRsRfS+UlED42BLcb7Kz3wXxqQZH3IFRZVjWHuMvVv3nVWrfEcxoc7YA//CrYc1sm/FqqXV5dlgyQd5MIZQFuU4J6bAWD0rUEadQyGoMOiC6Kb1LnbSgjj1gMJRj/MQkI8xaA28GEOTzusENOmni4bEkE672nzunrjWl/yjY+VyM6bHAr6oBBqDS2GAjlvcr373TlvXojUDS3rQqOqUjRlp85BSYhJkiDsoLjOVx/ku+lV5qeAGaPfPGFMxOE8xR8xhNQ4i0Ybo9wYMutq7vY/VvFePqrCo6UwDV3HV7F6QRZObnxbvvj+YmNyKVe0S1LFCiOYo8pt4gj65YDaXcobP3jBcwG/M6pTHCvsn5kb2ZGYwB/rUgoU+mxnwkGalfDJhJkQfIhnHcCxVnpvrldBk9008q0cVmT52I4
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:GV2PR04MB11799.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(19092799006)(376014)(7416014)(23010399003)(366016)(1800799024)(56012099006)(3023799007)(6133799003)(11063799006)(4143699003)(18002099003)(22082099003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?VHjucEikZac5mJAJUAx0LqbNO74M2irtBMZD6f0ap7Lv349DbLqPE9E6MUfu?=
- =?us-ascii?Q?OwFXEWbVFh30MdS5DrKHM6wjZF2wAhlml7uBvvuII7/ZWvQwouk0SJwT7yrR?=
- =?us-ascii?Q?wFVZ/WNMO5ZIfwdG6um9fjT1OZWVKnLvhWkvCr5CNRqLDVbodwMcwFCW59gj?=
- =?us-ascii?Q?MnU29lkSp8e2mvHRyZPsofGecCj2nOKfsSOZJZbS9VZMGQYYglEdrMU2iNXZ?=
- =?us-ascii?Q?S5HiCcLIYz2UBX5bvMi/6HkXRi1OVkbVHGTHlqE9/FPj2F349YgGULPPus46?=
- =?us-ascii?Q?gGlsJlQbVDa9OKGGM5ezg7Xl7gvEm2WVfLSQWg6EoV1JAVXgTG7bIsdL84gT?=
- =?us-ascii?Q?3ao1AN++f8EUPywX9Owj5SFZ5Z656Di2hSDWXc/doDE+8Ufs8gxVzJwsuN1M?=
- =?us-ascii?Q?D7/JZzf9FYegyMpTgyaydFQiFSIx0N32lLUWhc0SvlIFU39lLXrUs6vY91AI?=
- =?us-ascii?Q?ADi+FfynK2KUDAUVrKs/1SD1Sg+ueMDq4zW8BAF/QRguc3bWayi2dtdEHe+4?=
- =?us-ascii?Q?AUuOj9E2UYcwOPRc8eeh1Ui0aI3uu0EUdGhXB7dviVbbvzNTCNNp38CqbONh?=
- =?us-ascii?Q?9jN5vKi/FyJXFTINjNB2m/UTyq1kotrxC6MfPr85UzHpuVlNyyzdTAkcJXoW?=
- =?us-ascii?Q?pnrnkOGySQS5q1mgoBH4sMCZOPc9YdvveSrOKTtIKhSWmRFoXyc2T8BhEEjW?=
- =?us-ascii?Q?QZH92wnWA2hHL3XC1wkJo3pUt7nvVMcNWT+t+z1mmh6pETIJSiAxBrfiCz9Z?=
- =?us-ascii?Q?pM57McO4M3bk42D4vmlk3cyXaBcNLKfmLOjEeX5voVesQ8+sJljD4gTx4wTw?=
- =?us-ascii?Q?uCqfH/94HcpMVustEhutDDJLZim3qwC8k1P9rB2c9dOwLoROyURlUMLTI8MM?=
- =?us-ascii?Q?ntqQjpZaRiyBDjvxs3Y0OwTm8Siz5pSuYeZf0gHZD7MI4SOe9nHXyNS5kGa/?=
- =?us-ascii?Q?5fkSoCm5uAY1hC0MLtQp+DI0HRBYqhPtf+ZUM7M0M2UG0zLTfjlIpmejLO+G?=
- =?us-ascii?Q?68V4sqwWoEOCU4n9UDwXw8b6Er0UWA4R7GiIb2xdOX1hro5K1qDjbKFuGw/c?=
- =?us-ascii?Q?YzND7I5NoKD14aHiSRHaWHG57ARBtSqYYOBzN6k7/cvvmo6/de/QSSTbcFSL?=
- =?us-ascii?Q?NCpsF7YVIgKmm7b5SuuomyJ3BMnhAf0E9FMlBkBjoK5/dzV4Oklm4ZAlVRzC?=
- =?us-ascii?Q?3iQFJ8xOCbRqXorDxbRZPbjZcoAefhnxLaAu75H7/xyBWAuCJhYhwUet30CU?=
- =?us-ascii?Q?+5uvlA4oSpeMNOjGTW3+pA++3lOBhe3jH0y7a9HzWHgVsAML+b5pJVCQhPJo?=
- =?us-ascii?Q?4jxfQIHsgIYxYDrsqBtgG2nGHxe18bLeT+Stl/+48sqC8A8D6xBFSzIPxwbv?=
- =?us-ascii?Q?7A7DnhMQofLCkRcfwIn/b+u6qKxokZEASxVm56jO8FY+l6OChrpD1hx5pHQo?=
- =?us-ascii?Q?5lYC+vVJw1BZY7w8HPz+FGFWzVnqiKuJHVULpkavRrlQ2U4l+rbp0maKjuoN?=
- =?us-ascii?Q?GZ+uN45BOBxhXAbMy6YA/LgD4zOBhUCoDFNickL8klpNgAGcsMeYz0HzyUZg?=
- =?us-ascii?Q?zUcv8IqgYISNZhm88rQg4S9WO/65f6IuUjzLoNjwe4xf3RRzE36psxMirgt3?=
- =?us-ascii?Q?oTL504gpYN63wvYJ66HGgpvV/o0y4s3trw/kAwgbZZQTAswBfmD5zlRBWmBk?=
- =?us-ascii?Q?eD87TSQ2awcGH4XwdsikGjPXST7uKDKdnUbj39AoJrhHcNkSOVSFKRaAvENc?=
- =?us-ascii?Q?AG4SflZgkDDpoQa1Xm4ZNAtBriorRCgnY6CG0l6iQ9cfT8mYqShF?=
-X-OriginatorOrg: oss.nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: f3db80cc-e9e8-4053-0c89-08dec7d07121
-X-MS-Exchange-CrossTenant-AuthSource: GV2PR04MB11799.eurprd04.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 11 Jun 2026 15:45:19.9932
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: m+YGFU1KbU6MBM9fd5C3Cfwjje2iqHAmBUyINXU/oYIZtmrjSU+FPPIXT52Ys2JjB1/tBJtXuZp8BIOdIS4N0ykB525troQPzn19N7PzVzcMWqNyALpAvfNm2zpDuZUN
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: VI0PR04MB11818
+References: <20260611035245.13439-1-rosenp@gmail.com> <20260611035245.13439-12-rosenp@gmail.com>
+ <airV8Wm3yyY4hTQP@lizhi-Precision-Tower-5810>
+In-Reply-To: <airV8Wm3yyY4hTQP@lizhi-Precision-Tower-5810>
+From: Rosen Penev <rosenp@gmail.com>
+Date: Thu, 11 Jun 2026 09:08:32 -0700
+X-Gm-Features: AVVi8Cd07wPKVB64G5JpfGCeLGfe3Dlz_RdVLBiqMrIH7Js6qZaJUTS5GxMh3qw
+Message-ID: <CAKxU2N9QNMo9u0s_MfYG8qfiWsHqwuB9ax_qbf6gbxA0syOiaw@mail.gmail.com>
+Subject: Re: [PATCHv4 11/15] dmaengine: fsldma: convert channel allocation to devm_kzalloc()
+To: Frank Li <Frank.li@oss.nxp.com>
+Cc: dmaengine@vger.kernel.org, Vinod Koul <vkoul@kernel.org>, 
+	Frank Li <Frank.Li@kernel.org>, Zhang Wei <zw@zh-kernel.org>, 
+	Nathan Chancellor <nathan@kernel.org>, Nick Desaulniers <nick.desaulniers+lkml@gmail.com>, 
+	Bill Wendling <morbo@google.com>, Justin Stitt <justinstitt@google.com>, 
+	open list <linux-kernel@vger.kernel.org>, 
+	"open list:FREESCALE DMA DRIVER" <linuxppc-dev@lists.ozlabs.org>, 
+	"open list:CLANG/LLVM BUILD SUPPORT:Keyword:b(?i:clang|llvm)b" <llvm@lists.linux.dev>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On Wed, Jun 10, 2026 at 08:52:45PM -0700, Rosen Penev wrote:
-> Fix kernel-doc warnings where the documented parameter names
-> (@chan) no longer match the actual function signatures (@dchan),
-> and add the missing @cookie and @txstate parameters to
-> fsl_tx_status.
+On Thu, Jun 11, 2026 at 8:36=E2=80=AFAM Frank Li <Frank.li@oss.nxp.com> wro=
+te:
 >
-> These are pre-existing mismatches that predate the recent
-> devm conversion series.
+> On Wed, Jun 10, 2026 at 08:52:41PM -0700, Rosen Penev wrote:
+> > Convert fsl_dma_chan_probe from kzalloc_obj() to devm_kzalloc(), tying
+> > the channel lifetime to the parent DMA device. Remove kfree(chan) in bo=
+th
+> > the probe error path and the remove function.
+> >
+> > Assisted-by: opencode:big-pickle
+> > Signed-off-by: Rosen Penev <rosenp@gmail.com>
+> > ---
 >
-> Assisted-by: opencode:big-pickle
-> Signed-off-by: Rosen Penev <rosenp@gmail.com>
-> ---
-
-Can you put this simple fix to first patch? So it can pickup easily if
-need pick subset.
-
-Reviewed-by: Frank Li <Frank.Li@nxp.com>
-
-Frank
->  drivers/dma/fsldma.c | 10 ++++++----
->  1 file changed, 6 insertions(+), 4 deletions(-)
+> If use flexible array, needn't allocate channel
+Not sure what you mean. A regular array avoids that as well.
 >
-> diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
-> index 157db416eaaf..694c1b12bf2b 100644
-> --- a/drivers/dma/fsldma.c
-> +++ b/drivers/dma/fsldma.c
-> @@ -685,7 +685,7 @@ static void fsldma_cleanup_descriptors(struct fsldma_chan *chan)
+> Frank
 >
->  /**
->   * fsl_dma_alloc_chan_resources - Allocate resources for DMA channel.
-> - * @chan : Freescale DMA channel
-> + * @dchan : Freescale DMA channel
->   *
->   * This function will create a dma pool for descriptor allocation.
->   *
-> @@ -742,7 +742,7 @@ static void fsldma_free_desc_list_reverse(struct fsldma_chan *chan,
->
->  /**
->   * fsl_dma_free_chan_resources - Free all resources of the channel.
-> - * @chan : Freescale DMA channel
-> + * @dchan : Freescale DMA channel
->   */
->  static void fsl_dma_free_chan_resources(struct dma_chan *dchan)
->  {
-> @@ -878,7 +878,7 @@ static int fsl_dma_device_config(struct dma_chan *dchan,
->
->  /**
->   * fsl_dma_memcpy_issue_pending - Issue the DMA start command
-> - * @chan : Freescale DMA channel
-> + * @dchan : Freescale DMA channel
->   */
->  static void fsl_dma_memcpy_issue_pending(struct dma_chan *dchan)
->  {
-> @@ -891,7 +891,9 @@ static void fsl_dma_memcpy_issue_pending(struct dma_chan *dchan)
->
->  /**
->   * fsl_tx_status - Determine the DMA status
-> - * @chan : Freescale DMA channel
-> + * @dchan : Freescale DMA channel
-> + * @cookie : DMA transaction identifier
-> + * @txstate : DMA transaction state
->   */
->  static enum dma_status fsl_tx_status(struct dma_chan *dchan,
->  					dma_cookie_t cookie,
-> --
-> 2.54.0
->
+> >  drivers/dma/fsldma.c | 12 +++---------
+> >  1 file changed, 3 insertions(+), 9 deletions(-)
+> >
+> > diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
+> > index e4a3315a7d9d..0df09789187d 100644
+> > --- a/drivers/dma/fsldma.c
+> > +++ b/drivers/dma/fsldma.c
+> > @@ -1114,11 +1114,9 @@ static int fsl_dma_chan_probe(struct fsldma_devi=
+ce *fdev,
+> >       int err;
+> >
+> >       /* alloc channel */
+> > -     chan =3D kzalloc_obj(*chan);
+> > -     if (!chan) {
+> > -             err =3D -ENOMEM;
+> > -             goto out_return;
+> > -     }
+> > +     chan =3D devm_kzalloc(fdev->dev, sizeof(*chan), GFP_KERNEL);
+> > +     if (!chan)
+> > +             return -ENOMEM;
+> >
+> >       /* ioremap registers for use */
+> >       chan->regs =3D of_iomap(node, 0);
+> > @@ -1200,9 +1198,6 @@ static int fsl_dma_chan_probe(struct fsldma_devic=
+e *fdev,
+> >
+> >  out_iounmap_regs:
+> >       iounmap(chan->regs);
+> > -out_free_chan:
+> > -     kfree(chan);
+> > -out_return:
+> >       return err;
+> >  }
+> >
+> > @@ -1215,7 +1210,6 @@ static void fsl_dma_chan_remove(struct fsldma_cha=
+n *chan)
+> >       tasklet_kill(&chan->tasklet);
+> >       list_del(&chan->common.device_node);
+> >       iounmap(chan->regs);
+> > -     kfree(chan);
+> >  }
+> >
+> >  static void fsldma_device_release(struct dma_device *dma_dev);
+> > --
+> > 2.54.0
+> >
 
