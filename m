@@ -1,58 +1,58 @@
-Return-Path: <linuxppc-dev+bounces-22467-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22468-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 14221CD98C6
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Jun 2026 05:35:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 14686CD8CB2
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Jun 2026 05:35:18 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gbWZ05gnRz3br5;
-	Thu, 11 Jun 2026 15:35:04 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781147861;
-	cv=none; b=Ni4UySFOnlT2WRQIMNDQY+xAIQ2cexmuRA+LhvOSVfehnPPjVJLIcQ6knrVXNPwwlV+tKcpYOo/7opSUcpRId9nUJ9gtlvX180l8qRMtm/0BwWZtDaeqy+9fuPbgAA1FvCWdeqwq0X77llzx5Geujxlcr/xo01bN1zeCqIdUINkgVmYvZnHfLf6xtBmZvdHsF54iqLlGGPJmi4/R87aD+sYmDJl5E2TXSGOQOZSptu2tPsz3vVpazMTegLnOaelT1hyizXCqM6T28iimQF2lLysz2m2ngKJGTczbsnS24wfntIE4tNOi2YGEIXAkPeUXCz+CS24Jhr3umnNDhVLlBg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gbWZD5mjwz3br5;
+	Thu, 11 Jun 2026 15:35:16 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781147901;
+	cv=none; b=YGVnymwdgRxbumHngIqBPhDXI94Pe2Z0fcY+tiCg1/3DVZbhZrXo9rrN730+5cKLwdcQ5eBLLLml7JO5DxiryiqNHFKZljshPAXSAFSTAqZVPQteWdLpdNxOER3hFfJDw/w5N3hmZJU29uCQ+Eztd8ZAGR+pgeDgfhc/h9yW+oGBoTTcrjsrwQOqY8DGGTM0s6PWJYDO/3dh6VOkIlF+DP/5eJljr0Aa5JMjorJVqgkNUZnph4nNNVcUmwJgxUEF34BeKDp1ASJ2o109xHsN5IeDu8ih2I/18rJ7r4gfqyQkgHO6UuU2pA6FKJD74rPYcWklg2lZ5mgCgKhSnzKJKQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1781147861; c=relaxed/relaxed;
-	bh=FLooqN0yndNNSOMAEv1OhI/neTi7ZUfo9M9dFDLWUXk=;
+	t=1781147901; c=relaxed/relaxed;
+	bh=/x68ABRg379J30fMcenonWGwnmir0RuQ5ej/rkgPavY=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=h1SAHJlas7iN9QXcfqvfS3Q3kAxfUM/X3skys76mu+TC6ZK8UmLPDT6LsZquGe5VTLNPWd/j2B8vSePrbt/prSjFM+OmeSNKDRfJ6dASi2GC5nONjd9Q8ynh1LLpgCAt+N9Qtp/gbuSGpGvbMJcJC0kFy5qrqVrR4PzR3FX1aJsJRZIyxOaH0+iNBdm53g1fi3v9sE9IXSVew8OeHSCapFYvPtrHcHhBoj3zMEtHUZRy4w3fI2lJ7nKgQSj3C+vgqNOx14jxGqeP1i2sDJhIOYlfXABHAcfF7GToT6Fxf9R/PAVexdyYdja1ZpDVdYEGLR/6zg4g+3d+3J0aNDW+Jw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ociBo8my; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=chrisl@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 To:Cc:Content-Type; b=Lgwt+hOm9rqo5U5wlGyhQRoErEWx3bBjaYXEPHlToy1OSdnR5JFkWb+ursIbNBvp9cfxFKSqUwAp/d5eJxxuIzBKTE62dXZw6N9NQFJvwb+QAwJvZB6YUWkF5Gt/Y7EBrfohudNbZ7YChn28IKVKEbAbTSSAwqI9tFlwp03GOG5JrQ0P7MtV2s/uNzVwlX2t1zcZV6/Bz2ulS8mnFcyVH61NvLZd6p/h8mMV1/TWxG+fW6yDuVhdRzsWYXyWdMFrB0U54xYIvM+uIPOSSbxqiz9I5+6XBog0MgvZORXC51U/SWsU8AN7HZ+0tG0YlhfZ33F6Bg7Xbg7i8gKAoMcYkg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=hAgP2nUk; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=chrisl@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ociBo8my;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=hAgP2nUk;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=chrisl@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=chrisl@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gbSWS3zkZz2xl6
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jun 2026 13:17:40 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gbSXD4bylz2xl6
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jun 2026 13:18:20 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 28A7660208
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jun 2026 03:17:37 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D3F8F1F00893
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jun 2026 03:17:36 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 3CF7160208
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jun 2026 03:18:18 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E79201F00898
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jun 2026 03:18:17 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1781147856;
-	bh=FLooqN0yndNNSOMAEv1OhI/neTi7ZUfo9M9dFDLWUXk=;
+	s=k20260515; t=1781147897;
+	bh=/x68ABRg379J30fMcenonWGwnmir0RuQ5ej/rkgPavY=;
 	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=ociBo8myi7nMA486WCJzTn9Ba+l0h3FmAOM+NUMm7gfUh7e6tTolanB0q1Ny0TeFX
-	 Lo5t5AeDsneWeLLNICX9fdslBly5TkGNtLDKKI2y9x7aS9QaGcaDkXCzJunaRyDesO
-	 wMRnNTwlX9xWklDReE7Qn8q3rFTkhUdKoBEKJke7VjWb5+PyU5dA8bMpaUsDr8DD7e
-	 jHZ/6nnxvVWE5KFaOjNe61/BzaG1xkMnEOoJ5Gz7VL+R6+KX1UPSjv8amr73M4S73l
-	 GpDzNwZCKSkzKvvFn09eZEjUieAb+C8aVXm8spcE/EoYQZEJEdJZ/zrAyOAI3T42cv
-	 2EH3S7cPGM5MA==
-Received: by mail-yx1-f42.google.com with SMTP id 956f58d0204a3-66077e888b2so7519556d50.3
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jun 2026 20:17:36 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AFNElJ8qxRGOdsJLpSBwbfsbmIJZwIVKPSVvRXLp/GbaxOwOWn+e3Y7e/kAL02gVfLznzw0/jhwyirHfqR1cpMg=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YzNhztL93Ap3u89Ewpw8KThX3M2jiqJn++qLWwClH19tH9eP+50
-	ZlVg6cDPKJaWQrVgxfiUuAqc8qViT9bxCTva8OXW0kBSPlyZzr1CdJ/AbOfqT6TfKy0MO1XtqKY
-	cnJi2Drmfth3KEmDDiPZy6gS0TnenO0KI/Mw5SHarWA==
-X-Received: by 2002:a05:690e:1555:20b0:660:5a88:6445 with SMTP id
- 956f58d0204a3-66269a1c8d5mr623151d50.63.1781147856233; Wed, 10 Jun 2026
- 20:17:36 -0700 (PDT)
+	b=hAgP2nUk0OsKgS7OORWG7+8FeDP/7/EsmlwVRvn9Rdp/9dagBh9SPD1zS+CINg+wX
+	 ojlMkPCmQuONG+HCsx9MPU3vzvg6uZPIpQGZFvIrIqYXLY60aXfY7k752SkDqUP0Br
+	 ogZ425Ye619aRzc/Ft5a3JfVzDwyUroUpDsAI+Dks8bqvZxWphBNirRnislevqdmIk
+	 yyXU8DXC+Y75tSzBefrK0rjPZsChJERPST/U+//ggPTyGdy3Au0ZAJaz0ML/rNJgeA
+	 IUIs/qCKvfSSVR29bj9cJDMjyEYah6KQ+FXHw7RIf5HjksjsG2xoT9sovPnF0i/tlB
+	 ciUlRkH+c/k/w==
+Received: by mail-yx1-f47.google.com with SMTP id 956f58d0204a3-66061993294so7888694d50.3
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jun 2026 20:18:17 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AFNElJ+8dNiU00K8W51a8dczyIqCMW5hV7/jh8Nj3Y4SxmGYLE8rJanuR61UCTbTpe0fWh3J8LmFRNWZcSr2XcI=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YyIRXutbHoVU+S2DaRqIyVJC8f29nUARiEFIs7cKHRITEtFKOId
+	SPHnrFfrNyopz+BkDgmeyOBoSUjq4GLM8m3MUnBTR0mxiWtwhlnhlqEWH7RNnwzW6343saomVTb
+	JyE8f7ccmgrHtWnW3VxiKHN1E0sco9tLf1QTaejrdtw==
+X-Received: by 2002:a05:690e:4087:b0:660:651a:26e2 with SMTP id
+ 956f58d0204a3-662696264aemr832644d50.13.1781147897429; Wed, 10 Jun 2026
+ 20:18:17 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -66,18 +66,16 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <cover.1781000840.git.ritesh.list@gmail.com> <68591daf0d679e5a0072d63751f187d14613e2b0.1781000840.git.ritesh.list@gmail.com>
-In-Reply-To: <68591daf0d679e5a0072d63751f187d14613e2b0.1781000840.git.ritesh.list@gmail.com>
+References: <68591daf0d679e5a0072d63751f187d14613e2b0.1781146877.git.ritesh.list@gmail.com>
+In-Reply-To: <68591daf0d679e5a0072d63751f187d14613e2b0.1781146877.git.ritesh.list@gmail.com>
 From: Chris Li <chrisl@kernel.org>
-Date: Wed, 10 Jun 2026 20:17:24 -0700
-X-Gmail-Original-Message-ID: <CACePvbXDW-euoxVta8SL8gWG1L9WRVdid0PeenQsMzuBZbLb1w@mail.gmail.com>
-X-Gm-Features: AVVi8CeRjfh7lIAOBd_MgIZBBjqz3E5dbnm1fw9CUyM3Tu5c7QEaUgnKV4cNBlY
-Message-ID: <CACePvbXDW-euoxVta8SL8gWG1L9WRVdid0PeenQsMzuBZbLb1w@mail.gmail.com>
-Subject: Re: [RFC 1/4] include/linux/swap.h: Remove unused leftovers
+Date: Wed, 10 Jun 2026 20:18:06 -0700
+X-Gmail-Original-Message-ID: <CACePvbV5StK2W47UsoVBM9V_XPoFfd1UMfS+QS_j3jfLvrk9vQ@mail.gmail.com>
+X-Gm-Features: AVVi8CdqmWc_pAJZ1j0CGRdRempowIcbT1sudR1BZVzbc-u16prEzm_YyQdKOVY
+Message-ID: <CACePvbV5StK2W47UsoVBM9V_XPoFfd1UMfS+QS_j3jfLvrk9vQ@mail.gmail.com>
+Subject: Re: [PATCH v2] include/linux/swap.h: Remove unused leftovers
 To: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
-Cc: linux-mm@kvack.org, Madhavan Srinivasan <maddy@linux.ibm.com>, 
-	Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
-	Christophe Leroy <chleroy@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, 
+Cc: linux-mm@kvack.org, Andrew Morton <akpm@linux-foundation.org>, 
 	Kairui Song <kasong@tencent.com>, Kemeng Shi <shikemeng@huaweicloud.com>, 
 	Nhat Pham <nphamcs@gmail.com>, Baoquan He <baoquan.he@linux.dev>, Barry Song <baohua@kernel.org>, 
 	Youngjun Park <youngjun.park@lge.com>, David Hildenbrand <david@kernel.org>, linuxppc-dev@lists.ozlabs.org, 
@@ -85,26 +83,30 @@ Cc: linux-mm@kvack.org, Madhavan Srinivasan <maddy@linux.ibm.com>,
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Tue, Jun 9, 2026 at 6:20=E2=80=AFAM Ritesh Harjani (IBM)
+On Wed, Jun 10, 2026 at 8:09=E2=80=AFPM Ritesh Harjani (IBM)
 <ritesh.list@gmail.com> wrote:
 >
-> This removed unused leftovers most of them are forward structure
+> This removed unused leftovers, most of them are forward structure
 > declarations. Also removes SWAP_BATCH macro which isn't used any
 > where in the code.
 >
 > Found these during manual code review.
-
-Thanks for the patch.
-
-Obvious correct.
+>
+> Reviewed-by: Barry Song <baohua@kernel.org>
+> Signed-off-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
 
 Acked-by: Chris Li <chrisl@kernel.org>
 
 Chris
 
->
-> Signed-off-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
 > ---
+> RFC -> v2:
+> - separated from the rest of the series (enable thp swap on PowerPC Book3=
+s64)
+> - RB from Barry
+> [RFC]: https://lore.kernel.org/linuxppc-dev/cover.1781000840.git.ritesh.l=
+ist@gmail.com/
+>
 >  include/linux/swap.h | 7 -------
 >  1 file changed, 7 deletions(-)
 >
