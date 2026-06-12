@@ -1,71 +1,80 @@
-Return-Path: <linuxppc-dev+bounces-22552-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22553-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4E2C0CD98CE
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jun 2026 11:50:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DAE11CD8CA8
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jun 2026 12:02:42 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gcHrs2CB3z2ykX;
-	Fri, 12 Jun 2026 21:50:37 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=192.198.163.13
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781265037;
-	cv=none; b=LY7VFhKP32774u2M+3p6MoVGBTFtkS+JefOPLdsp1GoP8xAjtJkdgWCarwKVcJAUUPPKYZMycwe+DjePb2mBu3t84SnMhj2UUNRh9ZDqxKVH3l7UjTgg92h902QhU0wvbW5/KrhC0jl8GDHOIN92oIQSdGn18SJSoOH6i19WgFvMAYm6ipqfTEbkfQNiDgdLGtYyApywOu2yxt4IIKkmBraAQFlbR0ek7ty3B7RsRmr7hHDqDxthE3rwnRJePucCVjFX/VUABk6mtyuR/m7qXTEG4cO1fB8QFzyuNVyu6r7qUyNNLuZ+eWYjekXTeqXW25c1NSFgGKCeEH1EUsEu6w==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gcJ6n1PPlz2ykX;
+	Fri, 12 Jun 2026 22:02:41 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781265761;
+	cv=none; b=H9fHajxsWurXKaXgJ1saF5cCCs7cWCBJOh5pKS0j7bb5Ej2g04te4cxqlF6RF/f/IBTGVuXz4RdnUwskjWsyYmR3XkoFNLbI1GdPBYglVIuf/XrClKyolFhuLQMeir9K36dkw25STdK53OcWHvtHLB0YpI0cHutxhyd6CjajWMTSHYBUdDBja62a+Na062yyesKmKWeXDVWZSDdJJFAUW2Hqx2f5sCnj4E5MQJNcFNaRvyDrgsuFncSgVX34NzF+x5au0caIa1mqWficvUweBVtgI4R15yaJTvIG9sRsrbmZL7GBu2DhlHCueeYen+ug2Lg4ZAc7Fuq9dAt+9lW3xw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1781265037; c=relaxed/relaxed;
-	bh=5rEICosf2HVUzSwyySyvGPDBPt1a38j13M9yF66Iz3o=;
-	h=From:Date:To:cc:Subject:In-Reply-To:Message-ID:References:
-	 MIME-Version:Content-Type; b=BQQ/6bpB+C0LO8efGnKzjY4UM+L10uPD1T9u8yqIcGwCrLltWwpqY5KwJ9KV/GFRHIlgJFBWjB09AJ1u1YlKeHACD8hyFf1GHb4Tpk/Ni+LaxpD9lCxRzNPbe7V98ti5G7D0K+vEwZXfL+4pNJVsDz+nN1KWePGpfVNef1Vnqd8MAX9b/070pk4ELk5ZxqfCqptxuO3o1UVU4vIsRIvCJgEaOYYUzNNGP6yYKeFI5ePOqyO04PPFKN8bYzSt574B+QmMExJzOZgW0cEY8BEZvFCcr8ZqGEyo4GP0wVNwn7j5uyPFwVPIJ5MzTk1wIFryaH0h7OYBQc0L7pKbXxwDGg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=Mr2ccnwJ; dkim-atps=neutral; spf=pass (client-ip=192.198.163.13; helo=mgamail.intel.com; envelope-from=ilpo.jarvinen@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+	t=1781265761; c=relaxed/relaxed;
+	bh=wz2ikP3Nw2GSt6Y/722QnYvuk7BcnHAtqYwQfInxAtw=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=NFSWUhLBNJLiF6zYw3s/MjipPUXQNpFx/3YQf9B9CenJlP1qDqPntdzdvUljBqgApQBGf4OnjYDuvZ0KHn0aL1uaclnocFffU5XmHHDkKHiNZGepCoyKuIk7Fa5+Y7a+7b2B5nIwkx9Wn35UH2eYC/3a7ZyIKVRWBe4L7jkrV3V697lHwVqd7es5GCMNFS5M6gWvPg8A5raRaHUt6N812JQHZMZQ9Nih5jshhcOaT7OIDF+ekhAonb2yFNwdc5m9d6qFJ+k2IGJe8YK0V327aKRFnD0wsH3rTv4xbuwxwTUOmH3tLx/8VK0VSiU7nJmn+kueIBs0MDk50f7/hx8XUw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=AkuPZp+u; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sayalip@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=Mr2ccnwJ;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=AkuPZp+u;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.intel.com (client-ip=192.198.163.13; helo=mgamail.intel.com; envelope-from=ilpo.jarvinen@linux.intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.13])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sayalip@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gcHrn2T2tz2yhY
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jun 2026 21:50:30 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1781265034; x=1812801034;
-  h=from:date:to:cc:subject:in-reply-to:message-id:
-   references:mime-version;
-  bh=J6GLAr2FW67tGJ9wFG3aEziqOWOjQ80L6GvpcFfNQns=;
-  b=Mr2ccnwJ9cDiQFI95rIDEp0snu5g6U2CRUYGhdAbsSK+0b7a7Zs5Oh2F
-   i7ft27dV04AJFXFPnDYuMzp4CqtL9ZGztE2XS98wKKpNDZBngzvrbVkeU
-   sXBYAWFOTf/Tgsi2+tAHwn3jdUQoZybn3H213b0N4uSxlmVyKw74XiMqk
-   zsP/OGH6dc9iwS/7AflNE6Hwq2yfEjuQD/ho8rT+r35Det79t67Fyhna6
-   3ypwdNvk4/ezyFPK3skRP1xdQOZfUBzvVtWK5qUsfeU2MtKKAVhBQk7Xy
-   FAd1Xe2k5t+PmiXvB18XubON0viGS3mX76h9yPdODvn9o4xLKpGwu2SEi
-   g==;
-X-CSE-ConnectionGUID: bUhA9HaiTZiu1AvpHqt9Qw==
-X-CSE-MsgGUID: Na+spDCZQP6CyAznWaLBWg==
-X-IronPort-AV: E=McAfee;i="6800,10657,11813"; a="84661982"
-X-IronPort-AV: E=Sophos;i="6.24,200,1774335600"; 
-   d="scan'208";a="84661982"
-Received: from fmviesa006.fm.intel.com ([10.60.135.146])
-  by fmvoesa107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 12 Jun 2026 04:50:25 -0700
-X-CSE-ConnectionGUID: 9qzTIavXSZmlXNMa03/diA==
-X-CSE-MsgGUID: njm1IhwSS0GiY/IEb9WuOg==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.24,200,1774335600"; 
-   d="scan'208";a="242420679"
-Received: from ijarvine-mobl1.ger.corp.intel.com (HELO localhost) ([10.245.245.78])
-  by fmviesa006-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 12 Jun 2026 04:50:20 -0700
-From: =?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>
-Date: Fri, 12 Jun 2026 14:50:17 +0300 (EEST)
-To: Bjorn Helgaas <bhelgaas@google.com>
-cc: linux-pci@vger.kernel.org, Shawn Jin <shawn.jin@asteralabs.com>, 
-    linuxppc-dev@lists.ozlabs.org, Madhavan Srinivasan <maddy@linux.ibm.com>, 
-    Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
-    LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 10/11] PCI: Lower bound bridge window alignment
-In-Reply-To: <20260429122617.7324-11-ilpo.jarvinen@linux.intel.com>
-Message-ID: <4a35f669-b13b-c07a-fbd6-a8ea1ce9a38b@linux.intel.com>
-References: <20260429122617.7324-1-ilpo.jarvinen@linux.intel.com> <20260429122617.7324-11-ilpo.jarvinen@linux.intel.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gcJ6l61NKz2yhY
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jun 2026 22:02:39 +1000 (AEST)
+Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 65C005hg3872908;
+	Fri, 12 Jun 2026 12:02:30 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:date:from:message-id:mime-version
+	:subject:to; s=pp1; bh=wz2ikP3Nw2GSt6Y/722QnYvuk7BcnHAtqYwQfInxA
+	tw=; b=AkuPZp+ud3SnDNt7fu4CTVz8ENODxTMqvCXaRRdPjcAbNAHTTCv2mHbFo
+	x+YsVQu8iSTdy0sSBgW3vzFEZGA+oPd62Nz7BeOQk/fJZdnIbMP/z1C3mRHQRtQg
+	WAJrWsbA5d6ImxW3dy12Yko+DiUsJe2jVxfvzuRQ7N9+RJwpEDSTQVZMiFT1Z5H4
+	TBAbrBxU/54T+uR7OroQ5ivBqw2PwMnHs7YDNhq1ifJN0529maojHPWgduJu+y04
+	JEMVU2DJcISDP1ZQTP03HC5AFNSTUJzOrn4Aa/yAY/C2gwz8kPBDoFU3LSmfIgUW
+	8c6GSTTMrELQW5QTqP27bbSTn/ffQ==
+Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4eqe8f0swu-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 12 Jun 2026 12:02:29 +0000 (GMT)
+Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma11.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 65CBnhu2031852;
+	Fri, 12 Jun 2026 12:02:28 GMT
+Received: from smtprelay01.fra02v.mail.ibm.com ([9.218.2.227])
+	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4eqe09qq6u-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 12 Jun 2026 12:02:28 +0000 (GMT)
+Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
+	by smtprelay01.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 65CC2MjH37028262
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Fri, 12 Jun 2026 12:02:22 GMT
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 4F30D2004B;
+	Fri, 12 Jun 2026 12:02:22 +0000 (GMT)
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 29DC420040;
+	Fri, 12 Jun 2026 12:02:20 +0000 (GMT)
+Received: from li-3f69264c-2ce6-11b2-a85c-c3f414d24014.ibm.com.com (unknown [9.124.211.62])
+	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Fri, 12 Jun 2026 12:02:19 +0000 (GMT)
+From: Sayali Patil <sayalip@linux.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org, maddy@linux.ibm.com,
+        Christophe Leroy <chleroy@kernel.org>,
+        Michael Ellerman <mpe@kernel.org>, Nicholas Piggin <npiggin@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Ritesh Harjani <ritesh.list@gmail.com>,
+        Mahesh Salgaonkar <mahesh@linux.ibm.com>,
+        Sourabh Jain <sourabhjain@linux.ibm.com>
+Subject: [PATCH v2] powerpc/fadump: define MIN_RMA in bytes value to fix overflow
+Date: Fri, 12 Jun 2026 17:32:18 +0530
+Message-ID: <a9d56fe88218a7034296f1974568543a0ce2d973.1781265400.git.sayalip@linux.ibm.com>
+X-Mailer: git-send-email 2.52.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -79,64 +88,111 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="8323328-143881065-1781265017=:1266"
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjEyMDEwNiBTYWx0ZWRfX4jGFIlIxTBUN
+ 2GRn0vZljHjZY5kDqP1RI1eeoOksckZsnED0EusRtGImrOFmtyqCXbKMuIGlWLffEMmosDRuKsc
+ jhT1lJG62n7sHnzNC+5GBbAHbY+wD/GQc/L7RP9K81ZpDxxSMuU0oXjZDRQPnQEE9vMTTavyslF
+ 3IMC7zGXpuWxalyuW5zHyYPdn9ElMaQGbGfbeJvg9HIXHxGmQ01wR4van11syOLcUiWBnwpF/EH
+ kXKBa9sbcvrk8QLRBsc3TLAC4kc9FtKIfRjMbVVzx0fIJVj1bFhRvnjwwC2rJgLu/vQh3MFve8f
+ vui8qSBS9+MsnOezWMRQ09uY+zrUtflJbqLeFK0WMzvMHWG21JBiGdPvK8QwlQeIRq4CBSLNMk4
+ pR31Lu56QDy07Wr93ULen7aGrRlk24tPD4I5aZLa61HrOLmXUjJvMmSKVInua2/FzqPuLUI8UoK
+ P6NoDpGS1UqWE8QKVag==
+X-Authority-Analysis: v=2.4 cv=dr7rzVg4 c=1 sm=1 tr=0 ts=6a2bf555 cx=c_pps
+ a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
+ a=FelO9ux0wxsA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
+ a=U7nrCbtTmkRpXpFmAIza:22 a=VwQbUJbxAAAA:8 a=VnNF1IyMAAAA:8
+ a=1i_jHMy692ru-q50ErsA:9
+X-Proofpoint-ORIG-GUID: fqA2s5MBrWjCBfi2dtlvnK_CUggccUmN
+X-Proofpoint-GUID: QIMmEXVxx0_Gw62XlHNBI8bsbC42R_z2
+X-Proofpoint-Spam-Info: AW1haW4tMjYwNjEyMDEwNiBTYWx0ZWRfXylL2bUj8I+KG
+ VOfXNeyPvu2IKNgv6vNmLvZOLqw+5VVe14xHYKW/JLeGQ0ptEIqGnfWsRNjK+iOkb7nnPntT36a
+ cskPgmcePkZKiiopTTuYWhfg/uibaLI=
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
+ definitions=2026-06-12_01,2026-06-12_03,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ spamscore=0 adultscore=0 suspectscore=0 priorityscore=1501 phishscore=0
+ clxscore=1015 bulkscore=0 impostorscore=0 lowpriorityscore=0 malwarescore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2606040000 definitions=main-2606120106
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+The MIN_RMA size checks in fadump_setup_param_area() use
+(MIN_RMA * 1024 * 1024), which is evaluated in int and can
+overflow when MIN_RMA is increased to values such as SZ_2G.
+This triggers compiler warnings such as:
 
---8323328-143881065-1781265017=:1266
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+warning: integer overflow in expression of type 'int'
+results in '0' [-Woverflow]
 
-On Wed, 29 Apr 2026, Ilpo J=C3=A4rvinen wrote:
+Define MIN_RMA directly in bytes using SZ_1M and update the
+callers accordingly. This avoids repeated unit conversions and
+prevents integer overflow.
 
-> pci_resource_alignment() does not consider bridge windows special,
-> yet their alignment is subject to different requirements from BAR
-> alignment.
->=20
-> Add lower bound to bridge window alignment to help callers out to
-> always have large enough alignment.
->=20
-> Signed-off-by: Ilpo J=C3=A4rvinen <ilpo.jarvinen@linux.intel.com>
+Also convert MIN_RMA back to MB when populating the firmware
+architecture vector, since firmware expects the value in MB.
 
-Hi Bjorn,
+Fixes: b7bb46062457 ("powerpc/fadump: fix additional param memory reservation for HASH MMU")
+Suggested-by: Christophe Leroy (CS GROUP) <chleroy@kernel.org>
+Signed-off-by: Sayali Patil <sayalip@linux.ibm.com>
+---
+ arch/powerpc/include/asm/prom.h | 4 +++-
+ arch/powerpc/kernel/fadump.c    | 4 ++--
+ arch/powerpc/kernel/prom_init.c | 2 +-
+ 3 files changed, 6 insertions(+), 4 deletions(-)
 
-Could you please pull this change and the subsequent one, the commits in=20
-pci/resource:
+diff --git a/arch/powerpc/include/asm/prom.h b/arch/powerpc/include/asm/prom.h
+index f679a11a7e7f..f4991d10d89e 100644
+--- a/arch/powerpc/include/asm/prom.h
++++ b/arch/powerpc/include/asm/prom.h
+@@ -12,12 +12,14 @@
+  * Updates for PPC64 by Peter Bergner & David Engebretsen, IBM Corp.
+  */
+ #include <linux/types.h>
++#include <linux/sizes.h>
+ #include <asm/firmware.h>
+ 
+ struct device_node;
+ struct property;
+ 
+-#define MIN_RMA			768		/* Minimum RMA (in MB) for CAS negotiation */
++/* Minimum RMA in bytes for CAS negotiation */
++#define MIN_RMA			(768ULL * SZ_1M)
+ 
+ #define OF_DT_BEGIN_NODE	0x1		/* Start of node, full name */
+ #define OF_DT_END_NODE		0x2		/* End node */
+diff --git a/arch/powerpc/kernel/fadump.c b/arch/powerpc/kernel/fadump.c
+index 501d43bf18f3..bb41150b363c 100644
+--- a/arch/powerpc/kernel/fadump.c
++++ b/arch/powerpc/kernel/fadump.c
+@@ -1759,10 +1759,10 @@ void __init fadump_setup_param_area(void)
+ 		 * 2. The range should be between MIN_RMA and RMA size (ppc64_rma_size)
+ 		 * 3. It must not overlap with the fadump reserved area.
+ 		 */
+-		if (ppc64_rma_size < MIN_RMA*1024*1024)
++		if (ppc64_rma_size < MIN_RMA)
+ 			return;
+ 
+-		range_start = MIN_RMA * 1024 * 1024;
++		range_start = MIN_RMA;
+ 		range_end = min(ppc64_rma_size, fw_dump.boot_mem_top);
+ 	}
+ 
+diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
+index f26e80cbc615..53503937de0e 100644
+--- a/arch/powerpc/kernel/prom_init.c
++++ b/arch/powerpc/kernel/prom_init.c
+@@ -1061,7 +1061,7 @@ static const struct ibm_arch_vec ibm_architecture_vec_template __initconst = {
+ 		.virt_base = cpu_to_be32(0xffffffff),
+ 		.virt_size = cpu_to_be32(0xffffffff),
+ 		.load_base = cpu_to_be32(0xffffffff),
+-		.min_rma = cpu_to_be32(MIN_RMA),
++		.min_rma = cpu_to_be32(MIN_RMA / SZ_1M),
+ 		.min_load = cpu_to_be32(0xffffffff),	/* full client load */
+ 		.min_rma_percent = 0,	/* min RMA percentage of total RAM */
+ 		.max_pft_size = 48,	/* max log_2(hash table size) */
+-- 
+2.52.0
 
-ae09d28ecbbc ("PCI: Lower bound bridge window alignment")
-cf996b886675 ("PCI: Return valid alignment for assigned resources")
-
-The rest of the changes in this series seem okay and can proceed if you're=
-=20
-okay with keeping a partial series.
-
-The reason for this request is the dev->bus vs dev->subordinate issue=20
-sashiko mentioned in its review.
-
-I've tried to come up with a solution to that but it has become so ugly
-I have not been very happy with it. Maybe there's no other way but the=20
-problem boils down with pci_min_window_alignment() having to be capable of=
-=20
-dealing two cases, each lacking one of the key pointers (bus or bridge=20
-dev):
-
-1) root bus without bus->self
-2) bridge without a subordinate bus struct (if subordinate bus' alloc=20
-   failed)
-
-Only way to solve that I could think of is passing both the bus and the=20
-bridge device to pci_min_window_alignment() and the related arch side=20
-function pcibios_window_alignment(). The ugliest parts then involve=20
-getting a bus pointer compatible with both of those cases, like this:
-
-=09struct pci_controller *phb =3D pci_bus_to_host(bus ? bus : bridge->bus);
-
-But it's too late in the cycle now to try even that, IMO, so better to=20
-wait to the next cycle.
-
---=20
- i.
-
---8323328-143881065-1781265017=:1266--
 
