@@ -1,67 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-22597-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22598-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B3243CD98CF
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jun 2026 22:18:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AF8C8CD98CF
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jun 2026 22:35:42 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gcYnn6G3rz2xdb;
-	Sat, 13 Jun 2026 08:18:53 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781302733;
-	cv=none; b=a/BRlAKdlkxjFXCE6rpocPloeYObbfkaWkB3p/TYlEgcV7B60+t1RxfuqYHaMBSneUpSk4jXL+H2HIH9JLk/71Ewsy749QGKpN/1t0AgSucHqZEM9r9UUnv17BzzOIP4+gDdlf/m3uosvgZjQIpXE45VD8ufk6sW/9QDewQ4RVjPNzwk/hIsLEAlYYtiUJzJy04NjaYdcAepDzjO+44rEESg3zaB3XGggKW9aPkmvilLkT7P5P5xc+gCYbNlFvQazxgyykwWnNcDQLpUh0gXAUoHFjVtd4D8fYD4Gpe+vxDeuMZHIycMeGknXqNCYaApxidS6Ue7w8LsDJYUEqB3hg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gcZ99168Jz2xjN;
+	Sat, 13 Jun 2026 08:35:41 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781303741;
+	cv=none; b=jYDjCWPCTvcPcKi7A+7UcJ4enH1XwMHKo0Q9/IYS5rrDvP9Nk4uhJCHKCY/yHocJqBCUo8qiWzzBt966dSb1peTXltDygCNnD7KpczIHtRaxszj9qtzlOrQzWMehuGdZaDV6dFKf2ZZvd6zb661v0PPj3cFvj1aT/E51n8f9yNgNcyQea2p2sbpYY57hYpzldufUefc1h6XcZRsOw8TYIa5SGee+GOuWTgEyPS8iY2mwRtarsFXINAD8els4LWOZ87FWN3Rye1yRGlXZ+SX+7VvRaC7aubCCvZgV30TY3szPvrXAor95KQ/VIhiF7jVYeOhXXrNsbNzZRwpuQYDxOg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1781302733; c=relaxed/relaxed;
-	bh=+EaqxrR/sV3bOU1Rowx551pwQAzOjjox3enBFC+z/Nc=;
-	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=JW2q/9MiJdrBAhkKJT9IB3sZKOcLa4ahCbuHThjRpstGnOIyo/dZbQ7y7OZr40vy+cQomqjhoz5dN2N9x/4tAKYhd3gfF88t+DeIqC87wxWwNXV+L2WW14Ox9jH1Pl8Kitq5JsOdogo+usAjyYYC8KzqwyD8SlQf9YCjvqWbSs1TFrH0wriuKLw4rgi7bNUEJzqg1YCS4yL4EMRhL4sZsdmmDPDrNscvjnX7YQhSAx7k0Q+ewYPqCxEWo3H7LUkOQGXS/ffNpH2w4HVyC8oX3Tsax9r9Bac69PGNB7Rdoh3LeE+OyRkI00T6f0jF/lLtJc0qAajtkwOlrI82NOYm9g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=MCcjGVU5; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1781303741; c=relaxed/relaxed;
+	bh=tcozaSNDxW287Z2KI+BjjJnFriV5XYqdoKxv9KEBfjs=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=C3s6VZMQxTAFgW1U8LHoGMivyRPZcm70wVWK5NTQEyq3PQIZHtJB73LQkdAxVNtV5z5/jEVV7fvHLrBtmnkmheO3DqITPABHeNX0FU8oELcqN8zblke8OA88byEw7eMwFi4820+tDJZyFK4+5gexprSwYg4Jq6PUIc+V30jLLXAaHEAWxTuTmTuaD2JXTVWAwXYdy2eSZb1LSJ8fPSd+1oOTiW3erF1TT5/XetJ8/AosOHkmTO71w+Gn/YutAj9uYRqpuKnSXI/p/W+RQif419u8jEpSURlN9HToKIuzccRSemvZMMoQTbHNZSHjhr8X4UGFH35ziJweBvaKJEEY7w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=i1ZZ7969; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=tyreld@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=MCcjGVU5;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=i1ZZ7969;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=tyreld@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gcYnl60Nzz2xYg
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Jun 2026 08:18:51 +1000 (AEST)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 4E08243B79;
-	Fri, 12 Jun 2026 22:18:48 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 03BC71F000E9;
-	Fri, 12 Jun 2026 22:18:43 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1781302728;
-	bh=+EaqxrR/sV3bOU1Rowx551pwQAzOjjox3enBFC+z/Nc=;
-	h=From:To:Cc:In-Reply-To:References:Subject:Date;
-	b=MCcjGVU5k6xblfjlm0hOAQ0LxniK+ioRseQAbGr0sTWq5Lvyq/kScY4vYXkb/bfHt
-	 whIPFKbPmP/Ai80uaaYsLEKZdkge2EV9bFQJ8FpSqRvTekmxqA2m4ENfJ45lDWb23x
-	 JRoKEzD8PwT3Gi7LFaSUE3fz9rV7bdQPQh8T50fB+l9V4vBBBVOZgZTotMERGRI2j+
-	 J/RNWyA2lumXc+UcKfnTHysZq0b5GRmfgSBSt73C0Kqcl+lcjT3N2TQ99nImUGUNVm
-	 X4iMalO4cRwCX3tnuh50dZRQ0NYuJVlja1KFyzwDKG4daTUmWSEXpYwa0KIMhdlG+8
-	 YIrtwz6f2NHEA==
-From: Mark Brown <broonie@kernel.org>
-To: Srinivas Kandagatla <srini@kernel.org>, Takashi Iwai <tiwai@suse.com>, 
- Liam Girdwood <lgirdwood@gmail.com>, Jaroslav Kysela <perex@perex.cz>, 
- Herve Codina <herve.codina@bootlin.com>, 
- Shengjiu Wang <shengjiu.wang@gmail.com>, Xiubo Li <Xiubo.Lee@gmail.com>, 
- Fabio Estevam <festevam@gmail.com>, Nicolin Chen <nicoleotsuka@gmail.com>, 
- Ray Jui <rjui@broadcom.com>, Scott Branden <sbranden@broadcom.com>, 
- Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>, 
- =?utf-8?q?C=C3=A1ssio_Gabriel?= <cassiogabrielcontato@gmail.com>
-Cc: linux-sound@vger.kernel.org, linux-arm-msm@vger.kernel.org, 
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
- linux-arm-kernel@lists.infradead.org, notify@kernel.org
-In-Reply-To: <20260608-asoc-of-node-scoped-cleanup-v1-0-9e3ac518dc2e@gmail.com>
-References: <20260608-asoc-of-node-scoped-cleanup-v1-0-9e3ac518dc2e@gmail.com>
-Subject: Re: [PATCH 0/3] ASoC: use scoped OF node handling in manual
- cleanup paths
-Message-Id: <178127725305.48375.17603847447471691265.b4-ty@b4>
-Date: Fri, 12 Jun 2026 16:14:13 +0100
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gcZ9765Tsz2xYg
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Jun 2026 08:35:39 +1000 (AEST)
+Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 65CCtGjI3872955;
+	Fri, 12 Jun 2026 22:35:22 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=tcozaS
+	NDxW287Z2KI+BjjJnFriV5XYqdoKxv9KEBfjs=; b=i1ZZ7969zhe5HD+UxnzS6Q
+	IW7bJYEWdTZdvVy5LMsJXnlldiN5s+7cMUx35f5awVxm6kO1zoC1xLTnYNGmCkAm
+	bSdifScmh8tPMll3wVz6po6CTlddaR4Xh+1NDORlcQNChhSAsBYcHqxENtWlN18H
+	E+asoNIbZ2utc302Tr0SGoXM6Mf99TCWdVUrCdCoQjo4OyXyu41xuk0HDmcYGCgZ
+	Cx9fp87a8NtwGeABsGWvnhaNq6NFaZ9P9ifW8JN2ox2DJddIQMGww3gZKPnzSZsu
+	w5HbcIEgWP9jBcOw6dILzF7G+5ZOnSy1/lOE+pgwvIJ10NwgBAnhCLeiJpsJciDA
+	==
+Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4eqe8f39vq-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 12 Jun 2026 22:35:21 +0000 (GMT)
+Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma23.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 65CMYarW003327;
+	Fri, 12 Jun 2026 22:35:20 GMT
+Received: from smtprelay02.dal12v.mail.ibm.com ([172.16.1.4])
+	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4eqe0a9xfe-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 12 Jun 2026 22:35:20 +0000 (GMT)
+Received: from smtpav06.wdc07v.mail.ibm.com (smtpav06.wdc07v.mail.ibm.com [10.39.53.233])
+	by smtprelay02.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 65CMZJ0G25625122
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Fri, 12 Jun 2026 22:35:19 GMT
+Received: from smtpav06.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 2102B58068;
+	Fri, 12 Jun 2026 22:35:19 +0000 (GMT)
+Received: from smtpav06.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id C50965803F;
+	Fri, 12 Jun 2026 22:35:17 +0000 (GMT)
+Received: from [9.61.160.241] (unknown [9.61.160.241])
+	by smtpav06.wdc07v.mail.ibm.com (Postfix) with ESMTP;
+	Fri, 12 Jun 2026 22:35:17 +0000 (GMT)
+Message-ID: <d99205f7-8467-4918-8102-4b84620fd0ff@linux.ibm.com>
+Date: Fri, 12 Jun 2026 15:35:17 -0700
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -75,63 +81,320 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-X-Mailer: b4 0.16-dev
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1663; i=broonie@kernel.org;
- h=from:subject:message-id; bh=6NdJ1oXu8X+yrUyYOh3BVEt16gq7UD6K3TfA3IfrptY=;
- b=owEBbQGS/pANAwAKASTWi3JdVIfQAcsmYgBqLIXBRNPXenH0pNh+GaHTYt582SCRLiGDStmcX
- CIiqu8x+JmJATMEAAEKAB0WIQSt5miqZ1cYtZ/in+ok1otyXVSH0AUCaiyFwQAKCRAk1otyXVSH
- 0KzSB/9EIxR68YF4xkDdQc5qt3LLq490icnYLlz3hS/NZYEltakjL8njExuQ3zcTJBfIUrJCoZe
- V1ON3uZ3j1Ea91FUKsiBqIRNWpfU9cOfYwKdezXVTXFbrtH8oYaas6j/H0fm3C3KFDrcx6OV62E
- veBD3U/6ovNL+EL/marF53J8tw5ujOw6s6ht+U6oO7M/aQqxpT59X0xh0pYOSN8xvvbEC0RIO14
- nE1lO2wTJVHs2UYC1pLy0fuJyexr2jtykNji0JTzLDnobKjHMfIwxzCmM7fiCMq9aeTTzznCM7k
- IlTzJifQ4K3OWu56FdA49audNwYAbb6FUZGz2hV7qyC9/1jV
-X-Developer-Key: i=broonie@kernel.org; a=openpgp;
- fpr=3F2568AAC26998F9E813A1C5C3F436CA30F5D8EB
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2 1/7] ibmvfc: add basic FPIN support
+To: davemarq@linux.ibm.com,
+        "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
+        "Martin K. Petersen" <martin.petersen@oracle.com>,
+        Madhavan Srinivasan <maddy@linux.ibm.com>,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        Nicholas Piggin <npiggin@gmail.com>,
+        "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+        linuxppc-dev@lists.ozlabs.org, Brian King <brking@linux.ibm.com>,
+        Greg Joyce <gjoyce@linux.ibm.com>,
+        Kyle Mahlkuch <kmahlkuc@linux.ibm.com>
+References: <20260608-ibmvfc-fpin-support-v2-0-d41f540fba5c@linux.ibm.com>
+ <20260608-ibmvfc-fpin-support-v2-1-d41f540fba5c@linux.ibm.com>
+Content-Language: en-US
+From: Tyrel Datwyler <tyreld@linux.ibm.com>
+In-Reply-To: <20260608-ibmvfc-fpin-support-v2-1-d41f540fba5c@linux.ibm.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjEyMDIxMCBTYWx0ZWRfX1HnA7gSHOoKi
+ GdBnvYZ6HX5g4P0l0sYtw+57QXozaxobkNHLz2EMD+3G9eS9yXyjHZjeQIm37Sidp/ubEfncKHf
+ i9AZ5/goll4WnVkNvf/R6rmjCfo6YyQE5m4c6KuATBUqlTA+nDnSwJMFF1QBjYpLU+nf2ofebUS
+ 691qm4DMQZjkB0twUue8L2GGe2QdwEiSMjD2UIf0qb9NbWhqUNulkJ81CWDZqSR2igyUnz/G0Y1
+ n4fa4GcueECCfayTVHcCL2jBKGtXY9NmxbC5IS2PxE77VK95nkxOyUs9VkvArte9MHOmECaPL3w
+ fWhnJQjwAI8Jg5rJGeuTJiawzTR04ECLWkKRoXqmAvprwnZE2x9AP7rDiwe3oaJs2f+piiTkeBQ
+ +TcF7HTcwvUXCruXtEYU6xSH80L+fZKmmCG3JdwWNsCB5gZnbMuQd+cJietg8eWzGQdaH8Pi2DX
+ 0O3+O37U0qTJGccNdOg==
+X-Authority-Analysis: v=2.4 cv=dr7rzVg4 c=1 sm=1 tr=0 ts=6a2c89aa cx=c_pps
+ a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
+ a=IkcTkHD0fZMA:10 a=FelO9ux0wxsA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=U7nrCbtTmkRpXpFmAIza:22 a=VnNF1IyMAAAA:8
+ a=x49wV4nTLdBlH4IQi7IA:9 a=QEXdDO2ut3YA:10
+X-Proofpoint-ORIG-GUID: m0Dn58y3kFfRlbOQFJBom6gv6POwOqU1
+X-Proofpoint-GUID: ToOt9YvdzwHDg0Le4IXAbOfSFHrlv3eb
+X-Proofpoint-Spam-Info: AW1haW4tMjYwNjEyMDIxMCBTYWx0ZWRfX1OXbErOJ4bCz
+ RM4St7Lw51+cZmbL1PLVbakNTBL9ul7Z1lP2l0upSWWcYw/aoZLiKYVuBj8z/XLac8DDDJDO2Dc
+ jAGEi8OrfeZOr58bNzbVWYMKCvZW6fY=
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
+ definitions=2026-06-12_03,2026-06-12_03,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ spamscore=0 adultscore=0 suspectscore=0 priorityscore=1501 phishscore=0
+ clxscore=1015 bulkscore=0 impostorscore=0 lowpriorityscore=0 malwarescore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2606040000 definitions=main-2606120210
 
-On Mon, 08 Jun 2026 10:39:10 -0300, Cássio Gabriel wrote:
-> ASoC: use scoped OF node handling in manual cleanup paths
+On 6/8/26 11:30 AM, Dave Marquardt via B4 Relay wrote:
+> From: Dave Marquardt <davemarq@linux.ibm.com>
 > 
-> Some ASoC drivers still manually release child OF nodes
-> when leaving child-node iteration loops early.
+> Add support for basic FPIN messages to the ibmvfc driver. This includes
 > 
-> Convert these focused cases to scoped OF node cleanup
-> so early returns and normal loop exits keep the same node
-> lifetime handling without explicit of_node_put() calls.
+> - adding FPIN handling support to the async event handler
+> - offloading processing of FPIN messages to a work queue
+> - converting the VIOS FPIN message to a struct fc_els_fpin as used by
+>   the Linux kernel
+> - passing the converted struct fc_els_fpin to fc_host_fpin_rcv for
+>   processing
 > 
-> [...]
+> The FPIN message conversion routines include a common routine that
+> will also be used in patches 6 and 7, which add full and extended FPIN
+> support.
 
-Applied to
+You are missing a Signed-off-by tag here.
 
-   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git for-7.2
+> ---
+>  drivers/scsi/Kconfig                 |  10 ++
+>  drivers/scsi/ibmvscsi/Makefile       |   1 +
+>  drivers/scsi/ibmvscsi/ibmvfc.c       | 226 ++++++++++++++++++++++++++++++++++-
+>  drivers/scsi/ibmvscsi/ibmvfc.h       |  15 +++
+>  drivers/scsi/ibmvscsi/ibmvfc_kunit.c | 131 ++++++++++++++++++++
+>  5 files changed, 379 insertions(+), 4 deletions(-)
+> 
+> diff --git a/drivers/scsi/Kconfig b/drivers/scsi/Kconfig
+> index c3042393af23..d5fc7eb2ebb1 100644
+> --- a/drivers/scsi/Kconfig
+> +++ b/drivers/scsi/Kconfig
+> @@ -758,6 +758,16 @@ config SCSI_IBMVFC
+>  	  To compile this driver as a module, choose M here: the
+>  	  module will be called ibmvfc.
+>  
+> +config SCSI_IBMVFC_KUNIT_TEST
+> +	tristate "KUnit tests for the IBM POWER Virtual FC Client" if !KUNIT_ALL_TESTS
+> +	depends on SCSI_IBMVFC && KUNIT
+> +	default KUNIT_ALL_TESTS
+> +	help
+> +	  Compile IBM POWER Virtual FC client KUnit tests. These tests
+> +	  specifically test FPIN functionality. To compile this driver
+> +	  as a module, choose M here: the module will be called
+> +	  ibmvfc_kunit.
+> +
+>  config SCSI_IBMVFC_TRACE
+>  	bool "enable driver internal trace"
+>  	depends on SCSI_IBMVFC
+> diff --git a/drivers/scsi/ibmvscsi/Makefile b/drivers/scsi/ibmvscsi/Makefile
+> index 5eb1cb1a0028..75dc7aee15a0 100644
+> --- a/drivers/scsi/ibmvscsi/Makefile
+> +++ b/drivers/scsi/ibmvscsi/Makefile
+> @@ -1,3 +1,4 @@
+>  # SPDX-License-Identifier: GPL-2.0-only
+>  obj-$(CONFIG_SCSI_IBMVSCSI)	+= ibmvscsi.o
+>  obj-$(CONFIG_SCSI_IBMVFC)	+= ibmvfc.o
+> +obj-$(CONFIG_SCSI_IBMVFC_KUNIT_TEST)	+= ibmvfc_kunit.o
+> diff --git a/drivers/scsi/ibmvscsi/ibmvfc.c b/drivers/scsi/ibmvscsi/ibmvfc.c
+> index 3dd2adda195e..9e5f0c0f0369 100644
+> --- a/drivers/scsi/ibmvscsi/ibmvfc.c
+> +++ b/drivers/scsi/ibmvscsi/ibmvfc.c
+> @@ -30,6 +30,9 @@
+>  #include <scsi/scsi_tcq.h>
+>  #include <scsi/scsi_transport_fc.h>
+>  #include <scsi/scsi_bsg_fc.h>
+> +#include <kunit/visibility.h>
+> +#include <scsi/fc/fc_els.h>
+> +#include <linux/overflow.h>
+>  #include "ibmvfc.h"
+>  
+>  static unsigned int init_timeout = IBMVFC_INIT_TIMEOUT;
+> @@ -3137,6 +3140,7 @@ static const struct ibmvfc_async_desc ae_desc [] = {
+>  	{ "Halt",	IBMVFC_AE_HALT,		IBMVFC_DEFAULT_LOG_LEVEL },
+>  	{ "Resume",	IBMVFC_AE_RESUME,	IBMVFC_DEFAULT_LOG_LEVEL },
+>  	{ "Adapter Failed", IBMVFC_AE_ADAPTER_FAILED, IBMVFC_DEFAULT_LOG_LEVEL },
+> +	{ "FPIN",	IBMVFC_AE_FPIN,		IBMVFC_DEFAULT_LOG_LEVEL },
+>  };
+>  
+>  static const struct ibmvfc_async_desc unknown_ae = {
+> @@ -3185,17 +3189,211 @@ static const char *ibmvfc_get_link_state(enum ibmvfc_ae_link_state state)
+>  	return "";
+>  }
+>  
+> +#define IBMVFC_FPIN_CONGN_DESC_SZ (sizeof(struct fc_els_fpin) + sizeof(struct fc_fn_congn_desc))
+> +#define IBMVFC_FPIN_LI_DESC_SZ (sizeof(struct fc_els_fpin) + \
+> +				struct_size_t(struct fc_fn_li_desc, pname_list, 1))
+> +#define IBMVFC_FPIN_PEER_CONGN_DESC_SZ (sizeof(struct fc_els_fpin) + \
+> +					struct_size_t(struct fc_fn_peer_congn_desc, pname_list, 1))
+> +
+> +/**
+> + * ibmvfc_fpin_size_helper(): compute fpin structure size based on fpin status
+> + * @fpin_status: status value
+> + *
+> + * Return:
+> + * 0: invalid fpin_status
+> + * other: valid size
+> + */
+> +static size_t ibmvfc_fpin_size_helper(u8 fpin_status)
+> +{
+> +	size_t size = 0;
+> +
+> +	switch (fpin_status) {
+> +	case IBMVFC_AE_FPIN_LINK_CONGESTED:
+> +	case IBMVFC_AE_FPIN_CONGESTION_CLEARED:
+> +		size = IBMVFC_FPIN_CONGN_DESC_SZ;
+> +		break;
+> +	case IBMVFC_AE_FPIN_PORT_CONGESTED:
+> +	case IBMVFC_AE_FPIN_PORT_CLEARED:
+> +		size = IBMVFC_FPIN_PEER_CONGN_DESC_SZ;
+> +		break;
+> +	case IBMVFC_AE_FPIN_PORT_DEGRADED:
+> +		size = IBMVFC_FPIN_LI_DESC_SZ;
+> +		break;
+> +	default:
+> +		break;
+> +	}
+> +
+> +	return size;
+> +}
+> +
+> +/**
+> + * ibmvfc_common_fpin_to_desc(): allocate and populate a struct fc_els_fpin struct
+> + * containing a descriptor.
+> + *
+> + * Allocate a struct fc_els_fpin containing a descriptor and populate
+> + * based on data from *ibmvfc_fpin.
+> + *
+> + * Return:
+> + * NULL     - unable to allocate structure
+> + * non-NULL - pointer to populated struct fc_els_fpin
+> + */
+> +static struct fc_els_fpin *
+> +ibmvfc_common_fpin_to_desc(u8 fpin_status, __be64 wwpn, __be16 modifier,
+> +			   __be32 period, __be32 threshold, __be32 event_count)
+> +{
+> +	struct fc_fn_peer_congn_desc *pdesc;
+> +	struct fc_fn_congn_desc *cdesc;
+> +	struct fc_fn_li_desc *ldesc;
+> +	struct fc_els_fpin *fpin;
+> +	size_t size;
+> +
+> +	size = ibmvfc_fpin_size_helper(fpin_status);
+> +	if (size == 0)
 
-Thanks!
+To be consistent with other places in the driver !size instead of size == 0 check.
 
-[1/3] ASoC: qcom: common: use scoped OF node handling
-      https://git.kernel.org/broonie/sound/c/22aed576add0
-[2/3] ASoC: fsl: fsl_qmc_audio: use scoped child node loop
-      https://git.kernel.org/broonie/sound/c/065df02692f0
-[3/3] ASoC: bcm: cygnus: use scoped child node loop
-      https://git.kernel.org/broonie/sound/c/9741aad24432
+> +		return NULL;
+> +
+> +	fpin = kzalloc(size, GFP_KERNEL);
+> +	if (fpin == NULL)
 
-All being well this means that it will be integrated into the linux-next
-tree (usually sometime in the next 24 hours) and sent to Linus during
-the next merge window (or sooner if it is a bug fix), however if
-problems are discovered then the patch may be dropped or reverted.
+Same nit here !fpin instead of fpin == NULL.
 
-You may get further e-mails resulting from automated or manual testing
-and review of the tree, please engage with people reporting problems and
-send followup patches addressing any issues that are reported if needed.
+> +		return NULL;
+> +
+> +	fpin->fpin_cmd = ELS_FPIN;
+> +
+> +	switch (fpin_status) {
+> +	case IBMVFC_AE_FPIN_CONGESTION_CLEARED:
+> +	case IBMVFC_AE_FPIN_LINK_CONGESTED:
+> +		fpin->desc_len = cpu_to_be32(sizeof(struct fc_fn_congn_desc));
+> +		cdesc = (struct fc_fn_congn_desc *)fpin->fpin_desc;
+> +		cdesc->desc_tag = cpu_to_be32(ELS_DTAG_CONGESTION);
+> +		cdesc->desc_len = cpu_to_be32(FC_TLV_DESC_LENGTH_FROM_SZ(*cdesc));
+> +		if (fpin_status == IBMVFC_AE_FPIN_CONGESTION_CLEARED)
+> +			cdesc->event_type = cpu_to_be16(FPIN_CONGN_CLEAR);
+> +		else
+> +			cdesc->event_type = cpu_to_be16(FPIN_CONGN_DEVICE_SPEC);
+> +		cdesc->event_modifier = modifier;
+> +		cdesc->event_period = period;
+> +		cdesc->severity = FPIN_CONGN_SEVERITY_WARNING;
+> +		break;
+> +	case IBMVFC_AE_FPIN_PORT_CONGESTED:
+> +	case IBMVFC_AE_FPIN_PORT_CLEARED:
+> +		fpin->desc_len =
+> +			cpu_to_be32(struct_size_t(struct fc_fn_peer_congn_desc, pname_list, 1));
+> +		pdesc = (struct fc_fn_peer_congn_desc *)fpin->fpin_desc;
+> +		pdesc->desc_tag = cpu_to_be32(ELS_DTAG_PEER_CONGEST);
+> +		pdesc->desc_len = cpu_to_be32(FC_TLV_DESC_LENGTH_FROM_SZ(*pdesc));
+> +		if (fpin_status == IBMVFC_AE_FPIN_PORT_CLEARED)
+> +			pdesc->event_type = cpu_to_be16(FPIN_CONGN_CLEAR);
+> +		else
+> +			pdesc->event_type = cpu_to_be16(FPIN_CONGN_DEVICE_SPEC);
+> +		pdesc->event_modifier = modifier;
+> +		pdesc->event_period = period;
+> +		pdesc->detecting_wwpn = cpu_to_be64(0);
 
-If any updates are required or you are submitting further changes they
-should be sent as incremental updates against current git, existing
-patches will not be replaced.
+While not wrong 0 is 0 regardless of endianiess. Is this value always going to
+be zero here or is this place holder code that changes later in this patchset?
+If its the case this isn't a place holder the original fpin struct was allocated
+with kzalloc so this value should be zero already.
 
-Please add any relevant lists and maintainers to the CCs when replying
-to this mail.
+> +		pdesc->attached_wwpn = wwpn;
+> +		pdesc->pname_count = cpu_to_be32(1);
+> +		pdesc->pname_list[0] = wwpn;
+> +		break;
+> +	case IBMVFC_AE_FPIN_PORT_DEGRADED:
+> +		fpin->desc_len = cpu_to_be32(struct_size_t(struct fc_fn_li_desc, pname_list, 1));
+> +		ldesc = (struct fc_fn_li_desc *)fpin->fpin_desc;
+> +		ldesc->desc_tag = cpu_to_be32(ELS_DTAG_LNK_INTEGRITY);
+> +		ldesc->desc_len = cpu_to_be32(FC_TLV_DESC_LENGTH_FROM_SZ(*ldesc));
+> +		ldesc->event_type = cpu_to_be16(FPIN_LI_UNKNOWN);
+> +		ldesc->event_modifier = modifier;
+> +		ldesc->event_threshold = threshold;
+> +		ldesc->event_count = event_count;
+> +		ldesc->detecting_wwpn = cpu_to_be64(0);
 
-Thanks,
-Mark
+Same comment as above.
 
+> +		ldesc->attached_wwpn = wwpn;
+> +		ldesc->pname_count = cpu_to_be32(1);
+> +		ldesc->pname_list[0] = wwpn;
+> +		break;
+> +	default:
+> +		/* This should be caught above. */
+> +		kfree(fpin);
+> +		fpin = NULL;
+> +		break;
+> +	}
+> +
+> +	return fpin;
+> +}
+> +
+> +/**
+> + * ibmvfc_basic_fpin_to_desc(): allocate and populate a struct fc_els_fpin struct
+> + * containing a descriptor.
+> + * @ibmvfc_fpin: Pointer to async crq
+> + *
+> + * Allocate a struct fc_els_fpin containing a descriptor and populate
+> + * based on data from *ibmvfc_fpin.
+> + *
+> + * Return:
+> + * NULL     - unable to allocate structure
+> + * non-NULL - pointer to populated struct fc_els_fpin
+> + */
+> +static struct fc_els_fpin *
+> +ibmvfc_basic_fpin_to_desc(struct ibmvfc_async_crq *crq, u64 wwpn)
+> +{
+> +	return ibmvfc_common_fpin_to_desc(crq->fpin_status, cpu_to_be64(wwpn),
+> +					  cpu_to_be16(0),
+> +					  cpu_to_be32(IBMVFC_FPIN_DEFAULT_EVENT_PERIOD),
+> +					  cpu_to_be32(IBMVFC_FPIN_DEFAULT_EVENT_THRESHOLD),
+> +					  cpu_to_be32(1));
+> +}
+> +
+> +/**
+> + * ibmvfc_process_async_work - Process IBMVFC_AE_FPIN async CRQ from work queue
+> + * @work: pointer to work_struct
+> + */
+> +static void ibmvfc_process_async_work(struct work_struct *work)
+> +{
+> +	struct ibmvfc_async_work *aw;
+> +	struct ibmvfc_async_crq *crq;
+> +	struct ibmvfc_target *tgt;
+> +	struct ibmvfc_host *vhost;
+> +	struct fc_els_fpin *fpin;
+> +
+> +	aw = container_of(work, struct ibmvfc_async_work, async_work_s);
+> +	crq = aw->crq;
+> +	vhost = aw->vhost;
+> +
+> +	if (!crq->scsi_id && !crq->wwpn && !crq->node_name)
+> +		goto end;
+> +	list_for_each_entry(tgt, &vhost->targets, queue) {
+
+Should we be holding the host lock when iterateing targets?
+
+-Tyrel
 
