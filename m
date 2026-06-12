@@ -1,76 +1,77 @@
-Return-Path: <linuxppc-dev+bounces-22539-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22540-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4603BCD8CA8
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jun 2026 04:00:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B05C8CD8CA8
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jun 2026 04:00:53 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gc5Q23p7cz3bsy;
-	Fri, 12 Jun 2026 14:00:10 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::432"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781236810;
-	cv=none; b=XDGeN1Ihm6DSnlrCYbp9cky5w6CNgNZKbrgtXuR2EpvMbPseqfVR7spQRNYFRplfbkiopCQ8bFW7fF9ujW9QshDV9bOOjSf7sKb2SpbSrD3lIxtj4o4xACTdwUvPNmJOqGArlRCa4zqlbJ1OMADxB1PGWhrrDhFxz+UyGvrQ/48aXGcoV7SPh7xXwzdUVIe8chqaRZi/bTuUD8qiFfgRszZEABS30G7XLLWsFWKHhRRQXURS0dKxtH9fsEaRzZTXm0TgOCjZYKVcPzNXD3f7E5aVIUERSX1Ew8ZYYfUDzaC3FNJzBMdLaoOQFZ9W/EbFLkor1UBDT9m8pJ7RpWiQkg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gc5Q74sDMz3c7j;
+	Fri, 12 Jun 2026 14:00:15 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::531"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781236815;
+	cv=none; b=ZPnkek8uTbKGnpl8Vk45VG1c3JT15Dryj33/Lmnv4hDW3fUCThNYKSHUxjxxHssi+kZ7mcIKQ5W+gpG8pJ8+pr+YTCwWug9QDk4FxBTf9YVUxYwJ+Uv/jwWupjyI3W8mjqwXvbDuUkJFoI/YxK+aa5Usir+3Hf/tGhEWPW/bI7VjhZ6I4IqzE4VYSw3ZzQ/Ga4mpzYbGBZonCKMQY7rGUyzIWLs/4wh4CxL+3mQ85Fjrtg0dKjDoUq5k/2JDaWhN3lRYXAxuQa02bkcOhFkhxFcx8dFkzzsmxathvwUo8QPtps7RvQ7MLy9b4yP+dx4wv2DHY8aNhMP2QsdrTGAh0g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1781236810; c=relaxed/relaxed;
-	bh=AtY9w5OLgbMDm1Vvzf6EQHSekByITXuJYckwU3WoHU0=;
+	t=1781236815; c=relaxed/relaxed;
+	bh=Mz1pkfZLBXPZiMkWew4YPl94Bxp7XZrjgH0nwtCkmEk=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=PFrltu9XpSXxY1Prx0FEfpS54wgsdypo4QY9IeqjR2U5D3+E8EkuXj3RcnqnhFaKWmKe2THkvHSQOogVHw8jumH+49uosShF68IWW2P2l5gYnXN0Vz6K5+FsxU5okdPq0r4FauEIOrfzF+6dw3xITtdvviILjM1TZ40FibFmQHQKyvOXzMvc9eEmpJtvgFfjSNXFIjq44ADB0AfHlIqq0uSS/bV8tc6n7QfIMTAvMFT9NmR0S3X/A1+CGIAyuxxnPiYRS17T2sNPlBOKS8pxOPXdg+Ij9qLj82ixsawa5U8WyCTQDRvRyNfFHuL7CBZUllNI9GlZJ0sBxQcAiKURsQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=bytedance.com; dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=aQtNu9zE; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::432; helo=mail-pf1-x432.google.com; envelope-from=songmuchun@bytedance.com; receiver=lists.ozlabs.org) smtp.mailfrom=bytedance.com
+	 MIME-Version; b=n88ZL7b67/YEe/7e2HDxQNeyJhCG3YpHogzEQMdIep1r4Mf+z/dcM7qU+bn6n8m7iCvGYQsRuyHs6ekEJfGgl8YVXJBpc0iuM2kdCPL/ZM4yyXxwTJ5akyTJdyVaPiBV7DbPhpHNeXYpL0D5+L8lAbk593eb32cI9MnnykvFECUCFdxRB78kFPIHFTnSTe/OLdQIkjVBtXyMkEUnqgWTI2yVGEzMP3Vy+le/0csIU4R0/ywQflT+0WI4qToaeJV9x4/uma//87+SaZc/cGNE3IzOMzFOvi+m1ljDsYXyco4D9gTM3TEKyd3L7aUIa9W/lhBBEXKf7e1SbzzJN5rceA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=bytedance.com; dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=cYFYtTIp; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::531; helo=mail-pg1-x531.google.com; envelope-from=songmuchun@bytedance.com; receiver=lists.ozlabs.org) smtp.mailfrom=bytedance.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=bytedance.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=aQtNu9zE;
+	dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=cYFYtTIp;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bytedance.com (client-ip=2607:f8b0:4864:20::432; helo=mail-pf1-x432.google.com; envelope-from=songmuchun@bytedance.com; receiver=lists.ozlabs.org)
-Received: from mail-pf1-x432.google.com (mail-pf1-x432.google.com [IPv6:2607:f8b0:4864:20::432])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bytedance.com (client-ip=2607:f8b0:4864:20::531; helo=mail-pg1-x531.google.com; envelope-from=songmuchun@bytedance.com; receiver=lists.ozlabs.org)
+Received: from mail-pg1-x531.google.com (mail-pg1-x531.google.com [IPv6:2607:f8b0:4864:20::531])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gc5Q128WXz3bsQ
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jun 2026 14:00:09 +1000 (AEST)
-Received: by mail-pf1-x432.google.com with SMTP id d2e1a72fcca58-8423f869421so468471b3a.3
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jun 2026 21:00:09 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gc5Q63MbBz3c7M
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jun 2026 14:00:14 +1000 (AEST)
+Received: by mail-pg1-x531.google.com with SMTP id 41be03b00d2f7-c85d4b4245aso353317a12.1
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jun 2026 21:00:14 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=bytedance.com; s=google; t=1781236807; x=1781841607; darn=lists.ozlabs.org;
+        d=bytedance.com; s=google; t=1781236812; x=1781841612; darn=lists.ozlabs.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=AtY9w5OLgbMDm1Vvzf6EQHSekByITXuJYckwU3WoHU0=;
-        b=aQtNu9zEBDOM3QJBCAFdbisczqjBwLBdu0jhPQgXPaF0we8s49ZXfXAfqE4337Ra6v
-         1Eq/NRiP9hvlakyIyAqRu7P00aXKY8Wi2IhshymGMm8zhNsFmEnenmF0pEO8gD6BURtE
-         6oF1IE8ga9gUOpLZWt32THn3QRaD8Kt86EP8ynTIj3weCRnWcyRc0SbEilq329dp7Vcc
-         G1MECEuc2uXMhn5UUwXo+LDwAJYVQBKSXkTTHqBevqRlgul3gQgZeYi0behaYwGiGdkH
-         OVTcwX9bs3TFVD99nXhwof6Gmqpu7NCd78dL/Eacu2Oz9i2MjW1ebskYW+3ARapwqDyl
-         wRqw==
+        bh=Mz1pkfZLBXPZiMkWew4YPl94Bxp7XZrjgH0nwtCkmEk=;
+        b=cYFYtTIp03cKhBrq5P9JO3oaetEclYCzIHerwiQKfIftLgFJOfLadvO103JW4SZ42G
+         tsJA1ktyFSn35M/4Zql17nzJNpbUDL/RqdfI34IDs3Mh6JQCTxt9dMD5+zZZvi0UHiVP
+         E29ajkWXG2zBa8Y5xZo8da7i7dV97g3jXaYgeKIML5d8N8pbpti6mpCkBNqA5AdA4DmV
+         Ek6bpRparsQ0QAAlPMFAphwfwUqjPLLfSQOLj2Waie1q3Uh3BIHIQwcFQF7QxzZ3oPRx
+         lZGDp31vrmWdVW3vnXOsCrRb855PterSyNjYa0q9s87KuBlO+luNVgY0VZK275r3a77Q
+         cj5g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1781236807; x=1781841607;
+        d=1e100.net; s=20251104; t=1781236812; x=1781841612;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to;
-        bh=AtY9w5OLgbMDm1Vvzf6EQHSekByITXuJYckwU3WoHU0=;
-        b=JAC1Vyp4z1emyzjQ6NANNZJLSDTarL0RM9fb5fJptmrVIfinvB2NU4o/j1tyxRUKsJ
-         6Czqal31Pr/at7OJMT1sR5P+V5uUNup+r3aLtr/8j2MZo0YVW8Dn4tFJYwUT56PYKWQB
-         0PTDF1W8rUy8hVROPJ9VMQyH0I0zdlSG159s5r3+uo1IE0rUdaBIc9wgs4lgC6vUTwsa
-         TYb2n4xXvq4yjBDwkXGQUd26ouZCXcUruw834fozu5NnPyqHHVPJG9N+CWE0KPfiviFI
-         f/ThnW4K5M0fj+MAzGvFE7Mty/ztli2+xuRT2YoVjw8KFWcj5b+myLA8Vk1BECSSH1PX
-         RnVw==
-X-Forwarded-Encrypted: i=1; AFNElJ+1O/O4yHjN/XiQXe0U+7887beLsvJ37x2A9vCegDuUvMMNWcfuJ9gittakEduzrd1Yf/ile9SKmO+pr+c=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YwLWG+72Oul0pJrK1SnWFsTOma8+7YO3x2CM9+gjgGDe/bNpwZ9
-	wlbsefHwZFLtHs8whq5RoFcsDo+0Ury04chfcVmO8EegTvXxuWMJ4nAhb+bTKIJPmOc=
-X-Gm-Gg: Acq92OGAmZep5qb1BQ3sf/ODMxUSQ4rn9Rn4sk28r6/EvIKVLMJTbWxvciaLpuLCCL+
-	PFEAbVnJoUKNehZbz/ZHbwIZ/5xBgKdaQ0ciAPAxR1923Jfn7PJT2OAhPyV5qTA0h27T2Ks13S3
-	7gY/ZNH/v1U1dKZu5yUJSf63oI0YmrDKxaaFA1/X9Qbqx3f23O8FLzC+FrBzDBSoH+j9k9hw+gz
-	ppYUYddyvFzBLinvfo/8Yx1OfgR9U6KbCkl7imYVDii+P6lLC0eL9fwsVYS+WQaBiF/ieQQehu2
-	MiASRnUcjjquQn3BjjGLQkjjW8cVuzoRNTEgcVmyoaWe/NkoEnibSO1YSq1lh5LPUXOPpqsMLGk
-	Pf+NqyR2u1zPWbGwD8wEGW0wM923xIx0D2Kw122gSHZIGqiXKPLlBjhxfFF9gWc7acTNCfjgnpi
-	NAUwgY1QZUIgsSH/fCN1GgyBrX+GVG+mDefqdyQFCIKJI=
-X-Received: by 2002:a05:6a00:2992:b0:842:5d9b:d590 with SMTP id d2e1a72fcca58-8434ce1c8c4mr1121632b3a.30.1781236807010;
-        Thu, 11 Jun 2026 21:00:07 -0700 (PDT)
+        bh=Mz1pkfZLBXPZiMkWew4YPl94Bxp7XZrjgH0nwtCkmEk=;
+        b=PJ/yVOZogV84OJpXPFHlmzCnTw1j30aAjVgB+sr8r6KlUwc3iEjeA3zHgUoheiT0Hu
+         HWX0fVY6uFRmeIF0eQfIAtoIVpEDUKcRTdfv7enb4cyD6wzasclpeQjLYSBq3yPIwHfj
+         MYSV4gsOroSPIGqVHmU0misBt2k3P6sfVY9g6LNXk83RB3t0GcO1Q2U25k2/3jBF2T/u
+         Yf3zVLQ9kzBkhhPR5849uo9q5D5gxXy1Tdet/bI0bmdnc6F1bTQdAYco2Si74LC9265a
+         /ihsOENng+q0ldzYvwimQkkXGz28fisbo0scmMErTSH66Hqiwe4CtutWBhtrtKiGKJMd
+         23pw==
+X-Forwarded-Encrypted: i=1; AFNElJ9iMgXIQDxkW71m/OuU62mZhNjQ8Dk0nerDAy6yzc0kEPwtrniwN7G7K/XGuWyJIYbNYg9A+SEmdxiJYio=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yw14UkbmnRJA1M6Q91J3owOf3inXzw02r24cb3Atsb+4OmiNk6u
+	CEzLW34TcEOuJ0+CJLLrttj2npwzilQ+rsuYaGsHYJs08C5I3O1lK8PfKRqWavWKhXHAZJxY7s2
+	qptCue/+NRA==
+X-Gm-Gg: Acq92OHumaeJweVPCLX2bbnh7DB1qzoQ4VHPAIzDKC+xyGLNuM4WtS30L2APku1QQdT
+	ISy8aq+6T0CxpEcsKUpqk+TtSFuUq7MEAM3Pdrj+/0dEW/KGsnSRsDwCsvFLpk293cUUxmkzDTo
+	Ulfarjn7hx3mM+RhtZ43tixb2xbrPGxKM6W5FXJpg4iHy3VUsh2SdBn6So2/7H0jxXgXW+sBAWq
+	38IOgRsh8jYLhw1iverQscG+7tGh2OHLmwvYu1eLhtUZt/OETjs0t95mHmicYlRgDCfstJ/YDuJ
+	BYXl+H4nQy/6rW0k3IiyYBSZ0cvHHGISx6IhKBV8X8sLKxnU63kUGQvW6J4iuFAZqk2mM7nHGVV
+	jmuy8XRtj780Zntv7abTjga3xirA2QD/p0/+dheeRdJWuJn5uWJG8XzY1xK/G2C88dOwysASy+o
+	7E7q0hr0bCqk1OIk7oLLDymqJ55T+9n4asfsaix/Pf7xc=
+X-Received: by 2002:a05:6a00:228f:b0:842:46a6:e2db with SMTP id d2e1a72fcca58-8434cd377f0mr1142768b3a.19.1781236811996;
+        Thu, 11 Jun 2026 21:00:11 -0700 (PDT)
 Received: from n232-176-004.byted.org ([36.110.163.99])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-8434ad03fdcsm643352b3a.24.2026.06.11.21.00.02
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-8434ad03fdcsm643352b3a.24.2026.06.11.21.00.07
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 11 Jun 2026 21:00:06 -0700 (PDT)
+        Thu, 11 Jun 2026 21:00:11 -0700 (PDT)
 From: Muchun Song <songmuchun@bytedance.com>
 To: Oscar Salvador <osalvador@suse.de>,
 	David Hildenbrand <david@kernel.org>,
@@ -90,11 +91,10 @@ Cc: Muchun Song <muchun.song@linux.dev>,
 	"Aneesh Kumar K . V" <aneesh.kumar@linux.ibm.com>,
 	linuxppc-dev@lists.ozlabs.org,
 	Mike Kravetz <mike.kravetz@oracle.com>,
-	Muchun Song <songmuchun@bytedance.com>,
-	"Oscar Salvador (SUSE)" <osalvador@kernel.org>
-Subject: [PATCH v4 11/19] mm/sparse: Move sparse_vmemmap_init_nid_late() into sparse_init_nid()
-Date: Fri, 12 Jun 2026 11:58:55 +0800
-Message-ID: <20260612035903.2468601-12-songmuchun@bytedance.com>
+	Muchun Song <songmuchun@bytedance.com>
+Subject: [PATCH v4 12/19] mm/hugetlb_cma: Validate hugetlb CMA range by zone at reserve time
+Date: Fri, 12 Jun 2026 11:58:56 +0800
+Message-ID: <20260612035903.2468601-13-songmuchun@bytedance.com>
 X-Mailer: git-send-email 2.54.0
 In-Reply-To: <20260612035903.2468601-1-songmuchun@bytedance.com>
 References: <20260612035903.2468601-1-songmuchun@bytedance.com>
@@ -113,56 +113,63 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-sparse_vmemmap_init_nid_late() is still called separately from
-mm_core_init_early(), away from the rest of the sparse initialization
-path.
+Hugetlb CMA allocation currently has to cope with CMA areas that span
+multiple zones.
 
-Now that sparse_init() runs after zone initialization, call
-sparse_vmemmap_init_nid_late() from sparse_init_nid() instead. This
-keeps both sparse_vmemmap_init_nid_early() and
-sparse_vmemmap_init_nid_late() in the sparse setup path.
+Validate the reserved CMA range up front in hugetlb_cma_reserve() so
+later hugetlb CMA allocations can assume a zone-consistent area.
 
+Also drop the pfn_valid() check from cma_validate_zones(). mem_section
+is not fully initialized at this point, so the check can trigger false
+warnings. Keep the sanity check in cma_activate_area() instead.
+
+Acked-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
 Signed-off-by: Muchun Song <songmuchun@bytedance.com>
-Reviewed-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
-Reviewed-by: Oscar Salvador (SUSE) <osalvador@kernel.org>
+Reviewed-by: Oscar Salvador (SUSE) <osalvador@suse.de>
 ---
- mm/mm_init.c | 4 ----
- mm/sparse.c  | 1 +
- 2 files changed, 1 insertion(+), 4 deletions(-)
+ mm/cma.c         | 3 ++-
+ mm/hugetlb_cma.c | 6 ++++--
+ 2 files changed, 6 insertions(+), 3 deletions(-)
 
-diff --git a/mm/mm_init.c b/mm/mm_init.c
-index a0eb61f9f55a..c76498b7abd1 100644
---- a/mm/mm_init.c
-+++ b/mm/mm_init.c
-@@ -2674,16 +2674,12 @@ void __init __weak mem_init(void)
- 
- void __init mm_core_init_early(void)
- {
--	int nid;
--
- 	free_area_init();
- 
- 	hugetlb_cma_reserve();
- 	hugetlb_bootmem_alloc();
- 
- 	sparse_init();
--	for_each_node_state(nid, N_MEMORY)
--		sparse_vmemmap_init_nid_late(nid);
- 	memmap_init();
- }
- 
-diff --git a/mm/sparse.c b/mm/sparse.c
-index 324213d8bdcb..3917a47153d8 100644
---- a/mm/sparse.c
-+++ b/mm/sparse.c
-@@ -320,6 +320,7 @@ static void __init sparse_init_nid(int nid, unsigned long pnum_begin,
+diff --git a/mm/cma.c b/mm/cma.c
+index a13ce4999b39..31073738f2ac 100644
+--- a/mm/cma.c
++++ b/mm/cma.c
+@@ -126,7 +126,6 @@ bool cma_validate_zones(struct cma *cma)
+ 		 * to be in the same zone. Simplify by forcing the entire
+ 		 * CMA resv range to be in the same zone.
+ 		 */
+-		WARN_ON_ONCE(!pfn_valid(base_pfn));
+ 		if (pfn_range_intersects_zones(cma->nid, base_pfn, cmr->count)) {
+ 			set_bit(CMA_ZONES_INVALID, &cma->flags);
+ 			return false;
+@@ -165,6 +164,8 @@ static void __init cma_activate_area(struct cma *cma)
+ 			bitmap_set(cmr->bitmap, 0, bitmap_count);
  		}
- 	}
- 	sparse_usage_fini();
-+	sparse_vmemmap_init_nid_late(nid);
- }
  
- /*
++		WARN_ON_ONCE(!pfn_valid(cmr->base_pfn));
++
+ 		for (pfn = early_pfn[r]; pfn < cmr->base_pfn + cmr->count;
+ 		     pfn += pageblock_nr_pages)
+ 			init_cma_reserved_pageblock(pfn_to_page(pfn));
+diff --git a/mm/hugetlb_cma.c b/mm/hugetlb_cma.c
+index 39344d6c78d8..ce999391cc14 100644
+--- a/mm/hugetlb_cma.c
++++ b/mm/hugetlb_cma.c
+@@ -231,9 +231,11 @@ void __init hugetlb_cma_reserve(void)
+ 		res = cma_declare_contiguous_multi(size, gigantic_page_size,
+ 					HUGETLB_PAGE_ORDER, name,
+ 					&hugetlb_cma[nid], nid);
+-		if (res) {
+-			pr_warn("hugetlb_cma: reservation failed: err %d, node %d",
++		if (res || !cma_validate_zones(hugetlb_cma[nid])) {
++			pr_warn("hugetlb_cma: %s: err %d, node %d\n",
++				res ? "reservation failed" : "reserved area spans zones",
+ 				res, nid);
++			hugetlb_cma[nid] = NULL;
+ 			continue;
+ 		}
+ 
 -- 
 2.54.0
 
