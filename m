@@ -1,60 +1,81 @@
-Return-Path: <linuxppc-dev+bounces-22557-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22558-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BCBBCCD8CA8
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jun 2026 14:12:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4A253CD98CE
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jun 2026 14:36:18 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gcM0x1C2vz2ykX;
-	Sat, 13 Jun 2026 00:12:49 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781273569;
-	cv=none; b=Igh6w5d+hTD+iD6y6qseY6da9yu4DRhaipCASlSEjiQcVFLQ+2AzmX3Cg9kuQuJAFeTleMIekU5dQy+QPiuHvHFjSkgeOrlp5HfCd9GvY8cqkqlJoRYj1+N9sOHm8BWKGL28IthFzcCrotrfRW8/ER9oRAw5hVcNh/+Thnb9Jtvm8CJCEs+KhK61Qlnb5EKGkPqkmyXVw9c6kZcm/hPyhDQHdN+3QxT1ihAzLD+mxzkztkTZFhjy5Z1W3cNodqrh07ixhgWxWbdOq/sVN2IcLXfZ7h09Lpqk3EPtXfmMcSApaMmrirhwolQdRVX2BpXxsicG9cxHinO3XOWMYtgaLg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gcMX05Q09z2ykX;
+	Sat, 13 Jun 2026 00:36:16 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::436"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781274976;
+	cv=none; b=bbS26AulXCsENWohqTcmYYHN/rAY3iV9EGm2YiZwTY0g3NjnYT11OAX7CoPpEX3OfU2Ga4oepKJzuoyBK/Kw4em3znlINK6yNI4d3bY80uxGZg+EmJd2q6ruZewkjyKL5zKohqEgOSl4JgLmYvOM9GsG6fMafYI8qqoRgjKz4h6VnG7uVf9LkD3PesdKtMv28+AmtZAMjrrhTN5tqXFsNuVyd1U4Mm/F1k2SNuzXwJDdGueCEG6v7CVU868nQsHBvCtS1kuZrVAEYiNQ62m8YTEFlF6HUVvh7xraCYTbZOQvs/PUZXTr75T6/XnLQ2oMfL8fw2vgQWPPvGN9wXDoHQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1781273569; c=relaxed/relaxed;
-	bh=gkRlOqWLDOL9V+xajZiBlg7nENjsjV7EqIVO2RaSGlw=;
-	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type:
-	 Content-Disposition:In-Reply-To; b=VyXvnqaTDh85dCJ4QV7lDK2kaCRNu1m1Mt/0NCYDA7tkmmX0Ilyarm7INn+CN8vCtBJ8blfqEfG6Z7POZf4dRs+OWj3CKGUyJPgbDd8ds8aUQ3UoWY2JrPBFByLSUh07dd51uGfyRPr7l5hRWKR4IPhUwPub/COG3vjFNdge20wG2gVKtnpqyJDCqLgwc6Drl+ftgWwo3k75L1mRtEm5Q6T0GcDrHvTmJRUu8Z3zJC5Lihxby8hOZL1st922U2+o3n9ThHPNvP3QtFkBkHw6G9iv6YHwf3He9lSmPSdz27whZH8AeMI+D6qghTzwIma0c7C8OH5lAjNpXXZOeo0t7w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=QnVXc1H/; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=helgaas@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1781274976; c=relaxed/relaxed;
+	bh=VTVHpWDAc44gU8kS/zE/FGdewgWSDCACvR7pfF1CeHQ=;
+	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References; b=epcLh29Dcc/pqFNX0pB4jkpId9+ctwPhkLwv00w45NbLzc+CU1J2+iazGrfvivJ4hID9C0VdPpZx9ZVkFdw01FSj+cSx3SSnVcGoio57pOinhk9XdAzaZsyFGq2tVepc8O26o1nWx5mPfyLt8VZopwimBqMGaZZ4BEPg7yDv8pTxYSVLZRalk2VgDKuf3c6rvCHjkkKli2Rjpt4DAkeMjKAbdjx02WQQF/EkIqnI6HNSogb79VtbCEzi6CpGSsxQ78a7OY1OSj1ARvMsJFfoezKItP9BAi0XaABAl6dfakThx10xSjLCl3ZItykoKNrQLAvWJ9QCwuXUBVM/jdU4Pg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=bZ2pifww; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::436; helo=mail-pf1-x436.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=QnVXc1H/;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=bZ2pifww;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=helgaas@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::436; helo=mail-pf1-x436.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pf1-x436.google.com (mail-pf1-x436.google.com [IPv6:2607:f8b0:4864:20::436])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gcM0w1lSqz2yhY
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Jun 2026 00:12:48 +1000 (AEST)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 0A9C160008;
-	Fri, 12 Jun 2026 14:12:45 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 815BA1F000E9;
-	Fri, 12 Jun 2026 14:12:44 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1781273564;
-	bh=gkRlOqWLDOL9V+xajZiBlg7nENjsjV7EqIVO2RaSGlw=;
-	h=Date:From:To:Cc:Subject:In-Reply-To;
-	b=QnVXc1H/a8sNOm8x1VwpAxSFKDIfDkRD5dUSM49LtKBcWLfxkmHekfPrhUyNNTf8L
-	 5ezf0IHHCUrGBfbuV9tUuDwmblmbqRve/V9MZisaCk8PZuWjaVo6RGNPM8W0xWVO3u
-	 9tTKsI1lrCVlMmJPBYwFP4w2LEffEFx6+phQ+4HGZp0JuutB/h3Q6gh1FtfRGJrEBb
-	 r7BqkkcPquea/RjbpysjQYMzWT6yPECsQY7LzvMTpq0jMmJjZGQvYxrKW9X9KdtyN6
-	 Kn9YCW9Y+aU9n6hAXD8v5+Kb+I4q+kY9Ab+8BXDE8rd/OaD2/5O1GaF+JKNf6h0LFd
-	 qZuUBhHAj7eTQ==
-Date: Fri, 12 Jun 2026 09:12:43 -0500
-From: Bjorn Helgaas <helgaas@kernel.org>
-To: Ilpo =?utf-8?B?SsOkcnZpbmVu?= <ilpo.jarvinen@linux.intel.com>
-Cc: Bjorn Helgaas <bhelgaas@google.com>, linux-pci@vger.kernel.org,
-	Shawn Jin <shawn.jin@asteralabs.com>, linuxppc-dev@lists.ozlabs.org,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 10/11] PCI: Lower bound bridge window alignment
-Message-ID: <20260612141243.GA596363@bhelgaas>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gcMWz00mkz2yjp
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Jun 2026 00:36:14 +1000 (AEST)
+Received: by mail-pf1-x436.google.com with SMTP id d2e1a72fcca58-8422871b42dso655032b3a.3
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jun 2026 07:36:14 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1781274971; x=1781879771; darn=lists.ozlabs.org;
+        h=references:message-id:date:in-reply-to:subject:cc:to:from:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=VTVHpWDAc44gU8kS/zE/FGdewgWSDCACvR7pfF1CeHQ=;
+        b=bZ2pifwwW985BWPr+G9QwF/h+Ti1Mo9PGZwiRuzwyRZYVcN86LGNRoDKKHSdXYBvPf
+         wEJRUcORMBYThdl4itJq1D//th2WlX7thb+7dJSUgR8CAepaXp/ZxdEkHcwttHeVR933
+         FMFAJkWDFiaz9X7y+owt8eJ0H0OrESTv/7rkuCJ/QYyO0IOdplLYQ3Cjd44aMeBJHgxn
+         Wc3mZqiqfbSnhpsr/4WcSJGzZ941xqK//2yFzQdlLEt0CBBTBl0aGyylOG1rUKwpiple
+         j8X81+HjB1lAje/pKIZ+LZHizD2ynnwU5o/s7hAPymw69NCL/dKM7UEJr1ij4AL5xPE1
+         CLzg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1781274971; x=1781879771;
+        h=references:message-id:date:in-reply-to:subject:cc:to:from:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=VTVHpWDAc44gU8kS/zE/FGdewgWSDCACvR7pfF1CeHQ=;
+        b=mE6qdWOLebL6XMZItDqAnyfd9z4p/Z6hnj/fo9MdTqWTzC9lKs7QQld4LrGu1PBNm7
+         yjkxcMUiew3q2XWzCYBuayVeRcS+VKv9Z9iI3rPX0Twngf2EPwu+90bqIvNaojco0g3g
+         QA2yQfJ1Jfqib6X4/l6M3yysMaAiBCe/cRPg5GZpjuTeuXejrYmCRQ3LecbF2qk8+Cak
+         5Jz7HgKxvV+v9DISC9hm4fIEhi2S/DC28Fg3t3nb+/6PCNG39ndE6z0qKtkInptcX4Ji
+         3tw9i1ew8HN6tIGRMYso6SqZZHEToMeNQRn4MnVNN8f5XtOJqo+fsL0haJR2N+qE/7Pl
+         YMgw==
+X-Forwarded-Encrypted: i=1; AFNElJ/1BSrpOAhVJGQXijrqoxzM+xx8Vgs7SlRSbV5Wo5yn7Bwiy1sCLJX4nfPTkj8xqNj+85tXPYRwYnb+UsI=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yx59Pemnjz8hO6hT/gYX4kdJ25TC41c/j0vqI3JmigIZC9r/BAj
+	tG8KMO50bYo/dMEmsP/sbDR5fsIkuDT9uOHuwdLA0fT0f1pbZBVPar5g
+X-Gm-Gg: Acq92OG6fBW3kSZgcpurRwAbgyFmNRUP0g7fBil4y4o6FEwt0ARp0aoKwG8JsRac0VG
+	M2LRARWKdC4H1w6BnUxhBbHUXB3GHZRM9Ls5b5E4XdX7lFbHOf67NsPBzLC9nyGZsQiDzZTufV0
+	9FsFCVKMrCge+S7Acz0d/9VdPzW6LJaSIXorXMLWgljdXgtOK3fz6yR2B3R+Vo9Sinj7x91fkaC
+	lX+lkfNEv6ei7U6UnsdU5A2Riw0UCFy3mWuY0jZp07BaIZtePZZcIcTtASBbqTsMoD4xpbFOYmy
+	cqeIaFTTV4mzDdKT37ED8n/6PGJpLQbA7hqXwY8PG5Is71UiFcWTtSM1YZ2dZiSVOZ28p8SvPXI
+	EV5VfFsnXBhhV2Rl9nF2xJjCX5eoV04mCFz4sE9uxriB/yaP9HXbB0SNXf3Xawyv527tgoS79D4
+	Izcr96VIuBzN7nnNjd1Mel3UShhHc4rbTOqmg+
+X-Received: by 2002:a05:6a00:f93:b0:842:46a6:e2cf with SMTP id d2e1a72fcca58-8434ce46552mr3664545b3a.21.1781274971241;
+        Fri, 12 Jun 2026 07:36:11 -0700 (PDT)
+Received: from pve-server ([49.205.216.49])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-8434acf039fsm2390771b3a.20.2026.06.12.07.36.06
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 12 Jun 2026 07:36:10 -0700 (PDT)
+From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+To: Sean Christopherson <seanjc@google.com>
+Cc: kvm@vger.kernel.org, Paolo Bonzini <pbonzini@redhat.com>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>, Christophe Leroy <chleroy@kernel.org>, Anushree Mathur <anushree.mathur@linux.ibm.com>, Venkat Rao Bagalkote <venkat88@linux.ibm.com>, Harsh Prateek Bora <harshpb@linux.ibm.com>, Ackerley Tng <ackerleytng@google.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, Claudio Imbrenda <imbrenda@linux.ibm.com>, Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [PATCH v3 RESEND 04/10] KVM: PPC: selftests: powerpc enable kvm_create_max_vcpus test
+In-Reply-To: <aiml9iB_vUASRRQV@google.com>
+Date: Fri, 12 Jun 2026 18:19:37 +0530
+Message-ID: <ik7nexem.ritesh.list@gmail.com>
+References: <cover.1781093720.git.ritesh.list@gmail.com> <ed1d75f27a3b02897a8f54721d9f7f21bb163d9c.1781093720.git.ritesh.list@gmail.com> <aiml9iB_vUASRRQV@google.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -67,62 +88,104 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <4a35f669-b13b-c07a-fbd6-a8ea1ce9a38b@linux.intel.com>
 
-On Fri, Jun 12, 2026 at 02:50:17PM +0300, Ilpo Järvinen wrote:
-> On Wed, 29 Apr 2026, Ilpo Järvinen wrote:
-> 
-> > pci_resource_alignment() does not consider bridge windows special,
-> > yet their alignment is subject to different requirements from BAR
-> > alignment.
-> > 
-> > Add lower bound to bridge window alignment to help callers out to
-> > always have large enough alignment.
-> > 
-> > Signed-off-by: Ilpo Järvinen <ilpo.jarvinen@linux.intel.com>
-> 
-> Hi Bjorn,
-> 
-> Could you please pull this change and the subsequent one, the commits in 
-> pci/resource:
-> 
-> ae09d28ecbbc ("PCI: Lower bound bridge window alignment")
-> cf996b886675 ("PCI: Return valid alignment for assigned resources")
+Sean Christopherson <seanjc@google.com> writes:
 
-Sure, I dropped these two patches from pci/resource.  The rest are
-still heading to v7.2.  Thanks!
+> On Wed, Jun 10, 2026, Ritesh Harjani (IBM) wrote:
+>> From: Nicholas Piggin <npiggin@gmail.com>
+>> 
+>> powerpc's maximum permitted vCPU ID depends on the VM's SMT mode, and
+>> the maximum reported by KVM_CAP_MAX_VCPU_ID exceeds a simple non-SMT
+>> VM's limit.
+>> 
+>> The powerpc KVM selftest port uses non-SMT VMs, so add a workaround
+>> to the kvm_create_max_vcpus test case to limit vCPU IDs to
+>> KVM_CAP_MAX_VCPUS on powerpc.
+>
+> How is this not a KVM bug?  Literally the reason this test exists is to validate
+> KVM's advertised KVM_CAP_MAX_VCPU_ID and KVM_CAP_MAX_VCPUS.
 
-> The rest of the changes in this series seem okay and can proceed if you're 
-> okay with keeping a partial series.
-> 
-> The reason for this request is the dev->bus vs dev->subordinate issue 
-> sashiko mentioned in its review.
-> 
-> I've tried to come up with a solution to that but it has become so ugly
-> I have not been very happy with it. Maybe there's no other way but the 
-> problem boils down with pci_min_window_alignment() having to be capable of 
-> dealing two cases, each lacking one of the key pointers (bus or bridge 
-> dev):
-> 
-> 1) root bus without bus->self
-> 2) bridge without a subordinate bus struct (if subordinate bus' alloc 
->    failed)
-> 
-> Only way to solve that I could think of is passing both the bus and the 
-> bridge device to pci_min_window_alignment() and the related arch side 
-> function pcibios_window_alignment(). The ugliest parts then involve 
-> getting a bus pointer compatible with both of those cases, like this:
-> 
-> 	struct pci_controller *phb = pci_bus_to_host(bus ? bus : bridge->bus);
-> 
-> But it's too late in the cycle now to try even that, IMO, so better to 
-> wait to the next cycle.
-> 
-> -- 
->  i.
+It's not a KVM bug, it's expected on PowerPC. On PowerPC, vCPU ID encodes SMT topology, e.g. on P9,
+vcpu id = core * stride + thread,
+  .. where the stride is same as kvm->arch.emul_smt_mode (VM's emulated SMT mode)
 
+So the vcpu ID space can be sparse, however KVM_CAP_MAX_VCPU_ID is the
+absolute ceil value (MAX_SMT_THREADS * KVM_MAX_VCORES) i.e. the value
+with the maximum stride / SMT value.
+
+Since default selftest VM uses stride 1, so it rejects IDS >= max_vcpus.
+
+e.g.
+static int kvmppc_core_vcpu_create_hv(struct kvm_vcpu *vcpu)
+...
+		if (id >= (KVM_MAX_VCPUS * kvm->arch.emul_smt_mode)) {
+			pr_devel("KVM: VCPU ID too high\n");
+			core = KVM_MAX_VCORES;              /* rejected case */
+		} else {
+
+So, it's expected on PowerPC. vcpus with higher IDs can be created but
+for that we need to set KVM_CAP_PPC_SMT and use strided (sparse) IDs.
+But since the test as of now is not doing that - that's the reason why
+the patch only allows to test max vcpu IDs upto max vcpus.
+
+
+
+But I guess you must be hating the #ifdef __powerpc__ there. I agree I
+don't like it either.. maybe we can do it this way?
+
+
+-#ifdef __powerpc64__
+        /*
+-        * powerpc has a particular format for the vcpu ID that depends on
+-        * the guest SMT mode, and the max ID cap is too large for non-SMT
+-        * modes, where the maximum ID is the same as the maximum vCPUs.
++        * Some architectures (e.g. powerpc) encode topology into the vCPU ID,
++        * so a default VM can't necessarily use the full advertised ID range.
++        * Let the arch limit the highest ID this test will create.
+         */
+-       kvm_max_vcpu_id = kvm_max_vcpus;
+-#endif
++       kvm_max_vcpu_id = kvm_arch_vcpu_id_limit(kvm_max_vcpus, kvm_max_vcpu_id);
+
+
+And then in kvm_util.c -
++
++__weak int kvm_arch_vcpu_id_limit(int nr_vcpus, int vcpu_id_max)
++{
++       return vcpu_id_max;
++}
+
+and lib/powerpc/processor.c can define -
+
++
++int kvm_arch_vcpu_id_limit(int nr_vcpus, int vcpu_id_max)
++{
++       /*
++        * The stride is the default SMT mode from KVM_CAP_PPC_SMT (1 on
++        * POWER9+, the host's threads-per-subcore on POWER8) and is always <=
++        * MAX_SMT_THREADS, so the result never exceeds KVM_CAP_MAX_VCPU_ID.
++        *
++        * TODO: exercising the higher (sparse) ID range would require setting
++        * KVM_CAP_PPC_SMT and creating strided vCPU IDs.
++        */
++
++       int stride = kvm_check_cap(KVM_CAP_PPC_SMT);
++
++       return nr_vcpus * (stride > 0 ? stride : 1);
++}
+
+
+If this looks good, then I can re-spin a newer version with the
+following changes:
+
+1. Use above logic in Patch-4 for kvm_create_max_vcpus_test instead of
+   hardcoded #ifdef __powerpc__ logic.
+
+2. Drop patch-5 (print vcpu_id) debug patch
+
+3. Squash all the type specifier changes i.e. Patch 6-10 in the main
+   Patch-3, the patch which adds kvm selftests support for powerpc.
+
+
+-ritesh
 
