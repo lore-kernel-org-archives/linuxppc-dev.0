@@ -1,93 +1,71 @@
-Return-Path: <linuxppc-dev+bounces-22551-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22552-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 463E6CD98CE
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jun 2026 10:37:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4E2C0CD98CE
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jun 2026 11:50:39 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gcGD959rrz2ykX;
-	Fri, 12 Jun 2026 20:37:13 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::633" arc.chain=google.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781260633;
-	cv=pass; b=LIaurWI+GZBVgLBSwJbCA5CAbJSWwIdl8tRz9gZ0Vn/6R9YTn0rbFEyo4kV8U4gNoNG2Ph+X5MMjqAYR7G5DrZHRMKM0X5EuXmkQRRvVS2jp2AFX7TGp+fvrCbhP/VtmypKaZTvqCgmxH1h/2tTgwBMS5Ae+IQNna/7DIDsbPRwdveX5OkqC377GM0YgVF/+gjI0Tqcm0fr9zHmrY0hFcdBmAPBCMBwux2P6fBVIVg8NbjyeigG7AzWT85ZrV4w9SkuUUk7OvgAAGpZSuch9KqovjYvshSVDWfmYJ76/vfGW9fBrBCrKDlL00D+3V/dv7wCHz7EPzNBV+JJpgqLz7A==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1781260633; c=relaxed/relaxed;
-	bh=yGmOz1V0n8WCv2WsgeGuXHK9MeZUgyY4mCLu4WGLECg=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=XfljoqO2EsZTrPNQIJMAW25v97CDPn3eySWafvgDE9XHwj5Zh2Z9Uq/q4sI8iOvNgrcGk9rdkQUElmsdpJ3J+/d6jQOgVUx/8xVXWWZSZNfJgL8Bt7ayG+PPiXfTxCHnF+TBtF+FOL1774ukVNl5uXTGrlFQrR8UjW5+bSFvjoD8JzRL5oUVWvnaSEq1CfB7kx6wOw5UaOS4irZa/RK1AlUMwx9ONeXjX1vCdhRsNrWEa5qEQsEEIfdqALsgilfe+V3fxMP5xTBPTXME/FriJEKBmbEDrMjSeky6BQ150pfPrOaxonZmgSaPmNxUOCFFRlNOhM2DB6NxdiEs/7e0lQ==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=YsxbfXs2; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::633; helo=mail-pl1-x633.google.com; envelope-from=shengjiu.wang@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gcHrs2CB3z2ykX;
+	Fri, 12 Jun 2026 21:50:37 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=192.198.163.13
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781265037;
+	cv=none; b=LY7VFhKP32774u2M+3p6MoVGBTFtkS+JefOPLdsp1GoP8xAjtJkdgWCarwKVcJAUUPPKYZMycwe+DjePb2mBu3t84SnMhj2UUNRh9ZDqxKVH3l7UjTgg92h902QhU0wvbW5/KrhC0jl8GDHOIN92oIQSdGn18SJSoOH6i19WgFvMAYm6ipqfTEbkfQNiDgdLGtYyApywOu2yxt4IIKkmBraAQFlbR0ek7ty3B7RsRmr7hHDqDxthE3rwnRJePucCVjFX/VUABk6mtyuR/m7qXTEG4cO1fB8QFzyuNVyu6r7qUyNNLuZ+eWYjekXTeqXW25c1NSFgGKCeEH1EUsEu6w==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1781265037; c=relaxed/relaxed;
+	bh=5rEICosf2HVUzSwyySyvGPDBPt1a38j13M9yF66Iz3o=;
+	h=From:Date:To:cc:Subject:In-Reply-To:Message-ID:References:
+	 MIME-Version:Content-Type; b=BQQ/6bpB+C0LO8efGnKzjY4UM+L10uPD1T9u8yqIcGwCrLltWwpqY5KwJ9KV/GFRHIlgJFBWjB09AJ1u1YlKeHACD8hyFf1GHb4Tpk/Ni+LaxpD9lCxRzNPbe7V98ti5G7D0K+vEwZXfL+4pNJVsDz+nN1KWePGpfVNef1Vnqd8MAX9b/070pk4ELk5ZxqfCqptxuO3o1UVU4vIsRIvCJgEaOYYUzNNGP6yYKeFI5ePOqyO04PPFKN8bYzSt574B+QmMExJzOZgW0cEY8BEZvFCcr8ZqGEyo4GP0wVNwn7j5uyPFwVPIJ5MzTk1wIFryaH0h7OYBQc0L7pKbXxwDGg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=Mr2ccnwJ; dkim-atps=neutral; spf=pass (client-ip=192.198.163.13; helo=mgamail.intel.com; envelope-from=ilpo.jarvinen@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=YsxbfXs2;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=Mr2ccnwJ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::633; helo=mail-pl1-x633.google.com; envelope-from=shengjiu.wang@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pl1-x633.google.com (mail-pl1-x633.google.com [IPv6:2607:f8b0:4864:20::633])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.intel.com (client-ip=192.198.163.13; helo=mgamail.intel.com; envelope-from=ilpo.jarvinen@linux.intel.com; receiver=lists.ozlabs.org)
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.13])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gcGD85fgFz2yjp
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jun 2026 20:37:11 +1000 (AEST)
-Received: by mail-pl1-x633.google.com with SMTP id d9443c01a7336-2bf30d530bdso8239935ad.3
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jun 2026 03:37:11 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1781260630; cv=none;
-        d=google.com; s=arc-20240605;
-        b=PJS4U42QD1t0HNvOQ8y/wNFdzQTo+kvB2hPIK+AcIqIMrAm4NjAoKZimcw9VnLhGzN
-         3y6MeXKMXJNZrGXpJ2N4vhjDGkSg0GkqKXPRFawLJbLVURpyMwljFpOizgXi7fbox84I
-         2VNttvV5yp5Ys+YX74ZmWMmNHhN71d9HtsiDWFxMds8W/x12vG7RKgVLedh3mCUlO7y9
-         lytP2tN6/N0pgsp4nmYryZzlP03f/qalaj3R0QRKzuLpMLY9X0V6fQgo/njqu4M/Uadn
-         He/pSgJRIyglB+/vnHm3YKOA7W7Tt3ddqo5o3kRI+Qijhi8/ShN+OnKH0l1b+Il/UaGC
-         rptg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=yGmOz1V0n8WCv2WsgeGuXHK9MeZUgyY4mCLu4WGLECg=;
-        fh=WdJ4bI/5F5nOfQys/WGwhJSgQXaI2bkRrFACN67BYDI=;
-        b=WdeJqghz8m63G0boBGvnXdJ814hlIggsJ8tzwpuynT1CW+qnARw8AW13p6p3HNulxT
-         OZkZp0ENLkgnlHEh0qkURHwRHy1sBq0D05M/HYOSgRrXOXl5MjKxXjIHKNesC46x9IBZ
-         r9w2A3bgLw66U2esXXU6e+sMzIfwLEorA3fBGlV5qlUO1VPi1I9ZzOwMvGT6g3wUQrEu
-         dIblSKUDaujEo56jBRjemTUdkML1ttNXNfHzf1SMtM6mCwNGSCaolg3ejAHkONMbqQBV
-         BboXSClU32ulk0WyNj/W04ulQT+RipHYsmzF4TKKymbbBekvbcofGo1+sL0Bg02uw042
-         JI/Q==;
-        darn=lists.ozlabs.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1781260630; x=1781865430; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=yGmOz1V0n8WCv2WsgeGuXHK9MeZUgyY4mCLu4WGLECg=;
-        b=YsxbfXs27gne8awWUfsXjLoVGZQd7Nq75HaCABV1VnshdSd/kFT9qqloB9Gknd9mwP
-         wPuyUYIbZp8Msi/8wi53OWbwZsqWU+BRO/Omnh2OB0NSM5BxZVI7LZL4XKPsUNH5RTlm
-         d0uFGnQIgnIyQlh2TJjWRXvY3+A8TDg5TsGNBXuzwKr/xK//I48K6QRAtFX2cCoWz+tI
-         GYotEpFTapvQ7nd6ohb7+BbpjSG+mkFTif6ZycpdOYd1qzLshfFSvRtZq7BeCCwTT/A5
-         dN7Tgm//oBTJ0mqH/A8JeqjngdYwqwR0yNEubZzzEObMP5ZPlLguLMfPPULYvlQdk8rQ
-         /tTQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1781260630; x=1781865430;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=yGmOz1V0n8WCv2WsgeGuXHK9MeZUgyY4mCLu4WGLECg=;
-        b=TP+XQS9seJLRDAznwm6xXIYqrgJ5eZiBPtwzD8l5u3hjDLFJZmdawK0OZouj2xAdJ9
-         Xxx56iEkB8C5AgPgl342y7CcKmOcpuziw58vkQQw0U/7eWV6TXVFw1KYa2ECw4tmoggZ
-         NBMK4W4TJEHLNMvOy3XzIQUxSGjw1T5LEcnAnKv2mC4hgtTJ70fCLGBDf22cGPrZ9Ozr
-         kpI8JKwPAiy7ql/ZL2aU4G8Pm/r1N5towNziXItJ6X2X+fBZSV59Q3NSUkNm6Amzewbl
-         bF74c+ovwZ5fyvVld+z29NsFl9ogvRcFi9A3xkv1iIuDK/PJbSFzIOFSgXP+GULZdnm3
-         ygOA==
-X-Forwarded-Encrypted: i=1; AFNElJ+GaqX+zvFVKqM04x7nNPGUDa94jQ8uZ/QioRFCOwSAsvBjWkQzEe9oUBVfluT9FUq1qleIxzeBrXIQ3hk=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YxhLYrB7QPYfowOuebTt8y+nWRXlsr/rShCgVI5UbP/Jk04CXtt
-	k6rt+NXRGSbJoKIgCSUTn9b/4Rw3WYkcl9WMrUTDCSp1tzagSDODgpcpXeL5ZE2OJGuOenThcpE
-	QOr4rwgN0evlJLuQ6k85sUQvZRM3BmSY=
-X-Gm-Gg: Acq92OFvAdHHzgZHiNJXgeEUjFSMdWhRx5ejMrsWbkz2vMm9mc0meTTgMw5sRJlAt//
-	s1M7AZB5o3pmcC4cTbTC6ef4O3HSED0vOzt4+egl6XlFB3L1Dw6Gi/XIib2o01TxjXAQsDEtoTv
-	13DRmpo7JysFzOye3SYNkCixKuzFGjkaqJNPfaiaJkXISgEIbTggTU80sndaqO79tfT7RANbDUk
-	+/q0Jn98CcuYdcybMaWpoco5hzx8H7MmZYfYYMoDJJlmOL9BXM0s8lmDhckjA7pNCLFlQUDEFq4
-	MM/dOnNO8m6AU3i6Kg==
-X-Received: by 2002:a05:6a21:350f:b0:3b3:c7e:fda7 with SMTP id
- adf61e73a8af0-3b78406ebe3mr2900723637.39.1781260629920; Fri, 12 Jun 2026
- 03:37:09 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gcHrn2T2tz2yhY
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jun 2026 21:50:30 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1781265034; x=1812801034;
+  h=from:date:to:cc:subject:in-reply-to:message-id:
+   references:mime-version;
+  bh=J6GLAr2FW67tGJ9wFG3aEziqOWOjQ80L6GvpcFfNQns=;
+  b=Mr2ccnwJ9cDiQFI95rIDEp0snu5g6U2CRUYGhdAbsSK+0b7a7Zs5Oh2F
+   i7ft27dV04AJFXFPnDYuMzp4CqtL9ZGztE2XS98wKKpNDZBngzvrbVkeU
+   sXBYAWFOTf/Tgsi2+tAHwn3jdUQoZybn3H213b0N4uSxlmVyKw74XiMqk
+   zsP/OGH6dc9iwS/7AflNE6Hwq2yfEjuQD/ho8rT+r35Det79t67Fyhna6
+   3ypwdNvk4/ezyFPK3skRP1xdQOZfUBzvVtWK5qUsfeU2MtKKAVhBQk7Xy
+   FAd1Xe2k5t+PmiXvB18XubON0viGS3mX76h9yPdODvn9o4xLKpGwu2SEi
+   g==;
+X-CSE-ConnectionGUID: bUhA9HaiTZiu1AvpHqt9Qw==
+X-CSE-MsgGUID: Na+spDCZQP6CyAznWaLBWg==
+X-IronPort-AV: E=McAfee;i="6800,10657,11813"; a="84661982"
+X-IronPort-AV: E=Sophos;i="6.24,200,1774335600"; 
+   d="scan'208";a="84661982"
+Received: from fmviesa006.fm.intel.com ([10.60.135.146])
+  by fmvoesa107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 12 Jun 2026 04:50:25 -0700
+X-CSE-ConnectionGUID: 9qzTIavXSZmlXNMa03/diA==
+X-CSE-MsgGUID: njm1IhwSS0GiY/IEb9WuOg==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.24,200,1774335600"; 
+   d="scan'208";a="242420679"
+Received: from ijarvine-mobl1.ger.corp.intel.com (HELO localhost) ([10.245.245.78])
+  by fmviesa006-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 12 Jun 2026 04:50:20 -0700
+From: =?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>
+Date: Fri, 12 Jun 2026 14:50:17 +0300 (EEST)
+To: Bjorn Helgaas <bhelgaas@google.com>
+cc: linux-pci@vger.kernel.org, Shawn Jin <shawn.jin@asteralabs.com>, 
+    linuxppc-dev@lists.ozlabs.org, Madhavan Srinivasan <maddy@linux.ibm.com>, 
+    Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
+    LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 10/11] PCI: Lower bound bridge window alignment
+In-Reply-To: <20260429122617.7324-11-ilpo.jarvinen@linux.intel.com>
+Message-ID: <4a35f669-b13b-c07a-fbd6-a8ea1ce9a38b@linux.intel.com>
+References: <20260429122617.7324-1-ilpo.jarvinen@linux.intel.com> <20260429122617.7324-11-ilpo.jarvinen@linux.intel.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -101,75 +79,64 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20260609124317.38046-1-sammiee5311@gmail.com> <20260609124317.38046-4-sammiee5311@gmail.com>
-In-Reply-To: <20260609124317.38046-4-sammiee5311@gmail.com>
-From: Shengjiu Wang <shengjiu.wang@gmail.com>
-Date: Fri, 12 Jun 2026 18:36:57 +0800
-X-Gm-Features: AVVi8CenVHdc3LE6HJevD6aErfCNA_Sk-ZJA5DP2qrNShUhv5CBfoCuI5aCO6Ko
-Message-ID: <CAA+D8AN6+oQ6PRNS-KYd42QoS-r1WhGqcafNCewLuXpYsGW4XQ@mail.gmail.com>
-Subject: Re: [PATCH 3/4] ASoC: fsl: fsl_audmix: Validate written enum values
-To: HyeongJun An <sammiee5311@gmail.com>
-Cc: Mark Brown <broonie@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, 
-	Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>, linux-sound@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, Xiubo Li <Xiubo.Lee@gmail.com>, 
-	Fabio Estevam <festevam@gmail.com>, Nicolin Chen <nicoleotsuka@gmail.com>, 
-	Viorel Suman <viorel.suman@nxp.com>, linuxppc-dev@lists.ozlabs.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: multipart/mixed; boundary="8323328-143881065-1781265017=:1266"
 
-On Tue, Jun 9, 2026 at 8:47=E2=80=AFPM HyeongJun An <sammiee5311@gmail.com>=
- wrote:
->
-> fsl_audmix_put_mix_clk_src() and fsl_audmix_put_out_src()
-> convert the user-provided enum item with snd_soc_enum_item_to_val()
-> before checking whether the item is within the enum's item count.
->
-> The generic snd_soc_put_enum_double() helper performs that
-> validation, but these callbacks use the converted value first: the
-> clock-source path tests it with BIT(), and the output-source path
-> indexes the prms transition table with it.
->
-> Reject out-of-range enum items before converting them.
->
-> Fixes: be1df61cf06e ("ASoC: fsl: Add Audio Mixer CPU DAI driver")
-> Assisted-by: Claude:claude-opus-4-8
-> Signed-off-by: HyeongJun An <sammiee5311@gmail.com>
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-Acked-by: Shengjiu Wang <shengjiu.wang@gmail.com>
+--8323328-143881065-1781265017=:1266
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 
-Best regards
-Shengjiu Wang
-> ---
->  sound/soc/fsl/fsl_audmix.c | 6 ++++++
->  1 file changed, 6 insertions(+)
->
-> diff --git a/sound/soc/fsl/fsl_audmix.c b/sound/soc/fsl/fsl_audmix.c
-> index 40a3b7432174..f819f33ec46b 100644
-> --- a/sound/soc/fsl/fsl_audmix.c
-> +++ b/sound/soc/fsl/fsl_audmix.c
-> @@ -117,6 +117,9 @@ static int fsl_audmix_put_mix_clk_src(struct snd_kcon=
-trol *kcontrol,
->         unsigned int *item =3D ucontrol->value.enumerated.item;
->         unsigned int reg_val, val, mix_clk;
->
-> +       if (item[0] >=3D e->items)
-> +               return -EINVAL;
-> +
->         /* Get current state */
->         reg_val =3D snd_soc_component_read(comp, FSL_AUDMIX_CTR);
->         mix_clk =3D ((reg_val & FSL_AUDMIX_CTR_MIXCLK_MASK)
-> @@ -157,6 +160,9 @@ static int fsl_audmix_put_out_src(struct snd_kcontrol=
- *kcontrol,
->         unsigned int reg_val, val, mask =3D 0, ctr =3D 0;
->         int ret;
->
-> +       if (item[0] >=3D e->items)
-> +               return -EINVAL;
-> +
->         /* Get current state */
->         reg_val =3D snd_soc_component_read(comp, FSL_AUDMIX_CTR);
->
-> --
-> 2.43.0
->
+On Wed, 29 Apr 2026, Ilpo J=C3=A4rvinen wrote:
+
+> pci_resource_alignment() does not consider bridge windows special,
+> yet their alignment is subject to different requirements from BAR
+> alignment.
+>=20
+> Add lower bound to bridge window alignment to help callers out to
+> always have large enough alignment.
+>=20
+> Signed-off-by: Ilpo J=C3=A4rvinen <ilpo.jarvinen@linux.intel.com>
+
+Hi Bjorn,
+
+Could you please pull this change and the subsequent one, the commits in=20
+pci/resource:
+
+ae09d28ecbbc ("PCI: Lower bound bridge window alignment")
+cf996b886675 ("PCI: Return valid alignment for assigned resources")
+
+The rest of the changes in this series seem okay and can proceed if you're=
+=20
+okay with keeping a partial series.
+
+The reason for this request is the dev->bus vs dev->subordinate issue=20
+sashiko mentioned in its review.
+
+I've tried to come up with a solution to that but it has become so ugly
+I have not been very happy with it. Maybe there's no other way but the=20
+problem boils down with pci_min_window_alignment() having to be capable of=
+=20
+dealing two cases, each lacking one of the key pointers (bus or bridge=20
+dev):
+
+1) root bus without bus->self
+2) bridge without a subordinate bus struct (if subordinate bus' alloc=20
+   failed)
+
+Only way to solve that I could think of is passing both the bus and the=20
+bridge device to pci_min_window_alignment() and the related arch side=20
+function pcibios_window_alignment(). The ugliest parts then involve=20
+getting a bus pointer compatible with both of those cases, like this:
+
+=09struct pci_controller *phb =3D pci_bus_to_host(bus ? bus : bridge->bus);
+
+But it's too late in the cycle now to try even that, IMO, so better to=20
+wait to the next cycle.
+
+--=20
+ i.
+
+--8323328-143881065-1781265017=:1266--
 
