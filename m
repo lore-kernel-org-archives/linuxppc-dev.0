@@ -1,51 +1,97 @@
-Return-Path: <linuxppc-dev+bounces-22579-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22580-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DAA4ECD8CA8
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jun 2026 17:26:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 57D92CD98D6
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jun 2026 18:09:42 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gcRJj0v7yz2ykX;
-	Sat, 13 Jun 2026 03:26:45 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781285205;
-	cv=none; b=O3WtGeTB0wXE4yZsZ/8WsWVVZbhYX6Sr9dxhVzcLwHP5AQYJdm0ux4JOOxN9RAT8rW5hpOR9PVczx8jKNOVxXysSLt7PNY1Q2mvgPFpFMO4TTM5NtSp01eE5fjM7AKdt7d1ugKrCGsMQK7jzfm7tdTp+Y8EEHZk0lMaARm9iaD4m41XHiIihApjo71jps6QnmzAQOXOQL/JRYgKm4mSXbdX546Z798Q3cfOnRK1JXX9JDnsKGG12Xe3ZFjsmxiVbX8n2n+1BKj1HIbG8NZPqizdB3b+mkqx695xsgPhhzxkBRhY1W4NpuQYwCwbQ9OJgsKAzHlC25QlRQ8z4sLo7pA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gcSGD4pwHz2ykX;
+	Sat, 13 Jun 2026 04:09:40 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::635"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781287780;
+	cv=none; b=QziHTKKgrJOsfQTveCzLlTDNR8wH6w2ORx416+SgdoarlN6hTBClOmKpew6vZrC5lZ9ML6SqgLxLrCE10OkacJCxkNfBdxUmWsOnVbeAb7opABUD6F9Hy/NNa+oOGXiiC63TRu0S54A53MAQM2gyp/r19qell1TKJmhEN3jV45SDoLPqLqku70b78mx0gVLXGZff8+vu01kCIs4HxuyDqZquJ73LAyagOMJuMQwqRQUZYnblWrEUWihzjH7/2qcMfAciOKcFmdt6lgRyGSRnFCZGVAPCW6J0Hqr7mMSVP+Xha3wWoZVWEd7JDCqcC6uhQi4wIh9kQECBZLhdEf2+aw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1781285205; c=relaxed/relaxed;
-	bh=MJ66Jj49kATqUz5BO93tKqC2OHzrNh5fwYy14zcNuTE=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=IpgMftyEoEaaENFNyrDhEsQKjEeyQwwFBA3UzLNdZLGGef6B5sX8nVbAZvYcye2xMu9zT8gpV4wI8uXso3rcs3DRGVC5j9yfZgcpxqVIeOpJ+9HrLPvk/oAXTtx+iQSYjIpn7u+/SV1S43Hv4UXYsi/lTH9sqz4LDuLoWtnHXVSvm++kqhLjyyB3zmxnn3TbgwJ8CzwFlZ9X/WyrEBvc9PcgwWE9HtYDPmxYGTm8MmY0CcOCZ618NXjfedpVvmdzCSa3hBaU747u6IQ8aZ3tqNdDetm+SaNZkSHfbpRWBhdIoOgqSBiq++2mGTT536pBOSrm8vdajatjiwds3wd7rw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Ok0kQL5/; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1781287780; c=relaxed/relaxed;
+	bh=tIviRJIKLG37v3E4DnE8ZIX3XY+lQBK31eI/eTdPTgg=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=NAJXNNVa5n64dblRqOJUaN8XwDTBqiPwI1fxTy0dYJ8FVFP3KNkZxzLN2tyFHCawejCMEIPNWHqjdirj40/mL4HEtobfE5Z0LydC2yz57WHGeofOb/2w4fRTAAUn1q0DTb9e6dC5VI6cQaxbFEyGFfMSDDhdU9aTtq/Qk8hg6RLyYWWuxA0rr1Um6yaLTMvaQ+m52cpHEJskxfSjy6BKtdg+/CPO7bkjre0IQ7cRdnCtls4az2Y+Mdxwd3oVVvqjYHOQoRC5/rWKfAXcReBEevHqX+dQpqQbZNTxy3kuFcjo37ifju/soXGUk4Cymw1X1d0XBc95DeycQl/I8gy4OQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=RBqcnTFZ; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::635; helo=mail-pl1-x635.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Ok0kQL5/;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=RBqcnTFZ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::635; helo=mail-pl1-x635.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pl1-x635.google.com (mail-pl1-x635.google.com [IPv6:2607:f8b0:4864:20::635])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gcRJg6dtmz2yjp
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Jun 2026 03:26:43 +1000 (AEST)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id D6BC540732;
-	Fri, 12 Jun 2026 17:26:40 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 267F21F000E9;
-	Fri, 12 Jun 2026 17:26:35 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1781285200;
-	bh=MJ66Jj49kATqUz5BO93tKqC2OHzrNh5fwYy14zcNuTE=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=Ok0kQL5/NwKsK9GE+i5ErzO1Kxq95eMSQFNJdy8wi8S1hGF3/Onf9ETYAxlMMmoIW
-	 cShhBAyiDp4wjlk531q/5xywqQxPRVkoBhgWIIbN4EPswenr1ZP4LwoFdK1E0uIJcF
-	 E2ploPelATzP8Lrk6I5tSxMM3aSHiJxlMsCJVQ0FIkbaWvpoxhRk7qgoVHRDmZPjXH
-	 ZWY0iuWqOD6b8ExNEg+SbaxD2PVemBybAhOvxHmqLt84ImEr93MBRm88uOrpDVcLny
-	 xm1uiiE56ASCW6VrNSqolgMOzxBdup3e0HmQ9Qr/3pf4Py0EYSMjL+Z0EMKijriSOM
-	 GI5KklgcWw1Vw==
-Message-ID: <1e606b8e-f2dd-459b-9766-7dcd493fac9c@kernel.org>
-Date: Fri, 12 Jun 2026 19:26:33 +0200
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gcSGB6wjfz2yhY
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Jun 2026 04:09:38 +1000 (AEST)
+Received: by mail-pl1-x635.google.com with SMTP id d9443c01a7336-2bf22d29dabso9090425ad.2
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jun 2026 11:09:37 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1781287776; x=1781892576; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=tIviRJIKLG37v3E4DnE8ZIX3XY+lQBK31eI/eTdPTgg=;
+        b=RBqcnTFZPOUkKafpZY8faFo8tPDloOQXT1mIuyL57Z05eN2ga/NDjWkQ0quU3e3O6O
+         U5p50VtSuZV8hk0pJNsUWA60O1qCA0dX2gsKBNnsGgB1YSD1Dv/5gJiuNFiR4gM/Pi29
+         3KtOrSXf332wuMp5IZ0LFb1FfQzq/A++lOp5GQSglgRBvsqxyJyEK1j/GJNgwxmiqFs9
+         Jc0lJ2aQAPY/513nGfaL1VyWlEHyPLCP3EPZlOhYmAYGFpyCfDiBGIfaBRjJybK1E0bL
+         DmbnQMJKmfBQI70GDrrnym/SuR939I6Xx1ZhFJrW8KNg/MkVlOk9pcEBTeGhZ5q5ez/r
+         S1wg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1781287776; x=1781892576;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=tIviRJIKLG37v3E4DnE8ZIX3XY+lQBK31eI/eTdPTgg=;
+        b=d/NdDP0PFM2X9U0z/eQNUwN5b9jkc5Ty+LBKlTxhHyMHqKGd8Z772BLHj619d5MnnG
+         Jxj8I1y7NjkeLwCYJmFvS8/hmG8maQdazGanemJZdelkDXuEupbgFtQbWx2EgV9HCc+1
+         oVzEUwbFhhC//FhzqK5150BkqTyAlqsLgUE/g4Fd/JUYcs2trgawKcBJtoBYec5IHovv
+         4q1xjMiGtSTvT/uuOgdEwQPZpTGy454x2z5gm4mjzduCagdk5vXdiMI8mltYxFEDAsdd
+         JtX0g+4ThnWcgumGsMY0GD3ZGti7Uu8kxoIWinJn+qMw2AMJhTcfHAcTEXqoVgJBOi/h
+         Y1sg==
+X-Forwarded-Encrypted: i=1; AFNElJ/K1Pn3NXhaQCwN04CtgeHydvO0FP3x4IbMtSYElN0uSR1+OUW/sG1CGDa8SN8bWZ3bwZfbVfB+Mx6P28Q=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YyjG9xuFzpWp4rId6UaDv16jq/o0goB1o5BTpR5IkvMK+4tvcba
+	Fho4BDN3w0Rx+A20dEqY7pTBNtSePPcWM6WYfs/r6WEWQYlrkObbbvvq
+X-Gm-Gg: Acq92OGe2VGSC81qkHxts3LzLxUs9+kbIRoNgJvnoQlGtgbKMfKV1ZRDooxMKeBHcPn
+	sNspmiV+UTpyzkY7puT138zvOmMo+nbr/RL4y5RPwEu9Xm6tMOB8T/Ov4QDGJl/KVHRX1NxHG9w
+	c7b8F/aGiBuENUEgBpUeRmVNQu6NzVh+ZNU/C3cphU+U86AvsB9SmkZQhqQnPOYBbBX/fHoN5DZ
+	AsGDl1vg4MhUyPDTMD2WaKWSB5nyUhRG2XUW0W3KiPAQs8fKPg26Bj6W4bZR7X0sYI4IIKEAFqk
+	LeAUK5l1PGK4zfERpfkasCojVZpuifDnGKEagRQKwCkpR7DwTqtqEwWPzR5b/wQhJfpwqP0wupe
+	CgDxPZ9tPR9wURehY9s79ZefRiE5sd0ubu/oGQoKk/k9E/q36T5aAY4G38Fs2MVc+9/v53FxE1Y
+	MKVlzuMBVnuhWzTqmephSGnSwoWI8K5dMs
+X-Received: by 2002:a17:902:cecd:b0:2c2:27be:39a5 with SMTP id d9443c01a7336-2c412749c19mr43103815ad.33.1781287775593;
+        Fri, 12 Jun 2026 11:09:35 -0700 (PDT)
+Received: from pve-server.rlab ([49.205.216.49])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2c42f7c70easm38956975ad.25.2026.06.12.11.09.29
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 12 Jun 2026 11:09:34 -0700 (PDT)
+From: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
+To: linux-mm@kvack.org
+Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Christophe Leroy <chleroy@kernel.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Chris Li <chrisl@kernel.org>,
+	Kairui Song <kasong@tencent.com>,
+	Kemeng Shi <shikemeng@huaweicloud.com>,
+	Nhat Pham <nphamcs@gmail.com>,
+	Baoquan He <baoquan.he@linux.dev>,
+	Barry Song <baohua@kernel.org>,
+	Youngjun Park <youngjun.park@lge.com>,
+	David Hildenbrand <david@kernel.org>,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org,
+	Sayali Patil <sayalip@linux.ibm.com>,
+	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
+Subject: [PATCH v3 0/3] mm, swap: Enable THP SWAP for PowerPC Book3S64
+Date: Fri, 12 Jun 2026 23:39:14 +0530
+Message-Id: <cover.1781287297.git.ritesh.list@gmail.com>
+X-Mailer: git-send-email 2.39.5
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -59,93 +105,49 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] v2 Documentation: arch: fix brackets
-To: Manuel Ebner <manuelebner@mailbox.org>, Vineet Gupta <vgupta@kernel.org>,
- Jonathan Corbet <corbet@lwn.net>, Shuah Khan <skhan@linuxfoundation.org>,
- Peter Griffin <peter.griffin@linaro.org>,
- Alim Akhtar <alim.akhtar@samsung.com>,
- Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>,
- Madhavan Srinivasan <maddy@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
- Christophe Leroy <chleroy@kernel.org>,
- "open list:SYNOPSYS ARC ARCHITECTURE" <linux-snps-arc@lists.infradead.org>,
- "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>,
- open list <linux-kernel@vger.kernel.org>,
- "moderated list:ARM/SAMSUNG S3C, S5P AND EXYNOS ARM ARCHITECTURES"
- <linux-arm-kernel@lists.infradead.org>,
- "open list:ARM/SAMSUNG S3C, S5P AND EXYNOS ARM ARCHITECTURES"
- <linux-samsung-soc@vger.kernel.org>,
- "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
- <linuxppc-dev@lists.ozlabs.org>
-Cc: Randy Dunlap <rdunlap@infradead.org>
-References: <20260612095432.177759-2-manuelebner@mailbox.org>
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Content-Language: en-US
-Autocrypt: addr=krzk@kernel.org; keydata=
- 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
-In-Reply-To: <20260612095432.177759-2-manuelebner@mailbox.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 
-On 12/06/2026 11:54, Manuel Ebner wrote:
-> Add missing and remove needless parentheses, brackets and curly braces.
-> Fix typos.
-> 
-> Signed-off-by: Manuel Ebner <manuelebner@mailbox.org>
-> Reviewed-by: Randy Dunlap <rdunlap@infradead.org>
-> ---
-> [v1] -> [v2]
-> "(i.e cache geometries)" -> "(e.g., cache geometries)"
-> "Excer[t" -> "Excerpt"
-> add Reviewed-by: Randy Dunlap
+On PowerPC Book3S64, MMU is selected at runtime, so macros like PMD_SHIFT
+are effectively runtime variables in the Book3S64 code. THP swap code uses
+these macros for e.g. to size some of its array data structures based on
+PMD_ORDER. This patch series makes that usage dependent on the runtime
+variable and provides an upper-bound architecture override for cases (e.g.
+SWAP_NR_ORDERS), where the runtime conversion is not considered beneficial.
 
-You mixed up subject.
+This series increases bandwidth throughput with zram backend for swapout by
+around 40-50% with Radix and 100-130% with Hash (Tested by Sayali)
 
-Please version your patches correctly, e.g. use b4 or git format-patch
--vX.
+Note that this patch series is based out of linux-next (next-20260608).
 
-Best regards,
-Krzysztof
+v2 -> v3:
+=========
+1. Fixed sparse warning for swap_table_use_page reported by lkp in patch-1
+
+RFC -> v2:
+==========
+1. Send the unused leftovers change in swap.h separately [1]
+2. Changed RFC Patch-3 design from runtime SWAP_NR_ORDERS to arch override
+   (ARCH_MAX_PMD_ORDER) - suggested by Youngjun
+3. Dropped RFC tag
+
+[1]: https://lore.kernel.org/linux-mm/68591daf0d679e5a0072d63751f187d14613e2b0.1781146877.git.ritesh.list@gmail.com/
+[RFC]: https://lore.kernel.org/linux-mm/cover.1781000840.git.ritesh.list@gmail.com/
+[v2]: https://lore.kernel.org/linuxppc-dev/cover.1781170904.git.ritesh.list@gmail.com/
+
+Ritesh Harjani (IBM) (3):
+  mm, swap: make SWAPFILE_CLUSTER runtime
+  mm, swap: allow archs to override SWAP_NR_ORDERS via ARCH_MAX_PMD_ORDER
+  powerpc: Kconfig: Enable THP_SWAP on Book3S64
+
+ arch/powerpc/include/asm/book3s/64/pgtable.h |  7 +++++
+ arch/powerpc/platforms/Kconfig.cputype       |  1 +
+ include/linux/swap.h                         | 12 ++++++++-
+ mm/swap.h                                    |  5 ++--
+ mm/swap_table.h                              |  6 ++---
+ mm/swapfile.c                                | 27 ++++++++++++++++----
+ 6 files changed, 46 insertions(+), 12 deletions(-)
+
+--
+2.39.5
+
 
