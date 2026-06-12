@@ -1,76 +1,76 @@
-Return-Path: <linuxppc-dev+bounces-22533-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22534-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1DC4ECD8C9D
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jun 2026 04:00:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 00982CD8CA8
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jun 2026 04:00:09 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gc5PR5BlFz3bs0;
-	Fri, 12 Jun 2026 13:59:39 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::42a"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781236779;
-	cv=none; b=hsSMNmiri9xeH4ThsFrkUtLNioljVlJlZW8uv9lgDuVinauXWe1u9eFoqExKmUZ2vHlojLgfx8JiUC9c/Jwx5XrJ1dk99FpF1FX7FRAV04xoNg/ExnAaIiPikQotKxOM3erc8+GwzJhuhfoEDb2rrH7uqIZTGObEjQ7oOhOe4Pw1V0odoG54xWsvk7Q8dF6iagp2g8FrtNC0m+gqjYjv6EdsmqqmpFrZkgIokW2q30Hjjd0l7MBFGCMHRU2iSpkFQruVwrcvs1MOwHLl4S6Ma1tLQ8GH9EPUin7krLUp7+krCeMfREaz+v7UMv/30eXQxfCR6KNDQS28XfO2BsOOvw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gc5PX2YkDz3bsK;
+	Fri, 12 Jun 2026 13:59:44 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::431"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781236784;
+	cv=none; b=HL9pfH0yYh/9CP3I1e20DvfgwdG7q6bZ675XZSis2H4KEfV5UR1SZgWlWnJ9mlIDpGvn21z6avgPyjYpmDOZEEK7SoGHSqlS6EwrgY3PJEFVNQkO/c99UaAoANGE+UI0oybpS0Y6sxSzLODgoEB6H5ESSP1S5+MtRKISvS5tl5YJuKH3whCMxnatVBPkjBf5Y43vLrQ9X8JO+Rh8DB2gfTwPFMuT2x5xFFc3THfVqZc1OM0ilUcAuUUPvdTJ5O33yUBED7Elbj/KihU9+wbhY4J5AFlJMZzDWooNI7tFpbSkWAJvqqWZWswCcHtRou5c4l0FHX4MjwdQ9tpxQq+6JA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1781236779; c=relaxed/relaxed;
-	bh=TPNP/s8YQi9s7EHLxOTbc3dEJlnMSCHwNqhJjmE6eW0=;
+	t=1781236784; c=relaxed/relaxed;
+	bh=dEbLew8Y02WMzZJgEmHXqmt5ZtOiSFYiY5ZmDDudBcc=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=iohb6GddBOZzPVsH21M9uKr3m703wzZsuJq3LsvSdhgwOclHh6036h7BoGMHOibNGVJ4saEuGGiwylQPtxLQ6ze82WL//905g4aHj5z1MS3TtMtwkRsIicXE5FHafqEeirarugOi3HisQB8g+AtWlF7BJwM3Fung5Veap3WGSr88PJf7D5JwEld6pKDmVSSy+PFaCTDlMBQcUfhSz1emAcsh7YOlr7yFFaKN/mj5FBPmxa38/IIiezgWH2T25SBeA2X47XMjIfhYaxGCERRIH0HgrXmqBGuwBjQDPxvYDiKdOs/xxFtH1i12emvgGaQfGZ5QP8ZbqH3v0cBr0u+Qkw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=bytedance.com; dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=Mdcxelcb; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::42a; helo=mail-pf1-x42a.google.com; envelope-from=songmuchun@bytedance.com; receiver=lists.ozlabs.org) smtp.mailfrom=bytedance.com
+	 MIME-Version; b=DQh+7b/xx7NIZMld/asoLPUzuIeB2xcEtxfdUWBR/lkNbLRmRidmDg6eBrqanRP8ToQUGB+C5TWw+undmq5snYJg4pXJGt+AsGqkAsEEKNbppwJS4RHjBhe99swSmLM/NVWV2xnZZc4nieKSyrWxfJVgfhYI3FgQNwp5Lzp96jUhSAAXYC9Gj+URRDfhM4qVCrwywEPjLVNV9hqnscL5n7yFtu6ayRp79momdNWV7+uecIl1OMiukAJhqbWunXU4jXZFuGcmRUr1HZaR6t69bqA3Rnczun47oOYIR0Zu0TdcdO3Xh3uMLcOGC6CwLsMO3HjZYE3YFEPK+xuLl1NU9g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=bytedance.com; dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=XnTa2jri; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::431; helo=mail-pf1-x431.google.com; envelope-from=songmuchun@bytedance.com; receiver=lists.ozlabs.org) smtp.mailfrom=bytedance.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=bytedance.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=Mdcxelcb;
+	dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=XnTa2jri;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bytedance.com (client-ip=2607:f8b0:4864:20::42a; helo=mail-pf1-x42a.google.com; envelope-from=songmuchun@bytedance.com; receiver=lists.ozlabs.org)
-Received: from mail-pf1-x42a.google.com (mail-pf1-x42a.google.com [IPv6:2607:f8b0:4864:20::42a])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bytedance.com (client-ip=2607:f8b0:4864:20::431; helo=mail-pf1-x431.google.com; envelope-from=songmuchun@bytedance.com; receiver=lists.ozlabs.org)
+Received: from mail-pf1-x431.google.com (mail-pf1-x431.google.com [IPv6:2607:f8b0:4864:20::431])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gc5PR0m9vz3brx
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jun 2026 13:59:39 +1000 (AEST)
-Received: by mail-pf1-x42a.google.com with SMTP id d2e1a72fcca58-84229481d44so308107b3a.0
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jun 2026 20:59:38 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gc5PW5Ld2z3brx
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jun 2026 13:59:43 +1000 (AEST)
+Received: by mail-pf1-x431.google.com with SMTP id d2e1a72fcca58-8422524cb38so266818b3a.0
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jun 2026 20:59:43 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=bytedance.com; s=google; t=1781236777; x=1781841577; darn=lists.ozlabs.org;
+        d=bytedance.com; s=google; t=1781236782; x=1781841582; darn=lists.ozlabs.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=TPNP/s8YQi9s7EHLxOTbc3dEJlnMSCHwNqhJjmE6eW0=;
-        b=Mdcxelcb5ePHMIVn20Wzc7yN+F1B5xTG+x7OLnls+CmUXtfwESGrxzg8z7ThR53V8b
-         Qg+7nZb4ZTm/Zv0UF8opz16y7qNMEPv/u18f8iL0aGaPhO0u2je+sTpmwVb6MGeo7oza
-         FTFzSYKrvdDT9G6i2PF3ZohcvlTfOoMUpl2Ir1VWy4qn+A0s04jgqS0ao0pn+swLQT5S
-         JScvGGvUQq9yq4AiuB6uL/La7gYLsV0UIubkxARqso24PrAzDyAsmRkEiTnC+SCiiktj
-         LW2fMpGvkbOZhpsq4ZEVNTjKrv/3dtGvQM4MSLr5VMHRwtf8yOPLnZawtJLpwp3nDeIf
-         Al1g==
+        bh=dEbLew8Y02WMzZJgEmHXqmt5ZtOiSFYiY5ZmDDudBcc=;
+        b=XnTa2jriaxo9AMztMu55h1/is9uvuCijXZ7u66gtMBaMKnp4QRorqZcHzTevtHXtg1
+         79b+IjW+82h135vYevZvbrnqY3aQaxefdDgVmgMdvRcWWu7ht3uXy8tlFgUCu0Y7u2GL
+         qTsklSiU+BwN8HGxysM8EkiyC47LZrqxMSzk4koGWPR+eWZO59IJC1vR3yGZet+xjnZp
+         mP0fUELCPDRQbo7VFjZoOPj5sypfKLtyGkQtaItlIR3qGq1pWqGZpDsdIrsAJbPEcXFo
+         NjEQEGkVRjPF7GVqOsJAO4hYmnjadOk5egqJfmPmV1hz8NaQEKQfBJnBFLPITzbGEj58
+         lT4Q==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1781236777; x=1781841577;
+        d=1e100.net; s=20251104; t=1781236782; x=1781841582;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to;
-        bh=TPNP/s8YQi9s7EHLxOTbc3dEJlnMSCHwNqhJjmE6eW0=;
-        b=iIAMfRPYGhVOjnTtb9RQyKMX/JO8026C1uzrHNQ32luTl8/RfYdKD/0G4PXLO2r62x
-         cs2PziUr/jheUDynIwmv35d9gVJXYDkzClF8Nt7XQwwOiie/NI4VZY3wueIu4qBeICJx
-         c+DxxzFkZ0YzkdrTcT+Wc6LvAAQqdaszavGSK1bO0hpo2dLhVg00H1sY7eQ1Yc+8BEcp
-         GTVD4lUPRZroblU6DXPMi+F8bIFUXc9wV4VUyCjJfWEVyVGJd7DimZ9mVxaYHGhi4/tj
-         tbLaEvdsw8gAuS8jPsIMPail9443zRxon5rJpcBvWZFZQLXuJd/BnoDmKidTaGoA9vVW
-         qZwg==
-X-Forwarded-Encrypted: i=1; AFNElJ9E12/HZlazeGLRNwEiW+JM7XMAjEJHZNOgefI4eRThdaFk6uFksJrbXhheqriE7CC6CTOZxhkRTn6Y9ms=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yzs+4t9LVqELpKOFJk/BHsUTujJ6DySlHsnmC9c94l6Y3kV+p7K
-	J8fOPzlWGqxEICVo+Ud7V+PzYONtB8p0uJWMwbCrvcu92Sx8HMdBoP9jJMS3LyAMHV4=
-X-Gm-Gg: Acq92OF7toUkaq83/Io1RXP/GCls3sXSpXa/VqLXiiaXHgZ5YeeY3/dpSpx0iNb8VXz
-	qLe9u6ZGFbz/aIUOeNMzX0xTUSzm4T8Nqv8vAA2IG1EvbL1n9UCt5+Bk/1Taedie/TEvWzktfCl
-	13JyW0319hFk17tqfPspglfAxvlb4HC5ZYIA+15IHLi6N3siXKHz6y3eDUVrjfNTSl2BhAuAFkJ
-	XxRCdDRBpODd1mG1kdEPlzLKbCuBHET8zuyIu46TUuUxxx+PmsTSgHjWukn+FmE5xD/lYpa25F9
-	IDgc2Cl+8secvKJpeMnqBTVi9k3w+lBK4+CjdbZ7Fg/ukM2czHgoDacmXQz4sGHJLhQcVYQmegU
-	VoE+CIclZHHm9NG4LcuStvuKO181ESjUYl6m/RAV/E5YCRDiJHgnef3H170WavzFSPnKS10l5wY
-	UslUwOi2pzKjvOlbDyQRzfx/u160UjD76tkdfXB7VZgNY=
-X-Received: by 2002:a05:6a00:148d:b0:842:6a3b:60d8 with SMTP id d2e1a72fcca58-8434ce0d4b4mr1113011b3a.30.1781236776918;
-        Thu, 11 Jun 2026 20:59:36 -0700 (PDT)
+        bh=dEbLew8Y02WMzZJgEmHXqmt5ZtOiSFYiY5ZmDDudBcc=;
+        b=S+BXQn6qg2rLyARHI5v7jWfCLMxjuGOY6ORg3aGFBTaZf3HfWJrwg4d6RuaVFeRDD4
+         yHzYKbJ2C3/BBBWdq2DjeDtHNtQdg432mbFsrKOFyQAe77oDK4Z1OX5Iv1wwJTjk0/9i
+         rEUja3qZueHigC23V+fgcQ25RSN9dUGcAlsAPo+PKOQ8Vr8HORUnHY4LxglppN6sNm5W
+         3JZPcWv1TrjovHzyWvxopbh7g+9zzA/fKK+iyDcnvpzeycmnV++zayN9Qdo40gxXI7Ap
+         MHMYhpZTJAlWWnr6ICHoAFtac/AGN/oawHSnq0au2BSWOstp5SHcuTEJ6HzhR9p3YU0U
+         ZuOQ==
+X-Forwarded-Encrypted: i=1; AFNElJ+UaG8DZr1rHK+Kr7xmNI+bNgmvjdPVZwrsQxNYgDKyiw9CXi20aKPFWDUlhx+RHu2qOEPPJuYkhqG9eq4=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YyC62IGmIyCYi7CFAaOEir4EfxMsZBVxqK3TZOcM48QTdAASZIK
+	YckZ0r4hgsLytTVpzMOu4vaWv7yeAsdPDCbjaLuoCaEL7+jUqFkbBjL6FaazQOBt/p4=
+X-Gm-Gg: Acq92OF1mchhvmVjcLyQ0JFxmyyZjTBo+BO9dO+dTR38e2p2j+oFtv4SEoGgBLC09yM
+	6kMGthZdG563GbIh9vEecvQwIwqPRhHxULD33F9mILee9GZcWQW9bRRHVREW0v8s1Eom96feHfr
+	BWO4pfvJBBv3wD7AcqytGUQvF9/TRshY1oTefq/pppItCFBlcUJj9/Ve1UnN/Q+KBhuXNC5sNq2
+	4nrKQH9yOBtDMJGYduayGI0POKCn4kBYOBr0j8ovLtlHIikoaXkgwFJZ2ugstpYGt/ls2wqoWXS
+	U7geQ+WyGHVHJwGzUbB8P1Qizm9bcBybe4pX9chlaulHV3UApOEsruG29VA+7PLRZ65Q/y9/aIw
+	ksXWFU13r0FGxOxFS8R+OnZwBZNs98PRT2OPvYp3mQR27k8ZcWhlSNqUb7vNLSY7NqG9vWhtQEF
+	mTV8T27WhBJRXzBrnIpc7kPO4V476jHj0fzU0lX3yD4FA=
+X-Received: by 2002:a05:6a00:f95:b0:842:4a39:6047 with SMTP id d2e1a72fcca58-8434ce93db8mr1116163b3a.29.1781236781794;
+        Thu, 11 Jun 2026 20:59:41 -0700 (PDT)
 Received: from n232-176-004.byted.org ([36.110.163.99])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-8434ad03fdcsm643352b3a.24.2026.06.11.20.59.32
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-8434ad03fdcsm643352b3a.24.2026.06.11.20.59.37
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 11 Jun 2026 20:59:36 -0700 (PDT)
+        Thu, 11 Jun 2026 20:59:41 -0700 (PDT)
 From: Muchun Song <songmuchun@bytedance.com>
 To: Oscar Salvador <osalvador@suse.de>,
 	David Hildenbrand <david@kernel.org>,
@@ -91,9 +91,9 @@ Cc: Muchun Song <muchun.song@linux.dev>,
 	linuxppc-dev@lists.ozlabs.org,
 	Mike Kravetz <mike.kravetz@oracle.com>,
 	Muchun Song <songmuchun@bytedance.com>
-Subject: [PATCH v4 05/19] mm/mm_init: Simplify deferred_free_pages() migratetype init
-Date: Fri, 12 Jun 2026 11:58:49 +0800
-Message-ID: <20260612035903.2468601-6-songmuchun@bytedance.com>
+Subject: [PATCH v4 06/19] mm/sparse: Panic on memmap and usemap allocation failure
+Date: Fri, 12 Jun 2026 11:58:50 +0800
+Message-ID: <20260612035903.2468601-7-songmuchun@bytedance.com>
 X-Mailer: git-send-email 2.54.0
 In-Reply-To: <20260612035903.2468601-1-songmuchun@bytedance.com>
 References: <20260612035903.2468601-1-songmuchun@bytedance.com>
@@ -112,81 +112,110 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-deferred_free_pages() open-codes two loops to initialize the pageblock
-migratetype for a range of pages.
+When vmemmap or usemap allocation fails, sparse_init_nid() currently
+marks the section non-present and continues. Later boot-time code can
+still walk PFNs in that section without checking for this partial setup,
+which leads to invalid accesses. subsection_map_init() can also touch an
+unallocated usemap.
 
-Replace them with pageblock_migratetype_init_range() to remove the
-duplication and make the code clearer (Note that deferred_free_pages()
-may be called from atomic context).
+Auditing and fixing all early PFN walkers for this case is not worth the
+complexity. These allocation failures are expected to be fatal anyway,
+and other memory models already treat them that way.
+
+Make memmap and usemap allocation failures panic immediately instead of
+trying to recover and crashing later in less obvious ways. This is also
+consistent with how other memory model configurations handle memmap
+allocation failures.
 
 Signed-off-by: Muchun Song <songmuchun@bytedance.com>
 Acked-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
 Acked-by: Oscar Salvador <osalvador@suse.de>
 ---
- mm/mm_init.c | 19 ++++++++-----------
- 1 file changed, 8 insertions(+), 11 deletions(-)
+ mm/sparse.c | 44 +++++++++-----------------------------------
+ 1 file changed, 9 insertions(+), 35 deletions(-)
 
-diff --git a/mm/mm_init.c b/mm/mm_init.c
-index 92e88fca717f..5c7359693ba2 100644
---- a/mm/mm_init.c
-+++ b/mm/mm_init.c
-@@ -674,15 +674,15 @@ static inline void fixup_hashdist(void)
- static inline void fixup_hashdist(void) {}
- #endif /* CONFIG_NUMA */
- 
--#ifdef CONFIG_ZONE_DEVICE
-+#if defined(CONFIG_ZONE_DEVICE) || defined(CONFIG_DEFERRED_STRUCT_PAGE_INIT)
- static __meminit void pageblock_migratetype_init_range(unsigned long pfn,
--		unsigned long nr_pages, int migratetype)
-+		unsigned long nr_pages, int migratetype, bool atomic)
+diff --git a/mm/sparse.c b/mm/sparse.c
+index 16ac6df3c89f..c92bbc3f3aa3 100644
+--- a/mm/sparse.c
++++ b/mm/sparse.c
+@@ -239,15 +239,8 @@ struct page __init *__populate_section_memmap(unsigned long pfn,
+ 		struct dev_pagemap *pgmap)
  {
- 	const unsigned long end = pfn + nr_pages;
+ 	unsigned long size = section_map_size();
+-	struct page *map;
+-	phys_addr_t addr = __pa(MAX_DMA_ADDRESS);
  
- 	for (pfn = pageblock_align(pfn); pfn < end; pfn += pageblock_nr_pages) {
- 		init_pageblock_migratetype(pfn_to_page(pfn), migratetype, false);
--		if (IS_ALIGNED(pfn, PAGES_PER_SECTION))
-+		if (!atomic && IS_ALIGNED(pfn, PAGES_PER_SECTION))
- 			cond_resched();
- 	}
+-	map = memmap_alloc(size, size, addr, nid, false);
+-	if (!map)
+-		panic("%s: Failed to allocate %lu bytes align=0x%lx nid=%d from=%pa\n",
+-		      __func__, size, PAGE_SIZE, nid, &addr);
+-
+-	return map;
++	return memmap_alloc(size, size, __pa(MAX_DMA_ADDRESS), nid, false);
  }
-@@ -1142,7 +1142,7 @@ void __ref memmap_init_zone_device(struct zone *zone,
- 				     compound_nr_pages(pfn, altmap, pgmap));
- 	}
+ #endif /* !CONFIG_SPARSEMEM_VMEMMAP */
  
--	pageblock_migratetype_init_range(start_pfn, nr_pages, MIGRATE_MOVABLE);
-+	pageblock_migratetype_init_range(start_pfn, nr_pages, MIGRATE_MOVABLE, false);
+@@ -300,17 +293,14 @@ static void __init sparse_init_nid(int nid, unsigned long pnum_begin,
+ 				   unsigned long map_count)
+ {
+ 	unsigned long pnum;
+-	struct page *map;
+-	struct mem_section *ms;
  
- 	pr_debug("%s initialised %lu pages in %ums\n", __func__,
- 		nr_pages, jiffies_to_msecs(jiffies - start));
-@@ -1981,12 +1981,12 @@ static void __init deferred_free_pages(unsigned long pfn,
- 	if (!nr_pages)
- 		return;
- 
-+	pageblock_migratetype_init_range(pfn, nr_pages, mt, true);
-+
- 	page = pfn_to_page(pfn);
- 
- 	/* Free a large naturally-aligned chunk if possible */
- 	if (nr_pages == MAX_ORDER_NR_PAGES && IS_MAX_ORDER_ALIGNED(pfn)) {
--		for (i = 0; i < nr_pages; i += pageblock_nr_pages)
--			init_pageblock_migratetype(page + i, mt, false);
- 		__free_pages_core(page, MAX_PAGE_ORDER, MEMINIT_EARLY);
- 		return;
- 	}
-@@ -1994,11 +1994,8 @@ static void __init deferred_free_pages(unsigned long pfn,
- 	/* Accept chunks smaller than MAX_PAGE_ORDER upfront */
- 	accept_memory(PFN_PHYS(pfn), nr_pages * PAGE_SIZE);
- 
--	for (i = 0; i < nr_pages; i++, page++, pfn++) {
--		if (pageblock_aligned(pfn))
--			init_pageblock_migratetype(page, mt, false);
--		__free_pages_core(page, 0, MEMINIT_EARLY);
+-	if (sparse_usage_init(nid, map_count)) {
+-		pr_err("%s: node[%d] usemap allocation failed", __func__, nid);
+-		goto failed;
 -	}
-+	for (i = 0; i < nr_pages; i++)
-+		__free_pages_core(page + i, 0, MEMINIT_EARLY);
++	if (sparse_usage_init(nid, map_count))
++		panic("Failed to allocate usemap for node %d\n", nid);
+ 
+ 	sparse_vmemmap_init_nid_early(nid);
+ 
+ 	for_each_present_section_nr(pnum_begin, pnum) {
++		struct mem_section *ms;
+ 		unsigned long pfn = section_nr_to_pfn(pnum);
+ 
+ 		if (pnum >= pnum_end)
+@@ -318,34 +308,18 @@ static void __init sparse_init_nid(int nid, unsigned long pnum_begin,
+ 
+ 		ms = __nr_to_section(pnum);
+ 		if (!preinited_vmemmap_section(ms)) {
++			struct page *map;
++
+ 			map = __populate_section_memmap(pfn, PAGES_PER_SECTION,
+-					nid, NULL, NULL);
+-			if (!map) {
+-				pr_err("%s: node[%d] memory map backing failed. Some memory will not be available.",
+-				       __func__, nid);
+-				pnum_begin = pnum;
+-				sparse_usage_fini();
+-				goto failed;
+-			}
++							nid, NULL, NULL);
++			if (!map)
++				panic("Failed to allocate memmap for section %lu\n", pnum);
+ 			memmap_boot_pages_add(DIV_ROUND_UP(PAGES_PER_SECTION * sizeof(struct page),
+ 							   PAGE_SIZE));
+ 			sparse_init_early_section(nid, map, pnum, 0);
+ 		}
+ 	}
+ 	sparse_usage_fini();
+-	return;
+-failed:
+-	/*
+-	 * We failed to allocate, mark all the following pnums as not present,
+-	 * except the ones already initialized earlier.
+-	 */
+-	for_each_present_section_nr(pnum_begin, pnum) {
+-		if (pnum >= pnum_end)
+-			break;
+-		ms = __nr_to_section(pnum);
+-		if (!preinited_vmemmap_section(ms))
+-			ms->section_mem_map = 0;
+-	}
  }
  
- /* Completion tracking for deferred_init_memmap() threads */
+ /*
 -- 
 2.54.0
 
