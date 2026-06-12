@@ -1,76 +1,76 @@
-Return-Path: <linuxppc-dev+bounces-22537-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22538-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5F6A3CD8CA8
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jun 2026 04:00:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CA956CD8CA8
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jun 2026 04:00:38 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gc5Pq58C5z3bsZ;
-	Fri, 12 Jun 2026 13:59:59 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::42b"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781236799;
-	cv=none; b=ezeYL+Sw9aKy9Z5+aMXtTuOyPhg9uC44VfvtykUG4eML0V+R8SnZ6LFUtpYdYbFREREX1ZzKMKoVH1iQ8LAHkds1NYVE7eox0RAX4gzgndwC/4Vc5I3nfUpVoaGTN97kqoVyVNmnYiRUbBoUkJkiHtx+5f4d8G5mlhxyiCWZtbtGSTnL2hzMDb0WM+cRYsDtKZ2I81nS6625OgZrQ8ePEGqblo8ndOXrzBJUNtNxShQhBV2fla/aoJUVMXFDlE40I+V+SalS5lawsQ1pC24ppg4Jtj8zDEWQCamrFF07RM12cmtZjlkoINCue0DD6M80e3MgUS0jhtmvQ4NNgxFftg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gc5Px3Vwjz3bsM;
+	Fri, 12 Jun 2026 14:00:05 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::42c"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781236805;
+	cv=none; b=HsHGAcRGhGbJTvuwu7xwm8HqbTPQoJqlff++Iff5ejdIBMTDADWXHuU0eA4A9qeSvNuzyybPXTZiJ4fg/EnZZUZKAr5xAaVBzNbGwmN5J0Z18qOu93F8UCWmQIqVcTwEx1byTE9wdHxQPRwukNkWlnDawqj6MTuzKPUjnELEUIOWweFI1jXDjcvBGp1usp3ubGDxPCJQ3g9JY4RF2rRILikzMRxQybdIDyhNeLL3xtMpYy+Cp98kzAtPGQbsFJm2mpfZ0oSJpq0omgdPMWcAhigm7VMt5g89wBJfTHvocNbMFP02ye7Kzo3J5f9vM1CNtQcfCkBOKsvTs+PjyNk8EA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1781236799; c=relaxed/relaxed;
-	bh=BR0a3ryVRFpnQOFzhfXrKrFPrgwx6VYHHIteJPCS1zU=;
+	t=1781236805; c=relaxed/relaxed;
+	bh=yo9t8lKmmaXZlPvADJP1ElnBLtvvFqj3ytBwR1urti0=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=Mp7EOeWjsXPooTEmMT6xRYSsii51Kll705y8CVpBXvSkllOjWT2ScX5SMR39/KQ4JoUs1qt//JbaLT4qLn04TrV2cPuIL6NZpXjBCjbAPo++J3JlDCT7oDQaP3/VkgiWcMXPSYBLmQ4qvVWNmiuzHLc5ePrAeaRGDg9W04R4BjILh7eOv6XpoGYmuMV6vqzJzvM7wc3bX+wG6OSxtZy+quU2P1sqUg7lDW9hxPZjRzUEgJ+EUFM1e2xH/6uY/armdzPLpmz3eFUt8MU+JLmrn5zUMSnPNPqkHPjNda3EmIF8Dw87Dml/OThJLa91zYtgCHiShjJC46oVJrgZ7bbYjQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=bytedance.com; dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=VNEZqGBA; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::42b; helo=mail-pf1-x42b.google.com; envelope-from=songmuchun@bytedance.com; receiver=lists.ozlabs.org) smtp.mailfrom=bytedance.com
+	 MIME-Version; b=kyeBMCtqpcfRczvgIzBZnHmrJFoN9W1tIa4oos86CeDL/hx7nZmPEGR+/BFDkgh2r793G3Ju9CWXA/mqkog4pQvf7oKuvCvjV4TgvXqfe3P6DMPOMvwnQOo4axDg4uMlBJgRquhswzDC5eDKYxDhIrJ6A5j2b7hrEP1n6xp0vD+e7snfmKBydkdW/dnfjP33sdeAmQLUbJhDrtebq1+NoztkWR3q8LJM6X392OrQqXoCFhIPb6mbw9zjmyKkVZc7wJIa+6dfbBwQNu4nzsdk50JpMKdmKQBRu5dJGHt4yDCRIY+a1QIut5AYjTk7UtMLlRIPdFBaN7YKHLegREPmbA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=bytedance.com; dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=AWXBiynd; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::42c; helo=mail-pf1-x42c.google.com; envelope-from=songmuchun@bytedance.com; receiver=lists.ozlabs.org) smtp.mailfrom=bytedance.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=bytedance.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=VNEZqGBA;
+	dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=AWXBiynd;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bytedance.com (client-ip=2607:f8b0:4864:20::42b; helo=mail-pf1-x42b.google.com; envelope-from=songmuchun@bytedance.com; receiver=lists.ozlabs.org)
-Received: from mail-pf1-x42b.google.com (mail-pf1-x42b.google.com [IPv6:2607:f8b0:4864:20::42b])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bytedance.com (client-ip=2607:f8b0:4864:20::42c; helo=mail-pf1-x42c.google.com; envelope-from=songmuchun@bytedance.com; receiver=lists.ozlabs.org)
+Received: from mail-pf1-x42c.google.com (mail-pf1-x42c.google.com [IPv6:2607:f8b0:4864:20::42c])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gc5Pq0Vfbz3bsj
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jun 2026 13:59:58 +1000 (AEST)
-Received: by mail-pf1-x42b.google.com with SMTP id d2e1a72fcca58-8422f395a4aso418418b3a.0
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jun 2026 20:59:58 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gc5Pv4rqFz3bsQ
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jun 2026 14:00:03 +1000 (AEST)
+Received: by mail-pf1-x42c.google.com with SMTP id d2e1a72fcca58-842307473b5so455063b3a.2
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jun 2026 21:00:03 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=bytedance.com; s=google; t=1781236797; x=1781841597; darn=lists.ozlabs.org;
+        d=bytedance.com; s=google; t=1781236802; x=1781841602; darn=lists.ozlabs.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=BR0a3ryVRFpnQOFzhfXrKrFPrgwx6VYHHIteJPCS1zU=;
-        b=VNEZqGBA045nm/keCKue88qibLFFl6Z7brP1eITQ1GWfbe2ESTMOoL3+gMxXNYRbkB
-         gqI2dNFSbPR3eF30WZAJwIVwOGuSpP2acmS+G7nqQHUL5LLUtZGfpwG3x4+czE79bYQb
-         MO1rDtdSRxRTcX0dhwhZ6cmnZT/bw3R4f19uHq9aGDOVX+xlqBIbMFx8Gs2jnL49C1ok
-         X670jGVId83aFigxEA1LBiFd3g69mFODgyQg2O468eLtNGaZ3nfY1D9TJNTXX+EFqwUq
-         ki+2PNKfmWqkcmEZ8CR7Rs87lxFGA66Fm7bWc1sNlryh6gIv0bUWJHdQLE1T9sOQFUaW
-         CFzw==
+        bh=yo9t8lKmmaXZlPvADJP1ElnBLtvvFqj3ytBwR1urti0=;
+        b=AWXBiyndlSIJIqklcZA+K2zAxwPMPM9sDnkpyNgxEzmHfCo+TmrIpMBhnLuLUMqHX4
+         +Qdm6tplS+yTFjo3etwQ3WH3IW5mFwB7XXWstmyzt1JCt91IS9s/TlX+YyaE7kELJK3b
+         G1ZIpOfHazBMVCDV5CwAfqvmXWqihaZxPMDTTv1WCsh68siaUpQog56poo3BCF+j3D+J
+         vX1rTFxjR/ZQU7ioe9oXMEsZuoi31UV7KLI/EmRL2/V2FWYoFroqhB2TlGQyEXd6WRAu
+         x0MnUtzpod89JAY+aD/JrN2WjL3Pcy70zpwPgIfGc55klUZNKSwlMwsTgvuk4N1ZIpks
+         mDdg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1781236797; x=1781841597;
+        d=1e100.net; s=20251104; t=1781236802; x=1781841602;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to;
-        bh=BR0a3ryVRFpnQOFzhfXrKrFPrgwx6VYHHIteJPCS1zU=;
-        b=pYPHRG3iSDIAgigHKYhJ/SZtRaP9uVqoZUfrJ4uDd4qqQ7hFFl8LHt29ZQOfRldmgh
-         NuunzshQwFOCQBhR7qYioynd4/Dv33j3R9EPuHSzlwnHOCgOkhDTmyDRdQKqimAXzoEw
-         fAGrpmQLJ8r2lpaZ0nGSJYimdjmaSHHtGL1sx4CPxZdq5fXRFw0YUSsF7mugiwPNwkFH
-         Hxe+DiZfXA1VXlXW8ys/VIQZ+QjFvjbwv6+chel7vJ7B4HGdfpGQFdcGxmab8+jAZTR5
-         yWHSNSxGqwyON7NCTKoSNe8eoWkQQ9uGJOe9THWkriEhsQiNceyY/HzYQG0qreFKql/1
-         xazw==
-X-Forwarded-Encrypted: i=1; AFNElJ9T8FdvdAxC5qUBhOOy0SUu7FVGPCturFIilMjK11/JUIDKyOAuPSnlnhBFzT3DKCdjO03gZbf3mD1pZ+o=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yw4JnueyWt8a70Jom7uCOuhMqR8dDIKW/M2dj2qCCeHsstta/En
-	yh4YJYfuwyJjPR7Y2HxuSF2OLowPkNkYDQEPGZtoK3e5cyCpMevarzQ0lFnDt3veYks=
-X-Gm-Gg: Acq92OFDCa+aYJe70xSiqiPg13Ar+El74OCKZd3v1KyhXD21uvNCfZ9qOU9kzRkf1hv
-	qOBFNUUskzRwySxze/DFUyBD4vZ93690rW5PPJdRCAsnCGN3gzgsfMGPn5t+s/SY+A7hHNXmP8b
-	AyjbCEWt+ozw2QV7xqcEttqXqmUlmAnxa59lNOH9aMEzSR/LYukmthzQkD6CGjTzr2iWL3Om6AR
-	smU5bgD66hxbyRakWbdo941QYBTD6ZjlqoZl9w2W1zFwgzlEFDlDvjcRKk1VQxfmdU/NQoLd2ET
-	FEZMI4Mfb+e6XEcoYwszP0FqPbsb4/QfLGXob1+O8oWq602I5wlXXXPaUpNiNjza6VrdQCGRspG
-	bicImCeArs2Iqylc1+VBST42hf7o2+XmT9QNxH+edn2lP3S7TYKE1i3ZUaUHJhrPq4ze3R3WxIJ
-	HF5eVfS4ZxZK9PF7OeYE8xxfjDP7OqlHejPFqldhH8JkQ=
-X-Received: by 2002:a05:6a00:3e20:b0:81f:5acb:55fc with SMTP id d2e1a72fcca58-8434ceb5bfbmr869958b3a.10.1781236796968;
-        Thu, 11 Jun 2026 20:59:56 -0700 (PDT)
+        bh=yo9t8lKmmaXZlPvADJP1ElnBLtvvFqj3ytBwR1urti0=;
+        b=qdjmLC4GunK3bI8btrMVS0OBDdUThJqpneRnw6gakT3eOd/ZvFAdZueMjnlBU+kuWp
+         /kUWt19SVWtH0d3n7u+kNjy+Y37eEIku/M1ELur8weF86HIJq4RNZq6mB6Rd6IcBQuPZ
+         RbbkBegsroPSj2XeYSXXEul46r9DQKL1m8AwPD9Soq2+zsWe0XLhlESJ+r9Pu8V6pZ9I
+         bLbIbD4M+EowrYc4CGPooKyx3mydfpZ/oBD3RtPh+QlZMrT7AfoU7+aCva7W51njbxag
+         My38Y+/xmT2CqNUGmLQCgg+oh5gGQxf1OtihxWIL5QEdaU/u0SP2kQPnrVNVlOWS8Hmb
+         5TnQ==
+X-Forwarded-Encrypted: i=1; AFNElJ/mT32PM2mSxhea41i8GeD/GmEnO3ijgK/VBksY44eK85AyUkNOVofvUHJUDNE1AXE53sl/8m94S2UJ2Jk=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YymZvoJpRNoJejchK7fj8wv4y94clTnxznd+oBionBQykdwEN/b
+	U1mzJGrlVJflUW/nDZ1FPyMiAxCiWO2BwjbVTjPHt7o6biuFBPxeJrQN42Lmg7EtZP4=
+X-Gm-Gg: Acq92OFYnMzgeMoMBakWE0mu2VqF/YgJvi3KISiCBVwc6Fazc3h2IVC8g8kLwpKrDNQ
+	FMEQhCfmNbvgtmZpR7hvJTqPiFKGTfBZWhzwD98v2dmFMIlx1Y+zVF76x0s7M7jk4DFttcMkrbf
+	MMhqKnq0J19lMSg3FQJQw6LkYHtDhj326Cic9aFh+t8y8n/9k08glM1hJc8DaPVWcoKUUd2pYn/
+	iv2O/nFwO9OCDNJ1Qjmi7OiqEiDf46CW3sCsy4ZoC0LcssOHy8+AN02Fo6/WOmPrUSRUCwTpIZn
+	KoxuNVN/XpKxcI2YGXDltq6BADsC9fgXo1pKStKZ1UmVEEh8IEKj+TvTEpp3gpMdSR9IaCp/gAO
+	fbUwv9l49d7y6yj8RthVM3FbfwrjrPtNZKE4U2vFuQUpCQzffdLCxflfo6GatxhijT7yd3oJjcL
+	fqoh7dUEcuXmR8NXREegxWzPNUB+sANaMS4ynKvUoDj8A=
+X-Received: by 2002:a05:6a00:2396:b0:842:68d3:e29d with SMTP id d2e1a72fcca58-8434ce8a80dmr1047898b3a.36.1781236801769;
+        Thu, 11 Jun 2026 21:00:01 -0700 (PDT)
 Received: from n232-176-004.byted.org ([36.110.163.99])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-8434ad03fdcsm643352b3a.24.2026.06.11.20.59.51
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-8434ad03fdcsm643352b3a.24.2026.06.11.20.59.57
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 11 Jun 2026 20:59:56 -0700 (PDT)
+        Thu, 11 Jun 2026 21:00:01 -0700 (PDT)
 From: Muchun Song <songmuchun@bytedance.com>
 To: Oscar Salvador <osalvador@suse.de>,
 	David Hildenbrand <david@kernel.org>,
@@ -90,11 +90,10 @@ Cc: Muchun Song <muchun.song@linux.dev>,
 	"Aneesh Kumar K . V" <aneesh.kumar@linux.ibm.com>,
 	linuxppc-dev@lists.ozlabs.org,
 	Mike Kravetz <mike.kravetz@oracle.com>,
-	Muchun Song <songmuchun@bytedance.com>,
-	"Oscar Salvador (SUSE)" <osalvador@kernel.org>
-Subject: [PATCH v4 09/19] mm/mm_init: Defer hugetlb reservation until after zone initialization
-Date: Fri, 12 Jun 2026 11:58:53 +0800
-Message-ID: <20260612035903.2468601-10-songmuchun@bytedance.com>
+	Muchun Song <songmuchun@bytedance.com>
+Subject: [PATCH v4 10/19] mm/mm_init: Remove set_pageblock_order() call from sparse_init()
+Date: Fri, 12 Jun 2026 11:58:54 +0800
+Message-ID: <20260612035903.2468601-11-songmuchun@bytedance.com>
 X-Mailer: git-send-email 2.54.0
 In-Reply-To: <20260612035903.2468601-1-songmuchun@bytedance.com>
 References: <20260612035903.2468601-1-songmuchun@bytedance.com>
@@ -113,40 +112,70 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-hugetlb_cma_reserve() and hugetlb_bootmem_alloc() currently run before
-free_area_init(), so HugeTLB reservation happens before zone state is
-initialized.
+free_area_init() already sets pageblock_order before sparse_init() runs
+for CONFIG_HUGETLB_PAGE_SIZE_VARIABLE, so sparse_init() does not need to
+call set_pageblock_order() again.
 
-Move the reservation step after free_area_init() so the relevant zone
-information is available before HugeTLB reserves memory. This is needed
-for later hugetlb changes that validate boot-time HugeTLB reservations
-against zone boundaries.
+With that call removed, set_pageblock_order() is only used in mm/mm_init.c.
+Make it static.
 
-Signed-off-by: Muchun Song <songmuchun@bytedance.com>
 Reviewed-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
-Reviewed-by: Oscar Salvador (SUSE) <osalvador@kernel.org>
+Signed-off-by: Muchun Song <songmuchun@bytedance.com>
+Reviewed-by: Oscar Salvador (SUSE) <osalvador@suse.de>
 ---
- mm/mm_init.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ mm/internal.h | 1 -
+ mm/mm_init.c  | 4 ++--
+ mm/sparse.c   | 3 ---
+ 3 files changed, 2 insertions(+), 6 deletions(-)
 
+diff --git a/mm/internal.h b/mm/internal.h
+index dccd4727de46..09efb9f4d126 100644
+--- a/mm/internal.h
++++ b/mm/internal.h
+@@ -1435,7 +1435,6 @@ extern unsigned long  __must_check vm_mmap_pgoff(struct file *, unsigned long,
+         unsigned long, unsigned long,
+         unsigned long, unsigned long);
+ 
+-extern void set_pageblock_order(void);
+ unsigned long reclaim_pages(struct list_head *folio_list);
+ unsigned int reclaim_clean_pages_from_list(struct zone *zone,
+ 					    struct list_head *folio_list);
 diff --git a/mm/mm_init.c b/mm/mm_init.c
-index bdeaceadb531..ccf494fa7586 100644
+index ccf494fa7586..a0eb61f9f55a 100644
 --- a/mm/mm_init.c
 +++ b/mm/mm_init.c
-@@ -2676,11 +2676,11 @@ void __init mm_core_init_early(void)
+@@ -1496,7 +1496,7 @@ static inline void setup_usemap(struct zone *zone) {}
+ #ifdef CONFIG_HUGETLB_PAGE_SIZE_VARIABLE
+ 
+ /* Initialise the number of pages represented by NR_PAGEBLOCK_BITS */
+-void __init set_pageblock_order(void)
++static void __init set_pageblock_order(void)
  {
- 	int nid;
+ 	unsigned int order = PAGE_BLOCK_MAX_ORDER;
  
-+	free_area_init();
-+
- 	hugetlb_cma_reserve();
- 	hugetlb_bootmem_alloc();
+@@ -1522,7 +1522,7 @@ void __init set_pageblock_order(void)
+  * include/linux/pageblock-flags.h for the values of pageblock_order based on
+  * the kernel config
+  */
+-void __init set_pageblock_order(void)
++static inline void __init set_pageblock_order(void)
+ {
+ }
  
--	free_area_init();
+diff --git a/mm/sparse.c b/mm/sparse.c
+index 85557ef387c7..324213d8bdcb 100644
+--- a/mm/sparse.c
++++ b/mm/sparse.c
+@@ -343,9 +343,6 @@ void __init sparse_init(void)
+ 	pnum_begin = first_present_section_nr();
+ 	nid_begin = sparse_early_nid(__nr_to_section(pnum_begin));
+ 
+-	/* Setup pageblock_order for HUGETLB_PAGE_SIZE_VARIABLE */
+-	set_pageblock_order();
 -
- 	sparse_init();
- 	for_each_node_state(nid, N_MEMORY)
- 		sparse_vmemmap_init_nid_late(nid);
+ 	for_each_present_section_nr(pnum_begin + 1, pnum_end) {
+ 		int nid = sparse_early_nid(__nr_to_section(pnum_end));
+ 
 -- 
 2.54.0
 
