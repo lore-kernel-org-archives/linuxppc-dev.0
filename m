@@ -1,86 +1,98 @@
-Return-Path: <linuxppc-dev+bounces-22527-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22528-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3A6EFCD98C7
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Jun 2026 22:19:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 63863CD8CA8
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jun 2026 03:59:23 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gbxsL3D9Zz2xl5;
-	Fri, 12 Jun 2026 08:19:50 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:67c:2050:0:465::102"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781203403;
-	cv=none; b=g4FSVlgWLkq6TJHKo12gJvcpIk6wmBs4CQtbZzRBY3liiTwotsLpk1igqKND3Q2iFEKjHOULv4M3cjkM73zLZo6Zjo5H2rEdd4MdP+1uok3ZV/2z4FDf4cqynSqhLU223Lc0bdYii72l4rlXzBHVPH1WCVKWXGi2E+O2KXaER2X2VWvbRWtWWiYIQQ5Gzab5PB0ASMUGZfS98L24+H44/16q7S2Rt1DSFrjtm7tVYGaZg6AXHXaOLcJ5zrYecmHoY5G8CArX4XMZVFZST5vQyDa1c5xMDCZ/ho5ZbFAqpqRrElMGxKs3xFGDXfFdHimBwnEn9eD9KbTj+r+ote7Qvw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gc5P607ckz3brx;
+	Fri, 12 Jun 2026 13:59:22 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::435"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781236761;
+	cv=none; b=cUlBVpbROpXF3mnW9u31PTKhO+zwTaHk1ke6SxKGZzDa+jkq2xW8zsQz59wLMfzpeHzrw/45dNGDV35CL+Yugdws+KqSnUEj/dK3xM5V5glOheofm34ycUi9Mo8K8jDimVpt0gqlG+2VCA6TrKxx6qEqB2Uw2ckbZHkr0ZQIE2WFYDxT1Q0zl+hPPOx/onN7d7WsYFWBtLdXC1Vuplaq1JHrT70vt5oQO8FtOT0yERvqglD/04Ua6CK9/pJpzJmAXCwekwMQ+C/MNrwbpZsvAW+gjEupWokYbec9tRei5JDrpQe0jdlAOAMFKuGIc3puqxYpzMcoi1lBl4B+gnb7GA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1781203403; c=relaxed/relaxed;
-	bh=Dkv0Y88H+SR6ILk9sT/YTT+0skYukMCzceYVycVftns=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=Y4tqR57HpWHKf/12rUmLSaV2Lk7oKNXEzjFEGDucUYAwUWpFbosN+5/3HTEpwMTd1vno7t26JSHQqeA/TO7vEPhinovLGcKDDdygjFR5xlddGWrHlRuHaAuIKqrDu04KkP893EaB0WcCnaJLBXJXlyQYPYEAN0dA9YtwMPSbLuTWT1yTnCeVIXWilSwnP11NGHKn3pCthc4/ZljpJLq0wBB7+/K1eFPD5pQ1psYCxqEoNZ4re4sInMQjXQay8sfRr7kvHl/PhaJXUcWu0in8g2gkVCsBEZdDrhER2wDcivhfSytvHH/f08PB4RxVTzqBn3fvHkml13jH/gzb0Os7mQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=mailbox.org; dkim=pass (2048-bit key; secure) header.d=mailbox.org header.i=@mailbox.org header.a=rsa-sha256 header.s=mail20150812 header.b=dDcc08x0; dkim=pass (2048-bit key) header.d=mailbox.org header.i=@mailbox.org header.a=rsa-sha256 header.s=mail20150812 header.b=yHxSM7TA; dkim-atps=neutral; spf=pass (client-ip=2001:67c:2050:0:465::102; helo=mout-p-102.mailbox.org; envelope-from=manuelebner@mailbox.org; receiver=lists.ozlabs.org) smtp.mailfrom=mailbox.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=mailbox.org
+	t=1781236761; c=relaxed/relaxed;
+	bh=qXrTtpT2gfzfA9UVBfYwsqqZhVEbHAXGcBbRyTvn7RE=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=O3iS6vZ7N+YxV7mULRirVJWDeBqK+8YxpZzct6cCL8+gldFiXVOqLG0mz55REg500/kLTPC5U6yloROESB/IIXPRP3voxg80/wA3BQl3s12xXg0Tv8CuY3g1mqT+7rVgEXtj9WgX7Q1CXEw0nt8Kw/pt4PmnL4VJIXD84qlRH6pBMZYVlBr/3u9l7ZMjnr7aVCcxIEUTi0R1E3GeXLlMKP3xm8wD6LftpDyZ9EzIuw7gY+R8DqJ8gMlCPAReH+9aTD6w6sBrvjBSwT7B4MyIwj25aiOX+IbSTktDjrh/srC7kLk1sDg0+8FoCpVvCbP9uqfCJov7YFDNHQnXHIAbow==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=bytedance.com; dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=jiDwmN/H; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::435; helo=mail-pf1-x435.google.com; envelope-from=songmuchun@bytedance.com; receiver=lists.ozlabs.org) smtp.mailfrom=bytedance.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=bytedance.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=mailbox.org header.i=@mailbox.org header.a=rsa-sha256 header.s=mail20150812 header.b=dDcc08x0;
-	dkim=pass (2048-bit key) header.d=mailbox.org header.i=@mailbox.org header.a=rsa-sha256 header.s=mail20150812 header.b=yHxSM7TA;
+	dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=jiDwmN/H;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=mailbox.org (client-ip=2001:67c:2050:0:465::102; helo=mout-p-102.mailbox.org; envelope-from=manuelebner@mailbox.org; receiver=lists.ozlabs.org)
-X-Greylist: delayed 358 seconds by postgrey-1.37 at boromir; Fri, 12 Jun 2026 04:43:18 AEST
-Received: from mout-p-102.mailbox.org (mout-p-102.mailbox.org [IPv6:2001:67c:2050:0:465::102])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bytedance.com (client-ip=2607:f8b0:4864:20::435; helo=mail-pf1-x435.google.com; envelope-from=songmuchun@bytedance.com; receiver=lists.ozlabs.org)
+Received: from mail-pf1-x435.google.com (mail-pf1-x435.google.com [IPv6:2607:f8b0:4864:20::435])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gbs3V2FJmz3bpP
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jun 2026 04:43:17 +1000 (AEST)
-Received: from smtp102.mailbox.org (smtp102.mailbox.org [10.196.197.102])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mout-p-102.mailbox.org (Postfix) with ESMTPS id 4gbrwN2g2kz9tWv;
-	Thu, 11 Jun 2026 20:37:08 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mailbox.org; s=mail20150812;
-	t=1781203028;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding;
-	bh=Dkv0Y88H+SR6ILk9sT/YTT+0skYukMCzceYVycVftns=;
-	b=dDcc08x0dcrKswHlCVxuROso1L8H2qo5xxLwb2GdvV2xY4AFA5F9RTOimgpKn5pxzpRufh
-	tuzqlDg4A/rMg7HKbaHXE3Vn8IMzlSkyObAvpKbFCrjOXigEghkfPqHyz21cbPm/v+RB2l
-	lKbNlYW77r7imN2qll75tefdhZS8Z9cFOW+c5+P8mS+wPK4d4VwSyRmVXFe92peAB8WLng
-	A5/8uiQVtk2fibFWyO1c3OU9AeUBbNZgE1rYZdsN/u0W8kE0k69/i6qInDr/o2vEse8Kkc
-	7lH0fpN/C1Hu12dfoxky+PSj7B3F9OEOn08lRas9tdnimqiR3kdSw4VZBudakg==
-From: Manuel Ebner <manuelebner@mailbox.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mailbox.org; s=mail20150812;
-	t=1781203022;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding;
-	bh=Dkv0Y88H+SR6ILk9sT/YTT+0skYukMCzceYVycVftns=;
-	b=yHxSM7TAtkgtiG7evw5aBg+nfR1e5mMA5TA7y6XTlvnRHkWVkwOgn7nzTTVwgiJfxrlSPw
-	Fq6b2wdI56NyVbncWKl66lO/iR9AszePqYiGiIJS1Lnjbk/DbXPERUSPgNsiAwW8Xv8gBr
-	9sJTd5vM8OCzoTh48DBrJTg+X4eYfzigRIXzj5phRIFhp3mxRKM/hXHh9qnPi3MkMWml1z
-	9AbAxExj8Rl6A86dy7oZMZIJIUm83Z4Y6TQoBFXIF9dNdlS3J1vNIZLdCAFK8O2yqXcnEj
-	+bODCeBRbhc1fQWZrgL1UmtZcarxtrM5WqAJEGAWdVgLtWZN++53G17Pw0dPfw==
-To: Vineet Gupta <vgupta@kernel.org>,
-	Jonathan Corbet <corbet@lwn.net>,
-	Shuah Khan <skhan@linuxfoundation.org>,
-	Krzysztof Kozlowski <krzk@kernel.org>,
-	Peter Griffin <peter.griffin@linaro.org>,
-	Alim Akhtar <alim.akhtar@samsung.com>,
-	Catalin Marinas <catalin.marinas@arm.com>,
-	Will Deacon <will@kernel.org>,
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gc5P35DSSz3brt
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jun 2026 13:59:18 +1000 (AEST)
+Received: by mail-pf1-x435.google.com with SMTP id d2e1a72fcca58-8423b08b293so293255b3a.3
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jun 2026 20:59:18 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=bytedance.com; s=google; t=1781236751; x=1781841551; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=qXrTtpT2gfzfA9UVBfYwsqqZhVEbHAXGcBbRyTvn7RE=;
+        b=jiDwmN/HyBVFrKKOCZaiAleFMRGuIHytxCG+pmR5nXRSDKOpyCe086FV6o2bLzwQpD
+         lunIpi8UYAo2qHVR60DpoJHcvBRhpGnH0k0NEv5c9RxArp1nq0B9O+YAi+Xz2sL/AFnT
+         2vkGlImsAMrJ/KzA6CMQWKMLhTNwHtYLVHawQlx0PCZofdgZ5z27YnnYq7EIbjjSwyPb
+         d7lP46IGml2GITq2Rsx+e1Gli8znFf8SN++RBprCQluWKFgmLk74srMe5g9870Z3AxmF
+         YYhHGJJ5ZmDDjsWGOkEccD/9+nb88uZmW1xOLd+A200PGdBbQljxNSK/DqzabT63wv+I
+         9+tg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1781236751; x=1781841551;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=qXrTtpT2gfzfA9UVBfYwsqqZhVEbHAXGcBbRyTvn7RE=;
+        b=LjvACIw+/ts/mzRNv+d7Kxcf3grEfprSZvHVc27k3WMtthxNVWao64DdvdEDr7pvva
+         AI9/Ito+A11STNC6BaWYCi14muCr6YIgss5AD7Zvp4f346hkMKdJKvz5X6rzcVfcFt/o
+         Lwk9wWGr2434/ar+5d7GnQ8QgdJ/yPYqg5WNAjPoj4B6MKiliXvjtV3InH+EzChA3QW3
+         Mb86XujWpM7tnkwxQexZJJryK82I9DXxFGAYTmJkHeC+PoCTmdXUBOvhnqNqeuA95gCc
+         /nY4UiNQOdYUqo0I4vCMb5+BrvJYxeyBwKkbmUj6362MoH1fopPaz476rTzGTONDAg08
+         t0rg==
+X-Forwarded-Encrypted: i=1; AFNElJ8gn43R3dt+7DolLV5caQGPkMjTQd42UjB7kyO1+lAytmYS/vSly74HYc+TGvE1mKldGqdx9zTN8L1ycOo=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yz6BLNyL8KNaeYHuAMW9cOTlQRYLGIrzaT6EQ+EW0KW/YY9JQPN
+	EEniAbG0xGTnTSnUrm4lKVEAxCoSaAMfq9577t9vILqh1S4CO9DuZRzLN0dejWt8CBY=
+X-Gm-Gg: Acq92OGC3gQ9BQxNbKVbrTTd7/xYUpLIOLbEDGzDJhUm/18HFB2MiFaR6MarYpXujMY
+	ZaI5keL6Bh37dSAID9zbFeoztjP/4vqz3NUOuEBOrtn0XD+Hq+uhZrRZtGpAFN51b1+C1W0Q1En
+	CGjGt9T3IRi6x5awo3n2Mt80GQamLLq5/5JHx2/JJdhKfezBB5iTSUFA9HiPYIil5L5KDdbrnBy
+	T9L4N5OZadxSQJWf6ssUwp3+YFw15ZA3umBm3ejLp4wXaqekLqwHyiJwTjgVKxJzn+DABgORWuo
+	jS5ti4JCc+qzhJi7CnE2UcuGUx+voJHYV4eOIXJxydKyLrDQSvCAv4csvFkdAMVYR2heBp6yTCv
+	cArPNtIKoITInjA6zgtPNB2he9hF4X0AlRzI3S2yB7U4NUOI1ditYgxz3OjFSSjr4gyUSHjmPAa
+	7BwfmoUuYaXDiRYXBbv1btpwr0HBmlxSIO5+h5khboQDQ=
+X-Received: by 2002:a05:6a00:3a29:b0:842:5b63:6118 with SMTP id d2e1a72fcca58-8434cd0b6e4mr980556b3a.3.1781236750991;
+        Thu, 11 Jun 2026 20:59:10 -0700 (PDT)
+Received: from n232-176-004.byted.org ([36.110.163.99])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-8434ad03fdcsm643352b3a.24.2026.06.11.20.59.06
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 11 Jun 2026 20:59:10 -0700 (PDT)
+From: Muchun Song <songmuchun@bytedance.com>
+To: Oscar Salvador <osalvador@suse.de>,
+	David Hildenbrand <david@kernel.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
 	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
+	Michael Ellerman <mpe@ellerman.id.au>
+Cc: Muchun Song <muchun.song@linux.dev>,
+	Mike Rapoport <rppt@kernel.org>,
+	Lorenzo Stoakes <ljs@kernel.org>,
+	"Liam R . Howlett" <liam@infradead.org>,
+	Vlastimil Babka <vbabka@kernel.org>,
+	linux-mm@kvack.org,
+	linux-kernel@vger.kernel.org,
 	Nicholas Piggin <npiggin@gmail.com>,
 	Christophe Leroy <chleroy@kernel.org>,
-	linux-snps-arc@lists.infradead.org (open list:SYNOPSYS ARC ARCHITECTURE),
-	linux-doc@vger.kernel.org (open list:DOCUMENTATION),
-	linux-kernel@vger.kernel.org (open list),
-	linux-arm-kernel@lists.infradead.org (moderated list:ARM/SAMSUNG S3C, S5P AND EXYNOS ARM ARCHITECTURES),
-	linux-samsung-soc@vger.kernel.org (open list:ARM/SAMSUNG S3C, S5P AND EXYNOS ARM ARCHITECTURES),
-	linuxppc-dev@lists.ozlabs.org (open list:LINUX FOR POWERPC (32-BIT AND 64-BIT))
-Cc: Manuel Ebner <manuelebner@mailbox.org>
-Subject: [PATCH] Documentation: arch: fix brackets
-Date: Thu, 11 Jun 2026 20:35:20 +0200
-Message-ID: <20260611183525.153058-2-manuelebner@mailbox.org>
+	Ritesh Harjani <ritesh.list@gmail.com>,
+	"Aneesh Kumar K . V" <aneesh.kumar@linux.ibm.com>,
+	linuxppc-dev@lists.ozlabs.org,
+	Mike Kravetz <mike.kravetz@oracle.com>,
+	Muchun Song <songmuchun@bytedance.com>
+Subject: [PATCH v4 00/19] mm: Refactor bootmem gigantic hugepage allocation
+Date: Fri, 12 Jun 2026 11:58:44 +0800
+Message-ID: <20260612035903.2468601-1-songmuchun@bytedance.com>
+X-Mailer: git-send-email 2.54.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -94,173 +106,83 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-X-MBO-RS-META: f6zk6t8i7udhsfuxo6bwkb9axkpyzqtj
-X-MBO-RS-ID: 29289ebd505fa1394bb
 
-Add missing and remove needless parentheses, brackets and curly braces.
+This series is split out from the earlier larger series "mm: Generalize
+HVO for HugeTLB and device DAX" [1]. It collects the first 19 patches of
+that series as a standalone set of fixes and preparatory cleanups around
+bootmem HugeTLB handling, sparse initialization ordering, and related
+vmemmap setup.
 
-Signed-off-by: Manuel Ebner <manuelebner@mailbox.org>
----
- Documentation/arch/arc/arc.rst                 |  2 +-
- .../arm/samsung/clksrc-change-registers.awk    |  2 +-
- Documentation/arch/arm/vlocks.rst              |  4 ++--
- .../arch/arm64/memory-tagging-extension.rst    |  2 +-
- Documentation/arch/powerpc/vas-api.rst         |  2 +-
- Documentation/arch/sparc/oradax/dax-hv-api.txt | 18 +++++++++---------
- Documentation/arch/sparc/oradax/oracle-dax.rst |  3 ++-
- 7 files changed, 17 insertions(+), 16 deletions(-)
+The first patches fix a few bugs found while reviewing the existing
+code, including incorrect bootmem HVO handling, wrong vmemmap
+registration arguments, a powerpc compound-vmemmap tracking bug, and
+too-late initialization of gigantic bootmem HugeTLB struct pages.
 
-diff --git a/Documentation/arch/arc/arc.rst b/Documentation/arch/arc/arc.rst
-index 6c4d978f3f4e..553851f43be7 100644
---- a/Documentation/arch/arc/arc.rst
-+++ b/Documentation/arch/arc/arc.rst
-@@ -36,7 +36,7 @@ Important note on ARC processors configurability
- 
- ARC processors are highly configurable and several configurable options
- are supported in Linux. Some options are transparent to software
--(i.e cache geometries, some can be detected at runtime and configured
-+(i.e cache geometries), some can be detected at runtime and configured
- and used accordingly, while some need to be explicitly selected or configured
- in the kernel's configuration utility (AKA "make menuconfig").
- 
-diff --git a/Documentation/arch/arm/samsung/clksrc-change-registers.awk b/Documentation/arch/arm/samsung/clksrc-change-registers.awk
-index 7be1b8aa7cd9..48464397088c 100755
---- a/Documentation/arch/arm/samsung/clksrc-change-registers.awk
-+++ b/Documentation/arch/arm/samsung/clksrc-change-registers.awk
-@@ -163,4 +163,4 @@ BEGIN {
-     }
- }
- 
--// && ! /clksrc_clk.*=.*{/ { print $0 }
-+// && ! /clksrc_clk.*=.*{/ { print $0 }}
-diff --git a/Documentation/arch/arm/vlocks.rst b/Documentation/arch/arm/vlocks.rst
-index 737aa8661a21..b0ac33263086 100644
---- a/Documentation/arch/arm/vlocks.rst
-+++ b/Documentation/arch/arm/vlocks.rst
-@@ -102,10 +102,10 @@ Features and limitations
- 	if (I_won) {
- 		/* we won the town election, let's go for the state */
- 		my_state = states[(this_cpu >> 8) & 0xf];
--		I_won = vlock_lock(my_state, this_cpu & 0xf));
-+		I_won = vlock_lock(my_state, this_cpu & 0xf);
- 		if (I_won) {
- 			/* and so on */
--			I_won = vlock_lock(the_whole_country, this_cpu & 0xf];
-+			I_won = vlock_lock(the_whole_country, this_cpu & 0xf);
- 			if (I_won) {
- 				/* ... */
- 			}
-diff --git a/Documentation/arch/arm64/memory-tagging-extension.rst b/Documentation/arch/arm64/memory-tagging-extension.rst
-index 679725030731..e6fe428f0e2a 100644
---- a/Documentation/arch/arm64/memory-tagging-extension.rst
-+++ b/Documentation/arch/arm64/memory-tagging-extension.rst
-@@ -222,7 +222,7 @@ programs should not retry in case of a non-zero system call return.
- address ABI control and MTE configuration of a process as per the
- ``prctl()`` options described in
- Documentation/arch/arm64/tagged-address-abi.rst and above. The corresponding
--``regset`` is 1 element of 8 bytes (``sizeof(long))``).
-+``regset`` is 1 element of 8 bytes (``sizeof(long)``).
- 
- Core dump support
- -----------------
-diff --git a/Documentation/arch/powerpc/vas-api.rst b/Documentation/arch/powerpc/vas-api.rst
-index a9625a2fa0c6..1d0d055356e3 100644
---- a/Documentation/arch/powerpc/vas-api.rst
-+++ b/Documentation/arch/powerpc/vas-api.rst
-@@ -293,7 +293,7 @@ Simple example
- 				//Format CRB request with compression or
- 				//uncompression
- 				// Refer tests for vas_copy/vas_paste
--				vas_copy((&crb, 0, 1);
-+				vas_copy(&crb, 0, 1);
- 				vas_paste(addr, 0, 1);
- 				// Poll on csb.flags with timeout
- 				// csb address is listed in CRB
-diff --git a/Documentation/arch/sparc/oradax/dax-hv-api.txt b/Documentation/arch/sparc/oradax/dax-hv-api.txt
-index ef1a4c2bf08b..ef6088aeaa66 100644
---- a/Documentation/arch/sparc/oradax/dax-hv-api.txt
-+++ b/Documentation/arch/sparc/oradax/dax-hv-api.txt
-@@ -457,7 +457,7 @@ bits set, and terminate at a CCB that has the Conditional bit set, but not the P
- Offset   Size   Field Description
-                 Bits         Field Description
-                 [15:14]      Secondary Input Element Size (see Section 36.2.1.1.4,
--                             “Secondary Input Element Size”
-+                             “Secondary Input Element Size”)
-                 [13:10]      Output Format (see Section 36.2.1.1.6, “Output Format”)
-                 [9]          Padding Direction selector: A value of 1 causes padding bytes
-                              to be added to the left side of output elements. A value of 0
-@@ -656,7 +656,7 @@ Offset         Size            Field Description
-                                [18:16]      Secondary Input Starting Offset (see Section 36.2.1.1.5, “Input
-                                             Element Offsets”)
-                                [15:14]      Secondary Input Element Size (see Section 36.2.1.1.4,
--                                            “Secondary Input Element Size”
-+                                            “Secondary Input Element Size”)
-                                [13:10]      Output Format (see Section 36.2.1.1.6, “Output Format”)
-                                [9:5]        Operand size for first scan criteria value. In a scan value
-                                             operation, this is one of two potential exact match values.
-@@ -793,13 +793,13 @@ Offset   Size   Field Description
-                 [18:16]      Secondary Input Starting Offset (see Section 36.2.1.1.5, “Input
-                              Element Offsets”)
-                 [15:14]      Secondary Input Element Size (see Section 36.2.1.1.4,
--                             “Secondary Input Element Size”
-+                             “Secondary Input Element Size”)
-                 [13:10]      Output Format (see Section 36.2.1.1.6, “Output Format”)
-                 [9]          Reserved
-                 [8:0]        Test value used for comparison against the most significant bits
-                              in the input values, when using 2 or 3 byte input elements.
--8        8      Completion (same fields as Section 36.2.1.2, “Extract command”
--16       8      Primary Input (same fields as Section 36.2.1.2, “Extract command”
-+8        8      Completion (same fields as Section 36.2.1.2, “Extract command)”
-+16       8      Primary Input (same fields as Section 36.2.1.2, “Extract command”)
- 24       8      Data Access Control (same fields as Section 36.2.1.2, “Extract command”,
-                 except Primary Input Length Format may not use the 0x0 value)
- 32       8      Secondary Input, if used by Primary Input Format. Same fields as Primary
-@@ -880,7 +880,7 @@ Offset   Size   Field Description
-                                        [18:16]     Secondary Input Starting Offset (see Section 36.2.1.1.5, “Input
-                                                    Element Offsets”)
-                                        [15:14]     Secondary Input Element Size (see Section 36.2.1.1.4,
--                                                   “Secondary Input Element Size”
-+                                                   “Secondary Input Element Size”)
- 
- 
-                                                       524
-@@ -895,8 +895,8 @@ Offset   Size   Field Description
-                                                     causes padding bytes to be added to the right side of output
-                                                     elements.
-                                        [8:0]        Reserved
--        8              8               Completion (same fields as Section 36.2.1.2, “Extract command”
--        16             8               Primary Input (same fields as Section 36.2.1.2, “Extract command”
-+        8              8               Completion (same fields as Section 36.2.1.2, “Extract command”)
-+        16             8               Primary Input (same fields as Section 36.2.1.2, “Extract command”)
-         24             8               Data Access Control (same fields as Section 36.2.1.2, “Extract command”)
-         32             8               Secondary Bit Vector Input. Same fields as Primary Input.
-         40             8               Reserved
-@@ -949,7 +949,7 @@ Offset   Size   Field Description
-                                    [31]        If set, this CCB functions as a Sync command. If clear, this
-                                                CCB functions as a No-op command.
-                                    [30:0]      Reserved
--       8             8             Completion (same fields as Section 36.2.1.2, “Extract command”
-+       8             8             Completion (same fields as Section 36.2.1.2, “Extract command”)
-        16            46            Reserved
- 
- 36.2.2. CCB Completion Area
-diff --git a/Documentation/arch/sparc/oradax/oracle-dax.rst b/Documentation/arch/sparc/oradax/oracle-dax.rst
-index d1e14d572918..67867ea7be40 100644
---- a/Documentation/arch/sparc/oradax/oracle-dax.rst
-+++ b/Documentation/arch/sparc/oradax/oracle-dax.rst
-@@ -438,7 +438,8 @@ that in user land::
- The output bitmap is ready for consumption immediately after the
- completion status indicates success.
- 
--Excer[t from UltraSPARC Virtual Machine Specification
-+Excer?t from UltraSPARC Virtual Machine Specification
-+i guess this is wrong, but i don't know what's correct
- =====================================================
- 
-  .. include:: dax-hv-api.txt
+The rest of the series reorders early memory initialization so the
+relevant zone state is available before sparse and HugeTLB boot-time
+setup runs, then simplifies the remaining bootmem gigantic hugepage
+allocation path and removes code made obsolete by that rework.
+
+At a high level:
+  - patches [1-4] fix boot-time and arch-specific bugs
+  - patches [5-12] reorder and simplify sparse/mm/hugetlb early init
+  - patches [13-19] refactor bootmem gigantic hugepage allocation and
+    remove obsolete helpers and state
+
+Changes since v3:
+  - patches 2-4: add Cc: stable@vger.kernel.org to the applicable fixes
+  - patch 3: collect Reviewed-by from Ritesh Harjani
+  - patch 15: move pfn_to_zone() before hugetlb_vmemmap_init_early()
+    instead of using a forward declaration
+  - patches 15-17: collect Acked-by from Mike Rapoport where applicable
+  - patch 15: collect Acked-by from Usama Arif
+  - patch 18: clarify that the changelog also covers the early CMA
+    bootmem allocation fallback refactoring
+  - patch 19: initialize pgdat at declaration in
+    __init_deferred_page() and collect Reviewed-by from Mike Rapoport
+
+[1] https://lore.kernel.org/linux-mm/20260513130542.35604-1-songmuchun@bytedance.com/
+
+Muchun Song (19):
+  mm/hugetlb: Fix boot panic with CONFIG_DEBUG_VM and HVO bootmem pages
+  mm/hugetlb_vmemmap: Fix __hugetlb_vmemmap_optimize_folios()
+  powerpc/mm: Fix wrong addr_pfn tracking in compound vmemmap population
+  mm/hugetlb: Initialize gigantic bootmem hugepage struct pages earlier
+  mm/mm_init: Simplify deferred_free_pages() migratetype init
+  mm/sparse: Panic on memmap and usemap allocation failure
+  mm/sparse: Move subsection_map_init() into sparse_init()
+  mm/mm_init: Defer sparse_init() until after zone initialization
+  mm/mm_init: Defer hugetlb reservation until after zone initialization
+  mm/mm_init: Remove set_pageblock_order() call from sparse_init()
+  mm/sparse: Move sparse_vmemmap_init_nid_late() into sparse_init_nid()
+  mm/hugetlb_cma: Validate hugetlb CMA range by zone at reserve time
+  mm/hugetlb: Refactor early boot gigantic hugepage allocation
+  mm/hugetlb: Free cross-zone bootmem gigantic pages after allocation
+  mm/hugetlb_vmemmap: Move bootmem HVO setup to early init
+  mm/hugetlb: Remove obsolete bootmem cross-zone checks
+  mm/sparse-vmemmap: Remove sparse_vmemmap_init_nid_late()
+  mm/hugetlb: Remove unused bootmem cma field
+  mm/mm_init: Fold __init_page_from_nid() into __init_deferred_page()
+
+ arch/powerpc/mm/book3s64/radix_pgtable.c |   7 +-
+ arch/powerpc/mm/hugetlbpage.c            |  13 +-
+ include/linux/hugetlb.h                  |  24 +--
+ include/linux/mmzone.h                   |   7 -
+ mm/cma.c                                 |   3 +-
+ mm/hugetlb.c                             | 259 +++++++++++------------
+ mm/hugetlb_cma.c                         |  44 ++--
+ mm/hugetlb_cma.h                         |   8 +-
+ mm/hugetlb_vmemmap.c                     | 120 +++--------
+ mm/hugetlb_vmemmap.h                     |   5 -
+ mm/internal.h                            |  14 +-
+ mm/mm_init.c                             |  86 +++-----
+ mm/sparse-vmemmap.c                      |  26 ++-
+ mm/sparse.c                              |  48 +----
+ 14 files changed, 251 insertions(+), 413 deletions(-)
+
+
+base-commit: ec039126b7fac4e3af35ebccaa7c6f9b6875ba81
 -- 
 2.54.0
-
 
