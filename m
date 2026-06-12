@@ -1,93 +1,68 @@
-Return-Path: <linuxppc-dev+bounces-22575-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22576-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AEDBCCD98D6
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jun 2026 15:37:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 01A38CD98D6
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jun 2026 15:44:10 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gcNv76fVPz2ykX;
-	Sat, 13 Jun 2026 01:37:55 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a00:1450:4864:20::334" arc.chain=google.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781278675;
-	cv=pass; b=Be4YV3/bFhnquDsjbweHMhFF0B8TCmsBsvYC2RtidUbxKC8mGnLpC++QID1+wr7f8rc4uOSnBcGMFA3ezzLQYDKTrPBKNv4x7UDE8FjBH4H3weZ/2Z5A/zZju/qwLVKdKtsaabqDnmbOGNDJoiurnze8vb+QIf2BC8krGWFkr0nYjEm9sht7Oaf0CH7C2g0AIBVyB07zRRZ/1BAi8ZcHFuP+0md0ikz3j+Ghokej0N9YcL9Mk8EnSsVbTzjc5fL4f9Vn3gwKHE3+Sib1xtleZk7ynMoF5hd2gzK+MPRFx+IIJcO5BUUpKAtXOQ7PiTCNw6OD1ikMSlNb6rprE0an7g==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1781278675; c=relaxed/relaxed;
-	bh=bSvLr/lAiEeyR05iNmyP4S5A6xbdgQJ1b2X7JVpkEig=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=QyEY0taPWNe0G8MPuPcpMk9UfAIv9q9E0XsaPlZNAnS1m7WMn3iWjV66lgQLp3vINX/WTnzhFGhHlIcFO16KO0ApreejOD9+vxZqxTSxV42XcuR9NmjuTKaweFfOVwLh0FKVuKBw5JBHUc8DRpnnBgGHEKQsr8ggsyrVzFpFU+VKMlkwTKG0cCz1iZgeyzGAq0CTeeDc1fzG/Fj1X2kdJEqW1ClfV9ZiyVCJiHoGi36+u+jMSsKkisBHQPjJtFlDpNYsfDi9VYkN4MccPpf6HZPrLdO4v9szoqSmaHEmERsGu1OrK4htkIPzPfqxau2kZ6TpWxKAzjXPH1TsFercsw==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=NYDpdeTq; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::334; helo=mail-wm1-x334.google.com; envelope-from=fvdl@google.com; receiver=lists.ozlabs.org) smtp.mailfrom=google.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gcP2K4xnxz2ykX;
+	Sat, 13 Jun 2026 01:44:09 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781279049;
+	cv=none; b=UQWWSIE1vsEWSH5p4DmZChGAth+/D2N7iS9dwYaszS9DtHVboFTBl0Cq18A2/TTbQopCK6QdXNj/pyorX7XnZAa949hYep5SVek8/kwBuFt7NFcDIHCDv63w+CITjdEl8+iERTqhQFIiyKlcGf62kGlZxPFyCdv9I4NdWwNpwnjBvwGs3m+37Ueok+TbmopoqB4X8FiLw0Bh8sBK3JR9TvD+iUyNukwZ1NVhytaql1dLvUhsNZ5gba6p+piWnrhD4sZ4nXfwQDWlrrRosHSMIbj5wTz7SA8b+SNyHD07h0tTn/3b8/IP2k7Cw+6aG1lCTlKbsBXEvH5jFPT6ljPBkA==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1781279049; c=relaxed/relaxed;
+	bh=Ua7ilpqGQ1TJZ+Bnhifl0cs54R7li+gA4PLtG5KdeuQ=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=c/4y4l8GppgtEzCkrzxCng7X7py4mXJsm9muXqcVHL7pfy1j6SCm5/CsS7Hb+yCeFI7PSAcN1I0aGMtng5GtuVKJvR06UNowwiN5ruKa1A6MXXavZAWj8KR+VDffL4Z9fPKlRBZy2fC8SPLoHlpOmvSXwu2nHMNg2/stDLJ3jBLS5PcyUW/+Mo/XBwQhEAr6w01EcsMykVQFHWbkkmEIbgdI4P7TgzUHj/jeKwhKFyp1DzaO/shUeFbXjAlnEFOUXYF7slF2XKQVFZaaOkiaFL/fwTl3mqxAuuLlRrGs/dh8ELTe/MeM0iuqyrXFYAHZKqQy80+njdl1j1WaeuLpvA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=h91m9/RT; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=conor@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=NYDpdeTq;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=h91m9/RT;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2a00:1450:4864:20::334; helo=mail-wm1-x334.google.com; envelope-from=fvdl@google.com; receiver=lists.ozlabs.org)
-Received: from mail-wm1-x334.google.com (mail-wm1-x334.google.com [IPv6:2a00:1450:4864:20::334])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=conor@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gcNv62Td5z2yhY
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Jun 2026 01:37:53 +1000 (AEST)
-Received: by mail-wm1-x334.google.com with SMTP id 5b1f17b1804b1-4891b4934ffso78255e9.0
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jun 2026 08:37:53 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1781278670; cv=none;
-        d=google.com; s=arc-20240605;
-        b=CJi5WMg2bbnM+t609Xq7ddSrhfxelObt7T3cycJdKUJ841ArRegbt0WTX78Zmpk8S5
-         aL49Fg3NE6nASwIfeSXUF/AOob6ymlGgkPCcOXb3gqJUraEtw0XS9SMYHTaSwb9P0/aU
-         4YVzWdUBqOnsbpOl9fzDeQl35kannWi5jDx995AVTXoTx9NfDc2g4+ERpff5JkjEpN7i
-         VOs/dBJDTG2FprCf02GP1AguaYM0ESqBpKImRlQ/sml0vC/PMJbbiYAoH0zAZN91RAKC
-         /fcU5i0g5Yq8pm8Jy2o7LQdtKPdSHfH+M+/YKVihaPPDIq3UTTVujzzh7OAo1x9cPqYa
-         f7fw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=bSvLr/lAiEeyR05iNmyP4S5A6xbdgQJ1b2X7JVpkEig=;
-        fh=XzEtsk43uuBNgBWmJSGfvOpiwi2oyJElMRYlAqYAAz0=;
-        b=UqBnULFQcljJoTBFLtcrLm54qz/Y9KQl6xDWFJzkehQRYk4LtMrDIMvQ8RVBlxbcuD
-         niCg4YYZmskGsWIIL6//0U+3JdwOvsYGdKRxQxdjqMSW1Yo/F2jawoa1dbMbyU5tKP8v
-         90H3CqGCfB7sq8t+XTESqGuxvntbMh+5U63IGlxUv6QTyn/os46o0g9Pjy9Ym7wTk0HK
-         K0XUNsoj6m0kCdNWovzNFvG7mkFAXVqvu3g0znc6TZ1qi0pKCzXCp7o14gy5oV/0klr5
-         hjRjNhPA3jKRCSHCYSaSstGkQ+b0tFy6tQ20HyTkWytE2Hsbvz1DRql96pWJtqN9KhJc
-         XzTg==;
-        darn=lists.ozlabs.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20251104; t=1781278670; x=1781883470; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=bSvLr/lAiEeyR05iNmyP4S5A6xbdgQJ1b2X7JVpkEig=;
-        b=NYDpdeTq9920rl7kCjeIUv01NUuW4zNXpN0uO+u3JIBNp0TBb+Txa7Hj8LUCOPhO6O
-         4FdGnF2qffbRLHH2H7rBfyQE0b505rnbpOiNNjCL0zXtYGkhlYA5MPw+bd+OauqP5oHJ
-         iNrTgOnXaNs4zISr/VfI/HvJYDXf6mcF90Z+Jqjr0n/mIVadfH08Ucs/bpQ4AWDcn8p2
-         Gkbwa/mGAqsBZiT24qT/K0cAPfwRzrl072EQ7Mv83TK+SE4oTskUNndXgL5gNNsluIjl
-         UmvQemuDOcZ2ymqGCVlNDRrh53gUXiGqkezb0iuIwdhOiA+mvz2WDrC03Ka6IxLNUttb
-         KqJA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1781278670; x=1781883470;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=bSvLr/lAiEeyR05iNmyP4S5A6xbdgQJ1b2X7JVpkEig=;
-        b=Js52HcJ50MtDoRNZN2MNiPuZwXEGjgkZ5KinkzhU6L4POk9Gje8TYkk9y03AfiCrSG
-         h/qRDLG7lpVtFG7Caz18nCfg1pzbmHqM5OPbaj4QJ/YsIIfMAid41PCU6JN6tK/riVv6
-         QUP1Q60mCrwrCpTBYhm0rc3Qvyw1Eqe4LrLPzrgVEOVcK4HkcpmLS3RWNgABllMPLCsj
-         v8Js87HfRcWXOmP8Nqvk+IyOvoEst1rv2KQKOWHaUQVC7SIPMIHU/18TYH0ogpuZhU45
-         6SKCm4o+6sbmZRexeBOaTkXux+pGMHY2nyc8LZTDwDm2QfyB8VbaUtYhfXoPhMH3Mmxd
-         xMcw==
-X-Forwarded-Encrypted: i=1; AFNElJ8H5VSq9ghPFaA1eMPHekvCseTEfavyQwCYYs0pZWEQ27xuyiSxp0GQ09N53ZOmdhcydrW/REhrJ0n2RQ0=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yx5/Hk5dwbReNzTclePNcQfAPc5+K4E8NWBmqGJ+eDM237B3vBe
-	Wyl0gR+CYeHvxThzgsa5sOCTTMhbhScr6hO2R9A8SSyH50VAjAV4lgFyUyJDGUvGTXe18YoxTBc
-	G/f+1A1gqP2fbvpqCUz0WbiT8hHeGD+4qm4ICzVnT
-X-Gm-Gg: Acq92OHGVLCadKYg5ezPzQMxjPCFbQfGorQv+e8P6NVDKnys5RaksTG/Xvs95pbboJK
-	9w2gDlQwZEdFZFM9+iFDUL30OSvcfpK6chk1THVn2CXWiA2axpdkw6uc7bhXyDnlPvkQYNoeIco
-	iT+ta4n7hVuGTJQ97wpqNU9wiyETHY30g84NwnQlVsAeS8VC0enec68RwlCCPHBZFK5uJpl2HRy
-	+0/eyYTtjQcZyti0/gcgO8Td8lcjZtJhYIZ0xDURPPJYWeV4UgFGcjSBu2pJUAqrJ6L5rH71LYp
-	0OO7j8Y=
-X-Received: by 2002:a05:600c:604f:b0:48a:623c:8859 with SMTP id
- 5b1f17b1804b1-490eabf8ed1mr791455e9.7.1781278669647; Fri, 12 Jun 2026
- 08:37:49 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gcP2J64tgz2yhY
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Jun 2026 01:44:08 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id 6998D6008A;
+	Fri, 12 Jun 2026 15:44:06 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2CD361F000E9;
+	Fri, 12 Jun 2026 15:44:03 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1781279046;
+	bh=Ua7ilpqGQ1TJZ+Bnhifl0cs54R7li+gA4PLtG5KdeuQ=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=h91m9/RTVoc4n7+PHfPlE/bu8XLven6nAKb35XV39yApAjaHBXzKJ8LUiHX1Ax3Uc
+	 hs+12QVOwd6kjjJHbtVqYUbhAHbpwTwAT5pFJ1nP+Sh0z/nfy0DvOJYNcBQNju/VQ8
+	 P04Ynl5UWyd/Y7FiICFoenOJs8qje3zDwnbGwSrCRteIPXWRqJ+I5RPoff7YUeQKum
+	 036rNdlfFTMd8xwP8TnkpAhJ8pars/jTvXV2Gk1guqSQ4I9+GOgKudR2CLNTsWKdV3
+	 iLGdyKn3IuvIXLxhLCWAjcln79zQPU1A7k5OmuBwMgVtAKBb5X12h4oXaUeQjm/24M
+	 9ALyckPrchIYg==
+Date: Fri, 12 Jun 2026 16:44:00 +0100
+From: Conor Dooley <conor@kernel.org>
+To: Vladimir Oltean <vladimir.oltean@nxp.com>
+Cc: linux-phy@lists.infradead.org, devicetree@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
+	Ioana Ciornei <ioana.ciornei@nxp.com>,
+	Vinod Koul <vkoul@kernel.org>,
+	Neil Armstrong <neil.armstrong@linaro.org>,
+	Tanjeff Moos <tanjeff.moos@westermo.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	Michael Walle <mwalle@kernel.org>, Shawn Guo <shawnguo@kernel.org>,
+	Frank Li <Frank.Li@nxp.com>, linux-kernel@vger.kernel.org,
+	Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+	Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH v1 phy-next 6/8] dt-bindings: fsl: layerscape-dcfg:
+ define DCFG_DCSR region
+Message-ID: <20260612-graveyard-hacked-c65d54a1ece8@spud>
+References: <20260611193940.44416-1-vladimir.oltean@nxp.com>
+ <20260611193940.44416-7-vladimir.oltean@nxp.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -101,84 +76,121 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20260612035903.2468601-1-songmuchun@bytedance.com> <20260612035903.2468601-3-songmuchun@bytedance.com>
-In-Reply-To: <20260612035903.2468601-3-songmuchun@bytedance.com>
-From: Frank van der Linden <fvdl@google.com>
-Date: Fri, 12 Jun 2026 08:37:37 -0700
-X-Gm-Features: AVVi8Cdc4B9DOI5h_B7aQcyBPFaEKb3BaqoI3DRKTY6Pl2XtpJFskCaA7xImrJI
-Message-ID: <CAPTztWYx-_A8Jq=U+OGA4y0LUWkKWJxutOzyHJ6FeR+C2gj0JQ@mail.gmail.com>
-Subject: Re: [PATCH v4 02/19] mm/hugetlb_vmemmap: Fix __hugetlb_vmemmap_optimize_folios()
-To: Muchun Song <songmuchun@bytedance.com>
-Cc: Oscar Salvador <osalvador@suse.de>, David Hildenbrand <david@kernel.org>, 
-	Andrew Morton <akpm@linux-foundation.org>, Madhavan Srinivasan <maddy@linux.ibm.com>, 
-	Michael Ellerman <mpe@ellerman.id.au>, Muchun Song <muchun.song@linux.dev>, 
-	Mike Rapoport <rppt@kernel.org>, Lorenzo Stoakes <ljs@kernel.org>, 
-	"Liam R . Howlett" <liam@infradead.org>, Vlastimil Babka <vbabka@kernel.org>, linux-mm@kvack.org, 
-	linux-kernel@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>, 
-	Christophe Leroy <chleroy@kernel.org>, Ritesh Harjani <ritesh.list@gmail.com>, 
-	"Aneesh Kumar K . V" <aneesh.kumar@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org, 
-	Mike Kravetz <mike.kravetz@oracle.com>, stable@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="Anvk3G/afIgQqFuh"
+Content-Disposition: inline
+In-Reply-To: <20260611193940.44416-7-vladimir.oltean@nxp.com>
+
+
+--Anvk3G/afIgQqFuh
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Thu, Jun 11, 2026 at 8:59=E2=80=AFPM Muchun Song <songmuchun@bytedance.c=
-om> wrote:
->
-> __hugetlb_vmemmap_optimize_folios() uses incorrect arguments when handlin=
-g
-> bootmem HugeTLB folios.
->
-> The section number passed to register_page_bootmem_memmap() is derived fr=
-om
-> the vmemmap virtual address of folio->page instead of the folio PFN, so t=
-he
-> bootmem memmap metadata can be registered against the wrong section. The
-> helper is also given HUGETLB_VMEMMAP_RESERVE_SIZE even though it expects =
-a
-> page count, not a size in bytes. In addition, the write-protect range is
-> based on pages_per_huge_page(h), which does not cover the full HugeTLB
-> vmemmap area and can leave part of the shared tail vmemmap mapping writab=
-le.
->
-> Fix the section lookup to use folio_pfn(folio), use
-> HUGETLB_VMEMMAP_RESERVE_PAGES when registering the reserved memmap pages,=
- and
-> use hugetlb_vmemmap_size(h) for the write-protect range.
->
-> Fixes: 752fe17af693 ("mm/hugetlb: add pre-HVO framework")
-> Cc: stable@vger.kernel.org
-> Signed-off-by: Muchun Song <songmuchun@bytedance.com>
-> Acked-by: Oscar Salvador <osalvador@suse.de>
+On Thu, Jun 11, 2026 at 10:39:38PM +0300, Vladimir Oltean wrote:
+> In Layerscape (Arm) and QorIQ (PowerPC) devices, hardware peripherals
+> are accessed by the CPU through a portion of the SoC address space
+> called CCSR ("Configuration, Control, and Status Registers"). All
+> hardware IP blocks have their registers mapped here, and the Device
+> Configuration block makes no exception.
+>=20
+> However, there exists a secondary range of the address space named DCSR
+> ("Debug Control and Status Registers") which, like CCSR, also holds
+> registers of hardware IP blocks, except the DCSR contents is hidden in
+> all public reference manuals.
+>=20
+> The intention of the CCSR/DCSR split, to the best of my knowledge, was
+> to place the functionality that is too low level for normal use, and
+> which is necessary only for debug, in a completely separate address
+> space which can be hidden.
+>=20
+> A use case has appeared where networking SerDes lanes need to be
+> reconfigured at runtime for a different protocol (example: 10GBase-R to
+> SGMII), and the architecture of the SoCs does not normally permit that.
+> The Reset Configuration Word (RCW) is a data structure read by the SoC
+> preboot loader (PBL) which contains stuff like pinmuxing and SerDes
+> protocol mapping for each lane.
+>=20
+> The RCW that the PBL has loaded is visible in the DCFG block's normal
+> status registers (from CCSR), as read only. Turns out, the RCW is also
+> mapped in the DCFG's shadow register map (in DCSR), in a write-only
+> form. Writing to the RCW registers from the DCFG's DCSR space to change
+> what the PBL has loaded is called "RCW override".
+>=20
+> It has been validated that the RCW override procedure is necessary to
+> reconfigure the networking data path when a SerDes lane performs a major
+> protocol change. It changes some internal muxes which connect the PCS to
+> either the 10G MAC or to the 1G MAC.
+>=20
+> Defining the DCSR area of the DCFG as a secondary 'reg' array element
+> allows operating systems to perform RCW overrides. Since it is
+> introduced late in the binding's lifetime, it is optional. It can be
+> identified by name, but also by index (first 'reg' is CCSR).
+>=20
+> Note that while all SoCs should have a DCFG register block in DCSR, we
+> only need to expose it for the SoCs where the RCW override procedure is
+> known to be needed and has been validated.
+>=20
+> Signed-off-by: Vladimir Oltean <vladimir.oltean@nxp.com>
 > ---
->  mm/hugetlb_vmemmap.c | 6 +++---
->  1 file changed, 3 insertions(+), 3 deletions(-)
->
-> diff --git a/mm/hugetlb_vmemmap.c b/mm/hugetlb_vmemmap.c
-> index c713c0d2593a..ea6af85bfec1 100644
-> --- a/mm/hugetlb_vmemmap.c
-> +++ b/mm/hugetlb_vmemmap.c
-> @@ -635,12 +635,12 @@ static void __hugetlb_vmemmap_optimize_folios(struc=
-t hstate *h,
->                          * mirrored tail page structs RO.
->                          */
->                         spfn =3D (unsigned long)&folio->page;
-> -                       epfn =3D spfn + pages_per_huge_page(h);
-> +                       epfn =3D spfn + hugetlb_vmemmap_size(h);
->                         vmemmap_wrprotect_hvo(spfn, epfn, folio_nid(folio=
-),
->                                         HUGETLB_VMEMMAP_RESERVE_SIZE);
-> -                       register_page_bootmem_memmap(pfn_to_section_nr(sp=
-fn),
-> +                       register_page_bootmem_memmap(pfn_to_section_nr(fo=
-lio_pfn(folio)),
->                                         &folio->page,
-> -                                       HUGETLB_VMEMMAP_RESERVE_SIZE);
-> +                                       HUGETLB_VMEMMAP_RESERVE_PAGES);
->                         continue;
->                 }
->
+> Cc: Conor Dooley <conor@kernel.org>
 
-Thanks for fixing my mistakes!
+Where did this email come from btw? get_maintainer.pl result should have
++dt in it.
+Reviewed-by: Conor Dooley <conor.dooley@microchip.com>
+pw-bot: not-applicable
 
-Reviewed-by: Frank van der Linden <fvdl@google.com>
+Cheers,
+Conor.
+
+> Cc: Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>
+> Cc: Rob Herring <robh@kernel.org>
+> Cc: devicetree@vger.kernel.org
+> ---
+>  .../bindings/soc/fsl/fsl,layerscape-dcfg.yaml     | 15 ++++++++++++++-
+>  1 file changed, 14 insertions(+), 1 deletion(-)
+>=20
+> diff --git a/Documentation/devicetree/bindings/soc/fsl/fsl,layerscape-dcf=
+g.yaml b/Documentation/devicetree/bindings/soc/fsl/fsl,layerscape-dcfg.yaml
+> index 3fb0534ea597..fc14fd0bf84b 100644
+> --- a/Documentation/devicetree/bindings/soc/fsl/fsl,layerscape-dcfg.yaml
+> +++ b/Documentation/devicetree/bindings/soc/fsl/fsl,layerscape-dcfg.yaml
+> @@ -36,7 +36,20 @@ properties:
+>            - const: simple-mfd
+> =20
+>    reg:
+> -    maxItems: 1
+> +    minItems: 1
+> +    items:
+> +      - description:
+> +          Customer-visible DCFG register map from CCSR address space
+> +          (Configuration, Control and Status Registers)
+> +      - description:
+> +          Customer-hidden DCFG register map from DCSR address space
+> +          (Debug Control and Status Registers)
+> +
+> +  reg-names:
+> +    minItems: 1
+> +    items:
+> +      - const: dcfg_ccsr
+> +      - const: dcfg_dcsr
+> =20
+>    little-endian: true
+>    big-endian: true
+> --=20
+> 2.34.1
+>=20
+
+--Anvk3G/afIgQqFuh
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iHUEABYKAB0WIQRh246EGq/8RLhDjO14tDGHoIJi0gUCaiwpPQAKCRB4tDGHoIJi
+0iTkAP4y8yskNE7dxgDzs/Wxh5ly8vIUHNi1EsapV2wtvfvMrwEA//4T48+aL7mC
+/esW1vHzfucr882C38bIUCbZewcjhgE=
+=NKQc
+-----END PGP SIGNATURE-----
+
+--Anvk3G/afIgQqFuh--
 
