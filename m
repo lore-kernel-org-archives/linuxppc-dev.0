@@ -1,81 +1,93 @@
-Return-Path: <linuxppc-dev+bounces-22550-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22551-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 54FC3CD8CA8
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jun 2026 10:30:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 463E6CD98CE
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jun 2026 10:37:15 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gcG4q4txmz2ykX;
-	Fri, 12 Jun 2026 20:30:51 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::62c"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781260251;
-	cv=none; b=KK7h5FWutuXj9UIudSZf2drixdEXRK/cAyjzRc81fk0KKPmpdHlw8tpJMaCsyoSBbmj9O2ICrf7tNc/BykmM6H7Xyry6PUmdNC8RLpM46M/xgbC1n2xao7LU9UYJM3XKHtuHqA5ScJepW0JmS6fQpW7howcq/8IgQ3Ujmgi6p9AWv/BTAi/5WouevVNCTXmdoxmD/zh5Q3sXu+jKjLA9d4Lj+/2rFPwRwh97p+qVgdt+dyvA1ojAYYnuvoJcEeGIFzt5mRZbe9yUuvDL4nQBrV2VLCLx8C71WmYDgIRCM2l1Q2zDeWM68ZauI3OBuWKmoiYVHy8cCcxX4o1jLRzF0w==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1781260251; c=relaxed/relaxed;
-	bh=oARqs+T9JbWNb6W4wENAtGBSBaXfYyAinTQCHjHTX1s=;
-	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References; b=cB2XxELGDpcIrZN1a0K4Y6l18sKCqR/D6v2YGNzwJYrZxsYg6mXz9SUt+QwmNQ23FWlFuLs+YPEPZ0dUgOKhmvbqeK9NHqGNYVHHa++7XIp8tjPU+kKTSAWPLB8GMQ+vs1Wxc505WTuxNMx1UCaXgScE12ByN/4V9cmbkTbHhufL9pMl3XhlUgpDReqAyXsQrwnD/VTD/HIxAERkLvXxf7MsCFsXr3XrN3Pz+0hVaMD75xxKavTdLr9LN33eGkfwxK+IX81N8IBJOb65l0gVe0bM1pyHpqc7xWRLr63knaz9pWGivZTlzMp7HA4Fm0bbiomHV4v52HD2E2Njd06/ow==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=de5zPOns; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::62c; helo=mail-pl1-x62c.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gcGD959rrz2ykX;
+	Fri, 12 Jun 2026 20:37:13 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::633" arc.chain=google.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781260633;
+	cv=pass; b=LIaurWI+GZBVgLBSwJbCA5CAbJSWwIdl8tRz9gZ0Vn/6R9YTn0rbFEyo4kV8U4gNoNG2Ph+X5MMjqAYR7G5DrZHRMKM0X5EuXmkQRRvVS2jp2AFX7TGp+fvrCbhP/VtmypKaZTvqCgmxH1h/2tTgwBMS5Ae+IQNna/7DIDsbPRwdveX5OkqC377GM0YgVF/+gjI0Tqcm0fr9zHmrY0hFcdBmAPBCMBwux2P6fBVIVg8NbjyeigG7AzWT85ZrV4w9SkuUUk7OvgAAGpZSuch9KqovjYvshSVDWfmYJ76/vfGW9fBrBCrKDlL00D+3V/dv7wCHz7EPzNBV+JJpgqLz7A==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1781260633; c=relaxed/relaxed;
+	bh=yGmOz1V0n8WCv2WsgeGuXHK9MeZUgyY4mCLu4WGLECg=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=XfljoqO2EsZTrPNQIJMAW25v97CDPn3eySWafvgDE9XHwj5Zh2Z9Uq/q4sI8iOvNgrcGk9rdkQUElmsdpJ3J+/d6jQOgVUx/8xVXWWZSZNfJgL8Bt7ayG+PPiXfTxCHnF+TBtF+FOL1774ukVNl5uXTGrlFQrR8UjW5+bSFvjoD8JzRL5oUVWvnaSEq1CfB7kx6wOw5UaOS4irZa/RK1AlUMwx9ONeXjX1vCdhRsNrWEa5qEQsEEIfdqALsgilfe+V3fxMP5xTBPTXME/FriJEKBmbEDrMjSeky6BQ150pfPrOaxonZmgSaPmNxUOCFFRlNOhM2DB6NxdiEs/7e0lQ==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=YsxbfXs2; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::633; helo=mail-pl1-x633.google.com; envelope-from=shengjiu.wang@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=de5zPOns;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=YsxbfXs2;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::62c; helo=mail-pl1-x62c.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pl1-x62c.google.com (mail-pl1-x62c.google.com [IPv6:2607:f8b0:4864:20::62c])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::633; helo=mail-pl1-x633.google.com; envelope-from=shengjiu.wang@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pl1-x633.google.com (mail-pl1-x633.google.com [IPv6:2607:f8b0:4864:20::633])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gcG4n2CSLz2yjp
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jun 2026 20:30:48 +1000 (AEST)
-Received: by mail-pl1-x62c.google.com with SMTP id d9443c01a7336-2c0aa420401so6319015ad.3
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jun 2026 03:30:48 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gcGD85fgFz2yjp
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jun 2026 20:37:11 +1000 (AEST)
+Received: by mail-pl1-x633.google.com with SMTP id d9443c01a7336-2bf30d530bdso8239935ad.3
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jun 2026 03:37:11 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1781260630; cv=none;
+        d=google.com; s=arc-20240605;
+        b=PJS4U42QD1t0HNvOQ8y/wNFdzQTo+kvB2hPIK+AcIqIMrAm4NjAoKZimcw9VnLhGzN
+         3y6MeXKMXJNZrGXpJ2N4vhjDGkSg0GkqKXPRFawLJbLVURpyMwljFpOizgXi7fbox84I
+         2VNttvV5yp5Ys+YX74ZmWMmNHhN71d9HtsiDWFxMds8W/x12vG7RKgVLedh3mCUlO7y9
+         lytP2tN6/N0pgsp4nmYryZzlP03f/qalaj3R0QRKzuLpMLY9X0V6fQgo/njqu4M/Uadn
+         He/pSgJRIyglB+/vnHm3YKOA7W7Tt3ddqo5o3kRI+Qijhi8/ShN+OnKH0l1b+Il/UaGC
+         rptg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=yGmOz1V0n8WCv2WsgeGuXHK9MeZUgyY4mCLu4WGLECg=;
+        fh=WdJ4bI/5F5nOfQys/WGwhJSgQXaI2bkRrFACN67BYDI=;
+        b=WdeJqghz8m63G0boBGvnXdJ814hlIggsJ8tzwpuynT1CW+qnARw8AW13p6p3HNulxT
+         OZkZp0ENLkgnlHEh0qkURHwRHy1sBq0D05M/HYOSgRrXOXl5MjKxXjIHKNesC46x9IBZ
+         r9w2A3bgLw66U2esXXU6e+sMzIfwLEorA3fBGlV5qlUO1VPi1I9ZzOwMvGT6g3wUQrEu
+         dIblSKUDaujEo56jBRjemTUdkML1ttNXNfHzf1SMtM6mCwNGSCaolg3ejAHkONMbqQBV
+         BboXSClU32ulk0WyNj/W04ulQT+RipHYsmzF4TKKymbbBekvbcofGo1+sL0Bg02uw042
+         JI/Q==;
+        darn=lists.ozlabs.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1781260246; x=1781865046; darn=lists.ozlabs.org;
-        h=references:message-id:date:in-reply-to:subject:cc:to:from:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=oARqs+T9JbWNb6W4wENAtGBSBaXfYyAinTQCHjHTX1s=;
-        b=de5zPOnsdvYCrHhAKLCJIDypRxtYAKBIgD/NWUvn0EPcQb9VCjqTfu/Ko4MHPjr0g1
-         18jbPw6M+oUemWqKqkeDkbf0ghBa+FAFylh51AYUHlvjC3OsLTIPV5kMNvoLhx/qHjaY
-         rqMP11TSJZdjaNt2djCAawFJ6PEJ5woIqIBq5Szf5CjQdZGzYEyqC8HhXT50F7/47Em/
-         +UP5t7tlfktRPUjmBr5E+NJujp/TdqnC2YhwqVP73hjWnXHxSaT1RUvCprz0e4oW5353
-         5MGNen37p+kwqoyj/lDJo7P0dPphZ+SKAGAVdluOjY8PRwoWKQn2U8bwxKY4XY46HP+b
-         qlLA==
+        d=gmail.com; s=20251104; t=1781260630; x=1781865430; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=yGmOz1V0n8WCv2WsgeGuXHK9MeZUgyY4mCLu4WGLECg=;
+        b=YsxbfXs27gne8awWUfsXjLoVGZQd7Nq75HaCABV1VnshdSd/kFT9qqloB9Gknd9mwP
+         wPuyUYIbZp8Msi/8wi53OWbwZsqWU+BRO/Omnh2OB0NSM5BxZVI7LZL4XKPsUNH5RTlm
+         d0uFGnQIgnIyQlh2TJjWRXvY3+A8TDg5TsGNBXuzwKr/xK//I48K6QRAtFX2cCoWz+tI
+         GYotEpFTapvQ7nd6ohb7+BbpjSG+mkFTif6ZycpdOYd1qzLshfFSvRtZq7BeCCwTT/A5
+         dN7Tgm//oBTJ0mqH/A8JeqjngdYwqwR0yNEubZzzEObMP5ZPlLguLMfPPULYvlQdk8rQ
+         /tTQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1781260246; x=1781865046;
-        h=references:message-id:date:in-reply-to:subject:cc:to:from:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=oARqs+T9JbWNb6W4wENAtGBSBaXfYyAinTQCHjHTX1s=;
-        b=L4rZU9j0ydk9bI21yabn+gdhbc6EEmmchujDpYQPfCEkcw7VMdCIwkmM6XL3Zc78jK
-         E0XjNfKiSFIOum/vUKo2f93ZC3MwTlG4mfyQInwlDgAMERksSijPZKUaFOA+z0uI78WB
-         F9/47ad8Rfacd99jEQuLGyP/TV3H1lBjGQittpGIPy44duur9W03VA32w8sOQ1Iy91zX
-         Gb9wDWTA/amYtZqQ5U9VZLZ5WIs4ZgAr/CroONFhnSEhVNjMW4gkUwAqWw1BAXBBP6Ue
-         zFaBKWjQmhp46MVzvUFlDkieR9BXheCGLQ5FdWI8I649petrHbLF3NnVaNOkkrjxsh56
-         OMtQ==
-X-Forwarded-Encrypted: i=1; AFNElJ/K/JnctHMBvaRg94RlFUjKAhfCAljGpgnmGfw+Nj1JK8KOwaoaaIYsUQX60gdnwnM1deYRO2eX/K/Yvdc=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YyQkzUmrwtwSmqpD7hwaW+JRPAsfvR1CyTLZz+zgxQbTvvKA4/f
-	gw2zxGsods/H0qd0k7k3kGvBEGiX0kCIsvxyB1refoqDltgeqzbCSyFA
-X-Gm-Gg: Acq92OF9RbejhcyZqywR2yxNo+xtUwpQ2fTqb3HtiCJjivKC2xk5EmOXSoor5nAIFBx
-	7hkUB1g6fMfInOsivjeoufyCLEQDyPfkO4wljix49j4FDWivncYN8rUStpK4hOVBFPNjZCmvx6P
-	rBdvIX/CkJ8zBiBNm/FH31llutos7j9LcglhOeJU4PMfu6SqXwIahwWB2WPM3D6i03HY7gKXYya
-	9D40RuUW7+rdoLPKvnT3MnZN1BpoGLmoa+QaVPZpitKvxmCcyjkc45q6A58nVlfurcaCmFqzrpm
-	6468hOTvrWfgBcup2zqymwCzhwHZ+yDb0kBKINVBrMXjgpVqs007Hpp+VG9Lb2RILzsp+JXDc51
-	lFR0PdhlUmd8uDy1kBLHOWfc8mr85AzLFo6kT+3TCzy2Kh6D5ypgpImT6JwGJL6Aygu4AWg45e9
-	7gJxoNGFkWKFhNYE1TITiMiJAItA==
-X-Received: by 2002:a17:903:3887:b0:2b2:4d36:7ba with SMTP id d9443c01a7336-2c40e0350d2mr27814135ad.0.1781260245979;
-        Fri, 12 Jun 2026 03:30:45 -0700 (PDT)
-Received: from pve-server ([49.205.216.49])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2c42fbb50e5sm17778985ad.35.2026.06.12.03.30.38
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 12 Jun 2026 03:30:44 -0700 (PDT)
-From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-To: kernel test robot <lkp@intel.com>, linux-mm@kvack.org
-Cc: oe-kbuild-all@lists.linux.dev, Madhavan Srinivasan <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <chleroy@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Linux Memory Management List <linux-mm@kvack.org>, Chris Li <chrisl@kernel.org>, Kairui Song <kasong@tencent.com>, Kemeng Shi <shikemeng@huaweicloud.com>, Nhat Pham <nphamcs@gmail.com>, Baoquan He <baoquan.he@linux.dev>, Barry Song <baohua@kernel.org>, Youngjun Park <youngjun.park@lge.com>, David Hildenbrand <david@kernel.org>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, Sayali Patil <sayalip@linux.ibm.com>
-Subject: Re: [PATCH v2 3/3] powerpc: Kconfig: Enable THP_SWAP on Book3S64
-In-Reply-To: <202606121305.h0cxjhP2-lkp@intel.com>
-Date: Fri, 12 Jun 2026 12:01:26 +0530
-Message-ID: <jys4e0ch.ritesh.list@gmail.com>
-References: <3abf510d24c8ef17bd5e324cccc5e03e548afade.1781170904.git.ritesh.list@gmail.com> <202606121305.h0cxjhP2-lkp@intel.com>
+        d=1e100.net; s=20251104; t=1781260630; x=1781865430;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=yGmOz1V0n8WCv2WsgeGuXHK9MeZUgyY4mCLu4WGLECg=;
+        b=TP+XQS9seJLRDAznwm6xXIYqrgJ5eZiBPtwzD8l5u3hjDLFJZmdawK0OZouj2xAdJ9
+         Xxx56iEkB8C5AgPgl342y7CcKmOcpuziw58vkQQw0U/7eWV6TXVFw1KYa2ECw4tmoggZ
+         NBMK4W4TJEHLNMvOy3XzIQUxSGjw1T5LEcnAnKv2mC4hgtTJ70fCLGBDf22cGPrZ9Ozr
+         kpI8JKwPAiy7ql/ZL2aU4G8Pm/r1N5towNziXItJ6X2X+fBZSV59Q3NSUkNm6Amzewbl
+         bF74c+ovwZ5fyvVld+z29NsFl9ogvRcFi9A3xkv1iIuDK/PJbSFzIOFSgXP+GULZdnm3
+         ygOA==
+X-Forwarded-Encrypted: i=1; AFNElJ+GaqX+zvFVKqM04x7nNPGUDa94jQ8uZ/QioRFCOwSAsvBjWkQzEe9oUBVfluT9FUq1qleIxzeBrXIQ3hk=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YxhLYrB7QPYfowOuebTt8y+nWRXlsr/rShCgVI5UbP/Jk04CXtt
+	k6rt+NXRGSbJoKIgCSUTn9b/4Rw3WYkcl9WMrUTDCSp1tzagSDODgpcpXeL5ZE2OJGuOenThcpE
+	QOr4rwgN0evlJLuQ6k85sUQvZRM3BmSY=
+X-Gm-Gg: Acq92OFvAdHHzgZHiNJXgeEUjFSMdWhRx5ejMrsWbkz2vMm9mc0meTTgMw5sRJlAt//
+	s1M7AZB5o3pmcC4cTbTC6ef4O3HSED0vOzt4+egl6XlFB3L1Dw6Gi/XIib2o01TxjXAQsDEtoTv
+	13DRmpo7JysFzOye3SYNkCixKuzFGjkaqJNPfaiaJkXISgEIbTggTU80sndaqO79tfT7RANbDUk
+	+/q0Jn98CcuYdcybMaWpoco5hzx8H7MmZYfYYMoDJJlmOL9BXM0s8lmDhckjA7pNCLFlQUDEFq4
+	MM/dOnNO8m6AU3i6Kg==
+X-Received: by 2002:a05:6a21:350f:b0:3b3:c7e:fda7 with SMTP id
+ adf61e73a8af0-3b78406ebe3mr2900723637.39.1781260629920; Fri, 12 Jun 2026
+ 03:37:09 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -88,49 +100,76 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
+MIME-Version: 1.0
+References: <20260609124317.38046-1-sammiee5311@gmail.com> <20260609124317.38046-4-sammiee5311@gmail.com>
+In-Reply-To: <20260609124317.38046-4-sammiee5311@gmail.com>
+From: Shengjiu Wang <shengjiu.wang@gmail.com>
+Date: Fri, 12 Jun 2026 18:36:57 +0800
+X-Gm-Features: AVVi8CenVHdc3LE6HJevD6aErfCNA_Sk-ZJA5DP2qrNShUhv5CBfoCuI5aCO6Ko
+Message-ID: <CAA+D8AN6+oQ6PRNS-KYd42QoS-r1WhGqcafNCewLuXpYsGW4XQ@mail.gmail.com>
+Subject: Re: [PATCH 3/4] ASoC: fsl: fsl_audmix: Validate written enum values
+To: HyeongJun An <sammiee5311@gmail.com>
+Cc: Mark Brown <broonie@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, 
+	Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>, linux-sound@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, Xiubo Li <Xiubo.Lee@gmail.com>, 
+	Fabio Estevam <festevam@gmail.com>, Nicolin Chen <nicoleotsuka@gmail.com>, 
+	Viorel Suman <viorel.suman@nxp.com>, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-kernel test robot <lkp@intel.com> writes:
+On Tue, Jun 9, 2026 at 8:47=E2=80=AFPM HyeongJun An <sammiee5311@gmail.com>=
+ wrote:
+>
+> fsl_audmix_put_mix_clk_src() and fsl_audmix_put_out_src()
+> convert the user-provided enum item with snd_soc_enum_item_to_val()
+> before checking whether the item is within the enum's item count.
+>
+> The generic snd_soc_put_enum_double() helper performs that
+> validation, but these callbacks use the converted value first: the
+> clock-source path tests it with BIT(), and the output-source path
+> indexes the prms transition table with it.
+>
+> Reject out-of-range enum items before converting them.
+>
+> Fixes: be1df61cf06e ("ASoC: fsl: Add Audio Mixer CPU DAI driver")
+> Assisted-by: Claude:claude-opus-4-8
+> Signed-off-by: HyeongJun An <sammiee5311@gmail.com>
 
-> Hi Ritesh,
->
-> kernel test robot noticed the following build warnings:
->
-> [auto build test WARNING on akpm-mm/mm-everything]
-> [also build test WARNING on linux-review/Ritesh-Harjani-IBM/include-linux-swap-h-Remove-unused-leftovers/20260611-111124 next-20260611]
-> [cannot apply to powerpc/next powerpc/fixes linus/master v7.1-rc7]
-> [If your patch is applied to the wrong git tree, kindly drop us a note.
-> And when submitting patch, we suggest to use '--base' as documented in
-> https://git-scm.com/docs/git-format-patch#_base_tree_information]
->
-> url:    https://github.com/intel-lab-lkp/linux/commits/Ritesh-Harjani-IBM/mm-swap-make-SWAPFILE_CLUSTER-runtime/20260611-181121
-> base:   https://git.kernel.org/pub/scm/linux/kernel/git/akpm/mm.git mm-everything
-> patch link:    https://lore.kernel.org/r/3abf510d24c8ef17bd5e324cccc5e03e548afade.1781170904.git.ritesh.list%40gmail.com
-> patch subject: [PATCH v2 3/3] powerpc: Kconfig: Enable THP_SWAP on Book3S64
-> config: arm64-randconfig-r133-20260611 (https://download.01.org/0day-ci/archive/20260612/202606121305.h0cxjhP2-lkp@intel.com/config)
-> compiler: aarch64-linux-gcc (GCC) 8.5.0
-> sparse: v0.6.5-rc1
-> reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20260612/202606121305.h0cxjhP2-lkp@intel.com/reproduce)
->
-> If you fix the issue in a separate patch/commit (i.e. not just a new version of
-> the same patch/commit), kindly add following tags
-> | Reported-by: kernel test robot <lkp@intel.com>
-> | Closes: https://lore.kernel.org/oe-kbuild-all/202606121305.h0cxjhP2-lkp@intel.com/
->
-> sparse warnings: (new ones prefixed by >>)
->>> mm/swapfile.c:133:6: sparse: sparse: symbol 'swap_table_use_page' was not declared. Should it be static?
->
-> vim +/swap_table_use_page +133 mm/swapfile.c
->
->    131	
->    132	unsigned int swap_slots_in_cluster __read_mostly;
->  > 133	bool swap_table_use_page __read_mostly;
->    134	
+Acked-by: Shengjiu Wang <shengjiu.wang@gmail.com>
 
-I had noticed this after sending the v2. But by then it was late.
-Good that the sparse checker caught it.
-
-So, I will declare this variable as static - that should fix the
-sparse warning. I will spin a v3 in sometime with this fixed.
-
--ritesh
+Best regards
+Shengjiu Wang
+> ---
+>  sound/soc/fsl/fsl_audmix.c | 6 ++++++
+>  1 file changed, 6 insertions(+)
+>
+> diff --git a/sound/soc/fsl/fsl_audmix.c b/sound/soc/fsl/fsl_audmix.c
+> index 40a3b7432174..f819f33ec46b 100644
+> --- a/sound/soc/fsl/fsl_audmix.c
+> +++ b/sound/soc/fsl/fsl_audmix.c
+> @@ -117,6 +117,9 @@ static int fsl_audmix_put_mix_clk_src(struct snd_kcon=
+trol *kcontrol,
+>         unsigned int *item =3D ucontrol->value.enumerated.item;
+>         unsigned int reg_val, val, mix_clk;
+>
+> +       if (item[0] >=3D e->items)
+> +               return -EINVAL;
+> +
+>         /* Get current state */
+>         reg_val =3D snd_soc_component_read(comp, FSL_AUDMIX_CTR);
+>         mix_clk =3D ((reg_val & FSL_AUDMIX_CTR_MIXCLK_MASK)
+> @@ -157,6 +160,9 @@ static int fsl_audmix_put_out_src(struct snd_kcontrol=
+ *kcontrol,
+>         unsigned int reg_val, val, mask =3D 0, ctr =3D 0;
+>         int ret;
+>
+> +       if (item[0] >=3D e->items)
+> +               return -EINVAL;
+> +
+>         /* Get current state */
+>         reg_val =3D snd_soc_component_read(comp, FSL_AUDMIX_CTR);
+>
+> --
+> 2.43.0
+>
 
