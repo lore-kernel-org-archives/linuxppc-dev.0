@@ -1,73 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-22598-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22599-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AF8C8CD98CF
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jun 2026 22:35:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 94B3DCD98CE
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jun 2026 23:12:09 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gcZ99168Jz2xjN;
-	Sat, 13 Jun 2026 08:35:41 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gcZzC6cgHz2ykX;
+	Sat, 13 Jun 2026 09:12:07 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781303741;
-	cv=none; b=jYDjCWPCTvcPcKi7A+7UcJ4enH1XwMHKo0Q9/IYS5rrDvP9Nk4uhJCHKCY/yHocJqBCUo8qiWzzBt966dSb1peTXltDygCNnD7KpczIHtRaxszj9qtzlOrQzWMehuGdZaDV6dFKf2ZZvd6zb661v0PPj3cFvj1aT/E51n8f9yNgNcyQea2p2sbpYY57hYpzldufUefc1h6XcZRsOw8TYIa5SGee+GOuWTgEyPS8iY2mwRtarsFXINAD8els4LWOZ87FWN3Rye1yRGlXZ+SX+7VvRaC7aubCCvZgV30TY3szPvrXAor95KQ/VIhiF7jVYeOhXXrNsbNzZRwpuQYDxOg==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781305927;
+	cv=none; b=j3My6TIv7ARn/w7Bhy7q1zGUNsWjxSxD1t3ueMI1z48FUpXyHJf6YI23d1JQwVoEWXsC40AAbGuvJZyL8SsRimN6b281eYVgqqhRepETd7bF+l+PkxX+UqNwjdNsyzwN9Vq+OlnBPlqGkioSOcs+aEBiGyPDSUhGNz30Gd/L950ruV464274x8L+Pnprg2vkMv8KIoNkY1l68GYpEZUVmozJbskrVlJD4DyjVFRI1xdTMxd6fIB/vxKfpiF8p91CYKNqwZIZa/+UYY0qOE1LnkVfu4N6SMW9DCw3GH3tbpg1V0L0tXsBd82GJ6GY+PSwMwlO078XDpmYL+IyBxYzyw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1781303741; c=relaxed/relaxed;
-	bh=tcozaSNDxW287Z2KI+BjjJnFriV5XYqdoKxv9KEBfjs=;
+	t=1781305927; c=relaxed/relaxed;
+	bh=XN2+Lv+Bpsdrx7zggvVnqXZteIICRqidIKpH/qtqCBc=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=C3s6VZMQxTAFgW1U8LHoGMivyRPZcm70wVWK5NTQEyq3PQIZHtJB73LQkdAxVNtV5z5/jEVV7fvHLrBtmnkmheO3DqITPABHeNX0FU8oELcqN8zblke8OA88byEw7eMwFi4820+tDJZyFK4+5gexprSwYg4Jq6PUIc+V30jLLXAaHEAWxTuTmTuaD2JXTVWAwXYdy2eSZb1LSJ8fPSd+1oOTiW3erF1TT5/XetJ8/AosOHkmTO71w+Gn/YutAj9uYRqpuKnSXI/p/W+RQif419u8jEpSURlN9HToKIuzccRSemvZMMoQTbHNZSHjhr8X4UGFH35ziJweBvaKJEEY7w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=i1ZZ7969; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=tyreld@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	 In-Reply-To:Content-Type; b=fuSWRApP2f6RKyFzNEjz7/Yna15tTrzn1eXgaJAJP24E08ewcJTpPd5dwao4CSnEbXxC6afzfUuvub2c5hCIOjUQbCOCgcsI4RRUiGZLvlIDTOraQUSIj7irg853/2k/ZpK89D7mWH3z3Cwy3WME+sHDS3wvs0P8Lkqhdtoufps47ZxxEnpzcc8h6gDGCfJRU9Ti0x+y0rLXdWMob7gxzImRwbIigR2OjI3W0klp5CUOWNSGjD7twiMpd0x6XM/mQlsR8CPTVaZO1PmhmGVVdXr9x3DyA/VN26YEx1AtVBdeaL4IehtO5dC83Q5nErT8g8z7jSelbM4u5dV0xP1s2g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Ak+J8iSv; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=tyreld@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=i1ZZ7969;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Ak+J8iSv;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=tyreld@linux.ibm.com; receiver=lists.ozlabs.org)
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gcZ9765Tsz2xYg
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Jun 2026 08:35:39 +1000 (AEST)
-Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 65CCtGjI3872955;
-	Fri, 12 Jun 2026 22:35:22 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gcZzB3mqmz2yT0
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Jun 2026 09:12:05 +1000 (AEST)
+Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 65CGK190722204;
+	Fri, 12 Jun 2026 23:11:56 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
 	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=tcozaS
-	NDxW287Z2KI+BjjJnFriV5XYqdoKxv9KEBfjs=; b=i1ZZ7969zhe5HD+UxnzS6Q
-	IW7bJYEWdTZdvVy5LMsJXnlldiN5s+7cMUx35f5awVxm6kO1zoC1xLTnYNGmCkAm
-	bSdifScmh8tPMll3wVz6po6CTlddaR4Xh+1NDORlcQNChhSAsBYcHqxENtWlN18H
-	E+asoNIbZ2utc302Tr0SGoXM6Mf99TCWdVUrCdCoQjo4OyXyu41xuk0HDmcYGCgZ
-	Cx9fp87a8NtwGeABsGWvnhaNq6NFaZ9P9ifW8JN2ox2DJddIQMGww3gZKPnzSZsu
-	w5HbcIEgWP9jBcOw6dILzF7G+5ZOnSy1/lOE+pgwvIJ10NwgBAnhCLeiJpsJciDA
+	:message-id:mime-version:references:subject:to; s=pp1; bh=XN2+Lv
+	+Bpsdrx7zggvVnqXZteIICRqidIKpH/qtqCBc=; b=Ak+J8iSvyKcrEFPBMhfIDM
+	YmZtEBY4cSeCZuAlh8xf5cPI4VG7rLjkEyOHcimKt4iEKRx0Fu0WRzVShZr6vBxm
+	b12z1BQ1ZgjCqzTxX7RCID1CMWWHJohI2RBpOVkKcaqrw1dgJgZybxNF41uGSUeC
+	k5B5kCYTrrfU6eXJbLTA7cv6QskX/ne0rNbHya0x085lZl0B0uy9S0bug3qfJVI7
+	3bn6AIA0rCdFeSpxpKRoESX5+OxEnMYD6L9th9+DAuCvL+AvpJx5zC8gY+jZk0tk
+	4VVpz92bIw3QUv5StZu9YCQnC2yf0ZlCwmV5nAb2878u9c/SnW+w68Ex6q6g2n4g
 	==
 Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4eqe8f39vq-1
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4eqe8dkdv4-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 12 Jun 2026 22:35:21 +0000 (GMT)
+	Fri, 12 Jun 2026 23:11:55 +0000 (GMT)
 Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma23.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 65CMYarW003327;
-	Fri, 12 Jun 2026 22:35:20 GMT
-Received: from smtprelay02.dal12v.mail.ibm.com ([172.16.1.4])
-	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4eqe0a9xfe-1
+	by ppma23.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 65CN4ZM3032256;
+	Fri, 12 Jun 2026 23:11:54 GMT
+Received: from smtprelay05.dal12v.mail.ibm.com ([172.16.1.7])
+	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4eqe0aa1je-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 12 Jun 2026 22:35:20 +0000 (GMT)
+	Fri, 12 Jun 2026 23:11:54 +0000 (GMT)
 Received: from smtpav06.wdc07v.mail.ibm.com (smtpav06.wdc07v.mail.ibm.com [10.39.53.233])
-	by smtprelay02.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 65CMZJ0G25625122
+	by smtprelay05.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 65CNBqje33292988
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 12 Jun 2026 22:35:19 GMT
+	Fri, 12 Jun 2026 23:11:53 GMT
 Received: from smtpav06.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 2102B58068;
-	Fri, 12 Jun 2026 22:35:19 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id D12D75804E;
+	Fri, 12 Jun 2026 23:11:52 +0000 (GMT)
 Received: from smtpav06.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id C50965803F;
-	Fri, 12 Jun 2026 22:35:17 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 9B5F65803F;
+	Fri, 12 Jun 2026 23:11:51 +0000 (GMT)
 Received: from [9.61.160.241] (unknown [9.61.160.241])
 	by smtpav06.wdc07v.mail.ibm.com (Postfix) with ESMTP;
-	Fri, 12 Jun 2026 22:35:17 +0000 (GMT)
-Message-ID: <d99205f7-8467-4918-8102-4b84620fd0ff@linux.ibm.com>
-Date: Fri, 12 Jun 2026 15:35:17 -0700
+	Fri, 12 Jun 2026 23:11:51 +0000 (GMT)
+Message-ID: <bfb7ff08-e4ec-46a2-b368-12d5c77f0ee4@linux.ibm.com>
+Date: Fri, 12 Jun 2026 16:11:50 -0700
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -82,7 +82,7 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 1/7] ibmvfc: add basic FPIN support
+Subject: Re: [PATCH v2 3/7] ibmvfc: make ibmvfc login to fabric
 To: davemarq@linux.ibm.com,
         "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
         "Martin K. Petersen" <martin.petersen@oracle.com>,
@@ -95,306 +95,141 @@ Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
         Greg Joyce <gjoyce@linux.ibm.com>,
         Kyle Mahlkuch <kmahlkuc@linux.ibm.com>
 References: <20260608-ibmvfc-fpin-support-v2-0-d41f540fba5c@linux.ibm.com>
- <20260608-ibmvfc-fpin-support-v2-1-d41f540fba5c@linux.ibm.com>
+ <20260608-ibmvfc-fpin-support-v2-3-d41f540fba5c@linux.ibm.com>
 Content-Language: en-US
 From: Tyrel Datwyler <tyreld@linux.ibm.com>
-In-Reply-To: <20260608-ibmvfc-fpin-support-v2-1-d41f540fba5c@linux.ibm.com>
+In-Reply-To: <20260608-ibmvfc-fpin-support-v2-3-d41f540fba5c@linux.ibm.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 X-TM-AS-GCONF: 00
 X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjEyMDIxMCBTYWx0ZWRfX1HnA7gSHOoKi
- GdBnvYZ6HX5g4P0l0sYtw+57QXozaxobkNHLz2EMD+3G9eS9yXyjHZjeQIm37Sidp/ubEfncKHf
- i9AZ5/goll4WnVkNvf/R6rmjCfo6YyQE5m4c6KuATBUqlTA+nDnSwJMFF1QBjYpLU+nf2ofebUS
- 691qm4DMQZjkB0twUue8L2GGe2QdwEiSMjD2UIf0qb9NbWhqUNulkJ81CWDZqSR2igyUnz/G0Y1
- n4fa4GcueECCfayTVHcCL2jBKGtXY9NmxbC5IS2PxE77VK95nkxOyUs9VkvArte9MHOmECaPL3w
- fWhnJQjwAI8Jg5rJGeuTJiawzTR04ECLWkKRoXqmAvprwnZE2x9AP7rDiwe3oaJs2f+piiTkeBQ
- +TcF7HTcwvUXCruXtEYU6xSH80L+fZKmmCG3JdwWNsCB5gZnbMuQd+cJietg8eWzGQdaH8Pi2DX
- 0O3+O37U0qTJGccNdOg==
-X-Authority-Analysis: v=2.4 cv=dr7rzVg4 c=1 sm=1 tr=0 ts=6a2c89aa cx=c_pps
+X-Proofpoint-Spam-Info: AW1haW4tMjYwNjEyMDIyMCBTYWx0ZWRfX30a1uCGgXRb0
+ qUbqHu2cdSeRywaflWXHobQUOhAbzGhPuR03LDyK4Vw47w23lA7lg1R6r4MS+NhZFvINsiay/3t
+ krGWMQIkmuC43DaPuaHAPNiG9SKwhfU=
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjEyMDIyMCBTYWx0ZWRfX6MioWJsnb8Fm
+ TiC25s6c/s0RMw4GJLrjAkJH8EU2XBAE9tNEWOSXxhqgL58hpbwqJSqAiWQ3QG6n0c5m3EAqO1D
+ 3IJUiGSHKkrrX0g8MVY2xUenm7QDFV/6DXKSuOO/OJgHrQSsjyhCclNLiWPM/e6xKAf2EB2pH1+
+ 2L9mVQGvio6RTnXqaRAvQZKCeoGpUa0G9rX/T6Rj7MO+KjnrhiN5BQnUPtJqFoHldJ0eDI8gUo3
+ Ic2iKcYjb7GAzK0pigPnQnWvSvqUkq28SXxViHM7Q1K6e5uRBJJEciAXXCMggTGQsiWFKZzOK/x
+ UxtjbO0eABdFY+NK3HqIve9In/bM7YDkMwMzV6C/j+GfrwaFx21KaQYgvA7OUavG6qDz1gGn2qc
+ M7+mbm4PrlsLCEJDuLR6E1OhbomVrRlDtuAy6n2mLPT8fRJUewCAVtd/ikd5l0drEQ5IWrZN2hg
+ joQZ+3aYcZprUqci0vg==
+X-Proofpoint-ORIG-GUID: lnI6gV-ZIlmvnu72oD7TXbKnTxSK6fzV
+X-Authority-Analysis: v=2.4 cv=GIM41ONK c=1 sm=1 tr=0 ts=6a2c923c cx=c_pps
  a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
  a=IkcTkHD0fZMA:10 a=FelO9ux0wxsA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=U7nrCbtTmkRpXpFmAIza:22 a=VnNF1IyMAAAA:8
- a=x49wV4nTLdBlH4IQi7IA:9 a=QEXdDO2ut3YA:10
-X-Proofpoint-ORIG-GUID: m0Dn58y3kFfRlbOQFJBom6gv6POwOqU1
-X-Proofpoint-GUID: ToOt9YvdzwHDg0Le4IXAbOfSFHrlv3eb
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNjEyMDIxMCBTYWx0ZWRfX1OXbErOJ4bCz
- RM4St7Lw51+cZmbL1PLVbakNTBL9ul7Z1lP2l0upSWWcYw/aoZLiKYVuBj8z/XLac8DDDJDO2Dc
- jAGEi8OrfeZOr58bNzbVWYMKCvZW6fY=
+ a=RnoormkPH1_aCDwRdu11:22 a=iQ6ETzBq9ecOQQE5vZCe:22 a=VnNF1IyMAAAA:8
+ a=rJ4d5xbAOQceQwH0KXUA:9 a=QEXdDO2ut3YA:10
+X-Proofpoint-GUID: hhYXZCFmBA_lzEO61kTaD4YLRPAYOEO8
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
  definitions=2026-06-12_03,2026-06-12_03,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- spamscore=0 adultscore=0 suspectscore=0 priorityscore=1501 phishscore=0
- clxscore=1015 bulkscore=0 impostorscore=0 lowpriorityscore=0 malwarescore=0
+ clxscore=1015 suspectscore=0 impostorscore=0 spamscore=0 phishscore=0
+ adultscore=0 lowpriorityscore=0 bulkscore=0 priorityscore=1501 malwarescore=0
  classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606040000 definitions=main-2606120210
+ reason=mlx scancount=1 engine=8.22.0-2606040000 definitions=main-2606120220
 
 On 6/8/26 11:30 AM, Dave Marquardt via B4 Relay wrote:
 > From: Dave Marquardt <davemarq@linux.ibm.com>
 > 
-> Add support for basic FPIN messages to the ibmvfc driver. This includes
-> 
-> - adding FPIN handling support to the async event handler
-> - offloading processing of FPIN messages to a work queue
-> - converting the VIOS FPIN message to a struct fc_els_fpin as used by
->   the Linux kernel
-> - passing the converted struct fc_els_fpin to fc_host_fpin_rcv for
->   processing
-> 
-> The FPIN message conversion routines include a common routine that
-> will also be used in patches 6 and 7, which add full and extended FPIN
-> support.
-
-You are missing a Signed-off-by tag here.
-
+> Add support for fabric login in order to support the asynchronous
+> event queue with its own interrupt as required by NPIV specification
+> to support the asynchronous sub-queue and interrupt in order to
+> support full and extended FPIN messages.
 > ---
->  drivers/scsi/Kconfig                 |  10 ++
->  drivers/scsi/ibmvscsi/Makefile       |   1 +
->  drivers/scsi/ibmvscsi/ibmvfc.c       | 226 ++++++++++++++++++++++++++++++++++-
->  drivers/scsi/ibmvscsi/ibmvfc.h       |  15 +++
->  drivers/scsi/ibmvscsi/ibmvfc_kunit.c | 131 ++++++++++++++++++++
->  5 files changed, 379 insertions(+), 4 deletions(-)
+>  drivers/scsi/ibmvscsi/ibmvfc.c | 94 ++++++++++++++++++++++++++++++++++++++++--
+>  drivers/scsi/ibmvscsi/ibmvfc.h | 16 +++++++
+>  2 files changed, 106 insertions(+), 4 deletions(-)
 > 
-> diff --git a/drivers/scsi/Kconfig b/drivers/scsi/Kconfig
-> index c3042393af23..d5fc7eb2ebb1 100644
-> --- a/drivers/scsi/Kconfig
-> +++ b/drivers/scsi/Kconfig
-> @@ -758,6 +758,16 @@ config SCSI_IBMVFC
->  	  To compile this driver as a module, choose M here: the
->  	  module will be called ibmvfc.
->  
-> +config SCSI_IBMVFC_KUNIT_TEST
-> +	tristate "KUnit tests for the IBM POWER Virtual FC Client" if !KUNIT_ALL_TESTS
-> +	depends on SCSI_IBMVFC && KUNIT
-> +	default KUNIT_ALL_TESTS
-> +	help
-> +	  Compile IBM POWER Virtual FC client KUnit tests. These tests
-> +	  specifically test FPIN functionality. To compile this driver
-> +	  as a module, choose M here: the module will be called
-> +	  ibmvfc_kunit.
-> +
->  config SCSI_IBMVFC_TRACE
->  	bool "enable driver internal trace"
->  	depends on SCSI_IBMVFC
-> diff --git a/drivers/scsi/ibmvscsi/Makefile b/drivers/scsi/ibmvscsi/Makefile
-> index 5eb1cb1a0028..75dc7aee15a0 100644
-> --- a/drivers/scsi/ibmvscsi/Makefile
-> +++ b/drivers/scsi/ibmvscsi/Makefile
-> @@ -1,3 +1,4 @@
->  # SPDX-License-Identifier: GPL-2.0-only
->  obj-$(CONFIG_SCSI_IBMVSCSI)	+= ibmvscsi.o
->  obj-$(CONFIG_SCSI_IBMVFC)	+= ibmvfc.o
-> +obj-$(CONFIG_SCSI_IBMVFC_KUNIT_TEST)	+= ibmvfc_kunit.o
 > diff --git a/drivers/scsi/ibmvscsi/ibmvfc.c b/drivers/scsi/ibmvscsi/ibmvfc.c
-> index 3dd2adda195e..9e5f0c0f0369 100644
+> index 88386d7c9106..a18861808325 100644
 > --- a/drivers/scsi/ibmvscsi/ibmvfc.c
 > +++ b/drivers/scsi/ibmvscsi/ibmvfc.c
-> @@ -30,6 +30,9 @@
->  #include <scsi/scsi_tcq.h>
->  #include <scsi/scsi_transport_fc.h>
->  #include <scsi/scsi_bsg_fc.h>
-> +#include <kunit/visibility.h>
-> +#include <scsi/fc/fc_els.h>
-> +#include <linux/overflow.h>
->  #include "ibmvfc.h"
->  
->  static unsigned int init_timeout = IBMVFC_INIT_TIMEOUT;
-> @@ -3137,6 +3140,7 @@ static const struct ibmvfc_async_desc ae_desc [] = {
->  	{ "Halt",	IBMVFC_AE_HALT,		IBMVFC_DEFAULT_LOG_LEVEL },
->  	{ "Resume",	IBMVFC_AE_RESUME,	IBMVFC_DEFAULT_LOG_LEVEL },
->  	{ "Adapter Failed", IBMVFC_AE_ADAPTER_FAILED, IBMVFC_DEFAULT_LOG_LEVEL },
-> +	{ "FPIN",	IBMVFC_AE_FPIN,		IBMVFC_DEFAULT_LOG_LEVEL },
->  };
->  
->  static const struct ibmvfc_async_desc unknown_ae = {
-> @@ -3185,17 +3189,211 @@ static const char *ibmvfc_get_link_state(enum ibmvfc_ae_link_state state)
->  	return "";
+> @@ -5244,6 +5244,86 @@ static void ibmvfc_discover_targets(struct ibmvfc_host *vhost)
+>  		ibmvfc_link_down(vhost, IBMVFC_LINK_DEAD);
 >  }
 >  
-> +#define IBMVFC_FPIN_CONGN_DESC_SZ (sizeof(struct fc_els_fpin) + sizeof(struct fc_fn_congn_desc))
-> +#define IBMVFC_FPIN_LI_DESC_SZ (sizeof(struct fc_els_fpin) + \
-> +				struct_size_t(struct fc_fn_li_desc, pname_list, 1))
-> +#define IBMVFC_FPIN_PEER_CONGN_DESC_SZ (sizeof(struct fc_els_fpin) + \
-> +					struct_size_t(struct fc_fn_peer_congn_desc, pname_list, 1))
-> +
-> +/**
-> + * ibmvfc_fpin_size_helper(): compute fpin structure size based on fpin status
-> + * @fpin_status: status value
-> + *
-> + * Return:
-> + * 0: invalid fpin_status
-> + * other: valid size
-> + */
-> +static size_t ibmvfc_fpin_size_helper(u8 fpin_status)
+> +static void ibmvfc_fabric_login_done(struct ibmvfc_event *evt)
 > +{
-> +	size_t size = 0;
+> +	struct ibmvfc_fabric_login *rsp = &evt->xfer_iu->fabric_login;
+> +	u32 mad_status = be16_to_cpu(rsp->common.status);
+> +	struct ibmvfc_host *vhost = evt->vhost;
+> +	int level = IBMVFC_DEFAULT_LOG_LEVEL;
 > +
-> +	switch (fpin_status) {
-> +	case IBMVFC_AE_FPIN_LINK_CONGESTED:
-> +	case IBMVFC_AE_FPIN_CONGESTION_CLEARED:
-> +		size = IBMVFC_FPIN_CONGN_DESC_SZ;
+> +	ENTER;
+> +
+> +	switch (mad_status) {
+> +	case IBMVFC_MAD_SUCCESS:
+> +		fc_host_port_id(vhost->host) = be64_to_cpu(rsp->nport_id);
+> +		ibmvfc_free_event(evt);
 > +		break;
-> +	case IBMVFC_AE_FPIN_PORT_CONGESTED:
-> +	case IBMVFC_AE_FPIN_PORT_CLEARED:
-> +		size = IBMVFC_FPIN_PEER_CONGN_DESC_SZ;
-> +		break;
-> +	case IBMVFC_AE_FPIN_PORT_DEGRADED:
-> +		size = IBMVFC_FPIN_LI_DESC_SZ;
-> +		break;
+> +
+> +	case IBMVFC_MAD_FAILED:
+> +		if (ibmvfc_retry_cmd(be16_to_cpu(rsp->status), be16_to_cpu(rsp->error)))
+> +			level += ibmvfc_retry_host_init(vhost);
+> +		else
+> +			ibmvfc_link_down(vhost, IBMVFC_LINK_DEAD);
+> +		ibmvfc_log(vhost, level, "Fabric Login failed: %s (%x:%x)\n",
+> +			   ibmvfc_get_cmd_error(be16_to_cpu(rsp->status), be16_to_cpu(rsp->error)),
+> +						be16_to_cpu(rsp->status), be16_to_cpu(rsp->error));
+> +		ibmvfc_free_event(evt);
+> +		LEAVE;
+> +		return;
+> +
+> +	case IBMVFC_MAD_CRQ_ERROR:
+> +		ibmvfc_retry_host_init(vhost);
+> +		fallthrough;
+> +
+> +	case IBMVFC_MAD_DRIVER_FAILED:
+> +		ibmvfc_free_event(evt);
+> +		LEAVE;
+> +		return;
+> +
 > +	default:
-> +		break;
+> +		dev_err(vhost->dev, "Invalid fabric Login response: 0x%x\n", mad_status);
+> +		ibmvfc_link_down(vhost, IBMVFC_LINK_DEAD);
+> +		ibmvfc_free_event(evt);
+> +		LEAVE;
+> +		return;
 > +	}
 > +
-> +	return size;
+> +	ibmvfc_set_host_action(vhost, IBMVFC_HOST_ACTION_QUERY);
+> +	wake_up(&vhost->work_wait_q);
+> +
+> +	LEAVE;
 > +}
 > +
-> +/**
-> + * ibmvfc_common_fpin_to_desc(): allocate and populate a struct fc_els_fpin struct
-> + * containing a descriptor.
-> + *
-> + * Allocate a struct fc_els_fpin containing a descriptor and populate
-> + * based on data from *ibmvfc_fpin.
-> + *
-> + * Return:
-> + * NULL     - unable to allocate structure
-> + * non-NULL - pointer to populated struct fc_els_fpin
-> + */
-> +static struct fc_els_fpin *
-> +ibmvfc_common_fpin_to_desc(u8 fpin_status, __be64 wwpn, __be16 modifier,
-> +			   __be32 period, __be32 threshold, __be32 event_count)
+> +static void ibmvfc_fabric_login(struct ibmvfc_host *vhost)
 > +{
-> +	struct fc_fn_peer_congn_desc *pdesc;
-> +	struct fc_fn_congn_desc *cdesc;
-> +	struct fc_fn_li_desc *ldesc;
-> +	struct fc_els_fpin *fpin;
-> +	size_t size;
+> +	struct ibmvfc_fabric_login *mad;
+> +	struct ibmvfc_event *evt = ibmvfc_get_reserved_event(&vhost->crq);
+> +	int level = IBMVFC_DEFAULT_LOG_LEVEL;
 > +
-> +	size = ibmvfc_fpin_size_helper(fpin_status);
-> +	if (size == 0)
-
-To be consistent with other places in the driver !size instead of size == 0 check.
-
-> +		return NULL;
-> +
-> +	fpin = kzalloc(size, GFP_KERNEL);
-> +	if (fpin == NULL)
-
-Same nit here !fpin instead of fpin == NULL.
-
-> +		return NULL;
-> +
-> +	fpin->fpin_cmd = ELS_FPIN;
-> +
-> +	switch (fpin_status) {
-> +	case IBMVFC_AE_FPIN_CONGESTION_CLEARED:
-> +	case IBMVFC_AE_FPIN_LINK_CONGESTED:
-> +		fpin->desc_len = cpu_to_be32(sizeof(struct fc_fn_congn_desc));
-> +		cdesc = (struct fc_fn_congn_desc *)fpin->fpin_desc;
-> +		cdesc->desc_tag = cpu_to_be32(ELS_DTAG_CONGESTION);
-> +		cdesc->desc_len = cpu_to_be32(FC_TLV_DESC_LENGTH_FROM_SZ(*cdesc));
-> +		if (fpin_status == IBMVFC_AE_FPIN_CONGESTION_CLEARED)
-> +			cdesc->event_type = cpu_to_be16(FPIN_CONGN_CLEAR);
-> +		else
-> +			cdesc->event_type = cpu_to_be16(FPIN_CONGN_DEVICE_SPEC);
-> +		cdesc->event_modifier = modifier;
-> +		cdesc->event_period = period;
-> +		cdesc->severity = FPIN_CONGN_SEVERITY_WARNING;
-> +		break;
-> +	case IBMVFC_AE_FPIN_PORT_CONGESTED:
-> +	case IBMVFC_AE_FPIN_PORT_CLEARED:
-> +		fpin->desc_len =
-> +			cpu_to_be32(struct_size_t(struct fc_fn_peer_congn_desc, pname_list, 1));
-> +		pdesc = (struct fc_fn_peer_congn_desc *)fpin->fpin_desc;
-> +		pdesc->desc_tag = cpu_to_be32(ELS_DTAG_PEER_CONGEST);
-> +		pdesc->desc_len = cpu_to_be32(FC_TLV_DESC_LENGTH_FROM_SZ(*pdesc));
-> +		if (fpin_status == IBMVFC_AE_FPIN_PORT_CLEARED)
-> +			pdesc->event_type = cpu_to_be16(FPIN_CONGN_CLEAR);
-> +		else
-> +			pdesc->event_type = cpu_to_be16(FPIN_CONGN_DEVICE_SPEC);
-> +		pdesc->event_modifier = modifier;
-> +		pdesc->event_period = period;
-> +		pdesc->detecting_wwpn = cpu_to_be64(0);
-
-While not wrong 0 is 0 regardless of endianiess. Is this value always going to
-be zero here or is this place holder code that changes later in this patchset?
-If its the case this isn't a place holder the original fpin struct was allocated
-with kzalloc so this value should be zero already.
-
-> +		pdesc->attached_wwpn = wwpn;
-> +		pdesc->pname_count = cpu_to_be32(1);
-> +		pdesc->pname_list[0] = wwpn;
-> +		break;
-> +	case IBMVFC_AE_FPIN_PORT_DEGRADED:
-> +		fpin->desc_len = cpu_to_be32(struct_size_t(struct fc_fn_li_desc, pname_list, 1));
-> +		ldesc = (struct fc_fn_li_desc *)fpin->fpin_desc;
-> +		ldesc->desc_tag = cpu_to_be32(ELS_DTAG_LNK_INTEGRITY);
-> +		ldesc->desc_len = cpu_to_be32(FC_TLV_DESC_LENGTH_FROM_SZ(*ldesc));
-> +		ldesc->event_type = cpu_to_be16(FPIN_LI_UNKNOWN);
-> +		ldesc->event_modifier = modifier;
-> +		ldesc->event_threshold = threshold;
-> +		ldesc->event_count = event_count;
-> +		ldesc->detecting_wwpn = cpu_to_be64(0);
-
-Same comment as above.
-
-> +		ldesc->attached_wwpn = wwpn;
-> +		ldesc->pname_count = cpu_to_be32(1);
-> +		ldesc->pname_list[0] = wwpn;
-> +		break;
-> +	default:
-> +		/* This should be caught above. */
-> +		kfree(fpin);
-> +		fpin = NULL;
-> +		break;
+> +	if (!evt) {
+> +		ibmvfc_log(vhost, level, "Fabric Login failed: no available events\n");
+> +		ibmvfc_hard_reset_host(vhost);
+> +		return;
 > +	}
 > +
-> +	return fpin;
-> +}
-> +
-> +/**
-> + * ibmvfc_basic_fpin_to_desc(): allocate and populate a struct fc_els_fpin struct
-> + * containing a descriptor.
-> + * @ibmvfc_fpin: Pointer to async crq
-> + *
-> + * Allocate a struct fc_els_fpin containing a descriptor and populate
-> + * based on data from *ibmvfc_fpin.
-> + *
-> + * Return:
-> + * NULL     - unable to allocate structure
-> + * non-NULL - pointer to populated struct fc_els_fpin
-> + */
-> +static struct fc_els_fpin *
-> +ibmvfc_basic_fpin_to_desc(struct ibmvfc_async_crq *crq, u64 wwpn)
-> +{
-> +	return ibmvfc_common_fpin_to_desc(crq->fpin_status, cpu_to_be64(wwpn),
-> +					  cpu_to_be16(0),
-> +					  cpu_to_be32(IBMVFC_FPIN_DEFAULT_EVENT_PERIOD),
-> +					  cpu_to_be32(IBMVFC_FPIN_DEFAULT_EVENT_THRESHOLD),
-> +					  cpu_to_be32(1));
-> +}
-> +
-> +/**
-> + * ibmvfc_process_async_work - Process IBMVFC_AE_FPIN async CRQ from work queue
-> + * @work: pointer to work_struct
-> + */
-> +static void ibmvfc_process_async_work(struct work_struct *work)
-> +{
-> +	struct ibmvfc_async_work *aw;
-> +	struct ibmvfc_async_crq *crq;
-> +	struct ibmvfc_target *tgt;
-> +	struct ibmvfc_host *vhost;
-> +	struct fc_els_fpin *fpin;
-> +
-> +	aw = container_of(work, struct ibmvfc_async_work, async_work_s);
-> +	crq = aw->crq;
-> +	vhost = aw->vhost;
-> +
-> +	if (!crq->scsi_id && !crq->wwpn && !crq->node_name)
-> +		goto end;
-> +	list_for_each_entry(tgt, &vhost->targets, queue) {
+> +	ibmvfc_init_event(evt, ibmvfc_fabric_login_done, IBMVFC_MAD_FORMAT);
+> +	mad = &evt->iu.fabric_login;
+> +	memset(mad, 0, sizeof(*mad));
+> +	if (vhost->scsi_scrqs.protocol == IBMVFC_PROTO_SCSI)
+> +		mad->common.opcode = cpu_to_be32(IBMVFC_FABRIC_LOGIN);
+> +	else {
+> +		ibmvfc_log(vhost, level, "Fabric Login failed: unknown protocol\n");
+> +		return;
+> +	}
 
-Should we be holding the host lock when iterateing targets?
+This check is pretty pedantic. Seeing as you are directly referencing the scsi
+sub-crqs. The protocol field exists so we can pass the sub-crqs blindly and the
+code once NVMf comes along can determine the protocol.
+
+Also, if somehow this was ever possibly the case you would leak the event
+structure. I think we can drop the check all together.
 
 -Tyrel
+
+
 
