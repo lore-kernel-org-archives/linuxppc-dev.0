@@ -1,91 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-22602-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22603-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C9CEACD98C5
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Jun 2026 12:38:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 45A58CD8CA8
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Jun 2026 12:41:01 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gcwt23pS5z2yv2;
-	Sat, 13 Jun 2026 22:38:50 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1036"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781354330;
-	cv=none; b=N/ugTMNcboolj8yQj2TFeFEd/K1egLjImWJ6/E24O4sJcSb31uKpDCjTMZReXtNhtdT58DyRp/tTtH8RDsVwMb+xowbuMfnrN0jriNSv94PdfAMRZrwmZjIw8VGMhmrIow2JtkHnIMWZKD5RMgqxzH6Ahy8agjL715J06LD6KqAaS5N2Qk/qHJ9rVlKLut6Jdcve7O4IfV711KMf7wLXDteUuMYdt9B041rrsYfFcQTWGnAsX+8LdMOMzUpBUVJlBi3TDV87o1hUNECsxxYCyKrYIDgvN3u6BaXYXcMf8Ub3fvJvX2Yygx4Qn/pN4M8xr18CYHGBwYAm4o6NckQhIg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gcwwW2j0Hz3brB;
+	Sat, 13 Jun 2026 22:40:59 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781354459;
+	cv=none; b=k7eyzu3kZJGXENNoiiqg/SxmeZ+LHH+Yw32Ijyrv0IdJmND4Oj2Cx/uhbbkgyttgjCixENt9u3GeHW+YRwePGMdOaViSObvFpx+t3GqwB/mdwURwwNF0Rlnh051NVU7nCLBdNOqsYMPnAWAErgy12kCz48mnwDV16urYxTT15RvyLu2DLj1oe1/5e105UqemE165XotyyPGxWbv+hASZFEaIGNHsd/Up5XULSbYcHI39OOzGoyp2iMC4P9NmIIm5vB+0e+8440gWDJB/aiItCYhLavj1q7QKq1iCrL35Y1N50KmyWU+IQToahdy8WUrkD+cq4rHUP1LM/6CuLRpwTQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1781354330; c=relaxed/relaxed;
-	bh=q/tHHsuQGXJw1mO2ZLUKrxNGuUGVVaEC8U40b9LVZ8g=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=FR2IVgeVkjmo7KohPbR/5HlFga6GkjJKsVRv2IX6bH3PviRynmgYTNOzDtJe8LvQAn04/wAcGMxuJK3w+Dh9EEz49WmzFKOZwtt3sLuyM2Zv15x4DpM21K89xc/8euQExDac7q/QH2JO1OLvuowAnlUrYck5mUzS6MOtvcgnqABkAZdDvtoRUcWg825E3Js79oFn9gcMvG+nnbLk+GsR1X1ZmF/UrPgxkZSXaH58Q4D42+xAACjcd/R5+xAzWR+qCxoiB48QS58nK6FZBHJbLyhc9+ElZg1n+kmPpK5HFzCP4NPY+J7/qkjdGeJxylFrt/QbGSuwVS69iKMTRFZsKg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=jsjsw2Ey; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1036; helo=mail-pj1-x1036.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1781354459; c=relaxed/relaxed;
+	bh=ydvbqW5uF3cK4i0S+qx1mU4pZwT4vRnhnNMxCS69lQQ=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=DQWwFVkv0nZeHg0vEtbi5XmlpKkfpyhqOds0NdVuuPKi2ctFGvC/4W8xQ8gKrexoZdGg383LZ34LRuwno/UiRt+mpnxp5UVpn8MXWjCpW8aGH2Hr5KM5qxeSUP9HxhiHKVlh9NMHzdOQ5NLp1rZ4AZjZvoQwDG+fjtCPZgQLLb+AuwgUxeA8LvHK6u1jLuDGzVnjfLu2/+az296qUg8Ut23gbU4xLQOQJr1pryVg2PB4B3yqoGeP+RDlCsen0Fb1ecua+8qXNt26mAB+ocUfLHXU6T4nnGEBJF8CG8WhZ3A2TwVTfy+iUKwphi8J5XDGd4pqPwgA6aE/wQPioHCFWA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=m+DEG1AF; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=hbathini@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=jsjsw2Ey;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=m+DEG1AF;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1036; helo=mail-pj1-x1036.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pj1-x1036.google.com (mail-pj1-x1036.google.com [IPv6:2607:f8b0:4864:20::1036])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=hbathini@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gcwt114Zkz2yY0
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Jun 2026 22:38:48 +1000 (AEST)
-Received: by mail-pj1-x1036.google.com with SMTP id 98e67ed59e1d1-36b900f350fso1655483a91.0
-        for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Jun 2026 05:38:48 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1781354326; x=1781959126; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=q/tHHsuQGXJw1mO2ZLUKrxNGuUGVVaEC8U40b9LVZ8g=;
-        b=jsjsw2Ey9Hwp+j1Dxbw8JV0O16hCJZR5sJAGvCxofxA2wLHSOSF+/LbSGqH4+aOXV3
-         Cy6X3uR4hcwmhhxssxXzKk5Wg4TAM3sQGMwdM1kHije2gMUkINfx3nFHG9k1Lg5d6nRn
-         MSgj1LxzcGRGHuPpfKFoX20s7FeFa+1RZsIhl9zzFXdbFm1XWBU0hTNIOpfZFZ3FE/no
-         LhU9CESTLAWntjYV7jwfshHTbuQVqe3pCDrwe6bHKGOlBnYKM900vzceavHmONhSsiUs
-         e1lvLXjny1srevm4kECm+gwxucSpIjCmwl7BWScMg2ydChW1FZKe9cNC346W17UKaWl3
-         0UgQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1781354326; x=1781959126;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=q/tHHsuQGXJw1mO2ZLUKrxNGuUGVVaEC8U40b9LVZ8g=;
-        b=NnoMB0inpX9yNCGz0+wFjE2Ztt43jDcSwlhGoTLGeqQdpeST4kJ1hJ/JuGdT8ddY10
-         gVWgsSD+oBSWV0B8WHa8GqxoS5yiHkeAsJjZStlXzmAm6k9riyWjmi35xNJjFeXrV5mu
-         JSNTfywtBV47OaNuVn4XebNZr+TMdcSYlNI18X3oAHM6uP+0JoNj0XDScfWCpLJwblrt
-         wgzcIF2nDQO2c05AKwiWgouzFw5diXo8dTUHvzLrutZ4Ab1VFShNiivMjtA/BOXUJLi0
-         nxNIm00R/UQoBcCaOmHgqN9h9LKasdnNhQG1TLiMX4k1FB2IIjNII8ijenm7tIzbeOGV
-         hrMA==
-X-Forwarded-Encrypted: i=1; AFNElJ9v49Gse4hEThLCF1RHkn+zOOOvY9I1v8wlvyRciS18BLNkc/jSujtiQSOuMKORJBZeRJM1n/W7NL+RX5U=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Ywb28H78rmFzs2Lx9OAHhH3/R7jZI5HPjg7Mjz3/x1cQxTrLZEM
-	KRwXjOMy2xfYehZ8cmmU24V3Y4M6TjZoTc+JOKL3XBJRTTrgWFeith7u
-X-Gm-Gg: Acq92OGJOXMOGS/yq0EZOv0GyLPGrlCidOiH7r0rirXDPhMyowYnuj3qf1byTcNjMa4
-	92jxAMuLWH8p9vfWmeYdqZpBMDeGZbDCEvlGfjhZURZp7Ruwz9ApGzFOzts2m+jOo+yLSMXgr7y
-	Z9fjjnp18IXfFeRQ4RhXM4Md+1KbsumAU0gJ/mm4ihYu0Lcql4LUlcSlzdKC3A4uKHlxvPmR2z0
-	QKbvxketIhxULApcwL92zC5+RExJlhPuuALthQIPRhdOGlQxR35zPiBpWmG7vl+SD9dblXIXHoC
-	kzFhwy48cmsh7/Sb0URhS529DenpaT3Rz1h5u8yV3CVAOxsfxH1TZKeetuaigah2IseOfOWDcFp
-	m3qlaY11Ab6Dy7UMafMHEYKtmIcXeH39ezBrxBWsrsnv/zezX//kNc3KzrKIXNlkRBuyzdbqiZS
-	v7p9Wn6ncjXhalPtxfeG0G41Pi2WiEGOAI6/ExIkhsuoNwSshvy2U5N5Wa4yslY33Q3vEEGbAmt
-	EX5
-X-Received: by 2002:a17:90b:4ec8:b0:368:7c0f:ebf7 with SMTP id 98e67ed59e1d1-37c2bd06679mr3577207a91.16.1781354325879;
-        Sat, 13 Jun 2026 05:38:45 -0700 (PDT)
-Received: from li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com.com ([106.51.160.236])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-37a237dadbdsm5292778a91.5.2026.06.13.05.38.41
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 13 Jun 2026 05:38:45 -0700 (PDT)
-From: "Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com>
-To: maddy@linux.ibm.com,
-	mpe@ellerman.id.au,
-	npiggin@gmail.com,
-	chleroy@kernel.org,
-	mkchauras@linux.ibm.com,
-	sshegde@linux.ibm.com,
-	ruanjinjie@huawei.com,
-	mkchauras@gmail.com,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org
-Cc: Sayali Patil <sayalip@linux.ibm.com>
-Subject: [PATCH] powerpc: Restore kuap regs during syscall restart exit
-Date: Sat, 13 Jun 2026 18:08:31 +0530
-Message-ID: <20260613123831.1510474-1-mkchauras@gmail.com>
-X-Mailer: git-send-email 2.54.0
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gcwwV3dzdz2yv2
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Jun 2026 22:40:57 +1000 (AEST)
+Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 65DBIlix652871;
+	Sat, 13 Jun 2026 12:40:43 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=ydvbqW
+	5uF3cK4i0S+qx1mU4pZwT4vRnhnNMxCS69lQQ=; b=m+DEG1AFbq/gjxx69UREop
+	Kly/NnYchj42VNAUkFYRlRcEA7l1qgs3Ego+yyYq0E2+xnkyw6X5jyLCvfkWq4gU
+	t8TAPTpbQ3uubHpX85IvwChzKHtTLLWiuykWDIUaTjT04TrNPKbLX9R+TRH9p2Yq
+	HRad1Nz5z1SmnjUvgV4Ti3sQve1ubEshvxPQVz2L0q1oAsY1i+jUYFHG7mmFixjH
+	GMElCRHQ44C1o9lbM5bmYkWsYF0mst84s27bMHkbtQLCPGrbu6GgtUFloaHwxq3S
+	EJ+xJED+NAipbFDG9fwrpblYwn0BBWvUJ4w2w1zBxNCSHSEtaU+8qntm0uFk63mg
+	==
+Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4es1efrrj1-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Sat, 13 Jun 2026 12:40:43 +0000 (GMT)
+Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma22.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 65DCYj3P023972;
+	Sat, 13 Jun 2026 12:40:43 GMT
+Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
+	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4eqe093xsw-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Sat, 13 Jun 2026 12:40:42 +0000 (GMT)
+Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com [10.20.54.104])
+	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 65DCedC029295078
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Sat, 13 Jun 2026 12:40:39 GMT
+Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 4836F20043;
+	Sat, 13 Jun 2026 12:40:39 +0000 (GMT)
+Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id E485120040;
+	Sat, 13 Jun 2026 12:40:36 +0000 (GMT)
+Received: from [9.124.210.219] (unknown [9.124.210.219])
+	by smtpav05.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Sat, 13 Jun 2026 12:40:36 +0000 (GMT)
+Message-ID: <734fe885-ccb1-43c9-b3e4-50615926258e@linux.ibm.com>
+Date: Sat, 13 Jun 2026 18:10:35 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -99,39 +81,117 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v7 3/7] selftest/bpf: Fixing powerpc JIT disassembly
+ failure
+To: adubey@linux.ibm.com, bpf@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org, maddy@linux.ibm.com, ast@kernel.org,
+        andrii@kernel.org, daniel@iogearbox.net, shuah@kernel.org,
+        linux-kselftest@vger.kernel.org, stable@vger.kernel.org
+References: <20260611153826.31187-1-adubey@linux.ibm.com>
+ <20260611153826.31187-4-adubey@linux.ibm.com>
+Content-Language: en-US
+From: Hari Bathini <hbathini@linux.ibm.com>
+In-Reply-To: <20260611153826.31187-4-adubey@linux.ibm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Spam-Info: AW1haW4tMjYwNjEzMDEyNSBTYWx0ZWRfX4lETkS3LTlzt
+ SNSftstFikP0y8cPvD8ZOkUgBnKBKZiUR/n0t9urq+DRLS6w2t93a45Ek6tW2Ikksf//272dzbU
+ XHiaoQF5e4ss1LN57tvVt3AiqRZkVdk=
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjEzMDEyNSBTYWx0ZWRfXyFr4nekX5J2o
+ hUKROVFEpTG25SI2h1ehgh8uRTkWEqw8qpCACc8SSiJxLHNBKUaKte84Ap5MlRTfLZmlklATtxh
+ lbJHdE69BRQosbsFl6YN6BDV/57IyBTUIX4i5XBeHGqB4d3IkpLI9JnBywHx+l1mVkNdCcTCv3b
+ VRK0m1+jSgPyFOSbTVkt41YZRyAyLwM0IbHxH24E/9PdSUAe+AJk+XyeGaeXHGTrYNEJRa9QG+/
+ SEASWCEMxLGBLxDMgn8SgNv5xbkOOdzw5hQFxCDUlUISqzAOhlgWh3bErJQeFlBWckkj+hyl4Po
+ uIAmXf8rQCksgG575vM1O5tIKI/dqbksmrvMrFtGn7VZ0V7wg/ZXWfzjb5vzOrqTx73b7Fpx889
+ zPvTIEaOzO8lehb6JsZ7SczRF31i5/JZgU/5mUMi20KszVILXXECrt1p4nO4hVvbsp/3ePRnwjN
+ 0wYMlxoj2DQxr4Z4U5g==
+X-Proofpoint-GUID: 6ag7rUaVKmdpp58bXaeb5slWYq0R6GsN
+X-Authority-Analysis: v=2.4 cv=NuDhtcdJ c=1 sm=1 tr=0 ts=6a2d4fcb cx=c_pps
+ a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
+ a=IkcTkHD0fZMA:10 a=FelO9ux0wxsA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=V8glGbnc2Ofi9Qvn3v5h:22 a=VnNF1IyMAAAA:8
+ a=yb6hTpJXbLsbbwInLtMA:9 a=QEXdDO2ut3YA:10
+X-Proofpoint-ORIG-GUID: 6ag7rUaVKmdpp58bXaeb5slWYq0R6GsN
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
+ definitions=2026-06-13_02,2026-06-12_03,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ spamscore=0 adultscore=0 suspectscore=0 impostorscore=0 clxscore=1011
+ phishscore=0 bulkscore=0 malwarescore=0 priorityscore=1501 lowpriorityscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2606040000 definitions=main-2606130125
 
-During syscall restart, we block the kuap as we need to replay
-interrupts. Which are not restored when we exit to the user, hence we
-get a fault which ends up with `bad_access_pkey` and hence crashing the
-kernel.
 
-We have already stored the kuap values during the entry, just restore
-them when we exit.
 
-Applies on linux-next (next-20260610).
+On 11/06/26 9:08 pm, adubey@linux.ibm.com wrote:
+> From: Abhishek Dubey <adubey@linux.ibm.com>
+> 
+> Ensure that the trampoline stubs JITed at the tail of the
+> epilogue do not expose the dummy trampoline address stored
+> in the last 8 bytes(64-bit) and last 4 bytes(32-bit)
+> to the disassembly flow. Prevent the disassembler from
+> ingesting this memory address, as it may occasionally decode
+> into a seemingly valid but incorrect instruction. Fix this
+> issue by truncating the last 8/4 bytes from JITed buffers
+> before supplying them for disassembly.
+> 
+> Signed-off-by: Abhishek Dubey <adubey@linux.ibm.com>
+> ---
+>   .../selftests/bpf/jit_disasm_helpers.c        | 21 ++++++++++++++++++-
+>   1 file changed, 20 insertions(+), 1 deletion(-)
+> 
+> diff --git a/tools/testing/selftests/bpf/jit_disasm_helpers.c b/tools/testing/selftests/bpf/jit_disasm_helpers.c
+> index 3558fe10e28c..759d6a86803c 100644
+> --- a/tools/testing/selftests/bpf/jit_disasm_helpers.c
+> +++ b/tools/testing/selftests/bpf/jit_disasm_helpers.c
+> @@ -179,9 +179,11 @@ int get_jited_program_text(int fd, char *text, size_t text_sz)
+>   	struct bpf_prog_info info = {};
+>   	__u32 info_len = sizeof(info);
+>   	__u32 jited_funcs, len, pc;
+> +	__u32 trunc_len = 0;
+>   	__u32 *func_lens = NULL;
+>   	FILE *text_out = NULL;
+>   	uint8_t *image = NULL;
+> +	char *triple = NULL;
+>   	int i, err = 0;
+>   
+>   	if (!llvm_initialized) {
+> @@ -225,9 +227,26 @@ int get_jited_program_text(int fd, char *text, size_t text_sz)
+>   	if (!ASSERT_OK(err, "bpf_prog_get_info_by_fd #2"))
+>   		goto out;
+>   
+> +	/*
+> +	 * last 8 bytes contains dummy_trampoline address in JIT
+> +	 * output on 64-bit and last 4 bytes on 32-bit powerpc,
+> +	 * which can't disassemble to a valid instruction.
+> +	 */
+> +	triple = LLVMGetDefaultTargetTriple();
+> +	if (triple) {
+> +		if (strstr(triple, "powerpc64") || strstr(triple, "ppc64"))
+> +			trunc_len = 8;
+> +		else if (strstr(triple, "powerpc") || strstr(triple, "ppc"))
+> +			trunc_len = 4;
+> +		LLVMDisposeMessage(triple);
+> +	}
+> +
+>   	for (pc = 0, i = 0; i < jited_funcs; ++i) {
+>   		fprintf(text_out, "func #%d:\n", i);
+> -		disasm_one_func(text_out, image + pc, func_lens[i]);
 
-Fixes: bee25f97ad24 ("powerpc: Enable GENERIC_ENTRY feature")
-Reported-by: Sayali Patil <sayalip@linux.ibm.com>
-Signed-off-by: Mukesh Kumar Chaurasiya (IBM) <mkchauras@gmail.com>
----
- arch/powerpc/kernel/interrupt.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+> +		// Disabled JIT have zero func_lens, hence underflow
+> +		__u32 disasm_len = func_lens[i] > trunc_len ?
+> +					func_lens[i] - trunc_len : 0;
 
-diff --git a/arch/powerpc/kernel/interrupt.c b/arch/powerpc/kernel/interrupt.c
-index 89a999be1352..159901d6ba8c 100644
---- a/arch/powerpc/kernel/interrupt.c
-+++ b/arch/powerpc/kernel/interrupt.c
-@@ -165,7 +165,7 @@ notrace unsigned long syscall_exit_restart(unsigned long r3, struct pt_regs *reg
- 		local_irq_disable();
- 		goto again;
- 	}
--
-+	kuap_user_restore(regs);
- 	regs->exit_result |= regs->exit_flags;
- 
- 	return regs->exit_result;
--- 
-2.54.0
+Following the traditional C style, declare the variable at the start
+of the block and leave a blank line before the fprintf() statement.
+Also, fix the comment style as noted by the bot.
 
+> +		disasm_one_func(text_out, image + pc, disasm_len);
+>   		fprintf(text_out, "\n");
+>   		pc += func_lens[i];
+>   	}
+
+- Hari
 
