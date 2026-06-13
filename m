@@ -1,73 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-22599-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22600-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 94B3DCD98CE
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jun 2026 23:12:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7C001CD98C5
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Jun 2026 12:35:16 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gcZzC6cgHz2ykX;
-	Sat, 13 Jun 2026 09:12:07 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781305927;
-	cv=none; b=j3My6TIv7ARn/w7Bhy7q1zGUNsWjxSxD1t3ueMI1z48FUpXyHJf6YI23d1JQwVoEWXsC40AAbGuvJZyL8SsRimN6b281eYVgqqhRepETd7bF+l+PkxX+UqNwjdNsyzwN9Vq+OlnBPlqGkioSOcs+aEBiGyPDSUhGNz30Gd/L950ruV464274x8L+Pnprg2vkMv8KIoNkY1l68GYpEZUVmozJbskrVlJD4DyjVFRI1xdTMxd6fIB/vxKfpiF8p91CYKNqwZIZa/+UYY0qOE1LnkVfu4N6SMW9DCw3GH3tbpg1V0L0tXsBd82GJ6GY+PSwMwlO078XDpmYL+IyBxYzyw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gcwnt4hg9z2yY0;
+	Sat, 13 Jun 2026 22:35:14 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781354114;
+	cv=none; b=PleFb+M/wRYTXsOMjFYGVaRSjFDDU71GcNZoGlbry3ChB6MtWx8X8SJo2Woy29gudcHUJmXTshNHP6oIFDKHNN2YitMPXcPnrZQkYZOA/FhhCxQmamrfTGWf6jX4yVrZa+c3kDEgKr8QRAXTDiYzD+nd8JWvemqEUQ4owpX3maN53IJij2EQazc7lWsXAug1YJTPGAs9eLTEPRydR2yl9PK1Ibu91ERqAICJfYgbt32toEH0UjOtTJLC5KQkZsKRl6v0MVTgsQ39GGOiJNcn6N7+A2vZQ07UR9EFfw5LK2YRq4LDmFds+mwvwj7vIIn4ZgT9qFiXdnu6QTcGRa0kPA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1781305927; c=relaxed/relaxed;
-	bh=XN2+Lv+Bpsdrx7zggvVnqXZteIICRqidIKpH/qtqCBc=;
+	t=1781354114; c=relaxed/relaxed;
+	bh=4eKiKSyYB4BO3mkNQrS0tplJVDJjRKWjlm96EQJJ8DU=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=fuSWRApP2f6RKyFzNEjz7/Yna15tTrzn1eXgaJAJP24E08ewcJTpPd5dwao4CSnEbXxC6afzfUuvub2c5hCIOjUQbCOCgcsI4RRUiGZLvlIDTOraQUSIj7irg853/2k/ZpK89D7mWH3z3Cwy3WME+sHDS3wvs0P8Lkqhdtoufps47ZxxEnpzcc8h6gDGCfJRU9Ti0x+y0rLXdWMob7gxzImRwbIigR2OjI3W0klp5CUOWNSGjD7twiMpd0x6XM/mQlsR8CPTVaZO1PmhmGVVdXr9x3DyA/VN26YEx1AtVBdeaL4IehtO5dC83Q5nErT8g8z7jSelbM4u5dV0xP1s2g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Ak+J8iSv; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=tyreld@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	 In-Reply-To:Content-Type; b=KB2ww82hSrTOD/VyOK5docpGiB72OK1ROxNy5IJEKZlQU28o0tw+KZPCY+nhAGu8Jhmaz5SVZor4cW1GDzAtBRlsoe5pCWXRgsNMNI77LQ7PWNuSUJEDvSiy4W46nwDmZ3pbdPUnC5pzg4weG9pE17deEluRFGQLhwr9WBVREg6fMmrop7Tla1Ebj4DDxfZssFcLhr4dzOcSY0TqizkGwE3gEQbVwb9xSPFfzzFi0G0RWABs/Ft9ql1Buo6LtbteEQJUce0pzvbjpM1CfiB5k2N1suhPT1Z2BuMgchzEIiwwqUuA/+guska91z1yFSWu84CGFeLGpPZieqOyWxRnCw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=rWRpB4fW; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=hbathini@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Ak+J8iSv;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=rWRpB4fW;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=tyreld@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=hbathini@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gcZzB3mqmz2yT0
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Jun 2026 09:12:05 +1000 (AEST)
-Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 65CGK190722204;
-	Fri, 12 Jun 2026 23:11:56 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gcwnr5yXmz2xqn
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Jun 2026 22:35:11 +1000 (AEST)
+Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 65DBJH33620416;
+	Sat, 13 Jun 2026 12:34:55 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
 	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=XN2+Lv
-	+Bpsdrx7zggvVnqXZteIICRqidIKpH/qtqCBc=; b=Ak+J8iSvyKcrEFPBMhfIDM
-	YmZtEBY4cSeCZuAlh8xf5cPI4VG7rLjkEyOHcimKt4iEKRx0Fu0WRzVShZr6vBxm
-	b12z1BQ1ZgjCqzTxX7RCID1CMWWHJohI2RBpOVkKcaqrw1dgJgZybxNF41uGSUeC
-	k5B5kCYTrrfU6eXJbLTA7cv6QskX/ne0rNbHya0x085lZl0B0uy9S0bug3qfJVI7
-	3bn6AIA0rCdFeSpxpKRoESX5+OxEnMYD6L9th9+DAuCvL+AvpJx5zC8gY+jZk0tk
-	4VVpz92bIw3QUv5StZu9YCQnC2yf0ZlCwmV5nAb2878u9c/SnW+w68Ex6q6g2n4g
+	:message-id:mime-version:references:subject:to; s=pp1; bh=4eKiKS
+	yYB4BO3mkNQrS0tplJVDJjRKWjlm96EQJJ8DU=; b=rWRpB4fWpFZT2xLb9y8zQZ
+	epKuNw7mgHfYMqh12Uwp8Egh+XzZHfdkHuEt+W36SC5bY5Ku4V+e5CfDUrLXxO1S
+	XVi6F4kiYO03niXyLu9DEWaaalwTcwcMe+/pb32/Y9FQoBs0Z9uWxuS5iARq7LTn
+	GTN46ajoccn4L08VaXUMOHc83ToUb+zBJQz7B9IETgfOeJEbdPifJuj8OuKtC0Bb
+	ASM6YLdUcMzI6Jqj+WCfhlxeGHGoICawryvWD6FPyPrnSshYAULg86cB/Ipg9cLf
+	oq+x4OsEFPfZ+Sz00spLw4mAVoJer1rDdUo82s+XNQy/w7547zUHUloIB5C8Maaw
 	==
-Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4eqe8dkdv4-1
+Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4es1u08njc-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 12 Jun 2026 23:11:55 +0000 (GMT)
-Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma23.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 65CN4ZM3032256;
-	Fri, 12 Jun 2026 23:11:54 GMT
-Received: from smtprelay05.dal12v.mail.ibm.com ([172.16.1.7])
-	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4eqe0aa1je-1
+	Sat, 13 Jun 2026 12:34:55 +0000 (GMT)
+Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma11.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 65DCYdrT013758;
+	Sat, 13 Jun 2026 12:34:54 GMT
+Received: from smtprelay01.fra02v.mail.ibm.com ([9.218.2.227])
+	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4eqe09uy2m-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 12 Jun 2026 23:11:54 +0000 (GMT)
-Received: from smtpav06.wdc07v.mail.ibm.com (smtpav06.wdc07v.mail.ibm.com [10.39.53.233])
-	by smtprelay05.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 65CNBqje33292988
+	Sat, 13 Jun 2026 12:34:54 +0000 (GMT)
+Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com [10.20.54.104])
+	by smtprelay01.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 65DCYovJ55574992
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 12 Jun 2026 23:11:53 GMT
-Received: from smtpav06.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id D12D75804E;
-	Fri, 12 Jun 2026 23:11:52 +0000 (GMT)
-Received: from smtpav06.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 9B5F65803F;
-	Fri, 12 Jun 2026 23:11:51 +0000 (GMT)
-Received: from [9.61.160.241] (unknown [9.61.160.241])
-	by smtpav06.wdc07v.mail.ibm.com (Postfix) with ESMTP;
-	Fri, 12 Jun 2026 23:11:51 +0000 (GMT)
-Message-ID: <bfb7ff08-e4ec-46a2-b368-12d5c77f0ee4@linux.ibm.com>
-Date: Fri, 12 Jun 2026 16:11:50 -0700
+	Sat, 13 Jun 2026 12:34:51 GMT
+Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id D497C20043;
+	Sat, 13 Jun 2026 12:34:50 +0000 (GMT)
+Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 2815020040;
+	Sat, 13 Jun 2026 12:34:48 +0000 (GMT)
+Received: from [9.124.210.219] (unknown [9.124.210.219])
+	by smtpav05.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Sat, 13 Jun 2026 12:34:47 +0000 (GMT)
+Message-ID: <ed79e55e-d04e-41ef-b969-ca09eb2a6043@linux.ibm.com>
+Date: Sat, 13 Jun 2026 18:04:46 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -82,154 +82,230 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 3/7] ibmvfc: make ibmvfc login to fabric
-To: davemarq@linux.ibm.com,
-        "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
-        "Martin K. Petersen" <martin.petersen@oracle.com>,
-        Madhavan Srinivasan <maddy@linux.ibm.com>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        Nicholas Piggin <npiggin@gmail.com>,
-        "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-        linuxppc-dev@lists.ozlabs.org, Brian King <brking@linux.ibm.com>,
-        Greg Joyce <gjoyce@linux.ibm.com>,
-        Kyle Mahlkuch <kmahlkuc@linux.ibm.com>
-References: <20260608-ibmvfc-fpin-support-v2-0-d41f540fba5c@linux.ibm.com>
- <20260608-ibmvfc-fpin-support-v2-3-d41f540fba5c@linux.ibm.com>
+Subject: Re: [PATCH v7 1/7] powerpc/bpf: fix alignment of long branch
+ trampoline address
+To: adubey@linux.ibm.com, bpf@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org, maddy@linux.ibm.com, ast@kernel.org,
+        andrii@kernel.org, daniel@iogearbox.net, shuah@kernel.org,
+        linux-kselftest@vger.kernel.org, stable@vger.kernel.org
+References: <20260611153826.31187-1-adubey@linux.ibm.com>
+ <20260611153826.31187-2-adubey@linux.ibm.com>
 Content-Language: en-US
-From: Tyrel Datwyler <tyreld@linux.ibm.com>
-In-Reply-To: <20260608-ibmvfc-fpin-support-v2-3-d41f540fba5c@linux.ibm.com>
-Content-Type: text/plain; charset=UTF-8
+From: Hari Bathini <hbathini@linux.ibm.com>
+In-Reply-To: <20260611153826.31187-2-adubey@linux.ibm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNjEyMDIyMCBTYWx0ZWRfX30a1uCGgXRb0
- qUbqHu2cdSeRywaflWXHobQUOhAbzGhPuR03LDyK4Vw47w23lA7lg1R6r4MS+NhZFvINsiay/3t
- krGWMQIkmuC43DaPuaHAPNiG9SKwhfU=
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjEyMDIyMCBTYWx0ZWRfX6MioWJsnb8Fm
- TiC25s6c/s0RMw4GJLrjAkJH8EU2XBAE9tNEWOSXxhqgL58hpbwqJSqAiWQ3QG6n0c5m3EAqO1D
- 3IJUiGSHKkrrX0g8MVY2xUenm7QDFV/6DXKSuOO/OJgHrQSsjyhCclNLiWPM/e6xKAf2EB2pH1+
- 2L9mVQGvio6RTnXqaRAvQZKCeoGpUa0G9rX/T6Rj7MO+KjnrhiN5BQnUPtJqFoHldJ0eDI8gUo3
- Ic2iKcYjb7GAzK0pigPnQnWvSvqUkq28SXxViHM7Q1K6e5uRBJJEciAXXCMggTGQsiWFKZzOK/x
- UxtjbO0eABdFY+NK3HqIve9In/bM7YDkMwMzV6C/j+GfrwaFx21KaQYgvA7OUavG6qDz1gGn2qc
- M7+mbm4PrlsLCEJDuLR6E1OhbomVrRlDtuAy6n2mLPT8fRJUewCAVtd/ikd5l0drEQ5IWrZN2hg
- joQZ+3aYcZprUqci0vg==
-X-Proofpoint-ORIG-GUID: lnI6gV-ZIlmvnu72oD7TXbKnTxSK6fzV
-X-Authority-Analysis: v=2.4 cv=GIM41ONK c=1 sm=1 tr=0 ts=6a2c923c cx=c_pps
- a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
+X-Proofpoint-GUID: 3PPAdfD_fd-uoN9_J7v0D6AqxPhdgJge
+X-Authority-Analysis: v=2.4 cv=XdK5Co55 c=1 sm=1 tr=0 ts=6a2d4e6f cx=c_pps
+ a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
  a=IkcTkHD0fZMA:10 a=FelO9ux0wxsA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=iQ6ETzBq9ecOQQE5vZCe:22 a=VnNF1IyMAAAA:8
- a=rJ4d5xbAOQceQwH0KXUA:9 a=QEXdDO2ut3YA:10
-X-Proofpoint-GUID: hhYXZCFmBA_lzEO61kTaD4YLRPAYOEO8
+ a=RnoormkPH1_aCDwRdu11:22 a=Y2IxJ9c9Rs8Kov3niI8_:22 a=VnNF1IyMAAAA:8
+ a=VwQbUJbxAAAA:8 a=kQundSBVMOOzkBbW8r0A:9 a=QEXdDO2ut3YA:10
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjEzMDEyNSBTYWx0ZWRfX5enMjNJjBCJ+
+ X3RPRk2Mk2eq/TOVFkSTOkx7h5qEo1UCRG2xV52okZlPhKlZKPUQnz6cZgoOQ8IHbu1/1JuXF7w
+ 65neVJGgzg30uoaK3Nx411fcT6KPRIW6uSxY0smI70SQdg90lc0fOzkz982AEqIIlzqDxHlJr/9
+ QKC6h2Pb4XopjGP/D2miF/BDUTJ90dNhE6d8C2zgUNXtTc3xRLip51iqdHNJycrLCXnafOn3Y1H
+ vlffNT9N/8jfi22pjgGIEFIb+RTbwzuuHhndT7kssGh1T2a0KkJwmM7npfyvy7EISgcI/+q+x39
+ ahbYs10edzJgtAFxkfTKC+rp0Mo4UW49OzZGZo7S0ZsrehqxmLUs4wDAdyzHt6NipFjcaX9Z9Cs
+ TyRtAh8ZiksF3B7/nQAETnVxvUoHySzdFKwbx1T6KPSPMjoU4rMAadYzhV4E6VLTVuNo3nkTd1W
+ kDvWjGoLrybJh2+xFiA==
+X-Proofpoint-ORIG-GUID: 3PPAdfD_fd-uoN9_J7v0D6AqxPhdgJge
+X-Proofpoint-Spam-Info: AW1haW4tMjYwNjEzMDEyNSBTYWx0ZWRfX1qdKsOTbMe43
+ Z7dCPcGGuV674DzxLj2rw8jND6vyL8gvOMRii6lXBeYpetlinlHjdAJzUGepms2e4RUtlAyFLxj
+ biRQu+r4Pt/9G6OS7wE8DLHYWUTu3rM=
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
- definitions=2026-06-12_03,2026-06-12_03,2025-10-01_01
+ definitions=2026-06-13_02,2026-06-12_03,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1015 suspectscore=0 impostorscore=0 spamscore=0 phishscore=0
- adultscore=0 lowpriorityscore=0 bulkscore=0 priorityscore=1501 malwarescore=0
+ suspectscore=0 lowpriorityscore=0 clxscore=1015 bulkscore=0 malwarescore=0
+ spamscore=0 phishscore=0 priorityscore=1501 impostorscore=0 adultscore=0
  classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606040000 definitions=main-2606120220
+ reason=mlx scancount=1 engine=8.22.0-2606040000 definitions=main-2606130125
 
-On 6/8/26 11:30 AM, Dave Marquardt via B4 Relay wrote:
-> From: Dave Marquardt <davemarq@linux.ibm.com>
+
+
+On 11/06/26 9:08 pm, adubey@linux.ibm.com wrote:
+> From: Abhishek Dubey <adubey@linux.ibm.com>
 > 
-> Add support for fabric login in order to support the asynchronous
-> event queue with its own interrupt as required by NPIV specification
-> to support the asynchronous sub-queue and interrupt in order to
-> support full and extended FPIN messages.
+> Ensure the dummy trampoline address field present between the OOL stub
+> and the long branch stub is 8-byte aligned, for memory compatibility
+> when content loaded to a register.
+> 
+> Reported-by: Hari Bathini <hbathini@linux.ibm.com>
+> Fixes: d243b62b7bd3 ("powerpc64/bpf: Add support for bpf trampolines")
+> Cc: stable@vger.kernel.org
+
+Except for a couple of minor nits below, the patch looks good to me
+
+Reviewed-by: Hari Bathini <hbathini@linux.ibm.com>
+
+> Signed-off-by: Abhishek Dubey <adubey@linux.ibm.com>
 > ---
->  drivers/scsi/ibmvscsi/ibmvfc.c | 94 ++++++++++++++++++++++++++++++++++++++++--
->  drivers/scsi/ibmvscsi/ibmvfc.h | 16 +++++++
->  2 files changed, 106 insertions(+), 4 deletions(-)
+>   arch/powerpc/net/bpf_jit.h        |  4 ++--
+>   arch/powerpc/net/bpf_jit_comp.c   | 39 +++++++++++++++++++++++++++----
+>   arch/powerpc/net/bpf_jit_comp32.c |  4 ++--
+>   arch/powerpc/net/bpf_jit_comp64.c |  4 ++--
+>   4 files changed, 40 insertions(+), 11 deletions(-)
 > 
-> diff --git a/drivers/scsi/ibmvscsi/ibmvfc.c b/drivers/scsi/ibmvscsi/ibmvfc.c
-> index 88386d7c9106..a18861808325 100644
-> --- a/drivers/scsi/ibmvscsi/ibmvfc.c
-> +++ b/drivers/scsi/ibmvscsi/ibmvfc.c
-> @@ -5244,6 +5244,86 @@ static void ibmvfc_discover_targets(struct ibmvfc_host *vhost)
->  		ibmvfc_link_down(vhost, IBMVFC_LINK_DEAD);
->  }
->  
-> +static void ibmvfc_fabric_login_done(struct ibmvfc_event *evt)
-> +{
-> +	struct ibmvfc_fabric_login *rsp = &evt->xfer_iu->fabric_login;
-> +	u32 mad_status = be16_to_cpu(rsp->common.status);
-> +	struct ibmvfc_host *vhost = evt->vhost;
-> +	int level = IBMVFC_DEFAULT_LOG_LEVEL;
-> +
-> +	ENTER;
-> +
-> +	switch (mad_status) {
-> +	case IBMVFC_MAD_SUCCESS:
-> +		fc_host_port_id(vhost->host) = be64_to_cpu(rsp->nport_id);
-> +		ibmvfc_free_event(evt);
-> +		break;
-> +
-> +	case IBMVFC_MAD_FAILED:
-> +		if (ibmvfc_retry_cmd(be16_to_cpu(rsp->status), be16_to_cpu(rsp->error)))
-> +			level += ibmvfc_retry_host_init(vhost);
-> +		else
-> +			ibmvfc_link_down(vhost, IBMVFC_LINK_DEAD);
-> +		ibmvfc_log(vhost, level, "Fabric Login failed: %s (%x:%x)\n",
-> +			   ibmvfc_get_cmd_error(be16_to_cpu(rsp->status), be16_to_cpu(rsp->error)),
-> +						be16_to_cpu(rsp->status), be16_to_cpu(rsp->error));
-> +		ibmvfc_free_event(evt);
-> +		LEAVE;
-> +		return;
-> +
-> +	case IBMVFC_MAD_CRQ_ERROR:
-> +		ibmvfc_retry_host_init(vhost);
-> +		fallthrough;
-> +
-> +	case IBMVFC_MAD_DRIVER_FAILED:
-> +		ibmvfc_free_event(evt);
-> +		LEAVE;
-> +		return;
-> +
-> +	default:
-> +		dev_err(vhost->dev, "Invalid fabric Login response: 0x%x\n", mad_status);
-> +		ibmvfc_link_down(vhost, IBMVFC_LINK_DEAD);
-> +		ibmvfc_free_event(evt);
-> +		LEAVE;
-> +		return;
-> +	}
-> +
-> +	ibmvfc_set_host_action(vhost, IBMVFC_HOST_ACTION_QUERY);
-> +	wake_up(&vhost->work_wait_q);
-> +
-> +	LEAVE;
-> +}
-> +
-> +static void ibmvfc_fabric_login(struct ibmvfc_host *vhost)
-> +{
-> +	struct ibmvfc_fabric_login *mad;
-> +	struct ibmvfc_event *evt = ibmvfc_get_reserved_event(&vhost->crq);
-> +	int level = IBMVFC_DEFAULT_LOG_LEVEL;
-> +
-> +	if (!evt) {
-> +		ibmvfc_log(vhost, level, "Fabric Login failed: no available events\n");
-> +		ibmvfc_hard_reset_host(vhost);
-> +		return;
-> +	}
-> +
-> +	ibmvfc_init_event(evt, ibmvfc_fabric_login_done, IBMVFC_MAD_FORMAT);
-> +	mad = &evt->iu.fabric_login;
-> +	memset(mad, 0, sizeof(*mad));
-> +	if (vhost->scsi_scrqs.protocol == IBMVFC_PROTO_SCSI)
-> +		mad->common.opcode = cpu_to_be32(IBMVFC_FABRIC_LOGIN);
-> +	else {
-> +		ibmvfc_log(vhost, level, "Fabric Login failed: unknown protocol\n");
-> +		return;
-> +	}
+> diff --git a/arch/powerpc/net/bpf_jit.h b/arch/powerpc/net/bpf_jit.h
+> index f32de8704d4d..71e6e7d01057 100644
+> --- a/arch/powerpc/net/bpf_jit.h
+> +++ b/arch/powerpc/net/bpf_jit.h
+> @@ -214,8 +214,8 @@ int bpf_jit_emit_func_call_rel(u32 *image, u32 *fimage, struct codegen_context *
+>   int bpf_jit_build_body(struct bpf_prog *fp, u32 *image, u32 *fimage, struct codegen_context *ctx,
+>   		       u32 *addrs, int pass, bool extra_pass);
+>   void bpf_jit_build_prologue(u32 *image, struct codegen_context *ctx);
+> -void bpf_jit_build_epilogue(u32 *image, struct codegen_context *ctx);
+> -void bpf_jit_build_fentry_stubs(u32 *image, struct codegen_context *ctx);
+> +void bpf_jit_build_epilogue(u32 *image, u32 *fimage, struct codegen_context *ctx);
+> +void bpf_jit_build_fentry_stubs(u32 *image, u32 *fimage, struct codegen_context *ctx);
+>   void bpf_jit_realloc_regs(struct codegen_context *ctx);
+>   int bpf_jit_emit_exit_insn(u32 *image, struct codegen_context *ctx, int tmp_reg, long exit_addr);
+>   void prepare_for_fsession_fentry(u32 *image, struct codegen_context *ctx, int cookie_cnt,
+> diff --git a/arch/powerpc/net/bpf_jit_comp.c b/arch/powerpc/net/bpf_jit_comp.c
+> index 6351a187ca61..79288ff789b5 100644
+> --- a/arch/powerpc/net/bpf_jit_comp.c
+> +++ b/arch/powerpc/net/bpf_jit_comp.c
+> @@ -49,11 +49,39 @@ asm (
+>   "	.popsection				;"
+>   );
+>   
+> -void bpf_jit_build_fentry_stubs(u32 *image, struct codegen_context *ctx)
+> +void bpf_jit_build_fentry_stubs(u32 *image, u32 *fimage, struct codegen_context *ctx)
+>   {
+>   	int ool_stub_idx, long_branch_stub_idx;
+> +	int ool_instrs;
+>   
+>   	/*
+> +	 * In the final pass, align the mis-aligned dummy_tramp_addr field
+> +	 * in the fimage. The alignment NOP must appear before OOL stub,
+> +	 * to make ool_stub_idx & long_branch_stub_idx constant from end.
+> +	 *
+> +	 * dummy_tramp_addr must be 8-byte aligned for load-register
+> +	 * compatibility. The fimage can be non 8-byte aligned, so final
+> +	 * alignment depends on start of fimage and the stub's instruction
+> +	 * count offset. The OOL stub has 4 instructions (with
 
-This check is pretty pedantic. Seeing as you are directly referencing the scsi
-sub-crqs. The protocol field exists so we can pass the sub-crqs blindly and the
-code once NVMf comes along can determine the protocol.
+s/stub's instruction count offset/OOL stub size/
 
-Also, if somehow this was ever possibly the case you would leak the event
-structure. I think we can drop the check all together.
+> +	 * CONFIG_PPC_FTRACE_OUT_OF_LINE) or 3 instructions (without)
+> +	 * before dummy_tramp_addr.
+> +	 *
+> +	 * Emit a NOP here if (ctx->idx + ool_instrs) is odd, so that
+> +	 * dummy_tramp_addr lands at an even instruction offset (== 8-byte
+> +	 * aligned from an 8-byte aligned base).
+> +	 *
+> +	 * In pass=0 when image==NULL, conservatively account for space
+> +	 * required to accommodate alignment NOP. In case final pass skips
+> +	 * emitting alignment NOP, the image buffer have 4 spare bytes and
+> +	 * jited_len signifies correct program size.
+> +	 */
+> +
+> +	ool_instrs = IS_ENABLED(CONFIG_PPC_FTRACE_OUT_OF_LINE) ? 4*4 : 3*4;
 
--Tyrel
+ool_stub_sz sounds like a better name here instead of ool_instrs..
+As the comment above already mentioned the no. of instructions in
+each case, this could simply be:
 
+     ool_stub_sz = IS_ENABLED(CONFIG_PPC_FTRACE_OUT_OF_LINE) ? 16 : 12;
 
+> +	if (!image || !IS_ALIGNED((unsigned long)fimage + ctx->idx*4 + ool_instrs, SZL))
+> +		EMIT(PPC_RAW_NOP());
+> +
+> +	/*
+> +	 *      nop     // optional, for alignment of dummy_tramp_addr
+>   	 * Out-of-line stub:
+>   	 *	mflr	r0
+>   	 *	[b|bl]	tramp
+> @@ -70,7 +98,7 @@ void bpf_jit_build_fentry_stubs(u32 *image, struct codegen_context *ctx)
+>   
+>   	/*
+>   	 * Long branch stub:
+> -	 *	.long	<dummy_tramp_addr>
+> +	 *	.long	<dummy_tramp_addr>  // 8-byte aligned
+>   	 *	mflr	r11
+>   	 *	bcl	20,31,$+4
+>   	 *	mflr	r12
+> @@ -81,6 +109,7 @@ void bpf_jit_build_fentry_stubs(u32 *image, struct codegen_context *ctx)
+>   	 */
+>   	if (image)
+>   		*((unsigned long *)&image[ctx->idx]) = (unsigned long)dummy_tramp;
+> +
+>   	ctx->idx += SZL / 4;
+>   	long_branch_stub_idx = ctx->idx;
+>   	EMIT(PPC_RAW_MFLR(_R11));
+> @@ -107,7 +136,7 @@ int bpf_jit_emit_exit_insn(u32 *image, struct codegen_context *ctx, int tmp_reg,
+>   		PPC_JMP(ctx->alt_exit_addr);
+>   	} else {
+>   		ctx->alt_exit_addr = ctx->idx * 4;
+> -		bpf_jit_build_epilogue(image, ctx);
+> +		bpf_jit_build_epilogue(image, NULL, ctx);
+>   	}
+>   
+>   	return 0;
+> @@ -286,7 +315,7 @@ struct bpf_prog *bpf_int_jit_compile(struct bpf_verifier_env *env, struct bpf_pr
+>   	 */
+>   	bpf_jit_build_prologue(NULL, &cgctx);
+>   	addrs[fp->len] = cgctx.idx * 4;
+> -	bpf_jit_build_epilogue(NULL, &cgctx);
+> +	bpf_jit_build_epilogue(NULL, NULL, &cgctx);
+>   
+>   	fixup_len = fp->aux->num_exentries * BPF_FIXUP_LEN * 4;
+>   	extable_len = fp->aux->num_exentries * sizeof(struct exception_table_entry);
+> @@ -318,7 +347,7 @@ struct bpf_prog *bpf_int_jit_compile(struct bpf_verifier_env *env, struct bpf_pr
+>   			bpf_jit_binary_pack_free(fhdr, hdr);
+>   			goto out_err;
+>   		}
+> -		bpf_jit_build_epilogue(code_base, &cgctx);
+> +		bpf_jit_build_epilogue(code_base, fcode_base, &cgctx);
+>   
+>   		if (bpf_jit_enable > 1)
+>   			pr_info("Pass %d: shrink = %d, seen = 0x%x\n", pass,
+> diff --git a/arch/powerpc/net/bpf_jit_comp32.c b/arch/powerpc/net/bpf_jit_comp32.c
+> index bfdc50740da8..95bda0dee925 100644
+> --- a/arch/powerpc/net/bpf_jit_comp32.c
+> +++ b/arch/powerpc/net/bpf_jit_comp32.c
+> @@ -229,7 +229,7 @@ static void bpf_jit_emit_common_epilogue(u32 *image, struct codegen_context *ctx
+>   
+>   }
+>   
+> -void bpf_jit_build_epilogue(u32 *image, struct codegen_context *ctx)
+> +void bpf_jit_build_epilogue(u32 *image, u32 *fimage, struct codegen_context *ctx)
+>   {
+>   	EMIT(PPC_RAW_MR(_R3, bpf_to_ppc(BPF_REG_0)));
+>   
+> @@ -237,7 +237,7 @@ void bpf_jit_build_epilogue(u32 *image, struct codegen_context *ctx)
+>   
+>   	EMIT(PPC_RAW_BLR());
+>   
+> -	bpf_jit_build_fentry_stubs(image, ctx);
+> +	bpf_jit_build_fentry_stubs(image, fimage, ctx);
+>   }
+>   
+>   /* Relative offset needs to be calculated based on final image location */
+> diff --git a/arch/powerpc/net/bpf_jit_comp64.c b/arch/powerpc/net/bpf_jit_comp64.c
+> index db364d9083e7..885dc8cf55a2 100644
+> --- a/arch/powerpc/net/bpf_jit_comp64.c
+> +++ b/arch/powerpc/net/bpf_jit_comp64.c
+> @@ -398,7 +398,7 @@ static void bpf_jit_emit_common_epilogue(u32 *image, struct codegen_context *ctx
+>   	}
+>   }
+>   
+> -void bpf_jit_build_epilogue(u32 *image, struct codegen_context *ctx)
+> +void bpf_jit_build_epilogue(u32 *image, u32 *fimage, struct codegen_context *ctx)
+>   {
+>   	bpf_jit_emit_common_epilogue(image, ctx);
+>   
+> @@ -407,7 +407,7 @@ void bpf_jit_build_epilogue(u32 *image, struct codegen_context *ctx)
+>   
+>   	EMIT(PPC_RAW_BLR());
+>   
+> -	bpf_jit_build_fentry_stubs(image, ctx);
+> +	bpf_jit_build_fentry_stubs(image, fimage, ctx);
+>   }
+>   
+>   /*
+
+- Hari
 
