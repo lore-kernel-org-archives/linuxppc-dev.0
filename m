@@ -1,86 +1,72 @@
-Return-Path: <linuxppc-dev+bounces-22608-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22609-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C06DECD98D2
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 14 Jun 2026 07:43:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A9064CD98C5
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 14 Jun 2026 09:46:56 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gdQGP0tYLz2xtC;
-	Sun, 14 Jun 2026 17:43:09 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::436"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781422989;
-	cv=none; b=aNqwFuIasx2H+tfBliXjhazmsYjm4q1XYS4q4l8aRgllD9nwz+eir+jhfGO93ZZHc6AxOu+jzvSksWTZA5fSf20X/Xh8m+rwsOnk1E8oevmiEUo7EADEu8Os8WCvDOVVIz2vA86Cw/dZFcj+hg1bm0WHA3T6TDXprwnDoNVdYLgQ4Q8mkAOKDFcZHjEvWWWSWhRQgZPu/qPe3CArmFHtWyx+wAUm9Fv2g4We/woDNBha2GQOX6vRSHRSXJwc1WonI8VD5LF+UjLQ8nUQwnBIgwu5y/8uNwtBdsKe8HrWd/pR87X6PPlEFYW/LJzcXk1i/1DZSZCfpUU9XGK5ADJg6w==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gdT1C0D5kz2xtC;
+	Sun, 14 Jun 2026 19:46:55 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781430414;
+	cv=none; b=O/EDBtCBSloxVhYJxHPNAPxBi2bAc9c/ABHPNu5AW3yt6SPMLYJ2jmHGjye5VFWQed0KJgwCMWMCvTxiItT5F3g2SfDSEUNEyu6vFBjuVQVpFvJUvbqfn5c+bkGmU3Qi8/ZsCfVU81Q7ZMRKQPTVJbHadMhOIS24z1kaouvQ59Olw46b4zBnZLRy0QA2zQ3HgvHTkrcR/ElZvap3e6DifLlJcVbzNBaU4/IwVSF5TWT0Td7WcnainNL/3b/MOwRFe7zJdrT9yOq5q+R6w2k1N9Pax4HwnfHBg6fg7Z7LGx83Bg2bzKPraSWdZDi7sxPFXWRZZrSe7M8DKvVQ7xPpOw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1781422989; c=relaxed/relaxed;
-	bh=Tic0p+pSkHb4hbn4DKqBJzYkscK6Ityq2p9UK/h/iLc=;
+	t=1781430414; c=relaxed/relaxed;
+	bh=ch/CpHvya+lx1cR9vxabGOo27V2BdvD/1TKGk2c7iog=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=foB++k+Fx84UIsmnxvHIHMurziKIJ4NwMnjYrxMFyq5C3/ThQHuSEH+DeMEC51Srhd7tJOvhpFDncNYflHLwBqGI8kHRtUjviIXFWE1d+BvkI3Z6sC+3WXeH2m0vIhRr76xG+OfC1Y768ys3v3nHzoq7da4TFz6FMIfhG6rlvX/IivxTci/q7jiFsfJ9HiEKwtslFA8HhON3nenyc64ELnKXkzdCnYvpz5TS0MebbQwJk2msfpu6Eiz/K0rJZWdEFGn4sFLZ3VgcbDEYh8l/hZhWB5sjJR2pkb0G6wA+7ypnH8/xqJ4ng2nUG1bb+bMr4NOnAKGQBhTex2cQVrIEfw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=ASrYAdAi; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::436; helo=mail-pf1-x436.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	 Content-Type:Content-Disposition:In-Reply-To; b=BYpflE1ikdrAxL9hokpdLJxwLEmsGg1GSWtyWvYR625Ktp1wPKmUfv6Rgkw4Yrxp8o1DOfw/dW/dDM3+yRJbWXoOSKUyNBxxlLEZAOlcy2qtmwLrvk7pxsYd39so7/ectjXeV7SIpy/FHZkGbEPMgtQFwtoOByFOuVPdJAO5UDKPkQi15MWRVITt4Ks2Bl3mFg8Myau1fbjTt0tVpm+1eT32eb2SZfKYitpRrDhPluJS3V5A6e0bLrAFx+SYxa+q9PLTFYyG1pPLEiJHSJfiFvwsQrRGFTz3dE349g9N8PjvqmsYZYhTbAByX2exzJtjLdSfmLomMcbiJq7puygR9w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=KNgHT95Q; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=ASrYAdAi;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=KNgHT95Q;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::436; helo=mail-pf1-x436.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pf1-x436.google.com (mail-pf1-x436.google.com [IPv6:2607:f8b0:4864:20::436])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gdQGM1S4qz2xjd
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 Jun 2026 17:43:06 +1000 (AEST)
-Received: by mail-pf1-x436.google.com with SMTP id d2e1a72fcca58-8423efd76c8so1740393b3a.0
-        for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 Jun 2026 00:43:05 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1781422979; x=1782027779; darn=lists.ozlabs.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=Tic0p+pSkHb4hbn4DKqBJzYkscK6Ityq2p9UK/h/iLc=;
-        b=ASrYAdAi2VVc2T4atbb/mDtNLVXyr2B3u5jouMnLf0SM4U4K7mBL8A0aMIG3QH0F8z
-         HqhGAxownM95YOMb0726V8J3TNsLwWckXYW+RbiubDNN8o9F4WbpPuNr9ejc+IHrYlk1
-         ca4OrmF1gpURpnu9ls8/OM9RHosd7ohVu6lQsvdSQkAkkmGfGABTVX7ZLthp4HD04nIX
-         jXLPZvntFqwf2dGh8aL7fqlfAX15ENOhvE0QzzrVY13noYbNpKNsuczLznNiU/BR9XOd
-         rszNy+oltphZJ4HvpnQ76cDbLN6W1kM07A278avhKCPUlWeABbN4hj9FGQ+YZyYfiUol
-         vUVA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1781422979; x=1782027779;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=Tic0p+pSkHb4hbn4DKqBJzYkscK6Ityq2p9UK/h/iLc=;
-        b=FEZjQRp2tCr4+eErZhb/K8sPoFw3yCSpmRVT0WlDPxczA5f6JlJEuWeqUqSQgGleqG
-         jM4CQEksM+ZvIS+MIJay6kkCsQxmcEnsW/eyoQ90SGbPMFyq5Z+5BX76C1Q/njsHDJVA
-         oWYCpIrFm+rjhqTzGZrmBLcCPzg0BkSU3ztrMdZbIUTidt07rdjSVJfx9IQhiJm+J1vH
-         IMe/C3D+WJSXBjtSovfda2Ruh8hd9uLZb6/A0lN/r0aK9+EaCg9kN6hyrh3hhHRuxij6
-         iEuyeeo+pnWNTBy1xV1de49uuQ9XQz/5rjFsitazFoH+0gs0DLum01KSiQkbVV9JWoZL
-         wNkQ==
-X-Gm-Message-State: AOJu0Yyjy32TnjreOkYPcg22k0fZ7jbaosC6JE2617wEtrS6amqFnkwt
-	svA/SBV0aRBYy9vwdYVR2WKFhNEnZNtUFFFuyuD/EFbKqUx2ybMc3Ce6
-X-Gm-Gg: Acq92OFytsDufsOF8Oed8VFN0+UCHlDIpiTrpDxIL3zw+7soFvR/64WjHmMgA+8fEC0
-	6sxYSXfXrxk1EyGUx2WVoiqpQsfNNCsotBLju7wUzU5iBEb374RWq4rMFiyqLWAyr2LjODuwH2d
-	CLdDL6HbqqaGLUKszEeZmGoI/PPwY4vQ/uVrZdX76kUFyB7w9nT/pvbXTxMsoU8hHB2j1pmndSl
-	sU+ZdxAIHfSR9NkPDcBoVr/RyU5RaEO4kcTDmzOddvmIs1vgctV4+c737WEc19hf8D6K4lzZLDS
-	vgISMEel+Ut4gkqtyeWMzHxxsG0xaV0ozdQ/vL/9B3QB19yFXrezVKcMMgL7fpofvdjqcoDaAzX
-	qh9wF1FyF7BHlgWjeVfvMzUbJN5Kr87Y8euypfXvkDmvw0+lBJLQr70p0KvOf2HvdBHeDyBxwBD
-	5xGdgEb7C0TWD0hMKggl8Kr/xXsimdwH2Hko7BVMqvIR0KicmdB/uGDxVpiSMi7C9/hTk6nWU=
-X-Received: by 2002:a05:6a00:1407:b0:839:44c5:c321 with SMTP id d2e1a72fcca58-8434cec98c2mr10187137b3a.44.1781422978919;
-        Sun, 14 Jun 2026 00:42:58 -0700 (PDT)
-Received: from li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com ([106.51.160.236])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-8434acd96d8sm7869812b3a.19.2026.06.14.00.42.54
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 14 Jun 2026 00:42:57 -0700 (PDT)
-Date: Sun, 14 Jun 2026 13:12:51 +0530
-From: Mukesh Kumar Chaurasiya <mkchauras@gmail.com>
-To: Sayali Patil <sayalip@linux.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, maddy@linux.ibm.com, 
-	Peter Zijlstra <peterz@infradead.org>, "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>, 
-	sshegde@linux.ibm.com, Venkat Rao Bagalkote <venkat88@linux.ibm.com>, 
-	Samir M <samir@linux.ibm.com>, David Gow <davidgow@google.com>, 
-	LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [linux-next-20260610] powerpc/hash: KUAP fault during boot on
- POWER10
-Message-ID: <ai5bH2tqNdFqf034@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
-References: <fcd11556-27ac-4cd7-8c77-50716dec6985@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gdT195KvJz2xjd
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 Jun 2026 19:46:53 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id 131206008A;
+	Sun, 14 Jun 2026 09:46:50 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4B7CE1F000E9;
+	Sun, 14 Jun 2026 09:46:43 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1781430409;
+	bh=ch/CpHvya+lx1cR9vxabGOo27V2BdvD/1TKGk2c7iog=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=KNgHT95QFrNdcW7kXu8SpsK/TzlVvtt1gCIIOnXjMZ8/IL3FZj1I3CrwYfsoutIgP
+	 ezvgDaG/R127cAIpHzGSfltsz8/Tp/0PfIlgqfVs1sac/yxN+AhwJXzW43iOufqj3N
+	 B1U8fzT5n/iT0rBYRXK5gAf+oCaBLx+1l8UQlVao2NcNob5cLRLK/7gT5tFSMAgbAu
+	 Y4dEFiA5gThYLkiKhQBi1T9LLLLSqSfzOyUtLij608bEgiIYMJrcnvCVdyZnkhB9az
+	 Pz/IUY6477nPvxa2soQp2RulQ5CEvn1xRddj8Qo/I0Ho6ZP9XaLXvUfvNzABlmoXD1
+	 Gntrp3/2TlVlA==
+Date: Sun, 14 Jun 2026 12:46:40 +0300
+From: Mike Rapoport <rppt@kernel.org>
+To: Muchun Song <songmuchun@bytedance.com>
+Cc: Oscar Salvador <osalvador@suse.de>,
+	David Hildenbrand <david@kernel.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Muchun Song <muchun.song@linux.dev>,
+	Lorenzo Stoakes <ljs@kernel.org>,
+	"Liam R . Howlett" <liam@infradead.org>,
+	Vlastimil Babka <vbabka@kernel.org>, linux-mm@kvack.org,
+	linux-kernel@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>,
+	Christophe Leroy <chleroy@kernel.org>,
+	Ritesh Harjani <ritesh.list@gmail.com>,
+	"Aneesh Kumar K . V" <aneesh.kumar@linux.ibm.com>,
+	linuxppc-dev@lists.ozlabs.org,
+	Mike Kravetz <mike.kravetz@oracle.com>
+Subject: Re: [PATCH v4 14/19] mm/hugetlb: Free cross-zone bootmem gigantic
+ pages after allocation
+Message-ID: <ai54gBQ0TiWKE080@kernel.org>
+References: <20260612035903.2468601-1-songmuchun@bytedance.com>
+ <20260612035903.2468601-15-songmuchun@bytedance.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -96,30 +82,32 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <fcd11556-27ac-4cd7-8c77-50716dec6985@linux.ibm.com>
+In-Reply-To: <20260612035903.2468601-15-songmuchun@bytedance.com>
 
-On Fri, Jun 12, 2026 at 01:02:50PM +0530, Sayali Patil wrote:
-> Greetings!!!
+On Fri, Jun 12, 2026 at 11:58:58AM +0800, Muchun Song wrote:
+> Now that hugetlb reservation runs after zone initialization, bootmem
+> gigantic page allocation can detect pages that span multiple zones.
 > 
-> I am seeing a KUAP fault while booting a hash MMU
-> on a POWER10 (pSeries) system with linux-next (7.1.0-rc7-next-20260610) with
-> commandline option disable_radix=y.
-[...]
->After reverting the following two patches, the fault is no
-> longer observed:
-> 1.  powerpc: Enable GENERIC_ENTRY feature
-> https://lore.kernel.org/all/20260427122742.210074-8-mkchauras@gmail.com/
-> 2. powerpc: Remove unused functions
-> https://lore.kernel.org/all/20260427122742.210074-9-mkchauras@gmail.com/
+> Keep those cross-zone pages separate during allocation and free them
+> after allocation completes, so later hugetlb initialization only sees
+> zone-valid gigantic pages.
 > 
-> If you happen to fix this, please add below tag.
-> Reported-by: Sayali Patil <sayalip@linux.ibm.com>
+> This chooses to free cross-zone gigantic pages directly instead of
+> retrying allocation. In practice, such cross-zone cases are expected to
+> be very rare, so adding retry logic does not seem justified at this
+> point. Keeping the handling simple also preserves the previous behavior.
+> If similar real-world reports show up later, retry support can be
+> reconsidered then.
 > 
-> 
-> Regards,
-> Sayali
+> Signed-off-by: Muchun Song <songmuchun@bytedance.com>
 
-This is fixed with patch 
-https://lore.kernel.org/all/20260613123831.1510474-1-mkchauras@gmail.com/
+Acked-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
 
+> ---
+>  mm/hugetlb.c | 75 ++++++++++++++++++++++++++++++++++++++++++++--------
+>  1 file changed, 64 insertions(+), 11 deletions(-)
+
+-- 
+Sincerely yours,
+Mike.
 
