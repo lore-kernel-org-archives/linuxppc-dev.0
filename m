@@ -1,85 +1,92 @@
-Return-Path: <linuxppc-dev+bounces-22612-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22613-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 857CBCD98C7
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 14 Jun 2026 17:35:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 614ADCD98C5
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 14 Jun 2026 19:04:12 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gdgPg56MLz2yFc;
-	Mon, 15 Jun 2026 03:35:19 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781458519;
-	cv=none; b=eOY5rXSutyseN0VmSeAtDaiZMynZZ6hRD2AKClwWKzpoEXAZSOaAe8wGn+TetzWX959XP5hqdITDlJyVazV7eYFNpJOOIjLmh7VyyDDVxj4jNLbd9rnboOeNAbGnz4GGcNS3Or8x7+aHg3hgMKgFHNob+eq4bK6dVSUgk+CC1B6yx7w8SYfXMjc0u2kK/Xeq5XvjZGw6UR4MM8hOZ6X08bJasTfJDaJHp5efYC445XWYy5AmA+683H8l11hGnMM+QW+L3D6XL7FKLDMVMiP4YD90c5IuDTYmlbh677GKWJBkOGMW6uOAtMjuJxIXEUkVUyuE4y5fJsfoRpDR4Vnilg==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1781458519; c=relaxed/relaxed;
-	bh=M6uwfLSCCl68CdWp8kdRQnl9eN3dzx0UzhJ2FTIJyvk=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=L0V6Y2XNTPmJRA0cwtca/yC3prlvLNgfb78yvarB8jR3VR0kJzXkSQCQoO8O51irZJGtjNOtUI9Ni63cytRHBwsRUEYyEJFN+toIK4x4omjHA3m1xkya+qMG1Y+wEWppK9i2asT1ftS39oEHzAxVmrpf7FRWXSl1sP0wgOta0lLLzhhg+/IJeJ/c1S2E5OW6dfWd020XkdkV7gDULTyiooolCLgu0wcVW8Q+MWTtnXHtRNGVGBNtFthcL/bLr+BN0gsmWwg4p529mOoMZQkMeLlq9tCxWlSwdz9idV/kQc4im2h+4vYrg2bCuU4dnA1/Zku0I+QkD4csUG5mzrXdkw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Axcwt2rY; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gdjNB2cGMz2yFc;
+	Mon, 15 Jun 2026 05:04:10 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::1134" arc.chain=google.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781463850;
+	cv=pass; b=mvjQ1juxRPoqvFbIOCvkIRxKhTbMzD8rP7k+R1mU4OytL4cId+7uevNEExyKHIxFWjY/6I3wp65EziRHak3wnVofkOH6WRsyvKEuiGBGLXk+Ir4MpK6nUFoKLaaK/CTCevh1JcLuDlALYSRIr4jPVmFSuNyhy5kSDWD2EampoeqMwZcwbX/U1pCpAmxQ3aOaGRdiAhqp/4jIncIXfKf//buvrJ+f356KReppOMBdsdaDrQjVKRmn+1ImJWgZL4NqJ+OoA2bLZ6QUtvGkRFDaZdGF2orv4scS6USNmyTpNJPCly9qtYSu+AKU8sSxSyFWpcVvAPXO6ZjN3dVY5lXm6Q==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1781463850; c=relaxed/relaxed;
+	bh=JaE1dAP+QUxyb/PuM4ua6j3vVvRINrBklaaNqphjGs4=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=CO+txVDdsCfIxH+iWF3tiCLvS4wdLScsbyH0W+5rotfN1pJIr6aJI+ArU9EccZrn0qI0sFquHP0tGLpk3GMueeCxJk3pjH54cslVD/fGjIkK9Y90hFmV9+vYITmyfKPEGXgF+FLe63RARrv+15ycvHfaC6cGFYQUw16NmDESXPYcALWY7H5jV8JVN5tely/UQcfFp/QQlooBQLP5GHqvcO1nbwP9DD8UtISQ5a96iTOTFTOmaQ5ntRcAettxs4q7sRCopysXzGpXKvc6K/I2wTrsEVQ5UI4u7pOG5+xgfdEc0btZrWdyx+NpWWGZ+XMBrGy41pn+/XYCCtywRf8z9Q==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=Qh7pf0tp; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1134; helo=mail-yw1-x1134.google.com; envelope-from=randrianasulu@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Axcwt2rY;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=Qh7pf0tp;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1134; helo=mail-yw1-x1134.google.com; envelope-from=randrianasulu@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-yw1-x1134.google.com (mail-yw1-x1134.google.com [IPv6:2607:f8b0:4864:20::1134])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gdgPf0dMLz2xjd
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jun 2026 03:35:17 +1000 (AEST)
-Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 65EHIRg54151687;
-	Sun, 14 Jun 2026 17:34:53 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:message-id:mime-version
-	:subject:to; s=pp1; bh=M6uwfLSCCl68CdWp8kdRQnl9eN3dzx0UzhJ2FTIJy
-	vk=; b=Axcwt2rYwaZMi+polLDIuEc3VhZtBIN54xT3Xnp4S+Sey7954ld9wmMCe
-	RpXr+CDSxh5M48hTFoj1Mq+iGY/BzrpSV6/bu1tFImpQtlcyDQ1ZrxlT1zmbVBjV
-	CRDG9sA7/r68UR3msy4qrZ4oAhqhzbXE7Xjo738MTy39Jr8c3hs2j4o8RvlX7fMo
-	vfx0DoBX5mlBnL3LXmoqMJ9DU6bXb3PvmsKaoaHrF6+XX8ry1mXnFjDrTvzW+anB
-	PqN/zAZlgJBNUZnrTwjP2EuRHsFWEtG+uQrOjFB1G1vzw8XwOwu7oZsg3m6rDilu
-	NsoHMeyCAj3uDkBFaknruQxq29DTA==
-Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4es1v24tum-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Sun, 14 Jun 2026 17:34:52 +0000 (GMT)
-Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma21.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 65EHYdR7007033;
-	Sun, 14 Jun 2026 17:34:52 GMT
-Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
-	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4esjhju467-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Sun, 14 Jun 2026 17:34:51 +0000 (GMT)
-Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
-	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 65EHYmIo51511728
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Sun, 14 Jun 2026 17:34:48 GMT
-Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id F0CE720043;
-	Sun, 14 Jun 2026 17:34:47 +0000 (GMT)
-Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 01EA320040;
-	Sun, 14 Jun 2026 17:34:44 +0000 (GMT)
-Received: from localhost.localdomain (unknown [9.39.30.128])
-	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Sun, 14 Jun 2026 17:34:43 +0000 (GMT)
-From: Amit Machhiwal <amachhiw@linux.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, Madhavan Srinivasan <maddy@linux.ibm.com>
-Cc: Amit Machhiwal <amachhiw@linux.ibm.com>,
-        Vaibhav Jain <vaibhav@linux.ibm.com>,
-        Harsh Prateek Bora <harshpb@linux.ibm.com>,
-        Ritesh Harjani <ritesh.list@gmail.com>,
-        Anushree Mathur <anushree.mathur@linux.ibm.com>,
-        Gautam Menghani <gautam@linux.ibm.com>,
-        Nicholas Piggin <npiggin@gmail.com>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-        stable@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] powerpc/dt_cpu_ftrs: Set CPU_FTR_P11_PVR for Power11 and later processors
-Date: Sun, 14 Jun 2026 23:04:37 +0530
-Message-ID: <20260614173437.26352-1-amachhiw@linux.ibm.com>
-X-Mailer: git-send-email 2.50.1
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gdjN72Qhpz2xmV
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jun 2026 05:04:06 +1000 (AEST)
+Received: by mail-yw1-x1134.google.com with SMTP id 00721157ae682-7e2f3646c10so28604547b3.0
+        for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 Jun 2026 12:04:06 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1781463844; cv=none;
+        d=google.com; s=arc-20240605;
+        b=b+bBteInv3729uSUn9ROpjFZfzT05b6YnQeeY0YagFg4epFHjOSKnCIyzLyj4HYHZ9
+         4Xnn+sBlJlfw5ESIrmJxVT0iAc29k6Pb44VssGisZG/hgllIdf0RMS+qyT88NuZyqZSg
+         fEhaSb3ygVevBvyHVhi3nw/TuQXqF76BOKWHCRtVU7J4kaI3J4XNR5ElYkXv+ww5n28d
+         +Rq5PLtJRXDWYCp4t5J1PurSd4Lnq+cSmIZ60Hb4C4GA4PiUBsocKN3MoMKdkXL8YgSm
+         dTmtwhcUcJL6/0+WVy26JEQfknuQ1lZ4pzTmbjYbAqIuYN9hi8zg7nJWAVKmYJ6ha+Rc
+         EVMA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:dkim-signature;
+        bh=JaE1dAP+QUxyb/PuM4ua6j3vVvRINrBklaaNqphjGs4=;
+        fh=2hQd2doMvpL/jle13SbGPu+lDaIK4VH7Xqtcn4pRwko=;
+        b=aoNoTUGIWzLzRlPmB/oz985EIZmqjmO9DkMJrBa49LsA70p0Wlg6HTpQzlFFTKTXW9
+         z6cefojaCizJlfJyGu1RT5NDp+HmqV9fHoLeMbd9fkjee4TxMg9+NB8hoEYzK9rti0Bo
+         zP6pdO7onld8VZr7urZEXF39oMYs8RnWGBVrndBJCDGvhQ3QphOWHDtHwZ7Ve5kx5x3e
+         ydrS+FyR+FS5oMvTqvFHayWKiyFV40Nryy3YIZ39o6sjtClGRVHTr6SH1+F0Hnbi/VlX
+         RxriTjqpFQm1iv1D8rfvMuKb1kqKVdINW5+sFdqt+WAIufzX+T6MjCVfVFrd/TXKgYJ0
+         9cFw==;
+        darn=lists.ozlabs.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1781463844; x=1782068644; darn=lists.ozlabs.org;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date:message-id:reply-to;
+        bh=JaE1dAP+QUxyb/PuM4ua6j3vVvRINrBklaaNqphjGs4=;
+        b=Qh7pf0tpCZEywqkV0I71FMVrFkFHTIOfPLzNWH0NqFpiOOv/XKMPTXsbVY6qyuYY3j
+         9YtoUhVjP1gu4ZdxCKiyo/LMAwTzjKSxfWvoWmKHgGdjIfXegDwTfn4tgmanoxbtWr6I
+         1leCI4aa49kLEDaePcds6myXh48O6fEo/Ih7q4j43jLhzUmb+Lo9EnhW5NiqaRu+CIIv
+         CSzBDhqotn+9PhFQKNr7pFOR1EKiNTBj1PNMnXZ7LJIA0ugcTVHk7ADKtTjXMm7d1HLA
+         crQUXSh6jm5Fj6HG2w/nlsxTlZFEEDOdPG69rSTbvE32UivvfpTdSPY69kj5tDdaVXNI
+         18CA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1781463844; x=1782068644;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=JaE1dAP+QUxyb/PuM4ua6j3vVvRINrBklaaNqphjGs4=;
+        b=QDdTgvkwVzj/FQmQNJq/j8OvJN7ZJMulV+5QN0G1PzLNTwb+m1AINqKrC5bfkzVgHC
+         9pHdm9753jypXurl0GMXaUu2WSTZOryjClay1TV55W4PC3lWXr4NbY3gKjzkj07/R+8y
+         ryMOGTnAQ/lY8Ka9mdwwXhiWt0AisaRdLsMweNgOFnmPF96O+TlnkYQLdcfT4kJpWrNg
+         oZlvxD+iIzblUd3TZkpw8cj/czwbHwUE5ES5dKlKfFbpMp+6ReX00b4tq03j6doB5/TJ
+         BNLdQqcOKMj0sS7BrlYXXzLn9DRnbBtGaMPSOvTLLrCZofd3uR+N9VTXd59Du2BSscvv
+         W1HQ==
+X-Forwarded-Encrypted: i=1; AFNElJ8XFbKGX+yIsN82Knralo47xUl9DdSnsCcT9EeemE9K62MdN8osPXjKWZpLl4puJfTGmSyvlosQaQK4waI=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YyMBgD62F/jJTnqt7K47DEErIpmwghoC1LHOqSxMWciIzGBiyXk
+	rR289PipRRu967KEKopOSTbym4PruC5ELiAqoInicx2VmzJWg9+8/kbytEwA9F75ETt1LxkjQdf
+	+vfkeXyt2KiXMwnbsGwQQ1whcQD5B0peA20oN
+X-Gm-Gg: Acq92OH5ssgqFZv5QlgzaR2IWdwm68bTlJ+PBQFWs7IF2KJ5S5CKuhIJ+4cpkXd5mJp
+	MPek5tlNB1O5WhVhnplzUvxh86QoGlzP1BsDjs3MlAhdqWEcoD1e/nhZj0uYQlmzoG1BtTocygA
+	AfMlBIuyEiMYgIt9FleH5Md4U1o06d4/lXJEWlhdO2BKjUE5qBLM+n+xLJyP7+tqd+GhObCsT+f
+	zXmRc0sIOjseByt8s12cPyh5YyzoKRb65nJ7cet5WEI6B4S/0oBZwMBfsmKnh0X8g6PALEeZogf
+	JH+k4wGiJA==
+X-Received: by 2002:a05:690c:e36e:b0:7dc:f7b3:8e08 with SMTP id
+ 00721157ae682-7f7b7d32bebmr107685727b3.23.1781463843581; Sun, 14 Jun 2026
+ 12:04:03 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -93,104 +100,275 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNjE0MDE4MSBTYWx0ZWRfX25LaSoS5Brwk
- KaGYPclNcoE87khX27nDLggb+BZ5BmWZUmBvWMzUGBJS1PmxXiVKQk/Owa4RbmG85pMP7D1aV2N
- rWFX/N9/t8cwlwfRotfAt0MWxJ1W9sE=
-X-Proofpoint-GUID: f3HYISmmWK1FFVXaYcFsx-blu_6K8pPS
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjE0MDE4MSBTYWx0ZWRfX/wt1i8SW/arx
- FY0/pZcVYuEL7/bTO5TMnjfCJThbU6BNoQO5PSwNoVhAZckxWd1iS7Amq3OqspidihnWsH0MOZX
- csjHWNP+9Gm5u13bc9kfq2uDIuo8qHgrJqFRSqW22/FJzgAOl/+YgLq/el/u9jZHpvUywNn8gTC
- pjBdf/Oqc3uDnX6iR1CR5NRB3CcEgQo/x1aiFCp0lZaXyjhGCAxfFGMnwlhSsWHTBGPEe6AZRdT
- Zwrnhf3wpVXWgMa71espMhMwyUtHVB8/pM4WfGxeDQAY/e9YKwl7XazLjAD7WPATqmru62KXt2p
- 0wxuMe4yo4DExQYF3NRKwQ2VScmhwoQA9vp9nADuIcKrUfjykFVXnUpeCe+RtVq81QA1KE7xVxW
- tBKUxrweIkJocaiivH5PmCOq2eg5kIQMTCGcBGIPi0FLz3EIAzhoSjNQnZDe1VWmYHhG02aL921
- HKfU0tIck+HWJr4yDbQ==
-X-Proofpoint-ORIG-GUID: 7X9SvMqcsHuSui-NHCuD2yrme5VKuOM4
-X-Authority-Analysis: v=2.4 cv=Dd0nbPtW c=1 sm=1 tr=0 ts=6a2ee63d cx=c_pps
- a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
- a=FelO9ux0wxsA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=RzCfie-kr_QcCd8fBx8p:22 a=VwQbUJbxAAAA:8 a=VnNF1IyMAAAA:8
- a=NKTdka9ramWRCaAy5DwA:9
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
- definitions=2026-06-14_04,2026-06-12_03,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- malwarescore=0 clxscore=1015 priorityscore=1501 impostorscore=0
- lowpriorityscore=0 adultscore=0 suspectscore=0 phishscore=0 spamscore=0
- bulkscore=0 classifier=typeunknown authscore=0 authtc= authcc= route=outbound
- adjust=0 reason=mlx scancount=1 engine=8.22.0-2606040000
- definitions=main-2606140181
+References: <CA+rFky7UDpHYFXvEiq91dpnfLuKCiaONctmW-q2jONmNG25Wow@mail.gmail.com>
+ <418f045e-7aaf-c48b-4f08-018625b2c3e6@eik.bme.hu>
+In-Reply-To: <418f045e-7aaf-c48b-4f08-018625b2c3e6@eik.bme.hu>
+From: Andrew Randrianasulu <randrianasulu@gmail.com>
+Date: Sun, 14 Jun 2026 22:03:50 +0300
+X-Gm-Features: AVVi8Cd5TNRWdacIMM7k9VBQTSCGF7hZUXyDiwM7Swsmqc-ABDuzNE6B_FBU-zU
+Message-ID: <CA+rFky73KGYwJRBuEBqFA1dKkDk0_W+u4VQL9bg2n1_AkeOU3g@mail.gmail.com>
+Subject: Re: Does kvm_pr work on G5 mac with host kernel 6.12.xx ?
+To: BALATON Zoltan <balaton@eik.bme.hu>
+Cc: qemu-ppc@nongnu.org, linuxppc-dev@lists.ozlabs.org
+Content-Type: multipart/alternative; boundary="00000000000093b3d806543b5f49"
 
-When using device tree CPU features (dt-cpu-ftrs), the kernel bypasses
-the traditional cputable-based CPU identification and instead derives
-CPU features from the device tree's "ibm,powerpc-cpu-features" node
-provided by firmware.
+--00000000000093b3d806543b5f49
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-However, CPU_FTR_P11_PVR is a kernel-internal feature flag used to
-identify Power11 and later processors, and is not represented in the
-device tree's ISA feature set. While ISA v3.1 support (indicated by
-CPU_FTR_ARCH_31) is present on both Power10 and Power11, the
-CPU_FTR_P11_PVR flag is specifically needed by code that must
-distinguish between Power10 and Power11 processors.
+=D0=B2=D1=81, 14 =D0=B8=D1=8E=D0=BD. 2026 =D0=B3., 17:29 BALATON Zoltan <ba=
+laton@eik.bme.hu>:
 
-Without this flag set, code that checks for Power11 using
-cpu_has_feature(CPU_FTR_P11_PVR) will incorrectly return false on
-Power11+ systems using dt-cpu-ftrs, leading to incorrect behavior.
+> On Sun, 14 Jun 2026, Andrew Randrianasulu wrote:
+> > I tried qemu 10.0.10 (qemu-system-ppc) compiled as ppc32 binary - fail
+> >
+> > I tried qemu 2.2.0 compiled as ppc64 binary (qemu-system-ppc and ppc64
+> > variants) -fail
+> >
+> > I tried qemu 5.0.0 compiled as 32bit ppc (qemu-system-ppc) - fail.
+> >
+> > I tried qemu 6.1.1 compiled as 32bit ppc binary - qemu-system-ppc. Fail=
+.
+> >
+> > I tried recompiling host kernel without preemtion - still fail.
+> >
+> > :(
+> >
+> > fail like this in dmesg
+> >
+> > [75573.287328] Couldn't emulate instruction 0x00000000 (op 0 xop 0)
+> >                        [75573.287334] kvmppc_exit_pr_progint: emulation
+> at
+> > 100 failed (00000000)
+> >
+> >
+> > lscpu output:
+> > Architecture:                ppc64
+> >
+> > CPU op-mode(s):            32-bit, 64-bit
+> > Byte Order:                Big Endian
+> > CPU(s):                      2
+> >
+> > On-line CPU(s) list:       0,1
+> >
+> > Model name:                  PPC970MP, altivec supported
+> > Model:                     1.1 (pvr 0044 0101)
+> [...]
+> > Why so old qemu? Well, it worked on OSX Leopard 10.5.8 on same machine,
+> so
+> > I compiled it as 64bit ppc64 binary - new qemu grow a lot  ... and
+> keeping
+> > effectively 3 different dev systems makes this 160 gb hdd look small :)
+>
+> I don't know about it but I think the only combination that ever worked
+> was ppc on ppc (i.e. KVM on G4 Macs) or maybe ppc64 on ppc64. Running ppc
+> on ppc64 is known not to work and I haven't heard about anybody fixing
+> that. There was a blog entry about running MacOS on Power10:
+>
+> https://www.talospace.com/2018/08/making-your-talos-ii-into-power-mac_29.=
+html
+> but I think that was on ppc64le (which does not work on G5 as that's big
+> endian only) and you still needed a guest kernel that could handle the G5
+> due to different cache line size that affects at least dcbz which is used
+> to clear memory so unless that's correctly emulated by KVM it may clear
+> more bytes than intended and break.
+>
 
-This issue manifests specifically in powernv environments (bare-metal
-or QEMU TCG with powernv machine type), where skiboot/OPAL firmware
-provides the "ibm,powerpc-cpu-features" node, causing the kernel to
-use dt-cpu-ftrs. The issue does not affect pseries guests, where SLOF
-firmware does not provide this node, causing the kernel to fall back
-to the traditional cputable path (identify_cpu) which correctly sets
-CPU_FTR_P11_PVR during PVR-based CPU identification.
+https://forum.hyperion-entertainment.com/viewtopic.php?t=3D4736&start=3D141=
+0
 
-In powernv TCG guests, the missing flag causes KVM code to trigger
-warnings when attempting to create KVM guests, as cpu_features shows
-0x000c00eb8f4fb187 (missing bit 53) instead of the correct
-0x002c00eb8f4fb187 (with bit 53 set).
+I thought this picture showed ppc64 kernel at host (not mac, neo amiga) and
+qemu-system-ppc with non-obvious bitness?
 
-Fix this by setting CPU_FTR_P11_PVR for all processors with
-PVR >= PVR_POWER11 when ISA v3.1 support is detected in
-cpufeatures_setup_start(). This approach ensures forward
-compatibility with future processor generations.
 
-Fixes: 96e266e3bcd6 ("KVM: PPC: Book3S HV: Add Power11 capability support for Nested PAPR guests")
-Cc: stable@vger.kernel.org # v6.13+
-Signed-off-by: Amit Machhiwal <amachhiw@linux.ibm.com>
----
-Related: https://lore.kernel.org/all/20260609053327.61563-1-amachhiw@linux.ibm.com/
----
+> So considering the above, what may work is if you run a 32 bit ppc kernel
+> (G4 version) on your G5 for the host not using it as 64 bit instead of
+> ppc64 kernel and try a guest kernel that detects G5 CPU and knows how to
+> handle the different cache line size.
 
- arch/powerpc/kernel/dt_cpu_ftrs.c | 9 +++++++++
- 1 file changed, 9 insertions(+)
 
-diff --git a/arch/powerpc/kernel/dt_cpu_ftrs.c b/arch/powerpc/kernel/dt_cpu_ftrs.c
-index 3af6c06af02f..e5853daa6a48 100644
---- a/arch/powerpc/kernel/dt_cpu_ftrs.c
-+++ b/arch/powerpc/kernel/dt_cpu_ftrs.c
-@@ -704,6 +704,15 @@ static void __init cpufeatures_setup_start(u32 isa)
- 	if (isa >= ISA_V3_1) {
- 		cur_cpu_spec->cpu_features |= CPU_FTR_ARCH_31;
- 		cur_cpu_spec->cpu_user_features2 |= PPC_FEATURE2_ARCH_3_1;
-+
-+		/*
-+		 * CPU_FTR_P11_PVR is a kernel-internal flag to identify
-+		 * Power11 and later processors. While ISA v3.1 is supported
-+		 * by Power10+, this flag specifically indicates Power11+
-+		 * for code that needs to distinguish between P10 and P11.
-+		 */
-+		if (PVR_VER(mfspr(SPRN_PVR)) >= PVR_POWER11)
-+			cur_cpu_spec->cpu_features |= CPU_FTR_P11_PVR;
- 	}
- }
- 
+Are you saying 32bit *Linux* ppc kvm as host can handle 64bit guest kernel =
+?
 
-base-commit: 424280953322cf66314f3ba5e2d1ef345f21c770
--- 
-2.50.1 (Apple Git-155)
+I am not ever sure firmware here can load 32bit ppc Linux .. I'll try of
+course.
 
+
+Or find and fix the emulation of
+> different instructions on ppc64 in Linux KVM when running 32 bit ppc code
+> on 64 but host. There supposed to be some support for that but maybe it's
+> broken or never finished.
+>
+> But as I said I don't know this and don't have PPC hardware to try, nor
+> interest to do it so it's just my understanding and guess, which may be
+> wrong, but that's probably where you should start looking. Hopefully ther=
+e
+> are others here with more knowledge about it or who want to look at it.
+> You should also look at how to enable KVM debug logs in Linux kernel and
+> see if you get any errors in the syslog. The usual QEMU debug options are
+> not that helpful with KVM and you should look for KVM logs instead.
+>
+
+In theory I subscribed to linux-ppc (kernel) list. May be I should cc them
+? (added to cc)
+
+I tried kvm-unit-tests but they apparently require qemu (to my surprise!)
+and mostly focus on pseries / kvm HV (not surprisingly)?
+
+Is there anything smaller to test kvm_pr specifically?
+
+I even tried to d/l svn version of Mac on Linux but this one failed to
+compile with gcc 15.
+
+svn checkout svn://svn.code.sf.net/p/mac-on-linux/code/trunk
+mac-on-linux-code
+
+
+
+> Regards,
+> BALATON Zoltan
+>
+
+--00000000000093b3d806543b5f49
+Content-Type: text/html; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+<div dir=3D"auto"><div><br><br><div class=3D"gmail_quote"><div dir=3D"ltr" =
+class=3D"gmail_attr">=D0=B2=D1=81, 14 =D0=B8=D1=8E=D0=BD. 2026 =D0=B3., 17:=
+29 BALATON Zoltan &lt;<a href=3D"mailto:balaton@eik.bme.hu" target=3D"_blan=
+k" rel=3D"noreferrer">balaton@eik.bme.hu</a>&gt;:<br></div><blockquote clas=
+s=3D"gmail_quote" style=3D"margin:0 0 0 .8ex;border-left:1px #ccc solid;pad=
+ding-left:1ex">On Sun, 14 Jun 2026, Andrew Randrianasulu wrote:<br>
+&gt; I tried qemu 10.0.10 (qemu-system-ppc) compiled as ppc32 binary - fail=
+<br>
+&gt;<br>
+&gt; I tried qemu 2.2.0 compiled as ppc64 binary (qemu-system-ppc and ppc64=
+<br>
+&gt; variants) -fail<br>
+&gt;<br>
+&gt; I tried qemu 5.0.0 compiled as 32bit ppc (qemu-system-ppc) - fail.<br>
+&gt;<br>
+&gt; I tried qemu 6.1.1 compiled as 32bit ppc binary - qemu-system-ppc. Fai=
+l.<br>
+&gt;<br>
+&gt; I tried recompiling host kernel without preemtion - still fail.<br>
+&gt;<br>
+&gt; :(<br>
+&gt;<br>
+&gt; fail like this in dmesg<br>
+&gt;<br>
+&gt; [75573.287328] Couldn&#39;t emulate instruction 0x00000000 (op 0 xop 0=
+)<br>
+&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
+=C2=A0 =C2=A0 [75573.287334] kvmppc_exit_pr_progint: emulation at<br>
+&gt; 100 failed (00000000)<br>
+&gt;<br>
+&gt;<br>
+&gt; lscpu output:<br>
+&gt; Architecture:=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 p=
+pc64<br>
+&gt;<br>
+&gt; CPU op-mode(s):=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 32-bit, 64-bi=
+t<br>
+&gt; Byte Order:=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 Big=
+ Endian<br>
+&gt; CPU(s):=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
+=C2=A0 =C2=A0 2<br>
+&gt;<br>
+&gt; On-line CPU(s) list:=C2=A0 =C2=A0 =C2=A0 =C2=A00,1<br>
+&gt;<br>
+&gt; Model name:=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0 PPC970MP, altivec supported<br>
+&gt; Model:=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
+=C2=A0 =C2=A01.1 (pvr 0044 0101)<br>
+[...]<br>
+&gt; Why so old qemu? Well, it worked on OSX Leopard 10.5.8 on same machine=
+, so<br>
+&gt; I compiled it as 64bit ppc64 binary - new qemu grow a lot=C2=A0 ... an=
+d keeping<br>
+&gt; effectively 3 different dev systems makes this 160 gb hdd look small :=
+)<br>
+<br>
+I don&#39;t know about it but I think the only combination that ever worked=
+ <br>
+was ppc on ppc (i.e. KVM on G4 Macs) or maybe ppc64 on ppc64. Running ppc <=
+br>
+on ppc64 is known not to work and I haven&#39;t heard about anybody fixing =
+<br>
+that. There was a blog entry about running MacOS on Power10: <br>
+<a href=3D"https://www.talospace.com/2018/08/making-your-talos-ii-into-powe=
+r-mac_29.html" rel=3D"noreferrer noreferrer noreferrer" target=3D"_blank">h=
+ttps://www.talospace.com/2018/08/making-your-talos-ii-into-power-mac_29.htm=
+l</a> <br>
+but I think that was on ppc64le (which does not work on G5 as that&#39;s bi=
+g <br>
+endian only) and you still needed a guest kernel that could handle the G5 <=
+br>
+due to different cache line size that affects at least dcbz which is used <=
+br>
+to clear memory so unless that&#39;s correctly emulated by KVM it may clear=
+ <br>
+more bytes than intended and break.<br></blockquote></div></div><div dir=3D=
+"auto"><br></div><div dir=3D"auto"><a href=3D"https://forum.hyperion-entert=
+ainment.com/viewtopic.php?t=3D4736&amp;start=3D1410" target=3D"_blank" rel=
+=3D"noreferrer">https://forum.hyperion-entertainment.com/viewtopic.php?t=3D=
+4736&amp;start=3D1410</a></div><div dir=3D"auto"><br></div><div dir=3D"auto=
+">I thought this picture showed ppc64 kernel at host (not mac, neo amiga) a=
+nd qemu-system-ppc with non-obvious bitness?</div><div dir=3D"auto"><br></d=
+iv><div dir=3D"auto"><div class=3D"gmail_quote"><blockquote class=3D"gmail_=
+quote" style=3D"margin:0 0 0 .8ex;border-left:1px #ccc solid;padding-left:1=
+ex">
+<br>
+So considering the above, what may work is if you run a 32 bit ppc kernel <=
+br>
+(G4 version) on your G5 for the host not using it as 64 bit instead of <br>
+ppc64 kernel and try a guest kernel that detects G5 CPU and knows how to <b=
+r>
+handle the different cache line size. </blockquote></div></div><div dir=3D"=
+auto"><br></div><div dir=3D"auto">Are you saying 32bit *Linux* ppc kvm as h=
+ost can handle 64bit guest kernel ?</div><div dir=3D"auto"><br></div><div d=
+ir=3D"auto">I am not ever sure firmware here can load 32bit ppc Linux .. I&=
+#39;ll try of course.</div><div dir=3D"auto"><br></div><div dir=3D"auto"><b=
+r></div><div dir=3D"auto"><div class=3D"gmail_quote"><blockquote class=3D"g=
+mail_quote" style=3D"margin:0 0 0 .8ex;border-left:1px #ccc solid;padding-l=
+eft:1ex">Or find and fix the emulation of <br>
+different instructions on ppc64 in Linux KVM when running 32 bit ppc code <=
+br>
+on 64 but host. There supposed to be some support for that but maybe it&#39=
+;s <br>
+broken or never finished.<br>
+<br>
+But as I said I don&#39;t know this and don&#39;t have PPC hardware to try,=
+ nor <br>
+interest to do it so it&#39;s just my understanding and guess, which may be=
+ <br>
+wrong, but that&#39;s probably where you should start looking. Hopefully th=
+ere <br>
+are others here with more knowledge about it or who want to look at it. <br=
+>
+You should also look at how to enable KVM debug logs in Linux kernel and <b=
+r>
+see if you get any errors in the syslog. The usual QEMU debug options are <=
+br>
+not that helpful with KVM and you should look for KVM logs instead.<br></bl=
+ockquote></div></div><div dir=3D"auto"><br></div><div dir=3D"auto">In theor=
+y I subscribed to linux-ppc (kernel) list. May be I should cc them ? (added=
+ to cc)</div><div dir=3D"auto"><br></div><div dir=3D"auto">I tried kvm-unit=
+-tests but they apparently require qemu (to my surprise!) and mostly focus =
+on pseries / kvm HV (not surprisingly)?</div><div dir=3D"auto"><br></div><d=
+iv dir=3D"auto">Is there anything smaller to test kvm_pr specifically?</div=
+><div dir=3D"auto"><br></div><div dir=3D"auto">I even tried to d/l svn vers=
+ion of Mac on Linux but this one failed to compile with gcc 15.</div><div d=
+ir=3D"auto"><br></div><div dir=3D"auto">svn checkout svn://<a href=3D"http:=
+//svn.code.sf.net/p/mac-on-linux/code/trunk">svn.code.sf.net/p/mac-on-linux=
+/code/trunk</a> mac-on-linux-code</div><div dir=3D"auto"><br></div><div dir=
+=3D"auto"><br></div><div dir=3D"auto"><div class=3D"gmail_quote"><blockquot=
+e class=3D"gmail_quote" style=3D"margin:0 0 0 .8ex;border-left:1px #ccc sol=
+id;padding-left:1ex">
+<br>
+Regards,<br>
+BALATON Zoltan<br>
+</blockquote></div></div></div>
+
+--00000000000093b3d806543b5f49--
 
