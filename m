@@ -1,89 +1,97 @@
-Return-Path: <linuxppc-dev+bounces-22635-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22636-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E6533CD98C7
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Jun 2026 10:53:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 62ED3CD98CF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Jun 2026 13:42:43 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gf6RK0MgLz3btY;
-	Mon, 15 Jun 2026 20:53:17 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c203::5" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781520796;
-	cv=pass; b=jAo/2DnWWnhhCG41RLrPf5dlJavMJYkif3nRO6gzc1Rt9H1aY0qXnrebfjDOPstY8ztTAtP5+LOBgU/J9yWs657gTgPVuvD41sXfCCgEaRD2Sqysmolm4a1C7ZJ4IWdEqQ6VoPVtjlANEoixhNrTJCdV+i9EimvO+iY3BPqs4zJHS7Ph5psU0LRv8B5xAeefyyFXhzlB+SAyIEAN0gTS+7Tf5F3ugm9HGiOUeDCReZnavX6WPHnYPR17NrJlD9GebjvDO3Bra56Nnl+msANQlh88d+oTkI11lC5ildAUHJg2LTRykLFR06LtN2+sn4CkOYPgt1jZaZbFfjQqqX7Dxg==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1781520796; c=relaxed/relaxed;
-	bh=VZZ9HuKbA0zQ0VwJtXcsGx/pVDCJNKq8x/AJabyeOMk=;
-	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
-	 Content-Type:MIME-Version; b=h6PxznW8IubuicwZXSOTTEqyoKl/zioR1lSxBcXHyLseMM77q7jIyhEcFvIZNd/cmpapq/r/iVyRSJZb42i4iNedvXf4kea0RuoJMqC8gnRjdenO2Hkbc6vT1V6n/yWpnrxJYOwxoWaagzdaZ6KQMchZ6mBu5PgbZrYJrsINtTptaO8sHpNy4kQ41PpWuf06SYe2JcsnaIN+vlccIFxfOr0+rsSKG+nmzhZt17WjHaHuv/pr+k+g5hlO4ycoviE36IHmGdVWGc8nEMOGYAcgNL62m1J0NQfu4jb32uOHyNbMDu3tqCc820r0edSg3s4l57jpYPQWwXoz9Zxc7TD0Lw==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=permerror header.from=gaisler.com; dkim=pass (2048-bit key; unprotected) header.d=gaisler.com header.i=@gaisler.com header.a=rsa-sha256 header.s=selector1 header.b=AmwwRQCe; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c203::5; helo=mm0p280cu010.outbound.protection.outlook.com; envelope-from=andreas.larsson@gaisler.com; receiver=lists.ozlabs.org) smtp.mailfrom=gaisler.com
-Authentication-Results: lists.ozlabs.org; dmarc=permerror header.from=gaisler.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gfBBn55Xbz3btX;
+	Mon, 15 Jun 2026 23:42:41 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781530961;
+	cv=none; b=dcnqGc+MFB4zUhM608BgE4Hw5juvWz7kyMBbf9P17ziQ/BXAI72ifFUDGo+9qjQBb+RiSY+/zI3B1gFnPnQIOXw2cvVEyP5KJWm65E5VRfsy6lBp+nZLPirq5nUhNB5bWVdIEzpFp0v5wNNsCtc7isZWRPDXYtGO1m9H6fsVBoq64+sIgys8HUp6X1i4sIzEsUNc8O+p+u4PS0MhPFEHGWzp03zE/yRJ/8VRtPWNfEnyLRN9eh+xfIKU0op4TuIQqzz6XGxtnZemksq460tM0TGh8eU0RjGafnnSNpyx7O0bI41oJy3JDK/yYnQC+/XTVkuVtAyacxGGtwyNkw1o/A==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1781530961; c=relaxed/relaxed;
+	bh=/AUs2IpHamyo41vAyD7BiKW2lU4vDvYAUoToDIb93Mo=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
+	 MIME-Version:Content-Type; b=D5Tq6bkT8SfHfHR193hsdOeXAym3+xhwxexm1p2mK7Eu0lY9t/pMYuDenNTxPfsgwRMJi+uI8XrtiCPgYT2gqYL2vQ/hdMEujpg/85+toQSdl/tOW/8TelulQN33WctSSandKxh7ipOKHP3BuqqgDHKwbZwTbIY3AzBoOoDxhVHDTa8DPb8f2MVYEJ+SDsxunSMXpVTH2o1gxIY78d1SiMT1KQgSR0HRcyDPhm9xDhv613axi6tDU9uYIMjg7XzXQ3c94KXpTEJRHiA3ln/OocS/8DaFb2W6vXht/6JMkHQ55F/wFSmm2IQYtCbsHXKO/ep18EXzTgSHuVHY1iQW6Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Y+6iTTVH; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=davemarq@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gaisler.com header.i=@gaisler.com header.a=rsa-sha256 header.s=selector1 header.b=AmwwRQCe;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Y+6iTTVH;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gaisler.com (client-ip=2a01:111:f403:c203::5; helo=mm0p280cu010.outbound.protection.outlook.com; envelope-from=andreas.larsson@gaisler.com; receiver=lists.ozlabs.org)
-Received: from MM0P280CU010.outbound.protection.outlook.com (mail-swedensouthazlp170120005.outbound.protection.outlook.com [IPv6:2a01:111:f403:c203::5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=davemarq@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gf6RF6GvVz3btX
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jun 2026 20:53:10 +1000 (AEST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=o5hP1EMyLvJcpCEHRYxb2fqiQlC5BXY+yDRZ0dXCNgUOFuTp4nasNh9XfvbOtA69zEjVUF4COj/nTnpgIWooMcZXlcvZf1nqTmm/427WmG3251Bs5RjSn6rgOe2IXzmYxDh0hy3xLZMWgnIGl3Ad6mtnlbpD37+d1nql0eA86ty2Z6caugtWw+k2JCxGVOUHUx3RNQYNUgypBAp27c/+fdFkXUqCE11pbgRlSkCF9dkh6E+t5mvqgwx0cYuNCjdro7Rsuhncr3prOlr/yUTkLwDhy7LBr8GjlCeVoGrCjAwhDv/NiFOPo1jb24xHDc/PBDe47h84q6FCT8y/RIZsZQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=VZZ9HuKbA0zQ0VwJtXcsGx/pVDCJNKq8x/AJabyeOMk=;
- b=vh6nw8eT1YAJ6Ckw/ciNVzb0Jc64l8zgXAPmBsEEsmRohQd79EjLDVaAg6XLfdRD7D4AfUYY1JsmfmcEB8m/NO8Etzs1DtjPp7zZ7WNRCHPOxMBAIUPJv6M4XU7g/I5xnH7Fk0eVfwAMrD78tNHlS6grCCnDE+GlAfwmL6/eSYuEaU6fGBhDxCmuxd3ZsFgiRksGH3MDLxeT/Npz6cGvdMEuIEsDOmu7MSgNnZaAQRlXe094xlnwJ2kmsW9vo7MmbAd0tiiXZgll7/UCqC7KDRgmuPqHaKQY6E1KN5adNGC8eZaTRJcoapbM35vtPC9POdm0QisXHwArNM2O8ES1aA==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=gaisler.com; dmarc=pass action=none header.from=gaisler.com;
- dkim=pass header.d=gaisler.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gaisler.com;
- s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=VZZ9HuKbA0zQ0VwJtXcsGx/pVDCJNKq8x/AJabyeOMk=;
- b=AmwwRQCePo3mKdKWLlPoJZP7yj66d/0SjGHMr63QxPtPcvUrZPOudkvLeQP6OhIsdEtpo+V5bzaMRelta8XMiwq7pPPrvczbKmAdDNfr5vP9FZ4dmLMTal2aN+B6L/bxk1qhjTgMo5kkWbpgwluSJ/ojm7yYQEnyIT3yRuXUF0BnQRK6QSdUesvE2zeaM5/wmOw43YFTs05FVXP74/Y9vG8x0LY0F+Kr4sy5Hjo48u+4zKs4KQjAbzbyRwlW/Ovx80KTjL+QtCo0FnvB7PjNdNSHsFri6nGvA4MwCrXDtdZPV6TPcxD4ZuUIrOge2bDW9qsvUeAR2I1gOT1IyE8S4A==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=gaisler.com;
-Received: from GVYP280MB1290.SWEP280.PROD.OUTLOOK.COM (2603:10a6:150:195::18)
- by GVZP280MB1738.SWEP280.PROD.OUTLOOK.COM (2603:10a6:150:237::10) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.113.18; Mon, 15 Jun
- 2026 10:52:44 +0000
-Received: from GVYP280MB1290.SWEP280.PROD.OUTLOOK.COM
- ([fe80::be76:7636:f4ac:6773]) by GVYP280MB1290.SWEP280.PROD.OUTLOOK.COM
- ([fe80::be76:7636:f4ac:6773%6]) with mapi id 15.21.0113.015; Mon, 15 Jun 2026
- 10:52:44 +0000
-Message-ID: <d592a4de-7c36-4028-9763-3913b0836349@gaisler.com>
-Date: Mon, 15 Jun 2026 12:52:43 +0200
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v4 5/5] sparc: Remove remaining defconfig references to
- the pktcdvd driver
-To: Catalin Iacob <iacobcatalin@gmail.com>,
- Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
- Madhavan Srinivasan <maddy@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
- "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
- Rich Felker <dalias@libc.org>,
- John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
- "David S. Miller" <davem@davemloft.net>,
- "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
- "Martin K. Petersen" <martin.petersen@oracle.com>,
- Jens Axboe <axboe@kernel.dk>
-Cc: linux-mips@vger.kernel.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-sh@vger.kernel.org,
- sparclinux@vger.kernel.org, linux-scsi@vger.kernel.org
-References: <20260608-remove-pktcdvd-references-v4-0-72f88b04cc87@gmail.com>
- <20260608-remove-pktcdvd-references-v4-5-72f88b04cc87@gmail.com>
-Content-Language: en-US
-From: Andreas Larsson <andreas@gaisler.com>
-In-Reply-To: <20260608-remove-pktcdvd-references-v4-5-72f88b04cc87@gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-ClientProxiedBy: GVZP280CA0009.SWEP280.PROD.OUTLOOK.COM
- (2603:10a6:150:273::7) To GVYP280MB1290.SWEP280.PROD.OUTLOOK.COM
- (2603:10a6:150:195::18)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gfBBm33l6z3btJ
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jun 2026 23:42:39 +1000 (AEST)
+Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 65FCmI972492985;
+	Mon, 15 Jun 2026 13:42:23 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-type:date:from:in-reply-to:message-id:mime-version
+	:references:subject:to; s=pp1; bh=/AUs2IpHamyo41vAyD7BiKW2lU4vDv
+	YAUoToDIb93Mo=; b=Y+6iTTVHuidrVhR6sd0Q6mUiaWTd5rmT29K0h7e7rMz7uM
+	xRwbUMLU3U5rLwN32FINpxrs5ToE39p6HpH7QhxUA7DeVFniFJQtihlFhBBk1g52
+	5bHfJLB7Jtm7ZqgJNtFgo/xTCaKhJtPYSwr0LHHw2HAP+eobqOOZNwmGB6LkUSHf
+	mVKN4CuNN7aZVVJmDQ99sPdO7UUrmm1m+zvAsT1uIUjK3RHlCfHCxHfP7viPbJ70
+	1ZZsxL8mJ81xPC4EKRzbDMJdmRpj19E0mH1vm40vehbb2UMuRWeaQgXCOWO+F3tF
+	CWDeiAEJy70SZPAG5BdZU08he8U5Uc+4s5W59Vrw==
+Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4es1u0gb2c-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 15 Jun 2026 13:42:22 +0000 (GMT)
+Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma11.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 65FDYskr005326;
+	Mon, 15 Jun 2026 13:42:21 GMT
+Received: from smtprelay06.dal12v.mail.ibm.com ([172.16.1.8])
+	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4esm7xxj46-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 15 Jun 2026 13:42:21 +0000 (GMT)
+Received: from smtpav06.dal12v.mail.ibm.com (smtpav06.dal12v.mail.ibm.com [10.241.53.105])
+	by smtprelay06.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 65FDgKFq61800938
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Mon, 15 Jun 2026 13:42:21 GMT
+Received: from smtpav06.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id D2D165805E;
+	Mon, 15 Jun 2026 13:42:20 +0000 (GMT)
+Received: from smtpav06.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 8D05D58043;
+	Mon, 15 Jun 2026 13:42:20 +0000 (GMT)
+Received: from d (unknown [9.61.47.236])
+	by smtpav06.dal12v.mail.ibm.com (Postfix) with ESMTPS;
+	Mon, 15 Jun 2026 13:42:20 +0000 (GMT)
+From: Dave Marquardt <davemarq@linux.ibm.com>
+To: Tyrel Datwyler <tyreld@linux.ibm.com>
+Cc: "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
+        "Martin
+ K. Petersen" <martin.petersen@oracle.com>,
+        Madhavan Srinivasan
+ <maddy@linux.ibm.com>,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        Nicholas
+ Piggin <npiggin@gmail.com>,
+        "Christophe Leroy (CS GROUP)"
+ <chleroy@kernel.org>,
+        linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+        linuxppc-dev@lists.ozlabs.org, Brian King
+ <brking@linux.ibm.com>,
+        Greg Joyce <gjoyce@linux.ibm.com>,
+        Kyle Mahlkuch
+ <kmahlkuc@linux.ibm.com>
+Subject: Re: [PATCH v2 3/7] ibmvfc: make ibmvfc login to fabric
+In-Reply-To: <bfb7ff08-e4ec-46a2-b368-12d5c77f0ee4@linux.ibm.com> (Tyrel
+	Datwyler's message of "Fri, 12 Jun 2026 16:11:50 -0700")
+References: <20260608-ibmvfc-fpin-support-v2-0-d41f540fba5c@linux.ibm.com>
+	<20260608-ibmvfc-fpin-support-v2-3-d41f540fba5c@linux.ibm.com>
+	<bfb7ff08-e4ec-46a2-b368-12d5c77f0ee4@linux.ibm.com>
+Date: Mon, 15 Jun 2026 08:42:20 -0500
+Message-ID: <87fr2ngbsz.fsf@linux.ibm.com>
+User-Agent: Gnus/5.13 (Gnus v5.13)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -97,100 +105,137 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: GVYP280MB1290:EE_|GVZP280MB1738:EE_
-X-MS-Office365-Filtering-Correlation-Id: 71e3a7ad-0117-4e59-9886-08decacc3ad6
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|366016|7416014|376014|23010399003|1800799024|56012099006|4143699003|22082099003|18002099003|921020;
-X-Microsoft-Antispam-Message-Info:
-	YcBE1IOwW0Tty0tgFy4d5Tn7QJ4DCkk+8NtNWvZgq32/8BzxIixbwjEvflMp1m0ay1mZi04PsT1ygJ3HHRQmfCtSoev7WG++RbdbbuH6V4K7uxMLAE66i81qiDgJ5s1+CwgiDaz3Y+2TojHisONHMkcVFdptFkUE65YtXIQw3wfZr6TGQcYFApJfKVcrPH2de1y+rlvnA6ki6S9qKVr2/OcI+g+yZYBKdWsaF3em0fHD7lixVcbj6l/SIcQ3dW3l8pbGDz9tyAfzPYA1HH6/ATLuuaqSmOHK1LqPYo+dkTGnKiyI4P6usMJWrRyvKkDomF1BEW7Qme3k9oPHQd/OyZ7ifr3TGatJzA8HTgnjCn2ciXR01Xhec46gZGJVuK9rybyhesfhNuE7SnkNcs1hTVVbw34zDHSt+z9XAb0lua7g9LcP/sXfjwOIgR5YV0phDCmnVf473ag8GH7vSULxCnpbiHlKvMh2Wo6ZT3FL3xz4CEPnFsBWJ73qvNtAIo0aWJFfWLsm7N8scHBnSqf/4OGFz/yT4fTfwrr79cgl3Zo74KcxdVdolz0vY7fk55KnIUAUPxx3Gr3FbMKt6D6Vox9HPrC1Ui1yRqFn0xL7I3Q0+LdZlgfZscUo7LqJ38nawiGe+5SgegYuo+6fOSYVtGrJTQiLQmcSPsOFpotmOLSpkERpcSTy89C5empqE1kyrw1DRU8RamioiEZ7vHkoHDOO/0ogYosUKuz1JhBuuJo=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:GVYP280MB1290.SWEP280.PROD.OUTLOOK.COM;PTR:;CAT:NONE;SFS:(13230040)(366016)(7416014)(376014)(23010399003)(1800799024)(56012099006)(4143699003)(22082099003)(18002099003)(921020);DIR:OUT;SFP:1102;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?utf-8?B?c0tyeGVST0t0YTkvMjFFR0IwbkphZklET2Vud0M0YlRVcm1hQVVRT2NYRlNo?=
- =?utf-8?B?MG1Td1VnanBRNVMxQU1COGUyMDJHTU4zZ3A0RXdIK0IxaGpwaDZaVUdvQlQ0?=
- =?utf-8?B?TTdBdytUWTBaU2tkaFMzZEhJZ3F5cG9UdzF3bTJyL0tkUEQ1Vms2N09SS1k1?=
- =?utf-8?B?cHdUTVFFTkJpVGdFMndmWkIrT0l0cE1qY3c4OE9leEZBVFl2UFBEQkRJTnVl?=
- =?utf-8?B?emJ5Z2xtVDl5NEI4ODc3V3plZE93dnhLRDZJL01ZNytwQkN6ekJjK1lNcTdE?=
- =?utf-8?B?WHJObjJRNnZEZHNoVnp5RDd0SnQ1d2JZMnFpencrVGdxamF4MC8wWWtKZzVw?=
- =?utf-8?B?Lys0dFNkUWl0dEs3VVU4cS9UcVFDNUJNQ0ZSQWhxYThVSXk5UmVjR2JjakQv?=
- =?utf-8?B?cmlvZEY0a0FSMmF2dzJHb2Y3b0ZBaGwreWM3K3duYlRBcmxtZ2JhZWlKb0RU?=
- =?utf-8?B?azZVSUV2aFVlZWhpclhMNXgwTFJ1Qlk4Y3laUENWWElKR3psTktBOVNPN0ZY?=
- =?utf-8?B?bHRXZDJIWC80NUtsM2d5NHNLMFNncHZCT3BKRkV2czVLUnQ0c3AvWlNWTEVF?=
- =?utf-8?B?ZDRuVWE3OEhod2lpdUV4SlhoY0dNRlpGYzFIZlBnVmEzYS9IZEt2elY3NzN4?=
- =?utf-8?B?aHNiZ3BpbzVnUXNmek96Mks0d09nNWsxdU0zRlp4ZmxyWkRBR3M3cUdkcDZa?=
- =?utf-8?B?SEZxWm1kaHVBMmxCU3VJbWMyeGg1K3hmVmFZOU1LR1pnei90T1ZUZTJqUjdj?=
- =?utf-8?B?bXF2MU5PelRhblVGdmpydG9TMGNPYXRUdWZFdk5saVREQ0N2VjM3Ti9DVjhi?=
- =?utf-8?B?THJmeFhWWXV5QVEyL0NSREdSVXNUR0d1OXdid0JWZERDdmhNcXc5M3ZZZm5I?=
- =?utf-8?B?d2VCcnBrYTRnTDdncmpoMjRFeDBGcTk3bHRpeEVhZVYyMU43UEFNbHhZSlhJ?=
- =?utf-8?B?QUU0T1FFTTI3aldqZkFCcm1qNzBzRFc5UDRPSFB3U2c3Zm50UHNROXZTdGZp?=
- =?utf-8?B?dmtqVGltc0I0cGRZQURzcXdkUEp4TG5Sb0pRZUVONlJnYis0ZHE2eEJFblNu?=
- =?utf-8?B?S3hLdE9IZWJiak5lRm9MdEdJa0tQcnlaNXhkdklOMzhFMzh1aWtPdEhVQzdR?=
- =?utf-8?B?eU5tQUFXeHpFanJQbzJIOWxCMXkzaU1nZThTTTRTcGE5QnZjUDd3eGdLM001?=
- =?utf-8?B?elBCbzdqSS9JZG54SlZFNkNFaFo0ZmM4ejZHdW1QSU8yQTMyUy82Z01LMGpv?=
- =?utf-8?B?WjBDaTgwNUJxSmdpbG40UjM5bkxsMkU0ZEpTMEZhcEc5d1RncUV4K1l1ZmJv?=
- =?utf-8?B?cGdXdTFSQmx2ZVZVUTVTS2h3a284blVqMkVaRVUrR2taamJhZEkzaXVGMVJo?=
- =?utf-8?B?RjJIQ3JaUXhOOHBLMm9HMkFsbWtUT2N3bHNVN01UcWMyZ0lLb2M1Wm94MFR4?=
- =?utf-8?B?NStHVzdhQUJOTFloc0kzbWFxblJXQWV2VVRSVnlHb09TbHk5cHBOazhuMlZH?=
- =?utf-8?B?UGpNMnp3N290V2Z4amhDYSt5NkRMUzFRRFJpY05RakJ6N0lVUEZNUk9DUFdW?=
- =?utf-8?B?d3NRMU1hd2VVUkF3b3VPK21NTnppWG53ZDUreXFnZGlqWTVRd0hWWWZWU3or?=
- =?utf-8?B?c3duSDEwaGppL2ZBR08rM2lFbnZZeWJtaHIwU0NQOU5KZWk4S0tBVCtIaE5s?=
- =?utf-8?B?VmQvYkU0Szk1Z3MwS3dCYXpKMTJYTkNDYm9INk5CYlVUMXhiMVJlcXloSy9T?=
- =?utf-8?B?RXJzcGJydnJSNHVkblFUV29NbE90VERMMFoyMHVOY1lGUGxTTTVObC9ZUS9G?=
- =?utf-8?B?clgzU3FTOVpDcHd2M2Q3SFA2RnRDSUJBVTBsbkdUa01DQ3BvQWowQ2c4aUFU?=
- =?utf-8?B?enorUU1YWk5UakRlL2g0andyNEhuWmJhNjh4VFEzRkk5aWFpd3BacmM0Z2NM?=
- =?utf-8?B?bld5M1pRZjdrZ3RUZDVIZG9tZ1Y4NjNBa2RsQ2h1WXZOcnoxalhab05mR25a?=
- =?utf-8?B?SDdaWjNaMm1KTVhIWGRGSjhEM1hDb2JKbjNHTDBkRVpQN0xVL0RzMzRqSUhp?=
- =?utf-8?B?YUIzWTdYblBOSDMvdWMrMzVwYXE2alM5d2lrbGx2bGFnTXRTUXZsMXN0M1pt?=
- =?utf-8?B?d1Z1WE8wRENtYzAwdGZLL0F0ZFN4Y2hHbElGb0VCVDBYS1VUbzM2ZFBHR0k4?=
- =?utf-8?B?bjZSNGN4SFZqRVdGeThSS3Z0aHlEYjQ2WTFpTFlXSk96UW40Y1NiakQvZlYr?=
- =?utf-8?B?U1Fva0crZ3V6eHd2MzZrQU44T2NKZ0plUWIrSktRYW16SWxJKy83aE9NUGRj?=
- =?utf-8?B?YmFXTEQ1cFhQMnlYbWYyaHppRzFSU3Y5RU41MnQyeUJ2V0owaUJlTlFncmRk?=
- =?utf-8?Q?c44te9QAjbmb95t0=3D?=
-X-OriginatorOrg: gaisler.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 71e3a7ad-0117-4e59-9886-08decacc3ad6
-X-MS-Exchange-CrossTenant-AuthSource: GVYP280MB1290.SWEP280.PROD.OUTLOOK.COM
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 15 Jun 2026 10:52:44.4200
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 91fa4a59-2167-458a-8318-e45d80469d7e
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: GXWf5JRMy2vo4wnz60pDKOMAwnCVhH2Jr7BYCTt0/SKfH8g90gFvRFp6uo6IjZLuoCBUcwXrlStAi199DDdiTHkSkx59cPBGXYzcnG6obW8=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: GVZP280MB1738
+Content-Type: text/plain
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-GUID: 8u22F-5ZuVfIGMU1LG1gjHNN8Q2486UM
+X-Authority-Analysis: v=2.4 cv=XdK5Co55 c=1 sm=1 tr=0 ts=6a30013e cx=c_pps
+ a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
+ a=FelO9ux0wxsA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
+ a=Y2IxJ9c9Rs8Kov3niI8_:22 a=VnNF1IyMAAAA:8 a=XpNYvxSjXNYYdcPCh5QA:9
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjE1MDE0MCBTYWx0ZWRfXyww3q4H4sX7z
+ GEBlp/6aVGTE/1F8LTaGr5Bt/Nzk/wF4Zw6NkUJ1cVRSuqnK5Fnz70O2JYj76ILvdvKv2I3HHQ1
+ CvWqP8gwiilp9baN+smOcXycHncoj1DR83F2zfXfTSqtQubPHxZsEUTXEHCzPylZOuvv5g9+iCM
+ C43DmrqP4CxIkLN/rgbi0MMzHfLoRnTXP5ZdnXCbrEV2MMdeEuYTrJPhhoTcuVF8N28qaUeLzBb
+ 8EbVcuY4jMk/bAKWAOxOdJN9HD5l0J6lDDNfbxxCE6P3Nl0skSvPTGGfvFR1zzbYtsOocCJn+3G
+ CfVV9Hvplk2qqyARSRzEkdpCg4FHf1z8404WwEYrUMI704F7HlPraJgpFcZ+QeHxeUQYG+5Sj9E
+ Q8P3ZXBLpnMsXM+MFZ1nm9hHE91DWnJ831SV3tbIORwnA+hDDIyeBRXE81KJ7Z1Dpe8ZWFJ/zTc
+ Gc7cIlql4qn/fJydaug==
+X-Proofpoint-ORIG-GUID: o_eAyPbjzhEC7E28p1u7-6JtD0ON0pqo
+X-Proofpoint-Spam-Info: AW1haW4tMjYwNjE1MDE0MCBTYWx0ZWRfX8rk26948JXO3
+ eBMop23yX6JIdm+z0iGbBu4OqEC3/9oPhP18vM5yBuUT+VbDPSjYxJQu7gAkyXS/OsWxKAIREFZ
+ 56LbjGxp3NeXToiScy5wSwCr6MKQNoE=
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
+ definitions=2026-06-15_03,2026-06-15_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ suspectscore=0 lowpriorityscore=0 clxscore=1015 bulkscore=0 malwarescore=0
+ spamscore=0 phishscore=0 priorityscore=1501 impostorscore=0 adultscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2606040000 definitions=main-2606150140
 
-On 2026-06-08 16:29, Catalin Iacob wrote:
-> Commit 1cea5180f2f8 ("block: remove pktcdvd driver") left behind some
-> CONFIG_CONFIG_CDROM_PKTCDVD* references in defconfigs. Remove them.
-> 
-> Signed-off-by: Catalin Iacob <iacobcatalin@gmail.com>
-> ---
->  arch/sparc/configs/sparc64_defconfig | 2 --
->  1 file changed, 2 deletions(-)
-> 
-> diff --git a/arch/sparc/configs/sparc64_defconfig b/arch/sparc/configs/sparc64_defconfig
-> index 632081a262ba..4abea39281cd 100644
-> --- a/arch/sparc/configs/sparc64_defconfig
-> +++ b/arch/sparc/configs/sparc64_defconfig
-> @@ -60,8 +60,6 @@ CONFIG_CONNECTOR=m
->  CONFIG_BLK_DEV_LOOP=m
->  CONFIG_BLK_DEV_CRYPTOLOOP=m
->  CONFIG_BLK_DEV_NBD=m
-> -CONFIG_CDROM_PKTCDVD=m
-> -CONFIG_CDROM_PKTCDVD_WCACHE=y
->  CONFIG_ATA_OVER_ETH=m
->  CONFIG_SUNVDC=m
->  CONFIG_ATA=y
-> 
+Tyrel Datwyler <tyreld@linux.ibm.com> writes:
 
-Reviewed-by: Andreas Larsson <andreas@gaisler.com>
+> On 6/8/26 11:30 AM, Dave Marquardt via B4 Relay wrote:
+>> From: Dave Marquardt <davemarq@linux.ibm.com>
+>> 
+>> Add support for fabric login in order to support the asynchronous
+>> event queue with its own interrupt as required by NPIV specification
+>> to support the asynchronous sub-queue and interrupt in order to
+>> support full and extended FPIN messages.
+>> ---
+>>  drivers/scsi/ibmvscsi/ibmvfc.c | 94 ++++++++++++++++++++++++++++++++++++++++--
+>>  drivers/scsi/ibmvscsi/ibmvfc.h | 16 +++++++
+>>  2 files changed, 106 insertions(+), 4 deletions(-)
+>> 
+>> diff --git a/drivers/scsi/ibmvscsi/ibmvfc.c b/drivers/scsi/ibmvscsi/ibmvfc.c
+>> index 88386d7c9106..a18861808325 100644
+>> --- a/drivers/scsi/ibmvscsi/ibmvfc.c
+>> +++ b/drivers/scsi/ibmvscsi/ibmvfc.c
+>> @@ -5244,6 +5244,86 @@ static void ibmvfc_discover_targets(struct ibmvfc_host *vhost)
+>>  		ibmvfc_link_down(vhost, IBMVFC_LINK_DEAD);
+>>  }
+>>  
+>> +static void ibmvfc_fabric_login_done(struct ibmvfc_event *evt)
+>> +{
+>> +	struct ibmvfc_fabric_login *rsp = &evt->xfer_iu->fabric_login;
+>> +	u32 mad_status = be16_to_cpu(rsp->common.status);
+>> +	struct ibmvfc_host *vhost = evt->vhost;
+>> +	int level = IBMVFC_DEFAULT_LOG_LEVEL;
+>> +
+>> +	ENTER;
+>> +
+>> +	switch (mad_status) {
+>> +	case IBMVFC_MAD_SUCCESS:
+>> +		fc_host_port_id(vhost->host) = be64_to_cpu(rsp->nport_id);
+>> +		ibmvfc_free_event(evt);
+>> +		break;
+>> +
+>> +	case IBMVFC_MAD_FAILED:
+>> +		if (ibmvfc_retry_cmd(be16_to_cpu(rsp->status), be16_to_cpu(rsp->error)))
+>> +			level += ibmvfc_retry_host_init(vhost);
+>> +		else
+>> +			ibmvfc_link_down(vhost, IBMVFC_LINK_DEAD);
+>> +		ibmvfc_log(vhost, level, "Fabric Login failed: %s (%x:%x)\n",
+>> +			   ibmvfc_get_cmd_error(be16_to_cpu(rsp->status), be16_to_cpu(rsp->error)),
+>> +						be16_to_cpu(rsp->status), be16_to_cpu(rsp->error));
+>> +		ibmvfc_free_event(evt);
+>> +		LEAVE;
+>> +		return;
+>> +
+>> +	case IBMVFC_MAD_CRQ_ERROR:
+>> +		ibmvfc_retry_host_init(vhost);
+>> +		fallthrough;
+>> +
+>> +	case IBMVFC_MAD_DRIVER_FAILED:
+>> +		ibmvfc_free_event(evt);
+>> +		LEAVE;
+>> +		return;
+>> +
+>> +	default:
+>> +		dev_err(vhost->dev, "Invalid fabric Login response: 0x%x\n", mad_status);
+>> +		ibmvfc_link_down(vhost, IBMVFC_LINK_DEAD);
+>> +		ibmvfc_free_event(evt);
+>> +		LEAVE;
+>> +		return;
+>> +	}
+>> +
+>> +	ibmvfc_set_host_action(vhost, IBMVFC_HOST_ACTION_QUERY);
+>> +	wake_up(&vhost->work_wait_q);
+>> +
+>> +	LEAVE;
+>> +}
+>> +
+>> +static void ibmvfc_fabric_login(struct ibmvfc_host *vhost)
+>> +{
+>> +	struct ibmvfc_fabric_login *mad;
+>> +	struct ibmvfc_event *evt = ibmvfc_get_reserved_event(&vhost->crq);
+>> +	int level = IBMVFC_DEFAULT_LOG_LEVEL;
+>> +
+>> +	if (!evt) {
+>> +		ibmvfc_log(vhost, level, "Fabric Login failed: no available events\n");
+>> +		ibmvfc_hard_reset_host(vhost);
+>> +		return;
+>> +	}
+>> +
+>> +	ibmvfc_init_event(evt, ibmvfc_fabric_login_done, IBMVFC_MAD_FORMAT);
+>> +	mad = &evt->iu.fabric_login;
+>> +	memset(mad, 0, sizeof(*mad));
+>> +	if (vhost->scsi_scrqs.protocol == IBMVFC_PROTO_SCSI)
+>> +		mad->common.opcode = cpu_to_be32(IBMVFC_FABRIC_LOGIN);
+>> +	else {
+>> +		ibmvfc_log(vhost, level, "Fabric Login failed: unknown protocol\n");
+>> +		return;
+>> +	}
+>
+> This check is pretty pedantic. Seeing as you are directly referencing the scsi
+> sub-crqs. The protocol field exists so we can pass the sub-crqs blindly and the
+> code once NVMf comes along can determine the protocol.
+>
+> Also, if somehow this was ever possibly the case you would leak the event
+> structure. I think we can drop the check all together.
 
-Picking this one up to my for-next.
+Okay, I'll drop this.
 
-Thanks,
-Andreas
-
+-Dave
 
