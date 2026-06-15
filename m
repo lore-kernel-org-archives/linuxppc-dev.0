@@ -1,92 +1,53 @@
-Return-Path: <linuxppc-dev+bounces-22649-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22650-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C8DE5CD98E1
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Jun 2026 15:38:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F1131CD98E1
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Jun 2026 16:10:16 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gfDmP106vz3bxH;
-	Tue, 16 Jun 2026 01:38:29 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::1135" arc.chain=google.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781537909;
-	cv=pass; b=cgvRNM7ABNLssDvtD9RLWE5LJoYTDApy0wS9hJGWbWcVGhJPjo85CaCi4/mWZMSe1CCxuLPkbRUxs62TJfw6tO7ZPXc5xV1wbNTQmqnXgtRF7hxJGA5FPYaNb0uxXvoc6L/8OITX1KxUmO3sNFfJJtd3Lg6eNtAV46J8S1qBarB3ujhLS58E+OXbko8aXNSn0XPLuf2NZ6AJOaxYlYBBgt/63j/mTQTLNR5LIrzM2MCO3q5jqHoCyayVZOnag+kWWWQNxxYe5JA6s+QaHFZEiL6YM48ptuS6LpkRkslOkM6nLVM8RovtcfSKHEqLPpbsHRjeSrga7DnWbZtfTtaMfQ==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1781537909; c=relaxed/relaxed;
-	bh=84xYQktEtoYUQcIRE7ERmXH/KggFpDsCx2KmUXy7yzE=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=GIjUPsa2Z2VGx9aZ35hxarMQ351Ke3ZSq2mBem9B5/Sx2wGJOEhvdmKPGK0gWyk+RuJJSkeqNOgSjFMiPiH5AktcH046pn8mZhS7Y1nsIYK5B21ToO9NBC/ahwe82sNIbpng8Ohfc2+DZgXcPSTfOVrWcNs3I9PTzRdeMH6jhmx098y2ARCcI8L8mpnsOVs5zC2Y0UGSeiESbqmSCwQNSOvMkPhUAPyKyZswzP/qo1d147tFOf3YhWaP7AlwXO0rC+PyaLci9R+8lcPRuiS9IbseF8SC8x99kRLOAOpozU3UAz5UFif4mo6m4+q8PyidhbEC/a1OjHkNa7+0QkI3qA==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=Hh2NE56F; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1135; helo=mail-yw1-x1135.google.com; envelope-from=randrianasulu@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gfFT34GRlz3bxJ;
+	Tue, 16 Jun 2026 02:10:15 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781539815;
+	cv=none; b=hZwyYT7z+t2m9E0hvukl/wBZ26BZy6b5eVmk6z6jvniZurmnX8+uPhWquCajGSQ1EclhRILmEHB69rr6fdoxqTBhNkaBPm+6q+JFXgFH1wba0cayHo46itE7tNDVdNrxa5yzzz5spC8nnhCTWVsbTwEEOrCEpyGI8CQjYFwLadK8vusl9KbRgBvtYh/+znkMiBY67Ur6E4Cr93V18x9Q7G0irtDvVUGlk7XH97i3SDwE4qwa7HU1Hp0NS6q30QA8503/03FfNkeQMVq32LNsb8TNUCnqKIgBuHXyyLcPfW/1tJoOk2spys5f5QCmMDorUqcvkKwsiaFLWFZW9lkqhA==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1781539815; c=relaxed/relaxed;
+	bh=WrhOiAXY4BpdFNkpuEH5kqbHucFA9LBquobYeTzjtI4=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=KTmK/KZCcKc6BdVVEr2ivFsa+Y/NbxJGeesZ4C2zQ2YDWzvTkUCI7gdJfwBm4MT4IEobrUI5WD6U51Cdp6faax27lgZVR8w5BAJfb+lHHUaXhJMv7uhExVM8H2qWkVz+sqHPL6qfIGemJqJpS659BuOSEXjViQa9d8Xv2vfOmm2doipnPYUUV8AK85V4n94HRXss0sO+ydl9IQRsQCgrdrs6Sp5DVXH7SDn8lUzvwZNMyatZ39ynSOf8TePuic2q2zcep5PSqCAc0lFtAVVxZRCeWj14puHspJ5Yf1Mq1u7I8mf6v6A9vhQpGFm8xXX3wgm3g4AnCLChC3lMepZdBg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=J2bt7UtU; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=mailhol@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=Hh2NE56F;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=J2bt7UtU;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1135; helo=mail-yw1-x1135.google.com; envelope-from=randrianasulu@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-yw1-x1135.google.com (mail-yw1-x1135.google.com [IPv6:2607:f8b0:4864:20::1135])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=mailhol@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gfDmM3JGjz3bxC
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jun 2026 01:38:26 +1000 (AEST)
-Received: by mail-yw1-x1135.google.com with SMTP id 00721157ae682-7e8833c99fcso37595547b3.3
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jun 2026 08:38:26 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1781537904; cv=none;
-        d=google.com; s=arc-20240605;
-        b=eZ8sVRodsj/RcULInazN3y7Ye5YTK9buYt0KdrWf7ufqljDMEqT/ljkubMFPEuKZQP
-         HaGSuEoDb20SvnNVwjacAsQESCzBn+kClBYIISFp5mwqAxCzXcTvmnVrlciTpekLBqfo
-         DLub9gmPhftJGFAkoequuF8Bhrmj9P70a6EHw0FQ9f0akQqmKpEiFUpvS0cdDrz+pk32
-         zEdIlkdDnddOIVsT93IdlLVgl9uKVV+U4/ZLZZjAITgIHfiSwT8xRUVNMGzud+/z9BBd
-         wh10CrukEEYeUQLTV7bqU6a/MvkzD/jhcQJWmO5XPS/RqylKzI3C7MYV9MyFI0FtJJMi
-         jVMA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:dkim-signature;
-        bh=84xYQktEtoYUQcIRE7ERmXH/KggFpDsCx2KmUXy7yzE=;
-        fh=hLzpPbFe7FBh2DhP4pNX/m0Ecw4+jwYqhdpcsK0HAJ0=;
-        b=UG/Pr6RKXhpjZ551NvdYeB7FRGfQTGeViQ1XcbPOUgTGc3uBPdqXTCruMnETwXoawv
-         nm5iSmcume5etH1dz5GsIpjm5IabYk3n5PYSWOCPqShm0NVSdCc7pKNb0P7+FxRkzyMc
-         v3O3iiJUBKLM48TLrapX/+FGt8drAoVPxhcsHdbB7aR53wceV9jChaT6azHKIjM6y4DR
-         RIiCfHb2RPuh7X+YrtBGC17/OsD2NCxA166l52DKNcgwccxY9jz5rrtTMUqkcq6uFLru
-         J82B8djHSABX8Mpvzjrg0K/1MvNx9untgNoAdaVAb64o3t6ImG3eAc76LxwmIp/XDbkC
-         L2qg==;
-        darn=lists.ozlabs.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1781537904; x=1782142704; darn=lists.ozlabs.org;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=84xYQktEtoYUQcIRE7ERmXH/KggFpDsCx2KmUXy7yzE=;
-        b=Hh2NE56FdVO+KQsZ7TSFSeVPCiYNS96EdCcrtVcjRNnDb6/eRLyxFYH6IEbCtEW/h8
-         VhjiC8xvGDiMa5K3CYBbbQe9CWUG98lI0wN55L0TAgTUucrUTlPiYI37bwq6FJGhI+AJ
-         kL+E+GDmjO7kwSMTFus8u3eMJUCr1TOwTUyx+YmhoREn+LoFhk4S5kq5970+DlnDAQKZ
-         adu6+W1rv2nGyd8zN2DorTNDa7pE6PTQmhpt7GzN/zR4Rjpuo9F9e4vKEIkGh7w47T30
-         SpHI7AuNiht7fAvf33cc600ktWIvnpPf4kmCE/M6BolRKjzv9r7EgbPyRpfE1jnxdALW
-         65Rg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1781537904; x=1782142704;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=84xYQktEtoYUQcIRE7ERmXH/KggFpDsCx2KmUXy7yzE=;
-        b=WdGh6pPLagqGxr1DHlXQNskR1WNzo5l+e52J30hESGrfoFTEW0XHBPYjquHDp/emmL
-         dNPfYQ9tb0O6I70gM2ASYFZH8izpSGBeVQJ3YiO/5l/M4MZseYRM0LmMlABkTM2NXAwU
-         6A/Gunw6MF7ycO5W10zEEWGJqUY5V8RBJjfrlLkVGV1fnYSruxeorCJHNCPRMDTJ1blE
-         ZOIIHwDG6GmFq+WzgUatz3RDQicpFIQeKYJ7sWcCaA6nWcYMoTAt4yQNBeiKxpbKBS16
-         gw5Lt1COTkjDxG5w1lMviPd7nWba+z+3oOZFRZG0FTZuL+jCoZl0S3buA0Ee8hKN6Y2L
-         6+1w==
-X-Forwarded-Encrypted: i=1; AFNElJ+yft73jla1r+Ay0VXnfzsDRx9XlA1sujLDsCD4ZVACKuu+lKPQbnepznodsJ2LroTuq0CMFYbwsnRUpPc=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yz85g4V2LEb5ROMLCS99l7KTIuGirCLkv8KwEHlvuwPQmgewIGc
-	iybHCwvwrbxpICIJaPid3hb/hBOWVxL9ZSjW7w62IoKSqK0cu8XLAQZ/3zVuD5G+pYloaPLnSHp
-	5hSdvbYeBrf1FMT9FUI/jifpVc1csC/Y=
-X-Gm-Gg: Acq92OGZkTZ4TARV8Z+k6ip6swuEAMC20L4VIe+jiVQJPAZJNL9mQ8z70QceVcXMo7L
-	DeCM6ulrX6dBDCHDDV5Uciw9g5OsGspwjqA37yzyT0Bah35s8FzSEvZp+xResGPxTC7Op2MUKmq
-	c4oEh07qC4kc+vEDAQummKK1QpvMaKbCNh+e52G7h6hxLiY+ZQ04+csCfnSMvaV8aafeszIIXGI
-	Y0p4U2uhv+QYN7w+32RO4Ge9xKtAMQd9uTc384Su+2pxrX55nKsHNGaHFm1tSuzNqs5sNYgSHtv
-	GbtGdawlVA==
-X-Received: by 2002:a05:690c:6304:b0:7cf:f14e:bf5a with SMTP id
- 00721157ae682-7f7bbd0f69bmr148788727b3.20.1781537903876; Mon, 15 Jun 2026
- 08:38:23 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gfFT16l83z3bxH
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jun 2026 02:10:13 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id 76F53600AB;
+	Mon, 15 Jun 2026 16:10:10 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 659B51F000E9;
+	Mon, 15 Jun 2026 16:09:58 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1781539810;
+	bh=WrhOiAXY4BpdFNkpuEH5kqbHucFA9LBquobYeTzjtI4=;
+	h=From:Subject:Date:To:Cc;
+	b=J2bt7UtU/OYY8PxVyIm3d95v5G+IcTrjBW3L2jU7dt2De3kFnXcxRBS+wcjkcf6fN
+	 XltNpsJON5Ei+eQjAfRadOoGZ6Zr5MKKrnWqjtat85KDYFuJIzaAhhV9joTPZvvnm/
+	 Upf4GSVXporZ+/9u524Qsag7+a/uWIBE8WrhynM4IvaF/bx9BOfhayePviKAuHtMdm
+	 yF/mMlzcia/W4uNmZrGta+pMv2x8g5cbMGvX0YqVwoVCDJpU+Ht9xei0zv8nicGVwV
+	 SRcRt86DYJ9ycUYURQM1lx9ByNJFh+o5TVH1JyohwC9u2Q2ptXr+Wwo4pEiWgn9BWI
+	 W8aRU0vDmzPwg==
+From: Vincent Mailhol <mailhol@kernel.org>
+Subject: [PATCH 00/19] init: discoverable root partitions, a.k.a. an
+ omittable "root=" cmdline option
+Date: Mon, 15 Jun 2026 18:08:56 +0200
+Message-Id: <20260615-discoverable-root_partitions-v1-0-39c78fac42e2@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -100,314 +61,182 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <CA+rFky7UDpHYFXvEiq91dpnfLuKCiaONctmW-q2jONmNG25Wow@mail.gmail.com>
- <418f045e-7aaf-c48b-4f08-018625b2c3e6@eik.bme.hu> <CA+rFky73KGYwJRBuEBqFA1dKkDk0_W+u4VQL9bg2n1_AkeOU3g@mail.gmail.com>
- <fb610033-efd3-6fa6-bd80-c5dccc9296eb@eik.bme.hu> <CA+rFky4nea6VPhYuVhH2SwSAgP0QC5LMrHqfWAwKNMNHpQ7aYg@mail.gmail.com>
- <8f2fb26e-f406-261a-f9b7-8a1a032bf4df@eik.bme.hu>
-In-Reply-To: <8f2fb26e-f406-261a-f9b7-8a1a032bf4df@eik.bme.hu>
-From: Andrew Randrianasulu <randrianasulu@gmail.com>
-Date: Mon, 15 Jun 2026 18:38:10 +0300
-X-Gm-Features: AVVi8CevycKENjsJOOf4UylDIwlfOJ0FbmH2yujVYP4740sZ2XQBpg_droamLio
-Message-ID: <CA+rFky7mpZx+3h8HFBeQAfj6=xLcTdKMdSe=tzjfv1EYQQqHTg@mail.gmail.com>
-Subject: Re: Does kvm_pr work on G5 mac with host kernel 6.12.xx ?
-To: BALATON Zoltan <balaton@eik.bme.hu>
-Cc: qemu-ppc@nongnu.org, linuxppc-dev@lists.ozlabs.org
-Content-Type: multipart/alternative; boundary="000000000000ea1efb06544c9da1"
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+X-B4-Tracking: v=1; b=H4sIAAAAAAAC/x3MQQqEMAxA0atI1hZaQQWvMgySNlEDYiUpMiDef
+ YrLt/j/BmMVNpiaG5QvMclHRWgbSBseKzuhauh8N/ghBEdiKV+sGHd2mnOZT9QipXbmImGKSNi
+ PnqAuTuVFfu/+832eP+2uWG1uAAAA
+X-Change-ID: 20260611-discoverable-root_partitions-bdacbada570d
+To: Jens Axboe <axboe@kernel.dk>, Davidlohr Bueso <dave@stgolabs.net>, 
+ Alexander Viro <viro@zeniv.linux.org.uk>, 
+ Christian Brauner <brauner@kernel.org>, Jan Kara <jack@suse.cz>
+Cc: linux-kernel@vger.kernel.org, linux-block@vger.kernel.org, 
+ linux-efi@vger.kernel.org, linux-fsdevel@vger.kernel.org, 
+ Vincent Mailhol <mailhol@kernel.org>, 
+ Richard Henderson <richard.henderson@linaro.org>, 
+ Matt Turner <mattst88@gmail.com>, Magnus Lindholm <linmag7@gmail.com>, 
+ linux-alpha@vger.kernel.org, Vineet Gupta <vgupta@kernel.org>, 
+ linux-snps-arc@lists.infradead.org, Russell King <linux@armlinux.org.uk>, 
+ linux-arm-kernel@lists.infradead.org, 
+ Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>, 
+ Huacai Chen <chenhuacai@kernel.org>, WANG Xuerui <kernel@xen0n.name>, 
+ loongarch@lists.linux.dev, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, 
+ linux-mips@vger.kernel.org, 
+ "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>, 
+ Helge Deller <deller@gmx.de>, linux-parisc@vger.kernel.org, 
+ Madhavan Srinivasan <maddy@linux.ibm.com>, 
+ Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org, 
+ Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, 
+ Albert Ou <aou@eecs.berkeley.edu>, linux-riscv@lists.infradead.org, 
+ Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>, 
+ Alexander Gordeev <agordeev@linux.ibm.com>, linux-s390@vger.kernel.org, 
+ Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>, 
+ Borislav Petkov <bp@alien8.de>, Dave Hansen <dave.hansen@linux.intel.com>, 
+ x86@kernel.org, Jonathan Corbet <corbet@lwn.net>, 
+ Shuah Khan <skhan@linuxfoundation.org>, linux-doc@vger.kernel.org
+X-Mailer: b4 0.14.3
+X-Developer-Signature: v=1; a=openpgp-sha256; l=6653; i=mailhol@kernel.org;
+ h=from:subject:message-id; bh=RjmwbjJUekMN4XQbpwM2sAMQ8Q4VGqazX1lTIqnbeDs=;
+ b=owGbwMvMwCV2McXO4Xp97WbG02pJDFkGyhcU3klMvHNzftiCl6lmH3kWl02+abz8VKXHlaTy/
+ w4vP39V7pjIwiDGxWAppsiyrJyTW6Gj0Dvs0F9LmDmsTCBDpEUaGICAhYEvNzGv1EjHSM9U21DP
+ EMjQMWLg4hSAqfbXZfgr2rolQuyW6w6JgNKDJ4tvO69i+ZPHkj6Tv9JAckFms/tLRoYma5u3R6a
+ 1csurnulLb7M78HnNmlIVnlf38k/kSby8dJsZAA==
+X-Developer-Key: i=mailhol@kernel.org; a=openpgp;
+ fpr=ED8F700574E67F20E574E8E2AB5FEB886DBB99C2
 
---000000000000ea1efb06544c9da1
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+DPS [1] defines GPT partition type UUIDs for OS partitions and
+attributes that control whether such partitions should be
+automatically discovered. The specification states that:
 
-=D0=BF=D0=BD, 15 =D0=B8=D1=8E=D0=BD. 2026 =D0=B3., 16:33 BALATON Zoltan <ba=
-laton@eik.bme.hu>:
+  The OS can discover and mount the necessary file systems with a
+  non-existent or incomplete /etc/fstab file and without the root=
+  kernel command line option.
 
-> On Mon, 15 Jun 2026, Andrew Randrianasulu wrote:
-> > I also tried to see "info registers" as you showed in another email fro=
-m
-> > 2021 where you tried to use kvm-pr on qemu-emulated G5 and it showed
-> >
-> > info registers
-> >                NIP 0000000000000700   LR 0000000000000000 CTR
-> > 0000000000000000 XER 0000000000000000 CPU#0
-> > MSR 8000000000000000 HID0 0000000060000000  HF 8000000000000000 iidx 3
-> didx
-> > 3                      TB 00000000 00000000 DECR 0
-> >                                              GPR00 0000000000000000
-> > 0000000000000000 0000000000000000 0000000000000000
-> > GPR04 0000000000000000 0000000000000000 0000000000000000 00000000000000=
-00
-> >                        GPR08 0000000000000000 0000000000000000
-> > 0000000000000000 0000000000000000                          GPR12
-> > 0000000000000000 0000000000000000 0000000000000000 0000000000000000
-> > GPR16 0000000000000000 0000000000000000 0000000000000000 00000000000000=
-00
-> >                        GPR20 0000000000000000 0000000000000000
-> > 0000000000000000 0000000000000000                          GPR24
-> > 0000000000000000 0000000000000000 0000000000000000 0000000000000000
-> >                  GPR28 0000000000000000 0000000000000000 00000000000000=
-00
-> > 0000000000000000
-> > CR 00000000  [ -  -  -  -  -  -  -  -  ]             RES ffffffffffffff=
-ff
-> >                        FPR00 0000000000000000 0000000000000000
-> > 0000000000000000 0000000000000000                          FPR04
-> > 0000000000000000 0000000000000000 0000000000000000 0000000000000000
-> >                  FPR08 0000000000000000 0000000000000000 00000000000000=
-00
-> > 0000000000000000
-> > FPR12 0000000000000000 0000000000000000 0000000000000000 00000000000000=
-00
-> >                        FPR16 0000000000000000 0000000000000000
-> > 0000000000000000 0000000000000000                          FPR20
-> > 0000000000000000 0000000000000000 0000000000000000 0000000000000000
-> >                  FPR24 0000000000000000 0000000000000000 00000000000000=
-00
-> > 0000000000000000                          FPR28 0000000000000000
-> > 0000000000000000 0000000000000000 0000000000000000
-> > FPSCR 0000000000000000
-> >                        SRR0 0000000000000100  SRR1 8000000000080000
-> PVR
-> > 00000000003c0301 VRSAVE 0000000000000000      SPRG0 0000000000000000
-> SPRG1
-> > 0000000000000000  SPRG2 0000000000000000  SPRG3 0000000000000000
-> SPRG4
-> > 0000000000000000 SPRG5 0000000000000000  SPRG6 0000000000000000  SPRG7
-> > 0000000000000000
-> > SDR1 0000000000000000   DAR 0000000000000000  DSISR 0000000000000000
-> >
-> > (qemu) q
-> >
-> > not sure if instruction pointer moved or not ...
-> >
-> > looking at some scroll buffer in Termux (I ssh into powermac ) it was a=
-t
-> > 700 all 3 times I typed "info registers" into qemu monitor.
-> >
-> > but this debug msg
-> >
-> > [154992.595845] Couldn't emulate instruction 0x00000000 (op 0 xop 0)
-> > [154992.595859] kvmppc_exit_pr_progint: emulation at 100 failed
-> (00000000)
-> >
-> >
-> > fills logs FAST!
->
-> NIP=3D0x700 is illegal instruction exception due to trying to execute 0
-> opcode at 0x100 which is the reset vector but shouldn't it try to start a=
-t
-> 0xfff00100? Maybe there's some issue with setting up KVM correctly? You
-> can trace what is executed in TCG with -d in_asm but that does not work
-> for KVM as it's a TCG debug option. I don't know how to trace execution
-> with KVM but probably there are some trace points for that. Maybe you get
-> some info with -trace enable=3D"kvm*" but I don't know how to understand
-> that output.
->
+DPS is already implemented in systemd-gpt-auto-generator [2], which,
+when embedded in an initrd, indeed allows automatic detection of the
+root filesystem through its partition type UUID.
 
--trace *kvm* (on qemu 6.1.1) ends with
+This series adds this discovery feature directly into the kernel so
+that people who are not using systemd or not using an initrd can still
+benefit from it. The implementation follows the same model as
+systemd-gpt-auto-generator:
 
-kvm_vcpu_ioctl cpu_index 0, type 0x8010aeac, arg 0xe81a8080
+  - GPT partition type UUIDs are used for automatic discovery policy
+    only. No root=PARTTYPEUUID=xxx cmdline option or similar syntax is
+    added.
 
-kvm_vcpu_ioctl cpu_index 0, type 0x8010aeac, arg 0xe81a8080
+  - The root= cmdline option takes precedence. This prevents unexpected
+    behaviour.
 
-kvm_vcpu_ioctl cpu_index 0, type 0x8010aeac, arg 0xe81a8080
+  - Only the disk with the active EFI System Partition is scanned, as
+    required by DPS. The disk is identified through the Boot Loader
+    Interface LoaderDevicePartUUID EFI variable.
 
-kvm_vcpu_ioctl cpu_index 0, type 0x8010aeac, arg 0xe81a8080
-kvm_vcpu_ioctl cpu_index 0, type 0x84d0ae84, arg 0xe81a7b78
+The DPS no-auto attribute is also implemented, giving another option for
+the user to disable this auto discovery. However, the DPS read-only
+attribute is intentionally not enforced. The kernel already mounts the
+root filesystem read-only by default unless the command line requests
+rw, and user space remains responsible for deciding whether a discovered
+root should later be remounted read-write based on DPS metadata and
+local policy. The other partition type UUIDs (home, swap, var...) are
+also out of scope for the same reason: user space remains responsible
+for mounting anything other than the root partition.
 
-kvm_vcpu_ioctl cpu_index 0, type 0x8010aeac, arg 0xe81a8018
+Patch 1 adds the ARCH_HAS_DPS_ROOT_PARTITION_TYPE_UUID capability and
+the hidden CONFIG_DPS_ROOT_AUTO_DISCOVERY Kconfig symbol used to signal
+whether the feature is available. Patches 2 to 12 declare the
+ARCH_HAS_DPS_ROOT_PARTITION_TYPE_UUID capability for the supported
+architectures and define their architecture-specific root partition type
+UUID values in asm/dps_root.h.
 
-kvm_vcpu_ioctl cpu_index 0, type 0x8010aeac, arg 0xe81a8018
-kvm_vcpu_ioctl cpu_index 0, type 0x8010aeac, arg 0xe81a8018
+Patches 13 to 16 make the GPT partition type UUID and the no-auto
+attribute available during early block lookup.
 
-kvm_vcpu_ioctl cpu_index 0, type 0x8010aeac, arg 0xe81a8018
-kvm_failed_spr_set Warning: Unable to set SPR 1013 to KVM: Invalid
-argument
-kvm_vcpu_ioctl cpu_index 0, type 0x2000ae80, arg (nil)
+Patch 17 is a small code refactor that prepares for patch 18, which
+updates the root mount path so that, when root= is omitted, the kernel
+reads LoaderDevicePartUUID and uses the early block lookup
+infrastructure to discover the DPS root partition on that disk.
 
-kvm_vcpu_ioctl cpu_index 0, type 0x2000ae80, arg (nil)
+Finally, patch 19 documents this automatic root discovery feature.
 
-My hack idea  about adding || defined CONFIG_PPC_BOOK3S_64 to two statement
-in
+Tested with GRUB, which implements the LoaderDevicePartUUID EFI variable
+in its bli module [3]. With this, I was able to boot a kernel with a
+completely empty cmdline and no initrd.
 
-arch/powerpc/kvm/emulate.c
+[1] The Discoverable Partitions Specification (DPS)
+Link: https://uapi-group.org/specifications/specs/discoverable_partitions_specification/
 
-also did not improve situation :(
+[2] systemd-gpt-auto-generator
+Link: https://www.freedesktop.org/software/systemd/man/latest/systemd-gpt-auto-generator.html
 
-but at least I know I am running with patched kvm_pr module because I
-commented this kernel printk about "failed to emulate instruction" and this
-line disappeared from dmesg.
+[3] GRUB -- §16.2 bli
+Link: https://www.gnu.org/software/grub/manual/grub/html_node/bli_005fmodule.html
 
+Signed-off-by: Vincent Mailhol <mailhol@kernel.org>
+---
+Vincent Mailhol (19):
+      init: add DPS root partition type UUID capability
+      alpha: define DPS root partition type UUID
+      arc: define DPS root partition type UUID
+      arm: define DPS root partition type UUID
+      arm64: define DPS root partition type UUID
+      loongarch: define DPS root partition type UUID
+      mips: define DPS root partition type UUIDs
+      parisc: define DPS root partition type UUID
+      powerpc: define DPS root partition type UUIDs
+      riscv: define DPS root partition type UUIDs
+      s390: define DPS root partition type UUIDs
+      x86: define DPS root partition type UUIDs
+      block: store GPT partition type UUID
+      block: add early_lookup_bdev_by_type_uuid()
+      block: store GPT attributes as a raw value
+      block: don't discover partition with DPS no-auto GPT attribute
+      init: factor out root device lookup into lookup_root_device()
+      init: discover root by DPS partition type UUID
+      docs: document discoverable root partitions
 
+ Documentation/admin-guide/discoverable-root.rst | 33 +++++++++
+ Documentation/admin-guide/index.rst             |  1 +
+ Documentation/admin-guide/kernel-parameters.txt |  5 ++
+ arch/alpha/Kconfig                              |  1 +
+ arch/alpha/include/asm/dps_root.h               |  8 +++
+ arch/arc/Kconfig                                |  1 +
+ arch/arc/include/asm/dps_root.h                 |  8 +++
+ arch/arm/Kconfig                                |  1 +
+ arch/arm/include/asm/dps_root.h                 |  8 +++
+ arch/arm64/Kconfig                              |  1 +
+ arch/arm64/include/asm/dps_root.h               |  8 +++
+ arch/loongarch/Kconfig                          |  1 +
+ arch/loongarch/include/asm/dps_root.h           |  8 +++
+ arch/mips/Kconfig                               |  1 +
+ arch/mips/include/asm/dps_root.h                | 20 ++++++
+ arch/parisc/Kconfig                             |  1 +
+ arch/parisc/include/asm/dps_root.h              |  8 +++
+ arch/powerpc/Kconfig                            |  1 +
+ arch/powerpc/include/asm/dps_root.h             | 16 +++++
+ arch/riscv/Kconfig                              |  1 +
+ arch/riscv/include/asm/dps_root.h               | 12 ++++
+ arch/s390/Kconfig                               |  1 +
+ arch/s390/include/asm/dps_root.h                | 12 ++++
+ arch/x86/Kconfig                                |  1 +
+ arch/x86/include/asm/dps_root.h                 | 12 ++++
+ block/blk.h                                     |  1 +
+ block/early-lookup.c                            | 68 +++++++++++++++++-
+ block/partitions/core.c                         |  2 +
+ block/partitions/efi.c                          |  3 +
+ block/partitions/efi.h                          | 11 ++-
+ include/linux/blk_types.h                       |  1 +
+ include/linux/blkdev.h                          |  5 ++
+ include/linux/root_dev.h                        |  6 ++
+ init/Kconfig                                    |  6 ++
+ init/do_mounts.c                                | 94 ++++++++++++++++++++++++-
+ 35 files changed, 355 insertions(+), 12 deletions(-)
+---
+base-commit: 36808d5e983985bbda87e01059cccc071fe3ec8d
+change-id: 20260611-discoverable-root_partitions-bdacbada570d
 
+Best regards,
+-- 
+Vincent Mailhol <mailhol@kernel.org>
 
-> Regards,
-> BALATON Zoltan
->
-
---000000000000ea1efb06544c9da1
-Content-Type: text/html; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-
-<div dir=3D"auto"><div><br><br><div class=3D"gmail_quote"><div dir=3D"ltr" =
-class=3D"gmail_attr">=D0=BF=D0=BD, 15 =D0=B8=D1=8E=D0=BD. 2026 =D0=B3., 16:=
-33 BALATON Zoltan &lt;<a href=3D"mailto:balaton@eik.bme.hu" target=3D"_blan=
-k" rel=3D"noreferrer">balaton@eik.bme.hu</a>&gt;:<br></div><blockquote clas=
-s=3D"gmail_quote" style=3D"margin:0 0 0 .8ex;border-left:1px #ccc solid;pad=
-ding-left:1ex">On Mon, 15 Jun 2026, Andrew Randrianasulu wrote:<br>
-&gt; I also tried to see &quot;info registers&quot; as you showed in anothe=
-r email from<br>
-&gt; 2021 where you tried to use kvm-pr on qemu-emulated G5 and it showed<b=
-r>
-&gt;<br>
-&gt; info registers<br>
-&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 NIP 00000000000=
-00700=C2=A0 =C2=A0LR 0000000000000000 CTR<br>
-&gt; 0000000000000000 XER 0000000000000000 CPU#0<br>
-&gt; MSR 8000000000000000 HID0 0000000060000000=C2=A0 HF 8000000000000000 i=
-idx 3 didx<br>
-&gt; 3=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0=
- =C2=A0 TB 00000000 00000000 DECR 0<br>
-&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0 =C2=A0 =C2=A0 GPR00 0000000000000000<br>
-&gt; 0000000000000000 0000000000000000 0000000000000000<br>
-&gt; GPR04 0000000000000000 0000000000000000 0000000000000000 0000000000000=
-000<br>
-&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
-=C2=A0 =C2=A0 GPR08 0000000000000000 0000000000000000<br>
-&gt; 0000000000000000 0000000000000000=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 GPR12<br>
-&gt; 0000000000000000 0000000000000000 0000000000000000 0000000000000000<br=
->
-&gt; GPR16 0000000000000000 0000000000000000 0000000000000000 0000000000000=
-000<br>
-&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
-=C2=A0 =C2=A0 GPR20 0000000000000000 0000000000000000<br>
-&gt; 0000000000000000 0000000000000000=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 GPR24<br>
-&gt; 0000000000000000 0000000000000000 0000000000000000 0000000000000000<br=
->
-&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 GPR28 00=
-00000000000000 0000000000000000 0000000000000000<br>
-&gt; 0000000000000000<br>
-&gt; CR 00000000=C2=A0 [ -=C2=A0 -=C2=A0 -=C2=A0 -=C2=A0 -=C2=A0 -=C2=A0 -=
-=C2=A0 -=C2=A0 ]=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0RES fffffff=
-fffffffff<br>
-&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
-=C2=A0 =C2=A0 FPR00 0000000000000000 0000000000000000<br>
-&gt; 0000000000000000 0000000000000000=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 FPR04<br>
-&gt; 0000000000000000 0000000000000000 0000000000000000 0000000000000000<br=
->
-&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 FPR08 00=
-00000000000000 0000000000000000 0000000000000000<br>
-&gt; 0000000000000000<br>
-&gt; FPR12 0000000000000000 0000000000000000 0000000000000000 0000000000000=
-000<br>
-&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
-=C2=A0 =C2=A0 FPR16 0000000000000000 0000000000000000<br>
-&gt; 0000000000000000 0000000000000000=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 FPR20<br>
-&gt; 0000000000000000 0000000000000000 0000000000000000 0000000000000000<br=
->
-&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 FPR24 00=
-00000000000000 0000000000000000 0000000000000000<br>
-&gt; 0000000000000000=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 FPR28 0000000000000000<br>
-&gt; 0000000000000000 0000000000000000 0000000000000000<br>
-&gt; FPSCR 0000000000000000<br>
-&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
-=C2=A0 =C2=A0 SRR0 0000000000000100=C2=A0 SRR1 8000000000080000=C2=A0 =C2=
-=A0 PVR<br>
-&gt; 00000000003c0301 VRSAVE 0000000000000000=C2=A0 =C2=A0 =C2=A0 SPRG0 000=
-0000000000000 SPRG1<br>
-&gt; 0000000000000000=C2=A0 SPRG2 0000000000000000=C2=A0 SPRG3 000000000000=
-0000=C2=A0 =C2=A0 =C2=A0 SPRG4<br>
-&gt; 0000000000000000 SPRG5 0000000000000000=C2=A0 SPRG6 0000000000000000=
-=C2=A0 SPRG7<br>
-&gt; 0000000000000000<br>
-&gt; SDR1 0000000000000000=C2=A0 =C2=A0DAR 0000000000000000=C2=A0 DSISR 000=
-0000000000000<br>
-&gt;<br>
-&gt; (qemu) q<br>
-&gt;<br>
-&gt; not sure if instruction pointer moved or not ...<br>
-&gt;<br>
-&gt; looking at some scroll buffer in Termux (I ssh into powermac ) it was =
-at<br>
-&gt; 700 all 3 times I typed &quot;info registers&quot; into qemu monitor.<=
-br>
-&gt;<br>
-&gt; but this debug msg<br>
-&gt;<br>
-&gt; [154992.595845] Couldn&#39;t emulate instruction 0x00000000 (op 0 xop =
-0)<br>
-&gt; [154992.595859] kvmppc_exit_pr_progint: emulation at 100 failed (00000=
-000)<br>
-&gt;<br>
-&gt;<br>
-&gt; fills logs FAST!<br>
-<br>
-NIP=3D0x700 is illegal instruction exception due to trying to execute 0 <br=
->
-opcode at 0x100 which is the reset vector but shouldn&#39;t it try to start=
- at <br>
-0xfff00100? Maybe there&#39;s some issue with setting up KVM correctly? You=
- <br>
-can trace what is executed in TCG with -d in_asm but that does not work <br=
->
-for KVM as it&#39;s a TCG debug option. I don&#39;t know how to trace execu=
-tion <br>
-with KVM but probably there are some trace points for that. Maybe you get <=
-br>
-some info with -trace enable=3D&quot;kvm*&quot; but I don&#39;t know how to=
- understand <br>
-that output.<br></blockquote></div></div><div dir=3D"auto"><br></div><div d=
-ir=3D"auto">-trace *kvm* (on qemu 6.1.1) ends with=C2=A0</div><div dir=3D"a=
-uto"><br></div><div dir=3D"auto"><div dir=3D"auto">kvm_vcpu_ioctl cpu_index=
- 0, type 0x8010aeac, arg 0xe81a8080=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
-=C2=A0 =C2=A0 =C2=A0 =C2=A0=C2=A0</div><div dir=3D"auto">kvm_vcpu_ioctl cpu=
-_index 0, type 0x8010aeac, arg 0xe81a8080=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0=
- =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0=C2=A0</div><div dir=3D"auto">kvm_vcpu_ioctl=
- cpu_index 0, type 0x8010aeac, arg 0xe81a8080=C2=A0 =C2=A0 =C2=A0 =C2=A0 =
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0=C2=A0</div><div dir=3D"auto">kvm_vcp=
-u_ioctl cpu_index 0, type 0x8010aeac, arg 0xe81a8080</div><div dir=3D"auto"=
->kvm_vcpu_ioctl cpu_index 0, type 0x84d0ae84, arg 0xe81a7b78=C2=A0 =C2=A0 =
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0=C2=A0</div><div dir=3D=
-"auto">kvm_vcpu_ioctl cpu_index 0, type 0x8010aeac, arg 0xe81a8018=C2=A0 =
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0=C2=A0</div><div=
- dir=3D"auto">kvm_vcpu_ioctl cpu_index 0, type 0x8010aeac, arg 0xe81a8018</=
-div><div dir=3D"auto">kvm_vcpu_ioctl cpu_index 0, type 0x8010aeac, arg 0xe8=
-1a8018=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0=
- =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0=C2=
-=A0</div><div dir=3D"auto">kvm_vcpu_ioctl cpu_index 0, type 0x8010aeac, arg=
- 0xe81a8018</div><div dir=3D"auto">kvm_failed_spr_set Warning: Unable to se=
-t SPR 1013 to KVM: Invalid argument=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0=C2=A0</div><div dir=3D"auto">=
-kvm_vcpu_ioctl cpu_index 0, type 0x2000ae80, arg (nil)=C2=A0 =C2=A0 =C2=A0 =
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0</div><di=
-v dir=3D"auto">kvm_vcpu_ioctl cpu_index 0, type 0x2000ae80, arg (nil)</div>=
-<div dir=3D"auto"><br></div><div dir=3D"auto">My hack idea=C2=A0 about addi=
-ng || defined CONFIG_PPC_BOOK3S_64 to two statement in</div><div dir=3D"aut=
-o"><br></div><div dir=3D"auto">arch/powerpc/kvm/emulate.c=C2=A0</div><div d=
-ir=3D"auto"><br></div><div dir=3D"auto">also did not improve situation :(</=
-div><div dir=3D"auto"><br></div><div dir=3D"auto">but at least I know I am =
-running with patched kvm_pr module because I commented this kernel printk a=
-bout &quot;failed to emulate instruction&quot; and this line disappeared fr=
-om dmesg.</div></div><div dir=3D"auto"><br></div><div dir=3D"auto"><br></di=
-v><div dir=3D"auto"><br></div><div dir=3D"auto"><div class=3D"gmail_quote">=
-<blockquote class=3D"gmail_quote" style=3D"margin:0 0 0 .8ex;border-left:1p=
-x #ccc solid;padding-left:1ex">
-<br>
-Regards,<br>
-BALATON Zoltan<br>
-</blockquote></div></div></div>
-
---000000000000ea1efb06544c9da1--
 
