@@ -1,76 +1,76 @@
-Return-Path: <linuxppc-dev+bounces-22631-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22632-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 898FFCD98DA
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Jun 2026 09:41:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E2F4CCD98DE
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Jun 2026 09:41:11 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gf4qz2YZxz3bxH;
-	Mon, 15 Jun 2026 19:41:03 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::102e"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781516463;
-	cv=none; b=GFJa2aiXKVkvyD6OIXVBI4Q5xiAY8WCMwz7cbpSd+M0vIDjO4ny9QB0PUoeTbVh0ryagrY2o9Q6mdHXrkJ/vZhSOelK6fcxHyTkPw/hYej9CxhOXZ5rKgRBx7gmJlkO2m9A0/cT6OlRq7Ek6Ypv3nt9QzKAS/mXA9MAVzFeuEFQRQFWMNlr8G/huYGs3II/356VjGf0AcM5MmaBYpAOQ5Vke+fEksBAn0khp/v1S18Zb0rdXKChzlWFvkjFGahZ1xhByEvPkf0IzV8h9qlpNhtf8d94L14WTwzVcPda8o0n0tyOeNOpnpKgnLq+hJhCNutflj3xDQlY0J0/8GwtqLA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gf4r53QLNz3bsy;
+	Mon, 15 Jun 2026 19:41:09 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1029"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781516469;
+	cv=none; b=Y8oSMOYDpmzkM0GsRTThkDBXrFHtG3eY7Ugk0AiJ0bTU+BKtsy6x6aRBOozs2I6qo7yL2HwbpfMQolAj/T2ITlxKg56rzwT22LwqHz+1Km47YzmWbXzj/9ovQdzLcvq8lTpAGJUewBFnVA/MuINaFPJvfw/ke0l02TYgo0/v5r+3RtbfdbtLyU959tLhCtdDjd1wEz4WtFQF8ZmpelPTLfweib71nEmIs8XrmpIYEU91hD3w4UTT90W5GhRgBx3aLAtTsrepCDCvsLXjgkH7FcyV6dY6qvH8lvomlA/Qb0H7Umrcvf/PFXqCXRhni8tDYLBZSC0Q1b1WFqzuRFT3/Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1781516463; c=relaxed/relaxed;
-	bh=fixiw6LCSjSy5TCm86A8JjKJ/P+woOFTUDHQjwMDfTk=;
+	t=1781516469; c=relaxed/relaxed;
+	bh=NnE4Srd5uTTyhfuQp5PAjqJfajCDEXq0juLBDGnU9sg=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=fnsSG5bm+2JJlJdfW8IlK9vhc/H+pDhpbNeieTeHXZHbi8vxaM9yEMaT1UzFO2b1eTrmZtsJ6SxNAOj2Z4syyOZRbd1FYdDDX8+GB2pPeqEo/89kCkSrlR1r58dw4S/rqaXLD8I5LOvk1WJt/d/Eh98rssE1D8duqHt6XSsohjSuTTKOpxFmqmv4DaYHiqhto/IyAXX1ijHwqDovHMGBy7Tejb8AMVBJLpZkLfItwom0pT/Rtf9qLVD30SwvZ8Fv5/VF3QpD03wqBzT4zowuAA/CMDHsxPFnL6vTpSOtVkwO4vWcN1Qz7WHB7t4FAAw0fr8+QjeRshrQfUDjERdwWw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=gEWivWMo; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::102e; helo=mail-pj1-x102e.google.com; envelope-from=phucduc.bui@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	 MIME-Version; b=dM5YD9j2V/TTBp2z3f0TObYhoynPh3ZoFGtI2h8afXUaEPk2TSVzuvE1/ERL4mUu/tp3HRkNECJBvlXrERLyiNKjOLejnvVm0o1W5ZMqAWRdhza5j1F5sWo+ilaNlPtXznxOzNFVl4MsYu6Lc2mZY1UtPYd1ZNTBkS40m8V29BpBuQ4pTDVF5/H5JHLPTxY71Zo33x1EJoH78Ybu2+o9Tkl/7bUoYlAjqnFK0De8mdTNRKSmsQu4wpU/lWQg1iNuWIY/Y61SKEdXm7aapavoDvnHzcYvVxYasLOHqM0ip7Xa/KkwwVokehG9P0Ds9L7vKbVZAahrXBi7nqnBcBnovA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=QKYUH/yU; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1029; helo=mail-pj1-x1029.google.com; envelope-from=phucduc.bui@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=gEWivWMo;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=QKYUH/yU;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::102e; helo=mail-pj1-x102e.google.com; envelope-from=phucduc.bui@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pj1-x102e.google.com (mail-pj1-x102e.google.com [IPv6:2607:f8b0:4864:20::102e])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1029; helo=mail-pj1-x1029.google.com; envelope-from=phucduc.bui@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pj1-x1029.google.com (mail-pj1-x1029.google.com [IPv6:2607:f8b0:4864:20::1029])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gf4qy4X5nz3bx5
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jun 2026 19:41:02 +1000 (AEST)
-Received: by mail-pj1-x102e.google.com with SMTP id 98e67ed59e1d1-36b9d265355so1435884a91.2
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jun 2026 02:41:02 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gf4r450DJz3c86
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jun 2026 19:41:08 +1000 (AEST)
+Received: by mail-pj1-x1029.google.com with SMTP id 98e67ed59e1d1-36bdb11bf8bso1631570a91.0
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jun 2026 02:41:08 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1781516460; x=1782121260; darn=lists.ozlabs.org;
+        d=gmail.com; s=20251104; t=1781516467; x=1782121267; darn=lists.ozlabs.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=fixiw6LCSjSy5TCm86A8JjKJ/P+woOFTUDHQjwMDfTk=;
-        b=gEWivWMoTX4uUuwEldWtYg8KbjZaPm8TJ0ZV7SPaMCWMUYqNFI3wNRxMTTCuf8xsRH
-         Pgt/+br+fjvcBI7I0+dufpCghEvrosaUmUM2qtuQTAr6mERyjYIixTAOB8WIAq8wVq+r
-         CSbyV1+3MFxoESLcoTKB1W7ZHQpaUnb1+I88FOT5DQSduSfraLvsHbECr423ftCCgcBB
-         Ma3dDvpEkyzLg+AFtZ5nA63wwjONTxtjWLRBTpoAAV6yR28Px9Vrwt+jX6x7KRQCOkY3
-         D2Vy79qYEfIlKdHbFtowYm7070ZOcd4YNWz8cCn/8a79tIbYdZc4Qz0laQSLrwlm+GBJ
-         h6JQ==
+        bh=NnE4Srd5uTTyhfuQp5PAjqJfajCDEXq0juLBDGnU9sg=;
+        b=QKYUH/yUOUtdGS6rVWiK+or9MEho6HVQ8qRI67UnfsKX0vuEEIWQdoNSgYlPDeIjm+
+         r/YA/18FP5sljvzXfBoe7BAkoMyP9HSAkOycKHa6pp9fZ+cJ5IN64uWb6ANUWiUm6Xb8
+         7C8c+RS9PaFnvQv44yT0kU/RUdW5bUhlxUfUmZvMXiQAGr1+VVf/Mm5pmyRfvI+Vlxp6
+         Q/T1dqndMFfsXbTfvyXpnaanw+Zdqci6rY9x3X3b+rvaNj9fI0Y6H+a63uQLBi5HRMW8
+         LnCK+TKPCP2frwxuGua8UxNxn0zWvhcSDL/UJj5q+NHXEGxok3zACoFaRuaRQDIU9fyd
+         bbxw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1781516460; x=1782121260;
+        d=1e100.net; s=20251104; t=1781516467; x=1782121267;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to;
-        bh=fixiw6LCSjSy5TCm86A8JjKJ/P+woOFTUDHQjwMDfTk=;
-        b=m/wDsblZRgDrPIwkMTCLVHGGwhbMlKzmKmgCDc4ElUp9HAj6OFvcnZGOqGJTJsrBIW
-         UNx8cRbxiyVckAnUUdMxoiuyNbdh3h/H3n2sdd1p96SctmZMYcHKSe/riaGxWKLmGyCe
-         8A71dX+VrSSTTnNzmotQsRsBQdSZ+E7GuvHq2rNpU64PuaXAwHuAkgqXnQnbqaHvdk3G
-         llrVL3aDtJDaPaZMOU43N4gkjCeBcGJj4ieCBZE0+QrNd4i53o9eWLn93C8PMCxEz8kI
-         iLNzYs+HKNVqJZ3Q74TAOMrAlUMyXCZ6Iynhq1sY++cpDoZsbSRjCK8QIdxaEqAWmZ3+
-         8bOg==
-X-Forwarded-Encrypted: i=1; AFNElJ9TAcbQEV+Kjd2OhAyKtWbtJv/s0at6/Vc3CaKYdcj76xsbcKn6g6HbI4PQgInAdbqp0XUVFJou9X59fi0=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YwaCHE+zfz3d66Fb461JEF3mniIIWdof0qFV+e4fKPBzOKOLxf/
-	/pmmBFleOWsdanYJvWX9p+WcYTTxHXnRjgjztzw+Fz1uy+BA2GMCrI3e
-X-Gm-Gg: Acq92OHkDdd2HXlq+wCQtTYkv2fy9tT+WpX4PDa8G2aGNWY1rz91R/KuEGJKIgfedVq
-	bba2xQFzys380YscDo5RsSE0+Nzl6dFPM3qS4Mk/IcL+Yb/IfYbq4gupzhNhx8KVBlzDJ9DKZJd
-	FvyaWIxc5bP09+N3WtlH92ImERGvL655g5CsJxGLIbL+FNQ+Qxsmy2DWbrFI9+KhFxQ7um/cmKE
-	GsAkx9wssC0HnW5fhxfgz9NWu7DoxnWokpQNGN0tL6evflxrv8kDnNgxEksrQsttAFNZcmk98Lz
-	vDu2g6EWhWRe231NgbwG2TNQ+Wwr9bQ4L4p8t37CVQBOelArBeumyp5kvayKG6iuQGuIK+fYESp
-	GY7muMXuNoTJo9Gft+dhZ5uvjrCrc1vJ2ozB3OOz65pUP9FDomEca4JKBzeZGGWNwbh9ADbQxTI
-	MQ1Rr51YTAomSrGfxk1kgFRVp2uwNgZH4QZBrEo2jD1Nj/KA7oAxGWn06EMIYn+jmcT+XL
-X-Received: by 2002:a17:90a:d004:b0:36d:81b3:61a1 with SMTP id 98e67ed59e1d1-37a01c34487mr13541493a91.7.1781516460544;
-        Mon, 15 Jun 2026 02:41:00 -0700 (PDT)
+        bh=NnE4Srd5uTTyhfuQp5PAjqJfajCDEXq0juLBDGnU9sg=;
+        b=Ga9je/vGjnbBLoFuy/EogdiedXL6D4FVe7UWop0SUUmvF5AKB3okOrbMy3oMNwlPxo
+         nXQ6VNMwTpqM2knzefowoQJx59K1n/6PDq585htByV/AaXUcFshvGBw49TSgAioGMWm+
+         vlf7kgLR8fP8bdL7k1Vi8LZSFR1lj2EKlYxATmBhrkvMRx1RJ8cf/Ez9w8iDTGHJvAF7
+         FrdUUya8Rf8b+AjXKtFVsTRyQT9vJkJp6SvjTdzV4ky7YQu2AzvTe4gyc3hkikkGERCi
+         e8FmEMRxv/3rpMdDjevjac/sdmU1/e44gXjXKkR6Uv7hdtr4cyvgSzKutnyutX908l7j
+         97rw==
+X-Forwarded-Encrypted: i=1; AFNElJ/o1FW35V3EfezDQNOzZZQGZXR5r4X0lTIWnzQv5oO9C7hVR+0RwiYJOVXxe/2VcbFr7FTJ8BYQiLtwCL0=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YwVJmASPtwiYIaMr2Tu6RNn885MVapPcDByFe0cntzayb1tQz9/
+	2aHU+zJ9DAIO21XJPQJX9tIC84+unf9wG8TXVsylzHLikBFuS1I5l2QH
+X-Gm-Gg: Acq92OE+07/c2CQtlOa2LZ9v5dBy00pS5tA1MTWfF25+4lrT+Ozz6M4LAdhz6Mfubso
+	GqOXy1kO+1WKGb/WKAi6Du+FaJPVWaxoTIfE3DGU/ISXIRX5K2o7pqkuO5vQ1baIvrnmoN3dwF1
+	41t8K7xME1iQAXXAkkKES6NK58QTNFPet0XJKqAZdTS3m855ONnr0gdRZ5HePy9iSKQl5EdlJwF
+	eeg0SzhdYXnyaspDh0AOt365f2H8Cxuv61ypHufDH+n9IdTyQRROnS77wGgBdBDlIymqH76G76F
+	Mt4WFXdJwKyDqD8BM2MXzSgwiHKzVYf6V5bz3VHMFkTBD36UwgpstrZLSJ4wmrMBdgch5TkcUWZ
+	wukyWXXQUXBQsrRE7yInneIQO2LLQoIr39fTJHumRQ/BolRV2IiVNYfqCihitSUb2O22QzTyUMr
+	tEVI2FExELTy1svMxwLNcpPmoC0grZmaOWPA6UoQJW8enk4yGZ4AD6XW1goA==
+X-Received: by 2002:a17:90b:4a11:b0:36a:4074:9aa6 with SMTP id 98e67ed59e1d1-37a01b3f8b6mr13135815a91.6.1781516466932;
+        Mon, 15 Jun 2026 02:41:06 -0700 (PDT)
 Received: from phuc-desktop.. ([183.91.15.56])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-37a1eba8e9asm9936290a91.2.2026.06.15.02.40.55
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-37a1eba8e9asm9936290a91.2.2026.06.15.02.41.01
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 15 Jun 2026 02:40:59 -0700 (PDT)
+        Mon, 15 Jun 2026 02:41:05 -0700 (PDT)
 From: phucduc.bui@gmail.com
 To: Mark Brown <broonie@kernel.org>
 Cc: Liam Girdwood <lgirdwood@gmail.com>,
@@ -89,9 +89,9 @@ Cc: Liam Girdwood <lgirdwood@gmail.com>,
 	imx@lists.linux.dev,
 	linuxppc-dev@lists.ozlabs.org,
 	bui duc phuc <phucduc.bui@gmail.com>
-Subject: [PATCH v2 10/11] ASoC: fsl: mpc5200_dma: Use guard() for spin locks
-Date: Mon, 15 Jun 2026 16:38:23 +0700
-Message-ID: <20260615093824.115751-11-phucduc.bui@gmail.com>
+Subject: [PATCH v2 11/11] ASoC: fsl: mpc5200_psc_ac97: Use guard() for mutex locks
+Date: Mon, 15 Jun 2026 16:38:24 +0700
+Message-ID: <20260615093824.115751-12-phucduc.bui@gmail.com>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20260615093824.115751-1-phucduc.bui@gmail.com>
 References: <20260615093824.115751-1-phucduc.bui@gmail.com>
@@ -112,107 +112,123 @@ Content-Transfer-Encoding: 8bit
 
 From: bui duc phuc <phucduc.bui@gmail.com>
 
-Clean up the code using guard() for spin locks.
+Clean up the code using guard() for mutex locks.
 Merely code refactoring, and no behavior change.
 
 Signed-off-by: bui duc phuc <phucduc.bui@gmail.com>
 ---
- sound/soc/fsl/mpc5200_dma.c | 56 ++++++++++++++++++-------------------
- 1 file changed, 28 insertions(+), 28 deletions(-)
 
-diff --git a/sound/soc/fsl/mpc5200_dma.c b/sound/soc/fsl/mpc5200_dma.c
-index 56e2cf2f727b..bfedb2dea0b3 100644
---- a/sound/soc/fsl/mpc5200_dma.c
-+++ b/sound/soc/fsl/mpc5200_dma.c
-@@ -77,18 +77,20 @@ static irqreturn_t psc_dma_bcom_irq(int irq, void *_psc_dma_stream)
- {
- 	struct psc_dma_stream *s = _psc_dma_stream;
+Changes in v2:
+ - psc_ac97_cold_reset(): Fix scoped_guard() usage by replacing
+   scoped_guard(mutex_lock, ...) with scoped_guard(mutex, ...).
+
+ sound/soc/fsl/mpc5200_psc_ac97.c | 34 +++++++++++---------------------
+ 1 file changed, 12 insertions(+), 22 deletions(-)
+
+diff --git a/sound/soc/fsl/mpc5200_psc_ac97.c b/sound/soc/fsl/mpc5200_psc_ac97.c
+index 8554fb690772..d4d9f5b6bc07 100644
+--- a/sound/soc/fsl/mpc5200_psc_ac97.c
++++ b/sound/soc/fsl/mpc5200_psc_ac97.c
+@@ -31,14 +31,13 @@ static unsigned short psc_ac97_read(struct snd_ac97 *ac97, unsigned short reg)
+ 	int status;
+ 	unsigned int val;
  
--	spin_lock(&s->psc_dma->lock);
--	/* For each finished period, dequeue the completed period buffer
--	 * and enqueue a new one in it's place. */
--	while (bcom_buffer_done(s->bcom_task)) {
--		bcom_retrieve_buffer(s->bcom_task, NULL, NULL);
-+	scoped_guard(spinlock, &s->psc_dma->lock) {
-+		/*
-+		 * For each finished period, dequeue the completed period buffer
-+		 * and enqueue a new one in its place
-+		 */
-+		while (bcom_buffer_done(s->bcom_task)) {
-+			bcom_retrieve_buffer(s->bcom_task, NULL, NULL);
+-	mutex_lock(&psc_dma->mutex);
++	guard(mutex)(&psc_dma->mutex);
  
--		s->period_current = (s->period_current+1) % s->runtime->periods;
--		s->period_count++;
-+			s->period_current = (s->period_current+1) % s->runtime->periods;
-+			s->period_count++;
- 
--		psc_dma_bcom_enqueue_next_buffer(s);
-+			psc_dma_bcom_enqueue_next_buffer(s);
-+		}
+ 	/* Wait for command send status zero = ready */
+ 	status = spin_event_timeout(!(in_be16(&psc_dma->psc_regs->sr_csr.status) &
+ 				MPC52xx_PSC_SR_CMDSEND), 100, 0);
+ 	if (status == 0) {
+ 		pr_err("timeout on ac97 bus (rdy)\n");
+-		mutex_unlock(&psc_dma->mutex);
+ 		return -ENODEV;
  	}
--	spin_unlock(&s->psc_dma->lock);
  
- 	/* If the stream is active, then also inform the PCM middle layer
- 	 * of the period finished event. */
-@@ -116,7 +118,6 @@ static int psc_dma_trigger(struct snd_soc_component *component,
- 	struct psc_dma_stream *s = to_psc_dma_stream(substream, psc_dma);
- 	struct mpc52xx_psc __iomem *regs = psc_dma->psc_regs;
- 	u16 imr;
--	unsigned long flags;
- 	int i;
+@@ -54,19 +53,16 @@ static unsigned short psc_ac97_read(struct snd_ac97 *ac97, unsigned short reg)
+ 	if (status == 0) {
+ 		pr_err("timeout on ac97 read (val) %x\n",
+ 				in_be16(&psc_dma->psc_regs->sr_csr.status));
+-		mutex_unlock(&psc_dma->mutex);
+ 		return -ENODEV;
+ 	}
+ 	/* Get the data */
+ 	val = in_be32(&psc_dma->psc_regs->ac97_data);
+ 	if (((val >> 24) & 0x7f) != reg) {
+ 		pr_err("reg echo error on ac97 read\n");
+-		mutex_unlock(&psc_dma->mutex);
+ 		return -ENODEV;
+ 	}
+ 	val = (val >> 8) & 0xffff;
  
- 	switch (cmd) {
-@@ -135,19 +136,18 @@ static int psc_dma_trigger(struct snd_soc_component *component,
- 		/* Fill up the bestcomm bd queue and enable DMA.
- 		 * This will begin filling the PSC's fifo.
- 		 */
--		spin_lock_irqsave(&psc_dma->lock, flags);
+-	mutex_unlock(&psc_dma->mutex);
+ 	return (unsigned short) val;
+ }
+ 
+@@ -75,52 +71,46 @@ static void psc_ac97_write(struct snd_ac97 *ac97,
+ {
+ 	int status;
+ 
+-	mutex_lock(&psc_dma->mutex);
++	guard(mutex)(&psc_dma->mutex);
+ 
+ 	/* Wait for command status zero = ready */
+ 	status = spin_event_timeout(!(in_be16(&psc_dma->psc_regs->sr_csr.status) &
+ 				MPC52xx_PSC_SR_CMDSEND), 100, 0);
+ 	if (status == 0) {
+ 		pr_err("timeout on ac97 bus (write)\n");
+-		goto out;
++		return;
+ 	}
+ 	/* Write data */
+ 	out_be32(&psc_dma->psc_regs->ac97_cmd,
+ 			((reg & 0x7f) << 24) | (val << 8));
 -
--		if (substream->pstr->stream == SNDRV_PCM_STREAM_CAPTURE)
--			bcom_gen_bd_rx_reset(s->bcom_task);
--		else
--			bcom_gen_bd_tx_reset(s->bcom_task);
-+		scoped_guard(spinlock_irqsave, &psc_dma->lock) {
-+			if (substream->pstr->stream == SNDRV_PCM_STREAM_CAPTURE)
-+				bcom_gen_bd_rx_reset(s->bcom_task);
-+			else
-+				bcom_gen_bd_tx_reset(s->bcom_task);
+- out:
+-	mutex_unlock(&psc_dma->mutex);
+ }
  
--		for (i = 0; i < runtime->periods; i++)
--			if (!bcom_queue_full(s->bcom_task))
--				psc_dma_bcom_enqueue_next_buffer(s);
-+			for (i = 0; i < runtime->periods; i++)
-+				if (!bcom_queue_full(s->bcom_task))
-+					psc_dma_bcom_enqueue_next_buffer(s);
+ static void psc_ac97_warm_reset(struct snd_ac97 *ac97)
+ {
+ 	struct mpc52xx_psc __iomem *regs = psc_dma->psc_regs;
  
--		bcom_enable(s->bcom_task);
--		spin_unlock_irqrestore(&psc_dma->lock, flags);
-+			bcom_enable(s->bcom_task);
-+		}
+-	mutex_lock(&psc_dma->mutex);
++	guard(mutex)(&psc_dma->mutex);
  
- 		out_8(&regs->command, MPC52xx_PSC_RST_ERR_STAT);
+ 	out_be32(&regs->sicr, psc_dma->sicr | MPC52xx_PSC_SICR_AWR);
+ 	udelay(3);
+ 	out_be32(&regs->sicr, psc_dma->sicr);
+-
+-	mutex_unlock(&psc_dma->mutex);
+ }
  
-@@ -158,13 +158,13 @@ static int psc_dma_trigger(struct snd_soc_component *component,
- 			substream->pstr->stream, s->period_count);
- 		s->active = 0;
+ static void psc_ac97_cold_reset(struct snd_ac97 *ac97)
+ {
+ 	struct mpc52xx_psc __iomem *regs = psc_dma->psc_regs;
  
--		spin_lock_irqsave(&psc_dma->lock, flags);
--		bcom_disable(s->bcom_task);
--		if (substream->pstr->stream == SNDRV_PCM_STREAM_CAPTURE)
--			bcom_gen_bd_rx_reset(s->bcom_task);
--		else
--			bcom_gen_bd_tx_reset(s->bcom_task);
--		spin_unlock_irqrestore(&psc_dma->lock, flags);
-+		scoped_guard(spinlock_irqsave, &psc_dma->lock) {
-+			bcom_disable(s->bcom_task);
-+			if (substream->pstr->stream == SNDRV_PCM_STREAM_CAPTURE)
-+				bcom_gen_bd_rx_reset(s->bcom_task);
-+			else
-+				bcom_gen_bd_tx_reset(s->bcom_task);
-+		}
+-	mutex_lock(&psc_dma->mutex);
+-	dev_dbg(psc_dma->dev, "cold reset\n");
++	scoped_guard(mutex, &psc_dma->mutex) {
++		dev_dbg(psc_dma->dev, "cold reset\n");
  
- 		break;
+-	mpc5200_psc_ac97_gpio_reset(psc_dma->id);
++		mpc5200_psc_ac97_gpio_reset(psc_dma->id);
  
+-	/* Notify the PSC that a reset has occurred */
+-	out_be32(&regs->sicr, psc_dma->sicr | MPC52xx_PSC_SICR_ACRB);
++		/* Notify the PSC that a reset has occurred */
++		out_be32(&regs->sicr, psc_dma->sicr | MPC52xx_PSC_SICR_ACRB);
+ 
+-	/* Re-enable RX and TX */
+-	out_8(&regs->command, MPC52xx_PSC_TX_ENABLE | MPC52xx_PSC_RX_ENABLE);
+-
+-	mutex_unlock(&psc_dma->mutex);
++		/* Re-enable RX and TX */
++		out_8(&regs->command, MPC52xx_PSC_TX_ENABLE | MPC52xx_PSC_RX_ENABLE);
++	}
+ 
+ 	usleep_range(1000, 2000);
+ 	psc_ac97_warm_reset(ac97);
 -- 
 2.43.0
 
