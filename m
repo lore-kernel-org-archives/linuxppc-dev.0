@@ -1,52 +1,90 @@
-Return-Path: <linuxppc-dev+bounces-22651-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22652-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 90C87CD98DA
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Jun 2026 16:10:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A0C09CD98DA
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Jun 2026 16:26:32 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gfFTd06Vsz3bxp;
-	Tue, 16 Jun 2026 02:10:45 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781539844;
-	cv=none; b=jfDtiSuf6zuVZmRUM1w43L6YFSBMbsl3UkDrHGyAVaU3zztwIOn0/rZaPiVPsUE3fL9hc5pG6KkoAPOM4TJUi8CWI9xEWKMUiLHhN5RiMKOYB3GBYWJ8wmYOdkVH26ziTzGSNUexYCDQDc3FdQ+ouB0fU03vk2hlz6GvmXqmjae0L83E3O4jgYaZCAMS329VNfWywchsfFvj/BCTIL7v5/eUlPijyWDMF6Gr975ngpWp3Js9xH1oIQWDePuNEbc8icsU+Dz6Vp9ATxoqW5xsTO4mjtslSaMOk9NP75vFUqy27ZYFCxmWlpv1tL6uUqPQpzaQx2JYyT15n2lszqUpjA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gfFqq0zn6z2xSb;
+	Tue, 16 Jun 2026 02:26:31 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::52f"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781540791;
+	cv=none; b=fzEf40uhpwncd228qWmwlCs38WtXWmjhTGuBKHlQKzu1LfP5e/DNwLuKmno0rSlYth0q0d+c3ME1FZwsvyUaTSrV7hJBphiHuO0roQfekQg2gmFLBUVX5FYFDxixjefxuw8UYrSk+cdcqHPzGSCz57CyZ/TNNdCq+O6jkTrhB316SnaegRQwuj9jGKnkFUjCDHkAswhVsLyE+Aq5Q46sAF696VsAOG7uqoY/viMjVsq5VxD1/dNrnz8NrVl8hM9+PyM6rRpVFokWZfJJUWOxC9VDY+++KoYPnrbyCPxHbpThT7hLPSXWAJcP4e/p/MQNvuvzbU9MHlHtEpqK014zMQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1781539844; c=relaxed/relaxed;
-	bh=s2Nu94G1QYwV0Emq9ZE/vR9zmqebZOy/GJaBCjCaRlY=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=osFQBnXuyxLat4MEgDOCPbFro2cPvVPMNNZB/AzGU4z4QBQedw/BxsQARG7E6CoMUbL79TU/7PsGMdsDuCpw2dG86yF2/x89cjZwi20rGEPbuOrIw7smuglCPrRz+IorMICUBa8JB2tnsYJ8iSl1ncZ+yZakg2pFg3RAz8uoE8q3mNLcY+MT4xdGgQYcELTcUSnz5pLhV7/PEE9aaafPMEk02CwDKtWr6ZA8dsnc43GrNRVI0k4KyMAy8Oa0kXHuoTAxxYbn2Zq7UykCS2XaAH/zP3649Z2ZpjbfARvb0Gjpz/cWaes4jcN9x7DGd2ttJE5atwezY4CVx4RM1Yio2A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=hRKdXCq/; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=mailhol@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1781540791; c=relaxed/relaxed;
+	bh=/kq53XBMXwwpeWSUuJdvcoCP4keKFn7d1L/6qu3gGAk=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=R8gINwBwPHRpjW64k1JTK7So3X6P1Y/7H1MuoB6OihQTFp38hn/FZI8miDaHrVcNmmSeLi/JG2kEmX68eMSivMUv2CmrogvG5UnTLIds6XgMf5mnWikQMBlWaUcWVWUPN7940CT+zXWTZCaelusReaxj/hT7+IyVCJrp8vkFt99gLS/LQmKnT6yBnpHbBZJ2O3N9hF7e8QOx04KGasqNGqTUz6KXXgx2iT7OlEabvznVL/GqdBIsg0/oO6D5BFxj8yjkUBxAU0/PBT0qv1dwpenL/EShsAhkvsmn8Vrnp1efC29hSrkqzm3ziGREshXOuPzyP7s04Izl9TKGHGQk3A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=kuXmWid9; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::52f; helo=mail-pg1-x52f.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=hRKdXCq/;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=kuXmWid9;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=mailhol@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::52f; helo=mail-pg1-x52f.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pg1-x52f.google.com (mail-pg1-x52f.google.com [IPv6:2607:f8b0:4864:20::52f])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gfFTc17T8z3bxf
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jun 2026 02:10:44 +1000 (AEST)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 976B842A3E;
-	Mon, 15 Jun 2026 16:10:41 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 241071F000E9;
-	Mon, 15 Jun 2026 16:10:37 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1781539841;
-	bh=s2Nu94G1QYwV0Emq9ZE/vR9zmqebZOy/GJaBCjCaRlY=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=hRKdXCq/Di0yDVyM/BFZpVJYk+Eo4IVGGmK6eddql8FPf7QRcGa/NKyve+FzWWm2n
-	 nJADHQ8tH3yvoRTcOANZzqjjWF5Y530YCZ5LYQjvz3u2xlCGiREWdeA70FlL5gEn1Q
-	 Svf4/E+Q7kC1Ie0zaz5N7hCkhTAMur2BdHw4GGOv6qLkW00aBTzr9VYF5SH8xyP1ud
-	 V+xPI13vuxiIZZNAwZG1o2v/AayOoKL2gptSuYRVmPoWHRLgBV+Gky8QdCg55vlxgG
-	 PB8jN8K+g+cr0IfwJFCDqygIwgK4O1j3UISteGwd0/qeAPTbN9MmZvOp0HBcbTA+Uo
-	 tzspBhR4Uc2ig==
-From: Vincent Mailhol <mailhol@kernel.org>
-Date: Mon, 15 Jun 2026 18:09:05 +0200
-Subject: [PATCH 09/19] powerpc: define DPS root partition type UUIDs
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gfFqn6RWSz2xLq
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jun 2026 02:26:29 +1000 (AEST)
+Received: by mail-pg1-x52f.google.com with SMTP id 41be03b00d2f7-c855599a77aso1752568a12.0
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jun 2026 09:26:29 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1781540787; x=1782145587; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=/kq53XBMXwwpeWSUuJdvcoCP4keKFn7d1L/6qu3gGAk=;
+        b=kuXmWid9rarCsW8PjBOx3i6txrj3+dBAvtpxtLk5u3SZeHeV/nfXlnb1+1krRGT9Dh
+         nIgmIMPMx54F9E13Z+1PCQ3ESX14pYnY1+adoPBkFAVbKrTe7at3KvPlmak53JWX7hAx
+         EBykpCLcXdTUWvpz6NkD5wnGqLj+O1LgLttEiUL6mZ9yE5vqJ41kNOoGVPGrxreqFKzv
+         8qUJko5u/1S8b3vWEufiqPWJlIndIxIGpWcIeU0zvdfX2ZiPrf3ViwYNplE63Z7SeokY
+         x4lgcBu0Fc8YsJ6NpzY58vxdBef7RRGS5EuCvG0YVUYO+PRprXahh+l5jV07pnceXYX8
+         1dfQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1781540787; x=1782145587;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=/kq53XBMXwwpeWSUuJdvcoCP4keKFn7d1L/6qu3gGAk=;
+        b=V2/R4tYfEptqFd86KSTJECcLASNEqAtRMkSG8ETFAj+d2Kh2t+dX7srrbqIvi8OLrq
+         qgNp4NnDcGjlQOUIXREI5KCEydKQbPR6r7DKfYdu965xPzeeRaoH2zrGqoUXrA0u1QuU
+         URZFOZ7AmTGzcQZc4Q5nKD7UFZl6CYRxi3o4c7hn/5T8JAH8/60rgdKNra/eAuvryQJc
+         uO2pSTyvBMYpLzpebp+9ASfy8Hui1hxkVbkvQhtD6BatAMAAz/W/vK4EDE7eBwTdMrhN
+         ZWpT0QIBror852vLgEMrn7tCDkf/oQ1kOfM86x2/YZt9DsoqFKsixbxaVMmTdOnrnAc5
+         CCzw==
+X-Forwarded-Encrypted: i=1; AFNElJ8KG1FvGt9/DVWd11LqxH4Ov/7F+oEfdW/XPKma59O1odjR41CtfY+47MQFOxOdLZ9XmeX1igXP+FSyuk0=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YxaMlO+sjn8H5DwRS6Y8KRN7NWg5XL3aX5KjhWtIJ2N56tmGZ7o
+	BQjeLbG4PAOdm8e4Gb9k/eF5JmALAQJ4+vWYCGRgBVhCs1w0oNU0Mzmr
+X-Gm-Gg: Acq92OGdafH1KEtU/rPpR0kEASiln4k8OtpT0JSw4sFfPHEXu2ueb0GGpe5kq3+8Oe5
+	8PvduaYNoiCVINZkksxDG0f2zAtGTdewgMrigwklgPZHEKStxQFq+4LcK1vcy3s5cUDqcy+f8b7
+	P6KfXD+3tzzZ8ssQMh4tpnAwGy7fc2KraLETE20v5a/9HH6ghxVb9vdbNBxFBg6jrT1SQ785j3C
+	IFIMeuzBztzq8/YVjwQ1cU1EdnX0DUnvrtYx3Gj7W6A8SSmKyC2NHOhgjz/CNb/sw3Wf7/RoZ78
+	8tUofxaGkcXe4PR397UG0TMiQ1EmN5g4ahbJmwmWPZWATA3hk1YnXbN2nQR+K87YdLSFftwx690
+	s+Vq/sP+lDuiSuCKB+uFlpRTYCkD4PHH4CmoyILpBHlWNQoMPVys1IvQEhSYmEIBNKNQBSAGzSG
+	FQ3U9ft7QRAOH8NR7fFTPqoYhWteVEHOemi4NI2LU31XsIOoBP8ZEbW+KEBk/YPa97ye8/rs6KT
+	SbQpKndVA==
+X-Received: by 2002:a05:6a21:7d02:b0:3b3:216b:274c with SMTP id adf61e73a8af0-3b783f1bd60mr17547127637.22.1781540787455;
+        Mon, 15 Jun 2026 09:26:27 -0700 (PDT)
+Received: from li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com ([106.51.160.236])
+        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-c86651af080sm9502388a12.29.2026.06.15.09.26.22
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 15 Jun 2026 09:26:26 -0700 (PDT)
+From: "Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com>
+To: maddy@linux.ibm.com,
+	mpe@ellerman.id.au,
+	npiggin@gmail.com,
+	chleroy@kernel.org,
+	sshegde@linux.ibm.com,
+	ruanjinjie@huawei.com,
+	mkchauras@gmail.com,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org
+Cc: Sayali Patil <sayalip@linux.ibm.com>
+Subject: [PATCH V2] powerpc: Restore KUAP registers on syscall restart exit
+Date: Mon, 15 Jun 2026 21:56:17 +0530
+Message-ID: <20260615162617.2861795-1-mkchauras@gmail.com>
+X-Mailer: git-send-email 2.54.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -60,86 +98,41 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260615-discoverable-root_partitions-v1-9-39c78fac42e2@kernel.org>
-References: <20260615-discoverable-root_partitions-v1-0-39c78fac42e2@kernel.org>
-In-Reply-To: <20260615-discoverable-root_partitions-v1-0-39c78fac42e2@kernel.org>
-To: Jens Axboe <axboe@kernel.dk>, Davidlohr Bueso <dave@stgolabs.net>, 
- Alexander Viro <viro@zeniv.linux.org.uk>, 
- Christian Brauner <brauner@kernel.org>, Jan Kara <jack@suse.cz>
-Cc: linux-kernel@vger.kernel.org, linux-block@vger.kernel.org, 
- linux-efi@vger.kernel.org, linux-fsdevel@vger.kernel.org, 
- Vincent Mailhol <mailhol@kernel.org>, 
- Madhavan Srinivasan <maddy@linux.ibm.com>, 
- Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
-X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=openpgp-sha256; l=2097; i=mailhol@kernel.org;
- h=from:subject:message-id; bh=1H9x4pEZJ9qkAPBU2nBzdn+Fy1Js3SiNM+vLUchH+X8=;
- b=owGbwMvMwCV2McXO4Xp97WbG02pJDFkGylctNHnUtn/wDAwTbLtt+l0x56bd++Z5sgGO2cJ68
- wI2hWd2TGRhEONisBRTZFlWzsmt0FHoHXboryXMHFYmkCHSIg0MQMDCwJebmFdqpGOkZ6ptqGcI
- ZOgYMXBxCsBUH5vF8IdDcvnNvUHJDBJxkv7/nT87dn5N25FVWr6v4MqhD5vaewQY/md4LHCZUZ1
- vNLtYcH9OxvxLB7XWdrQcfNx8+LBMxPSrk1kA
-X-Developer-Key: i=mailhol@kernel.org; a=openpgp;
- fpr=ED8F700574E67F20E574E8E2AB5FEB886DBB99C2
+Content-Transfer-Encoding: 8bit
 
-DPS [1] assigns GPT partition type UUIDs to operating system partitions.
-Root partitions use architecture-specific type UUIDs so the OS can
-discover the intended root filesystem without relying on a root= cmdline
-option.
+During a syscall restart, block KUAP so that pending interrupts can be
+replayed. The original KUAP state is not restored before returning to
+userspace, causing subsequent userspace accesses to fault and eventually
+trigger bad_access_pkey(), crashing the kernel.
 
-Define DPS_ROOT_PARTITION_TYPE_UUID in asm/dps_root.h for the powerpc
-endian and 32/64-bit variants described by the specification and select
-ARCH_HAS_DPS_ROOT_PARTITION_TYPE_UUID.
+The original KUAP register values are already saved in
+arch_enter_from_user_mode(). Restore them on the syscall restart exit
+path before returning to userspace.
 
-[1] The Discoverable Partitions Specification (DPS)
-Link: https://uapi-group.org/specifications/specs/discoverable_partitions_specification/
-
-Cc: Madhavan Srinivasan <maddy@linux.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org
-Signed-off-by: Vincent Mailhol <mailhol@kernel.org>
+Fixes: bee25f97ad24 ("powerpc: Enable GENERIC_ENTRY feature")
+Reported-by: Sayali Patil <sayalip@linux.ibm.com>
+Signed-off-by: Mukesh Kumar Chaurasiya (IBM) <mkchauras@gmail.com>
 ---
- arch/powerpc/Kconfig                |  1 +
- arch/powerpc/include/asm/dps_root.h | 16 ++++++++++++++++
- 2 files changed, 17 insertions(+)
+V1 -> V2:
+- Commit message rephrased
+V1: https://lore.kernel.org/all/20260613123831.1510474-1-mkchauras@gmail.com
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index e93df95b79e7..e611280a6057 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -134,6 +134,7 @@ config PPC
- 	select ARCH_HAS_DEVMEM_IS_ALLOWED
- 	select ARCH_HAS_DMA_MAP_DIRECT 		if PPC_PSERIES
- 	select ARCH_HAS_DMA_OPS			if PPC64
-+	select ARCH_HAS_DPS_ROOT_PARTITION_TYPE_UUID
- 	select ARCH_HAS_FORTIFY_SOURCE
- 	select ARCH_HAS_GCOV_PROFILE_ALL
- 	select ARCH_HAS_GIGANTIC_PAGE		if ARCH_SUPPORTS_HUGETLBFS
-diff --git a/arch/powerpc/include/asm/dps_root.h b/arch/powerpc/include/asm/dps_root.h
-new file mode 100644
-index 000000000000..6b3592a73d3d
---- /dev/null
-+++ b/arch/powerpc/include/asm/dps_root.h
-@@ -0,0 +1,16 @@
-+/* SPDX-License-Identifier: GPL-2.0-only */
-+
-+#ifndef _ASM_POWERPC_DPS_ROOT_H
-+#define _ASM_POWERPC_DPS_ROOT_H
-+
-+#ifdef CONFIG_PPC64
-+#ifdef CONFIG_CPU_LITTLE_ENDIAN
-+#define DPS_ROOT_PARTITION_TYPE_UUID "c31c45e6-3f39-412e-80fb-4809c4980599"
-+#else
-+#define DPS_ROOT_PARTITION_TYPE_UUID "912ade1d-a839-4913-8964-a10eee08fbd2"
-+#endif
-+#else
-+#define DPS_ROOT_PARTITION_TYPE_UUID "1de3f1ef-fa98-47b5-8dcd-4a860a654d78"
-+#endif
-+
-+#endif /* _ASM_POWERPC_DPS_ROOT_H */
+ arch/powerpc/kernel/interrupt.c | 1 +
+ 1 file changed, 1 insertion(+)
 
+diff --git a/arch/powerpc/kernel/interrupt.c b/arch/powerpc/kernel/interrupt.c
+index 89a999be1352..f04978080837 100644
+--- a/arch/powerpc/kernel/interrupt.c
++++ b/arch/powerpc/kernel/interrupt.c
+@@ -166,6 +166,7 @@ notrace unsigned long syscall_exit_restart(unsigned long r3, struct pt_regs *reg
+ 		goto again;
+ 	}
+ 
++	kuap_user_restore(regs);
+ 	regs->exit_result |= regs->exit_flags;
+ 
+ 	return regs->exit_result;
 -- 
-2.53.0
+2.54.0
 
 
