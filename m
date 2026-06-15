@@ -1,97 +1,85 @@
-Return-Path: <linuxppc-dev+bounces-22636-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22637-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 62ED3CD98CF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Jun 2026 13:42:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3FFE6CD98C5
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Jun 2026 14:13:09 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gfBBn55Xbz3btX;
-	Mon, 15 Jun 2026 23:42:41 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781530961;
-	cv=none; b=dcnqGc+MFB4zUhM608BgE4Hw5juvWz7kyMBbf9P17ziQ/BXAI72ifFUDGo+9qjQBb+RiSY+/zI3B1gFnPnQIOXw2cvVEyP5KJWm65E5VRfsy6lBp+nZLPirq5nUhNB5bWVdIEzpFp0v5wNNsCtc7isZWRPDXYtGO1m9H6fsVBoq64+sIgys8HUp6X1i4sIzEsUNc8O+p+u4PS0MhPFEHGWzp03zE/yRJ/8VRtPWNfEnyLRN9eh+xfIKU0op4TuIQqzz6XGxtnZemksq460tM0TGh8eU0RjGafnnSNpyx7O0bI41oJy3JDK/yYnQC+/XTVkuVtAyacxGGtwyNkw1o/A==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1781530961; c=relaxed/relaxed;
-	bh=/AUs2IpHamyo41vAyD7BiKW2lU4vDvYAUoToDIb93Mo=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
-	 MIME-Version:Content-Type; b=D5Tq6bkT8SfHfHR193hsdOeXAym3+xhwxexm1p2mK7Eu0lY9t/pMYuDenNTxPfsgwRMJi+uI8XrtiCPgYT2gqYL2vQ/hdMEujpg/85+toQSdl/tOW/8TelulQN33WctSSandKxh7ipOKHP3BuqqgDHKwbZwTbIY3AzBoOoDxhVHDTa8DPb8f2MVYEJ+SDsxunSMXpVTH2o1gxIY78d1SiMT1KQgSR0HRcyDPhm9xDhv613axi6tDU9uYIMjg7XzXQ3c94KXpTEJRHiA3ln/OocS/8DaFb2W6vXht/6JMkHQ55F/wFSmm2IQYtCbsHXKO/ep18EXzTgSHuVHY1iQW6Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Y+6iTTVH; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=davemarq@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gfBsv2s4Rz3btX;
+	Tue, 16 Jun 2026 00:13:07 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c201::6" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781532787;
+	cv=pass; b=ouD4/sJFO4BPzYOROk+K3lgcwuhImQASc+x14kGRqoZay6CaGg6CdQs1BAfUh+So+oYPLmINoxAjwPlYj2YAu+BuDU5HM8Y/X1HF5khaW95L50jYlGkxHypFm3HY6EjKQ+7xGtRSts+JHGdrE6TtJ7Q23mTQXPBqTdfItPvf86t48hBp8mmA0ZcQoj9IoLJYklMvI9Xr3NF8tTGinuMkd6ECWh8QwXRXQLV2y0TOMjAwdYIab5yUWnTwvRueSFH7iwJEv/AQ4NGv/x0F/NVhxLwItCUjs9DNzg6SjJ8fIqfzUU0my8CKDisCj9wJIGNj7rbhsmPPhp/rgwzeR8njbQ==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1781532787; c=relaxed/relaxed;
+	bh=Z1NDKA3jUcCwR08SohW76QoktiW7yDfkNTkQyZBLomQ=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:Content-Type:
+	 Content-Disposition:In-Reply-To:MIME-Version; b=N5HzEtIaE9Abyb5u/Npi9BK2JnV5UtHd6tIs8vJG9LHgJg3PtInd8it2vl4uou7CpQfb/XfrXVflHCrP74FPO39SPwZZEpBmjMc5i/KUTF3UhXApTVrow7krsJkfSbmj83sjoqNIQK66zHxJn+cFLsiQSYuseYPqm9XqI0WzUNpSQhKj8V/Y9zUbHDmX0uvIDtnWvQwWZgn/wHoNGCn+he5d4rY70TinTeIrX5rsie2yEO/LaDzVTKfJ+r/HDyFdP03vEJsX7tyiTBf77+WBeQPBCZErkYWJDFGAODPZOKm9vylZUbcfHksY+Ne8tavhCBzdGU7EWpwzHjccQxYhfg==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=oss.nxp.com; dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=q3e6DRcW; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c201::6; helo=am0pr02cu008.outbound.protection.outlook.com; envelope-from=frank.li@oss.nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=oss.nxp.com
+Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=oss.nxp.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Y+6iTTVH;
+	dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=q3e6DRcW;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=davemarq@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=oss.nxp.com (client-ip=2a01:111:f403:c201::6; helo=am0pr02cu008.outbound.protection.outlook.com; envelope-from=frank.li@oss.nxp.com; receiver=lists.ozlabs.org)
+Received: from AM0PR02CU008.outbound.protection.outlook.com (mail-westeuropeazlp170130006.outbound.protection.outlook.com [IPv6:2a01:111:f403:c201::6])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gfBBm33l6z3btJ
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jun 2026 23:42:39 +1000 (AEST)
-Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 65FCmI972492985;
-	Mon, 15 Jun 2026 13:42:23 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-type:date:from:in-reply-to:message-id:mime-version
-	:references:subject:to; s=pp1; bh=/AUs2IpHamyo41vAyD7BiKW2lU4vDv
-	YAUoToDIb93Mo=; b=Y+6iTTVHuidrVhR6sd0Q6mUiaWTd5rmT29K0h7e7rMz7uM
-	xRwbUMLU3U5rLwN32FINpxrs5ToE39p6HpH7QhxUA7DeVFniFJQtihlFhBBk1g52
-	5bHfJLB7Jtm7ZqgJNtFgo/xTCaKhJtPYSwr0LHHw2HAP+eobqOOZNwmGB6LkUSHf
-	mVKN4CuNN7aZVVJmDQ99sPdO7UUrmm1m+zvAsT1uIUjK3RHlCfHCxHfP7viPbJ70
-	1ZZsxL8mJ81xPC4EKRzbDMJdmRpj19E0mH1vm40vehbb2UMuRWeaQgXCOWO+F3tF
-	CWDeiAEJy70SZPAG5BdZU08he8U5Uc+4s5W59Vrw==
-Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4es1u0gb2c-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 15 Jun 2026 13:42:22 +0000 (GMT)
-Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma11.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 65FDYskr005326;
-	Mon, 15 Jun 2026 13:42:21 GMT
-Received: from smtprelay06.dal12v.mail.ibm.com ([172.16.1.8])
-	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4esm7xxj46-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 15 Jun 2026 13:42:21 +0000 (GMT)
-Received: from smtpav06.dal12v.mail.ibm.com (smtpav06.dal12v.mail.ibm.com [10.241.53.105])
-	by smtprelay06.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 65FDgKFq61800938
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 15 Jun 2026 13:42:21 GMT
-Received: from smtpav06.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id D2D165805E;
-	Mon, 15 Jun 2026 13:42:20 +0000 (GMT)
-Received: from smtpav06.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 8D05D58043;
-	Mon, 15 Jun 2026 13:42:20 +0000 (GMT)
-Received: from d (unknown [9.61.47.236])
-	by smtpav06.dal12v.mail.ibm.com (Postfix) with ESMTPS;
-	Mon, 15 Jun 2026 13:42:20 +0000 (GMT)
-From: Dave Marquardt <davemarq@linux.ibm.com>
-To: Tyrel Datwyler <tyreld@linux.ibm.com>
-Cc: "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
-        "Martin
- K. Petersen" <martin.petersen@oracle.com>,
-        Madhavan Srinivasan
- <maddy@linux.ibm.com>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        Nicholas
- Piggin <npiggin@gmail.com>,
-        "Christophe Leroy (CS GROUP)"
- <chleroy@kernel.org>,
-        linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-        linuxppc-dev@lists.ozlabs.org, Brian King
- <brking@linux.ibm.com>,
-        Greg Joyce <gjoyce@linux.ibm.com>,
-        Kyle Mahlkuch
- <kmahlkuc@linux.ibm.com>
-Subject: Re: [PATCH v2 3/7] ibmvfc: make ibmvfc login to fabric
-In-Reply-To: <bfb7ff08-e4ec-46a2-b368-12d5c77f0ee4@linux.ibm.com> (Tyrel
-	Datwyler's message of "Fri, 12 Jun 2026 16:11:50 -0700")
-References: <20260608-ibmvfc-fpin-support-v2-0-d41f540fba5c@linux.ibm.com>
-	<20260608-ibmvfc-fpin-support-v2-3-d41f540fba5c@linux.ibm.com>
-	<bfb7ff08-e4ec-46a2-b368-12d5c77f0ee4@linux.ibm.com>
-Date: Mon, 15 Jun 2026 08:42:20 -0500
-Message-ID: <87fr2ngbsz.fsf@linux.ibm.com>
-User-Agent: Gnus/5.13 (Gnus v5.13)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gfBss1467z3btJ
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jun 2026 00:13:04 +1000 (AEST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=GEdg+xWr7I7tGXYBy0kV8aopDB0KP7zUY6jiQ4H85/FCY4bYuFm821hOZoUKhZeeDJ7l/u+GJWYSRd3GTM9f4T2ixmbSD/xkzDMXwF+hjuWTMSj37N4QufUNEJLsirIiUyuRiraOADsvDLQLD/zhPYV7nlr1zRLuZV7dR1USwLz4k/O2KoWf6Z69+H0NBBV/oLv98dR08WazWiNmwLc4c7LoTMWG2OD6/0vYtc33Qgou4kQf0jS3nP+e4pbGIltqTM4yljM3KadCElIVs8Q3WdvikbOFsn1LohK+IpylQKp/79YAcOGiSkpLYia3Wg2tN4+s9kqzoGre8JGQRIopJw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=Z1NDKA3jUcCwR08SohW76QoktiW7yDfkNTkQyZBLomQ=;
+ b=O9xy9sf+P38NOxfl8Avp5cZe9/Ws2RXyOo7/2VLC1OAh4zOrisHzn7mN8q5qQ3d9CUN48MIcend1iKACf3vfM0ahZQOx4V+iPVD5GKOTO0uI2CUzuJTcQz/qdSNu/ww3yD52TFcVLeyhtLhC1i+2zlw7TfJLZsjqe3rnw0Rgq2CiRyREdiCtll0FQAYKL+1eknmSj2JQNKOBjRZnRcpmDz/Ri1Oh1NQ8I9kDHtAxMngKJ8/zNnCSfdyO8lCNa77qN0/VQ7R/W/H//UoG1y2wkLSb5A3g1wbVf6b/W88lScYpUnCw2osZ/GDo66EFOu92myA0HeEc3T98sEBfIAE4jQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=oss.nxp.com; dmarc=pass action=none header.from=oss.nxp.com;
+ dkim=pass header.d=oss.nxp.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=NXP1.onmicrosoft.com;
+ s=selector1-NXP1-onmicrosoft-com;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=Z1NDKA3jUcCwR08SohW76QoktiW7yDfkNTkQyZBLomQ=;
+ b=q3e6DRcWefQYMy2h+8ycoVSNJYC3fR6xUjY9C9sUUJhx6oGIsn9kE3jlg/1ZOQGXCr/7v+yIRdtazeQD1cIB9l588eD6rdGhORjsv4VUx07X84xmDrnA+zkNNAsnReS2LyYvepeYZPS9h4CUsVkjjv33UPnkZIR1DRUPkqBPy6yfDDat8OPvKYsiJ5veUP/JILSGPQajyUzoL4kjfLfSSBYFE7xLUT3bS8VhrFbOnPKojY5JIZcFFW9r0QO1GoJfxld/7buyiqEzIsRN5avXwsnU+1KI/TRsux+cvpH/E0JwmWReQtyKHhi8QNxwjzXJmCC1ryXX2pRexlQNRuMwQg==
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=oss.nxp.com;
+Received: from GV2PR04MB11799.eurprd04.prod.outlook.com (2603:10a6:150:2cf::9)
+ by AM8PR04MB7459.eurprd04.prod.outlook.com (2603:10a6:20b:1dc::11) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.113.18; Mon, 15 Jun
+ 2026 14:12:37 +0000
+Received: from GV2PR04MB11799.eurprd04.prod.outlook.com
+ ([fe80::2146:83a2:5329:b7c]) by GV2PR04MB11799.eurprd04.prod.outlook.com
+ ([fe80::2146:83a2:5329:b7c%6]) with mapi id 15.21.0113.015; Mon, 15 Jun 2026
+ 14:12:37 +0000
+Date: Mon, 15 Jun 2026 09:12:25 -0500
+From: Frank Li <Frank.li@oss.nxp.com>
+To: phucduc.bui@gmail.com
+Cc: Mark Brown <broonie@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>,
+	Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>,
+	Shengjiu Wang <shengjiu.wang@gmail.com>,
+	Xiubo Li <Xiubo.Lee@gmail.com>, Frank Li <Frank.Li@nxp.com>,
+	Fabio Estevam <festevam@gmail.com>,
+	Nicolin Chen <nicoleotsuka@gmail.com>,
+	Sascha Hauer <s.hauer@pengutronix.de>,
+	Pengutronix Kernel Team <kernel@pengutronix.de>,
+	linux-sound@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org, imx@lists.linux.dev,
+	linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v2 09/11] ASoC: fsl_rpmsg: Use guard() for mutex & spin
+ locks
+Message-ID: <ajAISbgHDbQB7-cK@SMW015318>
+References: <20260615093824.115751-1-phucduc.bui@gmail.com>
+ <20260615093824.115751-10-phucduc.bui@gmail.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260615093824.115751-10-phucduc.bui@gmail.com>
+X-ClientProxiedBy: SN7PR04CA0217.namprd04.prod.outlook.com
+ (2603:10b6:806:127::12) To GV2PR04MB11799.eurprd04.prod.outlook.com
+ (2603:10a6:150:2cf::9)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -105,137 +93,243 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-GUID: 8u22F-5ZuVfIGMU1LG1gjHNN8Q2486UM
-X-Authority-Analysis: v=2.4 cv=XdK5Co55 c=1 sm=1 tr=0 ts=6a30013e cx=c_pps
- a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
- a=FelO9ux0wxsA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=Y2IxJ9c9Rs8Kov3niI8_:22 a=VnNF1IyMAAAA:8 a=XpNYvxSjXNYYdcPCh5QA:9
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjE1MDE0MCBTYWx0ZWRfXyww3q4H4sX7z
- GEBlp/6aVGTE/1F8LTaGr5Bt/Nzk/wF4Zw6NkUJ1cVRSuqnK5Fnz70O2JYj76ILvdvKv2I3HHQ1
- CvWqP8gwiilp9baN+smOcXycHncoj1DR83F2zfXfTSqtQubPHxZsEUTXEHCzPylZOuvv5g9+iCM
- C43DmrqP4CxIkLN/rgbi0MMzHfLoRnTXP5ZdnXCbrEV2MMdeEuYTrJPhhoTcuVF8N28qaUeLzBb
- 8EbVcuY4jMk/bAKWAOxOdJN9HD5l0J6lDDNfbxxCE6P3Nl0skSvPTGGfvFR1zzbYtsOocCJn+3G
- CfVV9Hvplk2qqyARSRzEkdpCg4FHf1z8404WwEYrUMI704F7HlPraJgpFcZ+QeHxeUQYG+5Sj9E
- Q8P3ZXBLpnMsXM+MFZ1nm9hHE91DWnJ831SV3tbIORwnA+hDDIyeBRXE81KJ7Z1Dpe8ZWFJ/zTc
- Gc7cIlql4qn/fJydaug==
-X-Proofpoint-ORIG-GUID: o_eAyPbjzhEC7E28p1u7-6JtD0ON0pqo
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNjE1MDE0MCBTYWx0ZWRfX8rk26948JXO3
- eBMop23yX6JIdm+z0iGbBu4OqEC3/9oPhP18vM5yBuUT+VbDPSjYxJQu7gAkyXS/OsWxKAIREFZ
- 56LbjGxp3NeXToiScy5wSwCr6MKQNoE=
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
- definitions=2026-06-15_03,2026-06-15_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- suspectscore=0 lowpriorityscore=0 clxscore=1015 bulkscore=0 malwarescore=0
- spamscore=0 phishscore=0 priorityscore=1501 impostorscore=0 adultscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606040000 definitions=main-2606150140
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: GV2PR04MB11799:EE_|AM8PR04MB7459:EE_
+X-MS-Office365-Filtering-Correlation-Id: 0e2f6ba2-d5b3-43e1-aa8f-08decae826e2
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|7416014|19092799006|376014|1800799024|366016|23010399003|22082099003|18002099003|4143699003|11063799006|56012099006;
+X-Microsoft-Antispam-Message-Info:
+	bVTYyBPTUWP6bOlxReN5i9QsBh5EwkfYj4woeTxkr85azVwR5U7iku0HDVj73bHM2CtqJHTGYvVTtjRSYxYFryEI6oKxdVEP/699oHXkMqlwf7Gw+G9YHadQS0VuutqJaLNNd5lhxtO6VjYSljiQkxRv3tffhghHqNYoInjZs6bKpNMIKVCreUTUrbirAdXIz26dFl9UrFn4/7IfN5DYbvRFx9Fvjh1cH4lMrcVYSUaweqtC4XPhjUm1uuFZZrGVXGshXGGUQ6JebCsG6XGsHZ0QMaNWnIaB25X93guNxi9xgQEdK+wgfSlIMlUIxuvmgesiHJ9zu7wVlX2wdU//4DijtXz/1t1c7XXu/LKQvYE7d4HKdQaisdE1bqV6knhSu+sdBwlx4Kc6H+iS3vT5HCij87crwPpzLfrHo5bLE791vMCIzNaRQa3gmjUn2Zg4vm45wtw3Zw5liak4k90YPHJEVmLGma/OBTd26Uxsex0p24FAjUW2ZwujhuDBT4yT1jrfRq51D5GpQsEq7GRyTCNWhP/FeHgGv8biyjSmwGgrPcuOaXJ0YP9N144e5jdYHFdXlGpHTcvJS5Fj7R2wsPVlnFD2kIsf/BpM7EDZII0og6E+9WnikBqPW0NB3NKUvlhKtsjIjrcivASqmkUXogyGpTsyBUsqAumeGZSF38idC6fQLeW3Q6IurqLv++K1
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:GV2PR04MB11799.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(7416014)(19092799006)(376014)(1800799024)(366016)(23010399003)(22082099003)(18002099003)(4143699003)(11063799006)(56012099006);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?us-ascii?Q?C1P29ox21Spu/RZwc5M+ClmxnZ1OpHq0svsSKp1p8ghlz0iVW47RYlDygY+M?=
+ =?us-ascii?Q?yDhKrjz4V1gqVF2mJjHct3lomwxGlMb415ZkXg9lHgQr4weLUTOHsO34Xvvy?=
+ =?us-ascii?Q?K+Hj3mAfWaftHmXc/hjObQrRuvyg8s8eEKShBvCsPHfiGoR0V8pUnMEHXYUA?=
+ =?us-ascii?Q?GBiUuI2wH/BwErdL+gzxR1ov828VIMSybsOPoQC2W+8PBBmMlcTfH7uf7G/r?=
+ =?us-ascii?Q?S9xo30EEmlwUK4QiKA6upd693Yo47MNRf6n/MnF1+WyUo79J5Z3mcMMUxrwf?=
+ =?us-ascii?Q?+B9t4DQtKj/9ONg+Vux3flmf70woRzQgW8evSKJSpGzapbIvJ264MlutuQK2?=
+ =?us-ascii?Q?M5feJHhYgO/9yl7blsX9oGUqv6/96KH1Y8hWnZU/8bhmhU7MBdvPDJidpgp/?=
+ =?us-ascii?Q?+rhH2u0HaF9+CboVoDD7oi66H+cKdE8RbOcrjVTWQiFJCwJ+4urm50ybHePm?=
+ =?us-ascii?Q?kNkFNRSl5FGl77577wUeoh0D5M/H3eHNLmStj2IdMIRNPHOAU4W/FqVbDidb?=
+ =?us-ascii?Q?x1lE/htrrg1JebiIDqNk+AOvR6v1YQrsgqz+5Jza0MkLVRFo8hmOOeH+WJ/b?=
+ =?us-ascii?Q?5F3r9wYyi6LuHewNfzQn0qNr+IHBZuCRadVGe2XSrwyf6PlUN9wiwnCFByJO?=
+ =?us-ascii?Q?nnHtrJIl6HRDve6RvYTdgBXpa7/+LBV99OUMSiqCHjZCx3+WXPki9tAc0HpN?=
+ =?us-ascii?Q?dhAqBDMlMNWvuiFEQWJEIZz96hIF2m72y6IHnKEbShqGEbRDyP23ZA1FfIeJ?=
+ =?us-ascii?Q?msu/x1LO+SKdKuMnrAgvLvzp3jrUWwqwOJYrOGG+YCDbdbsOHmcd7N693RdK?=
+ =?us-ascii?Q?XO+HVoDddDO1oO9tCp8CVEyy+CB9CmOhOoShBEh5zMZjPVOWfrg75PkDaeR3?=
+ =?us-ascii?Q?dLyG4rj513SiYKxG/DAnzhyK9BwKGdXrY3qMXZcjdOfa/G7KOiWeWlyLiMa3?=
+ =?us-ascii?Q?5h9ryfAK/znfj+LWP46zRXW7ohucb9ohWV5ZF4jLpKhTOb2UO61Q5eCTz1lb?=
+ =?us-ascii?Q?2c98m854C5RpJ9xLdP9fsd6rWHIpGFVtREPMZm/hrX+Gs5SKQS9RWGDBZ7zi?=
+ =?us-ascii?Q?RCkMFwKaqXxzSA9yOK5CL8hKkYLhOlw5keZneW7oDyf6RKMlBEZGFkndae/+?=
+ =?us-ascii?Q?ybptYtd6IIR4MgONfxYAgaU2teOFPhi8V1K0/aHlpHTMC/BTTp7hIpHYYBYk?=
+ =?us-ascii?Q?1h+kYzuTgRHsrzipWQmCGl9xLP8qBO2cXnMYy8VaTfzHPlkl6FQ2UNbBc6gH?=
+ =?us-ascii?Q?jnyf/vZBG6anr7SRy3w7jE6fenwbVYnE6WrAfopNmEIpHRfmy4qi7CiBseeL?=
+ =?us-ascii?Q?Q/a/vvwVoKhqQ/Ld13ethAzZutz0nPt9v8n9b28VL/ZoPf9HY0hyf73XsBZH?=
+ =?us-ascii?Q?zUEW/FfXL9olA/5SHPUGi680PvrAHzCvFMGF//NVNd2GdKO1PbsDgEknuQDy?=
+ =?us-ascii?Q?30JZAQidzuzeMEU46hBXv8Hbo5vDjqRJtT1p8s9TOv/TpTACnCe1iaEpjjbD?=
+ =?us-ascii?Q?5R4VenRYnFO3+O1k5JTZnQqYM+RWfL56m7NP8reM+aOJQkWVErhtoQ4RQ6UT?=
+ =?us-ascii?Q?P3artZpu9RPLOa0XTjA0JwytIZDtgITKGUyk29HIbm9d24nZXJlAFoJr1aph?=
+ =?us-ascii?Q?Z0EGJxZP5NUKwr6CP9hkLOaSD6nwOl9NcmRAgj8sFNKW4QsURmIbQsftOygS?=
+ =?us-ascii?Q?bAhOZzVdRtEyTzG6cDHKQYb9KCRFgeP5E9aJaPmWFfBQwmYqCHAOg99JUmuq?=
+ =?us-ascii?Q?5DhX5JgqezMAWbe8FGA5UzTMlLv874ssuVPVH83CXCzRJ+JvBoqB?=
+X-OriginatorOrg: oss.nxp.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 0e2f6ba2-d5b3-43e1-aa8f-08decae826e2
+X-MS-Exchange-CrossTenant-AuthSource: GV2PR04MB11799.eurprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 15 Jun 2026 14:12:36.9851
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: EIR52jUCqw9HpFJFuVR6Bvj8Bpt4zazcvZHJ0amxeGYeEj/LW+OVwVjeTyB9mHV3XOr9xF6xp3lrmzBZB6qO+fGFfcS9mPszdlZjXMxrgaSSThx/QHVT9ecmvUijGRMM
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: AM8PR04MB7459
 
-Tyrel Datwyler <tyreld@linux.ibm.com> writes:
-
-> On 6/8/26 11:30 AM, Dave Marquardt via B4 Relay wrote:
->> From: Dave Marquardt <davemarq@linux.ibm.com>
->> 
->> Add support for fabric login in order to support the asynchronous
->> event queue with its own interrupt as required by NPIV specification
->> to support the asynchronous sub-queue and interrupt in order to
->> support full and extended FPIN messages.
->> ---
->>  drivers/scsi/ibmvscsi/ibmvfc.c | 94 ++++++++++++++++++++++++++++++++++++++++--
->>  drivers/scsi/ibmvscsi/ibmvfc.h | 16 +++++++
->>  2 files changed, 106 insertions(+), 4 deletions(-)
->> 
->> diff --git a/drivers/scsi/ibmvscsi/ibmvfc.c b/drivers/scsi/ibmvscsi/ibmvfc.c
->> index 88386d7c9106..a18861808325 100644
->> --- a/drivers/scsi/ibmvscsi/ibmvfc.c
->> +++ b/drivers/scsi/ibmvscsi/ibmvfc.c
->> @@ -5244,6 +5244,86 @@ static void ibmvfc_discover_targets(struct ibmvfc_host *vhost)
->>  		ibmvfc_link_down(vhost, IBMVFC_LINK_DEAD);
->>  }
->>  
->> +static void ibmvfc_fabric_login_done(struct ibmvfc_event *evt)
->> +{
->> +	struct ibmvfc_fabric_login *rsp = &evt->xfer_iu->fabric_login;
->> +	u32 mad_status = be16_to_cpu(rsp->common.status);
->> +	struct ibmvfc_host *vhost = evt->vhost;
->> +	int level = IBMVFC_DEFAULT_LOG_LEVEL;
->> +
->> +	ENTER;
->> +
->> +	switch (mad_status) {
->> +	case IBMVFC_MAD_SUCCESS:
->> +		fc_host_port_id(vhost->host) = be64_to_cpu(rsp->nport_id);
->> +		ibmvfc_free_event(evt);
->> +		break;
->> +
->> +	case IBMVFC_MAD_FAILED:
->> +		if (ibmvfc_retry_cmd(be16_to_cpu(rsp->status), be16_to_cpu(rsp->error)))
->> +			level += ibmvfc_retry_host_init(vhost);
->> +		else
->> +			ibmvfc_link_down(vhost, IBMVFC_LINK_DEAD);
->> +		ibmvfc_log(vhost, level, "Fabric Login failed: %s (%x:%x)\n",
->> +			   ibmvfc_get_cmd_error(be16_to_cpu(rsp->status), be16_to_cpu(rsp->error)),
->> +						be16_to_cpu(rsp->status), be16_to_cpu(rsp->error));
->> +		ibmvfc_free_event(evt);
->> +		LEAVE;
->> +		return;
->> +
->> +	case IBMVFC_MAD_CRQ_ERROR:
->> +		ibmvfc_retry_host_init(vhost);
->> +		fallthrough;
->> +
->> +	case IBMVFC_MAD_DRIVER_FAILED:
->> +		ibmvfc_free_event(evt);
->> +		LEAVE;
->> +		return;
->> +
->> +	default:
->> +		dev_err(vhost->dev, "Invalid fabric Login response: 0x%x\n", mad_status);
->> +		ibmvfc_link_down(vhost, IBMVFC_LINK_DEAD);
->> +		ibmvfc_free_event(evt);
->> +		LEAVE;
->> +		return;
->> +	}
->> +
->> +	ibmvfc_set_host_action(vhost, IBMVFC_HOST_ACTION_QUERY);
->> +	wake_up(&vhost->work_wait_q);
->> +
->> +	LEAVE;
->> +}
->> +
->> +static void ibmvfc_fabric_login(struct ibmvfc_host *vhost)
->> +{
->> +	struct ibmvfc_fabric_login *mad;
->> +	struct ibmvfc_event *evt = ibmvfc_get_reserved_event(&vhost->crq);
->> +	int level = IBMVFC_DEFAULT_LOG_LEVEL;
->> +
->> +	if (!evt) {
->> +		ibmvfc_log(vhost, level, "Fabric Login failed: no available events\n");
->> +		ibmvfc_hard_reset_host(vhost);
->> +		return;
->> +	}
->> +
->> +	ibmvfc_init_event(evt, ibmvfc_fabric_login_done, IBMVFC_MAD_FORMAT);
->> +	mad = &evt->iu.fabric_login;
->> +	memset(mad, 0, sizeof(*mad));
->> +	if (vhost->scsi_scrqs.protocol == IBMVFC_PROTO_SCSI)
->> +		mad->common.opcode = cpu_to_be32(IBMVFC_FABRIC_LOGIN);
->> +	else {
->> +		ibmvfc_log(vhost, level, "Fabric Login failed: unknown protocol\n");
->> +		return;
->> +	}
+On Mon, Jun 15, 2026 at 04:38:22PM +0700, phucduc.bui@gmail.com wrote:
+> From: bui duc phuc <phucduc.bui@gmail.com>
 >
-> This check is pretty pedantic. Seeing as you are directly referencing the scsi
-> sub-crqs. The protocol field exists so we can pass the sub-crqs blindly and the
-> code once NVMf comes along can determine the protocol.
+> Clean up the code using guard() for mutex & spin locks.
+> Merely code refactoring, and no behavior change.
 >
-> Also, if somehow this was ever possibly the case you would leak the event
-> structure. I think we can drop the check all together.
+> Signed-off-by: bui duc phuc <phucduc.bui@gmail.com>
+> ---
 
-Okay, I'll drop this.
+Reviewed-by: Frank Li <Frank.Li@nxp.com>
 
--Dave
+>  sound/soc/fsl/imx-pcm-rpmsg.c | 69 +++++++++++++++--------------------
+>  1 file changed, 30 insertions(+), 39 deletions(-)
+>
+> diff --git a/sound/soc/fsl/imx-pcm-rpmsg.c b/sound/soc/fsl/imx-pcm-rpmsg.c
+> index 031e5272215d..7210393dfa5d 100644
+> --- a/sound/soc/fsl/imx-pcm-rpmsg.c
+> +++ b/sound/soc/fsl/imx-pcm-rpmsg.c
+> @@ -39,10 +39,9 @@ static int imx_rpmsg_pcm_send_message(struct rpmsg_msg *msg,
+>  	struct rpmsg_device *rpdev = info->rpdev;
+>  	int ret = 0;
+>
+> -	mutex_lock(&info->msg_lock);
+> +	guard(mutex)(&info->msg_lock);
+>  	if (!rpdev) {
+>  		dev_err(info->dev, "rpmsg channel not ready\n");
+> -		mutex_unlock(&info->msg_lock);
+>  		return -EINVAL;
+>  	}
+>
+> @@ -55,15 +54,12 @@ static int imx_rpmsg_pcm_send_message(struct rpmsg_msg *msg,
+>  			 sizeof(struct rpmsg_s_msg));
+>  	if (ret) {
+>  		dev_err(&rpdev->dev, "rpmsg_send failed: %d\n", ret);
+> -		mutex_unlock(&info->msg_lock);
+>  		return ret;
+>  	}
+>
+>  	/* No receive msg for TYPE_C command */
+> -	if (msg->s_msg.header.type == MSG_TYPE_C) {
+> -		mutex_unlock(&info->msg_lock);
+> +	if (msg->s_msg.header.type == MSG_TYPE_C)
+>  		return 0;
+> -	}
+>
+>  	/* wait response from rpmsg */
+>  	ret = wait_for_completion_timeout(&info->cmd_complete,
+> @@ -71,7 +67,6 @@ static int imx_rpmsg_pcm_send_message(struct rpmsg_msg *msg,
+>  	if (!ret) {
+>  		dev_err(&rpdev->dev, "rpmsg_send cmd %d timeout!\n",
+>  			msg->s_msg.header.cmd);
+> -		mutex_unlock(&info->msg_lock);
+>  		return -ETIMEDOUT;
+>  	}
+>
+> @@ -100,8 +95,6 @@ static int imx_rpmsg_pcm_send_message(struct rpmsg_msg *msg,
+>  	dev_dbg(&rpdev->dev, "cmd:%d, resp %d\n", msg->s_msg.header.cmd,
+>  		info->r_msg.param.resp);
+>
+> -	mutex_unlock(&info->msg_lock);
+> -
+>  	return 0;
+>  }
+>
+> @@ -109,14 +102,13 @@ static int imx_rpmsg_insert_workqueue(struct snd_pcm_substream *substream,
+>  				      struct rpmsg_msg *msg,
+>  				      struct rpmsg_info *info)
+>  {
+> -	unsigned long flags;
+>  	int ret = 0;
+>
+>  	/*
+>  	 * Queue the work to workqueue.
+>  	 * If the queue is full, drop the message.
+>  	 */
+> -	spin_lock_irqsave(&info->wq_lock, flags);
+> +	guard(spinlock_irqsave)(&info->wq_lock);
+>  	if (info->work_write_index != info->work_read_index) {
+>  		int index = info->work_write_index;
+>
+> @@ -130,7 +122,6 @@ static int imx_rpmsg_insert_workqueue(struct snd_pcm_substream *substream,
+>  		info->msg_drop_count[substream->stream]++;
+>  		ret = -EPIPE;
+>  	}
+> -	spin_unlock_irqrestore(&info->wq_lock, flags);
+>
+>  	return ret;
+>  }
+> @@ -523,7 +514,6 @@ static int imx_rpmsg_pcm_ack(struct snd_soc_component *component,
+>  	snd_pcm_sframes_t avail;
+>  	struct timer_list *timer;
+>  	struct rpmsg_msg *msg;
+> -	unsigned long flags;
+>  	int buffer_tail = 0;
+>  	int written_num;
+>
+> @@ -553,11 +543,11 @@ static int imx_rpmsg_pcm_ack(struct snd_soc_component *component,
+>  		msg->s_msg.param.buffer_tail = buffer_tail;
+>
+>  		/* The notification message is updated to latest */
+> -		spin_lock_irqsave(&info->lock[substream->stream], flags);
+> -		memcpy(&info->notify[substream->stream], msg,
+> -		       sizeof(struct rpmsg_s_msg));
+> -		info->notify_updated[substream->stream] = true;
+> -		spin_unlock_irqrestore(&info->lock[substream->stream], flags);
+> +		scoped_guard(spinlock_irqsave, &info->lock[substream->stream]) {
+> +			memcpy(&info->notify[substream->stream], msg,
+> +			       sizeof(struct rpmsg_s_msg));
+> +			info->notify_updated[substream->stream] = true;
+> +		}
+>
+>  		if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK)
+>  			avail = snd_pcm_playback_hw_avail(runtime);
+> @@ -640,7 +630,7 @@ static void imx_rpmsg_pcm_work(struct work_struct *work)
+>  	bool is_notification = false;
+>  	struct rpmsg_info *info;
+>  	struct rpmsg_msg msg;
+> -	unsigned long flags;
+> +	bool updated;
+>
+>  	work_of_rpmsg = container_of(work, struct work_of_rpmsg, work);
+>  	info = work_of_rpmsg->info;
+> @@ -651,25 +641,26 @@ static void imx_rpmsg_pcm_work(struct work_struct *work)
+>  	 * enough data in M core side, need to let M core know
+>  	 * data is updated immediately.
+>  	 */
+> -	spin_lock_irqsave(&info->lock[TX], flags);
+> -	if (info->notify_updated[TX]) {
+> -		memcpy(&msg, &info->notify[TX], sizeof(struct rpmsg_s_msg));
+> -		info->notify_updated[TX] = false;
+> -		spin_unlock_irqrestore(&info->lock[TX], flags);
+> -		info->send_message(&msg, info);
+> -	} else {
+> -		spin_unlock_irqrestore(&info->lock[TX], flags);
+> +	scoped_guard(spinlock_irqsave, &info->lock[TX]) {
+> +		updated = info->notify_updated[TX];
+> +		if (updated) {
+> +			memcpy(&msg, &info->notify[TX], sizeof(struct rpmsg_s_msg));
+> +			info->notify_updated[TX] = false;
+> +		}
+>  	}
+> -
+> -	spin_lock_irqsave(&info->lock[RX], flags);
+> -	if (info->notify_updated[RX]) {
+> -		memcpy(&msg, &info->notify[RX], sizeof(struct rpmsg_s_msg));
+> -		info->notify_updated[RX] = false;
+> -		spin_unlock_irqrestore(&info->lock[RX], flags);
+> +	if (updated)
+>  		info->send_message(&msg, info);
+> -	} else {
+> -		spin_unlock_irqrestore(&info->lock[RX], flags);
+> +
+> +	scoped_guard(spinlock_irqsave, &info->lock[RX]) {
+> +		updated = info->notify_updated[RX];
+> +		if (updated) {
+> +			memcpy(&msg, &info->notify[RX], sizeof(struct rpmsg_s_msg));
+> +			info->notify_updated[RX] = false;
+> +		}
+>  	}
+> +	if (updated)
+> +		info->send_message(&msg, info);
+> +
+>
+>  	/* Skip the notification message for it has been processed above */
+>  	if (work_of_rpmsg->msg.s_msg.header.type == MSG_TYPE_C &&
+> @@ -681,10 +672,10 @@ static void imx_rpmsg_pcm_work(struct work_struct *work)
+>  		info->send_message(&work_of_rpmsg->msg, info);
+>
+>  	/* update read index */
+> -	spin_lock_irqsave(&info->wq_lock, flags);
+> -	info->work_read_index++;
+> -	info->work_read_index %= WORK_MAX_NUM;
+> -	spin_unlock_irqrestore(&info->wq_lock, flags);
+> +	scoped_guard(spinlock_irqsave, &info->wq_lock) {
+> +		info->work_read_index++;
+> +		info->work_read_index %= WORK_MAX_NUM;
+> +	}
+>  }
+>
+>  static int imx_rpmsg_pcm_probe(struct platform_device *pdev)
+> --
+> 2.43.0
+>
+>
 
