@@ -1,63 +1,72 @@
-Return-Path: <linuxppc-dev+bounces-22670-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22671-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2FA61CD98DE
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Jun 2026 22:31:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 94D5CCD98DE
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Jun 2026 23:34:26 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gfPxS51wlz2ySS;
-	Tue, 16 Jun 2026 08:31:56 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=162.62.57.64
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781541796;
-	cv=none; b=Dtu05TD+dUHi7PvuLUuoAhvYUvSd375mN76MCBhbdRdqab6MlmMCHNprR53MY7dSaMdF2+e7U9PnjWoi2to/wnlmEVBS/q/T2jrXmPmH+3faZDHdQs5M+wZjOScDN+spsVPZ2xVVI27mR3MJ7dJx7UOJJ8EdeWwyXBalTS2vn7vZKrMs8PwMvr1gU8ye1bxuHPuI9owvYgYP9VimnfHN3OCEht5+ch14QfBiYnCUFgjzkMa035bFpuYJt/OfwBmKYKZsQqdnG4Wx0VpFu3uy05eaeWRPzY6jvFRwic39JDHmAulgtp/o6jMWVwezdE2vXGfEbcjzc70UOcAGUqPozA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gfRKX6BFvz2yv0;
+	Tue, 16 Jun 2026 09:34:24 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=130.133.4.66
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781566464;
+	cv=none; b=AUIAO95zVMGDZhq4Q1ICOKmbEwiSnvTvoehoMHwz4Zp7PrXmGVAI6BIUb+aiPegwLLJ1ojAMf516+T/JHn6MzHL1sswYRSamYFaVJxR3T70BxZX8HBrr9OPTcxkc82e9e2ygqE3C/5emkAxZmbkVcBr0kqyTg8mj3PGJezTAR5P13nIXD2g3FCp1Re7VNIROt0vLnSnplFbxpSK9kSYvy97zRJeATCwvvzWpyLC3JL02RMGqEC3lOZn0wSbV85IZ8e1/8c+xXu7rW28dhF0XpH0d8FOcjwdHNUwvB3yk3Y57g3Dq6ooVj6udNtVUGlY8VerFp97qHW5TvPR90ELk8A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1781541796; c=relaxed/relaxed;
-	bh=88RkaO2p7eyI794czkPMVu+KIuNd6h2Ce0G8XbguOj4=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=lYBQwGTK2FZKk7JOq7/DlzKryCpEyb4QPc7g1473eBj4xyTBj0G4Q44W0lPwQKVZpF9wdueqjEBwCOFBXE5zwfJ4yrKWImLxIuUiPHmVZCuf+mThtfIyI9raRVsOrtCxslVLF4mKKxkNkXzAIwSXsxvKjwvsLA1i2kNbLocjpLldqwuR47TzQnWw1hAnAVTpglCtJPNrp2BG+SzcXYPqzCwnu6pETmiZ2mZSqKzzCyj17LWiyYp2ZLfvPeSZwxb2d0vDp2gM/Ng9W94QxyEMnTnZmIdz7szGYzY8uoeAEGo++eINsgF0QBKE+82kliFARfad+bsRkZZfnI0UyB2t9g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=qq.com; dkim=pass (1024-bit key; unprotected) header.d=qq.com header.i=@qq.com header.a=rsa-sha256 header.s=s201512 header.b=emtfNPNS; dkim-atps=neutral; spf=pass (client-ip=162.62.57.64; helo=out162-62-57-64.mail.qq.com; envelope-from=xiaowu.417@qq.com; receiver=lists.ozlabs.org) smtp.mailfrom=qq.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=qq.com
+	t=1781566464; c=relaxed/relaxed;
+	bh=UcyzNe2kkvCr0tmZScGHxnkfzSMWsq/75HfrZoct7a8=;
+	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=iwKoHu+iqsRqOtAaQVzRUXjS9cbFM+J3aS7UVf9j1KtbUclU5grohuCl/UdiWuNfacTR8sUizDq54K2KfTOj0auxotQCYNe/DHMH/708tjjA10JF8atTuUXwXtv2mmbDhqSgDtELclFymHwZH5+hryUIrTnkHHVLvaDYzncdT3O8upTyha8J/TuPAWcBi5ZPB4e5d1qtBZyz10zqRCvavUsyWT5KOuYkfTmIaSKQ2WWFJkiEZYZwMOimfFztDm6f2AXbAMMK/iCSa5loOgsIyrYC6iGhsT+nAIWKuMToV19IyZt7aeBR464nv6mjAyuHAyW/igRhlFlJmBNBIwzrKw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=physik.fu-berlin.de; dkim=pass (2048-bit key; unprotected) header.d=fu-berlin.de header.i=@fu-berlin.de header.a=rsa-sha256 header.s=fub01 header.b=HIhpFWAT; dkim-atps=neutral; spf=pass (client-ip=130.133.4.66; helo=outpost1.zedat.fu-berlin.de; envelope-from=glaubitz@zedat.fu-berlin.de; receiver=lists.ozlabs.org) smtp.mailfrom=zedat.fu-berlin.de
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=physik.fu-berlin.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=qq.com header.i=@qq.com header.a=rsa-sha256 header.s=s201512 header.b=emtfNPNS;
+	dkim=pass (2048-bit key; unprotected) header.d=fu-berlin.de header.i=@fu-berlin.de header.a=rsa-sha256 header.s=fub01 header.b=HIhpFWAT;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=qq.com (client-ip=162.62.57.64; helo=out162-62-57-64.mail.qq.com; envelope-from=xiaowu.417@qq.com; receiver=lists.ozlabs.org)
-X-Greylist: delayed 372 seconds by postgrey-1.37 at boromir; Tue, 16 Jun 2026 02:43:12 AEST
-Received: from out162-62-57-64.mail.qq.com (out162-62-57-64.mail.qq.com [162.62.57.64])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=zedat.fu-berlin.de (client-ip=130.133.4.66; helo=outpost1.zedat.fu-berlin.de; envelope-from=glaubitz@zedat.fu-berlin.de; receiver=lists.ozlabs.org)
+Received: from outpost1.zedat.fu-berlin.de (outpost1.zedat.fu-berlin.de [130.133.4.66])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with UTF8SMTPS id 4gfGC46zFPz3bps
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jun 2026 02:43:12 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qq.com; s=s201512;
-	t=1781541785; bh=88RkaO2p7eyI794czkPMVu+KIuNd6h2Ce0G8XbguOj4=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=emtfNPNST5mBawuDTiCGVsr8whjhwBhTJ5dInV9XWmrtkpmBj9o2TOEJDOSYxdnEo
-	 YYj7NCcwJZvce9Bq51obPBjieWjQM5eJDcM6mQWvh96ZxMofEbUBqSpeqSuwbS/rOG
-	 x45kqbqkXzwaH8MB+/NSrSqMPXlcTaESLKhMaBsU=
-Received: from [192.168.3.157] ([115.156.144.140])
-	by newxmesmtplogicsvrszb51-1.qq.com (NewEsmtp) with SMTP
-	id 8D523424; Tue, 16 Jun 2026 00:35:21 +0800
-X-QQ-mid: xmsmtpt1781541321tv1d6gxea
-Message-ID: <tencent_5D21B8CE461994D9323FDEDA6441E4234407@qq.com>
-X-QQ-XMAILINFO: MZtEYADUG4AgQcDlRbWn1WDHT9RsUiLODzsMmDkuth3SXU7enl1Cz0cpGkadp4
-	 dtJ9TIoIlmsv+VbrB0mj3JVtfxNNP8fJROFZ1SIHEk12R5/QYWP2tl7HBdab968l3iyj17p9+erT
-	 /GzD9oisgYL2Tqqf8DeW/HtQR7gQmRHnrMy5tJdWHYHMff2a3ILp78HU+ZLeBl/K8FC7A7Jl+d3I
-	 77/7zGwryiTG2dhRfR0ubCJcrTDv/i0hpeXq9MYRzK0b2KBlCGFEBGjSq/I3+18rBtAXMUCk7qDg
-	 bucfiaR/+OxaahT3pXxGNqcw+NSgAHUBVWkflB6uFi2SYJjCg9IOr/2iB44SdL2YPyhZDxIM8ANG
-	 FnaTTwcsAy20JgyczsoNYoFQRfFIFFNtuNqrinDAyKIjCTYmFbaYjOboeJVnsOxtiz5AktuB+Yp2
-	 cFKTkbbNj5k9sh9XaUcbXXPTwsOzI9qYRtcMevSPZJM1x44xt3nUeO5+DQ1phzEcnZeUr1uqPR/E
-	 4KYkc4ctDsOjOGKnPfDF6/9Di5grSeECDqUkrQ4JNBUDTsJxEUk3kKYNuS+AQoFowsM6qn+EjnxV
-	 b2dTqPzsudSo0a6sD89jK+3PevK5J7eHU7AhL5LY2Wnfpsa85/o+qAkLT8ISricofWbCNrpajehr
-	 i3YvSloL7OapMTPRvTsrcSuKCpfFpZ8m+j+A1Q68nLJTUn4o8D7KgQIjqodMZRqkMV45WSm/Ai/3
-	 vW870bH0Gh5F8irIYk1GWHm9ZqOt65/P/dlNDXvHNT/PinUJIrmVkyfgLkr1IG1DilfIYcPRz2dR
-	 ly/qpw+cO642+dBlFjdg2ER3yx3w+RoXyf3nAwnaBHHNenCzteFrOjE32Ko5UAA5Ae6Vurbl47ko
-	 r/uebomp6YPlybogMdkMQJvGHshsqpMQ/fI7zgFsFp762mOleH+y1Avtv52GSh9QIt9PWeSAvLUj
-	 G5jAN/1a+268rq7nyyVZGLuFm6FRzKFexHaZwouPmef48lo7DGUTe/gL5Kfzz5zTVdbtCGFJWyGO
-	 kM3A0YyaD50PwQyxKXWByXOqdY2GeY+6e+54IZOQ==
-X-QQ-XMRINFO: MPJ6Tf5t3I/ylTmHUqvI8+Wpn+Gzalws3A==
-X-OQ-MSGID: <3ef0ecaa-3e0b-4583-8404-d552c62489db@qq.com>
-Date: Tue, 16 Jun 2026 00:35:21 +0800
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gfRKS4qffz2xnK
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jun 2026 09:34:19 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=fu-berlin.de; s=fub01; h=MIME-Version:Content-Transfer-Encoding:
+	Content-Type:References:In-Reply-To:Date:Cc:To:From:Subject:Message-ID:From:
+	Reply-To:Subject:Date:Message-ID:To:Cc:MIME-Version:Content-Type:
+	Content-Transfer-Encoding:Content-ID:Content-Description:In-Reply-To:
+	References; bh=UcyzNe2kkvCr0tmZScGHxnkfzSMWsq/75HfrZoct7a8=; t=1781566460;
+	x=1782171260; b=HIhpFWAT98G8IdY//G9+rrogMHf9tRrRx6T00JvzFSunW+ZN1ocftYrZ9o5S5
+	T8cVG4wftxptE5XQfas725120Y7JICTeQcekieianZb+q1N0ao11wrpGlE4GxM+Lhw9P0XHMdfqf9
+	GthfJ4r+O87RHqW09V/cv5FWZkvPRwTcOGFu0QjW5+6hiDSCdkI+kagN0wSM78t/cPmJvWusaZXSD
+	DQX03IA78dHjTDF9gPAm6JC7ciNXnobAuIYbMVMwhYPvD1e3nxYTrOF3w/j9pVrd84gcKAEXvqHtc
+	2tJdKBeczKZxNAk+13ghqVAU6im752vf9KbtnhGZSIiLhDs3CA==;
+Received: from inpost2.zedat.fu-berlin.de ([130.133.4.69])
+          by outpost.zedat.fu-berlin.de (Exim 4.99)
+          with esmtps (TLS1.3)
+          tls TLS_AES_256_GCM_SHA384
+          (envelope-from <glaubitz@zedat.fu-berlin.de>)
+          id 1wZGoh-00000000EPh-2I78; Tue, 16 Jun 2026 01:34:07 +0200
+Received: from p57bd94c1.dip0.t-ipconnect.de ([87.189.148.193] helo=suse-laptop.fritz.box)
+          by inpost2.zedat.fu-berlin.de (Exim 4.99)
+          with esmtpsa (TLS1.3)
+          tls TLS_AES_256_GCM_SHA384
+          (envelope-from <glaubitz@physik.fu-berlin.de>)
+          id 1wZGoh-00000000RxC-1Ebx; Tue, 16 Jun 2026 01:34:07 +0200
+Message-ID: <c3789160609a10e232ba3e27c4b13adbb170956c.camel@physik.fu-berlin.de>
+Subject: Re: [PATCH net-next 0/2] appletalk: move the protocol out of tree
+From: John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>
+To: Jakub Kicinski <kuba@kernel.org>, davem@davemloft.net
+Cc: netdev@vger.kernel.org, edumazet@google.com, pabeni@redhat.com, 
+	andrew+netdev@lunn.ch, horms@kernel.org, geert@linux-m68k.org,
+ chleroy@kernel.org, 	npiggin@gmail.com, mpe@ellerman.id.au,
+ maddy@linux.ibm.com, 	linux-mips@vger.kernel.org,
+ linux-m68k@lists.linux-m68k.org, 	linuxppc-dev@lists.ozlabs.org
+Date: Tue, 16 Jun 2026 01:34:06 +0200
+In-Reply-To: <20260615222935.947233-1-kuba@kernel.org>
+References: <20260615222935.947233-1-kuba@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+User-Agent: Evolution 3.60.2 
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -71,101 +80,66 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v4 07/19] mm/sparse: Move subsection_map_init() into
- sparse_init()
-To: Muchun Song <songmuchun@bytedance.com>, Oscar Salvador
- <osalvador@suse.de>, David Hildenbrand <david@kernel.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- Madhavan Srinivasan <maddy@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>
-Cc: Muchun Song <muchun.song@linux.dev>, Mike Rapoport <rppt@kernel.org>,
- Lorenzo Stoakes <ljs@kernel.org>, "Liam R . Howlett" <liam@infradead.org>,
- Vlastimil Babka <vbabka@kernel.org>, linux-mm@kvack.org,
- linux-kernel@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>,
- Christophe Leroy <chleroy@kernel.org>, Ritesh Harjani
- <ritesh.list@gmail.com>, "Aneesh Kumar K . V" <aneesh.kumar@linux.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, Mike Kravetz <mike.kravetz@oracle.com>
-References: <20260612035903.2468601-1-songmuchun@bytedance.com>
- <20260612035903.2468601-8-songmuchun@bytedance.com>
-From: XIAO WU <xiaowu.417@qq.com>
-In-Reply-To: <20260612035903.2468601-8-songmuchun@bytedance.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+X-Original-Sender: glaubitz@physik.fu-berlin.de
+X-Originating-IP: 87.189.148.193
+X-ZEDAT-Hint: PO
 
-Hi Muchun,
+Hello Jakub,
 
-Muchun Song <muchun.song@linux.dev> wrote:
- > mm/sparse: Move subsection_map_init() into sparse_init()
- >
- > This commit moves subsection_map_init() from free_area_init() into
- > sparse_init() so that sparse-specific setup stays together instead of 
-being
- > split across the generic free_area_init() path.
+On Mon, 2026-06-15 at 15:29 -0700, Jakub Kicinski wrote:
+> This tiny series moves appletalk out of tree, to:
+>=20
+>   https://github.com/linux-netdev/mod-orphan
+>=20
+> Core maintainainers are unable to keep up with the rate of security
+> bug reports and fixes. Nobody seems to care about appletalk enough
+> to review the patches.
 
-This patch introduces a new `sparse_init_subsection_map()` that iterates
-over all memblock ranges and calls `sparse_init_subsection_map_range()`:
+Why would fixing these vulnerabilities be relevant? No one is going to
+expose an Apple Talk server to an untrusted network, are they? The same
+applies to hamradio and AX.25, they are all used by hobbyists in DMZ
+networks, so no one really cares about vulnerabilities in these protocols.
 
- > +void __init sparse_init_subsection_map(void)
- > +{
- > +    int i, nid;
- > +    unsigned long start, end;
- > +
- > +    for_each_mem_pfn_range(i, MAX_NUMNODES, &start, &end, &nid)
- > +        sparse_init_subsection_map_range(start, end - start);
+I find it sad that AI tools are basically used to shoot at the kernel
+to kill off features as some people are apparently getting scared by
+these AI reports and just nuke everything in a panic reaction as if it
+wouldn't just be possible to disable these protocols at compile time
+to reduce the attack surface.
 
-However, earlier in `sparse_init()`, `memblocks_present()` calls
-`memory_present()`, which internally caps PFN ranges at
-`max_sparsemem_pfn` via `mminit_validate_memmodel_limits()`. Sections
-beyond this cap never have `ms->usage` allocated.
+> As Eric pointed out Mac OS dropped AppleTalk over a decade ago.
 
-`for_each_mem_pfn_range()` returns the raw, uncapped memblock ranges.
-If a range extends beyond `max_sparsemem_pfn`, then inside
-`sparse_init_subsection_map_range()`:
+That's not the point though. No one is going to use AppleTalk to network
+a Linux box to a modern macOS machine. The usefulness lies in hooking up
+a Linux box to a vintage Mac or other retro computer.
 
-     ms = __nr_to_section(nr);
-     subsection_mask_set(ms->usage->subsection_map, pfn, pfns);
+So far, one of the huge advantages of open source operating systems has
+always been that even niche use cases were supported and people could make
+use of old hardware by using open source operating systems over commercial
+offerings such as Windows or macOS.
 
-`ms->usage` is NULL because `sparse_init_early_section()` was never
-called for this section, causing a NULL pointer dereference.
+With the advent of AI security reports, these niche use cases are more and
+more being killed off with the argument that a vulnerability in the harmrad=
+io
+code could pose a threat to a large SAP database running on a Linux enterpr=
+ise
+distribution. However, if your enterprise distribution is enabling kernel
+features their customers aren't using and therefore enlarging the attack su=
+rface,
+it's more a problem of said enterprise distribution and not of these old an=
+d
+obscure network protocols.
 
-I was able to reproduce this on x86_64 with 4-level paging by booting
-with `memmap=4G@0x400080000000` to place a memblock range beyond the
-~64 TiB `max_sparsemem_pfn` limit.  The kernel crashes during early boot:
+I am trying my best to save as many classic features in the kernel as possi=
+ble
+to enable retro computing but I am sometimes fearing that commercial intere=
+st
+in the kernel is taking over too much making my efforts harder every day.
 
-   node  -1: [mem 0x0000400080000000-0x000040017fffffff]
-   ------------[ cut here ]------------
-   WARNING: mm/sparse.c:142 at sparse_init+0x1ac/0x8a0
-    ...
-   PANIC: early exception 0x0d IP 
-10:...sparse_init_subsection_map+0x12f/0x250
-   RIP: 0010:sparse_init_subsection_map+0x12f/0x250
-   Call Trace:
-    sparse_init+0x69f/0x8a0
-    mm_core_init_early+0x12fa/0x20c0
-    start_kernel+0x89/0x4e0
+Adrian
 
-The fix is a one-line NULL check in sparse_init_subsection_map_range():
-
---- a/mm/sparse-vmemmap.c
-+++ b/mm/sparse-vmemmap.c
-@@ -608,6 +608,8 @@ void __init sparse_init_subsection_map(unsigned long 
-pfn,
-          pfns = min(nr_pages, PAGES_PER_SECTION
-                  - (pfn & ~PAGE_SECTION_MASK));
-          ms = __nr_to_section(nr);
-+        if (!ms->usage)
-+            continue;
-          subsection_mask_set(ms->usage->subsection_map, pfn, pfns);
-
-On most systems `max_sparsemem_pfn` is large enough that this is never
-hit, but on 32-bit or PAE configurations where the limit is much lower,
-the mismatch between `for_each_mem_pfn_range()` and
-`mminit_validate_memmodel_limits()` can trigger with reasonable memory
-sizes.
-
-Thanks,
-Xiao
-
-
+--=20
+ .''`.  John Paul Adrian Glaubitz
+: :' :  Debian Developer
+`. `'   Physicist
+  `-    GPG: 62FF 8A75 84E0 2956 9546  0006 7426 3B37 F5B5 F913
 
