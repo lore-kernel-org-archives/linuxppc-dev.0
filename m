@@ -1,52 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-22614-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22615-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 81E37CD98CE
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Jun 2026 04:28:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1B6C0CD98C5
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Jun 2026 05:27:21 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gdxvM54vRz3bqD;
-	Mon, 15 Jun 2026 14:28:31 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=152.66.115.2
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781469753;
-	cv=none; b=CId0WFva8VjV5VOpGQlSD/tqw1sctcOEvdVaecqFwsbxtvu/Yr/VPQEQQELFqg3pWzahIVEqXbhezpwAOCJ2HCDflaeoxvmAtRI7e/RhFMfBcUWpQbNH97PnPayzwfiiIZfqH3vJ1Aep0djbp5fS2V1J0jdgwAGtVPUSu+RM6avs+xR1Cx/VFJQhZ3kDWR3doPceyU0JiZfdo7ld3vPVWkG0upySJMkiBoInsUddCe5Lc8B52BcfEM4z9oNhRs5VKAapPAZ13pIvgE9WU7rd99mVLe1inmk3eBL2f0NAdSOjJb/LoeHSyui+juXWM17+fFzwWcBcgDmwJ2Je2bv98w==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gdzCC4vLFz3bqD;
+	Mon, 15 Jun 2026 15:27:19 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781501239;
+	cv=none; b=C7DGxYzTBICd3eGvFExfVHHZkxmUDPMsQ9nOy/C7RzzMo/tiqeyr3+K4rPtYwziJ6AyWgxZZlC5CZKy9Gm1xQed1ZEVfKkEzzJYnfWM7r3z0svKbWDpLd/8QqvSI18fYtuKbg1Ok9gCc+5TUEpRL9opPNXVJPYcRZHaHvfe4sOWK7PVXilXRDRGwfGYgWo1UXqRPbCCjHaU0uNicy/9oMOGK+lfGv8fGF5mmn0lr/P7xBB/F+/sz7C9OzOmR81Ksr/wn6kMWNaIG/WHIwVRxAjBm7r09A63BHtMFQ8HMNXN/QQhEE8HQAyiyIEcA6ceYOeIQLWiaSmLWRWOJN8U4Eg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1781469753; c=relaxed/relaxed;
-	bh=YULG7w4wJ39NNUVSvI6EOpjSUYXWwAY90cURpKSz348=;
-	h=Date:From:To:cc:Subject:In-Reply-To:Message-ID:References:
-	 MIME-Version:Content-Type; b=AG5KOaAjBcU573muptgpnwoAyioaDFkK/cP+gAuIW9fh08U0kesXhW7MBWdqWSQwIRj3eLRIaax+UJRlmBRMuOr8HJj+JK5wOGvGrUvIJ1z/5STgZDYXYY0vSurJEi3njOadd8d7BNvW7ai5BPng0geHkmmS0vAh4Hsdv6t1FpOgLx+n6xNGCaGR4X4+TU+Tx5KS/vm02lGLHrRO2be4vgTpf2sBp+1NVyaVwWJQ4ncDrh7/Re+0JoSGtr0bLWQx7ZTvRaIPd9Q+usXwUoB9xqnebbi4iS+Ozp0O5zjJcJNG2dqeesEzyok61mPjRepzABapQEC3nz4s3BOIQDqY9Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=eik.bme.hu; spf=pass (client-ip=152.66.115.2; helo=zero.eik.bme.hu; envelope-from=balaton@eik.bme.hu; receiver=lists.ozlabs.org) smtp.mailfrom=eik.bme.hu
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=eik.bme.hu
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=eik.bme.hu (client-ip=152.66.115.2; helo=zero.eik.bme.hu; envelope-from=balaton@eik.bme.hu; receiver=lists.ozlabs.org)
-X-Greylist: delayed 409 seconds by postgrey-1.37 at boromir; Mon, 15 Jun 2026 06:42:31 AEST
-Received: from zero.eik.bme.hu (zero.eik.bme.hu [152.66.115.2])
+	t=1781501239; c=relaxed/relaxed;
+	bh=MTXDBWTfXt6cRYUwdTw+t527GMCbeNvBgpmrxZxDt/0=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=V2cepC9LMr0zEONbBafG3mIiXELkm64AqUpsc/MNBZ2gbUE9R9ESaCejQRBiYowvZpLXgkYQZiVAyDtjWqAMLRN9c5BvE8dZEo0hztlEe5jEsl1PIUOzC9/1wGLMr7ztWtB073+Fq4iovvs5Zg/0Ga4nHZokPl4l6G/GvdR8Imf+pG67ruXPvjTM+21IB7a7FU8X/3E5MgAnvADirVWCmMBfXlOMlVHGbSiE4q+/D30olSc2E1yjXO3tUJRhyjnxWZvSLl2PhmqSC4oViS190SZ9b0Ww0CNb4ZRApiVBsLF+3pGSLDsv38dvDsaezVzqJPaN5jaP36URs5B6bQvaHA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=T6NZwl5p; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=T6NZwl5p;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gdlYg2Mx9z2xjd
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jun 2026 06:42:31 +1000 (AEST)
-Received: from localhost (localhost [127.0.0.1])
-	by zero.eik.bme.hu (Postfix) with ESMTP id 9FA04596948;
-	Sun, 14 Jun 2026 22:35:36 +0200 (CEST)
-X-Virus-Scanned: amavis at eik.bme.hu
-Received: from zero.eik.bme.hu ([127.0.0.1])
- by localhost (zero.eik.bme.hu [127.0.0.1]) (amavis, port 10028) with ESMTP
- id ZsID2rzwcMKI; Sun, 14 Jun 2026 22:35:33 +0200 (CEST)
-Received: by zero.eik.bme.hu (Postfix, from userid 432)
-	id 0D8DB596945; Sun, 14 Jun 2026 22:35:33 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
-	by zero.eik.bme.hu (Postfix) with ESMTP id 0BD0A5968DE;
-	Sun, 14 Jun 2026 22:35:33 +0200 (CEST)
-Date: Sun, 14 Jun 2026 22:35:33 +0200 (CEST)
-From: BALATON Zoltan <balaton@eik.bme.hu>
-To: Andrew Randrianasulu <randrianasulu@gmail.com>
-cc: qemu-ppc@nongnu.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: Does kvm_pr work on G5 mac with host kernel 6.12.xx ?
-In-Reply-To: <CA+rFky73KGYwJRBuEBqFA1dKkDk0_W+u4VQL9bg2n1_AkeOU3g@mail.gmail.com>
-Message-ID: <fb610033-efd3-6fa6-bd80-c5dccc9296eb@eik.bme.hu>
-References: <CA+rFky7UDpHYFXvEiq91dpnfLuKCiaONctmW-q2jONmNG25Wow@mail.gmail.com> <418f045e-7aaf-c48b-4f08-018625b2c3e6@eik.bme.hu> <CA+rFky73KGYwJRBuEBqFA1dKkDk0_W+u4VQL9bg2n1_AkeOU3g@mail.gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gdzCB2qbsz2yR5
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jun 2026 15:27:17 +1000 (AEST)
+Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 65F1mUk9932245;
+	Mon, 15 Jun 2026 05:21:52 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=MTXDBW
+	TfXt6cRYUwdTw+t527GMCbeNvBgpmrxZxDt/0=; b=T6NZwl5pASScA8Y7flVAtv
+	9nAgS0int6yeFvxNEoQ2qBcKbMAgjEim8OueXfVcYK9Ra6bZyLiZkKOWBjXHceeC
+	5w3B2XF9UScG8sKjyOaGnbdE+Kd4wsMzVgrymq5W31plG+ETnyt8P/G9xW2mUO9W
+	a8mZDUuioTIwMZrah9rkopmk+lKoPDOXox2NcgwVwiJlSiw6AnZR0VyyE4TIGeOt
+	c7J+QaZeG6Z3G9Bge6eTq9MCycn2rXpF8SSznEs/fMAtks/bE9aJ2BHXZdvDqcJ7
+	gqEugLlE2QZs+hgYD25YkRCfhkIeZdrNmlha7CHzZHhmH6L3x278DPpQUEiovYmg
+	==
+Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4es1wkxwvd-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 15 Jun 2026 05:21:51 +0000 (GMT)
+Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma21.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 65F5JlpI029730;
+	Mon, 15 Jun 2026 05:21:50 GMT
+Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
+	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4esjhjw3c3-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 15 Jun 2026 05:21:50 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
+	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 65F5Lkh850266394
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Mon, 15 Jun 2026 05:21:46 GMT
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 6D7BF2004E;
+	Mon, 15 Jun 2026 05:21:46 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 2DDBB20040;
+	Mon, 15 Jun 2026 05:21:44 +0000 (GMT)
+Received: from [9.123.5.233] (unknown [9.123.5.233])
+	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Mon, 15 Jun 2026 05:21:43 +0000 (GMT)
+Message-ID: <c08eaf78-38ce-47f9-883d-5a009e768584@linux.ibm.com>
+Date: Mon, 15 Jun 2026 10:51:43 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -60,139 +81,91 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="3866299591-229711801-1781469333=:75274"
-
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
-
---3866299591-229711801-1781469333=:75274
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] powerpc: Restore kuap regs during syscall restart exit
+To: "Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com>
+Cc: Sayali Patil <sayalip@linux.ibm.com>, maddy@linux.ibm.com,
+        mpe@ellerman.id.au, npiggin@gmail.com, chleroy@kernel.org,
+        mkchauras@linux.ibm.com, ruanjinjie@huawei.com,
+        linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+References: <20260613123831.1510474-1-mkchauras@gmail.com>
+Content-Language: en-US
+From: Shrikanth Hegde <sshegde@linux.ibm.com>
+In-Reply-To: <20260613123831.1510474-1-mkchauras@gmail.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-Spam-Info: AW1haW4tMjYwNjE1MDA1MyBTYWx0ZWRfX8pa1Z/dsU/wp
+ hX+A2RMFf4/1kBaimQ24N/R20ymFoOffqIehViXy59PnigfMx0K7POAVw8L50rzATanr+CZJCH5
+ cmkUrsEg966ZjUpIjvbKqQw49DqpN/g=
+X-Proofpoint-GUID: ZrDr8-1oWe6NMI5_RFi6ctSV26R0G8TJ
+X-Authority-Analysis: v=2.4 cv=SY/HsPRu c=1 sm=1 tr=0 ts=6a2f8bef cx=c_pps
+ a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
+ a=IkcTkHD0fZMA:10 a=FelO9ux0wxsA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=U7nrCbtTmkRpXpFmAIza:22 a=VwQbUJbxAAAA:8
+ a=VnNF1IyMAAAA:8 a=pGLkceISAAAA:8 a=NTBBhXH5AvtzSzspoF0A:9 a=QEXdDO2ut3YA:10
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjE1MDA1MyBTYWx0ZWRfXwOjsosSgUxAm
+ ID68n3i+z0dzv6WFT93EgNFix2Zd/bZM/EMjI3gfs8iaZUnNm4sh2RFCbbnvOBscqIlSg7nHH/s
+ txLHv9TqkNkWq3myUKdUB/Tt+CYkmUbDlIYKEah9ImIv/jxcA90XsbZqQjUosCCK3G04MC9xnn2
+ bQminwL/RvbYCMc9KJ1IXqI7+Mt/vLqWa4qHBB1x/aRy4uWSPmFp4LuKmZhmXIYw+M/uxLWxdQ9
+ ZhcJ4ilPMpffHzoq39hjyYFZgh8tMaAGJvW2AMVviarwP0ezPadSJ0io9MjDGPGukzaPzZlHN1I
+ bH0DKmeO5hNoLQ7d4oLlsRQc9mbIQnp7OAvxnHxiahHRjOjVnDaHmSyuRvpQiKrch0Em0luX2H/
+ hPHUmadqLQQwBa2G/z9MjTcwg5zz8VK3s1g9hkoHzpaLA8IWVCDORRX3BQDcg/92pU5x7dhrRaA
+ nwa5ZR3Yx6Un/Os09AQ==
+X-Proofpoint-ORIG-GUID: SFj63Ts2DWjLimsohPgAkDCz16C182Wl
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
+ definitions=2026-06-15_01,2026-06-12_03,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ adultscore=0 phishscore=0 suspectscore=0 spamscore=0 impostorscore=0
+ malwarescore=0 bulkscore=0 lowpriorityscore=0 clxscore=1011
+ priorityscore=1501 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2606040000
+ definitions=main-2606150053
 
-On Sun, 14 Jun 2026, Andrew Randrianasulu wrote:
-> вс, 14 июн. 2026 г., 17:29 BALATON Zoltan <balaton@eik.bme.hu>:
->> On Sun, 14 Jun 2026, Andrew Randrianasulu wrote:
->>> I tried qemu 10.0.10 (qemu-system-ppc) compiled as ppc32 binary - fail
->>>
->>> I tried qemu 2.2.0 compiled as ppc64 binary (qemu-system-ppc and ppc64
->>> variants) -fail
->>>
->>> I tried qemu 5.0.0 compiled as 32bit ppc (qemu-system-ppc) - fail.
->>>
->>> I tried qemu 6.1.1 compiled as 32bit ppc binary - qemu-system-ppc. Fail.
->>>
->>> I tried recompiling host kernel without preemtion - still fail.
->>>
->>> :(
->>>
->>> fail like this in dmesg
->>>
->>> [75573.287328] Couldn't emulate instruction 0x00000000 (op 0 xop 0)
->>>                        [75573.287334] kvmppc_exit_pr_progint: emulation
->> at
->>> 100 failed (00000000)
->>>
->>>
->>> lscpu output:
->>> Architecture:                ppc64
->>>
->>> CPU op-mode(s):            32-bit, 64-bit
->>> Byte Order:                Big Endian
->>> CPU(s):                      2
->>>
->>> On-line CPU(s) list:       0,1
->>>
->>> Model name:                  PPC970MP, altivec supported
->>> Model:                     1.1 (pvr 0044 0101)
->> [...]
->>> Why so old qemu? Well, it worked on OSX Leopard 10.5.8 on same machine,
->> so
->>> I compiled it as 64bit ppc64 binary - new qemu grow a lot  ... and
->> keeping
->>> effectively 3 different dev systems makes this 160 gb hdd look small :)
->>
->> I don't know about it but I think the only combination that ever worked
->> was ppc on ppc (i.e. KVM on G4 Macs) or maybe ppc64 on ppc64. Running ppc
->> on ppc64 is known not to work and I haven't heard about anybody fixing
->> that. There was a blog entry about running MacOS on Power10:
+Hi Mukesh.
 
-Actually I meant POWER9 not POWER10.
+On 6/13/26 6:08 PM, Mukesh Kumar Chaurasiya (IBM) wrote:
+> During syscall restart, we block the kuap as we need to replay
+> interrupts. Which are not restored when we exit to the user, hence we
+> get a fault which ends up with `bad_access_pkey` and hence crashing the
+> kernel.
+> 
+> We have already stored the kuap values during the entry, just restore
+> them when we exit.
+> 
+> Applies on linux-next (next-20260610).
+> 
 
->> https://www.talospace.com/2018/08/making-your-talos-ii-into-power-mac_29.html
->> but I think that was on ppc64le (which does not work on G5 as that's big
->> endian only) and you still needed a guest kernel that could handle the G5
->> due to different cache line size that affects at least dcbz which is used
->> to clear memory so unless that's correctly emulated by KVM it may clear
->> more bytes than intended and break.
->>
->
-> https://forum.hyperion-entertainment.com/viewtopic.php?t=4736&start=1410
->
-> I thought this picture showed ppc64 kernel at host (not mac, neo amiga) and
-> qemu-system-ppc with non-obvious bitness?
+Please re-write the changelog in imperative mood.
+i.e Avoid we/you/I.
 
-But that's BookE e500 not the BookS POWER4 variant G5 you have so KVM may 
-work differently on that and maybe it even has HV which probably works 
-better than PR. I think KVM was used on G4, e500 and newer POWER mostly 
-with HV but I'm not sure if KVM PR on G5 was ever well supported. Did you 
-try running the same Linux version that you have on your host under KVM PR 
-first to verify that at least that works? I think that's where everybody 
-should start with KVM before trying to boot other guest OSes.
+https://www.kernel.org/doc/html/v4.17/process/submitting-patches.html#describe-your-changes
 
->> So considering the above, what may work is if you run a 32 bit ppc kernel
->> (G4 version) on your G5 for the host not using it as 64 bit instead of
->> ppc64 kernel and try a guest kernel that detects G5 CPU and knows how to
->> handle the different cache line size.
->
->
-> Are you saying 32bit *Linux* ppc kvm as host can handle 64bit guest kernel ?
 
-No I meant trying a 32 bit host with 32 bit guest but the cache line size 
-issue may still get in the way so maybe this does not help but for 
-debugging may worth a try.
+> Fixes: bee25f97ad24 ("powerpc: Enable GENERIC_ENTRY feature")
+> Reported-by: Sayali Patil <sayalip@linux.ibm.com>
+> Signed-off-by: Mukesh Kumar Chaurasiya (IBM) <mkchauras@gmail.com>
+> ---
+>   arch/powerpc/kernel/interrupt.c | 2 +-
+>   1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/arch/powerpc/kernel/interrupt.c b/arch/powerpc/kernel/interrupt.c
+> index 89a999be1352..159901d6ba8c 100644
+> --- a/arch/powerpc/kernel/interrupt.c
+> +++ b/arch/powerpc/kernel/interrupt.c
+> @@ -165,7 +165,7 @@ notrace unsigned long syscall_exit_restart(unsigned long r3, struct pt_regs *reg
+>   		local_irq_disable();
+>   		goto again;
+>   	}
+> -
+> +	kuap_user_restore(regs);
 
-> I am not ever sure firmware here can load 32bit ppc Linux .. I'll try of
-> course.
+Please describe where was kuap save was done in the stack.
 
-Since G5 is backwards compatible with PPC32 maybe it should work but I 
-know nothing about real PowerPC machines.
+>   	regs->exit_result |= regs->exit_flags;
+>   
+>   	return regs->exit_result;
 
-> Or find and fix the emulation of
->> different instructions on ppc64 in Linux KVM when running 32 bit ppc code
->> on 64 but host. There supposed to be some support for that but maybe it's
->> broken or never finished.
->>
->> But as I said I don't know this and don't have PPC hardware to try, nor
->> interest to do it so it's just my understanding and guess, which may be
->> wrong, but that's probably where you should start looking. Hopefully there
->> are others here with more knowledge about it or who want to look at it.
->> You should also look at how to enable KVM debug logs in Linux kernel and
->> see if you get any errors in the syslog. The usual QEMU debug options are
->> not that helpful with KVM and you should look for KVM logs instead.
->>
->
-> In theory I subscribed to linux-ppc (kernel) list. May be I should cc them
-> ? (added to cc)
->
-> I tried kvm-unit-tests but they apparently require qemu (to my surprise!)
-> and mostly focus on pseries / kvm HV (not surprisingly)?
->
-> Is there anything smaller to test kvm_pr specifically?
->
-> I even tried to d/l svn version of Mac on Linux but this one failed to
-> compile with gcc 15.
->
-> svn checkout svn://svn.code.sf.net/p/mac-on-linux/code/trunk
-> mac-on-linux-code
-
-I think you may have better luck trying an older Linux distro from the 
-time this was still used and had MoL as a package as that may have been 
-tested back then on real machines and used to work. Anything newer is 
-likely untested and thus could be broken without anybody noticing and 
-fixing it so finding something older that worked at least would give a 
-baseline to find regressions against.
-
-Regards,
-BALATON Zoltan
---3866299591-229711801-1781469333=:75274--
 
