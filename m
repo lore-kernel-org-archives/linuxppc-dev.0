@@ -1,85 +1,93 @@
-Return-Path: <linuxppc-dev+bounces-22653-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22654-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5C599CD98C5
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Jun 2026 17:05:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 18E12CD98DA
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Jun 2026 17:59:51 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gfGhJ4P5Xz3bwF;
-	Tue, 16 Jun 2026 03:05:04 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a03:a000:7:0:5054:ff:fe1c:15ff"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781543104;
-	cv=none; b=URQFQr6V36/EJKhDZxwhKnCR+j0+8t7JlYhO/lSvCf0cXQPTc2NLsvySGDd4bhIu9TYXmbsIso5dxbxxOy0rCGoBRq8M73h/YAUqXJFzvvs6rS+ZIqQu2Oulhp14b9QRE2XjWP6OMkN3KvqLef+H78W1zNBDrebniFaMijSZ9c8ccwavvcki+hv7SUiPO57B1B0REL9gjSPdL7f9xTO5WBvD1D44o1FL+ufmOCPx2tfwlMrg0cDqXTVW0tX+lZe931fxPu3764DW6Gy/gnyS/A45JGFs+lm8nYX0oNJCzgOMr6mz2nWhzRh4IO8MK7MGNn410HVqz+kvPrzoS9NkfA==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1781543104; c=relaxed/relaxed;
-	bh=be/KypQX5Q9fujajARM6Q7r9w26ilWIZmzbrtGfAKys=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=bW1kyZLP3kE6je3C5PkmqgVHY/q46kuhpN7kVIcF1WnPhmHabhsAmT2YDLZVOKfTEtQGSyl7XGWyFR2ZIkM9ZvuCnm7RW/vGn4MPakE2s36Eem58omKpcYUQ5L/5Ew75jWu+ca40faTuVWvlM8RN0T0syU6Qq9ShArR+BOZnT6WLraNVwhhyfpkqpfj8p7LTGo7E9CJ+EoQFPxtX9z4etuf8roGfGsJ9Vaz3vYH+1oVtIElK/Dl1aJPPw1CmP9jnPyxEPdpNqraYJiBlH0Gog7/tmmM8sZT6JjKibVNYJO9MVNX3cViTQY+PeuXTrisikrZYUmldru+XrTHyWx60ew==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=zeniv.linux.org.uk; dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=SLabnQnx; dkim-atps=neutral; spf=none (client-ip=2a03:a000:7:0:5054:ff:fe1c:15ff; helo=zeniv.linux.org.uk; envelope-from=viro@ftp.linux.org.uk; receiver=lists.ozlabs.org) smtp.mailfrom=ftp.linux.org.uk
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=zeniv.linux.org.uk
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gfHvV1KNVz3brl;
+	Tue, 16 Jun 2026 03:59:50 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::b131" arc.chain=google.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781546390;
+	cv=pass; b=MPIJeMG1C1dgZpB4mGegaggndL5rcay/1pDu1ZRry4vDGr8reCFeJ6uJMeG5OcT19f6KF6X1YPaO52D8rCsVVwiHWNXewVSF2V9/mfAa5oo76hSnhEN+66LkiHZE3aAq4HwTWcAZ2K+emjODpK9NvKKjgfb82lqFW4A8tmerIMo7HnxmvTTAoO+4qfu5k12eIWykbYYIh5M8ilMAOuY254Iku9QHqac8KEqHdqYeryW6tHMNun92zBx00m9+/W+xd2nYgLEcQspRkiIf0g6LsgLqJ2CAOwXY7mVKKG5MufzHknQKnmmLoxKAS+PSh27R3RLyYgpJ6Y2CLupHedSkWQ==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1781546390; c=relaxed/relaxed;
+	bh=N7DCS1FhJDnbMeFiAtGx2JiLKTME+H3qz4ArR/Ptiac=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=XGz/sqIjm1dtuI3+qhX639zbypLoJ/FuNWsqbweH6GSa/Qxf6VMHkg+8JDhPrLEare1KYrwopsSDya3oK9j6n4z+KNafM2NrQshEDid+iVfT/67iKu6gsVXEzHN+3khbc7cz5e6v8Jnv7etEXpAn66dir6OrxpLhmWfqTBq8oxJC9ziLGSxgYNQC7tUpeXHxq/8CHH+aOT5IVOieH0wAK5w6UCu1PQun0/91KhLgt7cC7dg83n1s2hdNXhI9PWDK8fPcOIcEup26XXFZQRnOiwrxlavf4QmczpdvgpjqpSPeRo21hIofUrCHmL1/quGjnscs+QdEPcyRxQS9989SSQ==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=TiPMFQrq; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::b131; helo=mail-yx1-xb131.google.com; envelope-from=ekffu200098@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=SLabnQnx;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=TiPMFQrq;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=ftp.linux.org.uk (client-ip=2a03:a000:7:0:5054:ff:fe1c:15ff; helo=zeniv.linux.org.uk; envelope-from=viro@ftp.linux.org.uk; receiver=lists.ozlabs.org)
-Received: from zeniv.linux.org.uk (zeniv.linux.org.uk [IPv6:2a03:a000:7:0:5054:ff:fe1c:15ff])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::b131; helo=mail-yx1-xb131.google.com; envelope-from=ekffu200098@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-yx1-xb131.google.com (mail-yx1-xb131.google.com [IPv6:2607:f8b0:4864:20::b131])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gfGhF3jt5z3bw9
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jun 2026 03:05:00 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=linux.org.uk; s=zeniv-20220401; h=Sender:In-Reply-To:
-	Content-Transfer-Encoding:Content-Type:MIME-Version:References:Message-ID:
-	Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description;
-	bh=be/KypQX5Q9fujajARM6Q7r9w26ilWIZmzbrtGfAKys=; b=SLabnQnxi8RKG6kB4YLIrRrIte
-	+jYEaBgX5DOoDOdPOU6k6ypOK6lDxxOMXQzKEUszFj5yTLPDASBaagrmnsOk8tUGdmzHw2XGk68HM
-	2J1tv7+pE0CjbBOIjeYCz0TsyHOIrqFb8Mb1LadfEs+3t0bUVsavfv//KIZ2S3hmTXIBIqEbnE3qn
-	zsd3Hxu29/Ylu8C3lRKI+WwMxWxUWcLIz0u0fTGyYSKAR/XPPXo0Rkv03xUIJElu5cOtap9hCSZj1
-	74eb7LaTsGudBKuTsb4/IH254uFPRDECMTh8XzLqKRh9ykQzpGUZV9OECxDmxcCHO22vobRU+rK1T
-	RNRNGWLQ==;
-Received: from viro by zeniv.linux.org.uk with local (Exim 4.99.2 #2 (Red Hat Linux))
-	id 1wZAjg-00000000Vxn-0xg6;
-	Mon, 15 Jun 2026 17:04:32 +0000
-Date: Mon, 15 Jun 2026 18:04:32 +0100
-From: Al Viro <viro@zeniv.linux.org.uk>
-To: Vincent Mailhol <mailhol@kernel.org>
-Cc: Jens Axboe <axboe@kernel.dk>, Davidlohr Bueso <dave@stgolabs.net>,
-	Christian Brauner <brauner@kernel.org>, Jan Kara <jack@suse.cz>,
-	linux-kernel@vger.kernel.org, linux-block@vger.kernel.org,
-	linux-efi@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-	Richard Henderson <richard.henderson@linaro.org>,
-	Matt Turner <mattst88@gmail.com>,
-	Magnus Lindholm <linmag7@gmail.com>, linux-alpha@vger.kernel.org,
-	Vineet Gupta <vgupta@kernel.org>,
-	linux-snps-arc@lists.infradead.org,
-	Russell King <linux@armlinux.org.uk>,
-	linux-arm-kernel@lists.infradead.org,
-	Catalin Marinas <catalin.marinas@arm.com>,
-	Will Deacon <will@kernel.org>, Huacai Chen <chenhuacai@kernel.org>,
-	WANG Xuerui <kernel@xen0n.name>, loongarch@lists.linux.dev,
-	Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
-	linux-mips@vger.kernel.org,
-	"James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
-	Helge Deller <deller@gmx.de>, linux-parisc@vger.kernel.org,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	linuxppc-dev@lists.ozlabs.org, Paul Walmsley <pjw@kernel.org>,
-	Palmer Dabbelt <palmer@dabbelt.com>,
-	Albert Ou <aou@eecs.berkeley.edu>, linux-riscv@lists.infradead.org,
-	Heiko Carstens <hca@linux.ibm.com>,
-	Vasily Gorbik <gor@linux.ibm.com>,
-	Alexander Gordeev <agordeev@linux.ibm.com>,
-	linux-s390@vger.kernel.org, Thomas Gleixner <tglx@kernel.org>,
-	Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
-	Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
-	Jonathan Corbet <corbet@lwn.net>,
-	Shuah Khan <skhan@linuxfoundation.org>, linux-doc@vger.kernel.org
-Subject: Re: [PATCH 00/19] init: discoverable root partitions, a.k.a. an
- omittable "root=" cmdline option
-Message-ID: <20260615170432.GW2636677@ZenIV>
-References: <20260615-discoverable-root_partitions-v1-0-39c78fac42e2@kernel.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gfHvS4kl2z3brL
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jun 2026 03:59:47 +1000 (AEST)
+Received: by mail-yx1-xb131.google.com with SMTP id 956f58d0204a3-660e9ea23cbso1870913d50.2
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jun 2026 10:59:47 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1781546385; cv=none;
+        d=google.com; s=arc-20240605;
+        b=joswUqDKOV9YTcpkyLVY/xe9xb2I7tl7L86GcUBvsju/nbJm3Sqv2E21j5ZsKK8H9z
+         btg9HIiyd5vc8ML76F1fEWOwKo0VuqdVSvPpUILs3Ok6Vi5mL97RDJcVDsZmV4bJFGAq
+         rPo9ava8FHoX0UW8WhjA597PqjxjlC2HR3zAGYZ7oG/mYPu/nQSD4D4yhCCFmk4+OlIe
+         hB6UAAqtI2cpRsLID7Jtk6z/GFaOWbzhZb5H4mWoWD6oPJnlft23w5B5jrOsMOb/5WnO
+         I1y1vu78PovY4qdeue1j0MvTfP/LCqx/MDrTlKYnoYe4/h+Ufitgns0nxiAjsDtvmlvD
+         eihQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=N7DCS1FhJDnbMeFiAtGx2JiLKTME+H3qz4ArR/Ptiac=;
+        fh=9ggvHVetauklk/4C19fJ+3sDx43EZ9xRfncf26OouBQ=;
+        b=OAA8MFsgXO5/f2c4WJ+FvkTOt/ly2H4n7Q1alSYBn43LiAe8x7C7lGQUoZqt7f4CGy
+         UqzykC0FeBfVpl3m/u2B56qE/WLDqndWnbj5er4IfPExJ9u7i8EgxQbhjTLY+an9Ocge
+         2Wc3Xh7zZAayMXfsxc5aeljOULoBxQKPQHLDpELUPpALqjj7NbwAOQzzfY62U4K5zEDg
+         UKmF5F1AsrRRu+m5U6XExrqZlx2YpI7hMHCyh84hDINb+rfyJeLjV7g4gsOYvBRP+R7l
+         iZywkBGGOjOM880vIYst23RkMcebfCLRhxNYAXdJ/dYMgudlEz7qWzPQ0zGld6PugCmO
+         2W5g==;
+        darn=lists.ozlabs.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1781546385; x=1782151185; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=N7DCS1FhJDnbMeFiAtGx2JiLKTME+H3qz4ArR/Ptiac=;
+        b=TiPMFQrq4NZ1YvtgNeVJQbXuMUWMdBa8OClfljhh7xSInwBY3OJLilR70t7LLGpXUa
+         /l8B/oaIlCrOBWXN0euZgYKb1hMAK/96mgJ7L34kjZO+PLxST7UsDtmygllljx8JyxUy
+         unn4pRHUQ1qqxFlqla030m9Tzo0xWuwBAcKRgcHggEVoDHydAIe7EXfcFmToK5YkjBNR
+         lFqKSp2q4/7jqqhrNC+Mo65psK+dN0zW8xDJHEGRnbxmG1+DrzDS3Pc6i2CNuoOON3E4
+         yK9MI6ZypHRUbhFWdWaROhJsE6v6pSfrfuvpA13bTuKXp4vViIO0C7NFjNSDaIyVwH3d
+         2ECw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1781546385; x=1782151185;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=N7DCS1FhJDnbMeFiAtGx2JiLKTME+H3qz4ArR/Ptiac=;
+        b=gawmPMUM1HxnijqRgpS+BwXreLbO7tM6OCmmYf9CpsZEWHU0sZE59roDYMt4h/VnZM
+         ZXdOBttFsUnzcA2pBoAIHkSYXe+SlDNkarmVCpS4hXk5sKcBqscRq9hnZ7j+4MBBzVKs
+         AYQaLGV1ONSU9DMMlf3TTr0vEhiE2ZzORcSVt1JV2DEwkVYhho+xAwmvTkmaMlumo0Kf
+         9qmxjRJ6rXPA9SCdY86xKrxxj1t7fRCj9zCffQSMBV3Y2lacGbfBJd/UUcaffYePTRoj
+         5MBDvGZ+mtctmLAgEOIIVNkd1Z5cJkk31A3SIhexyhy1iiwQhm7BbQ1ov+C1vQHS8t+R
+         PPZQ==
+X-Forwarded-Encrypted: i=1; AFNElJ+R71EwQeWov8GbdxQgNAgIPNybKyhNNliE6od2z//VhzggcgN9eKFN8ir6XTkcDTh3T6tFsr/k7MQwuT4=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YyyCx0Dbii8XspE0XZjtsbWwhIPyp+rwmmv5XL3mj3P5QR+2EJC
+	d1tqyGy9Cltytk3/kuuxe2R0oEFhRTJkxDq7Vd1CGl3DxnjVZB0onXuTecZnuywvoEj9VdJ6sz/
+	jsh+zkBUor+VukZynRgBpF1A7K3accdg=
+X-Gm-Gg: Acq92OGf9QR35whqF5wIZU2FwfgOe2CMp15RY1Xo8yE03krdp8PvocYMV5llmXu3Aeo
+	gQu/f4a1/bde8MfqYhZIw3PgC9Rmxh/6CfJ3rbzWgVqCGI9U6VoQP9CkJBoWQtAIYLRZbqKNx8n
+	h5YI3SnPahgev/e+0mTJbHt0PTfSTYhNQXq9DO73ZjJpZBKSbPyYz8fScid93Q7RV4y2OxI/9Xm
+	uoM4DJFcq70aKESG6bMHV9qE/gWVQEWa1kB2SfJfhxOaOzTnROz9Yvzab/22yJ6m6qtkz0jw7D7
+	K/tML1da64BSFOc=
+X-Received: by 2002:a05:690e:124a:b0:660:5df1:f243 with SMTP id
+ 956f58d0204a3-66278346bd2mr13188710d50.50.1781546384795; Mon, 15 Jun 2026
+ 10:59:44 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -93,33 +101,70 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20260615-discoverable-root_partitions-v1-0-39c78fac42e2@kernel.org>
-Sender: Al Viro <viro@ftp.linux.org.uk>
+References: <20260510171353.1406018-1-ekffu200098@gmail.com>
+ <20260510171353.1406018-3-ekffu200098@gmail.com> <20260601220346.GB54006-robh@kernel.org>
+In-Reply-To: <20260601220346.GB54006-robh@kernel.org>
+From: Sang-Heon Jeon <ekffu200098@gmail.com>
+Date: Tue, 16 Jun 2026 02:59:32 +0900
+X-Gm-Features: AVVi8Ce3VjKsZhdbSUBBzYGD6PwF3j2b4jhtEgG1brsSGXPufZKHeAEi0A9pCcg
+Message-ID: <CABFDxMHRqNDg1TmuYSWFuF95rYgDX2SpThn-TvbTGMTen8kx2w@mail.gmail.com>
+Subject: Re: [PATCH 2/2] of/fdt: make early_init_dt_scan_chosen() return void
+To: Rob Herring <robh@kernel.org>
+Cc: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com, 
+	chleroy@kernel.org, saravanak@kernel.org, linuxppc-dev@lists.ozlabs.org, 
+	devicetree@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On Mon, Jun 15, 2026 at 06:08:56PM +0200, Vincent Mailhol wrote:
+Hello,
 
-> Tested with GRUB, which implements the LoaderDevicePartUUID EFI variable
-> in its bli module [3]. With this, I was able to boot a kernel with a
-> completely empty cmdline and no initrd.
-> 
-> [1] The Discoverable Partitions Specification (DPS)
-> Link: https://uapi-group.org/specifications/specs/discoverable_partitions_specification/
-> 
-> [2] systemd-gpt-auto-generator
-> Link: https://www.freedesktop.org/software/systemd/man/latest/systemd-gpt-auto-generator.html
-> 
-> [3] GRUB -- §16.2 bli
-> Link: https://www.gnu.org/software/grub/manual/grub/html_node/bli_005fmodule.html
+On Tue, Jun 2, 2026 at 7:03=E2=80=AFAM Rob Herring <robh@kernel.org> wrote:
+>
+> On Mon, May 11, 2026 at 02:13:53AM +0900, Sang-Heon Jeon wrote:
+> > Since commit 064e32dc5b03 ("of: fdt: Honor CONFIG_CMDLINE* even
+> > without /chosen node, take 2"), early_init_dt_scan_chosen() always
+> > returns 0, so the return value checks at its callers have become
+> > dead code.
+> >
+> > Drop the return value, change the function to return void, and
+> > update its declaration and callers accordingly. No functional
+> > change.
+> >
+> > Signed-off-by: Sang-Heon Jeon <ekffu200098@gmail.com>
+> > ---
+> > dt-test result
+> >
+> > [    0.684136] ### dt-test ### start of unittest - you will see error m=
+essages
+> > [    0.685849] ### dt-test ### EXPECT \ : Duplicate name in testcase-da=
+ta, renamed to "duplicate-name#1"
+> > [    0.685870] Duplicate name in testcase-data, renamed to "duplicate-n=
+ame#1"
+> > [    0.689496] ### dt-test ### EXPECT / : Duplicate name in testcase-da=
+ta, renamed to "duplicate-name#1"
+> >
+> > ...
+> >
+> > [    1.693384] ### dt-test ### EXPECT / : OF: resolver: overlay phandle=
+ fixup failed: -22
+> > [    1.693386] ### dt-test ### EXPECT / : OF: resolver: node label 'thi=
+s_label_does_not_exist' not found in live devicetree symbols table
+> > [    1.694968] ### dt-test ### end of unittest - 405 passed, 0 failed
+> > ---
+> >  drivers/of/fdt.c       | 10 ++--------
+> >  include/linux/of_fdt.h |  2 +-
+> >  2 files changed, 3 insertions(+), 9 deletions(-)
+>
+> Looks like this is dependent on patch 1, so I'm assuming the PPC folks
+> will take the series.
+>
+> Reviewed-by: Rob Herring (Arm) <robh@kernel.org>
 
-So what does that thing, tied to EFI as it is, have to do with architectures where
-	* firmware is rather unlike EFI
-	* firmware wouldn't know what to do with GPT
-	* GRUB is *not* ported to, let alone used
-such as, say it, the very first one mentioned at your [1]?
+Thanks for reviewing, Rob :)
 
-Or is that conditional upon "if anyone wants to design replacement firmware
-for those, and if they agree to follow our wishlist"?
+The merge window is now open. PPC folks, could you take a look and
+pick this series up for 7.2?
+
+Best Regards,
+Sang-Heon Jeon
 
