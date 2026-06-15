@@ -1,76 +1,76 @@
-Return-Path: <linuxppc-dev+bounces-22623-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22624-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BC786CD98DA
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Jun 2026 09:39:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 49FAACD98DE
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Jun 2026 09:39:52 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gf4pS3MM6z3bsd;
-	Mon, 15 Jun 2026 19:39:44 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::102a"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781516384;
-	cv=none; b=nhbnztfh1ph0pp4Z9tbXMMtC7jrvnZWpXmlX639dHBpF1f6oPhQocroqC8TOvcRCccaqg5ml5dGAggRRsTGOCnPPu8BjfqVn9Tv2XL6tuE5P9HS1iwnrPkidRrlEoZ9XvR1B/QRFpJczK53y+9LDo7iavoiVoZR/aITjHTKuWqKjbsteQxNfq1rKDnfY1zRphUIZecucMtSYDU/4UtMMUiuPaZFoVo1e/5d1SbJAe2elA1dZoLX4MzvVCGCOcxAL69o1YGZFIUwoCMGrrktbhTy7pJM4e6yz5rFWyedadEDobX/tFJ5CSu8K77MSQKRkOxSLtPkHA9xKldoF9aD2kg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gf4pZ6QsCz3bxM;
+	Mon, 15 Jun 2026 19:39:50 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::102f"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781516390;
+	cv=none; b=WjaYDL211MAST+RoCTvMH/sxWgfKFfMbVjV+QmEpIe8BMFEfOARGGG1odps2uoKh+UNrL+2M0cGSarbjLUANVR61hU/bp7IKk3G1YqRcCwQ0Vwfbd5+kga44UXGiZ3XFoNuoF/LaVeB6PqPVMz7ifqnt5QVqmATKJfyGb85hID1tZXCLbcphoCG2KslhRBafLgK1eiEDvWM0RIpTMIyuyA6INWytqo8KA5h1psvNkdeCO7/6SQeuFxLNtEgZtcnTHQPCfxKlQT3r1WB/2LvVWyQSPjIbkQmGbWOOVfiRdN0Y/sI68jUyNafuMsPTVErdYctz9Fb+9dorDJsgT8J0gQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1781516384; c=relaxed/relaxed;
-	bh=6XAdGAHmWyaxfC0CIkFTqcFEJz2zy9rtxVk5mFpwGBY=;
+	t=1781516390; c=relaxed/relaxed;
+	bh=ANb0KIfsTx8/8tZ1jjFTsAAUSzrIuzqzfqRTdMc2tcQ=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=TO1vKO6f3jfAcTYRonXwBEaEIxF3Nml9QWaUb0YTsZ/aZ3EYHKXR4PwMWdX8WVq6TLUDvYz1MNJTB36Ib/HbOikKGEZyjHeiu+UGjHUlLOjkFtDMR59hRK6WJxtvrZJLFWfK7wy5a0BkAHu6YwtMM7k5MfKIpU7REPVhvcv29z7/WP7U4VWmKr7ujhh9u12SwMOgTvtO+fc3TLFsKlfkKsW+KCMusnO520aSaeXj0YmH5uv2OcG7HJclSjfObL8H18P13zbjowoKTMR72jqYty3n4CIl7Zf331pdP3Jv9Fu99uucGC/OPnnvAzRP3e8eU8p5J5jKyZQmtktu7rKMgw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=INeX+gdn; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::102a; helo=mail-pj1-x102a.google.com; envelope-from=phucduc.bui@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	 MIME-Version; b=SRNYhy54XpuEWugcg00eivbtLKmYkp7bGWNiF46/EtjIF5+LS3V2Lz1EMwZBbpofbhAMjlgTNMhW9oEHlU9zdMo3UQrf5hseNw+ele9/LzdzxnwwgqDhjIyMrc7jSvca2TBWIW3xNMTtNWQnU9EcZjE1PZQEV0hO1cMShaMKYk0BKnGDeaTuGIYh4iuNF3TB7XZhrbvAh9uQSzMqTT7LWvZAh5iruGAOX7UXVNvGHc5Oa9qcYmvLB1QFPSmKol4Jrhon9HT2FUM/5IiyVtqb9EV0M2SRU6LygvwC0GRKrKufO5UBe5Ek0Fh77p2XNclHGjZYnhErVHg08LJz6XtpyA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=LFTU+8mr; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::102f; helo=mail-pj1-x102f.google.com; envelope-from=phucduc.bui@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=INeX+gdn;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=LFTU+8mr;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::102a; helo=mail-pj1-x102a.google.com; envelope-from=phucduc.bui@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pj1-x102a.google.com (mail-pj1-x102a.google.com [IPv6:2607:f8b0:4864:20::102a])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::102f; helo=mail-pj1-x102f.google.com; envelope-from=phucduc.bui@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pj1-x102f.google.com (mail-pj1-x102f.google.com [IPv6:2607:f8b0:4864:20::102f])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gf4pR4y6hz3bsj
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jun 2026 19:39:43 +1000 (AEST)
-Received: by mail-pj1-x102a.google.com with SMTP id 98e67ed59e1d1-36b9b15af73so2683702a91.0
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jun 2026 02:39:43 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gf4pZ0tYlz3btJ
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jun 2026 19:39:50 +1000 (AEST)
+Received: by mail-pj1-x102f.google.com with SMTP id 98e67ed59e1d1-36b7b7b7a80so1853869a91.1
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jun 2026 02:39:50 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1781516382; x=1782121182; darn=lists.ozlabs.org;
+        d=gmail.com; s=20251104; t=1781516388; x=1782121188; darn=lists.ozlabs.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=6XAdGAHmWyaxfC0CIkFTqcFEJz2zy9rtxVk5mFpwGBY=;
-        b=INeX+gdnYCGd2kZAvkR1ngeHDpSHAFFkb1HMd3Szukg/mN2TyahtLq7G93Xvo1defR
-         O3DtRkxhPR2fO4bExURC9l/u1Rrj4NELjZAcJWfEVQ1NKVprGgpNjmX+trzMlcXYfkNQ
-         ppiP4qwSn3J37HLCbJ6HjsQNVnHHb0xxuSl4miUfLEzNkMo9U5umNzGLbb2amkQuHWV8
-         ZC6+RkT7Tw87OLjeAra/g1X4OJOoYYcBRxtzMUaIuooGheZvvvTPbk24f7L6OElbbbhY
-         g1RRPRb3hWH+Zw03pQvhWjejEZz+2wXhU3I0bsl+S+QtdvZ+iA6Uv8ruKEYfMige6wIC
-         pJ1g==
+        bh=ANb0KIfsTx8/8tZ1jjFTsAAUSzrIuzqzfqRTdMc2tcQ=;
+        b=LFTU+8mrDMBBZ4bH8ejl2rXSJSVPFliloVDuOHoCL6unXFRkecnlpOu/8YD1BZ9zFB
+         1MCa4ArEktr0PkxbwdLy4kqVeyQOwEt3/oe6BC0CYvd6+0g6NnYifZRbtna5/xW9xjBI
+         Pmtmeo4c5pPFAAfV/fBfY8wrolyLjnpqi+/qPBFhV6I2EbSM6l29fNSDkzjOe24oh9kE
+         T/PMy/9Z/AArSWvl1q8kYv+Fi6eu/B+DyqLousiYlvZjOEO63qxODhrl2mpZ2IBbcuhd
+         prMHc1EIuQd7BKiJPbVFGcvb8p+4W46mo9gTTcauCstLC6iq2qIDBx02DZmMoj9645+h
+         Qoyg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1781516382; x=1782121182;
+        d=1e100.net; s=20251104; t=1781516388; x=1782121188;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to;
-        bh=6XAdGAHmWyaxfC0CIkFTqcFEJz2zy9rtxVk5mFpwGBY=;
-        b=PyYt5mnf61s4VYDzm2xt6HLcFrdIpZEvBluzgKfoxq6K/4F44aRiOK1fUoxpgCfBmH
-         ufPtSu1h/m2fe4N2lPW+92uJ/clDZugNzf1SJhozAm25x7sOJ4xruvANPDqs1WRIKQxZ
-         BfjGf/GnpJK5DCMV8M4FHEMQ5xCr+bfhAwEYIPpq9BousmuIHzs2A6RWjgTektVbq8EV
-         +u6LJBitwqMNVOhNLEkJieTUUrstgZFhpR9Gne5CYw8s+kmgRBHiyWjdQwt9LIVTHGXy
-         8uaRHrZU9p1pcnb8Bs1kh3CR1QoA8QutZEEnN5xju/ITH4aUppw3rUFlmc/q/6vMBzQN
-         k72w==
-X-Forwarded-Encrypted: i=1; AFNElJ92y78vgld5HZVIaR4iK/0KPZman3OfMv0J4ZbXPCr/MzoyExVhr70nrFeCDYVKjzeNRFF6+gClNRT1rTA=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YyiwGFJ0d9SKlOJJd665Xww2M8WyTk9JgP1IfZWgEbyYqrS/t2p
-	3xQ2kZBY+DW0iod5txn297C5relWfLMqt6Ty3xo0obP3Ha/TuJ7ud4Wz
-X-Gm-Gg: Acq92OGd+BdrC149HPRruQSYRuzVWRVYHGW8AeJtWDn3TD0AXEj0n6zcxMv8GoNo8ZW
-	GokC3w6c4Z+EjmqCd4YqX1h243AAD6YfYTFk3+x0OXCwopeyVJ8sGOObhUl7RekGF3kA/sUVtba
-	Z4qzBV0+OV1NPJzMIb1PiLRQvOx2y6N23mpRNT2YmVImOq7Hm1NTIB2dXgKY/YXAKBAGbSQogKU
-	juwOfro3gDKbB543EP3PDLPAkv/fH3LMGWadHvDYNOHzhY6BKC8LyIcDIc5K4rTCQlA6Wg9T1RG
-	n0iS7kV3o9+tDzU/BFRbkhwM/sCp8/9Kwlkx2M+zRwRupsDt9GL3MbtOo/io+vZyCOedPFN9Krj
-	3iV73XiHhEtan2WwCa8wNVGl9G74SyoteFrIrJUkpK/r/wPXLOG9EnST9Kb0TSUUOBXc3K72A79
-	Vrb4TJHyYyQsppIZsS58HAeHbr5VVvWDIFP+cUe3ZXl7gtiffwlkRTzZ4CTg==
-X-Received: by 2002:a17:90b:33ce:b0:36b:3ecd:88d2 with SMTP id 98e67ed59e1d1-37a01847928mr13640118a91.3.1781516381562;
-        Mon, 15 Jun 2026 02:39:41 -0700 (PDT)
+        bh=ANb0KIfsTx8/8tZ1jjFTsAAUSzrIuzqzfqRTdMc2tcQ=;
+        b=LNF2owIF/WFQzBsGr3A4gi3bSjXhrLWlOcsOoIDpJxe02oRqpS4GVzPMqFoCpBVmTt
+         kKiv9h7uE/SFBQK+0Y5ySG5r4FEwFUE2RqvFzBLZdXGm720PRgWpnuwgVYqH7AHJyLlu
+         OS+oVx/0qCsGzM1APQalGR2PmOpvp/CV8Y+TSaBumwgfOLKMn+cQvkmwoM7fpmxpprak
+         aVrDmIMeOnDQ31Ht8Jym9iU0oxLQ/HCC2T1NZ2Ge/e74OTSxu1gwNRWzrU7ejZ+TGl16
+         4x86RQXbe0kFMJH3ajLUGg1nfFzverNKPPNcfNjsyE40g8EtRPf+D0kBJa2Q/RWIOfFW
+         1rtg==
+X-Forwarded-Encrypted: i=1; AFNElJ8KcHblLeg2fnA6js5oOYqpS05IAxvblobNBVbGynpwHFMaLTxEvQbk5PUCVoZcmGWw+YMua2D7MMQzQ+o=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YyQURQ/zq83wN9U8LX79cGJBkaN6Ya+CCEOpot6R3m4tAcOfLHY
+	jZvWN7GGY0FGUA4rlSbucS35s0RCFTSPTuheZ6kR316sge3zmICg3lbM
+X-Gm-Gg: Acq92OEqKO2APPH/lcTQ++NwZwTpa2nFjMM+QjTUlglvk5Gl04gnP046r2HtPGczfj5
+	R7xEQ6OBPFxVt7mkBJfzD4NxsNoKQOaiw1lzwAEbRc27LYKgZpbEsFZBacwrHXlo6jfXj4ic7HC
+	xoWxaaEz28btDascDPejVkW5yuGKdEM0ltlI58PB+8H5Tqf8UsNxwXMJOsNhSCkCV66aoWFbgji
+	VgVEtaUHp5/2sxyYywiOTpFd7CFtPqcGJwaNtk0TgQvMSto3w5WF5T8zjtjej+TdEKIkMljErVp
+	bLsN2vI3jBOb5cs08wpZ60j10RxoRe2hZAloYKuteC3x03YnMigzAI7EQdVL/4GfX6eFQzLbDJL
+	ONvW5BniMjLBqfNzVBeGqrxaQYIZjTX2j+1R98FYm7VIASad89/cvQA7qyyos/c0oXdXqfl2Xad
+	Tu+PXjYxz0jg3YPDTn6v6q0Ds6ogg8CvNwJjdz40gRPAyJVp9XmclUBD3THQ==
+X-Received: by 2002:a17:90b:1d8a:b0:36d:86a5:5b8 with SMTP id 98e67ed59e1d1-37a20016cf1mr10407905a91.11.1781516388272;
+        Mon, 15 Jun 2026 02:39:48 -0700 (PDT)
 Received: from phuc-desktop.. ([183.91.15.56])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-37a1eba8e9asm9936290a91.2.2026.06.15.02.39.32
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-37a1eba8e9asm9936290a91.2.2026.06.15.02.39.43
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 15 Jun 2026 02:39:40 -0700 (PDT)
+        Mon, 15 Jun 2026 02:39:47 -0700 (PDT)
 From: phucduc.bui@gmail.com
 To: Mark Brown <broonie@kernel.org>
 Cc: Liam Girdwood <lgirdwood@gmail.com>,
@@ -89,9 +89,9 @@ Cc: Liam Girdwood <lgirdwood@gmail.com>,
 	imx@lists.linux.dev,
 	linuxppc-dev@lists.ozlabs.org,
 	bui duc phuc <phucduc.bui@gmail.com>
-Subject: [PATCH v2 02/11] ASoC: fsl_audmix: Use guard() for spin locks
-Date: Mon, 15 Jun 2026 16:38:15 +0700
-Message-ID: <20260615093824.115751-3-phucduc.bui@gmail.com>
+Subject: [PATCH v2 03/11] ASoC: fsl_easrc: Use guard() for spin locks
+Date: Mon, 15 Jun 2026 16:38:16 +0700
+Message-ID: <20260615093824.115751-4-phucduc.bui@gmail.com>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20260615093824.115751-1-phucduc.bui@gmail.com>
 References: <20260615093824.115751-1-phucduc.bui@gmail.com>
@@ -117,42 +117,135 @@ Merely code refactoring, and no behavior change.
 
 Signed-off-by: bui duc phuc <phucduc.bui@gmail.com>
 ---
- sound/soc/fsl/fsl_audmix.c | 11 ++++-------
- 1 file changed, 4 insertions(+), 7 deletions(-)
+ sound/soc/fsl/fsl_easrc.c | 36 ++++++++++--------------------------
+ 1 file changed, 10 insertions(+), 26 deletions(-)
 
-diff --git a/sound/soc/fsl/fsl_audmix.c b/sound/soc/fsl/fsl_audmix.c
-index 40a3b7432174..066239c64037 100644
---- a/sound/soc/fsl/fsl_audmix.c
-+++ b/sound/soc/fsl/fsl_audmix.c
-@@ -280,7 +280,6 @@ static int fsl_audmix_dai_trigger(struct snd_pcm_substream *substream, int cmd,
- 				  struct snd_soc_dai *dai)
+diff --git a/sound/soc/fsl/fsl_easrc.c b/sound/soc/fsl/fsl_easrc.c
+index 114a6c0b6b73..edfd943197a0 100644
+--- a/sound/soc/fsl/fsl_easrc.c
++++ b/sound/soc/fsl/fsl_easrc.c
+@@ -1025,7 +1025,6 @@ static int fsl_easrc_config_context(struct fsl_asrc *easrc, unsigned int ctx_id)
+ 	struct fsl_easrc_ctx_priv *ctx_priv;
+ 	struct fsl_asrc_pair *ctx;
+ 	struct device *dev;
+-	unsigned long lock_flags;
+ 	int ret;
+ 
+ 	if (!easrc)
+@@ -1053,9 +1052,8 @@ static int fsl_easrc_config_context(struct fsl_asrc *easrc, unsigned int ctx_id)
+ 	if (ret)
+ 		return ret;
+ 
+-	spin_lock_irqsave(&easrc->lock, lock_flags);
+-	ret = fsl_easrc_config_slot(easrc, ctx->index);
+-	spin_unlock_irqrestore(&easrc->lock, lock_flags);
++	scoped_guard(spinlock_irqsave, &easrc->lock)
++		ret = fsl_easrc_config_slot(easrc, ctx->index);
+ 	if (ret)
+ 		return ret;
+ 
+@@ -1301,13 +1299,12 @@ static int fsl_easrc_request_context(int channels, struct fsl_asrc_pair *ctx)
+ 	enum asrc_pair_index index = ASRC_INVALID_PAIR;
+ 	struct fsl_asrc *easrc = ctx->asrc;
+ 	struct device *dev;
+-	unsigned long lock_flags;
+ 	int ret = 0;
+ 	int i;
+ 
+ 	dev = &easrc->pdev->dev;
+ 
+-	spin_lock_irqsave(&easrc->lock, lock_flags);
++	guard(spinlock_irqsave)(&easrc->lock);
+ 
+ 	for (i = ASRC_PAIR_A; i < EASRC_CTX_MAX_NUM; i++) {
+ 		if (easrc->pair[i])
+@@ -1331,8 +1328,6 @@ static int fsl_easrc_request_context(int channels, struct fsl_asrc_pair *ctx)
+ 		easrc->channel_avail -= channels;
+ 	}
+ 
+-	spin_unlock_irqrestore(&easrc->lock, lock_flags);
+-
+ 	return ret;
+ }
+ 
+@@ -1343,7 +1338,6 @@ static int fsl_easrc_request_context(int channels, struct fsl_asrc_pair *ctx)
+  */
+ static void fsl_easrc_release_context(struct fsl_asrc_pair *ctx)
  {
- 	struct fsl_audmix *priv = snd_soc_dai_get_drvdata(dai);
+-	unsigned long lock_flags;
+ 	struct fsl_asrc *easrc;
+ 
+ 	if (!ctx)
+@@ -1351,14 +1345,12 @@ static void fsl_easrc_release_context(struct fsl_asrc_pair *ctx)
+ 
+ 	easrc = ctx->asrc;
+ 
+-	spin_lock_irqsave(&easrc->lock, lock_flags);
++	guard(spinlock_irqsave)(&easrc->lock);
+ 
+ 	fsl_easrc_release_slot(easrc, ctx->index);
+ 
+ 	easrc->channel_avail += ctx->channels;
+ 	easrc->pair[ctx->index] = NULL;
+-
+-	spin_unlock_irqrestore(&easrc->lock, lock_flags);
+ }
+ 
+ /*
+@@ -2292,15 +2284,13 @@ static int fsl_easrc_runtime_suspend(struct device *dev)
+ {
+ 	struct fsl_asrc *easrc = dev_get_drvdata(dev);
+ 	struct fsl_easrc_priv *easrc_priv = easrc->private;
 -	unsigned long lock_flags;
  
- 	/* Capture stream shall not be handled */
- 	if (substream->stream == SNDRV_PCM_STREAM_CAPTURE)
-@@ -290,16 +289,14 @@ static int fsl_audmix_dai_trigger(struct snd_pcm_substream *substream, int cmd,
- 	case SNDRV_PCM_TRIGGER_START:
- 	case SNDRV_PCM_TRIGGER_RESUME:
- 	case SNDRV_PCM_TRIGGER_PAUSE_RELEASE:
--		spin_lock_irqsave(&priv->lock, lock_flags);
--		priv->tdms |= BIT(dai->driver->id);
--		spin_unlock_irqrestore(&priv->lock, lock_flags);
-+		scoped_guard(spinlock_irqsave, &priv->lock)
-+			priv->tdms |= BIT(dai->driver->id);
- 		break;
- 	case SNDRV_PCM_TRIGGER_STOP:
- 	case SNDRV_PCM_TRIGGER_SUSPEND:
- 	case SNDRV_PCM_TRIGGER_PAUSE_PUSH:
--		spin_lock_irqsave(&priv->lock, lock_flags);
--		priv->tdms &= ~BIT(dai->driver->id);
--		spin_unlock_irqrestore(&priv->lock, lock_flags);
-+		scoped_guard(spinlock_irqsave, &priv->lock)
-+			priv->tdms &= ~BIT(dai->driver->id);
- 		break;
- 	default:
- 		return -EINVAL;
+ 	regcache_cache_only(easrc->regmap, true);
+ 
+ 	clk_disable_unprepare(easrc->mem_clk);
+ 
+-	spin_lock_irqsave(&easrc->lock, lock_flags);
+-	easrc_priv->firmware_loaded = 0;
+-	spin_unlock_irqrestore(&easrc->lock, lock_flags);
++	scoped_guard(spinlock_irqsave, &easrc->lock)
++		easrc_priv->firmware_loaded = 0;
+ 
+ 	return 0;
+ }
+@@ -2311,7 +2301,6 @@ static int fsl_easrc_runtime_resume(struct device *dev)
+ 	struct fsl_easrc_priv *easrc_priv = easrc->private;
+ 	struct fsl_easrc_ctx_priv *ctx_priv;
+ 	struct fsl_asrc_pair *ctx;
+-	unsigned long lock_flags;
+ 	int ret;
+ 	int i;
+ 
+@@ -2323,13 +2312,11 @@ static int fsl_easrc_runtime_resume(struct device *dev)
+ 	regcache_mark_dirty(easrc->regmap);
+ 	regcache_sync(easrc->regmap);
+ 
+-	spin_lock_irqsave(&easrc->lock, lock_flags);
+-	if (easrc_priv->firmware_loaded) {
+-		spin_unlock_irqrestore(&easrc->lock, lock_flags);
+-		goto skip_load;
++	scoped_guard(spinlock_irqsave, &easrc->lock) {
++		if (easrc_priv->firmware_loaded)
++			return 0;
++		easrc_priv->firmware_loaded = 1;
+ 	}
+-	easrc_priv->firmware_loaded = 1;
+-	spin_unlock_irqrestore(&easrc->lock, lock_flags);
+ 
+ 	ret = fsl_easrc_get_firmware(easrc);
+ 	if (ret) {
+@@ -2377,9 +2364,6 @@ static int fsl_easrc_runtime_resume(struct device *dev)
+ 			goto disable_mem_clk;
+ 	}
+ 
+-skip_load:
+-	return 0;
+-
+ disable_mem_clk:
+ 	clk_disable_unprepare(easrc->mem_clk);
+ 	return ret;
 -- 
 2.43.0
 
