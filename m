@@ -1,102 +1,50 @@
-Return-Path: <linuxppc-dev+bounces-22717-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22718-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id ECF96CD98E1
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Jun 2026 13:38:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B1BAFCD98DA
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Jun 2026 13:55:34 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gfp3C3xpwz3bqh;
-	Tue, 16 Jun 2026 23:38:15 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781617095;
-	cv=none; b=iRS0e6EeYwrUehxhWOxS2iu9eAOXwqe8PC1q0qjRYezgiVD86jn7CndddNIVJg3/VHtMvIRhOx8BCvXdPglei4uFrU8xuiBw6fkh+DPkLxISlLAEFe8c55y3yndnCu+wObbToZGZE1ZjE9AhgDHoSbUhcvYTvw5dDSv3WpenO6uGaE8NoA1jhAq+uutfphf6PeWk/9Ihf92b1eISgeTx8UUGgMo022yrf9dC297SRpjy/qrv2PGbqBiFDlekNnKjRgfxSOyuWz+UmdEooAtULeqmCqw+dG8fRvvJtcXjlb9uQtFjUdgWHrXoBQigBehYsHTPmqT1keGrec1eF6C03A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gfpR90Q8kz2yRF;
+	Tue, 16 Jun 2026 23:55:33 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781618132;
+	cv=none; b=Efcp/XFayFyrMQ2Ux55lQpxCBfrVBe8LVNb1JC0RwYq6AJE9WiBHVS58Sz5urcDQd8ZNUuGQ6WtMAH7CP30AyspHE4Wu9EMrAHkMnfvDx5Y1hb65FpqkvJk9trsGLSYjHFjgd0ww67Hxus3h8wpbBSIZtsWwufJNB+k/F5zoyotd8lCWIvehDyo7u8zRg139AMgVvWFowtiUkAbhgKKOU0yyFexvV+Aoufd738xh2vWuNXXgZIxAnvMmE9szC4HzyZLDudqSt/yzkEv4/N2I82pix6BG1Oc+NQQhy4e/AAbVb0mbgMW+YYi8t7ql6BFVPHlbKRXowb3xr1JxyO1Z/w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1781617095; c=relaxed/relaxed;
-	bh=OJlJUiTv5XLMETNJVTesa29BlzuKdpnijWbmINEBqB4=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=O+6NYg/g1FisoE3DoIyYWAjHCZog37xPSMOt2a+6qg61aTb2O6wzWckm8ZVX+b5KDuP/Fk5vhrhUoZOFqUimqhne9PhC7KqceIW8AbT7yM5J1hvTb2ejXTquhqkBjvlktIYMPqz0mJ4gWLWsv3RH9gviCZ8+opfESagr8ylQBnwL29OoHWHRx/7+O/bPTcSJx498pOx1aTNw4pY1UPnWeEcmHzokanStoDBkWNxLb7O+R016oxhan9CEGJYJJ8NYz7ckHO+MTnZsrARmabnidBCLFUDdm2kkI0h8iy7l25LrRwQna3b7+0D8I25S4nDbUWlGeee8D9an4dud8RnG7w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=B7gOOxoV; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1781618132; c=relaxed/relaxed;
+	bh=QyF84nqSk9ebDNws1PdrM6L0rUUvlTQZheOw/Il6Zbg=;
+	h=Content-Type:MIME-Version:Message-Id:In-Reply-To:References:
+	 Subject:From:To:Cc:Date; b=BGTvJFqXs6WfuVDARFi1nLABuSLV4tYwWW/iVY0IeQiwmrJuvFjb1qMuGDrKRxYSrjXWduHmxusnTQ1jdZr+ZhSZc8I3pGv8iM8jdjlR1E3aTQ/GJvRdV+RGqNwmuZZcVd65BDB7jTE9M1qiM1y0Cj2I8gs6FdY7it3JoaLHgvVTwf9vgtfAgRCFLUXzG6Usbcbd/9DVwB/uJhn0/NL0e7csa4Wwx+0rxHgG4yak42SpxRqhPbbgDQiUVDW3+Z6W9GD4uCf3RtufyxVsFf3bZ3xL3lgebz0/k1tuOGGrflAWfUz9SH7gLE/wWG8yliPUEYIhl55po6EhVR9LKfXW8Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=fHtswDRL; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=bot+bpf-ci@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=B7gOOxoV;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=fHtswDRL;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=bot+bpf-ci@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gfp3B0R8vz3bqM
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jun 2026 23:38:13 +1000 (AEST)
-Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 65GAIQtR1156101;
-	Tue, 16 Jun 2026 13:38:03 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-type:date:from:in-reply-to:message-id:mime-version
-	:references:subject:to; s=pp1; bh=OJlJUiTv5XLMETNJVTesa29BlzuKdp
-	nijWbmINEBqB4=; b=B7gOOxoVTJ0XFMFgjK7UOGZNOLEAoGBQsbGLt6CjbGK4bH
-	9jG0p+Qs1LWYoOnypXmRBE+n6iiTi/xTq7CQ49gFLB0xjWJEvL3WYsO536t2P8Fz
-	0X2d51nAg0DQ6WhLqtO6WfzUc+iPf9fdVs17o3SqTmVL78MmgTjh7GEcNV3rrPSt
-	5khh+2fyZ/YRtdmyZo740wfCtoIagIrHjC2e5DEPrjy+P++/kOYHyFW9bQwDcU+r
-	/nuZyFw//DRfAC5ahZ5Q+vo5s1rWHwfjM1QQyDOzn1oDZYlqFVxoFp0+mRZwxbCX
-	EknmTxh2TqjwLH7RSVNTfwTcKweOuvxwOog2M3UA==
-Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4es1eg5caa-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 16 Jun 2026 13:38:02 +0000 (GMT)
-Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma21.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 65GDYdrJ012348;
-	Tue, 16 Jun 2026 13:38:01 GMT
-Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
-	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4esjhk3hm1-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 16 Jun 2026 13:38:01 +0000 (GMT)
-Received: from smtpav01.fra02v.mail.ibm.com (smtpav01.fra02v.mail.ibm.com [10.20.54.100])
-	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 65GDbvC813042050
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 16 Jun 2026 13:37:57 GMT
-Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id C2EE520043;
-	Tue, 16 Jun 2026 13:37:57 +0000 (GMT)
-Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 050F220040;
-	Tue, 16 Jun 2026 13:37:55 +0000 (GMT)
-Received: from fedora (unknown [9.5.7.39])
-	by smtpav01.fra02v.mail.ibm.com (Postfix) with ESMTPS;
-	Tue, 16 Jun 2026 13:37:54 +0000 (GMT)
-Date: Tue, 16 Jun 2026 19:07:55 +0530
-From: Amit Machhiwal <amachhiw@linux.ibm.com>
-To: Ritesh Harjani <ritesh.list@gmail.com>
-Cc: Amit Machhiwal <amachhiw@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
-        Madhavan Srinivasan <maddy@linux.ibm.com>,
-        Vaibhav Jain <vaibhav@linux.ibm.com>,
-        Harsh Prateek Bora <harshpb@linux.ibm.com>,
-        Anushree Mathur <anushree.mathur@linux.ibm.com>,
-        Gautam Menghani <gautam@linux.ibm.com>,
-        Mukesh Kumar Chaurasiya <mkchauras@gmail.com>,
-        Nicholas Piggin <npiggin@gmail.com>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-        Thomas Huth <thuth@redhat.com>, kvm@vger.kernel.org,
-        stable@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v3] KVM: PPC: Book3S HV: Validate arch_compat against
- host compatibility mode
-Message-ID: <20260616190601.49193107-d8-amachhiw@linux.ibm.com>
-Mail-Followup-To: Ritesh Harjani <ritesh.list@gmail.com>, 
-	linuxppc-dev@lists.ozlabs.org, Madhavan Srinivasan <maddy@linux.ibm.com>, 
-	Vaibhav Jain <vaibhav@linux.ibm.com>, Harsh Prateek Bora <harshpb@linux.ibm.com>, 
-	Anushree Mathur <anushree.mathur@linux.ibm.com>, Gautam Menghani <gautam@linux.ibm.com>, 
-	Mukesh Kumar Chaurasiya <mkchauras@gmail.com>, Nicholas Piggin <npiggin@gmail.com>, 
-	Michael Ellerman <mpe@ellerman.id.au>, "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, 
-	Thomas Huth <thuth@redhat.com>, kvm@vger.kernel.org, stable@vger.kernel.org, 
-	linux-kernel@vger.kernel.org
-References: <20260609053327.61563-1-amachhiw@linux.ibm.com>
- <cxxqerzk.ritesh.list@gmail.com>
- <20260616161011.835c90f0-38-amachhiw@linux.ibm.com>
- <a4suelh6.ritesh.list@gmail.com>
- <20260616182627.2ebf3cfc-3a-amachhiw@linux.ibm.com>
- <8q8eeio8.ritesh.list@gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gfpR80ghVz2yFj
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jun 2026 23:55:31 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id AF204600B0;
+	Tue, 16 Jun 2026 13:55:28 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id DE3931F000E9;
+	Tue, 16 Jun 2026 13:55:27 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1781618128;
+	bh=QyF84nqSk9ebDNws1PdrM6L0rUUvlTQZheOw/Il6Zbg=;
+	h=In-Reply-To:References:Subject:From:To:Cc:Date;
+	b=fHtswDRL+VZvqlH6MaqUfWr91+VRYWrJc0UX0mpeCqETVowWwLdywrv1toWQJ18wL
+	 RJwsSyBfzLtAloKRY0EwCIk+yml43WKHjG6LkjCakmXrKGBKpDsfVB98tlSyiQhgD2
+	 60EI6JLWtPq0nw9sXaiAJOMb048QoiXn9eSWGSJjsX3Jm1uvNkD0qr5c6oeTQZgyT1
+	 VJwGMBpOGRW1EoQ/u0Q1L/33eznB7Ib4YS/jYY1RWc9NAb7oQxaUV4ffAr1/EpZd2+
+	 gvaEI9mqH5AkYPYo6o4mDDk6utOWBVV85zCBC+LQy70ROWS7+9J9j4pT43P5OAfl+m
+	 ci8uj//KUNjxA==
+Content-Type: multipart/mixed; boundary="===============8414396918092606343=="
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -110,107 +58,48 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <8q8eeio8.ritesh.list@gmail.com>
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNjE2MDEzNSBTYWx0ZWRfXwLYiwAAZ/0qP
- C4fGeY/69Q52L5ztLq7fK62M/koQTcP7rGqF0dcW5PdQJIVqmG25U6Butopsqhyz0hWV9rQ+X2Q
- kZnO3iR09Fi6wc+Z3l3m+3eJ85OKFS0=
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjE2MDEzNSBTYWx0ZWRfX2aa9naN/h4n/
- uZGa/jNJHCKe9M0iG+BKTBaVDqhwW5VeWwinEuRAcyAQzZ9YPyC8D8yUD3TnUTwZmOkTD3wdPFS
- KC/8MWStWvd7Yd28iAb2bRlU6va6qFm3zD9Ahtr23Act6pSxn3pq8YFgLBg52n5fk7ksPmM/b0m
- pEJ9gMzK9jmxgqhGtiKTLYHS1y/rOSb/gOmSl8IdmVJE7ULglbSX0J4PB9OqiqV6F+uBgUgmqHW
- FyHeTUnE+oLlUPDvFk1DwvMNW1xYT0tO4GbaGQ4w8b9ndzhzRJkQIZThvWbL9zYNmoaz1M7nA+M
- GL5vAS6jPizSqyu/nXaKDKhOFGWnVskpd14SWXXKRdNEcRC6nNSaHM4KwQcGp/49xWxhthSOpWa
- 7EZid1rkJfI/JOGNZT2f1Ceyl/OTWwUiip+rXSUrO/AHDdL2RNd6KeAe7cObRJ+hHttixnRQbXz
- 4p+Ao2j6zgWEeT8KE4g==
-X-Proofpoint-GUID: iK_GhqM-0CA3-a8u0l2MimtfPdu62Gqd
-X-Authority-Analysis: v=2.4 cv=NuDhtcdJ c=1 sm=1 tr=0 ts=6a3151ba cx=c_pps
- a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
- a=kj9zAlcOel0A:10 a=FelO9ux0wxsA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=V8glGbnc2Ofi9Qvn3v5h:22 a=VnNF1IyMAAAA:8
- a=iq54L-VbdJhnno5R1iwA:9 a=CjuIK1q_8ugA:10
-X-Proofpoint-ORIG-GUID: 3woL183bwpqlqcMfJLp47KJDbDowNofT
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
- definitions=2026-06-16_03,2026-06-15_04,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- spamscore=0 adultscore=0 suspectscore=0 impostorscore=0 clxscore=1015
- phishscore=0 bulkscore=0 malwarescore=0 priorityscore=1501 lowpriorityscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606040000 definitions=main-2606160135
+Message-Id: <22624c18aedcefcada9ef30f7b9b2d03bf228d0314de708c5474f9115680d319@mail.kernel.org>
+In-Reply-To: <20260616164741.32252-6-adubey@linux.ibm.com>
+References: <20260616164741.32252-6-adubey@linux.ibm.com>
+Subject: Re: [bpf v8 5/7] powerpc64/bpf: fix compare instruction emitted for tailcall
+From: bot+bpf-ci@kernel.org
+To: adubey@linux.ibm.com,bpf@vger.kernel.org
+Cc: hbathini@linux.ibm.com,linuxppc-dev@lists.ozlabs.org,maddy@linux.ibm.com,ast@kernel.org,andrii@kernel.org,daniel@iogearbox.net,shuah@kernel.org,linux-kselftest@vger.kernel.org,stable@vger.kernel.org,adubey@linux.ibm.com,sashiko-bot@kernel.org,ast@kernel.org,andrii@kernel.org,daniel@iogearbox.net,martin.lau@kernel.org,eddyz87@gmail.com,yonghong.song@linux.dev,clm@meta.com,ihor.solodrai@linux.dev
+Date: Tue, 16 Jun 2026 13:55:27 +0000 (UTC)
 
-On 2026/06/16 06:39 PM, Ritesh Harjani wrote:
-> Amit Machhiwal <amachhiw@linux.ibm.com> writes:
-> 
-> > On 2026/06/16 05:38 PM, Ritesh Harjani wrote:
-> >> Amit Machhiwal <amachhiw@linux.ibm.com> writes:
-> >> 
-> >> >> > diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
-> >> >> > index 3449dd2b577d..7472b9522f71 100644
-> >> >> > --- a/arch/powerpc/include/asm/reg.h
-> >> >> > +++ b/arch/powerpc/include/asm/reg.h
-> >> >> > @@ -1356,6 +1356,7 @@
-> >> >> >  #define PVR_ARCH_300	0x0f000005
-> >> >> >  #define PVR_ARCH_31	0x0f000006
-> >> >> >  #define PVR_ARCH_31_P11	0x0f000007
-> >> >> > +#define PVR_ARCH_INVALID	0xffffffff
-> >> >> 
-> >> >> Logical processor version is defined as part of the PAPR spec. We should
-> >> >> ensure that this invalid PVR is also documented in the PAPR spec.
-> >> >> 
-> >> >> If you have already taken care of that, then please confirm and feel free to add:
-> >> >
-> >> > Regarding the PAPR specification documentation: The PAPR spec documents
-> >> > the valid Processor Version Register (PVR) values for each processor
-> >> > generation (POWER8, POWER9, POWER10, POWER11, etc.). However, the
-> >> > PVR_ARCH_INVALID value (0xffffffff) introduced in this patch series is a
-> >> > KVM implementation detail used internally to mark invalid compatibility
-> >> > mode requests - it's not an architectural value that would be defined in
-> >> > PAPR itself.
-> >> >
-> >> > The validation logic and the use of PVR_ARCH_INVALID as a sentinel value
-> >> > are documented in the kernel code and commit message.
-> >> >
-> >> 
-> >> But that still worries me on what if PAPR wants to re-use this value for
-> >> some other purpose in future. 
-> >
-> > This is a valid concern about potential future conflicts with PAPR.
-> > However, I'd like to point out that PAPR explicitly specifies:
-> >
-> >   "The first byte of the logical processor version value shall be 0x0F."
-> >
-> > Since PVR_ARCH_INVALID (0xffffffff) has a first byte of 0xFF, it's
-> > explicitly outside the valid PAPR-defined range for logical PVR values.
-> > This means there shouldn't be any risk of future conflict with PAPR
-> > specifications.
-> >
-> 
-> aah ok.. That make sense. Thanks for confirming that.
-> Can we please update a small comment in the code and log this info,
-> maybe something like:
+--===============8414396918092606343==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
 
-Sure, Ritesh. I can certainly do that in the next version.
+> The tail_call_info field can contain either a scalar counter
+> value or a 64-bit pointer to the counter, using a 32-bit
+> compare (cmplwi) only checks the lower 32 bits, which can lead
+> to incorrect comparisions when location of counter is near 4GB
+> boundary. Use instruction cmpldi for accurate comparision in
+> all cases.
 
-Thanks,
-Amit.
+The change now uses cmpldi on ppc64 and cmplwi on ppc32 through the new
+PPC_RAW_CMPLLI macro, so should this sentence read "Use cmpldi/cmplwi
+instruction" rather than "Use instruction cmpldi"?
 
-> 
-> /*
->  * PAPR specifies that the first byte of a valid logical PVR value is
->  * 0x0f. 0xffffffff therefore lies permanently outside the PAPR-defined
->  * range and is safe to repurpose as a kernel-internal sentinel. KVM
->  * stores it in vc->arch_compat when userspace requests an unsupported
->  * compatibility mode (e.g. Power11 on a Power10 compat host);
->  * kvmppc_sanity_check() detects this and prevents the vCPU from running
->  * until a valid arch_compat is set.
->  */
-> #define PVR_ARCH_INVALID      0xffffffff
-> 
-> 
-> -ritesh
-> 
+This wording was raised in the v7 review by Hari Bathini
+<hbathini@linux.ibm.com>:
+
+https://lore.kernel.org/bpf/5c095e3d-d554-4506-9dbc-96d568b4be5e@linux.ibm.com/
+
+  This should be "Use cmpldi/cmplwi instruction" instead of "Use
+  instruction cmpldi"
+
+The technical part of that feedback (defining PPC_RAW_CMPLLI rather than
+using PPC_RAW_CMPLDI directly in the shared file) appears to be addressed
+in this version, but the wording still reads "Use instruction cmpldi".
+
+
+---
+AI reviewed your patch. Please fix the bug or email reply why it's not a bug.
+See: https://github.com/kernel-patches/vmtest/blob/master/ci/claude/README.md
+
+CI run summary: https://github.com/kernel-patches/bpf/actions/runs/27620315552
+--===============8414396918092606343==--
 
