@@ -1,86 +1,95 @@
-Return-Path: <linuxppc-dev+bounces-22689-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22690-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 413CBCD98DA
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Jun 2026 06:27:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EFEB1CD98DA
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Jun 2026 06:38:28 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gfcTf6p9Bz3bqh;
-	Tue, 16 Jun 2026 16:27:02 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::42f"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781591222;
-	cv=none; b=GQZypn5mNEEQK0YpR+7AVKy5FD6+XWT9tZl6+7yTM7LPptV7Dod3w1HSvbisAoFAcFePK24DI/rqBvxF/49Bf/V4rILToEKyCRY7z8hiVCS8yq7tbAFuDj3K9bYTC3aQUQmMZbUFVTDfdxJS8BmpIPmDBq3YVdMvf/v1qSS3VmapbbJaNSavRv44RmlVRyKv1gBHxG6WeZIhM/oHAI5Qd8h4ysaU8ysvB3qDwbanj30yLy/HG9G40cgnx4aeK3kJbStxWGrAEDuWp4SWbf6LC5eBvyNXNrqsxJONPjV1xTgYiSXzTtOiLl8PW0Eo0CPZS7uNxbo88rsMJLhleEf/aA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gfckq45ffz3bqh;
+	Tue, 16 Jun 2026 16:38:27 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781591907;
+	cv=none; b=k+GeqziX0uZAKb3gOK6PSTn/lv8Wtx8ncSS6BnSk6gDBrlt7HHTn6Hr26mmXToaIH3tB/Fx/fJpbhSGQMwI9u0XBwLzE//o7Fx6NO2CytOuGg93jy3/ES/Evmb1asqD301JXd2AstVXTNckyV4ieYoWkCyMX0SdJ6oLvYlXh/7n+L7RXdEBKD8Ym6FboKKfHW6oqCH+K9G9SONJoZHhgcC8IqPpzLb75p472vsoCjwI6PjFqhqW9bVHU/vqLVXodsth0tv2FDFcODmgp8DWYPmmjHOFfSfR2IPuHcWge3g+4hDkiU0Furt7LzHnhqeMoI9bJ4ZaDPoFU8L8+1SQamw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1781591222; c=relaxed/relaxed;
-	bh=rI93y5seViHg5YidVC1YNQsLofTGTFtrXXZXnF5WUWU=;
+	t=1781591907; c=relaxed/relaxed;
+	bh=/QdSIcq6Bz9cXxEkVZQM87mA7iZJ+jF2gZbZe3HL7Io=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=WuzKUW+Zf4F5CqSOH8XeSwCnOaZkcYz+iNKO0N4wVu7kaEZTWy3AEAeCysGvX3E697xeu99tyDU1q2aOvxa00o2OEVBpx49Knj96DGcGNML8uPM1MV3t4rgb/tyfFaQzmFMO0Ydf5nE6WVZeKNAxluDxr+/eAH3YB0CHdOQXTTqXsrDuEzHWChydkFHdaEC1+lGYXaVAV3RjK4F3ufO2L0yfo1Gi88zg+mwScNWXUruKoG7sBrK7HM7aeRP0PmxBnaMAG0AdCIFS6iOeTbcUns8FMUWg6ETGl8le9+8Fw1fMQwxzoHMKfBwCbE7ZPw793CvxspysaDZxuK/scD79vw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=iRx2H0ox; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::42f; helo=mail-pf1-x42f.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	 Content-Type:Content-Disposition:In-Reply-To; b=mClctybT7LiGFix4H4At6WbCGOg7eLYG4fd60VY07NxFrlhknuYAx72YLN65VzKqswr3KOnKSwRiWAbxfefsYlnHptUb1xYKhACE3+o1MInGmJCDQxA9xr19l4iiWmSYK+y2shVDpVc2ebTaBXccVvjURb98Al0KmXo5Rk+NxLWJAc/hNyZu3mTjY1P1+qi/bBL/8NYQe+vgeogb5pKHkIHZlVQxT2yYzkWQxqlK+5AADUnY5BlJIE3FOQy5Htu+Z8LQvI+ebYxsqC01qDXXxWY2pGduX/QhBP73wlrxlJAVCmkE58qkO0Y9zmj+q0dRmTSymKONsAQfivkGgVgI9Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=hJyq7AH3; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=iRx2H0ox;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=hJyq7AH3;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::42f; helo=mail-pf1-x42f.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pf1-x42f.google.com (mail-pf1-x42f.google.com [IPv6:2607:f8b0:4864:20::42f])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gfcTd1w82z2yv0
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jun 2026 16:27:00 +1000 (AEST)
-Received: by mail-pf1-x42f.google.com with SMTP id d2e1a72fcca58-8423f626a65so1977454b3a.2
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jun 2026 23:27:00 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1781591218; x=1782196018; darn=lists.ozlabs.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=rI93y5seViHg5YidVC1YNQsLofTGTFtrXXZXnF5WUWU=;
-        b=iRx2H0oxJ/3Cy6Ai1oxKrDAFDfr1RgCCMC9UpeU8oOxoEPL0byLAps9x7FQ1DfreM0
-         LRtFMSPpMS7QzYor1FnBEY9AxrA1GAjUg+KdM3OgAQJF+jZE8yivyEQWRX2Cec7T5/Tm
-         OK9sTDPqlHl2BwlFWHm/kKwqdCOxLB9Uf63SIQE5YmE/RvhDIK5LfYlLQ4LUBFjrNoqx
-         90z8wy7BDXR3IlG4OZl93ROda5zR3FSvsZ63/+TFp8M9xxA43hmHvqdjatPK1OBzoLSW
-         yK9ODdJlhMur9RCux0HNWr4mCnRBPCXfjP2tv8KdK1ERiOYx1t+9AhnTWAEkqz433Tph
-         NHxA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1781591218; x=1782196018;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=rI93y5seViHg5YidVC1YNQsLofTGTFtrXXZXnF5WUWU=;
-        b=W9HZt1M0I+35GL1OwcU+cbOyBZqny8N8d48nl6AfSC37hNXK+TnxrbEO6H0KKBgKRf
-         L27JQT06hdTlinGH5JxvA2BrwPuaGq+UaST4ixXiLqOMO0gOOPpxaMqbpgkg1DUYk+fd
-         0/aN9QDi+CXqSE0TTzhm0vCL0rx71Rt9d+f77agPlGzhCxvtx3VUfEgm659wR0X5cSZS
-         7CY+WT/wOM9z1yzAbQzL1E89TXHA9d3iVteAAoPPmr+kHDFcS82OTpxml62mNH/YZgei
-         ddICeyfR8f/CFHxpdU1/x1ha9/mQEaVd51cSAmklWGYjo8MCkOXH7buhJCkeM/drzE/7
-         nHUg==
-X-Forwarded-Encrypted: i=1; AFNElJ/ZpaoXfWVGTlpP7y/PZbIRw8ha53pIQmHJq53wX40UStgwawKNhBmRsjmGTE9Rj8w2Pi/tj8xGwkeRO6I=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YyftG94u4PujYjV1Ig4RrJP2wqWGkjjb39IGdJoIqjpHzEVilZK
-	visI4QuOA9y3/vO01M80U1Q/FM8wnu0LPhbXBchXkBjB+T3Yt1+S1iB/
-X-Gm-Gg: Acq92OHt5Oq3LVStJQ/g5ZnCN1vM3YVbNq4dpR1c+lylf8MiVYKjM70NYc1vfw+R1XN
-	5YepQxDOKS4mqpUvCOy4JqKfD1oAo0HKr7HmI6py8zfdvYb17+wuA336Q/+aSLDW3aHIYN8Amt8
-	iFbo8dsEQRsJOQkYIDgfTmJttvU1DvxRQTsTqskAxTH43m7hpiMyJ0ok8L6odAqyUwYnSq+lpW8
-	GoxifFOSvU9o7wDiOesat8FMJEUAjDptX1QI4BuFAUyKlczpI0J+Wmw/8KFRTMiZ3Qy6AiHgVbD
-	Qg0fBg1atnRE5qHjJ4by6Na7u/RhjiJ4fe3czM6FGZ4/WENf4kTY51dvNAL2BpUwkzrnlkMvcR4
-	fk4iXTMI5ho+kTrDuwVNssVRWo25vmxCCETw3YLQHIbb4dIcmCwam+vFA/dJWfepVWqo+tUaT71
-	fC5Y/S9OkrMcrZ1bx9IuZYjZT7AZIEqvkTHf8yssdEtFzBYz2Y4XITkilAFlDwegNSxQuOmkQ=
-X-Received: by 2002:a05:6a00:4485:b0:842:2f3d:dff2 with SMTP id d2e1a72fcca58-84515521648mr2243020b3a.34.1781591218063;
-        Mon, 15 Jun 2026 23:26:58 -0700 (PDT)
-Received: from li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com ([106.51.160.236])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-8434b009e67sm14154810b3a.42.2026.06.15.23.26.55
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 15 Jun 2026 23:26:57 -0700 (PDT)
-Date: Tue, 16 Jun 2026 11:56:52 +0530
-From: Mukesh Kumar Chaurasiya <mkchauras@gmail.com>
-To: Yeswanth Krishna <yeswanth@linux.ibm.com>
-Cc: netdev@vger.kernel.org, venkat88@linux.ibm.com, 
-	linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [BUG] kernel BUG in team driver: buffer overflow in
- team_add_slave()
-Message-ID: <ajDshKtFNpQAtHQ0@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
-References: <3ad19e86-234c-408f-896e-0d6c774fea49@linux.ibm.com>
- <a08b0a7f-089f-4428-9360-9edbec3a5453@linux.ibm.com>
- <ad80ee33-400b-4c63-8197-838c3cf85cef@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gfckp3nvCz2yv0
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jun 2026 16:38:26 +1000 (AEST)
+Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 65G6IEj9507681;
+	Tue, 16 Jun 2026 06:38:11 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=/QdSIc
+	q6Bz9cXxEkVZQM87mA7iZJ+jF2gZbZe3HL7Io=; b=hJyq7AH3EEcqTeqmQCXPFi
+	P9ApmUaPtmX8MgPCe1//vYlzmSMxbJw/uWpm83635tICxY0vE+neijeJ8fKCBgxN
+	pK/uJdAPt8NHLAIkBgCjw8e+wUPgfVNbv11sFlpUVglR7AvRGrWoDr6yUsfoyYQw
+	4F8H33VGOW78ev6iyalrtEvTqmFbBkKHVtndjyhzigVhj5Q2beupJdUwKtRC42DA
+	hqUnOjD5xbRzV3euKkwc233x7doxThsYJSQObiC0Rx/K7ufHRFHPWybjcSZwVNzu
+	1xjO5tY0llMS5GQ/pEYOSUo9jz7pLuUg+oaJff4HZc5Mi6Xxxejrtk8PmZgaIatw
+	==
+Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4es23nm6fu-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 16 Jun 2026 06:38:10 +0000 (GMT)
+Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma22.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 65G6YaNB032043;
+	Tue, 16 Jun 2026 06:38:09 GMT
+Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
+	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4eshww26js-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 16 Jun 2026 06:38:09 +0000 (GMT)
+Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com [10.20.54.104])
+	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 65G6c5WG30409094
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Tue, 16 Jun 2026 06:38:05 GMT
+Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 77CFC20043;
+	Tue, 16 Jun 2026 06:38:05 +0000 (GMT)
+Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 3AFA220040;
+	Tue, 16 Jun 2026 06:38:03 +0000 (GMT)
+Received: from fedora (unknown [9.5.7.39])
+	by smtpav05.fra02v.mail.ibm.com (Postfix) with ESMTPS;
+	Tue, 16 Jun 2026 06:38:03 +0000 (GMT)
+Date: Tue, 16 Jun 2026 12:08:21 +0530
+From: Amit Machhiwal <amachhiw@linux.ibm.com>
+To: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+Cc: Amit Machhiwal <amachhiw@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+        Madhavan Srinivasan <maddy@linux.ibm.com>,
+        Vaibhav Jain <vaibhav@linux.ibm.com>,
+        Harsh Prateek Bora <harshpb@linux.ibm.com>,
+        Ritesh Harjani <ritesh.list@gmail.com>,
+        Anushree Mathur <anushree.mathur@linux.ibm.com>,
+        Gautam Menghani <gautam@linux.ibm.com>,
+        Nicholas Piggin <npiggin@gmail.com>,
+        Michael Ellerman <mpe@ellerman.id.au>, stable@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] powerpc/dt_cpu_ftrs: Set CPU_FTR_P11_PVR for Power11 and
+ later processors
+Message-ID: <20260616115521.79ad9699-39-amachhiw@linux.ibm.com>
+Mail-Followup-To: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, 
+	linuxppc-dev@lists.ozlabs.org, Madhavan Srinivasan <maddy@linux.ibm.com>, 
+	Vaibhav Jain <vaibhav@linux.ibm.com>, Harsh Prateek Bora <harshpb@linux.ibm.com>, 
+	Ritesh Harjani <ritesh.list@gmail.com>, Anushree Mathur <anushree.mathur@linux.ibm.com>, 
+	Gautam Menghani <gautam@linux.ibm.com>, Nicholas Piggin <npiggin@gmail.com>, 
+	Michael Ellerman <mpe@ellerman.id.au>, stable@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20260614173437.26352-1-amachhiw@linux.ibm.com>
+ <56dfa6bf-1eb0-4e27-974b-03f963c5eed1@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -94,19 +103,149 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <ad80ee33-400b-4c63-8197-838c3cf85cef@linux.ibm.com>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <56dfa6bf-1eb0-4e27-974b-03f963c5eed1@kernel.org>
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Authority-Analysis: v=2.4 cv=XtnK/1F9 c=1 sm=1 tr=0 ts=6a30ef53 cx=c_pps
+ a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
+ a=8nJEP1OIZ-IA:10 a=FelO9ux0wxsA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=iQ6ETzBq9ecOQQE5vZCe:22 a=VwQbUJbxAAAA:8
+ a=VnNF1IyMAAAA:8 a=a82qm-gZ-efHhUihHKcA:9 a=3ZKOabzyN94A:10 a=wPNLvfGTeEIA:10
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjE2MDA2MCBTYWx0ZWRfX/XoDiPjm6zHZ
+ hVJedRVpr17l/m+2D0Uju/lIxRTa4SdIoA14wlM7ZjYlkdxeHF0jyvzgsabmcFV0+Hq0Up52vbA
+ dGR5dowujt5ARnMjO1yEkzLh172esSh2eqbZcUzPGuBKRTVaX4/3XknBqddtAIghboJoPnBkFC7
+ eVt+7S2wa2sJ7IFtexvykTAP49Kh+rg0s7W5ZG12QQBltzGLLPv/2QStfz4Ojnb4nQJ8emfUnb7
+ m3HYg1A4eAV5b/aJBzij97LYs0GxCU6ATknfoovmZ8cccA+J3HUYCAJHiBXiDKVAV6PTfbIYvxn
+ Ibk7ET//PkWGjlBiVOF0rucwA8qTM6TDPRCQyLIb4he3VaKg7ic89nEekxd4P7nR5Gg7dppjtqx
+ J39g7bFFwYIi1NUWqaICvdax8N9w2ki/60ghUZzUcNJeu2WJ6xiCGObrE6IzA1A8CRSDTnsK0os
+ pcBn6T2rwePuIqyKhBQ==
+X-Proofpoint-GUID: 7eamVPgNIYN9kh4QzNk_iYIhmnWnCo2g
+X-Proofpoint-ORIG-GUID: ST6LHGXcw3rMrmNV3S_8iCfr06j3L7m_
+X-Proofpoint-Spam-Info: AW1haW4tMjYwNjE2MDA2MCBTYWx0ZWRfX0y9FYKc+vWL9
+ Y0CIhvaZdo+MpvSi7E5UCmBTwAPNjCRAOsWhDMwtA5EdlqRSIPVtXrxwXl+1dFKKLJdR+IK2/G3
+ WEhnT+TIyzL5+czn2gXrq+QN4J9JjMQ=
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
+ definitions=2026-06-16_02,2026-06-15_04,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ bulkscore=0 adultscore=0 phishscore=0 lowpriorityscore=0 priorityscore=1501
+ suspectscore=0 clxscore=1015 malwarescore=0 spamscore=0 impostorscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2606040000 definitions=main-2606160060
 
-On Tue, Jun 16, 2026 at 11:38:37AM +0530, Yeswanth Krishna wrote:
+Hi Christophe,
+
+Thanks for reviewing this patch. Please find my response inline.
+
+On 2026/06/16 07:39 AM, Christophe Leroy (CS GROUP) wrote:
 > 
-> > Please add below reported-by tag:
-> > Reported-by: Yeswanth Krishna Tellakula <yeswanth@linux.ibm.com>\
+> 
+> Le 14/06/2026 à 19:34, Amit Machhiwal a écrit :
+> > When using device tree CPU features (dt-cpu-ftrs), the kernel bypasses
+> > the traditional cputable-based CPU identification and instead derives
+> > CPU features from the device tree's "ibm,powerpc-cpu-features" node
+> > provided by firmware.
 > > 
+> > However, CPU_FTR_P11_PVR is a kernel-internal feature flag used to
+> > identify Power11 and later processors, and is not represented in the
+> > device tree's ISA feature set. While ISA v3.1 support (indicated by
+> > CPU_FTR_ARCH_31) is present on both Power10 and Power11, the
+> > CPU_FTR_P11_PVR flag is specifically needed by code that must
+> > distinguish between Power10 and Power11 processors.
 > > 
-I am also not able to reproduce it.
-Can you paste the full report of the crash?
+> > Without this flag set, code that checks for Power11 using
+> > cpu_has_feature(CPU_FTR_P11_PVR) will incorrectly return false on
+> > Power11+ systems using dt-cpu-ftrs, leading to incorrect behavior.
+> > 
+> > This issue manifests specifically in powernv environments (bare-metal
+> > or QEMU TCG with powernv machine type), where skiboot/OPAL firmware
+> > provides the "ibm,powerpc-cpu-features" node, causing the kernel to
+> > use dt-cpu-ftrs. The issue does not affect pseries guests, where SLOF
+> > firmware does not provide this node, causing the kernel to fall back
+> > to the traditional cputable path (identify_cpu) which correctly sets
+> > CPU_FTR_P11_PVR during PVR-based CPU identification.
+> > 
+> > In powernv TCG guests, the missing flag causes KVM code to trigger
+> > warnings when attempting to create KVM guests, as cpu_features shows
+> > 0x000c00eb8f4fb187 (missing bit 53) instead of the correct
+> > 0x002c00eb8f4fb187 (with bit 53 set).
+> > 
+> > Fix this by setting CPU_FTR_P11_PVR for all processors with
+> > PVR >= PVR_POWER11 when ISA v3.1 support is detected in
+> > cpufeatures_setup_start(). This approach ensures forward
+> > compatibility with future processor generations.
+> > 
+> > Fixes: 96e266e3bcd6 ("KVM: PPC: Book3S HV: Add Power11 capability support for Nested PAPR guests")
+> > Cc: stable@vger.kernel.org # v6.13+
+> > Signed-off-by: Amit Machhiwal <amachhiw@linux.ibm.com>
+> > ---
+> > Related: https://lore.kernel.org/all/20260609053327.61563-1-amachhiw@linux.ibm.com/
+> > ---
+> > 
+> >   arch/powerpc/kernel/dt_cpu_ftrs.c | 9 +++++++++
+> >   1 file changed, 9 insertions(+)
+> > 
+> > diff --git a/arch/powerpc/kernel/dt_cpu_ftrs.c b/arch/powerpc/kernel/dt_cpu_ftrs.c
+> > index 3af6c06af02f..e5853daa6a48 100644
+> > --- a/arch/powerpc/kernel/dt_cpu_ftrs.c
+> > +++ b/arch/powerpc/kernel/dt_cpu_ftrs.c
+> > @@ -704,6 +704,15 @@ static void __init cpufeatures_setup_start(u32 isa)
+> >   	if (isa >= ISA_V3_1) {
+> >   		cur_cpu_spec->cpu_features |= CPU_FTR_ARCH_31;
+> >   		cur_cpu_spec->cpu_user_features2 |= PPC_FEATURE2_ARCH_3_1;
+> > +
+> > +		/*
+> > +		 * CPU_FTR_P11_PVR is a kernel-internal flag to identify
+> > +		 * Power11 and later processors. While ISA v3.1 is supported
+> > +		 * by Power10+, this flag specifically indicates Power11+
+> > +		 * for code that needs to distinguish between P10 and P11.
+> > +		 */
+> > +		if (PVR_VER(mfspr(SPRN_PVR)) >= PVR_POWER11)
+> 
+> Are we sure this test will always be correct ?
+> 
+> For instance PVR_PA6T is higher than PVR_POWER11 allthough it is not ISA 3.1
+> 
+> Wouldn't is be cleaner and safer to just do:
+> 
+> 	PVR_VER(mfspr(SPRN_PVR)) == PVR_POWER11
 
-Regards,
-Mukesh
+You're absolutely right to point out the PVR ordering concern. But PA6T
+cannot actually reach this path because we're already gated by:
+
+  if (isa >= ISA_V3_1)
+
+and PA6T does not implement ISA v3.1.
+
+My rationale for using `>= PVR_POWER11` is that `CPU_FTR_P11_PVR` is
+intended to be included for Power11 and later processors, not just
+Power11 itself, as it identifies a CPU feature. Using `== PVR_POWER11`
+would mean we'd need to revisit this code for every future generation.
+
+This approach is consistent with existing kernel code. For example, in
+arch/powerpc/perf/hv-gpci.c:
+
+  /* sysinfo interface files are only available for power10 and above platforms */
+  if (PVR_VER(mfspr(SPRN_PVR)) >= PVR_POWER10)
+      add_sysinfo_interface_files();
+
+Also, I couldn't find any current users of `PVR_PA6T` or `PVR_BE` in the
+kernel tree, so there doesn't appear to be a present-day ISA v3.1+
+example where the comparison would misidentify a processor.
+
+Please let me know your further thoughts on this.
+
+Thanks,
+Amit
+
+> 
+> > +			cur_cpu_spec->cpu_features |= CPU_FTR_P11_PVR;
+> >   	}
+> >   }
+> > 
+> > base-commit: 424280953322cf66314f3ba5e2d1ef345f21c770
+> 
 
