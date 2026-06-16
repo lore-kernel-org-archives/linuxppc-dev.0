@@ -1,92 +1,58 @@
-Return-Path: <linuxppc-dev+bounces-22732-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22733-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9B4BECD98E1
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Jun 2026 02:25:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 646B9CD98E1
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Jun 2026 03:47:56 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gg74j5zmSz2ysW;
-	Wed, 17 Jun 2026 12:25:41 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::42f" arc.chain=google.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781663141;
-	cv=pass; b=ag3dtSv+BRqehg4ZueIdA4k9eH9twM/9BcjMgHT+xvndST1ltrQePKBayTLY5Ac43HKAdlu2gVG0X4dZ/N5tXSXehohAMWZ91oZ6n6xHaGxH6v4z0Rya6/lcJnEb92OahDUqqmyHMSlzAFu/JAVvS4oZWyrRWlL07RIRW1ExY6Og1Y+aDl07BQCZFdb6c0wyvjenpekz4F+FcA2CVYBHSmZJWQU7x3EtgywFR8kOWjfSEZiHWS9Mz+bki63bOxsyXbgICO+3Aq3IDqCphBe7SGIW4Xd6p4Momu4KwEwHQDhCRjslsqPGirwZTG+kQA1U0ASxiS8oWCgPuYu6hOUIlA==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1781663141; c=relaxed/relaxed;
-	bh=I9jkNgg69cYp9Gmed8dyPc4oJRxJqglqMoz9LIyCVkM=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=IlcT0UziqwbocVsE6ceNzl3SKJ5pOn2PDGan+xkxORI+cNphu83ZpRI2NgjiLjPbCmkn8BJNF+MW99fjriodk1Gyv8l9ZjYMoAOXBsXQ7cBNaM1YGKUurIK52MCHzWFmt9YnsBahmH1eIG+pk4t0twiGeG86ci+R5KEeOKQ01pnIE/n7SRiauRgdb9a40fMtNlKadrBm4G9PGgjsvOIpo7pbJwRpORMOhT1eYElyMefrLy6XtboOvF3y6No1Xjpo4PBuTbkLiMR3tOaT3ova8wkvIQ3l8lL2FjKKC9WgnCnAs3PE9Q5F42/vtF+X2gqYXgPBFkf/VAs2c6iMDoDkXA==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=r/eEgh89; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::42f; helo=mail-pf1-x42f.google.com; envelope-from=phucduc.bui@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=r/eEgh89;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::42f; helo=mail-pf1-x42f.google.com; envelope-from=phucduc.bui@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pf1-x42f.google.com (mail-pf1-x42f.google.com [IPv6:2607:f8b0:4864:20::42f])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gg8vZ4NSvz3bqh;
+	Wed, 17 Jun 2026 13:47:54 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=46.38.233.133
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781594529;
+	cv=none; b=ai5XRxpBD15Zez4C/Tfendg3CsAHaBa70dpxRy5YYtLT6KDdfYrwPluUzl//j6esZyfuD/CN3yY9t5tpAa9IgoYiz7JVh5miOwngOriEvJQu5ltviSxBGWL4pJgLbyUn2cu5CnxM5u7iWdXmORbrwUnN/vCUvx25cGsDmXwswn+XnBsfsTdiQ0ADvJP7BNsHTmcDTL2SpQP/4p+w7dVcsC0yv0U512EIthTmxns3Ewj0/9P6jqMr0JXnqR09C37zAtFyQ6CMwqJgTVqibVcIuOr7ySQaaUaOJ701lWNCtsBMpTznnJmU1k0NpeS8U6eIiiZZC+F/nkYuidCxYGg6kw==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1781594529; c=relaxed/relaxed;
+	bh=juhXNLlnPzgyRynEqG91o/WPu2WsUH4/kzqpgpcpPCs=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=Vsyttsx9F7K3XB+rv26fNE0SLVDUnuzrqJqB/cPn5d3+J7y28N54R97tRHCbYcrjMOh04+acacI9P2uFyYsB2jarmlHup4sMYqHhuFNwQ1bxHpW+IyOZ1hf32TSPII0R8BB+SrnBDatvzrUwVaqmSt84VbsgZ+4DDPB5CLywkW1eIjCk2lzBICDr6dFBB5iaFGchcgSpHO/VGCJlFF/Mdcex+ns0FWTofZimQSsVAuBCv47nFNYLs8j3O7NJ96Zn5/XByj4GnAmRkRG+FxQenTVJepEZpbU02j92YoKDRqE1T3H0cVsRfQ/jt2y2uA1mirJ9Tst5/ed+txgf29tbsw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=strotmann.de; spf=pass (client-ip=46.38.233.133; helo=strotmann.de; envelope-from=cas@strotmann.de; receiver=lists.ozlabs.org) smtp.mailfrom=strotmann.de
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=strotmann.de
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=strotmann.de (client-ip=46.38.233.133; helo=strotmann.de; envelope-from=cas@strotmann.de; receiver=lists.ozlabs.org)
+X-Greylist: delayed 480 seconds by postgrey-1.37 at boromir; Tue, 16 Jun 2026 17:22:07 AEST
+Received: from strotmann.de (smtp3.strotmann.de [46.38.233.133])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bit raw public key) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gg74g3ycBz2yfD
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Jun 2026 12:25:38 +1000 (AEST)
-Received: by mail-pf1-x42f.google.com with SMTP id d2e1a72fcca58-8452a597afcso47724b3a.1
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jun 2026 19:25:38 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1781663137; cv=none;
-        d=google.com; s=arc-20240605;
-        b=dyGocVIJ7d2J+9ub2BgoSLJrNYiWWByzjZwidVBe23edNphrxDhbOZF2+ad+WGb0PW
-         QWy/10zUXnTc634IwnFKuEkhp7+r8RoP1+/K2xQ8ijV1FP10s8JnUvGeRWHwJk/e3d9C
-         ymZ/tFLe9ceV4ULdSj33yTOr7jCKZ3YLMFCtS8xdMA4To+hTi4j3HpBoGOigDBH9oBZn
-         30VUoApO6meUzPoo7bj2f3zs4FO4lF8mRxM9xuxO0Caj+CtuV8QiW/Qcts2HdqaE1Ewj
-         d30PWkzKLyJzajHnfUCB6O4V1c98AU2w6zaOXWMmCorqUiq8ugwOC+gr0+q4dcTxHDLW
-         5Mbg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:dkim-signature;
-        bh=I9jkNgg69cYp9Gmed8dyPc4oJRxJqglqMoz9LIyCVkM=;
-        fh=rftLJDsEdSenVRZIlmwFhodDIpwkIYEA8fiA2j0hv2o=;
-        b=NPd+fQvHjMWFKns6qYtnb5sLPXcBUZ0/tcE51uEM1J1yxtYFo1mHJ+ZMmE8juKpxz/
-         SgbladEC3s0Uggyahwnl15qwhIZMyeY/rnscJiMFBF+8D1EqOiPzi3hdS5biAN/Z7Xg+
-         g28c7LlJqxXc+jTN1HjA19G9/ODQYEXEVRu802VBnM5TWn3lpN9iZsW/pkoGlR+GEknb
-         JDQrJ0EUP/WW1aIp1usAR5ncAxBkBIGsQIz5uAukcVf5VlHcRNlqsso5kOxtCZfHCSqg
-         KAqfBbotYdUyc36otLuwwZobYAW95LoWNIwX2RBZNA61y5Exdxpe2686g8mOJghEtp+t
-         7MNQ==;
-        darn=lists.ozlabs.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1781663137; x=1782267937; darn=lists.ozlabs.org;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=I9jkNgg69cYp9Gmed8dyPc4oJRxJqglqMoz9LIyCVkM=;
-        b=r/eEgh8926n1AmHI7vpBddeHd3b4H+CyqBtkqfxW+8M0+hO1zo+tnqiLDzNaXQQKsI
-         ABumw2atfeJteAFIfLZQWZ+siUe0uYGGGcNWuz9ckG1idqPCCDGj7jpIRsBlpydLvE2F
-         IjZJ2TJOgosY5JxHCNnXS5yei1o1KRFWIEyCo8oZqCyz6wPMUYogLoL9VTF+nlIQcYJP
-         pOGlcogS0PD/2i0TYLtVlkNp6v+6h7Pt2WEAQWk6xX+6erVLrJbkxCn06d0PO4HI8gWb
-         L63t8CK11koijwrGGwI3LXO/4qA9e/+nvu0t8OrDGeRN9aAaVZ3wVX5W6ab6PJFJ7CEQ
-         yjfg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1781663137; x=1782267937;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=I9jkNgg69cYp9Gmed8dyPc4oJRxJqglqMoz9LIyCVkM=;
-        b=AhfMCk4zJj0onH+xGZtZoHPjCb/kimV4YtZDmTQTwfk3XBbkxnzcQiLfASoNyGivpH
-         eWZRo7sSKJay75l5BW3jC9d3rY6Tdy3JPITRlTAbe5wXS+stiplu01mc7Hyy9/8nVkHn
-         rhwxaH8hBvq0w330IuQr9EWLb7s7G/7FbzvJbsdCCsr5E15qHd+dl8pRzr4WJ/LegJWq
-         eCJ5LULubmf+69HAGOd6xKXp6hwbfQhAGlN3jMGukzR2zEfnkqgIgceEHSYzDIogdgJk
-         syRX2+y91ZeCj+ghmgqGcClK9SLDl3Gna9AyJSwXV1snnH57TIpqTWe96rg/X1Cpv4cI
-         /05g==
-X-Forwarded-Encrypted: i=1; AFNElJ9txzGMHw1hb+CKho05CgEfJrcczuH222zmgS/KQp/uD8/6uE4P+e84JhaX3jsmq4T4Ol/Yeco5hvQUSqk=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YxG7IeEDSIthVAOnX9zrWq5eKzsxBpHww858VXomwNArLFmyOmx
-	UwDrMNXHh6i+YqHSl34k/MG8dwXnzQgrUvZMdSjCptxWZ7sy7/gf+OVjeUf9uWiNLnrDd8O2uIi
-	yKVoQAX++1jZWqe05IaGeBE9WXp0XXgg=
-X-Gm-Gg: Acq92OE9v81mSjbyO84GUiCV3h17/kmTT7acZSeLxTPw0BvLnONr5OFjAuKoEX1HJTf
-	LzPAL9IMavB40BVDpClEvRJIVyfeaRixXmVh/Q4/8u31qIJFHsGU9IrXNZb5STrd9vJ3L+OpVhm
-	Zgae3z4d8ZnefoCNcggdLEceZ28vd1fJQQoD5WGVvX3J1DjDK9S38Ud0jUsqMgyaTM4juE4nz5y
-	jItMYVd6UWqqnwtbwKKhWJBYcpTrXxOP2hK7SwUmhMMog8NDbZlMkLukpayIKUnf03qwUOsNzpp
-	6Yh0wuYYHsyGVsshpZjMEzaaAfQ=
-X-Received: by 2002:a05:6a00:b89:b0:842:5da3:9b8b with SMTP id
- d2e1a72fcca58-845245994cfmr1624839b3a.36.1781663136820; Tue, 16 Jun 2026
- 19:25:36 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gfdjC6qmMz2ySJ
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jun 2026 17:22:07 +1000 (AEST)
+Received: from smtp2.strotmann.de (unknown [IPv6:fd01::1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519)
+	(No client certificate requested)
+	by smtp3.strotmann.de (Postfix) with ESMTPS id 495787FE91;
+	Tue, 16 Jun 2026 09:13:56 +0200 (CEST)
+Received: from [192.168.8.114] (unknown [IPv6:fd00::1000])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp2.strotmann.de (Postfix) with ESMTPSA id 4gfdWb3KmCzHfrn;
+	Tue, 16 Jun 2026 09:13:47 +0200 (CEST)
+From: Carsten Strotmann <cas@strotmann.de>
+To: Jakub Kicinski <kuba@kernel.org>
+Cc: John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
+ davem@davemloft.net, netdev@vger.kernel.org, edumazet@google.com,
+ pabeni@redhat.com, andrew+netdev@lunn.ch, horms@kernel.org,
+ geert@linux-m68k.org, chleroy@kernel.org, npiggin@gmail.com,
+ mpe@ellerman.id.au, maddy@linux.ibm.com, linux-mips@vger.kernel.org,
+ linux-m68k@lists.linux-m68k.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH net-next 0/2] appletalk: move the protocol out of tree
+Date: Tue, 16 Jun 2026 09:13:46 +0200
+Message-ID: <A3590144-073C-46D6-8425-90EE0C4D48E8@strotmann.de>
+In-Reply-To: <20260615175535.5bc56cfc@kernel.org>
+References: <20260615222935.947233-1-kuba@kernel.org>
+ <c3789160609a10e232ba3e27c4b13adbb170956c.camel@physik.fu-berlin.de>
+ <20260615175535.5bc56cfc@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -100,34 +66,31 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20260615093824.115751-1-phucduc.bui@gmail.com>
- <20260615093824.115751-2-phucduc.bui@gmail.com> <ajAJt-EV1sSfG3OC@SMW015318>
-In-Reply-To: <ajAJt-EV1sSfG3OC@SMW015318>
-From: Bui Duc Phuc <phucduc.bui@gmail.com>
-Date: Wed, 17 Jun 2026 09:25:23 +0700
-X-Gm-Features: AVVi8CdoNbD47oGFTWSfJEm9Lr238WEoMJ3mqPMc2xN9snSeNNUZupbWD1q6iqo
-Message-ID: <CAABR9nHNLchAnkeuGrDWoS4+sAKnqQMgx9b0cuv7rOHzC8P6Pw@mail.gmail.com>
-Subject: Re: [PATCH v2 01/11] ASoC: fsl_asrc: Use guard() for spin locks
-To: Frank Li <Frank.li@oss.nxp.com>
-Cc: Mark Brown <broonie@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, 
-	Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>, Shengjiu Wang <shengjiu.wang@gmail.com>, 
-	Xiubo Li <Xiubo.Lee@gmail.com>, Frank Li <Frank.Li@nxp.com>, 
-	Fabio Estevam <festevam@gmail.com>, Nicolin Chen <nicoleotsuka@gmail.com>, 
-	Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix Kernel Team <kernel@pengutronix.de>, 
-	linux-sound@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	linux-arm-kernel@lists.infradead.org, imx@lists.linux.dev, 
-	linuxppc-dev@lists.ozlabs.org
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Hi Frank,
+Hi,
 
+I'm a user of AppleTalk and other "Retro"-Features in the Linux Kernel.
+
+On 16 Jun 2026, at 2:55, Jakub Kicinski wrote:
+
+> We can complain about the AI slop til the cows comes home.
+> I don't like it, you don't like it. What difference does it make?
 >
-> Reviewed-by: Frank Li <Frank.Li@nxp.com>
->
+> If y'all have real solutions please share. Complaining about
+> "commercial interests" and "nuk[ing] everything in a panic reaction"
+> is not helpful.
 
-Thank you for taking the time to review the series and for providing
-the Reviewed-by tags.
+the solution, as Adrian pointed out, is to leave these features in the Li=
+nux kernel but have them disabled by default. Maybe put a warning message=
+ in the kernel config tools that people should only enable these if they =
+know what they are doing.
 
-Best regards,
-Phuc
+These "retro"-features should not pose any security risk of they are not =
+compiled into a kernel.
+
+Greetings
+
+Carsten
 
