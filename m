@@ -1,70 +1,95 @@
-Return-Path: <linuxppc-dev+bounces-22730-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22731-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id F33EDCD98E1
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Jun 2026 22:13:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7B978CD98EC
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Jun 2026 00:51:20 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gg1TG3TPwz2ybR;
-	Wed, 17 Jun 2026 08:13:06 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=198.175.65.14
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781647986;
-	cv=none; b=XIO8ikDFp+DdY4byYarLgbAENUatvceiXVYZCAmOFWfeUVr/TqgjMFzjCfa3NESURMWIcYLkosn2MmWnk0hdyriyo4oLRTIMzWp8xhKB9W93V1pnMRwP+CNU4XwgIpdOtJhCI2ZffewRxxPdur/wxWgp8NxGTVD1bsQTRosEvMk1sPYSrht7/LbB4HpDTWuoagKK/9cAa5M+yBkrJtA97dgpKslVKu62uwxVzQc0R+jJd7RjlPHkebHAwjEtHvTbcLK9UaVwL1Ef4BJHWKJKIOM6FPVRThtqhLCc49P6xoKjo3XnQcPXck7HdPZELXTDMSTQPg/aZ/AiuihfbR+ffg==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1781647986; c=relaxed/relaxed;
-	bh=yWAkn0NHjSrOWZLtJSIaHTf/PdWpf/8BY4pwCbxvOww=;
-	h=Date:From:To:Cc:Subject:Message-ID; b=eMxrGDZ8cqbQGC7cn055zooDAU10P8RJgEXhZ83ps6wqAGXFpNv1SrkS3sFNoI7ziDKyS6PCEKUMTvy9VvifMrpNbBcSBbMXglSduN8pgO9c4G15GEu/Tsr6H5G43lLpiPRyKhRmhxRu69qWBDYXGh6gFNiTynCFF+nTSFFiPuVv7dLdZZjmx7oATWMWbZa6B5foEwTJaLG5xpZtKgzddMETITFsKeE05tY8Zf+XEumPNt1nJGR7unPVtzS6dBLNRjAl/R6mO11jOYPpORb5UEk82NtmhFcdisZQ6tAP8WRIP3F7L2MWX+kseD/ZRusBdrQf+88vCe1jzGAqvXtMGA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=UkUEgXLF; dkim-atps=neutral; spf=pass (client-ip=198.175.65.14; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=intel.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gg4zq0PFJz3c4v;
+	Wed, 17 Jun 2026 10:51:19 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c107::9" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781657478;
+	cv=pass; b=lNihBTseO50Sa3rTvdrkLbZWEGnAMn52TjNA4IAdRMrx8ucCLDO7Ma22smmkWYEjd/CHqXV8q4V64ZJOmn/NruGnKUghFvU34v01QlsYngS2wVCus4WKvqAy9scb65wkloZP5bie5/4kZ8WIu94lscLbbijt6pMjvavSvzbca6TfzubuZtmVW3k9hPNrmaLjyW7nsmBbikXI0FlyxAnIaAU7bSVhzYrzqfDv/xGaLYpg/T5agjds0yIGs9VJy/WNoqnX4naUNpZe9UNzk0PkLdJpJVX9BDDVBYyQaXsH3CAOjSVs4V6tWKyr+dkIEgcC+BHHl8uz/bBNb7/3WKxSyA==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1781657478; c=relaxed/relaxed;
+	bh=x8JBnesZBrm7U/LhrZYPe4Gp0x7oIXKYBqhmhzRNnEc=;
+	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
+	 Content-Type:MIME-Version; b=Ir8q1VkEp6RF9eZbV64buEsx5uiSuGixNDN8PIMGafK9gfuPoSn8OMdj00ZqajB/2Bnhr5O24ek5mWPxKHBph9vrLmSvjYABRx9f5YueJZma9A8GAsiVy/JSbzj9WRhZQ0SKvRUb9Pudfm5cxfNpULzoOhRTGcshKl5sGW4xvhb77cVtILaWiHFkYQUa+WMqe/0JwuWsRcOCKZn3fSlAnvBU2l576Yirx1jVYZ7RYQHCHS3w5xGLuE8bDo88oF2b1VpnYv49LWnGCJ2xtsjwYMXT0AnHKmqcDY/kf2Wb6TFQQalQs2B8hwnW9fqOm3gEHRCflKUMifA0L30LxsJOZA==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; dkim=pass (1024-bit key; unprotected) header.d=amd.com header.i=@amd.com header.a=rsa-sha256 header.s=selector1 header.b=gbFulCjB; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c107::9; helo=ph7pr06cu001.outbound.protection.outlook.com; envelope-from=alexey.kardashevskiy@amd.com; receiver=lists.ozlabs.org) smtp.mailfrom=amd.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=UkUEgXLF;
+	dkim=pass (1024-bit key; unprotected) header.d=amd.com header.i=@amd.com header.a=rsa-sha256 header.s=selector1 header.b=gbFulCjB;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=198.175.65.14; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.14])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=amd.com (client-ip=2a01:111:f403:c107::9; helo=ph7pr06cu001.outbound.protection.outlook.com; envelope-from=alexey.kardashevskiy@amd.com; receiver=lists.ozlabs.org)
+Received: from PH7PR06CU001.outbound.protection.outlook.com (mail-westus3azlp170100009.outbound.protection.outlook.com [IPv6:2a01:111:f403:c107::9])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gg1TB6phdz2yb9
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Jun 2026 08:13:00 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1781647983; x=1813183983;
-  h=date:from:to:cc:subject:message-id;
-  bh=Ady9G6yPnHjEL5znJ+blSYfY2tl6htMOfxpEZrI/Y/0=;
-  b=UkUEgXLFUItxyhDV6LEhzMOva+whS867jftbXTMqhroBG5j+Cqn33iCd
-   IYpENJUs/45aJPnzkKEXF29R/gtz1KRqtkJK83jnnXxsVck0bI+FT5mDa
-   lY6aeFtp+nUpFifIpQgtHzQvY4eb4sYgjxPZXssUgSJZbtrECjRWz3H1I
-   uCgp3PTVgYFdWPMCCnJu+mmdMLeslsmTHS3diiEiTXY5eL5E6QR2CgBjr
-   wlZirbvQNSZBbPlVMzJtj7us94EcIgV2F58xZOsfkeNSeyINq1BAkrfzO
-   sVarX+1WBQP2/Q5hZJ/ae9h+1OIBgAIgtmGgL9RUjLl293hOrtTYVUBuH
-   A==;
-X-CSE-ConnectionGUID: OEOkFMMdSjONMfjT5ofrkw==
-X-CSE-MsgGUID: KBN0VpvOQo2w7Vds+6qMoA==
-X-IronPort-AV: E=McAfee;i="6800,10657,11819"; a="86344605"
-X-IronPort-AV: E=Sophos;i="6.24,208,1774335600"; 
-   d="scan'208";a="86344605"
-Received: from fmviesa010.fm.intel.com ([10.60.135.150])
-  by orvoesa106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 16 Jun 2026 15:12:57 -0700
-X-CSE-ConnectionGUID: aMaAOJtCRtmuUvE23BMQdA==
-X-CSE-MsgGUID: HKx42tzzS0eJVKnSbTc6Sg==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.24,208,1774335600"; 
-   d="scan'208";a="243730770"
-Received: from lkp-server01.sh.intel.com (HELO f0d55cb201f0) ([10.239.97.150])
-  by fmviesa010.fm.intel.com with ESMTP; 16 Jun 2026 15:12:55 -0700
-Received: from kbuild by f0d55cb201f0 with local (Exim 4.98.2)
-	(envelope-from <lkp@intel.com>)
-	id 1wZc1d-00000000Tnc-1AAW;
-	Tue, 16 Jun 2026 22:12:53 +0000
-Date: Wed, 17 Jun 2026 06:12:42 +0800
-From: kernel test robot <lkp@intel.com>
-To: Madhavan Srinivasan <maddy@linux.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: [powerpc:next-test] BUILD SUCCESS
- 42f252f5a646866a95f025863c8b201042494ba1
-Message-ID: <202606170630.ARDBT7wo-lkp@intel.com>
-User-Agent: s-nail v14.9.25
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gg4zn2Nqwz3bsY
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Jun 2026 10:51:16 +1000 (AEST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=KmDOZbQkjVrJuiLw8/nOZeTLYgCbTgsOGuxjF/Jd4hTMvpVUk2/fcYa8GbJ/tKGmFKwpXxuHLMuaOGhjmwx8lvp7PKgA6Q1I2+sun+xrImWFC3mn3jOJEvnGDY73gg4ZgSN7MuG7+VR5nfA10ZNxknnFMFxvTN8qtwSFmT7KtUbeotKZjRIxXr30DNoCnHFgAwYH2mG3cE8g0K/aDodCk2HtR57xqwVom5PMPmC8E9rG+cxbYVz9NDzucnwZrfMgxHaXLGQTnA8NPI+bs0IKADhunGmGwI6UhX1lT930ThQEplt8SHaJjV8FDg6BWAaPGHr6yOoq3zKVrBSwpb5m9A==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=x8JBnesZBrm7U/LhrZYPe4Gp0x7oIXKYBqhmhzRNnEc=;
+ b=hqb1Hkuuf976iKWnavL4H84yQkWopgdXGwSrW2CbLrYqht6jRzNnCDgh6cdxdU1epHp0N+V5PtB1gSe2WLiV3gKrmSZy9nLpr/bj5N6ic1o5vcxaRuhUnSvisi5VatE81fHeaUbA+ZzioAP7jJKKpBhJy4z4OU1DSmoeWNVebPWeX4I1eU87ywjIiDXy1sEThZTN32hu2ZMHNYJEpFwu7a3yKY1mtyfImCrjC3/5yfVkQ5kluVPIsPRJb2NV/727IQPHdkqfr7VSZ1Y9+SZx+/u0G0cH595ydwIVmnB0RBbxgxNdypBeRJMrOBLdsrYrMPOQJoHilgLWP0RXeFENjA==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=amd.com; dmarc=pass action=none header.from=amd.com; dkim=pass
+ header.d=amd.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=x8JBnesZBrm7U/LhrZYPe4Gp0x7oIXKYBqhmhzRNnEc=;
+ b=gbFulCjBL38tkmww8QotejWQclPTUrfD1hSp8qKBxL+ofshQPJIWuVMje4Mg5tzsQcNf8qyY4QNNqsjZrbu3v3TJVXiCFVeIWlJLVoH10+RRNN5cCY0Cc1SsjqOFvYNwpDUH8aHbQejJKgACC93BNAFSr+oLjfIs0lptSR3SoIw=
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=amd.com;
+Received: from SA1PR12MB999228.namprd12.prod.outlook.com
+ (2603:10b6:806:4db::10) by SA3PR12MB7805.namprd12.prod.outlook.com
+ (2603:10b6:806:319::20) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.113.18; Wed, 17 Jun
+ 2026 00:50:48 +0000
+Received: from SA1PR12MB999228.namprd12.prod.outlook.com
+ ([fe80::4dba:119e:8e7c:37b3]) by SA1PR12MB999228.namprd12.prod.outlook.com
+ ([fe80::4dba:119e:8e7c:37b3%4]) with mapi id 15.21.0113.015; Wed, 17 Jun 2026
+ 00:50:48 +0000
+Message-ID: <845d0c8a-6d51-47aa-8e0b-8381e733444a@amd.com>
+Date: Wed, 17 Jun 2026 10:50:39 +1000
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v6 03/20] dma-direct: use DMA_ATTR_CC_SHARED in alloc/free
+ paths
+To: "Aneesh Kumar K.V (Arm)" <aneesh.kumar@kernel.org>,
+ iommu@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
+ linux-kernel@vger.kernel.org, linux-coco@lists.linux.dev
+Cc: Robin Murphy <robin.murphy@arm.com>,
+ Marek Szyprowski <m.szyprowski@samsung.com>, Will Deacon <will@kernel.org>,
+ Marc Zyngier <maz@kernel.org>, Steven Price <steven.price@arm.com>,
+ Suzuki K Poulose <Suzuki.Poulose@arm.com>,
+ Catalin Marinas <catalin.marinas@arm.com>, Jiri Pirko <jiri@resnulli.us>,
+ Jason Gunthorpe <jgg@ziepe.ca>, Mostafa Saleh <smostafa@google.com>,
+ Petr Tesarik <ptesarik@suse.com>, Dan Williams <dan.j.williams@intel.com>,
+ Xu Yilun <yilun.xu@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
+ "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+ Alexander Gordeev <agordeev@linux.ibm.com>,
+ Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
+ Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>,
+ Christian Borntraeger <borntraeger@linux.ibm.com>,
+ Sven Schnelle <svens@linux.ibm.com>, x86@kernel.org,
+ Jiri Pirko <jiri@nvidia.com>, Michael Kelley <mhklinux@outlook.com>,
+ "Cheloha, Scott" <Scott.Cheloha@amd.com>
+References: <20260604083959.1265923-1-aneesh.kumar@kernel.org>
+ <20260604083959.1265923-4-aneesh.kumar@kernel.org>
+Content-Language: en-US
+From: Alexey Kardashevskiy <aik@amd.com>
+In-Reply-To: <20260604083959.1265923-4-aneesh.kumar@kernel.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-ClientProxiedBy: SY8P282CA0021.AUSP282.PROD.OUTLOOK.COM
+ (2603:10c6:10:29b::34) To SA1PR12MB999228.namprd12.prod.outlook.com
+ (2603:10b6:806:4db::10)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -77,305 +102,203 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
+MIME-Version: 1.0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: SA1PR12MB999228:EE_|SA3PR12MB7805:EE_
+X-MS-Office365-Filtering-Correlation-Id: cf3c37af-cffc-4830-8386-08decc0a78c9
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|1800799024|366016|7416014|23010399003|376014|22082099003|18002099003|56012099006|11063799006|4143699003;
+X-Microsoft-Antispam-Message-Info:
+	nkXzYCUuCGe+qORqV4+JnKcgFHHkw1lLwrFP5+ZHFs1VgzanCtsUEw7M137pvWhT6JNP/o07sz2W8dtL6SID28WSXwMcOV+p3uKcD1y4JRtz+DcdhWnw8o/miDHUNPJYyo+pDHW+qatPxWnr6YTtesdCvfa4QErw8lhuWgzxkgMDDnyaSZnuV5QfDBvAnLv5STpnXNgkRxdpHsEQIWTkttoAL+ZitY4r1oeGULU+ZMyhYCHajXagrxZq8HAmRzPXpscqPmFzagbwIgxJ9bmCFW2thlzMt1D7RFmzZQ7NHAp4soO7gT1dw2Ww9VOQrem2HrRybjg4Ed4snvDRC/ZOzO9v1xpXB/cHgYpDpVaSjTn+HH0nn7E3X+5vT1h0elXMJ2jBQdh1GVPub58a7poebsD8Q05tFpGLNru8B1ANI2q383tmfdAp/MfaN4jwFQ25O/Ny85BSs6Y29C9NKard6dUgsdes7AQPIApq7HXFp1GDD1ikM0xBSpvGroa3HTKmqm+iEuH3JpWiJwJ7k6B0H1D2HjTVe/hiuqq4bGPf7os/DstDKN+fzdgCuDtcituNSwFxGQoqeat9aC0FYhB6vcHhFhhjvu4JN1R6F9Uw//R+Vs1PEZX6Jjfr34SrmWCE2S2u/DMX7bUb5pTO/kNE33wIN73zxB4C7dGMSEMnGXQs9Q3thUEDdxc8BuPOngCq
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:SA1PR12MB999228.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(366016)(7416014)(23010399003)(376014)(22082099003)(18002099003)(56012099006)(11063799006)(4143699003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?utf-8?B?dTJNWXBBdUJWU3lONGRYdzUzYUlXK1hNUkkrUHN6bWpGbHJZcHppbkh1NFBs?=
+ =?utf-8?B?eXRKeXIveHJGNWwwbmY1UFJOajNaRTN2ZlN0alU4REN1czcrYjlFUTFraUFn?=
+ =?utf-8?B?SDR1MVB0YXpWQXNDQk1tbE9Tc0xISjR3b1ZGSDFNbTA4VU8wN3JBeUowSnZN?=
+ =?utf-8?B?SC9SVllWMUdHM1N5YnRubytJNElSSTY1dFJLTmZ3QjE0ZXhFWTUzaHM2VEpw?=
+ =?utf-8?B?MGNmTVJzNWxXRUJPZU9zaG00UXdwNG5UOFhBdndmZjA5bytzWUJYWEt0NU5j?=
+ =?utf-8?B?eG94ZWVIenRVUzlpbEplT1ZmdFJwbjF6MzN2Y082RVJKNnBMci9FazhDVzhz?=
+ =?utf-8?B?Nk94a2JPcEFqT3dDTWN5Y2lha0lLVEErd2tFSlZFdnUvR0YyckF4a2k0bHhV?=
+ =?utf-8?B?VkROYzhLSzVNbW5DZnRrVU1jenNkNlppbWdkWXkxUEo5UkJMT0FKbEJmTUwr?=
+ =?utf-8?B?dE1jTzhwMlBsczYzcVVDSFVTcnUzZ0tOc1lyVmFkUElxN0JJbU5Ob0p2Sk1j?=
+ =?utf-8?B?SlhnUjl1NXZrejJidFdpTk9SZDQxQUdQRGovU2NwVWE4ZUJhOUljSmhreXh5?=
+ =?utf-8?B?TEM4OCtjNG9NbUJYQVE1d1hScE9tTEhZRGp4VCswNi90aGk4dzBSMWRta0Uw?=
+ =?utf-8?B?MXV1ME1vanQwOEFoMzNWRWpDSkwyb250M0NzVS9wL0NQTnVJS3ZVRW44M1h4?=
+ =?utf-8?B?RHVFMGMyYzNLdUtacklqZFVRb0U5SjRyVjIxOVA3eHlGd082K3N1K2pEYnZr?=
+ =?utf-8?B?b3BMNW1UWjZVNVRHMXFNbWtncU1wQ0thNVdGTFM1bXBiZGF5TDVJRWJIbUEy?=
+ =?utf-8?B?MDlEZVNEVzhKQ1hUQjZqNFI0MHV4UUtZOWtYMXhVWEdnV094Wjh4RVJtMnNF?=
+ =?utf-8?B?Zk1oV21HZUNkSXh5MXNTeXNRYUdqMXo0TElqUVVJRWFkRlA2OUVKZWM5VC96?=
+ =?utf-8?B?THBZWU9ZdGFzYk0wVXR1cmU3aTNNT0ZGQ1ZJdEFtZDlOWW4xaXBZOFBVZkNp?=
+ =?utf-8?B?K283YXJCb3NkeExaRWhUK1RpNm95TkxVZmdLVEgvV2pRbjdRNlZnYTdDUmJM?=
+ =?utf-8?B?ZlpHbDBhaUpTd3NsNnQ3cXZ6QXoxQ2VxdU4zTVgxTDA0YWJKTVc5RXRteHA3?=
+ =?utf-8?B?bS9hZnNyWVZ1RTVsNDgvL29ZVDhvNDRvbG95NFB4Y1J4MFE1STRKY3pGRlZo?=
+ =?utf-8?B?OWVZZjJoWnUyTzFnUHFlZFNndFZna2drVFE1NEpuWGZZa0xMNlZ3RzdTclV0?=
+ =?utf-8?B?Q1E2bjhzblRuRjhHYUtoSFJmQkcvWDNIYXpFQUxjUHJrWUsrUUR2SUp5NDll?=
+ =?utf-8?B?YWlrbUZSRFFkUWdSRHB3LzErb1p5bXc3ZjE3S0ZTck9MOUVCYnpJbDNtV05p?=
+ =?utf-8?B?d2pXbVEzNTRpTStLK05ZRDdxLzg4RlIzMndjQTg1dUk0bk43SUlaS0NoUEJs?=
+ =?utf-8?B?MlZWRTFHcGR4QkI5Y21TS0dpWmFrajUydWh5VlZFWEVxdm44UG5Od2dEWE1B?=
+ =?utf-8?B?QmlUZnJRaXFycTRncW5sclFFVGlSK1o4OGdwdExNUFpLNVhCcEFOdmQ2MHly?=
+ =?utf-8?B?anZDdWt4RHJRbmswVWxwZFV5UlVGQkhJdTFIbUJTWUpJeUhwMjNER2RyN0RC?=
+ =?utf-8?B?RGU4anl5bzMxYVk2WXlwRHFseWZ5VkFSakhUbythL2xsTXBNMGhJdXkybGtP?=
+ =?utf-8?B?c0U3SGFDem80NGxrV3p6cnc1UEM1U3JhUTczd0dWZmllM056RzFhSWhkMDEr?=
+ =?utf-8?B?Q0pIanp5S0tROUZWUGFkZmJVbnpOQnk1bmFwdms4NmNRWG9aV0x6Q2RwbGds?=
+ =?utf-8?B?NzFtNjZIKzBQZVQwc1Fpb0hXQ0JFditJWWtkWTlBdG9ydHJSTG84dUUvaDYv?=
+ =?utf-8?B?VWZNUWs5WUFxT0xYcXdMZlNCTjNtTXBhZTNpTFpWdkNPNXZzeFlaS1orc3RS?=
+ =?utf-8?B?d3poK0ZKM0R4aEZySjg2Nk1sTjZ3cjZIaVZSK2hRU2J1ek16T1BZT1hqdWVu?=
+ =?utf-8?B?T3l3ZUxnMHMra3h4VWUxRWF3STR3ZGd0c2lXeFByc1hRTXJoMTFTUWxOUjlK?=
+ =?utf-8?B?QmkyMi9UalN5SUFBSFJFNVNDclM4UStsM0p1eW5XaFRRNjRIL0RSZTBrcndk?=
+ =?utf-8?B?ZzY0dVhKWkx6aUN5ei9aMkhYcVhmU1RNOW1KK0k2QVZ1bitSNDJ2aktyd1dp?=
+ =?utf-8?B?OVg5V3I0TjZLMWZXeXk1N0xuMG9zWi9FUkVOZlFnK3VHeUVONUY1TTA2MTkz?=
+ =?utf-8?B?Y3RUZjVaYk1ndUdxdEc0cXVOOWE5VEY2N0RybkowSWN4TVdDa0l6K0NBdGhF?=
+ =?utf-8?Q?1t5hJgEz/QtEBcgP+c?=
+X-OriginatorOrg: amd.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: cf3c37af-cffc-4830-8386-08decc0a78c9
+X-MS-Exchange-CrossTenant-AuthSource: SA1PR12MB999228.namprd12.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 17 Jun 2026 00:50:48.2126
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: xJyYNehu4aFAnuaNinqQcslh0HzPNpR+EN7/6VUccgE4GzgT43HcxJmU5ai6ILjOhnnQ38ROI0a6z1yCGQ/dRQ==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SA3PR12MB7805
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git next-test
-branch HEAD: 42f252f5a646866a95f025863c8b201042494ba1  powerpc/fadump: define MIN_RMA in bytes rather than MB
 
-elapsed time: 729m
 
-configs tested: 284
-configs skipped: 2
+On 4/6/26 18:39, Aneesh Kumar K.V (Arm) wrote:
+> Propagate force_dma_unencrypted() into DMA_ATTR_CC_SHARED in the
+> dma-direct allocation path and use the attribute to drive the related
+> decisions.
+> 
+> This updates dma_direct_alloc(), dma_direct_free(), and
+> dma_direct_alloc_pages() to fold the forced unencrypted case into attrs.
+> 
+> Tested-by: Jiri Pirko <jiri@nvidia.com>
+> Tested-by: Michael Kelley <mhklinux@outlook.com>
+> Tested-by: Mostafa Saleh <smostafa@google.com>
+> Signed-off-by: Aneesh Kumar K.V (Arm) <aneesh.kumar@kernel.org>
+> ---
+>   kernel/dma/direct.c | 53 +++++++++++++++++++++++++++++++++++++--------
+>   1 file changed, 44 insertions(+), 9 deletions(-)
+> 
+> diff --git a/kernel/dma/direct.c b/kernel/dma/direct.c
+> index a741c8a2ee66..90dc5057a0c0 100644
+> --- a/kernel/dma/direct.c
+> +++ b/kernel/dma/direct.c
+> @@ -193,16 +193,31 @@ void *dma_direct_alloc(struct device *dev, size_t size,
+>   		dma_addr_t *dma_handle, gfp_t gfp, unsigned long attrs)
+>   {
+>   	bool remap = false, set_uncached = false;
+> -	bool mark_mem_decrypt = true;
+> +	bool mark_mem_decrypt = false;
+>   	struct page *page;
+>   	void *ret;
+>   
+> +	/*
+> +	 * DMA_ATTR_CC_SHARED is not a caller-visible dma_alloc_*()
+> +	 * attribute. The direct allocator uses it internally after it has
+> +	 * decided that the backing pages must be shared/decrypted, so the
+> +	 * rest of the allocation path can consistently select DMA addresses,
+> +	 * choose compatible pools and restore encryption on free.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+Why this limit?
 
-tested configs:
-alpha                             allnoconfig    gcc-16.1.0
-alpha                            allyesconfig    gcc-16.1.0
-alpha                               defconfig    gcc-16.1.0
-arc                              allmodconfig    clang-23
-arc                               allnoconfig    gcc-16.1.0
-arc                              allyesconfig    clang-23
-arc                                 defconfig    gcc-16.1.0
-arc                   randconfig-001-20260616    gcc-9.5.0
-arc                   randconfig-001-20260617    gcc-16.1.0
-arc                   randconfig-002-20260616    gcc-9.5.0
-arc                   randconfig-002-20260617    gcc-16.1.0
-arm                               allnoconfig    gcc-16.1.0
-arm                              allyesconfig    clang-23
-arm                                 defconfig    gcc-16.1.0
-arm                         lpc18xx_defconfig    clang-23
-arm                   randconfig-001-20260616    gcc-9.5.0
-arm                   randconfig-001-20260617    gcc-16.1.0
-arm                   randconfig-002-20260616    gcc-9.5.0
-arm                   randconfig-002-20260617    gcc-16.1.0
-arm                   randconfig-003-20260616    gcc-9.5.0
-arm                   randconfig-003-20260617    gcc-16.1.0
-arm                   randconfig-004-20260616    gcc-9.5.0
-arm                   randconfig-004-20260617    gcc-16.1.0
-arm64                            allmodconfig    clang-23
-arm64                             allnoconfig    gcc-16.1.0
-arm64                               defconfig    gcc-16.1.0
-arm64                          randconfig-001    clang-23
-arm64                 randconfig-001-20260616    clang-23
-arm64                 randconfig-001-20260617    gcc-12.5.0
-arm64                          randconfig-002    clang-23
-arm64                 randconfig-002-20260616    clang-23
-arm64                 randconfig-002-20260617    gcc-12.5.0
-arm64                          randconfig-003    clang-23
-arm64                 randconfig-003-20260616    clang-23
-arm64                 randconfig-003-20260617    gcc-12.5.0
-arm64                          randconfig-004    clang-23
-arm64                 randconfig-004-20260616    clang-23
-arm64                 randconfig-004-20260617    gcc-12.5.0
-csky                             allmodconfig    gcc-16.1.0
-csky                              allnoconfig    gcc-16.1.0
-csky                                defconfig    gcc-16.1.0
-csky                           randconfig-001    clang-23
-csky                  randconfig-001-20260616    clang-23
-csky                  randconfig-001-20260617    gcc-12.5.0
-csky                           randconfig-002    clang-23
-csky                  randconfig-002-20260616    clang-23
-csky                  randconfig-002-20260617    gcc-12.5.0
-hexagon                          allmodconfig    gcc-16.1.0
-hexagon                           allnoconfig    gcc-16.1.0
-hexagon                             defconfig    gcc-16.1.0
-hexagon               randconfig-001-20260616    clang-23
-hexagon               randconfig-001-20260617    clang-17
-hexagon               randconfig-002-20260616    clang-23
-hexagon               randconfig-002-20260617    clang-17
-i386                             allmodconfig    clang-22
-i386                              allnoconfig    gcc-16.1.0
-i386                             allyesconfig    clang-22
-i386                 buildonly-randconfig-001    clang-22
-i386        buildonly-randconfig-001-20260616    clang-22
-i386                 buildonly-randconfig-002    clang-22
-i386        buildonly-randconfig-002-20260616    clang-22
-i386                 buildonly-randconfig-003    clang-22
-i386        buildonly-randconfig-003-20260616    clang-22
-i386                 buildonly-randconfig-004    clang-22
-i386        buildonly-randconfig-004-20260616    clang-22
-i386                 buildonly-randconfig-005    clang-22
-i386        buildonly-randconfig-005-20260616    clang-22
-i386                 buildonly-randconfig-006    clang-22
-i386        buildonly-randconfig-006-20260616    clang-22
-i386                                defconfig    gcc-16.1.0
-i386                  randconfig-001-20260616    gcc-14
-i386                  randconfig-002-20260616    gcc-14
-i386                  randconfig-003-20260616    gcc-14
-i386                  randconfig-004-20260616    gcc-14
-i386                  randconfig-005-20260616    gcc-14
-i386                  randconfig-006-20260616    gcc-14
-i386                  randconfig-007-20260616    gcc-14
-i386                           randconfig-011    clang-22
-i386                  randconfig-011-20260616    clang-22
-i386                  randconfig-011-20260617    clang-22
-i386                           randconfig-012    clang-22
-i386                  randconfig-012-20260616    clang-22
-i386                  randconfig-012-20260617    clang-22
-i386                           randconfig-013    clang-22
-i386                  randconfig-013-20260616    clang-22
-i386                  randconfig-013-20260617    clang-22
-i386                           randconfig-014    clang-22
-i386                  randconfig-014-20260616    clang-22
-i386                  randconfig-014-20260617    clang-22
-i386                           randconfig-015    clang-22
-i386                  randconfig-015-20260616    clang-22
-i386                  randconfig-015-20260617    clang-22
-i386                           randconfig-016    clang-22
-i386                  randconfig-016-20260616    clang-22
-i386                  randconfig-016-20260617    clang-22
-i386                           randconfig-017    clang-22
-i386                  randconfig-017-20260616    clang-22
-i386                  randconfig-017-20260617    clang-22
-loongarch                        allmodconfig    clang-23
-loongarch                         allnoconfig    gcc-16.1.0
-loongarch                           defconfig    clang-23
-loongarch             randconfig-001-20260616    clang-23
-loongarch             randconfig-001-20260617    clang-17
-loongarch             randconfig-002-20260616    clang-23
-loongarch             randconfig-002-20260617    clang-17
-m68k                             allmodconfig    gcc-16.1.0
-m68k                              allnoconfig    gcc-16.1.0
-m68k                             allyesconfig    clang-23
-m68k                                defconfig    clang-23
-microblaze                        allnoconfig    gcc-16.1.0
-microblaze                       allyesconfig    gcc-16.1.0
-microblaze                          defconfig    clang-23
-mips                             allmodconfig    gcc-16.1.0
-mips                              allnoconfig    gcc-16.1.0
-mips                             allyesconfig    gcc-16.1.0
-mips                      malta_kvm_defconfig    gcc-16.1.0
-nios2                            allmodconfig    clang-20
-nios2                             allnoconfig    clang-23
-nios2                               defconfig    clang-23
-nios2                 randconfig-001-20260616    clang-23
-nios2                 randconfig-001-20260617    clang-17
-nios2                 randconfig-002-20260616    clang-23
-nios2                 randconfig-002-20260617    clang-17
-openrisc                         allmodconfig    clang-20
-openrisc                          allnoconfig    clang-23
-openrisc                            defconfig    gcc-16.1.0
-parisc                           allmodconfig    gcc-16.1.0
-parisc                            allnoconfig    clang-23
-parisc                           allyesconfig    clang-17
-parisc                              defconfig    gcc-16.1.0
-parisc                         randconfig-001    gcc-8.5.0
-parisc                randconfig-001-20260616    gcc-8.5.0
-parisc                randconfig-001-20260617    gcc-15.2.0
-parisc                         randconfig-002    gcc-8.5.0
-parisc                randconfig-002-20260616    gcc-8.5.0
-parisc                randconfig-002-20260617    gcc-15.2.0
-parisc64                            defconfig    clang-23
-powerpc                          allmodconfig    gcc-16.1.0
-powerpc                           allnoconfig    clang-23
-powerpc                 mpc8315_rdb_defconfig    clang-23
-powerpc                        randconfig-001    gcc-8.5.0
-powerpc               randconfig-001-20260616    gcc-8.5.0
-powerpc               randconfig-001-20260617    gcc-15.2.0
-powerpc                        randconfig-002    gcc-8.5.0
-powerpc               randconfig-002-20260616    gcc-8.5.0
-powerpc               randconfig-002-20260617    gcc-15.2.0
-powerpc64                      randconfig-001    gcc-8.5.0
-powerpc64             randconfig-001-20260616    gcc-8.5.0
-powerpc64             randconfig-001-20260617    gcc-15.2.0
-powerpc64                      randconfig-002    gcc-8.5.0
-powerpc64             randconfig-002-20260616    gcc-8.5.0
-powerpc64             randconfig-002-20260617    gcc-15.2.0
-riscv                            allmodconfig    clang-23
-riscv                             allnoconfig    clang-23
-riscv                            allyesconfig    clang-23
-riscv                               defconfig    gcc-16.1.0
-riscv                 randconfig-001-20260616    gcc-16.1.0
-riscv                 randconfig-001-20260617    gcc-16.1.0
-riscv                 randconfig-002-20260616    gcc-16.1.0
-riscv                 randconfig-002-20260617    gcc-16.1.0
-s390                             allmodconfig    clang-17
-s390                              allnoconfig    clang-23
-s390                             allyesconfig    gcc-16.1.0
-s390                                defconfig    gcc-16.1.0
-s390                  randconfig-001-20260616    gcc-16.1.0
-s390                  randconfig-001-20260617    gcc-16.1.0
-s390                  randconfig-002-20260616    gcc-16.1.0
-s390                  randconfig-002-20260617    gcc-16.1.0
-sh                               allmodconfig    gcc-16.1.0
-sh                                allnoconfig    clang-23
-sh                               allyesconfig    clang-17
-sh                                  defconfig    gcc-14
-sh                    randconfig-001-20260616    gcc-16.1.0
-sh                    randconfig-001-20260617    gcc-16.1.0
-sh                    randconfig-002-20260616    gcc-16.1.0
-sh                    randconfig-002-20260617    gcc-16.1.0
-sparc                             allnoconfig    clang-23
-sparc                               defconfig    gcc-16.1.0
-sparc                          randconfig-001    gcc-8.5.0
-sparc                 randconfig-001-20260616    gcc-8.5.0
-sparc                 randconfig-001-20260617    gcc-16.1.0
-sparc                          randconfig-002    gcc-8.5.0
-sparc                 randconfig-002-20260616    gcc-8.5.0
-sparc                 randconfig-002-20260617    gcc-16.1.0
-sparc64                          allmodconfig    clang-20
-sparc64                             defconfig    gcc-14
-sparc64                        randconfig-001    gcc-8.5.0
-sparc64               randconfig-001-20260616    gcc-8.5.0
-sparc64               randconfig-001-20260617    gcc-16.1.0
-sparc64                        randconfig-002    gcc-8.5.0
-sparc64               randconfig-002-20260616    gcc-8.5.0
-sparc64               randconfig-002-20260617    gcc-16.1.0
-um                               allmodconfig    clang-17
-um                                allnoconfig    clang-23
-um                               allyesconfig    gcc-16.1.0
-um                                  defconfig    gcc-14
-um                             i386_defconfig    gcc-14
-um                             randconfig-001    gcc-8.5.0
-um                    randconfig-001-20260616    gcc-8.5.0
-um                    randconfig-001-20260617    gcc-16.1.0
-um                             randconfig-002    gcc-8.5.0
-um                    randconfig-002-20260616    gcc-8.5.0
-um                    randconfig-002-20260617    gcc-16.1.0
-um                           x86_64_defconfig    gcc-14
-x86_64                           allmodconfig    clang-22
-x86_64                            allnoconfig    clang-23
-x86_64                           allyesconfig    clang-22
-x86_64      buildonly-randconfig-001-20260616    gcc-14
-x86_64      buildonly-randconfig-001-20260617    clang-22
-x86_64      buildonly-randconfig-002-20260616    gcc-14
-x86_64      buildonly-randconfig-002-20260617    clang-22
-x86_64      buildonly-randconfig-003-20260616    gcc-14
-x86_64      buildonly-randconfig-003-20260617    clang-22
-x86_64      buildonly-randconfig-004-20260616    gcc-14
-x86_64      buildonly-randconfig-004-20260617    clang-22
-x86_64      buildonly-randconfig-005-20260616    gcc-14
-x86_64      buildonly-randconfig-005-20260617    clang-22
-x86_64      buildonly-randconfig-006-20260616    gcc-14
-x86_64      buildonly-randconfig-006-20260617    clang-22
-x86_64                              defconfig    gcc-14
-x86_64                                  kexec    clang-22
-x86_64                         randconfig-001    clang-22
-x86_64                randconfig-001-20260616    clang-22
-x86_64                randconfig-001-20260617    clang-22
-x86_64                         randconfig-002    clang-22
-x86_64                randconfig-002-20260616    clang-22
-x86_64                randconfig-002-20260617    clang-22
-x86_64                         randconfig-003    clang-22
-x86_64                randconfig-003-20260616    clang-22
-x86_64                randconfig-003-20260617    clang-22
-x86_64                         randconfig-004    clang-22
-x86_64                randconfig-004-20260616    clang-22
-x86_64                randconfig-004-20260617    clang-22
-x86_64                         randconfig-005    clang-22
-x86_64                randconfig-005-20260616    clang-22
-x86_64                randconfig-005-20260617    clang-22
-x86_64                         randconfig-006    clang-22
-x86_64                randconfig-006-20260616    clang-22
-x86_64                randconfig-006-20260617    clang-22
-x86_64                randconfig-011-20260616    clang-22
-x86_64                randconfig-011-20260617    clang-22
-x86_64                randconfig-012-20260616    clang-22
-x86_64                randconfig-012-20260617    clang-22
-x86_64                randconfig-013-20260616    clang-22
-x86_64                randconfig-013-20260617    clang-22
-x86_64                randconfig-014-20260616    clang-22
-x86_64                randconfig-014-20260617    clang-22
-x86_64                randconfig-015-20260616    clang-22
-x86_64                randconfig-015-20260617    clang-22
-x86_64                randconfig-016-20260616    clang-22
-x86_64                randconfig-016-20260617    clang-22
-x86_64                         randconfig-071    gcc-13
-x86_64                randconfig-071-20260616    gcc-13
-x86_64                randconfig-071-20260617    clang-22
-x86_64                         randconfig-072    gcc-13
-x86_64                randconfig-072-20260616    gcc-13
-x86_64                randconfig-072-20260617    clang-22
-x86_64                         randconfig-073    gcc-13
-x86_64                randconfig-073-20260616    gcc-13
-x86_64                randconfig-073-20260617    clang-22
-x86_64                         randconfig-074    gcc-13
-x86_64                randconfig-074-20260616    gcc-13
-x86_64                randconfig-074-20260617    clang-22
-x86_64                         randconfig-075    gcc-13
-x86_64                randconfig-075-20260616    gcc-13
-x86_64                randconfig-075-20260617    clang-22
-x86_64                         randconfig-076    gcc-13
-x86_64                randconfig-076-20260616    gcc-13
-x86_64                randconfig-076-20260617    clang-22
-x86_64                               rhel-9.4    clang-22
-x86_64                           rhel-9.4-bpf    gcc-14
-x86_64                          rhel-9.4-func    clang-22
-x86_64                    rhel-9.4-kselftests    clang-22
-x86_64                         rhel-9.4-kunit    gcc-14
-x86_64                           rhel-9.4-ltp    gcc-14
-x86_64                          rhel-9.4-rust    clang-22
-xtensa                            allnoconfig    clang-23
-xtensa                           allyesconfig    clang-20
-xtensa                         randconfig-001    gcc-8.5.0
-xtensa                randconfig-001-20260616    gcc-8.5.0
-xtensa                randconfig-001-20260617    gcc-16.1.0
-xtensa                         randconfig-002    gcc-8.5.0
-xtensa                randconfig-002-20260616    gcc-8.5.0
-xtensa                randconfig-002-20260617    gcc-16.1.0
+Context: I am looking for a memory pool for a few shared pages (to do some guest<->host communication), SWIOTLB seems like the right fit but swiotlb_alloc() is not exported and dma_direct_alloc(DMA_ATTR_CC_SHARED) is not allowed.  Thanks,
 
---
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+
+> +	 */
+> +	if (attrs & DMA_ATTR_CC_SHARED)
+> +		return NULL;
+> +
+> +	if (force_dma_unencrypted(dev)) {
+> +		attrs |= DMA_ATTR_CC_SHARED;
+> +		mark_mem_decrypt = true;
+> +	}
+> +
+>   	size = PAGE_ALIGN(size);
+>   	if (attrs & DMA_ATTR_NO_WARN)
+>   		gfp |= __GFP_NOWARN;
+>   
+> -	if ((attrs & DMA_ATTR_NO_KERNEL_MAPPING) &&
+> -	    !force_dma_unencrypted(dev) && !is_swiotlb_for_alloc(dev))
+> +	if (((attrs & (DMA_ATTR_NO_KERNEL_MAPPING | DMA_ATTR_CC_SHARED)) ==
+> +	     DMA_ATTR_NO_KERNEL_MAPPING) && !is_swiotlb_for_alloc(dev))
+>   		return dma_direct_alloc_no_mapping(dev, size, dma_handle, gfp);
+>   
+>   	if (!dev_is_dma_coherent(dev)) {
+> @@ -236,7 +251,7 @@ void *dma_direct_alloc(struct device *dev, size_t size,
+>   	 * Remapping or decrypting memory may block, allocate the memory from
+>   	 * the atomic pools instead if we aren't allowed block.
+>   	 */
+> -	if ((remap || force_dma_unencrypted(dev)) &&
+> +	if ((remap || (attrs & DMA_ATTR_CC_SHARED)) &&
+>   	    dma_direct_use_pool(dev, gfp))
+>   		return dma_direct_alloc_from_pool(dev, size, dma_handle, gfp);
+>   
+> @@ -312,12 +327,24 @@ void dma_direct_free(struct device *dev, size_t size,
+>   		void *cpu_addr, dma_addr_t dma_addr, unsigned long attrs)
+>   {
+>   	phys_addr_t phys;
+> -	bool mark_mem_encrypted = true;
+> +	bool mark_mem_encrypted = false;
+>   	struct io_tlb_pool *swiotlb_pool;
+>   	unsigned int page_order = get_order(size);
+>   
+> -	if ((attrs & DMA_ATTR_NO_KERNEL_MAPPING) &&
+> -	    !force_dma_unencrypted(dev) && !is_swiotlb_for_alloc(dev)) {
+> +	/* see dma_direct_alloc() for details */
+> +	WARN_ON(attrs & DMA_ATTR_CC_SHARED);
+> +
+> +	/*
+> +	 * if the device had requested for an unencrypted buffer,
+> +	 * convert it to encrypted on free
+> +	 */
+> +	if (force_dma_unencrypted(dev)) {
+> +		attrs |= DMA_ATTR_CC_SHARED;
+> +		mark_mem_encrypted = true;
+> +	}
+> +
+> +	if (((attrs & (DMA_ATTR_NO_KERNEL_MAPPING | DMA_ATTR_CC_SHARED)) ==
+> +	     DMA_ATTR_NO_KERNEL_MAPPING) && !is_swiotlb_for_alloc(dev)) {
+>   		/* cpu_addr is a struct page cookie, not a kernel address */
+>   		dma_free_contiguous(dev, cpu_addr, size);
+>   		return;
+> @@ -366,10 +393,14 @@ void dma_direct_free(struct device *dev, size_t size,
+>   struct page *dma_direct_alloc_pages(struct device *dev, size_t size,
+>   		dma_addr_t *dma_handle, enum dma_data_direction dir, gfp_t gfp)
+>   {
+> +	unsigned long attrs = 0;
+>   	struct page *page;
+>   	void *ret;
+>   
+> -	if (force_dma_unencrypted(dev) && dma_direct_use_pool(dev, gfp))
+> +	if (force_dma_unencrypted(dev))
+> +		attrs |= DMA_ATTR_CC_SHARED;
+> +
+> +	if ((attrs & DMA_ATTR_CC_SHARED) && dma_direct_use_pool(dev, gfp))
+>   		return dma_direct_alloc_from_pool(dev, size, dma_handle, gfp);
+>   
+>   	if (is_swiotlb_for_alloc(dev)) {
+> @@ -403,7 +434,11 @@ void dma_direct_free_pages(struct device *dev, size_t size,
+>   	phys_addr_t phys;
+>   	void *vaddr = page_address(page);
+>   	struct io_tlb_pool *swiotlb_pool;
+> -	bool mark_mem_encrypted = true;
+> +	/*
+> +	 * if the device had requested for an unencrypted buffer,
+> +	 * convert it to encrypted on free
+> +	 */
+> +	bool mark_mem_encrypted = force_dma_unencrypted(dev);
+>   
+>   	/* If cpu_addr is not from an atomic pool, dma_free_from_pool() fails */
+>   	if (IS_ENABLED(CONFIG_DMA_COHERENT_POOL) &&
+
+
+-- 
+Alexey
+
 
