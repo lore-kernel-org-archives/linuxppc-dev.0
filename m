@@ -1,87 +1,92 @@
-Return-Path: <linuxppc-dev+bounces-22738-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22739-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 152EBCD98E2
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Jun 2026 09:27:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4F281CD98E2
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Jun 2026 10:29:07 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ggJRr41Mmz2yfD;
-	Wed, 17 Jun 2026 19:27:52 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::62c"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781688472;
-	cv=none; b=SHpWQcYXJdO06wcI28Rok9qo6fyXLoXu+3NzkBMlSuFnr0gUkGCDlqkiW3OgvOynh1boe4Q9rDogzDoJgitw3umNbO+rV7IJNw6wvBe7YdeMpzQgpiGyxfEAhLczAz70hQ0MIO4Op3F6DdcXZLTNU2OC4IeC1hE1Z6ifH0u6GQi0h7XD1Jrdqg+Nn8HGkXJw8FfiQUT/oM+kFWGZ5xqsPdKuvIIaWMaZGQ6oUSBa8dFx7ouc9ZKttEyiwOL//q7RsZXZt8og7GR20nXxvD+4R5a+T8BPm9lUvZrsbJW5dUFs29/1fli3zknJP1ps3yKg+XRjuTywXuEucpk4c7WPgw==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1781688472; c=relaxed/relaxed;
-	bh=hizaUSOcpmr93CQTlwODwEp3HXH9tbZgpK5ejTYO1a4=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=FrJulCMUEE/ajsb7JJD7yNIVpNzWP8SXfVvaBnghR9oK2SCiZiKS/fQJXHmXLsKZ/0hECMu+tZi7514QB/84eQ+N/7e7wDxxyuidlM422MkZc8QqIquCl9WYzMoF6G4gRp/AqgeGPIpO1TNwFVKAsN8ZbE6yaSP4wldmGiRZ2CTVzbZaVDwBGGZ0ibu/VqWqFoMUdHIWUXM3cyaBKk/sIfG9FinIIZvhHFle+zTYC+Ouq7qEy9IcGYYw8fHPF+rfR3c6QUnKGbHmGQQhF4Mq9qkc9OsCEu7ffwjUl8RnkmFygzioA6Kvuc0o8CX9IheAmvLaQgKFH16P7AkcYH69qQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=HK9E1YsJ; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::62c; helo=mail-pl1-x62c.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ggKpT2Jhbz2yfD;
+	Wed, 17 Jun 2026 20:29:05 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::52c" arc.chain=google.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781692145;
+	cv=pass; b=ovjNudylqBvtJvY9Kq3IG8UXH4mpqyrGH6vZrXQn8L5k2AVn1rOuFYq9jrOKsikTFIRwoPuODqCl4pMV04haCa8TeqAbsqb+IdOq9f4xBusU5ai5mFHUXcix8YbAmSjBGpnSssGe0RCAA6dUn4B8nCK7ywPd7fREyj6tRh8na0rAoc+B7+iLVxeZ2DxP4eSwSpM/X8xE7b3qD9Zsv91FRGnSXrOFnKX2IqPQbGELkLXXybNOrcr5/yx98lDWLGcpNmBTTsrIY0vJ0Sw9xyHPuLdDiSJZev2IBL3SMw0db1Y6m0vylsq7bX6ZXxlwQ6I/mZF70N1wuovEktrIqSJU2w==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1781692145; c=relaxed/relaxed;
+	bh=kRjUtdAZ1X8edMk+uEk4qOuv5l+aTxpMz/Az3+07hSo=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=DY2RF4pR8AQ0b1uFrKRfVqngUR2qVKTiM/12xHlpBpk9ZS11sHdGlyNhme2iPf3gQ0FZNLooRr+3QSxXEX0Dk2sXV5XZ4Z23iW43pkcQN8vAq6875BHaoufxIugdvCxhTbSybs6RI4W6O3Bwqt5Jp8/eHn2DWzo1wOvY3+aHvdWsDzp8rz6LhsXQDG6flkQchfvGLsTV1IZJWQSyuPRpKPLgRuTHPyoKWPMAX0CY9eQElel8J26tnVKpKhCkgA8ZGWOXeZlB/D8HSWVM/HtN1o99tJBbj/WzHFfho4rvjL3w+Fn5x+IdFFVVW51ZDPHda9UESFxOj0g5R/OExieW+Q==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=pW5aqirM; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::52c; helo=mail-pg1-x52c.google.com; envelope-from=shengjiu.wang@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=HK9E1YsJ;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=pW5aqirM;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::62c; helo=mail-pl1-x62c.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pl1-x62c.google.com (mail-pl1-x62c.google.com [IPv6:2607:f8b0:4864:20::62c])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::52c; helo=mail-pg1-x52c.google.com; envelope-from=shengjiu.wang@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pg1-x52c.google.com (mail-pg1-x52c.google.com [IPv6:2607:f8b0:4864:20::52c])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ggJRq3XrHz2yb9
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Jun 2026 19:27:50 +1000 (AEST)
-Received: by mail-pl1-x62c.google.com with SMTP id d9443c01a7336-2c0c32f6ce1so38716615ad.2
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Jun 2026 02:27:50 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ggKpR1q4Xz2yb9
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Jun 2026 20:29:02 +1000 (AEST)
+Received: by mail-pg1-x52c.google.com with SMTP id 41be03b00d2f7-c858cc9870aso324973a12.0
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Jun 2026 03:29:01 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1781692135; cv=none;
+        d=google.com; s=arc-20240605;
+        b=MtMDHXhf7eywvXWgaANAmjKQoBqUlNAMpdwzEhEg0HUZVtRDaWte4nbkaG79shB7Y1
+         U21PH9KU2TUV003xQTcZpsTKI0MTfQYbPrkoxn8CS/YYdOTk57PF/imaf/Ng/wKQGGWl
+         R65DmHbHhBJeW6jpf/126Eo6Ui2dMjc306dCtaImTqdLAt9iEfLP8RebqsgGo7gseGiC
+         uCR+dBar3BsEBIJHW+oviFGvEnxyvRIN/rFWtFtlGKtMbMbXcMn18cZM1ZmhYLm1k83y
+         sidJXcS8xtcNAvU8WhBKyX5m0mypc42EnP64C4sO4ezMxy4rjhPkQzNNJ4Wexgr10UzG
+         s2QA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=kRjUtdAZ1X8edMk+uEk4qOuv5l+aTxpMz/Az3+07hSo=;
+        fh=3Hxg+7WNM30ahkMypl2p073Lu4ep3edpsarPOllhxNk=;
+        b=OsJmDahsC6GK0qMufojCtOSbhQ31/39OCIVLub2LtlmTUwJSr5dyjnlIUG1JSvLfRf
+         ARBjDGNgJtF+OX8xm6Kj5rFLAMMAR/p5kheMYWOWp/3GmI8KDDra+TyuMLQnvW4+jH9h
+         OE2P++gD9+gXidkgjdY8G4Gke4z1QIrVwKFiKl3rZT80GkIp8HAOE3JfTZE1flbs9W96
+         2dabJBtP5AEdx2GmFZ1PJyrlYpaiwvwzo9b6/RfPo2hANTHJddImojOTWtEs8QO1uqli
+         8GQ+jS5LLzNDPLVdNWgVKbf5TqtFEs4I6y6sRRJnAwma2HiLRSDpy23wSefDsb4Mh7+2
+         A2kg==;
+        darn=lists.ozlabs.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1781688469; x=1782293269; darn=lists.ozlabs.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=hizaUSOcpmr93CQTlwODwEp3HXH9tbZgpK5ejTYO1a4=;
-        b=HK9E1YsJVFckUMzdfsMaD9TCJvtpVK9z7bQItgRXTJYKVS2SnQa5lLl8tWLUZapUFa
-         Jw66BembFs05smtIni3WToE+RfgeB7XQf1BJh2PlHd8dM614t36sf5DBbsKwXyAnByVw
-         V1Or7r1GC9JVRz7XgYsvldeCUoRYPp5ph9vrYZ40A3/vED5eAztR1Yj/sEPczEnRprfF
-         WNUAuXSs9B42bgR7c0eihYlHQBBGHuADQwAjQoQadsQAflEJpE0fm8IBfKxEh1y+0awL
-         2YVgO5TblAUcsbmBZWoCM8gCkhFJ3FSAroMlJPDk6Wj153yONYfipH03PC2cV5vn4JaZ
-         9xyQ==
+        d=gmail.com; s=20251104; t=1781692135; x=1782296935; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=kRjUtdAZ1X8edMk+uEk4qOuv5l+aTxpMz/Az3+07hSo=;
+        b=pW5aqirMJE4Lic8BFytD6SYdpMoIBep340WUWnBv8zgAJ27uzqy9Hlcpll6a9Nhnvk
+         awoXeyt0RtVLK/8c7+VWkgZftLofM7/ZJm+rK8eNMTDDyEgIuMKeOYd3KZXOlV/TLuct
+         6RcRo7qHFtNX1ViWlvUG6jMFcZdqJCq+WH3Kl3+lD4w4ifY2152gHGGkvMpcz3IibYQ4
+         cgUlfxQwo4J5H99rMLD1a2gtyO1RxWnHUdZavbTSr/6O/r3SU43pZGMyerlUOK0vEPB0
+         1zFtIZT5yiJTXLwUoDRoHFGcylhQy0xEU3XUIcvfcFUy9BDA4KRcVIQivsa8pOqMQFne
+         AXng==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1781688469; x=1782293269;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=hizaUSOcpmr93CQTlwODwEp3HXH9tbZgpK5ejTYO1a4=;
-        b=aWp/tGjuR6fg8Mie/AjxoUNtgvZchm+l/Ue4C4MfwxlZ3X/3Hr90rIhjQs2deuNvcT
-         NntJLemDLs5/CeafmMaUQv/alLjXx/lC69IZuHSqW8L/m5snczM7T10kMuIBwNx0iR08
-         6gqDaofb5Nk+LLPHBkPhvFF2zNXIgXHjXHPxpHxMfo5pkJ088+U543Zov74V6Jq72L8K
-         uQ7ThVHmShuqV7edDGl1qb/KKneOwz6ONWGIuv26nVCHPniyg6TG+z5QIB3xCwO8D3Ba
-         azeWIOkDBTcM2UONyX+E6UFaWrEEUGo1Ylwou0KZsnT/nPGDd0H0BAUBFYSEeKt9U+JB
-         Zwmg==
-X-Forwarded-Encrypted: i=1; AFNElJ++vZGQ+dyy7LsUv8cJWoGzDB5Mfg6+kFruGhwv7cr9W/Eht7sjej7vwXCIqXoi/WfihwpKxDfY1Qo1lKQ=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YzkL1KBntCFTnc0cDbI0aKInbhFlrAWotLy/qVGUMXWGA79e5Dx
-	CtNfwMRtKOABXMFLDxG9UBKoi0c21MMapSw7VqCxL5vxa1AVzafir6F8
-X-Gm-Gg: AfdE7ckmWphLPd/U255XXdoBJRx9+/q260BlAS4d4j9CI1dFiK6ILTeCPCuxZjA1yCH
-	AodYcRvX95AnI+9X6EdNE9nnywcOjLUM5L5g7eE+YoIYjUB2yrP8EycKTbAum/boX4Kwugedf07
-	UY/gJ0G8LQqdSzuuE2dLz3eVpQpSbJvqVeDZKVBTCLrSK4S55MUkA3/LAFdVR++3t816OD4TXst
-	7TGGF6xAVvtH2UxXN/ffwG7qEbXdA/3lf7Tf8aJLu1iwGicZdJcJ0JUi008AhuWuHvH2sLL+85S
-	iyqXXMIkLfixdTEq5DI2CDkroIdF9590+gHk4Ysw9FflT6s8zBWmnllEnIoI7WovY81VAwh9Tvh
-	xILGG53HbB1TZh75xnJiCPNMFvfABAtjkomcACpcylcOFpNybOR/NdmGzu6/iJjLCh4puzbBhFb
-	V/c89XBe4el6ywgpaazhgCKuG6RX6ziWz2WUEI7I+dwAY17xqRe6BNSLCF
-X-Received: by 2002:a17:903:249:b0:2c0:bcb3:86f with SMTP id d9443c01a7336-2c6bbf57bc4mr28631075ad.6.1781688469091;
-        Wed, 17 Jun 2026 02:27:49 -0700 (PDT)
-Received: from li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com ([129.41.58.4])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2c42f7c651dsm157900335ad.26.2026.06.17.02.27.45
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 17 Jun 2026 02:27:48 -0700 (PDT)
-Date: Wed, 17 Jun 2026 14:57:43 +0530
-From: Mukesh Kumar Chaurasiya <mkchauras@gmail.com>
-To: Sang-Heon Jeon <ekffu200098@gmail.com>
-Cc: Madhavan Srinivasan <maddy@linux.ibm.com>, 
-	Michael Ellerman <mpe@ellerman.id.au>, "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, 
-	linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
-	Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [PATCH 3/5] powerpc/fadump: remove unreachable
- memblock_reserve() return value checks
-Message-ID: <ajJoV8xggRz05J-x@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
-References: <20260616182959.2429774-1-ekffu200098@gmail.com>
- <20260616182959.2429774-4-ekffu200098@gmail.com>
+        d=1e100.net; s=20251104; t=1781692135; x=1782296935;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=kRjUtdAZ1X8edMk+uEk4qOuv5l+aTxpMz/Az3+07hSo=;
+        b=lH+UsDJf23wdjskaDD4bC/gP/4e10JQkYH+W9On8bSLnz+EV/fvDWkch87nmD3AIMs
+         6SlRxjvpAUzCQWQMiXQ0J959Oq+mC8gJNfmVxOOW1u1fSYqW3FXzqN7X1ZD6js8Uj7ge
+         dCzd9YRBJ/2qKWSnnX4qxkyZQjH7nTdngoOK/UPcQgU6UJOvSrZGIP+Ea2RwVKpgbt56
+         kCMpPYtWXEYEcktw6lwnsW0GIr9ibe+mqJbqrqfA3dnPtROYZl7SGbUSTb66LBZr6xtQ
+         ozetSLqnHYBF0lVoyZNnhM4EEl3ZordEPNWHR0PvQxW0RFTyU2Ye8wtz2wrPNWSsrmBd
+         A2IA==
+X-Forwarded-Encrypted: i=1; AFNElJ+GUZhWEoQnLNvKUYKI7H+isM56JRU4tYvyIWLOISp3d7WGJ1rIQiPbH1n/+ItForbihmk3EX28GmtuzzE=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YyNuJ+52Ug/5pF5GJKuhn+OVs22N728QdZeC3/bMZ1xhMrivYPd
+	14EQ38gVSjlerOVY4l2tYoF960IDUxcLxoz0rbUb0Fj3voH7W/YkcD84M0UtHHrxNZjscRGMMus
+	9ZnGhpxHiKtgX+0XxuBMf4AVWtC4LcBk=
+X-Gm-Gg: Acq92OGv2inGNr5UL6g1+/a0j6wHscoJR5As3FsB4Tj8F6bOE5Jku47MPwYkaUqRVl6
+	Cls4n1nH4Ad3Y/Ne1AsJfB/rlLL+O1RaRQhsu36U4OeFHlq4ZWxCuRhcFc7wsL1bNkQ2zPh3csz
+	zMwkiROcajRAqe5B8vh3zyqc6zIMeKPQj8aGBxhF9uxVOEO5GDjq91pJLrmPSb2PlV35KRieKXL
+	W0alq+8lfV12FYGDH8F2PGtDCDe7akuk43GQsS4CR0vg60U8yxwBkBS3f4bup7fcvfNQev/
+X-Received: by 2002:a05:6a21:3315:b0:3b3:6db1:5986 with SMTP id
+ adf61e73a8af0-3b8dce967b4mr2334359637.30.1781692134673; Wed, 17 Jun 2026
+ 03:28:54 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -95,62 +100,45 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260616182959.2429774-4-ekffu200098@gmail.com>
+References: <20260616030038.4170204-1-shengjiu.wang@oss.nxp.com> <a5a652cb-d6bb-45a2-a1f5-ca540b34c115@sirena.org.uk>
+In-Reply-To: <a5a652cb-d6bb-45a2-a1f5-ca540b34c115@sirena.org.uk>
+From: Shengjiu Wang <shengjiu.wang@gmail.com>
+Date: Wed, 17 Jun 2026 18:28:35 +0800
+X-Gm-Features: AVVi8Ccnexg7hf0koZrghXGJFMY7u-UOLAfnr_vjOBeW40Mj9iwT9-M8wbHva8Y
+Message-ID: <CAA+D8AONvb2PJX871g8yUEtUhq7EGRFMdLm-6yFdTzbTvMGn2g@mail.gmail.com>
+Subject: Re: [PATCH] ASoC: fsl_audmix: switch regmap to cache-only mode after probe
+To: Mark Brown <broonie@kernel.org>
+Cc: shengjiu.wang@oss.nxp.com, Xiubo.Lee@gmail.com, festevam@gmail.com, 
+	nicoleotsuka@gmail.com, lgirdwood@gmail.com, perex@perex.cz, tiwai@suse.com, 
+	linux-sound@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
+	linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On Wed, Jun 17, 2026 at 03:29:54AM +0900, Sang-Heon Jeon wrote:
-> fadump_append_bootargs() and fadump_reserve_mem() both run from
-> early_init_devtree(), before it calls memblock_allow_resize(). At that
-> point memblock_reserve() either succeeds or panics, never returning an
-> error.
-> 
-> Therefore the return value checks are unreachable, so remove them and the
-> related logic.
-> 
-> No functional change.
-> 
-> Signed-off-by: Sang-Heon Jeon <ekffu200098@gmail.com>
-> ---
->  arch/powerpc/kernel/fadump.c | 14 +++-----------
->  1 file changed, 3 insertions(+), 11 deletions(-)
-> 
-> diff --git a/arch/powerpc/kernel/fadump.c b/arch/powerpc/kernel/fadump.c
-> index a313b1653124..88ca6156b81a 100644
-> --- a/arch/powerpc/kernel/fadump.c
-> +++ b/arch/powerpc/kernel/fadump.c
-> @@ -154,13 +154,8 @@ void __init fadump_append_bootargs(void)
->  	if (!fw_dump.dump_active || !fw_dump.param_area_supported || !fw_dump.param_area)
->  		return;
->  
-> -	if (fw_dump.param_area < fw_dump.boot_mem_top) {
-> -		if (memblock_reserve(fw_dump.param_area, COMMAND_LINE_SIZE)) {
-> -			pr_warn("WARNING: Can't use additional parameters area!\n");
-> -			fw_dump.param_area = 0;
-> -			return;
-> -		}
-> -	}
-> +	if (fw_dump.param_area < fw_dump.boot_mem_top)
-> +		memblock_reserve(fw_dump.param_area, COMMAND_LINE_SIZE);
->  
->  	append_args = (char *)fw_dump.param_area;
->  	len = strlen(boot_command_line);
-> @@ -632,10 +627,7 @@ int __init fadump_reserve_mem(void)
->  		    (fw_dump.ops->fadump_setup_metadata(&fw_dump) < 0))
->  			goto error_out;
->  
-> -		if (memblock_reserve(base, size)) {
-> -			pr_err("Failed to reserve memory!\n");
-> -			goto error_out;
-> -		}
-> +		memblock_reserve(base, size);
->  
->  		pr_info("Reserved %lldMB of memory at %#016llx (System RAM: %lldMB)\n",
->  			(size >> 20), base, (memblock_phys_mem_size() >> 20));
-> -- 
-> 2.43.0
-> 
-Yeah, that's a dead code.
+On Tue, Jun 16, 2026 at 6:48=E2=80=AFPM Mark Brown <broonie@kernel.org> wro=
+te:
+>
+> On Tue, Jun 16, 2026 at 11:00:38AM +0800, shengjiu.wang@oss.nxp.com wrote=
+:
+> > From: Shengjiu Wang <shengjiu.wang@nxp.com>
+> >
+> > After pm_runtime_enable() the AUDMIX hardware block is powered off and
+> > remains suspended until the first runtime resume. Any register write
+> > issued between probe() and the first resume (for example from DAPM or
+> > ALSA control paths) would target unpowered hardware and be silently
+> > lost.
+>
+> >       platform_set_drvdata(pdev, priv);
+> >       pm_runtime_enable(dev);
+> > +     regcache_cache_only(priv->regmap, true);
+>
+> How does the cache get turned off again when runtime PM is configured
+> off?  I'd expect the device to probe powered up and then be powered down
+> and put into cache only mode as a result of runtime PM running.
 
-Reviewed-by: Mukesh Kumar Chaurasiya (IBM) <mkchauras@gmail.com>
+Thanks for the comments.
+Yes. need to consider when runtime PM off case.  I will refine it.
+
+Best regards
+Shengjiu Wang
 
