@@ -1,92 +1,82 @@
-Return-Path: <linuxppc-dev+bounces-22739-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22740-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4F281CD98E2
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Jun 2026 10:29:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8205BCD98E4
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Jun 2026 12:39:01 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ggKpT2Jhbz2yfD;
-	Wed, 17 Jun 2026 20:29:05 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::52c" arc.chain=google.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781692145;
-	cv=pass; b=ovjNudylqBvtJvY9Kq3IG8UXH4mpqyrGH6vZrXQn8L5k2AVn1rOuFYq9jrOKsikTFIRwoPuODqCl4pMV04haCa8TeqAbsqb+IdOq9f4xBusU5ai5mFHUXcix8YbAmSjBGpnSssGe0RCAA6dUn4B8nCK7ywPd7fREyj6tRh8na0rAoc+B7+iLVxeZ2DxP4eSwSpM/X8xE7b3qD9Zsv91FRGnSXrOFnKX2IqPQbGELkLXXybNOrcr5/yx98lDWLGcpNmBTTsrIY0vJ0Sw9xyHPuLdDiSJZev2IBL3SMw0db1Y6m0vylsq7bX6ZXxlwQ6I/mZF70N1wuovEktrIqSJU2w==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1781692145; c=relaxed/relaxed;
-	bh=kRjUtdAZ1X8edMk+uEk4qOuv5l+aTxpMz/Az3+07hSo=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=DY2RF4pR8AQ0b1uFrKRfVqngUR2qVKTiM/12xHlpBpk9ZS11sHdGlyNhme2iPf3gQ0FZNLooRr+3QSxXEX0Dk2sXV5XZ4Z23iW43pkcQN8vAq6875BHaoufxIugdvCxhTbSybs6RI4W6O3Bwqt5Jp8/eHn2DWzo1wOvY3+aHvdWsDzp8rz6LhsXQDG6flkQchfvGLsTV1IZJWQSyuPRpKPLgRuTHPyoKWPMAX0CY9eQElel8J26tnVKpKhCkgA8ZGWOXeZlB/D8HSWVM/HtN1o99tJBbj/WzHFfho4rvjL3w+Fn5x+IdFFVVW51ZDPHda9UESFxOj0g5R/OExieW+Q==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=pW5aqirM; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::52c; helo=mail-pg1-x52c.google.com; envelope-from=shengjiu.wang@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ggNhM4vQsz2xHK;
+	Wed, 17 Jun 2026 22:38:59 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781699939;
+	cv=none; b=WTztT2WXpbkQdMfUQ4R80PdLsOhCoI7IW51ypvXL4Ejdog7Ca+LWbfMBnFxCt61xvLA0UAQskKr3BrY1mfotVjOPLZUksxJUn2Nbfyle6Ij7GltmgubX2Nhr4QhxUjqcVCcNv64RO+OuHoOPHD1OW3BZnQuNdUb5OzyjtzwPnsWINGUu9LMZ+4dv2mPuldRt8uLUGvshTDRDOn/wH7wtMiJVjH5Ja5fJYwE+TLvUREpYwlPHKoNoTpvoZPxRfaVJnqgxA+dny/nLG0zaJLSnQPtXqEFQT6ERaEbV5AQ3w9ENxg9vvp5rGYrYIzPSREZzfOIYejYwGA61UEmZuhRtTQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1781699939; c=relaxed/relaxed;
+	bh=JmmEtwAC+IzjnnOdassXkR7D2VbpXwWYi5VYohYNvCU=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=J7Md0wBdEUx1/uZD66irP9XJuJ/CcFMDjh2G+PwtMW8NLPCmJ+zB77+Z5R0nU9DaWalcDkuKppAsRIJWXIc8FZfVGGcOmG3nEEz6z9f0wGTE04fcU10PyGPiR+nQuEwWAV/m66fgo2kOcfsv2mpaF/wBYbawfSz0UC3dcppi2XOVep4Ex9NsXONp/4eYT7dtyQdEe19o8Pucet7Q358BsCwUxGKzCti3inLMOamJHp03cvXdnFO+yO5ALiwGeTqOX2UNW1vPeHNa27oaqL8TCMC2fsaH/+BlvlLYvQNeaS2KJ9ls6gv2eJDCCWcaayu5nsxuTkMj91qg2pJqbVgnaQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=lsLNtA7U; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=vaibhav@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=pW5aqirM;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=lsLNtA7U;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::52c; helo=mail-pg1-x52c.google.com; envelope-from=shengjiu.wang@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pg1-x52c.google.com (mail-pg1-x52c.google.com [IPv6:2607:f8b0:4864:20::52c])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=vaibhav@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ggKpR1q4Xz2yb9
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Jun 2026 20:29:02 +1000 (AEST)
-Received: by mail-pg1-x52c.google.com with SMTP id 41be03b00d2f7-c858cc9870aso324973a12.0
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Jun 2026 03:29:01 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1781692135; cv=none;
-        d=google.com; s=arc-20240605;
-        b=MtMDHXhf7eywvXWgaANAmjKQoBqUlNAMpdwzEhEg0HUZVtRDaWte4nbkaG79shB7Y1
-         U21PH9KU2TUV003xQTcZpsTKI0MTfQYbPrkoxn8CS/YYdOTk57PF/imaf/Ng/wKQGGWl
-         R65DmHbHhBJeW6jpf/126Eo6Ui2dMjc306dCtaImTqdLAt9iEfLP8RebqsgGo7gseGiC
-         uCR+dBar3BsEBIJHW+oviFGvEnxyvRIN/rFWtFtlGKtMbMbXcMn18cZM1ZmhYLm1k83y
-         sidJXcS8xtcNAvU8WhBKyX5m0mypc42EnP64C4sO4ezMxy4rjhPkQzNNJ4Wexgr10UzG
-         s2QA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=kRjUtdAZ1X8edMk+uEk4qOuv5l+aTxpMz/Az3+07hSo=;
-        fh=3Hxg+7WNM30ahkMypl2p073Lu4ep3edpsarPOllhxNk=;
-        b=OsJmDahsC6GK0qMufojCtOSbhQ31/39OCIVLub2LtlmTUwJSr5dyjnlIUG1JSvLfRf
-         ARBjDGNgJtF+OX8xm6Kj5rFLAMMAR/p5kheMYWOWp/3GmI8KDDra+TyuMLQnvW4+jH9h
-         OE2P++gD9+gXidkgjdY8G4Gke4z1QIrVwKFiKl3rZT80GkIp8HAOE3JfTZE1flbs9W96
-         2dabJBtP5AEdx2GmFZ1PJyrlYpaiwvwzo9b6/RfPo2hANTHJddImojOTWtEs8QO1uqli
-         8GQ+jS5LLzNDPLVdNWgVKbf5TqtFEs4I6y6sRRJnAwma2HiLRSDpy23wSefDsb4Mh7+2
-         A2kg==;
-        darn=lists.ozlabs.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1781692135; x=1782296935; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=kRjUtdAZ1X8edMk+uEk4qOuv5l+aTxpMz/Az3+07hSo=;
-        b=pW5aqirMJE4Lic8BFytD6SYdpMoIBep340WUWnBv8zgAJ27uzqy9Hlcpll6a9Nhnvk
-         awoXeyt0RtVLK/8c7+VWkgZftLofM7/ZJm+rK8eNMTDDyEgIuMKeOYd3KZXOlV/TLuct
-         6RcRo7qHFtNX1ViWlvUG6jMFcZdqJCq+WH3Kl3+lD4w4ifY2152gHGGkvMpcz3IibYQ4
-         cgUlfxQwo4J5H99rMLD1a2gtyO1RxWnHUdZavbTSr/6O/r3SU43pZGMyerlUOK0vEPB0
-         1zFtIZT5yiJTXLwUoDRoHFGcylhQy0xEU3XUIcvfcFUy9BDA4KRcVIQivsa8pOqMQFne
-         AXng==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1781692135; x=1782296935;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=kRjUtdAZ1X8edMk+uEk4qOuv5l+aTxpMz/Az3+07hSo=;
-        b=lH+UsDJf23wdjskaDD4bC/gP/4e10JQkYH+W9On8bSLnz+EV/fvDWkch87nmD3AIMs
-         6SlRxjvpAUzCQWQMiXQ0J959Oq+mC8gJNfmVxOOW1u1fSYqW3FXzqN7X1ZD6js8Uj7ge
-         dCzd9YRBJ/2qKWSnnX4qxkyZQjH7nTdngoOK/UPcQgU6UJOvSrZGIP+Ea2RwVKpgbt56
-         kCMpPYtWXEYEcktw6lwnsW0GIr9ibe+mqJbqrqfA3dnPtROYZl7SGbUSTb66LBZr6xtQ
-         ozetSLqnHYBF0lVoyZNnhM4EEl3ZordEPNWHR0PvQxW0RFTyU2Ye8wtz2wrPNWSsrmBd
-         A2IA==
-X-Forwarded-Encrypted: i=1; AFNElJ+GUZhWEoQnLNvKUYKI7H+isM56JRU4tYvyIWLOISp3d7WGJ1rIQiPbH1n/+ItForbihmk3EX28GmtuzzE=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YyNuJ+52Ug/5pF5GJKuhn+OVs22N728QdZeC3/bMZ1xhMrivYPd
-	14EQ38gVSjlerOVY4l2tYoF960IDUxcLxoz0rbUb0Fj3voH7W/YkcD84M0UtHHrxNZjscRGMMus
-	9ZnGhpxHiKtgX+0XxuBMf4AVWtC4LcBk=
-X-Gm-Gg: Acq92OGv2inGNr5UL6g1+/a0j6wHscoJR5As3FsB4Tj8F6bOE5Jku47MPwYkaUqRVl6
-	Cls4n1nH4Ad3Y/Ne1AsJfB/rlLL+O1RaRQhsu36U4OeFHlq4ZWxCuRhcFc7wsL1bNkQ2zPh3csz
-	zMwkiROcajRAqe5B8vh3zyqc6zIMeKPQj8aGBxhF9uxVOEO5GDjq91pJLrmPSb2PlV35KRieKXL
-	W0alq+8lfV12FYGDH8F2PGtDCDe7akuk43GQsS4CR0vg60U8yxwBkBS3f4bup7fcvfNQev/
-X-Received: by 2002:a05:6a21:3315:b0:3b3:6db1:5986 with SMTP id
- adf61e73a8af0-3b8dce967b4mr2334359637.30.1781692134673; Wed, 17 Jun 2026
- 03:28:54 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ggNhL3KMkz2xBb
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Jun 2026 22:38:57 +1000 (AEST)
+Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 65H8mUbJ4041355;
+	Wed, 17 Jun 2026 12:38:39 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:date:from:message-id:mime-version
+	:subject:to; s=pp1; bh=JmmEtwAC+IzjnnOdassXkR7D2VbpXwWYi5VYohYNv
+	CU=; b=lsLNtA7U7IehynhoTX1t+0Yl+KMO09Qeulb0pmkcvuzYW3JFUS9wbwn7o
+	/jLLB/g/muK+ldoAwoG0ljXfUzWOlJvlKAXUxb7oHzzD1bI4vZOV1xZJhtZZHEoe
+	JucDcVxQ6d2YBKJRKQLThOkKGe4ho629aDrABZYGzrEgiZtgbJnzyKso/lShUQCB
+	2LfBPFQhD4WdqfE2L9grq0GpxSH264zxBeHWXmpmQqobQNcdZLZVce0jTxyxXW2o
+	D+bbWo3bk74VSkohFlqs5fEfTuYtMFRu1h0o8ZrQAqJ1QrNPUDpMFTBuEKnEMAKN
+	A5YoWkIJquJ3mcKRAtfML7fhWAIsg==
+Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4eueqxau31-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 17 Jun 2026 12:38:39 +0000 (GMT)
+Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma21.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 65HCYcYY003680;
+	Wed, 17 Jun 2026 12:38:38 GMT
+Received: from smtprelay04.wdc07v.mail.ibm.com ([172.16.1.71])
+	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4eudvab3w7-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 17 Jun 2026 12:38:38 +0000 (GMT)
+Received: from smtpav03.dal12v.mail.ibm.com (smtpav03.dal12v.mail.ibm.com [10.241.53.102])
+	by smtprelay04.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 65HCcbY832572146
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Wed, 17 Jun 2026 12:38:37 GMT
+Received: from smtpav03.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 22AC358064;
+	Wed, 17 Jun 2026 12:38:37 +0000 (GMT)
+Received: from smtpav03.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id A279B58056;
+	Wed, 17 Jun 2026 12:38:32 +0000 (GMT)
+Received: from vaibhav?linux.ibm.com (unknown [9.39.28.81])
+	by smtpav03.dal12v.mail.ibm.com (Postfix) with SMTP;
+	Wed, 17 Jun 2026 12:38:32 +0000 (GMT)
+Received: by vaibhav@linux.ibm.com (sSMTP sendmail emulation); Wed, 17 Jun 2026 18:08:31 +0530
+From: Vaibhav Jain <vaibhav@linux.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org,
+        kvm-ppc@vger.kernel.org
+Cc: Vaibhav Jain <vaibhav@linux.ibm.com>,
+        Madhavan Srinivasan <maddy@linux.ibm.com>,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        Brendan Higgins <brendan.higgins@linux.dev>,
+        David Gow <david@davidgow.net>, Eric Biggers <ebiggers@kernel.org>
+Subject: [PATCH v2] kvm powerpc/book3s-apiv2: Add suite initialization to skip GSB tests without APIv2 support
+Date: Wed, 17 Jun 2026 18:08:18 +0530
+Message-ID: <20260617123820.467601-1-vaibhav@linux.ibm.com>
+X-Mailer: git-send-email 2.54.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -100,45 +90,108 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20260616030038.4170204-1-shengjiu.wang@oss.nxp.com> <a5a652cb-d6bb-45a2-a1f5-ca540b34c115@sirena.org.uk>
-In-Reply-To: <a5a652cb-d6bb-45a2-a1f5-ca540b34c115@sirena.org.uk>
-From: Shengjiu Wang <shengjiu.wang@gmail.com>
-Date: Wed, 17 Jun 2026 18:28:35 +0800
-X-Gm-Features: AVVi8Ccnexg7hf0koZrghXGJFMY7u-UOLAfnr_vjOBeW40Mj9iwT9-M8wbHva8Y
-Message-ID: <CAA+D8AONvb2PJX871g8yUEtUhq7EGRFMdLm-6yFdTzbTvMGn2g@mail.gmail.com>
-Subject: Re: [PATCH] ASoC: fsl_audmix: switch regmap to cache-only mode after probe
-To: Mark Brown <broonie@kernel.org>
-Cc: shengjiu.wang@oss.nxp.com, Xiubo.Lee@gmail.com, festevam@gmail.com, 
-	nicoleotsuka@gmail.com, lgirdwood@gmail.com, perex@perex.cz, tiwai@suse.com, 
-	linux-sound@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
-	linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Authority-Analysis: v=2.4 cv=OcSoyBTY c=1 sm=1 tr=0 ts=6a32954f cx=c_pps
+ a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
+ a=FelO9ux0wxsA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
+ a=V8glGbnc2Ofi9Qvn3v5h:22 a=VwQbUJbxAAAA:8 a=VnNF1IyMAAAA:8
+ a=SRakg5jYXA31ZsQ6RxEA:9
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjE3MDExNyBTYWx0ZWRfXy1ha+JNSDO3a
+ XHZ8fvjQbldOimJ2SkhIxPHKxtUDsVDzAv15nSDCz0Vi127QtkcWnX0ySf+5xLDIq6irnIs+NB0
+ dNxMS5sYYGdRti0JjKVXq/g2NkDtUeBDqavF9f1o834gLvznsO3cpYk2aL23jQ+21NcjxViQhUT
+ bQgZS+26CKE0Ybw0xoq9zY51mPRfUAbbrlHQo/R0xEXimISuMqLHa7sa28lW98kkQ7K+NaO5yKG
+ 47K74WllQyQ1z0cMwppiEb0SNu5ItMXG3mTVm2uKGdCC3tMwId49FTCbHxDNcBEMNDZynUuLSEG
+ SVP0ddF02vkeRq2MSoPFyWfb3B/ettwryWRptv4Kz+fNXj93cdCgUr/E/OQc3K6Vq75I2UasdkF
+ MydGB6hDEhkBc2IazJpDcVKfm3K9obntWkmz+CPRTdbL1jYXbd/ahEAIeY/qT8XzkoYp9rHILPS
+ jmXl7No1rhUWKd2hbmQ==
+X-Proofpoint-GUID: 5ZlxN5mkTsg8ZKm5Nq3NjBxbTdvThqxc
+X-Proofpoint-Spam-Info: AW1haW4tMjYwNjE3MDExNyBTYWx0ZWRfX02pFcEngnAFQ
+ kH/5Izf1Yb7i/OAsEJbnpJj3by9DieA3wsa0KWfrCbW+GGjNC32wm5gu4EQ4fcqYwGevkIyPpw3
+ vGrR/nh4mGvZtMN4T+hajnUydxZPrLY=
+X-Proofpoint-ORIG-GUID: 5ZlxN5mkTsg8ZKm5Nq3NjBxbTdvThqxc
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
+ definitions=2026-06-17_01,2026-06-16_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501 phishscore=0 bulkscore=0 suspectscore=0 lowpriorityscore=0
+ impostorscore=0 malwarescore=0 spamscore=0 adultscore=0 clxscore=1015
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2606170117
 
-On Tue, Jun 16, 2026 at 6:48=E2=80=AFPM Mark Brown <broonie@kernel.org> wro=
-te:
->
-> On Tue, Jun 16, 2026 at 11:00:38AM +0800, shengjiu.wang@oss.nxp.com wrote=
-:
-> > From: Shengjiu Wang <shengjiu.wang@nxp.com>
-> >
-> > After pm_runtime_enable() the AUDMIX hardware block is powered off and
-> > remains suspended until the first runtime resume. Any register write
-> > issued between probe() and the first resume (for example from DAPM or
-> > ALSA control paths) would target unpowered hardware and be silently
-> > lost.
->
-> >       platform_set_drvdata(pdev, priv);
-> >       pm_runtime_enable(dev);
-> > +     regcache_cache_only(priv->regmap, true);
->
-> How does the cache get turned off again when runtime PM is configured
-> off?  I'd expect the device to probe powered up and then be powered down
-> and put into cache only mode as a result of runtime PM running.
+The guest state buffer (GSB) test suite currently fails on systems that
+do not support the PAPR APIv2 nested virtualization. This happens because
+the tests attempt to use APIv2-specific functionality without first
+checking if the host supports it. This was recently reported [1] when
+test-guest-state-buffer kunit tests were being run on Qemu without enabling
+Qemu capability 'cap-nested-papr' which enabled APIv2 nested virtualization
+for PPC64 Pseries Qemu machine.
 
-Thanks for the comments.
-Yes. need to consider when runtime PM off case.  I will refine it.
+Add a suite_init callback that checks for APIv2 support by calling
+plpar_guest_get_capabilities(). If the host does not support APIv2
+(indicated by H_SUCCESS not being returned), mark the kunit_suite as
+skipped. This prevents test failures on systems without APIv2 support while
+still allowing the tests to run on capable systems.
 
-Best regards
-Shengjiu Wang
+This patch uses the ability to skip entire kunit_suite which is proposed at
+[2].
+
+[1] https://lore.kernel.org/all/20260603064225.GC18149@sol/
+[2] https://lore.kernel.org/all/20260617121535.462459-1-vaibhav@linux.ibm.com/
+
+Reported-by: Eric Biggers <ebiggers@kernel.org>
+Closes: https://lore.kernel.org/all/20260603064225.GC18149@sol
+Signed-off-by: Vaibhav Jain <vaibhav@linux.ibm.com>
+Assisted-by: Bob:Claude-3.7-Sonnet Bob-Shell
+
+---
+
+Change-log
+=========
+V1->V2:
+* Updated the init_gs_test_suite() to use 'kunit_mark_skipped()' for
+kunit_suite.
+* Addressed sashiko-bot's review comment regarding unconditional execution
+of hcall on non-PSeries systems like PowerNV [Sashiko]
+---
+ arch/powerpc/kvm/test-guest-state-buffer.c | 16 ++++++++++++++++
+ 1 file changed, 16 insertions(+)
+
+diff --git a/arch/powerpc/kvm/test-guest-state-buffer.c b/arch/powerpc/kvm/test-guest-state-buffer.c
+index 5ccca306997a..232c00493a25 100644
+--- a/arch/powerpc/kvm/test-guest-state-buffer.c
++++ b/arch/powerpc/kvm/test-guest-state-buffer.c
+@@ -521,6 +521,21 @@ static void test_gs_hostwide_counters(struct kunit *test)
+ 	kvmppc_gsb_free(gsb);
+ }
+ 
++static int init_gs_test_suite(struct kunit_suite *suite)
++{
++	long rc = H_NOT_AVAILABLE;
++	unsigned long host_capabilities = 0;
++
++	/* Enable test suite only if APIv2 is supported */
++	if (kvmhv_on_pseries())
++		rc = plpar_guest_get_capabilities(0, &host_capabilities);
++
++	if (rc)
++		kunit_mark_skipped(suite, "Unsupported hypervisor");
++
++	return 0;
++}
++
+ static struct kunit_case guest_state_buffer_testcases[] = {
+ 	KUNIT_CASE(test_creating_buffer),
+ 	KUNIT_CASE(test_adding_element),
+@@ -535,6 +550,7 @@ static struct kunit_case guest_state_buffer_testcases[] = {
+ static struct kunit_suite guest_state_buffer_test_suite = {
+ 	.name = "guest_state_buffer_test",
+ 	.test_cases = guest_state_buffer_testcases,
++	.suite_init = init_gs_test_suite,
+ };
+ 
+ kunit_test_suites(&guest_state_buffer_test_suite);
+-- 
+2.54.0
+
 
