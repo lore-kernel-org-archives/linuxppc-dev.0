@@ -1,73 +1,46 @@
-Return-Path: <linuxppc-dev+bounces-22734-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22735-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 871C4CD98E1
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Jun 2026 05:46:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3D79BCD98E2
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Jun 2026 06:56:41 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ggCWs5mf8z2yRM;
-	Wed, 17 Jun 2026 15:46:01 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781675161;
-	cv=none; b=MN2pRR7L+lpOoL/EiV3cKuWyUZ1XJtH9qqyC8nRsouhtOs1P1zPZHKdlLTRLxWpXodGKreIVSvaTxbt/h4Vusk7Cw20Jj8bbCSRcNU+eNJLaTqqHs4AbmO7BeU373un7xPP/5lOwvP7WB+myyFgKIeoy7deuFwaOqD6PEcQzamjqgbrtkHIsZfNwVs2J+qzTMfPfoKa3zQDL6maSnfXPpwHuWR21k/dAoS/1R5XYGYIUjfQDJDYMqOJY5oIpT2shW1w5QMOfWSpDJEJGxlv3dTWEWm5OHkFq5X2z6htJbNXH+QGfac8CoIFLU7W5aI4XdHnvQUIAK7Xzd0kS4bK04Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ggF5M2wptz2yFj;
+	Wed, 17 Jun 2026 16:56:39 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:41d0:203:375::ad"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781679399;
+	cv=none; b=G2vZyfkGX+EBZo6+zj9x2Xjjakt4GG8XIjb3AEYj+jpvP/8sdrDe48MVZMhx9RWFw8vYx8uSsHNARRvhw7JnRvqID1LoO1tfUR/KUb1na7lYVv3Oy0QAxZQC/SAGYQVRJ2+VWoZlxS8SqQeZDXrusia8Vox8buIqciArZtaWfk27YbW5zny2WyrRMFXUcNyZ1hsjqH9d952rFuyar7HnE/7UukhuoaAyyvyARb1rh9kpURFKOAjZKTDRVxXMkRTzqIM/qUfiWMRIXvtLynMqiDTidvt2CrVXfnGeG5yqHVcTD5BmFVY8SCr9vJJoXKYv6mFSoxzLbvHJoofmuRpWsw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1781675161; c=relaxed/relaxed;
-	bh=7A7NpsA0dFdRmES8QeZ+5ivPRFA6wzmrJIcJc2w4Lz4=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=BGvNEXxdRSxysdO4puZh7IdOozDhP12zhxOrxPecIKw7Ca4efOEuzzKtn+vBEOEGp65kzbXxknUeU35wnlOYTkC3VE8kS6fCy7O5TkhIHC8Od6PC3pcbO+YhtSqnTasQvHnG5AHP0pY3iVTjLFJxvIjOrK2TQTXdRA8Bur320vwhEmHYU9TaBIuCHBdYGWnGQDhMC27K1EGOVO6ghfEvuriYfOchgpqGxqGbDp/r3dwn6qRmAG7dvt3GytkF+hJrN71HFd8fXmnTp44j0WZaZkqlhb/sfc0dbcBPggmsy/gegLfEE55uGbZdMtrL51r7jvrv0rcMLaVMfc5vK3wZjw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=DWuHypBZ; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=yeswanth@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1781679399; c=relaxed/relaxed;
+	bh=Pd8gbWlNCzyQkqrU5ZHSLBlgsjsUTsM3D0rkfq8QUW0=;
+	h=Content-Type:Mime-Version:Subject:From:In-Reply-To:Date:Cc:
+	 Message-Id:References:To; b=Jc1ISKHP9EE6qSLaAAzwdVQFE81YWmILQiuCoRCsXLDSX71/sB3IjoquyYFV5W3k5tfU4+mC8rr7yk9xiFTQaKP4dAEj4BMS1ajgkdCwOU6PRNGmd0b9039OSrKpVspEBcjuAgK765g1HRXF6cG15f1ZAP0vL3nmQAGJZOCNTPsewayHOXwSzlr/xyAhmP3Kd9eqhEJ4upExWwIoYdumElg0N3DJrdoe6+QBB5bGYqxesEQczjXwxdbQDqE660A1BQVY7Z375hWhK4Lovbh1OZiworxmfQL+1buXK/9b2ozM5QtSBrLItP7OUqAW4y+PT4Cli+2dHDkCb4wRIMikvw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=ttcAU0uv; dkim-atps=neutral; spf=pass (client-ip=2001:41d0:203:375::ad; helo=out-173.mta1.migadu.com; envelope-from=muchun.song@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=DWuHypBZ;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=ttcAU0uv;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=yeswanth@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=2001:41d0:203:375::ad; helo=out-173.mta1.migadu.com; envelope-from=muchun.song@linux.dev; receiver=lists.ozlabs.org)
+Received: from out-173.mta1.migadu.com (out-173.mta1.migadu.com [IPv6:2001:41d0:203:375::ad])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ggCWr0Twnz2yR5
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Jun 2026 15:45:59 +1000 (AEST)
-Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 65GLmgMc2724723;
-	Wed, 17 Jun 2026 05:45:56 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=7A7Nps
-	A0dFdRmES8QeZ+5ivPRFA6wzmrJIcJc2w4Lz4=; b=DWuHypBZIV0pqVUYlm50SY
-	eYENgtfZ/N3atCtZ6EKMeqZQpYPjdUdBPLHVbLy/o0UpMzMk+5HxEiywqu9l6cGZ
-	hVOkoJ4P4t/mCqEdTmpQDCtAOYEcwt9sKzfYaeBJx4OjOZgmWyn/I67LcqJBuaRd
-	jNRHlYeu4WMaODNWZ4o5qLKHPEfq2C59VMiZEPJhq/j9TgFViw36y8UvZ9HqH+Yv
-	TreDbJpVSn5IjgOXmDnIAmH26W6bnvorBr2znzJ73657Y/1tI504M9/pAY2O8y9l
-	Lw6KQxEAGRb0gGqmcoDLlHPO2h2yN+XClTz9ZHJsymLCbwdE43ZhAClww4N+0oMQ
-	==
-Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4eueqvsd40-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 17 Jun 2026 05:45:55 +0000 (GMT)
-Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma11.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 65H5Yn1I028479;
-	Wed, 17 Jun 2026 05:45:54 GMT
-Received: from smtprelay06.wdc07v.mail.ibm.com ([172.16.1.73])
-	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4eudva1puw-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 17 Jun 2026 05:45:54 +0000 (GMT)
-Received: from smtpav05.wdc07v.mail.ibm.com (smtpav05.wdc07v.mail.ibm.com [10.39.53.232])
-	by smtprelay06.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 65H5jrkJ17891938
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 17 Jun 2026 05:45:53 GMT
-Received: from smtpav05.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id B97E35805F;
-	Wed, 17 Jun 2026 05:45:53 +0000 (GMT)
-Received: from smtpav05.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id EE09C58059;
-	Wed, 17 Jun 2026 05:45:51 +0000 (GMT)
-Received: from [9.123.6.235] (unknown [9.123.6.235])
-	by smtpav05.wdc07v.mail.ibm.com (Postfix) with ESMTP;
-	Wed, 17 Jun 2026 05:45:51 +0000 (GMT)
-Message-ID: <9522eb6d-8751-46dc-8047-22e8a6304fbf@linux.ibm.com>
-Date: Wed, 17 Jun 2026 11:15:50 +0530
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ggF5H0MMMz2yFc
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Jun 2026 16:56:33 +1000 (AEST)
+Content-Type: text/plain;
+	charset=us-ascii
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
+	t=1781679372;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=Pd8gbWlNCzyQkqrU5ZHSLBlgsjsUTsM3D0rkfq8QUW0=;
+	b=ttcAU0uv6c4ydMwv2tlS3Wzs4bC6X98JE1iuB1K3Xm0VC+m/C51NpfOzx5cdFQzkyMK+vp
+	YRs/Mhod1qpU9xD9YJL4sDSKUoMdQz4FqoMOwK397a4Fy+3cVA52NT6LDbcvy25HoPukjR
+	7w3/v5h8h9a09AS9H3WcWW1T1bs3iCw=
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -80,67 +53,156 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [BUG] kernel BUG in team driver: buffer overflow in
- team_add_slave()
-To: Mukesh Kumar Chaurasiya <mkchauras@gmail.com>
-Cc: netdev@vger.kernel.org, venkat88@linux.ibm.com,
-        linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-References: <3ad19e86-234c-408f-896e-0d6c774fea49@linux.ibm.com>
- <a08b0a7f-089f-4428-9360-9edbec3a5453@linux.ibm.com>
- <ad80ee33-400b-4c63-8197-838c3cf85cef@linux.ibm.com>
- <ajDshKtFNpQAtHQ0@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
-Content-Language: en-US
-From: Yeswanth Krishna <yeswanth@linux.ibm.com>
-In-Reply-To: <ajDshKtFNpQAtHQ0@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNjE3MDA0NiBTYWx0ZWRfX8Z/p5gBfHRjW
- 2kzbZDGk+c92iP5TzzV8Dmtp/mFmPR+RrIPtufa+XJ0I79NuDNJeV4QI+wZouy8d2jTFBni+2eB
- ncvnsOHs8MAq2kvDOgZ0Zid4hSxdUVw=
-X-Proofpoint-GUID: 5Q8CXRBZqcAA_mVuI02siDijslm8R4MQ
-X-Authority-Analysis: v=2.4 cv=bMgm5v+Z c=1 sm=1 tr=0 ts=6a323493 cx=c_pps
- a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
- a=IkcTkHD0fZMA:10 a=FelO9ux0wxsA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=U7nrCbtTmkRpXpFmAIza:22 a=VnNF1IyMAAAA:8
- a=fQ7eh-DbEtEogAiaS8sA:9 a=QEXdDO2ut3YA:10
-X-Proofpoint-ORIG-GUID: lyh8K7ThnGrGl1BXkAz8XubDr-4CbFzW
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjE3MDA0NiBTYWx0ZWRfX5uIfGZh9+Ss1
- p7Cj0mQYuCTBfZxN2fDkZEee0AXyXZKggTjW5Cn/QsfgLLkkYqsY+s4IaRLLyit6TQ5dQVQdoFX
- MbZkXalK8hqbbQxNgFqB9ApiMuMoYtdXT+s7yYRZ8DmrPx8+Wse1OCl1HxLgAfJw/DxR8dmIZsU
- In87p39/KNd+MdApnM1DuN65CBTs9UnGdNs4AtqMigHYLLQAiweezef6HFvjxSzXntbjoROnJgd
- VgPwqptwURA8h+J5pwNV+FMNwH/LIdEXHFQ55Cbgd80tzT75YHoCbJbUQJwBNhm+3MfIxLQqKRV
- 6t3UIcg7aEG2fQ9VCE+T2jony+lm31dtM6b/s6dE2xM3gB/7bEqaKOHB7wAUXopC5DUQ+uk/CI9
- T3a3wh+NNQ6a1lANhTZrjRXK5YDQs6Nfi+KnGZqJDdNOde8xobS1pDlSHXJXj0J/vojyDjPjGzD
- hQrYUofGbYCUtNQx3yA==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
- definitions=2026-06-16_05,2026-06-16_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- suspectscore=0 impostorscore=0 malwarescore=0 adultscore=0 spamscore=0
- bulkscore=0 priorityscore=1501 phishscore=0 clxscore=1015 lowpriorityscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2606170046
+Mime-Version: 1.0 (Mac OS X Mail 16.0 \(3864.600.51.1.1\))
+Subject: Re: [PATCH v4 00/19] mm: Refactor bootmem gigantic hugepage
+ allocation
+X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
+From: Muchun Song <muchun.song@linux.dev>
+In-Reply-To: <20260612035903.2468601-1-songmuchun@bytedance.com>
+Date: Wed, 17 Jun 2026 14:54:39 +0800
+Cc: Oscar Salvador <osalvador@suse.de>,
+ David Hildenbrand <david@kernel.org>,
+ Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Muchun Song <songmuchun@bytedance.com>,
+ Mike Rapoport <rppt@kernel.org>,
+ Lorenzo Stoakes <ljs@kernel.org>,
+ "Liam R . Howlett" <liam@infradead.org>,
+ Vlastimil Babka <vbabka@kernel.org>,
+ linux-mm@kvack.org,
+ linux-kernel@vger.kernel.org,
+ Nicholas Piggin <npiggin@gmail.com>,
+ Christophe Leroy <chleroy@kernel.org>,
+ Ritesh Harjani <ritesh.list@gmail.com>,
+ "Aneesh Kumar K . V" <aneesh.kumar@linux.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
+Content-Transfer-Encoding: quoted-printable
+Message-Id: <1213AB34-BDA3-4EB0-A2D1-83A4744C710F@linux.dev>
+References: <20260612035903.2468601-1-songmuchun@bytedance.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+X-Migadu-Flow: FLOW_OUT
 
-Me and Mukesh discussed offline he able to reproduce on latest kernel on 
-my System but not on other systems need to see.
 
-Regard,
 
-Yeswanth
+> On Jun 12, 2026, at 11:58, Muchun Song <songmuchun@bytedance.com> =
+wrote:
+>=20
+> This series is split out from the earlier larger series "mm: =
+Generalize
+> HVO for HugeTLB and device DAX" [1]. It collects the first 19 patches =
+of
+> that series as a standalone set of fixes and preparatory cleanups =
+around
+> bootmem HugeTLB handling, sparse initialization ordering, and related
+> vmemmap setup.
+>=20
+> The first patches fix a few bugs found while reviewing the existing
+> code, including incorrect bootmem HVO handling, wrong vmemmap
+> registration arguments, a powerpc compound-vmemmap tracking bug, and
+> too-late initialization of gigantic bootmem HugeTLB struct pages.
+>=20
+> The rest of the series reorders early memory initialization so the
+> relevant zone state is available before sparse and HugeTLB boot-time
+> setup runs, then simplifies the remaining bootmem gigantic hugepage
+> allocation path and removes code made obsolete by that rework.
+>=20
+> At a high level:
+>  - patches [1-4] fix boot-time and arch-specific bugs
+>  - patches [5-12] reorder and simplify sparse/mm/hugetlb early init
+>  - patches [13-19] refactor bootmem gigantic hugepage allocation and
+>    remove obsolete helpers and state
+>=20
+> Changes since v3:
+>  - patches 2-4: add Cc: stable@vger.kernel.org to the applicable fixes
+>  - patch 3: collect Reviewed-by from Ritesh Harjani
+>  - patch 15: move pfn_to_zone() before hugetlb_vmemmap_init_early()
+>    instead of using a forward declaration
+>  - patches 15-17: collect Acked-by from Mike Rapoport where applicable
+>  - patch 15: collect Acked-by from Usama Arif
+>  - patch 18: clarify that the changelog also covers the early CMA
+>    bootmem allocation fallback refactoring
+>  - patch 19: initialize pgdat at declaration in
+>    __init_deferred_page() and collect Reviewed-by from Mike Rapoport
+>=20
+> [1] =
+https://lore.kernel.org/linux-mm/20260513130542.35604-1-songmuchun@bytedan=
+ce.com/
 
-On 16/06/26 11:56 am, Mukesh Kumar Chaurasiya wrote:
-> On Tue, Jun 16, 2026 at 11:38:37AM +0530, Yeswanth Krishna wrote:
->>> Please add below reported-by tag:
->>> Reported-by: Yeswanth Krishna Tellakula <yeswanth@linux.ibm.com>\
->>>
->>>
-> I am also not able to reproduce it.
-> Can you paste the full report of the crash?
->
-> Regards,
-> Mukesh
+Hi Andrew,
+
+Would you mind picking these up for the mm-unstable branch? Almost all
+patches have received a Reviewed-by or Acked-by.
+
+Regarding the Sashiko review comments, it reported 5 issues in total, =
+and
+I've verified all of them:
+
+- Patches 7 & 11: These are pre-existing issues and not introduced by =
+this
+  series.
+- Patch 14: This is a false positive.
+- Patches 8 & 9: These are valid observations but not a practical issue. =
+The
+  report mentioned:
+
+	"moving these reservations after free_area_init() artificially =
+inflate
+	 nr_kernel_pages and nr_all_pages, potentially causing an early =
+boot OOM"
+
+However, this aligns the 1GB HugeTLB allocation behavior with the =
+existing
+2MB HugeTLB allocation, which already behaves this way. So it won't =
+introduce
+new risks.
+
+Thanks for your time!
+
+Best regards,
+Muchun
+
+>=20
+> Muchun Song (19):
+>  mm/hugetlb: Fix boot panic with CONFIG_DEBUG_VM and HVO bootmem pages
+>  mm/hugetlb_vmemmap: Fix __hugetlb_vmemmap_optimize_folios()
+>  powerpc/mm: Fix wrong addr_pfn tracking in compound vmemmap =
+population
+>  mm/hugetlb: Initialize gigantic bootmem hugepage struct pages earlier
+>  mm/mm_init: Simplify deferred_free_pages() migratetype init
+>  mm/sparse: Panic on memmap and usemap allocation failure
+>  mm/sparse: Move subsection_map_init() into sparse_init()
+>  mm/mm_init: Defer sparse_init() until after zone initialization
+>  mm/mm_init: Defer hugetlb reservation until after zone initialization
+>  mm/mm_init: Remove set_pageblock_order() call from sparse_init()
+>  mm/sparse: Move sparse_vmemmap_init_nid_late() into sparse_init_nid()
+>  mm/hugetlb_cma: Validate hugetlb CMA range by zone at reserve time
+>  mm/hugetlb: Refactor early boot gigantic hugepage allocation
+>  mm/hugetlb: Free cross-zone bootmem gigantic pages after allocation
+>  mm/hugetlb_vmemmap: Move bootmem HVO setup to early init
+>  mm/hugetlb: Remove obsolete bootmem cross-zone checks
+>  mm/sparse-vmemmap: Remove sparse_vmemmap_init_nid_late()
+>  mm/hugetlb: Remove unused bootmem cma field
+>  mm/mm_init: Fold __init_page_from_nid() into __init_deferred_page()
+>=20
+> arch/powerpc/mm/book3s64/radix_pgtable.c |   7 +-
+> arch/powerpc/mm/hugetlbpage.c            |  13 +-
+> include/linux/hugetlb.h                  |  24 +--
+> include/linux/mmzone.h                   |   7 -
+> mm/cma.c                                 |   3 +-
+> mm/hugetlb.c                             | 259 +++++++++++------------
+> mm/hugetlb_cma.c                         |  44 ++--
+> mm/hugetlb_cma.h                         |   8 +-
+> mm/hugetlb_vmemmap.c                     | 120 +++--------
+> mm/hugetlb_vmemmap.h                     |   5 -
+> mm/internal.h                            |  14 +-
+> mm/mm_init.c                             |  86 +++-----
+> mm/sparse-vmemmap.c                      |  26 ++-
+> mm/sparse.c                              |  48 +----
+> 14 files changed, 251 insertions(+), 413 deletions(-)
+>=20
+>=20
+> base-commit: ec039126b7fac4e3af35ebccaa7c6f9b6875ba81
+> --=20
+> 2.54.0
+
 
