@@ -1,43 +1,43 @@
-Return-Path: <linuxppc-dev+bounces-22768-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22769-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7F7E3CD98F2
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Jun 2026 09:22:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BB0A1CD98E2
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Jun 2026 09:22:33 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ggwGq0xrdz3bps;
-	Thu, 18 Jun 2026 19:22:11 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=115.124.30.99
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781774531;
-	cv=none; b=KK3+0EAz2yNKb6PfjyaLNyvui/XUxRWh0iDlF+UJZzc2reZm58oVU4MFvBVzQnaleAydEOp2I8ezpiRdbhxSrbFjyZBkfNaqwI3Zff+vNnBywl6GWsZnQMrFE1sPIV/2OcLwcd5wyVHqJzG4dd4M70tcit0ZvXCTSIkQ4VLSJYD9zWr/tfTg6INGsTlBauCyc+G+MAaY9lJODbESGkKiEf1QmB10LH/OiAKTAt09mcWcZkCSKoHZOZIedoW5Y0Z7AEaAitSalKHxabAETEKRZXjGpHpNtEyXgvREcl9L8w6SReLD0pAUuvFFXSw6J8Tw24eu2P8pgI0FJsO3JcEM9w==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ggwGv5lQqz3bqM;
+	Thu, 18 Jun 2026 19:22:15 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=115.124.30.110
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781774535;
+	cv=none; b=WyqNTbP9Y9AehjAtE8UsCUgK324sasXmyrxtkiyN41LZk1VQppYkvXCeqzjJce/1wMZuohqprqjw+5fChzvOyU0zNc3KDQw69HLQXhkSMeei4vUB3/SjMpROnkkdNNVa36//BKhkBqtb3ptR1t/yOFzhPPlMcbGwYZGQ3NYQFiXxVOUHs3iU4Ce+LH7jS72sas6AEezcclyDPkM5Ld65AlI9mUebziwfQFc17hftk7Aw4uWeKvg+cmYOoxFDNvelDxBG4lL9QJovKQ2GDCBQrlJJFDOGB++tk9vTAI+UdzsxvwVfbkxNdODxt4KMJueAQ1YzNoqbyiVJeHaKa1Knxg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1781774531; c=relaxed/relaxed;
-	bh=1QfA9obPswGJtaazWa7wtlqPBE8fA3np3bpzuNLaVkE=;
+	t=1781774535; c=relaxed/relaxed;
+	bh=gSg9hURQWwaF6v2rlWIi5aDbWlEdNloKS9CNWqoe2X8=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=YkjGA8vhl7aHKgaKVzhsfI8i6EZswKR+m3H689Qr1cHfkZOism4hveZ+YSaNGJ4wjpngmoP801JVynzWkatcW2W1EZzzFis1gpaRegGFTI+vQdF2huqQb46uf8rRfo42HjVPa35UgTppkuWdgImUpLaM+oDk+CQ+5EFLfyWKMa6CZ/j1F9c+IQOQ0LjWZDtFM8Ky5+SMg9VlSj3F1+PX23oUoZ/S//1/Z4YlvZc6lswalyvc/9ounBtyQVTQBy0DY+CA4j/2oSEqHLS2uSWmp9Pn0oQGcOf/XRPVlN8fc5CV7juceiOyX+BYSTqVObUtpnRk7r00qb7unR5hPFLObg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.alibaba.com; dkim=pass (1024-bit key; unprotected) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.a=rsa-sha256 header.s=default header.b=rv0ipSzI; dkim-atps=neutral; spf=pass (client-ip=115.124.30.99; helo=out30-99.freemail.mail.aliyun.com; envelope-from=tianruidong@linux.alibaba.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.alibaba.com
+	 MIME-Version; b=UGL+vlZRqdjj3Kqgw1pgcf6Wz7MGSsFPVlL2U0aHVFSO066APqpL5NNX/idVEpC3/Fspsb178d8WMijC3Lhj0GWNAGdEKuEgceA3APpR2SAioREuM/L9wayCAVIJqckNIkS7ZHMRmGN40Do09IgGg+MLz5hMCo/33BAuCYIJJTrtI4+LDBWGg01eh2gI4CZdEY0I8xxosJu2L+iDzh0E7FFav48TzzMyAfB6oNRKH47K0QuZsxxlfCdVvzgSWuohab0S4Wagj55Rt7HbR9SmID3/C6QaJRICFs8A9j/pKMWzjbgA91SGbN976jvhgAIGeHkaSW9HxtWu/TMPsigB/g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.alibaba.com; dkim=pass (1024-bit key; unprotected) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.a=rsa-sha256 header.s=default header.b=iKGEIc7G; dkim-atps=neutral; spf=pass (client-ip=115.124.30.110; helo=out30-110.freemail.mail.aliyun.com; envelope-from=tianruidong@linux.alibaba.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.alibaba.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.alibaba.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.a=rsa-sha256 header.s=default header.b=rv0ipSzI;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.a=rsa-sha256 header.s=default header.b=iKGEIc7G;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.alibaba.com (client-ip=115.124.30.99; helo=out30-99.freemail.mail.aliyun.com; envelope-from=tianruidong@linux.alibaba.com; receiver=lists.ozlabs.org)
-Received: from out30-99.freemail.mail.aliyun.com (out30-99.freemail.mail.aliyun.com [115.124.30.99])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.alibaba.com (client-ip=115.124.30.110; helo=out30-110.freemail.mail.aliyun.com; envelope-from=tianruidong@linux.alibaba.com; receiver=lists.ozlabs.org)
+Received: from out30-110.freemail.mail.aliyun.com (out30-110.freemail.mail.aliyun.com [115.124.30.110])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ggwGn538Zz2ytj
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jun 2026 19:22:09 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ggwGt08wKz2ytj
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jun 2026 19:22:13 +1000 (AEST)
 DKIM-Signature:v=1; a=rsa-sha256; c=relaxed/relaxed;
 	d=linux.alibaba.com; s=default;
-	t=1781774526; h=From:To:Subject:Date:Message-ID:MIME-Version;
-	bh=1QfA9obPswGJtaazWa7wtlqPBE8fA3np3bpzuNLaVkE=;
-	b=rv0ipSzISgVT7yTbAWsmekOVdgAJ14kqts5YH5EtlRt9q7uWgCZLfc45OrxStBQ5GkwK04fTJccHw35MVtK+deQPfjpENT3UJ/5/EDME3aqaS5DG4vovB+xEW5XlKaNMHv9dpWsdvSuOv9z/mgbjEIQ9SqBaQtUISlqiEPZqc94=
-X-Alimail-AntiSpam:AC=PASS;BC=-1|-1;BR=01201311R761e4;CH=green;DM=||false|;DS=||;FP=0|-1|-1|-1|0|-1|-1|-1;HT=maildocker-contentspam011083073210;MF=tianruidong@linux.alibaba.com;NM=1;PH=DS;RN=28;SR=0;TI=SMTPD_---0X56TKAw_1781774519;
-Received: from localhost(mailfrom:tianruidong@linux.alibaba.com fp:SMTPD_---0X56TKAw_1781774519 cluster:ay36)
+	t=1781774530; h=From:To:Subject:Date:Message-ID:MIME-Version;
+	bh=gSg9hURQWwaF6v2rlWIi5aDbWlEdNloKS9CNWqoe2X8=;
+	b=iKGEIc7GlFOqDbMbePnDCJrpbX9mQqBEJgeXcSIzasr9uV6RbCOFk4n7RkC/XzVVEuraKknPn5LVtOpdbTHENFnoMl7JSmiCOEpJWiCBiVgpkvie2Ev74Tkkx/qYH+LJrfmdoZxWo7ZAS28wf6ibcFjMf+GLKcT1/Jj3TgvfHKA=
+X-Alimail-AntiSpam:AC=PASS;BC=-1|-1;BR=01201311R831e4;CH=green;DM=||false|;DS=||;FP=0|-1|-1|-1|0|-1|-1|-1;HT=maildocker-contentspam033032089153;MF=tianruidong@linux.alibaba.com;NM=1;PH=DS;RN=28;SR=0;TI=SMTPD_---0X56TKD2_1781774524;
+Received: from localhost(mailfrom:tianruidong@linux.alibaba.com fp:SMTPD_---0X56TKD2_1781774524 cluster:ay36)
           by smtp.aliyun-inc.com;
-          Thu, 18 Jun 2026 17:22:02 +0800
+          Thu, 18 Jun 2026 17:22:07 +0800
 From: Ruidong Tian <tianruidong@linux.alibaba.com>
 To: catalin.marinas@arm.com,
 	will@kernel.org,
@@ -67,9 +67,9 @@ Cc: linux-arm-kernel@lists.infradead.org,
 	linux-kernel@vger.kernel.org,
 	kasan-dev@googlegroups.com,
 	tianruidong@linux.alibaba.com
-Subject: [PATCH v15 6/9] arm64: support copy_mc_[user]_highpage()
-Date: Thu, 18 Jun 2026 17:21:20 +0800
-Message-ID: <20260618092124.3901230-7-tianruidong@linux.alibaba.com>
+Subject: [PATCH v15 7/9] arm64: introduce copy_mc_to_kernel() implementation
+Date: Thu, 18 Jun 2026 17:21:21 +0800
+Message-ID: <20260618092124.3901230-8-tianruidong@linux.alibaba.com>
 X-Mailer: git-send-email 2.43.7
 In-Reply-To: <20260618092124.3901230-1-tianruidong@linux.alibaba.com>
 References: <20260618092124.3901230-1-tianruidong@linux.alibaba.com>
@@ -90,524 +90,709 @@ Content-Transfer-Encoding: 8bit
 
 From: Tong Tiangen <tongtiangen@huawei.com>
 
-Currently, many scenarios that can tolerate memory errors when copying page
-have been supported in the kernel[1~9], all of which are implemented by
-copy_mc_[user]_highpage(). arm64 should also support this mechanism.
+The copy_mc_to_kernel() helper is memory copy implementation that handles
+source exceptions. It can be used in memory copy scenarios that tolerate
+hardware memory errors(e.g: pmem_read/dax_copy_to_iter).
 
-Due to mte, arm64 needs to have its own copy_mc_[user]_highpage()
-architecture implementation, macros __HAVE_ARCH_COPY_MC_HIGHPAGE and
-__HAVE_ARCH_COPY_MC_USER_HIGHPAGE have been added to control it.
+Currently, only x86 and ppc support this helper, Add this for ARM64 as
+well, if ARCH_HAS_COPY_MC is defined, by implementing copy_mc_to_kernel()
+and memcpy_mc() functions.
 
-Add new helper copy_mc_page() which provide a page copy implementation with
-hardware memory error safe. The code logic of copy_mc_page() is the same as
-copy_page(), the main difference is that the ldp insn of copy_mc_page()
-contains the fixup type EX_TYPE_KACCESS_SEA, therefore, the
-main logic is extracted to copy_page_template.S. In addition, the fixup of
-MOPS insn is not considered at present.
+Because there is no caller-saved GPR is available for saving "bytes not
+copied" in memcpy(), the memcpy_mc() is referenced to the implementation
+of copy_from_user(). In addition, the fixup of MOPS insn is not considered
+at present.
 
-[Ruidong: add FEAT_MOPS support]
-
-[1] commit d302c2398ba2 ("mm, hwpoison: when copy-on-write hits poison, take page offline")
-[2] commit 1cb9dc4b475c ("mm: hwpoison: support recovery from HugePage copy-on-write faults")
-[3] commit 6b970599e807 ("mm: hwpoison: support recovery from ksm_might_need_to_copy()")
-[4] commit 98c76c9f1ef7 ("mm/khugepaged: recover from poisoned anonymous memory")
-[5] commit 12904d953364 ("mm/khugepaged: recover from poisoned file-backed memory")
-[6] commit 658be46520ce ("mm: support poison recovery from copy_present_page()")
-[7] commit aa549f923f5e ("mm: support poison recovery from do_cow_fault()")
-[8] commit f00b295b9b61 ("fs: hugetlbfs: support poisoned recover from hugetlbfs_migrate_folio()")
-[9] commit 060913999d7a ("mm: migrate: support poisoned recover from migrate folio")
+[Ruidong: refactor memcpy_mc on top of the new memcpy implementation.]
 
 Signed-off-by: Tong Tiangen <tongtiangen@huawei.com>
 Signed-off-by: Ruidong Tian <tianruidong@linux.alibaba.com>
 ---
- arch/arm64/Kconfig                   |  1 +
- arch/arm64/include/asm/asm-extable.h |  4 ++
- arch/arm64/include/asm/mte.h         |  9 ++++
- arch/arm64/include/asm/page.h        | 12 +++++
- arch/arm64/lib/Makefile              |  2 +
- arch/arm64/lib/copy_mc_page.S        | 44 +++++++++++++++
- arch/arm64/lib/copy_page.S           | 67 ++++-------------------
- arch/arm64/lib/copy_page_template.S  | 70 ++++++++++++++++++++++++
- arch/arm64/lib/mte.S                 | 29 ++++++++++
- arch/arm64/mm/copypage.c             | 80 ++++++++++++++++++++++++++++
- include/linux/highmem.h              |  8 +++
- 11 files changed, 270 insertions(+), 56 deletions(-)
- create mode 100644 arch/arm64/lib/copy_mc_page.S
- create mode 100644 arch/arm64/lib/copy_page_template.S
+ arch/arm64/include/asm/string.h  |   5 +
+ arch/arm64/include/asm/uaccess.h |  17 +++
+ arch/arm64/lib/Makefile          |   2 +-
+ arch/arm64/lib/memcpy.S          | 251 +++----------------------------
+ arch/arm64/lib/memcpy_mc.S       |  56 +++++++
+ arch/arm64/lib/memcpy_template.S | 250 ++++++++++++++++++++++++++++++
+ mm/kasan/shadow.c                |  12 ++
+ 7 files changed, 359 insertions(+), 234 deletions(-)
+ create mode 100644 arch/arm64/lib/memcpy_mc.S
+ create mode 100644 arch/arm64/lib/memcpy_template.S
 
-diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
-index fe60738e5943..831b20d45893 100644
---- a/arch/arm64/Kconfig
-+++ b/arch/arm64/Kconfig
-@@ -21,6 +21,7 @@ config ARM64
- 	select ARCH_HAS_CACHE_LINE_SIZE
- 	select ARCH_HAS_CC_PLATFORM
- 	select ARCH_HAS_CPU_CACHE_INVALIDATE_MEMREGION
-+	select ARCH_HAS_COPY_MC if ACPI_APEI_GHES
- 	select ARCH_HAS_CURRENT_STACK_POINTER
- 	select ARCH_HAS_DEBUG_VIRTUAL
- 	select ARCH_HAS_DEBUG_VM_PGTABLE
-diff --git a/arch/arm64/include/asm/asm-extable.h b/arch/arm64/include/asm/asm-extable.h
-index 8450ec5a3af6..9305ea77482a 100644
---- a/arch/arm64/include/asm/asm-extable.h
-+++ b/arch/arm64/include/asm/asm-extable.h
-@@ -10,6 +10,10 @@
- #define EX_TYPE_ACCESS_ERR_ZERO		2
- #define EX_TYPE_UACCESS_CPY		3
- #define EX_TYPE_LOAD_UNALIGNED_ZEROPAD	4
-+/*
-+ * Kernel access: used in kernel context for both regular load/store
-+ * instructions and MOPS (memory copy/set) instructions.
+diff --git a/arch/arm64/include/asm/string.h b/arch/arm64/include/asm/string.h
+index 3a3264ff47b9..2e81f6c00cdd 100644
+--- a/arch/arm64/include/asm/string.h
++++ b/arch/arm64/include/asm/string.h
+@@ -35,6 +35,10 @@ extern void *memchr(const void *, int, __kernel_size_t);
+ extern void *memcpy(void *, const void *, __kernel_size_t);
+ extern void *__memcpy(void *, const void *, __kernel_size_t);
+ 
++#define __HAVE_ARCH_MEMCPY_MC
++extern unsigned long memcpy_mc(void *, const void *, __kernel_size_t);
++extern unsigned long __memcpy_mc(void *, const void *, __kernel_size_t);
++
+ #define __HAVE_ARCH_MEMMOVE
+ extern void *memmove(void *, const void *, __kernel_size_t);
+ extern void *__memmove(void *, const void *, __kernel_size_t);
+@@ -57,6 +61,7 @@ void memcpy_flushcache(void *dst, const void *src, size_t cnt);
+  */
+ 
+ #define memcpy(dst, src, len) __memcpy(dst, src, len)
++#define memcpy_mc(dst, src, len) __memcpy_mc(dst, src, len)
+ #define memmove(dst, src, len) __memmove(dst, src, len)
+ #define memset(s, c, n) __memset(s, c, n)
+ 
+diff --git a/arch/arm64/include/asm/uaccess.h b/arch/arm64/include/asm/uaccess.h
+index b0c83a08dda9..93277eca2268 100644
+--- a/arch/arm64/include/asm/uaccess.h
++++ b/arch/arm64/include/asm/uaccess.h
+@@ -499,5 +499,22 @@ static inline size_t probe_subpage_writeable(const char __user *uaddr,
+ }
+ 
+ #endif /* CONFIG_ARCH_HAS_SUBPAGE_FAULTS */
++#ifdef CONFIG_ARCH_HAS_COPY_MC
++/**
++ * copy_mc_to_kernel - memory copy that handles source exceptions
++ *
++ * @to:		destination address
++ * @from:	source address
++ * @size:	number of bytes to copy
++ *
++ * Return 0 for success, or bytes not copied.
 + */
- #define EX_TYPE_KACCESS_SEA		5
- 
- /* Data fields for EX_TYPE_ACCESS_ERR_ZERO */
-diff --git a/arch/arm64/include/asm/mte.h b/arch/arm64/include/asm/mte.h
-index 7f7b97e09996..a0b1757f4847 100644
---- a/arch/arm64/include/asm/mte.h
-+++ b/arch/arm64/include/asm/mte.h
-@@ -98,6 +98,11 @@ static inline bool try_page_mte_tagging(struct page *page)
- void mte_zero_clear_page_tags(void *addr);
- void mte_sync_tags(pte_t pte, unsigned int nr_pages);
- void mte_copy_page_tags(void *kto, const void *kfrom);
-+
-+#ifdef CONFIG_ARCH_HAS_COPY_MC
-+int mte_copy_mc_page_tags(void *kto, const void *kfrom);
-+#endif
-+
- void mte_thread_init_user(void);
- void mte_thread_switch(struct task_struct *next);
- void mte_cpu_setup(void);
-@@ -134,6 +139,10 @@ static inline void mte_sync_tags(pte_t pte, unsigned int nr_pages)
- static inline void mte_copy_page_tags(void *kto, const void *kfrom)
- {
- }
-+static inline int mte_copy_mc_page_tags(void *kto, const void *kfrom)
++static inline unsigned long __must_check
++copy_mc_to_kernel(void *to, const void *from, unsigned long size)
 +{
-+	return 0;
++	return memcpy_mc(to, from, size);
 +}
- static inline void mte_thread_init_user(void)
- {
- }
-diff --git a/arch/arm64/include/asm/page.h b/arch/arm64/include/asm/page.h
-index e25d0d18f6d7..5c4c9f974b68 100644
---- a/arch/arm64/include/asm/page.h
-+++ b/arch/arm64/include/asm/page.h
-@@ -29,6 +29,18 @@ void copy_user_highpage(struct page *to, struct page *from,
- void copy_highpage(struct page *to, struct page *from);
- #define __HAVE_ARCH_COPY_HIGHPAGE
- 
-+#ifdef CONFIG_ARCH_HAS_COPY_MC
-+int copy_mc_page(void *to, const void *from);
-+#define __HAVE_ARCH_COPY_MC_PAGE
-+
-+int copy_mc_highpage(struct page *to, struct page *from);
-+#define __HAVE_ARCH_COPY_MC_HIGHPAGE
-+
-+int copy_mc_user_highpage(struct page *to, struct page *from,
-+		unsigned long vaddr, struct vm_area_struct *vma);
-+#define __HAVE_ARCH_COPY_MC_USER_HIGHPAGE
++#define copy_mc_to_kernel copy_mc_to_kernel
 +#endif
-+
- struct folio *vma_alloc_zeroed_movable_folio(struct vm_area_struct *vma,
- 						unsigned long vaddr);
- #define vma_alloc_zeroed_movable_folio vma_alloc_zeroed_movable_folio
+ 
+ #endif /* __ASM_UACCESS_H */
 diff --git a/arch/arm64/lib/Makefile b/arch/arm64/lib/Makefile
-index 448c917494f3..1f4c3f743a20 100644
+index 1f4c3f743a20..a5820e6c33d4 100644
 --- a/arch/arm64/lib/Makefile
 +++ b/arch/arm64/lib/Makefile
-@@ -7,6 +7,8 @@ lib-y		:= clear_user.o delay.o copy_from_user.o		\
+@@ -7,7 +7,7 @@ lib-y		:= clear_user.o delay.o copy_from_user.o		\
  
  lib-$(CONFIG_ARCH_HAS_UACCESS_FLUSHCACHE) += uaccess_flushcache.o
  
-+lib-$(CONFIG_ARCH_HAS_COPY_MC) += copy_mc_page.o
-+
+-lib-$(CONFIG_ARCH_HAS_COPY_MC) += copy_mc_page.o
++lib-$(CONFIG_ARCH_HAS_COPY_MC) += copy_mc_page.o memcpy_mc.o
+ 
  obj-$(CONFIG_FUNCTION_ERROR_INJECTION) += error-inject.o
  
- obj-$(CONFIG_ARM64_MTE) += mte.o
-diff --git a/arch/arm64/lib/copy_mc_page.S b/arch/arm64/lib/copy_mc_page.S
+diff --git a/arch/arm64/lib/memcpy.S b/arch/arm64/lib/memcpy.S
+index 9b99106fb95f..ab48c5c798d1 100644
+--- a/arch/arm64/lib/memcpy.S
++++ b/arch/arm64/lib/memcpy.S
+@@ -15,247 +15,32 @@
+  *
+  */
+ 
+-#define L(label) .L ## label
++	.macro ldrb1 reg, addr:vararg
++	ldrb  \reg, \addr
++	.endm
+ 
+-#define dstin	x0
+-#define src	x1
+-#define count	x2
+-#define dst	x3
+-#define srcend	x4
+-#define dstend	x5
+-#define A_l	x6
+-#define A_lw	w6
+-#define A_h	x7
+-#define B_l	x8
+-#define B_lw	w8
+-#define B_h	x9
+-#define C_l	x10
+-#define C_lw	w10
+-#define C_h	x11
+-#define D_l	x12
+-#define D_h	x13
+-#define E_l	x14
+-#define E_h	x15
+-#define F_l	x16
+-#define F_h	x17
+-#define G_l	count
+-#define G_h	dst
+-#define H_l	src
+-#define H_h	srcend
+-#define tmp1	x14
++	.macro ldr1 reg, addr:vararg
++	ldr   \reg, \addr
++	.endm
+ 
+-/* This implementation handles overlaps and supports both memcpy and memmove
+-   from a single entry point.  It uses unaligned accesses and branchless
+-   sequences to keep the code small, simple and improve performance.
++	.macro ldp1 reg1, reg2, addr:vararg
++	ldp   \reg1, \reg2, \addr
++	.endm
+ 
+-   Copies are split into 3 main cases: small copies of up to 32 bytes, medium
+-   copies of up to 128 bytes, and large copies.  The overhead of the overlap
+-   check is negligible since it is only required for large copies.
+-
+-   Large copies use a software pipelined loop processing 64 bytes per iteration.
+-   The destination pointer is 16-byte aligned to minimize unaligned accesses.
+-   The loop tail is handled by always copying 64 bytes from the end.
+-*/
+-
+-SYM_FUNC_START_LOCAL(__pi_memcpy_generic)
+-	add	srcend, src, count
+-	add	dstend, dstin, count
+-	cmp	count, 128
+-	b.hi	L(copy_long)
+-	cmp	count, 32
+-	b.hi	L(copy32_128)
+-
+-	/* Small copies: 0..32 bytes.  */
+-	cmp	count, 16
+-	b.lo	L(copy16)
+-	ldp	A_l, A_h, [src]
+-	ldp	D_l, D_h, [srcend, -16]
+-	stp	A_l, A_h, [dstin]
+-	stp	D_l, D_h, [dstend, -16]
+-	ret
+-
+-	/* Copy 8-15 bytes.  */
+-L(copy16):
+-	tbz	count, 3, L(copy8)
+-	ldr	A_l, [src]
+-	ldr	A_h, [srcend, -8]
+-	str	A_l, [dstin]
+-	str	A_h, [dstend, -8]
+-	ret
+-
+-	.p2align 3
+-	/* Copy 4-7 bytes.  */
+-L(copy8):
+-	tbz	count, 2, L(copy4)
+-	ldr	A_lw, [src]
+-	ldr	B_lw, [srcend, -4]
+-	str	A_lw, [dstin]
+-	str	B_lw, [dstend, -4]
++	.macro ret1
+ 	ret
++	.endm
+ 
+-	/* Copy 0..3 bytes using a branchless sequence.  */
+-L(copy4):
+-	cbz	count, L(copy0)
+-	lsr	tmp1, count, 1
+-	ldrb	A_lw, [src]
+-	ldrb	C_lw, [srcend, -1]
+-	ldrb	B_lw, [src, tmp1]
+-	strb	A_lw, [dstin]
+-	strb	B_lw, [dstin, tmp1]
+-	strb	C_lw, [dstend, -1]
+-L(copy0):
+-	ret
+-
+-	.p2align 4
+-	/* Medium copies: 33..128 bytes.  */
+-L(copy32_128):
+-	ldp	A_l, A_h, [src]
+-	ldp	B_l, B_h, [src, 16]
+-	ldp	C_l, C_h, [srcend, -32]
+-	ldp	D_l, D_h, [srcend, -16]
+-	cmp	count, 64
+-	b.hi	L(copy128)
+-	stp	A_l, A_h, [dstin]
+-	stp	B_l, B_h, [dstin, 16]
+-	stp	C_l, C_h, [dstend, -32]
+-	stp	D_l, D_h, [dstend, -16]
+-	ret
+-
+-	.p2align 4
+-	/* Copy 65..128 bytes.  */
+-L(copy128):
+-	ldp	E_l, E_h, [src, 32]
+-	ldp	F_l, F_h, [src, 48]
+-	cmp	count, 96
+-	b.ls	L(copy96)
+-	ldp	G_l, G_h, [srcend, -64]
+-	ldp	H_l, H_h, [srcend, -48]
+-	stp	G_l, G_h, [dstend, -64]
+-	stp	H_l, H_h, [dstend, -48]
+-L(copy96):
+-	stp	A_l, A_h, [dstin]
+-	stp	B_l, B_h, [dstin, 16]
+-	stp	E_l, E_h, [dstin, 32]
+-	stp	F_l, F_h, [dstin, 48]
+-	stp	C_l, C_h, [dstend, -32]
+-	stp	D_l, D_h, [dstend, -16]
+-	ret
+-
+-	.p2align 4
+-	/* Copy more than 128 bytes.  */
+-L(copy_long):
+-	/* Use backwards copy if there is an overlap.  */
+-	sub	tmp1, dstin, src
+-	cbz	tmp1, L(copy0)
+-	cmp	tmp1, count
+-	b.lo	L(copy_long_backwards)
+-
+-	/* Copy 16 bytes and then align dst to 16-byte alignment.  */
+-
+-	ldp	D_l, D_h, [src]
+-	and	tmp1, dstin, 15
+-	bic	dst, dstin, 15
+-	sub	src, src, tmp1
+-	add	count, count, tmp1	/* Count is now 16 too large.  */
+-	ldp	A_l, A_h, [src, 16]
+-	stp	D_l, D_h, [dstin]
+-	ldp	B_l, B_h, [src, 32]
+-	ldp	C_l, C_h, [src, 48]
+-	ldp	D_l, D_h, [src, 64]!
+-	subs	count, count, 128 + 16	/* Test and readjust count.  */
+-	b.ls	L(copy64_from_end)
+-
+-L(loop64):
+-	stp	A_l, A_h, [dst, 16]
+-	ldp	A_l, A_h, [src, 16]
+-	stp	B_l, B_h, [dst, 32]
+-	ldp	B_l, B_h, [src, 32]
+-	stp	C_l, C_h, [dst, 48]
+-	ldp	C_l, C_h, [src, 48]
+-	stp	D_l, D_h, [dst, 64]!
+-	ldp	D_l, D_h, [src, 64]!
+-	subs	count, count, 64
+-	b.hi	L(loop64)
+-
+-	/* Write the last iteration and copy 64 bytes from the end.  */
+-L(copy64_from_end):
+-	ldp	E_l, E_h, [srcend, -64]
+-	stp	A_l, A_h, [dst, 16]
+-	ldp	A_l, A_h, [srcend, -48]
+-	stp	B_l, B_h, [dst, 32]
+-	ldp	B_l, B_h, [srcend, -32]
+-	stp	C_l, C_h, [dst, 48]
+-	ldp	C_l, C_h, [srcend, -16]
+-	stp	D_l, D_h, [dst, 64]
+-	stp	E_l, E_h, [dstend, -64]
+-	stp	A_l, A_h, [dstend, -48]
+-	stp	B_l, B_h, [dstend, -32]
+-	stp	C_l, C_h, [dstend, -16]
+-	ret
+-
+-	.p2align 4
+-
+-	/* Large backwards copy for overlapping copies.
+-	   Copy 16 bytes and then align dst to 16-byte alignment.  */
+-L(copy_long_backwards):
+-	ldp	D_l, D_h, [srcend, -16]
+-	and	tmp1, dstend, 15
+-	sub	srcend, srcend, tmp1
+-	sub	count, count, tmp1
+-	ldp	A_l, A_h, [srcend, -16]
+-	stp	D_l, D_h, [dstend, -16]
+-	ldp	B_l, B_h, [srcend, -32]
+-	ldp	C_l, C_h, [srcend, -48]
+-	ldp	D_l, D_h, [srcend, -64]!
+-	sub	dstend, dstend, tmp1
+-	subs	count, count, 128
+-	b.ls	L(copy64_from_start)
+-
+-L(loop64_backwards):
+-	stp	A_l, A_h, [dstend, -16]
+-	ldp	A_l, A_h, [srcend, -16]
+-	stp	B_l, B_h, [dstend, -32]
+-	ldp	B_l, B_h, [srcend, -32]
+-	stp	C_l, C_h, [dstend, -48]
+-	ldp	C_l, C_h, [srcend, -48]
+-	stp	D_l, D_h, [dstend, -64]!
+-	ldp	D_l, D_h, [srcend, -64]!
+-	subs	count, count, 64
+-	b.hi	L(loop64_backwards)
+-
+-	/* Write the last iteration and copy 64 bytes from the start.  */
+-L(copy64_from_start):
+-	ldp	G_l, G_h, [src, 48]
+-	stp	A_l, A_h, [dstend, -16]
+-	ldp	A_l, A_h, [src, 32]
+-	stp	B_l, B_h, [dstend, -32]
+-	ldp	B_l, B_h, [src, 16]
+-	stp	C_l, C_h, [dstend, -48]
+-	ldp	C_l, C_h, [src]
+-	stp	D_l, D_h, [dstend, -64]
+-	stp	G_l, G_h, [dstin, 48]
+-	stp	A_l, A_h, [dstin, 32]
+-	stp	B_l, B_h, [dstin, 16]
+-	stp	C_l, C_h, [dstin]
+-	ret
+-SYM_FUNC_END(__pi_memcpy_generic)
+-
+-#ifdef CONFIG_AS_HAS_MOPS
++	.macro cpy1 dst, src, count
+ 	.arch_extension mops
+-SYM_FUNC_START(__pi_memcpy)
+-alternative_if_not ARM64_HAS_MOPS
+-	b	__pi_memcpy_generic
+-alternative_else_nop_endif
++	cpyp [\dst]!, [\src]!, \count!
++	cpym [\dst]!, [\src]!, \count!
++	cpye [\dst]!, [\src]!, \count!
++	.endm
+ 
+-	mov	dst, dstin
+-	cpyp	[dst]!, [src]!, count!
+-	cpym	[dst]!, [src]!, count!
+-	cpye	[dst]!, [src]!, count!
+-	ret
++SYM_FUNC_START(__pi_memcpy)
++#include "memcpy_template.S"
+ SYM_FUNC_END(__pi_memcpy)
+-#else
+-SYM_FUNC_ALIAS(__pi_memcpy, __pi_memcpy_generic)
+-#endif
+ 
+ SYM_FUNC_ALIAS(__memcpy, __pi_memcpy)
+ EXPORT_SYMBOL(__memcpy)
+diff --git a/arch/arm64/lib/memcpy_mc.S b/arch/arm64/lib/memcpy_mc.S
 new file mode 100644
-index 000000000000..f936e0c98611
+index 000000000000..d9ce8279d91f
 --- /dev/null
-+++ b/arch/arm64/lib/copy_mc_page.S
-@@ -0,0 +1,44 @@
++++ b/arch/arm64/lib/memcpy_mc.S
+@@ -0,0 +1,56 @@
 +/* SPDX-License-Identifier: GPL-2.0-only */
++/*
++ * Copyright (c) 2012-2021, Arm Limited.
++ *
++ * Adapted from the original at:
++ * https://github.com/ARM-software/optimized-routines/blob/afd6244a1f8d9229/string/aarch64/memcpy.S
++ */
 +
 +#include <linux/linkage.h>
-+#include <linux/const.h>
 +#include <asm/assembler.h>
-+#include <asm/page.h>
-+#include <asm/cpufeature.h>
-+#include <asm/alternative.h>
-+#include <asm/asm-extable.h>
 +#include <asm/asm-uaccess.h>
 +
-+/*
-+ * Copy a page from src to dest (both are page aligned) with memory error safe
++/* Assumptions:
 + *
-+ * Parameters:
-+ *	x0 - dest
-+ *	x1 - src
-+ * Returns:
-+ * 	x0 - Return 0 if copy success, or -EFAULT if anything goes wrong
-+ *	     while copying.
++ * ARMv8-a, AArch64, unaligned accesses.
++ *
 + */
-+	.macro ldp1 reg1, reg2, ptr, val
-+	KERNEL_SEA(9998f, ldp \reg1, \reg2, [\ptr, \val])
++
++	.macro ldrb1 reg, addr:vararg
++	KERNEL_SEA(9998f, ldrb  \reg, \addr)
++	.endm
++
++	.macro ldr1 reg, addr:vararg
++	KERNEL_SEA(9998f, ldr   \reg, \addr)
++	.endm
++
++	.macro ldp1 reg1, reg2, addr:vararg
++	KERNEL_SEA(9998f, ldp   \reg1, \reg2, \addr)
++	.endm
++
++	.macro ret1
++	mov	x0, #0
++	ret
 +	.endm
 +
 +	.macro cpy1 dst, src, count
 +	.arch_extension mops
-+	KERNEL_SEA(9998f, cpypwn [\dst]!, [\src]!, \count!)
-+	KERNEL_SEA(9998f, cpymwn [\dst]!, [\src]!, \count!)
-+	KERNEL_SEA(9998f, cpyewn [\dst]!, [\src]!, \count!)
++	KERNEL_SEA(9998f, cpyp [\dst]!, [\src]!, \count!)
++	KERNEL_SEA(9996f, cpym [\dst]!, [\src]!, \count!)
++	KERNEL_SEA(9996f, cpye [\dst]!, [\src]!, \count!)
 +	.endm
 +
-+SYM_FUNC_START(__pi_copy_mc_page)
-+#include "copy_page_template.S"
++SYM_FUNC_START(__memcpy_mc)
++#include "memcpy_template.S"
 +
-+	mov x0, #0
++	// Exception fixups
++9996:	b.cs	9998f
++	// Registers are in Option A format
++	add	dst, dst, count
++9998:	sub	x0, dstend, dstin			// bytes not copied
 +	ret
++SYM_FUNC_END(__memcpy_mc)
 +
-+9998:	mov x0, #-EFAULT
-+	ret
-+
-+SYM_FUNC_END(__pi_copy_mc_page)
-+SYM_FUNC_ALIAS(copy_mc_page, __pi_copy_mc_page)
-+EXPORT_SYMBOL(copy_mc_page)
-diff --git a/arch/arm64/lib/copy_page.S b/arch/arm64/lib/copy_page.S
-index e6374e7e5511..e520777b5150 100644
---- a/arch/arm64/lib/copy_page.S
-+++ b/arch/arm64/lib/copy_page.S
-@@ -17,65 +17,20 @@
-  *	x0 - dest
-  *	x1 - src
-  */
--SYM_FUNC_START(__pi_copy_page)
--#ifdef CONFIG_AS_HAS_MOPS
--	.arch_extension mops
--alternative_if_not ARM64_HAS_MOPS
--	b	.Lno_mops
--alternative_else_nop_endif
--
--	mov	x2, #PAGE_SIZE
--	cpypwn	[x0]!, [x1]!, x2!
--	cpymwn	[x0]!, [x1]!, x2!
--	cpyewn	[x0]!, [x1]!, x2!
--	ret
--.Lno_mops:
--#endif
--	ldp	x2, x3, [x1]
--	ldp	x4, x5, [x1, #16]
--	ldp	x6, x7, [x1, #32]
--	ldp	x8, x9, [x1, #48]
--	ldp	x10, x11, [x1, #64]
--	ldp	x12, x13, [x1, #80]
--	ldp	x14, x15, [x1, #96]
--	ldp	x16, x17, [x1, #112]
--
--	add	x0, x0, #256
--	add	x1, x1, #128
--1:
--	tst	x0, #(PAGE_SIZE - 1)
- 
--	stnp	x2, x3, [x0, #-256]
--	ldp	x2, x3, [x1]
--	stnp	x4, x5, [x0, #16 - 256]
--	ldp	x4, x5, [x1, #16]
--	stnp	x6, x7, [x0, #32 - 256]
--	ldp	x6, x7, [x1, #32]
--	stnp	x8, x9, [x0, #48 - 256]
--	ldp	x8, x9, [x1, #48]
--	stnp	x10, x11, [x0, #64 - 256]
--	ldp	x10, x11, [x1, #64]
--	stnp	x12, x13, [x0, #80 - 256]
--	ldp	x12, x13, [x1, #80]
--	stnp	x14, x15, [x0, #96 - 256]
--	ldp	x14, x15, [x1, #96]
--	stnp	x16, x17, [x0, #112 - 256]
--	ldp	x16, x17, [x1, #112]
-+	.macro ldp1 reg1, reg2, ptr, val
-+	ldp \reg1, \reg2, [\ptr, \val]
-+	.endm
- 
--	add	x0, x0, #128
--	add	x1, x1, #128
--
--	b.ne	1b
--
--	stnp	x2, x3, [x0, #-256]
--	stnp	x4, x5, [x0, #16 - 256]
--	stnp	x6, x7, [x0, #32 - 256]
--	stnp	x8, x9, [x0, #48 - 256]
--	stnp	x10, x11, [x0, #64 - 256]
--	stnp	x12, x13, [x0, #80 - 256]
--	stnp	x14, x15, [x0, #96 - 256]
--	stnp	x16, x17, [x0, #112 - 256]
-+	.macro cpy1 dst, src, count
-+	.arch_extension mops
-+	cpypwn [\dst]!, [\src]!, \count!
-+	cpymwn [\dst]!, [\src]!, \count!
-+	cpyewn [\dst]!, [\src]!, \count!
-+	.endm
- 
-+SYM_FUNC_START(__pi_copy_page)
-+#include "copy_page_template.S"
- 	ret
- SYM_FUNC_END(__pi_copy_page)
- SYM_FUNC_ALIAS(copy_page, __pi_copy_page)
-diff --git a/arch/arm64/lib/copy_page_template.S b/arch/arm64/lib/copy_page_template.S
++EXPORT_SYMBOL(__memcpy_mc)
++SYM_FUNC_ALIAS_WEAK(memcpy_mc, __memcpy_mc)
++EXPORT_SYMBOL(memcpy_mc)
+diff --git a/arch/arm64/lib/memcpy_template.S b/arch/arm64/lib/memcpy_template.S
 new file mode 100644
-index 000000000000..e5afbeaaad25
+index 000000000000..a8b496f8f651
 --- /dev/null
-+++ b/arch/arm64/lib/copy_page_template.S
-@@ -0,0 +1,70 @@
++++ b/arch/arm64/lib/memcpy_template.S
+@@ -0,0 +1,250 @@
 +/* SPDX-License-Identifier: GPL-2.0-only */
 +/*
-+ * Copyright (C) 2012 ARM Ltd.
++ * Copyright (c) 2012-2021, Arm Limited.
++ *
++ * Adapted from the original at:
++ * https://github.com/ARM-software/optimized-routines/blob/afd6244a1f8d9229/string/aarch64/memcpy.S
 + */
 +
-+/*
-+ * Copy a page from src to dest (both are page aligned)
++#include <linux/linkage.h>
++#include <asm/assembler.h>
++
++/* Assumptions:
 + *
-+ * Parameters:
-+ *	x0 - dest
-+ *	x1 - src
++ * ARMv8-a, AArch64, unaligned accesses.
++ *
 + */
-+dstin	.req	x0
-+src	.req	x1
++
++#define L(label) .L ## label
++
++#define dstin	x0
++#define src	x1
++#define count	x2
++#define dst	x3
++#define srcend	x4
++#define dstend	x5
++#define A_l	x6
++#define A_lw	w6
++#define A_h	x7
++#define B_l	x8
++#define B_lw	w8
++#define B_h	x9
++#define C_l	x10
++#define C_lw	w10
++#define C_h	x11
++#define D_l	x12
++#define D_h	x13
++#define E_l	x14
++#define E_h	x15
++#define F_l	x16
++#define F_h	x17
++#define G_l	count
++#define G_h	dst
++#define H_l	src
++#define H_h	srcend
++#define tmp1	x14
++
++/* This implementation handles overlaps and supports both memcpy and memmove
++   from a single entry point.  It uses unaligned accesses and branchless
++   sequences to keep the code small, simple and improve performance.
++
++   Copies are split into 3 main cases: small copies of up to 32 bytes, medium
++   copies of up to 128 bytes, and large copies.  The overhead of the overlap
++   check is negligible since it is only required for large copies.
++
++   Large copies use a software pipelined loop processing 64 bytes per iteration.
++   The destination pointer is 16-byte aligned to minimize unaligned accesses.
++   The loop tail is handled by always copying 64 bytes from the end.
++*/
++
++	add	dstend, dstin, count
 +
 +#ifdef CONFIG_AS_HAS_MOPS
 +alternative_if_not ARM64_HAS_MOPS
-+	b	.Lno_mops
++	b	L(no_mops)
 +alternative_else_nop_endif
-+	mov	x2, #PAGE_SIZE
-+	cpy1	dst, src, x2
-+	b	.Lexitfunc
-+.Lno_mops:
++	mov	dst, dstin
++	cpy1	dst, src, count
++	ret1
 +#endif
 +
-+	ldp1	x2, x3, x1, #0
-+	ldp1	x4, x5, x1, #16
-+	ldp1	x6, x7, x1, #32
-+	ldp1	x8, x9, x1, #48
-+	ldp1	x10, x11, x1, #64
-+	ldp1	x12, x13, x1, #80
-+	ldp1	x14, x15, x1, #96
-+	ldp1	x16, x17, x1, #112
++L(no_mops):
++	add	srcend, src, count
++	cmp	count, 128
++	b.hi	L(copy_long)
++	cmp	count, 32
++	b.hi	L(copy32_128)
 +
-+	add	x0, x0, #256
-+	add	x1, x1, #128
-+1:
-+	tst	x0, #(PAGE_SIZE - 1)
++	/* Small copies: 0..32 bytes.  */
++	cmp	count, 16
++	b.lo	L(copy16)
++	ldp1	A_l, A_h, [src]
++	ldp1	D_l, D_h, [srcend, -16]
++	stp	A_l, A_h, [dstin]
++	stp	D_l, D_h, [dstend, -16]
++	ret1
 +
-+	stnp	x2, x3, [x0, #-256]
-+	ldp1	x2, x3, x1, #0
-+	stnp	x4, x5, [x0, #16 - 256]
-+	ldp1	x4, x5, x1, #16
-+	stnp	x6, x7, [x0, #32 - 256]
-+	ldp1	x6, x7, x1, #32
-+	stnp	x8, x9, [x0, #48 - 256]
-+	ldp1	x8, x9, x1, #48
-+	stnp	x10, x11, [x0, #64 - 256]
-+	ldp1	x10, x11, x1, #64
-+	stnp	x12, x13, [x0, #80 - 256]
-+	ldp1	x12, x13, x1, #80
-+	stnp	x14, x15, [x0, #96 - 256]
-+	ldp1	x14, x15, x1, #96
-+	stnp	x16, x17, [x0, #112 - 256]
-+	ldp1	x16, x17, x1, #112
++	/* Copy 8-15 bytes.  */
++L(copy16):
++	tbz	count, 3, L(copy8)
++	ldr1	A_l, [src]
++	ldr1	A_h, [srcend, -8]
++	str	A_l, [dstin]
++	str	A_h, [dstend, -8]
++	ret1
 +
-+	add	x0, x0, #128
-+	add	x1, x1, #128
++	.p2align 3
++	/* Copy 4-7 bytes.  */
++L(copy8):
++	tbz	count, 2, L(copy4)
++	ldr1	A_lw, [src]
++	ldr1	B_lw, [srcend, -4]
++	str	A_lw, [dstin]
++	str	B_lw, [dstend, -4]
++	ret1
 +
-+	b.ne	1b
++	/* Copy 0..3 bytes using a branchless sequence.  */
++L(copy4):
++	cbz	count, L(copy0)
++	lsr	tmp1, count, 1
++	ldrb1	A_lw, [src]
++	ldrb1	C_lw, [srcend, -1]
++	ldrb1	B_lw, [src, tmp1]
++	strb	A_lw, [dstin]
++	strb	B_lw, [dstin, tmp1]
++	strb	C_lw, [dstend, -1]
++L(copy0):
++	ret1
 +
-+	stnp	x2, x3, [x0, #-256]
-+	stnp	x4, x5, [x0, #16 - 256]
-+	stnp	x6, x7, [x0, #32 - 256]
-+	stnp	x8, x9, [x0, #48 - 256]
-+	stnp	x10, x11, [x0, #64 - 256]
-+	stnp	x12, x13, [x0, #80 - 256]
-+	stnp	x14, x15, [x0, #96 - 256]
-+	stnp	x16, x17, [x0, #112 - 256]
-+.Lexitfunc:
-diff --git a/arch/arm64/lib/mte.S b/arch/arm64/lib/mte.S
-index 5018ac03b6bf..1afe3ef1502c 100644
---- a/arch/arm64/lib/mte.S
-+++ b/arch/arm64/lib/mte.S
-@@ -80,6 +80,35 @@ SYM_FUNC_START(mte_copy_page_tags)
- 	ret
- SYM_FUNC_END(mte_copy_page_tags)
- 
-+#ifdef CONFIG_ARCH_HAS_COPY_MC
-+/*
-+ * Copy the tags from the source page to the destination one with memory error safe
-+ *   x0 - address of the destination page
-+ *   x1 - address of the source page
-+ * Returns:
-+ *   x0 - Return 0 if copy success, or
-+ *        -EFAULT if anything goes wrong while copying.
-+ */
-+SYM_FUNC_START(mte_copy_mc_page_tags)
-+	mov	x2, x0
-+	mov	x3, x1
-+	multitag_transfer_size x5, x6
-+1:
-+KERNEL_SEA(2f, ldgm	x4, [x3])
-+	stgm	x4, [x2]
-+	add	x2, x2, x5
-+	add	x3, x3, x5
-+	tst	x2, #(PAGE_SIZE - 1)
-+	b.ne	1b
++	.p2align 4
++	/* Medium copies: 33..128 bytes.  */
++L(copy32_128):
++	ldp1	A_l, A_h, [src]
++	ldp1	B_l, B_h, [src, 16]
++	ldp1	C_l, C_h, [srcend, -32]
++	ldp1	D_l, D_h, [srcend, -16]
++	cmp	count, 64
++	b.hi	L(copy128)
++	stp	A_l, A_h, [dstin]
++	stp	B_l, B_h, [dstin, 16]
++	stp	C_l, C_h, [dstend, -32]
++	stp	D_l, D_h, [dstend, -16]
++	ret1
 +
-+	mov x0, #0
-+	ret
++	.p2align 4
++	/* Copy 65..128 bytes.  */
++L(copy128):
++	ldp1	E_l, E_h, [src, 32]
++	ldp1	F_l, F_h, [src, 48]
++	cmp	count, 96
++	b.ls	L(copy96)
++	ldp1	G_l, G_h, [srcend, -64]
++	ldp1	H_l, H_h, [srcend, -48]
++	stp	G_l, G_h, [dstend, -64]
++	stp	H_l, H_h, [dstend, -48]
++L(copy96):
++	stp	A_l, A_h, [dstin]
++	stp	B_l, B_h, [dstin, 16]
++	stp	E_l, E_h, [dstin, 32]
++	stp	F_l, F_h, [dstin, 48]
++	stp	C_l, C_h, [dstend, -32]
++	stp	D_l, D_h, [dstend, -16]
++	ret1
 +
-+2:	mov x0, #-EFAULT
-+	ret
-+SYM_FUNC_END(mte_copy_mc_page_tags)
-+#endif
++	.p2align 4
++	/* Copy more than 128 bytes.  */
++L(copy_long):
++	/* Use backwards copy if there is an overlap.  */
++	sub	tmp1, dstin, src
++	cbz	tmp1, L(copy0)
++	cmp	tmp1, count
++	b.lo	L(copy_long_backwards)
 +
- /*
-  * Read tags from a user buffer (one tag per byte) and set the corresponding
-  * tags at the given kernel address. Used by PTRACE_POKEMTETAGS.
-diff --git a/arch/arm64/mm/copypage.c b/arch/arm64/mm/copypage.c
-index cd5912ba617b..c22918ed0f3c 100644
---- a/arch/arm64/mm/copypage.c
-+++ b/arch/arm64/mm/copypage.c
-@@ -72,3 +72,83 @@ void copy_user_highpage(struct page *to, struct page *from,
- 	flush_dcache_page(to);
- }
- EXPORT_SYMBOL_GPL(copy_user_highpage);
++	/* Copy 16 bytes and then align dst to 16-byte alignment.  */
 +
-+#ifdef CONFIG_ARCH_HAS_COPY_MC
-+/*
-+ * Return -EFAULT if anything goes wrong while copying page or mte.
-+ */
-+int copy_mc_highpage(struct page *to, struct page *from)
-+{
-+	void *kto = page_address(to);
-+	void *kfrom = page_address(from);
-+	struct folio *src = page_folio(from);
-+	struct folio *dst = page_folio(to);
-+	unsigned int i, nr_pages;
-+	int ret;
++	ldp1	D_l, D_h, [src]
++	and	tmp1, dstin, 15
++	bic	dst, dstin, 15
++	sub	src, src, tmp1
++	add	count, count, tmp1	/* Count is now 16 too large.  */
++	ldp1	A_l, A_h, [src, 16]
++	stp	D_l, D_h, [dstin]
++	ldp1	B_l, B_h, [src, 32]
++	ldp1	C_l, C_h, [src, 48]
++	ldp1	D_l, D_h, [src, 64]!
++	subs	count, count, 128 + 16	/* Test and readjust count.  */
++	b.ls	L(copy64_from_end)
 +
-+	ret = copy_mc_page(kto, kfrom);
-+	if (ret)
-+		return -EFAULT;
++L(loop64):
++	stp	A_l, A_h, [dst, 16]
++	ldp1	A_l, A_h, [src, 16]
++	stp	B_l, B_h, [dst, 32]
++	ldp1	B_l, B_h, [src, 32]
++	stp	C_l, C_h, [dst, 48]
++	ldp1	C_l, C_h, [src, 48]
++	stp	D_l, D_h, [dst, 64]!
++	ldp1	D_l, D_h, [src, 64]!
++	subs	count, count, 64
++	b.hi	L(loop64)
 +
-+	if (kasan_hw_tags_enabled())
-+		page_kasan_tag_reset(to);
++	/* Write the last iteration and copy 64 bytes from the end.  */
++L(copy64_from_end):
++	ldp1	E_l, E_h, [srcend, -64]
++	stp	A_l, A_h, [dst, 16]
++	ldp1	A_l, A_h, [srcend, -48]
++	stp	B_l, B_h, [dst, 32]
++	ldp1	B_l, B_h, [srcend, -32]
++	stp	C_l, C_h, [dst, 48]
++	ldp1	C_l, C_h, [srcend, -16]
++	stp	D_l, D_h, [dst, 64]
++	stp	E_l, E_h, [dstend, -64]
++	stp	A_l, A_h, [dstend, -48]
++	stp	B_l, B_h, [dstend, -32]
++	stp	C_l, C_h, [dstend, -16]
++	ret1
 +
-+	if (!system_supports_mte())
-+		return 0;
++	.p2align 4
 +
-+	if (folio_test_hugetlb(src)) {
-+		if (!folio_test_hugetlb_mte_tagged(src) ||
-+		    from != folio_page(src, 0))
-+			return 0;
++	/* Large backwards copy for overlapping copies.
++	   Copy 16 bytes and then align dst to 16-byte alignment.  */
++L(copy_long_backwards):
++	ldp1	D_l, D_h, [srcend, -16]
++	and	tmp1, dstend, 15
++	sub	srcend, srcend, tmp1
++	sub	count, count, tmp1
++	ldp1	A_l, A_h, [srcend, -16]
++	stp	D_l, D_h, [dstend, -16]
++	ldp1	B_l, B_h, [srcend, -32]
++	ldp1	C_l, C_h, [srcend, -48]
++	ldp1	D_l, D_h, [srcend, -64]!
++	sub	dstend, dstend, tmp1
++	subs	count, count, 128
++	b.ls	L(copy64_from_start)
 +
-+		WARN_ON_ONCE(!folio_try_hugetlb_mte_tagging(dst));
++L(loop64_backwards):
++	stp	A_l, A_h, [dstend, -16]
++	ldp1	A_l, A_h, [srcend, -16]
++	stp	B_l, B_h, [dstend, -32]
++	ldp1	B_l, B_h, [srcend, -32]
++	stp	C_l, C_h, [dstend, -48]
++	ldp1	C_l, C_h, [srcend, -48]
++	stp	D_l, D_h, [dstend, -64]!
++	ldp1	D_l, D_h, [srcend, -64]!
++	subs	count, count, 64
++	b.hi	L(loop64_backwards)
 +
-+		/*
-+		 * Populate tags for all subpages.
-+		 *
-+		 * Don't assume the first page is head page since
-+		 * huge page copy may start from any subpage.
-+		 */
-+		nr_pages = folio_nr_pages(src);
-+		for (i = 0; i < nr_pages; i++) {
-+			kfrom = page_address(folio_page(src, i));
-+			kto = page_address(folio_page(dst, i));
-+			ret = mte_copy_mc_page_tags(kto, kfrom);
-+			if (ret)
-+				return -EFAULT;
-+		}
-+		folio_set_hugetlb_mte_tagged(dst);
-+	} else if (page_mte_tagged(from)) {
-+		/* It's a new page, shouldn't have been tagged yet */
-+		WARN_ON_ONCE(!try_page_mte_tagging(to));
-+
-+		ret = mte_copy_mc_page_tags(kto, kfrom);
-+		if (ret)
-+			return -EFAULT;
-+		set_page_mte_tagged(to);
-+	}
-+	/*
-+	 * memory_failure_queue() is not called here because on arm64
-+	 * the firmware (GHES) has already reported the hardware memory
-+	 * error and queued the page for memory_failure() handling via
-+	 * ghes_do_memory_failure().
-+	 */
-+	return 0;
-+}
-+EXPORT_SYMBOL(copy_mc_highpage);
-+
-+int copy_mc_user_highpage(struct page *to, struct page *from,
-+			unsigned long vaddr, struct vm_area_struct *vma)
-+{
-+	int ret;
-+
-+	ret = copy_mc_highpage(to, from);
-+	if (ret)
-+		return ret;
-+
-+	flush_dcache_page(to);
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(copy_mc_user_highpage);
-+#endif
-diff --git a/include/linux/highmem.h b/include/linux/highmem.h
-index 18dc4aca4aa1..f168c9d4ad0e 100644
---- a/include/linux/highmem.h
-+++ b/include/linux/highmem.h
-@@ -424,6 +424,7 @@ static inline void copy_highpage(struct page *to, struct page *from)
- #endif
- 
- #ifdef copy_mc_to_kernel
-+#ifndef __HAVE_ARCH_COPY_MC_USER_HIGHPAGE
- /*
-  * If architecture supports machine check exception handling, define the
-  * #MC versions of copy_user_highpage and copy_highpage. They copy a memory
-@@ -449,7 +450,9 @@ static inline int copy_mc_user_highpage(struct page *to, struct page *from,
- 
- 	return ret ? -EFAULT : 0;
- }
-+#endif
- 
-+#ifndef __HAVE_ARCH_COPY_MC_HIGHPAGE
- static inline int copy_mc_highpage(struct page *to, struct page *from)
- {
- 	unsigned long ret;
-@@ -468,20 +471,25 @@ static inline int copy_mc_highpage(struct page *to, struct page *from)
- 
- 	return ret ? -EFAULT : 0;
- }
-+#endif
- #else
-+#ifndef __HAVE_ARCH_COPY_MC_USER_HIGHPAGE
- static inline int copy_mc_user_highpage(struct page *to, struct page *from,
- 					unsigned long vaddr, struct vm_area_struct *vma)
- {
- 	copy_user_highpage(to, from, vaddr, vma);
- 	return 0;
- }
-+#endif
- 
-+#ifndef __HAVE_ARCH_COPY_MC_HIGHPAGE
- static inline int copy_mc_highpage(struct page *to, struct page *from)
- {
- 	copy_highpage(to, from);
- 	return 0;
++	/* Write the last iteration and copy 64 bytes from the start.  */
++L(copy64_from_start):
++	ldp1	G_l, G_h, [src, 48]
++	stp	A_l, A_h, [dstend, -16]
++	ldp1	A_l, A_h, [src, 32]
++	stp	B_l, B_h, [dstend, -32]
++	ldp1	B_l, B_h, [src, 16]
++	stp	C_l, C_h, [dstend, -48]
++	ldp1	C_l, C_h, [src]
++	stp	D_l, D_h, [dstend, -64]
++	stp	G_l, G_h, [dstin, 48]
++	stp	A_l, A_h, [dstin, 32]
++	stp	B_l, B_h, [dstin, 16]
++	stp	C_l, C_h, [dstin]
++	ret1
+diff --git a/mm/kasan/shadow.c b/mm/kasan/shadow.c
+index d286e0a04543..da21a13151b9 100644
+--- a/mm/kasan/shadow.c
++++ b/mm/kasan/shadow.c
+@@ -79,6 +79,18 @@ void *memcpy(void *dest, const void *src, size_t len)
  }
  #endif
-+#endif
  
- static inline void memcpy_page(struct page *dst_page, size_t dst_off,
- 			       struct page *src_page, size_t src_off,
++#ifdef __HAVE_ARCH_MEMCPY_MC
++#undef memcpy_mc
++unsigned long memcpy_mc(void *dest, const void *src, size_t len)
++{
++	if (!kasan_check_range(src, len, false, _RET_IP_) ||
++	    !kasan_check_range(dest, len, true, _RET_IP_))
++		return len;
++
++	return __memcpy_mc(dest, src, len);
++}
++#endif
++
+ void *__asan_memset(void *addr, int c, ssize_t len)
+ {
+ 	if (!kasan_check_range(addr, len, true, _RET_IP_))
 -- 
 2.39.3
 
