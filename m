@@ -1,43 +1,43 @@
-Return-Path: <linuxppc-dev+bounces-22766-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22767-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 245F6CD98E2
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Jun 2026 09:22:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BE427CD98E2
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Jun 2026 09:22:19 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ggwGb6Ffcz3btk;
-	Thu, 18 Jun 2026 19:21:59 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=115.124.30.119
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781774519;
-	cv=none; b=oGGmMzCN+cwI/5hZtqTLiQaavgsuY5F3+0xYyVS/JmGXjJRBGyhaGk2Kd3vjzkVvcVG+L32IfrJfmtBeMtlTvLtgeUHfC0i43WDPNlRn1EFMg5f/o0O1hatdns7susJq2L1SLbLmCpnzVFVawhiDl76+wrPthtCku+OlLPm2z4yd8kKsAtHbNWsJ8a3tJK5D+rcHCn1a0tuGkDmzssKVHsLfezLt0VbUko3FoQ65HouFx/29caAildLnsQfO3Uu41b0YhFRnh1wJeDGDAs79OelI5Mz/xyM5Ynk0Fx3SXx7lc/NaaRAxAONmcw/mbamaOsbaRz5/KnF2kkwiBWzsfw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ggwGh1gMfz3bpm;
+	Thu, 18 Jun 2026 19:22:04 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=115.124.30.98
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781774524;
+	cv=none; b=QBTYFxlZQVFQGNHp2867BJ/cRHiMevFZn5AMYHbu5XqqMlN1cb090azOsbzcy8TuCGTs2avaexE1jhycClEe/EZLr8PRSN0WF17l0IhQR29tetKhm/3RvOOqVsiGDa11vrFLTHqZsOGB7wGq2+V/g6c3395XLH1x3WKFHFevrLO7xf+gtPUJGjU+0eDfxkzgCheT4qESOpHIkY39VE5LcvytD/ml99W5wljXrQ83RfvfS6wgoV63951ajdiy7YN/8NNzen8aPfuZuwWLsvNMrKUmMdCqZb7i4QtIugn/vvkNRNNqt5mfaKh/F6r0Hg/GTCp7GsCp3VJaRoUCn4ceoA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1781774519; c=relaxed/relaxed;
-	bh=GFT2qwUPpYfCLwTGty0d6yeRs8ICppiuWOoU1Fah3Ls=;
+	t=1781774524; c=relaxed/relaxed;
+	bh=+lp7IuTicfKn/jutgHJKaOpNy7+Kx5wxHCFNLAg35l8=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=VpxPvaVcsvJBVSlwuBfimpyyWMKgSV9QSXzISoZHz9aldvQTPslVH8IMiq0IxCcjrxG12qHA+HoURN9nWD3Ib0zYTD922SsFTo3lFvuJq4PPzDruEPL8U0L4wZFgUBiWkJX40CT++HqOCXsOi6EyGSBpSFmjmRvhYZHm3MBuEELlPJ7lblSr6iiOlP/rq1KYEERArq54+qUhjFAWLfcAnbM9CmEwonBgSNVkYWSBT4bhLYXA0IgJdCykrhUBkMrezOlYnT/tat8Ra64uWdOcIZfmEyosxxli37CapprZXl4nlcu5oplxzQlDUnxMa0YZqS9v1kP4dCrLqfYpMMmJFw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.alibaba.com; dkim=pass (1024-bit key; unprotected) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.a=rsa-sha256 header.s=default header.b=Bc1WozGe; dkim-atps=neutral; spf=pass (client-ip=115.124.30.119; helo=out30-119.freemail.mail.aliyun.com; envelope-from=tianruidong@linux.alibaba.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.alibaba.com
+	 MIME-Version; b=KE7zC6IMyT3NNgTYKOefg3b/jafaZZHHDS9A9J3yirtEc6eQnoVE8UcICt+TUIXAGdFXdNq5bN5ya1S6KuSAfqq0D/w/X824t3koSb1Ogn2O3sOfWVPxQB09vcr1fhgh6J5gTMa6ZzTq9NkX1SfwzxgpY3CmsY/uSuPy2CLqoV9yWxOqrQ+IkDayAMTAYkOL9L96fcaNfzKjjw7vkcaSd8s4SWGprfVJeSxVhsmi7lJHJ2R654XlUqIFfxNfqYkLPODvdWrv9joUmL8I8vpMHxggxxWnvmzFPVndBU2A1J9ohUgtQUpy/t8wy/eNyjHTNqbG2i/FK/Q4bmU9ES4z1Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.alibaba.com; dkim=pass (1024-bit key; unprotected) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.a=rsa-sha256 header.s=default header.b=L2pAxz97; dkim-atps=neutral; spf=pass (client-ip=115.124.30.98; helo=out30-98.freemail.mail.aliyun.com; envelope-from=tianruidong@linux.alibaba.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.alibaba.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.alibaba.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.a=rsa-sha256 header.s=default header.b=Bc1WozGe;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.a=rsa-sha256 header.s=default header.b=L2pAxz97;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.alibaba.com (client-ip=115.124.30.119; helo=out30-119.freemail.mail.aliyun.com; envelope-from=tianruidong@linux.alibaba.com; receiver=lists.ozlabs.org)
-Received: from out30-119.freemail.mail.aliyun.com (out30-119.freemail.mail.aliyun.com [115.124.30.119])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.alibaba.com (client-ip=115.124.30.98; helo=out30-98.freemail.mail.aliyun.com; envelope-from=tianruidong@linux.alibaba.com; receiver=lists.ozlabs.org)
+Received: from out30-98.freemail.mail.aliyun.com (out30-98.freemail.mail.aliyun.com [115.124.30.98])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ggwGZ1KBlz2ytj
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jun 2026 19:21:57 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ggwGg24fMz2ytj
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jun 2026 19:22:02 +1000 (AEST)
 DKIM-Signature:v=1; a=rsa-sha256; c=relaxed/relaxed;
 	d=linux.alibaba.com; s=default;
-	t=1781774514; h=From:To:Subject:Date:Message-ID:MIME-Version;
-	bh=GFT2qwUPpYfCLwTGty0d6yeRs8ICppiuWOoU1Fah3Ls=;
-	b=Bc1WozGeghZvFyXAPxkmXO8k4Jvb5TE/q7Z4WEIPulQB23kYM5OOt0nDopL5250+iWDnJ/61fiLUV5i+EN1OXC2h8xBA2ee5nr50n2zNCbWUvWdfV9vNRj+8/0sFeS7KQUy6GT1t3jyG8pBF334fGQIpUPm/qK0zDMgvDea67Wk=
-X-Alimail-AntiSpam:AC=PASS;BC=-1|-1;BR=01201311R161e4;CH=green;DM=||false|;DS=||;FP=0|-1|-1|-1|0|-1|-1|-1;HT=maildocker-contentspam033037009110;MF=tianruidong@linux.alibaba.com;NM=1;PH=DS;RN=28;SR=0;TI=SMTPD_---0X56USuz_1781774509;
-Received: from localhost(mailfrom:tianruidong@linux.alibaba.com fp:SMTPD_---0X56USuz_1781774509 cluster:ay36)
+	t=1781774519; h=From:To:Subject:Date:Message-ID:MIME-Version;
+	bh=+lp7IuTicfKn/jutgHJKaOpNy7+Kx5wxHCFNLAg35l8=;
+	b=L2pAxz9700gJe1kc9i6aOaei+L3zCx0Mv6EXGcXPQLfoLnxO7xSge5mOQ1JW4GwVZJ60zXeDAnqWX0GOsAWWfef2rjUN2vl96B8uyUPNUZYGMKUpfG9F7ihB8S7L2T7yvFNUoss86C/U0Yvi6yA0VQW7kaPTsYPj95UFCd+gTTc=
+X-Alimail-AntiSpam:AC=PASS;BC=-1|-1;BR=01201311R191e4;CH=green;DM=||false|;DS=||;FP=0|-1|-1|-1|0|-1|-1|-1;HT=maildocker-contentspam033037009110;MF=tianruidong@linux.alibaba.com;NM=1;PH=DS;RN=30;SR=0;TI=SMTPD_---0X56WGuf_1781774514;
+Received: from localhost(mailfrom:tianruidong@linux.alibaba.com fp:SMTPD_---0X56WGuf_1781774514 cluster:ay36)
           by smtp.aliyun-inc.com;
-          Thu, 18 Jun 2026 17:21:52 +0800
+          Thu, 18 Jun 2026 17:21:57 +0800
 From: Ruidong Tian <tianruidong@linux.alibaba.com>
 To: catalin.marinas@arm.com,
 	will@kernel.org,
@@ -66,10 +66,12 @@ Cc: linux-arm-kernel@lists.infradead.org,
 	linuxppc-dev@lists.ozlabs.org,
 	linux-kernel@vger.kernel.org,
 	kasan-dev@googlegroups.com,
-	tianruidong@linux.alibaba.com
-Subject: [PATCH v15 4/9] arm64: enable recover from synchronous external abort in kernel context
-Date: Thu, 18 Jun 2026 17:21:18 +0800
-Message-ID: <20260618092124.3901230-5-tianruidong@linux.alibaba.com>
+	tianruidong@linux.alibaba.com,
+	Jonathan Cameron <Jonathan.Cameron@huawei.com>,
+	Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
+Subject: [PATCH v15 5/9] mm/hwpoison: return -EFAULT when copy fail in copy_mc_[user]_highpage()
+Date: Thu, 18 Jun 2026 17:21:19 +0800
+Message-ID: <20260618092124.3901230-6-tianruidong@linux.alibaba.com>
 X-Mailer: git-send-email 2.43.7
 In-Reply-To: <20260618092124.3901230-1-tianruidong@linux.alibaba.com>
 References: <20260618092124.3901230-1-tianruidong@linux.alibaba.com>
@@ -88,218 +90,86 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-For the arm64 kernel, when it processes hardware memory errors for
-synchronize notifications(do_sea()), if the errors is consumed within the
-kernel, the current processing is panic. However, it is not optimal.
+From: Tong Tiangen <tongtiangen@huawei.com>
 
-Take copy_from/to_user for example, If ld* triggers a memory error, even in
-kernel mode, only the associated process is affected. Killing the user
-process and isolating the corrupt page is a better choice.
+Currently, copy_mc_[user]_highpage() returns zero on success, or in case
+of failures, the number of bytes that weren't copied.
 
-Add new fixup type EX_TYPE_KACCESS_SEA to identify insn that can recover
-from memory errors triggered by access to kernel memory, and this fixup
-type is used in __arch_copy_to_user(), This make the regular copy_to_user()
-will handle kernel memory errors.
+While tracking the number of not copied works fine for x86 and PPC, There
+are some difficulties in doing the same thing on ARM64 because there is no
+available caller-saved register in copy_page()(lib/copy_page.S) to save
+"bytes not copied", and the following copy_mc_page() will also encounter
+the same problem.
 
-[Ruidong: modify subject and rename EX_TYPE_KACCESS_ERR_ZERO_MEM_ERR to
-EX_TYPE_KACCESS_SEA]
+Consider the caller of copy_mc_[user]_highpage() cannot do any processing
+on the remaining data(The page has hardware errors), they only check if
+copy was succeeded or not, make the interface more generic by using an
+error code when copy fails (-EFAULT) or return zero on success.
 
 Signed-off-by: Tong Tiangen <tongtiangen@huawei.com>
-Signed-off-by: Ruidong Tian <tianruidong@linux.alibaba.com>
+Reviewed-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+Reviewed-by: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
+Reviewed-by: Shuai Xue <xueshuai@linux.alibaba.com>
 ---
- arch/arm64/include/asm/asm-extable.h |  5 +++++
- arch/arm64/include/asm/asm-uaccess.h |  4 ++++
- arch/arm64/include/asm/extable.h     |  1 +
- arch/arm64/lib/copy_to_user.S        | 10 +++++-----
- arch/arm64/mm/extable.c              | 28 ++++++++++++++++++++++++++
- arch/arm64/mm/fault.c                | 30 ++++++++++++++++++++--------
- 6 files changed, 65 insertions(+), 13 deletions(-)
+ include/linux/highmem.h | 8 ++++----
+ mm/khugepaged.c         | 4 ++--
+ 2 files changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/arch/arm64/include/asm/asm-extable.h b/arch/arm64/include/asm/asm-extable.h
-index 06b19023939b..8450ec5a3af6 100644
---- a/arch/arm64/include/asm/asm-extable.h
-+++ b/arch/arm64/include/asm/asm-extable.h
-@@ -10,6 +10,7 @@
- #define EX_TYPE_ACCESS_ERR_ZERO		2
- #define EX_TYPE_UACCESS_CPY		3
- #define EX_TYPE_LOAD_UNALIGNED_ZEROPAD	4
-+#define EX_TYPE_KACCESS_SEA		5
- 
- /* Data fields for EX_TYPE_ACCESS_ERR_ZERO */
- #define EX_DATA_REG_ERR_SHIFT	0
-@@ -76,6 +77,10 @@
- 	__ASM_EXTABLE_RAW(\insn, \fixup, EX_TYPE_UACCESS_CPY, \uaccess_is_write)
- 	.endm
- 
-+	.macro          _asm_extable_kaccess_sea, insn, fixup
-+	__ASM_EXTABLE_RAW(\insn, \fixup, EX_TYPE_KACCESS_SEA, 0)
-+	.endm
-+
- #else /* __ASSEMBLER__ */
- 
- #include <linux/stringify.h>
-diff --git a/arch/arm64/include/asm/asm-uaccess.h b/arch/arm64/include/asm/asm-uaccess.h
-index 12aa6a283249..27bf8edbf597 100644
---- a/arch/arm64/include/asm/asm-uaccess.h
-+++ b/arch/arm64/include/asm/asm-uaccess.h
-@@ -57,6 +57,10 @@ alternative_else_nop_endif
- 	.endm
- #endif
- 
-+#define KERNEL_SEA(l, x...)			\
-+9999:	x;					\
-+	_asm_extable_kaccess_sea	9999b, l
-+
- #define USER(l, x...)				\
- 9999:	x;					\
- 	_asm_extable_uaccess	9999b, l
-diff --git a/arch/arm64/include/asm/extable.h b/arch/arm64/include/asm/extable.h
-index 9dc39612bdf5..47c851d7df4f 100644
---- a/arch/arm64/include/asm/extable.h
-+++ b/arch/arm64/include/asm/extable.h
-@@ -48,4 +48,5 @@ bool ex_handler_bpf(const struct exception_table_entry *ex,
- #endif /* !CONFIG_BPF_JIT */
- 
- bool fixup_exception(struct pt_regs *regs, unsigned long esr);
-+bool fixup_exception_me(struct pt_regs *regs);
- #endif
-diff --git a/arch/arm64/lib/copy_to_user.S b/arch/arm64/lib/copy_to_user.S
-index 819f2e3fc7a9..6103f5b0a2d0 100644
---- a/arch/arm64/lib/copy_to_user.S
-+++ b/arch/arm64/lib/copy_to_user.S
-@@ -20,7 +20,7 @@
-  *	x0 - bytes not copied
+diff --git a/include/linux/highmem.h b/include/linux/highmem.h
+index af03db851a1d..18dc4aca4aa1 100644
+--- a/include/linux/highmem.h
++++ b/include/linux/highmem.h
+@@ -427,8 +427,8 @@ static inline void copy_highpage(struct page *to, struct page *from)
+ /*
+  * If architecture supports machine check exception handling, define the
+  * #MC versions of copy_user_highpage and copy_highpage. They copy a memory
+- * page with #MC in source page (@from) handled, and return the number
+- * of bytes not copied if there was a #MC, otherwise 0 for success.
++ * page with #MC in source page (@from) handled, and return -EFAULT if there
++ * was a #MC, otherwise 0 for success.
   */
- 	.macro ldrb1 reg, ptr, val
--	ldrb  \reg, [\ptr], \val
-+	KERNEL_SEA(9998f, ldrb  \reg, [\ptr], \val)
- 	.endm
+ static inline int copy_mc_user_highpage(struct page *to, struct page *from,
+ 					unsigned long vaddr, struct vm_area_struct *vma)
+@@ -447,7 +447,7 @@ static inline int copy_mc_user_highpage(struct page *to, struct page *from,
+ 	if (ret)
+ 		memory_failure_queue(page_to_pfn(from), 0);
  
- 	.macro strb1 reg, ptr, val
-@@ -28,7 +28,7 @@
- 	.endm
- 
- 	.macro ldrh1 reg, ptr, val
--	ldrh  \reg, [\ptr], \val
-+	KERNEL_SEA(9998f, ldrh  \reg, [\ptr], \val)
- 	.endm
- 
- 	.macro strh1 reg, ptr, val
-@@ -36,7 +36,7 @@
- 	.endm
- 
- 	.macro ldr1 reg, ptr, val
--	ldr \reg, [\ptr], \val
-+	KERNEL_SEA(9998f, ldr \reg, [\ptr], \val)
- 	.endm
- 
- 	.macro str1 reg, ptr, val
-@@ -44,7 +44,7 @@
- 	.endm
- 
- 	.macro ldp1 reg1, reg2, ptr, val
--	ldp \reg1, \reg2, [\ptr], \val
-+	KERNEL_SEA(9998f, ldp \reg1, \reg2, [\ptr], \val)
- 	.endm
- 
- 	.macro stp1 reg1, reg2, ptr, val
-@@ -74,7 +74,7 @@ SYM_FUNC_START(__arch_copy_to_user)
- 9997:	cmp	dst, dstin
- 	b.ne	9998f
- 	// Before being absolutely sure we couldn't copy anything, try harder
--	ldrb	tmp1w, [srcin]
-+KERNEL_SEA(9998f, ldrb	tmp1w, [srcin])
- USER(9998f, sttrb tmp1w, [dst])
- 	add	dst, dst, #1
- 9998:	sub	x0, end, dst			// bytes not copied
-diff --git a/arch/arm64/mm/extable.c b/arch/arm64/mm/extable.c
-index 76b18780f1f9..20a7a9eeed94 100644
---- a/arch/arm64/mm/extable.c
-+++ b/arch/arm64/mm/extable.c
-@@ -109,7 +109,35 @@ bool fixup_exception(struct pt_regs *regs, unsigned long esr)
- 		return ex_handler_uaccess_cpy(ex, regs, esr);
- 	case EX_TYPE_LOAD_UNALIGNED_ZEROPAD:
- 		return ex_handler_load_unaligned_zeropad(ex, regs);
-+	/*
-+	 * Kernel address faults (e.g. copy_to_user reading from kernel src).
-+	 * Do not fixup here: a translation fault on a kernel address is a
-+	 * kernel bug (e.g. NULL pointer dereference) and must oops.
-+	 * Only SEA (hardware memory error) should be fixed up, which is
-+	 * handled by fixup_exception_me() through the do_sea path.
-+	 */
-+	case EX_TYPE_KACCESS_SEA:
-+		return false;
- 	}
- 
- 	BUG();
- }
-+
-+bool fixup_exception_me(struct pt_regs *regs)
-+{
-+	const struct exception_table_entry *ex;
-+
-+	ex = search_exception_tables(instruction_pointer(regs));
-+	if (!ex)
-+		return false;
-+
-+	switch (ex->type) {
-+	case EX_TYPE_ACCESS_ERR_ZERO:
-+		return ex_handler_access_err_zero(ex, regs);
-+	case EX_TYPE_KACCESS_SEA:
-+		regs->pc = get_ex_fixup(ex);
-+		return true;
-+	}
-+
-+	return false;
-+}
-diff --git a/arch/arm64/mm/fault.c b/arch/arm64/mm/fault.c
-index 0f3c5c7ca054..b775c0928a53 100644
---- a/arch/arm64/mm/fault.c
-+++ b/arch/arm64/mm/fault.c
-@@ -858,21 +858,35 @@ static int do_bad(unsigned long far, unsigned long esr, struct pt_regs *regs)
- 	return 1; /* "fault" */
+-	return ret;
++	return ret ? -EFAULT : 0;
  }
  
-+/*
-+ * APEI claimed this as a firmware-first notification.
-+ * Some processing deferred to task_work before ret_to_user().
-+ */
-+static int do_apei_claim_sea(struct pt_regs *regs)
-+{
-+	int ret;
-+
-+	ret = apei_claim_sea(regs);
-+	if (ret)
-+		return ret;
-+
-+	if (!user_mode(regs)) {
-+		if (!fixup_exception_me(regs))
-+			return -ENOENT;
-+	}
-+
-+	return ret;
-+}
-+
- static int do_sea(unsigned long far, unsigned long esr, struct pt_regs *regs)
- {
- 	const struct fault_info *inf;
- 	unsigned long siaddr;
+ static inline int copy_mc_highpage(struct page *to, struct page *from)
+@@ -466,7 +466,7 @@ static inline int copy_mc_highpage(struct page *to, struct page *from)
+ 	if (ret)
+ 		memory_failure_queue(page_to_pfn(from), 0);
  
--	inf = esr_to_fault_info(esr);
--
--	if (user_mode(regs) && apei_claim_sea(regs) == 0) {
--		/*
--		 * APEI claimed this as a firmware-first notification.
--		 * Some processing deferred to task_work before ret_to_user().
--		 */
-+	if (do_apei_claim_sea(regs) == 0)
- 		return 0;
--	}
+-	return ret;
++	return ret ? -EFAULT : 0;
+ }
+ #else
+ static inline int copy_mc_user_highpage(struct page *to, struct page *from,
+diff --git a/mm/khugepaged.c b/mm/khugepaged.c
+index b8452dbdb043..cf1b78eed3c3 100644
+--- a/mm/khugepaged.c
++++ b/mm/khugepaged.c
+@@ -810,7 +810,7 @@ static enum scan_result __collapse_huge_page_copy(pte_t *pte, struct folio *foli
+ 			continue;
+ 		}
+ 		src_page = pte_page(pteval);
+-		if (copy_mc_user_highpage(page, src_page, src_addr, vma) > 0) {
++		if (copy_mc_user_highpage(page, src_page, src_addr, vma)) {
+ 			result = SCAN_COPY_MC;
+ 			break;
+ 		}
+@@ -2143,7 +2143,7 @@ static enum scan_result collapse_file(struct mm_struct *mm, unsigned long addr,
+ 		}
  
-+	inf = esr_to_fault_info(esr);
- 	if (esr & ESR_ELx_FnV) {
- 		siaddr = 0;
- 	} else {
+ 		for (i = 0; i < nr_pages; i++) {
+-			if (copy_mc_highpage(dst, folio_page(folio, i)) > 0) {
++			if (copy_mc_highpage(dst, folio_page(folio, i))) {
+ 				result = SCAN_COPY_MC;
+ 				goto rollback;
+ 			}
 -- 
 2.39.3
 
