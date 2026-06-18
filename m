@@ -1,73 +1,113 @@
-Return-Path: <linuxppc-dev+bounces-22773-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22774-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0EB2FCD98F6
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Jun 2026 15:17:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3113BCD98F6
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Jun 2026 15:37:19 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gh48F72g2z2yRF;
-	Fri, 19 Jun 2026 01:17:01 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781795821;
-	cv=none; b=gfgJF8qJQ7ibe7wxb0M5QAN8OIhKOAv1JjVmVhVTNewghFVRVFTJPQFD9HlG8T1pyC11C6YHij2DtLDp8HdXDbdbBZBkPhdFeeINGAR1hoW7iGev51Rz2H7wfziLBRNRX8goHwYIy0Ua3PhFUKtPh1ybbkfj6qjPKXjmYPVBk+rjwYsRTm1v8rtEDvTRPuRv2zTAl7KYptchf5Jyc+YVlb5fqgDj6YPnzc4mMQIUlfKLgA31GArznR6cwEOQksREzRW2faoRa6zlqhz7c3lrK7oENAgcsephUrDcfzNXRxQ2lCyA1iTeztq00r0xeRRSc4i3ZIYLDnkuiC4PSCxOjg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gh4bd4Bfhz2yRF;
+	Fri, 19 Jun 2026 01:37:17 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::72f"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781797037;
+	cv=none; b=baXv6+HnWxmswEYPn/PCbMs2FBeFBu7sTvrNmqcQQLuMwiiJsqdvehro3VpomyzYkhdK3hf7HrjFi/WS2A3sA9HenznD5dL3XpfaQxb1rAGc4/RdudMIQZcfd2WDXp5/+V8j+JvVcygQgrD9pOGlioH84cvW8P+CdUtiKkQEfvZHjly3mU7p39KcYGstkifn48wX6aRCXJyOVzC7fIi9AZYvbUyboQZ3G5skk2EpaeydP5v52lKsByY3FuZOldYr5WfoM+V6IO212NCFHrI1YJCRN+v1QKCP6jZLjtCZPDa5YrSejhwF4kuNqTbWGYpLYPBY8ZywmTV4CBN+76K5pg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1781795821; c=relaxed/relaxed;
-	bh=HQDw9hBFhF4z6kW9UOyzfabpUtvuruXQ8qavzcET9vU=;
-	h=Content-Type:Mime-Version:Subject:From:In-Reply-To:Date:Cc:
-	 Message-Id:References:To; b=XP8h1mV5LehVcmYM6vaScEzxutfiPlfGoJzXLg6xvSmOwMh3qOxEiClnE6/H9lROdTxyesmDyiyyb6CzonL0e7XnuDD1dzlwG/U+Ka9m+Qp6oaGQ+m93Galxi1r4SrlphkXjIG6N/LZdT7BhDvrzmYoHfsBNW9/4ldKOmUjNzaVAYmX0lmZGfRC3r62pGU1grApL3vXOeUA84v4RdflE2/Qsbgv2STLseMNvCbiQtu3UoyoMd/eaLSL+//YBwtWkN4S3u4M1KETOBNev6KQF/ctSN7AcO/0ZL1OheOYWLAxOr/gUr5QYlfa3pmeuggw+Ft3QlQrGo9W0mFbLo3Pdug==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=BF/HWDqb; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=atrajeev@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1781797037; c=relaxed/relaxed;
+	bh=Tm+jP+3WfoLtXaL6gn2l0sQY+Wj2XqJdxBBXikZyHQE=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=jP0qBS688f3pbCY2Mpfq97VoqdKQKhRK4urs+hbFN2heqpMIiOlQ21UUUQXH5is4f6lUy4tFNwkVR+18LyeW306Gs8/n4ess9IwJupOi7+n3wZqu3+UMRKuuM+3PULLRh+oGE1q2rZVG7CpR1ZaJ8V+45sykyuTFV035OX51jRdRwMUhstvhBWTdDyOUpPKpgfnUOY/D1/tbQauACFFs92uLDelBqvPQPSXS+/yaxjkO9yVJzd8ObziNzC/dJrQGlHn5k+VqM1tGuYIH2lXDCdu2WLTO4ALk27UTWVXNeHEw1cejzO5/2tlfGtgcPE/8Egj68ZDj62bmGKU7RGqxZQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ziepe.ca; dkim=pass (2048-bit key; secure) header.d=ziepe.ca header.i=@ziepe.ca header.a=rsa-sha256 header.s=google header.b=ReymBpap; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::72f; helo=mail-qk1-x72f.google.com; envelope-from=jgg@ziepe.ca; receiver=lists.ozlabs.org) smtp.mailfrom=ziepe.ca
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ziepe.ca
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=BF/HWDqb;
+	dkim=pass (2048-bit key; secure) header.d=ziepe.ca header.i=@ziepe.ca header.a=rsa-sha256 header.s=google header.b=ReymBpap;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=atrajeev@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=ziepe.ca (client-ip=2607:f8b0:4864:20::72f; helo=mail-qk1-x72f.google.com; envelope-from=jgg@ziepe.ca; receiver=lists.ozlabs.org)
+Received: from mail-qk1-x72f.google.com (mail-qk1-x72f.google.com [IPv6:2607:f8b0:4864:20::72f])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gh48D2KP5z2yFc
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Jun 2026 01:16:59 +1000 (AEST)
-Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 65IEIFU23688654;
-	Thu, 18 Jun 2026 15:16:54 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=HQDw9h
-	BFhF4z6kW9UOyzfabpUtvuruXQ8qavzcET9vU=; b=BF/HWDqbrrGPvFyiJb0oGe
-	i5Xnpe0XwbZ+zwOeiQ6ejWnhtX/Z+o/LcIF6ZRugTtJallzsBqHP3byAvRl8AlvL
-	ZXGlkF9dXLbnTGOv0dddtm/aN0tFj+6TbkwWoc9PvlWOdvFfFnge+6mYi3AAgK4h
-	dm7b50nZe1QWLoTi799ybI/heCTeqadRBv9nSH/LOdtwEkJMs/oonIEeKsm/JO0g
-	UMVc+KUEDL7IDi2CZ9bL4EbJx95MMfDF4318fa2+sJ95l4Ou6liKK+VIKqkazfMb
-	XoDe2SP9WM6jDKbT6MVnvGwZ4yOaYIdNpkI/HxNV3+BLryIUjcWTxAKXlwr+Tb4w
-	==
-Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4eueqtruqb-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 18 Jun 2026 15:16:53 +0000 (GMT)
-Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma13.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 65IF4tS6019185;
-	Thu, 18 Jun 2026 15:16:52 GMT
-Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
-	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4ev1724bfv-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 18 Jun 2026 15:16:52 +0000 (GMT)
-Received: from smtpav01.fra02v.mail.ibm.com (smtpav01.fra02v.mail.ibm.com [10.20.54.100])
-	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 65IFGmoo50135314
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 18 Jun 2026 15:16:48 GMT
-Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id B407F20043;
-	Thu, 18 Jun 2026 15:16:48 +0000 (GMT)
-Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id AB0DE20040;
-	Thu, 18 Jun 2026 15:16:45 +0000 (GMT)
-Received: from smtpclient.apple (unknown [9.39.31.209])
-	by smtpav01.fra02v.mail.ibm.com (Postfix) with ESMTPS;
-	Thu, 18 Jun 2026 15:16:45 +0000 (GMT)
-Content-Type: text/plain;
-	charset=utf-8
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gh4bc0krQz2yFc
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Jun 2026 01:37:15 +1000 (AEST)
+Received: by mail-qk1-x72f.google.com with SMTP id af79cd13be357-915aa0a9293so241747185a.1
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jun 2026 08:37:14 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=ziepe.ca; s=google; t=1781797027; x=1782401827; darn=lists.ozlabs.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=Tm+jP+3WfoLtXaL6gn2l0sQY+Wj2XqJdxBBXikZyHQE=;
+        b=ReymBpap+rJj7dw+e83ov91tYjdVuGwIQ9RwbG1Wjs+QMIW3IurZJsbdXSX5oAxm9t
+         AFyXLx21W/OyFFsj6spS+dAoQ8imC4oKR+XXRw7jfTaIev1iGb2AteC9elnQmfzvke5/
+         T2Guxk8T3p53Ga5YMSDpte66rFAWIhoPf3xCY4cpUfyVsxA3HtLsW+qw7wtI/rz+hlW9
+         tG9zj0SVh3NLZFYAQ5FUToY9nksDa1A4g6Z7Cof/2K8vaEAwdN9FFQzaJUHdShs/wJeR
+         D37XaTprZ9W01SAW+w7gwAtEmwp3jb4VtaAgueRUzj8CDZEuDuYqiEg38qkKclBN27Mw
+         Bagw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1781797027; x=1782401827;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=Tm+jP+3WfoLtXaL6gn2l0sQY+Wj2XqJdxBBXikZyHQE=;
+        b=X+zIvIVfgaORwGepzcvOb8C7G6kCBFNfB09bj1gIhu4MIz+NqMN/nwZTXLKhggRWpF
+         K1QPEDg7//2VqSl+wpyWA+JA8dh1ur7VWfsN6J51JlxD0MpHUR+IieaMz+E0WNwTQ3e4
+         a59Z9A0u/kmPVyJLX645w7TWzzeUp9zdxGBg4GDEkp04aLi0r0+MyFKEVQwHUGeLJz6q
+         LSHIXLr+PB/O0GTkEXKyPq8z5NYHxV+M5se4nXy3kZxnc+JeQ4WGDEdiBV4USGxlbeW0
+         +JtU5XFwfudqKxaxTBFSvUVzA421rCDeT3aGXNI5202TW7NszUYPDdPy/1lezWha7ha8
+         TCGg==
+X-Forwarded-Encrypted: i=1; AFNElJ8aHCSlH+pQebKZ8n9XNlYM2ULa0HEZzg1TcUzERs+hunLClOIYUiB96gAEqLigamKHprwGRN6VNmQ0wDI=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YyXzU0Hf3iylUd2BU5STKsa2bVhsJnXLHkSw8rVLiUDW9JUjDw0
+	rdtAoXVK/UfSJsE6h4WPmYewhl5ABg6to7g1jZKOqJFH11tafYix7SrnKaWZMXZfXZk=
+X-Gm-Gg: AfdE7cknO7VJ8qXxxuV7zo80NX2d3/RSNCQoXu5S+4BVnwO2Dr6nhc/ca6zhl+Jt+IK
+	et8mrkl75N8s7xk6g16PEpBJfGvRQ7GOt+3MHB+zt0OGKaZqLVoVUfGKGVDWp/4TS1iiD5SWHf7
+	FEnooDWPpzdHQxtvf47pCGr2SMkQp/4/msCYZFCk0bQe2DSEZImZyUt5kiVb2dL9+qfvCVW2j0v
+	esChh93+JDmOWmtwTJeIpDQtCiIsgCpU+pIYsindfZpAkhwxAcszhhjKKx9kj/n6U7JBDn4uiaZ
+	y0UWIOf73wiZpKqs3Xf0Ya+sGNIrZS390mCQYg7099vpn1nEIU+NqorEaEf4SCdSofZir+PpISv
+	RxYh89lBn+xeIeiuKSBjseUvPRoCzLGPnU2n+QfD4Ny4k+IMAMGKq+fXmXsPGbqAWh+Hks0g0KM
+	Q74vJm619GM46YAd2+6o2KuzyChKnUvfFmVVwhvtIotw2L3z2yHKLR8Mykt3elc0EAQzo=
+X-Received: by 2002:a05:620a:469e:b0:915:8f64:604c with SMTP id af79cd13be357-91f082ff425mr678605385a.15.1781797026718;
+        Thu, 18 Jun 2026 08:37:06 -0700 (PDT)
+Received: from ziepe.ca (crbknf0213w-47-54-130-67.pppoe-dynamic.high-speed.nl.bellaliant.net. [47.54.130.67])
+        by smtp.gmail.com with ESMTPSA id af79cd13be357-91619f3c324sm2104263685a.21.2026.06.18.08.37.05
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 18 Jun 2026 08:37:06 -0700 (PDT)
+Received: from jgg by wakko with local (Exim 4.97)
+	(envelope-from <jgg@ziepe.ca>)
+	id 1waEnh-00000002tSw-24HO;
+	Thu, 18 Jun 2026 12:37:05 -0300
+Date: Thu, 18 Jun 2026 12:37:05 -0300
+From: Jason Gunthorpe <jgg@ziepe.ca>
+To: "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>
+Cc: Alexey Kardashevskiy <aik@amd.com>,
+	Catalin Marinas <catalin.marinas@arm.com>, iommu@lists.linux.dev,
+	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+	linux-coco@lists.linux.dev, Robin Murphy <robin.murphy@arm.com>,
+	Marek Szyprowski <m.szyprowski@samsung.com>,
+	Will Deacon <will@kernel.org>, Marc Zyngier <maz@kernel.org>,
+	Steven Price <steven.price@arm.com>,
+	Suzuki K Poulose <Suzuki.Poulose@arm.com>,
+	Jiri Pirko <jiri@resnulli.us>, Mostafa Saleh <smostafa@google.com>,
+	Petr Tesarik <ptesarik@suse.com>,
+	Dan Williams <dan.j.williams@intel.com>,
+	Xu Yilun <yilun.xu@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
+	linux-s390@vger.kernel.org,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	Alexander Gordeev <agordeev@linux.ibm.com>,
+	Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
+	Heiko Carstens <hca@linux.ibm.com>,
+	Vasily Gorbik <gor@linux.ibm.com>,
+	Christian Borntraeger <borntraeger@linux.ibm.com>,
+	Sven Schnelle <svens@linux.ibm.com>, x86@kernel.org
+Subject: Re: [PATCH v6 00/20] dma-mapping: Use DMA_ATTR_CC_SHARED through
+ direct, pool and swiotlb paths
+Message-ID: <20260618153705.GH231643@ziepe.ca>
+References: <20260604083959.1265923-1-aneesh.kumar@kernel.org>
+ <aigYbK12D8uKQvJF@arm.com>
+ <20260609144746.GL2764304@ziepe.ca>
+ <2ecfa1a8-6202-4319-9692-a6ffeb5a3dbf@amd.com>
+ <yq5aqzm4dz25.fsf@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -80,171 +120,69 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-Mime-Version: 1.0 (Mac OS X Mail 16.0 \(3864.300.41.1.7\))
-Subject: Re: [PATCH V2] tools/perf/sched: Update process names of processes in
- zombie state for both -s and -S options
-From: Athira Rajeev <atrajeev@linux.ibm.com>
-In-Reply-To: <20260607140245.95706-1-atrajeev@linux.ibm.com>
-Date: Thu, 18 Jun 2026 20:46:33 +0530
-Cc: linux-perf-users@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-        hbathini@linux.vnet.ibm.com, Tejas.Manhas1@ibm.com,
-        Tanushree.Shah@ibm.com, shivani@linux.ibm.com, venkat88@linux.ibm.com,
-        Madhavan Srinivasan <maddy@linux.ibm.com>
-Content-Transfer-Encoding: quoted-printable
-Message-Id: <93D649E9-C919-43D3-A812-25D6C9605DB3@linux.ibm.com>
-References: <20260607140245.95706-1-atrajeev@linux.ibm.com>
-To: acme@kernel.org, jolsa@kernel.org, adrian.hunter@intel.com,
-        mpetlan@redhat.com, tmricht@linux.ibm.com, irogers@google.com,
-        namhyung@kernel.org
-X-Mailer: Apple Mail (2.3864.300.41.1.7)
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-ORIG-GUID: oN5ochPhrt11UfsJK6g_4Y27ZFQfiJL4
-X-Proofpoint-GUID: SpBU6xznXNzAHlKBMn9QUNt8EEaIqIDk
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjE4MDEzNyBTYWx0ZWRfXxod8C9vIYVeY
- S0fNbn3c6i810q/xE2a1A/9ht41bf8y99hUsfBD5vYce48mxQkp8ZZtp01SGOUH2WUrYPWGe77R
- 246PkLyJH3l2m1Ii5BkXc3WvM3+I4JnSP8taMuLnlNhWJJxMYRbzIXz5jWzYCcVoi7OQ10EpK2L
- NL2re5nkWRW0n2d1raePUw5jqUrR5iAPmVtHTdvbz2X4AkrMm81LZ5sfCCaq1pwQiktoPhlIUSy
- l6V7fcXZx/Ka7paohye9yO4g0T26QvJ+8d2+1ViUmtsQlFC3L+tA91sKIBCKE5/hEf0P5pufIPm
- ln0YeuICyEnGw/hb4uysvhUz6xWjeF/7l9hWgBomq6linwK6xY504WlTrbJ1QneqpydcNROc41M
- /n5VP4J5HhdgOpvqd3MjddMeUGaXwCG0jzGHBpFQqpgphhMEH64Q6EDuFI/nkYK/I93C59Q0JSV
- osGdeQGF3sJUqduSzMg==
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNjE4MDEzNyBTYWx0ZWRfX7WHJ0l/CflIS
- BINOrKkt6cTyFsi4gpxUj/ZpolAhUmH2I5I+Nh7vaGNIAOZYskrCUpiGa3Jm4gXvqOyW5XWNge/
- rfP7jZC1n9QSWfwLITL90OU5SXXjXvY=
-X-Authority-Analysis: v=2.4 cv=B4KJFutM c=1 sm=1 tr=0 ts=6a340be6 cx=c_pps
- a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
- a=x5QCPqNzQhPJdF4W:21 a=IkcTkHD0fZMA:10 a=FelO9ux0wxsA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22 a=iQ6ETzBq9ecOQQE5vZCe:22
- a=VnNF1IyMAAAA:8 a=VwQbUJbxAAAA:8 a=5G33EI8LH34GI3k0to8A:9 a=QEXdDO2ut3YA:10
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
- definitions=2026-06-18_02,2026-06-18_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- malwarescore=0 adultscore=0 lowpriorityscore=0 suspectscore=0
- priorityscore=1501 clxscore=1015 phishscore=0 spamscore=0 bulkscore=0
- impostorscore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2606150000
- definitions=main-2606180137
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <yq5aqzm4dz25.fsf@kernel.org>
 
+On Thu, Jun 18, 2026 at 09:37:22AM +0100, Aneesh Kumar K.V wrote:
+> Alexey Kardashevskiy <aik@amd.com> writes:
+> 
+> > On 10/6/26 00:47, Jason Gunthorpe wrote:
+> >> On Tue, Jun 09, 2026 at 02:43:08PM +0100, Catalin Marinas wrote:
+> >>> On Thu, Jun 04, 2026 at 02:09:39PM +0530, Aneesh Kumar K.V (Arm) wrote:
+> >>>> This series propagates DMA_ATTR_CC_SHARED through the dma-direct,
+> >>>> dma-pool, and swiotlb paths so that encrypted and decrypted DMA buffers
+> >>>> are handled consistently.
+> >>>>
+> >>>> Today, the direct DMA path mostly relies on force_dma_unencrypted() for
+> >>>> shared/decrypted buffer handling. This series consolidates the
+> >>>> force_dma_unencrypted() checks in the top-level functions and ensures
+> >>>> that the remaining DMA interfaces use DMA attributes to make the correct
+> >>>> decisions.
+> >>>
+> >>> Please check Sashiko's reports, it has some good points:
+> >>>
+> >>> https://sashiko.dev/#/patchset/20260604083959.1265923-1-aneesh.kumar@kernel.org
+> >>>
+> >>> I think the main one is the swiotlb_tbl_map_single() changes which break
+> >>> AMD SME host support. There cc_platform_has(CC_ATTR_MEM_ENCRYPT) is true
+> >>> but force_dma_unencrypted() is false. Normally you'd not end up on this
+> >>> path but you can have swiotlb=force.
+> >> 
+> >> IMHO that's an AMD issue, not with the design of this series..
+> >> 
+> >> The series is right, a device that is !force_dma_decrypted() must be
+> >> considerd to be a trusted device and we must never place any DMA
+> >> mappings for a trusted device into shared memory.
+> >
+> > swiotlb=force forces swiotlb, not decryption.
 
+If force_dma_decrypted() == true then swiotlb must allocate from a
+decrypted memory pool. It is right there in the name!
 
-> On 7 Jun 2026, at 7:32=E2=80=AFPM, Athira Rajeev =
-<atrajeev@linux.ibm.com> wrote:
->=20
-> In redhat perftool testsuite, observed fail for this test:
->    -- [ FAIL ] -- perf_sched :: test_timehist :: --with-summary =
-(output regexp parsing)
->=20
-> This led to analysis of "perf sched timehist" summary options.
->=20
->  # perf sched record -a -o ./perf.data -- sleep 0.1
->   This will record using perf sched record
->=20
-> perf sched timeliest has two options "-s" and "-S"
->  # perf sched -i ./perf.data timehist -S
-> -S : Captures summary also at the end
->=20
->  # perf sched -i ./perf.data timehist -s
-> -s : Captures only summary
->=20
-> The test saves -s result which has only summary and compares with
-> summary which comes at the end from -S . Since there is a difference
-> in these two, test fails.
->=20
-> Checking the behaviour change in -S and -s results, difference is:
->=20
->                  rcu_sched[16]       2          4        0.013      =
-0.001       0.003       0.006   33.23       0
->               migration/11[73]       2          1        0.006      =
-0.006       0.006       0.006    0.00       0
->                migration/3[33]       2          1        0.006      =
-0.006       0.006       0.006    0.00       0
-> -               :216753[216753]      -1          1        0.041      =
-0.041       0.041       0.041    0.00       0
-> +                 sleep[216753]      -1          1        0.041      =
-0.041       0.041       0.041    0.00       0
->                migration/8[58]       2          1        0.005      =
-0.005       0.005       0.005    0.00       0
->            NetworkManager[811]       1          2        0.089      =
-0.028       0.044       0.060   36.06       0
->               migration/13[83]       2          1        0.005      =
-0.005       0.005       0.005    0.00       0
->=20
-> Here 216753 is pid for sleep which is a zombie process. This is
-> happening in latest kernel due to an update in "-S" result.
-> In -S, the process name appears in the results "sleep[216753]",
-> where as in the -s, only pid is present in the summary result
-> ":216753[216753]".
->=20
-> After commit 39f473f6d0b2 ("perf sched timehist: decode process names
-> of processes in zombie state")
-> for -S option, if process name is using pid, it uses different way to
-> set it. So that we get the process name and not just Pid.
->=20
-> This change went in only for timehist_print_sample() function.
-> Add this improvement in generic place so that even -s option (which
-> captures summary) also will have meaningful information.
->=20
-> Acked-by: Namhyung Kim <namhyung@kernel.org>
-> Tested-by: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
-> Signed-off-by: Athira Rajeev <atrajeev@linux.ibm.com>
-> ---
-> Changelog
-> v1 -> v2:
-> - Rebased on top of latest perf-tools-next
-> - Since there is no change in logic, carried Acked-by from
-> Namhyung Kim and Tested-by from Venkat Rao Bagalkote
->=20
-> tools/perf/builtin-sched.c | 16 ++++++++++------
-> 1 file changed, 10 insertions(+), 6 deletions(-)
+The hypervisor environment should *never* set force_dma_decrypted()
+because all devices can access all hypervisor memory, up to their IOVA
+limits.
 
-Hi,
+> > So when I try "mem_encrypt=on iommu=pt swiotlb=force" with this
+> > patchset, it fails to boot. But it boots with a hack like this:
 
-Looking for comments on this patch
+On the host side I expect this to cause swiotlb to allocate encrypted
+memory and bounce to it.
 
-Thanks
-Athira
->=20
-> diff --git a/tools/perf/builtin-sched.c b/tools/perf/builtin-sched.c
-> index b7ccdc6a985d..5d3761a27e67 100644
-> --- a/tools/perf/builtin-sched.c
-> +++ b/tools/perf/builtin-sched.c
-> @@ -2259,12 +2259,6 @@ static void timehist_print_sample(struct =
-perf_sched *sched,
-> printf(" ");
-> }
->=20
-> - if (!thread__comm_set(thread)) {
-> - const char *prev_comm =3D perf_sample__strval(sample, "prev_comm");
-> -
-> - thread__set_comm(thread, prev_comm, sample->time);
-> -        }
-> -
-> printf(" %-*s ", comm_width, timehist_get_commstr(thread));
->=20
-> if (sched->show_prio)
-> @@ -2965,6 +2959,16 @@ static int timehist_sched_change_event(const =
-struct perf_tool *tool,
-> thread__zput(itr->last_thread);
-> }
->=20
-> + /*
-> + * If the process name is not set for the thread, use "prev_comm"
-> + * to set it. Otherwise the sched summary will have just pid =
-information
-> + */
-> + if (!thread__comm_set(thread)) {
-> + const char *prev_comm =3D perf_sample__strval(sample, "prev_comm");
-> +
-> + thread__set_comm(thread, prev_comm, sample->time);
-> + }
-> +
-> if (!sched->summary_only)
-> timehist_print_sample(sched, sample, &al, thread, t, state);
-> }
-> --=20
-> 2.52.0
->=20
+>  		u64 dma_enc_mask = DMA_BIT_MASK(__ffs64(sme_me_mask));
+>  		u64 dma_dev_mask = min_not_zero(dev->coherent_dma_mask,
+>  						dev->bus_dma_limit);
+> +		/*
+> +		 * With memory encryption enabled, SWIOTLB is marked decrypted.
+> +		 * If SWIOTLB bouncing is forced, treat the device as requiring
+> +		 * decrypted DMA.
+> +		 */
 
+And this is more insane logic. The right fix is to allocate the
+swiotlb bounce from the *encrypted* pools when running on the
+hypervisor which requires undoing this abuse of force_dma_decrypted().
+
+Jason
 
