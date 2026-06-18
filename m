@@ -1,87 +1,53 @@
-Return-Path: <linuxppc-dev+bounces-22751-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22752-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1EC4ACD98ED
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Jun 2026 00:56:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1D0BCCD98ED
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Jun 2026 01:45:33 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ggj2w5nNsz2xSb;
-	Thu, 18 Jun 2026 10:56:08 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=103.168.172.145
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781744168;
-	cv=none; b=A9c7SSd11/p4d0OQrLoLdkFNrGD3ob/tlomeK03dNJzZRd0U58SYN4l7AqkLyZ0wXQqdwG9y9V9Haj9uOPqpUh8NgR9XzK3rzbX+tP9znVoVdlKsjGs1F6DjQ4uoVi+MyGSXckSFIwBU8S1Id53lydtxkfgBqTEB6TH7O4Jc4CHkOQp1O/Vt9nymHjuR70uT5uNZHLmPKufJa/uZq4LPmdtvLiaPMEzSxZxhQAH+ltXAXbv/eUx91+mp3+gHpUZ0bWUnXtcs+tTMGOHk48JL319qhJtH9I3eELykEnZle5eN6WwXCltrjJZCU66gqzs3eeUAbu+/IGiO0UeplDgX5A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ggk7w29Dcz2xSb;
+	Thu, 18 Jun 2026 11:45:32 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=113.46.200.226
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781747132;
+	cv=none; b=THWqKE11mOK3qjtwBEoZjySWruj7Bipd8k52Wgu1HhqbsMKBygJSxtkS9Hmb2Kw6c8HTAWtjB+2JqInKjxG6yHXmzD6PDW5oR0DRj87Yyj1yg310Lr6EjpkbbZw2aKDD4wGosXLaD+xdJS0BzBsFBz1v82Q4wHRw4gWRjjaIkZpucBRkfQYO5PH2oJvIYZltkT3JcTEKOTfGBGxzM0qOc8oOLPKXMh6RFZmaDUf87C9ptWuxpdLyz4xtHF55fT88Cxhj5Y5s5kxWde/35tdrCdYDOY7TuhQ7Ra4dE6Zzn9L14qfSax+VMk0LrPLOHvoKsS+/d0Nzb5AceX8EOzCNvA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1781744168; c=relaxed/relaxed;
-	bh=oRkffw0hyh/GuxJCIVfKgEWNAymvT88Y3XYpx2BDW/k=;
-	h=Date:From:To:cc:Subject:In-Reply-To:Message-ID:References:
-	 MIME-Version:Content-Type; b=WMWe3ytZPt8cTMAhDXFmp9+Fdxq1KwgY4rnk0kVnhUbnX5icdhf7bsCnqe4guHYSRlKTvwd1S0MBeO0ymkw8GvPV9LndQvmCQ0YpqU7UOGp0szESjYBNvsjJeyA16G4vMfo+qu3Nb2SsCtuYZQfHLtngFTw72l8ojyd2iqnmM4Xyno9kYCaDfDiEW2xlK1PqrSbnqTINLUTL418RyO8ytM0iXMaieOaq5aBJq1JCq6fbNscRwLX8/OSxFsofyQWiKDFy1OngerCjybnMK6mRCjUwrjQpcIDyLFpOPNHngT2yG2hm8feLuHz/SDVlIfIVhnUY7AF2RXqcpEad/7bgCg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm1 header.b=eERmQ0ay; dkim-atps=neutral; spf=pass (client-ip=103.168.172.145; helo=fout-a2-smtp.messagingengine.com; envelope-from=fthain@linux-m68k.org; receiver=lists.ozlabs.org) smtp.helo=fout-a2-smtp.messagingengine.com
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
+	t=1781747132; c=relaxed/relaxed;
+	bh=elgYJ9FctEuOCR5N0/Evesj9qTtWETUXJRRIi/jFI38=;
+	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
+	 In-Reply-To:Content-Type; b=AVPGFasKEaGSep8dVw5qc7DadYJWZIxc5hvRsFFwROI8l2ddzC95+nEw0h5EREz9GtMbgrOXRpUCeYH5AmK5Whu32S2HhRQYQoo1FJ7Y4y1Ea0Lpuo3Kk+L9SJ0VWI/23wB+ewu83SPdbRp/onIhLjaOpN5jt3YLbVaa3wDAnRerGRz2y/pOT4y/S0MERYQ8B/viKpeQFk8sVCWzMY9kSHcSWoocAUCtnIR3A9yTcxA0o8xr3Z0ASwzGELLOLr4OsV72Waea1i//2CckKM1VSnPiJI1Pf9Q6sJvzjgNmd1B46rAQW7QV2sQeHj7GPbyEU48e02lI1SOjUAn+uIoxHA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=mKZIAMgr; dkim-atps=neutral; spf=pass (client-ip=113.46.200.226; helo=canpmsgout11.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm1 header.b=eERmQ0ay;
+	dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=mKZIAMgr;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.helo=fout-a2-smtp.messagingengine.com (client-ip=103.168.172.145; helo=fout-a2-smtp.messagingengine.com; envelope-from=fthain@linux-m68k.org; receiver=lists.ozlabs.org)
-Received: from fout-a2-smtp.messagingengine.com (fout-a2-smtp.messagingengine.com [103.168.172.145])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=113.46.200.226; helo=canpmsgout11.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org)
+Received: from canpmsgout11.his.huawei.com (canpmsgout11.his.huawei.com [113.46.200.226])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ggj2t3VyYz2xLm
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jun 2026 10:56:03 +1000 (AEST)
-Received: from phl-compute-11.internal (phl-compute-11.internal [10.202.2.51])
-	by mailfout.phl.internal (Postfix) with ESMTP id 3738DEC05E7;
-	Wed, 17 Jun 2026 20:56:01 -0400 (EDT)
-Received: from phl-frontend-04 ([10.202.2.163])
-  by phl-compute-11.internal (MEProxy); Wed, 17 Jun 2026 20:56:01 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
-	messagingengine.com; h=cc:cc:content-type:content-type:date:date
-	:feedback-id:feedback-id:from:from:in-reply-to:in-reply-to
-	:message-id:mime-version:references:reply-to:subject:subject:to
-	:to:x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=fm1; t=
-	1781744161; x=1781830561; bh=oRkffw0hyh/GuxJCIVfKgEWNAymvT88Y3XY
-	px2BDW/k=; b=eERmQ0ayn9m8wVNhOnqGRZkMB6lds2D6/ZBX5aKImkIIXfgOTbi
-	bBSDJcR8oILGjvE3+26/CCmg1rMxDZhplAMhmLr74EdkgR03Fzo3Pr33uMyYzruw
-	fLWbiYpqvFnIKO1OkdZ/lTWnLN9ZqzlKZ+Pmae7qKjlBGAAT5assyNo9DU2CLm2n
-	hcYgUn9Dcuv0J6tYCTvW0YPaOY9hT4bfB/Ypusbfl/uBe5yp+sMGPTWW3FfNlwXf
-	yG8FsMyCEJ6CCpuqkbMQFgtW5XCsF/M919yTmBgRSXTDhPvZxrrcNhKur7CAJ3xw
-	F55/rzSyXReRpHb7PsV+qL0k/H92V0c4Itw==
-X-ME-Sender: <xms:H0IzarJoPpga0EVjkyYtDAKpuylNksfat_NvfCUhWSOCtjwCzF_f-g>
-    <xme:H0IzamHdndkLe1JzQqFpQuE1xFHz02NY7tkG3dJxEwoiSQfMF57TOdJOmPEwKtHzY
-    KcN0CeNNl1_j8Yp4J3GkmQjc6ElL7AejiJQZOjTqnxH4p3h_WesQA>
-X-ME-Received: <xmr:H0Izaoy6d2LWswGUSgdxEZiGOOIp7F1GAzeKRKpSJyrH0AcCv47p3z-pU9ecUiICg3vu-MH_bhj3VeOXZCQlmtdBfz8XK8kBIME>
-X-ME-Proxy-Cause: dmFkZTEfsd2sy6rGCX9gKFtzw6P16veTBgEOvotvsGqzQMeY4e0byjs4rXjd0jR1EGh9lH
-    Yq1ys3Ja4IDwXPS3v8h80XGdeqX22kwtwfnwKbBWzdXMbQ3K21J/sdYHJ69m1M3WmEMdIu
-    u1nMszQRk8K9LYU0Q7Q7bmIKdExPNa6BOQgw7kl30YHXVdwKmJf3E0sJPtu/GsirOjXIP1
-    OMohMujEERuDNRRVoYibAAjRUfzIntuPTXU4ZMzzhV1KO9u+QyuBjvQZWPFHNeoyfVgbrS
-    xKlIz72VPlV0PJCNH8exmh65DDQ4fM9o2UBLSyaOZeAPSCtscvI5N+qb7q9WWVzoyMW0KJ
-    OK/PhdNbZwjAicc4o1XuhSDvlAX5cy+FtEEvV2F6GwZhMa+lPcgdxqF8OBb/lmLupQ5tEs
-    eheTqaLv4Nsg7nu414U6XqgJZzeXjEHoQKyhhj/PW+xu5f6FM80JRxgBdtwG9jllgL7YcC
-    yqXxG7Cj/sJGT3xVSMUgNWvoLGL7Kb6t1s9H5aAAQMPyEY0Lgd7FGNcJuDBha9e0gs/fps
-    iOWIrG6DUpVNDUVADq/vCJwf9Ebi7fmT8Ljiah57AZUCaHj9g2RUI1FwTR5wI2qitIaKqu
-    uLTAsCEPC2PcldxNQjt5opO4jHMZ5Rs2C0Zvi0g1/JJ5wDCgBUftZn/Xom5g
-X-ME-Proxy: <xmx:H0IzarhtWgRuIMlu2p5-tLhgH2FkJtO7O_M4iRkuEoFf70ad5bOd_A>
-    <xmx:H0IzatL7Euk8fVpAZfJJAWzsTcu0W72nRDeXBvUtVs0R9OUKs0mo6Q>
-    <xmx:H0IzauC7vQlbiuSjd4tSULVmpAMAV6fSiI9w8wwt0RrhGN4Z63PPVg>
-    <xmx:H0IzauSGYEJXZzWQrOlUMtDDUANieswg55yx3NL-E1fVReVzaCOU8A>
-    <xmx:IUIzavmfDbaASv4X0vfqP16GYSQdU_zCwOTdK2L0zg5ukH_f6P9Pfp7h>
-Feedback-ID: i58a146ae:Fastmail
-Received: by mail.messagingengine.com (Postfix) with ESMTPA; Wed,
- 17 Jun 2026 20:55:57 -0400 (EDT)
-Date: Thu, 18 Jun 2026 10:55:54 +1000 (AEST)
-From: Finn Thain <fthain@linux-m68k.org>
-To: Carsten Strotmann <carsten@strotmann.de>
-cc: Jakub Kicinski <kuba@kernel.org>, Carsten Strotmann <cas@strotmann.de>, 
-    John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, 
-    davem@davemloft.net, netdev@vger.kernel.org, edumazet@google.com, 
-    pabeni@redhat.com, andrew+netdev@lunn.ch, horms@kernel.org, 
-    geert@linux-m68k.org, chleroy@kernel.org, npiggin@gmail.com, 
-    mpe@ellerman.id.au, maddy@linux.ibm.com, linux-mips@vger.kernel.org, 
-    linux-m68k@lists.linux-m68k.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH net-next 0/2] appletalk: move the protocol out of tree
-In-Reply-To: <1781694488854.956546368.818588236@strotmann.de>
-Message-ID: <489024bc-b6e5-f601-3bce-444d75abbf5d@linux-m68k.org>
-References: <20260616084901.3319d82e@kernel.org> <1781694488854.956546368.818588236@strotmann.de>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ggk7r6n15z2xLk
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jun 2026 11:45:26 +1000 (AEST)
+dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
+	c=relaxed/relaxed; q=dns/txt;
+	h=From;
+	bh=elgYJ9FctEuOCR5N0/Evesj9qTtWETUXJRRIi/jFI38=;
+	b=mKZIAMgrv0yhhqfotPRGtcu6nLs4Chv0duVXxR76TfyQ3YmTy1nupn328cT3+Yi8uyhE+9n3j
+	uc7hX8yW3e8zJNd2aoWbAUFQRgY3AFqjEchvsWtvpFlpDHyb9xAegYA4dU42PHQBl0b7E74Ye3c
+	bNyffaauQdereWE6+Bi3IAM=
+Received: from mail.maildlp.com (unknown [172.19.163.127])
+	by canpmsgout11.his.huawei.com (SkyGuard) with ESMTPS id 4ggjyS3PN2zKm62;
+	Thu, 18 Jun 2026 09:37:20 +0800 (CST)
+Received: from dggpemf500011.china.huawei.com (unknown [7.185.36.131])
+	by mail.maildlp.com (Postfix) with ESMTPS id DADF3402AB;
+	Thu, 18 Jun 2026 09:45:21 +0800 (CST)
+Received: from [10.67.109.254] (10.67.109.254) by
+ dggpemf500011.china.huawei.com (7.185.36.131) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.1544.11; Thu, 18 Jun 2026 09:45:17 +0800
+Message-ID: <6437c0e3-d5c5-44b1-9157-b30bae2a6335@huawei.com>
+Date: Thu, 18 Jun 2026 09:45:17 +0800
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -95,31 +61,75 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v16 00/10] arm64/riscv: Add support for crashkernel CMA
+ reservation
+To: Mike Rapoport <rppt@kernel.org>
+CC: <corbet@lwn.net>, <skhan@linuxfoundation.org>, <catalin.marinas@arm.com>,
+	<will@kernel.org>, <chenhuacai@kernel.org>, <kernel@xen0n.name>,
+	<maddy@linux.ibm.com>, <mpe@ellerman.id.au>, <npiggin@gmail.com>,
+	<chleroy@kernel.org>, <pjw@kernel.org>, <palmer@dabbelt.com>,
+	<aou@eecs.berkeley.edu>, <alex@ghiti.fr>, <tglx@kernel.org>,
+	<mingo@redhat.com>, <bp@alien8.de>, <dave.hansen@linux.intel.com>,
+	<hpa@zytor.com>, <robh@kernel.org>, <saravanak@kernel.org>,
+	<akpm@linux-foundation.org>, <bhe@redhat.com>, <pasha.tatashin@soleen.com>,
+	<pratyush@kernel.org>, <ruirui.yang@linux.dev>, <rdunlap@infradead.org>,
+	<peterz@infradead.org>, <feng.tang@linux.alibaba.com>,
+	<dapeng1.mi@linux.intel.com>, <kees@kernel.org>, <elver@google.com>,
+	<kuba@kernel.org>, <lirongqing@baidu.com>, <ebiggers@kernel.org>,
+	<paulmck@kernel.org>, <leitao@debian.org>, <coxu@redhat.com>,
+	<Liam.Howlett@oracle.com>, <ryan.roberts@arm.com>, <osandov@fb.com>,
+	<jbohac@suse.cz>, <cfsworks@gmail.com>, <tangyouling@kylinos.cn>,
+	<sourabhjain@linux.ibm.com>, <ritesh.list@gmail.com>,
+	<adityag@linux.ibm.com>, <liaoyuanhong@vivo.com>, <seanjc@google.com>,
+	<fuqiang.wang@easystack.cn>, <ardb@kernel.org>, <chenjiahao16@huawei.com>,
+	<guoren@kernel.org>, <x86@kernel.org>, <linux-doc@vger.kernel.org>,
+	<linux-kernel@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
+	<loongarch@lists.linux.dev>, <linuxppc-dev@lists.ozlabs.org>,
+	<linux-riscv@lists.infradead.org>, <devicetree@vger.kernel.org>,
+	<kexec@lists.infradead.org>
+References: <20260608073459.3119290-1-ruanjinjie@huawei.com>
+ <ajLr53EK6mJbng-7@kernel.org>
+From: Jinjie Ruan <ruanjinjie@huawei.com>
+In-Reply-To: <ajLr53EK6mJbng-7@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+X-Originating-IP: [10.67.109.254]
+X-ClientProxiedBy: kwepems500002.china.huawei.com (7.221.188.17) To
+ dggpemf500011.china.huawei.com (7.185.36.131)
 
 
-On Wed, 17 Jun 2026, Carsten Strotmann wrote:
 
-> > _Someone_ has to handle the reports and patches. And since nobody is 
-> > doing that the code is going to GitHub, where it can continue to "just 
-> > be left" or whatever, without racking up CVEs for the Linux kernel and 
-> > leading to maintainer burn out :/
-> > 
+On 6/18/2026 2:48 AM, Mike Rapoport wrote:
+> Hi Jinjie,
 > 
-> That's a good point. The large influx of reports is a problem, and burn 
-> out of maintainers is a too high cost.
+> On Mon, Jun 08, 2026 at 03:34:49PM +0800, Jinjie Ruan wrote:
+>> The crash memory allocation, and the exclude of crashk_res, crashk_low_res
+>> and crashk_cma memory are almost identical across different architectures,
+>> This patch set handle them in crash core in a general way, which eliminate
+>> a lot of duplication code.
+>>
+>> And add support for crashkernel CMA reservation for arm64 and riscv.
+>>
+>> This patch set is rebased on v7.1-rc1.
+> 
+> Please rebase this set on v7.2-rc1 once that's out.
+> 
+> I'm going to queue it in the liveupdate tree then to expose to the wider
+> testing.
+> 
+> Meanwhile it would be great to chase riscv and x86 maintainers for acks :)
+
+Thanks! That sounds great.
+
+I will rebase this patch set on v7.2-rc1 as soon as it is out and send v17.
+
+In the meantime, I will CC and reach out to the RISC-V and x86
+maintainers to request their reviews and Acks.
+
+Best regards,
+Jinjie
+
 > 
 
-Carsten, if, as a maintainer, you want to avoid burnout then
-
-1) don't promise what you can't deliver (that is, decline sponsorship)
-
-2) delegate (that is, leverage AI as an ally not as a lame excuse)
-
-So the question remains: what is it which _can_ be delivered by and for 
-the "community" (by which I mean, that group of people which includes 
-actual end users -- not merely paying customers and sponsored developers).
-
-This question has precious little to do with burnout, but it's the 
-question we need to address.
 
