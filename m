@@ -1,53 +1,98 @@
-Return-Path: <linuxppc-dev+bounces-22753-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22754-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7FBF2CD98ED
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Jun 2026 01:55:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5FDE8CD98E4
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Jun 2026 02:40:00 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ggkLy5SKFz2xSb;
-	Thu, 18 Jun 2026 11:55:06 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=113.46.200.217
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781747706;
-	cv=none; b=RmkO+fdNw/u5905YWT5BEp8UVR+OcNTkOT/0RM8EtEEcr3dPg8dFgRmv9jEAi9bITiA0PfXJF/FiH6b2gNu2RWNcrufG+1gwdjHH29o1rJ5EvxdGEcp1DUkaR+2xu9Pho8bjj4dKbkBREkcQ3mmWKlZqdAmWAk20TNMhAcUggXckIvb3waAfN7M5AHz8e04kHCmNxPAn+bB3+zPbWRNvDqxty0BIdZgwM6dd/XtT7PSXEeMNxAH8+VQIwlyTq/KpW7q+uuNF6WANHPcGUR1p8pzn5cFk5O3IJGSLUIpnFdaUye1r8Vi8iI6BevzO+L57kxROKz/uOOAWOW3hj4P9Bg==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1781747706; c=relaxed/relaxed;
-	bh=UOH0r2GKmZinHZXHsCVUvBFIRyCZaXIIn59yPqlKYRQ=;
-	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
-	 In-Reply-To:Content-Type; b=isgF41e0xkOdn/6ocPRnnzB8wGVJe9ne6CzwZ3wlE5u9qJ/WUMJwSD6+3mohGPzy/M6gGkOIFADerSzGlSPvw7MAkhLjlKPKukcOhVDKV4Gm0gw+mgXIQ0+oiD83wxZNEhkneivxXb2qYQZ7vjMY+QTgUk8yJsEASlBpdfmULcrrj2zglusM4Km4sK7KRd4L3iaAs+k/dymw7H69bnPotPkGWhFtF4N986R5MQO+5fNgZwf6QlpM4vOKKolTFZylcTgNGJKcQd6NlIUDgBKza6w6Y54wcj2tRYrARYY44Fokw12VDOFJC2k6+PE3CuGKjW0V6YljDeaBtO7L7nKMMA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=35QD5KYB; dkim-atps=neutral; spf=pass (client-ip=113.46.200.217; helo=canpmsgout02.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gglLk6gFbz2xM7;
+	Thu, 18 Jun 2026 12:39:58 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c112::7" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781750398;
+	cv=pass; b=e+LAQXbwZjnvZtz3phJd2Di5h5SF20DfQsKHppksQ6gzkEar2jkE56I3gjvDSO7Ed0cuLlrDUH+3x0yFQH1eDGMYCY5lklhqWjGZPo2o+bI0lFh2cuN4dnVy7pFQ02XjoqEtTlL86Rf2aYWCC1qxk5tYnx1h1ZV5uMT0j18QDr74kCMf+fNseQa/4xjM7Z1g1rAiDrpy3CovC2eicNB6Z5n9QXdqjTvXomzU3S5pK82TPxj8osl3eT0VtsM5n3SwW0hyNYdUAF1Ji/izR3OSEvoJPUIIkFroMTyS7vQgm5QHvjh5K6WCkKExoOlUg48mYs6Z69QVJaLEHexmonUT/A==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1781750398; c=relaxed/relaxed;
+	bh=lHvsIAgIBceF0OPDYR+D1Xr8Nu0CLjHXLYuecGFm7rY=;
+	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
+	 Content-Type:MIME-Version; b=Qz80e6jQxFK6z0IwWRirIp/JiCs+vw6MBPVdd9MUKJmPb2PfBLR5HCucWGtqZ4QuSkPymccjYt7hgfGKIr4wuSFZKPQdG3sUwcMWkOQAo4YNZj5B12kWbfZAoIwC2e7QYZhcNc4N3obt3SacwxerV9bhKnDo8wu/s8LVHVo/HCMuguDjp75nxR1U6QbDvaMwe8pYlI6RSr0j2amANY75MuvHourIiCcKIkVTKzzUym+gi1ymYfQB0Gxn2wQhhZqXizWytTytq8zxxnr4vft6KOrLSSnWKm0taEpp2nDiwEDMyDO0e8dVYNzhO/7eg8thsfPZNHeZ08MqtXd+2rAeaQ==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; dkim=pass (1024-bit key; unprotected) header.d=amd.com header.i=@amd.com header.a=rsa-sha256 header.s=selector1 header.b=g/eXt4BS; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c112::7; helo=cy3pr05cu001.outbound.protection.outlook.com; envelope-from=alexey.kardashevskiy@amd.com; receiver=lists.ozlabs.org) smtp.mailfrom=amd.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=35QD5KYB;
+	dkim=pass (1024-bit key; unprotected) header.d=amd.com header.i=@amd.com header.a=rsa-sha256 header.s=selector1 header.b=g/eXt4BS;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=113.46.200.217; helo=canpmsgout02.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org)
-Received: from canpmsgout02.his.huawei.com (canpmsgout02.his.huawei.com [113.46.200.217])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=amd.com (client-ip=2a01:111:f403:c112::7; helo=cy3pr05cu001.outbound.protection.outlook.com; envelope-from=alexey.kardashevskiy@amd.com; receiver=lists.ozlabs.org)
+Received: from CY3PR05CU001.outbound.protection.outlook.com (mail-westcentralusazlp170130007.outbound.protection.outlook.com [IPv6:2a01:111:f403:c112::7])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ggkLx4CzSz2xLk
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jun 2026 11:55:05 +1000 (AEST)
-dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
-	c=relaxed/relaxed; q=dns/txt;
-	h=From;
-	bh=UOH0r2GKmZinHZXHsCVUvBFIRyCZaXIIn59yPqlKYRQ=;
-	b=35QD5KYBf8iWm3rSHGgu5lrD1IM1oRlAbbVOXF6oMi5OW7M8yZlBjxwAJDI7B4dZe3/wWYw3i
-	u1FsPuVNCgRGRIq4XPKt8ko5A2ZywXPGblpb9i9d6ACKRzVYyCRKVU0tJtsMiLrk1LIdelLq3nq
-	AYJjys3AV3rY6Q7icuxh40k=
-Received: from mail.maildlp.com (unknown [172.19.163.0])
-	by canpmsgout02.his.huawei.com (SkyGuard) with ESMTPS id 4ggk934xsfzcbNM;
-	Thu, 18 Jun 2026 09:46:31 +0800 (CST)
-Received: from dggpemf500011.china.huawei.com (unknown [7.185.36.131])
-	by mail.maildlp.com (Postfix) with ESMTPS id A97B840561;
-	Thu, 18 Jun 2026 09:54:57 +0800 (CST)
-Received: from [10.67.109.254] (10.67.109.254) by
- dggpemf500011.china.huawei.com (7.185.36.131) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1544.11; Thu, 18 Jun 2026 09:54:53 +0800
-Message-ID: <7d8492c5-fc17-4c94-bc88-e77d6c1a849d@huawei.com>
-Date: Thu, 18 Jun 2026 09:54:52 +0800
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gglLj1YmNz2xLm
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jun 2026 12:39:56 +1000 (AEST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=j9Orkoee0SHfN3xK9EGQ9VC7RWlYw0m5crFg0vEfzyg/NJq+gvGDNcMDgwW+usjJRASNA5CkKGl9kqC6j3xZCtGKmSvCD6BBWRswY/cmrCJP8Lsjefb0VwtOZuVur8Kn//7ok2e+ngXoqlhwRRxxFiGxWodVsCZs2UcGjyRefZjnczIjLu0vS8jQf9W7lGG9t+6FPhF+n4deBY0C6mQPWdBPYVoEgtMIqPCLeCoNkBR808F14mzuBD7bQnA2R0WlYK+9/drdcZ671nk154jga5SNQJlTMmOdIbpqsqhRMgUQzwwubNh7J/c0oK7gwszbcWIVi9ZNaUxSrCXhtxAbGA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=lHvsIAgIBceF0OPDYR+D1Xr8Nu0CLjHXLYuecGFm7rY=;
+ b=NWacjJweOwsKg7Dn/tJf9L2oBzzqktBVe/PUIE4cdkpfzs8febYxd//STKvYbEM5awFYMEZC9bt01GrI+Clap0xBK0g273C0i6r29e61122je7YlmJRED/TUvmIyYDNahvqDAQsXnyhddmYNetIQshw8CRBAv14YvDNSF4vF5FWw2KHOmnGwjn3E5lm/pvaTtcdzB/asX+Yb0u01lY82H3ntxU850v+lGwEBPKmouebcLhIBdKtLbqFHFwNUXekJI2H4oyHZOrmJ23a1ki62aqk3drGjqI6Ak+vNLyTlEbTsE2u0ePbUx/b2t8AefAMVSv0RVLRbQUXkVGC65ZMkBg==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=amd.com; dmarc=pass action=none header.from=amd.com; dkim=pass
+ header.d=amd.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=lHvsIAgIBceF0OPDYR+D1Xr8Nu0CLjHXLYuecGFm7rY=;
+ b=g/eXt4BSn29yVu7Y7xnRP1QCtNsvzSKzUqU7Jz4n+jUlvb2pYoeJqdlEerVFL2VYL0QNXrKKNOxNzeK0IgPU1jBxMKOelAFUCnZFTgI6/4SNsJ8UND35O5YpLH7xp9AnDeMnuxIheSxpwfDckWJmJAw8uzoVritQAar+v4w343Y=
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=amd.com;
+Received: from SA1PR12MB999228.namprd12.prod.outlook.com
+ (2603:10b6:806:4db::10) by MW5PR12MB5622.namprd12.prod.outlook.com
+ (2603:10b6:303:198::13) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.139.11; Thu, 18 Jun
+ 2026 02:39:32 +0000
+Received: from SA1PR12MB999228.namprd12.prod.outlook.com
+ ([fe80::4dba:119e:8e7c:37b3]) by SA1PR12MB999228.namprd12.prod.outlook.com
+ ([fe80::4dba:119e:8e7c:37b3%4]) with mapi id 15.21.0113.015; Thu, 18 Jun 2026
+ 02:39:31 +0000
+Message-ID: <25155bd6-4348-4aa8-ba70-0a882fc84db9@amd.com>
+Date: Thu, 18 Jun 2026 12:39:21 +1000
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v6 03/20] dma-direct: use DMA_ATTR_CC_SHARED in alloc/free
+ paths
+To: Jason Gunthorpe <jgg@ziepe.ca>
+Cc: "Aneesh Kumar K.V (Arm)" <aneesh.kumar@kernel.org>,
+ iommu@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
+ linux-kernel@vger.kernel.org, linux-coco@lists.linux.dev,
+ Robin Murphy <robin.murphy@arm.com>,
+ Marek Szyprowski <m.szyprowski@samsung.com>, Will Deacon <will@kernel.org>,
+ Marc Zyngier <maz@kernel.org>, Steven Price <steven.price@arm.com>,
+ Suzuki K Poulose <Suzuki.Poulose@arm.com>,
+ Catalin Marinas <catalin.marinas@arm.com>, Jiri Pirko <jiri@resnulli.us>,
+ Mostafa Saleh <smostafa@google.com>, Petr Tesarik <ptesarik@suse.com>,
+ Dan Williams <dan.j.williams@intel.com>, Xu Yilun
+ <yilun.xu@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
+ "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+ Alexander Gordeev <agordeev@linux.ibm.com>,
+ Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
+ Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>,
+ Christian Borntraeger <borntraeger@linux.ibm.com>,
+ Sven Schnelle <svens@linux.ibm.com>, x86@kernel.org,
+ Jiri Pirko <jiri@nvidia.com>, Michael Kelley <mhklinux@outlook.com>,
+ "Cheloha, Scott" <Scott.Cheloha@amd.com>
+References: <20260604083959.1265923-1-aneesh.kumar@kernel.org>
+ <20260604083959.1265923-4-aneesh.kumar@kernel.org>
+ <845d0c8a-6d51-47aa-8e0b-8381e733444a@amd.com>
+ <20260617154101.GE3577091@ziepe.ca>
+Content-Language: en-US
+From: Alexey Kardashevskiy <aik@amd.com>
+In-Reply-To: <20260617154101.GE3577091@ziepe.ca>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-ClientProxiedBy: SY6PR01CA0124.ausprd01.prod.outlook.com
+ (2603:10c6:10:1b8::17) To SA1PR12MB999228.namprd12.prod.outlook.com
+ (2603:10b6:806:4db::10)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -61,170 +106,117 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v16 06/10] riscv: kexec_file: Use crash_prepare_headers()
- helper to simplify code
-To: <corbet@lwn.net>, <skhan@linuxfoundation.org>, <catalin.marinas@arm.com>,
-	<will@kernel.org>, <chenhuacai@kernel.org>, <kernel@xen0n.name>,
-	<maddy@linux.ibm.com>, <mpe@ellerman.id.au>, <npiggin@gmail.com>,
-	<chleroy@kernel.org>, <pjw@kernel.org>, <palmer@dabbelt.com>,
-	<aou@eecs.berkeley.edu>, <alex@ghiti.fr>, <tglx@kernel.org>,
-	<mingo@redhat.com>, <bp@alien8.de>, <dave.hansen@linux.intel.com>,
-	<hpa@zytor.com>, <robh@kernel.org>, <saravanak@kernel.org>,
-	<akpm@linux-foundation.org>, <bhe@redhat.com>, <rppt@kernel.org>,
-	<pasha.tatashin@soleen.com>, <pratyush@kernel.org>, <ruirui.yang@linux.dev>,
-	<rdunlap@infradead.org>, <peterz@infradead.org>,
-	<feng.tang@linux.alibaba.com>, <dapeng1.mi@linux.intel.com>,
-	<kees@kernel.org>, <elver@google.com>, <kuba@kernel.org>,
-	<lirongqing@baidu.com>, <ebiggers@kernel.org>, <paulmck@kernel.org>,
-	<leitao@debian.org>, <coxu@redhat.com>, <Liam.Howlett@oracle.com>,
-	<ryan.roberts@arm.com>, <osandov@fb.com>, <jbohac@suse.cz>,
-	<cfsworks@gmail.com>, <tangyouling@kylinos.cn>, <sourabhjain@linux.ibm.com>,
-	<ritesh.list@gmail.com>, <adityag@linux.ibm.com>, <liaoyuanhong@vivo.com>,
-	<seanjc@google.com>, <fuqiang.wang@easystack.cn>, <ardb@kernel.org>,
-	<chenjiahao16@huawei.com>, <guoren@kernel.org>, <x86@kernel.org>,
-	<linux-doc@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-	<linux-arm-kernel@lists.infradead.org>, <loongarch@lists.linux.dev>,
-	<linuxppc-dev@lists.ozlabs.org>, <linux-riscv@lists.infradead.org>,
-	<devicetree@vger.kernel.org>, <kexec@lists.infradead.org>
-References: <20260608073459.3119290-1-ruanjinjie@huawei.com>
- <20260608073459.3119290-7-ruanjinjie@huawei.com>
-From: Jinjie Ruan <ruanjinjie@huawei.com>
-In-Reply-To: <20260608073459.3119290-7-ruanjinjie@huawei.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-X-Originating-IP: [10.67.109.254]
-X-ClientProxiedBy: kwepems500002.china.huawei.com (7.221.188.17) To
- dggpemf500011.china.huawei.com (7.185.36.131)
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: SA1PR12MB999228:EE_|MW5PR12MB5622:EE_
+X-MS-Office365-Filtering-Correlation-Id: fb695296-4ac9-4986-f8f3-08decce2d366
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|23010399003|7416014|1800799024|376014|366016|56012099006|11063799006|22082099003|18002099003|4143699003;
+X-Microsoft-Antispam-Message-Info:
+	6bhn0HZ4tXBeCfOqPBuOQF/DR4sbwgmHha8T6qIL9+6gcSNM2zT7k0k59vAwon5cG1DwuZqBokpUgLOQ2XZsRW9EpgJaTfxfJgFQcCkj0CV1aGdn0aPEWFNPOiDgp/vBMAt+d9u8ENj9N8vmzcoXgg/ve0SW1KPIIo7x6HYu7MhaOOEziaO3Y/RG6dEXykKpceOcl5nR+AzdOPJlTIUPKSNyLAhq42Er10e7qPQKj2ZYd6uLVPA1EHEmj8Fts8YRBw1UfAZXiQMyd4YHSoJTSxLtuIOQJDSIGWS8Cwqu/MgBARnanx8jEs7ma084J+qy9qwPNkCUSSKOkfWiJ/SfpvP/ARIqGPZpxUTTr/Gp6oouHd6v5qegLrvrJYg1O+L1p+nWCNZ0D3R66DDHx9dOHxMAD4JXCYJjU2HQB375hzyD3npz8GCf92kZxrI+8cZBvAWtCuLrvvCculsaOjOG7t0F4rMbJZh32NvcuLRKnlSVQRXJBe5gjqRZmdcTf6Q4cQyCTBVdhv6L9ZS6L3fr6QKOfKEjpT1rmZz8O3e+UnsGa6zI192UIzK7E1nES0s/Wwx/tt4+yKgsQNsVlwf3Cy4kVJLYWbjwHmx/3AoNd5EDqjhK9OvLtuDIKGKpyYN5HbjgRdqYoEj6qKkLBq8Y2BBy2F5ZqYtvMcMLQFjNbpLCVeYc9QKLNISAxDb69YTb
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:SA1PR12MB999228.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(23010399003)(7416014)(1800799024)(376014)(366016)(56012099006)(11063799006)(22082099003)(18002099003)(4143699003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?utf-8?B?YU9FY1g2WGk3SHFETGlXUVJTeFVmK1BhcVRsMjh6dThwTk1aVjI4Mjkydk90?=
+ =?utf-8?B?MW5RQ0RrK1luQ0RPeVRqMGNwYjdHV3dsWFp4VWVtMjdiUVNPRHFKMFgyZlZt?=
+ =?utf-8?B?eDNVTE5JYnYzRnBJQTYrdXVCS1ZCQmRrb1dhSWdRamNTbGF0VUV2VS93SEhm?=
+ =?utf-8?B?Tklib3AyRjdNZTJpQzhvazhLU3B4aVFCZUh4MllNK1FZc2tzKzVHNWtsUnBF?=
+ =?utf-8?B?ZzBSTncveGpGMklFbnhVeFplOVVTNUNPU2lLUWMxVVpHRXZ4bWY5bTVqeTJu?=
+ =?utf-8?B?SlFJNjN5Ym5XMlhmeW9oNEk4N1FwZzNFMDM4MTJlOVRuUk1hMGZac3liekN2?=
+ =?utf-8?B?NGdjTlpiSmdwbVM0NjNGbWVqbUJzbHFCQzA4N2hFTlI4NGNPTWxOZElqSTNU?=
+ =?utf-8?B?ZExhZkNmR2wrKzVWc0VDYUNrV0N0eGpaSFdUMHZ1UTdpdU9nZlJkZkpZbDA5?=
+ =?utf-8?B?ZGFQTnB5QzlrTjBFUTFzZ1M2bTNQd1pUMTNEUlV1Nks3Tzd4MVlTOW1hYU1Q?=
+ =?utf-8?B?emVORmtyLys5bHR2WlZmUjdWcVZWdkFXRXhYVXVpaEt3WWU4dUNLWUZyNVJM?=
+ =?utf-8?B?SnpQQlBjSm0vMVBCU0E1MzdySG5UNjZiR0h0V1ZTb0JUcitCY1dvelJ0Ni9w?=
+ =?utf-8?B?KzBKR2c1NFUySm1zR0czNTRHZzJSdUZlZFNvWVdpeXRpVXV4MFRUb08wVGY4?=
+ =?utf-8?B?dGo4NVNiTFltRitMQnA2WDB2MUtOY3RjVlhXbWM1ZEtwbGxMNTdadFBleXpu?=
+ =?utf-8?B?ZW81RjR0WHl4eEZIbHRleTdzYlUyd3NiaFVpZE5naXpZQU5SekR2Wk5uVFov?=
+ =?utf-8?B?elBiRmFhQ3BFOGNFTHBpZjlFVXYzU1UvUy9jMTZhSzZtbHFBZEJEajZNZ0RJ?=
+ =?utf-8?B?SzE3WlV6Wk9GaG5pajhuL3FQVnYzM2hud3FtSmtVTUhyZ21SYksyMG5nWkNq?=
+ =?utf-8?B?RlNEelROZUloZmROa2Vxcm40YmtLSEh2YlRMNUVQL2I2REw5WkVtVFArbm9v?=
+ =?utf-8?B?MmVuODJNaUp6WFhMSXJ0aTBDL3BDMndOVjRyTlhPT2pxdFo4eWhlUTB5ZFhJ?=
+ =?utf-8?B?MmpNVzc3UFYzMGZxcCtKRi9HNllTWGF1bjMyK3lOY2EwY0o0Z3ZOR3Q4UjJX?=
+ =?utf-8?B?RDhuM1N1N1VmRUN1ZEJnckJqYVRsWHZyck9ZOHhsZEd1UEJGdVZyb29ienV5?=
+ =?utf-8?B?M2RjS0dhaXdqeUQ1KzBpR2VxSmFPdU41dUdQNkJQRDVIVk1IOXIxQjdkL1Rh?=
+ =?utf-8?B?MlIrQnU2K0VRcTA0WmpNVGdZcTZwY05SMHAvcHg3RDdwemlvcjdCaXNUd2g0?=
+ =?utf-8?B?UVZ5WGlFSU0yalJoUVlqMFpTSkpxZGluOEhaLzBtSFJ3NG4yck5rVDQwdi9s?=
+ =?utf-8?B?VHh0K0pXUmN5b24rRU9XSGVmdmdUWFlkV3J1blpxYS9aTjd0bDdZR0J4dXM5?=
+ =?utf-8?B?aWtsODFWeHBRUFE1NnZJemhMM3ZuL1BVNndyL2UwbVZzK1RJM0N5ZUswV1pU?=
+ =?utf-8?B?c0dlQTlZVDZQV29Ocnk5VGZWaEg0V0NCSEo0UzF3SGd5TFgySDR4WHhNckdj?=
+ =?utf-8?B?Z2QvZHhsS254cC9OeW9GL0ljdDJzVnRFNkhQLzJxYWk5bVhDMm9ZN1pTdG9z?=
+ =?utf-8?B?dzl0MFhOQmxtd2tVOHhPOCtjcXVLZHlqb3lxL2laZGUwUEY1T052eDkrNzBt?=
+ =?utf-8?B?V3RKUU5Kakh4Yy9JYmZDME9JUmRQcVJyb1RZYXMrYm1QcFM3cElqeEgwOXpE?=
+ =?utf-8?B?SXhhbHZXcFQxMVNDUXJMYWhMbEtQbVNEd2ZRNTZvVEViRGQ4SW1sK2V6bkdy?=
+ =?utf-8?B?bFM4YmFrZ1I0RjVaMGVwU2VwZW5YS0NISEhoSVVQd3NLdDhWYjBMaHR6VS9D?=
+ =?utf-8?B?N2M1YTFtaTFDS2RyeEhqQ1Z3aEdVak9SQ2E5bisrQXlMMUZtS0ZLdExrTHY5?=
+ =?utf-8?B?NFYycmVJcG53VmRiWnJGRFJLbWxBTlhnRVhnS3ZlNW1XZklsRGh6TTRrOTJo?=
+ =?utf-8?B?bUQ4M2JxbFQzdTlSTmNDajdnNGRqL0I4QUdkRm8yUlA0L01ZWWVaQ2ZRakxa?=
+ =?utf-8?B?WEV0azF4UFMvOENpMStEdXlNeXVRZFZCSFpmU2NQdVcrWDVWQXdoMER4M2JS?=
+ =?utf-8?B?TVdPWEN3VXNCRkdBZExNM2NacFE1cThjTHJYTkVTalZ3ck12YXRJb3pOM0NW?=
+ =?utf-8?B?U2ZLSitYUitSUG5Hczd1NjZtRU5YdWMxU3A2ZmFBUWlvUTVwOEhCZEYzbWhC?=
+ =?utf-8?B?S3U5UEE2UVJuTDNtWGVYa3p4a2JrR1d6K3Y2MCsxdTJSR1ErSVpIWXBuRS9r?=
+ =?utf-8?Q?aUDdEisr5/hOEtDAhz?=
+X-OriginatorOrg: amd.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: fb695296-4ac9-4986-f8f3-08decce2d366
+X-MS-Exchange-CrossTenant-AuthSource: SA1PR12MB999228.namprd12.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 18 Jun 2026 02:39:31.6916
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: S3FFOQkpgvwqpgBtKFfaxKfgTS7bGPTHGpWwzO7JWqMY92thEWIeMQ0f55pi5T0wqS5sHqE9ILQtW6dgXovqJA==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: MW5PR12MB5622
 
 
 
-On 6/8/2026 3:34 PM, Jinjie Ruan wrote:
-> Use the newly introduced crash_prepare_headers() function to replace
-> the existing prepare_elf_headers(), allocate cmem and exclude crash kernel
-> memory in the crash core, which reduce code duplication.
+On 18/6/26 01:41, Jason Gunthorpe wrote:
+> On Wed, Jun 17, 2026 at 10:50:39AM +1000, Alexey Kardashevskiy wrote:
+>>> @@ -193,16 +193,31 @@ void *dma_direct_alloc(struct device *dev, size_t size,
+>>>    		dma_addr_t *dma_handle, gfp_t gfp, unsigned long attrs)
+>>>    {
+>>>    	bool remap = false, set_uncached = false;
+>>> -	bool mark_mem_decrypt = true;
+>>> +	bool mark_mem_decrypt = false;
+>>>    	struct page *page;
+>>>    	void *ret;
+>>> +	/*
+>>> +	 * DMA_ATTR_CC_SHARED is not a caller-visible dma_alloc_*()
+>>> +	 * attribute. The direct allocator uses it internally after it has
+>>> +	 * decided that the backing pages must be shared/decrypted, so the
+>>> +	 * rest of the allocation path can consistently select DMA addresses,
+>>> +	 * choose compatible pools and restore encryption on free.
+>>
+>> Why this limit?
+>>
+>> Context: I am looking for a memory pool for a few shared pages (to
+>> do some guest<->host communication), SWIOTLB seems like the right
+>> fit but swiotlb_alloc() is not exported and
+>> dma_direct_alloc(DMA_ATTR_CC_SHARED) is not allowed.  Thanks,
 > 
-> Only the following two architecture functions need to be implemented:
-> - arch_get_system_nr_ranges(). Call get_nr_ram_ranges_callback()
->   to pre-counts the max number of memory ranges.
+> Then setup your struct device so that the DMA API knows the
+> guest<->host channel requires unecrypted and it will work correctly.
 > 
-> - arch_crash_populate_cmem(). Use prepare_elf64_ram_headers_callback()
->   to collects the memory ranges and fills them into cmem.
+> I think this is a reasonable API to use for that, and I was just
+> advocating that hyperv should be using it too.
+> 
+> But it all relies on a properly setup struct device.
 
-Hi Paul, Palmer, Albert, Alexandre and RISC-V maintainers,
+Sounds good but how do I do that in practice? DMA_ATTR_CC_SHARED is not externally available so I'll have to trick the DMA layer into using SWIOTLB (which is still all shared, right?) as I specifically want to skip page conversions. Setting low DMA mask won't guarantee that the DMA layer won't allocate a page outside of SWIOTLB and convert it. Manually do
 
-Sorry for the interruption.
+dev->dma_io_tlb_mem->force_bounce = true;
+dev->dma_io_tlb_mem->for_allow = true;
 
-This patch set aims to clean up and refactor the crash memory allocation
-and the exclusion logic of crashk_res, crashk_low_res, and crashk_cma.
-Currently, these  routines are almost identical across different
-architectures, leading to a lot of duplicated code.
+?
+Or follow the Aneesh'es genpool approach? Thanks,
 
-This series consolidates the logic into the generic crash core, removing
-redundant implementations from architecture-specific directories,
-including arch/riscv.
-
-There are no functional changes intended for RISC-V.
-
-The patches will be queued in the liveupdate tree for wider testing.
-Could you please take a look at the RISC-V side and consider providing
-an Acked-by?
-
-The patch series can be reviewed here:
-
-https://lore.kernel.org/all/20260608073459.3119290-1-ruanjinjie@huawei.com/
-
-Thank you very much for your time and review!
-
-Best regards,
-Jinjie
 
 > 
-> Cc: Paul Walmsley <pjw@kernel.org>
-> Cc: Palmer Dabbelt <palmer@dabbelt.com>
-> Cc: Albert Ou <aou@eecs.berkeley.edu>
-> Cc: Alexandre Ghiti <alex@ghiti.fr>
-> Cc: Guo Ren <guoren@kernel.org>
-> Reviewed-by: Sourabh Jain <sourabhjain@linux.ibm.com>
-> Acked-by: Baoquan He <bhe@redhat.com>
-> Acked-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
-> Signed-off-by: Jinjie Ruan <ruanjinjie@huawei.com>
-> ---
->  arch/riscv/kernel/machine_kexec_file.c | 47 +++++++-------------------
->  1 file changed, 12 insertions(+), 35 deletions(-)
-> 
-> diff --git a/arch/riscv/kernel/machine_kexec_file.c b/arch/riscv/kernel/machine_kexec_file.c
-> index 3f7766057cac..439cbc50dfa6 100644
-> --- a/arch/riscv/kernel/machine_kexec_file.c
-> +++ b/arch/riscv/kernel/machine_kexec_file.c
-> @@ -44,6 +44,15 @@ static int get_nr_ram_ranges_callback(struct resource *res, void *arg)
->  	return 0;
->  }
->  
-> +unsigned int arch_get_system_nr_ranges(void)
-> +{
-> +	unsigned int nr_ranges = 2; /* For exclusion of crashkernel region */
-> +
-> +	walk_system_ram_res(0, -1, &nr_ranges, get_nr_ram_ranges_callback);
-> +
-> +	return nr_ranges;
-> +}
-> +
->  static int prepare_elf64_ram_headers_callback(struct resource *res, void *arg)
->  {
->  	struct crash_mem *cmem = arg;
-> @@ -55,41 +64,9 @@ static int prepare_elf64_ram_headers_callback(struct resource *res, void *arg)
->  	return 0;
->  }
->  
-> -static int prepare_elf_headers(void **addr, unsigned long *sz)
-> +int arch_crash_populate_cmem(struct crash_mem *cmem)
->  {
-> -	struct crash_mem *cmem;
-> -	unsigned int nr_ranges;
-> -	int ret;
-> -
-> -	nr_ranges = 2; /* For exclusion of crashkernel region */
-> -	walk_system_ram_res(0, -1, &nr_ranges, get_nr_ram_ranges_callback);
-> -
-> -	cmem = kmalloc_flex(*cmem, ranges, nr_ranges);
-> -	if (!cmem)
-> -		return -ENOMEM;
-> -
-> -	cmem->max_nr_ranges = nr_ranges;
-> -	cmem->nr_ranges = 0;
-> -	ret = walk_system_ram_res(0, -1, cmem, prepare_elf64_ram_headers_callback);
-> -	if (ret)
-> -		goto out;
-> -
-> -	/* Exclude crashkernel region */
-> -	ret = crash_exclude_mem_range(cmem, crashk_res.start, crashk_res.end);
-> -	if (ret)
-> -		goto out;
-> -
-> -	if (crashk_low_res.end) {
-> -		ret = crash_exclude_mem_range(cmem, crashk_low_res.start, crashk_low_res.end);
-> -		if (ret)
-> -			goto out;
-> -	}
-> -
-> -	ret = crash_prepare_elf64_headers(cmem, true, addr, sz);
-> -
-> -out:
-> -	kfree(cmem);
-> -	return ret;
-> +	return walk_system_ram_res(0, -1, cmem, prepare_elf64_ram_headers_callback);
->  }
->  
->  static char *setup_kdump_cmdline(struct kimage *image, char *cmdline,
-> @@ -281,7 +258,7 @@ int load_extra_segments(struct kimage *image, unsigned long kernel_start,
->  	if (image->type == KEXEC_TYPE_CRASH) {
->  		void *headers;
->  		unsigned long headers_sz;
-> -		ret = prepare_elf_headers(&headers, &headers_sz);
-> +		ret = crash_prepare_headers(true, &headers, &headers_sz, NULL);
->  		if (ret) {
->  			pr_err("Preparing elf core header failed\n");
->  			goto out;
+> Jason
+
+-- 
+Alexey
 
 
