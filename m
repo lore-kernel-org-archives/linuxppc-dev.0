@@ -1,80 +1,76 @@
-Return-Path: <linuxppc-dev+bounces-22789-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22790-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4F874CD98E6
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Jun 2026 07:29:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E046ACD98F8
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Jun 2026 08:52:12 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ghTkD1x9wz2ySW;
-	Fri, 19 Jun 2026 17:29:24 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::72f"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781853638;
-	cv=none; b=jQUAjxAnNEXtpoeaIq1YJtNrbUEBi0PjcuitaXmQrbbiVlemlmQCZrZ6+6s9t0mCthFU2TXY7WkgRcgZIxbnqNGqfNDa5SMmQf5qDwxdZzfU7j2asCICxE2LVfxiItObuZMpRPWzSQ39khhure9n7YXv9Ui2uG5shfMGksztzA9QC6AOtk+mbHmBiX7n7ilwJfDxqOJqU+P8/e8iEObvrjkUhBler3Fp/t54gHP0DIavCaUVyX14oyVurnDMOCZzy9moo27xjWmUid7Rc4hU9gTrVQqBqzSjqrydUVg3zwlXSaylh/ORKt86pkTyDBgtMClptLSV7hD/WESq+wTAnQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ghWYl0kwHz2ySW;
+	Fri, 19 Jun 2026 18:52:11 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781859131;
+	cv=none; b=NZtx3mbIKc05BgrsBG7fAdnZXOYBzNLTp+yL3unM88m2yNa2DJ58MF8NuqgnksrR4q8YiQErVesFvlioXmartV8XxpOiFwgWTgz3sUIuDuQNmy1ES6MWsouPtkpuz8ZBMYajTLxFln+YkDCA6ALamUCmY0iYw4Mvh7Q8qO29I/xhpLzCm3O/3rxkqR+CTnP7uFOXnl+4esENGUa99xEe6waNqU4AAxCZ44nwx+mAvDQZX/EP5Ap2dQ5obzr7Rs3idie0WMUsoXUNUmaw+il7yJ0fAdPEc5qRLMARS8fPznTNABkDR7SvpvBUQ4SLaudwBu7c+/BpuFNOjDzxY9RICw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1781853638; c=relaxed/relaxed;
-	bh=44Fxy13MSHLhHlbGbPMHcICK4gvzAmU5tsItGLAL6rE=;
-	h=Content-Type:Message-ID:Date:MIME-Version:To:References:Subject:
-	 From:In-Reply-To; b=I+rGnSV8mfZvY+MFn9l7HdQXZn6gCI+SZFG2soMLC5pCi81RjDGOmQbyOHfoOiFep5FP1VOtN2XscY1PeHpc4x9m+So5uXD8RbJLuPEqDMr0wqiGoUtd5r+ESlyZE50bzE+aii9pVvM1KiJu5NxQVRufUAqwxxj59BtzfnzaSnqAJTMFtVw3k9NHhvzqZGKvoCn35kb3wJGbtrAvvujj/KOJguxmUtihwc4jNNtOHZL6Fbfw9CZBeIA4AcsYceU3Y5Bx2IKZS44CZny7g6W78RTUyFCWb//q8Plq3Cs9RNzhsECXmgWw/OvykJmBlR6WNBK6jwVqDHoP/vM0OnUS0g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=e/xhMT9K; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::72f; helo=mail-qk1-x72f.google.com; envelope-from=gshel054@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1781859131; c=relaxed/relaxed;
+	bh=qxY5cipRcYcFoxJaSL8EuPGTAZltStA0EAWHUJo28jM=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=XJp+JS00gNNaDdDPOCzAfXtCNIP4fKCbrRAvDpjI8hTji5Fh1etIvg87+SnF3kHlCJdJIHznl7jskhM+dNC9FMQzUOjzyrmAe1CDeBe/pxwrqJ2EcFqu6TuVBgeqrKi/M43XU17qpuGHVYiVfCIFsCaRAkHu9XWIiix1dnCJV4Wm6gO5amTZgwyxjtdURCeoE1mcvfo6OgrtrxpAhj7QZtYn0/xafdAoc7D8VMszaHgH4LF9CYUV9wTx2b/rkuSZSwRl7713XXvVN5peBuVeXcZ1HAl6Zxu9gJwPWfKMd7jq8SfPfPcTr3gI7LKZaKPz1n7NExLX2aUpvjVkza4bzw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=C9G4KPxU; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=kwilczynski@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=e/xhMT9K;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=C9G4KPxU;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::72f; helo=mail-qk1-x72f.google.com; envelope-from=gshel054@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-qk1-x72f.google.com (mail-qk1-x72f.google.com [IPv6:2607:f8b0:4864:20::72f])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=kwilczynski@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ghTX50HJHz2xF8
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Jun 2026 17:20:36 +1000 (AEST)
-Received: by mail-qk1-x72f.google.com with SMTP id af79cd13be357-91578122305so252155485a.0
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Jun 2026 00:20:36 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1781853634; x=1782458434; darn=lists.ozlabs.org;
-        h=in-reply-to:from:content-language:subject:references:to:user-agent
-         :mime-version:date:message-id:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=44Fxy13MSHLhHlbGbPMHcICK4gvzAmU5tsItGLAL6rE=;
-        b=e/xhMT9KuxcpZ2QzB8FhXJQcUIdn8VEUWUkktjuHJanp+mSz5qLdC5lYTxM6LS8pb4
-         PVBUSW5vSwi6ACWRUJndMHljtzLvSMVPwNOHe+tctjXTnMC7rZbPv/QZXkcQ5QSZnTmn
-         wKwyX1XkQP34xerYcXvJ3e/J1kZoQmLds9DUTicYnWnmqX/l7OpDkn+JqrQAC8ZkFpnh
-         GcqUY6q0DnXoGcF7o7yOX41p4ILmHbGVn25lddtfqb+9FRXP0A6XZBfpJ3m53GWvD65k
-         iX3ucsWpM6a/HE/3BSYUIkaEfNcYVVKv/h47mBlEpHJvKpksIYWOC/rd8X3AbinDCGIz
-         pj2A==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1781853634; x=1782458434;
-        h=in-reply-to:from:content-language:subject:references:to:user-agent
-         :mime-version:date:message-id:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=44Fxy13MSHLhHlbGbPMHcICK4gvzAmU5tsItGLAL6rE=;
-        b=i3H1XCO42jzFphmAPmSzOe2LgmgMvzdBnYQdAnN/ccbET933Zs/WA9ZhqZFsXrYvAz
-         tVwNbtEzuSMcsiZpU5Wa5v97uEn4PjrEQmIXT/utRh0vpuK3LgE9plFksvyfmOpDdrIj
-         CLI1BQrXUm9mUgyZI/UgtRRcLpOkFmwmeVU121rBJ6wJLmzpIbqTORDqUblfFo0lCVdF
-         iQFA8kXwBLh9WKiQzs9mkhP+M9r4kCAVRa1jLjgOOVvgOUoSF2Qqz6glkID8XY9eVAkV
-         cyniFc6+v3MiugUU12jEwcyVQCy9Ftm1xzaz1q2cSHPUIlzECmgCXVWSkP88hSqliogO
-         uxgA==
-X-Gm-Message-State: AOJu0Yzb+mhRiIFyQlJfRlne990btq/axgsjGBs9WV3lpARFt7dJ1J+r
-	NFgpULlSYshjmELsl4BQ5YU+OCVnCvWKGRegPWvAwQe7oi3nUCSZ8ujsduk0a1Li
-X-Gm-Gg: AfdE7cnS6cEqKZPpNXbwTatHhIhO9x4C643xK+yxgG3F376eCfgw6j3vioK0KMjhfEd
-	eywEv3vnnk+oXU1LcLsoWH0t7ZITY2C0MNxe8cTEbvEHjxtM5DK2m3w93tMB1vKf7XQyyFc/6o7
-	0Uo/SJXGtnVQdzA3AgM9Y7x1XcPySqKyUwia3wIWW4PUWVQ4srTLmlCHWF4KpFPZfxrMexTD3N1
-	VIuoB+t4m9vZyJI/BwbFpVMwrsz3xxAI4FfLT5qrsWkPpAvPtMRbQh1PQLQeUkG7MlgJ0UzNtSq
-	U1ChUP43hsNIfrU9CKfZctknvx6WVpeZqK+DaOp5EByy8qgXiEGgZfuDfkpLpB70lZwL232Sdee
-	qF5dGDfhcm4BohTTUyxaZrS+LYGSDBGjQKPa+2fnFddQZkIlY+L96cgJ+7T970YI1Kt0G0tsk6X
-	y6Oq+rHr+ZpeIaU+i42fA0NJ0DjOvk7EZygCRAr0M1yes+15v9fbEV/8hMqmpvemg=
-X-Received: by 2002:a05:620a:4386:b0:915:89d4:df17 with SMTP id af79cd13be357-92091497ad2mr342253085a.33.1781853634107;
-        Fri, 19 Jun 2026 00:20:34 -0700 (PDT)
-Received: from [192.168.1.13] (c-73-215-216-70.hsd1.nj.comcast.net. [73.215.216.70])
-        by smtp.gmail.com with ESMTPSA id 6a1803df08f44-8de6251002fsm14453836d6.33.2026.06.19.00.20.33
-        for <linuxppc-dev@lists.ozlabs.org>
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 19 Jun 2026 00:20:33 -0700 (PDT)
-Content-Type: multipart/alternative;
- boundary="------------DZNm905eZcQgALKaFsTEjiub"
-Message-ID: <91106504-499e-41a8-ab5e-6539cd7b1b7b@gmail.com>
-Date: Fri, 19 Jun 2026 03:20:32 -0400
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ghWYh5KhQz2xF8
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Jun 2026 18:52:08 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with ESMTP id 6D89344267;
+	Fri, 19 Jun 2026 08:52:05 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0F4801F00A3A;
+	Fri, 19 Jun 2026 08:52:01 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1781859125;
+	bh=qxY5cipRcYcFoxJaSL8EuPGTAZltStA0EAWHUJo28jM=;
+	h=From:To:Cc:Subject:Date;
+	b=C9G4KPxU+rPZD5RHPYI5kA3kbSf7xZ/QgrrVSGdW+IokJ1hwp5yaH0uF/cZJi0QFz
+	 IV748qAUZK3YQj//iakE2RCvlexmQXhkPpu8ecHfb0p4v5Ua+m8ozkrGGZzxtkWKDZ
+	 Wiz9He9uU2wZVgv2U5ZJ0E54y341fZ85RhPu2JptFIG2SJuWyD7vpuzJYDNQnKIz3w
+	 Ajrq3BnjBUFUXqxdYdKwRAATy2ZvpvS2usArp2sMUKdMT38md0QLcdRLiJV9frVyfv
+	 90NyiHRxFmoS7NYmodT5wlB2fCIaa7Lukuf0ynxWiKL4Qh59fk5HjYA64at495VMmR
+	 7UP9QwC32jW5Q==
+From: =?UTF-8?q?Krzysztof=20Wilczy=C5=84ski?= <kwilczynski@kernel.org>
+To: Bjorn Helgaas <bhelgaas@google.com>
+Cc: Bjorn Helgaas <helgaas@kernel.org>,
+	Manivannan Sadhasivam <mani@kernel.org>,
+	Lorenzo Pieralisi <lpieralisi@kernel.org>,
+	Alex Williamson <alex@shazbot.org>,
+	Magnus Lindholm <linmag7@gmail.com>,
+	Matt Turner <mattst88@gmail.com>,
+	Richard Henderson <richard.henderson@linaro.org>,
+	Christophe Leroy <chleroy@kernel.org>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Dexuan Cui <decui@microsoft.com>,
+	=?UTF-8?q?Krzysztof=20Ha=C5=82asa?= <khalasa@piap.pl>,
+	Lukas Wunner <lukas@wunner.de>,
+	"Oliver O'Halloran" <oohall@gmail.com>,
+	Saurabh Singh Sengar <ssengar@microsoft.com>,
+	Shuan He <heshuan@bytedance.com>,
+	Srivatsa Bhat <srivatsabhat@microsoft.com>,
+	=?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>,
+	linux-pci@vger.kernel.org,
+	linux-alpha@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v8 00/25] PCI: Convert all dynamic sysfs attributes to static
+Date: Fri, 19 Jun 2026 08:51:35 +0000
+Message-ID: <20260619085200.3729431-1-kwilczynski@kernel.org>
+X-Mailer: git-send-email 2.54.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -88,231 +84,306 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-To: linuxppc-dev@lists.ozlabs.org
-References: <CAC1vu625FvXPJMXqtSdoAD4c4070nxVsktSvAM=U1QxFHM_aEg@mail.gmail.com>
-Subject: Re: libspe2:test_context_create_error on 4.12-rc1 and 4.2-rc2
-Content-Language: en-US
-From: Gary <gshel054@gmail.com>
-In-Reply-To: <CAC1vu625FvXPJMXqtSdoAD4c4070nxVsktSvAM=U1QxFHM_aEg@mail.gmail.com>
-
-This is a multi-part message in MIME format.
---------------DZNm905eZcQgALKaFsTEjiub
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-Dear* Sombat Tragolgosol, *
+Hello,
 
-*My name is Gary and I noticed your post on ozlabs.org about running the 
-libspe2 testsuite under modern kernels and getting some failures. I was 
-wondering if you ever found a solution for this issue. I run a custom 
-Linux on my PS3 (basically the latest ppc64 fedora with a PS3 compatible 
-kernel). I'm currently running on kernel 6.6.142. I've built a ppu-gcc 
-and a spu-gcc from gcc 8.3.0 and now I'm trying to package a working 
-libspe2-2.3.0.*
+This series converts every dynamically allocated PCI sysfs attribute to
+a static const definition.  After the full series, pci_sysfs_init() and
+sysfs_initialized are gone, and every sysfs file is created by the
+driver model at device_add() time.
 
-*On testing, the first test failure I see is 
-test_single_gang_context.elf which causes a segfault. If you could help 
-me analyze the trace and point me in the right direction, I would 
-appreciate it so much.*
+Currently, the PCI resource files (resourceN, resourceN_wc) and the
+legacy bus files (legacy_io, legacy_mem) are created dynamically
+from two unsynchronised paths:
 
-*dmesg returns:*
+Path A: late_initcall
 
-*[10814.901983] BUG: Kernel NULL pointer dereference on read at 0x00000038
-[10814.902009] Faulting instruction address: 0xc000000000299bb8
-[10814.902031] Oops: Kernel access of bad area, sig: 11 [#4]
-[10814.902048] BE PAGE_SIZE=4K MMU=Hash SMP NR_CPUS=2 NUMA PS3
-[10814.902068] Modules linked in: snd_ps3 snd_seq snd_seq_device snd_pcm 
-snd_timer snd soundcore ps3vram
-[10814.902173] CPU: 0 PID: 1206 Comm: scratch Tainted: G      D W        
-   6.6.142-10.PS3_1.ppc64 #1
-[10814.902196] Hardware name: SonyPS3 Cell Broadband Engine 0x701000 PS3
-[10814.902212] NIP:  c000000000299bb8 LR: c000000000299b84 CTR: 
-c000000000295750
-[10814.902228] REGS: c0000000035b39d0 TRAP: 0300   Tainted: G   D W      
-      (6.6.142-10.PS3_1.ppc64)
-[10814.902247] MSR:  8000000000008032 <SF,EE,IR,DR,RI> CR: 22000822  
-XER: 20000000
-[10814.902335] DAR: 0000000000000038 DSISR: 40000000 IRQMASK: 0
-                GPR00: c000000000299b84 c0000000035b3c70 
-c000000000b72000 c00000000220b0c0
-                GPR04: c000000001972900 c000000001fc7798 
-0000000000000008 0000000000000000
-                GPR08: 0000000000000000 0000000000000000 
-0000000000000010 c000000001bb5a80
-                GPR12: c000000008551900 c000000000d6c000 
-00000001064cb110 00000001063b9710
-                GPR16: 00000001063b9714
-[10814.910166] systemd-journald[93]: /dev/kmsg buffer overrun, some 
-messages lost.
-[10814.913614] 00000001063b9788 0000000106351408 000000004822228a
-                GPR20: 00000001063bd558 00000001064f6700 
-00000001063e0210 00000001063baf84
-                GPR24: 0000000000000000 0000000000000000 
-00003fffe4e70798 c0000000032f0290
-                GPR28: c00000000220b0c0 c000000003516e20 
-00000000000a801d c000000001fc7700
-[10815.241151] Call Trace:
-[10815.241169] [c0000000035b3c70] [c000000000299b84] 0xc000000000299b84 
-(unreliable)
-[10815.241207] [c0000000035b3d10] [c000000000295790] 0xc000000000295790
-[10815.241231] [c0000000035b3d90] [c00000000001ca94] 0xc00000000001ca94
-[10815.241257] [c0000000035b3e10] [c00000000000b354] 0xc00000000000b354
-[10815.241284] --- interrupt: c00 at 0x00003fff9f0dd3d8
-[10815.241299] NIP:  00003fff9f0dd3d8 LR: 00003fff9f0dd3a4 CTR: 
-0000000000000000
-[10815.241317] REGS: c0000000035b3e80 TRAP: 0c00   Tainted: G   D W      
-      (6.6.142-10.PS3_1.ppc64)
-[10815.241338] MSR:  800000000200e032 <SF,VEC,EE,PR,FP,IR,DR,RI>  CR: 
-22000822  XER: 00000000
-[10815.241452] IRQMASK: 0
-                GPR00: 0000000000000006 00003fffe4e6ffd0 
-00003fff9f109f00 0000000000000003
-                GPR04: 0000000010021c20 0000000000000004 
-000000000000001f 00003fff9f196b98
-                GPR08: 0000000000000002 0000000000000000 
-0000000000000000 0000000000000000
-                GPR12: 0000000000000000 00003fff9f19e200 
-00000001064cb110 00000001063b9710
-                GPR16: 00000001063b9714 00000001063b9788 
-0000000106351408 000000004822228a
-                GPR20: 00000001063bd558 00000001064f6700 
-00000001063e0210 00000001063baf84
-                GPR24: 0000000000000000 0000000000000000 
-00003fffe4e70798 0000000000000001
-                GPR28: 0000000010002948 0000000010002510 
-0000000000000000 0000000000000003
-[10815.314808] --- interrupt: c00
-[10815.317969] Code: 813f0014 39400008 71280002 41820194 5528044a 
-55080163 40820054 75290200 38bf0098 408202a4 e8650008 e9030030 
-<e9280038> e9290440 2fa90000 419e0030
-[10815.321344] ---[ end trace 0000000000000000 ]---*
+  pci_sysfs_init()                        (late_initcall)
+    sysfs_initialized = 1
+    for_each_pci_dev()
+      pci_create_sysfs_dev_files()
+        sysfs_create_bin_file()           (resourceN, resourceN_wc)
+    pci_find_next_bus()
+      pci_create_legacy_files()
+        sysfs_create_bin_file()           (legacy_io, legacy_mem)
 
-*Unfortunately I have much to learn when it comes to this level of 
-debugging. I do know that de-referencing a NULL pointer is a big time 
-catastrophe though.*
+Path B: device registration / hotplug
 
-*I've been writing little dummy programs just to test out functions like 
-spe_context_create and spe_gang_context_create but haven't been able to 
-reproduce the segfault yet...*
+  pci_bus_add_devices()
+    pci_bus_add_device()
+      pci_create_sysfs_dev_files()
+        if (!sysfs_initialized)           <- only guard
+          return
+        sysfs_create_bin_file()           (resourceN, resourceN_wc)
 
-*Anyway hope you are well. Thanks for your consideration!*
+On most ACPI systems this does not race because PCI enumeration
+completes at subsys_initcall time, before pci_sysfs_init() runs:
 
-*Gary*
+  subsys_initcall (level 4):
+    acpi_pci_root_add()
+      pci_bus_add_device()
+        pci_create_sysfs_dev_files()
+          if (!sysfs_initialized)         <- variable not yet set
+            return -EACCES
 
-*(https://ps3linux.net admin)*
+  late_initcall (level 7):
+    pci_sysfs_init()
+      sysfs_initialized = 1
+      for_each_pci_dev()
+        pci_create_sysfs_dev_files()      <- creates the files, no race
 
---------------DZNm905eZcQgALKaFsTEjiub
-Content-Type: text/html; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+On Devicetree platforms the host controller is a platform driver that
+probes via the driver model, often on a workqueue, and overlaps with the
+late_initcall:
 
-<!DOCTYPE html>
-<html>
-  <head>
+  CPU 0 (late_initcall)                CPU 1 (driver probe)
+  ---------------------------          ----------------------------
+  pci_sysfs_init()
+    sysfs_initialized = 1
+    for_each_pci_dev()                 pci_bus_add_device()
+      pci_create_sysfs_dev_files()       pci_create_sysfs_dev_files()
+        sysfs_create_bin_file()            sysfs_create_bin_file()
+                                             -> "duplicate filename"
 
-    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-  </head>
-  <body>
-    <p>Dear<b> Sombat Tragolgosol, </b></p>
-    <p><b>My name is Gary and I noticed your post on ozlabs.org about
-        running the libspe2 testsuite under modern kernels and getting
-        some failures. I was wondering if you ever found a solution for
-        this issue. I run a custom Linux on my PS3 (basically the latest
-        ppc64 fedora with a PS3 compatible kernel). I'm currently
-        running on kernel 6.6.142. I've built a ppu-gcc and a spu-gcc
-        from gcc 8.3.0 and now I'm trying to package a working
-        libspe2-2.3.0.</b></p>
-    <p><b>On testing, the first test failure I see is
-        test_single_gang_context.elf which causes a segfault. If you
-        could help me analyze the trace and point me in the right
-        direction, I would appreciate it so much.</b></p>
-    <p><b>dmesg returns:</b></p>
-    <p><b>[10814.901983] BUG: Kernel NULL pointer dereference on read at
-        0x00000038<br>
-        [10814.902009] Faulting instruction address: 0xc000000000299bb8<br>
-        [10814.902031] Oops: Kernel access of bad area, sig: 11 [#4]<br>
-        [10814.902048] BE PAGE_SIZE=4K MMU=Hash SMP NR_CPUS=2 NUMA PS3<br>
-        [10814.902068] Modules linked in: snd_ps3 snd_seq snd_seq_device
-        snd_pcm snd_timer snd soundcore ps3vram<br>
-        [10814.902173] CPU: 0 PID: 1206 Comm: scratch Tainted: G      D
-        W          6.6.142-10.PS3_1.ppc64 #1<br>
-        [10814.902196] Hardware name: SonyPS3 Cell Broadband Engine
-        0x701000 PS3<br>
-        [10814.902212] NIP:  c000000000299bb8 LR: c000000000299b84 CTR:
-        c000000000295750<br>
-        [10814.902228] REGS: c0000000035b39d0 TRAP: 0300   Tainted: G   
-          D W           (6.6.142-10.PS3_1.ppc64)<br>
-        [10814.902247] MSR:  8000000000008032 &lt;SF,EE,IR,DR,RI&gt; 
-        CR: 22000822  XER: 20000000<br>
-        [10814.902335] DAR: 0000000000000038 DSISR: 40000000 IRQMASK: 0 <br>
-                       GPR00: c000000000299b84 c0000000035b3c70
-        c000000000b72000 c00000000220b0c0 <br>
-                       GPR04: c000000001972900 c000000001fc7798
-        0000000000000008 0000000000000000 <br>
-                       GPR08: 0000000000000000 0000000000000000
-        0000000000000010 c000000001bb5a80 <br>
-                       GPR12: c000000008551900 c000000000d6c000
-        00000001064cb110 00000001063b9710 <br>
-                       GPR16: 00000001063b9714 <br>
-        [10814.910166] systemd-journald[93]: /dev/kmsg buffer overrun,
-        some messages lost.<br>
-        [10814.913614] 00000001063b9788 0000000106351408
-        000000004822228a <br>
-                       GPR20: 00000001063bd558 00000001064f6700
-        00000001063e0210 00000001063baf84 <br>
-                       GPR24: 0000000000000000 0000000000000000
-        00003fffe4e70798 c0000000032f0290 <br>
-                       GPR28: c00000000220b0c0 c000000003516e20
-        00000000000a801d c000000001fc7700 <br>
-        [10815.241151] Call Trace:<br>
-        [10815.241169] [c0000000035b3c70] [c000000000299b84]
-        0xc000000000299b84 (unreliable)<br>
-        [10815.241207] [c0000000035b3d10] [c000000000295790]
-        0xc000000000295790<br>
-        [10815.241231] [c0000000035b3d90] [c00000000001ca94]
-        0xc00000000001ca94<br>
-        [10815.241257] [c0000000035b3e10] [c00000000000b354]
-        0xc00000000000b354<br>
-        [10815.241284] --- interrupt: c00 at 0x00003fff9f0dd3d8<br>
-        [10815.241299] NIP:  00003fff9f0dd3d8 LR: 00003fff9f0dd3a4 CTR:
-        0000000000000000<br>
-        [10815.241317] REGS: c0000000035b3e80 TRAP: 0c00   Tainted: G   
-          D W           (6.6.142-10.PS3_1.ppc64)<br>
-        [10815.241338] MSR:  800000000200e032
-        &lt;SF,VEC,EE,PR,FP,IR,DR,RI&gt;  CR: 22000822  XER: 00000000<br>
-        [10815.241452] IRQMASK: 0 <br>
-                       GPR00: 0000000000000006 00003fffe4e6ffd0
-        00003fff9f109f00 0000000000000003 <br>
-                       GPR04: 0000000010021c20 0000000000000004
-        000000000000001f 00003fff9f196b98 <br>
-                       GPR08: 0000000000000002 0000000000000000
-        0000000000000000 0000000000000000 <br>
-                       GPR12: 0000000000000000 00003fff9f19e200
-        00000001064cb110 00000001063b9710 <br>
-                       GPR16: 00000001063b9714 00000001063b9788
-        0000000106351408 000000004822228a <br>
-                       GPR20: 00000001063bd558 00000001064f6700
-        00000001063e0210 00000001063baf84 <br>
-                       GPR24: 0000000000000000 0000000000000000
-        00003fffe4e70798 0000000000000001 <br>
-                       GPR28: 0000000010002948 0000000010002510
-        0000000000000000 0000000000000003 <br>
-        [10815.314808] --- interrupt: c00<br>
-        [10815.317969] Code: 813f0014 39400008 71280002 41820194
-        5528044a 55080163 40820054 75290200 38bf0098 408202a4 e8650008
-        e9030030 &lt;e9280038&gt; e9290440 2fa90000 419e0030 <br>
-        [10815.321344] ---[ end trace 0000000000000000 ]---</b></p>
-    <p><b>Unfortunately I have much to learn when it comes to this level
-        of debugging. I do know that de-referencing a NULL pointer is a
-        big time catastrophe though.</b></p>
-    <p><b>I've been writing little dummy programs just to test out
-        functions like spe_context_create and spe_gang_context_create
-        but haven't been able to reproduce the segfault yet...</b></p>
-    <p><b>Anyway hope you are well. Thanks for your consideration!</b></p>
-    <p><b>Gary</b></p>
-    <p><b>(<a class="moz-txt-link-freetext" href="https://ps3linux.net">https://ps3linux.net</a> admin)</b></p>
-  </body>
-</html>
+The same happens on ACPI when probing is asynchronous (hv_pci on
+Azure, RISC-V with ACPI).
 
---------------DZNm905eZcQgALKaFsTEjiub--
+The duplicate causes sysfs_create_bin_file() to fail with -EEXIST.
+pci_create_resource_files() then calls pci_remove_resource_files() in
+its error unwind, tearing down files the other thread created and
+still references through pdev->res_attr[].  This has caused kernel
+panics on i.MX6 and boot failures on other platforms.
+
+Several different fixes have been proposed over the years: reordering
+the sysfs_initialized assignment, adding locks, checking
+pci_dev_is_added(), setting pdev->res_attr[] to NULL after kfree
+(which only prevents a double-free on the teardown path, not the
+error unwind removing the other thread's files).  None would address the
+root cause.
+
+This has been reported a few times:
+
+  - https://lore.kernel.org/linux-pci/20250702155112.40124-1-heshuan@bytedance.com/
+  - https://lore.kernel.org/linux-pci/b51519d6-ce45-4b6d-8135-c70169bd110e@h-partners.com/
+  - https://lore.kernel.org/linux-pci/1702093576-30405-1-git-send-email-ssengar@linux.microsoft.com/
+  - https://lore.kernel.org/linux-pci/SY0P300MB04687548090B73E40AF97D8897B82@SY0P300MB0468.AUSP300.PROD.OUTLOOK.COM/
+  - https://lore.kernel.org/linux-pci/20230105174736.GA1154719@bhelgaas/
+  - https://lore.kernel.org/linux-pci/m3eebg9puj.fsf@t19.piap.pl/
+  - https://lore.kernel.org/linux-pci/20200716110423.xtfyb3n6tn5ixedh@pali/
+  - https://lore.kernel.org/linux-pci/1366196798-15929-1-git-send-email-artem.savkov@gmail.com/
+  - https://bugzilla.kernel.org/show_bug.cgi?id=215515
+  - https://bugzilla.kernel.org/show_bug.cgi?id=216888
+
+With static attributes the driver model creates sysfs entries once per
+device at device_add() time, under the device lock, eliminating the
+late_initcall iteration and the race along with it.
+
+	Krzysztof
+
+---
+Changes in v8:
+  https://lore.kernel.org/linux-pci/20260508043543.217179-1-kwilczynski@kernel.org/
+
+  - Renamed the generic resource attributes from dev_resourceN_{io,uc,wc}_attr
+    to pci_dev_resourceN_{io,uc,wc}_attr, for consistency, and cleaned up
+    resource macros definitions.
+  - Changed resource macros argument order to fix checkpatch.pl
+    complaint.
+  - Added two new macros, pci_legacy_resource_io_attr() and
+    pci_legacy_resource_mem_attr(), used for the legacy I/O and memory
+    conversion instead of open-coding each struct bin_attribute.  No
+    functional changes intended.
+
+Changes in v7:
+  https://lore.kernel.org/linux-pci/20260422161407.118748-1-kwilczynski@kernel.org/
+
+  - Addded Alex Williamson (author of the resource resize sysfs
+    attributes) to the list of recipients for visibility.
+  - Split pci_llseek_resource() into pci_llseek_resource() and
+    pci_llseek_resource_legacy() since legacy attributes operate
+    on a struct pci_bus where to_pci_dev() would be invalid,
+    as per Bjorn Helgaas' feedback.
+  - Moved each llseek variant inside its respective #ifdef guard
+    during the corresponding dynamic-to-static conversion commit,
+    dropping the __maybe_unused annotations.
+  - Extended the WARN macro removal to also cover __legacy_mmap_fits().
+  - Updated commit message of patch 18, so that it correctly mentions
+    pci_stop_dev() rather than pci_stop_bus_device().
+  - Updated commit message of patch 24 to clarify the indirect
+    relationship between ReBAR and the HAVE_PCI_MMAP and/or
+    ARCH_GENERIC_PCI_MMAP_RESOURCE guards.
+
+Changes in v6:
+  https://lore.kernel.org/linux-pci/20260416180107.777065-1-kwilczynski@kernel.org/
+
+   - Fixed commit message for patch 13, removing reference to
+     pci_resource_flags() which was no longer changed there.
+   - Added a new patch (24) to move the BAR resource resize
+     (ReBAR) support behind existing PCI mmap #ifdef guard,
+     so that the code is not included on architectures that
+     do not support resource resizing (i.e., Alpha, etc.).
+
+Changes in v5:
+  https://lore.kernel.org/linux-pci/20260411080148.471335-1-kwilczynski@kernel.org/
+  
+   - Added new Tested-by, Reviewed-by, and Acked-by tags.
+   - Used the existing _io function names in the static macro
+     definitions, deferring the rename to the conversion commit
+     where it belongs, to avoid a forward reference across
+     commits. This was reported by Sashiko, see:
+     https://sashiko.dev/#/patchset/20260411080148.471335-1-kwilczynski%40kernel.org?part=6
+   - Folded the __resource_resize_store() conversion into the
+     main static attributes commit so the resize path is never
+     broken between commits. This was reported by Sashiko, see:
+     https://sashiko.dev/#/patchset/20260410055040.39233-1-kwilczynski%40kernel.org?part=6
+     https://sashiko.dev/#/patchset/20260411080148.471335-1-kwilczynski%40kernel.org?part=7
+   - Dropped the unnecessary parentheses cleanup from the Alpha
+     BAR index commit, as the line is replaced two commits later
+     anyway, as per Ilpo Järvinen's feedback.
+   - Squashed the Alpha accessor macro and cleanup commits into
+     one, using pci_resource_is_mem() directly instead of the
+     intermediate pci_resource_flags() step, as per Ilpo
+     Järvinen's feedback.
+   - Moved the raw literal conversion in pci_create_legacy_files()
+     into the macro definition commit, so the macros and their
+     usage are introduced together, as per Ilpo Järvinen's
+     feedback.
+   - Removed unnecessary backslash line continuation from the
+     ternary in pci_mmap_legacy_page_range().
+   - Kept pci_resource_len() for visibility checks instead of
+     resource_assigned().  The static is_visible() callback
+     runs at device_add() time during the PCI enumeration,
+     before the pci_assign_unassigned_bus_resources() populates
+     res->parent, as such, resource_assigned() returned false
+     for every BAR, hiding all resource files.  This is related
+     to review feedback from Ilpo Järvinen.
+
+Changes in v4:
+  https://lore.kernel.org/linux-pci/20260410055040.39233-1-kwilczynski@kernel.org/
+
+   - Added new Reviewed-by tags.
+   - Added pci_resource_is_io() and pci_resource_is_mem() helpers
+     for resource type checks, replacing the open-coded bitwise
+     flag tests in pci_mmap_resource(), pci_resource_io(), and
+     Alpha's pci_mmap_resource(), as per Ilpo Järvinen's
+     suggestion.
+   - Split the __pci_mmap_fits() cleanup into two patches.  An
+     overflow fix for zero-length BARs, which now includes a
+     Fixes: tag referencing the original Alpha PCI sysfs commit,
+     and the WARN macro removal is a separate cleanup as per Ilpo
+     Järvinen's suggestion.
+   - Added a missing Fixes: tag to the Alpha lockdown check,
+     referencing the commit that added the check to the generic
+     path but missed Alpha's implementation.
+   - Added PCI_LEGACY_IO_SIZE and PCI_LEGACY_MEM_SIZE macros to
+     replace the raw literals used for legacy address space sizes.
+     These are used in both Alpha's pci_mmap_legacy_page_range()
+     and the static legacy attribute definitions, as per Ilpo
+     Järvinen's suggestion.
+   - Replaced sysfs_update_groups() in the BAR resize path with
+     sysfs_remove_groups() before the resize and sysfs_create_groups()
+     after, restoring the original teardown before BAR resize
+     ordering.  This was reported by Sashiko, see:
+     https://sashiko.dev/#/patchset/20260410055040.39233-1-kwilczynski%40kernel.org?part=7
+   - Defined pci_dev_resource_attr_groups as a NULL macro when
+     HAVE_PCI_MMAP and ARCH_GENERIC_PCI_MMAP_RESOURCE are both
+     absent, so the resize path compiles unconditionally without
+     #ifdef guards in the function body.  This was reported by
+     Sashiko, see:
+     https://sashiko.dev/#/patchset/20260410055040.39233-1-kwilczynski%40kernel.org?part=7
+   - Moved the pci_legacy_has_sparse() prototype into the patch
+     that introduces the function, alongside the existing
+     pci_adjust_legacy_attr() declaration, to fix a bisection
+     issue where Alpha would warn on -Wmissing-prototypes.
+     This was reported by Sashiko, see:
+     https://sashiko.dev/#/patchset/20260410055040.39233-1-kwilczynski%40kernel.org?part=18
+
+Changes in v3:
+  https://lore.kernel.org/linux-pci/20210910202623.2293708-1-kw@linux.com/
+
+  - Updated for modern kernel releases and expanded scope.  The
+    v2 only covered the generic resource files.  This version
+    also converts Alpha's sparse/dense resource files and the
+    legacy bus attributes, removing pci_sysfs_init() entirely.
+  - Split the single macro definition into three distinct ones
+    (per I/O, UC, and WC), to make sure that each carries only
+    the callbacks its resource type needs.
+  - Updated to use the new .bin_size callback, as the attributes
+    are const, to replace using a->size directly, which was not
+    ideal.  This required changes to pci_llseek_resource(), to
+    ensure that it would work for device and bus-level attributes.
+  - Updated the __resource_resize_store() to include CAP_SYS_ADMIN
+    capabilities check.
+  - Added the security_locked_down() check to Alpha's
+    pci_mmap_resource(), to align with other architectures.
+
+Changes in v2:
+  https://lore.kernel.org/linux-pci/20210825212255.878043-1-kw@linux.com/
+
+  - Refactored code so that the macros, helpers and internal
+    functions can be used to correctly leverage the read(),
+    write() and mmap() callbacks rather than to use the
+    .is_bin_visible() callback to set up sysfs objects
+    internals as this is not supported.
+  - Refactored some if-statements to check for a resource
+    flag first, and then call either arch_can_pci_mmap_io()
+    or arch_can_pci_mmap_wc(), plus store result of testing
+    for IORESOURCE_MEM and IORESOURCE_PREFETCH flags into
+    a boolean variable, as per Bjorn Helgaas' suggestion.
+  - Renamed pci_read_resource_io() and pci_write_resource_io()
+    callbacks so that these are not specifically tied to I/O
+    BARs read() and write() operations also as per Bjorn
+    Helgaas' suggestion.
+  - Updated style for code handling bitwise operations to
+    match the style that is preferred as per Bjorn Helgaas'
+    suggestion.
+  - Updated commit messages adding more details about the
+    implementation as requested by Bjorn Helgaas.
+
+Krzysztof Wilczyński (25):
+  PCI/sysfs: Use PCI resource accessor macros
+  PCI: Add pci_resource_is_io() and pci_resource_is_mem() helpers
+  PCI/sysfs: Only allow supported resource types in I/O and MMIO helpers
+  PCI/sysfs: Split pci_llseek_resource() for device and legacy
+    attributes
+  PCI/sysfs: Add CAP_SYS_ADMIN check to __resource_resize_store()
+  PCI/sysfs: Add static PCI resource attribute macros
+  PCI/sysfs: Convert PCI resource files to static attributes
+  PCI/sysfs: Warn about BAR resize failure in __resource_resize_store()
+  PCI/sysfs: Add stubs for pci_{create,remove}_sysfs_dev_files()
+  PCI/sysfs: Limit pci_sysfs_init() late_initcall compile scope
+  alpha/PCI: Add security_locked_down() check to pci_mmap_resource()
+  alpha/PCI: Use BAR index in sysfs attr->private instead of resource
+    pointer
+  alpha/PCI: Use PCI resource accessor macros
+  alpha/PCI: Fix __pci_mmap_fits() overflow for zero-length BARs
+  alpha/PCI: Remove WARN from __pci_mmap_fits() and __legacy_mmap_fits()
+  alpha/PCI: Add static PCI resource attribute macros
+  alpha/PCI: Convert resource files to static attributes
+  PCI/sysfs: Remove pci_{create,remove}_sysfs_dev_files()
+  PCI: Add macros for legacy I/O and memory address space sizes
+  alpha/PCI: Compute legacy size in pci_mmap_legacy_page_range()
+  PCI/sysfs: Add __weak pci_legacy_has_sparse() helper
+  PCI/sysfs: Add legacy I/O and memory attribute macros
+  PCI/sysfs: Convert legacy I/O and memory attributes to static
+    definitions
+  PCI/sysfs: Remove pci_create_legacy_files() and pci_sysfs_init()
+  PCI/sysfs: Limit BAR resize attribute scope to platforms with PCI mmap
+
+ arch/alpha/include/asm/pci.h   |  13 +-
+ arch/alpha/kernel/pci-sysfs.c  | 388 ++++++++++++----------
+ arch/powerpc/include/asm/pci.h |   2 -
+ drivers/pci/bus.c              |   1 -
+ drivers/pci/pci-sysfs.c        | 581 ++++++++++++++++++---------------
+ drivers/pci/pci.h              |  16 +-
+ drivers/pci/probe.c            |   6 -
+ drivers/pci/remove.c           |   3 -
+ include/linux/pci.h            |  39 ++-
+ 9 files changed, 580 insertions(+), 469 deletions(-)
+
+-- 
+2.54.0
+
 
