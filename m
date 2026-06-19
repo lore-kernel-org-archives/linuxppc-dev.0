@@ -1,116 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-22820-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22821-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3C477CD98F2
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Jun 2026 12:21:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4FFDCCD4F26
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Jun 2026 12:32:46 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ghcCk4FG5z3bpp;
-	Fri, 19 Jun 2026 22:21:54 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::f2c"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781871714;
-	cv=none; b=T8EQbBryRlPcHBUNYafjiZfTITtmEHc8dtxvCbsoGcQl5V74XQmoS2gmzy1YZYvoDiRn3MUNNs43TdW+c/gi7nqmt45wj0NtZlNdSVu5b0UWjBnzHY6Y2CTQE5h5JF1yDDeZKnnPBuwmqscIeQ6fR0tbhnkFk6TBFVq6sW/38362TGyqX02YVRetAYQhUkpnybjuAeXSdtn0kkGZm6f6V4jF/Ml3nuc+wzgKSzpa9knk7P/yMEZf1AvBJS2LSN6AV8yToQKJ3JUELS151QZrWdfFx9nuVpqjpjFgkFsdEM0TUhbRJmpIhvGRj6+nlIjg2l67LmJ4gc2+EjUxuW08qA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ghcSD5DWbz3bps;
+	Fri, 19 Jun 2026 22:32:44 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781872364;
+	cv=none; b=OuFUzxYfpO/lsPmha9zLZj3z+N+5ivfUSyUtP4eSg2Dfv7EH4/oknOSEHbTPs2qxJl43FFi00VFeNS+XH9wt7gb5VTkHzV4DtNmAMnsUfxGXjFqaVgvClFg+cRGtc1KUIxRgZiRnN8QTBnXX2R4OQMjjBGT9tgXvrxAf93lVEa+iqqkaSkLydHEQlpR6cxbJuZ+wr/vqsrmrdZJIneTkSouP+D8MDyO5QmQuJj3DVYtQ6eWGcxv8yDwHbPdTP15NeokZkAZ6RB5FAQOj7P1CoM8vkxYW6GDxDa2f+2GmbcEAyXu8Cnut+BZ20lrlS2NAmjsCv5N0Y+wnF+FBHf9rrg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1781871714; c=relaxed/relaxed;
-	bh=c9LPBfHeyyLdgfb3oWsJJs9sVnnCU9Plv3UTJaVJh/Q=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=oljADZ0B1sqAr2yrRy0triKd5099WEo0y0waGh9jLgnZ5DNZxW6mIrXgdMuCq7gJOhEQsn6t/yZLas7TNQG6QgLx9G7nLPo8arjIlzTT4L6EkfctDy+rGx9KBU/+yGn/UzCh05BhzFSlr7CU4lywNaptEgArlcjcRzj+iarN4MqM7aj4A4+G9mmKcBxbEuviOeWVEm9PRmC37vjwX6ju7Yi2MyeoiczDY1nIyZk7gOvx3trCSzY10/9wtEc8lVumEc8jNN4ZInu9yNuAgs3uxQotVU1chm87LwS1exJhu9ItlENKPU9c+DGgAeFRI1G/QTyHPx8lx7qDiCihlp/JaQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ziepe.ca; dkim=pass (2048-bit key; secure) header.d=ziepe.ca header.i=@ziepe.ca header.a=rsa-sha256 header.s=google header.b=GWO32+pX; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::f2c; helo=mail-qv1-xf2c.google.com; envelope-from=jgg@ziepe.ca; receiver=lists.ozlabs.org) smtp.mailfrom=ziepe.ca
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ziepe.ca
+	t=1781872364; c=relaxed/relaxed;
+	bh=8W5L4P51TPTDo8osQuHTkbur7XJ4M3tR0eMXpuM6vs0=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=hT8G2kiMYJbEznpVOhwKk3pvyhzCT998JXG3E9sDp0SGaRq5kXdOzAb8moSenIregEwuYfU8LR7H9rpLDAF4zwb/hJAHdBIB0Rz6xah9QRs4RjcU2WN+xNj7aklrozyGiEUPVAzsNI6i2Schk5WQhBM+QcVDSCt8ST8hCl7XMGCc2fC5mFjXfZgTC+/tjejAIb8/RQ1bd4aDwEJ+56TYnOdwrS+EGBmALpXUEkW5HIaqArsSU2UyVGKLpgX0ofZBwdFMdtRRZK7BWcyNaEA6V79ZWD1OCpTtiQHgw+aQJZZLVTBzMFY9JSl1g9D1kWoUif1VslVvLRKnLsCngT6dbA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=R8+sNZI7; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=ziepe.ca header.i=@ziepe.ca header.a=rsa-sha256 header.s=google header.b=GWO32+pX;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=R8+sNZI7;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=ziepe.ca (client-ip=2607:f8b0:4864:20::f2c; helo=mail-qv1-xf2c.google.com; envelope-from=jgg@ziepe.ca; receiver=lists.ozlabs.org)
-Received: from mail-qv1-xf2c.google.com (mail-qv1-xf2c.google.com [IPv6:2607:f8b0:4864:20::f2c])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ghcCj1wfSz3bpm
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Jun 2026 22:21:52 +1000 (AEST)
-Received: by mail-qv1-xf2c.google.com with SMTP id 6a1803df08f44-8dd6e530061so22680226d6.2
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Jun 2026 05:21:52 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ziepe.ca; s=google; t=1781871710; x=1782476510; darn=lists.ozlabs.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=c9LPBfHeyyLdgfb3oWsJJs9sVnnCU9Plv3UTJaVJh/Q=;
-        b=GWO32+pX9ikEUinTJwzydMsDe/huyfKa8p9xKbFri1TUGTAVPluw5RZ2gxatTqJoma
-         YtQXYo04wEEl1WsI3JDRocWSFR4kbTRaoRBBDim2tfFRkwPqATPYOqdISAm/pP5SYHQW
-         EuaCt9h33BEb3iwMdX0TjJG8OJ3whzL+MYYC2CGz5xsrxvQOC01tgRrkOhgKWL7X964o
-         38M4itGcphqB7kDczHpYR8aDYk8fJ3PFPU4ETJSOvma4UblSmKqlHg7SvmnNqF9/eXJp
-         w+gRBXTHSfmQ/4WMU/A7a2hqSR+TfA0oLVmDjEoDhifSebpXHq4/ZTw30LMCllRWhvtM
-         27hg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1781871710; x=1782476510;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=c9LPBfHeyyLdgfb3oWsJJs9sVnnCU9Plv3UTJaVJh/Q=;
-        b=rKG86D7POVchi9mV8Iv6ArZ13p90gtS1+yVOxI2Z5eBd7z/+3WjowTLA4S8neoOfil
-         9OcQCDvrj9zxEUgLa9qmjxdaVv4+MnmmIke7FIe8LxWpjODr2xxFxABtiwhQ1BQnumdM
-         3Wb0vF0nPXwEl/jzIJZPnZ6DWBLmQVMSdn8DTpdscKR6O322LtHpPzd9q3kdvlnpWi5F
-         MEGOhFVMiDd7DofytrTvNzJCLvEKGv7xwQsSd6w2epdE2nhU6eyIaEEn9Fb3Zc7RnKlf
-         Vunqoz7Xq2QFmbcf1M7m4xr8znbLFtKsURG6H2mmITPiuMrWtWyB3fEEJOWzpWKMYtxT
-         /dAQ==
-X-Forwarded-Encrypted: i=1; AFNElJ8ZfZnugUEeAby166BrYLPRkXxoWNOX6FSpFAU1KS7Br+I6yUsqVmVPjPxEsxOkgONvqLQz2cFKbqwQGjg=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yzve/FXWSsNFuR0BSmKPkdULmvvbxYxN9Xdt6rsC3REpjvjIdTe
-	WgYQFtvfyWqvZpKffnkFKD3objCLbENS+RtoGoqFbQJli+nKh0M4XaBJUdFgXzXbDRE=
-X-Gm-Gg: AfdE7cnMxg6aJ+GPNYifDCSjeOQqmS0Z2CyYZpGOjmUCHo+niXoSQT/SJ3VlpBBHMCf
-	MGL6RfVnuXFuCDh2aKLkohGx1JaAKWd1CT5vR9XTGjg2xlHP916mQamIFoiJbFY52WHTKsQo8zY
-	9yUSh1le8kBgxTi/6twUwX1lilcF8Zp5PoFm10uuzJ6XcbhnEkn7Ut7eFLdX56JwNdJWFv1o9N3
-	OWNRYQZbHCJrWj6PtzHxaKycEhy0r48TPPBWQjcaOghd5es9BqVRyl9+jDhRUWZa6ZdvwaODYGl
-	x844y1TchoMHkXNLoS27dDAgsAF1eXbLFb6ZVy/rKSE68p/e5PiqUL6CV54Q2fDq5+0HKxLFec+
-	9sLFwtsIa44vSQn9vlBTxKIhk5uW/thHdDshCeak3bco4Z8i29pBiLMttw1M60q7FHwntQ/+v/V
-	GE1dhbqwfBmBV8JTZMH63H8OF1ei9HjbkFi00wkgfSYCSMU1/d2xsulb8Gou61BVB/+OcHTzczy
-	h4cxg==
-X-Received: by 2002:a05:620a:4413:b0:915:1359:fc5f with SMTP id af79cd13be357-9208f835f14mr474588385a.14.1781871709844;
-        Fri, 19 Jun 2026 05:21:49 -0700 (PDT)
-Received: from ziepe.ca (crbknf0213w-47-54-130-67.pppoe-dynamic.high-speed.nl.bellaliant.net. [47.54.130.67])
-        by smtp.gmail.com with ESMTPSA id af79cd13be357-920a4966577sm218949585a.34.2026.06.19.05.21.49
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 19 Jun 2026 05:21:49 -0700 (PDT)
-Received: from jgg by wakko with local (Exim 4.97)
-	(envelope-from <jgg@ziepe.ca>)
-	id 1waYEG-00000004U03-2Vgj;
-	Fri, 19 Jun 2026 09:21:48 -0300
-Date: Fri, 19 Jun 2026 09:21:48 -0300
-From: Jason Gunthorpe <jgg@ziepe.ca>
-To: "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>
-Cc: Alexey Kardashevskiy <aik@amd.com>,
-	Catalin Marinas <catalin.marinas@arm.com>, iommu@lists.linux.dev,
-	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-	linux-coco@lists.linux.dev, Robin Murphy <robin.murphy@arm.com>,
-	Marek Szyprowski <m.szyprowski@samsung.com>,
-	Will Deacon <will@kernel.org>, Marc Zyngier <maz@kernel.org>,
-	Steven Price <steven.price@arm.com>,
-	Suzuki K Poulose <Suzuki.Poulose@arm.com>,
-	Jiri Pirko <jiri@resnulli.us>, Mostafa Saleh <smostafa@google.com>,
-	Petr Tesarik <ptesarik@suse.com>,
-	Dan Williams <dan.j.williams@intel.com>,
-	Xu Yilun <yilun.xu@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
-	linux-s390@vger.kernel.org,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	Alexander Gordeev <agordeev@linux.ibm.com>,
-	Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
-	Heiko Carstens <hca@linux.ibm.com>,
-	Vasily Gorbik <gor@linux.ibm.com>,
-	Christian Borntraeger <borntraeger@linux.ibm.com>,
-	Sven Schnelle <svens@linux.ibm.com>, x86@kernel.org
-Subject: Re: [PATCH v6 00/20] dma-mapping: Use DMA_ATTR_CC_SHARED through
- direct, pool and swiotlb paths
-Message-ID: <20260619122148.GL231643@ziepe.ca>
-References: <20260604083959.1265923-1-aneesh.kumar@kernel.org>
- <aigYbK12D8uKQvJF@arm.com>
- <20260609144746.GL2764304@ziepe.ca>
- <2ecfa1a8-6202-4319-9692-a6ffeb5a3dbf@amd.com>
- <yq5aqzm4dz25.fsf@kernel.org>
- <20260618153705.GH231643@ziepe.ca>
- <yq5ao6h6enhm.fsf@kernel.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ghcSC4fSXz3bpp
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Jun 2026 22:32:42 +1000 (AEST)
+Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 65J7mEFU1711462;
+	Fri, 19 Jun 2026 12:32:33 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=8W5L4P
+	51TPTDo8osQuHTkbur7XJ4M3tR0eMXpuM6vs0=; b=R8+sNZI7Ct5okXA8fl7JFv
+	4rKFOQCv6KslouEREGS3BAGlDHxJ57XkOfbUZ9mFHKnz+ehMIrgP3cq003qyTn7K
+	CGdmuwAqIO20TALakrT9QDhtjxXQzPG5Gw+alcfqDERNOyUSyWTvnGKvJZa/549/
+	qnXWjRKMfUVpKPE2hGEKf76T7jahx7WEsnxyPAbUP8ri/O/psarDsATXRVJCYuG6
+	hzSxn/oPk+uy9O5yi+S511+7iSs7xcoAHSKWe08yXsEFpOvWvoeJLehiv2l8i+aB
+	x+s28nSqSbwTGbEjiBew2y2+EcRd290icR8ViMTpGDrsPYe00E5gkE+b4NOz5guQ
+	==
+Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4eueqtwjbr-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 19 Jun 2026 12:32:33 +0000 (GMT)
+Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma22.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 65JCJaqf023381;
+	Fri, 19 Jun 2026 12:32:32 GMT
+Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
+	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4ev172grjt-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 19 Jun 2026 12:32:32 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
+	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 65JCWPGb46203294
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Fri, 19 Jun 2026 12:32:30 GMT
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id B92AB20080;
+	Fri, 19 Jun 2026 12:32:25 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id BDFBE20078;
+	Fri, 19 Jun 2026 12:32:23 +0000 (GMT)
+Received: from [9.124.218.121] (unknown [9.124.218.121])
+	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Fri, 19 Jun 2026 12:32:23 +0000 (GMT)
+Message-ID: <763622c4-d2fc-4e84-8474-fdd72a64b5e6@linux.ibm.com>
+Date: Fri, 19 Jun 2026 18:02:22 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -124,29 +81,83 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <yq5ao6h6enhm.fsf@kernel.org>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] powerpc/32: Use HAVE_PREEMPT_DYNAMIC_CALL instead of
+ HAVE_PREEMPT_DYNAMIC_KEY
+To: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        Nicholas Piggin <npiggin@gmail.com>,
+        Madhavan Srinivasan <maddy@linux.ibm.com>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+References: <d26da63caddc52de7894c763304ec7ecb23909a8.1781866685.git.chleroy@kernel.org>
+From: Shrikanth Hegde <sshegde@linux.ibm.com>
+Content-Language: en-US
+In-Reply-To: <d26da63caddc52de7894c763304ec7ecb23909a8.1781866685.git.chleroy@kernel.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-ORIG-GUID: KksRwkVvbRS1YVAkr7x-YK9vZyyz13Sx
+X-Proofpoint-GUID: 5rI5vqLo2cjLoPDpE-SAkF0HnxbUb4VK
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjE5MDExNSBTYWx0ZWRfX7mjDCsaAp6Gu
+ Bjflc0JVFYbhKafKIn/KC4upFDEyWsujXoTpfhaIUZnQycbdYnTPYupczBvrpguhr/FpIEYA4/X
+ Xyj60TUrvW8XMjlYcF34C+AfRf2PJZHlmBnTAVwDa/OVtO3qrobnNIlh/aC2fEafuqV45R4txfl
+ Ob2MbJH6P2xej0WuIAlpO5rAh9zRtndTlEKtsbf1hoG95ir4QDr/GhkUcO6ihs6NhCzpzRLnodt
+ 44ZZ+LuH+tXC4n10iz7KdVDhihpvOs4f8oG72FY3HGVMb50Zm0N/lRO9MGRrKx5rx59ueZVDY00
+ CHXAvchR0rvxHZlqtrPs3gXfLxKtSKgup/CDzvgc25AE2sMlpv6rsVWuHdIDR1nS2GR1b1iapWl
+ 1OoHfl9GCwaeoB1Y8dCFlGjBEQkBGji36tup+tgwhBle2nyC5SYUNwzH30pl0WMFPaBYpUvhpPc
+ O01+P6jY8TP5hoZM23g==
+X-Proofpoint-Spam-Info: AW1haW4tMjYwNjE5MDExNSBTYWx0ZWRfX9rcJN9bhDEcz
+ F9eQ+o4WBsvoz6GTj9B7tCcW6CDCRLxmz0lhor/EFTw9l0mTq4lj/ebAkqNtPqvwqFk1XyJ5ESO
+ wML9WOz9738BgaJAcR1XXr5177O7mUA=
+X-Authority-Analysis: v=2.4 cv=B4KJFutM c=1 sm=1 tr=0 ts=6a3536e1 cx=c_pps
+ a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
+ a=IkcTkHD0fZMA:10 a=FelO9ux0wxsA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=iQ6ETzBq9ecOQQE5vZCe:22 a=VwQbUJbxAAAA:8
+ a=VnNF1IyMAAAA:8 a=gDzEomWgUn4-idOrWXkA:9 a=QEXdDO2ut3YA:10
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
+ definitions=2026-06-19_02,2026-06-18_03,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ malwarescore=0 adultscore=0 lowpriorityscore=0 suspectscore=0
+ priorityscore=1501 clxscore=1015 phishscore=0 spamscore=0 bulkscore=0
+ impostorscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2606150000
+ definitions=main-2606190115
 
-On Fri, Jun 19, 2026 at 01:14:13PM +0100, Aneesh Kumar K.V wrote:
-> > And this is more insane logic. The right fix is to allocate the
-> > swiotlb bounce from the *encrypted* pools when running on the
-> > hypervisor which requires undoing this abuse of force_dma_decrypted().
-> >
+Hi Christophe.
+
+On 6/19/26 4:28 PM, Christophe Leroy (CS GROUP) wrote:
+> powerpc/32 has HAVE_STATIC_CALL_INLINE, so
+> HAVE_PREEMPT_DYNAMIC_CALL has to be selected instead of
+> HAVE_PREEMPT_DYNAMIC_KEY for less overhead.
 > 
-> Agreed. If the device can do encrypted DMA and requires bouncing, it
-> should bounce through encrypted pools. We don't support encrypted pools
-> now and that means, we mark the option ("mem_encrypt=on iommu=pt
-> swiotlb=force") not supported for now? 
 
-?? if you don't have a CC system then the swiotlb is "encrypted"
-meaning ordinary struct page system memory.
+Do you have any way to quantify this overhead?
 
-The hypervisor should not be triggering any CC special stuff here, it
-is not a CC guest.
 
-Agree we don't need to worry about swiotlb=force with a trusted device
-in the GUEST for now, but it should be something to fix eventually.
+> Fixes: 6ad7751537e8 ("powerpc: enable dynamic preemption")
+> Signed-off-by: Christophe Leroy (CS GROUP) <chleroy@kernel.org>
+> ---
+>   arch/powerpc/Kconfig | 3 ++-
+>   1 file changed, 2 insertions(+), 1 deletion(-)
+> 
+> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+> index 81642206f7de..7475907cef5b 100644
+> --- a/arch/powerpc/Kconfig
+> +++ b/arch/powerpc/Kconfig
+> @@ -281,7 +281,8 @@ config PPC
+>   	select HAVE_PERF_EVENTS_NMI		if PPC64
+>   	select HAVE_PERF_REGS
+>   	select HAVE_PERF_USER_STACK_DUMP
+> -	select HAVE_PREEMPT_DYNAMIC_KEY
+> +	select HAVE_PREEMPT_DYNAMIC_CALL	if PPC32
+> +	select HAVE_PREEMPT_DYNAMIC_KEY		if PPC64
+>   	select HAVE_RETHOOK			if KPROBES
+>   	select HAVE_REGS_AND_STACK_ACCESS_API
+>   	select HAVE_RELIABLE_STACKTRACE
 
-Jason
+Patch per se, looks good to me.
+
+Reviewed-by: Shrikanth Hegde <sshegde@linux.ibm.com>
 
