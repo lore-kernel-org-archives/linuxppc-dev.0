@@ -1,95 +1,81 @@
-Return-Path: <linuxppc-dev+bounces-22776-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22777-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 866B4CD98F0
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Jun 2026 02:06:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6EC4FCD98E6
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Jun 2026 04:11:25 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ghLYW588Jz3bpP;
-	Fri, 19 Jun 2026 12:06:23 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c105::5" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781834783;
-	cv=pass; b=Mbt1OowHXqFM6YcL41fyd3Hl7WV4ZKF2Z1gOs4uzxcaubqbYyICBOe24s39yKBWWH9H+TrxhZEFKgEljQ1jWZ0GqQvsFnR0Ku+V8lVwlmdXf+TWfZ904YI30VIyfGhtWDOnsnx4Zo5+58iHOolUBHr2QFAT6xvTReaD/1jxSosfcArOzWr2WkskTZSufTKDhHpYMcuPa40eNM9lVXwo9pE+rdUPmZBTNowlhJDRFSKAjmTu6mdznZNE4AXoyky7S9KPLBpWcGJnYwEHNIyN6xKbR8+sMNOjpQEApbRLt3H3WVz6WwZf+8Q5Eg17J9CoArPc0Bcrh9A9zNoDGf6nG4Q==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1781834783; c=relaxed/relaxed;
-	bh=RO3Uwu9YXgSeFUwMQBdwSjLjIP2l7aCMzKGUPtpsJNg=;
-	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
-	 Content-Type:MIME-Version; b=hU+jR/KlSCmW9y5/WyM0WH3CfX7lz+m0s6ZQAWLD890tDa+3OiE9aQ2OiOnJ7abl2wMmUqh4rj4IrflIYtNZX6SrdsQ4ZhCEHk6R07yL1+04T3qJTb1QygpMrT/sE91hz3eSumJb+sc9tnHUYevq01L0MGUGbfq/UpDidYjLgcqGe6W0oxz072p4fYUxjQGYxY+CCBw78SUS8YDjrp7gmgejGjwh9wxJ5+S1hWQtaU04CqHUEwWH8JZGGtcrg/qZLhyQXQy3lJR3ntBoFuKIMt+3lqVd3z1ns42vLSawZU/+JCVmuOtYcqu9QREMF0vgwWfBIA2XECjHGzKZjH22MA==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; dkim=pass (1024-bit key; unprotected) header.d=amd.com header.i=@amd.com header.a=rsa-sha256 header.s=selector1 header.b=1BPF2AAC; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c105::5; helo=ch5pr02cu005.outbound.protection.outlook.com; envelope-from=alexey.kardashevskiy@amd.com; receiver=lists.ozlabs.org) smtp.mailfrom=amd.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ghPKl4dV2z3bpP;
+	Fri, 19 Jun 2026 14:11:23 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::42a"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781842283;
+	cv=none; b=QZjxg/gdvwJEldkkQ8uBE3IeY46uwsaADCmS9EChd0dyEhd/VV97RNLq5AgdbmzvpehsTgwQwIY5N2p3JYOcRh/iG1xExsG2WwHadKf80S2IHL79SwDj0pBBDHqmX5y3D9nDu6HhoybPi9ib5UUG7051j2NVebiTD3xF/JkpCT0euFWvYy9glQGyPqVyzU80bc4phvKV19oCmUMeH6/c3ZAknFBY9VDZC95c6ntVBj3hMuVFxM/aRlG0MUElRP7UmdUlCELtL2H/JbRl+RqxqHN1hB0FJgKTC29DD8hN9Qs6Ck9BiujtNQ3P+monLFmVJxRrvenLsqwXyZO8UdY2pg==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1781842283; c=relaxed/relaxed;
+	bh=ns7uFMdN8XmD+BmGhPlCgcUtZIHgSZf+bEO3nXaURYw=;
+	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References; b=IUycehSwI2ED7snKDQdZtvP2eiYxIGJ9VfQ66yV7fy0w8ltaE+LbyDYVF+QdVLkVn5BBEQevaPQ2K2Ifx5XHahnOCIycUDJdST2+mL4KVdvkJ/Hytt1imJ8stsPPXxO5OltZwQFNf42txGJB0GTgbElSUIM9XkSTPGgH3mVVxoFO2PmeULyEpLeGzTnAsaJJfA7WTmBpDQZU4Kq9FeATJTbIMJUObiGbR2rLY15pvT5wRyRDG5Kdq9WDDMNuyDptckILYyg4BBZWP68vDV0wXc9h0ymQcW8clLX7a0wKsHieQx0LfkTnTD0oRDd7k3iwpUEyoen/9T4Jk4D6JOjemw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=hTn0qCeL; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::42a; helo=mail-pf1-x42a.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=amd.com header.i=@amd.com header.a=rsa-sha256 header.s=selector1 header.b=1BPF2AAC;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=hTn0qCeL;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=amd.com (client-ip=2a01:111:f403:c105::5; helo=ch5pr02cu005.outbound.protection.outlook.com; envelope-from=alexey.kardashevskiy@amd.com; receiver=lists.ozlabs.org)
-Received: from CH5PR02CU005.outbound.protection.outlook.com (mail-northcentralusazlp170120005.outbound.protection.outlook.com [IPv6:2a01:111:f403:c105::5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::42a; helo=mail-pf1-x42a.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pf1-x42a.google.com (mail-pf1-x42a.google.com [IPv6:2607:f8b0:4864:20::42a])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ghLYT1RFBz2ySW
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Jun 2026 12:06:20 +1000 (AEST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=fTK2RUYDVCDs1n/0iYrWETJT/cDJaBlR3H6QhAd4XbrNf9TV4Rg/PmYfW/+/aqHfOU/c3MqTyYxa0h/Bt9fL25TsQ6L2pLJcsHkTITDhHCijslWSa1fLByloBnzxj0A0kita8u0/zXcatwymvqMZneKgnf8DlwJB8K0W22P+x+1/PcEcuefzpN4XAncIQ/xhDMINLtE6pK9mtT6OEO163R5wKhViRknIftpDtzZ6K5GT/eDtApe2Qu6N4HlpwEt2SbYtFu0q7MyVq9fKlnBMUdpdFjLVSp/8jLgKdm9hfe1fy4cXwPpU9RYztA8XfmEQHOUy5kzW9nX+bwAdM7TtgA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=RO3Uwu9YXgSeFUwMQBdwSjLjIP2l7aCMzKGUPtpsJNg=;
- b=A8bdIUeznSsPM0Oe0yhX8UqfsJ71eCkjEQFwYuAuX0jNJMFJiMQXxRy3OBkqawRSfG93LXB8lgXFcsnmJDRwUX3d5aCP/JoTXI/jOs5bFyxc4LJaF5sHICMTL2sJ+z5slmgpYZAtCo937sqR1WxNG3F6SVr6ag/fKVD6rBO8mPRf+V9rj27xn1Ra/vINbPTFavjtLwOWLqlRmlkr23djPtm2T9yW28XrX7dtfrQSeVD+m2vLTz0aSV/hojN643flVF7r0dHZlJBSj7SlGs2ac052+N7xbV+lZewbxOLoMKjk+ZwltLwl0gT6jT4Dmoaux1Xykmf3nhmyXJgdmJOJjA==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=amd.com; dmarc=pass action=none header.from=amd.com; dkim=pass
- header.d=amd.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=RO3Uwu9YXgSeFUwMQBdwSjLjIP2l7aCMzKGUPtpsJNg=;
- b=1BPF2AACvlclAy8QKNocwwGNiXonZ7lT8/2mhB2yBn4+SmkRSlgLERES80YzRHumVH9oT1FAak0iOw2E8SGIYn1l6quh/9ISKm8YOQ6uBKeMO6pofD9xmHnqhqapaabY88uM1ESl5jpChh9HafAA+q9qCjidY2IAYCWfO9QP6fc=
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=amd.com;
-Received: from SA1PR12MB999228.namprd12.prod.outlook.com
- (2603:10b6:806:4db::10) by SA1PR12MB6704.namprd12.prod.outlook.com
- (2603:10b6:806:254::6) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.113.18; Fri, 19 Jun
- 2026 02:05:54 +0000
-Received: from SA1PR12MB999228.namprd12.prod.outlook.com
- ([fe80::4dba:119e:8e7c:37b3]) by SA1PR12MB999228.namprd12.prod.outlook.com
- ([fe80::4dba:119e:8e7c:37b3%4]) with mapi id 15.21.0113.015; Fri, 19 Jun 2026
- 02:05:54 +0000
-Message-ID: <d4ef9a9f-18d9-40e1-9d02-87aeb9cb6540@amd.com>
-Date: Fri, 19 Jun 2026 12:05:45 +1000
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v6 00/20] dma-mapping: Use DMA_ATTR_CC_SHARED through
- direct, pool and swiotlb paths
-To: Jason Gunthorpe <jgg@ziepe.ca>, "Aneesh Kumar K.V"
- <aneesh.kumar@kernel.org>
-Cc: Catalin Marinas <catalin.marinas@arm.com>, iommu@lists.linux.dev,
- linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
- linux-coco@lists.linux.dev, Robin Murphy <robin.murphy@arm.com>,
- Marek Szyprowski <m.szyprowski@samsung.com>, Will Deacon <will@kernel.org>,
- Marc Zyngier <maz@kernel.org>, Steven Price <steven.price@arm.com>,
- Suzuki K Poulose <Suzuki.Poulose@arm.com>, Jiri Pirko <jiri@resnulli.us>,
- Mostafa Saleh <smostafa@google.com>, Petr Tesarik <ptesarik@suse.com>,
- Dan Williams <dan.j.williams@intel.com>, Xu Yilun
- <yilun.xu@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org, Madhavan Srinivasan <maddy@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
- "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
- Alexander Gordeev <agordeev@linux.ibm.com>,
- Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
- Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>,
- Christian Borntraeger <borntraeger@linux.ibm.com>,
- Sven Schnelle <svens@linux.ibm.com>, x86@kernel.org
-References: <20260604083959.1265923-1-aneesh.kumar@kernel.org>
- <aigYbK12D8uKQvJF@arm.com> <20260609144746.GL2764304@ziepe.ca>
- <2ecfa1a8-6202-4319-9692-a6ffeb5a3dbf@amd.com> <yq5aqzm4dz25.fsf@kernel.org>
- <20260618153705.GH231643@ziepe.ca>
-Content-Language: en-US
-From: Alexey Kardashevskiy <aik@amd.com>
-In-Reply-To: <20260618153705.GH231643@ziepe.ca>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-ClientProxiedBy: SYYP282CA0018.AUSP282.PROD.OUTLOOK.COM
- (2603:10c6:10:b4::28) To SA1PR12MB999228.namprd12.prod.outlook.com
- (2603:10b6:806:4db::10)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ghPKk157pz2ySW
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Jun 2026 14:11:21 +1000 (AEST)
+Received: by mail-pf1-x42a.google.com with SMTP id d2e1a72fcca58-842848fd613so1550021b3a.3
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jun 2026 21:11:21 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1781842279; x=1782447079; darn=lists.ozlabs.org;
+        h=references:message-id:date:in-reply-to:subject:cc:to:from:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=ns7uFMdN8XmD+BmGhPlCgcUtZIHgSZf+bEO3nXaURYw=;
+        b=hTn0qCeLXJMEMnoZxpw0M/tdC8Nb/qSqQ1XMBDFCoozvrkgKhuuQwAgAXq9FM9M1wV
+         HlT/SV88sKjqnsbNjcq12egt+MbB9s43wlzvqnHbtAt575qTZ9GODq1LR1LpepP74e5K
+         MnQjd+XSg/zj3ipdU84GPBKnM3F+4w56uoBKUUcBQpB1Aq5yNQ1glU8E6UEPNLoz7F7Q
+         HBqUJEr/E+b9vQEuQbjNgqcqQ3gHj4Vi5V1vZfCfeAH0Hrm3gjwm6qYCCzzsihXePj/b
+         r9DNNhL3DYcVqyRp6q3+8H5tqeXw8AVtXJoreoTxWrRghChf5geJu4fDeVePnqTI9ciA
+         XBUw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1781842279; x=1782447079;
+        h=references:message-id:date:in-reply-to:subject:cc:to:from:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=ns7uFMdN8XmD+BmGhPlCgcUtZIHgSZf+bEO3nXaURYw=;
+        b=fGgyUNdzyWNgsNZX52xVCvJNGXIm6MY1bzQlUn5t74dRp53O/fCC3Llbulj8uyJBj8
+         vDY3NNPf6CFIFwQ6AyI7Xmtlqj6EffNZle0FY7OMyQC4xJ1nd5J4p96r1VcKh1jkbyy1
+         jTg7MLC0k/C5SRdNNNcOY+yJ4si6DsZGqK+I2dKJokP/Vv0t4zWwQdWFuDX26P2GFvF4
+         FTkf0Hhg4XHouiIjZSqPJX4vEr1V14OkeUsd/iZdWpc99eWarF3mxLYXkXy1iMPUsfbT
+         Xga2MTnzLRwj3RrtuYxCIoPItpTTu4ZCCoi9XJRLQyDOpYTUiqq1yXENq8H3ZtBNgFi2
+         WOPQ==
+X-Forwarded-Encrypted: i=1; AFNElJ/1r5sCkN7hEsC5eLVXljNEh3SW+fYP4WL2rFYPbVVF9tIOt4taHec1yB69Nv0JLlM6TlhLzMvcpdZ2xjM=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yxb/E7ODPsFOF1FXLVnIxvjdUNi2kz8/qNmVj7phLXZYujoTbZH
+	ygymMKZgqlIQb+fnOIYcVGRPCpEDB/ABFP6DPuyB6hom9WuH9GdIZgig
+X-Gm-Gg: AfdE7clNvoksjcrI1azfN8kl22ClXFmjZUG1ibGHZOL3Qbv3glc6J1bQIO880gJV8Vs
+	vtemys/icYi/0aJI1QiM6REE2G5WyjPQdO5+fJOtZ7viv6xzboZz9dnjfHjqPXx9dVp6/AsVhJY
+	OkQxV//3PB1UIY5bxysAfmh7wGUaXQaakHOOJjlNSdwigY6DI5onGSvrPo8d65HK4aCOnwouPO2
+	HQf4lqITOPTOuY1pTySrCFg6GvsJLAE8zSxBMuZg19QvlcA9sBxLOpoWJDsSnuqg9XXHwORn2Er
+	y2RSseKqrJrwmz5UpZWXOZh45x3VQAOouJIg8X2cXNTbyhXl0myi7BQzLpgmMTXEE6UBU15lNAp
+	qp1TXufc5ZpHqskqib+XzZnwG92wz8+KGE6fC+QDVc1y8Zqnpypt4pz8Xl0HmZxrZ1xIyh+kQa9
+	jwQDdg+hGzgEq036w=
+X-Received: by 2002:a05:6a00:14d3:b0:835:4291:6975 with SMTP id d2e1a72fcca58-845508cce6amr2119845b3a.39.1781842279197;
+        Thu, 18 Jun 2026 21:11:19 -0700 (PDT)
+Received: from pve-server ([49.205.216.49])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-8455382b766sm793864b3a.47.2026.06.18.21.11.12
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 18 Jun 2026 21:11:17 -0700 (PDT)
+From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+To: Kairui Song <ryncsn@gmail.com>
+Cc: linux-mm@kvack.org, Madhavan Srinivasan <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <chleroy@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Chris Li <chrisl@kernel.org>, Kairui Song <kasong@tencent.com>, Kemeng Shi <shikemeng@huaweicloud.com>, Nhat Pham <nphamcs@gmail.com>, Baoquan He <baoquan.he@linux.dev>, Barry Song <baohua@kernel.org>, Youngjun Park <youngjun.park@lge.com>, David Hildenbrand <david@kernel.org>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, Sayali Patil <sayalip@linux.ibm.com>
+Subject: Re: [PATCH v3 1/3] mm, swap: make SWAPFILE_CLUSTER runtime
+In-Reply-To: <ajIUVSWaQbFoez5Y@KASONG-MC4>
+Date: Fri, 19 Jun 2026 09:36:17 +0530
+Message-ID: <5x3fdvie.ritesh.list@gmail.com>
+References: <cover.1781287297.git.ritesh.list@gmail.com> <1e8d7e4d0bb1377277ae8b6561d89fa0e048e7de.1781287297.git.ritesh.list@gmail.com> <ajIUVSWaQbFoez5Y@KASONG-MC4>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -102,149 +88,66 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: SA1PR12MB999228:EE_|SA1PR12MB6704:EE_
-X-MS-Office365-Filtering-Correlation-Id: dc5cf836-5609-4e38-97fd-08decda74b3b
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|7416014|366016|23010399003|376014|1800799024|4143699003|56012099006|11063799006|18002099003|22082099003|6133799003;
-X-Microsoft-Antispam-Message-Info:
-	kX9f/Ctpt+Qw3FhU0VDSnrg0Br7W75fFKn4cJ/Qrotp/mKbEAPPTEhBUtU79MUzqVQkuo+vehL70Hef99ENh+dJhs0nVw9FnPVA3T1hKHq9NyGbdUDl6sxvDO7wA4QFzduORaImT7ADcATb6lWkN3Y5P1bh77Uctz18BowW1ydh6Fl4kH/dT79g+Fv1JTOE/Wljqyp4HiSit9fHFdDWEuPCD1ga2LJOx+wF1qycPU9aYJkHpUkLw+lsA54E65W0FV0uF24f+Hi2U35yOFRCqqAAukFtZ00jc38iea6I9cPh+JeDdCDcGzPWHtP8USXNaPUvJbdFr8Iqow43/EMQhx+ShEAZEymsIAcfJ7QEJA8JwD99KioKJI1tJTXH93W3YltTy3zzJ9BpQzH4Ps+SbGwLfTftqJRgBb2kr6tWFcaOTSgS/wduKMRNpXfYK5K8VAtM94kSDMNkirbqrePkf3B9piwM/tQQzukpA1ZLVXhsd0an8Nz8fF4sDeGoMA9oATXIgcIaPA2cVtuJtes6ziVPJ5o7x8/mHvmb0Z/rzhmQO/Cou3mo6UzzSfzkgg7RQc9KASDEInKSSqIVPm1w/B8cCR7JZshFHYo8n1x0UFHY=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:SA1PR12MB999228.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(7416014)(366016)(23010399003)(376014)(1800799024)(4143699003)(56012099006)(11063799006)(18002099003)(22082099003)(6133799003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?utf-8?B?R2FPR1NDaGFWNW1uVEZZQlV6bCtWSDJQSkF2RTQ3dVE3SURMQjByK0dRQlR1?=
- =?utf-8?B?MjFyaUVzd1N3UXBsQ3pYdXhzVUhaZ2NpMDY5TkJvTzQ2ckdOYll0Y1Y5SDRD?=
- =?utf-8?B?QWF5YkpyNnlid1V5QWs1Q3h2UHhIY0ExVm1qcXdWVXBVVjZmTnZXYWdZMzI0?=
- =?utf-8?B?WlJlekd5RW5XbWlod0NZSGRNdy9KRzZOLzRHVmJrQm9JempGcDU4bXBnL3kz?=
- =?utf-8?B?OHF3enFtSGE5QWllYTczWDNUUlkvcTlqQ2Nxa3NHV3lpbUtXcEZRTEdxSnkz?=
- =?utf-8?B?RU5CaktqNDNUOUxXNzFBeGtSRitIRHlaZzQ2T2hQemhPRUJYRVlRVmVZQ1NC?=
- =?utf-8?B?RDVNRndQT29LVjVpTVlGeTR1U0dOdWpsWHF1Zk16d01zdEJBa1VTK01oVXJN?=
- =?utf-8?B?NnVTQ2UyUFRDWjdsZjJjaVBRTTR3SVF0WUU2YUx5eFdpTThrbEgrZHRSejN0?=
- =?utf-8?B?QVpaNzNHWk9uSzMvbzdZei85bFhOZ2JzUU15em5rbFNLVjFRRWR2RWpWMVJF?=
- =?utf-8?B?KzRMNHZnbVR5UjdZRnZ0Mkpid293MW02U0ZPbmNGQTZkd1VDUStyNXExZC8r?=
- =?utf-8?B?MVpRUkhiczArTTViT1YyeFZKUGpKYkZLRkpKZmRtQlJVc1RQZUliZU1yZ1Mw?=
- =?utf-8?B?Mm9TckFUTWptUWJKcW56b2VieFlqT3AxT0Q0d2JKbEZ2cmxWaUxtNjdVLy9X?=
- =?utf-8?B?T25taHRwcEprbm1qSTFDSWkvRktyeXZUdzU5OHhJTjhtdWJ2UVFwWGdGYjZ1?=
- =?utf-8?B?NG1NUjJaWW9aV2tDODhoQWd0VHM5UlYvbjdEZlc2N0QrdEx3dzFBNURjbVp3?=
- =?utf-8?B?YVZNeVV4UmkwQ1hEVXAwWFJJc0VJTU4weVBxTk9peGpOejQ0c2gya1JVS3ZR?=
- =?utf-8?B?Nkc0eEZDN1dLVXFseVk2WCtLR1A1SllqemVBUnQzQm9kZ0ZkQng5bm12Rk9Q?=
- =?utf-8?B?OU4wQ1Jtd0txYzhRc1NjdnQ5amJCUmErZlduMFNaWlc5UUQraWZnV2luZlNQ?=
- =?utf-8?B?bHhJWFAwbnc3TXNLU1hlSzNYZWpKSnNrUTZ0SWlOQWtCNFFFRDh3eFNYZmtG?=
- =?utf-8?B?NFdCbFBYSmZIQjhnOC8vMUt5bWlxOWoxTHl2VklGMlpYZDk5bVpuZFZkZnhQ?=
- =?utf-8?B?RjBrcDVrcGVlMS9adllVdi9WbEVDN2RhMkIyZjJqVzJRZXZWQmEwOE1mUkk0?=
- =?utf-8?B?cjlpZFZGcG5lVGE4QWpKRCs1MU1DNVdUM29ZWUhpV3M5clR3eUtrMTdReGdn?=
- =?utf-8?B?TFNMN1RFa2JRVDl4dXp5dGFJSzAxd1NXOWhwVStRUHh4NVhSb1lLQ04yT1pQ?=
- =?utf-8?B?blZBekZJcUt0RmpINnNOM1dMT1J2TGxNc2gzYmRRU2p0TlYwcDJiYWN0TVdI?=
- =?utf-8?B?Rm9DV0tYUG9kbnM4TVhMd2VadDJuVm1FL1A5T0VlZW5ESzJvZk1Lb0FaWC8x?=
- =?utf-8?B?ZzI3eG9qMlhDcTRKTlcrUC9udnNmejJuVFdOQ2s3RzN4ZE5EdHcvdVlWc2hu?=
- =?utf-8?B?ak9xU2dwZ0xJb3RSZnAvVlNPenlDa3B4NHovZmgxRXFqam8zVG9ZT0FwSDhm?=
- =?utf-8?B?cTdZQU45dS8xZFJENEZIQVZjSkxSenV2NWxWUTZxNjZMbFM5MEowUDV2emVJ?=
- =?utf-8?B?akRadVUvSDhRMWMwcTkvZXNrdjFvSmlERDdVZ2ozeEhGU1kxQVVjUHhTd1lL?=
- =?utf-8?B?ZnVRbUp6eHBmK1VpUnJiSXM2d1dYSmZwUFJFeGlaTFZJZFZRcUtyRnh3ZXRL?=
- =?utf-8?B?aEJGdmllTFQrNzNyUnpCQ3ozZ1h4Rmd2eTQ4T0liVUlreXp2M2hVSmRlOWU2?=
- =?utf-8?B?ZERhRThEVXUwbWZ0S2l2MTV5QkJYWXN0OEZqbGZpOGkreitCN3ZUWVZFUlI2?=
- =?utf-8?B?Z1pqdGxXMThuOVF3VXpZN2VNK1V0U1JaTzZ2bGdOZ0FFdUJ3aG1GeXNoYkw1?=
- =?utf-8?B?NWNENFc4VWQyZUY3Um1pLzZYcEp3TVhsTmRsTjVWQk5LZjFZbkJQOFBTMXBJ?=
- =?utf-8?B?QUVCay9rR21VWEUzSWgvb3Y2TnRyUVlLbXdTNGJqSUt6Yy8zZUdTckZNR0Ra?=
- =?utf-8?B?TFQ1VVVsV0VlQmU4alR3MmVMZ1RScjg1SDNYR1ZjZ0JHSmNReXJkNndqRGUv?=
- =?utf-8?B?V1FWaFFtWGJTTjBma3RNekVLL1NkNUoxcDVwZWhxaVZtcUZKU2c3dWRGYnB0?=
- =?utf-8?B?K0dOdHF5V1JXRGcyWmhzYWJTVDJscEhRSHYvZjlJSndKN1JYcElCbnNrSzNS?=
- =?utf-8?B?M1plOHgvS3djZXQ3U3NFZmdmT3FleDFPVmk5b0wydWxWNGZzNWpYMUFIeXhB?=
- =?utf-8?B?dEUxVUxaMktIc2FvazJSK2hrRW9vU01sa1J0RC9MekZaMHh1QkFjdz09?=
-X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: dc5cf836-5609-4e38-97fd-08decda74b3b
-X-MS-Exchange-CrossTenant-AuthSource: SA1PR12MB999228.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 19 Jun 2026 02:05:53.9389
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: j8cNpjyzaRX5xoINOYFBPZR3VenQQ6KrftZ5X4h4vnrjSnxYh3rhfFQ2fFf76ffhPT7dlZPZICmzAVz7HaVq6g==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: SA1PR12MB6704
+
+Kairui Song <ryncsn@gmail.com> writes:
+
+> On Fri, Jun 12, 2026 at 11:39:15PM +0800, Ritesh Harjani (IBM) wrote:
+>> On PowerPC Book3S64, MMU is selected at runtime, so macros like
+>> PMD_SHIFT are effectively runtime variables in the Book3S64 code. THP
+>> swap code uses these macros to size some of its array data structures
+>> based on PMD_ORDER e.g. SWAPFILE_CLUSTER macro is used for this very
+>> purpose.
+>> Hence this patch initializes SWAPFILE_CLUSTER at runtime and also
+>> modifies swap_table and swap_memcg_table which were earlier using this
+>> macro for defining the number of table entries.
+>> 
+>> Signed-off-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+>> ---
+>>  mm/swap.h       |  5 +++--
+>>  mm/swap_table.h |  6 ++----
+>>  mm/swapfile.c   | 27 ++++++++++++++++++++++-----
+>>  3 files changed, 27 insertions(+), 11 deletions(-)
+>
+> Hi Ritesh,
+>
+> Thanks for the patch.
+>
+
+Thanks Kairui for taking a look at this. Sorry about the delayed
+response, (was on travel to #OSSMumbai).
+
+>> 
+>> diff --git a/mm/swap.h b/mm/swap.h
+>> index 77d2d14eda42..956879a69ddd 100644
+>> --- a/mm/swap.h
+>> +++ b/mm/swap.h
+>> @@ -26,11 +26,12 @@ extern int page_cluster;
+>>  #define SWAP_TABLE_HAS_ZEROFLAG		((BITS_PER_LONG - SWAP_CACHE_PFN_MARK_BITS - \
+>>  					  SWAP_CACHE_PFN_BITS) > SWAP_COUNT_MIN_BITS)
+>> 
+>> +extern unsigned int swap_slots_in_cluster __read_mostly;
+>
+> Maybe __ro_after_init is better for this kind of use case?
+>
+
+yup. I can change that.
+
+>> +#define SWAPFILE_CLUSTER	swap_slots_in_cluster
+>> +
+>>  #ifdef CONFIG_THP_SWAP
+>> -#define SWAPFILE_CLUSTER	HPAGE_PMD_NR
+>
+> So on Book3S64, HPAGE_PMD_NR is also a variable right? Then we don't really
+> need to change the SWAPFILE_CLUSTER defination here? We just need to adjust
+> the users of this macro so the build will pass?
+>
+
+Right. Earlier I was playing with different values of this via an
+arch_xxx variant. But for book3s64 usecase, the default values are fine.
+
+So, I agree, we need not change SWAPFILE_CLUSTER here. I can update the
+patch with the suggested changes in v4. 
 
 
-
-On 19/6/26 01:37, Jason Gunthorpe wrote:
-> On Thu, Jun 18, 2026 at 09:37:22AM +0100, Aneesh Kumar K.V wrote:
->> Alexey Kardashevskiy <aik@amd.com> writes:
->>
->>> On 10/6/26 00:47, Jason Gunthorpe wrote:
->>>> On Tue, Jun 09, 2026 at 02:43:08PM +0100, Catalin Marinas wrote:
->>>>> On Thu, Jun 04, 2026 at 02:09:39PM +0530, Aneesh Kumar K.V (Arm) wrote:
->>>>>> This series propagates DMA_ATTR_CC_SHARED through the dma-direct,
->>>>>> dma-pool, and swiotlb paths so that encrypted and decrypted DMA buffers
->>>>>> are handled consistently.
->>>>>>
->>>>>> Today, the direct DMA path mostly relies on force_dma_unencrypted() for
->>>>>> shared/decrypted buffer handling. This series consolidates the
->>>>>> force_dma_unencrypted() checks in the top-level functions and ensures
->>>>>> that the remaining DMA interfaces use DMA attributes to make the correct
->>>>>> decisions.
->>>>>
->>>>> Please check Sashiko's reports, it has some good points:
->>>>>
->>>>> https://sashiko.dev/#/patchset/20260604083959.1265923-1-aneesh.kumar@kernel.org
->>>>>
->>>>> I think the main one is the swiotlb_tbl_map_single() changes which break
->>>>> AMD SME host support. There cc_platform_has(CC_ATTR_MEM_ENCRYPT) is true
->>>>> but force_dma_unencrypted() is false. Normally you'd not end up on this
->>>>> path but you can have swiotlb=force.
->>>>
->>>> IMHO that's an AMD issue, not with the design of this series..
->>>>
->>>> The series is right, a device that is !force_dma_decrypted() must be
->>>> considerd to be a trusted device and we must never place any DMA
->>>> mappings for a trusted device into shared memory.
->>>
->>> swiotlb=force forces swiotlb, not decryption.
-> 
-> If force_dma_decrypted() == true then swiotlb must allocate from a
-> decrypted memory pool. It is right there in the name!
-> 
-> The hypervisor environment should *never* set force_dma_decrypted()
-> because all devices can access all hypervisor memory, up to their IOVA
-> limits.
-
-True. But we do not have encrypted swiotlb pool today, right?
-
-> 
->>> So when I try "mem_encrypt=on iommu=pt swiotlb=force" with this
->>> patchset, it fails to boot. But it boots with a hack like this:
-> 
-> On the host side I expect this to cause swiotlb to allocate encrypted
-> memory and bounce to it.
-> 
->>   		u64 dma_enc_mask = DMA_BIT_MASK(__ffs64(sme_me_mask));
->>   		u64 dma_dev_mask = min_not_zero(dev->coherent_dma_mask,
->>   						dev->bus_dma_limit);
->> +		/*
->> +		 * With memory encryption enabled, SWIOTLB is marked decrypted.
->> +		 * If SWIOTLB bouncing is forced, treat the device as requiring
->> +		 * decrypted DMA.
->> +		 */
-> 
-> And this is more insane logic. The right fix is to allocate the
-> swiotlb bounce from the *encrypted* pools when running on the
-> hypervisor which requires undoing this abuse of force_dma_decrypted().
-
-+1.
-
-But how does the kernel decide if it is this swiotlb pool or just some page which happens to be below the IOVA limit?
-
-swiotlb can be for bouncing (with all these dma_sync_single_for_cpu) or, if dev->dma_io_tlb_mem->for_alloc = true, for coherent allocation (no need in dma_sync_single_for_cpu).
-
-I am looking for a way to set up my "sev-guest" device such as when dma_alloc_attrs(snp_dev->dev,...) happens, it allocates a page from the shared swiotlb pool (with no actual bouncing) and there is no obvious way to trick the DMA layer into doing that.
-
-
-> 
-> Jason
-
--- 
-Alexey
-
+-ritesh
 
