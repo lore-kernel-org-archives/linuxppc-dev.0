@@ -1,71 +1,71 @@
-Return-Path: <linuxppc-dev+bounces-22785-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22786-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 318E4CD98F6
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Jun 2026 06:14:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8938ACD98F6
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Jun 2026 06:15:17 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ghS3t6ZFfz3bpP;
-	Fri, 19 Jun 2026 16:14:34 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781849674;
-	cv=none; b=Al0sPKX4M8gS8maBhNs9gf4pO+RA8afnAPkY0QLDbDJaHyvSM36EbLttlT3kdDKaA4AotyCMm7vNM0g5l5K6haX3rz3l3qn/66qaAr1pXK4i5BXF+sEOWz5rJtrgrYd2/3hktjOCEDIk743S0VdfjARRipX5h1vonnu1mkR8e5gXNqYKF+DV8ZYbijg14QYZrW18VSLm/LhiU+FVYjF269/PZ1aVdtYVLJ6DxsdZdJ+xrEWx88WkhjHHAfjLQeDVQmUUPA+fRb+RSyNtUXxyDmvnoi/6WDsMCUL+so7yXdYrQuAwaSt36xSXYc2w3dE8vtItTsamEf2h+jtOxpOE7Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ghS4h1X4fz3bpP;
+	Fri, 19 Jun 2026 16:15:16 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781849716;
+	cv=none; b=LeELYsdRNTz5PhwYwNIBB5SN3kaUQA/fo2aVK4YsnDYjfy6SbIVhIGO1DD9v9rETKO3aX4QtPbpufkFBw+UxVZ2BIK/vRQTHiduoo3bF8sYy1tunGzLnWio/u1AqV1QKhP43hk2KPSs1EZnekn1WgB74FIRD+0TQdnHiLqL8wMq3LcQU5AedibbiPNuN+Dx49Knb69fUXa4akgc6mJJss/dNkr/lKpid7md4E7NFt5ppwCWCJFfLdtkwCJaiTPwA48zGmsBH7MMNa4Cm8S/1VyVTRyJ9udknX4IuFiid1jwARRW9ojBh+FadiYiJeIM3rn7Mm2g8aoQWHucUmh1wKg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1781849674; c=relaxed/relaxed;
-	bh=jrWfkYLZGLXyJmzQQERjCP1qFgpBrevURQaWqVdMkjY=;
+	t=1781849716; c=relaxed/relaxed;
+	bh=N9WGKVXq2UqaQ0+nIzsGUfe75rS6wGR6BEBoc+Wixcg=;
 	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
-	 MIME-Version:Content-Type; b=Vu/Db1dhVp8LFeptS528+MgjhW2QgLahIKj1Bu9SKfi5Orgv/l6xeFHRAjkpSpPswU/Yq8TsRyXX+Jw7K1M4U8fbRGE2ha99mrigDIAY6d8+yed9KMnsbla8ghRqvXb5BtLd/tQ2u6fyy6oBnlWWHnASjgVRAvm8us7B7euLCOUouKp7Ox5pPsM31QxjY6vCMIOV+upA3QpQf6hzFowYm/J9rQeFQwc/or1NMV8TqSgvbW/VfQ+raLahu09JEilSofRIGyp1J4UfXiiSs4ZgkaJUO1lUQdqEhgDn6+2TgIxTtnBWwHge+ZyiHDfS89L9D+MPul6rkBTHa84w1E+Z3A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=qiTg+4XY; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=vaibhav@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	 MIME-Version:Content-Type; b=QzU6DpauobtjKZYDAXh4lqhSvksZVuaJoRnEBQhFbRcu9984E/aRGKSC/R+68VD+vlX3fCwmo0QHHMtkfgeONFrs05AnbVFMdWwu8VmrukQtk9f8JRa6iH9cT+rsuBE1gZhhSDN6ESUmJ/uk+c0JoUwmeAATXJxaIHSirjAagB2ZzzFGCwJe/IbZhQFuO/UCOnmMvh07yIvHJStrJu+V9Y8GoRbIwvflYON/MKnOt2FW6EQDo6D79PjDRXhqzMMuVWHvXxs7kYl9J/m1UHatfRNMQCFI/TWWwTwUGmA5m4gcIMMk9kIBAmadt4nDbPqaphGqlPabNoBkMf7bYb1ETQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=kGv/UaIo; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=vaibhav@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=qiTg+4XY;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=kGv/UaIo;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=vaibhav@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=vaibhav@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ghS3s6t4fz2y1Y
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Jun 2026 16:14:33 +1000 (AEST)
-Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 65J3IHNj1055914;
-	Fri, 19 Jun 2026 06:14:15 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ghS4g3JnBz2y1Y
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Jun 2026 16:15:15 +1000 (AEST)
+Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 65J3IXFG1116579;
+	Fri, 19 Jun 2026 06:15:06 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
 	:content-type:date:from:in-reply-to:message-id:mime-version
-	:references:subject:to; s=pp1; bh=jrWfkYLZGLXyJmzQQERjCP1qFgpBre
-	vURQaWqVdMkjY=; b=qiTg+4XYZtRNdYyqupyuzg31jQfD04g3PtPa06lcMJrOGK
-	EWd9N5HHU91Alfc7ixt5VWSEV2b0KpBKC3Xcb387tiqfOqJ5vou9n4wazmHY8wiZ
-	PdeXeIp1jt+Yr+9dUA8N+hx1C0Mc3UJR5ObXfHmEYcrFx5M8kJwODmEYfDKmWcgp
-	KoFKFqRaAE3w5kRyrFJz8SYdeg5dOKCBdguarAwmAIs44tHzoelInninI6w8Gp/j
-	UO7Yz2XeWmDziCzeh/gd/npgXmkdShpeOwLsWDhmljQ/4f8gvpVjceHQFlEtM5Lq
-	4sxnlTUbU/hxgaEG6Io+r6ctkJUnS58MIj7O+alw==
-Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4eueqxktcw-1
+	:references:subject:to; s=pp1; bh=N9WGKVXq2UqaQ0+nIzsGUfe75rS6wG
+	R6BEBoc+Wixcg=; b=kGv/UaIoRwQhGHR+yHUNihGAz5e2CoJ43ca11ML/4/b7iu
+	0aijgDQfMp6D4Zrdqdw9mfKtAmJEOUEsCT0qviGzzodVxdunaUuCBEPhTpgAl54N
+	Me5pB9iSlahynqUfx4Y9vHoH9RL9yevB1J5DxC/o7QB2wwIUTgXZi6zNE8INNHKd
+	oL+Nohn4ZN68ExmdaL6lvRdQ4v/FkRdFop2YW9QA8ATswEhW0/Cg0p5Dxf87KsfE
+	jWijjEH6+YaUbOZxXUcgQNTL3VwcsVMSQ6FzcdB1rLa2CY+oEgGx5Hmv1HQ/7hfU
+	UO1SAiqg54dJ9a7lYPEeIZ0x16M5WncwTJH6QhhQ==
+Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4eueqw422s-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 19 Jun 2026 06:14:15 +0000 (GMT)
-Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma23.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 65J64pa9017858;
-	Fri, 19 Jun 2026 06:14:14 GMT
-Received: from smtprelay07.wdc07v.mail.ibm.com ([172.16.1.74])
-	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4ev172fesj-1
+	Fri, 19 Jun 2026 06:15:05 +0000 (GMT)
+Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma22.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 65J64bev017803;
+	Fri, 19 Jun 2026 06:15:04 GMT
+Received: from smtprelay05.wdc07v.mail.ibm.com ([172.16.1.72])
+	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4ev172feum-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 19 Jun 2026 06:14:14 +0000 (GMT)
-Received: from smtpav01.wdc07v.mail.ibm.com (smtpav01.wdc07v.mail.ibm.com [10.39.53.228])
-	by smtprelay07.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 65J6EDTf55312722
+	Fri, 19 Jun 2026 06:15:04 +0000 (GMT)
+Received: from smtpav06.dal12v.mail.ibm.com (smtpav06.dal12v.mail.ibm.com [10.241.53.105])
+	by smtprelay05.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 65J6F2ND34013722
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 19 Jun 2026 06:14:13 GMT
-Received: from smtpav01.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 472635804B;
-	Fri, 19 Jun 2026 06:14:13 +0000 (GMT)
-Received: from smtpav01.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 0054D58055;
-	Fri, 19 Jun 2026 06:14:07 +0000 (GMT)
+	Fri, 19 Jun 2026 06:15:03 GMT
+Received: from smtpav06.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id B2EE758059;
+	Fri, 19 Jun 2026 06:15:02 +0000 (GMT)
+Received: from smtpav06.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id C2DB358043;
+	Fri, 19 Jun 2026 06:14:56 +0000 (GMT)
 Received: from vaibhav?linux.ibm.com (unknown [9.39.17.1])
-	by smtpav01.wdc07v.mail.ibm.com (Postfix) with SMTP;
-	Fri, 19 Jun 2026 06:14:06 +0000 (GMT)
-Received: by vaibhav@linux.ibm.com (sSMTP sendmail emulation); Fri, 19 Jun 2026 11:44:05 +0530
+	by smtpav06.dal12v.mail.ibm.com (Postfix) with SMTP;
+	Fri, 19 Jun 2026 06:14:56 +0000 (GMT)
+Received: by vaibhav@linux.ibm.com (sSMTP sendmail emulation); Fri, 19 Jun 2026 11:44:55 +0530
 From: Vaibhav Jain <vaibhav@linux.ibm.com>
 To: Amit Machhiwal <amachhiw@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
         Madhavan Srinivasan <maddy@linux.ibm.com>
@@ -80,12 +80,13 @@ Cc: Amit Machhiwal <amachhiw@linux.ibm.com>,
         Jonathan Corbet <corbet@lwn.net>,
         Shuah Khan <skhan@linuxfoundation.org>, kvm@vger.kernel.org,
         linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, lkp@intel.com
-Subject: Re: [PATCH v4 4/4] KVM: PPC: Document KVM_PPC_GET_COMPAT_CAPS ioctl
-In-Reply-To: <20260616123314.82721-5-amachhiw@linux.ibm.com>
+Subject: Re: [PATCH v4 1/4] KVM: PPC: Introduce KVM_CAP_PPC_COMPAT_CAPS and
+ wire up ioctl
+In-Reply-To: <20260616123314.82721-2-amachhiw@linux.ibm.com>
 References: <20260616123314.82721-1-amachhiw@linux.ibm.com>
- <20260616123314.82721-5-amachhiw@linux.ibm.com>
-Date: Fri, 19 Jun 2026 11:44:05 +0530
-Message-ID: <8733yjcb0y.fsf@vajain21.in.ibm.com>
+ <20260616123314.82721-2-amachhiw@linux.ibm.com>
+Date: Fri, 19 Jun 2026 11:44:55 +0530
+Message-ID: <871pe3cazk.fsf@vajain21.in.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -102,117 +103,204 @@ MIME-Version: 1.0
 Content-Type: text/plain
 X-TM-AS-GCONF: 00
 X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Authority-Analysis: v=2.4 cv=OcSoyBTY c=1 sm=1 tr=0 ts=6a34de37 cx=c_pps
- a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
+X-Proofpoint-Spam-Info: AW1haW4tMjYwNjE5MDA1MSBTYWx0ZWRfX30gfv+TcQrtF
+ v2fu0TcJBKcjLz+hJXSPIphOJWI0imWzVZQDhwLTQkBKl+cWVSjjCAXU5Oj/WuIZfvEktrPi7lA
+ ovaXBHkFeK2d7b/lv0mVzgNxLW64YEY=
+X-Proofpoint-GUID: wqNhlxy33C7NbSHWPuNqGN1mC9rYRKUI
+X-Authority-Analysis: v=2.4 cv=bMgm5v+Z c=1 sm=1 tr=0 ts=6a34de69 cx=c_pps
+ a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
  a=FelO9ux0wxsA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=V8glGbnc2Ofi9Qvn3v5h:22 a=VnNF1IyMAAAA:8 a=EG2VKv7dvh7jra7yapQA:9
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjE5MDA1MSBTYWx0ZWRfX9J7EqdFprCWA
- PH0CZAwVMNdOU4HemDkK6G7NAC97hIkpapFAfAOP1Usy9DW2zO5yjHiyxxJdV6Sfn0QJGcaV4TH
- cofMYSALmk1hni8HExUG60GpjrlMxIexANyY/O6SHdfHHT/QQ7Tb+UJRyCII/fujapYa2Vm05lA
- RJ2x+JPuIqavp0RUD34rWw+7SsQtPvnkwGkbGGa+KFJinY4iHQHDCpC0ecWF/S8YhGM5X3M9R9g
- jutDKBe131Al4BvrMKtyXKkd2jtoITsOZIzlOoCqxWRWX/9WVKWQFGZFJ6O3rrQBX+55sSoFf6v
- vMo1EorE4G2/GXuWceAviZygFMmZjmF3jKBB7NT3oOcyl+que1W/pcOAkqrpvJpfbjKqxnN18Xb
- z/USC9ILYC8W3ZZko+EUchoOjDeVSLsl5hKjyc31QheSxW+wqqpJqr05Q5NYXQcJwkEPoGkF5S7
- jiYIpY6anvwdVQXpd9g==
-X-Proofpoint-GUID: XtZQzzW6xfAPo1iWZWmYtAz5iWd9VC3R
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNjE5MDA1MSBTYWx0ZWRfX3OrnysIXGGRl
- TYFrdzaivGTVEq0E4g38+YtSuqTZE34GkgoBIeyX/0ewIygHWFVs1CBoLAy2UdrOF+4yZ9ohdy0
- iiWwIuW1C+AbItRobB73xtUpJAuWgLA=
-X-Proofpoint-ORIG-GUID: 6bFKtkTU5rpuzemZqjuCTGlT3mc3PgUc
+ a=U7nrCbtTmkRpXpFmAIza:22 a=VnNF1IyMAAAA:8 a=fta_d2NlTjNxvIL-FKcA:9
+X-Proofpoint-ORIG-GUID: RgYr7eR6PuaLHU6C-Fo8QGxqzQR_q9Cn
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjE5MDA1MSBTYWx0ZWRfX+36aUoqJnMLy
+ PCZmtdzjL2OhAmJdoMH0oQ6C7RgYsPuvzc0jSprIIlg27DXcWhpGm6wvb9cTcj4vAXqEtw/hGGL
+ hq2UajxR8CelU5o7XYyP0n4mqpQrRifZ2W14cWmeH1nTMfAYDlSHgAeUR4AnmaWGgVWsbDphjwC
+ 4EIObecj+CLOWRucHSWnMwCTtIn0LikX1vriWcihjl0gy1o36GkKA2nhR8OQ9UTYKfO5J8S5HEP
+ L1ECfXfor1PzHa0qDgkxd+boQEq8qET3XeAGSdg9uHeDT+nSHg6q31yu5IjfgANmcUqcH766OST
+ 7VpGZQqu+DfZ04BHcOBLXUECHZBNgJrFep+i80ftYTAbi0zhNCCjX5YQw6p5jf2EGXY6xBMW+A0
+ AVpG+TLyZhVX4C4FxxmXg1OlVrNroCH7lmxbBr0QgK6pwvA6aZsmIpi5K/6X/1dUf7PuAhKvNz4
+ Vcpv3rMCR2snpGNSpGw==
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
  definitions=2026-06-19_01,2026-06-18_03,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501 phishscore=0 bulkscore=0 suspectscore=0 lowpriorityscore=0
- impostorscore=0 malwarescore=0 spamscore=0 adultscore=0 clxscore=1015
+ suspectscore=0 impostorscore=0 malwarescore=0 adultscore=0 spamscore=0
+ bulkscore=0 priorityscore=1501 phishscore=0 clxscore=1015 lowpriorityscore=0
  classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
  reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2606190051
 
-Hi Amit,
+Hi Amit.
 
 Thanks for the patch and incorporating V3 review comments. Further
 review comments inline below:
 
 Amit Machhiwal <amachhiw@linux.ibm.com> writes:
 
-> Add documentation for the KVM_PPC_GET_COMPAT_CAPS ioctl to the KVM API
-> documentation.
+> Introduce a new capability and ioctl to expose CPU compatibility modes
+> supported by the host processor for nested guests.
 >
-> The ioctl exposes host processor compatibility modes supported for
-> nested KVM guests on PowerPC systems. The documentation includes
-> comprehensive error code descriptions, structure field definitions
-> including the size field for forward compatibility, and KVM-specific
-> capability bit constants.
+> On IBM POWER systems, newer processor generations (N) can operate in
+> compatibility modes corresponding to earlier generations, like (N-1) and
+> (N-2). This is particularly relevant for nested virtualization, where
+> nested KVM guests may need to run with a specific processor compatibility
+> level.
 >
+> Introduce KVM_CAP_PPC_COMPAT_CAPS capability and the corresponding
+> KVM_PPC_GET_COMPAT_CAPS vm ioctl. The ioctl returns a bitmap describing
+> the compatibility modes supported by the host in respective bit numbers,
+> allowing userspace (e.g., QEMU) to select an appropriate compatibility
+> level when configuring nested KVM guests.
+>
+> The ioctl handling is added in kvm_arch_vm_ioctl() and retrieves host
+> CPU compatibility capabilities via a PowerPC-specific backend
+> implementation when available. The implementation validates the structure
+> size from userspace to ensure forward compatibility and returns
+> appropriate error codes (EINVAL for invalid size, EFAULT for copy
+> failures, ENOTTY if backend is not implemented). The struct
+> kvm_ppc_compat_caps includes a size field to support future ABI
+> extensions.
+>
+> Suggested-by: Vaibhav Jain <vaibhav@linux.ibm.com>
 > Signed-off-by: Amit Machhiwal <amachhiw@linux.ibm.com>
 > ---
->  Documentation/virt/kvm/api.rst | 47 ++++++++++++++++++++++++++++++++++
->  1 file changed, 47 insertions(+)
+>  arch/powerpc/include/asm/kvm_ppc.h  |  1 +
+>  arch/powerpc/include/uapi/asm/kvm.h |  7 ++++++
+>  arch/powerpc/kvm/powerpc.c          | 35 +++++++++++++++++++++++++++++
+>  include/uapi/linux/kvm.h            |  4 ++++
+>  4 files changed, 47 insertions(+)
 >
-> diff --git a/Documentation/virt/kvm/api.rst b/Documentation/virt/kvm/api.rst
-> index 52bbbb553ce1..ba6feba74d7d 100644
-> --- a/Documentation/virt/kvm/api.rst
-> +++ b/Documentation/virt/kvm/api.rst
-> @@ -6553,6 +6553,53 @@ KVM_S390_KEYOP_SSKE
->    Sets the storage key for the guest address ``guest_addr`` to the key
->    specified in ``key``, returning the previous value in ``key``.
+> diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include/asm/kvm_ppc.h
+> index 0953f2daa466..169ea6a7fbad 100644
+> --- a/arch/powerpc/include/asm/kvm_ppc.h
+> +++ b/arch/powerpc/include/asm/kvm_ppc.h
+> @@ -319,6 +319,7 @@ struct kvmppc_ops {
+>  	bool (*hash_v3_possible)(void);
+>  	int (*create_vm_debugfs)(struct kvm *kvm);
+>  	int (*create_vcpu_debugfs)(struct kvm_vcpu *vcpu, struct dentry *debugfs_dentry);
+> +	int (*get_compat_caps)(struct kvm_ppc_compat_caps *host_caps);
+>  };
 >  
-> +4.145 KVM_PPC_GET_COMPAT_CAPS
-> +-----------------------------
-> +:Capability: KVM_CAP_PPC_COMPAT_CAPS
-> +:Architectures: powerpc
-> +:Type: vm ioctl
-> +:Parameters: struct kvm_ppc_compat_caps (out)
-> +:Returns: 0 on success, negative value on failure
-> +
-> +Errors include:
-> +
-> +  ======== ============================================================
-> +  EFAULT   if ``struct kvm_ppc_compat_caps`` cannot be read from or
-> +           written to userspace
-> +  EINVAL   if the ``size`` field is smaller than the current structure
-> +           size, or if the backend implementation fails to retrieve or
-> +           map CPU compatibility capabilities
-> +  ENOTTY   if the backend does not implement the ``get_compat_caps``
-> +           operation (e.g., on non-pseries platforms or when the
-> +           required KVM operations are not available)
-> +  ======== ============================================================
-> +
-> +IBM POWER system server-based processors provide a compatibility mode feature
-> +where an Nth generation processor can operate in modes consistent with earlier
-> +generations such as (N-1) and (N-2).
-> +
-> +This ioctl provides userspace with information about the CPU compatibility modes
-> +supported by the current host processor for booting the nested KVM guests on
-> +PowerNV (KVM nested APIv1) and PowerVM (KVM nested APIv2) platforms.
-> +
-
-Please add a detail on how returned 'size' field can be less than what
-the userspace has sent and how it should be handled.
-
-> +::
-> +
-> +  struct kvm_ppc_compat_caps {
+>  extern struct kvmppc_ops *kvmppc_hv_ops;
+> diff --git a/arch/powerpc/include/uapi/asm/kvm.h b/arch/powerpc/include/uapi/asm/kvm.h
+> index 077c5437f521..8a38be6c3b03 100644
+> --- a/arch/powerpc/include/uapi/asm/kvm.h
+> +++ b/arch/powerpc/include/uapi/asm/kvm.h
+> @@ -437,6 +437,13 @@ struct kvm_ppc_cpu_char {
+>  	__u64	behaviour_mask;		/* valid bits in behaviour */
+>  };
+>  
+> +/* For KVM_PPC_GET_COMPAT_CAPS */
+> +struct kvm_ppc_compat_caps {
 > +	__u64	flags;			/* Reserved for future use */
 > +	__u64	size;			/* Size of this structure */
+Suggesting moving the 'size' as the first member of the struct. That way
+copying the struct from userspace becomes bit easier.
+
 > +	__u64	compat_capabilities;	/* Capabilities supported by the host */
-> +  };
+> +};
 > +
-> +The ``compat_capabilities`` bit field describes the processor compatibility
-> +modes supported by the host. For example, the following bits indicate support
-> +for specific processor modes.
+>  /*
+>   * Values for character and character_mask.
+>   * These are identical to the values used by H_GET_CPU_CHARACTERISTICS.
+> diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
+> index 98de68379b18..9153b0034b45 100644
+> --- a/arch/powerpc/kvm/powerpc.c
+> +++ b/arch/powerpc/kvm/powerpc.c
+> @@ -701,6 +701,13 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
+>  			}
+>  		}
+>  		break;
+> +#if defined(CONFIG_KVM_BOOK3S_HV_POSSIBLE)
+> +	case KVM_CAP_PPC_COMPAT_CAPS:
+> +		r = 0;
+> +		if (kvmhv_on_pseries())
+> +			r = 1;
+> +		break;
+> +#endif /* CONFIG_KVM_BOOK3S_HV_POSSIBLE */
+>  	default:
+>  		r = 0;
+>  		break;
+> @@ -2467,6 +2474,34 @@ int kvm_arch_vm_ioctl(struct file *filp, unsigned int ioctl, unsigned long arg)
+>  		r = kvm->arch.kvm_ops->svm_off(kvm);
+>  		break;
+>  	}
+> +	case KVM_PPC_GET_COMPAT_CAPS: {
+> +		struct kvm_ppc_compat_caps host_caps;
+> +		u64 user_size;
 > +
-> +::
+> +		r = -EFAULT;
+> +		/* First, get the size field from userspace to validate */
+> +		if (copy_from_user(&user_size, &((struct kvm_ppc_compat_caps
+> +		     __user *)argp)->size, sizeof(user_size))) {
+move the struct size member to the first field. That way
+from_from_user() call is simplified and you wont have to do some wired
+pointer arithmetic.
+
+
+> +			goto out;
+> +		}
 > +
-> +  KVM_PPC_COMPAT_CAP_POWER9  (bit 1): KVM guests can run in Power9 processor mode
-> +  KVM_PPC_COMPAT_CAP_POWER10 (bit 2): KVM guests can run in Power10 processor mode
-> +  KVM_PPC_COMPAT_CAP_POWER11 (bit 3): KVM guests can run in Power11 processor mode
+> +		/* Validate size - must be at least the current structure size */
+> +		r = -EINVAL;
+> +		if (user_size < sizeof(host_caps))
+> +			goto out;
+Check should be strengthed to
+ if (user_size != sizeof(host_caps))
+So that in case used space sends a struct larger than what kernel knows
+abt it will be rejected. This will prevent surprises in future in case
+VMM sends a larger struct expecting kernel to know abt it but an older
+kernel only knows abt older smaller sized struct. Also look at the
+review comment below.
+
 > +
->  .. _kvm_run:
+> +		r = -ENOTTY;
+> +		memset(&host_caps, 0, sizeof(host_caps));
+> +		if (!kvm->arch.kvm_ops->get_compat_caps)
+> +			goto out;
+> +
+> +		r = kvm->arch.kvm_ops->get_compat_caps(&host_caps);
+> +		/* Set the actual size of the structure we're returning */
+> +		host_caps.size = sizeof(host_caps);
+> +		if (!r && copy_to_user(argp, &host_caps, sizeof(host_caps)))
+> +			r = -EFAULT;
+You are allowing a future userspace VMM to potentially send a larger
+'struct kvm_ppc_compat_caps' that what kernel knows about. This makes
+error handling in userspace bit involved since there might be some
+fields in the 'struct kvm_ppc_compat_caps' given from userspace may
+remain un-initialized when userspace sees it. So please mention this
+subtle behaviour should be mentioned in patch description and also
+update it the doc in the later patch.
+
+> +		break;
+> +	}
+>  	default: {
+>  		struct kvm *kvm = filp->private_data;
+>  		r = kvm->arch.kvm_ops->arch_vm_ioctl(filp, ioctl, arg);
+> diff --git a/include/uapi/linux/kvm.h b/include/uapi/linux/kvm.h
+> index 6c8afa2047bf..1788a0068662 100644
+> --- a/include/uapi/linux/kvm.h
+> +++ b/include/uapi/linux/kvm.h
+> @@ -996,6 +996,7 @@ struct kvm_enable_cap {
+>  #define KVM_CAP_S390_USER_OPEREXEC 246
+>  #define KVM_CAP_S390_KEYOP 247
+>  #define KVM_CAP_S390_VSIE_ESAMODE 248
+> +#define KVM_CAP_PPC_COMPAT_CAPS 249
 >  
->  5. The kvm_run structure
+>  struct kvm_irq_routing_irqchip {
+>  	__u32 irqchip;
+> @@ -1349,6 +1350,9 @@ struct kvm_s390_keyop {
+>  #define KVM_GET_DEVICE_ATTR	  _IOW(KVMIO,  0xe2, struct kvm_device_attr)
+>  #define KVM_HAS_DEVICE_ATTR	  _IOW(KVMIO,  0xe3, struct kvm_device_attr)
+>  
+> +/* Available with KVM_CAP_PPC_COMPAT_CAPS */
+> +#define KVM_PPC_GET_COMPAT_CAPS	_IOR(KVMIO,  0xe4, struct kvm_ppc_compat_caps)
+> +
+>  /*
+>   * ioctls for vcpu fds
+>   */
 > -- 
 > 2.50.1 (Apple Git-155)
+>
 >
 
 -- 
