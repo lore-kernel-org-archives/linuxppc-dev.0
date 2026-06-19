@@ -1,85 +1,87 @@
-Return-Path: <linuxppc-dev+bounces-22842-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22843-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3B193CD98F6
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Jun 2026 22:01:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E1418CDB466
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Jun 2026 22:01:32 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ghs3k3cC8z3btJ;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ghs3k6Znlz3cC5;
 	Sat, 20 Jun 2026 08:00:50 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781906450;
-	cv=none; b=e2+YSRkM//6yvHQI83N1agWFmcdZfWujuddG97N00TcuPVRWTNraDwvn5WULAEDxBP5VbgGOZRidZpBR8qkpm+2BZR5myGTzrDZRWIwogO8lO3dzKfQGzG2EuGHAc+IH1LZ2na+kJ2oSKiz4m9fAWJF69zUcliJ/oLO+D2SShiFXNvic+8rCgmtCXva+O9ZWAvfRKLNI1zTszBBimWJ++ZHuJ6G/eLRW7dosjWdrlYmSW954y5V5CkYsn2wzeF99Fr1C9TiRoYuspnYgqsBFsC2LGtwkPCQFaR17uZ0uqmUU7whHxO2raOj4tJSR2RG4WZR6DLrlKy4aseFNacvvmg==
+	cv=none; b=Gl1SNFp7wA183wDSPm6MD76HKQBLSL79l6S6Nuzv8yVIOgtpEYIjp06/gG7htmV2v+kyJtg39AsYdBvkltMjkk8CjHmchv9fZs1TpKQ35vomgFrvDjD0XenqkQmbWgFh65ShvWQIsWa3NjUM1kyLWOsrrlMzVrh0ztQiDvV+Dq7w2JZTUr0PbEwz3M19Ct+Tncm8qM3isKUIFmrqgSxMPaPH6ISI9T0ecJUD5DRetmNCZE5she682A+GYL74iyRT4wF5RWQth9N5Mb+cSvwyjdy4Idljsk1B6e7N3mUtit9ZPWqJY7Ccuw6JqHqzAsu8tRUiGSZM/MPx09afVUyQ0A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1781906450; c=relaxed/relaxed;
-	bh=0Ye5dhshwXr58VxzYRx5kr1b+nZcAXsMCPw9rovgVX8=;
+	bh=RGxzpqrPvNfaZrVRaGa3UJckt7eWXPaHjsewheIKEOY=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=RrePUwnMeQbfzGaZKzb4IfRWx92za0P/UK9iKgQPAlGMSCIJXRdxZhfnjSdWI+m/mq9ld2rA/UnIuKt8X/rYrUuKO8zHhEf5ObJX1qAUU2esDOlKJ1ylE7U01GqeoGMtZCLrm/8ACB3SYlpcMiXXx70/sFI9cQ190kSlRnqMLYeFUBpqQkJWybr0Z/IKxpp44gqj8evLrLl5BME66hdWbjLqUMoWC1AYkG0aQPEwRc7vU9IyEC8cMBjkjV+3CKV8E+hfiyV+H+x36TCWx+m1ZiraHaPXwK3/FP3SGWIZ8J+I6UDA5Plmxrc7bJMt3x8x9xDWyuqTlUBfGbkfnHGzvA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=jTk/Hu/r; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	 MIME-Version:Content-Type; b=QJN85dQWcgKuDAorFRNkkcKSYX1smQWMVZLKALHWGq0L3wY6VMYa8VO7+wf0WCDJLQCR4yyTrtylLJQre6P7TqmNibtNoMXHzPLEyPo1XedNKyKwk17t05e0KE5/5n6M+ZKe08aAJQ3/F68pZ4TLLepicy5bWj/rBmESK4mdqWiUcJ6Lg0c/sPMaP5zKsOVbl/xngb/FnqH5r7UhLoxed+XwprBbP38xM2eIsjoC0nqGuJ9/zLM6ZhhK3N6DDnKdYtoI9Gg3cL8GfYTNWgq4bWAtqGlu+WhAzzKBqVtlcryCJ+EsFgK+WfUS2A8BAhbryXeKAy/yv+JsHrMyKynfoQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Un1bx4kf; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=jTk/Hu/r;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Un1bx4kf;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ghs3j6Jwsz3cB3
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ghs3j3fpSz3c7j
 	for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 Jun 2026 08:00:49 +1000 (AEST)
-Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 65JLmGTv3445137;
-	Fri, 19 Jun 2026 22:00:37 GMT
+Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 65JLn6183393166;
+	Fri, 19 Jun 2026 22:00:29 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
 	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=0Ye5dh
-	shwXr58VxzYRx5kr1b+nZcAXsMCPw9rovgVX8=; b=jTk/Hu/rTkgfyVojxBEsZF
-	LrXddMMTee/PiT9A2pSNsJoHpjxpltopqhBEzYk8ZqJ1b5csYRYVj9M56xg2Gntj
-	+Bw21MzhnQkrmDhXS8vrKrw72Zygehyls5Ean1aSOBqtyEjwPEmY8woz9xj4xwtN
-	Wcc9tTN4CwJhTRuidhh8O5JDRyx6q08cyPBELxkcvL7wWyCfXP65DIljwON+6n2T
-	JsCa9AbFsoC3tHCIriozAxIU5+7DBTGc3Us8cwzAHqyF+k+KAe7J8g141Ku0neJY
-	vLJy6na6069zCqzVdFZOhVRl5+eH2u/eP8UH5JE9d/C+NPtEQLrOzWXz/XpsqNvg
+	:message-id:mime-version:references:subject:to; s=pp1; bh=RGxzpq
+	rPvNfaZrVRaGa3UJckt7eWXPaHjsewheIKEOY=; b=Un1bx4kfaW6EsR3br2UO/k
+	DjEVZXQSKLhRqFWMsxmPVtkMXPbcPaD/McN3BX/5XUERUs8jmgjLUV9gLiumcfcN
+	v5Nxs7g6lZ4ZGBsDYDUSjMPFydDFjc9k7HuPdIsn01trU01mR8pcMpyvfJ44e9Uh
+	kjY2T61LtwwFOrEXIz6EQbd0z6p+pRA7mkIBjT5/Dagfc9b3VZ5a8AhXq4PPq/Zv
+	/6EwpUfkDdh7b86/4SFIiTR3y7tzhB+zkh81eb8YxhIqcXX/sqa9WwqGKl6JZIjS
+	O0dahn32F2TVdmMlS19scCumAJZ6L1bvNYl1fpysoHJvmQfzhKYsYWc+vcUCWoew
 	==
-Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4eueqw7rwf-1
+Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4eueqxqeu7-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 19 Jun 2026 22:00:36 +0000 (GMT)
-Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma21.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 65JLnh6h007545;
-	Fri, 19 Jun 2026 22:00:35 GMT
-Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
-	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4ev172jrq5-1
+	Fri, 19 Jun 2026 22:00:29 +0000 (GMT)
+Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma23.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 65JLnsfn016909;
+	Fri, 19 Jun 2026 22:00:28 GMT
+Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
+	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4ev172js3a-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 19 Jun 2026 22:00:35 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
-	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 65JM0Xp830343760
+	Fri, 19 Jun 2026 22:00:28 +0000 (GMT)
+Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
+	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 65JM0Q4643450776
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 19 Jun 2026 22:00:33 GMT
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 6475520040;
-	Fri, 19 Jun 2026 22:00:33 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 5760220043;
-	Fri, 19 Jun 2026 22:00:31 +0000 (GMT)
+	Fri, 19 Jun 2026 22:00:26 GMT
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 855B02004B;
+	Fri, 19 Jun 2026 22:00:26 +0000 (GMT)
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id BE48920040;
+	Fri, 19 Jun 2026 22:00:23 +0000 (GMT)
 Received: from Linuxdev (unknown [9.43.77.5])
-	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Fri, 19 Jun 2026 22:00:31 +0000 (GMT)
+	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Fri, 19 Jun 2026 22:00:23 +0000 (GMT)
 From: Madhavan Srinivasan <maddy@linux.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
-        =?UTF-8?q?Thomas=20Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>,
-        Christophe Leroy <chleroy@kernel.org>,
-        Thomas Gleixner <tglx@kernel.org>,
+To: Herbert Xu <herbert@gondor.apana.org.au>,
+        "David S. Miller" <davem@davemloft.net>,
+        =?UTF-8?q?Breno=20Leit=C3=A3o?= <leitao@debian.org>,
+        Nayna Jain <nayna@linux.ibm.com>,
+        Paulo Flabiano Smorigo <pfsmorigo@gmail.com>,
+        Eric Biggers <ebiggers@kernel.org>, Ard Biesheuvel <ardb@kernel.org>,
         Thorsten Blum <thorsten.blum@linux.dev>
-Cc: linux-hardening@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+Cc: linux-crypto@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
         linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] powerpc/pseries/lparcfg: Replace deprecated strcpy in parse_system_parameter_string
-Date: Sat, 20 Jun 2026 03:30:12 +0530
-Message-ID: <178190618802.653308.14345935745182583416.b4-ty@linux.ibm.com>
+Subject: Re: [PATCH] MAINTAINERS: powerpc: update VMX AES entries
+Date: Sat, 20 Jun 2026 03:30:05 +0530
+Message-ID: <178190618797.653308.17486087920312921654.b4-ty@linux.ibm.com>
 X-Mailer: git-send-email 2.54.0
-In-Reply-To: <20251013135703.97260-2-thorsten.blum@linux.dev>
-References: <20251013135703.97260-2-thorsten.blum@linux.dev>
+In-Reply-To: <20260524212943.799757-3-thorsten.blum@linux.dev>
+References: <20260524212943.799757-3-thorsten.blum@linux.dev>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -97,47 +99,47 @@ Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
 X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNjE5MDIxMCBTYWx0ZWRfX+d4X9phUmC2C
- KYwyG4LptMezMrtxROxSa/iHzvmyD7/aBChh+f0LJPCumKPxMNRAKVGGWz9EVsdH/8cKcg9nnyl
- x88VukTTYgoGkEoSSVPhmaH1ATacrLg=
-X-Proofpoint-GUID: 0Mw86DZJdEKxSCzY2d6cDJ68WtHC3z51
-X-Authority-Analysis: v=2.4 cv=bMgm5v+Z c=1 sm=1 tr=0 ts=6a35bc05 cx=c_pps
- a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
+X-Authority-Analysis: v=2.4 cv=OcSoyBTY c=1 sm=1 tr=0 ts=6a35bbfd cx=c_pps
+ a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
  a=IkcTkHD0fZMA:10 a=FelO9ux0wxsA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=U7nrCbtTmkRpXpFmAIza:22 a=VwQbUJbxAAAA:8
- a=ObQ0Zf3V30G6lmXZe-cA:9 a=QEXdDO2ut3YA:10
-X-Proofpoint-ORIG-GUID: 3G9r9qoivLZVygOWlLIB9JecMtJ-RsSx
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjE5MDIxMCBTYWx0ZWRfXwyXN5OPmGF2X
- 8ADPqnC75eKmSbMBrsmQIyuJJ/V0Y6XaWxYM7qrQlDAIOZNG3OMbEGeMUFgh9Gw1rkMceRWFUAg
- N95dZ1qztvcz/acplP6ZUryzZ0sSMeAtTy8hnNlnkkzW3devJUdy9NbOvM/sheMDHGLYO0C/q7E
- TELga004Gfuu+JWREVSUWnQBS02fHqNW1D93KvyX8mmvzt3PIkACkWBkWwS2vrjSKBFIigJILgD
- caFzzNfxCYANpc8RlC55I5aTbYykHqWQ1Z6fW3uafwbY6mwcwNm7rJiQiiDvYWRIBzGH4SfJDmV
- L4DcCYPDtmCzyfiU30GnNgSKAVDpNfoA+nX7ODyvPsLkno8Btd92LqmzRYNkPz+luP17M/2i84r
- OnShStqGznv0U2zcRIzbk9SJLydDadKnvxoO7GEN+Kg2JDjkgPibfoC4lookDNhDASAaq6qbpq8
- +jl/53WDyowkhL2jzRw==
+ a=RnoormkPH1_aCDwRdu11:22 a=V8glGbnc2Ofi9Qvn3v5h:22 a=VwQbUJbxAAAA:8
+ a=WvaCuGcPcGSp2Jw2L04A:9 a=QEXdDO2ut3YA:10 a=0lgtpPvCYYIA:10
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjE5MDIxMCBTYWx0ZWRfX68p4YrCV0ApJ
+ 4zmQkcIfArMEZhlb06AtGutKJ5hix4B0x0ofIiTu50ypOfQcNs9EijFbEVgKkXtuLw3t+Ia/q3A
+ AJFCyctr63NYK692O6vx65sMob5tYAfVAg6YKjxYzntN+gp3cKR4jLeV2mqCd+JP1wmWIf8uYvx
+ FSpYywxFtSMRka3kBC1t+xCjr3CgvVY+ijuzJbvNIdvj7dBMinbMjUx7z2y2RyQs73VFgA8btJ1
+ DrTG9gGyctmIPrEL+kofzpYULJtCAKmw20IitABD0av+5dKNOhYb2R6Qo94Upomk0sIyaYoaBxk
+ edBf7CN8fAdZjDFegcyKz6FfqtaQDo/8h7nNCRVx8VGml4wrw1EhtYGDtlNECC/qolX4bZFGpKa
+ DFoq3ZYm3sEVZa2Cmg3pvWMHmP+wzrLmqk5cGr2YnX0v9O6KCo3SKjezcFxz4eRc/ltK3qwcCvm
+ lDM/FYNIBm/6yUFNADQ==
+X-Proofpoint-GUID: JCDkzTyrtN1aqqCxMuSLcN8TQfAmldUa
+X-Proofpoint-Spam-Info: AW1haW4tMjYwNjE5MDIxMCBTYWx0ZWRfXzirTNlhSifXG
+ E0PbMyPd9kqW1HK5N6AvNoRO9ublQxGaLs4e/oLLRP32qzbD9sk3Zx2a4ArTFOvZR5qknVLpxfQ
+ SVCTL3TZ7aLFDZrqvLnDutHt4jAKA4Y=
+X-Proofpoint-ORIG-GUID: r-9gheGHJBa1ZFuVD-nq_Piv7dls85WV
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
  definitions=2026-06-19_05,2026-06-18_03,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- suspectscore=0 impostorscore=0 malwarescore=0 adultscore=0 spamscore=0
- bulkscore=0 priorityscore=1501 phishscore=0 clxscore=1011 lowpriorityscore=0
+ priorityscore=1501 phishscore=0 bulkscore=0 suspectscore=0 lowpriorityscore=0
+ impostorscore=0 malwarescore=0 spamscore=0 adultscore=0 clxscore=1015
  classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
  reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2606190210
 
-On Mon, 13 Oct 2025 15:57:02 +0200, Thorsten Blum wrote:
-> strcpy() is deprecated; use strscpy() instead. Use the return value of
-> strscpy() instead of calling strlen() again, and ignore any potential
-> string truncation since both strings are much shorter than the buffer
-> size SPLPAR_MAXLENGTH.
+On Sun, 24 May 2026 23:29:45 +0200, Thorsten Blum wrote:
+> Commit 7cf2082e74ce ("lib/crypto: powerpc/aes: Migrate POWER8 optimized
+> code into library") removed arch/powerpc/crypto/aes.c and moved
+> arch/powerpc/crypto/aesp8-ppc.pl to lib/crypto/powerpc/.
 > 
-> Change both if conditions to silence the following checkpatch warnings:
+> However, the "IBM Power VMX Cryptographic instructions" entry still
+> references the removed file and no longer covers the moved aesp8-ppc.pl.
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/pseries/lparcfg: Replace deprecated strcpy in parse_system_parameter_string
-      https://git.kernel.org/powerpc/c/c8f80f95da32618d49c2a068ee561b85655b761d
+[1/1] MAINTAINERS: powerpc: update VMX AES entries
+      https://git.kernel.org/powerpc/c/a5779442addf487b8093b12e7acdb16a5aab2f11
 
 cheers
 
