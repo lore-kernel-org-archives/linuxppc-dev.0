@@ -1,116 +1,61 @@
-Return-Path: <linuxppc-dev+bounces-22817-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22818-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 69EBACD98F2
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Jun 2026 12:03:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A3304CD4F26
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Jun 2026 12:09:45 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ghbpJ3YcYz2ykX;
-	Fri, 19 Jun 2026 22:03:20 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::e2e"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781870600;
-	cv=none; b=JUQ0SApnBM1e3PczVQ6+mvDXrx4pnGLiK6D9F05cnmb5yI0qBXUucq60hoJTmn2eXW1AUwKGhd/T45z9J/WlmpF4L56s61JEbkJnRCYIeCxk1+B3FSIuBVRNtJM9VjNx5sH38bwjugDBru3Ecw5bfazLQjB08vbEXtZ5OiLLUDoimzU/SVfZ5ZEVJ0Iry1WilgddKUl6kZPAB1UQ4McehMShlm6unnLSTHqbNiwE6WDQflugl7jlIKFdcElIM9VNTuCy1FdohRr8JHyuZH/FVrHCyirJ7V/LlMKVe4c6b6bv7IWapB5WtanZClYtWzc5Rre5vnvGAZORA+TesgwjSA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ghbxh0ntWz3bpm;
+	Fri, 19 Jun 2026 22:09:44 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781870984;
+	cv=none; b=R7ZTFOfOlCEMnnOZsuE3a4Dsg6QRJzy/oQlP/u3Q1ji+p4IU1nCKrFQvoDAXGCdIYCOuDSk9LgG8P6Ti/w+pjbqkGSZL+QlGKj2T/LY5MCpXsWg9KawoSZboThMt5ThJEZDpLZYD8zdoZTb//5KKG7y8SV9W8Z1IWIuAScv4NxVntd3kvHTtoOU7P80toXn4pvZybicpFg+h2PWAT7elLxrAS3Ipq6O/WUV7W3D7oHpq4xzVHR8pnbbo2G2Mmj3RgadxmUhj4pqBagAzxq6V1eOfuEPEpDmM65nlzMRFQFI1Y2DSECnquUHlXWsm3xDsI6nT13/+e9Fpl/wwy6dmjw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1781870600; c=relaxed/relaxed;
-	bh=StlCUTUicQISJ/bWwbWkmSHhXapLgWFJJHXk0oHb5Ig=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=cyTBy4T/YUqSPbayX/pzJ4qh3vJwmODwnbhEJwtpOaaTtoLTgIBfDPUy0+IwILCTBrYvvy3eHHDsiDPUoyTl/LEQ3l96h4rPYvhO1t9Gl3yHYAWPn/IYtoOK3olmLhjBBZxCAUnz/tCYpV71sDCHUmIa7hbambF2atoKFLMT7z8od0Nvy7t9AezSMQglNVRj3V1Zb71CAUhiSbnzw3yJ0xpegyJEbTFlN36WoL5BT/eylA7fGLymI6OdkmkQ+V1xZLGAv3iSt96vDNsprbC5I5lcncPjy5LvLRvvL4ArOQxT009aPNowA5IYK20953/+2RUYYMIuNFNe807DNvJWKw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ziepe.ca; dkim=pass (2048-bit key; secure) header.d=ziepe.ca header.i=@ziepe.ca header.a=rsa-sha256 header.s=google header.b=XNmjmWmv; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::e2e; helo=mail-vs1-xe2e.google.com; envelope-from=jgg@ziepe.ca; receiver=lists.ozlabs.org) smtp.mailfrom=ziepe.ca
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ziepe.ca
+	t=1781870984; c=relaxed/relaxed;
+	bh=0GS0A+IFgITksiTouHWoieJdGp3AW5vhPLcHf+koJZg=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=D6YpyEC5Bj6Me8zAXpFTn2QProveegWYfmLjEdWagdv94yKxijXJMLLco8NqpCvZHniWfuLniPFjcTwQv5J497xmnoeq3D1IJLI98z0dkcBDzPKL04TRbwiM/XbrPttRdLh5AKwL1HfYattOutsgtWxTTUBaLecikOkuhahbZi/2MMhFDQpb9Uu7zJpifjfRg59paCyJzOuTU71iilhdm8PREEeXHNXDBaCWI9krzmhg+wXqzWJjP8rAqbakNLLWSf2g/8Ied5tKkB7i0DxMOJcUoyjRr2VPybrKGb1q7sOfpBqlkaq/Zs7eIr1L0ZHsxvWKmGdY+xYFodp2+XVEaw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=KNry+8kk; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=ziepe.ca header.i=@ziepe.ca header.a=rsa-sha256 header.s=google header.b=XNmjmWmv;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=KNry+8kk;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=ziepe.ca (client-ip=2607:f8b0:4864:20::e2e; helo=mail-vs1-xe2e.google.com; envelope-from=jgg@ziepe.ca; receiver=lists.ozlabs.org)
-Received: from mail-vs1-xe2e.google.com (mail-vs1-xe2e.google.com [IPv6:2607:f8b0:4864:20::e2e])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ghbpC4DC2z2ySW
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Jun 2026 22:03:14 +1000 (AEST)
-Received: by mail-vs1-xe2e.google.com with SMTP id ada2fe7eead31-7296071d19fso905757137.1
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Jun 2026 05:03:14 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ziepe.ca; s=google; t=1781870592; x=1782475392; darn=lists.ozlabs.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=StlCUTUicQISJ/bWwbWkmSHhXapLgWFJJHXk0oHb5Ig=;
-        b=XNmjmWmvne8qE2OgTLJFVCytHcUrSTkeDPxHvNNjUW1XCWLvMuvVjLeF8pyywGJI8y
-         UQRAadviOi6YPR0lC0W9civou622einf0as4aTHe68iaDTVPd0M3Fu/nWV3oX+KuE0dL
-         rU+AnLVnmUJS6jyBZRzvM+XAZGyXln+ptgZBPs1pUOUd4Pp//LAggWxmGC+ma0K8CXLv
-         2sZEji3n8G3iC0ykgJsq0ys+1edxwNIHKoTSI6Y3mzicCoc4TDt4lwY/lPRrVsxyUXrM
-         tWUZNdjSKidpeU71xpcVXz4DzM+YkL+pbITQcatiDMULL/KuH3iOCurp2+9cLs0w+VWf
-         uhwQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1781870592; x=1782475392;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=StlCUTUicQISJ/bWwbWkmSHhXapLgWFJJHXk0oHb5Ig=;
-        b=YPIuAO4AO/oNi69Grve+iI55AEKpIOS+QE3ZZepEss0brYRMAea1Jk2pRQmcz1K2Bo
-         hm+XNdO8MS7hOZPPTx6pOGnvt6jYZm/zPXjr6C+kIX1h6jATJZJHejoqe72lGCsInWtb
-         Ji7rrKqOCf5Efy8AJsDJ40veOTc5bXBmQ4i0u5kBFa7qdXehRXB0xseXKHp1pZXiuqBd
-         +ogE9FguV9/kppozlEq59kkc61IIVvN2tp54ZhcQHTyVEpYB31ZgHKTMQMLmoCH1JGXY
-         G/rW4KPacvSdN6Si1H/t+SCakCi0SQYCsSCPzUk9oFFV2k24N20p7ufDBdNuy7qaPgAf
-         9xTQ==
-X-Forwarded-Encrypted: i=1; AFNElJ95UrAKqC/Ay61zZBCHZioQz3gUWcTctqVjoXGup/kZ1rcgNuHJAg/DFU36PyNJStXkW3L0VBcgE1gy7CM=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YxgzaqV/tr8bK0/1tRGMd7/owe9RMp9KBbKGN6uuAEpFKSym0cJ
-	Q0GUuL74eotZ2HXeVd+Zps7xx0uxDXA+00uz7mjI9lSuPn/QsXEb8z0vObnnBNoslV8=
-X-Gm-Gg: AfdE7ckTdL514lMqYC5F3gKoJCOcHpgp4//NEvG/o0neejUsnP5pcq0/si9pRFtOXZ+
-	2xt30p21RJNxj4dslh2dfqCeQnDFQZj9+E2QrP2H42udJXqlh7sMR+fyQnOa2mcurSIElzpTqHW
-	zzUOHZF9jgw+GQyybzhYPwyILl1Tpwt40krLsd/BYWO807vlF6k1BZEpS6iSjWc0tjZ2iRW6/2t
-	f2sCjkWVYI/J+0qG0WIIip1hyIGKglabEdOiqiM0reppqFeAtgRZw+rV0jxcCEZywqiY/QPDwEU
-	vmR2g7eITj0mIr5CUgABIz0eGyO28AvP4wIcXHwBh9jJw68YHt4PDRUuOqMb40FMgJuCGvFmD7J
-	lTVtwDPAS/VbwfmpwKWSFnl41AQt8tLlMR8gnLuLcioqhwvRA61jKbYrYX7gBgfikAEgofSNhNj
-	nLmRm0sOX3R7TJYig511T8oQwuSZruBFXmANjVJoXNEtUnL1NjzufFlLHMqnbMhGJ0OhSqs51XT
-	29SXA==
-X-Received: by 2002:a05:6102:c89:b0:729:213f:76ca with SMTP id ada2fe7eead31-72a20215eaamr1999509137.29.1781870591985;
-        Fri, 19 Jun 2026 05:03:11 -0700 (PDT)
-Received: from ziepe.ca (crbknf0213w-47-54-130-67.pppoe-dynamic.high-speed.nl.bellaliant.net. [47.54.130.67])
-        by smtp.gmail.com with ESMTPSA id af79cd13be357-920a424f817sm215731985a.22.2026.06.19.05.03.10
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 19 Jun 2026 05:03:10 -0700 (PDT)
-Received: from jgg by wakko with local (Exim 4.97)
-	(envelope-from <jgg@ziepe.ca>)
-	id 1waXwD-00000004SQK-4AfU;
-	Fri, 19 Jun 2026 09:03:09 -0300
-Date: Fri, 19 Jun 2026 09:03:09 -0300
-From: Jason Gunthorpe <jgg@ziepe.ca>
-To: Alexey Kardashevskiy <aik@amd.com>
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>,
-	Catalin Marinas <catalin.marinas@arm.com>, iommu@lists.linux.dev,
-	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-	linux-coco@lists.linux.dev, Robin Murphy <robin.murphy@arm.com>,
-	Marek Szyprowski <m.szyprowski@samsung.com>,
-	Will Deacon <will@kernel.org>, Marc Zyngier <maz@kernel.org>,
-	Steven Price <steven.price@arm.com>,
-	Suzuki K Poulose <Suzuki.Poulose@arm.com>,
-	Jiri Pirko <jiri@resnulli.us>, Mostafa Saleh <smostafa@google.com>,
-	Petr Tesarik <ptesarik@suse.com>,
-	Dan Williams <dan.j.williams@intel.com>,
-	Xu Yilun <yilun.xu@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
-	linux-s390@vger.kernel.org,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ghbxg21vFz2y1Y
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Jun 2026 22:09:43 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id C36AD601E1;
+	Fri, 19 Jun 2026 12:09:39 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 268961F00A3E;
+	Fri, 19 Jun 2026 12:09:36 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1781870979;
+	bh=0GS0A+IFgITksiTouHWoieJdGp3AW5vhPLcHf+koJZg=;
+	h=From:To:Cc:Subject:Date;
+	b=KNry+8kkVktj0ZhaKHcA0HiSe/u4p1ROZqCSKW3Db2MO0nOo4lMnhmpnZEEf0B0Pz
+	 o5MgVbi+hItnBSsN6pP/2T5f2orypo6fXjFCi+FgkOQFus0kiLDbtpjCNqsbrG2jr/
+	 Z1kGkDTRkOfYcx1IQx92eBvyJ0MS/tLZwlKjxGVhzWwwI2P4qZbPl6aIjdcw+1AWEo
+	 8p8YJkPygFPvrobz2RDQBdW5JMqPgNSlapePaCf949qSUmX1fWes4RiyVIhJV429E0
+	 8RqQW82CmUKokgdQ7mm6wvjL12TSuRMoaFDFDsu7uGEqd4YbkHs169IpeOiUnuvj6k
+	 i533b5F/9noVA==
+From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+To: Shrikanth Hegde <sshegde@linux.ibm.com>,
+	Peter Zijlstra <peterz@infradead.org>,
 	Michael Ellerman <mpe@ellerman.id.au>,
 	Nicholas Piggin <npiggin@gmail.com>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	Alexander Gordeev <agordeev@linux.ibm.com>,
-	Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
-	Heiko Carstens <hca@linux.ibm.com>,
-	Vasily Gorbik <gor@linux.ibm.com>,
-	Christian Borntraeger <borntraeger@linux.ibm.com>,
-	Sven Schnelle <svens@linux.ibm.com>, x86@kernel.org
-Subject: Re: [PATCH v6 00/20] dma-mapping: Use DMA_ATTR_CC_SHARED through
- direct, pool and swiotlb paths
-Message-ID: <20260619120309.GI231643@ziepe.ca>
-References: <20260604083959.1265923-1-aneesh.kumar@kernel.org>
- <aigYbK12D8uKQvJF@arm.com>
- <20260609144746.GL2764304@ziepe.ca>
- <2ecfa1a8-6202-4319-9692-a6ffeb5a3dbf@amd.com>
- <yq5aqzm4dz25.fsf@kernel.org>
- <20260618153705.GH231643@ziepe.ca>
- <d4ef9a9f-18d9-40e1-9d02-87aeb9cb6540@amd.com>
+	Madhavan Srinivasan <maddy@linux.ibm.com>
+Cc: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	linux-kernel@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc: Remove dead non-preemption code
+Date: Fri, 19 Jun 2026 14:08:28 +0200
+Message-ID: <2bf10a0afffefb6aca44bf2f864cc17471a80e31.1781870889.git.chleroy@kernel.org>
+X-Mailer: git-send-email 2.54.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -124,71 +69,66 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <d4ef9a9f-18d9-40e1-9d02-87aeb9cb6540@amd.com>
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2071; i=chleroy@kernel.org; h=from:subject:message-id; bh=uEC5u4MSNV152j4uKm5LKCFNpyVETvn3Vh+1CHcRLp4=; b=owGbwMvMwCV2d0KB2p7V54MZT6slMWSZGpYsW+BQdsrRYN3pkJMdraZHrE/Va0QJbGee3VGzl u3xlFMXOkpZGMS4GGTFFFmO/+feNaPrS2r+1F36MHNYmUCGMHBxCsBEvs1mZGid8CR2yf+T62Ui Z2udSs576tb/uvrKNivlM3d2hcy7xdDB8D+rO0T/W++Ba5LMEr4HDesW72D7YBew3bVRRit6kbg 4KwsA
+X-Developer-Key: i=chleroy@kernel.org; a=openpgp; fpr=10FFE6F8B390DE17ACC2632368A92FEB01B8DD78
+Content-Transfer-Encoding: 8bit
 
-On Fri, Jun 19, 2026 at 12:05:45PM +1000, Alexey Kardashevskiy wrote:
+Since commit 7dadeaa6e851 ("sched: Further restrict the preemption
+modes"), powerpc always has CONFIG_PREEMPTION because only
+CONFIG_PREEMPT and CONFIG_PREEMPT_LAZY are possible, even in
+dynamic preemption mode (see sched_dynamic_mode).
 
-> > > > > IMHO that's an AMD issue, not with the design of this series..
-> > > > > 
-> > > > > The series is right, a device that is !force_dma_decrypted() must be
-> > > > > considerd to be a trusted device and we must never place any DMA
-> > > > > mappings for a trusted device into shared memory.
-> > > > 
-> > > > swiotlb=force forces swiotlb, not decryption.
-> > 
-> > If force_dma_decrypted() == true then swiotlb must allocate from a
-> > decrypted memory pool. It is right there in the name!
-> > 
-> > The hypervisor environment should *never* set force_dma_decrypted()
-> > because all devices can access all hypervisor memory, up to their IOVA
-> > limits.
-> 
-> True. But we do not have encrypted swiotlb pool today, right?
+As a consequence, need_irq_preemption() is always true and can be
+removed.
 
-"encrypted" is just normal struct page memory, that's the default for
-swiotlb.
+And because commit bee25f97ad24 ("powerpc: Enable GENERIC_ENTRY
+feature") includes linux/irq-entry-common.h which already declares
+sk_dynamic_irqentry_exit_cond_resched static key, asm/preempt.h
+becauses useless and can be removed.
 
-I think it was a big mistake for the AMD SME stuff to overload the
-decrypted/encrypted CC stuff which should mean shared/private in a
-guest context to also mean things about physical memory encryption in
-the host. It is really confusing.
+Signed-off-by: Christophe Leroy (CS GROUP) <chleroy@kernel.org>
+---
+ arch/powerpc/include/asm/preempt.h | 16 ----------------
+ arch/powerpc/lib/vmx-helper.c      |  2 +-
+ 2 files changed, 1 insertion(+), 17 deletions(-)
+ delete mode 100644 arch/powerpc/include/asm/preempt.h
 
-The SME side is just a bad arch choice, the real world doesn't work
-well if you set high address bits in your dma_addr_t. I think AMD
-needs to use those restricted swiotlb pool where it allocates this
-very special "SME Disabled" memory that will have a low
-dma_addr_t. Then alloc and bouncing will get memory with a suitable
-dma_addr_t. This has nothing to do with force_dma_unencrypted() which
-is only a CC guest concept and nothing else in the OS should ever
-touch decrypted memory.
+diff --git a/arch/powerpc/include/asm/preempt.h b/arch/powerpc/include/asm/preempt.h
+deleted file mode 100644
+index 000e2b9681f3..000000000000
+--- a/arch/powerpc/include/asm/preempt.h
++++ /dev/null
+@@ -1,16 +0,0 @@
+-/* SPDX-License-Identifier: GPL-2.0 */
+-#ifndef __ASM_POWERPC_PREEMPT_H
+-#define __ASM_POWERPC_PREEMPT_H
+-
+-#include <asm-generic/preempt.h>
+-
+-#if defined(CONFIG_PREEMPT_DYNAMIC)
+-#include <linux/jump_label.h>
+-DECLARE_STATIC_KEY_TRUE(sk_dynamic_irqentry_exit_cond_resched);
+-#define need_irq_preemption() \
+-	(static_branch_unlikely(&sk_dynamic_irqentry_exit_cond_resched))
+-#else
+-#define need_irq_preemption()   (IS_ENABLED(CONFIG_PREEMPTION))
+-#endif
+-
+-#endif /* __ASM_POWERPC_PREEMPT_H */
+diff --git a/arch/powerpc/lib/vmx-helper.c b/arch/powerpc/lib/vmx-helper.c
+index 57e897b60db8..cc9fb72cb4eb 100644
+--- a/arch/powerpc/lib/vmx-helper.c
++++ b/arch/powerpc/lib/vmx-helper.c
+@@ -46,7 +46,7 @@ int exit_vmx_usercopy(void)
+ 	 * set and we are preemptible. The hack here is to schedule a
+ 	 * decrementer to fire here and reschedule for us if necessary.
+ 	 */
+-	if (need_irq_preemption() && need_resched())
++	if (need_resched())
+ 		set_dec(1);
+ 	return 0;
+ }
+-- 
+2.54.0
 
-> > And this is more insane logic. The right fix is to allocate the
-> > swiotlb bounce from the *encrypted* pools when running on the
-> > hypervisor which requires undoing this abuse of force_dma_decrypted().
-> 
-> +1.
-> 
-> But how does the kernel decide if it is this swiotlb pool or just
-> some page which happens to be below the IOVA limit?
-
-You mean in swiotlb_tbl_unmap_single() ? It checks the address against
-the pool's range?
-
-> swiotlb can be for bouncing (with all these dma_sync_single_for_cpu)
-> or, if dev->dma_io_tlb_mem->for_alloc = true, for coherent
-> allocation (no need in dma_sync_single_for_cpu).
-> 
-> I am looking for a way to set up my "sev-guest" device such as when
-
-Whats a "sev-guest" device?
-
-> dma_alloc_attrs(snp_dev->dev,...) happens, it allocates a page from
-> the shared swiotlb pool (with no actual bouncing) and there is no
-> obvious way to trick the DMA layer into doing that.
-
-Why do you need this?
-
-Jason
 
