@@ -1,54 +1,61 @@
-Return-Path: <linuxppc-dev+bounces-22847-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22848-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B4813CDB46B
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 20 Jun 2026 12:09:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 10404CDB466
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 20 Jun 2026 23:31:53 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gjCtn52YXz3bpx;
-	Sat, 20 Jun 2026 22:09:21 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=220.197.31.2
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781957361;
-	cv=none; b=UfGksH/1vjeIeDuwfD7AzQdCxnwwqpdCcTenJLDCcbRi3aMxmr4DyMsqsb9Bt9GqHMqEQmZi6hxqOMikvO4zXDMaiRnh9YTb4OysrupsTfHhywRsV4atjsciVGaUK5+5dR0M58G0Khri1ECEInRXTIQ7avHHpQBSNoGXa6mi2hDCLwHnR0IwED6Q2ClOmcJHoyao2D+3yg6DP5tkzHLxRZCdXoGZ2DPH3nzAi2p1cbrGyhlHSJbnfzSrkBGEf93JHCDl30Blv1fMj8mQsVGLyAgAd+zQkIi0IF8/eHxQag7BCg/Y2eOPiLlWce5JJHhsEsMCVlEmE0h4QBkfbui+vg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gjW2J0xK5z2ySW;
+	Sun, 21 Jun 2026 09:31:52 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a11:7980:1::2:0"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781993459;
+	cv=none; b=ouWyHaRynCsXj5N6GUDblHmF2w4tJtgNdvbnGzjbuM11MVT4e55KT/R3/0KNgB7ZWxYwwstGiSZ8U30P+nwRf4oOJVHcv0NTQmw3r9LzSSsbYYzSmGnb3p+VREYdAgXNbDVKNdpvZT7uaBdXxrj4M4ygJrpI4cWWB6ZweNp0sQWNRVp+5uyRZm9v9qYNBK2H7Ii/KXr7Ppa17fygqdtqO/i9xb4FptgBxSLOEZdk5A1HbAVvCd7OHpQom3XSMLigVVJa0gugSkW+vvzUNcHe/uj8JHsHAO693rJRj8BXfxUoczRN5Ia/Tu0m0kcXvB9hXZN+To9YX8EPROBpz3XQ8g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1781957361; c=relaxed/relaxed;
-	bh=+KTI0mDZMF3AYyK23FmAyqNncU+sjW5XAXd7jr2Trm4=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=ZmcBTtfKGR5Wv6jQ4LTKJQpJj284odG914T3SsnwosGG8tXuECtgas5hwllMKTh64HZI71XTSQYU7I51efmKiOafmXljHteMD8rMsXwiAliczS3XkLbtUQVgUPG3Om0NrJw8lzbu9eJiGvwdA11mu6Hk0e3QgdiXSLoPL9FQZeJeClhU6msjT5bW0Ghu7h9RPfIYpuupVOu0FbUkBnhsQFcHf4b3m/ZEuDh9ZVEeEJO3sv/KDiVbbL8m8noJXistweTnl21Pkl+usFohiYTa54NVWIPxQUkQrEYovPkXiMJzHrv1GZkT6DqMvtzafF/+KupkiB5uU6jEekBWVSI8Aw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=163.com; dkim=pass (1024-bit key; unprotected) header.d=163.com header.i=@163.com header.a=rsa-sha256 header.s=s110527 header.b=nWsolaHb; dkim-atps=neutral; spf=pass (client-ip=220.197.31.2; helo=m16.mail.163.com; envelope-from=haoxiang_li2024@163.com; receiver=lists.ozlabs.org) smtp.mailfrom=163.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=163.com
+	t=1781993459; c=relaxed/relaxed;
+	bh=3vIdAFJFm2VmX3nU7cHArA7YHYS0lSiPW10WwQVdXmk=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=W69K0M9iOr51XhHwmUY60TLp7Yh2ruLVwUMTPJgIGb2JFjmAJ8v+Y9l1WoE9FB3rnA+LBUT2bL8AlOv82DFjhgLCL7kUzMMqlitNKr1LR9UC4cbuXIQWa/ZGLbm2EPXKnh8Hlor9rUCA1aqWQ5LrQWdz8+S8u6Ro+vGOKGPTMOubWV9ln1TmNEvtu9aD6liKNlYG0a38AErBnhnHPk6f/hzKhVjOeoK4Eldo8AFn3uk8tTDT9b1NDFMFAwmLypTnceEv9xJhKC8ExKN1Ggf+B+mxyIkR0r3m54C3NpVXtNM6sAALAGFBMkvj7OUH95t08Xo5RRxdLhTTJ6j5xK9LwQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=grrlz.net; dkim=pass (1024-bit key; secure) header.d=grrlz.net header.i=@grrlz.net header.a=rsa-sha256 header.s=stigmate header.b=cEIhlfUp; dkim-atps=neutral; spf=pass (client-ip=2a11:7980:1::2:0; helo=confino.investici.org; envelope-from=include@grrlz.net; receiver=lists.ozlabs.org) smtp.mailfrom=grrlz.net
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=grrlz.net
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=163.com header.i=@163.com header.a=rsa-sha256 header.s=s110527 header.b=nWsolaHb;
+	dkim=pass (1024-bit key; secure) header.d=grrlz.net header.i=@grrlz.net header.a=rsa-sha256 header.s=stigmate header.b=cEIhlfUp;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=163.com (client-ip=220.197.31.2; helo=m16.mail.163.com; envelope-from=haoxiang_li2024@163.com; receiver=lists.ozlabs.org)
-X-Greylist: delayed 138 seconds by postgrey-1.37 at boromir; Sat, 20 Jun 2026 22:09:18 AEST
-Received: from m16.mail.163.com (m16.mail.163.com [220.197.31.2])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=grrlz.net (client-ip=2a11:7980:1::2:0; helo=confino.investici.org; envelope-from=include@grrlz.net; receiver=lists.ozlabs.org)
+X-Greylist: delayed 518 seconds by postgrey-1.37 at boromir; Sun, 21 Jun 2026 08:10:56 AEST
+Received: from confino.investici.org (confino.investici.org [IPv6:2a11:7980:1::2:0])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gjCtk4R0jz2xwL
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 Jun 2026 22:09:16 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
-	s=s110527; h=From:To:Subject:Date:Message-Id:MIME-Version; bh=+K
-	TI0mDZMF3AYyK23FmAyqNncU+sjW5XAXd7jr2Trm4=; b=nWsolaHbpdr7QNCQT2
-	vitVIKVmkd1qooYJJyWIllifZFvgE8AaDV+uEZ8aqf8Pf9Tz9IjWkq5QycW5AQQY
-	pdksl2X2Ztb/2kCJQaIIsIQUsPGlb0I3USNVHWRgVXL6uw0TLG7xhk3xw0d9S2zX
-	qqfEjMUQz5yznY3D0lp7DMXKw=
-Received: from localhost.localdomain (unknown [])
-	by gzga-smtp-mtada-g0-4 (Coremail) with SMTP id _____wB3ROVIgjZqsf9PEw--.43408S2;
-	Sat, 20 Jun 2026 20:06:33 +0800 (CST)
-From: Haoxiang Li <haoxiang_li2024@163.com>
-To: kees@kernel.org,
-	gregkh@linuxfoundation.org
-Cc: linux-usb@vger.kernel.org,
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gjTDw5pzcz2xM7
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 21 Jun 2026 08:10:56 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=grrlz.net;
+	s=stigmate; t=1781992927;
+	bh=3vIdAFJFm2VmX3nU7cHArA7YHYS0lSiPW10WwQVdXmk=;
+	h=From:To:Cc:Subject:Date:From;
+	b=cEIhlfUp2mUGtjDU8LSFIien9pW8rzycayd78HxsyDxD3cDBa5G1a1PY638SCAEkJ
+	 lsp389ddOHskiFlLCOJHpe6ufANRDR+6YAehGr/E3Rh34T4gY8E6z2KguI4buLAOFs
+	 ErYvB8Fn4YCVloPkoV8/0bdXp8QUgVWgms69XYv4=
+Received: from mx1.investici.org (unknown [127.0.0.1])
+	by confino.investici.org (Postfix) with ESMTP id 4gjT2l6fTVz110b;
+	Sat, 20 Jun 2026 22:02:07 +0000 (UTC)
+Received: by mx1.investici.org (Postfix) id 4gjT2l2BkSz110S;
+	Sat, 20 Jun 2026 22:02:07 +0000 (UTC)
+From: Bradley Morgan <include@grrlz.net>
+To: Michael Ellerman <mpe@ellerman.id.au>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Christophe Leroy <chleroy@kernel.org>
+Cc: Feng Tang <feng.tang@linux.alibaba.com>,
+	Mukesh Kumar Chaurasiya <mchauras@linux.ibm.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Petr Mladek <pmladek@suse.com>,
 	linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org,
-	Haoxiang Li <haoxiang_li2024@163.com>
-Subject: [PATCH] usb: fsl_qe_udc: check qe_alloc_request() failure in ch9getstatus()
-Date: Sat, 20 Jun 2026 20:06:31 +0800
-Message-Id: <20260620120631.2894977-1-haoxiang_li2024@163.com>
-X-Mailer: git-send-email 2.25.1
+	linux-kernel@vger.kernel.org
+Subject: [PATCH 1/1] powerpc/watchdog: avoid extra sys_info dumps for all_bt
+Date: Sat, 20 Jun 2026 22:02:04 +0000
+Message-ID: <20260620220204.15756-1-include@grrlz.net>
+X-Mailer: git-send-email 2.53.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -63,51 +70,91 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-CM-TRANSID:_____wB3ROVIgjZqsf9PEw--.43408S2
-X-Coremail-Antispam: 1Uf129KBjvJXoW7Cw43XryDtrWrKw43Gr4rKrg_yoW8GrW3pF
-	W5JrWjyFW8Zr4vya1UJr4kZa45Ca97Cry7KrWIq3yS9FnxJw4kCay5Kry0qr4xAFW8Gr42
-	gFsYgrnxAw47KrJanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
-	9KBjDUYxBIdaVFxhVjvjDU0xZFpf9x0pRqZXUUUUUU=
-X-Originating-IP: [240e:604:311:e68d:6113:4bb1:7711:7d42]
-X-CM-SenderInfo: xkdr5xpdqjszblsqjki6rwjhhfrp/xtbCxQnaSWo2gkkr-gAA3d
 
-qe_alloc_request() may return NULL on allocation failure. ch9getstatus()
-passes the return value directly to container_of() and then immediately
-dereferences the resulting qe_req pointer. Check the allocation result
-before using it and stall the control request on failure.
+The powerpc watchdog handles SYS_INFO_ALL_BT itself. When that is the
+only hardlockup_sys_info bit, sys_info(0) falls back to kernel_sys_info.
 
-Signed-off-by: Haoxiang Li <haoxiang_li2024@163.com>
+Skip sys_info() for that case.
+
+Fixes: e561383a39ed ("powerpc/watchdog: add support for hardlockup_sys_info sysctl")
+Signed-off-by: Bradley Morgan <include@grrlz.net>
 ---
- drivers/usb/gadget/udc/fsl_qe_udc.c | 8 ++++++--
- 1 file changed, 6 insertions(+), 2 deletions(-)
+ arch/powerpc/kernel/watchdog.c | 22 ++++++++++++++++++----
+ 1 file changed, 18 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/usb/gadget/udc/fsl_qe_udc.c b/drivers/usb/gadget/udc/fsl_qe_udc.c
-index bf87285ad13c..603c77ff129f 100644
---- a/drivers/usb/gadget/udc/fsl_qe_udc.c
-+++ b/drivers/usb/gadget/udc/fsl_qe_udc.c
-@@ -1945,6 +1945,7 @@ static void ch9getstatus(struct qe_udc *udc, u8 request_type, u16 value,
- 			u16 index, u16 length)
+diff --git a/arch/powerpc/kernel/watchdog.c b/arch/powerpc/kernel/watchdog.c
+index c40c69368476..6338e12651e3 100644
+--- a/arch/powerpc/kernel/watchdog.c
++++ b/arch/powerpc/kernel/watchdog.c
+@@ -92,6 +92,16 @@ static cpumask_t wd_smp_cpus_pending;
+ static cpumask_t wd_smp_cpus_stuck;
+ static u64 wd_smp_last_reset_tb;
+ 
++static void watchdog_sys_info(unsigned long si_mask)
++{
++	unsigned long dump_mask = si_mask & ~SYS_INFO_ALL_BT;
++
++	if (si_mask && !dump_mask)
++		return;
++
++	sys_info(dump_mask);
++}
++
+ #ifdef CONFIG_PPC_PSERIES
+ static u64 wd_timeout_pct;
+ #endif
+@@ -201,6 +211,7 @@ static bool set_cpu_stuck(int cpu)
+ static void watchdog_smp_panic(int cpu)
  {
- 	u16 usb_status = 0;
-+	struct usb_request *usb_req;
- 	struct qe_req *req;
- 	struct qe_ep *ep;
- 	int status = 0;
-@@ -1983,8 +1984,11 @@ static void ch9getstatus(struct qe_udc *udc, u8 request_type, u16 value,
+ 	static cpumask_t wd_smp_cpus_ipi; // protected by reporting
++	unsigned long si_mask;
+ 	unsigned long flags;
+ 	u64 tb, last_reset;
+ 	int c;
+@@ -236,8 +247,9 @@ static void watchdog_smp_panic(int cpu)
+ 	pr_emerg("CPU %d TB:%lld, last SMP heartbeat TB:%lld (%lldms ago)\n",
+ 		 cpu, tb, last_reset, tb_to_ns(tb - last_reset) / 1000000);
+ 
++	si_mask = READ_ONCE(hardlockup_si_mask);
+ 	if (sysctl_hardlockup_all_cpu_backtrace ||
+-	    (hardlockup_si_mask & SYS_INFO_ALL_BT)) {
++	    (si_mask & SYS_INFO_ALL_BT)) {
+ 		trigger_allbutcpu_cpu_backtrace(cpu);
+ 		cpumask_clear(&wd_smp_cpus_ipi);
+ 	} else {
+@@ -251,7 +263,7 @@ static void watchdog_smp_panic(int cpu)
  		}
  	}
  
--	req = container_of(qe_alloc_request(&ep->ep, GFP_KERNEL),
--					struct qe_req, req);
-+	usb_req = qe_alloc_request(&ep->ep, GFP_KERNEL);
-+	if (!usb_req)
-+		goto stall;
-+
-+	req = container_of(usb_req, struct qe_req, req);
- 	req->req.length = 2;
- 	req->req.buf = udc->statusbuf;
- 	*(u16 *)req->req.buf = cpu_to_le16(usb_status);
+-	sys_info(hardlockup_si_mask & ~SYS_INFO_ALL_BT);
++	watchdog_sys_info(si_mask);
+ 	if (hardlockup_panic)
+ 		nmi_panic(NULL, "Hard LOCKUP");
+ 
+@@ -371,6 +383,7 @@ static void watchdog_timer_interrupt(int cpu)
+ 
+ DEFINE_INTERRUPT_HANDLER_NMI(soft_nmi_interrupt)
+ {
++	unsigned long si_mask;
+ 	unsigned long flags;
+ 	int cpu = raw_smp_processor_id();
+ 	u64 tb;
+@@ -418,11 +431,12 @@ DEFINE_INTERRUPT_HANDLER_NMI(soft_nmi_interrupt)
+ 
+ 		xchg(&__wd_nmi_output, 1); // see wd_lockup_ipi
+ 
++		si_mask = READ_ONCE(hardlockup_si_mask);
+ 		if (sysctl_hardlockup_all_cpu_backtrace ||
+-		    (hardlockup_si_mask & SYS_INFO_ALL_BT))
++		    (si_mask & SYS_INFO_ALL_BT))
+ 			trigger_allbutcpu_cpu_backtrace(cpu);
+ 
+-		sys_info(hardlockup_si_mask & ~SYS_INFO_ALL_BT);
++		watchdog_sys_info(si_mask);
+ 		if (hardlockup_panic)
+ 			nmi_panic(regs, "Hard LOCKUP");
+ 
 -- 
-2.25.1
+2.53.0
 
 
