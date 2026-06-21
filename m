@@ -1,76 +1,76 @@
-Return-Path: <linuxppc-dev+bounces-22861-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22862-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CC958CD98F0
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 21 Jun 2026 20:50:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A4863CDB466
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 21 Jun 2026 23:35:12 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gk3PD6SBTz2xQD;
-	Mon, 22 Jun 2026 06:50:08 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:8b0:10b:1236::1"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782075008;
-	cv=none; b=WcZvP505aCrVev2uXKTN1jivvvM2uQ8tytQR44c/WfcDakCdPnKcVzDynAThQT7BEBosAU6mIcTkhbYEVUuJHpgQS3sadTRQgcp2VDCBVG8LJFIqKyW9Y4HJdNEZhxn+EuMUi3bNaqbkI/d2xUVvd6ZWsWX5GUvKYFVBpMXhU7VETVK+YTOmLMCjdjesZqwvj5FRpK6eHHIPMT2r+AKK0UabZlOkj3zxgsLrJfY7wWJT+VmKjBLiveMbzgCj0aQU01IVZAkKmOJQJHDl5tL21vNSdharvfnQb4Or/JlzEtScHu4fZEsRLRGb0eewwmSp2ChA0IU800ic/BS0OjHHsg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gk73f3mRSz2xyj;
+	Mon, 22 Jun 2026 09:35:10 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782047046;
+	cv=none; b=gRm5VlV3MF+Gd9eoJaWXzx8UFMiRGVuZREpDojNaNrtI3jzTsQjd254gMMrUyicc7802h8/wPLo29aSOQ1+3+eA0PC2ktt/q1KFDF35nH39Y34OqQ8OZl+1nSN53urTO/fuQFddeZ1XSF2TPYGWGGpvcj70X8ruz6F5MqCTk8SRKxgcHO+XlTINaIGeJtdGNFBDFLrndEx75dEXm5pLerieIECOhVtCyJwwcVoHcVYBt/hRstHEdYqbd5TSS5R2R7lrNqk8qjwWEIIRrQ8/DWA+F4jNd8kf9rqkrnLBnDnm7g/g8EeuQxx7GzCqarexZsHRfIZyFX7mFTgiIbHqx/w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1782075008; c=relaxed/relaxed;
-	bh=M8eA5erpVUaElEed48rJS2wGTR5+Yv1nLd38ESSS2Rw=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=h32hcKijF9Ij8hJ8KNl8gilWuMpYQRjWxI7z/T4aXWXmF/GL/1CRpKEoxcPToku7ST1zJ5xM5/a6ibAxU9Gj+x85sT8ylrGRTMmpUvF1iolHPph/+HAT43DO+0VcUPrT0St5afsP1Cwqrk922Tp2J/MU6JjDByYO2+oN8VJ54eomkWCzT0z5sBoIR9VgK3j6iL4xXL6eqiliS/Cz72UKf2wEJYYzp+qdOSS1cNgvcr6f0TjgCK7wwPQoZeRPV7bixGtoMUfI0vW45dK1LEYCVQgSko0F6gFqnKJSoy5xcS4GlFTBvhTaiKaRUCp87ZSowiONLNmdVhZ067Zp0DIqQw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=infradead.org; dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=g6iAM/3x; dkim-atps=neutral; spf=pass (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org; envelope-from=willy@infradead.org; receiver=lists.ozlabs.org) smtp.mailfrom=infradead.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=infradead.org
+	t=1782047046; c=relaxed/relaxed;
+	bh=XZ3QL+ViFIRQLIm9wDhWdL0BX/Xy+P2cyftFjHpTXuA=;
+	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=fU1/V8+bZ4xaR5Ki8SEv2Huswjc4bH8cZyon+ToPYlZHTHVz6sp+nDJNsvOTnLhqAmIOh17l++tGa3y/24w7DkdkK+kFocBjqijsgxW4+dQdpPbPMk2uUsXpGUnD/12agae5dp9riIL/n9gqEDgh8YeN3+rQDxG+hRrNGEE7+aA3f5h4oJC3qmNJ3birwXAYOidRABANDz3PMI5OK6JQt6BdgGZfYfBKTwELDtDraiCRWBzfjbKGX0CeIa+XctkdizVUbL9ebUJT5LuR92rdMf9MkLXdS3zc59EZRuGMNg2S466pnYbiIeDMH2JzbNaaTPr2MuiEv1q8QgHRIr+W1g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Fov1mXvD; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=rostedt@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=g6iAM/3x;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Fov1mXvD;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=infradead.org (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org; envelope-from=willy@infradead.org; receiver=lists.ozlabs.org)
-Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=rostedt@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gk3P70blsz2xPb
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jun 2026 06:49:59 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=casper.20170209; h=In-Reply-To:Content-Type:MIME-Version:
-	References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
-	Content-Transfer-Encoding:Content-ID:Content-Description;
-	bh=M8eA5erpVUaElEed48rJS2wGTR5+Yv1nLd38ESSS2Rw=; b=g6iAM/3xDdWgV5X+yh4FkmLv62
-	OiHp0rJWKrS0azBEgV4lUi6tf73QIx3b1EfxkJWLE9+0vYHZwchHgBudDH0pHDxxXgTjwrWdu/mct
-	Pv33b+2kvV7VjO9v7r9ZJhg42qZrzl0nH7+5lsv84CGZePPxYtNzgtc+jHFw/OqqVr5gfB6dJeyht
-	Ta+Y3SqdvDLqXkzUCijftXQvtQR1xKMpDX3P8Pi4bp33DePJ+q2Ae6ol72ij7EXyHBJ2UsHVBJ0x9
-	+qUBkAxK1+zVPdKdmOAH0oG08P8SIzHjxBxu4r6NIyihQBFDoDV5qvDZCRzyYtm8IkqtseF10HUAj
-	vqUbW0Ug==;
-Received: from willy by casper.infradead.org with local (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wbP6X-00000002ysn-1JeK;
-	Sun, 21 Jun 2026 20:49:21 +0000
-Date: Sun, 21 Jun 2026 21:49:21 +0100
-From: Matthew Wilcox <willy@infradead.org>
-To: Suren Baghdasaryan <surenb@google.com>
-Cc: Barry Song <baohua@kernel.org>, Lorenzo Stoakes <ljs@kernel.org>,
-	"David Hildenbrand (Arm)" <david@kernel.org>,
-	"Liam R. Howlett" <liam@infradead.org>, akpm@linux-foundation.org,
-	linux-mm@kvack.org, vbabka@kernel.org, rppt@kernel.org,
-	mhocko@suse.com, jack@suse.cz, pfalcato@suse.de,
-	wanglian@kylinos.cn, chentao@kylinos.cn, lianux.mm@gmail.com,
-	kunwu.chan@gmail.com, liyangouwen1@oppo.com, chrisl@kernel.org,
-	kasong@tencent.com, shikemeng@huaweicloud.com, nphamcs@gmail.com,
-	bhe@redhat.com, youngjun.park@lge.com,
-	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-	loongarch@lists.linux.dev, linuxppc-dev@lists.ozlabs.org,
-	linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
-	Nanzhe Zhao <nzzhao@126.com>
-Subject: Re: [PATCH v2 0/5] mm: reduce mmap_lock contention and improve page
- fault performance
-Message-ID: <ajhOUdbWsswgQyl2@casper.infradead.org>
-References: <5zdaa5uv5oj27q3taopl3amops57ouxgyfsdveudz4ovmbdw7z@6lwrlyvmhcp2>
- <CAGsJ_4yKxg1QugcsJi3WD0KVGJKe-zXycgm5D6cRi9vWtNcpDQ@mail.gmail.com>
- <ag4h87CBd-gph9zX@casper.infradead.org>
- <CAGsJ_4zA8afu0xXy0WS+tMe-eesDX1W6UBmfAsuouUpcAgK8JQ@mail.gmail.com>
- <ag4kj84EcKqamdB-@casper.infradead.org>
- <3be9475b-0e8a-4df8-a130-4262f993973d@kernel.org>
- <CAGsJ_4xC5LdhuoWV1=tK-RZ5rkjc8aOKOkmb1L_8BG_3gtJhDg@mail.gmail.com>
- <ahB6QyHgYq8ksj65@lucifer>
- <CAGsJ_4zxLvZ01i19vdo0xA47T1hxa1VRYvxLmiDhy5q1GDKPRg@mail.gmail.com>
- <CAJuCfpHTxaU4KdNmefU7C7cWZSLCFDLPdUrnqV6yzxzN+8RQ0Q@mail.gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gjs3T2fJbz2xQD
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 21 Jun 2026 23:04:05 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with ESMTP id ED7EF43E1A;
+	Sun, 21 Jun 2026 13:04:02 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 436C81F000E9;
+	Sun, 21 Jun 2026 13:03:57 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1782047042;
+	bh=XZ3QL+ViFIRQLIm9wDhWdL0BX/Xy+P2cyftFjHpTXuA=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:References;
+	b=Fov1mXvDuGCK2T8sN6e2OfQHKCECHfbpGXRBBqt0mJumjJ/lQbWWgN+HJ+/A1VLw+
+	 e5YBQ183dvuJj8bkhkLpBwxFrOxwQLVALwfGN8E1vAdvSrax2YUe76xVCjK7uPwOFi
+	 8L8TB9EiAaEyP+6x5OTgJet8aZiHBkKPALBPE4+VYsqKVHMeJsBx9VwREe4epBtPeP
+	 n9K1YBwfMVRT70tbP5fJHUITXTsn/07OQJHxOY03KDzngCMaGRvGI98OxNWNIGSt1/
+	 pUwueEV4G7f1R4ZCP/PbFKS6BI+0tZTyLgw9UhMTaK5YsTglkNBetTBg7DaYsXC78p
+	 S9lKpmXhld3Cw==
+Date: Sun, 21 Jun 2026 09:03:53 -0400
+From: Steven Rostedt <rostedt@kernel.org>
+To: David Laight <david.laight.linux@gmail.com>
+Cc: Thomas Gleixner <tglx@kernel.org>, linux-kernel@vger.kernel.org,
+ linux-trace-kernel@vger.kernel.org, Masami Hiramatsu <mhiramat@kernel.org>,
+ Mark Rutland <mark.rutland@arm.com>, Mathieu Desnoyers
+ <mathieu.desnoyers@efficios.com>, Andrew Morton
+ <akpm@linux-foundation.org>, Linus Torvalds
+ <torvalds@linux-foundation.org>, Sebastian Andrzej Siewior
+ <bigeasy@linutronix.de>, John Ogness <john.ogness@linutronix.de>, Peter
+ Zijlstra <peterz@infradead.org>, Julia Lawall <julia.lawall@inria.fr>, Yury
+ Norov <yury.norov@gmail.com>, linux-doc@vger.kernel.org,
+ linux-kbuild@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ dri-devel@lists.freedesktop.org, linux-stm32@st-md-mailman.stormreply.com,
+ linux-arm-kernel@lists.infradead.org, linux-rdma@vger.kernel.org,
+ linux-usb@vger.kernel.org, linux-ext4@vger.kernel.org,
+ linux-nfs@vger.kernel.org, kvm@vger.kernel.org,
+ intel-gfx@lists.freedesktop.org
+Subject: Re: [PATCH 2/2] tracing: Add CONFIG_TRACE_PRINTK_DEBUGGING to clean
+ up kernel.h
+Message-ID: <20260621090353.24772584@fedora>
+In-Reply-To: <20260621135531.243375d9@pumpkin>
+References: <20260621093430.264983361@kernel.org>
+	<20260621093811.168514984@kernel.org>
+	<87ik7cmcb7.ffs@fw13>
+	<20260621135531.243375d9@pumpkin>
+X-Mailer: Claws Mail 4.4.0 (GTK 3.24.52; x86_64-redhat-linux-gnu)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -84,46 +84,19 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CAJuCfpHTxaU4KdNmefU7C7cWZSLCFDLPdUrnqV6yzxzN+8RQ0Q@mail.gmail.com>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 
-On Sat, Jun 20, 2026 at 04:48:57PM -0700, Suren Baghdasaryan wrote:
-> Just checking in on the followup plans. IIUC the RFC mentioned will
-> try to implement the solution we discussed at LSFMM: splitting
-> VM_FAULT_RETRY into two flags - one for retrying under per-VMA locks
-> and another one to fallback to mmap_lock.
+On Sun, 21 Jun 2026 13:55:31 +0100
+David Laight <david.laight.linux@gmail.com> wrote:
 
-I continue to hate this idea.  I don't believe that those who were
-pushing for it have ever tried to understand the whole fault path.
-It's utterly byzantine.
+> Indeed...
+> Isn't trace_printk() just an extern?
+> Having it defined somewhere isn't going to make any difference to build times.
 
-I defy anyone to make sense of this:
+No it is not. It is a macro to cut as many nanoseconds as possible as
+trace_printk() was created to debug tight race conditions and any added
+latency can make the race go away.
 
-        /*
-         * NOTE! This will make us return with VM_FAULT_RETRY, but with
-         * the fault lock still held. That's how FAULT_FLAG_RETRY_NOWAIT
-         * is supposed to work. We have way too many special cases..
-         */
-        if (vmf->flags & FAULT_FLAG_RETRY_NOWAIT)
-                return 0;
-
-        *fpin = maybe_unlock_mmap_for_io(vmf, *fpin);
-        if (vmf->flags & FAULT_FLAG_KILLABLE) {
-                if (__folio_lock_killable(folio)) {
-                        /*
-                         * We didn't have the right flags to drop the
-                         * fault lock, but all fault_handlers only check
-                         * for fatal signals if we return VM_FAULT_RETRY,
-                         * so we need to drop the fault lock here and
-                         * return 0 if we don't have a fpin.
-                         */
-                        if (*fpin == NULL)
-                                release_fault_lock(vmf);
-                        return 0;
-                }
-
-Wed need to simplify the fault path, not add additional complexity.
-Josef has said he wouldn't've done the lock dropping had we had per-VMA
-locks.  We should rip it out.
+-- Steve
 
