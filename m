@@ -1,105 +1,60 @@
-Return-Path: <linuxppc-dev+bounces-22859-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22860-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id ED463CDB46B
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 21 Jun 2026 13:57:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 534FDCDB46B
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 21 Jun 2026 14:22:01 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gjtDl320vz2xPb;
-	Sun, 21 Jun 2026 23:57:11 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1134"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782050231;
-	cv=none; b=EZM8a9rSbDD+WMdE5ghpKaLErXPqanWpXozTgNE8LXZmuCObl1OWuvsIxNEJnoZTpBTBG+xP5pmMbRkOLdINFnEdUieeCOVOFuMyWRPjq3tHJKxSq0pl72L7CzaSpAB7mqeSXMdY2IhIPhKd/e1rmRHb19QFeT/RuRemMYqXbcaMyNtHv+j/HYsDOBHJL9unWwdZJtTLBTDuSeEB/B+CtGYJAsVWAKEzbfkvLorhele3vERpq9kJO0jhMM1Hzr2aeT6oF4GNytRagpgtz5/tJNyki4reyoti4Ib7E1sxh+M8BaHYVJazbdrsp6LPX9Vn4e5KcGKxvu7dYD4akuZb2A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gjtnM4sHFz2xQD;
+	Mon, 22 Jun 2026 00:21:59 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=216.40.44.11
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782051719;
+	cv=none; b=SxyS8RsyPzEIaGDIQAIwTMDMY54gq10ZV7m7m8pTd9g0DiQU9Hr7hEPupI/cV85pfB9/CNlPbp5eT1q3pXIKbUKnVxv54YY70WCdarORzQ3IqWz7eGa0K4UVxi9RXp++wJIjJbm4DuX8hEleIvKTpESyECcYUwEiqBSXxtfNnm6NL0V+xql4hgYL7vI6nip10e5/c5eGDiWaDrImYTAHHD60d/Sjg2ZiIfvak4KS/MGzFqR4vjGQRRVtHGLhfoWq8aMv0dLL8p7QiVnRYuKjV34MqMHaWXjcZDB7bb4Gtr3pUNDzvjyxD0K3q0s2JbGpRIb3M3RFI+oM3mkY00PpKA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1782050231; c=relaxed/relaxed;
-	bh=Sv1dki/80aNeWwp+36abGEnVJza7FGEeP7NOY9gPTvc=;
-	h=From:Date:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=MGb6zVJqTa+Q71OvRyoBiC3kEbqhnO1pv0fn/NK5yWi4YIrlrCGrTb3gLZ2K35vLIEUeQ2TUNfMHm27v9RVKxVSIpAeVjYm3CM2WfngmgkPerZwS7c42c/N9fPGgUjStQ0nofrHfoApw56uA2nEEMShEmj4ifA7NhRrzoesbQnRp55jL6b7j6peO04ZPCZ6PCWUau00s7OYQO5EANVqIEa8QxubRhMuKjhNuDa2MEj3/45ni3AopaVz3uMVaJ+n5O0GBKyqv38pJoZzWR6Mxdz7geez7ql12nBt7WXZh/ckkA5wmAD9Pq60l5ArFX8XuTutW5x+ysWo+1hGcge8vqA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=ZftML+5f; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1134; helo=mail-yw1-x1134.google.com; envelope-from=yury.norov@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=ZftML+5f;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1134; helo=mail-yw1-x1134.google.com; envelope-from=yury.norov@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-yw1-x1134.google.com (mail-yw1-x1134.google.com [IPv6:2607:f8b0:4864:20::1134])
+	t=1782051719; c=relaxed/relaxed;
+	bh=IpwTUV7cMr9DZyt+PGfboKuTJxbESBW6N7Y5Sf43YLI=;
+	h=Date:From:To:CC:Subject:In-Reply-To:References:Message-ID:
+	 MIME-Version:Content-Type; b=kHuqz7r6ublL0HL0Vv0hYEGvA1j1PhgYe9Ts/+HhE9lDqJRtxNA0Af5G/ucbeJONE623hRZOrsENKG1+YGvGuTFhn5A2dmUXAT0pyKMu1UnNjlETyziAWWhFkFESdTaQK7HyReHMs2OdLNoL6oaqwkK03X6QR9kLUwyKS+3ZgNcewY4wHt6wf2hwxeX2PFPMbWI5xnju0gGiaYjfCVFQuvY/bmi54Qy3iusVvAxtEagb5xDzqoqAuGD8IjutR5L35f9NIOCAazNXAR4LhPd96DfcIZ8rVE9YLzlsnqO6kmhVJuWfF7P28f3r+FkQXOgqbVBL1F7k2wPcF+0KGnQD0Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=goodmis.org; spf=pass (client-ip=216.40.44.11; helo=relay.hostedemail.com; envelope-from=rostedt@goodmis.org; receiver=lists.ozlabs.org) smtp.mailfrom=goodmis.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=goodmis.org
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=goodmis.org (client-ip=216.40.44.11; helo=relay.hostedemail.com; envelope-from=rostedt@goodmis.org; receiver=lists.ozlabs.org)
+Received: from relay.hostedemail.com (smtprelay0011.hostedemail.com [216.40.44.11])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gjtDk12xtz2xPL
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 21 Jun 2026 23:57:08 +1000 (AEST)
-Received: by mail-yw1-x1134.google.com with SMTP id 00721157ae682-7fdeab38240so30526847b3.2
-        for <linuxppc-dev@lists.ozlabs.org>; Sun, 21 Jun 2026 06:57:08 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1782050226; x=1782655026; darn=lists.ozlabs.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:date:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=Sv1dki/80aNeWwp+36abGEnVJza7FGEeP7NOY9gPTvc=;
-        b=ZftML+5f/pa3skt+QoUaZ2IPTeScz9AVOqd9gt5KHY5pMGwdmGWAxhE9BeCWHad6NW
-         xJsOh4IPHmaUB8ApsdebWxdHB6+P6sWdeq1/g39Q0gKWFKQM13CALN4sMXqvZc6sKwV7
-         Qb6mfEYa9iM8oIMm8Ly4WVW1cP74kwMMkhgDiVXA/Q/Ejk5F09CWG0+gGMRZaY43SkOq
-         cf9CrkJdW3hBhnVBf9b1cc0a9kXN49Qu0DNx6AWnA6dx3ndSvl5cP4PfNhk1i3fBbU4K
-         L1xnE3hZUsdDN7P4JGtXPPQiiUZYopJcsrzLq1aMEyicxFoWx7UgSPmDHVUmXhm1ixfF
-         R2og==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1782050226; x=1782655026;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:date:from:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=Sv1dki/80aNeWwp+36abGEnVJza7FGEeP7NOY9gPTvc=;
-        b=C3WfBuSdv9AotOenyXvRTWo+fPNasogHHSsEIe+1mN+s0DuVNCacidzcYImKkJLCeG
-         gllAf/SRCTZZr2yug7NNSzhCTwRFoLbjbMZZB5SChknRSbf8VaTXtfoPJSudnWUE/FEQ
-         l/7MDJzV5xeCT3LZ7XUiycxLTfWRnyhXfTRocqJGHXiAv11K2WeyTAy5HB75bT9casq4
-         mVaE0jgz+YiU/sMETD/BUZ9fDmiW4RXQSNADbsPsBzTShuitV7GLfNva20wcZhyVYAI2
-         CpVFampbszRRCONg6VskSaYgYOxSo2WNKqfZQ/VPPvwBDrBX1RPNdKFq8Y4rgama69Cd
-         nKow==
-X-Forwarded-Encrypted: i=1; AHgh+Rqk0vA8PYw7FU5yiy/OLAi65Kf9kvH01tUJyzqdOykWEjxtYXrev6e892SSGJiftVx/ofVcA8yaiygFgm8=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yz9yCA2QFayGciuumf1/OfkIjVbKIV+YDwPHzpOihqEdirHwKr0
-	YsEyzSv5FAFRheEdog7IU0eCNKtdOsaG15r6xjE4pS5dnC/RInwPvRIy
-X-Gm-Gg: AfdE7cnOk9TzYoxpXK4Dky1+kqi9ejSrgubbOdBcDVYSodYq2lq978uKKe/ejOQKNVm
-	p4KQPg6BDMrTpTQJ6IQEEOosXmPm/5R9BrlSvmfEM2AJicbPbYGofqpYAvgFMvCXK4YDLNJ+VIz
-	U8ir/ZyXcMeofBfHXCTIzqQdH0XilvlIIYjrV0jGjMRyCi47w9ZRHK72lgotczAcwTYt0EiPOsH
-	BvO4AntyvM8R/obPAYonlzlJJgYEy6D05NBGfFqscCfjlt6xhWySJoXKXuu4d+pWiPfN1lPqzmh
-	UEoowLOTIMU4wW18PXccXXgko5u7tWSnzHt4BFOzjVz0FjP2ItGkBePUoEh5PVJdxpOP29JkBPG
-	B26faWnB5yL2w1wuzhx3yOBFbaOiuByD7ZOioW0QB+td4CMxHT7PPeKsCE4fyV6Hq4xX1BhCitO
-	rP33h9CPrKrJi4h4WmMcXamj5pwI3g5kb5skQ=
-X-Received: by 2002:a05:690c:4b8b:b0:7c5:f6c:d311 with SMTP id 00721157ae682-80131d97bdamr100779827b3.13.1782050226417;
-        Sun, 21 Jun 2026 06:57:06 -0700 (PDT)
-Received: from localhost (user-24-214-85-55.knology.net. [24.214.85.55])
-        by smtp.gmail.com with ESMTPSA id 00721157ae682-8025c96fdb3sm21073127b3.1.2026.06.21.06.57.06
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 21 Jun 2026 06:57:06 -0700 (PDT)
-From: Yury Norov <yury.norov@gmail.com>
-X-Google-Original-From: Yury Norov <ynorov@nvidia.com>
-Date: Sun, 21 Jun 2026 09:57:05 -0400
-To: Yury Norov <yury.norov@gmail.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
-	linux-trace-kernel@vger.kernel.org,
-	Masami Hiramatsu <mhiramat@kernel.org>,
-	Mark Rutland <mark.rutland@arm.com>,
-	Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
-	John Ogness <john.ogness@linutronix.de>,
-	Thomas Gleixner <tglx@kernel.org>,
-	Peter Zijlstra <peterz@infradead.org>,
-	Julia Lawall <julia.lawall@inria.fr>, linux-doc@vger.kernel.org,
-	linux-kbuild@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-	dri-devel@lists.freedesktop.org,
-	linux-stm32@st-md-mailman.stormreply.com,
-	linux-arm-kernel@lists.infradead.org, linux-rdma@vger.kernel.org,
-	linux-usb@vger.kernel.org, linux-ext4@vger.kernel.org,
-	linux-nfs@vger.kernel.org, kvm@vger.kernel.org,
-	intel-gfx@lists.freedesktop.org
-Subject: Re: [PATCH 2/2] tracing: Add CONFIG_TRACE_PRINTK_DEBUGGING to clean
- up kernel.h
-Message-ID: <ajftsRwe19fPTP1r@yury>
-References: <20260621093430.264983361@kernel.org>
- <20260621093811.168514984@kernel.org>
- <20260621054721.7cde38f0@fedora>
- <ajfphe4Z8BrfYoUX@yury>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gjtnL3Jqjz2xPb
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jun 2026 00:21:56 +1000 (AEST)
+Received: from omf19.hostedemail.com (lb01a-stub [10.200.18.249])
+	by unirelay07.hostedemail.com (Postfix) with ESMTP id 36393166CE4;
+	Sun, 21 Jun 2026 14:21:51 +0000 (UTC)
+Received: from [HIDDEN] (Authenticated sender: rostedt@goodmis.org) by omf19.hostedemail.com (Postfix) with ESMTPA id 1169420026;
+	Sun, 21 Jun 2026 14:21:46 +0000 (UTC)
+Date: Sun, 21 Jun 2026 14:24:07 +0100
+From: Steven Rostedt <rostedt@goodmis.org>
+To: Yury Norov <yury.norov@gmail.com>, Steven Rostedt <rostedt@kernel.org>
+CC: linux-kernel@vger.kernel.org, linux-trace-kernel@vger.kernel.org,
+ Masami Hiramatsu <mhiramat@kernel.org>, Mark Rutland <mark.rutland@arm.com>,
+ Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Linus Torvalds <torvalds@linux-foundation.org>,
+ Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
+ John Ogness <john.ogness@linutronix.de>, Thomas Gleixner <tglx@kernel.org>,
+ Peter Zijlstra <peterz@infradead.org>, Julia Lawall <julia.lawall@inria.fr>,
+ linux-doc@vger.kernel.org, linux-kbuild@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, dri-devel@lists.freedesktop.org,
+ linux-stm32@st-md-mailman.stormreply.com,
+ linux-arm-kernel@lists.infradead.org, linux-rdma@vger.kernel.org,
+ linux-usb@vger.kernel.org, linux-ext4@vger.kernel.org,
+ linux-nfs@vger.kernel.org, kvm@vger.kernel.org,
+ intel-gfx@lists.freedesktop.org
+Subject: =?US-ASCII?Q?Re=3A_=5BPATCH_1/2=5D_tracing=3A_Move_non-tra?=
+ =?US-ASCII?Q?ce=5Fprintk_prototypes_back_to_kernel=2Eh?=
+User-Agent: K-9 Mail for Android
+In-Reply-To: <ajfiVTlCIVlqW3sh@yury>
+References: <20260621093430.264983361@kernel.org> <20260621093811.007634476@kernel.org> <ajfiVTlCIVlqW3sh@yury>
+Message-ID: <C4ED8F5F-042B-43B6-B17A-7C3E2743E48F@goodmis.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -113,54 +68,59 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <ajfphe4Z8BrfYoUX@yury>
+Content-Type: text/plain;
+ charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+X-Stat-Signature: m5id8uysanmtioempn6emsnsdgs5phht
+X-Rspamd-Server: rspamout02
+X-Rspamd-Queue-Id: 1169420026
+X-Session-Marker: 726F737465647440676F6F646D69732E6F7267
+X-Session-ID: U2FsdGVkX19WinE5LWQa8HzvFNjRdlGwYann5/w38N8=
+X-HE-Tag: 1782051706-894210
+X-HE-Meta: U2FsdGVkX183C80JzklQEIa+kgNTjJZOknF6vAmyswd98TyGVgTRC8SyVWsz19w9BPwppSUtPiaeZPJXrIQbsy98gLBfQ1cJQl7yzp34fic0gzv0s9hrB6mxeJXqinMntnlfXe73gJIH/D2pt50tZwbP93X5621Z+n1JPgBDPeg2Qqz5v4YTHrFVzIaZ3VcUXUAKuj/7BGAd4D8VuUGw+dkVUMzvtoZoN/seDFwcReGQTYquH+YMzJ815xl7wR46FpiJ9+THR6XRxVuJCVh6iJAhD/ahytYNQMcMNmgFRXblBTPxbXFH63lW5Djcit4yMB+uNazqknvOnTkAw3vbLAB4CMkaAooU09WOrb4dRD5m5BQTaIQKdR+GIKMYTEwoPVIlbOYXwm+XOsikcSvwWkIxSgSJzlVeOeQCU6+wcUsByy327CPzOKFxszsj4v/QYc8SsHkTU40=
 
-On Sun, Jun 21, 2026 at 09:39:17AM -0400, Yury Norov wrote:
-> On Sun, Jun 21, 2026 at 05:47:21AM -0400, Steven Rostedt wrote:
-> > On Sun, 21 Jun 2026 05:34:32 -0400
-> > Steven Rostedt <rostedt@kernel.org> wrote:
-> > 
-> > > Instead of having trace_printk.h included in kernel.h, create a config
-> > > TRACE_PRINTK_DEBUGGING that when set will update the CFLAGS in the
-> > > Makefile to allow developers to add trace_printk() without the need to add
-> > > the include for it. Having it included in the Makefile keeps it from being
-> > > in the dependency chain and it will not waste extra CPU cycles for those
-> > > building the kernel without using trace_printk.
-> > 
-> > Bah, I only tested with the config option enabled, and missed some
-> > dependencies with it disabled.
-> 
-> Yes you did.
->  
-> > For instance, rcu.h also uses ftrace_dump() so that too needs to go
-> > into kernel.h.
-> 
-> No, it shouldn't.
-> 
-> > I also need to add a few more includes to trace_printk.h.
-> 
-> > OK, I need to run this through all my tests to find where else I missed
-> > adding the includes. But the idea should hopefully satisfy everyone.
-> 
-> If you include it under config in kernel.h, to make the kernel buildable,
 
-I mean: in kernel.h or in Makefile.
 
-> you need to include trace_printk.h explicitly where it's actually used.
-> IOW, apply my patch v4-7.
-> 
-> Then, developers who use trace_printk() on their development machine,
-> will be really frustrated when their debugging code will break client
-> build just because CONFIG_TRACE_PRINTK_DEBUGGING is disabled there.
-> They will spend a day, at best, communicating with remote managers,
-> and end up with adding #include <linux/trace_printk.h> in the files
-> they touch. Is that your plan?
-> 
-> If I was one of those developers, the solution would be simple for me:
-> don't use trace_printk() at all.
-> 
-> Thanks,
-> Yury
+On June 21, 2026 2:08:37 PM GMT+01:00, Yury Norov <yury=2Enorov@gmail=2Eco=
+m> wrote:
+>On Sun, Jun 21, 2026 at 05:34:31AM -0400, Steven Rostedt wrote:
+>> From: Steven Rostedt <rostedt@goodmis=2Eorg>
+>>=20
+>> In order to remove the include to trace_printk=2Eh from kernel=2Eh the =
+tracing
+>> control prototypes need to be moved back into kernel=2Eh=2E That's beca=
+use
+>
+>Please don't=2E Instead, you can split them out to trace_control=2Eh, and
+>include where needed=2E I actually have a prototype for it, FYI:
+>
+>https://github=2Ecom/norov/linux/tree/trace_pritk3
+>
+
+Sure, I have no problem adding another header for this=2E
+
+>> they are used in other common header files like rcu=2Eh=2E There's no p=
+oint in
+>> removing trace_printk=2Eh from kernel=2Eh if it just gets added back to=
+ other
+>> common headers=2E
+>>=20
+>> Prototypes are very cheap for the compiler and should not be an issue=
+=2E
+>
+>It's not about cost, it's about mess=2E kernel=2Eh is included everywhere=
+=2E
+>Is that API needed everywhere? No, it's needed in literally 10 files=2E
+>So, no place in kernel=2Eh=2E
+>=20
+
+Well one of those files is rcu=2Eh which is also pretty much included ever=
+ywhere=2E But OK=2E
+
+-- Steve=20
+
+
+>>=20
+>> 2=2E53=2E0
+>>=20
 
