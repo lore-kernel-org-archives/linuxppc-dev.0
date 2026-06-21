@@ -1,56 +1,55 @@
-Return-Path: <linuxppc-dev+bounces-22853-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22854-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A9265CD98F2
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 21 Jun 2026 11:13:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4D1D8CD98F2
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 21 Jun 2026 11:20:48 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gjpbt5Gz1z2xQD;
-	Sun, 21 Jun 2026 21:13:30 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782034676;
-	cv=none; b=SNa71HF4uhJ61pEIa3ySplTrBb8d6JQNUebtt9ELLsR+3/oslFUCZJRR+D3aIxh+qAXtkDuk1DtbIYPhNGXVCbQvYPTdTSWj+At0y/48E8WeXvp8o80D8bsFhy4xkFz1bqN77FmoDeCQd0DuS7ljCbi9dVa5Q1C6blumgTyA39Sz5Y3FyjcMqK2aZO9xWllhXADfoFfSOjfhxqWg78BuLRo6qvW97IIkTEbZBq8zMOzhGCrOHuL21vdj1r6m2RRApl5dutgEpHJaYku8/KRp36qFLNvvsWj+AYClBLEJTyomH+4S78M5pZYYNvQP6RFQulpZ3tFkuV9RXOLCe6YoWA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gjpmG6Z9Mz2xQD;
+	Sun, 21 Jun 2026 21:20:46 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782034677;
+	cv=none; b=jw+DMKmBye2DYmTlXtOI46uHsxT8qEQN3OcxmATpGf7j0r4oht3DtrIi117gqtVW3IQAADEXiTnIcc+B1queWaz5sCxgN6cYPSUU+/CHMOz95rrfNPAxfZaZTHg2C5IBmwus6zHfBhZ6xXYRSv/qvmq7wrtdEP1PdW5LSYD5oTB5wxRZM/Ghj44i/Urz38sfJGzuSq+2bnekn1imdUX8H+cpsRhrP5onTACfzSTexdGMr/WIneogJVpIUmnzX8YxMj78akiMgcE58c2FbgtI0ZVfrptqtcy5aX56dIA2a/Xn3lohTx8AJ9hLUdMjVDF/3Kz8cxLQ8lIBsCBeyHN2Jg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1782034676; c=relaxed/relaxed;
-	bh=eq4Jiz0A0s0y1CCaKrigK8iMCmKO2KO/DMw+O1PS1ZY=;
-	h=Message-ID:Date:From:To:Cc:Subject:References:MIME-Version:
-	 Content-Type; b=WYoPj5lIw7XUOi9Y4jm2GiY+26afggCyT0HBKJtoPznUE194A406yUc9g49gX8HptaYUMiA+VYdovpt2CwmT694q7zb2ClEU1KBBr0HPPS13rbxhprJ1bsP/dq9ZTfIiVP+q6Wq4WH3QvmOnkZXZctA/9osQmmO0t/a12iJvDKHVndt07MhDMvXxo8vYVyF+G/toFaGlVhq3s00otIxHqGbTZ/SuFUhwcFHxKKSCb1+eCaUi0Z/FwRCByU2b35xGJTVYd2PGeAesFAW2pt3mniA1DLgvsLdbnP9TyFd0yjB5I6vbX8x/LsrjEFxK5LGAHSXgr/KYVr6XSB4VLRU/2g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=kHYbAcsD; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=rostedt@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1782034677; c=relaxed/relaxed;
+	bh=3PM2SwKGUgQ1Wfor83rkZsilDOPTMWeMgpO7Hmp6Coc=;
+	h=Message-ID:Date:From:To:Cc:Subject; b=ZrN+0TLL7SOmGxl1Iw9TJBb2ykNckWX+pnkVHg/ot0LSCsb/ejtEoyS71XT9BOS9sL/mv0Akih7USUoBUfvv/3p2b1Yi8sUnOlYnueK8zyIgKZuEzKb1bBJZdBByAz95W7aQMipDOIvo2O6gLDVyN+EjYTenZGeIpzXIgn8cPyMLPvWKl8TuqV940+h86447rkcMa9sQq8nUb087dyy0vn70rZmfCfzFwTckFIkX/J9NXGfdx5vCE5hLYJERhVKh/LxQ/yONrz9KsASHhcChtUrlneYlu5CAuJWsyohpgkAJt5oL/uNfxNdN31Gow31pGAhBemNbAIcUSWi4v5biow==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=CPvoIDGL; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=rostedt@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=kHYbAcsD;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=CPvoIDGL;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=rostedt@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=rostedt@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gjmTb54vHz2xPL
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 21 Jun 2026 19:37:55 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gjmTc1ZdVz2xQD
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 21 Jun 2026 19:37:56 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id BA1C8600AF;
+	by tor.source.kernel.org (Postfix) with ESMTP id 99C0F60051;
 	Sun, 21 Jun 2026 09:37:52 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4C4931F00A3A;
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 44EEE1F000E9;
 	Sun, 21 Jun 2026 09:37:52 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
 	s=k20260515; t=1782034672;
-	bh=eq4Jiz0A0s0y1CCaKrigK8iMCmKO2KO/DMw+O1PS1ZY=;
-	h=Date:From:To:Cc:Subject:References;
-	b=kHYbAcsD3riuZyE8yw/zGyX4OGv8E29ntBrV/psMay3TNT67fA5gNBpeHGFBeZ/12
-	 2Ay7PRmR+s6HdarptXq0OjoszuRK4hDjuFDr5zqy5M5pwo3OOG5Rfwzz1hG/+dQ1n8
-	 CM2zwSeAYz4lQYZRNadhemupSTJhYAVEj8Z/JGBsC+uxY4TS20hXDjW9EjrTZX/Dl+
-	 vMXqPLpJ/wkow6elNFJjsfNE/3ih99IbbRotQdZuC4nu/UA/y3tJKjSTogiiW5YYf5
-	 87SMm3+n4xuUToS7j7SvNUKsWt0yz2IfUnDNb9wlqNTm+yoVD5272meD4iMEV5O7Pw
-	 ZebFVZP2gqGBg==
+	bh=3PM2SwKGUgQ1Wfor83rkZsilDOPTMWeMgpO7Hmp6Coc=;
+	h=Date:From:To:Cc:Subject;
+	b=CPvoIDGL14sCX5ylLaYUAhDC9lMcMiJh12IJzutGSGQKhhN/j3P7fMe1lw15m5Roc
+	 tHpoEk8Aby4R7yyQzmUbl4hKAdLn06DdHEiYs3o1201v2up+FU7xKvnepQ/nPPwDCI
+	 WFkQeLslfQ8Kj6y7aV8P00hG40B3FZDEvni22GswCCp3bAgMXKZfMgiJsONy+BOgVi
+	 k0p/zCAiBS0MY4A0IhU6SDokj6lXppltL7JA3pcuCP15DKxW8Mk4X/xfQ3c3P97y2z
+	 c5uOUbqO06EeOjVenm17mc5XrEaYLlP7aug5hC/9nFo5DtP/NtxZmsipMAfim8Ib+w
+	 nCbGOugNardpA==
 Received: from rostedt by gandalf with local (Exim 4.99.3)
 	(envelope-from <rostedt@kernel.org>)
-	id 1wbEd1-00000001qU9-0cPr;
-	Sun, 21 Jun 2026 05:38:11 -0400
-Message-ID: <20260621093811.007634476@kernel.org>
+	id 1wbEd0-00000001qTd-46mY;
+	Sun, 21 Jun 2026 05:38:10 -0400
+Message-ID: <20260621093430.264983361@kernel.org>
 User-Agent: quilt/0.69
-Date: Sun, 21 Jun 2026 05:34:31 -0400
+Date: Sun, 21 Jun 2026 05:34:30 -0400
 From: Steven Rostedt <rostedt@kernel.org>
 To: linux-kernel@vger.kernel.org,
  linux-trace-kernel@vger.kernel.org
@@ -77,8 +76,7 @@ Cc: Masami Hiramatsu <mhiramat@kernel.org>,
  linux-nfs@vger.kernel.org,
  kvm@vger.kernel.org,
  intel-gfx@lists.freedesktop.org
-Subject: [PATCH 1/2] tracing: Move non-trace_printk prototypes back to kernel.h
-References: <20260621093430.264983361@kernel.org>
+Subject: [PATCH 0/2] tracing: Move trace_printk.h out of kernel.h
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -91,91 +89,44 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
 
-From: Steven Rostedt <rostedt@goodmis.org>
+There's been complaints about trace_printk() being defined in kernel.h as it
+can increase the compilation time. As it is only used by some developers for
+debugging purposes, it should not be in kernel.h causing lots of wasted CPU
+cycles for those that do not ever care about it.
 
-In order to remove the include to trace_printk.h from kernel.h the tracing
-control prototypes need to be moved back into kernel.h. That's because
-they are used in other common header files like rcu.h. There's no point in
-removing trace_printk.h from kernel.h if it just gets added back to other
-common headers.
+Instead, add a CONFIG_TRACE_PRINTK_DEBUGGING option that developers that do
+use it can set and not have to always remember to add #include <linux/trace_printk.h>
+to the files they add trace_printk() while debugging. It also means that
+those that do not have that config set will not have to worry about wasted
+CPU cycles as it is only include in the CFLAGS when the option is set, and
+its completely ignored otherwise.
 
-Prototypes are very cheap for the compiler and should not be an issue.
+Steven Rostedt (2):
+      tracing: Move non-trace_printk prototypes back to kernel.h
+      tracing: Add CONFIG_TRACE_PRINTK_DEBUGGING to clean up kernel.h
 
-Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
----
- include/linux/kernel.h       | 18 ++++++++++++++++++
- include/linux/trace_printk.h | 17 -----------------
- 2 files changed, 18 insertions(+), 17 deletions(-)
-
-diff --git a/include/linux/kernel.h b/include/linux/kernel.h
-index e5570a16cbb1..c3c68128827c 100644
---- a/include/linux/kernel.h
-+++ b/include/linux/kernel.h
-@@ -194,4 +194,22 @@ extern enum system_states system_state;
- # define REBUILD_DUE_TO_DYNAMIC_FTRACE
- #endif
- 
-+#ifdef CONFIG_TRACING
-+void tracing_on(void);
-+void tracing_off(void);
-+int tracing_is_on(void);
-+void tracing_snapshot(void);
-+void tracing_snapshot_alloc(void);
-+void tracing_start(void);
-+void tracing_stop(void);
-+#else
-+static inline void tracing_start(void) { }
-+static inline void tracing_stop(void) { }
-+static inline void tracing_on(void) { }
-+static inline void tracing_off(void) { }
-+static inline int tracing_is_on(void) { return 0; }
-+static inline void tracing_snapshot(void) { }
-+static inline void tracing_snapshot_alloc(void) { }
-+#endif
-+
- #endif
-diff --git a/include/linux/trace_printk.h b/include/linux/trace_printk.h
-index 3d54f440dccf..879fed0805fd 100644
---- a/include/linux/trace_printk.h
-+++ b/include/linux/trace_printk.h
-@@ -35,15 +35,6 @@ enum ftrace_dump_mode {
- };
- 
- #ifdef CONFIG_TRACING
--void tracing_on(void);
--void tracing_off(void);
--int tracing_is_on(void);
--void tracing_snapshot(void);
--void tracing_snapshot_alloc(void);
--
--extern void tracing_start(void);
--extern void tracing_stop(void);
--
- static inline __printf(1, 2)
- void ____trace_printk_check_format(const char *fmt, ...)
- {
-@@ -176,16 +167,8 @@ __ftrace_vprintk(unsigned long ip, const char *fmt, va_list ap);
- 
- extern void ftrace_dump(enum ftrace_dump_mode oops_dump_mode);
- #else
--static inline void tracing_start(void) { }
--static inline void tracing_stop(void) { }
- static inline void trace_dump_stack(int skip) { }
- 
--static inline void tracing_on(void) { }
--static inline void tracing_off(void) { }
--static inline int tracing_is_on(void) { return 0; }
--static inline void tracing_snapshot(void) { }
--static inline void tracing_snapshot_alloc(void) { }
--
- static inline __printf(1, 2)
- int trace_printk(const char *fmt, ...)
- {
--- 
-2.53.0
-
-
+----
+ .../driver_development_debugging_guide.rst         |  2 +-
+ Makefile                                           |  5 +++++
+ arch/powerpc/kvm/book3s_xics.c                     |  1 +
+ drivers/gpu/drm/i915/gt/intel_gtt.h                |  1 +
+ drivers/gpu/drm/i915/i915_gem.h                    |  1 +
+ drivers/hwtracing/stm/dummy_stm.c                  |  4 ++++
+ drivers/infiniband/hw/hfi1/trace_dbg.h             |  1 +
+ drivers/usb/early/xhci-dbc.c                       |  1 +
+ fs/ext4/inline.c                                   |  1 +
+ include/linux/kernel.h                             | 19 ++++++++++++++++++-
+ include/linux/sunrpc/debug.h                       |  1 +
+ include/linux/trace_printk.h                       | 22 +++-------------------
+ kernel/trace/Kconfig                               | 10 ++++++++++
+ kernel/trace/ring_buffer_benchmark.c               |  1 +
+ kernel/trace/trace.h                               |  1 +
+ samples/fprobe/fprobe_example.c                    |  1 +
+ samples/ftrace/ftrace-direct-modify.c              |  1 +
+ samples/ftrace/ftrace-direct-multi-modify.c        |  1 +
+ samples/ftrace/ftrace-direct-multi.c               |  2 +-
+ samples/ftrace/ftrace-direct-too.c                 |  2 +-
+ samples/ftrace/ftrace-direct.c                     |  2 +-
+ 21 files changed, 56 insertions(+), 24 deletions(-)
 
