@@ -1,64 +1,58 @@
-Return-Path: <linuxppc-dev+bounces-22882-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22883-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AC92CCD98F2
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Jun 2026 17:43:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8B650CD98F2
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Jun 2026 21:35:36 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gkbCY0vlNz2yVd;
-	Tue, 23 Jun 2026 03:43:37 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782150217;
-	cv=none; b=oTJI1wgjp//NP2VdvrtRLWs54yCMP33XK8xLMk049xOr0NsfaquSn74vVskSuQq4hJuTZOHZmdkbU8tCFoh5ByVwgiDt6cfSWmIxKRkDMP+Z8JASlezHv/P4mPWnwJQeX9ti3jd8n9H50kihJIPS5KifVMRnPcsbihlDM7teqT+6bBU6tHoPFZ2VnqTD6bMkbGP0kTsEP5TXg9WtSx7gGeRGOnpFUgL0P0uaf/RUUbKCE2srYctY6uElBG3OvVrNOywV0vzCjOspjjYb7hMJzHs8EqpaLOZf3ToBN2lnjxr3wQHeUJSUx9hiw3EjgknTetk6PBK8YlkZzt+zzjXeYg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gkhMB48kJz2yVd;
+	Tue, 23 Jun 2026 07:35:34 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782164134;
+	cv=none; b=iZ0C8LKCLojww0V3EwoUCk5t4JlohYKnu+O7/zuM7T4nPZTgZQ04QjU64pqAx7eFsTr5480b5MuY+Bx2x95R7is+HPwos/BQcih5XpLlo3SqcR4i8z4Mrb8gJKS3U8IByB1lVHCAqThTNez0cVq1fqhxBYP+3xS6WFhTHEHMF1aa+gy2ZN5bkkONFKIRYZVi/c4JgG7syWC+e2IhJighItvLAFRdBQzLjGPB3ZLfS8ukRyn+ocBISD5kQ1NInkWeRoJSwAfMBiJsOkEw5BSJS+lEPIHO2bZUJxTbzfuRyUGfsxmXsvrHpcaSy4XYTvjVOwLnojme2QbUbJhxQo0bwA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1782150217; c=relaxed/relaxed;
-	bh=ZOvkxM7SoiYga4F3HI0NRlsezjpo0hLIkN4UO4HHxjU=;
-	h=From:In-Reply-To:MIME-Version:References:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=l//4cNuC6g1tW4fMWy1+4FR7ywKsy1lJ52RjnTdxDAlLkDzJS2A5ZNLVRiBtAodtpPXSbvFGl8JL54ptmmdxlOp1XqIkmoUXy+E1G2JaNQmBt5q9XLpd7FqB7yi+hdq309TB1/mVm/UG7cC/rSN5j+x3KIEEun1fPu9bx2UjK+luKnjDWPKqwY3NhCGmAGpZaPLe3b624DGdvbd9qU5YGMVCExJEUzJxlYWkU7Hc9fBkq7zGiegrJSrNE7kSU4GjHDxXuNt/TrW3O0ODVrnvU7DOzwhBIFf4BQdhMiSpKf8BXZb6IpzuBEfXQdmouxs/hrhl9+MtTwyNJKP3gjysqw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=bWs9bj1f; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=brgl@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1782164134; c=relaxed/relaxed;
+	bh=HgImYFkLyD1hj/g9jIukArDdySmWi+kCTAd6Z7Own3s=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=MHLwJ0qVWcqA/lWXciAryfEbhtrq/Crrd0J8oOV6yYEoB+rWAYl3MyQhiVHe3FtdaLLMOvvWqA7DyPzqLYOjFYK6y9lo/Ca8MGXj4vH4wOZoFzMZKN1wp9RKA4iqrjQTmiMANgRykQt2OLiOwGPg4AhE/gTFKSendZtdgXhPjG593vpjkKMTlIBk7Ws0E54pNJ8VAdtMyaQg0XWtbgGukWnm13GJbrouOpc3S6nH6GbKOhAnxMl1M9JrOjeL93xhypsgd8O5H/yJEI95+Wpr5l8NZGrdgg4YIqSQoegHYH0S7EP0ISncLjcZflhh1wr3L/p1Pa0BUslYvuMznEn5Yw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=FDO4wxCc; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=baohua@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=bWs9bj1f;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=FDO4wxCc;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=brgl@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=baohua@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gkbCW5w4dz2xWR
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jun 2026 03:43:35 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gkhM85FLnz2xnH
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jun 2026 07:35:32 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 61E12601F6
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jun 2026 17:43:32 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 17E1C1F00A3F
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jun 2026 17:43:32 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 0BB8A44412
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jun 2026 21:35:30 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D4E331F00ADE
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jun 2026 21:35:29 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1782150212;
-	bh=ZOvkxM7SoiYga4F3HI0NRlsezjpo0hLIkN4UO4HHxjU=;
-	h=From:In-Reply-To:References:Date:Subject:To:Cc;
-	b=bWs9bj1fag5KYrEtQKDWajU/F6qyj+Xj0XywCLK/icvKgyu3zXE8BtiE5VCmzBOIO
-	 skOV0vdmfh5mCkma6G1yrE/H1sWckCiKx0kV384oGGNyzktYrin//aZ1A2T9J+RvZq
-	 tLhd4ueV9nefHqs6/L55gODvylLnx+BGn1DaSxnxjd+YO5r+feGhhbbldQDXQzrV7q
-	 InN3bE5Wk7q70Sq7/fRrBO5JcoyyAgKcaZfkUgqIJcm8KxCXn9dPVJbUuFpObZuXcl
-	 40yRt2QoBA60YiGyyZSznJ1lh57IMuMv+WKUqWeRQZyld2GfoWo6fs7ZFdt1rcNYd6
-	 YnYd6Pb1v9FZg==
-Received: by mail-lj1-f176.google.com with SMTP id 38308e7fff4ca-39983214844so41523781fa.3
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jun 2026 10:43:32 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AFNElJ8A0exzgOX7YzCZObTtRch6hKxw4GgvfUxUNqn4k/mDYQrfRZ44CPImZ9Y2j5DpJojhfES9f8vfma8MAe8=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YwghnQCM4kfH6NPNxxfuIyu6m2ZPQMcYa5xrf8QD8zaZ7OEu4nj
-	1QpNKw+rlxVZ1GL59is5XvVvNZOJ91lz32xGOEQyU9mjVc41tzvaeam2eKCEt8sbJeHG4REbpny
-	bVUcOSiZcsmYTXQOFFg0F6S1luRgBp5Dv+zm909zlnA==
-X-Received: by 2002:a05:651c:88b:b0:394:635:70b1 with SMTP id
- 38308e7fff4ca-3998bc52fbemr41304291fa.3.1782150210743; Mon, 22 Jun 2026
- 10:43:30 -0700 (PDT)
-Received: from 969154062570 named unknown by gmailapi.google.com with
- HTTPREST; Mon, 22 Jun 2026 13:43:29 -0400
-Received: from 969154062570 named unknown by gmailapi.google.com with
- HTTPREST; Mon, 22 Jun 2026 13:43:28 -0400
-From: Bartosz Golaszewski <brgl@kernel.org>
-In-Reply-To: <20260521-pdev-fwnode-ref-v1-5-88c324a1b8d2@oss.qualcomm.com>
+	s=k20260515; t=1782164129;
+	bh=HgImYFkLyD1hj/g9jIukArDdySmWi+kCTAd6Z7Own3s=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc;
+	b=FDO4wxCceO99ohP1/DFe16yqc13aAhyLtsANUMoZJaX7e4BN8T4H0dkpqjjugodGy
+	 Txa5lG/gOuD6AqiT51VHSE3PxN+QAzVHy9GcXAGrKyIOdKpJ/Jof1EU0UeaDz/GyYs
+	 J07GqksE/VR0z/Vu4s2PiQiIdj3gI84epywArnyq80LgwUJekrx0AD1KXG7ugHe1uv
+	 56sIsexmvNJFOFZy2cTq6YRjz5dnKSRaY54cJMDkac7sjtnfv3A7BKEGdq4vwzdd/3
+	 oDqkfNSkiytSqmY05D7nIH0dcBmhNJPoFxVubsTZKaso7jAHBcCq1/aCN74pAcjQ2b
+	 ZEj7BseReSOZw==
+Received: by mail-vk1-f177.google.com with SMTP id 71dfb90a1353d-5bbca605be3so230571e0c.1
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jun 2026 14:35:29 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AFNElJ/gW6gO4II5oqhZy9f/ybmepwaMZgh8g8vDW+/rPL4WanchAedrcJV/yiMxHH/ggXVgaMzDlEep7XwOqfA=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YxB+RRjI07agDGLUpbR4rDMVnYHdDVX7Oa5X9XqVKu4GOJavLBo
+	4BAW6Qffhx8an19moNHa0ujmR9a7wVoyMA0wjjoEd8GuuhDZpY47Be0Bj6eIRF6enBcVafUxWhA
+	FQ/+h6EjLGVxUzGpYM+rsAXbTUtNCBSE=
+X-Received: by 2002:a05:6102:3254:10b0:6cc:e6b1:7f84 with SMTP id
+ ada2fe7eead31-72f85be19c5mr499665137.17.1782164129165; Mon, 22 Jun 2026
+ 14:35:29 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -72,88 +66,255 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20260521-pdev-fwnode-ref-v1-0-88c324a1b8d2@oss.qualcomm.com> <20260521-pdev-fwnode-ref-v1-5-88c324a1b8d2@oss.qualcomm.com>
-Date: Mon, 22 Jun 2026 13:43:28 -0400
-X-Gmail-Original-Message-ID: <CAMRc=MfSsLt8+CAh++8qo_=F=q5XRu6G3WGB=B2TZj8dTZydfg@mail.gmail.com>
-X-Gm-Features: AVVi8CfRnQqz6Nh2M0v3z0C67LQjbAf_AXtOmIr-lp4acya5s7VimMoD1ExGxmc
-Message-ID: <CAMRc=MfSsLt8+CAh++8qo_=F=q5XRu6G3WGB=B2TZj8dTZydfg@mail.gmail.com>
-Subject: Re: [PATCH 05/23] powerpc/powermac: fix OF node refcount
-To: Madhavan Srinivasan <maddy@linux.ibm.com>
-Cc: brgl@kernel.org, linux-kernel@vger.kernel.org, netdev@vger.kernel.org, 
-	linux-arm-msm@vger.kernel.org, linux-sound@vger.kernel.org, 
-	driver-core@lists.linux.dev, devicetree@vger.kernel.org, 
-	linuxppc-dev@lists.ozlabs.org, linux-i2c@vger.kernel.org, 
-	iommu@lists.linux.dev, linux-pm@vger.kernel.org, imx@lists.linux.dev, 
-	linux-arm-kernel@lists.infradead.org, intel-xe@lists.freedesktop.org, 
-	dri-devel@lists.freedesktop.org, linux-usb@vger.kernel.org, 
-	linux-mips@vger.kernel.org, platform-driver-x86@vger.kernel.org, 
-	Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>, stable@vger.kernel.org, 
-	Lee Jones <lee@kernel.org>, Mark Brown <broonie@opensource.wolfsonmicro.com>, 
-	Thierry Reding <thierry.reding@avionic-design.de>, 
-	Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Andrew Lunn <andrew+netdev@lunn.ch>, 
-	"David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, 
-	Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, 
-	Srinivas Kandagatla <srini@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
-	Vinod Koul <vkoul@kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Danilo Krummrich <dakr@kernel.org>, 
-	Rob Herring <robh@kernel.org>, Saravana Kannan <saravanak@kernel.org>, 
-	Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, Andi Shyti <andi.shyti@kernel.org>, 
-	Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Joerg Roedel <joro@8bytes.org>, 
-	Will Deacon <will@kernel.org>, Robin Murphy <robin.murphy@arm.com>, Doug Berger <opendmb@gmail.com>, 
-	Florian Fainelli <florian.fainelli@broadcom.com>, 
-	Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>, Ulf Hansson <ulfh@kernel.org>, 
-	Frank Li <Frank.Li@nxp.com>, Sascha Hauer <s.hauer@pengutronix.de>, 
-	Pengutronix Kernel Team <kernel@pengutronix.de>, Fabio Estevam <festevam@gmail.com>, 
-	Matthew Brost <matthew.brost@intel.com>, 
-	=?UTF-8?Q?Thomas_Hellstr=C3=B6m?= <thomas.hellstrom@linux.intel.com>, 
-	Rodrigo Vivi <rodrigo.vivi@intel.com>, David Airlie <airlied@gmail.com>, 
-	Simona Vetter <simona@ffwll.ch>, Peter Chen <peter.chen@kernel.org>, 
-	Paul Cercueil <paul@crapouillou.net>, Bin Liu <b-liu@ti.com>, 
-	Philipp Zabel <p.zabel@pengutronix.de>, Maximilian Luz <luzmaximilian@gmail.com>, 
-	Hans de Goede <hansg@kernel.org>, =?UTF-8?Q?Ilpo_J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>, 
-	Krzysztof Kozlowski <krzk@kernel.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>
+References: <ag4h87CBd-gph9zX@casper.infradead.org> <CAGsJ_4zA8afu0xXy0WS+tMe-eesDX1W6UBmfAsuouUpcAgK8JQ@mail.gmail.com>
+ <ag4kj84EcKqamdB-@casper.infradead.org> <3be9475b-0e8a-4df8-a130-4262f993973d@kernel.org>
+ <CAGsJ_4xC5LdhuoWV1=tK-RZ5rkjc8aOKOkmb1L_8BG_3gtJhDg@mail.gmail.com>
+ <ahB6QyHgYq8ksj65@lucifer> <CAGsJ_4zxLvZ01i19vdo0xA47T1hxa1VRYvxLmiDhy5q1GDKPRg@mail.gmail.com>
+ <CAJuCfpHTxaU4KdNmefU7C7cWZSLCFDLPdUrnqV6yzxzN+8RQ0Q@mail.gmail.com>
+ <ajhOUdbWsswgQyl2@casper.infradead.org> <CAGsJ_4ybg5LGYopTUJTh5R2rN6X3uR9xoJSL+RdTYVtm1-xqLg@mail.gmail.com>
+ <c5soxcu245cerfljr2ddto4h7xqksfxzxti47mq6sqn6pnmnxh@th5kxapvnaj3>
+In-Reply-To: <c5soxcu245cerfljr2ddto4h7xqksfxzxti47mq6sqn6pnmnxh@th5kxapvnaj3>
+From: Barry Song <baohua@kernel.org>
+Date: Tue, 23 Jun 2026 05:35:16 +0800
+X-Gmail-Original-Message-ID: <CAGsJ_4xeRmi_EtcLUpZm49zNO3pxscd1shDcO-wbBAZheyN9jQ@mail.gmail.com>
+X-Gm-Features: AVVi8CfVr0XrKkWqf7CvIbBvspzJJaewjz-ymsw_zXuVPurYIavkpzh5F1y4IKg
+Message-ID: <CAGsJ_4xeRmi_EtcLUpZm49zNO3pxscd1shDcO-wbBAZheyN9jQ@mail.gmail.com>
+Subject: Re: [PATCH v2 0/5] mm: reduce mmap_lock contention and improve page
+ fault performance
+To: "Liam R. Howlett" <liam@infradead.org>
+Cc: Matthew Wilcox <willy@infradead.org>, Suren Baghdasaryan <surenb@google.com>, 
+	Lorenzo Stoakes <ljs@kernel.org>, "David Hildenbrand (Arm)" <david@kernel.org>, akpm@linux-foundation.org, 
+	linux-mm@kvack.org, vbabka@kernel.org, rppt@kernel.org, mhocko@suse.com, 
+	jack@suse.cz, pfalcato@suse.de, wanglian@kylinos.cn, chentao@kylinos.cn, 
+	lianux.mm@gmail.com, kunwu.chan@gmail.com, liyangouwen1@oppo.com, 
+	chrisl@kernel.org, kasong@tencent.com, shikemeng@huaweicloud.com, 
+	nphamcs@gmail.com, bhe@redhat.com, youngjun.park@lge.com, 
+	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, 
+	loongarch@lists.linux.dev, linuxppc-dev@lists.ozlabs.org, 
+	linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org, 
+	Nanzhe Zhao <nzzhao@126.com>, Hongru Zhang <zhanghongru06@gmail.com>
 Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On Thu, 21 May 2026 10:36:28 +0200, Bartosz Golaszewski
-<bartosz.golaszewski@oss.qualcomm.com> said:
-> Platform devices created with platform_device_alloc() call
-> platform_device_release() when the last reference to the device's
-> kobject is dropped. This function calls of_node_put() unconditionally.
-> This works fine for devices created with platform_device_register_full()
-> but users of the split approach (platform_device_alloc() +
-> platform_device_add()) must bump the reference of the of_node they
-> assign manually. Add the missing call to of_node_get().
+On Mon, Jun 22, 2026 at 10:50=E2=80=AFPM Liam R. Howlett <liam@infradead.or=
+g> wrote:
 >
-> Cc: stable@vger.kernel.org
-> Fixes: 81e5d8646ff6 ("i2c/powermac: Register i2c devices from device-tree")
-> Signed-off-by: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
-> ---
->  arch/powerpc/platforms/powermac/low_i2c.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+> On 26/06/22 08:15AM, Barry Song wrote:
+> > On Mon, Jun 22, 2026 at 4:49=E2=80=AFAM Matthew Wilcox <willy@infradead=
+.org> wrote:
+> > >
+> > > On Sat, Jun 20, 2026 at 04:48:57PM -0700, Suren Baghdasaryan wrote:
+> > > > Just checking in on the followup plans. IIUC the RFC mentioned will
+> > > > try to implement the solution we discussed at LSFMM: splitting
+> > > > VM_FAULT_RETRY into two flags - one for retrying under per-VMA lock=
+s
+> > > > and another one to fallback to mmap_lock.
+> > >
+> > > I continue to hate this idea.  I don't believe that those who were
+> > > pushing for it have ever tried to understand the whole fault path.
+> > > It's utterly byzantine.
+> > >
+> > > I defy anyone to make sense of this:
+> > >
+> > >         /*
+> > >          * NOTE! This will make us return with VM_FAULT_RETRY, but wi=
+th
+> > >          * the fault lock still held. That's how FAULT_FLAG_RETRY_NOW=
+AIT
+> > >          * is supposed to work. We have way too many special cases..
+> > >          */
+> > >         if (vmf->flags & FAULT_FLAG_RETRY_NOWAIT)
+> > >                 return 0;
+> > >
+> > >         *fpin =3D maybe_unlock_mmap_for_io(vmf, *fpin);
+> > >         if (vmf->flags & FAULT_FLAG_KILLABLE) {
+> > >                 if (__folio_lock_killable(folio)) {
+> > >                         /*
+> > >                          * We didn't have the right flags to drop the
+> > >                          * fault lock, but all fault_handlers only ch=
+eck
+> > >                          * for fatal signals if we return VM_FAULT_RE=
+TRY,
+> > >                          * so we need to drop the fault lock here and
+> > >                          * return 0 if we don't have a fpin.
+> > >                          */
+> > >                         if (*fpin =3D=3D NULL)
+> > >                                 release_fault_lock(vmf);
+> > >                         return 0;
+> > >                 }
+> > >
+> > > Wed need to simplify the fault path, not add additional complexity.
+> > > Josef has said he wouldn't've done the lock dropping had we had per-V=
+MA
+> > > locks.  We should rip it out.
+> >
+> > I think you have agreed that, at least for anon vma, we can
+> > keep the current policy, since anon vma is much more volatile
+> > than file vma.
 >
-> diff --git a/arch/powerpc/platforms/powermac/low_i2c.c b/arch/powerpc/platforms/powermac/low_i2c.c
-> index da72a30ab8657e6dc7e6f3437af612155783d8f9..973f58771d9636605ed5d3e91b45008543b584d3 100644
-> --- a/arch/powerpc/platforms/powermac/low_i2c.c
-> +++ b/arch/powerpc/platforms/powermac/low_i2c.c
-> @@ -1471,7 +1471,7 @@ static int __init pmac_i2c_create_platform_devices(void)
->  		if (bus->platform_dev == NULL)
->  			return -ENOMEM;
->  		bus->platform_dev->dev.platform_data = bus;
-> -		bus->platform_dev->dev.of_node = bus->busnode;
-> +		bus->platform_dev->dev.of_node = of_node_get(bus->busnode);
->  		platform_device_add(bus->platform_dev);
->  	}
->
->
-> --
-> 2.47.3
->
->
+> I don't think any of the above has to do with anon vmas.  Does any anon
+> vma handling have anything to do with your problem?
 
-Madhavan, can you please pick this up and send it upstream as a fix please?
-Not having to carry it with the rest of the series will make things easier
-for the next release.
+Hi Liam,
 
-Thanks,
-Bartosz
+I think there may be a misunderstanding about the motivation behind
+this series.
+
+Currently, for both file-backed and anonymous VMAs, when a page fault
+cannot lock the required folios=E2=80=94for example, because a folio is und=
+er
+I/O during a major fault=E2=80=94the fault handler drops any locks it is
+holding (either per-VMA locks or the mmap lock) and retries the fault
+under the mmap_lock. This page-fault retry pattern requiring the
+mmap_lock can lead to significant mmap_lock contention.
+
+The entire purpose of this series is to avoid reacquiring the mmap_lock
+where possible, while ensuring that the implementation does not
+introduce new priority inversion issues or unnecessary complexity.
+
+We have two possible approaches:
+
+1. Keep the page-fault retry path, but retry under the per-VMA lock
+whenever possible. In this case, we would need a flag to indicate
+whether the retry should be performed under the per-VMA lock or the
+mmap_lock.
+
+2. Remove the page-fault retry path entirely. Instead, wait for the
+folio to become lockable while retaining the locks currently held,
+and continue the fault handling without retrying the page fault.
+
+Approach 1 is the direction taken by both the current patch and the
+RFC that was suggested.
+
+Approach 2 is a potential alternative, but I have never posted an RFC
+proposing it.
+
+For Approach 1, the primary concern seems to be the added complexity.
+
+For Approach 2, my concern is the increased risk of priority
+inversion. With this approach, we may end up holding a lock while
+waiting for I/O completion, potentially for a considerable amount of
+time. As a result, a concurrent VMA writer, along with any subsequent
+mmap_lock acquirers blocked behind it, could be stalled for an
+extended period.
+
+If there is an approach 3, it could be:
+for file VMAs, we take approach 2; for anonymous VMAs, we take
+approach 1.
+
+>
+> This would be needed if anon vmas were being faulted while being
+> unmapped or merged?  Do we really need a fast path for that?  Note that
+> anon vmas cannot be merged if the vma chain... you know what, I wonder
+> how many people know what I'm talking about here... Let's just say that
+> they can't be merged if they were around for a fork.
+
+In terms of fork(), this is the concern I raised when considering
+approach 2=E2=80=94holding the VMA lock while performing I/O, since a
+concurrent fork would need to acquire the VMA write lock.
+
+I had Hongru add some tracing code and run it against the top 200
+Android applications in the China market. All of them are heavily
+multi-threaded. Unfortunately, we found that 82 of these 200 Android
+applications call fork(), and some even call fork() from multiple
+threads.
+
+So, although it may be technically a bad idea to call fork() in a
+multi-threaded application, it appears that in practice it is still
+widely used in real-world applications.
+
+I guess Hongru (Cc-ed) will share his observations later today or
+tomorrow.
+
+>
+> So, then, we're looking at anon vmas taking the mmap lock on:
+> 1. single task anon vmas being expanded and faulted at the same time
+> 2. single task anon vmas being unmapped and faulted at the same time
+>
+> I think that's it?
+
+Yes and no. It could also include mprotect, UFFDIO_REGISTER,
+UFFDIO_UNREGISTER, and setting VMA names, etc.
+
+Note that Java GC may also invoke UFFDIO_REGISTER and
+UFFDIO_UNREGISTER on Java heaps.
+
+Note that priority inversion can still occur between threads that are
+not operating on the same VMA if we take approach 2.
+
+For example:
+
+Thread A: page fault in vma1, holding the VMA lock and waiting for I/O.
+
+Thread B: concurrent write on vma1 (takes mmap_lock and then waits for
+the VMA write lock);
+
+Thread C: concurrent write on vma2 or do VMA iteration (acquires
+mmap_lock).
+
+In this scenario, Thread C may end up indirectly waiting for Thread A.
+
+>
+> But maybe I missed something critical about your use case here?
+>
+> I don't understand why you are involving anon vmas in this discussion,
+> so I must have missed something with your IO completion issue.  Is there
+> an anon vma causing your priority inversion?
+
+As explained, the primary goal is to reduce mmap_lock contention by
+avoiding taking the mmap_lock whenever possible, while ensuring that
+the implementation does not introduce new priority inversion issues.
+
+>
+> > Concurrent page faults and VMA modifications can happen more
+> > often than with file VMAs.
+>
+> But it's only a problem for anon vmas with per-vma locking if it's the
+> same vma (or the vma lock sequence counter overflows, but let's say
+> that's a statistically insignificant non-zero value).
+>
+> >
+> > For file vmas, how much code can we actually remove, given that
+> > the first page fault might already be holding mmap_lock?
+>
+> How much complexity can we remove and maintain the performance, might be
+> a better question.
+
+Right, thanks for improving the question.
+
+>
+> > It could be the case that lock_vma_under_rcu() fails, and then
+> > on the first page fault we end up holding mmap_lock before
+> > retrying. So are we also going to rip out the lock release,
+> > even if it risks holding mmap_lock for a long time?
+> >
+> >         vma =3D lock_vma_under_rcu(mm, addr);
+> >         if (!vma)
+> >                 goto lock_mmap;
+> >        ...
+> > lock_mmap:
+> >
+> >         vma =3D lock_mm_and_find_vma(mm, addr, regs);
+> >         if (unlikely(!vma)) {
+> >                 fault =3D 0;
+> >                 si_code =3D SEGV_MAPERR;
+> >                 goto bad_area;
+> >         }
+> >
+> > If we still need to keep the page fault retry code there, it
+> > doesn't seem like "ripping out" really reduces complexity in
+> > the page fault code?
+>
+> This seems unrelated to be above complexity that might be the target of
+> removal?
+
+I think it is highly related. If we take approach 2=E2=80=94holding locks t=
+o
+perform I/O and removing the page-fault retry path=E2=80=94we need to
+consider whether the same behavior should also apply when we are
+already holding the mmap_lock. We should understand the full picture
+before focusing on a specific part in isolation.
+
+Thanks
+Barry
 
