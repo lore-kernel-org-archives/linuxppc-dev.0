@@ -1,87 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-22866-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22867-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 150F7CD98F6
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Jun 2026 05:40:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 04EE8CDB471
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Jun 2026 08:05:24 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gkH946hHQz2yVP;
-	Mon, 22 Jun 2026 15:40:24 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782106824;
-	cv=none; b=SZgNPZwgRjAREdZxtdxf+MUgIRqdGJdzcDEJdbOyHpoJJ9FKv7nSd72B4pMa9vVRfLkvP5oaLDK5PQx93SsCKCt6O3TsXc6Id3kYYs7I32AiDH67Ui88Ra+DDMa5OGYSIhn1rVmUjBnDjdbBB5a4QBagigxZFbgTb0O5xMdW+1KdHzE6AjeWf0Rj71hV2TPlc5a2dsNiP3uN9R5mPvVZikVk8t1HpVAmDbSwZniDNo42sysfh+wED5bUXt0Lhe93GluOzI2h3YldetgSeQGSGohq429MOdMZXd58YOEbOI+haX0a85E2TdybwyTnzGhpgGSwDUGEEFSLik7kt8lo0w==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gkLNM4cKcz2yVZ;
+	Mon, 22 Jun 2026 18:05:23 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782115523;
+	cv=none; b=YF1Hg+DBXefSdahGTadvoqGAwv9wCJ0rHN/lMDQK0MdqOsekYPXVm4FM4C0k5iwmKHAz5Tq61GVu//w/kG2xWiO75KJQdmE9raa5WRm4fgPCLIGRNZOm6fVlQM4rnkgcBvfJjx1SY7czoH0PNykQhHBjGXbMuDSW/AR5eu9ubgSUdW4VC1x+KOM0jA5+rIBIlZOPAZi4/iFe91gI4LWJTSbCshtfvvqFJfn1Af0DUnLO0PiRLcskSH1SU2FqHLoTanpHFy/Ua14I/ZZRwZSKSnN6U+WibgKIsOzO8wRD8F4rR6zOmAkXWeqAr0DL5CPpykHkH73rasDsfByFSQT0pg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1782106824; c=relaxed/relaxed;
-	bh=jm2AmFyd/QI77zwCG7lII1o6QQJL339NSiscJsVLusI=;
-	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=PWuQ4nDJRIFbBNpVzoyUFiPSAkp1XyVkX1Q5mucP2c77hvE9ifLYpVsurhIs+twz0gWqgwgbhnc9qT0FfGMhbUb+uqL6rrBsLnnadPhr3jyAD1LbMVTaIAvH/Cagjm+2g5XDclvzUkbodNdHeLhum5uyxSQd0eqIHVZpO5vKbdA4gv35qYvWuPBvUR/Q2I4/4qAseGSUS2H6LpBnvlwa4Mxca/jsLZOv07ltJF3CfIKKTFZp7fvd8Hi0bjlo1BNkUgHz2zppNgEBdszc8SViO1vKhOPVQgyycgD53jc1/tQKXvqLF0uYc0RNHYXqOpTqVdYQ3XWe5KODN75Dk9KA5A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=IPhc2pEh; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=shivangu@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1782115523; c=relaxed/relaxed;
+	bh=FAbpiNhKVqoEfhFmUfUdlxgESW8QuGiY+lhl+lA+T60=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=HJzOPo3L2bUckrUUBhxMwP2+B1a0TjYldKtDxM4OL9AVun9V/uxH/GaL+x70GGf9kLtKD/N4xzLpNXhiFsdfkD9Vbgvpx88tRlvD5lFHSNLrtwPCmxTyNejIhewT5VmlmW04tOyA6y5aW+EM+m7pbIROKLypDYLHebC2r6DTyDZsYzKWENj2LHw7/Jlz/qCqL8KYF85ACU0w2uXh5Ges0heQ8ZenckK8ChvEPIB9jdum9FWozIgBPj16g3TjSsnGlboGmPz+EhmGf3U8wVx4/91x/Fn5xBkJottdS+fYRHA6Zo7f7s/swt9JbPNT2I5V8juE83EblG/LRuf1VndJoA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=WKhiDDUd; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=IPhc2pEh;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=WKhiDDUd;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=shivangu@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gkH934NYHz2xyh
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jun 2026 15:40:22 +1000 (AEST)
-Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 65M5IYoY1656892;
-	Mon, 22 Jun 2026 05:40:05 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=jm2AmF
-	yd/QI77zwCG7lII1o6QQJL339NSiscJsVLusI=; b=IPhc2pEh6Hri6NvgZhBxOT
-	mUxzlbBriV/LkG5o9AuRVIj4ml3j4HDRK6G2SmQ05f6ZABwzGm1FHfVjGtPfI4Pn
-	Grr8k9f1D+m4jqaPsXs8BndoiOecJo8kc02chVRYT6FUU6BysMLnICHUS4kN+ZMp
-	/rtujLL2EIfSDuEIdSzAG0jcabFm5iLkOYJZXyntKb9JjO5zGJPll4apiu74l2hG
-	XkuoNSAXqp+SklpVR7oR0vSNGOe1O+u/yuqwfHhExEI9ga3hEsa5eXa22kiL99Zy
-	D01eXvO/vVUQZ6eytpWXAtLdjYV/uGZr0C93iSNmLTsAIngsFDMuAVoPekfHVipg
-	==
-Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4ewjk47bc2-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 22 Jun 2026 05:40:05 +0000 (GMT)
-Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma11.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 65M5YcFV005111;
-	Mon, 22 Jun 2026 05:40:04 GMT
-Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
-	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4ex7vyc9ma-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 22 Jun 2026 05:40:04 +0000 (GMT)
-Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
-	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 65M5e0qa31392450
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 22 Jun 2026 05:40:00 GMT
-Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 68D0E20043;
-	Mon, 22 Jun 2026 05:40:00 +0000 (GMT)
-Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id CDAE520040;
-	Mon, 22 Jun 2026 05:39:56 +0000 (GMT)
-Received: from shivang.upadyay (unknown [9.124.221.137])
-	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Mon, 22 Jun 2026 05:39:56 +0000 (GMT)
-Message-ID: <009aa525aaa33d5f64d291c53adf51bba55b4e16.camel@linux.ibm.com>
-Subject: Re: [PATCH] powerpc/powernv: Cache OPAL check_token() results
-From: Shivang Upadhyay <shivangu@linux.ibm.com>
-To: Sourabh Jain <sourabhjain@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
-        linux-kernel@vger.kernel.org
-Cc: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com,
-        chleroy@kernel.org, thuth@redhat.com,
-        Aditya Gupta <adityag@linux.ibm.com>,
-        Mahesh J Salgaonkar	 <mahesh@linux.ibm.com>
-Date: Mon, 22 Jun 2026 11:09:55 +0530
-In-Reply-To: <31904199-2635-4c0d-a725-53665185fff8@linux.ibm.com>
-References: <20260601112520.161605-1-shivangu@linux.ibm.com>
-	 <31904199-2635-4c0d-a725-53665185fff8@linux.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.58.3 (3.58.3-1.fc43) 
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gkLNL5MKwz2xPL
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jun 2026 18:05:22 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id 1913F6001A;
+	Mon, 22 Jun 2026 08:05:20 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1B84C1F000E9;
+	Mon, 22 Jun 2026 08:05:14 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1782115519;
+	bh=FAbpiNhKVqoEfhFmUfUdlxgESW8QuGiY+lhl+lA+T60=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To;
+	b=WKhiDDUdL0KRgYXfe2WI9TPD1Fcz4Jm9ZEs4TCvppOjXgUFC4H1afMQFw+2v6sbYC
+	 wyKQOW94sIC2JrNxh5T1XMUYBWAlDKC18spHzcXcYSeSIENbdvnOdBeIFeCRHU0wcr
+	 GXhaSILwuzYrxIUKMomqoVtJ32rfzWA7jVghDLmfnz+BZrvg16SiSZpHTKMbep/4WK
+	 cTRFBl6B2TwAUd1X5OjJrSj8wdRtwPxWGGAsp+lGM7jfcHoi8eTosbKCizRmGWHd0+
+	 cQFh5OCUybibOIb31BzksIWMYD20OkhiGIxmv8Z+opVm7KScIv+rhlWvQYzzdL9N23
+	 S4BwD770Utgzw==
+Message-ID: <dbb5915e-6587-4de9-87f3-76bea5024da8@kernel.org>
+Date: Mon, 22 Jun 2026 10:05:13 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -95,98 +59,79 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNjIyMDA0OSBTYWx0ZWRfX2/xjCzmpHwDg
- W70TAlQ38wbxD9z4vV2vO4MRV2DpgdYAkk1+/PWNCZPujuTsV1qmmBUonDcm71cQIduNgxbTfw+
- 1P5mnKJ35870c0Y16CNoWhkYlnq6xSw=
-X-Proofpoint-ORIG-GUID: SjGvJqvPOSWU-IHt9kj1RduoM3rtT_8h
-X-Authority-Analysis: v=2.4 cv=Oph/DS/t c=1 sm=1 tr=0 ts=6a38cab5 cx=c_pps
- a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
- a=IkcTkHD0fZMA:10 a=FelO9ux0wxsA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=U7nrCbtTmkRpXpFmAIza:22 a=d92W-HUjIstk2f35YVcA:9
- a=QEXdDO2ut3YA:10
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjIyMDA0OSBTYWx0ZWRfX0MFFUH51kw1G
- oZiHN0sA3XwPM3sRVPD32TTYbzbByz5acjOYM0h922uF1VqnKbhOQ09B62nJxKcJ4uPeoJaeSwn
- 7C4GO9fFVqkebYzbz16jU1pNkpZPCxCLmCHjOLkJyf8tqoit8I3COx7oIbbZllaklgRbr997wmD
- gKS+ZQBXIgbfG6dw44jPuX8OGcKl3zeUQ+Qyx6jNgifKOVp3QetyU1XI820jeVjtS7ZyKnERGfA
- k+FIbhMigAmT91IsgJDa3qf/WEj4nRLcvd18418Y1vVwQZ+XMEM4uwswBWd3zwEG3k0NJHdKnED
- 2eN5++sv/MNSgZLiq7vgcPZLRnpvmoacvpGCe24KNS7kVcXXafsYntfiG5alYKNHQawXX43RgBZ
- ++48KEjmwYfdGwtBPlbm6wZolsrye6Od64sGASDrDurPe3nUmt3TE0JPbf3FChdOUwEp8xbQyjb
- P0vZfcV6FDdtmY/Bs2g==
-X-Proofpoint-GUID: oOiS0YYUPf0oylJXSoInk-9BvaUQkd2X
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
- definitions=2026-06-22_01,2026-06-18_03,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- phishscore=0 lowpriorityscore=0 bulkscore=0 spamscore=0 priorityscore=1501
- clxscore=1015 impostorscore=0 malwarescore=0 adultscore=0 suspectscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2606220049
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 0/2] tracing: Move trace_printk.h out of kernel.h
+To: Steven Rostedt <rostedt@kernel.org>, linux-kernel@vger.kernel.org,
+ linux-trace-kernel@vger.kernel.org
+Cc: Masami Hiramatsu <mhiramat@kernel.org>,
+ Mark Rutland <mark.rutland@arm.com>,
+ Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Linus Torvalds <torvalds@linux-foundation.org>,
+ Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
+ John Ogness <john.ogness@linutronix.de>, Thomas Gleixner <tglx@kernel.org>,
+ Peter Zijlstra <peterz@infradead.org>, Julia Lawall <julia.lawall@inria.fr>,
+ Yury Norov <yury.norov@gmail.com>, linux-doc@vger.kernel.org,
+ linux-kbuild@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ dri-devel@lists.freedesktop.org, linux-stm32@st-md-mailman.stormreply.com,
+ linux-arm-kernel@lists.infradead.org, linux-rdma@vger.kernel.org,
+ linux-usb@vger.kernel.org, linux-ext4@vger.kernel.org,
+ linux-nfs@vger.kernel.org, kvm@vger.kernel.org,
+ intel-gfx@lists.freedesktop.org
+References: <20260621093430.264983361@kernel.org>
+Content-Language: fr-FR
+From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+In-Reply-To: <20260621093430.264983361@kernel.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 
-Hi Sourabh,
-Thanks for reviewing.
 
-On Wed, 2026-06-03 at 09:22 +0530, Sourabh Jain wrote:
-> Yes, it is a good idea to avoid making repetitive calls to check
-> whether
-> an OPAL call is supported by the firmware.
->=20
-> But it feels like it would have been better if skiboot itself
-> advertised
-> support for OPAL calls via the FDT, similar to how RTAS does.
->=20
-That's a good suggestion. I can take that up as future scope of
-improvements.
-> The current approach to finding supported OPAL calls is:
->=20
-> - Discover all supported OPAL calls during the first
-> opal_check_token()=20
-> call.
-> - From the second call onward, check whether discovery has already
-> been
-> =C2=A0=C2=A0 done, and then test the token in opal_token_cache.
->=20
-> The approach looks reasonable, but how about doing it this way
-> instead:
->=20
-> Maintain a tri-state value for each OPAL call:
-> 0 - Status needs to be check
-> 1 - Supported
-> -1 - Not supported
->=20
-this tri-state implementation, maybe would get little hard to
-implement, along with how currently i've designed the test_token call.=20
 
-So currently on the first call it caches all the results. and then just
-returns the output. But as per your suggestion, first one would have to
-set all to -1, then set the result in the token that is being checked.
+Le 21/06/2026 à 11:34, Steven Rostedt a écrit :
+> There's been complaints about trace_printk() being defined in kernel.h as it
+> can increase the compilation time. As it is only used by some developers for
+> debugging purposes, it should not be in kernel.h causing lots of wasted CPU
+> cycles for those that do not ever care about it.
 
-IMO, the current implementation is slightly more clean.
+Do we have a measurement of the increased compilation time ?
 
-as per your concern with opal_token_cache_initialized, I think we can
-instead look at jump_labels to solve this. First lookup is same, but
-then we asm_patch the next lookup with nops. I think that would be best
-of both worlds.
+Christophe
 
->=20
->=20
-> > =C2=A0=20
-> > +/**
-> > + * opal_token_cache_init - Initialize the OPAL token cache
-> > + *
-> > + * Called during opal_init() to populate the token cache by
-> > querying
-> > + * OPAL firmware for all tokens in the supported range.
->=20
-> Seems like the above comment is not correct. I don't see below
-> function
-> invoked from opal_init().
->=20
-yeah, I missed this. this was my first implementation. But turns out
-alot of opal_calls actually happend before opal_init(). So i moved to=20
-opal_token_cache_initialized method.				=C2=A0=C2=A0=C2=A0=C2=A0=20
+> 
+> Instead, add a CONFIG_TRACE_PRINTK_DEBUGGING option that developers that do
+> use it can set and not have to always remember to add #include <linux/trace_printk.h>
+> to the files they add trace_printk() while debugging. It also means that
+> those that do not have that config set will not have to worry about wasted
+> CPU cycles as it is only include in the CFLAGS when the option is set, and
+> its completely ignored otherwise.
+> 
+> Steven Rostedt (2):
+>        tracing: Move non-trace_printk prototypes back to kernel.h
+>        tracing: Add CONFIG_TRACE_PRINTK_DEBUGGING to clean up kernel.h
+> 
+> ----
+>   .../driver_development_debugging_guide.rst         |  2 +-
+>   Makefile                                           |  5 +++++
+>   arch/powerpc/kvm/book3s_xics.c                     |  1 +
+>   drivers/gpu/drm/i915/gt/intel_gtt.h                |  1 +
+>   drivers/gpu/drm/i915/i915_gem.h                    |  1 +
+>   drivers/hwtracing/stm/dummy_stm.c                  |  4 ++++
+>   drivers/infiniband/hw/hfi1/trace_dbg.h             |  1 +
+>   drivers/usb/early/xhci-dbc.c                       |  1 +
+>   fs/ext4/inline.c                                   |  1 +
+>   include/linux/kernel.h                             | 19 ++++++++++++++++++-
+>   include/linux/sunrpc/debug.h                       |  1 +
+>   include/linux/trace_printk.h                       | 22 +++-------------------
+>   kernel/trace/Kconfig                               | 10 ++++++++++
+>   kernel/trace/ring_buffer_benchmark.c               |  1 +
+>   kernel/trace/trace.h                               |  1 +
+>   samples/fprobe/fprobe_example.c                    |  1 +
+>   samples/ftrace/ftrace-direct-modify.c              |  1 +
+>   samples/ftrace/ftrace-direct-multi-modify.c        |  1 +
+>   samples/ftrace/ftrace-direct-multi.c               |  2 +-
+>   samples/ftrace/ftrace-direct-too.c                 |  2 +-
+>   samples/ftrace/ftrace-direct.c                     |  2 +-
+>   21 files changed, 56 insertions(+), 24 deletions(-)
+> 
 
-Regards
-~Shivang.
 
