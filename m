@@ -1,76 +1,58 @@
-Return-Path: <linuxppc-dev+bounces-22862-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22863-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A4863CDB466
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 21 Jun 2026 23:35:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 08FECCD98F0
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Jun 2026 00:16:17 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gk73f3mRSz2xyj;
-	Mon, 22 Jun 2026 09:35:10 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782047046;
-	cv=none; b=gRm5VlV3MF+Gd9eoJaWXzx8UFMiRGVuZREpDojNaNrtI3jzTsQjd254gMMrUyicc7802h8/wPLo29aSOQ1+3+eA0PC2ktt/q1KFDF35nH39Y34OqQ8OZl+1nSN53urTO/fuQFddeZ1XSF2TPYGWGGpvcj70X8ruz6F5MqCTk8SRKxgcHO+XlTINaIGeJtdGNFBDFLrndEx75dEXm5pLerieIECOhVtCyJwwcVoHcVYBt/hRstHEdYqbd5TSS5R2R7lrNqk8qjwWEIIRrQ8/DWA+F4jNd8kf9rqkrnLBnDnm7g/g8EeuQxx7GzCqarexZsHRfIZyFX7mFTgiIbHqx/w==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gk7z42RfZz2xyj;
+	Mon, 22 Jun 2026 10:16:16 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782087376;
+	cv=none; b=Chj2Tmx5cLcC/vFkrLZAect8P1clvqH7QRGMuUpFBIqNosQc4K4MxzA8kY4YhvJZggHYc6klyI5gojH8ftsl2nYZt/iWSyzFOf7prDREV0QINGZXrPLXU8QH5ICN5WSRjjN9yQkUrN0587Kr6ph1KHMrGv/Acdiu/xqOEvz5+gfTobAQvFUV6s1RYtOh8+K6I4qRjcCASnC9xEtx5v8REUeBMcKy2LytvRKj1Zh38pQ1SpWgDdi6cTqLjcrgN+CEPUtjYEYqHxY/Gtw6/dfsZSaQqvMcqTsM0IUk9Zs5wgxM0BGeHP81W/+32CT1PxA99Txry479TIJzcTP2pRP+0Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1782047046; c=relaxed/relaxed;
-	bh=XZ3QL+ViFIRQLIm9wDhWdL0BX/Xy+P2cyftFjHpTXuA=;
-	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=fU1/V8+bZ4xaR5Ki8SEv2Huswjc4bH8cZyon+ToPYlZHTHVz6sp+nDJNsvOTnLhqAmIOh17l++tGa3y/24w7DkdkK+kFocBjqijsgxW4+dQdpPbPMk2uUsXpGUnD/12agae5dp9riIL/n9gqEDgh8YeN3+rQDxG+hRrNGEE7+aA3f5h4oJC3qmNJ3birwXAYOidRABANDz3PMI5OK6JQt6BdgGZfYfBKTwELDtDraiCRWBzfjbKGX0CeIa+XctkdizVUbL9ebUJT5LuR92rdMf9MkLXdS3zc59EZRuGMNg2S466pnYbiIeDMH2JzbNaaTPr2MuiEv1q8QgHRIr+W1g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Fov1mXvD; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=rostedt@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1782087376; c=relaxed/relaxed;
+	bh=IHIwIiKiSPJeb13YpcTgfxJcsK09+PRa0/JU1j/CnWg=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=fc0/wegbbxmJ4EcZ5COIh07EQ11vUofJ8DlidTQY8GdwZfBTPYMOabsQ47WKm7r9plyUcIVVTj+YSqNrtyw9jU9/mFNNpXFlgV0tJCPJrEhaIBg6zPyybJOM+yIMRO4oLxKVQmpTZdcKnzPez7aINbWn+qR8DKzE/JYOhYRQ3SNk7ehE70hByF/S8bVXIDdzm+SfBZCKMla7aCF8Z+VmhsVgWExnWluMc+ZLecGY14zXsJEhsqFxaoRDtNeXZYwBxYpwZgfBLIvdhtCUvb6J5VnBr3oE8QIQLsFLvh3ygtpTGVcjRCfq+9zsJ5aaB+A5zLGorZElzd+w0VIMRLMViA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=cMLhsAtt; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=baohua@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Fov1mXvD;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=cMLhsAtt;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=rostedt@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=baohua@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gjs3T2fJbz2xQD
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 21 Jun 2026 23:04:05 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gk7z323Hxz2xLk
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jun 2026 10:16:15 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id ED7EF43E1A;
-	Sun, 21 Jun 2026 13:04:02 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 436C81F000E9;
-	Sun, 21 Jun 2026 13:03:57 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 9E91C6008A
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jun 2026 00:16:07 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 467741F00A3E
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jun 2026 00:16:07 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1782047042;
-	bh=XZ3QL+ViFIRQLIm9wDhWdL0BX/Xy+P2cyftFjHpTXuA=;
-	h=Date:From:To:Cc:Subject:In-Reply-To:References;
-	b=Fov1mXvDuGCK2T8sN6e2OfQHKCECHfbpGXRBBqt0mJumjJ/lQbWWgN+HJ+/A1VLw+
-	 e5YBQ183dvuJj8bkhkLpBwxFrOxwQLVALwfGN8E1vAdvSrax2YUe76xVCjK7uPwOFi
-	 8L8TB9EiAaEyP+6x5OTgJet8aZiHBkKPALBPE4+VYsqKVHMeJsBx9VwREe4epBtPeP
-	 n9K1YBwfMVRT70tbP5fJHUITXTsn/07OQJHxOY03KDzngCMaGRvGI98OxNWNIGSt1/
-	 pUwueEV4G7f1R4ZCP/PbFKS6BI+0tZTyLgw9UhMTaK5YsTglkNBetTBg7DaYsXC78p
-	 S9lKpmXhld3Cw==
-Date: Sun, 21 Jun 2026 09:03:53 -0400
-From: Steven Rostedt <rostedt@kernel.org>
-To: David Laight <david.laight.linux@gmail.com>
-Cc: Thomas Gleixner <tglx@kernel.org>, linux-kernel@vger.kernel.org,
- linux-trace-kernel@vger.kernel.org, Masami Hiramatsu <mhiramat@kernel.org>,
- Mark Rutland <mark.rutland@arm.com>, Mathieu Desnoyers
- <mathieu.desnoyers@efficios.com>, Andrew Morton
- <akpm@linux-foundation.org>, Linus Torvalds
- <torvalds@linux-foundation.org>, Sebastian Andrzej Siewior
- <bigeasy@linutronix.de>, John Ogness <john.ogness@linutronix.de>, Peter
- Zijlstra <peterz@infradead.org>, Julia Lawall <julia.lawall@inria.fr>, Yury
- Norov <yury.norov@gmail.com>, linux-doc@vger.kernel.org,
- linux-kbuild@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- dri-devel@lists.freedesktop.org, linux-stm32@st-md-mailman.stormreply.com,
- linux-arm-kernel@lists.infradead.org, linux-rdma@vger.kernel.org,
- linux-usb@vger.kernel.org, linux-ext4@vger.kernel.org,
- linux-nfs@vger.kernel.org, kvm@vger.kernel.org,
- intel-gfx@lists.freedesktop.org
-Subject: Re: [PATCH 2/2] tracing: Add CONFIG_TRACE_PRINTK_DEBUGGING to clean
- up kernel.h
-Message-ID: <20260621090353.24772584@fedora>
-In-Reply-To: <20260621135531.243375d9@pumpkin>
-References: <20260621093430.264983361@kernel.org>
-	<20260621093811.168514984@kernel.org>
-	<87ik7cmcb7.ffs@fw13>
-	<20260621135531.243375d9@pumpkin>
-X-Mailer: Claws Mail 4.4.0 (GTK 3.24.52; x86_64-redhat-linux-gnu)
+	s=k20260515; t=1782087367;
+	bh=IHIwIiKiSPJeb13YpcTgfxJcsK09+PRa0/JU1j/CnWg=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc;
+	b=cMLhsAttTe8dyYAVQ5ButgRPTCNVZUjJ+rFUJS/Nb+BEGqhTUydcs0LU3Lix/Z3ek
+	 KD0MCI/yAPBWlN6wb7sqDiwlAttozmfCiUFWz9O3jE4hYXuyhq8p1QaOAF9Rxm+bPp
+	 zboU9r+goMAm9xbYv8LFtKEEZ5j6ZLteAPSQZ6OcSh5MIs/62zPpZIj5oiIaFmvUDR
+	 QC6ZRHtySEUkXZIEInSyph82+HpL4LpnJ7gqwRc/Aciq0eNZH9YLMUThL9XzXyeqjI
+	 Rm0VjsR1+yxuogHe+HIFTcJ5KRUzQnReJU7/nUzkEoFcP0eQK2LX+MLHdOMaRBfjL5
+	 BYH2jN1C6LQGQ==
+Received: by mail-qt1-f170.google.com with SMTP id d75a77b69052e-51a019e9ea9so22155841cf.2
+        for <linuxppc-dev@lists.ozlabs.org>; Sun, 21 Jun 2026 17:16:07 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AFNElJ9ZX4RY90a4+Naupq8MCf573F2rMmegv/wzPzIuho/9KjXzDsyAIZcoxjpnWVHCwXzCSJ8J8doOpS6FmNw=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YyPu3056ZEcMJxO2VHkkILiB3b4CzOCArkIHQMxDk/PRWrFu9mL
+	TXMhcr2tW2e4W91VxtPWtMKZjgaZjOmOkIlt9OVWrclEUEVa5t1ao5sg0dGMEW3DVr4iX5iWJaw
+	a0ZYyf7ENQxcX+Mr+Z36/cfpCX97ujzA=
+X-Received: by 2002:a05:620a:2991:b0:920:bc4a:6d9f with SMTP id
+ af79cd13be357-921d185ff31mr1291391485a.25.1782087366553; Sun, 21 Jun 2026
+ 17:16:06 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -84,19 +66,108 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+References: <5zdaa5uv5oj27q3taopl3amops57ouxgyfsdveudz4ovmbdw7z@6lwrlyvmhcp2>
+ <CAGsJ_4yKxg1QugcsJi3WD0KVGJKe-zXycgm5D6cRi9vWtNcpDQ@mail.gmail.com>
+ <ag4h87CBd-gph9zX@casper.infradead.org> <CAGsJ_4zA8afu0xXy0WS+tMe-eesDX1W6UBmfAsuouUpcAgK8JQ@mail.gmail.com>
+ <ag4kj84EcKqamdB-@casper.infradead.org> <3be9475b-0e8a-4df8-a130-4262f993973d@kernel.org>
+ <CAGsJ_4xC5LdhuoWV1=tK-RZ5rkjc8aOKOkmb1L_8BG_3gtJhDg@mail.gmail.com>
+ <ahB6QyHgYq8ksj65@lucifer> <CAGsJ_4zxLvZ01i19vdo0xA47T1hxa1VRYvxLmiDhy5q1GDKPRg@mail.gmail.com>
+ <CAJuCfpHTxaU4KdNmefU7C7cWZSLCFDLPdUrnqV6yzxzN+8RQ0Q@mail.gmail.com> <ajhOUdbWsswgQyl2@casper.infradead.org>
+In-Reply-To: <ajhOUdbWsswgQyl2@casper.infradead.org>
+From: Barry Song <baohua@kernel.org>
+Date: Mon, 22 Jun 2026 08:15:55 +0800
+X-Gmail-Original-Message-ID: <CAGsJ_4ybg5LGYopTUJTh5R2rN6X3uR9xoJSL+RdTYVtm1-xqLg@mail.gmail.com>
+X-Gm-Features: AVVi8CfKzSAPaNgcIJCxOHQBAHV_wanqXUmTigM-8i98Bk0ci-4XCgmSQNzZol4
+Message-ID: <CAGsJ_4ybg5LGYopTUJTh5R2rN6X3uR9xoJSL+RdTYVtm1-xqLg@mail.gmail.com>
+Subject: Re: [PATCH v2 0/5] mm: reduce mmap_lock contention and improve page
+ fault performance
+To: Matthew Wilcox <willy@infradead.org>
+Cc: Suren Baghdasaryan <surenb@google.com>, Lorenzo Stoakes <ljs@kernel.org>, 
+	"David Hildenbrand (Arm)" <david@kernel.org>, "Liam R. Howlett" <liam@infradead.org>, akpm@linux-foundation.org, 
+	linux-mm@kvack.org, vbabka@kernel.org, rppt@kernel.org, mhocko@suse.com, 
+	jack@suse.cz, pfalcato@suse.de, wanglian@kylinos.cn, chentao@kylinos.cn, 
+	lianux.mm@gmail.com, kunwu.chan@gmail.com, liyangouwen1@oppo.com, 
+	chrisl@kernel.org, kasong@tencent.com, shikemeng@huaweicloud.com, 
+	nphamcs@gmail.com, bhe@redhat.com, youngjun.park@lge.com, 
+	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, 
+	loongarch@lists.linux.dev, linuxppc-dev@lists.ozlabs.org, 
+	linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org, 
+	Nanzhe Zhao <nzzhao@126.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On Sun, 21 Jun 2026 13:55:31 +0100
-David Laight <david.laight.linux@gmail.com> wrote:
+On Mon, Jun 22, 2026 at 4:49=E2=80=AFAM Matthew Wilcox <willy@infradead.org=
+> wrote:
+>
+> On Sat, Jun 20, 2026 at 04:48:57PM -0700, Suren Baghdasaryan wrote:
+> > Just checking in on the followup plans. IIUC the RFC mentioned will
+> > try to implement the solution we discussed at LSFMM: splitting
+> > VM_FAULT_RETRY into two flags - one for retrying under per-VMA locks
+> > and another one to fallback to mmap_lock.
+>
+> I continue to hate this idea.  I don't believe that those who were
+> pushing for it have ever tried to understand the whole fault path.
+> It's utterly byzantine.
+>
+> I defy anyone to make sense of this:
+>
+>         /*
+>          * NOTE! This will make us return with VM_FAULT_RETRY, but with
+>          * the fault lock still held. That's how FAULT_FLAG_RETRY_NOWAIT
+>          * is supposed to work. We have way too many special cases..
+>          */
+>         if (vmf->flags & FAULT_FLAG_RETRY_NOWAIT)
+>                 return 0;
+>
+>         *fpin =3D maybe_unlock_mmap_for_io(vmf, *fpin);
+>         if (vmf->flags & FAULT_FLAG_KILLABLE) {
+>                 if (__folio_lock_killable(folio)) {
+>                         /*
+>                          * We didn't have the right flags to drop the
+>                          * fault lock, but all fault_handlers only check
+>                          * for fatal signals if we return VM_FAULT_RETRY,
+>                          * so we need to drop the fault lock here and
+>                          * return 0 if we don't have a fpin.
+>                          */
+>                         if (*fpin =3D=3D NULL)
+>                                 release_fault_lock(vmf);
+>                         return 0;
+>                 }
+>
+> Wed need to simplify the fault path, not add additional complexity.
+> Josef has said he wouldn't've done the lock dropping had we had per-VMA
+> locks.  We should rip it out.
 
-> Indeed...
-> Isn't trace_printk() just an extern?
-> Having it defined somewhere isn't going to make any difference to build times.
+I think you have agreed that, at least for anon vma, we can
+keep the current policy, since anon vma is much more volatile
+than file vma.
+Concurrent page faults and VMA modifications can happen more
+often than with file VMAs.
 
-No it is not. It is a macro to cut as many nanoseconds as possible as
-trace_printk() was created to debug tight race conditions and any added
-latency can make the race go away.
+For file vmas, how much code can we actually remove, given that
+the first page fault might already be holding mmap_lock?
+It could be the case that lock_vma_under_rcu() fails, and then
+on the first page fault we end up holding mmap_lock before
+retrying. So are we also going to rip out the lock release,
+even if it risks holding mmap_lock for a long time?
 
--- Steve
+        vma =3D lock_vma_under_rcu(mm, addr);
+        if (!vma)
+                goto lock_mmap;
+       ...
+lock_mmap:
+
+        vma =3D lock_mm_and_find_vma(mm, addr, regs);
+        if (unlikely(!vma)) {
+                fault =3D 0;
+                si_code =3D SEGV_MAPERR;
+                goto bad_area;
+        }
+
+If we still need to keep the page fault retry code there, it
+doesn't seem like "ripping out" really reduces complexity in
+the page fault code?
+
+Best Regards
+Barry
 
