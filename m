@@ -1,62 +1,57 @@
-Return-Path: <linuxppc-dev+bounces-22877-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22878-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B5018CD98F2
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Jun 2026 15:58:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 34480CD98F2
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Jun 2026 16:39:10 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gkXth0Dw3z2yVZ;
-	Tue, 23 Jun 2026 01:58:52 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782143931;
-	cv=none; b=TaFld8Uzm7/4nobX+SBXbrXBWa/NJv3DvzzI2cYRRDOEJxzwfDDox+A69HII7oecI0poLjhNyRsvw+ZKqchmu7RDIZfljgBAXpxARCCaSW064zzkcSR6BW6a1eJIWxN3n7VsTGZ0cY254iyET0sNMPl+WVPXCy91Y1WoRfivCeaGi53CJwQcbx80LnZ9OsIhnFvFfcBuLUkhAcMahm7lwic0YPYZul1J7wOOP+kPN7CLChJSgPIq4sPOpDBsoNswObtY1MnFRiYduEgZHPT1TiNw8+XBeOxe+U1kMhjUwwnjTpYylL59gcNFZTnhMc5JHwWL7uEDlRL7Uav0w5tv7g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gkYn86HFDz2yVZ;
+	Tue, 23 Jun 2026 02:39:08 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=117.135.210.2
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782146348;
+	cv=none; b=Otvt8hSydHnQ4/ALFY/JbJ+93M0T5dsuFx62jNxloAjdflnQoVYXsrno9yciULvVH2zb/kNs4ZSS2l4eIbqGnOC1cVMax09KRtpx6uRhNqY3OZlmqp+m2zRmHUZ4gpGTtrS7GA9yBD8husFv9bJiQuzwswLf8Q0HfcZTShnr31thmUl4E6120irL9LTL/8KpmhnE3EbJ8qFnUmgn/mdmPijzdYskl1iFJ53F5OwL30/O2revq7Jrnu2a50LjhxRnpU1mwsAiNTY2/HEGX1kxEVfIJPyR6q6U53xb4PPRfo5xf9yqhs+nyj5gr7ooDDONbaQzElwF3Wj57XZCi/Ygdg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1782143931; c=relaxed/relaxed;
-	bh=UkLwf4/QyP1Yi6wvnPkjGleUk0Fd5AHHFeNFSuwbkvE=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=dYlwdH9ZOsVEcgfuG90i9VMWc+fOOwsLDwK0757SAV7x9efcmBZWUz72eZYqyi6/hpVjd/jqNolJkDa3cSBE6+4w5ycsaF91I/osTv42/M6UCvp0kt0PzVsjJErYXBeGL6FRE7BFBZfAO2okyvrBz5PZPmOjowilOHZRVqGfwU+qc7nDiNfUC/NKs5xHHFuED3V+gl21+96TDjhoADgz36W/51hXI1BSMLYFfHJHWWQ6HEvQZFNIP5pNy6h3cWgpPOAyIxId1qOE/hrL1MjzQaZmT/BqWoF+Auej2uuI3qlO6kLgtnm7pyhYfyLO5IOhAB2ZIe1Cdk8d9pjkJn81fA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=LOArqTVY; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=mani@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1782146348; c=relaxed/relaxed;
+	bh=6M8qGLFhZu2RmVuNev+Lh67Tma1Rdrecr4EbGmg4TH0=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=SeZCIp0PLKgtbccPVmDNsaggdkW0dF0L5DgW8gq3G10DxKWTP/NAUkcmw0zJtIZrfrRd3uYmBfkNZoT5p9aKoQLoHU6GdnOZVuS6bcMPN0Dr8W70dwVU0nAdDsrqfQmRfUlinRUlk4WTBv1HcjgIfFfdwwzQzj6C6NSGWgUKvznlxQd3S+EdhvkZMH0CPOLw7Nw9ijTbdJsh9cGqX7VOAndkxHGrkEfty9tzzAnkId5KURLfr4mC1eMG8cr5/H0VhVBzOGmtV24PyJGRiK6HP+YnGE16KP4q2SeL1OnBhnIYjr3WV7eQWk7OWfPcnil22khFUxue21a1aw1USvbwwQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=163.com; dkim=pass (1024-bit key; unprotected) header.d=163.com header.i=@163.com header.a=rsa-sha256 header.s=s110527 header.b=N5LJlgj+; dkim-atps=neutral; spf=pass (client-ip=117.135.210.2; helo=m16.mail.163.com; envelope-from=haoxiang_li2024@163.com; receiver=lists.ozlabs.org) smtp.mailfrom=163.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=163.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=LOArqTVY;
+	dkim=pass (1024-bit key; unprotected) header.d=163.com header.i=@163.com header.a=rsa-sha256 header.s=s110527 header.b=N5LJlgj+;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=mani@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=163.com (client-ip=117.135.210.2; helo=m16.mail.163.com; envelope-from=haoxiang_li2024@163.com; receiver=lists.ozlabs.org)
+X-Greylist: delayed 9110 seconds by postgrey-1.37 at boromir; Tue, 23 Jun 2026 02:39:04 AEST
+Received: from m16.mail.163.com (m16.mail.163.com [117.135.210.2])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gkXtg0lFYz2xSN
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jun 2026 01:58:50 +1000 (AEST)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 864BD601F6;
-	Mon, 22 Jun 2026 15:58:48 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 169121F000E9;
-	Mon, 22 Jun 2026 15:58:42 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1782143928;
-	bh=UkLwf4/QyP1Yi6wvnPkjGleUk0Fd5AHHFeNFSuwbkvE=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=LOArqTVY8dxdyrbj8R264+4IzWm9EqpHZ+kDQNK4SSKP/LvTJwRcQUrBrV3idAEom
-	 dGUfDxuabwKyRZ7l5YqeNoH22AnMS1VYRNLAudVVo7aq+cg8dm6uGFpob4lcdx7VE1
-	 Ev/c0EnaFKPa/rmXkHgq+o+k2scb+vXRwl+6ZeV73/OPVjkS+Hisfn5nhUdWBYUnok
-	 munwLR3PVvTuHxUzxsuN3XkATfUJ7EPBVrRuXte+dLDNVJKv/3qzjOpWfV1cC08aBN
-	 ofzCWNqIGVa33s+RPwHTwOwDZD1M0l0jj9H8X0s04UkLe8DSLi80nn9nYZXJCwNtKQ
-	 Z4eUUz62/qSpg==
-Date: Mon, 22 Jun 2026 17:58:38 +0200
-From: Manivannan Sadhasivam <mani@kernel.org>
-To: Markus Elfring <Markus.Elfring@web.de>
-Cc: linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
-	Bjorn Helgaas <bhelgaas@google.com>, Christophe Leroy <chleroy@kernel.org>, 
-	Madhavan Srinivasan <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, 
-	Nicholas Piggin <npiggin@gmail.com>, LKML <linux-kernel@vger.kernel.org>, 
-	kernel-janitors@vger.kernel.org, Ilpo =?utf-8?B?SsOkcnZpbmVu?= <ilpo.jarvinen@linux.intel.com>, 
-	Jonathan Cameron <jonathan.cameron@huawei.com>, Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
-Subject: Re: [PATCH] PCI: pnv_php: Use common error handling code in
- pnv_php_alloc_slot()
-Message-ID: <tlemzejir3wi3rff2x65bbqqknzel4nwy3fnlvruyg7fll4p44@zqrf3z2cxhuu>
-References: <5cd04727-44c5-4ace-af86-d3c227234d4b@web.de>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gkYn45j1wz2xl6
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jun 2026 02:39:01 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
+	s=s110527; h=From:To:Subject:Date:Message-Id:MIME-Version; bh=6M
+	8qGLFhZu2RmVuNev+Lh67Tma1Rdrecr4EbGmg4TH0=; b=N5LJlgj+OdZhdf0axS
+	7qxesVfSX2LoR4L5JGu/U38l2d2jw1hm83Ota0nej6tERhxayyBHG+E44Cqq5X1l
+	J36RFSuapwmEtSEo0HpKqgKpX/CNUaEFnwOVdIYMmPGaVouWjLjWrPq1jLzA1bJT
+	Bk1OQEnua3J+DfQI/tq0P1FYg=
+Received: from localhost.localdomain (unknown [])
+	by gzga-smtp-mtada-g1-2 (Coremail) with SMTP id _____wDXX5v7ZDlqTS+KFA--.19183S2;
+	Tue, 23 Jun 2026 00:38:21 +0800 (CST)
+From: Haoxiang Li <haoxiang_li2024@163.com>
+To: maddy@linux.ibm.com,
+	mpe@ellerman.id.au,
+	npiggin@gmail.com,
+	chleroy@kernel.org,
+	gbatra@linux.ibm.com,
+	kees@kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org,
+	Haoxiang Li <haoxiang_li2024@163.com>
+Subject: [PATCH] powerpc/pseries/iommu: Add check for iommu_pseries_alloc_group()
+Date: Tue, 23 Jun 2026 00:38:18 +0800
+Message-Id: <20260622163818.1273990-1-haoxiang_li2024@163.com>
+X-Mailer: git-send-email 2.25.1
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -70,51 +65,38 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <5cd04727-44c5-4ace-af86-d3c227234d4b@web.de>
+X-CM-TRANSID:_____wDXX5v7ZDlqTS+KFA--.19183S2
+X-Coremail-Antispam: 1Uf129KBjvdXoW7Jr1UGr18AF15Cw1fKr48Zwb_yoWfXFg_C3
+	s7ua1kZ3y8Xrs0vF9Fyr1fGF13K398ZrZ8KF1q9a9Iva45Xw4rCa15X398GF4xury8AFZx
+	Kan8t343Ga45tjkaLaAFLSUrUUUUjb8apTn2vfkv8UJUUUU8Yxn0WfASr-VFAUDa7-sFnT
+	9fnUUvcSsGvfC2KfnxnUUI43ZEXa7sRNFALDUUUUU==
+X-Originating-IP: [240e:604:311:e68d:9586:9dd0:bd4b:6902]
+X-CM-SenderInfo: xkdr5xpdqjszblsqjki6rwjhhfrp/xtbCxR1Br2o5ZP3ZsQAA3U
 
-On Thu, Jun 11, 2026 at 11:25:12AM +0200, Markus Elfring wrote:
-> From: Markus Elfring <elfring@users.sourceforge.net>
-> Date: Thu, 11 Jun 2026 11:16:49 +0200
-> 
-> Use an additional label so that a bit of exception handling can be better
-> reused at the end of an if branch.
-> 
-> This issue was detected by using the Coccinelle software.
-> 
-> Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
-> ---
->  drivers/pci/hotplug/pnv_php.c | 7 +++----
->  1 file changed, 3 insertions(+), 4 deletions(-)
-> 
-> diff --git a/drivers/pci/hotplug/pnv_php.c b/drivers/pci/hotplug/pnv_php.c
-> index ff92a5c301b8..e448f1802002 100644
-> --- a/drivers/pci/hotplug/pnv_php.c
-> +++ b/drivers/pci/hotplug/pnv_php.c
-> @@ -791,16 +791,15 @@ static struct pnv_php_slot *pnv_php_alloc_slot(struct device_node *dn)
->  		return NULL;
->  
->  	php_slot->name = kstrdup(label, GFP_KERNEL);
-> -	if (!php_slot->name) {
-> -		kfree(php_slot);
-> -		return NULL;
-> -	}
-> +	if (!php_slot->name)
-> +		goto free_php_slot;
->  
->  	/* Allocate workqueue for this slot's interrupt handling */
->  	php_slot->wq = alloc_workqueue("pciehp-%s", WQ_PERCPU, 0, php_slot->name);
->  	if (!php_slot->wq) {
->  		SLOT_WARN(php_slot, "Cannot alloc workqueue\n");
->  		kfree(php_slot->name);
-> +free_php_slot:
+Add check for the return value of iommu_pseries_alloc_group()
+to prevent a potential null pointer dereference.
 
-Really? What kind of coding practice is this?
+Signed-off-by: Haoxiang Li <haoxiang_li2024@163.com>
+---
+ arch/powerpc/platforms/pseries/iommu.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-- Mani
-
+diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
+index 3e1f915fe4f6..3b49a0f76df9 100644
+--- a/arch/powerpc/platforms/pseries/iommu.c
++++ b/arch/powerpc/platforms/pseries/iommu.c
+@@ -1875,6 +1875,9 @@ static void pci_dma_dev_setup_pSeriesLP(struct pci_dev *dev)
+ 	pci = PCI_DN(pdn);
+ 	if (!pci->table_group) {
+ 		pci->table_group = iommu_pseries_alloc_group(pci->phb->node);
++		if (!pci->table_group)
++			return;
++
+ 		tbl = pci->table_group->tables[0];
+ 
+ 		iommu_table_setparms_common(tbl, pci->phb->bus->number,
 -- 
-மணிவண்ணன் சதாசிவம்
+2.25.1
+
 
