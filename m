@@ -1,74 +1,62 @@
-Return-Path: <linuxppc-dev+bounces-22876-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22877-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CBA13CDB46F
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Jun 2026 14:50:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B5018CD98F2
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Jun 2026 15:58:53 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gkWMw34LJz2yVd;
-	Tue, 23 Jun 2026 00:50:36 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:7c80:54:3::133"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782139836;
-	cv=none; b=DMwigKEGUyjB+jExApZmzS0z5p4Yn3Z49eRsm1tM6hT1yof3XhTmMPygH0dxy/Tvyncqo7zogEGDs4Aey0lwWHg+5Bl2QNl8Lojq+5TO+u0ZkpfYJIazr1en0I3zZVtmfDY+kvyrOaadAuLUU6IUY5BQA2IiAg25kAYkaa6PpGVqLtsPvJqCKSKetWiQp4YtLWIPFd/LdbJqjTXMWR0l8g4MATGnCksF48lSalTVc5neAutyUonDuhhNbPR+RQvok+UzeIzxX4foz5kjxrZ/Vr9g64RhDN4oZ9UQ5nupAsFAbCtNyne4C2hjNPCxW0BFvGMyXv0oH6p+2mDuxtUIoA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gkXth0Dw3z2yVZ;
+	Tue, 23 Jun 2026 01:58:52 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782143931;
+	cv=none; b=TaFld8Uzm7/4nobX+SBXbrXBWa/NJv3DvzzI2cYRRDOEJxzwfDDox+A69HII7oecI0poLjhNyRsvw+ZKqchmu7RDIZfljgBAXpxARCCaSW064zzkcSR6BW6a1eJIWxN3n7VsTGZ0cY254iyET0sNMPl+WVPXCy91Y1WoRfivCeaGi53CJwQcbx80LnZ9OsIhnFvFfcBuLUkhAcMahm7lwic0YPYZul1J7wOOP+kPN7CLChJSgPIq4sPOpDBsoNswObtY1MnFRiYduEgZHPT1TiNw8+XBeOxe+U1kMhjUwwnjTpYylL59gcNFZTnhMc5JHwWL7uEDlRL7Uav0w5tv7g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1782139836; c=relaxed/relaxed;
-	bh=5FxiXI2Cp5YdtBkdSD+qNScBXccHcZeYoAW8t2qi+Yc=;
+	t=1782143931; c=relaxed/relaxed;
+	bh=UkLwf4/QyP1Yi6wvnPkjGleUk0Fd5AHHFeNFSuwbkvE=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Vcs5vkrE9sJYwOOv9OHBnaFP9NW8UxYAwSEe/Wa9z3r86eS/1ATriQZ6CvBLv+uoKGnabTWFJtp6Du6XmKsT8nrvqOvU8mSZtujVbxM/83HQR2ffOex6TTwfG/lCH+XIrgFyvSsG20wCyH8qrJkdNe0XwFR7YdwMvcgr3sSrHinLXb4S1DyUtHSLVvO1VYl2nzL/vyKZZTrsYkcfaHhAHOV8wYZ8qq7siy4jGhl20wONeJeb3hTxVFH/OkvFCb+KdkQuEg6PbFI6fyR2/8OqiaIVRxisGOaRggvYw6NBd1yS3x9Piq+sMZWH96ZmhovEty8S9JMZ75/WHUvREqwrtg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=infradead.org; dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=JK+kFtzl; dkim-atps=neutral; spf=pass (client-ip=2607:7c80:54:3::133; helo=bombadil.infradead.org; envelope-from=liam@infradead.org; receiver=lists.ozlabs.org) smtp.mailfrom=infradead.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=infradead.org
+	 Content-Type:Content-Disposition:In-Reply-To; b=dYlwdH9ZOsVEcgfuG90i9VMWc+fOOwsLDwK0757SAV7x9efcmBZWUz72eZYqyi6/hpVjd/jqNolJkDa3cSBE6+4w5ycsaF91I/osTv42/M6UCvp0kt0PzVsjJErYXBeGL6FRE7BFBZfAO2okyvrBz5PZPmOjowilOHZRVqGfwU+qc7nDiNfUC/NKs5xHHFuED3V+gl21+96TDjhoADgz36W/51hXI1BSMLYFfHJHWWQ6HEvQZFNIP5pNy6h3cWgpPOAyIxId1qOE/hrL1MjzQaZmT/BqWoF+Auej2uuI3qlO6kLgtnm7pyhYfyLO5IOhAB2ZIe1Cdk8d9pjkJn81fA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=LOArqTVY; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=mani@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=JK+kFtzl;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=LOArqTVY;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=infradead.org (client-ip=2607:7c80:54:3::133; helo=bombadil.infradead.org; envelope-from=liam@infradead.org; receiver=lists.ozlabs.org)
-Received: from bombadil.infradead.org (bombadil.infradead.org [IPv6:2607:7c80:54:3::133])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=mani@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gkWMm37V4z2xl6
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jun 2026 00:50:27 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=bombadil.20210309; h=In-Reply-To:Content-Transfer-Encoding
-	:Content-Type:MIME-Version:References:Message-ID:Subject:Cc:To:From:Date:
-	Sender:Reply-To:Content-ID:Content-Description;
-	bh=5FxiXI2Cp5YdtBkdSD+qNScBXccHcZeYoAW8t2qi+Yc=; b=JK+kFtzlUAONUzDRoTzYX+brhD
-	GKFH0RfbSzUM95BSOrozCSCjOw8vzTHXTIm39G4MXXyBXkGQxtrTmVgQzvzmmmeBEBPZ5Y830BVuk
-	fl7AcG6/bn+wbK2Lu1KCjHNA0aPKVEZY6qTmdbEyqF8o+9MMHqTDUmuXwOB5rkZLoDq8h5WSGs3eG
-	EZGd4nIcvKQn1H7UodiJAGUOAIvYYdKLQi5gwAqTUvXspEktsI80PoQ3S8uztj6P35PIEY+OtzAci
-	pFgaZPJGW47T+bbX3mwQZ0H9RhR2jZxYGZuhZyHbY8K0S/+O2urv10M2x7CACas7uQMjPhjDb5t0L
-	Sbnx7uoA==;
-Received: from [38.23.173.23] (helo=localhost)
-	by bombadil.infradead.org with esmtpsa (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wbfyR-00000005693-3OS3;
-	Mon, 22 Jun 2026 14:50:07 +0000
-Date: Mon, 22 Jun 2026 10:50:02 -0400
-From: "Liam R. Howlett" <liam@infradead.org>
-To: Barry Song <baohua@kernel.org>
-Cc: Matthew Wilcox <willy@infradead.org>, 
-	Suren Baghdasaryan <surenb@google.com>, Lorenzo Stoakes <ljs@kernel.org>, 
-	"David Hildenbrand (Arm)" <david@kernel.org>, akpm@linux-foundation.org, linux-mm@kvack.org, vbabka@kernel.org, 
-	rppt@kernel.org, mhocko@suse.com, jack@suse.cz, pfalcato@suse.de, 
-	wanglian@kylinos.cn, chentao@kylinos.cn, lianux.mm@gmail.com, kunwu.chan@gmail.com, 
-	liyangouwen1@oppo.com, chrisl@kernel.org, kasong@tencent.com, shikemeng@huaweicloud.com, 
-	nphamcs@gmail.com, bhe@redhat.com, youngjun.park@lge.com, 
-	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, loongarch@lists.linux.dev, 
-	linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org, 
-	Nanzhe Zhao <nzzhao@126.com>
-Subject: Re: [PATCH v2 0/5] mm: reduce mmap_lock contention and improve page
- fault performance
-Message-ID: <c5soxcu245cerfljr2ddto4h7xqksfxzxti47mq6sqn6pnmnxh@th5kxapvnaj3>
-References: <ag4h87CBd-gph9zX@casper.infradead.org>
- <CAGsJ_4zA8afu0xXy0WS+tMe-eesDX1W6UBmfAsuouUpcAgK8JQ@mail.gmail.com>
- <ag4kj84EcKqamdB-@casper.infradead.org>
- <3be9475b-0e8a-4df8-a130-4262f993973d@kernel.org>
- <CAGsJ_4xC5LdhuoWV1=tK-RZ5rkjc8aOKOkmb1L_8BG_3gtJhDg@mail.gmail.com>
- <ahB6QyHgYq8ksj65@lucifer>
- <CAGsJ_4zxLvZ01i19vdo0xA47T1hxa1VRYvxLmiDhy5q1GDKPRg@mail.gmail.com>
- <CAJuCfpHTxaU4KdNmefU7C7cWZSLCFDLPdUrnqV6yzxzN+8RQ0Q@mail.gmail.com>
- <ajhOUdbWsswgQyl2@casper.infradead.org>
- <CAGsJ_4ybg5LGYopTUJTh5R2rN6X3uR9xoJSL+RdTYVtm1-xqLg@mail.gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gkXtg0lFYz2xSN
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jun 2026 01:58:50 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id 864BD601F6;
+	Mon, 22 Jun 2026 15:58:48 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 169121F000E9;
+	Mon, 22 Jun 2026 15:58:42 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1782143928;
+	bh=UkLwf4/QyP1Yi6wvnPkjGleUk0Fd5AHHFeNFSuwbkvE=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=LOArqTVY8dxdyrbj8R264+4IzWm9EqpHZ+kDQNK4SSKP/LvTJwRcQUrBrV3idAEom
+	 dGUfDxuabwKyRZ7l5YqeNoH22AnMS1VYRNLAudVVo7aq+cg8dm6uGFpob4lcdx7VE1
+	 Ev/c0EnaFKPa/rmXkHgq+o+k2scb+vXRwl+6ZeV73/OPVjkS+Hisfn5nhUdWBYUnok
+	 munwLR3PVvTuHxUzxsuN3XkATfUJ7EPBVrRuXte+dLDNVJKv/3qzjOpWfV1cC08aBN
+	 ofzCWNqIGVa33s+RPwHTwOwDZD1M0l0jj9H8X0s04UkLe8DSLi80nn9nYZXJCwNtKQ
+	 Z4eUUz62/qSpg==
+Date: Mon, 22 Jun 2026 17:58:38 +0200
+From: Manivannan Sadhasivam <mani@kernel.org>
+To: Markus Elfring <Markus.Elfring@web.de>
+Cc: linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
+	Bjorn Helgaas <bhelgaas@google.com>, Christophe Leroy <chleroy@kernel.org>, 
+	Madhavan Srinivasan <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, 
+	Nicholas Piggin <npiggin@gmail.com>, LKML <linux-kernel@vger.kernel.org>, 
+	kernel-janitors@vger.kernel.org, Ilpo =?utf-8?B?SsOkcnZpbmVu?= <ilpo.jarvinen@linux.intel.com>, 
+	Jonathan Cameron <jonathan.cameron@huawei.com>, Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+Subject: Re: [PATCH] PCI: pnv_php: Use common error handling code in
+ pnv_php_alloc_slot()
+Message-ID: <tlemzejir3wi3rff2x65bbqqknzel4nwy3fnlvruyg7fll4p44@zqrf3z2cxhuu>
+References: <5cd04727-44c5-4ace-af86-d3c227234d4b@web.de>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -85,115 +73,48 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <CAGsJ_4ybg5LGYopTUJTh5R2rN6X3uR9xoJSL+RdTYVtm1-xqLg@mail.gmail.com>
+In-Reply-To: <5cd04727-44c5-4ace-af86-d3c227234d4b@web.de>
 
-On 26/06/22 08:15AM, Barry Song wrote:
-> On Mon, Jun 22, 2026 at 4:49 AM Matthew Wilcox <willy@infradead.org> wrote:
-> >
-> > On Sat, Jun 20, 2026 at 04:48:57PM -0700, Suren Baghdasaryan wrote:
-> > > Just checking in on the followup plans. IIUC the RFC mentioned will
-> > > try to implement the solution we discussed at LSFMM: splitting
-> > > VM_FAULT_RETRY into two flags - one for retrying under per-VMA locks
-> > > and another one to fallback to mmap_lock.
-> >
-> > I continue to hate this idea.  I don't believe that those who were
-> > pushing for it have ever tried to understand the whole fault path.
-> > It's utterly byzantine.
-> >
-> > I defy anyone to make sense of this:
-> >
-> >         /*
-> >          * NOTE! This will make us return with VM_FAULT_RETRY, but with
-> >          * the fault lock still held. That's how FAULT_FLAG_RETRY_NOWAIT
-> >          * is supposed to work. We have way too many special cases..
-> >          */
-> >         if (vmf->flags & FAULT_FLAG_RETRY_NOWAIT)
-> >                 return 0;
-> >
-> >         *fpin = maybe_unlock_mmap_for_io(vmf, *fpin);
-> >         if (vmf->flags & FAULT_FLAG_KILLABLE) {
-> >                 if (__folio_lock_killable(folio)) {
-> >                         /*
-> >                          * We didn't have the right flags to drop the
-> >                          * fault lock, but all fault_handlers only check
-> >                          * for fatal signals if we return VM_FAULT_RETRY,
-> >                          * so we need to drop the fault lock here and
-> >                          * return 0 if we don't have a fpin.
-> >                          */
-> >                         if (*fpin == NULL)
-> >                                 release_fault_lock(vmf);
-> >                         return 0;
-> >                 }
-> >
-> > Wed need to simplify the fault path, not add additional complexity.
-> > Josef has said he wouldn't've done the lock dropping had we had per-VMA
-> > locks.  We should rip it out.
+On Thu, Jun 11, 2026 at 11:25:12AM +0200, Markus Elfring wrote:
+> From: Markus Elfring <elfring@users.sourceforge.net>
+> Date: Thu, 11 Jun 2026 11:16:49 +0200
 > 
-> I think you have agreed that, at least for anon vma, we can
-> keep the current policy, since anon vma is much more volatile
-> than file vma.
-
-I don't think any of the above has to do with anon vmas.  Does any anon
-vma handling have anything to do with your problem?
-
-This would be needed if anon vmas were being faulted while being
-unmapped or merged?  Do we really need a fast path for that?  Note that
-anon vmas cannot be merged if the vma chain... you know what, I wonder
-how many people know what I'm talking about here... Let's just say that
-they can't be merged if they were around for a fork.
-
-So, then, we're looking at anon vmas taking the mmap lock on:
-1. single task anon vmas being expanded and faulted at the same time
-2. single task anon vmas being unmapped and faulted at the same time
-
-I think that's it?
-
-But maybe I missed something critical about your use case here?
-
-I don't understand why you are involving anon vmas in this discussion,
-so I must have missed something with your IO completion issue.  Is there
-an anon vma causing your priority inversion?
-
-> Concurrent page faults and VMA modifications can happen more
-> often than with file VMAs.
-
-But it's only a problem for anon vmas with per-vma locking if it's the
-same vma (or the vma lock sequence counter overflows, but let's say
-that's a statistically insignificant non-zero value).
-
+> Use an additional label so that a bit of exception handling can be better
+> reused at the end of an if branch.
 > 
-> For file vmas, how much code can we actually remove, given that
-> the first page fault might already be holding mmap_lock?
-
-How much complexity can we remove and maintain the performance, might be
-a better question.
-
-> It could be the case that lock_vma_under_rcu() fails, and then
-> on the first page fault we end up holding mmap_lock before
-> retrying. So are we also going to rip out the lock release,
-> even if it risks holding mmap_lock for a long time?
+> This issue was detected by using the Coccinelle software.
 > 
->         vma = lock_vma_under_rcu(mm, addr);
->         if (!vma)
->                 goto lock_mmap;
->        ...
-> lock_mmap:
+> Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
+> ---
+>  drivers/pci/hotplug/pnv_php.c | 7 +++----
+>  1 file changed, 3 insertions(+), 4 deletions(-)
 > 
->         vma = lock_mm_and_find_vma(mm, addr, regs);
->         if (unlikely(!vma)) {
->                 fault = 0;
->                 si_code = SEGV_MAPERR;
->                 goto bad_area;
->         }
-> 
-> If we still need to keep the page fault retry code there, it
-> doesn't seem like "ripping out" really reduces complexity in
-> the page fault code?
+> diff --git a/drivers/pci/hotplug/pnv_php.c b/drivers/pci/hotplug/pnv_php.c
+> index ff92a5c301b8..e448f1802002 100644
+> --- a/drivers/pci/hotplug/pnv_php.c
+> +++ b/drivers/pci/hotplug/pnv_php.c
+> @@ -791,16 +791,15 @@ static struct pnv_php_slot *pnv_php_alloc_slot(struct device_node *dn)
+>  		return NULL;
+>  
+>  	php_slot->name = kstrdup(label, GFP_KERNEL);
+> -	if (!php_slot->name) {
+> -		kfree(php_slot);
+> -		return NULL;
+> -	}
+> +	if (!php_slot->name)
+> +		goto free_php_slot;
+>  
+>  	/* Allocate workqueue for this slot's interrupt handling */
+>  	php_slot->wq = alloc_workqueue("pciehp-%s", WQ_PERCPU, 0, php_slot->name);
+>  	if (!php_slot->wq) {
+>  		SLOT_WARN(php_slot, "Cannot alloc workqueue\n");
+>  		kfree(php_slot->name);
+> +free_php_slot:
 
-This seems unrelated to be above complexity that might be the target of
-removal?
+Really? What kind of coding practice is this?
 
-Thanks,
-Liam
+- Mani
 
+-- 
+மணிவண்ணன் சதாசிவம்
 
