@@ -1,96 +1,98 @@
-Return-Path: <linuxppc-dev+bounces-22924-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22925-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 311B2CDB46F
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Jun 2026 11:11:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 57607CD98F2
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Jun 2026 11:12:04 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gl2Sh45sDz2y71;
-	Tue, 23 Jun 2026 21:11:32 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782213092;
-	cv=none; b=LpJrTczq027Wiga6HcXODjYSC07OJ74XOqwmzzScD9T4oBXG39Q6B7LmTpPDz2JgTO4sznfRPiI04DmnxQBfm4C40jjOE1u8f3e41ITNLbKr1SiyceRTZMyma/7AlJsOEJ9A7vBjEW59Hb5w3vbHMEtxy/NpyrFYIAhAtZL1mHSfNEwsA92v9AbpjVLbLgj2zP0gpBNX2g5LevlShzXfenUdjb5nG2x9BEmnJ9wRucRuGg+utM83C6NRqlbUCDRXx6ZluT0+GCerc4WaQimzsAO0+QJMsk0fzYfVbUO2YTmnOj8wtUmJvUKK7MUGlhyzvdiOpIVLiTkpR58MandTZg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gl2TG4XXFz2yQL;
+	Tue, 23 Jun 2026 21:12:02 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=195.135.223.131
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782213122;
+	cv=none; b=ZyjptOG191zOpp9Up0SKbp88vEj34ZJZbX5Aq9W6hhZcibIw9V8CcOEguCknnjzX8CVI38xMwR1dvMdUrx3bdpRUI1TNFatD5HrESIPPMH2X4V6A2692bBU11HXoQOAFTA6G9l+v/hadAbQGw2qnT36tw+gpahc+3L0hmwvwMwyKEY3ipQryJd5Z4bZwQ9XQvCreHPtskEbsOIa+YRatod/yAj4rav7It0WLUMF3Juv7d+EyDCv1DL0/Et2GC18VcfZkjtWzzvO4S1eq/PkvKqovWvVilEmTYi6eMVNlw8+AdNRTkuEVcMMng5qR+DvjhM+VFrHgcsnQor12Mf717g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1782213092; c=relaxed/relaxed;
-	bh=yBJ486POfh/CKy6R2QtDtV9gbKdDWXkD+wPSnN31lpc=;
+	t=1782213122; c=relaxed/relaxed;
+	bh=2KC5uz/Q9vZRGxlgx9g/mdIH/o4JfJCdH/4iMSLlLH4=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=cyz/JjtJNQBT77u7BryL+RRVz4fz3XTU+Jbswzhy5iMj9/IUlYtJ6qHpFufqHcjkUt6IW1cJlSsh7Fb3GgHznq7dfxbECZhzbT57Q153sahYA2VewhdL/Db50zfiL0KO3L06MWcZGNPpNQoZpq6YEScuyu0WsKRS0zxQ2oCyRxfp9Z75tRZ4Kv1wk/9oiAu69/+DDNCTMiob7S9BB/HMJH3+hWWhoryr2HMlQsIHjvRaanjfwCWeejh1y6FUpG3Htn/z/V1fwC3OHIJo9GsoyeUcYQF+WBGaWf7A5s5Wh+fI94aOqCrwCjscA7pwgKXExCLw6+HGl5I9brGXx6VDlw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=sollDm0k; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	 Content-Type:Content-Disposition:In-Reply-To; b=KQ6QmQxaqQBFElJmDJhwXT4G1Jfhqhwsrxp9LbwPjPY3M6BQ2DTdkqH7sf5PkJC0aUPx2U2G722cpwFPxYl8P0mn5FK/61O8bUCMMw7ye7J6rx76W6Th6XasGWRgL1VV8lphh3R092cdMgEzuH6rV8UbWUDsP954DNFED8JXLBN8HQFCRCuo8vOcoWCyGGfkfgcS8+Wd95yuNqVSTa369+sXt4LAHWuOkGqroZUy+zvHmoWfHp9pOYl319u4q2tATp/q1hCu6jcwcFKBGyrUYdlH6QG2Ack68/5FDg9uqwyn9ne+gznNeNGfWcKApTgD4ukRWfRyfTI1ajiQ+hMmdw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de; dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=bA6/ev32; dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=FFUrV6v3; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=1Oq78NFI; dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=JTeBs68m; dkim-atps=neutral; spf=pass (client-ip=195.135.223.131; helo=smtp-out2.suse.de; envelope-from=msuchanek@suse.de; receiver=lists.ozlabs.org) smtp.mailfrom=suse.de
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=sollDm0k;
+	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=bA6/ev32;
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=FFUrV6v3;
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=1Oq78NFI;
+	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=JTeBs68m;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=195.135.223.131; helo=smtp-out2.suse.de; envelope-from=msuchanek@suse.de; receiver=lists.ozlabs.org)
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gl2Sf67x9z2xl6
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jun 2026 21:11:30 +1000 (AEST)
-Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 65N6mJG31148009;
-	Tue, 23 Jun 2026 11:11:12 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-type:date:from:in-reply-to:message-id:mime-version
-	:references:subject:to; s=pp1; bh=yBJ486POfh/CKy6R2QtDtV9gbKdDWX
-	kD+wPSnN31lpc=; b=sollDm0kbCJlaU/lFWyIFoEhv4C+GcZgNxN1J1TUPfxQXQ
-	TaSy31dSsbVjriyDeMwPhUQiQ38Q7lOeO4tdLRqaverRMYdOHosLwLVuSgKB2HWs
-	sG5/ctAqMi3DQi+eHuElIAw8Kwq/zm5F6oH5pRN0swMr8poJDDCgq3zzrnd13Ri4
-	vLYWpDYGijo9eAXTNYFbjpC0eIxT/UhIWN6GFEeAQjjn3QN6bLgtIgn8cDNzZket
-	l2kXm9v7+o+wxLvFTLYfvEQ8rPPUWqxycEqXK4D11IDW+rtfGlGZoYMwWMPb5FsG
-	zBE/p/4kGZ1arUlVTp9CWiREyHKAgl4xLgYnOSZg==
-Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4ewjk4e3hx-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 23 Jun 2026 11:11:11 +0000 (GMT)
-Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma21.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 65NB51WJ029114;
-	Tue, 23 Jun 2026 11:11:10 GMT
-Received: from smtprelay01.fra02v.mail.ibm.com ([9.218.2.227])
-	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4ex66k2w88-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 23 Jun 2026 11:11:10 +0000 (GMT)
-Received: from smtpav07.fra02v.mail.ibm.com (smtpav07.fra02v.mail.ibm.com [10.20.54.106])
-	by smtprelay01.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 65NBB63947120656
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 23 Jun 2026 11:11:06 GMT
-Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id B11E720043;
-	Tue, 23 Jun 2026 11:11:06 +0000 (GMT)
-Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id D2DED20040;
-	Tue, 23 Jun 2026 11:11:03 +0000 (GMT)
-Received: from fedora (unknown [9.5.7.39])
-	by smtpav07.fra02v.mail.ibm.com (Postfix) with ESMTPS;
-	Tue, 23 Jun 2026 11:11:03 +0000 (GMT)
-Date: Tue, 23 Jun 2026 16:41:07 +0530
-From: Amit Machhiwal <amachhiw@linux.ibm.com>
-To: Vaibhav Jain <vaibhav@linux.ibm.com>
-Cc: Amit Machhiwal <amachhiw@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
-        Madhavan Srinivasan <maddy@linux.ibm.com>,
-        Anushree Mathur <anushree.mathur@linux.ibm.com>,
-        Paolo Bonzini <pbonzini@redhat.com>,
-        Nicholas Piggin <npiggin@gmail.com>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-        Jonathan Corbet <corbet@lwn.net>,
-        Shuah Khan <skhan@linuxfoundation.org>, kvm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, lkp@intel.com
-Subject: Re: [PATCH v4 1/4] KVM: PPC: Introduce KVM_CAP_PPC_COMPAT_CAPS and
- wire up ioctl
-Message-ID: <20260623162456.90450414-ec-amachhiw@linux.ibm.com>
-Mail-Followup-To: Vaibhav Jain <vaibhav@linux.ibm.com>, 
-	linuxppc-dev@lists.ozlabs.org, Madhavan Srinivasan <maddy@linux.ibm.com>, 
-	Anushree Mathur <anushree.mathur@linux.ibm.com>, Paolo Bonzini <pbonzini@redhat.com>, 
-	Nicholas Piggin <npiggin@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>, 
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, Jonathan Corbet <corbet@lwn.net>, 
-	Shuah Khan <skhan@linuxfoundation.org>, kvm@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	linux-doc@vger.kernel.org, lkp@intel.com
-References: <20260616123314.82721-1-amachhiw@linux.ibm.com>
- <20260616123314.82721-2-amachhiw@linux.ibm.com>
- <871pe3cazk.fsf@vajain21.in.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gl2TF1nqNz2y71
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jun 2026 21:12:01 +1000 (AEST)
+Received: from kunlun.suse.cz (unknown [IPv6:2a07:de40:b306:2000::2])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out2.suse.de (Postfix) with ESMTPS id 95F9275EFA;
+	Tue, 23 Jun 2026 11:11:56 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1782213118; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=2KC5uz/Q9vZRGxlgx9g/mdIH/o4JfJCdH/4iMSLlLH4=;
+	b=bA6/ev32dJCfO+gw01okbit/FFFCyUCQ56AwMnpUQFrLZgexfJm3gNJ4n53HQt8UYna4z0
+	Df62F29iMuJQE4VfTYmq9O8wLksRPAm7wFlzfp6dtNQgHDXp5oiJ5AiXYp99RZ7B8zycy0
+	Mvg7PYd2FPHS51n5P2vO3wZoMkbPiIo=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1782213118;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=2KC5uz/Q9vZRGxlgx9g/mdIH/o4JfJCdH/4iMSLlLH4=;
+	b=FFUrV6v3iPQgjUWRQnGKD3oX++HPg24ey3E6kSJd8irajCps5Kq/jj7ZNKj0CyiUT0v7Ca
+	Vu3NMwH19RCwjfDg==
+Authentication-Results: smtp-out2.suse.de;
+	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=1Oq78NFI;
+	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=JTeBs68m
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1782213116; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=2KC5uz/Q9vZRGxlgx9g/mdIH/o4JfJCdH/4iMSLlLH4=;
+	b=1Oq78NFI6dxXLnWaYqx0dSWZ9gdci1NheZiUe1+/w1nRWKNyqnkPM/s/Fzxr4B/I7EF6yv
+	Zi184i/vX/2UTHsTZICZd4SywYfGsU00JjYJXCjiD1xF0VlHI9PxZzin1oFAUgHiyVq0tV
+	fdwfiP5l64zqtzUPeCXYVAlI35ynnaM=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1782213116;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=2KC5uz/Q9vZRGxlgx9g/mdIH/o4JfJCdH/4iMSLlLH4=;
+	b=JTeBs68mPgI+xX3qm/5XBBPtEd/FeRptcNA0qLD7Sso94LtKnQejMSEXoHGoiWUXFAt9mm
+	/tfXPep1Y1HdaaCQ==
+Date: Tue, 23 Jun 2026 13:11:55 +0200
+From: Michal =?iso-8859-1?Q?Such=E1nek?= <msuchanek@suse.de>
+To: "Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com>
+Cc: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com,
+	chleroy@kernel.org, ryabinin.a.a@gmail.com, glider@google.com,
+	andreyknvl@gmail.com, dvyukov@google.com, vincenzo.frascino@arm.com,
+	oleg@redhat.com, kees@kernel.org, luto@amacapital.net,
+	wad@chromium.org, mchauras@linux.ibm.com, sshegde@linux.ibm.com,
+	thuth@redhat.com, ruanjinjie@huawei.com, akpm@linux-foundation.org,
+	macro@orcam.me.uk, ldv@strace.io, charlie@rivosinc.com,
+	deller@gmx.de, kevin.brodsky@arm.com, ritesh.list@gmail.com,
+	yeoreum.yun@arm.com, agordeev@linux.ibm.com,
+	segher@kernel.crashing.org, mark.rutland@arm.com,
+	ryan.roberts@arm.com, pmladek@suse.com, feng.tang@linux.alibaba.com,
+	peterz@infradead.org, kan.liang@linux.intel.com,
+	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+	kasan-dev@googlegroups.com
+Subject: Re: [PATCH v5 0/8] Generic IRQ entry/exit support for powerpc
+Message-ID: <ajpp-_XnbF3UTM_E@kunlun.suse.cz>
+References: <20260427122742.210074-1-mkchauras@gmail.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -106,251 +108,73 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <871pe3cazk.fsf@vajain21.in.ibm.com>
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNjIzMDA4OCBTYWx0ZWRfX1BptHr0N9O7T
- E3XRE/YUWCJ0qc6xCLG4fgzvVnNcMtJKkapdhTCFGHkHmzPczRroVqQ97HuLI+JmaLwpDlj5DGP
- /mNjmLcYlZ1yHW74WZclcJrssMuHV3Q=
-X-Proofpoint-ORIG-GUID: x-4ir4d2p3xj8J67if6-Sa0rLus3Eqw3
-X-Authority-Analysis: v=2.4 cv=Oph/DS/t c=1 sm=1 tr=0 ts=6a3a69d0 cx=c_pps
- a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
- a=kj9zAlcOel0A:10 a=FelO9ux0wxsA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=U7nrCbtTmkRpXpFmAIza:22 a=VnNF1IyMAAAA:8
- a=BK828DTCH-fAdFGChxgA:9 a=CjuIK1q_8ugA:10
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjIzMDA4OCBTYWx0ZWRfX98JKAv1aDOV8
- gdE3HTqJ1rAId7dv6vSWoQPxtGijm2SxcE2ecWl2srcoISQJ7hFJV/qcN44uDsKnwC3ymOxkpP3
- DSBf/xaa4zwTDJ3QAZIe0s8kfHOxAnjodDyGwX68SFPhXpoM1RfOIBnmAKZylZ1qzjP6kp/C92b
- 4SFexWP4niEZW7Ecaz+S24ph07zDoLrn8kAFQkDYXmlIgBDY9kGhCSyb9pxe9OAEFg5xhZvN4Zx
- /83bMKLdU1DWVuyzr58mYHm6+G2tlDv01rw8eG3tZQUt3qbuoPydUb/GmYx5dEmc6SoKEVvID16
- VorBEtXLJix5rZlmAfPnik3+j1Kj3mkCjJy8SUsM4C6pnhErYIjTEKLGHrf7l7RpmJcG6/E1vH6
- zBnOW1kehHc7lvL5jtBk/QzVUkfaUi4PPFghhb+rveEINikNJU0WfEjL3y5TVQ402K8m8QD2hsD
- 9IzuBtzMM2cL4YmNELQ==
-X-Proofpoint-GUID: KX-dP-pr8Lp8SFQyJWIDVbrs4G8XgU3B
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
- definitions=2026-06-23_02,2026-06-22_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- phishscore=0 lowpriorityscore=0 bulkscore=0 spamscore=0 priorityscore=1501
- clxscore=1015 impostorscore=0 malwarescore=0 adultscore=0 suspectscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2606230088
+In-Reply-To: <20260427122742.210074-1-mkchauras@gmail.com>
+X-Spamd-Bar: ++++++++++++++++
+X-Rspamd-Queue-Id: 95F9275EFA
+X-Rspamd-Action: add header
+X-Rspamd-Server: rspamd1.dmz-prg2.suse.org
+X-Spamd-Result: default: False [16.60 / 50.00];
+	SPAM_FLAG(5.00)[];
+	NEURAL_SPAM_LONG(3.50)[1.000];
+	BAYES_HAM(-3.00)[100.00%];
+	NEURAL_SPAM_SHORT(2.91)[0.970];
+	HFILTER_HOSTNAME_UNKNOWN(2.50)[];
+	RDNS_NONE(2.00)[];
+	SUSPICIOUS_RECIPS(1.50)[];
+	ONCE_RECEIVED(1.20)[];
+	HFILTER_HELO_IP_A(1.00)[kunlun.suse.cz];
+	HFILTER_HELO_NORES_A_OR_MX(0.30)[kunlun.suse.cz];
+	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	MIME_GOOD(-0.10)[text/plain];
+	MX_GOOD(-0.01)[];
+	RCPT_COUNT_TWELVE(0.00)[37];
+	MIME_TRACE(0.00)[0:+];
+	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	FREEMAIL_TO(0.00)[gmail.com];
+	RBL_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b306:2000::2:from];
+	ARC_NA(0.00)[];
+	FUZZY_RATELIMITED(0.00)[rspamd.com];
+	FREEMAIL_ENVRCPT(0.00)[gmail.com,gmx.de];
+	TO_DN_SOME(0.00)[];
+	DWL_DNSWL_BLOCKED(0.00)[suse.de:dkim];
+	RCVD_COUNT_ZERO(0.00)[0];
+	FROM_EQ_ENVFROM(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	TAGGED_RCPT(0.00)[];
+	R_RATELIMIT(0.00)[to_ip_from(RLdywaiysxdh7edq8aukuk3thi)];
+	MISSING_XM_UA(0.00)[];
+	FREEMAIL_CC(0.00)[linux.ibm.com,ellerman.id.au,gmail.com,kernel.org,google.com,arm.com,redhat.com,amacapital.net,chromium.org,huawei.com,linux-foundation.org,orcam.me.uk,strace.io,rivosinc.com,gmx.de,kernel.crashing.org,suse.com,linux.alibaba.com,infradead.org,linux.intel.com,lists.ozlabs.org,vger.kernel.org,googlegroups.com];
+	DKIM_TRACE(0.00)[suse.de:+];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[kunlun.suse.cz:mid,kunlun.suse.cz:helo,suse.com:url,docker.io:url,suse.de:dkim]
+X-Spam: Yes
 
-Hi Vaibhav,
-
-Thanks for the detailed review. My responses are inline below.
-
-On 2026/06/19 11:44 AM, Vaibhav Jain wrote:
-> Hi Amit.
+On Mon, Apr 27, 2026 at 05:57:34PM +0530, Mukesh Kumar Chaurasiya (IBM) wrote:
+> Adding support for the generic irq entry/exit handling for PowerPC. The
+> goal is to bring PowerPC in line with other architectures that already
+> use the common irq entry infrastructure, reducing duplicated code and
+> making it easier to share future changes in entry/exit paths.
 > 
-> Thanks for the patch and incorporating V3 review comments. Further
-> review comments inline below:
-> 
-> Amit Machhiwal <amachhiw@linux.ibm.com> writes:
-> 
-> > Introduce a new capability and ioctl to expose CPU compatibility modes
-> > supported by the host processor for nested guests.
-> >
-> > On IBM POWER systems, newer processor generations (N) can operate in
-> > compatibility modes corresponding to earlier generations, like (N-1) and
-> > (N-2). This is particularly relevant for nested virtualization, where
-> > nested KVM guests may need to run with a specific processor compatibility
-> > level.
-> >
-> > Introduce KVM_CAP_PPC_COMPAT_CAPS capability and the corresponding
-> > KVM_PPC_GET_COMPAT_CAPS vm ioctl. The ioctl returns a bitmap describing
-> > the compatibility modes supported by the host in respective bit numbers,
-> > allowing userspace (e.g., QEMU) to select an appropriate compatibility
-> > level when configuring nested KVM guests.
-> >
-> > The ioctl handling is added in kvm_arch_vm_ioctl() and retrieves host
-> > CPU compatibility capabilities via a PowerPC-specific backend
-> > implementation when available. The implementation validates the structure
-> > size from userspace to ensure forward compatibility and returns
-> > appropriate error codes (EINVAL for invalid size, EFAULT for copy
-> > failures, ENOTTY if backend is not implemented). The struct
-> > kvm_ppc_compat_caps includes a size field to support future ABI
-> > extensions.
-> >
-> > Suggested-by: Vaibhav Jain <vaibhav@linux.ibm.com>
-> > Signed-off-by: Amit Machhiwal <amachhiw@linux.ibm.com>
-> > ---
-> >  arch/powerpc/include/asm/kvm_ppc.h  |  1 +
-> >  arch/powerpc/include/uapi/asm/kvm.h |  7 ++++++
-> >  arch/powerpc/kvm/powerpc.c          | 35 +++++++++++++++++++++++++++++
-> >  include/uapi/linux/kvm.h            |  4 ++++
-> >  4 files changed, 47 insertions(+)
-> >
-> > diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include/asm/kvm_ppc.h
-> > index 0953f2daa466..169ea6a7fbad 100644
-> > --- a/arch/powerpc/include/asm/kvm_ppc.h
-> > +++ b/arch/powerpc/include/asm/kvm_ppc.h
-> > @@ -319,6 +319,7 @@ struct kvmppc_ops {
-> >  	bool (*hash_v3_possible)(void);
-> >  	int (*create_vm_debugfs)(struct kvm *kvm);
-> >  	int (*create_vcpu_debugfs)(struct kvm_vcpu *vcpu, struct dentry *debugfs_dentry);
-> > +	int (*get_compat_caps)(struct kvm_ppc_compat_caps *host_caps);
-> >  };
-> >  
-> >  extern struct kvmppc_ops *kvmppc_hv_ops;
-> > diff --git a/arch/powerpc/include/uapi/asm/kvm.h b/arch/powerpc/include/uapi/asm/kvm.h
-> > index 077c5437f521..8a38be6c3b03 100644
-> > --- a/arch/powerpc/include/uapi/asm/kvm.h
-> > +++ b/arch/powerpc/include/uapi/asm/kvm.h
-> > @@ -437,6 +437,13 @@ struct kvm_ppc_cpu_char {
-> >  	__u64	behaviour_mask;		/* valid bits in behaviour */
-> >  };
-> >  
-> > +/* For KVM_PPC_GET_COMPAT_CAPS */
-> > +struct kvm_ppc_compat_caps {
-> > +	__u64	flags;			/* Reserved for future use */
-> > +	__u64	size;			/* Size of this structure */
-> Suggesting moving the 'size' as the first member of the struct. That way
-> copying the struct from userspace becomes bit easier.
 
-Yeah, I think it would make more sense and will simplify the
-copy_from_user() call. I will make the change in v5. I will change to:
+Hello,
 
-  struct kvm_ppc_compat_caps {
-  	__u64	size;
-  	__u64	flags;
-  	__u64	compat_capabilities;
-  };
+applying these patches on top of Linux 6.12 causes seccomp to return
+different error (ENNOSYS instead of EPERM) causing some seccomp tests to
+fail.
 
-> 
-> > +	__u64	compat_capabilities;	/* Capabilities supported by the host */
-> > +};
-> > +
-> >  /*
-> >   * Values for character and character_mask.
-> >   * These are identical to the values used by H_GET_CPU_CHARACTERISTICS.
-> > diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
-> > index 98de68379b18..9153b0034b45 100644
-> > --- a/arch/powerpc/kvm/powerpc.c
-> > +++ b/arch/powerpc/kvm/powerpc.c
-> > @@ -701,6 +701,13 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
-> >  			}
-> >  		}
-> >  		break;
-> > +#if defined(CONFIG_KVM_BOOK3S_HV_POSSIBLE)
-> > +	case KVM_CAP_PPC_COMPAT_CAPS:
-> > +		r = 0;
-> > +		if (kvmhv_on_pseries())
-> > +			r = 1;
-> > +		break;
-> > +#endif /* CONFIG_KVM_BOOK3S_HV_POSSIBLE */
-> >  	default:
-> >  		r = 0;
-> >  		break;
-> > @@ -2467,6 +2474,34 @@ int kvm_arch_vm_ioctl(struct file *filp, unsigned int ioctl, unsigned long arg)
-> >  		r = kvm->arch.kvm_ops->svm_off(kvm);
-> >  		break;
-> >  	}
-> > +	case KVM_PPC_GET_COMPAT_CAPS: {
-> > +		struct kvm_ppc_compat_caps host_caps;
-> > +		u64 user_size;
-> > +
-> > +		r = -EFAULT;
-> > +		/* First, get the size field from userspace to validate */
-> > +		if (copy_from_user(&user_size, &((struct kvm_ppc_compat_caps
-> > +		     __user *)argp)->size, sizeof(user_size))) {
-> move the struct size member to the first field. That way
-> from_from_user() call is simplified and you wont have to do some wired
-> pointer arithmetic.
+A minimal reporoducer is
 
-Will do as mentioned above.
+podman run --rm --security-opt seccomp=<(echo '{"defaultAction":"SCMP_ACT_ALLOW","syscalls":[{"names":["mkdir"],"action":"SCMP_ACT_ERRNO"}]}') docker.io/library/alpine mkdir /tmp/test
 
-> 
-> 
-> > +			goto out;
-> > +		}
-> > +
-> > +		/* Validate size - must be at least the current structure size */
-> > +		r = -EINVAL;
-> > +		if (user_size < sizeof(host_caps))
-> > +			goto out;
-> Check should be strengthed to
->  if (user_size != sizeof(host_caps))
-> So that in case used space sends a struct larger than what kernel knows
-> abt it will be rejected. This will prevent surprises in future in case
-> VMM sends a larger struct expecting kernel to know abt it but an older
-> kernel only knows abt older smaller sized struct. Also look at the
-> review comment below.
+This should produce 'Operation not permitted' but produces
+'Function not implemented'.
 
-Agreed. I'll change the validation to use strict equality. This is
-simpler and clearer - userspace must provide exactly the size the kernel
-expects.
+Can you have a look?
 
-> 
-> > +
-> > +		r = -ENOTTY;
-> > +		memset(&host_caps, 0, sizeof(host_caps));
-> > +		if (!kvm->arch.kvm_ops->get_compat_caps)
-> > +			goto out;
-> > +
-> > +		r = kvm->arch.kvm_ops->get_compat_caps(&host_caps);
-> > +		/* Set the actual size of the structure we're returning */
-> > +		host_caps.size = sizeof(host_caps);
-> > +		if (!r && copy_to_user(argp, &host_caps, sizeof(host_caps)))
-> > +			r = -EFAULT;
-> You are allowing a future userspace VMM to potentially send a larger
-> 'struct kvm_ppc_compat_caps' that what kernel knows about. This makes
-> error handling in userspace bit involved since there might be some
-> fields in the 'struct kvm_ppc_compat_caps' given from userspace may
-> remain un-initialized when userspace sees it. So please mention this
-> subtle behaviour should be mentioned in patch description and also
-> update it the doc in the later patch.
+Thanks
 
-With the strict equality check (user_size != sizeof(host_caps)), this
-concern should be addressed - we won't accept larger structs from
-userspace. However, I'll still improve the documentation to:
+Michal
 
-1. In the commit message:
-   - Explain the size field validation
-   - Document that exact size match is required
-   - Clarify error handling behavior
+See also https://bugzilla.suse.com/show_bug.cgi?id=1268620
 
-2. In Documentation/virt/kvm/api.rst:
-   - Add improved documentation for KVM_PPC_GET_COMPAT_CAPS
-   - Document the size field requirement and validation
-
-Thanks,
-Amit
-
-> 
-> > +		break;
-> > +	}
-> >  	default: {
-> >  		struct kvm *kvm = filp->private_data;
-> >  		r = kvm->arch.kvm_ops->arch_vm_ioctl(filp, ioctl, arg);
-> > diff --git a/include/uapi/linux/kvm.h b/include/uapi/linux/kvm.h
-> > index 6c8afa2047bf..1788a0068662 100644
-> > --- a/include/uapi/linux/kvm.h
-> > +++ b/include/uapi/linux/kvm.h
-> > @@ -996,6 +996,7 @@ struct kvm_enable_cap {
-> >  #define KVM_CAP_S390_USER_OPEREXEC 246
-> >  #define KVM_CAP_S390_KEYOP 247
-> >  #define KVM_CAP_S390_VSIE_ESAMODE 248
-> > +#define KVM_CAP_PPC_COMPAT_CAPS 249
-> >  
-> >  struct kvm_irq_routing_irqchip {
-> >  	__u32 irqchip;
-> > @@ -1349,6 +1350,9 @@ struct kvm_s390_keyop {
-> >  #define KVM_GET_DEVICE_ATTR	  _IOW(KVMIO,  0xe2, struct kvm_device_attr)
-> >  #define KVM_HAS_DEVICE_ATTR	  _IOW(KVMIO,  0xe3, struct kvm_device_attr)
-> >  
-> > +/* Available with KVM_CAP_PPC_COMPAT_CAPS */
-> > +#define KVM_PPC_GET_COMPAT_CAPS	_IOR(KVMIO,  0xe4, struct kvm_ppc_compat_caps)
-> > +
-> >  /*
-> >   * ioctls for vcpu fds
-> >   */
-> > -- 
-> > 2.50.1 (Apple Git-155)
-> >
-> >
-> 
-> -- 
-> Cheers
-> ~ Vaibhav
 
