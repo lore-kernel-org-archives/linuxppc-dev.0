@@ -1,116 +1,88 @@
-Return-Path: <linuxppc-dev+bounces-22952-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22953-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 80787CD4F26
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Jun 2026 02:25:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 713B7CD4F26
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Jun 2026 02:26:36 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4glQlS02Kmz2yY1;
-	Wed, 24 Jun 2026 12:25:40 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1042"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782209450;
-	cv=none; b=XCVxYSOC5Aw6j3wrR7lZQ+1p4tsF3iWxLnFlGYlfoV9YHl20h+B24WY7DpjZJQTKcdlPow/Z4cJJmrvCS7Qm50pSt/1SIlqFdrdM5H1yedgcdbnXu/xQNwlMDAtNJ4/U2BP/tpQ2VSQsIOttacn0gVNW1wDDQXAGKhD4pTv1t8t8JgsZ5fFqYxrwqka/GUHNhMGPY0qTqujJYzo6xprCORgNAcWoWWv5G4Jovh+a6iea9Oo+18GbyKPA4NUW2KwHcBSIoT7s6F+/Uhpeka8mKJyCsZ85qTq6asaZvPXpAVQwwzHvXNBkihOixYXEAK9Ck7uacfw++C56qriFXPs0xg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4glQmV6fhqz2yY1;
+	Wed, 24 Jun 2026 12:26:34 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1043"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782226384;
+	cv=none; b=C/gXpo3CRFrXccXbo7rbQJyu+poMWmdFcEZ+gKICQCu5ZazYEbc849ZHVawTLItYiF/94Zc0YA9bxm555pFMiQ0szUYwhH3ViE5I2t3hCjSo+45QMuBTxrB3bjhmRXvxqKk0z/62ZPxDdzvaiZHsTPP1bwThRsH/pAJzB6VjuCe+eJrjZ9xHYGqZoBaM08OCSoCDUIlK1iCtgQgu0uMkdUMTlt+VPk7vGBxjh/EwUKVMaw+r6darE9FBSbhJNI2wPAoYdtPKoZnTCIqNOFXt7Zp3gUpuK1b05RKONxLLjpcBP9d6LMOtu+E2AD6KB4LwklahFErraR9C0E8IFD6wnw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1782209450; c=relaxed/relaxed;
-	bh=q9xRyN5mmtNm+QB3YIDVLwBheiPW9GTxijNSPRoIWhA=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=MXVcpM4qrPgKv5kM/3JL9zOI5kp88bRY10zdKMe7GHDBzu62n9XrKpo+KZCg6N817ncJII6r7YGxKoKhQ7G1cyWW/ZQvXxBNkZ9nIQottX7sFb6Mj80DWR//0+Iw2YwNq7vjSu2/esCQxV5dsTwY5Ngtj6vlwpxto50208ltPQTVhFIP1LtDwk1xNL6EHot+BMciRO2HhltrGVEoqYyqAh0UMb+AqVvDiZ2u0IApREeO3UGlogDf6jNK5VmGoH53fBcR+0rBD00uo8AHfC4TkWkmyIOBSNE/kNz8zQbJNrkcry2sFokciU+mrePVEBWcCd4sZ9bWE8O6V/Gasi62aQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=VlfDe0Xd; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1042; helo=mail-pj1-x1042.google.com; envelope-from=zhanghongru06@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	t=1782226384; c=relaxed/relaxed;
+	bh=AeJlYzH+Z0sCek8zGKSy/7esmMSr6MOi3Ac8XXBZWsY=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=eG1OqEJh28z2CeonyrMwJaUnrrXxGsCKIX50BSOk3XdDY/6ayB5f/Vd6awBYHbPIh+teHBIizzgSv8KgF26QLmTMUmgc4rR8pXqtId24SxU0dAkpCy7WiSb13lv3J0pP3Fg16bJ2hyJwwXS4a1u3QLU/tmnkenfXzLIWZMwFbviYCrfjipxisYYMZmgdq1WQdxHpWIhE0pf+d7UDglP0Bszz5sjWSngTWb9YKjcOBfA05ThPpc1hQ5tb8oIwg1DyXSnbhCSOPRnRbGbXEshrAzog0VujncSMQY/dyRjcOcGJVvjuU501ukoqIaGpa98CUdIwTq4DUjMkSNe1ft1Ncw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=b/Dx8TLz; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1043; helo=mail-pj1-x1043.google.com; envelope-from=taoye602602@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=VlfDe0Xd;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=b/Dx8TLz;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1042; helo=mail-pj1-x1042.google.com; envelope-from=zhanghongru06@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pj1-x1042.google.com (mail-pj1-x1042.google.com [IPv6:2607:f8b0:4864:20::1042])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1043; helo=mail-pj1-x1043.google.com; envelope-from=taoye602602@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pj1-x1043.google.com (mail-pj1-x1043.google.com [IPv6:2607:f8b0:4864:20::1043])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gl16c4qctz2xM7
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jun 2026 20:10:47 +1000 (AEST)
-Received: by mail-pj1-x1042.google.com with SMTP id 98e67ed59e1d1-37d700363fdso1184301a91.2
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jun 2026 03:10:47 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gl7NG0tmVz2xM7
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jun 2026 00:53:01 +1000 (AEST)
+Received: by mail-pj1-x1043.google.com with SMTP id 98e67ed59e1d1-37d7c265ca5so1912a91.2
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jun 2026 07:53:01 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1782209444; x=1782814244; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=q9xRyN5mmtNm+QB3YIDVLwBheiPW9GTxijNSPRoIWhA=;
-        b=VlfDe0XdNzPn3QxTkcLlk4viGurL9i6YsHigrMHXldsPn2e2hRddt4eJ9TxBiSbgM4
-         LOJoqmLgrWzu5W9Us3pFH/sopeeAIE05NklIrcvxXlN4VJiG9eGlFHyae09dGBcAF/Xt
-         wG//ulwACpsmxHyYyTa36C5KrJqd5DHeM/gaz4ncvMhALZ8Z/roE96PDkeKWKbQsIyxp
-         NBdVYPz0qCaW+DiIgf8F3l+ix6W7XBEXpA4md6W/tabcqIlvlABGqWznHctVuBxgcYVO
-         0+qCENQpZEB2QC4cD05DmmjD2flqMrWJKSt+KoZ5KB1mNfq08OcVDGL5hZOrTwnOkPti
-         vacA==
+        d=gmail.com; s=20251104; t=1782226377; x=1782831177; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=AeJlYzH+Z0sCek8zGKSy/7esmMSr6MOi3Ac8XXBZWsY=;
+        b=b/Dx8TLzwTvMRqk0wE33C6n/6Ng/EqZ5m02v3AwNdlJ1KNo5BMykGNDVXybWdONSAF
+         ckNPDNAIYTgr0PJZX0Uf8nE+heNEwXsdfGu7vjthb2YTr8S8Ha72buenfWCSolfs2E4G
+         vu21RkuT0sxbdE2wr7mCBHiJCmsmCrobjaDlcMBS65asfxByZa9gsEFecHmAyfG59wmu
+         TT3hJblqixpJGFFCnRf1zTMpQX9puIdWddwk1978Ja+PF6S+6QhU/kQAW/IwUaoks99I
+         k1wkCMJ6LdK0AfrEoRHHcHAVPOSyqdOR2nrmUEGPDicy8wNdHXXQxXGkkElFRoAJLB+D
+         jMaA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1782209444; x=1782814244;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=q9xRyN5mmtNm+QB3YIDVLwBheiPW9GTxijNSPRoIWhA=;
-        b=VkaRPJa3WR3xMPB8265vCru1WoARo7qQbfKvYr4tL2zTr1J9A2U2UOlr1sia+RWJBT
-         oM+XYbw0/KpR5YzHWdGZNapgsDxdwtiS328rUWmde7dPPfHM7e8grZad0eDJbXU4i+Da
-         DbiKiEAK0m8QjKCkWooloivDK4DywnE1YwY7hsaAewZDStp/7nsV8c7aH+RZC9gTJnGC
-         Dp90pzu3ARttURX6FpIB3RM0VB2J+L0GRDbW3azoKpYBUruMEcf7igCyLBtmD5odq5cM
-         Hibxptp+z3IDDJ25ynxpQRBE6OXCtUdTp6M+FPUn6Wgy4l/GkyxMPl+OpHMoREwplZsm
-         l/kA==
-X-Forwarded-Encrypted: i=1; AHgh+Rp9x/m5fDCyr3pZWAaRNsZAuAhSTUp/7Xq1Hh4uxDB8epBAQj2+7KzG3bhBXX7xE+WS3zKPKSDdJsfb5kI=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YzqvezmJyFV9YNCXDkCatWaz/AAfN3z4YZ3PjLcZbogBn6h4GVh
-	HzZvnGmMc/jdzowVB1mOvwZQhZS60Gw/JBIn26bC3//39tMK4N5Td5ZU
-X-Gm-Gg: AfdE7ck2R35NKZHJWjUCbl4vHTAHHxLfqpgNuKEV68xSgfc5gLwPejTLSI8D3kiiuYF
-	HXN01wXqvi/JZRMp+ga90E3mgqgCNTMEKmEmOmaeSn6v2HOJU02Q9YeOotYg2dgsWt7R61mmH/f
-	rEk66XTwI360c8O60HI+elXibVRC6PqadaizN5s22EEZ/KLtnSx5is78epK/yRDqLsWmaYFoCPY
-	lvKY6Hrx7tgtR1FDgjGAp1G/3aV8mhzWFDamql2G2u85Y+if5yHrCpXC6vxuf2+prfKlZXPIcnf
-	btk5slfNiXuPHkYA5W00GH+3eQOu7EKxRk1k+Fh32Vw+A87XffvOkQo/uJjYre60cGkwcHVMigk
-	8ZlXeSDehCQ+510dRYdMf/QLYy7ZUsObNuC6ZCqxkoIWPcyK+Prho6AkXlFn+/VWWt7fPkBsJa1
-	QGEn/fYneDyPFvYqLoAGiJD18Cy5HnVn1di6RRr8yx
-X-Received: by 2002:a17:902:ec8f:b0:2c0:e5ee:f56c with SMTP id d9443c01a7336-2c7c99def24mr17988445ad.20.1782209444473;
-        Tue, 23 Jun 2026 03:10:44 -0700 (PDT)
-Received: from zhr-ThinkStation-K.mioffice.cn ([2408:8607:1b00:8:ede9:3e72:37cf:55a2])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2c7436f7e0asm118059125ad.30.2026.06.23.03.10.25
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 23 Jun 2026 03:10:44 -0700 (PDT)
-From: Hongru Zhang <zhanghongru06@gmail.com>
-X-Google-Original-From: Hongru Zhang <zhanghongru@xiaomi.com>
-To: david@kernel.org
-Cc: akpm@linux-foundation.org,
-	baohua@kernel.org,
-	bhe@redhat.com,
-	chentao@kylinos.cn,
-	chrisl@kernel.org,
-	jack@suse.cz,
-	kasong@tencent.com,
-	kunwu.chan@gmail.com,
-	liam@infradead.org,
-	lianux.mm@gmail.com,
-	linux-arm-kernel@lists.infradead.org,
-	linux-kernel@vger.kernel.org,
-	linux-mm@kvack.org,
-	linux-riscv@lists.infradead.org,
-	linux-s390@vger.kernel.org,
+        d=1e100.net; s=20251104; t=1782226377; x=1782831177;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=AeJlYzH+Z0sCek8zGKSy/7esmMSr6MOi3Ac8XXBZWsY=;
+        b=JuesJ1aB3QlD/tWZ779Vr4fR0/KiDbo8kZHE9ad9DhBnPOZin5wtuBi3QpxLGzL+W4
+         8ClB3igo41iMxHBO9fGjENi78sy5PHQnSS4OnbMrQeG9uScCLrS1UhYC3HiYhcAyzPPT
+         ERrhJ4fhqb90bot7ZrZcKvTa7AwP5oWlpqE6rDkMTlzuGRIU2ItBRSpOjDK8f0/o44yQ
+         AVyTnjdu7lyY07oG2VGCbytdPlYSJYY88eZ4mjT0EBTakXURBcGIUuDlTFlS96KucJLj
+         UK7q9WWUTCJqP3pK7AP5WaMKKBNTB1GCQOrDfazzZDXC3UkYdZulwL51woWX4/1I4DXH
+         /0Cw==
+X-Forwarded-Encrypted: i=1; AHgh+RoTnftHpXUs75c/A83ADlNVjuxtudfN3159G4vE32U5ooB7+CRt5qcph9KOt2OA4RQsok7Vf13v+SbnxSo=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yzt8+9/xSRw0haJFo3S9DEDzNSBaapgy6iMSHzMFeCdNxRWWX79
+	W5aqTSkcEf06iJTTLQoK5E78otl5N+I7Jw0Q+uGgNDhXIP1wl+zbo4E=
+X-Gm-Gg: AfdE7clePDBFzYf7ls2UoBjBtfXvTx7oPgkkDwo0RodyGrzhm3Itx9gtRdPwt8rVCLp
+	GRE4v7uub2125WHXjw2r3lCW1ooONHb0yI/2Ouy8wQpI3bNJb7xQJepVKXwgomVSpUz1iFljm/U
+	HuJaZAPpREitvFf3g6cm38y5DnNH6e5Zi0Hm22/xqhXQ0c8Q9z/rxOTUCrUu9dbWnfObvDovjDY
+	LUOYEFypoYoR9HKN8JpCT8+OyjNyEJixORPhbf/4eTzrouMR+nmyom0NSfM6iPPAuKWbOAtC2wh
+	ZJwc9ud8qm6QxrgfVeBOp2rVkZ4/dhljfzbKhKZ+Adqnobl3gwTchE13Xc8dZpjMglvWz9tjeBN
+	S67o0tCRlW1HQ/wB1OUC1d85rU3OE3v7rBjhaJs/H/zxlNrhj9i75eMcPAU1krhHSOidwYHol/O
+	K0ttWgExjInu6avRfTRi4zHg06
+X-Received: by 2002:a17:90b:3ece:b0:36d:635b:85a0 with SMTP id 98e67ed59e1d1-37d15fbff00mr22298281a91.3.1782226376807;
+        Tue, 23 Jun 2026 07:52:56 -0700 (PDT)
+Received: from localhost.localdomain ([66.235.111.7])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2c7439f8cfbsm108727065ad.45.2026.06.23.07.52.51
+        (version=TLS1_3 cipher=TLS_CHACHA20_POLY1305_SHA256 bits=256/256);
+        Tue, 23 Jun 2026 07:52:55 -0700 (PDT)
+From: TAO Ye <taoye602602@gmail.com>
+To: Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>
+Cc: Nicholas Piggin <npiggin@gmail.com>,
+	Christophe Leroy <chleroy@kernel.org>,
+	Shuah Khan <shuah@kernel.org>,
 	linuxppc-dev@lists.ozlabs.org,
-	liyangouwen1@oppo.com,
-	ljs@kernel.org,
-	loongarch@lists.linux.dev,
-	mhocko@suse.com,
-	nphamcs@gmail.com,
-	nzzhao@126.com,
-	pfalcato@suse.de,
-	rppt@kernel.org,
-	shikemeng@huaweicloud.com,
-	surenb@google.com,
-	vbabka@kernel.org,
-	wanglian@kylinos.cn,
-	willy@infradead.org,
-	youngjun.park@lge.com,
-	zhanghongru06@gmail.com
-Subject: Re: [PATCH v2 0/5] mm: reduce mmap_lock contention and improve page fault performance
-Date: Tue, 23 Jun 2026 18:10:09 +0800
-Message-ID: <20260623101009.522775-1-zhanghongru@xiaomi.com>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <d04f745d-eb3e-4d2c-8ea2-5fdcf2cf27b8@kernel.org>
-References: <d04f745d-eb3e-4d2c-8ea2-5fdcf2cf27b8@kernel.org>
+	linux-kselftest@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	TAO Ye <taoye602602@gmail.com>
+Subject: [PATCH] selftests/powerpc: Add SPDX-License-Identifier to count_stcx_fail.c
+Date: Tue, 23 Jun 2026 22:52:37 +0800
+Message-ID: <20260623145237.32583-1-taoye602602@gmail.com>
+X-Mailer: git-send-email 2.50.1
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -124,64 +96,36 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
 
-On 6/23/26 10:02, David Hildenbrand wrote:=0D
-> I know that especially browser usually use fork servers: a tiny=0D
-> (single-threaded) process just to create new child processes. Any informa=
-tion=0D
-> regarding the apps above that use fork() on small vs. large processes?=0D
-=0D
-I wrote a second BPF tool (fork_info) that captures nr_threads and=0D
-map_count (VMA count) from the calling process at the exact moment=0D
-fork() is triggered. Results from 3 representative apps:=0D
-=0D
-  App (category)          Fork caller        Threads   VMAs=0D
-  -----------------------------------------------------------=0D
-  Taobao (shopping)       DaemonThread-6        526    8,987=0D
-  Amap (navigation)       DaemonThread-6        289    7,120=0D
-  UC Browser (browser)    OneNativeThread       350    8,144=0D
-=0D
-These are all heavyweight multi-threaded processes (hundreds of threads,=0D
-7,000-9,000 VMAs), not fork servers.=0D
-=0D
-> Above you write "some call fork() from multiple threads". Any further=0D
-> information on that?=0D
-=0D
-Xiaohongshu (com.xingin.xhs, social media) is a clear example. In just=0D
-tens of seconds of normal usage, fork() was called 22 times from 4=0D
-different threads:=0D
-=0D
-  PID     COMM            THREADS    VMAS=0D
-  4206    com.xingin.xhs       85    4,140=0D
-  4216    Thread-2208          85    4,157=0D
-  4208    Thread-2208          90    4,211=0D
-  5200    Thread-3200         337    6,519=0D
-  5200    Thread-3200         343    6,563=0D
-  5200    Thread-3200         361    6,769=0D
-  5200    Thread-3200         453    7,793=0D
-  5200    Thread-3200         450    7,779=0D
-  5202    Thread-2219         459    7,846=0D
-  5202    Thread-2219         462    7,875=0D
-  5202    Thread-2219         465    7,899=0D
-  4219    Thread-2219         465    7,903=0D
-  4219    Thread-2219         468    7,922=0D
-  5202    Thread-2219         467    7,917=0D
-  4219    Thread-2219         467    7,921=0D
-  4219    Thread-2219         468    7,929=0D
-  5202    Thread-2219         464    7,909=0D
-  5202    Thread-2219         460    7,889=0D
-  5202    Thread-2219         459    7,884=0D
-  4219    Thread-2219         433    7,771=0D
-  4219    Thread-2219         433    7,771=0D
-  4219    Thread-2219         434    7,778=0D
-=0D
-The process grew from 85 threads / 4,140 VMAs at first fork to=0D
-434 threads / 7,778 VMAs at last fork, showing these are long-lived=0D
-heavyweight processes that fork repeatedly throughout their lifecycle.=0D
-=0D
-Tracing tool:=0D
-  https://gist.github.com/zhr250/ba7725d0ea55594bcafd3cd4806eed98=0D
-=0D
-Hongru=0D
+count_stcx_fail.c still carries only the original free-text license
+notice ("Licensed under GPLv2.") and has no SPDX-License-Identifier
+tag.
+
+Replace the free-text notice with the equivalent SPDX identifier
+GPL-2.0-only, matching the sibling files. The copyright notice is
+retained and no license change is intended.
+
+Signed-off-by: TAO Ye <taoye602602@gmail.com>
+---
+ tools/testing/selftests/powerpc/pmu/count_stcx_fail.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/tools/testing/selftests/powerpc/pmu/count_stcx_fail.c b/tools/testing/selftests/powerpc/pmu/count_stcx_fail.c
+index d8dd9a9c6c1b..51a7565c6435 100644
+--- a/tools/testing/selftests/powerpc/pmu/count_stcx_fail.c
++++ b/tools/testing/selftests/powerpc/pmu/count_stcx_fail.c
+@@ -1,6 +1,6 @@
++// SPDX-License-Identifier: GPL-2.0-only
+ /*
+  * Copyright 2013, Michael Ellerman, IBM Corp.
+- * Licensed under GPLv2.
+  */
+ 
+ #define _GNU_SOURCE
+
+base-commit: 4708cac0e22cfd217f48f7cec3c35e5922efcccd
+-- 
+2.50.1 (Apple Git-155)
+
 
