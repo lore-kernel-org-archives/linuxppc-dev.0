@@ -1,81 +1,116 @@
-Return-Path: <linuxppc-dev+bounces-22950-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22951-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E7771CDB479
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Jun 2026 01:25:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D2A12CDB479
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Jun 2026 02:24:53 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4glPQX0sbpz2ySV;
-	Wed, 24 Jun 2026 11:25:56 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::52c"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782264356;
-	cv=none; b=GzQB1n7Xjz9V+tEuL4vOyvE86Lu9otL846kzQhguxWQnZln4bnNHTaqTEiGk2XjRr5zTQnvywq2jDgF7sAKcDrDqmy8d3yoxazt8d0GqlfNHV+B5dGO0D21aOJdr5VASCioJV4TJ6fKgKErqblFnbPF3QrIWnSRnU14WQQJ3p+1APBdFLJBIINJcnuSE8EDKD5k168E5i+Mjji/Wi6zxNjxKs88VjVhhjcURuITYjZ8GQY13hJMkkeCCh04W3bE1RiB+UbUfGBO34IF4JtKPH7LahFc9tXCTe+DdDKrKVXOBXYas4tYOh34f66l5d62ZH3XmnGD135evvq4dtARQVg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4glQkX2S6yz2yVv;
+	Wed, 24 Jun 2026 12:24:52 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::441"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782201519;
+	cv=none; b=knMQ9JNYH9vYveuHhmx2uY5IgUXP5UKGfsnQmT1IGEsFDtyQZtNb/1v9cOxhlhrsGdLQBVB/u0iuApuvZFPpo3BAzo6kdHz0pErbN5B6J2oCk2zgUuZuYTLHkBuLzebVYe4fP0YECh640iAj4DIom7cW0+nDx/845o8qaou2+qbPm7uQbOM0PLrvvMf2AIp6r++zuikfBMwbcAfmIBWYXBeeABsYcdJ5ABhiUD0QqqgovykM3Zk0gUqRfOLhKkWuGSzhOVY+9ThimKIrYpcALCC1hHpUTI8J5vQV2B3xO2MjPObCuEsXJdzIchUlUh9NsnpQPW1P/feANl7uQ3iuKw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1782264356; c=relaxed/relaxed;
-	bh=7HCRbCpnbD8iw8+YXonGk3G4egkfXoMc79Jv1896LIk=;
-	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References; b=oPS5FiY+GKEi8XXShesHsT6sSXQO92V97tKg2y7mbSBZhEwsIxnNqO6yahKOy3nxO7ofSS0Mxfg+LFJc/tG05dqd64Qkf87GCAYqeY+027stlSnJPefeJnpJAXb1ugstKGvdXDOdz6JE5gRZowfDJjaCpxb0wH6FYDWdF1B9xlIpkeNlxBqvbVGpCQzo8Wd3EDWRxT6vH21AAAX1296rbQAK85XmflL7H494GTtTzLn14gsGfQ2XkrO0UQtLg9boWDftWFSr0gDJ8ds613dcizqJJDSq3Eot88O/Lhp7Y4QOGg6nQnXTkfYaVjEt0hQHY3dQY51VqjnZn/1w0dNZDg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=NJLZ4Qr/; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::52c; helo=mail-pg1-x52c.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	t=1782201519; c=relaxed/relaxed;
+	bh=Ek6r0TkIKR0tiCQ28suwzM5bkNpctpIQyqr76NBcjWs=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=IQL+2oL7v3DxfBvP84B2PRH+G00aprGmK0x584qjbugQgoNywngYLf4Uz1Usi/pnSA/RdUVjNM5JvX8j0Yas+zUuN4rkQ3+Jk9ej8j1Y+6WjJqXvSul3NPb1/vcOj+Cyyb2mFpOJyDZd8H+RhwzYwJF5AkYc+eA1T/8DSFM8n4VSiATdnq6yaxHH84CdsOYdI/CTcBdEnGlH9cywKIL14WRHOPmOW+cKy7TWpvtkS8puLRjbcyUPSYWapjxfZ5GCGbcbCmMY/e/o3MESmDI11BxE69j3cEVP37QZUW5bOjH728RRMVbJ5YB0Z3Jy+AH4aqNHjiBAaiwFPUfhxprL5g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=rJpG0/Vr; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::441; helo=mail-pf1-x441.google.com; envelope-from=zhanghongru06@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=NJLZ4Qr/;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=rJpG0/Vr;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::52c; helo=mail-pg1-x52c.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pg1-x52c.google.com (mail-pg1-x52c.google.com [IPv6:2607:f8b0:4864:20::52c])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::441; helo=mail-pf1-x441.google.com; envelope-from=zhanghongru06@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pf1-x441.google.com (mail-pf1-x441.google.com [IPv6:2607:f8b0:4864:20::441])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4glPQV3kmxz2xyl
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jun 2026 11:25:53 +1000 (AEST)
-Received: by mail-pg1-x52c.google.com with SMTP id 41be03b00d2f7-c89636920a3so167866a12.1
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jun 2026 18:25:53 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gkyB6541Jz2xwL
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jun 2026 17:58:37 +1000 (AEST)
+Received: by mail-pf1-x441.google.com with SMTP id d2e1a72fcca58-8453bcf7276so2982333b3a.2
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jun 2026 00:58:37 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1782264350; x=1782869150; darn=lists.ozlabs.org;
-        h=references:message-id:date:in-reply-to:subject:cc:to:from:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=7HCRbCpnbD8iw8+YXonGk3G4egkfXoMc79Jv1896LIk=;
-        b=NJLZ4Qr/Zy/H95UT0WCMUXciowvxZ09LSeH0ON5/vILKDVehdZqGgN+2BQ2x/1D+KG
-         VY/w//o4X/Pgh/wFHIf1ct69deQlhfWdf5WkodyvuhB3cWT7iixQ3gmV7ovGuURZKefp
-         4FT1cVlWzUH4n7xISuMjeY9N5oSCdA2Rwsr+wb6tNGS1Y9lzHwao8BSEnyquik2uI3Ld
-         q1K1RQMZzCb3QfwU5JoyVLWVpXB82ibW/vT3+ZATvp6CH8KXkrkQPmR74S6jAUJmZkPB
-         h/mJ2P84SCdf8+l3MdT2knZil8uHqoLTQVDptp9odncyREF5ZXmFy3F3X9N+yNuQwOR7
-         f1OQ==
+        d=gmail.com; s=20251104; t=1782201516; x=1782806316; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=Ek6r0TkIKR0tiCQ28suwzM5bkNpctpIQyqr76NBcjWs=;
+        b=rJpG0/VrfrWOuZVhg+/QD5p9nbHTk3LKtX4UYOIX8FZVoePyjm6ckBK2uR1E6SXEqW
+         avFajxx0KiEjfaf10TCVCpXG0ZdD9y532JXOMdw7Q0dN6F8o0r6FW+AJZL8/QCnW9hJt
+         UeAGvXUNJPM1Bbnle3ASu3KuGUKXmRwrB/5wkKv2TOj6hK4y3iAFQigMl58M5v+fvzjT
+         YIan21/mLURBQI2BNNtepEjzmZI97g70mN223JRjPm/mVHM4Nh/iboJV08CuFcWT2ZvE
+         py1NPsz9t4iHcCByHf4jvaLmKVDBJyn3LnS0QjD0uzaRWO+KPmux09nRcNGlkZJ9EGt7
+         mU2w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1782264350; x=1782869150;
-        h=references:message-id:date:in-reply-to:subject:cc:to:from:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=7HCRbCpnbD8iw8+YXonGk3G4egkfXoMc79Jv1896LIk=;
-        b=BNO0JQ7xZoyupJvAJBMJc5Hm8EuCOWGSj7fQXtU5Xv29Lv9WECVSF/5GqEVUxXlXLG
-         Iycieta/68IQreaRsHvIm+6CNMG6N1YJEstEUBy+jDQf07lFFZFCOHcghJw6RZs4iu5g
-         7eTz3zbIYtEm+ypX/lMHyVZ3aqpQmIs63HdgIVLsQOvp/gqUTtgX/qgca555/NiQnUMJ
-         5fDrwz3W4ruJfbl3fTvVkp8/MYr/be4GAff4Yhm2559nfS6UhV9GuzmSwIdUPzJCgBQf
-         a+tDrVediyIxE6Jo47642MI4/yzEqUwPLLkGLYeb/bHvqWKxhKWSejgFroBa0iwsiqLD
-         t0xQ==
-X-Forwarded-Encrypted: i=1; AHgh+RoSRpih/CUPSzgDWfhI3AGe7uyRM5svVZN8JjDUf1Th5y4MRIaGlC8bIO7j0YQV/N1S9Iw3OZ45AjLdqvM=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yyp/porTuDp2X6HnMzv+/dkEKGnnIxsAxsjx0NAIbjS0/7k1cUZ
-	95M3R3wEM/YZtfcbA6X11lk1KO/jgCbrGNz71sRvuFSjTn99Uh74otha
-X-Gm-Gg: AfdE7clQL2rL9qVAbtYtjtkcAPb8y69UTRQx6dN1DHAp/daV8VhkaCXvcZsOFTnAqhy
-	t2Y8Y4tf2pQkeq1MIyV2Z4L08UuUVnntrCzoCg1SLMNbdA67S22gL/GDCC+jKescHTH7mUd/Woh
-	46crexjD09C3BixK4+j2AjRftEzqgA7Vt92fXIc99+kijjGNRqQUh1U1czzY3HaXoWbiJZGXZuY
-	d/gn+RZenZk53lBNaZADJX4S56EhLQS8QIxwA6jd06eFxRzOG/bASm5vfEk2I0mN3Eg8rvqTgKf
-	iNfiOr8yup5KGfGEnMUxcKXdsxetwdspMipTx+FURu8YZfnUr0ivX4STgWnHuzCDdwgqfZcfptT
-	KkZ3gdlGlE4jrV8EXjuKOe5r7pAG82VjUTsFHCiuFjdbu59BFQedI1TbNZVFeolhKk5oWrIeLjf
-	7Em50MF6zcQfSd35c=
-X-Received: by 2002:a17:902:d4c2:b0:2c2:cf20:213 with SMTP id d9443c01a7336-2c7e15265aemr12562995ad.29.1782264350114;
-        Tue, 23 Jun 2026 18:25:50 -0700 (PDT)
-Received: from pve-server ([49.205.216.49])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2c7436af310sm121860795ad.2.2026.06.23.18.25.44
+        d=1e100.net; s=20251104; t=1782201516; x=1782806316;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=Ek6r0TkIKR0tiCQ28suwzM5bkNpctpIQyqr76NBcjWs=;
+        b=hIaAoOzXmxgaEa0F6A8DC332s5TKzIqMYrQQjQYvHXSZmun+n8NeMzwf5ocN8GUpZN
+         +v0YYjNHjMzVcP20nZCJxYMfZ1LaO3XeN5BBwBPYA6ew27A3VFyeoiEyh1CVRgv9Ky/O
+         iTDWZBRDOdWb+szL2sNA9rtKXxhargGmsG36tBhQw613urkmOjc6qvy90jbJbxxdoJmO
+         R4r0MeKrdHZFrGn+YEmtQEQXzX9AYveloVBm66EWUgkiZQfYN/xzb+mBY9kAc266aCWE
+         INAMIV2TD/HFaKy95DFW92ypskUmUSSj7nywe7uduLREwKyXR8PiMsh3z0Tp8sZfZdAj
+         brdg==
+X-Forwarded-Encrypted: i=1; AHgh+Rpq+ggCCvVRaU3XH0+BqsJWFkO69r8FkKUaDoncfg4X47cuvzz9oJaE9LQmCGGeqIYAQHkkc4QfhazHbsQ=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yw3SLWgZpNKMeItaNtVWXwy4uI4rT+vu9K2jg5kJUOOJgq3GqGF
+	d+tPyZauqRyxxnovI/llQy5csMR8ofPItQr0WxzNluf7UHQF0Zj4oCmM
+X-Gm-Gg: AfdE7ckkb85PcxR9/fFJ47uZL1qCe8HnkDTbotNUrPpDwv4BVkJHQWkCuq8xtfdJn9S
+	AenUA9ODdJrW6WKcVErQ8Tm/240cGsIFX7MO78vWtDW0KmyLuVHYDL7b6Ol23+uUJPvrpMcfpkT
+	8wBW72t1nsRxBSpYWQTw7MI6ZXWeSXiH82/LPuWf70VtBHGm3e9zIudZTtS0WrniywAJRRy9dz6
+	SlqrZVZ4qwGoQB3L7I9GZJ8cL9IwraTC8MbgUJMR7E5e42sYs9yQxhJy6PysL/3urhnAE5Ubb7n
+	TJLt3/YIrBXbSse+qFBsy0nnNaGvSE/4Uq0nHQr5F3O7e/d2/bIFI7psU3SuSnjHFS4qrbLtv6R
+	Gb7HHuL0J9W1/RbEiVlUS1a76JelO2vldbqfS/KWnXQOxqNxQ3SZQONklxCV8bcipsPUhdW3F0t
+	tl+h70f83Z3mFA4xoiwylQVNvRv0Sspt/UsiQH2pOi
+X-Received: by 2002:a05:6a00:1707:b0:838:29b3:9ed1 with SMTP id d2e1a72fcca58-84550900333mr19117203b3a.41.1782201515623;
+        Tue, 23 Jun 2026 00:58:35 -0700 (PDT)
+Received: from zhr-ThinkStation-K.mioffice.cn ([2408:8607:1b00:8:ede9:3e72:37cf:55a2])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-84564e745besm9355930b3a.28.2026.06.23.00.58.16
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 23 Jun 2026 18:25:49 -0700 (PDT)
-From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-To: Sean Christopherson <seanjc@google.com>
-Cc: kvm@vger.kernel.org, Paolo Bonzini <pbonzini@redhat.com>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>, Christophe Leroy <chleroy@kernel.org>, Anushree Mathur <anushree.mathur@linux.ibm.com>, Venkat Rao Bagalkote <venkat88@linux.ibm.com>, Harsh Prateek Bora <harshpb@linux.ibm.com>, Ackerley Tng <ackerleytng@google.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, Claudio Imbrenda <imbrenda@linux.ibm.com>, Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [PATCH v3 RESEND 02/10] KVM: selftests: Add aligned guest physical page allocator
-In-Reply-To: <aimOVomL2RzYt2J4@google.com>
-Date: Wed, 24 Jun 2026 06:48:02 +0530
-Message-ID: <qzlwwxbp.ritesh.list@gmail.com>
-References: <cover.1781093720.git.ritesh.list@gmail.com> <df86b5ccdbdafc3509d9538bd5e6796737bab2db.1781093720.git.ritesh.list@gmail.com> <aimOVomL2RzYt2J4@google.com>
+        Tue, 23 Jun 2026 00:58:35 -0700 (PDT)
+From: Hongru Zhang <zhanghongru06@gmail.com>
+X-Google-Original-From: Hongru Zhang <zhanghongru@xiaomi.com>
+To: david@kernel.org
+Cc: akpm@linux-foundation.org,
+	baohua@kernel.org,
+	bhe@redhat.com,
+	chentao@kylinos.cn,
+	chrisl@kernel.org,
+	jack@suse.cz,
+	kasong@tencent.com,
+	kunwu.chan@gmail.com,
+	liam@infradead.org,
+	lianux.mm@gmail.com,
+	linux-arm-kernel@lists.infradead.org,
+	linux-kernel@vger.kernel.org,
+	linux-mm@kvack.org,
+	linux-riscv@lists.infradead.org,
+	linux-s390@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org,
+	liyangouwen1@oppo.com,
+	ljs@kernel.org,
+	loongarch@lists.linux.dev,
+	mhocko@suse.com,
+	nphamcs@gmail.com,
+	nzzhao@126.com,
+	pfalcato@suse.de,
+	rppt@kernel.org,
+	shikemeng@huaweicloud.com,
+	surenb@google.com,
+	vbabka@kernel.org,
+	wanglian@kylinos.cn,
+	willy@infradead.org,
+	youngjun.park@lge.com,
+	zhanghongru06@gmail.com
+Subject: Re: [PATCH v2 0/5] mm: reduce mmap_lock contention and improve page fault performance
+Date: Tue, 23 Jun 2026 15:58:05 +0800
+Message-ID: <20260623075805.466317-1-zhanghongru@xiaomi.com>
+X-Mailer: git-send-email 2.43.0
+In-Reply-To: <3be9475b-0e8a-4df8-a130-4262f993973d@kernel.org>
+References: <3be9475b-0e8a-4df8-a130-4262f993973d@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -88,27 +123,83 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
+MIME-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
 
-Sean Christopherson <seanjc@google.com> writes:
-
-> Compile tested only at this point, but I now have a series of ~17 patches to yield:
-> <..>
-> It'll probably take me a few days/weeks, but I'll try get a series posted before
-> the 7.2 merge window closes, so that you can build on top to get the PPC selftests
-> support landed in 7.3.
->
-
-Hello Sean,
-
-I have addressed the comments which we discussed in v3. Kindly let me
-know if you want me to post v4 or otherwise I was thinking once you post
-your base patches (to take natural alignment into account, which we
-discussed here [1]), then I can rebase my changes on top of that series.
-
-[1]: https://lore.kernel.org/linuxppc-dev/aimOVomL2RzYt2J4@google.com/
-
-Thanks for your help on this!
-
--ritesh
-
+> On 5/20/26 23:15, Matthew Wilcox wrote:=0D
+> > On Thu, May 21, 2026 at 05:14:20AM +0800, Barry Song wrote:=0D
+> >> My understanding is that we should not blame applications here. This i=
+s 2026:=0D
+> >> there are basically only two kinds of applications =E2=80=94 single-th=
+readed and=0D
+> >> multi-threaded =E2=80=94 and single-threaded applications are nearly e=
+xtinct.=0D
+> > =0D
+> > all of the applications i run are either single threaded or don't fork.=
+=0D
+> > what multithreaded applications call fork?=0D
+>=0D
+> Traditionally the problem was random libraries using fork+execve to launc=
+h other=0D
+> programs ... instead of using alternatives like posix_spwan (some use cas=
+es=0D
+> require more work done before execve and cannot yet switch to that). I'd =
+hope=0D
+> that that is less of a problem on Android.=0D
+>=0D
+> I assume Android zygote might be multi threaded? Maybe sshd as well? Syst=
+emd?=0D
+> But I'd be surprised if there are really performance implications.=0D
+>=0D
+> Not sure about webbroswers .... I think most of them switched to fork ser=
+vers,=0D
+> where I would assume fork servers would be single-threaded.=0D
+>=0D
+> So, yeah, getting a clear understanding how this ends up being a problem =
+on=0D
+> Android would be great.=0D
+=0D
+Barry asked me to share observations on fork() usage across Android=0D
+applications.=0D
+=0D
+I wrote a BPF-based tracing tool (kprobe on copy_process, checking=0D
+CLONE_VM to distinguish process creation from thread creation) and ran=0D
+it against the top 200 Android applications in the China market during=0D
+normal usage scenarios.=0D
+=0D
+Results:=0D
+- 82 out of 200 apps (41%) call fork() during normal operation=0D
+- Among these, some call fork() from multiple threads=0D
+=0D
+These are not zygote forks =E2=80=94 they are fork() calls initiated by app=
+=0D
+threads at runtime. Examples by category:=0D
+=0D
+  Browsers:     com.quark.browser, com.UCMobile, com.xunlei.browser=0D
+  Shopping:     com.taobao.taobao, com.tmall.wireless, com.achievo.vipshop=
+=0D
+  Video:        com.youku.phone, com.qiyi.video, com.hunantv.imgo.activity=
+=0D
+  Social/IM:    com.alibaba.android.rimet, com.ss.android.lark=0D
+  News:         com.ss.android.article.news, com.ss.android.article.lite=0D
+  Navigation:   com.autonavi.minimap, com.sdu.didi.psnger=0D
+  Finance:      com.eg.android.AlipayGphone, com.chinamworld.main=0D
+=0D
+This confirms that fork() is widely used in real-world multi-threaded=0D
+Android applications. Since dup_mmap() needs to acquire=0D
+vma_start_write() for every VMA, holding the VMA lock across I/O=0D
+would risk blocking fork() for unpredictable durations in these 82=0D
+applications.=0D
+=0D
+Tracing tool (two equivalent implementations):=0D
+  bpftrace:         https://gist.github.com/zhr250/bf4384202d598bb4cda71cb9=
+902f15ab=0D
+  libbpf-bootstrap: https://gist.github.com/zhr250/76189bdf51bdc8818500e4c8=
+917c6493=0D
+=0D
+Analysis results (top 200 apps):=0D
+  https://gist.github.com/zhr250/06f51092c84a49c602a55ac3d186e9ce=0D
+=0D
+Hongru=0D
+=0D
 
