@@ -1,58 +1,58 @@
-Return-Path: <linuxppc-dev+bounces-22915-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22916-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1DF77CDB470
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Jun 2026 05:11:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3A8D9CDB470
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Jun 2026 05:21:24 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gktT25JmSz2y71;
-	Tue, 23 Jun 2026 15:11:18 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782191478;
-	cv=none; b=gkwtvXVq0mPdO2QItXmBuTH++qavBMQgaBw8+Ci0l9mOhUjTmVYuVuqiDAGdbwax1U7FnFYcwPys0ZDT1J8Y7Gm+fmRsSzF9xzSMiIYgY5JXdpomk3RUPp7R3d4IhIO/yi+qktrYyySvsoxd/9PtTVU5hW4HfGfwjDA9LyBXX1vHlEuSv5fuYg7iD1WSliARYaciBzB9mqFsuyoxSR+GZLgl9TAY+l3WzhHV26/JMf4ci5eAjlLl8jons/z0HYM9lsbHnahjSJ6bm8nBh1AcVbZI1ogA5MmrbB23eHLbKyYtxI5y5zmLElCd5qhMpz2vlP/igWa2WwrfcXWIO25a4A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gkthf3XZFz2y71;
+	Tue, 23 Jun 2026 15:21:22 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782192082;
+	cv=none; b=TDfLU3mr49z2zjtAeXXDsdy9JDzXLJdlbVN1G0e42FIQBcIb2aQOCkdN5UBLSVOsPyDuhY0QeqPPsIWpKEF7z2r1KTXMeJSUZ/LCH3MM+wZ9carIQj0nh/VNnJGbv3T66icvfXlJ2/WIZnA9wko+nphU/d0Y//jn+WurEmxFHBwx718o/dojC3VrIulx72DzRzvkTsVj/Pg/UPQnm56ltuKqap1g1yMNFLrSifsLgJtcLFGbmLEGsgfeYXHnadqlo5CfRLUeFWLSy9R5LBKdLSt7wUlVFYqUWKBovRtSpQo04lnL+P/SMoyryD6C4sr4b4ShbGf3kyuKYzo/kKbmEA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1782191478; c=relaxed/relaxed;
-	bh=q5Sf1Z9xRL9LWcd2ZET1VjKqMFRzCniZR0mElMq/Kvc=;
+	t=1782192082; c=relaxed/relaxed;
+	bh=f9xcHL0zKeHdVldIVcal4xWYBnpP9GoKJfV/vtggwPM=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=nPjZfVSCi2nw5GLd5cQP31F3qE8/t3zy9wyDG0Bx6l6NXU6XODsMne3HMWEW570WwBqdJhHADRRTtb7DX0hnI/pc1jRcaFwU2G/eNsPNZhOpdKnVR1695ctsy8WnHwt5tuMnK2Ypk7PeE3pE/cSHjk3jupXj0Bzt45hPr338lhNUPhkWet8uWZ5JZD7cY+PYmswRPJiQXZ4HY6CrGp+rOgcdF51gu2n+iEdtMNrdNsIF0Fijk8wZIXGr/TYW6KEAaR7yYKCt/tp5BOIjtpVQoS02lnHzj/YHUEU9tc2VpjWnGRPAAh8Ov84gHzTllHeuIZQzqAHeVDkKF9PcCIGVTQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=m+kehgXJ; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=baohua@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 To:Cc:Content-Type; b=XzITymcuOozXiCSLmSMuuyCVms6ZweFIuOubc0X9KUq+ymZLMOOUutJJoXpgcF2hT09t2a36BretJJHkCtuwhlk9jTxp2RhKBEKiIxD71m2w0JMM7EtPkowBUeP6IdohboG2RORtn4Wa5Jhw+e2qJb4OUufIz0G2a14cI2C0ArTNL9vJeRsu5IRlKNbsmMgmHi7w+2lfNq0J42m6MkIMV9p5NRKphSo/sLa07DW+Nsp0kWFMO8JAP8hoYQdHXwExvLm1towbPCU7yxGlbQhJA9+ROGnGatwv9FENpc6DR1VpKtbVNj9G3yPq6xNc2fkCBusZ3ukOktbSvBfdAapw9g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=cbdCyaDc; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=baohua@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=m+kehgXJ;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=cbdCyaDc;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=baohua@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=baohua@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gktT11LfDz2xl6
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jun 2026 15:11:17 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gkthd3sd4z2xl6
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jun 2026 15:21:21 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id DB60F444D2
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jun 2026 05:11:14 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B8E851F00ADE
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jun 2026 05:11:14 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 232D2445AD
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jun 2026 05:21:19 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0799F1F00ADF
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jun 2026 05:21:18 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1782191474;
-	bh=q5Sf1Z9xRL9LWcd2ZET1VjKqMFRzCniZR0mElMq/Kvc=;
+	s=k20260515; t=1782192079;
+	bh=f9xcHL0zKeHdVldIVcal4xWYBnpP9GoKJfV/vtggwPM=;
 	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=m+kehgXJ7IJ9wyrAyKxGHr8VzJe07qU/W8OBvjpMn/5iEYqb/+5sfphIj3lZS702Y
-	 hiGkYLpSsPCndvRe6S8QWWieAf3MLKGo+JvP6M5nIfz1p1BepTYGAptEVwJZ5PxIeP
-	 dtHkl8kcPP9tzWpK0FL6XP1p6hMwCsikohm8IWVxrXr6uxzrMqEwOsbDlR81Ef9cLF
-	 5BWf8DM7KZs66eDqzxX6aj4QM6+mQq1eR7/Sb+VNDoolkty8odjYiGXmw5fokKorCL
-	 k0CWqjXiRcUCWugG8id9MEGY/MoM1Tw8o5TCTKAEtTLQxlBfr2kVHQld8BKG2aY0QV
-	 0nM5lDNwTusVA==
-Received: by mail-qk1-f173.google.com with SMTP id af79cd13be357-9204711e831so448709585a.2
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jun 2026 22:11:14 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AFNElJ8UgRstwMFZznjkWs9yodBrfcFkhwplwPdh5g8LRfujx65RdQQvzdTx/5OeAOYEHprppVqjSlJSGuEubPY=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YzbrBASV0DCdOMdz/diFmi4l+1YodN3k8Ed2jrKRkSBCLU8W0k2
-	UKtx/hPAC1ssKjp0t9lC1J5dQxl2n684PBtsnABZ/ARa98DFt2wTPHyT+VK8yWVaHCiESbJE7GY
-	bRjCNObY97m01iCzPq4ieFuATb3qjXG0=
-X-Received: by 2002:a05:620a:261a:b0:911:9a7a:8076 with SMTP id
- af79cd13be357-9266b97e8eamr160228885a.8.1782191474145; Mon, 22 Jun 2026
- 22:11:14 -0700 (PDT)
+	b=cbdCyaDcakBo8y9Qy5UWuhk2O2aw58n25cBDhw/DKga8b94ePDG9vyz/zA//HlwRG
+	 u2W3SZnGiAxtcyX+mFvPozlLMw/erAzgkVkpqQsLUcpMbSoq2q80+MSeNYhuA30ysb
+	 e5eWQtfKGxvBDIF96wiWEusH3E1xGCP3h9glQKv4INS4CcNWDia2GugQmE8cVlAgoQ
+	 PBLSLSoNiHNU1KzNlzimAlUJGhIPYcSz8vH4yaWAHLabmOw8SPvESa2X1zuDHcvlmZ
+	 kZEwZQ3+Bz72a8O8+DmulSV1YY2OBr6+hdZjMB9LT+SmfGhuK6bEcqI3zgTlqW717B
+	 CUwK+paWj9syw==
+Received: by mail-qv1-f46.google.com with SMTP id 6a1803df08f44-8dcd895a4c0so61729856d6.3
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jun 2026 22:21:18 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AHgh+Rq/FYWpoJ/GTjHLuckbOvddc9lHwYqbiFjYWlwytHkKP1fq2h2E5MONc9k1z1GMNfK0F5yYhggqCINVGTk=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YziITiI7SjOqeOCCb1d5Q7UUP1K3jSyOey6SU53qm09SyPL9fYs
+	Oppn9S6DXNhdk1FkUENlTt3x67syaZsf27CDjYmvXZfoalA1nfARvQbbs6CVIDHc8sdWztDw1U5
+	nswsaMKD8VmXt5QrjBiwUpPiG7k0i58c=
+X-Received: by 2002:a05:6214:3d13:b0:8ce:ee76:1597 with SMTP id
+ 6a1803df08f44-8e43709599amr15409076d6.43.1782192078434; Mon, 22 Jun 2026
+ 22:21:18 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -66,15 +66,14 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <cover.1781843449.git.ritesh.list@gmail.com> <eda4e51ee9f1270582fbb2823ec5873e769de089.1781843449.git.ritesh.list@gmail.com>
-In-Reply-To: <eda4e51ee9f1270582fbb2823ec5873e769de089.1781843449.git.ritesh.list@gmail.com>
+References: <cover.1781843449.git.ritesh.list@gmail.com> <ecbca3be3fa8bd7e213d013a2ec6ff9a11c6e0d1.1781843449.git.ritesh.list@gmail.com>
+In-Reply-To: <ecbca3be3fa8bd7e213d013a2ec6ff9a11c6e0d1.1781843449.git.ritesh.list@gmail.com>
 From: Barry Song <baohua@kernel.org>
-Date: Tue, 23 Jun 2026 13:11:03 +0800
-X-Gmail-Original-Message-ID: <CAGsJ_4yTY8g3M7qmpM7HeUq=E05e7v_QFTzk=2D5Mv3Vj3Usqg@mail.gmail.com>
-X-Gm-Features: AVVi8CebkszW_dJseo4N-w7zaazQK_GJnKVeR7lxEzBiOpulB3NIjYM7MC4L4Kw
-Message-ID: <CAGsJ_4yTY8g3M7qmpM7HeUq=E05e7v_QFTzk=2D5Mv3Vj3Usqg@mail.gmail.com>
-Subject: Re: [PATCH v4 2/3] mm, swap: allow archs to override SWAP_NR_ORDERS
- via ARCH_MAX_PMD_ORDER
+Date: Tue, 23 Jun 2026 13:21:07 +0800
+X-Gmail-Original-Message-ID: <CAGsJ_4zxcp-jdnRTn09b8ZfxT0P7suFq3BEpyiUzA2C_iRRUGw@mail.gmail.com>
+X-Gm-Features: AVVi8CeiUTUaiIcSdVYVOkLXA4Apo1fqvv-IRKNsnhGzJmhGJPkOscl1sBGYS6M
+Message-ID: <CAGsJ_4zxcp-jdnRTn09b8ZfxT0P7suFq3BEpyiUzA2C_iRRUGw@mail.gmail.com>
+Subject: Re: [PATCH v4 3/3] powerpc: Kconfig: Enable THP_SWAP on Book3S64
 To: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
 Cc: linux-mm@kvack.org, Madhavan Srinivasan <maddy@linux.ibm.com>, 
 	Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
@@ -90,40 +89,29 @@ Content-Transfer-Encoding: quoted-printable
 On Fri, Jun 19, 2026 at 12:41=E2=80=AFPM Ritesh Harjani (IBM)
 <ritesh.list@gmail.com> wrote:
 >
-> SWAP_NR_ORDERS sizes a few small bounded arrays inside THP swap
-> allocator code (nofull/frag cluster lists, percpu_swap_cluster's
-> si/offset arrays, next array for rotational device). This currently
-> expands to PMD_ORDER+1, which only works when PMD_ORDER is a compile
-> time constant.
+> THP_SWAP avoids splitting of a transparent huge folio into 32 smaller
+> 64K folios (Radix-64K pagesize / 2M PMD) or into 256 smaller 64K folios
+> (Hash-64K pagesize / 16M PMD), during swapout. This improves the
+> swapping performance since all the bookking & I/O submission happens
+> once per large folio. More details at [1].
 >
-> However on architecture like PowerPC Book3S64, PMD_ORDER is a runtime
-> variable which depends upon which MMU is selected (Radix / Hash), so in
-> that case, PMD_ORDER cannot be used to size the static arrays.
+> PowerPC Book3S64 could not enable this before because PMD_ORDER is
+> selected at runtime depending upon the chosen MMU. The earlier patches
+> in this series turn SWAPFILE_CLUSTER into a runtime value and introduce
+> an ARCH_MAX_PMD_ORDER upperbound override for SWAP_NR_ORDERS. With those
+> changes, we can now enable THP SWAP for Book3S64.
 >
-> This patch provides an optional ARCH_MAX_PMD_ORDER (upper-bound)
-> override for such architectures. The memory overhead on enabling this
-> override is negligible. Even if we make SWAP_NR_ORDERS runtime alloc,
-> default slab padding could cause some memory waste. Also we lose the
-> per-cpu cacheline benefits (for percpu_swap_cluster) because it might
-> cost an extra cacheline indirection overhead in swap_alloc_fast() for
-> fetching si[order]/offset[order]. Note that a fully runtime
-> SWAP_NR_ORDERS was considered in previous version but was dropped for
-> this reason [1]
+> This increases bandwidth throughput with zram backend for swapout by
+> 40-50% with Radix and 100-130% with Hash (Tested by Sayali)
 
-Do we know the maximum PMD size? On arm64 with a 64 KB base page,
-a PMD can be as large as 512 MB:
-https://docs.kernel.org/arch/arm64/hugetlbpage.html
+Thanks!
 
-One concern we have is that performing I/O on such a large folio could
-incur significant latency before reclaiming any memory. For this
-reason, on arm64 we initially enabled THP_SWAPOUT only for 4 KB base
-pages:
-https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?=
-id=3Dd0637c505f
+I am curious about the contents of the anonymous memory being tested
+and the compression algorithm used by zram.
 
 >
-> [1]: https://lore.kernel.org/linuxppc-dev/pl1zdksc.ritesh.list@gmail.com/
->
+> [1]: https://lore.kernel.org/all/20170515112522.32457-2-ying.huang@intel.=
+com/
 
 Best Regards
 Barry
