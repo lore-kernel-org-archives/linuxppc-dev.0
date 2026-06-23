@@ -1,83 +1,50 @@
-Return-Path: <linuxppc-dev+bounces-22944-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22945-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 82840CDB471
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Jun 2026 19:15:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 83B4ACDB470
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Jun 2026 20:07:44 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4glFBv1BW0z2yfS;
-	Wed, 24 Jun 2026 05:15:19 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782242119;
-	cv=none; b=h2ZkadQIwIVC3N+InWAjf1DTPexpPlqLWhwf8Qo39qpHMoyioAviVJ0Mh+rZ2tKECaMbit3+g2iTq5SdawmmbVDjU7PJeXyWwt5ZLKUUl9hntRhp5lTUwDR+UR4iksn/hiaAfvIHbelqktnVS+KLWUwJAbHxR7FtZO64PoQPa2WIOkxsY9evHQjRufTwv/nRi9IVgd2ex+Rgbe/fhwYSK6hCtPukeRQ4bY2XYSa3qa7IahboYSixWbuKl6wgW2IM9DsBKLumiwh6lHnkIrT2pRmxkXDhDnOtQN5Qnzyitg0O9u9sF0dDRi0ReWpq58KJguw4Ro2Zx7i2cpy3c/+6xA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4glGMM01v7z2yQG;
+	Wed, 24 Jun 2026 06:07:43 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782245262;
+	cv=none; b=nQbXtKPm7KA46m8MkoxzTCTxiv8idUasB3WbkvvYfeRbagWSCsMcZoXAE4mzAjxDYYKw09vKTSPkMeX7FMdsMFwoDJ+SW4+oDWFxp2lLLUwUcBD9ja6sgYGzXz/WF8RFt0PmxmTkugxqrXij/7aseE5DJFQoi/kkbXXauats/EbVzoV3+WUNk0Oc/EO8dd+RVa2TPmLAbopCvz5iRHPNkHU9dCIQNcK9uU3jx0UJ+pVr9DB63gpkfja1EbrTSMqyqZwUC7FysGqOp+po8c6tNsJ7pf8ArM0Mu8VYpSwMezjkCDFysJN8vzmDpy31+SjE9S3dk58r55QY3QGD4+oa2w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1782242119; c=relaxed/relaxed;
-	bh=QFGzWOrOeMaGW9Uc45BDxkQB2n97WnL5QNSYwhNDk4E=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=g8JHn17rl5r52hI/6j1VZXVJDSJZTq5FgRIttXwfeiT5YbjzNkTn7f7kWu2F0IoPs7jDxWvF4avisYC6qXSJZJDg+ePXxQAgdpvSP/XBV41VLLW7tKiq+mvdp/FyCihbIo7UJdnxZ6HC0kYaf0MHHvyZw3ce1XpWpwMsR4JcLwtBpec7WLX2ieJ9YD6l/s/AQyBpvSM2FE8ertPDeBtw3dv6cWbi0tghRUiOI1fNk2Bm/OCyPn4+w4pyXpZIN4syLs3PoyfFudnMDe/SRosvrSaDK3jOFNvVCSyvkKT3XwRMyhcDL/K1yyWUUhCt5dbGZCRIc4bXo60gGQMD7vIZng==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Vod6nmLW; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=adubey@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1782245262; c=relaxed/relaxed;
+	bh=6Kmx0mi/Yz50Wgq4l7LEOUoM/N7dSVgue1OpRg96emw=;
+	h=Content-Type:MIME-Version:Message-Id:In-Reply-To:References:
+	 Subject:From:To:Cc:Date; b=k9vC7mnoZNqlPbcUyUBxuqocnbOs9VnCGBtdebRVHnnsVaLN3twUxM1GrfupC9R6aJWbvuXfo/zggCAH7xiaLFoMBfN1XV1ITnjQFjsEb9qRb57/KUZoe1FsEjkUbjzj/jsKwkBrL33tr+mlCyAVeg/Ni/cmiUhbkKtJIUowPoMgV65L4GLXU/IJR8otC4io5eEtGI68zCobuX7YzeQ+Eg7CezPtCLmhVcR+lRFTcL/FW7ICz3v84KLocDcGuthjDPh4+SLY6DF3UgD7BJzMxrzW6gW8xmiDHCum9vqa+Oa51n3PGlmaPRvRlBBrbQZ4E2i6FIrPwlVoeUeeCIvKOg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=mtgC7vu1; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=bot+bpf-ci@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Vod6nmLW;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=mtgC7vu1;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=adubey@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=bot+bpf-ci@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4glFBt4C9vz2yfN
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jun 2026 05:15:18 +1000 (AEST)
-Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 65NBmRZL1914627;
-	Tue, 23 Jun 2026 19:15:05 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=pp1; bh=QFGzWOrOeMaGW9Uc4
-	5BDxkQB2n97WnL5QNSYwhNDk4E=; b=Vod6nmLWfGJFIWWivCsfIIg0vd9L5LJrt
-	IK2pjHqFkyP3RzKI+jARXPMZMLoc4EhOy6t70pchSzT7SsnlEtLrrjgjlHWRMGSe
-	W0fD/SEI+0ps94ZYLvvtlzKPy+oCqF746JdWKqJTO5loYS8MW2vZc8opb6H5jiPz
-	amDcFHELYWVKp3AxwOGWiRfz47F6I0IdXBEOc3ol6eWG9mVnnyng8Y83P+0Nu9TH
-	bvqz1bbM1OC1UiCqm9a0f67B2w5KUL9uHNvO8G7yYkZ3P4ZFmGEjB3b+INT7mDK3
-	O07hPhqw+zasS2NLmbIPAly4QXh9SaLwdovqV0sLDL8wxL/5ByhxA==
-Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4ewjk4geja-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 23 Jun 2026 19:15:04 +0000 (GMT)
-Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma13.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 65NJ4em7015733;
-	Tue, 23 Jun 2026 19:15:03 GMT
-Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
-	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4ex7dg4rd0-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 23 Jun 2026 19:15:03 +0000 (GMT)
-Received: from smtpav04.fra02v.mail.ibm.com (smtpav04.fra02v.mail.ibm.com [10.20.54.103])
-	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 65NJF0GP38601018
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 23 Jun 2026 19:15:00 GMT
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id F26F52004D;
-	Tue, 23 Jun 2026 19:14:59 +0000 (GMT)
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id A65302004B;
-	Tue, 23 Jun 2026 19:14:57 +0000 (GMT)
-Received: from ltcrain4-lp15.ltc.tadn.ibm.com (unknown [9.5.7.39])
-	by smtpav04.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Tue, 23 Jun 2026 19:14:57 +0000 (GMT)
-From: adubey@linux.ibm.com
-To: bpf@vger.kernel.org
-Cc: hbathini@linux.ibm.com, linuxppc-dev@lists.ozlabs.org, maddy@linux.ibm.com,
-        ast@kernel.org, andrii@kernel.org, daniel@iogearbox.net,
-        shuah@kernel.org, linux-kselftest@vger.kernel.org,
-        stable@vger.kernel.org, Abhishek Dubey <adubey@linux.ibm.com>,
-        sashiko-bot@kernel.org
-Subject: [PATCH bpf v9 8/8] powerpc64/bpf: fix percpu private stack leak on JIT failure
-Date: Tue, 23 Jun 2026 19:14:11 -0400
-Message-ID: <20260623231411.6216-9-adubey@linux.ibm.com>
-X-Mailer: git-send-email 2.52.0
-In-Reply-To: <20260623231411.6216-1-adubey@linux.ibm.com>
-References: <20260623231411.6216-1-adubey@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4glGMK5W3jz2xnQ
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jun 2026 06:07:41 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with ESMTP id F06D74079F;
+	Tue, 23 Jun 2026 20:07:38 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 996831F000E9;
+	Tue, 23 Jun 2026 20:07:38 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1782245258;
+	bh=6Kmx0mi/Yz50Wgq4l7LEOUoM/N7dSVgue1OpRg96emw=;
+	h=In-Reply-To:References:Subject:From:To:Cc:Date;
+	b=mtgC7vu1b8rxzkq0Xdavu/GlMTv+4n+D8qxXWeiHmpga4P5LNvQ+nuoGfBcpM26H3
+	 wO3+BzB8wKxaKvlsUJtBxNgrH2jEstdh/SdmR9z6IrIIsdvCI53xkjq1dCQpwAARVh
+	 B8MU+/b9X+U2/x4UGI5LsTpbfWU2x9AwlmvrGQ9n2qUFTdNPjxlLITg2lc6nKgPjqB
+	 xt7XlyKXMvc5ZDJDvJlIIRTl5+dIhrLWBmYKLyi/2uxG8t8KcHn9awaeka8cGHVMXI
+	 W6nk+bo/vE0TuIxyVYOohVX9QRtMEe/PEc+fM+qrwWsL8UZmGBBCvEtRQ/3crbym7P
+	 mdNsp6XLBIZTQ==
+Content-Type: multipart/mixed; boundary="===============2442528478780633523=="
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -91,76 +58,82 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Authority-Analysis: v=2.4 cv=Oph/DS/t c=1 sm=1 tr=0 ts=6a3adb38 cx=c_pps
- a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
- a=FelO9ux0wxsA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=U7nrCbtTmkRpXpFmAIza:22 a=VwQbUJbxAAAA:8 a=VnNF1IyMAAAA:8
- a=SJ-jtujo7bo76xSWeacA:9
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjIzMDE1NSBTYWx0ZWRfX2H5XoMx5nWWJ
- m62y6PksTNZin6rBCXi4c4pjygPixUARVgoOqwR3VF7zW3wI5yBplclQj4b0EwkRY2eZGweylvn
- dtAWAUAfAqsiRhov16M/8Bbw6oC9V3DGtAuyHOWE268Lr6ubQJssDKkduo4ftMIrNUV2QkJmz8K
- ybL2qODKGrMCS3rLeyCjtvxdbjeewG+EL6Kgs2RhI2tEco/0uZ1EZmDqpqiYs5NldkwL7n2AOQM
- L8NuJvDTjER13EFCi0f8qLmZ4CG/b6MyxGJKswqh3O5FEPoDMEsqC9yzndbWg0xVZff4pzaAlwm
- icr0ymb7L7trZ4R5KWzMCIu0AvqQ5TP+kAxIGAbD+um9AybOLCZazhwz0YiH4Km6oOtJaPEP9SL
- E+hwHvAeeGyLlQjJwvzieeek+VKvpw==
-X-Proofpoint-GUID: xAJjT9n7SPaDfVV7uNdzhCqfg5IRru91
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNjIzMDE1NSBTYWx0ZWRfX3BkofGrn1xk0
- y2+igvHcNP931PcZu3rd5wgnN1/vOcVXxACR5vzKNepuPl30q19sNDDH+s8hhfq7gAOJ5mRJroJ
- wmBW+AvQOcrJxV2fBIJOoEjhzdNGSek=
-X-Proofpoint-ORIG-GUID: xAJjT9n7SPaDfVV7uNdzhCqfg5IRru91
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
- definitions=2026-06-23_03,2026-06-23_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- phishscore=0 lowpriorityscore=0 bulkscore=0 spamscore=0 suspectscore=0
- malwarescore=0 adultscore=0 classifier=typeunknown authscore=0 authtc=
- authcc= route=outbound adjust=0 reason=mlx scancount=1
- engine=8.22.0-2606150000 definitions=main-2606230155
+Message-Id: <979553f5ed74dcb555e9aba6aad660ad2a208c643ab7aeac6d5e74992427f362@mail.kernel.org>
+In-Reply-To: <20260623231411.6216-4-adubey@linux.ibm.com>
+References: <20260623231411.6216-4-adubey@linux.ibm.com>
+Subject: Re: [PATCH bpf v9 3/8] selftest/bpf: Fixing powerpc JIT disassembly failure
+From: bot+bpf-ci@kernel.org
+To: adubey@linux.ibm.com,bpf@vger.kernel.org
+Cc: hbathini@linux.ibm.com,linuxppc-dev@lists.ozlabs.org,maddy@linux.ibm.com,ast@kernel.org,andrii@kernel.org,daniel@iogearbox.net,shuah@kernel.org,linux-kselftest@vger.kernel.org,stable@vger.kernel.org,adubey@linux.ibm.com,ast@kernel.org,andrii@kernel.org,daniel@iogearbox.net,martin.lau@kernel.org,eddyz87@gmail.com,yonghong.song@linux.dev,clm@meta.com,ihor.solodrai@linux.dev
+Date: Tue, 23 Jun 2026 20:07:38 +0000 (UTC)
 
-From: Abhishek Dubey <adubey@linux.ibm.com>
+--===============2442528478780633523==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
 
-The existing conditional statement in bpf_int_jit_compile() frees the
-percpu private stack at out_addrs only when the image buffer was never
-allocated.
+> diff --git a/tools/testing/selftests/bpf/jit_disasm_helpers.c b/tools/testing/selftests/bpf/jit_disasm_helpers.c
+> index 3558fe10e28c..11428cad5b2d 100644
+> --- a/tools/testing/selftests/bpf/jit_disasm_helpers.c
+> +++ b/tools/testing/selftests/bpf/jit_disasm_helpers.c
+> @@ -178,10 +178,12 @@ int get_jited_program_text(int fd, char *text, size_t text_sz)
+>  {
+>  	struct bpf_prog_info info = {};
+>  	__u32 info_len = sizeof(info);
+> -	__u32 jited_funcs, len, pc;
+> +	__u32 jited_funcs, len, pc, disasm_len;
+> +	__u32 trunc_len = 0;
+>  	__u32 *func_lens = NULL;
+>  	FILE *text_out = NULL;
+>  	uint8_t *image = NULL;
+> +	char *triple = NULL;
 
-If bpf_jit_build_body() fails during a code-generation pass, the
-image buffer has already been allocated, so !image is false and the
-percpu stack is not freed.
+This isn't a bug, but would it be clearer to follow the traditional C
+style by grouping related variables together? The disasm_len variable
+could be declared closer to where it's used along with trunc_len, and
+adding a blank line before the fprintf() statement in the loop might
+improve readability.
 
-Because JIT compilation failed, fp->jited remains at 0. The subsequent
-bpf_jit_free() path only frees priv_stack_ptr when fp->jited is set, so
-freeing is skipped here too, leaking the percpu allocation.
+[ ... ]
 
-Fix implements freeing the private stack whenever fp->jited was not set,
-i.e. compilation did not succeed, instead of keying off !image. !fp->jited
-already covers the !image case, since image is only NULL on early-failure
-paths where fp->jited is likewise 0.
+> @@ -225,9 +227,30 @@ int get_jited_program_text(int fd, char *text, size_t text_sz)
+>  	if (!ASSERT_OK(err, "bpf_prog_get_info_by_fd #2"))
+>  		goto out;
+>
+> +	/*
+> +	 * last 8 bytes contains dummy_trampoline address in JIT
+> +	 * output on 64-bit and last 4 bytes on 32-bit powerpc,
+> +	 * which can't disassemble to a valid instruction.
+> +	 */
+> +	triple = LLVMGetDefaultTargetTriple();
+> +	if (triple) {
+> +		if (strstr(triple, "powerpc64") || strstr(triple, "ppc64"))
+> +			trunc_len = 8;
+> +		else if (strstr(triple, "powerpc") || strstr(triple, "ppc"))
+> +			trunc_len = 4;
+> +		LLVMDisposeMessage(triple);
+> +	}
+> +
+>  	for (pc = 0, i = 0; i < jited_funcs; ++i) {
+> +
+>  		fprintf(text_out, "func #%d:\n", i);
+> -		disasm_one_func(text_out, image + pc, func_lens[i]);
+> +		/*
+> +		 * Disabled JIT have zero func_lens, hence underflow
+> +		 */
+> +		disasm_len = func_lens[i] > trunc_len ?
+> +					func_lens[i] - trunc_len : 0;
+> +		disasm_one_func(text_out, image + pc, disasm_len);
+> +
+>  		fprintf(text_out, "\n");
+>  		pc += func_lens[i];
+>  	}
 
-Reported-by: sashiko-bot@kernel.org
-Closes: https://lore.kernel.org/bpf/20260616135426.A06B71F000E9@smtp.kernel.org
-Fixes: 156d985123b6 ("powerpc64/bpf: Implement JIT support for private stack")
-Cc: stable@vger.kernel.org
-Signed-off-by: Abhishek Dubey <adubey@linux.ibm.com>
+
 ---
- arch/powerpc/net/bpf_jit_comp.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+AI reviewed your patch. Please fix the bug or email reply why it's not a bug.
+See: https://github.com/kernel-patches/vmtest/blob/master/ci/claude/README.md
 
-diff --git a/arch/powerpc/net/bpf_jit_comp.c b/arch/powerpc/net/bpf_jit_comp.c
-index 171cb6017259..46bbfb6be613 100644
---- a/arch/powerpc/net/bpf_jit_comp.c
-+++ b/arch/powerpc/net/bpf_jit_comp.c
-@@ -403,7 +403,7 @@ struct bpf_prog *bpf_int_jit_compile(struct bpf_verifier_env *env, struct bpf_pr
- 				(void *)fimage + FUNCTION_DESCR_SIZE);
- 
- out_addrs:
--		if (!image && priv_stack_ptr) {
-+		if (!fp->jited && priv_stack_ptr) {
- 			fp->aux->priv_stack_ptr = NULL;
- 			free_percpu(priv_stack_ptr);
- 		}
--- 
-2.52.0
-
+CI run summary: https://github.com/kernel-patches/bpf/actions/runs/28051760380
+--===============2442528478780633523==--
 
