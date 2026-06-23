@@ -1,98 +1,84 @@
-Return-Path: <linuxppc-dev+bounces-22925-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22926-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 57607CD98F2
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Jun 2026 11:12:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EECD6CDB479
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Jun 2026 11:37:54 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gl2TG4XXFz2yQL;
-	Tue, 23 Jun 2026 21:12:02 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=195.135.223.131
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782213122;
-	cv=none; b=ZyjptOG191zOpp9Up0SKbp88vEj34ZJZbX5Aq9W6hhZcibIw9V8CcOEguCknnjzX8CVI38xMwR1dvMdUrx3bdpRUI1TNFatD5HrESIPPMH2X4V6A2692bBU11HXoQOAFTA6G9l+v/hadAbQGw2qnT36tw+gpahc+3L0hmwvwMwyKEY3ipQryJd5Z4bZwQ9XQvCreHPtskEbsOIa+YRatod/yAj4rav7It0WLUMF3Juv7d+EyDCv1DL0/Et2GC18VcfZkjtWzzvO4S1eq/PkvKqovWvVilEmTYi6eMVNlw8+AdNRTkuEVcMMng5qR+DvjhM+VFrHgcsnQor12Mf717g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gl3351MPTz2y71;
+	Tue, 23 Jun 2026 21:37:53 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::434"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782214673;
+	cv=none; b=ojVXefgpen5ZtPy9S3djmSF+NbcG5V0SDarN2KQ68oJIgdHKhQwMuAwB3lRo8RoGLyualykxkgWmb/aBguA4xSF+M6KI0LtNrmZdzBg+nUVbC8pWCBYyO9ql9XZk4ciMAUYARAVKtGKbah7sEncgjMawWF9LsuxfhYUsCJ9vmsIHhIBuYQlBG/WV25zJrCHY2n05lrmpseHqZr8EMdt7F3wb8QQCwlp3x1bpZ7UPiljWTq3/52gkXrsOIInQUMYd9HiK/HEN1e0KaKJh91cd5g5QS3G3ZNug1n+obKbTeWaa2SFuVRzGOK16GNDr8hj18GrMLs6X9zO4YzWQpF3JrQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1782213122; c=relaxed/relaxed;
-	bh=2KC5uz/Q9vZRGxlgx9g/mdIH/o4JfJCdH/4iMSLlLH4=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=KQ6QmQxaqQBFElJmDJhwXT4G1Jfhqhwsrxp9LbwPjPY3M6BQ2DTdkqH7sf5PkJC0aUPx2U2G722cpwFPxYl8P0mn5FK/61O8bUCMMw7ye7J6rx76W6Th6XasGWRgL1VV8lphh3R092cdMgEzuH6rV8UbWUDsP954DNFED8JXLBN8HQFCRCuo8vOcoWCyGGfkfgcS8+Wd95yuNqVSTa369+sXt4LAHWuOkGqroZUy+zvHmoWfHp9pOYl319u4q2tATp/q1hCu6jcwcFKBGyrUYdlH6QG2Ack68/5FDg9uqwyn9ne+gznNeNGfWcKApTgD4ukRWfRyfTI1ajiQ+hMmdw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de; dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=bA6/ev32; dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=FFUrV6v3; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=1Oq78NFI; dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=JTeBs68m; dkim-atps=neutral; spf=pass (client-ip=195.135.223.131; helo=smtp-out2.suse.de; envelope-from=msuchanek@suse.de; receiver=lists.ozlabs.org) smtp.mailfrom=suse.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de
+	t=1782214673; c=relaxed/relaxed;
+	bh=t/a2x5Ghb20XmVHJR+ek7GnEWJsjkaghf0C6SjAspjc=;
+	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References:
+	 MIME-version:Content-type; b=oiAGEMQ7zquijeub8VXROrMv3yaUuuSEq2gfnBr2ofjNxpjWiAEC6q3We97J2F/oZHa34mYkdHbsvhAzpRfigccpjzXMiasgSEYKR4mz9zFSpKskOyAH1WM0w9fjoDK+LzYozsqMjoN/PDuaZFLg5MfPIN7Zpsh+K1aaHGA4T4nZ3btf05yROfWbkrJ9fxmw2qyMdGWBChu6/VigcBUiy5Ylmxh99v01pgOgMzXoCqAQ7qiKz1vCmKbzNSI6ASIuP3c4eLCzBjgyKjw9wFr1UjhBjpYk5O5PIafAH662PM8IhplcASytHnaAQ0kIDpB0ei6nDOCFVWCHN3yHByGp+g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=TTMV05U/; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::434; helo=mail-pf1-x434.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=bA6/ev32;
-	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=FFUrV6v3;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=1Oq78NFI;
-	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=JTeBs68m;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=TTMV05U/;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=195.135.223.131; helo=smtp-out2.suse.de; envelope-from=msuchanek@suse.de; receiver=lists.ozlabs.org)
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::434; helo=mail-pf1-x434.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pf1-x434.google.com (mail-pf1-x434.google.com [IPv6:2607:f8b0:4864:20::434])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gl2TF1nqNz2y71
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jun 2026 21:12:01 +1000 (AEST)
-Received: from kunlun.suse.cz (unknown [IPv6:2a07:de40:b306:2000::2])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out2.suse.de (Postfix) with ESMTPS id 95F9275EFA;
-	Tue, 23 Jun 2026 11:11:56 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1782213118; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=2KC5uz/Q9vZRGxlgx9g/mdIH/o4JfJCdH/4iMSLlLH4=;
-	b=bA6/ev32dJCfO+gw01okbit/FFFCyUCQ56AwMnpUQFrLZgexfJm3gNJ4n53HQt8UYna4z0
-	Df62F29iMuJQE4VfTYmq9O8wLksRPAm7wFlzfp6dtNQgHDXp5oiJ5AiXYp99RZ7B8zycy0
-	Mvg7PYd2FPHS51n5P2vO3wZoMkbPiIo=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1782213118;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=2KC5uz/Q9vZRGxlgx9g/mdIH/o4JfJCdH/4iMSLlLH4=;
-	b=FFUrV6v3iPQgjUWRQnGKD3oX++HPg24ey3E6kSJd8irajCps5Kq/jj7ZNKj0CyiUT0v7Ca
-	Vu3NMwH19RCwjfDg==
-Authentication-Results: smtp-out2.suse.de;
-	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=1Oq78NFI;
-	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=JTeBs68m
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1782213116; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=2KC5uz/Q9vZRGxlgx9g/mdIH/o4JfJCdH/4iMSLlLH4=;
-	b=1Oq78NFI6dxXLnWaYqx0dSWZ9gdci1NheZiUe1+/w1nRWKNyqnkPM/s/Fzxr4B/I7EF6yv
-	Zi184i/vX/2UTHsTZICZd4SywYfGsU00JjYJXCjiD1xF0VlHI9PxZzin1oFAUgHiyVq0tV
-	fdwfiP5l64zqtzUPeCXYVAlI35ynnaM=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1782213116;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=2KC5uz/Q9vZRGxlgx9g/mdIH/o4JfJCdH/4iMSLlLH4=;
-	b=JTeBs68mPgI+xX3qm/5XBBPtEd/FeRptcNA0qLD7Sso94LtKnQejMSEXoHGoiWUXFAt9mm
-	/tfXPep1Y1HdaaCQ==
-Date: Tue, 23 Jun 2026 13:11:55 +0200
-From: Michal =?iso-8859-1?Q?Such=E1nek?= <msuchanek@suse.de>
-To: "Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com>
-Cc: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com,
-	chleroy@kernel.org, ryabinin.a.a@gmail.com, glider@google.com,
-	andreyknvl@gmail.com, dvyukov@google.com, vincenzo.frascino@arm.com,
-	oleg@redhat.com, kees@kernel.org, luto@amacapital.net,
-	wad@chromium.org, mchauras@linux.ibm.com, sshegde@linux.ibm.com,
-	thuth@redhat.com, ruanjinjie@huawei.com, akpm@linux-foundation.org,
-	macro@orcam.me.uk, ldv@strace.io, charlie@rivosinc.com,
-	deller@gmx.de, kevin.brodsky@arm.com, ritesh.list@gmail.com,
-	yeoreum.yun@arm.com, agordeev@linux.ibm.com,
-	segher@kernel.crashing.org, mark.rutland@arm.com,
-	ryan.roberts@arm.com, pmladek@suse.com, feng.tang@linux.alibaba.com,
-	peterz@infradead.org, kan.liang@linux.intel.com,
-	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
-	kasan-dev@googlegroups.com
-Subject: Re: [PATCH v5 0/8] Generic IRQ entry/exit support for powerpc
-Message-ID: <ajpp-_XnbF3UTM_E@kunlun.suse.cz>
-References: <20260427122742.210074-1-mkchauras@gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gl3334mVBz2xM7
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jun 2026 21:37:50 +1000 (AEST)
+Received: by mail-pf1-x434.google.com with SMTP id d2e1a72fcca58-842358aaf36so2410264b3a.2
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jun 2026 04:37:50 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1782214669; x=1782819469; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:references:message-id:date
+         :in-reply-to:subject:cc:to:from:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=t/a2x5Ghb20XmVHJR+ek7GnEWJsjkaghf0C6SjAspjc=;
+        b=TTMV05U/hHKrKk5YiYynSFEM6oVNENWO6wbr1Ul0sepWkVuLLwUeujt2kqz0QiKbPZ
+         +Huk3ywp6ji9JFbCx937iYBxRd9xTdrLiZY/6l6CkClIh/+DX1AfDq5nL6E0S0ZfF4Qs
+         P/G59nQEtIO/HgWPcSrbO49SiRL9k6kHZ56SEW1bOlmCcjsByEYl965l8vjWrQO3s5zc
+         RPHW4kS9kDi+mfjdt4yuenKTSucAl591uUkKUIGb++qDglAlTVC3SbPWlg132R1/dC3/
+         1j8lAhhMCKdjTEdRXOiIgVjw1eOVR79fcKgpGDBGxTHfcZRoKA+DvTxJwFz89CGIAkbI
+         f6iQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1782214669; x=1782819469;
+        h=content-transfer-encoding:mime-version:references:message-id:date
+         :in-reply-to:subject:cc:to:from:x-gm-gg:x-gm-message-state:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=t/a2x5Ghb20XmVHJR+ek7GnEWJsjkaghf0C6SjAspjc=;
+        b=DjOfXjZkKbCexN7eHcR038/sw4HbpTneh/qOXo+2ydbSiETuTqbyzAxJwkZQUc8GLW
+         5qog+Cjr/bhn2na7xk2s5QZ07Lzwinu3f9bXaUN/dlyf4q3YNAg79EAvptF3KIiNgwKK
+         +OntqxhjcWqvYxvGfXyL+lZlEHlVD+uQgCnso+7HpYH9T4PP9H5yWzTpqw8uojMGs1Jr
+         N3EtoArN0V/yFFJOIUYgoXlDAjroZiSWZVG/eZC1QKDtphy2gdiXYjFW+sIu68yDb03c
+         lRNs979KSo3vxOhcNvTC6dREEC3DAQruUj9qWADxglzBD33uQETsZxFKkDrf6YowCQGq
+         1zfw==
+X-Forwarded-Encrypted: i=1; AFNElJ/hoadtoUvEzkMl8bLVBWwsk8XIuUbgVJkPLQVu0SyCZ+PbSXZKxd8kQXSiuFmqt6SWXOso5dPVNQpEruI=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YyShayfAkz30V/SvdK7BtPmh++mNsX8Bris/Ma1lwgDJzOx1Cy1
+	5NT6Ksi1i7gvurpBbUUrLWyrPiXNTLaMSnS+vb5sLj6KDF24rgCUncS7
+X-Gm-Gg: AfdE7clNA7TiHMUBZRPZYt+KzaBLcTj7Rum+TfLdEysBvhAjNwTf7zJ+0XMgAt/6Y5q
+	PSeB8YLKGWMLojVgdb0aqRNs6lbOBiLFEtt7YySIAh4LLjjw7scfHoYw4g4fRD4DcsnC9/fYXJA
+	svJAKkariS4UW3wcvQnAjBJYIqFY4Ca95HAu0Dhqc7h1C4DjKXUnVosUwjrJWqsWFjIFHXuubm5
+	DZC4khhWjPdFEp1S6iOq1Ycgqe4V8A43f1RgeDAIL7Fv4F8GF3kvOri8eKksETvigwEEvROVzVa
+	ReLxk4EOy5zJgcQCZum9HZdckd9SWqs1b/zmOPyA4AxtluzCLsIFQuxb0tZMJ/QgXDrRtQ1R4yW
+	bvvKJL/LyWruXdj9t9DDLic0aTHbPs0/hz+Vt8p8ekhvyjR2/z/3yQ+zOSTxyktWe9/VCM4AlBZ
+	AkMr6wgbhVaU7XuFo=
+X-Received: by 2002:a05:6a00:4b51:b0:842:4327:6cfb with SMTP id d2e1a72fcca58-84597123e04mr2464203b3a.46.1782214668486;
+        Tue, 23 Jun 2026 04:37:48 -0700 (PDT)
+Received: from pve-server ([49.205.216.49])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-84564ef4c09sm11953864b3a.61.2026.06.23.04.37.42
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 23 Jun 2026 04:37:47 -0700 (PDT)
+From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+To: Barry Song <baohua@kernel.org>
+Cc: linux-mm@kvack.org, Madhavan Srinivasan <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <chleroy@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Chris Li <chrisl@kernel.org>, Kairui Song <kasong@tencent.com>, Kemeng Shi <shikemeng@huaweicloud.com>, Nhat Pham <nphamcs@gmail.com>, Baoquan He <baoquan.he@linux.dev>, Youngjun Park <youngjun.park@lge.com>, David Hildenbrand <david@kernel.org>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, Sayali Patil <sayalip@linux.ibm.com>
+Subject: Re: [PATCH v4 2/3] mm, swap: allow archs to override SWAP_NR_ORDERS via ARCH_MAX_PMD_ORDER
+In-Reply-To: <CAGsJ_4zZBf2dGjG2SF8VkwwaYm-oFpmFEJ+Kx5-DuNk0ez7xbg@mail.gmail.com>
+Date: Tue, 23 Jun 2026 15:02:07 +0530
+Message-ID: <wlvpwqjs.ritesh.list@gmail.com>
+References: <cover.1781843449.git.ritesh.list@gmail.com> <eda4e51ee9f1270582fbb2823ec5873e769de089.1781843449.git.ritesh.list@gmail.com> <CAGsJ_4yTY8g3M7qmpM7HeUq=E05e7v_QFTzk=2D5Mv3Vj3Usqg@mail.gmail.com> <33ydyd82.ritesh.list@gmail.com> <CAGsJ_4zZBf2dGjG2SF8VkwwaYm-oFpmFEJ+Kx5-DuNk0ez7xbg@mail.gmail.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -105,76 +91,91 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260427122742.210074-1-mkchauras@gmail.com>
-X-Spamd-Bar: ++++++++++++++++
-X-Rspamd-Queue-Id: 95F9275EFA
-X-Rspamd-Action: add header
-X-Rspamd-Server: rspamd1.dmz-prg2.suse.org
-X-Spamd-Result: default: False [16.60 / 50.00];
-	SPAM_FLAG(5.00)[];
-	NEURAL_SPAM_LONG(3.50)[1.000];
-	BAYES_HAM(-3.00)[100.00%];
-	NEURAL_SPAM_SHORT(2.91)[0.970];
-	HFILTER_HOSTNAME_UNKNOWN(2.50)[];
-	RDNS_NONE(2.00)[];
-	SUSPICIOUS_RECIPS(1.50)[];
-	ONCE_RECEIVED(1.20)[];
-	HFILTER_HELO_IP_A(1.00)[kunlun.suse.cz];
-	HFILTER_HELO_NORES_A_OR_MX(0.30)[kunlun.suse.cz];
-	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	MIME_GOOD(-0.10)[text/plain];
-	MX_GOOD(-0.01)[];
-	RCPT_COUNT_TWELVE(0.00)[37];
-	MIME_TRACE(0.00)[0:+];
-	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	FREEMAIL_TO(0.00)[gmail.com];
-	RBL_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b306:2000::2:from];
-	ARC_NA(0.00)[];
-	FUZZY_RATELIMITED(0.00)[rspamd.com];
-	FREEMAIL_ENVRCPT(0.00)[gmail.com,gmx.de];
-	TO_DN_SOME(0.00)[];
-	DWL_DNSWL_BLOCKED(0.00)[suse.de:dkim];
-	RCVD_COUNT_ZERO(0.00)[0];
-	FROM_EQ_ENVFROM(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	TAGGED_RCPT(0.00)[];
-	R_RATELIMIT(0.00)[to_ip_from(RLdywaiysxdh7edq8aukuk3thi)];
-	MISSING_XM_UA(0.00)[];
-	FREEMAIL_CC(0.00)[linux.ibm.com,ellerman.id.au,gmail.com,kernel.org,google.com,arm.com,redhat.com,amacapital.net,chromium.org,huawei.com,linux-foundation.org,orcam.me.uk,strace.io,rivosinc.com,gmx.de,kernel.crashing.org,suse.com,linux.alibaba.com,infradead.org,linux.intel.com,lists.ozlabs.org,vger.kernel.org,googlegroups.com];
-	DKIM_TRACE(0.00)[suse.de:+];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[kunlun.suse.cz:mid,kunlun.suse.cz:helo,suse.com:url,docker.io:url,suse.de:dkim]
-X-Spam: Yes
+MIME-version: 1.0
+Content-type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 
-On Mon, Apr 27, 2026 at 05:57:34PM +0530, Mukesh Kumar Chaurasiya (IBM) wrote:
-> Adding support for the generic irq entry/exit handling for PowerPC. The
-> goal is to bring PowerPC in line with other architectures that already
-> use the common irq entry infrastructure, reducing duplicated code and
-> making it easier to share future changes in entry/exit paths.
-> 
+Barry Song <baohua@kernel.org> writes:
 
-Hello,
+> On Tue, Jun 23, 2026 at 3:05 PM Ritesh Harjani <ritesh.list@gmail.com> wrote:
+>>
+>> Barry Song <baohua@kernel.org> writes:
+>>
+>> > On Fri, Jun 19, 2026 at 12:41 PM Ritesh Harjani (IBM)
+>> > <ritesh.list@gmail.com> wrote:
+>> >>
+>> >> SWAP_NR_ORDERS sizes a few small bounded arrays inside THP swap
+>> >> allocator code (nofull/frag cluster lists, percpu_swap_cluster's
+>> >> si/offset arrays, next array for rotational device). This currently
+>> >> expands to PMD_ORDER+1, which only works when PMD_ORDER is a compile
+>> >> time constant.
+>> >>
+>> >> However on architecture like PowerPC Book3S64, PMD_ORDER is a runtime
+>> >> variable which depends upon which MMU is selected (Radix / Hash), so in
+>> >> that case, PMD_ORDER cannot be used to size the static arrays.
+>> >>
+>> >> This patch provides an optional ARCH_MAX_PMD_ORDER (upper-bound)
+>> >> override for such architectures. The memory overhead on enabling this
+>> >> override is negligible. Even if we make SWAP_NR_ORDERS runtime alloc,
+>> >> default slab padding could cause some memory waste. Also we lose the
+>> >> per-cpu cacheline benefits (for percpu_swap_cluster) because it might
+>> >> cost an extra cacheline indirection overhead in swap_alloc_fast() for
+>> >> fetching si[order]/offset[order]. Note that a fully runtime
+>> >> SWAP_NR_ORDERS was considered in previous version but was dropped for
+>> >> this reason [1]
+>> >
+>> > Do we know the maximum PMD size?
+>>
+>> ARCH_MAX_PMD_ORDER will be 8 on PowerPC book3s64 with 64K pagesize.
+>> PowerPC Hash MMU with 64K default pagesize supports PMD size of 16MB.
+>>
+>> > On arm64 with a 64 KB base page,
+>> > a PMD can be as large as 512 MB:
+>> > https://docs.kernel.org/arch/arm64/hugetlbpage.html
+>> >
+>> > One concern we have is that performing I/O on such a large folio could
+>> > incur significant latency before reclaiming any memory. For this
+>> > reason, on arm64 we initially enabled THP_SWAPOUT only for 4 KB base
+>> > pages:
+>> > https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=d0637c505f
+>> >
+>>
+>> That's not the case on PowerPC. Max PMD size for Hash will be 16MB.
+>
+> Yep. A 16 MB folio might be fine, although I'm not sure whether
+> splitting a 16 MB folio into eight 2 MB folios would help much.
+>
+> For 512 MB PMD-sized pages on arm64, one possible approach might be to
+> split them into 256 × 2 MB folios rather than all the way down to 4 KB
+> pages. That could provide a better balance between I/O latency and swap
+> performance.
+>
 
-applying these patches on top of Linux 6.12 causes seccomp to return
-different error (ENNOSYS instead of EPERM) causing some seccomp tests to
-fail.
+Fair enough. I guess this can be looked upon but is outside of the scope
+of this work. For now Radix with 2MB PMD is the default on latest
+PowerPC, so this will be slightly lower priority for me right now.
 
-A minimal reporoducer is
+>> Also we still need this patch since we can at runtime choose Hash or
+>> Radix MMU. So, the main problem this patch is trying to solve on PowerPC
+>> Book3s64 is enabling this feature w/o impacting any other architecture.
+>> W/O this patch series, we can't enable it, since it gives build errors.
+>
+> I see. If possible, please mention in the changelog that the maximum
+> PMD size on your platform is 16 MB.
 
-podman run --rm --security-opt seccomp=<(echo '{"defaultAction":"SCMP_ACT_ALLOW","syscalls":[{"names":["mkdir"],"action":"SCMP_ACT_ERRNO"}]}') docker.io/library/alpine mkdir /tmp/test
+Sure. I can do that.
 
-This should produce 'Operation not permitted' but produces
-'Function not implemented'.
+> In that case, the I/O latency concerns I raised may not really apply.
+>
+> w/ that, please free feel to add:
+>
+> Reviewed-by: Barry Song <baohua@kernel.org>
 
-Can you have a look?
+Thanks again for the reviewing this patch series.
 
-Thanks
+I will re-spin the updated version (with additional details in the
+commit msg as you requested) in a couple of days.
 
-Michal
-
-See also https://bugzilla.suse.com/show_bug.cgi?id=1268620
+-ritesh
 
 
