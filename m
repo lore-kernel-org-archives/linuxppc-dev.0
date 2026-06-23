@@ -1,56 +1,77 @@
-Return-Path: <linuxppc-dev+bounces-22930-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22931-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B92E0CDB46F
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Jun 2026 14:30:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E10EBCDB46F
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Jun 2026 15:35:22 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gl6t32qzcz2y1Y;
-	Wed, 24 Jun 2026 00:30:19 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=220.197.31.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782225019;
-	cv=none; b=gUBPz7VVz1aOn8IxaNutTKcf2xNilPmjusq0dNOOHB/eqDTv0Fgcm64LcXY1ioqcF84uRge6DjORLIna68zyNosWMSC+bnR/RnlflTxmJNLqNBAyQBK4qOcihlqmlRH0dnghuMNCAJuRPJxOJNM3IqEQPGjl1+XGYwgzMSI0Egvx8gzHx06nVuFSO9T4rVj57q408lwmftcBUhwA86UJF9NkNhc6yluYSN3I91IuEvK30CMXnCqDf0B9fJ7iQyGjrhElLisSzokngY7b4fVBb27KrEOHtc1EPqWzeJ04EDjpv/P4DLHRgT2GIr2ULjLVToNBMwYYE8o/fq6C8qiy/g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gl8K46Z3mz2yVZ;
+	Wed, 24 Jun 2026 01:35:20 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a11:7980:1::2:0"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782228920;
+	cv=none; b=jxDQKTsoh7coZVsPCx45meaF4zMKOLykPDLl2buap8OnnLlYfOtJRAvPnLhTQsvw8xFmns8JWNgqVDRqRqxzCU56wosGjGhX3xqi00pY1P3toORIWQU1d+txKsqTl0+IuOfsXWHAEUDjKIrKrTqGpILZ2l2RaIlyjoQIJ/G3UkmBv0P8gU1TGs9REVqOC61WT6Mo3m6XPCIRLJyvRh5/td4HnVE9Nv/mFDBLE+2DFd5D0HXaQZWa7lYPkDyyZUOf13nGW+RSC7hstNUZ0l6r0uRvN8DLZVwUdvihrnWwhNYcsKXSxy+OrMaU0bVA+eHOMXqT+g8gET4Q0W08OiFssQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1782225019; c=relaxed/relaxed;
-	bh=pQO5VjXJcC4HPlZ6Ah+8CJVijHxVAyJdB8wO2DL1CAg=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=B6S1woSkzKkbb2WErZfRcsab0oZaXmZLnoLsg+Qxr/CDOLaw8zJdNbCkAnyF+D7o/TbhrEBj3ulPzMohME/Ob5mz9n4cK8A3fD8EuZsS5+GfTbt7RGve0iXrMHOgtwZH5AZwk4NTYacsH9tAE0rKh4jVedV79Z/y5t2T7Zo5h33q7Vvni6bo1dkjm7aD+dMflPey00ijtOzJjPIFGwT6XMnwKFqgQYSvWm/GFg1AWbGXHpV37F6CGF7rvLSTf7nKI3Xvmnmm8P9sg+zkPeXiX8boUht1A4Bdp+nbjDjqEkaxrxJj7fWJKRAzk0P8hngATVPLb0/6DJ6a0wzYEuwgYQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=163.com; dkim=pass (1024-bit key; unprotected) header.d=163.com header.i=@163.com header.a=rsa-sha256 header.s=s110527 header.b=KVRzMdJI; dkim-atps=neutral; spf=pass (client-ip=220.197.31.5; helo=m16.mail.163.com; envelope-from=haoxiang_li2024@163.com; receiver=lists.ozlabs.org) smtp.mailfrom=163.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=163.com
+	t=1782228920; c=relaxed/relaxed;
+	bh=yJvoIA1fO2feDg/kwex0Po7ylI4GiWcadD1slikx9OE=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=XgRgObUHiIu9mClecxItbBhKsVwM6KXQCJSDzFND3JeXVCZ6sKYq8O1OXG53yuV9bn3sBbDeI7jGfs8DCv3jCEe8nBEl1hgURCzQEjbm5cgA7dH87U3AOIHqp4LrkYoi0oaJ60+BjCoJiOGMJpLurDV8C9qvuMcmTbGlEeK6sdqsz+tSMW684OLWs1JUCe7SpQjBQiiZ5uV30/oEAr9MbKF03yJE9Q7YT25ns60DBtu39+kOErszLxhF9o3s/wESYKEfpnqAfADShcK9Jx+5spb6uvVbm5alfAuBhoqLn+ojNZQ9BnETZCcKUXonuewFFdZZkdz5XM5cbuw8QvoUZQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=grrlz.net; dkim=pass (1024-bit key; secure) header.d=grrlz.net header.i=@grrlz.net header.a=rsa-sha256 header.s=stigmate header.b=YWQ63Pqr; dkim-atps=neutral; spf=pass (client-ip=2a11:7980:1::2:0; helo=confino.investici.org; envelope-from=include@grrlz.net; receiver=lists.ozlabs.org) smtp.mailfrom=grrlz.net
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=grrlz.net
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=163.com header.i=@163.com header.a=rsa-sha256 header.s=s110527 header.b=KVRzMdJI;
+	dkim=pass (1024-bit key; secure) header.d=grrlz.net header.i=@grrlz.net header.a=rsa-sha256 header.s=stigmate header.b=YWQ63Pqr;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=163.com (client-ip=220.197.31.5; helo=m16.mail.163.com; envelope-from=haoxiang_li2024@163.com; receiver=lists.ozlabs.org)
-Received: from m16.mail.163.com (m16.mail.163.com [220.197.31.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=grrlz.net (client-ip=2a11:7980:1::2:0; helo=confino.investici.org; envelope-from=include@grrlz.net; receiver=lists.ozlabs.org)
+Received: from confino.investici.org (confino.investici.org [IPv6:2a11:7980:1::2:0])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gl6t00P1jz2xM7
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jun 2026 00:30:13 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
-	s=s110527; h=From:To:Subject:Date:Message-Id:MIME-Version; bh=pQ
-	O5VjXJcC4HPlZ6Ah+8CJVijHxVAyJdB8wO2DL1CAg=; b=KVRzMdJIVKuzQ8u1wZ
-	Iuycs+jp6O+oE7UKyeRo6p12sd0SHWlMy4HyieaG5EF4fDqFBQMJ9D473Ws1uxVf
-	eV9i+WYO/4tXFlYhJS1zIuksu9BHouZj+Z/DhpSHP8WAR1zQ8s91N6yKa7ATIvAo
-	3Tv5h6BtXjfw2klL5nhWse4lc=
-Received: from localhost.localdomain (unknown [])
-	by gzga-smtp-mtada-g1-2 (Coremail) with SMTP id _____wBHj+1AmDpq_zBUFQ--.34764S2;
-	Tue, 23 Jun 2026 22:29:22 +0800 (CST)
-From: Haoxiang Li <haoxiang_li2024@163.com>
-To: gbatra@linux.ibm.com,
-	maddy@linux.ibm.com,
-	mpe@ellerman.id.au,
-	npiggin@gmail.com,
-	chleroy@kernel.org,
-	kees@kernel.org
-Cc: linuxppc-dev@lists.ozlabs.org,
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gl8K20jl7z2yT0
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jun 2026 01:35:18 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=grrlz.net;
+	s=stigmate; t=1782228911;
+	bh=yJvoIA1fO2feDg/kwex0Po7ylI4GiWcadD1slikx9OE=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=YWQ63PqrZA6fHb8qsiiZDoFe8MfB9mrdyJNeNo70YVy2vjDtftfvhU4iMf/0NMZTl
+	 Rr6cmR0Pic59edq6R/aHn1RQm+BOmvPs1Yy4a6UpumqBRscME5k1uJj10kJW1t8FDF
+	 4E9tmGrDQ8GfP2ptybXd6OHZwo30tkIyAsf+LS+s=
+Received: from mx1.investici.org (unknown [127.0.0.1])
+	by confino.investici.org (Postfix) with ESMTP id 4gl8Jv4hBZz10yw;
+	Tue, 23 Jun 2026 15:35:11 +0000 (UTC)
+Received: by mx1.investici.org (Postfix) id 4gl8Jt3GQrz10xZ;
+	Tue, 23 Jun 2026 15:35:10 +0000 (UTC)
+From: Bradley Morgan <include@grrlz.net>
+To: Petr Mladek <pmladek@suse.com>,
+	Feng Tang <feng.tang@linux.alibaba.com>,
+	Andrew Morton <akpm@linux-foundation.org>
+Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Christophe Leroy <chleroy@kernel.org>,
+	Mukesh Kumar Chaurasiya <mchauras@linux.ibm.com>,
+	Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+	Jinchao Wang <wangjinchao600@gmail.com>,
+	Kees Cook <kees@kernel.org>,
+	Rio <rioo.tsukatsukii@gmail.com>,
+	Joel Granados <joel.granados@kernel.org>,
+	Pnina Feder <pnina.feder@mobileye.com>,
+	Petr Pavlu <petr.pavlu@suse.com>,
+	Sergey Senozhatsky <senozhatsky@chromium.org>,
+	Douglas Anderson <dianders@chromium.org>,
+	Mayank Rungta <mrungta@google.com>,
+	Tejun Heo <tj@kernel.org>,
+	Zhenguo Yao <yaozhenguo1@gmail.com>,
+	linuxppc-dev@lists.ozlabs.org,
 	linux-kernel@vger.kernel.org,
-	Haoxiang Li <haoxiang_li2024@163.com>
-Subject: [PATCH v2] powerpc/pseries/iommu: Add check for iommu_pseries_alloc_group()
-Date: Tue, 23 Jun 2026 22:29:18 +0800
-Message-Id: <20260623142918.2287696-1-haoxiang_li2024@163.com>
-X-Mailer: git-send-email 2.25.1
+	stable@vger.kernel.org,
+	Bradley Morgan <include@grrlz.net>
+Subject: [PATCH v2 4/4] panic: avoid duplicate all CPU backtraces from sys_info
+Date: Tue, 23 Jun 2026 15:35:01 +0000
+Message-ID: <2199a8b4da8700b9f27e61486293e9c26ab107ef.1782228656.git.include@grrlz.net>
+X-Mailer: git-send-email 2.53.0
+In-Reply-To: <9b8c96e291696815d3c7de5d3e199298dee0279d.1782228656.git.include@grrlz.net>
+References: <9b8c96e291696815d3c7de5d3e199298dee0279d.1782228656.git.include@grrlz.net>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -65,70 +86,37 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-CM-TRANSID:_____wBHj+1AmDpq_zBUFQ--.34764S2
-X-Coremail-Antispam: 1Uf129KBjvJXoWxJryUWFWruFyDXr1fWrykXwb_yoW8ZF15pF
-	s8tFZrtF95Jry0vanava4jqw4xZw4vqrWrXw43Ka9YyasxXry8G3Z7XrySvrs7GFWDGF12
-	yw4vqrn8Zrs3JwUanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
-	9KBjDUYxBIdaVFxhVjvjDU0xZFpf9x0piMKZJUUUUU=
-X-Originating-IP: [240e:604:311:e68d:298a:1bbc:177b:53c8]
-X-CM-SenderInfo: xkdr5xpdqjszblsqjki6rwjhhfrp/xtbC7gJfzWo6mEIYmQAA31
 
-Add check for the return value of iommu_pseries_alloc_group()
-to prevent potential null pointer dereferences.
+panic_other_cpus_shutdown() handles SYS_INFO_ALL_BT before stopping the
+other CPUs. Do not ask sys_info() to handle that bit again later in the
+panic path.
 
-Signed-off-by: Haoxiang Li <haoxiang_li2024@163.com>
+Use sys_info_without_all_bt() so panic_print=all_bt does not request more
+output after the CPUs are stopped.
+
+Fixes: b76e89e50fc3 ("panic: generalize panic_print's function to show sys info")
+Cc: stable@vger.kernel.org
+Signed-off-by: Bradley Morgan <include@grrlz.net>
 ---
-- Changes in v2:
-  - Add check for other callsites. Thanks, Gaurav!
----
- arch/powerpc/platforms/pseries/iommu.c | 12 ++++++++++++
- 1 file changed, 12 insertions(+)
+Changes since v1:
+- New patch using the same helper for panic.
 
-diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
-index 3e1f915fe4f6..d97bde96dd4d 100644
---- a/arch/powerpc/platforms/pseries/iommu.c
-+++ b/arch/powerpc/platforms/pseries/iommu.c
-@@ -684,6 +684,9 @@ static void pci_dma_bus_setup_pSeries(struct pci_bus *bus)
- 	pci->phb->dma_window_base_cur = 0x8000000ul;
+ kernel/panic.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/kernel/panic.c b/kernel/panic.c
+index d030f88ad4ef..2cf229c7c0cf 100644
+--- a/kernel/panic.c
++++ b/kernel/panic.c
+@@ -683,7 +683,7 @@ void vpanic(const char *fmt, va_list args)
+ 	 */
+ 	atomic_notifier_call_chain(&panic_notifier_list, 0, buf);
  
- 	pci->table_group = iommu_pseries_alloc_group(pci->phb->node);
-+	if (!pci->table_group)
-+		return;
-+
- 	tbl = pci->table_group->tables[0];
+-	sys_info(panic_print);
++	sys_info_without_all_bt(panic_print);
  
- 	iommu_table_setparms(pci->phb, dn, tbl);
-@@ -872,6 +875,9 @@ static void pci_dma_bus_setup_pSeriesLP(struct pci_bus *bus)
+ 	kmsg_dump_desc(KMSG_DUMP_PANIC, buf);
  
- 	if (!ppci->table_group) {
- 		ppci->table_group = iommu_pseries_alloc_group(ppci->phb->node);
-+		if (!ppci->table_group)
-+			return;
-+
- 		tbl = ppci->table_group->tables[0];
- 
- 		iommu_table_setparms_common(tbl, ppci->phb->bus->number,
-@@ -909,6 +915,9 @@ static void pci_dma_dev_setup_pSeries(struct pci_dev *dev)
- 
- 		pr_debug(" --> first child, no bridge. Allocating iommu table.\n");
- 		PCI_DN(dn)->table_group = iommu_pseries_alloc_group(phb->node);
-+		if (!PCI_DN(dn)->table_group)
-+			return;
-+
- 		tbl = PCI_DN(dn)->table_group->tables[0];
- 		iommu_table_setparms(phb, dn, tbl);
- 
-@@ -1875,6 +1884,9 @@ static void pci_dma_dev_setup_pSeriesLP(struct pci_dev *dev)
- 	pci = PCI_DN(pdn);
- 	if (!pci->table_group) {
- 		pci->table_group = iommu_pseries_alloc_group(pci->phb->node);
-+		if (!pci->table_group)
-+			return;
-+
- 		tbl = pci->table_group->tables[0];
- 
- 		iommu_table_setparms_common(tbl, pci->phb->bus->number,
 -- 
-2.25.1
-
+2.53.0
 
