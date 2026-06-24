@@ -1,69 +1,52 @@
-Return-Path: <linuxppc-dev+bounces-22954-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22955-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 618BACDB479
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Jun 2026 02:50:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 806CACDB470
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Jun 2026 07:18:30 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4glRJK4v3bz2yVv;
-	Wed, 24 Jun 2026 12:50:41 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=115.124.30.98
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782269441;
-	cv=none; b=mVaM3tyED/tozLcmp7BS3Vo2tDV2UAwJhCJXmjpTHdedyvkBZb2Gwh14tVE3Gd2FVmfe44gC6wcPUCrMX1jgbzLODkE+pYe5vJ+dqoKsWTsW3lzOlSK5U12qKwi+Y8gdbHoMARxoT/ZLBojy1lv2cZbCMngXtdyshsNzXpSQU8ZEJWV/TS8vsmE+/oNss28s8PViRcKfO82Yul9A86nuegflB7YtFdW4ZUkCkw8vrNvkHE+ArjYAn933eHJoAjbHkP2pMrYXbIEkUsYA8IPt7ql6AqlqA0CoOKMnT8o3KsAYp5+hvL1Oplr2N9Qcsud0ixdRJkMFF7RkttWZ/LFE0g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4glYFJ5TZyz2yYq;
+	Wed, 24 Jun 2026 17:18:28 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=150.107.74.76
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782285508;
+	cv=none; b=N4+Ou6S+gvLhGZOABqiygLrqBbGqP4rMkSGdnMMbYsM8aVhRk+bpmNavNbxohS0gKxFwpPNjdam96upzzQPpxNtFlWdAECmQD5RZ5M8SMoedUX5P3h79dPqARpv9orS3bPBFyYbRSvWxq76p1eJup9Re68Cwj96OcL2E2Vo5n6SHYzcm6DwKN21eFd9wx50TEBd8+xFlqfQWiTYZZktZtColdRSHVjc4AdDBGQ6QjJxOS0Vc61qcm/oOSAn/0t2O3qR3BTweg9bnsQC0n2Zq4KXYtzAudshwNSPoMsvd1Xmf/Gb+wNbjwmgNR4VqL9sA4u2juuO2x83N24PGAf8Owg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1782269441; c=relaxed/relaxed;
-	bh=QK2Sa3tUM9FmdHMKVzdbtY23gSTQnspEbezYtpW8lPQ=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=BpOnMjhQ/Tm9aesElTXfGH0K9vSnBhoHJwGuyDoMDRwNsWsirnHzZVsb/MqCTg8jrMOi/ZXCidc2iNJkRyPiGQyZjLuUZl3XgGJzoWFISt/AkU8b2OTs7rz3BSZz1Gr47Z7R5dAGDJv+rQJKRBmujyL8lG54fvkmf4WwqDFcE4hz0hmkTFY44ykdpdjWYkJ9ecCStzhr2pnyURNaXkSbziJRTS/AKjpeZLb5tvc7vc6qKgMiem+VF4HLvYI7RKI9fjfsW+5SEStqDrt/zxqve1JwfD91xqeBF5qx4bZuro9d6z1CoR5Bp3c1jSWxEg+NU8cd3ebtp498pr7kFyIfgg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.alibaba.com; dkim=pass (1024-bit key; unprotected) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.a=rsa-sha256 header.s=default header.b=xeyQjXdn; dkim-atps=neutral; spf=pass (client-ip=115.124.30.98; helo=out30-98.freemail.mail.aliyun.com; envelope-from=feng.tang@linux.alibaba.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.alibaba.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.alibaba.com
+	t=1782285508; c=relaxed/relaxed;
+	bh=tYnX/KYRq2a4qOnQiI42I8nnFvl3gY6ZLXnptEri7C4=;
+	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
+	 In-Reply-To:Content-Type; b=jxuqWmaaaYjt8mTtqfOps5FdDiDbiokrN/PWgv2LkvbeeVaHaiXy36a7Oy3aVTAMM3j/pxF6/K+NM06WpgYIz65A8QA6zlyX91raAG7Wt+z14vR6BElfmoeC+xbttGgW93uoIKEKfMX6FHg8rAkvf4cBTq6msRR5duHPfyK11N61IPp1fX9pExzjXaFmH8lW2/3x1PK11w38mDNmm6zqSAxP+b4aUvS/RiCD+iPR9s7PaH/wK18uirR+5sfdoXWHOtCPzjznXARxp3gNl9HsHni9XDBxfg0WhsjLIvp/tdzSMuaH7i31lOqEHU9A5E3uVjfP21VB2sMf9Vz+jZwxoA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au; dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=M2+l3uNL; dkim-atps=neutral; spf=pass (client-ip=150.107.74.76; helo=mail.ozlabs.org; envelope-from=mpe@ellerman.id.au; receiver=lists.ozlabs.org) smtp.mailfrom=ellerman.id.au
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.a=rsa-sha256 header.s=default header.b=xeyQjXdn;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=M2+l3uNL;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.alibaba.com (client-ip=115.124.30.98; helo=out30-98.freemail.mail.aliyun.com; envelope-from=feng.tang@linux.alibaba.com; receiver=lists.ozlabs.org)
-Received: from out30-98.freemail.mail.aliyun.com (out30-98.freemail.mail.aliyun.com [115.124.30.98])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=ellerman.id.au (client-ip=150.107.74.76; helo=mail.ozlabs.org; envelope-from=mpe@ellerman.id.au; receiver=lists.ozlabs.org)
+Received: from mail.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bit raw public key) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4glRJH2qJcz2xy3
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jun 2026 12:50:37 +1000 (AEST)
-DKIM-Signature:v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=linux.alibaba.com; s=default;
-	t=1782269433; h=Date:From:To:Subject:Message-ID:MIME-Version:Content-Type;
-	bh=QK2Sa3tUM9FmdHMKVzdbtY23gSTQnspEbezYtpW8lPQ=;
-	b=xeyQjXdnyMdiZKetPmfT8LibER3U6NrPWNTdxe7OwIWej5VVV+teyapaVRFhCUrYkjG9x+NPDNr9pLX6O0soGvH7aYgPxnIVJMVwnd8rXrfCe+fzygIMkg6Jgv8Fz5NqWWMX4/yzVi3OqbXpk0HFolrMoKZ8YNu5wNzsYZhntjA=
-X-Alimail-AntiSpam:AC=PASS;BC=-1|-1;BR=01201311R521e4;CH=green;DM=||false|;DS=||;FP=0|-1|-1|-1|0|-1|-1|-1;HT=maildocker-contentspam011083073210;MF=feng.tang@linux.alibaba.com;NM=1;PH=DS;RN=24;SR=0;TI=SMTPD_---0X5W1YNy_1782269429;
-Received: from localhost(mailfrom:feng.tang@linux.alibaba.com fp:SMTPD_---0X5W1YNy_1782269429 cluster:ay36)
-          by smtp.aliyun-inc.com;
-          Wed, 24 Jun 2026 10:50:29 +0800
-Date: Wed, 24 Jun 2026 10:50:27 +0800
-From: Feng Tang <feng.tang@linux.alibaba.com>
-To: Bradley Morgan <include@grrlz.net>
-Cc: Petr Mladek <pmladek@suse.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Christophe Leroy <chleroy@kernel.org>,
-	Mukesh Kumar Chaurasiya <mchauras@linux.ibm.com>,
-	Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-	Jinchao Wang <wangjinchao600@gmail.com>,
-	Kees Cook <kees@kernel.org>, Rio <rioo.tsukatsukii@gmail.com>,
-	Joel Granados <joel.granados@kernel.org>,
-	Pnina Feder <pnina.feder@mobileye.com>,
-	Petr Pavlu <petr.pavlu@suse.com>,
-	Sergey Senozhatsky <senozhatsky@chromium.org>,
-	Douglas Anderson <dianders@chromium.org>,
-	Mayank Rungta <mrungta@google.com>, Tejun Heo <tj@kernel.org>,
-	Zhenguo Yao <yaozhenguo1@gmail.com>, linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Subject: Re: [PATCH v2 4/4] panic: avoid duplicate all CPU backtraces from
- sys_info
-Message-ID: <ajtF8xCGBNH3wzzo@U-2FWC9VHC-2323.local>
-References: <9b8c96e291696815d3c7de5d3e199298dee0279d.1782228656.git.include@grrlz.net>
- <2199a8b4da8700b9f27e61486293e9c26ab107ef.1782228656.git.include@grrlz.net>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4glYFH2RJ6z2yQn
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jun 2026 17:18:26 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
+	s=201909; t=1782285506;
+	bh=tYnX/KYRq2a4qOnQiI42I8nnFvl3gY6ZLXnptEri7C4=;
+	h=Date:Subject:To:References:From:In-Reply-To:From;
+	b=M2+l3uNLi9Tonc74vOLrYTEKdAGXPNtC6WCfhv+Aa9wslGvgEeu2M1PMPSOT7TRR8
+	 ojLKjYbaRHNb6Fz9s3YxZ33QGdHLN8bVtP6brk4uyt/6M4H3wGdD5u0PGJmTV2NuDp
+	 KUyjmkkhCyUWP51zHAD4OEYBwnaWqkoVMzxDcldb03U7u3hVmd1PprgTsnd0MFG3b8
+	 +PQo3/r0AUIpcm03ULoZdoTRm0YrgLzN8+9G5MyjJfp1NYz6lXNoPY75Fvn+lpow3S
+	 ZLSSw8ix4beJ54RsHG8DOxSWm/8x4cb84Hfj1CBp8nf1yGxqpuZQmQkRltDNcjjNy2
+	 GO86iKC6ICh2A==
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(Client did not present a certificate)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4glYFG0Dbsz4w2B;
+	Wed, 24 Jun 2026 17:18:26 +1000 (AEST)
+Message-ID: <2847c36f-aba7-4458-8767-7617e13058bf@ellerman.id.au>
+Date: Wed, 24 Jun 2026 17:18:25 +1000
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -77,54 +60,32 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <2199a8b4da8700b9f27e61486293e9c26ab107ef.1782228656.git.include@grrlz.net>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] MAINTAINERS: Demote myself to reviewer
+To: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
+ linuxppc-dev@lists.ozlabs.org, Madhavan Srinivasan <maddy@linux.ibm.com>,
+ "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+References: <87y0hspx0u.fsf@mpe.ellerman.id.au>
+ <7bpasqtq.ritesh.list@gmail.com>
+Content-Language: en-US
+From: Michael Ellerman <mpe@ellerman.id.au>
+In-Reply-To: <7bpasqtq.ritesh.list@gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-On Tue, Jun 23, 2026 at 03:35:01PM +0000, Bradley Morgan wrote:
-> panic_other_cpus_shutdown() handles SYS_INFO_ALL_BT before stopping the
-> other CPUs. Do not ask sys_info() to handle that bit again later in the
-> panic path.
+On 11/5/26 11:00 am, Ritesh Harjani (IBM) wrote:
+> Michael Ellerman <mpe@ellerman.id.au> writes:
+>    
+>>   LINUX FOR POWERPC (32-BIT AND 64-BIT)
+>>   M:	Madhavan Srinivasan <maddy@linux.ibm.com>
+>> -M:	Michael Ellerman <mpe@ellerman.id.au>
 > 
-> Use sys_info_without_all_bt() so panic_print=all_bt does not request more
-> output after the CPUs are stopped.
+> Thanks for more than a decade of maintainership of Linux on PowerPC tree
+> :)
 
-Good catch! Thanks!
+Thanks Ritesh.
 
-Later in panic_other_cpus_shutdown(), it sends IPIs to stop other CPUs, and
-this patch does avoid dumping local call trace again!
+Maddy can you pick this one up please :)
 
-For the whole serie, feel free to add:
-
-Reviewed-by: Feng Tang <feng.tang@linux.alibaba.com>
-
-Thanks,
-Feng
-
-> 
-> Fixes: b76e89e50fc3 ("panic: generalize panic_print's function to show sys info")
-> Cc: stable@vger.kernel.org
-> Signed-off-by: Bradley Morgan <include@grrlz.net>
-> ---
-> Changes since v1:
-> - New patch using the same helper for panic.
-> 
->  kernel/panic.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/kernel/panic.c b/kernel/panic.c
-> index d030f88ad4ef..2cf229c7c0cf 100644
-> --- a/kernel/panic.c
-> +++ b/kernel/panic.c
-> @@ -683,7 +683,7 @@ void vpanic(const char *fmt, va_list args)
->  	 */
->  	atomic_notifier_call_chain(&panic_notifier_list, 0, buf);
->  
-> -	sys_info(panic_print);
-> +	sys_info_without_all_bt(panic_print);
->  
->  	kmsg_dump_desc(KMSG_DUMP_PANIC, buf);
->  
-> -- 
-> 2.53.0
+cheers
 
