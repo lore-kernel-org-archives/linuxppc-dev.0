@@ -1,68 +1,92 @@
-Return-Path: <linuxppc-dev+bounces-22962-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22963-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 558D6CDB479
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Jun 2026 16:12:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7112ECDB479
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Jun 2026 17:15:39 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gln5j1XW7z2yRF;
-	Thu, 25 Jun 2026 02:12:41 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=185.218.207.228
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782317561;
-	cv=none; b=RLjrjB17AbgkzSSqAQDVPUNsNrz+BfLKwwXHUClMjCQy7hdorIctikoBXN+RisMhdLfURf2VzBP4t8UwPxMPz0fW79mmSdqIwg+tDkGlh7GQhyqEDRLPNv8YZJMivWCcQcSD/k4J8hF7eAlTfU5xeZUMVwPR8X6DJtORCbo/nk1vr1k71jpUiPElQpwI1Fto+gmyjoDaBcWm85vF691lCOfpesTTRxhypO2bAWWjHBtf3fFux3vfQ/PKO8wcLnXYYx5p5n2he1e10v3D3Y/4DbU4VkRRB6XxxvkqkDQv+E3LX+Qi+7qr4oFVfoUHKG40FcY7agXYe+FwzaRmBUHh8w==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4glpVK3swyz2yVd;
+	Thu, 25 Jun 2026 03:15:37 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::535"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782321337;
+	cv=none; b=PaKl/m1/P5NQGki0RWAhtICRnfz9BAilj+QDgSDPJul7jhaNFmhW4lBY8BTUZigT2z4xF0UKKGdG281dRAXvKh65bwGitUqahsBKb/uNhTvlsaY+7VqFIEM7DqZeESd9piAzvrA+y1x2o6pvXSxBghe8waUwU/oMHG+gXu68XAu8IVHeNogJcW4WzWVHBVxzxzgysXskHQ/XetRhht0fseUWirs6x7DxLzstCqVFU0Y6jJVj98ph55Lfp+ed1pm/CSCq53Fhq1hvkmSN7jgnSp6qzKjdxgB/36rk4fUbtmMzhai9CIyFaCi8OROcgKMKDhMU1cQa8AmsU/j//oHC7Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1782317561; c=relaxed/relaxed;
-	bh=VnQUr85LCOui0QkTY9NjKigopViBoQ7x5EYpB8b0K74=;
-	h=Date:From:To:CC:Subject:In-Reply-To:References:Message-ID:
-	 MIME-Version:Content-Type; b=gkUClgKHgyA4wEbIxIpAUzqJbNZT+s8bamAZhiymtRwCKzRFiFm8k7F4tUKYXmP7yQHCoj2I03piznCaH4tQrh04L+IpXY4Ahm+QWRg+ii5794XdpX+tF6ExaJrnRdEoWWd43PYcSU5h1314u6vwdhzDDQ/yqFsi7vTuheJL3sFloXKFh1D7RihtgQOLfb13sAEnCucNLEjrI+P4omYXwNOcqv22bBSwArqQbYx7gsqnrmYHOCyz2YNLBzAcxZcrwxymBi+BghygI4oiThqygAq1f+KD55OcR1VLQk6PuS3BM0FjmV61R6zFwBrO16OTmPFKJhl4WIjx2xBtPffqzw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=grrlz.net; dkim=pass (1024-bit key; secure) header.d=grrlz.net header.i=@grrlz.net header.a=rsa-sha256 header.s=stigmate header.b=YrM62DRh; dkim-atps=neutral; spf=pass (client-ip=185.218.207.228; helo=latitanza.investici.org; envelope-from=include@grrlz.net; receiver=lists.ozlabs.org) smtp.mailfrom=grrlz.net
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=grrlz.net
+	t=1782321337; c=relaxed/relaxed;
+	bh=U/G1JgxwMKv+niNn6F5i+1VXQFhS2/7uV7yXwnMuPUA=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=OZAk+96jjUU8rKGybYrVtdJuTAcla+EhhR0AViA2syy+7dzjzX0jDN121qyVYMyNMMLkasKNXXubXWix3vHjoT5jXP8beuOLQvGPBdtZHFn0yTA/O/0u99YP/ssGSfC078oeVf7MeOJBBhEY3JlwxXuTMeXK1C3K1PmEm/4KEBuIzYu0A1TXUhs/L2x48xhUlhpkXgdKVO5eC7j/ZOy5qDKpSChhRCtD/HY5JgHDennvHiKR7mRQYrJMpMTvFCeko0E7j7GbyPnnefuGOk/ACxB3X5JBBU9B6epWSzqmGXLCYpQPoa3V7Mbwl+K6+3ze5zAiumey0hrW48VbRxaKWA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=GWbCY7/+; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::535; helo=mail-pg1-x535.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; secure) header.d=grrlz.net header.i=@grrlz.net header.a=rsa-sha256 header.s=stigmate header.b=YrM62DRh;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=GWbCY7/+;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=grrlz.net (client-ip=185.218.207.228; helo=latitanza.investici.org; envelope-from=include@grrlz.net; receiver=lists.ozlabs.org)
-Received: from latitanza.investici.org (latitanza.investici.org [185.218.207.228])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::535; helo=mail-pg1-x535.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pg1-x535.google.com (mail-pg1-x535.google.com [IPv6:2607:f8b0:4864:20::535])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gln5d5MyWz2xy3
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jun 2026 02:12:35 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=grrlz.net;
-	s=stigmate; t=1782317551;
-	bh=VnQUr85LCOui0QkTY9NjKigopViBoQ7x5EYpB8b0K74=;
-	h=Date:From:To:CC:Subject:In-Reply-To:References:From;
-	b=YrM62DRhSFVLelbhXvWrZU2rfJ6oaoVsnB26D6/+rcUoc3Ss5Sz+tIpjVmMAARFKy
-	 euhDTMnvO1Wf4e9iOlGsLUtgdY/42yZ2093VMpt26QBylka7cYdwyOu3/WtVHXnyWB
-	 dk9YkvCd773tu6PrJth1qChw2NdWbYuV6HQFCaak=
-Received: from mx3.investici.org (unknown [127.0.0.1])
-	by latitanza.investici.org (Postfix) with ESMTP id 4gln5W2j6JzGp8s;
-	Wed, 24 Jun 2026 16:12:31 +0000 (UTC)
-Received: by mx3.investici.org (Postfix) id 4gln5V3s2VzGp8r;
-	Wed, 24 Jun 2026 16:12:30 +0000 (UTC)
-Date: Wed, 24 Jun 2026 17:12:28 +0100
-From: Bradley Morgan <include@grrlz.net>
-To: Feng Tang <feng.tang@linux.alibaba.com>
-CC: Petr Mladek <pmladek@suse.com>, Andrew Morton <akpm@linux-foundation.org>,
- Madhavan Srinivasan <maddy@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
- Christophe Leroy <chleroy@kernel.org>,
- Mukesh Kumar Chaurasiya <mchauras@linux.ibm.com>,
- Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
- Jinchao Wang <wangjinchao600@gmail.com>, Kees Cook <kees@kernel.org>,
- Rio <rioo.tsukatsukii@gmail.com>, Joel Granados <joel.granados@kernel.org>,
- Pnina Feder <pnina.feder@mobileye.com>, Petr Pavlu <petr.pavlu@suse.com>,
- Sergey Senozhatsky <senozhatsky@chromium.org>,
- Douglas Anderson <dianders@chromium.org>, Mayank Rungta <mrungta@google.com>,
- Tejun Heo <tj@kernel.org>, Zhenguo Yao <yaozhenguo1@gmail.com>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- stable@vger.kernel.org
-Subject: =?US-ASCII?Q?Re=3A_=5BPATCH_v2_4/4=5D_panic=3A_avoid_dupli?=
- =?US-ASCII?Q?cate_all_CPU_backtraces_from_sys=5Finfo?=
-In-Reply-To: <ajtF8xCGBNH3wzzo@U-2FWC9VHC-2323.local>
-References: <9b8c96e291696815d3c7de5d3e199298dee0279d.1782228656.git.include@grrlz.net> <2199a8b4da8700b9f27e61486293e9c26ab107ef.1782228656.git.include@grrlz.net> <ajtF8xCGBNH3wzzo@U-2FWC9VHC-2323.local>
-Message-ID: <F8A80465-2EE6-457C-A580-5CC325A5A226@grrlz.net>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4glpVH4Dtwz2xnK
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jun 2026 03:15:34 +1000 (AEST)
+Received: by mail-pg1-x535.google.com with SMTP id 41be03b00d2f7-c8894560c89so423343a12.0
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jun 2026 10:15:34 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1782321331; x=1782926131; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=U/G1JgxwMKv+niNn6F5i+1VXQFhS2/7uV7yXwnMuPUA=;
+        b=GWbCY7/+9mH8sMvTv7RAFnqdDulMAuUY/q0a2MKsWn4Lgn3lvyqJkSRwmwqhmYNd5M
+         rxsWdmR3/f2x/16wAVRiaStq+S7+xUHioDQUlx1Hry2/2HvIKXbxhuKIDdJ21iRUjgot
+         FwAAMaHX3ZfOg8nW2I5F1fQ1WAyJ/7wkhA+JZk715mFSW7RXigm1Q+lhgnCrIeQmzgBt
+         lM3o2w0P/aRSB8gLv5DSuYkOOCzfzJpLrX3TfvTmatqORtR0xM2pFk5OYy2vaMUPcGuh
+         AwkP0gwx2BDvW1eb5OUC77oaeKw3QXbxSCOlE5bHC4moxI4bDIR74FtTrOB4za64KDGO
+         4LDw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1782321331; x=1782926131;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=U/G1JgxwMKv+niNn6F5i+1VXQFhS2/7uV7yXwnMuPUA=;
+        b=rI+B2ylp6Dmal0Xu/rKn+/kM+PA0+OuU0Kh5cMDEdplsJPPtjLYwJbD0yCb8w6oUz7
+         C7pYm4HoeqnXWzA0zEUwMQWRUQ0hYEsp9lbHbtls22g2W2Bm/4myu5uBoojzRIqFm/42
+         aA3aimwVvfKR3SiFfNmK3NNU34JtIAvDlwj5jaB/7ylTBZNSddmO0CJcWwEuRJbzZcyK
+         Q6kwBgk3sMMS6WRUd0hc4Uw5N2qTW/B9GWqVruYDtqC2+N940aPBJ3P06NP8BrlPsN2x
+         UDQHNR5dM7+766EJXf0bJi5Zu/KILFKePDcfKNAO5ebUtXKGMiiuKAOxrtuU040KDU3D
+         1icw==
+X-Forwarded-Encrypted: i=1; AFNElJ+gus+obxFLoWZbord48l6Xv7Jm+zGqwGkCqPNp7sRQb/Qxc3zdZ8NRJGi9FyKjqfcM0npL+gmkwnH3A9M=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YyFT5rtjPOYUOB2CR/h72sSyYXN9vZvYcZUZ0v/P6QS5kFmry85
+	sEwSArybY1RdkllJA6YZKPjguZcpRgonGRp8kbIDTZVdB1cqlKDrIcsy
+X-Gm-Gg: AfdE7cmXCq0GnOmDs+7gzfTfGa+UjgPtw1lwj1JHgcsacDgZJT4vnxyIWMiY/R/YtiE
+	+BcJCevcebT8rCTCdQCZW/ExYVKzP3v7cqwmsHUTb+8crIYkKzq75YG9sCZdK1RpjahuKspjzjD
+	NCfbt0XCqotMjL2RuTpwgYD08WfSl8+BRo8LgKisH/jx1Gl4Eleg2/JWPFmDyDkMh1plaWDk1dA
+	VJ6GLAOInibxQwdjZVIIJe2fmg7HzmOdX3DV7dvOjGTOBOwKl/9EHQ4J7QcmXiPnrPh5FPIyykZ
+	jt0np6pP2L+e1H0X10HnepxOX+tTSVnlrspDXK5Yd9gqODGAkGSKn9fSKa8qm2j5nuJ8hdOd9sO
+	hdhwj2L98/bacZ1yCP7r7MePhqutVVEy4iGfTHijMEITziM+v8p9Ci17yO8uxYVimHtDOeQwaaz
+	H4+05MY1xiNa4NAZVwtbv6lPju6x7FRF5h/0XS3RyrJEShjbnJOfpRJqc4fXSbkf/VgQ==
+X-Received: by 2002:a05:6a20:ce4b:b0:398:840d:39aa with SMTP id adf61e73a8af0-3bd2d23dad1mr5089082637.29.1782321331219;
+        Wed, 24 Jun 2026 10:15:31 -0700 (PDT)
+Received: from li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com.com ([106.51.160.236])
+        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-c92bcc90af5sm186497a12.28.2026.06.24.10.15.26
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 24 Jun 2026 10:15:30 -0700 (PDT)
+From: "Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com>
+To: maddy@linux.ibm.com,
+	mpe@ellerman.id.au,
+	npiggin@gmail.com,
+	chleroy@kernel.org,
+	sshegde@linux.ibm.com,
+	mkchauras@linux.ibm.com,
+	kees@kernel.org,
+	mark.rutland@arm.com,
+	mkchauras@gmail.com,
+	ryan.roberts@arm.com,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org
+Cc: =?UTF-8?q?Michal=20Such=C3=A1nek?= <msuchanek@suse.de>
+Subject: [PATCH] powerpc/syscall: Fix seccomp errno handling with GENERIC_ENTRY
+Date: Wed, 24 Jun 2026 22:45:20 +0530
+Message-ID: <20260624171520.772408-1-mkchauras@gmail.com>
+X-Mailer: git-send-email 2.54.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -76,75 +100,57 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain;
- charset=utf-8
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-On June 24, 2026 3:50:27 AM GMT+01:00, Feng Tang
-<feng.tang@linux.alibaba.com> wrote:
->On Tue, Jun 23, 2026 at 03:35:01PM +0000, Bradley Morgan wrote:
->> panic_other_cpus_shutdown() handles SYS_INFO_ALL_BT before stopping the
->> other CPUs. Do not ask sys_info() to handle that bit again later in the
->> panic path.
->> 
->> Use sys_info_without_all_bt() so panic_print=all_bt does not request
->more
->> output after the CPUs are stopped.
->
->Good catch! Thanks!
->
->Later in panic_other_cpus_shutdown(), it sends IPIs to stop other CPUs,
->and
->this patch does avoid dumping local call trace again!
->
->For the whole serie, feel free to add:
->
->Reviewed-by: Feng Tang <feng.tang@linux.alibaba.com>
->
->Thanks,
->Feng
+After enabling GENERIC_ENTRY on PowerPC, seccomp filters using
+SCMP_ACT_ERRNO without an explicit errnoRet value return ENOSYS
+(Function not implemented) instead of the expected EPERM (Operation
+not permitted).
 
-Thanks a lot Feng!
+The issue occurs in system_call_exception() when syscall_enter_from_user_mode()
+returns -1 to indicate the syscall should be skipped (e.g., blocked by seccomp).
+The current code treats this -1 as a syscall number and compares it against
+NR_syscalls. Since -1 (when cast to unsigned long) is greater than NR_syscalls,
+the code incorrectly returns -ENOSYS, overwriting the errno that seccomp
+already set via syscall_set_return_value().
 
-All 4 patches, right?
+The generic entry code in syscall_trace_enter() calls __secure_computing(),
+which sets the appropriate errno in regs->gpr[3] and returns -1 to signal
+that the syscall should be skipped. However, the PowerPC syscall handler
+was not checking for this -1 return value before validating the syscall
+number.
 
-I'll let the maintainer (whomever will merge it) merge it, and add 
-your tag!
+Fix this by explicitly checking if syscall_enter_from_user_mode() returns
+-1 and returning the value already set in regs->gpr[3] (the errno from
+seccomp) before performing the syscall number validation.
 
-If you would like, Feng, if you CC me on any watchdog, etc etc patch,
-I'm sure I'll help review! :)
+This aligns PowerPC's behavior with other architectures using GENERIC_ENTRY
+and restores correct seccomp errno handling.
 
-Thanks for your tag.
+Fixes: bee25f97ad24 ("powerpc: Enable GENERIC_ENTRY feature")
+Reported-by: Michal Suchánek <msuchanek@suse.de>
+Signed-off-by: Mukesh Kumar Chaurasiya (IBM) <mkchauras@gmail.com>
+---
+ arch/powerpc/kernel/syscall.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
+diff --git a/arch/powerpc/kernel/syscall.c b/arch/powerpc/kernel/syscall.c
+index a9da2af6efa8..5b58c8d396c8 100644
+--- a/arch/powerpc/kernel/syscall.c
++++ b/arch/powerpc/kernel/syscall.c
+@@ -22,6 +22,10 @@ notrace long system_call_exception(struct pt_regs *regs, unsigned long r0)
+ 	add_random_kstack_offset();
+ 	r0 = syscall_enter_from_user_mode(regs, r0);
+ 
++	/* Seccomp or ptrace may have set return value, skip syscall */
++	if (unlikely(r0 == -1L))
++		return regs->gpr[3];
++
+ 	if (unlikely(r0 >= NR_syscalls)) {
+ 		if (unlikely(trap_is_unsupported_scv(regs))) {
+ 			/* Unsupported scv vector */
+-- 
+2.54.0
 
->> 
->> Fixes: b76e89e50fc3 ("panic: generalize panic_print's function to show
->sys info")
->> Cc: stable@vger.kernel.org
->> Signed-off-by: Bradley Morgan <include@grrlz.net>
->> ---
->> Changes since v1:
->> - New patch using the same helper for panic.
->> 
->>  kernel/panic.c | 2 +-
->>  1 file changed, 1 insertion(+), 1 deletion(-)
->> 
->> diff --git a/kernel/panic.c b/kernel/panic.c
->> index d030f88ad4ef..2cf229c7c0cf 100644
->> --- a/kernel/panic.c
->> +++ b/kernel/panic.c
->> @@ -683,7 +683,7 @@ void vpanic(const char *fmt, va_list args)
->>  	 */
->>  	atomic_notifier_call_chain(&panic_notifier_list, 0, buf);
->>  
->> -	sys_info(panic_print);
->> +	sys_info_without_all_bt(panic_print);
->>  
->>  	kmsg_dump_desc(KMSG_DUMP_PANIC, buf);
->>  
->> -- 
->> 2.53.0
->
-
-Thanks!
 
