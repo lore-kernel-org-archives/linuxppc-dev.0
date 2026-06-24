@@ -1,84 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-22960-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22961-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9B60FCDB47F
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Jun 2026 11:51:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 91A17CDE002
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Jun 2026 15:14:56 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4glgHs2kNhz2yVv;
-	Wed, 24 Jun 2026 21:51:05 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::42a"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782301865;
-	cv=none; b=cVbeQdkao/95J5QQ7bnexfGLPm9oiKU1FGZ34119spGZNldiBGPE4r3DQP742JnFZxYktUxMfHHkZl89reUhgZY5ZswS6HZ6wlKm9r4D6LryDdlIdvxvmdHZNRttmIVDwTmBJlpOh2IPLTrcZN6/112EFEdJn3066uOdJX3o8adH/7NMAYRDvsrsjRDkcnMzMw8u4VUIgtKk4aR4vdGOd1qx7lmy4BIwM/njL1Kc+5AJHVqMNNzrvb55x4CSuXgBFK203gVRxDui9MAb2mQTe/KowANMJDcNcuO6jTAIDbVIvgzgGorL5OEzOPw8+Evmmrx4ZhKC6V5+1BayYnKVpw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gllq23r5nz2yYq;
+	Thu, 25 Jun 2026 01:14:54 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782314094;
+	cv=none; b=XcdeTqThpmNnItkywK7ZWKY/myRV7xv5uyzA7ZGabLguaE5ACJT//vjvkEohHBfdk1PQ4VRpcbPWc8AKigCk6qMW9EumNJTVEOIy2ozFwdaDW3TwaoXUC35uV4H+Nz1TgvmzW/iuhtdWFH5RBMH4fdKcSg4HSSkVI0xvK5OUXb5Q0RB71vwk90omuMqPbwAfiS3Jg44PD5jtILHUHOBRVmbJXijos1NHJyoKahLSZmGssyxaulrGwZ3RHxI05CzBkqBbBmwtQZIcSx/HIjvOzmXZAiiVlHQ+rawUU5dJjihoKlL4r6EFgDabAyui+gMruUronH/0qQAxsAccn6lWxQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1782301865; c=relaxed/relaxed;
-	bh=XLYGI+jGGD5SSrEhLKeuITqC8EDy62Dm21Ns6LCR8Mk=;
-	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References:
-	 MIME-version:Content-type; b=imXiSAecttmsnYRU7Wj2w5Mm1ikD4ctsonK2MY6lf/7WBsPRCnsFYYQf7yseiFgep70JGUYPthyStBZISA7RG/auriN7nhHRiw72qdz7PAjYlP64gTm+FWD5TIdbdwXplZOvEtylSixk9QsLMEq0pMGFQI8TDWt/tRGuisPtxQ49LH0cf3obVF6Ow4cQVq38OVUKVS78EjIHnZIWM5tIXOiyRXtvty+3w2LiiWe0iw+smIiUW0vA4mlpWGa1JNxd6BCSyjjD2q9dqL/tINTRYiGhT4WMnkJ4o1J6R72Gd3eFFgqzdTMeHVqpd6787oVOKlSXuNzcfMuddhKzNGEqPA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=Kw52+g9w; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::42a; helo=mail-pf1-x42a.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1782314094; c=relaxed/relaxed;
+	bh=xJObyXnpUVDmMYy0V086nGwmhU2/l7D2rZmg64phSSo=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=mV+yfLjB/jzf4iCqsj6zEurJeKO/+buAwcVV/VwX9aFkxguPk6t92FaZRDKzpHlbJkeljC6VkZxlmICVBj/Au0Pjmg5Er0K1z1wZq99CsDbWFG1i/+6d6HlPKp5By65qbi6KW0Gc01Sfhv7OpA1RRM4M2RGs3Fb3o1J4ZdNyL8rI6AwXOWpVqDjNhrUiuY/l7rSrIMM21RJo3CZcLEjg9k1aJ9MLec0vWboocvJOLtEVVApeGRm5kYDwBWL70pOYNcGQ+Ka0mg/GaLfedtrOPr9fzjnn/hGOCwHwmY3720Xt99hs3zLG/bWulX7ke/mK1Km+BgP3PqcrL22oPEkL4g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=KXrb63Ci; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=gbatra@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=Kw52+g9w;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=KXrb63Ci;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::42a; helo=mail-pf1-x42a.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pf1-x42a.google.com (mail-pf1-x42a.google.com [IPv6:2607:f8b0:4864:20::42a])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=gbatra@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4glgHq1Kf7z2ySg
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jun 2026 21:51:01 +1000 (AEST)
-Received: by mail-pf1-x42a.google.com with SMTP id d2e1a72fcca58-84592b55832so594056b3a.3
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jun 2026 04:51:01 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1782301859; x=1782906659; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:references:message-id:date
-         :in-reply-to:subject:cc:to:from:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=XLYGI+jGGD5SSrEhLKeuITqC8EDy62Dm21Ns6LCR8Mk=;
-        b=Kw52+g9wiUISZ18+7YieVYOGm5o4GWPLgC0w3KgowkajhjFhQq9Tzq7Khl2cYuqxYL
-         X5E7jiSN3lkFioD7kQIZjbLnm4P+503AfencgsvTuc/oxYchAWrhGACSTSVeKtEVYmj+
-         Jpj9y7AdX+8mPDk/rF/1ojglLC+pPgha1i2MFwvr4YavevUv9IJS7dYVOnuL+K9ZkwRJ
-         Hz6eLgCaV/mPd8jf8gZzf5T9tUGUYJoYEGOrzGeBVjGmJsJVnpz72BLq5xvhWAm/JLSe
-         KUk+W3GEU2PiGvxL5+0uPAvjr7J1NzhPtC4VpLYy271EkM7BuI2V+5sAabWx+rzrw+0j
-         X2HA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1782301859; x=1782906659;
-        h=content-transfer-encoding:mime-version:references:message-id:date
-         :in-reply-to:subject:cc:to:from:x-gm-gg:x-gm-message-state:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=XLYGI+jGGD5SSrEhLKeuITqC8EDy62Dm21Ns6LCR8Mk=;
-        b=slU6t5nyLbOcsdg+tiHZe+51t9A1vpzdolWPwnSHeY/19N9HW95+gtI+F/Uq+aCKnX
-         FI+31oGziT6haICBJLM8HaQZCvAPw1I6pfH3Uo8ENAypaOw5r98iszuyULmxFne/iLj1
-         PPJa8u8LjUMMW+8ayf7OLBGoWRA7aHVYQp4r/dH2IpMwAWdW2N+0O3Fiu9XUJhk3Yt2n
-         5ML0Bt3Xj0ARQm8O2yg29KpP/9mZkZ1O+ueCT6GRrDkvkJqmlPdBsVFz9MSC8/KhqQjT
-         hX5uLKIXWODx2WYHOUe8bl7O6lSEiftEE0uMyROClvwBGqFZZN/edRNSsYqU9F31CeiZ
-         9LcA==
-X-Forwarded-Encrypted: i=1; AFNElJ+ult5yxVtovLp6ZWQ8PfyDq34RAmdus7LS+a/FWYLFGpksRa0gF61GKCAFXGX4+2hy3Zrta+IFcq9nbtY=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YyKaPwrxDsio5rYy0G6+ttGSBq4wjOzmvAKpkktZbfFZ1wf662a
-	76JIAA4JcvGwF/YxUmtN1qG4Mj+Bl50vuTOlPFQnU/AkOBvUC5a9Esza
-X-Gm-Gg: AfdE7cnzRLXVCvLTVPrbPLYOpuuRG+z9GM3bHwvD5BC08Lv5i17HVZCxPeyuxjTQS+S
-	uMpvXWB9+4xFvye5KTWE6cgFJDLuelOYeoaHgPZoWnU+CmTNzUelSuM9Y0DjzSf3qDDxIYkajaM
-	uqt6GyH/Vbd3T0iRSWHCBlizu0mkhBEmiwgQOx4KTKzj8O9zXxj2Djz76dKE6V0r+idpoz8LEc3
-	rEzcXHxMc3n/mlAGySjDfu0QGWhjCwc51sKioMMj4azLhDFUSePmOCbwZteIBQQaDo4lpt/xI93
-	jUP9mQ8DvuC+UmHQ08ID6ii9rbi3ayWEREA02YhWy/9yz5DAq8Ts2BDCQ6PT+KAuR+aKwebyBHo
-	sGZgbBaUsrtifNs0023ihgBrxFZD1BrxKbsQWHZS/Q+DvxOH96uU5g2ee+H7J5xcYVkJb/PzFZu
-	zuQGKkc0qZbMcJISpB2jWEQ+xjOQ==
-X-Received: by 2002:a05:6a00:2305:b0:842:7f81:8079 with SMTP id d2e1a72fcca58-84595326988mr8140571b3a.37.1782301858737;
-        Wed, 24 Jun 2026 04:50:58 -0700 (PDT)
-Received: from pve-server ([49.205.216.49])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-845a413d2aasm2435598b3a.59.2026.06.24.04.50.51
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 24 Jun 2026 04:50:56 -0700 (PDT)
-From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-To: Kairui Song <ryncsn@gmail.com>
-Cc: linux-mm@kvack.org, Madhavan Srinivasan <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <chleroy@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Chris Li <chrisl@kernel.org>, Kemeng Shi <shikemeng@huaweicloud.com>, Nhat Pham <nphamcs@gmail.com>, Baoquan He <baoquan.he@linux.dev>, Barry Song <baohua@kernel.org>, Youngjun Park <youngjun.park@lge.com>, David Hildenbrand <david@kernel.org>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, Sayali Patil <sayalip@linux.ibm.com>
-Subject: Re: [PATCH v4 2/3] mm, swap: allow archs to override SWAP_NR_ORDERS via ARCH_MAX_PMD_ORDER
-In-Reply-To: <CAMgjq7BNMYCBKDYH_O-mHsBdAeSq4Z_ve5oDB6rQTGioHo26GQ@mail.gmail.com>
-Date: Wed, 24 Jun 2026 16:45:21 +0530
-Message-ID: <pl1gw5o6.ritesh.list@gmail.com>
-References: <cover.1781843449.git.ritesh.list@gmail.com> <eda4e51ee9f1270582fbb2823ec5873e769de089.1781843449.git.ritesh.list@gmail.com> <CAMgjq7BNMYCBKDYH_O-mHsBdAeSq4Z_ve5oDB6rQTGioHo26GQ@mail.gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gllq12jNSz2yRF
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jun 2026 01:14:52 +1000 (AEST)
+Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 65OEmOGm1191241;
+	Wed, 24 Jun 2026 15:14:33 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=xJObyX
+	npUVDmMYy0V086nGwmhU2/l7D2rZmg64phSSo=; b=KXrb63CibSHEeSLrnbOveX
+	qgC8ITrNWgu7AdDSz/iWUnLl/ZoMw9KwfEILtYYMD9a8eB+rOBZswqiqn7S5doT2
+	YzhasyYrafIOzz1jajrs9o7yc73oASJj4glLgnzhWqAqxZ0sUcSpmYHwT9iHbIRP
+	HCvUnCCa8fIom8eNalYQ8/LuIa5NRHWWmgl+WJX5aUgURp/q3jYvG6/cIQkE4/25
+	17RGgB1DlN1SCCSumdqk7/wuSRq5urFPaJiTaP4auPpw9vzDxM9FJRTFdj3D/se1
+	+t58/AZ7FTj8Rww00/TnPJwJOkbyqGPQZNRE9UZ6akoQULI8sjWQcvMF6MZjYf3Q
+	==
+Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4ewjgsvkh6-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 24 Jun 2026 15:14:31 +0000 (GMT)
+Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma11.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 65OF4dQE024622;
+	Wed, 24 Jun 2026 15:14:30 GMT
+Received: from smtprelay05.dal12v.mail.ibm.com ([172.16.1.7])
+	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4ex7vyrxun-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 24 Jun 2026 15:14:30 +0000 (GMT)
+Received: from smtpav04.wdc07v.mail.ibm.com (smtpav04.wdc07v.mail.ibm.com [10.39.53.231])
+	by smtprelay05.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 65OFETRN27263700
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Wed, 24 Jun 2026 15:14:30 GMT
+Received: from smtpav04.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id B6CDE58050;
+	Wed, 24 Jun 2026 15:14:29 +0000 (GMT)
+Received: from smtpav04.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id B492458045;
+	Wed, 24 Jun 2026 15:14:28 +0000 (GMT)
+Received: from [9.67.85.162] (unknown [9.67.85.162])
+	by smtpav04.wdc07v.mail.ibm.com (Postfix) with ESMTP;
+	Wed, 24 Jun 2026 15:14:28 +0000 (GMT)
+Message-ID: <436eeb18-1412-450f-a259-25356ddf80d1@linux.ibm.com>
+Date: Wed, 24 Jun 2026 10:14:28 -0500
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -91,108 +80,106 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-version: 1.0
-Content-type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2] powerpc/pseries/iommu: Add check for
+ iommu_pseries_alloc_group()
+To: Haoxiang Li <haoxiang_li2024@163.com>, maddy@linux.ibm.com,
+        mpe@ellerman.id.au, npiggin@gmail.com, chleroy@kernel.org,
+        kees@kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+References: <20260623142918.2287696-1-haoxiang_li2024@163.com>
+Content-Language: en-US
+From: Gaurav Batra <gbatra@linux.ibm.com>
+In-Reply-To: <20260623142918.2287696-1-haoxiang_li2024@163.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjI0MDEyMyBTYWx0ZWRfXxmGKkZGF4xYS
+ kU8fnUjpbn52XXRhkRuuqS6RjhdC+7JIbGYtrqkeMGXaRkpdr9rf2IZKG7fRYJvLBzPpbRSeBJ9
+ rDdWQ2nFit0dqU2wRyRrMkrXteghjJzhX5+fOAVl2DnHYwAaYgqelGgfjpznfIBtDB5Nob+TYv3
+ ljq1ZIjf6aS4QQIu7zFVT4QnUKOqReB48LAwPsUTzZcKLAOssOJRV+Dv7Ub3PkUQjmXdmpc5qoQ
+ SB7s+JkptmMJHo6UJ0t4Rv0u/k3Wc3rDlodubr912EL/Aj3BHbGjK5pjaOm8GBFn+/9OvDQ5rPb
+ z59Icr1he1XCEZPlv2uRMs09ul0oF8rvY5JBD9Q9liou4Ndl74L1n2ZPOL8sp1EeA9OktxmRn0c
+ Ys4LOS3wQPdQgCm7TfX/iYBhdsDK2Q==
+X-Proofpoint-GUID: flGtOn1WRBYVN29zXUOI11fP-G6lZn_7
+X-Proofpoint-Spam-Info: AW1haW4tMjYwNjI0MDEyMyBTYWx0ZWRfXyxxipmOxS/4S
+ uKBHBRl1mJqLhGLi3EFTeibCpCs/qWVqzN+MyY1Z0c4GPZwvcQvtqq0fmcc+Xj1zLrc/UN0Gtvm
+ hU9wDToWapX2QrFWZ5IDnroW8KzHLok=
+X-Authority-Analysis: v=2.4 cv=I/lVgtgg c=1 sm=1 tr=0 ts=6a3bf457 cx=c_pps
+ a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
+ a=IkcTkHD0fZMA:10 a=FelO9ux0wxsA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=RzCfie-kr_QcCd8fBx8p:22 a=VnNF1IyMAAAA:8
+ a=Byx-y9mGAAAA:8 a=4F6sIWIm2fMPugnQaUsA:9 a=QEXdDO2ut3YA:10
+X-Proofpoint-ORIG-GUID: tXfybc9ehgZ0LobV8aQfU-2UaXgFZ72l
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
+ definitions=2026-06-24_03,2026-06-24_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ lowpriorityscore=0 phishscore=0 spamscore=0 adultscore=0 bulkscore=0
+ suspectscore=0 malwarescore=0 classifier=typeunknown authscore=0 authtc=
+ authcc= route=outbound adjust=0 reason=mlx scancount=1
+ engine=8.22.0-2606150000 definitions=main-2606240123
 
-Kairui Song <ryncsn@gmail.com> writes:
+looks good
 
-> On Fri, Jun 19, 2026 at 12:42 PM Ritesh Harjani (IBM)
-> <ritesh.list@gmail.com> wrote:
->>
->> SWAP_NR_ORDERS sizes a few small bounded arrays inside THP swap
->> allocator code (nofull/frag cluster lists, percpu_swap_cluster's
->> si/offset arrays, next array for rotational device). This currently
->> expands to PMD_ORDER+1, which only works when PMD_ORDER is a compile
->> time constant.
->>
->> However on architecture like PowerPC Book3S64, PMD_ORDER is a runtime
->> variable which depends upon which MMU is selected (Radix / Hash), so in
->> that case, PMD_ORDER cannot be used to size the static arrays.
->>
->> This patch provides an optional ARCH_MAX_PMD_ORDER (upper-bound)
->> override for such architectures. The memory overhead on enabling this
->> override is negligible. Even if we make SWAP_NR_ORDERS runtime alloc,
->> default slab padding could cause some memory waste. Also we lose the
->> per-cpu cacheline benefits (for percpu_swap_cluster) because it might
->> cost an extra cacheline indirection overhead in swap_alloc_fast() for
->> fetching si[order]/offset[order]. Note that a fully runtime
->> SWAP_NR_ORDERS was considered in previous version but was dropped for
->> this reason [1]
->>
->> [1]: https://lore.kernel.org/linuxppc-dev/pl1zdksc.ritesh.list@gmail.com/
->>
->> Suggested-by: YoungJun Park <youngjun.park@lge.com>
->> Signed-off-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
->> ---
->>  arch/powerpc/include/asm/book3s/64/pgtable.h |  7 +++++++
->>  include/linux/swap.h                         | 12 +++++++++++-
->>  2 files changed, 18 insertions(+), 1 deletion(-)
->>
->> diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
->> index e67e64ac6e8c..7f22d5d5fbdf 100644
->> --- a/arch/powerpc/include/asm/book3s/64/pgtable.h
->> +++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
->> @@ -204,6 +204,13 @@ extern unsigned long __pmd_frag_size_shift;
->>  #define MAX_PTRS_PER_PGD       (1 << (H_PGD_INDEX_SIZE > RADIX_PGD_INDEX_SIZE ? \
->>                                        H_PGD_INDEX_SIZE : RADIX_PGD_INDEX_SIZE))
->>
->> +/*
->> + * Compile-time upper bound on PMD_ORDER across hash and radix MMUs.
->> + * Used by THP SWAP code. Check include/linux/swap.h
->> + */
->> +#define ARCH_MAX_PMD_ORDER ((H_PTE_INDEX_SIZE > RADIX_PTE_INDEX_SIZE) ? \
->> +                               H_PTE_INDEX_SIZE : RADIX_PTE_INDEX_SIZE)
+Reviewed-by: Gaurav Batra <gbatra@linux.ibm.com>
+
+On 6/23/26 9:29 AM, Haoxiang Li wrote:
+> Add check for the return value of iommu_pseries_alloc_group()
+> to prevent potential null pointer dereferences.
 >
-> Hi Ritesh
+> Signed-off-by: Haoxiang Li <haoxiang_li2024@163.com>
+> ---
+> - Changes in v2:
+>    - Add check for other callsites. Thanks, Gaurav!
+> ---
+>   arch/powerpc/platforms/pseries/iommu.c | 12 ++++++++++++
+>   1 file changed, 12 insertions(+)
 >
-> So swap is the only user of this macro? Will there by any other users?
->
-
-No other users so far other than swap.
-
-> I see that due to the percpu cluster design, it's hard to use a
-> flexible array here. We will probabaly get rid of the fixed percpu
-> cluster design in the future. By then should we be able to get rid of
-> this macro?
->
-
-Earlier in RFC version [1] it was runtime though, but as stated in the
-commit msg, it adds unncessary complexity and yes, the per-cpu usage
-there, made me re-think this whole thing (as Youngjun also suggested).
-Since the allocation of si/offset of percpu_swap_cluster in fastpath
-means, we also loose on the cacheline benefits that it otherwise had.
-
-[1]: https://lore.kernel.org/linux-mm/19688ab5ab8017467749e003cf630c76a4b2b198.1781000840.git.ritesh.list@gmail.com/
-
-Sure - I am not well aware of the plans on how to avoid the fixed
-per-cpu cluster design here. Maybe if you can share some details, that
-will be helpful.
-
-But essentially yes, per-cpu swap cluster was the major reason why we
-looked at adding ARCH_MAX_PMD_ORDER for PowerPC. Also note that this
-does not cost any additional memory overhead compared to the runtime
-solution, since kmalloc allocations of these structures were anyway
-adding some bit of padding.
-
-
-> I'm OK with this approach though. This current design has no negative
-> effect on other archs so no reason to block it,
-
-Sure. Thanks!
-
-> just wondering if this can be made simpler in the future :)
-
-Well it's relative. I felt this is a simpler design compared to the RFC
-version we had earlier [1]. But still - can you share some additional
-details of your concerns please.
-
-Having said that - sure if in future we get rid of the fixed percpu
-design, then I am happy to revisit this to see if this macro can be
-killed - by maybe adopting to runtime allocations.
-
-Thanks for looking into this!
-
--ritesh
-
+> diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
+> index 3e1f915fe4f6..d97bde96dd4d 100644
+> --- a/arch/powerpc/platforms/pseries/iommu.c
+> +++ b/arch/powerpc/platforms/pseries/iommu.c
+> @@ -684,6 +684,9 @@ static void pci_dma_bus_setup_pSeries(struct pci_bus *bus)
+>   	pci->phb->dma_window_base_cur = 0x8000000ul;
+>   
+>   	pci->table_group = iommu_pseries_alloc_group(pci->phb->node);
+> +	if (!pci->table_group)
+> +		return;
+> +
+>   	tbl = pci->table_group->tables[0];
+>   
+>   	iommu_table_setparms(pci->phb, dn, tbl);
+> @@ -872,6 +875,9 @@ static void pci_dma_bus_setup_pSeriesLP(struct pci_bus *bus)
+>   
+>   	if (!ppci->table_group) {
+>   		ppci->table_group = iommu_pseries_alloc_group(ppci->phb->node);
+> +		if (!ppci->table_group)
+> +			return;
+> +
+>   		tbl = ppci->table_group->tables[0];
+>   
+>   		iommu_table_setparms_common(tbl, ppci->phb->bus->number,
+> @@ -909,6 +915,9 @@ static void pci_dma_dev_setup_pSeries(struct pci_dev *dev)
+>   
+>   		pr_debug(" --> first child, no bridge. Allocating iommu table.\n");
+>   		PCI_DN(dn)->table_group = iommu_pseries_alloc_group(phb->node);
+> +		if (!PCI_DN(dn)->table_group)
+> +			return;
+> +
+>   		tbl = PCI_DN(dn)->table_group->tables[0];
+>   		iommu_table_setparms(phb, dn, tbl);
+>   
+> @@ -1875,6 +1884,9 @@ static void pci_dma_dev_setup_pSeriesLP(struct pci_dev *dev)
+>   	pci = PCI_DN(pdn);
+>   	if (!pci->table_group) {
+>   		pci->table_group = iommu_pseries_alloc_group(pci->phb->node);
+> +		if (!pci->table_group)
+> +			return;
+> +
+>   		tbl = pci->table_group->tables[0];
+>   
+>   		iommu_table_setparms_common(tbl, pci->phb->bus->number,
 
