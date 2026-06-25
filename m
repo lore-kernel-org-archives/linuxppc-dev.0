@@ -1,100 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-22980-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22981-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2B9F1CDE000
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Jun 2026 14:04:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7E25ECDE000
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Jun 2026 14:05:00 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gmLBr73Pmz2ySW;
-	Fri, 26 Jun 2026 00:04:04 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::42b"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782396244;
-	cv=none; b=E8ITEkFtz+UUPsR7VCQ76pG4YYmzOaZ72raeDQjEOCdEEQsRzkTvJso8BtlSmhtdhBft3NEgpL+aZ1u8gRsN3dAhwgSwJx7V7nnwQWe5Xaxvdw1akVtalG1Nx/nOI5gZjAPdAtITY/3eFdrO9eOHai3ALn29Lt4nVyXgm+dp53UK0AatDqxtwoXLkUXmb8j64sPswieZSENRhwzzHwPlpJlHk+WvtZiqZucMBwGgxhwJQzCWJBO1gWLjSvrmnn/8/TlUNYNXfNW2aTDhYWYpTXsNOsCQiMhnnqQwu6rz2rX+ZKSLvfR5p7N144JsnEjuekYLJF65i+XQAckS356sig==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gmLCt6HlRz2ySW;
+	Fri, 26 Jun 2026 00:04:58 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782396298;
+	cv=none; b=SsrIzvqtFwXCrBuNza5huJVJNMSbPOX1HNz56Ddic11GgDfO44LvJIEAYAF+ZSKZ0L1OftfDts7ha9yCcpREL9//lsp1eo3FmotSszwH4IWpqFG97gHdNp94otQZRlzj1DdA4cQvhzsWPSrNW5PHodlcf/+6ommhMsSb8cBEUlsWy9NeKGDJfi8t0p3HIp36PeW/NqQjbVhGi24+p3S8ISBPtGsLn8rtycQxLGgd3c7oeMuMXAHlrXJ0fZ6jxPoW5mOGbWLt87bLq4H0T0a7pk4C5veQ71igTGOzsbSze6NEHZ7a9VJ+E4oWcZoQTuHkDRHO9p6IDiX4LbJZvVAVAA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1782396244; c=relaxed/relaxed;
-	bh=FXePbhpqmqUIpWXHZ6AhrPzihy8SICwPudmPEVZUNGU=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=TxYk93rgn8LPLruSvbc3SlIxyN5SzEY+LV6ql3RsCTKQ2PbCVPviJN3dBjPNtcmbT6zPICmywSwItro1c2Ol63hcBxFjg4Dw55AfRwfsP6C/ni+2RmGyGHwbA7PgRlacEga1Dy4SR2rnMOOL908OgujhKmIwdsOq/f19Nf0C5R8NdgeBwMduuonxLQjVtErFMQiYHllBOm7E8KBoS6esbbU57WEDiHPHBsxq/W+JIvu+1CaZvLhbfeM1Gz56Mo0d2wnoEsOlvo4kGxlUPD4LY1TcjVv2CpwHIQXRcKplNAmREgzk7aBPahmvo81emBRwblKU32H8ASJ/dbU2vf9MoQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com; dkim=pass (2048-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=google header.b=D3+MXZ9G; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::42b; helo=mail-wr1-x42b.google.com; envelope-from=pmladek@suse.com; receiver=lists.ozlabs.org) smtp.mailfrom=suse.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com
+	t=1782396298; c=relaxed/relaxed;
+	bh=wdT6rQDcVONIEoFXNeng4/FokBuEy+7WhKmADDSqROo=;
+	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
+	 In-Reply-To:Content-Type; b=DS/FRe1zrGiHnrFB+sOLD7YMrP03t+bHRIEEgx2+ybBhvInPqrVKBsyBHOlJ8CzLn2eI9Y8OCittqid8iJ4ILFTn3ibQ8+WpGroCOACT6PUxTIecPRg0KdKK2qsatJ8s0dXhFVJwfvT3GJD+6St87GrpOdGttFLEKd+0Mc6iGws2i+8d0LizyljxuYqeOdtvqmZa/x82h5KYhhD8CiIQI4QS0tlJnfC5SCGnrLt9hCDYAhC3sxn4rRraUbXJ0jS0aaZHvc+2g+QtMnyimAQvRNBPbtpTbQjUAcK4PaZNHtgvUBTo4Js4OHw5BoDwKesgaj52OIvAhBBgBoCI1GHAqA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=A+Z4/X3Z; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=google header.b=D3+MXZ9G;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=A+Z4/X3Z;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.com (client-ip=2a00:1450:4864:20::42b; helo=mail-wr1-x42b.google.com; envelope-from=pmladek@suse.com; receiver=lists.ozlabs.org)
-Received: from mail-wr1-x42b.google.com (mail-wr1-x42b.google.com [IPv6:2a00:1450:4864:20::42b])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gmLBp16tCz2y8p
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jun 2026 00:04:01 +1000 (AEST)
-Received: by mail-wr1-x42b.google.com with SMTP id ffacd0b85a97d-46cdcec58c2so527951f8f.1
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jun 2026 07:04:00 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=suse.com; s=google; t=1782396233; x=1783001033; darn=lists.ozlabs.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=FXePbhpqmqUIpWXHZ6AhrPzihy8SICwPudmPEVZUNGU=;
-        b=D3+MXZ9Gy7fG2fdAbXPaGdvo5+ikXh67DEICyN/VkBXnz3oqaQl8Ajl8AsDL79Byvu
-         Cf7xhrgJw+ztWuNwCae8XhYc5IBqtH0oKf+eUC/hYgtQx6+LK5l6qDn0wMlqwqwBd6N6
-         27xJ81jSpYhCS8Fc9owdWW3kxMBKnSAmoFPTSlq9ddzby4LTwkRvhOLQxBnArmgG6L3S
-         +7Mtq9El35ln27OmAGUWDqNh1pkIGCn0j8bH614QR+NYL9UcKc5jnZnTAS88WL6H5/Wf
-         do4XG1P4eyrDjhC0dIM2ts1WTs1dTyZTFf3fMrrHLhH3Gf5th5HieA9vC3nPnQVkyiBz
-         f/5Q==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1782396233; x=1783001033;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=FXePbhpqmqUIpWXHZ6AhrPzihy8SICwPudmPEVZUNGU=;
-        b=nw+Ba+LIISphwCdYVNLr0QmTOv4iCQ+kFjgFC6IQ3uTvYW2GulS9L1JEDSKHMN1Twb
-         I6eLvnmqqoCr63sILjtMF/DXoh0n/22LIaqaxzZepdR6iSpbVoDqEQZz+Js5+Xc2EJ/N
-         rQ2XIfAMCQJSHgQfggs1yX8AvczBdIdRcOaEy9hay8marBjRqLXLXLRTlxgxAYN5M4Q2
-         tr0S8Zv1dX+Qg+VKXs83dU7hT9l8RrE+x3huevX+HyJTZE1LgXZdA3Ztn0MpPgJc/0AF
-         KLygGe+MNFWHFS3/3DryVNU45TBlLIJH0pTgRXgw9BubfPNVE2uS1aveqfRXIkuksZ1r
-         1OOg==
-X-Forwarded-Encrypted: i=1; AHgh+RpiicRTLFQnHcKQuu1tT7KL+SIt3V+8yF25GOLXrsEuf3hKGslCQwixSWyItjFcC82x/azqVBgxhjK1IY0=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YwHJgsXqORD5MRt2S3twr9PPSpoFIbDTjajzPo0jW6n9VrVCb27
-	hJOGb15/14Chm4PQVoP6pFzVjWj8s2qolfBYQFJUaIVtCS/t9KxIfdYSTsM5kgOOMJg=
-X-Gm-Gg: AfdE7cncEWyaDgN442cFSohwREitfei/gWV5iXk9sdKURnl83HIUBFGnlP6BBEF0Esd
-	Il19mAI7ymbsWtxqZgzOmJdEK/bKKsJTHPBEFRQIlH0E2+LgvMXrRzLC1XrQnjzRS+D30Hgns4/
-	fEkBV1kmpgnS0kVTVoa08s9BLWsXkFgvloAlJwnjxs8m0c3pz0rjXwqqsVCvHRILzlLFjlIFOEe
-	OHdmgwXuRFFqrJ4PfQmjLXIg2fSiJvS4cdp4/ia+LReahIvIjioVmFQ7VdGTzhzvdwoplRV6lsn
-	sSph9mpYI6mp2ld2QFCceZpZ5QqHTs6A5oU5/0yfR4ZRG56Ga2zXxJV28tXYjQiqNvQ6oIXZfS1
-	J+/rKQtos8dgBUs3ArU8BrtqpJG+u+a6E9GQPeh4jYoT830UT4JtP+2JXQnaYcHSmDzBzShWzMx
-	g3
-X-Received: by 2002:a5d:5f4d:0:b0:460:395c:7404 with SMTP id ffacd0b85a97d-46da9aceb40mr4346600f8f.20.1782396232681;
-        Thu, 25 Jun 2026 07:03:52 -0700 (PDT)
-Received: from pathway.suse.cz ([176.114.240.130])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-46d86960983sm7584574f8f.4.2026.06.25.07.03.50
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 25 Jun 2026 07:03:51 -0700 (PDT)
-Date: Thu, 25 Jun 2026 16:03:48 +0200
-From: Petr Mladek <pmladek@suse.com>
-To: Bradley Morgan <include@grrlz.net>
-Cc: Feng Tang <feng.tang@linux.alibaba.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Christophe Leroy <chleroy@kernel.org>,
-	Mukesh Kumar Chaurasiya <mchauras@linux.ibm.com>,
-	Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-	Jinchao Wang <wangjinchao600@gmail.com>,
-	Kees Cook <kees@kernel.org>, Rio <rioo.tsukatsukii@gmail.com>,
-	Joel Granados <joel.granados@kernel.org>,
-	Pnina Feder <pnina.feder@mobileye.com>,
-	Petr Pavlu <petr.pavlu@suse.com>,
-	Sergey Senozhatsky <senozhatsky@chromium.org>,
-	Douglas Anderson <dianders@chromium.org>,
-	Mayank Rungta <mrungta@google.com>, Tejun Heo <tj@kernel.org>,
-	Zhenguo Yao <yaozhenguo1@gmail.com>, linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Subject: Re: [PATCH v2 1/4] sys_info: add helper for callers that handle
- all_bt
-Message-ID: <aj01RHgagZm83dFq@pathway.suse.cz>
-References: <9b8c96e291696815d3c7de5d3e199298dee0279d.1782228656.git.include@grrlz.net>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gmLCr3Qrxz2y8p
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jun 2026 00:04:56 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with ESMTP id F122E41658;
+	Thu, 25 Jun 2026 14:04:52 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D1C671F000E9;
+	Thu, 25 Jun 2026 14:04:50 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1782396292;
+	bh=wdT6rQDcVONIEoFXNeng4/FokBuEy+7WhKmADDSqROo=;
+	h=Date:Subject:To:References:From:In-Reply-To;
+	b=A+Z4/X3ZkTXwHL2KPfDvTlJUbufQkmMwThCEDCLKrzc3my9+ilEo+HFAP9h5NDNF0
+	 0S3Nh2wp79xolvwCYaOpzujaRryGSzaNISLyfWmgdZPDS8Woyq3fpTNlisSvI0A5c3
+	 rKfOqcEqVnOPUoLKeDv3gaMHpErRWUCcotvofJamT2y1GK1wHcT6SB2lch8K6jJnAk
+	 nlN6/PFRgTpFMhzrdrQ2edIZ017BzsILGckn/iK6KkwcMbn5vzUsNLHLWdWQBunfaB
+	 CMx7snobTTvmHzETssL5ZexLzKMy3ASVay/8yT99jTb7sAcNjImmOcDnIymTZqimXM
+	 KfU3lQ2jaRQOw==
+Message-ID: <db3168f1-91a4-4871-a68a-cdd42b1c6ea4@kernel.org>
+Date: Thu, 25 Jun 2026 16:04:48 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -108,152 +59,91 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <9b8c96e291696815d3c7de5d3e199298dee0279d.1782228656.git.include@grrlz.net>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] powerpc/dt_cpu_ftrs: Set CPU_FTR_P11_PVR for Power11 and
+ later processors
+To: linuxppc-dev@lists.ozlabs.org, Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Vaibhav Jain <vaibhav@linux.ibm.com>,
+ Harsh Prateek Bora <harshpb@linux.ibm.com>,
+ Ritesh Harjani <ritesh.list@gmail.com>,
+ Anushree Mathur <anushree.mathur@linux.ibm.com>,
+ Gautam Menghani <gautam@linux.ibm.com>, Nicholas Piggin <npiggin@gmail.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, stable@vger.kernel.org,
+ linux-kernel@vger.kernel.org
+References: <20260614173437.26352-1-amachhiw@linux.ibm.com>
+ <56dfa6bf-1eb0-4e27-974b-03f963c5eed1@kernel.org>
+ <20260616115521.79ad9699-39-amachhiw@linux.ibm.com>
+ <20260625184146.6de49c63-67-amachhiw@linux.ibm.com>
+Content-Language: fr-FR
+From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+In-Reply-To: <20260625184146.6de49c63-67-amachhiw@linux.ibm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 
-On Tue 2026-06-23 15:34:58, Bradley Morgan wrote:
-> Some callers handle SYS_INFO_ALL_BT themselves before calling sys_info().
-> Add a helper that strips that bit without turning an all_bt only mask into
-> a kernel_sys_info fallback.
+
+
+Le 25/06/2026 à 15:14, Amit Machhiwal a écrit :
+> Hi Christophe,
 > 
-> Signed-off-by: Bradley Morgan <include@grrlz.net>
-> ---
-> Changes since v1:
-> - New patch for the shared helper suggested by Petr.
+> <snip>
 > 
->  include/linux/sys_info.h |  1 +
->  lib/sys_info.c           | 15 +++++++++++++++
->  2 files changed, 16 insertions(+)
+>>>> diff --git a/arch/powerpc/kernel/dt_cpu_ftrs.c b/arch/powerpc/kernel/dt_cpu_ftrs.c
+>>>> index 3af6c06af02f..e5853daa6a48 100644
+>>>> --- a/arch/powerpc/kernel/dt_cpu_ftrs.c
+>>>> +++ b/arch/powerpc/kernel/dt_cpu_ftrs.c
+>>>> @@ -704,6 +704,15 @@ static void __init cpufeatures_setup_start(u32 isa)
+>>>>    	if (isa >= ISA_V3_1) {
+>>>>    		cur_cpu_spec->cpu_features |= CPU_FTR_ARCH_31;
+>>>>    		cur_cpu_spec->cpu_user_features2 |= PPC_FEATURE2_ARCH_3_1;
+>>>> +
+>>>> +		/*
+>>>> +		 * CPU_FTR_P11_PVR is a kernel-internal flag to identify
+>>>> +		 * Power11 and later processors. While ISA v3.1 is supported
+>>>> +		 * by Power10+, this flag specifically indicates Power11+
+>>>> +		 * for code that needs to distinguish between P10 and P11.
+>>>> +		 */
+>>>> +		if (PVR_VER(mfspr(SPRN_PVR)) >= PVR_POWER11)
+>>>
+>>> Are we sure this test will always be correct ?
+>>>
+>>> For instance PVR_PA6T is higher than PVR_POWER11 allthough it is not ISA 3.1
+>>>
+>>> Wouldn't is be cleaner and safer to just do:
+>>>
+>>> 	PVR_VER(mfspr(SPRN_PVR)) == PVR_POWER11
+>>
+>> You're absolutely right to point out the PVR ordering concern. But PA6T
+>> cannot actually reach this path because we're already gated by:
+>>
+>>    if (isa >= ISA_V3_1)
+>>
+>> and PA6T does not implement ISA v3.1.
+>>
+>> My rationale for using `>= PVR_POWER11` is that `CPU_FTR_P11_PVR` is
+>> intended to be included for Power11 and later processors, not just
+>> Power11 itself, as it identifies a CPU feature. Using `== PVR_POWER11`
+>> would mean we'd need to revisit this code for every future generation.
+>>
+>> This approach is consistent with existing kernel code. For example, in
+>> arch/powerpc/perf/hv-gpci.c:
+>>
+>>    /* sysinfo interface files are only available for power10 and above platforms */
+>>    if (PVR_VER(mfspr(SPRN_PVR)) >= PVR_POWER10)
+>>        add_sysinfo_interface_files();
+>>
+>> Also, I couldn't find any current users of `PVR_PA6T` or `PVR_BE` in the
+>> kernel tree, so there doesn't appear to be a present-day ISA v3.1+
+>> example where the comparison would misidentify a processor.
+>>
+>> Please let me know your further thoughts on this.
 > 
-> diff --git a/include/linux/sys_info.h b/include/linux/sys_info.h
-> index a5bc3ea3d44b..87a841ec7b6a 100644
-> --- a/include/linux/sys_info.h
-> +++ b/include/linux/sys_info.h
-> @@ -18,6 +18,7 @@
->  #define SYS_INFO_BLOCKED_TASKS		0x00000080
->  
->  void sys_info(unsigned long si_mask);
-> +void sys_info_without_all_bt(unsigned long si_mask);
->  unsigned long sys_info_parse_param(char *str);
->  
->  #ifdef CONFIG_SYSCTL
-> diff --git a/lib/sys_info.c b/lib/sys_info.c
-> index f32a06ec9ed4..6afd4c697633 100644
-> --- a/lib/sys_info.c
-> +++ b/lib/sys_info.c
-> @@ -164,3 +164,18 @@ void sys_info(unsigned long si_mask)
->  {
->  	__sys_info(si_mask ? : kernel_si_mask);
->  }
-> +
-> +void sys_info_without_all_bt(unsigned long si_mask)
-> +{
-> +	unsigned long dump_mask = si_mask & ~SYS_INFO_ALL_BT;
-> +
-> +	/*
-> +	 * Do not call sys_info() when the caller context required only
-> +	 * backtraces from all CPUs. Otherwise sys_info() would fall back
-> +	 * to the generic kernel_si_mask.
-> +	 */
-> +	if (si_mask && !dump_mask)
-> +		return;
-> +
-> +	sys_info(dump_mask);
-> +}
+> Just checking in — did my previous response address your concern, or do
+> you have further comments?
 
-Sashiko AI pointed out that this function still migth trigger printing
-duplicate backtraces when (si_mask == 0). It calls sys_info(0)
-which falls back to kernel_si_mask which might have SYS_INFO_ALL_BT
-bit set, see https://sashiko.dev/#/patchset/9b8c96e291696815d3c7de5d3e199298dee0279d.1782228656.git.include%40grrlz.net
+That ok, no more comments.
 
-=> we need to eventually disable the SYS_INFO_ALL_BT bit also
-   in kernel_si_mask.
 
-I think about creating a generic API which would allow to apply
-a filter mask, something like:
+Reviewed-by: Christophe Leroy (CS GROUP) <chleroy@kernel.org>
 
-From 02fc810a801adc0fc4d1fd14318415719bdfc656 Mon Sep 17 00:00:00 2001
-From: Bradley Morgan <include@grrlz.net>
-Date: Tue, 23 Jun 2026 15:34:58 +0000
-Subject: [PATCH 1/4] sys_info: add helper for callers that print some
-sys_info on their own
-
-Some callers print some sys_info on their own before calling sys_info().
-Add a helper which would allow to prevent a duplicated output.
-
-It is a bit tricky because kernel_si_mask should be used only
-when the call-specific si_mask is empty. But the duplicated
-output must be prevented there as well.
-
-Signed-off-by: Bradley Morgan <include@grrlz.net>
-Fixes: a9af76a78760 ("watchdog: add sys_info sysctls to dump sys info on system lockup") ?
-Fixes: a9af76a78760 ("watchdog: add sys_info sysctls to dump sys info on system lockup")
----
- include/linux/sys_info.h |  1 +
- lib/sys_info.c           | 20 ++++++++++++++++++--
- 2 files changed, 19 insertions(+), 2 deletions(-)
-
-diff --git a/include/linux/sys_info.h b/include/linux/sys_info.h
-index a5bc3ea3d44b..f1c2552ca3d1 100644
---- a/include/linux/sys_info.h
-+++ b/include/linux/sys_info.h
-@@ -18,6 +18,7 @@
- #define SYS_INFO_BLOCKED_TASKS		0x00000080
- 
- void sys_info(unsigned long si_mask);
-+void sys_info_with_filter(unsigned long si_mask, unsigned long si_ignore_mask);
- unsigned long sys_info_parse_param(char *str);
- 
- #ifdef CONFIG_SYSCTL
-diff --git a/lib/sys_info.c b/lib/sys_info.c
-index f32a06ec9ed4..d411fee10415 100644
---- a/lib/sys_info.c
-+++ b/lib/sys_info.c
-@@ -136,8 +136,10 @@ static int __init sys_info_sysctl_init(void)
- subsys_initcall(sys_info_sysctl_init);
- #endif
- 
--static void __sys_info(unsigned long si_mask)
-+static void __sys_info(unsigned long si_mask, unsigned long si_ignore_mask)
- {
-+	si_mask &= ~si_ignore_mask;
-+
- 	if (si_mask & SYS_INFO_TASKS)
- 		show_state();
- 
-@@ -160,7 +162,21 @@ static void __sys_info(unsigned long si_mask)
- 		show_state_filter(TASK_UNINTERRUPTIBLE);
- }
- 
-+void sys_info_with_filter(unsigned long si_mask, unsigned long si_ignore_mask)
-+{
-+	unsigned long dump_mask = si_mask & ~si_ignore_mask;
-+
-+	/*
-+	 * Do not fall back to kernel_si_mask when the caller context
-+	 * required only the ignored information.
-+	 */
-+	if (si_mask && !dump_mask)
-+		return;
-+
-+	__sys_info(dump_mask ? : kernel_si_mask, si_ignore_mask);
-+}
-+
- void sys_info(unsigned long si_mask)
- {
--	__sys_info(si_mask ? : kernel_si_mask);
-+	sys_info_with_filter(si_mask, 0);
- }
-
-The next patches might use sys_info_with_filter(si_mask,
-SYS_INFO_ALL_BT) instead of sys_info_without_all_bt(si_mask).
-
-Feel free to bike shed about the function name. Also I am not
-sure whether to pass the filter as bits to filter or already
-the complement (~mask).
-
-Best Regards,
-Petr
 
 
