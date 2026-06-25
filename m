@@ -1,80 +1,84 @@
-Return-Path: <linuxppc-dev+bounces-22971-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22972-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6274CCDE008
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Jun 2026 10:19:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DD816CDB479
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Jun 2026 10:43:40 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gmFD855Hnz2y8p;
-	Thu, 25 Jun 2026 20:19:52 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c202::7" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782382792;
-	cv=pass; b=nVTouHN/WTDhbg1cqnNce/a9ZvnKHbjfNkM/EC5eXWoEU6nEzT+vnUDrIFcGu8GHT1ZxEI9LB+tHki4SZnpd3+RITuV3f7/Z8Gt/XsUW9A4xfwIxhwdXBzo8xFa64ZnMeFJCHAUqzqeusps+o68zodq99ebqOG915Faxv96n1TPMtdg1zOZOlOuIxqW6qqBZlp0ibXxwa45GFDF6t/o9aoFprzMgsZxFoKr4BXVY7fDGR35X/hRqYO2tWLyzoCHbP50Qa77vZdzv4mxhsuRjWp28qM4jwN2Jzt+HPDlInI4k4gx1Nzdo+httX3JTX0s7QT8vBAsKl1Mh1TjrSsXWSw==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1782382792; c=relaxed/relaxed;
-	bh=oyjlMSV0kBhnLDimC4I4jO0eOwFu6CyJUqyhC5ytGjA=;
-	h=From:To:Subject:Date:Message-Id:Content-Type:MIME-Version; b=E6r4shcSZ4A+zH662M5tNc5ja1ML7rkr9dSnGeFUOk2w/dq2u/b0VRl2z8lk+riCI0Q71WLAzWKkpwl4u0AtNtaruRCdmB1Brgm7IFaUwRtCxfQEj1j0j8N7DtlUNJSTXXxJavx7oWpYzWkdV+zp/r5XquiMuV+EAO1JcsRnJiYjl0wQWcdLwxyzOnGT6NLDPnSgXtDhRKcrLJ/qtpx2EMIBTIViIPs9c6NsxtCldNm0oXHiazcwaDzmqrmd5s3Afmjfs/NCQcw48In3ZpUv6Gmpm6+0Q0bjh8yoTSXGhyNanMSXtc1B7Rna16sf2r07Mwg886tkeT7sfQKTmMrdFg==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=oss.nxp.com; dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=tZ/aQ/oV; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c202::7; helo=gvxpr05cu001.outbound.protection.outlook.com; envelope-from=shengjiu.wang@oss.nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=oss.nxp.com
-Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=oss.nxp.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gmFlb2FfNz2ySg;
+	Thu, 25 Jun 2026 20:43:39 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782384219;
+	cv=none; b=X+2At1pNqnI9Xz71IJLf4lrZbGyLdIFkY9s8DdbmRBeFTx6xxOEeQDXg0o0WeegOsPD1dzMyZkWACAANm8Zezg+z2vVfwC1EFCyhSCTshwmVAYnqd35B42CI4Rzbjs7/ekSeIo8B7ovcm7AcpYeavWo+8ETgEk96bj37S1y9WymurmlBXiJAJQQB6C6JY6gzUXFXzK4tFvhT0ibv70VpUGtKbTfLjsHpNPQgdvDyKgQ1cE/HXGBzO7AmkftXOTtIzI6klBKI9UVJ+rn/Vt3f0K4e8tMp2fecyQtrXKjhaalA7YyUGxhBW20Nt+5wD+2ZZm3hRvOtk6+G5+9IpeMyPw==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1782384219; c=relaxed/relaxed;
+	bh=vrE5rKKh67A7ttm5RQO/CXJ/rkAgZefEmuAWd7/EtXk=;
+	h=Message-ID:Date:From:To:Cc:Subject:References:MIME-Version:
+	 Content-Type; b=SR6ReSyTUcLtcCZZle9+uJgmBJQOPol5oNZY3+l3+U7PqYVYd26eGJ+4Ur6uhPqB26+F1Lfo42lQ6tZv8L7J7kPdTw3QcHmvxLMISYVhJxPAY89H5EWgJKgVRFVX9mw1dKdtLFFXcosL5a7YOFe1z172SpAYHwfy9kuH6bIcW4x8bDl1UY108VgSBIhntOxmI6PkPoVV9mN2JqiS5HvVCl6cOaa2No6HxpFQq+/+VuYGCKKddC7eJWeklybQzPV0ZDAgUXAHoR1cNNQRHKIlPTcqwo5gFSns8TcS2BYsEB2dEYYyS/QO5CLX7/WhF8ObJy7jmcgVsiF/O/WOZtlXRg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=jCZlirZK; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=rostedt@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=tZ/aQ/oV;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=jCZlirZK;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=oss.nxp.com (client-ip=2a01:111:f403:c202::7; helo=gvxpr05cu001.outbound.protection.outlook.com; envelope-from=shengjiu.wang@oss.nxp.com; receiver=lists.ozlabs.org)
-Received: from GVXPR05CU001.outbound.protection.outlook.com (mail-swedencentralazlp170130007.outbound.protection.outlook.com [IPv6:2a01:111:f403:c202::7])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=rostedt@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gmFD70Rkkz2xwH
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jun 2026 20:19:50 +1000 (AEST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=lyYsQN6SIF7IRTbroWE9qnaJAs576pTqviFpHrI+jJwhaBOquZ97jJCDBCJ/WWh1kQe91nm27x8QB4U0r0F0UpetyBOZQqrZGlEDKaVc/rPM4k0JbExhGf0nla4Ck0zAAIR/0WYKUCtue/Q1tK3ZirNi7kS9W0pUod0eY8cd/r+GoWfh4PGRenYxBP7fY4A71U4OGhGZo2gIw8jTuhLh/339Vuv5veSlfVT6jNILRu/8PKzzR71y7ljhpEfSvRlnTpwdC4/MIlX1YmoDpclHpErvmgd+wTAjvK3PLKC3MS+X95viS+MBX6GcKrlCcb0aBy2DiJlGXTY7izGfHH8+2Q==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=oyjlMSV0kBhnLDimC4I4jO0eOwFu6CyJUqyhC5ytGjA=;
- b=fTAuOyJvbtwuSmmnyVSVp+LF9+g0GBEMVOr/u5I4tRDaW9m+pRav5+Rv23SBGON1rUrh+qj/D0yYEyddt+p5+SZydFNUKsQg20qCxxX5vnjglQjFJmc2rgVczzEk7pB/umYkZIhgLXvGLqpM1vnCOjlDpMPf0pkz2VwZnzJ7KbL0ly+XFdvOJvj9QVOMDBuKyx5bfPY4AaBAteEOwS5MfnjWCpooczsq1a7Hd/jsQkzkZcxxgCF+yuDslFZh8oBpuPVJIj6wl15VlN1es4ppGGKgMKsUBjZTg8zOxjNh+0vAVMZwRkxScvh+a4KY42+5zYir9uPylTiAlOSVEe0vOw==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=oss.nxp.com; dmarc=pass action=none header.from=oss.nxp.com;
- dkim=pass header.d=oss.nxp.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=NXP1.onmicrosoft.com;
- s=selector1-NXP1-onmicrosoft-com;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=oyjlMSV0kBhnLDimC4I4jO0eOwFu6CyJUqyhC5ytGjA=;
- b=tZ/aQ/oVcfYBu8OJn0Vq+8+LTXhJkSmTpguMJ4LI82WpmWg1wIZ6cuc72WBsVv5qqSrqbg5BEFTE6n4/WzYTTb0uNhKAyqwivYjsRVKpwMLAniFCPHIpiFpUFthKhTgG62EQQh4iYznEg+WJSFQSnvk3wxtp0Wndvg16PhDrYAL/lp26f//hsjR7kp6Ue8AbSIdyFK1eCt1QXXNzIOMmpOJG4WQkeGlHYHJpXUDiapXtnb5fvJfiu/PRi7jKpfsH45ABYZO7OAvUyRVPQdfhOebj9J2Qh1WpqYa6a3GMSxlaKQ3ifAOdrBa8we1HJCbY7ZXO6Jqw3oUP2QnFfLxLhg==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=oss.nxp.com;
-Received: from PAXPR04MB9351.eurprd04.prod.outlook.com (2603:10a6:102:2b6::17)
- by PAXPR04MB8192.eurprd04.prod.outlook.com (2603:10a6:102:1cd::17) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.159.16; Thu, 25 Jun
- 2026 10:19:25 +0000
-Received: from PAXPR04MB9351.eurprd04.prod.outlook.com
- ([fe80::1058:a430:52c1:5aa]) by PAXPR04MB9351.eurprd04.prod.outlook.com
- ([fe80::1058:a430:52c1:5aa%6]) with mapi id 15.21.0159.013; Thu, 25 Jun 2026
- 10:19:25 +0000
-From: shengjiu.wang@oss.nxp.com
-To: shengjiu.wang@gmail.com,
-	Xiubo.Lee@gmail.com,
-	festevam@gmail.com,
-	nicoleotsuka@gmail.com,
-	lgirdwood@gmail.com,
-	broonie@kernel.org,
-	perex@perex.cz,
-	tiwai@suse.com,
-	linux-sound@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH] ASoC: fsl_asrc_dma: fix eDMA maxburst misalignment with channel count
-Date: Thu, 25 Jun 2026 18:24:16 +0800
-Message-Id: <20260625102416.424911-1-shengjiu.wang@oss.nxp.com>
-X-Mailer: git-send-email 2.34.1
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-ClientProxiedBy: MA0PR01CA0020.INDPRD01.PROD.OUTLOOK.COM
- (2603:1096:a01:b8::8) To PAXPR04MB9351.eurprd04.prod.outlook.com
- (2603:10a6:102:2b6::17)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gmFlY4cwWz2xwH
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jun 2026 20:43:37 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with ESMTP id A83AC40146;
+	Thu, 25 Jun 2026 10:43:34 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7DC901F00A3D;
+	Thu, 25 Jun 2026 10:43:34 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1782384214;
+	bh=vrE5rKKh67A7ttm5RQO/CXJ/rkAgZefEmuAWd7/EtXk=;
+	h=Date:From:To:Cc:Subject:References;
+	b=jCZlirZKjW2TUHy8idztUHCy4JIRd6I6M7e6xGNB23f3pyXf16FhvqG35DrXbTKif
+	 6CTdD9I7QCaqiGxZugzO7MmTStmCmJRqZyKjOD2zH6ykU5hvcdCFabi3O+xbQjzlCp
+	 HXOV6f0o71MzIypBKKi3RKSTW3TUdHlVKxejROkvPBTKmZw7W5JJBpN3I1t676Izr5
+	 ZLxEfDC34+BMHYGfUs9Ki7IhnhcW12qrIXm4Qsr39vpPQ2RXr+gXQmH1XwzEN3U17w
+	 PscFL1YbbVfy1enFaH7zV/kWilNH4t2W73evYLf6fhTFgl6kXpKsrHnxlGp7wQY30g
+	 TswFZtxoRGi/g==
+Received: from rostedt by gandalf with local (Exim 4.99.3)
+	(envelope-from <rostedt@kernel.org>)
+	id 1wchYw-00000002WAe-1TEX;
+	Thu, 25 Jun 2026 06:44:02 -0400
+Message-ID: <20260625104402.210473477@kernel.org>
+User-Agent: quilt/0.69
+Date: Thu, 25 Jun 2026 06:40:09 -0400
+From: Steven Rostedt <rostedt@kernel.org>
+To: linux-kernel@vger.kernel.org,
+ linux-trace-kernel@vger.kernel.org
+Cc: Masami Hiramatsu <mhiramat@kernel.org>,
+ Mark Rutland <mark.rutland@arm.com>,
+ Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Linus Torvalds <torvalds@linux-foundation.org>,
+ Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
+ John Ogness <john.ogness@linutronix.de>,
+ Thomas Gleixner <tglx@kernel.org>,
+ Peter Zijlstra <peterz@infradead.org>,
+ Julia Lawall <julia.lawall@inria.fr>,
+ Yury Norov <yury.norov@gmail.com>,
+ linux-doc@vger.kernel.org,
+ linux-kbuild@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org,
+ dri-devel@lists.freedesktop.org,
+ linux-stm32@st-md-mailman.stormreply.com,
+ linux-arm-kernel@lists.infradead.org,
+ linux-rdma@vger.kernel.org,
+ linux-usb@vger.kernel.org,
+ linux-ext4@vger.kernel.org,
+ linux-nfs@vger.kernel.org,
+ kvm@vger.kernel.org,
+ intel-gfx@lists.freedesktop.org
+Subject: [PATCH v4 2/2] tracing: Remove trace_printk.h from kernel.h
+References: <20260625104007.041432666@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -88,120 +92,231 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: PAXPR04MB9351:EE_|PAXPR04MB8192:EE_
-X-MS-Office365-Filtering-Correlation-Id: 4c7f7fde-4391-470b-0eb9-08ded2a33b36
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|366016|23010399003|19092799006|7416014|376014|1800799024|56012099006|11063799006|6133799003|3023799007|18002099003|921020;
-X-Microsoft-Antispam-Message-Info:
-	Nnq0r7MYYK38uE0lSjRjdY2nyiEiEFNKIlYqp6eJyOFAV5rRZFT9A0TSLRTXVT2AH3GEjjjs0DBsL+XSY7wdFo8ZGmenGODPBvf6tyvqxhPhvPXG6b/I3nVA+TuSK8NfP2jhAiwRox4B2PECDH/bMd8GXxc6H9GgQY+gT6bUZ2oqoNp+I/QYiK2XAhy+amu8/ruBbSyrjNoLfUzcEZj61I4HGXZJ9cCWvvW8t9A+lb+N7g2inywOeDk90EfNRavcEAXGGrmyqMkfKfKYMFanRAX4ogyJMBxL3vvcXI7BPzz7aqZoMlBjnmBDWqHNia4hH9PHBsMqaIXgkibyvNDG6Zgs0iVugVsTcNdROApv8/4qlFr9R/8zlePlbXGgaScODY7+9pv1bcIHjUxA/dJZ5iKjZX43MpqBKnffL1ZbC7Qnu97QGzkOiJz65u1w9pJF4PaPlIGIH/qzlkW3wR37lvc52030q1gw3AOb3flRDdjEVEkUUTpI1cZTEdeH3o1f/hUq7tWjt/F/WTl/ANWkk38fxFgWDUvAccm4ZG6sza69PNbQPcqJBXE5HakvKDYrtOUXxwCd+tzBzIasYa93SeykPZtmSa5CZIwKrz6YcFVqA/6YWrDYOv5/wKXVpGYMXFOQiFsV+gU4ZLj0fCzKc6yHGCYsI8jWUQP1vXXDV6+zdUm2Uud8IPzdlWpNqhxostfWfIQWeEBz79k0gVtqBg==
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PAXPR04MB9351.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(23010399003)(19092799006)(7416014)(376014)(1800799024)(56012099006)(11063799006)(6133799003)(3023799007)(18002099003)(921020);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?NIRS3YDKCprZl/iHHrPdQfgFcQUWUixHUCE2VQdb92q7iW2Gq/KFfOcOsYmL?=
- =?us-ascii?Q?j2qj10r5d69VJW4u6cewwbLqeaF/GGGKvnkk51CSsJ+0Bxv8pM/dvJ3RbZPQ?=
- =?us-ascii?Q?eNjwBG5UYpcGyviQKFeKVu37YZaZFpUqmOkerY848mffnHlofooX1L301iOd?=
- =?us-ascii?Q?jzdb0cXpQSvmigBKP4c1ePHjwJEbHe9Okjb/9AcBCadK2w1fgzCaFgEoJjzi?=
- =?us-ascii?Q?nawUHnO3/XogbUzSvxxWLrHlPwUrfzyYQUm3FTYLmcq+lFMOgnoALn1T1JuN?=
- =?us-ascii?Q?xNEEDBOWzmzrxcQp/7STKkaESnUfaRQNlsOIDzSpSaS1VdjEoNFcBzXtMQ4G?=
- =?us-ascii?Q?cwF5zz7oAkp1yLTsP8itbuMFzh0ij97nx7OfvFWz98WYyJWDn12uzlL3BdN+?=
- =?us-ascii?Q?F4TvL7CpCSLZZi5WD1nZgsv3JX2MpdjrvmZf6p0YHLhUujaRCxToTLVEj/Nk?=
- =?us-ascii?Q?+tZL/SXlHU9jJ5Wt6FoRl6m2KQAx+EZcCWNEZfV93+SW4rVSa8royRRn02lN?=
- =?us-ascii?Q?smtps1zOemORuakQN4U/NgJCXRFwiNQuaWKuvzSRlY6EtBns63np89u8/cFl?=
- =?us-ascii?Q?gdjotNhelasWUcWb1NBetvS3f7ZbIxm2LsHz4LqCl1O08xA6cjdq9ELRCH/8?=
- =?us-ascii?Q?L/LCsXT1VmrylCBS19C+Vrj+1XF9HXKS/t0TpwA83zcUFqucjDGzAT9J3bOL?=
- =?us-ascii?Q?HYmhgwyTTBOWB8HI9n/x//i07/m0VO/kSdauIaLmlVa5JZRG/HbSxE5KcTSu?=
- =?us-ascii?Q?Eag1RKXJziGQFrVY/hVLRzhLzSPtiGfvLIGuy6ZnBDReawvFTcRzuLG2KHId?=
- =?us-ascii?Q?WyCkRKThCiAyojfXwebfRRxFC7SIavXxOFGeyZRJ6f/vcpZ9fP4lnmlrX1A9?=
- =?us-ascii?Q?iLyg218HP0ZIwplQTczUtXRvzXbbhXIbBqFjXQCDl0191sKSeJJJWj6ik6m0?=
- =?us-ascii?Q?OShTzDp6LDj/O99ehHUzz5tgwquucAGz/iNPktZUXKoMdM3tbWMBYP89Pus2?=
- =?us-ascii?Q?B5aTPLre89nQaN9gq+fEn5pY7N2CrObXBLfs+diRnVEUrOG5fh93XuZNpuvy?=
- =?us-ascii?Q?mbq/NHpgUuRIenpeB8awJlpSJW04myrr3UcWagHkBlYMcjFffpuoF0dVfngl?=
- =?us-ascii?Q?czk9tJalTsL4m/tsBqltnZ45ttycYraSDfl6xz0E8OGo5slT7UC6ZuYWndwt?=
- =?us-ascii?Q?dh6UQBETe3y6FKV0RTfqjVcYq4NV2+VwFbbrbXnziSxZ1hxP/opihGwhFuhr?=
- =?us-ascii?Q?6tioQ7kdszcRmqUjUjn+qSapGPCJxcsW794y1dGRahPXrgTVhY41az5NQYPe?=
- =?us-ascii?Q?0YfBT/6EPd8kpm3h8sQmkXEAiHTEDrYUK9pAblb2iWnvyTDKpvryNyJsIa2u?=
- =?us-ascii?Q?hl2yluRZ8BI2VoYebB67XKyzeDoBZKhCgEX1xkLSKCxlrwH73CY4ek21OA6n?=
- =?us-ascii?Q?G6Pm8TCbGqSYbvsvlCbN4egD53yIQpQJJEA69LyPyMDQekWiPxj473hnZSvs?=
- =?us-ascii?Q?QSStbX186IX1WSzOsPH7C/7zD3DJuTP+lJGYHpl15Fn9hGuKO9ScFwEC+Old?=
- =?us-ascii?Q?TD17opfuOXhkkLfHEEwXmF6TkbkKhJbHAY1BzNRO7kepAmMgQ3C7otIIUbLK?=
- =?us-ascii?Q?3nKih47LHupUPYvEO/Yox4qPrLXxNESrBb1DcZLFtNkDAaoEqjqfNiq+tQ5A?=
- =?us-ascii?Q?MK4eswCzGqybLwgZ7FH5gnQwR/Lq7FSeVP4bEdAOXju0gfiYovu1URsqTdA/?=
- =?us-ascii?Q?ar2s48QCByr9OygOYq4lBdmzKKq3wummVOKobO7e9b73b8OYefoC?=
-X-OriginatorOrg: oss.nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 4c7f7fde-4391-470b-0eb9-08ded2a33b36
-X-MS-Exchange-CrossTenant-AuthSource: PAXPR04MB9351.eurprd04.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 25 Jun 2026 10:19:24.9895
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: f7CI0ynjT5B6bICPSxHxdtHgxIFcNegVf3Mn4jS+gGcqmCu/pbB8ZndMvkhP/ReGXPKW/0xP5pBk+3xT24iYWpq/utqNKPb5EhlTAP7E1eC9ZDwNNVI58V/wwaVjWdjt
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: PAXPR04MB8192
+Content-Type: text/plain; charset=UTF-8
 
-From: Shengjiu Wang <shengjiu.wang@nxp.com>
+From: Steven Rostedt <rostedt@goodmis.org>
 
-The back-end consumes data in units of the number of channels. When the
-maxburst value is not evenly divisible by the channel count, the DMA
-transfer length does not align with the FIFO frame boundary, causing
-wrong data to be copied and audible noise at the end of the stream.
+There have been complaints about trace_printk.h causing more build time
+for being in kernel.h if it changes. There is also an effort to clean up
+kernel.h to have it not include unneeded header files. Move trace_printk.h
+out of kernel.h and place it in the headers and C files that use it.
 
-This is specific to eDMA: eDMA only responds to DMA requests from the
-back-end, whereas SDMA handles requests from both the front-end and the
-back-end and is not affected.
+Link: https://lore.kernel.org/all/CAHk-=wikCBeVFjVXiY4o-oepdbjAoir5+TcAgtL12c4u1TpZLQ@mail.gmail.com/
 
-For eDMA, when the back-end maxburst is not evenly divisible by the
-channel count, align it to the nearest valid boundary:
-- If maxburst >= channel count, override to the channel count so each
-  transfer corresponds to exactly one audio frame.
-- If maxburst < channel count, override to 1 to avoid partial-frame
-  transfers.
-
-Retain the original maxburst for SDMA or when it already aligns with
-the channel count.
-
-Fixes: c05f10f28ef6 ("ASoC: fsl_asrc: Add support for imx8qm & imx8qxp")
-Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
+Suggested-by: Yury Norov <yury.norov@gmail.com>
+Acked-by: Masami Hiramatsu (Google) <mhiramat@kernel.org>
+Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 ---
- sound/soc/fsl/fsl_asrc_dma.c | 20 ++++++++++++++++++++
- 1 file changed, 20 insertions(+)
+ arch/powerpc/kvm/book3s_xics.c         | 1 +
+ drivers/gpu/drm/i915/gt/intel_gtt.h    | 1 +
+ drivers/gpu/drm/i915/i915_gem.h        | 1 +
+ drivers/hwtracing/stm/dummy_stm.c      | 1 +
+ drivers/infiniband/hw/hfi1/trace_dbg.h | 1 +
+ drivers/usb/early/xhci-dbc.c           | 1 +
+ fs/ext4/inline.c                       | 1 +
+ include/linux/ftrace.h                 | 2 ++
+ include/linux/kernel.h                 | 1 -
+ include/linux/sunrpc/debug.h           | 1 +
+ include/linux/trace_printk.h           | 5 +++--
+ kernel/trace/ring_buffer_benchmark.c   | 1 +
+ samples/fprobe/fprobe_example.c        | 1 +
+ samples/ftrace/ftrace-direct-too.c     | 1 -
+ samples/trace_printk/trace-printk.c    | 1 +
+ 15 files changed, 16 insertions(+), 4 deletions(-)
 
-diff --git a/sound/soc/fsl/fsl_asrc_dma.c b/sound/soc/fsl/fsl_asrc_dma.c
-index 5aa96af994c4..38f2b7c63133 100644
---- a/sound/soc/fsl/fsl_asrc_dma.c
-+++ b/sound/soc/fsl/fsl_asrc_dma.c
-@@ -288,6 +288,26 @@ static int fsl_asrc_dma_hw_params(struct snd_soc_component *component,
- 	config_be.dst_addr_width = buswidth;
- 	config_be.dst_maxburst = dma_params_be->maxburst;
+diff --git a/arch/powerpc/kvm/book3s_xics.c b/arch/powerpc/kvm/book3s_xics.c
+index 74a44fa702b0..ef5eb596a56e 100644
+--- a/arch/powerpc/kvm/book3s_xics.c
++++ b/arch/powerpc/kvm/book3s_xics.c
+@@ -26,6 +26,7 @@
+ #if 1
+ #define XICS_DBG(fmt...) do { } while (0)
+ #else
++#include <linux/trace_printk.h>
+ #define XICS_DBG(fmt...) trace_printk(fmt)
+ #endif
  
-+	/*
-+	 * For eDMA, the back-end may report a maxburst size that is not evenly
-+	 * divisible by the channel count. This causes the DMA transfer length
-+	 * to misalign with the FIFO boundary, resulting in wrong data and
-+	 * audible noise. Align maxburst to the nearest valid boundary:
-+	 * - If maxburst >= channel count, override to the channel count so
-+	 *   each transfer equals exactly one audio frame.
-+	 * - If maxburst < channel count, override to 1 to avoid partial-frame
-+	 *   transfers.
-+	 */
-+	if (asrc->use_edma && (dma_params_be->maxburst % params_channels(params))) {
-+		if (dma_params_be->maxburst >= params_channels(params)) {
-+			config_be.src_maxburst = params_channels(params);
-+			config_be.dst_maxburst = params_channels(params);
-+		} else {
-+			config_be.src_maxburst = 1;
-+			config_be.dst_maxburst = 1;
-+		}
-+	}
-+
- 	memset(&audio_config, 0, sizeof(audio_config));
- 	config_be.peripheral_config = &audio_config;
- 	config_be.peripheral_size  = sizeof(audio_config);
+diff --git a/drivers/gpu/drm/i915/gt/intel_gtt.h b/drivers/gpu/drm/i915/gt/intel_gtt.h
+index b54ee4f25af1..f6f223090760 100644
+--- a/drivers/gpu/drm/i915/gt/intel_gtt.h
++++ b/drivers/gpu/drm/i915/gt/intel_gtt.h
+@@ -35,6 +35,7 @@
+ #define I915_GFP_ALLOW_FAIL (GFP_KERNEL | __GFP_RETRY_MAYFAIL | __GFP_NOWARN)
+ 
+ #if IS_ENABLED(CONFIG_DRM_I915_TRACE_GTT)
++#include <linux/trace_printk.h>
+ #define GTT_TRACE(...) trace_printk(__VA_ARGS__)
+ #else
+ #define GTT_TRACE(...)
+diff --git a/drivers/gpu/drm/i915/i915_gem.h b/drivers/gpu/drm/i915/i915_gem.h
+index 1da8fb61c09e..f490052e8964 100644
+--- a/drivers/gpu/drm/i915/i915_gem.h
++++ b/drivers/gpu/drm/i915/i915_gem.h
+@@ -117,6 +117,7 @@ int i915_gem_open(struct drm_i915_private *i915, struct drm_file *file);
+ 
+ #if IS_ENABLED(CONFIG_DRM_I915_TRACE_GEM)
+ #include <linux/trace_controls.h>
++#include <linux/trace_printk.h>
+ #define GEM_TRACE(...) trace_printk(__VA_ARGS__)
+ #define GEM_TRACE_ERR(...) do {						\
+ 	pr_err(__VA_ARGS__);						\
+diff --git a/drivers/hwtracing/stm/dummy_stm.c b/drivers/hwtracing/stm/dummy_stm.c
+index 38528ffdc0b3..7c5e48ebfb9f 100644
+--- a/drivers/hwtracing/stm/dummy_stm.c
++++ b/drivers/hwtracing/stm/dummy_stm.c
+@@ -8,6 +8,7 @@
+  */
+ 
+ #undef DEBUG
++#include <linux/trace_printk.h>
+ #include <linux/kernel.h>
+ #include <linux/module.h>
+ #include <linux/slab.h>
+diff --git a/drivers/infiniband/hw/hfi1/trace_dbg.h b/drivers/infiniband/hw/hfi1/trace_dbg.h
+index 58304b91380f..30df5e246586 100644
+--- a/drivers/infiniband/hw/hfi1/trace_dbg.h
++++ b/drivers/infiniband/hw/hfi1/trace_dbg.h
+@@ -103,6 +103,7 @@ __hfi1_trace_def(IOCTL);
+  */
+ 
+ #ifdef HFI1_EARLY_DBG
++#include <linux/trace_printk.h>
+ #define hfi1_dbg_early(fmt, ...) \
+ 	trace_printk(fmt, ##__VA_ARGS__)
+ #else
+diff --git a/drivers/usb/early/xhci-dbc.c b/drivers/usb/early/xhci-dbc.c
+index 41118bba9197..955c73bd601f 100644
+--- a/drivers/usb/early/xhci-dbc.c
++++ b/drivers/usb/early/xhci-dbc.c
+@@ -30,6 +30,7 @@ static struct xdbc_state xdbc;
+ static bool early_console_keep;
+ 
+ #ifdef XDBC_TRACE
++#include <linux/trace_printk.h>
+ #define	xdbc_trace	trace_printk
+ #else
+ static inline void xdbc_trace(const char *fmt, ...) { }
+diff --git a/fs/ext4/inline.c b/fs/ext4/inline.c
+index 8045e4ff270c..0eff4a0c6a6c 100644
+--- a/fs/ext4/inline.c
++++ b/fs/ext4/inline.c
+@@ -934,6 +934,7 @@ static int ext4_da_convert_inline_data_to_extent(struct address_space *mapping,
+ }
+ 
+ #ifdef INLINE_DIR_DEBUG
++#include <linux/trace_printk.h>
+ void ext4_show_inline_dir(struct inode *dir, struct buffer_head *bh,
+ 			  void *inline_start, int inline_size)
+ {
+diff --git a/include/linux/ftrace.h b/include/linux/ftrace.h
+index 02bc5027523a..b5336a81e619 100644
+--- a/include/linux/ftrace.h
++++ b/include/linux/ftrace.h
+@@ -8,6 +8,8 @@
+ #define _LINUX_FTRACE_H
+ 
+ #include <linux/trace_recursion.h>
++#include <linux/trace_controls.h>
++#include <linux/trace_printk.h>
+ #include <linux/trace_clock.h>
+ #include <linux/jump_label.h>
+ #include <linux/kallsyms.h>
+diff --git a/include/linux/kernel.h b/include/linux/kernel.h
+index e5570a16cbb1..e87a40fbd152 100644
+--- a/include/linux/kernel.h
++++ b/include/linux/kernel.h
+@@ -31,7 +31,6 @@
+ #include <linux/build_bug.h>
+ #include <linux/sprintf.h>
+ #include <linux/static_call_types.h>
+-#include <linux/trace_printk.h>
+ #include <linux/util_macros.h>
+ #include <linux/wordpart.h>
+ 
+diff --git a/include/linux/sunrpc/debug.h b/include/linux/sunrpc/debug.h
+index ab61bed2f7af..7524f5d82fba 100644
+--- a/include/linux/sunrpc/debug.h
++++ b/include/linux/sunrpc/debug.h
+@@ -29,6 +29,7 @@ extern unsigned int		nlm_debug;
+ # define ifdebug(fac)		if (unlikely(rpc_debug & RPCDBG_##fac))
+ 
+ # if IS_ENABLED(CONFIG_SUNRPC_DEBUG_TRACE)
++#  include <linux/trace_printk.h>
+ #  define __sunrpc_printk(fmt, ...)	trace_printk(fmt, ##__VA_ARGS__)
+ # else
+ #  define __sunrpc_printk(fmt, ...)	printk(KERN_DEFAULT fmt, ##__VA_ARGS__)
+diff --git a/include/linux/trace_printk.h b/include/linux/trace_printk.h
+index a488ea9e9f85..74ce4f8995c4 100644
+--- a/include/linux/trace_printk.h
++++ b/include/linux/trace_printk.h
+@@ -1,11 +1,12 @@
+ /* SPDX-License-Identifier: GPL-2.0 */
+ #ifndef _LINUX_TRACE_PRINTK_H
+ #define _LINUX_TRACE_PRINTK_H
++#if !defined(__ASSEMBLY__) && !defined(__GENKSYMS__) && !defined(BUILD_VDSO)
+ 
+-#include <linux/compiler_attributes.h>
+ #include <linux/instruction_pointer.h>
+ #include <linux/stddef.h>
+ #include <linux/stringify.h>
++#include <linux/stdarg.h>
+ 
+ #ifdef CONFIG_TRACING
+ static inline __printf(1, 2)
+@@ -147,5 +148,5 @@ ftrace_vprintk(const char *fmt, va_list ap)
+ 	return 0;
+ }
+ #endif /* CONFIG_TRACING */
+-
++#endif /* !defined(__ASSEMBLY__) && !defined(__GENKSYMS__) && !defined(BUILD_VDSO) */
+ #endif
+diff --git a/kernel/trace/ring_buffer_benchmark.c b/kernel/trace/ring_buffer_benchmark.c
+index 593e3b59e42e..2bb25caebb75 100644
+--- a/kernel/trace/ring_buffer_benchmark.c
++++ b/kernel/trace/ring_buffer_benchmark.c
+@@ -5,6 +5,7 @@
+  * Copyright (C) 2009 Steven Rostedt <srostedt@redhat.com>
+  */
+ #include <linux/ring_buffer.h>
++#include <linux/trace_printk.h>
+ #include <linux/completion.h>
+ #include <linux/kthread.h>
+ #include <uapi/linux/sched/types.h>
+diff --git a/samples/fprobe/fprobe_example.c b/samples/fprobe/fprobe_example.c
+index bfe98ce826f3..de81b9b4ca7d 100644
+--- a/samples/fprobe/fprobe_example.c
++++ b/samples/fprobe/fprobe_example.c
+@@ -12,6 +12,7 @@
+ 
+ #define pr_fmt(fmt) "%s: " fmt, __func__
+ 
++#include <linux/trace_printk.h>
+ #include <linux/kernel.h>
+ #include <linux/module.h>
+ #include <linux/fprobe.h>
+diff --git a/samples/ftrace/ftrace-direct-too.c b/samples/ftrace/ftrace-direct-too.c
+index bf2411aa6fd7..159190f4103f 100644
+--- a/samples/ftrace/ftrace-direct-too.c
++++ b/samples/ftrace/ftrace-direct-too.c
+@@ -1,6 +1,5 @@
+ // SPDX-License-Identifier: GPL-2.0-only
+ #include <linux/module.h>
+-
+ #include <linux/mm.h> /* for handle_mm_fault() */
+ #include <linux/ftrace.h>
+ #if !defined(CONFIG_ARM64) && !defined(CONFIG_PPC32)
+diff --git a/samples/trace_printk/trace-printk.c b/samples/trace_printk/trace-printk.c
+index cfc159580263..ff37aeb8523e 100644
+--- a/samples/trace_printk/trace-printk.c
++++ b/samples/trace_printk/trace-printk.c
+@@ -1,4 +1,5 @@
+ // SPDX-License-Identifier: GPL-2.0-only
++#include <linux/trace_printk.h>
+ #include <linux/module.h>
+ #include <linux/kthread.h>
+ #include <linux/irq_work.h>
 -- 
-2.34.1
+2.53.0
+
 
 
