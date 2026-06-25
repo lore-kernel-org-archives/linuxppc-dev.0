@@ -1,56 +1,65 @@
-Return-Path: <linuxppc-dev+bounces-22983-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22984-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5D053CDB479
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Jun 2026 14:56:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F0AB0CDE001
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Jun 2026 15:26:16 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gmMMc4llGz2xM7;
-	Fri, 26 Jun 2026 00:56:44 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782399404;
-	cv=none; b=Ckq/ZV3iOaj2juuXjo4+qt8Fg166w3ej5C1BXCVnLLe4NC/w40JZJPOr2lGLgrIZ+po42F+PKh46LYKdxr9BBdHR4O9QdUfcT+7K7xbyUCPJVoEyjEwRaCwI4x50OQQ3n9jYzPaSCdHbsr2BpbnXIAFdCmwaK4DnM1DZJx4o2LJtCEfJ1rK9JIL6AbJ6/CkrkQE3YvJ1yT88Q4hMwNOaxWcChlQW8A/Ljm+z1Ca+4DSxDET2umYR6laZJvMmOFn84LzHvOcCN+N7U+PFHZLkpCOks8T5uI6ls0YFGOUAoWCY3jb1JInXnNcsWu/n6t651rYYhMg2L/b1utFUyHHcpA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gmN1g0tkDz2ySg;
+	Fri, 26 Jun 2026 01:26:15 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a11:7980:1::2:0"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782401174;
+	cv=none; b=nvIKKNlCwHglcrYTadbyYXYPiF2TBYlgUUc4X46KeZTLdjfKv7Q011K5iSbGX8IbTrf08bLWQ6SmLI5RIs+DEzzWipkQszncCpInS7jTbuHpufXNvtzLLPXDfAT+dB+IV3l5esSckDzOspEx+tHGHRu7YdfsRjLJoob9ZEmN78At7JJI14uAsWNbRK055YHE/NFhSJWK9dEXStOBQ7kJpWSbihslzS4kd0gais2yxapfDB8QZKoakngaz7+syoR3G1wqkIbFNYVwMHmmECQZTkUvat8ersIFkCnYuCwKEJTxsuNk4rmBLbQlc3wSZzLolQO/Fha5Wdff6jw4k8Gr9A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1782399404; c=relaxed/relaxed;
-	bh=80z3qdr1Ri+GX2ZpVWhKDkBHRsxbX1EdK+IIUrsw1PQ=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Jf7v54CL9yBhFV6tJ/OaGIjGZKYP9NOVK9LuqmxijFs71XYOLvtf4VPzCSFHm5CxyJQjFZchp9HaH3ZCQ0psHzHsFNHn3UEX3mWrMU/HGmSiW/CUWgYGUVQfMuNsC8MJm3xdUjtLvQP0Ymeidu5F8BXvgLiWJNK5qqLBAhNGgtxhoTeF4XtqVz56BSwZ5tz62HhxWF5SOCGwYOUIDisHzfy3hRfG2t9ECCK+2Pnzqa7qXoxxWKHzhKaasleW+HN2aPK/b+7ULG4tbyuVqh2XCVMf5kN3Ox6mwWnUKJ12MR7qo6fGyovFnWx4vZkKEhePwJ6EEK/y9neXTaHgnQQ7OA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linuxfoundation.org; dkim=pass (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=1JVLv8/W; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=gregkh@linuxfoundation.org; receiver=lists.ozlabs.org) smtp.mailfrom=linuxfoundation.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linuxfoundation.org
+	t=1782401174; c=relaxed/relaxed;
+	bh=j9CXKAHhdqi4eGx4YYPuER2s6anoRJJPXHxXpa88ucY=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=lnFBUTDo9K6wWwYJiL01fvxPU5mZrJL3jAP9UGEwIMyoVBjnTGlP/Jfl6zXrEZvnRnEOMsT1v3SZvc/BxBtANjmcrg6lJfUhWt+A+ZVqS0m5yDj2GC661OfN+lZZNo1yYDZzTmPdC8iv0uNEQzpgrSb1L1RQxNCzzkj7Sj5hWV/wCHyeVKXlRqXmf92Wau+NPzApCEb6FWG6RtVJjrwXgjLhNKXmwnPYEs4F+F4jxqI2onPqwn5Xa7LsVK8TjeFdSOBeTk8RryJzXbHnlqSeSV8QjvOi4RJSZNIqi4uLXOt4zpsKivrT/YWa7933WQbFGWgBWqLIO/EPDo2qwdgIfA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=grrlz.net; dkim=pass (1024-bit key; secure) header.d=grrlz.net header.i=@grrlz.net header.a=rsa-sha256 header.s=stigmate header.b=AejoM5t5; dkim-atps=neutral; spf=pass (client-ip=2a11:7980:1::2:0; helo=confino.investici.org; envelope-from=include@grrlz.net; receiver=lists.ozlabs.org) smtp.mailfrom=grrlz.net
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=grrlz.net
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=1JVLv8/W;
+	dkim=pass (1024-bit key; secure) header.d=grrlz.net header.i=@grrlz.net header.a=rsa-sha256 header.s=stigmate header.b=AejoM5t5;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linuxfoundation.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=gregkh@linuxfoundation.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=grrlz.net (client-ip=2a11:7980:1::2:0; helo=confino.investici.org; envelope-from=include@grrlz.net; receiver=lists.ozlabs.org)
+Received: from confino.investici.org (confino.investici.org [IPv6:2a11:7980:1::2:0])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gmMMb2Fh6z2xLm
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jun 2026 00:56:42 +1000 (AEST)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id CB0E6600AE;
-	Thu, 25 Jun 2026 14:56:39 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E07811F000E9;
-	Thu, 25 Jun 2026 14:56:38 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linuxfoundation.org;
-	s=korg; t=1782399399;
-	bh=80z3qdr1Ri+GX2ZpVWhKDkBHRsxbX1EdK+IIUrsw1PQ=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=1JVLv8/WnfpoZFLRt1IedSCno2nVh7GfnUOghogiyIdavCxO010sXTVaR4HjLN1pJ
-	 vvD05dPJ2xkc82p4EMxHBNpYtT6g9nV2QGdm4HaDDMJ4Jssw8SCB+LUfl9OvYpdDQ9
-	 fitTkeZQYduCvUQiyrBMgiUXDuw9weqri26lR6u4=
-Date: Thu, 25 Jun 2026 15:55:27 +0100
-From: Greg KH <gregkh@linuxfoundation.org>
-To: Haoxiang Li <haoxiang_li2024@163.com>
-Cc: kees@kernel.org, balbi@ti.com, sebastian@breakpoint.cc,
-	linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org, stable@kernel.org
-Subject: Re: [PATCH] usb: gadget: fsl_qe_udc: fix gadget lifetime on
- registration failure
-Message-ID: <2026062552-danger-slug-bc0d@gregkh>
-References: <20260622140610.1140558-1-haoxiang_li2024@163.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gmN1d573Gz2y8p
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jun 2026 01:26:13 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=grrlz.net;
+	s=stigmate; t=1782401171;
+	bh=j9CXKAHhdqi4eGx4YYPuER2s6anoRJJPXHxXpa88ucY=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=AejoM5t5GdalaI4l4XhlRetAHYf/V5T7rGkxgbNeppUK8YtW5cjkxWATG88jRZPO1
+	 BiFQubOMPudqnCw3jKkGx+9c4RNSGoF/Al7sNc5lHFk6H1oRsuiUM+UJuk9HiXh1FW
+	 4vCiT0/xI9UlRLs7KywMGskJunpS1Q29vGsrw66g=
+Received: from mx1.investici.org (unknown [127.0.0.1])
+	by confino.investici.org (Postfix) with ESMTP id 4gmN1b3cczz10sy;
+	Thu, 25 Jun 2026 15:26:11 +0000 (UTC)
+Received: by mx1.investici.org (Postfix) id 4gmN1Z5mh1z10jY;
+	Thu, 25 Jun 2026 15:26:10 +0000 (UTC)
+From: Bradley Morgan <include@grrlz.net>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Petr Mladek <pmladek@suse.com>,
+	Feng Tang <feng.tang@linux.alibaba.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Christophe Leroy <chleroy@kernel.org>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Douglas Anderson <dianders@chromium.org>,
+	linux-kernel@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org,
+	stable@vger.kernel.org,
+	Bradley Morgan <include@grrlz.net>
+Subject: [PATCH v3 1/4] sys_info: add helper for callers that print some sys_info on their own
+Date: Thu, 25 Jun 2026 15:25:55 +0000
+Message-ID: <20260625152558.7450-2-include@grrlz.net>
+X-Mailer: git-send-email 2.53.0
+In-Reply-To: <20260625152558.7450-1-include@grrlz.net>
+References: <20260625152558.7450-1-include@grrlz.net>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -64,62 +73,77 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260622140610.1140558-1-haoxiang_li2024@163.com>
+Content-Transfer-Encoding: 8bit
 
-On Mon, Jun 22, 2026 at 10:06:10PM +0800, Haoxiang Li wrote:
-> usb_add_gadget_udc_release() drops the gadget device reference when
-> registration fails. This invokes qe_udc_release() while qe_udc_probe()
-> is still unwinding. Since udc->done is not initialized during probe,
-> the release callback dereferences NULL in complete(). It also frees
-> the qe_udc object before the remaining probe cleanup accesses it,
-> resulting in use-after-free and double-free risks.
-> 
-> Initialize the gadget device explicitly and register it with
-> usb_add_gadget(), which leaves the gadget reference owned by the
-> driver on failure. Unwind the IRQ, DMA mappings, endpoint resources
-> and registers before dropping that reference with usb_put_gadget().
-> Make the completion notification conditional because it is only
-> installed by the remove path.
-> 
-> Similarly, use usb_del_gadget() during removal so the final gadget
-> reference remains held while the controller resources are released.
-> Set the completion pointer immediately before dropping the reference,
-> then wait for the release callback to finish.
-> 
-> Fixes: d77c1198666d ("usb: gadget: fsl_qe_udc: convert to new style start/stop")
-> Cc: stable@kernel.org
-> Signed-off-by: Haoxiang Li <haoxiang_li2024@163.com>
-> ---
->  drivers/usb/gadget/udc/fsl_qe_udc.c | 17 +++++++++++------
->  1 file changed, 11 insertions(+), 6 deletions(-)
-> 
-> diff --git a/drivers/usb/gadget/udc/fsl_qe_udc.c b/drivers/usb/gadget/udc/fsl_qe_udc.c
-> index bf87285ad13c..f9a59b32e272 100644
-> --- a/drivers/usb/gadget/udc/fsl_qe_udc.c
-> +++ b/drivers/usb/gadget/udc/fsl_qe_udc.c
-> @@ -2459,7 +2459,9 @@ static void qe_udc_release(struct device *dev)
->  	struct qe_udc *udc = container_of(dev, struct qe_udc, gadget.dev);
->  	int i;
->  
-> -	complete(udc->done);
-> +	if (udc->done)
-> +		complete(udc->done);
-> +
->  	cpm_muram_free(cpm_muram_offset(udc->ep_param[0]));
->  	for (i = 0; i < USB_MAX_ENDPOINTS; i++)
->  		udc->ep_param[i] = NULL;
-> @@ -2489,6 +2491,9 @@ static int qe_udc_probe(struct platform_device *ofdev)
->  		return -ENOMEM;
->  	}
->  
-> +	usb_initialize_gadget(&ofdev->dev, &udc->gadget,
-> +						qe_udc_release);
+Some callers print some sys_info on their own before calling sys_info().
 
-Odd coding style, why not just one line?
+Add a helper which would allow to prevent a duplicated output.
 
-thanks,
+It is a bit tricky because kernel_si_mask should be used only
+when the call-specific si_mask is empty. But the duplicated
+output must be prevented there as well.
 
-greg k-h
+Fixes: a9af76a78760 ("watchdog: add sys_info sysctls to dump sys info on system lockup")
+Cc: stable@vger.kernel.org
+Suggested-by: Petr Mladek <pmladek@suse.com>
+Signed-off-by: Bradley Morgan <include@grrlz.net>
+---
+ include/linux/sys_info.h |  1 +
+ lib/sys_info.c           | 20 ++++++++++++++++++--
+ 2 files changed, 19 insertions(+), 2 deletions(-)
+
+diff --git a/include/linux/sys_info.h b/include/linux/sys_info.h
+index a5bc3ea3d44b..f1c2552ca3d1 100644
+--- a/include/linux/sys_info.h
++++ b/include/linux/sys_info.h
+@@ -18,6 +18,7 @@
+ #define SYS_INFO_BLOCKED_TASKS		0x00000080
+ 
+ void sys_info(unsigned long si_mask);
++void sys_info_with_filter(unsigned long si_mask, unsigned long si_ignore_mask);
+ unsigned long sys_info_parse_param(char *str);
+ 
+ #ifdef CONFIG_SYSCTL
+diff --git a/lib/sys_info.c b/lib/sys_info.c
+index f32a06ec9ed4..d411fee10415 100644
+--- a/lib/sys_info.c
++++ b/lib/sys_info.c
+@@ -136,8 +136,10 @@ static int __init sys_info_sysctl_init(void)
+ subsys_initcall(sys_info_sysctl_init);
+ #endif
+ 
+-static void __sys_info(unsigned long si_mask)
++static void __sys_info(unsigned long si_mask, unsigned long si_ignore_mask)
+ {
++	si_mask &= ~si_ignore_mask;
++
+ 	if (si_mask & SYS_INFO_TASKS)
+ 		show_state();
+ 
+@@ -160,7 +162,21 @@ static void __sys_info(unsigned long si_mask)
+ 		show_state_filter(TASK_UNINTERRUPTIBLE);
+ }
+ 
++void sys_info_with_filter(unsigned long si_mask, unsigned long si_ignore_mask)
++{
++	unsigned long dump_mask = si_mask & ~si_ignore_mask;
++
++	/*
++	 * Do not fall back to kernel_si_mask when the caller context
++	 * required only the ignored information.
++	 */
++	if (si_mask && !dump_mask)
++		return;
++
++	__sys_info(dump_mask ? : kernel_si_mask, si_ignore_mask);
++}
++
+ void sys_info(unsigned long si_mask)
+ {
+-	__sys_info(si_mask ? : kernel_si_mask);
++	sys_info_with_filter(si_mask, 0);
+ }
+-- 
+2.53.0
+
 
