@@ -1,46 +1,45 @@
-Return-Path: <linuxppc-dev+bounces-22984-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22985-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id F0AB0CDE001
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Jun 2026 15:26:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9E979CDB479
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Jun 2026 15:26:17 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gmN1g0tkDz2ySg;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gmN1g12Xmz2yVd;
 	Fri, 26 Jun 2026 01:26:15 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a11:7980:1::2:0"
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782401174;
-	cv=none; b=nvIKKNlCwHglcrYTadbyYXYPiF2TBYlgUUc4X46KeZTLdjfKv7Q011K5iSbGX8IbTrf08bLWQ6SmLI5RIs+DEzzWipkQszncCpInS7jTbuHpufXNvtzLLPXDfAT+dB+IV3l5esSckDzOspEx+tHGHRu7YdfsRjLJoob9ZEmN78At7JJI14uAsWNbRK055YHE/NFhSJWK9dEXStOBQ7kJpWSbihslzS4kd0gais2yxapfDB8QZKoakngaz7+syoR3G1wqkIbFNYVwMHmmECQZTkUvat8ersIFkCnYuCwKEJTxsuNk4rmBLbQlc3wSZzLolQO/Fha5Wdff6jw4k8Gr9A==
+	cv=none; b=hiP5/VxW4v5UYcp4LyzKgT6S4mEU7mvLBzZkxOR/Qjt/Cwe1iQL+3O3geAIQe2F5CiSLjtbTT2IXUmlKFI5zO8AG8UZQ5JAI1XEorpZHAXlOINsB8wu23NPmEBwNxVWN3A2LlhfnCOBJ3IDIHuCgtXq6h1UjdEyKmL2pqXx8R9C5R44ajZgek1NmHxqjkNThUR0WQc4zAVzgyhmRmxnLsHhhc58LJwF8tkQAzLfjmX1QYXmV+y5nTX+LDGClHTyjaiY0YoQFtrveuMES4kST1VgZC0+IwB7nsh0YvSIGnMo/iXul4lFlPTj1pj4bpicTaTX6iZctoqov49YKUPdjzQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1782401174; c=relaxed/relaxed;
-	bh=j9CXKAHhdqi4eGx4YYPuER2s6anoRJJPXHxXpa88ucY=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=lnFBUTDo9K6wWwYJiL01fvxPU5mZrJL3jAP9UGEwIMyoVBjnTGlP/Jfl6zXrEZvnRnEOMsT1v3SZvc/BxBtANjmcrg6lJfUhWt+A+ZVqS0m5yDj2GC661OfN+lZZNo1yYDZzTmPdC8iv0uNEQzpgrSb1L1RQxNCzzkj7Sj5hWV/wCHyeVKXlRqXmf92Wau+NPzApCEb6FWG6RtVJjrwXgjLhNKXmwnPYEs4F+F4jxqI2onPqwn5Xa7LsVK8TjeFdSOBeTk8RryJzXbHnlqSeSV8QjvOi4RJSZNIqi4uLXOt4zpsKivrT/YWa7933WQbFGWgBWqLIO/EPDo2qwdgIfA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=grrlz.net; dkim=pass (1024-bit key; secure) header.d=grrlz.net header.i=@grrlz.net header.a=rsa-sha256 header.s=stigmate header.b=AejoM5t5; dkim-atps=neutral; spf=pass (client-ip=2a11:7980:1::2:0; helo=confino.investici.org; envelope-from=include@grrlz.net; receiver=lists.ozlabs.org) smtp.mailfrom=grrlz.net
+	bh=5CnqIZrXbOvj5YTogFA5mNwwB12cmB+wEc2uMYZ9VoI=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=hYDdU22zDVoP70B+CI1F1+0ASZvzYV9r+d0q1ZQy7fw0JQ8wGZSU4X90IpmJFOdVD5AOAWspsWq4G3HG64oEMsKFgBkTlH2bWGVRo6BIth/iTTxoBKlhviXGwDHDnfaMAFU3r/37s4rjZXDbz95+ll8XFboGUseQi5ZQc5baeaSyt24ldvEf0vqOksxv6i3isbTMwauGIBL475sGobCWqtwJ2hi/CYpT7Pwe4L93ddaCcLOb9EwmljSPG3wSzsmRHn/B0bJFrZba3n0bYUr3WcV+2XzwDGtO8DPjpFAT0wXB9BKbPlOUzSxFwBllI2vUhjYrcrwJ8rT9BEIadCUKzw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=grrlz.net; dkim=pass (1024-bit key; secure) header.d=grrlz.net header.i=@grrlz.net header.a=rsa-sha256 header.s=stigmate header.b=e07tngQX; dkim-atps=neutral; spf=pass (client-ip=2a11:7980:1::2:0; helo=confino.investici.org; envelope-from=include@grrlz.net; receiver=lists.ozlabs.org) smtp.mailfrom=grrlz.net
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=grrlz.net
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; secure) header.d=grrlz.net header.i=@grrlz.net header.a=rsa-sha256 header.s=stigmate header.b=AejoM5t5;
+	dkim=pass (1024-bit key; secure) header.d=grrlz.net header.i=@grrlz.net header.a=rsa-sha256 header.s=stigmate header.b=e07tngQX;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=grrlz.net (client-ip=2a11:7980:1::2:0; helo=confino.investici.org; envelope-from=include@grrlz.net; receiver=lists.ozlabs.org)
 Received: from confino.investici.org (confino.investici.org [IPv6:2a11:7980:1::2:0])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gmN1d573Gz2y8p
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gmN1d3zymz2xM7
 	for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jun 2026 01:26:13 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=grrlz.net;
-	s=stigmate; t=1782401171;
-	bh=j9CXKAHhdqi4eGx4YYPuER2s6anoRJJPXHxXpa88ucY=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=AejoM5t5GdalaI4l4XhlRetAHYf/V5T7rGkxgbNeppUK8YtW5cjkxWATG88jRZPO1
-	 BiFQubOMPudqnCw3jKkGx+9c4RNSGoF/Al7sNc5lHFk6H1oRsuiUM+UJuk9HiXh1FW
-	 4vCiT0/xI9UlRLs7KywMGskJunpS1Q29vGsrw66g=
+	s=stigmate; t=1782401169;
+	bh=5CnqIZrXbOvj5YTogFA5mNwwB12cmB+wEc2uMYZ9VoI=;
+	h=From:To:Cc:Subject:Date:From;
+	b=e07tngQXAOEZscw7ItyoLzxMsp7Ue3bldidYfHVIzLCq6lk4TxQcueMgQ9+yxl3dz
+	 3xNtlINvBBG2n81B7hmWnqomB805PfqiomxKlInI5v4VW66KJAMOqJW6Q3z4tMAQH6
+	 yD4iwzTxJJ6gJBE8x4H+AFLjVPljCZbA1sYBgB6s=
 Received: from mx1.investici.org (unknown [127.0.0.1])
-	by confino.investici.org (Postfix) with ESMTP id 4gmN1b3cczz10sy;
-	Thu, 25 Jun 2026 15:26:11 +0000 (UTC)
-Received: by mx1.investici.org (Postfix) id 4gmN1Z5mh1z10jY;
-	Thu, 25 Jun 2026 15:26:10 +0000 (UTC)
+	by confino.investici.org (Postfix) with ESMTP id 4gmN1Y5KFRz10hn;
+	Thu, 25 Jun 2026 15:26:09 +0000 (UTC)
+Received: by mx1.investici.org (Postfix) id 4gmN1Y0NDvz10j8;
+	Thu, 25 Jun 2026 15:26:09 +0000 (UTC)
 From: Bradley Morgan <include@grrlz.net>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Petr Mladek <pmladek@suse.com>,
@@ -54,12 +53,10 @@ Cc: Petr Mladek <pmladek@suse.com>,
 	linuxppc-dev@lists.ozlabs.org,
 	stable@vger.kernel.org,
 	Bradley Morgan <include@grrlz.net>
-Subject: [PATCH v3 1/4] sys_info: add helper for callers that print some sys_info on their own
-Date: Thu, 25 Jun 2026 15:25:55 +0000
-Message-ID: <20260625152558.7450-2-include@grrlz.net>
+Subject: [PATCH v3 0/4] sys_info: prevent duplicate backtraces
+Date: Thu, 25 Jun 2026 15:25:54 +0000
+Message-ID: <20260625152558.7450-1-include@grrlz.net>
 X-Mailer: git-send-email 2.53.0
-In-Reply-To: <20260625152558.7450-1-include@grrlz.net>
-References: <20260625152558.7450-1-include@grrlz.net>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -75,74 +72,33 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Some callers print some sys_info on their own before calling sys_info().
+Some callers handle SYS_INFO_ALL_BT themselves before calling sys_info().
+When they strip that bit, an all_bt-only mask becomes zero and sys_info(0)
+falls back to kernel_si_mask, potentially duplicating output.
 
-Add a helper which would allow to prevent a duplicated output.
+This series adds sys_info_with_filter() to filter specific bits without
+triggering the kernel_si_mask fallback.
 
-It is a bit tricky because kernel_si_mask should be used only
-when the call-specific si_mask is empty. But the duplicated
-output must be prevented there as well.
+Changes since v2:
+- Use sys_info_with_filter() instead of sys_info_without_all_bt() per
+  Petr's suggestion
+- Filter applied at __sys_info() level to handle kernel_si_mask correctly
+- Added panic.c conversion
 
-Fixes: a9af76a78760 ("watchdog: add sys_info sysctls to dump sys info on system lockup")
-Cc: stable@vger.kernel.org
-Suggested-by: Petr Mladek <pmladek@suse.com>
-Signed-off-by: Bradley Morgan <include@grrlz.net>
----
- include/linux/sys_info.h |  1 +
- lib/sys_info.c           | 20 ++++++++++++++++++--
- 2 files changed, 19 insertions(+), 2 deletions(-)
+Bradley Morgan (4):
+  sys_info: add helper for callers that print some sys_info on their own
+  watchdog: use sys_info_with_filter() to avoid duplicate backtraces
+  powerpc/watchdog: use sys_info_with_filter() to avoid duplicate
+    backtraces
+  panic: use sys_info_with_filter() to avoid duplicate backtraces
 
-diff --git a/include/linux/sys_info.h b/include/linux/sys_info.h
-index a5bc3ea3d44b..f1c2552ca3d1 100644
---- a/include/linux/sys_info.h
-+++ b/include/linux/sys_info.h
-@@ -18,6 +18,7 @@
- #define SYS_INFO_BLOCKED_TASKS		0x00000080
- 
- void sys_info(unsigned long si_mask);
-+void sys_info_with_filter(unsigned long si_mask, unsigned long si_ignore_mask);
- unsigned long sys_info_parse_param(char *str);
- 
- #ifdef CONFIG_SYSCTL
-diff --git a/lib/sys_info.c b/lib/sys_info.c
-index f32a06ec9ed4..d411fee10415 100644
---- a/lib/sys_info.c
-+++ b/lib/sys_info.c
-@@ -136,8 +136,10 @@ static int __init sys_info_sysctl_init(void)
- subsys_initcall(sys_info_sysctl_init);
- #endif
- 
--static void __sys_info(unsigned long si_mask)
-+static void __sys_info(unsigned long si_mask, unsigned long si_ignore_mask)
- {
-+	si_mask &= ~si_ignore_mask;
-+
- 	if (si_mask & SYS_INFO_TASKS)
- 		show_state();
- 
-@@ -160,7 +162,21 @@ static void __sys_info(unsigned long si_mask)
- 		show_state_filter(TASK_UNINTERRUPTIBLE);
- }
- 
-+void sys_info_with_filter(unsigned long si_mask, unsigned long si_ignore_mask)
-+{
-+	unsigned long dump_mask = si_mask & ~si_ignore_mask;
-+
-+	/*
-+	 * Do not fall back to kernel_si_mask when the caller context
-+	 * required only the ignored information.
-+	 */
-+	if (si_mask && !dump_mask)
-+		return;
-+
-+	__sys_info(dump_mask ? : kernel_si_mask, si_ignore_mask);
-+}
-+
- void sys_info(unsigned long si_mask)
- {
--	__sys_info(si_mask ? : kernel_si_mask);
-+	sys_info_with_filter(si_mask, 0);
- }
+ arch/powerpc/kernel/watchdog.c | 12 ++++++++----
+ include/linux/sys_info.h       |  1 +
+ kernel/panic.c                 |  2 +-
+ kernel/watchdog.c              | 12 ++++++++----
+ lib/sys_info.c                 | 20 ++++++++++++++++++--
+ 5 files changed, 36 insertions(+), 11 deletions(-)
+
 -- 
 2.53.0
 
