@@ -1,62 +1,60 @@
-Return-Path: <linuxppc-dev+bounces-23090-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23091-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A1EF7C43458
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Jun 2026 11:41:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CAD13C43458
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Jun 2026 12:14:19 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gpkqz21NFz2ySS;
-	Mon, 29 Jun 2026 21:41:03 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=115.124.30.119
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782733263;
-	cv=none; b=h95DSLI9lf/PIqQo3bYid6YFEszX181INwInzrQM/RzG5Y+BY6RKO6/DVAnctOdzxqJnvk2XpdNSOp0eb4jEBHIOw0VnOwflIrM5ABwurCVoqMBdv/36L9jheRBddidGTPBka33wJfbUIaOpXDxMf4edbCbQxT8NZskbQtX9wgLzlT/IcxEBrulDMBoHgRzcOUtbPy1s1zqAdEqnX9jrGkwOg612xBk1K7pl4Uyt0T93j+vfnppnaRMLlZktRXi8SsK7tjKdNLLbEp5GGUKkUadDxIIXd4eh0KnIoSu0ntTp8atrcMxCPsHQvWn2CRGS2Y7qroj/EZpokR3NzDxtwQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gplZL2Glwz2ySS;
+	Mon, 29 Jun 2026 22:14:18 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782735258;
+	cv=none; b=lZsIVHiXE4wyy+WyATTVMOWtBZ02JFub/U64ApWvgnWc81rkvullyZv0PdcvFBO8nKrYKZDTADbq/wGYPBtOy6D3TRzIkLkYOObtUtBtHo7Bn1XSBKCupIO/1H+rxts7sw0qNNCuPitJdpERcDCCQmrVYvC6pfPj+Q3WeOQhmuIO7jgQrnpx3xQ4fnEa7zZax9zeDDIGLidji+gBfHYvinpN9YeDGjjvasiv2VfcrUj6VcDJUPAt/9oIYsS4Rt1aEDDyYfdUJuCTOaKtk+fZt8/iUY9Zrz3BTkpQ5NIzDoRMAUoIX9F63Dlvsb7coR2eA3WZVey8MmKrl0fSVQeNCA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1782733263; c=relaxed/relaxed;
-	bh=IamwdDSMaD5+IxwQs2MbeKnGNJ8bxCpdX3TG62bS6SM=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=BqPf5N4uTks+ssn0zDB0HY/14Ua/ce80ixJakqZrmgPlQiCsdTimNPIH4RByhQhhivJCywV+LnvMJrZx8JTpOVcF1afa6Xy8omkp/kVBp93Ot3Tz6pdqv54MSdKPqB5JG7xm5KZwf4+P332rYeHQeGsM2qhOoKduc/hYDNsBSEFOGMwhksCiK9XRatJ6RKh1/3SODw5rB68ocDbTnULJlWYGp41whoA1kFrR7E9Kg+B2sebR3A3v4M576wxvMwIm1ZlBMktN36vMXrIYjeeA65XPFaRpZo5eJthi+5d9v2xAl4DbUsjcfryM/FSF5HoFojYZR8KrVYbIh6Uj7swKQA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.alibaba.com; dkim=pass (1024-bit key; unprotected) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.a=rsa-sha256 header.s=default header.b=NuJ+ikbN; dkim-atps=neutral; spf=pass (client-ip=115.124.30.119; helo=out30-119.freemail.mail.aliyun.com; envelope-from=feng.tang@linux.alibaba.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.alibaba.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.alibaba.com
+	t=1782735258; c=relaxed/relaxed;
+	bh=n+coV1M1k9ivDucBnlClOj7zKR27F4vBF8Pokzkw63Y=;
+	h=From:To:In-Reply-To:References:Subject:Message-Id:Date:
+	 MIME-Version:Content-Type; b=QyHPXZX+luLVT0sK1Zt7C0vHGK+QSq6HsL58FhTDh5CiDs+3pYvpfMTi5RVo07l9mYmVwmCjMY1xWJkPrLwjs4TTCd1XDyyQ+/yzcxEGgx3YeIEG8xKXrI0eD4Q3+0NG37boWELBs20UgdZEHp5K3+F1EAr6DmPXzonZxEogoW5NUGJj9KFJFN8CdmzE7Zl+HQvWc3QxwjWBu4tlReWhzKfwbLs1tHGavmH/hiKhDnBGG6uVkA/mO8zo4/Ro+9glzLIq/qMe8NlURCV2qc9pgFr7h8dmSDCK5SOWJk8mQGGUN3MuVy9tohcl3wdZwDUJCR3Hhoc6JZcqLZsCiytJ/A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Of51FpbA; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.a=rsa-sha256 header.s=default header.b=NuJ+ikbN;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Of51FpbA;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.alibaba.com (client-ip=115.124.30.119; helo=out30-119.freemail.mail.aliyun.com; envelope-from=feng.tang@linux.alibaba.com; receiver=lists.ozlabs.org)
-Received: from out30-119.freemail.mail.aliyun.com (out30-119.freemail.mail.aliyun.com [115.124.30.119])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gpkqw6VbHz2yFc
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Jun 2026 21:40:59 +1000 (AEST)
-DKIM-Signature:v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=linux.alibaba.com; s=default;
-	t=1782733255; h=Date:From:To:Subject:Message-ID:MIME-Version:Content-Type;
-	bh=IamwdDSMaD5+IxwQs2MbeKnGNJ8bxCpdX3TG62bS6SM=;
-	b=NuJ+ikbN+TPDKP4Ox+G0yDVLn9HB5Wnz4JZ/B1fzU1iX4pC2GhWK0V7MA8JmfEeoBv9rUet34pghtxYkTUyaqcdI3yXMAiV2QkqxbDo4MDKUGN9WBmxzSCw+DhBwLVm24jECqu2Y/ci549kvVGsm0OGugNqhlvPkA/CY+O2hcXg=
-X-Alimail-AntiSpam:AC=PASS;BC=-1|-1;BR=01201311R121e4;CH=green;DM=||false|;DS=||;FP=0|-1|-1|-1|0|-1|-1|-1;HT=maildocker-contentspam033032089153;MF=feng.tang@linux.alibaba.com;NM=1;PH=DS;RN=12;SR=0;TI=SMTPD_---0X5ss1KF_1782733252;
-Received: from localhost(mailfrom:feng.tang@linux.alibaba.com fp:SMTPD_---0X5ss1KF_1782733252 cluster:ay36)
-          by smtp.aliyun-inc.com;
-          Mon, 29 Jun 2026 19:40:53 +0800
-Date: Mon, 29 Jun 2026 19:40:52 +0800
-From: Feng Tang <feng.tang@linux.alibaba.com>
-To: Petr Mladek <pmladek@suse.com>
-Cc: Bradley Morgan <include@grrlz.net>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Christophe Leroy <chleroy@kernel.org>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Douglas Anderson <dianders@chromium.org>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-	stable@vger.kernel.org
-Subject: Re: [PATCH v3 4/4] panic: use sys_info_with_filter() to avoid
- duplicate backtraces
-Message-ID: <akJZxCTlLcwubqi2@U-2FWC9VHC-2323.local>
-References: <20260625152558.7450-1-include@grrlz.net>
- <20260625152558.7450-5-include@grrlz.net>
- <aj5TNB8cRtMNTtIT@pathway.suse.cz>
- <aj5tFiwhRqPkAkqU@pathway.suse.cz>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gplZK33lgz2xYh
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Jun 2026 22:14:17 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with ESMTP id F203A43C3E;
+	Mon, 29 Jun 2026 12:14:14 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D1B551F00A3A;
+	Mon, 29 Jun 2026 12:14:12 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1782735254;
+	bh=n+coV1M1k9ivDucBnlClOj7zKR27F4vBF8Pokzkw63Y=;
+	h=From:To:In-Reply-To:References:Subject:Date;
+	b=Of51FpbA6HZf9/yVnds+0yyBzWj8QCMKAo0CYcwO6gMOYO/mvx7EWIGwefwRhRHwS
+	 JB581U6jI+P4OYASwOG/Aqc+cHn0tIOsxWN6i+7TXRnh5iEg1YahtmqfXY+Smiappl
+	 Aw8aMt+kYoGhCMVhYEboehvN7Yw0c9+aBg8fLR3NaKokErsRp+tTRxeeyK7o7wbVyS
+	 HfwHStRiv0i8oJZJscXlRdEfHfR4f4R4m4nBSw52s8qnkkKtDTnVoAbFxC68Uq7yw4
+	 5lH30uDaR44kTY5KeIu5JD7dJ5CKSnyzLP+X14QFXkHApMRWM0x52tcXLXuB6zYWzr
+	 xejSUPDC73oPA==
+From: Mark Brown <broonie@kernel.org>
+To: shengjiu.wang@gmail.com, Xiubo.Lee@gmail.com, festevam@gmail.com, 
+ nicoleotsuka@gmail.com, lgirdwood@gmail.com, perex@perex.cz, tiwai@suse.com, 
+ linux-sound@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
+ linux-kernel@vger.kernel.org, shengjiu.wang@oss.nxp.com
+In-Reply-To: <20260625102416.424911-1-shengjiu.wang@oss.nxp.com>
+References: <20260625102416.424911-1-shengjiu.wang@oss.nxp.com>
+Subject: Re: [PATCH] ASoC: fsl_asrc_dma: fix eDMA maxburst misalignment
+ with channel count
+Message-Id: <178239587658.51343.2769093541201001196.b4-ty@b4>
+Date: Thu, 25 Jun 2026 14:57:56 +0100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -70,142 +68,50 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <aj5tFiwhRqPkAkqU@pathway.suse.cz>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-Mailer: b4 0.16-dev
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1169; i=broonie@kernel.org;
+ h=from:subject:message-id; bh=S1uHXem2NPKorcIgxQtqKkiIBFoLN4lrRepfZPijNe0=;
+ b=owEBbQGS/pANAwAKASTWi3JdVIfQAcsmYgBqQmGTG5TwQoa6xRAxjRcbu9vHK0fnsbEKCdAdt
+ 1FXmqZvZ3qJATMEAAEKAB0WIQSt5miqZ1cYtZ/in+ok1otyXVSH0AUCakJhkwAKCRAk1otyXVSH
+ 0JfeB/0TG2IJV8dN6ol8F4L57VLrZBoF7T+7fvk1ZvZat7083qw8BgAq4M1SP4lKZqqC8VcwvM7
+ gyHOadeU30f+zwRWtC8vLRF4LY7CcAhZTr83IJKDLlPfqTQ0+20q/xXaiBQj9sIPq1I1P0XHKiU
+ Eg56u/k78XIchupjk+6wReOxi++HRMZ73Hy41hxD7b/degqTwGcFyfxoTobXXGAGeS061MKrTzi
+ g1fSZz2G0fXIgqiOjHVU8XXYF7o1caxLQ7hPi9+2lJXIXCGPDF6Dv1Pd4EB8ZCAu/TjEO+FKvjw
+ BwYiw5pXnyHTNoPy/vIXVA0rycSYxu8bzMbYi3Dor9GCx86j
+X-Developer-Key: i=broonie@kernel.org; a=openpgp;
+ fpr=3F2568AAC26998F9E813A1C5C3F436CA30F5D8EB
 
-On Fri, Jun 26, 2026 at 02:14:14PM +0200, Petr Mladek wrote:
-> On Fri 2026-06-26 12:23:50, Petr Mladek wrote:
-> > On Thu 2026-06-25 15:25:58, Bradley Morgan wrote:
-> > > panic_other_cpus_shutdown() handles SYS_INFO_ALL_BT before stopping the
-> > > other CPUs. Do not ask sys_info() to handle that bit again later in the
-> > > panic path.
-> > > 
-> > > Use sys_info_with_filter() so panic_print=all_bt does not request more
-> > > output after the CPUs are stopped.
-> > > 
-> > > Fixes: a9af76a78760 ("watchdog: add sys_info sysctls to dump sys info on system lockup")
-> > > Cc: stable@vger.kernel.org
-> > > Signed-off-by: Bradley Morgan <include@grrlz.net>
-> > > ---
-> > >  kernel/panic.c | 2 +-
-> > >  1 file changed, 1 insertion(+), 1 deletion(-)
-> > > 
-> > > diff --git a/kernel/panic.c b/kernel/panic.c
-> > > index 213725b612aa..eb842823df61 100644
-> > > --- a/kernel/panic.c
-> > > +++ b/kernel/panic.c
-> > > @@ -680,7 +680,7 @@ void vpanic(const char *fmt, va_list args)
-> > >  	 */
-> > >  	atomic_notifier_call_chain(&panic_notifier_list, 0, buf);
-> > >  
-> > > -	sys_info(panic_print);
-> > > +	sys_info_with_filter(panic_print, SYS_INFO_ALL_BT);
-> > 
-> > Hmm, this prevents printing backtraces from all CPUs completely.
-> > But what if they were not printed?
-> > 
-> > They might be printed by:
-> > 
-> > static void panic_other_cpus_shutdown(bool crash_kexec)
-> > {
-> > 	if (panic_print & SYS_INFO_ALL_BT)
-> > 		panic_trigger_all_cpu_backtrace();
-> > 
-> > [...]
-> > }
-> > 
-> > But it checks only "panic_print" variable. It won't do anything
-> > when (panic_print == 0).
-> > 
-> > In this case, we might still want to print the backraces when
-> > SYS_INFO_ALL_BT is set in kernel_si_info.
-> > 
-> > >  	kmsg_dump_desc(KMSG_DUMP_PANIC, buf);
-> > 
-> > Of course, we might fix panic_other_cpus_shutdown() to check also
-> > kernel_si_info.
-> > 
-> > But it all becomes very hairy. We have several levels:
-> > 
-> >    + watchdog-all_bt-specific option, e.g. sysctl_hardlockup_all_cpu_backtrace
-> > 
-> >    + watchdog-specific si_info preferences, e.g. hardlockup_si_mask
-> > 
-> >    + panic-specific si_info: panic_print
-> > 
-> >    + universal fallback for any layer: kernel_si_info
-> > 
-> > Now, we try to check all these variables back and forth to
-> > trigger all backtraces or to avoid triggering them.
-> > And it clearly does not work well and the code is more and more
-> > hairy.
-> > 
-> > I think about another approach. The word "waterfall" comes to my mind.
-> > Instead of checking all the settings back and forth, let's process
-> > each setting one by one and just remember what has been done and
-> > skip this in the next level.
-> > 
-> > All the si_info actions seems to dump a global system state.
-> > So, it would make sense to remember the state in a global variable
-> > even when it might be modified by more CPUs in parallel.
-> > 
-> > I am going to think more about it.
-> 
-> I have created a POC using Gemini. I haven't tested it.
-> But it looks acceptable. And the logic seems to be more
-> straightforward.
-> 
-> One drawback is that it requires adding the _reset()
-> call for all sys_info() callers. It is fine in principle
-> but it might complicate back-porting because all changes
-> have to be done in one patch.
-> 
-> But honestly, this is a nice to have fix. Most people could
-> live happily without it.
-> 
-> From 3c66436d9978030845a96bfaedd6b914536e2ac4 Mon Sep 17 00:00:00 2001
-> From: Petr Mladek <pmladek@suse.com>
-> Date: Fri, 26 Jun 2026 13:55:41 +0200
-> Subject: [POC] sys_info: Introduce state-tracking APIs to prevent duplicate
->  backtraces
-> 
-> In watchdog, panic, and hung task detection scenarios, sys_info() can
-> be called multiple times or alongside direct backtrace triggers like
-> trigger_allbutcpu_cpu_backtrace(). This results in identical backtraces
-> being dumped repeatedly from all CPUs, cluttering the kernel log and
-> delaying or obscuring critical debug details.
-> 
-> Introduce a state tracking bitmask and associated helpers:
-> - sys_info_done(mask): Marks specific sys_info bits as already printed.
-> - sys_info_reset(): Resets the tracking state.
-> - sys_info_is_done(mask): Checks if all bits in the mask have been printed.
-> 
-> Update sys_info() to automatically filter out already printed bits
-> using this state. Integrate these APIs with the generic hardlockup
-> and softlockup watchdogs, the PowerPC watchdog, the hung task detector,
-> and the panic core. This ensures that each piece of system information
-> and backtrace output is printed at most once per lockup/panic event,
-> and the state is reset cleanly when a lockup does not trigger a panic.
-> 
-> Races between sys_info() callers are ignored. It should be acceptable
-> because the output from various watchdogs has never been synchronized.
-> And panic() never returns.
-> 
-> Assisted-by: gemini-1.5-flash
-> Signed-off-by: Petr Mladek <pmladek@suse.com>
+On Thu, 25 Jun 2026 18:24:16 +0800, shengjiu.wang@oss.nxp.com wrote:
+> ASoC: fsl_asrc_dma: fix eDMA maxburst misalignment with channel count
 
-Yep. There are cases that people want panic on task-hung or sw/hw lockup,
-and this could remove much duplication of sys info dump, thanks!
+Applied to
 
-Reviewed-by: Feng Tang <feng.tang@linux.alibaba.com>
+   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git for-7.2
 
-> ---
->  arch/powerpc/kernel/watchdog.c | 13 ++++++++++---
->  include/linux/sys_info.h       |  3 +++
->  kernel/hung_task.c             |  2 ++
->  kernel/panic.c                 |  4 +++-
->  kernel/watchdog.c              | 10 ++++++++--
->  lib/sys_info.c                 | 30 +++++++++++++++++++++++++++++-
->  6 files changed, 55 insertions(+), 7 deletions(-)
+Thanks!
+
+[1/1] ASoC: fsl_asrc_dma: fix eDMA maxburst misalignment with channel count
+      https://git.kernel.org/broonie/sound/c/cf6f56990ea2
+
+All being well this means that it will be integrated into the linux-next
+tree (usually sometime in the next 24 hours) and sent to Linus during
+the next merge window (or sooner if it is a bug fix), however if
+problems are discovered then the patch may be dropped or reverted.
+
+You may get further e-mails resulting from automated or manual testing
+and review of the tree, please engage with people reporting problems and
+send followup patches addressing any issues that are reported if needed.
+
+If any updates are required or you are submitting further changes they
+should be sent as incremental updates against current git, existing
+patches will not be replaced.
+
+Please add any relevant lists and maintainers to the CCs when replying
+to this mail.
+
+Thanks,
+Mark
+
 
