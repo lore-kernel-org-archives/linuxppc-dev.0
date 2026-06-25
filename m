@@ -1,87 +1,85 @@
-Return-Path: <linuxppc-dev+bounces-22975-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22976-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9BD98CDE008
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Jun 2026 11:08:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2B855CDB479
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Jun 2026 12:41:20 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gmGHh5RwZz2y8p;
-	Thu, 25 Jun 2026 21:08:00 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=192.198.163.19
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782385680;
-	cv=none; b=i/9YnwKYJVkao5wgk6IbCcA2COqIb+aBlF7nY+BOmAUZadDrlwrFyEnzIu3NEVMcEMoY71IA19FK0KHsXAQrqVwlWTMNQeTzWOaJyXAs0HtgUAf4Qla8YEumktyHekBygvA0MHTjmo/0sIJzbIrRJptHyvxGqaJ7HGQ485M9tojyTFk3PHOxxxOQe4PMf+kN3ASWGb0xpVJqGeUMJcVPWwOtT+WOXGPkgWo6YIEMBGM25d7+3i9vDEnQV9bajf8fezfmSJK9nzpfhPqoYAw7/UqMD9P7MqiBc8fxWQ6T00JYjeNHWxr0K6VH1ccZXyod1euQChtg2dY3s0O/90SGiA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gmJML2vTfz2xwH;
+	Thu, 25 Jun 2026 22:41:18 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782391278;
+	cv=none; b=S09OuQYCpYd9IsxTRLtODwK4Yxag0DuJ/B8nJ9qCIf8CeaQPLcoW31hGqgZ3bgt4vhLKe8iErrnuxWGNZUnrUjmSxGXFXCsYpuVdjplq4kh5MVmy/V9BKiWRl8VQUPbQEe0AVe0+TRwCCa+S98gm4sxaW3atkOouKiEjFC1Z0QloRUrYDfG4zYSIroZy1bYKCn9/u5Le6pCDLyHIICqZLuxXV9oum2je5XZmG11n+SL4iS+VVQGV6PlYvK+va+whEHD4JmxAr4Fk41vwqWv4sAaEiXaL0jAe5zPZ/JZfQkAMBngYLYGzBS8FpJmyBtrnJK3o2CSyXbVtpp44plZ/2Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1782385680; c=relaxed/relaxed;
-	bh=L28gvtHaVFUvm3g298xCnBf8nljEiAgGAj/WveWrpJ8=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
-	 MIME-Version:Content-Type; b=Zt3oKxboPC5Ulj6/obgBYwGQBgbT3eX+6RmAPB4aRaJ3z5MpqYbDHZqPlOumGOdnEz8091SXRbcsQHd31iq03ltUSrnmuvP4V1OF/wCqsfNU2sf72yVPksZ/EQ8PsM0QTAGShYEZEeyrSvgJoSHrzTYe91lFOKZGlsgJXERnVrsCW59hZas6XfnDxNNiqigpgh5mKiA2bhxc9PF2JJcXIZgK60ZQcaXiUUebEaQjRjOH5/tyXyjWhZNMLdXqa0oGaEY6TUKzlU81Ep5mbn0bAC6SMzabfC8zl2VzB5iEclFz7W9SleSCIJsaqbKm6MRkX8thcoddVmkaYCzuDp8qkw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=QuDLKX++; dkim-atps=neutral; spf=pass (client-ip=192.198.163.19; helo=mgamail.intel.com; envelope-from=jani.nikula@intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=intel.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+	t=1782391278; c=relaxed/relaxed;
+	bh=/FIcy5VYAad+2tZYzaneZS90/1op071eXRZTRdPJDdc=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=P6fLRFPePw6OOdU1EYgHBtKIwp4qxiiFvCopuQ8ZCvIP1wWURKwEWXd0XzU1FNtBnitnG+tQ2mZ0hyimAu93jCdRmaPdH/S4jlaJw+NpzZsT4lo+c4+QDGlRQni9m6m93CEZOd75T0tmkRRjj0y+ArRGpDkfsVpbU5QzYBqnmk68djfDbK82A9gefoVDUBIe6fCcFQ9dsNgn3Ta+7lq7qnQ7uA2SLCm8VTnE/8Sd1ugZJJt7pYl4zV9CdWbTzH2V8RJ6VH2LeQ1zc3nEaURcPm9VZl7IKjk2cS7or8hY6GGpyJ6wgJXjOMsk32Rbgt/wZLpmp1STwk0tga57uIphzA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=aN2OkwrG; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sayalip@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=QuDLKX++;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=aN2OkwrG;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=192.198.163.19; helo=mgamail.intel.com; envelope-from=jani.nikula@intel.com; receiver=lists.ozlabs.org)
-X-Greylist: delayed 65 seconds by postgrey-1.37 at boromir; Thu, 25 Jun 2026 21:07:57 AEST
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.19])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sayalip@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gmGHd13C0z2xLm
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jun 2026 21:07:56 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1782385678; x=1813921678;
-  h=from:to:cc:subject:in-reply-to:references:date:
-   message-id:mime-version;
-  bh=3mMUyu41hsUV3+8vmn2FEljozTYUkLukSLGnNifcCP4=;
-  b=QuDLKX++5hyvwWZGS3FYiEuxLeIj2Ro5VFyuzqvuxh+KjnZNFhNA1GFF
-   QW70p9c+/nPWpDPuKvdBjgecZ5pMqe8ZAfaztfPeBT7pnT81cdy0KyIhY
-   H7KBnBroinoSBZ8xXMDEqbeiGK7STec6/iO8LK7mhGU7ZWEkBk15ZdmmK
-   6GbsAjnijozQUdOwcS1Pjo5I92TfHRRb4vgWmA5Oeqr5pirHSWcxz61HW
-   ro06hGKB2lydrJ4SoUJGat6vzIVwGI346PIMvNHM8kMgUd7SpA66Z6/nI
-   6SUl8HjHM71mYnJ/cYVY+PxV5i1OmAHYXZUkZ/TlnrMKvf5AHbY0yWTzB
-   Q==;
-X-CSE-ConnectionGUID: RZ7a+U+LS3G6VmpiweJfmQ==
-X-CSE-MsgGUID: PS3S6QCnTfqgUqd2jWuxkA==
-X-IronPort-AV: E=McAfee;i="6800,10657,11827"; a="82144901"
-X-IronPort-AV: E=Sophos;i="6.24,224,1774335600"; 
-   d="scan'208";a="82144901"
-Received: from orviesa006.jf.intel.com ([10.64.159.146])
-  by fmvoesa113.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 25 Jun 2026 04:06:05 -0700
-X-CSE-ConnectionGUID: Ff5wjq2eS3y4NEnYZUPVEg==
-X-CSE-MsgGUID: /T55+aBtS92ybM5/4REhrg==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.24,224,1774335600"; 
-   d="scan'208";a="249131302"
-Received: from ijarvine-mobl1.ger.corp.intel.com (HELO localhost) ([10.245.245.126])
-  by orviesa006-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 25 Jun 2026 04:05:58 -0700
-From: Jani Nikula <jani.nikula@linux.intel.com>
-To: Steven Rostedt <rostedt@kernel.org>, linux-kernel@vger.kernel.org,
- linux-trace-kernel@vger.kernel.org
-Cc: Masami Hiramatsu <mhiramat@kernel.org>, Mark Rutland
- <mark.rutland@arm.com>, Mathieu Desnoyers
- <mathieu.desnoyers@efficios.com>, Andrew Morton
- <akpm@linux-foundation.org>, Linus Torvalds
- <torvalds@linux-foundation.org>, Sebastian Andrzej Siewior
- <bigeasy@linutronix.de>, John Ogness <john.ogness@linutronix.de>, Thomas
- Gleixner <tglx@kernel.org>, Peter Zijlstra <peterz@infradead.org>, Julia
- Lawall <julia.lawall@inria.fr>, Yury Norov <yury.norov@gmail.com>,
- linux-doc@vger.kernel.org, linux-kbuild@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, dri-devel@lists.freedesktop.org,
- linux-stm32@st-md-mailman.stormreply.com,
- linux-arm-kernel@lists.infradead.org, linux-rdma@vger.kernel.org,
- linux-usb@vger.kernel.org, linux-ext4@vger.kernel.org,
- linux-nfs@vger.kernel.org, kvm@vger.kernel.org,
- intel-gfx@lists.freedesktop.org
-Subject: Re: [PATCH v4 0/2] tracing: Move non-trace_printk prototypes into
- trace_controls.h
-In-Reply-To: <20260625104007.041432666@kernel.org>
-Organization: Intel Finland Oy - BIC 0357606-4 - c/o Alberga Business Park,
- 6 krs Bertel Jungin Aukio 5, 02600 Espoo, Finland
-References: <20260625104007.041432666@kernel.org>
-Date: Thu, 25 Jun 2026 14:05:56 +0300
-Message-ID: <2037b6b62264c0192d45733ec1099c3ec14085a2@intel.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gmJMK22wTz2xLm
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jun 2026 22:41:16 +1000 (AEST)
+Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 65P3n2Fo2890175;
+	Thu, 25 Jun 2026 12:41:00 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:date:from:message-id:mime-version
+	:subject:to; s=pp1; bh=/FIcy5VYAad+2tZYzaneZS90/1op071eXRZTRdPJD
+	dc=; b=aN2OkwrGpBVNXntWIYCMfe2M4t8Q/kZv2943OxYC0D14S9TejoPEQn5EF
+	Zmu0qwIceLDq5j11z1mfoyDj1Aix8wonJAdMMbZ1srdehQIVvKt2DevrL2DNJdVL
+	Tv0LujdhhXdQ0uW07R/ebnYdBwlDHwp2Yu9rVpOoANSsyAIssD5X3BOFV//qFRac
+	OBky/IUJfh8S3iRkiEQTY8cQnp8BX778wGQe2cQ/f5hl76nCRsG+NXn6pTid/t3/
+	TT/xqd/dai8rCSGe8aZtHzuM29bgtE6dYePy3U/UyHkawavBmdiSzGFMYE4+wDp/
+	yK3wu5TVN+fk6rrpOOOocAQ+YdQhQ==
+Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4ewjgt1bgg-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 25 Jun 2026 12:40:59 +0000 (GMT)
+Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma22.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 65PCYeif013544;
+	Thu, 25 Jun 2026 12:40:59 GMT
+Received: from smtprelay01.fra02v.mail.ibm.com ([9.218.2.227])
+	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4ex5jwp8p6-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 25 Jun 2026 12:40:59 +0000 (GMT)
+Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
+	by smtprelay01.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 65PCetiN49807862
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Thu, 25 Jun 2026 12:40:55 GMT
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 26F9420043;
+	Thu, 25 Jun 2026 12:40:55 +0000 (GMT)
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 42BD020040;
+	Thu, 25 Jun 2026 12:40:51 +0000 (GMT)
+Received: from li-3f69264c-2ce6-11b2-a85c-c3f414d24014.ibm.com.com (unknown [9.39.21.143])
+	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Thu, 25 Jun 2026 12:40:51 +0000 (GMT)
+From: Sayali Patil <sayalip@linux.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>, Shuah Khan <shuah@kernel.org>,
+        linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+        linux-kselftest@vger.kernel.org,
+        Ritesh Harjani <ritesh.list@gmail.com>
+Cc: David Hildenbrand <david@kernel.org>, Zi Yan <ziy@nvidia.com>,
+        Michal Hocko <mhocko@kernel.org>, Oscar Salvador <osalvador@suse.de>,
+        Lorenzo Stoakes <lorenzo.stoakes@oracle.com>,
+        Dev Jain <dev.jain@arm.com>, Liam.Howlett@oracle.com,
+        linuxppc-dev@lists.ozlabs.org, Miaohe Lin <linmiaohe@huawei.com>,
+        Venkat Rao Bagalkote <venkat88@linux.ibm.com>,
+        Sayali Patil <sayalip@linux.ibm.com>
+Subject: [PATCH 0/2] selftests/mm: avoid false failures in hugetlb and KSM tests
+Date: Thu, 25 Jun 2026 18:10:15 +0530
+Message-ID: <cover.1782365671.git.sayalip@linux.ibm.com>
+X-Mailer: git-send-email 2.52.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -95,63 +93,70 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjI1MDEwNiBTYWx0ZWRfX+pzfsgCI9YfC
+ rqm84zEZZGm9qXuQY06LMuBL6O6Wg2WuEDAXX2WS5q6/UGjbzldMT/iIu/Q6+UT/Ttsrl3uu11F
+ JKZ9DabKLi5AYneABAPok1XLFrUW41D1xtR9WIUoB/E3RMGcItRo3R0y2oY+i1IUD66nYCT4Y/A
+ mmJAbLKjktDaqZqvpza4/iekgvH3RskKxeaQoGM3iXt3CzZ1TU9UxDphixG6XrekOGoLybjDXvo
+ kZ+Twiwtd9HhzTUZvxeDXQWqFPPvxTzgGG7rhOshYB8J7WnDf5zknrRi9VwiPG0e+zZJEk01r5l
+ LGflhkiVEu2HlZLi2wlSQmbIc/1K0uzUhrjhLgtdP+riWHQS3EjofRB1NEXGT4PaRsNSJs2DzLL
+ 8/6NJR4Ery0FL2cZ7zxKPbgsaTWXaiG/nPEF953KywThxOgNy2VEjSAfPpZmWsArPzvJ4kYiXVW
+ TK3/fZ42WpqJMKgO/kQ==
+X-Proofpoint-GUID: wvXnOcw3yMUp1B6tzhXcaLeWOiadoVVq
+X-Proofpoint-Spam-Info: AW1haW4tMjYwNjI1MDEwNiBTYWx0ZWRfX5WTv3XNCjeaX
+ XWbm5MNpKHuDvG/Osihk8fpDtuOHgfjHbGB1d9NRUciwmJNDjKuYBDDk9c7lo/6UdcOk5W7Cf+S
+ Z0HOr4EJV4gTnnP/yPdhXRY0RbBqaa0=
+X-Authority-Analysis: v=2.4 cv=I/lVgtgg c=1 sm=1 tr=0 ts=6a3d21dc cx=c_pps
+ a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
+ a=FelO9ux0wxsA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
+ a=RzCfie-kr_QcCd8fBx8p:22 a=-j2Td5Va5la4C7oUbE8A:9
+X-Proofpoint-ORIG-GUID: axG6r6divsSaBiTKZElGReQERRgE4s27
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
+ definitions=2026-06-25_01,2026-06-24_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ lowpriorityscore=0 spamscore=0 phishscore=0 clxscore=1015 priorityscore=1501
+ adultscore=0 impostorscore=0 bulkscore=0 suspectscore=0 malwarescore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2606250106
 
-On Thu, 25 Jun 2026, Steven Rostedt <rostedt@kernel.org> wrote:
-> Remove trace_printk.h by creating a trace_controls.h for those places that
-> need access to tracing prototypes like tracing_off() and for the places that
-> need trace_printk() directly, to have it included directly.
->
-> Changse since v3: https://lore.kernel.org/all/20260624081806.120105649@kernel.org/
->
-> - Always include trace_controls.h in rcu.h (kernel test robot)
->
->   There are other configs that may include tracing_off() in rcu.h besides
->   the one that had the include of trace_controls.h. Just always include
->   it in that header to be safe.
->
-> Steven Rostedt (2):
->       tracing: Move non-trace_printk prototypes into trace_controls.h
->       tracing: Remove trace_printk.h from kernel.h
->
-> ----
->  arch/powerpc/kvm/book3s_xics.c         |  1 +
->  arch/powerpc/xmon/xmon.c               |  1 +
->  arch/s390/kernel/ipl.c                 |  1 +
->  arch/s390/kernel/machine_kexec.c       |  1 +
->  drivers/gpu/drm/i915/gt/intel_gtt.h    |  1 +
->  drivers/gpu/drm/i915/i915_gem.h        |  2 ++
+Hi all,
 
-For the i915 parts,
+This series fixes issues in the hugetlb and KSM MM selftest categories
+that can report failures when the prerequisites for the tests are not
+satisfied.
 
-Acked-by: Jani Nikula <jani.nikula@intel.com>
+Patch 1 updates the hugetlb selftest helpers to handle -EINVAL when
+attempting to configure gigantic HugeTLB pages via nr_hugepages. 
+PowerPC hash MMU pSeries systems expose gigantic hugepage sizes 
+but do not allow runtime allocation of such pages,
+causing the sysfs write to fail. Handle this case gracefully and
+continue running the test instead of aborting.
 
-for merging via whichever tree.
+Patch 2 fixes the KSM NUMA merge test on systems with memoryless NUMA
+nodes. The test currently relies on the number of configured NUMA nodes
+and may attempt allocations on nodes that have no memory, resulting in
+spurious failures. Count only NUMA nodes that contain memory and skip
+the test when fewer than two such nodes are available.
 
->  drivers/hwtracing/stm/dummy_stm.c      |  1 +
->  drivers/infiniband/hw/hfi1/trace_dbg.h |  1 +
->  drivers/tty/sysrq.c                    |  1 +
->  drivers/usb/early/xhci-dbc.c           |  1 +
->  fs/ext4/inline.c                       |  1 +
->  include/linux/ftrace.h                 |  2 ++
->  include/linux/kernel.h                 |  1 -
->  include/linux/sunrpc/debug.h           |  1 +
->  include/linux/trace_controls.h         | 54 ++++++++++++++++++++++++++++++++
->  include/linux/trace_printk.h           | 56 ++--------------------------------
->  kernel/debug/debug_core.c              |  1 +
->  kernel/panic.c                         |  1 +
->  kernel/rcu/rcu.h                       |  1 +
->  kernel/rcu/rcutorture.c                |  1 +
->  kernel/trace/ring_buffer_benchmark.c   |  1 +
->  kernel/trace/trace.h                   |  1 +
->  kernel/trace/trace_benchmark.c         |  1 +
->  lib/sys_info.c                         |  1 +
->  samples/fprobe/fprobe_example.c        |  1 +
->  samples/ftrace/ftrace-direct-too.c     |  1 -
->  samples/trace_printk/trace-printk.c    |  1 +
->  27 files changed, 82 insertions(+), 55 deletions(-)
->  create mode 100644 include/linux/trace_controls.h
+These changes improve handling of unsupported test configurations and
+unmet test prerequisites, avoiding spurious failures.
+
+Thanks,
+Sayali
+
+Sayali Patil (2):
+  selftests/mm: handle EINVAL when configuring gigantic hugepages
+  selftests/mm: fix ksm NUMA merge test for systems with memoryless NUMA
+    nodes
+
+ tools/testing/selftests/mm/ksm_tests.c | 26 ++++++++++++++++++--------
+ tools/testing/selftests/mm/vm_util.c   |  7 +++++++
+ 2 files changed, 25 insertions(+), 8 deletions(-)
 
 -- 
-Jani Nikula, Intel
+2.52.0
+
 
