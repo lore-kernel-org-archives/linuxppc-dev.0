@@ -1,51 +1,61 @@
-Return-Path: <linuxppc-dev+bounces-23026-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23027-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 82B0BC43327
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Jun 2026 14:31:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B0803C43458
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Jun 2026 14:35:28 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gmymW03Kdz2yYf;
-	Sat, 27 Jun 2026 00:31:55 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782484314;
-	cv=none; b=J3573gmPzlgCTcXzgfcOVSPxI1mmNs4tVKvpoOnrLhWrVVo893TR/MItj33Kgl0AydHw2bdSqlgFFCEQDfb0J9bRBWOYEPlxVdxECKyi4SnP9DbsgEmpK1pVsG2Q46Q61i9vMPS3uFjpCpZBpGOrTn7NlNlttqPWuZVmozz0Acm/qaRPr6ch9C1P/Rny+Q+CnutcwKWaMsnMLW9jlajCOpCp4miSSXQ9mNOKmJtWFxv3gPi80gCB2p5fwX9hbAvqRs8tmTJ0wYGFH7u6OPwE5Vaf12OAWZHzyUihV5oukuf/RPdHaMj2JmcECsG6jGl2+LfybeuW+KocdeC3Hc1J1g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gmyrb1nHwz2yYf;
+	Sat, 27 Jun 2026 00:35:27 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a12:4180:dc1:929::42"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782484527;
+	cv=none; b=ARLePCihm2wp54YE8VtxIEIDjYKsUn815IoVlXIyBLH57EtAOFadW+06qJbtWDi7SPj8+K1if4bn3y+K/FBk2WqaRZM7EVgFM9/IYwyjblrS1QWI8NfJbP227DhFjpwibvE2oWupFStnGfPD3f4oaCxkA5hfzyOVvVwFu257QBdsBHAT28TA+U4ixHi9vBLBjCSvnr24JtAToAxVFsVxdTpuKq58/BQu53XjzR2xcz7EJnh9s5p3W/A0MezHq1zpNG0OpZlcxOvvh3hQvzEX2Cv2exOS1O+yH2LxhcjqrF9xBjFhm31nCsytLWRYnfVGYnH5TtMh9ul5/z06sIOuYw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1782484314; c=relaxed/relaxed;
-	bh=i0wu8Q+145AvrvTbKuoqi8x8L/c1FZs+98nHo/LrncA=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=UoGQ4Vf+6GvVqT7zwOrixR5DHVmO76ujObOgaw3YryQ+WpGzh/fitFVdx/C2YBQgbCdc6dc5uvr3LStpTbU7UTcAPEC4onE2zu0DFfLyMAN6UmKEB/bciNer5MdGYGICbm5EZEpLcGORL53s0a8BNvVEWu8fPC+chvRugAvJExLWwv/WIuWj6QLhwzKGRpyvnl7AURL++Ry5UVGySbBMOcp0bZTl/cNv+Y5VSPHNmPpZmaU6cx15gaSk31NDgJ82t/gu9k6SW9su6nfbC+/W8+2UNB43frPjAp9rMwNzqnf6wHv8dudozJP+Vpv55F1arNVq74e3H/VJJ/yHWWxGbw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Fn1SIcXU; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1782484527; c=relaxed/relaxed;
+	bh=1WouP7coA/xMC5AsCpYgMU/VQAQ2GZ2Lo/C5DGW3ELY=;
+	h=Date:From:To:CC:Subject:In-Reply-To:References:Message-ID:
+	 MIME-Version:Content-Type; b=FhE+TdgNNFdiWDAl5DCf1Is+vfPRS+EKicjRt9f2cC40hnCHHBWmggbydchfRk8F5M5lTYlcWRdsFSmLGmnstCcEAPiQnQ/GCVd66B2ihNpVgU2JIrtlDB2nPTmPryrePHXQcUvWcxL8YIKspOO/6HcfxpaAEfjhzyDK73pEAWyHebOYzq2JypDW3itoBsyyR2Aso+goKOLLvTCy7TzfjzH3/vsaJOoIBaCGTAI7Bn6vDtK+8Hkt6Dzl+ELunIQ5WmUXNDup9REqNwnHC+Nh4eQBrMOYL94TjGhiAn3fDPQDWkgXUq2A31cgcymTa6IwuoXFOVXAWCPd/oq0bhYzAQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=grrlz.net; dkim=pass (1024-bit key; secure) header.d=grrlz.net header.i=@grrlz.net header.a=rsa-sha256 header.s=stigmate header.b=PP6sQgSr; dkim-atps=neutral; spf=pass (client-ip=2a12:4180:dc1:929::42; helo=latitanza.investici.org; envelope-from=include@grrlz.net; receiver=lists.ozlabs.org) smtp.mailfrom=grrlz.net
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=grrlz.net
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Fn1SIcXU;
+	dkim=pass (1024-bit key; secure) header.d=grrlz.net header.i=@grrlz.net header.a=rsa-sha256 header.s=stigmate header.b=PP6sQgSr;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=grrlz.net (client-ip=2a12:4180:dc1:929::42; helo=latitanza.investici.org; envelope-from=include@grrlz.net; receiver=lists.ozlabs.org)
+Received: from latitanza.investici.org (latitanza.investici.org [IPv6:2a12:4180:dc1:929::42])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gmymV1c65z2xn3
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Jun 2026 00:31:54 +1000 (AEST)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id EBF894148B;
-	Fri, 26 Jun 2026 14:31:51 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id DD02A1F000E9;
-	Fri, 26 Jun 2026 14:31:48 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1782484311;
-	bh=i0wu8Q+145AvrvTbKuoqi8x8L/c1FZs+98nHo/LrncA=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=Fn1SIcXUvaCc2WIKpXFJng++cv0dJioTlTBlat5BSRME4QAgFkka7Jc04AA17TrCa
-	 qI1TkECYX0juNllZKBq9kan+sZgIilcFAmgp+4D7cdZ8UZoENHSShJT2+55Y+EV+3J
-	 LVLELPV5GgszkctmNXzPFgxsylZD8+wsGeoxCxZeJTHlD3Adh4EYvAf8oHv3Rxzoed
-	 YgSwBX7k9dVjKANDZ+63FdSZAbOmI8gDnulKcLtInVHU5UjafDrKCRVPGE/0tVy+Bu
-	 EYvLQyV5yW34+CD521wlj194xfqlxaWrdvv6LE/Ynb3iB2ZpDb2S6y9FW3+RqXwLHJ
-	 BNU/XEj/izWBw==
-Message-ID: <17eecc4d-ae7b-4c32-9edc-d3b8e131549c@kernel.org>
-Date: Fri, 26 Jun 2026 16:31:47 +0200
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gmyrX2c2zz2xn3
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Jun 2026 00:35:22 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=grrlz.net;
+	s=stigmate; t=1782484518;
+	bh=1WouP7coA/xMC5AsCpYgMU/VQAQ2GZ2Lo/C5DGW3ELY=;
+	h=Date:From:To:CC:Subject:In-Reply-To:References:From;
+	b=PP6sQgSreAsE1hqONJ5G+8E2mrXCmCx8e1NwpUBo7JSXiXZCuqCHnKKrRVs+QYylB
+	 RJrCjh3509vuP5MQTp0kRtNvy2hYbfy6h2q57CLz/h9gGucSNLpYZJm+bWLKBXC0YU
+	 AGCilvAY9852EWXfK+r8wrBZ7+YOqqz4xrED0ALo=
+Received: from mx3.investici.org (unknown [127.0.0.1])
+	by latitanza.investici.org (Postfix) with ESMTP id 4gmyrQ1pkYzGpDk;
+	Fri, 26 Jun 2026 14:35:18 +0000 (UTC)
+Received: by mx3.investici.org (Postfix) id 4gmyrP6K8QzGpDg;
+	Fri, 26 Jun 2026 14:35:17 +0000 (UTC)
+Date: Fri, 26 Jun 2026 15:35:19 +0100
+From: Bradley Morgan <include@grrlz.net>
+To: Petr Mladek <pmladek@suse.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+ Feng Tang <feng.tang@linux.alibaba.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
+ Christophe Leroy <chleroy@kernel.org>,
+ Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Douglas Anderson <dianders@chromium.org>, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, stable@vger.kernel.org
+Subject: =?US-ASCII?Q?Re=3A_=5BPATCH_v3_4/4=5D_panic=3A_use_sys=5Finfo=5Fwi?=
+ =?US-ASCII?Q?th=5Ffilter=28=29_to_avoid_duplicate_backtraces?=
+In-Reply-To: <aj6MAxQKpLeK1Mp6@pathway.suse.cz>
+References: <20260625152558.7450-1-include@grrlz.net> <20260625152558.7450-5-include@grrlz.net> <aj5TNB8cRtMNTtIT@pathway.suse.cz> <aj5tFiwhRqPkAkqU@pathway.suse.cz> <85F6E30C-EB1B-4BAF-9204-5174FD066EE0@grrlz.net> <4CF5AE3F-D7ED-47F8-A920-61D0AA078CF9@grrlz.net> <aj6MAxQKpLeK1Mp6@pathway.suse.cz>
+Message-ID: <688433ED-A478-43F7-9103-995398A6BF63@grrlz.net>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -59,77 +69,130 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] powerpc/syscall: Fix seccomp errno handling with
- GENERIC_ENTRY
-To: "Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com>,
- maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com,
- sshegde@linux.ibm.com, mkchauras@linux.ibm.com, kees@kernel.org,
- mark.rutland@arm.com, ryan.roberts@arm.com, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Cc: =?UTF-8?Q?Michal_Such=C3=A1nek?= <msuchanek@suse.de>
-References: <20260624171520.772408-1-mkchauras@gmail.com>
-Content-Language: fr-FR
-From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-In-Reply-To: <20260624171520.772408-1-mkchauras@gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain;
+ charset=utf-8
 Content-Transfer-Encoding: 8bit
 
+On June 26, 2026 3:26:11 PM GMT+01:00, Petr Mladek <pmladek@suse.com>
+wrote:
+>On Fri 2026-06-26 13:32:38, Bradley Morgan wrote:
+>> On June 26, 2026 1:17:13 PM GMT+01:00, Bradley Morgan
+><include@grrlz.net>
+>> wrote:
+>> >On June 26, 2026 1:14:14 PM GMT+01:00, Petr Mladek <pmladek@suse.com>
+>> >wrote:
+>> >>On Fri 2026-06-26 12:23:50, Petr Mladek wrote:
+>> >>> On Thu 2026-06-25 15:25:58, Bradley Morgan wrote:
+>> >>> But it all becomes very hairy. We have several levels:
+>> >>> 
+>> >>>    + watchdog-all_bt-specific option, e.g.
+>> >>sysctl_hardlockup_all_cpu_backtrace
+>> >>> 
+>> >>>    + watchdog-specific si_info preferences, e.g. hardlockup_si_mask
+>> >>> 
+>> >>>    + panic-specific si_info: panic_print
+>> >>> 
+>> >>>    + universal fallback for any layer: kernel_si_info
+>> >>> 
+>> >>> Now, we try to check all these variables back and forth to
+>> >>> trigger all backtraces or to avoid triggering them.
+>> >>> And it clearly does not work well and the code is more and more
+>> >>> hairy.
+>> >>> 
+>> >>> I think about another approach. The word "waterfall" comes to my
+>mind.
+>> >>> Instead of checking all the settings back and forth, let's process
+>> >>> each setting one by one and just remember what has been done and
+>> >>> skip this in the next level.
+>> >>> 
+>> >>> All the si_info actions seems to dump a global system state.
+>> >>> So, it would make sense to remember the state in a global variable
+>> >>> even when it might be modified by more CPUs in parallel.
+>> >>> 
+>> Hmm.. new idea 
+>> 
+>> kernel/dump_filter.c ?
+>> 
+>> What this file could do is to handle a generic lockup state machine
+>> so any subsystem can log what it already dumped?
+>> 
+>> I know it may bloat, but it's better then cramming fixes in.
+>
+>I am not sure what exactly you would like to achieve but it sounds
+>a bit scary ;-)
+>
+>Anyway, we should not synchronize the watchdog reports against
+>each other, definitely. They are running in non-compatible contexts
+>(task vs interrupt vs NMI). Also we should not add any locking
+>because they usually print something when the system has enough
+>troubles.
+>
+>Also I think that it is not worth preventing duplicated backtraces
+>or reports from a single CPU. IMHO, it is not a big problem
+>in practice.
+>
+>So, we are down to large reports, like backtraces from all CPUs,
+>timers, locks, ... which are handled by sys_info(). So, I think
+>that it should be enough to handle this inside the sys_info() API.
+>
+>I do not want to say that my proposal was the best solution.
+>I am sure that there are better ones. But we need to consider
+>the gain vs. complexity.
+>
+>Honestly, I am already a bit scared by the complexity which
+>we the sys_info() API added. And it is hard to imagine that
+>adding another API would make it easier. But I might be wrong.
+>
+>Instead, it might make sense to integrate the conflicting
+>subsystem-specific calls under the sys_info() API.
+>I mean that, for example watchdog_hardlockup_check() won't
+>call trigger_allbutcpu_cpu_backtrace() directly but
+>it would call it via sys_info() API so that sys_info()
+>could keep track of it. Something like:
+>
+>void sys_info_allbutcpu_bt(int cpu)
+>{
+>	trigger_allbutcpu_cpu_backtrace(cpu);
+>	/*
+>	 * The caller likely printed backtrace of the given @cpu
+>	 * on its own. Prevent duplicate backtraces from all
+>	 * CPUs with potential next sys_info() call.
+>	 */
+>	sys_info_done(SYS_INFO_ALL_BT);
+>}
+>
+>But I am not sure if it is really easier to follow
+>than calling sys_info_done() from the watchdog code.
+>
+>Some watchdogs try to optimize the output and print backtraces
+>only from CPUs which are relevant for the given lockup.
+>We should keep the logic for selecting the set of CPUs
+>in the watchdog code. We just need to solve how to elegantly
+>make sys_info() aware of it or at least about the more massive
+>reports.
+>
+>Anyway, I would prefer to keep it simple until we see some problems
+>in practice.
+>
+>Best Regards,
+>Petr
+>
 
 
-Le 24/06/2026 à 19:15, Mukesh Kumar Chaurasiya (IBM) a écrit :
-> After enabling GENERIC_ENTRY on PowerPC, seccomp filters using
-> SCMP_ACT_ERRNO without an explicit errnoRet value return ENOSYS
-> (Function not implemented) instead of the expected EPERM (Operation
-> not permitted).
-> 
-> The issue occurs in system_call_exception() when syscall_enter_from_user_mode()
-> returns -1 to indicate the syscall should be skipped (e.g., blocked by seccomp).
-> The current code treats this -1 as a syscall number and compares it against
-> NR_syscalls. Since -1 (when cast to unsigned long) is greater than NR_syscalls,
-> the code incorrectly returns -ENOSYS, overwriting the errno that seccomp
-> already set via syscall_set_return_value().
-> 
-> The generic entry code in syscall_trace_enter() calls __secure_computing(),
-> which sets the appropriate errno in regs->gpr[3] and returns -1 to signal
-> that the syscall should be skipped. However, the PowerPC syscall handler
-> was not checking for this -1 return value before validating the syscall
-> number.
-> 
-> Fix this by explicitly checking if syscall_enter_from_user_mode() returns
-> -1 and returning the value already set in regs->gpr[3] (the errno from
-> seccomp) before performing the syscall number validation.
-> 
-> This aligns PowerPC's behavior with other architectures using GENERIC_ENTRY
-> and restores correct seccomp errno handling.
-> 
-> Fixes: bee25f97ad24 ("powerpc: Enable GENERIC_ENTRY feature")
-> Reported-by: Michal Suchánek <msuchanek@suse.de>
+I understand it's scary. To make a new file in the first place.
 
-Closes: https://lore.kernel.org/all/ajpp-_XnbF3UTM_E@kunlun.suse.cz/
+But I was a bit vague of what I wanted, and I'm sorry.
 
-> Signed-off-by: Mukesh Kumar Chaurasiya (IBM) <mkchauras@gmail.com>
-> ---
->   arch/powerpc/kernel/syscall.c | 4 ++++
->   1 file changed, 4 insertions(+)
-> 
-> diff --git a/arch/powerpc/kernel/syscall.c b/arch/powerpc/kernel/syscall.c
-> index a9da2af6efa8..5b58c8d396c8 100644
-> --- a/arch/powerpc/kernel/syscall.c
-> +++ b/arch/powerpc/kernel/syscall.c
-> @@ -22,6 +22,10 @@ notrace long system_call_exception(struct pt_regs *regs, unsigned long r0)
->   	add_random_kstack_offset();
->   	r0 = syscall_enter_from_user_mode(regs, r0);
->   
-> +	/* Seccomp or ptrace may have set return value, skip syscall */
-> +	if (unlikely(r0 == -1L))
+So, the reason why I'd suggest a new file, is because if any subsystem
+Theoretically bypasses sys_info to log a lockup, this completely misses
+the filter and duplicates the dump
 
-Is it really needed to add the L after 1 ?
+My file would act as a generic lockless state machine that any
+subsystem can update regardless of how they dump logs.
 
-> +		return regs->gpr[3];
-> +
->   	if (unlikely(r0 >= NR_syscalls)) {
->   		if (unlikely(trap_is_unsupported_scv(regs))) {
->   			/* Unsupported scv vector */
+If you have any questions, feel absolutely free to ask! :)
 
+Discussion is a way to make everyone happy!
+
+Thanks!
 
