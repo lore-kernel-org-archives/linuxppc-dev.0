@@ -1,95 +1,92 @@
-Return-Path: <linuxppc-dev+bounces-23013-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23014-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B61ECCD4F26
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Jun 2026 10:18:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6BD3BCD4F26
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Jun 2026 10:23:57 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gms7k2bfZz2yYd;
-	Fri, 26 Jun 2026 20:18:10 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::1332" arc.chain=google.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782469090;
-	cv=pass; b=Mv+z38cat6FqUuHiFPxY7uIb6IvMwZH+05WFarOKEnaAsWFoNDzu2hyqCERjtS372g8eQBcNU+ClGf8d33vg5QmxtZOMDPTNfDn6dIZ/SH3H6LYzVOrHEYgTG181sFtdyfOSgwC1nx2IZasitH7x/q4vy4Osc5I2TPHtPtMKSMXqOXLdpxYXvAK6RO5uJw5DQuqju4mBHn6tNOzguY3NF4y+dpj6zDW53vJVQD86g+o9gbugB4GcXhxvN6Rg8BwrBHT5z2O6IztkatR+Ulmf3Ob9fKvf2iuUeSvTCX29JYsn8ANcfcfKH0L0CjUm1etFpQBKkTRn63vA/CR9Q0m7HA==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1782469090; c=relaxed/relaxed;
-	bh=OwEemPqInwbSVk9dzdDs5pHQn5Viy4wnF3S49Fh17/k=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=R6zrAHSkAdT+P76qj138a9tpe/upVo9oCvStvNG/CluMaCTMbvwSKDpbIwWGnHKE6f0GXqxJEaDcK9jsVDrRzc+A5D/0PFgR3+/ndS8tREtcOyEZQA7WhvkiqEMnIyxLBHl+LmJksqjBexGXD7k7NrpPWW6DDdj6+oJlg0RagdYDcDsWB7jxi0Io5aTFEknHdEA91mHiEsS/QHvvvvc6VuN8r2xdpK3b9zbFKJp+1pZkGpYjJYoGhdDWv9XlcBfqa5PGpnHH7KvPFazI8L8SZLa/FsxF64k2ssDLh5e0213IUxsB0qZYGADz5pThmOBjgxwOE8gJ3aHJe7MPsTrZ4g==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=ou/S6YD3; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1332; helo=mail-dy1-x1332.google.com; envelope-from=miguel.ojeda.sandonis@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gmsGM5dyXz2yYf;
+	Fri, 26 Jun 2026 20:23:55 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::430"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782469435;
+	cv=none; b=h9ncsdOUcUfcnPeu1JitgTyEqisg1Eb2NY7JbNkqMQoYBsE9bbI8sqrqE9Y/dFp7jlf//jjt3fdq8vLiDdwcqFCEpjoCZR5rqHnfnKndi9RJvoISmbyxY+16HdjdUwMm6G1so/79DEswQUZnICa809Df6t0wTEYqvROwu29JhJfVYteUpnthdxix3qDgVt4eyRE/1Nmqrb/xo8VVkJcZteeXJPliEud6v6kjQmcruRGLfJhAWVV4oik3IGvXOdVhlVG6w9FZ+FxTL0DRZ07PQQNTor4PH+WYEPNUCtpbvkK42hMsoIN5ksn4VNdafJzZr0Jz+dHNAvNM4+Ou7pSr5Q==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1782469435; c=relaxed/relaxed;
+	bh=eLFZTGPtRiE8UPhqU4UMjkuV0PbJHe/HCNgoSE+benw=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=TdpqA+Wn/eLP4MCss6Y/iVOPFnnVF9zCYyfUc681YLN7jMJ65gbUDqT/zcSDg1TxEaLldXgyEi10mRATShzWopfPwZhTgWArf1JBYM8ub6X5WN0ujIWyWzmLR8kqnj0UX0Yqiassq5uzPfnByKNXGROsQRa7fEhn2SUdn9zUNbRSV7OjH/WD2dL0FulXGyhPm8yRpwWAWcXxl1jDI+Vx9j/EshOSrizqA9B+HVpKefG01MHBiInxuV7vpbDWmQQCKGTwpJZWVeqB16brc8lT02me9JmUCSmazGoqmjJDqsbqGZP03VcSCmJTGLvYC17fK211OczuZWTRIAVJ11QhXg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com; dkim=pass (2048-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=google header.b=REE13fGZ; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::430; helo=mail-wr1-x430.google.com; envelope-from=pmladek@suse.com; receiver=lists.ozlabs.org) smtp.mailfrom=suse.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=ou/S6YD3;
+	dkim=pass (2048-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=google header.b=REE13fGZ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1332; helo=mail-dy1-x1332.google.com; envelope-from=miguel.ojeda.sandonis@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-dy1-x1332.google.com (mail-dy1-x1332.google.com [IPv6:2607:f8b0:4864:20::1332])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.com (client-ip=2a00:1450:4864:20::430; helo=mail-wr1-x430.google.com; envelope-from=pmladek@suse.com; receiver=lists.ozlabs.org)
+Received: from mail-wr1-x430.google.com (mail-wr1-x430.google.com [IPv6:2a00:1450:4864:20::430])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gms7h6CBfz2yVv
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jun 2026 20:18:07 +1000 (AEST)
-Received: by mail-dy1-x1332.google.com with SMTP id 5a478bee46e88-30bca8ef052so51054eec.1
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jun 2026 03:18:07 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1782469084; cv=none;
-        d=google.com; s=arc-20260327;
-        b=Q3A9zHJR0dxcCmNMPcu+Cmvw6W9K4exML45s+YOkGbLd94YE+hbhVUnpMnyf3CO2rY
-         jMqMFtnRnYgcTb0E/xn10QsJnrTrd5UxSY95lTHbg92r9GQLngiLWKW4/UvRyeUCsL1n
-         PQ+y1J7Pv3NUCfCq56DSVmd7dh+hMGVyCqD1hjw/SftoM6X3QHMkHNL0nJdsxjmndfTF
-         0nUPNP03Qi8lpTd0cqEXit1oOzH5p6GN1+n+MoQWgzttYafEnY+qv/+8ahytHmzzfj29
-         AdVItmIMolSDwPpW80Cvrp6MtKjd9b9kqyI4tveSwM5p9F9ZgGEZQD8jiNLB9/1JDqnS
-         TTUA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=OwEemPqInwbSVk9dzdDs5pHQn5Viy4wnF3S49Fh17/k=;
-        fh=YFQCFHXy4odPUBqQTAa8hRn54AZbTghI3mQ2PJOG0co=;
-        b=bzG9lLuaHLcQxC6A7yo5SLsDwR1wawIrFnDkw3X5deZXwx31RaT8MgeT/ILoo0Y9TL
-         JYzyt5TTth6ezAUqYU4IzgwT4as2rZ+4gIrbXzQiGDN7j42cWsDSMZpD0ZWj03et5xJG
-         gGAsnNLZRjNKN4s51d6Jb62OsD9qSll4Vel1hTxevEX46kORXj2vg/loZ+0ZR4TpFGxU
-         vKGfod8oiz1NmDMn8TAhVfUU3ML2MEnWN0b/YESmeqf9W/hLKsPqoipAz6og/3LoiZs8
-         9/H/PJgnjmEA7vfGTBekk3qMtSDiXLiCFQML2ji1LSbi8C9wI/mC5/ZshOXIDTC+UDd2
-         wfWg==;
-        darn=lists.ozlabs.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gmsGL1ytRz2yYd
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jun 2026 20:23:53 +1000 (AEST)
+Received: by mail-wr1-x430.google.com with SMTP id ffacd0b85a97d-461edb387ddso776007f8f.3
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jun 2026 03:23:53 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1782469084; x=1783073884; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=OwEemPqInwbSVk9dzdDs5pHQn5Viy4wnF3S49Fh17/k=;
-        b=ou/S6YD31w6VpITtsjRGhtNxcUKqfkTlzX4CDdCEPxKlBcjoTzezkk02fM3qBxj995
-         k5+kwaiB6V4r34oS/l3FCQenbUTnITsFMA4cFcpwgjVHlVyMxij468joguBJAe3dMysj
-         ihwhxSqKD0oafE3KvV9GW0Td5KnEaT8lZ/SHiO/IPnGe3pvzr9mRzixlRvTiVmRbqgPh
-         IVXgR2UeeIhFpQ14exWFOa4zvzok7HqGYoc5UdC7FMkaXWu0bKw49LjJeaoRHhlCEaaV
-         5tMsKFCW3JC/PH0oxtJeaWIzuPj18UYgWg4k5OSTMDPNdQL163QKRScDr9ghStb3Pp46
-         jNQw==
+        d=suse.com; s=google; t=1782469430; x=1783074230; darn=lists.ozlabs.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=eLFZTGPtRiE8UPhqU4UMjkuV0PbJHe/HCNgoSE+benw=;
+        b=REE13fGZOBy5KGqEytR+78rU0U8jVkShIx8+P3AhhpVPVZoY/vm/HKG3a4uwre9khe
+         E+4DJW0Eg0F+9G0vcwLc6KpVkSnJLRYYXDenGNYkyrUZtFFBKWKBuImm6o05tBkAtmIj
+         RAIHU0BDoxCr8hTsqaN3KnlQk0uERdu0WK07wApdhFUgyjc6uRAnju5HjFsBkvYlTpM6
+         PVvhReVvrsN5F6oRz2xfiNKuyl3h3cjCV45npzeFTPCupHIsC2lhnMw6Z3cWvCkEffuf
+         yRhHTthdRn1gHGCo+ys6ekibYVQru8sAmwrlrG5xjmIzDX3tMfFcQsxfFuVXu+3LvStp
+         d3dA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1782469084; x=1783073884;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=OwEemPqInwbSVk9dzdDs5pHQn5Viy4wnF3S49Fh17/k=;
-        b=gjQbWSrFcZRUJ9w7bPkmD4JGkT8sWg21mj6Mqgq/WTrimMkn09Yj2L93A5zcFUMYh2
-         sLj1TpSIA1g2d7Kq+GeFKOY6qHgFW/XaGivAiTc7465YtmhLHZiPCW0rhd9DGC1jjWXG
-         gW1zPfqZ8x3coJajcz0mjaIrTrWbUzShoNJPircIokVmdNKsE5SZrsyJE4HjCr26vfL9
-         0dangvOgcefoNAdGuSmlN1lYihJPG6tP9W8WpmJdxrVcmCY4vGs2Nci0w3NoyJMH4rit
-         Z2+IoKlclwIDoWzxtN7J5Yla1MpIuJXHXFLXOpayxT+LDmBefeOcThlr5iQ+J9X0swzn
-         kyrw==
-X-Forwarded-Encrypted: i=1; AHgh+RqGITXaujnywDE1+biK8xheggTwc2rv9jZLIyEHKZhKnQFVj3s5c1zlM1FGgHF5n4gr3oAp3v+gHL6A0+c=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yw/ST6ihQ3Kd3oAFnonXJnOiAQlySp+hLZDLhIdltKCpTCzTZiI
-	KlD0zRyTEz70UxDGfcZf8tJU9K4U4+yxU15RFjCbbKZBtGqXvtdzatNfNB6URF7M0SU0SLX34tK
-	jwKIlhxdoohrE92fgm/JAwdNrLT84QhU=
-X-Gm-Gg: AfdE7ck1con6Qo0nfbnefEf56FmjLUsy7rHl4hwrY93a/EpVkBMRyz+Xi658rCA8Ue0
-	V+ZOcHvfSXpYS4gQTY0z5v65uLthVU19JH03sCsSdJKR6tg3HlQZ57QkaMPO0grOpyQ6XSSRVr2
-	rSYXyayX8vEFR/yQ7ecA7Oju19w9/1ioYydF5xFSG1QkfGdgJmK7nhdBKUTCXM0EPcao1YJuPOr
-	lU30OCeZTsrJ2AtsGk971hcSZ2pfGbowJgtCLRdOmHiTNMKmxrfIiLG+Fz4KdVNetvsiawkHHmm
-	CMFa19T45Fdl2cINzuSDpfliaM9D1Qm3+oh7XR2sPvslEWVz8zpCMYs11WaU5SeM/DYz12qpayR
-	KEcFJEBkNZsQ9
-X-Received: by 2002:a05:7300:e6c6:b0:2d5:9438:2a02 with SMTP id
- 5a478bee46e88-30c84ad9f55mr3026758eec.1.1782469084327; Fri, 26 Jun 2026
- 03:18:04 -0700 (PDT)
+        d=1e100.net; s=20251104; t=1782469430; x=1783074230;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=eLFZTGPtRiE8UPhqU4UMjkuV0PbJHe/HCNgoSE+benw=;
+        b=UfFICo4koUwI6I9IzbANhdAekMhnNNCcgaWRzQV46CrdmHSBlqax60JHDfofkx1xRj
+         C1k0y5y8rpE9c9gZgZUC4D0o18qpJv6GJWIjM5VshjAFeyNbjSzh5RwM00VPmTJkXEvC
+         gYCHHBYAweGvspQTNP/4UZgAJ3dLuipD789YXZ6wXRYIPxXnKfFFcY4TgigJZsQ8SS62
+         PF9/31wajdiyA5L6ZfROvzs5Wj62twV+8nG82Egiscx+lF7/w7wbGyTzigrbSwD4Nhbk
+         fCvFnIo4tb5NvIYOXX+KZs0SajDdNoyL8mZmUWYH73QxFGOBctZ8tpEuVp0EqeMdJ7jE
+         pBDw==
+X-Forwarded-Encrypted: i=1; AHgh+RrThiPsZlq5HLKDJqGHWwFbKXUvpa/NBFaHNWCPxuib8M+UOei6GiMS/7sDQyDPqsYhzvaf1Iw8N4urFu8=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yzv+ibjUXBJOeO9NLyBUncvoy3YZhXeHeHNRHRYHY66otdtXKwD
+	01kfYOYGXWO+8xStyZFjKtVfM0Y1MsgHL0uYP36NTVUF5jFb03Rk5s8kKq/jqIJ6L1M=
+X-Gm-Gg: AfdE7cnsY2EuVOHZ34MUM5acl2y4Tn3IQC3Kb2p3+IXjE4hHeQaf+l0wDUE3ny9DxLY
+	RKkVde8N9nLs2JI8DsusbrOLyqsw5KZW48T+vXXn17eg0aAJb55toG+we4ka816pmYzkryngUNx
+	8O13wOO1bHT9qL4JBlJ7NFG3i+uNHaRPjEMpDYIK/XadD0Z6rFzDbrGJB+TnpyAjQZaKxjiaByq
+	LjhSFX1uSrqzZrBH63yoXHkMz4fsQhicnyD9WTTOqUDhSULLZMhDGnrwFH4aPphAcUKRMAAxK0k
+	4b88if55ZVYBsVDW/l7NJgzF/ccDpJIEmHUwdwYHRNXxtWc0uhzhzlWvR6kb9qZ4eDzjg1Tk/7w
+	uEa+9pUtP6G8FZNZQxr1ERzN/1aNnmlnjULixFO2VGr2Md6MTadkyXIfTAtWmQlTvyFdU3ZNt+p
+	colezPqwhUCbyuFGY=
+X-Received: by 2002:a05:6000:4204:b0:460:30bd:4dca with SMTP id ffacd0b85a97d-46dc12e056fmr9792387f8f.30.1782469430521;
+        Fri, 26 Jun 2026 03:23:50 -0700 (PDT)
+Received: from pathway.suse.cz ([176.114.240.130])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-46dcbac0c9dsm13650525f8f.19.2026.06.26.03.23.49
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 26 Jun 2026 03:23:50 -0700 (PDT)
+Date: Fri, 26 Jun 2026 12:23:48 +0200
+From: Petr Mladek <pmladek@suse.com>
+To: Bradley Morgan <include@grrlz.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+	Feng Tang <feng.tang@linux.alibaba.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Christophe Leroy <chleroy@kernel.org>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Douglas Anderson <dianders@chromium.org>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+	stable@vger.kernel.org
+Subject: Re: [PATCH v3 4/4] panic: use sys_info_with_filter() to avoid
+ duplicate backtraces
+Message-ID: <aj5TNB8cRtMNTtIT@pathway.suse.cz>
+References: <20260625152558.7450-1-include@grrlz.net>
+ <20260625152558.7450-5-include@grrlz.net>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -103,52 +100,88 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20260520064630.1785283-1-mkchauras@gmail.com> <20260520064630.1785283-5-mkchauras@gmail.com>
- <CANiq72nPOMkZXpMpwTLFg4xjFfmyf_O_x2FN_nrNBsxeNu178Q@mail.gmail.com>
- <ahVb4k-2rC4EYZF9@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com> <aj4gAdy2siBxONpo@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
-In-Reply-To: <aj4gAdy2siBxONpo@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
-From: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
-Date: Fri, 26 Jun 2026 12:17:50 +0200
-X-Gm-Features: AVVi8Ccrx0kRQsHQymdfhdPBE1X5e4EB1kia4xesGjoItezYgW-_bvi72bKccEY
-Message-ID: <CANiq72=EVsTFkQK3LWrT2Gs5UKKViemGkv1WuitY6NOEtvcsNg@mail.gmail.com>
-Subject: Re: [PATCH V16 4/7] rust/powerpc: Set min rustc version for powerpc
-To: Mukesh Kumar Chaurasiya <mkchauras@gmail.com>
-Cc: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com, 
-	chleroy@kernel.org, peterz@infradead.org, jpoimboe@kernel.org, 
-	jbaron@akamai.com, aliceryhl@google.com, rostedt@goodmis.org, ardb@kernel.org, 
-	ojeda@kernel.org, boqun@kernel.org, gary@garyguo.net, 
-	bjorn3_gh@protonmail.com, lossin@kernel.org, a.hindborg@kernel.org, 
-	tmgross@umich.edu, dakr@kernel.org, nathan@kernel.org, 
-	nick.desaulniers+lkml@gmail.com, morbo@google.com, justinstitt@google.com, 
-	daniel.almeida@collabora.com, acourbot@nvidia.com, fujita.tomonori@gmail.com, 
-	gregkh@linuxfoundation.org, prafulrai522@gmail.com, tamird@kernel.org, 
-	kees@kernel.org, lyude@redhat.com, airlied@gmail.com, 
-	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
-	rust-for-linux@vger.kernel.org, llvm@lists.linux.dev
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260625152558.7450-5-include@grrlz.net>
 
-On Fri, Jun 26, 2026 at 8:50=E2=80=AFAM Mukesh Kumar Chaurasiya
-<mkchauras@gmail.com> wrote:
->
-> This corresponds to a floating point instruction. Although we have
-> disabled fpu, vsx and altivec we are still generating these. Seems like
-> we have some issue with the rustc here. I didn't dive deeper into this.
->
-> Is it ok if we keep 1.95 as base for powerpc64le?
+On Thu 2026-06-25 15:25:58, Bradley Morgan wrote:
+> panic_other_cpus_shutdown() handles SYS_INFO_ALL_BT before stopping the
+> other CPUs. Do not ask sys_info() to handle that bit again later in the
+> panic path.
+> 
+> Use sys_info_with_filter() so panic_print=all_bt does not request more
+> output after the CPUs are stopped.
+> 
+> Fixes: a9af76a78760 ("watchdog: add sys_info sysctls to dump sys info on system lockup")
+> Cc: stable@vger.kernel.org
+> Signed-off-by: Bradley Morgan <include@grrlz.net>
+> ---
+>  kernel/panic.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/kernel/panic.c b/kernel/panic.c
+> index 213725b612aa..eb842823df61 100644
+> --- a/kernel/panic.c
+> +++ b/kernel/panic.c
+> @@ -680,7 +680,7 @@ void vpanic(const char *fmt, va_list args)
+>  	 */
+>  	atomic_notifier_call_chain(&panic_notifier_list, 0, buf);
+>  
+> -	sys_info(panic_print);
+> +	sys_info_with_filter(panic_print, SYS_INFO_ALL_BT);
 
-It may be that it is generated but unused (we have that issue
-elsewhere -- see e.g. `rust/compiler_builtins.rs`).
+Hmm, this prevents printing backtraces from all CPUs completely.
+But what if they were not printed?
 
-Having said that, if 1.95 is fine for the powerpc arch maintainers,
-then that is fine (s390 also used a higher minimum -- please see the
-recent change in `scripts/min-tool-version.sh`).
+They might be printed by:
 
-But please try to bisect upstream Rust to see where the change
-happened, i.e. what is the root cause? e.g. `core` changes, `rustc`
-changes, built-in LLVM changes... It could be that it is not tied to
-the `rustc` version but LLVM's.
+static void panic_other_cpus_shutdown(bool crash_kexec)
+{
+	if (panic_print & SYS_INFO_ALL_BT)
+		panic_trigger_all_cpu_backtrace();
 
-Cheers,
-Miguel
+[...]
+}
+
+But it checks only "panic_print" variable. It won't do anything
+when (panic_print == 0).
+
+In this case, we might still want to print the backraces when
+SYS_INFO_ALL_BT is set in kernel_si_info.
+
+>  	kmsg_dump_desc(KMSG_DUMP_PANIC, buf);
+
+Of course, we might fix panic_other_cpus_shutdown() to check also
+kernel_si_info.
+
+But it all becomes very hairy. We have several levels:
+
+   + watchdog-all_bt-specific option, e.g. sysctl_hardlockup_all_cpu_backtrace
+
+   + watchdog-specific si_info preferences, e.g. hardlockup_si_mask
+
+   + panic-specific si_info: panic_print
+
+   + universal fallback for any layer: kernel_si_info
+
+Now, we try to check all these variables back and forth to
+trigger all backtraces or to avoid triggering them.
+And it clearly does not work well and the code is more and more
+hairy.
+
+I think about another approach. The word "waterfall" comes to my mind.
+Instead of checking all the settings back and forth, let's process
+each setting one by one and just remember what has been done and
+skip this in the next level.
+
+All the si_info actions seems to dump a global system state.
+So, it would make sense to remember the state in a global variable
+even when it might be modified by more CPUs in parallel.
+
+I am going to think more about it.
+
+Please, do not send v4 until the discussion settles!
+
+Best Regards,
+Petr
 
