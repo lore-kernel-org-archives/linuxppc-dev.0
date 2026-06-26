@@ -1,52 +1,52 @@
-Return-Path: <linuxppc-dev+bounces-23004-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23005-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 54C7CCDE013
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Jun 2026 08:21:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8339CCD4F26
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Jun 2026 08:21:57 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gmpY05vN4z2yfH;
-	Fri, 26 Jun 2026 18:21:24 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782462084;
-	cv=none; b=FGyeDGp+h7a38y3VxSXlK1Rj/7ga5DfcGhVrb2Uh2Z2dQ0R2qJKhfNceV5dcGg/cD3TSRYGaES4kjEnysvODN6b14+BouU+QCuh26weD1EDX+dwZXsJVmpSrOyL9nTVaFTY9RyJWOFTjEIwL8taUpBj7N5DNlLCnCsKx5B/MFXPpogbW0KaQrwgM8R0ODqiloDDAczCRkRSNFocEtK+fGUhCkXNcA8OCSyzoTMdHLeh/UY5s2AIHi+0ky6TiL0E9kn/nxRbkGz9U4ovj482h+sB656Lvn/QVvQnFLuRdYJksPhqs58MPod5c6Y9nZcAFeDkaRnVBaBGk45+4kHlp2A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gmpYc1Cbpz2yZ6;
+	Fri, 26 Jun 2026 18:21:56 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782462116;
+	cv=none; b=dHKE7dCkLybZCYrZcX8lYCa79cbMpMZU4pswewshrBk94kqleKwxc4+4FSL0a+cFedq7Ag9+azeJ6UQnTpGilyWMtkBvRmWz+Gzr3hkSfNVv5S5LwULs3d5ctpI2xgAdyRzlyljZS7jnqXkEgv4wEEe8YWt1Ji4upttuY0D9A/m6wYtsespVKjjytKt5SqUSXks2GcV5q4LM5f1mQA1IFYisN0hkV83CQKlcbwDTRNt0XGtH9Z7eRvke6EM2nUfjKB887sy32RpGuB+s3Fp/oSaSiMg2w+1dMHAUZYnLJ1PEO+Zx+a9K0jA+aPxYszKbBHNTefHEIxDKHRbGfT3Z9Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1782462084; c=relaxed/relaxed;
-	bh=cnDZkcdojzG6TP+7FyMqVMauu4QrpFoQrKFZui4fel0=;
+	t=1782462116; c=relaxed/relaxed;
+	bh=7N6xFs6HldNaJtHXB+1so7kMQ4CsatgFOfKvzUpfQ6c=;
 	h=Content-Type:MIME-Version:Subject:From:Message-Id:Date:References:
-	 In-Reply-To:To:Cc; b=Ais2pyYwcMw8EC04b2g5JpTSYTiZ3vhsgLTLV4pak+qrMeQnlWVSBx+AKJAHL2kj/K823gEqAiqhl2QSx50kvmC/6axdJwdkk07UeHxYErClZFluLzyyl5g7XNqCR0h3QLoQ8JfCdaUfoWkJghL2m1BV9PXCBf56rVBAeT/Fwrd+CWtfiYMzgAI8J4FsGytJViqzM0nnkILDG7iGBRUXUaDiZx+tE3RGHJrvy3S7YqrPCQQkmfrDDRGg10IppzedSKWNcNmrc+vTIYvhLonnMzvJddg7Rs8i/eMr0XlgHKpnvDc7M9DU+uTIXwvH+q2KQRDUpiREpriUcXq1w6T14g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=MC6yAmsd; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=patchwork-bot+linux-riscv@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:To:Cc; b=NpcYOQ62I51kSYhBMNUv1dH1LNtcpR0mAujGWBt9Cie1sHZR1xf8UOQAuRPPgTQz47SpzgcUfAveTarZ5FOf5JMnDmqChDlvyYShJRlodIp+tHvojH5qf9djts/Ei0zC+ESRHUcK1cdULPvkPRDlsh0r6jhaGmvWdttOmiao32UO1En+gG/4fCDrGiuAwu3xWlZCxb1yqM9QTFWKByiIhJBX42tTLP+T6t8P8pK08YokhCHN5SRMiAlG4n3bDuJKb+XdKnJQq/6xiGQk4lEaYd3aNE1DhI0YqqhFp37Dt1S06or72Ewei4EcVF0pe7x4w0OXVLOI0AjblgQ3E5LG0Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=DLkaMOoe; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=patchwork-bot+linux-riscv@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=MC6yAmsd;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=DLkaMOoe;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=patchwork-bot+linux-riscv@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=patchwork-bot+linux-riscv@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gmpY00Wcdz2yYd
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jun 2026 18:21:23 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gmpYb0QhTz2yVv;
+	Fri, 26 Jun 2026 18:21:55 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 047B640A8E;
-	Fri, 26 Jun 2026 08:21:22 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D3FFB1F00AC4;
-	Fri, 26 Jun 2026 08:21:21 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 085944430E;
+	Fri, 26 Jun 2026 08:21:53 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id DBDAC1F00A3A;
+	Fri, 26 Jun 2026 08:21:52 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1782462081;
-	bh=cnDZkcdojzG6TP+7FyMqVMauu4QrpFoQrKFZui4fel0=;
+	s=k20260515; t=1782462112;
+	bh=7N6xFs6HldNaJtHXB+1so7kMQ4CsatgFOfKvzUpfQ6c=;
 	h=Subject:From:Date:References:In-Reply-To:To:Cc;
-	b=MC6yAmsds/bx8R7anvknX1AQ8wYErykOAlLqPC3rBrW/haRJJv9chUhiwT+CvnTmN
-	 khK/Dcw19LSCUFchb8D/hw+DpMaTb1XpLahGVWuQ2ovAXgjD87gIQurL0gIl9+xHit
-	 ncTog7IyU918i0n0R2d/om837p9tvnVMwNZwfwlMdGa5QlmnH1j/rqWXUCSJ6gUh9Z
-	 brR2GYKjb1zdGevtCBdmugxCTe8YRqU7Ur91VQYGPcJyxomzPIKGl4smPb/Yxi36dG
-	 9lOJILFIUiOpBT1cUYSLvvKVEE9Xu8TR8Q7d0eK5LtRY1OrEVkIWnTXlTpm48x7ej4
-	 4HMiz7mE0JbVg==
+	b=DLkaMOoe7jjLq0zrWVM7g5T3weWBVn0GKvdUrsWL1NS6Qs/YGb/jSI/OCz0xvfzqS
+	 Qaym8bn+YQ7Yv3mFvqa3JZPMQyeTT1JkI61/DRV2mqoJOQ6RCZahCcrN/sZ0P41GxN
+	 lQMkVEyzffwbljfjI4cRAmJFH6TA/MXXocYqdJ0r2fyaFbY7MUFYbzOT2mQ1bO9ESQ
+	 aXENlZ4+KidZLyWpFEQCN/4TQ2SdvjPzYQw0gZqKyFHWnTN9MR5o7FqI9NLTieKhiJ
+	 eEE7hw/g70YQVjdOMlBaDUGyYwudw/LY4An0H/3ioGWkJoeS59H947CE7rYTKgUHWr
+	 baMoIKRFCt04w==
 Received: from [10.30.226.235] (localhost [IPv6:::1])
-	by aws-us-west-2-korg-oddjob-rhel9-1.codeaurora.org (Postfix) with ESMTP id 198C839389E8;
-	Fri, 26 Jun 2026 08:21:10 +0000 (UTC)
+	by aws-us-west-2-korg-oddjob-rhel9-1.codeaurora.org (Postfix) with ESMTP id 199D639389E8;
+	Fri, 26 Jun 2026 08:21:41 +0000 (UTC)
 Content-Type: text/plain; charset="utf-8"
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -62,84 +62,65 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-Subject: Re: [PATCH 01/19] btrfs: require at least 4 devices for RAID 6
+Subject: Re: [PATCH v5 0/9] driver core: Fix some race conditions
 From: patchwork-bot+linux-riscv@kernel.org
 Message-Id: 
- <178246206859.3816447.16178589769412306177.git-patchwork-notify@kernel.org>
-Date: Fri, 26 Jun 2026 08:21:08 +0000
-References: <20260512052230.2947683-2-hch@lst.de>
-In-Reply-To: <20260512052230.2947683-2-hch@lst.de>
-To: Christoph Hellwig <hch@lst.de>
-Cc: linux-riscv@lists.infradead.org, akpm@linux-foundation.org,
- catalin.marinas@arm.com, will@kernel.org, ardb@kernel.org,
- chenhuacai@kernel.org, kernel@xen0n.name, maddy@linux.ibm.com,
- mpe@ellerman.id.au, npiggin@gmail.com, chleroy@kernel.org, pjw@kernel.org,
- palmer@dabbelt.com, aou@eecs.berkeley.edu, alex@ghiti.fr, hca@linux.ibm.com,
- gor@linux.ibm.com, agordeev@linux.ibm.com, borntraeger@linux.ibm.com,
- svens@linux.ibm.com, tglx@kernel.org, mingo@redhat.com, bp@alien8.de,
- dave.hansen@linux.intel.com, x86@kernel.org, hpa@zytor.com,
- herbert@gondor.apana.org.au, dan.j.williams@intel.com, clm@fb.com,
- dsterba@suse.com, arnd@arndb.de, song@kernel.org, yukuai@fnnas.com,
- linan122@huawei.com, linux-kernel@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, loongarch@lists.linux.dev,
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
- linux-crypto@vger.kernel.org, linux-btrfs@vger.kernel.org,
- linux-arch@vger.kernel.org, linux-raid@vger.kernel.org
+ <178246209959.3816447.5329631417058038374.git-patchwork-notify@kernel.org>
+Date: Fri, 26 Jun 2026 08:21:39 +0000
+References: <20260406232444.3117516-1-dianders@chromium.org>
+In-Reply-To: <20260406232444.3117516-1-dianders@chromium.org>
+To: Doug Anderson <dianders@chromium.org>
+Cc: linux-riscv@lists.infradead.org, gregkh@linuxfoundation.org,
+ rafael@kernel.org, dakr@kernel.org, stern@rowland.harvard.edu, aik@ozlabs.ru,
+ johan@kernel.org, edumazet@google.com, leon@kernel.org, hch@lst.de,
+ robin.murphy@arm.com, maz@kernel.org, aleksander.lobakin@intel.com,
+ saravanak@kernel.org, akpm@linux-foundation.org, Frank.Li@kernel.org,
+ jgg@ziepe.ca, alex@ghiti.fr, alexander.stein@ew.tq-group.com,
+ andre.przywara@arm.com, andrew@codeconstruct.com.au, andrew@lunn.ch,
+ andriy.shevchenko@linux.intel.com, aou@eecs.berkeley.edu, ardb@kernel.org,
+ astewart@tektelic.com, bhelgaas@google.com, brgl@kernel.org,
+ broonie@kernel.org, catalin.marinas@arm.com, chleroy@kernel.org,
+ davem@davemloft.net, david@kernel.org, devicetree@vger.kernel.org,
+ dmaengine@vger.kernel.org, driver-core@lists.linux.dev, gbatra@linux.ibm.com,
+ gregory.clement@bootlin.com, hkallweit1@gmail.com, iommu@lists.linux.dev,
+ jirislaby@kernel.org, joel@jms.id.au, joro@8bytes.org, kees@kernel.org,
+ kevin.brodsky@arm.com, kuba@kernel.org, lenb@kernel.org, lgirdwood@gmail.com,
+ linux-acpi@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linux-aspeed@lists.ozlabs.org, linux-cxl@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-mips@vger.kernel.org, linux-mm@kvack.org,
+ linux-pci@vger.kernel.org, linux-serial@vger.kernel.org,
+ linux-snps-arc@lists.infradead.org, linux-usb@vger.kernel.org,
+ linux@armlinux.org.uk, linuxppc-dev@lists.ozlabs.org,
+ m.szyprowski@samsung.com, maddy@linux.ibm.com, mani@kernel.org,
+ miko.lenczewski@arm.com, mpe@ellerman.id.au, netdev@vger.kernel.org,
+ npiggin@gmail.com, osalvador@suse.de, oupton@kernel.org, pabeni@redhat.com,
+ palmer@dabbelt.com, peter.ujfalusi@gmail.com, peterz@infradead.org,
+ pjw@kernel.org, robh@kernel.org, sebastian.hesselbarth@gmail.com,
+ tglx@kernel.org, tsbogend@alpha.franken.de, vgupta@kernel.org,
+ vkoul@kernel.org, will@kernel.org, willy@infradead.org,
+ yangyicong@hisilicon.com, yeoreum.yun@arm.com
 
 Hello:
 
-This series was applied to riscv/linux.git (fixes)
-by Andrew Morton <akpm@linux-foundation.org>:
+This patch was applied to riscv/linux.git (fixes)
+by Danilo Krummrich <dakr@kernel.org>:
 
-On Tue, 12 May 2026 07:20:41 +0200 you wrote:
-> While the RAID6 algorithm could in theory support 3 devices by just
-> copying the data disk to the two parity disks, this version is not only
-> useless because it is a suboptimal version of 3-way mirroring, but also
-> broken with various crashes and incorrect parity generation in various
-> architecture-optimized implementations.  Disallow it similar to mdraid
-> which requires at least 4 devices for RAID 6.
+On Mon,  6 Apr 2026 16:22:53 -0700 you wrote:
+> The main goal of this series is to fix the observed bug talked about
+> in the first patch ("driver core: Don't let a device probe until it's
+> ready"). That patch fixes a problem that has been observed in the real
+> world and could land even if the rest of the patches are found
+> unacceptable or need to be spun.
+> 
+> That said, during patch review Danilo correctly pointed out that many
+> of the bitfield accesses in "struct device" are unsafe. I added a
+> bunch of patches in the series to address each one.
 > 
 > [...]
 
 Here is the summary with links:
-  - [01/19] btrfs: require at least 4 devices for RAID 6
-    (no matching commit)
-  - [02/19] raid6: turn the userspace test harness into a kunit test
-    (no matching commit)
-  - [03/19] raid6: remove __KERNEL__ ifdefs
-    https://git.kernel.org/riscv/c/3d6beb659ddf
-  - [04/19] raid6: move to lib/raid/
-    (no matching commit)
-  - [05/19] raid6: remove unused defines in pq.h
-    https://git.kernel.org/riscv/c/06d2a66fb7c0
-  - [06/19] raid6: remove raid6_get_zero_page
-    https://git.kernel.org/riscv/c/885d31423183
-  - [07/19] raid6: use named initializers for struct raid6_calls
-    https://git.kernel.org/riscv/c/7e91f76a9668
-  - [08/19] raid6: improve the public interface
-    (no matching commit)
-  - [09/19] raid6: hide internals
-    (no matching commit)
-  - [10/19] raid6: rework the init helpers
-    (no matching commit)
-  - [11/19] raid6: use static_call for gen_syndrom and xor_syndrom
-    https://git.kernel.org/riscv/c/10f4b8e2a164
-  - [12/19] raid6: use static_call for raid6_recov_2data and raid6_recov_datap
-    (no matching commit)
-  - [13/19] raid6: update top of file comments
-    https://git.kernel.org/riscv/c/30bf04bd13a5
-  - [14/19] raid6_kunit: use KUNIT_CASE_PARAM
-    https://git.kernel.org/riscv/c/2175395f76c3
-  - [15/19] raid6_kunit: dynamically allocate data buffers using vmalloc
-    https://git.kernel.org/riscv/c/d67c25712fe3
-  - [16/19] raid6_kunit: cleanup dataptr handling
-    https://git.kernel.org/riscv/c/562bcbfcb99b
-  - [17/19] raid6_kunit: randomize parameters and increase limits
-    (no matching commit)
-  - [18/19] raid6_kunit: randomize parameters and increase limits
-    (no matching commit)
-  - [19/19] raid6_kunit: randomize buffer alignment
-    https://git.kernel.org/riscv/c/8cf0a6c4bb9e
+  - [v5,7/9] driver core: Replace dev->dma_coherent with dev_dma_coherent()
+    https://git.kernel.org/riscv/c/3e2c1e213ac2
 
 You are awesome, thank you!
 -- 
