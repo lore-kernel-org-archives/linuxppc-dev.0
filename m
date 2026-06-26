@@ -1,53 +1,74 @@
-Return-Path: <linuxppc-dev+bounces-23005-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23006-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8339CCD4F26
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Jun 2026 08:21:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7CF1CCDE00E
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Jun 2026 08:51:32 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gmpYc1Cbpz2yZ6;
-	Fri, 26 Jun 2026 18:21:56 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782462116;
-	cv=none; b=dHKE7dCkLybZCYrZcX8lYCa79cbMpMZU4pswewshrBk94kqleKwxc4+4FSL0a+cFedq7Ag9+azeJ6UQnTpGilyWMtkBvRmWz+Gzr3hkSfNVv5S5LwULs3d5ctpI2xgAdyRzlyljZS7jnqXkEgv4wEEe8YWt1Ji4upttuY0D9A/m6wYtsespVKjjytKt5SqUSXks2GcV5q4LM5f1mQA1IFYisN0hkV83CQKlcbwDTRNt0XGtH9Z7eRvke6EM2nUfjKB887sy32RpGuB+s3Fp/oSaSiMg2w+1dMHAUZYnLJ1PEO+Zx+a9K0jA+aPxYszKbBHNTefHEIxDKHRbGfT3Z9Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gmqCk6NZ7z2yYd;
+	Fri, 26 Jun 2026 18:51:30 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782463890;
+	cv=none; b=B24rMjBqw4MfzQ+5BYHJVAKDpsmJc8Do9v+lvE4EWqT7aQttWLoxG9EPJwo+qqS4cNBEQU5DEyKUNjnfvPJ8LNcYfS0RjbXMmYhnu7Ulea1sbeHE+bw3vZDUcfKoxQMPDdS/BOKVHemjZVAvlhN3RZbs0cF0XnOusvVr+SxNfVFybJ+AVh3awZwdn4Szt68BEIlUaaoBLO36ILNb5zRInePknqSTsB8W/S5ppoq7sq1aOkGNGnH6KSkOP3flK5Tz8nHKWFN0hGkv9c1gOVFbsbGNK584F23/M+1dtO8LksPXZW0Y6UtauIraq8KE0NNZlUuHHEaxSYFg0ztGym0rUQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1782462116; c=relaxed/relaxed;
-	bh=7N6xFs6HldNaJtHXB+1so7kMQ4CsatgFOfKvzUpfQ6c=;
-	h=Content-Type:MIME-Version:Subject:From:Message-Id:Date:References:
-	 In-Reply-To:To:Cc; b=NpcYOQ62I51kSYhBMNUv1dH1LNtcpR0mAujGWBt9Cie1sHZR1xf8UOQAuRPPgTQz47SpzgcUfAveTarZ5FOf5JMnDmqChDlvyYShJRlodIp+tHvojH5qf9djts/Ei0zC+ESRHUcK1cdULPvkPRDlsh0r6jhaGmvWdttOmiao32UO1En+gG/4fCDrGiuAwu3xWlZCxb1yqM9QTFWKByiIhJBX42tTLP+T6t8P8pK08YokhCHN5SRMiAlG4n3bDuJKb+XdKnJQq/6xiGQk4lEaYd3aNE1DhI0YqqhFp37Dt1S06or72Ewei4EcVF0pe7x4w0OXVLOI0AjblgQ3E5LG0Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=DLkaMOoe; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=patchwork-bot+linux-riscv@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1782463890; c=relaxed/relaxed;
+	bh=dczgg0EG8SzCmQOx10ra7Wu7tyi/QlMQ5W656css9gI=;
+	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=DgKDBMkPkqFAvVXzM6kgzkvDMfxRPL0fspw1znL13IVbmr+5GiFbdGv+jHE1Sr7YH5PZEp0EvX6ZFM4hzIs07vPatjZO2a9wcEhqgCipqbsi/7RbxsOjDDsaXSYs5XNiCCzUlckKDGl+llfT/OTqT4n9YyR53QmvQBYBE8GcGEfhRPfplGtAo4niyJv1hY+R1h3+ggb64BUElUPAKmPJhk4Lu4DxOk/UP4aoA0TD3t/DoNNsCM8pbeK/2mh/kYtgHCzEWs6A9HCzjy4tUKrV9FfhDiK04vHzGOkYixXr9qoPREL08dYNeDzMqJx0nO8hBjNv7ZL3a6V0+RFjm/IBLg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ZuN86shS; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=rostedt@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=DLkaMOoe;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ZuN86shS;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=patchwork-bot+linux-riscv@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=rostedt@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gmpYb0QhTz2yVv;
-	Fri, 26 Jun 2026 18:21:55 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gmqCj56xqz2yVv
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jun 2026 18:51:29 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 085944430E;
-	Fri, 26 Jun 2026 08:21:53 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id DBDAC1F00A3A;
-	Fri, 26 Jun 2026 08:21:52 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id E0C03600AE;
+	Fri, 26 Jun 2026 08:51:26 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 55C131F000E9;
+	Fri, 26 Jun 2026 08:51:22 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1782462112;
-	bh=7N6xFs6HldNaJtHXB+1so7kMQ4CsatgFOfKvzUpfQ6c=;
-	h=Subject:From:Date:References:In-Reply-To:To:Cc;
-	b=DLkaMOoe7jjLq0zrWVM7g5T3weWBVn0GKvdUrsWL1NS6Qs/YGb/jSI/OCz0xvfzqS
-	 Qaym8bn+YQ7Yv3mFvqa3JZPMQyeTT1JkI61/DRV2mqoJOQ6RCZahCcrN/sZ0P41GxN
-	 lQMkVEyzffwbljfjI4cRAmJFH6TA/MXXocYqdJ0r2fyaFbY7MUFYbzOT2mQ1bO9ESQ
-	 aXENlZ4+KidZLyWpFEQCN/4TQ2SdvjPzYQw0gZqKyFHWnTN9MR5o7FqI9NLTieKhiJ
-	 eEE7hw/g70YQVjdOMlBaDUGyYwudw/LY4An0H/3ioGWkJoeS59H947CE7rYTKgUHWr
-	 baMoIKRFCt04w==
-Received: from [10.30.226.235] (localhost [IPv6:::1])
-	by aws-us-west-2-korg-oddjob-rhel9-1.codeaurora.org (Postfix) with ESMTP id 199D639389E8;
-	Fri, 26 Jun 2026 08:21:41 +0000 (UTC)
-Content-Type: text/plain; charset="utf-8"
+	s=k20260515; t=1782463886;
+	bh=dczgg0EG8SzCmQOx10ra7Wu7tyi/QlMQ5W656css9gI=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:References;
+	b=ZuN86shSSyy0XeJHxDjAleAAh3O8h5DItrYs4TSav34bAuZW0MAx9ZBBE9S3nKp+q
+	 JUucAqzuWIOp1XCgdpd9P3oFXnLbWNeWduuAN7d3BLmln+qoARZNZxKF2O06nPeYv4
+	 1dAdVGA0JDyuC0sJVCZD2wvL+fK7VqCql7n7upa+dFP/qqyZ8tCeX05jqkcgPFDC5w
+	 tFX0+2mg/DvZd1BW9undZCZbfHnid5R0fV0ghRYpjUgkCITPyYbrNbnJWUD3Su88Bu
+	 iGHlEwHR4XUomu86ZdOshDLSTLNHrTMNbY7gs9BX+9uYtxaMeTpyySj/HlKZUt2HrK
+	 5/RKab/63CQEw==
+Date: Fri, 26 Jun 2026 04:51:19 -0400
+From: Steven Rostedt <rostedt@kernel.org>
+To: Nathan Chancellor <nathan@kernel.org>
+Cc: linux-kernel@vger.kernel.org, linux-trace-kernel@vger.kernel.org, Masami
+ Hiramatsu <mhiramat@kernel.org>, Mark Rutland <mark.rutland@arm.com>,
+ Mathieu Desnoyers <mathieu.desnoyers@efficios.com>, Andrew Morton
+ <akpm@linux-foundation.org>, Linus Torvalds
+ <torvalds@linux-foundation.org>, Sebastian Andrzej Siewior
+ <bigeasy@linutronix.de>, John Ogness <john.ogness@linutronix.de>, Thomas
+ Gleixner <tglx@kernel.org>, Peter Zijlstra <peterz@infradead.org>, Julia
+ Lawall <julia.lawall@inria.fr>, Yury Norov <yury.norov@gmail.com>,
+ linux-doc@vger.kernel.org, linux-kbuild@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, dri-devel@lists.freedesktop.org,
+ linux-stm32@st-md-mailman.stormreply.com,
+ linux-arm-kernel@lists.infradead.org, linux-rdma@vger.kernel.org,
+ linux-usb@vger.kernel.org, linux-ext4@vger.kernel.org,
+ linux-nfs@vger.kernel.org, kvm@vger.kernel.org,
+ intel-gfx@lists.freedesktop.org
+Subject: Re: [PATCH v4 2/2] tracing: Remove trace_printk.h from kernel.h
+Message-ID: <20260626045119.659d1e6b@fedora>
+In-Reply-To: <20260625234158.GA261868@ax162>
+References: <20260625104007.041432666@kernel.org>
+	<20260625104402.210473477@kernel.org>
+	<20260625234158.GA261868@ax162>
+X-Mailer: Claws Mail 4.4.0 (GTK 3.24.52; x86_64-redhat-linux-gnu)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -61,71 +82,43 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Subject: Re: [PATCH v5 0/9] driver core: Fix some race conditions
-From: patchwork-bot+linux-riscv@kernel.org
-Message-Id: 
- <178246209959.3816447.5329631417058038374.git-patchwork-notify@kernel.org>
-Date: Fri, 26 Jun 2026 08:21:39 +0000
-References: <20260406232444.3117516-1-dianders@chromium.org>
-In-Reply-To: <20260406232444.3117516-1-dianders@chromium.org>
-To: Doug Anderson <dianders@chromium.org>
-Cc: linux-riscv@lists.infradead.org, gregkh@linuxfoundation.org,
- rafael@kernel.org, dakr@kernel.org, stern@rowland.harvard.edu, aik@ozlabs.ru,
- johan@kernel.org, edumazet@google.com, leon@kernel.org, hch@lst.de,
- robin.murphy@arm.com, maz@kernel.org, aleksander.lobakin@intel.com,
- saravanak@kernel.org, akpm@linux-foundation.org, Frank.Li@kernel.org,
- jgg@ziepe.ca, alex@ghiti.fr, alexander.stein@ew.tq-group.com,
- andre.przywara@arm.com, andrew@codeconstruct.com.au, andrew@lunn.ch,
- andriy.shevchenko@linux.intel.com, aou@eecs.berkeley.edu, ardb@kernel.org,
- astewart@tektelic.com, bhelgaas@google.com, brgl@kernel.org,
- broonie@kernel.org, catalin.marinas@arm.com, chleroy@kernel.org,
- davem@davemloft.net, david@kernel.org, devicetree@vger.kernel.org,
- dmaengine@vger.kernel.org, driver-core@lists.linux.dev, gbatra@linux.ibm.com,
- gregory.clement@bootlin.com, hkallweit1@gmail.com, iommu@lists.linux.dev,
- jirislaby@kernel.org, joel@jms.id.au, joro@8bytes.org, kees@kernel.org,
- kevin.brodsky@arm.com, kuba@kernel.org, lenb@kernel.org, lgirdwood@gmail.com,
- linux-acpi@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linux-aspeed@lists.ozlabs.org, linux-cxl@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-mips@vger.kernel.org, linux-mm@kvack.org,
- linux-pci@vger.kernel.org, linux-serial@vger.kernel.org,
- linux-snps-arc@lists.infradead.org, linux-usb@vger.kernel.org,
- linux@armlinux.org.uk, linuxppc-dev@lists.ozlabs.org,
- m.szyprowski@samsung.com, maddy@linux.ibm.com, mani@kernel.org,
- miko.lenczewski@arm.com, mpe@ellerman.id.au, netdev@vger.kernel.org,
- npiggin@gmail.com, osalvador@suse.de, oupton@kernel.org, pabeni@redhat.com,
- palmer@dabbelt.com, peter.ujfalusi@gmail.com, peterz@infradead.org,
- pjw@kernel.org, robh@kernel.org, sebastian.hesselbarth@gmail.com,
- tglx@kernel.org, tsbogend@alpha.franken.de, vgupta@kernel.org,
- vkoul@kernel.org, will@kernel.org, willy@infradead.org,
- yangyicong@hisilicon.com, yeoreum.yun@arm.com
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 
-Hello:
+On Thu, 25 Jun 2026 16:41:58 -0700
+Nathan Chancellor <nathan@kernel.org> wrote:
 
-This patch was applied to riscv/linux.git (fixes)
-by Danilo Krummrich <dakr@kernel.org>:
 
-On Mon,  6 Apr 2026 16:22:53 -0700 you wrote:
-> The main goal of this series is to fix the observed bug talked about
-> in the first patch ("driver core: Don't let a device probe until it's
-> ready"). That patch fixes a problem that has been observed in the real
-> world and could land even if the rest of the patches are found
-> unacceptable or need to be spun.
+> The following diff resolves it for me, should I send it as a separate
+> patch or do you want to just fold it in with a note?
 > 
-> That said, during patch review Danilo correctly pointed out that many
-> of the bitfield accesses in "struct device" are unsafe. I added a
-> bunch of patches in the series to address each one.
-> 
-> [...]
+> diff --git a/include/linux/lockdep.h b/include/linux/lockdep.h
+> index 621566345406..2301a701ffbb 100644
+> --- a/include/linux/lockdep.h
+> +++ b/include/linux/lockdep.h
+> @@ -10,6 +10,7 @@
+>  #ifndef __LINUX_LOCKDEP_H
+>  #define __LINUX_LOCKDEP_H
+>  
+> +#include <linux/instruction_pointer.h>
 
-Here is the summary with links:
-  - [v5,7/9] driver core: Replace dev->dma_coherent with dev_dma_coherent()
-    https://git.kernel.org/riscv/c/3e2c1e213ac2
+Ah, so the reason for this breakage is because lockdep was relying on
+instruction_pointer.h, that just happened to be included in kernel.h
+via trace_printk.h.
 
-You are awesome, thank you!
--- 
-Deet-doot-dot, I am a bot.
-https://korg.docs.kernel.org/patchwork/pwbot.html
+This is a separate issue, so it should be a separate patch. I'll add it
+as patch 1 of this series.
 
+Can you send me the config you used. This didn't trigger in my tests.
+
+Thanks,
+
+-- Steve
+
+
+
+>  #include <linux/lockdep_types.h>
+>  #include <linux/smp.h>
+>  #include <asm/percpu.h>
 
 
