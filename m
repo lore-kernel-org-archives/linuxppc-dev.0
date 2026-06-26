@@ -1,79 +1,96 @@
-Return-Path: <linuxppc-dev+bounces-23023-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23024-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CF2AFCDE00E
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Jun 2026 12:36:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 465B4C43458
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Jun 2026 14:26:23 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gmwBl3kSCz2yYd;
-	Fri, 26 Jun 2026 22:35:59 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782477359;
-	cv=none; b=eGc63FdkuQKene5SW65/maMWtcYMSjqghTO8+Pduy/RN/N8GMEbOGuWyYwcfdjW++qz5Yg+NJV36rQ09l9XPiO601OS8jLXZfF18H2mSKoKUChUKJXiy4ZCJM5ouyNFBuEaTZ/of7Sji7xMqcwtu+vzt8f7i89mm5L1Jw15g7vsVVaTvf32yGbDhjMV0RQ+Kpbh29UIytGdvYV5V1C7z54wOJqsm1yZw89r/u0sYvoUaBqYvsPoJYbhsfAs/2vCeUccKUUEQVftRQbhUFGKhMhHCStikIUZbulpWDXuHHVTNIWKUmznVATn4a3sKaGVM4tC+MWtGLds5VVa1RCIbsg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gmyf54RkQz2yYd;
+	Sat, 27 Jun 2026 00:26:21 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::42b"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782483981;
+	cv=none; b=XEx9Zg+cpAs6Oa7opGWP62xkXg7A36qVxUm2x57GMlotmyds5UmnF9bv3lH8jBPefi1AoSClzCATZsYWM7w60h651MJL5AhB2ueE0KEq755/qyXj4j4iRSZJuoU0Mk5Zdc/LmZYgypwKfYVB4aF/FOj/M7CN0oxGM3nnqvqsds2Q9sv8V4ZwT9MGTpGa5qKh7cg3LqgtPyB0l4xDIgdImejE/PlO95EZVX5Own+pHiOWPzM5B6ebzPafOCoQn7MymyXZoFdisrG5pgdmyRZeve7E87mNnM0/xUxbpgevq1Se4CMYM7dhkdeHhQDsA3tnYFibKIO+kup8Repwc0zw+A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1782477359; c=relaxed/relaxed;
-	bh=qZusql1MEib1Ora7F9aQYtgBwH0FEhYr2tnwv1gB/D4=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=oPr2pyFsTbIr5xAAHcvgo5AnNo46ULm4GJ2xhwaEDE1U0vpY5exaDMkqiUbV6JVGEAFVXaJdQf8VF0HEC+38UG5rimUR5yzqGfXbaQAylhCAgTG2P4t2iqZqoZxYD+143HsvTcN97VRCDT2T6oLg9F5UzT3w8BR/ifPUQkYP0ItweimtHQzKTXP0l9Qo2aVKHXtDZsZUYaA4HQSIfrwKkHv80oHRNH9RUZiqtqm4DRGa/0cNrv4enMw4qPS+2gOqtpYgyPtue1F7lvpiCMsSEXfnPT4x1Nm3eZ/wl4LuocenfccCTS8pFcDAHW2JpvOPaDnI5BINx1QlCfxwdPsfwg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=NBnwk4Nk; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=shivangu@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1782483981; c=relaxed/relaxed;
+	bh=93zgvkxuh49PA0NOJqu92O8AFgIa3mgcrkcaggpnEck=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=R11uFJ1PYPEyNvGoypAe346nbP5VctUnRxKi54yPyjKmaGsTdjCbQA98zuyPrePwMWTWWKZu1mJujlKkdi9aKYexnIWYyrjH1FfcxgeVYhoixQd3ybvi/il1AhvkZtv+HyVgTPaFy08LjUFVPlb50nEpDm6V1/OD25oEs16X3XFA+9W8Xh/KDpETkRBrnhMy4KUBdQ+8Damy1gb3vzIDGRTB04WKDhhAWMR3wPA4w70mSVuWWRQonrpd06Prd3FjiZXKAXxnGrfYdeFm0bSRaxuourMsvd5MiqFb8VDssJD44uNLSwMX6nNpNZAR2OwYrE8SreeeDwvIvqwyak5JSw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com; dkim=pass (2048-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=google header.b=PVntTT67; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::42b; helo=mail-wr1-x42b.google.com; envelope-from=pmladek@suse.com; receiver=lists.ozlabs.org) smtp.mailfrom=suse.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=NBnwk4Nk;
+	dkim=pass (2048-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=google header.b=PVntTT67;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=shivangu@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.com (client-ip=2a00:1450:4864:20::42b; helo=mail-wr1-x42b.google.com; envelope-from=pmladek@suse.com; receiver=lists.ozlabs.org)
+Received: from mail-wr1-x42b.google.com (mail-wr1-x42b.google.com [IPv6:2a00:1450:4864:20::42b])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gmwBk1tw7z2yVv
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jun 2026 22:35:57 +1000 (AEST)
-Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 65QAIhQD2660410;
-	Fri, 26 Jun 2026 12:35:45 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:message-id:mime-version
-	:subject:to; s=pp1; bh=qZusql1MEib1Ora7F9aQYtgBwH0FEhYr2tnwv1gB/
-	D4=; b=NBnwk4NkSkpZqZThv9fVfSEbYAwNiZjHT48Zhy/6sXEZk3trENY1EN8Gu
-	mlRhHFeZ4dWNzFyy9bMHXhHEdKA/h8/WkY38HDFNn4UwLirBcqd1HqTYmAok4oGv
-	abVA1r00tWdrNveBHeRKojKNG0Ifd0thVHBE4Sbd2Gnf/qNNaiBIuj4vdr4SKSVp
-	ENYXuCNbt9wQCIcgN+YD62zMKox7uWdW9wYmEWwAQ5xcVac5EjXSPyklGxocPY53
-	x+e6Nu9/+9lntzF8UEkClbUXB3BBj58si+JI/ZypGCPKCAClQKoTdD98oEvZrYOz
-	Pxgb6gPjMHjivgVRa8wRJJtM15zWA==
-Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4ewh9gxk1a-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 26 Jun 2026 12:35:44 +0000 (GMT)
-Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma13.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 65QCYeTK031766;
-	Fri, 26 Jun 2026 12:35:43 GMT
-Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
-	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4ex7dgjufu-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 26 Jun 2026 12:35:43 +0000 (GMT)
-Received: from smtpav04.fra02v.mail.ibm.com (smtpav04.fra02v.mail.ibm.com [10.20.54.103])
-	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 65QCZdig49873318
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 26 Jun 2026 12:35:39 GMT
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 6A6B52004D;
-	Fri, 26 Jun 2026 12:35:39 +0000 (GMT)
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id BC52620043;
-	Fri, 26 Jun 2026 12:35:36 +0000 (GMT)
-Received: from shivang.bl1-in.ibm.com (unknown [9.123.12.247])
-	by smtpav04.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Fri, 26 Jun 2026 12:35:36 +0000 (GMT)
-From: Shivang Upadhyay <shivangu@linux.ibm.com>
-To: shivangu@linux.ibm.com
-Cc: adityag@linux.ibm.com, chleroy@kernel.org, linux-kernel@vger.kernel.org,
-        linuxppc-dev@lists.ozlabs.org, maddy@linux.ibm.com,
-        mahesh@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com,
-        sourabhjain@linux.ibm.com, thuth@redhat.com
-Subject: [PATCH v2] powerpc/powernv: Cache OPAL check_token() results
-Date: Fri, 26 Jun 2026 18:05:34 +0530
-Message-ID: <20260626123534.396456-1-shivangu@linux.ibm.com>
-X-Mailer: git-send-email 2.54.0
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gmyf41dJ7z2xn3
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Jun 2026 00:26:18 +1000 (AEST)
+Received: by mail-wr1-x42b.google.com with SMTP id ffacd0b85a97d-46f27bd4c45so661628f8f.2
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jun 2026 07:26:18 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=suse.com; s=google; t=1782483974; x=1783088774; darn=lists.ozlabs.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=93zgvkxuh49PA0NOJqu92O8AFgIa3mgcrkcaggpnEck=;
+        b=PVntTT67JBUWPNxa4T68+SsMZ1vsXB2QaOLN0MQXhGl2N+F251lgB6I53+KIJFI6kC
+         rv4gJ27lwaDH+hkVBRmlHera+RcTipJCRWeR3N6q9w1cRYKRPmXdFHy5ovlfsdlcyhoY
+         xz0MeunVNDeiONfHeZSvOpuGJQE2LjJnzl7MOxefS4Guof720uf3hqPY0/dPB0dsVQjO
+         isAmoUnYfV7tKQ9Gzh3FHp6xon1UCWToE/RrQtw1rdr9KKOy2V5Z3maI12tQSaN3n0nH
+         aqQM/7h5rlUfZItUBkCqf/toYF8b4GrtXNW5l17fj1ZjPa0HODgKCnwQ05nM//mCuApt
+         YIWA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1782483974; x=1783088774;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=93zgvkxuh49PA0NOJqu92O8AFgIa3mgcrkcaggpnEck=;
+        b=dC5NurPd1V4kHb7qFbMQANY0DxZc4tXWMsY7QZ8omxYingEALGcLDM8x+NzVM4vHQI
+         UuHe6RHKZr0TQfSg6y7TtPu0la3FJukijT+tdb1oiO4fe2lpTOssGvhHlA6BlO9A6DAq
+         /5wn7yfxGQ0MAH7sPN9nyCX3FejhPsDURjIE7j8lCye9uoMFZCchfW/PW09sKoY43O7j
+         w4LiEhroXyHUUTYAv/oVljSi/YgCdKEx/YANH4YqXKiuE/XZF3olFEbcn68XTWB3UtuA
+         XWbl+/zyqREj48QFZLMGvZb/JC0M1exnjeYjCdptqgAsXCIHAPfEXee4Zx4GBY8SKaU7
+         RAlQ==
+X-Forwarded-Encrypted: i=1; AFNElJ8FfDLcrDxCKXLdB8biOKz09yU1q2f1YmTcgteb4Osu0QL09LhO7VVZ9XjGI95yYTKTA8rF9HZ/W9Q+6Bo=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YxsVmEW85jZeYCyTKCM0eUGCUpNh1wy4uhoGFsB8CPkR5Sn164L
+	kghr247++PCyU0G9ePg/XoG/TTI0xMAkogxtTupGT8NRYFYy8WRwoHgaAT+FMoMsIBc=
+X-Gm-Gg: AfdE7cnsgY3tlee1+rT0IotW/p+f6bVBn+26+zCOCCDkfnbmvZpqWKml/5TaqjcHojQ
+	JrrYYhxPDB0iqFtvmNYiu5BgYLuRtZWtbjq4ycytQRn7gvp3XPEOwE1zAnTQFOqmj2ZCk0aJzUF
+	aSSMUKYrOnI5H/nqd4FoFzGAFmv+/KQWDkhT6Gkkd3KVcdxqXmTJuXQdaL/zH2ixDP/O7auQefv
+	E6z/8NK7gVbrdSbmW1LJ42a5/AzLGtTpa+aGkMnyaO/qCnQg8L3XKDaK3TMOXcOVHALZMXd0AnS
+	FrIFSXG7uXXpM0tr3mqdSuXjc6K4T2AvtHhTR52a5l6EArd59lbwx3lz10N9VmglLmhboZuOHRF
+	7L91ZRGTYlN2Fh9ic/Oqggy1oFet204ABbDjV5WMIZLV8HPJrb6qscyTXRx+UL1fBS9eMm33OP8
+	0Z/Zj5XXQ7iIuEJco=
+X-Received: by 2002:a05:600c:8114:b0:492:7024:11c8 with SMTP id 5b1f17b1804b1-492702411d5mr10254015e9.32.1782483974505;
+        Fri, 26 Jun 2026 07:26:14 -0700 (PDT)
+Received: from pathway.suse.cz ([176.114.240.130])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4926c02081bsm44449055e9.0.2026.06.26.07.26.13
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 26 Jun 2026 07:26:14 -0700 (PDT)
+Date: Fri, 26 Jun 2026 16:26:11 +0200
+From: Petr Mladek <pmladek@suse.com>
+To: Bradley Morgan <include@grrlz.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+	Feng Tang <feng.tang@linux.alibaba.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Christophe Leroy <chleroy@kernel.org>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Douglas Anderson <dianders@chromium.org>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+	stable@vger.kernel.org
+Subject: Re: [PATCH v3 4/4] panic: use sys_info_with_filter() to avoid
+ duplicate backtraces
+Message-ID: <aj6MAxQKpLeK1Mp6@pathway.suse.cz>
+References: <20260625152558.7450-1-include@grrlz.net>
+ <20260625152558.7450-5-include@grrlz.net>
+ <aj5TNB8cRtMNTtIT@pathway.suse.cz>
+ <aj5tFiwhRqPkAkqU@pathway.suse.cz>
+ <85F6E30C-EB1B-4BAF-9204-5174FD066EE0@grrlz.net>
+ <4CF5AE3F-D7ED-47F8-A920-61D0AA078CF9@grrlz.net>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -87,128 +104,107 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-GUID: -McQ3Gf7Y7AmqoLOU5nRkxoEdRgx8Krk
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNjI2MDEwMCBTYWx0ZWRfX9eREewlKgEMw
- nTs8BFCPkKilwOqMtQNLd6WhIkLpgD4hgpHu1k6JL4d3klsoJREXHj26yFBEsI1dQLlTy6Qy6j2
- gKB/fFXNGsI1a4l+Kfwavlv3Z5FwPNg=
-X-Authority-Analysis: v=2.4 cv=c62bhx9l c=1 sm=1 tr=0 ts=6a3e7220 cx=c_pps
- a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
- a=FelO9ux0wxsA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=V8glGbnc2Ofi9Qvn3v5h:22 a=VwQbUJbxAAAA:8 a=VnNF1IyMAAAA:8
- a=_oxaYUcLAtKeAHhaBbsA:9
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjI2MDEwMCBTYWx0ZWRfX+yX5+bvzOF1T
- aMo7tAiv4puaqNPCYXBLLLAXtpK9gQqMToCHeu+GAFj4ZEILCUPvqad17ZYEtZLoiAKRqxo900q
- Govmo0DSG4dr76Ljm3d0wiLRvfsUxEJBNkX73QrSwdoiqEtF46DxFUTWsCexJz9ajz+q+RdIFmP
- 6Ba0Gny4npdDl8HWaG8QpXgpAZ4R73oPTFKQkEmkjBrCaxHxbYQWufn+DL18UBGCiwlq/6zAT3i
- rbchA4LIIgamGyVD73HA2NypJm3E/pMBK5iEExoZTpjsHj2RyADS+e5CN576hfFHsR6Vi5uTahC
- kwPBdz5YLIN69UYb/GxWTeDwEa8T1DAC66NtUiLyudK+l/rMpubKZvTZPna88r5U5ihPy3l9jnn
- WbpWm1Yxem9Bxo8habxgnFkw9Pp8fEWCnqihGKclKktOfwURRmmhp4sSxbOZbTnh2DFvdh1nu+8
- XQbbjjPx3cZ43cYgHVg==
-X-Proofpoint-ORIG-GUID: 9HYbuIUslBhT0YAa_tMzS9YkQiukJR3Y
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
- definitions=2026-06-26_03,2026-06-24_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- lowpriorityscore=0 impostorscore=0 adultscore=0 clxscore=1015 suspectscore=0
- priorityscore=1501 phishscore=0 spamscore=0 bulkscore=0 malwarescore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2606260100
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4CF5AE3F-D7ED-47F8-A920-61D0AA078CF9@grrlz.net>
 
-`opal_check_token()` function is used to determine if a specific
-OPAL firmware call is supported on the current platform. This check
-is performed frequently during boot and runtime, resulting in
-unnecessary firmware calls for the same token values.
+On Fri 2026-06-26 13:32:38, Bradley Morgan wrote:
+> On June 26, 2026 1:17:13 PM GMT+01:00, Bradley Morgan <include@grrlz.net>
+> wrote:
+> >On June 26, 2026 1:14:14 PM GMT+01:00, Petr Mladek <pmladek@suse.com>
+> >wrote:
+> >>On Fri 2026-06-26 12:23:50, Petr Mladek wrote:
+> >>> On Thu 2026-06-25 15:25:58, Bradley Morgan wrote:
+> >>> But it all becomes very hairy. We have several levels:
+> >>> 
+> >>>    + watchdog-all_bt-specific option, e.g.
+> >>sysctl_hardlockup_all_cpu_backtrace
+> >>> 
+> >>>    + watchdog-specific si_info preferences, e.g. hardlockup_si_mask
+> >>> 
+> >>>    + panic-specific si_info: panic_print
+> >>> 
+> >>>    + universal fallback for any layer: kernel_si_info
+> >>> 
+> >>> Now, we try to check all these variables back and forth to
+> >>> trigger all backtraces or to avoid triggering them.
+> >>> And it clearly does not work well and the code is more and more
+> >>> hairy.
+> >>> 
+> >>> I think about another approach. The word "waterfall" comes to my mind.
+> >>> Instead of checking all the settings back and forth, let's process
+> >>> each setting one by one and just remember what has been done and
+> >>> skip this in the next level.
+> >>> 
+> >>> All the si_info actions seems to dump a global system state.
+> >>> So, it would make sense to remember the state in a global variable
+> >>> even when it might be modified by more CPUs in parallel.
+> >>> 
+> Hmm.. new idea 
+> 
+> kernel/dump_filter.c ?
+> 
+> What this file could do is to handle a generic lockup state machine
+> so any subsystem can log what it already dumped?
+> 
+> I know it may bloat, but it's better then cramming fixes in.
 
-Add a caching layer for the opal_check_token() OPAL call to avoid
-repeated firmware calls for token availability checks. This reduces
-firmware call overhead during boot.
+I am not sure what exactly you would like to achieve but it sounds
+a bit scary ;-)
 
-Testing with buildroot images shows OPAL calls reduced from
-35578 to 28983, before console bring-up.
+Anyway, we should not synchronize the watchdog reports against
+each other, definitely. They are running in non-compatible contexts
+(task vs interrupt vs NMI). Also we should not add any locking
+because they usually print something when the system has enough
+troubles.
 
-Signed-off-by: Shivang Upadhyay <shivangu@linux.ibm.com>
----
-Changelog:
-* v1: https://lore.kernel.org/all/20260601112520.161605-1-shivangu@linux.ibm.com/
-   - implemented tri-state check as suggestd by Sourabh.
-   - made the implementation more clear.
+Also I think that it is not worth preventing duplicated backtraces
+or reports from a single CPU. IMHO, it is not a big problem
+in practice.
 
----
- arch/powerpc/include/asm/opal.h            |  1 +
- arch/powerpc/platforms/powernv/opal-call.c |  2 +-
- arch/powerpc/platforms/powernv/opal.c      | 30 ++++++++++++++++++++++
- 3 files changed, 32 insertions(+), 1 deletion(-)
+So, we are down to large reports, like backtraces from all CPUs,
+timers, locks, ... which are handled by sys_info(). So, I think
+that it should be enough to handle this inside the sys_info() API.
 
-diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
-index 0a398265ba04..e7e11479122b 100644
---- a/arch/powerpc/include/asm/opal.h
-+++ b/arch/powerpc/include/asm/opal.h
-@@ -156,6 +156,7 @@ int64_t opal_pci_next_error(uint64_t phb_id, __be64 *first_frozen_pe,
- int64_t opal_pci_poll(uint64_t id);
- int64_t opal_return_cpu(void);
- int64_t opal_check_token(uint64_t token);
-+int64_t opal_check_token_call(uint64_t token);
- int64_t opal_reinit_cpus(uint64_t flags);
- 
- int64_t opal_xscom_read(uint32_t gcid, uint64_t pcb_addr, __be64 *val);
-diff --git a/arch/powerpc/platforms/powernv/opal-call.c b/arch/powerpc/platforms/powernv/opal-call.c
-index 021b0ec29e24..00325c189e69 100644
---- a/arch/powerpc/platforms/powernv/opal-call.c
-+++ b/arch/powerpc/platforms/powernv/opal-call.c
-@@ -207,7 +207,7 @@ OPAL_CALL(opal_validate_flash,			OPAL_FLASH_VALIDATE);
- OPAL_CALL(opal_manage_flash,			OPAL_FLASH_MANAGE);
- OPAL_CALL(opal_update_flash,			OPAL_FLASH_UPDATE);
- OPAL_CALL(opal_resync_timebase,			OPAL_RESYNC_TIMEBASE);
--OPAL_CALL(opal_check_token,			OPAL_CHECK_TOKEN);
-+OPAL_CALL(opal_check_token_call,		OPAL_CHECK_TOKEN);
- OPAL_CALL(opal_dump_init,			OPAL_DUMP_INIT);
- OPAL_CALL(opal_dump_info,			OPAL_DUMP_INFO);
- OPAL_CALL(opal_dump_info2,			OPAL_DUMP_INFO2);
-diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
-index 1946dbdc9fa1..1e9cb5271ee7 100644
---- a/arch/powerpc/platforms/powernv/opal.c
-+++ b/arch/powerpc/platforms/powernv/opal.c
-@@ -1125,6 +1125,36 @@ EXPORT_SYMBOL_GPL(opal_flash_read);
- EXPORT_SYMBOL_GPL(opal_flash_write);
- EXPORT_SYMBOL_GPL(opal_flash_erase);
- EXPORT_SYMBOL_GPL(opal_prd_msg);
-+
-+/**
-+ * opal_check_token - Check if an OPAL call token is supported
-+ * @token: OPAL token number to check
-+ *
-+ * Returns 1 if supported, 0 if not.
-+ */
-+int64_t opal_check_token(uint64_t token)
-+{
-+	static u8 token_cache[OPAL_LAST];
-+	enum {
-+		SUPP_UNKNOWN = 0,
-+		PRESENT,
-+		ABSENT
-+	};
-+
-+	if (token > OPAL_LAST)
-+		return 0;
-+
-+	if (token_cache[token] == SUPP_UNKNOWN) {
-+		/* Do the actual opal_call here */
-+		if (opal_check_token_call(token)) {
-+			token_cache[token] = PRESENT;
-+		} else {
-+			token_cache[token] = ABSENT;
-+		}
-+	}
-+
-+	return (token_cache[token] == PRESENT);
-+}
- EXPORT_SYMBOL_GPL(opal_check_token);
- 
- /* Convert a region of vmalloc memory to an opal sg list */
--- 
-2.54.0
+I do not want to say that my proposal was the best solution.
+I am sure that there are better ones. But we need to consider
+the gain vs. complexity.
 
+Honestly, I am already a bit scared by the complexity which
+we the sys_info() API added. And it is hard to imagine that
+adding another API would make it easier. But I might be wrong.
+
+Instead, it might make sense to integrate the conflicting
+subsystem-specific calls under the sys_info() API.
+I mean that, for example watchdog_hardlockup_check() won't
+call trigger_allbutcpu_cpu_backtrace() directly but
+it would call it via sys_info() API so that sys_info()
+could keep track of it. Something like:
+
+void sys_info_allbutcpu_bt(int cpu)
+{
+	trigger_allbutcpu_cpu_backtrace(cpu);
+	/*
+	 * The caller likely printed backtrace of the given @cpu
+	 * on its own. Prevent duplicate backtraces from all
+	 * CPUs with potential next sys_info() call.
+	 */
+	sys_info_done(SYS_INFO_ALL_BT);
+}
+
+But I am not sure if it is really easier to follow
+than calling sys_info_done() from the watchdog code.
+
+Some watchdogs try to optimize the output and print backtraces
+only from CPUs which are relevant for the given lockup.
+We should keep the logic for selecting the set of CPUs
+in the watchdog code. We just need to solve how to elegantly
+make sys_info() aware of it or at least about the more massive
+reports.
+
+Anyway, I would prefer to keep it simple until we see some problems
+in practice.
+
+Best Regards,
+Petr
 
