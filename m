@@ -1,61 +1,79 @@
-Return-Path: <linuxppc-dev+bounces-23022-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23023-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3CDCCCDE002
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Jun 2026 12:32:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CF2AFCDE00E
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Jun 2026 12:36:00 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gmw6y6nrrz2yYd;
-	Fri, 26 Jun 2026 22:32:42 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a11:7980:1::2:0"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782477162;
-	cv=none; b=AHTlNl2go3nzkGoeEjpZf7XLZl0RqcjhJKqzYNmU91X9pLtWLXg4KZ8Veh7jWHPIu9+SenE06TRwOFew8Up/J0vNMhS66j3IHCkds9az0Aay5OLd0YSyut0ZyQ1A4aHySXWDw6wKWHJGc6C3de2Rgbt4wfB5r4QMxODgGdC3Ym1xpi9hpeRfpXHivUCj/CBInv7EPmo7Jvs0Psvbni2cfghBJCLCnU8DbU/WcXTTSGw0q/6C9VVLnRIHOmK9mmagk5yVb7qd1c3QLjley2myvzgN0rWTxvB2SrjI/qrUlr4YM4OeP8XLHxBmRBnbalzIihO43e8o+q36qRg14APjVw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gmwBl3kSCz2yYd;
+	Fri, 26 Jun 2026 22:35:59 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782477359;
+	cv=none; b=eGc63FdkuQKene5SW65/maMWtcYMSjqghTO8+Pduy/RN/N8GMEbOGuWyYwcfdjW++qz5Yg+NJV36rQ09l9XPiO601OS8jLXZfF18H2mSKoKUChUKJXiy4ZCJM5ouyNFBuEaTZ/of7Sji7xMqcwtu+vzt8f7i89mm5L1Jw15g7vsVVaTvf32yGbDhjMV0RQ+Kpbh29UIytGdvYV5V1C7z54wOJqsm1yZw89r/u0sYvoUaBqYvsPoJYbhsfAs/2vCeUccKUUEQVftRQbhUFGKhMhHCStikIUZbulpWDXuHHVTNIWKUmznVATn4a3sKaGVM4tC+MWtGLds5VVa1RCIbsg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1782477162; c=relaxed/relaxed;
-	bh=iCFHrjSHMQsrYTus26/wZtjmV4y7JIcRPdW7IUr3OE4=;
-	h=Date:From:To:CC:Subject:In-Reply-To:References:Message-ID:
-	 MIME-Version:Content-Type; b=XMnqSiPYGRC40Qu47tdKgwbYQIi0GG/oTDiePhcSn5EdVfGayNknEol91sElnwKUF8QApwzXjDn20Fb5bYssWSkbqYgKgRbH5edgsGziXZVo7P29HqJ7KL7dlHTcirUutKpw1XW/uRyMqUXb+/KYqRHabnNCqLZON/OmEh7bRHQF7pB+fSBaA3e5JHD4RzhJc6tsZomSxUzJNcRqxtXrCRpXpDTnaPqC3DzoCdPhyjIM5X+vNQi1DKJgbp5ChFCr6Qm4bSRobhb4ZR4e5Th07EsKtYUnEDSURvCzickYsVj2xCzlO+/ZfTErXFxaXwCykIZqu7VPIgJKssdQRbp7cQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=grrlz.net; dkim=pass (1024-bit key; secure) header.d=grrlz.net header.i=@grrlz.net header.a=rsa-sha256 header.s=stigmate header.b=Pp2lEQGE; dkim-atps=neutral; spf=pass (client-ip=2a11:7980:1::2:0; helo=confino.investici.org; envelope-from=include@grrlz.net; receiver=lists.ozlabs.org) smtp.mailfrom=grrlz.net
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=grrlz.net
+	t=1782477359; c=relaxed/relaxed;
+	bh=qZusql1MEib1Ora7F9aQYtgBwH0FEhYr2tnwv1gB/D4=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=oPr2pyFsTbIr5xAAHcvgo5AnNo46ULm4GJ2xhwaEDE1U0vpY5exaDMkqiUbV6JVGEAFVXaJdQf8VF0HEC+38UG5rimUR5yzqGfXbaQAylhCAgTG2P4t2iqZqoZxYD+143HsvTcN97VRCDT2T6oLg9F5UzT3w8BR/ifPUQkYP0ItweimtHQzKTXP0l9Qo2aVKHXtDZsZUYaA4HQSIfrwKkHv80oHRNH9RUZiqtqm4DRGa/0cNrv4enMw4qPS+2gOqtpYgyPtue1F7lvpiCMsSEXfnPT4x1Nm3eZ/wl4LuocenfccCTS8pFcDAHW2JpvOPaDnI5BINx1QlCfxwdPsfwg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=NBnwk4Nk; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=shivangu@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; secure) header.d=grrlz.net header.i=@grrlz.net header.a=rsa-sha256 header.s=stigmate header.b=Pp2lEQGE;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=NBnwk4Nk;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=grrlz.net (client-ip=2a11:7980:1::2:0; helo=confino.investici.org; envelope-from=include@grrlz.net; receiver=lists.ozlabs.org)
-Received: from confino.investici.org (confino.investici.org [IPv6:2a11:7980:1::2:0])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=shivangu@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gmw6y0DCpz2yVv
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jun 2026 22:32:41 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=grrlz.net;
-	s=stigmate; t=1782477158;
-	bh=iCFHrjSHMQsrYTus26/wZtjmV4y7JIcRPdW7IUr3OE4=;
-	h=Date:From:To:CC:Subject:In-Reply-To:References:From;
-	b=Pp2lEQGEW1puarLtbtYCEBJyVAju8EGfaZq+SPsYGvNB2z9ja7k/nD06t4fb485T8
-	 N1bJgjL8/PyjKK9k4iQOqefdjKmSyq7xcLV4NVrvi9h3xRhmxwwxC2QCwB2yb5KtLt
-	 7sYi5xNCxelRUZG4c4TnE+0ptLgyQbNfdn+0Gs6M=
-Received: from mx1.investici.org (unknown [127.0.0.1])
-	by confino.investici.org (Postfix) with ESMTP id 4gmw6t1C5Wz1134;
-	Fri, 26 Jun 2026 12:32:38 +0000 (UTC)
-Received: by mx1.investici.org (Postfix) id 4gmw6s3pvdz112y;
-	Fri, 26 Jun 2026 12:32:37 +0000 (UTC)
-Date: Fri, 26 Jun 2026 13:32:38 +0100
-From: Bradley Morgan <include@grrlz.net>
-To: Petr Mladek <pmladek@suse.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
- Feng Tang <feng.tang@linux.alibaba.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
- Christophe Leroy <chleroy@kernel.org>,
- Madhavan Srinivasan <maddy@linux.ibm.com>,
- Douglas Anderson <dianders@chromium.org>, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, stable@vger.kernel.org
-Subject: =?US-ASCII?Q?Re=3A_=5BPATCH_v3_4/4=5D_panic=3A_use_sys=5Finfo=5Fwi?=
- =?US-ASCII?Q?th=5Ffilter=28=29_to_avoid_duplicate_backtraces?=
-In-Reply-To: <85F6E30C-EB1B-4BAF-9204-5174FD066EE0@grrlz.net>
-References: <20260625152558.7450-1-include@grrlz.net> <20260625152558.7450-5-include@grrlz.net> <aj5TNB8cRtMNTtIT@pathway.suse.cz> <aj5tFiwhRqPkAkqU@pathway.suse.cz> <85F6E30C-EB1B-4BAF-9204-5174FD066EE0@grrlz.net>
-Message-ID: <4CF5AE3F-D7ED-47F8-A920-61D0AA078CF9@grrlz.net>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gmwBk1tw7z2yVv
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jun 2026 22:35:57 +1000 (AEST)
+Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 65QAIhQD2660410;
+	Fri, 26 Jun 2026 12:35:45 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:date:from:message-id:mime-version
+	:subject:to; s=pp1; bh=qZusql1MEib1Ora7F9aQYtgBwH0FEhYr2tnwv1gB/
+	D4=; b=NBnwk4NkSkpZqZThv9fVfSEbYAwNiZjHT48Zhy/6sXEZk3trENY1EN8Gu
+	mlRhHFeZ4dWNzFyy9bMHXhHEdKA/h8/WkY38HDFNn4UwLirBcqd1HqTYmAok4oGv
+	abVA1r00tWdrNveBHeRKojKNG0Ifd0thVHBE4Sbd2Gnf/qNNaiBIuj4vdr4SKSVp
+	ENYXuCNbt9wQCIcgN+YD62zMKox7uWdW9wYmEWwAQ5xcVac5EjXSPyklGxocPY53
+	x+e6Nu9/+9lntzF8UEkClbUXB3BBj58si+JI/ZypGCPKCAClQKoTdD98oEvZrYOz
+	Pxgb6gPjMHjivgVRa8wRJJtM15zWA==
+Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4ewh9gxk1a-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 26 Jun 2026 12:35:44 +0000 (GMT)
+Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma13.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 65QCYeTK031766;
+	Fri, 26 Jun 2026 12:35:43 GMT
+Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
+	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4ex7dgjufu-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 26 Jun 2026 12:35:43 +0000 (GMT)
+Received: from smtpav04.fra02v.mail.ibm.com (smtpav04.fra02v.mail.ibm.com [10.20.54.103])
+	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 65QCZdig49873318
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Fri, 26 Jun 2026 12:35:39 GMT
+Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 6A6B52004D;
+	Fri, 26 Jun 2026 12:35:39 +0000 (GMT)
+Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id BC52620043;
+	Fri, 26 Jun 2026 12:35:36 +0000 (GMT)
+Received: from shivang.bl1-in.ibm.com (unknown [9.123.12.247])
+	by smtpav04.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Fri, 26 Jun 2026 12:35:36 +0000 (GMT)
+From: Shivang Upadhyay <shivangu@linux.ibm.com>
+To: shivangu@linux.ibm.com
+Cc: adityag@linux.ibm.com, chleroy@kernel.org, linux-kernel@vger.kernel.org,
+        linuxppc-dev@lists.ozlabs.org, maddy@linux.ibm.com,
+        mahesh@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com,
+        sourabhjain@linux.ibm.com, thuth@redhat.com
+Subject: [PATCH v2] powerpc/powernv: Cache OPAL check_token() results
+Date: Fri, 26 Jun 2026 18:05:34 +0530
+Message-ID: <20260626123534.396456-1-shivangu@linux.ibm.com>
+X-Mailer: git-send-email 2.54.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -69,350 +87,128 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain;
- charset=utf-8
 Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-GUID: -McQ3Gf7Y7AmqoLOU5nRkxoEdRgx8Krk
+X-Proofpoint-Spam-Info: AW1haW4tMjYwNjI2MDEwMCBTYWx0ZWRfX9eREewlKgEMw
+ nTs8BFCPkKilwOqMtQNLd6WhIkLpgD4hgpHu1k6JL4d3klsoJREXHj26yFBEsI1dQLlTy6Qy6j2
+ gKB/fFXNGsI1a4l+Kfwavlv3Z5FwPNg=
+X-Authority-Analysis: v=2.4 cv=c62bhx9l c=1 sm=1 tr=0 ts=6a3e7220 cx=c_pps
+ a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
+ a=FelO9ux0wxsA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
+ a=V8glGbnc2Ofi9Qvn3v5h:22 a=VwQbUJbxAAAA:8 a=VnNF1IyMAAAA:8
+ a=_oxaYUcLAtKeAHhaBbsA:9
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjI2MDEwMCBTYWx0ZWRfX+yX5+bvzOF1T
+ aMo7tAiv4puaqNPCYXBLLLAXtpK9gQqMToCHeu+GAFj4ZEILCUPvqad17ZYEtZLoiAKRqxo900q
+ Govmo0DSG4dr76Ljm3d0wiLRvfsUxEJBNkX73QrSwdoiqEtF46DxFUTWsCexJz9ajz+q+RdIFmP
+ 6Ba0Gny4npdDl8HWaG8QpXgpAZ4R73oPTFKQkEmkjBrCaxHxbYQWufn+DL18UBGCiwlq/6zAT3i
+ rbchA4LIIgamGyVD73HA2NypJm3E/pMBK5iEExoZTpjsHj2RyADS+e5CN576hfFHsR6Vi5uTahC
+ kwPBdz5YLIN69UYb/GxWTeDwEa8T1DAC66NtUiLyudK+l/rMpubKZvTZPna88r5U5ihPy3l9jnn
+ WbpWm1Yxem9Bxo8habxgnFkw9Pp8fEWCnqihGKclKktOfwURRmmhp4sSxbOZbTnh2DFvdh1nu+8
+ XQbbjjPx3cZ43cYgHVg==
+X-Proofpoint-ORIG-GUID: 9HYbuIUslBhT0YAa_tMzS9YkQiukJR3Y
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
+ definitions=2026-06-26_03,2026-06-24_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ lowpriorityscore=0 impostorscore=0 adultscore=0 clxscore=1015 suspectscore=0
+ priorityscore=1501 phishscore=0 spamscore=0 bulkscore=0 malwarescore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2606260100
 
-On June 26, 2026 1:17:13 PM GMT+01:00, Bradley Morgan <include@grrlz.net>
-wrote:
->On June 26, 2026 1:14:14 PM GMT+01:00, Petr Mladek <pmladek@suse.com>
->wrote:
->>On Fri 2026-06-26 12:23:50, Petr Mladek wrote:
->>> On Thu 2026-06-25 15:25:58, Bradley Morgan wrote:
->>> > panic_other_cpus_shutdown() handles SYS_INFO_ALL_BT before stopping
->>the
->>> > other CPUs. Do not ask sys_info() to handle that bit again later in
->>the
->>> > panic path.
->>> > 
->>> > Use sys_info_with_filter() so panic_print=all_bt does not request
->more
->>> > output after the CPUs are stopped.
->>> > 
->>> > Fixes: a9af76a78760 ("watchdog: add sys_info sysctls to dump sys info
->>on system lockup")
->>> > Cc: stable@vger.kernel.org
->>> > Signed-off-by: Bradley Morgan <include@grrlz.net>
->>> > ---
->>> >  kernel/panic.c | 2 +-
->>> >  1 file changed, 1 insertion(+), 1 deletion(-)
->>> > 
->>> > diff --git a/kernel/panic.c b/kernel/panic.c
->>> > index 213725b612aa..eb842823df61 100644
->>> > --- a/kernel/panic.c
->>> > +++ b/kernel/panic.c
->>> > @@ -680,7 +680,7 @@ void vpanic(const char *fmt, va_list args)
->>> >  	 */
->>> >  	atomic_notifier_call_chain(&panic_notifier_list, 0, buf);
->>> >  
->>> > -	sys_info(panic_print);
->>> > +	sys_info_with_filter(panic_print, SYS_INFO_ALL_BT);
->>> 
->>> Hmm, this prevents printing backtraces from all CPUs completely.
->>> But what if they were not printed?
->>> 
->>> They might be printed by:
->>> 
->>> static void panic_other_cpus_shutdown(bool crash_kexec)
->>> {
->>> 	if (panic_print & SYS_INFO_ALL_BT)
->>> 		panic_trigger_all_cpu_backtrace();
->>> 
->>> [...]
->>> }
->>> 
->>> But it checks only "panic_print" variable. It won't do anything
->>> when (panic_print == 0).
->>> 
->>> In this case, we might still want to print the backraces when
->>> SYS_INFO_ALL_BT is set in kernel_si_info.
->>> 
->>> >  	kmsg_dump_desc(KMSG_DUMP_PANIC, buf);
->>> 
->>> Of course, we might fix panic_other_cpus_shutdown() to check also
->>> kernel_si_info.
->>> 
->>> But it all becomes very hairy. We have several levels:
->>> 
->>>    + watchdog-all_bt-specific option, e.g.
->>sysctl_hardlockup_all_cpu_backtrace
->>> 
->>>    + watchdog-specific si_info preferences, e.g. hardlockup_si_mask
->>> 
->>>    + panic-specific si_info: panic_print
->>> 
->>>    + universal fallback for any layer: kernel_si_info
->>> 
->>> Now, we try to check all these variables back and forth to
->>> trigger all backtraces or to avoid triggering them.
->>> And it clearly does not work well and the code is more and more
->>> hairy.
->>> 
->>> I think about another approach. The word "waterfall" comes to my mind.
->>> Instead of checking all the settings back and forth, let's process
->>> each setting one by one and just remember what has been done and
->>> skip this in the next level.
->>> 
->>> All the si_info actions seems to dump a global system state.
->>> So, it would make sense to remember the state in a global variable
->>> even when it might be modified by more CPUs in parallel.
->>> 
->>> I am going to think more about it.
->>
->>I have created a POC using Gemini. I haven't tested it.
->>But it looks acceptable. And the logic seems to be more
->>straightforward.
->>
->>One drawback is that it requires adding the _reset()
->>call for all sys_info() callers. It is fine in principle
->>but it might complicate back-porting because all changes
->>have to be done in one patch.
->>
->>But honestly, this is a nice to have fix. Most people could
->>live happily without it.
->>
->>From 3c66436d9978030845a96bfaedd6b914536e2ac4 Mon Sep 17 00:00:00 2001
->>From: Petr Mladek <pmladek@suse.com>
->>Date: Fri, 26 Jun 2026 13:55:41 +0200
->>Subject: [POC] sys_info: Introduce state-tracking APIs to prevent
->duplicate
->> backtraces
->>
->>In watchdog, panic, and hung task detection scenarios, sys_info() can
->>be called multiple times or alongside direct backtrace triggers like
->>trigger_allbutcpu_cpu_backtrace(). This results in identical backtraces
->>being dumped repeatedly from all CPUs, cluttering the kernel log and
->>delaying or obscuring critical debug details.
->>
->>Introduce a state tracking bitmask and associated helpers:
->>- sys_info_done(mask): Marks specific sys_info bits as already printed.
->>- sys_info_reset(): Resets the tracking state.
->>- sys_info_is_done(mask): Checks if all bits in the mask have been
->printed.
->>
->>Update sys_info() to automatically filter out already printed bits
->>using this state. Integrate these APIs with the generic hardlockup
->>and softlockup watchdogs, the PowerPC watchdog, the hung task detector,
->>and the panic core. This ensures that each piece of system information
->>and backtrace output is printed at most once per lockup/panic event,
->>and the state is reset cleanly when a lockup does not trigger a panic.
->>
->>Races between sys_info() callers are ignored. It should be acceptable
->>because the output from various watchdogs has never been synchronized.
->>And panic() never returns.
->>
->>Assisted-by: gemini-1.5-flash ?
->
->Why not use gemini 3.5 flash?
->
->I can try if you want. 
->
->Could I have the prompt you used? :)
->
->>Signed-off-by: Petr Mladek <pmladek@suse.com>
->>---
->> arch/powerpc/kernel/watchdog.c | 13 ++++++++++---
->> include/linux/sys_info.h       |  3 +++
->> kernel/hung_task.c             |  2 ++
->> kernel/panic.c                 |  4 +++-
->> kernel/watchdog.c              | 10 ++++++++--
->> lib/sys_info.c                 | 30 +++++++++++++++++++++++++++++-
->> 6 files changed, 55 insertions(+), 7 deletions(-)
->>
->>diff --git a/arch/powerpc/kernel/watchdog.c
->b/arch/powerpc/kernel/watchdog.c
->>index c40c69368476..0eab7894b9dc 100644
->>--- a/arch/powerpc/kernel/watchdog.c
->>+++ b/arch/powerpc/kernel/watchdog.c
->>@@ -239,6 +239,7 @@ static void watchdog_smp_panic(int cpu)
->> 	if (sysctl_hardlockup_all_cpu_backtrace ||
->> 	    (hardlockup_si_mask & SYS_INFO_ALL_BT)) {
->> 		trigger_allbutcpu_cpu_backtrace(cpu);
->>+		sys_info_done(SYS_INFO_ALL_BT);
->> 		cpumask_clear(&wd_smp_cpus_ipi);
->> 	} else {
->> 		/*
->>@@ -251,10 +252,12 @@ static void watchdog_smp_panic(int cpu)
->> 		}
->> 	}
->> 
->>-	sys_info(hardlockup_si_mask & ~SYS_INFO_ALL_BT);
->>+	sys_info(hardlockup_si_mask);
->> 	if (hardlockup_panic)
->> 		nmi_panic(NULL, "Hard LOCKUP");
->> 
->>+	sys_info_reset();
->>+
->> 	wd_end_reporting();
->> 
->> 	return;
->>@@ -419,13 +422,17 @@ DEFINE_INTERRUPT_HANDLER_NMI(soft_nmi_interrupt)
->> 		xchg(&__wd_nmi_output, 1); // see wd_lockup_ipi
->> 
->> 		if (sysctl_hardlockup_all_cpu_backtrace ||
->>-		    (hardlockup_si_mask & SYS_INFO_ALL_BT))
->>+		    (hardlockup_si_mask & SYS_INFO_ALL_BT)) {
->> 			trigger_allbutcpu_cpu_backtrace(cpu);
->>+			sys_info_done(SYS_INFO_ALL_BT);
->>+		}
->> 
->>-		sys_info(hardlockup_si_mask & ~SYS_INFO_ALL_BT);
->>+		sys_info(hardlockup_si_mask);
->> 		if (hardlockup_panic)
->> 			nmi_panic(regs, "Hard LOCKUP");
->> 
->>+		sys_info_reset();
->>+
->> 		wd_end_reporting();
->> 	}
->> 	/*
->>diff --git a/include/linux/sys_info.h b/include/linux/sys_info.h
->>index a5bc3ea3d44b..ad43548c75dd 100644
->>--- a/include/linux/sys_info.h
->>+++ b/include/linux/sys_info.h
->>@@ -18,6 +18,9 @@
->> #define SYS_INFO_BLOCKED_TASKS		0x00000080
->> 
->> void sys_info(unsigned long si_mask);
->>+void sys_info_done(unsigned long si_mask);
->>+void sys_info_reset(void);
->>+bool sys_info_is_done(unsigned long si_mask);
->> unsigned long sys_info_parse_param(char *str);
->> 
->> #ifdef CONFIG_SYSCTL
->>diff --git a/kernel/hung_task.c b/kernel/hung_task.c
->>index 6fcc94ce4ca9..dbb6a27770f5 100644
->>--- a/kernel/hung_task.c
->>+++ b/kernel/hung_task.c
->>@@ -354,6 +354,8 @@ static void check_hung_uninterruptible_tasks(unsigned
->long timeout)
->> 
->> 	if (hung_task_call_panic)
->> 		panic("hung_task: blocked tasks");
->>+
->>+	sys_info_reset();
->> }
->> 
->> static long hung_timeout_jiffies(unsigned long last_checked,
->>diff --git a/kernel/panic.c b/kernel/panic.c
->>index 213725b612aa..86ce17f03da2 100644
->>--- a/kernel/panic.c
->>+++ b/kernel/panic.c
->>@@ -550,8 +550,10 @@ static void panic_trigger_all_cpu_backtrace(void)
->>  */
->> static void panic_other_cpus_shutdown(bool crash_kexec)
->> {
->>-	if (panic_print & SYS_INFO_ALL_BT)
->>+	if ((panic_print & SYS_INFO_ALL_BT) && !sys_info_is_done(SYS_INFO_ALL_BT)) {
->> 		panic_trigger_all_cpu_backtrace();
->>+		sys_info_done(SYS_INFO_ALL_BT);
->>+	}
->> 
->> 	/*
->> 	 * Note that smp_send_stop() is the usual SMP shutdown function,
->>diff --git a/kernel/watchdog.c b/kernel/watchdog.c
->>index 87dd5e0f6968..f431087c68a7 100644
->>--- a/kernel/watchdog.c
->>+++ b/kernel/watchdog.c
->>@@ -282,14 +282,17 @@ void watchdog_hardlockup_check(unsigned int cpu,
->struct pt_regs *regs)
->> 
->> 	if (hardlockup_all_cpu_backtrace) {
->> 		trigger_allbutcpu_cpu_backtrace(cpu);
->>+		sys_info_done(SYS_INFO_ALL_BT);
->> 		if (!hardlockup_panic)
->> 			clear_bit_unlock(0, &hard_lockup_nmi_warn);
->> 	}
->> 
->>-	sys_info(hardlockup_si_mask & ~SYS_INFO_ALL_BT);
->>+	sys_info(hardlockup_si_mask);
->> 	if (hardlockup_panic)
->> 		nmi_panic(regs, "Hard LOCKUP");
->> 
->>+	sys_info_reset();
->>+
->> 	per_cpu(watchdog_hardlockup_warned, cpu) = true;
->> }
->> 
->>@@ -895,16 +898,19 @@ static enum hrtimer_restart
->watchdog_timer_fn(struct hrtimer *hrtimer)
->> 
->> 		if (softlockup_all_cpu_backtrace) {
->> 			trigger_allbutcpu_cpu_backtrace(smp_processor_id());
->>+			sys_info_done(SYS_INFO_ALL_BT);
->> 			if (!softlockup_panic)
->> 				clear_bit_unlock(0, &soft_lockup_nmi_warn);
->> 		}
->> 
->> 		add_taint(TAINT_SOFTLOCKUP, LOCKDEP_STILL_OK);
->>-		sys_info(softlockup_si_mask & ~SYS_INFO_ALL_BT);
->>+		sys_info(softlockup_si_mask);
->> 		thresh_count = duration / get_softlockup_thresh();
->> 
->> 		if (softlockup_panic && thresh_count >= softlockup_panic)
->> 			panic("softlockup: hung tasks");
->>+
->>+		sys_info_reset();
->> 	}
->> 
->> 	return HRTIMER_RESTART;
->>diff --git a/lib/sys_info.c b/lib/sys_info.c
->>index f32a06ec9ed4..f8e6176fae75 100644
->>--- a/lib/sys_info.c
->>+++ b/lib/sys_info.c
->>@@ -160,7 +160,35 @@ static void __sys_info(unsigned long si_mask)
->> 		show_state_filter(TASK_UNINTERRUPTIBLE);
->> }
->> 
->>+static unsigned long sys_info_done_mask;
->>+
->>+void sys_info_done(unsigned long si_mask)
->>+{
->>+	sys_info_done_mask |= si_mask;
->>+}
->>+
->>+void sys_info_reset(void)
->>+{
->>+	sys_info_done_mask = 0;
->>+}
->>+
->>+bool sys_info_is_done(unsigned long si_mask)
->>+{
->>+	return (sys_info_done_mask & si_mask) == si_mask;
->>+}
->>+
->> void sys_info(unsigned long si_mask)
->> {
->>-	__sys_info(si_mask ? : kernel_si_mask);
->>+	unsigned long mask;
->>+
->>+	if (si_mask)
->>+		mask = si_mask & ~sys_info_done_mask;
->>+	else
->>+		mask = kernel_si_mask & ~sys_info_done_mask;
->>+
->>+	if (!mask)
->>+		return;
->>+
->>+	__sys_info(mask);
->>+	sys_info_done(mask);
->> }
->>
->
->Thanks!
+`opal_check_token()` function is used to determine if a specific
+OPAL firmware call is supported on the current platform. This check
+is performed frequently during boot and runtime, resulting in
+unnecessary firmware calls for the same token values.
 
+Add a caching layer for the opal_check_token() OPAL call to avoid
+repeated firmware calls for token availability checks. This reduces
+firmware call overhead during boot.
 
-Hmm.. new idea 
+Testing with buildroot images shows OPAL calls reduced from
+35578 to 28983, before console bring-up.
 
-kernel/dump_filter.c ?
+Signed-off-by: Shivang Upadhyay <shivangu@linux.ibm.com>
+---
+Changelog:
+* v1: https://lore.kernel.org/all/20260601112520.161605-1-shivangu@linux.ibm.com/
+   - implemented tri-state check as suggestd by Sourabh.
+   - made the implementation more clear.
 
-What this file could do is to handle a generic lockup state machine
-so any subsystem can log what it already dumped?
+---
+ arch/powerpc/include/asm/opal.h            |  1 +
+ arch/powerpc/platforms/powernv/opal-call.c |  2 +-
+ arch/powerpc/platforms/powernv/opal.c      | 30 ++++++++++++++++++++++
+ 3 files changed, 32 insertions(+), 1 deletion(-)
 
+diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
+index 0a398265ba04..e7e11479122b 100644
+--- a/arch/powerpc/include/asm/opal.h
++++ b/arch/powerpc/include/asm/opal.h
+@@ -156,6 +156,7 @@ int64_t opal_pci_next_error(uint64_t phb_id, __be64 *first_frozen_pe,
+ int64_t opal_pci_poll(uint64_t id);
+ int64_t opal_return_cpu(void);
+ int64_t opal_check_token(uint64_t token);
++int64_t opal_check_token_call(uint64_t token);
+ int64_t opal_reinit_cpus(uint64_t flags);
+ 
+ int64_t opal_xscom_read(uint32_t gcid, uint64_t pcb_addr, __be64 *val);
+diff --git a/arch/powerpc/platforms/powernv/opal-call.c b/arch/powerpc/platforms/powernv/opal-call.c
+index 021b0ec29e24..00325c189e69 100644
+--- a/arch/powerpc/platforms/powernv/opal-call.c
++++ b/arch/powerpc/platforms/powernv/opal-call.c
+@@ -207,7 +207,7 @@ OPAL_CALL(opal_validate_flash,			OPAL_FLASH_VALIDATE);
+ OPAL_CALL(opal_manage_flash,			OPAL_FLASH_MANAGE);
+ OPAL_CALL(opal_update_flash,			OPAL_FLASH_UPDATE);
+ OPAL_CALL(opal_resync_timebase,			OPAL_RESYNC_TIMEBASE);
+-OPAL_CALL(opal_check_token,			OPAL_CHECK_TOKEN);
++OPAL_CALL(opal_check_token_call,		OPAL_CHECK_TOKEN);
+ OPAL_CALL(opal_dump_init,			OPAL_DUMP_INIT);
+ OPAL_CALL(opal_dump_info,			OPAL_DUMP_INFO);
+ OPAL_CALL(opal_dump_info2,			OPAL_DUMP_INFO2);
+diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
+index 1946dbdc9fa1..1e9cb5271ee7 100644
+--- a/arch/powerpc/platforms/powernv/opal.c
++++ b/arch/powerpc/platforms/powernv/opal.c
+@@ -1125,6 +1125,36 @@ EXPORT_SYMBOL_GPL(opal_flash_read);
+ EXPORT_SYMBOL_GPL(opal_flash_write);
+ EXPORT_SYMBOL_GPL(opal_flash_erase);
+ EXPORT_SYMBOL_GPL(opal_prd_msg);
++
++/**
++ * opal_check_token - Check if an OPAL call token is supported
++ * @token: OPAL token number to check
++ *
++ * Returns 1 if supported, 0 if not.
++ */
++int64_t opal_check_token(uint64_t token)
++{
++	static u8 token_cache[OPAL_LAST];
++	enum {
++		SUPP_UNKNOWN = 0,
++		PRESENT,
++		ABSENT
++	};
++
++	if (token > OPAL_LAST)
++		return 0;
++
++	if (token_cache[token] == SUPP_UNKNOWN) {
++		/* Do the actual opal_call here */
++		if (opal_check_token_call(token)) {
++			token_cache[token] = PRESENT;
++		} else {
++			token_cache[token] = ABSENT;
++		}
++	}
++
++	return (token_cache[token] == PRESENT);
++}
+ EXPORT_SYMBOL_GPL(opal_check_token);
+ 
+ /* Convert a region of vmalloc memory to an opal sg list */
+-- 
+2.54.0
 
-I know it may bloat, but it's better then cramming fixes in.
-
-What do you guys think? Maybe we could start a RFC for this?
-
-Thanks!
 
