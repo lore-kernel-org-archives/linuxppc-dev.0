@@ -1,51 +1,81 @@
-Return-Path: <linuxppc-dev+bounces-23031-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23032-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 20318C43327
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Jun 2026 15:55:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B19F4C43458
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Jun 2026 16:11:59 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gn0cg2h5Nz2yYd;
-	Sat, 27 Jun 2026 01:55:15 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782489315;
-	cv=none; b=h0d8OUlfXNayQ1ig9gZYTD/UZaTqcVcMzjL/3+MSYLCPgjic2GVhIbAkalNlTBWtYYE6mHu4t+BXwql1lj4ZI0WetBwDgj0T/DTJs1qM3o4TeKPQ7/mlD0ZuRmKWCLDuNk0AWsSrvfB+m8FeyLS+61PEeRQX5MBd9Q4LV90XXGr6/FwXd0AhWG6dVfDlsYpoKGMO9Y2VgZN2X/YPA1movevcnwa9OMJWisYIRQh6p/Z1lFVm+nBIMmY6ng4yewhfvddEWzpo/87srzxPZwnkyjQVva10ZMtLtBlydZlhuOHKeDo0wjWCGfLKmu2qvlyVxRrjUdT4MnAvtEFa/Pf/cw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gn0zy1NFKz2yYd;
+	Sat, 27 Jun 2026 02:11:58 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782490318;
+	cv=none; b=GlYird8hjKhpTyfDytIGHWEE9lPLsKb1VRalF+Ww/uAEF5k2oppt8pZfpxMdDzbddswOnCAsnpT75kWJwb9M1MerlueHaSYce7hXS2x4LDqh0F4WGy2SEohkHWwAb2JgQqMAHjIiT8QBLbFhm7C54GC7RbM+WnlSggoxiuzCkAh/QnqD5lb7uAp5IRBA1gEnoSyXcHYbkDsQXWja3Dz9LsEIkXkoXA2TkAPxSsBp9UMY5RbQqj4Fx9tc0hmu3sR5buyaP3hCGUjTy1MBGWkRPWh/H5XrFuW+TP2ljZ8ytFj9+vbNiSf4f39mUiA+tCUT7xtmgmcc6y2Zsqa7LwIwAg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1782489315; c=relaxed/relaxed;
-	bh=3Ce1ivL2u+pzFIhU3inz2XhQZgcVJMPkBIHLb8U0NEU=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=fYgB9FOjn0KRoHKb5OugoDPI3FfAEZYSjfrmkWB9E5l1gpvWSPLbtffHVNuhOiOjQtzFSDDcIbWInALqYYJVfkESp3HDYXb8Nucr0hPPZOnxZvDLPjS+Tz8JFPcoXn0cK5hNVBFHr/zG8OvY+gGg7WyH4OjC0V1Hcd9pxDke1E9NOGiUErHNPewyOaqKBlyd8DUGasUUaD4svOKm9GSvf1vQbD7KJjcvHy3KNB1FObTUmsU12QbzBFSXUey+U+PL3KEOZfZuoB5XwQ+LmV99j87DogbI9QL51k2VUDfSzaN5Z4kOM14luYGl2kiK24EVhONGGkMFgJ4hPKQe9EoCuw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=aOOon28K; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1782490318; c=relaxed/relaxed;
+	bh=EP9eH0oRE4eRM9pYXQuyyzmRq3l/3tg5EKZE6KeM81w=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=AbN0F+2RN2rfAxyfHgenRTGQ+ClTeBOaB0NgZ0cqSh0ExpaFYcXm/yG7OSFsXo8N9a46+UBezLN7uvf5taMyakt6qNis9TXATPBUpYLTFYTc4fOYVDz3s35DNEvSaQGH4bxb5Lw9hwCqc9Nz3RQb7UqrKySDoYgagzsKhQNkJncjT6Y7fDShhY2AYPvkNmd7m+ZOGgfV36sX7VoYOC1dy1Ks2wOsZTfN8Mws19ZyskrsgWEn5WdWJvvJ+hs+KkXbr2Y7drWdWUmydi7FLQ91T5sOTTHKgdjXkGT07gdt9CIsgp7zx5nzm5kfuPGT6fogcBggjjoUCd/FOXNjfyFAcQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=s8QNz9qb; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=tshah@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=aOOon28K;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=s8QNz9qb;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=tshah@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gn0cf1xZKz2xn3
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Jun 2026 01:55:14 +1000 (AEST)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id CDB52404C3;
-	Fri, 26 Jun 2026 15:55:11 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3FA851F000E9;
-	Fri, 26 Jun 2026 15:55:06 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1782489311;
-	bh=3Ce1ivL2u+pzFIhU3inz2XhQZgcVJMPkBIHLb8U0NEU=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=aOOon28KnbYeL6fq04CX46DrOdtRGnEJBkiX8PyMiZjoOsbGH9ZqaCuHqTkwVEPRP
-	 lCUe2dVwynO/Esz6q27hA8xSWwPzuBV8c6lkY2LZ0ReU35zH9rA7M9XhBAmOcwk2/1
-	 COtOx5Zvo9YaBeO3usPWhONHEzJ5BXoNnYoGa0FG1d6bSeY91upGpdo1J57UVv01yi
-	 HZUwILylvMhxrMC1D/v/lhbDYsjzckHsQ8Y8QP1bNcwm9E3htpmrrR1DEhyq7gY8rX
-	 w9TrocZ1Yxyw0M/R118qcw5c61fjn7FLhl7XozKS78Z5ozhH9InEhM5chFMsEkbTT1
-	 WoGJvl4ZRCbSQ==
-Message-ID: <8663e05b-0e54-4c1a-a7d1-94e49f2ca178@kernel.org>
-Date: Fri, 26 Jun 2026 17:55:05 +0200
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gn0zw57GSz2xn3
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Jun 2026 02:11:55 +1000 (AEST)
+Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 65QFnnYh3312102;
+	Fri, 26 Jun 2026 16:11:50 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:date:from:message-id:mime-version
+	:subject:to; s=pp1; bh=EP9eH0oRE4eRM9pYXQuyyzmRq3l/3tg5EKZE6KeM8
+	1w=; b=s8QNz9qb241scJe/ztPShoZ5Tu4Emy6yLy3/32F7VA5j62ieCMFLrBA9i
+	IDszEw6U3IaTY0VC+lgpm6MGZssLbcU6/vuI0TyJAlUSlAXur8RKPBlmIC5pt2n0
+	vrUxoR2R/5aTYf9/ubyw4svshPAnrkGmZswJVhmJ0KjgEuzWTzkEjQ3MTg7jJl4d
+	kDQdEpeKhXcAtHMuysihKveNONNF6oBQGDpwaUnj5GLaOtP83X/X80d92fWjISTe
+	5rKoitlv6PPQ7qyl33k88dfwh2fZw8RBt7dbT1hh472RcQs6n1FNLSv/8pjhgxtw
+	tEN1R0aq2oO+WXJ2zZyw4zKar+d1g==
+Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4ewjgt7cma-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 26 Jun 2026 16:11:49 +0000 (GMT)
+Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma11.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 65QG53jw019219;
+	Fri, 26 Jun 2026 16:11:48 GMT
+Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
+	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4ex7w03hg8-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 26 Jun 2026 16:11:48 +0000 (GMT)
+Received: from smtpav07.fra02v.mail.ibm.com (smtpav07.fra02v.mail.ibm.com [10.20.54.106])
+	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 65QGBivA27132286
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Fri, 26 Jun 2026 16:11:44 GMT
+Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 86ADD20043;
+	Fri, 26 Jun 2026 16:11:44 +0000 (GMT)
+Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 8C0AF20040;
+	Fri, 26 Jun 2026 16:11:40 +0000 (GMT)
+Received: from li-4c4c4544-0047-4210-804e-b5c04f423534.ibm.com.com (unknown [9.124.221.251])
+	by smtpav07.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Fri, 26 Jun 2026 16:11:40 +0000 (GMT)
+From: Tanushree Shah <tshah@linux.ibm.com>
+To: acme@kernel.org, jolsa@kernel.org, adrian.hunter@intel.com,
+        vmolnaro@redhat.com, mpetlan@redhat.com, tmricht@linux.ibm.com,
+        maddy@linux.ibm.com, irogers@google.com, namhyung@kernel.org
+Cc: linux-perf-users@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+        atrajeev@linux.ibm.com, hbathini@linux.ibm.com, Tejas.Manhas1@ibm.com,
+        Tanushree.Shah@ibm.com, Shivani.Nittor@ibm.com,
+        Tanushree Shah <tshah@linux.ibm.com>
+Subject: [PATCH v3] perf dso: Fix kallsyms DSO detection with fallback logic
+Date: Fri, 26 Jun 2026 21:40:53 +0530
+Message-ID: <20260626161052.1024439-2-tshah@linux.ibm.com>
+X-Mailer: git-send-email 2.54.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -59,154 +89,158 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 2/2] selftests/mm: fix ksm NUMA merge test for systems
- with memoryless NUMA nodes
-To: Sayali Patil <sayalip@linux.ibm.com>,
- Andrew Morton <akpm@linux-foundation.org>, Shuah Khan <shuah@kernel.org>,
- linux-mm@kvack.org, linux-kernel@vger.kernel.org,
- linux-kselftest@vger.kernel.org, Ritesh Harjani <ritesh.list@gmail.com>
-Cc: Zi Yan <ziy@nvidia.com>, Michal Hocko <mhocko@kernel.org>,
- Oscar Salvador <osalvador@suse.de>,
- Lorenzo Stoakes <lorenzo.stoakes@oracle.com>, Dev Jain <dev.jain@arm.com>,
- Liam.Howlett@oracle.com, linuxppc-dev@lists.ozlabs.org,
- Miaohe Lin <linmiaohe@huawei.com>,
- Venkat Rao Bagalkote <venkat88@linux.ibm.com>
-References: <cover.1782365671.git.sayalip@linux.ibm.com>
- <8540b58ef1fdbc2e5cb2f9fe28a2d2a54a5bc6a8.1782365671.git.sayalip@linux.ibm.com>
-From: "David Hildenbrand (Arm)" <david@kernel.org>
-Content-Language: en-US
-Autocrypt: addr=david@kernel.org; keydata=
- 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
- qIws/H2t
-In-Reply-To: <8540b58ef1fdbc2e5cb2f9fe28a2d2a54a5bc6a8.1782365671.git.sayalip@linux.ibm.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjI2MDEzMSBTYWx0ZWRfXwU3qr5gqvhsL
+ 0L2FBSCAsbS4OBuk9HMYrJDUuxWkfBzz2yLyDNA4vPF4ms5P6yznhQblX3DjV6vpH5cdRjvEzbH
+ HOB3PPrfIOOtqmH9npKKspAmZ0s0HYqI78lR9l7wt3SvkcfzeM9H1egGW85VT66IsHxGO9E14VR
+ hlkeK7VASpdpwvB0mCsHx5bHeLovCS+SVs+RBiT/teJb06s8B7jDUjOH5NGWPspcqnqzOwUBqEH
+ T0BRaoRYMWQ+5cpYar1XAlB5AcyfTXUEQA3u5HctxrLxFa1fdGEsrBjLlF7em0/hFrwu4/CPVyH
+ SqQxsXwAIMVrHkcNZNfxa0Q58MNeqIhWoQYkYb6NK0TFXaG9GrGwdxZGsYq2DPXWK6D5bp72KYi
+ iA83kSQp41OnWxkahrnKHsFwKRC0T6d/AclH5pztNwqlhZRiwc0gCvwKHBEcLb+giYNJ2Yn01go
+ NsZJZU3JRsK4iV1LrLw==
+X-Proofpoint-GUID: YdKosPuWuGxdbbhI_zyVdQBMCWEFQfxB
+X-Proofpoint-Spam-Info: AW1haW4tMjYwNjI2MDEzMSBTYWx0ZWRfXzcZokNkqYf6T
+ z3sqJC9qkRAi49WIydSUhi9poWW808eLNUKHSvT/dvw+8n5nvjmPAdR2DfLBJ33yaN1pljoFatH
+ 8i+NZWo5kpQQem+ecw+UO5sd2/ZltoY=
+X-Authority-Analysis: v=2.4 cv=I/lVgtgg c=1 sm=1 tr=0 ts=6a3ea4c5 cx=c_pps
+ a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
+ a=FelO9ux0wxsA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
+ a=RzCfie-kr_QcCd8fBx8p:22 a=VwQbUJbxAAAA:8 a=VnNF1IyMAAAA:8
+ a=4ZgrmD5STv3GE8aCXdIA:9
+X-Proofpoint-ORIG-GUID: xaxaAKM_F0dEc8ol06I7siiMw_JIhT4N
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
+ definitions=2026-06-26_04,2026-06-26_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ lowpriorityscore=0 spamscore=0 phishscore=0 clxscore=1015 priorityscore=1501
+ adultscore=0 impostorscore=0 bulkscore=0 suspectscore=0 malwarescore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2606260131
 
->  
-> +static int count_mem_nodes(void)
-> +{
-> +	int node, count = 0;
-> +
-> +	for (node = 0; node <= numa_max_node(); node++) {
-> +		if (numa_node_size(node, NULL) > 0)
-> +			count++;
-> +	}
-> +
-> +	return count;
-> +}
-> +
+The current kallsyms detection in dso__is_kallsyms() uses the
+dso_binary_type enum which fixes the issue of kallsyms being cached in
+the build-id cache for out-of-tree modules.
 
-Can we instead build upon our existing helpers get_first_mem_node() +
-get_next_mem_node() ?
+However, during build-id injection in perf record/inject, dso_binary_type
+has not been explicitly set yet,so dso__binary_type() returns
+DSO_BINARY_TYPE__NOT_FOUND instead of DSO_BINARY_TYPE__KALLSYMS for the
+kernel DSO. The current check then fails to identify it as kallsyms,
+causing build-id symlinks to not be created in ~/.debug/.build-id/ and
+perf archive to fail with "Cannot stat" errors.
 
-From 432774fb50237519c1c041e402fddfdf4b35aa2c Mon Sep 17 00:00:00 2001
-From: "David Hildenbrand (Arm)" <david@kernel.org>
-Date: Fri, 26 Jun 2026 17:52:21 +0200
-Subject: [PATCH] tmp
+Steps to reproduce the issue:
+1. rm -rf ~/.debug/.build-id
+2. perf record sleep 1
+3. perf archive
 
-Signed-off-by: David Hildenbrand (Arm) <david@kernel.org>
+Fix by falling back to matching long_name against the known kallsyms
+strings explicitly when binary_type is not yet set
+(== DSO_BINARY_TYPE__NOT_FOUND). Use strcmp() for exact matching of
+fixed names and strict validation for guest kallsyms with embedded PID
+to prevent path traversal attacks.
+
+Fixes: ebf0b332732d ("perf dso: fix dso__is_kallsyms() check")
+Signed-off-by: Tanushree Shah <tshah@linux.ibm.com>
 ---
- tools/testing/selftests/mm/ksm_tests.c | 16 +++++++++-------
- 1 file changed, 9 insertions(+), 7 deletions(-)
+v2 -> v3: Replace strncmp() prefix matching with strcmp() for fixed
+          kallsyms names and add is_guest_kallsyms_pid_name() to
+          strictly validate guest kallsyms with PID format, preventing
+          path traversal attacks.
 
-diff --git a/tools/testing/selftests/mm/ksm_tests.c b/tools/testing/selftests/mm/ksm_tests.c
-index a050f4840cfa3..2ebbb544c6711 100644
---- a/tools/testing/selftests/mm/ksm_tests.c
-+++ b/tools/testing/selftests/mm/ksm_tests.c
-@@ -440,9 +440,9 @@ static int get_next_mem_node(int node)
- 		mem_node = i % (max_node + 1);
- 		node_size = numa_node_size(mem_node, NULL);
- 		if (node_size > 0)
--			break;
-+			return mem_node;
- 	}
--	return mem_node;
-+	return -ENODEV;
+v1 -> v2: Rename DSO__NAME_GUEST_KALLSYMS to DSO__PREFIX_GUEST_KALLSYMS
+          to reflect that it is a prefix, not a full name.
+
+v1: https://lore.kernel.org/all/20260410071225.708005-2-tshah@linux.ibm.com/
+
+ tools/perf/util/dso.h | 57 ++++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 56 insertions(+), 1 deletion(-)
+
+diff --git a/tools/perf/util/dso.h b/tools/perf/util/dso.h
+index ede691e9a249..8763e6f65316 100644
+--- a/tools/perf/util/dso.h
++++ b/tools/perf/util/dso.h
+@@ -9,6 +9,7 @@
+ #include <stdbool.h>
+ #include <stdio.h>
+ #include <linux/bitops.h>
++#include <string.h>
+ #include "build-id.h"
+ #include "debuginfo.h"
+ #include "mutex.h"
+@@ -20,6 +21,40 @@ struct perf_env;
+ 
+ #define DSO__NAME_KALLSYMS	"[kernel.kallsyms]"
+ #define DSO__NAME_KCORE		"[kernel.kcore]"
++#define DSO__NAME_GUEST_KALLSYMS		"[guest.kernel.kallsyms]"
++#define DSO__NAME_GUEST_KALLSYMS_PID_PREFIX	"[guest.kernel.kallsyms."
++
++/*
++ * Validate names of the form "[guest.kernel.kallsyms.<pid>]", where
++ * <pid> is the PID of the guest VM and varies per guest, so it
++ * cannot be matched with strcmp() against a fixed string.
++ *
++ * Every character after the fixed prefix must be a decimal digit,
++ * with ']' immediately terminating the digit run and nothing
++ * following it. This rules out '/', "..", or any other character
++ * being smuggled into the name.
++ */
++static inline bool is_guest_kallsyms_pid_name(const char *name)
++{
++	const size_t prefix_len = sizeof(DSO__NAME_GUEST_KALLSYMS_PID_PREFIX) - 1;
++	size_t digits;
++
++	if (strncmp(name, DSO__NAME_GUEST_KALLSYMS_PID_PREFIX, prefix_len) != 0)
++		return false;
++
++	digits = strspn(name + prefix_len, "0123456789");
++	if (digits == 0)
++		return false;
++
++	/* ']' must terminate the digit run, with nothing trailing it */
++	if (name[prefix_len + digits] != ']')
++		return false;
++
++	if (name[prefix_len + digits + 1] != '\0')
++		return false;
++
++	return true;
++}
+ 
+ /**
+  * enum dso_binary_type - The kind of DSO generally associated with a memory
+@@ -914,8 +949,28 @@ static inline bool dso__is_kcore(const struct dso *dso)
+ static inline bool dso__is_kallsyms(const struct dso *dso)
+ {
+ 	enum dso_binary_type bt = dso__binary_type(dso);
++	const char *name;
++
++	if (bt == DSO_BINARY_TYPE__KALLSYMS || bt == DSO_BINARY_TYPE__GUEST_KALLSYMS)
++		return true;
++
++	if (bt != DSO_BINARY_TYPE__NOT_FOUND)
++		return false;
++
++	if (!RC_CHK_ACCESS(dso)->kernel)
++		return false;
++
++	name = RC_CHK_ACCESS(dso)->long_name;
++	if (!name)
++		return false;
++
++	if (!strcmp(name, DSO__NAME_KALLSYMS))
++		return true;
++
++	if (!strcmp(name, DSO__NAME_GUEST_KALLSYMS))
++		return true;
+ 
+-	return bt == DSO_BINARY_TYPE__KALLSYMS || bt == DSO_BINARY_TYPE__GUEST_KALLSYMS;
++	return is_guest_kallsyms_pid_name(name);
  }
  
- static int get_first_mem_node(void)
-@@ -455,8 +455,8 @@ static int check_ksm_numa_merge(int merge_type, int mapping, int prot, int timeo
- {
- 	void *numa1_map_ptr, *numa2_map_ptr;
- 	struct timespec start_time;
-+	int first_node, second_node;
- 	int page_count = 2;
--	int first_node;
- 
- 	if (clock_gettime(CLOCK_MONOTONIC_RAW, &start_time)) {
- 		ksft_perror("clock_gettime");
-@@ -467,17 +467,19 @@ static int check_ksm_numa_merge(int merge_type, int mapping, int prot, int timeo
- 		ksft_print_msg("NUMA support not enabled\n");
- 		return KSFT_SKIP;
- 	}
--	if (numa_num_configured_nodes() <= 1) {
--		ksft_print_msg("At least 2 NUMA nodes must be available\n");
-+	first_node = get_first_mem_node();
-+	second_node = get_next_mem_node(first_node);
-+
-+	if (second_node < 0) {
-+		ksft_print_msg("At least 2 NUMA nodes with memory must be available\n");
- 		return KSFT_SKIP;
- 	}
- 	if (ksm_write_sysfs(KSM_FP("merge_across_nodes"), merge_across_nodes))
- 		return KSFT_FAIL;
- 
- 	/* allocate 2 pages in 2 different NUMA nodes and fill them with the same data */
--	first_node = get_first_mem_node();
- 	numa1_map_ptr = numa_alloc_onnode(page_size, first_node);
--	numa2_map_ptr = numa_alloc_onnode(page_size, get_next_mem_node(first_node));
-+	numa2_map_ptr = numa_alloc_onnode(page_size, second_node);
- 	if (!numa1_map_ptr || !numa2_map_ptr) {
- 		ksft_perror("numa_alloc_onnode");
- 		return KSFT_FAIL;
+ bool dso__is_object_file(const struct dso *dso);
 -- 
-2.43.0
+2.47.3
 
-
--- 
-Cheers,
-
-David
 
