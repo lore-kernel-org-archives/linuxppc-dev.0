@@ -1,85 +1,78 @@
-Return-Path: <linuxppc-dev+bounces-23009-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23010-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3D0E1CDE008
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Jun 2026 08:59:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 52515CDE00E
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Jun 2026 09:13:27 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gmqNC55VCz2yh4;
-	Fri, 26 Jun 2026 18:58:51 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782464331;
-	cv=none; b=YTUFmPyDyQjYCA2fla0FpeKuUGnX4clZTdbfjfpMbAOw3X3roxjHMScSJUte/yhdsPx7W6Kl7BgT9ovjkn1CQHh4PMto+q4ZVcXOW4S3VmIqKxJ3fgVRWa8cJJErSBah5q5Z78FkCYQG4RRr5BLw4JUOjF8t7FWOPuY0B9Wp4B2kFj2MVz4wN8QTEOlnZAF4PHm+86iAdkO5W46HtP4mJYxvi9R0eyves6C+hAhuQCIdUDVx80UrDYoBPM88wxBFY4Mml3OctdosygFOjYN46BNRUcB3cKqp3PrG5ZZ4p7gZNw2jIatbE3YAsT3c+tUp9/LKlo09B+UvcAyVWP6nuA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gmqj16gQPz2yVv;
+	Fri, 26 Jun 2026 19:13:25 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782465205;
+	cv=none; b=Uro41pN30Z4NZJV9HNSXIzp4UstsFwYyo0WnujsSAu0zyI3SlGZ9vT63t2+0Quc7Sgmw9pkTwvo5yeW3KfLuRCE+orh0/UDVNETlqYnQp1ZXAIdggLyo3raLc+imyUTiwBnoO5Lx2a2eQx5j/MknPn2H4dsudb6++pGRY7oCPVK5VcqfvTxfTMEQk7zsnUCw/x+r/cyZHhDAcO9+TdizBGhfmxDApI/0RvpbtnG/yRthSTOo/mkpRDhGGS58yaGVAhoftuugC0PG77r9bMC006UFR8IhOYoTIuL+87kPGedUt21yVdJIwjASlfXrCVPgN0VFcQJNLqaklKhWsHk2/A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1782464331; c=relaxed/relaxed;
-	bh=dq2iJH3ZBxy9MuvW63gPgQjNUyVQUQHN+hh9clQFrqw=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=P3VrU0rtgPjXSFMr7svNQKHSRIuzeNG7F8N9HMA0l17VwCd/Ty833BjwFJVScFRFPelEwtqIRXNAmq9OK256gOCNwivQ8xx9mNYYzs7LBCDBh3JA8KffrY95X7k+zSQw6kMkaiCDYUWWAIY03odhQBCXGLeRrmKaM+JDxliQTXyrCbGOKFjGZd0OdNORL+PWl1Wmc5fLoazh9QdunxtIE5JEz67w6H/Z38M8uBc7DTqWcdPcPL4dN/3TWuvU7IXkDBggwBxvq7u46gdiqtn63eqaZtp0bEvZkj6jnQ1qQN3Hs1z/YnScqCuwmVi5w5lHW+Q9vsAYiguBmulj7x8t4g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=OSWTvxHd; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=vaibhav@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	t=1782465205; c=relaxed/relaxed;
+	bh=v6gDTn5FgvBoj/xb3W1jwiO4tyzvEh2+Yekrgngyuzc=;
+	h=Subject:From:To:Cc:Date:Message-ID:MIME-Version:Content-Type; b=hNLODWClI2I/pvcQ/Xp81aQsMmbEqJ+nrkZEiBIkf3Qbe19KcvY8DBlDlBgUWmceaNeJAUyXAebrN+YVZNQX7hktoYR46BwgB4c+aeBPY/h9ajyCr4w+d0pD6p7gC2JoNU85JhnK52w43JA5cFBEsKcSYK0nmmbQdemjjUAqN7R0lepljwdvZmFM4DmyD8VTE1MJPUKRqlqNMCLBuMpAmeR4iyUq1TOKT0yOdzDyWFTC98oWfHEgUsm6hscJxli4SgLNA5Rg8UbwWnMW1DSxmDB6ISrYvKA1bMXuNjndVvRdJxcTFJqgoK35BTtwUvj+CLsZS9uuDwalGZK9CGDYsA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=HBZ8kOeC; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sbhat@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=OSWTvxHd;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=HBZ8kOeC;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=vaibhav@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sbhat@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gmqNC0Nlzz2yYd
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jun 2026 18:58:50 +1000 (AEST)
-Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 65Q6nBfc2221391;
-	Fri, 26 Jun 2026 08:58:37 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gmqj061K4z2yDs
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jun 2026 19:13:24 +1000 (AEST)
+Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 65Q6mQuE2322718;
+	Fri, 26 Jun 2026 09:13:10 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=pp1; bh=dq2iJH3ZBxy9MuvW6
-	3gPgQjNUyVQUQHN+hh9clQFrqw=; b=OSWTvxHdkeMs7oFspfn/vpBlKgW+OnZks
-	M/oIkwuW6s1B1MypgxPmffzhng2mZnG76ZFi2V60dO/jCYohpclcDJYabZIiXJAG
-	mvg+2aYyPnsX/Pi+tOCH18/FcuePoj7A2B+XghL18iGrrhvG81UOR806FRIEAFjo
-	Z1hk5Ikq53LKCKmOjKNAd89LqcBlmFDRvyc+vwRO/0SnuUBkN336oKRjJBaiDHff
-	SKiX9ZBbRITuvNxKFOzLy0Dxiu9azhBO7mfh7QI7aIEZ0fm3O7hyiZRyB1IjLbIp
-	2/cTeFOzrVA9s7GgBf0jXsTMW3ak+Z2miH2hCm4pl6MGm/j/Kk8Tw==
-Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4ewg9j62yj-1
+	:content-transfer-encoding:content-type:date:from:message-id
+	:mime-version:subject:to; s=pp1; bh=v6gDTn5FgvBoj/xb3W1jwiO4tyzv
+	Eh2+Yekrgngyuzc=; b=HBZ8kOeCCWBDDBmXGZr4Ddo305kLY+idGnddzETmqZsU
+	cDs+ItEgcLc3dqI5akrrpI5r5aN6X6/CL1dcKNiTKOYDaBmr8KU4oXfAvX9IMqYQ
+	jUKEQ4kVnc1mVy9+SKpHi7mBIRaadvihoZKj8enRmUaJWJ7ZXEt9TNtIDNUzSfwX
+	gQnIKFwQoJToNHntYcTZX6HsXYGkcIPvQExHbBdDSr3m1qiyryjc6ZRSfOsw0A0X
+	hK89fOzN54Svb2cG3H+H8vbX3021WVXLh9roD2oJTuKlKysmGaesnuzzSoKagrRH
+	oSJLL5nNbHeu/4HhpBij6oW+MfLZJUobZt9AEmTkBw==
+Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4ewjc3xayd-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 26 Jun 2026 08:58:36 +0000 (GMT)
-Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma12.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 65Q8njNO001484;
-	Fri, 26 Jun 2026 08:58:35 GMT
-Received: from smtprelay07.wdc07v.mail.ibm.com ([172.16.1.74])
-	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 4ex56qthuw-1
+	Fri, 26 Jun 2026 09:13:09 +0000 (GMT)
+Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma13.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 65Q94jNI007133;
+	Fri, 26 Jun 2026 09:13:08 GMT
+Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
+	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4ex7dgj5fd-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 26 Jun 2026 08:58:35 +0000 (GMT)
-Received: from smtpav03.dal12v.mail.ibm.com (smtpav03.dal12v.mail.ibm.com [10.241.53.102])
-	by smtprelay07.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 65Q8wYvU32703216
+	Fri, 26 Jun 2026 09:13:08 +0000 (GMT)
+Received: from smtpav07.fra02v.mail.ibm.com (smtpav07.fra02v.mail.ibm.com [10.20.54.106])
+	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 65Q9D41a43057412
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 26 Jun 2026 08:58:34 GMT
-Received: from smtpav03.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 108FB5803F;
-	Fri, 26 Jun 2026 08:58:34 +0000 (GMT)
-Received: from smtpav03.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 817B958056;
-	Fri, 26 Jun 2026 08:58:29 +0000 (GMT)
-Received: from vaibhav?linux.ibm.com (unknown [9.39.20.139])
-	by smtpav03.dal12v.mail.ibm.com (Postfix) with SMTP;
-	Fri, 26 Jun 2026 08:58:29 +0000 (GMT)
-Received: by vaibhav@linux.ibm.com (sSMTP sendmail emulation); Fri, 26 Jun 2026 14:28:28 +0530
-From: Vaibhav Jain <vaibhav@linux.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, linux-kselftest@vger.kernel.org,
-        kunit-dev@googlegroups.com, linux-kernel@vger.kernel.org
-Cc: Vaibhav Jain <vaibhav@linux.ibm.com>,
-        Madhavan Srinivasan <maddy@linux.ibm.com>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        Brendan Higgins <brendan.higgins@linux.dev>,
-        David Gow <david@davidgow.net>, Rae Moar <raemoar63@gmail.com>
-Subject: [PATCH v4 2/2] kunit: Add example of test suite that can be skipped at runtime
-Date: Fri, 26 Jun 2026 14:28:07 +0530
-Message-ID: <20260626085811.151133-3-vaibhav@linux.ibm.com>
-X-Mailer: git-send-email 2.54.0
-In-Reply-To: <20260626085811.151133-1-vaibhav@linux.ibm.com>
-References: <20260626085811.151133-1-vaibhav@linux.ibm.com>
+	Fri, 26 Jun 2026 09:13:04 GMT
+Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 919BE2004B;
+	Fri, 26 Jun 2026 09:13:04 +0000 (GMT)
+Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 1798B20040;
+	Fri, 26 Jun 2026 09:13:03 +0000 (GMT)
+Received: from [10.88.0.2] (unknown [9.5.7.39])
+	by smtpav07.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Fri, 26 Jun 2026 09:13:02 +0000 (GMT)
+Subject: [PATCH v2] powerpc/rtas_pci: No hotplug on permanently removed device
+ on pSeries
+From: Shivaprasad G Bhat <sbhat@linux.ibm.com>
+To: maddy@linux.ibm.com, linuxppc-dev@lists.ozlabs.org
+Cc: harshpb@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com,
+        chleroy@kernel.org, sbhat@linux.ibm.com, linux-kernel@vger.kernel.org
+Date: Fri, 26 Jun 2026 09:13:03 +0000
+Message-ID: <178246517230.1267.12206176311111155505.stgit@linux.ibm.com>
+User-Agent: StGit/1.5
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -93,114 +86,97 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 X-TM-AS-GCONF: 00
 X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-ORIG-GUID: ZJ8nUWzOPibnE_4HGKDwr7KZD7-vjhPI
-X-Proofpoint-GUID: LSCqZt8pxDgpYvnHYkLVsI-2UQyVz1-N
-X-Authority-Analysis: v=2.4 cv=Y4XIdBeN c=1 sm=1 tr=0 ts=6a3e3f3d cx=c_pps
- a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17
- a=FelO9ux0wxsA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=Y2IxJ9c9Rs8Kov3niI8_:22 a=VwQbUJbxAAAA:8 a=VnNF1IyMAAAA:8 a=nzuXsxulAAAA:8
- a=ER9KG9QWV2A1lhMn8r8A:9 a=Jn5cl5okm61iLnyvC_SE:22
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjI2MDA3MCBTYWx0ZWRfX+K4XeN0OChbK
- gsEfb8qxoF/2mD/0bpgiStMhEoLgIHejVSNd9iUpyTMT8tkHSUCFHPXgvli2gWSOcFdYQqIbhgf
- RnufnotmcvNkwn9B9UNNFqx8QhrcX/rPrpX9xw9Zcbc1r7/cnIU8UR013ZEg715qz4jGtZXr5zp
- ECecIP3JAzvBPE1GPtQo58v3aY2pA+ggvuqZF2cX86MVbB5DqFRSwO+fHCg+eNQa7T21rBvHg4F
- CCMc9npIaW9wq7u2LUj6EwYT9QIjHECio4cSptdiQYpD+/2UZpfRhk5CStVuQ9U8qvfwkmFR372
- yReHC2h21+FMyJJGKajb8Nj8y4XlVBDr39bYeCPjw2PlJRXvgvbRuDgHsOvepeU4Z5drpfyqUOQ
- tZlmon74vMDBVnZUK1D5XzVSCGKNdNy3xgddpAKqw5gydJaeZCwtDDTrsEZiLj+SIaECqlclzCX
- to7RE+wvoArjTYj7n7Q==
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNjI2MDA3MCBTYWx0ZWRfX2Y5pxUSuobM5
- LTziNjbjv8zx99Kqq67lxKSIE+RtLymWq5dlTCzAE2QnT2gv7/kB8VUAL+b0kpCmtMCmNLlJqBm
- kGSfbLmuD1f6Y8MCIncTBMGYlqBRYJ0=
+X-Authority-Analysis: v=2.4 cv=X4Ni7mTe c=1 sm=1 tr=0 ts=6a3e42a5 cx=c_pps
+ a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
+ a=IkcTkHD0fZMA:10 a=FelO9ux0wxsA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=iQ6ETzBq9ecOQQE5vZCe:22 a=VnNF1IyMAAAA:8
+ a=X10Nmy_CeZXe0l56EggA:9 a=QEXdDO2ut3YA:10
+X-Proofpoint-Spam-Info: AW1haW4tMjYwNjI2MDA3MCBTYWx0ZWRfX+txLtLQFW2aB
+ YFEFiDBldMPvgya5lbBWUYErgMbS0ITejN0NNm1m+6mXadPWdJ1CfnjilFIX7oU5dFQG5pPiiAk
+ KcxvPr9Gd/h3NdspGcxthWPqf1qH0Ys=
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjI2MDA3MCBTYWx0ZWRfX9etoxmGGvbTL
+ y4bGjO8bHBXGM33esx72Y8clfixb07CfykgF+Mbwc+WxSTOD4IXL5IHygf/6maC85E5ypKO5sfv
+ gvsnODOns4qbrLF5Rv//Q+IlMB2yDJCZQKmiYEWSNvo3TBzZUnqFOFeZnoTMvypZaGMCeBGvf6l
+ VeCXYvoKdiFOHmfO2UyRnQVfBRkIlO16yM1mRjmwisVYi93imdBjv1P7Asj0XxpXNiPj3uBiFZ/
+ GMLPUGc9ijshZX9pp5jbbdL67RG1QOhtzOTXN1H/SWP+wxvcCzEnu78vdndSMy/cfnFcCdblAHU
+ OQ2sIb6shaeSUpo+11FS8jI0GSvaKwdVUyjiIJ0jjIRgAmie3VAITEluu9DnfHpO/1LASe/a7Jn
+ xzUJC4K5nlWqQGFhA3CHrHb58F5WpInKvwN//UVyc83+jpvua4gWd2KKx339rUhPlZWoJ47xane
+ 9/5OGhXqPJYKARFM9fA==
+X-Proofpoint-ORIG-GUID: KT1GE4JRALs8mm1aQua1QrvEX9FO_55F
+X-Proofpoint-GUID: Uzd7feYOgz6Gx7CP0rmOngIUkSOtQYjF
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
  definitions=2026-06-26_02,2026-06-24_01,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- adultscore=0 priorityscore=1501 malwarescore=0 lowpriorityscore=0 spamscore=0
- clxscore=1015 suspectscore=0 impostorscore=0 phishscore=0 bulkscore=0
+ phishscore=0 bulkscore=0 suspectscore=0 spamscore=0 priorityscore=1501
+ impostorscore=0 malwarescore=0 clxscore=1011 adultscore=0 lowpriorityscore=0
  classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
  reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2606260070
 
-Add an example test suite name 'example_test_skip_suite' to
-'kunit-example-test.c' that shows how to skip an entire test suite based on
-runtime conditions.
+The eeh_driver disables and offlines the PE permanently when it
+exceeds the freeze count beyond eeh_max_freeze within the last hour.
+The PE is only offline, so the device tree entries, eeh device
+references are all intact till the real unplug of the device from
+the guest/host takes place.
 
-The example suite 'example_skip_suite' provides a 'suite_init' callback
-named example_skip_suite_init() which marks the entire suite as skipped
-using kunit_mark_skipped().
+On pSeries, with a new hotplug of any PCI device, the drmgr initiates
+a system-wide PCI rescan, which finds devices offlined by the eeh_driver
+and there will be attempts to bring them online. This leads to
+recurring EEHs either at the config read time itself or a bit
+later depending on the type of the problem.
 
-This demonstrates a way for conditionally skipping test suites when any
-prerequisites for kunit_suite execution are not met. The 'suite_init'
-callback can perform any necessary checks and mark the suite as skipped,
-preventing all test cases from executing while also indicating why the
-suite was skipped.
+For PowerNV, the commit d2b0f6f77ee5 ("powerpc/eeh: No hotplug on
+permanently removed dev") introduced the EEH_DEV_REMOVED flag to
+prevent such inadvertent rescans on hierarchical toplogies relavent in
+Baremetal setups. For pSeries, such topologies don't really make sense
+as the devices are either part of the same PE OR exposed as independent
+devices on multiple virtual PHBs. However, the inadvertent rescans are
+still a possibility with either hotplug of a new device or otherwise
+with manual system-wide pci bus rescan attempts.
 
-Reviewed-by: David Gow <david@davidgow.net>
-Signed-off-by: Vaibhav Jain <vaibhav@linux.ibm.com>
+So the patch checks for EEH_DEV_REMOVED before allowing config space
+access just like PowerNV, making the PCI core omit the PE, and thus
+preventing subsequent EEH recurances. The patch is tested on PowerVM
+and KVM machines with single and multi-function devices, and on the
+devices behind a switch. The unplug of the affected devices post EEH
+removal is also working fine as expected.
+
+Signed-off-by: Shivaprasad G Bhat <sbhat@linux.ibm.com>
+References: d2b0f6f77ee5 ("powerpc/eeh: No hotplug on permanently removed dev")
 ---
-Changelog
-=========
-V3->V4:
-Link:
-https://lore.kernel.org/all/20260617121535.462459-4-vaibhav@linux.ibm.com
-* Updated patch index in the series
-* Added RB from David Gow
+ arch/powerpc/kernel/rtas_pci.c |    8 ++++++++
+ 1 file changed, 8 insertions(+)
 
-V2->V3:
-Link:
-https://lore.kernel.org/all/20260608090438.219497-3-vaibhav@linux.ibm.com
-* Updated patch index in the series
+diff --git a/arch/powerpc/kernel/rtas_pci.c b/arch/powerpc/kernel/rtas_pci.c
+index fccf96e897f6..206c825225c2 100644
+--- a/arch/powerpc/kernel/rtas_pci.c
++++ b/arch/powerpc/kernel/rtas_pci.c
+@@ -54,6 +54,10 @@ int rtas_pci_dn_read_config(struct pci_dn *pdn, int where, int size, u32 *val)
+ 	if (!config_access_valid(pdn, where))
+ 		return PCIBIOS_BAD_REGISTER_NUMBER;
+ #ifdef CONFIG_EEH
++	if (pdn->edev &&
++	    (pdn->edev->mode & EEH_DEV_REMOVED))
++		return PCIBIOS_DEVICE_NOT_FOUND;
++
+ 	if (pdn->edev && pdn->edev->pe &&
+ 	    (pdn->edev->pe->state & EEH_PE_CFG_BLOCKED))
+ 		return PCIBIOS_SET_FAILED;
+@@ -105,6 +109,10 @@ int rtas_pci_dn_write_config(struct pci_dn *pdn, int where, int size, u32 val)
+ 	if (!config_access_valid(pdn, where))
+ 		return PCIBIOS_BAD_REGISTER_NUMBER;
+ #ifdef CONFIG_EEH
++	if (pdn->edev &&
++	    (pdn->edev->mode & EEH_DEV_REMOVED))
++		return PCIBIOS_DEVICE_NOT_FOUND;
++
+ 	if (pdn->edev && pdn->edev->pe &&
+ 	    (pdn->edev->pe->state & EEH_PE_CFG_BLOCKED))
+ 		return PCIBIOS_SET_FAILED;
 
-V1->V2:
-Link:
-https://lore.kernel.org/all/20260604162805.556135-3-vaibhav@linux.ibm.com/
-* Added RB from 'David Gow'
----
- lib/kunit/kunit-example-test.c | 29 +++++++++++++++++++++++++++++
- 1 file changed, 29 insertions(+)
-
-diff --git a/lib/kunit/kunit-example-test.c b/lib/kunit/kunit-example-test.c
-index 0bae7b7ca0b0..b8ded54fa46d 100644
---- a/lib/kunit/kunit-example-test.c
-+++ b/lib/kunit/kunit-example-test.c
-@@ -591,5 +591,34 @@ static struct kunit_suite example_init_test_suite = {
-  */
- kunit_test_init_section_suites(&example_init_test_suite);
- 
-+/*
-+ * This test should always be skipped.
-+ */
-+static void example_skip_suite_test(struct kunit *test)
-+{
-+	/* This line should never be seen */
-+	KUNIT_FAIL(test, "You should not see a this.");
-+}
-+
-+static struct kunit_case  example_skip_suite_test_cases[] = {
-+	KUNIT_CASE(example_skip_suite_test),
-+	{}
-+};
-+
-+static int example_skip_suite_init(struct kunit_suite *suite)
-+{
-+	kunit_mark_skipped(suite, "Test suite expected to be skipped");
-+	return 0;
-+}
-+
-+static struct kunit_suite example_test_skip_suite = {
-+	.name = "example_skip_suite",
-+	.suite_init = example_skip_suite_init,
-+	.test_cases = example_skip_suite_test_cases,
-+};
-+
-+/* This registers a test suite that will be skipped */
-+kunit_test_suite(example_test_skip_suite);
-+
- MODULE_DESCRIPTION("Example KUnit test suite");
- MODULE_LICENSE("GPL v2");
--- 
-2.54.0
 
 
