@@ -1,75 +1,65 @@
-Return-Path: <linuxppc-dev+bounces-22997-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-22998-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AF951CDE00C
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Jun 2026 23:42:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E29AACDE00C
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Jun 2026 00:46:28 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gmb1t6CBSz2ySJ;
-	Fri, 26 Jun 2026 09:42:10 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782430930;
-	cv=none; b=PSe/DuUqt3lTq3b9jY7ZqpD8dWF7MyZPsJmGP5XCoeFHjX74UeeemhpbAUtFmM8kexk9bo/WzoQxZ76NEfKgQEaNie266VHH6aoKOETeBq3zMB2+diAMGeYOFmRi8S9hGm8FhsyY5MCg8VpyINOQVoplYVPqA+YybabIZNgiKKpJ2q9Nm4wTl1I+MA4nkcFBhwcJFWAWwSXMx/oirO0UTl8EZKRhxkOABN/G0T/qh+vj/m2yR6vnLWF0rVz5omfsUElizPaYCtMOjQk1fkTGuJ+rpoYqGWcCQzjxCmPTt4dKAC7m+7znrZHN8feQIksJ2t43Bb+q70V1xmDTCApHnA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gmcS26pf9z2xn3;
+	Fri, 26 Jun 2026 10:46:26 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782434786;
+	cv=none; b=Izlh8rZ1sG0QqBGTy+rlszhPmi/oye1m+pGdk1GhoOkbmepxJ5y/4aXOkSJoNPn/lR7eCzaCg+CixaP63oF3SgASabvkOOefafubPv5zLcsya8JGo6N+TVrwVemkUvKFJmHxxuDC7jFJZdvtISi+u8i19L5pLkMBRO8NJk5GR6lXxF7VAluuCi8m8LUlxMSwSLEF4o4gPHi8tzdz8cVgAkBAB6yHocNmPTE1/q3x2NfXiTu0C9gQjrrvAKY+ERE0x1UwZNBvyk0yNGoYvsU3Klm0oSuai/lrnwLHhcaZqb7wsbGJ21RGQ1KeVGutwWIUWF28rTWMTZxm0sEYmi/Exg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1782430930; c=relaxed/relaxed;
-	bh=7rTeWGRC3qlYe3M/STi4OqC/ckIFBCcw0pmuKzcM+Ms=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=T3vQDWLYI4/qrN8DuwcCYEA9pz8Pi1vKld/Ulc4xsO3J11/peWEo789m5CvOhX8nuCyl3rmsTP89Oxj5GglFvBtIe87CfpWhguNMQfViiPSOVH+VgqFKhqKaLMSbBcfNS90a8mpCvw8th9QVL2E7cM1jRAi6/3UMD/bdCshTw2h1gm6XCpUsba1hWl3b1CKL95vNOr7JxInGnFXmP8CZ81aHNzZzQvJWjxzK1ttD2w0MpAasHPzt7m7OV66bOQLBPqYg9RSv8tWaJCTfuio28y0W1hKJTezBED41om7bYpwMn3mssCCNxOSZWxcX3/3ShxrRnQG/bdC9Ohcfn9d5kg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ERWk9tSf; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=nathan@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1782434786; c=relaxed/relaxed;
+	bh=aVwnJDGi7HOXHyeM0jNjwmLxXliLE7L625+/NqaYxmg=;
+	h=Date:From:To:Cc:Subject:Message-Id:In-Reply-To:References:
+	 Mime-Version:Content-Type; b=ZiLYMyXVg8ywEKuIbQCN/9g0I0a5T/d1XLFVlG6e/vrIYZCHglh/S6BPbQR65a/EGl01ipjP5nVSmaB+oPi3UhAykYjr8ggqc3skw0WurVc5spvfdz2oz3lK4lKD4Gc0tyi2MRzqBl3jlYzyutp5DI7zExiLsz3FprrFl8qcZY41MrVUKM0OYiLJ4GXtw8dUoCplktkpB8vAI/jBVQKYZzV45DVd8bZhhHclM+pBvvrtb/40ju3O+eJd6fJYswTz6m7mEmeLk6rYbtheTE8sGloSljhou2ORkzTEwEeImH6jaJb7VkmlbDjOlAi0go/QbpeU8Z4yBIjPMMkFkH37Zw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org; dkim=pass (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=korg header.b=ttuUkkW9; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=akpm@linux-foundation.org; receiver=lists.ozlabs.org) smtp.mailfrom=linux-foundation.org
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ERWk9tSf;
+	dkim=pass (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=korg header.b=ttuUkkW9;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=nathan@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux-foundation.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=akpm@linux-foundation.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gmb1s4kWyz2xn3
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jun 2026 09:42:09 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gmcS12zsjz2xLq
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jun 2026 10:46:24 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id A12BF40BF5;
-	Thu, 25 Jun 2026 23:42:06 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9DEF11F000E9;
-	Thu, 25 Jun 2026 23:42:01 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1782430926;
-	bh=7rTeWGRC3qlYe3M/STi4OqC/ckIFBCcw0pmuKzcM+Ms=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=ERWk9tSfkvUB3gpMoi+r8/npeOf+VTcK6LEcTQ+ydlZM4R04BnjE7NoxRlL2Y7oOp
-	 HwEILF3l/MEtXv4l1oapXtPAddR7mVIcAbFM+/NzAauaraVXtWjthqV/7Xr9jV0rmP
-	 iV/aTYKta1D6uPYRp+2hh9+GTlghECm8I505IDeByN96e5NV0eCKP7muVv5sc3JnQG
-	 O3K8AFvvCi6QK5nN6WRqQQQyuO2ODeP0WbSkJkHgCIFXVq1+HVSkMdVsvtq4txrVyP
-	 sezhtjuTBGj4tnd2fWtTX6Neebzlxe0449kNqUc5+ZQaEKrKtQDmJHaKYNRwLyfJcc
-	 gFiMuxnkCmkKg==
-Date: Thu, 25 Jun 2026 16:41:58 -0700
-From: Nathan Chancellor <nathan@kernel.org>
-To: Steven Rostedt <rostedt@kernel.org>
-Cc: linux-kernel@vger.kernel.org, linux-trace-kernel@vger.kernel.org,
-	Masami Hiramatsu <mhiramat@kernel.org>,
-	Mark Rutland <mark.rutland@arm.com>,
-	Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
-	John Ogness <john.ogness@linutronix.de>,
-	Thomas Gleixner <tglx@kernel.org>,
-	Peter Zijlstra <peterz@infradead.org>,
-	Julia Lawall <julia.lawall@inria.fr>,
-	Yury Norov <yury.norov@gmail.com>, linux-doc@vger.kernel.org,
-	linux-kbuild@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-	dri-devel@lists.freedesktop.org,
-	linux-stm32@st-md-mailman.stormreply.com,
-	linux-arm-kernel@lists.infradead.org, linux-rdma@vger.kernel.org,
-	linux-usb@vger.kernel.org, linux-ext4@vger.kernel.org,
-	linux-nfs@vger.kernel.org, kvm@vger.kernel.org,
-	intel-gfx@lists.freedesktop.org
-Subject: Re: [PATCH v4 2/2] tracing: Remove trace_printk.h from kernel.h
-Message-ID: <20260625234158.GA261868@ax162>
-References: <20260625104007.041432666@kernel.org>
- <20260625104402.210473477@kernel.org>
+	by tor.source.kernel.org (Postfix) with ESMTP id 746FE60098;
+	Fri, 26 Jun 2026 00:46:21 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 903801F000E9;
+	Fri, 26 Jun 2026 00:46:20 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+	d=linux-foundation.org; s=korg; t=1782434781;
+	bh=aVwnJDGi7HOXHyeM0jNjwmLxXliLE7L625+/NqaYxmg=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:References;
+	b=ttuUkkW9XB6RuZTLYjeJ/3uTYeXRf6yq0egZXdrkILgAmZizyGc15vX5NyM2XHWzD
+	 tb2k1YiKgsHTU9XgApnhlqlUXzoIYDtrltk0/8s1pLM+JAaHAVeY8PIo2wZL+iaNvF
+	 qR60k0TTyAaXwmuUmEv88320MeMUOpwVNwW8AI7A=
+Date: Thu, 25 Jun 2026 17:46:19 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Muchun Song <songmuchun@bytedance.com>
+Cc: Oscar Salvador <osalvador@suse.de>, David Hildenbrand
+ <david@kernel.org>, Madhavan Srinivasan <maddy@linux.ibm.com>, Michael
+ Ellerman <mpe@ellerman.id.au>, Muchun Song <muchun.song@linux.dev>, Mike
+ Rapoport <rppt@kernel.org>, Lorenzo Stoakes <ljs@kernel.org>,
+ "Liam R . Howlett" <liam@infradead.org>, Vlastimil Babka
+ <vbabka@kernel.org>, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+ Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <chleroy@kernel.org>,
+ Ritesh Harjani <ritesh.list@gmail.com>, "Aneesh Kumar K . V"
+ <aneesh.kumar@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org, Mike Kravetz
+ <mike.kravetz@oracle.com>, Michal Clapinski ? <mclapinski@google.com>
+Subject: Re: [PATCH v4 00/19] mm: Refactor bootmem gigantic hugepage
+ allocation
+Message-Id: <20260625174619.45d7b772b69b7b54b7f3bae1@linux-foundation.org>
+In-Reply-To: <20260612035903.2468601-1-songmuchun@bytedance.com>
+References: <20260612035903.2468601-1-songmuchun@bytedance.com>
+X-Mailer: Sylpheed 3.8.0beta1 (GTK+ 2.24.33; x86_64-pc-linux-gnu)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -82,72 +72,48 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260625104402.210473477@kernel.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 
-Hi Steve,
+On Fri, 12 Jun 2026 11:58:44 +0800 Muchun Song <songmuchun@bytedance.com> wrote:
 
-On Thu, Jun 25, 2026 at 06:40:09AM -0400, Steven Rostedt wrote:
-> From: Steven Rostedt <rostedt@goodmis.org>
+> This series is split out from the earlier larger series "mm: Generalize
+> HVO for HugeTLB and device DAX" [1]. It collects the first 19 patches of
+> that series as a standalone set of fixes and preparatory cleanups around
+> bootmem HugeTLB handling, sparse initialization ordering, and related
+> vmemmap setup.
 > 
-> There have been complaints about trace_printk.h causing more build time
-> for being in kernel.h if it changes. There is also an effort to clean up
-> kernel.h to have it not include unneeded header files. Move trace_printk.h
-> out of kernel.h and place it in the headers and C files that use it.
+> The first patches fix a few bugs found while reviewing the existing
+> code, including incorrect bootmem HVO handling, wrong vmemmap
+> registration arguments, a powerpc compound-vmemmap tracking bug, and
+> too-late initialization of gigantic bootmem HugeTLB struct pages.
 > 
-> Link: https://lore.kernel.org/all/CAHk-=wikCBeVFjVXiY4o-oepdbjAoir5+TcAgtL12c4u1TpZLQ@mail.gmail.com/
-> 
-> Suggested-by: Yury Norov <yury.norov@gmail.com>
-> Acked-by: Masami Hiramatsu (Google) <mhiramat@kernel.org>
-> Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
+> The rest of the series reorders early memory initialization so the
+> relevant zone state is available before sparse and HugeTLB boot-time
+> setup runs, then simplifies the remaining bootmem gigantic hugepage
+> allocation path and removes code made obsolete by that rework.
 
-This patch breaks lib/test_context-analysis.c for me in several
-configurations:
+Thanks, I added this to mm.git's mm-new branch.
 
-  In file included from lib/test_context-analysis.c:9:
-  In file included from include/linux/local_lock.h:5:
-  include/linux/local_lock_internal.h:46:2: error: use of undeclared identifier '_THIS_IP_'
-     46 |         lock_map_acquire(&l->dep_map);
-        |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  include/linux/lockdep.h:541:69: note: expanded from macro 'lock_map_acquire'
-    541 | #define lock_map_acquire(l)                     lock_acquire_exclusive(l, 0, 0, NULL, _THIS_IP_)
-        |                                                                                       ^~~~~~~~~
-  In file included from lib/test_context-analysis.c:9:
-  In file included from include/linux/local_lock.h:5:
-  include/linux/local_lock_internal.h:53:2: error: use of undeclared identifier '_THIS_IP_'
-     53 |         lock_map_acquire_try(&l->dep_map);
-        |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  include/linux/lockdep.h:542:73: note: expanded from macro 'lock_map_acquire_try'
-    542 | #define lock_map_acquire_try(l)                 lock_acquire_exclusive(l, 0, 1, NULL, _THIS_IP_)
-        |                                                                                       ^~~~~~~~~
-  In file included from lib/test_context-analysis.c:9:
-  In file included from include/linux/local_lock.h:5:
-  include/linux/local_lock_internal.h:62:2: error: use of undeclared identifier '_THIS_IP_'
-     62 |         lock_map_release(&l->dep_map);
-        |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  include/linux/lockdep.h:545:47: note: expanded from macro 'lock_map_release'
-    545 | #define lock_map_release(l)                     lock_release(l, _THIS_IP_)
-        |                                                                 ^~~~~~~~~
-  3 errors generated.
 
-The following diff resolves it for me, should I send it as a separate
-patch or do you want to just fold it in with a note?
+As requested, I dropped Michal's "mm/hugetlb: init tails before
+init_migratetype" from the mm-hotfixes-unstable branch.  Michal, can
+you please review and perhaps test [01/19] "mm/hugetlb: fix boot panic
+with CONFIG_DEBUG_VM and HVO bootmem pages"
+(https://lore.kernel.org/20260612035903.2468601-2-songmuchun@bytedance.com)?
+Thanks.
 
-diff --git a/include/linux/lockdep.h b/include/linux/lockdep.h
-index 621566345406..2301a701ffbb 100644
---- a/include/linux/lockdep.h
-+++ b/include/linux/lockdep.h
-@@ -10,6 +10,7 @@
- #ifndef __LINUX_LOCKDEP_H
- #define __LINUX_LOCKDEP_H
- 
-+#include <linux/instruction_pointer.h>
- #include <linux/lockdep_types.h>
- #include <linux/smp.h>
- #include <asm/percpu.h>
--- 
-Cheers,
-Nathan
+
+I added cc:stable to [01/19], as CONFIG_DEBUG_VM is not uncommon.
+
+
+I added this series as-sent.  This means that the four cc:stable
+patches won't be offered to -stable maintainers for 2+ months.  If you
+feel that some/all of them should be upstreamed earlier than this,
+please let me know and I'll make the necessary reorganizations.
+
+
+And thanks for checking the Sashiko report.  Dang thing ;)
+
 
