@@ -1,53 +1,53 @@
-Return-Path: <linuxppc-dev+bounces-23037-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23038-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CD40CC43327
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Jun 2026 01:42:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8FBCEC43458
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Jun 2026 02:22:55 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gnFfF6XhQz2yDs;
-	Sat, 27 Jun 2026 11:42:29 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:7c80:54:3::136"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782524549;
-	cv=none; b=bJm7dDKegh8Ty3QyLjPhVCDBMGCNmXzfTMECr5nWxrWiTnFA9ole3c7gVYSK4EQmWP4KZiQBfn04ybNNgWw+nI9LpBlgc203btACT/E0fFadou88tKDVk69HEZPWFeMM8SeXM/rNshMU1E3eZJmhXqLNsJqM8Ce/IAEjb1UNEghV2uj6PKH/3MX3eKahn41vJMrdoWP8xbEw6nJlDG84G1b3KfGu4bIV+uLHb95f2t7u7ziVCJqN1fmrcas/HQD7cXebqCu/uBjVh+6UOTVjR/V+mJ52ynpe9rk7MQmpj5CKXtjfSW2P1lm5Ll8goPmgR3OzrGl+YdL4l0P8cw0kqA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gnGXs6dBXz2xWP;
+	Sat, 27 Jun 2026 12:22:53 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=198.137.202.136
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782526973;
+	cv=none; b=CIUySBHJyQL/8U4uH4MjtrrpoeyS61W87rpsm9RF3vU6QprCC7KB19QWjEH0pSYpii2pbGvcZhkiKlabv9pkbhv1uo2mnne7xmzFL1OFc2+o2oL4CNPilbiykkEd0GEaj1Q+8f+OIAp9YXNNoL4J+40rfkiAM/HcEXs2HYzyFBp1fPl1cnd09TP5peXOJ+We94aoQyDzcsLhD5FYRE9nbR3GZLXsSbXakRndRByB71dGsArXtNQirHnfjEY6ZXI3r2WVAiUcLuTH4VPbfimir+OpE3OL/l/p0LOdEK6DODMstoLsqTceAKEBb9zP0bZWJgREauQENiVNzFEktAokWg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1782524549; c=relaxed/relaxed;
-	bh=a3misQc9HlKUNeYqqO4Fnmvv4Fv9RkyhsTgdLQ0BWz0=;
+	t=1782526973; c=relaxed/relaxed;
+	bh=CoKSivJMaQDV2sSkRTRw7olGkcZfQ72Xwmih/Aa0td0=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=al4Va8yH73hkdquoRI1JrOFonbxQPqsnLrjx3LjSvIUkthAD2hrgZ3uGZYWX9thECm1+OkpcbRRnS3LtlaGou6GAmjkVCf+ydQrKUTJU5atGUznm34Wz2L47BvQwTb6thgnZj+w/lbE3jtBhS8JVot2cQJbGYUv3WDzB/uTUreDN/ARBepl0NCwjWmdhfqwgoq1RD8N8ngOM/XK7ZPAqEuwlhbhmduKZ6W1XwMhUkSk+FtKSeMDRdIQ65FcsdMhMV/hA/QOM+6zK8yncyHPUmNE3vyPp8TcWvkVLd40CcmLmdLvf/vZTgX3sFn+82x6D6xROudPAHb4H33KN5nmMiw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=zytor.com; dkim=pass (2048-bit key; unprotected) header.d=zytor.com header.i=@zytor.com header.a=rsa-sha256 header.s=2026052701 header.b=ieVY684F; dkim-atps=neutral; spf=pass (client-ip=2607:7c80:54:3::136; helo=mail.zytor.com; envelope-from=hpa@zytor.com; receiver=lists.ozlabs.org) smtp.mailfrom=zytor.com
+	 In-Reply-To:Content-Type; b=i6xZzfxPRReZiDEEnXN4QKHwjsqmI1aG5JM6ytKGO7UphoYGZWej3gfmkvvrUCrXnusBRpveXwNYcgJEIlMyGyQoq4uL2FHidYhP34D9oSmk15T65hZJQX7coTxibCHZnn4pHOd3M4z0twqSAm5v4BVsm/yH7j12aN0TvTgSYNvHhEgOGIwYMDra7OrsWvNF20+XigAhQfMwpY/6WxJECKW4/3n9QOCTsQetPQhlcwfLBLRWo+iF2/t1RdsRtVYC7UjgokZ2YdLrviijeIn2qcejXqEwEKjReZrHgoQXHjjxHwgxk4EMVuCTfmuR3urGXQOtYm50j7QXZhegRjGWmA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=zytor.com; dkim=pass (2048-bit key; unprotected) header.d=zytor.com header.i=@zytor.com header.a=rsa-sha256 header.s=2026052701 header.b=qMyBFc1g; dkim-atps=neutral; spf=pass (client-ip=198.137.202.136; helo=terminus.zytor.com; envelope-from=hpa@zytor.com; receiver=lists.ozlabs.org) smtp.mailfrom=zytor.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=zytor.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=zytor.com header.i=@zytor.com header.a=rsa-sha256 header.s=2026052701 header.b=ieVY684F;
+	dkim=pass (2048-bit key; unprotected) header.d=zytor.com header.i=@zytor.com header.a=rsa-sha256 header.s=2026052701 header.b=qMyBFc1g;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=zytor.com (client-ip=2607:7c80:54:3::136; helo=mail.zytor.com; envelope-from=hpa@zytor.com; receiver=lists.ozlabs.org)
-X-Greylist: delayed 341 seconds by postgrey-1.37 at boromir; Sat, 27 Jun 2026 11:42:27 AEST
-Received: from mail.zytor.com (terminus.zytor.com [IPv6:2607:7c80:54:3::136])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=zytor.com (client-ip=198.137.202.136; helo=terminus.zytor.com; envelope-from=hpa@zytor.com; receiver=lists.ozlabs.org)
+X-Greylist: delayed 839 seconds by postgrey-1.37 at boromir; Sat, 27 Jun 2026 12:22:52 AEST
+Received: from terminus.zytor.com (terminus.zytor.com [198.137.202.136])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gnFfC1hK8z2xWY
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Jun 2026 11:42:26 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gnGXr4ryDz2xVK
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Jun 2026 12:22:52 +1000 (AEST)
 Received: from [IPV6:2601:646:8081:7da1:dcd4:e1f8:5d79:bdb4] ([IPv6:2601:646:8081:7da1:dcd4:e1f8:5d79:bdb4])
 	(authenticated bits=0)
-	by mail.zytor.com (8.18.1/8.17.1) with ESMTPSA id 65R1EHQ12354017
+	by mail.zytor.com (8.18.1/8.17.1) with ESMTPSA id 65R0qN0N2285168
 	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NO);
-	Fri, 26 Jun 2026 18:14:17 -0700
-DKIM-Filter: OpenDKIM Filter v2.11.0 mail.zytor.com 65R1EHQ12354017
+	Fri, 26 Jun 2026 17:52:24 -0700
+DKIM-Filter: OpenDKIM Filter v2.11.0 mail.zytor.com 65R0qN0N2285168
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=zytor.com;
-	s=2026052701; t=1782522861;
-	bh=a3misQc9HlKUNeYqqO4Fnmvv4Fv9RkyhsTgdLQ0BWz0=;
+	s=2026052701; t=1782521550;
+	bh=CoKSivJMaQDV2sSkRTRw7olGkcZfQ72Xwmih/Aa0td0=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=ieVY684FxDj35+1OdJbAri1pdBhTN2gqeIU7j2Y370sBUQ30QPhmIZvW75cKJPbdR
-	 IMWIkamCPLrfWfNgBKcB3PhaMkYzKHTrmnUKLa1e+ZLSJhv19+SOXDBLXcwGBwQUQm
-	 r/XHx5z9usnk9iv+AszJJxJtR+3sMk9VLHHsh52YfG3DsQ64mFPl5qVJWfAy/D+2Rh
-	 S+WMDllsVtD5pOEp++Uf505LlYCJ5QwZinre3Oi8+jbt4xxPtHa6lglEWhLpIlBWBv
-	 8Y8Cvo1WqplQrMHkk6CviVuUOV0LSl6zFgnbsOyQby5POoRmSu/3wfwF+nNtjeJn02
-	 kxE798jNrTxdQ==
-Message-ID: <33ef4e7b-3139-4cb8-9545-6d445bf6e5f1@zytor.com>
-Date: Fri, 26 Jun 2026 18:14:11 -0700
+	b=qMyBFc1gnGXRksBwsJ1/rUznZgiE7lPuLPv/lWpmOM+5Q3Fqu1GkBtPV/i01hTsmm
+	 FyrrwODPBIMXlAoyCpEVfCiClmUhwPWsNagz78j3LDMf+Ut0XXJAAidVe9l1aTOAut
+	 7WQuEQASgzET2NWeiLHKYC5brvZfsPACaGhvlYNW5X1iG8c+02aTJiS4yaJSFbtRty
+	 RzVpKhz70FSqCBKm8TK2gLW8sDPukFdgs1lqJ60AGqtpglwDIA/PnerR6f0L+dvu0f
+	 tzL0aZnBm0Ed9q+Fj1E4zhVGr5LPAVMhZk4GFV4YP0Rst/9nwzTfe9CuWNPpW58FjU
+	 Q8Foj51/YA5sw==
+Message-ID: <7d8efc7c-65e3-49f8-9381-910de7affef2@zytor.com>
+Date: Fri, 26 Jun 2026 17:52:18 -0700
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -62,7 +62,7 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 08/18] raid6: warn when using less than four devices
+Subject: Re: cleanup the RAID6 P/Q library v3
 To: Christoph Hellwig <hch@lst.de>, Andrew Morton <akpm@linux-foundation.org>
 Cc: Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>,
         Ard Biesheuvel <ardb@kernel.org>, Huacai Chen <chenhuacai@kernel.org>,
@@ -91,36 +91,27 @@ Cc: Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>,
         linux-btrfs@vger.kernel.org, linux-arch@vger.kernel.org,
         linux-raid@vger.kernel.org
 References: <20260518051804.462141-1-hch@lst.de>
- <20260518051804.462141-9-hch@lst.de>
+ <20260518141205.c100f76eec5f58e78bbbf7af@linux-foundation.org>
+ <20260519082432.GA14956@lst.de>
 Content-Language: en-US, sv-SE
 From: "H. Peter Anvin" <hpa@zytor.com>
-In-Reply-To: <20260518051804.462141-9-hch@lst.de>
+In-Reply-To: <20260519082432.GA14956@lst.de>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
-On 2026-05-17 22:17, Christoph Hellwig wrote:
-> Quoting H. Peter Anvin who came up with the RAID6 P/Q algorithm, and
-> who wrote the initial implementation, then still part of the md driver:
+On 2026-05-19 01:24, Christoph Hellwig wrote:
 > 
->   The RAID-6 code has *never* supported only 3 units, and if it ever
->   worked for *any* of the implementations it was purely by accident.
->   Speaking as the original author I should know; this was deliberate as
->   in some cases the degenerate case (3) would have required extra trays
-
-Stupid autocorrect. That was of course supposed to be "tests" (as in extra
-code paths) not "trays" :)
-
->   in the code to no user benefit.
+> raid6: rework registration of optimized algorithms
 > 
-> While md never allowed less than 4 devices, btrfs does.  This new
-> warning will trigger for such file systems, but given how it already
-> causes havoc that is a good thing.  If btrfs wants to fix third, it
-> should switch to transparently use three-way mirroring underneath,
-> which will work as P and Q are copies of the single data device by
-> the definition of the Linux RAID 6 P/Q algorithm.
+>  - avx2 instead of avx512 is probably the right thing for no
+>    benchmarking, but if it was intentional (it wasn't), that should
+>    be document.  So I'll just switch back to the previous version to
+>    keep the state of the art
 
-For what it's worth, this is also true in the degenerate two-drive RAID-4|5
-case (D = P).
+It is unlikely to be the right thing *going forward*, though.
+
+The very unfortunate performance inversion is likely model-specific. It is one
+of those things where you largely would have to have a list of quirks :(
 
 	-hpa
 
