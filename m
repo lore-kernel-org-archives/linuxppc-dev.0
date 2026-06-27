@@ -1,57 +1,53 @@
-Return-Path: <linuxppc-dev+bounces-23036-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23037-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 371B2C43458
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Jun 2026 19:26:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CD40CC43327
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Jun 2026 01:42:31 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gn5JT4bpHz2xqJ;
-	Sat, 27 Jun 2026 05:26:33 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:41d0:203:375::b5"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782501993;
-	cv=none; b=aJHfuEUB9gRhnzIiieg20cYN6hKnSLP/vawed+mvkKv7q5tcMpHtwru4t++XVFrLlgjjuzxplKozJj0kU6We/ovMRxE7d0rwOu1tG49dDXHCkog28SyxUaTkC1dccOAeWcKe2vhlWsjd4Zv4X3TL9rIHRjPjGlTG86BUsqpvgAhh9nLDAVxdHjhY7g9K5+A2ZtYv1sV5iy6TzIlmLuAg+CuDLoqe4GFKb4pfMtGpOTsMOtEybfKqHTP8wlIXMp5jR/EeQU5NyjrKlGhAltmAz0ttnnmTPCMiW+rWT062dSHiLp8YE0/IbeoRDLBVG62eU1YPiWi7OyeyGH148YFJ8Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gnFfF6XhQz2yDs;
+	Sat, 27 Jun 2026 11:42:29 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:7c80:54:3::136"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782524549;
+	cv=none; b=bJm7dDKegh8Ty3QyLjPhVCDBMGCNmXzfTMECr5nWxrWiTnFA9ole3c7gVYSK4EQmWP4KZiQBfn04ybNNgWw+nI9LpBlgc203btACT/E0fFadou88tKDVk69HEZPWFeMM8SeXM/rNshMU1E3eZJmhXqLNsJqM8Ce/IAEjb1UNEghV2uj6PKH/3MX3eKahn41vJMrdoWP8xbEw6nJlDG84G1b3KfGu4bIV+uLHb95f2t7u7ziVCJqN1fmrcas/HQD7cXebqCu/uBjVh+6UOTVjR/V+mJ52ynpe9rk7MQmpj5CKXtjfSW2P1lm5Ll8goPmgR3OzrGl+YdL4l0P8cw0kqA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1782501993; c=relaxed/relaxed;
-	bh=P3GSIxg28qBTx+sEiExtBNcC25BVatGs6EWV34pDMZM=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=EDw4R1DUyQOpVFTaVL7G2tcQyFgOsZPnj72nrG/HsmkL1X6WB1GiIGx92MjdtWb+NelPTaV3wo9eG7Tbdtt7i2fswm67gXyx5Lakh05fNRFo5Nj4F+W8QbeSHL9/CQwHPbRWB8IaJX1ROBqtD3HticcCxuVl/P+oX8lgjl6hpzQJPQ+3j5fZ168FTAehCJvp23bOqzcCFLL9+JV6RpjoS30RijWLdUgQGe/az2z1HmTKkuo7xtOiGSWlvfTRabqYUxe7RXUQ8+EeoZ64g0PoxrwuvrXmleF8ZLbutOuFoZpIy5Ro7LGIsbJGalO4U53vVZsN76FhkX+dDJsRuWKbwg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=tpBodHKL; dkim-atps=neutral; spf=pass (client-ip=2001:41d0:203:375::b5; helo=out-181.mta1.migadu.com; envelope-from=thorsten.blum@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
+	t=1782524549; c=relaxed/relaxed;
+	bh=a3misQc9HlKUNeYqqO4Fnmvv4Fv9RkyhsTgdLQ0BWz0=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=al4Va8yH73hkdquoRI1JrOFonbxQPqsnLrjx3LjSvIUkthAD2hrgZ3uGZYWX9thECm1+OkpcbRRnS3LtlaGou6GAmjkVCf+ydQrKUTJU5atGUznm34Wz2L47BvQwTb6thgnZj+w/lbE3jtBhS8JVot2cQJbGYUv3WDzB/uTUreDN/ARBepl0NCwjWmdhfqwgoq1RD8N8ngOM/XK7ZPAqEuwlhbhmduKZ6W1XwMhUkSk+FtKSeMDRdIQ65FcsdMhMV/hA/QOM+6zK8yncyHPUmNE3vyPp8TcWvkVLd40CcmLmdLvf/vZTgX3sFn+82x6D6xROudPAHb4H33KN5nmMiw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=zytor.com; dkim=pass (2048-bit key; unprotected) header.d=zytor.com header.i=@zytor.com header.a=rsa-sha256 header.s=2026052701 header.b=ieVY684F; dkim-atps=neutral; spf=pass (client-ip=2607:7c80:54:3::136; helo=mail.zytor.com; envelope-from=hpa@zytor.com; receiver=lists.ozlabs.org) smtp.mailfrom=zytor.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=zytor.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=tpBodHKL;
+	dkim=pass (2048-bit key; unprotected) header.d=zytor.com header.i=@zytor.com header.a=rsa-sha256 header.s=2026052701 header.b=ieVY684F;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=2001:41d0:203:375::b5; helo=out-181.mta1.migadu.com; envelope-from=thorsten.blum@linux.dev; receiver=lists.ozlabs.org)
-X-Greylist: delayed 29901 seconds by postgrey-1.37 at boromir; Sat, 27 Jun 2026 05:26:30 AEST
-Received: from out-181.mta1.migadu.com (out-181.mta1.migadu.com [IPv6:2001:41d0:203:375::b5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=zytor.com (client-ip=2607:7c80:54:3::136; helo=mail.zytor.com; envelope-from=hpa@zytor.com; receiver=lists.ozlabs.org)
+X-Greylist: delayed 341 seconds by postgrey-1.37 at boromir; Sat, 27 Jun 2026 11:42:27 AEST
+Received: from mail.zytor.com (terminus.zytor.com [IPv6:2607:7c80:54:3::136])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gn5JQ70C2z2xWP
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Jun 2026 05:26:29 +1000 (AEST)
-Date: Fri, 26 Jun 2026 21:25:47 +0200
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
-	t=1782501970;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=P3GSIxg28qBTx+sEiExtBNcC25BVatGs6EWV34pDMZM=;
-	b=tpBodHKLZlJSwypwSQlX0z4HMwd1UTkj/mNZRFfM9CfiC4L/gi8FxWj+J3kZf3o9bskpB5
-	YiH1AzaFLgaINdJ9mnz8ZhRbiPpDfJ6zZ80VKwkKQlESyoliLYLcwzyHkXTvCpiD4auNEL
-	f92KJMC1nyb2rdkySJCrQgp4YUyhL/g=
-X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
-From: Thorsten Blum <thorsten.blum@linux.dev>
-To: Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] powerpc/pseries/ras: Use struct_size() to simplify
- fwnmi_get_errinfo()
-Message-ID: <aj7SO0o_EAVc52j5@linux.dev>
-References: <20260626184750.166642-3-thorsten.blum@linux.dev>
- <20260626184750.166642-4-thorsten.blum@linux.dev>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gnFfC1hK8z2xWY
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Jun 2026 11:42:26 +1000 (AEST)
+Received: from [IPV6:2601:646:8081:7da1:dcd4:e1f8:5d79:bdb4] ([IPv6:2601:646:8081:7da1:dcd4:e1f8:5d79:bdb4])
+	(authenticated bits=0)
+	by mail.zytor.com (8.18.1/8.17.1) with ESMTPSA id 65R1EHQ12354017
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NO);
+	Fri, 26 Jun 2026 18:14:17 -0700
+DKIM-Filter: OpenDKIM Filter v2.11.0 mail.zytor.com 65R1EHQ12354017
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=zytor.com;
+	s=2026052701; t=1782522861;
+	bh=a3misQc9HlKUNeYqqO4Fnmvv4Fv9RkyhsTgdLQ0BWz0=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=ieVY684FxDj35+1OdJbAri1pdBhTN2gqeIU7j2Y370sBUQ30QPhmIZvW75cKJPbdR
+	 IMWIkamCPLrfWfNgBKcB3PhaMkYzKHTrmnUKLa1e+ZLSJhv19+SOXDBLXcwGBwQUQm
+	 r/XHx5z9usnk9iv+AszJJxJtR+3sMk9VLHHsh52YfG3DsQ64mFPl5qVJWfAy/D+2Rh
+	 S+WMDllsVtD5pOEp++Uf505LlYCJ5QwZinre3Oi8+jbt4xxPtHa6lglEWhLpIlBWBv
+	 8Y8Cvo1WqplQrMHkk6CviVuUOV0LSl6zFgnbsOyQby5POoRmSu/3wfwF+nNtjeJn02
+	 kxE798jNrTxdQ==
+Message-ID: <33ef4e7b-3139-4cb8-9545-6d445bf6e5f1@zytor.com>
+Date: Fri, 26 Jun 2026 18:14:11 -0700
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -65,68 +61,67 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260626184750.166642-4-thorsten.blum@linux.dev>
-X-Migadu-Flow: FLOW_OUT
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 08/18] raid6: warn when using less than four devices
+To: Christoph Hellwig <hch@lst.de>, Andrew Morton <akpm@linux-foundation.org>
+Cc: Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>,
+        Ard Biesheuvel <ardb@kernel.org>, Huacai Chen <chenhuacai@kernel.org>,
+        WANG Xuerui <kernel@xen0n.name>,
+        Madhavan Srinivasan <maddy@linux.ibm.com>,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        Nicholas Piggin <npiggin@gmail.com>,
+        "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+        Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
+        Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>,
+        Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>,
+        Alexander Gordeev <agordeev@linux.ibm.com>,
+        Christian Borntraeger <borntraeger@linux.ibm.com>,
+        Sven Schnelle <svens@linux.ibm.com>, Thomas Gleixner <tglx@kernel.org>,
+        Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
+        Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
+        Herbert Xu <herbert@gondor.apana.org.au>,
+        Dan Williams <dan.j.williams@intel.com>, Chris Mason <clm@fb.com>,
+        David Sterba <dsterba@suse.com>, Arnd Bergmann <arnd@arndb.de>,
+        Song Liu <song@kernel.org>,
+        Yu Kuai <yukuai@alb-78bjiv52429oh8qptp.cn-shenzhen.alb.aliyuncs.com>,
+        Li Nan <linan122@huawei.com>, linux-kernel@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, loongarch@lists.linux.dev,
+        linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org,
+        linux-s390@vger.kernel.org, linux-crypto@vger.kernel.org,
+        linux-btrfs@vger.kernel.org, linux-arch@vger.kernel.org,
+        linux-raid@vger.kernel.org
+References: <20260518051804.462141-1-hch@lst.de>
+ <20260518051804.462141-9-hch@lst.de>
+Content-Language: en-US, sv-SE
+From: "H. Peter Anvin" <hpa@zytor.com>
+In-Reply-To: <20260518051804.462141-9-hch@lst.de>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-On Fri, Jun 26, 2026 at 08:47:50PM +0200, Thorsten Blum wrote:
-> Now that struct rtas_error_log uses a flexible array member for the
-> extended log buffer, use struct_size() to calculate the total RTAS error
-> log size and avoid using the hard-coded header size of 8 bytes.
+On 2026-05-17 22:17, Christoph Hellwig wrote:
+> Quoting H. Peter Anvin who came up with the RAID6 P/Q algorithm, and
+> who wrote the initial implementation, then still part of the md driver:
 > 
-> Use memcpy_and_pad() instead of memset() and memcpy() while at it.
+>   The RAID-6 code has *never* supported only 3 units, and if it ever
+>   worked for *any* of the implementations it was purely by accident.
+>   Speaking as the original author I should know; this was deliberate as
+>   in some cases the degenerate case (3) would have required extra trays
+
+Stupid autocorrect. That was of course supposed to be "tests" (as in extra
+code paths) not "trays" :)
+
+>   in the code to no user benefit.
 > 
-> Signed-off-by: Thorsten Blum <thorsten.blum@linux.dev>
-> ---
->  arch/powerpc/platforms/pseries/ras.c | 17 +++++++----------
->  1 file changed, 7 insertions(+), 10 deletions(-)
-> 
-> diff --git a/arch/powerpc/platforms/pseries/ras.c b/arch/powerpc/platforms/pseries/ras.c
-> index adafd593d9d3..d54030fd2324 100644
-> --- a/arch/powerpc/platforms/pseries/ras.c
-> +++ b/arch/powerpc/platforms/pseries/ras.c
-> @@ -7,6 +7,7 @@
->  #include <linux/interrupt.h>
->  #include <linux/irq.h>
->  #include <linux/of.h>
-> +#include <linux/overflow.h>
->  #include <linux/fs.h>
->  #include <linux/reboot.h>
->  #include <linux/irq_work.h>
-> @@ -440,6 +441,8 @@ static __be64 *fwnmi_get_savep(struct pt_regs *regs)
->  static struct rtas_error_log *fwnmi_get_errinfo(struct pt_regs *regs)
->  {
->  	struct rtas_error_log *h;
-> +	u32 extended_log_length;
-> +	size_t len;
->  	__be64 *savep;
->  
->  	savep = fwnmi_get_savep(regs);
-> @@ -449,17 +452,11 @@ static struct rtas_error_log *fwnmi_get_errinfo(struct pt_regs *regs)
->  	regs->gpr[3] = be64_to_cpu(savep[0]); /* restore original r3 */
->  
->  	h = (struct rtas_error_log *)&savep[1];
-> +	extended_log_length = rtas_error_extended(h) ? rtas_error_extended_log_length(h) : 0;
-> +	len = struct_size(h, buffer, extended_log_length);
-> +	len = min(len, RTAS_ERROR_LOG_MAX);
->  	/* Use the per cpu buffer from paca to store rtas error log */
-> -	memset(local_paca->mce_data_buf, 0, RTAS_ERROR_LOG_MAX);
-> -	if (!rtas_error_extended(h)) {
-> -		memcpy(local_paca->mce_data_buf, h, sizeof(__u64));
-> -	} else {
-> -		int len, error_log_length;
-> -
-> -		error_log_length = 8 + rtas_error_extended_log_length(h);
-> -		len = min_t(int, error_log_length, RTAS_ERROR_LOG_MAX);
-> -		memcpy(local_paca->mce_data_buf, h, len);
-> -	}
-> +	memcpy_and_pad(local_paca->mce_data_buf, RTAS_ERROR_LOG_MAX, h, len, 0);
+> While md never allowed less than 4 devices, btrfs does.  This new
+> warning will trigger for such file systems, but given how it already
+> causes havoc that is a good thing.  If btrfs wants to fix third, it
+> should switch to transparently use three-way mirroring underneath,
+> which will work as P and Q are copies of the single data device by
+> the definition of the Linux RAID 6 P/Q algorithm.
 
-Sashiko found that memcpy_and_pad() isn't safe here because
-fwnmi_get_errinfo() is part of a real-mode path:
+For what it's worth, this is also true in the degenerate two-drive RAID-4|5
+case (D = P).
 
-https://sashiko.dev/#/patchset/20260626184750.166642-3-thorsten.blum%40linux.dev
+	-hpa
 
-I'll send a v2 and keep memset() and memcpy() separate.
 
