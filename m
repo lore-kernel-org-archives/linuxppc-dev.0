@@ -1,80 +1,58 @@
-Return-Path: <linuxppc-dev+bounces-23039-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23041-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1003FC43458
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Jun 2026 09:04:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AD87FC43327
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Jun 2026 10:48:26 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gnRRg2YSZz2xWP;
-	Sat, 27 Jun 2026 19:03:59 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782551039;
-	cv=none; b=ORU9EktLSTggGMvSXtMnmQHksnXDxrqB8wx9lQW0RZB+ks97CbQC66px+O+BfqXsGcKf3xzTUqbm169NHjEb6VwLWo9wCXStXzAjFesrPkokaXOlzC/ZGAFBs4XjJmsRp0WSw6HS22nPqyD4XXRlhlF3EPMt5OMGD9ejCyPc41otarIFjp3opboT1xllLDWrBJ0vSBnQtub5HY1hiv89jkZfyv5JAYsCR1KWZb3P2FUPCPGEaJtAgBcVEmO9cvxoWk68yG8I8CwDEoVYc/QupcMJYXD5lNlUxx4nyeYUovXAupK22lPMKB4IgAD9kBRxEIVbV12Bz+Z7AAVp8cP70w==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gnTm85L7hz2yS4;
+	Sat, 27 Jun 2026 20:48:24 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=91.218.175.172
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782557304;
+	cv=none; b=FYgiDIupy3nCkQ5PyODvnDFrdm7Mn88jN/Ln85F4jBzVjSVW0IoxssNl3oTYsI12pcgUH7E0Roysqc/oHGXVSGm34VIFVdiwobRunSL2mYqsQJaLTKv/fcuAWYHd1rkzbUJ1lJ4vX3Ne3ESUwPP980TFE74pvaxYqZ1viJS14e3Jo0lPOmKrdbrOKSivexNJbwA6u8PIpJ86FAVIYx2Kh8Gj55cCBx34bOPwI3UByKesIZv/D3PVyTUuOoa/gbx868VlLay46ibfT4ghJdyu4tD2loMYXt1BUiB4KXIch1ZHEWSxEofZxJMwCYQW6Orve3kMSr3f2SpLrSvxp3LzxA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1782551039; c=relaxed/relaxed;
-	bh=R3oxmrHEu3DxHUyIeRYPRcYft4luqjoeznjd6iV4xyA=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=ogScQ4crCiiN6utnmmHNRVxfSTRApSKYNJmYlB7ieX8N2NFNVEr21gZO7ESSKb3eWahREt/U69fuOHwRkUuJ+vztWanjqar3PStpzPph3qyX/rFxA8TWx7mzGwv7pdUYeLQIkUZ5riLP05r4OP2zStGSoPNBnHac7IC34Y/xw168oIrT6WAxvmufkeRGZPpoxKmYhWYt8IAUIxAy1g3LR+g5e8L6EjzMadqX94lr5dCxecc8DEfiRLQuV8WUnV7q+zwLzK191nwuLpAdsfmS6Ea9SkwbQXNqPHHmEKrKgLYD33408Fw59YcBTYP5HRRid5Jw7ssOA0XZT1e/dTT8Tg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=oRkyWLZR; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=shivani@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1782557304; c=relaxed/relaxed;
+	bh=Q0bXOJE6tHd+pYP54YvtCZ62SW/PO7nF/2RtSUXtdbs=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=QBs3p+fI5cxkjee7/B1N8/fUWIQD18RyPWkjbNCiKAhfte4zDSpLGVowPwumI4c3TsgTLtM6ce6XzD2g65uqfySgsMHv0ad1hgSZSNY8QyuC1VKwTjxh+1SaohgvmHqT/OfBSxyF6OSlVhMomIexIfbVasMdPxnhO328UPcvUaMtlZi0UhrTSpchq6um7h7aK5oClQ5RGDrzZzGrk6VPi+B7CIvKnDQwfmJwPVsGR6Q4N2adumPGcKO4yiEfd1L1UqRSJNT+kGvOUKv+i+Ps0yLasvawOhGbZfpWUGtTQi4CM3KooIsdXuLlIrPUHEz5nFCrY6NzF9xomfLNO5cOiw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=NbUsJCOS; dkim-atps=neutral; spf=pass (client-ip=91.218.175.172; helo=out-172.mta0.migadu.com; envelope-from=thorsten.blum@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=oRkyWLZR;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=NbUsJCOS;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=shivani@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=91.218.175.172; helo=out-172.mta0.migadu.com; envelope-from=thorsten.blum@linux.dev; receiver=lists.ozlabs.org)
+Received: from out-172.mta0.migadu.com (out-172.mta0.migadu.com [91.218.175.172])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gnRRd3j1jz2xJT
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Jun 2026 19:03:56 +1000 (AEST)
-Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 65R3SgR4635123;
-	Sat, 27 Jun 2026 09:03:51 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:message-id:mime-version
-	:subject:to; s=pp1; bh=R3oxmrHEu3DxHUyIeRYPRcYft4luqjoeznjd6iV4x
-	yA=; b=oRkyWLZR5WsJvMRfEBVTu2+iaNORJneGe9+HS54d2kcKOoew3wm7An8hc
-	Uyy40Y4HpfyLZ33wyG+s8+My9zCKXd9UCjjBOSwtXIX2ByooveNaY/8jFXLEvRTd
-	P0PYH2MJwiy+xpQYp0jwvpGS9L3lsqJjGssH5ONbQgIUPjOaGkcJDPMP6Sf0bafn
-	fPpJHnX6AVaiZeuboh/rhcpB+vf91FzB0YuclOnz1jqTdnMOOuWrbJYwiCmC3RGs
-	Pz7Y0/2oGibTR+telA33oRCUpO+M8HdWh4HUAavnbhfL9SmoenzPsjN4mxY8jqN1
-	kljxpL1HblJ3CNxVrh/LK1xWns1Tw==
-Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4f26n590yg-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Sat, 27 Jun 2026 09:03:50 +0000 (GMT)
-Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma21.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 65R8nj9w018731;
-	Sat, 27 Jun 2026 09:03:49 GMT
-Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
-	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4ex66kpn5v-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Sat, 27 Jun 2026 09:03:49 +0000 (GMT)
-Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
-	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 65R93jAb28967370
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Sat, 27 Jun 2026 09:03:45 GMT
-Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 38BE72004E;
-	Sat, 27 Jun 2026 09:03:45 +0000 (GMT)
-Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id B12FD20040;
-	Sat, 27 Jun 2026 09:03:40 +0000 (GMT)
-Received: from Mac.ibm.com (unknown [9.39.21.58])
-	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Sat, 27 Jun 2026 09:03:40 +0000 (GMT)
-From: Shivani Nittor <shivani@linux.ibm.com>
-To: acme@kernel.org, jolsa@kernel.org, adrian.hunter@intel.com,
-        mpetlan@redhat.com, tmricht@linux.ibm.com, maddy@linux.ibm.com,
-        irogers@google.com, namhyung@kernel.org, ravi.bangoria@amd.com
-Cc: linux-perf-users@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-        atrajeev@linux.ibm.com, hbathini@linux.vnet.ibm.com,
-        Tejas.Manhas1@ibm.com, Tanushree.Shah@ibm.com, shivani@linux.ibm.com
-Subject: [PATCH v3] perf scripts: Add configurable sorting option to powerpc-hcalls
-Date: Sat, 27 Jun 2026 14:33:33 +0530
-Message-ID: <20260627090334.67847-1-shivani@linux.ibm.com>
-X-Mailer: git-send-email 2.50.1
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gnTm46qtkz2y71
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Jun 2026 20:48:20 +1000 (AEST)
+X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
+	t=1782557280;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=Q0bXOJE6tHd+pYP54YvtCZ62SW/PO7nF/2RtSUXtdbs=;
+	b=NbUsJCOSsl1Jk+ovYIzpsmnNxWblZ8TSUR/uaew+DboEHMZeBqZN0s49UTPUWW6h+EUFmA
+	bXo1OceTlVnhFvjWVQH/HXSRdmLYeiqN56CfEaIbsQCpVQx5piunhteRkItMFLYsZ0sP5T
+	O45xuOtUlSC32NdtTSe59tzZ/wlax7Y=
+From: Thorsten Blum <thorsten.blum@linux.dev>
+To: Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+Cc: Thorsten Blum <thorsten.blum@linux.dev>,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH v2 2/2] powerpc/pseries/ras: Use struct_size() to simplify fwnmi_get_errinfo()
+Date: Sat, 27 Jun 2026 12:47:31 +0200
+Message-ID: <20260627104730.276858-4-thorsten.blum@linux.dev>
+In-Reply-To: <20260627104730.276858-3-thorsten.blum@linux.dev>
+References: <20260627104730.276858-3-thorsten.blum@linux.dev>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -88,152 +66,65 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2201; i=thorsten.blum@linux.dev; h=from:subject; bh=5f9DRxCgxvpKHvnJSiV97tR0B71w7wB17eQP9/xYHCA=; b=owGbwMvMwCUWt7pQ4caZUj3G02pJDFn2q3w19hQyGdydaWfbInupj5NvcW+8ls430TT/V9YaT yJOdit0lLIwiHExyIopsjyY9WOGb2lN5SaTiJ0wc1iZQIYwcHEKwERecDP8T5Gruv1GdJJS2l3/ uOdRETkq37dYdm1N6T8kMEsi5L15FsP/pGsFG878ebV8b7IV/9GJyjaOUx+f90ho+LO1/s3qUDV XLgA=
+X-Developer-Key: i=thorsten.blum@linux.dev; a=openpgp; fpr=1D60735E8AEF3BE473B69D84733678FD8DFEEAD4
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjI3MDA3NSBTYWx0ZWRfX8GHrVINKo/rc
- 82v3sE7H3b1ZbSB/zF4OQitqS9ST0S4mr63QAtAWWo/7ifOkCzqiKn55zRodV1MYJFPWOIxLUmF
- JvYYB5lkkG4kt41Y3txXR9y+DhgJGkMqBhqVqb2lU2PlVInjfcrEM/FNTAUtXP6OzltyY69P/Nk
- QZvUXPOalr2W2THhNSeiNqtPd0o5Xs7HnIE1K3jHi21o+pscyjH/Axn7g9Wx4neNVU9rRaVLXcX
- fpwig9JOGuIOv39TziwkuTPIih0QB1uaad9s82mQ+grlII9P6HgW8I78N5NyfD/2KibpCZUu0yh
- WhA+r8Z4CimSrXohc+iyURtPqwRxFDtEN3FI4FgrQl05FqNowlAh4Odtx2k7z7tHSF6JX7wByHq
- k2XJdsED3GQpuzF4G04u4H0CoPN+Q4/0XNCODiIR8/YRrStHioQNl+oPp6Gx5DbbMPlqMg/LQG/
- DVCeNbxBzUsGRFKiCBQ==
-X-Authority-Analysis: v=2.4 cv=V45NF+ni c=1 sm=1 tr=0 ts=6a3f91f6 cx=c_pps
- a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
- a=FelO9ux0wxsA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=U7nrCbtTmkRpXpFmAIza:22 a=VnNF1IyMAAAA:8 a=-UTqftxNVshRFOYItwsA:9
-X-Proofpoint-ORIG-GUID: h6argQTvTZJXYt9Icqmtig88y55ksaE1
-X-Proofpoint-GUID: DlSsYyZ3pXWg6XB8G7dzV5gTDXo4wjQa
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNjI3MDA3NSBTYWx0ZWRfX/n/fasDHopju
- ZGxzGydz4ssOlPu6+5ZW4JgHO1h+FftmZV52/aAGn9fZl7shyInPc68qWGvQihp7tyjFGsrwVdZ
- WSG6abys+wszEVLrEfKr6T/jZ73V/Ck=
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
- definitions=2026-06-27_01,2026-06-26_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- phishscore=0 spamscore=0 suspectscore=0 lowpriorityscore=0 priorityscore=1501
- adultscore=0 clxscore=1015 impostorscore=0 malwarescore=0 bulkscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2606270075
+X-Migadu-Flow: FLOW_OUT
 
-The powerpc-hcalls.py script currently prints hypercall
-statistics in a fixed sort order based on the number of
-hcall occurrences, making it difficult to analyze hcalls
-from different execution characteristics.
+Now that struct rtas_error_log uses a flexible array member for the
+extended log buffer, use struct_size() to calculate the total RTAS error
+log size and avoid using the hard-coded header size of 8 bytes.
 
-Add support for runtime-configurable sorting so users
-can order hypercall statistics by count, minimum
-latency, maximum latency, or average latency using
-a --sort option.
-
-Parse arguments through sys.argv to support perf script
-argument passing semantics.
-
-Example:
-
-perf record -a -e powerpc* sleep 10
-
-perf script -s ./powerpc-hcalls.py -i ./perf.data -- --sort=max
-
-SORT KEY = max
-hcall                            count   min(ns)   max(ns)   avg(ns)
-
-H_SEND_LOGICAL_LAN                  47      7380     40148      8739
-H_VIO_SIGNAL                       706       880     17454      1911
-H_RANDOM                             1     15176     15176     15176
-H_PUT_TCE_INDIRECT                   4      3032     10444      4956
-H_ADD_LOGICAL_LAN_BUFFER           363      1250      8716      1534
-H_SEND_CRQ                           8      2086      6846      3044
-H_PUT_TCE                            9      1284      4932      2646
-H_STUFF_TCE                         13      1620      3962      2358
-
-This makes it easier to identify frequently occurring
-or high-latency hypercalls depending on the analysis
-being performed.
-
-Signed-off-by: Shivani Nittor <shivani@linux.ibm.com>
+Signed-off-by: Thorsten Blum <thorsten.blum@linux.dev>
 ---
-Changelog:
-v2 -> v3
-- Add validation for supported sort keys
-- Print valid sort options for invalid input
+Changes in v2:
+- memcpy_and_pad() cannot be used in real mode; use memset() + memcpy()
+- v1: https://lore.kernel.org/r/20260626184750.166642-4-thorsten.blum@linux.dev/
+---
+ arch/powerpc/platforms/pseries/ras.c | 16 +++++++---------
+ 1 file changed, 7 insertions(+), 9 deletions(-)
 
-v1 -> v2
-- Add bounds check for --sort argument handling
-- Prevent IndexError when sort key is omitted
-
- tools/perf/scripts/python/powerpc-hcalls.py | 46 ++++++++++++++++++++-
- 1 file changed, 45 insertions(+), 1 deletion(-)
-
-diff --git a/tools/perf/scripts/python/powerpc-hcalls.py b/tools/perf/scripts/python/powerpc-hcalls.py
-index 8b78dc790adb..bfa628d8c952 100644
---- a/tools/perf/scripts/python/powerpc-hcalls.py
-+++ b/tools/perf/scripts/python/powerpc-hcalls.py
-@@ -25,6 +25,7 @@ from Util import *
- #	} ...
- # }
- output = {}
-+sort_key = 'count'
+diff --git a/arch/powerpc/platforms/pseries/ras.c b/arch/powerpc/platforms/pseries/ras.c
+index adafd593d9d3..7b8713bdd978 100644
+--- a/arch/powerpc/platforms/pseries/ras.c
++++ b/arch/powerpc/platforms/pseries/ras.c
+@@ -7,6 +7,7 @@
+ #include <linux/interrupt.h>
+ #include <linux/irq.h>
+ #include <linux/of.h>
++#include <linux/overflow.h>
+ #include <linux/fs.h>
+ #include <linux/reboot.h>
+ #include <linux/irq_work.h>
+@@ -440,6 +441,8 @@ static __be64 *fwnmi_get_savep(struct pt_regs *regs)
+ static struct rtas_error_log *fwnmi_get_errinfo(struct pt_regs *regs)
+ {
+ 	struct rtas_error_log *h;
++	u32 extended_log_length;
++	size_t len;
+ 	__be64 *savep;
  
- # d_enter: {
- #	cpu: {
-@@ -158,10 +159,53 @@ def hcall_table_lookup(opcode):
+ 	savep = fwnmi_get_savep(regs);
+@@ -449,17 +452,12 @@ static struct rtas_error_log *fwnmi_get_errinfo(struct pt_regs *regs)
+ 	regs->gpr[3] = be64_to_cpu(savep[0]); /* restore original r3 */
  
- print_ptrn = '%-28s%10s%10s%10s%10s'
+ 	h = (struct rtas_error_log *)&savep[1];
++	extended_log_length = rtas_error_extended(h) ? rtas_error_extended_log_length(h) : 0;
++	len = struct_size(h, buffer, extended_log_length);
++	len = min(len, RTAS_ERROR_LOG_MAX);
+ 	/* Use the per cpu buffer from paca to store rtas error log */
+ 	memset(local_paca->mce_data_buf, 0, RTAS_ERROR_LOG_MAX);
+-	if (!rtas_error_extended(h)) {
+-		memcpy(local_paca->mce_data_buf, h, sizeof(__u64));
+-	} else {
+-		int len, error_log_length;
+-
+-		error_log_length = 8 + rtas_error_extended_log_length(h);
+-		len = min_t(int, error_log_length, RTAS_ERROR_LOG_MAX);
+-		memcpy(local_paca->mce_data_buf, h, len);
+-	}
++	memcpy(local_paca->mce_data_buf, h, len);
  
-+def sort_output(opcode):
-+	stats = output[opcode]
-+
-+	if sort_key == 'min':
-+		return stats['min']
-+	if sort_key == 'max':
-+		return stats['max']
-+	if sort_key == 'avg':
-+		return stats['time'] // stats['cnt']
-+
-+	return stats['cnt']
-+
-+def trace_begin():
-+	global sort_key
-+
-+	valid_sort_keys = ['count', 'min', 'max', 'avg']
-+
-+	i = 1
-+	while i < len(sys.argv):
-+		arg = sys.argv[i]
-+
-+		if arg == '-s' or arg == '--sort':
-+			if i + 1 >= len(sys.argv):
-+				print("Error: -s/--sort requires a sort key argument")
-+				sys.exit(1)
-+			sort_key = sys.argv[i + 1]
-+			i += 2
-+			continue
-+
-+		if arg.startswith('--sort='):
-+			sort_key = arg.split('=', 1)[1]
-+			i += 1
-+			continue
-+
-+		i += 1
-+
-+	if sort_key not in valid_sort_keys:
-+		print(f"Error: Invalid sort key '{sort_key}'. Valid options are: {', '.join(valid_sort_keys)}")
-+		sys.exit(1)
-+
-+	print("SORT KEY =", sort_key)
-+
- def trace_end():
- 	print(print_ptrn % ('hcall', 'count', 'min(ns)', 'max(ns)', 'avg(ns)'))
- 	print('-' * 68)
--	for opcode in output:
-+	for opcode in sorted(output, key = sort_output,
-+                            reverse=True):
- 		h_name = hcall_table_lookup(opcode)
- 		time = output[opcode]['time']
- 		cnt = output[opcode]['cnt']
--- 
-2.54.0
-
+ 	return (struct rtas_error_log *)local_paca->mce_data_buf;
+ }
 
