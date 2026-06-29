@@ -1,62 +1,61 @@
-Return-Path: <linuxppc-dev+bounces-23117-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23118-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 763EEC43458
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Jun 2026 16:23:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 47AEEC43458
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Jun 2026 16:23:22 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gps5V5VLFz2yH4;
-	Tue, 30 Jun 2026 02:23:10 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=198.175.65.16
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782750190;
-	cv=none; b=LznZQy0oi6iH0SZqYcpw36YYqBG7trm7Zkw9Oz5eq/CRGrRUeaLGvZHDYpSleQDAloOWaGh4rEaAacRqwre8/Bn0VMcWP8c5cDZWpHn1BtOWFzJTImuzB9Xmgf2T32DXQYjF4zgRK2p7Hr8HXVOkDRRb9f/yV9IBvTfFfXKBQfjWQ6k7ZG5XZf3Oqxi+/2Kmvr7VvIBncho4UuJ5Qr8pPGpzNlhbHFGfN/PMc9ia9gJVAfRQMOTcdhQipe8TikA2Giw0I3q7pO8n8xPK4lzljxiEoJx3w3mOfAKF8uQDlXgnQoqYXRKQA41JjcJ8mPUH2PFotxzg/htI65TugfLVQg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gps5h74Vbz2yH4;
+	Tue, 30 Jun 2026 02:23:20 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=198.175.65.17
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782750200;
+	cv=none; b=iBS9GzecFsW+hopb5hOQcmNPcGRGUKLPwGJbiMVeIgyetEdnHUvCXX6186BUoxwNVnq2hHf7tUATTNoFsU6wlqzk5PKvtC76j/vzvFQ5PaQvAABWtRzH/t9/XFDGMs2nM6WxgPBteArx9uqildIUy3tJp9e1pwp/T8w2WUcC2IfvK7mkm+TBGPz99Ax+5BmA0V+rmeSdi8OA5QWUuzq3fNQWpXm8NUkj9kStg/Uv9MsKreIjJlD+Nfgpmi3O8GX4O/P3jXBMvtnQrvYZFCNgG3sIDNGRCS8VZZBFyB89NQx5UK1i8eSEhhTd1X3WjIkTLpaeQd789HlDiewExAKHZQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1782750190; c=relaxed/relaxed;
-	bh=XnZAvQRuMx/J3aC4trm8bs2DmSDhWyZ5UqHCdLG4R4w=;
+	t=1782750200; c=relaxed/relaxed;
+	bh=XmMP3Fyn5t2fBCLhgeG0xrhOjF7olylXvaOhfkqQqqI=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=bx4TVbQRf5hNo19X2OER/+/Ixx+orcxGQtFdGqZ9dzro3yTJRKH+tsuD9S2LTKnXOUlJzNcQjd0J994c/JmJfZ8KjPkBiO0yUoMpvjtRNS0ekUGK2X8kCpmG4Tywa4YLdCGWrh/sIxbEscYFKAD6z+nLaPb4O3AANSBzNZ0aAPcmLeS9qN2+GqCe1O5JuaxAf7aMyJzOySaayQfaNOU8OBoP/qem32i8e0O3PWnL2lI7imlkjffSV3GlRVul1j7yWqwP3sSfRw5AbM7uE5GTXVwJCO9M/YR78Go/JCHn/fpg9sBMXdcixpcBMt3fQiZfsTtUbussIi2O9X6Zpgf3Hw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=I45Dh1pY; dkim-atps=neutral; spf=pass (client-ip=198.175.65.16; helo=mgamail.intel.com; envelope-from=andriy.shevchenko@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
+	 Content-Type:Content-Disposition:In-Reply-To; b=T5+h7l64Gdy/ozRn7xFN4KoDznicfeKOQt9YS/iWadZPpSwgLiBCtt4zlD1uG09X2stO4XYjWh8o+axFsJw8WG/LZme8hzbvRq9DUhU2VbbTPMsShd3Bq/bG3c7CbUvGL0U16c1Lcgy8KrAel83uWzL4YNBkNWR5fgdEBpnGduMwfd8yDEQaIAwuylzXazc7SHtrrfeC+LSbzcQxknFNDuyFpgBFARltzkxKaPb4Y2F9V938zuiBxndX3ZlkRuFetHps6UTP0FT72dalMHogk8cMvuKONWD348w0PZzN8ABFaVCKSr4eBkkhebnyxtePMbQYuXEm+pUialBfs+wdXw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=KidCTjNt; dkim-atps=neutral; spf=pass (client-ip=198.175.65.17; helo=mgamail.intel.com; envelope-from=andriy.shevchenko@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=I45Dh1pY;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=KidCTjNt;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.intel.com (client-ip=198.175.65.16; helo=mgamail.intel.com; envelope-from=andriy.shevchenko@linux.intel.com; receiver=lists.ozlabs.org)
-X-Greylist: delayed 65 seconds by postgrey-1.37 at boromir; Tue, 30 Jun 2026 02:23:06 AEST
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.16])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.intel.com (client-ip=198.175.65.17; helo=mgamail.intel.com; envelope-from=andriy.shevchenko@linux.intel.com; receiver=lists.ozlabs.org)
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gps5Q4Zscz2xd2
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jun 2026 02:23:06 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gps5g4gtJz2xd2
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jun 2026 02:23:19 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1782750187; x=1814286187;
+  t=1782750200; x=1814286200;
   h=date:from:to:cc:subject:message-id:references:
    mime-version:in-reply-to;
-  bh=NFSMtVuoxLsda44tJKXSv/IYfieoOuyAy+SzWiTGH00=;
-  b=I45Dh1pYsP0IfhhlXpddZtbzBsutnCH0+Xnk2OG7mENQpAqhZfbOAKD5
-   e/qJwjlFi/5vqt/vxns6Ori3ZMet879yvyZGdqv2F/5onpgd5hTL7ujUQ
-   J9JX7f3P4cft8shRAY6XkTe6ERDDS60FAgnl7KlE8utEQcb3kU0NbPGT2
-   vofSREphfwHSx0UCJ2qL2LUe07tGGjs1Dp/zgnd/lk5zMrBmgUgYfwjug
-   6PRczXD7tvWOo/UznEuMouiq0vUryXssTJwbNNjcnzd/hBon4s3/PAAKR
-   WgJl7MS7WOguGo9JHei+6jNeMZKoDiLNYgzdeB86k+RQsnQXRqUjeeUI5
+  bh=60Kkhn1S4xFp8KF1ZAF46WPmvC0pF6KOvaZqQh2Mlf4=;
+  b=KidCTjNtEWIleRshxkpHesHi7jCfUKqRBBKWyWcVThN0GOBmZzyAKkmQ
+   jdwjKnkyjtQAkA7PMtfT2v94io167/X/T1a+6xNvtSU8V8vwI8xyWhZ9Z
+   Uy1zZgVnoBVMApF8dCJjQeeghDaoJFfxrYxLUm8sL38x2sb0c2mNGgIVL
+   Zjm+KzdJgiBFOhwnNcVVvOM0MBOMC/6ezI43FvpEgB1UnXoy57g32GnGt
+   1mX+PgsArAigDD1qCLCxQoYcnRFSU/yZqH6uRacA9bsLoAAH3i5ZDvcqW
+   rafRT8guX6bwiEkhkDDAdQouh7fBhQPX+wMnP71wSWOAvI14J8Vf7bTtP
    Q==;
-X-CSE-ConnectionGUID: qGxm3BVfQWKwkNB9NP45uQ==
-X-CSE-MsgGUID: wBBEplfMTJuwNsxT4KVrSg==
-X-IronPort-AV: E=McAfee;i="6800,10657,11832"; a="83644942"
+X-CSE-ConnectionGUID: 9PIqqWw7SmK1ynWEnIeXxw==
+X-CSE-MsgGUID: CC7haAbQSaW9fEb1+8mdmQ==
+X-IronPort-AV: E=McAfee;i="6800,10657,11832"; a="83476055"
 X-IronPort-AV: E=Sophos;i="6.24,232,1774335600"; 
-   d="scan'208";a="83644942"
-Received: from orviesa001.jf.intel.com ([10.64.159.141])
-  by orvoesa108.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 29 Jun 2026 09:21:46 -0700
-X-CSE-ConnectionGUID: FxugsHAHT4+THTJwauLSzw==
-X-CSE-MsgGUID: nJKI5ILbSS+sjP319WFTsA==
+   d="scan'208";a="83476055"
+Received: from fmviesa005.fm.intel.com ([10.60.135.145])
+  by orvoesa109.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 29 Jun 2026 09:23:15 -0700
+X-CSE-ConnectionGUID: tfo8W8J/QcSmRxl6mSfrug==
+X-CSE-MsgGUID: qa+c086/QemtMiZKLSzfAA==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.24,232,1774335600"; 
-   d="scan'208";a="290124520"
+   d="scan'208";a="256920930"
 Received: from kniemiec-mobl1.ger.corp.intel.com (HELO localhost) ([10.245.244.207])
-  by smtpauth.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 29 Jun 2026 09:21:33 -0700
-Date: Mon, 29 Jun 2026 19:21:10 +0300
+  by fmviesa005-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 29 Jun 2026 09:23:02 -0700
+Date: Mon, 29 Jun 2026 19:23:00 +0300
 From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 To: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
 Cc: Lee Jones <lee@kernel.org>,
@@ -106,12 +105,12 @@ Cc: Lee Jones <lee@kernel.org>,
 	imx@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
 	intel-xe@lists.freedesktop.org, dri-devel@lists.freedesktop.org,
 	linux-usb@vger.kernel.org, linux-mips@vger.kernel.org,
-	platform-driver-x86@vger.kernel.org
-Subject: Re: [PATCH v2 19/19] driver core: platform: count references to all
- kinds of firmware nodes
-Message-ID: <akKbdrwQSGAakDcq@ashevche-desk.local>
+	platform-driver-x86@vger.kernel.org, stable@vger.kernel.org,
+	Wolfram Sang <wsa+renesas@sang-engineering.com>
+Subject: Re: [PATCH v2 00/19] driver core: count references of the platform
+ device's fwnode, not OF node
+Message-ID: <akKb5LPBIMenF9yD@ashevche-desk.local>
 References: <20260629-pdev-fwnode-ref-v2-0-8abe2513f96e@oss.qualcomm.com>
- <20260629-pdev-fwnode-ref-v2-19-8abe2513f96e@oss.qualcomm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -127,53 +126,47 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20260629-pdev-fwnode-ref-v2-19-8abe2513f96e@oss.qualcomm.com>
+In-Reply-To: <20260629-pdev-fwnode-ref-v2-0-8abe2513f96e@oss.qualcomm.com>
 Organization: Intel Finland Oy - BIC 0357606-4 - c/o Alberga Business Park, 6
  krs, Bertel Jungin Aukio 5, 02600 Espoo
 
-On Mon, Jun 29, 2026 at 11:12:42AM +0200, Bartosz Golaszewski wrote:
-> When using platform_device_register_full(), we currently only increase
-> the reference count of the OF node associated with a platform device. We
-> symmetrically decrease it in platform_device_release(). With all users in
-> tree now converted to using provided platform device helpers for
-> assigning OF and firmware nodes, we can now switch to counting references
-> of all kinds of firmware nodes.
+On Mon, Jun 29, 2026 at 11:12:23AM +0200, Bartosz Golaszewski wrote:
+> Platform device core provides helper interfaces for dealing with
+> dynamically created platform devices. Most users should use
+> platform_device_register_full() which encapsulates most of the
+> operations but some modules will want to use the split approach of
+> calling platform_device_alloc() + platform_device_add() separately for
+> various reasons.
+> 
+> With many platform devices now using dynamic software nodes as their
+> primary firmware nodes and with the platform device interface being
+> extended to also better cover the use-cases of secondary software nodes,
+> I believe it makes sense to switch to counting the references of all
+> kinds of firmware nodes.
+> 
+> To that end, I identified all users of platform_device_alloc() that also
+> assign dev.of_node or dev.fwnode manually. I noticed five cases where
+> the references are not increased as they should (patches 1-5 fix these
+> users) and provided three new functions in platform_device.h that now
+> become the preferred interfaces for assigning firmware nodes to dynamic
+> platform devices (in line with platform_device_add_data(),
+> platform_device_add_resources(), etc.). The bulk of the patches in this
+> series are small driver conversions to port all users to going through
+> the new functions that now encapsulate the refcount logic. With that
+> done, the final patch seamlessly switches to counting the references of
+> all firmware node types.
+> 
+> This effort is prerequisite of removing platform_device_release_full()
+> and unifying the release path for dynamic platform devices using
+> unmanaged software nodes.
+> 
+> Merging strategy: The entire series should go through the driver core
+> tree, possibly with an immutable branch provided to solve any potential
+> conflicts though these are rather unlikely.
 
-Yep, that's the expected result, thanks!
-
-...
-
->  void platform_device_set_fwnode(struct platform_device *pdev,
->  				struct fwnode_handle *fwnode)
->  {
-> -	if (is_of_node(fwnode))
-> -		platform_device_set_of_node(pdev, to_of_node(fwnode));
-> -	else
-> -		pdev->dev.fwnode = fwnode;
-> +	fwnode_handle_put(pdev->dev.fwnode);
-
-> +	pdev->dev.fwnode = fwnode_handle_get(fwnode);
-> +	pdev->dev.of_node = to_of_node(fwnode);
-
-	device_set_node(&pdev->dev, fwnode_handle_get(fwnode));
-
->  }
-
-...
-
->  	pdev->dev.parent = pdevinfo->parent;
-> -	pdev->dev.fwnode = pdevinfo->fwnode;
-> -	pdev->dev.of_node = of_node_get(to_of_node(pdev->dev.fwnode));
-
-> +	pdev->dev.fwnode = fwnode_handle_get(pdevinfo->fwnode);
-> +	pdev->dev.of_node = to_of_node(pdev->dev.fwnode);
-
-See above.
-
-...
-
-With them being addressed,
 Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+for patches 2-4 assuming they will be accompanied with patch 19 at the same
+time.
 
 -- 
 With Best Regards,
