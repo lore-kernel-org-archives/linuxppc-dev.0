@@ -1,48 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-23126-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23127-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7B045C43602
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Jun 2026 19:26:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2C21CC43602
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Jun 2026 19:26:09 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gpx8S5fw9z2xRw;
-	Tue, 30 Jun 2026 05:26:00 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gpx8W35PXz2xPL;
+	Tue, 30 Jun 2026 05:26:03 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782761160;
-	cv=none; b=Wnt+tAN0H7a4Ee+vl1uJGCAJZ2RGR7YcZjWoSVe7mNx054pe1Hmt/Nqn0ATqbfoBznhsyJTTPqt8qH4nw7gyGWg6CZ70l1jdCaL2Ag+U2F2WcPdOdRjDpN+I64mgFK9baC11uZ0kMZX6XTi6G3ZgxSrOkaXOc/uxzwDdyJnyDNaDk48YCgMsHiGl8h26bm3noRt7z3gcfpFRw/oYM+as3hVzz6gvFyD1bZWdmO4IcVFPeZ2GgTLsmsOac6CB5HkYh5cw0M0JgTXByyLHI1BBn+nja6Ck9X+l6deBDRrQdtptGxZjl1PN0+GxH89N4pg/azmxDzin3POx36F4j8MsMg==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782761163;
+	cv=none; b=BwYktZ7yzg8yDoU0mtkyRN+crTpn5o0m1pwr35qIfoDwMioUV4iHOEO1npgqfEDfYj/3f/oQM+CREQzfV5+5BT8WdOoV7h+I7RBFC1J33mYnH6YvpUC8MM6AfYpycLg7q7bEI+S+43dhS6y1JWUSNQhszeS50LY2qnPeXhZLKGH5KdH6t7wks5yjM3w4LY6N044u4sFKMfwM8ClssnEXM9W6F+Vg7jjhTJRhbHupS46/wDcZ4wE+plN+fVY1PhhqxLrEP8WduVcYDCbPDwM84yyhPkeoALpeN537c23bOQX9Y/q/qiSIu9ZFKEzNRLqL1tkQDZrHkLTpGv0bTNYjfQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1782761160; c=relaxed/relaxed;
-	bh=uYIw6aQ9I+77XwEcGZ5sLAkEEwuPzF6gubx9MILGtr0=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=kF0Pq/bdmwWn+gnYSRjt96zkODYss0slMZPcUSZMKj9EX1DUE2LcBX/82YprdyjI5gviUsPPrsVLrLo7qJ/5EtAD7b42AXK7/cVX0nNDILea6mt+1z/d29d5KHg9+LKacaFrpRCmF+99RA4l+AHqGjW9cGDlfPMSzz4W8c7v7UanQxbt0d7MC2ioDx6mOc0qncJWzRVZTWCTVVjDrbQH116KDBkqTI0ZiWUxWUvweGsGjs87Zp6kDIqxkG90WE/bPmhKyCqalgiZjXLOseVafj8z0Ac2LIiA3JUtfME7sq9YOfhVtV6NT5s01rG4vwHP7h/s9wtm8Ht+SxcmNrvenQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=WOjc9JyG; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1782761163; c=relaxed/relaxed;
+	bh=RyicGxsSOzJTaoBcRQGH27oUytYBKCYLUF6jDOpzH7I=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=kcdbtVY0S+ydKmBaBez+sMO+RNgDzmHU+JySVhRuq89g8LH8LdElCnErcWoCzMMOBKdleIDWvfj72JrXNFIwarYv3oqb5R2NHasdm94CLdlGcKXGe21wlzvidN2djiBejzcFrstEztSTkxW49Iq/N75k+Ihfr+qMOgnpKVIzC3YH0bz3mTRcBrYwrdY2/+U7Ska0AzRNqRm4PREv/cvpHWW2cQyXdU0pKj09j4gK0YRGNHGh/95ro9695jCKP99t+a1u0U4gSq7Y2RMcHi7KI/SR/PDd8Ram1+1GwHVSsSKP3ZJlT4B4IHVgptYp6y+BAB0zU2zrayMhoVjQwkpyFA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=a5KeyFTe; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=WOjc9JyG;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=a5KeyFTe;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
 Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gpx8R4RQXz2xPL
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jun 2026 05:25:59 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gpx8V10rmz2yf5
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jun 2026 05:26:01 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 723DC60008;
-	Mon, 29 Jun 2026 19:25:56 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 52F6D1F000E9;
-	Mon, 29 Jun 2026 19:25:55 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 7F8DE600AA;
+	Mon, 29 Jun 2026 19:25:59 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 564721F000E9;
+	Mon, 29 Jun 2026 19:25:58 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1782761156;
-	bh=uYIw6aQ9I+77XwEcGZ5sLAkEEwuPzF6gubx9MILGtr0=;
-	h=From:To:Cc:Subject:Date;
-	b=WOjc9JyG02UBcXhhgV9ic0phr0uZCFD5k0ILdv6ONhCv8Z1XYDxBYiwvpukl7K1Fg
-	 a8aIrsAXippHTg2Wibb6tHWkzlE4E0fWXgBDrHzByOJL4F8jISF06sHckyYY+PF7tK
-	 OiAiSmS9jz9wRn1oMBm18e5Uavo00IhgOxFuVQdHvJLDYYtq4uXlvS/eQXpk6KaIDD
-	 GN3rVLuuxb69YleGJzixCH/hWeHWpFDPzoCr2KQROO1CK5H8VnjBM1FKT5hXUj42/o
-	 WOenPbgoWzQyVU21Y69V/YrWJ0M+K8b+G7Zlo5u3zMESofU5MsPpKfLAYEn9kt+uGS
-	 wlAF5pba2Dehg==
+	s=k20260515; t=1782761159;
+	bh=RyicGxsSOzJTaoBcRQGH27oUytYBKCYLUF6jDOpzH7I=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References;
+	b=a5KeyFTeJjh7TJORUpSdmde4WrAK8BTgTPTho1LlZNtgrXh/Yqn9mD6/L1E9zfs8r
+	 e8za/mcjsoGeYfC+55PxZM0hLi0ZRJB+0Gbcm0U2F6Fn97SZIJM1N8XKGpsR2xQKrI
+	 yYMjTnXxd/YQ9zzdgYLIPjHCFJPa2KKvIAraY8mhyi19FlYp5ghqePfdzpdkTUseC1
+	 had3a1qZv4Z9B8qbb5LsCMcPsRJ2m5HWJRYLpaEMWR5rYHXsAk6QucmLYIa0UzO6lQ
+	 Pqa24H5c5iEEZidrzYUke9zV+idmE8KbclhOGbVFF/6WTC2VNdnFmcT1ViYuCVE/mn
+	 cARBGEsTONhTA==
 From: Lorenzo Stoakes <ljs@kernel.org>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
@@ -126,10 +127,12 @@ Cc: Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
 	linux-fsdevel@vger.kernel.org,
 	linux-mm@kvack.org,
 	linux-sound@vger.kernel.org
-Subject: [PATCH 00/13] convert more vm_flags_t users to vma_flags_t
-Date: Mon, 29 Jun 2026 20:25:23 +0100
-Message-ID: <cover.1782760670.git.ljs@kernel.org>
+Subject: [PATCH 01/13] mm: introduce vma_flags_can_grow() and vma_can_grow()
+Date: Mon, 29 Jun 2026 20:25:24 +0100
+Message-ID: <f2e8c32515d328db62279cc8bab8398ea278d74f.1782760670.git.ljs@kernel.org>
 X-Mailer: git-send-email 2.54.0
+In-Reply-To: <cover.1782760670.git.ljs@kernel.org>
+References: <cover.1782760670.git.ljs@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -145,83 +148,97 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-This series makes further progress in converting usage of the deprecated
-vm_flags_t type to its replacement, vma_flags_t.
+These test whether the VMA has stack sematics, i.e. is able to grow upwards
+or downwards depending on the architecture.
 
-It focuses on mm, though updates some users of mm APIs also.
+In order to account for arches which do not support upward-growing stacks,
+introduce VMA_GROWSUP whose definition depends on the architecture
+supporting it, and use vma_flags_test_single_mask() in vma_flags_can_grow()
+to account for this.
 
-It updates:
+Update the VMA userland tests to reflect the changes
 
-* The core do_mmap() code path for VMA mapping.
-* Unmapped area logic.
-* The usage of mm->def_vma_flags.
-* VMA page protection bit logic.
-* General usage of VMA flags in core mm code, mlock, mprotect, mremap.
+No functional change intended.
 
+Signed-off-by: Lorenzo Stoakes <ljs@kernel.org>
+---
+ include/linux/mm.h              | 21 ++++++++++++++++++---
+ tools/testing/vma/include/dup.h |  4 ++++
+ 2 files changed, 22 insertions(+), 3 deletions(-)
 
-REVIEWER/MERGER NOTE: This is dependent on [0], which must be merged before
-this.
-
-[0]:https://lore.kernel.org/linux-mm/cover.1782735110.git.ljs@kernel.org/
-
-Lorenzo Stoakes (13):
-  mm: introduce vma_flags_can_grow() and vma_can_grow()
-  mm/vma: update do_mmap() to use vma_flags_t
-  mm: convert __get_unmapped_area() to use vma_flags_t
-  mm: update generic_get_unmapped_area[_topdown]() to use vma_flags_t
-  mm: prefer mm->def_vma_flags in mm logic
-  mm/vma: convert vm_pgprot_modify() to use vma_flags_t and rename
-  mm/vma: rename vma_get_page_prot to vma_flags_to_page_prot
-  mm: introduce vma_get_page_prot() and use it
-  mm/vma: update create_init_stack_vma() to use vma_flags_t
-  mm/vma: convert miscellaneous uses of VMA flags in core mm
-  mm/mlock: convert mlock code to use vma_flags_t
-  mm/mprotect: convert mprotect code to use vma_flags_t
-  mm/mremap: convert mremap code to use vma_flags_t
-
- arch/mips/kernel/vdso.c                     |   4 +-
- arch/powerpc/mm/book3s64/slice.c            |   6 +-
- drivers/gpu/drm/drm_gem.c                   |   2 +-
- drivers/gpu/drm/drm_gem_dma_helper.c        |   2 +-
- drivers/gpu/drm/drm_gem_shmem_helper.c      |   2 +-
- drivers/gpu/drm/etnaviv/etnaviv_gem.c       |   2 +-
- drivers/gpu/drm/exynos/exynos_drm_gem.c     |   6 +-
- drivers/gpu/drm/i915/gem/i915_gem_mman.c    |  12 +-
- drivers/gpu/drm/msm/msm_gem.c               |   2 +-
- drivers/gpu/drm/nouveau/nouveau_gem.c       |   2 +-
- drivers/gpu/drm/omapdrm/omap_fbdev.c        |   2 +-
- drivers/gpu/drm/omapdrm/omap_gem.c          |   6 +-
- drivers/gpu/drm/rockchip/rockchip_drm_gem.c |   2 +-
- drivers/gpu/drm/tegra/gem.c                 |   2 +-
- drivers/gpu/drm/virtio/virtgpu_vram.c       |   2 +-
- drivers/gpu/drm/vmwgfx/vmwgfx_page_dirty.c  |   2 +-
- drivers/gpu/drm/xe/xe_device.c              |   2 +-
- drivers/gpu/drm/xe/xe_mmio_gem.c            |   2 +-
- drivers/gpu/drm/xen/xen_drm_front_gem.c     |   2 +-
- drivers/video/fbdev/core/fb_io_fops.c       |   2 +-
- fs/aio.c                                    |   2 +-
- fs/hugetlbfs/inode.c                        |   3 +-
- include/linux/huge_mm.h                     |  10 +-
- include/linux/memfd.h                       |   6 +-
- include/linux/mm.h                          |  51 ++++--
- include/linux/sched/mm.h                    |  16 +-
- ipc/shm.c                                   |   3 +-
- mm/debug.c                                  |   2 +-
- mm/huge_memory.c                            |  21 +--
- mm/memfd.c                                  |  15 +-
- mm/mlock.c                                  |  97 ++++++------
- mm/mmap.c                                   | 164 +++++++++++---------
- mm/mprotect.c                               |  16 +-
- mm/mremap.c                                 |  38 ++---
- mm/nommu.c                                  |   3 +-
- mm/util.c                                   |  10 +-
- mm/vma.c                                    |  27 ++--
- mm/vma.h                                    |   8 +-
- mm/vma_exec.c                               |  20 ++-
- sound/core/memalloc.c                       |   2 +-
- tools/testing/vma/include/dup.h             |  22 ++-
- 41 files changed, 339 insertions(+), 261 deletions(-)
-
---
+diff --git a/include/linux/mm.h b/include/linux/mm.h
+index 868b2334bff3..cf7df1569052 100644
+--- a/include/linux/mm.h
++++ b/include/linux/mm.h
+@@ -472,6 +472,7 @@ enum {
+ #define VM_SAO		INIT_VM_FLAG(SAO)
+ #elif defined(CONFIG_PARISC)
+ #define VM_GROWSUP	INIT_VM_FLAG(GROWSUP)
++#define VMA_GROWSUP	mk_vma_flags(VMA_GROWSUP_BIT)
+ #elif defined(CONFIG_SPARC64)
+ #define VM_SPARC_ADI	INIT_VM_FLAG(SPARC_ADI)
+ #define VM_ARCH_CLEAR	INIT_VM_FLAG(ARCH_CLEAR)
+@@ -483,6 +484,7 @@ enum {
+ #endif
+ #ifndef VM_GROWSUP
+ #define VM_GROWSUP	VM_NONE
++#define VMA_GROWSUP	EMPTY_VMA_FLAGS
+ #endif
+ #ifdef CONFIG_ARM64_MTE
+ #define VM_MTE		INIT_VM_FLAG(MTE)
+@@ -1563,11 +1565,24 @@ static inline bool vma_is_initial_stack(const struct vm_area_struct *vma)
+ 		vma->vm_end >= vma->vm_mm->start_stack;
+ }
+ 
+-static inline bool vma_is_temporary_stack(const struct vm_area_struct *vma)
++static inline bool vma_flags_can_grow(const vma_flags_t *flags)
+ {
+-	int maybe_stack = vma->vm_flags & (VM_GROWSDOWN | VM_GROWSUP);
++	if (vma_flags_test_single_mask(flags, VMA_GROWSUP))
++		return true;
++	if (vma_flags_test(flags, VMA_GROWSDOWN_BIT))
++		return true;
++
++	return false;
++}
+ 
+-	if (!maybe_stack)
++static inline bool vma_can_grow(const struct vm_area_struct *vma)
++{
++	return vma_flags_can_grow(&vma->flags);
++}
++
++static inline bool vma_is_temporary_stack(const struct vm_area_struct *vma)
++{
++	if (!vma_can_grow(vma))
+ 		return false;
+ 
+ 	if ((vma->vm_flags & VM_STACK_INCOMPLETE_SETUP) ==
+diff --git a/tools/testing/vma/include/dup.h b/tools/testing/vma/include/dup.h
+index 5d7d0afd7765..6f5bcd7fbcd8 100644
+--- a/tools/testing/vma/include/dup.h
++++ b/tools/testing/vma/include/dup.h
+@@ -245,8 +245,10 @@ enum {
+ #define VM_STACK	INIT_VM_FLAG(STACK)
+ #ifdef CONFIG_STACK_GROWS_UP
+ #define VM_STACK_EARLY	INIT_VM_FLAG(STACK_EARLY)
++#define VMA_STACK_EARLY mk_vma_flags(VMA_STACK_EARLY_BIT)
+ #else
+ #define VM_STACK_EARLY	VM_NONE
++#define VMA_STACK_EARLY EMPTY_VMA_FLAGS
+ #endif
+ #ifdef CONFIG_ARCH_HAS_PKEYS
+ #define VM_PKEY_SHIFT ((__force int)VMA_HIGH_ARCH_0_BIT)
+@@ -315,6 +317,8 @@ enum {
+ 
+ /* Bits set in the VMA until the stack is in its final location */
+ #define VM_STACK_INCOMPLETE_SETUP (VM_RAND_READ | VM_SEQ_READ | VM_STACK_EARLY)
++#define VMA_STACK_INCOMPLETE_SETUP append_vma_flags(		\
++	VMA_STACK_EARLY, VMA_RAND_READ_BIT, VMA_SEQ_READ_BIT)
+ 
+ #define TASK_EXEC_BIT ((current->personality & READ_IMPLIES_EXEC) ? \
+ 		       VM_EXEC_BIT : VM_READ_BIT)
+-- 
 2.54.0
+
 
