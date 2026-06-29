@@ -1,77 +1,77 @@
-Return-Path: <linuxppc-dev+bounces-23047-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23048-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9759BC43458
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Jun 2026 06:11:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EB9C1C43327
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Jun 2026 06:11:29 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gpbWc600Rz2yZZ;
-	Mon, 29 Jun 2026 16:11:24 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gpbWd2PwQz2yd7;
+	Mon, 29 Jun 2026 16:11:25 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782713484;
-	cv=none; b=TLZGTNz1OdtQDhjxgQ+Uu5avaRPFVU2RpceG9+TG6rSXDAxd0tHJk5dtW1igL9crl1ipvEhs7j5FmeOd2ThY7ZcXRcrSNg4MurDho+8QIERoIE+AwoaVo3CbAvKCzBbAwHrWfpWG9SAIrcXI54bMGJbES6ePN5n3MRpfsU6ASQrFoD8wfytLuPWaa0lFUE2QiExMZIoadJRF+8SxKI2GixVp0n4bdyEo+rnqMWMuMjpdIC4oMeB4uZzhe4O9SpBqddi47zQlHkaHihc59qC+xlkqKwjuZ223UmaiJcnMTmfqZhZGMhNBotB2JnC+ej2PnelTVTT1UIUGlW3l0QqADw==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782713485;
+	cv=none; b=S6MNyLZIanMHC3VasqeJf3GqBGwO8Na8ijpsosWTMuit+5t8rZH53Z5wcLWViBd5ZmNHVuE5baeJyQwVTmH1cQaBIRFSgm4iVJV6mn77IckvwXVzVss+XHZRZuBV70Sp3JMBFti/HaKFopsbqOJlTJJrSj3/hadcuyGngDOpnG19if+XlyGS7++S90CM0xdIekGae3qWZ6bk84Y4QjGz56msEidVeIT0A7eRyVbxudGFNt/vK835Jut3T9yd/TeB31f5iiV7hvS1/OZgAPiW+LIMvnYMO1poOeY3vyB38hgdOspp2swJwNw6jmNYyGpXH2ZCS5uCktkS4ghU2qRpeA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1782713484; c=relaxed/relaxed;
-	bh=tIKvbUiPmYfFGEIAUtVecoRHpTttmT8MZO704z2E19U=;
+	t=1782713485; c=relaxed/relaxed;
+	bh=EnhouEDa9yUU7i/ckVrxEqVIxTCJn31PV/DgRcBxmo8=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=B2ECWsly1EC23UXbT6rahBaraKwlZmxOZdT8T17yVnYqaZEKqQOfxZnelQp7YdKccNMM7PTNe5ULWPCGQ4/GzmUKu5nOpCLdcPJeWrRP1PjzLk6IxHpjl++4BtIDxfx/XITLXB0pT4HbjfgYM9U3Lox+SLUD8IvBQDU6mck5w0QRYOTrZpiv7wvAo+owO8uXGMJNWIncII79intNvW58hC+sHQmB67m6/aqeGAW2gE4KGwskRfdN9j3ExpoE+D/M4qpqrghnPyQprIRYnaSdoX7EE4PO3ECb6tRRj58d0JZ5qMdOQ36xv+6Tj82RGPZl43LHtXFKlFjChkMv1ZVGNA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=EUBHNAsV; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=shivani@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	 MIME-Version; b=WKVN/tGZarFK/eqX66CkgeFZtP7Uchn2ODPsIfy/q+4AER+q9MgqaeiLRe7YneJj4unHSScM+D52YLtwxvpd4GYT6v3QTQ58K3L/0824rMvcfGCiA7CP6W80Hc5NKCYtBa90ZFPQB47oT79ploF2EBCY4E2lbRQRLBfbFa8SS0lFujnUTee9FOsEiML9cabaimY+/OANwKJDfjX8Ovq3qiFm3/8GcmmicjNYQBO2eTXfH1li7DYHR+CzAIjHVMTbu5DwjIyPIerPzjbHH9eHWaZ0UTywEkbwGAu44XX6bzsfFjGWko168yPBnvZlNzgipXunkeLYT8voVuLzjWTi+Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=npY79DJz; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=shivani@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=EUBHNAsV;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=npY79DJz;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=shivani@linux.ibm.com; receiver=lists.ozlabs.org)
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gpbWZ5lRpz2ySS
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Jun 2026 16:11:22 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gpbWZ73lmz2yT0
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Jun 2026 16:11:21 +1000 (AEST)
 Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 65T3IMb52098884;
-	Mon, 29 Jun 2026 06:11:21 GMT
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 65T3IT0q2098939;
+	Mon, 29 Jun 2026 06:11:18 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
 	:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=pp1; bh=tIKvbUiPmYfFGEIAU
-	tVecoRHpTttmT8MZO704z2E19U=; b=EUBHNAsVLTD2kqVPHrINpAaFrFLSphmYF
-	KKPdGN/JqSKXgkwV9UX3E+YzrwNJE13jEQ65NfMsHUQ0+kC85P+Nw62rCORSCtfB
-	y8Ep0wUsuHYDZfyr17GZrZFJVI0LMU6PzLO5z7RJ1WvL06bc/+LptGjeydT2GgNa
-	jM7lFN+iEs4NKYbuBC8nqMiXserPVVME7ZydhJ80Eq3pcXm7I+glXXKX47k8HdA8
-	zvVJYdtNVaYTASHmz7Jdxd4TgPLBLhdmlMGbanJm5+Itmt0+2m0/J1uiSBMAV0/E
-	6ScNLd71SaQC8+OPJl19w0kOEksPXEsEI2xguR5AHva++ymPc0MXg==
-Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4f26pdqsnc-1
+	:mime-version:references:subject:to; s=pp1; bh=EnhouEDa9yUU7i/ck
+	VrxEqVIxTCJn31PV/DgRcBxmo8=; b=npY79DJzm1te9RXdc5jFoC0/rnjQil1sk
+	76iics8ADoWdG/wTA2z4Aew6WM+qmYAw0LKX4k64eCWBInRRUxGtOv9VvaV1+x6Y
+	SAcFBDaGi6ExIvqtd/0U1201+ztkb6vBevtv9C0YgJqEjIrT29cxP7K6o3C66wX8
+	VPN0hk8i3c5/xuBRlilIDFwy80o7WIqk7RnebsRw0wfqfXBD/5GiqUAEk7a8iOk6
+	blDuGcpV5xZnFcOlaj6oAlC9CofkPwgsPrYJFNQCv3Wl3L/RAcqFwt295dnCqGDo
+	/MbhFFe8Dp58Vk66Ob+9ZUTAsv4xn57QcqT6gQD8d7gJsRwqBzjSw==
+Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4f26pdqsn9-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 29 Jun 2026 06:11:20 +0000 (GMT)
-Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma12.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 65T64dCg026687;
-	Mon, 29 Jun 2026 06:11:20 GMT
-Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
-	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 4f2ruq48xy-1
+	Mon, 29 Jun 2026 06:11:18 +0000 (GMT)
+Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma22.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 65T64xq0011497;
+	Mon, 29 Jun 2026 06:11:17 GMT
+Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
+	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4f2s7vv767-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 29 Jun 2026 06:11:19 +0000 (GMT)
-Received: from smtpav06.fra02v.mail.ibm.com (smtpav06.fra02v.mail.ibm.com [10.20.54.105])
-	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 65T6BGTD31392498
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 29 Jun 2026 06:11:16 GMT
-Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 28AC420049;
 	Mon, 29 Jun 2026 06:11:16 +0000 (GMT)
+Received: from smtpav06.fra02v.mail.ibm.com (smtpav06.fra02v.mail.ibm.com [10.20.54.105])
+	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 65T6BCQA14156196
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Mon, 29 Jun 2026 06:11:13 GMT
 Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id C673C20040;
-	Mon, 29 Jun 2026 06:11:14 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id C7D4420049;
+	Mon, 29 Jun 2026 06:11:12 +0000 (GMT)
+Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 5242820040;
+	Mon, 29 Jun 2026 06:11:11 +0000 (GMT)
 Received: from dhcp-9-123-15-26.bl1-in.ibm.com (unknown [9.123.15.26])
 	by smtpav06.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Mon, 29 Jun 2026 06:11:14 +0000 (GMT)
+	Mon, 29 Jun 2026 06:11:11 +0000 (GMT)
 From: Shivani Nittor <shivani@linux.ibm.com>
 To: maddy@linux.ibm.com, linuxppc-dev@lists.ozlabs.org
 Cc: linux-kernel@vger.kernel.org, atrajeev@linux.ibm.com,
         shivani@linux.ibm.com, tshah@linux.ibm.com
-Subject: [RFC 3/3] powerpc/perf: Add DTS-based event constraints
-Date: Mon, 29 Jun 2026 11:40:22 +0530
-Message-ID: <20260629061101.43119-4-shivani@linux.ibm.com>
+Subject: [RFC 1/3] powerpc/perf: Register PMU from device tree and expose events
+Date: Mon, 29 Jun 2026 11:40:20 +0530
+Message-ID: <20260629061101.43119-2-shivani@linux.ibm.com>
 X-Mailer: git-send-email 2.50.1
 In-Reply-To: <20260629061101.43119-1-shivani@linux.ibm.com>
 References: <20260629061101.43119-1-shivani@linux.ibm.com>
@@ -90,23 +90,23 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: SjkdUoradBDYWPLeBKSk9M4pA7K4jXcm
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNjI5MDA0NyBTYWx0ZWRfXwstkhr1BAf5h
- 7H9AV/d7Iws8jhAxzW6pvCaH0IzNMN45ajqLB+Iw16nlhwl47cwQ8OmnmXXHp4XbyLM2GLck1xO
- FLCr++LhcyCY8z9k8l8tzsXQszzOipw=
-X-Authority-Analysis: v=2.4 cv=edsNubEH c=1 sm=1 tr=0 ts=6a420c88 cx=c_pps
- a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17
+X-Proofpoint-GUID: hZ9IjdF7OAR2AIy5kWzB_pI90KrLndAy
+X-Proofpoint-Spam-Info: AW1haW4tMjYwNjI5MDA0NyBTYWx0ZWRfX/wMQZVCyNYbZ
+ IOv/VXnpyLBWxyVwqDwcHRKI4LWy5+FZ/cnBffa5gVIEYnvsCsPp9fb6YnOQq63Xc6su3K+sxXU
+ 400KOIoGZ8OXClWKhOCLXCS8c9T//3Y=
+X-Authority-Analysis: v=2.4 cv=edsNubEH c=1 sm=1 tr=0 ts=6a420c86 cx=c_pps
+ a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
  a=FelO9ux0wxsA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=iQ6ETzBq9ecOQQE5vZCe:22 a=VnNF1IyMAAAA:8 a=IRTuDXuqDS2-8YcwQYEA:9
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjI5MDA0NyBTYWx0ZWRfX+U6n7t5s3GKm
- V2R5emzUHLi0BB/uzCqc47Zkvc2GW33NKGhMw0sKSUgxxQP9GOIE+QSqb7oYc9sh2KBHnsYVsYm
- DoKQUVmoLB4HdVeVl2QWu5UDZ9OjEQOYUXGTB020ordBprIYOtQ3ZBVC/VBsWqSUokPK+upsFgi
- nD2RwzP2K3K5656OjP+JJ2zhyrxrF8grodgwufwkCBvcQ/Lme9+LObIu6TdP2mXCqzfdmkpSK9V
- jgqwcAryXvufrtznNHheAyt9TfXUv/ZlDNMexgYwm3ufBGRJb2k40jRoCRsV+XfM7wmxAfTeTsX
- xWsOR9jF18XoaHPWsqaKjJI/tKiAlFf8MuxvXbirVyw5izyp3H8+3N0rrY2uW8NUjxHA48yISrH
- ntavIhAQ+tTltKdb8cTtDbj80XEv5EGp8DQxUw2OzfyKEJUdc6MSZyTesSZaLCZP3Melyg8zS+n
- hvvrRDfnJC9UhWXbksQ==
-X-Proofpoint-ORIG-GUID: SjkdUoradBDYWPLeBKSk9M4pA7K4jXcm
+ a=iQ6ETzBq9ecOQQE5vZCe:22 a=VnNF1IyMAAAA:8 a=pqDV2N876HMRgRtTpwkA:9
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjI5MDA0NyBTYWx0ZWRfXyapQ3nbKelZa
+ VsNkiNibhY2wJ7jjG25lyXyNRBOGzhdloaul8lyhFHEj6Rxv+pol+LbW8VrYX2coeIs3UfzY5Ie
+ QQltidmp4DnVfdq8jh5/qRlJrCswDj7qglw/7puqCxI03ucS7BtDC77o4xka9IEtJMwvRNj8s3X
+ DpxBrtA8FcG5C/DlpKykdjTm8Ivg1xwLjWI+rzZa8mZa8KFnK5vOGB/wbp+ijPkp7VnkX3zbLRC
+ dlq0mNuti6uNAreWV8W1S7Wyquc2iYActewW1G6XhVPAwZ9lINdzCfMWukHGyFGed1OPxFduKrs
+ MS8A/Q3+wf8/j2ImR8q4hQ3UoP+zVQ3d496+kjIcOinTQH/B15hjUjemI2sVo0+EdlXnssKAx1A
+ 5fY9MJxM2noUnmUCnUbwFNKDmV+wfeKTdQBtzusbwyjT6jI6aZ3qhDLXNRGCatenK8nUzHQOkYh
+ 17wfaAUe8U1PEOSxesw==
+X-Proofpoint-ORIG-GUID: hZ9IjdF7OAR2AIy5kWzB_pI90KrLndAy
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
  definitions=2026-06-29_01,2026-06-26_01,2025-10-01_01
@@ -116,519 +116,467 @@ X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
  reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2606290047
 
-Add support for describing PMU event constraints in the device
-tree.
+Introduce a DTS-based PMU driver that discovers PMU information
+from the device tree and registers a PowerPC PMU instance at
+runtime.
 
-Parse constraint definitions from the constraints node and use
-them to build PMU scheduling constraints at runtime. Implement
-isa207_get_constraint_dts() to validate event combinations and
-derive constraint masks and values from the device tree
-description.
+The driver parses basic PMU properties such as the number of
+counters and MMCR register definitions, creates sysfs event
+entries from the device tree event descriptions, and registers
+the PMU with the perf subsystem.
 
-The constraint system handles:
-- PMC restrictions (e.g., PMC5 for instructions, PMC6 for cycles)
-- Maximum counter limits
-- Cache selector requirements
-- EBB (Event-Based Branch) and BHRB (Branch History Rolling Buffer)
-  dependencies
-- Threshold, sampling, and L1 qualifier constraints
-- Radix scope and fabric match constraints
-- NC (Next Counter) increment logic
+To support dynamic PMU registration, add PMU unregistration
+support and create a platform device for PMU nodes described
+in the device tree.
 
-Constraints are conditionally applied based on event properties
-(marked events, threshold events, L1 events, BHRB requests) and
-CPU features (ARCH_31 for radix scope).
+This forms the foundation for moving PMU descriptions out of
+architecture-specific kernel code and into device tree data.
 
-The parse_constraints() function reads constraint definitions from
-DTS nodes including pmc-constraints, sample, threshold, cache, ebb,
-bhrb, l1-qualifier, fab-match, radix-scope, and nc. Each constraint
-field specifies event masks, shifts, constraint masks, and shifts
-to build the final constraint value.
+The driver implements the following functionality:
 
-This allows PMU constraint information to be described in DTS
-rather than being hardcoded in the PMU implementation.
+Device Tree Parsing:
+- Reads PMU properties including counter count (nr_pmc), PMU name,
+  version, and platform information
+- Parses MMCR (Monitor Mode Control Register) definitions from the
+  sprs/mmcr node hierarchy, storing the MMCR register SPRNs
+- Extracts event definitions from the events node, supporting both
+  32-bit and 64-bit event codes
+
+Dynamic Event Registration:
+- Creates sysfs event entries dynamically from device tree event
+  descriptions
+- Generates event attributes with format "event=0x<code>" for each
+  discovered event
+- Exposes events under /sys/devices/<pmu-name>/events/
+
+PMU Registration:
+- Registers a power_pmu instance with the perf subsystem using the
+  device tree-provided PMU name
+- Adds PMU unregistration support to enable proper cleanup
+- Creates platform device for "ibm,power-pmu" compatible nodes
+
+Sysfs Interface:
+- Provides format attributes (event, pmcsel) under
+  /sys/devices/<pmu-name>/format/
+- Exposes device tree debug information (nr_pmc) under
+  /sys/devices/<pmu-name>/dt/
+
+Platform Integration:
+- Adds opal_pmus_init_dev() to create platform devices for PMU nodes
+  during OPAL initialization on PowerNV systems
+- Uses platform driver model with probe/remove callbacks
+
+With the device tree based PMU registered:
+ # ls /sys/devices/cpu_dts/events/
+
+ # Snippet of "perf list" :
+
+  cpu_dts/branch-finished/                               [Kernel PMU event]
+  cpu_dts/branch-mispredict-finished/                    [Kernel PMU event]
+  cpu_dts/branch-misses/                                 [Kernel PMU event]
+  cpu_dts/branches/                                      [Kernel PMU event]
+  cpu_dts/cycles/                                        [Kernel PMU event]
 
 Signed-off-by: Shivani Nittor <shivani@linux.ibm.com>
 ---
- arch/powerpc/include/asm/dts_pmu.h |  53 +++++++++
- arch/powerpc/perf/Makefile         |   1 +
- arch/powerpc/perf/dts_pmu.c        | 177 ++++++++++++++++++++++++++++-
- arch/powerpc/perf/isa207-common.c  | 141 +++++++++++++++++++++++
- arch/powerpc/perf/isa207-common.h  |   2 +
- 5 files changed, 370 insertions(+), 4 deletions(-)
+ arch/powerpc/include/asm/dts_pmu.h    |  12 ++
+ arch/powerpc/perf/Makefile            |   3 +-
+ arch/powerpc/perf/core-book3s.c       |  12 +-
+ arch/powerpc/perf/dts_pmu.c           | 257 ++++++++++++++++++++++++++
+ arch/powerpc/perf/internal.h          |   1 +
+ arch/powerpc/perf/isa207-common.c     |   1 +
+ arch/powerpc/platforms/powernv/opal.c |  15 ++
+ 7 files changed, 299 insertions(+), 2 deletions(-)
+ create mode 100644 arch/powerpc/include/asm/dts_pmu.h
+ create mode 100644 arch/powerpc/perf/dts_pmu.c
 
 diff --git a/arch/powerpc/include/asm/dts_pmu.h b/arch/powerpc/include/asm/dts_pmu.h
-index 1309a45ce604..5632c4f8f748 100644
---- a/arch/powerpc/include/asm/dts_pmu.h
+new file mode 100644
+index 000000000000..791dda370de8
+--- /dev/null
 +++ b/arch/powerpc/include/asm/dts_pmu.h
-@@ -7,6 +7,13 @@
- #define MAX_MMCR   5
- #define MAX_DTS_EVENTS 32
- #define MAX_PMU_COUNTERS 6
-+#define DTS_COND_ALWAYS      0
-+#define DTS_COND_MARKED      1
-+#define DTS_COND_THRESHOLD   2
-+#define DTS_COND_L1          3
-+#define DTS_COND_BHRB        4
-+#define DTS_COND_CACHE       5
-+#define DTS_COND_RADIX       6
- 
- struct dts_field_map {
- 	u32 bits_start, bits_end;
-@@ -21,9 +28,55 @@ extern int field_count;
- 
- extern u32 mmcr_regs_sprs[MAX_MMCR];
- extern int mmcr_count;
-+extern struct dts_constraint_map *constraint_maps;
-+extern int constraint_map_count;
- 
- int compute_mmcr_dts(u64 event[], int n_ev,
- 			unsigned int hwc[], struct mmcr_regs *mmcr,
- 			struct perf_event *pevents[], u32 flags);
- 
-+struct dts_constraint_field {
-+	u64 event_mask, constraint_mask;
-+	u32 event_shift, constraint_shift, condition;
-+};
+@@ -0,0 +1,12 @@
++#ifndef _ASM_DTS_PMU_H
++#define _ASM_DTS_PMU_H
 +
-+struct dts_constraint_map {
-+	struct dts_constraint_field field;
-+};
++#include <linux/types.h>
 +
-+struct restricted_counter {
-+	u32 pmc;
-+	u64 event;
-+};
++#define MAX_MMCR   5
++#define MAX_DTS_EVENTS 32
++#define MAX_PMU_COUNTERS 6
 +
-+struct dts_threshold_constraints {
-+	bool supported;
-+	struct dts_constraint_field thresh_sel, thresh_cmp, thresh_ctl;
-+};
-+
-+struct dts_nc_constraints {
-+	u64 mask;
-+	u32 shift, increment;
-+};
-+
-+struct dts_pmu_constraints {
-+	u32 max_counter;
-+
-+	struct restricted_counter restricted[8];
-+	int num_restricted;
-+
-+	bool require_cache_selector_zero;
-+	u32 cache_selector_mask;
-+
-+	bool require_pmc_for_ebb, bhrb_requires_ebb;
-+
-+	struct dts_constraint_field sample, ebb, bhrb, l1_qualifier,
-+				    fab_match, radix_scope, cache_group,
-+				    cache_pmc4, l2l3_group;
-+
-+	struct dts_threshold_constraints threshold;
-+	struct dts_nc_constraints nc;
-+};
-+
-+extern struct dts_pmu_constraints dts_constraints;
- #endif
++extern u32 mmcr_regs_sprs[MAX_MMCR];
++extern int mmcr_count;
++#endif
 diff --git a/arch/powerpc/perf/Makefile b/arch/powerpc/perf/Makefile
-index 537f4b87cffe..7b474bd0d090 100644
+index 78dd7e25219e..537f4b87cffe 100644
 --- a/arch/powerpc/perf/Makefile
 +++ b/arch/powerpc/perf/Makefile
-@@ -9,6 +9,7 @@ obj64-$(CONFIG_PPC_PERF_CTRS)	+= ppc970-pmu.o power5-pmu.o \
+@@ -7,7 +7,8 @@ obj-$(CONFIG_PPC_PERF_CTRS)	+= core-book3s.o
+ obj64-$(CONFIG_PPC_PERF_CTRS)	+= ppc970-pmu.o power5-pmu.o \
+ 				   power5+-pmu.o power6-pmu.o power7-pmu.o \
  				   isa207-common.o power8-pmu.o power9-pmu.o \
- 				   generic-compat-pmu.o power10-pmu.o bhrb.o \
- 				   dts_pmu.o
-+
+-				   generic-compat-pmu.o power10-pmu.o bhrb.o
++				   generic-compat-pmu.o power10-pmu.o bhrb.o \
++				   dts_pmu.o
  obj32-$(CONFIG_PPC_PERF_CTRS)	+= mpc7450-pmu.o
  
  obj-$(CONFIG_PPC_POWERNV)	+= imc-pmu.o
-diff --git a/arch/powerpc/perf/dts_pmu.c b/arch/powerpc/perf/dts_pmu.c
-index 39107af6d467..0faea573f144 100644
---- a/arch/powerpc/perf/dts_pmu.c
-+++ b/arch/powerpc/perf/dts_pmu.c
-@@ -14,10 +14,13 @@
+diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
+index 8b0081441f85..f33ed1423046 100644
+--- a/arch/powerpc/perf/core-book3s.c
++++ b/arch/powerpc/perf/core-book3s.c
+@@ -2569,12 +2569,19 @@ int __init register_power_pmu(struct power_pmu *pmu)
+ 		freeze_events_kernel = MMCR0_FCHV;
+ #endif /* CONFIG_PPC64 */
  
- extern void unregister_power_pmu(struct power_pmu *pmu);
- static u32 pmu_dts_nr_pmc;
-+struct dts_pmu_constraints dts_constraints;
- struct dts_field_map pmcsel_map;
- struct dts_field_map pmc_map;
- struct dts_field_map field_maps[MAX_FIELDS];
- int field_count;
-+struct dts_constraint_map *constraint_maps;
-+int constraint_map_count;
- 
- u32 mmcr_regs_sprs[MAX_MMCR];
- int mmcr_count;
-@@ -32,6 +35,172 @@ static struct pmu_dts_event *dts_events[MAX_DTS_EVENTS];
- static struct attribute *pmu_dts_events_attrs[MAX_DTS_EVENTS + 1];
- static int dts_event_count;
- 
-+/* Constraints Structure */
-+static void parse_constraint_field(struct device_node *np,
-+				struct dts_constraint_field *field)
-+{
-+	u32 val32[2] = {0};
-+
-+	if (!np)
-+		return;
-+
-+	/* initialize */
-+	field->event_mask = 0;
-+	field->event_shift = 0;
-+	field->constraint_mask = 0;
-+	field->constraint_shift = 0;
-+
-+	/* event-mask */
-+	if (!of_property_read_u32(np, "event-mask", &val32[0]))
-+		field->event_mask = val32[0];
-+
-+	/* event-shift */
-+	of_property_read_u32(np, "event-shift", &field->event_shift);
-+
-+	/* constraint-mask */
-+	if (!of_property_read_u32_array(np, "constraint-mask", val32, 2))
-+		field->constraint_mask = ((u64)val32[0] << 32) | val32[1];
-+	else if (!of_property_read_u32(np, "constraint-mask", &val32[0]))
-+		field->constraint_mask = val32[0];
-+
-+	/* constraint-shift */
-+	of_property_read_u32(np, "constraint-shift", &field->constraint_shift);
-+
-+	of_property_read_u32(np, "condition", &field->condition);
-+
-+	if (constraint_maps && constraint_map_count < 16) {
-+		memcpy(&constraint_maps[constraint_map_count].field,
-+					field, sizeof(*field));
-+		constraint_map_count++;
-+	}
-+}
-+
-+static void parse_constraints(struct device_node *pmu_np)
-+{
-+	struct device_node *np;
-+	struct device_node *child;
-+	int i = 0;
-+
-+	constraint_maps = kcalloc(16, sizeof(*constraint_maps), GFP_KERNEL);
-+
-+	constraint_map_count = 0;
-+
-+	np = of_get_child_by_name(pmu_np, "constraints");
-+	if (!np)
-+		return;
-+
-+	/* PMC constraints */
-+	child = of_get_child_by_name(np, "pmc-constraints");
-+
-+	if (child) {
-+		of_property_read_u32(child,
-+					"max-counter", &dts_constraints.max_counter);
-+
-+		for_each_child_of_node(child, child) {
-+			of_property_read_u32(child, "pmc",
-+					&dts_constraints.restricted[i].pmc);
-+
-+			of_property_read_u64(child, "valid-events",
-+					&dts_constraints.restricted[i].event);
-+			i++;
-+		}
-+
-+		dts_constraints.restricted[0].event = 0x500fa;
-+		dts_constraints.restricted[1].event = 0x600f4;
-+		dts_constraints.num_restricted = i;
-+	}
-+
-+	/* sample */
-+	child = of_get_child_by_name(np, "sample");
-+
-+	if (child)
-+		parse_constraint_field(child, &dts_constraints.sample);
-+
-+	/* threshold */
-+	child = of_get_child_by_name(np, "threshold");
-+
-+	if (child) {
-+		dts_constraints.threshold.supported =
-+				of_property_read_bool(child, "supported");
-+
-+		parse_constraint_field(of_get_child_by_name(child, "thresh-sel"),
-+					&dts_constraints.threshold.thresh_sel);
-+
-+		parse_constraint_field(of_get_child_by_name(child, "thresh-cmp"),
-+					&dts_constraints.threshold.thresh_cmp);
-+
-+		parse_constraint_field(of_get_child_by_name(child, "thresh-ctl"),
-+					&dts_constraints.threshold.thresh_ctl);
-+	}
-+
-+	/* cache */
-+	child = of_get_child_by_name(np, "cache");
-+
-+	if (child) {
-+		of_property_read_u32(child, "cache-selector-mask",
-+					&dts_constraints.cache_selector_mask);
-+
-+		dts_constraints.require_cache_selector_zero =
-+					of_property_read_bool(child, "require-cache-selector-zero");
-+
-+		/* cache-group */
-+		parse_constraint_field(of_get_child_by_name(child, "cache-group"),
-+					&dts_constraints.cache_group);
-+
-+		/* cache-pmc4 */
-+		parse_constraint_field(of_get_child_by_name(child, "cache-pmc4"),
-+					&dts_constraints.cache_pmc4);
-+
-+		/* l2l3-group */
-+		parse_constraint_field(of_get_child_by_name(child, "l2l3-group"),
-+					&dts_constraints.l2l3_group);
-+	}
-+
-+	/* ebb */
-+	child = of_get_child_by_name(np, "ebb");
-+
-+	if (child) {
-+		parse_constraint_field(child, &dts_constraints.ebb);
-+
-+		dts_constraints.require_pmc_for_ebb =
-+					of_property_read_bool(child, "require-pmc");
-+	}
-+
-+	/* bhrb */
-+	child = of_get_child_by_name(np, "bhrb");
-+
-+	if (child) {
-+		parse_constraint_field(child, &dts_constraints.bhrb);
-+
-+		dts_constraints.bhrb_requires_ebb =
-+					of_property_read_bool(child, "requires-ebb");
-+	}
-+
-+	/* others */
-+	parse_constraint_field(of_get_child_by_name(np, "l1-qualifier"),
-+					&dts_constraints.l1_qualifier);
-+
-+	parse_constraint_field(of_get_child_by_name(np, "fab-match"),
-+					&dts_constraints.fab_match);
-+
-+	parse_constraint_field(of_get_child_by_name(np, "radix-scope"),
-+					&dts_constraints.radix_scope);
-+
-+	/* NC */
-+	child = of_get_child_by_name(np, "nc");
-+
-+	if (child) {
-+		of_property_read_u64(child, "mask",
-+					&dts_constraints.nc.mask);
-+
-+		of_property_read_u32(child, "shift",
-+					&dts_constraints.nc.shift);
-+
-+		of_property_read_u32(child, "increment",
-+					&dts_constraints.nc.increment);
-+	}
-+}
-+
- static ssize_t pmu_dts_event_show(struct device *dev,
- 				struct device_attribute *attr,
- 				char *buf)
-@@ -124,8 +293,7 @@ static struct power_pmu dts_pmu = {
- 	.group_constraint_mask  = CNST_CACHE_PMC4_MASK,
- 	.group_constraint_val   = CNST_CACHE_PMC4_VAL,
- 	.compute_mmcr           = dts_compute_mmcr,
--	// .config_bhrb         = power10_config_bhrb,
--	// .bhrb_filter_map     = power10_bhrb_filte-r_map,
-+	.get_constraint         = isa207_get_constraint_dts,
- 	.get_alternatives       = dts_get_alternatives,
- 	.get_mem_data_src       = isa207_get_mem_data_src,
- 	.get_mem_weight         = isa207_get_mem_weight,
-@@ -134,9 +302,7 @@ static struct power_pmu dts_pmu = {
- 					PPMU_ARCH_31 | PPMU_HAS_ATTR_CONFIG1 |
- 					PPMU_P10,
- 	.attr_groups            = pmu_dts_attr_groups,
--	//.bhrb_nr              = 32,
- 	.capabilities           = PERF_PMU_CAP_EXTENDED_REGS,
--	//.check_attr_config    = power10_check_attr_config,
- };
- 
- /* Device Tree match */
-@@ -175,6 +341,9 @@ static int pmu_dts_probe(struct platform_device *pdev)
- 		}
- 	}
- 
-+	/* For format parsing */
-+	parse_constraints(np);
-+
- 	if (of_property_read_u32(np, "nr_pmc", &pmu_dts_nr_pmc)) {
- 		pr_err("pmu_dts: nr_pmc not found in %s\n", np->full_name);
- 		return -EINVAL;
-diff --git a/arch/powerpc/perf/isa207-common.c b/arch/powerpc/perf/isa207-common.c
-index f912432fd6db..1d93f9e5c5f2 100644
---- a/arch/powerpc/perf/isa207-common.c
-+++ b/arch/powerpc/perf/isa207-common.c
-@@ -748,6 +748,147 @@ int isa207_compute_mmcr(u64 event[], int n_ev,
+-	perf_pmu_register(&power_pmu, "cpu", PERF_TYPE_RAW);
++	perf_pmu_register(&power_pmu, pmu->name, PERF_TYPE_RAW);
+ 	cpuhp_setup_state(CPUHP_PERF_POWER, "perf/powerpc:prepare",
+ 			  power_pmu_prepare_cpu, NULL);
  	return 0;
  }
  
-+static void apply_constraint(u64 event,
-+			struct dts_constraint_field *field,
-+			unsigned long *mask,
-+			unsigned long *value)
++void unregister_power_pmu(struct power_pmu *pmu)
 +{
-+	u64 extracted;
++	if (!ppmu)
++		return;
 +
-+	extracted = (event >> field->event_shift) & field->event_mask;
-+	*mask |= field->constraint_mask;
-+	*value |= (extracted << field->constraint_shift);
++	perf_pmu_unregister(&power_pmu);
++}
+ #ifdef CONFIG_PPC64
+ static bool pmu_override = false;
+ static unsigned long pmu_override_val;
+@@ -2588,6 +2595,9 @@ static void do_pmu_override(void *data)
+ 
+ static int __init init_ppc64_pmu(void)
+ {
++	/* Disable registering PMU from here and enable picking from device tree */
++	return 0;
++
+ 	if (cpu_has_feature(CPU_FTR_HVMODE) && pmu_override) {
+ 		pr_warn("disabling perf due to pmu_override= command line option.\n");
+ 		on_each_cpu(do_pmu_override, NULL, 1);
+diff --git a/arch/powerpc/perf/dts_pmu.c b/arch/powerpc/perf/dts_pmu.c
+new file mode 100644
+index 000000000000..67eabd5ec6e5
+--- /dev/null
++++ b/arch/powerpc/perf/dts_pmu.c
+@@ -0,0 +1,257 @@
++// SPDX-License-Identifier: GPL-2.0
++
++#include <linux/module.h>
++#include <linux/perf_event.h>
++#include <linux/init.h>
++#include <linux/kernel.h>
++#include <linux/of.h>
++#include <linux/of_device.h>
++#include <linux/platform_device.h>
++#include <linux/string.h>
++#include <asm/reg.h>
++#include <asm/dts_pmu.h>
++
++
++extern void unregister_power_pmu(struct power_pmu *pmu);
++static u32 pmu_dts_nr_pmc;
++
++u32 mmcr_regs_sprs[MAX_MMCR];
++int mmcr_count;
++
++struct pmu_dts_event {
++	struct device_attribute attr;
++	char name[32];
++	char config[32];
++};
++
++static struct pmu_dts_event *dts_events[MAX_DTS_EVENTS];
++static struct attribute *pmu_dts_events_attrs[MAX_DTS_EVENTS + 1];
++static int dts_event_count;
++
++static ssize_t pmu_dts_event_show(struct device *dev,
++				struct device_attribute *attr,
++				char *buf)
++{
++	struct pmu_dts_event *evt =
++			container_of(attr, struct pmu_dts_event, attr);
++
++	return sprintf(buf, "%s\n", evt->config);
 +}
 +
-+static bool constraint_enabled(struct dts_constraint_map *m, u64 event)
++/* Format attributes */
++PMU_FORMAT_ATTR(event, "config:0-59");
++PMU_FORMAT_ATTR(pmcsel, "config1:18-25");
++
++static struct attribute *pmu_dts_format_attrs[] = {
++	&format_attr_event.attr,
++	&format_attr_pmcsel.attr,
++	NULL,
++};
++
++static struct attribute_group pmu_dts_format_group = {
++	.name = "format",
++	.attrs = pmu_dts_format_attrs,
++};
++
++static ssize_t nr_pmc_show(struct device *dev,
++				struct device_attribute *attr,
++				char *buf)
 +{
-+	switch (m->field.condition) {
-+
-+	case DTS_COND_ALWAYS:
-+		return true;
-+
-+	case DTS_COND_MARKED:
-+		return is_event_marked(event);
-+
-+	case DTS_COND_THRESHOLD:
-+		return event_is_threshold(event);
-+
-+	case DTS_COND_L1:
-+		return (event & EVENT_IS_L1);
-+
-+	case DTS_COND_BHRB:
-+		return (event & EVENT_WANTS_BHRB);
-+
-+	case DTS_COND_RADIX:
-+		return cpu_has_feature(CPU_FTR_ARCH_31);
-+
-+	default:
-+		return false;
-+	}
-+	return false;
++	return sprintf(buf, "%u\n", pmu_dts_nr_pmc);
 +}
 +
-+int isa207_get_constraint_dts(u64 event,
-+			      unsigned long *maskp,
-+			      unsigned long *valp,
-+			      u64 event_config1)
++static DEVICE_ATTR_RO(nr_pmc);
++
++static struct attribute *pmu_dts_dt_attrs[] = {
++	&dev_attr_nr_pmc.attr,
++	NULL,
++};
++
++static struct attribute_group pmu_dts_dt_group = {
++	.name = "dt",
++	.attrs = pmu_dts_dt_attrs,
++};
++
++static struct attribute_group pmu_dts_events_group = {
++	.name = "events",
++	.attrs = pmu_dts_events_attrs,
++};
++
++static const struct attribute_group *pmu_dts_attr_groups[] = {
++	&pmu_dts_events_group,
++	&pmu_dts_format_group,
++	&pmu_dts_dt_group,
++	NULL,
++};
++
++static struct power_pmu dts_pmu = {
++	.name           = "cpu_dts",
++	.n_counter      = MAX_PMU_COUNTERS,
++	.attr_groups    = pmu_dts_attr_groups,
++};
++
++/* Device Tree match */
++static const struct of_device_id pmu_dts_of_match[] = {
++	{ .compatible = "ibm,power-pmu" },
++	{ }
++};
++MODULE_DEVICE_TABLE(of, pmu_dts_of_match);
++
++/* Probe function */
++static int pmu_dts_probe(struct platform_device *pdev)
 +{
-+	unsigned int pmc, unit, cache, ebb;
-+	unsigned long mask = 0;
-+	unsigned long value = 0;
-+	u64 base_event;
-+	int i, valid = 0;
++	struct device_node *np = pdev->dev.of_node, *child, *events_np;
++	struct device_node *sprs_np, *mmcr_np, *mmcr_child;
++	struct pmu_dts_event *evt;
++	u64 code;
++	u32 code32, sprn;
++	u32 code64[2];
++	u32 code128[4];
++	int cells;
++	const char *str;
 +
-+	pmc = (event >> EVENT_PMC_SHIFT) & EVENT_PMC_MASK;
-+	unit = (event >> EVENT_UNIT_SHIFT) & EVENT_UNIT_MASK;
-+	cache = (event >> EVENT_CACHE_SEL_SHIFT) & EVENT_CACHE_SEL_MASK;
-+	ebb = (event >> EVENT_EBB_SHIFT) & EVENT_EBB_MASK;
-+	base_event = event & ~EVENT_LINUX_MASK;
++	pr_info("PMU DTS probe node = %s\n", np->full_name);
 +
-+	/* max counter */
-+	if (pmc > dts_constraints.max_counter)
-+		return -1;
++	if (!of_property_present(np, "nr_pmc")) {
 +
-+	/* restricted counters */
-+	if (pmc >= 5) {
-+		valid = 0;
++		for_each_child_of_node(np, child) {
++			pr_info("child node = %s\n", child->full_name);
 +
-+		for (i = 0;
-+			i < dts_constraints.num_restricted;
-+			i++) {
-+
-+			if (dts_constraints.restricted[i].pmc == pmc &&
-+					dts_constraints.restricted[i].event == base_event) {
-+				valid = 1;
++			if (of_property_present(child, "nr_pmc")) {
++				np = child;
 +				break;
 +			}
 +		}
-+
-+		if (!valid)
-+			return -1;
 +	}
 +
-+	/* cache selector */
-+	if (dts_constraints.require_cache_selector_zero &&
-+			(cache & dts_constraints.cache_selector_mask))
-+		return -1;
-+
-+	/* EBB */
-+	if (dts_constraints.require_pmc_for_ebb && !pmc && ebb)
-+		return -1;
-+
-+	/* BHRB */
-+	if ((event & EVENT_WANTS_BHRB) &&
-+	    dts_constraints.bhrb_requires_ebb && !ebb)
-+		return -1;
-+
-+	/* PMC */
-+	if (pmc) {
-+		mask |= CNST_PMC_MASK(pmc);
-+		value |= CNST_PMC_VAL(pmc);
-+
-+		if (pmc >= 5)
-+			goto post_general_constraints;
++	if (of_property_read_u32(np, "nr_pmc", &pmu_dts_nr_pmc)) {
++		pr_err("pmu_dts: nr_pmc not found in %s\n", np->full_name);
++		return -EINVAL;
 +	}
 +
-+	/* NC */
-+	if (pmc <= 4) {
-+		mask |= dts_constraints.nc.mask;
++	if (!of_property_read_string(np, "pmu-name", &str))
++		pr_info("PMU Name: %s\n", str);
 +
-+		value |=
-+			(dts_constraints.nc.increment << dts_constraints.nc.shift);
++	if (!of_property_read_string(np, "pmu-version", &str))
++		pr_info("PMU Version: %s\n", str);
++
++	if (!of_property_read_string(np, "platform", &str))
++		pr_info("Platform: %s\n", str);
++
++	sprs_np = of_get_child_by_name(np, "sprs");
++	if (!sprs_np) {
++		pr_err("pmu_dts: no sprs node\n");
++		return -EINVAL;
 +	}
 +
-+	/* cache / l2l3 */
-+	if (unit >= 6 && unit <= 9) {
-+		if (cpu_has_feature(CPU_FTR_ARCH_31)) {
-+			apply_constraint (event, &dts_constraints.l2l3_group,
-+				&mask, &value);
-+		} else {
-+			apply_constraint (event, &dts_constraints.cache_group,
-+				&mask, &value);
-+
-+			if (pmc == 4)
-+				mask |= dts_constraints.cache_pmc4.constraint_mask;
-+		}
++	mmcr_np = of_get_child_by_name(sprs_np, "mmcr");
++	if (!mmcr_np) {
++		pr_err("pmu_dts: no mmcr node\n");
++		return -EINVAL;
 +	}
 +
-+post_general_constraints:
++	mmcr_count = 0;
++	for_each_child_of_node(mmcr_np, mmcr_child) {
 +
-+	for (i = 0; i < constraint_map_count; i++) {
-+		if (!constraint_enabled(&constraint_maps[i], event))
++		if (of_property_read_u32(mmcr_child, "sprn", &sprn))
 +			continue;
 +
-+		apply_constraint(event, &constraint_maps[i].field,
-+				&mask, &value);
++		mmcr_regs_sprs[mmcr_count++] = sprn;
++		pr_info("pmu_dts: MMCR[%d] = %u (%s)\n", mmcr_count - 1,
++				sprn, mmcr_child->name);
++
++		if (mmcr_count >= MAX_MMCR)
++			break;
 +	}
 +
-+	*maskp = mask;
-+	*valp = value;
++	if (!mmcr_count) {
++		pr_err("pmu_dts: no MMCR SPRs found\n");
++		return -EINVAL;
++	}
 +
-+	return 0;
++	/* Parse events */
++	events_np = of_get_child_by_name(np, "events");
++	if (!events_np) {
++		pr_err("pmu_dts: no events node found\n");
++		return -EINVAL;
++	}
++
++	dts_event_count = 0;
++	for_each_child_of_node(events_np, child) {
++		if (!of_device_is_available(child))
++			continue;
++
++		cells = of_property_count_u32_elems(child, "event_code");
++		if (cells == 1) {
++			if (of_property_read_u32(child, "event_code", &code32))
++				continue;
++
++			code = code32;
++
++		} else if (cells == 2) {
++			if (of_property_read_u32_array(child, "event_code", code64, 2))
++				continue;
++			code = ((u64)code64[0] << 32) | code64[1];
++
++		} else if (cells == 4) {
++			if (of_property_read_u32_array(child, "event_code", code128, 4))
++				continue;
++			code = ((u64)code128[1] << 32) | code128[3];
++
++		} else {
++			pr_warn("pmu_dts: invalid event_code for %s\n", child->name);
++			continue;
++		}
++
++		evt = kzalloc(sizeof(*evt), GFP_KERNEL);
++		if (!evt)
++			continue;
++
++		snprintf(evt->name, sizeof(evt->name), "%s", child->name);
++		snprintf(evt->config, sizeof(evt->config), "event=0x%llx", code);
++
++		sysfs_attr_init(&evt->attr.attr);
++		evt->attr.attr.name = evt->name;
++		evt->attr.attr.mode = 0444;
++		evt->attr.show = pmu_dts_event_show;
++		dts_events[dts_event_count] = evt;
++		pmu_dts_events_attrs[dts_event_count] = &evt->attr.attr;
++		dts_event_count++;
++
++		if (dts_event_count >= MAX_DTS_EVENTS)
++			break;
++	}
++	pmu_dts_events_attrs[dts_event_count] = NULL;
++
++	/* Register PMU */
++	pr_info("pmu_dts: registering PMU\n");
++	return register_power_pmu(&dts_pmu);
 +}
 +
- int compute_mmcr_dts(u64 event[], int n_ev,
- 			unsigned int hwc[], struct mmcr_regs *mmcr,
- 			struct perf_event *pevents[], u32 flags)
-diff --git a/arch/powerpc/perf/isa207-common.h b/arch/powerpc/perf/isa207-common.h
-index e9a7c5a39ec2..99cf1a7bac20 100644
---- a/arch/powerpc/perf/isa207-common.h
-+++ b/arch/powerpc/perf/isa207-common.h
-@@ -278,6 +278,8 @@
- #define REM				P(REMOTE, REMOTE)
++/* Platform driver */
++static struct platform_driver pmu_dts_driver = {
++	.probe = pmu_dts_probe,
++	.driver = {
++		.name = "pmu_dts",
++		.of_match_table = pmu_dts_of_match,
++	},
++};
++
++static int __init pmu_dts_init(void)
++{
++	pr_info("pmu_dts: init\n");
++	return platform_driver_register(&pmu_dts_driver);
++}
++
++static void __exit pmu_dts_exit(void)
++{
++	pr_info("pmu_dts: exit\n");
++	platform_driver_unregister(&pmu_dts_driver);
++	unregister_power_pmu(&dts_pmu);
++}
++module_init(pmu_dts_init);
++module_exit(pmu_dts_exit);
++
++MODULE_LICENSE("GPL");
++MODULE_AUTHOR("Shivani Nittor");
++MODULE_DESCRIPTION("PMU DTS driver");
+diff --git a/arch/powerpc/perf/internal.h b/arch/powerpc/perf/internal.h
+index a70ac471a5a5..11154ee31f8e 100644
+--- a/arch/powerpc/perf/internal.h
++++ b/arch/powerpc/perf/internal.h
+@@ -2,6 +2,7 @@
+ //
+ // Copyright 2019 Madhavan Srinivasan, IBM Corporation.
  
- int isa207_get_constraint(u64 event, unsigned long *maskp, unsigned long *valp, u64 event_config1);
-+int isa207_get_constraint_dts(u64 event, unsigned long *maskp,
-+				unsigned long *valp, u64 event_config1);
- int isa207_compute_mmcr(u64 event[], int n_ev,
- 				unsigned int hwc[], struct mmcr_regs *mmcr,
- 				struct perf_event *pevents[], u32 flags);
++void unregister_power_pmu(struct power_pmu *pmu);
+ int __init init_ppc970_pmu(void);
+ int __init init_power5_pmu(void);
+ int __init init_power5p_pmu(void);
+diff --git a/arch/powerpc/perf/isa207-common.c b/arch/powerpc/perf/isa207-common.c
+index 2b3547fdba4a..e11d1bbbc27b 100644
+--- a/arch/powerpc/perf/isa207-common.c
++++ b/arch/powerpc/perf/isa207-common.c
+@@ -7,6 +7,7 @@
+  * Copyright 2016 Madhavan Srinivasan, IBM Corporation.
+  */
+ #include "isa207-common.h"
++#include <asm/dts_pmu.h>
+ 
+ PMU_FORMAT_ATTR(event,		"config:0-49");
+ PMU_FORMAT_ATTR(pmcxsel,	"config:0-7");
+diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
+index 1946dbdc9fa1..35be67eef2c6 100644
+--- a/arch/powerpc/platforms/powernv/opal.c
++++ b/arch/powerpc/platforms/powernv/opal.c
+@@ -947,6 +947,18 @@ static void __init opal_imc_init_dev(void)
+ 
+ 	of_node_put(np);
+ }
++#define PMU_DTB "ibm,power-pmu"
++
++static void __init opal_pmus_init_dev(void)
++{
++	struct device_node *np;
++
++	np = of_find_compatible_node(NULL, NULL, PMU_DTB);
++	if (np)
++		of_platform_device_create(np, NULL, NULL);
++
++	of_node_put(np);
++}
+ 
+ static int kopald(void *unused)
+ {
+@@ -1032,6 +1044,9 @@ static int __init opal_init(void)
+ 	/* Detect In-Memory Collection counters and create devices*/
+ 	opal_imc_init_dev();
+ 
++    /*Detect PMU node and create device*/
++	opal_pmus_init_dev();
++
+ 	/* Create leds platform devices */
+ 	leds = of_find_node_by_path("/ibm,opal/leds");
+ 	if (leds) {
 -- 
 2.54.0
 
