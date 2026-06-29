@@ -1,116 +1,110 @@
-Return-Path: <linuxppc-dev+bounces-23118-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23119-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 47AEEC43458
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Jun 2026 16:23:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 96341C43602
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Jun 2026 16:37:57 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gps5h74Vbz2yH4;
-	Tue, 30 Jun 2026 02:23:20 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=198.175.65.17
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782750200;
-	cv=none; b=iBS9GzecFsW+hopb5hOQcmNPcGRGUKLPwGJbiMVeIgyetEdnHUvCXX6186BUoxwNVnq2hHf7tUATTNoFsU6wlqzk5PKvtC76j/vzvFQ5PaQvAABWtRzH/t9/XFDGMs2nM6WxgPBteArx9uqildIUy3tJp9e1pwp/T8w2WUcC2IfvK7mkm+TBGPz99Ax+5BmA0V+rmeSdi8OA5QWUuzq3fNQWpXm8NUkj9kStg/Uv9MsKreIjJlD+Nfgpmi3O8GX4O/P3jXBMvtnQrvYZFCNgG3sIDNGRCS8VZZBFyB89NQx5UK1i8eSEhhTd1X3WjIkTLpaeQd789HlDiewExAKHZQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gpsQX0grcz2yH4;
+	Tue, 30 Jun 2026 02:37:56 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::432"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782751076;
+	cv=none; b=Bk4W2NqR6FEOa8VsyxAJwQs/jh7WHBeNvj5kDborKapv/NoFP4gzFTFHDm8WzDLKF8GePutd9D/O15kQVvxgxO7XCgSJih3yhB7AuCxk8L0emSPvN2kf2g5JlUbsScD2k0Rto7Hlb7OiK9WMBX3/VcEoMrP1LzIacbLGntjIOZEI70fPOesCp3JbWfeLTswh/+b457XFLFAKxvJTYjBfWGVXip/8Rnir0yjAzURA57dVtHU4o2loeKm8JnQDhYQKpp8Tsx+uO5uRb5nEzVkoyGQgjd5MoAwa1JtAv8uo6p5zYbdFnVgWVQxMfC6abEoF5NAo/nptpaykI5ZqDhcDPQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1782750200; c=relaxed/relaxed;
-	bh=XmMP3Fyn5t2fBCLhgeG0xrhOjF7olylXvaOhfkqQqqI=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=T5+h7l64Gdy/ozRn7xFN4KoDznicfeKOQt9YS/iWadZPpSwgLiBCtt4zlD1uG09X2stO4XYjWh8o+axFsJw8WG/LZme8hzbvRq9DUhU2VbbTPMsShd3Bq/bG3c7CbUvGL0U16c1Lcgy8KrAel83uWzL4YNBkNWR5fgdEBpnGduMwfd8yDEQaIAwuylzXazc7SHtrrfeC+LSbzcQxknFNDuyFpgBFARltzkxKaPb4Y2F9V938zuiBxndX3ZlkRuFetHps6UTP0FT72dalMHogk8cMvuKONWD348w0PZzN8ABFaVCKSr4eBkkhebnyxtePMbQYuXEm+pUialBfs+wdXw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=KidCTjNt; dkim-atps=neutral; spf=pass (client-ip=198.175.65.17; helo=mgamail.intel.com; envelope-from=andriy.shevchenko@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+	t=1782751076; c=relaxed/relaxed;
+	bh=rGoS9kJnOsBC1GLvPLCMMJFTI12ls42atzGQpoe5Bdw=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=e+qG6Ifc9SvP7KXwbbtb8a3c9zlhGsoXCX5yNCjjrJkM+B2fhfp68tofUlZ0zn1rAJcTiFckhQWf85RQwG59Usck1D0iBILeR3yWVgBO5KJJATD8yHKNgFCzhFH50STKz1TqYOUtXoHabCpNARDXCta49BUMD5xJVeqa+l8xd5B6L53bMHQJ6WqMIjonqAafOjP4uVpJlW8IPFCYa2BEl4M+XfLQlnEA8fXn177elx3zDUrgiJaIBzRq7Po+nq3B6HrYaGi9HTYZDtef3FWgjLPStQVaD1fLw3MyzO6dINWIXV7ndOYGGRNp4XqafJgf1xGoylToaKVYXYy16TOVmQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=nUGq0YSo; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::432; helo=mail-pf1-x432.google.com; envelope-from=ekffu200098@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=KidCTjNt;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=nUGq0YSo;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.intel.com (client-ip=198.175.65.17; helo=mgamail.intel.com; envelope-from=andriy.shevchenko@linux.intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.17])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::432; helo=mail-pf1-x432.google.com; envelope-from=ekffu200098@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pf1-x432.google.com (mail-pf1-x432.google.com [IPv6:2607:f8b0:4864:20::432])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gps5g4gtJz2xd2
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jun 2026 02:23:19 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1782750200; x=1814286200;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=60Kkhn1S4xFp8KF1ZAF46WPmvC0pF6KOvaZqQh2Mlf4=;
-  b=KidCTjNtEWIleRshxkpHesHi7jCfUKqRBBKWyWcVThN0GOBmZzyAKkmQ
-   jdwjKnkyjtQAkA7PMtfT2v94io167/X/T1a+6xNvtSU8V8vwI8xyWhZ9Z
-   Uy1zZgVnoBVMApF8dCJjQeeghDaoJFfxrYxLUm8sL38x2sb0c2mNGgIVL
-   Zjm+KzdJgiBFOhwnNcVVvOM0MBOMC/6ezI43FvpEgB1UnXoy57g32GnGt
-   1mX+PgsArAigDD1qCLCxQoYcnRFSU/yZqH6uRacA9bsLoAAH3i5ZDvcqW
-   rafRT8guX6bwiEkhkDDAdQouh7fBhQPX+wMnP71wSWOAvI14J8Vf7bTtP
-   Q==;
-X-CSE-ConnectionGUID: 9PIqqWw7SmK1ynWEnIeXxw==
-X-CSE-MsgGUID: CC7haAbQSaW9fEb1+8mdmQ==
-X-IronPort-AV: E=McAfee;i="6800,10657,11832"; a="83476055"
-X-IronPort-AV: E=Sophos;i="6.24,232,1774335600"; 
-   d="scan'208";a="83476055"
-Received: from fmviesa005.fm.intel.com ([10.60.135.145])
-  by orvoesa109.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 29 Jun 2026 09:23:15 -0700
-X-CSE-ConnectionGUID: tfo8W8J/QcSmRxl6mSfrug==
-X-CSE-MsgGUID: qa+c086/QemtMiZKLSzfAA==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.24,232,1774335600"; 
-   d="scan'208";a="256920930"
-Received: from kniemiec-mobl1.ger.corp.intel.com (HELO localhost) ([10.245.244.207])
-  by fmviesa005-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 29 Jun 2026 09:23:02 -0700
-Date: Mon, 29 Jun 2026 19:23:00 +0300
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-To: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
-Cc: Lee Jones <lee@kernel.org>,
-	Mark Brown <broonie@opensource.wolfsonmicro.com>,
-	Thierry Reding <thierry.reding@avionic-design.de>,
-	Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>,
-	Andrew Lunn <andrew+netdev@lunn.ch>,
-	"David S. Miller" <davem@davemloft.net>,
-	Eric Dumazet <edumazet@google.com>,
-	Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
-	Srinivas Kandagatla <srini@kernel.org>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Vinod Koul <vkoul@kernel.org>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Danilo Krummrich <dakr@kernel.org>, Rob Herring <robh@kernel.org>,
-	Saravana Kannan <saravanak@kernel.org>,
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gpsQV36pcz2xYh
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jun 2026 02:37:53 +1000 (AEST)
+Received: by mail-pf1-x432.google.com with SMTP id d2e1a72fcca58-84794e800f4so393219b3a.0
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Jun 2026 09:37:53 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1782751071; x=1783355871; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=rGoS9kJnOsBC1GLvPLCMMJFTI12ls42atzGQpoe5Bdw=;
+        b=nUGq0YSoyweJNmExO8TdiDAFboeMDpBbKNtUH9KKWt9p6QAFLXDIN0kNmzIUloWIh9
+         IFq7zXTX+AxbSpQgDHjsT1DdUjra4cJ8j5gSN8y93Ns0nzPjs6b/VGEeGz5YG5GRErLM
+         7+YFmn4JO6CpoiOZjeHVLaM9+ItIZhdHh7+5DALXSc09ITaxfqV3Bhw4asHnpLpAagCN
+         henrdhFy0Abp/6Eu/detGY4itfxEvwzgfxf3BSHiFI/MwTyIuFRjhGtqWCem81PE9+V7
+         yqlfHv84VzcMxkiVRZ3QMHD8mo12lbSyWbO9OeJwIwhnWGcct7wX473bE19vJdtrSG+L
+         dbQA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1782751071; x=1783355871;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=rGoS9kJnOsBC1GLvPLCMMJFTI12ls42atzGQpoe5Bdw=;
+        b=CT8fHsOPQ2B0c9lXEGVMjVsYBj4QzYQgIGpLeKfwZFKX5xSvVBlHSatVVp40Xsovtr
+         R+BcEcW/C6CRSCc3aI5oq2Kg/ykSYOupSjc+5GhgTkMEYsEeiLhIbiJj3zaZUSxkiZQc
+         2wMZdNMh6yLkcdAeAQUcx7/+lYm0ERii9JaC6TLSR/2/PB5y2QOSbnqSFQc9PsZjhK9Q
+         j/n4wL7qFykDOTmkvdqOV0KY3uK3pPfzY/jkjAFOm/SWtIz7T7Y2pRJF7nkuqXw8TLGR
+         /PGwC7QK4k4G3FSdrwW6UGiPusL3aJbSzMPgXEPRC8dz3DqfSgvJzYKfZ5kqBMteKNtv
+         HHVA==
+X-Forwarded-Encrypted: i=1; AFNElJ/HdSk3dVi0uMHL5XAiwj+4o6Gbjobn+Fa22LMTJ1v42dp9WCUDlIJv48JBxYs6+MgpX4iMETW/YLNCkUc=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YzqGIZuUSB1f33os0y71M3vrpAnECVvcHEZqRpU+1qhUAqAsR16
+	Myn0ColZcOhJSKJv6m2EtsSefUqZ42BOuQrCt21XaOPbsGEIhZWTceO8
+X-Gm-Gg: AfdE7cmNkkSlPbT3st7IfPE6KUhSYCRVzweg9nxUWfT8fGFLlPWBT5L5Heo+DGqqVjU
+	bZV/8lsfxMxh7rpyPEpaupo+IfscFYukRlsITYUA01/UGOOf4CcwIX6YJoo9d1yXWgWBqXhfJ0T
+	HxgMInTUkDlqGVjnmHpD91ldORanSpDj8U9SYuw1dEwHfb5VugIy48DvQ4tKJ6x+Ll69OzkNhfm
+	PLLcpGQVzw/ghNjuRLciroXr9rupiJq/ZWrnhhP5TQ3H/NkeTcAevd/ftCEn0JPOeal/bn1gnvS
+	hMHN4QhCQEjLjO3bKvL8JB8utjY8N7ERSp4JeIKrHmZVeo9L6eduCzttIQx3b2LSA5qefF+IBKC
+	yLdq7WjUGRXsQjbd5BzbtsiMJC4VpXdZFNwfEelO4/bqB31KVwKWaj/uHHPUolWdeToZnU14cyw
+	bXx5nvk00=
+X-Received: by 2002:a05:6a00:92a5:b0:847:8337:64e4 with SMTP id d2e1a72fcca58-8479f1f553amr205069b3a.30.1782751071179;
+        Mon, 29 Jun 2026 09:37:51 -0700 (PDT)
+Received: from ubuntu.. ([110.9.142.4])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-847a02d41c0sm18474b3a.33.2026.06.29.09.37.46
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 29 Jun 2026 09:37:50 -0700 (PDT)
+From: Sang-Heon Jeon <ekffu200098@gmail.com>
+To: rppt@kernel.org,
+	Albert Ou <aou@eecs.berkeley.edu>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Andrey Ryabinin <ryabinin.a.a@gmail.com>,
+	Catalin Marinas <catalin.marinas@arm.com>,
+	Huacai Chen <chenhuacai@kernel.org>,
 	Madhavan Srinivasan <maddy@linux.ibm.com>,
 	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
+	Muchun Song <muchun.song@linux.dev>,
+	Oscar Salvador <osalvador@suse.de>,
+	Palmer Dabbelt <palmer@dabbelt.com>,
+	Paul Walmsley <pjw@kernel.org>,
+	Russell King <linux@armlinux.org.uk>,
+	Will Deacon <will@kernel.org>
+Cc: linux-mm@kvack.org,
+	Sang-Heon Jeon <ekffu200098@gmail.com>,
+	Alexander Potapenko <glider@google.com>,
+	Alexandre Ghiti <alex@ghiti.fr>,
+	Andrey Konovalov <andreyknvl@gmail.com>,
 	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	Andi Shyti <andi.shyti@kernel.org>, Joerg Roedel <joro@8bytes.org>,
-	Will Deacon <will@kernel.org>, Robin Murphy <robin.murphy@arm.com>,
-	Doug Berger <opendmb@gmail.com>,
-	Florian Fainelli <florian.fainelli@broadcom.com>,
-	Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>,
-	Ulf Hansson <ulfh@kernel.org>, Frank Li <Frank.Li@nxp.com>,
-	Sascha Hauer <s.hauer@pengutronix.de>,
-	Pengutronix Kernel Team <kernel@pengutronix.de>,
-	Fabio Estevam <festevam@gmail.com>,
-	Matthew Brost <matthew.brost@intel.com>,
-	Thomas =?iso-8859-1?Q?Hellstr=F6m?= <thomas.hellstrom@linux.intel.com>,
-	Rodrigo Vivi <rodrigo.vivi@intel.com>,
-	David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
-	Peter Chen <peter.chen@kernel.org>,
-	Paul Cercueil <paul@crapouillou.net>, Bin Liu <b-liu@ti.com>,
-	Philipp Zabel <p.zabel@pengutronix.de>,
-	Maximilian Luz <luzmaximilian@gmail.com>,
-	Hans de Goede <hansg@kernel.org>,
-	Ilpo =?iso-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@linux.intel.com>,
-	Krzysztof Kozlowski <krzk@kernel.org>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>, brgl@kernel.org,
-	linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-	linux-arm-msm@vger.kernel.org, linux-sound@vger.kernel.org,
-	driver-core@lists.linux.dev, devicetree@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org, linux-i2c@vger.kernel.org,
-	iommu@lists.linux.dev, linux-pm@vger.kernel.org,
-	imx@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
-	intel-xe@lists.freedesktop.org, dri-devel@lists.freedesktop.org,
-	linux-usb@vger.kernel.org, linux-mips@vger.kernel.org,
-	platform-driver-x86@vger.kernel.org, stable@vger.kernel.org,
-	Wolfram Sang <wsa+renesas@sang-engineering.com>
-Subject: Re: [PATCH v2 00/19] driver core: count references of the platform
- device's fwnode, not OF node
-Message-ID: <akKb5LPBIMenF9yD@ashevche-desk.local>
-References: <20260629-pdev-fwnode-ref-v2-0-8abe2513f96e@oss.qualcomm.com>
+	David Hildenbrand <david@kernel.org>,
+	Dmitry Vyukov <dvyukov@google.com>,
+	kasan-dev@googlegroups.com,
+	linux-arm-kernel@lists.infradead.org,
+	linux-kernel@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-riscv@lists.infradead.org,
+	loongarch@lists.linux.dev,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Vincenzo Frascino <vincenzo.frascino@arm.com>,
+	WANG Xuerui <kernel@xen0n.name>
+Subject: [PATCH v2 0/8] treewide: remove unnecessary invalid range checks in memblock iteration loops
+Date: Tue, 30 Jun 2026 01:37:28 +0900
+Message-ID: <20260629163736.1606688-1-ekffu200098@gmail.com>
+X-Mailer: git-send-email 2.43.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -124,53 +118,67 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260629-pdev-fwnode-ref-v2-0-8abe2513f96e@oss.qualcomm.com>
-Organization: Intel Finland Oy - BIC 0357606-4 - c/o Alberga Business Park, 6
- krs, Bertel Jungin Aukio 5, 02600 Espoo
+Content-Transfer-Encoding: 8bit
 
-On Mon, Jun 29, 2026 at 11:12:23AM +0200, Bartosz Golaszewski wrote:
-> Platform device core provides helper interfaces for dealing with
-> dynamically created platform devices. Most users should use
-> platform_device_register_full() which encapsulates most of the
-> operations but some modules will want to use the split approach of
-> calling platform_device_alloc() + platform_device_add() separately for
-> various reasons.
-> 
-> With many platform devices now using dynamic software nodes as their
-> primary firmware nodes and with the platform device interface being
-> extended to also better cover the use-cases of secondary software nodes,
-> I believe it makes sense to switch to counting the references of all
-> kinds of firmware nodes.
-> 
-> To that end, I identified all users of platform_device_alloc() that also
-> assign dev.of_node or dev.fwnode manually. I noticed five cases where
-> the references are not increased as they should (patches 1-5 fix these
-> users) and provided three new functions in platform_device.h that now
-> become the preferred interfaces for assigning firmware nodes to dynamic
-> platform devices (in line with platform_device_add_data(),
-> platform_device_add_resources(), etc.). The bulk of the patches in this
-> series are small driver conversions to port all users to going through
-> the new functions that now encapsulate the refcount logic. With that
-> done, the final patch seamlessly switches to counting the references of
-> all firmware node types.
-> 
-> This effort is prerequisite of removing platform_device_release_full()
-> and unifying the release path for dynamic platform devices using
-> unmanaged software nodes.
-> 
-> Merging strategy: The entire series should go through the driver core
-> tree, possibly with an immutable branch provided to solve any potential
-> conflicts though these are rather unlikely.
+The memblock API guarantees that for_each_mem_range() and
+for_each_mem_pfn_range() never return an invalid range, meaning start is
+always less than end.
 
-Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-for patches 2-4 assuming they will be accompanied with patch 19 at the same
-time.
+Several memblock callers still have unnecessary invalid range checks in
+their loop bodies, so remove them.
+
+Patches 1-6 cover for_each_mem_range() callers. memblock never stores a
+zero-size region, so the range it returns always has start < end. Some
+callers apply __va() or __phys_to_virt() before comparing, but these keep
+start < end too, so the check is unreachable.
+
+Patches 7-8 cover for_each_mem_pfn_range() callers. __next_mem_pfn_range()
+skips any region that contains no whole page, so it only ever returns
+start_pfn < end_pfn and the check is unnecessary.
+
+For reference, commit 36ca7f4be809 ("arm64: mm: Remove bogus stop
+condition from map_mem() loop") did a similar cleanup in arm64 map_mem().
+
+All these checks are in different trees, so I split the change into one
+patch per arch/subsystem. The patches are independent and can be applied
+separately.
+
+---
+Changes from v1 [1]
+- Add review-by, tested-by tags from v1
+- Add missing simliar patches(5,6) to patch series
+- Change base to rppt/for-next
+
+[1] https://lore.kernel.org/all/20260621145919.1453-1-ekffu200098@gmail.com/
+---
+
+Sang-Heon Jeon (8):
+  arm64: mm: remove unreachable invalid range check in
+    kasan_init_shadow()
+  LoongArch: remove unreachable invalid range check in kasan_init()
+  riscv: remove unreachable invalid range check in
+    create_linear_mapping_page_table()
+  riscv: remove unreachable invalid range check in kasan_init()
+  ARM: remove unreachable invalid range check in kasan_init()
+  powerpc64/kasan: Remove unreachable invalid range check in
+    kasan_init_phys_region()
+  mm: remove unnecessary empty range check in
+    early_calculate_totalpages()
+  mm/hugetlb: remove unnecessary empty range check in
+    hugetlb_bootmem_set_nodes()
+
+ arch/arm/mm/kasan_init.c               | 6 ------
+ arch/arm64/mm/kasan_init.c             | 3 ---
+ arch/loongarch/mm/kasan_init.c         | 3 ---
+ arch/powerpc/mm/kasan/init_book3e_64.c | 3 ---
+ arch/powerpc/mm/kasan/init_book3s_64.c | 3 ---
+ arch/riscv/mm/init.c                   | 2 --
+ arch/riscv/mm/kasan_init.c             | 3 ---
+ mm/hugetlb.c                           | 3 +--
+ mm/mm_init.c                           | 3 +--
+ 9 files changed, 2 insertions(+), 27 deletions(-)
 
 -- 
-With Best Regards,
-Andy Shevchenko
-
+2.43.0
 
 
