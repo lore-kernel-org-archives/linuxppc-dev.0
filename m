@@ -1,77 +1,75 @@
-Return-Path: <linuxppc-dev+bounces-23050-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23051-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8F48DC43327
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Jun 2026 06:11:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C35DAC43458
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Jun 2026 06:47:19 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gpbWg4RtNz2yhY;
-	Mon, 29 Jun 2026 16:11:27 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782713487;
-	cv=none; b=C97QmM03vFPwYhZfrRjgf97ZGKeEItm/VGZw1kWW0ZuIOpwmWAxiwOEKSR7dQT6oRCGoS2Rwj1ME3K616uy20aJW9f6pNmqG87bVMmfo0c401oSEupLp99f/jyt4sLL5ROdfFmfm6+kugLube/yOd/zjWNG7GXcvm3Pkyk7sarkl62dBO8ixhdUMtaOB/Bqoi6cxgKV+Pb1WvGFu1LmYHjU8gRBSYOq/syalHs+4qKXAJOXrSxhWUsCEdvCldP0RZmVosxCB2XcHPKQj/K2+50sI8s0JTKVO/W61fEEGOUUqq6OCGesQdTDo2eRJtuxyAlY/V2986JYZAKHAVGOqQg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gpcK232TSz2ySS;
+	Mon, 29 Jun 2026 16:47:18 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782715638;
+	cv=none; b=l8rFPURzuZOdVMYuxmNhoaET/FnfnE6D5s51DnLqSa1HEWFMDXSMfJaCKTm8qY3nRNLCAC2dL5flfZME/nRJMTYAMH7gjWB2DVvu9gO+TzOEmc32LIDndb9n/xmhw6YrH3uhhoo5ImWwd24KBUiyuReSUjZ1LpxJuZIEaY8x0VcNpGBrhQryC7Yx4v/uqdOZ9wzJYcep17wSyy5dXP5TtGUq2UE+u+nGVggG4DgauzBqm6V8k4tUFLw18GyC/wlrcX+DYHE/pTCujNwtZQOMolapKhLcEBonPrhV+9Cs8tNUPmLokHvmbAGbaknbq9f0paxPWvCfqqR2zAINXTw79Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1782713487; c=relaxed/relaxed;
-	bh=vQvEaIj31yNjKG9HzwNPIskclcZFRJX1wjKwQ2wffX4=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=dS3jEd37KdK6vqE/QgD8GIZ4Ni3/J+nHXL7HXe6ap/ZPPqcWv+0Wgg2LeaneNZj6pILSw7V/u5YSENimhQcKuUhvHrbNgvkJqwnWPv9otV2xWLVM3s6nhqIQBE3K8crWQjRgeXKKn7hRDNRgBwaQnBXFgziNxqdiMxRaQn3RjIL89E1AZc+qvcADBDQaRbq/N2144uFBT4FKGwv+YYSqbDtnbJoGce3jKdoEpmc1jpnnWGCkEnrgQ+SimX/rDlyLP0pfcy5SOyfwFXbrYrmcb7ajuE8etmKBH5oEDzO1RF756i6HQmDmrfQ6UZJSxbk06qfJ5Cyc+kExYWRIGow+Dg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=nZ0GPfxt; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=shivani@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=nZ0GPfxt;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=shivani@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+	t=1782715638; c=relaxed/relaxed;
+	bh=I52N9mFbc5LOQ/rxNzEmVs0EoFJ4aiUXlWOD6LDV1Ew=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
+	 MIME-Version:Content-Type; b=lg+HDKQ2L01zHlrcwb9vfqlniVyWELD2rVsolsBQ65oyPWb7+cSqLrhmDw+cFA5UJmGh+F5vPHI0V245ciTo72e4GQYYVh2+Bu29uQEToZUUVKdQ4YY4fLqZ3e3gh5//L281zKX/JSiFFUzFlSdzWknkg0w4byIP/UyrKEmplYaZe9Z1MTc15W0AyShgg4snP0FuDdQCZHKbkoOmNVKGK7ieV8Q+Xgxai4VKleLfCUSAceT910mc0OogObjFwpk3vd/kCMcxUGYSOIMTSZ++rUeXDPPgGWL0I6XshYkuEH6HARFs1qY6y/Mh6MggOjcTI4dhPSr83SLyYS6TCOJ5kQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=aneesh.kumar@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=aneesh.kumar@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gpbWb5xwjz2yZ8
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Jun 2026 16:11:23 +1000 (AEST)
-Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 65T3JoDI1954481;
-	Mon, 29 Jun 2026 06:11:16 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:message-id:mime-version
-	:subject:to; s=pp1; bh=vQvEaIj31yNjKG9HzwNPIskclcZFRJX1wjKwQ2wff
-	X4=; b=nZ0GPfxtovN7VSr0GVss8ESGPD1Yrwi2UTNuup2I6rRXVsTNPxXd8xpc9
-	Vm/M3H4zSPqej5pfFxKf1OOxqxjXwb0V9v2pNecfYIe8BF2pOFK/0kOdgjnOTlAt
-	RHy3YDkvWTm6B7vigLT+/AuiZvOm9RvslwHi2KCre8xBAf1na7bbZvkqk/4hYLlp
-	HoZtkiLxBmX1J09EELKt2pbeVoABpTjzjFH9ZPYkkykE1Sc/1n2TMr0EywIkOnbt
-	wffW65S7NBHRnddK4MNYyUZ7zW2450J6MpzInjYvyvR21+nUKnjZY6VJj4T925OM
-	+yTN2jxYei/5vIzSEVjavRj2Q22Yg==
-Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4f26mjfmda-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 29 Jun 2026 06:11:15 +0000 (GMT)
-Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma13.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 65T64d18006260;
-	Mon, 29 Jun 2026 06:11:14 GMT
-Received: from smtprelay01.fra02v.mail.ibm.com ([9.218.2.227])
-	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4f2u2g3wy4-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 29 Jun 2026 06:11:14 +0000 (GMT)
-Received: from smtpav06.fra02v.mail.ibm.com (smtpav06.fra02v.mail.ibm.com [10.20.54.105])
-	by smtprelay01.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 65T6BBOn61735272
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 29 Jun 2026 06:11:11 GMT
-Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 00FE420049;
-	Mon, 29 Jun 2026 06:11:11 +0000 (GMT)
-Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 98CCF20040;
-	Mon, 29 Jun 2026 06:11:09 +0000 (GMT)
-Received: from dhcp-9-123-15-26.bl1-in.ibm.com (unknown [9.123.15.26])
-	by smtpav06.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Mon, 29 Jun 2026 06:11:09 +0000 (GMT)
-From: Shivani Nittor <shivani@linux.ibm.com>
-To: maddy@linux.ibm.com, linuxppc-dev@lists.ozlabs.org
-Cc: linux-kernel@vger.kernel.org, atrajeev@linux.ibm.com,
-        shivani@linux.ibm.com, tshah@linux.ibm.com
-Subject: [RFC 0/3] powerpc/perf: Add Device Tree based PMU description framework
-Date: Mon, 29 Jun 2026 11:40:19 +0530
-Message-ID: <20260629061101.43119-1-shivani@linux.ibm.com>
-X-Mailer: git-send-email 2.50.1
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gpcK11K7qz2ySJ
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Jun 2026 16:47:17 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with ESMTP id 178F8438E0;
+	Mon, 29 Jun 2026 06:47:14 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id EAD6E1F000E9;
+	Mon, 29 Jun 2026 06:47:03 +0000 (UTC)
+X-Mailer: emacs 30.2 (via feedmail 11-beta-1 I)
+From: Aneesh Kumar K.V <aneesh.kumar@kernel.org>
+To: Jason Gunthorpe <jgg@ziepe.ca>
+Cc: Alexey Kardashevskiy <aik@amd.com>,
+	Catalin Marinas <catalin.marinas@arm.com>,
+	iommu@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
+	linux-kernel@vger.kernel.org, linux-coco@lists.linux.dev,
+	Robin Murphy <robin.murphy@arm.com>,
+	Marek Szyprowski <m.szyprowski@samsung.com>,
+	Will Deacon <will@kernel.org>, Marc Zyngier <maz@kernel.org>,
+	Steven Price <steven.price@arm.com>,
+	Suzuki K Poulose <Suzuki.Poulose@arm.com>,
+	Jiri Pirko <jiri@resnulli.us>,
+	Mostafa Saleh <smostafa@google.com>,
+	Petr Tesarik <ptesarik@suse.com>,
+	Dan Williams <dan.j.williams@intel.com>,
+	Xu Yilun <yilun.xu@linux.intel.com>,
+	linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	Alexander Gordeev <agordeev@linux.ibm.com>,
+	Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
+	Heiko Carstens <hca@linux.ibm.com>,
+	Vasily Gorbik <gor@linux.ibm.com>,
+	Christian Borntraeger <borntraeger@linux.ibm.com>,
+	Sven Schnelle <svens@linux.ibm.com>, x86@kernel.org
+Subject: Re: [PATCH v6 00/20] dma-mapping: Use DMA_ATTR_CC_SHARED through
+ direct, pool and swiotlb paths
+In-Reply-To: <20260619140616.GB1068655@ziepe.ca>
+References: <20260604083959.1265923-1-aneesh.kumar@kernel.org>
+ <aigYbK12D8uKQvJF@arm.com> <20260609144746.GL2764304@ziepe.ca>
+ <2ecfa1a8-6202-4319-9692-a6ffeb5a3dbf@amd.com>
+ <yq5aqzm4dz25.fsf@kernel.org> <20260618153705.GH231643@ziepe.ca>
+ <yq5ao6h6enhm.fsf@kernel.org> <20260619122148.GL231643@ziepe.ca>
+ <yq5aldcaejos.fsf@kernel.org> <20260619140616.GB1068655@ziepe.ca>
+Date: Mon, 29 Jun 2026 12:16:30 +0530
+Message-ID: <yq5ao6gtoncp.fsf@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -85,236 +83,246 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjI5MDA0NyBTYWx0ZWRfX6YjzTx7J6MjQ
- EYPePJfWxVJkAAvAOrCLufR/BYGZ1asudoguCK+Mv0BxdhogLxgPTnOhsAsMElAArdZXE/aguj5
- 08yXi0rv5NgqzuirwYi4FvIBYGGimRpP55d7DaTrkkszl8kqIyK/CQHFR4+kaSF9o5O8goYsCzX
- xm6EZnkpEYxLp3BDaOhUCZfKqcdl3DWF6wW+WcGBEkXgMC0ssk0h8s91y1Twh3F2qfwV6mGijg2
- pigKw/Y5K2mB33VK4r8qEGIVb80xCKiOJIKqJOOFJybrP0n0Mc5Eg42xRJIRRvjMYtvxd96vAL0
- S10tAhMKktf4TOJYCGqZ/J5LoXJ3aAt8eJZHqd9PCdAUood7TXgaB5G9DpNcQHprAxE5/wkfkS6
- Jc1XK2D/Qs1RYGRfcTn99E+cwLb0GKbGq9GcoF8PPtN5Y75I1p7QKrSqLpcrn2VvTgZAGDQ6CWQ
- zXWd42oSzXCnxykkgOA==
-X-Proofpoint-GUID: xgXGSXzuClBSH5PHRM1aQwMXWobNlB3Y
-X-Authority-Analysis: v=2.4 cv=Z8bc2nRA c=1 sm=1 tr=0 ts=6a420c83 cx=c_pps
- a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
- a=FelO9ux0wxsA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=RzCfie-kr_QcCd8fBx8p:22 a=NEAV23lmAAAA:8 a=WvX7VD2CBKCRy93ivgcA:9
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNjI5MDA0NyBTYWx0ZWRfX+3eVxK5x9n95
- rvX5ig6/tV2EDHYUQ5YbGE7khmtRAWFoPu3R2AlZuLgoZ7mt7CqE7zi6bTZU2lXpCY7ch5wpmId
- v/Liy5jugUS08PT4PzUzNsJnjOA++Kg=
-X-Proofpoint-ORIG-GUID: xgXGSXzuClBSH5PHRM1aQwMXWobNlB3Y
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
- definitions=2026-06-29_01,2026-06-26_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1015 adultscore=0 spamscore=0 priorityscore=1501 impostorscore=0
- malwarescore=0 phishscore=0 bulkscore=0 lowpriorityscore=0 suspectscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2606290047
+Content-Type: text/plain
 
-PowerPC has a Performance Monitoring Unit (PMU) infrastructure which provides
-comprehensive performance monitoring capabilities at the processor level. The
-PMU includes programmable counters (PMCs) and control registers (MMCRs) that
-enable detailed performance analysis and profiling.
+Jason Gunthorpe <jgg@ziepe.ca> writes:
 
-The PowerPC PMU consists of 6 Performance Monitor Counters (PMCs), where PMC1-4
-are fully programmable and can monitor any supported event, while PMC5 and PMC6
-are dedicated to counting instructions and cycles respectively. The PMU is
-controlled through 5 Monitor Mode Control Registers (MMCRs) that configure
-event selection, sampling modes, thresholds, and other monitoring parameters.
+> On Fri, Jun 19, 2026 at 02:36:19PM +0100, Aneesh Kumar K.V wrote:
+>> >> Agreed. If the device can do encrypted DMA and requires bouncing, it
+>> >> should bounce through encrypted pools. We don't support encrypted pools
+>> >> now and that means, we mark the option ("mem_encrypt=on iommu=pt
+>> >> swiotlb=force") not supported for now? 
+>> >
+>> > ?? if you don't have a CC system then the swiotlb is "encrypted"
+>> > meaning ordinary struct page system memory.
+>> >
+>> > The hypervisor should not be triggering any CC special stuff here, it
+>> > is not a CC guest.
+>> >
+>> > Agree we don't need to worry about swiotlb=force with a trusted device
+>> > in the GUEST for now, but it should be something to fix eventually.
+>> >
+>> 
+>> If i understand this correctly, the setup Alexey is referring to here is
+>> bare metal system with memory encryption enabled and dma address doesn't
+>> need C bit cleared because it is handled in iommu.
+>
+> This is how I understand it too, if the iommu is turned on then it can
+> take the high PA with the C bit set and map it to an IOVA that matches
+> the device's dma limit.
+>
+>> ( I consider this as memory encryption that is handled
+>> transparently, device can access any address because that encryption
+>> details are now managed by iommu).
+>
+> Compared to the guest side there are some important host side differences:
+>
+>  - On the host the iommu can fix it because this is only a matter of
+>    IOVA range not access control. On a guest even a IOMMU cannot
+>    permit access to private memory
+>  - On the host the state of the device is driven by the dma limit
+>    which is not set until after the driver probes. On guest the state is
+>    set by the tsm and device security level before the driver
+>    probes
+>  - Both flows end up using pgprot_decrypted and set_memory_decrypted()
+>    to create their special pools, but for completely different
+>    reasons.
+>  - The memory coming from the special swiotlb pool must NOT be used by
+>    a trusted device on a CC guest, while there is no problem for any
+>    device to use it on the host.
+>
 
-This patchset enables the PowerPC PMU by providing a device tree specification
-that describes the PMU hardware capabilities, event encoding format, register
-mappings, and event constraints. The device tree approach allows firmware
-(OPAL/skiboot) to communicate PMU capabilities to the kernel dynamically,
-enabling better hardware abstraction and forward compatibility.
+Agreed.
 
-PMU Hardware Components:
-The PowerPC PMU provides the following hardware components:
-- 6 Performance Monitor Counters (PMC1-PMC6)
- * PMC1-4: Programmable counters (32-bit, any event)
- * PMC5: Fixed counter for instructions (32-bit)
- * PMC6: Fixed counter for cycles (32-bit)
-- 5 Monitor Mode Control Registers
- * MMCR0 (SPR 795): Primary control register
- * MMCR1 (SPR 798): Event selection and configuration
- * MMCR2 (SPR 785): Extended event configuration
- * MMCR3 (SPR 754): Additional event source selection
- * MMCRA (SPR 0x312): Sampling and marking control
+>> Thinking about this more, I guess we should mark the swiotlb as
+>> cc_shared only with  CC_ATTR_GUEST_MEM_ENCRYPT instead of
+>> CC_ATTR_MEM_ENCRYPT as we have below.
+>
+> The name cc_shared should be used for GUEST scenarios only.
+>
+> I guess there is some merit in keeping swiotlb using "decrypted" to
+> mean it usinig pgprot_decrypted and set_memory_decyped() which AMD
+> gives meaning to on both host and guest.
+>
 
-Event Encoding Format:
-The device tree describes how 64-bit event codes are decomposed into fields
-that map to specific bits in the MMCR registers. Key encoding fields include:
-- PMCxSEL: 8-bit event selector (256 events per PMC)
-- PMCxUNIT: 4-bit unit selector for event source
-- PMCxCOMB: 2-bit combine mode for multi-counter operations
-- THRESH_SEL/START/STOP: Threshold-based event filtering
-- SDAR_MODE: Data address sampling configuration
-- MARK: Instruction marking for sampling
-- L2L3_SELECT: Cache event selection
-- IFM: Instruction fetch marking mode
+Are you suggesting to change the struct io_tlb_mem::cc_shared back to
+struct io_tlb_mem::unencrypted?. If we want to split cc_shared and
+unencrypted as two flags, I think we will add quiet a lot of code
+duplication.
 
-Event Constraints:
-The PMU enforces several hardware constraints that are described in the DTS:
-- Counter restrictions: PMC5 limited to instructions (0x500fa), PMC6 limited
- to cycles (0x600f4)
-- Sampling constraints: Events with sampling require specific bit patterns
-- Threshold constraints: Threshold events require coordinated MMCR field values
-- Cache constraints: Cache events restricted to specific units (6,7,8,9) and
- require PMC4 for certain operations
-- EBB (Event-Based Branching) constraints: EBB events require PMC assignment
-- BHRB (Branch History Rolling Buffer) constraints: BHRB requires EBB enabled
-- L1 qualifier constraints: L1 cache qualifiers for load/store filtering
-- Radix scope constraints: Radix page table scope qualification
+> IDK what AMD should do on the host by default. I guess it should setup
+> a swiotlb pool of low dma addrs "unencrypted", but not "cc_shared"?
+>
 
-PMU Events Information:
-The device tree includes definitions for common performance events such as:
-- Core events: cycles, instructions, dispatch/execution stalls
-- Branch events: branches, branch-misses, branch predictions
-- Cache events: L1/L2/L3 hits and misses for data and instructions
-- TLB events: DTLB and ITLB misses
-- Memory events: load/store operations and cache reloads
+If by low DMA address you mean using an address with the C-bit
+cleared. Currently the SME code uses force_dma_unencrypted() as the hook to
+determine whether the C-bit needs to be cleared. Therefore,
+force_dma_unencrypted(dev) must be true to use such a pool.
 
-The kernel discovers the PMU configuration in the device tree at the "pmus"
-device node which contains a "pmu_dts@0" child node with compatible field
-"ibm,power-pmu".
+The current code already does this and uses the swiotlb pool correctly
+on SME. The challenge arises when we want to force SWIOTLB
+bouncing even for devices that can handle encrypted DMA addresses (more
+on that below). For such a config force_dma_uencrypted(dev) will return
+false and swiotlb will be marked cc_shared/decrypted = true; This trip
+the new check we added.
 
-Parsing of the PMU Information:
-To parse the PMU configuration, the kernel discovers the "pmus" node and
-walks through the PMU definition, extracting:
-- Hardware capabilities (number of PMCs, MMCRs)
-- SPR (Special Purpose Register) definitions
-- Event code format and field mappings
-- MMCR bit field configurations
-- Event constraints and restrictions
-- Pre-defined event list with codes and descriptions
+	/* swiotlb pool is incorrect for this device */
+	if (unlikely(mem->cc_shared != force_dma_unencrypted(dev)))
+		return (phys_addr_t)DMA_MAPPING_ERROR;
 
-Here is an excerpt of the DTS showing the PMU node structure:
-pmus {
-	#address-cells = <1>;
-	#size-cells = <0>;
+We can also do
 
-	pmu_dts@0 {
-		compatible = "ibm,power-pmu";
-		reg = <0>;
-		pmu-name = "POWER10 PMU";
-		pmu-version = "PowerISA 3.1";
-		platform = "power10";
-		status = "okay";
-		nr_pmc = <6>;
-		nr_mmcr = <5>;
+	if (cc_platform_has(CC_ATTR_GUEST_MEM_ENCRYPT)) {
+		/* swiotlb pool is incorrect for this device */
+		if (unlikely(mem->cc_shared != force_dma_unencrypted(dev)))
+			return (phys_addr_t)DMA_MAPPING_ERROR;
 
-		sprs {
-			pmcs {
-				pmc1 {
-					sprn = <787>;
-					register-width = <32>;
-					privilege = "hv";
-					programmable = <1>;
-					event = "any";
-					status = "okay";
-				};
-				[...]
-			};
-			mmcr {
-				mmcr0 {
-					sprn = <795>;
-					register-width = <64>;
-					privilege = "hv";
-					status = "okay";
-				};
-				[...]
-			};
-		};
+		/* Force attrs to match the kind of memory in the pool */
+		if (mem->cc_shared)
+			*attrs |= DMA_ATTR_CC_SHARED;
+		else
+			*attrs &= ~DMA_ATTR_CC_SHARED;
+	} else {
+		/*
+		 * Host memory encryption where device requires an
+		 * unencrypted dma_addr_t due to dma mask limit
+    		 */
+		if (force_dma_unencrypted(dev))
+			*attrs |= DMA_ATTR_CC_SHARED;
+		else
+			*attrs &= ~DMA_ATTR_CC_SHARED;
+	}
 
-		evt_code_format {
-			compatible = "ibm,power-pmu";
 
-			PMCxSEL {
-				description = "PMC event selector (256 possible events per PMC)";
-				bits = <0 7>;
-				length = <8>;
-				mmcr = <1>;
-				target_field_base = <32>;
-				target_field_shift = <8>;
-			};
-			[...]
-		};
+Here I see value in having DMA_ATTR_UNENCRYPTED. The question is do we
+need to split this into two flags and introduce the resulting code
+duplication.
 
-		constraints {
-			pmc-constraints {
-				max-counter = <6>;
+>
+> But if we are operating on the host then this pool is not limited to
+> only T=0 devices, every device can "safely" use it. (ignoring this
+> destroys the security memory encryption on bare metal was supposed to
+> provide)
+>
+>> Now we have the case of host memory encryption where the C-bit needs to
+>> be cleared in dma_addr_t. That requires special handling in the kernel, and
+>> I believe we need to mark swiotlb as unencrypted in this configuration.
+>
+> I think we need to split the two things up, they have different
+> behaviors and need different flags and labels to make it all work
+> right.
+>
+>> I am still not clear whether there is a config option or runtime check
+>> we can use to identify this case.
+>
+> The dma api has to detect, after the driver sets the dma limit, that
+> none of system memory is usable when:
+>  - The direct path is being used
+>  - phys to dma for 0 is outside the dma limit
+>
+> Then it should assume the arch has setup a swiotlb pool for it to use
+> to fix the high memory problem.
+>
+> Similar hackery would be needed in the dma alloc path to know that
+> decrypted can be used to fix the high memory problem like for GUEST.
+>
+> I guess some 'dev_cannot_reach_memory(dev)' sort of test in a
+> few key places? Setup with a static branch to be a nop on everything
+> but AMD, compiled out on every other arch.
+>
 
-				restricted-counters-5 {
-					pmc = <5>;
-					valid-events = <0x00000000 0x000500fa>;
-				};
+If we are not able to reach the memory because of the memory encryption
+bit, then isn't dev_cannot_reach_memory(dev) the same as
+force_dma_unencrypted(dev)? If so, that is how it is already done.
 
-				restricted-counters-6 {
-					pmc = <6>;
-					valid-events = <0x00000000 0x000600f4>;
-				};
-			};
-			[...]
-		};
+I am wondering whether we can keep this simpler by ignoring the
+swiotlb=force kernel parameter and keeping cc_shared as it is, even
+though that can be confusing when looking at SME.
 
-		events {
-			cycles {
-				event_code = <0x600f4>;
-				event-category = "core";
-				event-class = "primary";
-				description = "Number of processor cycles";
-				status = "okay";
-			};
-			instructions {
-				event_code = <0x500fa>;
-				event-category = "core";
-				event-class = "primary";
-				description = "Number of instructions completed";
-				status = "okay";
-			};
-			[...]
-		};
-	};
-};
+The three configurations we need to consider here are:
 
-From the device tree, the kernel parses the PMU hardware description, event
-encoding format, constraints, and pre-defined events.
+1) SEV-SNP guest
+2) SME host with iommu=translated
+3) SME host with iommu=passthrough
 
-After parsing the PMU configuration, the PMU and its events are registered
-with the kernel's perf subsystem, making them available for performance
-monitoring and profiling.
+IIUC, all of the above work with the current code because we mark the
+swiotlb as cc_shared/decrypted when CC_ATTR_MEM_ENCRYPT is set (i.e.,
+this applies to an SME host as well).
 
-This series depends on the corresponding skiboot patches:
-https://github.com/maddy-kerneldev/skiboot/commit/783e33f17f13412b89b774124cef0988c0578829
+The challenge arises when the user forces swiotlb bouncing with the
+swiotlb=force command-line option. At that point, all devices, including
+those whose DMA mask can handle encrypted DMA addresses, are forced to
+use SWIOTLB. That becomes a problem because SWIOTLB is marked as
+decrypted by default.
 
-Comments/feedback/suggestions are welcome.
+How about something like the following?
 
-Next Steps:
-1) Add DTS support for peripheral and unit-specific PMU events.
-2) Extend the DTS schema for additional MMCR registers and controls.
-3) Support advanced PMU features such as BHRB.
-4) Feedback from Community
+x86/dma: Disable forced SWIOTLB bouncing for SME IOMMU passthrough
 
-Shivani Nittor (3):
-  powerpc/perf: Register PMU from device tree and expose events
-  powerpc/perf: Add DTS-based MMCR computation
-  powerpc/perf: Add DTS-based event constraints
+With host memory encryption and IOMMU passthrough, DMA address handling
+depends on whether a device can address the C-bit. Devices that cannot
+address it need DMA addresses with the C-bit cleared, while devices that
+can address encrypted memory should keep using encrypted DMA addresses.
 
- arch/powerpc/include/asm/dts_pmu.h    |  82 ++++
- arch/powerpc/perf/Makefile            |   4 +-
- arch/powerpc/perf/core-book3s.c       |  12 +-
- arch/powerpc/perf/dts_pmu.c           | 536 ++++++++++++++++++++++++++
- arch/powerpc/perf/internal.h          |   1 +
- arch/powerpc/perf/isa207-common.c     | 262 +++++++++++++
- arch/powerpc/perf/isa207-common.h     |   4 +
- arch/powerpc/platforms/powernv/opal.c |  15 +
- 8 files changed, 914 insertions(+), 2 deletions(-)
- create mode 100644 arch/powerpc/include/asm/dts_pmu.h
- create mode 100644 arch/powerpc/perf/dts_pmu.c
+The default swiotlb pool is marked shared when memory encryption is active.
+Forcing all devices through that pool would also force devices capable of
+encrypted DMA to use shared mappings. Clear the global swiotlb-force-bounce
+state in this mode, and warn when this overrides an explicit swiotlb=force
+command-line request.
 
--- 
-2.54.0
+Signed-off-by: Aneesh Kumar K.V (Arm) <aneesh.kumar@kernel.org>
 
+modified   arch/x86/kernel/pci-dma.c
+@@ -51,8 +51,24 @@ static void __init pci_swiotlb_detect(void)
+ 	 * Set swiotlb to 1 so that bounce buffers are allocated and used for
+ 	 * devices that can't support DMA to encrypted memory.
+ 	 */
+-	if (cc_platform_has(CC_ATTR_HOST_MEM_ENCRYPT))
++	if (cc_platform_has(CC_ATTR_HOST_MEM_ENCRYPT)) {
+ 		x86_swiotlb_enable = true;
++		/*
++		 * With host memory encryption and IOMMU passthrough, devices
++		 * that cannot address the C-bit need DMA addresses with the
++		 * C-bit cleared, while devices that can address encrypted
++		 * memory should keep using encrypted DMA addresses.
++		 *
++		 * The default SWIOTLB pool is marked shared when memory
++		 * encryption is active, so forcing all devices through it would
++		 * also force devices that support encrypted DMA to use shared
++		 * mappings. Disable global forced bouncing in this mode.
++		 */
++		if (iommu_default_passthrough() &&
++		    clear_swiotlb_force_bounce())
++			pr_warn("Ignoring swiotlb=force with host memory encryption and "
++				"IOMMU passthrough\n");
++	}
+ 
+ 	/*
+ 	 * Guest with guest memory encryption currently perform all DMA through
+modified   include/linux/swiotlb.h
+@@ -40,6 +40,7 @@ void __init swiotlb_init_remap(bool addressing_limit, unsigned int flags,
+ int swiotlb_init_late(size_t size, gfp_t gfp_mask,
+ 	int (*remap)(void *tlb, unsigned long nslabs));
+ extern void __init swiotlb_update_mem_attributes(void);
++bool __init clear_swiotlb_force_bounce(void);
+ 
+ #ifdef CONFIG_SWIOTLB
+ 
+modified   kernel/dma/swiotlb.c
+@@ -208,6 +208,15 @@ unsigned long swiotlb_size_or_default(void)
+ 	return default_nslabs << IO_TLB_SHIFT;
+ }
+ 
++bool __init clear_swiotlb_force_bounce(void)
++{
++	if (!swiotlb_force_bounce)
++		return false;
++
++	swiotlb_force_bounce = false;
++	return true;
++}
++
+ void __init swiotlb_adjust_size(unsigned long size)
+ {
+ 	/*
 
