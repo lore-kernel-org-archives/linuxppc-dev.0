@@ -1,49 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-23132-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23133-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 02E38C43458
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Jun 2026 19:26:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7EB4FC43602
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Jun 2026 19:26:48 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gpx8n03ykz2yrL;
-	Tue, 30 Jun 2026 05:26:17 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782761176;
-	cv=none; b=muoSdzXxtK6TdNoa2naGLqjrXbrGAknSSS1LagcO7ELEbCjevCI2iM7Mva8DYwOvsI/nyxca8FReaRgHAcalPuvOR5Oly4sjj2WAiHnRe/5D7HjKAkj0bvb9is5ol/WSzk61KKJhTuU/TT4Z5th81DUcnyKnUI/2jHbAOy7PaWd5BwkmvD2ch+Y9DsJr5GpEJqaqDIQwIoxSF2VbLmJKaEvAn+sf+5+r2hy+rn4mK8BflBYXlNmNhfS+n1W3jWYbg7vNV29vH23t035eIFSVRZZQQlN+qlo2bGmzDj1FBBTezAZ3agYlnNW5IfKXTT8zRaHFQdBUSAO1S3yiea/yGg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gpx8q3wkhz2yqP;
+	Tue, 30 Jun 2026 05:26:19 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782761179;
+	cv=none; b=ow1k6wnvVEt2hs25lWjqYAbMBqqulCsLXaK7aF084OO+DZBK/o9lASsKUJv6cWzasuqQEUMCNadFMA6Rx9CL0qWBA3iktVsHgdZ9GITzUowPRwNjT5CMZlECtKBu//9gs8PHC9c7hZTaeEVQ9NJha4ArlHAp/8z2B9DcGvEciADSX9vD94K8iwt6OLnc925CGjpRWfOIiXFF3PyqrfwSz+z4j+e3NKp28QkkREn0W+BUetRKkvfaJetA8+acLN8h5LtzRL8ljujWlP84gTH6xn6zm1qdDLXWPPRXQAgIN+Z26VznvZ54dePwd/RuvmaSGgqLb2USEbKQbNygIsB4nQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1782761176; c=relaxed/relaxed;
-	bh=gKmo4U1gXLGtJnRP+WhnxnFRqzwXuOB5h6v9uTSdV1s=;
+	t=1782761179; c=relaxed/relaxed;
+	bh=kVNcj1n0t63iEIMvCjdqZpMGs73q5Ko9ggshfmmLkXE=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=g8KzRNlGH8RnWgYxOUIkur9RK2wNiV0iQfQNnW1DueP3HDAXqllCoMfLVaX5+KeExXuAlRJtptGYQpj5A1jigXlCriCw3t7yUZVOEthqjKh9y/rDZaSKb4iLYsnJZMeRHX7V5KBCzHFblWOMgsymBQRkvwljMzOENzRG7Do5eLQv9cOhgvn/e34c83Og9sNzXLkC6jaB9jkDtjLUhUG9Y6pSNGrkaQKCg/jgmklg03T9HTOeqAV4N5ouVTxaHjGlwhs038IhbnDqTsYrzmDoXXCgFMjYRznpo7WWyGdcoDNuyaSVBmLEBeOlq9cM5ssqlOO3h90Ubdwi9cbdlpZwpg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=F+1lY+lC; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=M5rO7ggvdpQYThFwiQzRq8QGiHpHiOHxCI7N2drWR+zIFe0PY6kFqvpXmzcTBT6XRtITTtf3vJQRRpyJBQjCS94Qa0/ySEIzijSvBZVMNJEeEEs2VEAqZXd1GbcOKQDYcU+FNXOspLkOk5l/4hHyrNc6MNis1TmOIBB4OHihyzuMq1/9x8P2BtNISnoYiBM4WHvN1xxrE8y5l2Xg+9p5sohH1L4O8v+Yn6e7wVJ2zRsiELncsQ+khilBmU0f5D3jntWXuTPmhttu0WJEp5NHc2wG+LH9/Z3RA/uQ2F3Juda8+NSnuZEgjjSfwDorXcHpSs6S85QgUs1PR2dlX0xCCA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=klEBAvxA; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=F+1lY+lC;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=klEBAvxA;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gpx8m0jvXz2yqP
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jun 2026 05:26:16 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gpx8p5MTGz2yd7
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jun 2026 05:26:18 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 081F7600C8;
-	Mon, 29 Jun 2026 19:26:14 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E2FCC1F00A3D;
-	Mon, 29 Jun 2026 19:26:12 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id D2D50601BE;
+	Mon, 29 Jun 2026 19:26:16 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id BC1611F00A3A;
+	Mon, 29 Jun 2026 19:26:15 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1782761173;
-	bh=gKmo4U1gXLGtJnRP+WhnxnFRqzwXuOB5h6v9uTSdV1s=;
+	s=k20260515; t=1782761176;
+	bh=kVNcj1n0t63iEIMvCjdqZpMGs73q5Ko9ggshfmmLkXE=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=F+1lY+lCh4/ljg4cAF+WiIYMH69AbV51hkuC1jZywIIRJtnSTTT9Cl417kLqBvIL2
-	 8OgnOg+47T8fRg2he/k0Czan1lawmcrV1QOn8ALLq/c2Ln2nuZw+lUVlp9IBNBM7O9
-	 ULuAgYhvU87+ozqV7cC/Uv3vF3QGLRPm547HTvpe+ig3eiPKismCLxZqLocHJJSRPE
-	 ub2TJPIrtzztEsLj+o6x6PxyaZ56GCtceA3IiAP5fOpSWc8Uo+I5/jmojutM8causc
-	 cQ+/HDIGoeC5yU7JzcyMSeGb6xZ0mYXeADHJM+UmSIQ/cxJ8RXeP+AGDV1OS3TxIGG
-	 sMbSC7d+ndHmA==
+	b=klEBAvxAFllrYroNuPJLJ6gpkhIWH2gTVoT+/xDpJL5trOYXohBGpPUklmeyy3M8s
+	 V8yPCwMkEt0hiRNtDQFKpdz3l1uU7duIasGbSIztboWDM2ZAqiJD0rorDwfoqGlBAa
+	 LG7rxtse+7tEtmE7jUNFo/a5he8kyou91LnB1mOd3C/3gEPhWsxleGxfu6UNzRLKT4
+	 q/kle54fQbZ80BilK1fYXEKilUW+HJlbq+uSEtkk9SKLXzWuUuYgjrQUH6aBSmWp7O
+	 s8EEU2+Bt7ipQc2WUzag4pdln2sWzLqlewf7/vmu4r9kXvNYawRuP/0vdC2aunN5Wg
+	 EWS79jrl2lb4w==
 From: Lorenzo Stoakes <ljs@kernel.org>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
@@ -127,9 +127,9 @@ Cc: Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
 	linux-fsdevel@vger.kernel.org,
 	linux-mm@kvack.org,
 	linux-sound@vger.kernel.org
-Subject: [PATCH 06/13] mm/vma: convert vm_pgprot_modify() to use vma_flags_t and rename
-Date: Mon, 29 Jun 2026 20:25:29 +0100
-Message-ID: <548ba81b2971734d4d2143237ad1465bd1b2f525.1782760670.git.ljs@kernel.org>
+Subject: [PATCH 07/13] mm/vma: rename vma_get_page_prot to vma_flags_to_page_prot
+Date: Mon, 29 Jun 2026 20:25:30 +0100
+Message-ID: <fc8ac30d03d29d236e76542b36432bba315aca60.1782760670.git.ljs@kernel.org>
 X-Mailer: git-send-email 2.54.0
 In-Reply-To: <cover.1782760670.git.ljs@kernel.org>
 References: <cover.1782760670.git.ljs@kernel.org>
@@ -148,111 +148,83 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Update vm_pgprot_modify() to use the new VMA flags type vma_flags_t, and
-rename to vma_pgprot_modify() accordingly.
+Having vma_get_page_prot() refer to VMA flags and vma_set_page_prot() refer
+to a VMA is confusing.
 
-This is part of the ongoing work to convert vm_flags_t to vma_flags_t, in
-order to eliminate the arbitrary limit of the number of bits in a system
-word on available VMA flags.
-
-Update VMA userland tests accordingly, updating vma_set_page_prot() to no
-longer inline vma_pgprot_modify(), rather we can simply define
-vma_pgprot_modify() as a static inline function and the tests will pick it
-up from vma.h.
+Rename vma_get_page_prot() to vma_flags_to_page_prot() to resolve this
+confusion.
 
 No functional change intended.
 
 Signed-off-by: Lorenzo Stoakes <ljs@kernel.org>
 ---
- mm/mmap.c                       |  8 ++++----
- mm/vma.c                        |  2 +-
- mm/vma.h                        |  6 ++++--
- tools/testing/vma/include/dup.h | 12 +++++-------
- 4 files changed, 14 insertions(+), 14 deletions(-)
+ include/linux/mm.h              | 4 ++--
+ mm/vma.c                        | 2 +-
+ mm/vma.h                        | 2 +-
+ tools/testing/vma/include/dup.h | 2 +-
+ 4 files changed, 5 insertions(+), 5 deletions(-)
 
-diff --git a/mm/mmap.c b/mm/mmap.c
-index 477f4a77361a..e834ec9273e3 100644
---- a/mm/mmap.c
-+++ b/mm/mmap.c
-@@ -80,13 +80,13 @@ core_param(ignore_rlimit_data, ignore_rlimit_data, bool, 0644);
- /* Update vma->vm_page_prot to reflect vma->vm_flags. */
- void vma_set_page_prot(struct vm_area_struct *vma)
- {
--	vm_flags_t vm_flags = vma->vm_flags;
-+	vma_flags_t vma_flags = vma->flags;
- 	pgprot_t vm_page_prot;
+diff --git a/include/linux/mm.h b/include/linux/mm.h
+index 474b3698f565..c8336f68d7bb 100644
+--- a/include/linux/mm.h
++++ b/include/linux/mm.h
+@@ -4568,7 +4568,7 @@ static inline bool range_in_vma_desc(const struct vm_area_desc *desc,
+ #ifdef CONFIG_MMU
+ pgprot_t vm_get_page_prot(vm_flags_t vm_flags);
  
--	vm_page_prot = vm_pgprot_modify(vma->vm_page_prot, vm_flags);
-+	vm_page_prot = vma_pgprot_modify(vma->vm_page_prot, vma_flags);
- 	if (vma_wants_writenotify(vma, vm_page_prot)) {
--		vm_flags &= ~VM_SHARED;
--		vm_page_prot = vm_pgprot_modify(vm_page_prot, vm_flags);
-+		vma_flags_clear(&vma_flags, VMA_SHARED_BIT);
-+		vm_page_prot = vma_pgprot_modify(vm_page_prot, vma_flags);
- 	}
- 	/* remove_protection_ptes reads vma->vm_page_prot without mmap_lock */
- 	WRITE_ONCE(vma->vm_page_prot, vm_page_prot);
+-static inline pgprot_t vma_get_page_prot(vma_flags_t vma_flags)
++static inline pgprot_t vma_flags_to_page_prot(vma_flags_t vma_flags)
+ {
+ 	const vm_flags_t vm_flags = vma_flags_to_legacy(vma_flags);
+ 
+@@ -4581,7 +4581,7 @@ static inline pgprot_t vm_get_page_prot(vm_flags_t vm_flags)
+ {
+ 	return __pgprot(0);
+ }
+-static inline pgprot_t vma_get_page_prot(vma_flags_t vma_flags)
++static inline pgprot_t vma_flags_to_page_prot(vma_flags_t vma_flags)
+ {
+ 	return __pgprot(0);
+ }
 diff --git a/mm/vma.c b/mm/vma.c
-index fb4341943576..395b6619ecc1 100644
+index 395b6619ecc1..fcdd2ac3ac68 100644
 --- a/mm/vma.c
 +++ b/mm/vma.c
-@@ -2179,7 +2179,7 @@ bool vma_wants_writenotify(struct vm_area_struct *vma, pgprot_t vm_page_prot)
- 	/* The open routine did something to the protections that pgprot_modify
- 	 * won't preserve? */
- 	if (pgprot_val(vm_page_prot) !=
--	    pgprot_val(vm_pgprot_modify(vm_page_prot, vma->vm_flags)))
-+	    pgprot_val(vma_pgprot_modify(vm_page_prot, vma->flags)))
- 		return false;
+@@ -56,7 +56,7 @@ struct mmap_state {
+ 		.pglen = PHYS_PFN(len_),				\
+ 		.vma_flags = vma_flags_,				\
+ 		.file = file_,						\
+-		.page_prot = vma_get_page_prot(vma_flags_),		\
++		.page_prot = vma_flags_to_page_prot(vma_flags_),	\
+ 	}
  
- 	/*
+ #define VMG_MMAP_STATE(name, map_, vma_)				\
 diff --git a/mm/vma.h b/mm/vma.h
-index bcf0c2773449..6a8abb8ae937 100644
+index 6a8abb8ae937..d6b48d596f44 100644
 --- a/mm/vma.h
 +++ b/mm/vma.h
-@@ -522,9 +522,11 @@ static inline bool vma_wants_manual_pte_write_upgrade(struct vm_area_struct *vma
- }
- 
+@@ -524,7 +524,7 @@ static inline bool vma_wants_manual_pte_write_upgrade(struct vm_area_struct *vma
  #ifdef CONFIG_MMU
--static inline pgprot_t vm_pgprot_modify(pgprot_t oldprot, vm_flags_t vm_flags)
-+static inline pgprot_t vma_pgprot_modify(pgprot_t oldprot, vma_flags_t vma_flags)
+ static inline pgprot_t vma_pgprot_modify(pgprot_t oldprot, vma_flags_t vma_flags)
  {
--	return pgprot_modify(oldprot, vm_get_page_prot(vm_flags));
-+	const pgprot_t prot = vma_get_page_prot(vma_flags);
-+
-+	return pgprot_modify(oldprot, prot);
- }
- #endif
+-	const pgprot_t prot = vma_get_page_prot(vma_flags);
++	const pgprot_t prot = vma_flags_to_page_prot(vma_flags);
  
+ 	return pgprot_modify(oldprot, prot);
+ }
 diff --git a/tools/testing/vma/include/dup.h b/tools/testing/vma/include/dup.h
-index 6f5bcd7fbcd8..813044781719 100644
+index 813044781719..1ffac38a5377 100644
 --- a/tools/testing/vma/include/dup.h
 +++ b/tools/testing/vma/include/dup.h
-@@ -1434,20 +1434,18 @@ struct vm_area_struct *vma_iter_next_range(struct vma_iterator *vmi)
- }
+@@ -1555,7 +1555,7 @@ static inline int get_sysctl_max_map_count(void)
+ #define pgtable_supports_soft_dirty()	IS_ENABLED(CONFIG_MEM_SOFT_DIRTY)
+ #endif
  
- bool vma_wants_writenotify(struct vm_area_struct *vma, pgprot_t vm_page_prot);
-+static inline pgprot_t vma_pgprot_modify(pgprot_t oldprot, vma_flags_t vma_flags);
- 
- /* Update vma->vm_page_prot to reflect vma->vm_flags. */
- static inline void vma_set_page_prot(struct vm_area_struct *vma)
+-static inline pgprot_t vma_get_page_prot(vma_flags_t vma_flags)
++static inline pgprot_t vma_flags_to_page_prot(vma_flags_t vma_flags)
  {
--	vm_flags_t vm_flags = vma->vm_flags;
-+	vma_flags_t vma_flags = vma->flags;
- 	pgprot_t vm_page_prot;
+ 	const vm_flags_t vm_flags = vma_flags_to_legacy(vma_flags);
  
--	/* testing: we inline vm_pgprot_modify() to avoid clash with vma.h. */
--	vm_page_prot = pgprot_modify(vma->vm_page_prot, vm_get_page_prot(vm_flags));
--
-+	vm_page_prot = vma_pgprot_modify(vma->vm_page_prot, vma_flags);
- 	if (vma_wants_writenotify(vma, vm_page_prot)) {
--		vm_flags &= ~VM_SHARED;
--		/* testing: we inline vm_pgprot_modify() to avoid clash with vma.h. */
--		vm_page_prot = pgprot_modify(vm_page_prot, vm_get_page_prot(vm_flags));
-+		vma_flags_clear(&vma_flags, VMA_SHARED_BIT);
-+		vm_page_prot = vma_pgprot_modify(vm_page_prot, vma_flags);
- 	}
- 	/* remove_protection_ptes reads vma->vm_page_prot without mmap_lock */
- 	WRITE_ONCE(vma->vm_page_prot, vm_page_prot);
 -- 
 2.54.0
 
