@@ -1,88 +1,97 @@
-Return-Path: <linuxppc-dev+bounces-23045-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23046-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C0582C43458
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Jun 2026 04:54:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 91431C43458
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Jun 2026 04:57:38 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gpYqJ0CnNz2yT0;
-	Mon, 29 Jun 2026 14:54:52 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::122f"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782708891;
-	cv=none; b=Lx8weT0d4TT86n40dD4KAeKpNBUpy7FCoy7uWSTU76gwjyLLIeNqGU9vVwlgKMDQaE1zBAezsXx1GaEGyJ4CuG7/blb3zPnTn4VL3ET092U8ZMzknV7DKoeFo4fqlhZoawJoKqZWx8S92AMJuMrvDFl8sL8CUjO1TU7Lg4i+QtQwZ+KwrJBbniyk8b1O12KZlpgrCHC1uqfUI+V67COUyzJJkTpTdGgAgQtdHLG/lNrThk4sckFo1TmBEM0i7KmCcK7IeLAmxf5hdLtnqLq0IOPpeSyjzyXJ71zmAj3nOnH+hUXav5hxJn6WTLCaDJbPsYZnaf5/bZBBIA+Cw2YSmg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gpYtS6FXkz2yT0;
+	Mon, 29 Jun 2026 14:57:36 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::132c"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782709056;
+	cv=none; b=Kx8VV75K/Kr9ZsELJGr6dJOEdIXvH5kogAXLqh9H0lvhIOuuf+m9+cMkUJBCrkzguHCcw6MuoSk2Ez4CAgLlxzlGjiSlJyP3PdlVZ+HSIfO+fYwqNoK/l+/89Q99zxPUUKTBZn0T45Gu4uQecASdaDVXdkOckIW+kr4ll0b2BaY9NWNkXAKCmAVAu4ROsxZdIbx+A+5VyMmhw6NdVaIKs9ywYa8TuAu5rUfTqYvkdlOlZ9pKLW2MdikiIOIJU+Dcd9/2ewPQeodunwrvGja/iCLfiD4zqxZSad89iIfWWQmKLFWsAZv3MKTITBFEG3fPFgLYxokUXiOq0MtRj+dSWA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1782708891; c=relaxed/relaxed;
-	bh=xelqBObbyshoMTI8e/i+QalKkFMy66EdgFOZ66d0qzk=;
+	t=1782709056; c=relaxed/relaxed;
+	bh=iQD/rHZj3a8p2S8n+F8bG5yMjsLxWvoQVhtFef2fXlQ=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=PeG8S4+l5HyZD/hR/vT/oRit9fP+UQbCiD5iAHXabzG5BWQWcSaOV/VcHXhnDqUlrhUHwr1p8+pcDF6Z5t5MZNgw2KKcceVZOmZr8RQXtsJnjMViCXLkIkLqRNuA8Y33RQmx4Gir9ro8ZBwUnxKlqwrauYCGHRSEQtGeKZFJNaJUUcrmEYMVrlEfF4w7nnqJfCDEGUyhNhXMvWfg5CNdhXgv57jCZBeHC6IStMCgaH8dV847zAcbeFLKn0bq/sFb0UW5QlsA/S8YTw22NiO413mnQcQ3UjIrNSSAuc6cH7jMjBzyt+MUNtR50gOIxhaG83XtkKP55BmmMPAa6y77mQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=drcamGiI; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::122f; helo=mail-dl1-x122f.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	 Content-Type:Content-Disposition:In-Reply-To; b=jh20WW3a35nEKjZ7dx6dA+DauB6Rn5LvmA8emkQxOM9TvDrD4egdwl4OH281BNP+HUCaeOhLrZs+iyCZrtkClAnp56Rth5xccP1QIveF7nJK6JCYhX7RKiQZ86vjmMakXZ2gXlotKa6CbtUZ+1RcEZh/TccHfX2OL7vqTfWlzKHQsZXHD5jyBrGrmC3UiekzAkPFNtj9IkcTnY/Y7CDHZFa+rcmpvJuF0G128Y5IgaM9fjl4RglJavT8yDRvTADHi8nSqLju4jMEqok3mSdmIDLkbzbLj6vT1sdVK+14/neyVRi/RZmN/ev7HgGT1wWhHhN5Y0n9fDRwUbcMZv6PZQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=earvLXkZ; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::132c; helo=mail-dy1-x132c.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=drcamGiI;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=earvLXkZ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::122f; helo=mail-dl1-x122f.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-dl1-x122f.google.com (mail-dl1-x122f.google.com [IPv6:2607:f8b0:4864:20::122f])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::132c; helo=mail-dy1-x132c.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-dy1-x132c.google.com (mail-dy1-x132c.google.com [IPv6:2607:f8b0:4864:20::132c])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gpYqH0YDLz2ySS
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Jun 2026 14:54:50 +1000 (AEST)
-Received: by mail-dl1-x122f.google.com with SMTP id a92af1059eb24-139f71a5201so344499c88.0
-        for <linuxppc-dev@lists.ozlabs.org>; Sun, 28 Jun 2026 21:54:50 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gpYtS0CJ5z2ySS
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Jun 2026 14:57:35 +1000 (AEST)
+Received: by mail-dy1-x132c.google.com with SMTP id 5a478bee46e88-30b6dad2382so5494530eec.0
+        for <linuxppc-dev@lists.ozlabs.org>; Sun, 28 Jun 2026 21:57:35 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1782708888; x=1783313688; darn=lists.ozlabs.org;
+        d=gmail.com; s=20251104; t=1782709054; x=1783313854; darn=lists.ozlabs.org;
         h=in-reply-to:content-transfer-encoding:content-disposition
          :mime-version:references:message-id:subject:cc:to:from:date:from:to
          :cc:subject:date:message-id:reply-to;
-        bh=xelqBObbyshoMTI8e/i+QalKkFMy66EdgFOZ66d0qzk=;
-        b=drcamGiI7pcT//jipn/k/6e8MyZ6jB1aoqR6Gew1sNXKYM7O8bKjm2Rvgh+2omz5fH
-         RFijCx5U6b8jAjtFJOlj6YtUkomQoJi9x5t0gPh2eA9hBXfXa6pGmjsfmNoGA/0YS34h
-         GPwBUagBwdlw6itNOPHOjLknAPbjyss7nekar47yc5bLtkmsIuFt3OP84D+dCgm6twbe
-         G/rF6WzPN6kPBc6hO1yufvgtT2CCv5i21LH5KzLp5bBvz5gIkPuhme03jxyppxvbQmsA
-         szc7oMLlXxxNaM8ww+X0D0wHyxBx/hJqITBztqqAm3CvyYGO4DRgs02AxxpLAFCvKoSy
-         OYtQ==
+        bh=iQD/rHZj3a8p2S8n+F8bG5yMjsLxWvoQVhtFef2fXlQ=;
+        b=earvLXkZleroeWM1OPD/kprCNIl29t00ayB8JHp5D6qdcV0pRRiFM/KGYmVvfpFHBf
+         LCynKcR2TzVVxmacIqvBAPlcT5iUxxG/x6EzHS6DMBFgpLIuwfTGd1rSH91RFOQ3Gc7x
+         lc+3ViSCq03V5jQa+vgLUwJ4UE210YBGNBVy4QTwcgpOO6u5Pw9tZJQ/LhWY6KwJHdbf
+         TsukwQwgykY7JB+AIRYFzdQ0ALTyqurmgV7UCWrhSrz1Dy9V06tmYxxnx20UeYkk/nIc
+         8brmW+QH4q6xLo2ULuXTSrMUYPs4l+tiKWfogY9KFQqCCgmhtQMUYwuGiytqw/pr1TJR
+         1FMA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1782708888; x=1783313688;
+        d=1e100.net; s=20251104; t=1782709054; x=1783313854;
         h=in-reply-to:content-transfer-encoding:content-disposition
          :mime-version:references:message-id:subject:cc:to:from:date:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=xelqBObbyshoMTI8e/i+QalKkFMy66EdgFOZ66d0qzk=;
-        b=REBO9YyiWdossebvbgwkTqgE7TRbH968SGZrPBP3VAmX7HLBzaH1WC3wEBkFxgtzKI
-         aMsM++LeW6gr5UYe8CMawjW3JOSS5PLwB78m8ZJ5TkiM5RcJ2bptSACvb6fKAvVYgzDd
-         ypBuYyA/83PWPtvdXJZ/ZtHpZKK5LT5jMICX7ZZedlMfE38g3GsqsUVTqDWB0udaqKKJ
-         qwuqBQx6oDJHeQC9qvCyIBhIm/LP4jNjpdYswl+X3ZMH41Jwm2yuH3jqFTztCB2PXfk1
-         r3d8gD3jEJuaCvamYHM3aqPxZh5UrD/nDbSW/FQsd/UdUeOkOCoLkJNEJTdaGpKo2fm7
-         RIKg==
-X-Forwarded-Encrypted: i=1; AFNElJ+yZzOIOUX8t9XrXO2fK50pVHDXGCoV1dzuLIm3gzka66evoZO3+JvdD5++kXaf3bgm+dMlPnybuNoPvs0=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YxNh5zuPiNnOAOCPcUBf68J14E2bjqJm1fsPA2WeqYvDJicyDyR
-	limangJQrp6QHayFWmLSSkZjuxIrG0FYkswcOi8qc6dyj6wm+XellUIC
-X-Gm-Gg: AfdE7cmV4kUoIcXiybid0nLnSnfo+skKZ6nVDdFWzamBxitrZYaTlGiZpJvpuKfKiS/
-	KHNYUsg8UcdWFUC+cPGJx2dBS52zkxpJ1lqY2R/1YzpHu8FDJtTNvRYhb9vaFHDKY1VTPsojXib
-	/wsQigjMlbJU1Lr0iPAL3yn8xpEdV6qKfKeoLx3bhx2irVQYgwqGfffcpb5LKP7NFDYTm9d6ng7
-	aQxRVQi+JE9QR4wfcAGM96G1hgTaweSfM499W8YSkcMkDu64fcF4BsxhLbkV76GgOu/8zxo81XB
-	sAkESRbpeRI+IPijy8eitXix5o2NpRwmwc0qJk+U9CuPlUyWGYUeDLX76OYaRC+kLgUMilLZuHi
-	6VrOnNdWKBglLiAir+rQg5Z+J6dQbquU8KFB1m7MYo629U1FQJbgDIIs9LEA8kl1EXLdgLjJone
-	92x69Pl+ES6FQX4hPTTD6yqZPEVv/HK6nOZ7TniRFHgOYFjfZRSeyibzwqqDCq
-X-Received: by 2002:a05:7022:61e:b0:138:59d:e1 with SMTP id a92af1059eb24-139c3d145c3mr20794117c88.24.1782708888373;
-        Sun, 28 Jun 2026 21:54:48 -0700 (PDT)
+        bh=iQD/rHZj3a8p2S8n+F8bG5yMjsLxWvoQVhtFef2fXlQ=;
+        b=d3ks67Uu+KXZ9UnoioP2lOuJlUYABiGpYNFxw8h0VKUZ5tjr4fFPkGulUunpJXTg6L
+         Q193pcmkgePWbaK0yB/YjQP4rXSuDtot1hDMw4XFgrmcdkkIk+kMCPXsRbuoRq/bpj9i
+         tQrJ1d4QJfIvyYdX3I2E7m4pVPjbEAcR9DG4iMn4UBcfvJBZlbaOX3uAiBp857AOyDGj
+         0JgugIkureXVOy7LyyHYQhn1oNkXFuIjAKaWSJMiFCFBE/7X7iMmFyJyF1IjQ+tztnF+
+         bt1crtsG1l5THcAcSBh0+2/nnUc+CD8L5/KZcZvyjErZbm4yPyMGIZbTmOIfJTD0BAtg
+         B/Ew==
+X-Forwarded-Encrypted: i=1; AHgh+RogMVB+IvtZx6pq4gFoa+Bjs8dFvx+xEFHQrv9vosRR7fvmTVkBpEymq7qIhSylRRpTUt/aWsyKEFjoi78=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yzn/2DqOlSATsE5b+sDx+x72aWGfDRk+r8MZKI/6hm1BzBORKFA
+	DtcJegSzOEl9IrDL6v7lnxdFzqxzpx5wSq9q+EMTDWYpipyGjvTq2Fjm
+X-Gm-Gg: AfdE7ckagryhzapJfYassVavzCR069HuLtCk3avPenCqwXdaxJA4Zfvv5ejYHwKsI2f
+	Gh8vhPl/ZfpQdsq/7DR5I06ImrTs0DJXXyCPYlqDk49lw+//bgqK6B5ARP8wZDJEAphWYwXzGhl
+	bf2+y1txzuf5TQAWcNuwMgxBWZxgjPhNrZT7hJOlSVw+DDGT4Dmse0cLSB54EwoIQ/mNIEHzKgr
+	BHH8LFRKm80TPNZaAS46wM5C3t2+fZOMK+jw9kG1DYWbINM3DaOCboeQ+Hv5+voWXHhhuhpQqdG
+	3yGbwWTuY5ajrHWY70gl7GVDAFnLXUDhVgD1KisUhpw8svo1cUBMHEQBSFVQrzDBGVyKE7SnsU+
+	txKHMjOtbe0WziXe/b0XlpFkopxJDWnM9b5gHU35WGXHeD1PPHmjnWKMh9dBiN8oPDoAkZKflTL
+	/H8mSwgFFdqspxn3bMmfs8T2uuttwmohMQ53f/iYfipjqSPpfv1S3ifcVaV7sve2Q4j21//rU=
+X-Received: by 2002:a05:7300:e8a9:b0:304:bce8:fa30 with SMTP id 5a478bee46e88-30c84b2c0c8mr15331021eec.5.1782709053542;
+        Sun, 28 Jun 2026 21:57:33 -0700 (PDT)
 Received: from li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com ([106.51.160.236])
-        by smtp.gmail.com with ESMTPSA id a92af1059eb24-139eac62642sm22462259c88.10.2026.06.28.21.54.42
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-30c7ca87caasm39851291eec.27.2026.06.28.21.57.21
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 28 Jun 2026 21:54:48 -0700 (PDT)
-Date: Mon, 29 Jun 2026 10:24:40 +0530
+        Sun, 28 Jun 2026 21:57:33 -0700 (PDT)
+Date: Mon, 29 Jun 2026 10:27:19 +0530
 From: Mukesh Kumar Chaurasiya <mkchauras@gmail.com>
-To: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+To: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
 Cc: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com, 
-	sshegde@linux.ibm.com, mkchauras@linux.ibm.com, kees@kernel.org, mark.rutland@arm.com, 
-	ryan.roberts@arm.com, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
-	Michal =?utf-8?B?U3VjaMOhbmVr?= <msuchanek@suse.de>
-Subject: Re: [PATCH] powerpc/syscall: Fix seccomp errno handling with
- GENERIC_ENTRY
-Message-ID: <akH6JooVWvTVIgpK@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
-References: <20260624171520.772408-1-mkchauras@gmail.com>
- <17eecc4d-ae7b-4c32-9edc-d3b8e131549c@kernel.org>
+	chleroy@kernel.org, peterz@infradead.org, jpoimboe@kernel.org, jbaron@akamai.com, 
+	aliceryhl@google.com, rostedt@goodmis.org, ardb@kernel.org, ojeda@kernel.org, 
+	boqun@kernel.org, gary@garyguo.net, bjorn3_gh@protonmail.com, lossin@kernel.org, 
+	a.hindborg@kernel.org, tmgross@umich.edu, dakr@kernel.org, nathan@kernel.org, 
+	nick.desaulniers+lkml@gmail.com, morbo@google.com, justinstitt@google.com, 
+	daniel.almeida@collabora.com, acourbot@nvidia.com, fujita.tomonori@gmail.com, 
+	gregkh@linuxfoundation.org, prafulrai522@gmail.com, tamird@kernel.org, kees@kernel.org, 
+	lyude@redhat.com, airlied@gmail.com, linuxppc-dev@lists.ozlabs.org, 
+	linux-kernel@vger.kernel.org, rust-for-linux@vger.kernel.org, llvm@lists.linux.dev
+Subject: Re: [PATCH V16 4/7] rust/powerpc: Set min rustc version for powerpc
+Message-ID: <akH6yuDH9ZwXVoVA@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
+References: <20260520064630.1785283-1-mkchauras@gmail.com>
+ <20260520064630.1785283-5-mkchauras@gmail.com>
+ <CANiq72nPOMkZXpMpwTLFg4xjFfmyf_O_x2FN_nrNBsxeNu178Q@mail.gmail.com>
+ <ahVb4k-2rC4EYZF9@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
+ <aj4gAdy2siBxONpo@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
+ <CANiq72=EVsTFkQK3LWrT2Gs5UKKViemGkv1WuitY6NOEtvcsNg@mail.gmail.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -96,71 +105,43 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <17eecc4d-ae7b-4c32-9edc-d3b8e131549c@kernel.org>
+In-Reply-To: <CANiq72=EVsTFkQK3LWrT2Gs5UKKViemGkv1WuitY6NOEtvcsNg@mail.gmail.com>
 
-On Fri, Jun 26, 2026 at 04:31:47PM +0200, Christophe Leroy (CS GROUP) wrote:
+On Fri, Jun 26, 2026 at 12:17:50PM +0200, Miguel Ojeda wrote:
+> On Fri, Jun 26, 2026 at 8:50â€¯AM Mukesh Kumar Chaurasiya
+> <mkchauras@gmail.com> wrote:
+> >
+> > This corresponds to a floating point instruction. Although we have
+> > disabled fpu, vsx and altivec we are still generating these. Seems like
+> > we have some issue with the rustc here. I didn't dive deeper into this.
+> >
+> > Is it ok if we keep 1.95 as base for powerpc64le?
 > 
+> It may be that it is generated but unused (we have that issue
+> elsewhere -- see e.g. `rust/compiler_builtins.rs`).
 > 
-> Le 24/06/2026 à 19:15, Mukesh Kumar Chaurasiya (IBM) a écrit :
-> > After enabling GENERIC_ENTRY on PowerPC, seccomp filters using
-> > SCMP_ACT_ERRNO without an explicit errnoRet value return ENOSYS
-> > (Function not implemented) instead of the expected EPERM (Operation
-> > not permitted).
-> > 
-> > The issue occurs in system_call_exception() when syscall_enter_from_user_mode()
-> > returns -1 to indicate the syscall should be skipped (e.g., blocked by seccomp).
-> > The current code treats this -1 as a syscall number and compares it against
-> > NR_syscalls. Since -1 (when cast to unsigned long) is greater than NR_syscalls,
-> > the code incorrectly returns -ENOSYS, overwriting the errno that seccomp
-> > already set via syscall_set_return_value().
-> > 
-> > The generic entry code in syscall_trace_enter() calls __secure_computing(),
-> > which sets the appropriate errno in regs->gpr[3] and returns -1 to signal
-> > that the syscall should be skipped. However, the PowerPC syscall handler
-> > was not checking for this -1 return value before validating the syscall
-> > number.
-> > 
-> > Fix this by explicitly checking if syscall_enter_from_user_mode() returns
-> > -1 and returning the value already set in regs->gpr[3] (the errno from
-> > seccomp) before performing the syscall number validation.
-> > 
-> > This aligns PowerPC's behavior with other architectures using GENERIC_ENTRY
-> > and restores correct seccomp errno handling.
-> > 
-> > Fixes: bee25f97ad24 ("powerpc: Enable GENERIC_ENTRY feature")
-> > Reported-by: Michal Suchánek <msuchanek@suse.de>
+> Having said that, if 1.95 is fine for the powerpc arch maintainers,
+> then that is fine (s390 also used a higher minimum -- please see the
+> recent change in `scripts/min-tool-version.sh`).
 > 
-> Closes: https://lore.kernel.org/all/ajpp-_XnbF3UTM_E@kunlun.suse.cz/
+> But please try to bisect upstream Rust to see where the change
+> happened, i.e. what is the root cause? e.g. `core` changes, `rustc`
+> changes, built-in LLVM changes... It could be that it is not tied to
+> the `rustc` version but LLVM's.
 > 
-> > Signed-off-by: Mukesh Kumar Chaurasiya (IBM) <mkchauras@gmail.com>
-> > ---
-> >   arch/powerpc/kernel/syscall.c | 4 ++++
-> >   1 file changed, 4 insertions(+)
-> > 
-> > diff --git a/arch/powerpc/kernel/syscall.c b/arch/powerpc/kernel/syscall.c
-> > index a9da2af6efa8..5b58c8d396c8 100644
-> > --- a/arch/powerpc/kernel/syscall.c
-> > +++ b/arch/powerpc/kernel/syscall.c
-> > @@ -22,6 +22,10 @@ notrace long system_call_exception(struct pt_regs *regs, unsigned long r0)
-> >   	add_random_kstack_offset();
-> >   	r0 = syscall_enter_from_user_mode(regs, r0);
-> > +	/* Seccomp or ptrace may have set return value, skip syscall */
-> > +	if (unlikely(r0 == -1L))
-> 
-> Is it really needed to add the L after 1 ?
-> 
-I guess it's not needed, but syscall_trace_enter is returning -1L, and i
-wanted to keep it consistent to that.
+> Cheers,
+> Miguel
+Hey Miguel, 
+
+Sure i'll bisect. Meanwhile i would still like to get this upstream.
+
+Hey @Madhavan,
+
+Can we pick this version up for ppc?
 
 Regards,
 Mukesh
-> > +		return regs->gpr[3];
-> > +
-> >   	if (unlikely(r0 >= NR_syscalls)) {
-> >   		if (unlikely(trap_is_unsupported_scv(regs))) {
-> >   			/* Unsupported scv vector */
-> 
 
