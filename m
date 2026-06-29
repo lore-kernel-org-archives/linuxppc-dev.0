@@ -1,49 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-23130-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23131-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 31C36C43638
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Jun 2026 19:26:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 79288C43638
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Jun 2026 19:26:35 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gpx8g6BKsz2yf5;
-	Tue, 30 Jun 2026 05:26:11 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782761171;
-	cv=none; b=C4H+gnmGBYRSSen+VQJrrhn3sooUq3DQ5wyo7AYKJKkwkvZ6KVFgKjy9nSEU9M9HIczLzURrPSYV3NfMRxlXJtjtsiEN7l4pK3+f/p420N5DjDLSik+WlVleKtUSYqngt5Ej6sPOTT2a+geJ2oVpU63JxFe3qF0Prw6GJnMWsia/yccs3fbBXZoGzW3bICW71Zap4B/p8tYdoNNxPRfILrYf3bCwGWisUAkrOxnTGoR1rhc4CEjbO7OTIEz3TTNyBM6YRD/omcuv7Io9Ij/UZfZwFPGYMfjze/QjwW8QvGp/ruVs1QHy7XHVJ49kooeY+AU8cmFwg16lVdZ+Y2tMFA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gpx8k4tDWz2yb9;
+	Tue, 30 Jun 2026 05:26:14 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782761174;
+	cv=none; b=DqYQ0/NEMW9ok9rSWjTGnT09QMe3DGjPiAeSweUEfjXebRqGhvCHwxyf9dxCoQW6mZSRjX5M/ltk7C6xtRaj6f6OTAJRWe8ckBUuVFD1c5t1y7y5jQ98Qvz1H9UozWMopcjnZvU4iT+ZercGmHzvjw/LazttVTC3m/ZjYJJC6xym/nQ4Vr2hBSweblTu/YNIDcTMI9lKUKCASpOkwIux86Ajg7ng5rROfP8N28isC/NWNjFp5uiA48kzB3BL1ZbFSGYv8cZyCPgm54rhe7Ilx+5642bYHOD5vnNVA1ktMq63ga6BW25B0lwPWFLsM76hhQyYcedS6hTbvqKqAaUOFA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1782761171; c=relaxed/relaxed;
-	bh=hVd6ZuVqENj3zeMR4aL2t+2UMMhczNHM+gJ9snfAafg=;
+	t=1782761174; c=relaxed/relaxed;
+	bh=UckrPyyaq5eQ3/ESdKIiCBv0nseBWr37AnyJxZAhDyA=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=eaW8cAfRzonD5uLHIszsuov469IiZZIwGyUUVhAfkgYzAfZuaOZL+6To/lxzqT7zTZhu4USmlZjRfkJO8j1Mop5YfDmU1sxo/TD9zfUa2yCVAsoKw3NlsXbGCzQQ8D11HClDzPYhjUsNNlE09nkiVAlC533oj4AH/gnoCs4202OtDvaDNyVvaaKjdC55uIeoGWrd/wZSpzoreF4i+k04uA6OQAfx+rJK2+Ig2K/Iwjju1T7dDoEDgWtsfd3dR6nzCQNN1EKPHbj2Tjenb4tDcLiD4R9fGkbQGM579jqqGb1Q03RwuXWCeE53f7I7xVTD599KMIa/2lkaheU4ckd5Bw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=BExgykrx; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=dDSPgIXGg5aPNR0dTV1PX4ANz0V9cW3NvidvH1ZV40glYbZHKjii/wSGXJcLjny2xWadqql9XXo/bnJoJvfIaD2PJSpJ1fHwi0YUmZcRVSN+f7NA8WctB+xM3KuH32S/Z8jCDDleE3oJSr5fg1j1D7JeOm4v+9zdV79mUll4y3i0e5QhCR3IUwEunomo30qNY1Azuqu649Bz84gwIKzdJTsvQXWHgQKB326bsv7LTmcGZtl+49o5DoI0BT6qYnhJarFCtrA8TxucghQMwumZTPvaU+aHthVDVUvva1ySwEsRLujejUAoFWdK1uXHhi1uHJq9qYnqrIE1PGOdJB8ulg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=aLceiJFh; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=BExgykrx;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=aLceiJFh;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gpx8g0jVsz2xYh
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jun 2026 05:26:11 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gpx8j5LRSz2yqP
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jun 2026 05:26:13 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 51A386014B;
-	Mon, 29 Jun 2026 19:26:08 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3A2DC1F00A3E;
-	Mon, 29 Jun 2026 19:26:07 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id F3B8342AD6;
+	Mon, 29 Jun 2026 19:26:10 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 144CE1F000E9;
+	Mon, 29 Jun 2026 19:26:10 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1782761168;
-	bh=hVd6ZuVqENj3zeMR4aL2t+2UMMhczNHM+gJ9snfAafg=;
+	s=k20260515; t=1782761170;
+	bh=UckrPyyaq5eQ3/ESdKIiCBv0nseBWr37AnyJxZAhDyA=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=BExgykrxcgTd5RClbXfmFD5Hp/1Grb/Kjey3DiRaMUeFZgqydXxsDWyRIvpzoISG7
-	 /Iilv3IrxTXNlJUqKZNyr5TyZZvKbnpj8BmRYrG9ZFdN0Nb0i0NyJk8Sl7npMKfdti
-	 1DTOuDeaNgSBKxd+05qng9++fyrY+sD0P/+0C6uNIMSgwntxptodo0GGuiVJ2fa7Xh
-	 tcbnSkYetMr8IMTjqAFSQc8sq/Xc+KvUA6heTO4Lwayd0uEmx/7h0R2T9dkwHlc5h+
-	 iCD7J6P0FnSJ3xPPyRVSFdOIImy48N18CmoYp7IbeVR4j1E/heYWHJ8ULXWfCEAyFn
-	 uHB+/Pwf3DOzg==
+	b=aLceiJFh+snHgwJGHP/qCXPhR7qJ8YyjaxrTlyR7D0hm5wLyHQY+iiA2uneyDGmJj
+	 G1AZncsiLujD5kbc1tsdhnrkJC1E7rMCK1ujoj1v4UNRKHLZ2ORGgy2VUFnNGPcKDg
+	 qaMyPLULt4Sx9ASgeeO/9di4CBbN4HFxF8uEtPuukCrlTuIeaGOoXMhYYoTszUhLhD
+	 fvTqEJQb4R9AyFWNvK4MljxzMGQy1r1QEaCpWeY0/SsjhR5XfDBHn1Ges8h1q3P8fo
+	 GY2yfWatCDrMfqmDF8fuVGk9e/dRAHn2Nv/h2jGdVSYE3pZVge2XsX8pZGvzj03VY4
+	 zsNjEpharm7Yw==
 From: Lorenzo Stoakes <ljs@kernel.org>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
@@ -127,9 +127,9 @@ Cc: Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
 	linux-fsdevel@vger.kernel.org,
 	linux-mm@kvack.org,
 	linux-sound@vger.kernel.org
-Subject: [PATCH 04/13] mm: update generic_get_unmapped_area[_topdown]() to use vma_flags_t
-Date: Mon, 29 Jun 2026 20:25:27 +0100
-Message-ID: <cef55b19f86c110952f13829aefa4859db3a70ed.1782760670.git.ljs@kernel.org>
+Subject: [PATCH 05/13] mm: prefer mm->def_vma_flags in mm logic
+Date: Mon, 29 Jun 2026 20:25:28 +0100
+Message-ID: <3b4ccdc38819b42ddc79ee5a795831208ac7986c.1782760670.git.ljs@kernel.org>
 X-Mailer: git-send-email 2.54.0
 In-Reply-To: <cover.1782760670.git.ljs@kernel.org>
 References: <cover.1782760670.git.ljs@kernel.org>
@@ -148,135 +148,138 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-As part of the changes converting VMA flags from a system word size to a
-bitmap, extend this change to generic_get_unmapped_area() and
-generic_get_unmapped_area_topdown(), which also allows us to convert
-stack_guard_placement() as well.
+Currently mm->def_flags (of type vm_flags_t) is union'd with
+mm->def_vma_flags (of type vma_flags_t).
 
-We retain arch_get_unmapped_area() and arch_get_unmapped_area_topdown()
-as-is for now, using legacy_to_vma_flags() as necessary to do so.
+As part of the effort to convert vm_flags_t usage to vma_flags_t (in order
+to no longer be arbitrarily limited to a system word size for VMA flags),
+prefer mm->def_vma_flags to mm->def_flags throughout the mm logic.
 
 No functional change intended.
 
 Signed-off-by: Lorenzo Stoakes <ljs@kernel.org>
 ---
- arch/powerpc/mm/book3s64/slice.c |  6 ++++--
- include/linux/sched/mm.h         |  4 ++--
- mm/mmap.c                        | 16 ++++++++--------
- 3 files changed, 14 insertions(+), 12 deletions(-)
+ mm/debug.c |  2 +-
+ mm/mlock.c | 13 +++++++------
+ mm/mmap.c  | 11 ++++++-----
+ mm/vma.c   |  4 ++--
+ 4 files changed, 16 insertions(+), 14 deletions(-)
 
-diff --git a/arch/powerpc/mm/book3s64/slice.c b/arch/powerpc/mm/book3s64/slice.c
-index 28bec5bc7879..82127e31dca6 100644
---- a/arch/powerpc/mm/book3s64/slice.c
-+++ b/arch/powerpc/mm/book3s64/slice.c
-@@ -659,7 +659,8 @@ unsigned long arch_get_unmapped_area(struct file *filp,
- 	unsigned int psize;
+diff --git a/mm/debug.c b/mm/debug.c
+index 497654b36f1a..f0a354a9496a 100644
+--- a/mm/debug.c
++++ b/mm/debug.c
+@@ -226,7 +226,7 @@ void dump_mm(const struct mm_struct *mm)
+ 		mm->numa_next_scan, mm->numa_scan_offset, mm->numa_scan_seq,
+ #endif
+ 		atomic_read(&mm->tlb_flush_pending),
+-		mm->def_flags, &mm->def_flags
++		vma_flags_to_legacy(mm->def_vma_flags), &mm->def_vma_flags
+ 	);
+ }
+ EXPORT_SYMBOL(dump_mm);
+diff --git a/mm/mlock.c b/mm/mlock.c
+index 8c227fefa2df..9c87b3ced65f 100644
+--- a/mm/mlock.c
++++ b/mm/mlock.c
+@@ -699,26 +699,27 @@ SYSCALL_DEFINE2(munlock, unsigned long, start, size_t, len)
  
- 	if (radix_enabled())
--		return generic_get_unmapped_area(filp, addr, len, pgoff, flags, vm_flags);
-+		return generic_get_unmapped_area(filp, addr, len, pgoff, flags,
-+						 legacy_to_vma_flags(vm_flags));
+ /*
+  * Take the MCL_* flags passed into mlockall (or 0 if called from munlockall)
+- * and translate into the appropriate modifications to mm->def_flags and/or the
+- * flags for all current VMAs.
++ * and translate into the appropriate modifications to mm->def_vma_flags and/or
++ * the flags for all current VMAs.
+  *
+  * There are a couple of subtleties with this.  If mlockall() is called multiple
+  * times with different flags, the values do not necessarily stack.  If mlockall
+  * is called once including the MCL_FUTURE flag and then a second time without
+- * it, VM_LOCKED and VM_LOCKONFAULT will be cleared from mm->def_flags.
++ * it, VM_LOCKED and VM_LOCKONFAULT will be cleared from mm->def_vma_flags.
+  */
+ static int apply_mlockall_flags(int flags)
+ {
+ 	VMA_ITERATOR(vmi, current->mm, 0);
++	struct mm_struct *mm = current->mm;
+ 	struct vm_area_struct *vma, *prev = NULL;
+ 	vm_flags_t to_add = 0;
  
- 	if (filp && is_file_hugepages(filp))
- 		psize = file_to_psize(filp);
-@@ -679,7 +680,8 @@ unsigned long arch_get_unmapped_area_topdown(struct file *filp,
- 	unsigned int psize;
+-	current->mm->def_flags &= ~VM_LOCKED_MASK;
++	vma_flags_clear_mask(&mm->def_vma_flags, VMA_LOCKED_MASK);
+ 	if (flags & MCL_FUTURE) {
+-		current->mm->def_flags |= VM_LOCKED;
++		vma_flags_set(&mm->def_vma_flags, VMA_LOCKED_BIT);
  
- 	if (radix_enabled())
--		return generic_get_unmapped_area_topdown(filp, addr0, len, pgoff, flags, vm_flags);
-+		return generic_get_unmapped_area_topdown(filp, addr0, len,
-+				pgoff, flags, legacy_to_vma_flags(vm_flags));
+ 		if (flags & MCL_ONFAULT)
+-			current->mm->def_flags |= VM_LOCKONFAULT;
++			vma_flags_set(&mm->def_vma_flags, VMA_LOCKONFAULT_BIT);
  
- 	if (filp && is_file_hugepages(filp))
- 		psize = file_to_psize(filp);
-diff --git a/include/linux/sched/mm.h b/include/linux/sched/mm.h
-index b301ec90740a..c8720d8e2158 100644
---- a/include/linux/sched/mm.h
-+++ b/include/linux/sched/mm.h
-@@ -203,11 +203,11 @@ unsigned long mm_get_unmapped_area_vmaflags(struct file *filp,
- unsigned long
- generic_get_unmapped_area(struct file *filp, unsigned long addr,
- 			  unsigned long len, unsigned long pgoff,
--			  unsigned long flags, vm_flags_t vm_flags);
-+			  unsigned long flags, vma_flags_t vma_flags);
- unsigned long
- generic_get_unmapped_area_topdown(struct file *filp, unsigned long addr,
- 				  unsigned long len, unsigned long pgoff,
--				  unsigned long flags, vm_flags_t vm_flags);
-+				  unsigned long flags, vma_flags_t vma_flags);
- #else
- static inline void arch_pick_mmap_layout(struct mm_struct *mm,
- 					 const struct rlimit *rlim_stack) {}
+ 		if (!(flags & MCL_CURRENT))
+ 			goto out;
 diff --git a/mm/mmap.c b/mm/mmap.c
-index 461ce510e12a..3ef603d5ff00 100644
+index 3ef603d5ff00..477f4a77361a 100644
 --- a/mm/mmap.c
 +++ b/mm/mmap.c
-@@ -657,9 +657,9 @@ SYSCALL_DEFINE1(old_mmap, struct mmap_arg_struct __user *, arg)
-  * Determine if the allocation needs to ensure that there is no
-  * existing mapping within it's guard gaps, for use as start_gap.
+@@ -102,15 +102,16 @@ void vma_set_page_prot(struct vm_area_struct *vma)
   */
--static inline unsigned long stack_guard_placement(vm_flags_t vm_flags)
-+static inline unsigned long stack_guard_placement(vma_flags_t vma_flags)
+ static int check_brk_limits(unsigned long addr, unsigned long len)
  {
--	if (vm_flags & VM_SHADOW_STACK)
-+	if (vma_flags_test_single_mask(&vma_flags, VMA_SHADOW_STACK))
- 		return PAGE_SIZE;
++	const struct mm_struct *mm = current->mm;
++	const bool is_def_locked =
++		vma_flags_test(&mm->def_vma_flags, VMA_LOCKED_BIT);
+ 	unsigned long mapped_addr;
  
- 	return 0;
-@@ -701,7 +701,7 @@ unsigned long vm_unmapped_area(struct vm_unmapped_area_info *info)
- unsigned long
- generic_get_unmapped_area(struct file *filp, unsigned long addr,
- 			  unsigned long len, unsigned long pgoff,
--			  unsigned long flags, vm_flags_t vm_flags)
-+			  unsigned long flags, vma_flags_t vma_flags)
- {
- 	struct mm_struct *mm = current->mm;
- 	struct vm_area_struct *vma, *prev;
-@@ -726,7 +726,7 @@ generic_get_unmapped_area(struct file *filp, unsigned long addr,
- 	info.length = len;
- 	info.low_limit = mm->mmap_base;
- 	info.high_limit = mmap_end;
--	info.start_gap = stack_guard_placement(vm_flags);
-+	info.start_gap = stack_guard_placement(vma_flags);
- 	if (filp && is_file_hugepages(filp))
- 		info.align_mask = huge_page_mask_align(filp);
- 	return vm_unmapped_area(&info);
-@@ -739,7 +739,7 @@ arch_get_unmapped_area(struct file *filp, unsigned long addr,
- 		       unsigned long flags, vm_flags_t vm_flags)
- {
- 	return generic_get_unmapped_area(filp, addr, len, pgoff, flags,
--					 vm_flags);
-+					 legacy_to_vma_flags(vm_flags));
+ 	mapped_addr = get_unmapped_area(NULL, addr, len, 0, MAP_FIXED);
+ 	if (IS_ERR_VALUE(mapped_addr))
+ 		return mapped_addr;
+ 
+-	return mlock_future_ok(current->mm,
+-			      current->mm->def_flags & VM_LOCKED, len)
+-		? 0 : -EAGAIN;
++	return mlock_future_ok(mm, is_def_locked, len) ? 0 : -EAGAIN;
  }
- #endif
  
-@@ -750,7 +750,7 @@ arch_get_unmapped_area(struct file *filp, unsigned long addr,
- unsigned long
- generic_get_unmapped_area_topdown(struct file *filp, unsigned long addr,
- 				  unsigned long len, unsigned long pgoff,
--				  unsigned long flags, vm_flags_t vm_flags)
-+				  unsigned long flags, vma_flags_t vma_flags)
- {
- 	struct vm_area_struct *vma, *prev;
- 	struct mm_struct *mm = current->mm;
-@@ -778,7 +778,7 @@ generic_get_unmapped_area_topdown(struct file *filp, unsigned long addr,
- 	info.length = len;
- 	info.low_limit = PAGE_SIZE;
- 	info.high_limit = arch_get_mmap_base(addr, mm->mmap_base);
--	info.start_gap = stack_guard_placement(vm_flags);
-+	info.start_gap = stack_guard_placement(vma_flags);
- 	if (filp && is_file_hugepages(filp))
- 		info.align_mask = huge_page_mask_align(filp);
- 	addr = vm_unmapped_area(&info);
-@@ -807,7 +807,7 @@ arch_get_unmapped_area_topdown(struct file *filp, unsigned long addr,
- 			       unsigned long flags, vm_flags_t vm_flags)
- {
- 	return generic_get_unmapped_area_topdown(filp, addr, len, pgoff, flags,
--						 vm_flags);
-+						 legacy_to_vma_flags(vm_flags));
- }
- #endif
+ SYSCALL_DEFINE1(brk, unsigned long, brk)
+@@ -197,7 +198,7 @@ SYSCALL_DEFINE1(brk, unsigned long, brk)
+ 		goto out;
  
+ 	mm->brk = brk;
+-	if (mm->def_flags & VM_LOCKED)
++	if (vma_flags_test(&mm->def_vma_flags, VMA_LOCKED_BIT))
+ 		populate = true;
+ 
+ success:
+@@ -1247,7 +1248,7 @@ int vm_brk_flags(unsigned long addr, unsigned long request, bool is_exec)
+ 
+ 	vma = vma_prev(&vmi);
+ 	ret = do_brk_flags(&vmi, vma, addr, len, vma_flags);
+-	populate = ((mm->def_flags & VM_LOCKED) != 0);
++	populate = vma_flags_test(&mm->def_vma_flags, VMA_LOCKED_BIT);
+ 	mmap_write_unlock(mm);
+ 	userfaultfd_unmap_complete(mm, &uf);
+ 	if (populate && !ret)
+diff --git a/mm/vma.c b/mm/vma.c
+index 3d1ae3cae45f..fb4341943576 100644
+--- a/mm/vma.c
++++ b/mm/vma.c
+@@ -3424,7 +3424,8 @@ struct vm_area_struct *__install_special_mapping(
+ 	if (unlikely(vma == NULL))
+ 		return ERR_PTR(-ENOMEM);
+ 
+-	vm_flags |= mm->def_flags | VM_DONTEXPAND;
++	vma_set_range(vma, addr, addr + len, 0);
++	vm_flags |= vma_flags_to_legacy(mm->def_vma_flags) | VM_DONTEXPAND;
+ 	if (pgtable_supports_soft_dirty())
+ 		vm_flags |= VM_SOFTDIRTY;
+ 	vm_flags_init(vma, vm_flags & ~VM_LOCKED_MASK);
+@@ -3432,7 +3433,6 @@ struct vm_area_struct *__install_special_mapping(
+ 
+ 	vma->vm_ops = ops;
+ 	vma->vm_private_data = priv;
+-	vma_set_range(vma, addr, addr + len, 0);
+ 
+ 	ret = insert_vm_struct(mm, vma);
+ 	if (ret)
 -- 
 2.54.0
 
