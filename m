@@ -1,51 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-23098-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23099-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 225BAC44500
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Jun 2026 13:07:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C590EC43458
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Jun 2026 13:07:13 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gpml11BLXz2xYh;
-	Mon, 29 Jun 2026 23:06:53 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=113.46.200.222
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782738413;
-	cv=none; b=X9I9WeMZCP9hXBAbp7BAe/+I27KvlOa/c3mMxS+JyiOomQvb9L1FLK0hmboIQTDtOnev/RfXx27Ys6dXPsrZ6jqjxHvB2yJ0aB+NetuyL2T5PEkdyIixlENCq7U17Ljw9ZlLSRUwuP+uTiJ+ILNB3ZRgCrVySlTVp0bXfua+m4LLfdcYAg2YQQlAs9nN2UxTllKU54Rv6tHFLksNOSQc/w4g6t+KTJTjg2fiEB7bupYp09FkoX9ISYEKoUakhD6ESdbI7G/WgPzdSmqTRXUJniyIgb6ylXgDNpadNU4j8fBMPLOUisUnTNiiZ6BCCW07NrKb/NRrMA5wCjt94RDWzA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gpml423lJz2yjv;
+	Mon, 29 Jun 2026 23:06:56 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=113.46.200.221
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782738416;
+	cv=none; b=cXr84l8y+X+qAmZOKfixOz8drfR9YYkZlV19v0ATPfEdM0BvwqX150ixwHovqpdEyuSwz4g8IxfgeObO/1LCctY460FMXcmwXhvJvac2wEjs0BqK0lig1cV/+UI0DCtI0gQ1rYh2dPFsWItC51yFyJbccpMyvjR9CQMl68wNI2kb7918z4s3+kTuFqft9Mestl0jSWJNWzxl1I8wdzeKfBulleWlhJnac1iBNo7miF6QVOFMepbFZXeFfZYuKVSE5swlj/F+PyyAGe+dR+5KdJZByPTn+EyqpQdffjpDXJc+jcEv+VegkzEgMErsOo+KByT7V59pTs1o41Jvdlyhfw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1782738413; c=relaxed/relaxed;
-	bh=QajGHSeELTeFwAo2Vi+cAigxNZFa68v7esARJOfEGL8=;
+	t=1782738416; c=relaxed/relaxed;
+	bh=2tgd8psQEJ0paMoFyhOqZDvuVvnTBva24LYJw5z0Xdw=;
 	h=From:To:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=GBMgT3DaAy0wpa089ekyZVwGIYqeJwZ5aB+zvIBIbdZCajTLoUbeP3+wVzcNKDyJs1R9JIqicXMUTFCZSXb9UV941TiuORLy7L9IqkEH40nnN/AYWzhPzevg1YOw71D2Mbb8mwlariz+yewROhkZjuEkqQKzzUhr9V+f/HPQoYUchW7GeyMRnpmlp5iLmkL0RXjOSVa5B3hrDUr3ogMlxZEe4vU2m2CfQl9E1SvcppGCEtMfX2vVEieP2ShRrrTDCctpf2kqqChXtram3tFmdVwDFV6SabwIQX+vWCfQle7V7eiU5UhcUNTZgciFfxDfMkyNAXsBHq6q/KjYS1yUCQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=K5W+RbBF; dkim-atps=neutral; spf=pass (client-ip=113.46.200.222; helo=canpmsgout07.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
+	 MIME-Version:Content-Type; b=Sy/vfOEfsem3TP1ltFsVtNRQutvkfgn7zGvd+G/2uUMXs7IInPpiB08AE1p/3L8hNSTGDIK3Jb009HiZ2Yz8MYyweV9+OTj6y1Sg7nwq/+QUKagT2uD4IrcnM7kmeVSjRw2pmb/01KdPEvVUhTR1yiZjtvL4tcKuJSCvcQseCoHs4X60qLjwn/7rugRRthTUfv6HPpjTasNEXpuPaq6u2Ep7h2CCpTEY05E0WPwxB3k9rVSOq/m7ZOCb6yL35B6DaO2GT/UhA9kkNel0KHnkJjDsa1rTIHOF8Me5U1kssUp2zFjhFl9UgN8cA6F6Gif+RZmQqo+mCQ75/4XAHsFbtg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=obS3f4t/; dkim-atps=neutral; spf=pass (client-ip=113.46.200.221; helo=canpmsgout06.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=K5W+RbBF;
+	dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=obS3f4t/;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=113.46.200.222; helo=canpmsgout07.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org)
-Received: from canpmsgout07.his.huawei.com (canpmsgout07.his.huawei.com [113.46.200.222])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=113.46.200.221; helo=canpmsgout06.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org)
+Received: from canpmsgout06.his.huawei.com (canpmsgout06.his.huawei.com [113.46.200.221])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gpmkz652Mz2ygG
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Jun 2026 23:06:51 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gpml272tSz2ygG
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Jun 2026 23:06:54 +1000 (AEST)
 dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
 	c=relaxed/relaxed; q=dns/txt;
 	h=From;
-	bh=QajGHSeELTeFwAo2Vi+cAigxNZFa68v7esARJOfEGL8=;
-	b=K5W+RbBF/b3OBpG5ddsT3bmnCLBLEzgyzzh300maR3q5Yzre6htvRd1h62EH0Qq8ZRLKiCyVR
-	7x2r9MGY/Q4YnrsdD5+L1K+xmcJorhcRgEsexa89co6ktYK7W/JX4y7GLJ/9v16AQNEERwnh96q
-	DwurhrJk6XJseic49PmwfnU=
-Received: from mail.maildlp.com (unknown [172.19.163.127])
-	by canpmsgout07.his.huawei.com (SkyGuard) with ESMTPS id 4gpmXL5DzdzLmHQ;
-	Mon, 29 Jun 2026 20:57:38 +0800 (CST)
+	bh=2tgd8psQEJ0paMoFyhOqZDvuVvnTBva24LYJw5z0Xdw=;
+	b=obS3f4t/Ekl9z/a/IDOrh1hP+eobkVYySkiX1b4nRKIGKUjwYNdeXqhPgqRDKjsdtlCpqmeah
+	kFZXl4F2UaNIWX2ZKGvz+WWmGTLHxKiT4eIpFSMjifYhBYWT2dPpgX0Q9k4qXSG3boHoHWrzaD8
+	5I3q5Yw/kqi1eZkFX8mJEv4=
+Received: from mail.maildlp.com (unknown [172.19.162.140])
+	by canpmsgout06.his.huawei.com (SkyGuard) with ESMTPS id 4gpmXS0jZszRhRT;
+	Mon, 29 Jun 2026 20:57:44 +0800 (CST)
 Received: from dggpemf500011.china.huawei.com (unknown [7.185.36.131])
-	by mail.maildlp.com (Postfix) with ESMTPS id 3797E40572;
-	Mon, 29 Jun 2026 21:06:47 +0800 (CST)
+	by mail.maildlp.com (Postfix) with ESMTPS id 532E62025F;
+	Mon, 29 Jun 2026 21:06:51 +0800 (CST)
 Received: from huawei.com (10.90.53.73) by dggpemf500011.china.huawei.com
  (7.185.36.131) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.11; Mon, 29 Jun
- 2026 21:06:42 +0800
+ 2026 21:06:47 +0800
 From: Jinjie Ruan <ruanjinjie@huawei.com>
 To: <oleg@redhat.com>, <richard.henderson@linaro.org>, <mattst88@gmail.com>,
 	<linmag7@gmail.com>, <linux@armlinux.org.uk>, <catalin.marinas@arm.com>,
@@ -79,9 +79,9 @@ To: <oleg@redhat.com>, <richard.henderson@linaro.org>, <mattst88@gmail.com>,
 	<linuxppc-dev@lists.ozlabs.org>, <linux-riscv@lists.infradead.org>,
 	<linux-s390@vger.kernel.org>, <linux-sh@vger.kernel.org>,
 	<linux-um@lists.infradead.org>
-Subject: [PATCH v16 02/18] syscall_user_dispatch: Introduce a weak fallback for arch_syscall_is_vdso_sigreturn()
-Date: Mon, 29 Jun 2026 21:06:00 +0800
-Message-ID: <20260629130616.642022-3-ruanjinjie@huawei.com>
+Subject: [PATCH v16 03/18] arm64: ptrace: Pass thread flags to syscall_trace_enter/exit()
+Date: Mon, 29 Jun 2026 21:06:01 +0800
+Message-ID: <20260629130616.642022-4-ruanjinjie@huawei.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20260629130616.642022-1-ruanjinjie@huawei.com>
 References: <20260629130616.642022-1-ruanjinjie@huawei.com>
@@ -98,126 +98,114 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
 X-Originating-IP: [10.90.53.73]
 X-ClientProxiedBy: kwepems500001.china.huawei.com (7.221.188.70) To
  dggpemf500011.china.huawei.com (7.185.36.131)
 
-Currently, multiple architectures (LoongArch, RISC-V, S390, Powerpc)
-provide identical stubs for arch_syscall_is_vdso_sigreturn() that simply
-return false. This results in redundant boilerplate code across the tree.
+Refactor syscall_trace_enter() and syscall_trace_exit() to move thread
+flag reading to the caller. This aligns arm64's syscall trace enter/exit
+function signature with generic entry framework.
 
-Introduce a default __weak implementation of
-arch_syscall_is_vdso_sigreturn() directly in syscall_user_dispatch.c that
-returns false. This allows architectures that do not utilize a vDSO
-sigreturn to entirely drop their redundant inline definitions.
+[Changes]
+1. Function signature changes:
+   - syscall_trace_enter(regs) → syscall_trace_enter(regs, flags)
+   - syscall_trace_exit(regs) → syscall_trace_exit(regs, flags)
 
-Architectures requiring a specialized check (such as x86) will continue to
-override this fallback with their strong symbol definitions.
+2. Move flags reading to caller:
+   - Previously: read_thread_flags() called inside each function.
+   - Now: caller (like el0_svc_common) passes flags as parameter.
 
-Clean up the redundant implementations in loongarch, riscv, s390
-and powerpc.
+3. Update syscall.c:
+   - el0_svc_common() now passes flags to tracing functions and
+     re-fetches flags before entry/exit to handle potential TIF
+     updates.
 
-Cc: Thomas Gleixner <tglx@kernel.org>
+[Why this matters]
+- Aligns arm64 with the generic entry interface.
+- Makes future migration to generic entry framework smoother.
+
+No functional changes intended.
+
+Cc: Mark Rutland <mark.rutland@arm.com>
+Cc: Will Deacon <will@kernel.org>
+Cc: Catalin Marinas <catalin.marinas@arm.com>
+Reviewed-by: Ada Couprie Diaz <ada.coupriediaz@arm.com>
+Reviewed-by: Linus Walleij <linusw@kernel.org>
+Reviewed-by: Yeoreum Yun <yeoreum.yun@arm.com>
+Reviewed-by: Kevin Brodsky <kevin.brodsky@arm.com>
 Signed-off-by: Jinjie Ruan <ruanjinjie@huawei.com>
 ---
- arch/loongarch/include/asm/syscall.h  | 5 -----
- arch/powerpc/include/asm/syscall.h    | 5 -----
- arch/riscv/include/asm/syscall.h      | 5 -----
- arch/s390/include/asm/syscall.h       | 5 -----
- include/linux/syscall_user_dispatch.h | 1 +
- kernel/entry/syscall_user_dispatch.c  | 5 +++++
- 6 files changed, 6 insertions(+), 20 deletions(-)
+ arch/arm64/include/asm/syscall.h | 4 ++--
+ arch/arm64/kernel/ptrace.c       | 7 ++-----
+ arch/arm64/kernel/syscall.c      | 5 +++--
+ 3 files changed, 7 insertions(+), 9 deletions(-)
 
-diff --git a/arch/loongarch/include/asm/syscall.h b/arch/loongarch/include/asm/syscall.h
-index df8ea223c77b..946886794ced 100644
---- a/arch/loongarch/include/asm/syscall.h
-+++ b/arch/loongarch/include/asm/syscall.h
-@@ -85,9 +85,4 @@ static inline int syscall_get_arch(struct task_struct *task)
- #endif
+diff --git a/arch/arm64/include/asm/syscall.h b/arch/arm64/include/asm/syscall.h
+index 5e4c7fc44f73..30b203ef156b 100644
+--- a/arch/arm64/include/asm/syscall.h
++++ b/arch/arm64/include/asm/syscall.h
+@@ -120,7 +120,7 @@ static inline int syscall_get_arch(struct task_struct *task)
+ 	return AUDIT_ARCH_AARCH64;
  }
  
--static inline bool arch_syscall_is_vdso_sigreturn(struct pt_regs *regs)
--{
--	return false;
--}
--
- #endif	/* __ASM_LOONGARCH_SYSCALL_H */
-diff --git a/arch/powerpc/include/asm/syscall.h b/arch/powerpc/include/asm/syscall.h
-index 834fcc4f7b54..4b3c52ed6e9d 100644
---- a/arch/powerpc/include/asm/syscall.h
-+++ b/arch/powerpc/include/asm/syscall.h
-@@ -139,9 +139,4 @@ static inline int syscall_get_arch(struct task_struct *task)
- 	else
- 		return AUDIT_ARCH_PPC64;
- }
--
--static inline bool arch_syscall_is_vdso_sigreturn(struct pt_regs *regs)
--{
--	return false;
--}
- #endif	/* _ASM_SYSCALL_H */
-diff --git a/arch/riscv/include/asm/syscall.h b/arch/riscv/include/asm/syscall.h
-index 8067e666a4ca..987c9a78806f 100644
---- a/arch/riscv/include/asm/syscall.h
-+++ b/arch/riscv/include/asm/syscall.h
-@@ -112,11 +112,6 @@ static inline void syscall_handler(struct pt_regs *regs, ulong syscall)
- 	regs->a0 = fn(regs);
+-int syscall_trace_enter(struct pt_regs *regs);
+-void syscall_trace_exit(struct pt_regs *regs);
++int syscall_trace_enter(struct pt_regs *regs, unsigned long flags);
++void syscall_trace_exit(struct pt_regs *regs, unsigned long flags);
+ 
+ #endif	/* __ASM_SYSCALL_H */
+diff --git a/arch/arm64/kernel/ptrace.c b/arch/arm64/kernel/ptrace.c
+index 2ca6fab39a37..ac15b81a71b5 100644
+--- a/arch/arm64/kernel/ptrace.c
++++ b/arch/arm64/kernel/ptrace.c
+@@ -2408,9 +2408,8 @@ static void report_syscall_exit(struct pt_regs *regs)
+ 	}
  }
  
--static inline bool arch_syscall_is_vdso_sigreturn(struct pt_regs *regs)
--{
--	return false;
--}
--
- asmlinkage long sys_riscv_flush_icache(uintptr_t, uintptr_t, uintptr_t);
- 
- asmlinkage long sys_riscv_hwprobe(struct riscv_hwprobe *, size_t, size_t,
-diff --git a/arch/s390/include/asm/syscall.h b/arch/s390/include/asm/syscall.h
-index 4271e4169f45..5f310caad1fc 100644
---- a/arch/s390/include/asm/syscall.h
-+++ b/arch/s390/include/asm/syscall.h
-@@ -89,11 +89,6 @@ static inline int syscall_get_arch(struct task_struct *task)
- 	return AUDIT_ARCH_S390X;
- }
- 
--static inline bool arch_syscall_is_vdso_sigreturn(struct pt_regs *regs)
--{
--	return false;
--}
--
- #define SYSCALL_FMT_0
- #define SYSCALL_FMT_1 , "0" (r2)
- #define SYSCALL_FMT_2 , "d" (r3) SYSCALL_FMT_1
-diff --git a/include/linux/syscall_user_dispatch.h b/include/linux/syscall_user_dispatch.h
-index 3858a6ffdd5c..73d69e02807d 100644
---- a/include/linux/syscall_user_dispatch.h
-+++ b/include/linux/syscall_user_dispatch.h
-@@ -10,6 +10,7 @@
- 
- #ifdef CONFIG_GENERIC_ENTRY
- 
-+bool arch_syscall_is_vdso_sigreturn(struct pt_regs *regs);
- int set_syscall_user_dispatch(unsigned long mode, unsigned long offset,
- 			      unsigned long len, char __user *selector);
- 
-diff --git a/kernel/entry/syscall_user_dispatch.c b/kernel/entry/syscall_user_dispatch.c
-index d89dffcc2d64..acf545774d37 100644
---- a/kernel/entry/syscall_user_dispatch.c
-+++ b/kernel/entry/syscall_user_dispatch.c
-@@ -32,6 +32,11 @@ static void trigger_sigsys(struct pt_regs *regs)
- 	force_sig_info(&info);
- }
- 
-+bool __weak arch_syscall_is_vdso_sigreturn(struct pt_regs *regs)
-+{
-+	return false;
-+}
-+
- bool syscall_user_dispatch(struct pt_regs *regs)
+-int syscall_trace_enter(struct pt_regs *regs)
++int syscall_trace_enter(struct pt_regs *regs, unsigned long flags)
  {
- 	struct syscall_user_dispatch *sd = &current->syscall_dispatch;
+-	unsigned long flags = read_thread_flags();
+ 	int ret;
+ 
+ 	if (flags & (_TIF_SYSCALL_EMU | _TIF_SYSCALL_TRACE)) {
+@@ -2432,10 +2431,8 @@ int syscall_trace_enter(struct pt_regs *regs)
+ 	return regs->syscallno;
+ }
+ 
+-void syscall_trace_exit(struct pt_regs *regs)
++void syscall_trace_exit(struct pt_regs *regs, unsigned long flags)
+ {
+-	unsigned long flags = read_thread_flags();
+-
+ 	audit_syscall_exit(regs);
+ 
+ 	if (flags & _TIF_SYSCALL_TRACEPOINT)
+diff --git a/arch/arm64/kernel/syscall.c b/arch/arm64/kernel/syscall.c
+index 358ddfbf1401..c8e116397cfd 100644
+--- a/arch/arm64/kernel/syscall.c
++++ b/arch/arm64/kernel/syscall.c
+@@ -113,7 +113,7 @@ static void el0_svc_common(struct pt_regs *regs, int scno, int sc_nr,
+ 		 */
+ 		if (scno == NO_SYSCALL)
+ 			syscall_set_return_value(current, regs, -ENOSYS, 0);
+-		scno = syscall_trace_enter(regs);
++		scno = syscall_trace_enter(regs, read_thread_flags());
+ 		if (scno == NO_SYSCALL)
+ 			goto trace_exit;
+ 	}
+@@ -132,7 +132,8 @@ static void el0_svc_common(struct pt_regs *regs, int scno, int sc_nr,
+ 	}
+ 
+ trace_exit:
+-	syscall_trace_exit(regs);
++	flags = read_thread_flags();
++	syscall_trace_exit(regs, flags);
+ }
+ 
+ void do_el0_svc(struct pt_regs *regs)
 -- 
 2.34.1
 
