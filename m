@@ -1,75 +1,64 @@
-Return-Path: <linuxppc-dev+bounces-23051-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23052-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C35DAC43458
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Jun 2026 06:47:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 76B19C43638
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Jun 2026 09:06:16 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gpcK232TSz2ySS;
-	Mon, 29 Jun 2026 16:47:18 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782715638;
-	cv=none; b=l8rFPURzuZOdVMYuxmNhoaET/FnfnE6D5s51DnLqSa1HEWFMDXSMfJaCKTm8qY3nRNLCAC2dL5flfZME/nRJMTYAMH7gjWB2DVvu9gO+TzOEmc32LIDndb9n/xmhw6YrH3uhhoo5ImWwd24KBUiyuReSUjZ1LpxJuZIEaY8x0VcNpGBrhQryC7Yx4v/uqdOZ9wzJYcep17wSyy5dXP5TtGUq2UE+u+nGVggG4DgauzBqm6V8k4tUFLw18GyC/wlrcX+DYHE/pTCujNwtZQOMolapKhLcEBonPrhV+9Cs8tNUPmLokHvmbAGbaknbq9f0paxPWvCfqqR2zAINXTw79Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gpgPM13FTz2yT0;
+	Mon, 29 Jun 2026 19:06:15 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782723975;
+	cv=none; b=LHuNOMy9NtgBhi+izqNd28SAAx2/XAmkfKUy0CKCiqB5xky5wsXt8wN7goOrUqly30fzazKYktYYIaiBmqwQqpWUqe3Tg49+QfdP572I1I/Frb6OZh7MWOemf+G3iNCrdRmow7jzvD5gLPwC0E1gIh1z8JvO2nC8oo1tnkIK28ORzBxI0h8iPF7NVl3Ah2ZKKL/ZZbM7JvkxG28vax0tW8lfzwWdgHznCNhyKR49iNy1eFwAqpkYzHvfMCTxt10G4lxGZPyvOxweqni/k62zokJGZzpG1TVrGWtuT37RLZgEq7Vb6LL3A55N6LXIEV/wCkqtQGQ7rhZCegF6rWWGYA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1782715638; c=relaxed/relaxed;
-	bh=I52N9mFbc5LOQ/rxNzEmVs0EoFJ4aiUXlWOD6LDV1Ew=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
-	 MIME-Version:Content-Type; b=lg+HDKQ2L01zHlrcwb9vfqlniVyWELD2rVsolsBQ65oyPWb7+cSqLrhmDw+cFA5UJmGh+F5vPHI0V245ciTo72e4GQYYVh2+Bu29uQEToZUUVKdQ4YY4fLqZ3e3gh5//L281zKX/JSiFFUzFlSdzWknkg0w4byIP/UyrKEmplYaZe9Z1MTc15W0AyShgg4snP0FuDdQCZHKbkoOmNVKGK7ieV8Q+Xgxai4VKleLfCUSAceT910mc0OogObjFwpk3vd/kCMcxUGYSOIMTSZ++rUeXDPPgGWL0I6XshYkuEH6HARFs1qY6y/Mh6MggOjcTI4dhPSr83SLyYS6TCOJ5kQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=aneesh.kumar@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1782723975; c=relaxed/relaxed;
+	bh=qB4tJg2aYLg8hehpYin2dptPRoadEzGzbBpoppNMyKk=;
+	h=From:In-Reply-To:MIME-Version:References:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=FGb2IlOTtZdrIJcdpsiijU/EBWtKf4aHi9rpVJaqpoZ/n6E67lBWjbwJx7AnpNPginmkmhACNt/3moj1sMjQdfT13CnskMaTyQzyvTL1+rEPGQGKEBw/Ukx3bGwmtJtxV7o9itma2r59w1xmg3N7CbWQj5x8cy0UomvMDySjBL5iHfGUXg7VhrfNld1wbbWqblM8A8dRutpvTqSshDpeSKklGXCxLN9TX2aKZHBO9JaXg6Rw0My/XabRjq08L4xXduBuMx1AO/79/UlDnFs7Os3+SP/ib6fEhHbEESfn0f6gqA3P787ahP2wpf3zRj7aomnFjtukPgGkTgb401AXow==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=iyUhTV03; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=brgl@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=aneesh.kumar@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=iyUhTV03;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=brgl@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gpcK11K7qz2ySJ
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Jun 2026 16:47:17 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gpgPL17SYz2yFc
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Jun 2026 19:06:14 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 178F8438E0;
-	Mon, 29 Jun 2026 06:47:14 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id EAD6E1F000E9;
-	Mon, 29 Jun 2026 06:47:03 +0000 (UTC)
-X-Mailer: emacs 30.2 (via feedmail 11-beta-1 I)
-From: Aneesh Kumar K.V <aneesh.kumar@kernel.org>
-To: Jason Gunthorpe <jgg@ziepe.ca>
-Cc: Alexey Kardashevskiy <aik@amd.com>,
-	Catalin Marinas <catalin.marinas@arm.com>,
-	iommu@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
-	linux-kernel@vger.kernel.org, linux-coco@lists.linux.dev,
-	Robin Murphy <robin.murphy@arm.com>,
-	Marek Szyprowski <m.szyprowski@samsung.com>,
-	Will Deacon <will@kernel.org>, Marc Zyngier <maz@kernel.org>,
-	Steven Price <steven.price@arm.com>,
-	Suzuki K Poulose <Suzuki.Poulose@arm.com>,
-	Jiri Pirko <jiri@resnulli.us>,
-	Mostafa Saleh <smostafa@google.com>,
-	Petr Tesarik <ptesarik@suse.com>,
-	Dan Williams <dan.j.williams@intel.com>,
-	Xu Yilun <yilun.xu@linux.intel.com>,
-	linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	Alexander Gordeev <agordeev@linux.ibm.com>,
-	Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
-	Heiko Carstens <hca@linux.ibm.com>,
-	Vasily Gorbik <gor@linux.ibm.com>,
-	Christian Borntraeger <borntraeger@linux.ibm.com>,
-	Sven Schnelle <svens@linux.ibm.com>, x86@kernel.org
-Subject: Re: [PATCH v6 00/20] dma-mapping: Use DMA_ATTR_CC_SHARED through
- direct, pool and swiotlb paths
-In-Reply-To: <20260619140616.GB1068655@ziepe.ca>
-References: <20260604083959.1265923-1-aneesh.kumar@kernel.org>
- <aigYbK12D8uKQvJF@arm.com> <20260609144746.GL2764304@ziepe.ca>
- <2ecfa1a8-6202-4319-9692-a6ffeb5a3dbf@amd.com>
- <yq5aqzm4dz25.fsf@kernel.org> <20260618153705.GH231643@ziepe.ca>
- <yq5ao6h6enhm.fsf@kernel.org> <20260619122148.GL231643@ziepe.ca>
- <yq5aldcaejos.fsf@kernel.org> <20260619140616.GB1068655@ziepe.ca>
-Date: Mon, 29 Jun 2026 12:16:30 +0530
-Message-ID: <yq5ao6gtoncp.fsf@kernel.org>
+	by sea.source.kernel.org (Postfix) with ESMTP id DAC9F43F5B
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Jun 2026 09:06:11 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9C2A31F01565
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Jun 2026 09:06:11 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1782723971;
+	bh=qB4tJg2aYLg8hehpYin2dptPRoadEzGzbBpoppNMyKk=;
+	h=From:In-Reply-To:References:Date:Subject:To:Cc;
+	b=iyUhTV03bOKBX3P50ZCu5uI5Z9GdSG5FaWYf46X7lJcOmFmX+TOB5ZSHaEGQvoVvi
+	 w7QBgX5wGnlIt9PwETkpMRIPTtL2gcrwvVGZlvQ9UEO6y0jwZX9Mmn6Zpk9DscDEuY
+	 F0AAPET4mFlLtpb3GilD+x3+Q8aLT5LUaL+qRXeepLEhJbSMjM6672Tt+0t+JTi4Ib
+	 aZbeAoeQD4GZ24bf76pYRPdkOembLX2HEF5nuge3oTrb5EA6IK7gusKHdgBYLt0wZe
+	 2UB/jbL1RUF+Rd3fa80u2w1VGLhbQLmwYrqVheU88CxYlRSZkCxTIpqImYjye4YPzK
+	 QVoyZa2wkJ4iA==
+Received: by mail-lj1-f179.google.com with SMTP id 38308e7fff4ca-39af6402933so14210291fa.2
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Jun 2026 02:06:11 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AHgh+RoW2z6jYmU4j8FQ4hFECB6NoMjRewD0QFOBwP2GUUxp5bh0gCEzGpodnEnCGdTL/CM2sl8vjVO4OVavfzE=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YxRITUeD8omUx5RBjnK525DiO20rEsjxsSAgZb3x0nCrYLmiF3U
+	Il/KQLTGc9JSF9OHT4wB2prBHoLpsuPu+cPzWeRDrG3Aj2JM7bK2KX2Nx4b43ySooDJ3Pvse6Lm
+	ZRwqtHCyLZU5D+5cRlHXtxhufnoDg7+klnEHcxU+NBw==
+X-Received: by 2002:a05:651c:1587:b0:39a:e3c7:6644 with SMTP id
+ 38308e7fff4ca-39ae3c76ecdmr17150311fa.12.1782723969253; Mon, 29 Jun 2026
+ 02:06:09 -0700 (PDT)
+Received: from 969154062570 named unknown by gmailapi.google.com with
+ HTTPREST; Mon, 29 Jun 2026 09:06:07 +0000
+Received: from 969154062570 named unknown by gmailapi.google.com with
+ HTTPREST; Mon, 29 Jun 2026 09:06:07 +0000
+From: Bartosz Golaszewski <brgl@kernel.org>
+In-Reply-To: <ah9QPgco9BxEix7T@ashevche-desk.local>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -83,246 +72,65 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain
+References: <20260521-pdev-fwnode-ref-v1-0-88c324a1b8d2@oss.qualcomm.com>
+ <20260521-pdev-fwnode-ref-v1-21-88c324a1b8d2@oss.qualcomm.com> <ah9QPgco9BxEix7T@ashevche-desk.local>
+Date: Mon, 29 Jun 2026 09:06:07 +0000
+X-Gmail-Original-Message-ID: <CAMRc=McSDNdBMc_MAbBiOgeWusQXPEvivxniX5dJq+X6rp3UZw@mail.gmail.com>
+X-Gm-Features: AVVi8Cem7nS_T_r8P1YOw4p48wRJJJKggepy3MNLXmsKDTbaRpH5jyNSSJ0YwZw
+Message-ID: <CAMRc=McSDNdBMc_MAbBiOgeWusQXPEvivxniX5dJq+X6rp3UZw@mail.gmail.com>
+Subject: Re: [PATCH 21/23] usb: musb: use platform_device_set_of_node_from_dev()
+To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Cc: Lee Jones <lee@kernel.org>, Mark Brown <broonie@opensource.wolfsonmicro.com>, 
+	Thierry Reding <thierry.reding@avionic-design.de>, 
+	Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Andrew Lunn <andrew+netdev@lunn.ch>, 
+	"David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, 
+	Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, 
+	Srinivas Kandagatla <srini@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
+	Vinod Koul <vkoul@kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Danilo Krummrich <dakr@kernel.org>, 
+	Rob Herring <robh@kernel.org>, Saravana Kannan <saravanak@kernel.org>, 
+	Madhavan Srinivasan <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, 
+	Nicholas Piggin <npiggin@gmail.com>, "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, 
+	Andi Shyti <andi.shyti@kernel.org>, Joerg Roedel <joro@8bytes.org>, Will Deacon <will@kernel.org>, 
+	Robin Murphy <robin.murphy@arm.com>, Doug Berger <opendmb@gmail.com>, 
+	Florian Fainelli <florian.fainelli@broadcom.com>, 
+	Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>, Ulf Hansson <ulfh@kernel.org>, 
+	Frank Li <Frank.Li@nxp.com>, Sascha Hauer <s.hauer@pengutronix.de>, 
+	Pengutronix Kernel Team <kernel@pengutronix.de>, Fabio Estevam <festevam@gmail.com>, 
+	Matthew Brost <matthew.brost@intel.com>, 
+	=?UTF-8?Q?Thomas_Hellstr=C3=B6m?= <thomas.hellstrom@linux.intel.com>, 
+	Rodrigo Vivi <rodrigo.vivi@intel.com>, David Airlie <airlied@gmail.com>, 
+	Simona Vetter <simona@ffwll.ch>, Peter Chen <peter.chen@kernel.org>, 
+	Paul Cercueil <paul@crapouillou.net>, Bin Liu <b-liu@ti.com>, 
+	Philipp Zabel <p.zabel@pengutronix.de>, Maximilian Luz <luzmaximilian@gmail.com>, 
+	Hans de Goede <hansg@kernel.org>, =?UTF-8?Q?Ilpo_J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>, 
+	Krzysztof Kozlowski <krzk@kernel.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, brgl@kernel.org, 
+	linux-kernel@vger.kernel.org, netdev@vger.kernel.org, 
+	linux-arm-msm@vger.kernel.org, linux-sound@vger.kernel.org, 
+	driver-core@lists.linux.dev, devicetree@vger.kernel.org, 
+	linuxppc-dev@lists.ozlabs.org, linux-i2c@vger.kernel.org, 
+	iommu@lists.linux.dev, linux-pm@vger.kernel.org, imx@lists.linux.dev, 
+	linux-arm-kernel@lists.infradead.org, intel-xe@lists.freedesktop.org, 
+	dri-devel@lists.freedesktop.org, linux-usb@vger.kernel.org, 
+	linux-mips@vger.kernel.org, platform-driver-x86@vger.kernel.org, 
+	Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
+Content-Type: text/plain; charset="UTF-8"
 
-Jason Gunthorpe <jgg@ziepe.ca> writes:
-
-> On Fri, Jun 19, 2026 at 02:36:19PM +0100, Aneesh Kumar K.V wrote:
->> >> Agreed. If the device can do encrypted DMA and requires bouncing, it
->> >> should bounce through encrypted pools. We don't support encrypted pools
->> >> now and that means, we mark the option ("mem_encrypt=on iommu=pt
->> >> swiotlb=force") not supported for now? 
->> >
->> > ?? if you don't have a CC system then the swiotlb is "encrypted"
->> > meaning ordinary struct page system memory.
->> >
->> > The hypervisor should not be triggering any CC special stuff here, it
->> > is not a CC guest.
->> >
->> > Agree we don't need to worry about swiotlb=force with a trusted device
->> > in the GUEST for now, but it should be something to fix eventually.
->> >
->> 
->> If i understand this correctly, the setup Alexey is referring to here is
->> bare metal system with memory encryption enabled and dma address doesn't
->> need C bit cleared because it is handled in iommu.
+On Tue, 2 Jun 2026 23:50:54 +0200, Andy Shevchenko
+<andriy.shevchenko@linux.intel.com> said:
+> On Thu, May 21, 2026 at 10:36:44AM +0200, Bartosz Golaszewski wrote:
+>> Ahead of reworking the reference counting logic for platform devices,
+>> encapsulate the assignment of the OF node from another device for
+>> dynamically allocated platform devices with the provided helper.
 >
-> This is how I understand it too, if the iommu is turned on then it can
-> take the high PA with the C bit set and map it to an IOVA that matches
-> the device's dma limit.
+> Same Q as per chipidea. Do they provide a pin control facility at the same time?
 >
->> ( I consider this as memory encryption that is handled
->> transparently, device can access any address because that encryption
->> details are now managed by iommu).
->
-> Compared to the guest side there are some important host side differences:
->
->  - On the host the iommu can fix it because this is only a matter of
->    IOVA range not access control. On a guest even a IOMMU cannot
->    permit access to private memory
->  - On the host the state of the device is driven by the dma limit
->    which is not set until after the driver probes. On guest the state is
->    set by the tsm and device security level before the driver
->    probes
->  - Both flows end up using pgprot_decrypted and set_memory_decrypted()
->    to create their special pools, but for completely different
->    reasons.
->  - The memory coming from the special swiotlb pool must NOT be used by
->    a trusted device on a CC guest, while there is no problem for any
->    device to use it on the host.
->
-
-Agreed.
-
->> Thinking about this more, I guess we should mark the swiotlb as
->> cc_shared only with  CC_ATTR_GUEST_MEM_ENCRYPT instead of
->> CC_ATTR_MEM_ENCRYPT as we have below.
->
-> The name cc_shared should be used for GUEST scenarios only.
->
-> I guess there is some merit in keeping swiotlb using "decrypted" to
-> mean it usinig pgprot_decrypted and set_memory_decyped() which AMD
-> gives meaning to on both host and guest.
+> Otherwise simple device_set_node() or whatever platform analogue should suffice.
 >
 
-Are you suggesting to change the struct io_tlb_mem::cc_shared back to
-struct io_tlb_mem::unencrypted?. If we want to split cc_shared and
-unencrypted as two flags, I think we will add quiet a lot of code
-duplication.
+Hi!
 
-> IDK what AMD should do on the host by default. I guess it should setup
-> a swiotlb pool of low dma addrs "unencrypted", but not "cc_shared"?
->
+I don't know and I can't test it so let me respin the series as is. This can
+always be amended separately later.
 
-If by low DMA address you mean using an address with the C-bit
-cleared. Currently the SME code uses force_dma_unencrypted() as the hook to
-determine whether the C-bit needs to be cleared. Therefore,
-force_dma_unencrypted(dev) must be true to use such a pool.
-
-The current code already does this and uses the swiotlb pool correctly
-on SME. The challenge arises when we want to force SWIOTLB
-bouncing even for devices that can handle encrypted DMA addresses (more
-on that below). For such a config force_dma_uencrypted(dev) will return
-false and swiotlb will be marked cc_shared/decrypted = true; This trip
-the new check we added.
-
-	/* swiotlb pool is incorrect for this device */
-	if (unlikely(mem->cc_shared != force_dma_unencrypted(dev)))
-		return (phys_addr_t)DMA_MAPPING_ERROR;
-
-We can also do
-
-	if (cc_platform_has(CC_ATTR_GUEST_MEM_ENCRYPT)) {
-		/* swiotlb pool is incorrect for this device */
-		if (unlikely(mem->cc_shared != force_dma_unencrypted(dev)))
-			return (phys_addr_t)DMA_MAPPING_ERROR;
-
-		/* Force attrs to match the kind of memory in the pool */
-		if (mem->cc_shared)
-			*attrs |= DMA_ATTR_CC_SHARED;
-		else
-			*attrs &= ~DMA_ATTR_CC_SHARED;
-	} else {
-		/*
-		 * Host memory encryption where device requires an
-		 * unencrypted dma_addr_t due to dma mask limit
-    		 */
-		if (force_dma_unencrypted(dev))
-			*attrs |= DMA_ATTR_CC_SHARED;
-		else
-			*attrs &= ~DMA_ATTR_CC_SHARED;
-	}
-
-
-Here I see value in having DMA_ATTR_UNENCRYPTED. The question is do we
-need to split this into two flags and introduce the resulting code
-duplication.
-
->
-> But if we are operating on the host then this pool is not limited to
-> only T=0 devices, every device can "safely" use it. (ignoring this
-> destroys the security memory encryption on bare metal was supposed to
-> provide)
->
->> Now we have the case of host memory encryption where the C-bit needs to
->> be cleared in dma_addr_t. That requires special handling in the kernel, and
->> I believe we need to mark swiotlb as unencrypted in this configuration.
->
-> I think we need to split the two things up, they have different
-> behaviors and need different flags and labels to make it all work
-> right.
->
->> I am still not clear whether there is a config option or runtime check
->> we can use to identify this case.
->
-> The dma api has to detect, after the driver sets the dma limit, that
-> none of system memory is usable when:
->  - The direct path is being used
->  - phys to dma for 0 is outside the dma limit
->
-> Then it should assume the arch has setup a swiotlb pool for it to use
-> to fix the high memory problem.
->
-> Similar hackery would be needed in the dma alloc path to know that
-> decrypted can be used to fix the high memory problem like for GUEST.
->
-> I guess some 'dev_cannot_reach_memory(dev)' sort of test in a
-> few key places? Setup with a static branch to be a nop on everything
-> but AMD, compiled out on every other arch.
->
-
-If we are not able to reach the memory because of the memory encryption
-bit, then isn't dev_cannot_reach_memory(dev) the same as
-force_dma_unencrypted(dev)? If so, that is how it is already done.
-
-I am wondering whether we can keep this simpler by ignoring the
-swiotlb=force kernel parameter and keeping cc_shared as it is, even
-though that can be confusing when looking at SME.
-
-The three configurations we need to consider here are:
-
-1) SEV-SNP guest
-2) SME host with iommu=translated
-3) SME host with iommu=passthrough
-
-IIUC, all of the above work with the current code because we mark the
-swiotlb as cc_shared/decrypted when CC_ATTR_MEM_ENCRYPT is set (i.e.,
-this applies to an SME host as well).
-
-The challenge arises when the user forces swiotlb bouncing with the
-swiotlb=force command-line option. At that point, all devices, including
-those whose DMA mask can handle encrypted DMA addresses, are forced to
-use SWIOTLB. That becomes a problem because SWIOTLB is marked as
-decrypted by default.
-
-How about something like the following?
-
-x86/dma: Disable forced SWIOTLB bouncing for SME IOMMU passthrough
-
-With host memory encryption and IOMMU passthrough, DMA address handling
-depends on whether a device can address the C-bit. Devices that cannot
-address it need DMA addresses with the C-bit cleared, while devices that
-can address encrypted memory should keep using encrypted DMA addresses.
-
-The default swiotlb pool is marked shared when memory encryption is active.
-Forcing all devices through that pool would also force devices capable of
-encrypted DMA to use shared mappings. Clear the global swiotlb-force-bounce
-state in this mode, and warn when this overrides an explicit swiotlb=force
-command-line request.
-
-Signed-off-by: Aneesh Kumar K.V (Arm) <aneesh.kumar@kernel.org>
-
-modified   arch/x86/kernel/pci-dma.c
-@@ -51,8 +51,24 @@ static void __init pci_swiotlb_detect(void)
- 	 * Set swiotlb to 1 so that bounce buffers are allocated and used for
- 	 * devices that can't support DMA to encrypted memory.
- 	 */
--	if (cc_platform_has(CC_ATTR_HOST_MEM_ENCRYPT))
-+	if (cc_platform_has(CC_ATTR_HOST_MEM_ENCRYPT)) {
- 		x86_swiotlb_enable = true;
-+		/*
-+		 * With host memory encryption and IOMMU passthrough, devices
-+		 * that cannot address the C-bit need DMA addresses with the
-+		 * C-bit cleared, while devices that can address encrypted
-+		 * memory should keep using encrypted DMA addresses.
-+		 *
-+		 * The default SWIOTLB pool is marked shared when memory
-+		 * encryption is active, so forcing all devices through it would
-+		 * also force devices that support encrypted DMA to use shared
-+		 * mappings. Disable global forced bouncing in this mode.
-+		 */
-+		if (iommu_default_passthrough() &&
-+		    clear_swiotlb_force_bounce())
-+			pr_warn("Ignoring swiotlb=force with host memory encryption and "
-+				"IOMMU passthrough\n");
-+	}
- 
- 	/*
- 	 * Guest with guest memory encryption currently perform all DMA through
-modified   include/linux/swiotlb.h
-@@ -40,6 +40,7 @@ void __init swiotlb_init_remap(bool addressing_limit, unsigned int flags,
- int swiotlb_init_late(size_t size, gfp_t gfp_mask,
- 	int (*remap)(void *tlb, unsigned long nslabs));
- extern void __init swiotlb_update_mem_attributes(void);
-+bool __init clear_swiotlb_force_bounce(void);
- 
- #ifdef CONFIG_SWIOTLB
- 
-modified   kernel/dma/swiotlb.c
-@@ -208,6 +208,15 @@ unsigned long swiotlb_size_or_default(void)
- 	return default_nslabs << IO_TLB_SHIFT;
- }
- 
-+bool __init clear_swiotlb_force_bounce(void)
-+{
-+	if (!swiotlb_force_bounce)
-+		return false;
-+
-+	swiotlb_force_bounce = false;
-+	return true;
-+}
-+
- void __init swiotlb_adjust_size(unsigned long size)
- {
- 	/*
+Bart
 
