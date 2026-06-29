@@ -1,90 +1,93 @@
-Return-Path: <linuxppc-dev+bounces-23114-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23115-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 81685C43458
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Jun 2026 13:08:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 611B4C43327
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Jun 2026 13:31:51 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gpmmJ4K9Qz2yh4;
-	Mon, 29 Jun 2026 23:08:00 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=113.46.200.227
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782738480;
-	cv=none; b=Z10CPu0sxobA1WbPM2BZ6ae7q1qM85mB+67GHRnCdsyTnOWDP23gJj6CNWtqJU5gX4OpeOUjUMNPeq8YZbq5aTe74hLo5FAxEtZhdp8rviVkDZ/2cplx9UZgLpYRQEo1+tlRpuaRRK54f+rVVlwANTw7Y4gsY08g2Ar3sn4WLFKd9/0SKNgaDbGDwY46gEx+nLkLx9JnxIBaVFG2NYlKVhFmnGgSwEf4NTDsdlfqU9BvBtUqaDFg8a+JXESqEJIyQg0FAoGvdOXk83pZ+WC0gGIMgABKeW/FSvgtFZbv8iNhoEUPF5NVWoYC1QvGbOhiimM8iXifzZ3qPABznt36NA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gpnHn5clkz2yFc;
+	Mon, 29 Jun 2026 23:31:49 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=195.135.223.130
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782739909;
+	cv=none; b=RI5ODOWuKxBD19+8x2aJPqABNANNu/foxGxb6CEx16I3qvGF6EXAlp0SJN0TORF0vwVgHVpYveO1eH2J8R10vObdAEeP3Pt18gQobAHPhZFXnxNAMPb/I/nRxL8l20QrkttLH3hRkNmtLmEHh5RWJ8qZir47+76HsgLOWYkJfuhyiKDBo7nL5k+rkdlmkV5k46KM0vklJLMTYSzH+mU315ekP8OrAVf94lVwmMDJqGRUYnq7gz0WbDLjpssVsONM/ATnuA9wgAuQGqxJLXM7LDQ3nvGgfv8CkuiyQXdbz5yj5K1LHTVVwKEFifDVVd2UL3Spp0gXdQRjLAMAwhhaKQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1782738480; c=relaxed/relaxed;
-	bh=nXlEqg7p36Jks1c4yuaOXWFRq7Kp2sLsUwczenqjsfU=;
-	h=From:To:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=SCVvFQAi/yli7C9mNDQszW5zK0+OzQeGc1KM4F2zNADvTQYaQZ05wjasBkmrue8bPRz9QWEXe2fqqj6MYUQcCIghwqs+jFmn/0TJGyp1qe6Ey9NQHPzv8L6jKkvI3l2KcIQVOUDQIebS4Ni5lgsICxibQS8+0/0Ey6y5gpDbZk+SVfvrInuq0XGSTj2uekfTdky9gd7+xSmoSsxOUQ0hyU9Vlr5KCTMr3FTF6ynWsCknyE6kz52gmO4fmPnp8OQ1AMOOfm/izE5ojB+8CKW0jXrT1ehPVSO9d4oAsB+9vGs2ykSTSZ3tLtkct8qV1+i8TlWPGZ4JmTuMNaaAM/ub8w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=n8efmFXZ; dkim-atps=neutral; spf=pass (client-ip=113.46.200.227; helo=canpmsgout12.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
+	t=1782739909; c=relaxed/relaxed;
+	bh=FQYItTj83ndavw6UQp5BwjnG14vM48N1/0OH1HWTN7Q=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=NiWf137hJWYF30TX9izQLpqu89hzXBCQbn2MOG5atvKMZpX8epkRDuP2QInGHHByxbwtf3R5co7syi2/+52+O/uGCUrjvTJHXDhKAyz1xIjLJHzTqUUWBL6NuucdNH8ZcmH7839Ulwfi92Th7a1V6KZcjIuuloIsiIEc6GHZ4vaX1bv5MXTcqiCT6g4uP3DFhRDfMjoQ7kkKxsh0T6GP9C0rpv+u6vfzSHsjh2kqNJ8crZ42AFo0X8nG/J+owxacJqJYi5vhlqozK+82ulDUY11cDPepqqOHv0wBcmHSGX62xRmjrNLSx9eWv7jdunQouwuirtNb/A1uJJYC/gkR1w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de; dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=rKePMkdb; dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=oiwGIM/J; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=YrAesAEk; dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=FJneIzCs; dkim-atps=neutral; spf=pass (client-ip=195.135.223.130; helo=smtp-out1.suse.de; envelope-from=msuchanek@suse.de; receiver=lists.ozlabs.org) smtp.mailfrom=suse.de
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=n8efmFXZ;
+	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=rKePMkdb;
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=oiwGIM/J;
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=YrAesAEk;
+	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=FJneIzCs;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=113.46.200.227; helo=canpmsgout12.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org)
-Received: from canpmsgout12.his.huawei.com (canpmsgout12.his.huawei.com [113.46.200.227])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=195.135.223.130; helo=smtp-out1.suse.de; envelope-from=msuchanek@suse.de; receiver=lists.ozlabs.org)
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gpmmH4WZXz2yFc
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Jun 2026 23:07:59 +1000 (AEST)
-dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
-	c=relaxed/relaxed; q=dns/txt;
-	h=From;
-	bh=nXlEqg7p36Jks1c4yuaOXWFRq7Kp2sLsUwczenqjsfU=;
-	b=n8efmFXZdzG/h0lZ6Y0o4MsHme01XM8L7okaKbD/TR5W3fhAEUiS3084Q2F4FbdJWy9onNHJn
-	NoyvX82wTsDRv9G5PxGTgVIRQ7Jcm5Hx10ZCpPXtHg6aMkk03hx8R8iCitsSqg5zLYEjQwsADbU
-	ewPWK6UfSGus42FOPWCcAkU=
-Received: from mail.maildlp.com (unknown [172.19.163.163])
-	by canpmsgout12.his.huawei.com (SkyGuard) with ESMTPS id 4gpmZ82YsKznTbW;
-	Mon, 29 Jun 2026 20:59:12 +0800 (CST)
-Received: from dggpemf500011.china.huawei.com (unknown [7.185.36.131])
-	by mail.maildlp.com (Postfix) with ESMTPS id 5D6CF40588;
-	Mon, 29 Jun 2026 21:07:53 +0800 (CST)
-Received: from huawei.com (10.90.53.73) by dggpemf500011.china.huawei.com
- (7.185.36.131) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.11; Mon, 29 Jun
- 2026 21:07:49 +0800
-From: Jinjie Ruan <ruanjinjie@huawei.com>
-To: <oleg@redhat.com>, <richard.henderson@linaro.org>, <mattst88@gmail.com>,
-	<linmag7@gmail.com>, <linux@armlinux.org.uk>, <catalin.marinas@arm.com>,
-	<will@kernel.org>, <kees@kernel.org>, <guoren@kernel.org>,
-	<chenhuacai@kernel.org>, <kernel@xen0n.name>, <geert@linux-m68k.org>,
-	<tsbogend@alpha.franken.de>, <James.Bottomley@HansenPartnership.com>,
-	<deller@gmx.de>, <maddy@linux.ibm.com>, <mpe@ellerman.id.au>,
-	<npiggin@gmail.com>, <chleroy@kernel.org>, <pjw@kernel.org>,
-	<palmer@dabbelt.com>, <aou@eecs.berkeley.edu>, <alex@ghiti.fr>,
-	<hca@linux.ibm.com>, <gor@linux.ibm.com>, <agordeev@linux.ibm.com>,
-	<borntraeger@linux.ibm.com>, <svens@linux.ibm.com>,
-	<ysato@users.sourceforge.jp>, <dalias@libc.org>,
-	<glaubitz@physik.fu-berlin.de>, <richard@nod.at>,
-	<anton.ivanov@cambridgegreys.com>, <johannes@sipsolutions.net>,
-	<luto@kernel.org>, <tglx@kernel.org>, <mingo@redhat.com>, <bp@alien8.de>,
-	<dave.hansen@linux.intel.com>, <hpa@zytor.com>, <chris@zankel.net>,
-	<jcmvbkbc@gmail.com>, <peterz@infradead.org>, <wad@chromium.org>,
-	<ruanjinjie@huawei.com>, <thuth@redhat.com>, <mark.rutland@arm.com>,
-	<ada.coupriediaz@arm.com>, <kevin.brodsky@arm.com>, <linusw@kernel.org>,
-	<yeoreum.yun@arm.com>, <song@kernel.org>, <james.morse@arm.com>,
-	<anshuman.khandual@arm.com>, <broonie@kernel.org>, <liqiang01@kylinos.cn>,
-	<pengcan@kylinos.cn>, <ryan.roberts@arm.com>, <yangtiezhu@loongson.cn>,
-	<sshegde@linux.ibm.com>, <mchauras@linux.ibm.com>, <austin.kim@lge.com>,
-	<jchrist@linux.ibm.com>, <arnd@arndb.de>, <thomas.weissschuh@linutronix.de>,
-	<sohil.mehta@intel.com>, <andrew.cooper3@citrix.com>, <jgross@suse.com>,
-	<kas@kernel.org>, <x86@kernel.org>, <linux-alpha@vger.kernel.org>,
-	<linux-kernel@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
-	<linux-mm@kvack.org>, <linux-csky@vger.kernel.org>,
-	<loongarch@lists.linux.dev>, <linux-m68k@lists.linux-m68k.org>,
-	<linux-mips@vger.kernel.org>, <linux-parisc@vger.kernel.org>,
-	<linuxppc-dev@lists.ozlabs.org>, <linux-riscv@lists.infradead.org>,
-	<linux-s390@vger.kernel.org>, <linux-sh@vger.kernel.org>,
-	<linux-um@lists.infradead.org>
-Subject: [PATCH v16 18/18] arm64: vdso: Expose sigreturn address on vdso to the kernel
-Date: Mon, 29 Jun 2026 21:06:16 +0800
-Message-ID: <20260629130616.642022-19-ruanjinjie@huawei.com>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20260629130616.642022-1-ruanjinjie@huawei.com>
-References: <20260629130616.642022-1-ruanjinjie@huawei.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gpnHl1Jysz2xYh
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Jun 2026 23:31:47 +1000 (AEST)
+Received: from kunlun.suse.cz (unknown [IPv6:2a07:de40:b306:2000::2])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out1.suse.de (Postfix) with ESMTPS id 21AA6730A6;
+	Mon, 29 Jun 2026 13:31:38 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1782739899; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=FQYItTj83ndavw6UQp5BwjnG14vM48N1/0OH1HWTN7Q=;
+	b=rKePMkdbK7MzqhjcfNU7hpM0TQNJw+u2RAmgudH9P8aIonOtwCY+yqDfO9GqO0Rsfi0zyd
+	ugH72Ql/XOnYX3Sf83YVFpd25LJIYJLiuFcVfrgWSZSV9aij9wx3haosU2/ez779R+y1PX
+	u6KjiVb875dz7d60fisSi0C4RAhgsd0=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1782739899;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=FQYItTj83ndavw6UQp5BwjnG14vM48N1/0OH1HWTN7Q=;
+	b=oiwGIM/JVZWt+Q9AJXDSsYOFP864LJc60Tzi6tTxI0SMvLnMvhSqjAFF4nFZDrnXBgOFsk
+	w5AQZ38vznFZk9Cg==
+Authentication-Results: smtp-out1.suse.de;
+	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=YrAesAEk;
+	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=FJneIzCs
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1782739898; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=FQYItTj83ndavw6UQp5BwjnG14vM48N1/0OH1HWTN7Q=;
+	b=YrAesAEk9xoCdxAophmd/SBQ4lC0ZKfwxBgTGwcdGURWZQsd/qc+Jw7Lo82xYJoyttVSyM
+	JmEDQt/UrhZ2fgt+we0Loc3K8rx2QThh3fl12Uvf7pSSzFff4PrbwIVHkmDRnMSCUQDcjk
+	mGupoan9/FyxAhZdT+DDAZvfKjtBz3s=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1782739898;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=FQYItTj83ndavw6UQp5BwjnG14vM48N1/0OH1HWTN7Q=;
+	b=FJneIzCsnVHpZKTosmSoILPRB41ri4XD2/4LVfufXp5fCawsGc0yUxj7bJ/qOro42f/VtH
+	350b9cfv9XPKPeDQ==
+Date: Mon, 29 Jun 2026 15:31:36 +0200
+From: Michal =?iso-8859-1?Q?Such=E1nek?= <msuchanek@suse.de>
+To: "Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com>
+Cc: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com,
+	chleroy@kernel.org, sshegde@linux.ibm.com, mkchauras@linux.ibm.com,
+	kees@kernel.org, mark.rutland@arm.com, ryan.roberts@arm.com,
+	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] powerpc/syscall: Fix seccomp errno handling with
+ GENERIC_ENTRY
+Message-ID: <akJzuEJRLniHk4Fi@kunlun.suse.cz>
+References: <20260624171520.772408-1-mkchauras@gmail.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -98,74 +101,119 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-Originating-IP: [10.90.53.73]
-X-ClientProxiedBy: kwepems500001.china.huawei.com (7.221.188.70) To
- dggpemf500011.china.huawei.com (7.185.36.131)
+In-Reply-To: <20260624171520.772408-1-mkchauras@gmail.com>
+X-Spamd-Bar: +++++++++++++++
+X-Rspamd-Queue-Id: 21AA6730A6
+X-Rspamd-Action: add header
+X-Rspamd-Server: rspamd1.dmz-prg2.suse.org
+X-Spamd-Result: default: False [15.07 / 50.00];
+	SPAM_FLAG(5.00)[];
+	NEURAL_SPAM_LONG(3.50)[1.000];
+	BAYES_HAM(-3.00)[100.00%];
+	NEURAL_SPAM_SHORT(2.88)[0.961];
+	HFILTER_HOSTNAME_UNKNOWN(2.50)[];
+	RDNS_NONE(2.00)[];
+	ONCE_RECEIVED(1.20)[];
+	HFILTER_HELO_IP_A(1.00)[kunlun.suse.cz];
+	HFILTER_HELO_NORES_A_OR_MX(0.30)[kunlun.suse.cz];
+	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	MIME_GOOD(-0.10)[text/plain];
+	MX_GOOD(-0.01)[];
+	RCPT_COUNT_TWELVE(0.00)[12];
+	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	MIME_TRACE(0.00)[0:+];
+	ARC_NA(0.00)[];
+	RBL_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b306:2000::2:from];
+	FREEMAIL_TO(0.00)[gmail.com];
+	FUZZY_RATELIMITED(0.00)[rspamd.com];
+	FREEMAIL_ENVRCPT(0.00)[gmail.com];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	DNSWL_BLOCKED(0.00)[2a07:de40:b306:2000::2:from];
+	FROM_EQ_ENVFROM(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	URIBL_BLOCKED(0.00)[kunlun.suse.cz:mid,kunlun.suse.cz:helo,suse.de:email,suse.de:dkim];
+	RCVD_COUNT_ZERO(0.00)[0];
+	DKIM_TRACE(0.00)[suse.de:+];
+	MISSING_XM_UA(0.00)[];
+	TO_DN_SOME(0.00)[];
+	FREEMAIL_CC(0.00)[linux.ibm.com,ellerman.id.au,gmail.com,kernel.org,arm.com,lists.ozlabs.org,vger.kernel.org];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:email,suse.de:dkim,kunlun.suse.cz:mid,kunlun.suse.cz:helo]
+X-Spam: Yes
 
-Syscall User Dispatch (SUD) requires the signal trampoline code to not be
-intercepted. This is necessary to support returning with a locked selector
-while avoiding infinite recursion back into the signal handler.
+Hello,
 
-Implement arch_syscall_is_vdso_sigreturn() for arm64 to support this
-exclusion mechanism. For native 64-bit tasks, it checks whether the current
-PC matches the 'svc #0' instruction inside the vDSO sigreturn trampoline.
+there is yet another bug identified.
 
-	SYM_CODE_START(__kernel_rt_sigreturn)
-	        mov     x8, #__NR_rt_sigreturn
-	        svc     #0
-	SYM_CODE_END(__kernel_rt_sigreturn)
+When the initial syscall number is -1 the new condition bypasses setting
+the ENOSYS below in if (unlikely(r0 >= NR_syscalls)) and returns 0.
 
-For COMPAT tasks, it verifies if the instruction falls within
-the architecture's 'sigpage' range, allowing the kernel to safely bypass
-dispatching syscalls originating from these areas back to userspace.
+perl -MPOSIX -e '$!=0; my $r = syscall(-1, 0); print "ret=$r errno=".($!+0)." ($!)\n"'
 
-Suggested-by: Kevin Brodsky <kevin.brodsky@arm.com>
-Suggested-by: kemal <kmal@cock.li>
-Signed-off-by: Jinjie Ruan <ruanjinjie@huawei.com>
----
- arch/arm64/include/asm/elf.h |  1 +
- arch/arm64/kernel/vdso.c     | 16 ++++++++++++++++
- 2 files changed, 17 insertions(+)
+Normally the result is
 
-diff --git a/arch/arm64/include/asm/elf.h b/arch/arm64/include/asm/elf.h
-index d2779d604c7b..f43d4dea916a 100644
---- a/arch/arm64/include/asm/elf.h
-+++ b/arch/arm64/include/asm/elf.h
-@@ -185,6 +185,7 @@ do {									\
- struct linux_binprm;
- extern int arch_setup_additional_pages(struct linux_binprm *bprm,
- 				       int uses_interp);
-+extern bool arch_syscall_is_vdso_sigreturn(struct pt_regs *regs);
- 
- /* 1GB of VA */
- #ifdef CONFIG_COMPAT
-diff --git a/arch/arm64/kernel/vdso.c b/arch/arm64/kernel/vdso.c
-index 592dd8668de4..5a0314a3c26e 100644
---- a/arch/arm64/kernel/vdso.c
-+++ b/arch/arm64/kernel/vdso.c
-@@ -343,3 +343,19 @@ int arch_setup_additional_pages(struct linux_binprm *bprm, int uses_interp)
- 
- 	return ret;
- }
-+
-+bool arch_syscall_is_vdso_sigreturn(struct pt_regs *regs)
-+{
-+	unsigned long sigtramp;
-+
-+#ifdef CONFIG_COMPAT
-+	if (is_compat_task()) {
-+		unsigned long sigpage = (unsigned long)current->mm->context.sigpage;
-+
-+		return regs->pc >= sigpage && regs->pc < (sigpage + PAGE_SIZE);
-+	}
-+#endif
-+	sigtramp = (unsigned long)VDSO_SYMBOL(current->mm->context.vdso, sigtramp);
-+
-+	return regs->pc == (sigtramp + 8);
-+}
--- 
-2.34.1
+ret=-1 errno=38 (Function not implemented)
 
+but with this patch the result is
+
+ret=0 errno=0 ()
+
+fixup below.
+
+On Wed, Jun 24, 2026 at 10:45:20PM +0530, Mukesh Kumar Chaurasiya (IBM) wrote:
+> After enabling GENERIC_ENTRY on PowerPC, seccomp filters using
+> SCMP_ACT_ERRNO without an explicit errnoRet value return ENOSYS
+> (Function not implemented) instead of the expected EPERM (Operation
+> not permitted).
+> 
+> The issue occurs in system_call_exception() when syscall_enter_from_user_mode()
+> returns -1 to indicate the syscall should be skipped (e.g., blocked by seccomp).
+> The current code treats this -1 as a syscall number and compares it against
+> NR_syscalls. Since -1 (when cast to unsigned long) is greater than NR_syscalls,
+> the code incorrectly returns -ENOSYS, overwriting the errno that seccomp
+> already set via syscall_set_return_value().
+> 
+> The generic entry code in syscall_trace_enter() calls __secure_computing(),
+> which sets the appropriate errno in regs->gpr[3] and returns -1 to signal
+> that the syscall should be skipped. However, the PowerPC syscall handler
+> was not checking for this -1 return value before validating the syscall
+> number.
+> 
+> Fix this by explicitly checking if syscall_enter_from_user_mode() returns
+> -1 and returning the value already set in regs->gpr[3] (the errno from
+> seccomp) before performing the syscall number validation.
+> 
+> This aligns PowerPC's behavior with other architectures using GENERIC_ENTRY
+> and restores correct seccomp errno handling.
+> 
+> Fixes: bee25f97ad24 ("powerpc: Enable GENERIC_ENTRY feature")
+> Reported-by: Michal Suchánek <msuchanek@suse.de>
+> Signed-off-by: Mukesh Kumar Chaurasiya (IBM) <mkchauras@gmail.com>
+> ---
+>  arch/powerpc/kernel/syscall.c | 4 ++++
+>  1 file changed, 4 insertions(+)
+> 
+> diff --git a/arch/powerpc/kernel/syscall.c b/arch/powerpc/kernel/syscall.c
+> index a9da2af6efa8..5b58c8d396c8 100644
+> --- a/arch/powerpc/kernel/syscall.c
+> +++ b/arch/powerpc/kernel/syscall.c
+> @@ -22,6 +22,10 @@ notrace long system_call_exception(struct pt_regs *regs, unsigned long r0)
+	unsigned long r0_initial = r0;
+>  	add_random_kstack_offset();
+>  	r0 = syscall_enter_from_user_mode(regs, r0);
+>  
+> +	/* Seccomp or ptrace may have set return value, skip syscall */
+> +	if (unlikely(r0 == -1L)
+				&& (r0_initial != -1L))
+> +		return regs->gpr[3];
+> +
+>  	if (unlikely(r0 >= NR_syscalls)) {
+>  		if (unlikely(trap_is_unsupported_scv(regs))) {
+>  			/* Unsupported scv vector */
+
+Thanks
+
+Michal
 
