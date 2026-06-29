@@ -1,110 +1,92 @@
-Return-Path: <linuxppc-dev+bounces-23119-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23120-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 96341C43602
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Jun 2026 16:37:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BBE44C43458
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Jun 2026 16:38:24 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gpsQX0grcz2yH4;
-	Tue, 30 Jun 2026 02:37:56 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gpsR26zgFz2yH4;
+	Tue, 30 Jun 2026 02:38:22 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::432"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782751076;
-	cv=none; b=Bk4W2NqR6FEOa8VsyxAJwQs/jh7WHBeNvj5kDborKapv/NoFP4gzFTFHDm8WzDLKF8GePutd9D/O15kQVvxgxO7XCgSJih3yhB7AuCxk8L0emSPvN2kf2g5JlUbsScD2k0Rto7Hlb7OiK9WMBX3/VcEoMrP1LzIacbLGntjIOZEI70fPOesCp3JbWfeLTswh/+b457XFLFAKxvJTYjBfWGVXip/8Rnir0yjAzURA57dVtHU4o2loeKm8JnQDhYQKpp8Tsx+uO5uRb5nEzVkoyGQgjd5MoAwa1JtAv8uo6p5zYbdFnVgWVQxMfC6abEoF5NAo/nptpaykI5ZqDhcDPQ==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782751102;
+	cv=none; b=FGwQ15Hsv57kPG6QXCWuBGnHs8PkfkQipLB0m6rOnz1f4MZwd5UP9S9T6T1DP+myv5FZgGwyxZSUH96eGQYHZnAHbQdtBSjE8xTRUImrSfVjTph8X3CjIv2Rn6u4qHzfeCMFl3wluoAj3HsaouWGcU0RbQ17oZKKAoFII9arEiQGBUyy1ICEJGIh6wggkLsRZERNkBcBXqHwRNvdFRXlgbkHZsthPlOpAfp1TKa0tE5EIsUvzSmpha54wCzHdd2p/ZVwFcbqOHdHv/EWZMRilIsWIRFCFBKlx9AB1hxD6dKw2Aq66YfkYgQeQh8modx7wLZfxC8ET9x6tTlukF2jrg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1782751076; c=relaxed/relaxed;
-	bh=rGoS9kJnOsBC1GLvPLCMMJFTI12ls42atzGQpoe5Bdw=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=e+qG6Ifc9SvP7KXwbbtb8a3c9zlhGsoXCX5yNCjjrJkM+B2fhfp68tofUlZ0zn1rAJcTiFckhQWf85RQwG59Usck1D0iBILeR3yWVgBO5KJJATD8yHKNgFCzhFH50STKz1TqYOUtXoHabCpNARDXCta49BUMD5xJVeqa+l8xd5B6L53bMHQJ6WqMIjonqAafOjP4uVpJlW8IPFCYa2BEl4M+XfLQlnEA8fXn177elx3zDUrgiJaIBzRq7Po+nq3B6HrYaGi9HTYZDtef3FWgjLPStQVaD1fLw3MyzO6dINWIXV7ndOYGGRNp4XqafJgf1xGoylToaKVYXYy16TOVmQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=nUGq0YSo; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::432; helo=mail-pf1-x432.google.com; envelope-from=ekffu200098@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	t=1782751102; c=relaxed/relaxed;
+	bh=PPX10qsMY++ER8afXSJu3F27jyGSgCeFMlyZg3pCc1s=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=Wyl3l5X5b+XkDDG7qLogQdpaFdr7kjOqoIJGP/pURfvVwnejlubQckARmo7bpQDkbdkEwnt4ocknULm9HXJeuSe7frFtCl2bVMlWBjQVWtuIkR6/oGqTaOulfdazxwe06L/ImveAW62SNNxtOxU11KXAyy0/9+xjPJ1USy3slS7oBY6mu2yui8ydnwKeHw5j9guHaVmXBSW3W5rItrRd9PQDraCK9zNqV5hlFThyUzmwI5fLqEWHfHr+JcCpuaJ4nUGrQa8yJ9ZcpYDLEn0t15q1GKEtHsACWs98+91Gi6sh8YNQbtybbMdcb2Wt3eG7MJ6cobUj7wTwbXJzXj7xqA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=NkMnpVEm; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::432; helo=mail-pf1-x432.google.com; envelope-from=ekffu200098@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=nUGq0YSo;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=NkMnpVEm;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::432; helo=mail-pf1-x432.google.com; envelope-from=ekffu200098@gmail.com; receiver=lists.ozlabs.org)
 Received: from mail-pf1-x432.google.com (mail-pf1-x432.google.com [IPv6:2607:f8b0:4864:20::432])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gpsQV36pcz2xYh
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jun 2026 02:37:53 +1000 (AEST)
-Received: by mail-pf1-x432.google.com with SMTP id d2e1a72fcca58-84794e800f4so393219b3a.0
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Jun 2026 09:37:53 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gpsR20rbwz2xYh
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jun 2026 02:38:22 +1000 (AEST)
+Received: by mail-pf1-x432.google.com with SMTP id d2e1a72fcca58-845b965c1c4so1763308b3a.3
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Jun 2026 09:38:22 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1782751071; x=1783355871; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=rGoS9kJnOsBC1GLvPLCMMJFTI12ls42atzGQpoe5Bdw=;
-        b=nUGq0YSoyweJNmExO8TdiDAFboeMDpBbKNtUH9KKWt9p6QAFLXDIN0kNmzIUloWIh9
-         IFq7zXTX+AxbSpQgDHjsT1DdUjra4cJ8j5gSN8y93Ns0nzPjs6b/VGEeGz5YG5GRErLM
-         7+YFmn4JO6CpoiOZjeHVLaM9+ItIZhdHh7+5DALXSc09ITaxfqV3Bhw4asHnpLpAagCN
-         henrdhFy0Abp/6Eu/detGY4itfxEvwzgfxf3BSHiFI/MwTyIuFRjhGtqWCem81PE9+V7
-         yqlfHv84VzcMxkiVRZ3QMHD8mo12lbSyWbO9OeJwIwhnWGcct7wX473bE19vJdtrSG+L
-         dbQA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1782751071; x=1783355871;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+        d=gmail.com; s=20251104; t=1782751100; x=1783355900; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=rGoS9kJnOsBC1GLvPLCMMJFTI12ls42atzGQpoe5Bdw=;
-        b=CT8fHsOPQ2B0c9lXEGVMjVsYBj4QzYQgIGpLeKfwZFKX5xSvVBlHSatVVp40Xsovtr
-         R+BcEcW/C6CRSCc3aI5oq2Kg/ykSYOupSjc+5GhgTkMEYsEeiLhIbiJj3zaZUSxkiZQc
-         2wMZdNMh6yLkcdAeAQUcx7/+lYm0ERii9JaC6TLSR/2/PB5y2QOSbnqSFQc9PsZjhK9Q
-         j/n4wL7qFykDOTmkvdqOV0KY3uK3pPfzY/jkjAFOm/SWtIz7T7Y2pRJF7nkuqXw8TLGR
-         /PGwC7QK4k4G3FSdrwW6UGiPusL3aJbSzMPgXEPRC8dz3DqfSgvJzYKfZ5kqBMteKNtv
-         HHVA==
-X-Forwarded-Encrypted: i=1; AFNElJ/HdSk3dVi0uMHL5XAiwj+4o6Gbjobn+Fa22LMTJ1v42dp9WCUDlIJv48JBxYs6+MgpX4iMETW/YLNCkUc=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YzqGIZuUSB1f33os0y71M3vrpAnECVvcHEZqRpU+1qhUAqAsR16
-	Myn0ColZcOhJSKJv6m2EtsSefUqZ42BOuQrCt21XaOPbsGEIhZWTceO8
-X-Gm-Gg: AfdE7cmNkkSlPbT3st7IfPE6KUhSYCRVzweg9nxUWfT8fGFLlPWBT5L5Heo+DGqqVjU
-	bZV/8lsfxMxh7rpyPEpaupo+IfscFYukRlsITYUA01/UGOOf4CcwIX6YJoo9d1yXWgWBqXhfJ0T
-	HxgMInTUkDlqGVjnmHpD91ldORanSpDj8U9SYuw1dEwHfb5VugIy48DvQ4tKJ6x+Ll69OzkNhfm
-	PLLcpGQVzw/ghNjuRLciroXr9rupiJq/ZWrnhhP5TQ3H/NkeTcAevd/ftCEn0JPOeal/bn1gnvS
-	hMHN4QhCQEjLjO3bKvL8JB8utjY8N7ERSp4JeIKrHmZVeo9L6eduCzttIQx3b2LSA5qefF+IBKC
-	yLdq7WjUGRXsQjbd5BzbtsiMJC4VpXdZFNwfEelO4/bqB31KVwKWaj/uHHPUolWdeToZnU14cyw
-	bXx5nvk00=
-X-Received: by 2002:a05:6a00:92a5:b0:847:8337:64e4 with SMTP id d2e1a72fcca58-8479f1f553amr205069b3a.30.1782751071179;
-        Mon, 29 Jun 2026 09:37:51 -0700 (PDT)
+        bh=PPX10qsMY++ER8afXSJu3F27jyGSgCeFMlyZg3pCc1s=;
+        b=NkMnpVEmrPadDslWTLneWQMYEEDLTdLtYW7Kb5R5UKzPkNGH4tH3QUh58OKd9oGXQN
+         egYH8sMIh4nr0EnV1eFn5PK5iAqywUBE1nipZvFnwbsJw+rtjFSWLldwWMPNWtZiJqCY
+         69uu4WFuJvdcJZUNKB1rnWH3VXFfTcaUXWb/v6vighfbxkGjKlH0Y9/4kbyx4vWNV8e4
+         b4QKEg76ulmGOGnpvTJ7gENStPKsBPESLdc+caA4iO4ZB19LciqBnYLuLDKRp1PVenWh
+         AC2nB6QZAapsGykJRDaP+dFtkTqHHL+IW3u07RbU13LcdODUesXU8Vn38RI2wjYCCsuh
+         MnHA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1782751100; x=1783355900;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=PPX10qsMY++ER8afXSJu3F27jyGSgCeFMlyZg3pCc1s=;
+        b=H8fNDRrR3nvm4r52t7vjekn4c6aJv7kMnZumn7MI3w77J11NjHbqZ/XFSM7kwmCLwr
+         2zsZS0JHS2MePp+ev7qs8FD/UpdzB+9cEZaOAoiz/Z5z3P17yLsWmdr3r+1HZAqM/xpG
+         mqwkFPFY/KgscqirCeVWAkt6yF+XbgfIYvAl8Brb2k6j3eu67tqqZNW3ze3sUzUfsw//
+         J9CPEQ8M/aqKsbo8waZ/U+L1HAFWc9mtc9yzO5n42hXEBEnilTWCxbvvH0eWBEr2dolP
+         hNfxSLmyDgIm7+UkMeZSQAw7HWKIoORYTRERw5G9lhP8c8EbEL961isDHNVKoGxntzv4
+         wIcA==
+X-Forwarded-Encrypted: i=1; AHgh+Rp4Tf4GrLlqZ7ZoCVE8ZeiMr/v2DhxLv0qvkWf3wLdb5ZoCiEnJRXttiuEfdYJDR5XaeZzDWh/oixrX4cw=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yy5EFm8AzAVZpk+K2lkyq6oPrzciJr8rzWJHNUJNQyVG/cdW0bM
+	WdA6Cl2e5/976KPxBfX2vljdivuTUgc9PZ8sRAFv4z2RERh3DLVNj4Bj
+X-Gm-Gg: AfdE7cnQSvfymB5Ib4MGd7zTdQjqIez0efhx2uXHnVLqafBxTYUB5+UslNYlaQ2rUyv
+	3iCiRpjcORzAqH4SLLrqaxXllVrhaMaNV5mtaeseqyZDUdzuuKWhnnVRcxU5NBXiPFDdn/zQWIz
+	SHT7/h1X7NtBfUhgMCssisMQXJUM7wPWPIKa+/YiylDcEim/e8ma9sdwjxj6GAxdX4csDQ/ScEl
+	G+5IYnMaSgbF7vvXXzx7vFC9TSosMATMPYF6XJ2od5PxmyK4TuqfJIv6j/ZihC4mZFOzKUvWOcW
+	7R3B49B3xu71Xc0t7+3yhtFHQyGvz6abcfYCML6GFsUD054Plq9NsyOnQS5bZ21jDkxOoqQWnIh
+	eAnIS7XhzRZY2/cgF6srobcaQydRQuAr4a3HceWY8AynHvozpWc2kS9slZbdUQw7LlBvXRI3cV3
+	RTw5phpAQ=
+X-Received: by 2002:a05:6a00:190c:b0:842:4b88:20ee with SMTP id d2e1a72fcca58-8479f26c18dmr215091b3a.44.1782751100331;
+        Mon, 29 Jun 2026 09:38:20 -0700 (PDT)
 Received: from ubuntu.. ([110.9.142.4])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-847a02d41c0sm18474b3a.33.2026.06.29.09.37.46
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-847a02d41c0sm18474b3a.33.2026.06.29.09.38.17
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 29 Jun 2026 09:37:50 -0700 (PDT)
+        Mon, 29 Jun 2026 09:38:19 -0700 (PDT)
 From: Sang-Heon Jeon <ekffu200098@gmail.com>
 To: rppt@kernel.org,
-	Albert Ou <aou@eecs.berkeley.edu>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Andrey Ryabinin <ryabinin.a.a@gmail.com>,
-	Catalin Marinas <catalin.marinas@arm.com>,
-	Huacai Chen <chenhuacai@kernel.org>,
 	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Muchun Song <muchun.song@linux.dev>,
-	Oscar Salvador <osalvador@suse.de>,
-	Palmer Dabbelt <palmer@dabbelt.com>,
-	Paul Walmsley <pjw@kernel.org>,
-	Russell King <linux@armlinux.org.uk>,
-	Will Deacon <will@kernel.org>
+	Michael Ellerman <mpe@ellerman.id.au>
 Cc: linux-mm@kvack.org,
 	Sang-Heon Jeon <ekffu200098@gmail.com>,
-	Alexander Potapenko <glider@google.com>,
-	Alexandre Ghiti <alex@ghiti.fr>,
-	Andrey Konovalov <andreyknvl@gmail.com>,
 	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	David Hildenbrand <david@kernel.org>,
-	Dmitry Vyukov <dvyukov@google.com>,
-	kasan-dev@googlegroups.com,
-	linux-arm-kernel@lists.infradead.org,
 	linux-kernel@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org,
-	linux-riscv@lists.infradead.org,
-	loongarch@lists.linux.dev,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Vincenzo Frascino <vincenzo.frascino@arm.com>,
-	WANG Xuerui <kernel@xen0n.name>
-Subject: [PATCH v2 0/8] treewide: remove unnecessary invalid range checks in memblock iteration loops
-Date: Tue, 30 Jun 2026 01:37:28 +0900
-Message-ID: <20260629163736.1606688-1-ekffu200098@gmail.com>
+	Nicholas Piggin <npiggin@gmail.com>
+Subject: [PATCH v2 6/8] powerpc64/kasan: Remove unreachable invalid range check in kasan_init_phys_region()
+Date: Tue, 30 Jun 2026 01:37:34 +0900
+Message-ID: <20260629163736.1606688-7-ekffu200098@gmail.com>
 X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20260629163736.1606688-1-ekffu200098@gmail.com>
+References: <20260629163736.1606688-1-ekffu200098@gmail.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -120,64 +102,48 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-The memblock API guarantees that for_each_mem_range() and
-for_each_mem_pfn_range() never return an invalid range, meaning start is
-always less than end.
+kasan_init() maps each memblock region with for_each_mem_range() and passes
+it to kasan_init_phys_region(), which does nothing when start >= end.
+for_each_mem_range() never returns an invalid range, so start < end always.
 
-Several memblock callers still have unnecessary invalid range checks in
-their loop bodies, so remove them.
+Therefore the start >= end check is unreachable, so remove it.
 
-Patches 1-6 cover for_each_mem_range() callers. memblock never stores a
-zero-size region, so the range it returns always has start < end. Some
-callers apply __va() or __phys_to_virt() before comparing, but these keep
-start < end too, so the check is unreachable.
+No functional change.
 
-Patches 7-8 cover for_each_mem_pfn_range() callers. __next_mem_pfn_range()
-skips any region that contains no whole page, so it only ever returns
-start_pfn < end_pfn and the check is unnecessary.
-
-For reference, commit 36ca7f4be809 ("arm64: mm: Remove bogus stop
-condition from map_mem() loop") did a similar cleanup in arm64 map_mem().
-
-All these checks are in different trees, so I split the change into one
-patch per arch/subsystem. The patches are independent and can be applied
-separately.
-
+Signed-off-by: Sang-Heon Jeon <ekffu200098@gmail.com>
 ---
-Changes from v1 [1]
-- Add review-by, tested-by tags from v1
-- Add missing simliar patches(5,6) to patch series
-- Change base to rppt/for-next
-
-[1] https://lore.kernel.org/all/20260621145919.1453-1-ekffu200098@gmail.com/
----
-
-Sang-Heon Jeon (8):
-  arm64: mm: remove unreachable invalid range check in
-    kasan_init_shadow()
-  LoongArch: remove unreachable invalid range check in kasan_init()
-  riscv: remove unreachable invalid range check in
-    create_linear_mapping_page_table()
-  riscv: remove unreachable invalid range check in kasan_init()
-  ARM: remove unreachable invalid range check in kasan_init()
-  powerpc64/kasan: Remove unreachable invalid range check in
-    kasan_init_phys_region()
-  mm: remove unnecessary empty range check in
-    early_calculate_totalpages()
-  mm/hugetlb: remove unnecessary empty range check in
-    hugetlb_bootmem_set_nodes()
-
- arch/arm/mm/kasan_init.c               | 6 ------
- arch/arm64/mm/kasan_init.c             | 3 ---
- arch/loongarch/mm/kasan_init.c         | 3 ---
  arch/powerpc/mm/kasan/init_book3e_64.c | 3 ---
  arch/powerpc/mm/kasan/init_book3s_64.c | 3 ---
- arch/riscv/mm/init.c                   | 2 --
- arch/riscv/mm/kasan_init.c             | 3 ---
- mm/hugetlb.c                           | 3 +--
- mm/mm_init.c                           | 3 +--
- 9 files changed, 2 insertions(+), 27 deletions(-)
+ 2 files changed, 6 deletions(-)
 
+diff --git a/arch/powerpc/mm/kasan/init_book3e_64.c b/arch/powerpc/mm/kasan/init_book3e_64.c
+index 0d3a73d6d4b0..0ed372fb8b09 100644
+--- a/arch/powerpc/mm/kasan/init_book3e_64.c
++++ b/arch/powerpc/mm/kasan/init_book3e_64.c
+@@ -68,9 +68,6 @@ static void __init kasan_init_phys_region(void *start, void *end)
+ 	unsigned long k_start, k_end, k_cur;
+ 	void *va;
+ 
+-	if (start >= end)
+-		return;
+-
+ 	k_start = ALIGN_DOWN((unsigned long)kasan_mem_to_shadow(start), PAGE_SIZE);
+ 	k_end = ALIGN((unsigned long)kasan_mem_to_shadow(end), PAGE_SIZE);
+ 
+diff --git a/arch/powerpc/mm/kasan/init_book3s_64.c b/arch/powerpc/mm/kasan/init_book3s_64.c
+index dcafa641804c..ccfbfb894637 100644
+--- a/arch/powerpc/mm/kasan/init_book3s_64.c
++++ b/arch/powerpc/mm/kasan/init_book3s_64.c
+@@ -24,9 +24,6 @@ static void __init kasan_init_phys_region(void *start, void *end)
+ 	unsigned long k_start, k_end, k_cur;
+ 	void *va;
+ 
+-	if (start >= end)
+-		return;
+-
+ 	k_start = ALIGN_DOWN((unsigned long)kasan_mem_to_shadow(start), PAGE_SIZE);
+ 	k_end = ALIGN((unsigned long)kasan_mem_to_shadow(end), PAGE_SIZE);
+ 
 -- 
 2.43.0
 
