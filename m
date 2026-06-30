@@ -1,51 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-23184-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23185-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 90EBBC43327
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Jun 2026 10:34:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 91B34C43327
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Jun 2026 10:45:51 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gqKJB71lVz2yZ8;
-	Tue, 30 Jun 2026 20:34:02 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gqKYn6lfVz2yZ8;
+	Tue, 30 Jun 2026 20:45:49 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782815642;
-	cv=none; b=XRcDiBTdpo+m3jw2/Vv5DoV/Ivot2P3+cTMF/AGNzyL+pBeVjX68GqMnhQdngWbjwkv8VONINl88qEmVTiKOIb9m8cI4hB75vVZlNlTmZtovVb2mA49A1agfDX44BxmLHDbby7ru8JETC6BuEUfLFmqhWgICEgphr1b18mFKR4BolKyxYiosE7wQdzxTH8I7iH1mmivKKV1IAo9mNzSM17ikFSWtJKbQ2t+YqQn8EW9br+gDq+1NyBoYUjLOUBpGgRJB9kuaImqnxGlYvGdDOGfWEwgPH2T4iIieE0BaV3xYzsMKmeCraw/Bq+A1Ouu9PNUzRvWo3zg8eCscWCbH1w==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782816349;
+	cv=none; b=bDNjLqVFgCPusovuq61RcmSdVuoYADUL8RvBjCF91/LyoCX6Y1NrFTBBOKrLwPnu88aFSH8optR12jk1YaHKaXOZ+KW76cFEM7QQWjbeHSsfrgHNJjqptJYTtM8n4zMRUabMu0WUtO6dnmmNaEp+ABWes/ulPYoKabRSZR4KhkJ9j1FWHnwvZE0ruwiIitOCgJ0EMJMXI8YsG3LxAi6GdLfjEjCkvaOBqpljniTfzSX6CJLe/VSqMX23UiL5OBJEztoo6KxP9tHOFL1FYnoJrpb//toxSCfALCjxL6+3DKARwJf5WzJfMuri63Pq7jZ1GOCclGYIkm1UuO3upsA0Nw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1782815642; c=relaxed/relaxed;
-	bh=Gsl3tPUdzUJBW9EALbXP0CQ+gdTQn4E8pzPSD9/4upk=;
+	t=1782816349; c=relaxed/relaxed;
+	bh=81g9nQCWE+mnZNEbv5idLZmIKGtoPWn06b20cZHWlKg=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=SAriO4Jo7vEM+C4S0A930yNnrOB4E228uUl3NoI3lstH8iqYn61Xo8pmKeRyBIbWhAqzHTxGcr4xVVHcjJp5ddmEu5CRsgLRyKh6c0kfOe5FKI5SQEMuSjjPZ66wYyvEnAwSYjIRlPKVA7J/ENl9CcV3lKFMLj9l0xVx5MUnaz20Obb0S4QhwPCURWdhCNEH6UJ8xS7qVce6cFfk8VCvmPkywIMkTCblG+GZbQ/5goUP2nct7LH+YXJChj4VLNnI3RPcCQ7cVyA3A5C3srItZUkVdnhP4Jap0HXbuo2Oz5suU3O26p2CvnKrwS2A2jOMWS8laAfJQHbO+UurSZwc2g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=F+zXCaY5; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:Content-Type; b=K09q3oOmvvdl15wnNetDkDSwvbsJ3zM2z4RZH9ST4kJza0r0Mmk9HvzaWHchbMMXgfL+ew/FMjvjPmPsnTtLaaYwiuZ6ffRNDXZnb0qIwJe8B29riwa0PxXT/mcRn3FgDzvHEW/r547PQFQIWFIwRmxKeSzQ2JRXWorFQI9XYaV/dqwlqk44LQA3BUA8fY9znLErC8ytCz8KuOQFne3AbZKK9gnF6UGQGwpoewnv7GwXPHlx+10nYGSA+dla7LH+HFGv79JgNQYRqu7MQcP/3sho3qXeK70GDOrKqfCs2kWiI8Tfs/UlKL30NpOH4uYxJvU/QT/EsON8qpIYeTdLxw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=bBs7FIc1; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=F+zXCaY5;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=bBs7FIc1;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org)
 Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gqKJ962fpz2yYs
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jun 2026 20:34:01 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gqKYm6d85z2yYs
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jun 2026 20:45:48 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id B9B0743714;
-	Tue, 30 Jun 2026 10:33:59 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id C73051F000E9;
-	Tue, 30 Jun 2026 10:33:56 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 14554435C8;
+	Tue, 30 Jun 2026 10:45:47 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E96671F000E9;
+	Tue, 30 Jun 2026 10:45:43 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1782815639;
-	bh=Gsl3tPUdzUJBW9EALbXP0CQ+gdTQn4E8pzPSD9/4upk=;
+	s=k20260515; t=1782816347;
+	bh=81g9nQCWE+mnZNEbv5idLZmIKGtoPWn06b20cZHWlKg=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=F+zXCaY5S4Ob1UllqUKHQ5eO6fIGVBOcOHk/A04DaLnNWPdqoUSiVZFTVE9Tuu+58
-	 6zefI/15iK7W5WQGDL3b9kYNcVOo6bFhmLAyr5ouDGjwPzJ3zPD0YoT3/nEGAIm5Vx
-	 6hbOC9zXmnWXjzrIU7FaU3hNeF220G3NPy8QovDFU9loPN3El6UiUf2pd098bM6DFG
-	 nlVN6m65S0okuyJtB0/b86tDd/9k2vTkbhsWnVGYsVckvuev7fnfpPdakop9K+Gi4j
-	 cpjsrnNH5lVmf/H/5LLrH5eDgT0AhmVlLlMrnVAoLk+Pv2lkeYSmzwiM7dohq0LBVc
-	 FHJt8/HE/HrjQ==
-Message-ID: <c07c7a6b-da47-4d05-b501-d338e944d861@kernel.org>
-Date: Tue, 30 Jun 2026 12:33:55 +0200
+	b=bBs7FIc1czEHhj/ZjXSRYfnmdenzMd0iZwQBLMVNsCj2HRNguS3J9h/O2PxR+1LLi
+	 /+mJZ5MfYWh7xdlxCo2M8/zXi6rT5+HpZ7rwMZq0V8BLGGLFygjfEghsKlziDn3q1k
+	 RdYbfdyaOeHo6CRgDeDx6eN9H+50Bk/B32to6oA/aZjpcOwSoBWTuYzWaco/gUHJ/S
+	 QyXMxFU7TCYEBlUX+nCDCPbSVE58Fq2FLgtS0MIs8Jv5CNR6j/7h3iqsBSbZ/7+6Jh
+	 iLKFEQq7QuMUiAtoYdwOwB8pEKrbFjoO25CREqNbaGODe2k4FRqxzeEvqOqXki5Aw7
+	 3WVuJz8mLXjIA==
+Message-ID: <ccba342f-1ed0-43fe-ac59-9b8bbfb168d4@kernel.org>
+Date: Tue, 30 Jun 2026 12:45:42 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -60,8 +60,8 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 3/3] selftests/mm: fix ternary operator precedence in
- ksm_tests
+Subject: Re: [PATCH v2 1/3] selftests/mm: handle EINVAL when configuring
+ gigantic hugepages
 To: Sayali Patil <sayalip@linux.ibm.com>,
  Andrew Morton <akpm@linux-foundation.org>, Shuah Khan <shuah@kernel.org>,
  linux-mm@kvack.org, linux-kernel@vger.kernel.org,
@@ -73,7 +73,7 @@ Cc: Zi Yan <ziy@nvidia.com>, Michal Hocko <mhocko@kernel.org>,
  Miaohe Lin <linmiaohe@huawei.com>,
  Venkat Rao Bagalkote <venkat88@linux.ibm.com>
 References: <cover.1782811071.git.sayalip@linux.ibm.com>
- <bea784beacee411394c332272df9e68148caf7f3.1782811071.git.sayalip@linux.ibm.com>
+ <3d394c8cd59fe380d4e2d13b051544f241918f07.1782811071.git.sayalip@linux.ibm.com>
 From: "David Hildenbrand (Arm)" <david@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=david@kernel.org; keydata=
@@ -120,35 +120,98 @@ Autocrypt: addr=david@kernel.org; keydata=
  3iyY2Nsd7JxfKu1PRhCGwXzRw5TlfEsoRI7V9A8isUCoqE2Dzh3FvYHVeX4Us+bRL/oqareJ
  CIFqgYMyvHj7Q06kTKmauOe4Nf0l0qEkIuIzfoLJ3qr5UyXc2hLtWyT9Ir+lYlX9efqh7mOY
  qIws/H2t
-In-Reply-To: <bea784beacee411394c332272df9e68148caf7f3.1782811071.git.sayalip@linux.ibm.com>
+In-Reply-To: <3d394c8cd59fe380d4e2d13b051544f241918f07.1782811071.git.sayalip@linux.ibm.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
 On 6/30/26 11:32, Sayali Patil wrote:
-> The KSM selftest uses conditional expressions to skip accesses to
-> merge_across_nodes on systems without NUMA support. However, the
-> ternary operator is combined with logical OR without parentheses:
+> Some MM selftests attempt to configure the amount of
+> HugeTLB pages of different sizes by writing to nr_hugepages.
 > 
-> a || numa_available() ? 0 : b || c
+> PowerPC hash MMU pSeries systems advertise gigantic hugepage sizes
+> but do not support runtime allocation of such pages, writes
+> to the corresponding nr_hugepages file fail with -EINVAL.
+> This causes the test to bail out even though the failure is due
+> to a platform limitation rather than the
+> functionality being tested.
 > 
-> Due to operator precedence rules, this is parsed as:
+> Treat -EINVAL from the sysfs write as a skipped configuration request
+> and continue running the test instead of failing.
 > 
-> (a || numa_available()) ? 0 : (b || c)
+> Before patch:
+>    -------------------------
+>    running ./hugetlb-madvise
+>    -------------------------
+>    TAP version 13
+>    1..1
+>      [INFO] detected hugetlb page size: 16777216 KiB
+>      [INFO] detected hugetlb page size: 16384 KiB
+>     ok 1 MADV_DONTNEED and MADV_REMOVE on hugetlb
+>     Totals: pass:1 fail:0 xfail:0 xpass:0 skip:0 error:0
+>     Bail out! /sys/kernel/mm/hugepages/hugepages-16777216kB/nr_hugepages
+>     write(0) failed: Invalid argument
+>     Totals: pass:0 fail:0 xfail:0 xpass:0 skip:0 error:0
+>     [FAIL]
 > 
-> instead of the intended:
+> After patch:
+>    -------------------------
+>    running ./hugetlb-madvise
+>    -------------------------
+>    TAP version 13
+>    1..1
+>     [INFO] detected hugetlb page size: 16777216 KiB
+>     [INFO] detected hugetlb page size: 16384 KiB
+>    ok 1 MADV_DONTNEED and MADV_REMOVE on hugetlb
+>    Totals: pass:1 fail:0 xfail:0 xpass:0 skip:0 error:0
+>    /sys/kernel/mm/hugepages/hugepages-16777216kB/nr_hugepages
+>    write(0) failed: Invalid argument
+>    [PASS]
 > 
-> a || (numa_available() ? 0 : b) || c
-> 
-> Add parentheses around the conditional expressions to ensure the
-> correct evaluation order.
-> 
-> Fixes: 9aa1af954db0 ("selftests: vm: check numa_available() before operating "merge_across_nodes" in ksm_tests")
+> Fixes: 27477b28b74f ("selftests/mm: hugepage_settings: add APIs to get and set nr_hugepages")
 > Signed-off-by: Sayali Patil <sayalip@linux.ibm.com>
 > ---
+>  .../testing/selftests/mm/hugepage_settings.c  | 32 ++++++++++++++++++-
+>  .../testing/selftests/mm/hugepage_settings.h  |  1 +
+>  2 files changed, 32 insertions(+), 1 deletion(-)
+> 
+> diff --git a/tools/testing/selftests/mm/hugepage_settings.c b/tools/testing/selftests/mm/hugepage_settings.c
+> index 2eab2110ac6a..ce38ae3da01a 100644
+> --- a/tools/testing/selftests/mm/hugepage_settings.c
+> +++ b/tools/testing/selftests/mm/hugepage_settings.c
+> @@ -422,6 +422,36 @@ static void hugetlb_sysfs_path(char *buf, size_t buflen,
+>  		 size / 1024, attr);
+>  }
+>  
+> +void hugetlb_write_num(const char *path, unsigned long num)
+> +{
+> +	int fd, saved_errno;
+> +	ssize_t numwritten;
+> +	char buf[21];
+> +
+> +	sprintf(buf, "%lu", num);
+> +
+> +	fd = open(path, O_WRONLY);
+> +	if (fd == -1)
+> +		ksft_exit_fail_msg("%s open failed: %s\n", path, strerror(errno));
+> +
+> +	numwritten = write(fd, buf, strlen(buf));
+> +	saved_errno = errno;
+> +	close(fd);
+> +	errno = saved_errno;
+> +
+> +	/* Treat EINVAL as a skipped configuration (e.g., unsupported gigantic pages) */
+> +	if (numwritten < 0 && errno == EINVAL) {
+> +		ksft_print_msg("%s write(%s) failed: %s\n", path, buf, strerror(errno));
 
-LGTM, although the code is a bit ugly (already before your changes).
+Should we even print anything here? Rather confusing. It's just like we cannot
+allocate anything (no memory).
 
-Acked-by: David Hildenbrand (Arm) <david@kernel.org>
+In general, you are copy-pasting a lot of write_num()+write_file() content,
+which is really suboptimal.
+
+All you want is an option for write_num -> write_file to skip on -EINVAL, correct?
+
+There are not that many write_num / write_file users ...
 
 -- 
 Cheers,
