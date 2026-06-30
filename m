@@ -1,34 +1,34 @@
-Return-Path: <linuxppc-dev+bounces-23157-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23158-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 08912C43602
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Jun 2026 07:44:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DD02EC43458
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Jun 2026 07:45:09 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gqFXS6chyz2yqf;
-	Tue, 30 Jun 2026 17:44:24 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a0a:51c0:0:12e:550::1"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782805464;
-	cv=none; b=QasP/soz6B7VlqxDKtV/hiDNYi+3CLtAUPHKXWhp/pkPSOG0XJJhrfNjbLYCjlvUeB6YQjiszVbrZmwviSiMDqzI9Oxmrz9UqgKEG6Z592O7rRqq/irkQlPgszuRZn5OtY/v4ip1oDJyBQdv+obNx+Sv9x42knI55cBGSxp+nqPqxSY0HYQlqHf688PNIxafEF8xbm1a1QS8uvkXCEXs8FU+fbQkx/PiHB8QbVCfuWbWy6ZY3sMOnVYRYeMPu7RoPs2hernxErByMnQSEcIbHmm/wKddW785ihcMRnelKuISQeB9YOQuHvVvupA3WT+388wUULHIXq3m7M5rsachgw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gqFXV5x3yz2ytv;
+	Tue, 30 Jun 2026 17:44:26 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=193.142.43.55
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782805466;
+	cv=none; b=nf30MAeioBfyg3mZzMZDwlr8GvpOec/rrCyUkwrpGVggNUwt/5QxChlfziWO4Nwjy7KreKdfIsWwkAHRYiguc2z+8ow38IEAPs2eAZQwXVxsz2pXvdDtdnuhqCMX/cp6Wc1mz3UHdifDFr0tBUieDYy0GK3SO0XreSxvdCUQIUJapGASbZ6NGOc4fXCp48kMeGCJSug9k0Fk+fBtwzWPnrEMXvL8i7cScDNw5gFIA68QBgxX1ZDneLQ003wJ0wBhuVnjaUP18W7oIpDATj429URiCLbrHVGRl3vLOwhqmR1HPFvo7p1UFpv5pIwHK+WMy9t2Kg3aSIZVvg2+EDAk7g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1782805464; c=relaxed/relaxed;
-	bh=WgU1XNPY0vIUYdQ/FaYaRLqUo4Ff/LB/v3f+zOEPBiQ=;
+	t=1782805466; c=relaxed/relaxed;
+	bh=j0rP5abhmKr6KLEx3iZEdDeVAcPKxX+uoMyOYGVFHCg=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=R+7xb75tCLj4IgqlspnD8HNrPHBc1M9qlenGQGVcr060YEGeJk+HOVE24aYQ3rdwnplvOXHJ6PkERDhNSDneFIpJJxuwZlX/87ouZGffHokqHtAq6XrKfvqTbFesBFyv0ttIEaheCrPP4oy66/c+ix1ME74FvjBouxP9elOVu/Slp2mEHgTRkEuTse6Um1p+DOZjlxgkQttjB3YVpzoH9xQ5M9gsLyZ9AtrK2i5i8Wen9OtaUxNeODBcrVApoI1a5ivJIP7OxLzuUUHnE0V6AVApGvs4BQ2tbMaR6Sg7Tv8rqpLtFrI4LjKfTJQvrddQqY+AmBSv6VIBGK2ina4NJg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=h+IH3bIb; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=F9dovyTg; dkim-atps=neutral; spf=pass (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
+	 In-Reply-To:To:Cc; b=eURvl8RWcLaSH/MJegeXTTURk8zZP0Dfvq2fpVjZ9el1zY743V7wSr31qooIra2LiyAFdDV1LoHk5AKsFVuNuw3gfFiY/Gp2ZM5a+y7auQ3xt+ZchyFXMTqDZSMnP4fqBfs3wzpW7uvgXuYHQ+gpFZGLB5DPLEszgSPNlXYVNJbNZy+tjCWIDipMSy5ZEyZKXkB5UTDoPb7kWl/3/p4J73bvA2jpDZFncwAj4ILEqord6FDzTCRlu7Ehy7xPpqJCgDB4hO8Q1qD1T8MtesWUu8ttvTo2VPVBc3ixaHahabZdtHpRYeH1rd6dLa8vjm1wLB3913CtsDquGL5gymi6rA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=TczhSN8Q; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=jzgRViMZ; dkim-atps=neutral; spf=pass (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=h+IH3bIb;
-	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=F9dovyTg;
+	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=TczhSN8Q;
+	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=jzgRViMZ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org)
-Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org)
+Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gqFXR251Pz2yk6
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gqFXR5vKMz2yZZ
 	for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jun 2026 17:44:23 +1000 (AEST)
 From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
@@ -37,23 +37,23 @@ DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=WgU1XNPY0vIUYdQ/FaYaRLqUo4Ff/LB/v3f+zOEPBiQ=;
-	b=h+IH3bIb4hWPAsWvZ9L+T8/HyGFJ0+d2m1BDfA9jlQQqd7hcgQaruHtYDaXdtqMVXigWW1
-	9P6ghnGQNfIi9lg1IbgL2IPYfthldRToINTF0IQbuhnP26EZtQOuaD2c3LLwNWSWgjgP11
-	QvG0SJ5Pb9tOXQj90FzhQQa9fNqa3P25ETnLRbVEJ/f5D894D+zlmc3lXSc1PcSWbsYY5y
-	yai7jrcbn6iRKfSCtixhTz+LejYbyNQX3Vjo3mcKZ5pCUDDLbj+NFGzAVRjNC1UhdYxQDV
-	hdkzd/OyQpC7nfwW/+UnxBb7t5JrRy5/QlV1kG/2xLN9H9AlQPLk/p7fV6MvTw==
+	bh=j0rP5abhmKr6KLEx3iZEdDeVAcPKxX+uoMyOYGVFHCg=;
+	b=TczhSN8QMskf5TjORlWONf/XomuIBCqAPlEuPxXJKY8rTuQWE/zorwPnbatqBK9LoFH4Fl
+	odlBfohKOCPLp9io7ZxYulSYdULULLiy6oz3XyKKx+VJe6Vr/1APewPFsWoBir9tN0U8sd
+	PZkLNkoQRCJq9QTgOfy+dUxFAj1TqkOnvYoRqqf3joYMAo4F6g0JCLm1XN7WTmydPI4DkA
+	s91UJ9U+QDHI+ImbWxlUTLmijuljShdZ08aEPI3wnzR2hz2BDZRdF6XH0JEKB5Xpwpa1NA
+	NJyqqb7NwXALfPXxYxaUHF8Ep4qtiZHbtrumdNpfBQTxFb67vWrd/YPVIMgpqQ==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
 	s=2020e; t=1782805119;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=WgU1XNPY0vIUYdQ/FaYaRLqUo4Ff/LB/v3f+zOEPBiQ=;
-	b=F9dovyTgsQ94qzEBBtODBH6sasghBtq0x8pMwb559L+KL31pipNar8eEoVI8R8PXToRPCD
-	iH5xgFeGgMybUQBw==
-Date: Tue, 30 Jun 2026 09:38:32 +0200
-Subject: [PATCH v2 3/9] x86/vdso: Respect COMPAT_32BIT_TIME
+	bh=j0rP5abhmKr6KLEx3iZEdDeVAcPKxX+uoMyOYGVFHCg=;
+	b=jzgRViMZz774qFMKHXHPeMS4Mdkv4+p0V2Qcs9WaT2T4zF6wrBOB7bmiJcgGjaN8Q6cVtd
+	GztXYgnQ4ZdXOgDg==
+Date: Tue, 30 Jun 2026 09:38:33 +0200
+Subject: [PATCH v2 4/9] arm64: vdso32: Respect COMPAT_32BIT_TIME
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -69,7 +69,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20260630-vdso-compat_32bit_time-v2-3-520d194640dd@linutronix.de>
+Message-Id: <20260630-vdso-compat_32bit_time-v2-4-520d194640dd@linutronix.de>
 References: <20260630-vdso-compat_32bit_time-v2-0-520d194640dd@linutronix.de>
 In-Reply-To: <20260630-vdso-compat_32bit_time-v2-0-520d194640dd@linutronix.de>
 To: Andy Lutomirski <luto@kernel.org>, Thomas Gleixner <tglx@kernel.org>, 
@@ -90,11 +90,11 @@ Cc: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>,
  linuxppc-dev@lists.ozlabs.org, linux-mips@vger.kernel.org, 
  Arnd Bergmann <arnd@arndb.de>, linux-api@vger.kernel.org, 
  sparclinux@vger.kernel.org
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1782805116; l=3352;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1782805116; l=2429;
  i=thomas.weissschuh@linutronix.de; s=20240209; h=from:subject:message-id;
- bh=5A3ufT/BlAl4IMY/Ptlcs79bMJADg0kjD64uZGVIocg=;
- b=PzY+KudQ5YnvlX0RMo1JjTVOXOGayc171Vg7wV3AE9FjYs8epGJlmnq56c01HywzI2H8jpNZ9
- fSfaOYKxkeiDOtUbZXvBhCoJb+KXXreeoSjmohCrORyvtYjO9ZiZAoM
+ bh=plrPFKoJU/JbBsz98bmTgEfEDcWHMRUx9UlzYiAXfhk=;
+ b=MoI8OxBRQTXPL7JpTkPnu0q30h7XY+R8Rz3zOV8gOov8Sk45uvf1yINZeUgEwpoVHvWHmnObB
+ 7nCG3+7MN++CX2BCN1FaE5fKzjbNOp4AEI3o48IRlkxBfehKJSVKQvZ
 X-Developer-Key: i=thomas.weissschuh@linutronix.de; a=ed25519;
  pk=pfvxvpFUDJV2h2nY0FidLUml22uGLSjByFbM6aqQQws=
 
@@ -108,86 +108,67 @@ so also keep that in the vDSO.
 
 Signed-off-by: Thomas Weißschuh <thomas.weissschuh@linutronix.de>
 ---
- arch/x86/entry/vdso/common/vclock_gettime.c | 20 ++++++++++++--------
- arch/x86/entry/vdso/vdso32/vdso32.lds.S     |  2 ++
- 2 files changed, 14 insertions(+), 8 deletions(-)
+ arch/arm64/kernel/vdso32/vdso.lds.S      |  2 ++
+ arch/arm64/kernel/vdso32/vgettimeofday.c | 14 ++++++++------
+ 2 files changed, 10 insertions(+), 6 deletions(-)
 
-diff --git a/arch/x86/entry/vdso/common/vclock_gettime.c b/arch/x86/entry/vdso/common/vclock_gettime.c
-index 57066f346b3f..304dbd1f9db4 100644
---- a/arch/x86/entry/vdso/common/vclock_gettime.c
-+++ b/arch/x86/entry/vdso/common/vclock_gettime.c
-@@ -15,6 +15,7 @@
- 
- #include "lib/vdso/gettimeofday.c"
- 
-+#if defined(__x86_64__) || defined(CONFIG_COMPAT_32BIT_TIME)
- int __vdso_gettimeofday(struct __kernel_old_timeval *tv, struct timezone *tz)
- {
- 	return __cvdso_gettimeofday(tv, tz);
-@@ -29,6 +30,7 @@ __kernel_old_time_t __vdso_time(__kernel_old_time_t *t)
- }
- 
- __kernel_old_time_t time(__kernel_old_time_t *t)	__attribute__((weak, alias("__vdso_time")));
-+#endif /* CONFIG_COMPAT_32BIT_TIME */
- 
- 
- #if defined(CONFIG_X86_64) && !defined(BUILD_VDSO32_64)
-@@ -51,6 +53,7 @@ int clock_getres(clockid_t, struct __kernel_timespec *)
- 
- #else
- /* i386 only */
-+#ifdef CONFIG_COMPAT_32BIT_TIME
- int __vdso_clock_gettime(clockid_t clock, struct old_timespec32 *ts)
- {
- 	return __cvdso_clock_gettime32(clock, ts);
-@@ -59,14 +62,6 @@ int __vdso_clock_gettime(clockid_t clock, struct old_timespec32 *ts)
- int clock_gettime(clockid_t, struct old_timespec32 *)
- 	__attribute__((weak, alias("__vdso_clock_gettime")));
- 
--int __vdso_clock_gettime64(clockid_t clock, struct __kernel_timespec *ts)
--{
--	return __cvdso_clock_gettime(clock, ts);
--}
--
--int clock_gettime64(clockid_t, struct __kernel_timespec *)
--	__attribute__((weak, alias("__vdso_clock_gettime64")));
--
- int __vdso_clock_getres(clockid_t clock, struct old_timespec32 *res)
- {
- 	return __cvdso_clock_getres_time32(clock, res);
-@@ -74,6 +69,15 @@ int __vdso_clock_getres(clockid_t clock, struct old_timespec32 *res)
- 
- int clock_getres(clockid_t, struct old_timespec32 *)
- 	__attribute__((weak, alias("__vdso_clock_getres")));
-+#endif /* CONFIG_COMPAT_32BIT_TIME */
-+
-+int __vdso_clock_gettime64(clockid_t clock, struct __kernel_timespec *ts)
-+{
-+	return __cvdso_clock_gettime(clock, ts);
-+}
-+
-+int clock_gettime64(clockid_t, struct __kernel_timespec *)
-+	__attribute__((weak, alias("__vdso_clock_gettime64")));
- 
- int __vdso_clock_getres_time64(clockid_t clock, struct __kernel_timespec *ts)
- {
-diff --git a/arch/x86/entry/vdso/vdso32/vdso32.lds.S b/arch/x86/entry/vdso/vdso32/vdso32.lds.S
-index cee8f7f9fe80..00629192db56 100644
---- a/arch/x86/entry/vdso/vdso32/vdso32.lds.S
-+++ b/arch/x86/entry/vdso/vdso32/vdso32.lds.S
-@@ -23,10 +23,12 @@ VERSION
+diff --git a/arch/arm64/kernel/vdso32/vdso.lds.S b/arch/arm64/kernel/vdso32/vdso.lds.S
+index c374fb0146f3..12bfc39e8aab 100644
+--- a/arch/arm64/kernel/vdso32/vdso.lds.S
++++ b/arch/arm64/kernel/vdso32/vdso.lds.S
+@@ -82,9 +82,11 @@ VERSION
  {
  	LINUX_2.6 {
  	global:
 +#ifdef CONFIG_COMPAT_32BIT_TIME
  		__vdso_clock_gettime;
  		__vdso_gettimeofday;
- 		__vdso_time;
  		__vdso_clock_getres;
 +#endif /* CONFIG_COMPAT_32BIT_TIME */
  		__vdso_clock_gettime64;
  		__vdso_clock_getres_time64;
- 		__vdso_getcpu;
+ 	local: *;
+diff --git a/arch/arm64/kernel/vdso32/vgettimeofday.c b/arch/arm64/kernel/vdso32/vgettimeofday.c
+index 0c6998ebe491..12d0255cc2cf 100644
+--- a/arch/arm64/kernel/vdso32/vgettimeofday.c
++++ b/arch/arm64/kernel/vdso32/vgettimeofday.c
+@@ -8,16 +8,17 @@
+ #define BUILD_VDSO32_64
+ #include <vdso/gettime.h>
+ 
++#ifdef CONFIG_COMPAT_32BIT_TIME
+ int __vdso_clock_gettime(clockid_t clock,
+ 			 struct old_timespec32 *ts)
+ {
+ 	return __cvdso_clock_gettime32(clock, ts);
+ }
+ 
+-int __vdso_clock_gettime64(clockid_t clock,
+-			   struct __kernel_timespec *ts)
++int __vdso_clock_getres(clockid_t clock_id,
++			struct old_timespec32 *res)
+ {
+-	return __cvdso_clock_gettime(clock, ts);
++	return __cvdso_clock_getres_time32(clock_id, res);
+ }
+ 
+ int __vdso_gettimeofday(struct __kernel_old_timeval *tv,
+@@ -25,11 +26,12 @@ int __vdso_gettimeofday(struct __kernel_old_timeval *tv,
+ {
+ 	return __cvdso_gettimeofday(tv, tz);
+ }
++#endif /* CONFIG_COMPAT_32BIT_TIME */
+ 
+-int __vdso_clock_getres(clockid_t clock_id,
+-			struct old_timespec32 *res)
++int __vdso_clock_gettime64(clockid_t clock,
++			   struct __kernel_timespec *ts)
+ {
+-	return __cvdso_clock_getres_time32(clock_id, res);
++	return __cvdso_clock_gettime(clock, ts);
+ }
+ 
+ int __vdso_clock_getres_time64(clockid_t clock_id, struct __kernel_timespec *res)
 
 -- 
 2.55.0
