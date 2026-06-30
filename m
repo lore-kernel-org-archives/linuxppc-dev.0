@@ -1,73 +1,116 @@
-Return-Path: <linuxppc-dev+bounces-23182-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23183-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 11B5CC43458
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Jun 2026 09:36:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 11BEFC43458
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Jun 2026 10:24:17 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gqJ1D43fSz2xPL;
-	Tue, 30 Jun 2026 19:36:00 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782812160;
-	cv=none; b=bZYtEFvzDxbgokpykn3crGPqv7kVpCCH6tchCgHT8z+6Il0tKX7QCVS2JClCcXFbmA4NXOZmvpHpEJFOvo6gvyJ3UTfdMoyN/a+mr9ga1Ng83GmKMi6V4z/iEnDjr3yKXjaOl7tn5wY1CYNO0dlR9JbWBm+bAGKf57jEFKLK0Iq1+T4UO0u6VHc4LPfg5qGyvUM0gYknaLNFs3xXPH7JO38asn9kIfUXbtffwrO1KsJb6twRBIaI+qAewAtdGRkR6UJm8db3g+yNS4Ons6ZC4nAsIcq/nn2ud8RYl32DBDmKW9nUwmt2oh8K4wDYOTCj5Xcd4HpKAsom6Jwv1Uu7Aw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gqK4w1jQzz2yYs;
+	Tue, 30 Jun 2026 20:24:16 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=192.198.163.14
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782815056;
+	cv=none; b=iLB6LkOk1QY+pmfsv9FOgRrsfyxYGDSPPUCSYnLfu6N2Tz/VvCGxR1D2ekSMKc53TO4xaeBJ7RWTRUxwOZ8qEcxrR2G+rsWsVBKK1UQTw4pegWBQ7QGMHYeEu8jpvqN/WHlcBfegJKPubOdG7liDVuZMlhZhiJXzVxRptOoqPqH8t9G6Ale1bah6BWUbhehku268a6DG6SlieDuv/cJ6g36wmtz6MX1diuQIl4lxnK0XJHu8F54swG2omqkhAw5ZYA3XD3HOaz1epbCHl3MFZ4u5+GnimVOhI2OPvX6Vrr+yYZ84AxrJzWd64h3V9cF/TeT95rwIehb0ucIWcYqdNg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1782812160; c=relaxed/relaxed;
-	bh=ynIHlG9XKyd50EeZ1Oh9hk1QBbklthyVMi9jY71J0TM=;
-	h=Message-ID:Date:MIME-Version:From:Subject:To:Cc:References:
-	 In-Reply-To:Content-Type; b=fnnBTGhvsUJJPdP0C3YMFuYHi5yaF8DBnB4MYRJLDuEX+VJDUzQ5ODt1J2dkSBda9AEt7pRXEH+YouHgQ0tMF8FDFb34FEW8iNWwpBbDO2TI6GVLPQjRVPTc9+e5uPCZ39YML/L9P0kw30p4+5iF4C8hxOhlUAHbP0+lEiBLSb2FJX5UfuiLoFmDWARDoGtBjF2W4EuEwQ51x3ebak6cTxDiOLm27jBPO9+iLRp6BZc1jQTWtxQykrilClaqOJNh66sDFBD0OQlTLz+863OAnyTUjfJK+0FpIP1zlohus7+ln3KjkdDqj2hJtEv2VcnkLwqQ+0Gue/Ikqbsq4XA9fQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=fqL0qCCh; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sayalip@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1782815056; c=relaxed/relaxed;
+	bh=yYZN8QcmTZB0XuTqOpasOlloDru9xfoOYzlyz+jRrVI=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
+	 MIME-Version:Content-Type; b=iGCjpzfj0N80gVusCQrinDnPeMlh8pSElKYOSvn9iVA6rbnVBsg2j4+h6PSZvDrJrWaH+uM+57Dfl658qUIcLLIMfHzM/hSvvuo9SZigJvz5HMHaax6gR1/Q/aTAEC+TFG6dBhufkBsKTnH+OqDDnJW0iJKyAQ5NfTHWKJ8G3xmD72lXwsUH6/ROsbih/uk9YxWVGmT1OLuSMNMM3cqr+DDIrUcGXhyg8DnKm4aIC1nD1ZBLDotqezoEs4cAEb4p9y3PBMr7A024O8+3IDk7ClSBS80NOcJy/m4RQoxVc5ZcSbisn0CrPG6WoFR+LxQjY84uwO+EQnF9f5QJUUiPcQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=jY8HKonJ; dkim-atps=neutral; spf=pass (client-ip=192.198.163.14; helo=mgamail.intel.com; envelope-from=jani.nikula@intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=intel.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=fqL0qCCh;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=jY8HKonJ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sayalip@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=192.198.163.14; helo=mgamail.intel.com; envelope-from=jani.nikula@intel.com; receiver=lists.ozlabs.org)
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.14])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gqJ1C5f7Jz2xF8
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jun 2026 19:35:59 +1000 (AEST)
-Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 65U5mMkS1069686;
-	Tue, 30 Jun 2026 09:35:42 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=ynIHlG
-	9XKyd50EeZ1Oh9hk1QBbklthyVMi9jY71J0TM=; b=fqL0qCCh3ANo1+l4UOOMn8
-	pgyoEGMugURk/QbqJDyrahBPdTjVqfAaA6OdwJsA/uny+msEq6tj50P2aHXSS1Yy
-	6clqb1eFKWJQmKJJ9Q02bKjCW3TW2Ef48SAXtIgQEjOflAa5UQFqiMa6fNDvc/vc
-	vVrkuiIWOX9dCFOQY02dlCwgylhmExZb7KjrhxJVQf7ilTmSie9rUhXtp0KVv9vb
-	qEemq1gNo42vvRhikSSzIQhOT+3+HRA5dj4n83Yy59wcB78XGKXZVQS9mu/Uiggc
-	MSp/nx5jcm35ud4VBEpZklFQzQ14fBE9vsEUjtW/+TVh84CbK0At0uhv6JTfgrzA
-	==
-Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4f26rewm56-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 30 Jun 2026 09:35:41 +0000 (GMT)
-Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma11.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 65U9Yhcl005799;
-	Tue, 30 Jun 2026 09:35:40 GMT
-Received: from smtprelay02.wdc07v.mail.ibm.com ([172.16.1.69])
-	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4f2uhy97vh-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 30 Jun 2026 09:35:40 +0000 (GMT)
-Received: from smtpav03.wdc07v.mail.ibm.com (smtpav03.wdc07v.mail.ibm.com [10.39.53.230])
-	by smtprelay02.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 65U9ZeJK26804944
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 30 Jun 2026 09:35:40 GMT
-Received: from smtpav03.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 109055805F;
-	Tue, 30 Jun 2026 09:35:40 +0000 (GMT)
-Received: from smtpav03.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 7C4A85805A;
-	Tue, 30 Jun 2026 09:35:33 +0000 (GMT)
-Received: from [9.39.22.200] (unknown [9.39.22.200])
-	by smtpav03.wdc07v.mail.ibm.com (Postfix) with ESMTP;
-	Tue, 30 Jun 2026 09:35:33 +0000 (GMT)
-Message-ID: <8483ce18-070c-4d14-add6-bf65e3f71ddb@linux.ibm.com>
-Date: Tue, 30 Jun 2026 15:05:31 +0530
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gqK4r4kzGz2yY1
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jun 2026 20:24:10 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1782815053; x=1814351053;
+  h=from:to:cc:subject:in-reply-to:references:date:
+   message-id:mime-version;
+  bh=ktunQaDDS5EVOVO47fVPmptPD5p+avnAGjEgEXLkbp0=;
+  b=jY8HKonJpx6eXpLlDTt+998mHCae6iGmxmVe7+cOi7lyrJt7/aj+YsvT
+   hBB5+nZtTmvSO5Q8Fy8AVSuHZLmEIdVDyH8TgYsO17rpSV4dfK/u0WM7S
+   M57/7PVlps80rYDRh5+usjy1L7FbXQDS+MISaJ8ULjXhqw/0XOhbMOT7v
+   8LP5aCju8BfFGCrnBavciy9gMrrqkKKIPwXM4isrk+Ij57lTCyobl1zjY
+   gdhXm1XiOX8UZYY1ls1/p6cKH9kXgiZlk4+Xj+jk4F0flrtJ9us20zYAA
+   3DjfsED/r0tJHRAOpQRTSfpMSOwH8ATH5hzfCAQ3GYbpvyQasPPub/Tth
+   w==;
+X-CSE-ConnectionGUID: 6yUJD2P3R2y7sYrZQbNZJg==
+X-CSE-MsgGUID: ytdH5enuS36I5egAaxpCIQ==
+X-IronPort-AV: E=McAfee;i="6800,10657,11832"; a="83581409"
+X-IronPort-AV: E=Sophos;i="6.24,233,1774335600"; 
+   d="scan'208";a="83581409"
+Received: from fmviesa009.fm.intel.com ([10.60.135.149])
+  by fmvoesa108.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 30 Jun 2026 03:24:04 -0700
+X-CSE-ConnectionGUID: jgq2xSQuTZCC6QLcUYS3Dw==
+X-CSE-MsgGUID: Tgh3e1tLRQ2N4h0xSzOsDw==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.24,233,1774335600"; 
+   d="scan'208";a="245877673"
+Received: from ijarvine-mobl1.ger.corp.intel.com (HELO localhost) ([10.245.245.148])
+  by fmviesa009-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 30 Jun 2026 03:23:47 -0700
+From: Jani Nikula <jani.nikula@linux.intel.com>
+To: Lorenzo Stoakes <ljs@kernel.org>, Andrew Morton <akpm@linux-foundation.org>
+Cc: Thomas Bogendoerfer <tsbogend@alpha.franken.de>, Madhavan Srinivasan
+ <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, Maarten
+ Lankhorst <maarten.lankhorst@linux.intel.com>, Maxime Ripard
+ <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>, David
+ Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, Lucas Stach
+ <l.stach@pengutronix.de>, Inki Dae <inki.dae@samsung.com>, Seung-Woo Kim
+ <sw0312.kim@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>,
+ Krzysztof Kozlowski <krzk@kernel.org>, Peter Griffin
+ <peter.griffin@linaro.org>, Joonas Lahtinen
+ <joonas.lahtinen@linux.intel.com>, Rodrigo Vivi <rodrigo.vivi@intel.com>,
+ Tvrtko Ursulin <tursulin@ursulin.net>, Rob Clark
+ <robin.clark@oss.qualcomm.com>, Dmitry Baryshkov <lumag@kernel.org>, Lyude
+ Paul <lyude@redhat.com>, Danilo Krummrich <dakr@kernel.org>, Tomi
+ Valkeinen <tomi.valkeinen@ideasonboard.com>, Sandy Huang
+ <hjc@rock-chips.com>, Heiko =?utf-8?Q?St=C3=BCbner?= <heiko@sntech.de>,
+ Andy Yan
+ <andy.yan@rock-chips.com>, Thierry Reding <thierry.reding@kernel.org>,
+ Mikko Perttunen <mperttunen@nvidia.com>, Jonathan Hunter
+ <jonathanh@nvidia.com>, Gerd Hoffmann <kraxel@redhat.com>, Dmitry Osipenko
+ <dmitry.osipenko@collabora.com>, Zack Rusin <zack.rusin@broadcom.com>,
+ Matthew Brost <matthew.brost@intel.com>, Thomas Hellstrom
+ <thomas.hellstrom@linux.intel.com>, Oleksandr Andrushchenko
+ <oleksandr_andrushchenko@epam.com>, Helge Deller <deller@gmx.de>, Benjamin
+ LaHaise <bcrl@kvack.org>, Alexander Viro <viro@zeniv.linux.org.uk>,
+ Christian Brauner <brauner@kernel.org>, Muchun Song
+ <muchun.song@linux.dev>, Oscar Salvador <osalvador@suse.de>, David
+ Hildenbrand <david@kernel.org>, Zi Yan <ziy@nvidia.com>, Baolin Wang
+ <baolin.wang@linux.alibaba.com>, "Liam R . Howlett" <liam@infradead.org>,
+ Nico Pache <npache@redhat.com>, Ryan Roberts <ryan.roberts@arm.com>, Dev
+ Jain <dev.jain@arm.com>, Barry Song <baohua@kernel.org>, Lance Yang
+ <lance.yang@linux.dev>, Hugh Dickins <hughd@google.com>, Vlastimil Babka
+ <vbabka@kernel.org>, Mike Rapoport <rppt@kernel.org>, Suren Baghdasaryan
+ <surenb@google.com>, Michal Hocko <mhocko@suse.com>, Jann Horn
+ <jannh@google.com>, Pedro Falcato <pfalcato@suse.de>, Kees Cook
+ <kees@kernel.org>, Jaroslav Kysela <perex@perex.cz>, Takashi Iwai
+ <tiwai@suse.com>, linux-mips@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ dri-devel@lists.freedesktop.org, etnaviv@lists.freedesktop.org,
+ linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org,
+ intel-gfx@lists.freedesktop.org, linux-arm-msm@vger.kernel.org,
+ freedreno@lists.freedesktop.org, nouveau@lists.freedesktop.org,
+ linux-rockchip@lists.infradead.org, linux-tegra@vger.kernel.org,
+ virtualization@lists.linux.dev, intel-xe@lists.freedesktop.org,
+ xen-devel@lists.xenproject.org, linux-fbdev@vger.kernel.org,
+ linux-aio@kvack.org, linux-fsdevel@vger.kernel.org, linux-mm@kvack.org,
+ linux-sound@vger.kernel.org
+Subject: Re: [PATCH 08/13] mm: introduce vma_get_page_prot() and use it
+In-Reply-To: <3bb8bdc4788230c33102166d56cbc5abfad9d4cb.1782760670.git.ljs@kernel.org>
+Organization: Intel Finland Oy - BIC 0357606-4 - c/o Alberga Business Park,
+ 6 krs Bertel Jungin Aukio 5, 02600 Espoo, Finland
+References: <cover.1782760670.git.ljs@kernel.org>
+ <3bb8bdc4788230c33102166d56cbc5abfad9d4cb.1782760670.git.ljs@kernel.org>
+Date: Tue, 30 Jun 2026 13:23:44 +0300
+Message-ID: <d6d75626287ddd46d7da136cf013f7b21b1afc06@intel.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -81,151 +124,17 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-From: Sayali Patil <sayalip@linux.ibm.com>
-Subject: Re: [PATCH 1/2] selftests/mm: handle EINVAL when configuring gigantic
- hugepages
-To: Usama Arif <usama.arif@linux.dev>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Shuah Khan <shuah@kernel.org>,
-        linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-        linux-kselftest@vger.kernel.org,
-        Ritesh Harjani <ritesh.list@gmail.com>,
-        David Hildenbrand <david@kernel.org>, Zi Yan <ziy@nvidia.com>,
-        Michal Hocko <mhocko@kernel.org>, Oscar Salvador <osalvador@suse.de>,
-        Lorenzo Stoakes <lorenzo.stoakes@oracle.com>,
-        Dev Jain <dev.jain@arm.com>, Liam.Howlett@oracle.com,
-        linuxppc-dev@lists.ozlabs.org, Miaohe Lin <linmiaohe@huawei.com>,
-        Venkat Rao Bagalkote <venkat88@linux.ibm.com>
-References: <20260626144835.3759976-1-usama.arif@linux.dev>
-Content-Language: en-IN
-In-Reply-To: <20260626144835.3759976-1-usama.arif@linux.dev>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Authority-Analysis: v=2.4 cv=a4kAM0SF c=1 sm=1 tr=0 ts=6a438dee cx=c_pps
- a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
- a=IkcTkHD0fZMA:10 a=FelO9ux0wxsA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=V8glGbnc2Ofi9Qvn3v5h:22 a=VwQbUJbxAAAA:8
- a=VnNF1IyMAAAA:8 a=sZw2k_FkU4g0e2GbGXMA:9 a=QEXdDO2ut3YA:10
-X-Proofpoint-ORIG-GUID: O05riK16JTu0mCcfDhGEvhNGcRsFq20J
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjMwMDA4MyBTYWx0ZWRfX1F5LFHMQC1Uy
- WDGF1qlwgVeVVpKLWd/3RF65rRLw6rKLKDnh/vIEVXJdipdEBhOYTo8lhS36RYnHhKFiuyIkk6N
- hGi0XsDEbkzQa7dvK19AujSLmOme8rW58QMbjwN/wIuivV5BwQ4zT6cJpWpyt5YiGuqmW7RJ+/F
- q6XQ/X25XzF2qRSxguyM5MTJcZOxbxa6XG6nxzA4Q41QcX81iWFHYrrYAu+slncthSPieQd4iRj
- KA3PWR14/wlhsm4YQZLFqlnSsbnYjA0ILrbpkOdSMeC6jie2FC0Xno/y00c8lOB2bAy3zAqwaGv
- 91bDgvi0aHfAKrY6iYEigb220QtI7VIFD1Oe8c1z29tSfX5zJXnH0va/GeA8Z2SblXzTMW1lPLv
- luAeoS9O85EyuaPPZ56c4CWKTpqCymU3L/U00XCyGBVBybKL5VTPexHibs0gAJSfQOBRyOBdBKD
- DYdaUmuoHSYPu2g5xkQ==
-X-Proofpoint-GUID: phyyY_qkonHDLKEyL1C2LMBimzIXQU-q
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNjMwMDA4MyBTYWx0ZWRfX1cnShknkJ/ee
- 0x/UssF7tYiW7UFuGNZKW3uZv1DbylP9INZp0eU0fQliRUXc4rQKc9lKzPF5CA1iuTDuBoagdsC
- 9r+B7v4hQFFFcPZyKJeNgQbd8H+OwzI=
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
- definitions=2026-06-30_02,2026-06-26_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1011 bulkscore=0 suspectscore=0 lowpriorityscore=0 impostorscore=0
- spamscore=0 priorityscore=1501 adultscore=0 malwarescore=0 phishscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2606300083
+Content-Type: text/plain
+
+On Mon, 29 Jun 2026, Lorenzo Stoakes <ljs@kernel.org> wrote:
+>  drivers/gpu/drm/i915/gem/i915_gem_mman.c    | 12 ++++++------
+
+For i915,
+
+Acked-by: Jani Nikula <jani.nikula@intel.com>
 
 
 
-On 26/06/26 20:18, Usama Arif wrote:
-> On Thu, 25 Jun 2026 18:10:16 +0530 Sayali Patil <sayalip@linux.ibm.com> wrote:
-> 
->> Some MM selftests attempt to configure the amount of
->> HugeTLB pages of different sizes by writing to nr_hugepages.
->>
->> PowerPC hash MMU pSeries systems advertise gigantic hugepage sizes
->> but do not support runtime allocation of such pages, writes
->> to the corresponding nr_hugepages file fail with -EINVAL.
->> This causes the test to bail out even though the failure is due
->> to a platform limitation rather than the
->> functionality being tested.
->>
->> Treat -EINVAL from the sysfs write as a skipped configuration request
->> and continue running the test instead of failing.
->>
->> Before patch:
->>     -------------------------
->>     running ./hugetlb-madvise
->>     -------------------------
->>     TAP version 13
->>     1..1
->>       [INFO] detected hugetlb page size: 16777216 KiB
->>       [INFO] detected hugetlb page size: 16384 KiB
->>      ok 1 MADV_DONTNEED and MADV_REMOVE on hugetlb
->>      Totals: pass:1 fail:0 xfail:0 xpass:0 skip:0 error:0
->>      Bail out! /sys/kernel/mm/hugepages/hugepages-16777216kB/nr_hugepages
->>      write(0) failed: Invalid argument
->>      Totals: pass:0 fail:0 xfail:0 xpass:0 skip:0 error:0
->>      [FAIL]
->>
->> After patch:
->>     -------------------------
->>     running ./hugetlb-madvise
->>     -------------------------
->>     TAP version 13
->>     1..1
->>      [INFO] detected hugetlb page size: 16777216 KiB
->>      [INFO] detected hugetlb page size: 16384 KiB
->>     ok 1 MADV_DONTNEED and MADV_REMOVE on hugetlb
->>     Totals: pass:1 fail:0 xfail:0 xpass:0 skip:0 error:0
->>     /sys/kernel/mm/hugepages/hugepages-16777216kB/nr_hugepages
->>     write(0) failed: Invalid argument
->>     [PASS]
->>
->> Fixes: 9d07250ea1eb ("selftests/mm: hugepage_settings: add APIs to get and set nr_hugepages")
->> Signed-off-by: Sayali Patil <sayalip@linux.ibm.com>
->> ---
->>   tools/testing/selftests/mm/vm_util.c | 7 +++++++
->>   1 file changed, 7 insertions(+)
->>
->> diff --git a/tools/testing/selftests/mm/vm_util.c b/tools/testing/selftests/mm/vm_util.c
->> index 311fc5b4513e..a8f16eef5c7c 100644
->> --- a/tools/testing/selftests/mm/vm_util.c
->> +++ b/tools/testing/selftests/mm/vm_util.c
->> @@ -735,6 +735,13 @@ void write_file(const char *path, const char *buf, size_t buflen)
->>   	saved_errno = errno;
->>   	close(fd);
->>   	errno = saved_errno;
->> +
->> +	if (numwritten < 0 && errno == EINVAL) {
->> +		ksft_print_msg("%s write(%.*s) failed: %s\n", path,
->> +			       (int)(buflen - 1), buf, strerror(errno));
->> +		return;
->> +	}
->> +
-> This makes write_file() silently succeed for every EINVAL, not just the
-> gigantic-hugetlb setup case. Several callers use this helper for writes where
-> EINVAL is a real test failure, for example drop_caches or split huge page
-> setup. Those tests can now continue after a failed setup and report misleading
-> results.
-> 
-> Please keep the common helper strict and ignore EINVAL only in the hugetlb
-> path that is probing unsupported gigantic page runtime allocation.
-
-Thanks for review!
-In v2, I kept the generic write_file() helper unchanged and
-added a dedicated hugetlb_write_num() helper to handle the expected
--EINVAL returned when configuring gigantic hugepages. This limits the
-special handling to the hugepage setup path and avoids masking genuine
-EINVAL failures from other write_file() callers.
-
-V2: 
-https://lore.kernel.org/all/3d394c8cd59fe380d4e2d13b051544f241918f07.1782811071.git.sayalip@linux.ibm.com/
-
-> 
-> 
->>   	if (numwritten < 0)
->>   		ksft_exit_fail_msg("%s write(%.*s) failed: %s\n", path, (int)(buflen - 1),
->>   				buf, strerror(errno));
->> -- 
->> 2.52.0
->>
->>
-> 
-
+-- 
+Jani Nikula, Intel
 
