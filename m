@@ -1,64 +1,59 @@
-Return-Path: <linuxppc-dev+bounces-23194-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23195-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C546EC43458
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Jun 2026 13:22:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 49E05C43458
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Jun 2026 13:25:13 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gqP2S2h7Jz2ybQ;
-	Tue, 30 Jun 2026 23:22:24 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782825744;
-	cv=none; b=VgVWMtScxKRWt1r2hatX+8LS0v6xXQBXDyV+U3FjerNRX8Nm4g40bFC7BpksKOIUxjkHIsV6DCxwTe+U7/UNUYS697KrGw79+uOVCvMqlloaxloUBdVLnUjotfepMsIQndw6jGdhPyM8tSUp9ZWTInU54OnSm83CJ3YsWJolH1WvuxvKWtyicSnW0bmEEVVru/CdhfI7ksTKDzwjrLK9KywIWXZQ9Lx7CNYl3HPfY+zjv9dL1Hdw+S8ldTySqfNthTIMGfjVOoK35DSLDB3VCauIWSJeh8RBp6ibev4y6XlV69jZL5OWm5fW2khwaS/pgX372biecIBbXTZzv3au8w==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gqP5g6Z7Lz2ybR;
+	Tue, 30 Jun 2026 23:25:11 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782825911;
+	cv=none; b=JEXsd2vAMnQxo1vbVWyzDcuOhEgLkpA4HuBT/ADLg6gJB4vc/Q3B6N9knQbSY8pZVluHgu9XGWKA/J0SHh0Myfc4fXJkUoswt/OQp4XumQKD+MElN5KVQ4PM2EFRlMG+OCevixo91WgWlJoAkC2wZD6P323wh4/MFxU5p6iC3T6j9494JbsQ5V6y/2zr639n31sQHLursPng+YOHvgJf/zQJslY5QzjqjXoyrT+P4AfCj3CCeAWWs/U1ScPqNGJz2NyNQkrtT3G5dnX+V6ag2lHuk/lt8+yDAj8J3weNoq3WiQltpSWsVar7oAKhE+Cm5i8Q6P95VVpGtzI1OQ/dNQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1782825744; c=relaxed/relaxed;
-	bh=siJF0S+CSX6SKMbF6lhMt/C1v2E/StqLW87OFuT5mug=;
-	h=From:In-Reply-To:MIME-Version:References:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=dm+lDRY0ECmF71SWblFq43E7Ytvulp6BqLM06YgQrXowOUgd3DDDElslVvJn+zGQqUjPEcH/h3iIZfu+QtBJy27nnFTTe/hWKG03iXSZXhwpV0oE+zTV948jN8A5mnjw+jxUK21yWpwSO+AjRN0A/aHMbsuL1vrbtwozOsJ6y43tSFvlNO3PmLKWIvVQhNKaCTEp+62Xzm/SENcQQh9hBkpXYe7vXkHxYxJNEYVqWHMZpNBCRiXZt03KMwnKUGvUYeT6WnYAq1vJMBdKodOZoYb6P9j8I1EbzyKAHPmpWun2VwzYFeH7k/gBwgn7Hyu3I/XNhWYIDl3IIVkkcCm+yA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=AwMqGpzZ; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=brgl@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1782825911; c=relaxed/relaxed;
+	bh=aN3AhlhZvp+Vej1wTa9tcQgECOaxstihSa4ef2eA6j4=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=mGycceM4mP2MCTm1xvIavPak1VpsmLOVAqCs5GHursLwiFxiunVNNEJ5gklvACjavcr0DbXAYQkeT/a3mn+VgvIzViVhGqm7uX0UVKMyxpFzsvTkVjwL+/6upvwdcV8xWyHNsbfQe4U49mvFOkBncTA8EjlVZRJPqYLcVOwQXNGkfrItDyLO3beVndMYifkeNI3wPawYynFQqo3ZU6euUN1bEKZgcd7QuXq193OoSn6D6d87BHBsb+GaTWLF0KNHSi7tprl0wcMR9+AzS+7DMY1rYkcrsEm/mDe+AkEyD/rS8kvDOspkqLzvWQL4UbkNVO/DnL1rdF9e/x7D5DNDZQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=PPGrUUeS; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=AwMqGpzZ;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=PPGrUUeS;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=brgl@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gqP2Q6WBcz2yZc
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jun 2026 23:22:22 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gqP5f4r5dz2ybQ
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jun 2026 23:25:10 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id CDEED601DF
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jun 2026 13:22:19 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 82B6E1F00A3E
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jun 2026 13:22:19 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 0488E601C1;
+	Tue, 30 Jun 2026 13:25:08 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 941CF1F00A3D;
+	Tue, 30 Jun 2026 13:25:05 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1782825739;
-	bh=siJF0S+CSX6SKMbF6lhMt/C1v2E/StqLW87OFuT5mug=;
-	h=From:In-Reply-To:References:Date:Subject:To:Cc;
-	b=AwMqGpzZSvDnV5vSM2z0wkwmPZcuy6Z0HxhXFqaldHKlF6D4sOyHQK4L/B0fF/itF
-	 Z9C2BVuksw1mr1+6ch02R+Zz8gUAI5fDmwZjU0wGMt2h6Gvq8cC5ZOCtMOofX5R+yU
-	 1Hy/oyLq2B0fQTEZyfgl3xfrexpVhETu+CQgBxy7/99a3XMItUDuxVCBl4oiSjn1eD
-	 o38KeGOoUlFVb5zZeSXv+WtlmGXFDo9Wxn8ecfVThX04SgSmZnYMsm+XWmLmYZpjIC
-	 zdm9J6iEsk3ibRX/F7HoLCPZU+tHrUTrb8Qp73PbRYfYDyWDS2X2Ru7diIgwCebdnz
-	 9GKoHZxfVlf+A==
-Received: by mail-lf1-f44.google.com with SMTP id 2adb3069b0e04-5aeb59d54b1so2164114e87.1
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jun 2026 06:22:19 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AHgh+RqhJE3HN+vFglU2nL+krI3xlg2nOMTBzFlwz4SuqXtMnlvIMHR9DvRZSkrQOsTHg9qo6XivoF13BYKEaL0=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YwOOCjsjoQDntWTc8yurqzDXh0HAC7llyqEepMVmE5/vz6balf4
-	VBZa1acMGDzj0Tp/ht8KURzxbOtlToTk2PZ4TcVKOJXhEKhwoymrh7DFO6YMpt/NmrTE+NgL3fW
-	QiXJcKc9W8AqcX3pz8OmtLhwgQcqhi2fNid3Q09WC3g==
-X-Received: by 2002:a05:6512:8041:b0:5ad:4f1c:8e50 with SMTP id
- 2adb3069b0e04-5aebdba2f7fmr745427e87.37.1782825738263; Tue, 30 Jun 2026
- 06:22:18 -0700 (PDT)
-Received: from 969154062570 named unknown by gmailapi.google.com with
- HTTPREST; Tue, 30 Jun 2026 09:22:16 -0400
-Received: from 969154062570 named unknown by gmailapi.google.com with
- HTTPREST; Tue, 30 Jun 2026 09:22:16 -0400
-From: Bartosz Golaszewski <brgl@kernel.org>
-In-Reply-To: <263f58b418a27a2339fc2478f93234e0208b0ad9.camel@mailbox.org>
+	s=k20260515; t=1782825907;
+	bh=aN3AhlhZvp+Vej1wTa9tcQgECOaxstihSa4ef2eA6j4=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=PPGrUUeSl/XrMhQtEga5FLzhwJipIBhyy+Cl2YlPEKnbd13fF0wc9hMSdiRwnO5S/
+	 FsEv3G5Wtln7mjfJypkaeJ1fqn4Cr962msmXnlH308MOswPjSfDa71eOvV70fDxfBw
+	 IIuq33OvNwHzzY+yCmZxkbm7mxAG163Gq3135+/QCZctY+po8c49SgYbekXWt9X8LC
+	 49nyZ7qXskvfBjTypvDirUlkvZB73efQ5s1/g6t8BNTc0AgADRndfTp/gFf1ewvG7m
+	 XXOHBNhXt0DVzo8/6yuzsFoz5QPQurWFcm1pJmv4IuCkLUNkqOGXFbXabcdCVjL72R
+	 8pQTfvoE2PB4g==
+Date: Tue, 30 Jun 2026 14:25:03 +0100
+From: Mark Brown <broonie@kernel.org>
+To: shengjiu.wang@oss.nxp.com
+Cc: shengjiu.wang@gmail.com, Xiubo.Lee@gmail.com, festevam@gmail.com,
+	nicoleotsuka@gmail.com, lgirdwood@gmail.com, perex@perex.cz,
+	tiwai@suse.com, linux-sound@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH V3] ASoC: fsl_audmix: rework runtime PM handling in probe
+Message-ID: <e0367509-358c-4ace-a7b3-56b903cee0d9@sirena.org.uk>
+References: <20260630124016.645114-1-shengjiu.wang@oss.nxp.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -72,70 +67,41 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20260629-pdev-fwnode-ref-v2-0-8abe2513f96e@oss.qualcomm.com>
-	 <20260629-pdev-fwnode-ref-v2-2-8abe2513f96e@oss.qualcomm.com> <263f58b418a27a2339fc2478f93234e0208b0ad9.camel@mailbox.org>
-Date: Tue, 30 Jun 2026 09:22:16 -0400
-X-Gmail-Original-Message-ID: <CAMRc=MdQURjypSn+QjSDJfEiOMC8bbEZmZLgjpt=EquAM1Q1pw@mail.gmail.com>
-X-Gm-Features: AVVi8CeQXBZd5M2B6MhLUb095jshYyZGAJu3z11iktq0q6r491Qj_z_hr6U3W70
-Message-ID: <CAMRc=MdQURjypSn+QjSDJfEiOMC8bbEZmZLgjpt=EquAM1Q1pw@mail.gmail.com>
-Subject: Re: [PATCH v2 02/19] driver core: platform: provide platform_device_set_of_node()
-To: Manuel Ebner <manuelebner@mailbox.org>
-Cc: brgl@kernel.org, linux-kernel@vger.kernel.org, netdev@vger.kernel.org, 
-	linux-arm-msm@vger.kernel.org, linux-sound@vger.kernel.org, 
-	driver-core@lists.linux.dev, devicetree@vger.kernel.org, 
-	linuxppc-dev@lists.ozlabs.org, linux-i2c@vger.kernel.org, 
-	iommu@lists.linux.dev, linux-pm@vger.kernel.org, imx@lists.linux.dev, 
-	linux-arm-kernel@lists.infradead.org, intel-xe@lists.freedesktop.org, 
-	dri-devel@lists.freedesktop.org, linux-usb@vger.kernel.org, 
-	linux-mips@vger.kernel.org, platform-driver-x86@vger.kernel.org, 
-	Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>, Lee Jones <lee@kernel.org>, 
-	Thierry Reding <thierry.reding@avionic-design.de>, 
-	Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Andrew Lunn <andrew+netdev@lunn.ch>, 
-	"David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, 
-	Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, 
-	Srinivas Kandagatla <srini@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
-	Vinod Koul <vkoul@kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Danilo Krummrich <dakr@kernel.org>, 
-	Rob Herring <robh@kernel.org>, Saravana Kannan <saravanak@kernel.org>, 
-	Madhavan Srinivasan <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, 
-	Nicholas Piggin <npiggin@gmail.com>, "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, 
-	Andi Shyti <andi.shyti@kernel.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, 
-	Joerg Roedel <joro@8bytes.org>, Will Deacon <will@kernel.org>, Robin Murphy <robin.murphy@arm.com>, 
-	Doug Berger <opendmb@gmail.com>, Florian Fainelli <florian.fainelli@broadcom.com>, 
-	Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>, Ulf Hansson <ulfh@kernel.org>, 
-	Frank Li <Frank.Li@nxp.com>, Sascha Hauer <s.hauer@pengutronix.de>, 
-	Pengutronix Kernel Team <kernel@pengutronix.de>, Fabio Estevam <festevam@gmail.com>, 
-	Matthew Brost <matthew.brost@intel.com>, 
-	=?UTF-8?Q?Thomas_Hellstr=C3=B6m?= <thomas.hellstrom@linux.intel.com>, 
-	Rodrigo Vivi <rodrigo.vivi@intel.com>, David Airlie <airlied@gmail.com>, 
-	Simona Vetter <simona@ffwll.ch>, Peter Chen <peter.chen@kernel.org>, 
-	Paul Cercueil <paul@crapouillou.net>, Bin Liu <b-liu@ti.com>, 
-	Philipp Zabel <p.zabel@pengutronix.de>, Maximilian Luz <luzmaximilian@gmail.com>, 
-	Hans de Goede <hansg@kernel.org>, =?UTF-8?Q?Ilpo_J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>, 
-	Krzysztof Kozlowski <krzk@kernel.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="k7GzKw/gt5Rm2Xcy"
+Content-Disposition: inline
+In-Reply-To: <20260630124016.645114-1-shengjiu.wang@oss.nxp.com>
+X-Cookie: Air is water with holes in it.
 
-On Tue, 30 Jun 2026 13:37:54 +0200, Manuel Ebner <manuelebner@mailbox.org> said:
-> On Mon, 2026-06-29 at 11:12 +0200, Bartosz Golaszewski wrote:
->> [...]
->>
->> +/**
->> + * platform_device_set_of_node - assign an OF node to device
->> + * @pdev: platform device to add the node for
->> + * @np: new device node
->> + *
->> + * Assign an OF node to this platform device. Internally keep track of the
->> + * reference count. Devices created with platform_device_alloc() must use this
->> + * function instead of assigning the node manually.
->
-> Doesn't it make sense to add a remark to the kernel doc of platform_device_alloc()?
->
-> Thanks
->  Manuel
->
->>  [...]
->
 
-Sure, will do in the next iteration.
+--k7GzKw/gt5Rm2Xcy
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Bart
+On Tue, Jun 30, 2026 at 08:40:16PM +0800, shengjiu.wang@oss.nxp.com wrote:
+
+> Changes in v3:
+> - address the comments from sashiko.dev
+> - replace the pm_runtime_put() with pm_runtime_put_sync() to fix the
+>   race of async=20
+
+I already applied v2, please submit new changes with these updates.
+
+--k7GzKw/gt5Rm2Xcy
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAmpDw64ACgkQJNaLcl1U
+h9BvwQf9Hij/dQrKYeOKMveHecl8CVNUC7XqMFWQpw1P5aqN+PrK+R9mZnTrKUxe
+S5BpWKmNeEN4hwPpZA2FfPZlKoRWDN+3/ecyQWqBvAy6Vl0ThGKMWrzxYhTvov0C
+nanG7svDN36m8qyiitKuYNGB1c/FsizZe15G4Q5PPM6Z/7fbFC7asTAUQVaCJd3K
+T/m3WsHbzYyqEmXPSCgHJU9fwroFT1/aclyUoscscLDEAaFrfQi1A9W9s0CH0nzt
+V3G4dbU0O+xkA+zCDsn819YOv3ighnoJIVumTQFlkv91FXYfUUnO+4MvB+wWlmJX
+Qn/hQV2+4tWeSOAhCJYBgyF+dz6AZg==
+=Gc+K
+-----END PGP SIGNATURE-----
+
+--k7GzKw/gt5Rm2Xcy--
 
