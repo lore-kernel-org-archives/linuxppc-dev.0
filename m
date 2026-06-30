@@ -1,35 +1,35 @@
-Return-Path: <linuxppc-dev+bounces-23155-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23156-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0F1C4C43458
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Jun 2026 07:44:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 04092C43458
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Jun 2026 07:44:53 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gqFXR2CMjz2ykX;
-	Tue, 30 Jun 2026 17:44:23 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gqFXS4pyfz2yps;
+	Tue, 30 Jun 2026 17:44:24 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a0a:51c0:0:12e:550::1"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782805463;
-	cv=none; b=FVnvaRg4O/inv0vqrmfNHRB//MN/PC6ILsPbIxPln6rNyKpDzJS0r3b02E7EjJD0BpyrRD94gPKu6vWPKF7UgDu/etrkA0h/7P/QEoerKVLMRcSc2ZlatU+YhUe1o1Ra/c2uJ5+dh1qjxHLdZHF1Huq3VFNDrTZ+WhkeqxQrSqlwPVeRLBlIdDvcny/4In2omP0HeKYDxMQG+LVBAl3JBNqCGm8n25pORcvboONOPf9z9v+gSDTKeYjBLJPeNT/8pu7Dn9fYqsYeLAK6EJVfVpJ92ELAFimljxc788/ok3f7eiYSL5Mukq3lsdzBn0Nb1DmS8CdoWxo8DPwx6FSGwg==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782805464;
+	cv=none; b=MMDWZ9gs34+5ln2JvqFdGyeiL2JRKwFIHCqU212sdQi/EoVbyEo1fK0dURvuLPSwwQzD28XMizQFbwb0/vPSTWkiTuaUqs/kgkftn+PKkXbvAABE+E+PyIbf34Zv/v8wnKlG06QYkYvwyZUasiLhLq82CAqagey3kgkCmU4XrSHAGcZdwN+RDrvaMIMXzejrN+69xHPQFZ1oNfS3gk5xftVJaFFS5fjXWl+CLiYcDCcDdB73yC82O7fz9Hqzk3plfKIDxMR06h2hlRpjE3Kjz8/3OBjlDsJwtLoIXLn2Z7vKF/OEKvw7q3JH/5Mrq26GoJfkR6dCyZUb50hRxzlxXQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1782805463; c=relaxed/relaxed;
-	bh=oLMUk/yMfaiFPgFvnWmAECoPJREoyyvTC7Prat1r96I=;
+	t=1782805464; c=relaxed/relaxed;
+	bh=iUQ6jFSMVNPMzb38d677yAeg1LprsENzvRHiBxMRE/A=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=bKy7zWV3d8I/hqoYEm+OunUD9u2p/5Q1yruoGbCSVrYQHKiOdRZIBbsh+DTS/rVexjqFTKNHPu3T9L9ywp3f5KGQtwiAhMcANS/sePrwF4neQUR/0SMrV/YqVq6aFwMvYTf+oKDU7xj5cHBB8OvE5TaPoJqJzST0RIG5NHX/qHoANPg5+0a7kj+QRxuG8tCRs/inzUa+O2QFyM0+RfZwsTYesW9EaFdZvz0xNKEPUufjyBnPcJ0NP9f6vH0Yt/1k7dNhMLeSTgmtDBi3KmoCX/a0knON4Aqi2Onf1n7TmXdp23Pra07osQV7Mh2P0naL3KQlaJZsZ//sjrWdG0dA7g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=xs3x1Pjf; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=qx+W8f38; dkim-atps=neutral; spf=pass (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
+	 In-Reply-To:To:Cc; b=CxYge2TkVpH7F7hIYU/j1UoO8CjtfoaBDlerB2VdWriIKd7Dh6DK0mnionIb3cnSdf7p3hOrQPzkDI2id5p66qoWHC7VNcrGXcrOca7j+Ut7ZVciUNpmabDkU39UY/pn/Yu6SdJ+tNwqG9zemwqaexBg9IJKzPqVgHMfxX84HawT/pLYb9OPB6LRMZt53uFXcq7i6Ce4n7hOr24VsuM85tLcM6KDKfbyafJVxPPerGtiAG0Yft+p7c8WIvrcd30TfP2qtBvY13iEdtDD20apymbnYrosGuHa5sF1drspU6kSIzDjBRCmkXDkp9UOhAb5OtVEnOde5zsD97f53RnJ1A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=azx0VF9B; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=9987Z3GT; dkim-atps=neutral; spf=pass (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=xs3x1Pjf;
-	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=qx+W8f38;
+	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=azx0VF9B;
+	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=9987Z3GT;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org)
 Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gqFXL4XkQz2ybQ
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jun 2026 17:44:18 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gqFXR1nYjz2yjx
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jun 2026 17:44:23 +1000 (AEST)
 From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
 	s=2020; t=1782805120;
@@ -37,23 +37,23 @@ DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=oLMUk/yMfaiFPgFvnWmAECoPJREoyyvTC7Prat1r96I=;
-	b=xs3x1Pjfbw+jtif4Ux4gwzmNi2TjSpFeP32XnxHtpcaiTGGWWK4YG681PAUV4GVZVphAob
-	ASLgA1yUtGspkWLkqezV8XVVXZUA0rCGRoxIhhg8Fbxe6Vs/b+klMFiPT462lzYGS4IQZk
-	HkGajj9Utoc6znjfXxr5UFHEuuFZfTRvFAtHEgwRq8U7lojgogT11LVugHkZwoxdEF37kD
-	kIffFQ9SVTSrSHuwMJItnP1eBmnBxHF/+Vg/0WtVZdmO0qpb8TKBU6tCKRYSooMiqM9BxY
-	p4VmT9F9Pgw6zSA1GjdJHXWn57yAJt3V2S+GXmm2Hc+cpBIw6+O+HlJNnQFY5A==
+	bh=iUQ6jFSMVNPMzb38d677yAeg1LprsENzvRHiBxMRE/A=;
+	b=azx0VF9BBEtAr6ThA3DX8ZuDyV7033nYYJNIAmDBN8Lp3/iyYMAoRv79U/JPQ46Dk1olVO
+	WciQTdIzt0q+ph5qD4attfn0fiqCz5uLvmivbJVUKu0pE95/F4YtFHhpamzIg/msfr+Llp
+	qFEwW7fEPEfv1C4xZDTTPLEivZi7dGUrZXnmiqW2tBLGGWm3sBhWKFsk7mB3XvsB1OpKOx
+	aVTuT14dju5xMOQqEA1gJiM1BO2QhEb7DEsHT30dsHNr0xOt+9WsHkyi3jDg27QQVVtHis
+	C8EwyuswDoQxqLYV62IgEHIObYywWlv4n6BXxgtI4USncweQo6NAcLostoKIqw==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
 	s=2020e; t=1782805120;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=oLMUk/yMfaiFPgFvnWmAECoPJREoyyvTC7Prat1r96I=;
-	b=qx+W8f38ofF6zICatvj4+srW01mOicSd7rnKy8/FWbLY87uzG2hELauTTgO0SEPrlTVfBu
-	EY2d+CQszihi7/Dg==
-Date: Tue, 30 Jun 2026 09:38:35 +0200
-Subject: [PATCH v2 6/9] powerpc/vdso: Respect COMPAT_32BIT_TIME
+	bh=iUQ6jFSMVNPMzb38d677yAeg1LprsENzvRHiBxMRE/A=;
+	b=9987Z3GTA/PZJ9Vl1M6iHdMwE8mQRNdoTRRjeakAY3fSlZgniuuu21uWmsb6Tp/5SN60S/
+	Ik1kFTcFqNdv5GCw==
+Date: Tue, 30 Jun 2026 09:38:34 +0200
+Subject: [PATCH v2 5/9] ARM: VDSO: Respect COMPAT_32BIT_TIME
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -69,7 +69,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20260630-vdso-compat_32bit_time-v2-6-520d194640dd@linutronix.de>
+Message-Id: <20260630-vdso-compat_32bit_time-v2-5-520d194640dd@linutronix.de>
 References: <20260630-vdso-compat_32bit_time-v2-0-520d194640dd@linutronix.de>
 In-Reply-To: <20260630-vdso-compat_32bit_time-v2-0-520d194640dd@linutronix.de>
 To: Andy Lutomirski <luto@kernel.org>, Thomas Gleixner <tglx@kernel.org>, 
@@ -90,11 +90,11 @@ Cc: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>,
  linuxppc-dev@lists.ozlabs.org, linux-mips@vger.kernel.org, 
  Arnd Bergmann <arnd@arndb.de>, linux-api@vger.kernel.org, 
  sparclinux@vger.kernel.org
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1782805116; l=4909;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1782805116; l=2321;
  i=thomas.weissschuh@linutronix.de; s=20240209; h=from:subject:message-id;
- bh=Qhpx3Xfl+Ro99botE5UEjPE2/tscRuOVBD2UN2HjYfQ=;
- b=Z4VF7j04jCTsakdoKCOJkmqBAxMXn2DHpuXL9IVEvSButRpRVsO8befWXpECQWvou78n05wvE
- p6JjNeW6LPcDKDGX4ph/GO4igdXofpwIXMEY78R8YaQcfyhSrZxTvHM
+ bh=T7+Paogn085sgV9ELgz2TiMuWvOL8lCxlSvp1JXazDE=;
+ b=PTy781XLM2JNi0R38FXtorGsAFXddDqIMmPeoQy7XdGWCfhypPS/ubgzDzcAGa/pbyA/i7DT7
+ YjBmN0yfLKvBx0D/ixlkCFqITJ+WN73NzmdTvcbFjUarFsLbYGcUeOl
 X-Developer-Key: i=thomas.weissschuh@linutronix.de; a=ed25519;
  pk=pfvxvpFUDJV2h2nY0FidLUml22uGLSjByFbM6aqQQws=
 
@@ -108,133 +108,67 @@ so also keep that in the vDSO.
 
 Signed-off-by: Thomas Weißschuh <thomas.weissschuh@linutronix.de>
 ---
- arch/powerpc/kernel/vdso/gettimeofday.S  |  8 ++++++++
- arch/powerpc/kernel/vdso/vdso32.lds.S    | 10 ++++++----
- arch/powerpc/kernel/vdso/vgettimeofday.c | 16 ++++++++++------
- 3 files changed, 24 insertions(+), 10 deletions(-)
+ arch/arm/vdso/vdso.lds.S      |  2 ++
+ arch/arm/vdso/vgettimeofday.c | 14 ++++++++------
+ 2 files changed, 10 insertions(+), 6 deletions(-)
 
-diff --git a/arch/powerpc/kernel/vdso/gettimeofday.S b/arch/powerpc/kernel/vdso/gettimeofday.S
-index 1c8e51691bf8..c635cd1e77be 100644
---- a/arch/powerpc/kernel/vdso/gettimeofday.S
-+++ b/arch/powerpc/kernel/vdso/gettimeofday.S
-@@ -67,9 +67,11 @@
-  * int __kernel_gettimeofday(struct timeval *tv, struct timezone *tz);
-  *
-  */
-+#if defined(__powerpc64__) || defined(CONFIG_COMPAT_32BIT_TIME)
- V_FUNCTION_BEGIN(__kernel_gettimeofday)
- 	cvdso_call __c_kernel_gettimeofday
- V_FUNCTION_END(__kernel_gettimeofday)
-+#endif
- 
- /*
-  * Exact prototype of clock_gettime()
-@@ -77,9 +79,11 @@ V_FUNCTION_END(__kernel_gettimeofday)
-  * int __kernel_clock_gettime(clockid_t clock_id, struct timespec *tp);
-  *
-  */
-+#if defined(__powerpc64__) || defined(CONFIG_COMPAT_32BIT_TIME)
- V_FUNCTION_BEGIN(__kernel_clock_gettime)
- 	cvdso_call __c_kernel_clock_gettime
- V_FUNCTION_END(__kernel_clock_gettime)
-+#endif
- 
- /*
-  * Exact prototype of clock_gettime64()
-@@ -99,9 +103,11 @@ V_FUNCTION_END(__kernel_clock_gettime64)
-  * int __kernel_clock_getres(clockid_t clock_id, struct timespec *res);
-  *
-  */
-+#if defined(__powerpc64__) || defined(CONFIG_COMPAT_32BIT_TIME)
- V_FUNCTION_BEGIN(__kernel_clock_getres)
- 	cvdso_call __c_kernel_clock_getres
- V_FUNCTION_END(__kernel_clock_getres)
-+#endif
- 
- /*
-  * Exact prototype of clock_getres_time64()
-@@ -122,6 +128,8 @@ V_FUNCTION_END(__kernel_clock_getres_time64)
-  * time_t time(time *t);
-  *
-  */
-+#if defined(__powerpc64__) || defined(CONFIG_COMPAT_32BIT_TIME)
- V_FUNCTION_BEGIN(__kernel_time)
- 	cvdso_call __c_kernel_time call_time=1
- V_FUNCTION_END(__kernel_time)
-+#endif
-diff --git a/arch/powerpc/kernel/vdso/vdso32.lds.S b/arch/powerpc/kernel/vdso/vdso32.lds.S
-index 3f384a2526ae..876c965b827d 100644
---- a/arch/powerpc/kernel/vdso/vdso32.lds.S
-+++ b/arch/powerpc/kernel/vdso/vdso32.lds.S
-@@ -119,13 +119,15 @@ VERSION
+diff --git a/arch/arm/vdso/vdso.lds.S b/arch/arm/vdso/vdso.lds.S
+index 74d8d8bc8a40..e61038c0195a 100644
+--- a/arch/arm/vdso/vdso.lds.S
++++ b/arch/arm/vdso/vdso.lds.S
+@@ -70,9 +70,11 @@ VERSION
  {
- 	VDSO_VERSION_STRING {
+ 	LINUX_2.6 {
  	global:
--		__kernel_get_syscall_map;
--		__kernel_gettimeofday;
 +#ifdef CONFIG_COMPAT_32BIT_TIME
- 		__kernel_clock_gettime;
--		__kernel_clock_gettime64;
- 		__kernel_clock_getres;
--		__kernel_clock_getres_time64;
-+		__kernel_gettimeofday;
- 		__kernel_time;
+ 		__vdso_clock_gettime;
+ 		__vdso_gettimeofday;
+ 		__vdso_clock_getres;
 +#endif /* CONFIG_COMPAT_32BIT_TIME */
-+		__kernel_get_syscall_map;
-+		__kernel_clock_gettime64;
-+		__kernel_clock_getres_time64;
- 		__kernel_get_tbfreq;
- 		__kernel_sync_dicache;
- 		__kernel_sigtramp32;
-diff --git a/arch/powerpc/kernel/vdso/vgettimeofday.c b/arch/powerpc/kernel/vdso/vgettimeofday.c
-index 3c194e1ab562..4b712fb01a3f 100644
---- a/arch/powerpc/kernel/vdso/vgettimeofday.c
-+++ b/arch/powerpc/kernel/vdso/vgettimeofday.c
-@@ -18,23 +18,25 @@ int __c_kernel_clock_getres(clockid_t clock_id, struct __kernel_timespec *res,
- 	return __cvdso_clock_getres_data(vd, clock_id, res);
- }
- #else
+ 		__vdso_clock_gettime64;
+ 		__vdso_clock_getres_time64;
+ 	local: *;
+diff --git a/arch/arm/vdso/vgettimeofday.c b/arch/arm/vdso/vgettimeofday.c
+index f7a2f5dc2fdc..3eebeddbfd18 100644
+--- a/arch/arm/vdso/vgettimeofday.c
++++ b/arch/arm/vdso/vgettimeofday.c
+@@ -10,16 +10,17 @@
+ #include <asm/unwind.h>
+ #include <vdso/gettime.h>
+ 
 +#ifdef CONFIG_COMPAT_32BIT_TIME
- int __c_kernel_clock_gettime(clockid_t clock, struct old_timespec32 *ts,
- 			     const struct vdso_time_data *vd)
+ int __vdso_clock_gettime(clockid_t clock,
+ 			 struct old_timespec32 *ts)
  {
- 	return __cvdso_clock_gettime32_data(vd, clock, ts);
+ 	return __cvdso_clock_gettime32(clock, ts);
  }
  
--int __c_kernel_clock_gettime64(clockid_t clock, struct __kernel_timespec *ts,
--			       const struct vdso_time_data *vd)
--{
--	return __cvdso_clock_gettime_data(vd, clock, ts);
--}
--
- int __c_kernel_clock_getres(clockid_t clock_id, struct old_timespec32 *res,
- 			    const struct vdso_time_data *vd)
+-int __vdso_clock_gettime64(clockid_t clock,
+-			   struct __kernel_timespec *ts)
++int __vdso_clock_getres(clockid_t clock_id,
++			struct old_timespec32 *res)
  {
- 	return __cvdso_clock_getres_time32_data(vd, clock_id, res);
+-	return __cvdso_clock_gettime(clock, ts);
++	return __cvdso_clock_getres_time32(clock_id, res);
+ }
+ 
+ int __vdso_gettimeofday(struct __kernel_old_timeval *tv,
+@@ -27,11 +28,12 @@ int __vdso_gettimeofday(struct __kernel_old_timeval *tv,
+ {
+ 	return __cvdso_gettimeofday(tv, tz);
  }
 +#endif /* CONFIG_COMPAT_32BIT_TIME */
-+
-+int __c_kernel_clock_gettime64(clockid_t clock, struct __kernel_timespec *ts,
-+			       const struct vdso_time_data *vd)
-+{
-+	return __cvdso_clock_gettime_data(vd, clock, ts);
-+}
  
- int __c_kernel_clock_getres_time64(clockid_t clock_id, struct __kernel_timespec *res,
- 				   const struct vdso_time_data *vd)
-@@ -43,6 +45,7 @@ int __c_kernel_clock_getres_time64(clockid_t clock_id, struct __kernel_timespec
+-int __vdso_clock_getres(clockid_t clock_id,
+-			struct old_timespec32 *res)
++int __vdso_clock_gettime64(clockid_t clock,
++			   struct __kernel_timespec *ts)
+ {
+-	return __cvdso_clock_getres_time32(clock_id, res);
++	return __cvdso_clock_gettime(clock, ts);
  }
- #endif
  
-+#if defined(__powerpc64__) || defined(CONFIG_COMPAT_32BIT_TIME)
- int __c_kernel_gettimeofday(struct __kernel_old_timeval *tv, struct timezone *tz,
- 			    const struct vdso_time_data *vd)
- {
-@@ -53,3 +56,4 @@ __kernel_old_time_t __c_kernel_time(__kernel_old_time_t *time, const struct vdso
- {
- 	return __cvdso_time_data(vd, time);
- }
-+#endif
+ int __vdso_clock_getres_time64(clockid_t clock_id, struct __kernel_timespec *res)
 
 -- 
 2.55.0
