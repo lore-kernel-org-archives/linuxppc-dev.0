@@ -1,80 +1,116 @@
-Return-Path: <linuxppc-dev+bounces-23224-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23225-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id F396FC43458
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Jun 2026 15:50:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 63F97C43458
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Jun 2026 16:02:55 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gqSK84vzTz2yft;
-	Wed, 01 Jul 2026 01:50:20 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782834620;
-	cv=none; b=LwaBgyLgGv6BOG10cPYTrojRqgbWxasKvSJzSVuqkK1PVmt4AoZNCECeuG90q7moaRU8xldCkCyjoF1Fhc5xdiIsyt4z2tiH/e0L7Dg8pyOIqmQRfa60WKnUXbH6NH9bzzFyQeN/crmAYkBsFwyPmonwtKgq4uTHGIx4aclaEb+4aWxyVeY0O02R7uqXKS674E6Y7Xuw/EruRlUIYSHjLeId5y4GmVgPfx+sVH+YWFtfaJUsjHtvMAbBExu+6ks8fACtcKLdvYNhlCPYZ34mdsZ5nmQZ0mQXi3KLSdYfDtk8nuHuNiyqb9E/rgbVjlom+TzeOocRGLfj6GoA5hAIaQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gqSbd5VZYz2yft;
+	Wed, 01 Jul 2026 02:02:53 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::72e"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782835373;
+	cv=none; b=EEpWbHcfF3cSrdlH32KmRMWlLDaMiV/CWrN6k8TrPd+hyx+LoamiLT6fll+kOk7WTNx7RCfUe87suvYoKMys5rj/pO1Ho1kxK+nalfpYSFvjr0UmzZ3YNew3aVY+fTt1AS/wwJJnlMM9Pm6ujnU7R6ocdx0uLLWxSq/zOZhp98AgtCqbkCFjbo+hGOe+6WcpwnVXWP84+I2GZCo2XWGuxUSOn4FoUOQIh8mA5NfxTey1MNYSnyKF1zMFwaz9SSjTrQzIfu9bvOX/eDPVsTZRwM5ePELh5hxk9YhEwSvkszAiFNYa35ABqfqlUslojmoOdDM8sci9ozhYaMh5386iSg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1782834620; c=relaxed/relaxed;
-	bh=orBYolOiVh8P+Gs6dp8/inZibU5jKERhYsBdgyU7ewg=;
-	h=From:To:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=dkILXXQHQyCnRLyIpcJ3UmlXRKsF/932x94tfG8l6MZ+LKsfyioVnh0fY7gKYW+3GAA+nFeiBU49RNvffdEgtHhJLNB6KGCUK/Nw2o2zM0B3+RW3dYrTia0lneRS/bBeFlUFl//vqjZwJuUMTdNkRSu166DsSRFdVH9f3yusBCwQyp+SFxEwr8vtqsL1JolAdGSV3PNItLkyFErw9InqKIhXo98imK/Od8NC3rfxK1JD/M9txrw9b8EyZfP7GhUjLKeFUg+uEUIHBOl+3JAQ8gJJf/F00edlntEM4jbEFmrBt0R4uCDM7OiVswsVyFzKXoMUW5o18gpKsifomcgagQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=hYaFsO0F; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1782835373; c=relaxed/relaxed;
+	bh=GI+sDv/bw0RypxsaDxkfRwNjpEKuAX+hIc2iRD1v3+Q=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=WcuaoWDOE92XqfXFzqyIJV6lcc3bOxfUwL/hjTkJWij4Hn+ftnZHqMv0IGjMZs2me1A9gH58EzDliA+TLQ6P5/dpSW9HkXPdfCqV+DeP1cMizSH1azneq4C8VZCenoCdmhxJ0pyJbYPlklhsbZLGPs+/QrzUT50M4npSZ0mLRe4zmzqmMUs4qpDoN4ZK8mwh48AXFyAVqd45OHEPuZNdsQofBJQ2mrxlgNLYC5zyg0Tb7mTh8ZAQZqH66B6UkFi3OrkMin5qMkyT1aiUugdvFNa738OEeStMqbZg/u13/Y6tTAwnLsaPoTW5lOYnDiJTWwlbcdzytxSN9zoIrQ5rbQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ziepe.ca; dkim=pass (2048-bit key; secure) header.d=ziepe.ca header.i=@ziepe.ca header.a=rsa-sha256 header.s=google header.b=hkNpiewC; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::72e; helo=mail-qk1-x72e.google.com; envelope-from=jgg@ziepe.ca; receiver=lists.ozlabs.org) smtp.mailfrom=ziepe.ca
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ziepe.ca
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=hYaFsO0F;
+	dkim=pass (2048-bit key; secure) header.d=ziepe.ca header.i=@ziepe.ca header.a=rsa-sha256 header.s=google header.b=hkNpiewC;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=ziepe.ca (client-ip=2607:f8b0:4864:20::72e; helo=mail-qk1-x72e.google.com; envelope-from=jgg@ziepe.ca; receiver=lists.ozlabs.org)
+Received: from mail-qk1-x72e.google.com (mail-qk1-x72e.google.com [IPv6:2607:f8b0:4864:20::72e])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gqSK76j4mz2yfs
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 Jul 2026 01:50:19 +1000 (AEST)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id ED39040314;
-	Tue, 30 Jun 2026 15:50:17 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 272C01F00A3A;
-	Tue, 30 Jun 2026 15:50:02 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1782834617;
-	bh=orBYolOiVh8P+Gs6dp8/inZibU5jKERhYsBdgyU7ewg=;
-	h=From:To:In-Reply-To:References:Subject:Date;
-	b=hYaFsO0FH9QTvOvjL+VAVldlJ2YPFGk7Uv9Z6QoYCVHtTYFvz5GLpT1JPoGmvuzja
-	 MTy6IgtdK2zMOgBks1ci94yQnYzuxOJiLmpU/slEb508GaEKc1CAdIz3+/Zq6Bt0w9
-	 2FVSSC8lyJ1ZeKB8y1XDpUIRQvZEcPOZths6ZliY3SggfKoZOFKnqpC88EFu33XLTW
-	 sn6AnFxz4EW0LATrsCAmY8ssBo7Q13rik2AkR7zp8ALgguCfUFUhwRyu2d3NhQu+/K
-	 Y2AM6LawUcaWvPp3WCkTdmmqcN+TndJjAv7WwB1TzTqCVHBCGCID2JuhETb5Xb/WQQ
-	 rTUnWQuYsWNdQ==
-From: Mike Rapoport <rppt@kernel.org>
-To: corbet@lwn.net, skhan@linuxfoundation.org, catalin.marinas@arm.com, 
- will@kernel.org, chenhuacai@kernel.org, kernel@xen0n.name, 
- maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com, 
- chleroy@kernel.org, pjw@kernel.org, palmer@dabbelt.com, 
- aou@eecs.berkeley.edu, alex@ghiti.fr, tglx@kernel.org, mingo@redhat.com, 
- bp@alien8.de, dave.hansen@linux.intel.com, hpa@zytor.com, robh@kernel.org, 
- saravanak@kernel.org, akpm@linux-foundation.org, baoquan.he@linux.dev, 
- pasha.tatashin@soleen.com, pratyush@kernel.org, ruirui.yang@linux.dev, 
- rdunlap@infradead.org, peterz@infradead.org, feng.tang@linux.alibaba.com, 
- dapeng1.mi@linux.intel.com, elver@google.com, enelsonmoore@gmail.com, 
- kuba@kernel.org, ebiggers@kernel.org, lirongqing@baidu.com, 
- leitao@debian.org, kees@kernel.org, coxu@redhat.com, cfsworks@gmail.com, 
- jbohac@suse.cz, osandov@fb.com, ryan.roberts@arm.com, 
- tangyouling@kylinos.cn, sourabhjain@linux.ibm.com, ritesh.list@gmail.com, 
- gaohan@iscas.ac.cn, david@kernel.org, wangruikang@iscas.ac.cn, 
- muchun.song@linux.dev, vishal.moola@gmail.com, junhui.liu@pigmoral.tech, 
- guoren@kernel.org, namcao@linutronix.de, rick.p.edgecombe@intel.com, 
- djbw@kernel.org, liaoyuanhong@vivo.com, fuqiang.wang@easystack.cn, 
- vishal.l.verma@intel.com, chenjiahao16@huawei.com, x86@kernel.org, 
- linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, 
- linux-arm-kernel@lists.infradead.org, loongarch@lists.linux.dev, 
- linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org, 
- devicetree@vger.kernel.org, kexec@lists.infradead.org, 
- Jinjie Ruan <ruanjinjie@huawei.com>
-In-Reply-To: <20260629094746.191843-1-ruanjinjie@huawei.com>
-References: <20260629094746.191843-1-ruanjinjie@huawei.com>
-Subject: Re: [PATCH v17 00/10] arm64/riscv: Add support for crashkernel CMA
- reservation
-Message-Id: <178283459765.548295.14688999641870037803.b4-ty@b4>
-Date: Tue, 30 Jun 2026 18:49:57 +0300
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gqSbc0dnwz2yfS
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 Jul 2026 02:02:49 +1000 (AEST)
+Received: by mail-qk1-x72e.google.com with SMTP id af79cd13be357-92e622cc874so92475085a.0
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jun 2026 09:02:49 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=ziepe.ca; s=google; t=1782835367; x=1783440167; darn=lists.ozlabs.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=GI+sDv/bw0RypxsaDxkfRwNjpEKuAX+hIc2iRD1v3+Q=;
+        b=hkNpiewC6faG6bQItlOKDQhiNN3etHqvKzr2vXjuVyl9dNMZd/HbN0Qw3gYs3jSzwX
+         3TTwscsfRWCQ1nOAM+cJfuK06deDe28LaJ10bG8HGg/q1Hf73Gx5o/iJGqXC8erqX2o9
+         vSsLxbA6P3YA2VAp/PNtuueBz2JYLgXL+4km3Y23xuES0sLXKyMf4OmWOk5+vPM0wvKB
+         7e4bjnKLgY6pt04yYGTw6Kd/a/7jz2+u0xinZ+nQyzSsK/mXga/meaZRyyReTm7ExAx5
+         anaSwNPN97b/CDo9Mit/pLwLjJaIA6NW3NxeTiG7NonscNZyH4ELIY5Q1Wb1px3HWM/I
+         IO7Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1782835367; x=1783440167;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=GI+sDv/bw0RypxsaDxkfRwNjpEKuAX+hIc2iRD1v3+Q=;
+        b=SGd6V/k3RxvIyW7e0FC23ZBQcttijeTEPyovCmdeSeiK7ezsCxYpoCpxUlIHuX1Zv1
+         kxTi3W9Dr1801pMiHEWP6AkmWkfLDM6WusIa+yJXaR2OmLfW0orsvFa94bR9064/hPHZ
+         PF+TXmS/9bPBSfMskr9HRTwwo4asvTcKqeh8lHrSm9pTG5BNRknpGfSinWbz8nfF9d0Q
+         KJuUl9esIR+sRM/hKmOTIQyFP9q9f9+XRjXLqoLZaR4n+q+qrLlcWOtJ418HFGexi28T
+         6HQ1OfyiNdaqyYHz1xFJ51Ty0H5236AB7pIVf+eTyD6GQSWKHfWSM8u0HUHHmwTtup7u
+         5w7A==
+X-Forwarded-Encrypted: i=1; AFNElJ/BhgfpqE6VmneBUgYHv2/42Us4xTijtZFwPhmEEsb8uWTKB2en7QRaXt0o41WZfxrEoDcI7sPrwLW8dOE=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Ywvf3i3SBaKvIMRocWel6aIqFZcLbDTRWB0m/OYjRK2XmECV+B5
+	C9RnCUyElj5jFvTyURe0/nliKE3TDp36jnPlTwEyY4XqIyI0kmnmfuNx+CfLjIUOviw=
+X-Gm-Gg: AfdE7cm8N1OoFHE0D3NSgNo3zzeXtDd9vymWKrM/YjxlmOAcbIMc7/zCnA8V0ApBDLo
+	kgdX71ZrFvOHhzONuN3AyQZsrFZEFZuyVw/2++ln6Vd3qDm4JrPtVFlAWRH7m22HdDa0JnsmnM3
+	aOxZHVdr0dM3AN98l4SXk3X+Er9WIBWgojQpB9q4WLqfBoJrVZlihRQNJu/OcyEIiAy80L7YCN+
+	Lq4F1vVZCnebv8eRGcpLyPh20IsfGmkQs3N2oEDJuYWnWuuU6A+jP5kEwsw13AlvQiXP3Og+Wpj
+	khBPe1xPLjtY3hXu679UUY78pwiOiMHKVTLLu8jJZDziGzI60sn13eHpxpGytkhevwDO2fd4GzS
+	SMPv8xyCBVZdF6WH4fbnficb1kZi/Q8VpXfAHw+sub02p+0cO3Ku3HJjMQ/OLujF0KxSF2tzetA
+	1ytGsbdhjGiw6wgrSTQY4k3zyrs4Ge0ca4k4bJr/IvBk8LwCw9cfWJmFLhJ5uvh/EasqA=
+X-Received: by 2002:a05:620a:839b:b0:915:c4de:7ac0 with SMTP id af79cd13be357-92e6278d80fmr646181785a.31.1782835365891;
+        Tue, 30 Jun 2026 09:02:45 -0700 (PDT)
+Received: from ziepe.ca (crbknf0213w-47-54-130-67.pppoe-dynamic.high-speed.nl.bellaliant.net. [47.54.130.67])
+        by smtp.gmail.com with ESMTPSA id af79cd13be357-92e6236b9fcsm262102385a.41.2026.06.30.09.02.43
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 30 Jun 2026 09:02:44 -0700 (PDT)
+Received: from jgg by wakko with local (Exim 4.97)
+	(envelope-from <jgg@ziepe.ca>)
+	id 1weav4-000000027Ay-3dT0;
+	Tue, 30 Jun 2026 13:02:42 -0300
+Date: Tue, 30 Jun 2026 13:02:42 -0300
+From: Jason Gunthorpe <jgg@ziepe.ca>
+To: Alexey Kardashevskiy <aik@amd.com>
+Cc: "Aneesh Kumar K.V (Arm)" <aneesh.kumar@kernel.org>,
+	iommu@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
+	linux-kernel@vger.kernel.org, linux-coco@lists.linux.dev,
+	Robin Murphy <robin.murphy@arm.com>,
+	Marek Szyprowski <m.szyprowski@samsung.com>,
+	Will Deacon <will@kernel.org>, Marc Zyngier <maz@kernel.org>,
+	Steven Price <steven.price@arm.com>,
+	Suzuki K Poulose <Suzuki.Poulose@arm.com>,
+	Catalin Marinas <catalin.marinas@arm.com>,
+	Jiri Pirko <jiri@resnulli.us>, Mostafa Saleh <smostafa@google.com>,
+	Petr Tesarik <ptesarik@suse.com>,
+	Dan Williams <dan.j.williams@intel.com>,
+	Xu Yilun <yilun.xu@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
+	linux-s390@vger.kernel.org,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	Alexander Gordeev <agordeev@linux.ibm.com>,
+	Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
+	Heiko Carstens <hca@linux.ibm.com>,
+	Vasily Gorbik <gor@linux.ibm.com>,
+	Christian Borntraeger <borntraeger@linux.ibm.com>,
+	Sven Schnelle <svens@linux.ibm.com>, x86@kernel.org,
+	Jiri Pirko <jiri@nvidia.com>, Michael Kelley <mhklinux@outlook.com>,
+	"Cheloha, Scott" <Scott.Cheloha@amd.com>
+Subject: Re: [PATCH v6 03/20] dma-direct: use DMA_ATTR_CC_SHARED in
+ alloc/free paths
+Message-ID: <20260630160242.GI7525@ziepe.ca>
+References: <20260604083959.1265923-1-aneesh.kumar@kernel.org>
+ <20260604083959.1265923-4-aneesh.kumar@kernel.org>
+ <845d0c8a-6d51-47aa-8e0b-8381e733444a@amd.com>
+ <20260617154101.GE3577091@ziepe.ca>
+ <25155bd6-4348-4aa8-ba70-0a882fc84db9@amd.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -88,49 +124,62 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-X-Mailer: b4 0.15.2
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <25155bd6-4348-4aa8-ba70-0a882fc84db9@amd.com>
 
-On Mon, 29 Jun 2026 17:47:36 +0800, Jinjie Ruan wrote:
-> arm64/riscv: Add support for crashkernel CMA reservation
+On Thu, Jun 18, 2026 at 12:39:21PM +1000, Alexey Kardashevskiy wrote:
 > 
-> The crash memory allocation, and the exclude of crashk_res, crashk_low_res
-> and crashk_cma memory are almost identical across different architectures,
-> This patch set handle them in crash core in a general way, which eliminate
-> a lot of duplication code.
 > 
-> [...]
+> On 18/6/26 01:41, Jason Gunthorpe wrote:
+> > On Wed, Jun 17, 2026 at 10:50:39AM +1000, Alexey Kardashevskiy wrote:
+> > > > @@ -193,16 +193,31 @@ void *dma_direct_alloc(struct device *dev, size_t size,
+> > > >    		dma_addr_t *dma_handle, gfp_t gfp, unsigned long attrs)
+> > > >    {
+> > > >    	bool remap = false, set_uncached = false;
+> > > > -	bool mark_mem_decrypt = true;
+> > > > +	bool mark_mem_decrypt = false;
+> > > >    	struct page *page;
+> > > >    	void *ret;
+> > > > +	/*
+> > > > +	 * DMA_ATTR_CC_SHARED is not a caller-visible dma_alloc_*()
+> > > > +	 * attribute. The direct allocator uses it internally after it has
+> > > > +	 * decided that the backing pages must be shared/decrypted, so the
+> > > > +	 * rest of the allocation path can consistently select DMA addresses,
+> > > > +	 * choose compatible pools and restore encryption on free.
+> > > 
+> > > Why this limit?
+> > > 
+> > > Context: I am looking for a memory pool for a few shared pages (to
+> > > do some guest<->host communication), SWIOTLB seems like the right
+> > > fit but swiotlb_alloc() is not exported and
+> > > dma_direct_alloc(DMA_ATTR_CC_SHARED) is not allowed.  Thanks,
+> > 
+> > Then setup your struct device so that the DMA API knows the
+> > guest<->host channel requires unecrypted and it will work correctly.
+> > 
+> > I think this is a reasonable API to use for that, and I was just
+> > advocating that hyperv should be using it too.
+> > 
+> > But it all relies on a properly setup struct device.
+> 
+> Sounds good but how do I do that in practice? 
 
-Applied to crashkernel-cma branch of liveupdate/linux.git tree, thanks!
+I think we haven't got there yet, I understood Dan's plan was to add a
+bit in the struct device that signals if the device must be
+unencrypted or can support all memory.
 
-[01/10] riscv: kexec_file: Fix crashk_low_res not exclude bug
-        commit: 5fc6e7d45373571d03cd04fd4c6069c0a97fa75a
-[02/10] powerpc/crash: sort crash memory ranges before preparing elfcorehdr
-        commit: 202b5de3ec34317d6a8944239fe227ef8f6853ec
-[03/10] crash: Add crash_prepare_headers() to exclude crash kernel memory
-        commit: 5beabef0cffaa1ea6e27e85dbd526b7a28e0e7c7
-[04/10] arm64: kexec_file: Use crash_prepare_headers() helper to simplify code
-        commit: 201b561cbc6c594aa1ef718a1204dd45720d96dd
-[05/10] x86/crash: Use crash_prepare_headers() helper to simplify code
-        commit: a8f09f2a7485956c3653696f6cb94faadd243645
-[06/10] riscv: kexec_file: Use crash_prepare_headers() helper to simplify code
-        commit: 7b078a0aa2753dcf5cae88e5349a25ac39998a9b
-[07/10] LoongArch: kexec_file: Use crash_prepare_headers() helper to simplify code
-        commit: 51ed0950adf05c99e393818887a2616dd4ab3e34
-[08/10] powerpc/kexec_file: Use crash_exclude_core_ranges() helper
-        commit: b0e06c5a30742bc6bc8523fe9c71c1a043a7661d
-[09/10] arm64: kexec_file: Add support for crashkernel CMA reservation
-        commit: c12c63d05dfe7088aa8b1b872fe261e25537c823
-[10/10] riscv: kexec_file: Add support for crashkernel CMA reservation
-        commit: a037fe3c58ed489ca8ad8531bd7e16b90a84badc
+Currently the dma api assumes all devices must have unencrypted by
+default so it should be fine already, shouldn't it?
 
-tree: https://git.kernel.org/pub/scm/linux/kernel/git/liveupdate/linux
-branch: crashkernel-cma
+> not externally available so I'll have to trick the DMA layer into
+> using SWIOTLB (which is still all shared, right?) as I specifically
+> want to skip page conversions. Setting low DMA mask won't guarantee
+> that the DMA layer won't allocate a page outside of SWIOTLB and
+> convert it. Manually do
 
---
-Sincerely yours,
-Mike.
+Why so particular? Any address that satisifies the constraints should
+be good enough?
 
-
+Jason
 
