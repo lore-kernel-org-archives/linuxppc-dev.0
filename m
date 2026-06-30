@@ -1,85 +1,54 @@
-Return-Path: <linuxppc-dev+bounces-23221-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23222-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AA5FDC44500
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Jun 2026 15:32:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EBF86C43458
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Jun 2026 15:47:45 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gqRwD2R4Gz2yft;
-	Wed, 01 Jul 2026 01:32:12 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=193.142.43.55
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782833532;
-	cv=none; b=LatVBilEAHOs7W/rhHS6VtSamCG7iM/dyy4izRx8HJxGLBUTxO/Qc1EGjTs1Euy6GAV16t+sJ1BZWyv28NZUZouMhKifrmSFAUakU74SyOpXaWP/ottE/eTecC+LC39Vl/ETAPNB0fbpOsqN7wR6TbIb8B/fgi4GeAs4njq/8HQVb3DwWYwCz35CB+0pCRCu4oPBokFgmKdFgu9nbYOiSB4sYiZ50kRukYFh8IfQR5/UAYA1muo8x8fe1RTljUwzJEovQ2OxSJon6Anbv1LW4KAuEcDoFpc6Bo8OiEytRIYfJa2ivmvl6rBIcUoKEt/HeNA0fcpD12572ohtl42UCg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gqSG846c3z2yfS;
+	Wed, 01 Jul 2026 01:47:44 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=91.218.175.173
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782834464;
+	cv=none; b=H3JEjIW2Nfmz/1yhPD1JraGOu2ufdZCe6QrQSDo3ZlC4tfDrcBBZqNCq+HO8z+EqFP9DNBXLoeLpFTdtR2WLogy6tS9jlRgv3TIqFLQA/oqWnGMZSBLy77Qd5eI3RauCCQHLN0o366pn1RrRx5Dp1TdTOC+cDXZVDEc2AFMiMfvRROWRrpMJZau4Ue6RxVFY5NmxYXP7vzkVL0vF8yJYi7cFF9hLMQGloKiRUfWfd+uGbLWh961cedNBC5miN7XTceijjWcLHik+2/sd36qLY5oajQm+Fmn61vfkqBCHWOtYIeyniOKUURzgQKZkQwGRG1PCvWWVT0GQ6DK4pyV7Zg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1782833532; c=relaxed/relaxed;
-	bh=RdsRgNbVkI3Xb/bXMSfj+yw5lewzrynD2xqGGnGzV8Y=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=GbyGXKGsKCrxCBJGT2yVMbk61jB9dnOaW027ZhJzRjvWibKrJYCZ07Sj5vCXeqImBKndHNYKzGWpWmZ8VVNtTYTtbChBGrLa+wxmEY0xVnN3ATRGTxSHjfuX5gnpCK1zE/lKsJ+oqOiR6MSO3an0/jAg2EfGD07wYTisBr18j4sF8NLUsAFr0/GCJ4C2ckRU1tLr5M2GSXSzuI6zFtJVB9MhB+aQpxsKyS4Wqq6s16N2ctBaEXZ2RVR3YGS3WJ0q7xX8y7Mk1YojySJoDRdBIhmS9c067JPUdEyte3IPXRfcnj+oNd0Gw1894U11u6WKgJ70TMCAm3ZXgV8akvxtoQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=qu/1s0nH; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=vVSU3b5g; dkim-atps=neutral; spf=pass (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
+	t=1782834464; c=relaxed/relaxed;
+	bh=g0pf9ki1Ai0Xt9Gsq1JCPfcLfK6MHG0DE4RAET8G76Y=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=Mrl57x+PriEv6thzndrgvCcMKpPFbckBjTD0GKGcxaTheHNJbVRTQsEepLixAwNSG1EAt1HzTwJZNF0PvwW6U/gnVKpryov58ID57s+4/t18vJUTgRqdCCApBWFWEjfsOVBSqid8lIW0g/9GXXvU3Pu07+dUtRJ3d5EFEZhYEoY0iCTASSCGo9v7QCOIIGKP1I+wiMKGUMgbhF2E28oyVeTDdnW0XcEFVmdA7i2dXoj95JTnbDFDFRrAwj2/KMi9mc1h1fpX+DBqIm8VhZcn3tZouJ+u9O79Vupz80eyPKZpZFuWhjhMbPbHgH1H1WxZsltwj58RWGfKemvAD1804w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=AF0bM6Gn; dkim-atps=neutral; spf=pass (client-ip=91.218.175.173; helo=out-173.mta0.migadu.com; envelope-from=thorsten.blum@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=qu/1s0nH;
-	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=vVSU3b5g;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=AF0bM6Gn;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org)
-Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=91.218.175.173; helo=out-173.mta0.migadu.com; envelope-from=thorsten.blum@linux.dev; receiver=lists.ozlabs.org)
+Received: from out-173.mta0.migadu.com (out-173.mta0.migadu.com [91.218.175.173])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gqRwC2Wpvz2yb9
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 Jul 2026 01:32:11 +1000 (AEST)
-Date: Tue, 30 Jun 2026 17:32:04 +0200
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020; t=1782833526;
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gqSG54HYWz2yb9
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 Jul 2026 01:47:40 +1000 (AEST)
+X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
+	t=1782834439;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=RdsRgNbVkI3Xb/bXMSfj+yw5lewzrynD2xqGGnGzV8Y=;
-	b=qu/1s0nHQC6KFpDGuKrxXJLqBTdl1FoH/4yCYl34ohT2guoTuARwKQEULMNqdYWydigyrj
-	UQsxj+D6QvmsMUbHcM7u3rM86IjWKPJT39xqCzzGIvsLgqe2Hz4HBOvbz7iysNXKPy5W/u
-	R/GUuEzOAf1ZZdsDdNL4Jr6q/bCrdt9+3kstOwvKETmQg7hIqCfC8XESzPiKTthZJ9Oc09
-	xpBcumA8KxG/PCdAqz4l1iGj82SI/tB9ALWL8NP8tofOtWsr179TrHBkKBYCmCED0scKGL
-	24UnriDqIvgBJ16vM4xBQFbAgoL54zsV+WuM26JgtD+5w8qeomuxalv2Kqf/NA==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020e; t=1782833526;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=RdsRgNbVkI3Xb/bXMSfj+yw5lewzrynD2xqGGnGzV8Y=;
-	b=vVSU3b5gGX9pyXfPgfu3YTbbfDnrmDCkQKRUwm+vxUCIXLFG0mbsTHQglZDx4c5OUPi7Tu
-	n00gEBCaZoE4kFBg==
-From: Thomas =?utf-8?Q?Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
-To: Jinjie Ruan <ruanjinjie@huawei.com>
-Cc: oleg@redhat.com, richard.henderson@linaro.org, mattst88@gmail.com, 
-	linmag7@gmail.com, linux@armlinux.org.uk, catalin.marinas@arm.com, will@kernel.org, 
-	kees@kernel.org, guoren@kernel.org, chenhuacai@kernel.org, kernel@xen0n.name, 
-	geert@linux-m68k.org, tsbogend@alpha.franken.de, James.Bottomley@hansenpartnership.com, 
-	deller@gmx.de, maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com, 
-	chleroy@kernel.org, pjw@kernel.org, palmer@dabbelt.com, aou@eecs.berkeley.edu, 
-	alex@ghiti.fr, hca@linux.ibm.com, gor@linux.ibm.com, agordeev@linux.ibm.com, 
-	borntraeger@linux.ibm.com, svens@linux.ibm.com, ysato@users.sourceforge.jp, dalias@libc.org, 
-	glaubitz@physik.fu-berlin.de, richard@nod.at, anton.ivanov@cambridgegreys.com, 
-	johannes@sipsolutions.net, luto@kernel.org, tglx@kernel.org, mingo@redhat.com, bp@alien8.de, 
-	dave.hansen@linux.intel.com, hpa@zytor.com, chris@zankel.net, jcmvbkbc@gmail.com, 
-	peterz@infradead.org, wad@chromium.org, thuth@redhat.com, mark.rutland@arm.com, 
-	ada.coupriediaz@arm.com, kevin.brodsky@arm.com, linusw@kernel.org, yeoreum.yun@arm.com, 
-	song@kernel.org, james.morse@arm.com, anshuman.khandual@arm.com, 
-	broonie@kernel.org, liqiang01@kylinos.cn, pengcan@kylinos.cn, ryan.roberts@arm.com, 
-	yangtiezhu@loongson.cn, sshegde@linux.ibm.com, mchauras@linux.ibm.com, 
-	austin.kim@lge.com, jchrist@linux.ibm.com, arnd@arndb.de, sohil.mehta@intel.com, 
-	andrew.cooper3@citrix.com, jgross@suse.com, kas@kernel.org, x86@kernel.org, 
-	linux-alpha@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	linux-arm-kernel@lists.infradead.org, linux-mm@kvack.org, linux-csky@vger.kernel.org, 
-	loongarch@lists.linux.dev, linux-m68k@lists.linux-m68k.org, linux-mips@vger.kernel.org, 
-	linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org, 
-	linux-s390@vger.kernel.org, linux-sh@vger.kernel.org, linux-um@lists.infradead.org
-Subject: Re: [PATCH v16 18/18] arm64: vdso: Expose sigreturn address on vdso
- to the kernel
-Message-ID: <20260630172619-6c78c2e2-c2d3-44be-88e6-6c82de12baf4@linutronix.de>
-References: <20260629130616.642022-1-ruanjinjie@huawei.com>
- <20260629130616.642022-19-ruanjinjie@huawei.com>
+	 to:to:cc:cc:mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=g0pf9ki1Ai0Xt9Gsq1JCPfcLfK6MHG0DE4RAET8G76Y=;
+	b=AF0bM6GnVxIx4mkct6+9qn8H9JLXIiiPvkWChBIzRSXrpTasjDGtbyt8pYXrtPEe2LhIJ/
+	uCHZEc63/tqn+xmBYsX+nKKg4e0UAvUMU1GXYkLSsoTa9UuwpWKWRAIRXYAbJ6NpFb3+ep
+	vjOEFRPrPT5jgvIYZ2USk06P350xXGQ=
+From: Thorsten Blum <thorsten.blum@linux.dev>
+To: Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+Cc: Thorsten Blum <thorsten.blum@linux.dev>,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH] powerpc/dt_cpu_ftrs: Avoid separate strlen() in scan_callback()
+Date: Tue, 30 Jun 2026 17:46:56 +0200
+Message-ID: <20260630154657.693088-2-thorsten.blum@linux.dev>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -93,77 +62,53 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260629130616.642022-19-ruanjinjie@huawei.com>
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1554; i=thorsten.blum@linux.dev; h=from:subject; bh=jcM14XAg/Rn+w1ag3XGyVlqQz4Yn6TB6lSLVOHW5hJQ=; b=owGbwMvMwCUWt7pQ4caZUj3G02pJDFnOTz4etmtf8Tt0d+YqhUOX2qY/mS761vib++ksxegMW TGT9BNrO0pZGMS4GGTFFFkezPoxw7e0pnKTScROmDmsTCBDGLg4BWAibLsZGY567HZcfyLE6Nb9 6vwXhnk1pdaevz8dnai1NOS/1k0H60RGhq6TJX/01suay8+7mvJtss35itTjk6w1/mnMvh9ZZuR ykA0A
+X-Developer-Key: i=thorsten.blum@linux.dev; a=openpgp; fpr=1D60735E8AEF3BE473B69D84733678FD8DFEEAD4
+Content-Transfer-Encoding: 8bit
+X-Migadu-Flow: FLOW_OUT
 
-On Mon, Jun 29, 2026 at 09:06:16PM +0800, Jinjie Ruan wrote:
-> Syscall User Dispatch (SUD) requires the signal trampoline code to not be
-> intercepted. This is necessary to support returning with a locked selector
-> while avoiding infinite recursion back into the signal handler.
-> 
-> Implement arch_syscall_is_vdso_sigreturn() for arm64 to support this
-> exclusion mechanism. For native 64-bit tasks, it checks whether the current
-> PC matches the 'svc #0' instruction inside the vDSO sigreturn trampoline.
-> 
-> 	SYM_CODE_START(__kernel_rt_sigreturn)
-> 	        mov     x8, #__NR_rt_sigreturn
-> 	        svc     #0
-> 	SYM_CODE_END(__kernel_rt_sigreturn)
-> 
-> For COMPAT tasks, it verifies if the instruction falls within
-> the architecture's 'sigpage' range, allowing the kernel to safely bypass
-> dispatching syscalls originating from these areas back to userspace.
-> 
-> Suggested-by: Kevin Brodsky <kevin.brodsky@arm.com>
-> Suggested-by: kemal <kmal@cock.li>
-> Signed-off-by: Jinjie Ruan <ruanjinjie@huawei.com>
-> ---
->  arch/arm64/include/asm/elf.h |  1 +
->  arch/arm64/kernel/vdso.c     | 16 ++++++++++++++++
->  2 files changed, 17 insertions(+)
-> 
-> diff --git a/arch/arm64/include/asm/elf.h b/arch/arm64/include/asm/elf.h
-> index d2779d604c7b..f43d4dea916a 100644
-> --- a/arch/arm64/include/asm/elf.h
-> +++ b/arch/arm64/include/asm/elf.h
-> @@ -185,6 +185,7 @@ do {									\
->  struct linux_binprm;
->  extern int arch_setup_additional_pages(struct linux_binprm *bprm,
->  				       int uses_interp);
-> +extern bool arch_syscall_is_vdso_sigreturn(struct pt_regs *regs);
+Use the return value of strscpy() when copying the display name instead
+of checking the source string length with strlen() first.
 
-A header for that?
+Keep dt_cpu_name static but move it into dt_cpu_ftrs_scan_callback(),
+where it is assigned.
 
->  /* 1GB of VA */
->  #ifdef CONFIG_COMPAT
-> diff --git a/arch/arm64/kernel/vdso.c b/arch/arm64/kernel/vdso.c
-> index 592dd8668de4..5a0314a3c26e 100644
-> --- a/arch/arm64/kernel/vdso.c
-> +++ b/arch/arm64/kernel/vdso.c
-> @@ -343,3 +343,19 @@ int arch_setup_additional_pages(struct linux_binprm *bprm, int uses_interp)
->  
->  	return ret;
->  }
-> +
-> +bool arch_syscall_is_vdso_sigreturn(struct pt_regs *regs)
-> +{
-> +	unsigned long sigtramp;
-> +
-> +#ifdef CONFIG_COMPAT
-> +	if (is_compat_task()) {
-> +		unsigned long sigpage = (unsigned long)current->mm->context.sigpage;
-> +
-> +		return regs->pc >= sigpage && regs->pc < (sigpage + PAGE_SIZE);
-> +	}
-> +#endif
-> +	sigtramp = (unsigned long)VDSO_SYMBOL(current->mm->context.vdso, sigtramp);
-> +
-> +	return regs->pc == (sigtramp + 8);
+Signed-off-by: Thorsten Blum <thorsten.blum@linux.dev>
+---
+ arch/powerpc/kernel/dt_cpu_ftrs.c | 7 ++-----
+ 1 file changed, 2 insertions(+), 5 deletions(-)
 
-Instead of hardcoding 'sigtramp + 8' you could add a new label to the 'svc #0'
-instruction and use that with VDSO_SYMBOL().
-
-
-Thomas
+diff --git a/arch/powerpc/kernel/dt_cpu_ftrs.c b/arch/powerpc/kernel/dt_cpu_ftrs.c
+index 3af6c06af02f..8d8e94e4d2bc 100644
+--- a/arch/powerpc/kernel/dt_cpu_ftrs.c
++++ b/arch/powerpc/kernel/dt_cpu_ftrs.c
+@@ -90,8 +90,6 @@ static void __restore_cpu_cpufeatures(void)
+ 		init_pmu_registers();
+ }
+ 
+-static char dt_cpu_name[64];
+-
+ static struct cpu_spec __initdata base_cpu_spec = {
+ 	.cpu_name		= NULL,
+ 	.cpu_features		= CPU_FTRS_DT_CPU_BASE,
+@@ -1069,6 +1067,7 @@ static int __init count_cpufeatures_subnodes(unsigned long node,
+ static int __init dt_cpu_ftrs_scan_callback(unsigned long node, const char
+ 					    *uname, int depth, void *data)
+ {
++	static char dt_cpu_name[64];
+ 	const __be32 *prop;
+ 	int count, i;
+ 	u32 isa;
+@@ -1106,10 +1105,8 @@ static int __init dt_cpu_ftrs_scan_callback(unsigned long node, const char
+ 	}
+ 
+ 	prop = of_get_flat_dt_prop(node, "display-name", NULL);
+-	if (prop && strlen((char *)prop) != 0) {
+-		strscpy(dt_cpu_name, (char *)prop, sizeof(dt_cpu_name));
++	if (prop && strscpy(dt_cpu_name, (char *)prop) != 0)
+ 		cur_cpu_spec->cpu_name = dt_cpu_name;
+-	}
+ 
+ 	cpufeatures_setup_finished();
+ 
 
