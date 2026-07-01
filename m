@@ -1,88 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-23269-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23270-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 52C7AC43458
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Jul 2026 05:53:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 79D31C43458
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Jul 2026 06:14:19 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gqq2N0X9Fz2yfS;
-	Wed, 01 Jul 2026 15:53:48 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782885228;
-	cv=none; b=HylQVbAxW7y1RtRClFP3rb4t8kqQlRHT5qOqvd9945iNiMHI1CT8MFar3MupRDlam1U76mfy9mxnbou1vbHVA81gu15Tu7IDtpJ4t5GufJBwNDuaCXYM0vyULZItvag1JywtNcL5tYvty35vi5tghqpGuUSSJHGsQtAF6dJDrgj660PNzGM/AboGCBzh6tuT12Ut3lvkoXMJfnNOG6ETp5ZS7jr/UqV8/tvGoswyLLeB9eKHVHZdvVwH42rrEJkDrZTq6GXB6h+039ZBii0sSGW4OPwV7+oP0c3htzy/SCMnZ5B7ryVexyvPjGPM32rgzzd1j97KY6a7gcGI+TKHOQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gqqV203r3z2yR5;
+	Wed, 01 Jul 2026 16:14:18 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782886457;
+	cv=none; b=nUq4YOu4DeiE6ouuX3ka7ureYxzifspTyZcSCbLUJE97l4EQGZTbIsTCGdPFTCWrEcBQTcUD1DhmZCtiwgsUjpCOrNNXUlkNVGbaAwTP3il6B1JmA7soJQJ5o7e5xf69YcKqUhjaD45ruGwoo9lezHkIIj28tquo/zuaSustusQSICAGjplU86YXHsdQwrjgM7/wYUHIzwmJ/sQQZcH8XzreY2+e7nkjbZUGo+kyS6fZdunHfq+GMxbXl9TaNchXIw5xrDA/kXGCGrdfn0Pe1N7bdNeQg3EswT2B25Q7C06IDp/rinAtZyGzJdy0gQRYBsH4xEWP0IOdWA0aameTaA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1782885228; c=relaxed/relaxed;
-	bh=s22aUv759o7jOuYTf2EHjxStbcsNFUSunZW4b9jUGRs=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=D2tVU38tcLsarQEXsISdGBvAlNjtwbfEbSx97jU89z8w68jR+u1JZ8H0to9M0I3HdmMQQLRxcdd6t7dtAUkzyAYtcqhOolVF2XrWqa/VnjRd9TIhUtZdVKK0fR/ZRR5EVUuVfo494NQkzEgh0RVKWkKMNgJvSdh03rLsjKpohOpRwhVnamNL/jnaOUdKmwRSAsQm4MQXvi8KxwUOFJPMI0kK45me4lbwSClG76eq+ygjuenl9idw7Tjwd5gF+OpxFGJB+l3SIjWo/ef+kocTFV/LyEWCV+KhYz6RhGyP176AQoknZ67/Ij7n1M2/df2c+9YVPwXKnhTqLOiJpIcAZg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=B4vj3mIC; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=aneesh.kumar@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1782886457; c=relaxed/relaxed;
+	bh=Sd9wi4YQPSjUdpxHuMLpJeyDBsYtsd/zPnTpZW9Oxq8=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=BKl8WjMQid50Nn/8PdS3I35XhQu27QNvn2aWtmsFUN3vcqIoiTnGhhnatrrJ9l1aTZF5phDGt/8/IoYdNwn3iK0SHRppKPClDfx/WKv4jy7dZQoQ0H+c01/Xw0RkaQ69/4asWFOd4+YzywVMwjgyySukAXEjuK34/8YEFlybxGEDeMdeYI3bODB4VZlrYqcFt30azKlheJ2rfNIA6AGKSjvMTXW7U1wqm01Ucyd3dukqB1zHjprMkWDghnuJZ+ypMDkQSrUBP35oxIGC/wlm6YSsuO+GaB7Q3+1w5lvdNhuDQQFvPCa/finKarjCpbkPW/6bgx8jL+6M4eEl6Lgcfg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=GKz1U5iD; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=B4vj3mIC;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=GKz1U5iD;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=aneesh.kumar@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gqq2M3gkJz2ybQ
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 Jul 2026 15:53:47 +1000 (AEST)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id D950243720;
-	Wed,  1 Jul 2026 05:53:45 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E14681F000E9;
-	Wed,  1 Jul 2026 05:53:35 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1782885225;
-	bh=s22aUv759o7jOuYTf2EHjxStbcsNFUSunZW4b9jUGRs=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=B4vj3mICqCBG5J6Qz1J6ZL/CdmqQL9ug/kU7JGVQcXS/8c208ZLND9bS6m7eybLO3
-	 wRL6NLoxPnyItyX6BkBvidUfufZTBjxayOXlZzNA2azgv4I1eWOEZB2TaqCfWlcnQC
-	 Lhg+GmezbOHy6Z7trc8XjTQcmIocngXXawx1bfAk7MzOh6wGLGd6dsiULHFTHsgGUi
-	 mAHVzEmlUlVthSQ+H6gHh09sCL2AdPHYDtYkKMEzikE7XJmHgMtxeB0B3Yh2RRNl9u
-	 b1gMBtydG6RDBRmQfYyjayYc7c0SSo+Et5Q5wau0fZfwIuCBXoBqwuXpFpy3E3b5vi
-	 XcxBdGsO01mCg==
-From: "Aneesh Kumar K.V (Arm)" <aneesh.kumar@kernel.org>
-To: iommu@lists.linux.dev,
-	linux-arm-kernel@lists.infradead.org,
-	linux-kernel@vger.kernel.org,
-	linux-coco@lists.linux.dev
-Cc: "Aneesh Kumar K.V (Arm)" <aneesh.kumar@kernel.org>,
-	Robin Murphy <robin.murphy@arm.com>,
-	Marek Szyprowski <m.szyprowski@samsung.com>,
-	Will Deacon <will@kernel.org>,
-	Marc Zyngier <maz@kernel.org>,
-	Steven Price <steven.price@arm.com>,
-	Suzuki K Poulose <Suzuki.Poulose@arm.com>,
-	Catalin Marinas <catalin.marinas@arm.com>,
-	Jiri Pirko <jiri@resnulli.us>,
-	Jason Gunthorpe <jgg@ziepe.ca>,
-	Mostafa Saleh <smostafa@google.com>,
-	Petr Tesarik <ptesarik@suse.com>,
-	Alexey Kardashevskiy <aik@amd.com>,
-	Dan Williams <dan.j.williams@intel.com>,
-	Xu Yilun <yilun.xu@linux.intel.com>,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-s390@vger.kernel.org,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	Alexander Gordeev <agordeev@linux.ibm.com>,
-	Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
-	Heiko Carstens <hca@linux.ibm.com>,
-	Vasily Gorbik <gor@linux.ibm.com>,
-	Christian Borntraeger <borntraeger@linux.ibm.com>,
-	Sven Schnelle <svens@linux.ibm.com>,
-	x86@kernel.org
-Subject: [PATCH v7 22/22] swiotlb: remove unused SWIOTLB_FORCE flag
-Date: Wed,  1 Jul 2026 11:19:26 +0530
-Message-ID: <20260701054926.825925-23-aneesh.kumar@kernel.org>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20260701054926.825925-1-aneesh.kumar@kernel.org>
-References: <20260701054926.825925-1-aneesh.kumar@kernel.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gqqV03DNFz2yN8
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 Jul 2026 16:14:15 +1000 (AEST)
+Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6613ImK53760418;
+	Wed, 1 Jul 2026 06:13:57 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=Sd9wi4
+	YQPSjUdpxHuMLpJeyDBsYtsd/zPnTpZW9Oxq8=; b=GKz1U5iD6DN8/6643BK9ZZ
+	yLTlEfapxG1Q4v48ftLvXhdeM4T3O08FxJS2+GQ/8q+X3h4/UBITAvNi0dWTHO9K
+	moYB+j+uuwsj28ZB8vhpUtOfJuYenlkhJwdZ6alqv9gxN5lLf0jrzsHCgY8xKnxg
+	mfQgdmedzNGDgoAebzIzWi+ud5pUHS0RMXrxw/FRwzAkM8qMsnEOU2rngTxGbWAx
+	5H122AgdgsjYoUxveC4XAU7WJUAidcxsFG9IBk2m/b1smzVY3SQWB6rD2Sji/D1H
+	EAtuDcHIf473RJTTIHLE1+sFa0FT9dU8tMVdqCd2PQTrMrMfv/MO8D9z4XpKijBA
+	==
+Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4f26mjtj44-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 01 Jul 2026 06:13:56 +0000 (GMT)
+Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma11.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 66164c6O004056;
+	Wed, 1 Jul 2026 06:13:55 GMT
+Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
+	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4f2uhydph5-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 01 Jul 2026 06:13:55 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
+	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6616Dp2f18219364
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Wed, 1 Jul 2026 06:13:51 GMT
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 8F70C20043;
+	Wed,  1 Jul 2026 06:13:51 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 4EA1A2004B;
+	Wed,  1 Jul 2026 06:13:47 +0000 (GMT)
+Received: from [9.67.14.28] (unknown [9.67.14.28])
+	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Wed,  1 Jul 2026 06:13:46 +0000 (GMT)
+Message-ID: <ba65ad87-2d59-49c3-9b76-7068a9c0dac2@linux.ibm.com>
+Date: Wed, 1 Jul 2026 11:43:45 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -96,49 +81,257 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 1/1] KVM: powerpc/book3s_hv: Use generic xfer to guest
+ work function
+To: Vishal Chourasia <vishalc@linux.ibm.com>
+Cc: npiggin@gmail.com, mpe@ellerman.id.au, chleroy@kernel.org,
+        gautam@linux.ibm.com, bigeasy@linutronix.de,
+        linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, maddy@linux.ibm.com
+References: <20260626105449.2897924-2-vishalc@linux.ibm.com>
+ <20260626105449.2897924-4-vishalc@linux.ibm.com>
+From: Shrikanth Hegde <sshegde@linux.ibm.com>
+Content-Language: en-US
+In-Reply-To: <20260626105449.2897924-4-vishalc@linux.ibm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzAxMDA1NyBTYWx0ZWRfXxmwjXZ7oIwlm
+ 5N5WwlU52OF8hkFFKUZ+m7KvwCkxwIsgTdIJRl+dseNLlmcRDtFofacNOv7ARSpkNdS94sXpK8O
+ X9aMBvnfIOKWbUASXHgvHyZhSNtRethtBSagrdzSaWZUBVWQ3D5RsjW9ULiUV6hMN/tkf0ZN387
+ 3JDiX6k7orV2EP5n8nXV/I50k7GK3KkPuwWC8WNpz0JljJMC0uWybwdIhbj3QLdURFBxPjn1Qdo
+ Zm1UlkRRrDmnMncrJVPD+V1uNZjCC0e2p1v+lFzReZrQSrzSnWSMDsq4vhsf9ZXQT4jVnq5l3Ey
+ GUZVwvo9zjDKYLfI+f4WpBoVAcUW8m3xa/B8WYRW3oR34/IYeM8wRbiDIyUGmhBC9mFXWhPoCP4
+ xYlifBdliG4tdrfpRlz9dvpqDU8BF+tSxBgu2pya4DNrArq8iQWfs9TNsQ5twxEIMXAlnbM/s2o
+ w+JlEppsCv0GbOdOb/Q==
+X-Proofpoint-GUID: cQTXXnTFnRv6qLR1xhO94M9rZe6K9a4z
+X-Authority-Analysis: v=2.4 cv=Z8bc2nRA c=1 sm=1 tr=0 ts=6a44b024 cx=c_pps
+ a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
+ a=IkcTkHD0fZMA:10 a=RAioF0-LDSMA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=RzCfie-kr_QcCd8fBx8p:22 a=VnNF1IyMAAAA:8
+ a=p6WJHf5vwoid_y1ymPMA:9 a=QEXdDO2ut3YA:10
+X-Proofpoint-Spam-Info: AW1haW4tMjYwNzAxMDA1NyBTYWx0ZWRfX5QOGSF4xMhZP
+ AFdVeqOO30SUqRYpJuuClEM4Ft1RX+srfXMY1kNJpMvWqt7YN+yNXg28RwTG/oKaHe7ecjYbgVi
+ /bN+8HlG172IjUEizqVAU3Qbh0hEjGo=
+X-Proofpoint-ORIG-GUID: -XoToUgpwvoRZ2Kvl53dZvpzGSP3wlHg
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
+ definitions=2026-07-01_01,2026-06-26_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ clxscore=1011 adultscore=0 spamscore=0 priorityscore=1501 impostorscore=0
+ malwarescore=0 phishscore=0 bulkscore=0 lowpriorityscore=0 suspectscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607010057
 
-SWIOTLB_FORCE has no remaining in-tree users. Forced bouncing is now
-controlled through the swiotlb=force command line option via
-swiotlb_force_bounce.
+Hi Vishal,
 
-Remove the unused flag and simplify the force_bounce initialization.
+On 6/26/26 4:23 PM, Vishal Chourasia wrote:
+> Use the generic infrastructure to check for and handle pending work
+> before transitioning into guest mode, replacing the open-coded
+> need_resched() and cond_resched() checks.
+> 
+> This picks up handling for TIF_NOTIFY_RESUME, which was previously
+> ignored, meaning task work will now be correctly handled on every
+> guest re-entry.
 
-Signed-off-by: Aneesh Kumar K.V (Arm) <aneesh.kumar@kernel.org>
----
- include/linux/swiotlb.h | 3 +--
- kernel/dma/swiotlb.c    | 3 +--
- 2 files changed, 2 insertions(+), 4 deletions(-)
+It would indeed be good if powerpc moves go generic VIRT_XFER_TO_GUEST_WORK.
+It does take care of RESUME.
 
-diff --git a/include/linux/swiotlb.h b/include/linux/swiotlb.h
-index c3bf7ed6f7a6..9caca923c380 100644
---- a/include/linux/swiotlb.h
-+++ b/include/linux/swiotlb.h
-@@ -15,8 +15,7 @@ struct page;
- struct scatterlist;
- 
- #define SWIOTLB_VERBOSE	(1 << 0) /* verbose initialization */
--#define SWIOTLB_FORCE	(1 << 1) /* force bounce buffering */
--#define SWIOTLB_ANY	(1 << 2) /* allow any memory for the buffer */
-+#define SWIOTLB_ANY	(1 << 1) /* allow any memory for the buffer */
- 
- /*
-  * Maximum allowable number of contiguous slabs to map,
-diff --git a/kernel/dma/swiotlb.c b/kernel/dma/swiotlb.c
-index 8b7e47504304..897aba538c5b 100644
---- a/kernel/dma/swiotlb.c
-+++ b/kernel/dma/swiotlb.c
-@@ -400,8 +400,7 @@ void __init swiotlb_init_remap(bool addressing_limit, unsigned int flags,
- 	if (swiotlb_force_disable)
- 		return;
- 
--	io_tlb_default_mem.force_bounce =
--		swiotlb_force_bounce || (flags & SWIOTLB_FORCE);
-+	io_tlb_default_mem.force_bounce = swiotlb_force_bounce;
- 
- #ifdef CONFIG_SWIOTLB_DYNAMIC
- 	if (!remap)
--- 
-2.43.0
+In addition today, I doubt powerpc kvm works well for LAZY preemption.
+generic infra will take care of it too.
 
+> 
+> Signed-off-by: Vishal Chourasia <vishalc@linux.ibm.com>
+> ---
+>   arch/powerpc/kvm/Kconfig     |  1 +
+>   arch/powerpc/kvm/book3s_hv.c | 58 +++++++++++++++++++++++++++++++-----
+>   2 files changed, 52 insertions(+), 7 deletions(-)
+> 
+> diff --git a/arch/powerpc/kvm/Kconfig b/arch/powerpc/kvm/Kconfig
+> index 9a0d1c1aca6c..36aec58c5f22 100644
+> --- a/arch/powerpc/kvm/Kconfig
+> +++ b/arch/powerpc/kvm/Kconfig
+> @@ -81,6 +81,7 @@ config KVM_BOOK3S_64_HV
+>   	depends on KVM_BOOK3S_64 && PPC_POWERNV
+>   	select KVM_BOOK3S_HV_POSSIBLE
+>   	select KVM_BOOK3S_HV_PMU
+> +	select VIRT_XFER_TO_GUEST_WORK
+
+This takes care of HV only.
+Does PR/booke run into the same problem?
+Does anyone out there who runs them still and care about cgroup bandwidth control mechanism on it?
+
+It may be worth adding comment that PR still runs into the same issue.
+
+>   	select CMA
+>   	help
+>   	  Support running unmodified book3s_64 guest kernels in
+> diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
+> index 61dbeea317f3..b012512342e6 100644
+> --- a/arch/powerpc/kvm/book3s_hv.c
+> +++ b/arch/powerpc/kvm/book3s_hv.c
+> @@ -3850,10 +3850,20 @@ static noinline void kvmppc_run_core(struct kvmppc_vcore *vc)
+>   	 * and return without going into the guest(s).
+>   	 * If the mmu_ready flag has been cleared, don't go into the
+>   	 * guest because that means a HPT resize operation is in progress.
+> +	 *
+> +	 * xfer_to_guest_mode_work_pending() is the IRQs-disabled recheck for
+> +	 * pending guest-mode work (reschedule, signals, and TIF_NOTIFY_RESUME
+> +	 * task_work such as the deferred CFS throttle). It is the pre-POWER9
+> +	 * analog of the final gate in kvmhv_run_single_vcpu(), and a superset
+> +	 * of the old need_resched() check: it catches work that raced in after
+> +	 * the drain in kvmppc_run_vcpu(), so a CPU-bound vCPU is throttled here
+> +	 * instead of running one more guest dispatch past its quota. IRQs are
+> +	 * hard-disabled just above, so the non-__ variant (which asserts that)
+> +	 * is the correct one.
+>   	 */
+>   	local_irq_disable();
+>   	hard_irq_disable();
+> -	if (lazy_irq_pending() || need_resched() ||
+> +	if (lazy_irq_pending() || xfer_to_guest_mode_work_pending() ||
+>   	    recheck_signals_and_mmu(&core_info)) {
+>   		local_irq_enable();
+>   		vc->vcore_state = VCORE_INACTIVE;
+> @@ -4824,10 +4834,24 @@ static int kvmppc_run_vcpu(struct kvm_vcpu *vcpu)
+>   		vc->runner = vcpu;
+>   		if (n_ceded == vc->n_runnable) {
+>   			kvmppc_vcore_blocked(vc);
+> -		} else if (need_resched()) {
+> +		} else if (__xfer_to_guest_mode_work_pending()) {
+>   			kvmppc_vcore_preempt(vc);
+> -			/* Let something else run */
+> -			cond_resched_lock(&vc->lock);
+> +			/*
+> +			 * Let something else run, and run pending guest-mode
+> +			 * work (reschedule, and TIF_NOTIFY_RESUME task_work such
+> +			 * as the deferred CFS throttle) before we would re-enter
+> +			 * the guest, so a CPU-bound vCPU is actually throttled
+> +			 * here instead of running past its quota. This is a
+> +			 * superset of the old need_resched() check. Use the raw
+> +			 * helper, not the kvm_ wrapper: signals (KVM_EXIT_INTR
+> +			 * and the signal_exits stat) are accounted by this path's
+> +			 * existing handling below, so going through the wrapper
+> +			 * here would double-count them. The helper may schedule(),
+> +			 * so the vcore lock is dropped around it.
+> +			 */
+> +			spin_unlock(&vc->lock);
+> +			xfer_to_guest_mode_handle_work();
+> +			spin_lock(&vc->lock);
+>   			if (vc->vcore_state == VCORE_PREEMPT)
+>   				kvmppc_vcore_end_preempt(vc);
+>   		} else {
+> @@ -4899,8 +4923,21 @@ int kvmhv_run_single_vcpu(struct kvm_vcpu *vcpu, u64 time_limit,
+>   		}
+>   	}
+>   
+> -	if (need_resched())
+> -		cond_resched();
+> +	/*
+> +	 * Run pending work before (re-)entering the guest, most importantly
+> +	 * task_work queued via TWA_RESUME (e.g. the deferred CFS bandwidth
+> +	 * throttle, which only sets TIF_NOTIFY_RESUME). Without this a CPU-bound
+> +	 * vCPU that keeps returning RESUME_GUEST never reaches an exit-to-user
+> +	 * point, so the throttle is never enforced and the task runs far beyond
+> +	 * its quota. The helper also handles reschedule and signals, replacing
+> +	 * the cond_resched() that was here. It may schedule(), so it runs before
+> +	 * preemption and IRQs are disabled, with no vcore/KVM locks held. This
+> +	 * is the per-reentry site shared by the bare-metal and pseries (nested)
+> +	 * paths, so both are covered.
+> +	 */
+> +	r = kvm_xfer_to_guest_mode_handle_work(vcpu);
+> +	if (r)	/* -EINTR: signal pending, exit to userspace (KVM_EXIT_INTR) */
+> +		return r;
+>   
+>   	kvmppc_update_vpas(vcpu);
+>   
+> @@ -4916,7 +4953,14 @@ int kvmhv_run_single_vcpu(struct kvm_vcpu *vcpu, u64 time_limit,
+>   
+>   	if (signal_pending(current))
+>   		goto sigpend;
+
+xfer_to_guest_mode_work_pending checks for signals too right?
+
+#define XFER_TO_GUEST_MODE_WORK                                         \
+         (_TIF_NEED_RESCHED | _TIF_NEED_RESCHED_LAZY | _TIF_SIGPENDING | \
+          _TIF_NOTIFY_SIGNAL | _TIF_NOTIFY_RESUME |                      \
+          ARCH_XFER_TO_GUEST_MODE_WORK)
+
+> -	if (need_resched() || !kvm->arch.mmu_ready)
+> +	/*
+> +	 * Re-check for pending guest-mode work with IRQs disabled, to catch
+> +	 * anything (e.g. a TIF_NOTIFY_RESUME task_work such as the deferred CFS
+> +	 * throttle) that raced in after the check above. Bail back to the outer
+> +	 * loop, which re-enters here and runs the work. This is a superset of
+> +	 * the previous need_resched() check.
+> +	 */
+> +	if (xfer_to_guest_mode_work_pending() || !kvm->arch.mmu_ready)
+>   		goto out;
+>   
+>   	vcpu->cpu = pcpu;
+
+Copying from the discussion thread at that time,
+
+"""
+on x86:
+kvm_arch_vcpu_ioctl_run
+	vcpu_run
+		for () {
+			.. run guest..
+			xfer_to_guest_mode_handle_work
+				schedule
+		}
+
+
+on Powerpc:  ( taking book3s_hv flavour):
+kvm_arch_vcpu_ioctl_run
+kvmppc_vcpu_run_hv  *1
+	do while() {
+		kvmhv_run_single_vcpu or kvmppc_run_vcpu
+			-- checking for need_resched and signals and bails out *2
+	}
+
+
+*1 - checks for need resched and signals before entering guest
+*2 - checks for need resched and signals while running the guest
+
+
+This patch is addressing only *1 but it needs to address *2 as well using generic framework.
+I think it is doable for books3s_hv atleast. (though might need rewrite)
+"""
+
+
+A few questions that comes to my mind.
+
+1. I think you are doing for both *1 and *2 right? Is *1 necessary still for powerpc?
+2. There is a for loop. What is it doing? Does this still need similar checks?
+
+         if (is_kvmppc_resume_guest(r) && !kvmppc_vcpu_check_block(vcpu)) {
+                 kvmppc_set_timer(vcpu);
+
+                 prepare_to_rcuwait(wait);
+                 for (;;) {
+                         set_current_state(TASK_INTERRUPTIBLE);
+                         if (signal_pending(current)) {
+                                 vcpu->stat.signal_exits++;
+                                 run->exit_reason = KVM_EXIT_INTR;
+                                 vcpu->arch.ret = -EINTR;
+                                 break;
+                         }
+
+                         if (kvmppc_vcpu_check_block(vcpu))
+                                 break;
+
+                         trace_kvmppc_vcore_blocked(vcpu, 0);
+                         schedule();
+                         trace_kvmppc_vcore_blocked(vcpu, 1);
+                 }
+                 finish_rcuwait(wait);
+         }
+         vcpu->arch.ceded = 0;
+
+
+PS: cc'ing me would have helped me to see the mail earlier since you had referred
+to the patch I had sent.
 
