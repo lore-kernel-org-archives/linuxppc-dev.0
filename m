@@ -1,88 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-23239-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23240-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4D6DDC43458
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Jul 2026 03:09:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 22825C43458
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Jul 2026 04:32:58 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gqlNg49rWz2yQL;
-	Wed, 01 Jul 2026 13:09:23 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782875363;
-	cv=none; b=XquCrYVWWhWidopaJWAb/MSIdBBv45HVdxj/Kx5EZbYF0P9YASkShI1udarzaslB3bfXofKbVGB0hSxN/Pc/761uvwUeHgLB5ITuth2+JDaCcr6P/b5a07VcW1Wg2enWwKGpVtrgVzKSg5YbFdChfJY5PoMp2xfhb9TmcU5OOfwK8b3+taPdnCHDnvp0cRPjv78xO4MDTX4i9m/Kdj4TLyvuhAFUxFT0gL9v1IrBt80QJkaKrgGKtHtBeLuX0O0kzLYm0RllWYmoMjafR+Qme7v0uahhpubJgzkrs+w2mUlDYPgyq3qmpaf8CJy1LStnpS0vMM+ZTVru38ebNQWT+g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gqnF52zf8z2yQL;
+	Wed, 01 Jul 2026 14:32:57 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782880377;
+	cv=none; b=J2HDPYvRj1+LhRUWUhs9nmyJ1NnYQNlJX8l8Y4zUSG1kW+ylYjkoko5osCxr08UeXeSCl0yK8a2Q5VP9ayODZn2A3NgiLxBK1wSzAgXhvP2HnAMx6BT1vvxcITc0+/LGDgOWPEaOiFTloqycsJ487Od5lqOv5Bazni7OfoOE6egfZZFqrLRoBpR0n1qvE13jyfdVtuyHvEzSm4UmA9uGgOsmYPUy+6yKs2oAEze+sohCPqmOCiymSxy1EPthjD1ln34/rL5XpZ+8TnEGKWOra0pSLBRnonnMq9IAfhPaoJtUqH0bP+JvnXbOkrcfx13zsfrC8OxKid700dbrLpeOqg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1782875363; c=relaxed/relaxed;
-	bh=FJhajr5kdTmXSpbRHiZGZT3ioUVr6sHAFFO+7D7H7Iw=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
-	 MIME-Version:Content-Type; b=F9SqPom8Ze9Aw/VfVsfKMLXNkPqqaqvl2ZRTuyVoljGCTjpB3uNIC/IFMzsVUkR76VXaJcfliwpqZcDc1AYETAj39RFKt6rEfup/1nPBg3ZATrddHMW51kndviwt53Pj34oAic9v6QINGq5ugZI23ejTslQPbW0zYyqgaeJ5Fx8fsy8Hu4qOIXkWZzCBbW249KJBykDN96S0mMo70L8Ft6ynR6S2rIghbUspWW/vfZtjC7DjvL6b3vFYbBWufPheWq4dEr2SVXIroZjK9TcDOCJ9COcLER09V7D+ibWVsb4SEywcb7SKBRSvB57dVyH2z27vj9QFajP9VZdQNOwTCA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Apa1e2TN; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=aneesh.kumar@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1782880377; c=relaxed/relaxed;
+	bh=KR07QVSSDEYvycuyPUALTiuQWDSedko9F2gVEE/K1wo=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=FoeITF90DXK7gWm2mZNryCc3FCDbU5ibMwWzTaKc08NoTmC4M/kMzxq8R3KQz2RuzlhoSnHegTfaSi0qSqh0eWF83U5cAVV73wBPUcuurrrlIUAnEsl/zvLlMoUYQtEkgRg60v2IL8KL00np2blGJZ6vdpaxpuSl8OKSI730/gmx4EOflnUfOg9e24rTu6sOefu4lWgxLEQMVu7KfRyymWH2WZDflEMHTzu7c++EFKBI5MZ0Lap4A1OrHAbQAQTo4dPSYDbPmZDM/+GlTml4o3uJDP4ycf4O+lMkhwdbxCokXz/jOS8BVGrWCSSL7Lf2SdALvmBV2+lYp9hzpJbdOQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Y0xDI/Pe; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=venkat88@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Apa1e2TN;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Y0xDI/Pe;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=aneesh.kumar@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=venkat88@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gqlNf1n1Jz2xlw
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 Jul 2026 13:09:22 +1000 (AEST)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id B167D417B9;
-	Wed,  1 Jul 2026 03:09:19 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 598A71F000E9;
-	Wed,  1 Jul 2026 03:09:11 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1782875359;
-	bh=FJhajr5kdTmXSpbRHiZGZT3ioUVr6sHAFFO+7D7H7Iw=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date;
-	b=Apa1e2TNAD1OXcazOEFCxJl7l5BrVVMLldpRf0byGAFIxmHZcJ9j3O57EBDpqqCGC
-	 npNWTMDbd5MynUk+n9TOEgWrKZLUeu0x85rBnH3oE01O8UmQAVgtiT8Oxe0DwbXarq
-	 Rhj55UyvnpmtD02vXdUXMyNS/Gwhk3JQUnTOPAcDA46ZE++fUcZtSTuxWdL5uTuivC
-	 kvC2jhtCrGypZNaCdpd0nztN0oQqPcwT5h4mHQP6EvhXUQv1O6OZax7pV/JnK+5h4f
-	 Xtfv09ZeJ7OVs0ct4YkBueDVTpnVdg+nTb12bqzwLvFUbpPUCF35eDdmAKCrVeiZyW
-	 sl8y0F2F3AO0Q==
-X-Mailer: emacs 30.2 (via feedmail 11-beta-1 I)
-From: Aneesh Kumar K.V <aneesh.kumar@kernel.org>
-To: Jason Gunthorpe <jgg@ziepe.ca>
-Cc: Alexey Kardashevskiy <aik@amd.com>,
-	Catalin Marinas <catalin.marinas@arm.com>,
-	iommu@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
-	linux-kernel@vger.kernel.org, linux-coco@lists.linux.dev,
-	Robin Murphy <robin.murphy@arm.com>,
-	Marek Szyprowski <m.szyprowski@samsung.com>,
-	Will Deacon <will@kernel.org>, Marc Zyngier <maz@kernel.org>,
-	Steven Price <steven.price@arm.com>,
-	Suzuki K Poulose <Suzuki.Poulose@arm.com>,
-	Jiri Pirko <jiri@resnulli.us>,
-	Mostafa Saleh <smostafa@google.com>,
-	Petr Tesarik <ptesarik@suse.com>,
-	Dan Williams <dan.j.williams@intel.com>,
-	Xu Yilun <yilun.xu@linux.intel.com>,
-	linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	Alexander Gordeev <agordeev@linux.ibm.com>,
-	Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
-	Heiko Carstens <hca@linux.ibm.com>,
-	Vasily Gorbik <gor@linux.ibm.com>,
-	Christian Borntraeger <borntraeger@linux.ibm.com>,
-	Sven Schnelle <svens@linux.ibm.com>, x86@kernel.org
-Subject: Re: [PATCH v6 00/20] dma-mapping: Use DMA_ATTR_CC_SHARED through
- direct, pool and swiotlb paths
-In-Reply-To: <20260630174216.GK7525@ziepe.ca>
-References: <aigYbK12D8uKQvJF@arm.com> <20260609144746.GL2764304@ziepe.ca>
- <2ecfa1a8-6202-4319-9692-a6ffeb5a3dbf@amd.com>
- <yq5aqzm4dz25.fsf@kernel.org> <20260618153705.GH231643@ziepe.ca>
- <yq5ao6h6enhm.fsf@kernel.org> <20260619122148.GL231643@ziepe.ca>
- <yq5aldcaejos.fsf@kernel.org> <20260619140616.GB1068655@ziepe.ca>
- <yq5ao6gtoncp.fsf@kernel.org> <20260630174216.GK7525@ziepe.ca>
-Date: Wed, 01 Jul 2026 08:39:06 +0530
-Message-ID: <yq5abjcro17x.fsf@kernel.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gqnF40hxvz2yQG
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 Jul 2026 14:32:55 +1000 (AEST)
+Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6613IbpA3806419;
+	Wed, 1 Jul 2026 04:32:15 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=KR07QV
+	SSDEYvycuyPUALTiuQWDSedko9F2gVEE/K1wo=; b=Y0xDI/PeO2Pl/5oj+Qd75l
+	6CRdz1g0QCLj2Qj+82wSJlgY0JOsm6c+iYAhcGfWXdK3LhPNKKYB9HH4Yy49nrVn
+	SczCmFHUkAx33D1cYPaB5DML6GLqe01c+M9gEDbqyZ6JNwF+iJMLu3L9oIf3jvwu
+	4Ai7uHCoNwIW9uJmy/1m9YwqNdSFJea2EwyzzAS1LikywcZSXulHdZKJCNG2rmV/
+	XRs+G2VfGXemShhe+B0bWez8O42kdHowPmbFpSrjMGUg641OykaAFvx4Eu34Amvg
+	dl9/kCkep8hoBYkaQkCmY//DdW0qvrI7QSMPf1Xh2nN7XvXPHIOWPVqfGEFvsPrA
+	==
+Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4f26qa2677-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 01 Jul 2026 04:32:14 +0000 (GMT)
+Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma22.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 6614KBA7019140;
+	Wed, 1 Jul 2026 04:32:13 GMT
+Received: from smtprelay07.wdc07v.mail.ibm.com ([172.16.1.74])
+	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4f2s7w5phc-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 01 Jul 2026 04:32:13 +0000 (GMT)
+Received: from smtpav06.wdc07v.mail.ibm.com (smtpav06.wdc07v.mail.ibm.com [10.39.53.233])
+	by smtprelay07.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6614WCbS32506426
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Wed, 1 Jul 2026 04:32:12 GMT
+Received: from smtpav06.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 77F5D58054;
+	Wed,  1 Jul 2026 04:32:12 +0000 (GMT)
+Received: from smtpav06.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id BF0905803F;
+	Wed,  1 Jul 2026 04:32:07 +0000 (GMT)
+Received: from [9.123.5.126] (unknown [9.123.5.126])
+	by smtpav06.wdc07v.mail.ibm.com (Postfix) with ESMTP;
+	Wed,  1 Jul 2026 04:32:07 +0000 (GMT)
+Message-ID: <9c53ae3f-ccfd-4e8f-ac4f-0038e9b97a7e@linux.ibm.com>
+Date: Wed, 1 Jul 2026 10:02:06 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -96,117 +81,145 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v3] powerpc/audit: Convert powerpc to
+ AUDIT_ARCH_COMPAT_GENERIC
+Content-Language: en-GB
+To: Madhavan Srinivasan <maddy@linux.ibm.com>,
+        Paul Moore <paul@paul-moore.com>
+Cc: Harsh Prateek Bora <harshpb@linux.ibm.com>,
+        "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        Nicholas Piggin <npiggin@gmail.com>, Eric Paris <eparis@redhat.com>,
+        Christophe Leroy <christophe.leroy@csgroup.eu>,
+        linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+        audit@vger.kernel.org,
+        Thomas Weissschuh <thomas.weissschuh@linutronix.de>,
+        =?UTF-8?Q?C=C3=A9dric_Le_Goater?= <clg@kaod.org>,
+        ritesh.list@gmail.com
+References: <261b1be5b8dc526b83d73e8281e682a73536ea28.1773155031.git.chleroy@kernel.org>
+ <CAHC9VhTyOuuPs1uovodM9M_8zZeJnVXs9xrWSdPhZcjXUb=mvA@mail.gmail.com>
+ <fce0a701-ee58-4cb2-b34b-8aec26aaab5d@linux.ibm.com>
+ <09e72f42-e180-4e2b-b379-92b755792a2c@linux.ibm.com>
+ <CAHC9VhTzuO=RFtrUUuZyieVdkrM5H4ZCb1=PoL-oEEgiw38azg@mail.gmail.com>
+ <ea6e629f-dac7-45dd-bb18-5cd6361fe6c4@linux.ibm.com>
+From: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
+In-Reply-To: <ea6e629f-dac7-45dd-bb18-5cd6361fe6c4@linux.ibm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzAxMDA0MSBTYWx0ZWRfX26fUMa9e+dzf
+ jV54JAqIUU6qWVT7K1puzbM6VTdUwWobM2eZT8I2enJE2cYztvg9nV2Rgbi79FjfeoCtL+hjoLJ
+ gNRbWoOQMPsMehaxyPSIU12UOeLIMZUhpkKNTkIeNTKAkAv3S6VNahNI+s0ZSGLcg4INUrahFIG
+ mlooGkNLb/i12893niFNaM0CsbUiEOMPYmMfKuxRPgyoZ/Gy6+W/cKQcGY7MsE8WAVxP/Tvs/aH
+ 676ck6dwiEATcJSf8tgjrnTqqU6PSLl/CP6uCiFVFdFNJLgDi5FUpj6XjSalBbkAjEtj2bcZDx3
+ c0n1bHdWfG6dHCTvIGB1ohsMIfJOYNwDUNKZnzk4aiBJDyWBCh2obMMTlyjn4RR+sHlfQO+mTVk
+ hA7geWyC+vzTKnDlZc5WvTvG6ER2vFv9ohOTGK9DaNGZhjtwdOskXhoTkL7GY0qD5aE/yyqjaro
+ OgeWRlKeqHz4QckpgAA==
+X-Proofpoint-Spam-Info: AW1haW4tMjYwNzAxMDA0MSBTYWx0ZWRfXxtJVljgEWdyT
+ QKGrGiOSBj35P9V4TjFq+PpozqltfzHH2BrL0e7uTXJxWowPfdyw8ui90SmcyyClLrAh1Wteg7X
+ XWeCKE++JzpiSIXe7STuWi9NxYCaRW8=
+X-Proofpoint-GUID: 9MWPVextx98ji73r7A4b6eDRO_E14MI9
+X-Proofpoint-ORIG-GUID: z7SpAtaZm-81-f06poyur8xe1pHtRgEr
+X-Authority-Analysis: v=2.4 cv=WZ88rUhX c=1 sm=1 tr=0 ts=6a44984e cx=c_pps
+ a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
+ a=IkcTkHD0fZMA:10 a=RAioF0-LDSMA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=Y2IxJ9c9Rs8Kov3niI8_:22 a=VwQbUJbxAAAA:8
+ a=NEAV23lmAAAA:8 a=VnNF1IyMAAAA:8 a=1UX6Do5GAAAA:8 a=aow-egSQAAAA:8
+ a=REQlIFMOIXFrVupGOfgA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+ a=Et2XPkok5AAZYJIKzHr1:22 a=gFNbaldVC-z-bsjSTzMo:22
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
+ definitions=2026-07-01_01,2026-06-26_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ spamscore=0 adultscore=0 phishscore=0 clxscore=1011 bulkscore=0
+ impostorscore=0 priorityscore=1501 lowpriorityscore=0 suspectscore=0
+ malwarescore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2606150000
+ definitions=main-2607010041
 
-Jason Gunthorpe <jgg@ziepe.ca> writes:
 
-> On Mon, Jun 29, 2026 at 12:16:30PM +0530, Aneesh Kumar K.V wrote:
->> >> Thinking about this more, I guess we should mark the swiotlb as
->> >> cc_shared only with  CC_ATTR_GUEST_MEM_ENCRYPT instead of
->> >> CC_ATTR_MEM_ENCRYPT as we have below.
->> >
->> > The name cc_shared should be used for GUEST scenarios only.
->> >
->> > I guess there is some merit in keeping swiotlb using "decrypted" to
->> > mean it usinig pgprot_decrypted and set_memory_decyped() which AMD
->> > gives meaning to on both host and guest.
->> 
->> Are you suggesting to change the struct io_tlb_mem::cc_shared back to
->> struct io_tlb_mem::unencrypted?. 
+On 01/07/26 7:44 am, Madhavan Srinivasan wrote:
 >
-> Yes
->
->> > IDK what AMD should do on the host by default. I guess it should setup
->> > a swiotlb pool of low dma addrs "unencrypted", but not "cc_shared"?
->> >
->> 
->> If by low DMA address you mean using an address with the C-bit
->> cleared. 
->
-> Yes
->
->> The current code already does this and uses the swiotlb pool correctly
->> on SME.
->
-> Well, through the force_dma_unencrypted() hack...
->
->> The challenge arises when we want to force SWIOTLB
->> bouncing even for devices that can handle encrypted DMA addresses (more
->> on that below). For such a config force_dma_uencrypted(dev) will return
->> false and swiotlb will be marked cc_shared/decrypted = true; This trip
->> the new check we added.
->
-> Yes, because cc_shared (guest) and unencrypted (host) are very
-> different things and we've mixed them:
->
->> 	if (unlikely(mem->cc_shared != force_dma_unencrypted(dev)))
->
-> I'm aruging force_dma_unencrypted should mean cc_shared and be
-> guest_only, but the SME hack breaks this.
->
->> We can also do
->> 
->> 	if (cc_platform_has(CC_ATTR_GUEST_MEM_ENCRYPT)) {
->> 		/* swiotlb pool is incorrect for this device */
->> 		if (unlikely(mem->cc_shared != force_dma_unencrypted(dev)))
->> 			return (phys_addr_t)DMA_MAPPING_ERROR;
->> 
->> 		/* Force attrs to match the kind of memory in the pool */
->> 		if (mem->cc_shared)
->> 			*attrs |= DMA_ATTR_CC_SHARED;
->> 		else
->> 			*attrs &= ~DMA_ATTR_CC_SHARED;
->> 	} else {
->> 		/*
->> 		 * Host memory encryption where device requires an
->> 		 * unencrypted dma_addr_t due to dma mask limit
->>     		 */
->> 		if (force_dma_unencrypted(dev))
->> 			*attrs |= DMA_ATTR_CC_SHARED;
->> 		else
->> 			*attrs &= ~DMA_ATTR_CC_SHARED;
->> 	}
->
-> If we do this I would like to split the force_dma_.. functions into
-> guest and host, ie force_dma_cc_shared() and force_host_decrypted()
->
-> To make it clear there are two very different things here.
->
+> On 7/1/26 12:41 AM, Paul Moore wrote:
+>> On Wed, May 13, 2026 at 1:42 AM Madhavan Srinivasan 
+>> <maddy@linux.ibm.com> wrote:
+>>> On 5/13/26 10:05 AM, Harsh Prateek Bora wrote:
+>>>> On 11/03/26 12:49 am, Paul Moore wrote:
+>>>>> On Tue, Mar 10, 2026 at 11:08 AM Christophe Leroy (CS GROUP)
+>>>>> <chleroy@kernel.org> wrote:
+>>>>>> From: Christophe Leroy <christophe.leroy@csgroup.eu>
+>>>>>>
+>>>>>> Commit e65e1fc2d24b ("[PATCH] syscall class hookup for all normal
+>>>>>> targets") added generic support for AUDIT but that didn't include
+>>>>>> support for bi-arch like powerpc.
+>>>>>>
+>>>>>> Commit 4b58841149dc ("audit: Add generic compat syscall support")
+>>>>>> added generic support for bi-arch.
+>>>>>>
+>>>>>> Convert powerpc to that bi-arch generic audit support.
+>>>>>>
+>>>>>> With this change generated text is similar.
+>>>>>>
+>>>>>> Thomas has confirmed that the previously failing filter_exclude/test
+>>>>>> is now successful both without and with this patch, see [1]
+>>>>>>
+>>>>>> [1]
+>>>>>> https://lore.kernel.org/all/20260306115350-ef265661-6d6b-4043-9bd0-8e6b437d0d67@linutronix.de/ 
+>>>>>>
+>>>>>>
+>>>>>> Link: https://github.com/linuxppc/issues/issues/412
+>>>>>> Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+>>>>>> Reviewed-by: Cédric Le Goater <clg@kaod.org>
+>>>>>> ---
+>>>>>> Venkat, a test result with
+>>>>>> https://github.com/linux-audit/audit-testsuite would be appreciated.
+>>>>> Yes, I'd like to see confirmation that the audit test suite runs 
+>>>>> clean
+>>>>> on ppc systems with this patch applied, and unfortunately without a
+>>>>> ppc system I have no way to test this myself.
+>>> My bad, this is a miss from my end.
+>>> Venkat is already on this and will update the results here.
+>> Do we have an update on this?  Maybe I missed it, but I don't recall
+>> seeing any test results.
+> Venkat, did run the test but I guess he missed to respond here,
+> Details of his test run that he shared me in the internal chat from 
+> May 13.
 
-I have now folded the below change into
 
-modified   kernel/dma/swiotlb.c
-@@ -1514,9 +1514,23 @@ phys_addr_t swiotlb_tbl_map_single(struct device *dev, phys_addr_t orig_addr,
- 	if (cc_platform_has(CC_ATTR_MEM_ENCRYPT))
- 		pr_warn_once("Memory encryption is active and system is using DMA bounce buffers\n");
- 
--	/* swiotlb pool is incorrect for this device */
--	if (unlikely(mem->cc_shared != force_dma_unencrypted(dev)))
--		return (phys_addr_t)DMA_MAPPING_ERROR;
-+	if (cc_platform_has(CC_ATTR_GUEST_MEM_ENCRYPT)) {
-+
-+		/* swiotlb pool is incorrect for this device */
-+		if (unlikely(mem->cc_shared != force_dma_unencrypted(dev)))
-+			return (phys_addr_t)DMA_MAPPING_ERROR;
-+
-+	} else if (cc_platform_has(CC_ATTR_HOST_MEM_ENCRYPT)) {
-+		/*
-+		 * On hosts with memory encryption, SWIOTLB-backed memory is
-+		 * unencrypted. DMA addresses returned for bounce buffers must
-+		 * therefore be marked unencrypted, even for devices that can
-+		 * address encrypted memory. This also preserves swiotlb=force
-+		 * behavior for those devices.
-+		 */
-+		if (unlikely(!mem->cc_shared))
-+			return (phys_addr_t)DMA_MAPPING_ERROR;
-+	}
- 
-[PATCH] dma: swiotlb: track pool encryption state and honor DMA_ATTR_CC_SHARED
+Sorry, My bad. I missed updating here. Yes, this was tested in May. 
+Please let me know, if a re-run is required?
 
-This is the only code path where we need to special-case host memory
-encryption. For this reason, I have avoided renaming
-io_tlb_mem::cc_shared to io_tlb_mem::unencrypted. I can send a v7 with
-the above and we can review the changes based on that?
+Regards,
 
--aneesh
+Venkat.
+
+>
+> backlog_wait_time_actual_reset/test .. ok
+> bpf/test ............................. ok
+> exec_execve/test ..................... ok
+> exec_name/test ....................... ok
+> fanotify/test ........................ ok
+> field_compare/test ................... ok
+> file_create/test ..................... ok
+> file_delete/test ..................... ok
+> file_permission/test ................. ok
+> file_rename/test ..................... ok
+> filter_exclude/test .................. ok
+> filter_exit/test ..................... ok
+> filter_saddr_fam/test ................ ok
+> filter_sessionid/test ................ ok
+> io_uring/test ........................ ok
+> login_tty/test ....................... ok
+> lost_reset/test ...................... ok
+> netfilter_pkt/test ................... Can't exec "nc": No such file 
+> or directory at netfilter_pkt/test line 83.
+>
+> Venkat, can you please re-run if possible and paste the log here.
+>
+> Thanks
+> Maddy
+>
+>
 
