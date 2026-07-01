@@ -1,89 +1,85 @@
-Return-Path: <linuxppc-dev+bounces-23246-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23247-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 63BB0C43458
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Jul 2026 05:15:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 91074C43458
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Jul 2026 05:49:51 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gqp9h3n73z2yfy;
-	Wed, 01 Jul 2026 15:15:04 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782882904;
-	cv=none; b=LuqFxZWw8ROcLETqweloAzTD4TrzdFAjEnaCmjEluJQWNGVqqaIPUAeiei7l29wYFpxQsnYF3GYiPBnDYRZFFXgvODw1JsE29qvy7UeHgaGPlimRSZzzfAVuF1E84SOZ41B9ujxaf+ObhbTb61IRNRNFCWY45E8Ntxsy0F6lEkdQKItlEejBTFpl9JOUeKoZSyB8Is/NqesM4a62rttABR0X4yp8bPM5++7YYYsSGXJnlL+6qLAv3X8tg6m/5/dfj5qZfdl8ybAE3pkATkofKu4aO9C2xHKgq/9JWCz8gA+xUvU/Zx8/QLO01xT5oPmIBzNXGwY4iTtaLV0vgfiFEg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gqpxn6ryCz2yQL;
+	Wed, 01 Jul 2026 15:49:49 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782884989;
+	cv=none; b=Bk8oZvEl3xjRLm0U9qprKHVRL2G/2mpH1TjDh2Kny5EmHFwDNEEg5VC5mAV2XWerpPeaLGTGJk41VGyeTxZx0uZ0SXEryMvyD9egn7I7Pmalulwwz4oBU3oBghxsjp0amKTIm9C0KVCc68wE4avqfWg7MHjbCGTXnbp8r/Qck5KuIROSTWx5DQGQ5PrUSqycMAZJDAbru10MgGDuRJyZ2fMevOti4V7TNOXOzJOyha3LdLIqeDf39alSXZ89clwVo3hbNdu3VEs9XZv1uV40ZCkdkc+O5ZUAeitgljpJHAfNoF2JXT/HdyPjcWYk0wEp4j+XoJI/IB7TLvUfRjgBuQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1782882904; c=relaxed/relaxed;
-	bh=E80IxCKDLZdgTEyKIiEEd2vjIqfJG2YG606BV3dpUpc=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=QpNJ9kZymhT5+syNJ6NwEKMOmzRHE3cyAPr0/wnygxbjLKBfxJMGt0wsOx7DgaAABZewAts9D2wjP1Z3BDq2Se89W/M/OyOn548DPrLY9fZbJA4zOPy+S95NEcsb2/rshjgylXd8wScYQkC8zXQEozA55J3wqQrTJvf6vG7Gt/c2zzcdgZn7hGliyYManugL2kuko1C0ASyRnwo8qmwZMROLymrfXf+DcPL6cTBmG3D7R2ztQkQ4Q7CS89lijJIcQ9F+Wutdq/RKxJAgxOV/mrjWFuf0HSF1SkKT6aU8lQvUeWvhHVaZe6J/G+jLwFpCY9j5MEVHIuo76lBYsJDM3w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=kksbbEZv; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1782884989; c=relaxed/relaxed;
+	bh=JoYRG1XxcK/9QOsiUMDOT3jhxEGjKd5Wo3GSx4yAaVM=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=CvSV53u5oYdVTr3RyBsYa59UAC30R+6jJjHEL3TK7wkgS5X6tezjgcaH1gmDOeBv+YsPlKC3won9nyhwe9LWhF80pXIh/YLg3j0OTksPaK5pKK1eoh7poaogkK3uo41iexInJU6ZEx3DamBEwkwevZHGTN38n4eSreA8YB1ZX/1OETBNG0nLT/YNYkbvjwbv6ClcqT6hlxMagb3bZC3XHJziRsiIXReKg6FmxjFZJr98e1abZFA++uTonNCeCbi2d0fDF9xaOf8SDvqsl62uyC33pN4g8y33Cwl74KvOgDUUYP7C/r9IVsVEEfNBduyPpNYej3Udep/CUFMyxvBbzw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=jIlaovlj; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=aneesh.kumar@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=kksbbEZv;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=jIlaovlj;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=aneesh.kumar@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gqp9g5JZfz2xlw
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 Jul 2026 15:15:03 +1000 (AEST)
-Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6613Igbq3760289;
-	Wed, 1 Jul 2026 05:14:53 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=pp1; bh=E80IxCKDLZdgTEyKI
-	iEEd2vjIqfJG2YG606BV3dpUpc=; b=kksbbEZvJEDgztmBJqS6lQftnhQXdWgV2
-	WF0dTt7ABkAHGb6QEjExOAGxb6+PeyZytB7XCLbz++NoGACSTtX2qHAzsEWSOAfV
-	O3FHQb5/Bxj+RmIyYAHkireeohr3PGVAVPTsDCRx0ZTOZ/gc8F69jNqErxR7PqL8
-	RIeHAaY86d/QEavWKWWLgRP7lEs0UJXJHoXLEhcTXQlPGPWtYNqIWocbOXZdS1aw
-	WA7ogmtRFySe8TFVk2CeR1WkK9X2JmFJWofGfN36MAekooH62tL13X526Ugs8D8Y
-	ClHvsjzQBAEgU8Zafreke3T8g7HdsdUV1Xo7ovabOJ5YiICM1CoqQ==
-Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4f26mjtbv0-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 01 Jul 2026 05:14:52 +0000 (GMT)
-Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma11.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 66154beJ005002;
-	Wed, 1 Jul 2026 05:14:51 GMT
-Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
-	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4f2uhydg6x-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 01 Jul 2026 05:14:51 +0000 (GMT)
-Received: from smtpav06.fra02v.mail.ibm.com (smtpav06.fra02v.mail.ibm.com [10.20.54.105])
-	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6615ElFV24117692
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 1 Jul 2026 05:14:47 GMT
-Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id A07D820049;
-	Wed,  1 Jul 2026 05:14:47 +0000 (GMT)
-Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 23D6D20040;
-	Wed,  1 Jul 2026 05:14:44 +0000 (GMT)
-Received: from localhost.localdomain (unknown [9.124.211.190])
-	by smtpav06.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Wed,  1 Jul 2026 05:14:43 +0000 (GMT)
-From: Amit Machhiwal <amachhiw@linux.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, Madhavan Srinivasan <maddy@linux.ibm.com>
-Cc: Vaibhav Jain <vaibhav@linux.ibm.com>,
-        Amit Machhiwal <amachhiw@linux.ibm.com>,
-        Anushree Mathur <anushree.mathur@linux.ibm.com>,
-        Paolo Bonzini <pbonzini@redhat.com>,
-        Nicholas Piggin <npiggin@gmail.com>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-        Jonathan Corbet <corbet@lwn.net>,
-        Shuah Khan <skhan@linuxfoundation.org>,
-        Ritesh Harjani <ritesh.list@gmail.com>, kvm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org
-Subject: [PATCH v5 4/4] KVM: PPC: Document KVM_PPC_GET_COMPAT_CAPS ioctl
-Date: Wed,  1 Jul 2026 10:44:09 +0530
-Message-ID: <20260701051409.51820-5-amachhiw@linux.ibm.com>
-X-Mailer: git-send-email 2.50.1
-In-Reply-To: <20260701051409.51820-1-amachhiw@linux.ibm.com>
-References: <20260701051409.51820-1-amachhiw@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gqpxm4fnXz2xlw
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 Jul 2026 15:49:48 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id 94AF7601D6;
+	Wed,  1 Jul 2026 05:49:44 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6DE8E1F000E9;
+	Wed,  1 Jul 2026 05:49:34 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1782884984;
+	bh=JoYRG1XxcK/9QOsiUMDOT3jhxEGjKd5Wo3GSx4yAaVM=;
+	h=From:To:Cc:Subject:Date;
+	b=jIlaovljZqMSuR+TUEkKxmB87J1isqkeUOf6mQCggDk+JlOZJf5IR/hA4HltAo0n+
+	 0viZ4/M6Rc6DzSx0Z8wRRhgfZ0vsaFfHp/WfIcHKqQucoNt+uQWDxvSHn/ysfPpij8
+	 z6dcuraBSNAkdazQN7s0i3HD0sACsjiTFf6CVbPxN2C3c2GsnDaTpNZk688IDUynDi
+	 W08zohKSOUHkjzUkJtVQJpHNfblqi6RD6rBlCi9zvdzfWWa2i9qXxWcQY6APMZy5Me
+	 FnE9Y0hAI3Cf3laf30h7Q+RxAuvf204Y9SXETEOvtMPUhFPtjYsEFGIeq22Sr79rut
+	 zkpzWSwfaUxrQ==
+From: "Aneesh Kumar K.V (Arm)" <aneesh.kumar@kernel.org>
+To: iommu@lists.linux.dev,
+	linux-arm-kernel@lists.infradead.org,
+	linux-kernel@vger.kernel.org,
+	linux-coco@lists.linux.dev
+Cc: "Aneesh Kumar K.V (Arm)" <aneesh.kumar@kernel.org>,
+	Robin Murphy <robin.murphy@arm.com>,
+	Marek Szyprowski <m.szyprowski@samsung.com>,
+	Will Deacon <will@kernel.org>,
+	Marc Zyngier <maz@kernel.org>,
+	Steven Price <steven.price@arm.com>,
+	Suzuki K Poulose <Suzuki.Poulose@arm.com>,
+	Catalin Marinas <catalin.marinas@arm.com>,
+	Jiri Pirko <jiri@resnulli.us>,
+	Jason Gunthorpe <jgg@ziepe.ca>,
+	Mostafa Saleh <smostafa@google.com>,
+	Petr Tesarik <ptesarik@suse.com>,
+	Alexey Kardashevskiy <aik@amd.com>,
+	Dan Williams <dan.j.williams@intel.com>,
+	Xu Yilun <yilun.xu@linux.intel.com>,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-s390@vger.kernel.org,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	Alexander Gordeev <agordeev@linux.ibm.com>,
+	Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
+	Heiko Carstens <hca@linux.ibm.com>,
+	Vasily Gorbik <gor@linux.ibm.com>,
+	Christian Borntraeger <borntraeger@linux.ibm.com>,
+	Sven Schnelle <svens@linux.ibm.com>,
+	x86@kernel.org
+Subject: [PATCH v7 00/22] dma-mapping: Track shared DMA state through direct, pool and swiotlb paths
+Date: Wed,  1 Jul 2026 11:19:04 +0530
+Message-ID: <20260701054926.825925-1-aneesh.kumar@kernel.org>
+X-Mailer: git-send-email 2.43.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -98,148 +94,195 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzAxMDA0NiBTYWx0ZWRfX4R5o/5XJK5AS
- kgfFwIrFim/X/cp7GGk6IsBxHs+YL9kap9IHciKSveFcnLr30LJhaIBHiPjbmnJk01Cnx0+F3Z/
- TROx67urqgLKPd8dxNg/T/eLbC35/Ipyq1tKbjR/7oyoT78EcmTcHrbeG6fc9cwWX36zShp6Hwd
- ks9ey+6Oy/ovGE9qb3Na/bfTVsH1xkPVEb6Rhc1apI+6THnuaAc+bF85TN9f3ATEIupmzJ/RooG
- ohRn9b2iDTgZ7xc/VYPE8ckANCLuBHoMKjN77qEn/clyY+Z8iM1FhZVEoV+MfeBnbnspMxq+3r+
- IL4fTgK9u38Sud0JWozfARUQTTAQOsAA7yWeqmYz/vCH3rUNYioBYPWU2KxjtMInc2krK6T6YGr
- xJ41Pv9XohNM/1xVCY0tn28OnOdmuM+bZJmxGNTdFF3EZXDFNxSQkAo0tjPP3apNkPXL1oHTctl
- CYhFMJulkni3wP957DA==
-X-Proofpoint-GUID: AGg3uB9dIx5Oe_b3jSGqQJQrpCaDgkzo
-X-Authority-Analysis: v=2.4 cv=Z8bc2nRA c=1 sm=1 tr=0 ts=6a44a24c cx=c_pps
- a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
- a=RAioF0-LDSMA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=RzCfie-kr_QcCd8fBx8p:22 a=VnNF1IyMAAAA:8 a=hQeoMbdVOOR6M4iuoH8A:9
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNzAxMDA0NiBTYWx0ZWRfX3GGeuCGBMGG2
- NdKG0Ez7iwRmp+aEj2bm5Z+uZxpj/Gx8nbVLA+RQjptBqnHDp3JrycHI07EXdnrS1wd7K39eNbU
- upCuEQrreZlcjrAqvQzdslR3ApNXFTk=
-X-Proofpoint-ORIG-GUID: BMOTeKnrgBkY-1nC6moSJ13IWjwAXBZM
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
- definitions=2026-07-01_01,2026-06-26_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1015 adultscore=0 spamscore=0 priorityscore=1501 impostorscore=0
- malwarescore=0 phishscore=0 bulkscore=0 lowpriorityscore=0 suspectscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607010046
 
-Add documentation for the KVM_PPC_GET_COMPAT_CAPS ioctl to the KVM API
-documentation.
+This series tracks confidential-computing shared DMA state through the
+dma-direct, dma-pool, and swiotlb paths so that encrypted and decrypted
+DMA buffers are handled consistently.
 
-The ioctl exposes host processor compatibility modes supported for
-nested KVM guests on PowerPC systems. The documentation covers error
-code descriptions including E2BIG for forward compatibility, the
-extensible size-based versioning contract using
-KVM_PPC_COMPAT_CAPS_SIZE_VER0, the rationale for rejecting non-zero
-reserved fields to prevent ABI ambiguity, bit numbering clarification
-for IBM MSB-0 convention, and KVM-specific capability bit constants.
+Today, the direct DMA path mostly relies on force_dma_unencrypted() for
+shared/decrypted buffer handling. This series consolidates the
+force_dma_unencrypted() checks in the top-level functions and ensures
+that the remaining DMA interfaces use DMA attributes to make the correct
+decisions.
 
-Signed-off-by: Amit Machhiwal <amachhiw@linux.ibm.com>
----
-Changes in this version:
-  - Updated error table: EINVAL now reflects size < VER0 or flags != 0;
-    added E2BIG for new userspace on old kernel
-  - Replaced stale strict-size-validation paragraph with description of
-    the copy_struct_from_user/to_user extensibility model and
-    KVM_PPC_COMPAT_CAPS_SIZE_VER0 versioning contract
-  - Added rationale for flags == 0 enforcement to prevent ABI ambiguity
+The series separates mapping and allocation state:
+- DMA_ATTR_CC_SHARED describes the DMA address attribute requested for a
+  mapping. It tells the DMA mapping path that the DMA address must target
+  shared/decrypted memory.
+- __DMA_ATTR_ALLOC_CC_SHARED is an internal DMA-mapping attribute used only
+  by allocation paths after the DMA core decides that the backing pages
+  must be allocated as shared/decrypted memory.
 
- Documentation/virt/kvm/api.rst | 79 ++++++++++++++++++++++++++++++++++
- 1 file changed, 79 insertions(+)
+The series:
+- moves swiotlb-backed allocations out of __dma_direct_alloc_pages(),
+- uses __DMA_ATTR_ALLOC_CC_SHARED through the dma-direct alloc/free paths
+- teaches the atomic DMA pools to track encrypted versus decrypted
+  state
+- tracks swiotlb pool encryption state and enforces strict pool
+  selection
+- centralizes encrypted/decrypted pgprot handling in dma_pgprot() using
+  DMA attributes
+- passes DMA attributes down to dma_capable() so capability checks can
+  validate whether the selected DMA address encoding matches
+  DMA_ATTR_CC_SHARED
+- makes dma_direct_map_phys() choose the DMA address encoding from
+  DMA_ATTR_CC_SHARED and fall back to swiotlb when a shared DMA request
+  cannot use the direct mapping, which lets arm64 and x86 CCA guests stop
+  relying on SWIOTLB_FORCE for DMA mappings
+- use the selected swiotlb pool state to derive the returned DMA
+  address
+- reports CC_ATTR_GUEST_MEM_ENCRYPT for arm64 Realms, powerpc secure
+  guests, and s390 protected virtualization guests.
 
-diff --git a/Documentation/virt/kvm/api.rst b/Documentation/virt/kvm/api.rst
-index a5f9ee92f43e..43810c451317 100644
---- a/Documentation/virt/kvm/api.rst
-+++ b/Documentation/virt/kvm/api.rst
-@@ -6566,6 +6566,85 @@ KVM_S390_KEYOP_SSKE
-   Sets the storage key for the guest address ``guest_addr`` to the key
-   specified in ``key``, returning the previous value in ``key``.
- 
-+4.145 KVM_PPC_GET_COMPAT_CAPS
-+-----------------------------
-+:Capability: KVM_CAP_PPC_COMPAT_CAPS
-+:Architectures: powerpc
-+:Type: vm ioctl
-+:Parameters: struct kvm_ppc_compat_caps (out)
-+:Returns: 0 on success, negative value on failure
-+
-+Errors include:
-+
-+  ======== ============================================================
-+  EFAULT   if ``struct kvm_ppc_compat_caps`` cannot be read from or
-+           written to userspace
-+  EINVAL   if the ``size`` field is smaller than
-+           ``KVM_PPC_COMPAT_CAPS_SIZE_VER0``, if the ``flags`` field
-+           is non-zero, or if the backend fails to retrieve or map
-+           CPU compatibility capabilities
-+  E2BIG    if ``size`` is larger than the kernel's struct size
-+           (new userspace on old kernel); the kernel writes back its
-+           own struct size into the ``size`` field so userspace can
-+           retry with the correct size
-+  ENOTTY   if the backend does not implement the ``get_compat_caps``
-+           operation (e.g., on non-pseries platforms or when the
-+           required KVM operations are not available)
-+  ======== ============================================================
-+
-+IBM POWER system server-based processors provide a compatibility mode feature
-+where an Nth generation processor can operate in modes consistent with earlier
-+generations such as (N-1) and (N-2).
-+
-+This ioctl provides userspace with information about the CPU compatibility modes
-+supported by the current host processor for booting the nested KVM guests on
-+KVM on PowerNV (nested API v1) and KVM on PowerVM (nested API v2) platforms.
-+
-+::
-+
-+  struct kvm_ppc_compat_caps {
-+	__u64	size;			/* Size of this structure */
-+	__u64	flags;			/* Reserved for future use, must be 0 */
-+	__u64	compat_capabilities;	/* Capabilities supported by the host */
-+  };
-+
-+Before calling this ioctl, userspace must set the ``size`` field to
-+``sizeof(struct kvm_ppc_compat_caps)`` and zero the ``flags`` field.
-+The kernel rejects non-zero ``flags`` with ``-EINVAL`` to prevent
-+uninitialized stack values from being silently accepted, keeping the
-+field available for future use without ABI ambiguity.
-+
-+The ioctl uses ``copy_struct_from_user()`` and ``copy_struct_to_user()``
-+to support extensible versioning: if userspace passes a struct smaller
-+than the current kernel version (``size >= KVM_PPC_COMPAT_CAPS_SIZE_VER0``),
-+the kernel zero-pads unknown trailing fields. If userspace passes a larger
-+struct (``size > sizeof(struct kvm_ppc_compat_caps)``), the kernel writes
-+back its own struct size into the ``size`` field and returns ``-E2BIG``,
-+allowing userspace to discover the kernel's struct size and retry.
-+``KVM_PPC_COMPAT_CAPS_SIZE_VER0`` (24) is a frozen constant marking the
-+size of the initial struct version.
-+
-+The ``compat_capabilities`` bit field describes the processor compatibility
-+modes supported by the host. The following bits indicate support for specific
-+processor modes (using IBM's MSB-0 convention where bit 0 is the most
-+significant bit):
-+
-+- ``KVM_PPC_COMPAT_CAP_POWER9``  (bit 1) -- KVM guests can run in Power9 processor mode
-+- ``KVM_PPC_COMPAT_CAP_POWER10`` (bit 2) -- KVM guests can run in Power10 processor mode
-+- ``KVM_PPC_COMPAT_CAP_POWER11`` (bit 3) -- KVM guests can run in Power11 processor mode
-+
-+.. note::
-+
-+   The bit numbering above uses IBM's MSB-0 convention (bit 0 is the most
-+   significant bit). In the actual implementation, these are defined as:
-+
-+   - ``KVM_PPC_COMPAT_CAP_POWER9``  = ``(1ULL << 62)``
-+   - ``KVM_PPC_COMPAT_CAP_POWER10`` = ``(1ULL << 61)``
-+   - ``KVM_PPC_COMPAT_CAP_POWER11`` = ``(1ULL << 60)``
-+
-+   Userspace should use the defined constants from ``<linux/kvm.h>`` rather
-+   than hardcoding bit positions.
-+
- .. _kvm_run:
- 
- 5. The kvm_run structure
+Dependency:
+This series depends on the pKVM changes posted at:
+https://lore.kernel.org/all/20260603110522.3331819-1-smostafa@google.com
+
+Please merge this series only after the pKVM changes above are merged.
+Otherwise pKVM will be broken.
+
+Changes since v6:
+* Rebase onto the latest kernel.
+* Add __DMA_ATTR_ALLOC_CC_SHARED for allocation paths. DMA_ATTR_CC_SHARED
+  is now used to describe the requested DMA mapping address attribute,
+  while __DMA_ATTR_ALLOC_CC_SHARED is used internally when allocating
+  shared/decrypted backing pages.
+* Report CC_ATTR_GUEST_MEM_ENCRYPT for arm64 Realms, powerpc secure
+  guests, and s390 protected virtualization guests.
+* Add CC_ATTR_HOST_MEM_ENCRYPT and swiotlb=force fixes.
+
+Changes since v5:
+https://lore.kernel.org/all/20260522042815.370873-1-aneesh.kumar@kernel.org
+* Add Tested-by
+* Drop the pKVM patch, which has now been posted separately:
+  https://lore.kernel.org/all/20260603110522.3331819-1-smostafa@google.com
+* Remove the DO_NOT_MERGE tag from the s390 change.
+* Add a patch to drop the SWIOTLB_FORCE flag.
+* Rebase onto the latest kernel.
+
+Changes since v4:
+https://lore.kernel.org/all/20260512090408.794195-1-aneesh.kumar@kernel.org
+* Add new patches based on Sashiko review:
+  swiotlb: Preserve allocation virtual address for dynamic pools
+  dma: free atomic pool pages by physical address
+  dma: swiotlb: handle set_memory_decrypted() failures
+  dma: swiotlb: free dynamic pools from process context
+  iommu/dma: Check atomic pool allocation result directly
+* Include pKVM and s390 changes as dependent patches. These are not yet
+  ready to merge and are waiting for subsystem testing feedback.
+* Drop the AMD GART patch because it requires wider testing.
+* Update swiotlb_tbl_map_single() to take attrs by reference.
+* Switch swiotlb_free() to use rcu_work.
+* Avoid calling swiotlb_find_pool() multiple times in the free path.
+* Make DMA_ATTR_MMIO imply DMA_ATTR_CC_SHARED for devices requiring unencrypted DMA.
+
+Changes from v3:
+https://lore.kernel.org/all/20260427055509.898190-1-aneesh.kumar@kernel.org
+* Handle DMA_ATTR_MMIO correctly in dma_direct_map_phys()
+* Address most of sashiko review
+* Rebase to latest kernel
+* drop SWIOTLB_FORCE for s390 and powerpc secure guest.
+
+Changes from v2:
+https://lore.kernel.org/all/20260420061415.3650870-1-aneesh.kumar@kernel.org
+* pass attrs to dma_capable() and update direct, swiotlb, Xen swiotlb, and
+  x86 GART paths so the capability checks see the DMA address attr value
+  DMA_ATTR_CC_SHARED.
+* rework dma_direct_map_phys() so DMA_ATTR_CC_SHARED selects
+  phys_to_dma_unencrypted() while the default path uses
+  phys_to_dma_encrypted(), with swiotlb fallback when the requested
+  shared/private state cannot be satisfied by a direct DMA address.
+* stop relying on SWIOTLB_FORCE for arm64 and x86 CC guest DMA mappings;
+  swiotlb is still enabled there, but shared mappings is now selected
+  through the generic dma_direct_map_phys()/dma_capable() decision instead
+  of a global force-bounce flag.
+
+Changes from v1:
+https://lore.kernel.org/all/20260417085900.3062416-1-aneesh.kumar@kernel.org
+* rebased to latest kernel (change from DMA_ATTR_CC_DECRYPTED -> DMA_ATTR_CC_SHARED)
+* update the alloc path so DMA_ATTR_CC_SHARED is not a caller-visible attribute.
+
+Cc: Robin Murphy <robin.murphy@arm.com>
+Cc: Marek Szyprowski <m.szyprowski@samsung.com>
+Cc: Will Deacon <will@kernel.org>
+Cc: Marc Zyngier <maz@kernel.org>
+Cc: Steven Price <steven.price@arm.com>
+Cc: Suzuki K Poulose <Suzuki.Poulose@arm.com>
+Cc: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Jiri Pirko <jiri@resnulli.us>
+Cc: Jason Gunthorpe <jgg@ziepe.ca>
+Cc: Mostafa Saleh <smostafa@google.com>
+Cc: Petr Tesarik <ptesarik@suse.com>
+Cc: Alexey Kardashevskiy <aik@amd.com>
+Cc: Dan Williams <dan.j.williams@intel.com>
+Cc: Xu Yilun <yilun.xu@linux.intel.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linux-s390@vger.kernel.org
+Cc: Madhavan Srinivasan <maddy@linux.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Nicholas Piggin <npiggin@gmail.com>
+Cc: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+Cc: Alexander Gordeev <agordeev@linux.ibm.com>
+Cc: Gerald Schaefer <gerald.schaefer@linux.ibm.com>
+Cc: Heiko Carstens <hca@linux.ibm.com>
+Cc: Vasily Gorbik <gor@linux.ibm.com>
+Cc: Christian Borntraeger <borntraeger@linux.ibm.com>
+Cc: Sven Schnelle <svens@linux.ibm.com>
+Cc: x86@kernel.org
+
+Aneesh Kumar K.V (Arm) (22):
+  dma-direct: return struct page from dma_direct_alloc_from_pool()
+  dma-pool: fix page leak in atomic_pool_expand() cleanup
+  iommu/dma: Check atomic pool allocation result directly
+  dma: free atomic pool pages by physical address
+  swiotlb: Preserve allocation virtual address for dynamic pools
+  s390: Expose protected virtualization through cc_platform_has()
+  dma-direct: swiotlb: handle swiotlb alloc/free outside
+    __dma_direct_alloc_pages
+  coco: arm64: s390: powerpc: Mark secure guests with
+    CC_ATTR_GUEST_MEM_ENCRYPT
+  dma-mapping: Add internal shared allocation attribute
+  dma-direct: use __DMA_ATTR_ALLOC_CC_SHARED in alloc/free paths
+  dma-pool: track decrypted atomic pools and select them via attrs
+  dma: swiotlb: pass mapping attributes by reference
+  dma: swiotlb: track pool encryption state and honor DMA_ATTR_CC_SHARED
+  dma-mapping: make dma_pgprot() honor __DMA_ATTR_ALLOC_CC_SHARED
+  dma-direct: pass attrs to dma_capable() for DMA_ATTR_CC_SHARED checks
+  dma-direct: make dma_direct_map_phys() honor DMA_ATTR_CC_SHARED
+  dma-direct: set decrypted flag for remapped DMA allocations
+  dma-direct: select DMA address encoding from
+    __DMA_ATTR_ALLOC_CC_SHARED
+  dma-direct: rename ret to cpu_addr in alloc helpers
+  dma: swiotlb: free dynamic pools from process context
+  dma: swiotlb: handle set_memory_decrypted() failures
+  swiotlb: remove unused SWIOTLB_FORCE flag
+
+ Documentation/core-api/dma-attributes.rst    |  29 ++
+ arch/arm64/kernel/rsi.c                      |   1 +
+ arch/arm64/mm/init.c                         |   4 +-
+ arch/powerpc/platforms/pseries/cc_platform.c |   1 +
+ arch/powerpc/platforms/pseries/svm.c         |   2 +-
+ arch/s390/Kconfig                            |   1 +
+ arch/s390/mm/init.c                          |  17 +-
+ arch/x86/kernel/amd_gart_64.c                |  30 +-
+ arch/x86/kernel/pci-dma.c                    |   4 +-
+ drivers/iommu/dma-iommu.c                    |  20 +-
+ drivers/xen/swiotlb-xen.c                    |   8 +-
+ include/linux/dma-direct.h                   |  20 +-
+ include/linux/dma-map-ops.h                  |   3 +-
+ include/linux/dma-mapping.h                  |   8 +
+ include/linux/swiotlb.h                      |  25 +-
+ include/trace/events/dma.h                   |   3 +-
+ kernel/dma/direct.c                          | 264 ++++++++++++-----
+ kernel/dma/direct.h                          |  47 +--
+ kernel/dma/mapping.c                         |  25 +-
+ kernel/dma/pool.c                            | 221 ++++++++++----
+ kernel/dma/swiotlb.c                         | 292 ++++++++++++++-----
+ 21 files changed, 756 insertions(+), 269 deletions(-)
+
+
+base-commit: dc59e4fea9d83f03bad6bddf3fa2e52491777482
 -- 
-2.50.1 (Apple Git-155)
+2.43.0
+
 
