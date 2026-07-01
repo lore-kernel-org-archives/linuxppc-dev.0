@@ -1,120 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-23314-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23315-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A8D49C43327
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Jul 2026 17:42:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D728FC43458
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Jul 2026 18:05:18 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gr6lw5v8Pz2yS0;
-	Thu, 02 Jul 2026 03:42:20 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a07:de40:b251:101:10:150:64:1"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782927740;
-	cv=none; b=YGnXt3DJ3V1E1kIRRm5B9YuV4LFUQxzoqCcWGRqeoMngP0gU7ZZt6MStFN20v7bzm/I54qlDxhKTGZ1W05pFX76xx1DqPgtOBBuz+emB2N2HRRuI/y1CC/w7rZEkd7r02IVQ34WnpmsmwB1GDV5ghQ6Udo9wTqlQCHtvL3VKndX7S5FbteC9tOmIiqe4cWwrh6P+SPhSwfe2kjjeAQiKVHZMdZwArhWFnxhDrEuvwnja/6U6BmTBTC0z/ZlsJFT8NiNsoXJMpA1owLu7KFzIeXpuPWqF6DjrP1RvcAfqQyZzcges1zOBXuUThKhz6Dw5O1KnUnQtJ1x5k+WQQNYAqQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gr7GN6W66z2yS0;
+	Thu, 02 Jul 2026 04:05:16 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782929116;
+	cv=none; b=RFx6ly/4mn6mCdb5LJeGtJUfmZZ7vigtEajRz19xDpkUbzMxHnqQMZcz3o/1uHFkQLloZlt9DJ3l7vtZ8XCn7Tz3sKWq628KGLjiCcVoKep2t2yqfc5+P0YvOvQZpfwE4YFwRCVuMfSguy5+ax15Y8ZREAUl1jPvx3na17n5DW6S8k81LpjLXP5SsSESMvFuJZImh9dJcthDoSdQu6jBUB/m5pi/aLhCMGdVIN6cCdoQMC/cO6wahvJPRm0nhP0+UQBIiLi8BoHyq1coFJMN6o8zakk4yFzF2vWtDcfK175FStlmOvuTc8cOFiVq9SW/Mk9mIyMccQ/lU/jjgLZfFg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1782927740; c=relaxed/relaxed;
-	bh=g/9TqXZlX4/k/t2gPPoF6CqYPooDxdi7sERQrkUu8LM=;
-	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type:
-	 Content-Disposition; b=mIT3DJWXJcpMleVYBO0DJC9IXXwLqGVdzewzuWMml5IzQzwGcNX/llZCfbqKf6cAK7hHJfWg0aJWwMxy4auW7MXjq7KMZ/tmgPLru35JSRqIPqm9LhPw//vx//h0T/AzqJLK+y5r4on0liofVBCnJa6YcTRQTw0Bb5BJYa83XIg0y1+V8IlEQwixdUdtaj/TWXDH58RU2jtK90OlexdRYdyVrHzMColRt5A7sHX7Oak6eYBmSXY0WDEEMY4nLZdcu0XS8ut9EqPeOnFjPq9Jbk4UkhzipgBSj09jGLuJF/lcKkCkIgxqL+C6XSrxKhTtb+ARIJn85ByY3ds76PTIdQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de; dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=iDBM9Tzy; dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=Zs9101jm; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=KlfNxGQE; dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=Dk0Db3Eo; dkim-atps=neutral; spf=pass (client-ip=2a07:de40:b251:101:10:150:64:1; helo=smtp-out1.suse.de; envelope-from=msuchanek@suse.de; receiver=lists.ozlabs.org) smtp.mailfrom=suse.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de
+	t=1782929116; c=relaxed/relaxed;
+	bh=shndhiZek8hzHKFimPlGuQnjukXHCg1p9/th+He453Q=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=Zyv99+MWeHkhExLwz0pvbvrbq5MTkw9npGNHQkbGiycYgRPYErnclYpU5CIwtrH5sF0xgmbg1HSnWDdUUUani0m71hrlcHmaidw7fJKy4kPD63yLRzMismTM2x5NKyrmWCyPkaKS8zafIADE6OFwbeHKQ6ew3AGGrj1fhJaIApDJE32SfX3ZvZjLEWQXA6+yioOjKc6D4Lk1/+Q6IN1EjULPZvQDiMA4CQrVIW83xwfdCD6YD5xHaJz2l73M7L1BEZ1sUN7FfuJkBjbdDuh1TuT+yjRtNSWRlLnzyLciFU1neD5emD2TB1Cl9uPpsoYIHBwdMbhOIn9JZZVCU43FjQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=gwJJolis; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=vishalc@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=iDBM9Tzy;
-	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=Zs9101jm;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=KlfNxGQE;
-	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=Dk0Db3Eo;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=gwJJolis;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=2a07:de40:b251:101:10:150:64:1; helo=smtp-out1.suse.de; envelope-from=msuchanek@suse.de; receiver=lists.ozlabs.org)
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [IPv6:2a07:de40:b251:101:10:150:64:1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=vishalc@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gr6lt6T6mz2yRM
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 Jul 2026 03:42:18 +1000 (AEST)
-Received: from kunlun.suse.cz (unknown [IPv6:2a07:de40:b306:2000::2])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id AFCDA7160D;
-	Wed,  1 Jul 2026 17:42:09 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1782927730; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding;
-	bh=g/9TqXZlX4/k/t2gPPoF6CqYPooDxdi7sERQrkUu8LM=;
-	b=iDBM9TzyvbOUpRF/Gy8Fj0MyxLOfs7GgyI90fByLVsTdScqNvzOGbgxxDB7Tx2MqlpnWf3
-	jZcQyX/gKXm7k40saZtUE2wUlpHmircLjUnMZAG372GE8bw7t9Crop81yIZzSFgYj/Qse9
-	pUqz0auOFP6EZ8p7iF92mDlBxTcqOG8=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1782927730;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding;
-	bh=g/9TqXZlX4/k/t2gPPoF6CqYPooDxdi7sERQrkUu8LM=;
-	b=Zs9101jmnByN2sjws0Vmkh/Ak/fZjKvhrio71SUZPwhFbT+4/smF96zvR5e4qQrdR/9hrU
-	I6T0I0HMCd/ONyCA==
-Authentication-Results: smtp-out1.suse.de;
-	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=KlfNxGQE;
-	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=Dk0Db3Eo
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1782927729; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding;
-	bh=g/9TqXZlX4/k/t2gPPoF6CqYPooDxdi7sERQrkUu8LM=;
-	b=KlfNxGQEE3lxY2h4GpOynFhBYJhIteAgmhl14hmfG2CdvIrhxgVXPg2OgZY1rZxzDBZHrW
-	tyiCCfn2F2rrUlh6nt45mviXAKruchryu7qEA7wustxBbiS0CavcdiCPhm+glCntFhWC3j
-	RGhsBQ6Fw/KKc4/JaimttevyAZwp4fU=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1782927729;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding;
-	bh=g/9TqXZlX4/k/t2gPPoF6CqYPooDxdi7sERQrkUu8LM=;
-	b=Dk0Db3Eot3QLr3p04nq2JV8MC+CYJCa1GDtg3XP7QLn8PkuQ7JKTz5Q05HSsKz332JCaDs
-	d1IOC1MYfL8tbPBQ==
-Date: Wed, 1 Jul 2026 19:42:08 +0200
-From: Michal =?iso-8859-1?Q?Such=E1nek?= <msuchanek@suse.de>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Jonathan Corbet <corbet@lwn.net>,
-	Shuah Khan <skhan@linuxfoundation.org>,
-	Huacai Chen <chenhuacai@kernel.org>,
-	WANG Xuerui <kernel@xen0n.name>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
-	Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>,
-	Heiko Carstens <hca@linux.ibm.com>,
-	Vasily Gorbik <gor@linux.ibm.com>,
-	Alexander Gordeev <agordeev@linux.ibm.com>,
-	Christian Borntraeger <borntraeger@linux.ibm.com>,
-	Sven Schnelle <svens@linux.ibm.com>,
-	Andy Lutomirski <luto@kernel.org>,
-	Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>,
-	Borislav Petkov <bp@alien8.de>,
-	Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
-	"H. Peter Anvin" <hpa@zytor.com>,
-	Andrew Donnellan <andrew+kernel@donnellan.id.au>,
-	Mark Rutland <mark.rutland@arm.com>,
-	Michal =?iso-8859-1?Q?Such=E1nek?= <msuchanek@suse.de>,
-	Arnd Bergmann <arnd@arndb.de>,
-	Jiaxun Yang <jiaxun.yang@flygoat.com>,
-	Ryan Roberts <ryan.roberts@arm.com>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Mukesh Kumar Chaurasiya <mkchauras@linux.ibm.com>,
-	Shrikanth Hegde <sshegde@linux.ibm.com>,
-	Zong Li <zong.li@sifive.com>, Nam Cao <namcao@linutronix.de>,
-	Deepak Gupta <debug@rivosinc.com>,
-	Lukas Gerlach <lukas.gerlach@cispa.de>,
-	Rui Qi <qirui.001@bytedance.com>, Kees Cook <kees@kernel.org>,
-	linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
-	loongarch@lists.linux.dev, linuxppc-dev@lists.ozlabs.org,
-	linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org
-Subject: [RFC] entry: Untangle the return value of
- syscall_enter_from_user_mode from syscall NR
-Message-ID: <akVRcPsD_R_CE1qW@kunlun.suse.cz>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gr7GL4z9Bz2xlw
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 Jul 2026 04:05:13 +1000 (AEST)
+Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 661GmeJo1398715;
+	Wed, 1 Jul 2026 18:05:00 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=shndhi
+	Zek8hzHKFimPlGuQnjukXHCg1p9/th+He453Q=; b=gwJJolis11WcLYk7PLWrbD
+	HCM4cJI50WCrt0kJCDgPusp71oIAGo0euuevQtWE0Ob/zm7u9ROQQlfy8hT45zcD
+	zXyffEExx/JLX5S2q2fIJYv8l7BNPB8q90d87Bu1OmPtElmv3alsPBgj3N7BDIxl
+	hBHF+lONvyzVBR4cVPXCWYl7IROW88UEl5WijPhvwXppXykEOnJJqWQeyQRivZVU
+	YLDk9//RHv5lIr2Vx7qI95D2hbAjGGPH7rM2CkEO1/YjDA6F+l9Rs2CPpyocbNJ1
+	LcH6VwmdGikTHGdEOhMYAJm9PSDeiTchkglA4uDczJHFiP4MCNRp850NbRq0ym9Q
+	==
+Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4f26n5wyj3-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 01 Jul 2026 18:04:59 +0000 (GMT)
+Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma13.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 661I4hiS018051;
+	Wed, 1 Jul 2026 18:04:59 GMT
+Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
+	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4f2u2ggc8w-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 01 Jul 2026 18:04:58 +0000 (GMT)
+Received: from smtpav06.fra02v.mail.ibm.com (smtpav06.fra02v.mail.ibm.com [10.20.54.105])
+	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 661I4tPp47644928
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Wed, 1 Jul 2026 18:04:55 GMT
+Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 51A0D20049;
+	Wed,  1 Jul 2026 18:04:55 +0000 (GMT)
+Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id A704F20040;
+	Wed,  1 Jul 2026 18:04:52 +0000 (GMT)
+Received: from [9.39.23.199] (unknown [9.39.23.199])
+	by smtpav06.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Wed,  1 Jul 2026 18:04:52 +0000 (GMT)
+Message-ID: <08b76ac0-9c01-450a-a54c-bdae7379af74@linux.ibm.com>
+Date: Wed, 1 Jul 2026 23:34:51 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -128,437 +81,313 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 1/1] KVM: powerpc/book3s_hv: Use generic xfer to guest
+ work function
+To: Shrikanth Hegde <sshegde@linux.ibm.com>
+Cc: npiggin@gmail.com, mpe@ellerman.id.au, chleroy@kernel.org,
+        gautam@linux.ibm.com, bigeasy@linutronix.de,
+        linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, maddy@linux.ibm.com
+References: <20260626105449.2897924-2-vishalc@linux.ibm.com>
+ <20260626105449.2897924-4-vishalc@linux.ibm.com>
+ <ba65ad87-2d59-49c3-9b76-7068a9c0dac2@linux.ibm.com>
+Content-Language: en-US, en-IN
+From: Vishal Chourasia <vishalc@linux.ibm.com>
+In-Reply-To: <ba65ad87-2d59-49c3-9b76-7068a9c0dac2@linux.ibm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-X-Rspamd-Action: add header
-X-Rspamd-Server: rspamd2.dmz-prg2.suse.org
-X-Spamd-Result: default: False [15.68 / 50.00];
-	SPAM_FLAG(5.00)[];
-	NEURAL_SPAM_LONG(3.50)[1.000];
-	BAYES_HAM(-3.00)[100.00%];
-	NEURAL_SPAM_SHORT(2.99)[0.995];
-	HFILTER_HOSTNAME_UNKNOWN(2.50)[];
-	RDNS_NONE(2.00)[];
-	SUSPICIOUS_RECIPS(1.50)[];
-	ONCE_RECEIVED(1.20)[];
-	HFILTER_HELO_IP_A(1.00)[kunlun.suse.cz];
-	DWL_DNSWL_LOW(-1.00)[suse.de:dkim];
-	HFILTER_HELO_NORES_A_OR_MX(0.30)[kunlun.suse.cz];
-	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	MIME_GOOD(-0.10)[text/plain];
-	MX_GOOD(-0.01)[];
-	RCPT_COUNT_TWELVE(0.00)[46];
-	FUZZY_RATELIMITED(0.00)[rspamd.com];
-	MIME_TRACE(0.00)[0:+];
-	ARC_NA(0.00)[];
-	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	RBL_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b306:2000::2:from];
-	FREEMAIL_ENVRCPT(0.00)[gmail.com];
-	TO_DN_SOME(0.00)[];
-	DNSWL_BLOCKED(0.00)[2a07:de40:b306:2000::2:from];
-	RCVD_COUNT_ZERO(0.00)[0];
-	FROM_EQ_ENVFROM(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	TAGGED_RCPT(0.00)[kernel];
-	R_RATELIMIT(0.00)[to_ip_from(RLdf7cthttnq1gm73yfn4rmqgr)];
-	MISSING_XM_UA(0.00)[];
-	FREEMAIL_CC(0.00)[lwn.net,linuxfoundation.org,kernel.org,xen0n.name,linux.ibm.com,ellerman.id.au,gmail.com,dabbelt.com,eecs.berkeley.edu,ghiti.fr,redhat.com,alien8.de,linux.intel.com,zytor.com,donnellan.id.au,arm.com,suse.de,arndb.de,flygoat.com,sifive.com,linutronix.de,rivosinc.com,cispa.de,bytedance.com,vger.kernel.org,lists.linux.dev,lists.ozlabs.org,lists.infradead.org];
-	DKIM_TRACE(0.00)[suse.de:+];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:email,suse.de:dkim,kunlun.suse.cz:helo,kunlun.suse.cz:mid]
-X-Spamd-Bar: +++++++++++++++
-X-Rspamd-Queue-Id: AFCDA7160D
-X-Spam: Yes
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzAxMDE5MCBTYWx0ZWRfX7pKeK+Uf+y/e
+ UFZRxFZslFqbtRHL9boRhTVshV7RNV5wJWx0vmJYb/9PZFiiypHUHzi5hTuJuc0Q4egqUb087c2
+ zRQjQVxsXEOyLsQgda0bkJuPfdE+VgvfpLW8O2QTf7fXusWhp0fEz/D2YiQgkL1F3f6l/2bVE6m
+ FOlbUqZf3ueuD8w4D3KiSmlh7m3vNj3Gk8yGKHTwTE5YEXBRkH00glJ0a3hkkZ0IQQHVBoBS8Kq
+ Z8p4bPkCeHiWG8URzyOrdgGddL1xTHiM3cnYzGHyJUSTDv0+GkpJAvxADkYKHsD8UWCBqBtaN0u
+ 4C+7H+dwcpHNC5mjreKO6wsBmewReL1vV5rLZDmJZvFjoNmKUzBIbRGxsvSlvmyC/IQ2D9mBAnW
+ EnVKOG4OnrFmmYY+bUpNkbqByBrHw/OKuDMasKioBJclKNaOWpKN/lBqzXyuuEiaoiLog/w/JEE
+ Q2bZ1N08Hm5OILNw98Q==
+X-Authority-Analysis: v=2.4 cv=V45NF+ni c=1 sm=1 tr=0 ts=6a4556cc cx=c_pps
+ a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
+ a=IkcTkHD0fZMA:10 a=RAioF0-LDSMA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=U7nrCbtTmkRpXpFmAIza:22 a=VnNF1IyMAAAA:8
+ a=e6rxw4hy6MCZb7Uc7toA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+X-Proofpoint-ORIG-GUID: VDK6S743VZ7OE1HVem1gJFUIGIxaMUT4
+X-Proofpoint-GUID: oclSDBocyI5B2lDTuGbqyEJ9fE0R23Y5
+X-Proofpoint-Spam-Info: AW1haW4tMjYwNzAxMDE5MCBTYWx0ZWRfX4Es0U7GjBnAt
+ 9QY0PAoCjUYGiXRbscJWLdpON8ET0r8duQQpwMVUX+1iND4dU8bkNyAbW5Heelv1EJ/M5BjKzb8
+ 1yJFcL8LesZh8YIQBvZxnQH4ADO33D8=
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
+ definitions=2026-07-01_04,2026-06-26_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ phishscore=0 spamscore=0 suspectscore=0 lowpriorityscore=0 priorityscore=1501
+ adultscore=0 clxscore=1015 impostorscore=0 malwarescore=0 bulkscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607010190
 
-The return value of syscall_enter_from_user_mode is used both for the
-adjusted syscall number and the indicator that a syscall should be
-skipped.
 
-As seccomp can be invoked on any syscall, including invalid ones this
-somewhat undermines seccomp.
+On 01/07/26 11:43, Shrikanth Hegde wrote:
+> Hi Vishal,
+Hi Shrikanth, Thanks for looking into it.
+>
+> On 6/26/26 4:23 PM, Vishal Chourasia wrote:
+>> Use the generic infrastructure to check for and handle pending work
+>> before transitioning into guest mode, replacing the open-coded
+>> need_resched() and cond_resched() checks.
+>>
+>> This picks up handling for TIF_NOTIFY_RESUME, which was previously
+>> ignored, meaning task work will now be correctly handled on every
+>> guest re-entry.
+Yes
+>
+> It would indeed be good if powerpc moves go generic 
+> VIRT_XFER_TO_GUEST_WORK.
+> It does take care of RESUME.
+>
+> In addition today, I doubt powerpc kvm works well for LAZY preemption.
+> generic infra will take care of it too.
+>
+nice
+>>
+>> Signed-off-by: Vishal Chourasia <vishalc@linux.ibm.com>
+>> ---
+>>   arch/powerpc/kvm/Kconfig     |  1 +
+>>   arch/powerpc/kvm/book3s_hv.c | 58 +++++++++++++++++++++++++++++++-----
+>>   2 files changed, 52 insertions(+), 7 deletions(-)
+>>
+>> diff --git a/arch/powerpc/kvm/Kconfig b/arch/powerpc/kvm/Kconfig
+>> index 9a0d1c1aca6c..36aec58c5f22 100644
+>> --- a/arch/powerpc/kvm/Kconfig
+>> +++ b/arch/powerpc/kvm/Kconfig
+>> @@ -81,6 +81,7 @@ config KVM_BOOK3S_64_HV
+>>       depends on KVM_BOOK3S_64 && PPC_POWERNV
+>>       select KVM_BOOK3S_HV_POSSIBLE
+>>       select KVM_BOOK3S_HV_PMU
+>> +    select VIRT_XFER_TO_GUEST_WORK
+>
+> This takes care of HV only.
+> Does PR/booke run into the same problem?
+Yes, I would think so, if the KVM vCPU runs inside system.
+> Does anyone out there who runs them still and care about cgroup 
+> bandwidth control mechanism on it?
+>
+> It may be worth adding comment that PR still runs into the same issue.
+>
+>>       select CMA
+>>       help
+>>         Support running unmodified book3s_64 guest kernels in
+>> diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
+>> index 61dbeea317f3..b012512342e6 100644
+>> --- a/arch/powerpc/kvm/book3s_hv.c
+>> +++ b/arch/powerpc/kvm/book3s_hv.c
+>> @@ -3850,10 +3850,20 @@ static noinline void kvmppc_run_core(struct 
+>> kvmppc_vcore *vc)
+>>        * and return without going into the guest(s).
+>>        * If the mmu_ready flag has been cleared, don't go into the
+>>        * guest because that means a HPT resize operation is in progress.
+>> +     *
+>> +     * xfer_to_guest_mode_work_pending() is the IRQs-disabled 
+>> recheck for
+>> +     * pending guest-mode work (reschedule, signals, and 
+>> TIF_NOTIFY_RESUME
+>> +     * task_work such as the deferred CFS throttle). It is the 
+>> pre-POWER9
+>> +     * analog of the final gate in kvmhv_run_single_vcpu(), and a 
+>> superset
+>> +     * of the old need_resched() check: it catches work that raced 
+>> in after
+>> +     * the drain in kvmppc_run_vcpu(), so a CPU-bound vCPU is 
+>> throttled here
+>> +     * instead of running one more guest dispatch past its quota. 
+>> IRQs are
+>> +     * hard-disabled just above, so the non-__ variant (which 
+>> asserts that)
+>> +     * is the correct one.
+>>        */
+>>       local_irq_disable();
+>>       hard_irq_disable();
+>> -    if (lazy_irq_pending() || need_resched() ||
+>> +    if (lazy_irq_pending() || xfer_to_guest_mode_work_pending() ||
+>>           recheck_signals_and_mmu(&core_info)) {
+>>           local_irq_enable();
+>>           vc->vcore_state = VCORE_INACTIVE;
+>> @@ -4824,10 +4834,24 @@ static int kvmppc_run_vcpu(struct kvm_vcpu 
+>> *vcpu)
+>>           vc->runner = vcpu;
+>>           if (n_ceded == vc->n_runnable) {
+>>               kvmppc_vcore_blocked(vc);
+>> -        } else if (need_resched()) {
+>> +        } else if (__xfer_to_guest_mode_work_pending()) {
+>>               kvmppc_vcore_preempt(vc);
+>> -            /* Let something else run */
+>> -            cond_resched_lock(&vc->lock);
+>> +            /*
+>> +             * Let something else run, and run pending guest-mode
+>> +             * work (reschedule, and TIF_NOTIFY_RESUME task_work such
+>> +             * as the deferred CFS throttle) before we would re-enter
+>> +             * the guest, so a CPU-bound vCPU is actually throttled
+>> +             * here instead of running past its quota. This is a
+>> +             * superset of the old need_resched() check. Use the raw
+>> +             * helper, not the kvm_ wrapper: signals (KVM_EXIT_INTR
+>> +             * and the signal_exits stat) are accounted by this path's
+>> +             * existing handling below, so going through the wrapper
+>> +             * here would double-count them. The helper may schedule(),
+>> +             * so the vcore lock is dropped around it.
+>> +             */
+>> +            spin_unlock(&vc->lock);
+>> +            xfer_to_guest_mode_handle_work();
+>> +            spin_lock(&vc->lock);
+>>               if (vc->vcore_state == VCORE_PREEMPT)
+>>                   kvmppc_vcore_end_preempt(vc);
+>>           } else {
+>> @@ -4899,8 +4923,21 @@ int kvmhv_run_single_vcpu(struct kvm_vcpu 
+>> *vcpu, u64 time_limit,
+>>           }
+>>       }
+>>   -    if (need_resched())
+>> -        cond_resched();
+>> +    /*
+>> +     * Run pending work before (re-)entering the guest, most 
+>> importantly
+>> +     * task_work queued via TWA_RESUME (e.g. the deferred CFS bandwidth
+>> +     * throttle, which only sets TIF_NOTIFY_RESUME). Without this a 
+>> CPU-bound
+>> +     * vCPU that keeps returning RESUME_GUEST never reaches an 
+>> exit-to-user
+>> +     * point, so the throttle is never enforced and the task runs 
+>> far beyond
+>> +     * its quota. The helper also handles reschedule and signals, 
+>> replacing
+>> +     * the cond_resched() that was here. It may schedule(), so it 
+>> runs before
+>> +     * preemption and IRQs are disabled, with no vcore/KVM locks 
+>> held. This
+>> +     * is the per-reentry site shared by the bare-metal and pseries 
+>> (nested)
+>> +     * paths, so both are covered.
+>> +     */
+>> +    r = kvm_xfer_to_guest_mode_handle_work(vcpu);
+>> +    if (r)    /* -EINTR: signal pending, exit to userspace 
+>> (KVM_EXIT_INTR) */
+>> +        return r;
+>>         kvmppc_update_vpas(vcpu);
+>>   @@ -4916,7 +4953,14 @@ int kvmhv_run_single_vcpu(struct kvm_vcpu 
+>> *vcpu, u64 time_limit,
+>>         if (signal_pending(current))
+>>           goto sigpend;
+>
+> xfer_to_guest_mode_work_pending checks for signals too right?
+>
+> #define XFER_TO_GUEST_MODE_WORK                                         \
+>         (_TIF_NEED_RESCHED | _TIF_NEED_RESCHED_LAZY | _TIF_SIGPENDING | \
+>          _TIF_NOTIFY_SIGNAL | _TIF_NOTIFY_RESUME |                      \
+>          ARCH_XFER_TO_GUEST_MODE_WORK)
+Yes, I see originally we only had need_resched() check. will remove in v2
+>
+>> -    if (need_resched() || !kvm->arch.mmu_ready)
+>> +    /*
+>> +     * Re-check for pending guest-mode work with IRQs disabled, to 
+>> catch
+>> +     * anything (e.g. a TIF_NOTIFY_RESUME task_work such as the 
+>> deferred CFS
+>> +     * throttle) that raced in after the check above. Bail back to 
+>> the outer
+>> +     * loop, which re-enters here and runs the work. This is a 
+>> superset of
+>> +     * the previous need_resched() check.
+>> +     */
+>> +    if (xfer_to_guest_mode_work_pending() || !kvm->arch.mmu_ready)
+>>           goto out;
+>>         vcpu->cpu = pcpu;
+>
+> Copying from the discussion thread at that time,
+>
+> """
+> on x86:
+> kvm_arch_vcpu_ioctl_run
+>     vcpu_run
+>         for () {
+>             .. run guest..
+>             xfer_to_guest_mode_handle_work
+>                 schedule
+>         }
+>
+>
+> on Powerpc:  ( taking book3s_hv flavour):
+> kvm_arch_vcpu_ioctl_run
+> kvmppc_vcpu_run_hv  *1
+>     do while() {
+>         kvmhv_run_single_vcpu or kvmppc_run_vcpu
+>             -- checking for need_resched and signals and bails out *2
+>     }
+>
+>
+> *1 - checks for need resched and signals before entering guest
+> *2 - checks for need resched and signals while running the guest
+>
+>
+> This patch is addressing only *1 but it needs to address *2 as well 
+> using generic framework.
 
-While the seccomp variants that terminate the process do not need to
-care about this for the filter that sets the syscall return value this
-disctinction is required.
+Not sure about *2 (while running the guest) part. Here the patch checks 
+twice before entering the guest.
+Once when IRQs are not disabled and once after disabling IRQs.
 
-Pass the syscall number as a pointer to the inline entry functions, and
-use the return value exclusively for the indication that the syscall is
-already handled.
+> I think it is doable for books3s_hv atleast. (though might need rewrite)
+do what exactly?
+> """
+>
+>
+> A few questions that comes to my mind.
+>
+> 1. I think you are doing for both *1 and *2 right? Is *1 necessary 
+> still for powerpc?
+yes, before entering the guest we check twice. Once when IRQs are not 
+disabled and once after disabling IRQs.
+> 2. There is a for loop. What is it doing? Does this still need similar 
+> checks?
+>
+>         if (is_kvmppc_resume_guest(r) && 
+> !kvmppc_vcpu_check_block(vcpu)) {
+>                 kvmppc_set_timer(vcpu);
+>
+>                 prepare_to_rcuwait(wait);
+>                 for (;;) {
+>                         set_current_state(TASK_INTERRUPTIBLE);
+>                         if (signal_pending(current)) {
+>                                 vcpu->stat.signal_exits++;
+>                                 run->exit_reason = KVM_EXIT_INTR;
+>                                 vcpu->arch.ret = -EINTR;
+>                                 break;
+>                         }
+>
+>                         if (kvmppc_vcpu_check_block(vcpu))
+>                                 break;
+>
+>                         trace_kvmppc_vcore_blocked(vcpu, 0);
+>                         schedule();
+>                         trace_kvmppc_vcore_blocked(vcpu, 1);
+>                 }
+>                 finish_rcuwait(wait);
+>         }
+>         vcpu->arch.ceded = 0;
 
-This should avoid the need for the s390 PIF_SYSCALL_RET_SET which is the
-workaround for exactly this deficiency.
+IIUC, the vCPU has voluntarily went idle in the guest and it's
+about to re-enter, but there's genuinely nothing to deliver yet.
+So, it parks itself here until, something actually wake this vCPU.
 
-If this is desirable the patch could be split into some series that
-adjusts the code flow where needed so that the final change is mostly
-mechanical.
+I am not quite sure, if signal_pending() should be replaced with
+xfer_*_pending() check, because vCPU is not re-entering the guest.
 
-There is also another way to handle this problem.
+Adding the xfer_*_pending() check here will break the loop even
+when other flags causing busy spins (cede/re-enter).
 
-With x86 using bit 30 to denote compatibility syscall it sounds like
-declaring syscall number a 30bit quantity would work.
+>
+> PS: cc'ing me would have helped me to see the mail earlier since you 
+> had referred
+> to the patch I had sent.
 
-Then bit 31 could be used to denote an invalid syscall that can never be
-executed, and the -1 returned from syscall_enter_from_user_mode would
-then be inherently invalid.
-
-That is so long as no architectures use syscall numbers outside of this
-range so far, and the limitation is considered fine.
-
-Signed-off-by: Michal Such�nek <msuchanek@suse.de>
----
- Documentation/core-api/entry.rst | 12 ++++++----
- arch/loongarch/kernel/syscall.c  |  6 ++---
- arch/powerpc/kernel/syscall.c    |  3 ++-
- arch/riscv/kernel/traps.c        |  6 ++---
- arch/s390/kernel/syscall.c       |  6 ++---
- arch/x86/entry/syscall_32.c      | 39 +++++++++++++++-----------------
- arch/x86/entry/syscall_64.c      | 19 ++++++++--------
- include/linux/entry-common.h     | 38 ++++++++++++++-----------------
- 8 files changed, 63 insertions(+), 66 deletions(-)
-
-diff --git a/Documentation/core-api/entry.rst b/Documentation/core-api/entry.rst
-index 71d8eedc0549..b0bfae31fe7c 100644
---- a/Documentation/core-api/entry.rst
-+++ b/Documentation/core-api/entry.rst
-@@ -68,12 +68,14 @@ invoked from low-level assembly code looks like this:
-   noinstr void syscall(struct pt_regs *regs, int nr)
-   {
- 	arch_syscall_enter(regs);
--	nr = syscall_enter_from_user_mode(regs, nr);
- 
--	instrumentation_begin();
--	if (!invoke_syscall(regs, nr) && nr != -1)
--	 	result_reg(regs) = __sys_ni_syscall(regs);
--	instrumentation_end();
-+	/* Skip syscall when -1 is returned */
-+	if (!syscall_enter_from_user_mode(regs, &nr)) {
-+		instrumentation_begin();
-+		if (!invoke_syscall(regs, nr) && nr != -1)
-+			result_reg(regs) = __sys_ni_syscall(regs);
-+		instrumentation_end();
-+	}
- 
- 	syscall_exit_to_user_mode(regs);
-   }
-diff --git a/arch/loongarch/kernel/syscall.c b/arch/loongarch/kernel/syscall.c
-index 94c1c3b5b0b5..fc18ac56b91c 100644
---- a/arch/loongarch/kernel/syscall.c
-+++ b/arch/loongarch/kernel/syscall.c
-@@ -58,7 +58,7 @@ typedef long (*sys_call_fn)(unsigned long, unsigned long,
- 
- void noinstr __no_stack_protector do_syscall(struct pt_regs *regs)
- {
--	unsigned long nr;
-+	unsigned long nr, ret;
- 	sys_call_fn syscall_fn;
- 
- 	nr = regs->regs[11];
-@@ -70,11 +70,11 @@ void noinstr __no_stack_protector do_syscall(struct pt_regs *regs)
- 	regs->orig_a0 = regs->regs[4];
- 	regs->regs[4] = -ENOSYS;
- 
--	nr = syscall_enter_from_user_mode(regs, nr);
-+	ret = syscall_enter_from_user_mode(regs, &nr);
- 
- 	add_random_kstack_offset();
- 
--	if (nr < NR_syscalls) {
-+	if (nr < NR_syscalls && !ret) {
- 		syscall_fn = sys_call_table[array_index_nospec(nr, NR_syscalls)];
- 		regs->regs[4] = syscall_fn(regs->orig_a0, regs->regs[5], regs->regs[6],
- 					   regs->regs[7], regs->regs[8], regs->regs[9]);
-diff --git a/arch/powerpc/kernel/syscall.c b/arch/powerpc/kernel/syscall.c
-index a9da2af6efa8..45d11d518c51 100644
---- a/arch/powerpc/kernel/syscall.c
-+++ b/arch/powerpc/kernel/syscall.c
-@@ -20,7 +20,8 @@ notrace long system_call_exception(struct pt_regs *regs, unsigned long r0)
- 	syscall_fn f;
- 
- 	add_random_kstack_offset();
--	r0 = syscall_enter_from_user_mode(regs, r0);
-+	if (unlikely(syscall_enter_from_user_mode(regs, &r0)))
-+		return syscall_get_error(current, regs);
- 
- 	if (unlikely(r0 >= NR_syscalls)) {
- 		if (unlikely(trap_is_unsupported_scv(regs))) {
-diff --git a/arch/riscv/kernel/traps.c b/arch/riscv/kernel/traps.c
-index 8c62c771a656..9326a4a50696 100644
---- a/arch/riscv/kernel/traps.c
-+++ b/arch/riscv/kernel/traps.c
-@@ -325,7 +325,7 @@ asmlinkage __visible __trap_section  __no_stack_protector
- void do_trap_ecall_u(struct pt_regs *regs)
- {
- 	if (user_mode(regs)) {
--		long syscall = regs->a7;
-+		long ret, syscall = regs->a7;
- 
- 		regs->epc += 4;
- 		regs->orig_a0 = regs->a0;
-@@ -333,11 +333,11 @@ void do_trap_ecall_u(struct pt_regs *regs)
- 
- 		riscv_v_vstate_discard(regs);
- 
--		syscall = syscall_enter_from_user_mode(regs, syscall);
-+		ret = syscall_enter_from_user_mode(regs, &syscall);
- 
- 		add_random_kstack_offset();
- 
--		if (syscall >= 0 && syscall < NR_syscalls) {
-+		if (syscall >= 0 && syscall < NR_syscalls && !ret) {
- 			syscall = array_index_nospec(syscall, NR_syscalls);
- 			syscall_handler(regs, syscall);
- 		}
-diff --git a/arch/s390/kernel/syscall.c b/arch/s390/kernel/syscall.c
-index 75d5a3cab14e..9e5b873c011d 100644
---- a/arch/s390/kernel/syscall.c
-+++ b/arch/s390/kernel/syscall.c
-@@ -95,7 +95,7 @@ SYSCALL_DEFINE0(ni_syscall)
- 
- void noinstr __do_syscall(struct pt_regs *regs, int per_trap)
- {
--	unsigned long nr;
-+	unsigned long nr, ret;
- 
- 	enter_from_user_mode(regs);
- 	add_random_kstack_offset();
-@@ -121,7 +121,7 @@ void noinstr __do_syscall(struct pt_regs *regs, int per_trap)
- 		regs->psw.addr = current->restart_block.arch_data;
- 		current->restart_block.arch_data = 1;
- 	}
--	nr = syscall_enter_from_user_mode_work(regs, nr);
-+	ret = syscall_enter_from_user_mode_work(regs, &nr);
- 	/*
- 	 * In the s390 ptrace ABI, both the syscall number and the return value
- 	 * use gpr2. However, userspace puts the syscall number either in the
-@@ -129,7 +129,7 @@ void noinstr __do_syscall(struct pt_regs *regs, int per_trap)
- 	 * work, the ptrace code sets PIF_SYSCALL_RET_SET, which is checked here
- 	 * and if set, the syscall will be skipped.
- 	 */
--	if (unlikely(test_and_clear_pt_regs_flag(regs, PIF_SYSCALL_RET_SET)))
-+	if (unlikely(test_and_clear_pt_regs_flag(regs, PIF_SYSCALL_RET_SET) || ret))
- 		goto out;
- 	regs->gprs[2] = -ENOSYS;
- 	if (likely(nr < NR_syscalls)) {
-diff --git a/arch/x86/entry/syscall_32.c b/arch/x86/entry/syscall_32.c
-index 31b9492fe851..525e99691b31 100644
---- a/arch/x86/entry/syscall_32.c
-+++ b/arch/x86/entry/syscall_32.c
-@@ -128,7 +128,7 @@ static __always_inline bool int80_is_external(void)
-  */
- __visible noinstr void do_int80_emulation(struct pt_regs *regs)
- {
--	int nr;
-+	long nr;
- 
- 	/* Kernel does not use INT $0x80! */
- 	if (unlikely(!user_mode(regs))) {
-@@ -168,8 +168,7 @@ __visible noinstr void do_int80_emulation(struct pt_regs *regs)
- 	nr = syscall_32_enter(regs);
- 
- 	local_irq_enable();
--	nr = syscall_enter_from_user_mode_work(regs, nr);
--	do_syscall_32_irqs_on(regs, nr);
-+	syscall_enter_from_user_mode_work(regs, &nr);
- 
- 	instrumentation_end();
- 	syscall_exit_to_user_mode(regs);
-@@ -208,7 +207,7 @@ __visible noinstr void do_int80_emulation(struct pt_regs *regs)
-  */
- DEFINE_FREDENTRY_RAW(int80_emulation)
- {
--	int nr;
-+	long nr;
- 
- 	enter_from_user_mode(regs);
- 
-@@ -232,8 +231,10 @@ DEFINE_FREDENTRY_RAW(int80_emulation)
- 	nr = syscall_32_enter(regs);
- 
- 	local_irq_enable();
--	nr = syscall_enter_from_user_mode_work(regs, nr);
--	do_syscall_32_irqs_on(regs, nr);
-+	if (!syscall_enter_from_user_mode_work(regs, &nr)) {
-+		nr &= GENMASK(31, 0);
-+		do_syscall_32_irqs_on(regs, nr);
-+	}
- 
- 	instrumentation_end();
- 	syscall_exit_to_user_mode(regs);
-@@ -245,20 +246,17 @@ DEFINE_FREDENTRY_RAW(int80_emulation)
- /* Handles int $0x80 on a 32bit kernel */
- __visible noinstr void do_int80_syscall_32(struct pt_regs *regs)
- {
--	int nr = syscall_32_enter(regs);
--
--	/*
--	 * Subtlety here: if ptrace pokes something larger than 2^31-1 into
--	 * orig_ax, the int return value truncates it. This matches
--	 * the semantics of syscall_get_nr().
--	 */
--	nr = syscall_enter_from_user_mode(regs, nr);
--	instrumentation_begin();
-+	long nr = syscall_32_enter(regs);
- 
- 	add_random_kstack_offset();
--	do_syscall_32_irqs_on(regs, nr);
-+	if (!syscall_enter_from_user_mode(regs, &nr)) {
-+		instrumentation_begin();
- 
--	instrumentation_end();
-+		nr &= & GENMASK(31, 0);
-+		do_syscall_32_irqs_on(regs, nr);
-+
-+		instrumentation_end();
-+	}
- 	syscall_exit_to_user_mode(regs);
- }
- #endif /* !CONFIG_IA32_EMULATION */
-@@ -301,10 +299,9 @@ static noinstr bool __do_fast_syscall_32(struct pt_regs *regs)
- 		return false;
- 	}
- 
--	nr = syscall_enter_from_user_mode_work(regs, nr);
--
--	/* Now this is just like a normal syscall. */
--	do_syscall_32_irqs_on(regs, nr);
-+	if (!syscall_enter_from_user_mode_work(regs, &nr))
-+		/* Now this is just like a normal syscall. */
-+		do_syscall_32_irqs_on(regs, nr);
- 
- 	instrumentation_end();
- 	syscall_exit_to_user_mode(regs);
-diff --git a/arch/x86/entry/syscall_64.c b/arch/x86/entry/syscall_64.c
-index 71f032504e73..3400c2f43a62 100644
---- a/arch/x86/entry/syscall_64.c
-+++ b/arch/x86/entry/syscall_64.c
-@@ -84,19 +84,20 @@ static __always_inline bool do_syscall_x32(struct pt_regs *regs, int nr)
- }
- 
- /* Returns true to return using SYSRET, or false to use IRET */
--__visible noinstr bool do_syscall_64(struct pt_regs *regs, int nr)
-+__visible noinstr bool do_syscall_64(struct pt_regs *regs, long nr)
- {
--	nr = syscall_enter_from_user_mode(regs, nr);
--
--	instrumentation_begin();
- 	add_random_kstack_offset();
-+	if (!syscall_enter_from_user_mode(regs, &nr)) {
- 
--	if (!do_syscall_x64(regs, nr) && !do_syscall_x32(regs, nr) && nr != -1) {
--		/* Invalid system call, but still a system call. */
--		regs->ax = __x64_sys_ni_syscall(regs);
--	}
-+		instrumentation_begin();
- 
--	instrumentation_end();
-+		if (!do_syscall_x64(regs, nr) && !do_syscall_x32(regs, nr)) {
-+			/* Invalid system call, but still a system call. */
-+			regs->ax = __x64_sys_ni_syscall(regs);
-+		}
-+
-+		instrumentation_end();
-+	}
- 	syscall_exit_to_user_mode(regs);
- 
- 	/*
-diff --git a/include/linux/entry-common.h b/include/linux/entry-common.h
-index 416a3352261f..4991071d01fe 100644
---- a/include/linux/entry-common.h
-+++ b/include/linux/entry-common.h
-@@ -69,10 +69,8 @@ static inline void syscall_enter_audit(struct pt_regs *regs, long syscall)
- 	}
- }
- 
--static __always_inline long syscall_trace_enter(struct pt_regs *regs, unsigned long work)
-+static __always_inline long syscall_trace_enter(struct pt_regs *regs, unsigned long work, unsigned long *syscall)
- {
--	long syscall, ret = 0;
--
- 	/*
- 	 * Handle Syscall User Dispatch.  This must comes first, since
- 	 * the ABI here can be something that doesn't make sense for
-@@ -93,27 +91,25 @@ static __always_inline long syscall_trace_enter(struct pt_regs *regs, unsigned l
- 
- 	/* Handle ptrace */
- 	if (work & (SYSCALL_WORK_SYSCALL_TRACE | SYSCALL_WORK_SYSCALL_EMU)) {
--		ret = arch_ptrace_report_syscall_entry(regs);
--		if (ret || (work & SYSCALL_WORK_SYSCALL_EMU))
-+		if (arch_ptrace_report_syscall_entry(regs) || (work & SYSCALL_WORK_SYSCALL_EMU))
- 			return -1L;
- 	}
- 
- 	/* Do seccomp after ptrace, to catch any tracer changes. */
- 	if (work & SYSCALL_WORK_SECCOMP) {
--		ret = __secure_computing();
--		if (ret == -1L)
--			return ret;
-+		if (__secure_computing())
-+			return -1L;
- 	}
- 
- 	/* Either of the above might have changed the syscall number */
--	syscall = syscall_get_nr(current, regs);
-+	*syscall = syscall_get_nr(current, regs);
- 
- 	if (unlikely(work & SYSCALL_WORK_SYSCALL_TRACEPOINT))
--		syscall = trace_syscall_enter(regs, syscall);
-+		*syscall = trace_syscall_enter(regs, *syscall);
- 
--	syscall_enter_audit(regs, syscall);
-+	syscall_enter_audit(regs, *syscall);
- 
--	return ret ? : syscall;
-+	return 0;
- }
- 
- /**
-@@ -126,12 +122,12 @@ static __always_inline long syscall_trace_enter(struct pt_regs *regs, unsigned l
-  * enabled after invoking enter_from_user_mode(), enabling interrupts and
-  * extra architecture specific work.
-  *
-- * Returns: The original or a modified syscall number
-+ * Returns: The original or a modified syscall number as syscall
-  *
-- * If the returned syscall number is -1 then the syscall should be
-- * skipped. In this case the caller may invoke syscall_set_error() or
-- * syscall_set_return_value() first.  If neither of those are called and -1
-- * is returned, then the syscall will fail with ENOSYS.
-+ * If the returned value is -1 then the syscall should be skipped. In this case
-+ * the caller may invoke syscall_set_error() or syscall_set_return_value()
-+ * first.  If neither of those are called and -1 is returned, then the syscall
-+ * will fail with ENOSYS.
-  *
-  * It handles the following work items:
-  *
-@@ -139,14 +135,14 @@ static __always_inline long syscall_trace_enter(struct pt_regs *regs, unsigned l
-  *     ptrace_report_syscall_entry(), __secure_computing(), trace_sys_enter()
-  *  2) Invocation of audit_syscall_entry()
-  */
--static __always_inline long syscall_enter_from_user_mode_work(struct pt_regs *regs, long syscall)
-+static __always_inline long syscall_enter_from_user_mode_work(struct pt_regs *regs, long *syscall)
- {
- 	unsigned long work = READ_ONCE(current_thread_info()->syscall_work);
- 
- 	if (work & SYSCALL_WORK_ENTER)
--		syscall = syscall_trace_enter(regs, work);
-+		return syscall_trace_enter(regs, work, syscall);
- 
--	return syscall;
-+	return 0;
- }
- 
- /**
-@@ -167,7 +163,7 @@ static __always_inline long syscall_enter_from_user_mode_work(struct pt_regs *re
-  * Returns: The original or a modified syscall number. See
-  * syscall_enter_from_user_mode_work() for further explanation.
-  */
--static __always_inline long syscall_enter_from_user_mode(struct pt_regs *regs, long syscall)
-+static __always_inline long syscall_enter_from_user_mode(struct pt_regs *regs, long *syscall)
- {
- 	long ret;
- 
--- 
-2.51.0
+Yes. I missed it.
 
 
