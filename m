@@ -1,98 +1,78 @@
-Return-Path: <linuxppc-dev+bounces-23276-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23277-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EB111C43327
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Jul 2026 08:29:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4AF57C43458
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Jul 2026 08:38:27 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gqtVX2hxKz2xKh;
-	Wed, 01 Jul 2026 18:29:56 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=195.135.223.130
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782894596;
-	cv=none; b=DZ5La3dYqILeSFiS7OTItE3nzg8EfxsOQTPGBG4e+rLEeRfC4THFHvKKpgtb9u+z+w+EOo0i4rvcgAAhyNsTN9qtGfA0sYX7ZxvGIlHSptdHhmv5Qj9Db33d/HORbEkLswPLvAQ4o6Yn6xgbz6V2ZDaxoyBfOXzIzdls12ekygu0Nm8bZWUXmjnPxfcc/92bcpm+eL428NGyVqqaA7P9zZgl0jNL1CzAii2YFKfBLFQVE32NkAoIHpTPulojJcMVeLtjBLnc1EEZrhf0XcsVDLbtEvbZxTIzFZJdIyAZcZmTeep46RNVup6rbMnGqzgsEcX1bcbKvlhel5vVHMBEvw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gqthK72Vkz2xKh;
+	Wed, 01 Jul 2026 18:38:25 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782895105;
+	cv=none; b=lMf8FGTGIhb0/HWahPrfA+jvSfbIpylWbUudo1PsFloYCkRpRC1kk/3JreWRU2M7IkOQvJMxTFf2wppSV9a1NsBS/8Ao5wevpfi+WJgkFJNcGqQKwUiDYCzrsWezxTDHyk/aGlSV1dK7+b/JIbC8TpDP3iEypzJhuNlzK7t4US87rXKKKRWcMTAwkKBNuKlepdq188K1T3UUxUKwhgDUuDWE9lA9VHALARn3k2hVcA1PqLeyGJSxz7DpPpwmMkaEq3/1iIQkwdJCAFdPgCmfjzzFZLWXXEVTCNTvLyMZNOomJnW44PZOdIyrFsqdV0UQfkdMGKRZf1aFQdYNEihsYA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1782894596; c=relaxed/relaxed;
-	bh=RXXdGVRfCqtqSTHKkrvRfqO5GMS4z58MT3yoL5BEgZQ=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=C+uy3Fj83zggpQgALL8uLnwzJDk1CaiejBXzFVSdUMRIfjYvr3QDEziQz+qGD396gdIZP3RIVEOXt2koUNDCakHZHkuB2AtGZEEMPTpTJZbizJWyWkF3NGyYktaIL+Ax68uXGgv615qx+2VM5QFw72YCQn6Q7yPX8DqQ426J5eT+pbA0h+irKFJuPlUo59R2cWcyjQ7oh7npVLiQTfq3hB8ZsLCb9CLPM4asqt9I87oxDcjDk2Y1/s3IvuADjprcFxWC8Fd5rd6BkIUM+vv833Q2l0FuN5LryaFjQMk3K855x9WJzs0dgpkMMb5XLYYesRujCdyw7haMbtDx0tiDGQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de; dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=dvtlPlh4; dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=7uPmQlpd; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=gRwIZSMX; dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=uZZ44JWs; dkim-atps=neutral; spf=pass (client-ip=195.135.223.130; helo=smtp-out1.suse.de; envelope-from=msuchanek@suse.de; receiver=lists.ozlabs.org) smtp.mailfrom=suse.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de
+	t=1782895105; c=relaxed/relaxed;
+	bh=J+CvJdff2sWrtqDlFKMu8o+BVEcNouBdxeKYclfqCKs=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=W1x4bXaDfDJb4pUH5c03SmnB0Ulx7fgqv3devX7xT/XTx1GM3yH6Y5h3Fizy2GcaoaSJK2Y9mqA9LTzOCfEgINue0TJuUVL/+/p+MZ40V0/Pv8l/UcLX24/N+b2ONFATyPgXRZrPjwsXYlfRF91cTavCwd/hQ43FMnCiLVv8sT4g00enU7Mxd0OtU0BE2psSvsuxInMmuMwTz1rTxsySk51axNBEZ45anwZ7n9S9qPQeLjqEp+6FO+hHRAIpW6axGc3DdSLVJMMNoZFtAY54YcMDJnK/ju31tnOorNezw6dyYnOnZP4Jz3/OFg2tQZ+mEQEd3I02faH+8o8NhXS7+g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=nwUyiJ4N; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=atrajeev@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=dvtlPlh4;
-	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=7uPmQlpd;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=gRwIZSMX;
-	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=uZZ44JWs;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=nwUyiJ4N;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=195.135.223.130; helo=smtp-out1.suse.de; envelope-from=msuchanek@suse.de; receiver=lists.ozlabs.org)
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=atrajeev@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gqtVV6l7kz2xJT
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 Jul 2026 18:29:54 +1000 (AEST)
-Received: from kunlun.suse.cz (unknown [IPv6:2a07:de40:b306:2000::2])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id 848EE71FB0;
-	Wed,  1 Jul 2026 08:29:50 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1782894591; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=RXXdGVRfCqtqSTHKkrvRfqO5GMS4z58MT3yoL5BEgZQ=;
-	b=dvtlPlh4W9jg+5DjIlq7QcPbB3m15lWnzhTCdxGfuMUgQ48Hd4o+LbAOHziE0U42z0ILf0
-	iBKGsSC1NNIap10csJ8IV6cZE6u/B7VYLB80ahYPyGvQBWPcB7PPM5flA3vNflLdf5y3vK
-	tsywaK7z92TdBmI7hInAe/e5s5m8M6k=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1782894591;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=RXXdGVRfCqtqSTHKkrvRfqO5GMS4z58MT3yoL5BEgZQ=;
-	b=7uPmQlpdKZJ9LnNRHu6S5Ahdl+5R1OBRLbcw/hxH/mzL1kOhzu2YUqwW5TYolGEmkaYH2i
-	Cm6VQ1UXSB1cPzBg==
-Authentication-Results: smtp-out1.suse.de;
-	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=gRwIZSMX;
-	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=uZZ44JWs
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1782894590; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=RXXdGVRfCqtqSTHKkrvRfqO5GMS4z58MT3yoL5BEgZQ=;
-	b=gRwIZSMXnBQ4/2B1UC7dU+QiSfBHSTJP4DNJEIm/cp62IrBljt5lDw2t1BbQxqDf7bqPv6
-	WuQO8hyXspqp4T+SfsnGeDpjNwnKkgbBSRNCs1kWNQ7u/hLmPXIJBh2HdrHyPA0UHk6GN0
-	j9uLZhQA1+V3JgtmCOh41I78aeFsww8=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1782894590;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=RXXdGVRfCqtqSTHKkrvRfqO5GMS4z58MT3yoL5BEgZQ=;
-	b=uZZ44JWstUW3gWd+teo9eKyi9pWp8SwRQcI4pnCDnxouK2NRBOqDtR1Nlf2+5jWpnyhG5g
-	KXDnrxc/vwIwt9AA==
-Date: Wed, 1 Jul 2026 10:29:49 +0200
-From: Michal =?iso-8859-1?Q?Such=E1nek?= <msuchanek@suse.de>
-To: Mukesh Kumar Chaurasiya <mkchauras@gmail.com>
-Cc: Shrikanth Hegde <sshegde@linux.ibm.com>, maddy@linux.ibm.com,
-	mpe@ellerman.id.au, npiggin@gmail.com, chleroy@kernel.org,
-	mkchauras@linux.ibm.com, ryan.roberts@arm.com,
-	ruanjinjie@huawei.com, linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH V2] powerpc/syscall: Fix seccomp errno handling with
- GENERIC_ENTRY
-Message-ID: <akTP_YJvGwln_xb_@kunlun.suse.cz>
-References: <20260629182946.419552-1-mkchauras@gmail.com>
- <a58675e4-f5a6-4a21-9871-904aad33b683@linux.ibm.com>
- <akSyVOsraz9waBf4@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
- <akTExSO3ZT7iRtBa@kunlun.suse.cz>
- <akTJbfXPKc10Xemh@kunlun.suse.cz>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gqthK0HN7z2xJT
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 Jul 2026 18:38:24 +1000 (AEST)
+Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6618IU7a194502;
+	Wed, 1 Jul 2026 08:38:22 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:date:from:message-id:mime-version
+	:subject:to; s=pp1; bh=J+CvJdff2sWrtqDlFKMu8o+BVEcNouBdxeKYclfqC
+	Ks=; b=nwUyiJ4NA7ddr1715l6gV8sl4sbX7LO/QPXqVxS5BD2wXpN4zCct9+rl7
+	B5mgKwbHLQV9G9l8a9BY/3N29dlaw3Sgy8jL4oaAUprGDtdDryaV9+oToOjsq7VG
+	+YnWWe3lEt+qFT45QkuuQ8f56cYs9q/bjerCdz18wIUgtx7w5f2LZQPLK4PB5WiP
+	5KCafyVCx9wI60cLZi9AaIDlqcNsVmBcTJ9ApuXcNSonPNHa4omj+ndX3Eqr+qfr
+	cdoLsjeSxGEYBAst0lp+z6XJzDVkpCL6II9xSP2PBOfXeDGqTPtpW/LWFB8PK/J6
+	bZBUZ1iSJf7GcxbGIakbNvc86z7mQ==
+Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4f26mju5k8-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 01 Jul 2026 08:38:21 +0000 (GMT)
+Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma23.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 6618Z12Q002752;
+	Wed, 1 Jul 2026 08:38:20 GMT
+Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
+	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4f2tbhec6t-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 01 Jul 2026 08:38:20 +0000 (GMT)
+Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com [10.20.54.104])
+	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6618cF8728377798
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Wed, 1 Jul 2026 08:38:15 GMT
+Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id B534D20040;
+	Wed,  1 Jul 2026 08:38:15 +0000 (GMT)
+Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 4B3D620043;
+	Wed,  1 Jul 2026 08:38:13 +0000 (GMT)
+Received: from localhost.localdomain (unknown [9.124.212.11])
+	by smtpav05.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Wed,  1 Jul 2026 08:38:13 +0000 (GMT)
+From: Athira Rajeev <atrajeev@linux.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org, maddy@linux.ibm.com
+Cc: linux-perf-users@vger.kernel.org, atrajeev@linux.ibm.com,
+        hbathini@linux.vnet.ibm.com, tejas05@linux.ibm.com,
+        venkat88@linux.ibm.com, tshah@linux.ibm.com
+Subject: [PATCH 0/5] powerpc/htm: Add interface to expose HTM trace data via perf
+Date: Wed,  1 Jul 2026 14:08:01 +0530
+Message-Id: <20260701083806.79358-1-atrajeev@linux.ibm.com>
+X-Mailer: git-send-email 2.39.5 (Apple Git-154)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -106,134 +86,189 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <akTJbfXPKc10Xemh@kunlun.suse.cz>
-X-Spamd-Bar: +++++++++++++++
-X-Rspamd-Queue-Id: 848EE71FB0
-X-Rspamd-Action: add header
-X-Rspamd-Server: rspamd1.dmz-prg2.suse.org
-X-Spamd-Result: default: False [15.16 / 50.00];
-	SPAM_FLAG(5.00)[];
-	NEURAL_SPAM_LONG(3.50)[1.000];
-	BAYES_HAM(-3.00)[100.00%];
-	NEURAL_SPAM_SHORT(2.97)[0.989];
-	HFILTER_HOSTNAME_UNKNOWN(2.50)[];
-	RDNS_NONE(2.00)[];
-	ONCE_RECEIVED(1.20)[];
-	HFILTER_HELO_IP_A(1.00)[kunlun.suse.cz];
-	HFILTER_HELO_NORES_A_OR_MX(0.30)[kunlun.suse.cz];
-	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	MIME_GOOD(-0.10)[text/plain];
-	MX_GOOD(-0.01)[];
-	MIME_TRACE(0.00)[0:+];
-	ARC_NA(0.00)[];
-	FUZZY_RATELIMITED(0.00)[rspamd.com];
-	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	FREEMAIL_TO(0.00)[gmail.com];
-	RBL_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b306:2000::2:from];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	FREEMAIL_ENVRCPT(0.00)[gmail.com];
-	FREEMAIL_CC(0.00)[linux.ibm.com,ellerman.id.au,gmail.com,kernel.org,arm.com,huawei.com,lists.ozlabs.org,vger.kernel.org];
-	DNSWL_BLOCKED(0.00)[2a07:de40:b306:2000::2:from];
-	FROM_EQ_ENVFROM(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	TO_DN_SOME(0.00)[];
-	DWL_DNSWL_BLOCKED(0.00)[suse.de:dkim];
-	RCVD_COUNT_ZERO(0.00)[0];
-	RCPT_COUNT_SEVEN(0.00)[11];
-	DKIM_TRACE(0.00)[suse.de:+];
-	MISSING_XM_UA(0.00)[];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:dkim,kunlun.suse.cz:mid,kunlun.suse.cz:helo]
-X-Spam: Yes
+X-TM-AS-GCONF: 00
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzAxMDA4NCBTYWx0ZWRfXwpdU25//vHFG
+ 2LHf1/DnJd/w/pzzG5kbPO8m1OiDYOAz9gyjcd34TSiLsxdNPqshMHFRIbDwJJIbsdYavxDGOc7
+ KdoCKMgtRKW9zXPN7UiF1s0hnwhCoq0UCVjizLX+WySuzidXgd8rdOJN3RNGMBvCxZaOsVi5z6s
+ pbICaeofUDEFVrrybnLzoxwvrpZyNeXsgDj9ifscNLTN6OyW5miUu7zOZbhGGhs+vn1Ble0Daje
+ rYzWsQw3Oi7uXREwTlpljgVrfAvWr/Tj6oIG99K8QB5malAZBxux+aIWSFaq1rnHrIFmBRV/6nM
+ f8lzegVu1+XcDCpXIy3l8lRz5PEGtev1qYmmukeeFnOYfRbtoBqbQ82vVvLYXDwH6mBowpdVqUZ
+ S9FxgMnT0UgYYnLY3Icpp/owvdsvqre3ZuJH0wjwg7BuhXPwUDi5Lo1F6VudSWrCUsOk+OmZClf
+ BYBKLur5YUB060a7HQg==
+X-Proofpoint-GUID: hyUxgpI7IEgnvCTGtVxFo5iZ16ISXHDK
+X-Authority-Analysis: v=2.4 cv=Z8bc2nRA c=1 sm=1 tr=0 ts=6a44d1fd cx=c_pps
+ a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
+ a=RAioF0-LDSMA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
+ a=RzCfie-kr_QcCd8fBx8p:22 a=nF1dRtf8y8upiNnS95YA:9
+X-Proofpoint-Spam-Info: AW1haW4tMjYwNzAxMDA4NCBTYWx0ZWRfX8INk33TB61TV
+ zDK37tH5ARP8UG2lseeVu01KYOsiaoRx6oDFpchzKvNy3gBW/nc4KaAQtBgd0IrB4HRxfUL647f
+ JeHoqM1ezlf43FY1AOfwI9B44w6msyM=
+X-Proofpoint-ORIG-GUID: hyUxgpI7IEgnvCTGtVxFo5iZ16ISXHDK
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
+ definitions=2026-07-01_02,2026-06-26_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ clxscore=1015 adultscore=0 spamscore=0 priorityscore=1501 impostorscore=0
+ malwarescore=0 phishscore=0 bulkscore=0 lowpriorityscore=0 suspectscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607010084
 
-On Wed, Jul 01, 2026 at 10:01:49AM +0200, Michal Suchánek wrote:
-> On Wed, Jul 01, 2026 at 09:41:57AM +0200, Michal Suchánek wrote:
-> > On Wed, Jul 01, 2026 at 11:57:00AM +0530, Mukesh Kumar Chaurasiya wrote:
-> > > On Wed, Jul 01, 2026 at 01:41:09AM +0530, Shrikanth Hegde wrote:
-> > > > Hi Mukesh.
-> > > > 
-> > > > On 6/29/26 11:59 PM, Mukesh Kumar Chaurasiya (IBM) wrote:
+H_HTM (Hardware Trace Macro) hypervisor call is an HCALL to export data
+from Hardware Trace Macro (HTM) function. Patchset adds support for setup,
+configuration and control of HTM functions as well as trace data
+collection via perf PMU interface.
 
-> > > > > diff --git a/arch/powerpc/kernel/syscall.c b/arch/powerpc/kernel/syscall.c
-> > > > > index a9da2af6efa8..36d73933a311 100644
-> > > > > --- a/arch/powerpc/kernel/syscall.c
-> > > > > +++ b/arch/powerpc/kernel/syscall.c
-> > > > > @@ -20,7 +20,6 @@ notrace long system_call_exception(struct pt_regs *regs, unsigned long r0)
-> > > > >   	syscall_fn f;
-> > > > >   	add_random_kstack_offset();
-> > > > > -	r0 = syscall_enter_from_user_mode(regs, r0);
-> > > > >   	if (unlikely(r0 >= NR_syscalls)) {
-> > > > >   		if (unlikely(trap_is_unsupported_scv(regs))) {
-> > > > > @@ -31,6 +30,12 @@ notrace long system_call_exception(struct pt_regs *regs, unsigned long r0)
-> > > > >   		return -ENOSYS;
-> > > > >   	}
-> > > > > +	r0 = syscall_enter_from_user_mode(regs, r0);
-> > > > > +
-> > > > 
-> > > > I see many arch first do syscall_enter_from_user_mode and then check for return value.
-> > > > take x86 for example,
-> > > > 
-> > > > __visible noinstr bool do_syscall_64(struct pt_regs *regs, int nr)
-> > > > {
-> > > >         nr = syscall_enter_from_user_mode(regs, nr);
-> > > > 
-> > > >         if (!do_syscall_x64(regs, nr) && !do_syscall_x32(regs, nr) && nr != -1) {
-> > > >                 /* Invalid system call, but still a system call. */
-> > > >                 regs->ax = __x64_sys_ni_syscall(regs);
-> > > >         }
-> > > > 
-> > > > }
-> > > > 
-> > > > So seccomp fails silently there if initial nr was -1?
-> > > > 
-> > > Hey,
-> > > 
-> > > No the -1 syscall ignores the error silently and returns 0.
-> > > 
-> > 
-> > There seems to be some inconsistency with the invalid syscalls.
-> > 
-> > Adapting the example from seccomp man page to ignore architecture I get
-> > on x86_64 (presumably with GENERIC_ENTRY since long ago):
-> > 
-> > ./a.out -2 55 /usr/bin/perl -MPOSIX -e '$!=0; my $r = syscall(-2, 0); print "ret=$r errno=".($!+0)." ($!)\n"'
-> > ret=-1 errno=55 (No anode)
-> > 
-> > but on ppc64le (with GENEREC_ENTRY):
-> > 
-> > ./a.out -2 55 /usr/bin/perl -MPOSIX -e '$!=0; my $r = syscall(-2, 0); print "ret=$r errno=".($!+0)." ($!)\n"'
-> > ret=-1 errno=38 (Function not implemented)
-> > 
-> > That said, behavior of seccomp on invalid syscalls is not particularly
-> > concerning. The tools that people typically use for constructing those
-> > filters typically require a valid syscall number.
-> > 
-> > It would be nice to align, though.
-> 
-> It is more concerning for SECCOMP_SET_MODE_STRICT or similar. So it
-> should be resolved to correctly execute seccomp even on invalid
-> syscalls. The syscall_enter_from_user_mode API is not particularly
-> well-suited for that, though.
+H_HTM is used as an interface for executing Hardware Trace Macro (HTM)
+functions, including setup, configuration, control and dumping of the
+HTM trace data. HTM operations can be controlled using the H_HTM hcall.
+The hcall can be invoked for any core/chip of the system from within a
+partition itself.
 
-In particular the fixup per
-https://lore.kernel.org/linuxppc-dev/akJzuEJRLniHk4Fi@kunlun.suse.cz/
+HTM perf interface usage:
+The HTM (Hardware Trace Macro) perf interface enables collection and
+analysis of hardware trace data from PowerPC systems. This interface
+allows users to capture detailed execution traces for performance
+analysis and debugging. The interface uses AUX infrastructure for
+capturing of trace data.
 
-handles some cases
+Patchset includes powerpc kernel side changes.
 
-./a.out -2 55 /usr/bin/perl -MPOSIX -e '$!=0; my $r = syscall(-2, 0); print "ret=$r errno=".($!+0)." ($!)\n"'
-ret=-1 errno=55 (No anode)
+Patch 1 introduces the HTM PMU interface with event configuration
+support for specifying target hardware (node, chip, core) and trace
+type. It integrates H_HTM hcall wrappers for starting, stopping, and
+controlling HTM trace collection.
 
-but not -1
+Patch 2 implements AUX buffer infrastructure by adding setup_aux and
+free_aux callbacks, enabling perf to allocate and manage auxiliary
+buffers for HTM data.
 
-./a.out -1 55 /usr/bin/perl -MPOSIX -e '$!=0; my $r = syscall(-1, 0); print "ret=$r errno=".($!+0)." ($!)\n"'
-ret=-1 errno=38 (Function not implemented)
+Patch 3 extends trace collection to capture system memory
+configuration alongside trace data, using PERF_SAMPLE_RAW records to
+mark data boundaries in the AUX buffer for post-processing.
 
-which is the direct result of the ambiguous return value of
-syscall_enter_from_user_mode
+Patches 4 and 5 provide comprehensive documentation for the HTM PMU
+interface, including ABI documentation for sysfs attributes and
+user-facing documentation with usage examples and workflows.
+
+perf tools side patches will be posted separately in the linux-perf-users
+mailing list.
+
+Event Configuration:
+
+Use "perf record" with the htm PMU event. The event is configured using
+named parameters that specify the target hardware location and trace type:
+
+   - htm_type
+     - Type of HTM trace to collect (bits 0-3)
+   - nodeindex
+     - Node index in the system topology (bits 4-11)
+   - nodalchipindex
+     - Chip index within the specified node (bits 12-19)
+   - coreindexonchip
+     - Core index on the specified chip (bits 20-27)
+
+event: "config:0-27"
+htm_type: "config:0-3"
+nodeindex: "config:4-11"
+nodalchipindex: "config:12-19"
+coreindexonchip: "config:20-27"
+
+1) nodeindex, nodalchipindex, coreindexonchip: this specifies
+   which partition to configure the HTM for.
+2) htmtype: specifies the type of HTM.
+
+Event Syntax:
+The event configuration uses named parameters::
+
+   htm/nodeindex=N,nodalchipindex=C,coreindexonchip=R,htm_type=T/
+
+Where:
+
+- N = node index
+- C = chip index within the node
+- R = core index on the chip
+- T = HTM type
+
+Basic Usage Example:
+To collect HTM trace data for a specific chip:
+ # perf record -C 1 -e htm/nodalchipindex=2,nodeindex=0,htm_type=1/ <workload>
+
+In this example:
+
+- nodeindex=0: Target node 0
+- nodalchipindex=2: Target chip 2 within node 0
+- htm_type=1: HTM trace type 1
+
+Output Files:
+After running "perf record", the following files are generated:
+
+   # ls htm.bin.*
+   htm.bin.n0.p2.c0 htm.bin.n1.p3.c0  # Binary trace files
+
+   # ls translation.*
+   translation.n0.p2.c0  translation.n1.p3.c0  # Memory configuration files
+
+These files contain:
+
+- **htm.bin.*** - Raw HTM trace data in binary format
+- **translation.*** - Memory address translation information for decoding
+
+Trace Data Processing:
+Process the collected trace data using perf script:
+
+   # perf script -D
+
+This command:
+
+1. Reads the perf.data file
+2. Decodes HTM trace data using translation files
+3. Displays human-readable trace output
+
+The decoder automatically:
+
+- Translates physical addresses to logical addresses
+- Creates decoded output files for analysis
+- Correlates trace data with memory mappings
+
+Here's a complete example of collecting and analyzing HTM traces:
+
+   # Step 1: Collect trace data
+   perf record -C 1 -e htm/nodalchipindex=2,nodeindex=0,htm_type=1/ sleep 5
+
+   # Step 2: Verify output files
+   ls htm.bin.*        # Binary trace files
+   ls translation.*    # Memory configuration files
+   ls perf.data        # Perf data file
+
+   # Step 3: Decode and view traces
+   perf script -D > decoded_trace.txt
+
+   # Step 4: Analyze with perf report to see the hot logical address
+   perf report
 
 Thanks
+Athira
 
-Michal
+Athira Rajeev (5):
+  powerpc/htm: Add interface to expose HTM trace data via perf
+  powerpc/htm: Add support to setup and free aux buffer for capturing
+    HTM data
+  powerpc/perf: Capture the HTM memory configuration as part of perf
+    data
+  docs: ABI: sysfs-bus-event_source-devices-htm: Document sysfs event
+    format entries for htm pmu
+  powerpc/perf/htm: Add documentation for Hardware Trace Macro PMU
+
+ .../sysfs-bus-event_source-devices-htm        |  21 +
+ Documentation/arch/powerpc/htm.rst            | 137 ++++-
+ arch/powerpc/perf/Makefile                    |   2 +-
+ arch/powerpc/perf/htm-perf.c                  | 571 ++++++++++++++++++
+ 4 files changed, 727 insertions(+), 4 deletions(-)
+ create mode 100644 Documentation/ABI/testing/sysfs-bus-event_source-devices-htm
+ create mode 100644 arch/powerpc/perf/htm-perf.c
+
+-- 
+2.52.0
+
 
