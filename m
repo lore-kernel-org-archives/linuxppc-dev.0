@@ -1,135 +1,103 @@
-Return-Path: <linuxppc-dev+bounces-23311-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23312-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 58506C43458
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Jul 2026 16:16:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 73FAFC43458
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Jul 2026 17:19:10 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gr4rq4ws1z2yfS;
-	Thu, 02 Jul 2026 02:16:27 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:41d0:1004:224b::b4"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782922587;
-	cv=none; b=AnDZhHJKnh0/aDy+pD9t5aqVYM51ni0zP9KwY/RImP5HiEMUP/TDxPx+y6fv1caLvn7wNekhwtRDIUHAwARCO1aipqWChNryFfhJ3TCu8AK5rY30qkfwJ4++Jf75v33npifH7pbtnuTDBgL9T3/TozOMhCT8d74ZKcgLBj58PvMO0zpN4L1762tHwXJWjwC9vMYY34RzeNJ9clTh9PZOYua7GCfa6VHGGlv7+DsIBae6ClOmHeqxOyKYTF0Y2UMOfkygeDGSu4AYmJF8SdVl71cBX84oTI3+fY9KdRaV8hoc2cDxt7u06JNuxOCsE0Tk+FUecf0XNyomyQNmupCzYw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gr6F85NZjz2yfS;
+	Thu, 02 Jul 2026 03:19:08 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::429"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782926348;
+	cv=none; b=dcBKSA74o0W/eKwFYnTYkZTdVfaAHESEXSNRTnh3oIJ6vBOpBxaBGT1g1DfNIf/qqPIhq5mDTQC/8b4KADecL7QOsKb0NixpXRnQkJkFyS2ZBxF49wjgZwlgqldYOWyyJMfV1QHkLU1C0n8rXjpPr0R3JGSyM9wuBe4wrV0FMayAf01BKEuUIiXS2BqzbY4ToHWGyOjOVNrYz+1bx/3KIm+SbwsGjQcWZH9BmXM2c8rHV1cxDKi1LJXicIwfTfDlVXbb4rvsGHfmCvhIFCv2y7XcN1R/6JIByCMcAVPrrz7pM+2bFSB+ZfupoFtC/1SNJXdjuU7cbfHnHWF7PDRwgA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1782922587; c=relaxed/relaxed;
-	bh=32k3xy2qoDs5v558QiIXDOBJrw4XcLaI228zHYcvJQI=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=IAVt6U17N65bLmJjWbP3Xcm0O8e+Oe2QVxg495vLeIskxHZ7fXIcnbc1g5tjUtjLonqB7KMqvtIQGtUbVAAgtitB/dWup4kOPaKJVlmPCZvO9L68bsLGoyI3IOjBoQho8vOIN0sd/6G4vXTeKtaUi9sYaCHWBY42FE3qicfZ2nGGFFWnfUn0xg+Cfp8BeecVRdd0+h2gjuy2XtjPL+YZ2Vi+DZTaKWbhpexzGSDTBesqq/NOY5YE6Ua+XSj+xVfBLW0vqA3Q1acnJ890FtPAnDsiyyYn02XzFXBvlinkvckEyyF2s6YJMAERicZW3CW1NsOskSx/bBKtCd2nZe88Og==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=GKsigi9j; dkim-atps=neutral; spf=pass (client-ip=2001:41d0:1004:224b::b4; helo=out-180.mta0.migadu.com; envelope-from=lance.yang@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
+	t=1782926348; c=relaxed/relaxed;
+	bh=OVZjtpTrxXxAVguXYAz4E7mi5sWPqKxrHjlHEoMDU8Q=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=Aaayu7p74pzd6zbXASO7dZPh2aXQTuMa03kbKkX3DBAPyv5Ka3hEttzZJUL08HKv634W2UUlQjd7wzO3qVXth7EVN9vtfQcIULqvZtIGFuKxvr5sy+seaTATE0s8n5aMqlRjy7Sf2wtV5ANQ+9JT3FExp2ERp3o6o9VbSnxnkrQBIoR5PuH4WLUmTwQEEZwyXCSN5OGPxF4MgLao83S+d0xisk8KZqY3XNgrYDw3wsX+DRmT+FA14YFANoHqLZLGzr9l9L3h9iPVjQ/w9yS//cXzaehHnVeggKdzI9/u8tRCCYfKe28NHOUUSSrHSkXd5OrNYMNP0POs67ngd/NZ1w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=gbc786pw; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::429; helo=mail-pf1-x429.google.com; envelope-from=ekffu200098@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=GKsigi9j;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=gbc786pw;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=2001:41d0:1004:224b::b4; helo=out-180.mta0.migadu.com; envelope-from=lance.yang@linux.dev; receiver=lists.ozlabs.org)
-X-Greylist: delayed 365 seconds by postgrey-1.37 at boromir; Thu, 02 Jul 2026 02:16:21 AEST
-Received: from out-180.mta0.migadu.com (out-180.mta0.migadu.com [IPv6:2001:41d0:1004:224b::b4])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::429; helo=mail-pf1-x429.google.com; envelope-from=ekffu200098@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pf1-x429.google.com (mail-pf1-x429.google.com [IPv6:2607:f8b0:4864:20::429])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gr4rj4SVdz2yfH
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 Jul 2026 02:16:21 +1000 (AEST)
-X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
-	t=1782922180;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=32k3xy2qoDs5v558QiIXDOBJrw4XcLaI228zHYcvJQI=;
-	b=GKsigi9jw5iEZkRAOu0U35OCwwNX+WFYQBJnw1VnjqCFwAV1xkeG5HVPPXjVerUIFCpvkl
-	1sYFG/+4cZNO5RnH+3ZGNEajZyzEn2vDXqeNcTTch6ZM0ZT3P4Eo/8D1DaouN8eSB+B2FA
-	bvbtO9Gx6J4K8rZ0y4m06I1Z9Hu4ibM=
-From: Lance Yang <lance.yang@linux.dev>
-To: ljs@kernel.org
-Cc: akpm@linux-foundation.org,
-	tsbogend@alpha.franken.de,
-	maddy@linux.ibm.com,
-	mpe@ellerman.id.au,
-	maarten.lankhorst@linux.intel.com,
-	mripard@kernel.org,
-	tzimmermann@suse.de,
-	airlied@gmail.com,
-	simona@ffwll.ch,
-	l.stach@pengutronix.de,
-	inki.dae@samsung.com,
-	sw0312.kim@samsung.com,
-	kyungmin.park@samsung.com,
-	krzk@kernel.org,
-	peter.griffin@linaro.org,
-	jani.nikula@linux.intel.com,
-	joonas.lahtinen@linux.intel.com,
-	rodrigo.vivi@intel.com,
-	tursulin@ursulin.net,
-	robin.clark@oss.qualcomm.com,
-	lumag@kernel.org,
-	lyude@redhat.com,
-	dakr@kernel.org,
-	tomi.valkeinen@ideasonboard.com,
-	hjc@rock-chips.com,
-	heiko@sntech.de,
-	andy.yan@rock-chips.com,
-	thierry.reding@kernel.org,
-	mperttunen@nvidia.com,
-	jonathanh@nvidia.com,
-	kraxel@redhat.com,
-	dmitry.osipenko@collabora.com,
-	zack.rusin@broadcom.com,
-	matthew.brost@intel.com,
-	thomas.hellstrom@linux.intel.com,
-	oleksandr_andrushchenko@epam.com,
-	deller@gmx.de,
-	bcrl@kvack.org,
-	viro@zeniv.linux.org.uk,
-	brauner@kernel.org,
-	muchun.song@linux.dev,
-	osalvador@suse.de,
-	david@kernel.org,
-	ziy@nvidia.com,
-	baolin.wang@linux.alibaba.com,
-	liam@infradead.org,
-	npache@redhat.com,
-	ryan.roberts@arm.com,
-	dev.jain@arm.com,
-	baohua@kernel.org,
-	lance.yang@linux.dev,
-	hughd@google.com,
-	vbabka@kernel.org,
-	rppt@kernel.org,
-	surenb@google.com,
-	mhocko@suse.com,
-	jannh@google.com,
-	pfalcato@suse.de,
-	kees@kernel.org,
-	perex@perex.cz,
-	tiwai@suse.com,
-	linux-mips@vger.kernel.org,
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gr6F76jDCz2yfN
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 Jul 2026 03:19:07 +1000 (AEST)
+Received: by mail-pf1-x429.google.com with SMTP id d2e1a72fcca58-847a483e344so595202b3a.0
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 Jul 2026 10:19:07 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1782926345; x=1783531145; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=OVZjtpTrxXxAVguXYAz4E7mi5sWPqKxrHjlHEoMDU8Q=;
+        b=gbc786pwmy84hcAxygjFZV3rEkDBrB8EIn9/jjH3khKRMqtWAfbcP4iC23gmW3Jrfs
+         GVV4LkGClGTG3PzeAKf+BkCyBPPbFzYiodV/mFwmRhJ0rGFXHYVj5GsH7jY6OeOFQpH3
+         10LLRpD3FXv3i2cS7ob4dD90KX2Sbpm59T+2j+SBPY9ACXLlWmX2/gjlhfDoP+k4jr9j
+         MO5OxfbpGHst6woQQlg8O0Yz5zAUh8exLblal7aZ6cVxnpDtVMoGTV3UD1rHDpMbQlBE
+         VEJf/vrwI+qnZL90kZWAAjpjH9xzzVKmEg9tIrIgvZWtVbWck5auRVUAth+d7D1jsjQY
+         3glw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1782926345; x=1783531145;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=OVZjtpTrxXxAVguXYAz4E7mi5sWPqKxrHjlHEoMDU8Q=;
+        b=P4TOPCEp0U7IDWhFsUeVQFgyPTDV91xcGNlhe/GTLXrVmulu9XHc1tccTeEk0ceOeh
+         W9wwmeCypIDFNVAIsQ9VjWbtQRF2VRXDfAvhnuDpVyxmNzwRVcn07r0dFF7UHg81cVcN
+         r+vKx3uvkjog6UL9wrq26hfmMZugGoz5uz2ndQz6ATRJNXLkeYmA7bjUU221EtoYFdZt
+         5x9IC1Hurf61P6ZTl9Z2mXUAVK8yv4Cq8n9ueT6tWkrNwu0HyJa4Go5FGKhGRay3f8rm
+         zy8g+J+38tC7mcCBx3X1bfTzLQXeslF72hdcHdowY6nYkvJ01krN4wiqIymlVTVvJ6gJ
+         tzCQ==
+X-Forwarded-Encrypted: i=1; AHgh+RqoKjNlY/OxRoIf7pQVuv0rSd9CC2lUAsQwefHAopcd77LpTxeIKjXJrQEDszIE9S4yGdHupLVmZqGhYno=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yx6UZqOYSPK3RY3rnKCcFHXSJCas3rfYf6QQjdTNZYRPTF2opFt
+	0ycCBNzmN65Jw3etqTTIKFiXnJNZaxhV2xN02jF32skUhVxZkKyZI2ll
+X-Gm-Gg: AfdE7ck+HuUL+H33oII89fBnatRcntKKKNHs01rayUpqp+E1zYfxHKRR2ie/L0Dk5/g
+	uwWUG80kKvxnjLaGtQtEEnvJbHr7aNvyZ6MPoSNF2f1t2HISlW7uxYhenZl+uU5Lz3SOL0L5ttf
+	XyckSwFRu8zB3Xx0ix1rDaJoMOau3HmrYfBhw30Jm7XyJnlWT2mSL+O8K+AztfA2r7XZpxtJFtL
+	A9lwVHzG5f8tue8uhQp41Mlg4xMv0HIhctTBnmvD1KDtU69l2grEEiLXR6FWkPihOm25cFOczKd
+	vMN9EZBYY47vYK+oFM6ap7mFlSZP8LbSp56dU4H90Srqs1iJO3ddADezTsaLmX212GfhhqCQVyX
+	uW7wAcXlnh288eD8xpURLuuOHDiahYfZCdbhnUNLxAkrw+B9baGatm1rMJMvNayQAOBw3RUnFuT
+	Qb/FH4q9E=
+X-Received: by 2002:a05:6a00:948e:b0:846:a04:acdc with SMTP id d2e1a72fcca58-847a831fb33mr4758788b3a.26.1782926345049;
+        Wed, 01 Jul 2026 10:19:05 -0700 (PDT)
+Received: from ubuntu.. ([110.9.142.4])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-847cb94ab79sm105719b3a.31.2026.07.01.10.19.00
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 01 Jul 2026 10:19:04 -0700 (PDT)
+From: Sang-Heon Jeon <ekffu200098@gmail.com>
+To: akpm@linux-foundation.org,
+	Andreas Larsson <andreas@gaisler.com>,
+	"David S. Miller" <davem@davemloft.net>,
+	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Rich Felker <dalias@libc.org>,
+	Vlastimil Babka <vbabka@kernel.org>,
+	Yoshinori Sato <ysato@users.sourceforge.jp>,
+	Yury Norov <yury.norov@gmail.com>
+Cc: linux-mm@kvack.org,
+	Sang-Heon Jeon <ekffu200098@gmail.com>,
+	Brendan Jackman <jackmanb@google.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	Johannes Weiner <hannes@cmpxchg.org>,
 	linux-kernel@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org,
-	dri-devel@lists.freedesktop.org,
-	etnaviv@lists.freedesktop.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-samsung-soc@vger.kernel.org,
-	intel-gfx@lists.freedesktop.org,
-	linux-arm-msm@vger.kernel.org,
-	freedreno@lists.freedesktop.org,
-	nouveau@lists.freedesktop.org,
-	linux-rockchip@lists.infradead.org,
-	linux-tegra@vger.kernel.org,
-	virtualization@lists.linux.dev,
-	intel-xe@lists.freedesktop.org,
-	xen-devel@lists.xenproject.org,
-	linux-fbdev@vger.kernel.org,
-	linux-aio@kvack.org,
-	linux-fsdevel@vger.kernel.org,
-	linux-mm@kvack.org,
-	linux-sound@vger.kernel.org
-Subject: Re: [PATCH 12/13] mm/mprotect: convert mprotect code to use vma_flags_t
-Date: Thu,  2 Jul 2026 00:09:17 +0800
-Message-Id: <20260701160917.91435-1-lance.yang@linux.dev>
-In-Reply-To: <7ef626d8a12dc742cfc09d080be5dc09850e873a.1782760670.git.ljs@kernel.org>
-References: <7ef626d8a12dc742cfc09d080be5dc09850e873a.1782760670.git.ljs@kernel.org>
+	linux-sh@vger.kernel.org,
+	Michal Hocko <mhocko@suse.com>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Rasmus Villemoes <linux@rasmusvillemoes.dk>,
+	sparclinux@vger.kernel.org,
+	Suren Baghdasaryan <surenb@google.com>,
+	Zi Yan <ziy@nvidia.com>
+Subject: [PATCH 0/4] treewide, mm: initialize node_possible_map like the other node maps
+Date: Thu,  2 Jul 2026 02:18:47 +0900
+Message-ID: <20260701171851.2447626-1-ekffu200098@gmail.com>
+X-Mailer: git-send-email 2.43.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -143,129 +111,54 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-X-Migadu-Flow: FLOW_OUT
 
+While reviewing an earlier series [1], Andrew asked why we carefully
+initialize node_possible_map at compile time, then zero it within __init
+code anyway.
 
-On Mon, Jun 29, 2026 at 08:25:35PM +0100, Lorenzo Stoakes wrote:
->Replace use of the legacy vm_flags_t flags with vma_flags_t values
->throughout the mprotect logic.
->
->Note that we retain the legacy vm_flags_t bit shifting code in
->do_mprotect_key(), deferring a vma_flags_t approach to this for the time
->being.
->
->Additionally update comments to reflect the changes to be consistent.
->
->No functional change intended.
->
->Signed-off-by: Lorenzo Stoakes <ljs@kernel.org>
->---
-> mm/mprotect.c | 16 ++++++++--------
-> 1 file changed, 8 insertions(+), 8 deletions(-)
->
->diff --git a/mm/mprotect.c b/mm/mprotect.c
->index 9cbf932b028c..c9504b2a2525 100644
->--- a/mm/mprotect.c
->+++ b/mm/mprotect.c
->@@ -40,7 +40,7 @@
-> 
-> static bool maybe_change_pte_writable(struct vm_area_struct *vma, pte_t pte)
-> {
->-	if (WARN_ON_ONCE(!(vma->vm_flags & VM_WRITE)))
->+	if (WARN_ON_ONCE(!vma_test(vma, VMA_WRITE_BIT)))
-> 		return false;
-> 
-> 	/* Don't touch entries that are not even readable. */
->@@ -97,7 +97,7 @@ static bool can_change_shared_pte_writable(struct vm_area_struct *vma,
-> bool can_change_pte_writable(struct vm_area_struct *vma, unsigned long addr,
-> 			     pte_t pte)
-> {
->-	if (!(vma->vm_flags & VM_SHARED))
->+	if (!vma_test(vma, VMA_SHARED_BIT))
-> 		return can_change_private_pte_writable(vma, addr, pte);
-> 
-> 	return can_change_shared_pte_writable(vma, pte);
->@@ -194,7 +194,7 @@ static __always_inline void set_write_prot_commit_flush_ptes(struct vm_area_stru
-> {
-> 	bool set_write;
-> 
->-	if (vma->vm_flags & VM_SHARED) {
->+	if (vma_test(vma, VMA_SHARED_BIT)) {
-> 		set_write = can_change_shared_pte_writable(vma, ptent);
-> 		prot_commit_flush_ptes(vma, addr, ptep, oldpte, ptent, nr_ptes,
-> 				       /* idx = */ 0, set_write, tlb);
->@@ -811,8 +811,8 @@ mprotect_fixup(struct vma_iterator *vmi, struct mmu_gather *tlb,
-> 		vm_unacct_memory(nrpages);
-> 
-> 	/*
->-	 * Private VM_LOCKED VMA becoming writable: trigger COW to avoid major
->-	 * fault on access.
->+	 * Private VMA_LOCKED_BIT VMA becoming writable: trigger COW to avoid
->+	 * major fault on access.
-> 	 */
-> 	if (vma_flags_test(&new_vma_flags, VMA_WRITE_BIT) &&
-> 	    vma_flags_test(&old_vma_flags, VMA_LOCKED_BIT) &&
->@@ -886,7 +886,7 @@ static int do_mprotect_pkey(unsigned long start, size_t len,
-> 			goto out;
-> 		start = vma->vm_start;
-> 		error = -EINVAL;
->-		if (!(vma->vm_flags & VM_GROWSDOWN))
->+		if (!vma_test(vma, VMA_GROWSDOWN_BIT))
-> 			goto out;
-> 	} else {
-> 		if (vma->vm_start > start)
->@@ -894,7 +894,7 @@ static int do_mprotect_pkey(unsigned long start, size_t len,
-> 		if (unlikely(grows & PROT_GROWSUP)) {
-> 			end = vma->vm_end;
-> 			error = -EINVAL;
->-			if (!(vma->vm_flags & VM_GROWSUP))
->+			if (!vma_test(vma, VMA_GROWSUP_BIT))
+node_possible_map, aliased by node_states[N_POSSIBLE], is initialized to
+NODE_MASK_ALL at compile time, unlike the other entries, which are
+initialized with only node 0 set.
 
-IIUC, should this be
+Architectures that use numa_memblks set node_possible_map from
+numa_nodes_parsed, so the compile-time value is meaningless for them.
 
-if (!vma_test_single_mask(vma, VMA_GROWSUP))
+However, a few architectures that do not use numa_memblks do not set
+node_possible_map on their own. Once these architectures set
+node_possible_map to match their own topology, the NODE_MASK_ALL
+initialization can be removed.
 
-instead?
+Patches 1-2 handle sparc64 and sh, which do not set node_possible_map
+themselves. Both set node_online_map from their topology, so set
+node_possible_map from node_online_map.
 
-#elif defined(CONFIG_PARISC)
-#define VM_GROWSUP	INIT_VM_FLAG(GROWSUP)
-...
-#ifndef VM_GROWSUP
-#define VM_GROWSUP	VM_NONE
-...
+Patch 3 handles powerpc, which sets node_possible_map by intersecting it
+with node_online_map. Nothing sets node_possible_map before this, so it is
+still NODE_MASK_ALL and the intersection is just node_online_map. Once
+patch 4 changes that initial value, the intersection would no longer be
+node_online_map, so assign node_online_map directly.
 
-VM_GROWSUP is only defined as GROWSUP on parisc and becomes VM_NONE
-elsewhere. But VMA_GROWSUP_BIT is the raw ARCH_1 bit, which is also used
-for other arch-specific VMA flags:
+Patch 4 initializes node_possible_map with only node 0 set, like the other
+node_states[] entries. NODE_MASK_ALL is then no longer used, so remove it
+and its only helper NODE_MASK_LAST_WORD.
 
-	DECLARE_VMA_BIT_ALIAS(SAO, ARCH_1),		/* Strong Access Ordering (powerpc) */
-	DECLARE_VMA_BIT_ALIAS(GROWSUP, ARCH_1),		/* parisc */
-	DECLARE_VMA_BIT_ALIAS(SPARC_ADI, ARCH_1),	/* sparc64 */
-	DECLARE_VMA_BIT_ALIAS(ARM64_BTI, ARCH_1),	/* arm64 */
-	DECLARE_VMA_BIT_ALIAS(ARCH_CLEAR, ARCH_1),	/* sparc64, arm64 */
-	DECLARE_VMA_BIT_ALIAS(MAPPED_COPY, ARCH_1),	/* !CONFIG_MMU */
+[1] https://lore.kernel.org/all/20260624204030.3c8baa67713b6ca1d537baba@linux-foundation.org/
 
-Other vma_test() changes look fine to me: just fixed INIT_VM_FLAG()
-masks matching their VMA_*_BIT :)
+Sang-Heon Jeon (4):
+  sparc64: set node_possible_map in bootmem_init_numa()
+  sh: set node_possible_map in do_init_bootmem()
+  powerpc/numa: set node_possible_map from node_online_map
+  mm/page_alloc: initialize node_possible_map like the other node maps
 
-Cheers, Lance
+ arch/powerpc/mm/numa.c   |  2 +-
+ arch/sh/mm/init.c        |  2 ++
+ arch/sparc/mm/init_64.c  |  2 ++
+ include/linux/nodemask.h | 20 --------------------
+ mm/page_alloc.c          |  2 +-
+ 5 files changed, 6 insertions(+), 22 deletions(-)
 
-> 				goto out;
-> 		}
-> 	}
->@@ -918,7 +918,7 @@ static int do_mprotect_pkey(unsigned long start, size_t len,
-> 		}
-> 
-> 		/* Does the application expect PROT_READ to imply PROT_EXEC */
->-		if (rier && (vma->vm_flags & VM_MAYEXEC))
->+		if (rier && vma_test(vma, VMA_MAYEXEC_BIT))
-> 			prot |= PROT_EXEC;
-> 
-> 		/*
->-- 
->2.54.0
->
->
+-- 
+2.43.0
+
 
