@@ -1,80 +1,88 @@
-Return-Path: <linuxppc-dev+bounces-23317-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23318-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 11DCDC43458
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Jul 2026 18:31:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4081CC43602
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Jul 2026 18:31:13 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gr7r44mLFz2ygG;
-	Thu, 02 Jul 2026 04:31:00 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782930660;
-	cv=none; b=Y5BZg3Oyq0aZ855FJRYnYdI4xend4zjkZKQ8vU6ruXeeKtEudXjzv7IJnvt8DiN3ohKUYNrgY4PqSlON7aH3Pgc+oQPwRx8kuoEcQ6EelHg2ovJNX468ytzSFg0Hhzi/mwhg78sQz+dTeGTFuVdTm7WhNVfu+N5hdPFsIXeNYUmsWnrwymf7HgwRLYmDZRXxQiTjKpHDAtocqkPbdMvVIxzXrfhrESm8vQC/31V1M0J4Z3q7XN3ipJDzOdSaY6C3zZpz+ph+PRimlbEnIoEzAoo13c83NGSNv06dkDNyDEQ+MQItsw4eLP9xumFXeQ3WKvdq7UvsVfA0nCjuBIpHnA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gr7rH5h0sz2yjV;
+	Thu, 02 Jul 2026 04:31:11 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:7c80:54:3::136"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782930671;
+	cv=none; b=Pig+tT54UtWEwpzSxiaTG0DzxWY9gvNIeQ//aBu5Y7XJ8HExl42SIyEkEG1SRDKzSWUi4fCnHNCX6dFOzFBYC1wm4b8sy//AIrqnPlkp5qOshlbSj4NvE1icJpDC4PCduFLJSYCHBZhDJsMuYmbld+m9ZwKrs6KM/eBwdW+FgI9mziwlskXKXUDEmihB9ZgroNLusWM87/mYt9SAxfGqpoz/Bpt0kkg0NLA+sbiVXA/bavVWqxgHEIF4kiPXl0wqtrTW3QBnDTUxuqCgS2Uj50ukk20/Dx9wBNSCsXg1IlrlND9gF+5ZogGkjkEzkvbQ8TgklFu4Lp0icPJd7HskEQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1782930660; c=relaxed/relaxed;
-	bh=8Ri0qkLy2UgR6ESWzyJ+UkDfa9RR52HfnvZ0KvP1KSw=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=B6FUwnesKo4Xa68G5cpqO/X1xr9wlvPu+IdRc1r1OsmPpqsEWgYrTfad+QIdWZZQTIg34zfrxsGOGlJZeV+1TY/AhEOgJMr7BU6tv6n4dPfnKlmY36M4W6ez+xb7VkuLkgo5OkWx9d2mz6BzOnuCuFyT1BzG41y6CMXGAXocRVclzupxJAj0efsz2tuZUKZp1+H4n0VOmohUhlRf6gO73GDbqDwUXA7ku0fVbCGi1Uqc5xrONdUdvyXk4wonx1DByFmp2UvG1fWtxiaylgPA7MWMJgDfV19TpUFpN9Ox6F4GHvCCYwWriQ7SE4OsamAuW2frld+NcdQpw/+sSWXNEg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=pMsJfioO; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=vishalc@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1782930671; c=relaxed/relaxed;
+	bh=syy/ox+gzg6WwJpXFhS25G5cfX2XqjSCA2Oh6WGRHtw=;
+	h=Date:From:To:CC:Subject:In-Reply-To:References:Message-ID:
+	 MIME-Version:Content-Type; b=SJ2YoE6JbH2tPRLOmFvxJaWiItEckH8gUxpW8wwgeLnPP7QzUyfwLJjedVcGPzn+U64dOlsoACXJKNmWaSgirGgEn05O6emLp9FEhJW16mlIb4tzAnEtx+2nfVUaAbFERSSJYy40Pc1e90ZH4fHPD/wgOTOXNEOh6yre66vv2y9D6XzPX8/hGfMCa5WoKV1dT8wTfon6JoUhfRscJpc6o/FPwJnG8y9SH3nW5Rv/G08xua1Z6Xcp69awIPcnl6eaiAWvNZ8I3a2pLwpxDk3NUGOEL0DnM+kMuUKN963miH5GSOhbY8H0Y8+gQnRkLN5Jd+WDP7aAXqgByCWRcuc5kg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=zytor.com; dkim=pass (2048-bit key; unprotected) header.d=zytor.com header.i=@zytor.com header.a=rsa-sha256 header.s=2026062701 header.b=sjQ+NwvX; dkim-atps=neutral; spf=pass (client-ip=2607:7c80:54:3::136; helo=mail.zytor.com; envelope-from=hpa@zytor.com; receiver=lists.ozlabs.org) smtp.mailfrom=zytor.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=zytor.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=pMsJfioO;
+	dkim=pass (2048-bit key; unprotected) header.d=zytor.com header.i=@zytor.com header.a=rsa-sha256 header.s=2026062701 header.b=sjQ+NwvX;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=vishalc@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=zytor.com (client-ip=2607:7c80:54:3::136; helo=mail.zytor.com; envelope-from=hpa@zytor.com; receiver=lists.ozlabs.org)
+Received: from mail.zytor.com (terminus.zytor.com [IPv6:2607:7c80:54:3::136])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gr7r35RNhz2yfs
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 Jul 2026 04:30:59 +1000 (AEST)
-Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 661GmsPU1456114;
-	Wed, 1 Jul 2026 18:30:51 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:message-id
-	:mime-version:subject:to; s=pp1; bh=8Ri0qkLy2UgR6ESWzyJ+UkDfa9RR
-	52HfnvZ0KvP1KSw=; b=pMsJfioO25DD5xxVqc38DNBr5hFHatudXHyce+CHuqpN
-	rTxF+SDFeeKp07Mu6AhgPWBrpntVz6oGTxfsSG754HLEmiSZ535yunnrjNyGR+28
-	IjR0r+KaD662Xm9z8cBjjuFCB1Ton//c8plCQMwZtKuSAqJWJp08kneL8EmryiMs
-	I4LrCZLRBcNO9DonvQfe+ADFDGemAIuZTY13U8EvgByPSqmYVgbWuASJOUgvJdPr
-	jhETKGemg8z7ojoNQwuEYnyvF75kDHGF9XJxpwHWJAHXFjMGKJKUl7ImB/IQ1xUB
-	KJE1djAG93P3gQhbv1PceD98YF4sbhV66wmE8eb+lg==
-Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4f26pe64tm-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 01 Jul 2026 18:30:50 +0000 (GMT)
-Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma13.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 661I4hpE018051;
-	Wed, 1 Jul 2026 18:30:49 GMT
-Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
-	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4f2u2ggff4-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 01 Jul 2026 18:30:49 +0000 (GMT)
-Received: from smtpav07.fra02v.mail.ibm.com (smtpav07.fra02v.mail.ibm.com [10.20.54.106])
-	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 661IUjtF48562458
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 1 Jul 2026 18:30:46 GMT
-Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id DC0D220043;
-	Wed,  1 Jul 2026 18:30:45 +0000 (GMT)
-Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 65F2320040;
-	Wed,  1 Jul 2026 18:30:42 +0000 (GMT)
-Received: from vishalc-ibm.ibm.com (unknown [9.39.23.199])
-	by smtpav07.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Wed,  1 Jul 2026 18:30:42 +0000 (GMT)
-From: Vishal Chourasia <vishalc@linux.ibm.com>
-To: maddy@linux.ibm.com
-Cc: npiggin@gmail.com, mpe@ellerman.id.au, chleroy@kernel.org,
-        sshegde@linux.ibm.com, amachhiw@linux.ibm.com, vaibhav@linux.ibm.com,
-        harshpb@linux.ibm.com, gautam@linux.ibm.com,
-        linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, Vishal Chourasia <vishalc@linux.ibm.com>
-Subject: [PATCH v2 0/1] KVM: powerpc: Use generic xfer to guest work function
-Date: Thu,  2 Jul 2026 00:00:26 +0530
-Message-ID: <20260701183030.3610451-1-vishalc@linux.ibm.com>
-X-Mailer: git-send-email 2.54.0
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gr7rF4DgVz2yfs
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 Jul 2026 04:31:08 +1000 (AEST)
+Received: from ehlo.thunderbird.net (c-76-133-66-138.hsd1.ca.comcast.net [76.133.66.138])
+	(authenticated bits=0)
+	by mail.zytor.com (8.18.1/8.17.1) with ESMTPSA id 661IT8Ra2191034
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NO);
+	Wed, 1 Jul 2026 11:29:08 -0700
+DKIM-Filter: OpenDKIM Filter v2.11.0 mail.zytor.com 661IT8Ra2191034
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=zytor.com;
+	s=2026062701; t=1782930551;
+	bh=syy/ox+gzg6WwJpXFhS25G5cfX2XqjSCA2Oh6WGRHtw=;
+	h=Date:From:To:CC:Subject:In-Reply-To:References:From;
+	b=sjQ+NwvX3+MD5NIDGiYs+hr3FBy9zy664qemA2dwqMcL7OP+Xmso771H8OxcnLi4l
+	 vCEiK24hKWmVbNgHj8qxzgrIvFmotzsro4LnLc0IPkN2ERHhLo++HRSPM7lbe8b0jG
+	 oQ9J27yhe/mb3rKM07COC2c2dwVHvRitGxRT4JAh+byH0dfoeQzLY41ndCLwfS1Rau
+	 MNk0ePRjiicRT9L9ka77tnbKn09y6Z7Q7fN0VWXb/tY/fcPo86Wi94xJhkNqTrFZBW
+	 yq3/jzvH3xVufd9bV+xTOTuCHTq2arfKB0qkc7qTr6TIBVg3K9+9sffc0s+KArbCQ2
+	 SEmT6q5BX6nYQ==
+Date: Wed, 01 Jul 2026 11:29:01 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+To: =?ISO-8859-1?Q?Michal_Such=E1nek?= <msuchanek@suse.de>,
+        Peter Zijlstra <peterz@infradead.org>
+CC: Jonathan Corbet <corbet@lwn.net>, Shuah Khan <skhan@linuxfoundation.org>,
+        Huacai Chen <chenhuacai@kernel.org>, WANG Xuerui <kernel@xen0n.name>,
+        Madhavan Srinivasan <maddy@linux.ibm.com>,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        Nicholas Piggin <npiggin@gmail.com>,
+        "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+        Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
+        Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>,
+        Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>,
+        Alexander Gordeev <agordeev@linux.ibm.com>,
+        Christian Borntraeger <borntraeger@linux.ibm.com>,
+        Sven Schnelle <svens@linux.ibm.com>, Andy Lutomirski <luto@kernel.org>,
+        Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>,
+        Borislav Petkov <bp@alien8.de>,
+        Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
+        Andrew Donnellan <andrew+kernel@donnellan.id.au>,
+        Mark Rutland <mark.rutland@arm.com>, Arnd Bergmann <arnd@arndb.de>,
+        Jiaxun Yang <jiaxun.yang@flygoat.com>,
+        Ryan Roberts <ryan.roberts@arm.com>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Mukesh Kumar Chaurasiya <mkchauras@linux.ibm.com>,
+        Shrikanth Hegde <sshegde@linux.ibm.com>, Zong Li <zong.li@sifive.com>,
+        Nam Cao <namcao@linutronix.de>, Deepak Gupta <debug@rivosinc.com>,
+        Lukas Gerlach <lukas.gerlach@cispa.de>,
+        Rui Qi <qirui.001@bytedance.com>, Kees Cook <kees@kernel.org>,
+        linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
+        loongarch@lists.linux.dev, linuxppc-dev@lists.ozlabs.org,
+        linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org
+Subject: =?US-ASCII?Q?Re=3A_=5BRFC=5D_entry=3A_Untangle_the_return_value_of?=
+ =?US-ASCII?Q?_syscall=5Fenter=5Ffrom=5Fuser=5Fmode_from_syscall_NR?=
+User-Agent: K-9 Mail for Android
+In-Reply-To: <akVRcPsD_R_CE1qW@kunlun.suse.cz>
+References: <akVRcPsD_R_CE1qW@kunlun.suse.cz>
+Message-ID: <BA7CD91D-C0E5-47A1-B49C-BC6AF6604182@zytor.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -88,101 +96,494 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-GUID: uDQMCFHyWAx2gw7K9hK4STPvoHOFRcrk
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNzAxMDE5NiBTYWx0ZWRfX+A/lR9BmxxHE
- CcpCyTCsLpHjq/Xb/2WfqgnBIQv/aaXDw1Lok859hdwn5rkJHLSKskYSzODfMl9Qr6t+5DIsO36
- Qm4V9ZDYOlNNYfKvZ6sWTs1NLBH5u0I=
-X-Authority-Analysis: v=2.4 cv=edsNubEH c=1 sm=1 tr=0 ts=6a455cda cx=c_pps
- a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
- a=IkcTkHD0fZMA:10 a=RAioF0-LDSMA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=iQ6ETzBq9ecOQQE5vZCe:22 a=VwQbUJbxAAAA:8
- a=VnNF1IyMAAAA:8 a=dzg3fVpTFLiGrQa8HyEA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzAxMDE5NiBTYWx0ZWRfX9rHmRngBfNJk
- dPwtaVZ+n9QK84R1gRqbjMq4Ju1rK58ub2/CgSLJVHoeN2tRbr3hvq/4OK7HNi6Ul631b8Z4se9
- u/Pedw/BazEa0IPAHqsLPa1rFVkkp2L3eYNQMZWWtJuFew05DPymumdeJ5bXbPcxJyz4HfEWHnF
- eek/m79J27uQgfeOdXPYRPpcKfLHWjPJXBClLhc3pmTJXWHIchrdZxIdIrE16euNWALSP5RcBJw
- SBdEdK5hRuZUoS66YtGdbJl3giCeYzUF3AxUnvRh61arGebIQGoCgKCHNPqhbXvAPoA9yZiCsB+
- 6YvQ8mt6ixLp3QIbZ3j5nxb0YBZwE3tYHv8Jdg12/5JDFRmU0NHULiKt3oQF5bP4KGW48tH+Asa
- BFe8E5xPEBtytXa+QaELsQqP+3CdHcFELAeVXgQ4SB1ruuN87W3MC0oQ96y/KJG/uP3YskK2sgK
- O6D8hThTDmmD1bWOMQA==
-X-Proofpoint-ORIG-GUID: xBD_hczw7YhhrLTLjYhRiBprNdDIns71
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
- definitions=2026-07-01_04,2026-06-26_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501 malwarescore=0 adultscore=0 impostorscore=0 bulkscore=0
- spamscore=0 suspectscore=0 clxscore=1015 lowpriorityscore=0 phishscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607010196
+Content-Type: text/plain;
+ charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-This series fixes a KVM scheduling bug on Book3S HV where a guest VM
-under a cpu.max bandwidth limit can run arbitrarily past its quota and
-then appear frozen for minutes afterwards. 
+On July 1, 2026 10:42:08 AM PDT, "Michal Such=C3=A1nek" <msuchanek@suse=2Ed=
+e> wrote:
+>The return value of syscall_enter_from_user_mode is used both for the
+>adjusted syscall number and the indicator that a syscall should be
+>skipped=2E
+>
+>As seccomp can be invoked on any syscall, including invalid ones this
+>somewhat undermines seccomp=2E
+>
+>While the seccomp variants that terminate the process do not need to
+>care about this for the filter that sets the syscall return value this
+>disctinction is required=2E
+>
+>Pass the syscall number as a pointer to the inline entry functions, and
+>use the return value exclusively for the indication that the syscall is
+>already handled=2E
+>
+>This should avoid the need for the s390 PIF_SYSCALL_RET_SET which is the
+>workaround for exactly this deficiency=2E
+>
+>If this is desirable the patch could be split into some series that
+>adjusts the code flow where needed so that the final change is mostly
+>mechanical=2E
+>
+>There is also another way to handle this problem=2E
+>
+>With x86 using bit 30 to denote compatibility syscall it sounds like
+>declaring syscall number a 30bit quantity would work=2E
+>
+>Then bit 31 could be used to denote an invalid syscall that can never be
+>executed, and the -1 returned from syscall_enter_from_user_mode would
+>then be inherently invalid=2E
+>
+>That is so long as no architectures use syscall numbers outside of this
+>range so far, and the limitation is considered fine=2E
+>
+>Signed-off-by: Michal Such=C3=A1nek <msuchanek@suse=2Ede>
+>---
+> Documentation/core-api/entry=2Erst | 12 ++++++----
+> arch/loongarch/kernel/syscall=2Ec  |  6 ++---
+> arch/powerpc/kernel/syscall=2Ec    |  3 ++-
+> arch/riscv/kernel/traps=2Ec        |  6 ++---
+> arch/s390/kernel/syscall=2Ec       |  6 ++---
+> arch/x86/entry/syscall_32=2Ec      | 39 +++++++++++++++-----------------
+> arch/x86/entry/syscall_64=2Ec      | 19 ++++++++--------
+> include/linux/entry-common=2Eh     | 38 ++++++++++++++-----------------
+> 8 files changed, 63 insertions(+), 66 deletions(-)
+>
+>diff --git a/Documentation/core-api/entry=2Erst b/Documentation/core-api/=
+entry=2Erst
+>index 71d8eedc0549=2E=2Eb0bfae31fe7c 100644
+>--- a/Documentation/core-api/entry=2Erst
+>+++ b/Documentation/core-api/entry=2Erst
+>@@ -68,12 +68,14 @@ invoked from low-level assembly code looks like this:
+>   noinstr void syscall(struct pt_regs *regs, int nr)
+>   {
+> 	arch_syscall_enter(regs);
+>-	nr =3D syscall_enter_from_user_mode(regs, nr);
+>=20
+>-	instrumentation_begin();
+>-	if (!invoke_syscall(regs, nr) && nr !=3D -1)
+>-	 	result_reg(regs) =3D __sys_ni_syscall(regs);
+>-	instrumentation_end();
+>+	/* Skip syscall when -1 is returned */
+>+	if (!syscall_enter_from_user_mode(regs, &nr)) {
+>+		instrumentation_begin();
+>+		if (!invoke_syscall(regs, nr) && nr !=3D -1)
+>+			result_reg(regs) =3D __sys_ni_syscall(regs);
+>+		instrumentation_end();
+>+	}
+>=20
+> 	syscall_exit_to_user_mode(regs);
+>   }
+>diff --git a/arch/loongarch/kernel/syscall=2Ec b/arch/loongarch/kernel/sy=
+scall=2Ec
+>index 94c1c3b5b0b5=2E=2Efc18ac56b91c 100644
+>--- a/arch/loongarch/kernel/syscall=2Ec
+>+++ b/arch/loongarch/kernel/syscall=2Ec
+>@@ -58,7 +58,7 @@ typedef long (*sys_call_fn)(unsigned long, unsigned lon=
+g,
+>=20
+> void noinstr __no_stack_protector do_syscall(struct pt_regs *regs)
+> {
+>-	unsigned long nr;
+>+	unsigned long nr, ret;
+> 	sys_call_fn syscall_fn;
+>=20
+> 	nr =3D regs->regs[11];
+>@@ -70,11 +70,11 @@ void noinstr __no_stack_protector do_syscall(struct p=
+t_regs *regs)
+> 	regs->orig_a0 =3D regs->regs[4];
+> 	regs->regs[4] =3D -ENOSYS;
+>=20
+>-	nr =3D syscall_enter_from_user_mode(regs, nr);
+>+	ret =3D syscall_enter_from_user_mode(regs, &nr);
+>=20
+> 	add_random_kstack_offset();
+>=20
+>-	if (nr < NR_syscalls) {
+>+	if (nr < NR_syscalls && !ret) {
+> 		syscall_fn =3D sys_call_table[array_index_nospec(nr, NR_syscalls)];
+> 		regs->regs[4] =3D syscall_fn(regs->orig_a0, regs->regs[5], regs->regs[=
+6],
+> 					   regs->regs[7], regs->regs[8], regs->regs[9]);
+>diff --git a/arch/powerpc/kernel/syscall=2Ec b/arch/powerpc/kernel/syscal=
+l=2Ec
+>index a9da2af6efa8=2E=2E45d11d518c51 100644
+>--- a/arch/powerpc/kernel/syscall=2Ec
+>+++ b/arch/powerpc/kernel/syscall=2Ec
+>@@ -20,7 +20,8 @@ notrace long system_call_exception(struct pt_regs *regs=
+, unsigned long r0)
+> 	syscall_fn f;
+>=20
+> 	add_random_kstack_offset();
+>-	r0 =3D syscall_enter_from_user_mode(regs, r0);
+>+	if (unlikely(syscall_enter_from_user_mode(regs, &r0)))
+>+		return syscall_get_error(current, regs);
+>=20
+> 	if (unlikely(r0 >=3D NR_syscalls)) {
+> 		if (unlikely(trap_is_unsupported_scv(regs))) {
+>diff --git a/arch/riscv/kernel/traps=2Ec b/arch/riscv/kernel/traps=2Ec
+>index 8c62c771a656=2E=2E9326a4a50696 100644
+>--- a/arch/riscv/kernel/traps=2Ec
+>+++ b/arch/riscv/kernel/traps=2Ec
+>@@ -325,7 +325,7 @@ asmlinkage __visible __trap_section  __no_stack_prote=
+ctor
+> void do_trap_ecall_u(struct pt_regs *regs)
+> {
+> 	if (user_mode(regs)) {
+>-		long syscall =3D regs->a7;
+>+		long ret, syscall =3D regs->a7;
+>=20
+> 		regs->epc +=3D 4;
+> 		regs->orig_a0 =3D regs->a0;
+>@@ -333,11 +333,11 @@ void do_trap_ecall_u(struct pt_regs *regs)
+>=20
+> 		riscv_v_vstate_discard(regs);
+>=20
+>-		syscall =3D syscall_enter_from_user_mode(regs, syscall);
+>+		ret =3D syscall_enter_from_user_mode(regs, &syscall);
+>=20
+> 		add_random_kstack_offset();
+>=20
+>-		if (syscall >=3D 0 && syscall < NR_syscalls) {
+>+		if (syscall >=3D 0 && syscall < NR_syscalls && !ret) {
+> 			syscall =3D array_index_nospec(syscall, NR_syscalls);
+> 			syscall_handler(regs, syscall);
+> 		}
+>diff --git a/arch/s390/kernel/syscall=2Ec b/arch/s390/kernel/syscall=2Ec
+>index 75d5a3cab14e=2E=2E9e5b873c011d 100644
+>--- a/arch/s390/kernel/syscall=2Ec
+>+++ b/arch/s390/kernel/syscall=2Ec
+>@@ -95,7 +95,7 @@ SYSCALL_DEFINE0(ni_syscall)
+>=20
+> void noinstr __do_syscall(struct pt_regs *regs, int per_trap)
+> {
+>-	unsigned long nr;
+>+	unsigned long nr, ret;
+>=20
+> 	enter_from_user_mode(regs);
+> 	add_random_kstack_offset();
+>@@ -121,7 +121,7 @@ void noinstr __do_syscall(struct pt_regs *regs, int p=
+er_trap)
+> 		regs->psw=2Eaddr =3D current->restart_block=2Earch_data;
+> 		current->restart_block=2Earch_data =3D 1;
+> 	}
+>-	nr =3D syscall_enter_from_user_mode_work(regs, nr);
+>+	ret =3D syscall_enter_from_user_mode_work(regs, &nr);
+> 	/*
+> 	 * In the s390 ptrace ABI, both the syscall number and the return value
+> 	 * use gpr2=2E However, userspace puts the syscall number either in the
+>@@ -129,7 +129,7 @@ void noinstr __do_syscall(struct pt_regs *regs, int p=
+er_trap)
+> 	 * work, the ptrace code sets PIF_SYSCALL_RET_SET, which is checked her=
+e
+> 	 * and if set, the syscall will be skipped=2E
+> 	 */
+>-	if (unlikely(test_and_clear_pt_regs_flag(regs, PIF_SYSCALL_RET_SET)))
+>+	if (unlikely(test_and_clear_pt_regs_flag(regs, PIF_SYSCALL_RET_SET) || =
+ret))
+> 		goto out;
+> 	regs->gprs[2] =3D -ENOSYS;
+> 	if (likely(nr < NR_syscalls)) {
+>diff --git a/arch/x86/entry/syscall_32=2Ec b/arch/x86/entry/syscall_32=2E=
+c
+>index 31b9492fe851=2E=2E525e99691b31 100644
+>--- a/arch/x86/entry/syscall_32=2Ec
+>+++ b/arch/x86/entry/syscall_32=2Ec
+>@@ -128,7 +128,7 @@ static __always_inline bool int80_is_external(void)
+>  */
+> __visible noinstr void do_int80_emulation(struct pt_regs *regs)
+> {
+>-	int nr;
+>+	long nr;
+>=20
+> 	/* Kernel does not use INT $0x80! */
+> 	if (unlikely(!user_mode(regs))) {
+>@@ -168,8 +168,7 @@ __visible noinstr void do_int80_emulation(struct pt_r=
+egs *regs)
+> 	nr =3D syscall_32_enter(regs);
+>=20
+> 	local_irq_enable();
+>-	nr =3D syscall_enter_from_user_mode_work(regs, nr);
+>-	do_syscall_32_irqs_on(regs, nr);
+>+	syscall_enter_from_user_mode_work(regs, &nr);
+>=20
+> 	instrumentation_end();
+> 	syscall_exit_to_user_mode(regs);
+>@@ -208,7 +207,7 @@ __visible noinstr void do_int80_emulation(struct pt_r=
+egs *regs)
+>  */
+> DEFINE_FREDENTRY_RAW(int80_emulation)
+> {
+>-	int nr;
+>+	long nr;
+>=20
+> 	enter_from_user_mode(regs);
+>=20
+>@@ -232,8 +231,10 @@ DEFINE_FREDENTRY_RAW(int80_emulation)
+> 	nr =3D syscall_32_enter(regs);
+>=20
+> 	local_irq_enable();
+>-	nr =3D syscall_enter_from_user_mode_work(regs, nr);
+>-	do_syscall_32_irqs_on(regs, nr);
+>+	if (!syscall_enter_from_user_mode_work(regs, &nr)) {
+>+		nr &=3D GENMASK(31, 0);
+>+		do_syscall_32_irqs_on(regs, nr);
+>+	}
+>=20
+> 	instrumentation_end();
+> 	syscall_exit_to_user_mode(regs);
+>@@ -245,20 +246,17 @@ DEFINE_FREDENTRY_RAW(int80_emulation)
+> /* Handles int $0x80 on a 32bit kernel */
+> __visible noinstr void do_int80_syscall_32(struct pt_regs *regs)
+> {
+>-	int nr =3D syscall_32_enter(regs);
+>-
+>-	/*
+>-	 * Subtlety here: if ptrace pokes something larger than 2^31-1 into
+>-	 * orig_ax, the int return value truncates it=2E This matches
+>-	 * the semantics of syscall_get_nr()=2E
+>-	 */
+>-	nr =3D syscall_enter_from_user_mode(regs, nr);
+>-	instrumentation_begin();
+>+	long nr =3D syscall_32_enter(regs);
+>=20
+> 	add_random_kstack_offset();
+>-	do_syscall_32_irqs_on(regs, nr);
+>+	if (!syscall_enter_from_user_mode(regs, &nr)) {
+>+		instrumentation_begin();
+>=20
+>-	instrumentation_end();
+>+		nr &=3D & GENMASK(31, 0);
+>+		do_syscall_32_irqs_on(regs, nr);
+>+
+>+		instrumentation_end();
+>+	}
+> 	syscall_exit_to_user_mode(regs);
+> }
+> #endif /* !CONFIG_IA32_EMULATION */
+>@@ -301,10 +299,9 @@ static noinstr bool __do_fast_syscall_32(struct pt_r=
+egs *regs)
+> 		return false;
+> 	}
+>=20
+>-	nr =3D syscall_enter_from_user_mode_work(regs, nr);
+>-
+>-	/* Now this is just like a normal syscall=2E */
+>-	do_syscall_32_irqs_on(regs, nr);
+>+	if (!syscall_enter_from_user_mode_work(regs, &nr))
+>+		/* Now this is just like a normal syscall=2E */
+>+		do_syscall_32_irqs_on(regs, nr);
+>=20
+> 	instrumentation_end();
+> 	syscall_exit_to_user_mode(regs);
+>diff --git a/arch/x86/entry/syscall_64=2Ec b/arch/x86/entry/syscall_64=2E=
+c
+>index 71f032504e73=2E=2E3400c2f43a62 100644
+>--- a/arch/x86/entry/syscall_64=2Ec
+>+++ b/arch/x86/entry/syscall_64=2Ec
+>@@ -84,19 +84,20 @@ static __always_inline bool do_syscall_x32(struct pt_=
+regs *regs, int nr)
+> }
+>=20
+> /* Returns true to return using SYSRET, or false to use IRET */
+>-__visible noinstr bool do_syscall_64(struct pt_regs *regs, int nr)
+>+__visible noinstr bool do_syscall_64(struct pt_regs *regs, long nr)
+> {
+>-	nr =3D syscall_enter_from_user_mode(regs, nr);
+>-
+>-	instrumentation_begin();
+> 	add_random_kstack_offset();
+>+	if (!syscall_enter_from_user_mode(regs, &nr)) {
+>=20
+>-	if (!do_syscall_x64(regs, nr) && !do_syscall_x32(regs, nr) && nr !=3D -=
+1) {
+>-		/* Invalid system call, but still a system call=2E */
+>-		regs->ax =3D __x64_sys_ni_syscall(regs);
+>-	}
+>+		instrumentation_begin();
+>=20
+>-	instrumentation_end();
+>+		if (!do_syscall_x64(regs, nr) && !do_syscall_x32(regs, nr)) {
+>+			/* Invalid system call, but still a system call=2E */
+>+			regs->ax =3D __x64_sys_ni_syscall(regs);
+>+		}
+>+
+>+		instrumentation_end();
+>+	}
+> 	syscall_exit_to_user_mode(regs);
+>=20
+> 	/*
+>diff --git a/include/linux/entry-common=2Eh b/include/linux/entry-common=
+=2Eh
+>index 416a3352261f=2E=2E4991071d01fe 100644
+>--- a/include/linux/entry-common=2Eh
+>+++ b/include/linux/entry-common=2Eh
+>@@ -69,10 +69,8 @@ static inline void syscall_enter_audit(struct pt_regs =
+*regs, long syscall)
+> 	}
+> }
+>=20
+>-static __always_inline long syscall_trace_enter(struct pt_regs *regs, un=
+signed long work)
+>+static __always_inline long syscall_trace_enter(struct pt_regs *regs, un=
+signed long work, unsigned long *syscall)
+> {
+>-	long syscall, ret =3D 0;
+>-
+> 	/*
+> 	 * Handle Syscall User Dispatch=2E  This must comes first, since
+> 	 * the ABI here can be something that doesn't make sense for
+>@@ -93,27 +91,25 @@ static __always_inline long syscall_trace_enter(struc=
+t pt_regs *regs, unsigned l
+>=20
+> 	/* Handle ptrace */
+> 	if (work & (SYSCALL_WORK_SYSCALL_TRACE | SYSCALL_WORK_SYSCALL_EMU)) {
+>-		ret =3D arch_ptrace_report_syscall_entry(regs);
+>-		if (ret || (work & SYSCALL_WORK_SYSCALL_EMU))
+>+		if (arch_ptrace_report_syscall_entry(regs) || (work & SYSCALL_WORK_SYS=
+CALL_EMU))
+> 			return -1L;
+> 	}
+>=20
+> 	/* Do seccomp after ptrace, to catch any tracer changes=2E */
+> 	if (work & SYSCALL_WORK_SECCOMP) {
+>-		ret =3D __secure_computing();
+>-		if (ret =3D=3D -1L)
+>-			return ret;
+>+		if (__secure_computing())
+>+			return -1L;
+> 	}
+>=20
+> 	/* Either of the above might have changed the syscall number */
+>-	syscall =3D syscall_get_nr(current, regs);
+>+	*syscall =3D syscall_get_nr(current, regs);
+>=20
+> 	if (unlikely(work & SYSCALL_WORK_SYSCALL_TRACEPOINT))
+>-		syscall =3D trace_syscall_enter(regs, syscall);
+>+		*syscall =3D trace_syscall_enter(regs, *syscall);
+>=20
+>-	syscall_enter_audit(regs, syscall);
+>+	syscall_enter_audit(regs, *syscall);
+>=20
+>-	return ret ? : syscall;
+>+	return 0;
+> }
+>=20
+> /**
+>@@ -126,12 +122,12 @@ static __always_inline long syscall_trace_enter(str=
+uct pt_regs *regs, unsigned l
+>  * enabled after invoking enter_from_user_mode(), enabling interrupts an=
+d
+>  * extra architecture specific work=2E
+>  *
+>- * Returns: The original or a modified syscall number
+>+ * Returns: The original or a modified syscall number as syscall
+>  *
+>- * If the returned syscall number is -1 then the syscall should be
+>- * skipped=2E In this case the caller may invoke syscall_set_error() or
+>- * syscall_set_return_value() first=2E  If neither of those are called a=
+nd -1
+>- * is returned, then the syscall will fail with ENOSYS=2E
+>+ * If the returned value is -1 then the syscall should be skipped=2E In =
+this case
+>+ * the caller may invoke syscall_set_error() or syscall_set_return_value=
+()
+>+ * first=2E  If neither of those are called and -1 is returned, then the=
+ syscall
+>+ * will fail with ENOSYS=2E
+>  *
+>  * It handles the following work items:
+>  *
+>@@ -139,14 +135,14 @@ static __always_inline long syscall_trace_enter(str=
+uct pt_regs *regs, unsigned l
+>  *     ptrace_report_syscall_entry(), __secure_computing(), trace_sys_en=
+ter()
+>  *  2) Invocation of audit_syscall_entry()
+>  */
+>-static __always_inline long syscall_enter_from_user_mode_work(struct pt_=
+regs *regs, long syscall)
+>+static __always_inline long syscall_enter_from_user_mode_work(struct pt_=
+regs *regs, long *syscall)
+> {
+> 	unsigned long work =3D READ_ONCE(current_thread_info()->syscall_work);
+>=20
+> 	if (work & SYSCALL_WORK_ENTER)
+>-		syscall =3D syscall_trace_enter(regs, work);
+>+		return syscall_trace_enter(regs, work, syscall);
+>=20
+>-	return syscall;
+>+	return 0;
+> }
+>=20
+> /**
+>@@ -167,7 +163,7 @@ static __always_inline long syscall_enter_from_user_m=
+ode_work(struct pt_regs *re
+>  * Returns: The original or a modified syscall number=2E See
+>  * syscall_enter_from_user_mode_work() for further explanation=2E
+>  */
+>-static __always_inline long syscall_enter_from_user_mode(struct pt_regs =
+*regs, long syscall)
+>+static __always_inline long syscall_enter_from_user_mode(struct pt_regs =
+*regs, long *syscall)
+> {
+> 	long ret;
+>=20
 
-== Problem ==
+Negative numbers most definitely not be assigned as valid system calls, no=
+t now, not ever=2E=20
 
-Since commit 2cd571245b43 ("sched/fair: Add related data structure for
-task based throttle"), merged in v6.18, CFS bandwidth throttling no
-longer dequeues a task directly. Instead it queues a task_work item via
-task_work_add(..., TWA_RESUME), sets TIF_NOTIFY_RESUME, and relies on
-that work running on the return path to actually dequeue the task.
+Therein lies some serious madness=2E
 
-The powerpc KVM run loops only test TIF_SIGPENDING and TIF_NEED_RESCHED
-before re-entering the guest; TIF_NOTIFY_RESUME is never checked. For a
-CPU-bound guest that generates few KVM exits back to userspace, the vCPU
-thread never returns to user mode, so the deferred throttle task_work
-never runs. The guest keeps running unchecked while its
-runtime_remaining goes increasingly negative, and once it finally does
-exit to userspace it is legitimately throttled for minutes while the
-accrued debt is repaid at the bandwidth-timer replenishment rate.
+I believe setting the syscall number to -1 to skip is an ABI already in e=
+=2Eg=2E ptrace, so I doubt we can just get rid of it anyway=2E=20
 
-The generic xfer-to-guest-mode infrastructure (commit 935ace2fb5cc,
-"entry: Provide infrastructure for work before transitioning to guest
-mode") exists precisely to handle this kind of work before each guest
-entry. A full trace-backed root-cause analysis was posted with v1 [2].
+I would say as follows:
 
-== Fix ==
+Let's formally define that:=20
 
-Opt powerpc KVM into VIRT_XFER_TO_GUEST_WORK and use the generic
-xfer_to_guest_mode helpers to check for and handle pending guest-mode
-work (reschedule, signals, and TIF_NOTIFY_RESUME task_work such as the
-deferred CFS throttle) on every guest re-entry:
+- valid system call numbers are positive 32-bit numbers, using the appropr=
+iate ABI convention for "int"=2E
 
-- Book3S HV: both run loops — kvmhv_run_single_vcpu() for POWER9+ and
-  kvmppc_run_vcpu() for pre-POWER9.
-- Book3S PR and BookE: the common kvmppc_prepare_to_enter(), which
-  likewise only checked need_resched()/signal_pending().
+- bits [30:n] for some value of n are reserved for architecture-specific f=
+lags/modes=2E MIPS uses an offset of 2000 decimal between its syscall ABIs,=
+ which would imply n ~ 11, although I personally think that is too restrict=
+ive (MIPS could in fact use such a flag to provide an escape into a larger =
+number space if we ever need more than 2000 system calls=2E)
 
-== Changes from v1 ==
+I would suggest n =3D 24, at least for now=2E It is easier to give up addi=
+tional bits later than to claw them back when already used=2E=20
 
-- Extend the fix beyond Book3S HV to the shared powerpc KVM entry path:
-  also convert the common kvmppc_prepare_to_enter() used by Book3S PR
-  and BookE. (Shrikanth Shegde)
-- Move "select VIRT_XFER_TO_GUEST_WORK" from KVM_BOOK3S_64_HV up to the
-  common "config KVM" so every powerpc KVM variant gets the
-  infrastructure.
-- Drop the redundant signal_pending() recheck and its sigpend label in
-  kvmhv_run_single_vcpu(); xfer_to_guest_mode_work_pending() is a
-  superset of it.
-- Preserve the E500 CONFIG_KVM_EXIT_TIMING histogram on the signal path
-  via an explicit kvmppc_set_exit_type(SIGNAL_EXITS).
+Thus:=20
 
-[1] https://lore.kernel.org/all/20250421102837.78515-2-sshegde@linux.ibm.com/
-[2] https://lore.kernel.org/all/20260626105449.2897924-2-vishalc@linux.ibm.com/
+1=2E The type for a system call is int=2E
 
-Vishal Chourasia (1):
-  KVM: powerpc: Use generic xfer to guest work function
+2=2E A valid system call number is always going to be positive=2E
 
- arch/powerpc/kvm/Kconfig     |  1 +
- arch/powerpc/kvm/book3s_hv.c | 64 ++++++++++++++++++++++++++++--------
- arch/powerpc/kvm/powerpc.c   | 34 ++++++++++++++-----
- 3 files changed, 77 insertions(+), 22 deletions(-)
+3=2E Bits [30:24] are available for architecture ABI use=2E The "architect=
+ure independent" part of the system call number is therefore 24 bits wide=
+=2E
 
--- 
-2.54.0
+4=2E The exact ABI is platform-specific, obviously, but as a general guide=
+line (especially for new platforms/ABIs) should follow the rules for a plat=
+form "int" if practical=2E Notably, when passing a value in a register larg=
+er than 32 bits, which side of the calling interface is responsible for sig=
+n-extending a value passed in a register=2E If caller side, the kernel shou=
+ld validate, if callee side the kernel should ignore the additional bits an=
+d do the extension=2E
+
+5=2E A negative system call number is guaranteed to return -ENOSYS (unless=
+ intercepted by seccomp, ptrace, or another mechanism under user space cont=
+rol=2E)
+
+6=2E If the platform needs to algorithmically modify the system call numbe=
+r due to platform-specific concerns (say, the platform uses a 16-bit specia=
+l purpose register for the syscall number, or it has multiple kernel entry =
+points with different behavior), it should if at all possible transcode the=
+ system call number as necessary to match this convention in APIs that are =
+exposed to general kernel code=2E=20
+
+For example, in the future I could very much see the IA32 code in the x86 =
+kernel using bit 29 internally to indicate an ia32 system call, simplifying=
+ the is_compat implementation on x86=2E It should not mean that passing bit=
+ 29 to either the syscall instruction or int $0x80 will be accepted=2E
 
 
