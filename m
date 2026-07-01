@@ -1,92 +1,86 @@
-Return-Path: <linuxppc-dev+bounces-23308-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23309-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D1FCCC43458
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Jul 2026 13:03:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id ED71FC43458
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Jul 2026 13:12:49 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gr0ZD2p1hz2xKh;
-	Wed, 01 Jul 2026 23:03:32 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip=81.169.146.167 arc.chain=strato.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782911012;
-	cv=pass; b=mQ82eQUY4wSM/UowUsCw10YTzC5+pBeM08LwyH67J4P6jVkJGrgtPXUz/ABaDXgFebNhe+J9tijpQElLJCC4IP097ufSVCJh3gmILLGoAJqM82rgnzJpSmUTREoEtP7tlhPFF8stWdhClcW9h1Xk5NcrKo1HfSz1VSnLMlcpM/Jzxh9190JcKdQq3JvmK7jnqF73ua60dBklvST6/Rly3A3HKvvz9tbEpSEFd5Owo+xRBOilCais1woCD2oca2W+BhZC7D5wuJDmt6GvpeBNHRewluR2GZuIxiWfmWAw7jNJPtUnVDN0HyE/LLg1wOASMTxelZ/3RYUAvIbHXqFRGg==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1782911012; c=relaxed/relaxed;
-	bh=OqS7JdQx7tTfTDLzYeyQS7i7uzlya/tTdulabjgUEaE=;
-	h=From:To:Subject:Date:Message-ID:MIME-Version:Content-Type; b=f3f65L0l0B92vNcL7M0UPDD4E6zrfcyz6nVjT/w7op/vVnxkJtj1vuAoGefZurovKYs/N9jxtpi1lze2uYEvPY8Jy9lU6xxO4GSaZRnEKrZjQFBNv+9HeJFA9WSPnJj2Lto/5qoUw/OX5LT1E15IPmcmOO9V6SzMZqtKbE40ueFx4Xic/qGO6LyUYKmE6S3GPgFWGNBd6UDHZjrDtWGYzQjx3+IWKS+8Qmd6/bdvhz09DT1Q37vwtZDfr23utZGZhl0GKHrxMp6LwnKZBoia8wE0TCaYuxn7vbFDF543W5wnM5cFnog2N+TiiInkOlf7GSbnz1ZxfimVzu2sgT+xDg==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=xenosoft.de; dkim=pass (2048-bit key; unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.a=rsa-sha256 header.s=strato-dkim-0002 header.b=Ozks6cbO; dkim=pass header.d=xenosoft.de header.i=@xenosoft.de header.a=ed25519-sha256 header.s=strato-dkim-0003 header.b=Sgmlng3o; dkim-atps=neutral; spf=pass (client-ip=81.169.146.167; helo=mo4-p01-ob.smtp.rzone.de; envelope-from=chzigotzky@xenosoft.de; receiver=lists.ozlabs.org) smtp.helo=mo4-p01-ob.smtp.rzone.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=xenosoft.de
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gr0mw4M6lz2xKh;
+	Wed, 01 Jul 2026 23:12:48 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=202.12.124.152
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782911568;
+	cv=none; b=Xr5TZROjCPcZNf5A8u857lyh1JxPmWMcyiQ2zvDfLfJp+tU8jkTnxBaW7dFg6QQTx4ipLSk5lLwUgPY6XR4KXImW+OQ/S2wnHswJDdrQLkQ8QaAbE24H4i64q/oT2PmTcMc6jNw7GKwnUY0ImXc3YaJg/JOIn4yM/jy3fquAcSFMtKv8RdBWs90EcFP7ofypDk9Z6GkLnUFmlg2xXF4C8mPoXUcNmtbHuMITujb59gvxGYIYlsNbhe0gVyRSAa745MVcVxhg1buyhk6VHQvOamtgOVUxhKq9Gxj/yJnQFP762VOJkoXE0zBL6QJRvaW2u8j6noeggeOEhraQFgRkrQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1782911568; c=relaxed/relaxed;
+	bh=XqEEA6N5CwGJ6IA3lZOQ+4Ik7bEoUp9hnbB4/W/Zwik=;
+	h=MIME-Version:Date:From:To:Cc:Message-Id:In-Reply-To:References:
+	 Subject:Content-Type; b=kIPDJJAUzqRZeemLa3Ws2xCuTPGsnZMIUevTHJJhZ2UJUr/8TkSaF7LPde+QoeO7lp6jfxU2WugapsZoFChxg/z6rhnWk5EC88SXhXMnVDs4vfPPdEmIn7shse8CAWjYWi3V7AnYikp2CAFw0A33rcSaFbe+sCBs33WzshczycJyHvl02zd44z90UsZ+QOfhfFG0ZIoL7z4jIe1GGqH33Mhtf3dwStHg7HJfcFTGWMrRmF0EW0QNaXqbU/62Ufc4tDf02e8sTt9ZCpEYwhumBR+Th8TYSMvcIIvk2uG0BaQpHFLhir61pATq1cZDWgp2NNsREixWPttqtcq1ybFnoQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arndb.de; dkim=pass (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm1 header.b=sQSfLOue; dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm1 header.b=O8HXW5UO; dkim-atps=neutral; spf=pass (client-ip=202.12.124.152; helo=fhigh-b1-smtp.messagingengine.com; envelope-from=arnd@arndb.de; receiver=lists.ozlabs.org) smtp.mailfrom=arndb.de
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arndb.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.a=rsa-sha256 header.s=strato-dkim-0002 header.b=Ozks6cbO;
-	dkim=pass header.d=xenosoft.de header.i=@xenosoft.de header.a=ed25519-sha256 header.s=strato-dkim-0003 header.b=Sgmlng3o;
+	dkim=pass (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm1 header.b=sQSfLOue;
+	dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm1 header.b=O8HXW5UO;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.helo=mo4-p01-ob.smtp.rzone.de (client-ip=81.169.146.167; helo=mo4-p01-ob.smtp.rzone.de; envelope-from=chzigotzky@xenosoft.de; receiver=lists.ozlabs.org)
-Received: from mo4-p01-ob.smtp.rzone.de (mo4-p01-ob.smtp.rzone.de [81.169.146.167])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arndb.de (client-ip=202.12.124.152; helo=fhigh-b1-smtp.messagingengine.com; envelope-from=arnd@arndb.de; receiver=lists.ozlabs.org)
+Received: from fhigh-b1-smtp.messagingengine.com (fhigh-b1-smtp.messagingengine.com [202.12.124.152])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gr0Z763dyz2xJT
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 Jul 2026 23:03:26 +1000 (AEST)
-ARC-Seal: i=1; a=rsa-sha256; t=1782910811; cv=none;
-    d=strato.com; s=strato-dkim-0002;
-    b=h3bTaYIBgAgvrsHq0mc1hGetI3lk6+bXva78BsSp/PPJawlSbtYKhxnFGNlivI7Gys
-    DW5eTCz0s3MeM6XFqHR+tte6FEAQvEuvwwNhg/rYGCtC1Ot2ItRSGVO+wm1rA52cfp+S
-    EbdFKN3q7p37dalriDTOf1IU/eb0UuWpCxQF9ZbTlTWLnljCNBKS63GaUP3/Imc261On
-    5p3BjULCml/3SKWWpRZOt6yI+KBJfPkYjNJlYQtC7BUra9V9RrOnyl4wVCI4ZLlflUYe
-    P8/qjOOV1VoAjjMcc22FxTSQHaQ1vdH46u92H4jRIbOm4n6NawogAyFpIMsfBpX3/ycM
-    02IQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; t=1782910811;
-    s=strato-dkim-0002; d=strato.com;
-    h=Message-ID:Date:Subject:To:From:Cc:Date:From:Subject:Sender;
-    bh=OqS7JdQx7tTfTDLzYeyQS7i7uzlya/tTdulabjgUEaE=;
-    b=BYqYoHiRvwJDsXGLKtjMxf8WKrQS+2WOy5u0lY8NQ3DECxA/fiF8NcSY05oBKtttjh
-    DnxoeVYW9YhttCWE+JZHXMreJFYnvITJeMN7nSw5DmpJgYPu6NggolRcTbjR+9PUteRw
-    ZdV5ufxemlKwBiFQYlha0mSatFCYkek+CYK85PkVjbeL3aO4JZqTcGJXskK5YElOJBT1
-    AHn1ocsK/32HN5Lcar7auU8kEVoedQ6W+8hxlF6UDFEQniuX7M7csOf1CMhscUy9Sf8Z
-    82FokQYLxnyNLS4VZ/AyrV2HuW3GwmAErSROyVtDshjQagKjDFd6B+zIjNGSlUnZaKth
-    0lGQ==
-ARC-Authentication-Results: i=1; strato.com;
-    arc=none;
-    dkim=none
-X-RZG-CLASS-ID: mo01
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1782910811;
-    s=strato-dkim-0002; d=xenosoft.de;
-    h=Message-ID:Date:Subject:To:From:Cc:Date:From:Subject:Sender;
-    bh=OqS7JdQx7tTfTDLzYeyQS7i7uzlya/tTdulabjgUEaE=;
-    b=Ozks6cbO7VEAlLXMp3bRygSmKiUISOeruE7Eky98n/otZEGm02VK4QwBg9YfhEW55K
-    hOkUazK63oZCECOHQ/fH4VM3i0fIp0Bb/VOhrGtvZWZ3l/asA1vYSKXbMPaGEEWDFYZg
-    PFBSKgRD+3Hh8SUNBhDqccwiiPRH4fI2ElY6A119kNwZedHtcUCtnLMMnvpbMdhjG4Bw
-    t6YUIIgbMWyoWqyhxoIqFQSdhbT3AfX0DZvwUHUSyq2CdvsSdUGD8QV1C7caOuc+hzl9
-    BO5eJ1RLL866AQ8TFtVR+XWFPVVfKTmBwsP/GExGs96qoiaQlacargiwrq1lHwpPaPeT
-    oiQA==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; t=1782910811;
-    s=strato-dkim-0003; d=xenosoft.de;
-    h=Message-ID:Date:Subject:To:From:Cc:Date:From:Subject:Sender;
-    bh=OqS7JdQx7tTfTDLzYeyQS7i7uzlya/tTdulabjgUEaE=;
-    b=Sgmlng3oEAc9wPSxXQThFy3WGVtv4egVPHh/GWBPwLjuitfzdjsQDrCZVfx6f5K+QH
-    Ttgf1yzRF9GP75l4jADQ==
-X-RZG-AUTH: ":L2QefEenb+UdBJSdRCXu93KJ1bmSGnhMdmOod1DhGN0rBVhd9dFr6PxsY+ZPjaJwNagAH4FDfQ=="
-Received: from INTER8676
-    by smtp.strato.de (RZmta 55.5.6 AUTH)
-    with ESMTPSA id e4c84d261D0AQp3
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256 bits))
-	(Client did not present a certificate);
-    Wed, 1 Jul 2026 15:00:10 +0200 (CEST)
-From: Christian Zigotzky <chzigotzky@xenosoft.de>
-To: Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>,
-	Christian Zigotzky <chzigotzky@xenosoft.de>,
-	linuxppc-dev@lists.ozlabs.org (open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)),
-	linux-kernel@vger.kernel.org (open list)
-Subject: [PATCH] Connecting the SB600's i8259 controller rather in pasemi's pci.c than in pasemi's setup.c. 
-Date: Wed,  1 Jul 2026 14:59:35 +0200
-Message-ID: <20260701125941.906-2-chzigotzky@xenosoft.de>
-X-Mailer: git-send-email 2.55.0.windows.1
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gr0mr4ny7z2xJT
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 Jul 2026 23:12:43 +1000 (AEST)
+Received: from phl-compute-04.internal (phl-compute-04.internal [10.202.2.44])
+	by mailfhigh.stl.internal (Postfix) with ESMTP id 4658D7A009D;
+	Wed,  1 Jul 2026 09:12:39 -0400 (EDT)
+Received: from phl-imap-05 ([10.202.2.95])
+  by phl-compute-04.internal (MEProxy); Wed, 01 Jul 2026 09:12:39 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arndb.de; h=cc
+	:cc:content-transfer-encoding:content-type:content-type:date
+	:date:from:from:in-reply-to:in-reply-to:message-id:mime-version
+	:references:reply-to:subject:subject:to:to; s=fm1; t=1782911559;
+	 x=1782997959; bh=XqEEA6N5CwGJ6IA3lZOQ+4Ik7bEoUp9hnbB4/W/Zwik=; b=
+	sQSfLOueyGINlkU+m6V2rhx9l6c7DSh4peFKT2GDZON3Z0C4LcbV4ctXku49JLkN
+	g+HFYP+lati0duVqQNupgWCUMLIDFQb3u5OhrYunrii8zZnVegxb4bXG1TicAdTZ
+	1J6fEVDY8WkbUy5NVTaQZHbsMQqul3Z67raQ5Nzixux9IEaGnMSqdnlolXzBfyzT
+	1kpbhhyClY1m74WD8UisTPPxiNBiHUK1gsKQyOz/Cllu1TQyh5Cgyl797knGzYpL
+	s7dHJXo95drQLrIeVLutdn2sJJ7bSvCI+vVMLkubPKL1jYBySDDrpEnCUKSb1FpA
+	H1/6b8NJRdzlwIK1yB4dwQ==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+	messagingengine.com; h=cc:cc:content-transfer-encoding
+	:content-type:content-type:date:date:feedback-id:feedback-id
+	:from:from:in-reply-to:in-reply-to:message-id:mime-version
+	:references:reply-to:subject:subject:to:to:x-me-proxy
+	:x-me-sender:x-me-sender:x-sasl-enc; s=fm1; t=1782911559; x=
+	1782997959; bh=XqEEA6N5CwGJ6IA3lZOQ+4Ik7bEoUp9hnbB4/W/Zwik=; b=O
+	8HXW5UO+aYHUGl4LikMybwFP5BR8Y0BseQRJoQ7MMtQtRJUW7dx0z8kecrkKp6vE
+	f8gRSqm+yzPUDG4VjaFkAv1+JLHl6ByRd2Nf8FazoyogYQkRl1dvBfFjZTfQSKk8
+	VyfIiwjLPmwpzhOpCtWlTevYqBX8eA9E4N4h3nnP5TwUxyn6oD0Ms4mAgBntjB+r
+	wSTbF3lQ5DcPe5gBp/7W0cOrfSMl8r/ZhRyWoVzntnmXr6AlgZ8B9Ylr2+j0d2d+
+	HKycxjwa4Nz/b+UGNnW2aCoD4/MAS5C6pCPkk0ZH4p5+k2Pd89IwyHTMevvk/7Ze
+	tUOd+Xhn/Bgdmdpcb/8fw==
+X-ME-Sender: <xms:RRJFajJNuY7Ea447a624_w6t7wruejv0IM83V3g7A6KL8oggeAQA2A>
+    <xme:RRJFah-e56FYyd82CwMxPWeJjpQRTsQnlwKSbLFSNlao1NsAE5Wp-CdM4hyLbkXQE
+    _DlzPAfMzoE-whGqeOAnblKj8Oai3gyJlPqRfIoY39qPxdSMlnPpfI>
+X-ME-Proxy-Cause: dmFkZTGla2qQNlSZKlIqara0zN5koG4KqHg1bkjXpggyAWCLJNg2kfVgLI8lLCbuU2lk8S
+    kRgH252hH9LXdkXzSDSjqALczLdLPKlEPR5SaACUkXhDXWZtx+GoScADM9yWf1unDYqP8Q
+    2WSsB+yxUTjScO4bMrLoRiVJEsOVtHKynDYkTDSNlV/FlVOr++ZZbwgmEhkG986gVx8K+K
+    aifgVAxvA4y5ZVbSgxsda+zcFEbK/18X5WWflJ/ywdGPJlyZMoKT8cNBLhbRk76vDXjwpw
+    QLo2apXc7MtJeiGpsVVyKxyOA/SHS/M5eq8vxnr8WZeLKtuTYlVXwaw/JxEnplkTQrl3Pd
+    B7NJkf2pxDtojfaBQtKKBZV/obBu6aw/ly8+Aq5oikyGZRbLPSYuUz30ITeiZegu7GL1IY
+    BH+bpbU2FYzgYNvuW0kYqCdaBa94ExMmldk/xGt6dBhZaPieoYjNF9biNBBc3rgUbgmFbj
+    62LsHEdx24hoFQqVnJ9a9mVEjsfGg3qOJ5+MN46JlrX9eUQauDWHHEy0Awb0Lne6WNgaUO
+    4yVurEkxq/P/EbUXu4DrDTid9azOO9+oXTmhGP+PV4UklaisM4awcqFWxNagTgrY4T7xHu
+    8B7GWHRFLuVtfbbi9R9DHc8ER2iJp174rEfUAKSD/WUZBfVxKq+AH24iHCTA
+X-ME-Proxy: <xmx:RRJFalJN2aoA8kDFMua_h-i5Chn-r0wU-KwqgCI_zyQFyJxETPlNhw>
+    <xmx:RRJFajzXivGAASdZ72Is3bie1NpvnftEdIUPxmclVvZbBh4i5pzhmg>
+    <xmx:RRJFatM652J4WnFqkRON4WLzi44_c61ZybTn0ej-5qq9fbWYJQjNfA>
+    <xmx:RRJFanuRV787OOoAY7DQlxvI-5sNjEiRW1y01nGxGmEYB1CpRRmLyA>
+    <xmx:RxJFavp-QxIqJqyh2AhOILa9hNEeIKNUBd7uz-YJn9OT8avMOzD2XKsB>
+Feedback-ID: i56a14606:Fastmail
+Received: by mailuser.phl.internal (Postfix, from userid 501)
+	id 537641820082; Wed,  1 Jul 2026 09:12:37 -0400 (EDT)
+X-Mailer: MessagingEngine.com Webmail Interface
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -100,97 +94,95 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+X-ThreadId: AE-5y0c3-Pto
+Date: Wed, 01 Jul 2026 15:11:56 +0200
+From: "Arnd Bergmann" <arnd@arndb.de>
+To: =?UTF-8?Q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
+Cc: "Andy Lutomirski" <luto@kernel.org>, "Thomas Gleixner" <tglx@kernel.org>,
+ "Ingo Molnar" <mingo@redhat.com>, "Borislav Petkov" <bp@alien8.de>,
+ "Dave Hansen" <dave.hansen@linux.intel.com>, x86@kernel.org,
+ "H. Peter Anvin" <hpa@zytor.com>, "Russell King" <linux@armlinux.org.uk>,
+ "Catalin Marinas" <catalin.marinas@arm.com>, "Will Deacon" <will@kernel.org>,
+ "Madhavan Srinivasan" <maddy@linux.ibm.com>,
+ "Michael Ellerman" <mpe@ellerman.id.au>,
+ "Nicholas Piggin" <npiggin@gmail.com>,
+ "Christophe Leroy" <chleroy@kernel.org>,
+ "Thomas Bogendoerfer" <tsbogend@alpha.franken.de>,
+ "Vincenzo Frascino" <vincenzo.frascino@arm.com>,
+ "John Stultz" <jstultz@google.com>, "Stephen Boyd" <sboyd@kernel.org>,
+ "David S . Miller" <davem@davemloft.net>,
+ "Andreas Larsson" <andreas@gaisler.com>, linux-kernel@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
+ linux-mips@vger.kernel.org, linux-api@vger.kernel.org,
+ sparclinux@vger.kernel.org
+Message-Id: <a512dc5f-0734-4bd0-838c-61c8820e5f6d@app.fastmail.com>
+In-Reply-To: 
+ <20260701102912-ea8f3291-7bba-407b-9a7d-7c367a4c9398@linutronix.de>
+References: <20260630-vdso-compat_32bit_time-v2-0-520d194640dd@linutronix.de>
+ <20260630-vdso-compat_32bit_time-v2-1-520d194640dd@linutronix.de>
+ <0cda7366-2eb9-4ecb-b76a-b3b68ee10043@app.fastmail.com>
+ <20260701102912-ea8f3291-7bba-407b-9a7d-7c367a4c9398@linutronix.de>
+Subject: Re: [PATCH v2 1/9] time: Respect COMPAT_32BIT_TIME for old time type functions
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-Hello,
+On Wed, Jul 1, 2026, at 10:40, Thomas Wei=C3=9Fschuh wrote:
+> On Tue, Jun 30, 2026 at 03:00:37PM +0200, Arnd Bergmann wrote:
+>> On Tue, Jun 30, 2026, at 09:38, Thomas Wei=C3=9Fschuh wrote:
+>> > The "old" time types use 32-bit seconds which are not y2038-safe.
+>> > Respect COMPAT_32BIT_TIME for functions using those types.
+>> > time(), stime() and gettimeofday() are disabled completely.
+>>=20
+>> Looks good, yes
+>
+> Sashiko found an issue [0], which I think is valid. I'll change that f=
+or v3.
 
-Here is the email without HTML (Sorry):
+Ok
 
-The Nemo board [1] doesn’t boot without this patch. Darren explained it really well:
+>> > settimeofday() is kept as it is required to do the initial timewarp=
+ing
+>> > after boot. However the 'tv' argument will be rejected.
+>>=20
+>> Not sure about this part, did we already discuss this last time?
+>
+> This is my interpretation of [1].
 
-Originally we initialised the PCI-e ports in setup arch, this is quite early, and it seems uses some kernel functions that were not recommended (They changed a whole lot of different platforms at the same time for the same reason)
+Indeed, we did.
 
-After this we added the ISA bridge, then the kernel would init the IRQ contollers.
+>> I can see how keeping the timewarping functionality is the easy way
+>> out, but completely disabling the settimeofday syscall the same
+>> way we do on new architectures seems so much more consistent.
+>
+> Shouldn't we then do this completely? Irrespective of COMPAT_32BIT_TIM=
+E?
+> And then remove all of the timewarping and kernel timezone bits.
 
-The patch that broke booting on the X1000 moved the pas_pci_init to a node in the machine description, where it called later in the boot sequence. Unfortunately this is after we've tried to add the i8259 contoller from the pas_init_IRQ. Since our ISA bridge can't be found until we've connected the PCI-e ports the system tries to write to registers that aren't yet mapped - result a kernel panic, but before console I/O has been initialised so it appears to be a hang. We had a similar problem when they were introducing Radix support.
+I don't think we can simply kill the timewarping code since that
+likely has users on architectures including on x86-64.
 
-My patch changes our code so that it works with the new kernel code in place. Basically I moved the code that adds the i8259 cascade to after we've scanned for the ISA bridge where I know it will work.
+COMPAT_32BIT_TIME=3Dn is somewhat special because this is an
+intentional (and optional) ABI break already and requires
+updated userspace that avoids the time32 syscalls. Having the
+timewarp still in settimeofday() or dropping it entirely is not
+that different for userspace.
 
-Hopefully this makes sense, shout out if it doesn't.
+I was slightly worried about whether returning -EINVAL or -ENOSYS
+is the better option here, but I think your choice is the correct
+one after seeing that this is what glibc does other invalid
+cases, and that in all of codesearch.debian.net, I could not
+find a single caller that would care about the difference.
 
-Regards
-Darren
+> It would be nice however if this series, and my other ones blocked beh=
+ind it,
+> are not blocked on that larger rework.
 
-[1] https://en.wikipedia.org/wiki/AmigaOne_X1000
+Sure.
 
-Signed-off-by: Christian Zigotzky <chzigotzky@xenosoft.de>
----
- arch/powerpc/platforms/pasemi/pci.c   | 7 +++++++
- arch/powerpc/platforms/pasemi/setup.c | 7 ++++---
- 2 files changed, 11 insertions(+), 3 deletions(-)
+I think you can go ahead with this version. I would prefer
+to not have any settimeofday() for the COMPAT_32BIT_TIME=3Dn
+case, but if nobody else has a strong opinion on the matter,
+let's do it your way.
 
-diff --git a/arch/powerpc/platforms/pasemi/pci.c b/arch/powerpc/platforms/pasemi/pci.c
-index 2df955274652..7208c325bfc5 100644
---- a/arch/powerpc/platforms/pasemi/pci.c
-+++ b/arch/powerpc/platforms/pasemi/pci.c
-@@ -25,6 +25,8 @@
- 
- #define PA_PXP_CFA(bus, devfn, off) (((bus) << 20) | ((devfn) << 12) | (off))
- 
-+extern void nemo_init_IRQ(void);
-+
- static inline int pa_pxp_offset_valid(u8 bus, u8 devfn, int offset)
- {
- 	/* Device 0 Function 0 is special: It's config space spans function 1 as
-@@ -265,6 +267,11 @@ static int __init pas_add_bridge(struct device_node *dev)
- 	 */
- 	isa_bridge_find_early(hose);
- 
-+	/*
-+	 * ISA brigde is now active, add the i8259 cascade (if needed)
-+	 */
-+	nemo_init_IRQ();
-+
- 	return 0;
- }
- 
-diff --git a/arch/powerpc/platforms/pasemi/setup.c b/arch/powerpc/platforms/pasemi/setup.c
-index d03b41336901..eec74611be46 100644
---- a/arch/powerpc/platforms/pasemi/setup.c
-+++ b/arch/powerpc/platforms/pasemi/setup.c
-@@ -214,10 +214,12 @@ static void sb600_8259_cascade(struct irq_desc *desc)
- 	chip->irq_eoi(&desc->irq_data);
- }
- 
--static void __init nemo_init_IRQ(struct mpic *mpic)
-+void nemo_init_IRQ(void)
- {
- 	struct device_node *np;
- 	int gpio_virq;
-+        struct mpic *mpic;
-+
- 	/* Connect the SB600's legacy i8259 controller */
- 	np = of_find_node_by_path("/pxp@0,e0000000");
- 	i8259_init(np, 0);
-@@ -228,6 +230,7 @@ static void __init nemo_init_IRQ(struct mpic *mpic)
- 	irq_set_chained_handler(gpio_virq, sb600_8259_cascade);
- 	mpic_unmask_irq(irq_get_irq_data(gpio_virq));
- 
-+	mpic = irq_get_chip_data(gpio_virq);
- 	irq_set_default_domain(mpic->irqhost);
- }
- 
-@@ -298,8 +301,6 @@ static __init void pas_init_IRQ(void)
- 		mpic_unmask_irq(irq_get_irq_data(nmi_virq));
- 	}
- 
--	nemo_init_IRQ(mpic);
--
- 	of_node_put(mpic_node);
- 	of_node_put(root);
- }
--- 
-2.55.0.windows.1
-
+Reviewed-by: Arnd Bergmann <arnd@arndb.de>
 
