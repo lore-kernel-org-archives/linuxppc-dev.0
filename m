@@ -1,103 +1,99 @@
-Return-Path: <linuxppc-dev+bounces-23312-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23313-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 73FAFC43458
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Jul 2026 17:19:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6BC8FC43458
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Jul 2026 17:19:22 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gr6F85NZjz2yfS;
-	Thu, 02 Jul 2026 03:19:08 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::429"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782926348;
-	cv=none; b=dcBKSA74o0W/eKwFYnTYkZTdVfaAHESEXSNRTnh3oIJ6vBOpBxaBGT1g1DfNIf/qqPIhq5mDTQC/8b4KADecL7QOsKb0NixpXRnQkJkFyS2ZBxF49wjgZwlgqldYOWyyJMfV1QHkLU1C0n8rXjpPr0R3JGSyM9wuBe4wrV0FMayAf01BKEuUIiXS2BqzbY4ToHWGyOjOVNrYz+1bx/3KIm+SbwsGjQcWZH9BmXM2c8rHV1cxDKi1LJXicIwfTfDlVXbb4rvsGHfmCvhIFCv2y7XcN1R/6JIByCMcAVPrrz7pM+2bFSB+ZfupoFtC/1SNJXdjuU7cbfHnHWF7PDRwgA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gr6FN6zg4z2yfS;
+	Thu, 02 Jul 2026 03:19:20 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::42f"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782926360;
+	cv=none; b=K9cJT/HAQjvtAoiLbHptGVd34WX/tHZw109MRTUd8/fDHlOtDWPtFxj1zsU0LK4LvmOqmQ6qWtEQuOdh1DyBDbg+QzOoxX3sIdAH00Y5H4ZEOItws5QHvsyXwhv3VEKer6YTZPL5WEgu8UOIL+MiFGHBcfUntwJDM44+p4R4Q/81hptt6JJ/Gg+LCyax96OgxySvWPwdUpIsn2nzq02Hj2PfAsUnREhIrrdrqc2gQIHCY0mW6/Zi8z4bI36fHNROcanT73tC26B4WniZZmd76ZKOd/upkZ5qlyn3649kkbGcQftc6RTHv33LVYw/73u8xQBr9lyDa0y4FR3eBZQX+w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1782926348; c=relaxed/relaxed;
-	bh=OVZjtpTrxXxAVguXYAz4E7mi5sWPqKxrHjlHEoMDU8Q=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=Aaayu7p74pzd6zbXASO7dZPh2aXQTuMa03kbKkX3DBAPyv5Ka3hEttzZJUL08HKv634W2UUlQjd7wzO3qVXth7EVN9vtfQcIULqvZtIGFuKxvr5sy+seaTATE0s8n5aMqlRjy7Sf2wtV5ANQ+9JT3FExp2ERp3o6o9VbSnxnkrQBIoR5PuH4WLUmTwQEEZwyXCSN5OGPxF4MgLao83S+d0xisk8KZqY3XNgrYDw3wsX+DRmT+FA14YFANoHqLZLGzr9l9L3h9iPVjQ/w9yS//cXzaehHnVeggKdzI9/u8tRCCYfKe28NHOUUSSrHSkXd5OrNYMNP0POs67ngd/NZ1w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=gbc786pw; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::429; helo=mail-pf1-x429.google.com; envelope-from=ekffu200098@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	t=1782926360; c=relaxed/relaxed;
+	bh=obKytdSgK8DmwXqyL+Uzle0RrtZhdlqOEa7faS72rK8=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=e1gkzPeEAD/M39GNuPM7xR55fKMy8nsfigJxmKbyInOWtu/sbNiojifMIggg2SlRFD+r0REu6uhGjjNRhYC/bRY25osOXShNLhVNcJVpGkec76IUAPPrBD3/uQKDajZkN1s0kR0h9ueNnaJNU0Hy1hLL+U34pU9mCC2m+qLmIsP1WVkysguW/m/mMxdnyMZB3B90/drXO6PdbXdeTVR9BYQ/O4p+MlvQok1Mt2qTv3+Y1U6N1AddHZeLkwU/WgimhrcJANds5wSh6gOQlvAjGKUrc5x75L/xfV5phiry7aLCYdYxaVoftRu5fHq3WTCs9Kl2o+zyFQzTl8oOUFDidw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=anDIf+b2; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::42f; helo=mail-pf1-x42f.google.com; envelope-from=ekffu200098@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=gbc786pw;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=anDIf+b2;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::429; helo=mail-pf1-x429.google.com; envelope-from=ekffu200098@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pf1-x429.google.com (mail-pf1-x429.google.com [IPv6:2607:f8b0:4864:20::429])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::42f; helo=mail-pf1-x42f.google.com; envelope-from=ekffu200098@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pf1-x42f.google.com (mail-pf1-x42f.google.com [IPv6:2607:f8b0:4864:20::42f])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gr6F76jDCz2yfN
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 Jul 2026 03:19:07 +1000 (AEST)
-Received: by mail-pf1-x429.google.com with SMTP id d2e1a72fcca58-847a483e344so595202b3a.0
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 Jul 2026 10:19:07 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gr6FN1D8pz2yfN
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 Jul 2026 03:19:19 +1000 (AEST)
+Received: by mail-pf1-x42f.google.com with SMTP id d2e1a72fcca58-84794e800f4so495065b3a.0
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 Jul 2026 10:19:19 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1782926345; x=1783531145; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=OVZjtpTrxXxAVguXYAz4E7mi5sWPqKxrHjlHEoMDU8Q=;
-        b=gbc786pwmy84hcAxygjFZV3rEkDBrB8EIn9/jjH3khKRMqtWAfbcP4iC23gmW3Jrfs
-         GVV4LkGClGTG3PzeAKf+BkCyBPPbFzYiodV/mFwmRhJ0rGFXHYVj5GsH7jY6OeOFQpH3
-         10LLRpD3FXv3i2cS7ob4dD90KX2Sbpm59T+2j+SBPY9ACXLlWmX2/gjlhfDoP+k4jr9j
-         MO5OxfbpGHst6woQQlg8O0Yz5zAUh8exLblal7aZ6cVxnpDtVMoGTV3UD1rHDpMbQlBE
-         VEJf/vrwI+qnZL90kZWAAjpjH9xzzVKmEg9tIrIgvZWtVbWck5auRVUAth+d7D1jsjQY
-         3glw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1782926345; x=1783531145;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+        d=gmail.com; s=20251104; t=1782926358; x=1783531158; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=OVZjtpTrxXxAVguXYAz4E7mi5sWPqKxrHjlHEoMDU8Q=;
-        b=P4TOPCEp0U7IDWhFsUeVQFgyPTDV91xcGNlhe/GTLXrVmulu9XHc1tccTeEk0ceOeh
-         W9wwmeCypIDFNVAIsQ9VjWbtQRF2VRXDfAvhnuDpVyxmNzwRVcn07r0dFF7UHg81cVcN
-         r+vKx3uvkjog6UL9wrq26hfmMZugGoz5uz2ndQz6ATRJNXLkeYmA7bjUU221EtoYFdZt
-         5x9IC1Hurf61P6ZTl9Z2mXUAVK8yv4Cq8n9ueT6tWkrNwu0HyJa4Go5FGKhGRay3f8rm
-         zy8g+J+38tC7mcCBx3X1bfTzLQXeslF72hdcHdowY6nYkvJ01krN4wiqIymlVTVvJ6gJ
-         tzCQ==
-X-Forwarded-Encrypted: i=1; AHgh+RqoKjNlY/OxRoIf7pQVuv0rSd9CC2lUAsQwefHAopcd77LpTxeIKjXJrQEDszIE9S4yGdHupLVmZqGhYno=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yx6UZqOYSPK3RY3rnKCcFHXSJCas3rfYf6QQjdTNZYRPTF2opFt
-	0ycCBNzmN65Jw3etqTTIKFiXnJNZaxhV2xN02jF32skUhVxZkKyZI2ll
-X-Gm-Gg: AfdE7ck+HuUL+H33oII89fBnatRcntKKKNHs01rayUpqp+E1zYfxHKRR2ie/L0Dk5/g
-	uwWUG80kKvxnjLaGtQtEEnvJbHr7aNvyZ6MPoSNF2f1t2HISlW7uxYhenZl+uU5Lz3SOL0L5ttf
-	XyckSwFRu8zB3Xx0ix1rDaJoMOau3HmrYfBhw30Jm7XyJnlWT2mSL+O8K+AztfA2r7XZpxtJFtL
-	A9lwVHzG5f8tue8uhQp41Mlg4xMv0HIhctTBnmvD1KDtU69l2grEEiLXR6FWkPihOm25cFOczKd
-	vMN9EZBYY47vYK+oFM6ap7mFlSZP8LbSp56dU4H90Srqs1iJO3ddADezTsaLmX212GfhhqCQVyX
-	uW7wAcXlnh288eD8xpURLuuOHDiahYfZCdbhnUNLxAkrw+B9baGatm1rMJMvNayQAOBw3RUnFuT
-	Qb/FH4q9E=
-X-Received: by 2002:a05:6a00:948e:b0:846:a04:acdc with SMTP id d2e1a72fcca58-847a831fb33mr4758788b3a.26.1782926345049;
-        Wed, 01 Jul 2026 10:19:05 -0700 (PDT)
+        bh=obKytdSgK8DmwXqyL+Uzle0RrtZhdlqOEa7faS72rK8=;
+        b=anDIf+b2Xa+lBrU4MDaKTZq53I/9IczlHP/GLpbQWH4eEOL1C0rh780t6R7nrUpY1m
+         X0lTyEjv/uvXNe9KGQWSsO6anpj6SjcB7iscC4vmXckr9BMWCgsAh19zvRWf9F4V7P60
+         HYcFU31aAVZfm3ri30yGIUZC2YGvykP51Zjc7nbcRrYdaaHxWWH8RtJRBKQ4kk0k+oB1
+         hiQHVL08prAovrbTsCcjJH2nMNVt9ZKVIqoFXNpCSYNEYsxAuZPHsPwYIvXYXkKOoMcp
+         fMX+O152VIT54Pmv6JyEKztME7lCMtJiqiRrqEeB+GLeDyyywOA+uwFi2IQNYXO0U7y4
+         zRng==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1782926358; x=1783531158;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=obKytdSgK8DmwXqyL+Uzle0RrtZhdlqOEa7faS72rK8=;
+        b=R4grAaujflNJtSAKr2uXKktjkl601d6jfK3l2bS0tN0Rw0mXIG/yoiEhXu4WAJXPTW
+         U4CBYLGZ1Un3vdkRmYeprsRJv22dCDOnj+j3RQIjVcd3uHVxd2/lnNOpTMnbz6uo5GFl
+         /DTvZozGDw87BtJFRZJZXoiuGAC0z+0Q3vSIDb+yWcLTfFUV4GKl3XuTCzjeo+vK/y/+
+         pepPdn/qm2IDxTUPPbqv7iqnDAEkqPZggZj0IY0/lZbZIAe1q1biDfOvvz+zQY9R3gTR
+         vK+jDU5eFhy6ACV6GJO+vKJqfoa0Hxn8pvJTJZoC1HiRuWcevTOLDuaFi09HcEFJlehZ
+         Q0QQ==
+X-Forwarded-Encrypted: i=1; AFNElJ+ikE6GOnFulh2QCHK2f34uRYTuCQs9RFBqosDduchen3X26KvakC3qoHFBH+udcQzDkVAwMLgNsYv/w4w=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YzfCEdelXSSEquu1pR5SCo9ec5uSTtV1impTdl2w3GUpeba7byw
+	kPfRUyKZUPtik8cfRTJOmloU61klTm/i+PNLYKp3uMwrowHK+wSt6ewD
+X-Gm-Gg: AfdE7ck43/juJbY9a1D9Mh6l+vpnPJ3F3DRZiokN7L2FLwjx6EiRBDC+f0mvJKYLFqx
+	o78P/wqZKTMhSuBRnRmeLTgOlCf/lIR+o+PHvl1XOZ/VTE7apRj4VE0U6KFaL3cGnJeKsjOIExC
+	EJQqeJUcjDssqHTJb3ug5Ujok02V7cJp+LEhUHsYkV3h7bVyTYni5uNp2kMyNdIqXhhe0zJCa7q
+	HKfo6/j4fFrB3njTRLfwa/POETp8lwclDmfKkCviWASCxLnyUciVgH9Rbn9hqkZpi7Sjd5Aguea
+	alO8NzS42ne7pjr412LIyqZd6yMscwreKoXAlybC4Nvq7nXZ2RAP+82nFjpgRnMgEFguEoBKqQw
+	bo67pdFeiO7rkmthR1PToujy6Rqlh8tiFzp7vtw8pb3opnYfKdqDxjICopkjKZElykwE8vyHe2F
+	udGwfUwz4=
+X-Received: by 2002:a05:6a00:b4e:b0:847:7f0e:1ac6 with SMTP id d2e1a72fcca58-847c5070041mr1582243b3a.19.1782926357933;
+        Wed, 01 Jul 2026 10:19:17 -0700 (PDT)
 Received: from ubuntu.. ([110.9.142.4])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-847cb94ab79sm105719b3a.31.2026.07.01.10.19.00
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-847cb94ab79sm105719b3a.31.2026.07.01.10.19.15
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 01 Jul 2026 10:19:04 -0700 (PDT)
+        Wed, 01 Jul 2026 10:19:17 -0700 (PDT)
 From: Sang-Heon Jeon <ekffu200098@gmail.com>
 To: akpm@linux-foundation.org,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>
+Cc: linux-mm@kvack.org,
+	Sang-Heon Jeon <ekffu200098@gmail.com>,
 	Andreas Larsson <andreas@gaisler.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
 	"David S. Miller" <davem@davemloft.net>,
 	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
+	linux-kernel@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org,
+	Nicholas Piggin <npiggin@gmail.com>,
 	Rich Felker <dalias@libc.org>,
 	Vlastimil Babka <vbabka@kernel.org>,
 	Yoshinori Sato <ysato@users.sourceforge.jp>,
 	Yury Norov <yury.norov@gmail.com>
-Cc: linux-mm@kvack.org,
-	Sang-Heon Jeon <ekffu200098@gmail.com>,
-	Brendan Jackman <jackmanb@google.com>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	Johannes Weiner <hannes@cmpxchg.org>,
-	linux-kernel@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-sh@vger.kernel.org,
-	Michal Hocko <mhocko@suse.com>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Rasmus Villemoes <linux@rasmusvillemoes.dk>,
-	sparclinux@vger.kernel.org,
-	Suren Baghdasaryan <surenb@google.com>,
-	Zi Yan <ziy@nvidia.com>
-Subject: [PATCH 0/4] treewide, mm: initialize node_possible_map like the other node maps
-Date: Thu,  2 Jul 2026 02:18:47 +0900
-Message-ID: <20260701171851.2447626-1-ekffu200098@gmail.com>
+Subject: [PATCH 3/4] powerpc/numa: set node_possible_map from node_online_map
+Date: Thu,  2 Jul 2026 02:18:50 +0900
+Message-ID: <20260701171851.2447626-4-ekffu200098@gmail.com>
 X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20260701171851.2447626-1-ekffu200098@gmail.com>
+References: <20260701171851.2447626-1-ekffu200098@gmail.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -113,51 +109,33 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-While reviewing an earlier series [1], Andrew asked why we carefully
-initialize node_possible_map at compile time, then zero it within __init
-code anyway.
+mem_topology_setup() intersects node_possible_map with node_online_map.
+Nothing sets node_possible_map before this, so it is NODE_MASK_ALL and
+the result is just node_online_map.
 
-node_possible_map, aliased by node_states[N_POSSIBLE], is initialized to
-NODE_MASK_ALL at compile time, unlike the other entries, which are
-initialized with only node 0 set.
+In preparation for changing node_possible_map's initial value,
+mem_topology_setup() no longer depends on it.
 
-Architectures that use numa_memblks set node_possible_map from
-numa_nodes_parsed, so the compile-time value is meaningless for them.
+No functional change.
 
-However, a few architectures that do not use numa_memblks do not set
-node_possible_map on their own. Once these architectures set
-node_possible_map to match their own topology, the NODE_MASK_ALL
-initialization can be removed.
+Signed-off-by: Sang-Heon Jeon <ekffu200098@gmail.com>
+---
+ arch/powerpc/mm/numa.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Patches 1-2 handle sparc64 and sh, which do not set node_possible_map
-themselves. Both set node_online_map from their topology, so set
-node_possible_map from node_online_map.
-
-Patch 3 handles powerpc, which sets node_possible_map by intersecting it
-with node_online_map. Nothing sets node_possible_map before this, so it is
-still NODE_MASK_ALL and the intersection is just node_online_map. Once
-patch 4 changes that initial value, the intersection would no longer be
-node_online_map, so assign node_online_map directly.
-
-Patch 4 initializes node_possible_map with only node 0 set, like the other
-node_states[] entries. NODE_MASK_ALL is then no longer used, so remove it
-and its only helper NODE_MASK_LAST_WORD.
-
-[1] https://lore.kernel.org/all/20260624204030.3c8baa67713b6ca1d537baba@linux-foundation.org/
-
-Sang-Heon Jeon (4):
-  sparc64: set node_possible_map in bootmem_init_numa()
-  sh: set node_possible_map in do_init_bootmem()
-  powerpc/numa: set node_possible_map from node_online_map
-  mm/page_alloc: initialize node_possible_map like the other node maps
-
- arch/powerpc/mm/numa.c   |  2 +-
- arch/sh/mm/init.c        |  2 ++
- arch/sparc/mm/init_64.c  |  2 ++
- include/linux/nodemask.h | 20 --------------------
- mm/page_alloc.c          |  2 +-
- 5 files changed, 6 insertions(+), 22 deletions(-)
-
+diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
+index f4cf3ae036de..2fdecae90a01 100644
+--- a/arch/powerpc/mm/numa.c
++++ b/arch/powerpc/mm/numa.c
+@@ -1179,7 +1179,7 @@ void __init mem_topology_setup(void)
+ 	 * that we expect to make use of for this platform's affinity
+ 	 * calculations.
+ 	 */
+-	nodes_and(node_possible_map, node_possible_map, node_online_map);
++	node_possible_map = node_online_map;
+ 
+ 	find_possible_nodes();
+ 
 -- 
 2.43.0
 
