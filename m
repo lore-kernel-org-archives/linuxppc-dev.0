@@ -1,77 +1,79 @@
-Return-Path: <linuxppc-dev+bounces-23316-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23317-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 676C9C43602
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Jul 2026 18:28:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 11DCDC43458
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Jul 2026 18:31:02 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gr7n85M8Nz2yf9;
-	Thu, 02 Jul 2026 04:28:28 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782930508;
-	cv=none; b=cx81b9FGz1ulwKWDb6JveFKHPr1o9adxZCon2a679W6rxk09jgKFcU+X3xxeQCpyXhLXJLqQEiwvaqbxhRx6thC+gAarlo2sEHOaIrvJKbcbzYyPPV3la3mXJ5pUWuo2tXXkB2EMNfg7gmGRQ2MLwKvaO/Ytoe29ta42nKtBQpRwZpBfe2DzFDpGriWxYQuVOe7Q8EjA/3ULKEFVRHeCKFeh6GoFCpKfvV1x6MnEsvTjT43ay7ffxe0NwoYcHC1b4L1wIqhtXOo1N9nHrqv5vvd5+fEK4UbeOLXE6Qle6TSWZWvkBrXuZuG4QY7S15FkF2Wk3+QCVNJIWc8pUpXzyQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gr7r44mLFz2ygG;
+	Thu, 02 Jul 2026 04:31:00 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782930660;
+	cv=none; b=Y5BZg3Oyq0aZ855FJRYnYdI4xend4zjkZKQ8vU6ruXeeKtEudXjzv7IJnvt8DiN3ohKUYNrgY4PqSlON7aH3Pgc+oQPwRx8kuoEcQ6EelHg2ovJNX468ytzSFg0Hhzi/mwhg78sQz+dTeGTFuVdTm7WhNVfu+N5hdPFsIXeNYUmsWnrwymf7HgwRLYmDZRXxQiTjKpHDAtocqkPbdMvVIxzXrfhrESm8vQC/31V1M0J4Z3q7XN3ipJDzOdSaY6C3zZpz+ph+PRimlbEnIoEzAoo13c83NGSNv06dkDNyDEQ+MQItsw4eLP9xumFXeQ3WKvdq7UvsVfA0nCjuBIpHnA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1782930508; c=relaxed/relaxed;
-	bh=X1klvz84/JPFyQwnyXVxQ/9oD2qFvCehPllIpI6WRXI=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=ZLe6gql5Gk8bEn1dLpQgA38qru/hrQbfh2OyfmXzOV9HSb2KlYo2Wjn2W0FEzkf0Jw0zPKXJRJEMGkNj/sUs4eN2lEFFS/3wgSf52XDou2AQdhEE0RBWfmIBlwYLAaS49ihz87FSHAkq3JFoJ50haI4ys0x5E9yt7fCGmJN9h/V1ZAcsAB77ioQqUjR1Mr/a8F5ycpggYxirGBrBvGIYIP71C76lK0oXeCsIZLnGz6h3CBmWVIwKWvziEBZdzLrjB8JPhD9Ppm79rxuKBUzXI+yGlW6OdiDJCVP9YTSVw4UZJaS9cELykcg7bI3F9N7VA3cNY+BOkzhW6v0FEgF2kg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=JVE5sDsd; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=nikhilks@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	t=1782930660; c=relaxed/relaxed;
+	bh=8Ri0qkLy2UgR6ESWzyJ+UkDfa9RR52HfnvZ0KvP1KSw=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=B6FUwnesKo4Xa68G5cpqO/X1xr9wlvPu+IdRc1r1OsmPpqsEWgYrTfad+QIdWZZQTIg34zfrxsGOGlJZeV+1TY/AhEOgJMr7BU6tv6n4dPfnKlmY36M4W6ez+xb7VkuLkgo5OkWx9d2mz6BzOnuCuFyT1BzG41y6CMXGAXocRVclzupxJAj0efsz2tuZUKZp1+H4n0VOmohUhlRf6gO73GDbqDwUXA7ku0fVbCGi1Uqc5xrONdUdvyXk4wonx1DByFmp2UvG1fWtxiaylgPA7MWMJgDfV19TpUFpN9Ox6F4GHvCCYwWriQ7SE4OsamAuW2frld+NcdQpw/+sSWXNEg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=pMsJfioO; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=vishalc@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=JVE5sDsd;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=pMsJfioO;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=nikhilks@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=vishalc@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gr7n72m8cz2yS0
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 Jul 2026 04:28:26 +1000 (AEST)
-Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 661GnEDl1296133;
-	Wed, 1 Jul 2026 18:28:14 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gr7r35RNhz2yfs
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 Jul 2026 04:30:59 +1000 (AEST)
+Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 661GmsPU1456114;
+	Wed, 1 Jul 2026 18:30:51 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:message-id:mime-version
-	:subject:to; s=pp1; bh=X1klvz84/JPFyQwnyXVxQ/9oD2qFvCehPllIpI6WR
-	XI=; b=JVE5sDsdyqPa1m97LdLPzkbIG4Jh/gnN91X7GcUeIgdmvq+azJowa76/m
-	GZHIWgBqbRXeOUJrjdu06X+c0Zwek7f4KLMD5lu1JEX6DVGkY/cr6F0Sxg6NgbYx
-	kcGKj8egXZ4KG9kG5yNIpUMv0U3JA0j/g+stYy4HEojCqhBeWPkLOKUxjPiDYaM0
-	yK+WeRqSHCdOwUNlXcGoHT20QdF0tfdtIWKG5Ni7AM6+Xb5KaLmb/OUkZ/+eUYdk
-	v4On+V2M2KlvYCD938nh+FkqUnquhRRuIJYJLyqc490ij++212kZtN3JIF20dkE6
-	GQRfzAMa7uSRvbf7XRImtGG19leVA==
-Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4f26mjwrdw-1
+	:content-transfer-encoding:content-type:date:from:message-id
+	:mime-version:subject:to; s=pp1; bh=8Ri0qkLy2UgR6ESWzyJ+UkDfa9RR
+	52HfnvZ0KvP1KSw=; b=pMsJfioO25DD5xxVqc38DNBr5hFHatudXHyce+CHuqpN
+	rTxF+SDFeeKp07Mu6AhgPWBrpntVz6oGTxfsSG754HLEmiSZ535yunnrjNyGR+28
+	IjR0r+KaD662Xm9z8cBjjuFCB1Ton//c8plCQMwZtKuSAqJWJp08kneL8EmryiMs
+	I4LrCZLRBcNO9DonvQfe+ADFDGemAIuZTY13U8EvgByPSqmYVgbWuASJOUgvJdPr
+	jhETKGemg8z7ojoNQwuEYnyvF75kDHGF9XJxpwHWJAHXFjMGKJKUl7ImB/IQ1xUB
+	KJE1djAG93P3gQhbv1PceD98YF4sbhV66wmE8eb+lg==
+Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4f26pe64tm-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 01 Jul 2026 18:28:14 +0000 (GMT)
-Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma11.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 661IJjZT010272;
-	Wed, 1 Jul 2026 18:28:13 GMT
-Received: from smtprelay01.fra02v.mail.ibm.com ([9.218.2.227])
-	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4f2uhygbm5-1
+	Wed, 01 Jul 2026 18:30:50 +0000 (GMT)
+Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma13.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 661I4hpE018051;
+	Wed, 1 Jul 2026 18:30:49 GMT
+Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
+	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4f2u2ggff4-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 01 Jul 2026 18:28:13 +0000 (GMT)
-Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
-	by smtprelay01.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 661IS9rv59572546
+	Wed, 01 Jul 2026 18:30:49 +0000 (GMT)
+Received: from smtpav07.fra02v.mail.ibm.com (smtpav07.fra02v.mail.ibm.com [10.20.54.106])
+	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 661IUjtF48562458
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 1 Jul 2026 18:28:09 GMT
-Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 96B3020043;
-	Wed,  1 Jul 2026 18:28:09 +0000 (GMT)
-Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 33AD820040;
-	Wed,  1 Jul 2026 18:28:05 +0000 (GMT)
-Received: from li-609d1fcc-36b3-11b2-a85c-cc82146838dd.ibm.com.com (unknown [9.67.145.84])
-	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Wed,  1 Jul 2026 18:28:04 +0000 (GMT)
-From: Nikhil Kumar Singh <nikhilks@linux.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: linux-kernel@vger.kernel.org, maddy@linux.ibm.com, mpe@ellerman.id.au,
-        npiggin@gmail.com, chleroy@kernel.org, adityag@linux.ibm.com,
-        mahesh@linux.ibm.com, Nikhil Kumar Singh <nikhilks@linux.ibm.com>
-Subject: [PATCH] powerpc/64s: Clarify copy_and_flush() cache sync loop comment
-Date: Wed,  1 Jul 2026 23:57:56 +0530
-Message-ID: <20260701182756.273019-1-nikhilks@linux.ibm.com>
+	Wed, 1 Jul 2026 18:30:46 GMT
+Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id DC0D220043;
+	Wed,  1 Jul 2026 18:30:45 +0000 (GMT)
+Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 65F2320040;
+	Wed,  1 Jul 2026 18:30:42 +0000 (GMT)
+Received: from vishalc-ibm.ibm.com (unknown [9.39.23.199])
+	by smtpav07.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Wed,  1 Jul 2026 18:30:42 +0000 (GMT)
+From: Vishal Chourasia <vishalc@linux.ibm.com>
+To: maddy@linux.ibm.com
+Cc: npiggin@gmail.com, mpe@ellerman.id.au, chleroy@kernel.org,
+        sshegde@linux.ibm.com, amachhiw@linux.ibm.com, vaibhav@linux.ibm.com,
+        harshpb@linux.ibm.com, gautam@linux.ibm.com,
+        linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, Vishal Chourasia <vishalc@linux.ibm.com>
+Subject: [PATCH v2 0/1] KVM: powerpc: Use generic xfer to guest work function
+Date: Thu,  2 Jul 2026 00:00:26 +0530
+Message-ID: <20260701183030.3610451-1-vishalc@linux.ibm.com>
 X-Mailer: git-send-email 2.54.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -86,79 +88,101 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
 X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzAxMDE5NiBTYWx0ZWRfX+XtCNfIyo3xx
- l+MsbHy5P+9LjDeP8tR8dtoNHYKkyTb8rLfzr7u7+kEJpxisC1MyFhKQ6+1FvKIliulk7Ax3ZCM
- 9tBZzEbJ3UMGQdiA8nbchqs1tH+nC/lsQ5w3f8pFy18ZnGo0uLXd2uZcZbccR1GSx241vKsCILC
- w2sMk+PooINEOqvYyARG+t5Ai3z3j5K1L/pp4IKp5oSy/lA6154toCoPbKzEQq87hWSFlzquXQU
- zbMqMkAi96oyfC9LwzEtcI6SMXLQMUXtY5plYDnD5TZ2LsY8ePNK06RXTteR6XYSMjxguFwk6cH
- Qm7wJkwSgZFC+rW9u3L4BGnvl4zgOSnyukFwcDXrhhpykpeQxJkuvs20XEEAlMSsljGUGpGdPdt
- ZkbJLRsUInsPRBZYSi1NMwn2RllFlSPkfegO0WlFo+YAnhcSdqCgXuJZkk68PmQt3AE8eim5MAf
- yL6NhYTiJGCts/FlM8w==
-X-Proofpoint-GUID: K0vve0lmVJ3AQP3hYkme8l_AqZX_fK6J
-X-Authority-Analysis: v=2.4 cv=Z8bc2nRA c=1 sm=1 tr=0 ts=6a455c3e cx=c_pps
- a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
- a=RAioF0-LDSMA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=RzCfie-kr_QcCd8fBx8p:22 a=VnNF1IyMAAAA:8 a=EMOAY_goFwyYI0LnCuEA:9
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNzAxMDE5NiBTYWx0ZWRfX9K9z8Aj2WDpe
- bRYk4g7qiWTW8t/u1QkP1yfxYeR6ptDNhNJW1CTJbMrzhSnhp3S3sfmgxPdsghNib2TCrBiCVON
- NsM30pNXkHkftVLkOK0E2IguRCnvXVw=
-X-Proofpoint-ORIG-GUID: lv69R5Hprg5FOucFlqhATlf1mwugKa84
+X-Proofpoint-GUID: uDQMCFHyWAx2gw7K9hK4STPvoHOFRcrk
+X-Proofpoint-Spam-Info: AW1haW4tMjYwNzAxMDE5NiBTYWx0ZWRfX+A/lR9BmxxHE
+ CcpCyTCsLpHjq/Xb/2WfqgnBIQv/aaXDw1Lok859hdwn5rkJHLSKskYSzODfMl9Qr6t+5DIsO36
+ Qm4V9ZDYOlNNYfKvZ6sWTs1NLBH5u0I=
+X-Authority-Analysis: v=2.4 cv=edsNubEH c=1 sm=1 tr=0 ts=6a455cda cx=c_pps
+ a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
+ a=IkcTkHD0fZMA:10 a=RAioF0-LDSMA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=iQ6ETzBq9ecOQQE5vZCe:22 a=VwQbUJbxAAAA:8
+ a=VnNF1IyMAAAA:8 a=dzg3fVpTFLiGrQa8HyEA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzAxMDE5NiBTYWx0ZWRfX9rHmRngBfNJk
+ dPwtaVZ+n9QK84R1gRqbjMq4Ju1rK58ub2/CgSLJVHoeN2tRbr3hvq/4OK7HNi6Ul631b8Z4se9
+ u/Pedw/BazEa0IPAHqsLPa1rFVkkp2L3eYNQMZWWtJuFew05DPymumdeJ5bXbPcxJyz4HfEWHnF
+ eek/m79J27uQgfeOdXPYRPpcKfLHWjPJXBClLhc3pmTJXWHIchrdZxIdIrE16euNWALSP5RcBJw
+ SBdEdK5hRuZUoS66YtGdbJl3giCeYzUF3AxUnvRh61arGebIQGoCgKCHNPqhbXvAPoA9yZiCsB+
+ 6YvQ8mt6ixLp3QIbZ3j5nxb0YBZwE3tYHv8Jdg12/5JDFRmU0NHULiKt3oQF5bP4KGW48tH+Asa
+ BFe8E5xPEBtytXa+QaELsQqP+3CdHcFELAeVXgQ4SB1ruuN87W3MC0oQ96y/KJG/uP3YskK2sgK
+ O6D8hThTDmmD1bWOMQA==
+X-Proofpoint-ORIG-GUID: xBD_hczw7YhhrLTLjYhRiBprNdDIns71
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
  definitions=2026-07-01_04,2026-06-26_01,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1011 adultscore=0 spamscore=0 priorityscore=1501 impostorscore=0
- malwarescore=0 phishscore=0 bulkscore=0 lowpriorityscore=0 suspectscore=0
+ priorityscore=1501 malwarescore=0 adultscore=0 impostorscore=0 bulkscore=0
+ spamscore=0 suspectscore=0 clxscore=1015 lowpriorityscore=0 phishscore=0
  classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
  reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607010196
 
-The value loaded into r0 in copy_and_flush() represents the number of
-8-byte words processed between cache synchronization operations.
+This series fixes a KVM scheduling bug on Book3S HV where a guest VM
+under a cpu.max bandwidth limit can run arbitrarily past its quota and
+then appear frozen for minutes afterwards. 
 
-The existing comment refers to cache line size, which can make it appear
-that the value is a cache line size in bytes rather than a loop count.
-Clarify the comment to explain that the loop processes 8 words (64 bytes)
-per cache synchronization iteration, and that increasing the value would
-skip cache maintenance for intermediate cache lines.
+== Problem ==
 
-This is a comment-only change with no functional impact.
+Since commit 2cd571245b43 ("sched/fair: Add related data structure for
+task based throttle"), merged in v6.18, CFS bandwidth throttling no
+longer dequeues a task directly. Instead it queues a task_work item via
+task_work_add(..., TWA_RESUME), sets TIF_NOTIFY_RESUME, and relies on
+that work running on the return path to actually dequeue the task.
 
-Signed-off-by: Nikhil Kumar Singh <nikhilks@linux.ibm.com>
----
- arch/powerpc/kernel/head_64.S | 16 ++++++++--------
- 1 file changed, 8 insertions(+), 8 deletions(-)
+The powerpc KVM run loops only test TIF_SIGPENDING and TIF_NEED_RESCHED
+before re-entering the guest; TIF_NOTIFY_RESUME is never checked. For a
+CPU-bound guest that generates few KVM exits back to userspace, the vCPU
+thread never returns to user mode, so the deferred throttle task_work
+never runs. The guest keeps running unchecked while its
+runtime_remaining goes increasingly negative, and once it finally does
+exit to userspace it is legitimately throttled for minutes while the
+accrued debt is repaid at the bandwidth-timer replenishment rate.
 
-diff --git a/arch/powerpc/kernel/head_64.S b/arch/powerpc/kernel/head_64.S
-index 63432a33ec49..e21c2bce8f7e 100644
---- a/arch/powerpc/kernel/head_64.S
-+++ b/arch/powerpc/kernel/head_64.S
-@@ -713,14 +713,14 @@ p_end: .8byte _end - copy_to_here
- _GLOBAL(copy_and_flush)
- 	addi	r5,r5,-8
- 	addi	r6,r6,-8
--4:	li	r0,8			/* Use the smallest common	*/
--					/* denominator cache line	*/
--					/* size.  This results in	*/
--					/* extra cache line flushes	*/
--					/* but operation is correct.	*/
--					/* Can't get cache line size	*/
--					/* from NACA as it is being	*/
--					/* moved too.			*/
-+4:	li	r0,8			/* r0 is the number of 8-byte words       */
-+					/* to copy per cache sync iteration.      */
-+					/* 8 words * 8 bytes = 64 bytes. 64B is   */
-+					/* the current default cache line size.   */
-+					/* This is a loop count, not a byte       */
-+					/* count. Increasing it will skip         */
-+					/* dcbst/icbi for lines in between and    */
-+					/* leave stale instructions in icache.    */
- 
- 	mtctr	r0			/* put # words/line in ctr	*/
- 3:	addi	r6,r6,8			/* copy a cache line		*/
+The generic xfer-to-guest-mode infrastructure (commit 935ace2fb5cc,
+"entry: Provide infrastructure for work before transitioning to guest
+mode") exists precisely to handle this kind of work before each guest
+entry. A full trace-backed root-cause analysis was posted with v1 [2].
+
+== Fix ==
+
+Opt powerpc KVM into VIRT_XFER_TO_GUEST_WORK and use the generic
+xfer_to_guest_mode helpers to check for and handle pending guest-mode
+work (reschedule, signals, and TIF_NOTIFY_RESUME task_work such as the
+deferred CFS throttle) on every guest re-entry:
+
+- Book3S HV: both run loops — kvmhv_run_single_vcpu() for POWER9+ and
+  kvmppc_run_vcpu() for pre-POWER9.
+- Book3S PR and BookE: the common kvmppc_prepare_to_enter(), which
+  likewise only checked need_resched()/signal_pending().
+
+== Changes from v1 ==
+
+- Extend the fix beyond Book3S HV to the shared powerpc KVM entry path:
+  also convert the common kvmppc_prepare_to_enter() used by Book3S PR
+  and BookE. (Shrikanth Shegde)
+- Move "select VIRT_XFER_TO_GUEST_WORK" from KVM_BOOK3S_64_HV up to the
+  common "config KVM" so every powerpc KVM variant gets the
+  infrastructure.
+- Drop the redundant signal_pending() recheck and its sigpend label in
+  kvmhv_run_single_vcpu(); xfer_to_guest_mode_work_pending() is a
+  superset of it.
+- Preserve the E500 CONFIG_KVM_EXIT_TIMING histogram on the signal path
+  via an explicit kvmppc_set_exit_type(SIGNAL_EXITS).
+
+[1] https://lore.kernel.org/all/20250421102837.78515-2-sshegde@linux.ibm.com/
+[2] https://lore.kernel.org/all/20260626105449.2897924-2-vishalc@linux.ibm.com/
+
+Vishal Chourasia (1):
+  KVM: powerpc: Use generic xfer to guest work function
+
+ arch/powerpc/kvm/Kconfig     |  1 +
+ arch/powerpc/kvm/book3s_hv.c | 64 ++++++++++++++++++++++++++++--------
+ arch/powerpc/kvm/powerpc.c   | 34 ++++++++++++++-----
+ 3 files changed, 77 insertions(+), 22 deletions(-)
+
 -- 
-2.43.5
+2.54.0
 
 
