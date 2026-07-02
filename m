@@ -1,134 +1,66 @@
-Return-Path: <linuxppc-dev+bounces-23401-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23402-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D2C0EC43458
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Jul 2026 13:50:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6D898C43458
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Jul 2026 14:16:15 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4grdZD1WfMz2yb9;
-	Thu, 02 Jul 2026 23:50:44 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:41d0:1004:224b::ba"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783000244;
-	cv=none; b=Sd+N5sEU0PLSTU3tBXzcnhqYXRnwG6WHXBoGWh6DgpFGTKAFwQA4BD5hWnbATJVZAmKCF/H8z3heFhPXjpdRRt+jLN6v28KGIAkp1Ri5H2glQBw6OAunNry47hwKa+7pGXyyhYoIqEspxLsWZ1lEvT15DtNLR/mldgao3Uj3ckeGelpH0CRqr2hM62EhhoJlKQ6WN9m01GV6RmzqaLCePT0P6jiuh/XURowSzbOjE0It0SCp10aPZOt2V1a2DGsHbfptk3aKYHPwWFhb/eXe45XNedAQ6n40PhFyKjup0yspg78nvhttArH6ksVPEOOSdl0Ft/I7DuJdf+G1RrJRyw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4grf7d5MGtz2ydq;
+	Fri, 03 Jul 2026 00:16:13 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783001773;
+	cv=none; b=as8/TK3GWn/QMO1SKV81hOj2X0h1PY8dWCG95KD8hkcIX/Pliyno92olc9CRbh98XiO1BBjWqZoUXu5nNB7RAmKqF8XN1f4qsCUTwdcK15ARBB8AYR2yXbDSik6qpO2///P93a0gMFjqaGfX2iZJR5Hm9PO8O+lawplIxXvKCVZVxsOVs4j+4Ikh5PznvWtsweBbDEJunZcRvv4slqbP74Zou1oHFAElsjRMf49JKqUKWZwj4CJ2xEozKaa2xxKwxG+SL/htZ5gJYryBzUQ7pJC5+j2v83Sjy3s0Zxq3Vd/NWwkaGZYhWJKR/l+94nTedP34Vn4eKRJ1ZPbstXNSXw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1783000244; c=relaxed/relaxed;
-	bh=n7JedrMMFsZ3SA9xp8Er9WQ7Q5NWmS7gMbpQ8O+PQSg=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=Kce853fve8o4EAh7a9d3+muj8PhLlXkcXQzBWtwaU4K+Zu3JxDJecXUxd2tN05AGTWk2FiTFkhKCwO/2PE24stj8kRccWrFQ6mYIn4+wi8rWeSuzwpaORoVnUlAnLEbTZo/rZPKhttVEjBee3n8T58kzoeTtFF4eC3TQB8u13mItSZpraNSgJDnnJFopvdqzhWL1gh+M3bm9Khk7fbSfIYoFh0DqBf79B7rY8ngMsWOogsTCXKOSCFeCPLey0xL+XQvOV2sTso4QjAynNs1ujUzGu0h6/Vy461MbkA8AdUqPBqMftf61oD+09jqikN1Na/9i/RriakwFofTLEVYg6w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=SBk2LGdo; dkim-atps=neutral; spf=pass (client-ip=2001:41d0:1004:224b::ba; helo=out-186.mta0.migadu.com; envelope-from=lance.yang@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
+	t=1783001773; c=relaxed/relaxed;
+	bh=JKHzfupYnZe117wEy67kOH7iFlVmNX6mRlC7VLpP8Xc=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=N2Yk6YPcGYx6mG63UbcGRWLDt1vt+M85A0d4lrpa+1vDy3GfWdMxNFNczACRytMZeMNLzX4/UD1GzqE5Q4XOrkxkuw+KFj+eOR9ehVuHbYLZGOnGqvKdQ7E2ic0YvfHWbq1fk2BBkOtsYq+KSwh8FcDooBhfWaR+sUOxTmjAznpMMRXFdtGD9PrEbsLJcikinF7a/3Z/wst2nItoWjYjecRoSud8dyQ5vn8aI94D5Qy5Ez8CMKiii0F4rpZiT6UM9aJdfALrMY9Vd91lGd8vZ1ViUY4QmICcCDYIOQPViXNARXwzy+wYeo08ALdeMyu2NqpIYMeGr5y+a6LY5YD4jw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=S1TNfo1W; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=johan@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=SBk2LGdo;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=S1TNfo1W;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=2001:41d0:1004:224b::ba; helo=out-186.mta0.migadu.com; envelope-from=lance.yang@linux.dev; receiver=lists.ozlabs.org)
-Received: from out-186.mta0.migadu.com (out-186.mta0.migadu.com [IPv6:2001:41d0:1004:224b::ba])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=johan@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4grdZ926Nhz2yYY
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 Jul 2026 23:50:39 +1000 (AEST)
-X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
-	t=1783000216;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=n7JedrMMFsZ3SA9xp8Er9WQ7Q5NWmS7gMbpQ8O+PQSg=;
-	b=SBk2LGdo8O2Fh816oQbqXrmhKAQAYAxHqV6r2z//9k66SRzp2XfssdY3VkdvqTHoJEhhne
-	KBLV5b7WimMmbUd67b8UpLhwJTAsCl8UHKUpcr3XwD//YOwU43JswyAPjZ9yhLgdwnTOAg
-	TszqN8wOwdlDLsXMvuRT5nF6gC9LQmA=
-From: Lance Yang <lance.yang@linux.dev>
-To: ljs@kernel.org
-Cc: akpm@linux-foundation.org,
-	tsbogend@alpha.franken.de,
-	maddy@linux.ibm.com,
-	mpe@ellerman.id.au,
-	maarten.lankhorst@linux.intel.com,
-	mripard@kernel.org,
-	tzimmermann@suse.de,
-	airlied@gmail.com,
-	simona@ffwll.ch,
-	l.stach@pengutronix.de,
-	inki.dae@samsung.com,
-	sw0312.kim@samsung.com,
-	kyungmin.park@samsung.com,
-	krzk@kernel.org,
-	peter.griffin@linaro.org,
-	jani.nikula@linux.intel.com,
-	joonas.lahtinen@linux.intel.com,
-	rodrigo.vivi@intel.com,
-	tursulin@ursulin.net,
-	robin.clark@oss.qualcomm.com,
-	lumag@kernel.org,
-	lyude@redhat.com,
-	dakr@kernel.org,
-	tomi.valkeinen@ideasonboard.com,
-	hjc@rock-chips.com,
-	heiko@sntech.de,
-	andy.yan@rock-chips.com,
-	thierry.reding@kernel.org,
-	mperttunen@nvidia.com,
-	jonathanh@nvidia.com,
-	kraxel@redhat.com,
-	dmitry.osipenko@collabora.com,
-	zack.rusin@broadcom.com,
-	matthew.brost@intel.com,
-	thomas.hellstrom@linux.intel.com,
-	oleksandr_andrushchenko@epam.com,
-	deller@gmx.de,
-	bcrl@kvack.org,
-	viro@zeniv.linux.org.uk,
-	brauner@kernel.org,
-	muchun.song@linux.dev,
-	osalvador@suse.de,
-	david@kernel.org,
-	ziy@nvidia.com,
-	baolin.wang@linux.alibaba.com,
-	liam@infradead.org,
-	npache@redhat.com,
-	ryan.roberts@arm.com,
-	dev.jain@arm.com,
-	baohua@kernel.org,
-	lance.yang@linux.dev,
-	hughd@google.com,
-	vbabka@kernel.org,
-	rppt@kernel.org,
-	surenb@google.com,
-	mhocko@suse.com,
-	jannh@google.com,
-	pfalcato@suse.de,
-	kees@kernel.org,
-	perex@perex.cz,
-	tiwai@suse.com,
-	linux-mips@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4grf7b56hxz2yYY
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 Jul 2026 00:16:11 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with ESMTP id 787194346A;
+	Thu,  2 Jul 2026 14:16:09 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 10EE51F00A3D;
+	Thu,  2 Jul 2026 14:16:09 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1783001769;
+	bh=JKHzfupYnZe117wEy67kOH7iFlVmNX6mRlC7VLpP8Xc=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References;
+	b=S1TNfo1WQE/Qd9eHxN/TjcJRH9mJHiBe/rvoijiO7U3vNXB+UBScMk+OdG3H5QVUL
+	 JF8M/425dhgIMxNmq45TuOt+71Iq1vGUcWaPiWkzZHcNQuizRWovnb6zSY2I1BoY63
+	 MGgI0s+QIKPNIhaqS/jAfi4o7L1SeUBKMy10xmUp730ffRW5/ajbZoxD0qmGQGt5yO
+	 y49CwBJojM+8R86gFzkY/uRx0RYpaDWynWdDlhXs89vByl1zJHbd0W1GHglTWPAycs
+	 Q5M/Ama9gIYEIhENl8U+BvvWe2DvRp09FrKWRYS4pwN6SpwBdsAPEQ3xAxF7LqOv4G
+	 IPxRO35jccUCg==
+Received: from johan by xi.lan with local (Exim 4.99.3)
+	(envelope-from <johan@kernel.org>)
+	id 1wfID0-00000000Nee-2qlg;
+	Thu, 02 Jul 2026 16:16:06 +0200
+From: Johan Hovold <johan@kernel.org>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: linux-usb@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org,
-	dri-devel@lists.freedesktop.org,
-	etnaviv@lists.freedesktop.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-samsung-soc@vger.kernel.org,
-	intel-gfx@lists.freedesktop.org,
-	linux-arm-msm@vger.kernel.org,
-	freedreno@lists.freedesktop.org,
-	nouveau@lists.freedesktop.org,
-	linux-rockchip@lists.infradead.org,
-	linux-tegra@vger.kernel.org,
-	virtualization@lists.linux.dev,
-	intel-xe@lists.freedesktop.org,
-	xen-devel@lists.xenproject.org,
-	linux-fbdev@vger.kernel.org,
-	linux-aio@kvack.org,
-	linux-fsdevel@vger.kernel.org,
-	linux-mm@kvack.org,
-	linux-sound@vger.kernel.org
-Subject: Re: [PATCH 13/13] mm/mremap: convert mremap code to use vma_flags_t
-Date: Thu,  2 Jul 2026 21:49:47 +0800
-Message-Id: <20260702134947.25189-1-lance.yang@linux.dev>
-In-Reply-To: <380f761d35a3faa4370f8b3f92e3d4af3d4c7110.1782760670.git.ljs@kernel.org>
-References: <380f761d35a3faa4370f8b3f92e3d4af3d4c7110.1782760670.git.ljs@kernel.org>
+	linux-kernel@vger.kernel.org,
+	Johan Hovold <johan@kernel.org>,
+	=?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@baylibre.com>
+Subject: [PATCH 3/4] USB: gadget: fsl-udc: fix dev_printk() device
+Date: Thu,  2 Jul 2026 16:15:35 +0200
+Message-ID: <20260702141536.90887-4-johan@kernel.org>
+X-Mailer: git-send-email 2.53.0
+In-Reply-To: <20260702141536.90887-1-johan@kernel.org>
+References: <20260702141536.90887-1-johan@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -144,176 +76,416 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-X-Migadu-Flow: FLOW_OUT
 
+A change replacing custom printk() macros with dev_printk() incorrectly
+used the gadget struct device instead of the controller struct device
+(including for messages printed before the gadget device name has been
+initialised).
 
-On Mon, Jun 29, 2026 at 08:25:36PM +0100, Lorenzo Stoakes wrote:
->Replace use of the legacy vm_flags_t flags with vma_flags_t values
->throughout the mremap logic.
->
->Additionally update comments to reflect the changes to be consistent.
->
->No functional change intended.
->
->Signed-off-by: Lorenzo Stoakes <ljs@kernel.org>
->---
+Switch to using the controller platform device with dev_printk() so that
+the controller device and driver names are included in log messages as
+expected.
 
-The vm_flags_set() cases below spell out vma_start_write(), but the
-vm_flags_clear() cases don't?
+Fixes: 6025f20f16c2 ("usb: gadget: fsl-udc: Replace custom log wrappers by dev_{err,warn,dbg,vdbg}")
+Cc: Uwe Kleine-König <u.kleine-koenig@baylibre.com>
+Signed-off-by: Johan Hovold <johan@kernel.org>
+---
+ drivers/usb/gadget/udc/fsl_udc_core.c | 92 ++++++++++++---------------
+ drivers/usb/gadget/udc/fsl_usb2_udc.h |  1 +
+ 2 files changed, 43 insertions(+), 50 deletions(-)
 
-Thanks, Lance
+diff --git a/drivers/usb/gadget/udc/fsl_udc_core.c b/drivers/usb/gadget/udc/fsl_udc_core.c
+index 8c5b2f42ff44..c4761933ec86 100644
+--- a/drivers/usb/gadget/udc/fsl_udc_core.c
++++ b/drivers/usb/gadget/udc/fsl_udc_core.c
+@@ -184,7 +184,7 @@ __acquires(ep->udc->lock)
+ 	usb_gadget_unmap_request(&ep->udc->gadget, &req->req, ep_is_in(ep));
+ 
+ 	if (status && (status != -ESHUTDOWN))
+-		dev_vdbg(&udc->gadget.dev, "complete %s req %p stat %d len %u/%u\n",
++		dev_vdbg(udc->dev, "complete %s req %p stat %d len %u/%u\n",
+ 			 ep->ep.name, &req->req, status,
+ 			 req->req.actual, req->req.length);
+ 
+@@ -286,7 +286,7 @@ static int dr_controller_setup(struct fsl_udc *udc)
+ 	timeout = jiffies + FSL_UDC_RESET_TIMEOUT;
+ 	while (fsl_readl(&dr_regs->usbcmd) & USB_CMD_CTRL_RESET) {
+ 		if (time_after(jiffies, timeout)) {
+-			dev_err(&udc->gadget.dev, "udc reset timeout!\n");
++			dev_err(udc->dev, "udc reset timeout!\n");
+ 			return -ETIMEDOUT;
+ 		}
+ 		cpu_relax();
+@@ -309,7 +309,7 @@ static int dr_controller_setup(struct fsl_udc *udc)
+ 	tmp &= USB_EP_LIST_ADDRESS_MASK;
+ 	fsl_writel(tmp, &dr_regs->endpointlistaddr);
+ 
+-	dev_vdbg(&udc->gadget.dev,
++	dev_vdbg(udc->dev,
+ 		 "vir[qh_base] is %p phy[qh_base] is 0x%8x reg is 0x%8x\n",
+ 		 udc->ep_qh, (int)tmp,
+ 		 fsl_readl(&dr_regs->endpointlistaddr));
+@@ -500,7 +500,7 @@ static void struct_ep_qh_setup(struct fsl_udc *udc, unsigned char ep_num,
+ 		tmp = max_pkt_len << EP_QUEUE_HEAD_MAX_PKT_LEN_POS;
+ 		break;
+ 	default:
+-		dev_vdbg(&udc->gadget.dev, "error ep type is %d\n", ep_type);
++		dev_vdbg(udc->dev, "error ep type is %d\n", ep_type);
+ 		return;
+ 	}
+ 	if (zlt)
+@@ -613,7 +613,7 @@ static int fsl_ep_enable(struct usb_ep *_ep,
+ 	spin_unlock_irqrestore(&udc->lock, flags);
+ 	retval = 0;
+ 
+-	dev_vdbg(&udc->gadget.dev, "enabled %s (ep%d%s) maxpacket %d\n",
++	dev_vdbg(udc->dev, "enabled %s (ep%d%s) maxpacket %d\n",
+ 		 ep->ep.name, ep->ep.desc->bEndpointAddress & 0x0f,
+ 		 (desc->bEndpointAddress & USB_DIR_IN) ? "in" : "out",
+ 		 max);
+@@ -634,13 +634,8 @@ static int fsl_ep_disable(struct usb_ep *_ep)
+ 	int ep_num;
+ 
+ 	ep = container_of(_ep, struct fsl_ep, ep);
+-	if (!_ep || !ep->ep.desc) {
+-		/*
+-		 * dev_vdbg(&udc->gadget.dev, "%s not enabled\n",
+-		 *	 _ep ? ep->ep.name : NULL);
+-		 */
++	if (!_ep || !ep->ep.desc)
+ 		return -EINVAL;
+-	}
+ 
+ 	/* disable ep on controller */
+ 	ep_num = ep_index(ep);
+@@ -664,7 +659,7 @@ static int fsl_ep_disable(struct usb_ep *_ep)
+ 	ep->stopped = 1;
+ 	spin_unlock_irqrestore(&udc->lock, flags);
+ 
+-	dev_vdbg(&udc->gadget.dev, "disabled %s OK\n", _ep->name);
++	dev_vdbg(udc->dev, "disabled %s OK\n", _ep->name);
+ 	return 0;
+ }
+ 
+@@ -724,9 +719,6 @@ static void fsl_queue_td(struct fsl_ep *ep, struct fsl_req *req)
+ {
+ 	u32 temp, bitmask, tmp_stat;
+ 
+-	/* dev_vdbg(&udc->gadget.dev, "QH addr Register 0x%8x\n", dr_regs->endpointlistaddr);
+-	dev_vdbg(&udc->gadget.dev, "ep_qh[%d] addr is 0x%8x\n", i, (u32)&(ep->udc->ep_qh[i])); */
+-
+ 	bitmask = ep_is_in(ep)
+ 		? (1 << (ep_index(ep) + 16))
+ 		: (1 << (ep_index(ep)));
+@@ -813,7 +805,7 @@ static struct ep_td_struct *fsl_build_dtd(struct fsl_req *req, unsigned *length,
+ 		*is_last = 0;
+ 
+ 	if ((*is_last) == 0)
+-		dev_vdbg(&udc_controller->gadget.dev, "multi-dtd request!\n");
++		dev_vdbg(udc_controller->dev, "multi-dtd request!\n");
+ 	/* Fill in the transfer size; set active bit */
+ 	swap_temp = ((*length << DTD_LENGTH_BIT_POS) | DTD_STATUS_ACTIVE);
+ 
+@@ -825,7 +817,7 @@ static struct ep_td_struct *fsl_build_dtd(struct fsl_req *req, unsigned *length,
+ 
+ 	mb();
+ 
+-	dev_vdbg(&udc_controller->gadget.dev, "length = %d address= 0x%x\n", *length, (int)*dma);
++	dev_vdbg(udc_controller->dev, "length = %d address= 0x%x\n", *length, (int)*dma);
+ 
+ 	return dtd;
+ }
+@@ -876,11 +868,11 @@ fsl_ep_queue(struct usb_ep *_ep, struct usb_request *_req, gfp_t gfp_flags)
+ 	/* catch various bogus parameters */
+ 	if (!_req || !req->req.complete || !req->req.buf
+ 			|| !list_empty(&req->queue)) {
+-		dev_vdbg(&udc->gadget.dev, "%s, bad params\n", __func__);
++		dev_vdbg(udc->dev, "%s, bad params\n", __func__);
+ 		return -EINVAL;
+ 	}
+ 	if (unlikely(!ep->ep.desc)) {
+-		dev_vdbg(&udc->gadget.dev, "%s, bad ep\n", __func__);
++		dev_vdbg(udc->dev, "%s, bad ep\n", __func__);
+ 		return -EINVAL;
+ 	}
+ 	if (usb_endpoint_xfer_isoc(ep->ep.desc)) {
+@@ -1040,7 +1032,7 @@ static int fsl_ep_set_halt(struct usb_ep *_ep, int value)
+ 		udc->ep0_dir = 0;
+ 	}
+ out:
+-	dev_vdbg(&udc->gadget.dev, "%s %s halt stat %d\n", ep->ep.name,
++	dev_vdbg(udc->dev, "%s %s halt stat %d\n", ep->ep.name,
+ 		 value ?  "set" : "clear", status);
+ 
+ 	return status;
+@@ -1109,7 +1101,7 @@ static void fsl_ep_fifo_flush(struct usb_ep *_ep)
+ 		/* Wait until flush complete */
+ 		while (fsl_readl(&dr_regs->endptflush)) {
+ 			if (time_after(jiffies, timeout)) {
+-				dev_err(&udc_controller->gadget.dev,
++				dev_err(udc_controller->dev,
+ 					"ep flush timeout\n");
+ 				return;
+ 			}
+@@ -1182,7 +1174,7 @@ static int fsl_vbus_session(struct usb_gadget *gadget, int is_active)
+ 
+ 	udc = container_of(gadget, struct fsl_udc, gadget);
+ 	spin_lock_irqsave(&udc->lock, flags);
+-	dev_vdbg(&gadget->dev, "VBUS %s\n", str_on_off(is_active));
++	dev_vdbg(udc->dev, "VBUS %s\n", str_on_off(is_active));
+ 	udc->vbus_active = (is_active != 0);
+ 	if (can_pullup(udc))
+ 		fsl_writel((fsl_readl(&dr_regs->usbcmd) | USB_CMD_RUN_STOP),
+@@ -1548,7 +1540,7 @@ static void ep0_req_complete(struct fsl_udc *udc, struct fsl_ep *ep0,
+ 		udc->ep0_state = WAIT_FOR_SETUP;
+ 		break;
+ 	case WAIT_FOR_SETUP:
+-		dev_err(&udc->gadget.dev, "Unexpected ep0 packets\n");
++		dev_err(udc->dev, "Unexpected ep0 packets\n");
+ 		break;
+ 	default:
+ 		ep0stall(udc);
+@@ -1617,7 +1609,7 @@ static int process_ep_req(struct fsl_udc *udc, int pipe,
+ 		errors = hc32_to_cpu(curr_td->size_ioc_sts);
+ 		if (errors & DTD_ERROR_MASK) {
+ 			if (errors & DTD_STATUS_HALTED) {
+-				dev_err(&udc->gadget.dev, "dTD error %08x QH=%d\n", errors, pipe);
++				dev_err(udc->dev, "dTD error %08x QH=%d\n", errors, pipe);
+ 				/* Clear the errors and Halt condition */
+ 				tmp = hc32_to_cpu(curr_qh->size_ioc_int_sts);
+ 				tmp &= ~errors;
+@@ -1628,26 +1620,26 @@ static int process_ep_req(struct fsl_udc *udc, int pipe,
+ 				break;
+ 			}
+ 			if (errors & DTD_STATUS_DATA_BUFF_ERR) {
+-				dev_vdbg(&udc->gadget.dev, "Transfer overflow\n");
++				dev_vdbg(udc->dev, "Transfer overflow\n");
+ 				status = -EPROTO;
+ 				break;
+ 			} else if (errors & DTD_STATUS_TRANSACTION_ERR) {
+-				dev_vdbg(&udc->gadget.dev, "ISO error\n");
++				dev_vdbg(udc->dev, "ISO error\n");
+ 				status = -EILSEQ;
+ 				break;
+ 			} else
+-				dev_err(&udc->gadget.dev,
++				dev_err(udc->dev,
+ 					"Unknown error has occurred (0x%x)!\n",
+ 					errors);
+ 
+ 		} else if (hc32_to_cpu(curr_td->size_ioc_sts)
+ 				& DTD_STATUS_ACTIVE) {
+-			dev_vdbg(&udc->gadget.dev, "Request not complete\n");
++			dev_vdbg(udc->dev, "Request not complete\n");
+ 			status = REQ_UNCOMPLETE;
+ 			return status;
+ 		} else if (remaining_length) {
+ 			if (direction) {
+-				dev_vdbg(&udc->gadget.dev,
++				dev_vdbg(udc->dev,
+ 					 "Transmit dTD remaining length not zero\n");
+ 				status = -EPROTO;
+ 				break;
+@@ -1655,8 +1647,7 @@ static int process_ep_req(struct fsl_udc *udc, int pipe,
+ 				break;
+ 			}
+ 		} else {
+-			dev_vdbg(&udc->gadget.dev,
+-				 "dTD transmitted successful\n");
++			dev_vdbg(udc->dev, "dTD transmitted successful\n");
+ 		}
+ 
+ 		if (j != curr_req->dtd_count - 1)
+@@ -1699,7 +1690,7 @@ static void dtd_complete_irq(struct fsl_udc *udc)
+ 
+ 		/* If the ep is configured */
+ 		if (!curr_ep->ep.name) {
+-			dev_warn(&udc->gadget.dev, "Invalid EP?\n");
++			dev_warn(udc->dev, "Invalid EP?\n");
+ 			continue;
+ 		}
+ 
+@@ -1708,7 +1699,7 @@ static void dtd_complete_irq(struct fsl_udc *udc)
+ 				queue) {
+ 			status = process_ep_req(udc, i, curr_req);
+ 
+-			dev_vdbg(&udc->gadget.dev,
++			dev_vdbg(udc->dev,
+ 				 "status of process_ep_req= %d, ep = %d\n",
+ 				 status, ep_num);
+ 			if (status == REQ_UNCOMPLETE)
+@@ -1829,7 +1820,7 @@ static void reset_irq(struct fsl_udc *udc)
+ 	while (fsl_readl(&dr_regs->endpointprime)) {
+ 		/* Wait until all endptprime bits cleared */
+ 		if (time_after(jiffies, timeout)) {
+-			dev_err(&udc->gadget.dev, "Timeout for reset\n");
++			dev_err(udc->dev, "Timeout for reset\n");
+ 			break;
+ 		}
+ 		cpu_relax();
+@@ -1839,7 +1830,7 @@ static void reset_irq(struct fsl_udc *udc)
+ 	fsl_writel(0xffffffff, &dr_regs->endptflush);
+ 
+ 	if (fsl_readl(&dr_regs->portsc1) & PORTSCX_PORT_RESET) {
+-		dev_vdbg(&udc->gadget.dev, "Bus reset\n");
++		dev_vdbg(udc->dev, "Bus reset\n");
+ 		/* Bus is reseting */
+ 		udc->bus_reset = 1;
+ 		/* Reset all the queues, include XD, dTD, EP queue
+@@ -1847,7 +1838,7 @@ static void reset_irq(struct fsl_udc *udc)
+ 		reset_queues(udc, true);
+ 		udc->usb_state = USB_STATE_DEFAULT;
+ 	} else {
+-		dev_vdbg(&udc->gadget.dev, "Controller reset\n");
++		dev_vdbg(udc->dev, "Controller reset\n");
+ 		/* initialize usb hw reg except for regs for EP, not
+ 		 * touch usbintr reg */
+ 		dr_controller_setup(udc);
+@@ -1881,7 +1872,7 @@ static irqreturn_t fsl_udc_irq(int irq, void *_udc)
+ 	/* Clear notification bits */
+ 	fsl_writel(irq_src, &dr_regs->usbsts);
+ 
+-	/* dev_vdbg(&udc->gadget.dev, "irq_src [0x%8x]", irq_src); */
++	/* dev_vdbg(udc->dev, "irq_src [0x%8x]", irq_src); */
+ 
+ 	/* Need to resume? */
+ 	if (udc->usb_state == USB_STATE_SUSPENDED)
+@@ -1890,7 +1881,7 @@ static irqreturn_t fsl_udc_irq(int irq, void *_udc)
+ 
+ 	/* USB Interrupt */
+ 	if (irq_src & USB_STS_INT) {
+-		dev_vdbg(&udc->gadget.dev, "Packet int\n");
++		dev_vdbg(udc->dev, "Packet int\n");
+ 		/* Setup package, we only support ep0 as control ep */
+ 		if (fsl_readl(&dr_regs->endptsetupstat) & EP_SETUP_STATUS_EP0) {
+ 			tripwire_handler(udc, 0,
+@@ -1919,7 +1910,7 @@ static irqreturn_t fsl_udc_irq(int irq, void *_udc)
+ 
+ 	/* Reset Received */
+ 	if (irq_src & USB_STS_RESET) {
+-		dev_vdbg(&udc->gadget.dev, "reset int\n");
++		dev_vdbg(udc->dev, "reset int\n");
+ 		reset_irq(udc);
+ 		status = IRQ_HANDLED;
+ 	}
+@@ -1931,7 +1922,7 @@ static irqreturn_t fsl_udc_irq(int irq, void *_udc)
+ 	}
+ 
+ 	if (irq_src & (USB_STS_ERR | USB_STS_SYS_ERR)) {
+-		dev_vdbg(&udc->gadget.dev, "Error IRQ %x\n", irq_src);
++		dev_vdbg(udc->dev, "Error IRQ %x\n", irq_src);
+ 	}
+ 
+ 	spin_unlock_irqrestore(&udc->lock, flags);
+@@ -1967,7 +1958,7 @@ static int fsl_udc_start(struct usb_gadget *g,
+ 					udc_controller->transceiver->otg,
+ 						    &udc_controller->gadget);
+ 			if (retval < 0) {
+-				dev_err(&udc_controller->gadget.dev, "can't bind to transceiver\n");
++				dev_err(udc_controller->dev, "can't bind to transceiver\n");
+ 				udc_controller->driver = NULL;
+ 				return retval;
+ 			}
+@@ -2252,7 +2243,7 @@ static int struct_udc_setup(struct fsl_udc *udc,
+ 
+ 	udc->eps = kzalloc_objs(struct fsl_ep, udc->max_ep);
+ 	if (!udc->eps) {
+-		dev_err(&udc->gadget.dev, "kmalloc udc endpoint status failed\n");
++		dev_err(udc->dev, "kmalloc udc endpoint status failed\n");
+ 		goto eps_alloc_failed;
+ 	}
+ 
+@@ -2267,7 +2258,7 @@ static int struct_udc_setup(struct fsl_udc *udc,
+ 	udc->ep_qh = dma_alloc_coherent(&pdev->dev, size,
+ 					&udc->ep_qh_dma, GFP_KERNEL);
+ 	if (!udc->ep_qh) {
+-		dev_err(&udc->gadget.dev, "malloc QHs for udc failed\n");
++		dev_err(udc->dev, "malloc QHs for udc failed\n");
+ 		goto ep_queue_alloc_failed;
+ 	}
+ 
+@@ -2278,14 +2269,14 @@ static int struct_udc_setup(struct fsl_udc *udc,
+ 	udc->status_req = container_of(fsl_alloc_request(NULL, GFP_KERNEL),
+ 			struct fsl_req, req);
+ 	if (!udc->status_req) {
+-		dev_err(&udc->gadget.dev, "kzalloc for udc status request failed\n");
++		dev_err(udc->dev, "kzalloc for udc status request failed\n");
+ 		goto udc_status_alloc_failed;
+ 	}
+ 
+ 	/* allocate a small amount of memory to get valid address */
+ 	udc->status_req->req.buf = kmalloc(8, GFP_KERNEL);
+ 	if (!udc->status_req->req.buf) {
+-		dev_err(&udc->gadget.dev, "kzalloc for udc request buffer failed\n");
++		dev_err(udc->dev, "kzalloc for udc request buffer failed\n");
+ 		goto udc_req_buf_alloc_failed;
+ 	}
+ 
+@@ -2373,6 +2364,7 @@ static int fsl_udc_probe(struct platform_device *pdev)
+ 	if (udc_controller == NULL)
+ 		return -ENOMEM;
+ 
++	udc_controller->dev = &pdev->dev;
+ 	pdata = dev_get_platdata(&pdev->dev);
+ 	udc_controller->pdata = pdata;
+ 	spin_lock_init(&udc_controller->lock);
+@@ -2382,7 +2374,7 @@ static int fsl_udc_probe(struct platform_device *pdev)
+ 	if (pdata->operating_mode == FSL_USB2_DR_OTG) {
+ 		udc_controller->transceiver = usb_get_phy(USB_PHY_TYPE_USB2);
+ 		if (IS_ERR_OR_NULL(udc_controller->transceiver)) {
+-			dev_err(&udc_controller->gadget.dev, "Can't find OTG driver!\n");
++			dev_err(&pdev->dev, "Can't find OTG driver!\n");
+ 			ret = -ENODEV;
+ 			goto err_kfree;
+ 		}
+@@ -2398,7 +2390,7 @@ static int fsl_udc_probe(struct platform_device *pdev)
+ 	if (pdata->operating_mode == FSL_USB2_DR_DEVICE) {
+ 		if (!request_mem_region(res->start, resource_size(res),
+ 					driver_name)) {
+-			dev_err(&udc_controller->gadget.dev, "request mem region for %s failed\n", pdev->name);
++			dev_err(&pdev->dev, "failed to request mem region\n");
+ 			ret = -EBUSY;
+ 			goto err_kfree;
+ 		}
+@@ -2429,7 +2421,7 @@ static int fsl_udc_probe(struct platform_device *pdev)
+ 	/* Read Device Controller Capability Parameters register */
+ 	dccparams = fsl_readl(&dr_regs->dccparams);
+ 	if (!(dccparams & DCCPARAMS_DC)) {
+-		dev_err(&udc_controller->gadget.dev, "This SOC doesn't support device role\n");
++		dev_err(&pdev->dev, "This SOC doesn't support device role\n");
+ 		ret = -ENODEV;
+ 		goto err_exit;
+ 	}
+@@ -2447,14 +2439,14 @@ static int fsl_udc_probe(struct platform_device *pdev)
+ 	ret = request_irq(udc_controller->irq, fsl_udc_irq, IRQF_SHARED,
+ 			driver_name, udc_controller);
+ 	if (ret != 0) {
+-		dev_err(&udc_controller->gadget.dev, "cannot request irq %d err %d\n",
++		dev_err(&pdev->dev, "cannot request irq %d err %d\n",
+ 				udc_controller->irq, ret);
+ 		goto err_exit;
+ 	}
+ 
+ 	/* Initialize the udc structure including QH member and other member */
+ 	if (struct_udc_setup(udc_controller, pdev)) {
+-		dev_err(&udc_controller->gadget.dev, "Can't initialize udc data structure\n");
++		dev_err(&pdev->dev, "Can't initialize udc data structure\n");
+ 		ret = -ENOMEM;
+ 		goto err_free_irq;
+ 	}
+diff --git a/drivers/usb/gadget/udc/fsl_usb2_udc.h b/drivers/usb/gadget/udc/fsl_usb2_udc.h
+index cc1756f3e89d..53922bc58ca0 100644
+--- a/drivers/usb/gadget/udc/fsl_usb2_udc.h
++++ b/drivers/usb/gadget/udc/fsl_usb2_udc.h
+@@ -470,6 +470,7 @@ struct fsl_ep {
+ #define EP_DIR_OUT	0
+ 
+ struct fsl_udc {
++	struct device *dev;
+ 	struct usb_gadget gadget;
+ 	struct usb_gadget_driver *driver;
+ 	struct fsl_usb2_platform_data *pdata;
+-- 
+2.53.0
 
-> mm/mremap.c | 38 ++++++++++++++++++++------------------
-> 1 file changed, 20 insertions(+), 18 deletions(-)
->
->diff --git a/mm/mremap.c b/mm/mremap.c
->index 079a0ba0c4a7..0ea43302b7ed 100644
->--- a/mm/mremap.c
->+++ b/mm/mremap.c
->@@ -68,7 +68,7 @@ struct vma_remap_struct {
-> 	bool populate_expand;		/* mlock()'d expanded, must populate. */
-> 	enum mremap_type remap_type;	/* expand, shrink, etc. */
-> 	bool mmap_locked;		/* Is mm currently write-locked? */
->-	unsigned long charged;		/* If VM_ACCOUNT, # pages to account. */
->+	unsigned long charged;		/* If VMA_ACCOUNT_BIT, # pgs to account */
-> 	bool vmi_needs_invalidate;	/* Is the VMA iterator invalidated? */
-> };
-> 
->@@ -954,7 +954,7 @@ static unsigned long vrm_set_new_addr(struct vma_remap_struct *vrm)
-> 
-> 	if (vrm->flags & MREMAP_FIXED)
-> 		map_flags |= MAP_FIXED;
->-	if (vma->vm_flags & VM_MAYSHARE)
->+	if (vma_test(vma, VMA_MAYSHARE_BIT))
-> 		map_flags |= MAP_SHARED;
-> 
-> 	res = get_unmapped_area(vma->vm_file, new_addr, vrm->new_len, pgoff,
->@@ -976,7 +976,7 @@ static bool vrm_calc_charge(struct vma_remap_struct *vrm)
-> {
-> 	unsigned long charged;
-> 
->-	if (!(vrm->vma->vm_flags & VM_ACCOUNT))
->+	if (!vma_test(vrm->vma, VMA_ACCOUNT_BIT))
-> 		return true;
-> 
-> 	/*
->@@ -1003,7 +1003,7 @@ static bool vrm_calc_charge(struct vma_remap_struct *vrm)
->  */
-> static void vrm_uncharge(struct vma_remap_struct *vrm)
-> {
->-	if (!(vrm->vma->vm_flags & VM_ACCOUNT))
->+	if (!vma_test(vrm->vma, VMA_ACCOUNT_BIT))
-> 		return;
-> 
-> 	vm_unacct_memory(vrm->charged);
->@@ -1023,7 +1023,7 @@ static void vrm_stat_account(struct vma_remap_struct *vrm,
-> 	struct vm_area_struct *vma = vrm->vma;
-> 
-> 	vm_stat_account(mm, vma->vm_flags, pages);
->-	if (vma->vm_flags & VM_LOCKED)
->+	if (vma_test(vma, VMA_LOCKED_BIT))
-> 		mm->locked_vm += pages;
-> }
-> 
->@@ -1167,7 +1167,7 @@ static void unmap_source_vma(struct vma_remap_struct *vrm)
-> 	 * arose, in which case we _do_ wish to unmap the _new_ VMA, which means
-> 	 * we actually _do_ want it be unaccounted.
-> 	 */
->-	bool accountable_move = (vma->vm_flags & VM_ACCOUNT) &&
->+	bool accountable_move = vma_test(vma, VMA_ACCOUNT_BIT) &&
-> 		!(vrm->flags & MREMAP_DONTUNMAP);
-> 
-> 	/*
->@@ -1186,7 +1186,7 @@ static void unmap_source_vma(struct vma_remap_struct *vrm)
-> 	 * portions of the original VMA that remain.
-> 	 */
-> 	if (accountable_move) {
->-		vm_flags_clear(vma, VM_ACCOUNT);
->+		vma_clear_flags(vma, VMA_ACCOUNT_BIT);
-> 		/* We are about to split vma, so store the start/end. */
-> 		vm_start = vma->vm_start;
-> 		vm_end = vma->vm_end;
->@@ -1211,8 +1211,8 @@ static void unmap_source_vma(struct vma_remap_struct *vrm)
-> 	 * |             |
-> 	 * |-------------|
-> 	 *
->-	 * Having cleared VM_ACCOUNT from the whole VMA, after we unmap above
->-	 * we'll end up with:
->+	 * Having cleared VMA_ACCOUNT_BIT from the whole VMA, after we unmap
->+	 * above we'll end up with:
-> 	 *
-> 	 *    addr  end
-> 	 *     |     |
->@@ -1232,13 +1232,15 @@ static void unmap_source_vma(struct vma_remap_struct *vrm)
-> 		if (vm_start < addr) {
-> 			struct vm_area_struct *prev = vma_prev(&vmi);
-> 
->-			vm_flags_set(prev, VM_ACCOUNT); /* Acquires VMA lock. */
->+			vma_start_write(prev);
->+			vma_set_flags(prev, VMA_ACCOUNT_BIT);
-> 		}
-> 
-> 		if (vm_end > end) {
-> 			struct vm_area_struct *next = vma_next(&vmi);
-> 
->-			vm_flags_set(next, VM_ACCOUNT); /* Acquires VMA lock. */
->+			vma_start_write(next);
->+			vma_set_flags(next, VMA_ACCOUNT_BIT);
-> 		}
-> 	}
-> }
->@@ -1321,8 +1323,8 @@ static void dontunmap_complete(struct vma_remap_struct *vrm,
-> 	unsigned long old_start = vrm->vma->vm_start;
-> 	unsigned long old_end = vrm->vma->vm_end;
-> 
->-	/* We always clear VM_LOCKED[ONFAULT] on the old VMA. */
->-	vm_flags_clear(vrm->vma, VM_LOCKED_MASK);
->+	/* We always clear VMA_LOCKED[ONFAULT]_BIT on the old VMA. */
->+	vma_clear_flags_mask(vrm->vma, VMA_LOCKED_MASK);
-> 
-> 	/*
-> 	 * anon_vma links of the old vma is no longer needed after its page
->@@ -1758,14 +1760,14 @@ static int check_prep_vma(struct vma_remap_struct *vrm)
-> 	 * based on the original.  There are no known use cases for this
-> 	 * behavior.  As a result, fail such attempts.
-> 	 */
->-	if (!old_len && !(vma->vm_flags & (VM_SHARED | VM_MAYSHARE))) {
->+	if (!old_len && !vma_test_any(vma, VMA_SHARED_BIT, VMA_MAYSHARE_BIT)) {
-> 		pr_warn_once("%s (%d): attempted to duplicate a private mapping with mremap.  This is not supported.\n",
-> 			     current->comm, current->pid);
-> 		return -EINVAL;
-> 	}
-> 
-> 	if ((vrm->flags & MREMAP_DONTUNMAP) &&
->-			(vma->vm_flags & (VM_DONTEXPAND | VM_PFNMAP)))
->+	    vma_test_any(vma, VMA_DONTEXPAND_BIT, VMA_PFNMAP_BIT))
-> 		return -EINVAL;
-> 
-> 	/*
->@@ -1795,7 +1797,7 @@ static int check_prep_vma(struct vma_remap_struct *vrm)
-> 		return 0;
-> 
-> 	/* We are expanding and the VMA is mlock()'d so we need to populate. */
->-	if (vma->vm_flags & VM_LOCKED)
->+	if (vma_test(vma, VMA_LOCKED_BIT))
-> 		vrm->populate_expand = true;
-> 
-> 	/* Need to be careful about a growing mapping */
->@@ -1803,10 +1805,10 @@ static int check_prep_vma(struct vma_remap_struct *vrm)
-> 	if (pgoff + (new_len >> PAGE_SHIFT) < pgoff)
-> 		return -EINVAL;
-> 
->-	if (vma->vm_flags & (VM_DONTEXPAND | VM_PFNMAP))
->+	if (vma_test_any(vma, VMA_DONTEXPAND_BIT, VMA_PFNMAP_BIT))
-> 		return -EFAULT;
-> 
->-	if (!mlock_future_ok(mm, vma->vm_flags & VM_LOCKED, vrm->delta))
->+	if (!mlock_future_ok(mm, vma_test(vma, VMA_LOCKED_BIT), vrm->delta))
-> 		return -EAGAIN;
-> 
-> 	if (!may_expand_vm(mm, &vma->flags, vrm->delta >> PAGE_SHIFT))
->-- 
->2.54.0
->
->
 
