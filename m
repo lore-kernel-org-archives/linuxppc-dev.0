@@ -1,86 +1,92 @@
-Return-Path: <linuxppc-dev+bounces-23358-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23359-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id F2F84C43327
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Jul 2026 05:28:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0BD28C43327
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Jul 2026 05:50:16 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4grQQm1lG7z2yXj;
-	Thu, 02 Jul 2026 15:28:32 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::52f"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782970112;
-	cv=none; b=V4h0np3aCX3V9oLxXVnitNxI2EYrJl5dXuHAu2cRwKzgU3Ufa544KaVQgjFONRCeNZZ9W6Xa8XX87VCWCRpUByXv1vty69bwp+jgN9fkdfUnkVg7lbSPekssgjWXx1GLK3nFmdl2hwVKNWIcJoNFeD+imOe1OqHJIRy86D/5pXNp4AKf5CNVDTtkBKDAJqYiu27JZE828MVp99e3T855wtYhCf2nEkfFwMi5Ng+9Z5Qwt/xUeDrLgM1lt80VPscHTsoNo0FrR9HS3NVRZQdEOYLAGjco55wyZA77QTQ5HKrGwc5tOp+bGJ++pHAlV+FVAFYOi7bZltwYQIJ73DAwrA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4grQvq3gBMz2yXj;
+	Thu, 02 Jul 2026 15:50:15 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1031"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782971415;
+	cv=none; b=aMWMDCFEGQp3TqbkGWQm27gGVCwCfM6ye7n16+ECwrtFOPYBU/Smcw/5anxlR8cBAY5h1WhmWT90tbL6BAxydjNe3+Lp4dkoqIS4QKJt/oAyFRjXc5TDRPH4cKTbtYy5HKxJyFGHGdhboLg61TNRAXYmVLr2e7zn3lkClGImm560zHnTfAg/UkNfhxxoRHWeiwU+pc3F7tiIiUUKvgKXwxl1GQBmKC/jP6wxgR7IwJiLukLsZZxvlcIJSXOcMbXLN1pmenKhW2qzIHSGUzQ09HdF5cmjQSlK/revm9i5poUMY5k+TytH+09MkjLd3BmZhxYS+rR77iUJh8BGfB7Ngw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1782970112; c=relaxed/relaxed;
-	bh=f0ElEvUWjV6Gy4pknAoeXdTvp5XxbDAUQK5u4tzfIXk=;
+	t=1782971415; c=relaxed/relaxed;
+	bh=Xn80YbNQRCy7u0axvID9/jx4xqkgYbtUOWMNeQphPIk=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=ZZBe77HNdW/s8g4YheeQysguhkON2SULayFS6HPsiZm9rKNSFIzj/osZBeRlTHRTa4UBVmeZ+HDpTweTaY1OcKg7M9HK7n+tM20qtw7GPpY7KGqoyUnDDTwNuPxgViGvpLXORvT8X6UbJdroeDjXashWQEAIsbQ4G+xaLAq2dGiUEfIss/NGh5DaiduA9Ax2Jsp4yPZREvIvv6dwC9mr/MY/tEdAfYgPEBds+BoTWRZxiRPGVaDU/PkietPkq43lEDzeMORqSIc4tPnKivX02njBNkiZVm7jgRTfh/VCV2jTLkOioeTDiF0kZn/spN2ZwTX5iq9pzrcjrPUXNffAGw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=BbqJdGgP; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::52f; helo=mail-pg1-x52f.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	 Content-Type:Content-Disposition:In-Reply-To; b=O7j0BpLqCPVNAOyyyQL0H2RoYhv4x2rox1hkiUMQCOY4b45VeZtBweg++2YViObespsh3M1aoj36wVwCzsk77habIQCFU/JSQPEslxPsi4604FXVkJLiTqlWIwHCO6HSrCMFPZiYfjia57BeQzg5cfqVlQtX9fPDkgjJsyK3CVUF0wk98Varzn+2RJvIa7UZtzUda5eJiCi4x5bjdds+DoYGZV+b5lNac/bAs0KxUdTToPiZkBPK/SsZrJQIYdyLTs/Yzh5iR3HBj52+MKMQ+nEariL2vlXqx1gS61UmYb0FPoH/jjdUf3itxTw/AYq79xz3PjsvkS7os+J2x6wYpQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=HOltenqC; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1031; helo=mail-pj1-x1031.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=BbqJdGgP;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=HOltenqC;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::52f; helo=mail-pg1-x52f.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pg1-x52f.google.com (mail-pg1-x52f.google.com [IPv6:2607:f8b0:4864:20::52f])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1031; helo=mail-pj1-x1031.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pj1-x1031.google.com (mail-pj1-x1031.google.com [IPv6:2607:f8b0:4864:20::1031])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4grQQk4Jmhz2yRM
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 Jul 2026 15:28:29 +1000 (AEST)
-Received: by mail-pg1-x52f.google.com with SMTP id 41be03b00d2f7-c9e607d81fcso459584a12.2
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 Jul 2026 22:28:29 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4grQvp2K47z2yRM
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 Jul 2026 15:50:13 +1000 (AEST)
+Received: by mail-pj1-x1031.google.com with SMTP id 98e67ed59e1d1-37fc01a7835so955268a91.3
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 Jul 2026 22:50:13 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1782970108; x=1783574908; darn=lists.ozlabs.org;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=f0ElEvUWjV6Gy4pknAoeXdTvp5XxbDAUQK5u4tzfIXk=;
-        b=BbqJdGgPA1UN5M3+Zd5pWAYuN/QMoTKj9yOebvWpPLNV/zHy4qbNpfYgwayOf6BNx1
-         5IEjX2lZNGYkbsKxPY2RrANIJpZ1fB4vz8YfwSJEN+ve47XuI9oPEXybrSPDTY4qY8GV
-         BkzudO13xF9ozvZFShn+4PdPGhwJrtqz5EKyt4PTZLzuM6j4nc+3UXjz3NAZjSQYfa33
-         oJbtC065B/sBUDtOuugG/TNVSHhk4ftZiW0Flv3fKsgBuO280ExDM/n/WlnUvmqorbWs
-         v9HcWBCJtZhqq/TE7WWl3trfFvD/VGBCkFYjopdvFvV00jsqjvLDZnfb5JFcfP//KFru
-         hBGw==
+        d=gmail.com; s=20251104; t=1782971410; x=1783576210; darn=lists.ozlabs.org;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:message-id:subject:cc:to:from:date:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=Xn80YbNQRCy7u0axvID9/jx4xqkgYbtUOWMNeQphPIk=;
+        b=HOltenqC/EC2kpnEpnvGAN3pRKxP83LgAeIy9API21dtW7sn3dWZgVeu/OgfS5ob8c
+         rpI7QniI4uKXD8bFqBqcznd7U2ZQm3FOdWzkzw81/rGDH4l0fQEEDfq7wj/ZtFcJNyUA
+         ZUINrlZILxNXWht3c1jBu7ed2OTMB9k//A1oLJ305ls4CAYc1i1c0060OyNeHJSsYxgz
+         Y6UA2fh3Xd6GyG4y0kFlO2azOIOZUBPHksDckAS/1kGCpdzKRGqEuUWr0kdIDczb5c8H
+         0GLW/SmJuI2CNMvC+z/ZYlrAMy1eHG4kK3ed+lj9u6iaouCIbQk0EEqrIvkY6SXfBW3C
+         lGbw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1782970108; x=1783574908;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=f0ElEvUWjV6Gy4pknAoeXdTvp5XxbDAUQK5u4tzfIXk=;
-        b=gaWJXH2xvnvqPwyE1RNKGnVhT3ssPXzpAVOmJwsE1A4DT9ps/fB0as/Sbn6NefTyGt
-         hGr0m5/vwiRhgvnaVB3ZvReEehXz+jafp43VN0TgIFCwrk6XkMpNGaASvyuePxsvk5/q
-         lsibJanzNpofR+z6FsuW9pN3Rktc7dIG2qa01U7xWNVN5ILqyD5N8aPcRAaef5+IF0Va
-         ZWT5qSNNkmh9l15dewopqty1Z97/p6xe023M4H8jhWHNrsRUso6LEwjIG+tzzs2fsz1i
-         QsxpJNfvKSiEsAUJXuJdglEdMO2rWM7IgpaB0PlQAFsCOsuc4Ib9Xpi8OrtnnDw5uv9L
-         YA1Q==
-X-Gm-Message-State: AOJu0YxQdP5kOgmji28KgzMphNS4ELQjTeDHG4KwG14XfzZFnj4Itg3N
-	0KoraieoalZvO9FkxDqmMCBmEqWkIuQ2uXBJC8GUyB6ovk1pc6ZXkDyv
-X-Gm-Gg: AfdE7cn014bVp8NAALBjRVsqJxCMgPjWjGB/AfhId53LW0NwLYhyI2jw/B8HYfaV33c
-	eEe1L4YPCYsxaGkWorKtYKvg5ruuAHXjlIR6UGWi+Q3jP3zbEdyZ0x7jHt+DqrSKmolGq/uzemq
-	LGPXgLOgAl0oUdHLBhFcZcoI56srXtXin3rlu/6/W/60QHYP7b0R2qyVyzZiYxBI4RGyAY8jJGr
-	CoxnRGq2X03YQTDHxt7ZnkDUxqtrg5KK4VvSts4CcLgHV+D6tzo/58OE5BRVJXp4HPWlw13G0eJ
-	u2RXmg4s0SarNaCJ/Jq4jz+7mF7XJ8cYI5WKZ/0ke4PfQeFzthLmtgfoiAW2y+bBYSL4n5iv90C
-	kGlGJ/RkGVNFn4zS+QCHI5jfiEToLmlfLOl9vP/mGw4AFpOZJ4x3xVZSvYwLFQot6yRuIyJeEq2
-	SA/AVi9iMkuIJjEZ/IYZ1WAmyHAbEn9jxt7i+D1QH4+o82WAbSQZvsLk86aTIl
-X-Received: by 2002:a05:6a20:2451:b0:3bf:6c08:2b2f with SMTP id adf61e73a8af0-3bff4303132mr4324775637.55.1782970107539;
-        Wed, 01 Jul 2026 22:28:27 -0700 (PDT)
+        d=1e100.net; s=20251104; t=1782971410; x=1783576210;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:message-id:subject:cc:to:from:date:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=Xn80YbNQRCy7u0axvID9/jx4xqkgYbtUOWMNeQphPIk=;
+        b=iT3elACYNzAq6YTxxQdjUHS4xJUWHFCh/8RCJt0CXMpyxXLPvo5IM7ihMW6ydrweUN
+         HZ/5qxwA0gYWWA+3C6krRr1G9D5LVmklZ+SPK02aBSM4lvE1TV1QJa0h9PcDMzdZ0tGu
+         q+70m8icBWh6XVcf/I4s8LL/jM9SO/ecqf61Rr56NbI7wRSVy6qfMdu0+3wm3hpVgWbJ
+         vDxGpn2S5rsaJZL5y9KYw6qE8tXEEwH6xBrFWm4nRL07Cz8+sQENXFDtaZs2dWA9DMD1
+         e4tIAcqRC7pxpVa8m1vIzxoAT4sGKdkeH/Lk16t1ShBvEwtpZmpNZUDiXXPDcN6nmXn/
+         9D+A==
+X-Forwarded-Encrypted: i=1; AHgh+RpRsoysiT2/PM2D6JbfPC7GvZWdzNZm+D4NNnoaZkvyAErTt1H8P9tZsoaHxriTZsUfTf5DZ4AwYFArBtY=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yx/8Ez01VJeid8Xcc8rBVjsT8ajRGI4ZA8ZwiWyJEo/0+L1/ZX3
+	iCJGmv1SkC/NM9IY2rnnUtjE0E282elrdmjVNlukRhJrgRTSlm0X6R5u
+X-Gm-Gg: AfdE7cnYBxkqM2E1t4HA3kjOrfrSXXrSzcd5S/5u9vp3zjZmSWwWxDMeQzC6RdCub7t
+	dzWi6/bsj5bNPInKN79i+mL+l+HfLyO1UkXa8u0jI3mSz2gXTUY/uZDQWhjm5IDrVXvZEM5OAKU
+	l1SXF9UoBO/0eqBfksZ8FvL+b/RNjuw+4l1TCkQdGPyKyqsikRacH6z23tOJUXDCjic5QdgeFnZ
+	Gv6nfuOGBYuQ2mn4tuIqpOr6ULCy9+FqW1gVGTrYLDqo4fXKN088gw7mP0jUf8PnUDsoQVEbWKs
+	ZFzt5am6zYniDIN15jxXTWhrby+KjLO+lyJ24dskoP5gPqyvFpwz6RiK+lcAeEs2f6KwtNm6C4g
+	bhu7tESyq2U7klgcjsJQnRvlUeO/BiZ1ppAVF7lPQh5CK/uM2XGRzbSylzhTax04QWDza5CbTEO
+	2IqWh04vkE4D3xVpNXyROdv9z9qyAe2ltWIurzohdWOUTKxB/NXOgfNAC9XPo5lzfPcPoYJTk=
+X-Received: by 2002:a17:90b:4aca:b0:37f:9cdf:f03d with SMTP id 98e67ed59e1d1-380baacb525mr3809456a91.32.1782971409925;
+        Wed, 01 Jul 2026 22:50:09 -0700 (PDT)
 Received: from li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com ([106.51.160.236])
-        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-c9e8eb0ee85sm682627a12.3.2026.07.01.22.28.24
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-380e160b4c7sm441239a91.11.2026.07.01.22.50.06
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 01 Jul 2026 22:28:27 -0700 (PDT)
-Date: Thu, 2 Jul 2026 10:58:21 +0530
+        Wed, 01 Jul 2026 22:50:09 -0700 (PDT)
+Date: Thu, 2 Jul 2026 11:20:03 +0530
 From: Mukesh Kumar Chaurasiya <mkchauras@gmail.com>
-To: Nikhil Kumar Singh <nikhilks@linux.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
-	maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com, chleroy@kernel.org, 
-	adityag@linux.ibm.com, mahesh@linux.ibm.com
-Subject: Re: [PATCH] powerpc/64s: Clarify copy_and_flush() cache sync loop
- comment
-Message-ID: <akX1w9E-RaEFI8tD@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
-References: <20260701182756.273019-1-nikhilks@linux.ibm.com>
+To: Michal =?utf-8?B?U3VjaMOhbmVr?= <msuchanek@suse.de>
+Cc: Shrikanth Hegde <sshegde@linux.ibm.com>, maddy@linux.ibm.com, 
+	mpe@ellerman.id.au, npiggin@gmail.com, chleroy@kernel.org, mkchauras@linux.ibm.com, 
+	ryan.roberts@arm.com, ruanjinjie@huawei.com, linuxppc-dev@lists.ozlabs.org, 
+	linux-kernel@vger.kernel.org
+Subject: Re: [PATCH V2] powerpc/syscall: Fix seccomp errno handling with
+ GENERIC_ENTRY
+Message-ID: <akX6TL6v4aRPGdkk@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
+References: <20260629182946.419552-1-mkchauras@gmail.com>
+ <a58675e4-f5a6-4a21-9871-904aad33b683@linux.ibm.com>
+ <akSyVOsraz9waBf4@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
+ <akTExSO3ZT7iRtBa@kunlun.suse.cz>
+ <akTJbfXPKc10Xemh@kunlun.suse.cz>
+ <akTP_YJvGwln_xb_@kunlun.suse.cz>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -94,64 +100,109 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20260701182756.273019-1-nikhilks@linux.ibm.com>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <akTP_YJvGwln_xb_@kunlun.suse.cz>
 
-On Wed, Jul 01, 2026 at 11:57:56PM +0530, Nikhil Kumar Singh wrote:
-> The value loaded into r0 in copy_and_flush() represents the number of
-> 8-byte words processed between cache synchronization operations.
+On Wed, Jul 01, 2026 at 10:29:49AM +0200, Michal Suchánek wrote:
+> On Wed, Jul 01, 2026 at 10:01:49AM +0200, Michal Suchánek wrote:
+> > On Wed, Jul 01, 2026 at 09:41:57AM +0200, Michal Suchánek wrote:
+> > > On Wed, Jul 01, 2026 at 11:57:00AM +0530, Mukesh Kumar Chaurasiya wrote:
+> > > > On Wed, Jul 01, 2026 at 01:41:09AM +0530, Shrikanth Hegde wrote:
+> > > > > Hi Mukesh.
+> > > > > 
+> > > > > On 6/29/26 11:59 PM, Mukesh Kumar Chaurasiya (IBM) wrote:
 > 
-> The existing comment refers to cache line size, which can make it appear
-> that the value is a cache line size in bytes rather than a loop count.
-> Clarify the comment to explain that the loop processes 8 words (64 bytes)
-> per cache synchronization iteration, and that increasing the value would
-> skip cache maintenance for intermediate cache lines.
+> > > > > > diff --git a/arch/powerpc/kernel/syscall.c b/arch/powerpc/kernel/syscall.c
+> > > > > > index a9da2af6efa8..36d73933a311 100644
+> > > > > > --- a/arch/powerpc/kernel/syscall.c
+> > > > > > +++ b/arch/powerpc/kernel/syscall.c
+> > > > > > @@ -20,7 +20,6 @@ notrace long system_call_exception(struct pt_regs *regs, unsigned long r0)
+> > > > > >   	syscall_fn f;
+> > > > > >   	add_random_kstack_offset();
+> > > > > > -	r0 = syscall_enter_from_user_mode(regs, r0);
+> > > > > >   	if (unlikely(r0 >= NR_syscalls)) {
+> > > > > >   		if (unlikely(trap_is_unsupported_scv(regs))) {
+> > > > > > @@ -31,6 +30,12 @@ notrace long system_call_exception(struct pt_regs *regs, unsigned long r0)
+> > > > > >   		return -ENOSYS;
+> > > > > >   	}
+> > > > > > +	r0 = syscall_enter_from_user_mode(regs, r0);
+> > > > > > +
+> > > > > 
+> > > > > I see many arch first do syscall_enter_from_user_mode and then check for return value.
+> > > > > take x86 for example,
+> > > > > 
+> > > > > __visible noinstr bool do_syscall_64(struct pt_regs *regs, int nr)
+> > > > > {
+> > > > >         nr = syscall_enter_from_user_mode(regs, nr);
+> > > > > 
+> > > > >         if (!do_syscall_x64(regs, nr) && !do_syscall_x32(regs, nr) && nr != -1) {
+> > > > >                 /* Invalid system call, but still a system call. */
+> > > > >                 regs->ax = __x64_sys_ni_syscall(regs);
+> > > > >         }
+> > > > > 
+> > > > > }
+> > > > > 
+> > > > > So seccomp fails silently there if initial nr was -1?
+> > > > > 
+> > > > Hey,
+> > > > 
+> > > > No the -1 syscall ignores the error silently and returns 0.
+> > > > 
+> > > 
+> > > There seems to be some inconsistency with the invalid syscalls.
+> > > 
+> > > Adapting the example from seccomp man page to ignore architecture I get
+> > > on x86_64 (presumably with GENERIC_ENTRY since long ago):
+> > > 
+> > > ./a.out -2 55 /usr/bin/perl -MPOSIX -e '$!=0; my $r = syscall(-2, 0); print "ret=$r errno=".($!+0)." ($!)\n"'
+> > > ret=-1 errno=55 (No anode)
+> > > 
+> > > but on ppc64le (with GENEREC_ENTRY):
+> > > 
+> > > ./a.out -2 55 /usr/bin/perl -MPOSIX -e '$!=0; my $r = syscall(-2, 0); print "ret=$r errno=".($!+0)." ($!)\n"'
+> > > ret=-1 errno=38 (Function not implemented)
+> > > 
+> > > That said, behavior of seccomp on invalid syscalls is not particularly
+> > > concerning. The tools that people typically use for constructing those
+> > > filters typically require a valid syscall number.
+> > > 
+> > > It would be nice to align, though.
+> > 
+> > It is more concerning for SECCOMP_SET_MODE_STRICT or similar. So it
+> > should be resolved to correctly execute seccomp even on invalid
+> > syscalls. The syscall_enter_from_user_mode API is not particularly
+> > well-suited for that, though.
 > 
-> This is a comment-only change with no functional impact.
+> In particular the fixup per
+> https://lore.kernel.org/linuxppc-dev/akJzuEJRLniHk4Fi@kunlun.suse.cz/
 > 
-> Signed-off-by: Nikhil Kumar Singh <nikhilks@linux.ibm.com>
-> ---
->  arch/powerpc/kernel/head_64.S | 16 ++++++++--------
->  1 file changed, 8 insertions(+), 8 deletions(-)
+> handles some cases
 > 
-> diff --git a/arch/powerpc/kernel/head_64.S b/arch/powerpc/kernel/head_64.S
-> index 63432a33ec49..e21c2bce8f7e 100644
-> --- a/arch/powerpc/kernel/head_64.S
-> +++ b/arch/powerpc/kernel/head_64.S
-> @@ -713,14 +713,14 @@ p_end: .8byte _end - copy_to_here
->  _GLOBAL(copy_and_flush)
->  	addi	r5,r5,-8
->  	addi	r6,r6,-8
-> -4:	li	r0,8			/* Use the smallest common	*/
-> -					/* denominator cache line	*/
-> -					/* size.  This results in	*/
-> -					/* extra cache line flushes	*/
-> -					/* but operation is correct.	*/
-> -					/* Can't get cache line size	*/
-> -					/* from NACA as it is being	*/
-> -					/* moved too.			*/
-> +4:	li	r0,8			/* r0 is the number of 8-byte words       */
-> +					/* to copy per cache sync iteration.      */
-> +					/* 8 words * 8 bytes = 64 bytes. 64B is   */
-> +					/* the current default cache line size.   */
-> +					/* This is a loop count, not a byte       */
-> +					/* count. Increasing it will skip         */
-> +					/* dcbst/icbi for lines in between and    */
-> +					/* leave stale instructions in icache.    */
->  
-You dropped 2 pieces of information here, That we can't use NACA and
-that we are doing an extra cache line flush(atleast in case of P10).
+> ./a.out -2 55 /usr/bin/perl -MPOSIX -e '$!=0; my $r = syscall(-2, 0); print "ret=$r errno=".($!+0)." ($!)\n"'
+> ret=-1 errno=55 (No anode)
+> 
+> but not -1
+> 
+> ./a.out -1 55 /usr/bin/perl -MPOSIX -e '$!=0; my $r = syscall(-1, 0); print "ret=$r errno=".($!+0)." ($!)\n"'
+> ret=-1 errno=38 (Function not implemented)
+> 
+> which is the direct result of the ambiguous return value of
+> syscall_enter_from_user_mode
+> 
+> Thanks
+> 
+> Michal
+Hey Michal,
 
-Also use tab instead of spaces before commment close per line "*/" can
-you keep the last character aligned to rest of the file. It looks
-little nicer.
+Yeah this seems to be a more complex thing than anticipated.
+As per conversation on your another patch here
+https://lore.kernel.org/all/BA7CD91D-C0E5-47A1-B49C-BC6AF6604182@zytor.com/
+
+This patch seems to be redundant at this point.
 
 Regards,
 Mukesh
->  	mtctr	r0			/* put # words/line in ctr	*/
->  3:	addi	r6,r6,8			/* copy a cache line		*/
-> -- 
-> 2.43.5
-> 
+
 
