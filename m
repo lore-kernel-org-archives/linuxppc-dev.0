@@ -1,84 +1,90 @@
-Return-Path: <linuxppc-dev+bounces-23456-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23457-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 512AAC43458
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Jul 2026 22:39:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3790CC43458
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Jul 2026 00:18:00 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4grsJc45VQz2xRw;
-	Fri, 03 Jul 2026 08:39:44 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::335"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783031984;
-	cv=none; b=FOz7TeMzEwND7e+GlgS82pnC76bbnF78kFYvc9iPq78vcFU2qGjinWI2+goEymSpZ7CaVbngSdbycqx1rUaQQFlA23ooFR7P1Dezg3Xw9j32TaIsQNlGyGqWf3g/XZqh5tqUSaDVELuPC+MnzHgw45udrzGZEpX8xKa9JNgcBO13hbZir05bmiSoyZvidNlphZL7l3L7QjhKuCbm3IfwV4SrUYNNRVHXcj6SZmS4HUbY810nijFg/BpAy+tEtRbujDxhZQpkXrEiZ1gbBjICQ4g+P9owKWJ6Ym7VJBP6zajbuAzfNrAaH1EzIo1RIgRH9/RmewpU3R+snoArP2MNbg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4grvTy6FYRz2yDs;
+	Fri, 03 Jul 2026 10:17:58 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=170.10.133.124
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783016374;
+	cv=none; b=abpC87oU7xJHkv/QuITbGCXY7z9+HVqWJGkxet1PnpZmvVd14xE3eTpkXHzrQM2D5fl1TzvcSPXgPOCQb1V1qxiMMuugE/jr5am2eqNAQXdq156xyVpYSSQoKxZlyPg9tvupqglFe1ftaeMzurTCmM4dyB9nUigr1yt1/6JWrFJFZ6AMFnE89ic4I3ymQqlQWV+iH+6Bk7Xr4001McylGx5Dh0dz4nl0xuB6zPocsHblkloctV3d0D/UH4MWp5dCjfMMCg5ypTSvwCDFgmjOIwXNDdu952qtIAmz44C6eHzB9kLRUMmIbHq/SrXh8xxkSc2uGRt18PzfXVfa//QsBw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1783031984; c=relaxed/relaxed;
-	bh=jUEFO2dYlrUsHq/npRyqqQfPXBIu9PI/KDflitAC56U=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=hMz2e6uFbqZ97DXcqL5WopolQHrdSCL2EdxWQ8ECq4aOpCi+sW+cCJv2G3J2vBO82cghsBbgtn9vGJt5dNWD8IyD7+QWFBuRfS4DIHZODbBnm3nVzjRz5jyMKtK/DH+sfumch4LidaQDUfybWtO+PoM5ky6K0l9P4yi2SDtL7P1vEe1AeC7UWnwoK/19J+2e4Lwuv0Wofu3b4Ii4715Ny3n8aEllAFOGJhfcpdONuo5UXjPw/p4pV+uiLKDitcAQ79sqJjJn7h8nwVfFjrwWMHAlQln8oc157wfhVWEC51Q624p22a+Siub65TxdzkbMP9MRTiQgZ6JeoMAwIZ7vhQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=baylibre.com; dkim=pass (2048-bit key; secure) header.d=baylibre.com header.i=@baylibre.com header.a=rsa-sha256 header.s=google header.b=EAOQ62Pe; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::335; helo=mail-wm1-x335.google.com; envelope-from=ukleinek@baylibre.com; receiver=lists.ozlabs.org) smtp.mailfrom=baylibre.com
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=baylibre.com
+	t=1783016374; c=relaxed/relaxed;
+	bh=GnE5UMGB7bIKe4dMgecSQwaH8m85iUChv9iFEZy7XRE=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=bNL6Re4DqbGRR0UVsSfe37/Ep+l7myHGKcnoBxhuG9OTyakHUEETJDH/YTpxFj4ZvuL0Fb4l6ZOgPyW+XslzQNUtPiQtzkVKKw18a2Ukrv3EUOLrZIc2wTYp/wZdg3nqEHOELkxlRwhnKI+o36cQAp6+makIXLZsvxo5N0f1OageO3XhQLkzusE8bBdtQ52SpxUo3ExrLgCTDLIzjWpaGkTBSAymMs8F+3dBn1FjJ9EtmmgAHzwGedBTs78vrCi/DkJ1RxDCFMZQ9263X2bsC85PlLbhXoLWu9PqbovTuYZLFsfxUglY/3mjFCpyWfIhM1fcZm+qQogbxWTBIQKDgQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Y7JiZLQ9; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Y7JiZLQ9; dkim-atps=neutral; spf=pass (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=rrobaina@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=baylibre.com header.i=@baylibre.com header.a=rsa-sha256 header.s=google header.b=EAOQ62Pe;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Y7JiZLQ9;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Y7JiZLQ9;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=baylibre.com (client-ip=2a00:1450:4864:20::335; helo=mail-wm1-x335.google.com; envelope-from=ukleinek@baylibre.com; receiver=lists.ozlabs.org)
-Received: from mail-wm1-x335.google.com (mail-wm1-x335.google.com [IPv6:2a00:1450:4864:20::335])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=rrobaina@redhat.com; receiver=lists.ozlabs.org)
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4grsJX0Ymcz2xJT
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 Jul 2026 08:39:37 +1000 (AEST)
-Received: by mail-wm1-x335.google.com with SMTP id 5b1f17b1804b1-493be1b9682so17155095e9.2
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 Jul 2026 15:39:37 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=baylibre.com; s=google; t=1783031969; x=1783636769; darn=lists.ozlabs.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=jUEFO2dYlrUsHq/npRyqqQfPXBIu9PI/KDflitAC56U=;
-        b=EAOQ62PeCfSPA0iGtauKDOLUFWBptOgPssX4tS+KGcnL4UxUPXQjtCWa48KvARfAuq
-         IY7YP12Vu79UvNRJQDr5zw10WlgOHj8A0hQBVA2ufJVIsrWQWBshwraw3kXIC0Y2OP0D
-         eVfNH3585t2lYrY8jyTLErvvP1Tra19oIYV7xcejhcQJw0SHG6QgDk4GJ6WWlbRO1FHq
-         S8L+QTGPOS3UrMVm3Km+1UOhHiNuNGR/aOBkAYQ2O58VtgYgQ7SI7ZJ0yOZEytVgSS/W
-         k9etpjSad78f1boWo9BdecdMV0o0+8Dmu4i0mmrGjvMF+78CyLXGzWv9RrkpJ2nhcgx2
-         rgkA==
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4grlXN4JSKz2xPb
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 Jul 2026 04:19:29 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1783016365;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=GnE5UMGB7bIKe4dMgecSQwaH8m85iUChv9iFEZy7XRE=;
+	b=Y7JiZLQ9m6RjiU4yKQqiOYuZtrNH5Kq57hI10B20srU6YQsZN4PYD7IN31CKqoN6kkeOay
+	yCJf/8xgCgcMxUr+tvkYQ7i+SF0FfSq7iaMGsaktVbwbyNCThqo0TlQMlGo12hOwq/R5S4
+	LX9EKXPHsFTDJROZZjWavdm+Wr20j28=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1783016365;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=GnE5UMGB7bIKe4dMgecSQwaH8m85iUChv9iFEZy7XRE=;
+	b=Y7JiZLQ9m6RjiU4yKQqiOYuZtrNH5Kq57hI10B20srU6YQsZN4PYD7IN31CKqoN6kkeOay
+	yCJf/8xgCgcMxUr+tvkYQ7i+SF0FfSq7iaMGsaktVbwbyNCThqo0TlQMlGo12hOwq/R5S4
+	LX9EKXPHsFTDJROZZjWavdm+Wr20j28=
+Received: from mail-ej1-f72.google.com (mail-ej1-f72.google.com
+ [209.85.218.72]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-34-bbhNVoofM22cGuTZJtmNJA-1; Thu, 02 Jul 2026 14:19:24 -0400
+X-MC-Unique: bbhNVoofM22cGuTZJtmNJA-1
+X-Mimecast-MFC-AGG-ID: bbhNVoofM22cGuTZJtmNJA_1783016363
+Received: by mail-ej1-f72.google.com with SMTP id a640c23a62f3a-c07d22d503fso206277966b.2
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 Jul 2026 11:19:23 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1783031969; x=1783636769;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=jUEFO2dYlrUsHq/npRyqqQfPXBIu9PI/KDflitAC56U=;
-        b=KxCnKZsjLCoo1joXffMjNTDKSqFC9nV0Tp5Z3o9sbKSJB56KZ0jblOlxHND5YlUqmP
-         Tk2EgEyX5pu+43hmuMY40iiV8XxERg0uhu5lNz1gqIKl/vD9FD+Rb4l7WxVidUPRWtBU
-         eQ92RcQlu5twvK/4Jw/lW2pypfcIydKMRyUAZo0p9UzdQlEIO0fkD0k0QTj9hqM39tWT
-         aOWZGBPgR+uROEW9+XbjHoQHRwVMhmMNxeC1sDSQPpb00xTG8hFmtZZsJQsPTKCMj2Oi
-         idQZ2bXokbtP+diVISLpA6cpR6t0Hz/9vVj21LCh87qNG7R5EWTtIpf5JvYIMQz47DYP
-         B88w==
-X-Forwarded-Encrypted: i=1; AFNElJ8ftHzJvskwpGbZmPeq5WxW1Cz5FBbuKlM57Pzo0ClMyFDIk4U57VBu2y3STu7jv1RJYhQ5GrhOyl+ygQY=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yw8dkkIe/AaHbqUybIVwoc2J9xHR9dFT8WLSw9LS6kSYJxJmPta
-	pusDJe4RW8dKJzY1iFbSMgH/5L3LQlIJprnq8y6IEOrOGCQ5kD0sDOwW5XU/oHIpYUw=
-X-Gm-Gg: AfdE7ck6y2Ulv0FrSxuIvrHCLKiEBEsVDV36gA6uSDR7zBZfFi1OcmZXZ3+jWl/MMzv
-	E32PQE/jW2miqAumqcWy3btMCdE7HiPIv2xhpsb5UdyZKzh50iGLGLGSM4hpGRSl+pL4KibXQKN
-	O6T21XZuhK0tE0sHucO2aYFE04G1vrDIgHCeyOvpxl6++5T0gXUUjl02RL1FbpbIHboVS6OV/zW
-	MqSAJSxVx0NIcbKB2RC6UI/NjXOaIkkRLLmQsqYrLq4SoNKRk1SaBYxq55EggYh3l/uTF9lN13F
-	EV8ix5g1hMN1xv0RRR3Z1McWBC9j+fTkF6xRCVJEFv6G3izvUIE5P364glOw0WCfm0Fc5xRP6GF
-	4x9z8IMDfRyLIZiMboKYLf62hi/AC4OBhIebu0D12+pqrB4KJrIX0tcZ18eCcYCq+8NybkJWRt3
-	RXWLAv6h8+bLyBd0Cf8g==
-X-Received: by 2002:a05:600c:6692:b0:493:bb6b:5bda with SMTP id 5b1f17b1804b1-493c2b983b8mr111151595e9.29.1783031969110;
-        Thu, 02 Jul 2026 15:39:29 -0700 (PDT)
-Received: from localhost ([2a02:8071:56d1:2de0:1d24:d58d:2b65:c291])
-        by smtp.gmail.com with UTF8SMTPSA id 5b1f17b1804b1-493c635c41dsm155275235e9.5.2026.07.02.15.39.26
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 02 Jul 2026 15:39:27 -0700 (PDT)
-Date: Fri, 3 Jul 2026 00:38:18 +0200
-From: Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@baylibre.com>
-To: Johan Hovold <johan@kernel.org>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
-	linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/4] USB: gadget: fsl-udc: fix dev_printk() device
-Message-ID: <akbmlZKNiF2z90F-@monoceros>
-References: <20260702141536.90887-1-johan@kernel.org>
- <20260702141536.90887-4-johan@kernel.org>
+        d=1e100.net; s=20251104; t=1783016363; x=1783621163;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=GnE5UMGB7bIKe4dMgecSQwaH8m85iUChv9iFEZy7XRE=;
+        b=S8J9DCrKczOegngR1/tSxiXvKkkDr0xEIXYvezmZgStTKctkbde44ripAOppawZ2Hd
+         GHqVVYBProxTtLyKNw4qVwDu8+3UXJ0EZZLk8JmgoCTrnPPArbYHJYSfukQYoyKUEHsf
+         DfIyl8LrhTlBRMyz/KufzXvZc97YBQ81i6wxJlx9Iy7x5N9hgq6XffbO11Smvb5Aak/a
+         N6taAgYJ9x5KroU69OV+i9d0I05qX8CD8rODUqrYziwHjYL3u7F+/kkzaDkWBiG8TrVK
+         mI1S/ZWxIP2ja9N3VsgWfcP6HnQWjrP6Musx1Up0OMSYXIdpvPz4mNNTzHPCIEWOX56+
+         V4rA==
+X-Forwarded-Encrypted: i=1; AHgh+Rrz9DUDEz0GLvYd7SFPb5iKrIC75quIeJhI8cmBLKwyCf3J600iTETASLAURoOalSrmALUSNBdHKS3hnjM=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YxTe2y8Sr1Pd80pF3Lq9DBSzsiBKVjMPpDzCAfs90Wa5Nn5wYPy
+	8ndFtwjzQEpjRMihKbeZZrmdKSjYmc33prRjzNKt48Z29+bmVrhihNEoWoma+vaKcPNH1PnlU/6
+	lJhdRUvz389occmwU2zo+VibY0FpPd4q9raleXySkXLeBKGhrI88EAuAMHntWiX6k/+0VhNHqS8
+	LXYQXGTdFbJlbbHxswWs/NDJAeQOi1zpeKDN9nKytZ0A==
+X-Gm-Gg: AfdE7clAwKX+CtJ8IMpFyDNSjYbvI36FLHluHV+JCZX+JVSV+eHmLRgGXVtvJCRniwU
+	AISGwiMKqETY2jr3Z88CUmtrFWoUomITK2X9oKMHlmkiVtU7IiYoIEm/fEe/B2rGouQhov86jTj
+	GKUd0wUSHLlf+YVYkCEQslPp88FeTLC6rCu4jG35k+Pb+KYWUN63u5RxgyivGuxjsjOU1iIhbha
+	EVSWq2VJf9wbk5GFXAPz52zQihVt7s+ub8hYpIgPxgg8GFnlRjctTpf
+X-Received: by 2002:a17:906:f8cf:b0:c12:34f0:f7bf with SMTP id a640c23a62f3a-c12ae798209mr222262966b.62.1783016362695;
+        Thu, 02 Jul 2026 11:19:22 -0700 (PDT)
+X-Received: by 2002:a17:906:f8cf:b0:c12:34f0:f7bf with SMTP id
+ a640c23a62f3a-c12ae798209mr222260666b.62.1783016362196; Thu, 02 Jul 2026
+ 11:19:22 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -92,54 +98,119 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="nulx3wvnaf5kt2p5"
-Content-Disposition: inline
-In-Reply-To: <20260702141536.90887-4-johan@kernel.org>
-
-
---nulx3wvnaf5kt2p5
-Content-Type: text/plain; protected-headers=v1; charset=iso-8859-1
-Content-Disposition: inline
+References: <261b1be5b8dc526b83d73e8281e682a73536ea28.1773155031.git.chleroy@kernel.org>
+ <CAHC9VhTyOuuPs1uovodM9M_8zZeJnVXs9xrWSdPhZcjXUb=mvA@mail.gmail.com>
+ <fce0a701-ee58-4cb2-b34b-8aec26aaab5d@linux.ibm.com> <09e72f42-e180-4e2b-b379-92b755792a2c@linux.ibm.com>
+ <CAHC9VhTzuO=RFtrUUuZyieVdkrM5H4ZCb1=PoL-oEEgiw38azg@mail.gmail.com>
+ <ea6e629f-dac7-45dd-bb18-5cd6361fe6c4@linux.ibm.com> <9c53ae3f-ccfd-4e8f-ac4f-0038e9b97a7e@linux.ibm.com>
+ <b1d6e9a5-34ce-42ca-906a-d4237e18be25@kernel.org> <50507bb3-4229-4815-90e8-c01eaad058fc@linux.ibm.com>
+ <ba00c7a8-b4d5-4d80-859b-d75e9c91ebdb@kernel.org> <203f6e6d-2ce8-4e47-99a6-f4af745e0aaa@linux.ibm.com>
+ <CAHC9VhQvoK4uYP0NBnd4FGbXCQkDka4nHqdz9kAn2bGnm4qVHQ@mail.gmail.com>
+In-Reply-To: <CAHC9VhQvoK4uYP0NBnd4FGbXCQkDka4nHqdz9kAn2bGnm4qVHQ@mail.gmail.com>
+From: Ricardo Robaina <rrobaina@redhat.com>
+Date: Thu, 2 Jul 2026 15:19:10 -0300
+X-Gm-Features: AVVi8CfgJQQN8srCQcfoEeiecb8Fd_KUMFMpwzDJYWLdhmkZ5R5UO3-WcegNLlg
+Message-ID: <CAABTaaCQCBuR9Ny6zBHNK=gy3Cd0WGj-f9qgzwuyjWD_i=v_dQ@mail.gmail.com>
+Subject: Re: [PATCH v3] powerpc/audit: Convert powerpc to AUDIT_ARCH_COMPAT_GENERIC
+To: Paul Moore <paul@paul-moore.com>
+Cc: Venkat Rao Bagalkote <venkat88@linux.ibm.com>, 
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, Madhavan Srinivasan <maddy@linux.ibm.com>, 
+	Harsh Prateek Bora <harshpb@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, 
+	Nicholas Piggin <npiggin@gmail.com>, Eric Paris <eparis@redhat.com>, linux-kernel@vger.kernel.org, 
+	linuxppc-dev@lists.ozlabs.org, audit@vger.kernel.org, 
+	Thomas Weissschuh <thomas.weissschuh@linutronix.de>, =?UTF-8?Q?C=C3=A9dric_Le_Goater?= <clg@kaod.org>, 
+	ritesh.list@gmail.com
+X-Mimecast-Spam-Score: 0
+X-Mimecast-MFC-PROC-ID: _exbGpRgSgWl_PouXYjpyR0AmBrowSNERTaRkKRL9lU_1783016363
+X-Mimecast-Originator: redhat.com
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
-Subject: Re: [PATCH 3/4] USB: gadget: fsl-udc: fix dev_printk() device
-MIME-Version: 1.0
 
-Hello Johan,
+On Thu, Jul 2, 2026 at 10:28=E2=80=AFAM Paul Moore <paul@paul-moore.com> wr=
+ote:
+>
+> On Thu, Jul 2, 2026 at 8:50=E2=80=AFAM Venkat Rao Bagalkote
+> <venkat88@linux.ibm.com> wrote:
+> >
+> > Current remaining issue:
+> >
+> > 1. amcast_joinpart
+> > ------------------
+> > Still fails due to a missing Perl dependency:
+> >
+> >      Can't locate Socket/Netlink.pm in @INC
+> >
+> > I searched the configured repositories and could not find a package
+> > providing Socket::Netlink / Socket/Netlink.pm on this EL10 ppc64le syst=
+em.
+> >
+> > Latest run summary:
+> >
+> > amcast_joinpart/test ................. Can't locate Socket/Netlink.pm i=
+n
+> > @INC (you may need to install the Socket::Netlink module) (@INC entries
+> > checked: /usr/local/lib64/perl5/5.40 /usr/local/share/perl5/5.40
+> > /usr/lib64/perl5/vendor_perl /usr/share/perl5/vendor_perl
+> > /usr/lib64/perl5 /usr/share/perl5 .) at amcast_joinpart/test line 10.
+> > BEGIN failed--compilation aborted at amcast_joinpart/test line 10.
+> > amcast_joinpart/test ................. Dubious, test returned 2 (wstat
+> > 512, 0x200)
+> > Failed 7/7 subtests
+> > backlog_wait_time_actual_reset/test .. ok
+> > bpf/test ............................. ok
+> > exec_execve/test ..................... ok
+> > exec_name/test ....................... ok
+> > fanotify/test ........................ ok
+> > field_compare/test ................... ok
+> > file_create/test ..................... ok
+> > file_delete/test ..................... ok
+> > file_permission/test ................. ok
+> > file_rename/test ..................... ok
+> > filter_exclude/test .................. ok
+> > filter_exit/test ..................... ok
+> > filter_saddr_fam/test ................ ok
+> > filter_sessionid/test ................ ok
+> > io_uring/test ........................ ok
+> > login_tty/test ....................... ok
+> > lost_reset/test ...................... ok
+> > netfilter_pkt/test ................... ok
+> > signal/test .......................... ok
+> > syscalls_file/test ................... ok
+> > syscall_module/test .................. ok
+> > time_change/test ..................... ok
+> > user_msg/test ........................ ok
+> >
+> > All tests now pass except amcast_joinpart, which is blocked by the
+> > missing Socket::Netlink Perl module.
+> >
+> > Please let me know if there is a recommended package source for
+> > Socket::Netlink on EL10 ppc64le.
+>
+> Thanks for following up on this Venkat.
+>
+> I'm adding your colleague Ricardo from the RH side of the house.
+> Ricardo is very familiar with audit and should be able to help you
+> with missing RHEL packages.
 
-On Thu, Jul 02, 2026 at 04:15:35PM +0200, Johan Hovold wrote:
-> A change replacing custom printk() macros with dev_printk() incorrectly
-> used the gadget struct device instead of the controller struct device
-> (including for messages printed before the gadget device name has been
-> initialised).
->=20
-> Switch to using the controller platform device with dev_printk() so that
-> the controller device and driver names are included in log messages as
-> expected.
+Thanks for looping me in,  Paul!
 
-I don't know about "expected", because before 6025f20f16c2 the affected
-device wasn't included in the message at all. But I agree that using the
-not yet initialized device isn't nice, so:
+Venkat, unfortunately, perl-Socket-Netlink is not packaged for RHEL-10
+ppc64le. An alternative is to use CPAN[1] to install the
+Socket::Netlink Perl module.
 
-Acked-by: Uwe Kleine-K=F6nig <u.kleine-koenig@baylibre.com>
+ # dnf install cpan
+ # cpan App::cpanminus
+ # cpanm Socket::Netlink
 
-Thanks
-Uwe
+I'll reserve a ppc64le machine and run the tests locally as well. I'll
+share the results shortly.
 
---nulx3wvnaf5kt2p5
-Content-Type: application/pgp-signature; name="signature.asc"
+[1] https://www.cpan.org/modules/INSTALL.html
 
------BEGIN PGP SIGNATURE-----
 
-iQEzBAABCgAdFiEEP4GsaTp6HlmJrf7Tj4D7WH0S/k4FAmpG6FYACgkQj4D7WH0S
-/k4wnQgAgH+bRzd/g47MZIWPVDUm/GIRllQkmHGQpbbPtH1l42O12kHnutcWShhF
-29ExqURXwq7jY9SaSKB0Eoiv7kVto2Y0I3VVL9qTWA9icwCt1KRzjXjyxrMSWxwe
-OgBxCb+cTzVfSM3D2ZXbP3ZqY3BVoxLc1M4aAlfO0G6lwaGJ2tWmaOxRR5P3n+le
-f4GuNJP9DVvSw5TSyY4vUliDPLwN5g3MLfeYEcpaqDav4eW1bPKTpC7itWX2jdTY
-6iTNkWRxiEYLn/VbmPca1SusZ4ViA/0hHIIjJDD6BNYm6IyzaCq37abkiI9w0z6e
-hfxRl+hHKTWLLbm2i2JNy6Cznx4DaQ==
-=JsLz
------END PGP SIGNATURE-----
+>
+> --
+> paul-moore.com
+>
 
---nulx3wvnaf5kt2p5--
 
