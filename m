@@ -1,46 +1,45 @@
-Return-Path: <linuxppc-dev+bounces-23384-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23385-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 86045C43458
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Jul 2026 11:38:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B2C5AC43458
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Jul 2026 11:42:22 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4grZdV6WRpz2yN8;
-	Thu, 02 Jul 2026 21:38:22 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=95.215.58.178
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782992302;
-	cv=none; b=W69gYEGODZ/A1V1X+L+YcnoknzXj7/RF3AwjS5tHQTie195x84GY/+q9Zj7qyfyb+ictTZBvKCNj2Rh3iNHdRHRXeb1H5zmRDfa7xlM4kR0pDdaw4D89b0hp2jxss1ls21k7Xz76j5pzdC+HIFcO7L20To20I4RkWf4sTPGjWQJHTAjGtCBWHIiBFF8dtXuNV110TiSiVg6fSjT6v3MfxVzrc9w24eKDtZ8edkUEwZ42uvIcHTPgYPLEzjoiBSp1vd+Q5+YPZHqHPUyx/LQgkaqei+Xg0y3LOtYxbP90N9FwSpXAbsVeytP9vk5BNHeHt+eHGugnyGTNVkVqw0cP/Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4grZk52nHNz2yQG;
+	Thu, 02 Jul 2026 21:42:21 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:41d0:1004:224b::b2"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782992541;
+	cv=none; b=IS/egffKAGQRFbBGZnUG+M9UYgyAwJ5mE1nlmFzfmiZ6TS/XWiLEejRviH0vPLdQZJ8iogKe8c0YMOP3CzaEm5qmItcXtLwg1J/uIGYy72GTV30FBqeuQShlBjfEWJDHspxQoy5ptVp2D7g7qAleWVCNFwk1fyTCXfnQt6yc2sCZ58yoVy0+xBbSYp45A5Z6VXTQP0E+ZJxBpwWvNiL/aIOIyS28MhC0r929oqt+b9hEUmSl/y/CYwA3GjnKYIay+MsRDXcTdVn/W+cSOj4cnz1D+tXZI5PKMUfNdmE1paGliT8FGuqDXAFMss/DrjVOp8Vs8WpkFVI6XX7Kl/Mcyg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1782992302; c=relaxed/relaxed;
-	bh=s4zTiOPxPEEvh+Z2LMv+6gqe9ZZvh+3yTK3Yc5UnT/U=;
+	t=1782992541; c=relaxed/relaxed;
+	bh=vPHtV6pxZdlKjLiAMh+TI96h/MjbfgTMGiJB5aRI1Dw=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=mzXkL4hdoxLkasEWj2R5x7e5PFc0Cqr7KoAhTuID0UERl93adfuU7No4xkkRPR3hfsBbis1bUWfVqX0sJZ0nNUU3igykrbSne7S2umAhY4/n8AVtnSn8ioxtkyTKepAbFalgrUo2MYQm/hH65LnZ3/TgxS+ELOfU/Aptu+gj9MhZi2ZftIP+C1+3RyvR0cIrN55abALCMYOtxr+3Wf58dEplzXB1ZlIkfSj8rTTvxP55w3Jhx3SL/tUo8iu+JrvKRj/K3ctKatofhKHIbbYNH7idSooQLHaOVgs+K3psqfsrsULPThrc6mOpcdVOdoMw499KfO+Y11qDjyYpPx9crg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=AkD1PO3E; dkim-atps=neutral; spf=pass (client-ip=95.215.58.178; helo=out-178.mta1.migadu.com; envelope-from=lance.yang@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
+	 MIME-Version:Content-Type; b=LCe6rA9Z6ORtZYTgnb8AbIdiFYMdb1WFpFynY1luTr3t+4kQ+Vt3V8zhSeEs5yjVq7FpmHjKIyu4d9LbIq6dIBsebw3XQVbVhr7+mHQmlo+xtM+dWcW/ixe/oQPyq2oK9ukonD79lr2V/efAR674+yJPO9icc6VG3qrafT0YFcfCNRT0EUYr+bB9bkdLGZN8ctudMay9quX6RPYWVrddpm0GJHryNdz+TFDrxVahoo7SF6fpmb6Hie1W84jT3l03b1Ke751jrxZFExCok3JuIGhrTyRj4Yfjlz7es/a7nqhGLpO5ts/IrE7afYzs7DspNWgKdcDZHKrICPI+yUfscw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=ElylzNP2; dkim-atps=neutral; spf=pass (client-ip=2001:41d0:1004:224b::b2; helo=out-178.mta0.migadu.com; envelope-from=lance.yang@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=AkD1PO3E;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=ElylzNP2;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=95.215.58.178; helo=out-178.mta1.migadu.com; envelope-from=lance.yang@linux.dev; receiver=lists.ozlabs.org)
-X-Greylist: delayed 14984 seconds by postgrey-1.37 at boromir; Thu, 02 Jul 2026 21:38:19 AEST
-Received: from out-178.mta1.migadu.com (out-178.mta1.migadu.com [95.215.58.178])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=2001:41d0:1004:224b::b2; helo=out-178.mta0.migadu.com; envelope-from=lance.yang@linux.dev; receiver=lists.ozlabs.org)
+Received: from out-178.mta0.migadu.com (out-178.mta0.migadu.com [IPv6:2001:41d0:1004:224b::b2])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4grZdR0WdJz2xqn
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 Jul 2026 21:38:16 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4grZk41mqvz2yN8
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 Jul 2026 21:42:19 +1000 (AEST)
 X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
-	t=1782992273;
+	t=1782992513;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=s4zTiOPxPEEvh+Z2LMv+6gqe9ZZvh+3yTK3Yc5UnT/U=;
-	b=AkD1PO3EYh/hmuzqNyG5+F4iFU+xRbougp+bY+xotWctIjwUQvMKpAwXsjPb5kG+NxyY12
-	mV0mEGNoe2Czu7JdCtguHySTk1KxuHzjRfZnXIBhIe71SSOqRiI6wOFZz62JhxqVX83KFA
-	KhWu2A9hV9btjfbdFeq0dyXUttdl5PQ=
+	bh=vPHtV6pxZdlKjLiAMh+TI96h/MjbfgTMGiJB5aRI1Dw=;
+	b=ElylzNP2HZvUF6FtGgLgsW4vT0OTcdy2XorLGs6M4jbsXqc3kVIN25VDlrp06Kwp+MnkF0
+	7eCUNpZQUAu53ooUNOnYLe8bcSqU2lbFmJuaAoucdQs+qEK4yKsjIpHuYOtBIHp/EvNPEl
+	ujU0zKbwsKGW+OA8vv+O0JU4vozY/FA=
 From: Lance Yang <lance.yang@linux.dev>
 To: ljs@kernel.org
 Cc: akpm@linux-foundation.org,
@@ -125,11 +124,11 @@ Cc: akpm@linux-foundation.org,
 	linux-fsdevel@vger.kernel.org,
 	linux-mm@kvack.org,
 	linux-sound@vger.kernel.org
-Subject: Re: [PATCH 03/13] mm: convert __get_unmapped_area() to use vma_flags_t
-Date: Thu,  2 Jul 2026 19:37:22 +0800
-Message-Id: <20260702113722.97837-1-lance.yang@linux.dev>
-In-Reply-To: <b1ad7c4443f5cba622e4c48c5a9ef15427001a93.1782760670.git.ljs@kernel.org>
-References: <b1ad7c4443f5cba622e4c48c5a9ef15427001a93.1782760670.git.ljs@kernel.org>
+Subject: Re: [PATCH 04/13] mm: update generic_get_unmapped_area[_topdown]() to use vma_flags_t
+Date: Thu,  2 Jul 2026 19:41:35 +0800
+Message-Id: <20260702114135.4189-1-lance.yang@linux.dev>
+In-Reply-To: <cef55b19f86c110952f13829aefa4859db3a70ed.1782760670.git.ljs@kernel.org>
+References: <cef55b19f86c110952f13829aefa4859db3a70ed.1782760670.git.ljs@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -148,21 +147,21 @@ Content-Transfer-Encoding: 8bit
 X-Migadu-Flow: FLOW_OUT
 
 
-On Mon, Jun 29, 2026 at 08:25:26PM +0100, Lorenzo Stoakes wrote:
->Update __get_unmapped_area() to be parameterised by vma_flags_t rather than
->vm_flags_t as part of the effort to move VMA flags from a system word to a
->bitmap.
+On Mon, Jun 29, 2026 at 08:25:27PM +0100, Lorenzo Stoakes wrote:
+>As part of the changes converting VMA flags from a system word size to a
+>bitmap, extend this change to generic_get_unmapped_area() and
+>generic_get_unmapped_area_topdown(), which also allows us to convert
+>stack_guard_placement() as well.
 >
->We cascade the changes up to arch_get_unmapped_area_topdown() and
->arch_get_unmapped_area(), where, for now, we use vma_flags_to_legacy() in
->order to propagate the VMA flags.
+>We retain arch_get_unmapped_area() and arch_get_unmapped_area_topdown()
+>as-is for now, using legacy_to_vma_flags() as necessary to do so.
 >
 >No functional change intended.
 >
 >Signed-off-by: Lorenzo Stoakes <ljs@kernel.org>
 >---
 
-Nothing suspicious that I could spot :) Feel free to add:
+Nothing jumped out at me ;) Feel free to add:
 
 Reviewed-by: Lance Yang <lance.yang@linux.dev>
 
