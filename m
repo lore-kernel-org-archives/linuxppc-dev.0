@@ -1,55 +1,61 @@
-Return-Path: <linuxppc-dev+bounces-23447-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23449-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 926A4C43327
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Jul 2026 18:00:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 655E8C43458
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Jul 2026 18:13:38 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4grl5g5LPhz2yrr;
-	Fri, 03 Jul 2026 03:59:51 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783015191;
-	cv=none; b=EbQ0jvImbCAVHu6NS5cB+Yh/zNYVoQkJWTbs3r7UhLMU4sl5ZjYlVDmaOHwZvadfi1tAVD55PL0tdOIz2DwNGlh1px1ORLOMFcWos47yn/4gsKpTinC0eaxzTtLxMNyXfVIq03YdoXJFHkCfLvna2wegjTlChONWKVo8WEksX58gO5tuLOI7oprc2zw/u6YXqGEUxzrf4qpZNu0QkjHOw2hkhrvDCQN3reho0NHXIucaE2X0tBv3bAGhfImshKOLbWbKkddYA0uTH6l1j0byt1XsptFPCdz/aS6dQfehmO3ovTkgV2FLXF8ytsV5/J4bcn3JoJgajw3YqIlQMjPhrA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4grlPX6vfnz2xLk;
+	Fri, 03 Jul 2026 04:13:36 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=198.167.222.108
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783016016;
+	cv=none; b=T9fElvhfDvBeEQo1D9NB34LN5X0EsGJo/5Wdde5x+6cWw2YN+N465RgusiueC+3nBrY9jkB5H3DFiYnTTWLpG7eX6Jnv7cFqXIzmIcxmWtMYxBIIHEuIqNAqM5gsRrwE9p6nnFOAY0UqtnzYXpY6WptL0gFqHanSJnY+SHJMjxv2VrOFXVml+FZIe3zkVhtDNKNP2VKFlTF1A7NCtvbgU5muQEtOcYNibnPBbggj7bYLe0Y7HxypUnQscSYQpCmUTnG1HgR6ZhJtuuMVWIt/Ax8GIGFDYD5oxnASnw4gVDFxIZdkGTK8T0aB8dSMYv21B4ig/tFyQDBIGTo+AwIe5A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1783015191; c=relaxed/relaxed;
-	bh=yMhrqsgq6YFuggc5qz6GD4Bx0y7S8qdHqWmFYwOwx8E=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=bJIBkXEJ+dn6m2g2xY+pO4R+ZR/6+Ih3raYhIVHJXmfpwio3WF4BeZSr2rFALZJJ70b3AwfWju8ADP/H1PA4mBarcmShjn8G2VYBZe/yMROc6fxHci690dugCwFLUcdzBb3NtpNP7OhHH7KTC7Gmn4JCRssxsxMBO5HJmugGTx7tBCzvQ09kny30Mc8xLDUC0Cs1WNyNtOGVriA50iPyBpzSJV7DhS0FXerGMBvwrxPd5o2GSCIRwCzA+MlgldVrjnVodjlzeQ1bniGynR2Eul0qQMsbtp77qHAjIETm1VngWxZddUx+z2Dhr9CfKxcWXqhXGeVQCufCTHR9u3pPag==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=HrrN24Xh; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=devnull+davemarq.linux.ibm.com@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1783016016; c=relaxed/relaxed;
+	bh=FxsLMBtnbEMHfYtH6sL2Gn7Yq7J6SKVu65F4DcQd6Vg=;
+	h=Date:From:To:CC:Subject:In-Reply-To:References:Message-ID:
+	 MIME-Version:Content-Type; b=YNRn3+a/FFzjAlrZOQ1LXnRAuPnz+xPtELpRj3JweejCsXo00BFpelmXXgsXXNpi4lajpVJPggFyJm15h834GNF57f6jpQvRmn+S3Zs9rPFcAoBIkskaM6ry1nfhQ2yCHxgA4JHUHWHlC9R6cZnJimLPwBoVIjR5RUomWmAdavnSE0PyNRYvfZC1j7JROkKC+XGi/w3ea8q1/sc3YVODwHvZBk13RwNHc2M/oompf9uLpxFvq1npnNsiCLs336BLUrbWtqIn7X20bNmFJhC/nI7uRW7/wB07efSnFwgBR8qv2rq8N5hWcF+X2CsnJrNO9c9he6PwfJe+gZsXjd4XQA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=grrlz.net; dkim=pass (1024-bit key; secure) header.d=grrlz.net header.i=@grrlz.net header.a=rsa-sha256 header.s=stigmate header.b=h11TFcjf; dkim-atps=neutral; spf=pass (client-ip=198.167.222.108; helo=devianza.investici.org; envelope-from=include@grrlz.net; receiver=lists.ozlabs.org) smtp.mailfrom=grrlz.net
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=grrlz.net
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=HrrN24Xh;
+	dkim=pass (1024-bit key; secure) header.d=grrlz.net header.i=@grrlz.net header.a=rsa-sha256 header.s=stigmate header.b=h11TFcjf;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=devnull+davemarq.linux.ibm.com@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=grrlz.net (client-ip=198.167.222.108; helo=devianza.investici.org; envelope-from=include@grrlz.net; receiver=lists.ozlabs.org)
+Received: from devianza.investici.org (devianza.investici.org [198.167.222.108])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4grl5V5k8lz2xLk
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 Jul 2026 03:59:42 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 808CC601F8;
-	Thu,  2 Jul 2026 17:59:39 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 27B8EC2BCF5;
-	Thu,  2 Jul 2026 17:59:39 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1783015179;
-	bh=ln2SjJvUJryDaO7NTg6G28tiUvK14HbTf61+pC3eExA=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=HrrN24Xh/NBjK6OvYW+4QOMVXrvLqnRzfeFturxAEVGwCHHd4rssmmQev3DVl526W
-	 5vdc+pT6SuGeVTMpCaHWpHjKsffTGqQZg1lSVWvoWxQe7vRH6bwCfbdHLVvPOnwi6t
-	 kGn+T0mKedmqRCyKdTHOLA9IwxLZeIYSw28gUiGVTrQVA4XssSFconsgJwHK42TKJE
-	 JMF6W7ys+O+ePm/UnBoK5V6Y8rSGK1t1wc7bRiPUOjLcn8ADrHKrdEKQ8WJ79BJMe0
-	 qUfRj8ezm3i0FW8emOPxWPbOXe6R/j2cIQVYQ0iatZ4IzJc2MMEW58p/u/9KSwyvyp
-	 fzGF28n3gs9jQ==
-Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 06C89C43602;
-	Thu,  2 Jul 2026 17:59:39 +0000 (UTC)
-From: Dave Marquardt via B4 Relay <devnull+davemarq.linux.ibm.com@kernel.org>
-Date: Thu, 02 Jul 2026 12:59:31 -0500
-Subject: [PATCH v3 1/8] ibmvfc: add basic FPIN support
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4grlPT3WGXz2xKh
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 Jul 2026 04:13:31 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=grrlz.net;
+	s=stigmate; t=1783016007;
+	bh=FxsLMBtnbEMHfYtH6sL2Gn7Yq7J6SKVu65F4DcQd6Vg=;
+	h=Date:From:To:CC:Subject:In-Reply-To:References:From;
+	b=h11TFcjfUi9mHZq41xzQqXfwpoMVnwksW52qt3V4Vd02fD5FyQLVEyygMYpCCl31l
+	 94HCnAlC/ubfNXkR7TKlShc0VYjs4bdRVl+U1ZyPelp9Z6peABRVpK+v4HdzX1u4y8
+	 LqOEEGW4JWdlOK6B5TJOB8ufaH9aOQbp+juBUJig=
+Received: from mx2.investici.org (unknown [127.0.0.1])
+	by devianza.investici.org (Postfix) with ESMTP id 4grlPM1TdTz6vNX;
+	Thu, 02 Jul 2026 18:13:27 +0000 (UTC)
+Received: by mx2.investici.org (Postfix) id 4grlPL2KCqz4y2q;
+	Thu, 02 Jul 2026 18:13:26 +0000 (UTC)
+Date: Thu, 02 Jul 2026 19:13:26 +0100
+From: Bradley Morgan <include@grrlz.net>
+To: Petr Mladek <pmladek@suse.com>
+CC: Feng Tang <feng.tang@linux.alibaba.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
+ Christophe Leroy <chleroy@kernel.org>,
+ Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Douglas Anderson <dianders@chromium.org>, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, stable@vger.kernel.org
+Subject: =?US-ASCII?Q?Re=3A_=5BPATCH_v3_4/4=5D_panic=3A_use_sys=5Finfo=5Fwi?=
+ =?US-ASCII?Q?th=5Ffilter=28=29_to_avoid_duplicate_backtraces?=
+In-Reply-To: <akYq1YaCpZ0b4SBS@pathway.suse.cz>
+References: <20260625152558.7450-1-include@grrlz.net> <20260625152558.7450-5-include@grrlz.net> <aj5TNB8cRtMNTtIT@pathway.suse.cz> <aj5tFiwhRqPkAkqU@pathway.suse.cz> <akJZxCTlLcwubqi2@U-2FWC9VHC-2323.local> <E482A23D-4E1C-42C0-9D07-83C6CDFD1546@grrlz.net> <akYq1YaCpZ0b4SBS@pathway.suse.cz>
+Message-ID: <EC1E5A79-524A-45C2-9FE8-964EB0E18D76@grrlz.net>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -63,619 +69,644 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260702-ibmvfc-fpin-support-v3-1-d95b9547cf88@linux.ibm.com>
-References: <20260702-ibmvfc-fpin-support-v3-0-d95b9547cf88@linux.ibm.com>
-In-Reply-To: <20260702-ibmvfc-fpin-support-v3-0-d95b9547cf88@linux.ibm.com>
-To: "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>, 
- "Martin K. Petersen" <martin.petersen@oracle.com>, 
- Madhavan Srinivasan <maddy@linux.ibm.com>, 
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
- "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, 
- Tyrel Datwyler <tyreld@linux.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org, 
- linuxppc-dev@lists.ozlabs.org, Brian King <brking@linux.ibm.com>, 
- Greg Joyce <gjoyce@linux.ibm.com>, Kyle Mahlkuch <kmahlkuc@linux.ibm.com>, 
- Dave Marquardt <davemarq@linux.ibm.com>
-X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1783015177; l=20678;
- i=davemarq@linux.ibm.com; s=20260216; h=from:subject:message-id;
- bh=OAi0hXo9sQvyjwxSUgat4/1PxlCbZB0bal8fZCMWDK0=;
- b=jBZ7i0ERnTtIdEfbgAor9A9kq63D17AZuZjd0dNJ+4ADK8XWKg4DtV0FD+qyJg3XfKSnRH3J3
- FuSDTS7ZIZsD4D4lb9fiaKIIHJgj8XAoPHfs3pXlyh9JXCIvmWZSJcq
-X-Developer-Key: i=davemarq@linux.ibm.com; a=ed25519;
- pk=vy0/nfobrje6EqZxuyw6a3ZstytG8WK2vf5Y3xtGrEg=
-X-Endpoint-Received: by B4 Relay for davemarq@linux.ibm.com/20260216 with
- auth_id=689
-X-Original-From: Dave Marquardt <davemarq@linux.ibm.com>
-Reply-To: davemarq@linux.ibm.com
+Content-Type: text/plain;
+ charset=utf-8
+Content-Transfer-Encoding: 8bit
 
-From: Dave Marquardt <davemarq@linux.ibm.com>
+On July 2, 2026 10:09:41 AM GMT+01:00, Petr Mladek <pmladek@suse.com>
+wrote:
+>On Mon 2026-06-29 13:54:18, Bradley Morgan wrote:
+>> On 29 June 2026 12:40:52 BST, Feng Tang <feng.tang@linux.alibaba.com>
+>> wrote:
+>> >On Fri, Jun 26, 2026 at 02:14:14PM +0200, Petr Mladek wrote:
+>> >> On Fri 2026-06-26 12:23:50, Petr Mladek wrote:
+>> >> > On Thu 2026-06-25 15:25:58, Bradley Morgan wrote:
+>> >> > > panic_other_cpus_shutdown() handles SYS_INFO_ALL_BT before
+>stopping
+>> >the
+>> >> > > other CPUs. Do not ask sys_info() to handle that bit again later
+>in
+>> >the
+>> >> > > panic path.
+>> >> > > 
+>> >> > > Use sys_info_with_filter() so panic_print=all_bt does not request
+>> >more
+>> >> > > output after the CPUs are stopped.
+>> >> > > 
+>> >> > > Fixes: a9af76a78760 ("watchdog: add sys_info sysctls to dump sys
+>> >info on system lockup")
+>> >> > > Cc: stable@vger.kernel.org
+>> >> > > Signed-off-by: Bradley Morgan <include@grrlz.net>
+>> >> > > ---
+>> >> > >  kernel/panic.c | 2 +-
+>> >> > >  1 file changed, 1 insertion(+), 1 deletion(-)
+>> >> > > 
+>> >> > > diff --git a/kernel/panic.c b/kernel/panic.c
+>> >> > > index 213725b612aa..eb842823df61 100644
+>> >> > > --- a/kernel/panic.c
+>> >> > > +++ b/kernel/panic.c
+>> >> > > @@ -680,7 +680,7 @@ void vpanic(const char *fmt, va_list args)
+>> >> > >  	 */
+>> >> > >  	atomic_notifier_call_chain(&panic_notifier_list, 0, buf);
+>> >> > >  
+>> >> > > -	sys_info(panic_print);
+>> >> > > +	sys_info_with_filter(panic_print, SYS_INFO_ALL_BT);
+>> >> > 
+>> >> > Hmm, this prevents printing backtraces from all CPUs completely.
+>> >> > But what if they were not printed?
+>> >> > 
+>> >> > They might be printed by:
+>> >> > 
+>> >> > static void panic_other_cpus_shutdown(bool crash_kexec)
+>> >> > {
+>> >> > 	if (panic_print & SYS_INFO_ALL_BT)
+>> >> > 		panic_trigger_all_cpu_backtrace();
+>> >> > 
+>> >> > [...]
+>> >> > }
+>> >> > 
+>> >> > But it checks only "panic_print" variable. It won't do anything
+>> >> > when (panic_print == 0).
+>> >> > 
+>> >> > In this case, we might still want to print the backraces when
+>> >> > SYS_INFO_ALL_BT is set in kernel_si_info.
+>> >> > 
+>> >> > >  	kmsg_dump_desc(KMSG_DUMP_PANIC, buf);
+>> >> > 
+>> >> > Of course, we might fix panic_other_cpus_shutdown() to check also
+>> >> > kernel_si_info.
+>> >> > 
+>> >> > But it all becomes very hairy. We have several levels:
+>> >> > 
+>> >> >    + watchdog-all_bt-specific option, e.g.
+>> >sysctl_hardlockup_all_cpu_backtrace
+>> >> > 
+>> >> >    + watchdog-specific si_info preferences, e.g. hardlockup_si_mask
+>> >> > 
+>> >> >    + panic-specific si_info: panic_print
+>> >> > 
+>> >> >    + universal fallback for any layer: kernel_si_info
+>> >> > 
+>> >> > Now, we try to check all these variables back and forth to
+>> >> > trigger all backtraces or to avoid triggering them.
+>> >> > And it clearly does not work well and the code is more and more
+>> >> > hairy.
+>> >> > 
+>> >> > I think about another approach. The word "waterfall" comes to my
+>mind.
+>> >> > Instead of checking all the settings back and forth, let's process
+>> >> > each setting one by one and just remember what has been done and
+>> >> > skip this in the next level.
+>> >> > 
+>> >> > All the si_info actions seems to dump a global system state.
+>> >> > So, it would make sense to remember the state in a global variable
+>> >> > even when it might be modified by more CPUs in parallel.
+>> >> > 
+>> >> > I am going to think more about it.
+>> >> 
+>> >> I have created a POC using Gemini. I haven't tested it.
+>> >> But it looks acceptable. And the logic seems to be more
+>> >> straightforward.
+>> >> 
+>> >> One drawback is that it requires adding the _reset()
+>> >> call for all sys_info() callers. It is fine in principle
+>> >> but it might complicate back-porting because all changes
+>> >> have to be done in one patch.
+>> >> 
+>> >> But honestly, this is a nice to have fix. Most people could
+>> >> live happily without it.
+>> >> 
+>> >> From 3c66436d9978030845a96bfaedd6b914536e2ac4 Mon Sep 17 00:00:00
+>2001
+>> >> From: Petr Mladek <pmladek@suse.com>
+>> >> Date: Fri, 26 Jun 2026 13:55:41 +0200
+>> >> Subject: [POC] sys_info: Introduce state-tracking APIs to prevent
+>> >duplicate
+>> >>  backtraces
+>> >> 
+>> >> In watchdog, panic, and hung task detection scenarios, sys_info() can
+>> >> be called multiple times or alongside direct backtrace triggers like
+>> >> trigger_allbutcpu_cpu_backtrace(). This results in identical
+>backtraces
+>> >> being dumped repeatedly from all CPUs, cluttering the kernel log and
+>> >> delaying or obscuring critical debug details.
+>> >> 
+>> >> Introduce a state tracking bitmask and associated helpers:
+>> >> - sys_info_done(mask): Marks specific sys_info bits as already
+>printed.
+>> >> - sys_info_reset(): Resets the tracking state.
+>> >> - sys_info_is_done(mask): Checks if all bits in the mask have been
+>> >printed.
+>> >> 
+>> >> Update sys_info() to automatically filter out already printed bits
+>> >> using this state. Integrate these APIs with the generic hardlockup
+>> >> and softlockup watchdogs, the PowerPC watchdog, the hung task
+>detector,
+>> >> and the panic core. This ensures that each piece of system
+>information
+>> >> and backtrace output is printed at most once per lockup/panic event,
+>> >> and the state is reset cleanly when a lockup does not trigger a
+>panic.
+>> >> 
+>> >> Races between sys_info() callers are ignored. It should be acceptable
+>> >> because the output from various watchdogs has never been
+>synchronized.
+>> >> And panic() never returns.
+>> >> 
+>> >> Assisted-by: gemini-1.5-flash
+>> >> Signed-off-by: Petr Mladek <pmladek@suse.com>
+>> >
+>> >Yep. There are cases that people want panic on task-hung or sw/hw
+>lockup,
+>> >and this could remove much duplication of sys info dump, thanks!
+>> >
+>> >Reviewed-by: Feng Tang <feng.tang@linux.alibaba.com>
+>> 
+>> Thanks,
+>> 
+>> im feeling a new file to do all the force panic jazz, but putting tape
+>> on sys_info.c isn't bd either.
+>
+>I wonder how to move forward with this.
+>
+>Honestly, I am not sure what exactly you mean by creating another
+>API for tracking the reports so I could not judge it. Feel free
+>to sent some POC.
+>
+>Otherwise, I would go with my proposal to remember the printed states
+>by the sys_info API. I am not sure whether I should send a proper
+>patch or you would like to somehow improve it.
+>
+>Best Regards,
+>Petr
+>
 
-Add support for basic FPIN messages to the ibmvfc driver. This includes
 
-- adding FPIN handling support to the async event handler
-- offloading processing of FPIN messages to a work queue
-- converting the VIOS FPIN message to a struct fc_els_fpin as used by
-  the Linux kernel
-- passing the converted struct fc_els_fpin to fc_host_fpin_rcv for
-  processing
+sup petr, here's my poc
 
-The FPIN message conversion routines include a common routine that
-will also be used in patches 6 and 8, which add full and extended FPIN
-support.
 
-Signed-off-by: Dave Marquardt <davemarq@linux.ibm.com>
+This should make my entire thing make sense
+
+From eb587ed749ff5993c517f29799b369185c5ee7d8 Mon Sep 17 00:00:00 2001
+From: Bradley Morgan <include@grrlz.net>
+Date: Thu, 2 Jul 2026 18:09:23 +0000
+Subject: [POC] sys_info: Introduce incident state-tracking to prevent
+ duplicate diagnostics
+
+In watchdog, panic, and hung task detection scenarios, sys_info()
+can be called multiple times or alongside direct debug output
+functions (like trigger_allbutcpu_cpu_backtrace(), print_modules(),
+print_irqtrace_events(), and dump_stack()). This leads to identical
+diagnostics and stack traces being dumped repeatedly, cluttering the
+kernel log and delaying critical panics.
+
+Introduce a state tracking bitmask and helpers in a new file,
+lib/sys_info_filter.c:
+- sys_info_filter_and_set(mask): Atomically tests which bits in a mask
+  have not yet been printed during the current incident, marks them as
+  printed, and returns that subset.
+- sys_info_reset(): Clears the printed mask state.
+
+Add SYS_INFO_MODULES, SYS_INFO_IRQTRACE, and SYS_INFO_STACK flags to
+include/linux/sys_info.h, and handle them inside sys_info's diagnostic
+dispatch.
+
+Update the watchdogs, hung task detector, and panic core to call
+sys_info_filter_and_set() to deduplicate their diagnostic printouts, and
+sys_info_reset() when a warning incident concludes (e.g., when a stuck
+CPU recovers, or a new hung task check round begins).
+
+This ensures each piece of system diagnostic is printed at most once per
+lockup/panic event, preventing console log spam.
+
+Assisted-by: Gemini:gemini-3.5-flash
+Signed-off-by: Bradley Morgan <include@grrlz.net>
 ---
- drivers/scsi/Kconfig                 |  10 ++
- drivers/scsi/ibmvscsi/Makefile       |   1 +
- drivers/scsi/ibmvscsi/ibmvfc.c       | 255 ++++++++++++++++++++++++++++++++++-
- drivers/scsi/ibmvscsi/ibmvfc.h       |  16 +++
- drivers/scsi/ibmvscsi/ibmvfc_kunit.c | 131 ++++++++++++++++++
- 5 files changed, 406 insertions(+), 7 deletions(-)
+ arch/powerpc/kernel/watchdog.c |  21 +++++-
+ include/linux/sys_info.h       |   6 ++
+ kernel/hung_task.c             |   4 +-
+ kernel/panic.c                 |   9 ++-
+ kernel/watchdog.c              |  24 ++++++-
+ lib/Makefile                   |   2 +-
+ lib/sys_info.c                 |  38 ++---------
+ lib/sys_info_filter.c          | 120 +++++++++++++++++++++++++++++++++
+ 8 files changed, 184 insertions(+), 40 deletions(-)
+ create mode 100644 lib/sys_info_filter.c
 
-diff --git a/drivers/scsi/Kconfig b/drivers/scsi/Kconfig
-index c3042393af23..d5fc7eb2ebb1 100644
---- a/drivers/scsi/Kconfig
-+++ b/drivers/scsi/Kconfig
-@@ -758,6 +758,16 @@ config SCSI_IBMVFC
- 	  To compile this driver as a module, choose M here: the
- 	  module will be called ibmvfc.
+diff --git a/arch/powerpc/kernel/watchdog.c b/arch/powerpc/kernel/watchdog.c
+index c40c69368476..31035e28676a 100644
+--- a/arch/powerpc/kernel/watchdog.c
++++ b/arch/powerpc/kernel/watchdog.c
+@@ -160,6 +160,10 @@ static void wd_lockup_ipi(struct pt_regs *regs)
+ 	else
+ 		dump_stack();
  
-+config SCSI_IBMVFC_KUNIT_TEST
-+	tristate "KUnit tests for the IBM POWER Virtual FC Client" if !KUNIT_ALL_TESTS
-+	depends on SCSI_IBMVFC && KUNIT
-+	default KUNIT_ALL_TESTS
-+	help
-+	  Compile IBM POWER Virtual FC client KUnit tests. These tests
-+	  specifically test FPIN functionality. To compile this driver
-+	  as a module, choose M here: the module will be called
-+	  ibmvfc_kunit.
++	/* Mark what we already printed so panic() won't repeat it. */
++	sys_info_filter_and_set(SYS_INFO_MODULES | SYS_INFO_IRQTRACE |
++				SYS_INFO_STACK);
 +
- config SCSI_IBMVFC_TRACE
- 	bool "enable driver internal trace"
- 	depends on SCSI_IBMVFC
-diff --git a/drivers/scsi/ibmvscsi/Makefile b/drivers/scsi/ibmvscsi/Makefile
-index 5eb1cb1a0028..75dc7aee15a0 100644
---- a/drivers/scsi/ibmvscsi/Makefile
-+++ b/drivers/scsi/ibmvscsi/Makefile
-@@ -1,3 +1,4 @@
- # SPDX-License-Identifier: GPL-2.0-only
- obj-$(CONFIG_SCSI_IBMVSCSI)	+= ibmvscsi.o
- obj-$(CONFIG_SCSI_IBMVFC)	+= ibmvfc.o
-+obj-$(CONFIG_SCSI_IBMVFC_KUNIT_TEST)	+= ibmvfc_kunit.o
-diff --git a/drivers/scsi/ibmvscsi/ibmvfc.c b/drivers/scsi/ibmvscsi/ibmvfc.c
-index 3dd2adda195e..b63f41a6cfff 100644
---- a/drivers/scsi/ibmvscsi/ibmvfc.c
-+++ b/drivers/scsi/ibmvscsi/ibmvfc.c
-@@ -30,6 +30,9 @@
- #include <scsi/scsi_tcq.h>
- #include <scsi/scsi_transport_fc.h>
- #include <scsi/scsi_bsg_fc.h>
-+#include <kunit/visibility.h>
-+#include <scsi/fc/fc_els.h>
-+#include <linux/overflow.h>
- #include "ibmvfc.h"
+ 	/*
+ 	 * __wd_nmi_output must be set after we printk from NMI context.
+ 	 *
+@@ -238,7 +242,8 @@ static void watchdog_smp_panic(int cpu)
  
- static unsigned int init_timeout = IBMVFC_INIT_TIMEOUT;
-@@ -3137,6 +3140,7 @@ static const struct ibmvfc_async_desc ae_desc [] = {
- 	{ "Halt",	IBMVFC_AE_HALT,		IBMVFC_DEFAULT_LOG_LEVEL },
- 	{ "Resume",	IBMVFC_AE_RESUME,	IBMVFC_DEFAULT_LOG_LEVEL },
- 	{ "Adapter Failed", IBMVFC_AE_ADAPTER_FAILED, IBMVFC_DEFAULT_LOG_LEVEL },
-+	{ "FPIN",	IBMVFC_AE_FPIN,		IBMVFC_DEFAULT_LOG_LEVEL },
- };
+ 	if (sysctl_hardlockup_all_cpu_backtrace ||
+ 	    (hardlockup_si_mask & SYS_INFO_ALL_BT)) {
+-		trigger_allbutcpu_cpu_backtrace(cpu);
++		if (sys_info_filter_and_set(SYS_INFO_ALL_BT))
++			trigger_allbutcpu_cpu_backtrace(cpu);
+ 		cpumask_clear(&wd_smp_cpus_ipi);
+ 	} else {
+ 		/*
+@@ -254,6 +259,8 @@ static void watchdog_smp_panic(int cpu)
+ 	sys_info(hardlockup_si_mask & ~SYS_INFO_ALL_BT);
+ 	if (hardlockup_panic)
+ 		nmi_panic(NULL, "Hard LOCKUP");
++	else
++		sys_info_reset();
  
- static const struct ibmvfc_async_desc unknown_ae = {
-@@ -3185,16 +3189,228 @@ static const char *ibmvfc_get_link_state(enum ibmvfc_ae_link_state state)
- 	return "";
- }
+ 	wd_end_reporting();
  
-+#define IBMVFC_FPIN_CONGN_DESC_SZ (sizeof(struct fc_els_fpin) + sizeof(struct fc_fn_congn_desc))
-+#define IBMVFC_FPIN_LI_DESC_SZ (sizeof(struct fc_els_fpin) + \
-+				struct_size_t(struct fc_fn_li_desc, pname_list, 1))
-+#define IBMVFC_FPIN_PEER_CONGN_DESC_SZ (sizeof(struct fc_els_fpin) + \
-+					struct_size_t(struct fc_fn_peer_congn_desc, pname_list, 1))
-+
-+/**
-+ * ibmvfc_fpin_size_helper(): compute fpin structure size based on fpin status
-+ * @fpin_status: status value
-+ *
-+ * Return:
-+ * 0: invalid fpin_status
-+ * other: valid size
-+ */
-+static size_t ibmvfc_fpin_size_helper(u8 fpin_status)
-+{
-+	size_t size = 0;
-+
-+	switch (fpin_status) {
-+	case IBMVFC_AE_FPIN_LINK_CONGESTED:
-+	case IBMVFC_AE_FPIN_CONGESTION_CLEARED:
-+		size = IBMVFC_FPIN_CONGN_DESC_SZ;
-+		break;
-+	case IBMVFC_AE_FPIN_PORT_CONGESTED:
-+	case IBMVFC_AE_FPIN_PORT_CLEARED:
-+		size = IBMVFC_FPIN_PEER_CONGN_DESC_SZ;
-+		break;
-+	case IBMVFC_AE_FPIN_PORT_DEGRADED:
-+		size = IBMVFC_FPIN_LI_DESC_SZ;
-+		break;
-+	default:
-+		break;
-+	}
-+
-+	return size;
-+}
-+
-+/**
-+ * ibmvfc_common_fpin_to_desc(): allocate and populate a struct fc_els_fpin struct
-+ * containing a descriptor.
-+ *
-+ * Allocate a struct fc_els_fpin containing a descriptor and populate
-+ * based on data from *ibmvfc_fpin.
-+ *
-+ * Return:
-+ * NULL     - unable to allocate structure
-+ * non-NULL - pointer to populated struct fc_els_fpin
-+ */
-+static struct fc_els_fpin *
-+ibmvfc_common_fpin_to_desc(u8 fpin_status, __be64 wwpn, __be16 type, __be16 modifier,
-+			   __be32 threshold, __be32 event_count)
-+{
-+	struct fc_fn_peer_congn_desc *pdesc;
-+	struct fc_fn_congn_desc *cdesc;
-+	struct fc_fn_li_desc *ldesc;
-+	struct fc_els_fpin *fpin;
-+	size_t size;
-+
-+	size = ibmvfc_fpin_size_helper(fpin_status);
-+	if (!size)
-+		return NULL;
-+
-+	fpin = kzalloc(size, GFP_KERNEL);
-+	if (!fpin)
-+		return NULL;
-+
-+	fpin->fpin_cmd = ELS_FPIN;
-+
-+	switch (fpin_status) {
-+	case IBMVFC_AE_FPIN_CONGESTION_CLEARED:
-+	case IBMVFC_AE_FPIN_LINK_CONGESTED:
-+		fpin->desc_len = cpu_to_be32(sizeof(struct fc_fn_congn_desc));
-+		cdesc = (struct fc_fn_congn_desc *)fpin->fpin_desc;
-+		cdesc->desc_tag = cpu_to_be32(ELS_DTAG_CONGESTION);
-+		cdesc->desc_len = cpu_to_be32(FC_TLV_DESC_LENGTH_FROM_SZ(*cdesc));
-+		cdesc->event_type = type;
-+		cdesc->event_modifier = modifier;
-+		cdesc->event_period = cpu_to_be32(IBMVFC_FPIN_DEFAULT_EVENT_PERIOD);
-+		cdesc->severity = FPIN_CONGN_SEVERITY_WARNING;
-+		break;
-+	case IBMVFC_AE_FPIN_PORT_CONGESTED:
-+	case IBMVFC_AE_FPIN_PORT_CLEARED:
-+		fpin->desc_len =
-+			cpu_to_be32(struct_size_t(struct fc_fn_peer_congn_desc, pname_list, 1));
-+		pdesc = (struct fc_fn_peer_congn_desc *)fpin->fpin_desc;
-+		pdesc->desc_tag = cpu_to_be32(ELS_DTAG_PEER_CONGEST);
-+		pdesc->desc_len = cpu_to_be32(struct_size_t(struct fc_fn_peer_congn_desc,
-+							    pname_list, 1) - FC_TLV_DESC_HDR_SZ);
-+		pdesc->event_type = type;
-+		pdesc->event_modifier = modifier;
-+		pdesc->event_period = cpu_to_be32(IBMVFC_FPIN_DEFAULT_EVENT_PERIOD);
-+		pdesc->attached_wwpn = wwpn;
-+		pdesc->pname_count = cpu_to_be32(1);
-+		pdesc->pname_list[0] = wwpn;
-+		break;
-+	case IBMVFC_AE_FPIN_PORT_DEGRADED:
-+		fpin->desc_len = cpu_to_be32(struct_size_t(struct fc_fn_li_desc, pname_list, 1));
-+		ldesc = (struct fc_fn_li_desc *)fpin->fpin_desc;
-+		ldesc->desc_tag = cpu_to_be32(ELS_DTAG_LNK_INTEGRITY);
-+		ldesc->desc_len = cpu_to_be32(struct_size_t(struct fc_fn_li_desc,
-+							    pname_list, 1) - FC_TLV_DESC_HDR_SZ);
-+		ldesc->event_type = type;
-+		ldesc->event_modifier = modifier;
-+		ldesc->event_threshold = threshold;
-+		ldesc->event_count = event_count;
-+		ldesc->attached_wwpn = wwpn;
-+		ldesc->pname_count = cpu_to_be32(1);
-+		ldesc->pname_list[0] = wwpn;
-+		break;
-+	default:
-+		/* This should be caught above. */
-+		kfree(fpin);
-+		fpin = NULL;
-+		break;
-+	}
-+
-+	return fpin;
-+}
-+
-+/**
-+ * ibmvfc_basic_fpin_to_desc(): allocate and populate a struct fc_els_fpin struct
-+ * containing a descriptor.
-+ * @ibmvfc_fpin: Pointer to async crq
-+ *
-+ * Allocate a struct fc_els_fpin containing a descriptor and populate
-+ * based on data from *ibmvfc_fpin.
-+ *
-+ * Return:
-+ * NULL     - unable to allocate structure
-+ * non-NULL - pointer to populated struct fc_els_fpin
-+ */
-+static struct fc_els_fpin *
-+ibmvfc_basic_fpin_to_desc(struct ibmvfc_async_crq *crq, u64 wwpn)
-+{
-+	__be16 type;
-+
-+	switch (crq->fpin_status) {
-+	case IBMVFC_AE_FPIN_LINK_CONGESTED:
-+	case IBMVFC_AE_FPIN_PORT_CONGESTED:
-+		type = cpu_to_be16(FPIN_CONGN_DEVICE_SPEC);
-+		break;
-+	case IBMVFC_AE_FPIN_PORT_CLEARED:
-+	case IBMVFC_AE_FPIN_CONGESTION_CLEARED:
-+		type = cpu_to_be16(FPIN_CONGN_CLEAR);
-+		break;
-+	case IBMVFC_AE_FPIN_PORT_DEGRADED:
-+		type = cpu_to_be16(FPIN_LI_UNKNOWN);
-+		break;
-+	default:
-+		return (NULL);
-+	}
-+
-+	return ibmvfc_common_fpin_to_desc(crq->fpin_status, cpu_to_be64(wwpn),
-+					  type, cpu_to_be16(0),
-+					  cpu_to_be32(IBMVFC_FPIN_DEFAULT_EVENT_THRESHOLD),
-+					  cpu_to_be32(1));
-+}
-+
-+/**
-+ * ibmvfc_process_async_work - Process IBMVFC_AE_FPIN async CRQ from work queue
-+ * @work: pointer to work_struct
-+ */
-+static void ibmvfc_process_async_work(struct work_struct *work)
-+{
-+	struct ibmvfc_target *tgt, *next;
-+	struct ibmvfc_async_work *aw;
-+	struct ibmvfc_async_crq *crq;
-+	struct ibmvfc_host *vhost;
-+	struct fc_els_fpin *fpin;
-+	unsigned long flags;
-+
-+	aw = container_of(work, struct ibmvfc_async_work, async_work_s);
-+	crq = &aw->crq;
-+	vhost = aw->vhost;
-+
-+	if (!crq->scsi_id && !crq->wwpn && !crq->node_name)
-+		goto end;
-+
-+	spin_lock_irqsave(vhost->host->host_lock, flags);
-+	list_for_each_entry_safe(tgt, next, &vhost->targets, queue) {
-+		if (crq->scsi_id && cpu_to_be64(tgt->scsi_id) != crq->scsi_id)
-+			continue;
-+		if (crq->wwpn && cpu_to_be64(tgt->ids.port_name) != crq->wwpn)
-+			continue;
-+		if (crq->node_name && cpu_to_be64(tgt->ids.node_name) != crq->node_name)
-+			continue;
-+		if (!tgt->rport)
-+			continue;
-+		break;
-+	}
-+	spin_unlock_irqrestore(vhost->host->host_lock, flags);
-+
-+	if (!tgt || !tgt->rport) {
-+		dev_err_ratelimited(vhost->dev, "Invalid target for FPIN\n");
-+		goto end;
-+	}
-+
-+	fpin = ibmvfc_basic_fpin_to_desc(crq, tgt->wwpn);
-+	if (fpin) {
-+		fc_host_fpin_rcv(tgt->vhost->host,
-+				 sizeof(*fpin) + be32_to_cpu(fpin->desc_len),
-+				 (char *)fpin, 0);
-+		kfree(fpin);
-+	} else
-+		dev_err_ratelimited(vhost->dev,
-+				    "FPIN event %u received, unable to process\n",
-+				    crq->fpin_status);
-+ end:
-+	kfree(aw);
-+}
-+
- /**
-  * ibmvfc_handle_async - Handle an async event from the adapter
-  * @crq:	crq to process
-  * @vhost:	ibmvfc host struct
-  *
-  **/
--static void ibmvfc_handle_async(struct ibmvfc_async_crq *crq,
--				struct ibmvfc_host *vhost)
-+VISIBLE_IF_KUNIT void ibmvfc_handle_async(struct ibmvfc_async_crq *crq,
-+					  struct ibmvfc_host *vhost)
- {
- 	const struct ibmvfc_async_desc *desc = ibmvfc_get_ae_desc(be64_to_cpu(crq->event));
-+	struct ibmvfc_async_work *aw;
- 	struct ibmvfc_target *tgt;
+@@ -416,15 +423,23 @@ DEFINE_INTERRUPT_HANDLER_NMI(soft_nmi_interrupt)
+ 		print_irqtrace_events(current);
+ 		show_regs(regs);
  
- 	ibmvfc_log(vhost, desc->log_level, "%s event received. scsi_id: %llx, wwpn: %llx,"
-@@ -3269,11 +3485,23 @@ static void ibmvfc_handle_async(struct ibmvfc_async_crq *crq,
- 	case IBMVFC_AE_HALT:
- 		ibmvfc_link_down(vhost, IBMVFC_HALTED);
- 		break;
-+	case IBMVFC_AE_FPIN:
-+		aw = kzalloc(sizeof(struct ibmvfc_async_work), GFP_ATOMIC);
-+		if (aw) {
-+			INIT_WORK(&aw->async_work_s, ibmvfc_process_async_work);
-+			aw->vhost = vhost;
-+			aw->crq = *crq;
-+			queue_work(vhost->fpin_workq, &aw->async_work_s);
-+		} else
-+			dev_err_ratelimited(vhost->dev,
-+					    "can't offload async CRQ to work queue\n");
-+		break;
- 	default:
- 		dev_err(vhost->dev, "Unknown async event received: %lld\n", crq->event);
- 		break;
++		/* Mark what we already printed so panic() won't repeat it. */
++		sys_info_filter_and_set(SYS_INFO_MODULES | SYS_INFO_IRQTRACE |
++					SYS_INFO_STACK);
++
+ 		xchg(&__wd_nmi_output, 1); // see wd_lockup_ipi
+ 
+ 		if (sysctl_hardlockup_all_cpu_backtrace ||
+-		    (hardlockup_si_mask & SYS_INFO_ALL_BT))
+-			trigger_allbutcpu_cpu_backtrace(cpu);
++		    (hardlockup_si_mask & SYS_INFO_ALL_BT)) {
++			if (sys_info_filter_and_set(SYS_INFO_ALL_BT))
++				trigger_allbutcpu_cpu_backtrace(cpu);
++		}
+ 
+ 		sys_info(hardlockup_si_mask & ~SYS_INFO_ALL_BT);
+ 		if (hardlockup_panic)
+ 			nmi_panic(regs, "Hard LOCKUP");
++		else
++			sys_info_reset();
+ 
+ 		wd_end_reporting();
  	}
- }
-+EXPORT_SYMBOL_IF_KUNIT(ibmvfc_handle_async);
+diff --git a/include/linux/sys_info.h b/include/linux/sys_info.h
+index a5bc3ea3d44b..f5a1b699143b 100644
+--- a/include/linux/sys_info.h
++++ b/include/linux/sys_info.h
+@@ -16,8 +16,14 @@
+ #define SYS_INFO_PANIC_CONSOLE_REPLAY	0x00000020
+ #define SYS_INFO_ALL_BT			0x00000040
+ #define SYS_INFO_BLOCKED_TASKS		0x00000080
++#define SYS_INFO_MODULES		0x00000100
++#define SYS_INFO_IRQTRACE		0x00000200
++#define SYS_INFO_STACK			0x00000400
  
- /**
-  * ibmvfc_handle_crq - Handles and frees received events in the CRQ
-@@ -3803,8 +4031,6 @@ static void ibmvfc_tasklet(void *data)
- 		/* Pull all the valid messages off the async CRQ */
- 		while ((async = ibmvfc_next_async_crq(vhost)) != NULL) {
- 			ibmvfc_handle_async(async, vhost);
--			async->valid = 0;
--			wmb();
+ void sys_info(unsigned long si_mask);
++unsigned long sys_info_effective_mask(unsigned long mask);
++unsigned long sys_info_filter_and_set(unsigned long si_mask);
++void sys_info_reset(void);
+ unsigned long sys_info_parse_param(char *str);
+ 
+ #ifdef CONFIG_SYSCTL
+diff --git a/kernel/hung_task.c b/kernel/hung_task.c
+index 6fcc94ce4ca9..7a3738279503 100644
+--- a/kernel/hung_task.c
++++ b/kernel/hung_task.c
+@@ -557,8 +557,10 @@ static int watchdog(void *dummy)
+ 		t = hung_timeout_jiffies(hung_last_checked, interval);
+ 		if (t <= 0) {
+ 			if (!atomic_xchg(&reset_hung_task, 0) &&
+-			    !hung_detector_suspended)
++			    !hung_detector_suspended) {
++				sys_info_reset();
+ 				check_hung_uninterruptible_tasks(timeout);
++			}
+ 			hung_last_checked = jiffies;
+ 			continue;
  		}
- 
- 		/* Pull all the valid messages off the CRQ */
-@@ -3818,8 +4044,6 @@ static void ibmvfc_tasklet(void *data)
- 		if ((async = ibmvfc_next_async_crq(vhost)) != NULL) {
- 			vio_disable_interrupts(vdev);
- 			ibmvfc_handle_async(async, vhost);
--			async->valid = 0;
--			wmb();
- 		} else if ((crq = ibmvfc_next_crq(vhost)) != NULL) {
- 			vio_disable_interrupts(vdev);
- 			ibmvfc_handle_crq(crq, vhost, &evt_doneq);
-@@ -6364,9 +6588,15 @@ static int ibmvfc_probe(struct vio_dev *vdev, const struct vio_device_id *id)
- 	INIT_WORK(&vhost->rport_add_work_q, ibmvfc_rport_add_thread);
- 	mutex_init(&vhost->passthru_mutex);
- 
--	if ((rc = ibmvfc_alloc_mem(vhost)))
-+	vhost->fpin_workq = alloc_workqueue("%s-fpin-workq-%u", 0, 0,
-+					    IBMVFC_NAME, shost->host_no);
-+	if (vhost->fpin_workq == NULL)
- 		goto free_scsi_host;
- 
-+	rc = ibmvfc_alloc_mem(vhost);
-+	if (rc)
-+		goto free_workq;
+diff --git a/kernel/panic.c b/kernel/panic.c
+index 213725b612aa..94ce7a94f118 100644
+--- a/kernel/panic.c
++++ b/kernel/panic.c
+@@ -550,8 +550,12 @@ static void panic_trigger_all_cpu_backtrace(void)
+  */
+ static void panic_other_cpus_shutdown(bool crash_kexec)
+ {
+-	if (panic_print & SYS_INFO_ALL_BT)
+-		panic_trigger_all_cpu_backtrace();
++	unsigned long mask = sys_info_effective_mask(panic_print);
 +
- 	vhost->work_thread = kthread_run(ibmvfc_work, vhost, "%s_%d", IBMVFC_NAME,
- 					 shost->host_no);
++	if (mask & SYS_INFO_ALL_BT) {
++		if (sys_info_filter_and_set(SYS_INFO_ALL_BT))
++			panic_trigger_all_cpu_backtrace();
++	}
  
-@@ -6412,6 +6642,9 @@ static int ibmvfc_probe(struct vio_dev *vdev, const struct vio_device_id *id)
- 	kthread_stop(vhost->work_thread);
- free_host_mem:
- 	ibmvfc_free_mem(vhost);
-+free_workq:
-+	destroy_workqueue(vhost->fpin_workq);
-+	vhost->fpin_workq = NULL;
- free_scsi_host:
- 	scsi_host_put(shost);
- out:
-@@ -6453,6 +6686,8 @@ static void ibmvfc_remove(struct vio_dev *vdev)
- 	ibmvfc_release_crq_queue(vhost);
+ 	/*
+ 	 * Note that smp_send_stop() is the usual SMP shutdown function,
+@@ -649,6 +653,7 @@ void vpanic(const char *fmt, va_list args)
+ 		panic_this_cpu_backtrace_printed = true;
+ 	} else if (IS_ENABLED(CONFIG_DEBUG_BUGVERBOSE)) {
+ 		dump_stack();
++		sys_info_filter_and_set(SYS_INFO_STACK);
+ 		panic_this_cpu_backtrace_printed = true;
+ 	}
  
- 	ibmvfc_free_mem(vhost);
-+	destroy_workqueue(vhost->fpin_workq);
-+	vhost->fpin_workq = NULL;
- 	spin_lock(&ibmvfc_driver_lock);
- 	list_del(&vhost->queue);
- 	spin_unlock(&ibmvfc_driver_lock);
-@@ -6603,5 +6838,11 @@ static void __exit ibmvfc_module_exit(void)
- 	fc_release_transport(ibmvfc_transport_template);
+diff --git a/kernel/watchdog.c b/kernel/watchdog.c
+index 87dd5e0f6968..3bc6f5fd5380 100644
+--- a/kernel/watchdog.c
++++ b/kernel/watchdog.c
+@@ -280,8 +280,13 @@ void watchdog_hardlockup_check(unsigned int cpu, struct pt_regs *regs)
+ 		trigger_single_cpu_backtrace(cpu);
+ 	}
+ 
++	/* Mark what we already printed so panic() won't repeat it. */
++	sys_info_filter_and_set(SYS_INFO_MODULES | SYS_INFO_IRQTRACE |
++				SYS_INFO_STACK);
++
+ 	if (hardlockup_all_cpu_backtrace) {
+-		trigger_allbutcpu_cpu_backtrace(cpu);
++		if (sys_info_filter_and_set(SYS_INFO_ALL_BT))
++			trigger_allbutcpu_cpu_backtrace(cpu);
+ 		if (!hardlockup_panic)
+ 			clear_bit_unlock(0, &hard_lockup_nmi_warn);
+ 	}
+@@ -289,6 +294,8 @@ void watchdog_hardlockup_check(unsigned int cpu, struct pt_regs *regs)
+ 	sys_info(hardlockup_si_mask & ~SYS_INFO_ALL_BT);
+ 	if (hardlockup_panic)
+ 		nmi_panic(regs, "Hard LOCKUP");
++	else
++		sys_info_reset();
+ 
+ 	per_cpu(watchdog_hardlockup_warned, cpu) = true;
+ }
+@@ -792,6 +799,8 @@ static int softlockup_fn(void *data)
  }
  
-+VISIBLE_IF_KUNIT struct list_head *ibmvfc_get_headp(void)
-+{
-+	return &ibmvfc_head;
-+}
-+EXPORT_SYMBOL_IF_KUNIT(ibmvfc_get_headp);
+ /* watchdog kicker functions */
++static DEFINE_PER_CPU(bool, watchdog_stuck_previously);
 +
- module_init(ibmvfc_module_init);
- module_exit(ibmvfc_module_exit);
-diff --git a/drivers/scsi/ibmvscsi/ibmvfc.h b/drivers/scsi/ibmvscsi/ibmvfc.h
-index c73ed2314ad0..f69e0605a78d 100644
---- a/drivers/scsi/ibmvscsi/ibmvfc.h
-+++ b/drivers/scsi/ibmvscsi/ibmvfc.h
-@@ -671,8 +671,12 @@ enum ibmvfc_ae_fpin_status {
- 	IBMVFC_AE_FPIN_PORT_CONGESTED	= 0x2,
- 	IBMVFC_AE_FPIN_PORT_CLEARED	= 0x3,
- 	IBMVFC_AE_FPIN_PORT_DEGRADED	= 0x4,
-+	IBMVFC_AE_FPIN_CONGESTION_CLEARED	= 0x5,
+ static enum hrtimer_restart watchdog_timer_fn(struct hrtimer *hrtimer)
+ {
+ 	unsigned long touch_ts, period_ts, now;
+@@ -864,6 +873,7 @@ static enum hrtimer_restart watchdog_timer_fn(struct hrtimer *hrtimer)
+ 	touch_ts = __this_cpu_read(watchdog_touch_ts);
+ 	duration = is_softlockup(touch_ts, period_ts, now);
+ 	if (unlikely(duration)) {
++		__this_cpu_write(watchdog_stuck_previously, true);
+ #ifdef CONFIG_SYSFS
+ 		++softlockup_count;
+ #endif
+@@ -893,8 +903,13 @@ static enum hrtimer_restart watchdog_timer_fn(struct hrtimer *hrtimer)
+ 			dump_stack();
+ 		printk_cpu_sync_put_irqrestore(flags);
+ 
++		/* Mark what we already printed so panic() won't repeat it. */
++		sys_info_filter_and_set(SYS_INFO_MODULES | SYS_INFO_IRQTRACE |
++					SYS_INFO_STACK);
++
+ 		if (softlockup_all_cpu_backtrace) {
+-			trigger_allbutcpu_cpu_backtrace(smp_processor_id());
++			if (sys_info_filter_and_set(SYS_INFO_ALL_BT))
++				trigger_allbutcpu_cpu_backtrace(smp_processor_id());
+ 			if (!softlockup_panic)
+ 				clear_bit_unlock(0, &soft_lockup_nmi_warn);
+ 		}
+@@ -905,6 +920,11 @@ static enum hrtimer_restart watchdog_timer_fn(struct hrtimer *hrtimer)
+ 
+ 		if (softlockup_panic && thresh_count >= softlockup_panic)
+ 			panic("softlockup: hung tasks");
++	} else {
++		if (__this_cpu_read(watchdog_stuck_previously)) {
++			__this_cpu_write(watchdog_stuck_previously, false);
++			sys_info_reset();
++		}
+ 	}
+ 
+ 	return HRTIMER_RESTART;
+diff --git a/lib/Makefile b/lib/Makefile
+index 7f75cc6edf94..521644a140c8 100644
+--- a/lib/Makefile
++++ b/lib/Makefile
+@@ -40,7 +40,7 @@ lib-y := ctype.o string.o vsprintf.o cmdline.o \
+ 	 is_single_threaded.o plist.o decompress.o kobject_uevent.o \
+ 	 earlycpio.o seq_buf.o siphash.o dec_and_lock.o \
+ 	 nmi_backtrace.o win_minmax.o memcat_p.o \
+-	 buildid.o objpool.o iomem_copy.o sys_info.o
++	 buildid.o objpool.o iomem_copy.o sys_info.o sys_info_filter.o
+ 
+ lib-$(CONFIG_UNION_FIND) += union_find.o
+ lib-$(CONFIG_PRINTK) += dump_stack.o
+diff --git a/lib/sys_info.c b/lib/sys_info.c
+index f32a06ec9ed4..e188c5d924cb 100644
+--- a/lib/sys_info.c
++++ b/lib/sys_info.c
+@@ -2,12 +2,9 @@
+ #include <linux/array_size.h>
+ #include <linux/bitops.h>
+ #include <linux/cleanup.h>
+-#include <linux/console.h>
+ #include <linux/log2.h>
+ #include <linux/kernel.h>
+-#include <linux/ftrace.h>
+-#include <linux/nmi.h>
+-#include <linux/sched/debug.h>
++#include <linux/slab.h>
+ #include <linux/string.h>
+ #include <linux/sysctl.h>
+ 
+@@ -22,6 +19,9 @@ static const char * const si_names[] = {
+ 	[ilog2(SYS_INFO_PANIC_CONSOLE_REPLAY)]	= "",
+ 	[ilog2(SYS_INFO_ALL_BT)]		= "all_bt",
+ 	[ilog2(SYS_INFO_BLOCKED_TASKS)]		= "blocked_tasks",
++	[ilog2(SYS_INFO_MODULES)]		= "modules",
++	[ilog2(SYS_INFO_IRQTRACE)]		= "irqtrace",
++	[ilog2(SYS_INFO_STACK)]			= "stack",
  };
  
-+#define IBMVFC_FPIN_DEFAULT_EVENT_PERIOD	(5*60*MSEC_PER_SEC) /* 5 minutes */
-+#define IBMVFC_FPIN_DEFAULT_EVENT_THRESHOLD	(5*60*MSEC_PER_SEC/2) /* 2.5 minutes */
-+
- struct ibmvfc_async_crq {
- 	volatile u8 valid;
- 	u8 link_state;
-@@ -686,6 +690,12 @@ struct ibmvfc_async_crq {
- 	__be64 reserved;
- } __packed __aligned(8);
+ /*
+@@ -29,7 +29,7 @@ static const char * const si_names[] = {
+  * If a kernel module calls sys_info() with "parameter == 0", then
+  * this mask will be used.
+  */
+-static unsigned long kernel_si_mask;
++unsigned long kernel_si_mask;
  
-+struct ibmvfc_async_work {
-+	struct ibmvfc_host *vhost;
-+	struct ibmvfc_async_crq crq;
-+	struct work_struct async_work_s;
-+};
-+
- union ibmvfc_iu {
- 	struct ibmvfc_mad_common mad_common;
- 	struct ibmvfc_npiv_login_mad npiv_login;
-@@ -914,6 +924,7 @@ struct ibmvfc_host {
- 	struct work_struct rport_add_work_q;
- 	wait_queue_head_t init_wait_q;
- 	wait_queue_head_t work_wait_q;
-+	struct workqueue_struct *fpin_workq;
- };
- 
- #define DBG_CMD(CMD) do { if (ibmvfc_debug) CMD; } while (0)
-@@ -953,4 +964,9 @@ struct ibmvfc_host {
- #define ibmvfc_remove_trace_file(kobj, attr) do { } while (0)
+ /* Expecting string like "xxx_sys_info=tasks,mem,timers,locks,ftrace,..." */
+ unsigned long sys_info_parse_param(char *str)
+@@ -136,31 +136,7 @@ static int __init sys_info_sysctl_init(void)
+ subsys_initcall(sys_info_sysctl_init);
  #endif
  
-+#ifdef VISIBLE_IF_KUNIT
-+VISIBLE_IF_KUNIT void ibmvfc_handle_async(struct ibmvfc_async_crq *crq, struct ibmvfc_host *vhost);
-+VISIBLE_IF_KUNIT struct list_head *ibmvfc_get_headp(void);
-+#endif
-+
- #endif
-diff --git a/drivers/scsi/ibmvscsi/ibmvfc_kunit.c b/drivers/scsi/ibmvscsi/ibmvfc_kunit.c
+-static void __sys_info(unsigned long si_mask)
++unsigned long sys_info_effective_mask(unsigned long mask)
+ {
+-	if (si_mask & SYS_INFO_TASKS)
+-		show_state();
+-
+-	if (si_mask & SYS_INFO_MEM)
+-		show_mem();
+-
+-	if (si_mask & SYS_INFO_TIMERS)
+-		sysrq_timer_list_show();
+-
+-	if (si_mask & SYS_INFO_LOCKS)
+-		debug_show_all_locks();
+-
+-	if (si_mask & SYS_INFO_FTRACE)
+-		ftrace_dump(DUMP_ALL);
+-
+-	if (si_mask & SYS_INFO_ALL_BT)
+-		trigger_all_cpu_backtrace();
+-
+-	if (si_mask & SYS_INFO_BLOCKED_TASKS)
+-		show_state_filter(TASK_UNINTERRUPTIBLE);
+-}
+-
+-void sys_info(unsigned long si_mask)
+-{
+-	__sys_info(si_mask ? : kernel_si_mask);
++	return mask ? : READ_ONCE(kernel_si_mask);
+ }
+diff --git a/lib/sys_info_filter.c b/lib/sys_info_filter.c
 new file mode 100644
-index 000000000000..e41e2a49e549
+index 000000000000..b07b5dc3ce3c
 --- /dev/null
-+++ b/drivers/scsi/ibmvscsi/ibmvfc_kunit.c
-@@ -0,0 +1,131 @@
-+// SPDX-License-Identifier: GPL-2.0-or-later
-+#include <kunit/test.h>
-+#include <kunit/visibility.h>
-+#include <scsi/scsi_device.h>
-+#include <scsi/scsi_transport_fc.h>
-+#include <linux/list.h>
-+#include <linux/delay.h>
-+#include "ibmvfc.h"
++++ b/lib/sys_info_filter.c
+@@ -0,0 +1,120 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/*
++ * sys_info incident diagnostic engine.
++ *
++ * Centralises the dispatching and deduplication of system diagnostic
++ * output (task lists, memory info, backtraces, module lists, etc.)
++ * that is requested during lockups, hung tasks, and panics.
++ *
++ * A global bitmask tracks which categories have already been printed
++ * during the current incident so that duplicate output is suppressed
++ * when multiple subsystems request the same diagnostics (e.g. a
++ * watchdog fires, prints sys_info, then calls panic() which tries
++ * to print sys_info again).
++ */
++#include <linux/console.h>
++#include <linux/ftrace.h>
++#include <linux/kernel.h>
++#include <linux/lockdep.h>
++#include <linux/module.h>
++#include <linux/nmi.h>
++#include <linux/sched/debug.h>
 +
-+MODULE_IMPORT_NS("EXPORTED_FOR_KUNIT_TESTING");
++#include <linux/sys_info.h>
++
++/*
++ * Bitmask of sys_info categories already printed during the current
++ * incident.  Accessed locklessly via cmpxchg — races between CPUs
++ * during a lockup are tolerable because the output from different
++ * watchdogs has never been synchronised, and panic() never returns.
++ */
++static unsigned long sys_info_printed;
 +
 +/**
-+ * ibmvfc_async_fpin_event_test - unit test for IBMVFC_AE_FPIN parts of
-+ * ibmvfc_handle_async
-+ * @test: pointer to kunit structure
++ * sys_info_filter_and_set - atomically claim unprinted sys_info bits
++ * @si_mask: requested diagnostics bitmask
 + *
-+ * Tests
-+ * - error returns from ibmvfc_handle_async
-+ * - statistics updates
-+ *
-+ * Return: void
++ * Returns the subset of @si_mask that has NOT been printed yet during
++ * the current incident and marks those bits as printed.  Returns 0
++ * if everything requested was already printed.
 + */
-+static void ibmvfc_async_fpin_test(struct kunit *test)
++unsigned long sys_info_filter_and_set(unsigned long si_mask)
 +{
-+	u64 post[IBMVFC_AE_FPIN_CONGESTION_CLEARED + 1];
-+	u64 pre[IBMVFC_AE_FPIN_CONGESTION_CLEARED + 1];
-+	enum ibmvfc_ae_fpin_status fs;
-+	struct fc_host_attrs *fc_host;
-+	struct ibmvfc_async_crq crq[IBMVFC_AE_FPIN_CONGESTION_CLEARED + 1];
-+	struct ibmvfc_target *tgt;
-+	struct ibmvfc_host *vhost;
-+	struct list_head *queue;
-+	struct list_head *headp;
++	unsigned long old, new;
 +
-+	headp = ibmvfc_get_headp();
-+	KUNIT_ASSERT_FALSE_MSG(test, list_empty(headp), "No ibmvfc devices available\n");
-+	queue = headp->next;
-+	vhost = container_of(queue, struct ibmvfc_host, queue);
++	if (!si_mask)
++		return 0;
 +
-+	KUNIT_ASSERT_GE_MSG(test, vhost->num_targets, 1, "No targets");
-+	tgt = list_first_entry(&vhost->targets, struct ibmvfc_target, queue);
-+	KUNIT_EXPECT_NOT_NULL(test, tgt->rport);
++	do {
++		old = READ_ONCE(sys_info_printed);
++		if (!(si_mask & ~old))
++			return 0;
++		new = old | si_mask;
++	} while (cmpxchg(&sys_info_printed, old, new) != old);
 +
-+	fc_host = shost_to_fc_host(vhost->host);
-+
-+	pre[IBMVFC_AE_FPIN_LINK_CONGESTED] = READ_ONCE(fc_host->fpin_stats.cn_device_specific);
-+	pre[IBMVFC_AE_FPIN_PORT_CONGESTED] = READ_ONCE(tgt->rport->fpin_stats.cn);
-+	pre[IBMVFC_AE_FPIN_PORT_CLEARED] = READ_ONCE(tgt->rport->fpin_stats.cn_clear);
-+	pre[IBMVFC_AE_FPIN_PORT_DEGRADED] = READ_ONCE(tgt->rport->fpin_stats.li_failure_unknown);
-+	pre[IBMVFC_AE_FPIN_CONGESTION_CLEARED] = READ_ONCE(fc_host->fpin_stats.cn_clear);
-+
-+	for (fs = IBMVFC_AE_FPIN_LINK_CONGESTED; fs <= IBMVFC_AE_FPIN_CONGESTION_CLEARED; fs++) {
-+		crq[fs].valid = 0x80;
-+		crq[fs].link_state = IBMVFC_AE_LS_LINK_UP;
-+		crq[fs].fpin_status = fs;
-+		crq[fs].event = cpu_to_be64(IBMVFC_AE_FPIN);
-+		crq[fs].scsi_id = cpu_to_be64(tgt->scsi_id);
-+		crq[fs].wwpn = cpu_to_be64(tgt->wwpn);
-+		crq[fs].node_name = cpu_to_be64(tgt->ids.node_name);
-+		ibmvfc_handle_async(&crq[fs], vhost);
-+	}
-+
-+	msleep(500U);
-+
-+	post[IBMVFC_AE_FPIN_LINK_CONGESTED] = READ_ONCE(fc_host->fpin_stats.cn_device_specific);
-+	post[IBMVFC_AE_FPIN_PORT_CONGESTED] = READ_ONCE(tgt->rport->fpin_stats.cn);
-+	post[IBMVFC_AE_FPIN_PORT_CLEARED] = READ_ONCE(tgt->rport->fpin_stats.cn_clear);
-+	post[IBMVFC_AE_FPIN_PORT_DEGRADED] = READ_ONCE(tgt->rport->fpin_stats.li_failure_unknown);
-+	post[IBMVFC_AE_FPIN_CONGESTION_CLEARED] = READ_ONCE(fc_host->fpin_stats.cn_clear);
-+
-+	KUNIT_EXPECT_GE(test, post[IBMVFC_AE_FPIN_LINK_CONGESTED],
-+			pre[IBMVFC_AE_FPIN_LINK_CONGESTED]+1);
-+	KUNIT_EXPECT_GE(test, post[IBMVFC_AE_FPIN_PORT_CONGESTED],
-+			pre[IBMVFC_AE_FPIN_PORT_CONGESTED]+1);
-+	KUNIT_EXPECT_GE(test, post[IBMVFC_AE_FPIN_PORT_CLEARED],
-+			pre[IBMVFC_AE_FPIN_PORT_CLEARED]+1);
-+	KUNIT_EXPECT_GE(test, post[IBMVFC_AE_FPIN_PORT_DEGRADED],
-+			pre[IBMVFC_AE_FPIN_PORT_DEGRADED]+1);
-+	KUNIT_EXPECT_GE(test, post[IBMVFC_AE_FPIN_CONGESTION_CLEARED],
-+			pre[IBMVFC_AE_FPIN_CONGESTION_CLEARED]+1);
-+
-+	pre[IBMVFC_AE_FPIN_LINK_CONGESTED] = READ_ONCE(fc_host->fpin_stats.cn_device_specific);
-+	pre[IBMVFC_AE_FPIN_PORT_CONGESTED] = READ_ONCE(tgt->rport->fpin_stats.cn);
-+	pre[IBMVFC_AE_FPIN_PORT_CLEARED] = READ_ONCE(tgt->rport->fpin_stats.cn_clear);
-+	pre[IBMVFC_AE_FPIN_PORT_DEGRADED] = READ_ONCE(tgt->rport->fpin_stats.li_failure_unknown);
-+	pre[IBMVFC_AE_FPIN_CONGESTION_CLEARED] = READ_ONCE(fc_host->fpin_stats.cn_clear);
-+
-+	/* bad path */
-+	crq[0].valid = 0x80;
-+	crq[0].link_state = IBMVFC_AE_LS_LINK_UP;
-+	crq[0].fpin_status = 0; /* bad value */
-+	crq[0].event = cpu_to_be64(IBMVFC_AE_FPIN);
-+	crq[0].scsi_id = cpu_to_be64(tgt->scsi_id);
-+	crq[0].wwpn = cpu_to_be64(tgt->wwpn);
-+	crq[0].node_name = cpu_to_be64(tgt->ids.node_name);
-+	ibmvfc_handle_async(&crq[0], vhost);
-+
-+	msleep(500U);
-+
-+	post[IBMVFC_AE_FPIN_LINK_CONGESTED] = READ_ONCE(fc_host->fpin_stats.cn_device_specific);
-+	post[IBMVFC_AE_FPIN_PORT_CONGESTED] = READ_ONCE(tgt->rport->fpin_stats.cn);
-+	post[IBMVFC_AE_FPIN_PORT_CLEARED] = READ_ONCE(tgt->rport->fpin_stats.cn_clear);
-+	post[IBMVFC_AE_FPIN_PORT_DEGRADED] = READ_ONCE(tgt->rport->fpin_stats.li_failure_unknown);
-+	post[IBMVFC_AE_FPIN_CONGESTION_CLEARED] = READ_ONCE(fc_host->fpin_stats.cn_clear);
-+
-+	KUNIT_EXPECT_EQ(test, pre[IBMVFC_AE_FPIN_LINK_CONGESTED],
-+			post[IBMVFC_AE_FPIN_LINK_CONGESTED]);
-+	KUNIT_EXPECT_EQ(test, pre[IBMVFC_AE_FPIN_PORT_CONGESTED],
-+			post[IBMVFC_AE_FPIN_PORT_CONGESTED]);
-+	KUNIT_EXPECT_EQ(test, pre[IBMVFC_AE_FPIN_PORT_CLEARED],
-+			post[IBMVFC_AE_FPIN_PORT_CLEARED]);
-+	KUNIT_EXPECT_EQ(test, pre[IBMVFC_AE_FPIN_PORT_DEGRADED],
-+			post[IBMVFC_AE_FPIN_PORT_DEGRADED]);
-+	KUNIT_EXPECT_EQ(test, pre[IBMVFC_AE_FPIN_CONGESTION_CLEARED],
-+			post[IBMVFC_AE_FPIN_CONGESTION_CLEARED]);
++	return si_mask & ~old;
 +}
 +
-+static struct kunit_case ibmvfc_fpin_test_cases[] = {
-+	KUNIT_CASE_SLOW(ibmvfc_async_fpin_test),
-+	{},
-+};
++/**
++ * sys_info_reset - clear the printed-state bitmask
++ *
++ * Called when an incident is over (lockup recovered, hung-task check
++ * round starts fresh) so that subsequent incidents produce output.
++ */
++void sys_info_reset(void)
++{
++	WRITE_ONCE(sys_info_printed, 0);
++}
 +
-+static struct kunit_suite ibmvfc_fpin_test_suite = {
-+	.name = "ibmvfc-fpin-test",
-+	.test_cases = ibmvfc_fpin_test_cases,
-+};
-+kunit_test_init_section_suite(ibmvfc_fpin_test_suite);
++/*
++ * Dispatch the actual diagnostic output for each bit in @si_mask.
++ */
++static void __sys_info(unsigned long si_mask)
++{
++	if (si_mask & SYS_INFO_TASKS)
++		show_state();
 +
-+MODULE_LICENSE("GPL");
-+MODULE_AUTHOR("Dave Marquardt <davemarq@linux.ibm.com>");
-+MODULE_DESCRIPTION("Test module for IBM Virtual Fibre Channel Driver");
-
++	if (si_mask & SYS_INFO_MEM)
++		show_mem();
++
++	if (si_mask & SYS_INFO_TIMERS)
++		sysrq_timer_list_show();
++
++	if (si_mask & SYS_INFO_LOCKS)
++		debug_show_all_locks();
++
++	if (si_mask & SYS_INFO_FTRACE)
++		ftrace_dump(DUMP_ALL);
++
++	if (si_mask & SYS_INFO_ALL_BT)
++		trigger_all_cpu_backtrace();
++
++	if (si_mask & SYS_INFO_BLOCKED_TASKS)
++		show_state_filter(TASK_UNINTERRUPTIBLE);
++
++	if (si_mask & SYS_INFO_MODULES)
++		print_modules();
++
++	if (si_mask & SYS_INFO_IRQTRACE)
++		print_irqtrace_events(current);
++
++	if (si_mask & SYS_INFO_STACK)
++		dump_stack();
++}
++
++/**
++ * sys_info - print system diagnostics, suppressing duplicates
++ * @si_mask: requested diagnostics bitmask (0 = use kernel_si_info default)
++ *
++ * Resolves the effective mask (falling back to the kernel-wide default
++ * when @si_mask is 0), filters out anything already printed during this
++ * incident, and dispatches the remaining diagnostics.
++ */
++void sys_info(unsigned long si_mask)
++{
++	unsigned long mask = sys_info_effective_mask(si_mask);
++	unsigned long filtered = sys_info_filter_and_set(mask);
++
++	if (filtered)
++		__sys_info(filtered);
++}
 -- 
-2.54.0
+2.53.0
 
 
+
+NOTE!!: This is AI generated!! This **MAY** not be the finished product,
+this is ONLY the model!
+
+
+
+
+Thanks!
 
