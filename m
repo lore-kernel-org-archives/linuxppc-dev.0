@@ -1,50 +1,50 @@
-Return-Path: <linuxppc-dev+bounces-23416-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23417-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1899DC44500
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Jul 2026 15:46:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 48F2FC43327
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Jul 2026 15:47:43 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4grh7q3NYwz2ySD;
-	Fri, 03 Jul 2026 01:46:31 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783007191;
-	cv=none; b=iCBgIVRoHbT/+5InRaZVqAlaOcQBGgUK+cuebH+iB5AKYjc9Y5rLOL7EitzczqCQf09ZuDAF49Ji9M3si1wYdJiCMInNuVY+1xQLg2J5KMsB7+yudFNOIHuX+zz1vG11SqGMJrTFhQP9aajjpKosH4HdWv0PsFigpQe3faNPlOXYrA2ay4EXRnNEkNB5IV9Iq9rIGv2p4SQRcvFAJac1r8NwEXk72pgYs2aSPofnZqXFvuUDeWpVbp/igT3/hONo1ekJkYB3JUaGuna9nCwHjw2JRO6hcmcIK1odT7iBd0LalU+0Wkhvavr61g/I3WWIRGK4vwYFJKHieb8oF/Jigw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4grh996rHDz2xwM;
+	Fri, 03 Jul 2026 01:47:41 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783007261;
+	cv=none; b=nzNdpDzkkILSGbr5UnjNt6E8jIRbfKJ5mE/o4ifr5cyIVlhRtyrigTchknDf4dPcb56LEn6ux8I6Mo6ViWPh0m0RW7x3YhtfOaawuTyYF75s05yShFEnPQNwBXYGRiJrn04j406A9Ze2hIF1R4B19Ex3TmGECcKOtOuqW0Ap7yaA9y/OD7FdqNpbUfOnClb8XeODEj4koZdewUF0a5Xi1arlZ961uNBnWyqH0YbAh+3vo99ccXj5l/bJq+NusXWcDHzpY84egw1gXJyk34972tsq3pEQVDF+ddG0xEDwRGsnFj0GmPFAVhhqCUd8fdv26jEiQBeoT2leHzHIFm/zrA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1783007191; c=relaxed/relaxed;
-	bh=jvE9wSqWBUCbGMsJG9svgBUezevNvrm1MrcHHSCChso=;
+	t=1783007261; c=relaxed/relaxed;
+	bh=Po4UWa+Txwx6nSBMW1aPQiZMcfNfQH1HH88CC93hgvE=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=ojq6LX/M+3eAsBreRDVR/vy5zCvkNatDj7pb3S6qj7u8ogff12WWR7gfG2Z9rvqdRYwysnMN+/RfGZNHps5hk8j9DShLFfVFsVo9aKrClZRbPGuF41FsTxkLgGZVe/EERUS4FJz4C7c9mxhGiJMF0hVVy0oYHmwW8RIiEe89yj5kHje7mZPVA8Ezb8oqYna13dfwfgvVbvYg6Apoxev6r8lyooLlcxywISfJXsE6ROY9cYI5zFQCAMrANm1YB4tQy1Fxo0r1ed3gCrC0NNQqnnGpSJsYIujZJ40IvKIH6xtgCXRXGxDJt4jEfgxLhhF2WJpX3eGBrQ/HYKKfYY+P4w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Mynx6GD6; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 Content-Type:Content-Disposition:In-Reply-To; b=Dq+fsejrFEtsILVRV6p50syRgNdXQxb0zD2dQVo8mcoNnKQZJ54P1VNUHdgDXu3EsO34HTs6aHBMjTXuNgnEOho7vl+JQ559pP9rFgPDkP2K2/40C1S52UU0z54bATvZxTA2nxkj5AXsfXBy99ZdXB8XIrk6P7y5wJY3eglotalKprc4XtozvyBPBPZEYfrN7wAJZYxtc8ODD/CPi4aERTrpKe1ENwMenC9t+eH4tlr2pkeoxk4l2xAJqHeYKrkFyCvHDZnyh7HEHoVzZV1ZSiLrgaUUWCd15cUecKRgL8WaXObCdHl98IraDfvZuysdqktMgvORCAisFVmp3tE4LQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=TzKC7lqe; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Mynx6GD6;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=TzKC7lqe;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4grh7p34Xzz2yRM
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 Jul 2026 01:46:30 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4grh990BH7z2xqn
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 Jul 2026 01:47:41 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 2EBA4601EE;
-	Thu,  2 Jul 2026 15:46:28 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 90EC61F000E9;
-	Thu,  2 Jul 2026 15:46:11 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id E29F6601F1;
+	Thu,  2 Jul 2026 15:47:37 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 504D91F00A3E;
+	Thu,  2 Jul 2026 15:47:21 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1783007187;
-	bh=jvE9wSqWBUCbGMsJG9svgBUezevNvrm1MrcHHSCChso=;
+	s=k20260515; t=1783007257;
+	bh=Po4UWa+Txwx6nSBMW1aPQiZMcfNfQH1HH88CC93hgvE=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=Mynx6GD6LkebsGmUnF9MjOYGoc5t/kjVRBAa3y4hDMiI7/vl1tQdkpNYaMYBglDKt
-	 PpjOhV7WkyGWbA6148JfY40EHSUewPFem4EcHLSNtrDL52P+m6uRZFhhXV+p8drDP5
-	 krlXhtnXXcRAzWJ2KFYq3Hh8rhTgMNWOvfDO5ubcScHxjko5fhA5/oYXfBSBTm3FYZ
-	 q91+d//PbttUXOxvDyYYUNz2FFsT7LJ6pIAF99pcS/rpWlpmF6qsZCGqK6q0R7Cu6u
-	 A7jMMvK5AtByO3p0pYtd9gulxJxBI42o3AQ7j7VXEvArqPbpGQYUH4EuymRAwVZamK
-	 6IrFtw9w61Ysg==
-Date: Thu, 2 Jul 2026 16:46:04 +0100
+	b=TzKC7lqe9Irn8JWqPCnRnBZrIjo+wjSEuABLaM62PvcVIf4DaJMLiJvSaLOlIhJOf
+	 znTjZNuNsA3irPkrJRqgdqBSalvaquhCKCvJXbcnp48ft4f4usQWudMjc5HdiilEg8
+	 aXu2StIvmQVSGOVmy/Z45hqYBBWUQ4dmbbAuXk0zKTG9Nk6i9FrPim4oLQSVwaxjeJ
+	 SDNmxdCjFnKqxvBlFG1TSv8opFwMO6hCg3J9TODlwY2GGXnrD8Ppex9n5gZkrvDNyw
+	 HAH74jjJFvvUXueVEU77M3F6be8/OSAHgO1cGcNXrmLyLcrgWJzjocoh6IYJOxKTNs
+	 hiEtCFwm59HOw==
+Date: Thu, 2 Jul 2026 16:47:14 +0100
 From: Lorenzo Stoakes <ljs@kernel.org>
 To: Lance Yang <lance.yang@linux.dev>
 Cc: akpm@linux-foundation.org, tsbogend@alpha.franken.de, 
@@ -73,11 +73,10 @@ Cc: akpm@linux-foundation.org, tsbogend@alpha.franken.de,
 	intel-xe@lists.freedesktop.org, xen-devel@lists.xenproject.org, linux-fbdev@vger.kernel.org, 
 	linux-aio@kvack.org, linux-fsdevel@vger.kernel.org, linux-mm@kvack.org, 
 	linux-sound@vger.kernel.org
-Subject: Re: [PATCH 10/13] mm/vma: convert miscellaneous uses of VMA flags in
- core mm
-Message-ID: <akaGxiTaJreEQn8T@lucifer>
-References: <1e7d834c887b6a65627d730addcff13d458c6268.1782760670.git.ljs@kernel.org>
- <20260702131233.59026-1-lance.yang@linux.dev>
+Subject: Re: [PATCH 11/13] mm/mlock: convert mlock code to use vma_flags_t
+Message-ID: <akaH31jAOuMtthKF@lucifer>
+References: <2db16db81538355ca65f778c246d2381c673cad4.1782760670.git.ljs@kernel.org>
+ <20260702132107.73727-1-lance.yang@linux.dev>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -93,73 +92,63 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20260702131233.59026-1-lance.yang@linux.dev>
+In-Reply-To: <20260702132107.73727-1-lance.yang@linux.dev>
 
-On Thu, Jul 02, 2026 at 09:12:33PM +0800, Lance Yang wrote:
+On Thu, Jul 02, 2026 at 09:21:07PM +0800, Lance Yang wrote:
 >
-> On Mon, Jun 29, 2026 at 08:25:33PM +0100, Lorenzo Stoakes wrote:
-> >Update various uses of legacy flags in vma.c and mmap.c to the new
-> >vma_flags_t type, updating comments alongside them to be consistent.
+> On Mon, Jun 29, 2026 at 08:25:34PM +0100, Lorenzo Stoakes wrote:
+> >Replace use of the legacy vm_flags_t flags with vma_flags_t values
+> >throughout the mlock logic.
 > >
-> >Also update __install_special_mapping() to rearrange things slightly to
-> >accommodate the changes.
+> >Additionally update comments to reflect the changes to be consistent.
+> >
+> >No functional change intended.
 > >
 > >Signed-off-by: Lorenzo Stoakes <ljs@kernel.org>
 > >---
+>
+> Nothing scary jumped out at me. Just one tiny nit below ;)
+>
 > [...]
-> >diff --git a/mm/vma.c b/mm/vma.c
-> >index b81c05e67a61..ab2ef0f04420 100644
-> >--- a/mm/vma.c
-> >+++ b/mm/vma.c
-> >@@ -3417,23 +3417,27 @@ struct vm_area_struct *__install_special_mapping(
-> > 	vm_flags_t vm_flags, void *priv,
-> > 	const struct vm_operations_struct *ops)
+> >@@ -466,24 +466,23 @@ static void mlock_vma_pages_range(struct vm_area_struct *vma,
+> >  */
+> > static int mlock_fixup(struct vma_iterator *vmi, struct vm_area_struct *vma,
+> > 	       struct vm_area_struct **prev, unsigned long start,
+> >-	       unsigned long end, vm_flags_t newflags)
+> >+	       unsigned long end, vma_flags_t *new_vma_flags)
 > > {
-> >-	int ret;
-> >+	vma_flags_t vma_flags = legacy_to_vma_flags(vm_flags);
-> > 	struct vm_area_struct *vma;
-> >+	int ret;
+> >-	vma_flags_t new_vma_flags = legacy_to_vma_flags(newflags);
+> > 	const vma_flags_t old_vma_flags = vma->flags;
+> > 	struct mm_struct *mm = vma->vm_mm;
+> > 	int nr_pages;
+> > 	int ret = 0;
 > >
-> > 	vma = vm_area_alloc(mm);
-> >-	if (unlikely(vma == NULL))
-> >+	if (unlikely(!vma))
-> > 		return ERR_PTR(-ENOMEM);
+> >-	if (vma_flags_same_pair(&old_vma_flags, &new_vma_flags) ||
+> >+	if (vma_flags_same_pair(&old_vma_flags, new_vma_flags) ||
+> > 	    vma_is_secretmem(vma) || !vma_supports_mlock(vma)) {
+> > 		/*
+> >-		 * Don't set VM_LOCKED or VM_LOCKONFAULT and don't count.
+> >+		 * Don't set VMA_LOCKED_BIT or VM_LOCKONFAULT and don't count.
+>
+> s/VM_LOCKONFAULT/VMA_LOCKONFAULT_BIT/
+
+Ah yeah oops, will fix and respin! Good spot [and claude missed it ugh] :)
+
+>
+> Otherwise LGTM. Feel free to add:
+>
+> Reviewed-by: Lance Yang <lance.yang@linux.dev>
+>
+> > 		 * For secretmem, don't allow the memory to be unlocked.
+> > 		 */
+> > 		goto out;
+> > 	}
 > >
-> >-	vma_set_range(vma, addr, addr + len, 0);
-> >-	vm_flags |= vma_flags_to_legacy(mm->def_vma_flags) | VM_DONTEXPAND;
-> >+	vma_flags_set_mask(&vma_flags, mm->def_vma_flags);
-> >+	vma_flags_set(&vma_flags, VMA_DONTEXPAND_BIT);
-> > 	if (pgtable_supports_soft_dirty())
-> >-		vm_flags |= VM_SOFTDIRTY;
-> >-	vm_flags_init(vma, vm_flags & ~VM_LOCKED_MASK);
-> >+		vma_flags_set(&vma_flags, VMA_SOFTDIRTY_BIT);
-> >+	vma_flags_clear_mask(&vma_flags, VMA_LOCKED_MASK);
-> >+	vma->flags = vma_flags;
->
-> Maybe worth a vma_flags_init() helper here to mirror vm_flags_init()?
-> With this open-coded, we lose the soft-dirty WARN_ON_ONCE sanity check.
->
-> Might be nicer to keep that check in one place ;)
-
-I really hate all the VMA flag accessors, they conflate things horribly - we
-should be explicitly taking VMA write locks when we need to (and often killable
-ones actually) not assuming that a VMA flags accessor does (they should at most
-assert).
-
-This case is even more terribly egregious - you are setting flags at an
-arbitrary time, why are we asserting something about softdirty?
-
-You may update them as part of initialisation, maybe not. It's far from a
-guarantee and feels like a lazy place to put it.
-
-BUT obviously it's an oversight not to open code that here, so I'll update the
-patch to do that!
-
-I want VMA flags to be a clean stateless thing, other than the flags
-themselves. Implicit, unrelated, asserts or lock acquisitions in general should
-be done separately IMO.
-
->
+> >-	vma = vma_modify_flags(vmi, *prev, vma, start, end, &new_vma_flags);
+> >+	vma = vma_modify_flags(vmi, *prev, vma, start, end, new_vma_flags);
+> > 	if (IS_ERR(vma)) {
+> > 		ret = PTR_ERR(vma);
+> > 		goto out;
 > [...]
 
 Thanks, Lorenzo
