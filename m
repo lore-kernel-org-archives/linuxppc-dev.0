@@ -1,64 +1,134 @@
-Return-Path: <linuxppc-dev+bounces-23389-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23390-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 19760C43458
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Jul 2026 12:06:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F1E66C43458
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Jul 2026 12:11:18 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4grbGB1zS3z2yjv;
-	Thu, 02 Jul 2026 22:06:42 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=91.218.175.183
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782994002;
-	cv=none; b=BeCPb9/Ypw2nVAz6cbDgyvFUnAhs0D2BjpHEZ3D20L8r/hYnDt8e6ZbSfl79w0+7Zw0SSo7diHumdokPXTPRidTAlgijkZq8neuXOITRVADOcVLMMsnlkplL0snuIZ/v4RoXkjT/AN5jDOZ3EYBmXwMsWiA45rz+ds7nKjWGs890SQWZZrmGKpigCPNj5kjuh3J9IrtzMdZi9vyGHICPxCyPDUqC3YnW8HKSEnVdwiP7LFa7w4qCMbzHgfdkkhqTgR6ZtZPGCHEgA5LSfoVBVlWyXlz2Mh5Qxs8Mr88HzOquJvMmvURsJ9kSSWJhoIqw8uVAKSRQnJluPSc1gjqdEQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4grbMT4kCqz2yXj;
+	Thu, 02 Jul 2026 22:11:17 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:41d0:1004:224b::b2"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782994277;
+	cv=none; b=NCrjTZ6rkapuqWF8nwM2X7FqUYbTy48zylm9UUO5xp82vGydhIAW/lrnergLNUpYWo8QYGh8OCaVONnRQtINMiTDGl4btgFtVDEoGH8PjuIFbTHZWZNlx77ddC0I0Vae4n6YpUKmd21AT9DvdoEksjOcrqQuD97t44QLqdmF8gWWIaYqixngzX6vJy03+Ch7bWxY5VAnyHNlGNW3Gd/azD4k061Swa0x9x29tEBv2kbQqMwQlZVPbRQtWMwJF1zxcAW1lW0nGF7MVb6tKF4ZSKnNrRUlZZ9hvlxyB0pRCKdBcGFTVpuZ2je8yyk7ySrldREUBn4bbY9u+8yz35EDbA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1782994002; c=relaxed/relaxed;
-	bh=EpJZ25WsLuIlkqseCrbEHPfxQ4Tt5MBUyDicJs/5yFk=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=Cw5Zdcuy04t7BJtwudH4rSImnHfDpip/93xDnZTNpDj9C2nOZfXzgDnkXkFrdkpXGdCUl5hS1EXA07kbzktO9341OyeLTh/FnQIu2+mUc4+J3kuFkN7oeYd03RgGhCNIOvfbC6jx7tP6HqIr9FtKtefwW9RldVAKt39Wsrh/2cW/swtrsqIOH392TC46CFsCpT2OYqq7RNEwk64bnPqWh9rEfDaOmFPnpmY8BnoBfgl3hsAQ34PFuGB2jd8LBg0ZUJWAEGgMEFnFZDy8TRMk3JGQbqV5idEUbQHuKody9NLrETc1YdnioT4wGXXJdmfcOxbfsXsN7y7SyOPMBHXtqA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=pQMCWR48; dkim-atps=neutral; spf=pass (client-ip=91.218.175.183; helo=out-183.mta0.migadu.com; envelope-from=thorsten.blum@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
+	t=1782994277; c=relaxed/relaxed;
+	bh=szYxJDyUXLwpHCPYtdT5QZRTamk7ohIwjDiVPC1pzUs=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=RZPHE0dFRpnpZ5soma+QxZOKpdNOnNGVqrxgcnp1upahbZDnmOLKpaVwhGIs4d+DYbOK+urZCRUZfK6J/3WasdPj2hTMqVjb92JSOuwPGnOAXxypb9V32455tXzcpgT+o6H1xuHxZF07R0gERbiSyJ4ka08z2ZJGuRNU0JbaLMEhtL7b1V4cz+t7NUdAyefXFUIv6BphSDtHX4vPV9QJtqGEL1xvx4kLknEnp1EN4oJb5keJ4M/4przGkfIF9Ezw26B96YC/MfVZwA3rH7yvBPBHQmHlGOZbougmZEQooeDfx9xDm4GDTXJ9r5fScPRC3IfPClolBluRNADoS79WPQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=o2h14zEv; dkim-atps=neutral; spf=pass (client-ip=2001:41d0:1004:224b::b2; helo=out-178.mta0.migadu.com; envelope-from=lance.yang@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=pQMCWR48;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=o2h14zEv;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=91.218.175.183; helo=out-183.mta0.migadu.com; envelope-from=thorsten.blum@linux.dev; receiver=lists.ozlabs.org)
-Received: from out-183.mta0.migadu.com (out-183.mta0.migadu.com [91.218.175.183])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=2001:41d0:1004:224b::b2; helo=out-178.mta0.migadu.com; envelope-from=lance.yang@linux.dev; receiver=lists.ozlabs.org)
+Received: from out-178.mta0.migadu.com (out-178.mta0.migadu.com [IPv6:2001:41d0:1004:224b::b2])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4grbG94JmBz2yQG
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 Jul 2026 22:06:41 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4grbMS62lBz2xLq
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 Jul 2026 22:11:16 +1000 (AEST)
 X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
-	t=1782993980;
+	t=1782994254;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=EpJZ25WsLuIlkqseCrbEHPfxQ4Tt5MBUyDicJs/5yFk=;
-	b=pQMCWR48HrTKFfEiVKfi3/l06Bn2GCOjXTwUOGzFrAnKZcmvhvluO3+UaatJOkSq7qmNkD
-	BpG54LO/blIyC7cRma+a7KEYb4Jo4iyWMKGYobz2/uwVbDVVmH7VZ2tkCN56ditIaondft
-	9cFplZVafSFdbAsFXOZjOA4zmnZT0d0=
-From: Thorsten Blum <thorsten.blum@linux.dev>
-To: Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	Jiri Bohac <jbohac@suse.cz>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Scott Wood <oss@buserror.net>,
-	Jason Yan <yanaijie@huawei.com>,
-	Diana Craciun <diana.craciun@nxp.com>
-Cc: Thorsten Blum <thorsten.blum@linux.dev>,
-	stable@vger.kernel.org,
+	bh=szYxJDyUXLwpHCPYtdT5QZRTamk7ohIwjDiVPC1pzUs=;
+	b=o2h14zEvKcQ49vaQ50LBNnbgHGGpFBTA0OsIFCWdpiUc7gYaraiUcJHgmdFM4mBzY7pBJH
+	3Nawgn9WkBzIHxRb3Nw1H0UdEQI7UMwMGIksMhfoUjYHvm6uqPS5csZAIdTgWkWJ0NxwiR
+	+fbu3PSBP2IvpsY/0wNqYNag0+1ZZPU=
+From: Lance Yang <lance.yang@linux.dev>
+To: ljs@kernel.org
+Cc: akpm@linux-foundation.org,
+	tsbogend@alpha.franken.de,
+	maddy@linux.ibm.com,
+	mpe@ellerman.id.au,
+	maarten.lankhorst@linux.intel.com,
+	mripard@kernel.org,
+	tzimmermann@suse.de,
+	airlied@gmail.com,
+	simona@ffwll.ch,
+	l.stach@pengutronix.de,
+	inki.dae@samsung.com,
+	sw0312.kim@samsung.com,
+	kyungmin.park@samsung.com,
+	krzk@kernel.org,
+	peter.griffin@linaro.org,
+	jani.nikula@linux.intel.com,
+	joonas.lahtinen@linux.intel.com,
+	rodrigo.vivi@intel.com,
+	tursulin@ursulin.net,
+	robin.clark@oss.qualcomm.com,
+	lumag@kernel.org,
+	lyude@redhat.com,
+	dakr@kernel.org,
+	tomi.valkeinen@ideasonboard.com,
+	hjc@rock-chips.com,
+	heiko@sntech.de,
+	andy.yan@rock-chips.com,
+	thierry.reding@kernel.org,
+	mperttunen@nvidia.com,
+	jonathanh@nvidia.com,
+	kraxel@redhat.com,
+	dmitry.osipenko@collabora.com,
+	zack.rusin@broadcom.com,
+	matthew.brost@intel.com,
+	thomas.hellstrom@linux.intel.com,
+	oleksandr_andrushchenko@epam.com,
+	deller@gmx.de,
+	bcrl@kvack.org,
+	viro@zeniv.linux.org.uk,
+	brauner@kernel.org,
+	muchun.song@linux.dev,
+	osalvador@suse.de,
+	david@kernel.org,
+	ziy@nvidia.com,
+	baolin.wang@linux.alibaba.com,
+	liam@infradead.org,
+	npache@redhat.com,
+	ryan.roberts@arm.com,
+	dev.jain@arm.com,
+	baohua@kernel.org,
+	lance.yang@linux.dev,
+	hughd@google.com,
+	vbabka@kernel.org,
+	rppt@kernel.org,
+	surenb@google.com,
+	mhocko@suse.com,
+	jannh@google.com,
+	pfalcato@suse.de,
+	kees@kernel.org,
+	perex@perex.cz,
+	tiwai@suse.com,
+	linux-mips@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH 2/2] powerpc/kaslr_booke: Fix reserved-memory reg property length check
-Date: Thu,  2 Jul 2026 14:05:51 +0200
-Message-ID: <20260702120551.3046-4-thorsten.blum@linux.dev>
-In-Reply-To: <20260702120551.3046-3-thorsten.blum@linux.dev>
-References: <20260702120551.3046-3-thorsten.blum@linux.dev>
+	dri-devel@lists.freedesktop.org,
+	etnaviv@lists.freedesktop.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-samsung-soc@vger.kernel.org,
+	intel-gfx@lists.freedesktop.org,
+	linux-arm-msm@vger.kernel.org,
+	freedreno@lists.freedesktop.org,
+	nouveau@lists.freedesktop.org,
+	linux-rockchip@lists.infradead.org,
+	linux-tegra@vger.kernel.org,
+	virtualization@lists.linux.dev,
+	intel-xe@lists.freedesktop.org,
+	xen-devel@lists.xenproject.org,
+	linux-fbdev@vger.kernel.org,
+	linux-aio@kvack.org,
+	linux-fsdevel@vger.kernel.org,
+	linux-mm@kvack.org,
+	linux-sound@vger.kernel.org
+Subject: Re: [PATCH 05/13] mm: prefer mm->def_vma_flags in mm logic
+Date: Thu,  2 Jul 2026 20:10:22 +0800
+Message-Id: <20260702121022.49113-1-lance.yang@linux.dev>
+In-Reply-To: <3b4ccdc38819b42ddc79ee5a795831208ac7986c.1782760670.git.ljs@kernel.org>
+References: <3b4ccdc38819b42ddc79ee5a795831208ac7986c.1782760670.git.ljs@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -72,36 +142,50 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1272; i=thorsten.blum@linux.dev; h=from:subject; bh=ZZW7lUB7b9ygP6ck5Uz5hyt0C+D3AW01lrX5XsNNbiQ=; b=owGbwMvMwCUWt7pQ4caZUj3G02pJDFluIQrtvdNeHSuNDfwSuzHeO7lImX/H3yfFzLp32cRfv +/TzF7cUcrCIMbFICumyPJg1o8ZvqU1lZtMInbCzGFlAhnCwMUpABMxYmdkWPU35oAA092GnbNU ZxX/NbK0UFWbdFUlQVrj/VxFjYxHqowMbRF/0x2+uN0U9H/nZOpw01O2ZDrDg3lHL/+evVczrVS SEQA=
-X-Developer-Key: i=thorsten.blum@linux.dev; a=openpgp; fpr=1D60735E8AEF3BE473B69D84733678FD8DFEEAD4
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 X-Migadu-Flow: FLOW_OUT
 
-In overlaps_reserved_region(), fdt_getprop() returns the reg property
-length in bytes, which the loop condition compares against a cell count.
-Since each cell is 4 bytes, scale the count to bytes before comparing it
-with len to avoid reading past the end of a truncated reg property.
 
-Fixes: 6a38ea1d7b94 ("powerpc/fsl_booke/32: randomize the kernel image offset")
-Cc: stable@vger.kernel.org
-Signed-off-by: Thorsten Blum <thorsten.blum@linux.dev>
----
- arch/powerpc/mm/nohash/kaslr_booke.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+On Mon, Jun 29, 2026 at 08:25:28PM +0100, Lorenzo Stoakes wrote:
+>Currently mm->def_flags (of type vm_flags_t) is union'd with
+>mm->def_vma_flags (of type vma_flags_t).
+>
+>As part of the effort to convert vm_flags_t usage to vma_flags_t (in order
+>to no longer be arbitrarily limited to a system word size for VMA flags),
+>prefer mm->def_vma_flags to mm->def_flags throughout the mm logic.
+>
+>No functional change intended.
+>
+>Signed-off-by: Lorenzo Stoakes <ljs@kernel.org>
+>---
+> mm/debug.c |  2 +-
+> mm/mlock.c | 13 +++++++------
+> mm/mmap.c  | 11 ++++++-----
+> mm/vma.c   |  4 ++--
+> 4 files changed, 16 insertions(+), 14 deletions(-)
+>
+>diff --git a/mm/debug.c b/mm/debug.c
+>index 497654b36f1a..f0a354a9496a 100644
+>--- a/mm/debug.c
+>+++ b/mm/debug.c
+>@@ -226,7 +226,7 @@ void dump_mm(const struct mm_struct *mm)
+> 		mm->numa_next_scan, mm->numa_scan_offset, mm->numa_scan_seq,
+> #endif
+> 		atomic_read(&mm->tlb_flush_pending),
+>-		mm->def_flags, &mm->def_flags
+>+		vma_flags_to_legacy(mm->def_vma_flags), &mm->def_vma_flags
+> 	);
 
-diff --git a/arch/powerpc/mm/nohash/kaslr_booke.c b/arch/powerpc/mm/nohash/kaslr_booke.c
-index 3e5e67c76bda..82106a9d9d4c 100644
---- a/arch/powerpc/mm/nohash/kaslr_booke.c
-+++ b/arch/powerpc/mm/nohash/kaslr_booke.c
-@@ -123,8 +123,8 @@ static __init bool overlaps_reserved_region(const void *fdt, u32 start,
- 
- 		len = 0;
- 		reg = fdt_getprop(fdt, subnode, "reg", &len);
--		while (len >= (regions.reserved_mem_addr_cells +
--			       regions.reserved_mem_size_cells)) {
-+		while (len >= 4 * (regions.reserved_mem_addr_cells +
-+				   regions.reserved_mem_size_cells)) {
- 			base = fdt32_to_cpu(reg[0]);
- 			if (regions.reserved_mem_addr_cells == 2)
- 				base = (base << 32) | fdt32_to_cpu(reg[1]);
+While at it, one thing for later: dump_mm() still assumes one-world VMA
+flags. That works today since vma_flags_t is one word. Maybe worth a
+BUILD_BUG_ON() here, before that stops being true?
+
+Not a big deal though. Feel free to add:
+
+Reviewed-by: Lance Yang <lance.yang@linux.dev>
+
+> }
+> EXPORT_SYMBOL(dump_mm);
+[...]
 
