@@ -1,118 +1,82 @@
-Return-Path: <linuxppc-dev+bounces-23412-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23413-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 18872C43458
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Jul 2026 15:19:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 82D27C43327
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Jul 2026 15:25:05 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4grgXw3Nhgz2yYY;
-	Fri, 03 Jul 2026 01:19:44 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::f36"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783005584;
-	cv=none; b=czod0aYjdAb6Km2EC2B8FfSNGKW3lkSOzzvykWno6P5hHn3GUb/QU84RYuvefhy8ujmttFiQ3FR1LwB9Eu0oNRm2f8yG/eLjRvp2XAi/iXDt0V7hRMJ1a3cvquiupgbX+5SUmk0kEChVCw3WfxHgjdm0QS17PxjvfLcbRjhThUp2z/vNGm4giyVdQC0/CBQ5ryONU4NuMoGunc9ddSynMfzAfFZjZDdgRC/lT7anHzZ/uSlcqaLtR3QuNSl1kDDQcxiC8ds5Af7JhbaYNWOSneFvT99eU/cM4lJW3Xo/iVni4U6Rxot3pr5Vf1jtkD1k53aQWNsrcIGCXgLcYoJspg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4grgg36vsJz2xlw;
+	Fri, 03 Jul 2026 01:25:03 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783005903;
+	cv=none; b=dddRyZ0D4s34eMfy+xy4GbzmQfpiczXG8S9cdxqNnU7yvQU2DeZ0PsFaJEMZ7z+6zY+OKQWZMVw/0WUEnzK9CxAMbfjBeukvP/W3kkfiNRC3z7PbrwlFqYQn9IthK4Yzz2JZOVjvFODMvGF5VMyKDC3U07/wZgy4EMKBRnmxqPdNza09gD5EmVWk9hOtqry9w57qK+aim34Rmx8wq6t7f5Z9pdq7C/pt3ZYsnOIksojuytjxhYIj0pjYKRiP30b3ffIylqiRyhEgilmxZID2HMwK8/DvED624ji07nPfLieIll58GX4DyvSLYQi2zSWEFaaGkOa2+yiKA45w/ThoJA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1783005584; c=relaxed/relaxed;
-	bh=una0b7iSQE3/1X7UfiBFNzSBZGQVECZybRvoQUF1H+I=;
+	t=1783005903; c=relaxed/relaxed;
+	bh=LX3BYrLY2k63JpXB67A/Bjg+Ew5yjhUF+WJZEyA1fRw=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=aLY04s463vQEB/2K4pO8YII4tZmzrxgp8f9YzoNB618xe3NJxsAO/wU7scm9rlxNJKLmCFStVWZzgQjpyWsSDBweQOsFHp4VH13a5HYD6c33qRjW5WTvVTFMThWfd9kwUzrS4fVaQrDDK9gXo6Z80HePptsHlEeR6FdQ/NswkgxDXEGr7+U9ke7p5Fo1MxyQRcQcacXZyjlTGy+5UhX8ODdg9unSliBZYBeWWgTwxkyhjzYTLqt+KxSuRoQaZP/u98w51khHkniY6JLMfn75L6DTqmEU7GBFyOpHKc0SzTaQ2a8atpgDsy6qih6HkRNR3J25NHQcBPjNspFjWIY2bg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ziepe.ca; dkim=pass (2048-bit key; secure) header.d=ziepe.ca header.i=@ziepe.ca header.a=rsa-sha256 header.s=google header.b=Pr0lsy4/; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::f36; helo=mail-qv1-xf36.google.com; envelope-from=jgg@ziepe.ca; receiver=lists.ozlabs.org) smtp.mailfrom=ziepe.ca
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ziepe.ca
+	 Content-Type:Content-Disposition:In-Reply-To; b=hItlY9RBDXAlIO6UloDTbu6l8DqXC8wMZi8lQku/FgtGCKIz4jHcJtc5okYmXQPprHoKx2kqkIbu/sOvG6D5uwDk5B7g6sAeqcfAT8zRjVqIxrhKxKB92XBagZV1Y8moJkPSbxJbffuC6SyJ4wi8PHiAyo7K4A+AufpB2lRBMdMXXW4XQD7yjY/SQK61GnwLuCaB7/f5HB+n/iRSEGuQRBbpOmTwYRliS6P7w/nL2E08wPfp52YW39ya7ti0OVht6WcXG/XChxi+kSnKRsTqcCs2eydcXHFTa9liGLVlUv8IajaIuRu2bJiRh7iuNVFu18l+wmenRgzCfip1NxozxA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=kbG+cL/z; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=ziepe.ca header.i=@ziepe.ca header.a=rsa-sha256 header.s=google header.b=Pr0lsy4/;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=kbG+cL/z;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=ziepe.ca (client-ip=2607:f8b0:4864:20::f36; helo=mail-qv1-xf36.google.com; envelope-from=jgg@ziepe.ca; receiver=lists.ozlabs.org)
-Received: from mail-qv1-xf36.google.com (mail-qv1-xf36.google.com [IPv6:2607:f8b0:4864:20::f36])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4grgXt41Wtz2yQG
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 Jul 2026 01:19:41 +1000 (AEST)
-Received: by mail-qv1-xf36.google.com with SMTP id 6a1803df08f44-8f29ec73064so11895486d6.1
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 Jul 2026 08:19:41 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ziepe.ca; s=google; t=1783005579; x=1783610379; darn=lists.ozlabs.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=una0b7iSQE3/1X7UfiBFNzSBZGQVECZybRvoQUF1H+I=;
-        b=Pr0lsy4/URTgFU2YiHApVRjHucUlw9vL4KSMG5g9kJwd88DhJFjwGOubOKSIbFm3es
-         jShslPC+/oNLLHDCHIss4X4LlmWrZjUC7Z2f22g9QL0rJk06KsuDdmRzKYzos5CB7vbA
-         5IYqUq5KIvEtH+t19asmB10bmwlcCp+70Qprp233RWsVeJV5ytCWcOTXiFLBfOSvbnf9
-         gJZ2xnThIGGXPNdltxDX2VY5amBsVnhW1twQzJPQYxWDQqfXShYFdlplRQ9hVlX4Pb0A
-         FzSU5E79Ar+UHyRF6fZN671G1xnGV/OfHnBrzbrbDar1mvqEClgA5OnDF0YtLEGPwHPF
-         0gCg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1783005579; x=1783610379;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=una0b7iSQE3/1X7UfiBFNzSBZGQVECZybRvoQUF1H+I=;
-        b=OmtHHNaCJD7PdTT82BF8P51s+juQXMA6/hqvQEQikXukRad5/Xk78uLth4mNKxxUlI
-         d1EepUVZRRIerEJOopK/ZcibWZJpba2aA3Ww9c07HnX++vGQSkAmwFjm7jzLKxpg9cdC
-         VKpwEydyF+Sl+2XEVBNUlsFnbohbKs7EaxUVqK8tb2fTybOy+XaA6T0h0ZQ22T86sjVF
-         OTcyUdfV7tyyB1no/Jfc+3AtbFB1Rxa0IGBjWbVC3EhdMwo9H8ODeL3GgRt5N3jyiy7z
-         I3umQmK17ajxsctIy2lvXyKdOhgEWNSprT2XlcT/miSqZMZq/+qV6FA9s+5w5nTCrPhC
-         yVsA==
-X-Forwarded-Encrypted: i=1; AHgh+Roe6gX0a8764AHzrcdSdnRNfCVdCF3bz9dKgg3dNcT+LIKioDS5/hXYh3phJLV5Mw0UjA8sn5shLoPG52I=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yx4MK8yaa1yT9Ty6fbgC1m+zk7qBoW+p5ncCbqOOlv/jvBNYI8a
-	CVQHd93Zj7Xlj7hU22XJ6IEZ/8wwW52bx5tfYwwknRvzlagu0XEB+xw/s01zkVDu7n0=
-X-Gm-Gg: AfdE7ckbqSUBDoapWWql2OQkOcgkX2R0/8Ki5QIDDit594MkTEmSuuq139oN5HFiah1
-	hUOlEMb9tjMVTTm3DDnQBViNSFMluoJLBsDH63ByjwUuq1wCJbHkEH7c3r5wflSOI14DBAOryeJ
-	ju+sUxpIoCvlfkgIsYLpXqSKTzN/4ldhV9NKTFilj+SUzdvFzATw1CF7JRoXPzpuCXSzb7NLjm6
-	JBCuYM9Zr9pmvbvvJStgUhQbLlxsX2Ny1qfLiEewmhlm6l+AD3BseclQgDAaY4jQuC0lQLFWNMD
-	dHZUZnjKc6BNGCURgJgJilP/cMI9slUEUaJ7UXZeQ+gqscKSxY8tbDwcnWv647DkhP+nRzQuuDH
-	gjLPPjbSx6YmoU625lelsq5hosVWR5B7F4/DEpOhxdojQX5JQ66/4apzdbnCkz0q/L3VB4JAxg7
-	EAL8yTSB8DZfiOaklsztkHU3WtTXsXa8EsWQ+YFTLmvScWEWqzpX5eCTOtemo+K7FdqDQ=
-X-Received: by 2002:a05:6214:4208:b0:8de:16a7:fbe3 with SMTP id 6a1803df08f44-8f3c863d139mr68985636d6.31.1783005578597;
-        Thu, 02 Jul 2026 08:19:38 -0700 (PDT)
-Received: from ziepe.ca (crbknf0213w-47-54-130-67.pppoe-dynamic.high-speed.nl.bellaliant.net. [47.54.130.67])
-        by smtp.gmail.com with ESMTPSA id 6a1803df08f44-8f471de93a1sm27985376d6.34.2026.07.02.08.19.36
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 02 Jul 2026 08:19:36 -0700 (PDT)
-Received: from jgg by wakko with local (Exim 4.97)
-	(envelope-from <jgg@ziepe.ca>)
-	id 1wfJCR-00000005wsj-2X8o;
-	Thu, 02 Jul 2026 12:19:35 -0300
-Date: Thu, 2 Jul 2026 12:19:35 -0300
-From: Jason Gunthorpe <jgg@ziepe.ca>
-To: "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>
-Cc: Alexey Kardashevskiy <aik@amd.com>,
-	Catalin Marinas <catalin.marinas@arm.com>, iommu@lists.linux.dev,
-	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-	linux-coco@lists.linux.dev, Robin Murphy <robin.murphy@arm.com>,
-	Marek Szyprowski <m.szyprowski@samsung.com>,
-	Will Deacon <will@kernel.org>, Marc Zyngier <maz@kernel.org>,
-	Steven Price <steven.price@arm.com>,
-	Suzuki K Poulose <Suzuki.Poulose@arm.com>,
-	Jiri Pirko <jiri@resnulli.us>, Mostafa Saleh <smostafa@google.com>,
-	Petr Tesarik <ptesarik@suse.com>,
-	Dan Williams <dan.j.williams@intel.com>,
-	Xu Yilun <yilun.xu@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
-	linux-s390@vger.kernel.org,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	Alexander Gordeev <agordeev@linux.ibm.com>,
-	Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
-	Heiko Carstens <hca@linux.ibm.com>,
-	Vasily Gorbik <gor@linux.ibm.com>,
-	Christian Borntraeger <borntraeger@linux.ibm.com>,
-	Sven Schnelle <svens@linux.ibm.com>, x86@kernel.org
-Subject: Re: [PATCH v6 00/20] dma-mapping: Use DMA_ATTR_CC_SHARED through
- direct, pool and swiotlb paths
-Message-ID: <20260702151935.GR7525@ziepe.ca>
-References: <2ecfa1a8-6202-4319-9692-a6ffeb5a3dbf@amd.com>
- <yq5aqzm4dz25.fsf@kernel.org>
- <20260618153705.GH231643@ziepe.ca>
- <yq5ao6h6enhm.fsf@kernel.org>
- <20260619122148.GL231643@ziepe.ca>
- <yq5aldcaejos.fsf@kernel.org>
- <20260619140616.GB1068655@ziepe.ca>
- <yq5ao6gtoncp.fsf@kernel.org>
- <20260630174216.GK7525@ziepe.ca>
- <yq5abjcro17x.fsf@kernel.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4grgg26Z0Pz2xYg
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 Jul 2026 01:25:02 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with ESMTP id C929640801;
+	Thu,  2 Jul 2026 15:25:00 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5F0E41F000E9;
+	Thu,  2 Jul 2026 15:24:44 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1783005900;
+	bh=LX3BYrLY2k63JpXB67A/Bjg+Ew5yjhUF+WJZEyA1fRw=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=kbG+cL/z/Lm6qSE4udnGibaK8FsMK4daZd2R+hoEFAnemIecEE1GgHP0X+YmGanAO
+	 lUy6V/tOsn4eLItop07tyF1+tKZLAB376Z73zBZZR/VxVccPToewSf2zWsClidLb0a
+	 1ba3VdHACF4EGJhQZxBSvTHBcWlMH/zUclnichRT0/C3hk+pIj4TS7GYchozD+ZWNu
+	 evu0CqyUEndELEE8NUvVmpXBep2Kukvvzwrnf2DWGzh4uAWg/PKpNORRO9bOZEjI+M
+	 pMTZGas90E8+KBulzvC/BZdad1hSIx2FR4a50cjXxyZVyxi/oq6E9v6gCdozTTgwHV
+	 VbLDs0NzwuGjg==
+Date: Thu, 2 Jul 2026 16:24:37 +0100
+From: Lorenzo Stoakes <ljs@kernel.org>
+To: Lance Yang <lance.yang@linux.dev>
+Cc: akpm@linux-foundation.org, tsbogend@alpha.franken.de, 
+	maddy@linux.ibm.com, mpe@ellerman.id.au, maarten.lankhorst@linux.intel.com, 
+	mripard@kernel.org, tzimmermann@suse.de, airlied@gmail.com, simona@ffwll.ch, 
+	l.stach@pengutronix.de, inki.dae@samsung.com, sw0312.kim@samsung.com, 
+	kyungmin.park@samsung.com, krzk@kernel.org, peter.griffin@linaro.org, 
+	jani.nikula@linux.intel.com, joonas.lahtinen@linux.intel.com, rodrigo.vivi@intel.com, 
+	tursulin@ursulin.net, robin.clark@oss.qualcomm.com, lumag@kernel.org, lyude@redhat.com, 
+	dakr@kernel.org, tomi.valkeinen@ideasonboard.com, hjc@rock-chips.com, 
+	heiko@sntech.de, andy.yan@rock-chips.com, thierry.reding@kernel.org, 
+	mperttunen@nvidia.com, jonathanh@nvidia.com, kraxel@redhat.com, 
+	dmitry.osipenko@collabora.com, zack.rusin@broadcom.com, matthew.brost@intel.com, 
+	thomas.hellstrom@linux.intel.com, oleksandr_andrushchenko@epam.com, deller@gmx.de, bcrl@kvack.org, 
+	viro@zeniv.linux.org.uk, brauner@kernel.org, muchun.song@linux.dev, osalvador@suse.de, 
+	david@kernel.org, ziy@nvidia.com, baolin.wang@linux.alibaba.com, 
+	liam@infradead.org, npache@redhat.com, ryan.roberts@arm.com, dev.jain@arm.com, 
+	baohua@kernel.org, hughd@google.com, vbabka@kernel.org, rppt@kernel.org, 
+	surenb@google.com, mhocko@suse.com, jannh@google.com, pfalcato@suse.de, 
+	kees@kernel.org, perex@perex.cz, tiwai@suse.com, linux-mips@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, dri-devel@lists.freedesktop.org, 
+	etnaviv@lists.freedesktop.org, linux-arm-kernel@lists.infradead.org, 
+	linux-samsung-soc@vger.kernel.org, intel-gfx@lists.freedesktop.org, linux-arm-msm@vger.kernel.org, 
+	freedreno@lists.freedesktop.org, nouveau@lists.freedesktop.org, 
+	linux-rockchip@lists.infradead.org, linux-tegra@vger.kernel.org, virtualization@lists.linux.dev, 
+	intel-xe@lists.freedesktop.org, xen-devel@lists.xenproject.org, linux-fbdev@vger.kernel.org, 
+	linux-aio@kvack.org, linux-fsdevel@vger.kernel.org, linux-mm@kvack.org, 
+	linux-sound@vger.kernel.org
+Subject: Re: [PATCH 05/13] mm: prefer mm->def_vma_flags in mm logic
+Message-ID: <akaCFf_SjccZznnP@lucifer>
+References: <3b4ccdc38819b42ddc79ee5a795831208ac7986c.1782760670.git.ljs@kernel.org>
+ <20260702121022.49113-1-lance.yang@linux.dev>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -128,16 +92,58 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <yq5abjcro17x.fsf@kernel.org>
+In-Reply-To: <20260702121022.49113-1-lance.yang@linux.dev>
 
-On Wed, Jul 01, 2026 at 08:39:06AM +0530, Aneesh Kumar K.V wrote:
+On Thu, Jul 02, 2026 at 08:10:22PM +0800, Lance Yang wrote:
+>
+> On Mon, Jun 29, 2026 at 08:25:28PM +0100, Lorenzo Stoakes wrote:
+> >Currently mm->def_flags (of type vm_flags_t) is union'd with
+> >mm->def_vma_flags (of type vma_flags_t).
+> >
+> >As part of the effort to convert vm_flags_t usage to vma_flags_t (in order
+> >to no longer be arbitrarily limited to a system word size for VMA flags),
+> >prefer mm->def_vma_flags to mm->def_flags throughout the mm logic.
+> >
+> >No functional change intended.
+> >
+> >Signed-off-by: Lorenzo Stoakes <ljs@kernel.org>
+> >---
+> > mm/debug.c |  2 +-
+> > mm/mlock.c | 13 +++++++------
+> > mm/mmap.c  | 11 ++++++-----
+> > mm/vma.c   |  4 ++--
+> > 4 files changed, 16 insertions(+), 14 deletions(-)
+> >
+> >diff --git a/mm/debug.c b/mm/debug.c
+> >index 497654b36f1a..f0a354a9496a 100644
+> >--- a/mm/debug.c
+> >+++ b/mm/debug.c
+> >@@ -226,7 +226,7 @@ void dump_mm(const struct mm_struct *mm)
+> > 		mm->numa_next_scan, mm->numa_scan_offset, mm->numa_scan_seq,
+> > #endif
+> > 		atomic_read(&mm->tlb_flush_pending),
+> >-		mm->def_flags, &mm->def_flags
+> >+		vma_flags_to_legacy(mm->def_vma_flags), &mm->def_vma_flags
+> > 	);
+>
+> While at it, one thing for later: dump_mm() still assumes one-world VMA
+> flags. That works today since vma_flags_t is one word. Maybe worth a
+> BUILD_BUG_ON() here, before that stops being true?
 
-> This is the only code path where we need to special-case host memory
-> encryption. For this reason, I have avoided renaming
-> io_tlb_mem::cc_shared to io_tlb_mem::unencrypted. I can send a v7 with
-> the above and we can review the changes based on that?
+Ah yeah that could actually be pretty straightforward, if you see
+https://www.kernel.org/doc/Documentation/printk-formats.txt there is a bitmap
+format that could be used.
 
-I'm OK with this
+Can do that on a respin!
 
-Jason
+>
+> Not a big deal though. Feel free to add:
+>
+> Reviewed-by: Lance Yang <lance.yang@linux.dev>
+>
+> > }
+> > EXPORT_SYMBOL(dump_mm);
+> [...]
+
+Cheers, Lorenzo
 
