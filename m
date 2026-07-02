@@ -1,92 +1,134 @@
-Return-Path: <linuxppc-dev+bounces-23400-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23401-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0CE51C43458
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Jul 2026 13:28:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D2C0EC43458
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Jul 2026 13:50:45 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4grd473kdnz2yql;
-	Thu, 02 Jul 2026 23:28:07 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::436" arc.chain=google.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782998887;
-	cv=pass; b=l3cR0G8tcfOxLPvTHmmFdWQQXVnsKkqnIT0l5DLmSzWBzfmETE6Pf8iVRbv9k94bptUXR118zQlCwcekXSA0tNuHWWG/b9Rj0cXGtfN2WJDyljrrOf1m4N2a/IItidUh7Fead94NC5nqEa1glmKH7j+/QG3JmZShT0AvDHCUTyhPq4MABlt2iObE+TYoMXFx6xW4csNafBD4pVju7B2a7E0bL1nAPpsPbVTqB0dnqwH6S7mS5lGby9JHXwJ2s0ijuT8fTekYYQQkH7OuZw6Fj2XzmstVhfjSi+iYVcVcvTjs1dlkHdRNCUYz+H6UtxxyBuInK2ae8O50Mh65Ukbn6A==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1782998887; c=relaxed/relaxed;
-	bh=NNJ2RnvoQeNfDsJ73crtioMLjPdXpQiGlVuyqIgcPxs=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=fjwOuA1JX2CkDvDERzYZv9yW6xe4rnxYk6D/W5qGoYe61/Oo+SIRsEbWcYjO7Scs/5FCtNBdm9ToJAH0M/bYZaEGO2LlteDJAxBhTk3C1d6x1uxgejLWvHoiNNdgpLkGXO+Tb7J5o9bLdNxEQkMFV5IgPxJsRnbR8GKOhlTY0ejWP6X/gRHyqUMmPV5EpdlYq/uAWI853yQfD7xbdUh9FUNALnJAj4eAqkVOMLtR3EywhhRkKkE3vaENvVByqW6GydO/QCVWhfGV9NSPxDSQp5zEKjqcHH9DRbQ4mldTmf3DdrbtzQ3e/Y9fZU7q0xqdIub7NVS4WQQWPnCd35OGyg==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=paul-moore.com; dkim=pass (2048-bit key; unprotected) header.d=paul-moore.com header.i=@paul-moore.com header.a=rsa-sha256 header.s=google header.b=LjxSYHc6; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::436; helo=mail-pf1-x436.google.com; envelope-from=paul@paul-moore.com; receiver=lists.ozlabs.org) smtp.mailfrom=paul-moore.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=paul-moore.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4grdZD1WfMz2yb9;
+	Thu, 02 Jul 2026 23:50:44 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:41d0:1004:224b::ba"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783000244;
+	cv=none; b=Sd+N5sEU0PLSTU3tBXzcnhqYXRnwG6WHXBoGWh6DgpFGTKAFwQA4BD5hWnbATJVZAmKCF/H8z3heFhPXjpdRRt+jLN6v28KGIAkp1Ri5H2glQBw6OAunNry47hwKa+7pGXyyhYoIqEspxLsWZ1lEvT15DtNLR/mldgao3Uj3ckeGelpH0CRqr2hM62EhhoJlKQ6WN9m01GV6RmzqaLCePT0P6jiuh/XURowSzbOjE0It0SCp10aPZOt2V1a2DGsHbfptk3aKYHPwWFhb/eXe45XNedAQ6n40PhFyKjup0yspg78nvhttArH6ksVPEOOSdl0Ft/I7DuJdf+G1RrJRyw==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1783000244; c=relaxed/relaxed;
+	bh=n7JedrMMFsZ3SA9xp8Er9WQ7Q5NWmS7gMbpQ8O+PQSg=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=Kce853fve8o4EAh7a9d3+muj8PhLlXkcXQzBWtwaU4K+Zu3JxDJecXUxd2tN05AGTWk2FiTFkhKCwO/2PE24stj8kRccWrFQ6mYIn4+wi8rWeSuzwpaORoVnUlAnLEbTZo/rZPKhttVEjBee3n8T58kzoeTtFF4eC3TQB8u13mItSZpraNSgJDnnJFopvdqzhWL1gh+M3bm9Khk7fbSfIYoFh0DqBf79B7rY8ngMsWOogsTCXKOSCFeCPLey0xL+XQvOV2sTso4QjAynNs1ujUzGu0h6/Vy461MbkA8AdUqPBqMftf61oD+09jqikN1Na/9i/RriakwFofTLEVYg6w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=SBk2LGdo; dkim-atps=neutral; spf=pass (client-ip=2001:41d0:1004:224b::ba; helo=out-186.mta0.migadu.com; envelope-from=lance.yang@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=paul-moore.com header.i=@paul-moore.com header.a=rsa-sha256 header.s=google header.b=LjxSYHc6;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=SBk2LGdo;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=paul-moore.com (client-ip=2607:f8b0:4864:20::436; helo=mail-pf1-x436.google.com; envelope-from=paul@paul-moore.com; receiver=lists.ozlabs.org)
-Received: from mail-pf1-x436.google.com (mail-pf1-x436.google.com [IPv6:2607:f8b0:4864:20::436])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=2001:41d0:1004:224b::ba; helo=out-186.mta0.migadu.com; envelope-from=lance.yang@linux.dev; receiver=lists.ozlabs.org)
+Received: from out-186.mta0.migadu.com (out-186.mta0.migadu.com [IPv6:2001:41d0:1004:224b::ba])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4grd462sXKz2yhD
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 Jul 2026 23:28:05 +1000 (AEST)
-Received: by mail-pf1-x436.google.com with SMTP id d2e1a72fcca58-847968ca62fso1679767b3a.2
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 Jul 2026 06:28:05 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1782998883; cv=none;
-        d=google.com; s=arc-20260327;
-        b=JYC3KiUZN1Kb/uRrqNp70UdFsUSsE6BhDNQQmFQcu+dnByOptZtRGjB/thYinAF5x4
-         bkcBBCWNNHKnvfxYrN28rUywAp4kEajmHpO+koQ5SSG2TMIv/mF13pT1e8flU2xkpBgF
-         MiANjJmaDPFpW7U3Nko4jxCVVdmVVVQ9HKkecJpnsJas59VMAxMH6ZbitZ4npUgsB1Ec
-         gHopWZdTgCV+Y3/NVo2KabB4wT7Cb/Ay8fljKp50gHMX+ud8XStl4UEb46/QzsaY2o7S
-         XyL0ucA+NPSm5UAjN9YKzLZViM0ehzcuBW/k1RVIuzw1DggPlVD+apiRMELj3u1hVaFB
-         T8+w==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=NNJ2RnvoQeNfDsJ73crtioMLjPdXpQiGlVuyqIgcPxs=;
-        fh=mXCSbDsQdCruMVwyLNS7Rzxy7d0O23DsBUrZEpBwsH8=;
-        b=WAJKhyvoflDUYURHdSi+oodnyoo8i/EP9qw7EcTuQGo5Tg7V3YkIPG2fR/A0O1AWaa
-         RAg3dkjT8BRFgRzKl5hgI+5ecRF2Qkj9ihOdtOx0yagfa3LZK2uv691jHm3i3gwT6n/a
-         JyAzwreeriU3rbPPeLRkKcHEQS+iXImurKRhsSVAAWkxURJNiyR2qGD+CRDVxpBDH6gH
-         OWJruydrhKpyz4RZelKocFdNqNeSzaIFHsmQSfhdsatMkzbqM4nocMb4rP/2kdB1kOub
-         Q2UkjnoDY84pKVXAYWUv/BENsSGFrgLbQ7zTsjtzbWN3rX6JhcsI7H5xJsYBprxJa+N3
-         m1dA==;
-        darn=lists.ozlabs.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=paul-moore.com; s=google; t=1782998883; x=1783603683; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=NNJ2RnvoQeNfDsJ73crtioMLjPdXpQiGlVuyqIgcPxs=;
-        b=LjxSYHc6Q8Ss65bbpiVXPbE0GzrIDSN++afEIFsjKpJJE1zEf0E5EKySWawEZKD8yJ
-         F56Cr+cJ2bmOPCcnKy2xEs4o9q/ohe4YxFg6Sg8NdhpSdS7BqdU4MRJHTA8tsojAzsGJ
-         x/LBAATS3eVEd7DiOXeN0tdeBbiF2k1jJo4wtgbYECHXxRlYPZHlK6OPB/Yvkm/lxGo0
-         qOjqIE16yylPVN9768AZt8jdhKN9Br95tR2JZLaDYbb2G9TpovCKLqkzGR5pSWXhapVn
-         BSAFNGAewat3hxBClGn/nHAN8r8W3BvPaSDyF2fuA8XWjTGgDqJbB41oOZfOLvb+sUiK
-         qXug==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1782998883; x=1783603683;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=NNJ2RnvoQeNfDsJ73crtioMLjPdXpQiGlVuyqIgcPxs=;
-        b=BjgMbcJuIC+ulBMnD8Vh/mnWiGldnPiGUADS+ESrizLVWeQu4acH1CAk+5/ETxzsxE
-         p2hzeaEHWJ6GXIjlHvxvTATUYp/vibCCNGvC9wkyE36TefUJMcyEq4FPTt7TEmCzg50h
-         4Uz+HECTx8D/ZnGNbizrG9pcIHvoqy2EAe50LWHlH6i5ZvzdjfktWYlGcRUYrtwKfwRf
-         TbeBLd0ETZFChz1jmCfZdLi28rAQIHwcEPu9HyUGWfDyldWlL8zd9fjkoOQDWfAIL9Qg
-         wL/DHIxgepY4ASuqhNAjxXSJ3iXWdK4MwST3s1B7acwktshiWyeJ+Wha9uZPqmW51f/V
-         2l1w==
-X-Forwarded-Encrypted: i=1; AHgh+RoT26w5TNBrKX13VDTJYW2SgJYG6d6Vjd6B42HHM123Eh+vn9zt2zYqpFFY9vWNd8cYu7OlTF6734sZXJ0=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YzJINvr/pYcLdCrSUFgO/OX9y/aT1PD6HOut/FukdSypv5PPRff
-	xp+eBhrNBIL+5DtmbyfTI2CzNyE4Ka521T1EGAxR48JEt2BqfYHcAQXJhdUHnpxSQnLBYHrS7ES
-	evV0d9ZS2qcOOYruKis83l2POzTKPPkG8kB8yYs/W
-X-Gm-Gg: AfdE7cmw9NJBfjkdvaL0zGSqnaBIbOVrkUMA0VvFOxNO42ihIC9eJ2Xvcre8mIUzxMV
-	rscCHyIeoUP8LK9RciIAuWbmF25CdKwPZAfmOIyZg8llA6sadbFRcl3ejtvgu7vxsXuifrzWjua
-	mfHeTaIj+8Fld1Adk8yqu10ebF+DQXVCcUrYA6YjAXRFBoK7B20m2rR/Kj9W63qUFFi0pVbj3bk
-	iyR80VlVYyWQpTukGnN4JhYqA4ObHvFRpmfYLOhErGpu7wbLFDUbB1PVeQfL1l9hxGksl23
-X-Received: by 2002:aa7:8883:0:b0:846:bc60:5bf7 with SMTP id
- d2e1a72fcca58-847c0675300mr6113283b3a.6.1782998883309; Thu, 02 Jul 2026
- 06:28:03 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4grdZ926Nhz2yYY
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 Jul 2026 23:50:39 +1000 (AEST)
+X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
+	t=1783000216;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=n7JedrMMFsZ3SA9xp8Er9WQ7Q5NWmS7gMbpQ8O+PQSg=;
+	b=SBk2LGdo8O2Fh816oQbqXrmhKAQAYAxHqV6r2z//9k66SRzp2XfssdY3VkdvqTHoJEhhne
+	KBLV5b7WimMmbUd67b8UpLhwJTAsCl8UHKUpcr3XwD//YOwU43JswyAPjZ9yhLgdwnTOAg
+	TszqN8wOwdlDLsXMvuRT5nF6gC9LQmA=
+From: Lance Yang <lance.yang@linux.dev>
+To: ljs@kernel.org
+Cc: akpm@linux-foundation.org,
+	tsbogend@alpha.franken.de,
+	maddy@linux.ibm.com,
+	mpe@ellerman.id.au,
+	maarten.lankhorst@linux.intel.com,
+	mripard@kernel.org,
+	tzimmermann@suse.de,
+	airlied@gmail.com,
+	simona@ffwll.ch,
+	l.stach@pengutronix.de,
+	inki.dae@samsung.com,
+	sw0312.kim@samsung.com,
+	kyungmin.park@samsung.com,
+	krzk@kernel.org,
+	peter.griffin@linaro.org,
+	jani.nikula@linux.intel.com,
+	joonas.lahtinen@linux.intel.com,
+	rodrigo.vivi@intel.com,
+	tursulin@ursulin.net,
+	robin.clark@oss.qualcomm.com,
+	lumag@kernel.org,
+	lyude@redhat.com,
+	dakr@kernel.org,
+	tomi.valkeinen@ideasonboard.com,
+	hjc@rock-chips.com,
+	heiko@sntech.de,
+	andy.yan@rock-chips.com,
+	thierry.reding@kernel.org,
+	mperttunen@nvidia.com,
+	jonathanh@nvidia.com,
+	kraxel@redhat.com,
+	dmitry.osipenko@collabora.com,
+	zack.rusin@broadcom.com,
+	matthew.brost@intel.com,
+	thomas.hellstrom@linux.intel.com,
+	oleksandr_andrushchenko@epam.com,
+	deller@gmx.de,
+	bcrl@kvack.org,
+	viro@zeniv.linux.org.uk,
+	brauner@kernel.org,
+	muchun.song@linux.dev,
+	osalvador@suse.de,
+	david@kernel.org,
+	ziy@nvidia.com,
+	baolin.wang@linux.alibaba.com,
+	liam@infradead.org,
+	npache@redhat.com,
+	ryan.roberts@arm.com,
+	dev.jain@arm.com,
+	baohua@kernel.org,
+	lance.yang@linux.dev,
+	hughd@google.com,
+	vbabka@kernel.org,
+	rppt@kernel.org,
+	surenb@google.com,
+	mhocko@suse.com,
+	jannh@google.com,
+	pfalcato@suse.de,
+	kees@kernel.org,
+	perex@perex.cz,
+	tiwai@suse.com,
+	linux-mips@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org,
+	dri-devel@lists.freedesktop.org,
+	etnaviv@lists.freedesktop.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-samsung-soc@vger.kernel.org,
+	intel-gfx@lists.freedesktop.org,
+	linux-arm-msm@vger.kernel.org,
+	freedreno@lists.freedesktop.org,
+	nouveau@lists.freedesktop.org,
+	linux-rockchip@lists.infradead.org,
+	linux-tegra@vger.kernel.org,
+	virtualization@lists.linux.dev,
+	intel-xe@lists.freedesktop.org,
+	xen-devel@lists.xenproject.org,
+	linux-fbdev@vger.kernel.org,
+	linux-aio@kvack.org,
+	linux-fsdevel@vger.kernel.org,
+	linux-mm@kvack.org,
+	linux-sound@vger.kernel.org
+Subject: Re: [PATCH 13/13] mm/mremap: convert mremap code to use vma_flags_t
+Date: Thu,  2 Jul 2026 21:49:47 +0800
+Message-Id: <20260702134947.25189-1-lance.yang@linux.dev>
+In-Reply-To: <380f761d35a3faa4370f8b3f92e3d4af3d4c7110.1782760670.git.ljs@kernel.org>
+References: <380f761d35a3faa4370f8b3f92e3d4af3d4c7110.1782760670.git.ljs@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -100,91 +142,178 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <261b1be5b8dc526b83d73e8281e682a73536ea28.1773155031.git.chleroy@kernel.org>
- <CAHC9VhTyOuuPs1uovodM9M_8zZeJnVXs9xrWSdPhZcjXUb=mvA@mail.gmail.com>
- <fce0a701-ee58-4cb2-b34b-8aec26aaab5d@linux.ibm.com> <09e72f42-e180-4e2b-b379-92b755792a2c@linux.ibm.com>
- <CAHC9VhTzuO=RFtrUUuZyieVdkrM5H4ZCb1=PoL-oEEgiw38azg@mail.gmail.com>
- <ea6e629f-dac7-45dd-bb18-5cd6361fe6c4@linux.ibm.com> <9c53ae3f-ccfd-4e8f-ac4f-0038e9b97a7e@linux.ibm.com>
- <b1d6e9a5-34ce-42ca-906a-d4237e18be25@kernel.org> <50507bb3-4229-4815-90e8-c01eaad058fc@linux.ibm.com>
- <ba00c7a8-b4d5-4d80-859b-d75e9c91ebdb@kernel.org> <203f6e6d-2ce8-4e47-99a6-f4af745e0aaa@linux.ibm.com>
-In-Reply-To: <203f6e6d-2ce8-4e47-99a6-f4af745e0aaa@linux.ibm.com>
-From: Paul Moore <paul@paul-moore.com>
-Date: Thu, 2 Jul 2026 09:27:49 -0400
-X-Gm-Features: AVVi8Ce7kHZ6K-SM1XnzyYNf6UB60lCb0qSg6t5Q-Zh2t2hWQVqxIh32cuDs3y0
-Message-ID: <CAHC9VhQvoK4uYP0NBnd4FGbXCQkDka4nHqdz9kAn2bGnm4qVHQ@mail.gmail.com>
-Subject: Re: [PATCH v3] powerpc/audit: Convert powerpc to AUDIT_ARCH_COMPAT_GENERIC
-To: Venkat Rao Bagalkote <venkat88@linux.ibm.com>, rrobaina@redhat.com
-Cc: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, Madhavan Srinivasan <maddy@linux.ibm.com>, 
-	Harsh Prateek Bora <harshpb@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, 
-	Nicholas Piggin <npiggin@gmail.com>, Eric Paris <eparis@redhat.com>, linux-kernel@vger.kernel.org, 
-	linuxppc-dev@lists.ozlabs.org, audit@vger.kernel.org, 
-	Thomas Weissschuh <thomas.weissschuh@linutronix.de>, =?UTF-8?Q?C=C3=A9dric_Le_Goater?= <clg@kaod.org>, 
-	ritesh.list@gmail.com
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Migadu-Flow: FLOW_OUT
 
-On Thu, Jul 2, 2026 at 8:50=E2=80=AFAM Venkat Rao Bagalkote
-<venkat88@linux.ibm.com> wrote:
->
-> Current remaining issue:
->
-> 1. amcast_joinpart
-> ------------------
-> Still fails due to a missing Perl dependency:
->
->      Can't locate Socket/Netlink.pm in @INC
->
-> I searched the configured repositories and could not find a package
-> providing Socket::Netlink / Socket/Netlink.pm on this EL10 ppc64le system=
-.
->
-> Latest run summary:
->
-> amcast_joinpart/test ................. Can't locate Socket/Netlink.pm in
-> @INC (you may need to install the Socket::Netlink module) (@INC entries
-> checked: /usr/local/lib64/perl5/5.40 /usr/local/share/perl5/5.40
-> /usr/lib64/perl5/vendor_perl /usr/share/perl5/vendor_perl
-> /usr/lib64/perl5 /usr/share/perl5 .) at amcast_joinpart/test line 10.
-> BEGIN failed--compilation aborted at amcast_joinpart/test line 10.
-> amcast_joinpart/test ................. Dubious, test returned 2 (wstat
-> 512, 0x200)
-> Failed 7/7 subtests
-> backlog_wait_time_actual_reset/test .. ok
-> bpf/test ............................. ok
-> exec_execve/test ..................... ok
-> exec_name/test ....................... ok
-> fanotify/test ........................ ok
-> field_compare/test ................... ok
-> file_create/test ..................... ok
-> file_delete/test ..................... ok
-> file_permission/test ................. ok
-> file_rename/test ..................... ok
-> filter_exclude/test .................. ok
-> filter_exit/test ..................... ok
-> filter_saddr_fam/test ................ ok
-> filter_sessionid/test ................ ok
-> io_uring/test ........................ ok
-> login_tty/test ....................... ok
-> lost_reset/test ...................... ok
-> netfilter_pkt/test ................... ok
-> signal/test .......................... ok
-> syscalls_file/test ................... ok
-> syscall_module/test .................. ok
-> time_change/test ..................... ok
-> user_msg/test ........................ ok
->
-> All tests now pass except amcast_joinpart, which is blocked by the
-> missing Socket::Netlink Perl module.
->
-> Please let me know if there is a recommended package source for
-> Socket::Netlink on EL10 ppc64le.
 
-Thanks for following up on this Venkat.
+On Mon, Jun 29, 2026 at 08:25:36PM +0100, Lorenzo Stoakes wrote:
+>Replace use of the legacy vm_flags_t flags with vma_flags_t values
+>throughout the mremap logic.
+>
+>Additionally update comments to reflect the changes to be consistent.
+>
+>No functional change intended.
+>
+>Signed-off-by: Lorenzo Stoakes <ljs@kernel.org>
+>---
 
-I'm adding your colleague Ricardo from the RH side of the house.
-Ricardo is very familiar with audit and should be able to help you
-with missing RHEL packages.
+The vm_flags_set() cases below spell out vma_start_write(), but the
+vm_flags_clear() cases don't?
 
---
-paul-moore.com
+Thanks, Lance
+
+> mm/mremap.c | 38 ++++++++++++++++++++------------------
+> 1 file changed, 20 insertions(+), 18 deletions(-)
+>
+>diff --git a/mm/mremap.c b/mm/mremap.c
+>index 079a0ba0c4a7..0ea43302b7ed 100644
+>--- a/mm/mremap.c
+>+++ b/mm/mremap.c
+>@@ -68,7 +68,7 @@ struct vma_remap_struct {
+> 	bool populate_expand;		/* mlock()'d expanded, must populate. */
+> 	enum mremap_type remap_type;	/* expand, shrink, etc. */
+> 	bool mmap_locked;		/* Is mm currently write-locked? */
+>-	unsigned long charged;		/* If VM_ACCOUNT, # pages to account. */
+>+	unsigned long charged;		/* If VMA_ACCOUNT_BIT, # pgs to account */
+> 	bool vmi_needs_invalidate;	/* Is the VMA iterator invalidated? */
+> };
+> 
+>@@ -954,7 +954,7 @@ static unsigned long vrm_set_new_addr(struct vma_remap_struct *vrm)
+> 
+> 	if (vrm->flags & MREMAP_FIXED)
+> 		map_flags |= MAP_FIXED;
+>-	if (vma->vm_flags & VM_MAYSHARE)
+>+	if (vma_test(vma, VMA_MAYSHARE_BIT))
+> 		map_flags |= MAP_SHARED;
+> 
+> 	res = get_unmapped_area(vma->vm_file, new_addr, vrm->new_len, pgoff,
+>@@ -976,7 +976,7 @@ static bool vrm_calc_charge(struct vma_remap_struct *vrm)
+> {
+> 	unsigned long charged;
+> 
+>-	if (!(vrm->vma->vm_flags & VM_ACCOUNT))
+>+	if (!vma_test(vrm->vma, VMA_ACCOUNT_BIT))
+> 		return true;
+> 
+> 	/*
+>@@ -1003,7 +1003,7 @@ static bool vrm_calc_charge(struct vma_remap_struct *vrm)
+>  */
+> static void vrm_uncharge(struct vma_remap_struct *vrm)
+> {
+>-	if (!(vrm->vma->vm_flags & VM_ACCOUNT))
+>+	if (!vma_test(vrm->vma, VMA_ACCOUNT_BIT))
+> 		return;
+> 
+> 	vm_unacct_memory(vrm->charged);
+>@@ -1023,7 +1023,7 @@ static void vrm_stat_account(struct vma_remap_struct *vrm,
+> 	struct vm_area_struct *vma = vrm->vma;
+> 
+> 	vm_stat_account(mm, vma->vm_flags, pages);
+>-	if (vma->vm_flags & VM_LOCKED)
+>+	if (vma_test(vma, VMA_LOCKED_BIT))
+> 		mm->locked_vm += pages;
+> }
+> 
+>@@ -1167,7 +1167,7 @@ static void unmap_source_vma(struct vma_remap_struct *vrm)
+> 	 * arose, in which case we _do_ wish to unmap the _new_ VMA, which means
+> 	 * we actually _do_ want it be unaccounted.
+> 	 */
+>-	bool accountable_move = (vma->vm_flags & VM_ACCOUNT) &&
+>+	bool accountable_move = vma_test(vma, VMA_ACCOUNT_BIT) &&
+> 		!(vrm->flags & MREMAP_DONTUNMAP);
+> 
+> 	/*
+>@@ -1186,7 +1186,7 @@ static void unmap_source_vma(struct vma_remap_struct *vrm)
+> 	 * portions of the original VMA that remain.
+> 	 */
+> 	if (accountable_move) {
+>-		vm_flags_clear(vma, VM_ACCOUNT);
+>+		vma_clear_flags(vma, VMA_ACCOUNT_BIT);
+> 		/* We are about to split vma, so store the start/end. */
+> 		vm_start = vma->vm_start;
+> 		vm_end = vma->vm_end;
+>@@ -1211,8 +1211,8 @@ static void unmap_source_vma(struct vma_remap_struct *vrm)
+> 	 * |             |
+> 	 * |-------------|
+> 	 *
+>-	 * Having cleared VM_ACCOUNT from the whole VMA, after we unmap above
+>-	 * we'll end up with:
+>+	 * Having cleared VMA_ACCOUNT_BIT from the whole VMA, after we unmap
+>+	 * above we'll end up with:
+> 	 *
+> 	 *    addr  end
+> 	 *     |     |
+>@@ -1232,13 +1232,15 @@ static void unmap_source_vma(struct vma_remap_struct *vrm)
+> 		if (vm_start < addr) {
+> 			struct vm_area_struct *prev = vma_prev(&vmi);
+> 
+>-			vm_flags_set(prev, VM_ACCOUNT); /* Acquires VMA lock. */
+>+			vma_start_write(prev);
+>+			vma_set_flags(prev, VMA_ACCOUNT_BIT);
+> 		}
+> 
+> 		if (vm_end > end) {
+> 			struct vm_area_struct *next = vma_next(&vmi);
+> 
+>-			vm_flags_set(next, VM_ACCOUNT); /* Acquires VMA lock. */
+>+			vma_start_write(next);
+>+			vma_set_flags(next, VMA_ACCOUNT_BIT);
+> 		}
+> 	}
+> }
+>@@ -1321,8 +1323,8 @@ static void dontunmap_complete(struct vma_remap_struct *vrm,
+> 	unsigned long old_start = vrm->vma->vm_start;
+> 	unsigned long old_end = vrm->vma->vm_end;
+> 
+>-	/* We always clear VM_LOCKED[ONFAULT] on the old VMA. */
+>-	vm_flags_clear(vrm->vma, VM_LOCKED_MASK);
+>+	/* We always clear VMA_LOCKED[ONFAULT]_BIT on the old VMA. */
+>+	vma_clear_flags_mask(vrm->vma, VMA_LOCKED_MASK);
+> 
+> 	/*
+> 	 * anon_vma links of the old vma is no longer needed after its page
+>@@ -1758,14 +1760,14 @@ static int check_prep_vma(struct vma_remap_struct *vrm)
+> 	 * based on the original.  There are no known use cases for this
+> 	 * behavior.  As a result, fail such attempts.
+> 	 */
+>-	if (!old_len && !(vma->vm_flags & (VM_SHARED | VM_MAYSHARE))) {
+>+	if (!old_len && !vma_test_any(vma, VMA_SHARED_BIT, VMA_MAYSHARE_BIT)) {
+> 		pr_warn_once("%s (%d): attempted to duplicate a private mapping with mremap.  This is not supported.\n",
+> 			     current->comm, current->pid);
+> 		return -EINVAL;
+> 	}
+> 
+> 	if ((vrm->flags & MREMAP_DONTUNMAP) &&
+>-			(vma->vm_flags & (VM_DONTEXPAND | VM_PFNMAP)))
+>+	    vma_test_any(vma, VMA_DONTEXPAND_BIT, VMA_PFNMAP_BIT))
+> 		return -EINVAL;
+> 
+> 	/*
+>@@ -1795,7 +1797,7 @@ static int check_prep_vma(struct vma_remap_struct *vrm)
+> 		return 0;
+> 
+> 	/* We are expanding and the VMA is mlock()'d so we need to populate. */
+>-	if (vma->vm_flags & VM_LOCKED)
+>+	if (vma_test(vma, VMA_LOCKED_BIT))
+> 		vrm->populate_expand = true;
+> 
+> 	/* Need to be careful about a growing mapping */
+>@@ -1803,10 +1805,10 @@ static int check_prep_vma(struct vma_remap_struct *vrm)
+> 	if (pgoff + (new_len >> PAGE_SHIFT) < pgoff)
+> 		return -EINVAL;
+> 
+>-	if (vma->vm_flags & (VM_DONTEXPAND | VM_PFNMAP))
+>+	if (vma_test_any(vma, VMA_DONTEXPAND_BIT, VMA_PFNMAP_BIT))
+> 		return -EFAULT;
+> 
+>-	if (!mlock_future_ok(mm, vma->vm_flags & VM_LOCKED, vrm->delta))
+>+	if (!mlock_future_ok(mm, vma_test(vma, VMA_LOCKED_BIT), vrm->delta))
+> 		return -EAGAIN;
+> 
+> 	if (!may_expand_vm(mm, &vma->flags, vrm->delta >> PAGE_SHIFT))
+>-- 
+>2.54.0
+>
+>
 
