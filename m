@@ -1,46 +1,118 @@
-Return-Path: <linuxppc-dev+bounces-23411-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23412-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5917FC43458
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Jul 2026 15:09:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 18872C43458
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Jul 2026 15:19:46 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4grgK65k3Tz2ydq;
-	Fri, 03 Jul 2026 01:09:30 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:41d0:203:375::b2"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783004970;
-	cv=none; b=dajCAqcxKTKFnhXZDYG4K6gpj2Z8a9YvM8M9WQVgipdhFD148mMW8LM7Vt3hfIHn3Fu8/Vs6AfoK8aSXGJbmuE6RMwB5vRrwqBx5tXmWE/zcR17jlywb9WRL/UFNokHY9dwoRtw6C3kL9lcOkxNPqqtWR1xnmaItyXwltw8Ntp9qlBDnIBS0Cc09MdVXr2sXHCu2Ha4AXdWDUSZLtpPDBgDZfmSkJIjFpuErMzpXgnvpX0fDIB8fHcx59UZpNR+5gJIT0Cd+2UYW5T8MQjVJr4O5usvRQSUL0Q7moZszJhqjuBfQoLtKmT3LZgBT41ul0RUnnsg436FcSGeL3EfWTw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4grgXw3Nhgz2yYY;
+	Fri, 03 Jul 2026 01:19:44 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::f36"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783005584;
+	cv=none; b=czod0aYjdAb6Km2EC2B8FfSNGKW3lkSOzzvykWno6P5hHn3GUb/QU84RYuvefhy8ujmttFiQ3FR1LwB9Eu0oNRm2f8yG/eLjRvp2XAi/iXDt0V7hRMJ1a3cvquiupgbX+5SUmk0kEChVCw3WfxHgjdm0QS17PxjvfLcbRjhThUp2z/vNGm4giyVdQC0/CBQ5ryONU4NuMoGunc9ddSynMfzAfFZjZDdgRC/lT7anHzZ/uSlcqaLtR3QuNSl1kDDQcxiC8ds5Af7JhbaYNWOSneFvT99eU/cM4lJW3Xo/iVni4U6Rxot3pr5Vf1jtkD1k53aQWNsrcIGCXgLcYoJspg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1783004970; c=relaxed/relaxed;
-	bh=GVgi/IDW6MB0ICHH5yTujujreeH5t5fHN661xjkq/74=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=I7Xz1QPSRllKJ84IJ4Sf3jfrS8kdhGM1N6DHe1g5F6mYSitepIHqnSf6/oDlvzxCJZkOLTx3xMABdb+macJC8icC20OMkamZQ+0u/MQYXjIe/aZL7a2C8xwbcTMKzzqvrDyj8s/n5oUr8DrmQh581fmbzMoPqnEeIrd/0+GQcBy3gcTAGkDEsc38I4kiReWtgPTBDQjGDfyCFUTK1VVXEElacy0ZC6DbN3yIcGaYepqUsu3QN3708bn9g0HbyJeuZ6xV5bgQfreCZG33+6JydQqH9eJ4ekGtGxoCME/mFE66KG44tQPCR0k6N3sQlXfOmk4PdiYmb95fanrDSM/41A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=Dkh9RWL9; dkim-atps=neutral; spf=pass (client-ip=2001:41d0:203:375::b2; helo=out-178.mta1.migadu.com; envelope-from=lance.yang@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
+	t=1783005584; c=relaxed/relaxed;
+	bh=una0b7iSQE3/1X7UfiBFNzSBZGQVECZybRvoQUF1H+I=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=aLY04s463vQEB/2K4pO8YII4tZmzrxgp8f9YzoNB618xe3NJxsAO/wU7scm9rlxNJKLmCFStVWZzgQjpyWsSDBweQOsFHp4VH13a5HYD6c33qRjW5WTvVTFMThWfd9kwUzrS4fVaQrDDK9gXo6Z80HePptsHlEeR6FdQ/NswkgxDXEGr7+U9ke7p5Fo1MxyQRcQcacXZyjlTGy+5UhX8ODdg9unSliBZYBeWWgTwxkyhjzYTLqt+KxSuRoQaZP/u98w51khHkniY6JLMfn75L6DTqmEU7GBFyOpHKc0SzTaQ2a8atpgDsy6qih6HkRNR3J25NHQcBPjNspFjWIY2bg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ziepe.ca; dkim=pass (2048-bit key; secure) header.d=ziepe.ca header.i=@ziepe.ca header.a=rsa-sha256 header.s=google header.b=Pr0lsy4/; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::f36; helo=mail-qv1-xf36.google.com; envelope-from=jgg@ziepe.ca; receiver=lists.ozlabs.org) smtp.mailfrom=ziepe.ca
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ziepe.ca
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=Dkh9RWL9;
+	dkim=pass (2048-bit key; secure) header.d=ziepe.ca header.i=@ziepe.ca header.a=rsa-sha256 header.s=google header.b=Pr0lsy4/;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=2001:41d0:203:375::b2; helo=out-178.mta1.migadu.com; envelope-from=lance.yang@linux.dev; receiver=lists.ozlabs.org)
-Received: from out-178.mta1.migadu.com (out-178.mta1.migadu.com [IPv6:2001:41d0:203:375::b2])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=ziepe.ca (client-ip=2607:f8b0:4864:20::f36; helo=mail-qv1-xf36.google.com; envelope-from=jgg@ziepe.ca; receiver=lists.ozlabs.org)
+Received: from mail-qv1-xf36.google.com (mail-qv1-xf36.google.com [IPv6:2607:f8b0:4864:20::f36])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4grgK25fJjz2yYq
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 Jul 2026 01:09:23 +1000 (AEST)
-Message-ID: <cf5a92d3-2c7e-41e6-afed-f2a4c9d1a774@linux.dev>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
-	t=1783004941;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=GVgi/IDW6MB0ICHH5yTujujreeH5t5fHN661xjkq/74=;
-	b=Dkh9RWL9rMIQE6Ur1L+lFP9fWBIPUF1EBlETBXiV1FwoU/+0F4n7u3+DtwQotZKTkFazHu
-	oHVZr/Vs+FAfYKVbUxY57cWOfPctKhbPm5r74IEfkBs57Xoqgu/OIspBSvCnXq9uEYouaN
-	h+ygMrTbcJpYGV90L9aTDp+5SWenOgM=
-Date: Thu, 2 Jul 2026 23:08:32 +0800
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4grgXt41Wtz2yQG
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 Jul 2026 01:19:41 +1000 (AEST)
+Received: by mail-qv1-xf36.google.com with SMTP id 6a1803df08f44-8f29ec73064so11895486d6.1
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 Jul 2026 08:19:41 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=ziepe.ca; s=google; t=1783005579; x=1783610379; darn=lists.ozlabs.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=una0b7iSQE3/1X7UfiBFNzSBZGQVECZybRvoQUF1H+I=;
+        b=Pr0lsy4/URTgFU2YiHApVRjHucUlw9vL4KSMG5g9kJwd88DhJFjwGOubOKSIbFm3es
+         jShslPC+/oNLLHDCHIss4X4LlmWrZjUC7Z2f22g9QL0rJk06KsuDdmRzKYzos5CB7vbA
+         5IYqUq5KIvEtH+t19asmB10bmwlcCp+70Qprp233RWsVeJV5ytCWcOTXiFLBfOSvbnf9
+         gJZ2xnThIGGXPNdltxDX2VY5amBsVnhW1twQzJPQYxWDQqfXShYFdlplRQ9hVlX4Pb0A
+         FzSU5E79Ar+UHyRF6fZN671G1xnGV/OfHnBrzbrbDar1mvqEClgA5OnDF0YtLEGPwHPF
+         0gCg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1783005579; x=1783610379;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=una0b7iSQE3/1X7UfiBFNzSBZGQVECZybRvoQUF1H+I=;
+        b=OmtHHNaCJD7PdTT82BF8P51s+juQXMA6/hqvQEQikXukRad5/Xk78uLth4mNKxxUlI
+         d1EepUVZRRIerEJOopK/ZcibWZJpba2aA3Ww9c07HnX++vGQSkAmwFjm7jzLKxpg9cdC
+         VKpwEydyF+Sl+2XEVBNUlsFnbohbKs7EaxUVqK8tb2fTybOy+XaA6T0h0ZQ22T86sjVF
+         OTcyUdfV7tyyB1no/Jfc+3AtbFB1Rxa0IGBjWbVC3EhdMwo9H8ODeL3GgRt5N3jyiy7z
+         I3umQmK17ajxsctIy2lvXyKdOhgEWNSprT2XlcT/miSqZMZq/+qV6FA9s+5w5nTCrPhC
+         yVsA==
+X-Forwarded-Encrypted: i=1; AHgh+Roe6gX0a8764AHzrcdSdnRNfCVdCF3bz9dKgg3dNcT+LIKioDS5/hXYh3phJLV5Mw0UjA8sn5shLoPG52I=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yx4MK8yaa1yT9Ty6fbgC1m+zk7qBoW+p5ncCbqOOlv/jvBNYI8a
+	CVQHd93Zj7Xlj7hU22XJ6IEZ/8wwW52bx5tfYwwknRvzlagu0XEB+xw/s01zkVDu7n0=
+X-Gm-Gg: AfdE7ckbqSUBDoapWWql2OQkOcgkX2R0/8Ki5QIDDit594MkTEmSuuq139oN5HFiah1
+	hUOlEMb9tjMVTTm3DDnQBViNSFMluoJLBsDH63ByjwUuq1wCJbHkEH7c3r5wflSOI14DBAOryeJ
+	ju+sUxpIoCvlfkgIsYLpXqSKTzN/4ldhV9NKTFilj+SUzdvFzATw1CF7JRoXPzpuCXSzb7NLjm6
+	JBCuYM9Zr9pmvbvvJStgUhQbLlxsX2Ny1qfLiEewmhlm6l+AD3BseclQgDAaY4jQuC0lQLFWNMD
+	dHZUZnjKc6BNGCURgJgJilP/cMI9slUEUaJ7UXZeQ+gqscKSxY8tbDwcnWv647DkhP+nRzQuuDH
+	gjLPPjbSx6YmoU625lelsq5hosVWR5B7F4/DEpOhxdojQX5JQ66/4apzdbnCkz0q/L3VB4JAxg7
+	EAL8yTSB8DZfiOaklsztkHU3WtTXsXa8EsWQ+YFTLmvScWEWqzpX5eCTOtemo+K7FdqDQ=
+X-Received: by 2002:a05:6214:4208:b0:8de:16a7:fbe3 with SMTP id 6a1803df08f44-8f3c863d139mr68985636d6.31.1783005578597;
+        Thu, 02 Jul 2026 08:19:38 -0700 (PDT)
+Received: from ziepe.ca (crbknf0213w-47-54-130-67.pppoe-dynamic.high-speed.nl.bellaliant.net. [47.54.130.67])
+        by smtp.gmail.com with ESMTPSA id 6a1803df08f44-8f471de93a1sm27985376d6.34.2026.07.02.08.19.36
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 02 Jul 2026 08:19:36 -0700 (PDT)
+Received: from jgg by wakko with local (Exim 4.97)
+	(envelope-from <jgg@ziepe.ca>)
+	id 1wfJCR-00000005wsj-2X8o;
+	Thu, 02 Jul 2026 12:19:35 -0300
+Date: Thu, 2 Jul 2026 12:19:35 -0300
+From: Jason Gunthorpe <jgg@ziepe.ca>
+To: "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>
+Cc: Alexey Kardashevskiy <aik@amd.com>,
+	Catalin Marinas <catalin.marinas@arm.com>, iommu@lists.linux.dev,
+	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+	linux-coco@lists.linux.dev, Robin Murphy <robin.murphy@arm.com>,
+	Marek Szyprowski <m.szyprowski@samsung.com>,
+	Will Deacon <will@kernel.org>, Marc Zyngier <maz@kernel.org>,
+	Steven Price <steven.price@arm.com>,
+	Suzuki K Poulose <Suzuki.Poulose@arm.com>,
+	Jiri Pirko <jiri@resnulli.us>, Mostafa Saleh <smostafa@google.com>,
+	Petr Tesarik <ptesarik@suse.com>,
+	Dan Williams <dan.j.williams@intel.com>,
+	Xu Yilun <yilun.xu@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
+	linux-s390@vger.kernel.org,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	Alexander Gordeev <agordeev@linux.ibm.com>,
+	Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
+	Heiko Carstens <hca@linux.ibm.com>,
+	Vasily Gorbik <gor@linux.ibm.com>,
+	Christian Borntraeger <borntraeger@linux.ibm.com>,
+	Sven Schnelle <svens@linux.ibm.com>, x86@kernel.org
+Subject: Re: [PATCH v6 00/20] dma-mapping: Use DMA_ATTR_CC_SHARED through
+ direct, pool and swiotlb paths
+Message-ID: <20260702151935.GR7525@ziepe.ca>
+References: <2ecfa1a8-6202-4319-9692-a6ffeb5a3dbf@amd.com>
+ <yq5aqzm4dz25.fsf@kernel.org>
+ <20260618153705.GH231643@ziepe.ca>
+ <yq5ao6h6enhm.fsf@kernel.org>
+ <20260619122148.GL231643@ziepe.ca>
+ <yq5aldcaejos.fsf@kernel.org>
+ <20260619140616.GB1068655@ziepe.ca>
+ <yq5ao6gtoncp.fsf@kernel.org>
+ <20260630174216.GK7525@ziepe.ca>
+ <yq5abjcro17x.fsf@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -54,114 +126,18 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Subject: Re: [PATCH 02/13] mm/vma: update do_mmap() to use vma_flags_t
-To: Lorenzo Stoakes <ljs@kernel.org>
-Cc: akpm@linux-foundation.org, tsbogend@alpha.franken.de,
- maddy@linux.ibm.com, mpe@ellerman.id.au, maarten.lankhorst@linux.intel.com,
- mripard@kernel.org, tzimmermann@suse.de, airlied@gmail.com, simona@ffwll.ch,
- l.stach@pengutronix.de, inki.dae@samsung.com, sw0312.kim@samsung.com,
- kyungmin.park@samsung.com, krzk@kernel.org, peter.griffin@linaro.org,
- jani.nikula@linux.intel.com, joonas.lahtinen@linux.intel.com,
- rodrigo.vivi@intel.com, tursulin@ursulin.net, robin.clark@oss.qualcomm.com,
- lumag@kernel.org, lyude@redhat.com, dakr@kernel.org,
- tomi.valkeinen@ideasonboard.com, hjc@rock-chips.com, heiko@sntech.de,
- andy.yan@rock-chips.com, thierry.reding@kernel.org, mperttunen@nvidia.com,
- jonathanh@nvidia.com, kraxel@redhat.com, dmitry.osipenko@collabora.com,
- zack.rusin@broadcom.com, matthew.brost@intel.com,
- thomas.hellstrom@linux.intel.com, oleksandr_andrushchenko@epam.com,
- deller@gmx.de, bcrl@kvack.org, viro@zeniv.linux.org.uk, brauner@kernel.org,
- muchun.song@linux.dev, osalvador@suse.de, david@kernel.org, ziy@nvidia.com,
- baolin.wang@linux.alibaba.com, liam@infradead.org, npache@redhat.com,
- ryan.roberts@arm.com, dev.jain@arm.com, baohua@kernel.org, hughd@google.com,
- vbabka@kernel.org, rppt@kernel.org, surenb@google.com, mhocko@suse.com,
- jannh@google.com, pfalcato@suse.de, kees@kernel.org, perex@perex.cz,
- tiwai@suse.com, linux-mips@vger.kernel.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, dri-devel@lists.freedesktop.org,
- etnaviv@lists.freedesktop.org, linux-arm-kernel@lists.infradead.org,
- linux-samsung-soc@vger.kernel.org, intel-gfx@lists.freedesktop.org,
- linux-arm-msm@vger.kernel.org, freedreno@lists.freedesktop.org,
- nouveau@lists.freedesktop.org, linux-rockchip@lists.infradead.org,
- linux-tegra@vger.kernel.org, virtualization@lists.linux.dev,
- intel-xe@lists.freedesktop.org, xen-devel@lists.xenproject.org,
- linux-fbdev@vger.kernel.org, linux-aio@kvack.org,
- linux-fsdevel@vger.kernel.org, linux-mm@kvack.org,
- linux-sound@vger.kernel.org
-References: <e0ac58ad2b88ff7e2f0024e3286b2e786f79ca32.1782760670.git.ljs@kernel.org>
- <20260702111531.64883-1-lance.yang@linux.dev> <akZwsS-_cywsXSjL@lucifer>
-Content-Language: en-US
-X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
-From: Lance Yang <lance.yang@linux.dev>
-In-Reply-To: <akZwsS-_cywsXSjL@lucifer>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Migadu-Flow: FLOW_OUT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <yq5abjcro17x.fsf@kernel.org>
 
+On Wed, Jul 01, 2026 at 08:39:06AM +0530, Aneesh Kumar K.V wrote:
 
+> This is the only code path where we need to special-case host memory
+> encryption. For this reason, I have avoided renaming
+> io_tlb_mem::cc_shared to io_tlb_mem::unencrypted. I can send a v7 with
+> the above and we can review the changes based on that?
 
-On 2026/7/2 22:16, Lorenzo Stoakes wrote:
-> On Thu, Jul 02, 2026 at 07:15:31PM +0800, Lance Yang wrote:
-[...]
->>
->> [...]
->>> diff --git a/mm/mmap.c b/mm/mmap.c
->>> index 46174e706bbe..547352183214 100644
->>> --- a/mm/mmap.c
->>> +++ b/mm/mmap.c
->> [...]
->>> @@ -488,23 +496,27 @@ unsigned long do_mmap(struct file *file, unsigned long addr,
->>> 		 * Check to see if we are violating any seals and update VMA
->>> 		 * flags if necessary to avoid future seal violations.
->>> 		 */
->>> -		err = memfd_check_seals_mmap(file, &vm_flags);
->>> +		err = memfd_check_seals_mmap(file, &vma_flags);
->>> 		if (err)
->>> 			return (unsigned long)err;
->>> 	} else {
->>> 		switch (flags & MAP_TYPE) {
->>> 		case MAP_SHARED:
->>> -			if (vm_flags & (VM_GROWSDOWN|VM_GROWSUP))
->>> +			if (vma_flags_can_grow(&vma_flags))
->>> 				return -EINVAL;
->>> 			/*
->>> 			 * Ignore pgoff.
->>> 			 */
->>> 			pgoff = 0;
->>> -			vm_flags |= VM_SHARED | VM_MAYSHARE;
->>> +			vma_flags_set(&vma_flags, VMA_SHARED_BIT, VMA_MAYSHARE_BIT);
->>> 			break;
->>> -		case MAP_DROPPABLE:
->>> -			if (VM_DROPPABLE == VM_NONE)
->>> +		case MAP_DROPPABLE: {
->>> +			vma_flags_t droppable = VMA_DROPPABLE;
->>> +
->>> +			if (vma_flags_empty(&droppable))
->>> 				return -EOPNOTSUPP;
->>> +			vma_flags_set_mask(&vma_flags, droppable);
->>> +
->>> 			/*
->>> 			 * A locked or stack area makes no sense to be droppable.
->>> 			 *
->>> @@ -515,23 +527,24 @@ unsigned long do_mmap(struct file *file, unsigned long addr,
->>> 			 */
->>> 			if (flags & (MAP_LOCKED | MAP_HUGETLB))
->>> 			        return -EINVAL;
->>> -			if (vm_flags & (VM_GROWSDOWN | VM_GROWSUP))
->>> +			if (vma_flags_can_grow(&vma_flags))
->>> 			        return -EINVAL;
->>>
->>> -			vm_flags |= VM_DROPPABLE;
->>
->> Old code checked VM_GROWSDOWN|VM_GROWSUP before seting VM_DROPPABLE. New
->> code flips that around. Hmm, shouldn't master, just made me look twice ;)
->>
->> Maybe keep old order?
-> 
-> I guess I feared that defining droppable above then referencing it below would
-> be less clear?
-> 
-> Can move if you feel strongly about it, and sorry for making the move at the
-> same time as the general vm_flags_t -> vma_flags_t refactor as it does make that
-> less clear...
+I'm OK with this
 
-No need to churn just for me. Thanks :)
+Jason
 
