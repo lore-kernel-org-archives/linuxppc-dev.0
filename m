@@ -1,83 +1,100 @@
-Return-Path: <linuxppc-dev+bounces-23338-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23339-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 35819C43327
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Jul 2026 22:26:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9122CC43458
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Jul 2026 00:25:52 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4grF3J4HcFz30V3;
-	Thu, 02 Jul 2026 08:26:04 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782944764;
-	cv=none; b=kkd19A/wECuJ2rEVU91AopuZbzKwuNJExHpRCT5qFuxrmzVrw3V1iaervpNUgiLynnBGVeIFCuBUvffAG7NBKn5RqC08jFcz1JeXCFgCul45Zrqnk87qCdyGlWOx0i3kbo5O7yG0Y+K+VSPBMuVBN8usXE6GIuSY/Tr1tHwwAdak8kvY+yRKbCb60IElY7buIBV6PW+p+Lsx1gGN6k8HSoAN3SUN2RcKYoYie57aRlxE3xz8J64d3Xn7Jd7gPg/JumtZTK+rxGLNKUEwXomXsdzoXR0qrZ7QT8KcOtxkKk8rrOfYZz6I9/ETSukJzvLUw+W7PbJU6Yi0LIRGl1B3Jw==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1782944764; c=relaxed/relaxed;
-	bh=5WFgnhjFb3ujhWuLu5dC/j92ByllA3Et568vLAlecps=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=aGXH5YqZospmGBDlrukVY+c8VVIri4p/AL6w7Dr1mhPmoYbYDqWCk2wKvQBI/aKFPUhaBcMWllUr1/G0H89j1noRmuQlGQgeJhnJQ/3DzV8Ui0o6d3UDIxpB4R21g31BPbXqyaU37klbSRzEvl7s0OwSTgSAU/y+MtRszgjhfIt5ZFtZP9I92Lwa40ujBFCmIcoCMaJjikHqjwC9oGOYCX79/Jqe+qeOZ3QXwEXBgy9ZvSo71McNgL2wtkEs9RYg7l/2lyEeM6nFpdKUpcpyjYhTt7KXBVcIBeZk7h0uUOsTNyGJeFEdt9eAQ/1k1bhEz2bGm56udsWEIlL0mH7B9w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=RzcH37kE; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=mmc@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4grHjW26fYz2yfD;
+	Thu, 02 Jul 2026 10:25:51 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c105::7" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782951951;
+	cv=pass; b=ZQVgOBeTUkX+YKXW5/LXp5ZjZrqLyF2VNrOw+J3QWuqrW1dqZsFM1l5Fuc06CLnpYTpEyCt3AdkvVEPq8Y7fKGgXPJUOFc5LY//Z0fzEtK35AB/YDOayc+IYNcZukFBANxuxuw4iFS2Wb0Q5oU9mODqRZY+yDWhs2YX/1uNGCGf5Qh4zRk8lPK1/GKnts3k3UJODEIdKS/j2pblEJetzN9g9/5SWTSA+0pNCCXin8nIPpzOKAEGmLskGoXlxQRsqXLoSl3X3ducBikh5ECK7e8Icv6gK61r/6pVws2hgZoRYt1sURibsBHh2v1FhueziHctkUAWxndcPrACFm9bDFA==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1782951951; c=relaxed/relaxed;
+	bh=C1Yhufc6xvt9ifcyT6JrnbvwoW7wfKisRJN0hIK3Yvs=;
+	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
+	 Content-Type:MIME-Version; b=jqCDkNEzq4Y7cYH6utI3XVsbCk7Oe3MNQK01yVEoyH/hmL3LuZfbdEzN3q1p1K2cUHaZA/N801qaWhHx5j+tPB7wFCUNcJPgjGFAXvc2AHs9Idlvf4yIw230329hMjSXS+XD9aStdYC5jriQQYk+aNmqooLgEZdQHSqT9Hqxz2yw+hY86CWcLRp8F9l3JSF0R1im/uD7BVAUN2ZSF2gzdIGTYqZQztqpp4tjZXyysgrKv3xAi8lreOV/81YgrryL+z3nSsk3hE1/55r9KIE+4hh4ePkZX7EkgzPsLROHT97k+KrQdpyxrwyKYDfadoDqqxACFCop46ELlGuwAxTanA==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; dkim=pass (1024-bit key; unprotected) header.d=amd.com header.i=@amd.com header.a=rsa-sha256 header.s=selector1 header.b=N3Saq3+l; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c105::7; helo=ch4pr04cu002.outbound.protection.outlook.com; envelope-from=alexey.kardashevskiy@amd.com; receiver=lists.ozlabs.org) smtp.mailfrom=amd.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=RzcH37kE;
+	dkim=pass (1024-bit key; unprotected) header.d=amd.com header.i=@amd.com header.a=rsa-sha256 header.s=selector1 header.b=N3Saq3+l;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=mmc@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=amd.com (client-ip=2a01:111:f403:c105::7; helo=ch4pr04cu002.outbound.protection.outlook.com; envelope-from=alexey.kardashevskiy@amd.com; receiver=lists.ozlabs.org)
+Received: from CH4PR04CU002.outbound.protection.outlook.com (mail-northcentralusazlp170130007.outbound.protection.outlook.com [IPv6:2a01:111:f403:c105::7])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4grF3H4htfz30DX
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 Jul 2026 08:26:03 +1000 (AEST)
-Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 661LmTEw2030169;
-	Wed, 1 Jul 2026 22:25:56 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=pp1; bh=5WFgnhjFb3ujhWuLu
-	5dC/j92ByllA3Et568vLAlecps=; b=RzcH37kEjYAPrFffzm4RhNtZmbRuwW9xq
-	mD/JeYNOdyVlXaKBwt8h3OGBj/0ABTaClZ01QL44Vrry0dM5qGR5n29MUnZrDEYk
-	aYBtWSDh7cNvYKozpuTOXGPfeLPC9Z8JYr/BEw/LgXsJuUg2CUNMq+mOIW/YuCJj
-	mb48D0ZOsCFBxBclHVXaMS820maMbBuEorfObChJzYqCa4XWRSUGoWL2QjuirHQM
-	Ui4PbPWNhAMXqWdhWT24yENDG6+x6Sqzc2GPl/bSu8EoHZvFLdyAIp4dS5P4WHeT
-	+fGR7rusY0VAnuDEZh8dfYopcLKD3hHjqZ38avASKAYfvrd5C39ig==
-Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4f26n5xynn-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 01 Jul 2026 22:25:55 +0000 (GMT)
-Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma11.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 661MJbLe001383;
-	Wed, 1 Jul 2026 22:25:54 GMT
-Received: from smtprelay07.dal12v.mail.ibm.com ([172.16.1.9])
-	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4f2uhyh4v7-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 01 Jul 2026 22:25:54 +0000 (GMT)
-Received: from smtpav01.wdc07v.mail.ibm.com (smtpav01.wdc07v.mail.ibm.com [10.39.53.228])
-	by smtprelay07.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 661MPrKM29819478
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 1 Jul 2026 22:25:53 GMT
-Received: from smtpav01.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 87B4F5804B;
-	Wed,  1 Jul 2026 22:25:53 +0000 (GMT)
-Received: from smtpav01.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 2199E58066;
-	Wed,  1 Jul 2026 22:25:52 +0000 (GMT)
-Received: from localhost.localdomain (unknown [9.61.150.53])
-	by smtpav01.wdc07v.mail.ibm.com (Postfix) with ESMTP;
-	Wed,  1 Jul 2026 22:25:52 +0000 (GMT)
-From: Mingming Cao <mmc@linux.ibm.com>
-To: netdev@vger.kernel.org
-Cc: horms@kernel.org, bjking1@linux.ibm.com, haren@linux.ibm.com,
-        ricklind@linux.ibm.com, mmc@linux.ibm.com, kuba@kernel.org,
-        edumazet@google.com, pabeni@redhat.com, linuxppc-dev@lists.ozlabs.org,
-        maddy@linux.ibm.com, mpe@ellerman.id.au,
-        Dave Marquardt <davemarq@linux.ibm.com>
-Subject: [PATCH net-next v2 15/15] ibmveth: Fix MQ RX poll and shutdown hangs after queue resize
-Date: Wed,  1 Jul 2026 15:23:27 -0700
-Message-Id: <20260701222327.61325-16-mmc@linux.ibm.com>
-X-Mailer: git-send-email 2.39.3 (Apple Git-146)
-In-Reply-To: <20260701222327.61325-1-mmc@linux.ibm.com>
-References: <20260701222327.61325-1-mmc@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4grHjT5bMTz2yf9
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 Jul 2026 10:25:48 +1000 (AEST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=BOLqvxV3BB9w9/nuTXj3DfEmcoNJDqqvU9QJFUPACKo1/45y3OdsH1B/SXzG9ojCuIX4JqdDMytNvbzcULyDCUo3HVIngrxbThOfFKNzlnw7Mvojtit6LI8jFnxyxrRrG0u7PJMTNtjHy4twb2CGWqsl89ByPdC3pWqeo+as25LH5zyhjpyUMLNroxfrj3boep0ZAM0QD+CWtev6p1ksyw/6XiTu+Hcgm2pvEX+MWWETxchDbSKGmxMXfmT2X8bKCV6id+Sbz+41Js8WTP7PVoklLJ9juZJHEmS0vtAEtXXK25okr4ZQ3JwDpspwXNa+9II89IhdPyEp8l8N33aFMQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=C1Yhufc6xvt9ifcyT6JrnbvwoW7wfKisRJN0hIK3Yvs=;
+ b=ZX/EiXokTyIclQEceN2YnO6XUubMu++r63r9mh+X/SVFXNnWNdCM1BiGE739OWbRzVvRwUxa8VXRKC/OzvhK/RrdLb05VmZrQbXni8qQO6R8Yj13kYwGj7oCaWrzKlx8sD0vshnpPruNqkviE9G2vQRLC8dco1c8qjYztV/hUCVr1GP6f+tCA4ptMC+Aui4s7TrEJ4DPpx4ewAkzokUOmdPgnVurEOXsOlhgRVcbfdzFFNrQmepU1j3gOu16SFEFu2rt69AiZvQX4v3K8ejilIKrLRXsQZDI5tRPO1JQbeblnZvF+rMItT5hIwOrB5OBVMHfMXhjoIN0OLYf35Nxgw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=amd.com; dmarc=pass action=none header.from=amd.com; dkim=pass
+ header.d=amd.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=C1Yhufc6xvt9ifcyT6JrnbvwoW7wfKisRJN0hIK3Yvs=;
+ b=N3Saq3+lpzUxOgV82PY3ma58fCIlDgOAkFLRnT5SUPcl75REAX+PtHNJoakQm4YjphNHuXHX3rAp38MHbQQFCgTEj9Y5r49HkqrJx40j5sJn+RhNlxg4Cdds8JLS22UA60DZpK7XdaGAiZFsxkFI6wzV7hWKVlA4yd9+ic5YtMs=
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=amd.com;
+Received: from SA1PR12MB999228.namprd12.prod.outlook.com
+ (2603:10b6:806:4db::10) by IA1PR12MB9739.namprd12.prod.outlook.com
+ (2603:10b6:208:465::9) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.159.19; Thu, 2 Jul
+ 2026 00:25:25 +0000
+Received: from SA1PR12MB999228.namprd12.prod.outlook.com
+ ([fe80::4dba:119e:8e7c:37b3]) by SA1PR12MB999228.namprd12.prod.outlook.com
+ ([fe80::4dba:119e:8e7c:37b3%4]) with mapi id 15.21.0181.008; Thu, 2 Jul 2026
+ 00:25:25 +0000
+Message-ID: <98800d21-18f6-44d6-9ba0-da9b77567d85@amd.com>
+Date: Thu, 2 Jul 2026 10:25:16 +1000
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v6 03/20] dma-direct: use DMA_ATTR_CC_SHARED in alloc/free
+ paths
+To: Jason Gunthorpe <jgg@ziepe.ca>
+Cc: "Aneesh Kumar K.V (Arm)" <aneesh.kumar@kernel.org>,
+ iommu@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
+ linux-kernel@vger.kernel.org, linux-coco@lists.linux.dev,
+ Robin Murphy <robin.murphy@arm.com>,
+ Marek Szyprowski <m.szyprowski@samsung.com>, Will Deacon <will@kernel.org>,
+ Marc Zyngier <maz@kernel.org>, Steven Price <steven.price@arm.com>,
+ Suzuki K Poulose <Suzuki.Poulose@arm.com>,
+ Catalin Marinas <catalin.marinas@arm.com>, Jiri Pirko <jiri@resnulli.us>,
+ Mostafa Saleh <smostafa@google.com>, Petr Tesarik <ptesarik@suse.com>,
+ Dan Williams <dan.j.williams@intel.com>, Xu Yilun
+ <yilun.xu@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
+ "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+ Alexander Gordeev <agordeev@linux.ibm.com>,
+ Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
+ Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>,
+ Christian Borntraeger <borntraeger@linux.ibm.com>,
+ Sven Schnelle <svens@linux.ibm.com>, x86@kernel.org,
+ Jiri Pirko <jiri@nvidia.com>, Michael Kelley <mhklinux@outlook.com>,
+ "Cheloha, Scott" <Scott.Cheloha@amd.com>
+References: <20260604083959.1265923-1-aneesh.kumar@kernel.org>
+ <20260604083959.1265923-4-aneesh.kumar@kernel.org>
+ <845d0c8a-6d51-47aa-8e0b-8381e733444a@amd.com>
+ <20260617154101.GE3577091@ziepe.ca>
+ <25155bd6-4348-4aa8-ba70-0a882fc84db9@amd.com>
+ <20260630160242.GI7525@ziepe.ca>
+Content-Language: en-US
+From: Alexey Kardashevskiy <aik@amd.com>
+In-Reply-To: <20260630160242.GI7525@ziepe.ca>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-ClientProxiedBy: SY5P300CA0050.AUSP300.PROD.OUTLOOK.COM
+ (2603:10c6:10:1fe::9) To SA1PR12MB999228.namprd12.prod.outlook.com
+ (2603:10b6:806:4db::10)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -91,207 +108,135 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzAxMDIzOSBTYWx0ZWRfX9yYGwphyZA0M
- QVB9oQDVA53C69eedTsnuJ0k0qQ3mnKQInpDrGjG+3XGNA5eprv5csSCmYAMDgpDAKNEA25najP
- NeWCki1MJ3WgeR0joDi5hKbX7Q+L3o/LP6ZhgtZtnwUKsCDXI8py8BdFX9TrA9gzI4Nn2YfC6qW
- +2EpHkonNLzeYe3lLIkwVFb60UrOKodItctG6wCRDwpKoCffVQfUO3kI6eNPqUvUplmhzwvvCZx
- LcSmUnkCfXFeL4cfCBq7uhOuGDYWEvzAnCALOxP/vG0ZOipYlz+sOls5I8r2F7SmiCJu//SQAF1
- kvUCoEcr83/odfVXg8Ow0oratud0Mdh0YptJ5u0qe88fCQkNoaoKi5Yw33K2Ivg3VBB0I/cMfy0
- vLbugUiLa37pGevSlyvM4VQ+jc6bQ6utFLrvu4C4PEIaKUM3kl0XYLzo235RI6ujPLxAIkTLqfK
- GJWB3Kz4DDx60tP9B4g==
-X-Authority-Analysis: v=2.4 cv=V45NF+ni c=1 sm=1 tr=0 ts=6a4593f4 cx=c_pps
- a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
- a=RAioF0-LDSMA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=U7nrCbtTmkRpXpFmAIza:22 a=VnNF1IyMAAAA:8 a=H2PsU0_gVjd1cLIlZ3YA:9
-X-Proofpoint-ORIG-GUID: KY8kV9KCYWYTDSrFI9h-_1fcIFEWL17U
-X-Proofpoint-GUID: Th7arcEAi8i9hshMNlDnsy_vFDZFfp1m
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNzAxMDIzOSBTYWx0ZWRfXzvGm269p7jrx
- PLGRw9rn3HYvDh/UZoXENxMttqKAXSDqNyl7gxYga7k4U9Wlg2KIS4MNPCQY6VdnukL7Q7H6Ttz
- uWHBNo1VovNV9k9oCvGrHzMCWgX4854=
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
- definitions=2026-07-01_05,2026-06-26_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- phishscore=0 spamscore=0 suspectscore=0 lowpriorityscore=0 priorityscore=1501
- adultscore=0 clxscore=1015 impostorscore=0 malwarescore=0 bulkscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607010239
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: SA1PR12MB999228:EE_|IA1PR12MB9739:EE_
+X-MS-Office365-Filtering-Correlation-Id: ea092ab4-5f61-4960-a5f6-08ded7d0695e
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|366016|1800799024|23010399003|7416014|376014|22082099003|6133799003|56012099006|11063799006|3023799007|4143699003|18002099003;
+X-Microsoft-Antispam-Message-Info:
+	p1meNHZ7/WPm688u50XyH2zieVFOZhf/YoocfZTXmF7kj1oUTx//CFegyc7SKauGWVQE3wV3Qd3fnulWYMUvNuoxXxBKhjRls6t38JtMbsuVH3kUgFpq2NxfIY7t1wdVq3CuyXM/0DcdEVHh/fM3AIb42Hw86Knh+RgnAa5NF2M+iRz1y89RQkE9mdmOib2p5UxjLYVVioVtDJP5g3O2iEnHWZ3vSWO3fG08oanpIZNKSVy/JdvA2XdUHmKlLNZVV27qFffx6P91UI7oPtvw1wKbadClSutEWCMhILiYSBdpNpYU/lcK9XxXTDG31G29er2o4m60/UwwXq3f8YFDs8PP3EO3LanqV+CzzGgd87K6MzSKlfxptf28ocXOEi9BUBj1bZf6FaBqus/ITGR6+lFaOk5jrFO8OfTjxzM+dBqP5LAPQ2yLgENJWEo1rqtaqZFvR4ZyH7FvJkt2lCCm9a1bEGM2CdW842Y/ipP++L3OgpcfkaDqn9WCdPiSUvFycHfoNvpdfVrodXAZxTKUsmUlvoaCWoVR2ehkEJV0kyaQUVkq1pETq3IeYQ1qqMqZJN0+XD6Jm6jNiPth+cIDVnyb1oE5v2BrVbzmA3ETgi11Ew7j1QM7w+UTTbT6I2uwWcva/Rd1v25NMopizt26m4yr7ccO2vcsSywNzv/ZcnA=
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:SA1PR12MB999228.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(1800799024)(23010399003)(7416014)(376014)(22082099003)(6133799003)(56012099006)(11063799006)(3023799007)(4143699003)(18002099003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?utf-8?B?VlI0RDNTODFKc2N3ek1YYWc1bzZla0ZxNFpnTGJzc2k0T1YwQ1daejRGZzZt?=
+ =?utf-8?B?WVZ6bXlrNENCZ20vQ204SmtZZzMvd0ZJZzFCSEVteXlnSXIwZjlURjQ2bW81?=
+ =?utf-8?B?amEwWjFEOGJkUFdZZVU3S3NXNkl4a2NHSFA1SmtJTzFWajMzSEJBOHVuMUE4?=
+ =?utf-8?B?WU1ta043Vi9hOTVkdC9ISnJYdStMbTA1TzVaZzN4SXA5aUxoQ1BlRVFZQWxt?=
+ =?utf-8?B?VHEydy9XQjRrcU45RXR5L3NDc0lHTU84OXFnNVl3MnhITmdIdVhDRXh3bHlK?=
+ =?utf-8?B?TlZRSlZBTjRzRndYRXA4aTVPV2NJa3doQkFsTEV1V1B2OGIrcHV3OHNVcC9j?=
+ =?utf-8?B?eGpCaEpjWjBmR214V01FVGg0eFdOWERKMm94cDl6RVNDaWQrby9VcE03Z0RN?=
+ =?utf-8?B?bC83SnppbkptWHVQMjhZdFhPTXljMkkyNU54L2pZZFc2Uk5RUFg1bDY2U1JT?=
+ =?utf-8?B?UTdEbzkrQTlLZlZwZXN2TjJEdmJkRnRnUXVoRDdEdSsydjNSdTZwRzJSNmpE?=
+ =?utf-8?B?YWdVRFI2MmExcUtLb0RUSW9Ob2FmY3pOTVFOSTYwTVRhVUpieVVadlB4ZEdt?=
+ =?utf-8?B?YmRJWnBTMmlFR1dJZGJVazBHY3hzSk1EZHZGeldqZXZYazRKazlvU0Y5TDkr?=
+ =?utf-8?B?WHRDaERFSWRVL0VZQ1N2Z1ZrQVFTRWsxdTZDcE5Va3RGcGFtYWxFWk1KZTBJ?=
+ =?utf-8?B?UVZweFEwdmNCMlVKSjF3QU0yWnQ0NXJ2M0puRFBITW9GM1JPVGNlVnZUSkh0?=
+ =?utf-8?B?N25iRXpIL2JNdnBVbnNqbzdPei9rWWc1eUEvTEtPN3duSHNGblVsT0Y5V0VU?=
+ =?utf-8?B?SkZvdmNyV254OE5tM2JrMTFzZHVia21hT0RmNEhLN3pxdXA2Z1VNbEJkSE0v?=
+ =?utf-8?B?ZzBodHlhQ0podlpZUXUwRmxvb2dGY0UzejZ0WGR3Ly95aE5mcmVyNHlKeWN1?=
+ =?utf-8?B?MUFWTUJhYVkzRTdiM21ZVTFPYTRFUnJ0MFM2MWVkSUJtNUNqR3h5TkNzSU5s?=
+ =?utf-8?B?TkNhdUZWTkRpRlJoSlhLck14ZUZsM3MvSENvMmorc2QvaUVRZlFjTVZhZW54?=
+ =?utf-8?B?NitjMDBJTjdyMml2OXYzbzNoOWZWUkluL3JlYXFFdEdwUHg1M0JVMHVQYmZp?=
+ =?utf-8?B?NlJNSnR6eDNvYmpScVp5UnJsU1krQWY4dDIvdmROQWM3dWd2bXJRaGI3OWVD?=
+ =?utf-8?B?MWo4MGhCRThGVy9kZVc3TC9raUxQSlpmbWcvbGxIT296amdHSHFXMnloeDQ0?=
+ =?utf-8?B?N01QU2o2SFhUblA0bkhHN0tzRmxhMDJ3MHIycjRUVnBrRmFQeFFVS2xUS2NR?=
+ =?utf-8?B?TmRpWWNtWUdBYVJGVmluMVZUNkpERG1LQTNmbVJJdWM1dk9Hajg4T29ucXN3?=
+ =?utf-8?B?ZmdMNWhaN3JQbms0UGdab01zaGQzTDQ4VXRqb0xjS0U3a3dtTXRuSnhJVlZa?=
+ =?utf-8?B?Wm5wK3hrMGIwRXozZ2pMdm1tK1ZHMUhmUlZFblVhek53OWZYU1pNRGRVY1dk?=
+ =?utf-8?B?V3FpUU4wYThqN25ocVdIQTdKYVExSlBhRTZjK2Ewd2dGYXppK1g2eW1tUDJK?=
+ =?utf-8?B?SUE1aUxLNnE4Z2ovSjlCcTdpb3ZSNjJCdXc1c1Ava05RVTB0aWxnS2NOeWtM?=
+ =?utf-8?B?dVUrc0wxd2MrZTFJV3cyRmV4SUVKSXI0OHVDVHNWTGE2SUNFU2JQcHZZOTNt?=
+ =?utf-8?B?L3BWdUIvaFpFVmppZlU0UVEyZFI1Zno2RTVDZndtcUJjSW5XVGtrV2FrMG5U?=
+ =?utf-8?B?ZDhlcUdWU0J6dUd4dEFONk1tSmRrWnlTUDVtWHYwRE1acG5SSmpJTEtNUW1m?=
+ =?utf-8?B?aDlQRHVCYUFMUXIrOTFXVGJVV0lnRUVUMzlQLzhWdmlYOXlQYTdGcDFCeGdN?=
+ =?utf-8?B?MmZla3U3bG5qZ29mTFZNQ1VGaHc2MU5FRUcrdHU4NC9mdXZkbmRacUk4cjZa?=
+ =?utf-8?B?anpiUHkxdDN4NWM2RXJrUGc4bHF2K3FaNjhkb0d2bFhxbG9hTS8vaTFZVjNh?=
+ =?utf-8?B?bnJkdUphdXZ0c09yZjU4SzRTZnFwelV3c2N0aEFkS21RaGw3bDM5OWNwVUVZ?=
+ =?utf-8?B?ejBGbCtpTGJXcGptaEd2YjFkZzRuTC9QYUZBUUdLaUVhT1RGL1FQV1A2SElp?=
+ =?utf-8?B?dzZXcE5KVnIzUEFtcEJMUUFxTUozbXJkajd4bnB6ajJUM3o0ZE1ZZDd0d0JH?=
+ =?utf-8?B?aXViRmZydGNIT0VXK2ZYaFNlUVYrNi81bWZRRlhHNkM5MlhaKzdnTGhYUENW?=
+ =?utf-8?B?MlZHYnVmNzc1S2VCU1gyeXljTG5aWi9tSSs1RWNTSVFBb0ZvZnBVMnozakhN?=
+ =?utf-8?B?UlFQNDNVQXdYZWJ5VjFEN1A5QU5uUWt2eStKVkJuZ3dVZXRnR0ZaUT09?=
+X-OriginatorOrg: amd.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: ea092ab4-5f61-4960-a5f6-08ded7d0695e
+X-MS-Exchange-CrossTenant-AuthSource: SA1PR12MB999228.namprd12.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 02 Jul 2026 00:25:25.5184
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: GUrlBrWbc5RCgbjPHJEsAk+nbKxhn/JvXJpLN03KjNzP3xIRf2nPsbiRw+tlFrRXuUVaFafQeBmKBFjpdsjAOw==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: IA1PR12MB9739
 
-After aggressive ethtool -L cycling, PHYP can leave a VALID RX descriptor
-with a correlator that no longer matches the per-queue buffer pools. Poll
-treated this as fatal: ibmveth_rxq_get_buffer() WARNed and returned NULL
-without advancing the ring, then restart_poll retried the same slot forever.
 
-Advance past bad correlators instead of spinning: validate correlators
-without WARN_ON, skip invalid slots in poll (count as invalid_buffers),
-and advance the RX ring when remove_buffer_from_pool cannot map the
-correlator. Rate-limit the bad correlator message.
 
-Complete NAPI when the interface is down or napi_disable is pending so
-ibmveth_cleanup_rx_interrupts() can finish. Do not restart_poll in that
-window. Close keeps hypervisor IRQ disable before napi_disable (via
-cleanup_rx_interrupts()).
+On 1/7/26 02:02, Jason Gunthorpe wrote:
+> On Thu, Jun 18, 2026 at 12:39:21PM +1000, Alexey Kardashevskiy wrote:
+>>
+>>
+>> On 18/6/26 01:41, Jason Gunthorpe wrote:
+>>> On Wed, Jun 17, 2026 at 10:50:39AM +1000, Alexey Kardashevskiy wrote:
+>>>>> @@ -193,16 +193,31 @@ void *dma_direct_alloc(struct device *dev, size_t size,
+>>>>>     		dma_addr_t *dma_handle, gfp_t gfp, unsigned long attrs)
+>>>>>     {
+>>>>>     	bool remap = false, set_uncached = false;
+>>>>> -	bool mark_mem_decrypt = true;
+>>>>> +	bool mark_mem_decrypt = false;
+>>>>>     	struct page *page;
+>>>>>     	void *ret;
+>>>>> +	/*
+>>>>> +	 * DMA_ATTR_CC_SHARED is not a caller-visible dma_alloc_*()
+>>>>> +	 * attribute. The direct allocator uses it internally after it has
+>>>>> +	 * decided that the backing pages must be shared/decrypted, so the
+>>>>> +	 * rest of the allocation path can consistently select DMA addresses,
+>>>>> +	 * choose compatible pools and restore encryption on free.
+>>>>
+>>>> Why this limit?
+>>>>
+>>>> Context: I am looking for a memory pool for a few shared pages (to
+>>>> do some guest<->host communication), SWIOTLB seems like the right
+>>>> fit but swiotlb_alloc() is not exported and
+>>>> dma_direct_alloc(DMA_ATTR_CC_SHARED) is not allowed.  Thanks,
+>>>
+>>> Then setup your struct device so that the DMA API knows the
+>>> guest<->host channel requires unecrypted and it will work correctly.
+>>>
+>>> I think this is a reasonable API to use for that, and I was just
+>>> advocating that hyperv should be using it too.
+>>>
+>>> But it all relies on a properly setup struct device.
+>>
+>> Sounds good but how do I do that in practice?
+> 
+> I think we haven't got there yet, I understood Dan's plan was to add a
+> bit in the struct device that signals if the device must be
+> unencrypted or can support all memory.
+> 
+> Currently the dma api assumes all devices must have unencrypted by
+> default so it should be fine already, shouldn't it?
 
-Signed-off-by: Mingming Cao <mmc@linux.ibm.com>
-Reviewed-by: Dave Marquardt <davemarq@linux.ibm.com>
----
- drivers/net/ethernet/ibm/ibmveth.c | 76 ++++++++++++++++++++++--------
- 1 file changed, 57 insertions(+), 19 deletions(-)
+It assumes that DMA returns a handle for shared memory but the state of that memory is not guaranteed beforehand. I dislike 2M page mashing.
 
-diff --git a/drivers/net/ethernet/ibm/ibmveth.c b/drivers/net/ethernet/ibm/ibmveth.c
-index 50a332ab83fd..d7bf01271161 100644
---- a/drivers/net/ethernet/ibm/ibmveth.c
-+++ b/drivers/net/ethernet/ibm/ibmveth.c
-@@ -158,6 +158,25 @@ static inline int ibmveth_rxq_frame_length(struct ibmveth_adapter *adapter,
- 	return be32_to_cpu(rxq->queue_addr[rxq->index].length);
- }
- 
-+static inline bool
-+ibmveth_rxq_correlator_valid(struct ibmveth_adapter *adapter, int queue_index,
-+			     u64 correlator)
-+{
-+	unsigned int pool = correlator >> 32;
-+	unsigned int index = correlator & 0xffffffffUL;
-+
-+	return pool < IBMVETH_NUM_BUFF_POOLS &&
-+	       index < adapter->rx_buff_pool[queue_index][pool].size;
-+}
-+
-+static inline void ibmveth_rxq_advance(struct ibmveth_rx_q *rxq)
-+{
-+	if (++rxq->index == rxq->num_slots) {
-+		rxq->index = 0;
-+		rxq->toggle = !rxq->toggle;
-+	}
-+}
-+
- static inline int ibmveth_rxq_csum_good(struct ibmveth_adapter *adapter,
- 					int queue_index)
- {
-@@ -1284,17 +1303,12 @@ static int ibmveth_remove_buffer_from_pool(struct ibmveth_adapter *adapter,
- 	unsigned int free_index;
- 	struct sk_buff *skb;
- 
--	if (WARN_ON(pool >= IBMVETH_NUM_BUFF_POOLS) ||
--	    WARN_ON(index >= adapter->rx_buff_pool[queue_index][pool].size)) {
--		schedule_work(&adapter->work);
-+	if (!ibmveth_rxq_correlator_valid(adapter, queue_index, correlator))
- 		return -EINVAL;
--	}
- 
- 	skb = adapter->rx_buff_pool[queue_index][pool].skbuff[index];
--	if (WARN_ON(!skb)) {
--		schedule_work(&adapter->work);
-+	if (!skb)
- 		return -EFAULT;
--	}
- 
- 	/* if we are going to reuse the buffer then keep the pointers around
- 	 * but mark index as available. replenish will see the skb pointer and
-@@ -1335,11 +1349,8 @@ static inline struct sk_buff *ibmveth_rxq_get_buffer(struct ibmveth_adapter *ada
- 	unsigned int pool = correlator >> 32;
- 	unsigned int index = correlator & 0xffffffffUL;
- 
--	if (WARN_ON(pool >= IBMVETH_NUM_BUFF_POOLS) ||
--	    WARN_ON(index >= adapter->rx_buff_pool[queue_index][pool].size)) {
--		schedule_work(&adapter->work);
-+	if (!ibmveth_rxq_correlator_valid(adapter, queue_index, correlator))
- 		return NULL;
--	}
- 
- 	return adapter->rx_buff_pool[queue_index][pool].skbuff[index];
- }
-@@ -1365,14 +1376,15 @@ static int ibmveth_rxq_harvest_buffer(struct ibmveth_adapter *adapter,
- 
- 	cor = rxq->queue_addr[rxq->index].correlator;
- 	rc = ibmveth_remove_buffer_from_pool(adapter, cor, queue_index, reuse);
--	if (unlikely(rc))
-+	if (unlikely(rc)) {
-+		if (rc == -EINVAL || rc == -EFAULT)
-+			goto advance;
- 		return rc;
--
--	if (++rxq->index == rxq->num_slots) {
--		rxq->index = 0;
--		rxq->toggle = !rxq->toggle;
- 	}
- 
-+advance:
-+	ibmveth_rxq_advance(rxq);
-+
- 	return 0;
- }
- 
-@@ -2931,11 +2943,19 @@ static int ibmveth_poll(struct napi_struct *napi, int budget)
- 	if (WARN_ON(queue_index < 0 || queue_index >= adapter->num_rx_queues))
- 		return 0;
- 
-+	if (!netif_running(netdev) || napi_disable_pending(napi)) {
-+		napi_complete_done(napi, 0);
-+		return 0;
-+	}
-+
- 	if (adapter->rx_qstats)
- 		adapter->rx_qstats[queue_index].polls++;
- 
- restart_poll:
- 	while (frames_processed < budget) {
-+		if (!netif_running(netdev) || napi_disable_pending(napi))
-+			break;
-+
- 		if (!ibmveth_rxq_pending_buffer(adapter, queue_index))
- 			break;
- 
-@@ -2959,8 +2979,21 @@ static int ibmveth_poll(struct napi_struct *napi, int budget)
- 			__sum16 iph_check = 0;
- 
- 			skb = ibmveth_rxq_get_buffer(adapter, queue_index);
--			if (unlikely(!skb))
--				break;
-+			if (unlikely(!skb)) {
-+				if (net_ratelimit())
-+					netdev_err(netdev,
-+						   "bad correlator on queue %d, skipping slot\n",
-+						   queue_index);
-+				if (adapter->rx_qstats)
-+					adapter->rx_qstats[queue_index].invalid_buffers++;
-+				else
-+					adapter->rx_invalid_buffer++;
-+				rc = ibmveth_rxq_harvest_buffer(adapter, queue_index,
-+								true);
-+				if (unlikely(rc))
-+					break;
-+				continue;
-+			}
- 
- 			/* if the large packet bit is set in the rx queue
- 			 * descriptor, the mss will be written by PHYP eight
-@@ -3034,8 +3067,11 @@ static int ibmveth_poll(struct napi_struct *napi, int budget)
- 
- 	ibmveth_replenish_task(adapter, queue_index);
- 
--	if (frames_processed == budget)
-+	if (frames_processed == budget) {
-+		if (!netif_running(netdev) || napi_disable_pending(napi))
-+			napi_complete_done(napi, frames_processed);
- 		goto out;
-+	}
- 
- 	if (!napi_complete_done(napi, frames_processed))
- 		goto out;
-@@ -3053,6 +3089,8 @@ static int ibmveth_poll(struct napi_struct *napi, int budget)
- 	}
- 
- 	if (ibmveth_rxq_pending_buffer(adapter, queue_index) &&
-+	    netif_running(netdev) &&
-+	    !napi_disable_pending(napi) &&
- 	    napi_schedule(napi)) {
- 		lpar_rc = ibmveth_disable_irq(adapter, queue_index);
- 		WARN_ON(lpar_rc != H_SUCCESS);
+>> not externally available so I'll have to trick the DMA layer into
+>> using SWIOTLB (which is still all shared, right?) as I specifically
+>> want to skip page conversions. Setting low DMA mask won't guarantee
+>> that the DMA layer won't allocate a page outside of SWIOTLB and
+>> convert it. Manually do
+> 
+> Why so particular?
+
+aahhh I missed "pre-". I need a way to get pre-shared pages for my sev-guest activities.
+
+> Any address that satisifies the constraints should
+> be good enough?
+Any address can be already shared (from swiotlb) or not (from outside swiotlb). The latter will may trigger 2M page smashing and this is what I want to avoid. Makes better sense now? Thanks,
+
+
 -- 
-2.39.3 (Apple Git-146)
+Alexey
 
 
