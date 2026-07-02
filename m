@@ -1,96 +1,123 @@
-Return-Path: <linuxppc-dev+bounces-23377-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23378-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BE14BC43458
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Jul 2026 09:09:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 46B64C43458
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Jul 2026 09:12:35 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4grWL731Fkz2xPb;
-	Thu, 02 Jul 2026 19:09:51 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::32d"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782983391;
-	cv=none; b=YmP2xATxfOzAdcOCjzTR9VVGbt+Q8eXBYk7Po7IBAP3GHJGn7qiWIDlPTyIe9JRrMAU/UyfM5/17UrGuTvk78Wr74kveoB5qmre8/PzWVeFHr61SHOgbXblm0tOK9124dseYig0fIRjEk/qYPyo6I1Y1rjGz8sz8vZ4AL2IRXb3zFxOypy9nSMADK35hJnpxiwsu40Lb0waNp5WQst/n8rv8RRvX7/sS6sGjiWmfgQAGg4eYEXv/7ZhOCqTLXiY16yg0wrzXaUKoU0c4OyKU8EwI9qfTvirCHxfC9ILvnhfo7blnhBzJWBIeiGN0XnMa3/MHbl3wfgNq0uEPUZSSAA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4grWPF6cR9z2xYg;
+	Thu, 02 Jul 2026 19:12:33 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a07:de40:b251:101:10:150:64:1"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782983553;
+	cv=none; b=mzr2kRI7tu+prWOVXOdWIDSZjhLKCUfSG1TNnhagOXEFFTL/fmp4xlOogbFZIQ5TwNlw04ACn45TdUvWjReUAFbHGnmUCLMYQyUpTr9kB3Xo2gYurkXAumyXLKRXkmsR4kZbmxZiJaeJDgBXqRgRkEs5aO1Jxzcnd6QADlqdRoGETBTkIjPOVaUBLmLA6TUseM8uszNEOEaQ7vSDGm49T+gN08dsaA8Jb+qtOW98Qeia+JQcUci9k7odXX3wsadKLiU6KOkp7hq68DoKroaSFbpX5CLqUPdKJtJ5vZN7GwMeAnV+VtTJIEmIFdFdGD14+LIROYDb/LnHUXemGUm5lw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1782983391; c=relaxed/relaxed;
-	bh=2Ptox+JjM03OhvllsW2x9tH05PMT5+Q6t7YaDrA539A=;
+	t=1782983553; c=relaxed/relaxed;
+	bh=uRjlOG5TiXfZ2nHN8jbS31TsEigRmVqtiMO2xZmgwtE=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=AB8/Ths8csxObMdaegB6dLdc/POygYwgyGDIwwkssqSM8YYEQdFedYqAKAqqRCv8g2aKsFWuPUprFMMwobx6yoo7jVqECnmA+UKEmX/kKinH7AnW7oFt/Hja+Iyz1QLjYHdqY1rU0bHzXSP0T+kaLgMSWgjsFut3X6YEba/dSTmASsKKQwZ0cnkY8tVRqSddKil7eyGYR8U0/kktmAmZYIAylRljKUhhF/LDUld60S2gz82hb/lbg7JGFbNL6v/NAQlr92sRnwZ6NeSo9uhl1fUFIx5ESPYn+DQU/fBoeTFUPbpbeALQ1FaZwIwCywcsjLPRO/6I3N6zcBaQ8UfHbA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com; dkim=pass (2048-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=google header.b=UTIoc8M0; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::32d; helo=mail-wm1-x32d.google.com; envelope-from=pmladek@suse.com; receiver=lists.ozlabs.org) smtp.mailfrom=suse.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com
+	 Content-Type:Content-Disposition:In-Reply-To; b=j4g2OFPhAVQ57jztUSiqTpGIw/kABreqcvmXLMXTYsaBN+jw/tB+KFJpUZdSDSyhP44bWsHMH0SNriSlfTWvi8MX6F/cnOVkvBehD6nCw0NkGOpwtmgFIpP0q3rSzNkoLOXmQyyb+gxKZBArTboVU/JtLxicptkjPRoKo1MqZTObJron0PLMEJioYzJwHtPP9AHl13RUiXnmmrLj+LikctZY7s4MCROHD5Xxu7B2w0jrysRFiE8f0eyH+yrCYlA5P1efWArstRLP8zp4orwLIgMnMasBCw8bMhlgACDqQmmgVzDB0aL3ho1lUFSRAmw0g8e2p9jPYw0A0xkGZ4yCBg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de; dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=qTiFPQh+; dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=aP6p0YP/; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=xiNrM9PH; dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=Gd5jd37P; dkim-atps=neutral; spf=pass (client-ip=2a07:de40:b251:101:10:150:64:1; helo=smtp-out1.suse.de; envelope-from=msuchanek@suse.de; receiver=lists.ozlabs.org) smtp.mailfrom=suse.de
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=google header.b=UTIoc8M0;
+	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=qTiFPQh+;
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=aP6p0YP/;
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=xiNrM9PH;
+	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=Gd5jd37P;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.com (client-ip=2a00:1450:4864:20::32d; helo=mail-wm1-x32d.google.com; envelope-from=pmladek@suse.com; receiver=lists.ozlabs.org)
-Received: from mail-wm1-x32d.google.com (mail-wm1-x32d.google.com [IPv6:2a00:1450:4864:20::32d])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=2a07:de40:b251:101:10:150:64:1; helo=smtp-out1.suse.de; envelope-from=msuchanek@suse.de; receiver=lists.ozlabs.org)
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [IPv6:2a07:de40:b251:101:10:150:64:1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4grWL504hWz2xLk
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 Jul 2026 19:09:47 +1000 (AEST)
-Received: by mail-wm1-x32d.google.com with SMTP id 5b1f17b1804b1-493c52cde9eso7152405e9.3
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 Jul 2026 02:09:47 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=suse.com; s=google; t=1782983384; x=1783588184; darn=lists.ozlabs.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=2Ptox+JjM03OhvllsW2x9tH05PMT5+Q6t7YaDrA539A=;
-        b=UTIoc8M0h5zixZ3XMZ+FKXsu9YjzgqSiXoo52FJZ7YmzKxPni7KPmZwhe1Xv1bYXIR
-         zdQOiLQ77attBlMlQ23SkMDRWDl4DebLYoXsMCu7S/9wcXFGTCv0XI8kBO6QnR9STop9
-         HxyubJ4N2caiB2XLQ5Ec2wWQHcQggXUr5yrZ2gOzuEwWlxDjL5Y9GQNgRvDY0xR7W9cw
-         /RCDbanXiBIkT0qFILsflpnvMZVDrscMZ83q8vNeHakREOCw/jG35EwWHgF/xIFDRQ6C
-         ZpdF9X9gDQe7enDIik61moELj7JrzHp7bgmo2qJT+oNF/ItFSokkZ35s4g9ygESb/4Nx
-         j0Ww==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1782983384; x=1783588184;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=2Ptox+JjM03OhvllsW2x9tH05PMT5+Q6t7YaDrA539A=;
-        b=rlT4O8KFVsyKQ1GBGCCqKncbi1D8WYp5zkHuJeAvMrq/LQ+v2lwQTUHfhjBBT+sTym
-         VzQm83jGkFFc2YCSzJM4ybKtTxQkG2ENC7OUtfyieOXCnGI3nJ0YbA1+ZsnAzwJkG5YP
-         vCXR6HNZt1QlosvU3M7arY42NUUM8n43NCiJkGELMPfJLaXovsdX8t5RsUyuC4+/836z
-         Axb/glDhpfqaUMcQjllCMgO3zLAxT2j93f17dz8TC2SEB1AGTY1UWvjqQIRK/KnMAUs3
-         2DPeuZz0nIC/gwLXIE+ryIefwbzPRMycHhQ0k25Luqzz3meBrdg0zesM3Hqx1b/jkF2A
-         q0ug==
-X-Forwarded-Encrypted: i=1; AFNElJ9AKWeUZepNf14Sfjw+U9tr89oirXmNKKMKPPJHxp48HkYnneAKRmNbsPbwYhlcUhGkWz6G8YAH1IrTUqA=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YzK2JB9nkjzGB7fnoKZTuWz0Asv5eJu8ZCWKwduhJbrwQc9b9zs
-	qI2gL+GnPEXRCj+pEZ9eumJvmMiDvvuBoCNcTGR7fhWiAkZLhrfJKEBfNmhAJBTmEFI=
-X-Gm-Gg: AfdE7cnT+LTUSCSXQwmM0VeMfKnhi02dOmXrd0aNI+a1pJtUH1py0PigeyadKtkGFrD
-	L8iAQu3AaZieZGPEL5i7qVg5770QnUw2xq5+ub+p61biB3c9Dep3wwV3Ldq7cQmZBi76qD6YGtl
-	zfUuHUHwq/mGReo0EwX/rOtq/FScBAxiLZUmSB1CjRuJsuV9nsPH6TzYagXqXsT42PUK7qBPfEM
-	RiwdQQI9rxinpC0kNZq/tjeM/dKRV5ZeuhstWYPSm+1js0omakQdwSea0JWnjn2mmlgm5hJkR9i
-	SjKKtoIVX7NezAef/Oxxn+38ponH6f6W5SneCeumfSk9mOU2nqoRiOpAq7RoyCybTJr9eLq7ke0
-	Oe8T9nTM3Y/ToV18M/a2xLBAt8uvA+ZTsthxuhghWhJsg53Ha3IO3ES+DrLfR6afe8awgWslGja
-	qedFGbmmuDZV1LAYo=
-X-Received: by 2002:a05:600d:8649:10b0:492:6eff:7d02 with SMTP id 5b1f17b1804b1-493c2b974bamr64853005e9.30.1782983383910;
-        Thu, 02 Jul 2026 02:09:43 -0700 (PDT)
-Received: from pathway.suse.cz ([176.114.240.130])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-477de3dd0b1sm6982567f8f.35.2026.07.02.02.09.43
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 02 Jul 2026 02:09:43 -0700 (PDT)
-Date: Thu, 2 Jul 2026 11:09:41 +0200
-From: Petr Mladek <pmladek@suse.com>
-To: Bradley Morgan <include@grrlz.net>
-Cc: Feng Tang <feng.tang@linux.alibaba.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4grWPC0SPFz2xPb
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 Jul 2026 19:12:30 +1000 (AEST)
+Received: from kunlun.suse.cz (unknown [IPv6:2a07:de40:b306:2000::2])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out1.suse.de (Postfix) with ESMTPS id CC71C740D7;
+	Thu,  2 Jul 2026 09:12:26 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1782983547; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=uRjlOG5TiXfZ2nHN8jbS31TsEigRmVqtiMO2xZmgwtE=;
+	b=qTiFPQh+EAtnfZMspyIp88DVum08lq2h4M2oG+17REMmQZO/x99GyEPSyZcrk+53/j4pE7
+	ayUyxs1+H15MCkTXYR6IAyOF8/FJedHYq6bIOW4Tu55Xzy1cDgxE3TtnSGRxrEKYkr9qCx
+	MPDOGMtMfY/q90k/HdbzQB0MG6RtC98=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1782983547;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=uRjlOG5TiXfZ2nHN8jbS31TsEigRmVqtiMO2xZmgwtE=;
+	b=aP6p0YP/H9yklntcuxcs7O0hloiylzECiJuUePIZbwx7+JaYmW/QkkjkEZbLRVL/Qrxsum
+	V6sX1ipWkXeTo6AA==
+Authentication-Results: smtp-out1.suse.de;
+	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=xiNrM9PH;
+	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=Gd5jd37P
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1782983546; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=uRjlOG5TiXfZ2nHN8jbS31TsEigRmVqtiMO2xZmgwtE=;
+	b=xiNrM9PHv8T5r22Baf5wzuy/XEFUTC4h/U218uOWQiGo4hRQJKmIZSs8S+OlGNXeruiGUh
+	uEK3DCLCp2w+dcRHtrJu/oX0nohIw+HkUyfnSS2l1y6lkIHXdw2JY7qfkq/ytqyU4xB6Zp
+	TSkWj8Mxuv4w/GQNzlcb1o/p9eJieDE=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1782983546;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=uRjlOG5TiXfZ2nHN8jbS31TsEigRmVqtiMO2xZmgwtE=;
+	b=Gd5jd37PMMWNL15+a5FHWW6qPpNO2PnTB1RPKgya/PwYhq70rKS0IfGDTjRQHsyTLs59rb
+	EnhfcqK6Ag9I1tBQ==
+Date: Thu, 2 Jul 2026 11:12:25 +0200
+From: Michal =?iso-8859-1?Q?Such=E1nek?= <msuchanek@suse.de>
+To: Sven Schnelle <svens@linux.ibm.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, Jonathan Corbet <corbet@lwn.net>,
+	Shuah Khan <skhan@linuxfoundation.org>,
+	Huacai Chen <chenhuacai@kernel.org>,
+	WANG Xuerui <kernel@xen0n.name>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
 	Michael Ellerman <mpe@ellerman.id.au>,
 	Nicholas Piggin <npiggin@gmail.com>,
-	Christophe Leroy <chleroy@kernel.org>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Douglas Anderson <dianders@chromium.org>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-	stable@vger.kernel.org
-Subject: Re: [PATCH v3 4/4] panic: use sys_info_with_filter() to avoid
- duplicate backtraces
-Message-ID: <akYq1YaCpZ0b4SBS@pathway.suse.cz>
-References: <20260625152558.7450-1-include@grrlz.net>
- <20260625152558.7450-5-include@grrlz.net>
- <aj5TNB8cRtMNTtIT@pathway.suse.cz>
- <aj5tFiwhRqPkAkqU@pathway.suse.cz>
- <akJZxCTlLcwubqi2@U-2FWC9VHC-2323.local>
- <E482A23D-4E1C-42C0-9D07-83C6CDFD1546@grrlz.net>
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
+	Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>,
+	Heiko Carstens <hca@linux.ibm.com>,
+	Vasily Gorbik <gor@linux.ibm.com>,
+	Alexander Gordeev <agordeev@linux.ibm.com>,
+	Christian Borntraeger <borntraeger@linux.ibm.com>,
+	Andy Lutomirski <luto@kernel.org>,
+	Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>,
+	Borislav Petkov <bp@alien8.de>,
+	Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
+	"H. Peter Anvin" <hpa@zytor.com>,
+	Andrew Donnellan <andrew+kernel@donnellan.id.au>,
+	Mark Rutland <mark.rutland@arm.com>, Arnd Bergmann <arnd@arndb.de>,
+	Jiaxun Yang <jiaxun.yang@flygoat.com>,
+	Ryan Roberts <ryan.roberts@arm.com>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Mukesh Kumar Chaurasiya <mkchauras@linux.ibm.com>,
+	Shrikanth Hegde <sshegde@linux.ibm.com>,
+	Zong Li <zong.li@sifive.com>, Nam Cao <namcao@linutronix.de>,
+	Deepak Gupta <debug@rivosinc.com>,
+	Lukas Gerlach <lukas.gerlach@cispa.de>,
+	Rui Qi <qirui.001@bytedance.com>, Kees Cook <kees@kernel.org>,
+	linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
+	loongarch@lists.linux.dev, linuxppc-dev@lists.ozlabs.org,
+	linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org
+Subject: Re: [RFC] entry: Untangle the return value of
+ syscall_enter_from_user_mode from syscall NR
+Message-ID: <akYreY_BHuRbxSsO@kunlun.suse.cz>
+References: <akVRcPsD_R_CE1qW@kunlun.suse.cz>
+ <yt9dechlbyj0.fsf@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -104,161 +131,85 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <E482A23D-4E1C-42C0-9D07-83C6CDFD1546@grrlz.net>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <yt9dechlbyj0.fsf@linux.ibm.com>
+X-Spamd-Bar: +++++++++++++++
+X-Rspamd-Queue-Id: CC71C740D7
+X-Rspamd-Action: add header
+X-Rspamd-Server: rspamd1.dmz-prg2.suse.org
+X-Spamd-Result: default: False [15.65 / 50.00];
+	SPAM_FLAG(5.00)[];
+	NEURAL_SPAM_LONG(3.50)[1.000];
+	BAYES_HAM(-3.00)[100.00%];
+	HFILTER_HOSTNAME_UNKNOWN(2.50)[];
+	RDNS_NONE(2.00)[];
+	NEURAL_SPAM_SHORT(1.96)[0.653];
+	SUSPICIOUS_RECIPS(1.50)[];
+	ONCE_RECEIVED(1.20)[];
+	HFILTER_HELO_IP_A(1.00)[kunlun.suse.cz];
+	HFILTER_HELO_NORES_A_OR_MX(0.30)[kunlun.suse.cz];
+	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	MIME_GOOD(-0.10)[text/plain];
+	MX_GOOD(-0.01)[];
+	RCPT_COUNT_TWELVE(0.00)[45];
+	FUZZY_RATELIMITED(0.00)[rspamd.com];
+	MIME_TRACE(0.00)[0:+];
+	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	ARC_NA(0.00)[];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	FREEMAIL_ENVRCPT(0.00)[gmail.com];
+	FREEMAIL_CC(0.00)[infradead.org,lwn.net,linuxfoundation.org,kernel.org,xen0n.name,linux.ibm.com,ellerman.id.au,gmail.com,dabbelt.com,eecs.berkeley.edu,ghiti.fr,redhat.com,alien8.de,linux.intel.com,zytor.com,donnellan.id.au,arm.com,arndb.de,flygoat.com,sifive.com,linutronix.de,rivosinc.com,cispa.de,bytedance.com,vger.kernel.org,lists.linux.dev,lists.ozlabs.org,lists.infradead.org];
+	DNSWL_BLOCKED(0.00)[2a07:de40:b306:2000::2:from];
+	FROM_EQ_ENVFROM(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	TO_DN_SOME(0.00)[];
+	RCVD_COUNT_ZERO(0.00)[0];
+	MISSING_XM_UA(0.00)[];
+	TAGGED_RCPT(0.00)[kernel];
+	DKIM_TRACE(0.00)[suse.de:+];
+	R_RATELIMIT(0.00)[to_ip_from(RL5ct4uf71gj8hk4gmisc87btw)];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:email,suse.de:dkim]
+X-Spam: Yes
 
-On Mon 2026-06-29 13:54:18, Bradley Morgan wrote:
-> On 29 June 2026 12:40:52 BST, Feng Tang <feng.tang@linux.alibaba.com>
-> wrote:
-> >On Fri, Jun 26, 2026 at 02:14:14PM +0200, Petr Mladek wrote:
-> >> On Fri 2026-06-26 12:23:50, Petr Mladek wrote:
-> >> > On Thu 2026-06-25 15:25:58, Bradley Morgan wrote:
-> >> > > panic_other_cpus_shutdown() handles SYS_INFO_ALL_BT before stopping
-> >the
-> >> > > other CPUs. Do not ask sys_info() to handle that bit again later in
-> >the
-> >> > > panic path.
-> >> > > 
-> >> > > Use sys_info_with_filter() so panic_print=all_bt does not request
-> >more
-> >> > > output after the CPUs are stopped.
-> >> > > 
-> >> > > Fixes: a9af76a78760 ("watchdog: add sys_info sysctls to dump sys
-> >info on system lockup")
-> >> > > Cc: stable@vger.kernel.org
-> >> > > Signed-off-by: Bradley Morgan <include@grrlz.net>
-> >> > > ---
-> >> > >  kernel/panic.c | 2 +-
-> >> > >  1 file changed, 1 insertion(+), 1 deletion(-)
-> >> > > 
-> >> > > diff --git a/kernel/panic.c b/kernel/panic.c
-> >> > > index 213725b612aa..eb842823df61 100644
-> >> > > --- a/kernel/panic.c
-> >> > > +++ b/kernel/panic.c
-> >> > > @@ -680,7 +680,7 @@ void vpanic(const char *fmt, va_list args)
-> >> > >  	 */
-> >> > >  	atomic_notifier_call_chain(&panic_notifier_list, 0, buf);
-> >> > >  
-> >> > > -	sys_info(panic_print);
-> >> > > +	sys_info_with_filter(panic_print, SYS_INFO_ALL_BT);
-> >> > 
-> >> > Hmm, this prevents printing backtraces from all CPUs completely.
-> >> > But what if they were not printed?
-> >> > 
-> >> > They might be printed by:
-> >> > 
-> >> > static void panic_other_cpus_shutdown(bool crash_kexec)
-> >> > {
-> >> > 	if (panic_print & SYS_INFO_ALL_BT)
-> >> > 		panic_trigger_all_cpu_backtrace();
-> >> > 
-> >> > [...]
-> >> > }
-> >> > 
-> >> > But it checks only "panic_print" variable. It won't do anything
-> >> > when (panic_print == 0).
-> >> > 
-> >> > In this case, we might still want to print the backraces when
-> >> > SYS_INFO_ALL_BT is set in kernel_si_info.
-> >> > 
-> >> > >  	kmsg_dump_desc(KMSG_DUMP_PANIC, buf);
-> >> > 
-> >> > Of course, we might fix panic_other_cpus_shutdown() to check also
-> >> > kernel_si_info.
-> >> > 
-> >> > But it all becomes very hairy. We have several levels:
-> >> > 
-> >> >    + watchdog-all_bt-specific option, e.g.
-> >sysctl_hardlockup_all_cpu_backtrace
-> >> > 
-> >> >    + watchdog-specific si_info preferences, e.g. hardlockup_si_mask
-> >> > 
-> >> >    + panic-specific si_info: panic_print
-> >> > 
-> >> >    + universal fallback for any layer: kernel_si_info
-> >> > 
-> >> > Now, we try to check all these variables back and forth to
-> >> > trigger all backtraces or to avoid triggering them.
-> >> > And it clearly does not work well and the code is more and more
-> >> > hairy.
-> >> > 
-> >> > I think about another approach. The word "waterfall" comes to my mind.
-> >> > Instead of checking all the settings back and forth, let's process
-> >> > each setting one by one and just remember what has been done and
-> >> > skip this in the next level.
-> >> > 
-> >> > All the si_info actions seems to dump a global system state.
-> >> > So, it would make sense to remember the state in a global variable
-> >> > even when it might be modified by more CPUs in parallel.
-> >> > 
-> >> > I am going to think more about it.
-> >> 
-> >> I have created a POC using Gemini. I haven't tested it.
-> >> But it looks acceptable. And the logic seems to be more
-> >> straightforward.
-> >> 
-> >> One drawback is that it requires adding the _reset()
-> >> call for all sys_info() callers. It is fine in principle
-> >> but it might complicate back-porting because all changes
-> >> have to be done in one patch.
-> >> 
-> >> But honestly, this is a nice to have fix. Most people could
-> >> live happily without it.
-> >> 
-> >> From 3c66436d9978030845a96bfaedd6b914536e2ac4 Mon Sep 17 00:00:00 2001
-> >> From: Petr Mladek <pmladek@suse.com>
-> >> Date: Fri, 26 Jun 2026 13:55:41 +0200
-> >> Subject: [POC] sys_info: Introduce state-tracking APIs to prevent
-> >duplicate
-> >>  backtraces
-> >> 
-> >> In watchdog, panic, and hung task detection scenarios, sys_info() can
-> >> be called multiple times or alongside direct backtrace triggers like
-> >> trigger_allbutcpu_cpu_backtrace(). This results in identical backtraces
-> >> being dumped repeatedly from all CPUs, cluttering the kernel log and
-> >> delaying or obscuring critical debug details.
-> >> 
-> >> Introduce a state tracking bitmask and associated helpers:
-> >> - sys_info_done(mask): Marks specific sys_info bits as already printed.
-> >> - sys_info_reset(): Resets the tracking state.
-> >> - sys_info_is_done(mask): Checks if all bits in the mask have been
-> >printed.
-> >> 
-> >> Update sys_info() to automatically filter out already printed bits
-> >> using this state. Integrate these APIs with the generic hardlockup
-> >> and softlockup watchdogs, the PowerPC watchdog, the hung task detector,
-> >> and the panic core. This ensures that each piece of system information
-> >> and backtrace output is printed at most once per lockup/panic event,
-> >> and the state is reset cleanly when a lockup does not trigger a panic.
-> >> 
-> >> Races between sys_info() callers are ignored. It should be acceptable
-> >> because the output from various watchdogs has never been synchronized.
-> >> And panic() never returns.
-> >> 
-> >> Assisted-by: gemini-1.5-flash
-> >> Signed-off-by: Petr Mladek <pmladek@suse.com>
-> >
-> >Yep. There are cases that people want panic on task-hung or sw/hw lockup,
-> >and this could remove much duplication of sys info dump, thanks!
-> >
-> >Reviewed-by: Feng Tang <feng.tang@linux.alibaba.com>
+On Thu, Jul 02, 2026 at 10:12:35AM +0200, Sven Schnelle wrote:
+> Michal Suchánek <msuchanek@suse.de> writes:
 > 
-> Thanks,
+> > The return value of syscall_enter_from_user_mode is used both for the
+> > adjusted syscall number and the indicator that a syscall should be
+> > skipped.
+> >
+> > As seccomp can be invoked on any syscall, including invalid ones this
+> > somewhat undermines seccomp.
+> >
+> > While the seccomp variants that terminate the process do not need to
+> > care about this for the filter that sets the syscall return value this
+> > disctinction is required.
+> >
+> > Pass the syscall number as a pointer to the inline entry functions, and
+> > use the return value exclusively for the indication that the syscall is
+> > already handled.
+> >
+> > This should avoid the need for the s390 PIF_SYSCALL_RET_SET which is the
+> > workaround for exactly this deficiency.
 > 
-> im feeling a new file to do all the force panic jazz, but putting tape
-> on sys_info.c isn't bd either.
+> I'm not sure whether PIF_SYSCALL_RET_SET can be removed - the syscall
+> return might still get set by PTRACE_SET_SYSCALL_INFO when the tracee is
+> stopped. This might be a positive number which can't be distinguished
+> from a syscall number. But maybe i'm missing something? It's been quite
+> a while since I touched all that ptrace stuff.
 
-I wonder how to move forward with this.
+When the syscall return value is set (in the registers) the return value
+which is also the modified syscall number is set to -1 indicating the
+syscall was handled. At least that's how the API is described.
 
-Honestly, I am not sure what exactly you mean by creating another
-API for tracking the reports so I could not judge it. Feel free
-to sent some POC.
+So yes, if the syscall number range is restricted or the syscall number
+is returned through a path different from the function return value the
+flag should not be needed in the entry path because the case can be
+detected through the return value alone.
 
-Otherwise, I would go with my proposal to remember the printed states
-by the sys_info API. I am not sure whether I should send a proper
-patch or you would like to somehow improve it.
+Thanks
 
-Best Regards,
-Petr
+Michal
 
