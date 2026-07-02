@@ -1,134 +1,123 @@
-Return-Path: <linuxppc-dev+bounces-23385-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23386-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B2C5AC43458
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Jul 2026 11:42:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 079CCC43458
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Jul 2026 11:45:53 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4grZk52nHNz2yQG;
-	Thu, 02 Jul 2026 21:42:21 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:41d0:1004:224b::b2"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782992541;
-	cv=none; b=IS/egffKAGQRFbBGZnUG+M9UYgyAwJ5mE1nlmFzfmiZ6TS/XWiLEejRviH0vPLdQZJ8iogKe8c0YMOP3CzaEm5qmItcXtLwg1J/uIGYy72GTV30FBqeuQShlBjfEWJDHspxQoy5ptVp2D7g7qAleWVCNFwk1fyTCXfnQt6yc2sCZ58yoVy0+xBbSYp45A5Z6VXTQP0E+ZJxBpwWvNiL/aIOIyS28MhC0r929oqt+b9hEUmSl/y/CYwA3GjnKYIay+MsRDXcTdVn/W+cSOj4cnz1D+tXZI5PKMUfNdmE1paGliT8FGuqDXAFMss/DrjVOp8Vs8WpkFVI6XX7Kl/Mcyg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4grZp72VpJz2yYq;
+	Thu, 02 Jul 2026 21:45:51 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a07:de40:b251:101:10:150:64:2"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782992751;
+	cv=none; b=LbHLYVRkpcKeFK62uYGc7bneH5MAwnW6Y+gN8YDo1i8q6BO3NDeKAmQKRctVtxm87V0X/MtYX8IJ2P70ZBb38tdNGzTJYhK6lrCG0w72qILrH/lgAQE+H5ppNOk97BtrD1rMq6FOla1UdbKV/noZ1KdemYL8HRRN3Izj0cOyBgZ/AVkLPYuAJeXh0FiPV51DweUcSk2kcqBvOklxBoGAid8NzOyFNkskLJDlHG4usYMHDxEqejGTeirCsDY0RRDS5bc9fEYW2oC3P+n90IjWkFh/jID4IB5qqmsSxiI/Xw+w0auBc/QQtO3Nou9Wua5ODoaYPm9lIFktfT8rs5/R0w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1782992541; c=relaxed/relaxed;
-	bh=vPHtV6pxZdlKjLiAMh+TI96h/MjbfgTMGiJB5aRI1Dw=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=LCe6rA9Z6ORtZYTgnb8AbIdiFYMdb1WFpFynY1luTr3t+4kQ+Vt3V8zhSeEs5yjVq7FpmHjKIyu4d9LbIq6dIBsebw3XQVbVhr7+mHQmlo+xtM+dWcW/ixe/oQPyq2oK9ukonD79lr2V/efAR674+yJPO9icc6VG3qrafT0YFcfCNRT0EUYr+bB9bkdLGZN8ctudMay9quX6RPYWVrddpm0GJHryNdz+TFDrxVahoo7SF6fpmb6Hie1W84jT3l03b1Ke751jrxZFExCok3JuIGhrTyRj4Yfjlz7es/a7nqhGLpO5ts/IrE7afYzs7DspNWgKdcDZHKrICPI+yUfscw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=ElylzNP2; dkim-atps=neutral; spf=pass (client-ip=2001:41d0:1004:224b::b2; helo=out-178.mta0.migadu.com; envelope-from=lance.yang@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
+	t=1782992751; c=relaxed/relaxed;
+	bh=7sE5mvMjaed8Js4BiYjZ4KNoj5NHyhgaZgvHetARXIY=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=m5mGO78Vya0VM5wr0ljhyqAE/OUzY/5axllZsIQLT9WdZi/tVKGspLTn4j8rZXrkESIgmEWrHINlNVtMhpqPITqUeBBYuIki3gSM8lixVy2OUy7czal+Ino9RFDrDHAgXPE2vszzpioGUaCo2WAildov9B/Xi7LNOY/xRokOunfBkc4O7JdaQdQYT6cmQyhsYhSF4k/20VKp/ch7LQ2+1sBZnA4WQJ9cMYPRMCH7ahMMMhgp8uauL92M6TV8Bym5EqLZPI7m8AUeQqRv/NYZ2bAK4mUylVa+s1dq6hH/ipAu0+zwtU/OcGF6WGUOUlbohPx3mTev0zXPcDVVWwLmQA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de; dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=S/IosL+T; dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=loCKWFsB; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=S/IosL+T; dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=loCKWFsB; dkim-atps=neutral; spf=pass (client-ip=2a07:de40:b251:101:10:150:64:2; helo=smtp-out2.suse.de; envelope-from=msuchanek@suse.de; receiver=lists.ozlabs.org) smtp.mailfrom=suse.de
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=ElylzNP2;
+	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=S/IosL+T;
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=loCKWFsB;
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=S/IosL+T;
+	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=loCKWFsB;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=2001:41d0:1004:224b::b2; helo=out-178.mta0.migadu.com; envelope-from=lance.yang@linux.dev; receiver=lists.ozlabs.org)
-Received: from out-178.mta0.migadu.com (out-178.mta0.migadu.com [IPv6:2001:41d0:1004:224b::b2])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=2a07:de40:b251:101:10:150:64:2; helo=smtp-out2.suse.de; envelope-from=msuchanek@suse.de; receiver=lists.ozlabs.org)
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [IPv6:2a07:de40:b251:101:10:150:64:2])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4grZk41mqvz2yN8
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 Jul 2026 21:42:19 +1000 (AEST)
-X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
-	t=1782992513;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4grZp63wc8z2yXj
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 Jul 2026 21:45:50 +1000 (AEST)
+Received: from kunlun.suse.cz (unknown [IPv6:2a07:de40:b306:2000::2])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out2.suse.de (Postfix) with ESMTPS id 9393375C35;
+	Thu,  2 Jul 2026 11:45:47 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1782992747; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=vPHtV6pxZdlKjLiAMh+TI96h/MjbfgTMGiJB5aRI1Dw=;
-	b=ElylzNP2HZvUF6FtGgLgsW4vT0OTcdy2XorLGs6M4jbsXqc3kVIN25VDlrp06Kwp+MnkF0
-	7eCUNpZQUAu53ooUNOnYLe8bcSqU2lbFmJuaAoucdQs+qEK4yKsjIpHuYOtBIHp/EvNPEl
-	ujU0zKbwsKGW+OA8vv+O0JU4vozY/FA=
-From: Lance Yang <lance.yang@linux.dev>
-To: ljs@kernel.org
-Cc: akpm@linux-foundation.org,
-	tsbogend@alpha.franken.de,
-	maddy@linux.ibm.com,
-	mpe@ellerman.id.au,
-	maarten.lankhorst@linux.intel.com,
-	mripard@kernel.org,
-	tzimmermann@suse.de,
-	airlied@gmail.com,
-	simona@ffwll.ch,
-	l.stach@pengutronix.de,
-	inki.dae@samsung.com,
-	sw0312.kim@samsung.com,
-	kyungmin.park@samsung.com,
-	krzk@kernel.org,
-	peter.griffin@linaro.org,
-	jani.nikula@linux.intel.com,
-	joonas.lahtinen@linux.intel.com,
-	rodrigo.vivi@intel.com,
-	tursulin@ursulin.net,
-	robin.clark@oss.qualcomm.com,
-	lumag@kernel.org,
-	lyude@redhat.com,
-	dakr@kernel.org,
-	tomi.valkeinen@ideasonboard.com,
-	hjc@rock-chips.com,
-	heiko@sntech.de,
-	andy.yan@rock-chips.com,
-	thierry.reding@kernel.org,
-	mperttunen@nvidia.com,
-	jonathanh@nvidia.com,
-	kraxel@redhat.com,
-	dmitry.osipenko@collabora.com,
-	zack.rusin@broadcom.com,
-	matthew.brost@intel.com,
-	thomas.hellstrom@linux.intel.com,
-	oleksandr_andrushchenko@epam.com,
-	deller@gmx.de,
-	bcrl@kvack.org,
-	viro@zeniv.linux.org.uk,
-	brauner@kernel.org,
-	muchun.song@linux.dev,
-	osalvador@suse.de,
-	david@kernel.org,
-	ziy@nvidia.com,
-	baolin.wang@linux.alibaba.com,
-	liam@infradead.org,
-	npache@redhat.com,
-	ryan.roberts@arm.com,
-	dev.jain@arm.com,
-	baohua@kernel.org,
-	lance.yang@linux.dev,
-	hughd@google.com,
-	vbabka@kernel.org,
-	rppt@kernel.org,
-	surenb@google.com,
-	mhocko@suse.com,
-	jannh@google.com,
-	pfalcato@suse.de,
-	kees@kernel.org,
-	perex@perex.cz,
-	tiwai@suse.com,
-	linux-mips@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org,
-	dri-devel@lists.freedesktop.org,
-	etnaviv@lists.freedesktop.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-samsung-soc@vger.kernel.org,
-	intel-gfx@lists.freedesktop.org,
-	linux-arm-msm@vger.kernel.org,
-	freedreno@lists.freedesktop.org,
-	nouveau@lists.freedesktop.org,
-	linux-rockchip@lists.infradead.org,
-	linux-tegra@vger.kernel.org,
-	virtualization@lists.linux.dev,
-	intel-xe@lists.freedesktop.org,
-	xen-devel@lists.xenproject.org,
-	linux-fbdev@vger.kernel.org,
-	linux-aio@kvack.org,
-	linux-fsdevel@vger.kernel.org,
-	linux-mm@kvack.org,
-	linux-sound@vger.kernel.org
-Subject: Re: [PATCH 04/13] mm: update generic_get_unmapped_area[_topdown]() to use vma_flags_t
-Date: Thu,  2 Jul 2026 19:41:35 +0800
-Message-Id: <20260702114135.4189-1-lance.yang@linux.dev>
-In-Reply-To: <cef55b19f86c110952f13829aefa4859db3a70ed.1782760670.git.ljs@kernel.org>
-References: <cef55b19f86c110952f13829aefa4859db3a70ed.1782760670.git.ljs@kernel.org>
+	bh=7sE5mvMjaed8Js4BiYjZ4KNoj5NHyhgaZgvHetARXIY=;
+	b=S/IosL+Tzknzx5iaQYdkXBA9cX2U6axC0l8QFQJVZw4SSt5lzPuOhuAEKcOXi0o5YUTNR9
+	Nw71o4rDsmcI05DH/48sQEQ5KafiSK7QR3+OmqxfRwrsOlxeFM5ONp1+OlmJSH4YMgw8BC
+	jnF8mJq8iwbn8aLCSxV9v+4uWe4/VZI=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1782992747;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=7sE5mvMjaed8Js4BiYjZ4KNoj5NHyhgaZgvHetARXIY=;
+	b=loCKWFsBT/7dFcBvmpE0VlQqhM/VS05dnHzMePJDdt6iY0tayVWWilEx9AEo2o/iuHk5CG
+	ThxnObHRscAr1iDg==
+Authentication-Results: smtp-out2.suse.de;
+	dkim=pass header.d=suse.de header.s=susede2_rsa header.b="S/IosL+T";
+	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=loCKWFsB
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1782992747; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=7sE5mvMjaed8Js4BiYjZ4KNoj5NHyhgaZgvHetARXIY=;
+	b=S/IosL+Tzknzx5iaQYdkXBA9cX2U6axC0l8QFQJVZw4SSt5lzPuOhuAEKcOXi0o5YUTNR9
+	Nw71o4rDsmcI05DH/48sQEQ5KafiSK7QR3+OmqxfRwrsOlxeFM5ONp1+OlmJSH4YMgw8BC
+	jnF8mJq8iwbn8aLCSxV9v+4uWe4/VZI=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1782992747;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=7sE5mvMjaed8Js4BiYjZ4KNoj5NHyhgaZgvHetARXIY=;
+	b=loCKWFsBT/7dFcBvmpE0VlQqhM/VS05dnHzMePJDdt6iY0tayVWWilEx9AEo2o/iuHk5CG
+	ThxnObHRscAr1iDg==
+Date: Thu, 2 Jul 2026 13:45:46 +0200
+From: Michal =?iso-8859-1?Q?Such=E1nek?= <msuchanek@suse.de>
+To: Thomas Gleixner <tglx@kernel.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, Jonathan Corbet <corbet@lwn.net>,
+	Shuah Khan <skhan@linuxfoundation.org>,
+	Huacai Chen <chenhuacai@kernel.org>,
+	WANG Xuerui <kernel@xen0n.name>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
+	Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>,
+	Heiko Carstens <hca@linux.ibm.com>,
+	Vasily Gorbik <gor@linux.ibm.com>,
+	Alexander Gordeev <agordeev@linux.ibm.com>,
+	Christian Borntraeger <borntraeger@linux.ibm.com>,
+	Sven Schnelle <svens@linux.ibm.com>,
+	Andy Lutomirski <luto@kernel.org>, Ingo Molnar <mingo@redhat.com>,
+	Borislav Petkov <bp@alien8.de>,
+	Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
+	"H. Peter Anvin" <hpa@zytor.com>,
+	Andrew Donnellan <andrew+kernel@donnellan.id.au>,
+	Mark Rutland <mark.rutland@arm.com>, Arnd Bergmann <arnd@arndb.de>,
+	Jiaxun Yang <jiaxun.yang@flygoat.com>,
+	Ryan Roberts <ryan.roberts@arm.com>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Mukesh Kumar Chaurasiya <mkchauras@linux.ibm.com>,
+	Shrikanth Hegde <sshegde@linux.ibm.com>,
+	Zong Li <zong.li@sifive.com>, Nam Cao <namcao@linutronix.de>,
+	Deepak Gupta <debug@rivosinc.com>,
+	Lukas Gerlach <lukas.gerlach@cispa.de>,
+	Rui Qi <qirui.001@bytedance.com>, Kees Cook <kees@kernel.org>,
+	linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
+	loongarch@lists.linux.dev, linuxppc-dev@lists.ozlabs.org,
+	linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org
+Subject: Re: [RFC] entry: Untangle the return value of
+ syscall_enter_from_user_mode from syscall NR
+Message-ID: <akZPakNl6JT_jgGd@kunlun.suse.cz>
+References: <akVRcPsD_R_CE1qW@kunlun.suse.cz>
+ <878q7tprau.ffs@fw13>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -142,26 +131,140 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-X-Migadu-Flow: FLOW_OUT
+In-Reply-To: <878q7tprau.ffs@fw13>
+X-Spamd-Bar: +++
+X-Rspamd-Queue-Id: 9393375C35
+X-Rspamd-Action: no action
+X-Rspamd-Server: rspamd1.dmz-prg2.suse.org
+X-Spamd-Result: default: False [3.99 / 50.00];
+	BAYES_HAM(-3.00)[100.00%];
+	HFILTER_HOSTNAME_UNKNOWN(2.50)[];
+	RDNS_NONE(2.00)[];
+	SUSPICIOUS_RECIPS(1.50)[];
+	ONCE_RECEIVED(1.20)[];
+	HFILTER_HELO_IP_A(1.00)[kunlun.suse.cz];
+	NEURAL_HAM_LONG(-1.00)[-1.000];
+	HFILTER_HELO_NORES_A_OR_MX(0.30)[kunlun.suse.cz];
+	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	NEURAL_HAM_SHORT(-0.20)[-1.000];
+	MIME_GOOD(-0.10)[text/plain];
+	MX_GOOD(-0.01)[];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	ARC_NA(0.00)[];
+	RCPT_COUNT_TWELVE(0.00)[45];
+	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	FUZZY_RATELIMITED(0.00)[rspamd.com];
+	MIME_TRACE(0.00)[0:+];
+	FREEMAIL_ENVRCPT(0.00)[gmail.com];
+	DKIM_TRACE(0.00)[suse.de:+];
+	TO_DN_SOME(0.00)[];
+	DNSWL_BLOCKED(0.00)[2a07:de40:b306:2000::2:from];
+	FROM_EQ_ENVFROM(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	FREEMAIL_CC(0.00)[infradead.org,lwn.net,linuxfoundation.org,kernel.org,xen0n.name,linux.ibm.com,ellerman.id.au,gmail.com,dabbelt.com,eecs.berkeley.edu,ghiti.fr,redhat.com,alien8.de,linux.intel.com,zytor.com,donnellan.id.au,arm.com,arndb.de,flygoat.com,sifive.com,linutronix.de,rivosinc.com,cispa.de,bytedance.com,vger.kernel.org,lists.linux.dev,lists.ozlabs.org,lists.infradead.org];
+	RCVD_COUNT_ZERO(0.00)[0];
+	MISSING_XM_UA(0.00)[];
+	TAGGED_RCPT(0.00)[kernel];
+	R_RATELIMIT(0.00)[to_ip_from(RLs1yuyu6ywojxyk8y3ncu5g39)];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:dkim]
 
+On Thu, Jul 02, 2026 at 01:24:57PM +0200, Thomas Gleixner wrote:
+> On Wed, Jul 01 2026 at 19:42, Michal Suchánek wrote:
+> > The return value of syscall_enter_from_user_mode is used both for the
+> > adjusted syscall number and the indicator that a syscall should be
+> > skipped.
+> >
+> > As seccomp can be invoked on any syscall, including invalid ones this
+> > somewhat undermines seccomp.
+> >
+> > While the seccomp variants that terminate the process do not need to
+> > care about this for the filter that sets the syscall return value this
+> > disctinction is required.
+> 
+> You completely fail to explain why and what actual problem you are
+> trying to solve. At least I can't figure it out from the above word
+> salad.
 
-On Mon, Jun 29, 2026 at 08:25:27PM +0100, Lorenzo Stoakes wrote:
->As part of the changes converting VMA flags from a system word size to a
->bitmap, extend this change to generic_get_unmapped_area() and
->generic_get_unmapped_area_topdown(), which also allows us to convert
->stack_guard_placement() as well.
->
->We retain arch_get_unmapped_area() and arch_get_unmapped_area_topdown()
->as-is for now, using legacy_to_vma_flags() as necessary to do so.
->
->No functional change intended.
->
->Signed-off-by: Lorenzo Stoakes <ljs@kernel.org>
->---
+syscall_enter_from_user_mode returns the new syscall number after doing
+something arbitrarry with it, including running seccomp.
 
-Nothing jumped out at me ;) Feel free to add:
+Wehn the syscall is already handled, eg. by seccomp filtering it returns
+-1 as the new syscall number. -1 is an invalid syscall number but it can
+still be filtered by seccomp. When the syscall number was -1 to start
+with it's not possible to determine if the syscall was fileterd from the
+return value. s390 returns the filtered state in a flag it sets on the
+regs structure, avoiding this problem.
 
-Reviewed-by: Lance Yang <lance.yang@linux.dev>
+However, the API should be specified in a way that does not require
+everyone implementing such flag.
+
+> 
+> > Pass the syscall number as a pointer to the inline entry functions, and
+> > use the return value exclusively for the indication that the syscall is
+> > already handled.
+> >
+> > This should avoid the need for the s390 PIF_SYSCALL_RET_SET which is the
+> > workaround for exactly this deficiency.
+> >
+> > If this is desirable the patch could be split into some series that
+> > adjusts the code flow where needed so that the final change is mostly
+> > mechanical.
+> 
+> That's not a matter of desire. That's mandatory.
+
+So long as it's desirable to implement an API change in this direction,
+it's not clear to me so far.
+
+> > -	instrumentation_begin();
+> > -	if (!invoke_syscall(regs, nr) && nr != -1)
+> > -	 	result_reg(regs) = __sys_ni_syscall(regs);
+> > -	instrumentation_end();
+> > +	/* Skip syscall when -1 is returned */
+> > +	if (!syscall_enter_from_user_mode(regs, &nr)) {
+> 
+> Seriously?
+> 
+> If we go and separate the syscall number from the return value, then the
+> return value 0 means success and anything else fail. Which in other
+> words is a boolean. So instead of tastelessly adding a completely
+> nonsensical comment about -1 here, syscall_enter_from_user_mode() wants
+> to have the return value type bool with a proper boolean logic: true =
+> success, false = abort.
+
+We have that very same API down to __secure_computing() which returns
+boolean represented as -1 and 0 values. That does not mean it's not
+tasteless.
+
+> 
+> > @@ -168,8 +168,7 @@ __visible noinstr void do_int80_emulation(struct pt_regs *regs)
+> >  	nr = syscall_32_enter(regs);
+> >  
+> >  	local_irq_enable();
+> > -	nr = syscall_enter_from_user_mode_work(regs, nr);
+> > -	do_syscall_32_irqs_on(regs, nr);
+> > +	syscall_enter_from_user_mode_work(regs, &nr);
+> 
+> How exactly is this ever going to invoke a valid syscall?
+
+That's one of the problems with giant all-in-one patch, things like this
+easily slip in. However, it is in cluded mostly for illustration, I
+don't expect anyone to merge this as-is.
+
+> 
+> > +	if (!syscall_enter_from_user_mode_work(regs, &nr)) {
+> > +		nr &= GENMASK(31, 0);
+> > +		do_syscall_32_irqs_on(regs, nr);
+> 
+>   do_syscall_32_irqs_on(regs, (int)nr);
+> 
+> would be too simple, right?
+
+Also way less explicit.
+
+Thanks
+
+Michal
 
