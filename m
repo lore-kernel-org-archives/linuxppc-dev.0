@@ -1,50 +1,50 @@
-Return-Path: <linuxppc-dev+bounces-23413-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23414-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 82D27C43327
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Jul 2026 15:25:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EFA6BC44500
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Jul 2026 15:29:48 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4grgg36vsJz2xlw;
-	Fri, 03 Jul 2026 01:25:03 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4grgmW3PxCz2yN8;
+	Fri, 03 Jul 2026 01:29:47 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783005903;
-	cv=none; b=dddRyZ0D4s34eMfy+xy4GbzmQfpiczXG8S9cdxqNnU7yvQU2DeZ0PsFaJEMZ7z+6zY+OKQWZMVw/0WUEnzK9CxAMbfjBeukvP/W3kkfiNRC3z7PbrwlFqYQn9IthK4Yzz2JZOVjvFODMvGF5VMyKDC3U07/wZgy4EMKBRnmxqPdNza09gD5EmVWk9hOtqry9w57qK+aim34Rmx8wq6t7f5Z9pdq7C/pt3ZYsnOIksojuytjxhYIj0pjYKRiP30b3ffIylqiRyhEgilmxZID2HMwK8/DvED624ji07nPfLieIll58GX4DyvSLYQi2zSWEFaaGkOa2+yiKA45w/ThoJA==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783006187;
+	cv=none; b=dINLX4Lbwmr2EHoSjU/MotxkTRUGTIH4GsNBlCdxz4ZrNLZcAMXZpnAoQ0LyDXTDeRzEyW6wymQS+084ZrnNK6qnciinTCfxBd5i9gMh3NHwHe7GfB94cwRHuEI8qarSMmPewKlNoRZmr+UHSoSbxyOTqIDLPrPEUlyc4NA/Ak0vZfXFJkhwACILl9wFOz4UgalCBw66kNY36bhUm1HuIH00QgoPq62m3FMjFPtbo8MrK1GKsOdBNF6VSg2ZkN9gKZws/xA2BbocMjcsPi6RXF1D1uFtNymQtyyVn/ahl3UwHPrdq93T9i/JUNi9kUi03kYupbXZ4mXZEyQDF/8DWQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1783005903; c=relaxed/relaxed;
-	bh=LX3BYrLY2k63JpXB67A/Bjg+Ew5yjhUF+WJZEyA1fRw=;
+	t=1783006187; c=relaxed/relaxed;
+	bh=AmvNH9wwHqyoIMesePnV6/zMDBtlSz51dFh4yHJ1BTo=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=hItlY9RBDXAlIO6UloDTbu6l8DqXC8wMZi8lQku/FgtGCKIz4jHcJtc5okYmXQPprHoKx2kqkIbu/sOvG6D5uwDk5B7g6sAeqcfAT8zRjVqIxrhKxKB92XBagZV1Y8moJkPSbxJbffuC6SyJ4wi8PHiAyo7K4A+AufpB2lRBMdMXXW4XQD7yjY/SQK61GnwLuCaB7/f5HB+n/iRSEGuQRBbpOmTwYRliS6P7w/nL2E08wPfp52YW39ya7ti0OVht6WcXG/XChxi+kSnKRsTqcCs2eydcXHFTa9liGLVlUv8IajaIuRu2bJiRh7iuNVFu18l+wmenRgzCfip1NxozxA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=kbG+cL/z; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 Content-Type:Content-Disposition:In-Reply-To; b=JelE1DfimaaEfQOKTr99m1GSGqIFCQzr2fH/j5pf4A3Wb+GtTRv2Cg30YpsrpUBBRVCV+X8fHmqmT3W/oBscx4TjYU0SHKNKFSbFvwL/F1UtwMYrWIzxSOHvfQ7GZSZSXvR+49QNsClmnLtz/B5uMvfs4kEbKurUv8+G7ivw7U5H04CQpYNoKjLqNJKr3eVg7per1PEp70VjAvamQrvf8MjKLrI4cLopYL0+Q57T0fAS7Fqlb0FY0n5vlyRpjZSVv6a4KggtzLdfY4k7zr2fp75AyhKp0xw58oYwJxtos/h6TtVgKJPkidaFltG93Rb5lsRPwIHST4kMCCNv6XcTEw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=EZDY+QGc; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=kbG+cL/z;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=EZDY+QGc;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
 Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4grgg26Z0Pz2xYg
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 Jul 2026 01:25:02 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4grgmV2yRyz2xwM
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 Jul 2026 01:29:46 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id C929640801;
-	Thu,  2 Jul 2026 15:25:00 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5F0E41F000E9;
-	Thu,  2 Jul 2026 15:24:44 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 25A4F418F4;
+	Thu,  2 Jul 2026 15:29:44 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id BA7DF1F000E9;
+	Thu,  2 Jul 2026 15:29:27 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1783005900;
-	bh=LX3BYrLY2k63JpXB67A/Bjg+Ew5yjhUF+WJZEyA1fRw=;
+	s=k20260515; t=1783006184;
+	bh=AmvNH9wwHqyoIMesePnV6/zMDBtlSz51dFh4yHJ1BTo=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=kbG+cL/z/Lm6qSE4udnGibaK8FsMK4daZd2R+hoEFAnemIecEE1GgHP0X+YmGanAO
-	 lUy6V/tOsn4eLItop07tyF1+tKZLAB376Z73zBZZR/VxVccPToewSf2zWsClidLb0a
-	 1ba3VdHACF4EGJhQZxBSvTHBcWlMH/zUclnichRT0/C3hk+pIj4TS7GYchozD+ZWNu
-	 evu0CqyUEndELEE8NUvVmpXBep2Kukvvzwrnf2DWGzh4uAWg/PKpNORRO9bOZEjI+M
-	 pMTZGas90E8+KBulzvC/BZdad1hSIx2FR4a50cjXxyZVyxi/oq6E9v6gCdozTTgwHV
-	 VbLDs0NzwuGjg==
-Date: Thu, 2 Jul 2026 16:24:37 +0100
+	b=EZDY+QGcsghhDIw9rxbIhnPAJRijthrModhJ3dAoSN5cVM+YkTpcpEvD+KPlh/M/u
+	 Qwt3kZkRl2OzXpZ8lNBF20cEMvcQmjr2C3N0OBOmi3krbMnyRHMJTEBJXrtiCGLkys
+	 hVceGk9nKeLivyWhhq1nb1heVf5ntbaXnUG4S4OpDlt89/1RU+lLBy/OziQBm1WY0f
+	 mLETtt6Kv1hVTKJQz++mgHlN+PUF+ac9yH5QtMrmNRfTW7GoeSyD7Rts3hi3Don33s
+	 UtJfTmtwGOSlfBDJEzVdm8IjgP96nHmx5GxFIPDKfkfCebxxa9UBrNHRuHW+T6BGzw
+	 FkrA9PbgKP9aQ==
+Date: Thu, 2 Jul 2026 16:29:20 +0100
 From: Lorenzo Stoakes <ljs@kernel.org>
 To: Lance Yang <lance.yang@linux.dev>
 Cc: akpm@linux-foundation.org, tsbogend@alpha.franken.de, 
@@ -73,10 +73,11 @@ Cc: akpm@linux-foundation.org, tsbogend@alpha.franken.de,
 	intel-xe@lists.freedesktop.org, xen-devel@lists.xenproject.org, linux-fbdev@vger.kernel.org, 
 	linux-aio@kvack.org, linux-fsdevel@vger.kernel.org, linux-mm@kvack.org, 
 	linux-sound@vger.kernel.org
-Subject: Re: [PATCH 05/13] mm: prefer mm->def_vma_flags in mm logic
-Message-ID: <akaCFf_SjccZznnP@lucifer>
-References: <3b4ccdc38819b42ddc79ee5a795831208ac7986c.1782760670.git.ljs@kernel.org>
- <20260702121022.49113-1-lance.yang@linux.dev>
+Subject: Re: [PATCH 06/13] mm/vma: convert vm_pgprot_modify() to use
+ vma_flags_t and rename
+Message-ID: <akaC-xxNr8ZyN4aH@lucifer>
+References: <548ba81b2971734d4d2143237ad1465bd1b2f525.1782760670.git.ljs@kernel.org>
+ <20260702122116.65642-1-lance.yang@linux.dev>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -92,57 +93,59 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20260702121022.49113-1-lance.yang@linux.dev>
+In-Reply-To: <20260702122116.65642-1-lance.yang@linux.dev>
 
-On Thu, Jul 02, 2026 at 08:10:22PM +0800, Lance Yang wrote:
+On Thu, Jul 02, 2026 at 08:21:16PM +0800, Lance Yang wrote:
 >
-> On Mon, Jun 29, 2026 at 08:25:28PM +0100, Lorenzo Stoakes wrote:
-> >Currently mm->def_flags (of type vm_flags_t) is union'd with
-> >mm->def_vma_flags (of type vma_flags_t).
+> On Mon, Jun 29, 2026 at 08:25:29PM +0100, Lorenzo Stoakes wrote:
+> >Update vm_pgprot_modify() to use the new VMA flags type vma_flags_t, and
+> >rename to vma_pgprot_modify() accordingly.
 > >
-> >As part of the effort to convert vm_flags_t usage to vma_flags_t (in order
-> >to no longer be arbitrarily limited to a system word size for VMA flags),
-> >prefer mm->def_vma_flags to mm->def_flags throughout the mm logic.
+> >This is part of the ongoing work to convert vm_flags_t to vma_flags_t, in
+> >order to eliminate the arbitrary limit of the number of bits in a system
+> >word on available VMA flags.
+> >
+> >Update VMA userland tests accordingly, updating vma_set_page_prot() to no
+> >longer inline vma_pgprot_modify(), rather we can simply define
+> >vma_pgprot_modify() as a static inline function and the tests will pick it
+> >up from vma.h.
 > >
 > >No functional change intended.
 > >
 > >Signed-off-by: Lorenzo Stoakes <ljs@kernel.org>
 > >---
-> > mm/debug.c |  2 +-
-> > mm/mlock.c | 13 +++++++------
-> > mm/mmap.c  | 11 ++++++-----
-> > mm/vma.c   |  4 ++--
-> > 4 files changed, 16 insertions(+), 14 deletions(-)
+> [...]
+> >diff --git a/mm/vma.h b/mm/vma.h
+> >index bcf0c2773449..6a8abb8ae937 100644
+> >--- a/mm/vma.h
+> >+++ b/mm/vma.h
+> >@@ -522,9 +522,11 @@ static inline bool vma_wants_manual_pte_write_upgrade(struct vm_area_struct *vma
+> > }
 > >
-> >diff --git a/mm/debug.c b/mm/debug.c
-> >index 497654b36f1a..f0a354a9496a 100644
-> >--- a/mm/debug.c
-> >+++ b/mm/debug.c
-> >@@ -226,7 +226,7 @@ void dump_mm(const struct mm_struct *mm)
-> > 		mm->numa_next_scan, mm->numa_scan_offset, mm->numa_scan_seq,
-> > #endif
-> > 		atomic_read(&mm->tlb_flush_pending),
-> >-		mm->def_flags, &mm->def_flags
-> >+		vma_flags_to_legacy(mm->def_vma_flags), &mm->def_vma_flags
-> > 	);
+> > #ifdef CONFIG_MMU
+> >-static inline pgprot_t vm_pgprot_modify(pgprot_t oldprot, vm_flags_t vm_flags)
+> >+static inline pgprot_t vma_pgprot_modify(pgprot_t oldprot, vma_flags_t vma_flags)
+> > {
+> >-	return pgprot_modify(oldprot, vm_get_page_prot(vm_flags));
+> >+	const pgprot_t prot = vma_get_page_prot(vma_flags);
+> >+
+> >+	return pgprot_modify(oldprot, prot);
 >
-> While at it, one thing for later: dump_mm() still assumes one-world VMA
-> flags. That works today since vma_flags_t is one word. Maybe worth a
-> BUILD_BUG_ON() here, before that stops being true?
+> Nit: could this just stay as a single return? something like:
+>
+> return pgprot_modify(oldprot, vma_get_page_prot(vma_flags));
 
-Ah yeah that could actually be pretty straightforward, if you see
-https://www.kernel.org/doc/Documentation/printk-formats.txt there is a bitmap
-format that could be used.
-
-Can do that on a respin!
+I feel it's a bit clearer this way, separating out the two, I know it's a super
+tiny difference but anyway :P
 
 >
-> Not a big deal though. Feel free to add:
+> Otherwise, LGTM, feel free to add:
 >
 > Reviewed-by: Lance Yang <lance.yang@linux.dev>
+
+Thanks!
+
 >
-> > }
-> > EXPORT_SYMBOL(dump_mm);
 > [...]
 
 Cheers, Lorenzo
