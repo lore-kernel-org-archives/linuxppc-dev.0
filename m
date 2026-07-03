@@ -1,83 +1,86 @@
-Return-Path: <linuxppc-dev+bounces-23479-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23480-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9CEFBC43458
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Jul 2026 10:27:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 07862C43458
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Jul 2026 10:42:14 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gs91J1TFtz2xPb;
-	Fri, 03 Jul 2026 20:27:32 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=195.135.223.130
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783074452;
-	cv=none; b=M5C/sgocbLeff7BV8cirgeIHaMxHsyH3FrjcnSM/lUHcOa6YcJ4GppH30ErKvQW7hpf8eLDHZ8J3KihoPQ2kZnW74NbF27fzwh4+FBcyaZUStbkYOMuefnuubHd9fyUU9OWKC8zT5Fq7k51t5xZ900emaNUgXiu647eXQa3Lp50eMfUJRiyKVDucxoSOJJFYDWA/q+b59JFDPzWHvzVIvPCCqhsUzOc6tgny3+r3qArMYrscdBSMrZNlQbBpOoOXyf04Al2WNtEbkjPwBa4Gn3jK1y6L9jxVJhgtjJLFZlP2sdbttynYf61kP7/GHJqUwd/k5x3TPX9I94fW4y/bnQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1783074452; c=relaxed/relaxed;
-	bh=vzAgs/BEsj7FHZopxvIm9zgUiYjF8OFUBMNpzRJZrjM=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=TTSJaPTgqOTd+WCJR08oj6fEY6ZaESi04OM9ZHMLHZDJczjlSFxxBK74WYuSy4o/rLybJZyAEGjigqg717zSzi9q3s5KMW//oo7vWNnnRYY7Q27EPxzULb4pJXD8fO+8mHtxfnqP4rhJEA2+YrIQYXjUdDOR+KVxjNjO6+ZZX4u03k8snBWwQHfEsxgskVtS5cAz7ctBvv1BKhKJI8LP25xjdFhOJcQSgwisK3LX2wb3CgwuR3sMxctgWIs6BFwfxicBXvKV+aHfkEidrZnqIGxs5mS1EFGkKg9n33Zxzx/BcYAx5eL/4JRV5zd9MfnO4Lye+2RcHNAxqC1y4LuoAg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass (client-ip=195.135.223.130; helo=smtp-out1.suse.de; envelope-from=msuchanek@suse.de; receiver=lists.ozlabs.org) smtp.mailfrom=suse.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=195.135.223.130; helo=smtp-out1.suse.de; envelope-from=msuchanek@suse.de; receiver=lists.ozlabs.org)
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gs9LF28ngz2xd2;
+	Fri, 03 Jul 2026 20:42:13 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c201::6" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783075333;
+	cv=pass; b=JFoexi9Q/niwO4bdNeoPqDWA0Uy835/2MfaY62l/VBIKHB7OR9E46gucy0qKIyIJ5p6d6fCtn5C/qK1T0kRkaPMAsJrqFF9L2uuEnVRG+Sy6LDjLDugNcy6vi3bWoJTSygIUa2aoR35YEISPb3P2kxcyIAIT79DkJZBGvvXhCyTOxPytYG678nfrLR26Q1vk9dbSLHWAhx8CJY4SWmtqG6a/Lsfq9m4GFLvigsbLF8olxsaS8E3P0GDwPMW8uHhx5DN1FinyADpEVgPDqDKg08ypcYDJSe4669E2JCpBI7qA5ISY2+zHp0HMZEYB6CX7OxB5hwzcHLBQq0hUc4Bsvg==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1783075333; c=relaxed/relaxed;
+	bh=jr7g0vGTjY7JyNqWCSffK40WR1pTE+c5LTsuZA34Vv4=;
+	h=From:To:Cc:Subject:Date:Message-Id:Content-Type:MIME-Version; b=MmCpX6hV9oBYs/21HeSSsTBo02CGWhZ8dUl992+92QuGaT+pF3xe+/b2Le0lcnHxKT6nagdW0BBwit3UryRo535++xbCs0lA85sdFBXb3lz8vsBfnkvpq5UbmbFmQQBTY3Hk8ez7ZLG4R1udd/bpFm+3jN6T4e+mi6E/ZkE1eZ3FOu8cmC/f4tBm5vBBlLHgC29ZvzB2eQy0vHQ7LWwSZj47uEUZbe+b5UHMUenPTIj1k/U8Y0MUOPZW9UKLCODU6WdEiCQsPzahiRF+ajuE24TXhGjgvxnmUT8g3qaqJ3kIAAgbxVivHDbGasAar9AbkGS3sFSgH0RCLeFeKmPmcg==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=oss.nxp.com; dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=euTMMd/T; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c201::6; helo=am0pr02cu008.outbound.protection.outlook.com; envelope-from=wei.fang@oss.nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=oss.nxp.com
+Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=oss.nxp.com
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=euTMMd/T;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=oss.nxp.com (client-ip=2a01:111:f403:c201::6; helo=am0pr02cu008.outbound.protection.outlook.com; envelope-from=wei.fang@oss.nxp.com; receiver=lists.ozlabs.org)
+Received: from AM0PR02CU008.outbound.protection.outlook.com (mail-westeuropeazlp170130006.outbound.protection.outlook.com [IPv6:2a01:111:f403:c201::6])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gs91H2Tgkz2xLq
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 Jul 2026 20:27:31 +1000 (AEST)
-Received: from kunlun.suse.cz (unknown [IPv6:2a07:de40:b306:2000::2])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id 8F70A74890;
-	Fri,  3 Jul 2026 10:27:27 +0000 (UTC)
-Authentication-Results: smtp-out1.suse.de;
-	none
-Date: Fri, 3 Jul 2026 12:27:26 +0200
-From: Michal =?iso-8859-1?Q?Such=E1nek?= <msuchanek@suse.de>
-To: Mark Rutland <mark.rutland@arm.com>
-Cc: Thomas Gleixner <tglx@kernel.org>, Jinjie Ruan <ruanjinjie@huawei.com>,
-	oleg@redhat.com, richard.henderson@linaro.org, mattst88@gmail.com,
-	linmag7@gmail.com, linux@armlinux.org.uk, catalin.marinas@arm.com,
-	will@kernel.org, kees@kernel.org, guoren@kernel.org,
-	chenhuacai@kernel.org, kernel@xen0n.name, geert@linux-m68k.org,
-	tsbogend@alpha.franken.de, James.Bottomley@hansenpartnership.com,
-	deller@gmx.de, maddy@linux.ibm.com, mpe@ellerman.id.au,
-	npiggin@gmail.com, chleroy@kernel.org, pjw@kernel.org,
-	palmer@dabbelt.com, aou@eecs.berkeley.edu, alex@ghiti.fr,
-	hca@linux.ibm.com, gor@linux.ibm.com, agordeev@linux.ibm.com,
-	borntraeger@linux.ibm.com, svens@linux.ibm.com,
-	ysato@users.sourceforge.jp, dalias@libc.org,
-	glaubitz@physik.fu-berlin.de, richard@nod.at,
-	anton.ivanov@cambridgegreys.com, johannes@sipsolutions.net,
-	luto@kernel.org, mingo@redhat.com, bp@alien8.de,
-	dave.hansen@linux.intel.com, hpa@zytor.com, chris@zankel.net,
-	jcmvbkbc@gmail.com, peterz@infradead.org, wad@chromium.org,
-	thuth@redhat.com, ada.coupriediaz@arm.com, kevin.brodsky@arm.com,
-	linusw@kernel.org, yeoreum.yun@arm.com, song@kernel.org,
-	james.morse@arm.com, anshuman.khandual@arm.com, broonie@kernel.org,
-	liqiang01@kylinos.cn, pengcan@kylinos.cn, ryan.roberts@arm.com,
-	yangtiezhu@loongson.cn, sshegde@linux.ibm.com,
-	mchauras@linux.ibm.com, austin.kim@lge.com, jchrist@linux.ibm.com,
-	arnd@arndb.de, thomas.weissschuh@linutronix.de,
-	sohil.mehta@intel.com, andrew.cooper3@citrix.com, jgross@suse.com,
-	kas@kernel.org, x86@kernel.org, linux-alpha@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-	linux-mm@kvack.org, linux-csky@vger.kernel.org,
-	loongarch@lists.linux.dev, linux-m68k@lists.linux-m68k.org,
-	linux-mips@vger.kernel.org, linux-parisc@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org,
-	linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
-	linux-um@lists.infradead.org
-Subject: Re: [PATCH v16 01/18] seccomp: Convert __secure_computing() to
- return boolean
-Message-ID: <akeOjqMy7HVgRRCr@kunlun.suse.cz>
-References: <20260629130616.642022-1-ruanjinjie@huawei.com>
- <20260629130616.642022-2-ruanjinjie@huawei.com>
- <akdp6GAu77-ipsXA@kunlun.suse.cz>
- <87cxx4mmim.ffs@fw13>
- <akeIK5TRCjlKbzbp@J2N7QTR9R3>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gs9LC6dR2z2xPb
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 Jul 2026 20:42:11 +1000 (AEST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=aTF7qIlZXodupflGFlkFZj///LOjlramIYVDPfwLoWZWWlk7P0hK36J4SWYbjnnFDUSbYw24jj2DOLOz3uLzrduGF0W8YGZQRj/M3fuTgi4chDeFyTD+7XbNlVBBL3OzrUxyqM9WfQaRosIWi8Gb9PznsuzUklZ/zzGj7X5ZiYNL4UbBkIWSoLwbyWwM4FAUzQXPUfmrxzwWTVpRqZz0HG1cdA4qijEz4i9iFhE2enjcCgaE8rMuCiTTAXFztlwjD0z8XiYG8y5y49hERukL8C7p7n1FeKRLVEz8VyOQn/SA1ayd1igVGyAgP60BbeUa+lnj6wLwIXW9bnNponyJNA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=jr7g0vGTjY7JyNqWCSffK40WR1pTE+c5LTsuZA34Vv4=;
+ b=AZJYuyBKyiQYUwcO9RpUHVg2hAtuYKGqtG4k8xZ08xPV0QWUgI11M+ilEJpLKG2L0/ryz/jO8sAYjddMuAnMvJuJVOxEQbDGolunzerlutbi+855cybBUVqSuMfNcq6bPekFN5hB2N7nqHJsFQTVqZ2n/pDWvvS8Zz0Z/Twgkd7fvLbwmxCJAVpJQSwCCZzepKkX1DsLmtxVeseR7YKtaGS9Q9CEV+hmgZsv0TtNx7D86xXwbxdNtv1q5Q2SqfjBTpxn0m2Xy9tGuTjbalxnFN2K8vh0+zNfRedcc/GNsbjJuHa+4RF/4d7O9LMHs3HmcLgtK9ES43IlO2NEwOq0RQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=oss.nxp.com; dmarc=pass action=none header.from=oss.nxp.com;
+ dkim=pass header.d=oss.nxp.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=NXP1.onmicrosoft.com;
+ s=selector1-NXP1-onmicrosoft-com;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=jr7g0vGTjY7JyNqWCSffK40WR1pTE+c5LTsuZA34Vv4=;
+ b=euTMMd/TjGqqNldNJ6zHDZCcvMxsHa9Y/zLIouIlC3Rf4A3A42h3heBxui/qAvBtkPUbEiudsjSIN0lbj2UHwBN4w0KPBVFnT2lCzIkPq1ENTFwgeac69CM1Ho+gkAZpQQgxAZ/CP5kjy/QR42uQt9PECSPpJlrwdMy2nH2LKaDxnlA0vGEda0JNz2v1AHrqlxbtJ+YHb4rUcXJCJJHyaCEGh2JAsuatcRdzGQCsRa3WgCiqDhZivbPKr4LzkUhvmAy7wXiXJohYiRQjvGYSn2ktKRi8TxRYhm55xjzhBs5BaPHnCQR01/2bsMOB8/hGPWkcU5ZhZ9t8mCYXtDuyXA==
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=oss.nxp.com;
+Received: from VE1PR04MB7216.eurprd04.prod.outlook.com (2603:10a6:800:1b0::22)
+ by DU4PR04MB10741.eurprd04.prod.outlook.com (2603:10a6:10:581::5) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.181.11; Fri, 3 Jul
+ 2026 10:41:47 +0000
+Received: from VE1PR04MB7216.eurprd04.prod.outlook.com
+ ([fe80::a9a5:cf83:dbe8:1f74]) by VE1PR04MB7216.eurprd04.prod.outlook.com
+ ([fe80::a9a5:cf83:dbe8:1f74%3]) with mapi id 15.21.0181.010; Fri, 3 Jul 2026
+ 10:41:46 +0000
+From: wei.fang@oss.nxp.com
+To: claudiu.manoil@nxp.com,
+	vladimir.oltean@nxp.com,
+	xiaoning.wang@nxp.com,
+	andrew+netdev@lunn.ch,
+	davem@davemloft.net,
+	edumazet@google.com,
+	kuba@kernel.org,
+	pabeni@redhat.com,
+	linux@armlinux.org.uk,
+	wei.fang@nxp.com,
+	chleroy@kernel.org,
+	maxime.chevallier@bootlin.com
+Cc: imx@lists.linux.dev,
+	netdev@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-arm-kernel@lists.infradead.org
+Subject: [PATCH v3 net-next 00/14] net: enetc: cleanups and improvements
+Date: Fri,  3 Jul 2026 18:13:14 +0800
+Message-Id: <20260703101328.550714-1-wei.fang@oss.nxp.com>
+X-Mailer: git-send-email 2.34.1
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-ClientProxiedBy: MA5PR01CA0139.INDPRD01.PROD.OUTLOOK.COM
+ (2603:1096:a01:1b9::12) To VE1PR04MB7216.eurprd04.prod.outlook.com
+ (2603:10a6:800:1b0::22)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -91,67 +94,137 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <akeIK5TRCjlKbzbp@J2N7QTR9R3>
-X-Rspamd-Pre-Result: action=no action;
-	module=replies;
-	Message is reply to one we originated
-X-Rspamd-Queue-Id: 8F70A74890
-X-Rspamd-Action: no action
-X-Rspamd-Server: rspamd1.dmz-prg2.suse.org
-X-Rspamd-Pre-Result: action=no action;
-	module=replies;
-	Message is reply to one we originated
-X-Spamd-Result: default: False [-2.00 / 50.00];
-	REPLY(-4.00)[];
-	RDNS_NONE(2.00)[];
-	R_RATELIMIT(0.00)[to_ip_from(RL1f5ktcu9q8c5toc5bju644qd)]
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: VE1PR04MB7216:EE_|DU4PR04MB10741:EE_
+X-MS-Office365-Filtering-Correlation-Id: 64910e44-c272-4756-6fee-08ded8efae33
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|376014|7416014|1800799024|19092799006|23010399003|366016|921020|18002099003|56012099006|11063799006|6133799003;
+X-Microsoft-Antispam-Message-Info:
+	PswWCAD4QyasXCC4C7nVuCZ0pJmQaErAVi0CyDXnayZFCiwEj5aXvw+3CrDcMH1PaUjnIik+WG7a3WQ20Hyov6ejpf+ESLY2YlkZJROBH9Ft9fNdRYZ6a9o5sWckJbq5Ghz/uTJUTWrLaVfgQvdakQgfIUtZdiwFxCt84Ny6eqpFW7iDs8HiJwAXBMGqqPHJ6qX7SQYSmgr+bmYPv/6blQ/c/hA9Um7uyQSSh0ikfN0pTMET/GlPRcIpJTubsKgrwUFn8ay5y3GXwOuBoML4mNx5bKW9nRYEgIoRjRKX9bGcIBveOpSRtWW6TmCbBddg6GCWl0PcvX2HC38ROnGNxF2HygkikYHOzjSg0Kth/bLjNg1stZioXasBuElTUJTEnl9iwCGqjdx3z4uUcEz3dRjObgO4J1JLMbJ2oB3liMijCeque6ovbvgfl9TCHZxWUJ1EeGlYRcCkp9B66TAgb79P9lOVr6xr9HZn2Rdwk2sPN3OqPwvRiptfA/T0MSEwbNkV70nD9QyFNU5AO5sP7gYC6tMTG4IdGmJetLAM0hwr2atQrQFPVoqIVjYQzvMMTtC7gTf8r0AaWcEDrw+O5RqwCOvBx/qGo4uv8fvg1H9zK+RhIHpdQ4heS1CwT8F049E5V75aXOxfxFep2ZVzjzLwpESWA6l56ppyGYIAbxCEVJuuU4BiHKDFar4EYrCvfuDkaTange4X6DfioycEhA==
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:VE1PR04MB7216.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(376014)(7416014)(1800799024)(19092799006)(23010399003)(366016)(921020)(18002099003)(56012099006)(11063799006)(6133799003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?us-ascii?Q?7NrXDrBC+5lkxIrbQKmNIGMgOQ60JpwATpob1ymIo/GFZHB8U5whacBGBGEG?=
+ =?us-ascii?Q?C5seOCv+sa6E8qmjUXoJYflFcr1hHfTJCnIrws9z3mrNVKz3lJ+FO38FNxf5?=
+ =?us-ascii?Q?zo9uZUbw3buBnBzBSv/IscpPZJ3g8S8VdtO5sbfkEf8/aurlyjYvlcs+Nhmy?=
+ =?us-ascii?Q?hly9k2eRIRPThE3b7FXmIgdlaPRj3n/Se675VD0szEHlRt1hhMCdO/p/2EjK?=
+ =?us-ascii?Q?3Wc1wZBB2dC42gmKxG7EAgQiwkxMkjRd50A9/+vrfJWmBxaQlNibrnIcPQTU?=
+ =?us-ascii?Q?mkfW1tzXhnTDSWe9kKjANh1lHaJr7PnBE4yeklB7i0YZfe0NbTa77Nj6sQES?=
+ =?us-ascii?Q?2PU0ff17vyuDqEYqcScfAELAJhgoPvxFBQeT178WN6/CQuFTj63DxDLbbPDK?=
+ =?us-ascii?Q?B0WXaN09DxSHF6DyAzWEpdVdQYE+5rGgutOVjbavAK9HOqJBjHlF1wB6Jg6B?=
+ =?us-ascii?Q?GbiL6qImJncRUbH4IfkoodtX0sOIEKHm/EjgQfxqTfSau+jIpy4J8bdnU0oI?=
+ =?us-ascii?Q?8zMQexOKYEWtKQUtMtr/EhGUtUvGyG1soIWPhiExg+/mTtA766AOt1iWl1vP?=
+ =?us-ascii?Q?PnyZY3zs3JHTVdftld5LN2GYlT5vk1ky6MRKJPS7D8acgKvBYe9vm96LegCT?=
+ =?us-ascii?Q?QIjjASiwZ/MGablOMLCFyXopzumUJw2JtX2tyGumu8klbSUKKFcCsCIImLRo?=
+ =?us-ascii?Q?wONAbaIfQzLrLdqL6nMD/shjLuX1HHgpaEKkNOCdNcp+XrjY3LSFmrP2YktP?=
+ =?us-ascii?Q?EGj/X3PtCL2PTYuW8jy4OIJclp4jOKfkaGOkWHzhgM+2XYjkckNWu3lT3XG8?=
+ =?us-ascii?Q?g2WvkLGom2OmroirHfeV04TENC/HH9Z/5hNgRhxW3F216hWrS5yReZ3On3bW?=
+ =?us-ascii?Q?wEcZKvU18GI/A2cicV72Sgvt7KSqz6Gg72aIbax0FlR8smwGYRhO/t7YafJX?=
+ =?us-ascii?Q?RfEqDr3bmQ5u0OJ6+RZArsg4/e4u8q1bSQ7/g/iXt1VLZipoC5lD4PiAchiq?=
+ =?us-ascii?Q?wsf9E+EHWzG7dw0tIzvQ+GkJRTS9TwrIKlMP4RdEfS4MgCqjnonTTQiHWxYU?=
+ =?us-ascii?Q?GSDHEW2EOafXfLk88n13DUX+bnfOmwsI6AWvNEvOI68p8e0Ysa1aULK2qJzr?=
+ =?us-ascii?Q?BYH5FuMZlXPUmMREsxYSdqX524CjLb/DyVmhZSM+DcY2itpe4/3aXiayPZEp?=
+ =?us-ascii?Q?J1kX1TpwWbcp1zoi6TcONltSVpt+OEhpZ2gOfBdQOtpYkB15AUKX9yUR7o+F?=
+ =?us-ascii?Q?FS6XpQ0H88lE5c/9eEvkncGvt9rBniax8Olj5mtW6N0Nkj5ubAf4qxJXzXVa?=
+ =?us-ascii?Q?GaGlrdbDUWPLQUEpoBzZ6WYJyg4IAavHOjFyqCGkNeBIHQFY7W3At6fm3hYZ?=
+ =?us-ascii?Q?FmAzKdJg3qQF+KL6em+inwJ7HZRR3XxfXtRWs8rQUzi6lOs6mA5Nxn5LWuxa?=
+ =?us-ascii?Q?Vr+k4dY4WREichhEOqfLHHiPaeHMAQ+KUxxHelLb38EkSnKDGGLxJqJTYvah?=
+ =?us-ascii?Q?7vhkOmNmP6upKk03fmr7ed3kH9KywOJCDI0OsbshDfK5OWzoyOH1JEEpF0fQ?=
+ =?us-ascii?Q?xmNMsiaejzSHXdgBcLDzavWdjVJYDGUYc2vRaHlFVRpjyX9Wq3d5Kvm5F1Sn?=
+ =?us-ascii?Q?oBFVWb/0Mm6sKWBROazN6e2MvZs2d02gUtMfBl+HsCg7GcPx0xNkmXLeuvdI?=
+ =?us-ascii?Q?Ja1rMI/qZ28so58DRzENvpDZ/zb9I/UiPsOuNrAplKCEEuHPqFV0YDqXm4qf?=
+ =?us-ascii?Q?Nd+uK3km1IPSCKkGxJoCX5I1WOw666Pu2GXNem53cWtwMJrsr+aE?=
+X-OriginatorOrg: oss.nxp.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 64910e44-c272-4756-6fee-08ded8efae33
+X-MS-Exchange-CrossTenant-AuthSource: VE1PR04MB7216.eurprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 03 Jul 2026 10:41:46.7591
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: mzzGIyCxwGuVCf8nV+ox9gBekW8HCvv4nW/SPigAMX83NsQi89Rsy13WKuqf2M9CNnc64pRJJlXfwt23KHZFln10HgHL8PF1/SbSQc4ZFhQVuA65lSpAoYfO/QAsNV/y
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DU4PR04MB10741
 
-On Fri, Jul 03, 2026 at 11:00:11AM +0100, Mark Rutland wrote:
-> On Fri, Jul 03, 2026 at 11:48:49AM +0200, Thomas Gleixner wrote:
-> > On Fri, Jul 03 2026 at 09:51, Michal Suchánek wrote:
-> > > On Mon, Jun 29, 2026 at 09:05:59PM +0800, Jinjie Ruan wrote:
-> > >> -	if (secure_computing())
-> > >> +	if (!secure_computing())
-> > >>  		return -1;
-> > >
-> > > Hello,
-> > >
-> > > I am not fond of this logic inversion. The boolean is meaningless in
-> > > itself.
-> > >
-> > > Previously -1 was used to indicate that the syscall was filtered but you
-> > > chose to invert the logic choosing true to mean syscall was not filtered.
-> > >
-> > > You could choose true to mean that syscall was fitered avoiding this
-> > > inversion.
-> > 
-> > That's just wrong. Boolean logic makes more sense with having
-> > (!condition()). Just because the old 0/-1 nonsense had it the other way
-> > round does not mean it has to stay that way.
-> 
-> 100% agreed!
-> 
-> Bikeshedding below; sorry.
-> 
-> I think the bigger problem is just that secure_computing() is a terrible
-> name that does not express the intended semantic -- it's not clear
-> whether "secure computing" means "seccomp permit the syscall" or
-> "seccomp is enabled and some special rules now apply" or something else
-> entirely.
-> 
-> If we're changing the return type, it might be worth renaming the
-> function something like:
-> 
-> 	seccomp_permits_syscall()
+From: Wei Fang <wei.fang@nxp.com>
 
-Then not only it is clear which way the boolean value should be
-interpreted, it also pervents the accidental inversion of existing
-calls. Overall great.
+The first group of patches (1, 2, 5-7) eliminates code duplication
+between the ENETC v1 and v4 drivers. Since both hardware generations
+share identical register layouts for MAC promiscuous mode, MAC hash
+filters, and VLAN promiscuous mode - differing only in register address
+offsets - common helper functions are extracted into enetc_pf_common.c
+and shared by both drivers.
 
-Thanks
+Patch 3 converts ndo_set_rx_mode() to ndo_set_rx_mode_async(), removing
+the dedicated workqueue that was previously needed to defer MAC address
+list updates to a sleepable context.
 
-Michal
+Patch 4 replaces counter-based MAFT entry tracking with a bitmap, which
+keeps hardware and software state in sync and avoids partial failures
+during entry allocation.
+
+Patches 8 and 9 fix phylink-related issues: removing invalid code from
+enetc4_pl_mac_link_up() and properly differentiating phylink capabilities
+between pseudo-MAC and standalone MAC.
+
+The remaining patches (10-14) are minor cleanups: removing a redundant
+VLAN promiscuous mode initialization in probe, using the PCI device name
+for the debugfs directory, simplifying port speed configuration, removing
+a redundant num_vsi field, using alloc_etherdev_mqs() for the VF driver,
+and using kzalloc_flex() for a flexible array allocation.
+
+---
+v3:
+1. Add a check to speed in enetc4_set_port_speed()
+2. Remove PHY_INTERFACE_MODE_XGMII from the driver
+3. Restore the VLAN promiscuous mode setting for all SIs in probe phase
+4. Remove half_duplex field from struct enetc_port_caps
+5. Limit the maximum value of txqs/rxqs of alloc_etherdev_mqs() to
+   ENETC_MAX_NUM_TXQS
+6. Update the commit messages
+7. Collect tags
+v2 link: https://lore.kernel.org/imx/20260702025714.456233-1-wei.fang@oss.nxp.com/
+v1 link: https://lore.kernel.org/imx/20260630072036.382761-1-wei.fang@oss.nxp.com/
+---
+
+Claudiu Manoil (1):
+  net: enetc: differentiate phylink capabilities for pseudo-MAC and
+    standalone MAC
+
+Wei Fang (13):
+  net: enetc: extract common helpers for MAC promiscuous mode setting
+  net: enetc: extract common helpers for MAC hash filter configuration
+  net: enetc: convert ndo_set_rx_mode() to ndo_set_rx_mode_async()
+  net: enetc: improve MAFT entry management with bitmap tracking
+  net: enetc: use PCI device name for debugfs directory
+  net: enetc: simplify enetc4_set_port_speed()
+  net: enetc: remove invalid code from enetc4_pl_mac_link_up()
+  net: enetc: open-code enetc4_set_default_si_vlan_promisc()
+  net: enetc: refactor SI VLAN promiscuous mode configuration
+  net: enetc: move enetc_set_si_vlan_promisc() to enetc_pf_common.c
+  net: enetc: remove redundant num_vsi field from enetc_port_caps
+  net: enetc: use alloc_etherdev_mqs() to create netdev for VF driver
+  net: enetc: use kzalloc_flex() for enetc_psfp_gate allocation
+
+ drivers/net/ethernet/freescale/enetc/enetc.h  |   4 +-
+ .../ethernet/freescale/enetc/enetc4_debugfs.c |  42 +-
+ .../net/ethernet/freescale/enetc/enetc4_hw.h  |   7 +-
+ .../net/ethernet/freescale/enetc/enetc4_pf.c  | 424 +++++++-----------
+ .../ethernet/freescale/enetc/enetc_ethtool.c  |   2 +-
+ .../net/ethernet/freescale/enetc/enetc_hw.h   |  12 +-
+ .../net/ethernet/freescale/enetc/enetc_pf.c   |  94 +---
+ .../net/ethernet/freescale/enetc/enetc_pf.h   |   6 -
+ .../freescale/enetc/enetc_pf_common.c         | 150 ++++++-
+ .../freescale/enetc/enetc_pf_common.h         |   5 +
+ .../net/ethernet/freescale/enetc/enetc_qos.c  |   4 +-
+ .../net/ethernet/freescale/enetc/enetc_vf.c   |   9 +-
+ include/linux/fsl/ntmp.h                      |   2 +
+ 13 files changed, 367 insertions(+), 394 deletions(-)
+
+-- 
+2.34.1
+
 
