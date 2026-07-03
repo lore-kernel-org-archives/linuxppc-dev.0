@@ -1,98 +1,124 @@
-Return-Path: <linuxppc-dev+bounces-23503-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23504-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5EB66C43458
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Jul 2026 12:46:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BFDB7C43458
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Jul 2026 15:20:01 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gsD5V3WsSz2xdb;
-	Fri, 03 Jul 2026 22:46:22 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::436"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783082782;
-	cv=none; b=cLLfkors3mwEIeitiWjDEL/xYQqNg96a25S9RLO/O/ehIIKq/NHlKoFZRK1nXGLslaZx7T1AWeC9xCWHsYeC9djbK1uiY+eTFbVz3KHDxMKysNZ+9fRdgiQ1g2hibjOhf5Roqp8RUaGjmWMc0fe4E/Baaf9RdN4xpZb5KR7GG8mk2jqF2Tw+9rks5XMC3WkRkg58VEAGIZSoDx0whHIvonDJS6xnad2dFXfKc1J8ivJ9nLU9ErdpCV7Y72iJbGvG/i+yRIL3lKzgIkwsBfnYaOfvBzSiygj+jUNlphjupm/P4rMIqGz2Y8KovuBU2HyiimNatYnRXwAjaRM8etq2Eg==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1783082782; c=relaxed/relaxed;
-	bh=EsBLm+/j8lRVOopPYicPuZIR3XyWb+EmA3UL37jV8mE=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=NdoM1edDs/id8SS321O5LxlNIjWGaap0PgOI8i8Qwy4SkHRLI8xE8rVVRvM1UbbDgX10I7cXO45rVStAj+UGNkXEEX4nGhcamHo7LJBvGm3SycCEujskN61NcjP4lDYWcC/OcRZ1W3XTIZjuoZ/zSd0XV1Y6HkaEn9T+G41z5QwT+Iorq7mrT0aSGHeC5z+O5cgW/sHZ51ZnKBPwQsK+5ANFyHrI/MWnGaP4XxAFzi/GaiqP85F6st3N+5eppjjop0oEOvSPG3+hIiGeAYsw2wVo+Dof8zumGQQrKDzXVS0flreXzGsE689Cn6YXGFb8PLBSgM31OUT40g1Iq/40gw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com; dkim=pass (2048-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=google header.b=ERW+2bph; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::436; helo=mail-wr1-x436.google.com; envelope-from=pmladek@suse.com; receiver=lists.ozlabs.org) smtp.mailfrom=suse.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gsHVl4Bnsz2xdb;
+	Sat, 04 Jul 2026 01:19:59 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c110::1" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783091999;
+	cv=pass; b=R8QBBExINwZwmJ4cPuHHPd/dTvffow/MlME9ZcYvSI/VBXYdiZBtCe3kS6h7Z0QRm+EYrXjLtdSROV7fuzW5ggvaJq1HgUKvWEnSbjVCOEehjolo0BIgqVRWQ6rrwU8M97LF9ZrQFkncgoq22fCNEsEq0IcvrSgaYl2UXs8qoAuPbTmNqPTcIA/A+nKya0F2felZkes1tTP4hgs6iKAod49NM9+bSc29BZ6ALIdOcOl57RP7VtkeM4HfjuxWluZ7p1qzJyBM/dbWFBjqTu9C6PYKjA/gqDJS37L/Dxa8DPPDj/o1jXa4+uYaswzt4CXwKnrAkwTCBCBQ5xRzn2PTpQ==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1783091999; c=relaxed/relaxed;
+	bh=PJsWbDxlK1lfEc9swedmNLuoU5uhFAQRmSm+tgJfwMs=;
+	h=Content-Type:Date:Message-Id:From:Subject:Cc:To:References:
+	 In-Reply-To:MIME-Version; b=gpDk/SjH02I9aRKxKQDjd1hddWtXPtl0sh4dbLlcmi1JTsRPbhJfP31kCzlt/bQOFcYUX7kOmfMePrrCzr2Wi/fDKBsLamdK/hG8jm3Fs5d2CrZ3zRxEE38Nqy6GT+RzOwFk2gT/S1Zcb4DjRhOdbUUyauYKnqdLAXpZxXUY4jx/sD8rozx27wkzNymmaaOSf2iH0Lj02iULUz/FtdOhdUdoYCIhMwWJ/E6pZbvdkrsHTLkD15pER5WiSR+Fml4gnNid/ueQ/A9dN+I0+AjTlszp8TXb2ktA1O/t2i6boXXCWGiTfjA7L9RpZJqXuh52FlRS/ogGV85fmWd4buJP7g==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=mnMlyBtK; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c110::1; helo=bn1pr04cu002.outbound.protection.outlook.com; envelope-from=ziy@nvidia.com; receiver=lists.ozlabs.org) smtp.mailfrom=nvidia.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=google header.b=ERW+2bph;
+	dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=mnMlyBtK;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.com (client-ip=2a00:1450:4864:20::436; helo=mail-wr1-x436.google.com; envelope-from=pmladek@suse.com; receiver=lists.ozlabs.org)
-Received: from mail-wr1-x436.google.com (mail-wr1-x436.google.com [IPv6:2a00:1450:4864:20::436])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nvidia.com (client-ip=2a01:111:f403:c110::1; helo=bn1pr04cu002.outbound.protection.outlook.com; envelope-from=ziy@nvidia.com; receiver=lists.ozlabs.org)
+Received: from BN1PR04CU002.outbound.protection.outlook.com (mail-eastus2azlp170100001.outbound.protection.outlook.com [IPv6:2a01:111:f403:c110::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gsD5S5P0bz2xLq
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 Jul 2026 22:46:19 +1000 (AEST)
-Received: by mail-wr1-x436.google.com with SMTP id ffacd0b85a97d-475417f010dso353982f8f.2
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 Jul 2026 05:46:19 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=suse.com; s=google; t=1783082775; x=1783687575; darn=lists.ozlabs.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=EsBLm+/j8lRVOopPYicPuZIR3XyWb+EmA3UL37jV8mE=;
-        b=ERW+2bphNOI7aJx10lkBuSNN3QPA1csZ4us9NeKrPLEif3y0k2uUqZbLVMeJxLpDfS
-         ZqO/4mlvsq9b1OeC7yGi6o9xEa1fYvRNwY4GSq+eqmk32luF9BEE3yE+K5fJnIZIeR8E
-         zOr2Q4/iBqlRwVSAzNcYtz5pnMmlOevtkTq4iwNHwZdEVTJqI1DZ/BLo+wtjVTFv61nO
-         uotOyKMll1h0avtSy80IPFV1hdfPkYofSq9iOoeRL0hyq8azut1VqcRMJL1ZmjODCy65
-         +VadD49RpMgztSsW0P9CKVQ8A6JMQpPMZk3yr/A1zqzJYX656CWsb7zrZLGCOerA0Y8w
-         BxJg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1783082775; x=1783687575;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=EsBLm+/j8lRVOopPYicPuZIR3XyWb+EmA3UL37jV8mE=;
-        b=gDJ4Xb7DKQsiHcLwOK3lxRV6WYbfKAU0jw2GSfYzUTp9+FRVpipcLvNZwkP/VT1MB2
-         060g4LuMXzI+eCUExbUeZuzYIWAocjtLP1fRGpS4Tg/IqdHyYxXQZ0mCOIzTecaxMObU
-         P6CHYWYVGnMMYS7XJSqR4qI/fRJRo7RpO9GEzhc+rR4xZYgRV9jDYlyXtA84qYgu0Va9
-         TcP0lUS5dp1lF/n5WNTuGYJpjQh5aQqGO0/gHrsua7PA6cKWSHapywvl9UVGS95qRb+O
-         2LMFNl9fYOEs9PWh2VqpHapyrNTX6Lu5hGlCzmUwuND0cAXnR0WudSJKwlSjkrYJiWG7
-         6lzg==
-X-Forwarded-Encrypted: i=1; AFNElJ/iiIQQnsgnSb4e945ChjbM+wvy8q41TJyFPXfbzKYTtm7tmqEYT4BFcLDA5minN+6R6LEiUjMYvcCgrOE=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YylrNiuKwCeIzKB4X5jwW/m3tpRYx+IoMtbTisHD3DHAdD7/uch
-	Nw6PhVYxI50r6yNQ3iAC4GAAJ7pf/2HPtvrbpLJbsTz9o1oc9wL4SsNSBjOBXYPu/Cs=
-X-Gm-Gg: AfdE7cnLIcf1uM/FohWctF/WCwASxyO4OUH4fADykCu4ug3KZYBUcNQ6ONs+UepSf4S
-	R9d8DP6wxkF6BWUHGPuLLBdzI9gfZZMqPVGHr128OxODJ93R6Pj2Yv+0rxgIj3ynkJDBVh2KTqo
-	y2DwXjs00xNuo2HgUtr6nSRQxfNwVel67dPQ4YFOIr+cohVYWtFic1hhtKKa47VaFyOHaBTCcfS
-	m5w1V+Go+uSkXAhZyPhaw/7HtqQoB+Pz5omjWsVttlGbnAzlCyC/QZXFTqcF9Dk5FdLi38CxQfF
-	Mw9BRgc6sK5TI9yMPB46pPbY0nCCDfif5HLfXo9rQiMYSH6q7C+YNXb9ntGOqLk6BvyqCqlsAqu
-	WEoqgkC/6T9eyAlAmC3ki+XMjgGX1ul5zOmDa9XdVNYk9LC4ZFnGkUXlcgr+kLVNSoQ9NDBwJKa
-	j7oBTFPzAgYuMC05U=
-X-Received: by 2002:a05:600c:5805:b0:493:b163:42e8 with SMTP id 5b1f17b1804b1-493c2b7f204mr94148515e9.21.1783082774690;
-        Fri, 03 Jul 2026 05:46:14 -0700 (PDT)
-Received: from pathway.suse.cz ([176.114.240.130])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-493ccdb62d3sm54494835e9.8.2026.07.03.05.46.13
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 03 Jul 2026 05:46:14 -0700 (PDT)
-Date: Fri, 3 Jul 2026 14:46:12 +0200
-From: Petr Mladek <pmladek@suse.com>
-To: Bradley Morgan <include@grrlz.net>
-Cc: Feng Tang <feng.tang@linux.alibaba.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Christophe Leroy <chleroy@kernel.org>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Douglas Anderson <dianders@chromium.org>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-	stable@vger.kernel.org
-Subject: Re: [PATCH v3 4/4] panic: use sys_info_with_filter() to avoid
- duplicate backtraces
-Message-ID: <akevFNCaXnt0kRVC@pathway.suse.cz>
-References: <20260625152558.7450-1-include@grrlz.net>
- <20260625152558.7450-5-include@grrlz.net>
- <aj5TNB8cRtMNTtIT@pathway.suse.cz>
- <aj5tFiwhRqPkAkqU@pathway.suse.cz>
- <akJZxCTlLcwubqi2@U-2FWC9VHC-2323.local>
- <E482A23D-4E1C-42C0-9D07-83C6CDFD1546@grrlz.net>
- <akYq1YaCpZ0b4SBS@pathway.suse.cz>
- <EC1E5A79-524A-45C2-9FE8-964EB0E18D76@grrlz.net>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gsHVj0wSdz2xPb
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 04 Jul 2026 01:19:56 +1000 (AEST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=Rd5m6Emj+TW16fmXTB1pci+NBqwXYENjsKVlpGD9ECAMCq4EcFrxnPhVkkMIW4RcBBI34HG37RaG8Led8uF8M2iHrVrQhWK0ccbQVS97v/TAk8XweX7IU+Im+ztTSRWr01bT95TmQVED8847wafdlWo0alwby0VEPrXLaJBYqd1qna8fahsLtay9GBEHQkZelBLdDUBRqRCdp6q5++t3mjkLOshLuIMEObh3eWu3aCjsib4zYzDtSuX1s2ZI4MKmvbl6Sg6FprEiJjqnSItTfENlHySq7y4E2btiZUFnzKRv9ZmvnwdIJ2hTV8ICwEmJ/p5UdY1af2cxKeOf1lphMw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=PJsWbDxlK1lfEc9swedmNLuoU5uhFAQRmSm+tgJfwMs=;
+ b=MlVpoqHTH5ZYuGcvTo6vQxZA6Q+ZxE+n0kqcyo0CHUW8OzzzU3R+YG0Xk7iVG7BIY8GscI80LAzKFruvS7JRoWgLCMnnVSCfzPfhQeTaPtlEJn60ndflIMTsW/V/EmUZR2HLExQ/ew5kD1VFvDtf1hFVrbyh8+L9uh7jaFUOPGMYCPEeMZpBIjXcGjWwGAZjmbSjKHVD7RmG1sfNtW7KvaUQu8+8sdTbGYrtz++fAbn+xA3YfIFkluhIzjw8GmvIRLGcxKcCcA5sivFJ0tqfe5BEkgEUbXe84jqVgO73hHpXrCdlAvDAcNowP1n+1b/iWw7bPkEpQ2edrmJoRjCrew==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
+ dkim=pass header.d=nvidia.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=PJsWbDxlK1lfEc9swedmNLuoU5uhFAQRmSm+tgJfwMs=;
+ b=mnMlyBtKDLgxm2OMOM0mkmruD50fISkEz0+Rm+W8d9qTDm8k5EzC4Q3/8cx1JgWQOS8tPYLdVYIkTY19mOOH12wdO6H9G0SrjIYZE/9oDIZtJiWO1BfN5drpSK7RapWDqpnIAwIgo53cOphJ4MhLrRJv9Y5xq2GkaeWUIDPMrAf7Uv6B439nR/YQdSgOzevGmaTP/v/4/DxTYP9XtMsDyRyqHf+IEvLadGOW7bA/7ZiAPMhnMqJshOpYXFQBXVXCOxGhiHJ9UzunYdxaS+1ZvY7HagMXeCCs77ohgUMUuxtU0WMyOp9GuYgmcxgs0NxNoqKsXfRV4OaEnw5ikaO1Og==
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=nvidia.com;
+Received: from IA0PR12MB8374.namprd12.prod.outlook.com (2603:10b6:208:40e::7)
+ by PH7PR12MB5856.namprd12.prod.outlook.com (2603:10b6:510:1d7::19) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.181.8; Fri, 3 Jul 2026
+ 15:19:24 +0000
+Received: from IA0PR12MB8374.namprd12.prod.outlook.com
+ ([fe80::d85f:4c87:ae84:3f16]) by IA0PR12MB8374.namprd12.prod.outlook.com
+ ([fe80::d85f:4c87:ae84:3f16%5]) with mapi id 15.21.0181.009; Fri, 3 Jul 2026
+ 15:19:23 +0000
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=UTF-8
+Date: Fri, 03 Jul 2026 11:19:17 -0400
+Message-Id: <DJP1CGPF8ZW3.3BI3XRFCCYU6D@nvidia.com>
+From: "Zi Yan" <ziy@nvidia.com>
+Subject: Re: [PATCH 01/13] mm: introduce vma_flags_can_grow() and
+ vma_can_grow()
+Cc: "Thomas Bogendoerfer" <tsbogend@alpha.franken.de>, "Madhavan Srinivasan"
+ <maddy@linux.ibm.com>, "Michael Ellerman" <mpe@ellerman.id.au>, "Maarten
+ Lankhorst" <maarten.lankhorst@linux.intel.com>, "Maxime Ripard"
+ <mripard@kernel.org>, "Thomas Zimmermann" <tzimmermann@suse.de>, "David
+ Airlie" <airlied@gmail.com>, "Simona Vetter" <simona@ffwll.ch>, "Lucas
+ Stach" <l.stach@pengutronix.de>, "Inki Dae" <inki.dae@samsung.com>,
+ "Seung-Woo Kim" <sw0312.kim@samsung.com>, "Kyungmin Park"
+ <kyungmin.park@samsung.com>, "Krzysztof Kozlowski" <krzk@kernel.org>,
+ "Peter Griffin" <peter.griffin@linaro.org>, "Jani Nikula"
+ <jani.nikula@linux.intel.com>, "Joonas Lahtinen"
+ <joonas.lahtinen@linux.intel.com>, "Rodrigo Vivi" <rodrigo.vivi@intel.com>,
+ "Tvrtko Ursulin" <tursulin@ursulin.net>, "Rob Clark"
+ <robin.clark@oss.qualcomm.com>, "Dmitry Baryshkov" <lumag@kernel.org>,
+ "Lyude Paul" <lyude@redhat.com>, "Danilo Krummrich" <dakr@kernel.org>,
+ "Tomi Valkeinen" <tomi.valkeinen@ideasonboard.com>, "Sandy Huang"
+ <hjc@rock-chips.com>, =?utf-8?q?Heiko_St=C3=BCbner?= <heiko@sntech.de>,
+ "Andy Yan" <andy.yan@rock-chips.com>, "Thierry Reding"
+ <thierry.reding@kernel.org>, "Mikko Perttunen" <mperttunen@nvidia.com>,
+ "Jonathan Hunter" <jonathanh@nvidia.com>, "Gerd Hoffmann"
+ <kraxel@redhat.com>, "Dmitry Osipenko" <dmitry.osipenko@collabora.com>,
+ "Zack Rusin" <zack.rusin@broadcom.com>, "Matthew Brost"
+ <matthew.brost@intel.com>, "Thomas Hellstrom"
+ <thomas.hellstrom@linux.intel.com>, "Oleksandr Andrushchenko"
+ <oleksandr_andrushchenko@epam.com>, "Helge Deller" <deller@gmx.de>,
+ "Benjamin LaHaise" <bcrl@kvack.org>, "Alexander Viro"
+ <viro@zeniv.linux.org.uk>, "Christian Brauner" <brauner@kernel.org>,
+ "Muchun Song" <muchun.song@linux.dev>, "Oscar Salvador"
+ <osalvador@suse.de>, "David Hildenbrand" <david@kernel.org>, "Baolin Wang"
+ <baolin.wang@linux.alibaba.com>, "Liam R . Howlett" <liam@infradead.org>,
+ "Nico Pache" <npache@redhat.com>, "Ryan Roberts" <ryan.roberts@arm.com>,
+ "Dev Jain" <dev.jain@arm.com>, "Barry Song" <baohua@kernel.org>, "Lance
+ Yang" <lance.yang@linux.dev>, "Hugh Dickins" <hughd@google.com>, "Vlastimil
+ Babka" <vbabka@kernel.org>, "Mike Rapoport" <rppt@kernel.org>, "Suren
+ Baghdasaryan" <surenb@google.com>, "Michal Hocko" <mhocko@suse.com>, "Jann
+ Horn" <jannh@google.com>, "Pedro Falcato" <pfalcato@suse.de>, "Kees Cook"
+ <kees@kernel.org>, "Jaroslav Kysela" <perex@perex.cz>, "Takashi Iwai"
+ <tiwai@suse.com>, <linux-mips@vger.kernel.org>,
+ <linux-kernel@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
+ <dri-devel@lists.freedesktop.org>, <etnaviv@lists.freedesktop.org>,
+ <linux-arm-kernel@lists.infradead.org>,
+ <linux-samsung-soc@vger.kernel.org>, <intel-gfx@lists.freedesktop.org>,
+ <linux-arm-msm@vger.kernel.org>, <freedreno@lists.freedesktop.org>,
+ <nouveau@lists.freedesktop.org>, <linux-rockchip@lists.infradead.org>,
+ <linux-tegra@vger.kernel.org>, <virtualization@lists.linux.dev>,
+ <intel-xe@lists.freedesktop.org>, <xen-devel@lists.xenproject.org>,
+ <linux-fbdev@vger.kernel.org>, <linux-aio@kvack.org>,
+ <linux-fsdevel@vger.kernel.org>, <linux-mm@kvack.org>,
+ <linux-sound@vger.kernel.org>
+To: "Lorenzo Stoakes" <ljs@kernel.org>, "Andrew Morton"
+ <akpm@linux-foundation.org>
+X-Mailer: aerc 0.21.0
+References: <cover.1782760670.git.ljs@kernel.org>
+ <f2e8c32515d328db62279cc8bab8398ea278d74f.1782760670.git.ljs@kernel.org>
+In-Reply-To: <f2e8c32515d328db62279cc8bab8398ea278d74f.1782760670.git.ljs@kernel.org>
+X-ClientProxiedBy: DM6PR05CA0061.namprd05.prod.outlook.com
+ (2603:10b6:5:335::30) To IA0PR12MB8374.namprd12.prod.outlook.com
+ (2603:10b6:208:40e::7)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -106,139 +132,98 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <EC1E5A79-524A-45C2-9FE8-964EB0E18D76@grrlz.net>
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: IA0PR12MB8374:EE_|PH7PR12MB5856:EE_
+X-MS-Office365-Filtering-Correlation-Id: 51d166c3-9eb7-44b5-2305-08ded9167693
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|1800799024|366016|7416014|376014|23010399003|18002099003|22082099003|6133799003|4143699003|56012099006|11063799006;
+X-Microsoft-Antispam-Message-Info:
+	waK9HC66LHyvBqm/X6oa+SmhtU6o8X1iOE5NifCkoFkl5td3cp7RXlP+HRoyh/cPFfi70qQO5DQzjzA6/Tubl7xExcVdSWQd+1uWXGR2/gZnGhw4MqYnjDvjFzQBfBBDyvbTxCAthTYUGWdeifgcBwOPeuRIdFPiiFRrUf8cI8NyQLgNhYG1d9toWhc/iTV/sMRgjuC0gqZf7KKvfczTA/r5DoDHE8+8uw0r0waNlUYq+kVtsogTd4HMeap1Q/ZGs42D2YrV+r+5WQkQWUapt0DojyhDAdAmhm5LrxJpJK5EtINZouQbNgQHddP19XtOobJmcUt8jShLMIJocHpoBUnvaALynq3QYcf3VBJXViaATppkrRwmpHWnhW9MoQaFLp9BTE3SbavKLcA5+Anm6t+qECfj0oVTwXb2i5QOQvWEe074SxPlzNCClQ6OAFZGUJuEWuCn9futMXAribhavfRqlwDtPIMaz2obrS2xVTK5R2ZKOxYDiTNfSZL85RJTGnykaasKwCuBFvLX3U+DscbIUXiSF/qxXs4R/q6jP3tNiYzOl6jM/E8w+7V/mCisjndwxIaC2DrRoSjttxMZ6IXYMQZBdUWQ0gMF335ajCA/GS4nm1PUrfUwMqdVRVfSiqilkJEQMTsQvGZqvzNXMXkjxvHcG3sxuHOFhqZeEzI=
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:IA0PR12MB8374.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(366016)(7416014)(376014)(23010399003)(18002099003)(22082099003)(6133799003)(4143699003)(56012099006)(11063799006);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?utf-8?B?bGpZaHFMRFpUd2wzWXozWHFHZE9SK1B5ZHB0c01aVldkSTV4eWRWRWU5OWFS?=
+ =?utf-8?B?Ri9rM0MzSjdwMlZyTHFkalNyb2wvQ0ZsSTJUSnlyOThOQll3MEFTcDRHTzQz?=
+ =?utf-8?B?NEJIUzVUSkk1Sm96UXlNM0ZZNllxNC9EV2dTV3dwN3JhdWdDYWVZSGFYUWt6?=
+ =?utf-8?B?ZjVYb29udGpJTFQ1U2tmMzVBa3FwamoyU3c2Q3JyOW1RZW1RNUNaYjQ2U1Iv?=
+ =?utf-8?B?WjRNMHUxckZxcnArY2xtMWd0MXVlMWg1RjZzMGZTdjl1QjhqaEVNeXF1bDBJ?=
+ =?utf-8?B?aXd4eW83U2IxdzhCV1VWUU5YdXcwQWFINTM2ck84TTlQdkpsMXRDZEZBdEMv?=
+ =?utf-8?B?eVh1REs1THArbElVQi9RVzZuQW1wMjZoRjZJN0M4U0NpVW9sS0NQY0tXVjc4?=
+ =?utf-8?B?aXhQM2kwUGE5ZzVGUVlOdVp0ckM5MksrWEluNUhYeENtdzVaNmt6MGh0QjF6?=
+ =?utf-8?B?WWlVaTVRd0JUR0x1UUtMYklDeEhQRXJDbHNHaDN2Ly9PcHJtRGljelJvcUtV?=
+ =?utf-8?B?aGM4RU9YY2orSUMxLzBBMHkvNmVlRkwrVlZMNzRMR09kZ3BlenRyT1ZZN1c1?=
+ =?utf-8?B?SHNTY05SUWFoTDdLTy9ycGF1b1BWaWJSSjYzNTF5RFBvZVFwMEZqd3hEV255?=
+ =?utf-8?B?bVRhd3dlRWx3ZUczQzN1Uzk3NVM1ZUhMeEszcWZ5eXd6Z0RONU9qaWRwTjc0?=
+ =?utf-8?B?RzdrcEduZTZPS0I5UWc2U1ZlajNQVlc0cXJNV1pNTHI5bDZtQzBnRnhYSFRh?=
+ =?utf-8?B?SG9vMTNuRittdGxrZWNmaFZTZzNiamlpU2Riay8xRVlsL0lnUTVKQkgrOUdG?=
+ =?utf-8?B?SC9SQkRvdkd0L0x1VFR1TnBYSDFoYXNKVG1GcFVOQ1JLNnA3VDI4b2FRVU41?=
+ =?utf-8?B?UlVTVHB3YkRWVFhzeFZtc2YrQzZSVDlwRVYwSTFodlhNbm95MkQ5bjBhTCs4?=
+ =?utf-8?B?UGZKUjZKODhnTVI4SU1wRjgvZjZwM0t6Rjg2ZnBYcUQ2VSs3d3VUOUlyYklu?=
+ =?utf-8?B?Z3NkMUJUQzJpMFY2WmxWRkh1eEhhbDZFOERtdEh5NE5WUTYrbWxUQVQwNmky?=
+ =?utf-8?B?NlpTTUwwVWxtVHlJOTl3cjFtSDh0RjMwUlVIcThYU3FJZ0dlOHdTU3hraTl1?=
+ =?utf-8?B?TzdlMHlIaUVPT0d0L1c0SzhEWWlpUGdsbWV1UDFmWDNtYzZzYmZWVVhRV3VT?=
+ =?utf-8?B?a3M4Nkpscm5tZnhYVjhMVUtNRk9yQXg1K1QzOUFObURza091SlYveU0rM2VD?=
+ =?utf-8?B?cDNIYnhWZkZQNG8vWHVEQnFWcFRVTENRNkF2eUVBYzBjT2FLZm5HK1NjQTRK?=
+ =?utf-8?B?eW9HNkRwRXBZWllRRGgwODZqTmNXSWpBVVpPaUF4cm1LL05BTVlLcFJWclZQ?=
+ =?utf-8?B?eXZRM1dyMjRVbWM4aytMTDkxc2djWVVacFFMQWFzL0JrczlzR2J2ZXhBUjlm?=
+ =?utf-8?B?ODU3WFhwZmRWOFlKUDUwcnMrR3MrQWJhOGY4K0lmKy9qOU1rVUhlRUhtVnlk?=
+ =?utf-8?B?TWdvanpBN1ZJaEpZY3BCbmt2aDBWd0Q5QzVONm94Z0doVHVnVFRHRlhYR1I2?=
+ =?utf-8?B?SjRNVDgyZm9MYzNiRHhNMnEyL2NONDJtUkN0dVV0aGF0cUNsVmovM1Z4dUgv?=
+ =?utf-8?B?dHlyb0J4eVlJVXpkME16N0Jqci82UGdKQmkwNEFaVUc2aUJEZ2Q2NTd2QVo3?=
+ =?utf-8?B?b2x0SHBSeGkwVXNmQWsvYlZ0aVIyZlJVNW96R0xkZWpHd2EwZkRFVEg0SGdH?=
+ =?utf-8?B?VVM2MzArMWF2K3hsbmgySllIaFJmZlQzUVd4SmRhWGZ3Wmw5WTlKRXBCb0JQ?=
+ =?utf-8?B?cTVzT1l4UlpWNU42cHpnc2lnSk05QmZsekR6aDJKNDR3SWs0b0tLTjR0dVJR?=
+ =?utf-8?B?UlVJdmhIQTRlcFZ2M1VsVHcvWFVyZWFNMzlsSUFSdGVUV0xXREdaYjI5YXky?=
+ =?utf-8?B?VU5zV2tHL0VHdEYyREpSd3FFaUtzaUhDYnMzWFpnOGd1ckJqaS96dnBxbE5W?=
+ =?utf-8?B?ZGNSaDdEY2dsQnk2RVBYUzMyOU94UzY0QWRQd21hUHFDV25qUG9ObW0wUWQx?=
+ =?utf-8?B?RlM4Y2l3ZW1QQWhCcjhmaVdqMU5QRno3QktZbndYNUhWbENBZCtXbm54OXFo?=
+ =?utf-8?B?b2F6dk9XOTY0OG84ODZPWnB0L2RzbVpxdm9IM1JYZ2ZPYkRlZUx6NlZmb1lk?=
+ =?utf-8?B?MC91eVNkVm4rekk1UVlyQ1J1anQxRmxuZ2IxSlNVdHh4VlJjSmFyM1hxMnZt?=
+ =?utf-8?B?QlBTK1FpRk96U3JZUGcvSEZaR1pDMWs3QnRPVWlnZzV0U1lINjZzSE9pOENE?=
+ =?utf-8?Q?FLvWesTPpyJ9tzjTvw?=
+X-OriginatorOrg: Nvidia.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 51d166c3-9eb7-44b5-2305-08ded9167693
+X-MS-Exchange-CrossTenant-AuthSource: IA0PR12MB8374.namprd12.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 03 Jul 2026 15:19:23.7516
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: ve4DjdZRKH5W6DDGg77kv2BkqOMwB0CUDzxD06BnHw7k9x0Ex3i12jMTXkRZN8oc
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH7PR12MB5856
 
-On Thu 2026-07-02 19:13:26, Bradley Morgan wrote:
-> On July 2, 2026 10:09:41 AM GMT+01:00, Petr Mladek <pmladek@suse.com>
-> wrote:
-> >On Mon 2026-06-29 13:54:18, Bradley Morgan wrote:
-> >> On 29 June 2026 12:40:52 BST, Feng Tang <feng.tang@linux.alibaba.com>
-> >> wrote:
-> >> >On Fri, Jun 26, 2026 at 02:14:14PM +0200, Petr Mladek wrote:
-> >> >> On Fri 2026-06-26 12:23:50, Petr Mladek wrote:
-> >> >> > On Thu 2026-06-25 15:25:58, Bradley Morgan wrote:
-> >> >> In watchdog, panic, and hung task detection scenarios, sys_info() can
-> >> >> be called multiple times or alongside direct backtrace triggers like
-> >> >> trigger_allbutcpu_cpu_backtrace(). This results in identical
-> >backtraces
-> >> >> being dumped repeatedly from all CPUs, cluttering the kernel log and
-> >> >> delaying or obscuring critical debug details.
-> >> 
-> >> im feeling a new file to do all the force panic jazz, but putting tape
-> >> on sys_info.c isn't bd either.
-> >
-> >I wonder how to move forward with this.
-> >
-> >Honestly, I am not sure what exactly you mean by creating another
-> >API for tracking the reports so I could not judge it. Feel free
-> >to sent some POC.
-> 
-> sup petr, here's my poc
-> 
-> This should make my entire thing make sense
-> 
-> >From eb587ed749ff5993c517f29799b369185c5ee7d8 Mon Sep 17 00:00:00 2001
-> From: Bradley Morgan <include@grrlz.net>
-> Date: Thu, 2 Jul 2026 18:09:23 +0000
-> Subject: [POC] sys_info: Introduce incident state-tracking to prevent
->  duplicate diagnostics
-> 
-> In watchdog, panic, and hung task detection scenarios, sys_info()
-> can be called multiple times or alongside direct debug output
-> functions (like trigger_allbutcpu_cpu_backtrace(), print_modules(),
-> print_irqtrace_events(), and dump_stack()). This leads to identical
-> diagnostics and stack traces being dumped repeatedly, cluttering the
-> kernel log and delaying critical panics.
-> 
-> Introduce a state tracking bitmask and helpers in a new file,
-> lib/sys_info_filter.c:
+On Mon Jun 29, 2026 at 3:25 PM EDT, Lorenzo Stoakes wrote:
+> These test whether the VMA has stack sematics, i.e. is able to grow upwar=
+ds
+> or downwards depending on the architecture.
+>
+> In order to account for arches which do not support upward-growing stacks=
+,
+> introduce VMA_GROWSUP whose definition depends on the architecture
+> supporting it, and use vma_flags_test_single_mask() in vma_flags_can_grow=
+()
+> to account for this.
+>
+> Update the VMA userland tests to reflect the changes
+>
+> No functional change intended.
+>
+> Signed-off-by: Lorenzo Stoakes <ljs@kernel.org>
+> ---
+>  include/linux/mm.h              | 21 ++++++++++++++++++---
+>  tools/testing/vma/include/dup.h |  4 ++++
+>  2 files changed, 22 insertions(+), 3 deletions(-)
+>
 
-New file suggests that it would implement an API using
-sys_info_filter() prefix.
+Reviewed-by: Zi Yan <ziy@nvidia.com>
 
-> - sys_info_filter_and_set(mask): Atomically tests which bits in a mask
->   have not yet been printed during the current incident, marks them as
->   printed, and returns that subset.
 
-The name of the funtion is a kind of puzzle. I think that we
-could do a better job.
-
-> - sys_info_reset(): Clears the printed mask state.
-
-This function has sys_info* prefix. It would expect it in sys_info.c
-
-> Add SYS_INFO_MODULES, SYS_INFO_IRQTRACE, and SYS_INFO_STACK flags to
-> include/linux/sys_info.h, and handle them inside sys_info's diagnostic
-> dispatch.
-
-I though about adding an information that we printed backtrace for this
-CPU as well. But it not trivial. Different API shows different extra
-info, like modules, IRQ backtrace, registers, code. I would leave
-this complexity aside for now.
-
-> Update the watchdogs, hung task detector, and panic core to call
-> sys_info_filter_and_set() to deduplicate their diagnostic printouts, and
-> sys_info_reset() when a warning incident concludes (e.g., when a stuck
-> CPU recovers, or a new hung task check round begins).
-> 
-> This ensures each piece of system diagnostic is printed at most once per
-> lockup/panic event, preventing console log spam.
-> 
-> Assisted-by: Gemini:gemini-3.5-flash
-> Signed-off-by: Bradley Morgan <include@grrlz.net>
-
-> --- /dev/null
-> +++ b/lib/sys_info_filter.c
-> @@ -0,0 +1,120 @@
-> +static unsigned long sys_info_printed;
-> +
-> +unsigned long sys_info_filter_and_set(unsigned long si_mask)
-> +{
-> +	unsigned long old, new;
-> +
-> +	if (!si_mask)
-> +		return 0;
-> +
-> +	do {
-> +		old = READ_ONCE(sys_info_printed);
-> +		if (!(si_mask & ~old))
-> +			return 0;
-> +		new = old | si_mask;
-> +	} while (cmpxchg(&sys_info_printed, old, new) != old);
-
-It is a good question whether to update the info using atomic
-operations. One problem is that the mask is "unsigned long".
-I am not sure if it natively atomic on all architectures.
-32-bit architecures use extra locking when implementing
-atomic operations with 64-bit values. And we should rather
-avoid any locking in this code.
-
-Well, long seems to be 32-bit on 32-bit x86 so it might be
-safe after all.
-
-> +void sys_info_reset(void)
-> +static void __sys_info(unsigned long si_mask)
-> +void sys_info(unsigned long si_mask)
-
-I wonder why this sys_info*() API implementation has been moved
-from sys_info.c to sys_info_filter.c.
-
-I am sorry but I do not see any advantage in adding the new file
-sys_info_filter.c
-
-> NOTE!!: This is AI generated!! This **MAY** not be the finished product,
-> this is ONLY the model!
-
-IMHO, Gemini did pretty bad job in this case. Please, try to review
-the AI generated before you send it. And send it only when you think
-that it is reasonable enough. :-)
-
-It is even fine to send "crap" but you should start the mail
-with a warning that you send it just give us an idea what you
-had it mind. And you should explain why you actually do not like.
-
+--=20
 Best Regards,
-Petr
+Yan, Zi
+
 
