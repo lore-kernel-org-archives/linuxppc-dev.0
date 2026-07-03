@@ -1,102 +1,83 @@
-Return-Path: <linuxppc-dev+bounces-23478-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23479-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C9960C43458
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Jul 2026 10:16:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9CEFBC43458
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Jul 2026 10:27:33 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gs8mW2gNMz2xPb;
-	Fri, 03 Jul 2026 20:16:27 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c005::5" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783073787;
-	cv=pass; b=jbrtidP8TBPMQ7gosbEs4ukjCop5FY+tn7RAcI7ynETChrvjUZ/Bn4u0nJuyWpJLMSw1k3ZtmTw1jHrEoAxKELjbcxqeSLAZyuNdr9ZQJWVbV10J/M8NHJOmsnpLGjEcYBtjPtX2mbwzDHPJaxlRj3qagZYY8u//y+4qcucLFU7OslRUZoz/h9A5cJEPE4QitDCyyV6pKdeDTjzS/P862mwADrIljkyHEc34jxD4BbkXszCg7RpuPiaLJ1Uzwx29eE2ZeaPWCtjEKwq+8tBmjRFG3cIWS3LBomuF+R0TINqYEwQkE3LXC0dX0zBikAXH4Y32G/hprGUfVk+m/rJY/g==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1783073787; c=relaxed/relaxed;
-	bh=IBVMhNGGtTnLBZyGOG8H8b9TrV4fbJMm6cRAgaU9WDY=;
-	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
-	 Content-Type:MIME-Version; b=mrUfAZipjc5lEXiah7yk59PNfC7dLvZtzs/LDl5wK7RNtYTkM7PsFrCCOUpQE6qZoiW93CUZgiEWgl8QMf+D4Nfe9DswN0ipkfupBFIa7H/qWvxAUxgey2GRHOaT4G3qC5oty9OeoHYshXfYmLVT90JDzDHRwRTJMFc1QDXLuDRMUt1wo/I2E6UWYFHaKJd6MgI8dc58mdwTegfRC2LRDsowN3LO8NcVRtPPQ5OT5ZoheeJ6zcxBFpz3a6Wg5G0DPLO7NsluErlcq2Ca7YV6i3jzgf8sXCx1wFIrGDwoUsastOQ2uTGG2PIHmrHG6YBl1La99r0VT1TLF5xODgh3Ag==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; dkim=pass (1024-bit key; unprotected) header.d=amd.com header.i=@amd.com header.a=rsa-sha256 header.s=selector1 header.b=UEycZv4Q; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c005::5; helo=co1pr03cu002.outbound.protection.outlook.com; envelope-from=alexey.kardashevskiy@amd.com; receiver=lists.ozlabs.org) smtp.mailfrom=amd.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=amd.com header.i=@amd.com header.a=rsa-sha256 header.s=selector1 header.b=UEycZv4Q;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=amd.com (client-ip=2a01:111:f403:c005::5; helo=co1pr03cu002.outbound.protection.outlook.com; envelope-from=alexey.kardashevskiy@amd.com; receiver=lists.ozlabs.org)
-Received: from CO1PR03CU002.outbound.protection.outlook.com (mail-westus2azlp170100005.outbound.protection.outlook.com [IPv6:2a01:111:f403:c005::5])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gs91J1TFtz2xPb;
+	Fri, 03 Jul 2026 20:27:32 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=195.135.223.130
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783074452;
+	cv=none; b=M5C/sgocbLeff7BV8cirgeIHaMxHsyH3FrjcnSM/lUHcOa6YcJ4GppH30ErKvQW7hpf8eLDHZ8J3KihoPQ2kZnW74NbF27fzwh4+FBcyaZUStbkYOMuefnuubHd9fyUU9OWKC8zT5Fq7k51t5xZ900emaNUgXiu647eXQa3Lp50eMfUJRiyKVDucxoSOJJFYDWA/q+b59JFDPzWHvzVIvPCCqhsUzOc6tgny3+r3qArMYrscdBSMrZNlQbBpOoOXyf04Al2WNtEbkjPwBa4Gn3jK1y6L9jxVJhgtjJLFZlP2sdbttynYf61kP7/GHJqUwd/k5x3TPX9I94fW4y/bnQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1783074452; c=relaxed/relaxed;
+	bh=vzAgs/BEsj7FHZopxvIm9zgUiYjF8OFUBMNpzRJZrjM=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=TTSJaPTgqOTd+WCJR08oj6fEY6ZaESi04OM9ZHMLHZDJczjlSFxxBK74WYuSy4o/rLybJZyAEGjigqg717zSzi9q3s5KMW//oo7vWNnnRYY7Q27EPxzULb4pJXD8fO+8mHtxfnqP4rhJEA2+YrIQYXjUdDOR+KVxjNjO6+ZZX4u03k8snBWwQHfEsxgskVtS5cAz7ctBvv1BKhKJI8LP25xjdFhOJcQSgwisK3LX2wb3CgwuR3sMxctgWIs6BFwfxicBXvKV+aHfkEidrZnqIGxs5mS1EFGkKg9n33Zxzx/BcYAx5eL/4JRV5zd9MfnO4Lye+2RcHNAxqC1y4LuoAg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass (client-ip=195.135.223.130; helo=smtp-out1.suse.de; envelope-from=msuchanek@suse.de; receiver=lists.ozlabs.org) smtp.mailfrom=suse.de
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=195.135.223.130; helo=smtp-out1.suse.de; envelope-from=msuchanek@suse.de; receiver=lists.ozlabs.org)
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gs8mT2Jf6z2xLq
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 Jul 2026 20:16:24 +1000 (AEST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=oggyBYgpf0LgGqj0VM2/ibVSCa+uoObFCptdBTOseoiJeAMRMZfoUKiwC7dqeeGcxR/jspzQDbhQ5I8nDhHOyEkUE98RyMDS2nHYgA1hbOyAFuBdruJp8sWGA2HRT5vO+6Gsie5vYWmJ0aFwfv6cPCUE+1gm/UY58F4H50MIAi53AQe1GSLXZJyBDwFIdJUix5kXTM61LPiTB7SAX/rjwTPN5LIfKAoBUfJo3NN0CeBzz5g0yb8O7EIfeLJOvWhBwsUlKAzy7xrY74Dgfse8UtGPjKu7uVydNPIL61ZE9T4ktdM44WkJ2jIibeNt+A7KLn3iRrXnWoRz5OYjY5QRTQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=IBVMhNGGtTnLBZyGOG8H8b9TrV4fbJMm6cRAgaU9WDY=;
- b=ugGsr0SZn2ldjEOdCO0TvxfZ5lb5hnioRK/+bPZOjHfTVeYAW22wTtgW04D5BtQJG8bcxr6+eBRGjbxu5TJeqShdZDPk3akMi5wloywy8n0eqHIl8JdwJY5Id6a8l4zKJMJUKql3PhEKqSmHktGnodP/Of6wLP/rsPtgrPQF81nD7PZMnSYi+mTppHAesqel4oj1YE63vAaHMQa1ywhKDyw61HRpaLPsmGQjYGw67ArOpDeguq5AfK6f68ju4zJxl9HJBTKsmrOrffLVhfhGWOpHaEu3A/F7W2PbFK8msKDyN8RpKrNBT2yNT6T7mUjRwLO7fT+jauLf72jf4qGIkA==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=amd.com; dmarc=pass action=none header.from=amd.com; dkim=pass
- header.d=amd.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=IBVMhNGGtTnLBZyGOG8H8b9TrV4fbJMm6cRAgaU9WDY=;
- b=UEycZv4Qi1wa4Se+BkowHJj6ptewku3pXsIaNs4z4Eb87IcWXvuPl3w3uMRxxxIjUb+o5jGw7VO8QqYvDs9WMSXOBoDQu9gxmZ4S2eG/UvN0amU9EXpmu+cjPHJfKZs4rBaGmwxcAR8uXY2ouSorTzKWDIJsqcY3V8IOhQwO+Z0=
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=amd.com;
-Received: from SA1PR12MB999228.namprd12.prod.outlook.com
- (2603:10b6:806:4db::10) by DS7PR12MB6309.namprd12.prod.outlook.com
- (2603:10b6:8:96::19) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.181.10; Fri, 3 Jul
- 2026 10:15:59 +0000
-Received: from SA1PR12MB999228.namprd12.prod.outlook.com
- ([fe80::4dba:119e:8e7c:37b3]) by SA1PR12MB999228.namprd12.prod.outlook.com
- ([fe80::4dba:119e:8e7c:37b3%4]) with mapi id 15.21.0181.009; Fri, 3 Jul 2026
- 10:15:59 +0000
-Message-ID: <58bb92a9-c5ea-47a3-b19a-934573f15305@amd.com>
-Date: Fri, 3 Jul 2026 20:15:49 +1000
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v6 03/20] dma-direct: use DMA_ATTR_CC_SHARED in alloc/free
- paths
-To: Jason Gunthorpe <jgg@ziepe.ca>
-Cc: "Aneesh Kumar K.V (Arm)" <aneesh.kumar@kernel.org>,
- iommu@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
- linux-kernel@vger.kernel.org, linux-coco@lists.linux.dev,
- Robin Murphy <robin.murphy@arm.com>,
- Marek Szyprowski <m.szyprowski@samsung.com>, Will Deacon <will@kernel.org>,
- Marc Zyngier <maz@kernel.org>, Steven Price <steven.price@arm.com>,
- Suzuki K Poulose <Suzuki.Poulose@arm.com>,
- Catalin Marinas <catalin.marinas@arm.com>, Jiri Pirko <jiri@resnulli.us>,
- Mostafa Saleh <smostafa@google.com>, Petr Tesarik <ptesarik@suse.com>,
- Dan Williams <dan.j.williams@intel.com>, Xu Yilun
- <yilun.xu@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org, Madhavan Srinivasan <maddy@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
- "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
- Alexander Gordeev <agordeev@linux.ibm.com>,
- Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
- Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>,
- Christian Borntraeger <borntraeger@linux.ibm.com>,
- Sven Schnelle <svens@linux.ibm.com>, x86@kernel.org,
- Jiri Pirko <jiri@nvidia.com>, Michael Kelley <mhklinux@outlook.com>,
- "Cheloha, Scott" <Scott.Cheloha@amd.com>
-References: <20260604083959.1265923-1-aneesh.kumar@kernel.org>
- <20260604083959.1265923-4-aneesh.kumar@kernel.org>
- <845d0c8a-6d51-47aa-8e0b-8381e733444a@amd.com>
- <20260617154101.GE3577091@ziepe.ca>
- <25155bd6-4348-4aa8-ba70-0a882fc84db9@amd.com>
- <20260630160242.GI7525@ziepe.ca>
- <98800d21-18f6-44d6-9ba0-da9b77567d85@amd.com>
- <20260702144729.GP7525@ziepe.ca>
-Content-Language: en-US
-From: Alexey Kardashevskiy <aik@amd.com>
-In-Reply-To: <20260702144729.GP7525@ziepe.ca>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-ClientProxiedBy: SY5P282CA0165.AUSP282.PROD.OUTLOOK.COM
- (2603:10c6:10:24a::15) To SA1PR12MB999228.namprd12.prod.outlook.com
- (2603:10b6:806:4db::10)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gs91H2Tgkz2xLq
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 Jul 2026 20:27:31 +1000 (AEST)
+Received: from kunlun.suse.cz (unknown [IPv6:2a07:de40:b306:2000::2])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out1.suse.de (Postfix) with ESMTPS id 8F70A74890;
+	Fri,  3 Jul 2026 10:27:27 +0000 (UTC)
+Authentication-Results: smtp-out1.suse.de;
+	none
+Date: Fri, 3 Jul 2026 12:27:26 +0200
+From: Michal =?iso-8859-1?Q?Such=E1nek?= <msuchanek@suse.de>
+To: Mark Rutland <mark.rutland@arm.com>
+Cc: Thomas Gleixner <tglx@kernel.org>, Jinjie Ruan <ruanjinjie@huawei.com>,
+	oleg@redhat.com, richard.henderson@linaro.org, mattst88@gmail.com,
+	linmag7@gmail.com, linux@armlinux.org.uk, catalin.marinas@arm.com,
+	will@kernel.org, kees@kernel.org, guoren@kernel.org,
+	chenhuacai@kernel.org, kernel@xen0n.name, geert@linux-m68k.org,
+	tsbogend@alpha.franken.de, James.Bottomley@hansenpartnership.com,
+	deller@gmx.de, maddy@linux.ibm.com, mpe@ellerman.id.au,
+	npiggin@gmail.com, chleroy@kernel.org, pjw@kernel.org,
+	palmer@dabbelt.com, aou@eecs.berkeley.edu, alex@ghiti.fr,
+	hca@linux.ibm.com, gor@linux.ibm.com, agordeev@linux.ibm.com,
+	borntraeger@linux.ibm.com, svens@linux.ibm.com,
+	ysato@users.sourceforge.jp, dalias@libc.org,
+	glaubitz@physik.fu-berlin.de, richard@nod.at,
+	anton.ivanov@cambridgegreys.com, johannes@sipsolutions.net,
+	luto@kernel.org, mingo@redhat.com, bp@alien8.de,
+	dave.hansen@linux.intel.com, hpa@zytor.com, chris@zankel.net,
+	jcmvbkbc@gmail.com, peterz@infradead.org, wad@chromium.org,
+	thuth@redhat.com, ada.coupriediaz@arm.com, kevin.brodsky@arm.com,
+	linusw@kernel.org, yeoreum.yun@arm.com, song@kernel.org,
+	james.morse@arm.com, anshuman.khandual@arm.com, broonie@kernel.org,
+	liqiang01@kylinos.cn, pengcan@kylinos.cn, ryan.roberts@arm.com,
+	yangtiezhu@loongson.cn, sshegde@linux.ibm.com,
+	mchauras@linux.ibm.com, austin.kim@lge.com, jchrist@linux.ibm.com,
+	arnd@arndb.de, thomas.weissschuh@linutronix.de,
+	sohil.mehta@intel.com, andrew.cooper3@citrix.com, jgross@suse.com,
+	kas@kernel.org, x86@kernel.org, linux-alpha@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+	linux-mm@kvack.org, linux-csky@vger.kernel.org,
+	loongarch@lists.linux.dev, linux-m68k@lists.linux-m68k.org,
+	linux-mips@vger.kernel.org, linux-parisc@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org,
+	linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
+	linux-um@lists.infradead.org
+Subject: Re: [PATCH v16 01/18] seccomp: Convert __secure_computing() to
+ return boolean
+Message-ID: <akeOjqMy7HVgRRCr@kunlun.suse.cz>
+References: <20260629130616.642022-1-ruanjinjie@huawei.com>
+ <20260629130616.642022-2-ruanjinjie@huawei.com>
+ <akdp6GAu77-ipsXA@kunlun.suse.cz>
+ <87cxx4mmim.ffs@fw13>
+ <akeIK5TRCjlKbzbp@J2N7QTR9R3>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -110,105 +91,67 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: SA1PR12MB999228:EE_|DS7PR12MB6309:EE_
-X-MS-Office365-Filtering-Correlation-Id: dd4c620f-8fca-436c-552c-08ded8ec1430
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|23010399003|7416014|376014|1800799024|366016|56012099006|4143699003|6133799003|11063799006|18002099003|22082099003;
-X-Microsoft-Antispam-Message-Info:
-	y7r87hAgRGbWF+BoU5Rwk0nsXIRRgL0NNBybQpriNyOJ7AAP9Ybdglt/ag7GOb+C9GMpdoamzlHl9c69WvqoZ+LiQp0JWEExkYpjbLhOLrlLcNtQcFjdHo7a46UVRf6SmXTazLu7MJO4ZEGQI1aZvnTvo75nnahaVySuyddGFoYcby5T5xO6q111AASYmmsItHw8ayvMD8b4D2OBjRJyoCzn6EfPJMzwt0clN8xe8+DTyDClC6C8xhgKZL4An33KCZzGyxQUpDA+xN9rz4LQiYgCCYwowBVXUELtv7HzYaSN38LHMKIE8/r+CauXRRavlgkMdonBz6rrIZN5eCYraO3etvR62ouND6Dfy8Rqq6MF8dzSHts0jxe31MpcQAwY+6cAqQxRX/NV54kd6tGO57ene15SDpXILOxS2xpAc+uWMOMqWfLxxt4Ot8WhPyCGHII+stH6fRSaI6QNk3wSnGJ4G5eAfPZLtQavqlMC3EDKCm3gRsm/JkR5jcooBQSSf22qk8X3tbJMVCG0yqDREnUIOAeH1vmKVSjet/igkwNipxfU6ryMpSNUmjRZ6GMF2tJoKSxoYbnJC0OE8IZx+iIIEpC3g67Bv4nrUhUPJLte4Ri7yj3Iio55PgT35GUqMyq4j+3XA/yZ3z2HjtSi9kI8t9RLiHYl7rMi7OEAAus=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:SA1PR12MB999228.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(23010399003)(7416014)(376014)(1800799024)(366016)(56012099006)(4143699003)(6133799003)(11063799006)(18002099003)(22082099003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?utf-8?B?SEE5L0FtUDE0bEIzVVAyOHVFck1YWEJKYkgrTlNyUko4UHM2UlZ6UkM5dmZo?=
- =?utf-8?B?SnpWT0hjMHVzUTlrMjVLT2V3VTZoM1NzTHNsc0djeGdDa2xvMjBSY1Npa1Va?=
- =?utf-8?B?RVFhd0MycStGcjM3QkMxUjdORlA2TGpaZElwbEhiTExBcFI3YS8zeWZzM0ZB?=
- =?utf-8?B?TmNIenJOTDhyN2pOL2RHZlFUcFJ6OFR3blBPUlJQMS9IWXZkRlpRK2JiQUNY?=
- =?utf-8?B?RGp6aTdQa1RVNzByR0VOODdwbVppb1g4eEZtRHhxcHo3ZS9pVEN5V3J0UXdZ?=
- =?utf-8?B?ME1mMFR2SC81a2pvV2IrZ0JKRmI2Rm4xZzY3YkJRNkU5cS9ZTWs4dWVMWExj?=
- =?utf-8?B?ZGQ2WVg0VzFuL0FsMTVNT0ZpRjU0K0VBTHB5K0xwSWdtRzJRTmtSQlJYL1JN?=
- =?utf-8?B?WGhzK2wrU1M1TUFVaDVlNmN4d1NpaWp1QjhHV2g1QXpZTDl5Ujh5a2pHakk5?=
- =?utf-8?B?WnBTUTVUU1IyM0hjdVJFL3RQWWV6UHArZndqZnVlV3NUTmhZOVE4cVNMa3Vv?=
- =?utf-8?B?Um50UVNiYWZJM0lRaUxmUlE1bWhyUU0xM1FzblVqQ0RPdHJ2U2QzWGx0SEdw?=
- =?utf-8?B?eElXblJkQjlmdGNWVFBaU01vVFJBUnFVRW5DcEtBK0tkR0EwcXJFSVRHR3pw?=
- =?utf-8?B?OFcxN3VOSk85Sk0vQVMwcjlFQ2NWcnBSd0F1Lys2dEFiWjJ3T1VxeDZzOUh5?=
- =?utf-8?B?UjhGVjdscHBoVnN4czBKNTdxTUErMnFtM25JL1ZQY3p1M2VWS2NNeDVNTXRn?=
- =?utf-8?B?SURNK0xKUCtrWGZiREt3R09pS3VUZkVvcm1SejFPWjBCVGVmcDdUWExlNnI4?=
- =?utf-8?B?b2ZLSjhVQjNyZUNSNTNFUEVoQmNpOGtCclBrSmVmZkhYUW1JdTUzV0NJTVRo?=
- =?utf-8?B?ZXE3cFRvNzNVd1NxNzNPN3psUFhXUy8zbktsMFJDTXNPV0l6UjVTckdMakla?=
- =?utf-8?B?bVpKSkNHTjgvbVE3YmxRTEJaZURlTVJGOXF5MU1rMFRhcVo1TS9tZ2pTUWdK?=
- =?utf-8?B?eXFpckhNdUpNTkJMdzZnT3Q4dE1MYVU5b3hCczJpUUNpUnVQR0dJRHJ6M1pQ?=
- =?utf-8?B?Ukxid3J4eTBNc2hGb1RqY0RNeTBqejUyVC9VZzg0LzNzL1M0ZlZITVd2aVZ0?=
- =?utf-8?B?akZWQVRtRVZXVnRydFZLM2RzSU9KaTZoVzBXR3Q5NEJDZjUxbVB0NUpUTlg3?=
- =?utf-8?B?Uyt1VXpteVpKekhwdnJxdUUwcEpqVUlieWdvMDM0QVVQQ0xjOTB2OUVDZHZO?=
- =?utf-8?B?UWM2TEdQSi93bFB0NmhGa3RDVUpwcGNoS3BRdE5ZaHpOZ3E5NExKVkRHNy9n?=
- =?utf-8?B?VWgrNDVHOHBnaDlaeEI1QVowbC9IY2RMcW9LbHdOc1libWN3QTB4VkFpK3Zv?=
- =?utf-8?B?dWFIQ1ZoVDJ3NHg0N1Z3WDZvK29lRFEyQlFtb0U5MDRZd2FXVklCQ2grWWNn?=
- =?utf-8?B?WVRwR3JMTERla05lcStLK3RQWW56QzBWTVZ1RGRFd3ZCSVJKOHNtOG0xSThz?=
- =?utf-8?B?b1A3YkMwUWVWdlE3Wk9MZGJmTUdzU3RWclhuY25nZnhzK0haWkRQYkZUK0RS?=
- =?utf-8?B?TVJ0OWh2UUpEQUtuaXJBTTRFREorSjJET2RLVnVqTUJ4RUFkL1hUYUc2WVZl?=
- =?utf-8?B?Z0ZLVkFlM2pMMXQ0VXNMcGZuVWRTQmliakNhZWt6Rjg1Q2J4K3lnSEZiMmdX?=
- =?utf-8?B?clhYWnFPaGNQQ0tBZXF2TEdEb1RFbmNwMXdBckJlQXpMZEFlRnErSGZncDdn?=
- =?utf-8?B?a3Z5QTZoT2hrVUtHNUlHL25rRUdoTWY0dUptTlNDWUNZNFlGTzc0ajM2WHFr?=
- =?utf-8?B?OTA4dUNyQklLQjRzaVNRenpVVFc1YWdtWVE5dWw2cmU5Z01oMDZvZHZobUtv?=
- =?utf-8?B?ZEtkcUdqMG9HVUxWa1h4YVZIdi9EbGtCSHB6L2lDQjlieXlUYjBuanRSS0tp?=
- =?utf-8?B?OFRwSjBRODdBYXZBZnBDaFJySFdtcDR2ZW9VckJjSFZFN3VBOUFRR3JlVzl0?=
- =?utf-8?B?U0JDN0pIRHNyVXdud2tPUCtpOEFacldSaUVTTWcvUG94YnRnTWRyTE52eFZ4?=
- =?utf-8?B?RGI1d1d6NDFaVmRaRUIyazJ1bmR4bCtJbTlrQU5UZ2ZlSEkxeWFRRnVGVito?=
- =?utf-8?B?U1V1ZDcvSkpmS3gyQ1RCdVRqZ0hVWk8vTWxFYVpXL2RpakNLaHg0RVNBUnB5?=
- =?utf-8?B?NTZxK2JLVEFJemIyYk54ZURETVZNcENRM2RBU3V3UW82Wis3YU9leGp4NzlR?=
- =?utf-8?B?eWFhTDljcEdRbzJhYWtDSSt6U21LT201QTRMelR6b2gvcmx6VDNDTTVGdklP?=
- =?utf-8?B?WWVneXg1T1QwNWR3MkhIeGg5emF5cmNxTWNTYllkaEU3TkltQm5yUT09?=
-X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: dd4c620f-8fca-436c-552c-08ded8ec1430
-X-MS-Exchange-CrossTenant-AuthSource: SA1PR12MB999228.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 03 Jul 2026 10:15:59.6633
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: AzwBfwuFS/Shf2EaUGk5hugTlMbxb3ika7JIX0/7voBlCugtw1Eznw2wOM6zcYJr08Aqu9NLsK+c6+mYScreFg==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: DS7PR12MB6309
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <akeIK5TRCjlKbzbp@J2N7QTR9R3>
+X-Rspamd-Pre-Result: action=no action;
+	module=replies;
+	Message is reply to one we originated
+X-Rspamd-Queue-Id: 8F70A74890
+X-Rspamd-Action: no action
+X-Rspamd-Server: rspamd1.dmz-prg2.suse.org
+X-Rspamd-Pre-Result: action=no action;
+	module=replies;
+	Message is reply to one we originated
+X-Spamd-Result: default: False [-2.00 / 50.00];
+	REPLY(-4.00)[];
+	RDNS_NONE(2.00)[];
+	R_RATELIMIT(0.00)[to_ip_from(RL1f5ktcu9q8c5toc5bju644qd)]
 
-
-
-On 3/7/26 00:47, Jason Gunthorpe wrote:
-> On Thu, Jul 02, 2026 at 10:25:16AM +1000, Alexey Kardashevskiy wrote:
+On Fri, Jul 03, 2026 at 11:00:11AM +0100, Mark Rutland wrote:
+> On Fri, Jul 03, 2026 at 11:48:49AM +0200, Thomas Gleixner wrote:
+> > On Fri, Jul 03 2026 at 09:51, Michal Suchánek wrote:
+> > > On Mon, Jun 29, 2026 at 09:05:59PM +0800, Jinjie Ruan wrote:
+> > >> -	if (secure_computing())
+> > >> +	if (!secure_computing())
+> > >>  		return -1;
+> > >
+> > > Hello,
+> > >
+> > > I am not fond of this logic inversion. The boolean is meaningless in
+> > > itself.
+> > >
+> > > Previously -1 was used to indicate that the syscall was filtered but you
+> > > chose to invert the logic choosing true to mean syscall was not filtered.
+> > >
+> > > You could choose true to mean that syscall was fitered avoiding this
+> > > inversion.
+> > 
+> > That's just wrong. Boolean logic makes more sense with having
+> > (!condition()). Just because the old 0/-1 nonsense had it the other way
+> > round does not mean it has to stay that way.
 > 
->>>> not externally available so I'll have to trick the DMA layer into
->>>> using SWIOTLB (which is still all shared, right?) as I specifically
->>>> want to skip page conversions. Setting low DMA mask won't guarantee
->>>> that the DMA layer won't allocate a page outside of SWIOTLB and
->>>> convert it. Manually do
->>>
->>> Why so particular?
->>
->> aahhh I missed "pre-". I need a way to get pre-shared pages for my
->> sev-guest activities.
+> 100% agreed!
 > 
-> It sounds to me like you don't, what you are worried about is
-> optimizing the dma_alloc_coherent flow to avoid fragmentation and all
-> CC architetures require this optimization.
-
-It is not about fragmentation, it is about unwanted page state changes when few pages are shared for a very short time.
-
-When I needed these pages, I could: get a private page, convert, (possibly trigger RMP and IO PDE smashing if that 4K is backed with 2M), do the VM<->HV communication, convert back to private (and possibly unsmash the page).
-
-Or ask swiotlb for these already shared pages, and skip all of the above.
-
-How would defragmentation help here? It is two or zero conversions.
-
-> So I'm strongly against you trying to open code something in your
-> driver. Use the DMA API as-is. Propose general DMA API improvements to
-> reduce the fragmentation problem. It is a real problem.
+> Bikeshedding below; sorry.
 > 
-> Jason
+> I think the bigger problem is just that secure_computing() is a terrible
+> name that does not express the intended semantic -- it's not clear
+> whether "secure computing" means "seccomp permit the syscall" or
+> "seccomp is enabled and some special rules now apply" or something else
+> entirely.
+> 
+> If we're changing the return type, it might be worth renaming the
+> function something like:
+> 
+> 	seccomp_permits_syscall()
 
--- 
-Alexey
+Then not only it is clear which way the boolean value should be
+interpreted, it also pervents the accidental inversion of existing
+calls. Overall great.
 
+Thanks
+
+Michal
 
