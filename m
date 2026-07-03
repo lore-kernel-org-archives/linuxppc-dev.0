@@ -1,125 +1,79 @@
-Return-Path: <linuxppc-dev+bounces-23464-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23465-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CABCBC43458
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Jul 2026 07:54:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 47F7EC43458
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Jul 2026 08:01:51 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gs5c92wtWz2yDs;
-	Fri, 03 Jul 2026 17:54:01 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=195.135.223.131
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783065241;
-	cv=none; b=Yg4mnIEH43/gsRCHB+aV2tUJCRR7cCBUFtLB+81jaMksjBenFwtdHz3+l9Flq8LaqMnZxaop8s0KwrfoRSYALEW3QM3E8PLMncCbAbU8hC0aN8f1Lzu6VtWH73Cfab3jLml6wzvk2Fv5EP1Us9IhZaGnPQe1xdUtH1GW1T7y2fMDP9YIZpkBNDMUCgNzuN2QQJEI61lL5+WW7ngTNLminB2Txaea1EtnRYDF+nHU++VAxrw4nMGR/Rkvr2OUnMfS4lHuFKRKKN5CQMwFzGKkDiZOvtGcOJVec9U5Yf8cnSu3BJNsuP4wWvQMtDRcixlcmtMQrb1+DzagmW2g20yS9Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gs5n95WV3z2xdb;
+	Fri, 03 Jul 2026 18:01:49 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783065709;
+	cv=none; b=juLGHqFy6lG++1qh0pEYrLr63VhquOceJm9kZwO2Hqf6CxRmALeCyhYe9gMEeeQe7+SI6zRJb3CDWIUJ8p/T5fC81jQmtljUqIXSvRLzA5B38xd0U4m7J6No20ArB3QVaOfA82x8kLbO2fbBJHsrKdrkxeu3IKrBQTNntFMJAGgI5YRMP1m+VEZ5NqpeU4LIW+wedtfYgX/m0xcmjyKHbhezSIPjcYrVgiHILRUvRk7BFYlYwr6aWJmvCipbdAdBMKr9OWFB6Jev87OLg2B/G6XSXtlWDkWm2E7u+NJdyIVolLMZgTZtDtUvTPJzK8B0vDqnzY/Q0heewKgH+k/5Iw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1783065241; c=relaxed/relaxed;
-	bh=86AOamRcFcJIzmtTIHlbMlj4CRLkggYnO20t0jZshpc=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=LZHAh80szMURcSp5t/SPjbCwakbxWCaFnzvDR6Km8ihPfqapVOPBNfL2nIpRfS9llgtbLp7kurAHYrtly9M+UVAt1ZLPdBC+yKdwJE0FNpfsrNZPd0UnDrvn3nt/RKOq0mKkR74zI/KOmMt/gRxBbq3fq7OHwiGD+Dz/4+p+x2ee+BD1T4Z1gnMtZ+NEzuiwx690scHMH3nryaVuqHzD5iHc5zOKmV/ZT2BQtdhDHgmV71KAJkjdRVjK5HBAVRYyXibgZtJ8MGYjN+uPr9LKrL55h02jmp9C09kTFzTPwnl0bV8ow3OUfCmqny5Svuk4dLfTdAB/47crL8FWj7IXow==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de; dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=CbRmmERq; dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=IocVvEyL; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=Xmvd85vR; dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=hGkTJQ74; dkim-atps=neutral; spf=pass (client-ip=195.135.223.131; helo=smtp-out2.suse.de; envelope-from=msuchanek@suse.de; receiver=lists.ozlabs.org) smtp.mailfrom=suse.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de
+	t=1783065709; c=relaxed/relaxed;
+	bh=EHtNGkXBjS/m7GrE1oE5FvRgK6kKG2ZwSsq2xQOBZdI=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=BManpsVW2aCAB3z/ycs9AZSGeB+GfWNpUM2nE0pNVJkzgV/3ZaDfnJbTeInatNnlsDalikDQxGy3U2qHWq8T4RcOvAr06ewi1MVQxPgoBndbEm8FFxsETPYK9FLAx3exNsV3v84fSMItm3tBmCk3rcEayWMAWV3HgZv4jvQKkwARFJIewL0a/UyLUzlTA7n3lD1kWCtWboFiyC0841RAtmDdSHHYe9Xtd4R8v08WokqDLp+apr0wPQ63KJ/SkNiL6GZfmuw9uKiGe18rVFKVxjuOthsp+SHot872vjYuKitD1GYTT15HcK2hNp7ruOYfcNEMV6l8ytwqbOPcIQ6UaQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ZLnuRaSj; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=nnmlinux@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=CbRmmERq;
-	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=IocVvEyL;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=Xmvd85vR;
-	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=hGkTJQ74;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ZLnuRaSj;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=195.135.223.131; helo=smtp-out2.suse.de; envelope-from=msuchanek@suse.de; receiver=lists.ozlabs.org)
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=nnmlinux@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gs5c83tlyz2xwM
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 Jul 2026 17:54:00 +1000 (AEST)
-Received: from kunlun.suse.cz (unknown [IPv6:2a07:de40:b306:2000::2])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out2.suse.de (Postfix) with ESMTPS id CBA9F7618A;
-	Fri,  3 Jul 2026 07:53:57 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1783065238; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=86AOamRcFcJIzmtTIHlbMlj4CRLkggYnO20t0jZshpc=;
-	b=CbRmmERqfWieu4ysWTh10omj+YQCxVfB6dtLRO5KwpMHTtbWI+HMjDSfkdmWL6Z5tBwSs0
-	64dI9grAIJDKA53bwvMISb6ax0xKvJuXpWIS4xJvcO2WNzHkbVy0dGLLrFfoOL/of8MbJZ
-	G8zUR0YbYZJ05OGL/vLxC4OMac4mNf0=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1783065238;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=86AOamRcFcJIzmtTIHlbMlj4CRLkggYnO20t0jZshpc=;
-	b=IocVvEyLW43oonFkQ+U2aar5zYKMFxmM4+MchCTOViE1CdZikSQHLgiS6R7lAvS5xh7nj2
-	a6Dtpaov7ehMQpDg==
-Authentication-Results: smtp-out2.suse.de;
-	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=Xmvd85vR;
-	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=hGkTJQ74
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1783065237; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=86AOamRcFcJIzmtTIHlbMlj4CRLkggYnO20t0jZshpc=;
-	b=Xmvd85vRfIousfUHpOVFKa/+9oD4iF1jN72BWQqdOKQeyot1g8dqDeb96zST6xXQUnrWZd
-	B/kWaO83Faf+lmPKFWp4CBuZksHwyAp3cMta7AX/exjpEQS9rlrW5BHFIn5WBCg9O1H8iE
-	iaNxS6PbUufL/OKXF41SzStOrutbeHM=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1783065237;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=86AOamRcFcJIzmtTIHlbMlj4CRLkggYnO20t0jZshpc=;
-	b=hGkTJQ74isW/5ugiXaiIuvBc0DJmprtXDaMZ10c37l+VbtperReN+4kbg0PGnbQNDEOVJn
-	gCgyD/JHPKJMedDA==
-Date: Fri, 3 Jul 2026 09:53:56 +0200
-From: Michal =?iso-8859-1?Q?Such=E1nek?= <msuchanek@suse.de>
-To: Thomas Gleixner <tglx@kernel.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, Jonathan Corbet <corbet@lwn.net>,
-	Shuah Khan <skhan@linuxfoundation.org>,
-	Huacai Chen <chenhuacai@kernel.org>,
-	WANG Xuerui <kernel@xen0n.name>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
-	Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>,
-	Heiko Carstens <hca@linux.ibm.com>,
-	Vasily Gorbik <gor@linux.ibm.com>,
-	Alexander Gordeev <agordeev@linux.ibm.com>,
-	Christian Borntraeger <borntraeger@linux.ibm.com>,
-	Sven Schnelle <svens@linux.ibm.com>,
-	Andy Lutomirski <luto@kernel.org>, Ingo Molnar <mingo@redhat.com>,
-	Borislav Petkov <bp@alien8.de>,
-	Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
-	"H. Peter Anvin" <hpa@zytor.com>,
-	Andrew Donnellan <andrew+kernel@donnellan.id.au>,
-	Mark Rutland <mark.rutland@arm.com>, Arnd Bergmann <arnd@arndb.de>,
-	Jiaxun Yang <jiaxun.yang@flygoat.com>,
-	Ryan Roberts <ryan.roberts@arm.com>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Mukesh Kumar Chaurasiya <mkchauras@linux.ibm.com>,
-	Shrikanth Hegde <sshegde@linux.ibm.com>,
-	Zong Li <zong.li@sifive.com>, Nam Cao <namcao@linutronix.de>,
-	Deepak Gupta <debug@rivosinc.com>,
-	Lukas Gerlach <lukas.gerlach@cispa.de>,
-	Rui Qi <qirui.001@bytedance.com>, Kees Cook <kees@kernel.org>,
-	linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
-	loongarch@lists.linux.dev, linuxppc-dev@lists.ozlabs.org,
-	linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org
-Subject: Re: [RFC] entry: Untangle the return value of
- syscall_enter_from_user_mode from syscall NR
-Message-ID: <akdqlO0eJ6jKH-wU@kunlun.suse.cz>
-References: <akVRcPsD_R_CE1qW@kunlun.suse.cz>
- <878q7tprau.ffs@fw13>
- <akZPakNl6JT_jgGd@kunlun.suse.cz>
- <87jyrdnmrh.ffs@fw13>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gs5n84cMrz2xPb
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 Jul 2026 18:01:47 +1000 (AEST)
+Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6636IBUH1930356;
+	Fri, 3 Jul 2026 08:01:32 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:date:from:message-id:mime-version
+	:subject:to; s=pp1; bh=EHtNGkXBjS/m7GrE1oE5FvRgK6kKG2ZwSsq2xQOBZ
+	dI=; b=ZLnuRaSj/0enCAMlUYdDA6U5dTRvOrn7Bgle0I8zePDX7ZhLRgzojR+Cj
+	LFC9RoMZtEedxRp1fYDCGri7nXZj4YQtixYtM8UxRydGaVb2gyf51cqAXsSzenLE
+	GbvS009LrHL9kppRT6cYbSM/RV/27kiZkyRjV4d28LmYgZ9CEfNbKsf8nXR7qdDt
+	+EgCuYRr5IiQk7TjOMQuFVo7dGPkCnjlWxduA+OLkUZQLSDg5ufXd1dJUAt23AQo
+	i5NoVWKhdO0rdmdgR9xpQNsJcKkRrAq8iqpwfoCPyh6fJuYZOrfDzkb9E39DnrHy
+	dSIJgV+zJsU04AiGoMx5IcGHhPN3g==
+Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4f26pee6ds-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 03 Jul 2026 08:01:31 +0000 (GMT)
+Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma12.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 6637YdZ5015771;
+	Fri, 3 Jul 2026 08:01:31 GMT
+Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
+	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 4f2ruqr2jf-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 03 Jul 2026 08:01:31 +0000 (GMT)
+Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com [10.20.54.104])
+	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 66381R3L33816856
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Fri, 3 Jul 2026 08:01:27 GMT
+Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 46B2720043;
+	Fri,  3 Jul 2026 08:01:27 +0000 (GMT)
+Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id DD6722004E;
+	Fri,  3 Jul 2026 08:01:24 +0000 (GMT)
+Received: from ltcd48-lp3.ltc.tadn.ibm.com (unknown [9.5.7.39])
+	by smtpav05.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Fri,  3 Jul 2026 08:01:24 +0000 (GMT)
+From: Narayana Murty N <nnmlinux@linux.ibm.com>
+To: mahesh@linux.ibm.com, mpe@ellerman.id.au, maddy@linux.ibm.com
+Cc: oohall@gmail.com, npiggin@gmail.com, chleroy@kernel.org,
+        nnmlinux@linux.ibm.com, linuxppc-dev@lists.ozlabs.org,
+        linux-kernel@vger.kernel.org, vaibhav@linux.ibm.com,
+        sbhat@linux.ibm.com, harshpb@linux.ibm.com
+Subject: [PATCH 1/1] powerpc/eeh: Prevent EEH false positives on PMCSR reads in D3cold
+Date: Thu,  2 Jul 2026 23:36:49 -0400
+Message-ID: <20260703033649.41633-1-nnmlinux@linux.ibm.com>
+X-Mailer: git-send-email 2.51.1
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -133,111 +87,205 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <87jyrdnmrh.ffs@fw13>
-X-Spamd-Bar: ++++++++++++++++
-X-Rspamd-Queue-Id: CBA9F7618A
-X-Rspamd-Action: add header
-X-Rspamd-Server: rspamd1.dmz-prg2.suse.org
-X-Spamd-Result: default: False [16.54 / 50.00];
-	SPAM_FLAG(5.00)[];
-	NEURAL_SPAM_LONG(3.50)[1.000];
-	BAYES_HAM(-3.00)[100.00%];
-	NEURAL_SPAM_SHORT(2.85)[0.949];
-	HFILTER_HOSTNAME_UNKNOWN(2.50)[];
-	RDNS_NONE(2.00)[];
-	SUSPICIOUS_RECIPS(1.50)[];
-	ONCE_RECEIVED(1.20)[];
-	HFILTER_HELO_IP_A(1.00)[kunlun.suse.cz];
-	HFILTER_HELO_NORES_A_OR_MX(0.30)[kunlun.suse.cz];
-	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	MIME_GOOD(-0.10)[text/plain];
-	MX_GOOD(-0.01)[];
-	RCPT_COUNT_TWELVE(0.00)[45];
-	FUZZY_RATELIMITED(0.00)[rspamd.com];
-	MIME_TRACE(0.00)[0:+];
-	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	ARC_NA(0.00)[];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	FREEMAIL_ENVRCPT(0.00)[gmail.com];
-	FREEMAIL_CC(0.00)[infradead.org,lwn.net,linuxfoundation.org,kernel.org,xen0n.name,linux.ibm.com,ellerman.id.au,gmail.com,dabbelt.com,eecs.berkeley.edu,ghiti.fr,redhat.com,alien8.de,linux.intel.com,zytor.com,donnellan.id.au,arm.com,arndb.de,flygoat.com,sifive.com,linutronix.de,rivosinc.com,cispa.de,bytedance.com,vger.kernel.org,lists.linux.dev,lists.ozlabs.org,lists.infradead.org];
-	DNSWL_BLOCKED(0.00)[2a07:de40:b306:2000::2:from];
-	FROM_EQ_ENVFROM(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	TO_DN_SOME(0.00)[];
-	RCVD_COUNT_ZERO(0.00)[0];
-	MISSING_XM_UA(0.00)[];
-	TAGGED_RCPT(0.00)[kernel];
-	DKIM_TRACE(0.00)[suse.de:+];
-	R_RATELIMIT(0.00)[to_ip_from(RLs1yuyu6ywojxyk8y3ncu5g39)];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:dkim,kunlun.suse.cz:mid,kunlun.suse.cz:helo]
-X-Spam: Yes
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-GUID: VeLq9wx7fTfM78I7wbjuv5YPf_tPwka8
+X-Proofpoint-Spam-Info: AW1haW4tMjYwNzAzMDA3MyBTYWx0ZWRfXxMS+xiSVsrYZ
+ VII46PD1TX2xLdHDvki6XwSBhk6PPMlB7kxEMjv78Yp69FXrHzUMSk58BJDd8kIoTIfgPdCJn89
+ 0Xt7N77CKkioFa8elOOmoHJji0aJ/Lw=
+X-Authority-Analysis: v=2.4 cv=edsNubEH c=1 sm=1 tr=0 ts=6a476c5c cx=c_pps
+ a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17
+ a=RAioF0-LDSMA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
+ a=iQ6ETzBq9ecOQQE5vZCe:22 a=VnNF1IyMAAAA:8 a=-mcfluX0F-qhFAC7NC0A:9
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzAzMDA3MyBTYWx0ZWRfX1vb4LAe6FBDE
+ MzNHKyslTa80YkRuVpIpKC71LeZAW9KS1C2z0KpQAwAGcrEz77lsoS+gQsQjebDQyo5LtCLB3s2
+ D+hlmZuG/EsnI0wur//jkFKx156IEwX2XN75YzjRL8781ZbF6q5Dr/Icm0a6GCG8af3yK9A5XNc
+ gCCAJyWK2zF98DA9rer/y0l9kxKP6R8TmyqJkDIMcvdgtXIafLJg0SutnW/uZ22G/C2ZQBHTlj1
+ FIUak7ftCBrZf7CZ60fjRmq0SLiO4hu0NigC7SwRJiNultPeVPcOnFd+YWBcPwIgJ8My548fwBd
+ kq3o/cGg959o6OWvA/VJFGiL+YsA4onSY27VhEEatwUy4ONX4xOjFYBLBrC61YwKbG7/MaHo/+E
+ MD9Fb3tzuZNrTgV85JEOw/ZmdI1c6OmHTg0ob2k4JXQa84LZ5ivmkr7HHMknhw3H7Nt8Gb/Ezr8
+ JPGo/On0yQftFCZn0ag==
+X-Proofpoint-ORIG-GUID: lAy3IuutBfvwWrZB710FhILr3wqtE7Vz
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
+ definitions=2026-07-03_02,2026-06-26_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501 malwarescore=0 adultscore=0 impostorscore=0 bulkscore=0
+ spamscore=0 suspectscore=0 clxscore=1011 lowpriorityscore=0 phishscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607030073
 
-On Thu, Jul 02, 2026 at 10:45:54PM +0200, Thomas Gleixner wrote:
-> On Thu, Jul 02 2026 at 13:45, Michal Suchánek wrote:
-> > On Thu, Jul 02, 2026 at 01:24:57PM +0200, Thomas Gleixner wrote:
-> >> On Wed, Jul 01 2026 at 19:42, Michal Suchánek wrote:
-> >> > The return value of syscall_enter_from_user_mode is used both for the
-> >> > adjusted syscall number and the indicator that a syscall should be
-> >> > skipped.
-> >> >
-> >> > As seccomp can be invoked on any syscall, including invalid ones this
-> >> > somewhat undermines seccomp.
-> >> >
-> >> > While the seccomp variants that terminate the process do not need to
-> >> > care about this for the filter that sets the syscall return value this
-> >> > disctinction is required.
-> >> 
-> >> You completely fail to explain why and what actual problem you are
-> >> trying to solve. At least I can't figure it out from the above word
-> >> salad.
-> >
-> > syscall_enter_from_user_mode returns the new syscall number after doing
-> > something arbitrarry with it, including running seccomp.
-> >
-> > Wehn the syscall is already handled, eg. by seccomp filtering it returns
-> > -1 as the new syscall number. -1 is an invalid syscall number but it can
-> > still be filtered by seccomp.
-> 
-> Once syscall_enter_from_user_mode() returns -1 nothing can filter it
-> anymore.
-> 
-> > When the syscall number was -1 to start with it's not possible to
-> > determine if the syscall was fileterd from the return value. s390
-> > returns the filtered state in a flag it sets on the regs structure,
-> > avoiding this problem.
-> 
-> What needs to determine whether the syscall was filtered or not?
+On pseries systems, RTAS-based PCI config space reads can trigger
+false EEH events when attempting to read the Power Management Control
+Status Register (PMCSR) while a device is in D3cold state. This occurs
+because the device is powered off and cannot respond to config space
+accesses, causing the platform to report an error condition.
 
-The code that executes syscall_enter_from_user_mode() needs to determine
-that.
+This patch addresses the issue by:
 
-After syscall_enter_from_user_mode() returns the syscall needs to be
-executed or skipped.
+1. Caching PM capability information in struct eeh_dev:
+   - pm_cap: Offset of the PM capability structure
+   - pmcsr_offset: Absolute config space offset of PMCSR register
 
-'Executing' an invalid syscall boils down to setting the return value to
--ENOSYS.
+2. Synchronizing PM capability data between pci_dev and eeh_dev:
+   - During device probe (eeh_probe_device), copy pm_cap from pci_dev
+   - During early init (pseries_eeh_init_edev), discover pm_cap via
+     firmware before pci_dev exists
 
-But if the syscall number returned is -1 was the syscall filtered and
-the return value set by syscall_enter_from_user_mode() or should it be
-set by the caller to -ENOSYS?
+3. Intercepting PMCSR reads in D3cold state:
+   - In rtas_pci_dn_write_config, detect PMCSR read attempts
+   - Check if device is in D3cold via pdev->current_state
+   - Return synthetic success value instead of performing RTAS call
+   - Prevents hardware access that would trigger false EEH event
 
-> 
-> > However, the API should be specified in a way that does not require
-> > everyone implementing such flag.
-> 
-> Which exact problem does the flag solve?
+The fix handles both early boot (before pci_dev exists) and runtime
+scenarios, ensuring PM capability information is always available when
+needed. By blocking RTAS reads to PMCSR when devices are in D3cold,
+we prevent spurious EEH events while maintaining proper error detection
+for genuine hardware failures.
 
-To be able to tell if the syscall was handled or no, the return value
-from syscall_enter_from_user_mode() is inconclusive.
+Signed-off-by: Narayana Murty N <nnmlinux@linux.ibm.com>
+---
+ arch/powerpc/include/asm/eeh.h               |  9 +++++++
+ arch/powerpc/kernel/eeh.c                    | 16 ++++++++++++
+ arch/powerpc/kernel/rtas_pci.c               | 26 ++++++++++++++++++++
+ arch/powerpc/platforms/pseries/eeh_pseries.c | 16 ++++++++++++
+ 4 files changed, 67 insertions(+)
 
-That's what the flag is for. To be able to tell if the syscall was
-handled without relying on the ambiguous return value of
-syscall_enter_from_user_mode().
+diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
+index b7ebb4ac2c71..224a3adcd34e 100644
+--- a/arch/powerpc/include/asm/eeh.h
++++ b/arch/powerpc/include/asm/eeh.h
+@@ -139,6 +139,15 @@ struct eeh_dev {
+ 	int pcie_cap;			/* Saved PCIe capability	*/
+ 	int aer_cap;			/* Saved AER capability		*/
+ 	int af_cap;			/* Saved AF capability		*/
++	/*
++	 * Cached PCI PM capability information.
++	 * pm_cap == 0 means the device does not have PCI PM capability
++	 * or it has not been discovered yet.
++	 * pmcsr_offset is the absolute config-space offset of PMCSR:
++	 *     pm_cap + PCI_PM_CTRL
++	 */
++	u8 pm_cap;
++	u16 pmcsr_offset;
+ 	struct eeh_pe *pe;		/* Associated PE		*/
+ 	struct list_head entry;		/* Membership in eeh_pe.edevs	*/
+ 	struct list_head rmv_entry;	/* Membership in rmv_list	*/
+diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
+index bb836f02101c..4402166df8c0 100644
+--- a/arch/powerpc/kernel/eeh.c
++++ b/arch/powerpc/kernel/eeh.c
+@@ -997,6 +997,21 @@ int eeh_init(struct eeh_ops *ops)
+ 	return eeh_event_init();
+ }
+ 
++#ifdef CONFIG_EEH
++static void eeh_sync_pm_cap(struct eeh_dev *edev, struct pci_dev *pdev)
++{
++	if (!edev || !pdev)
++		return;
++
++	/*
++	 * Prefer PCI core cached PM capability once pci_dev exists.
++	 * If pm_cap is zero, clear pmcsr_offset as well.
++	 */
++	edev->pm_cap = pdev->pm_cap;
++	edev->pmcsr_offset = pdev->pm_cap ? pdev->pm_cap + PCI_PM_CTRL : 0;
++}
++#endif
++
+ /**
+  * eeh_probe_device() - Perform EEH initialization for the indicated pci device
+  * @dev: pci device for which to set up EEH
+@@ -1050,6 +1065,7 @@ void eeh_probe_device(struct pci_dev *dev)
+ 	/* bind the pdev and the edev together */
+ 	edev->pdev = dev;
+ 	dev->dev.archdata.edev = edev;
++	eeh_sync_pm_cap(edev, dev);
+ 	eeh_addr_cache_insert_dev(dev);
+ 	eeh_sysfs_add_device(dev);
+ }
+diff --git a/arch/powerpc/kernel/rtas_pci.c b/arch/powerpc/kernel/rtas_pci.c
+index fccf96e897f6..9668cd0411e1 100644
+--- a/arch/powerpc/kernel/rtas_pci.c
++++ b/arch/powerpc/kernel/rtas_pci.c
+@@ -95,6 +95,24 @@ static int rtas_pci_read_config(struct pci_bus *bus,
+ 	return ret;
+ }
+ 
++static bool eeh_handle_pmcsr_read(struct eeh_dev *edev, int size,
++				  u32 *val, int *pcibios_ret)
++{
++	struct pci_dev *pdev;
++
++	if (!edev)
++		return false;
++
++	pdev = edev->pdev;
++	if (!pdev || pdev->current_state != PCI_D3cold)
++		return false;
++
++	*val = EEH_IO_ERROR_VALUE(size);
++	*pcibios_ret = PCIBIOS_SUCCESSFUL;
++
++	return true;
++}
++
+ int rtas_pci_dn_write_config(struct pci_dn *pdn, int where, int size, u32 val)
+ {
+ 	unsigned long buid, addr;
+@@ -108,6 +126,14 @@ int rtas_pci_dn_write_config(struct pci_dn *pdn, int where, int size, u32 val)
+ 	if (pdn->edev && pdn->edev->pe &&
+ 	    (pdn->edev->pe->state & EEH_PE_CFG_BLOCKED))
+ 		return PCIBIOS_SET_FAILED;
++
++	if (unlikely(pdn->edev && pdn->edev->pmcsr_offset &&
++		     size == 2 && where == pdn->edev->pmcsr_offset)) {
++		int pcibios_ret;
++
++		if (eeh_handle_pmcsr_read(pdn->edev, size, &val, &pcibios_ret))
++			return pcibios_ret;
++	}
+ #endif
+ 
+ 	addr = rtas_config_addr(pdn->busno, pdn->devfn, where);
+diff --git a/arch/powerpc/platforms/pseries/eeh_pseries.c b/arch/powerpc/platforms/pseries/eeh_pseries.c
+index b12ef382fec7..0e7efb4bf2d4 100644
+--- a/arch/powerpc/platforms/pseries/eeh_pseries.c
++++ b/arch/powerpc/platforms/pseries/eeh_pseries.c
+@@ -351,6 +351,21 @@ static struct eeh_pe *pseries_eeh_pe_get_parent(struct eeh_dev *edev)
+ 	return NULL;
+ }
+ 
++static void pseries_eeh_init_pm_cap(struct pci_dn *pdn, struct eeh_dev *edev)
++{
++	edev->pm_cap = 0;
++	edev->pmcsr_offset = 0;
++
++	if (!pdn || !edev)
++		return;
++
++	edev->pm_cap = pseries_eeh_find_cap(pdn, PCI_CAP_ID_PM);
++	if (!edev->pm_cap)
++		return;
++
++	edev->pmcsr_offset = edev->pm_cap + PCI_PM_CTRL;
++}
++
+ /**
+  * pseries_eeh_init_edev - initialise the eeh_dev and eeh_pe for a pci_dn
+  *
+@@ -408,6 +423,7 @@ static void pseries_eeh_init_edev(struct pci_dn *pdn)
+ 	edev->pcix_cap = pseries_eeh_find_cap(pdn, PCI_CAP_ID_PCIX);
+ 	edev->pcie_cap = pseries_eeh_find_cap(pdn, PCI_CAP_ID_EXP);
+ 	edev->aer_cap = pseries_eeh_find_ecap(pdn, PCI_EXT_CAP_ID_ERR);
++	pseries_eeh_init_pm_cap(pdn, edev);
+ 	edev->mode &= 0xFFFFFF00;
+ 	if ((pdn->class_code >> 8) == PCI_CLASS_BRIDGE_PCI) {
+ 		edev->mode |= EEH_DEV_BRIDGE;
+-- 
+2.51.1
 
-Thanks
-
-Michal
 
