@@ -1,54 +1,127 @@
-Return-Path: <linuxppc-dev+bounces-23475-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23476-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5B0BEC44500
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Jul 2026 09:54:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8FA09C44500
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Jul 2026 10:00:32 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gs8HX6xgGz2xdb;
-	Fri, 03 Jul 2026 19:54:48 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=195.135.223.130
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783072488;
-	cv=none; b=C3aBBZGRURSTnWeLdUMJ1fs514C8scFZREuB+rJdDRcCfUYGWcgheVnmWuQ2Dwdy17+y9ZF0Zj4wfutQoNfd3xYEuUpl6U4uIt33wskBGZqZBedxQtl6Or6VbR20jj9ykA4AzjqyGq8XE640JThI5FZsvLpoP9/O0/o6VYjcTkeraL3n3F3wGLpEppy+Ht1bf8kRpmwGRRFIFy5YC8sss6Rlcpy2hlgjMHWZIuC7/pTuH3M5q2jLx5tLMAbR8Uigao6PyMR+vZZ7fNTUEQsne7PJ/Qu6StsGHscFj9tEOsoY2MKe0sWgw5hPWKMKnM5ahXZe16Cu5EIFdkCN7tBAzw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gs8Q710ynz2xPb;
+	Fri, 03 Jul 2026 20:00:31 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783072831;
+	cv=none; b=WOMVoXJFIDQSwC8LRLTxKpZd4ZEEFyNpRZdxkWBkaBHgvH5+jFlwt4ZEwIqome+7IN0vgqQo+K5lkvnPtvdYQ4h9hs2Vr3M83W51nS50VriCmYUrHFg+nQk/+aZs3cUiBQKpbZp8NhR99E3yQAcLQMxLrU2EZTBXheNyfdXW1Ry3F4zoz8i653pDYIE/bF3PfhgkBN52M3NQ+Fd08I6DvbHe3xumEd2fBdVKfPHMxMiKiOF1iMv4u1xh8msAoHhmhkLTz0QYtfZnWBZXL+6JFywUP8i+ju4J2RPdmUfUe3fOqmwAh/inbsHbTs3yDMhF9boUra8SaAOlhGF43Q6lnQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1783072488; c=relaxed/relaxed;
-	bh=ctl2tXXcSn3NjvOWmtVD54LM2Qw2q2RQ1erx/moz4wM=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=VgRHvYdMKURq3wTlOz4QadL/jCjhYmY0RSIJZfl0rtE2L5HTczxwNLEih2Ofd6duUw591JixjsInHvgZkAr283tecuVx2IiOl2KPRvYwtKxNppP3NfGUxPnOHJynj8xlJWsR9IfuwYc9DFBoHFMQku2NUH+srd4s80glZhpHAKLCRZZwoZZPZR1Q2Lo84vMa2PSVfUNM7fIhNNWsmZdHXsHRaHnDPmv967L8d6cJ+FNFOHdtzKYYB4PYxt2a0N0yRHVEL0CD0SlQQ+rowcrRq26acCk1CkUzMcURJblThVS57BhNwQWDvG3We5ZueSpWxouOOtLIScw1gUFlR/AkVw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass (client-ip=195.135.223.130; helo=smtp-out1.suse.de; envelope-from=msuchanek@suse.de; receiver=lists.ozlabs.org) smtp.mailfrom=suse.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=195.135.223.130; helo=smtp-out1.suse.de; envelope-from=msuchanek@suse.de; receiver=lists.ozlabs.org)
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
+	t=1783072831; c=relaxed/relaxed;
+	bh=XkZRwCRa2XhLgna4NJMGvoHXqep1IUGIjBvB5bpJuls=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
+	 MIME-Version:Content-Type; b=nKXFlZb/8sbFG0rAFg3bMyh67DwhXCikviRXZWD0gDlQMkLihYh2vOrh9uUz/V0HmdGKVKdOCDKqY0QI1mRDUMIqxe2SVyPPfC/OV1fv1UNOnIzCWx7LUYyO0KQglz+RNfr2Zy1d6/kzflhQ6igcPtTFeoE351qfr+NHu0Dupi8zHcv416drYJQOqVYZrROnS7midd3ROG3I27N1d3RGpPjdENmkp2mZGBLT+4ZkYAYKVTrKFqLK2r5YKg2ehQErlXZW+M74lIvoQ1467WUcipGeNBXNmEQqmiVC1Tiee1GNFz3en0TbDJEBWvbkwwxYUnoVAqzSfw673OuD3qsSWQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=sNzsJBSJ; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=svens@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=sNzsJBSJ;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=svens@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gs8HW4bkdz2xPb
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 Jul 2026 19:54:47 +1000 (AEST)
-Received: from kunlun.suse.cz (unknown [IPv6:2a07:de40:b306:2000::2])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id B85CF74879;
-	Fri,  3 Jul 2026 09:54:44 +0000 (UTC)
-Authentication-Results: smtp-out1.suse.de;
-	none
-Date: Fri, 3 Jul 2026 11:54:43 +0200
-From: Michal =?iso-8859-1?Q?Such=E1nek?= <msuchanek@suse.de>
-To: Mukesh Kumar Chaurasiya <mkchauras@gmail.com>
-Cc: oleg@redhat.com, maddy@linux.ibm.com, mpe@ellerman.id.au,
-	npiggin@gmail.com, chleroy@kernel.org, sshegde@linux.ibm.com,
-	mchauras@linux.ibm.com, thuth@redhat.com,
-	segher@kernel.crashing.org, ryan.roberts@arm.com,
-	ruanjinjie@huawei.com, linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH V3] powerpc/syscall: Fix syscall skip handling for
- seccomp and ptrace
-Message-ID: <akeG4w3enDsKK81J@kunlun.suse.cz>
-References: <20260703081100.1681924-1-mkchauras@gmail.com>
- <akdz6O-p9tdr1irz@kunlun.suse.cz>
- <akd0foBWjSxm374I@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gs8Q54VHPz2xLq
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 Jul 2026 20:00:29 +1000 (AEST)
+Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6636JW2R1762888;
+	Fri, 3 Jul 2026 09:59:14 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-type:date:from:in-reply-to:message-id:mime-version
+	:references:subject:to; s=pp1; bh=XkZRwCRa2XhLgna4NJMGvoHXqep1IU
+	GIjBvB5bpJuls=; b=sNzsJBSJE0At5moOOpohmVjQzetUDhecbWJtU/m6Bze7zq
+	z+RrCESoaCZmvBe++NZ1sOGEfWnxfJFd31TdIHLW/TxZO1nxuCSC7zqBofLiGUt7
+	eY9t51b8vVsYwVu5zi2pHQUeRg0uooWAhwfH64a1V1CSxYVhEITXRkMoPZEwgKSI
+	3LVExr7ylz5KDKZQJyFauWLV26RwjqkUwgElPJxZqNL7sPGCYZ/QkjXnAHGLxz2o
+	AadgZh2Nx47mH+l9cfY2Puqix6XBXJPgRDm4gypdKviCzsIDlio9B6EBH2jOZ53r
+	LP9GtE8SPV4qoBaQhkyE3iSOH/EoHLMhgyTUpSpQ==
+Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4f26mk63uk-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 03 Jul 2026 09:59:13 +0000 (GMT)
+Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma22.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 6639na9h008970;
+	Fri, 3 Jul 2026 09:59:12 GMT
+Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
+	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4f2s7wgamb-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 03 Jul 2026 09:59:12 +0000 (GMT)
+Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
+	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6639x8AG50135304
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Fri, 3 Jul 2026 09:59:08 GMT
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id AB02320043;
+	Fri,  3 Jul 2026 09:59:08 +0000 (GMT)
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 419EF20040;
+	Fri,  3 Jul 2026 09:59:08 +0000 (GMT)
+Received: from tuxmaker.linux.ibm.com (unknown [9.87.85.9])
+	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTPS;
+	Fri,  3 Jul 2026 09:59:08 +0000 (GMT)
+From: Sven Schnelle <svens@linux.ibm.com>
+To: Thomas Gleixner <tglx@kernel.org>
+Cc: "H. Peter Anvin" <hpa@zytor.com>,
+        Michal =?utf-8?Q?Such=C3=A1nek?=
+ <msuchanek@suse.de>,
+        Peter Zijlstra <peterz@infradead.org>,
+        Jonathan Corbet <corbet@lwn.net>,
+        Shuah Khan <skhan@linuxfoundation.org>,
+        Huacai Chen
+ <chenhuacai@kernel.org>, WANG Xuerui <kernel@xen0n.name>,
+        Madhavan
+ Srinivasan <maddy@linux.ibm.com>,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        Nicholas Piggin <npiggin@gmail.com>,
+        "Christophe Leroy (CS GROUP)"
+ <chleroy@kernel.org>,
+        Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt
+ <palmer@dabbelt.com>,
+        Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti
+ <alex@ghiti.fr>,
+        Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik
+ <gor@linux.ibm.com>,
+        Alexander Gordeev <agordeev@linux.ibm.com>,
+        Christian Borntraeger <borntraeger@linux.ibm.com>,
+        Andy Lutomirski
+ <luto@kernel.org>, Ingo Molnar <mingo@redhat.com>,
+        Borislav Petkov
+ <bp@alien8.de>,
+        Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
+        Andrew Donnellan <andrew+kernel@donnellan.id.au>,
+        Mark
+ Rutland <mark.rutland@arm.com>, Arnd Bergmann <arnd@arndb.de>,
+        Jiaxun
+ Yang <jiaxun.yang@flygoat.com>,
+        Ryan Roberts <ryan.roberts@arm.com>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Mukesh Kumar Chaurasiya
+ <mkchauras@linux.ibm.com>,
+        Shrikanth Hegde <sshegde@linux.ibm.com>, Zong
+ Li <zong.li@sifive.com>,
+        Nam Cao <namcao@linutronix.de>, Deepak Gupta
+ <debug@rivosinc.com>,
+        Lukas Gerlach <lukas.gerlach@cispa.de>,
+        Rui Qi
+ <qirui.001@bytedance.com>, Kees Cook <kees@kernel.org>,
+        linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
+        loongarch@lists.linux.dev, linuxppc-dev@lists.ozlabs.org,
+        linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org
+Subject: Re: [RFC] entry: Untangle the return value of
+ syscall_enter_from_user_mode from syscall NR
+In-Reply-To: <87ldbsmnie.ffs@fw13>
+References: <akVRcPsD_R_CE1qW@kunlun.suse.cz>
+	<BA7CD91D-C0E5-47A1-B49C-BC6AF6604182@zytor.com> <87h5mhnjsr.ffs@fw13>
+	<yt9dwlvca8rn.fsf@linux.ibm.com> <87ldbsmnie.ffs@fw13>
+Date: Fri, 03 Jul 2026 11:59:07 +0200
+Message-ID: <yt9d5x2w5r84.fsf@linux.ibm.com>
+User-Agent: Gnus/5.13 (Gnus v5.13)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -62,242 +135,68 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <akd0foBWjSxm374I@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
-X-Rspamd-Pre-Result: action=no action;
-	module=replies;
-	Message is reply to one we originated
-X-Rspamd-Queue-Id: B85CF74879
-X-Rspamd-Action: no action
-X-Rspamd-Server: rspamd1.dmz-prg2.suse.org
-X-Rspamd-Pre-Result: action=no action;
-	module=replies;
-	Message is reply to one we originated
-X-Spamd-Result: default: False [-2.00 / 50.00];
-	REPLY(-4.00)[];
-	RDNS_NONE(2.00)[]
+Content-Type: text/plain
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzAzMDA5NCBTYWx0ZWRfX9FMLwetAf5KQ
+ ndfxMBLSR49ue71Xv2NR40Icekc2MOvRbwixUqeEGtjdNkCalSSoGb966whocZ1gXXqpEriij7i
+ lynNNC3vb2CQvMQydbLaS3VAu0jrXMOm+jrv0ORIZSdXnj7Vi1yorOQLGdSZSAOdWCDMFX3r3pN
+ OuxRPVsNiZ9CQ3hGPyW9d4jjGhtQEH4JbcTwHIUqcZ7kznMyp1iLXVpiAu42PsAq9HSVzRZ1xeF
+ OvamAeXQ82LGybWvpxvCiyLv5wDWgXgkKO8Hf7eaiVVVSAu3moZrspj1/CUqHGOp0ZISuFiCOfm
+ 6AWwmNs4Kr04L5enCaF4YgWYGrYLmt6j4D8H0M1WcGM1ayQeiM6Yok1G5GskscCRoSEIeV8DpbU
+ tkC4ar4pU/D2r9uqicbUF56hge/NSmTFC3OSbbHRYF3sz6B3Za9sH3Juh93DjTwWc9D28Pc5hiX
+ 1sXDVTwSc86kcB2B9Rg==
+X-Proofpoint-GUID: fyPeOXFOcSecTLM12SqKB2NhFn9No9dY
+X-Authority-Analysis: v=2.4 cv=Z8bc2nRA c=1 sm=1 tr=0 ts=6a4787f2 cx=c_pps
+ a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
+ a=RAioF0-LDSMA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
+ a=RzCfie-kr_QcCd8fBx8p:22 a=VwQbUJbxAAAA:8 a=QZGpZFnrDBDqr2p2_-4A:9
+X-Proofpoint-Spam-Info: AW1haW4tMjYwNzAzMDA5NCBTYWx0ZWRfXw6X4LK9BAJr/
+ jeW91FBp5LTSjcZFRxjPIFSbzH40kzNpBhFPHP3F9N4dLBEIibxelkNLlh5TXnBBP24GksYOxGs
+ cdYngkRwuJr0O4yJ1YvQBiRfSdFRCMk=
+X-Proofpoint-ORIG-GUID: Zheb6wdsp5g_GwqVLO_LBTgHraVWDNxT
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
+ definitions=2026-07-03_02,2026-06-26_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ clxscore=1015 adultscore=0 spamscore=0 priorityscore=1501 impostorscore=0
+ malwarescore=0 phishscore=0 bulkscore=0 lowpriorityscore=0 suspectscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607030094
 
-On Fri, Jul 03, 2026 at 02:06:41PM +0530, Mukesh Kumar Chaurasiya wrote:
-> On Fri, Jul 03, 2026 at 10:33:44AM +0200, Michal Suchánek wrote:
-> > On Fri, Jul 03, 2026 at 01:41:00PM +0530, Mukesh Kumar Chaurasiya (IBM) wrote:
-> > > After enabling GENERIC_ENTRY on PowerPC, syscall_enter_from_user_mode()
-> > > returns -1 as a sentinel to signal that seccomp or ptrace has intercepted
-> > > the syscall and already set a return value via syscall_set_return_value().
-> > > system_call_exception() was not handling this sentinel, and since -1UL
-> > > is >= NR_syscalls, the code fell into the out-of-range path and returned
-> > > -ENOSYS, overwriting the errno already placed in regs->gpr[3].
-> > > 
-> > > The naive fix of checking r0 == -1L before the NR_syscalls bounds check
-> > > is ambiguous: a user legitimately calling syscall(-1) also produces r0 ==
-> > > -1L, and a tracer intercepting such a call would have its injected return
-> > > value silently discarded.
-> > > 
-> > > Fix this properly by introducing regs->entry_flags, a kernel-internal
-> > > field in struct pt_regs (consuming one slot of the existing __pt_regs_pad
-> > > so the ABI is preserved), with SYSCALL_ENTRY_RET_SET as an out-of-band
-> > > flag. syscall_set_return_value() sets this flag whenever seccomp or ptrace
-> > > injects a return value. system_call_exception() zeros entry_flags before
-> > > calling syscall_enter_from_user_mode(), then checks and clears the flag
-> > > afterwards: if set, it returns regs->gpr[3] directly regardless of what
-> > > syscall number the user originally requested.
-> > > 
-> > > This handles all seccomp actions correctly:
-> > > 
-> > >   - SECCOMP_RET_ERRNO, SECCOMP_RET_TRACE (no tracer), SECCOMP_RET_USER_NOTIF:
-> > >     all call syscall_set_return_value(), flag is set, injected value returned.
-> > >   - SECCOMP_RET_TRAP, SECCOMP_RET_KILL: call syscall_rollback() and deliver
-> > >     a signal; flag is not set, but the process is dying so the return value
-> > >     is irrelevant.
-> > > 
-> > > The fix covers both ppc32 and ppc64 with no #ifdefs.
-> > > 
-> > > Fixes: bee25f97ad24 ("powerpc: Enable GENERIC_ENTRY feature")
-> > > Reported-by: Michal Suchánek <msuchanek@suse.de>
-> > > Closes: https://lore.kernel.org/all/ajpp-_XnbF3UTM_E@kunlun.suse.cz/
-> > > Signed-off-by: Mukesh Kumar Chaurasiya (IBM) <mkchauras@gmail.com>
-> > > ---
-> > > v2 -> v3:
-> > >  - Last fix is not working for -1 syscall. Fixed that with this.
-> > > v2: https://lore.kernel.org/all/20260629182946.419552-1-mkchauras@gmail.com
-> > > 
-> > > v1 -> v2:
-> > >  - Fix issues in the previous fix (Michal)
-> > > v1: https://lore.kernel.org/all/20260624171520.772408-1-mkchauras@gmail.com
-> > > 
-> > >  arch/powerpc/include/asm/ptrace.h      | 22 +++++++++++++++++++++-
-> > >  arch/powerpc/include/asm/syscall.h     |  6 ++++++
-> > >  arch/powerpc/include/uapi/asm/ptrace.h |  6 ++++--
-> > >  arch/powerpc/kernel/ptrace/ptrace.c    |  2 ++
-> > >  arch/powerpc/kernel/syscall.c          | 18 ++++++++++++++++++
-> > >  5 files changed, 51 insertions(+), 3 deletions(-)
-> > > 
-> > > diff --git a/arch/powerpc/include/asm/ptrace.h b/arch/powerpc/include/asm/ptrace.h
-> > > index fdeb97421785..1a53d5cfa8db 100644
-> > > --- a/arch/powerpc/include/asm/ptrace.h
-> > > +++ b/arch/powerpc/include/asm/ptrace.h
-> > > @@ -54,8 +54,9 @@ struct pt_regs
-> > >  			};
-> > >  			unsigned long result;
-> > >  			unsigned long exit_flags;
-> > > +			unsigned long entry_flags;
-> > >  			/* Maintain 16 byte interrupt stack alignment */
-> > > -			unsigned long __pt_regs_pad[3];
-> > > +			unsigned long __pt_regs_pad[2];
-> > >  		};
-> > >  	};
-> > >  #if defined(CONFIG_PPC64) || defined(CONFIG_PPC_KUAP)
-> > > @@ -233,6 +234,25 @@ static inline unsigned long frame_pointer(struct pt_regs *regs)
-> > >  #define current_pt_regs() \
-> > >  	((struct pt_regs *)((unsigned long)task_stack_page(current) + THREAD_SIZE) - 1)
-> > >  
-> > > +/*
-> > > + * SYSCALL_ENTRY_RET_SET: seccomp or ptrace called syscall_set_return_value()
-> > > + * and wants the syscall skipped; regs->gpr[3] already holds the return value.
-> > > + */
-> > > +#define SYSCALL_ENTRY_RET_SET	BIT(0)
-> > > +
-> > > +static inline void set_syscall_entry_ret(struct pt_regs *regs)
-> > > +{
-> > > +	regs->entry_flags |= SYSCALL_ENTRY_RET_SET;
-> > > +}
-> > > +
-> > > +static inline bool test_and_clear_syscall_entry_ret(struct pt_regs *regs)
-> > > +{
-> > > +	bool set = !!(regs->entry_flags & SYSCALL_ENTRY_RET_SET);
-> > > +
-> > > +	regs->entry_flags &= ~SYSCALL_ENTRY_RET_SET;
-> > > +	return set;
-> > > +}
-> > > +
-> > >  /*
-> > >   * The 4 low bits (0xf) are available as flags to overload the trap word,
-> > >   * because interrupt vectors have minimum alignment of 0x10. TRAP_FLAGS_MASK
-> > > diff --git a/arch/powerpc/include/asm/syscall.h b/arch/powerpc/include/asm/syscall.h
-> > > index 834fcc4f7b54..9ae79326abe3 100644
-> > > --- a/arch/powerpc/include/asm/syscall.h
-> > > +++ b/arch/powerpc/include/asm/syscall.h
-> > > @@ -98,6 +98,12 @@ static inline void syscall_set_return_value(struct task_struct *task,
-> > >  			regs->gpr[3] = val;
-> > >  		}
-> > >  	}
-> > > +	/*
-> > > +	 * Mark that a return value has been explicitly set by seccomp or
-> > > +	 * ptrace so that system_call_exception() can skip the syscall
-> > > +	 * unconditionally, even when the user requested syscall(-1).
-> > > +	 */
-> > > +	set_syscall_entry_ret(regs);
-> > >  }
-> > >  
-> > >  static inline void syscall_get_arguments(struct task_struct *task,
-> > > diff --git a/arch/powerpc/include/uapi/asm/ptrace.h b/arch/powerpc/include/uapi/asm/ptrace.h
-> > > index a393b7f2760a..2f2a43414fe6 100644
-> > > --- a/arch/powerpc/include/uapi/asm/ptrace.h
-> > > +++ b/arch/powerpc/include/uapi/asm/ptrace.h
-> > > @@ -56,7 +56,8 @@ struct pt_regs
-> > >  	unsigned long dsisr;		/* on 4xx/Book-E used for ESR */
-> > >  	unsigned long result;		/* Result of a system call */
-> > >  	unsigned long exit_flags;	/* System call exit flags */
-> > > -	unsigned long __pt_regs_pad[3];	/* Maintain 16 byte interrupt stack alignment */
-> > > +	unsigned long entry_flags;	/* System call entry flags */
-> > > +	unsigned long __pt_regs_pad[2];	/* Maintain 16 byte interrupt stack alignment */
-> > >  };
-> > >  
-> > >  #endif /* __ASSEMBLER__ */
-> > > @@ -117,7 +118,8 @@ struct pt_regs
-> > >  #define PT_DSISR 42
-> > >  #define PT_RESULT 43
-> > >  #define PT_EXIT_FLAGS 44
-> > > -#define PT_PAD 47 /* 3 times */
-> > > +#define PT_ENTRY_FLAGS 45
-> > > +#define PT_PAD 46 /* 2 times */
-> > >  #define PT_DSCR 48
-> > >  #define PT_REGS_COUNT 48
-> > >  
-> > > diff --git a/arch/powerpc/kernel/ptrace/ptrace.c b/arch/powerpc/kernel/ptrace/ptrace.c
-> > > index 316d4f5ead8e..440d00690cf2 100644
-> > > --- a/arch/powerpc/kernel/ptrace/ptrace.c
-> > > +++ b/arch/powerpc/kernel/ptrace/ptrace.c
-> > > @@ -235,6 +235,8 @@ void __init pt_regs_check(void)
-> > >  		     offsetof(struct user_pt_regs, dsisr));
-> > >  	BUILD_BUG_ON(offsetof(struct pt_regs, result) !=
-> > >  		     offsetof(struct user_pt_regs, result));
-> > > +	BUILD_BUG_ON(offsetof(struct pt_regs, entry_flags) !=
-> > > +		     offsetof(struct user_pt_regs, entry_flags));
-> > >  
-> > >  	BUILD_BUG_ON(sizeof(struct user_pt_regs) > sizeof(struct pt_regs));
-> > >  
-> > > diff --git a/arch/powerpc/kernel/syscall.c b/arch/powerpc/kernel/syscall.c
-> > > index a9da2af6efa8..c7458aae199d 100644
-> > > --- a/arch/powerpc/kernel/syscall.c
-> > > +++ b/arch/powerpc/kernel/syscall.c
-> > > @@ -19,9 +19,27 @@ notrace long system_call_exception(struct pt_regs *regs, unsigned long r0)
-> > >  	long ret;
-> > >  	syscall_fn f;
-> > >  
-> > > +	/*
-> > > +	 * Zero entry_flags before syscall_enter_from_user_mode() so that
-> > > +	 * syscall_set_return_value() can set SYSCALL_ENTRY_RET_SET as an
-> > > +	 * unambiguous out-of-band signal.  The field is not initialised by
-> > > +	 * the entry assembly.
-> > > +	 */
-> > > +	regs->entry_flags = 0;
-> > >  	add_random_kstack_offset();
-> > >  	r0 = syscall_enter_from_user_mode(regs, r0);
-> > >  
-> > > +	/*
-> > > +	 * Seccomp or ptrace may have set a return value and requested that
-> > > +	 * the syscall be skipped. syscall_set_return_value() sets
-> > > +	 * SYSCALL_ENTRY_RET_SET in regs->entry_flags as an
-> > > +	 * unambiguous out-of-band signal. This avoids the ambiguity of
-> > > +	 * using r0 == -1 as the skip sentinel when the user themselves
-> > > +	 * called syscall(-1).
-> > > +	 */
-> > > +	if (unlikely(test_and_clear_syscall_entry_ret(regs)))
-> > > +		return regs->gpr[3];
-> > 
-> > Hello,
-> > 
-> > shouldn't this use the getter to correctly decode the value for both scv
-> > and non-scv case?
-> > 
-> > Thanks
-> > 
-> > Michal
-> > 
-> Oh yeah,
-> Correct. Lemme fix that.
+Thomas Gleixner <tglx@kernel.org> writes:
 
-Other than that it works as expected (note: a.out is the code adapted from
-seccomp man page, attached at
-https://lore.kernel.org/linuxppc-dev/akTExSO3ZT7iRtBa@kunlun.suse.cz/ )
+> On Fri, Jul 03 2026 at 08:26, Sven Schnelle wrote:
+>> Thomas Gleixner <tglx@kernel.org> writes:
+>>> It's less than obvious and I have no objections to clean that up and
+>>> make it more intuitive, but I still fail to see what Michal is actually
+>>> trying to solve and what the magic flag is for. If s390 requires it,
+>>> then that's an s390 problem, but definitely x86 does not.
+>>
+>> The difference between x86 and s390 is that on s390, regs->gprs[2] is
+>> used for both the syscall number and the syscall return value.
+>> That was a design mistake early in the begin about 25 years ago, but
+>> it's ABI now, so it cannot be changed.
+>
+> Cute.
+>
+>> When seccomp decides to skip a syscall, it write a return value into
+>> regs->gprs[2]. When syscall_enter_from_user_mode_work() returns, it
+>> returns this number. If it's negative all is good - the 'if (likely(nr <
+>> NR_syscalls))' conditiion would just catch it and skip the syscall.
+>>
+>> But if it's a positive number, the code cannot distinguish whether
+>> that's a return value or a syscall number.
+>>
+>> So I introduced PIF_SYSCALL_RET_SET when converting s390 to generic
+>> entry. This flag tells the syscall code that a return value was set in
+>> ptregs and the syscall should be skipped.
+>
+> You also could have added a 'syscall_ret' member to pt_regs, operate
+> on that for the return values (seccomp, syscall...) and swap it into
+> gprs[2] right before returning to user space.
 
-kwork2:~ # ./a.out -1 55 /usr/bin/perl -MPOSIX -e '$!=0; my $r = syscall(-1, 0); print "ret=$r errno=".($!+0)." ($!)\n"'
-ret=-1 errno=55 (No anode)
-kwork2:~ # ./a.out -2 55 /usr/bin/perl -MPOSIX -e '$!=0; my $r = syscall(-2, 0); print "ret=$r errno=".($!+0)." ($!)\n"'
-ret=-1 errno=55 (No anode)
-kwork2:~ # ./a.out -2 55 /usr/bin/perl -MPOSIX -e '$!=0; my $r = syscall(-1, 0); print "ret=$r errno=".($!+0)." ($!)\n"'
-ret=-1 errno=38 (Function not implemented)
-kwork2:~ # podman run --rm --security-opt seccomp=<(echo '{"defaultAction":"SCMP_ACT_ALLOW","syscalls":[{"names":["mkdir"],"action":"SCMP_ACT_ERRNO"}]}') docker.io/library/alpine mkdir /tmp/test
-mkdir: can't create directory '/tmp/test': Operation not permitted
-kwork2:~ # podman run -it opensuse/leap groupadd -r www
-
-All known problematic cases are covered.
-
-Tested-by: Michal Suchánek <msuchanek@suse.de>
-Reviewed-by: Michal Suchánek <msuchanek@suse.de>
-
-
-> 
-> Regards,
-> Mukesh
-> > > +
-> > >  	if (unlikely(r0 >= NR_syscalls)) {
-> > >  		if (unlikely(trap_is_unsupported_scv(regs))) {
-> > >  			/* Unsupported scv vector */
-> > > -- 
-> > > 2.55.0
-> > > 
-> 
+That would likely also work, but I found it easier to read and
+understand to have an additional flag with a descriptive name than having
+yet another 'somehow-related-to-gpr2' member in ptregs.
 
