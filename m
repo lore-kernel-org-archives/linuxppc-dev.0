@@ -1,79 +1,94 @@
-Return-Path: <linuxppc-dev+bounces-23465-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23466-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 47F7EC43458
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Jul 2026 08:01:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 43FB5C43458
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Jul 2026 08:11:17 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gs5n95WV3z2xdb;
-	Fri, 03 Jul 2026 18:01:49 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783065709;
-	cv=none; b=juLGHqFy6lG++1qh0pEYrLr63VhquOceJm9kZwO2Hqf6CxRmALeCyhYe9gMEeeQe7+SI6zRJb3CDWIUJ8p/T5fC81jQmtljUqIXSvRLzA5B38xd0U4m7J6No20ArB3QVaOfA82x8kLbO2fbBJHsrKdrkxeu3IKrBQTNntFMJAGgI5YRMP1m+VEZ5NqpeU4LIW+wedtfYgX/m0xcmjyKHbhezSIPjcYrVgiHILRUvRk7BFYlYwr6aWJmvCipbdAdBMKr9OWFB6Jev87OLg2B/G6XSXtlWDkWm2E7u+NJdyIVolLMZgTZtDtUvTPJzK8B0vDqnzY/Q0heewKgH+k/5Iw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gs6036R19z2yDs;
+	Fri, 03 Jul 2026 18:11:15 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::52e"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783066275;
+	cv=none; b=UvJTjGY+d73roteurTgZrk2DO9GFd52GV+Yx4AdZvk+l2aXCqAmpt1oIP0dExyym729EQACS1njzstP4OGq1cKoTsjoCyfLSmaVPBRCyXuJOxtYxGu1lR06XMRZ3bZiaGyTzXJHThGa045RV8Ys3PONOZbof03tq3PZsyqsNZmBfPDskSU2drhXwlJniZnWikP4rr/0BMw4tzLqEe6QdGg0Sp5guXbnMEk9sePwp8xmUFsHshcsCHrTW3kAzXeoAnktXM+0Dg75vPPzuyFZE4Hla3YEI9wQHK1FnWHL7kuyHWXDnRvalMSXqDogfWri++L32hy2KdgAZYzkDvlP2ww==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1783065709; c=relaxed/relaxed;
-	bh=EHtNGkXBjS/m7GrE1oE5FvRgK6kKG2ZwSsq2xQOBZdI=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=BManpsVW2aCAB3z/ycs9AZSGeB+GfWNpUM2nE0pNVJkzgV/3ZaDfnJbTeInatNnlsDalikDQxGy3U2qHWq8T4RcOvAr06ewi1MVQxPgoBndbEm8FFxsETPYK9FLAx3exNsV3v84fSMItm3tBmCk3rcEayWMAWV3HgZv4jvQKkwARFJIewL0a/UyLUzlTA7n3lD1kWCtWboFiyC0841RAtmDdSHHYe9Xtd4R8v08WokqDLp+apr0wPQ63KJ/SkNiL6GZfmuw9uKiGe18rVFKVxjuOthsp+SHot872vjYuKitD1GYTT15HcK2hNp7ruOYfcNEMV6l8ytwqbOPcIQ6UaQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ZLnuRaSj; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=nnmlinux@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1783066275; c=relaxed/relaxed;
+	bh=XonqW6TTEmhnxGieIs2nXvN/Lqh826qWlC2WpFQO6i8=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=HCa1Aq98yrn384smWhe2Aox4eBefvNSyX5QIgSpeDD/bwR9EKGI+P/6knD4EILUOfvtkMRfCc1YTb/ulPyNWgyDhF/vEuQ/3YDoML128TAdahe+8lf0R4l17ja57JAM3yFZZ25jjxeEedUKg8v7HO+sVlqrZCUyYO+Q+Baq6sC1y95rF6kzwM0FZi0wfy4di5rKqf5zFePbmCKMxEj6QS8IRZ+oMj3RW2/8laZk8/h0IZ0c2is6farpSQ+GaqjwQUI7Sqv5QmpUMbQ2UBfS/cfJMMj2B18GrK61+KnMyuCns3+RY3HVQ0/a1mlRk3Ro3A7iTLWyLFbeqUHaNpdriuQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=BxSqEsrX; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::52e; helo=mail-pg1-x52e.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ZLnuRaSj;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=BxSqEsrX;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=nnmlinux@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::52e; helo=mail-pg1-x52e.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pg1-x52e.google.com (mail-pg1-x52e.google.com [IPv6:2607:f8b0:4864:20::52e])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gs5n84cMrz2xPb
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 Jul 2026 18:01:47 +1000 (AEST)
-Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6636IBUH1930356;
-	Fri, 3 Jul 2026 08:01:32 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:message-id:mime-version
-	:subject:to; s=pp1; bh=EHtNGkXBjS/m7GrE1oE5FvRgK6kKG2ZwSsq2xQOBZ
-	dI=; b=ZLnuRaSj/0enCAMlUYdDA6U5dTRvOrn7Bgle0I8zePDX7ZhLRgzojR+Cj
-	LFC9RoMZtEedxRp1fYDCGri7nXZj4YQtixYtM8UxRydGaVb2gyf51cqAXsSzenLE
-	GbvS009LrHL9kppRT6cYbSM/RV/27kiZkyRjV4d28LmYgZ9CEfNbKsf8nXR7qdDt
-	+EgCuYRr5IiQk7TjOMQuFVo7dGPkCnjlWxduA+OLkUZQLSDg5ufXd1dJUAt23AQo
-	i5NoVWKhdO0rdmdgR9xpQNsJcKkRrAq8iqpwfoCPyh6fJuYZOrfDzkb9E39DnrHy
-	dSIJgV+zJsU04AiGoMx5IcGHhPN3g==
-Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4f26pee6ds-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 03 Jul 2026 08:01:31 +0000 (GMT)
-Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma12.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 6637YdZ5015771;
-	Fri, 3 Jul 2026 08:01:31 GMT
-Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
-	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 4f2ruqr2jf-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 03 Jul 2026 08:01:31 +0000 (GMT)
-Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com [10.20.54.104])
-	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 66381R3L33816856
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 3 Jul 2026 08:01:27 GMT
-Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 46B2720043;
-	Fri,  3 Jul 2026 08:01:27 +0000 (GMT)
-Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id DD6722004E;
-	Fri,  3 Jul 2026 08:01:24 +0000 (GMT)
-Received: from ltcd48-lp3.ltc.tadn.ibm.com (unknown [9.5.7.39])
-	by smtpav05.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Fri,  3 Jul 2026 08:01:24 +0000 (GMT)
-From: Narayana Murty N <nnmlinux@linux.ibm.com>
-To: mahesh@linux.ibm.com, mpe@ellerman.id.au, maddy@linux.ibm.com
-Cc: oohall@gmail.com, npiggin@gmail.com, chleroy@kernel.org,
-        nnmlinux@linux.ibm.com, linuxppc-dev@lists.ozlabs.org,
-        linux-kernel@vger.kernel.org, vaibhav@linux.ibm.com,
-        sbhat@linux.ibm.com, harshpb@linux.ibm.com
-Subject: [PATCH 1/1] powerpc/eeh: Prevent EEH false positives on PMCSR reads in D3cold
-Date: Thu,  2 Jul 2026 23:36:49 -0400
-Message-ID: <20260703033649.41633-1-nnmlinux@linux.ibm.com>
-X-Mailer: git-send-email 2.51.1
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gs6025vg3z2xwM
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 Jul 2026 18:11:13 +1000 (AEST)
+Received: by mail-pg1-x52e.google.com with SMTP id 41be03b00d2f7-c88cc025f54so215772a12.1
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 Jul 2026 01:11:13 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1783066272; x=1783671072; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=XonqW6TTEmhnxGieIs2nXvN/Lqh826qWlC2WpFQO6i8=;
+        b=BxSqEsrXSWQxedpPCuClPcdhKSFbmR12kep8BvGoW8CVx/l+SHCkIPTe3xX0cOi3GB
+         n2Qf5j7L5D2+KDFIekcGT/+Eq35v/GKQ1ftctioz5bAljwCXeemaQTKC9L6l/xE0VXR9
+         pxmqsuitdawSQL+chKwMpaSGAbzt1s/M/tXr1ivZ/QW3/BnHySyFFeRd9xzGKQ80ZBd3
+         TViw3EncC5oorpknZBRv+fwV4/ygmzDg3eaZeqxaz3Fsmtqetd8Jx8OqvFIa7VjiRJwY
+         tEpr7DtkUmkNbrP6jqZXb9uX+Y6/JXOMjfXjBrPlu3c7/+4AK+uu4N+pzyd8Ji0FZRET
+         j/YA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1783066272; x=1783671072;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=XonqW6TTEmhnxGieIs2nXvN/Lqh826qWlC2WpFQO6i8=;
+        b=Xs9u+V0TTSuCb98x2tnsqgHNPsqOWtCDBR1IhkUYSTqIPvJNAGmrfxd20A7xpCXRpS
+         x5h2ndzxAbpKGKMr/mqiXrPBYLHDhwR4v/voDz+hc+AFBRMgOqKSwzXOKnghh+u8M9bJ
+         Z9D5FaaqlvggDZaERFmDBmoxAvxXg196hRXrV6QAWeUYCS9Do41Ux0TtePt/FjdtdBRr
+         RvxNbmzXkKi15adsBHAUXr/AsTx3JktrTZr0dq4Mc7ed2oy1X2Cbaiw/X/OsTHxTktx7
+         p/AEBY46g4CnHw4ZpSeGA/XlVtAKyaIrCOKgKXMe2ctZT32gJIRfMEJgh2zr7oRgQ7T1
+         N8ew==
+X-Forwarded-Encrypted: i=1; AFNElJ/B+xfPyEMaGmhuFnP0i7tpK8qPy86cmIZpPmbblk83R4s8kPvoVm+Sb6dj12q2SQB0OzLnk2hazQ1jqYw=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yz/Zk2TEP0LtgnGtrBqxqDJ0X1ZZ6IYyDwyFCm8kifsM2RopKMt
+	1khoL7+J/x8HPIj/nzh/PBf+fU1Dc2fnikRyoDz818ZAZj2BZQ8uyadP
+X-Gm-Gg: AfdE7cnYVX2PufUw70twd3yxWvQY2lC2ObRCMWyAKzT7bpVGGS0vE+i6SsipyGQ7Uyl
+	4mY9UwWpVDiFnLDrvtp7kSox/kyH83Jn/XTJP6/CYKgVeQMH+/+G5DdRqVRHlb4lAzYBQAjoDHB
+	7n5TBBv9s/mAWFEWaMCFo2le6zv4++aijTX7EcjD469KpmX6U7QhmvvUlMfZ2UxyNRX2q8rC56d
+	1owZCpqf4cUNjjt0JSiy0G+9FVsD0SxQy7HupJb2+pCwS6jbptgIEJQUYrX9Kt0IB759rPWQhxb
+	7MaU8jn/xva562gEXem03n9z5Ghxfl2elNfyQBBNgBtUYt7YyeGc5jG1x6R+CI3IAqRKobJTGg6
+	/Qkgo09LziO/NfrbAjDEF7XbdQi/yepdmwr0ajSvkDUEcYh69A9Ie0A8PnGezlqJ/oeapHKCYVy
+	I1M3I3d0s5TwuNL+T/GGuN8xRd3XchZkCLEaVISYhAvlOy0uchqxPpEOk7Ft3AlapALg==
+X-Received: by 2002:a05:6a21:48d:b0:3bf:9aa9:b2a4 with SMTP id adf61e73a8af0-3bfed29d324mr10405838637.20.1783066271547;
+        Fri, 03 Jul 2026 01:11:11 -0700 (PDT)
+Received: from li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com.com ([106.51.160.236])
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-30f0bb80f5csm25932409eec.15.2026.07.03.01.11.05
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 03 Jul 2026 01:11:11 -0700 (PDT)
+From: "Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com>
+To: oleg@redhat.com,
+	maddy@linux.ibm.com,
+	mpe@ellerman.id.au,
+	npiggin@gmail.com,
+	chleroy@kernel.org,
+	sshegde@linux.ibm.com,
+	mkchauras@gmail.com,
+	mchauras@linux.ibm.com,
+	thuth@redhat.com,
+	segher@kernel.crashing.org,
+	ryan.roberts@arm.com,
+	ruanjinjie@huawei.com,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org
+Cc: =?UTF-8?q?Michal=20Such=C3=A1nek?= <msuchanek@suse.de>
+Subject: [PATCH V3] powerpc/syscall: Fix syscall skip handling for seccomp and ptrace
+Date: Fri,  3 Jul 2026 13:41:00 +0530
+Message-ID: <20260703081100.1681924-1-mkchauras@gmail.com>
+X-Mailer: git-send-email 2.55.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -87,205 +102,188 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-GUID: VeLq9wx7fTfM78I7wbjuv5YPf_tPwka8
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNzAzMDA3MyBTYWx0ZWRfXxMS+xiSVsrYZ
- VII46PD1TX2xLdHDvki6XwSBhk6PPMlB7kxEMjv78Yp69FXrHzUMSk58BJDd8kIoTIfgPdCJn89
- 0Xt7N77CKkioFa8elOOmoHJji0aJ/Lw=
-X-Authority-Analysis: v=2.4 cv=edsNubEH c=1 sm=1 tr=0 ts=6a476c5c cx=c_pps
- a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17
- a=RAioF0-LDSMA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=iQ6ETzBq9ecOQQE5vZCe:22 a=VnNF1IyMAAAA:8 a=-mcfluX0F-qhFAC7NC0A:9
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzAzMDA3MyBTYWx0ZWRfX1vb4LAe6FBDE
- MzNHKyslTa80YkRuVpIpKC71LeZAW9KS1C2z0KpQAwAGcrEz77lsoS+gQsQjebDQyo5LtCLB3s2
- D+hlmZuG/EsnI0wur//jkFKx156IEwX2XN75YzjRL8781ZbF6q5Dr/Icm0a6GCG8af3yK9A5XNc
- gCCAJyWK2zF98DA9rer/y0l9kxKP6R8TmyqJkDIMcvdgtXIafLJg0SutnW/uZ22G/C2ZQBHTlj1
- FIUak7ftCBrZf7CZ60fjRmq0SLiO4hu0NigC7SwRJiNultPeVPcOnFd+YWBcPwIgJ8My548fwBd
- kq3o/cGg959o6OWvA/VJFGiL+YsA4onSY27VhEEatwUy4ONX4xOjFYBLBrC61YwKbG7/MaHo/+E
- MD9Fb3tzuZNrTgV85JEOw/ZmdI1c6OmHTg0ob2k4JXQa84LZ5ivmkr7HHMknhw3H7Nt8Gb/Ezr8
- JPGo/On0yQftFCZn0ag==
-X-Proofpoint-ORIG-GUID: lAy3IuutBfvwWrZB710FhILr3wqtE7Vz
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
- definitions=2026-07-03_02,2026-06-26_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501 malwarescore=0 adultscore=0 impostorscore=0 bulkscore=0
- spamscore=0 suspectscore=0 clxscore=1011 lowpriorityscore=0 phishscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607030073
 
-On pseries systems, RTAS-based PCI config space reads can trigger
-false EEH events when attempting to read the Power Management Control
-Status Register (PMCSR) while a device is in D3cold state. This occurs
-because the device is powered off and cannot respond to config space
-accesses, causing the platform to report an error condition.
+After enabling GENERIC_ENTRY on PowerPC, syscall_enter_from_user_mode()
+returns -1 as a sentinel to signal that seccomp or ptrace has intercepted
+the syscall and already set a return value via syscall_set_return_value().
+system_call_exception() was not handling this sentinel, and since -1UL
+is >= NR_syscalls, the code fell into the out-of-range path and returned
+-ENOSYS, overwriting the errno already placed in regs->gpr[3].
 
-This patch addresses the issue by:
+The naive fix of checking r0 == -1L before the NR_syscalls bounds check
+is ambiguous: a user legitimately calling syscall(-1) also produces r0 ==
+-1L, and a tracer intercepting such a call would have its injected return
+value silently discarded.
 
-1. Caching PM capability information in struct eeh_dev:
-   - pm_cap: Offset of the PM capability structure
-   - pmcsr_offset: Absolute config space offset of PMCSR register
+Fix this properly by introducing regs->entry_flags, a kernel-internal
+field in struct pt_regs (consuming one slot of the existing __pt_regs_pad
+so the ABI is preserved), with SYSCALL_ENTRY_RET_SET as an out-of-band
+flag. syscall_set_return_value() sets this flag whenever seccomp or ptrace
+injects a return value. system_call_exception() zeros entry_flags before
+calling syscall_enter_from_user_mode(), then checks and clears the flag
+afterwards: if set, it returns regs->gpr[3] directly regardless of what
+syscall number the user originally requested.
 
-2. Synchronizing PM capability data between pci_dev and eeh_dev:
-   - During device probe (eeh_probe_device), copy pm_cap from pci_dev
-   - During early init (pseries_eeh_init_edev), discover pm_cap via
-     firmware before pci_dev exists
+This handles all seccomp actions correctly:
 
-3. Intercepting PMCSR reads in D3cold state:
-   - In rtas_pci_dn_write_config, detect PMCSR read attempts
-   - Check if device is in D3cold via pdev->current_state
-   - Return synthetic success value instead of performing RTAS call
-   - Prevents hardware access that would trigger false EEH event
+  - SECCOMP_RET_ERRNO, SECCOMP_RET_TRACE (no tracer), SECCOMP_RET_USER_NOTIF:
+    all call syscall_set_return_value(), flag is set, injected value returned.
+  - SECCOMP_RET_TRAP, SECCOMP_RET_KILL: call syscall_rollback() and deliver
+    a signal; flag is not set, but the process is dying so the return value
+    is irrelevant.
 
-The fix handles both early boot (before pci_dev exists) and runtime
-scenarios, ensuring PM capability information is always available when
-needed. By blocking RTAS reads to PMCSR when devices are in D3cold,
-we prevent spurious EEH events while maintaining proper error detection
-for genuine hardware failures.
+The fix covers both ppc32 and ppc64 with no #ifdefs.
 
-Signed-off-by: Narayana Murty N <nnmlinux@linux.ibm.com>
+Fixes: bee25f97ad24 ("powerpc: Enable GENERIC_ENTRY feature")
+Reported-by: Michal Suchánek <msuchanek@suse.de>
+Closes: https://lore.kernel.org/all/ajpp-_XnbF3UTM_E@kunlun.suse.cz/
+Signed-off-by: Mukesh Kumar Chaurasiya (IBM) <mkchauras@gmail.com>
 ---
- arch/powerpc/include/asm/eeh.h               |  9 +++++++
- arch/powerpc/kernel/eeh.c                    | 16 ++++++++++++
- arch/powerpc/kernel/rtas_pci.c               | 26 ++++++++++++++++++++
- arch/powerpc/platforms/pseries/eeh_pseries.c | 16 ++++++++++++
- 4 files changed, 67 insertions(+)
+v2 -> v3:
+ - Last fix is not working for -1 syscall. Fixed that with this.
+v2: https://lore.kernel.org/all/20260629182946.419552-1-mkchauras@gmail.com
 
-diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
-index b7ebb4ac2c71..224a3adcd34e 100644
---- a/arch/powerpc/include/asm/eeh.h
-+++ b/arch/powerpc/include/asm/eeh.h
-@@ -139,6 +139,15 @@ struct eeh_dev {
- 	int pcie_cap;			/* Saved PCIe capability	*/
- 	int aer_cap;			/* Saved AER capability		*/
- 	int af_cap;			/* Saved AF capability		*/
+v1 -> v2:
+ - Fix issues in the previous fix (Michal)
+v1: https://lore.kernel.org/all/20260624171520.772408-1-mkchauras@gmail.com
+
+ arch/powerpc/include/asm/ptrace.h      | 22 +++++++++++++++++++++-
+ arch/powerpc/include/asm/syscall.h     |  6 ++++++
+ arch/powerpc/include/uapi/asm/ptrace.h |  6 ++++--
+ arch/powerpc/kernel/ptrace/ptrace.c    |  2 ++
+ arch/powerpc/kernel/syscall.c          | 18 ++++++++++++++++++
+ 5 files changed, 51 insertions(+), 3 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/ptrace.h b/arch/powerpc/include/asm/ptrace.h
+index fdeb97421785..1a53d5cfa8db 100644
+--- a/arch/powerpc/include/asm/ptrace.h
++++ b/arch/powerpc/include/asm/ptrace.h
+@@ -54,8 +54,9 @@ struct pt_regs
+ 			};
+ 			unsigned long result;
+ 			unsigned long exit_flags;
++			unsigned long entry_flags;
+ 			/* Maintain 16 byte interrupt stack alignment */
+-			unsigned long __pt_regs_pad[3];
++			unsigned long __pt_regs_pad[2];
+ 		};
+ 	};
+ #if defined(CONFIG_PPC64) || defined(CONFIG_PPC_KUAP)
+@@ -233,6 +234,25 @@ static inline unsigned long frame_pointer(struct pt_regs *regs)
+ #define current_pt_regs() \
+ 	((struct pt_regs *)((unsigned long)task_stack_page(current) + THREAD_SIZE) - 1)
+ 
++/*
++ * SYSCALL_ENTRY_RET_SET: seccomp or ptrace called syscall_set_return_value()
++ * and wants the syscall skipped; regs->gpr[3] already holds the return value.
++ */
++#define SYSCALL_ENTRY_RET_SET	BIT(0)
++
++static inline void set_syscall_entry_ret(struct pt_regs *regs)
++{
++	regs->entry_flags |= SYSCALL_ENTRY_RET_SET;
++}
++
++static inline bool test_and_clear_syscall_entry_ret(struct pt_regs *regs)
++{
++	bool set = !!(regs->entry_flags & SYSCALL_ENTRY_RET_SET);
++
++	regs->entry_flags &= ~SYSCALL_ENTRY_RET_SET;
++	return set;
++}
++
+ /*
+  * The 4 low bits (0xf) are available as flags to overload the trap word,
+  * because interrupt vectors have minimum alignment of 0x10. TRAP_FLAGS_MASK
+diff --git a/arch/powerpc/include/asm/syscall.h b/arch/powerpc/include/asm/syscall.h
+index 834fcc4f7b54..9ae79326abe3 100644
+--- a/arch/powerpc/include/asm/syscall.h
++++ b/arch/powerpc/include/asm/syscall.h
+@@ -98,6 +98,12 @@ static inline void syscall_set_return_value(struct task_struct *task,
+ 			regs->gpr[3] = val;
+ 		}
+ 	}
 +	/*
-+	 * Cached PCI PM capability information.
-+	 * pm_cap == 0 means the device does not have PCI PM capability
-+	 * or it has not been discovered yet.
-+	 * pmcsr_offset is the absolute config-space offset of PMCSR:
-+	 *     pm_cap + PCI_PM_CTRL
++	 * Mark that a return value has been explicitly set by seccomp or
++	 * ptrace so that system_call_exception() can skip the syscall
++	 * unconditionally, even when the user requested syscall(-1).
 +	 */
-+	u8 pm_cap;
-+	u16 pmcsr_offset;
- 	struct eeh_pe *pe;		/* Associated PE		*/
- 	struct list_head entry;		/* Membership in eeh_pe.edevs	*/
- 	struct list_head rmv_entry;	/* Membership in rmv_list	*/
-diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
-index bb836f02101c..4402166df8c0 100644
---- a/arch/powerpc/kernel/eeh.c
-+++ b/arch/powerpc/kernel/eeh.c
-@@ -997,6 +997,21 @@ int eeh_init(struct eeh_ops *ops)
- 	return eeh_event_init();
++	set_syscall_entry_ret(regs);
  }
  
-+#ifdef CONFIG_EEH
-+static void eeh_sync_pm_cap(struct eeh_dev *edev, struct pci_dev *pdev)
-+{
-+	if (!edev || !pdev)
-+		return;
-+
+ static inline void syscall_get_arguments(struct task_struct *task,
+diff --git a/arch/powerpc/include/uapi/asm/ptrace.h b/arch/powerpc/include/uapi/asm/ptrace.h
+index a393b7f2760a..2f2a43414fe6 100644
+--- a/arch/powerpc/include/uapi/asm/ptrace.h
++++ b/arch/powerpc/include/uapi/asm/ptrace.h
+@@ -56,7 +56,8 @@ struct pt_regs
+ 	unsigned long dsisr;		/* on 4xx/Book-E used for ESR */
+ 	unsigned long result;		/* Result of a system call */
+ 	unsigned long exit_flags;	/* System call exit flags */
+-	unsigned long __pt_regs_pad[3];	/* Maintain 16 byte interrupt stack alignment */
++	unsigned long entry_flags;	/* System call entry flags */
++	unsigned long __pt_regs_pad[2];	/* Maintain 16 byte interrupt stack alignment */
+ };
+ 
+ #endif /* __ASSEMBLER__ */
+@@ -117,7 +118,8 @@ struct pt_regs
+ #define PT_DSISR 42
+ #define PT_RESULT 43
+ #define PT_EXIT_FLAGS 44
+-#define PT_PAD 47 /* 3 times */
++#define PT_ENTRY_FLAGS 45
++#define PT_PAD 46 /* 2 times */
+ #define PT_DSCR 48
+ #define PT_REGS_COUNT 48
+ 
+diff --git a/arch/powerpc/kernel/ptrace/ptrace.c b/arch/powerpc/kernel/ptrace/ptrace.c
+index 316d4f5ead8e..440d00690cf2 100644
+--- a/arch/powerpc/kernel/ptrace/ptrace.c
++++ b/arch/powerpc/kernel/ptrace/ptrace.c
+@@ -235,6 +235,8 @@ void __init pt_regs_check(void)
+ 		     offsetof(struct user_pt_regs, dsisr));
+ 	BUILD_BUG_ON(offsetof(struct pt_regs, result) !=
+ 		     offsetof(struct user_pt_regs, result));
++	BUILD_BUG_ON(offsetof(struct pt_regs, entry_flags) !=
++		     offsetof(struct user_pt_regs, entry_flags));
+ 
+ 	BUILD_BUG_ON(sizeof(struct user_pt_regs) > sizeof(struct pt_regs));
+ 
+diff --git a/arch/powerpc/kernel/syscall.c b/arch/powerpc/kernel/syscall.c
+index a9da2af6efa8..c7458aae199d 100644
+--- a/arch/powerpc/kernel/syscall.c
++++ b/arch/powerpc/kernel/syscall.c
+@@ -19,9 +19,27 @@ notrace long system_call_exception(struct pt_regs *regs, unsigned long r0)
+ 	long ret;
+ 	syscall_fn f;
+ 
 +	/*
-+	 * Prefer PCI core cached PM capability once pci_dev exists.
-+	 * If pm_cap is zero, clear pmcsr_offset as well.
++	 * Zero entry_flags before syscall_enter_from_user_mode() so that
++	 * syscall_set_return_value() can set SYSCALL_ENTRY_RET_SET as an
++	 * unambiguous out-of-band signal.  The field is not initialised by
++	 * the entry assembly.
 +	 */
-+	edev->pm_cap = pdev->pm_cap;
-+	edev->pmcsr_offset = pdev->pm_cap ? pdev->pm_cap + PCI_PM_CTRL : 0;
-+}
-+#endif
-+
- /**
-  * eeh_probe_device() - Perform EEH initialization for the indicated pci device
-  * @dev: pci device for which to set up EEH
-@@ -1050,6 +1065,7 @@ void eeh_probe_device(struct pci_dev *dev)
- 	/* bind the pdev and the edev together */
- 	edev->pdev = dev;
- 	dev->dev.archdata.edev = edev;
-+	eeh_sync_pm_cap(edev, dev);
- 	eeh_addr_cache_insert_dev(dev);
- 	eeh_sysfs_add_device(dev);
- }
-diff --git a/arch/powerpc/kernel/rtas_pci.c b/arch/powerpc/kernel/rtas_pci.c
-index fccf96e897f6..9668cd0411e1 100644
---- a/arch/powerpc/kernel/rtas_pci.c
-+++ b/arch/powerpc/kernel/rtas_pci.c
-@@ -95,6 +95,24 @@ static int rtas_pci_read_config(struct pci_bus *bus,
- 	return ret;
- }
++	regs->entry_flags = 0;
+ 	add_random_kstack_offset();
+ 	r0 = syscall_enter_from_user_mode(regs, r0);
  
-+static bool eeh_handle_pmcsr_read(struct eeh_dev *edev, int size,
-+				  u32 *val, int *pcibios_ret)
-+{
-+	struct pci_dev *pdev;
++	/*
++	 * Seccomp or ptrace may have set a return value and requested that
++	 * the syscall be skipped. syscall_set_return_value() sets
++	 * SYSCALL_ENTRY_RET_SET in regs->entry_flags as an
++	 * unambiguous out-of-band signal. This avoids the ambiguity of
++	 * using r0 == -1 as the skip sentinel when the user themselves
++	 * called syscall(-1).
++	 */
++	if (unlikely(test_and_clear_syscall_entry_ret(regs)))
++		return regs->gpr[3];
 +
-+	if (!edev)
-+		return false;
-+
-+	pdev = edev->pdev;
-+	if (!pdev || pdev->current_state != PCI_D3cold)
-+		return false;
-+
-+	*val = EEH_IO_ERROR_VALUE(size);
-+	*pcibios_ret = PCIBIOS_SUCCESSFUL;
-+
-+	return true;
-+}
-+
- int rtas_pci_dn_write_config(struct pci_dn *pdn, int where, int size, u32 val)
- {
- 	unsigned long buid, addr;
-@@ -108,6 +126,14 @@ int rtas_pci_dn_write_config(struct pci_dn *pdn, int where, int size, u32 val)
- 	if (pdn->edev && pdn->edev->pe &&
- 	    (pdn->edev->pe->state & EEH_PE_CFG_BLOCKED))
- 		return PCIBIOS_SET_FAILED;
-+
-+	if (unlikely(pdn->edev && pdn->edev->pmcsr_offset &&
-+		     size == 2 && where == pdn->edev->pmcsr_offset)) {
-+		int pcibios_ret;
-+
-+		if (eeh_handle_pmcsr_read(pdn->edev, size, &val, &pcibios_ret))
-+			return pcibios_ret;
-+	}
- #endif
- 
- 	addr = rtas_config_addr(pdn->busno, pdn->devfn, where);
-diff --git a/arch/powerpc/platforms/pseries/eeh_pseries.c b/arch/powerpc/platforms/pseries/eeh_pseries.c
-index b12ef382fec7..0e7efb4bf2d4 100644
---- a/arch/powerpc/platforms/pseries/eeh_pseries.c
-+++ b/arch/powerpc/platforms/pseries/eeh_pseries.c
-@@ -351,6 +351,21 @@ static struct eeh_pe *pseries_eeh_pe_get_parent(struct eeh_dev *edev)
- 	return NULL;
- }
- 
-+static void pseries_eeh_init_pm_cap(struct pci_dn *pdn, struct eeh_dev *edev)
-+{
-+	edev->pm_cap = 0;
-+	edev->pmcsr_offset = 0;
-+
-+	if (!pdn || !edev)
-+		return;
-+
-+	edev->pm_cap = pseries_eeh_find_cap(pdn, PCI_CAP_ID_PM);
-+	if (!edev->pm_cap)
-+		return;
-+
-+	edev->pmcsr_offset = edev->pm_cap + PCI_PM_CTRL;
-+}
-+
- /**
-  * pseries_eeh_init_edev - initialise the eeh_dev and eeh_pe for a pci_dn
-  *
-@@ -408,6 +423,7 @@ static void pseries_eeh_init_edev(struct pci_dn *pdn)
- 	edev->pcix_cap = pseries_eeh_find_cap(pdn, PCI_CAP_ID_PCIX);
- 	edev->pcie_cap = pseries_eeh_find_cap(pdn, PCI_CAP_ID_EXP);
- 	edev->aer_cap = pseries_eeh_find_ecap(pdn, PCI_EXT_CAP_ID_ERR);
-+	pseries_eeh_init_pm_cap(pdn, edev);
- 	edev->mode &= 0xFFFFFF00;
- 	if ((pdn->class_code >> 8) == PCI_CLASS_BRIDGE_PCI) {
- 		edev->mode |= EEH_DEV_BRIDGE;
+ 	if (unlikely(r0 >= NR_syscalls)) {
+ 		if (unlikely(trap_is_unsupported_scv(regs))) {
+ 			/* Unsupported scv vector */
 -- 
-2.51.1
+2.55.0
 
 
