@@ -1,55 +1,54 @@
-Return-Path: <linuxppc-dev+bounces-23509-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23510-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2E929C43458
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Jul 2026 20:39:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 697D3C43458
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Jul 2026 20:39:51 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gsQbZ3J2vz2yf5;
-	Sat, 04 Jul 2026 06:39:38 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gsQbj3kzWz2yVP;
+	Sat, 04 Jul 2026 06:39:45 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=185.171.202.116
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783085812;
-	cv=none; b=UiRMT4mAzILqhJ6fZSTS53NdVF1fT2rU2a2oIssSMCNkSZfv9v3eGAfK9Gholt8T/H429H4EGq5nrZLn8X+ILo8UjR4LcWjpNSzbGTUGchbgNM36MySYMQZs0cr4QQJ7Tkd5cZiD0qUkpCvUZ8fwwR/GC1UOC6MYEaiqcTar5jA/iAEf9ZaKYxEzpZb+m8e6dIL2RYasLgNsXqu2NmVujEEAF4P5rcuNXfC+oz7JFxa+sPth5RKBZ+foTttRxXSP2yllDuGXydwW5I1CR+c9Hp09Bw7xJj+VwmfuUkXQqq3DnCKKWI/ZVC5h5XCIkTftkZ7e6Q7YQIXPmUGxn5CG3g==
+	cv=none; b=E63/V8lg/u3DzTzHN6Xd9GHT7m8s3D+hnW5dsI1klzln4kVOiTlp8KGN2p9UJgj7VQrFLHCvhs5mBImt/Cb59nW88bMkb9b2toCUzba/ne+5SmOrq7ke4CiiYQQ1h9nTFGp+qguF+1gcecQu+uAwa8omjebQTK5BXGpp8BPP2+b53k26I1loqkQI9dO9v/Rcyq3Iy9AFcxKgRML7gs2oQTwo0aqAxDPGu/1Nn7VrmSXEE1NA5d7TBRTEM1FfFtDMnMLC0kdm8wGgQseEiGX74FZFw46ccz9catjZZpTJ85lwCL4F/Jb4YrYMeTBbC7f8GlBvzVaoXsNMtvrhv8aY6w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1783085812; c=relaxed/relaxed;
-	bh=n9bPyS/0uNi6wXJqgrGX5cVcsYuuWD9wtysaxkT+Dt4=;
+	bh=DYiPuRvE6Nwnxm1ayjjfGRCixDjRGX9XFfBMaqcehNo=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=L6eAjjQWMafS5Xulq/AlgTnZsHCGs9zZ3V7Hb3BhlHn6gDM6MtKDiqmu1GBUEFgvpNFXMKfE16IlDySn/Pb1z3NMSHW/hWF1D94R47Tf5sKdKNeqEspIJ6X0m1Ij9HSED7+VHjXSa8EuAcHPlkQkMeH0BzD2LjwBU5P84DT/mzHjeGxoDfAoIffSKQRNHbfvk2EXOugu4IZZA30b6V/idTyg9VUnpqgleAm5jnOfBRGZYjFc8VocWQPgTuafNaAt93bU+DWWwio0oy8a5htpZ9JZSKZqWvVCM5WZP/CCF2Nno3uCrkZx2agCwMBcIub8717L1ZaA54WUYIOgZ+0V1Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com; dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=dkim header.b=QXaAzfOJ; dkim-atps=neutral; spf=pass (client-ip=185.171.202.116; helo=smtpout-04.galae.net; envelope-from=paul.louvel@bootlin.com; receiver=lists.ozlabs.org) smtp.mailfrom=bootlin.com
+	 In-Reply-To:To:Cc; b=bmUH26BJFpEjuF2IBxycdbQRqZDev4Eic8w3Yi5KUpmNPK4Y374w4mV0jd8kXTTLt17hYqUxnsE/6WGNAG8smN1O8OV/pJ9P8BCAym5jp/duaObKkKt8f+4K5Ubx8dl4hkNiCUROzMrYis1nOJDUH4X5LayUGcECvMqVgU2Nd7WL+OlFdCyVMx4g8gLF6+h13QLJ8l6q1sef/vFbseIRJaAg/jXKZiwy4yTvTsTowrWl3U0Lig1nVJZLPExTK0/hHHu5vZn6OifLJrZPskQJJ9UhzCD+FIaqIiKSTixWZRCrPXzRbEoK4gYfXPT62MpJLA4vaGHDQ/F4Fm9Xpq0Bgg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com; dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=dkim header.b=TPFDubIO; dkim-atps=neutral; spf=pass (client-ip=185.171.202.116; helo=smtpout-04.galae.net; envelope-from=paul.louvel@bootlin.com; receiver=lists.ozlabs.org) smtp.mailfrom=bootlin.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=dkim header.b=QXaAzfOJ;
+	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=dkim header.b=TPFDubIO;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=185.171.202.116; helo=smtpout-04.galae.net; envelope-from=paul.louvel@bootlin.com; receiver=lists.ozlabs.org)
-X-Greylist: delayed 374 seconds by postgrey-1.37 at boromir; Fri, 03 Jul 2026 23:36:51 AEST
 Received: from smtpout-04.galae.net (smtpout-04.galae.net [185.171.202.116])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gsFCl6Dxkz2xPb
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gsFCm0Mp3z2xdb
 	for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 Jul 2026 23:36:51 +1000 (AEST)
 Received: from smtpout-01.galae.net (smtpout-01.galae.net [212.83.139.233])
-	by smtpout-04.galae.net (Postfix) with ESMTPS id 5C94EC49F61;
-	Fri,  3 Jul 2026 13:31:03 +0000 (UTC)
+	by smtpout-04.galae.net (Postfix) with ESMTPS id 9B913C49F5E;
+	Fri,  3 Jul 2026 13:31:01 +0000 (UTC)
 Received: from mail.galae.net (mail.galae.net [212.83.136.155])
-	by smtpout-01.galae.net (Postfix) with ESMTPS id 8C24660300;
-	Fri,  3 Jul 2026 13:30:51 +0000 (UTC)
-Received: from [127.0.0.1] (localhost [127.0.0.1]) by localhost (Mailerdaemon) with ESMTPSA id 388B5104C95AC;
-	Fri,  3 Jul 2026 15:30:49 +0200 (CEST)
+	by smtpout-01.galae.net (Postfix) with ESMTPS id CB6FA60300;
+	Fri,  3 Jul 2026 13:30:49 +0000 (UTC)
+Received: from [127.0.0.1] (localhost [127.0.0.1]) by localhost (Mailerdaemon) with ESMTPSA id A2806104C95AB;
+	Fri,  3 Jul 2026 15:30:47 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=dkim;
-	t=1783085450; h=from:subject:date:message-id:to:cc:mime-version:content-type:
+	t=1783085448; h=from:subject:date:message-id:to:cc:mime-version:content-type:
 	 content-transfer-encoding:in-reply-to:references;
-	bh=n9bPyS/0uNi6wXJqgrGX5cVcsYuuWD9wtysaxkT+Dt4=;
-	b=QXaAzfOJIpi/uOaJ6u/UgTYwunCe5bV9Fm7RPLZs4LjoS8ZAO5GapEmJ1pDc5hjTTFtDDa
-	5cTLLZbs2gsqgYBMzkGY2BaWUX7P0czD+wbLJD/U/5lTtF4MDwOunIknti8z/6IsFTWiWe
-	otFTFFdXt3R0jU8l91bAzGqXpT+jnOdhHLbY0HZPQZR3BexF9pwGnp7IoKKmX9/66v2XTS
-	cx3VBR/pvXj+w0K3umrGdIlSTUScE3CPltrvv0MXKGUPPi4cweL+zLNQ8Ad193+0EgMBc6
-	Hmj1oeQpolqdXNAzThanud+z8Oqh14OBmSb/VqtyM5E6MdC0DOOJZLbwsfSA8g==
+	bh=DYiPuRvE6Nwnxm1ayjjfGRCixDjRGX9XFfBMaqcehNo=;
+	b=TPFDubIOOd12n77ZxYKru+sNA7xfghnI7Q5u0bwp4fAQxtAEOXWdCwOjBuUJ6H/lVmev8p
+	At01ZX3W66RGbqXG6frB42AukdRbTiqgf9Ne3YC5tw1lFV81K1EcbqbimuX1VgsLsFsJWn
+	RgL3pNdq/GHpFeAJ7uzls9MGOI5yNN76s/TXzF09XOf0LcnI4uvnQqgvmkfrEwZXtNhtng
+	F9iI2hXF9H/6d6dtDGHA1MZRs9g1pnlYftrTHfaN8Tm4mLwIG1GTtftPFd6+jRiN/ninp7
+	+/TeZllHOaEtIknkmkI0euNQrkn31XiYid5PZ4uVeX2/UaR7O6aPY0+apyckgA==
 From: Paul Louvel <paul.louvel@bootlin.com>
-Date: Fri, 03 Jul 2026 15:30:20 +0200
-Subject: [PATCH 12/12] soc: fsl: qe: Add support of IRQs in QE GPIO
+Date: Fri, 03 Jul 2026 15:30:19 +0200
+Subject: [PATCH 11/12] soc: fsl: qe: Remove useless struct member
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -65,7 +64,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260703-qe-pic-gpios-v1-12-6c3e706e27dc@bootlin.com>
+Message-Id: <20260703-qe-pic-gpios-v1-11-6c3e706e27dc@bootlin.com>
 References: <20260703-qe-pic-gpios-v1-0-6c3e706e27dc@bootlin.com>
 In-Reply-To: <20260703-qe-pic-gpios-v1-0-6c3e706e27dc@bootlin.com>
 To: Qiang Zhao <qiang.zhao@nxp.com>, 
@@ -81,97 +80,64 @@ Cc: linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
  linux-gpio@vger.kernel.org, Paul Louvel <paul.louvel@bootlin.com>, 
  Thomas Petazzoni <thomas.petazzoni@bootlin.com>
 X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1783085423; l=2410;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1783085423; l=1530;
  i=paul.louvel@bootlin.com; s=20260313; h=from:subject:message-id;
- bh=uU4iuMohvv17IiIgOuFnj9w2k+ZovOe5eFIHeMSDjt4=;
- b=hNx7S/9Lk8zefyWMtjb/HRlT/T9Bq5wS3kVedzZyJ1n5LRDAihpruvvGSJm5Li7vBBareHst+
- bqggNYIbt96CsUzNAiJy5UEsQIIQkuAgz6vMaGlCucqiEWHZcqkKCyJ
+ bh=lV6ixfVQUU+h5OFc6ks1zgWp1h40IUo5QKv+Bi6rpy4=;
+ b=GTd53N1L6mieV9LlVEep06QMzjN/ESane6rFL5nBaGQzPhkH7cvOjjXeGy3noJBEpv8mlEyJD
+ 09JzWIAKFqZATFJ0g3rY981zqaR5bWzMCKPO8dxQ09la/CBBR6EG1Kf
 X-Developer-Key: i=paul.louvel@bootlin.com; a=ed25519;
  pk=eLW50NT18UAvUT5cAcYf88zNbBCZDLFXuptpyLVhVIU=
 X-Last-TLS-Session-Version: TLSv1.3
 
-Some QE GPIO pins have an associated interrupt line in the QE PIC to
-signal state changes on the pin.
-
-Because the GPIO controller does not perform any interrupt handling
-itself, a nexus node (interrupt-map) is used to map each GPIO line
-supporting IRQ to the parent QE PIC interrupt domain.
-
-Add the to_irq() method in the corresponding GPIO controller driver,
-that uses the nexus node to perform the translation.
+The reg member from the struct qepic_data is no longer needed, since it
+is now embedded in reg_base of struct irq_chip_generic. Remove it.
 
 Signed-off-by: Paul Louvel <paul.louvel@bootlin.com>
 ---
- drivers/soc/fsl/qe/gpio.c | 28 +++++++++++++++++++++++++++-
- 1 file changed, 27 insertions(+), 1 deletion(-)
+ drivers/soc/fsl/qe/qe_ports_ic.c | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/soc/fsl/qe/gpio.c b/drivers/soc/fsl/qe/gpio.c
-index 66828f2a3577..f8919642f40d 100644
---- a/drivers/soc/fsl/qe/gpio.c
-+++ b/drivers/soc/fsl/qe/gpio.c
-@@ -16,6 +16,7 @@
- #include <linux/gpio/driver.h>
- #include <linux/slab.h>
- #include <linux/export.h>
-+#include <linux/of_irq.h>
- #include <linux/platform_device.h>
+diff --git a/drivers/soc/fsl/qe/qe_ports_ic.c b/drivers/soc/fsl/qe/qe_ports_ic.c
+index 1bf2af087b78..6cf23a721ff3 100644
+--- a/drivers/soc/fsl/qe/qe_ports_ic.c
++++ b/drivers/soc/fsl/qe/qe_ports_ic.c
+@@ -17,7 +17,6 @@
+ #define CEPICR		0x14
  
- #include <soc/fsl/qe/qe.h>
-@@ -23,6 +24,7 @@
- #define PIN_MASK(gpio) (1UL << (QE_PIO_PINS - 1 - (gpio)))
+ struct qepic_data {
+-	void __iomem *reg;
+ 	int parent_irq;
+ 	struct irq_domain *domain;
+ 	struct irq_chip_generic *gc;
+@@ -144,15 +143,16 @@ static int qepic_probe(struct platform_device *pdev)
+ 	};
+ 	struct device *dev = &pdev->dev;
+ 	struct qepic_data *data;
++	void __iomem *reg;
  
- struct qe_gpio_chip {
-+	struct device_node *np;
- 	struct gpio_chip gc;
- 	void __iomem *regs;
- 	spinlock_t lock;
-@@ -135,6 +137,29 @@ static int qe_gpio_dir_out(struct gpio_chip *gc, unsigned int gpio, int val)
+ 	data = devm_kzalloc(dev, sizeof(*data), GFP_KERNEL);
+ 	if (!data)
+ 		return -ENOMEM;
+ 	d_info.host_data = data;
+ 
+-	data->reg = devm_platform_ioremap_resource(pdev, 0);
+-	if (IS_ERR(data->reg))
+-		return PTR_ERR(data->reg);
++	reg = devm_platform_ioremap_resource(pdev, 0);
++	if (IS_ERR(reg))
++		return PTR_ERR(reg);
+ 
+ 	data->parent_irq = platform_get_irq(pdev, 0);
+ 	if (data->parent_irq < 0)
+@@ -165,7 +165,7 @@ static int qepic_probe(struct platform_device *pdev)
+ 	data->gc = irq_get_domain_generic_chip(data->domain, 0);
+ 	if (!data->gc)
+ 		return -ENODEV;
+-	data->gc->reg_base = data->reg;
++	data->gc->reg_base = reg;
+ 
  	return 0;
  }
- 
-+static int qe_gpio_to_irq(struct gpio_chip *gc, unsigned int gpio)
-+{
-+	struct qe_gpio_chip *qe_gc = gpiochip_get_data(gc);
-+	struct of_phandle_args oirq;
-+	struct irq_domain *domain;
-+	int ret;
-+
-+	oirq.np = qe_gc->np;
-+	oirq.args_count = 2;
-+	oirq.args[0] = gpio;
-+	oirq.args[1] = 0;
-+
-+	ret = of_irq_parse_raw(NULL, &oirq);
-+	if (ret)
-+		return ret;
-+
-+	domain = irq_find_host(oirq.np);
-+	if (!domain)
-+		return -EPROBE_DEFER;
-+
-+	return irq_create_of_mapping(&oirq);
-+}
-+
- struct qe_pin {
- 	/*
- 	 * The qe_gpio_chip name is unfortunate, we should change that to
-@@ -299,7 +324,7 @@ static int qe_gpio_probe(struct platform_device *ofdev)
- 	qe_gc = devm_kzalloc(dev, sizeof(*qe_gc), GFP_KERNEL);
- 	if (!qe_gc)
- 		return -ENOMEM;
--
-+	qe_gc->np = np;
- 	spin_lock_init(&qe_gc->lock);
- 
- 	gc = &qe_gc->gc;
-@@ -311,6 +336,7 @@ static int qe_gpio_probe(struct platform_device *ofdev)
- 	gc->get = qe_gpio_get;
- 	gc->set = qe_gpio_set;
- 	gc->set_multiple = qe_gpio_set_multiple;
-+	gc->to_irq = qe_gpio_to_irq;
- 	gc->parent = dev;
- 	gc->owner = THIS_MODULE;
- 
 
 -- 
 2.55.0
