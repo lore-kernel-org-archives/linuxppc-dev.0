@@ -1,83 +1,120 @@
-Return-Path: <linuxppc-dev+bounces-23500-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23501-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DE703C43458
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Jul 2026 11:44:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 48CC2C43458
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Jul 2026 11:47:03 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gsBkN3KmTz2xdb;
-	Fri, 03 Jul 2026 21:44:44 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.140.110.172
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783079084;
-	cv=none; b=CovCwFmawdIu7a4hABx/eIuUqW52R6WX72gSdFmHzI+YbHt22wYLlNE/JePKLmQhVauid+ldCe5vjlDttyTCKMbpiyOhOZ08YOdsykdI9t5lFgh6XXM7wKrRpx84udKH0xzsi7b/9GL4+nYrAhgxdA/WZ+4w0pzSug0rmNv+fKz9yHi0tNjx8zVPHMo98asw/B/dfs8JNVjk/G6lHFinfAa51vcaN1UTehAjY+0sNU5mecAEfo8VM1AnePCUUWskvYqYaNadi9w0Dj3L6eWQkOk8pyptqAokDAI/Wo1QNGzm1r5vRJChkK0TOqskeHC3P1nIftZ00JADF9D/QYrjDA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gsBn16y9Xz2xdb;
+	Fri, 03 Jul 2026 21:47:01 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::82c"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783079221;
+	cv=none; b=Zfrxfpajk5JOo85rQXXA86iP421UHmGLf2X55digJKTcqUrMNZlVYbSUFIESY7bEgO1xdwYQ1zIHKTQ0QLP8rZiZwAQYQb4XZq/HK+/Y7FeMzMb5F5+Y3suEbLAZeYr92W73vt4e6RTO0y76vzCkB2Vs3IvLwKUlhYjVLnuHgqHkr2f8YKNtor2nm1fKkUhDZZbSR3j2mVwIV7WBHapp1Zize++6Zvw9qXIy36Ig9/q8qt9YG616IRmKpveOzbNgIggrkKgikUIlaQ2W7g1x50jfzkdpymPdUilBMY1YDqO9KnQYeEfzsSEGLwoblB4R0P4buu1m3IuaPdu+wqmHyw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1783079084; c=relaxed/relaxed;
-	bh=JLEv5rnGz+dH05b46BfT9OvCq8I6vCtHuaFvN5MWQs8=;
+	t=1783079221; c=relaxed/relaxed;
+	bh=GF/dZxM95AsUU1wWK1B0B/CUui/snGJUvA0tIkHl1DM=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Sq85xJOSbYU1zADt0N4OGcyTba6m2duORdORrBZU3U56a7RKRXl7mTic0jJrjHey8DaVSZBHiypX+uJG3rBuTor9E3YbynQ6HYla3MC3nYP38pztlDagGT0O/vIJ3QLR0Zsb1VyCbTtN/rIsMVbFtG/V83CIjI76YAbn5nAKObaG0bqsz/eSccYGgxHZJZsWpdta1ooqJZSsJL+ae/S/b8I54UXdkqlxAcQN5ZsNfRtILfM7ranQeefNoxrGmryYc2RnusI9fmA82WLHA7jTBLB9XwkLzmKG7muPllE7Z//3m7r6nM5dTVopV1R03PG74lCrq49bzbIL9i9h6aWGhw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=tKakZnJ3; dkim-atps=neutral; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=mark.rutland@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
+	 Content-Type:Content-Disposition:In-Reply-To; b=Uei6Kxq0/ASNbOQKCUfql8h0OuKWedWVzfEVRX3YZ7W0Wix8l7rhNCkGBf1y2mqJqOuCvdFpZg1YKWEuWWwZI5S4lBv0ltCNHTyanavW4AEdxOW5sBYqKsJpRJgqHtJwnP83z4AGDdCXOQi+gnENHkRq6KSUvEzCtoS1ZQBX5y19ck/3XdxiStFOJQU9JtwDiYTLn4ldHHPPXUYY91Xqubm/V3kFo0bNhNHa99Cdejs0Vil5fQx95sjmSh2U78BsLvkcCyEiWE1TWUOX4QHkOiClUpeK4gis5UdTCkitmNCnUlRQRNz+TAfUXmil2WnD2cpw+N2NxjeUVXQ/O+kh9A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ziepe.ca; dkim=pass (2048-bit key; secure) header.d=ziepe.ca header.i=@ziepe.ca header.a=rsa-sha256 header.s=google header.b=HWRgT0cg; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::82c; helo=mail-qt1-x82c.google.com; envelope-from=jgg@ziepe.ca; receiver=lists.ozlabs.org) smtp.mailfrom=ziepe.ca
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ziepe.ca
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=tKakZnJ3;
+	dkim=pass (2048-bit key; secure) header.d=ziepe.ca header.i=@ziepe.ca header.a=rsa-sha256 header.s=google header.b=HWRgT0cg;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=mark.rutland@arm.com; receiver=lists.ozlabs.org)
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gsBkK4SXRz2xLq
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 Jul 2026 21:44:39 +1000 (AEST)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 2D83C4637;
-	Fri,  3 Jul 2026 04:44:01 -0700 (PDT)
-Received: from J2N7QTR9R3 (usa-sjc-imap-foss1.foss.arm.com [10.121.207.14])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 65D7D3F673;
-	Fri,  3 Jul 2026 04:43:55 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1783079045; bh=GrslDCw/jAcNOwlB5p8nyDTpYshtAqIWlzis+qMG09I=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=tKakZnJ38IyGMrpp+FvNGCM4vGiYTEfyBni8Tcaswrg4QrDdEbNpUaICG78eSHmGQ
-	 OGQV+KmXsh59rXzLS/pX0QGbIzhBmg5wD2mrtFlZMHliVzpGArzzl6pwF6bB5ekiJB
-	 DUxWC4xjecD3+Ioa17sixIZ2uo+RdtMykGKWIz5Q=
-Date: Fri, 3 Jul 2026 12:43:53 +0100
-From: Mark Rutland <mark.rutland@arm.com>
-To: Jinjie Ruan <ruanjinjie@huawei.com>
-Cc: oleg@redhat.com, richard.henderson@linaro.org, mattst88@gmail.com,
-	linmag7@gmail.com, linux@armlinux.org.uk, catalin.marinas@arm.com,
-	will@kernel.org, kees@kernel.org, guoren@kernel.org,
-	chenhuacai@kernel.org, kernel@xen0n.name, geert@linux-m68k.org,
-	tsbogend@alpha.franken.de, James.Bottomley@hansenpartnership.com,
-	deller@gmx.de, maddy@linux.ibm.com, mpe@ellerman.id.au,
-	npiggin@gmail.com, chleroy@kernel.org, pjw@kernel.org,
-	palmer@dabbelt.com, aou@eecs.berkeley.edu, alex@ghiti.fr,
-	hca@linux.ibm.com, gor@linux.ibm.com, agordeev@linux.ibm.com,
-	borntraeger@linux.ibm.com, svens@linux.ibm.com,
-	ysato@users.sourceforge.jp, dalias@libc.org,
-	glaubitz@physik.fu-berlin.de, richard@nod.at,
-	anton.ivanov@cambridgegreys.com, johannes@sipsolutions.net,
-	luto@kernel.org, tglx@kernel.org, mingo@redhat.com, bp@alien8.de,
-	dave.hansen@linux.intel.com, hpa@zytor.com, chris@zankel.net,
-	jcmvbkbc@gmail.com, peterz@infradead.org, wad@chromium.org,
-	thuth@redhat.com, ada.coupriediaz@arm.com, kevin.brodsky@arm.com,
-	linusw@kernel.org, yeoreum.yun@arm.com, song@kernel.org,
-	james.morse@arm.com, anshuman.khandual@arm.com, broonie@kernel.org,
-	liqiang01@kylinos.cn, pengcan@kylinos.cn, ryan.roberts@arm.com,
-	yangtiezhu@loongson.cn, sshegde@linux.ibm.com,
-	mchauras@linux.ibm.com, austin.kim@lge.com, jchrist@linux.ibm.com,
-	arnd@arndb.de, thomas.weissschuh@linutronix.de,
-	sohil.mehta@intel.com, andrew.cooper3@citrix.com, jgross@suse.com,
-	kas@kernel.org, x86@kernel.org, linux-alpha@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-	linux-mm@kvack.org, linux-csky@vger.kernel.org,
-	loongarch@lists.linux.dev, linux-m68k@lists.linux-m68k.org,
-	linux-mips@vger.kernel.org, linux-parisc@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org,
-	linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
-	linux-um@lists.infradead.org
-Subject: Re: [PATCH v16 02/18] syscall_user_dispatch: Introduce a weak
- fallback for arch_syscall_is_vdso_sigreturn()
-Message-ID: <akegeU59jSK9t7FX@J2N7QTR9R3>
-References: <20260629130616.642022-1-ruanjinjie@huawei.com>
- <20260629130616.642022-3-ruanjinjie@huawei.com>
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=ziepe.ca (client-ip=2607:f8b0:4864:20::82c; helo=mail-qt1-x82c.google.com; envelope-from=jgg@ziepe.ca; receiver=lists.ozlabs.org)
+Received: from mail-qt1-x82c.google.com (mail-qt1-x82c.google.com [IPv6:2607:f8b0:4864:20::82c])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gsBn04vFBz2xLq
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 Jul 2026 21:46:59 +1000 (AEST)
+Received: by mail-qt1-x82c.google.com with SMTP id d75a77b69052e-51c08df8513so3452361cf.3
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 Jul 2026 04:46:59 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=ziepe.ca; s=google; t=1783079217; x=1783684017; darn=lists.ozlabs.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=GF/dZxM95AsUU1wWK1B0B/CUui/snGJUvA0tIkHl1DM=;
+        b=HWRgT0cgGtMAYEejmSaA4J3mFVFol4a3pO4iprW6TeCHjEO+9S6W1cyP950tQ2eULJ
+         UErFPXr5R4qAoED84Vr0fHwa3zSfBrOTEoZ+Hby9h+F12ctYqyloR6ueyrCOUaHPcuoY
+         SiVg8Rqk4rfTGFnwhev7XKj/nVZONMmGPorcdToqZRWHVHOHDLTWI8igTdRNcezjuogI
+         C5W9RnxCD6+sC2W2t0donML5N7bZWDLruQ9bbP7K6DNlq8mTWLb+Vm3+ZMsc4bSyzWD9
+         yjr1R5jpOX5acMjfxaOkRWa+GB7doEfIjhB9o8LZNHpVi9olFdjg8JRR8F0iyPbl3LC3
+         Ifng==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1783079217; x=1783684017;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=GF/dZxM95AsUU1wWK1B0B/CUui/snGJUvA0tIkHl1DM=;
+        b=fDb1tMYaLh/CXjBqChVwnge9nSWz5+DdT8edhNJj+JryTL6ZDNmHdhCVXlq/8Rr+fg
+         UOEm082bBz2c0+hRXOJMdTGDcbqytsE2NGsILT9PjOWoGhRw4fGupFuKoGyaGJxGJmwJ
+         SPPrcmd+uecLsfbGZxim/38KuPEZFbRhJRgE6qUHwY1+r1Ko4fFEdPs1TArJlZRWJvul
+         vOWt7C/7rjWmdG6kSNUfRLqr9XqldDMT1xUPfJ1b050WOw4WWVtil7wDvP/y/S7d22PS
+         LZ3UnOmmqofoJD+dGQvypwzs+hBw2Mq6QvmBuL2WGsi4E/OcWNm1una3z9/Q9R1jnRK2
+         Rvxg==
+X-Forwarded-Encrypted: i=1; AFNElJ/DWy46JnmlgeaxMl39itFL0OEOvEGyJCExmxz44Vw+Ieo26mqBykxU1BqfF9hfwERjoAzCGCwRiOsppec=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yw7J5kSlUDcoANObXiJ8j1KKlZvEZimIC3vtz17Ag/Fkb/WznhM
+	YR4zBRoLrGBZyNGFdmEkeOCQf7y4Kapr2mhM2QCN+3/oEpsa6i7awgzJe5SypxOJraY=
+X-Gm-Gg: AfdE7cl8yQd74jgRogjlj9R4ZyTdvdQ3yA/7Dyd7w4vpOmn0ExFA5AWcnGJwWPOm9JX
+	4gAVA2e9+pfn/VTNf/3Bon3wLTQPL0gXzg/xKRkZ9Te32bH/9lVcOannZ36Btf8XPPi1AjgITOc
+	/745/Ryv/FERs0YPOKRzSLd1mrwyRkTUKK0T/HPOkJXGFpHbTZ6/cqAo2ox/JfZKsh4k21V5VCu
+	BMqQbgpEpFYTXCE7qLNz5gum/mydgN7Ad8TmuE1QfIfcxj9qOksjicPjGA93kKhgr1+0XNOybvs
+	jr0Sn5KGVyoSFMmfxEthDm9X47zgeSQrLA7jgG3gQSSGXsLgduvRDLUqJs+mST6tOaM+67paRLK
+	PNZuxpSU9Ua0UYvUhZBmXlQREdxfEeA8K5qrVJNUAGtmtWJPg96KRwmGrnOsyBlCyWO7L+nkrVa
+	uoxWu+qmXz9yZfxX4uIJPfm+LLGhpxKrV+7w2t/urGXa+taTEJInBaFSIAAooM36fZRZ8=
+X-Received: by 2002:ac8:59d1:0:b0:51c:555:7dea with SMTP id d75a77b69052e-51c2ad42df1mr112307971cf.30.1783079216951;
+        Fri, 03 Jul 2026 04:46:56 -0700 (PDT)
+Received: from ziepe.ca (crbknf0213w-47-54-130-67.pppoe-dynamic.high-speed.nl.bellaliant.net. [47.54.130.67])
+        by smtp.gmail.com with ESMTPSA id d75a77b69052e-51c4202366csm13366551cf.30.2026.07.03.04.46.56
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 03 Jul 2026 04:46:56 -0700 (PDT)
+Received: from jgg by wakko with local (Exim 4.97)
+	(envelope-from <jgg@ziepe.ca>)
+	id 1wfcMB-00000007ngp-0vd7;
+	Fri, 03 Jul 2026 08:46:55 -0300
+Date: Fri, 3 Jul 2026 08:46:55 -0300
+From: Jason Gunthorpe <jgg@ziepe.ca>
+To: Alexey Kardashevskiy <aik@amd.com>
+Cc: "Aneesh Kumar K.V (Arm)" <aneesh.kumar@kernel.org>,
+	iommu@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
+	linux-kernel@vger.kernel.org, linux-coco@lists.linux.dev,
+	Robin Murphy <robin.murphy@arm.com>,
+	Marek Szyprowski <m.szyprowski@samsung.com>,
+	Will Deacon <will@kernel.org>, Marc Zyngier <maz@kernel.org>,
+	Steven Price <steven.price@arm.com>,
+	Suzuki K Poulose <Suzuki.Poulose@arm.com>,
+	Catalin Marinas <catalin.marinas@arm.com>,
+	Jiri Pirko <jiri@resnulli.us>, Mostafa Saleh <smostafa@google.com>,
+	Petr Tesarik <ptesarik@suse.com>,
+	Dan Williams <dan.j.williams@intel.com>,
+	Xu Yilun <yilun.xu@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
+	linux-s390@vger.kernel.org,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	Alexander Gordeev <agordeev@linux.ibm.com>,
+	Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
+	Heiko Carstens <hca@linux.ibm.com>,
+	Vasily Gorbik <gor@linux.ibm.com>,
+	Christian Borntraeger <borntraeger@linux.ibm.com>,
+	Sven Schnelle <svens@linux.ibm.com>, x86@kernel.org,
+	Jiri Pirko <jiri@nvidia.com>, Michael Kelley <mhklinux@outlook.com>,
+	"Cheloha, Scott" <Scott.Cheloha@amd.com>
+Subject: Re: [PATCH v6 03/20] dma-direct: use DMA_ATTR_CC_SHARED in
+ alloc/free paths
+Message-ID: <20260703114655.GW7525@ziepe.ca>
+References: <20260604083959.1265923-1-aneesh.kumar@kernel.org>
+ <20260604083959.1265923-4-aneesh.kumar@kernel.org>
+ <845d0c8a-6d51-47aa-8e0b-8381e733444a@amd.com>
+ <20260617154101.GE3577091@ziepe.ca>
+ <25155bd6-4348-4aa8-ba70-0a882fc84db9@amd.com>
+ <20260630160242.GI7525@ziepe.ca>
+ <98800d21-18f6-44d6-9ba0-da9b77567d85@amd.com>
+ <20260702144729.GP7525@ziepe.ca>
+ <58bb92a9-c5ea-47a3-b19a-934573f15305@amd.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -93,52 +130,41 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20260629130616.642022-3-ruanjinjie@huawei.com>
+In-Reply-To: <58bb92a9-c5ea-47a3-b19a-934573f15305@amd.com>
 
-On Mon, Jun 29, 2026 at 09:06:00PM +0800, Jinjie Ruan wrote:
-> Currently, multiple architectures (LoongArch, RISC-V, S390, Powerpc)
-> provide identical stubs for arch_syscall_is_vdso_sigreturn() that simply
-> return false. This results in redundant boilerplate code across the tree.
+On Fri, Jul 03, 2026 at 08:15:49PM +1000, Alexey Kardashevskiy wrote:
+> On 3/7/26 00:47, Jason Gunthorpe wrote:
+> > On Thu, Jul 02, 2026 at 10:25:16AM +1000, Alexey Kardashevskiy wrote:
+> > 
+> > > > > not externally available so I'll have to trick the DMA layer into
+> > > > > using SWIOTLB (which is still all shared, right?) as I specifically
+> > > > > want to skip page conversions. Setting low DMA mask won't guarantee
+> > > > > that the DMA layer won't allocate a page outside of SWIOTLB and
+> > > > > convert it. Manually do
+> > > > 
+> > > > Why so particular?
+> > > 
+> > > aahhh I missed "pre-". I need a way to get pre-shared pages for my
+> > > sev-guest activities.
+> > 
+> > It sounds to me like you don't, what you are worried about is
+> > optimizing the dma_alloc_coherent flow to avoid fragmentation and all
+> > CC architetures require this optimization.
 > 
-> Introduce a default __weak implementation of
-> arch_syscall_is_vdso_sigreturn() directly in syscall_user_dispatch.c that
-> returns false. This allows architectures that do not utilize a vDSO
-> sigreturn to entirely drop their redundant inline definitions.
-> 
-> Architectures requiring a specialized check (such as x86) will continue to
-> override this fallback with their strong symbol definitions.
-> 
-> Clean up the redundant implementations in loongarch, riscv, s390
-> and powerpc.
+> It is not about fragmentation, it is about unwanted page state
+> changes when few pages are shared for a very short time.
 
-> +bool __weak arch_syscall_is_vdso_sigreturn(struct pt_regs *regs)
-> +{
-> +	return false;
-> +}
+That's really basically the same thing. The responsiblity for
+optimizing the shared/private conversion lies with the DMA API not the
+callers.
 
-If we need this, please make it:
+> When I needed these pages, I could: get a private page, convert,
+> (possibly trigger RMP and IO PDE smashing if that 4K is backed with
+> 2M), do the VM<->HV communication, convert back to private (and
+> possibly unsmash the page).
 
-#ifndef arch_syscall_is_vdso_sigreturn
-static inline bool arch_syscall_is_vdso_sigreturn(struct pt_regs *regs)
-{
-	return false;
-}
-#endif
+IMHO it would be better to use something like dma_pool to amortize the
+coherent allocations instead of trying to hack with swiotlb.
 
-... and require that architectures which need this provide a CPP
-definition.
-
-The use of __weak is generally problematic, as it prevents the compiler
-form being able to elide code, and gets in the way of symbol resolution.
-It's perfectly fine to require that architectures need to provide a CPP
-definition alongside their own implementation of this function.
-
-That said, as per my comment on v15, I'd prefer that for now we DO NOT
-enable syscall user dispatch on arm64, and we first make it possible for
-architecture to express whether or not they support that, even if they
-use GENERIC_ENTRY. That might mean this patch isn't necessary right now.
-
-[1] https://lore.kernel.org/linux-arm-kernel/akZgV0Y4YAmB43_g@J2N7QTR9R3.cambridge.arm.com/
-
-Mark.
+Jason
 
