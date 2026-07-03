@@ -1,95 +1,95 @@
-Return-Path: <linuxppc-dev+bounces-23550-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23551-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D8338C43458
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Jul 2026 20:52:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6EC7AC43458
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Jul 2026 20:52:41 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gsQtQ4tyGz2yps;
-	Sat, 04 Jul 2026 06:52:30 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=205.220.168.131
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783108223;
-	cv=none; b=jsHq8zD5iUQCgj7WfOzd5CFn1THiq1i9uSsDsuG9eFutaMcASE0SbkmA1OwYPD8k2dsx0/VsYB9OZKD5OFN08ckRC3HaN1fRxcSuuYzHpvvWBtcERy5erjrgH0IBM5mn2aNPWZ/4+3vsiFr7b+4bzjnH4GjutUlixfguLE3gVlPm3H6Y/4Pd9gNaZCGyydEPLSVYA8OJ4x+oZG/LVC/0y8HnSRlT+RMgBpuYygXkv8+T9m8byq0XGiyCDXQZfABm7S3yZQbvdAb5xA9zbmTDxgNXVBct+CrjIXXs5kMP2rPqQv5W5BO0s02WaP03HyfRdZB1B/xzjnYdi9sfO9YFKQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gsQtb3Ngrz2yqX;
+	Sat, 04 Jul 2026 06:52:39 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=205.220.180.131
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783108247;
+	cv=none; b=ZIga9/TcXcs4ETFPrhemgi9RQkm5NenHzK9v71zI2olHmd0zlBmQCGng1nNhV4AbVA4EbADtRrtBtcukzd3Fax6ExVy+ia7hdVZi6YmGhEQtHPuMoy1VOJ1d1NhdJNStkCV98qUNeHHwKwppBirZCxKIZ/mNhgMyH1V2+ex+/wQbDS+VnrRRqg8OKFC0wiIWlLDpK9w3y34NFMzZ6QZ5jSDsErQQkCX7tliJGSeJTxYs5eyq+j0sXmUzNulqfhXJA7ZireB85D1AdK3kGMHnFKKUCihEJb2MnMQj0Xp0A5VgaeD8L8NBWhNRUqRxl8GRznRE3X4q+/nOMG/BYBQqrw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1783108223; c=relaxed/relaxed;
-	bh=yRi/WTO9ulMC6lVt6c63wlpnlLgzkshb40+LVJZvO7Y=;
+	t=1783108247; c=relaxed/relaxed;
+	bh=71ffIbujQRJpACfwswiC++PljuSs1fWY5AHxmQ6jcq4=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=cV1y2iPSLNHysgG+prSzy/XG2mLszumhuaup1LZnUy/om2CR/XIrGh0WvrVTb4irwlRn/qZA/+MX8MqXNX0K9h94KzkOkA/A83DRr6N4Tje1fPHekeI+CEXea7JIBt7aV9+LsvDF4aIZ2RUKGZLxaGT0qe09DDvAj/CA/eg8uOQtxASpUNi0i0+cxEU6guUxEyT1IkewH8kXcSI8WH9/ikld+j8PkgF0Sdqku3mg7Kk13igEeeDhzwCAxIea9GyHpoRrK1Lxe0DIp/Eq4SSHroBbgfq2MuraHBsKluQs08boPqVWL5er9MfTvFwEMEUL5tplXLPhVSc+En/yd9vH/g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=G9SC3rEj; dkim=pass (2048-bit key; unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=B3Voa2NP; dkim-atps=neutral; spf=pass (client-ip=205.220.168.131; helo=mx0a-0031df01.pphosted.com; envelope-from=mukesh.ojha@oss.qualcomm.com; receiver=lists.ozlabs.org) smtp.mailfrom=oss.qualcomm.com
+	 MIME-Version; b=Yx8PxyoS2+f4XAfffcCSdSBbLn8hDFag6GHIns9CZFyiRtbKzFMQzpDWKwT0ZQp/RvLvMWycRckZWGYJ+ALcxA8oblUhV0pcp/jNPCmqCHzoyUByqzgQdwC9cjNypBRGoJ3L9F98cwnQNCD0vw/+1L47K3+HRLzUwI3akyUlUWEiMX5pwCQlPoPfxK+dDRYxIwSKPx4ckveDPMjKVJOYOnEjVmFkZPmjXwKChE56MufsjQdeVx0HFdsHos5OLdzxwO00iRT+DCfDNCMjkAC4yDjnjjp9JrCyX6jgqGnyNieResemtBBGLUOkncFix3Pal+zlHHv+cu9U5ZP2S/dowA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=TvyBZCsm; dkim=pass (2048-bit key; unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=Rt/5S28L; dkim-atps=neutral; spf=pass (client-ip=205.220.180.131; helo=mx0b-0031df01.pphosted.com; envelope-from=mukesh.ojha@oss.qualcomm.com; receiver=lists.ozlabs.org) smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=G9SC3rEj;
-	dkim=pass (2048-bit key; unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=B3Voa2NP;
+	dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=TvyBZCsm;
+	dkim=pass (2048-bit key; unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=Rt/5S28L;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=oss.qualcomm.com (client-ip=205.220.168.131; helo=mx0a-0031df01.pphosted.com; envelope-from=mukesh.ojha@oss.qualcomm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=oss.qualcomm.com (client-ip=205.220.180.131; helo=mx0b-0031df01.pphosted.com; envelope-from=mukesh.ojha@oss.qualcomm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gsPVk4Ypbz2xC3
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 04 Jul 2026 05:50:21 +1000 (AEST)
-Received: from pps.filterd (m0279864.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 663HjeWH497469
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 3 Jul 2026 19:50:20 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gsPWC08bsz2xwM
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 04 Jul 2026 05:50:46 +1000 (AEST)
+Received: from pps.filterd (m0279872.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 663HjL8b532674
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 3 Jul 2026 19:50:44 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
 	cc:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=qcppdkim1; bh=yRi/WTO9ulM
-	C6lVt6c63wlpnlLgzkshb40+LVJZvO7Y=; b=G9SC3rEj2kHAWnYiSRqHCTjG60U
-	GTp1/0e6hpptCvjyg0JEHGriBBim0bhbPooY0oATfxtcRJooXMhaIcLDCcBqjgxk
-	jYlGgrqHqhqtatabxhhxjtMkbHboHxz/yXfKfl759vZd1PEzqNEIW0l0ix6uYNAI
-	Z3aEDzbTEup8FZLMCo/qecqk1uNB3pqgFiIPsHh56TqHtkt+ROAaE4LsRtNvey0t
-	g+6LF+M75t44gZnCpER4kEMf1DlU9CKiCvGgikFnVCvCdxrVPZwvpgNo09p87uYJ
-	HY116V/TYlyPgw62giiMSUYvclGNTfzHx3Sk7c46X48NmxcNE5oOV8dAUYg==
-Received: from mail-pg1-f199.google.com (mail-pg1-f199.google.com [209.85.215.199])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4f68jytmj9-1
+	:mime-version:references:subject:to; s=qcppdkim1; bh=71ffIbujQRJ
+	pACfwswiC++PljuSs1fWY5AHxmQ6jcq4=; b=TvyBZCsmUFb6XP0nyeMDmZUr0d6
+	QfdM5q7XKtRLmhSCsR87R7n24zAgPbqwXHbQbpbBrAfJN/3BoE2r95vk71p3+CBB
+	ObOCk69OylcINhIYVL4FrfDARu/c4LAUFcKEv/9v6uWS8ukaPAWQuL8QDl4PNDO6
+	WjFZPBHuitcjlSddKO9eskwZfTMHVM8nPVQ4qxvV0m/4929WyXvRmCnqcdLKEtVF
+	BRpK7IT2oKjC1GZwOGyeLt9zFZnQ6XcJ6WQmmdDcXj7k39CKJTR5ZgMjHxxCKGYB
+	3+KiUYnJ/K88oHwqwdihUAZhPh+yEQ4A7N5sgC8Y0wHfiGLi9JI0wWQhoHA==
+Received: from mail-pj1-f72.google.com (mail-pj1-f72.google.com [209.85.216.72])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4f648n3sw9-1
 	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 Jul 2026 19:50:20 +0000 (GMT)
-Received: by mail-pg1-f199.google.com with SMTP id 41be03b00d2f7-c9c26587e67so1029932a12.0
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 Jul 2026 12:50:20 -0700 (PDT)
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 Jul 2026 19:50:44 +0000 (GMT)
+Received: by mail-pj1-f72.google.com with SMTP id 98e67ed59e1d1-37e1f96b248so1509070a91.3
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 Jul 2026 12:50:44 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1783108219; x=1783713019; darn=lists.ozlabs.org;
+        d=oss.qualcomm.com; s=google; t=1783108244; x=1783713044; darn=lists.ozlabs.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=yRi/WTO9ulMC6lVt6c63wlpnlLgzkshb40+LVJZvO7Y=;
-        b=B3Voa2NPKPOe0y5Yz1ri3si2zeG2fIL+JoBSoaP149qfo/qIbQvCSq9aDhuf2qg0oA
-         TsXxSiCi/8cqb5LYOO7og48+EAC6qpaZWjucMiS6zjcJGsaHMbZ5ARl7o034CAZQRh9K
-         vaQiRocfhe1vIGLpDew/rLxv2Asp3G5C8AcmnswROF7uxS6+B9fu1ZsHkBKNIg7vuotm
-         unDUx1xOGLR/uZqRv7BAXIoH5Wu0IbCQ+V/TnbkZ8A1KEXdZYr0wIRN1uqDIectOOl3K
-         EXr2CV5Jd9tiRFys6Al4U+Qkx4klzg968/VqZSk7mj3CnGq58dnpabysZmVUoIOdekk+
-         R/UQ==
+        bh=71ffIbujQRJpACfwswiC++PljuSs1fWY5AHxmQ6jcq4=;
+        b=Rt/5S28Lv23VpqaEqcBBuAMhCzow+E9yRjOgMPSyXc7Q9bniY1q4Vr4RSMCIekEZLP
+         46OUWMfgNxpmUUGuUId4fzHFXlJkspI2WIzhajWRYLDbDLvz1ArKikCdclVYnXpQU/O0
+         28fBTPCjpZEQdEZALiHI7L03uOfZsgUoqisOVJnz/LGj5Gj1ZF+2HjUtnB0OO98b3sv7
+         3uBi1NPkJbZRs6tm1HzsO2ZOf74/cq4Y/ynhZCEBRTk/x3U4iNJijvsjr6wlcBvgXtcK
+         wxB8WtcJqwuXdi/UvLvWTeq5wWRTIezbXWaPbJQShDx3uQMOniktSB5eiKRSxKCmUhbh
+         3QHg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1783108219; x=1783713019;
+        d=1e100.net; s=20251104; t=1783108244; x=1783713044;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to;
-        bh=yRi/WTO9ulMC6lVt6c63wlpnlLgzkshb40+LVJZvO7Y=;
-        b=UXtbqBoNQg5zs9bVSrv1Y2YBlA23h8TzgzIYTLzG37y/pdtU5/sxLJnFHHDvh6MLSd
-         hZB3ehpGMlKDB/mmG3iECRTqwSqIkN/zAfuNHSu2y1A+BhZB37HlOXH42u+T5ryocbr5
-         HOK7L9TvGFNzesqop8Owxnk74gsU2xqhkEPnckBe27fIjMc1GhFnLFnQ8XJB1MdPjeg3
-         2vim01jBBeHBjDoVhMREs6Dhl4QDjMgzYzuIoKrCRT1Y8mMvkZvj2p0XuI+hjodOZ9lv
-         3zworgf83irJu0E4uW3Af7OQeI+LYAYCxT4vi7u8FGBC8d7ASn/HoOvdPIaaPDb3l3OH
-         2WPg==
-X-Forwarded-Encrypted: i=1; AFNElJ+52S44Q8gdcS4U2hAtO1CL4nCvti6h1zmdDJ2IPIlMlqEFtjdq4QRgLDWGOKPaYdXQwJhEJ79vkAO3pfk=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YwFf0XC5T/O7vCmaWLuDvulFY2ObMTtjKmnLksyQiGQpdRlceSs
-	6GTKLlSgxcDV8t3xyti9WFrDs2Shznd8zS96QOYatHXTb93P42WhmkGNyCbKJAoPz2te9RO31jY
-	6ArAR8YGCXl1tK5eVpoTY4rSSVN/Zccutz3WV+xfnzF99w2HxCBcjhSKfeW8b1uFsU+FF
-X-Gm-Gg: AfdE7cn44SD4DYIDCGiWkab2TC3qJ1Pmae7KH1QuVdGaI7eJpjSl4FjBrB23uvgxOa8
-	e62lXfpLArMa9dsfQeAoojXrCOIDpDfYy7/4DKLBOiu1LPpHNEc3KocA6WAanFpCsot4aCjerw4
-	BRQVhIKrRlrtkiVRZmU540dvnL0HtA68FipXzyHbV/rU3CDljuXvR9otT4elok/tOpWwON7PevW
-	Kg8fNbBNpkqdnbhI4Lbqgel88DhGNeuINDiOCztbCH+xjoVWRvRIMsQhf9M6SIRFgnBdwz3jke1
-	OmBEOgaVO9OK5ZDt+K65OPRMnGSyK3GJNUAdM4YfiGzbWc9mFDcxAK8YNfdk2SkngOa/SVI/k9R
-	Jy2UIGS5CDMPnlrh5oCVuHzONpE/cda8TnFhFww==
-X-Received: by 2002:a05:6a20:938e:b0:3bf:a8fa:a7b1 with SMTP id adf61e73a8af0-3c01cbe495dmr6288397637.37.1783108219255;
-        Fri, 03 Jul 2026 12:50:19 -0700 (PDT)
-X-Received: by 2002:a05:6a20:938e:b0:3bf:a8fa:a7b1 with SMTP id adf61e73a8af0-3c01cbe495dmr6288369637.37.1783108218631;
-        Fri, 03 Jul 2026 12:50:18 -0700 (PDT)
+        bh=71ffIbujQRJpACfwswiC++PljuSs1fWY5AHxmQ6jcq4=;
+        b=b9N1kEwWBkQuPbsQjugWRVSOlipujNZNQa9LdbNdVbmkGc5GQXUDScX2WDzvsXwGyi
+         sxYNq2h3bYK785UBcbSWGXY9BWiKjsq0F60J5EXoU/VoxBfManVfzM+nNwB1V+kXPxBx
+         5p0iaUHWfe2t47ZviX+2nUKqEUAMf0h3ZFg5+040puw6TGT7deZrtc9Osevik9JxM37x
+         TN3DG+8T8jGtBaRXkWhxD1zarqi80AgNY4Y4MFI8lOMtyyQf6DbqeHGFnEDGvPuurwiq
+         XB7Kl8DO0Q6ePTZTZ8/e2HcRA+4kPv/Vr6Z9CjRqQp/TUAmH1uj++iJMxjNNM6NmmP6+
+         P/lw==
+X-Forwarded-Encrypted: i=1; AHgh+Ro+aH5IM+uXoTIubelxT/6L4097wQKq5TGmXXwgCmOgXfluqvdDzgBeAN8syJ3uGz/F6k3NhOQPDxRzw3c=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YwR/BxUw78SwBdeZkvv8ghPUovjlqT5q4mnCZvbe99dCuyrwyFK
+	J9zbERKBOFIn3B8uZjgpwbi3lm47jcAl1XVcMTOFtHaj3SoUrC0x2drt4NWdZKpvJPjjOexot1F
+	mCr+e9A0lEwR9vxrZ9DEm5bHub32qana9igV2hQJZJYp8wB2nFl5poSI8A7fTXoCqiCIX
+X-Gm-Gg: AfdE7ckjW8UnjNvrIcxffZPf/7BmNc00nWIY2S5KYQUsNC8p5tBJO9qB+jc+VXxlQ3V
+	JDlI6hXTr/nijQkUfEUk5zuEkH4viTmu8y/ygYoY9Elmp/4QDszhjhN15qNAamI1Lj109UvdVNs
+	cLU7jmA/KuBbQ5svYdLeJ3k2jBN5NLOd2BHRZ6i959P/FVttEBlXDl10W0m/dvv/ZdZjv/7II+n
+	HH11xsIEtmuHKXr6poIYEJqabVvMD32tbW5wL1EZoo6dCF2AjUpDox5kBMEKJZ2ZuC7FmnhQBck
+	N1cO3e2vuKM9yN9KjzcM46FCwqrsYOuH+W98pJ2YypOsUuLB51bLlGPOKIhw8vHijGOku3Wk+ju
+	MMKPLOHQmUmbwNQvLUXs6dqQU5XnWALlbBlbwwg==
+X-Received: by 2002:a17:90b:1dd0:b0:37f:f4ae:5f25 with SMTP id 98e67ed59e1d1-38293b9946cmr729464a91.20.1783108243288;
+        Fri, 03 Jul 2026 12:50:43 -0700 (PDT)
+X-Received: by 2002:a17:90b:1dd0:b0:37f:f4ae:5f25 with SMTP id 98e67ed59e1d1-38293b9946cmr729426a91.20.1783108242651;
+        Fri, 03 Jul 2026 12:50:42 -0700 (PDT)
 Received: from hu-mojha-hyd.qualcomm.com ([202.46.23.25])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-30f290b6bc2sm10065845eec.27.2026.07.03.12.49.55
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-30f290b6bc2sm10065845eec.27.2026.07.03.12.50.19
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 03 Jul 2026 12:50:18 -0700 (PDT)
+        Fri, 03 Jul 2026 12:50:42 -0700 (PDT)
 From: Mukesh Ojha <mukesh.ojha@oss.qualcomm.com>
 To: Bjorn Andersson <andersson@kernel.org>,
         Konrad Dybcio <konradybcio@kernel.org>,
@@ -165,9 +165,9 @@ Cc: Ekansh Gupta <ekansh.gupta@oss.qualcomm.com>,
         linux-sound@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
         imx@lists.linux.dev, sound-open-firmware@alsa-project.org,
         Mukesh Ojha <mukesh.ojha@oss.qualcomm.com>
-Subject: [PATCH 27/42] ASoC: mediatek: mt8183: Use devm_of_reserved_mem_device_init()
-Date: Sat,  4 Jul 2026 01:08:40 +0530
-Message-ID: <20260703193855.110619-28-mukesh.ojha@oss.qualcomm.com>
+Subject: [PATCH 28/42] ASoC: mediatek: mt8189: Use devm_of_reserved_mem_device_init()
+Date: Sat,  4 Jul 2026 01:08:41 +0530
+Message-ID: <20260703193855.110619-29-mukesh.ojha@oss.qualcomm.com>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20260703193855.110619-1-mukesh.ojha@oss.qualcomm.com>
 References: <20260703193855.110619-1-mukesh.ojha@oss.qualcomm.com>
@@ -185,77 +185,78 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzAzMDIwMCBTYWx0ZWRfXzCqCLOvHAKvg
- yjEZCl3T/GYqUoZWrkpY9XHIWChBYbZXHVZJJ9A2yQDPDfFaizbcQVzVMKYs5glrkyf64WSCnFg
- U2gCnPVT4UKCLp5OO/KieRGsE5GUszzMEejKkx9YzpkYNwZWXEvZpBCRbYlPhPRyJtAdgSy8oJG
- RSAeg9feBXz2aclnW4JNLuoWpzjROFrkewVTwPvhN707GHSCBkyabenjGx54aqMnA1xRjfGtonR
- xVXhDSfBT7iWw5y7IRtMT/YoA1WntQSZb6Pfte96u1tiFoy1Ad7UAzBPxExSAe3YRW7XVl4G+8h
- WfO9gXm6IqUIB3Gd1V1owGV806W6hAhkBDsIStnSlz+a+Agalx/eeQbV9E6abE4pm3VVuDLg0ZI
- c0en1EvL6VGbJ0fyjjgWFZfza4ughcG9C8oJ6ODi9zc+eD+0RVcJE3sQj9oB/dNBP4GWD6epe+I
- 24lgjPnuANpE8aPDg6Q==
-X-Proofpoint-GUID: UAg0RA4-FiaAIPOW0z8qRRyAohGJBTBm
-X-Authority-Analysis: v=2.4 cv=QbFWeMbv c=1 sm=1 tr=0 ts=6a48127c cx=c_pps
- a=Oh5Dbbf/trHjhBongsHeRQ==:117 a=ZePRamnt/+rB5gQjfz0u9A==:17
+X-Proofpoint-Spam-Info: AW1haW4tMjYwNzAzMDIwMCBTYWx0ZWRfXxFVq6JzZ8xV8
+ Gp+614Afx3sdrteQlW5iKOkFR47nNPi2dACj8doNMPYBsndMWhaNfslRG3391lwT31YrCm6LLli
+ b2TI2JhjpUiyRxz6ydQq+7YwmLfFVos=
+X-Proofpoint-ORIG-GUID: ryDqvo7eztL9YLWY2QvwMLCXHMBxVEzs
+X-Authority-Analysis: v=2.4 cv=O4wJeh9W c=1 sm=1 tr=0 ts=6a481294 cx=c_pps
+ a=RP+M6JBNLl+fLTcSJhASfg==:117 a=ZePRamnt/+rB5gQjfz0u9A==:17
  a=RAioF0-LDSMA:10 a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=u7WPNUs3qKkmUXheDGA7:22 a=DJpcGTmdVt4CTyJn9g5Z:22 a=EUspDBNiAAAA:8
- a=5_2tDv0Uws32Dsz64S0A:9 a=_Vgx9l1VpLgwpw_dHYaR:22
-X-Proofpoint-ORIG-GUID: UAg0RA4-FiaAIPOW0z8qRRyAohGJBTBm
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNzAzMDIwMCBTYWx0ZWRfX6wTZDzme4ul1
- LFj6sykrSV8l9ls9nenQtiSxlPs0ePSxy6TDxnbLb9fJB6W+4LQ0g/28cSAOM+OirXeUpZKX3jH
- k845MoC/gcPqX3ChCCe9t2C18Nz7vZs=
+ a=u7WPNUs3qKkmUXheDGA7:22 a=yx91gb_oNiZeI1HMLzn7:22 a=EUspDBNiAAAA:8
+ a=vpwXisbvDR7QvT6TCt8A:9 a=iS9zxrgQBfv6-_F4QbHw:22
+X-Proofpoint-GUID: ryDqvo7eztL9YLWY2QvwMLCXHMBxVEzs
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzAzMDIwMCBTYWx0ZWRfX1XpBuiEaNPSt
+ m56/fMlfJCjBtuMCEWmlQETD4izYtUDsP30MIp0l1VX9PCW6FKtuOFR3BQSfC52w1QfdMaIZvU7
+ xRfk8v68KiX27eXsegzkvl3zyKbxr0VpoagWKp2ir2JGrWB7jQkLy2XqrXLd3GoI7gLk/Omxe4o
+ evztK3A1GD+wvUF1bKdKEFNGS8W2q+XdSmhCAygggGyfIizZsVCbCLZAo+s1fuNeK+yje+6panZ
+ VFoY/2VVzZMoW7W49D/dz9pM+JVBDxhGx4IVn+I2Y07jxAg1pt8mH0GB7peU5cFFtzvoHdj8vxP
+ IlkKYmCmdnmLNGOmJOMHWVWn8Ct65TAXUH46esBGaKHgq1XMp76uU35KcUg1+F/jc2SrKBMz69g
+ 5YxbqplxMam54JsfjswIWr4maiboFNgp8kHoIILxPpwj9FrCmXhdC+Xi/f5EeCHwNqIU+Wpma4q
+ ZO9tDRlcL6lk3rxegaQ==
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
  definitions=2026-07-03_03,2026-07-03_01,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- adultscore=0 phishscore=0 malwarescore=0 suspectscore=0 clxscore=1015
- bulkscore=0 impostorscore=0 lowpriorityscore=0 spamscore=0 priorityscore=1501
+ impostorscore=0 priorityscore=1501 bulkscore=0 clxscore=1015 phishscore=0
+ suspectscore=0 malwarescore=0 spamscore=0 adultscore=0 lowpriorityscore=0
  classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
  reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607030200
 
-Replace the hand-rolled devm wrapper (mt8183_afe_release_reserved_mem +
+Replace the hand-rolled devm wrapper (mt8189_afe_release_reserved_mem +
 devm_add_action_or_reset) with the standard
 devm_of_reserved_mem_device_init(), letting the device resource manager
 handle cleanup automatically.
 
 Signed-off-by: Mukesh Ojha <mukesh.ojha@oss.qualcomm.com>
 ---
- sound/soc/mediatek/mt8183/mt8183-afe-pcm.c | 13 +------------
- 1 file changed, 1 insertion(+), 12 deletions(-)
+ sound/soc/mediatek/mt8189/mt8189-afe-pcm.c | 16 ++--------------
+ 1 file changed, 2 insertions(+), 14 deletions(-)
 
-diff --git a/sound/soc/mediatek/mt8183/mt8183-afe-pcm.c b/sound/soc/mediatek/mt8183/mt8183-afe-pcm.c
-index 2634699534db..6ad396e3b10d 100644
---- a/sound/soc/mediatek/mt8183/mt8183-afe-pcm.c
-+++ b/sound/soc/mediatek/mt8183/mt8183-afe-pcm.c
-@@ -766,11 +766,6 @@ static const dai_register_cb dai_register_cbs[] = {
- 	mt8183_dai_memif_register,
+diff --git a/sound/soc/mediatek/mt8189/mt8189-afe-pcm.c b/sound/soc/mediatek/mt8189/mt8189-afe-pcm.c
+index 77cf2b604f6c..04baf7d9132a 100644
+--- a/sound/soc/mediatek/mt8189/mt8189-afe-pcm.c
++++ b/sound/soc/mediatek/mt8189/mt8189-afe-pcm.c
+@@ -2421,11 +2421,6 @@ static const struct reg_sequence mt8189_cg_patch[] = {
+ 	{ AUDIO_TOP_CON4, 0x361c },
  };
  
--static void mt8183_afe_release_reserved_mem(void *data)
+-static void mt8189_afe_release_reserved_mem(void *data)
 -{
 -	of_reserved_mem_device_release(data);
 -}
 -
- static int mt8183_afe_pcm_dev_probe(struct platform_device *pdev)
+ static int mt8189_afe_pcm_dev_probe(struct platform_device *pdev)
  {
- 	struct mtk_base_afe *afe;
-@@ -795,16 +790,10 @@ static int mt8183_afe_pcm_dev_probe(struct platform_device *pdev)
- 	afe_priv = afe->platform_priv;
- 	afe->dev = dev;
+ 	int ret, i;
+@@ -2439,16 +2434,9 @@ static int mt8189_afe_pcm_dev_probe(struct platform_device *pdev)
+ 	if (ret)
+ 		return ret;
  
 -	ret = of_reserved_mem_device_init(dev);
+-	if (ret) {
 +	ret = devm_of_reserved_mem_device_init(dev);
- 	if (ret) {
- 		dev_info(dev, "no reserved memory found, pre-allocating buffers instead\n");
- 		afe->preallocate_buffers = true;
++	if (ret)
+ 		dev_warn(dev, "failed to assign memory region: %d\n", ret);
 -	} else {
 -		ret = devm_add_action_or_reset(dev,
--					       mt8183_afe_release_reserved_mem,
+-					       mt8189_afe_release_reserved_mem,
 -					       dev);
 -		if (ret)
 -			return ret;
- 	}
+-	}
  
- 	/* initial audio related clock */
+ 	afe = devm_kzalloc(dev, sizeof(*afe), GFP_KERNEL);
+ 	if (!afe)
 -- 
 2.53.0
 
