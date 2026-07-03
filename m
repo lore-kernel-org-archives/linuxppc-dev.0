@@ -1,83 +1,90 @@
-Return-Path: <linuxppc-dev+bounces-23473-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23474-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5C8F2C43458
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Jul 2026 09:34:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6ABCBC43602
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Jul 2026 09:48:57 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gs7rQ2kK0z2xdb;
-	Fri, 03 Jul 2026 19:34:46 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783071286;
-	cv=none; b=ne+21QCNZYPUt7+iyFWlS24xTKQiQ6evezzjAxjmWkxpFOfwTnwfR9D7W1q+i0cCsm61wxNjd1OFRguO7Hd7ERr5Xz3KTNkbp8pxhQc1/OIV7DyGgziyRbPQ2IAqjj/S8Hk1ucgH3puPwtEqDRciL1bX0GjKLbdXh38aZLsKT15OyXXGz3rGyrhMi2GIgfb0hFUIBE/qVl1W+bUh8MAauXQKyCBL6QdCpgUPSE8HAI2UZJK2V7D3IRXz8mdW1sm0/M5GWPCMof4qB96iR+KEoy+Lx7alnOPuiJhqSjIaYvWYPZfGWlT24STlMjRPM2YFOlDcwOHLVTXDbze8TrYcsg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gs88m0XSsz2xPb;
+	Fri, 03 Jul 2026 19:48:56 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783072135;
+	cv=none; b=X+bxmpk3dIAol5TYjBID3op/6wpF3low1J1m9gLUOc8f9dBHn72v8E9Esxor93PLV1B+PNGhb7CeX/xtxPi+yochj2pxJRpR9CPrAbx6Mbnemv0XxBS3kzmxptDvnj3sSjsotljWqyVRYDFtVTVYq+H6evGvjDvO1NGMNuM0Dox8LjJ/3xFWcUK3lnkDf+XXICbaFEG5ECVYhra6k/pGv0aExoe1cGUQH4B4Q1mLWkNTWaAZgEMcySoVPd2O6rwqcMDCRW+6TShdz1oou1sK3z1o8ohr+McJpNQq9goIBvt2/4eyxVjbKV24ClQIWJYkqOxLur905BBhKS70N63CUA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1783071286; c=relaxed/relaxed;
-	bh=nMY8UZyvI/HF5Rdv1bSkWyNbGRbx1G27seV2ZaZUbN4=;
+	t=1783072135; c=relaxed/relaxed;
+	bh=GU2sQW+BHbRyl8stT+ES8Av3G6KBfsKpnc1VSiXAaH8=;
 	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
-	 MIME-Version:Content-Type; b=A4jEWXBnyrvJ4hwsd4CcA8EoJu/GwqTa7WMRFkbu3MzD/Q02cwF1mPaKN3+FieXg43sTwEe6RKU+QRwPoOjlCEggEiRwEJyLhFRhbe9rGVMayLbMDsHBCSnYkT8iGLWvNygfEd4krMKz+zcVCkJkN7hQWPvbllMrAwEhVBjX1rrSJKG2xehKa0cvNeP9j6CEIuINPsvtHT5dDlfSBz5ulH3oyYL7a4rlzrJ4r45XCFUpns+yIExJdILSrF4o1fk+Et5YzW77gcpURue2YwuJeUiCv7Cko3M9rGnIi97yqekHbKMEY+qPendGv9tkIldeqj63ax5G82I46RQzOKzRGw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=K4JQ6Zc8; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=tglx@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version:Content-Type; b=l1awZ04EqgyHzx1Coco1S4k+60rR+p0rZ2DQYxsVMvWK8Q0gIGt/jXhCnsvPypmrPYjSxA1v3neOFup6BMag3d5UFWNmO6YvhpDagQdI5/JCsAR9XlKrG2Vt2+pp+EaHKCr11ekIfTeymvICcwQIsScvnDPoswQ3vGle3PdGFPoWbK6iPKBoUTB0s/UG27m2DQjkrj3FVc9Qjg3ZP40ayYIYxhj9cz7r2ry5ADrXwzGkFatpSb1U1w8RjJqR1Cu9v+w7sDBxJDGSr7r79ZJovcZ6yJZVxlbCbPDNdzJkH5W6FBrrCrqb3LStUgua8WzbBZHEOuqEVaNTu/kHs5EsEg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=kTHi5+aa; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=tglx@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=K4JQ6Zc8;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=kTHi5+aa;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=tglx@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=tglx@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gs7rP30xhz2xPb
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 Jul 2026 19:34:45 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gs88l0129z2xLq
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 Jul 2026 19:48:54 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id D09566001A;
-	Fri,  3 Jul 2026 09:34:42 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B6B011F000E9;
-	Fri,  3 Jul 2026 09:34:41 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 9E36743C4F;
+	Fri,  3 Jul 2026 09:48:52 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D6F641F000E9;
+	Fri,  3 Jul 2026 09:48:51 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1783071282;
-	bh=nMY8UZyvI/HF5Rdv1bSkWyNbGRbx1G27seV2ZaZUbN4=;
+	s=k20260515; t=1783072132;
+	bh=GU2sQW+BHbRyl8stT+ES8Av3G6KBfsKpnc1VSiXAaH8=;
 	h=From:To:Cc:Subject:In-Reply-To:References:Date;
-	b=K4JQ6Zc8TPguGmkEN1toHL2v5PXz61h6EWt7zZ8rNB04Nv/OFyWtRbIK7/fVYv1YG
-	 B2iavueYbkcwMfN5GGnSDuP3/Y2ypQOlduP9C9EH0oHedTCI4eVb8GN99XZ7K3gk2U
-	 mKiWTX7nFzp9NihhXbgvqGtv6EZe36azyYLF8fKo4DpnPtV9M5EwlFIg4kabWNJ5dR
-	 ivYvj8LWnh2+s/7LGPHBUsOszJO62d4z94v7KFjNFI2CueHXILKryvycsxAeIyGtSG
-	 s98h3rggiuosCqsSmQ0MRnvTtW2Y2rrZ6VdGUVtB9Peojv9MYzNR0W2Zxz87hN6G4/
-	 UM7w31V/ebUew==
+	b=kTHi5+aaAp/rX4HTakkhjR3bFvlbbboB2hx19Nen/OQCynsTw3x/WIdUXu+frxwFV
+	 89SbG0+Shaxd2FOCH4dmgKGnOQNd95ufhEkEGXGpT/32v4K6RPBMgJaLR03++i0XQv
+	 HLnWwMqbhfMA9VGMcYWioEN6EpIjQeekAAIeSA8n3p4PU3sGcDhY+SXTEkDi6qWsvN
+	 N6ri66YT0BOjRUFOiXivtMgrlnMXxRLN30aljrlnw5thKW/fQEv2TszzuBrW0Uq2oE
+	 Hw8BoXQe/baC4Oi3LETFSwEwu7qrQBQfRHShyZgwSnxBg2nijHTJWdtguxJWbMqGZ5
+	 OSuwx+53eId9w==
 From: Thomas Gleixner <tglx@kernel.org>
-To: Michal =?utf-8?Q?Such=C3=A1nek?= <msuchanek@suse.de>
-Cc: Peter Zijlstra <peterz@infradead.org>, Jonathan Corbet <corbet@lwn.net>,
- Shuah Khan <skhan@linuxfoundation.org>, Huacai Chen
- <chenhuacai@kernel.org>, WANG Xuerui <kernel@xen0n.name>, Madhavan
- Srinivasan <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>,
- Nicholas Piggin <npiggin@gmail.com>, "Christophe Leroy (CS GROUP)"
- <chleroy@kernel.org>, Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt
- <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti
- <alex@ghiti.fr>, Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik
- <gor@linux.ibm.com>, Alexander Gordeev <agordeev@linux.ibm.com>, Christian
- Borntraeger <borntraeger@linux.ibm.com>, Sven Schnelle
- <svens@linux.ibm.com>, Andy Lutomirski <luto@kernel.org>, Ingo Molnar
- <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, Dave Hansen
- <dave.hansen@linux.intel.com>, x86@kernel.org, "H. Peter Anvin"
- <hpa@zytor.com>, Andrew Donnellan <andrew+kernel@donnellan.id.au>, Mark
- Rutland <mark.rutland@arm.com>, Arnd Bergmann <arnd@arndb.de>, Jiaxun Yang
- <jiaxun.yang@flygoat.com>, Ryan Roberts <ryan.roberts@arm.com>, Greg
- Kroah-Hartman <gregkh@linuxfoundation.org>, Mukesh Kumar Chaurasiya
- <mkchauras@linux.ibm.com>, Shrikanth Hegde <sshegde@linux.ibm.com>, Zong
- Li <zong.li@sifive.com>, Nam Cao <namcao@linutronix.de>, Deepak Gupta
- <debug@rivosinc.com>, Lukas Gerlach <lukas.gerlach@cispa.de>, Rui Qi
- <qirui.001@bytedance.com>, Kees Cook <kees@kernel.org>,
- linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
- loongarch@lists.linux.dev, linuxppc-dev@lists.ozlabs.org,
- linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org
-Subject: Re: [RFC] entry: Untangle the return value of
- syscall_enter_from_user_mode from syscall NR
-In-Reply-To: <akdqlO0eJ6jKH-wU@kunlun.suse.cz>
-References: <akVRcPsD_R_CE1qW@kunlun.suse.cz> <878q7tprau.ffs@fw13>
- <akZPakNl6JT_jgGd@kunlun.suse.cz> <87jyrdnmrh.ffs@fw13>
- <akdqlO0eJ6jKH-wU@kunlun.suse.cz>
-Date: Fri, 03 Jul 2026 11:34:39 +0200
-Message-ID: <87ik6wmn68.ffs@fw13>
+To: Michal =?utf-8?Q?Such=C3=A1nek?= <msuchanek@suse.de>, Jinjie Ruan
+ <ruanjinjie@huawei.com>
+Cc: oleg@redhat.com, richard.henderson@linaro.org, mattst88@gmail.com,
+ linmag7@gmail.com, linux@armlinux.org.uk, catalin.marinas@arm.com,
+ will@kernel.org, kees@kernel.org, guoren@kernel.org,
+ chenhuacai@kernel.org, kernel@xen0n.name, geert@linux-m68k.org,
+ tsbogend@alpha.franken.de, James.Bottomley@hansenpartnership.com,
+ deller@gmx.de, maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com,
+ chleroy@kernel.org, pjw@kernel.org, palmer@dabbelt.com,
+ aou@eecs.berkeley.edu, alex@ghiti.fr, hca@linux.ibm.com,
+ gor@linux.ibm.com, agordeev@linux.ibm.com, borntraeger@linux.ibm.com,
+ svens@linux.ibm.com, ysato@users.sourceforge.jp, dalias@libc.org,
+ glaubitz@physik.fu-berlin.de, richard@nod.at,
+ anton.ivanov@cambridgegreys.com, johannes@sipsolutions.net,
+ luto@kernel.org, mingo@redhat.com, bp@alien8.de,
+ dave.hansen@linux.intel.com, hpa@zytor.com, chris@zankel.net,
+ jcmvbkbc@gmail.com, peterz@infradead.org, wad@chromium.org,
+ thuth@redhat.com, mark.rutland@arm.com, ada.coupriediaz@arm.com,
+ kevin.brodsky@arm.com, linusw@kernel.org, yeoreum.yun@arm.com,
+ song@kernel.org, james.morse@arm.com, anshuman.khandual@arm.com,
+ broonie@kernel.org, liqiang01@kylinos.cn, pengcan@kylinos.cn,
+ ryan.roberts@arm.com, yangtiezhu@loongson.cn, sshegde@linux.ibm.com,
+ mchauras@linux.ibm.com, austin.kim@lge.com, jchrist@linux.ibm.com,
+ arnd@arndb.de, thomas.weissschuh@linutronix.de, sohil.mehta@intel.com,
+ andrew.cooper3@citrix.com, jgross@suse.com, kas@kernel.org,
+ x86@kernel.org, linux-alpha@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-mm@kvack.org,
+ linux-csky@vger.kernel.org, loongarch@lists.linux.dev,
+ linux-m68k@lists.linux-m68k.org, linux-mips@vger.kernel.org,
+ linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
+ linux-sh@vger.kernel.org, linux-um@lists.infradead.org
+Subject: Re: [PATCH v16 01/18] seccomp: Convert __secure_computing() to
+ return boolean
+In-Reply-To: <akdp6GAu77-ipsXA@kunlun.suse.cz>
+References: <20260629130616.642022-1-ruanjinjie@huawei.com>
+ <20260629130616.642022-2-ruanjinjie@huawei.com>
+ <akdp6GAu77-ipsXA@kunlun.suse.cz>
+Date: Fri, 03 Jul 2026 11:48:49 +0200
+Message-ID: <87cxx4mmim.ffs@fw13>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -94,36 +101,39 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: quoted-printable
 
-On Fri, Jul 03 2026 at 09:53, Michal Such=C3=A1nek wrote:
-> On Thu, Jul 02, 2026 at 10:45:54PM +0200, Thomas Gleixner wrote:
->> > When the syscall number was -1 to start with it's not possible to
->> > determine if the syscall was fileterd from the return value. s390
->> > returns the filtered state in a flag it sets on the regs structure,
->> > avoiding this problem.
->>=20
->> What needs to determine whether the syscall was filtered or not?
+On Fri, Jul 03 2026 at 09:51, Michal Such=C3=A1nek wrote:
+> On Mon, Jun 29, 2026 at 09:05:59PM +0800, Jinjie Ruan wrote:
+>> -	if (secure_computing())
+>> +	if (!secure_computing())
+>>  		return -1;
 >
-> The code that executes syscall_enter_from_user_mode() needs to determine
-> that.
+> Hello,
 >
-> After syscall_enter_from_user_mode() returns the syscall needs to be
-> executed or skipped.
+> I am not fond of this logic inversion. The boolean is meaningless in
+> itself.
 >
-> 'Executing' an invalid syscall boils down to setting the return value to
-> -ENOSYS.
+> Previously -1 was used to indicate that the syscall was filtered but you
+> chose to invert the logic choosing true to mean syscall was not filtered.
 >
-> But if the syscall number returned is -1 was the syscall filtered and
-> the return value set by syscall_enter_from_user_mode() or should it be
-> set by the caller to -ENOSYS?
+> You could choose true to mean that syscall was fitered avoiding this
+> inversion.
 
-See the explanation I gave to Peter. It's conclusive, but admittedly not
-intuitive.
+That's just wrong. Boolean logic makes more sense with having
+(!condition()). Just because the old 0/-1 nonsense had it the other way
+round does not mean it has to stay that way.
 
-The fact, that s390 decided to have the syscall number and the return
-value in the same register is a different problem, but as I pointed out
-to Sven it could have been solved completely without that flag.
+> Sashiko points out some places in existing code where it supposedly
+> explodes which might or might not be true
 
-Thanks,
+The vsyscall one is correct, but that's a bug like any other one and should
+be caught in review.
 
-        tglx
+The blurb about bypass is AI halluzination nonsense.
+
+> but any in-flight patches that use secure_computing would also be
+> affected.
+
+Maintainers know how to deal with collisions of that kind. Stop making
+problems up.
+
 
