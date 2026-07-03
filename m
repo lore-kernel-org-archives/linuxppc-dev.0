@@ -1,89 +1,128 @@
-Return-Path: <linuxppc-dev+bounces-23458-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23459-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A41DAC43458
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Jul 2026 00:23:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 524BFC44500
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Jul 2026 06:18:13 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4grvbl1R5Pz2yRC;
-	Fri, 03 Jul 2026 10:22:59 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=170.10.133.124
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783032595;
-	cv=none; b=gxKyOP/+GYA03/GHbSDIHbl6wSzrUfPpG2lOrCU/cj/bJ8W9yjT68SFMIMj8Zjoqj1qjgm+y928PYFaeKt3xd7StZQUDm8vsYnazqn7N5gkPxT3gRbRuPlJwCfqlq+ZuxvP7LwhGAzJh+sdHzyTcMYMOL9XTtUr6yjkik9F8Vg/Jak5DtbZQ8i1y3ijMZqSEetCcn2SqMx7UunuYlL7/qHkt8w5C43+XbGd9Yi1ipn5cqmZz/w/mbzVSNLqGNSqXIolH382MpzjlbUolK5Jc+fLG4X4SvWI+oHRPMXBc6vLDiuk9YrZf3l1RwOPP7WU6U1v8DGlwaZlFRzbnUBz5Kg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gs3Tb5HMQz2xdb;
+	Fri, 03 Jul 2026 16:18:11 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783059491;
+	cv=none; b=hFnOctmGId6hHvn/0t39EAqTpPZkQZRBWMbqcLuU0SrpK5nJ0kZ64y878OScS0BQM+RxrkEIp9fREeuFSYSE0XgAytcCbN4o5V525r88iOKpPRpLWh5/HkODqR8ileurcKc1xqP5oSdJ6UT9UMN8XLmhtkdaUwFbzndA0S9hMZUOZblDbOHpL4vW2xuzlHdQM4tVEJVr8Mwa+k6P3+9a7iZ4HaV5kff2HxelvxUcpOzt8m8dMWeCB1ZQ21Q7OkV3RimFndpbCePq/62j3ykXcCcTkvca9VYqwvMKpuTuGJLcqCXEdS88eKrzqoCVZPzOTMhRkhc8mSlcmuswLL49ug==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1783032595; c=relaxed/relaxed;
-	bh=G/2hym407OvJVwtz5j16/UTy0OY66ylRy9CZIkkSmIE=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=J0ouTF/IAer5aZBYL4DrBXXFfjoq5FjZnX7elcB6uJO9nF19k76q9ZGdN/TYO3I6a3tggEvCBIckLH3vHbNHtHyZ9XmGkeGmnAawaqA9rsKuLh358Ly8ypMNprBaYqQ3eG8hxVaywIVcs9oMdb3xGMHxn3xozLzXdb4Z8aMIgDGFj4PaN9rffSkwnOaDcr89pj+0aPovAWErVlBRnodalSQM4I3S+oBVRCHwZNY1V1g0FHk3qdq88liAgj1SJV20kszZkcM+CYRVZSy7cFGp85FLcmK6DyEDgguqCyzotABKOMlMF9cpzf72i1PEtl6YbsNz2si7iDzICYOTDEUaBQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=L7OqUGYd; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=L7OqUGYd; dkim-atps=neutral; spf=pass (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=rrobaina@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
+	t=1783059491; c=relaxed/relaxed;
+	bh=8pXveFmOOYSvyOo7QlW8sZ/yXA5rWNTgbkeIn+ezbyk=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
+	 MIME-Version:Content-Type; b=nKjVL9P/mgQ+p8Fp8xzQgrX50nwX8ePEv2nMFgpSx54WSBWoxipat2op+g3KlEj9ECrnTF77Oe7c8jCDzfmEQ50afvl2nBydxo/mmSzpKyJzDImuykgXdazgxJdBTXmWim6PTvqLKiMgOqjFEiNa3c81A5Mc8VUXk4A5FZ70+fIQckyrNU17XF7qCmCxeUpViMgma3UuHQ2meXhBZT25wjQgiCm3q4mq94rYGGtLeF3oENLVGMhdNNtEuy8oWscU46wDpjv2Exp0fq7YpJW0dad4USeBTuwvvB2bACGx8GYXsH6haNwbwmdYfec/3Dwn9TFpnqiLS2aD4oth+1eoZg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=r7spRylS; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=svens@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=L7OqUGYd;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=L7OqUGYd;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=r7spRylS;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=rrobaina@redhat.com; receiver=lists.ozlabs.org)
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=svens@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4grsXK46CKz2xJT
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 Jul 2026 08:49:51 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1783032588;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=G/2hym407OvJVwtz5j16/UTy0OY66ylRy9CZIkkSmIE=;
-	b=L7OqUGYdQf63BDBU5JzJBnKZaAWWc+GdLJzeY8ENHU4s68l3iNm9Xtq2TOPOcaPwIN8NUG
-	PdZvocpQ8828OPNVFInIMwaRSm/uJvdszksPOLtc5sxAMo3gZvbULMqDx4vwXNG0fkMnmS
-	WRYIuSHuHdO81oqFK7PfCQ4vclhyenM=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1783032588;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=G/2hym407OvJVwtz5j16/UTy0OY66ylRy9CZIkkSmIE=;
-	b=L7OqUGYdQf63BDBU5JzJBnKZaAWWc+GdLJzeY8ENHU4s68l3iNm9Xtq2TOPOcaPwIN8NUG
-	PdZvocpQ8828OPNVFInIMwaRSm/uJvdszksPOLtc5sxAMo3gZvbULMqDx4vwXNG0fkMnmS
-	WRYIuSHuHdO81oqFK7PfCQ4vclhyenM=
-Received: from mail-ej1-f72.google.com (mail-ej1-f72.google.com
- [209.85.218.72]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-438-HYdd1S7ZNwqu0APWtCIfPg-1; Thu, 02 Jul 2026 18:49:44 -0400
-X-MC-Unique: HYdd1S7ZNwqu0APWtCIfPg-1
-X-Mimecast-MFC-AGG-ID: HYdd1S7ZNwqu0APWtCIfPg_1783032583
-Received: by mail-ej1-f72.google.com with SMTP id a640c23a62f3a-c1288e572c9so239812366b.0
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 Jul 2026 15:49:44 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1783032583; x=1783637383;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=G/2hym407OvJVwtz5j16/UTy0OY66ylRy9CZIkkSmIE=;
-        b=mkrwtwusmrL2Bl6F5Gw/fm1/u1IwStTxfb9n0FQWTS+zTEOmnCwx30BYnrNP1bZiIT
-         qYekMJjlNGWPEb3PLRx+OFnfv2U/BR4XzjD8tSyr3T95PoUXgnJ4WGvXx1mm1V3htUJh
-         uWLBjzDftLb9uUi15RcRXtyZlfFdIB9DQCIg+oisZ/sdIje+64gRlXRMiFOJc0MafgUJ
-         dULac3tuaRPBdRgkdv4fq/K4YZW5Rxsme1B+WTksS+MxsVa9VicE9AXcSk/XZ8wPWgD5
-         1Jakrlb2IQpYSnxnip8sC4cikiXcm49zGtCs8+5vEgAv+wxFE5s61tXWd4nbGyUdeJcF
-         mVjw==
-X-Forwarded-Encrypted: i=1; AHgh+Rp4cg2U1IxyByL2eTPAimXzDkadkLr8jm+EsX64vfB79rHSBTsoLnWG033GXYS/qlY6W4i4pM4Hlwzp53U=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YwJhWKpQ5QdirAnYjfC8vXVhIGwAEu8qfYwt3sERZjCdVaCrDpc
-	hiUnxmjb3YQxcQZLJ59uXNNm5Ce6ZAb0Jw0Mmsi0CRp4opL/dkmND1JB3EKmHh7MJmrifHQDrzX
-	D0MvM2b9Z3ZJ+abfsz87B88xcUZnCtOb4Z6nFmc0e4A8SMDws8GyS79/PlORsZySE8PkHnIdYI5
-	H8m8AVxkcLCYVXsyovV5XkoxxbBRo9xB4zTkGfshnVRA==
-X-Gm-Gg: AfdE7cndcbn7nwJZotzsErZtmE4RwUNepPE48t6fYbpJhIrCmIYWRVW/my9pilw+Kqo
-	kL+CtiR84+4GrQ7ltITpvru39HnCYN6kGtBQlx3qQZ3xN//wz7g5JzvoyoAaUj9iN7JVdz9KBID
-	ZyWu/+S6VmzmsuWvOcrExFYaq7NBV9O9MLQCeDxUnkmzEkW/DTpTGUM6YFrcJXl9cxuiFG7oRx+
-	JbMM4yimb4yKnArKnFX5VFbxUjwJlctWZmt3ZorX4ztwGiJaJsdgcHa
-X-Received: by 2002:a17:906:46cc:b0:c12:93ed:47dc with SMTP id a640c23a62f3a-c12ae7bb5efmr256939066b.40.1783032583030;
-        Thu, 02 Jul 2026 15:49:43 -0700 (PDT)
-X-Received: by 2002:a17:906:46cc:b0:c12:93ed:47dc with SMTP id
- a640c23a62f3a-c12ae7bb5efmr256937566b.40.1783032582582; Thu, 02 Jul 2026
- 15:49:42 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gs3TZ32dfz2xLq
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 Jul 2026 16:18:09 +1000 (AEST)
+Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6631IwIc1453346;
+	Fri, 3 Jul 2026 06:17:02 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=8pXveF
+	mOOYSvyOo7QlW8sZ/yXA5rWNTgbkeIn+ezbyk=; b=r7spRylSayBaz3CBk1bvvu
+	BT4KLKfrwrUU4X0hCFFldC8JyUkP1gZ+yTJQS0XAZgoDUQyT8kQsl2NN9RE+BnDp
+	0Ur6gx8fKbE3nkhZnFikv0RHahFRjLZcfzpE03i1YiXm4+LzPdw+N3073CF0WKUr
+	wxfQurwfnIIzFAfa474Nrqmd/Vt/icWU6UlN5SLFu/uVN6Kbr2fvufT3SNpJt7wC
+	N/TRAbYtxSKETqKlFQZFcMAJWRrrEFbEF38fPnD0eUrC5144VVfDppMII8nqJLre
+	80fakqbbLcZv6OeewdU95Q37nlRIp6AFiX1Dhh07/z8RmPuMx3Xeej32A8FXRYtg
+	==
+Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4f26qgdpy7-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 03 Jul 2026 06:17:01 +0000 (GMT)
+Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma12.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 66364u8k021419;
+	Fri, 3 Jul 2026 06:17:00 GMT
+Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
+	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 4f2ruqqraa-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 03 Jul 2026 06:17:00 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
+	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6636GvOd23724404
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Fri, 3 Jul 2026 06:16:57 GMT
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id E084220040;
+	Fri,  3 Jul 2026 06:16:56 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 5DC3D20043;
+	Fri,  3 Jul 2026 06:16:56 +0000 (GMT)
+Received: from tuxmaker.linux.ibm.com (unknown [9.87.85.9])
+	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTPS;
+	Fri,  3 Jul 2026 06:16:56 +0000 (GMT)
+From: Sven Schnelle <svens@linux.ibm.com>
+To: Michal =?utf-8?Q?Such=C3=A1nek?= <msuchanek@suse.de>
+Cc: Peter Zijlstra <peterz@infradead.org>, Jonathan Corbet
+ <corbet@lwn.net>,
+        Shuah Khan <skhan@linuxfoundation.org>,
+        Huacai Chen
+ <chenhuacai@kernel.org>, WANG Xuerui <kernel@xen0n.name>,
+        Madhavan
+ Srinivasan <maddy@linux.ibm.com>,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        Nicholas Piggin <npiggin@gmail.com>,
+        "Christophe Leroy (CS GROUP)"
+ <chleroy@kernel.org>,
+        Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt
+ <palmer@dabbelt.com>,
+        Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti
+ <alex@ghiti.fr>,
+        Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik
+ <gor@linux.ibm.com>,
+        Alexander Gordeev <agordeev@linux.ibm.com>,
+        Christian Borntraeger <borntraeger@linux.ibm.com>,
+        Andy Lutomirski
+ <luto@kernel.org>, Thomas Gleixner <tglx@kernel.org>,
+        Ingo Molnar
+ <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
+        Dave Hansen
+ <dave.hansen@linux.intel.com>, x86@kernel.org,
+        "H. Peter Anvin"
+ <hpa@zytor.com>,
+        Andrew Donnellan <andrew+kernel@donnellan.id.au>,
+        Mark
+ Rutland <mark.rutland@arm.com>, Arnd Bergmann <arnd@arndb.de>,
+        Jiaxun
+ Yang <jiaxun.yang@flygoat.com>,
+        Ryan Roberts <ryan.roberts@arm.com>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Mukesh Kumar Chaurasiya
+ <mkchauras@linux.ibm.com>,
+        Shrikanth Hegde <sshegde@linux.ibm.com>, Zong
+ Li <zong.li@sifive.com>,
+        Nam Cao <namcao@linutronix.de>, Deepak Gupta
+ <debug@rivosinc.com>,
+        Lukas Gerlach <lukas.gerlach@cispa.de>,
+        Rui Qi
+ <qirui.001@bytedance.com>, Kees Cook <kees@kernel.org>,
+        linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
+        loongarch@lists.linux.dev, linuxppc-dev@lists.ozlabs.org,
+        linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org
+Subject: Re: [RFC] entry: Untangle the return value of
+ syscall_enter_from_user_mode from syscall NR
+In-Reply-To: <akZV7kjVh37z63Nz@kunlun.suse.cz>
+References: <akVRcPsD_R_CE1qW@kunlun.suse.cz> <yt9dechlbyj0.fsf@linux.ibm.com>
+	<akYreY_BHuRbxSsO@kunlun.suse.cz> <yt9d5x2xbny9.fsf@linux.ibm.com>
+	<akZV7kjVh37z63Nz@kunlun.suse.cz>
+Date: Fri, 03 Jul 2026 08:16:56 +0200
+Message-ID: <yt9d1pdkbns7.fsf@linux.ibm.com>
+User-Agent: Gnus/5.13 (Gnus v5.13)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -97,183 +136,102 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <261b1be5b8dc526b83d73e8281e682a73536ea28.1773155031.git.chleroy@kernel.org>
- <CAHC9VhTyOuuPs1uovodM9M_8zZeJnVXs9xrWSdPhZcjXUb=mvA@mail.gmail.com>
- <fce0a701-ee58-4cb2-b34b-8aec26aaab5d@linux.ibm.com> <09e72f42-e180-4e2b-b379-92b755792a2c@linux.ibm.com>
- <CAHC9VhTzuO=RFtrUUuZyieVdkrM5H4ZCb1=PoL-oEEgiw38azg@mail.gmail.com>
- <ea6e629f-dac7-45dd-bb18-5cd6361fe6c4@linux.ibm.com> <9c53ae3f-ccfd-4e8f-ac4f-0038e9b97a7e@linux.ibm.com>
- <b1d6e9a5-34ce-42ca-906a-d4237e18be25@kernel.org> <50507bb3-4229-4815-90e8-c01eaad058fc@linux.ibm.com>
- <ba00c7a8-b4d5-4d80-859b-d75e9c91ebdb@kernel.org> <203f6e6d-2ce8-4e47-99a6-f4af745e0aaa@linux.ibm.com>
- <CAHC9VhQvoK4uYP0NBnd4FGbXCQkDka4nHqdz9kAn2bGnm4qVHQ@mail.gmail.com> <CAABTaaCQCBuR9Ny6zBHNK=gy3Cd0WGj-f9qgzwuyjWD_i=v_dQ@mail.gmail.com>
-In-Reply-To: <CAABTaaCQCBuR9Ny6zBHNK=gy3Cd0WGj-f9qgzwuyjWD_i=v_dQ@mail.gmail.com>
-From: Ricardo Robaina <rrobaina@redhat.com>
-Date: Thu, 2 Jul 2026 19:49:31 -0300
-X-Gm-Features: AVVi8CeRFl__1Bqk-jk5FxN5LO-w5tjorS49FId6RokuADqCYNXoGJwL1nk7uKc
-Message-ID: <CAABTaaC_vQTM8B0wLqfHuv-S9JDzXeuDeLd0Sh3M21pO+=Zg2Q@mail.gmail.com>
-Subject: Re: [PATCH v3] powerpc/audit: Convert powerpc to AUDIT_ARCH_COMPAT_GENERIC
-To: Paul Moore <paul@paul-moore.com>
-Cc: Venkat Rao Bagalkote <venkat88@linux.ibm.com>, 
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, Madhavan Srinivasan <maddy@linux.ibm.com>, 
-	Harsh Prateek Bora <harshpb@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, 
-	Nicholas Piggin <npiggin@gmail.com>, Eric Paris <eparis@redhat.com>, linux-kernel@vger.kernel.org, 
-	linuxppc-dev@lists.ozlabs.org, audit@vger.kernel.org, 
-	Thomas Weissschuh <thomas.weissschuh@linutronix.de>, =?UTF-8?Q?C=C3=A9dric_Le_Goater?= <clg@kaod.org>, 
-	ritesh.list@gmail.com
-X-Mimecast-Spam-Score: 0
-X-Mimecast-MFC-PROC-ID: JWBM5mEJ1ZCZ346vrz4Hx_JYK3-7Aq5V8N_BPiJr5SQ_1783032583
-X-Mimecast-Originator: redhat.com
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: quoted-printable
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Authority-Analysis: v=2.4 cv=RYqgzVtv c=1 sm=1 tr=0 ts=6a4753de cx=c_pps
+ a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17
+ a=IkcTkHD0fZMA:10 a=RAioF0-LDSMA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=uAbxVGIbfxUO_5tXvNgY:22 a=PxzjjWZHAImlhUGC5A8A:9
+ a=QEXdDO2ut3YA:10
+X-Proofpoint-Spam-Info: AW1haW4tMjYwNzAzMDA1MiBTYWx0ZWRfX3KioJ0aE0IJK
+ 6GCXJHhUp1F2Z1YveNR5roy+VlB9mYaqqPi6ZnW5aiC5GW26VV2+HS77GgwsK/LiTuT7b05HLTJ
+ 7bqNBO0gAyrISbMT0IKHCUvnIc+Bc/c=
+X-Proofpoint-GUID: MZHualSITsNhKNRwX3VbQpZ3GLr3BMiU
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzAzMDA1MiBTYWx0ZWRfX1xdOF6m0TbsV
+ RRdovO7OWz9x9ZJwMBitj+Ms2sSe6kn4owwgid7NsQ+hw6RMIxUbpMSid4pQ0mJnsYrCDGpBWuN
+ ettr7U4yik8mEnZt/EICOdu8qFM5H9i+b35dllBVZzrNmsQ0B2SVeUuCOeJ8TraSiMkYJUJO+Nc
+ BJnyRM01Jj4QXANp0Io9tTz6Hj1vAd7lh+mkuzGmIJAfH0VdAS260qxw2YxoCTBvcir1LIuYlPw
+ LOfBvQ9Z5gu2kgM3zQKXqocxBvBylQvTG6K1R0ZF5Oy59AM0zBTpy13iio6Fdsb3nIFuT345/oZ
+ uzPcE5TicueH+0AQBY6ur7FPfScbrnIFQO95r+GaiM+KZ/cE3mSboUBKGGWCtZHTxfM/3ubcCX4
+ lKnp6tSsvLMOKZt/p9bvHcVJ7wXQ4gz33Og1uvgzaO9B74gsTFQTPb0/f/1a5u1GN5Ijss+/Nej
+ V3bAm3cpL0fOCvtJW1g==
+X-Proofpoint-ORIG-GUID: UKYrWbQA3xg_QgCJ6b-fW3NtJr_lLQLl
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
+ definitions=2026-07-03_01,2026-06-26_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ phishscore=0 impostorscore=0 malwarescore=0 spamscore=0 lowpriorityscore=0
+ adultscore=0 priorityscore=1501 suspectscore=0 bulkscore=0 clxscore=1015
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607030052
 
-On Thu, Jul 2, 2026 at 3:19=E2=80=AFPM Ricardo Robaina <rrobaina@redhat.com=
-> wrote:
+Michal Such=C3=A1nek <msuchanek@suse.de> writes:
+
+> On Thu, Jul 02, 2026 at 02:01:02PM +0200, Sven Schnelle wrote:
+>> Michal Such=C3=A1nek <msuchanek@suse.de> writes:
+>>=20
+>> > On Thu, Jul 02, 2026 at 10:12:35AM +0200, Sven Schnelle wrote:
+>> >> Michal Such=C3=A1nek <msuchanek@suse.de> writes:
+>> >>=20
+>> >> > The return value of syscall_enter_from_user_mode is used both for t=
+he
+>> >> > adjusted syscall number and the indicator that a syscall should be
+>> >> > skipped.
+>> >> >
+>> >> > As seccomp can be invoked on any syscall, including invalid ones th=
+is
+>> >> > somewhat undermines seccomp.
+>> >> >
+>> >> > While the seccomp variants that terminate the process do not need to
+>> >> > care about this for the filter that sets the syscall return value t=
+his
+>> >> > disctinction is required.
+>> >> >
+>> >> > Pass the syscall number as a pointer to the inline entry functions,=
+ and
+>> >> > use the return value exclusively for the indication that the syscal=
+l is
+>> >> > already handled.
+>> >> >
+>> >> > This should avoid the need for the s390 PIF_SYSCALL_RET_SET which i=
+s the
+>> >> > workaround for exactly this deficiency.
+>> >>=20
+>> >> I'm not sure whether PIF_SYSCALL_RET_SET can be removed - the syscall
+>> >> return might still get set by PTRACE_SET_SYSCALL_INFO when the tracee=
+ is
+>> >> stopped. This might be a positive number which can't be distinguished
+>> >> from a syscall number. But maybe i'm missing something? It's been qui=
+te
+>> >> a while since I touched all that ptrace stuff.
+>> >
+>> > When the syscall return value is set (in the registers) the return val=
+ue
+>> > which is also the modified syscall number is set to -1 indicating the
+>> > syscall was handled. At least that's how the API is described.
+>> >
+>> > So yes, if the syscall number range is restricted or the syscall number
+>> > is returned through a path different from the function return value the
+>> > flag should not be needed in the entry path because the case can be
+>> > detected through the return value alone.
+>>=20
+>> I'm still failing to see how this would work without an additional
+>> flag. Assume a program (the tracee) is stopped because of a syscall
+>> entry. The tracer then decides to skip the syscall and changes
+>> regs->gpr2 (which contains either the syscall number or return value)
+>> to contain 42. When the tracer than restarts the syscall, how does
+>> do_syscall() know that gpr2 is now a return value and not a syscall numb=
+er?
 >
-> On Thu, Jul 2, 2026 at 10:28=E2=80=AFAM Paul Moore <paul@paul-moore.com> =
-wrote:
-> >
-> > On Thu, Jul 2, 2026 at 8:50=E2=80=AFAM Venkat Rao Bagalkote
-> > <venkat88@linux.ibm.com> wrote:
-> > >
-> > > Current remaining issue:
-> > >
-> > > 1. amcast_joinpart
-> > > ------------------
-> > > Still fails due to a missing Perl dependency:
-> > >
-> > >      Can't locate Socket/Netlink.pm in @INC
-> > >
-> > > I searched the configured repositories and could not find a package
-> > > providing Socket::Netlink / Socket/Netlink.pm on this EL10 ppc64le sy=
-stem.
-> > >
-> > > Latest run summary:
-> > >
-> > > amcast_joinpart/test ................. Can't locate Socket/Netlink.pm=
- in
-> > > @INC (you may need to install the Socket::Netlink module) (@INC entri=
-es
-> > > checked: /usr/local/lib64/perl5/5.40 /usr/local/share/perl5/5.40
-> > > /usr/lib64/perl5/vendor_perl /usr/share/perl5/vendor_perl
-> > > /usr/lib64/perl5 /usr/share/perl5 .) at amcast_joinpart/test line 10.
-> > > BEGIN failed--compilation aborted at amcast_joinpart/test line 10.
-> > > amcast_joinpart/test ................. Dubious, test returned 2 (wsta=
-t
-> > > 512, 0x200)
-> > > Failed 7/7 subtests
-> > > backlog_wait_time_actual_reset/test .. ok
-> > > bpf/test ............................. ok
-> > > exec_execve/test ..................... ok
-> > > exec_name/test ....................... ok
-> > > fanotify/test ........................ ok
-> > > field_compare/test ................... ok
-> > > file_create/test ..................... ok
-> > > file_delete/test ..................... ok
-> > > file_permission/test ................. ok
-> > > file_rename/test ..................... ok
-> > > filter_exclude/test .................. ok
-> > > filter_exit/test ..................... ok
-> > > filter_saddr_fam/test ................ ok
-> > > filter_sessionid/test ................ ok
-> > > io_uring/test ........................ ok
-> > > login_tty/test ....................... ok
-> > > lost_reset/test ...................... ok
-> > > netfilter_pkt/test ................... ok
-> > > signal/test .......................... ok
-> > > syscalls_file/test ................... ok
-> > > syscall_module/test .................. ok
-> > > time_change/test ..................... ok
-> > > user_msg/test ........................ ok
-> > >
-> > > All tests now pass except amcast_joinpart, which is blocked by the
-> > > missing Socket::Netlink Perl module.
-> > >
-> > > Please let me know if there is a recommended package source for
-> > > Socket::Netlink on EL10 ppc64le.
-> >
-> > Thanks for following up on this Venkat.
-> >
-> > I'm adding your colleague Ricardo from the RH side of the house.
-> > Ricardo is very familiar with audit and should be able to help you
-> > with missing RHEL packages.
->
-> Thanks for looping me in,  Paul!
->
-> Venkat, unfortunately, perl-Socket-Netlink is not packaged for RHEL-10
-> ppc64le. An alternative is to use CPAN[1] to install the
-> Socket::Netlink Perl module.
->
->  # dnf install cpan
->  # cpan App::cpanminus
->  # cpanm Socket::Netlink
->
-> I'll reserve a ppc64le machine and run the tests locally as well. I'll
-> share the results shortly.
->
-> [1] https://www.cpan.org/modules/INSTALL.html
->
->
-> >
-> > --
-> > paul-moore.com
-> >
+> Because then the return value from the syscall_enter_from_user_mode
+> machinery would be -1 indicating the syscall should be skipped. That is
+> how the return value of syscall_enter_from_user_mode is documented, I
+> did not verify that it actually works that way for the tracing case on
+> s390.
 
-Hello everyone,
-
-I built an RHEL-10 kernel with the patch applied and verified that
-audit-testsuite passes successfully on a ppc64le machine. Please find
-the logs below:
-
-Tested-by: Ricardo Robaina <rrobaina@redhat.com>
-
----
-# uname -m
-ppc64le
-
-# uname -r
-6.12.0-245.test.el10.ppc64le
-
-# make test
-...
-chmod +x */test
-Running as   user    root
-        with context unconfined_u:unconfined_r:unconfined_t:s0-s0:c0.c1023
-        on   system  RHEL10
-
-amcast_joinpart/test ................. ok
-backlog_wait_time_actual_reset/test .. ok
-bpf/test ............................. ok
-coredump/test ........................ ok
-exec_execve/test ..................... ok
-exec_name/test ....................... ok
-fanotify/test ........................ ok
-field_compare/test ................... ok
-file_create/test ..................... ok
-file_delete/test ..................... ok
-file_permission/test ................. ok
-file_rename/test ..................... ok
-filter_device/test ................... ok
-filter_exclude/test .................. ok
-filter_exit/test ..................... ok
-filter_inode/test .................... ok
-filter_saddr_fam/test ................ ok
-filter_sessionid/test ................ ok
-io_uring/test ........................ ok
-login_tty/test ....................... ok
-lost_reset/test ...................... ok
-netfilter_pkt/test ................... ok
-signal/test .......................... ok
-syscalls_file/test ................... ok
-syscall_module/test .................. ok
-time_change/test ..................... ok
-user_msg/test ........................ ok
-All tests successful.
-Files=3D27, Tests=3D300, 252 wallclock secs ( 0.12 usr  0.01 sys + 54.34
-cusr  1.38 csys =3D 55.85 CPU)
-Result: PASS
-make[1]: Leaving directory '/root/rrobaina/audit-testsuite/tests'
----
-
-I hope it helps!
--Ricardo
-
+I read the code and tested - I think I confused the way how syscall are
+intercepted by seccomp vs. ptrace. The PIF_SYSCALL_RET_SET is indeed
+only required to indicate syscalls skipped via seccomp and not ptrace.
 
