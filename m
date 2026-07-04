@@ -1,67 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-23558-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23559-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9CECDC43458
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Jul 2026 23:59:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 82232C43458
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 Jul 2026 09:10:31 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gsW2k0YwBz2xKh;
-	Sat, 04 Jul 2026 09:59:58 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783123197;
-	cv=none; b=htFlyu0+wXfJWPMrwxNJwTD6iHNNibZ3ymo2Zurl1Vm/Z+s4JeNG6uTP0BM7vNas27zhHCJ6o9dsUL8QXL/Pj67DwtjNLugzthlqEDAJTxA9bFoDaPiPL09qxWEyTp9uZsQnHAo2O0Rxo+Kphkb77Xa2dmnbEv9eAMlNo7Ul8XXX1azK9hFtXGtVWvxkhbYKYKgRAwDbu4Rl+kMqm5xLdP/YpNRP5+7AZgFEH5dp5zBmFgOZuYvG+wSIEYKTk/WXVWJmhOD+vWjnLE7IIaj1EYtzA41KCdPew73EtuhUc2y21kPLQ0Xsoj2sXvkJmfRDGz+Q9umLZruDWKBt6LQNSw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gslFx5VL0z2yRn;
+	Sat, 04 Jul 2026 19:10:29 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783156229;
+	cv=none; b=o2KNyyWKLN9Nvk9NHIrB0ppf96aqfnwx0OKZPFbaqMLSIZoaObMzDsNwQ8XqHA/s/wgc6G5871KB7gVfsGkJkZ/IvlbV2UVv6c/p1QrS3gxUyMJ3TwT9QNMTz1RwT68/0RO4L+sCcC3d3jB/Mh6ym87ld0WUpSXA05Dn21NLWTicPwslI13A6k38xaeC3fsQtn2qu2TvMHaK3nP6NJt5jTGPGIyOratf3hipfXotK4sXmBvR9VmbpWXORKI57NElOiELFIbUoyh7iK+DNYWKVdMRzbBSPIjCOWdeYv7WicmnhS1zm1dXipft9wLSk5BpovJjMQwCEmvh5RlAFQeZMg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1783123197; c=relaxed/relaxed;
-	bh=neDxvJLZqydMYExJ0EqIpg5nFmchQ3Fc9GHFErQRroM=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=EXa9F35AzzYSDcYYBH2qaIC5teB6A4diF9K2LxhgEGmgWzhZr7dhiZZLDQL9OFhvcx8cEdiAqHBa1CP/Rqm+cvWhXCeZVnKH4l5Vo8YHZ/JPE7YHGQtRW/nThjpV6sTjhbJHM1ABvyx0ONQX+sanrBhMtGrnq/hvW/s6JIWa6ZrZjuj73qsqarCSGdWGTjm+ynWo05Jx1jvE6ybrejOHuXf+fWocN8M5jpg771GRSG0+3fW3LE1JUS4h5vmh6RTqrJ29CpVmLcbB/OtFaObzVccEBTCXKlnJJ/e7stlOgTeutd3QpX5fBt4m9UGGNtliWFCAfn6bJAQKnWXquoFjQg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=VOtSshoo; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=namhyung@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1783156229; c=relaxed/relaxed;
+	bh=53EQLw8XTEKafDGHQxdckYh+PN5Z8cHEu1Ax3kBjkYQ=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=XWPL1aAMnKjPdmZdTLvhlrcPHDXm47NM7z/CueB0cYZpFgC5GM6dlMsXBBxXwOftwV6HKZKjiXOnKAszrJ0C9LDmo2MUoAqIVaCDKAAGETSFEauW/LGE9d85yWYjj4QgKPA2wEuT7nzOJK3fnPqKTJ+6T5Do8zjTTw5fI98Ypmw5/ELLJchI2A+loUJ4wy7F4Ri+hWuuKBY4Tw784VGkxCbQa+00riv8mfDGxSybVLirP40Rq18YwBoGC7Hos6vFxM4GlXNpRbD563XK1nOZNlj6fVW79IuRpazXGkWu0NZrvR6Y6oCapBJIqLJ9hpm3bjs0XQDlrVgmnoa+kSUUlg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=mpKZ4WvB; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=VOtSshoo;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=mpKZ4WvB;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=namhyung@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gsW2h5v4cz2xF8
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 04 Jul 2026 09:59:56 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gslFs05G4z2xn3
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 04 Jul 2026 19:10:24 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id DC31D600AF;
-	Fri,  3 Jul 2026 23:59:53 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 042B61F000E9;
-	Fri,  3 Jul 2026 23:59:52 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 9B64540AF3;
+	Sat,  4 Jul 2026 09:10:22 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8563F1F000E9;
+	Sat,  4 Jul 2026 09:10:20 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1783123193;
-	bh=neDxvJLZqydMYExJ0EqIpg5nFmchQ3Fc9GHFErQRroM=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=VOtSshooeVOroaoJJmLAj7EQl8rWwHTcwE8RZj7t9eYCwASLt3GnAEzn2EoCxjIct
-	 HWRgDNqL4+2EZRUbvKxuLxjMr53ZZNJJemRld6cT3d0M3Ulf4p+fhrk2mvt0hsBizK
-	 wV3+4MI8sNLuN9PlXJ1fMTZzBaTOHOStzYRoRsYJ+KtMCRqQE1QZD0WeaFmwxZ07Nb
-	 J9ERdleg8J8KpOZBf8dQf+Puqr9cN7YkPFUlA0QccDpuc6HBsEfp4KXlpRhMV9AaCU
-	 aQ7SAsegaDT8m60ZnmXJN18QlCllZ0tLT+hPCwVTnUUi3MDAzrBvC9AtC8R816O2vg
-	 bMjlizbJ8nHxw==
-Date: Fri, 3 Jul 2026 16:59:51 -0700
-From: Namhyung Kim <namhyung@kernel.org>
-To: Tanushree Shah <tshah@linux.ibm.com>
-Cc: Arnaldo Carvalho de Melo <acme@kernel.org>, jolsa@kernel.org,
-	adrian.hunter@intel.com, vmolnaro@redhat.com, mpetlan@redhat.com,
-	tmricht@linux.ibm.com, maddy@linux.ibm.com, irogers@google.com,
-	linux-perf-users@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-	atrajeev@linux.ibm.com, hbathini@linux.ibm.com,
-	Tejas.Manhas1@ibm.com, Tanushree.Shah@ibm.com,
-	Shivani.Nittor@ibm.com
-Subject: Re: [PATCH] perf data convert json: Fix trace_seq memory leak in
- process_sample_event()
-Message-ID: <akhM9-d-tNjZzb-A@google.com>
-References: <20260604065519.112101-1-tshah@linux.ibm.com>
- <aiHuIBAIgv3L6TI7@x1>
- <f6937d04-6346-443b-8054-6f8a801a4fd8@linux.ibm.com>
- <akWEgMBK7Y39sgc8@google.com>
- <bf12f3d6-7410-44da-b4c4-32dc21244a12@linux.ibm.com>
+	s=k20260515; t=1783156222;
+	bh=53EQLw8XTEKafDGHQxdckYh+PN5Z8cHEu1Ax3kBjkYQ=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To;
+	b=mpKZ4WvB1LGdTw/vgASBVUBuaZlEfZeN8b1CQ7ChT63YY4UYXNWKcpSMS9vf/g560
+	 G1v3sXJYYcunL1fwyBgAKYbKwgnLjSgxwOUUbpklJR7dcnhkYjW8981fYk0HLz4gYC
+	 3jbApuPrxjc0EZRJt3+gfakE7mVV2KK13kI1IflqOwlz7WggXSDdQgwelGykLer7v0
+	 mvl7pn7UbBhOFT61LgMujJzotLp6bVAmJDNNTLSikTXunU8Z3EHu7nFtlJ4yBuoOgu
+	 CrMbCze98EfT0Yujmu4S+XRb42FQkUOxT3Ror6libgvFbNa/bJTJ5x+i7kZcBWRdpA
+	 YZH09UM8bRpkg==
+Message-ID: <dbd95f4c-cef3-4f7f-8619-375fe37c8852@kernel.org>
+Date: Sat, 4 Jul 2026 11:10:18 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -75,29 +59,84 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <bf12f3d6-7410-44da-b4c4-32dc21244a12@linux.ibm.com>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH next] drivers/bus/fsl-mc: Use strscpy() to copy strings
+ into arrays
+To: david.laight.linux@gmail.com, Kees Cook <kees@kernel.org>,
+ Ioana Ciornei <ioana.ciornei@nxp.com>
+Cc: Arnd Bergmann <arnd@kernel.org>, linux-kernel@vger.kernel.org,
+ linux-hardening@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+References: <20260608095500.2567-1-david.laight.linux@gmail.com>
+Content-Language: fr-FR
+From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+In-Reply-To: <20260608095500.2567-1-david.laight.linux@gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 
-On Thu, Jul 02, 2026 at 12:46:54PM +0530, Tanushree Shah wrote:
-> Hi Namhyung,
-> 
-> Yes, I was planning to send a v2 based on the review comments to fix the
-> pre-existing issue.
-> 
-> However, Arnaldo mentioned that the original patch had already been merged
-> before I got to send a v2, so I addressed the pre-existing issue in a
-> separate patch instead. The patch is available here:
-> 
-> https://lore.kernel.org/linux-perf-users/20260606121528.406919-2-tshah@linux.ibm.com/
-> 
-> That said, although Arnaldo mentioned that this patch had been merged, I
-> don't see it in perf-tools-next yet either. I'll wait for him to clarify its
-> current status.
 
-It's not in the perf-tools-next, and no plan to add it.  Please send v2.
 
-Thanks,
-Namhyung
+Le 08/06/2026 à 11:54, david.laight.linux@gmail.com a écrit :
+> From: David Laight <david.laight.linux@gmail.com>
+> 
+> Replacing strcpy() with strscpy() ensures than overflow of the target
+> buffer cannot happen.
+> 
+> Signed-off-by: David Laight <david.laight.linux@gmail.com>
+> ---
+> This is one of a group of patches that remove potentially unbounded
+> strcpy() calls.
+> 
+> They are mostly replaced by strscpy() or, when strlen() has just been
+> called, with memcpy() (usually including the '\0').
+> 
+> Calls with copy string literals into arrays are left unchanged.
+> They are safe and easily detected as such.
+> 
+> The changes were made by getting the compiler to detect the calls and
+> then fixing the code by hand.
+> 
+> Note that all the changes are only compile tested.
+> 
+> Some Makefiles were changed to allow files to contain strcpy().
+> As well as 'difficult to fix' files, this included 'show' functions
+> as they really need to use sysfs_emit() or seq_printf().
+> 
+> All the patches are being sent individually to avoid very long cc lists.
+> Apologies for the terse commit messages and likely unexpected tags.
+> (There are about 100 patches in total.)
+> 
+>   drivers/bus/fsl-mc/fsl-mc-bus.c | 4 ++--
+>   1 file changed, 2 insertions(+), 2 deletions(-)
+
+Do you expect this patch to go via individual trees or will you apply 
+them all together in a given tree ?
+
+Ioana, as usual I can take it via soc/fsl/ with your Ack.
+
+Christophe
+
+> 
+> diff --git a/drivers/bus/fsl-mc/fsl-mc-bus.c b/drivers/bus/fsl-mc/fsl-mc-bus.c
+> index 221146e4860b..372175fe169c 100644
+> --- a/drivers/bus/fsl-mc/fsl-mc-bus.c
+> +++ b/drivers/bus/fsl-mc/fsl-mc-bus.c
+> @@ -903,7 +903,7 @@ struct fsl_mc_device *fsl_mc_get_endpoint(struct fsl_mc_device *mc_dev,
+>   	int state, err;
+>   
+>   	mc_bus_dev = to_fsl_mc_device(mc_dev->dev.parent);
+> -	strcpy(endpoint1.type, mc_dev->obj_desc.type);
+> +	strscpy(endpoint1.type, mc_dev->obj_desc.type);
+>   	endpoint1.id = mc_dev->obj_desc.id;
+>   	endpoint1.if_id = if_id;
+>   
+> @@ -920,7 +920,7 @@ struct fsl_mc_device *fsl_mc_get_endpoint(struct fsl_mc_device *mc_dev,
+>   		return ERR_PTR(err);
+>   	}
+>   
+> -	strcpy(endpoint_desc.type, endpoint2.type);
+> +	strscpy(endpoint_desc.type, endpoint2.type);
+>   	endpoint_desc.id = endpoint2.id;
+>   	endpoint = fsl_mc_device_lookup(&endpoint_desc, mc_bus_dev);
+>   	if (endpoint)
 
 
