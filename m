@@ -1,57 +1,74 @@
-Return-Path: <linuxppc-dev+bounces-23562-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23563-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B9656C43458
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 Jul 2026 12:14:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7531CC43458
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 Jul 2026 15:58:08 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gsqLj4Y0xz2xyh;
-	Sat, 04 Jul 2026 22:14:53 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:41d0:1004:224b::b3"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783167293;
-	cv=none; b=eDAYEitnkSvEMO9PskIpHUMboqKrh7JOJaywfALnmMWRlLqo7oQ8cmYGe6T0cQZXvHpBGh1DDDR8vmKoQTzbwF2NJ6Y9YNMRUJ6oepsekz++kgQ1jPz8CbPe0NlzHrSrQN7hRw24rYio+nb/87QVV1CzhfJu/t/L61w9SEp+LVVk0CqaCkgAwDjN8WIePPcrUmJg67znUTXkxnS6KSN0L8iVBj4/9/G4w/cUfh/MTBAJgdlhum6Tl511KI4wB4fJYIUlaK+SpUjFxmbF9FIuUSNJooBvOkO+j4n4qw85DRpZtusAknflguqykWQef+EDXzl/Kxs3zMZ81ikAEabAMg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gswJG5C2gz2yRM;
+	Sun, 05 Jul 2026 01:58:06 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=212.18.0.10
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783180686;
+	cv=none; b=YAVs9o1DLulsfnKRgUjxuYTK7Bp1t6WxnrQ6yrzNkTwjd7HdI+X7GRdEgstBCPxBDhP+g0hGlqJ+wLhv/iWpcj5MirK+unB33fD/nmDNQLuJWKJRhre1T8O6yHDCf+G4CEkgsG5m2aGzNP5gdB3T6qqfKeADGZDwEiWBOHiGkMOQDD2jLd/vxkW11vEH0d7PM9plRVbUo8EkJI/vMk04KavgcYyHmcPKJbVXH+9lVshjb6E6JK7Vz+iGAIorZte9rp5q0acs3vqey7A67b/ZDmJUd1pswxiKYyax7F0p6cQvjDyelwsmvvK0/P0pM7wt0UyxN8yaXqvHY3RyvLn9vQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1783167293; c=relaxed/relaxed;
-	bh=AkRCfO1iVn/QHizYN/z5xeFRWe5Y2j6prWXL4nkHqdg=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=AKqB2SDJqSS3lF1/jR4hwKJiPjcH7LEa1nPJL+wm1BW9lxZwFwk5Samk5B5OHLjBb6zvH9kWl+PAeubxVwaGQmxXVF0Bv1tW3oBBrIGI19k5sY3gN4CV0Dju00aAVGLQsaSmYwLWIkgNvQSHSwgI1d8p9MWYIRKe2CmicbcqiyPRvoljgCAg5Mg8itPng2iSTAuK+/c5qg0ZyVJKVW4xMLfMvpi9YOj4VfYMDYqISIJOtDkQKEaCRGlyp/EbQ6V0NXvGqa4cwf7YQ1stueHrSTin2zAslcInzJrjHJpC+pWKJdhoP4Q4sjtLu4TUDPBmVZHTpXm2rXzCHYnD59kNGg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=QjDxQo8v; dkim-atps=neutral; spf=pass (client-ip=2001:41d0:1004:224b::b3; helo=out-179.mta0.migadu.com; envelope-from=thorsten.blum@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=QjDxQo8v;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=2001:41d0:1004:224b::b3; helo=out-179.mta0.migadu.com; envelope-from=thorsten.blum@linux.dev; receiver=lists.ozlabs.org)
-Received: from out-179.mta0.migadu.com (out-179.mta0.migadu.com [IPv6:2001:41d0:1004:224b::b3])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	t=1783180686; c=relaxed/relaxed;
+	bh=XKvX5DPQrSUHYICcoTrV7xOdzNCIwyOltYffht6DPHo=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
+	 MIME-Version:Content-Type; b=WSCKr8B0PV/V9jmHxkdh4BJ1BMfX4FtUBXiY77Q0v2Gb1Vw9/Hh2z1PePqY1YeGU6LrAMn2lceKRx6gbOh/LH3NnClZNoH9PiUHaR/RLFHjGi8+Yon+6e98zsW2frQsFwsb1oQbb3n+XCfzWysTdnaOx0M1kFbWRwktUxH8+EnKPgwpJCv3Z0zaFmr2KduSgsV5ZjCDmwc28bIelIb+STnoIdq2TifmHbEmticQOwbNjMg3nkk7H5ROCLRv3Eh4CaVo/bneoJlSd24H6UmbV8pxm3lnDhQnj4HnBEELKZ/dQf7HaBpnOw8ya0NdCMRN/zup9QYttRP7HRYJFriOdTw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass (client-ip=212.18.0.10; helo=mail-out.m-online.net; envelope-from=whitebox@nefkom.net; receiver=lists.ozlabs.org) smtp.mailfrom=nefkom.net
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nefkom.net (client-ip=212.18.0.10; helo=mail-out.m-online.net; envelope-from=whitebox@nefkom.net; receiver=lists.ozlabs.org)
+X-Greylist: delayed 483 seconds by postgrey-1.37 at boromir; Sun, 05 Jul 2026 01:58:05 AEST
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gsqLd2dxJz2xPb
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 04 Jul 2026 22:14:47 +1000 (AEST)
-X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
-	t=1783167262;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding;
-	bh=AkRCfO1iVn/QHizYN/z5xeFRWe5Y2j6prWXL4nkHqdg=;
-	b=QjDxQo8vPMgA7MrJ4wj1u1aU11TtIiT/LlRkdAPJ8hnzzkaVl5om7ZrvV6TTOF8+uBQlhY
-	s6dJqzyOlCzmZCea7yEtSBkUFKRrbjIhAik8RITcq4aWudmD/uDSkanidbPa9ykITDlsvZ
-	ebhGyu01+koW2fR2kW0vvTmCF5avOeE=
-From: Thorsten Blum <thorsten.blum@linux.dev>
-To: Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	Kees Cook <kees@kernel.org>,
-	Shrikanth Hegde <sshegde@linux.ibm.com>,
-	Yury Norov <ynorov@gmail.com>
-Cc: Thorsten Blum <thorsten.blum@linux.dev>,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH] powerpc/perf: Use strstarts() to simplify is_thread_imc_pmu()
-Date: Sat,  4 Jul 2026 14:13:54 +0200
-Message-ID: <20260704121353.201583-3-thorsten.blum@linux.dev>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gswJF0rc8z2xn3
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 05 Jul 2026 01:58:04 +1000 (AEST)
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+	by mail-out.m-online.net (Postfix) with ESMTP id 4gsw6s0cxcz1sHQH;
+	Sat,  4 Jul 2026 17:49:57 +0200 (CEST)
+Received: from frontend03.mail.m-online.net (unknown [192.168.6.182])
+	by mail-out.m-online.net (Postfix) with ESMTP id 4gsw6l1FYTz1sHPZ;
+	Sat,  4 Jul 2026 17:49:51 +0200 (CEST)
+Received: from localhost (dynscan3.mnet-online.de [192.168.6.87])
+	by mail.m-online.net (Postfix) with ESMTP id 4gsw6k4wvjz1qqlR;
+	Sat,  4 Jul 2026 17:49:50 +0200 (CEST)
+X-Virus-Scanned: amavis at mnet-online.de
+Received: from mail.mnet-online.de ([192.168.6.182])
+ by localhost (dynscan3.mail.m-online.net [192.168.6.87]) (amavis, port 10024)
+ with ESMTP id R_Y3_Cc9lJ6V; Sat,  4 Jul 2026 17:49:46 +0200 (CEST)
+X-Auth-Info: EFE9sk6gDFi3vH8HvqVovsJ6+NrN+qdzuX7oMCAWSGfdOJ88elpkdhPRZAIht4ol
+Received: from igel.home (aftr-62-216-202-137.dynamic.mnet-online.de [62.216.202.137])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mail.mnet-online.de (Postfix) with ESMTPSA;
+	Sat,  4 Jul 2026 17:49:46 +0200 (CEST)
+Received: by igel.home (Postfix, from userid 1000)
+	id D83472C0AF4; Sat, 04 Jul 2026 17:49:45 +0200 (CEST)
+From: Andreas Schwab <schwab@linux-m68k.org>
+To: "Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com>
+Cc: maddy@linux.ibm.com,  mpe@ellerman.id.au,  npiggin@gmail.com,
+  chleroy@kernel.org,  ryabinin.a.a@gmail.com,  glider@google.com,
+  andreyknvl@gmail.com,  dvyukov@google.com,  vincenzo.frascino@arm.com,
+  oleg@redhat.com,  kees@kernel.org,  luto@amacapital.net,
+  wad@chromium.org,  mchauras@linux.ibm.com,  sshegde@linux.ibm.com,
+  thuth@redhat.com,  ruanjinjie@huawei.com,  akpm@linux-foundation.org,
+  macro@orcam.me.uk,  ldv@strace.io,  charlie@rivosinc.com,  deller@gmx.de,
+  kevin.brodsky@arm.com,  ritesh.list@gmail.com,  yeoreum.yun@arm.com,
+  agordeev@linux.ibm.com,  segher@kernel.crashing.org,
+  mark.rutland@arm.com,  ryan.roberts@arm.com,  pmladek@suse.com,
+  feng.tang@linux.alibaba.com,  peterz@infradead.org,
+  kan.liang@linux.intel.com,  linuxppc-dev@lists.ozlabs.org,
+  linux-kernel@vger.kernel.org,  kasan-dev@googlegroups.com
+Subject: Re: [PATCH v5 0/8] Generic IRQ entry/exit support for powerpc
+In-Reply-To: <20260427122742.210074-1-mkchauras@gmail.com>
+References: <20260427122742.210074-1-mkchauras@gmail.com>
+Date: Sat, 04 Jul 2026 17:49:45 +0200
+Message-ID: <87wlvazrdy.fsf@igel.home>
+User-Agent: Gnus/5.13 (Gnus v5.13)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -65,33 +82,13 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=806; i=thorsten.blum@linux.dev; h=from:subject; bh=UwrlOT9c1HuWdVl1Ql3XG6T9KxGSNS6xYqU+a7+eINQ=; b=owGbwMvMwCUWt7pQ4caZUj3G02pJDFkePxm1Fl8KcjnnKLXtq0NjesmzpfP6hFviRL7vWmv/s aKG88LejlIWBjEuBlkxRZYHs37M8C2tqdxkErETZg4rE8gQBi5OAZjI5oWMDM/m2Zb6m+5ZotB1 bKX5QVuhE9+EziYslbkTct+4LiA9v4yRYWe182+zZInwAxH5d8/9+b7umP6ZnU7f1km973xcz6z SwAIA
-X-Developer-Key: i=thorsten.blum@linux.dev; a=openpgp; fpr=1D60735E8AEF3BE473B69D84733678FD8DFEEAD4
-Content-Transfer-Encoding: 8bit
-X-Migadu-Flow: FLOW_OUT
+Content-Type: text/plain
 
-Replace the open-coded implementation with strstarts() to simplify
-is_thread_imc_pmu().
+This breaks booting on the PowerMac G5 (PowerMac7,3), there is a panic
+somwhere in an irq.
 
-Signed-off-by: Thorsten Blum <thorsten.blum@linux.dev>
----
- arch/powerpc/perf/imc-pmu.c | 5 +----
- 1 file changed, 1 insertion(+), 4 deletions(-)
-
-diff --git a/arch/powerpc/perf/imc-pmu.c b/arch/powerpc/perf/imc-pmu.c
-index e3822f36c419..1d2db6d3e226 100644
---- a/arch/powerpc/perf/imc-pmu.c
-+++ b/arch/powerpc/perf/imc-pmu.c
-@@ -1023,10 +1023,7 @@ static int thread_imc_event_init(struct perf_event *event)
- 
- static bool is_thread_imc_pmu(struct perf_event *event)
- {
--	if (!strncmp(event->pmu->name, "thread_imc", strlen("thread_imc")))
--		return true;
--
--	return false;
-+	return strstarts(event->pmu->name, "thread_imc");
- }
- 
- static __be64 *get_event_base_addr(struct perf_event *event)
+-- 
+Andreas Schwab, schwab@linux-m68k.org
+GPG Key fingerprint = 7578 EB47 D4E5 4D69 2510  2552 DF73 E780 A9DA AEC1
+"And now for something completely different."
 
