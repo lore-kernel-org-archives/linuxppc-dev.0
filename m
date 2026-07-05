@@ -1,52 +1,53 @@
-Return-Path: <linuxppc-dev+bounces-23568-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23569-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 632A1C43458
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  5 Jul 2026 11:35:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A7702C43458
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  5 Jul 2026 12:03:00 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gtQQx48Z5z2yXj;
-	Sun, 05 Jul 2026 21:35:37 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=212.18.0.9
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783251337;
-	cv=none; b=jqcdA3ywYpIGTWQfqIr3kC8g8XQBgfEw2YZbNyFiZ/0Uc8A88VGiQj6QGW+tmKn6rSX6ldD2fQFJ47XFrkcQ7VIAfgNg+oxyEd0F1unHMJDw/86MYmLc9cgqKovqUppfWGNPh2Rv3ka++dyYpfYNEyZWGOR3Iq8d2Uxtid7iSsWYaKHPlC5+MnCEZd3XMcIgnmWyryggh3fo/JFcWZny1FABrgU2ok1f33EWvMBUXbr1QjCWsmAhTdM5Ggd2PqUNNyQ4nlTF1P2casIB0IBc0YIYWF6nWckmn9xDBmKb4ZptRDJMPXa0ODQqbRMeL5zczv1eYdaX9P/AFuT8uRb6dw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gtR2W1FVnz2yXj;
+	Sun, 05 Jul 2026 22:02:59 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:a60:0:28:0:1:25:1"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783252979;
+	cv=none; b=XUKpik7t2znDZ46k0Lnth+yl4RemXdAykLxK1TWEKGHw3Xnh5sqmopX2bGclw0yHfIFyaJw/u31KDXgOicCj6lm/Y7mf303G1VfJqYke2/xlPskN69YIEi7OO4yd3ZlmKoqkbTl014dnv0x+JqK9QHH9ndufg8Ayiclh+27QG1N67CFeDtLi/+ZPJZ6Wrf6Wlds+5aasCZzI1vpXeoxQwjcIQJdCxX5ZhwdsDJPfVZaDA4h9ZeUC5jNmdlUcRhHwbcW8yarUlvZuho/st/vmLxQGfSneZPoIwJ+o3rfmxL9toQ9MFrwYvaEMEmqhs+FXM9FhghLcR6s78zdyrWHz7w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1783251337; c=relaxed/relaxed;
-	bh=hEp4hkXnZJqqgHj1cbX6prSWUq/sWPwGNo6KywR0pd4=;
+	t=1783252979; c=relaxed/relaxed;
+	bh=Sji5Ah8stAlV4Q0B2WHTEDyQ0tlhX/MxLrEtBI4Pggs=;
 	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
-	 MIME-Version:Content-Type; b=S8Qm9fcxkJhoVShYV/JtRi6cpH+6vrk4K5dNVkk5y1sgc2PT63bHtvczN7XrqBzTX2L98R+vIcTJe3YMvlA5r0SfIFPM8xQYKLPF8nhcPVN87kHnR7IPL9tPhJvPZLOXtIt+EIkqvTnTr83RbrJEwazcqH2o1Ok5bdgj+yNxRQvL22/NiE/LGf9VlimdjF7I2sFwMQ2HdaZpBqPZJzHwJEfxV3APwgeCvd9yPXhTaE0/gsy0K6f+5VXMz3zzjD0zWg5/jbXc/5BRIN8tPmGDuDyBHEnhERDK8P1ILG/h1JgmEDo7WUsr1X8lh5F8g/BrWEFIT9IOLKpqhMLpEJ0O1Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass (client-ip=212.18.0.9; helo=mail-out.m-online.net; envelope-from=whitebox@nefkom.net; receiver=lists.ozlabs.org) smtp.mailfrom=nefkom.net
+	 MIME-Version:Content-Type; b=jEKGFQRLz3gkgJM2huNDbyKTbW1L1fnT4LQnQ1UJRbpbfr1ZnVXriR7M+O+q5imddCrfPFwY83ZMk5QAmhrmB3rJEn+PxQumVDzTTS/RrXm43iRkSi1Z+8jaV6Zjdg6wmOpq60BUXRkTBo1Jayu7rt4SaFsp8sr8SL5SSo5lXxm2FChtZgzbdGhrdxss+lwD4CwPcVFgNqLBC6K1fcwP4zAcGxByd10KQXTJLczo3v/hQiRy71+f2TKOi4loTx+5ZNiWOg9KGv4FIXw6HEgsIcLgf/rMaqw+TLyfLkgQ48T905tvn3M7c3bL6+HkOzgcVy7FIlgxTyjs/umnJlKjAg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass (client-ip=2001:a60:0:28:0:1:25:1; helo=mail-out.m-online.net; envelope-from=whitebox@nefkom.net; receiver=lists.ozlabs.org) smtp.mailfrom=nefkom.net
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nefkom.net (client-ip=212.18.0.9; helo=mail-out.m-online.net; envelope-from=whitebox@nefkom.net; receiver=lists.ozlabs.org)
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nefkom.net (client-ip=2001:a60:0:28:0:1:25:1; helo=mail-out.m-online.net; envelope-from=whitebox@nefkom.net; receiver=lists.ozlabs.org)
+X-Greylist: delayed 72768 seconds by postgrey-1.37 at boromir; Sun, 05 Jul 2026 22:02:58 AEST
+Received: from mail-out.m-online.net (mail-out.m-online.net [IPv6:2001:a60:0:28:0:1:25:1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gtQQv6427z2yRM
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 05 Jul 2026 21:35:34 +1000 (AEST)
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by mail-out.m-online.net (Postfix) with ESMTP id 4gtQQp3gddz1r5ST;
-	Sun,  5 Jul 2026 13:35:30 +0200 (CEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gtR2V0rfHz2yRC
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 05 Jul 2026 22:02:57 +1000 (AEST)
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+	by mail-out.m-online.net (Postfix) with ESMTP id 4gtR2P3sBQz1sGWl;
+	Sun,  5 Jul 2026 14:02:53 +0200 (CEST)
 Received: from frontend03.mail.m-online.net (unknown [192.168.6.182])
-	by mail-out.m-online.net (Postfix) with ESMTP id 4gtQQj391Lz1r5SR;
-	Sun,  5 Jul 2026 13:35:25 +0200 (CEST)
+	by mail-out.m-online.net (Postfix) with ESMTP id 4gtR2H2N3zz1sGWg;
+	Sun,  5 Jul 2026 14:02:47 +0200 (CEST)
 Received: from localhost (dynscan3.mnet-online.de [192.168.6.87])
-	by mail.m-online.net (Postfix) with ESMTP id 4gtQQh4vnnz1qqlR;
-	Sun,  5 Jul 2026 13:35:24 +0200 (CEST)
+	by mail.m-online.net (Postfix) with ESMTP id 4gtR2G5KXFz1qqlR;
+	Sun,  5 Jul 2026 14:02:46 +0200 (CEST)
 X-Virus-Scanned: amavis at mnet-online.de
 Received: from mail.mnet-online.de ([192.168.6.182])
  by localhost (dynscan3.mail.m-online.net [192.168.6.87]) (amavis, port 10024)
- with ESMTP id eqXnZcOzeJq0; Sun,  5 Jul 2026 13:35:20 +0200 (CEST)
-X-Auth-Info: rL0Tgy9moVwB6CCQCSaA+F48ujYxdVsV0p4gppaTiwTnO5NOHncg3Q4G9ZyKTDzO
+ with ESMTP id sBBVFTrCTAec; Sun,  5 Jul 2026 14:02:42 +0200 (CEST)
+X-Auth-Info: GjGVZKdk11T2Q/lJmy5m6Z08B4R22gBnYRTgOUdbDTI6PnfTLnyKcwoAO+YSoz4S
 Received: from igel.home (aftr-62-216-202-245.dynamic.mnet-online.de [62.216.202.245])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
 	by mail.mnet-online.de (Postfix) with ESMTPSA;
-	Sun,  5 Jul 2026 13:35:20 +0200 (CEST)
+	Sun,  5 Jul 2026 14:02:42 +0200 (CEST)
 Received: by igel.home (Postfix, from userid 1000)
-	id 093BE2C0B17; Sun, 05 Jul 2026 13:35:20 +0200 (CEST)
+	id 4A4D52C0B17; Sun, 05 Jul 2026 14:02:42 +0200 (CEST)
 From: Andreas Schwab <schwab@linux-m68k.org>
 To: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
 Cc: "Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com>,
@@ -68,8 +69,8 @@ In-Reply-To: <1693b268-ee26-4764-871a-5a067ae96080@kernel.org>
 References: <20260427122742.210074-1-mkchauras@gmail.com>
 	<87wlvazrdy.fsf@igel.home>
 	<1693b268-ee26-4764-871a-5a067ae96080@kernel.org>
-Date: Sun, 05 Jul 2026 13:35:19 +0200
-Message-ID: <877bn9vfd4.fsf@igel.home>
+Date: Sun, 05 Jul 2026 14:02:42 +0200
+Message-ID: <8733xxve3h.fsf@igel.home>
 User-Agent: Gnus/5.13 (Gnus v5.13)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -84,32 +85,17 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
 
-On Jul 05 2026, Christophe Leroy (CS GROUP) wrote:
+BUG: Unable to handle kernel data access at 0x30af548c0000028
+Faulting instruction address: 0xc0000000000af47c
 
-> Le 04/07/2026 à 17:49, Andreas Schwab a écrit :
->> This breaks booting on the PowerMac G5 (PowerMac7,3), there is a panic
->> somwhere in an irq.
->> 
->
-> Do you have more details ? Like at least the dump of the panic Oops ?
+c0000000000aee6c <.sched_balance_find_src_group>:
 
-NIP .power4_idle_nap+0x30/0x34
-LR .power4_idle+0x64/0x70
---- interrupt: 900
-
-.arch_spu_idle+0x88/0x100
-.default_idle_call+0x3c/0x5c
-.do_idle+0x194/0x2b4
-.cpu_startup_entry+0x3c/0x40
-.start_secondary+0x6b0/0x820
-start_secondary_prolog+0x10/0x14
-
-> Can it be reproduced on QEMU ?
-
-No, qemu does not support SMP.
+c0000000000af474:       e9 3f 00 18     ld      r9,24(r31)
+c0000000000af478:       e9 29 0d 48     ld      r9,3400(r9)
+c0000000000af47c:       89 49 00 28     lbz     r10,40(r9)
+c0000000000af480:       7c 0a e0 40     cmplw   r10,r28
 
 -- 
 Andreas Schwab, schwab@linux-m68k.org
