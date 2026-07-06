@@ -1,54 +1,46 @@
-Return-Path: <linuxppc-dev+bounces-23599-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23600-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 914B5C43458
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Jul 2026 10:46:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4FDA3C43458
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Jul 2026 11:05:56 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gv1HH1n6fz2yfS;
-	Mon, 06 Jul 2026 20:46:03 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=212.227.17.12
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783334763;
-	cv=none; b=lvwI63TxZT/lJPNbOidkYdhI4ieGz9alie5hQTlEx0pA3buxByqy1KNGFZ64SXKYvIKvgEwm/OBNx8jCBHCdBlzlRo9zKQyH+RJ4u7KXyiZRkn6WB6B41tsTUqOEwuyr0+hfgK+e/z42ZrJwKy1CH6TuNZr/HXAJNuWrvLYqK+liQ99sWpIIL8N1JyGc0tBbyYNK5jNa3N/E5bMjxSu0E7uJm7Dkwz/bnmcmyzOk3d/gtrpgHNn0lvkCXiDd0XYmXoCL2QsSF9BObTaSMDWWwCFbSkGgPBeFJjHOIpIar+XReKY7tNtbmjUtbO6+fgHHE9PhzDz1JuocjdS0XUl5zw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gv1kB6Y56z2yVZ;
+	Mon, 06 Jul 2026 21:05:54 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=91.218.175.183
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783335954;
+	cv=none; b=O7QBM/GlbzFEoQRtH1p++2jtA9y3vc7eL23IeGHJeG++h7YnTHpo3b+k0fE/a6cr2T2xTc2cAj6/nIeXcBXlUW4o01L5ZuRFKgoy7ueavcNxF826mbxhQwzOOdkEyi49uoWDq/q/LVrlSWhKj2gQ132vsnhy/FGr0g/KOgUghnJtZhNZ1zc8XSaAe3Dj1l58v7NVbva7t5rD/bD/Gw2Ga5PYaRQzXkvvlFAbijD6kDyYuSqKDpY+suRxZgdAapdnGyDiKEjsd60rcZQbdcSHeVc2vemSxgdj/TcsNswZKlPmsCDSPqlfisehR0/HbFPVPgwl/pEJd1ZOqBwmGV+Owg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1783334763; c=relaxed/relaxed;
-	bh=ul5AJDTYA7aLNwXWzGmKwSKEDzMH7D/FAfxASkHiZHY=;
-	h=Message-ID:Date:MIME-Version:Subject:From:To:Cc:References:
-	 In-Reply-To:Content-Type; b=LW4MkE6W7v580wo+FrJyMqRSmGFDoPZCB5oHXkjtbVkLZJwQk0PkGoj1zHbK0baSvTza9vYeGwWpijIc7uEFrIoAAenzRW1biQ42VOehCBwjW/Fmncy8pCjSqpDHN0AQIffH3D9qZQSgs0+RCTUnsKR/YxnoJOG20IQv29qyvNu9LbqBC5ibVAEtR8TsZP0A556X+4KW7DXrXwG0sMMQQ5d1JCzqKTOWqTtsgOsUuSiDjwkL0NY3nRvHN/lYbH83+eOBD1qIiW14vyP6I3VQ/5kDDucTclGEjEoUIoSPlzb+hkvRFoOItanNy1I0GJ4pX8zIyXzKDbaB2vmjRO4r4g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=web.de; dkim=pass (2048-bit key; secure) header.d=web.de header.i=markus.elfring@web.de header.a=rsa-sha256 header.s=s29768273 header.b=VkLL+rJM; dkim-atps=neutral; spf=pass (client-ip=212.227.17.12; helo=mout.web.de; envelope-from=markus.elfring@web.de; receiver=lists.ozlabs.org) smtp.mailfrom=web.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=web.de
+	t=1783335954; c=relaxed/relaxed;
+	bh=70JWofOLlMgrve9aDAgHG0zmj2dWsVDmKKX/VA1fyUA=;
+	h=Content-Type:Mime-Version:Subject:From:In-Reply-To:Date:Cc:
+	 Message-Id:References:To; b=faGMZg19V5PZdhFyXMUM+eAL0jojLGZ1GJct2W4OXOgD5v+Uct81M1A5zBJDe0qXcMDRcEBrNfsmrN/Sa14zSRsVFSVcuyxLxkFbN2Jn6L6A0vWLPDGtR/nNH7fenhD6Y7WOAwrfyJIrS4X8GvYNtKZzU70XnQospv7Zdc0uSrRrd1fHeEjf9OBXC0SGUTpUUhWSX4lqVlQfuV/Nc2mJnamaxgR7IeEwfwKqsgoagpDSaIWp/8HMJvdIYczAty124tkfVCqxeiAtOvOr5y7vq+v3ZsXKziqZ6JEAA7dJPmPAbO+dlncPIKpPFRKgR+anjXFggmdDltJaQt/GFJjz4g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=VHL9KSSG; dkim-atps=neutral; spf=pass (client-ip=91.218.175.183; helo=out-183.mta0.migadu.com; envelope-from=muchun.song@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=web.de header.i=markus.elfring@web.de header.a=rsa-sha256 header.s=s29768273 header.b=VkLL+rJM;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=VHL9KSSG;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=web.de (client-ip=212.227.17.12; helo=mout.web.de; envelope-from=markus.elfring@web.de; receiver=lists.ozlabs.org)
-X-Greylist: delayed 322 seconds by postgrey-1.37 at boromir; Mon, 06 Jul 2026 20:46:01 AEST
-Received: from mout.web.de (mout.web.de [212.227.17.12])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=91.218.175.183; helo=out-183.mta0.migadu.com; envelope-from=muchun.song@linux.dev; receiver=lists.ozlabs.org)
+Received: from out-183.mta0.migadu.com (out-183.mta0.migadu.com [91.218.175.183])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gv1HF4ZfBz2yVZ
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 Jul 2026 20:46:00 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=web.de;
-	s=s29768273; t=1783334756; x=1783939556; i=markus.elfring@web.de;
-	bh=ul5AJDTYA7aLNwXWzGmKwSKEDzMH7D/FAfxASkHiZHY=;
-	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:From:To:
-	 Cc:References:In-Reply-To:Content-Type:Content-Transfer-Encoding:
-	 cc:content-transfer-encoding:content-type:date:from:message-id:
-	 mime-version:reply-to:subject:to;
-	b=VkLL+rJMJOQZoL99DcXLizA5+hicEWPdCgLxQSj2U4VLEGxDMcPdRL64WmMqN8Nh
-	 WJViSLTO9CNKn3xaEGSq0DmAkBAX0jfcyjWJMvpqVQsPcQHQNEJh2636It4l97G8n
-	 ZLEHt8YLd8LZ4kt5ezjRMQtrz71kJaCkgczmhbPIjAstjmPnWD6wZ7hR7wXRlUqOP
-	 gV9qOUtaQsJBr/uKY2+4hbkQgoJnpfdHUHzTyYWLH13BWycmaT45MNAOLcrMwZUIL
-	 8P3+v/tAgumzG3w61GmxkXYJpYH5JWZi08ktB+BzQzcTsMzmkLdrtZA5d4opPZRfb
-	 Iv39/c2m6Ey+nN+2+w==
-X-UI-Sender-Class: 814a7b36-bfc1-4dae-8640-3722d8ec6cd6
-Received: from client.hidden.invalid by smtp.web.de (mrweb106
- [213.165.67.124]) with ESMTPSA (Nemesis) id 1M4KJX-1wgPlL3SqH-001EX3; Mon, 06
- Jul 2026 12:40:10 +0200
-Message-ID: <f47abd6e-9337-404c-a24f-39a9dd7454d2@web.de>
-Date: Mon, 6 Jul 2026 12:40:09 +0200
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gv1k73tCFz2xF8
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 Jul 2026 21:05:50 +1000 (AEST)
+Content-Type: text/plain;
+	charset=utf-8
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
+	t=1783335928;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=70JWofOLlMgrve9aDAgHG0zmj2dWsVDmKKX/VA1fyUA=;
+	b=VHL9KSSGqlxRYaGJQc9uy9oiC4xOSCeQUo/nl+CaMphFOPWNd+lQJukSEIALJfU39/njtD
+	8RLuOFpl7fzzo9dgm8IwummIQjaga+zPxFmOc/m/pSGd+HghXQrb6mhFAvSvUvMOFTzAMN
+	710fjORCfQjp3SJnNqGIg+QRTJFGbS8=
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -61,187 +53,180 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: [PATCH v2 2/2] soc: fsl: dpio: Use scope-based resource management in
- dpaa2_io_create()
-From: Markus Elfring <Markus.Elfring@web.de>
-To: linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
- Christophe Leroy <chleroy@kernel.org>, Roy Pledge <Roy.Pledge@nxp.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
-References: <690827f2-e746-4378-bb7c-9948cd69dc15@web.de>
- <d95d2f4c-f3cf-44eb-b61b-79ba7891674d@kernel.org>
- <d2e5df25-c8b7-4ee6-8ebf-1725542baabd@web.de>
-Content-Language: en-GB, de-DE
-In-Reply-To: <d2e5df25-c8b7-4ee6-8ebf-1725542baabd@web.de>
-Content-Type: text/plain; charset=UTF-8
+Mime-Version: 1.0 (Mac OS X Mail 16.0 \(3864.600.51.1.1\))
+Subject: Re: [PATCH v4 01/19] mm/hugetlb: Fix boot panic with CONFIG_DEBUG_VM
+ and HVO bootmem pages
+X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
+From: Muchun Song <muchun.song@linux.dev>
+In-Reply-To: <b4b200da-f510-4fe2-95ac-c63e4467c4bd@google.com>
+Date: Mon, 6 Jul 2026 19:04:50 +0800
+Cc: Muchun Song <songmuchun@bytedance.com>,
+ Oscar Salvador <osalvador@suse.de>,
+ David Hildenbrand <david@kernel.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Mike Rapoport <rppt@kernel.org>,
+ Lorenzo Stoakes <ljs@kernel.org>,
+ "Liam R . Howlett" <liam@infradead.org>,
+ Vlastimil Babka <vbabka@kernel.org>,
+ linux-mm@kvack.org,
+ linux-kernel@vger.kernel.org,
+ Nicholas Piggin <npiggin@gmail.com>,
+ Christophe Leroy <chleroy@kernel.org>,
+ Ritesh Harjani <ritesh.list@gmail.com>,
+ "Aneesh Kumar K . V" <aneesh.kumar@linux.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org,
+ Mike Kravetz <mike.kravetz@oracle.com>
 Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:BgikFvy0UCxadnIWbi7Ro86BGCmLYEw6oPOqX+iYeIvp3uyEjkX
- iMz4VhaUg4JaFZoKx1lJgD+2vz8LxUbNXpA6uFktC8zrP+4+gSZCavHu2HlIA0wvnp2abUu
- xtc+PBTFF/wabDIv4n1KcNDGNfuVdyV/M51Ec8y//BWLITEAWgt6Q7/Ht+/VlUoLMkJ9AY+
- Ohfqp9rRIFduMIN3F1gXg==
-UI-OutboundReport: notjunk:1;M01:P0:s7CzU5+f50Q=;yQnWfPzDVJ5avfDj61zgDL8RveC
- TYdog2zsnV3j69YHbL0ATlGyq92bXwwqc38KxiGj1fJmScQXdCS8GY1qPz1DhoWTpW4bEBTeS
- ed/ClBLo/BlQQqHGWHiZIlu08feQKNoTGThqV0btgbhY3CEjhGpFt0OsGlx9PZMGhJXL6gslg
- JXN9TtsDy+w76W0Uomkg6HYDA7/0ETlcRQdTp1PXeH3uW72juew8QuvHbI2HhvVIzN4gt8cQB
- PinoDYlao8lmBj0xmw7DZ/rGQ5qSPj42m3YZk7WwNt7OJaW+DMS59D2n6WE23MTsIsMquLX0F
- JHv/11PKQNh7XN8R46SOExH2oq1ohe3V/5Qn90J5fcLd/JwWNazp9IWxzaoRCfIoQyxHT4q/c
- tqa9Td9Tx8NZbNYsvM2nORBgHNPPOusl25tcUIlZ6SaciSyO729LdSQym9RMDRpxxzl8Kqf4B
- JK04r3ZxWLBZWI7Gdku1nyim5jvtik8gQ7L7hijBYCUAHIm/Ayj3yTKDTAsujWMa8MlWPSpJx
- 0zgOcOtFL3Im/oXGDszzmFFdw326d4hFM2KT+t6NZnnoNsLCcu36kmYuTEUTXZlbJnliV+Djo
- fPvyOnGEKEdJRwFmic2E8umYkmyBZt06kzt/orMpyhAOkQGME7RlsZ15Km2TQOQSDn/o+cTM6
- sdK22PrOyQmwWWyXP2usrEQtUoGcUt11WxzNLO5yQcMBp/dCSmVJpIYEebsM5osFp8BDUY+uH
- TUpBfSZeQ+0Xcm9fsrM1yLczsOdDU5OjJHMV6XA0/pyIsxywvH9KXH+73WBJ/XsqhQU38C523
- 3AGTHiLdTDPJihWeXUt2meBPiXS8my2K81ZPZeUI/7M+yGsYmWCu9AUbFT5bI4O23QbGP7Pev
- mSEVTxCibyD1r1264gfjE6pn/OPUkNFqAvgED5s+U0WMRAMcUNe9bzM4WHa7e2Gtm1fppcqyX
- YcB3+t/iFKsO2xSEvz0ekDY43hnSISqZYY6DPPmdvZHlBjstvgyUNGglGD4UeJ99hrSg8IRcx
- KXWoC5MvPzi9ixF2ZzvHHe5KFeYGlgbH/8wxmRD2tC/ZcIjPL+4iwUvrvLlzsjrWYs2qwhquG
- TdnUrnOMYIcmjaXdqazsjkxTdyRnQRfZ7vMXvKWwJukj/eRGlmxlbnmyTtbb0WKy++c4O34Fw
- 15lFJS10C7rXWQF6eaL/odJUu9IhwSJPPx7Mh5xkK6bFW+mZEWypfOhIzfQvwO14ksetbg9mJ
- baI+63CLtH15HZGwXT2JtQ18UYvlfMG3yHn/ywNWEl6NNQPYi1INxg5REdxQlfhjnqnpsRFPW
- F4iFo9nsP1CoksK7U7pM51hGUhQPmNXdBiT4TnAPakpFK9woT6+8oTDIqHxmg/dfjHaHY0Qpv
- vG7AiLUtYd975I237H/kvMwzYw5DEni6Keqf/UaFdWN9scd1zON/r7yQUaPCP1nyQNIjFP7AP
- SRV9XYMDLMYy/hDV5e5rNUl4pLxYIFNcpvD8CmDHdIIiAIJNUbM7ymp2taWUh5S85fkFPOnic
- BSPGUbOZYyUThTy9IahnrTEwHYXnOQBt91htx1EsaunrnllGKRiykk23nfW2tSZlPZBihDSXf
- d8YMFzD0irU+yrlWpQXgBK2qFibzdLFTPpzli45qylqI0gsDVscGmZTProQmbGy2nCar5Buhk
- zqrTigj5AyGCOx54SCz4x16XyVfKCgolocuUE9eolvRZWgDEb2ovIRvOS8K212WrSLKIQ4xw6
- B4LcT6zo5Q7EJ52XE3y1Qoh7mX3cYyn1YdZECckX/Piwp0OTvhc+lk3gPcI/ktFoDP1InD3JK
- m8zSXtHxaqiXTLQ1oGPvj7wZX603lRDj4l8kpBsPjNQcAgOkJe3Ox61nHAFXa4YaW86YDLKvZ
- dcf8y2+vKJA5YHwvSnuHxlUZabOB0uSNZnd9+vqKdsiSETb1lS9XJFy+QB0/RW/obohtUlqZH
- cFdinyYEsTyn1HKp0Gh9m/CZ0jBJ3a1lDl6arBMXt0UQ6mp9J5tI0jdDR9cBkIQdiLegJJYLx
- Ysp2+M0iUblAMuBe1JW/ezxGbXIDwzNZawCBknz8qcgPtPbVCYPyXI0JkdrCiML4//tQuLO0t
- JzFUh9iktMl0xo7iRvDYqcggY2ZaWVhqYgJMcXUMqcIZOwvDgqqE5IsMieWCquWskRnFDEW0S
- zfuPhcUPXAxbUL9bRX5WNt63KkdQR/iATfYGTcX7UvKYduIJq+D5XtHPglLgxpXXBCb+fhwBk
- pz7WxY2Hf3R6NAcDvfSImPMkcsyaBSuH3kmkQsQ9KmGGdR/sC/0X9CnRv+7luwmkihzcjwM7m
- LUGhmYVnr6zpjDCUDyfdMpE4rOJsFSikqgTSJ9MwBm/nOMjIvgBnfPGvbPbY4SROVFaDC7AS/
- Y/aCI5e6tJOgqVUkdljcH047PyVpxN50s+oI3YuuZo3ytM6EuTqWeaLTK1Bh0zUBGAkVZPqlM
- 9F3PhiP1UYDZpr/rwJerQ2dJKNSJVR/EBrBK41WnREbB1hUFpwsv9haO6ZD9V//f9Xi8r7iMC
- n1YAAlPkZzonfS7nPe8E8YsOzgfDvIz4SpauFe8us9KQr/8k8vYc7RRw/+MyMQSOimWgIQhrx
- KOept3kVrbpow+3/Dse39SKF1TxQGS+FM8wQvLLothvhOsp2UUEfHlZ2C0X0v0k37bkYcXuMD
- zql9I7CPuxIHhgDD9EGXYPh1JG/PDpbCmHmUnWlQbfSYxqTSBmxPt+2GWiHIhg93aywR1ljdk
- zsWkHyVnOUu7KxCULb3eDJjW1UZHbsfN36PoG3MJzyPssxV89vGcCLtQmLHn8b4PBeff58a+T
- WKLNNBNvJrhCO695LMi2lp9mC8niEQmjCGSbWE7W/6IqhuRj5aKzzwdnugfFi/g07vEA/s+uU
- KFMsrYHbp8PYblyWsJDprw3SZwEHrKKvxM4xXilRqeHj3cQhf+GLpSPP1tjYFSCDv6V8v/aS1
- 2aPNQRS3a8og48e8nSvmbMiZY4zIHkkgCOkxVrIB+3tP/6N5wrkTa5rW5F5TaFkBWDPqSulzs
- B9imR9vsBu9VBbIvzWhZxVbJ7ananFMW143cVWwx618/7cEaVzXBBvZKuw3xdBMue/r0SILhV
- 6Np7GMfkaQiicEzofwSjv8hN3655F2zZm4YMX7HAO8ix43MwuZ4bCyMi1tgnnE7ZpVgQuP1PL
- aigVfBE25+O6al2ORtH1VH5VHTN1xnETUD/m9OuX7uY29FYiIuQ0aYeIHQ1SFquw7zCV2SnXe
- A16d4QsCKwmJSqqkY9XV9CVUycGxRz9WwMA7/Cfaz9RjHGW306e/PqCFjR/N2A2+xN+Ouc0qQ
- m7cBNMq2XjTROlQPgV4VGCZC8W0UyRIonwmDZ5+kYpdXI1xGN1aJljN9eMxyAsgzU7TG6Ut1Z
- +/4FEOmx4EoVP6ePtaMBx6Dq7c/UkWejxikIhKW9PlZk793BkREnuge7/te5gDiq2+eJnquNM
- /7htlLbJtz9rN+BdFthrtar9/zpGg7z2mLP/IImyhpEz7N+8Ee5fmM5n8KF5omKWrLSn5VgQs
- 03u6R84LEhr2HWUpmFsGHsRSE9AWrjNMiG1d/e9Q5ipzbBTwy3bz6orCG2U2S9KIn1KGH4aKB
- 4+3A64N7C60veuLOlHu3+iUzMsvTJ/9kGTM7QGT4efTJVd464k+5hmzvpHQwI8pKp+TU6imy1
- e7Q0f6gpOXL5oh80VBThjLnQYDbcpp065nQp2+G2WYlgiWdMoblcmBMYSdFpoxF3oihrfExGj
- FyrFx3gCv7jZc4rKHyRFUc9kiBkqtqciiH7XnqssZ3UDPkCyEVrQtlD84En36IBqlV75H9Kjj
- 4e1l9N2g2X9+oQ8CMcRtew2+q6+lJ/BRA+Xzje8rjvV61so3WS/vA+q6YSpdBOGXt/dksn6BN
- HDsJ5WfBeIcKhp1n1VFAeaYCfaDyQ+BNEtkCbIv7AitCord3Zh1BpmXOfM6kP22cKFF53NbLB
- dJ4Ot3ZIxH1tiaysGzqlYDOzhcuyAtizJOvYnOGGWXGqhR4Vimyz6C0JjiePL6+4Ybz7H7/Oc
- vmC/dN4EZ/kWp1cNbcwh8rsdLJHVed1J0vp2oX+M7YA/TNrQ5dt6tWfmqLPv40ZaOROZhD2h5
- N7ZqOWZ/pEMO2W6ztXvlcZeTxP7WOJXeaqrdcwQQTt6e4yi/dLkg6IlmUM0vAiVsgwmTZ3IeU
- tY6LphYYNreRrhXx0zfy+LVuOugJR+YBVwKkAR4d7lFc/wKW/iJX128OtayZHO8+lu4XPgW1X
- rZKnt9DoUDBzNHpQDZTjtQUozyjeZXiIWUjLTg8bx/fthCpkBaJHQDTuDc5eo/iXbnK8rYdRY
- Taeg/qisYNL2Ech8i9B85wIKAEVZtAdk1pXkfkyy9v2uKF9QJuR5NJbDXZ9e49OD74M5fMtQb
- pKQYGM0MU09ayuAM+bAxonyrgY+9wJeeVaUBo/LtDixeNwvHvJrj0PApjH8dT179QHrSLrG7O
- 8CP4zxhOfI0Mo49Xfh+FX8U3GVB8bu3H1QHA0xjYhyl/Q+NT07moVl/m67df9M5N0+8pgqwJY
- psSf1l6jeCdA+w7Hy84zLt2ASfbOr1deyT/61Obi8k75Fe+s5B7oFwXSyxMgI4fAcDlRq5shX
- KLSKUrsSBqz7188mqiNJz+cO/TRHb0K5MkDaBTMec+qokOg7ipb5TBtJUEz2PlSNI3F4nLdvE
- SCQFDKEl/kkNAYHbrXOh0YxIRE7FwiJiSlxZukGt/oIOvM8MoJRKEjiJGgTVgcV7TQCoPQNjE
- 4eZc4eb9FxJNgqXZrNs3ZwQxX6GMjD9BiWKWqTg8UrQP+pBEqbZMlM9W8UcfT8Kl6tttMCnmA
- B8sPqvEhCim252MlPou3pQGHERd12MwkhPb2PEZJeklFnMVdFelfi5BCwL5z3XkAc+UTwKdZI
- N82Sj8QPsc40vE9/OlPVjPzsX4LEIq4b6UgE8w41PghREnmIbzrZDcESms/rGQ3fCaMe3Fnr+
- dkX1O1UY9UcwaXV8L7S5JCoOhjuhDyssRIt1KnNu3Hn0i9h8CaTxhrPYC3QDKq5ndPdFldJzD
- XrQ+ff9feOPHEVuOOhVtXFU1pqqteDJs+M1v7O43PI7hRYUxcZ+wEf3dlF7+l/5/oxsRf7Oco
- EOziIL6yShlrKel2tte+e0fgZg4KcJzU+gamI+OCBm92jTyiRBtkhXvzOdXfqVNvg4Lbi6m0J
- A6w7cETjdydrY+ewx4XVJF1KTmmOATv/tTtmy5C7lx1powVTumPvq5Dt6mNye3R48iB9BSJvU
- fX+LVJup613lIzIWf3HK8ut8S36Y6yZZthHYPY6iAgr8UcWwbmzPbQ4Ef0IFss2S6mttmtpFr
- HMs8zFG6NhRR7mTN24scMuw4NqPcbhgI1k3uLfKllNY0tamsU/6s0XM4idoqidJ3y9A9eKx5X
- MF2ufQBnh316/+02xIZ9woDjUX+xZsscQAoPcj6QlwLi9aFo8ZIYi9DFvBm/VF3p+3C2zHpf3
- wxiyxQGunQINn84pV2azyUJ9dH4UGaDpZAy3Qw4msF73Ogih6N0BMpnipQdehhxsVtFIeysPE
- 1v6zDL0+L6m966FDbBCiVHYY5NtUPztZ+wlP62vEs00CSty6iY7+UeqbApMwBtLP0bqQZw==
+Message-Id: <BBE64A39-448D-4235-8090-74C57947FE35@linux.dev>
+References: <20260612035903.2468601-1-songmuchun@bytedance.com>
+ <20260612035903.2468601-2-songmuchun@bytedance.com>
+ <b4b200da-f510-4fe2-95ac-c63e4467c4bd@google.com>
+To: =?utf-8?B?TWljaGHFgiBDxYJhcGnFhHNraQ==?= <mclapinski@google.com>
+X-Migadu-Flow: FLOW_OUT
 
-From: Markus Elfring <elfring@users.sourceforge.net>
-Date: Mon, 6 Jul 2026 11:18:39 +0200
 
-Scope-based resource management became supported for some
-programming interfaces by contributions of Peter Zijlstra on 2023-05-26.
-See also the commit 54da6a0924311c7cf5015533991e44fb8eb12773 ("locking:
-Introduce __cleanup() based infrastructure").
 
-* Thus use the attribute =E2=80=9C__free(kfree)=E2=80=9D.
+> On Jul 6, 2026, at 18:07, Micha=C5=82 C=C5=82api=C5=84ski =
+<mclapinski@google.com> wrote:
+>=20
+> On 6/12/26 5:58 AM, Muchun Song wrote:
+>> Commit 622026e87c40 ("mm/hugetlb: remove fake head pages") switched
+>> HVO to reuse per-zone shared tail pages from zone->vmemmap_tails[].
+>> Those shared tail pages were initialized in hugetlb_vmemmap_init(), =
+but
+>> bootmem HugeTLB folios are prepared earlier from =
+gather_bootmem_prealloc().
+>> With hugetlb_free_vmemmap=3Don, prep_and_add_bootmem_folios() can =
+access
+>> pageblock flags on bootmem HugeTLB pages whose mirrored tail struct =
+pages
+>> already point to the shared tail page. On CONFIG_DEBUG_VM kernels,
+>> get_pfnblock_bitmap_bitidx() then dereferences the =
+still-uninitialized
+>> shared tail page and can panic during boot.
+>> Initialize zone->vmemmap_tails[] from gather_bootmem_prealloc(), =
+before
+>> bootmem HugeTLB folios are processed, and drop the later =
+initialization
+>> from hugetlb_vmemmap_init().
+>> This bug only affects CONFIG_DEBUG_VM kernels, where the relevant
+>> assertion is evaluated.
+>> Fixes: 622026e87c40 ("mm/hugetlb: remove fake head pages")
+>> Signed-off-by: Muchun Song <songmuchun@bytedance.com>
+>> Acked-by: Oscar Salvador <osalvador@suse.de>
+>> ---
+>>  mm/hugetlb.c         | 25 +++++++++++++++++++++++++
+>>  mm/hugetlb_vmemmap.c | 17 -----------------
+>>  mm/sparse-vmemmap.c  |  2 +-
+>>  3 files changed, 26 insertions(+), 18 deletions(-)
+>> diff --git a/mm/hugetlb.c b/mm/hugetlb.c
+>> index 571212b80835..cd55524c7e30 100644
+>> --- a/mm/hugetlb.c
+>> +++ b/mm/hugetlb.c
+>> @@ -3365,6 +3365,31 @@ static void __init =
+gather_bootmem_prealloc(void)
+>>   .max_threads =3D num_node_state(N_MEMORY),
+>>   .numa_aware =3D true,
+>>   };
+>> +#ifdef CONFIG_HUGETLB_PAGE_OPTIMIZE_VMEMMAP
+>> + struct zone *zone;
+>> +
+>> + for_each_zone(zone) {
+>> + for (int i =3D 0; i < NR_VMEMMAP_TAILS; i++) {
+>> + struct page *tail, *p;
+>> + unsigned int order;
+>> +
+>> + tail =3D zone->vmemmap_tails[i];
+>> + if (!tail)
+>> + continue;
+>> +
+>> + order =3D i + VMEMMAP_TAIL_MIN_ORDER;
+>> + p =3D page_to_virt(tail);
+>> + /*
+>> + * prep_and_add_bootmem_folios() can access pageblock
+>> + * flags on bootmem HugeTLB pages, so initialize the
+>> + * shared tail struct pages here before bootmem folios
+>> + * start using them.
+>> + */
+>> + for (int j =3D 0; j < PAGE_SIZE / sizeof(struct page); j++)
+>> + init_compound_tail(p + j, NULL, order, zone);
+>> + }
+>> + }
+>> +#endif
+>=20
+> I think it would be better if this was located in mm/hugetlb_vmemmap.c =
+as a separate function.
 
-* Omit two kfree() calls accordingly.
+This is actually just temporary. I already have another patch [1] that
+completely removes this code later on. So, to avoid having to update
+the entire patchset unnecessarily, I figured it's best to just leave
+it as is for now, as it's not a major issue..
 
-* Reduce the scopes for the local variables =E2=80=9Cobj=E2=80=9D
-  and =E2=80=9Cqman_256_cycles_per_ns=E2=80=9D.
+[1] =
+https://lore.kernel.org/all/20260702093821.2740183-10-songmuchun@bytedance=
+.com/
 
-* Use the macro call =E2=80=9Creturn_ptr(obj)=E2=80=9D at the end.
+>=20
+>>     padata_do_multithreaded(&job);
+>>  }
+>> diff --git a/mm/hugetlb_vmemmap.c b/mm/hugetlb_vmemmap.c
+>> index 133b46dfb09f..c713c0d2593a 100644
+>> --- a/mm/hugetlb_vmemmap.c
+>> +++ b/mm/hugetlb_vmemmap.c
+>> @@ -870,27 +870,10 @@ static const struct ctl_table =
+hugetlb_vmemmap_sysctls[] =3D {
+>>  static int __init hugetlb_vmemmap_init(void)
+>>  {
+>>   const struct hstate *h;
+>> - struct zone *zone;
+>>     /* HUGETLB_VMEMMAP_RESERVE_SIZE should cover all used struct =
+pages */
+>>   BUILD_BUG_ON(__NR_USED_SUBPAGE > HUGETLB_VMEMMAP_RESERVE_PAGES);
+>>  - for_each_zone(zone) {
+>> - for (int i =3D 0; i < NR_VMEMMAP_TAILS; i++) {
+>> - struct page *tail, *p;
+>> - unsigned int order;
+>> -
+>> - tail =3D zone->vmemmap_tails[i];
+>> - if (!tail)
+>> - continue;
+>> -
+>> - order =3D i + VMEMMAP_TAIL_MIN_ORDER;
+>> - p =3D page_to_virt(tail);
+>> - for (int j =3D 0; j < PAGE_SIZE / sizeof(struct page); j++)
+>> - init_compound_tail(p + j, NULL, order, zone);
+>> - }
+>> - }
+>> -
+>>   for_each_hstate(h) {
+>>   if (hugetlb_vmemmap_optimizable(h)) {
+>>   register_sysctl_init("vm", hugetlb_vmemmap_sysctls);
+>> diff --git a/mm/sparse-vmemmap.c b/mm/sparse-vmemmap.c
+>> index 99e2be39671b..bb23fb3077a3 100644
+>> --- a/mm/sparse-vmemmap.c
+>> +++ b/mm/sparse-vmemmap.c
+>> @@ -342,7 +342,7 @@ static __meminit struct page =
+*vmemmap_get_tail(unsigned int order, struct zone *
+>>   *
+>>   * Any initialization done here will be overwritten by =
+memmap_init().
+>>   *
+>> - * hugetlb_vmemmap_init() will take care of initialization after
+>> + * gather_bootmem_prealloc() will take care of initialization after
+>>   * memmap_init().
+>>   */
+>> =20
+>=20
+> It gets the job done.
+>=20
+> Tested-by: Michal Clapinski <mclapinski@google.com>
+> Reviewed-by: Michal Clapinski <mclapinski@google.com>
 
-Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
-=2D--
- drivers/soc/fsl/dpio/dpio-service.c | 22 ++++++++--------------
- 1 file changed, 8 insertions(+), 14 deletions(-)
+Really thanks for your test.
 
-diff --git a/drivers/soc/fsl/dpio/dpio-service.c b/drivers/soc/fsl/dpio/dp=
-io-service.c
-index b252c3c7fa65..80fb11206160 100644
-=2D-- a/drivers/soc/fsl/dpio/dpio-service.c
-+++ b/drivers/soc/fsl/dpio/dpio-service.c
-@@ -133,17 +133,14 @@ static void dpaa2_io_dim_work(struct work_struct *w)
- struct dpaa2_io *dpaa2_io_create(const struct dpaa2_io_desc *desc,
- 				 struct device *dev)
- {
--	struct dpaa2_io *obj =3D kmalloc_obj(*obj);
--	u32 qman_256_cycles_per_ns;
--
--	if (!obj)
-+	/* check if CPU is out of range (-1 means any cpu) */
-+	if (desc->cpu !=3D DPAA2_IO_ANY_CPU && desc->cpu >=3D num_possible_cpus(=
-))
- 		return NULL;
-=20
--	/* check if CPU is out of range (-1 means any cpu) */
--	if (desc->cpu !=3D DPAA2_IO_ANY_CPU && desc->cpu >=3D num_possible_cpus(=
-)) {
--		kfree(obj);
-+	struct dpaa2_io *obj __free(kfree) =3D kmalloc_obj(*obj);
-+
-+	if (!obj)
- 		return NULL;
--	}
-=20
- 	obj->dpio_desc =3D *desc;
- 	obj->swp_desc.cena_bar =3D obj->dpio_desc.regs_cena;
-@@ -155,14 +152,11 @@ struct dpaa2_io *dpaa2_io_create(const struct dpaa2_=
-io_desc *desc,
- 	 * the interrupt timeout period register needs to be specified in QBMAN
- 	 * clock cycles in increments of 256.
- 	 */
--	qman_256_cycles_per_ns =3D 256000 / (obj->swp_desc.qman_clk / 1000000);
-+	u32 qman_256_cycles_per_ns =3D 256000 / (obj->swp_desc.qman_clk / 100000=
-0);
- 	obj->swp_desc.qman_256_cycles_per_ns =3D qman_256_cycles_per_ns;
- 	obj->swp =3D qbman_swp_init(&obj->swp_desc);
--
--	if (!obj->swp) {
--		kfree(obj);
-+	if (!obj->swp)
- 		return NULL;
--	}
-=20
- 	INIT_LIST_HEAD(&obj->node);
- 	spin_lock_init(&obj->lock_mgmt_cmd);
-@@ -191,7 +185,7 @@ struct dpaa2_io *dpaa2_io_create(const struct dpaa2_io=
-_desc *desc,
- 	obj->bytes =3D 0;
- 	obj->frames =3D 0;
-=20
--	return obj;
-+	return_ptr(obj);
- }
-=20
- /**
-=2D-=20
-2.54.0
+Muchun,
+Thanks.
 
 
