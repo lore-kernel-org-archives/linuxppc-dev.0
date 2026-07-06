@@ -1,82 +1,100 @@
-Return-Path: <linuxppc-dev+bounces-23629-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23630-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6CBBCC43458
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Jul 2026 12:57:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6C262C43458
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Jul 2026 12:58:43 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gv4Bx1GJrz3bby;
-	Mon, 06 Jul 2026 22:57:29 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::535"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783332461;
-	cv=none; b=R/BAGdoHqZ2jMmGc0fXvmBTBkgVJUCzvvQrLcWdk8ra7/ijJuYwtrbwrsNBTYUShXgRKmB2JjHfKck7WaNDr7BHTf/8wVftoRL2+s+zwOk+nX9o+BB1DVoIsNwN7KZiXwy7ZJB5f6o3d4Y9cjzkdE/BSuNviPX2IIfFcuLIuZAiHglu4ghSFAiDhFT5tMyvoElv0oKyndHcNGVblEbS15qgAa1WoduRwRhq+eWJe81cRrDX5rmf6YxlEtnavqu/bdYoBZ+Rt/stNhjAMMkTRcinR090j5t4N+4ShDsbPElDwbtmDuBDypWspkPLvONmVI3hIzyJ+PN/xZgIBqxJgmA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gv4DL1G4Yz3bby;
+	Mon, 06 Jul 2026 22:58:42 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=205.220.168.131
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783326763;
+	cv=none; b=bPFd8Hd0puWl+PizbXdKwniEAB1Msn6myRt+ZKIBtl1fWezc+uwvJLyg3oySUo7x52FOpPtv1r52vZmDkLWSDXTNJaELSx91yoTzXlg8JkgY9jcZXm5jGeQNqSGQLNMG0UETQJRkQJkeClBIN97mX1B29ZGyxgVh1YH1ZXbO39NTC3PGqGacEHwzOC9Y36xOXm5DNxAkdZSdpd4fxHcY0a84dLwfpPTCAzMIZboGOtkCLGq3i0ShKpzu2OlryASx/sbv2xJY5JLs1Px26YfcQO+Nq8wnDZQLumOqM4O2uDo0KdiR/PE1SciDoVIVTFNVr1iEvo5mJQ1AwD+ch3gTQw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1783332461; c=relaxed/relaxed;
-	bh=XV8hLM1BVaZzJ2YbfALYkq3xi+MgnRUgQHg6QJiWrc4=;
+	t=1783326763; c=relaxed/relaxed;
+	bh=u0chLt5mv9z2EayzuLPxsiMUHQpTGQFKrRQIdFhdccs=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=bR/vn9idx2UOvwTovp03hB1C8pn4PseN76b7XXgu7RHb1kykdxweEjv80LYRJdt+SpGyZ3cYekXt+TDzdQhSp1GWr6lZP06cfEkZAjQT+JNAlQGv4WGiUTh7BgZlUQ1hphRgerZncumMc7h/utqO+6DxB4IvxuCvcTjkuTkGsKEaZ0DPgZPSgvZ3eoaYy6vA7CHBOglilotgQPHMBzHujtbxV/2ncKeBF+FYnPJTmn4XadC7ug8UQBgKrNNhsQ6NbHORHA2eRXhdtKJ4Nx51SWSkf0ICQVUkz+t/xfzPELo6uLfO8mrr58SxpZtPSbmKjU25yZiDMn2myLbcL+/oAA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=Iz/DDVJc; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::535; helo=mail-ed1-x535.google.com; envelope-from=mclapinski@google.com; receiver=lists.ozlabs.org) smtp.mailfrom=google.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
+	 In-Reply-To:Content-Type; b=JliNfRW4lwL+jKS+Nub7pKt14aKdij5vcj2ZB5gr7itnZGw6kce7BMQgGtSoAU/ceOBtonf/Ad0dTvEa14Kw7/q+vwAugbSZtwxewcx7Ig2W8GKG5GyFEeh6Q4rHTYu7Z17wgjeAKXESJfBqhNaYf40Ul0hn/fDjPTBt/Eeu2svjRAujJmtvH0Pi55TGbKciL9lirP9iHehPcxeWX2+Oi7+T8nyWpSj6QP0Ez0uSSYLuqF9hYeURQXLz8Ul1qaf70/Fq8XehjWRQaJjSQTvJ/HDOJftQw2Fv3ZPML9LWbcBX+lo9zDTVr/wzKPpAO4sX4zYq2pozmunRpp/6nMkxWg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=Tt1g9aWR; dkim=pass (2048-bit key; unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=WIwDA1cL; dkim-atps=neutral; spf=pass (client-ip=205.220.168.131; helo=mx0a-0031df01.pphosted.com; envelope-from=konrad.dybcio@oss.qualcomm.com; receiver=lists.ozlabs.org) smtp.mailfrom=oss.qualcomm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=Iz/DDVJc;
+	dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=Tt1g9aWR;
+	dkim=pass (2048-bit key; unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=WIwDA1cL;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2a00:1450:4864:20::535; helo=mail-ed1-x535.google.com; envelope-from=mclapinski@google.com; receiver=lists.ozlabs.org)
-Received: from mail-ed1-x535.google.com (mail-ed1-x535.google.com [IPv6:2a00:1450:4864:20::535])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=oss.qualcomm.com (client-ip=205.220.168.131; helo=mx0a-0031df01.pphosted.com; envelope-from=konrad.dybcio@oss.qualcomm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gv0Qz0PMxz2xpn
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 Jul 2026 20:07:38 +1000 (AEST)
-Received: by mail-ed1-x535.google.com with SMTP id 4fb4d7f45d1cf-698411099d6so53529a12.0
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 Jul 2026 03:07:38 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gtyKQ1GSZz3bpx
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 Jul 2026 18:32:41 +1000 (AEST)
+Received: from pps.filterd (m0279866.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6668N3l14072472
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 6 Jul 2026 08:32:39 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	u0chLt5mv9z2EayzuLPxsiMUHQpTGQFKrRQIdFhdccs=; b=Tt1g9aWRdhyI3BpO
+	bvxcoGq7kYOipwI8sI86zxkmNdiblCbEIIy0D6ekqZISLjLM2a33y7RzY76GbicN
+	Opq7MS5ZQyamKmgeZkedVYAFfw1KRPYi8hl3Y7h7kuir3yf0DUot7pMFqfcV2RX7
+	X6ly6HXPcg70fqU+dH3N/iuMe5KE0DqLRF0s4qeJ6w03zgeEubZlkFJyH6FDUo2t
+	Et+Ig2j6kpZC/v51lNaj0P+xbzzB2QuKkvGbM4AuZdQSxZloAH/4eroeiJwOgPxx
+	kOehTF0x3+rZPy9CPDosN5R/kMP09AyBofAR6Pe/VMGVWMs1S1vCPm7OD23UZkSl
+	ZSPxow==
+Received: from mail-qt1-f198.google.com (mail-qt1-f198.google.com [209.85.160.198])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4f88t881c0-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 Jul 2026 08:32:38 +0000 (GMT)
+Received: by mail-qt1-f198.google.com with SMTP id d75a77b69052e-51bfe75b7dbso9086561cf.3
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 Jul 2026 01:32:38 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20251104; t=1783332450; x=1783937250; darn=lists.ozlabs.org;
+        d=oss.qualcomm.com; s=google; t=1783326758; x=1783931558; darn=lists.ozlabs.org;
         h=content-transfer-encoding:content-type:in-reply-to:from
          :content-language:references:cc:to:subject:user-agent:mime-version
          :date:message-id:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=XV8hLM1BVaZzJ2YbfALYkq3xi+MgnRUgQHg6QJiWrc4=;
-        b=Iz/DDVJcy9pp1xHJFCGDY1uU3jvIDMq0J+vYz/NQtKXcDjLrcnLbAHFCDSIBI9m7eE
-         VQ8LjmyfOqxyXu66pB7ocBiIIPryRaC0PIKKbyjzpFN68OO4RMNsSQ/iD+8jM0+RyVYT
-         7eQSriniesO8g94Rp9DIG4aFAxfq3jFhjMtAmXAdyvRHpmUUsaE2/UMVLAFb4jTvAzBu
-         bhdlHBsMpApabAGNRE6FJeLwOk15qZ41Xmuk0aXW4H66N/1GDco9xv9LutkOGk934EWf
-         sLGDNp6w+N25k9UCHGyBULlTxOsAXSCUqvUlZ8Ua4vuiUMwdfSZCHPkXMz1/aRB64T7I
-         AwCw==
+        bh=u0chLt5mv9z2EayzuLPxsiMUHQpTGQFKrRQIdFhdccs=;
+        b=WIwDA1cL4PaI6QW8flEPPuWYp0UpI8gRPHswhm8Fp7KiWcURSzrntCz1SQh2yVkJ54
+         99KPoi6tZuz4jXtuUQzjn50pKEtM88ED3rn9Pn2evgD+V+2k7I6KOjt51A1ZGPZ2AsPx
+         WaixoRfZcbDqKMzN1aNGcgz7+nWZ8x6e+6S3Zt7fVzzlIdp3LpZ1j3+ru2bDTC/vT5+3
+         lK0lKvgfJjDeYJ2feizbSw2VBvpaMIpYqAN165Bv1Krr6qqtAXk+67rJnXr4IZiBvmma
+         FkxUcjbpSY9LCprqUOdWJKC951jsq0YeozV80YvH3BQ9DKIvLUum4h7LwlhnaaS+eEax
+         MAMA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1783332450; x=1783937250;
+        d=1e100.net; s=20251104; t=1783326758; x=1783931558;
         h=content-transfer-encoding:content-type:in-reply-to:from
          :content-language:references:cc:to:subject:user-agent:mime-version
          :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=XV8hLM1BVaZzJ2YbfALYkq3xi+MgnRUgQHg6QJiWrc4=;
-        b=fr/1OU0DNnv5NG7Mh9YaE2PmGsM/6hvDacGXNYNO+q04UJ42ay6jl0Ou8nZ2xVeICZ
-         XicpLrd2YPuH5avk0USQgWevRFyp2aWxybrRfR571fUxC4RNy6O4zmyv7kPafSUwRX0c
-         3dKxOuqwAZTEAaixCP5VaAuVmyt/6Vy+/fbNk9rR/hPsLMZfywy+uX1Na7HK9DkwjKF9
-         5IY0985Fx949SM5o6aRmphnGe183KQLP1ckOij11VeaEBRK43e5fZlccCcNXCWjJ98Wo
-         WoLVeNz/LrMiQyYrWikoKlzhZ5R5dWcZwPPZflALQlzqmS1VuEJBzbW0Q7YXY4JC/YDd
-         N4jA==
-X-Forwarded-Encrypted: i=1; AHgh+Ronq8jB6BWbFGFM1IiDOQpH5fIi+oOIpRIr/aRn8+5bTCgm25Uv0IYZZoqZ+u9uJx0YVltiPv9mHWevV7Y=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yw7y2Ls8xFUr8HNoEYTqIT8x120qPoMfOfSyQl42ix2uiARdtzG
-	CSKCquIkGyDXlKjwV1h+x6BOxGmR+G4sp9nBZBRrXQOxCkoI3yROGtFxmjYOogkx42BZ4rSen9P
-	t/DiIrXlLz9o=
-X-Gm-Gg: AfdE7cmD47jadWw6YqRr7xc9aAe77YdL0Eov5fcQTLiSgiithstmd6lOc21He9dqPAn
-	lgOO2tQCxQuVjhdOOp5mi2+iQKudJcmxyOiBU04nWJ8sdNU5lW+5aQUdrgaO169B6xXBv9JDEGH
-	AA7W9QHgfpESHfpzX8RtIfAJde2J5DmVTXmSHKAX+mqItMmb/S7H+m6rV73VvBmXZtLAa66KyAZ
-	39ECqx4dzxiAFbux7S7yCu1uabD4czJ4LnMwtkzCd37bF6JapvHFuRH2fcQOB55Tz8jIITPkZ78
-	pwZgMPF88NtYgW5gWKy0DSEbqvSg6Wyr7fjgP4E/IjB9daoZ3s057Gs42W/BEOBs2RoPIJjP356
-	WVbegTs73+vNND56zScMR83MRTgcUivzSVCqGGVhIlxluRngsz1aXLb9S15udkfuHAkJPH6EuDd
-	nNX+795fxsWsEylpeva+Up/DYnMfTdNNiiT+f/9qgYpXCQaAEdOCKg0oKynOMbIfB6z6uvAcyZX
-	SoECimEaqxZMpUGQeSL
-X-Received: by 2002:aa7:d9d2:0:b0:698:59af:fb08 with SMTP id 4fb4d7f45d1cf-69a19ca26d1mr52807a12.4.1783332449904;
-        Mon, 06 Jul 2026 03:07:29 -0700 (PDT)
-Received: from ?IPV6:2a00:79e0:2890:d:9f2c:a127:989c:b6af? ([2a00:79e0:2890:d:9f2c:a127:989c:b6af])
-        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-c12b62c552esm710227466b.49.2026.07.06.03.07.28
+        bh=u0chLt5mv9z2EayzuLPxsiMUHQpTGQFKrRQIdFhdccs=;
+        b=mhHJ43VXIJdSfoToTK7oUYfHGgMj7BuBorc2qxacsISsThsbaPBHADJh71UE8qhKkn
+         KT+ES3qn5RQNbnuKEjPMJJ05I9zkNgUZNRF+NQwB6FF8hHp6ISTciYGgOUNCYk88zhVD
+         L/jeiRwSbd1PQqZfrEeiD8Mui+JKs7RhB7FlHqnF0XGlmwafKvUddSNLzRbQaqlTcxAT
+         /ZfhBJFe9WhxFavVOZ2XBmnfkuAj9PD5lkPdK40XgwJupDBW5jgxlTyvEu0VmH1iwzs7
+         7wnlC4OTPgXEOJnJargAO/mSE+a6O2LR2Fh9L1lDMI+lcvlyFVQ8LjeeVQYmmP3BN4lD
+         QpLQ==
+X-Forwarded-Encrypted: i=1; AHgh+RrWf4z+rCj0ZrummV8ek6KjWvN9KopAB+95pwvhvxs52PlGOZywgJQpBEwV/VBRkks0rJnIHmwdI4Trqag=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YxiXVn4jzC71ma1UxeQArQBEmwnOnApH6hPYS2v22iNhdrMm6eS
+	V7QcgC8G93ogqXxoS6udA1XkYBuRkXCOuXNFhZcwLp0MGQYLAxDOvdDawW40e1N37zI4V4wPLJr
+	Adho9YJ4amd+1k7FOVmawBjx1mSdPyGeDFjse3qCxhua+adaFLUiWPpdxunI+Obj67+ex
+X-Gm-Gg: AfdE7ckYi04+Q8+jdzOQtFOrUNMDwpHfQOXLdm7ii5F1++D7DJm9m7k7SBrXQvKM4Q1
+	Dv1TCaKlcQKs7FPvKSXxfmyEjbQQRSMmzkxy9cpHvSmZrUXGUyqh6oLjXJtGOAszhzor+on9/Pc
+	hHH9DsrR6HpYgXJbhgG0uNN0JMjY1jnXKOT9YOmfBENvTBbNYQe48fy/yfZt7YVb9Rl2rDinyxo
+	qyibF5aAAQeOqLZbVHKWUelEtvR7A+m3gNxb96Fo6y4kw+b0jAd31ROR9MJ3zJgj3XcmRq140sQ
+	vkswJWKM4ybRUGvrpBJBoV+icMnGEqoRe3xejBNWFOMulToNqUJ7mjlvP3sUCTj20KLMKpEPjTk
+	zwl5UlnwyLgd9rQZLy13E3kbWK/AscMoU1zo=
+X-Received: by 2002:a05:622a:82:b0:51b:ff78:f229 with SMTP id d75a77b69052e-51c4be04aeemr79016931cf.5.1783326758002;
+        Mon, 06 Jul 2026 01:32:38 -0700 (PDT)
+X-Received: by 2002:a05:622a:82:b0:51b:ff78:f229 with SMTP id d75a77b69052e-51c4be04aeemr79016281cf.5.1783326757507;
+        Mon, 06 Jul 2026 01:32:37 -0700 (PDT)
+Received: from [192.168.120.193] ([178.235.128.140])
+        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-c12b6093786sm694743966b.20.2026.07.06.01.32.28
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 06 Jul 2026 03:07:29 -0700 (PDT)
-Message-ID: <b4b200da-f510-4fe2-95ac-c63e4467c4bd@google.com>
-Date: Mon, 6 Jul 2026 12:07:27 +0200
+        Mon, 06 Jul 2026 01:32:36 -0700 (PDT)
+Message-ID: <f1e7ef14-7186-4854-a832-a34596d3313f@oss.qualcomm.com>
+Date: Mon, 6 Jul 2026 10:32:27 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -91,145 +109,134 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v4 01/19] mm/hugetlb: Fix boot panic with CONFIG_DEBUG_VM
- and HVO bootmem pages
-To: Muchun Song <songmuchun@bytedance.com>, Oscar Salvador
- <osalvador@suse.de>, David Hildenbrand <david@kernel.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- Madhavan Srinivasan <maddy@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>
-Cc: Muchun Song <muchun.song@linux.dev>, Mike Rapoport <rppt@kernel.org>,
- Lorenzo Stoakes <ljs@kernel.org>, "Liam R . Howlett" <liam@infradead.org>,
- Vlastimil Babka <vbabka@kernel.org>, linux-mm@kvack.org,
- linux-kernel@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>,
- Christophe Leroy <chleroy@kernel.org>, Ritesh Harjani
- <ritesh.list@gmail.com>, "Aneesh Kumar K . V" <aneesh.kumar@linux.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, Mike Kravetz <mike.kravetz@oracle.com>
-References: <20260612035903.2468601-1-songmuchun@bytedance.com>
- <20260612035903.2468601-2-songmuchun@bytedance.com>
+Subject: Re: [PATCH 03/42] firmware: qcom: scm: Use
+ devm_of_reserved_mem_device_init()
+To: Mukesh Ojha <mukesh.ojha@oss.qualcomm.com>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Konrad Dybcio <konradybcio@kernel.org>,
+        Liviu Dudau <liviu.dudau@arm.com>,
+        Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+        Maxime Ripard <mripard@kernel.org>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
+        Joel Stanley <joel@jms.id.au>,
+        Andrew Jeffery <andrew@codeconstruct.com.au>,
+        Paul Cercueil <paul@crapouillou.net>,
+        Anitha Chrisanthus <anitha.chrisanthus@intel.com>,
+        Paul Kocialkowski <paulk@sys-base.io>,
+        Linus Walleij <linusw@kernel.org>, Chen-Yu Tsai <wens@kernel.org>,
+        Jernej Skrabec <jernej.skrabec@gmail.com>,
+        Samuel Holland <samuel@sholland.org>,
+        Alexey Brodkin
+ <abrodkin@synopsys.com>,
+        Laurent Pinchart
+ <laurent.pinchart@ideasonboard.com>,
+        Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>,
+        Michal Simek <michal.simek@amd.com>,
+        Daniel Scally <dan.scally@ideasonboard.com>,
+        Jacopo Mondi <jacopo.mondi@ideasonboard.com>,
+        Mauro Carvalho Chehab <mchehab@kernel.org>,
+        Eddie James <eajames@linux.ibm.com>,
+        Tiffany Lin <tiffany.lin@mediatek.com>,
+        Andrew-CT Chen <andrew-ct.chen@mediatek.com>,
+        Yunfei Dong <yunfei.dong@mediatek.com>,
+        Minghsiu Tsai <minghsiu.tsai@mediatek.com>,
+        Houlong Wei <houlong.wei@mediatek.com>,
+        Matthias Brugger <matthias.bgg@gmail.com>,
+        AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
+        Joseph Liu <kwliu@nuvoton.com>, Marvin Lin <kflin@nuvoton.com>,
+        Dmitry Osipenko <dmitry.osipenko@collabora.com>,
+        Krzysztof Kozlowski <krzk@kernel.org>,
+        Thierry Reding <thierry.reding@kernel.org>,
+        Jonathan Hunter <jonathanh@nvidia.com>,
+        Srinivas Kandagatla <srini@kernel.org>, Arnd Bergmann <arnd@arndb.de>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Ge Gordon
+ <gordon.ge@bst.ai>, Adrian Hunter <adrian.hunter@intel.com>,
+        Ulf Hansson <ulfh@kernel.org>, Rob Herring <robh@kernel.org>,
+        Saravana Kannan <saravanak@kernel.org>,
+        Mathieu Poirier <mathieu.poirier@linaro.org>,
+        Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>,
+        Shengjiu Wang <shengjiu.wang@gmail.com>,
+        Xiubo Li <Xiubo.Lee@gmail.com>, Liam Girdwood <lgirdwood@gmail.com>,
+        Mark Brown <broonie@kernel.org>, Frank Li <Frank.Li@nxp.com>,
+        Sascha Hauer <s.hauer@pengutronix.de>,
+        Peter Ujfalusi <peter.ujfalusi@linux.intel.com>,
+        Bard Liao <yung-chuan.liao@linux.intel.com>,
+        Daniel Baluta <daniel.baluta@nxp.com>,
+        Orson Zhai <orsonzhai@gmail.com>,
+        Baolin Wang <baolin.wang@linux.alibaba.com>,
+        Peter Chen <peter.chen@cixtech.com>,
+        Fugang Duan <fugang.duan@cixtech.com>
+Cc: Ekansh Gupta <ekansh.gupta@oss.qualcomm.com>,
+        BST Linux Kernel Upstream Group <bst-upstream@bstai.top>,
+        Fabio Estevam <festevam@gmail.com>,
+        Nicolin Chen <nicoleotsuka@gmail.com>,
+        Pengutronix Kernel Team <kernel@pengutronix.de>,
+        Kai Vehmanen <kai.vehmanen@linux.intel.com>,
+        Pierre-Louis Bossart <pierre-louis.bossart@linux.dev>,
+        Vijendar Mukunda <Vijendar.Mukunda@amd.com>,
+        Chunyan Zhang <zhang.lyra@gmail.com>,
+        CIX Linux Kernel Upstream Group <cix-kernel-upstream@cixtech.com>,
+        linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, linux-aspeed@lists.ozlabs.org,
+        linux-arm-kernel@lists.infradead.org, linux-mips@vger.kernel.org,
+        linux-sunxi@lists.linux.dev, linux-media@vger.kernel.org,
+        openbmc@lists.ozlabs.org, linux-mediatek@lists.infradead.org,
+        kernel@collabora.com, linux-tegra@vger.kernel.org,
+        linux-mmc@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-remoteproc@vger.kernel.org, linux-staging@lists.linux.dev,
+        linux-sound@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+        imx@lists.linux.dev, sound-open-firmware@alsa-project.org
+References: <20260703193855.110619-1-mukesh.ojha@oss.qualcomm.com>
+ <20260703193855.110619-4-mukesh.ojha@oss.qualcomm.com>
 Content-Language: en-US
-From: =?UTF-8?B?TWljaGHFgiBDxYJhcGnFhHNraQ==?= <mclapinski@google.com>
-In-Reply-To: <20260612035903.2468601-2-songmuchun@bytedance.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+From: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
+In-Reply-To: <20260703193855.110619-4-mukesh.ojha@oss.qualcomm.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+X-Proofpoint-Spam-Info: AW1haW4tMjYwNzA2MDA4MyBTYWx0ZWRfXxISJmqHGCcB4
+ bTDFv681k7bXRV9WCxX6jfOl42Pk1VdlN98wp0Q3PiPFdsojGnWxNfQypCPduOmT8xJqZHCoF6A
+ xPIAZd5VLlzIlUVIbCPVOxp9hdSfM1U=
+X-Proofpoint-GUID: 7dTY2dcHKNUJmWyv2jyVWMsP__RXzREI
+X-Authority-Analysis: v=2.4 cv=C6zZDwP+ c=1 sm=1 tr=0 ts=6a4b6826 cx=c_pps
+ a=mPf7EqFMSY9/WdsSgAYMbA==:117 a=PRfkaYvzSr8QmIIGAkY2Sg==:17
+ a=IkcTkHD0fZMA:10 a=RAioF0-LDSMA:10 a=s4-Qcg_JpJYA:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=YMgV9FUhrdKAYTUUvYB2:22
+ a=EUspDBNiAAAA:8 a=7yxQZbK4ublJ3xJh_1MA:9 a=QEXdDO2ut3YA:10
+ a=dawVfQjAaf238kedN5IG:22
+X-Proofpoint-ORIG-GUID: 7dTY2dcHKNUJmWyv2jyVWMsP__RXzREI
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzA2MDA4MyBTYWx0ZWRfX+TGx1P0y06De
+ IxU55Ep/64jDvvXYdsGYXLNkOuc9jBcu0yOy1WLznL+EjsGqdyHZPGjdQW3Wi/ufS79cUnCeVS+
+ xuTkHsGG9itDuukvetFAeaWspJuFlUPoYGlRTI6pHQkFHXwEa1y/LAteX8G4bGfSo/ZxFP3cQIu
+ d0gyQArpmrtvVibyehd5IvC8WaNQtlqGdbnxNv0kFoR38B7mXg96MniV+LGhIkwznwkOoREASxc
+ sgmLHHpVPjEp+gcejJPZR0/UoOEXMzG56p2OfXHHmA9G1Z6CR40fQ3pdoJLmrYI+h7KYvyxgXez
+ MdOAybSDqPr/tM88IbDtnlTkoSwaKRCcklu1S66bXCN5mKuN/P6I/Y34Hp7Cqezp1cgC3iY0N+q
+ HiH2ps7HdZu/yczg0zy81W8TJ4of7qtXXSAaGGz4Nk0tjw5U50oP2BsVuiEcD6HOF609zxXT7PW
+ yybMrOi3/UL41PtLOYQ==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
+ definitions=2026-07-05_02,2026-07-03_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ impostorscore=0 phishscore=0 clxscore=1011 spamscore=0 adultscore=0
+ bulkscore=0 priorityscore=1501 lowpriorityscore=0 suspectscore=0
+ malwarescore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2606150000
+ definitions=main-2607060083
 
-On 6/12/26 5:58 AM, Muchun Song wrote:
-> Commit 622026e87c40 ("mm/hugetlb: remove fake head pages") switched
-> HVO to reuse per-zone shared tail pages from zone->vmemmap_tails[].
+On 7/3/26 9:38 PM, Mukesh Ojha wrote:
+> Switch from of_reserved_mem_device_init() to the new resource managed
+> devm_of_reserved_mem_device_init() so that the reserved memory region
+> is released automatically on probe failure or device unbind. This
+> eliminates the err_rmem cleanup label and the need to call
+> of_reserved_mem_device_release() explicitly on error paths.
 > 
-> Those shared tail pages were initialized in hugetlb_vmemmap_init(), but
-> bootmem HugeTLB folios are prepared earlier from gather_bootmem_prealloc().
-> With hugetlb_free_vmemmap=on, prep_and_add_bootmem_folios() can access
-> pageblock flags on bootmem HugeTLB pages whose mirrored tail struct pages
-> already point to the shared tail page. On CONFIG_DEBUG_VM kernels,
-> get_pfnblock_bitmap_bitidx() then dereferences the still-uninitialized
-> shared tail page and can panic during boot.
-> 
-> Initialize zone->vmemmap_tails[] from gather_bootmem_prealloc(), before
-> bootmem HugeTLB folios are processed, and drop the later initialization
-> from hugetlb_vmemmap_init().
-> 
-> This bug only affects CONFIG_DEBUG_VM kernels, where the relevant
-> assertion is evaluated.
-> 
-> Fixes: 622026e87c40 ("mm/hugetlb: remove fake head pages")
-> Signed-off-by: Muchun Song <songmuchun@bytedance.com>
-> Acked-by: Oscar Salvador <osalvador@suse.de>
+> Signed-off-by: Mukesh Ojha <mukesh.ojha@oss.qualcomm.com>
 > ---
->   mm/hugetlb.c         | 25 +++++++++++++++++++++++++
->   mm/hugetlb_vmemmap.c | 17 -----------------
->   mm/sparse-vmemmap.c  |  2 +-
->   3 files changed, 26 insertions(+), 18 deletions(-)
-> 
-> diff --git a/mm/hugetlb.c b/mm/hugetlb.c
-> index 571212b80835..cd55524c7e30 100644
-> --- a/mm/hugetlb.c
-> +++ b/mm/hugetlb.c
-> @@ -3365,6 +3365,31 @@ static void __init gather_bootmem_prealloc(void)
->   		.max_threads	= num_node_state(N_MEMORY),
->   		.numa_aware	= true,
->   	};
-> +#ifdef CONFIG_HUGETLB_PAGE_OPTIMIZE_VMEMMAP
-> +	struct zone *zone;
-> +
-> +	for_each_zone(zone) {
-> +		for (int i = 0; i < NR_VMEMMAP_TAILS; i++) {
-> +			struct page *tail, *p;
-> +			unsigned int order;
-> +
-> +			tail = zone->vmemmap_tails[i];
-> +			if (!tail)
-> +				continue;
-> +
-> +			order = i + VMEMMAP_TAIL_MIN_ORDER;
-> +			p = page_to_virt(tail);
-> +			/*
-> +			 * prep_and_add_bootmem_folios() can access pageblock
-> +			 * flags on bootmem HugeTLB pages, so initialize the
-> +			 * shared tail struct pages here before bootmem folios
-> +			 * start using them.
-> +			 */
-> +			for (int j = 0; j < PAGE_SIZE / sizeof(struct page); j++)
-> +				init_compound_tail(p + j, NULL, order, zone);
-> +		}
-> +	}
-> +#endif
 
-I think it would be better if this was located in mm/hugetlb_vmemmap.c 
-as a separate function.
+Thanks!
 
->   
->   	padata_do_multithreaded(&job);
->   }
-> diff --git a/mm/hugetlb_vmemmap.c b/mm/hugetlb_vmemmap.c
-> index 133b46dfb09f..c713c0d2593a 100644
-> --- a/mm/hugetlb_vmemmap.c
-> +++ b/mm/hugetlb_vmemmap.c
-> @@ -870,27 +870,10 @@ static const struct ctl_table hugetlb_vmemmap_sysctls[] = {
->   static int __init hugetlb_vmemmap_init(void)
->   {
->   	const struct hstate *h;
-> -	struct zone *zone;
->   
->   	/* HUGETLB_VMEMMAP_RESERVE_SIZE should cover all used struct pages */
->   	BUILD_BUG_ON(__NR_USED_SUBPAGE > HUGETLB_VMEMMAP_RESERVE_PAGES);
->   
-> -	for_each_zone(zone) {
-> -		for (int i = 0; i < NR_VMEMMAP_TAILS; i++) {
-> -			struct page *tail, *p;
-> -			unsigned int order;
-> -
-> -			tail = zone->vmemmap_tails[i];
-> -			if (!tail)
-> -				continue;
-> -
-> -			order = i + VMEMMAP_TAIL_MIN_ORDER;
-> -			p = page_to_virt(tail);
-> -			for (int j = 0; j < PAGE_SIZE / sizeof(struct page); j++)
-> -				init_compound_tail(p + j, NULL, order, zone);
-> -		}
-> -	}
-> -
->   	for_each_hstate(h) {
->   		if (hugetlb_vmemmap_optimizable(h)) {
->   			register_sysctl_init("vm", hugetlb_vmemmap_sysctls);
-> diff --git a/mm/sparse-vmemmap.c b/mm/sparse-vmemmap.c
-> index 99e2be39671b..bb23fb3077a3 100644
-> --- a/mm/sparse-vmemmap.c
-> +++ b/mm/sparse-vmemmap.c
-> @@ -342,7 +342,7 @@ static __meminit struct page *vmemmap_get_tail(unsigned int order, struct zone *
->   	 *
->   	 * Any initialization done here will be overwritten by memmap_init().
->   	 *
-> -	 * hugetlb_vmemmap_init() will take care of initialization after
-> +	 * gather_bootmem_prealloc() will take care of initialization after
->   	 * memmap_init().
->   	 */
->   
+Reviewed-by: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
 
-It gets the job done.
-
-Tested-by: Michal Clapinski <mclapinski@google.com>
-Reviewed-by: Michal Clapinski <mclapinski@google.com>
-
+Konrad
 
