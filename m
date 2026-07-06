@@ -1,50 +1,50 @@
-Return-Path: <linuxppc-dev+bounces-23601-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23602-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0EC26C44500
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Jul 2026 12:14:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0390EC44501
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Jul 2026 12:16:30 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gv3FS2tFdz2yfS;
-	Mon, 06 Jul 2026 22:14:36 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783340076;
-	cv=none; b=mmGDy8itUlcETfLQTiE4tJyBKQzLRMgBmizYHliTmHFFTCR/h+sLHRO2WOv4EQ0/QL5C8ConWXLNg8IyLmNL0dJwwTSV18cQ0JgopmIgvHOdTeQNyC02fzUdZqgVYvkWZsUybMwjgk5v5RvNTIuK4EH1m9tdXHwMcSpykw6rC5NFK6jR84lhLQYZ2pgx/h5qbRPJauLtk8+WRLrAyitcIfKmxjrkvTJqo7coFi2iFGfRZF9yADlDvxDwSXJ1a4K5zuU0rhntL5tg2ne1gsBS3EGt+wEM1/DGT4hr+5dQLxw2g0FsLnI3CaagycXxskGkdKaB42amoGyRV4n9cbdgjQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gv3Hd49cFz3bby;
+	Mon, 06 Jul 2026 22:16:29 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783340189;
+	cv=none; b=hY5XFyY2YTXDz60dyWr9+AAZZ6/OOxZ8B0bGDdKOowyZsaEMwGKn2Lm/Zr2UKdtox6AFF/hM74l4EkGwWdkauZDiCy76ANAP3ZPsjeyk5m0WHyPhrqcLQPq8mMBZ8WkCN1J9Scn6ZQSOKxFstmEGMR3uoaaCbKYxceUuNJxY7Fqc2Gnb/NoZuebCsLYX0WiJXqr21+q6QxVhl2ziFU+HTemZKRAATeuWKCuAqZY6Bfz+aeOfpWufGsqEF2X2nGq/0f1vUm3T5TTHYu6TnZvy7VHbP+xtEcWhfYqRW3blRXWBvrfUr6Ut3gQlai/xbrnEASIxFYr0XnjJT/+FTG/WfA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1783340076; c=relaxed/relaxed;
-	bh=UfZEhOmUAtYb9FNfwIrhuWbkBWwbFTNpgJ24RGae3QQ=;
+	t=1783340189; c=relaxed/relaxed;
+	bh=Z/lKSRcjWKapJuVT4TtgVFwUxKxBHhkUK36Xyw1gFTU=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=GAn7rQxvqAa/eixXjgCnR7v5YmXsAhPJ3n2MGH9VuUiNmUZIS1doQSQN9eUalqDLR7yB9pveyVFkPgEfussrRlXXu+3vmRdRfWHo4W3DCdPV/wP/mww59z9xvtHRDaoGrRHBYFFYcEO9uGTaZM8j70uIPMkr0tPCUq+zutk4SiWtNEy/53H6oYmRPQr+AMB34KKr6vMQUg9hJeL8oNZHenZrhVv7XRCrgcW2RqHxgdLPO4yzX/4u03SZZa8UETZLt2Nea33IrL4zMD6CcXs5/wYbyA38gslHsgHQeJ4tdOdZWW1eFFl4fvkoV0kohlX67eDnCY7qh7B9FZY0hqJyug==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=bPmtO7uN; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 Content-Type:Content-Disposition:In-Reply-To; b=YMIP+tHwcq3wEvqmAR6CBY5ek4d685dJ37nN9JKdP9ID+WAGdQwK0ERbFYdYA1rlKlJq3vaGzzzk4JasqzMYAzOrSBQxGXNGX8SUgvAjol36ZeQ0pgDvz6PqgyTidGUmWR4FnQa9gMveD4BZiSPeOwvoCW5y8/nOJjbjUfi/zSaWurD/TmFpCbuSKrO39R8ZzRQLQRF3TLmp/Dn0b1g/+QA69FMV2SnsFqGE9Rw4YWqZ7OVzJAw9st4sX4ITSarx8C9K8gg7cHoHeBl+JPuvzWBvpqYUytNJHTaJGIgOQy/Dm3IqNGcb6AHbTZCNWHNeJ9F2GSnvbzL+Ma4Yd9kFFw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=dW5IodGu; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=bPmtO7uN;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=dW5IodGu;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gv3FR24H8z2xpn;
-	Mon, 06 Jul 2026 22:14:35 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gv3Hc3ysMz2yVZ;
+	Mon, 06 Jul 2026 22:16:28 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 4DDCA403D8;
-	Mon,  6 Jul 2026 12:14:31 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 121871F000E9;
-	Mon,  6 Jul 2026 12:14:15 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 4D48B600C3;
+	Mon,  6 Jul 2026 12:16:25 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id EB7811F000E9;
+	Mon,  6 Jul 2026 12:16:08 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1783340071;
-	bh=UfZEhOmUAtYb9FNfwIrhuWbkBWwbFTNpgJ24RGae3QQ=;
+	s=k20260515; t=1783340185;
+	bh=Z/lKSRcjWKapJuVT4TtgVFwUxKxBHhkUK36Xyw1gFTU=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=bPmtO7uNl48Q6bs+krcLQuw/tGKsl/JnxFHgbLFLkbFx148tTkkA7+0+myQHEaGRx
-	 umK1+gemSQ381e4T0ydJrpe5m50O2llJQVDfxhEPEtVvjgabuo/BR5Ho6mleocrkpE
-	 fTxcf+KK6Dpfmp5M9B1Dl5PVW39xYP/4cksVqp5fVQ5O4WWUR3U4zCxV6tksNIYDNJ
-	 3bY+xwqwO8IC0rw+2yC2rczkDRpdu3Xv940Wc8aK8I3AlcbIjJHmDU4JiesBKEXqny
-	 SHdPswcAheebzOd/3vvQV+K23MtLsBdoa4ItivVZCf7TP91cWgJ6w8JjpA1/pDNXqP
-	 IZRI1tts3WtBQ==
-Date: Mon, 6 Jul 2026 13:14:13 +0100
+	b=dW5IodGu3nJX8tn88T9LM0lVQH7B5jfoPkOf0/3aM09o2lOWbX5/1tGJteOIx5aLR
+	 6QMzRBv5Ym2m9tdoG15pdKLOvIlH/expuQAYXijlgRFOW3BFLSk5s0QVLDVa8qLu4n
+	 s0T+1tTPeI4UtcMDbils+y2W4FB0RpuRXqzSs43+b6E7A8n1Hdcyz15cbQ2dcZvDV9
+	 PbLaqmINOR4dyPTKyA3QCIT91q3zjgsqRENCYLsmuqYD+eUNgL0npmvOsnBO3CNGQd
+	 2GWMjfkdCyIx5/NBqXveNcRvzQX8yvF28yrkaYeV1T0p/x2tXHKF6oDpSuv3dxEljV
+	 mJqJPa69yVtJQ==
+Date: Mon, 6 Jul 2026 13:16:06 +0100
 From: Mark Brown <broonie@kernel.org>
 To: Mukesh Ojha <mukesh.ojha@oss.qualcomm.com>
 Cc: Bjorn Andersson <andersson@kernel.org>,
@@ -121,9 +121,9 @@ Cc: Bjorn Andersson <andersson@kernel.org>,
 	linux-remoteproc@vger.kernel.org, linux-staging@lists.linux.dev,
 	linux-sound@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
 	imx@lists.linux.dev, sound-open-firmware@alsa-project.org
-Subject: Re: [PATCH 00/42] of: reserved_mem: Introduce devres helpers and
- convert drivers
-Message-ID: <ceeca378-3c76-4b2c-81b4-0ff1bb1e99be@sirena.org.uk>
+Subject: Re: [PATCH 25/42] ASoC: mediatek: mt8192: Use
+ devm_of_reserved_mem_device_init()
+Message-ID: <231e493b-cd54-4e8e-b14b-ce7ade97d645@sirena.org.uk>
 Mail-Followup-To: Mukesh Ojha <mukesh.ojha@oss.qualcomm.com>,
 	Bjorn Andersson <andersson@kernel.org>,
 	Konrad Dybcio <konradybcio@kernel.org>,
@@ -200,6 +200,7 @@ Mail-Followup-To: Mukesh Ojha <mukesh.ojha@oss.qualcomm.com>,
 	linux-sound@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
 	imx@lists.linux.dev, sound-open-firmware@alsa-project.org
 References: <20260703193855.110619-1-mukesh.ojha@oss.qualcomm.com>
+ <20260703193855.110619-26-mukesh.ojha@oss.qualcomm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -214,44 +215,38 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="wOAp0AJHJvNt3tz3"
+	protocol="application/pgp-signature"; boundary="RIv4GAh9IbQg1LAQ"
 Content-Disposition: inline
-In-Reply-To: <20260703193855.110619-1-mukesh.ojha@oss.qualcomm.com>
+In-Reply-To: <20260703193855.110619-26-mukesh.ojha@oss.qualcomm.com>
 X-Cookie: Did I do an INCORRECT THING??
 
 
---wOAp0AJHJvNt3tz3
+--RIv4GAh9IbQg1LAQ
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 
-On Sat, Jul 04, 2026 at 01:08:13AM +0530, Mukesh Ojha wrote:
-> Drivers using of_reserved_mem_device_init() and its variants must
-> manually call of_reserved_mem_device_release() in their remove and
-> error-unwind paths. This is repetitive boilerplate that is easy to
-> get wrong, and several drivers have open-coded the teardown
-> inconsistently or skipped it entirely, leading to dangling reserved
-> memory references.
+On Sat, Jul 04, 2026 at 01:08:38AM +0530, Mukesh Ojha wrote:
+> Replace the hand-rolled devm wrapper (mt8192_afe_release_reserved_mem +
+> devm_add_action_or_reset) with the standard
+> devm_of_reserved_mem_device_init(), letting the device resource manager
+> handle cleanup automatically.
 
-Just as a general thing, rather than sending a huge cross subsystem
-series for something like this it's probably better to just send a
-couple of examples, then once the new API is introduced and either has a
-pullable tag or has made it to mainline go and do the conversion.  This
-avoids clogging everyone's inbox with very big serieses.
+Acked-by: Mark Brown <broonie@kernel.org>
 
---wOAp0AJHJvNt3tz3
+--RIv4GAh9IbQg1LAQ
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAmpLnBQACgkQJNaLcl1U
-h9CmKwf9F2YIGBkVeulsWbi5D2t0CnJR/02sSOVl3kzxHiLVhiwWDuHChe6nJcf/
-B22JeTRk3geytCtoi5VvvmmNuN+5GmfWxtqo+bJgCYojxOFKt1bde4RkYg1O+aIO
-0JEs896VePybnfaXzCbeT2n3+gnqC/RMKL+WfvNsfpZqVXUb+QNc6jdCba+Jhlc6
-kJV1YxYgK0VXXLsuZ1ziJ+d22nU5afgm5JQX8CTrl+8EVCL+rbnDtnNmClMg8C6b
-RFN0y9e3hN+0tUEYxGm+VotHPeBuzmgBQucRkMCypqkAEegoWehkdUWzi41bhUBF
-sBJ4nhpfaNf7OXkA6cTOGSwuEFc7yA==
-=BASk
+iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAmpLnIUACgkQJNaLcl1U
+h9DXVQgAgtqnDlgz3o2aHoFiTshZUD1qTjoT5cLKw0RATdj7LLFbJi395gfR5E71
+JvVM9mudvxBLvs79vDRE5Rfy6beFPzQh5Dg1SQ76jAOtAzA9FZAUKezAHRhNQs9c
+reptszRK+aOUOTASYnOIQALfQhbgcXPtWJXGwTdYKeXYSe8LIzcalJxVkQ1fn7G8
+97f3HiN6zJErpvZPyuJ6R4I3vG+bqurBBacdUZQIaTFS2PwbuqAwwz+NDTatPdP8
+N8OdIEIYo9H1aLp5LJllxJsFosUxl+CxOpdbkxE9ccuJL5TlN0PxRoWsUvkv2AZn
+nbRAQNLgyPBrtH2zEMZVAFK9As3uMQ==
+=Txxl
 -----END PGP SIGNATURE-----
 
---wOAp0AJHJvNt3tz3--
+--RIv4GAh9IbQg1LAQ--
 
