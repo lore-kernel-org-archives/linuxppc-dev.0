@@ -1,36 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-23585-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23586-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 625B4C43458
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Jul 2026 05:49:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 521B4C43458
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Jul 2026 06:04:09 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gtthr71f5z2yfS;
-	Mon, 06 Jul 2026 15:49:16 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=159.226.251.25
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783316956;
-	cv=none; b=jeuQrbglKqeiXQHyWFssTiqgS46FU9XFOwsJGESeNRYO2lqPjCNAH09hOlzr7PgqBA4TTP/+1fR8qovCxJWkqnQuvWqp5QBv2eHJP4aOk6W/6xADFewZI92IDkgqkn/KLdI4cL4CG5GNCVBZLM1MfZ+c0EDTC8EXI7rd569Dk5OJQe1k89ZhwQJimcbfGPKPhAOeIBwP8kT3uU8bLdWvlKjvUR1MwrEaVQXylVkVV9KtismTqIv+OdYn+RHAFO/hA0YzohpcbfrjNfaKk2sVw43Mi9xdVPRmaiyK08Yf0NX8VqnsPQI7Y6gu+0gTUtkYnp5oPpFVJXmc0b01xohNIA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gtv1z4cNDz2yfS;
+	Mon, 06 Jul 2026 16:04:07 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783317847;
+	cv=none; b=GXpiJT9Zhm1Dn8edeAFKUVpaEmm05rXKW4P7IDB4ccnXVBZ8KCB/qH16zc8m5rZYG54fG/gD0TcinA8WyG58MQ6PavojNeSUbXt+DILPnvikCblaS31Mm0rX2hqrMhmUr1fcuehb7gFlmfKPSWYuGgV9JdbydyIBG1XLstSnYgqaTej+8jUZIxSzXjfvCvKGomXPoG4uHBrO7sESYxJBqt5AuU3fejynOiMXLEdlqaTFRHpG41g+VUYk8VixFvCsIjdAvGm3kLgQ5yyGKBOxJaSh9ZbQVqX2I36eCqQA/AujhQPIQ592gRUoachFg5UVBhxpetGf7pYF2120dkPLng==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1783316956; c=relaxed/relaxed;
-	bh=WwMF2aj9UZ6vai2ne8z58CIqSF1TWO6A8EE0BvxSuiQ=;
+	t=1783317847; c=relaxed/relaxed;
+	bh=98p+H6suEVoGhj8b+aF3PmEbJAz+Vvv4cgwfXKZMd0E=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=gVgOamxG2xMmhYMAkx11Pp0unw6I6Rz2MZbh0wwpWi5dOhGEV6POlzBnL5ASdtiUBl/IGPe7gnoV73heYCYJs7DiwgOOAvBDRBuEIVvoN5vJhd6Tgq54ZaQOCHoQb8zQMjy9M5Tx3B24n+9bQf6OlBULWtZKb8fmv67mvJdFcKAtvpydstYxdnoYBmcOsq445GHUosmY7witqj1dw8BSua0SOINFjMlL7GPPp73/OOdQndtPovwr4L2xnbWX0mAFYbleKj6Xo3tQnM/HtSN7CvFscBSry0F7+9M/8r2lSRN9tjHzX+WDYe10jZKvzLYrqrn6XYiaOfatuJljnp9VTQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=iscas.ac.cn; spf=pass (client-ip=159.226.251.25; helo=cstnet.cn; envelope-from=wangruikang@iscas.ac.cn; receiver=lists.ozlabs.org) smtp.mailfrom=iscas.ac.cn
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=iscas.ac.cn
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=iscas.ac.cn (client-ip=159.226.251.25; helo=cstnet.cn; envelope-from=wangruikang@iscas.ac.cn; receiver=lists.ozlabs.org)
-Received: from cstnet.cn (smtp25.cstnet.cn [159.226.251.25])
+	 In-Reply-To:Content-Type; b=IEVzGg8qPaYr+djnn92Wk8V/iaTP0qmyoaFRY5t9zzVlKZ3W/bv7ZoKPwqeiPctu9A11z/NbKAqHH4ccGt4oSPFKt2r/zX+xjaqhdD3XE8N0g++ISL63St5gfhKLRJLrjoNDoqmavxDLwJI7o8Vzp9jc/7ko527nuvrnOlbAaG8mheXpgRsotJZQM9trjIEY9cOMxQ2EvqNlMEOD/2wGKXSe4g+l+8HbiWhhudDfzTy8nIqIMmpZJDI012NTo6VPiUyFkPIlXlNbPgUFfD5MnUJqaeQiCQGWShbx1arPyyz3w5VBW6SlQLeOjcDwqki52/LqSrtk/gmyu46YA9ujaQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=N92goH3C; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=N92goH3C;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gtthq1fvKz2yVZ
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 Jul 2026 15:49:14 +1000 (AEST)
-Received: from [192.168.0.113] (unknown [123.118.218.239])
-	by APP-05 (Coremail) with SMTP id zQCowADHNenDQUtqcJ4pFw--.19733S2;
-	Mon, 06 Jul 2026 13:48:51 +0800 (CST)
-Message-ID: <b1690a31-f11b-417a-bfdd-c4a357b12e7a@iscas.ac.cn>
-Date: Mon, 6 Jul 2026 13:48:51 +0800
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gtv1y0dJnz2yT0
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 Jul 2026 16:04:05 +1000 (AEST)
+Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 665MIYX61515279;
+	Mon, 6 Jul 2026 06:03:04 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=98p+H6
+	suEVoGhj8b+aF3PmEbJAz+Vvv4cgwfXKZMd0E=; b=N92goH3C+6uBVwKR7krCkm
+	ssGv+vf9zmt3pfCWRBn0u44khcMQsw5Xkffl2wDDOeZm7tz1h4QG7HFhBT1hXN1N
+	MLi9ouQyWb3xzKClSCFTLZlUPDbxT3ig9Z/5U8GUYklQYTo5i93TU/SkTk/7DzaJ
+	xW5wNSaP3h9IPWCdUycbja168DuxiDSWwjzTeuGRFmD1fR6aFl/Xn9NQ0PEkuO2+
+	yVjw+Xv6JeLCxl1aujQ5AnpB9prCddO+Zj+eavOGhUrtSVNFvjeHjY11GIXnsUAM
+	g/rl4XqC7HfDnLpH1fWMNK95ePdySb77zydcN637kPu4lnhWkwuvW7mvMYwYpqFQ
+	==
+Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4f6rkdghpt-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 06 Jul 2026 06:03:03 +0000 (GMT)
+Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma12.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 6665ndvB018298;
+	Mon, 6 Jul 2026 06:03:02 GMT
+Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
+	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 4f7cgpvgme-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 06 Jul 2026 06:03:02 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
+	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 66662wQP47972786
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Mon, 6 Jul 2026 06:02:58 GMT
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 8E07B2004F;
+	Mon,  6 Jul 2026 06:02:58 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id EF7A620040;
+	Mon,  6 Jul 2026 06:02:50 +0000 (GMT)
+Received: from [9.123.5.233] (unknown [9.123.5.233])
+	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Mon,  6 Jul 2026 06:02:50 +0000 (GMT)
+Message-ID: <7f013fb9-c3fb-4c03-8a2b-cd395cc1e113@linux.ibm.com>
+Date: Mon, 6 Jul 2026 11:32:49 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -45,220 +82,76 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v4] riscv: mm: Avoid spurious fault after hotplugging
- vmemmap
-To: Muchun Song <muchun.song@linux.dev>
-Cc: linuxppc-dev@lists.ozlabs.org, Paul Walmsley <pjw@kernel.org>,
- Palmer Dabbelt <palmer@dabbelt.com>, Alexandre Ghiti <alex@ghiti.fr>,
- Andrew Morton <akpm@linux-foundation.org>,
- David Hildenbrand <david@kernel.org>, Lorenzo Stoakes <ljs@kernel.org>,
- "Liam R. Howlett" <liam@infradead.org>, Vlastimil Babka <vbabka@kernel.org>,
- Mike Rapoport <rppt@kernel.org>, Suren Baghdasaryan <surenb@google.com>,
- Michal Hocko <mhocko@suse.com>, linux-riscv@lists.infradead.org,
- linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- Madhavan Srinivasan <maddy@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
- "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-References: <20260630-mark-after-vmemmap-populate-v4-1-febbc15da028@iscas.ac.cn>
- <7B0CB4ED-C190-4F49-97EE-E1F14F08DED2@linux.dev>
- <5fac578c-ff97-4721-96f3-8ba495f0556a@iscas.ac.cn>
- <214FC970-465A-4E45-98C0-17978D63DE89@linux.dev>
+Subject: Re: [PATCH v5 0/8] Generic IRQ entry/exit support for powerpc
+To: Andreas Schwab <schwab@linux-m68k.org>,
+        "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+Cc: "Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com>, maddy@linux.ibm.com,
+        mpe@ellerman.id.au, npiggin@gmail.com, ryabinin.a.a@gmail.com,
+        glider@google.com, andreyknvl@gmail.com, dvyukov@google.com,
+        vincenzo.frascino@arm.com, oleg@redhat.com, kees@kernel.org,
+        luto@amacapital.net, wad@chromium.org, mchauras@linux.ibm.com,
+        thuth@redhat.com, ruanjinjie@huawei.com, akpm@linux-foundation.org,
+        macro@orcam.me.uk, ldv@strace.io, charlie@rivosinc.com, deller@gmx.de,
+        kevin.brodsky@arm.com, ritesh.list@gmail.com, yeoreum.yun@arm.com,
+        agordeev@linux.ibm.com, segher@kernel.crashing.org,
+        mark.rutland@arm.com, ryan.roberts@arm.com, pmladek@suse.com,
+        feng.tang@linux.alibaba.com, peterz@infradead.org,
+        kan.liang@linux.intel.com, linuxppc-dev@lists.ozlabs.org,
+        linux-kernel@vger.kernel.org, kasan-dev@googlegroups.com
+References: <20260427122742.210074-1-mkchauras@gmail.com>
+ <87wlvazrdy.fsf@igel.home> <1693b268-ee26-4764-871a-5a067ae96080@kernel.org>
+ <8733xxve3h.fsf@igel.home>
+From: Shrikanth Hegde <sshegde@linux.ibm.com>
 Content-Language: en-US
-From: Vivian Wang <wangruikang@iscas.ac.cn>
-In-Reply-To: <214FC970-465A-4E45-98C0-17978D63DE89@linux.dev>
-Content-Type: text/plain; charset=UTF-8
+In-Reply-To: <8733xxve3h.fsf@igel.home>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-X-CM-TRANSID:zQCowADHNenDQUtqcJ4pFw--.19733S2
-X-Coremail-Antispam: 1UD129KBjvJXoWxKw47XrWrKr1xJF45KryxAFb_yoW3Xr1kpF
-	Wj9an8Kr4DJr1fCw4Iqw17Wrn7trnYga4xWw1kKry8Zwn0qFnrGryFqa1Y9ry8Xrn7WayI
-	v3WYy343u345AaDanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
-	9KBjDU0xBIdaVrnRJUUUvlb7Iv0xC_Kw4lb4IE77IF4wAFF20E14v26ryj6rWUM7CY07I2
-	0VC2zVCF04k26cxKx2IYs7xG6rWj6s0DM7CIcVAFz4kK6r1j6r18M28lY4IEw2IIxxk0rw
-	A2F7IY1VAKz4vEj48ve4kI8wA2z4x0Y4vE2Ix0cI8IcVAFwI0_Xr0_Ar1l84ACjcxK6xII
-	jxv20xvEc7CjxVAFwI0_Gr1j6F4UJwA2z4x0Y4vEx4A2jsIE14v26F4UJVW0owA2z4x0Y4
-	vEx4A2jsIEc7CjxVAFwI0_GcCE3s1le2I262IYc4CY6c8Ij28IcVAaY2xG8wAqx4xG64xv
-	F2IEw4CE5I8CrVC2j2WlYx0E2Ix0cI8IcVAFwI0_Jr0_Jr4lYx0Ex4A2jsIE14v26r1j6r
-	4UMcvjeVCFs4IE7xkEbVWUJVW8JwACjcxG0xvEwIxGrwACI402YVCY1x02628vn2kIc2xK
-	xwCY1x0262kKe7AKxVW8ZVWrXwCF04k20xvY0x0EwIxGrwCFx2IqxVCFs4IE7xkEbVWUJV
-	W8JwC20s026c02F40E14v26r1j6r18MI8I3I0E7480Y4vE14v26r106r1rMI8E67AF67kF
-	1VAFwI0_GFv_WrylIxkGc2Ij64vIr41lIxAIcVC0I7IYx2IY67AKxVWUJVWUCwCI42IY6x
-	IIjxv20xvEc7CjxVAFwI0_Gr0_Cr1lIxAIcVCF04k26cxKx2IYs7xG6r1j6r1xMIIF0xvE
-	x4A2jsIE14v26r1j6r4UMIIF0xvEx4A2jsIEc7CjxVAFwI0_Gr0_Gr1UYxBIdaVFxhVjvj
-	DU0xZFpf9x07bIBTOUUUUU=
-X-Originating-IP: [123.118.218.239]
-X-CM-SenderInfo: pzdqw2pxlnt03j6l2u1dvotugofq/
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Authority-Analysis: v=2.4 cv=M7J97Sws c=1 sm=1 tr=0 ts=6a4b4518 cx=c_pps
+ a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17
+ a=IkcTkHD0fZMA:10 a=RAioF0-LDSMA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=V8glGbnc2Ofi9Qvn3v5h:22 a=VwQbUJbxAAAA:8
+ a=80_pbJD88MFYAXRLd50A:9 a=QEXdDO2ut3YA:10 a=zZCYzV9kfG8A:10
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzA2MDA1NSBTYWx0ZWRfX9B8GBgNO7fAm
+ 3qswhmql8PZ+M9FLpAbodGpTmGWEyms9j5tj8WB2rnkLXJa6VXpU2zvkbwZLVfeuLiTmfTV3nNt
+ 3/bqlfCBsjnnplW5dE2tovPrQ4tqI8tm3YzedpNdO4/u/dwLyekffQ/Ci2oDLXWU1H2V+lbMjW9
+ 5VTwtfOkD7Dxu6D2cIOuDN6CO2NGm6SLO9mJ8E94WVRd6dHBYxElZx4xeUQAYs0ludmt+Q/ADVo
+ 1pRtF5okNtyNMUgCOYbVzEVzjiYsDqbxeGxUJd/jLzzcCE/gYKd283/m9Bncv/L9rY5kodYBY9W
+ Md1dY33ryVXUGzebRWA+BVSs2Xf/a80+JSDkmqkxOzM+JEO0cVvYvFZrkxyyX4eTRdoxtEPLTFi
+ 08mDMaBPppEUMOYUU/jUYImaEOsptG6mxvE6sRIe3i2jiOr5N2bHA06gAAZ+g6a6Z7BfUYIFFew
+ a/L2eCqRp29QsZQL6ng==
+X-Proofpoint-Spam-Info: AW1haW4tMjYwNzA2MDA1NSBTYWx0ZWRfX0cBAzrxA653e
+ 5WtQniRTwLLND1MdEPYxY/4nIHfSxH9NaDPfRUlq9QonVcR2hbPKja/zb1vLDj3WE33TUVZ2kHY
+ hya7bz17Tsv0qOgb2NLHRvhQjHOxy+k=
+X-Proofpoint-GUID: hUdxJ9eovfhkfPLhD8ybsjVgdN99M6eb
+X-Proofpoint-ORIG-GUID: Dml9H1R2EgyKqVNI-uUfnh494UHp77CC
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
+ definitions=2026-07-05_02,2026-07-03_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ suspectscore=0 lowpriorityscore=0 malwarescore=0 clxscore=1011 adultscore=0
+ priorityscore=1501 bulkscore=0 spamscore=0 impostorscore=0 phishscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607060055
 
-On 7/6/26 13:38, Muchun Song wrote:
+Hi Andreas.
 
->
->> On Jul 6, 2026, at 13:04, Vivian Wang <wangruikang@iscas.ac.cn> wrote:
->>
->> [ powerpc maintainers: Thoughts on replacing the ptesync in
->> vmemmap_set_pmd() with a flush_cache_vmap() post-vmemmap-hotplug in the
->> generic code? ]
->>
->> On 7/6/26 11:00, Muchun Song wrote:
->>>> On Jun 30, 2026, at 15:51, Vivian Wang <wangruikang@iscas.ac.cn> wrote:
->>>>
->>>> section_activate() does not flush TLB after populating new vmemmap
->>>> pages. On most architectures, this is okay. However it is a problem on
->>>> RISC-V since there the TLB caching non-present entries is permitted,
->>>> which causes spurious faults on some hardwares.
->>>>
->>>> This seems to be most easily reproduced with DEBUG_VM=y and
->>>> PAGE_POISONING=y, which causes these newly mapped struct pages to be
->>>> poisoned i.e. written to immediately after mapping.
->>>>
->>>> Add a hook vmemmap_populate_finalize() in __populate_section_memmap()
->>>> after population, to allow architectures to handle such situations as
->>>> needed. Then implement it on RISC-V to arrange for the existing
->>>> exception handler code to deal with these faults if they happen.
->>>>
->>>> Signed-off-by: Vivian Wang <wangruikang@iscas.ac.cn>
->>>> ---
->>>> Changes in v4:
->>>> - Rebase on v7.2-rc1, drop dependencies
->>>> - (No code changes otherwise)
->>>> - (A concurrency fix for mark_new_valid_map was sent independently)
->>>> https://lore.kernel.org/linux-riscv/20260629-riscv-mm-new-valid-map-ordering-v1-1-60d8c10c6292@iscas.ac.cn/
->>>> - Link to v3: https://patch.msgid.link/20260605-mark-after-vmemmap-populate-v3-1-a06001ac9264@iscas.ac.cn
->>>>
->>>> Changes in v3:
->>>> - Merged back into one patch (Mike)
->>>> - (No code changes otherwise.)
->>>> - Link to v2: https://patch.msgid.link/20260604-mark-after-vmemmap-populate-v2-0-ab6a7d03b434@iscas.ac.cn
->>>>
->>>> Changes in v2:
->>>> - Split patch in two, hook point and riscv hook 
->>>> - Explain hook necessity in patch 1 message (Mike)
->>>> - Make hook #define based (Mike)
->>>> - Call finalize hook only on populate success
->>>> - Link to v1: https://patch.msgid.link/20260525-mark-after-vmemmap-populate-v1-1-e698d859ba16@iscas.ac.cn
->>>> ---
->>>> arch/riscv/include/asm/pgtable.h | 4 ++++
->>>> arch/riscv/mm/init.c             | 6 ++++++
->>>> mm/sparse-vmemmap.c              | 8 ++++++++
->>>> 3 files changed, 18 insertions(+)
->>>>
->>>> diff --git a/arch/riscv/include/asm/pgtable.h b/arch/riscv/include/asm/pgtable.h
->>>> index 5d5756bda82e..6b000c990ba7 100644
->>>> --- a/arch/riscv/include/asm/pgtable.h
->>>> +++ b/arch/riscv/include/asm/pgtable.h
->>>> @@ -1253,6 +1253,10 @@ static inline pte_t pte_swp_clear_exclusive(pte_t pte)
->>>> #define TASK_SIZE FIXADDR_START
->>>> #endif
->>>>
->>>> +/* Needed on SPARSEMEM_VMEMMAP */
->>>> +#define vmemmap_populate_finalize vmemmap_populate_finalize
->>>> +void __meminit vmemmap_populate_finalize(void);
->>>> +
->>>> #else /* CONFIG_MMU */
->>>>
->>>> #define PAGE_SHARED __pgprot(0)
->>>> diff --git a/arch/riscv/mm/init.c b/arch/riscv/mm/init.c
->>>> index 5b1b3c88b4d1..800cb5c007d1 100644
->>>> --- a/arch/riscv/mm/init.c
->>>> +++ b/arch/riscv/mm/init.c
->>>> @@ -1372,6 +1372,12 @@ int __meminit vmemmap_populate(unsigned long start, unsigned long end, int node,
->>>> */
->>>> return vmemmap_populate_hugepages(start, end, node, altmap);
->>>> }
->>>> +
->>>> +void __meminit vmemmap_populate_finalize(void)
->>>> +{
->>>> +  /* Avoid faults on cached non-present TLB entries. */
->>>> +  mark_new_valid_map();
->>>> +}
->>>> #endif
->>>>
->>>> #if defined(CONFIG_MMU) && defined(CONFIG_64BIT)
->>>> diff --git a/mm/sparse-vmemmap.c b/mm/sparse-vmemmap.c
->>>> index 99e2be39671b..290cafcfd723 100644
->>>> --- a/mm/sparse-vmemmap.c
->>>> +++ b/mm/sparse-vmemmap.c
->>>> @@ -544,6 +544,12 @@ static int __meminit vmemmap_populate_compound_pages(unsigned long start_pfn,
->>>>
->>>> #endif
->>>>
->>>> +#ifndef vmemmap_populate_finalize
->>>> +static void __meminit vmemmap_populate_finalize(void)
->>>> +{
->>>> +}
->>>> +#endif
->>>> +
->>>> struct page * __meminit __populate_section_memmap(unsigned long pfn,
->>>> unsigned long nr_pages, int nid, struct vmem_altmap *altmap,
->>>> struct dev_pagemap *pgmap)
->>>> @@ -564,6 +570,8 @@ struct page * __meminit __populate_section_memmap(unsigned long pfn,
->>>> if (r < 0)
->>>> return NULL;
->>>>
->>>> +  vmemmap_populate_finalize();
->>> Does the hook of flush_cache_vmap() work for you?  From the document of
->>> cachetlb.rst, it said: 
->>>
->>> 6) ``void flush_cache_vmap(unsigned long start, unsigned long end)``
->>>    ``void flush_cache_vunmap(unsigned long start, unsigned long end)``
->>>
->>> Here in these two interfaces we are flushing a specific range
->>> of (kernel) virtual addresses from the cache. After running,
->>> there will be no entries in the cache for the kernel address
->>> space for virtual addresses in the range 'start' to 'end-1'.
->>>
->>> It seems that flush_cache_vmap() is supposed to be called after a new kernel
->>> mapping has been installed, but before this address range is accessed.
->> Good point. I had initially avoided flush_cache_vmap() because, to be
->> honest, it looked scary. But the combination of "have vmemmap" and "have
->> flush_cache_vmap()" is much less scary.
->>
->> I'd need to drop the address range check in RISC-V's flush_cache_vmap(),
->> but might as well.
-> No. Please a new check for vmemmap address range.
+On 7/5/26 5:32 PM, Andreas Schwab wrote:
+> BUG: Unable to handle kernel data access at 0x30af548c0000028
+> Faulting instruction address: 0xc0000000000af47c
+> 
+> c0000000000aee6c <.sched_balance_find_src_group>:
+> 
+> c0000000000af474:       e9 3f 00 18     ld      r9,24(r31)
+> c0000000000af478:       e9 29 0d 48     ld      r9,3400(r9)
+> c0000000000af47c:       89 49 00 28     lbz     r10,40(r9)
+> c0000000000af480:       7c 0a e0 40     cmplw   r10,r28
+> 
 
-Okay, I'll do that in v5.
+Does the stack-trace change every time?
 
->
->>> Therefore, invoking flush_cache_vmap() here aligns perfectly with its interface
->>> definition. But how would this change impact other architectures? Currently,
->>> among architectures where CONFIG_SPARSEMEM=y, only RISC-V and PowerPC provide
->>> a concrete implementation for flush_cache_vmap().
->>>
->>> For PowerPC, the implementation is as follows:
->>>
->>> static inline void flush_cache_vmap(unsigned long start, unsigned long end)
->>> {
->>> asm volatile("ptesync" ::: "memory");
->>> }
->>>
->>> Here, flush_cache_vmap() is also intended to supply the ptesync instruction
->>> that the kernel address mapping lacks. However, flush_cache_vmap() is not
->>> called in the __populate_section_memmap() path. So, how does PowerPC ensure
->>> ptesync is executed there? The answer lies in the architecture-specific
->>> vmemmap_set_pmd(), which injects the necessary ptesync.
->>>
->>> If we choose to reuse flush_cache_vmap() in the generic path, it yields the
->>> following benefits:
->>>
->>> - Avoids architectural churn: We do not need to introduce a new hook
->>>  like vmemmap_populate_finalize().
->>> - Cleans up arch code: PowerPC can deprecate its custom vmemmap_set_pmd()
->>>  and migrate to the generic implementation.
->>>
->>> Let me know if this rationale makes sense, or if there are any hidden edge
->>> cases I might have overlooked regarding other architectures.
->>>
->>> Thanks,
->>> Muchun
->> At least on the face of it, it makes sense. The main thing is I don't
->> know much about powerpc. So I'm also hoping powerpc maintainers could
->> chime in. 
-> You do not need to know about powerpc since the change of powerpc is not
-> a part of this patch. It should be a separate code clean up for powerpc.
-
-Ah, good point. I'll just use flush_cache_vmap() in v5, and, as you
-said, the powerpc stuff can come later.
-
-Thanks,
-Vivian "dramforever" Wang
-
+There were couple more fixes on top of it. Is it included in your kernel already?
+https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git/commit/?h=next&id=334f3f6d7a1660fd65597bad9960bfa33a716d35
+https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git/commit/?h=next&id=4e1187e12de40b5301977b2476d21b569358dafb
 
