@@ -1,51 +1,83 @@
-Return-Path: <linuxppc-dev+bounces-23589-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23590-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 202A2C43458
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Jul 2026 07:29:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E64C9C43458
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Jul 2026 08:17:06 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gtwwd3bqgz2yfS;
-	Mon, 06 Jul 2026 17:29:37 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gtxzP2lyBz3bps;
+	Mon, 06 Jul 2026 18:17:05 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783322977;
-	cv=none; b=UafuEW3SfeYYlSa61vtMQMWpMTKNcWg8S1rbTGC2gyl/FeJivEky0Wgyjt12LpNuUS/Akb9tvMVYrPUE6xNZTWnG6NuTZoOeEuF5YmU6s3/lOB1CD6c10fJ/KwwHfCuj/6HP/KhjRa8d0QGCIcd1NjBG/b2o4C8i4+2YlmHajeyeqbZZNK+61bhiskqCVh1RDTEWXY9J12uWP8NOZJPsEROcqii/PXPUFnmQJXqzeysxqe/qDI6xHaN8qexs6DCUq8xax3FUrFuMdGCr46w/KZP/y6UAVq12EargERNjxD40r/9deoPoFHKcrAAx1TuE8MZ9i39WjFFXpAoeJ/GXyA==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783325825;
+	cv=none; b=myTC58yVpJ9Y47JriBQ/XeHHEk2t67Z2HCDMaxvZNIbNZCoFPQTyWbOnwML1Q0O+W5gZmwXG9xGNtD4q2xKXHnNxyZ8QnxwzzgOAKBfuwxHtMmMVdcveFJngWlOWX0EPwQEDhXVsK/aYC8NWl+BbYsM4ViD2iAo77CX6Y7keOwgvzlLAP04ExpO91fpwnlj12JRQdC9pbpwE5zbWPx1AvAe87L0bYxJZk0PsGe8PoS3k9K47eS7gKWoumeDQPT4EW+VQ4GD+HjLKapl+kp/ARKUZWPRUXnFxUUl84xRrsm/xniSt4RKC0J4IK/u935CtHCwNEr5s1Oh8L6Stk0PUhQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1783322977; c=relaxed/relaxed;
-	bh=nKzS4u+YMAULxq77QG+jAD+p3P+6bru/DOGdl2pXd3c=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=ZUIizD7FzHwRYbvIm1bn85KhgnEdywX7vYZqfrN+Oo/sAavcN+ffXYlAtfVMTAxVtTR49weT7P7fjkbvM8YcItv27JzyjIsxwxtOpRVEc15DeYnB07rEOkGHWJYVsIKzJ8w/yYAdSXqz1tQOMw0BlhBD1p1U61OwOKL971/MoAe5wr+kjAHwunXeCSRaJpWQKGWmQhceRIEftQmpWLA3bEeJBrp9NqQiWlX4O8g2XoyBglp4lp+nR5cOv2cs70lC4jPd3WuC5pZ1mRfgJ25H5mMSwgkgNkzEwjKbY5UH10AiuRc8l9eXnt4Aw7LBhR3GBZgCRn6/SpKtwsO3A6GVCQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=NVEWslUl; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1783325825; c=relaxed/relaxed;
+	bh=r7+ah1vbGAvQLsR+3yUG/Iv1avIrbLDskfWMmANIMpA=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
+	 MIME-Version:Content-Type; b=nybZiSQJz/lovnGNzmP/j2XVyOO0W/NS4poOdpyhJy8rrL6SFOr3CWaPKKxl02b8FZnJd474SdaN4422GaU1nZ6RdqA1GMn1iuAGtGUaehsrmY8X0ye2Hxd+CFeidv0ndpQtxBNFj7hkRArOUwRKgwCjzuS0+frYyzQSOZS20gdAtnQH1NS7K/eowkaFlkjgX83EdcI1zu/uBJp55B2qBIJbCxXNogVN8pTrjIzM++5A5a9TpIdKI/7cRjk272sRYKdFLaTVnsnreLwq9SowQEZwO1J/8GN5yLe630VUgt6Ghm7vnAQx51AXyuXYejVb6N4dmJ6mM9nTlyOZhi0mLA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=XfC9H2UV; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=tglx@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=NVEWslUl;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=XfC9H2UV;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=tglx@kernel.org; receiver=lists.ozlabs.org)
 Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gtwwc4tYqz2yVZ
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 Jul 2026 17:29:36 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gtxzN3qcnz2yT0
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 Jul 2026 18:17:04 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 394F3600BB;
-	Mon,  6 Jul 2026 07:29:34 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 810511F000E9;
-	Mon,  6 Jul 2026 07:29:29 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 08683600C3;
+	Mon,  6 Jul 2026 08:17:01 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E7CF91F000E9;
+	Mon,  6 Jul 2026 08:16:59 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1783322973;
-	bh=nKzS4u+YMAULxq77QG+jAD+p3P+6bru/DOGdl2pXd3c=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=NVEWslUl0Zu3708doVCVsHGsSAvnFlr7Y9mhT+u+DPekJi1OIaVTL4mg5xsBvkpk4
-	 4TiwyvDhjMrZ1WZ1zqDX6ZySpImhYg+kXowq5kX+S5KuLp1SnyB6sZGCbQSmw0q78v
-	 1xbNm444HWiQmTjKVUsRnI7wOwGQdKoyHvNAjgx0FhgCJWS3Gd+O6Ly03O4ROBXHrG
-	 7IgAi8VN51DB3VfmWXazcktu1j6/7fZaxI1eG/AJsKU2p4pDvP9NaadITHcOgNfGZI
-	 YTKDUYaDJDC6c2mX0aE+z50g3ugtao+cEss+pdpngNMFcmOpHw7r5aVROYRbKZZ8tC
-	 2S/OJ2kf/+hOQ==
-Message-ID: <34946670-2a76-47fa-af82-3d70cdc9d8f0@kernel.org>
-Date: Mon, 6 Jul 2026 09:29:26 +0200
+	s=k20260515; t=1783325820;
+	bh=r7+ah1vbGAvQLsR+3yUG/Iv1avIrbLDskfWMmANIMpA=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date;
+	b=XfC9H2UVpNQGtHq/xKLEWuvy4dBFo+F8wnT4a3nMjIvGfHuzuoXWCWWpR3IRGACyX
+	 ddDWKGu9BP+PsJvxUDK2bd/p/KeWLd0czr6A1n2oiorGfYOAORf0VSj4p8BpzPNLGs
+	 Ks/289z7wkXWc1DnJ7LrjlkM5r3LLyPV2aysSVO7Va/BtZrxeY3rlf3iV2jR28XK6V
+	 xvP1325V2CnieiUAnTaDerFyvnvz3so5txLMmGU2XfJvoVLUklK5D8L7xrnfvcxkuk
+	 3Zu/60IEr5IZRUAZ6W1jaKJhtWOhQgEXUqGG56v4UZ08TQLLk8BNUS0lXkVaayTddt
+	 u2lcP/zMPqcAw==
+From: Thomas Gleixner <tglx@kernel.org>
+To: Michal =?utf-8?Q?Such=C3=A1nek?= <msuchanek@suse.de>, Peter Zijlstra
+ <peterz@infradead.org>
+Cc: Jonathan Corbet <corbet@lwn.net>, Shuah Khan
+ <skhan@linuxfoundation.org>, Huacai Chen <chenhuacai@kernel.org>, WANG
+ Xuerui <kernel@xen0n.name>, Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin
+ <npiggin@gmail.com>, "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+ Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
+ Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>, Heiko
+ Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>, Alexander
+ Gordeev <agordeev@linux.ibm.com>, Christian Borntraeger
+ <borntraeger@linux.ibm.com>, Sven Schnelle <svens@linux.ibm.com>, Andy
+ Lutomirski <luto@kernel.org>, Ingo Molnar <mingo@redhat.com>, Borislav
+ Petkov <bp@alien8.de>, Dave Hansen <dave.hansen@linux.intel.com>,
+ x86@kernel.org, "H. Peter Anvin" <hpa@zytor.com>, Andrew Donnellan
+ <andrew+kernel@donnellan.id.au>, Mark Rutland <mark.rutland@arm.com>,
+ Michal =?utf-8?Q?Such=C3=A1nek?= <msuchanek@suse.de>, Arnd Bergmann
+ <arnd@arndb.de>, Jiaxun
+ Yang <jiaxun.yang@flygoat.com>, Ryan Roberts <ryan.roberts@arm.com>, Greg
+ Kroah-Hartman <gregkh@linuxfoundation.org>, Mukesh Kumar Chaurasiya
+ <mkchauras@linux.ibm.com>, Shrikanth Hegde <sshegde@linux.ibm.com>, Zong
+ Li <zong.li@sifive.com>, Nam Cao <namcao@linutronix.de>, Deepak Gupta
+ <debug@rivosinc.com>, Lukas Gerlach <lukas.gerlach@cispa.de>, Rui Qi
+ <qirui.001@bytedance.com>, Kees Cook <kees@kernel.org>,
+ linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
+ loongarch@lists.linux.dev, linuxppc-dev@lists.ozlabs.org,
+ linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org
+Subject: Re: [RFC] entry: Untangle the return value of
+ syscall_enter_from_user_mode from syscall NR
+In-Reply-To: <akVRcPsD_R_CE1qW@kunlun.suse.cz>
+References: <akVRcPsD_R_CE1qW@kunlun.suse.cz>
+Date: Mon, 06 Jul 2026 10:16:57 +0200
+Message-ID: <87ik6sjzwm.ffs@fw13>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -59,292 +91,29 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 08/12] soc: fsl: qe: Convert to generic IRQ chip
-To: Paul Louvel <paul.louvel@bootlin.com>, Qiang Zhao <qiang.zhao@nxp.com>,
- Thomas Gleixner <tglx@kernel.org>, Rob Herring <robh@kernel.org>,
- Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
- <conor+dt@kernel.org>, Linus Walleij <linusw@kernel.org>,
- Bartosz Golaszewski <brgl@kernel.org>,
- Madhavan Srinivasan <maddy@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
- linux-kernel@vger.kernel.org, devicetree@vger.kernel.org,
- linux-gpio@vger.kernel.org, Thomas Petazzoni <thomas.petazzoni@bootlin.com>
-References: <20260703-qe-pic-gpios-v1-0-6c3e706e27dc@bootlin.com>
- <20260703-qe-pic-gpios-v1-8-6c3e706e27dc@bootlin.com>
-Content-Language: fr-FR
-From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-In-Reply-To: <20260703-qe-pic-gpios-v1-8-6c3e706e27dc@bootlin.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-Hi Paul,
-
-Le 03/07/2026 à 15:30, Paul Louvel a écrit :
-> The generic IRQ chip framework is available to handle IRQ chips. Using
-> this framework for the QE interrupt controller allows to simplify the
-> driver. Indeed, the framework internally handles operations coded
-> directly in the driver.
-> 
-> Add a select dependency to GENERIC_IRQ_CHIP in the PPC platform Kconfig.
-> 
-> Signed-off-by: Paul Louvel <paul.louvel@bootlin.com>
-> ---
->   arch/powerpc/platforms/Kconfig   |   1 +
->   drivers/soc/fsl/qe/qe_ports_ic.c | 103 ++++++++++++++++++++++++++-------------
->   2 files changed, 70 insertions(+), 34 deletions(-)
-> 
-> diff --git a/arch/powerpc/platforms/Kconfig b/arch/powerpc/platforms/Kconfig
-> index c4e61843d9d9..b0b3a80f8cde 100644
-> --- a/arch/powerpc/platforms/Kconfig
-> +++ b/arch/powerpc/platforms/Kconfig
-> @@ -232,6 +232,7 @@ config QE_GPIO
->   	bool "QE GPIO support"
->   	depends on QUICC_ENGINE
->   	select GPIOLIB
-> +	select GENERIC_IRQ_CHIP
->   	help
->   	  Say Y here if you're going to use hardware that connects to the
->   	  QE GPIOs.
-> diff --git a/drivers/soc/fsl/qe/qe_ports_ic.c b/drivers/soc/fsl/qe/qe_ports_ic.c
-> index c8b73b0aa233..d022aa224f6d 100644
-> --- a/drivers/soc/fsl/qe/qe_ports_ic.c
-> +++ b/drivers/soc/fsl/qe/qe_ports_ic.c
-> @@ -20,63 +20,65 @@ struct qepic_data {
->   	void __iomem *reg;
->   	struct irq_domain *host;
->   	int irq;
-> +	struct irq_chip_generic *gc;
->   };
->   
->   static void qepic_mask(struct irq_data *d)
->   {
-> -	struct qepic_data *data = irq_data_get_irq_chip_data(d);
-> +	struct irq_chip_generic *gc = irq_data_get_irq_chip_data(d);
-> +	struct irq_chip_type *ct = irq_data_get_chip_type(d);
->   
-> -	clrbits32(data->reg + CEPIMR, 1 << (31 - irqd_to_hwirq(d)));
-> +	clrbits32(gc->reg_base + ct->regs.mask, d->mask);
-
-Is there a real added value with this change ?
-
-Previously we had:
-
-00000000 <qepic_mask>:
-    0:	81 03 00 18 	lwz     r8,24(r3)
-    4:	81 28 00 00 	lwz     r9,0(r8)
-    8:	7c 00 04 ac 	hwsync
-    c:	81 29 00 10 	lwz     r9,16(r9)
-   10:	0c 09 00 00 	twi     0,r9,0
-   14:	4c 00 01 2c 	isync
-   18:	80 e3 00 08 	lwz     r7,8(r3)
-   1c:	3d 40 80 00 	lis     r10,-32768
-   20:	81 08 00 00 	lwz     r8,0(r8)
-   24:	7d 4a 3c 30 	srw     r10,r10,r7
-   28:	7d 29 50 78 	andc    r9,r9,r10
-   2c:	7c 00 04 ac 	hwsync
-   30:	91 28 00 10 	stw     r9,16(r8)
-   34:	4e 80 00 20 	blr
-
-Now we have:
-
-00000000 <qepic_mask>:
-    0:	80 e3 00 18 	lwz     r7,24(r3)
-    4:	81 03 00 10 	lwz     r8,16(r3)
-    8:	81 27 00 00 	lwz     r9,0(r7)
-    c:	81 48 00 94 	lwz     r10,148(r8)
-   10:	7d 29 52 14 	add     r9,r9,r10
-   14:	7c 00 04 ac 	hwsync
-   18:	81 49 00 00 	lwz     r10,0(r9)
-   1c:	0c 0a 00 00 	twi     0,r10,0
-   20:	4c 00 01 2c 	isync
-   24:	80 c3 00 00 	lwz     r6,0(r3)
-   28:	81 27 00 00 	lwz     r9,0(r7)
-   2c:	81 08 00 94 	lwz     r8,148(r8)
-   30:	7d 4a 30 78 	andc    r10,r10,r6
-   34:	7d 29 42 14 	add     r9,r9,r8
-   38:	7c 00 04 ac 	hwsync
-   3c:	91 49 00 00 	stw     r10,0(r9)
-   40:	4e 80 00 20 	blr
-
-We now have three more indirect loads (8x lwz instead of 5x), for 
-loading some value which is already known at compile time.
-
-
->   }
->   
->   static void qepic_unmask(struct irq_data *d)
->   {
-> -	struct qepic_data *data = irq_data_get_irq_chip_data(d);
-> +	struct irq_chip_generic *gc = irq_data_get_irq_chip_data(d);
-> +	struct irq_chip_type *ct = irq_data_get_chip_type(d);
->   
-> -	setbits32(data->reg + CEPIMR, 1 << (31 - irqd_to_hwirq(d)));
-> +	setbits32(gc->reg_base + ct->regs.mask, d->mask);
->   }
->   
->   static void qepic_end(struct irq_data *d)
->   {
-> -	struct qepic_data *data = irq_data_get_irq_chip_data(d);
-> +	struct irq_chip_generic *gc = irq_data_get_irq_chip_data(d);
-> +	struct irq_chip_type *ct = irq_data_get_chip_type(d);
->   
-> -	out_be32(data->reg + CEPIER, 1 << (31 - irqd_to_hwirq(d)));
-> +	out_be32(gc->reg_base + ct->regs.eoi, d->mask);
-> +}
-> +
-> +static void qepic_calc_mask(struct irq_data *d)
-> +{
-> +	d->mask = 1 << (31 - irqd_to_hwirq(d));
->   }
->   
->   static int qepic_set_type(struct irq_data *d, unsigned int flow_type)
->   {
-> -	struct qepic_data *data = irq_data_get_irq_chip_data(d);
-> -	unsigned int vec = (unsigned int)irqd_to_hwirq(d);
-> +	struct irq_chip_generic *gc = irq_data_get_irq_chip_data(d);
-> +	struct irq_chip_type *ct = irq_data_get_chip_type(d);
->   
->   	switch (flow_type & IRQ_TYPE_SENSE_MASK) {
->   	case IRQ_TYPE_EDGE_FALLING:
-> -		setbits32(data->reg + CEPICR, 1 << (31 - vec));
-> +		setbits32(gc->reg_base + ct->regs.type, d->mask);
->   		return 0;
->   	case IRQ_TYPE_EDGE_BOTH:
->   	case IRQ_TYPE_NONE:
-> -		clrbits32(data->reg + CEPICR, 1 << (31 - vec));
-> +		clrbits32(gc->reg_base + ct->regs.type, d->mask);
->   		return 0;
->   	}
->   	return -EINVAL;
->   }
->   
-> -static struct irq_chip qepic = {
-> -	.name = "QEPIC",
-> -	.irq_mask = qepic_mask,
-> -	.irq_unmask = qepic_unmask,
-> -	.irq_eoi = qepic_end,
-> -	.irq_set_type = qepic_set_type,
-> -};
-> -
->   static void qepic_cascade(struct irq_desc *desc)
->   {
->   	struct qepic_data *data = irq_desc_get_handler_data(desc);
-> +	struct irq_chip_type *ct = data->gc->chip_types;
->   	struct irq_chip *chip = irq_desc_get_chip(desc);
->   	unsigned long event, bit;
->   
->   	chained_irq_enter(chip, desc);
->   
-> -	event = in_be32(data->reg + CEPIER);
-> +	event = in_be32(data->gc->reg_base + ct->regs.eoi);
->   	if (!event) {
->   		handle_bad_irq(desc);
->   		goto out;
-> @@ -89,33 +91,64 @@ static void qepic_cascade(struct irq_desc *desc)
->   	chained_irq_exit(chip, desc);
->   }
->   
-> -static int qepic_host_map(struct irq_domain *h, unsigned int virq, irq_hw_number_t hw)
-> +static int qepic_chip_init(struct irq_chip_generic *gc)
->   {
-> -	irq_set_chip_data(virq, h->host_data);
-> -	irq_set_chip_and_handler(virq, &qepic, handle_fasteoi_irq);
-> +	struct irq_chip_type *ct = gc->chip_types;
-> +
-> +	ct->regs.mask = CEPIMR;
-> +	ct->chip.irq_mask = qepic_mask;
-> +	ct->chip.irq_unmask = qepic_unmask;
-> +	ct->regs.eoi = CEPIER;
-> +	ct->chip.irq_eoi = qepic_end;
-> +	ct->regs.type = CEPICR;
-> +	ct->chip.irq_set_type = qepic_set_type;
-> +	ct->chip.irq_calc_mask = qepic_calc_mask;
-
-Are ct->regs.mask, ct->regs.eoi and ct->regs.type used anywhere else 
-than locally in qepic_{mask/unmask/end/set_type} ?
-
-Christophe
-
-> +
->   	return 0;
->   }
->   
-> -static const struct irq_domain_ops qepic_host_ops = {
-> -	.map = qepic_host_map,
-> -};
-> +static int qepic_domain_init(struct irq_domain *d)
-> +{
-> +	struct qepic_data *data = d->host_data;
->   
-> -static void qepic_remove(void *res)
-> +	irq_set_chained_handler_and_data(data->irq, qepic_cascade, data);
-> +
+On Wed, Jul 01 2026 at 19:42, Michal Such=C3=A1nek wrote:
+>=20=20
+>  	if (unlikely(work & SYSCALL_WORK_SYSCALL_TRACEPOINT))
+> -		syscall =3D trace_syscall_enter(regs, syscall);
+> +		*syscall =3D trace_syscall_enter(regs, *syscall);
+>=20=20
+> -	syscall_enter_audit(regs, syscall);
+> +	syscall_enter_audit(regs, *syscall);
+>=20=20
+> -	return ret ? : syscall;
 > +	return 0;
-> +}
-> +
-> +static void qepic_domain_exit(struct irq_domain *d)
->   {
-> -	struct qepic_data *data = res;
-> +	struct qepic_data *data = d->host_data;
->   
->   	irq_set_chained_handler_and_data(data->irq, NULL, NULL);
-> -	irq_domain_remove(data->host);
->   }
->   
->   static int qepic_probe(struct platform_device *pdev)
->   {
-> +	struct irq_domain_chip_generic_info dgc_info = {
-> +		.name		= "QEPIC",
-> +		.handler	= handle_fasteoi_irq,
-> +		.irqs_per_chip	= 32,
-> +		.num_ct		= 1,
-> +		.init		= qepic_chip_init,
-> +	};
-> +	struct irq_domain_info d_info = {
-> +		.fwnode		= of_fwnode_handle(pdev->dev.of_node),
-> +		.domain_flags	= IRQ_DOMAIN_FLAG_DESTROY_GC,
-> +		.size		= 32,
-> +		.hwirq_max	= 32,
-> +		.ops		= &irq_generic_chip_ops,
-> +		.dgc_info	= &dgc_info,
-> +		.init		= qepic_domain_init,
-> +		.exit		= qepic_domain_exit,
-> +	};
->   	struct device *dev = &pdev->dev;
->   	struct qepic_data *data;
->   
->   	data = devm_kzalloc(dev, sizeof(*data), GFP_KERNEL);
->   	if (!data)
->   		return -ENOMEM;
-> +	d_info.host_data = data;
->   
->   	data->reg = devm_platform_ioremap_resource(pdev, 0);
->   	if (IS_ERR(data->reg))
-> @@ -125,14 +158,16 @@ static int qepic_probe(struct platform_device *pdev)
->   	if (data->irq < 0)
->   		return data->irq;
->   
-> -	data->host = irq_domain_create_linear(dev_fwnode(dev), 32, &qepic_host_ops, data);
-> -	if (!data->host)
-> -		return -ENODEV;
-> +	data->host = devm_irq_domain_instantiate(dev, &d_info);
-> +	if (IS_ERR(data->host))
-> +		return PTR_ERR(data->host);
->   
-> -	irq_set_chained_handler_and_data(data->irq, qepic_cascade, data);
-> -
-> -	return devm_add_action_or_reset(dev, qepic_remove, data);
-> +	data->gc = irq_get_domain_generic_chip(data->host, 0);
-> +	if (!data->gc)
-> +		return -ENODEV;
-> +	data->gc->reg_base = data->reg;
->   
-> +	return 0;
->   }
->   
->   static const struct of_device_id qepic_match[] = {
-> 
+
+That breaks trace_syscall_enter() because the probes/BPF muck attached
+ot that can:
+
+     1) set the return code
+     2) set syscall to -1L
+
+That works correctly today, but with your sloppy hackery the low level
+x86 code falls into sys_ni_syscall() which sets the return code to
+-ENOSYS.
 
 
