@@ -1,92 +1,97 @@
-Return-Path: <linuxppc-dev+bounces-23634-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23635-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B80D2C43458
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Jul 2026 14:06:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2D1EAC43458
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Jul 2026 14:40:15 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gv5kH3wxjz3bby;
-	Tue, 07 Jul 2026 00:06:15 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::629" arc.chain=google.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783346775;
-	cv=pass; b=Nn1rvNLq6obkfUbQlyvKfpEAohz3i+mEL9fD1c0jC6bOG/PrIysC0u6gLUpQsWuQpEhFzbb1C8C03njiSPCYZdenI4pkA6GTM9O1f33b0xLsBHgI0f2934b79OTXUEAA8F9LlllSjxsBdQ+/P+MjX2/IXX0F/uOPSFOgWp6zglbapdnp5TYxUe4LFcQwuWbRIGNiR+HAkpcDC3pePxviZPMUaU70Dmi7qFYXZd1bQFJfvSkQ/g3AD5kvGqhjB41F4YfG0dpS+60Eh+Xj5FNFyEiJQKTiyMyXdt4R7qm67C7KSictNo+fus5DlszIp1Psbhn3AbWaWJkYhjfaNuzZmA==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1783346775; c=relaxed/relaxed;
-	bh=IwznM8wJhC3tYJr+9DBy6ZAChqMb/6fSD6dK6crswv4=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=R+1vziS9rk5efXMlqc9/yelfuaVxNNFzwMw4wReZWapD2XpnzF7SZfBRJZ2f/Fox5yqK50odB4AdrKdhEkv7nTm1dVQDhKNsK2yme4D5HjDIdjXhCEHrKDeK826Diy2VPI2ujzHbnam0LKeuLt4j5HaNNfUk7NeY9tWIErH/vQuADfQLSL+ZUho+beQZrpaCF3uL9vACmgSB8K1ExSPhpXPuVZ0WkkJgyATY7/DwZ4xlkwU+J5ssc3pOMy4OpnULib9B5DNgz7164OTma1/+b188ksoppaqPiYesb43N6aSn6ylY/AYQjUOpCpmToh5GHfxpm70xhWIKRIPPnWxGMA==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=paul-moore.com; dkim=pass (2048-bit key; unprotected) header.d=paul-moore.com header.i=@paul-moore.com header.a=rsa-sha256 header.s=google header.b=FsxZ0EI+; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::629; helo=mail-pl1-x629.google.com; envelope-from=paul@paul-moore.com; receiver=lists.ozlabs.org) smtp.mailfrom=paul-moore.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=paul-moore.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=paul-moore.com header.i=@paul-moore.com header.a=rsa-sha256 header.s=google header.b=FsxZ0EI+;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=paul-moore.com (client-ip=2607:f8b0:4864:20::629; helo=mail-pl1-x629.google.com; envelope-from=paul@paul-moore.com; receiver=lists.ozlabs.org)
-Received: from mail-pl1-x629.google.com (mail-pl1-x629.google.com [IPv6:2607:f8b0:4864:20::629])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gv6TT2gJXz3bby;
+	Tue, 07 Jul 2026 00:40:13 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=80.241.56.152
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783348813;
+	cv=none; b=jYI/2JeqnhH5tK5DsoG0//WjTEbgxWtv1RdV0f213YvfAcJk/yuwWiXi5ZGQlLu69C43SMqTUbyLPQMqjKkH3zBko//dOLrkSdVHPhGRcXkiHrboN9R9DIzccJIMwei5LA5IYI8TWs7HM6wHLaF8J2JCYFsrZObexznM9tHZ1IBydbd1nYW1k/rGincG57mOlovTpbSGAvnP1STDQay4lMZXAFWb4/BGwzGIdaJNrvigLrqLqkpL+NhKVUTgAcfwvMOJBD/P0DIi7PdhXMrVwegcaxuXBGmFYPUbjGA8GIYfmVUyT/WTMSdFBZ+IDguBJ+0/x+KzpB4E7cShhdLOBg==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1783348813; c=relaxed/relaxed;
+	bh=PTWGfLdwlWAV/LMkx8q6n+16+BLtwX+Uw6eFuSY1pwE=;
+	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=ZSRn35gTBYzJ8A1K/ljsB6ntJnrkheLeViq7C+06+h4eFollyxT0qS0ad7HTqj09bZg/l0NHmwNgp7ivOpqU/VK9ZcFrXLc27/Jnc3PzSeFISrSl3rG7agQs6vToV9IHn9ZCFyo5ZazzUxrMjmPiiOnSSGF1aRgSthN224KeLM89mBNOuwIJitkEOPFAiwvpDPPWrG6Le9S/P4agb+QsMNl+hi0BAGk1J9/srDB/V4s3nXBntQTXc4rbZKLT4guMUNGQOIbeiYyRtDJW1oPwBg4DMK5nsN7e8C/AYiRvT5voFTuruV1r9uxWUwOTKCPWSBLD20XctgY1A48H5kOC3Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=mailbox.org; spf=pass (client-ip=80.241.56.152; helo=mout-p-102.mailbox.org; envelope-from=manuelebner@mailbox.org; receiver=lists.ozlabs.org) smtp.mailfrom=mailbox.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=mailbox.org
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=mailbox.org (client-ip=80.241.56.152; helo=mout-p-102.mailbox.org; envelope-from=manuelebner@mailbox.org; receiver=lists.ozlabs.org)
+Received: from mout-p-102.mailbox.org (mout-p-102.mailbox.org [80.241.56.152])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bit raw public key) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gv5kF3b6fz2yfS
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 07 Jul 2026 00:06:12 +1000 (AEST)
-Received: by mail-pl1-x629.google.com with SMTP id d9443c01a7336-2c9bd2f8bf7so40647905ad.1
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 Jul 2026 07:06:12 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1783346769; cv=none;
-        d=google.com; s=arc-20260327;
-        b=H6TNnBkJxgoqXI/baDcgxuypTwb0itg78V3IQ2snfw7LXcDmqgDA9D2mYckUuJFq6G
-         9hWVMloS55wp0fwx0eJeqFqAwN99TE5GH0Hj7VQgbtxNy3MjnPP7jiuBxhskIGElVPtG
-         pYMjXoj5LN+I+cefuRYuco7W7qScQQbJXSGH0wjedkLg/7zqlnB5I5Z2UtjeAFN96/XG
-         umzQjkX70RIKGlzTv8qNIEUedLt96BmSEvXTdB4uFQXzJLKyDUj5PofCJiKamJBZeLJg
-         GE1664Uv8EQtMD9aQQ4zz/V0vtCK99wSxQzGig0XkMIagK4eWIkMAOddsq8Lz2plSUTT
-         w2Hw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=IwznM8wJhC3tYJr+9DBy6ZAChqMb/6fSD6dK6crswv4=;
-        fh=8M3QxOWWoDVoOzZ5i4XG42ncp3Af6HpX8UEGOmEW2Ew=;
-        b=nLvmx75Qw3YenPDSC2TSR0P0xiATo/Vi0vbtRxxLwJYNp8AdZhmBjWFRc9tN15tHDN
-         EOsctSSEKxyWy9F3yLuHaQyJOT8VEEPRyGUlsMnUJCqdTtNa3AjyRxF5gQveo6p8tAfW
-         j2MvECv3rgOxbIAhV06XvzOld9ipNug9+tT8iz6DB7HvFru1FDMnA81sbkXxYq0Uuwrb
-         4c0r4soU1IrymYj2N73ik9qDTIXcVVIgYP2q6zxHaRR+kc0NylRDRsEKdBnGwo6E3jCN
-         b9Ukd5DBbNEOoqBX14ncWIb9PNW/sWVJFOHycu9aVgzy/ixE/F/1/QX69mSdY5E7ZWZ6
-         0D1A==;
-        darn=lists.ozlabs.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=paul-moore.com; s=google; t=1783346769; x=1783951569; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=IwznM8wJhC3tYJr+9DBy6ZAChqMb/6fSD6dK6crswv4=;
-        b=FsxZ0EI+wkCOwhrXgKBpFfifxTb12KetmacmtUbGX3w7lHdr5yWNmkDBCJRYOEoYQZ
-         +Iw9k4EyhYF6xa9/WmcvFKb9UeYLZyuIUMxSZ1sKSF2s4DOcpmQDjojvf9rX6dbaQvTU
-         mLtEP067LeAF6OV/t1SxIVw3fVZh4u0XTPjAe0mKxRKjUINqi+9iOmL8pPVKorRiLo62
-         eKpqT6W3fsL53GwwsgJSMHSKWH1YJ+U9lfqWimoFnlXTvvshZpc2e1Vtn/yUaFke9UeR
-         k0OyPt77HKj/n+DG4lQic1kDpav4IAY43o9I7OjIfxw+Ef4PNHWLXAZuJgpBfHEsPMP3
-         hyrw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1783346769; x=1783951569;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=IwznM8wJhC3tYJr+9DBy6ZAChqMb/6fSD6dK6crswv4=;
-        b=FpmTCBOVD4XYhZpFGW3+ZEs7OdfNISYyhMVZDHcrOFAFxHRd5ynTcvqD8AxmgQGRQI
-         AwqOmX0LUfI+jiQDl2EKbPaDl32Ounku904xHUA7M/YPQq92N4zywNTPUqpvF/AIV9E9
-         7Dj3jFnigUGB361aA4nU5XWreKQtw0v/luBn65tLRQWGqstrLvtRU4AAw+BEr8snNao3
-         oNeDjExV/h8mdyqPvMk3X4Oa2Ji1YC6c5Fe482SYNi4btGfRqG+2BhRe7Jmdqm26mxli
-         Jh8OiPYob0q+7UoVAgMNkfp8mWYXR8YrbdFst++GQT+JcI2Icv7ZW8xYXUmjWranmveH
-         fG1A==
-X-Forwarded-Encrypted: i=1; AHgh+RoZuoHplrBsQXXpGBiLGxZ+r4LRH9ZINbKdqZQbtvz68lj3NPp35EQnIO6XWyVV30DkZsOZ2SvIz8wFUaU=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YyFqy8Cz7sCQQlQSEr6+z3hdPma7AVjkv6W8tSLYtwLRoqn3tVI
-	FKXQTwBLgo77YafIUORT+x2by6zt4lR4PwL0W0/I5aUZnBqcnUmeUWTJsLw5mxD6ybtElv/6Gyd
-	NrPwwgbmo0zYcOQXwBz+hJSg/UpWaPRZVeX7d5xZV
-X-Gm-Gg: AfdE7cn3dooxCKHxzcn0VC3YOw0fPLI8YJFxi2t/mc2LueAiOGcfZ5F6T/kp5IUx/T6
-	jzELPZ9MUVFxFH3g6wQzoxgKWRyC1Ie8nrQYLx99Xj4tDbuDhH4FIuM7mV9WIxvdruG/9k2i5m7
-	mbZXyLcUq6FMfKYsXCzM5sYIWsR1lQ88lY484NLwu/yUPOSOOCilUgWsNgqDbISy5a33up6dKVm
-	1Q6vhvX6MKy8L7Yff4asrWYtiQrj/iJmgiJW4o9/suvS3xFyNwh6S1T56xNShcInOhOmIe5
-X-Received: by 2002:a17:903:1a26:b0:2c9:97a7:3283 with SMTP id
- d9443c01a7336-2ccbd814425mr8460355ad.23.1783346768737; Mon, 06 Jul 2026
- 07:06:08 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gv6TQ0t35z2yfS
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 07 Jul 2026 00:40:07 +1000 (AEST)
+Received: from smtp102.mailbox.org (smtp102.mailbox.org [10.196.197.102])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (4096 bits) server-digest SHA512)
+	(No client certificate requested)
+	by mout-p-102.mailbox.org (Postfix) with ESMTPS id 4gv6TB3Q84zKv2g;
+	Mon, 06 Jul 2026 16:39:58 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mailbox.org; s=mail20150812;
+	t=1783348798;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=PTWGfLdwlWAV/LMkx8q6n+16+BLtwX+Uw6eFuSY1pwE=;
+	b=OIh2q5NoOb8/zfHzXHh6+EFxzLMaDkzPcbVgv5xkovZYR/4JA9SFzE0VU9VAm1rNRZLR0S
+	AX9n6t6Qdg/BHwG8GIE0XsFgInmrRdJCk1rI7C64cKOlIyq4TCeFWdyPovr+dbaBZvE7Xw
+	3Gt8jIfDUCNo/K6k+YRQVDybeevZzGh0XtuQ2zVUtN5hCMOWCq8qaO0uMb1bLR1G0foLqN
+	KuGMynijGMoLzFJiCQ/pxQVYlrrpwux9nHY20wk2i5B2W/3iVCLsdvpCsubihHUwhDMw1G
+	ARSB7sTYnBnOH85aXuiUq7w/RlmGL22TeStMe6dbMo/bP0D6ZZw0KkWwo9maXg==
+Message-ID: <fbc50f89e0c3bb148656a3b8d96974f591576dec.camel@mailbox.org>
+Subject: Re: [PATCH v3 02/20] driver core: platform: provide
+ platform_device_set_of_node()
+From: Manuel Ebner <manuelebner@mailbox.org>
+To: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>, Lee Jones	
+ <lee@kernel.org>, Thierry Reding <thierry.reding@avionic-design.de>, 
+ Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Andrew Lunn
+ <andrew+netdev@lunn.ch>, "David S. Miller"	 <davem@davemloft.net>, Eric
+ Dumazet <edumazet@google.com>, Jakub Kicinski	 <kuba@kernel.org>, Paolo
+ Abeni <pabeni@redhat.com>, Srinivas Kandagatla	 <srini@kernel.org>, Greg
+ Kroah-Hartman <gregkh@linuxfoundation.org>, Vinod Koul	 <vkoul@kernel.org>,
+ "Rafael J. Wysocki" <rafael@kernel.org>, Danilo Krummrich	
+ <dakr@kernel.org>, Rob Herring <robh@kernel.org>, Saravana Kannan	
+ <saravanak@kernel.org>, Madhavan Srinivasan <maddy@linux.ibm.com>, Michael
+ Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
+ "Christophe Leroy (CS GROUP)"	 <chleroy@kernel.org>, Andi Shyti
+ <andi.shyti@kernel.org>, Andy Shevchenko	
+ <andriy.shevchenko@linux.intel.com>, Joerg Roedel <joro@8bytes.org>, Will
+ Deacon <will@kernel.org>, Robin Murphy <robin.murphy@arm.com>, Doug Berger
+ <opendmb@gmail.com>,  Florian Fainelli <florian.fainelli@broadcom.com>,
+ Broadcom internal kernel review list	
+ <bcm-kernel-feedback-list@broadcom.com>, Ulf Hansson <ulfh@kernel.org>, 
+ Frank Li <Frank.Li@nxp.com>, Sascha Hauer <s.hauer@pengutronix.de>,
+ Pengutronix Kernel Team	 <kernel@pengutronix.de>, Fabio Estevam
+ <festevam@gmail.com>, Matthew Brost	 <matthew.brost@intel.com>, Thomas
+ =?ISO-8859-1?Q?Hellstr=F6m?=	 <thomas.hellstrom@linux.intel.com>, Rodrigo
+ Vivi <rodrigo.vivi@intel.com>,  David Airlie <airlied@gmail.com>, Simona
+ Vetter <simona@ffwll.ch>, Peter Chen <peter.chen@kernel.org>,  Paul
+ Cercueil <paul@crapouillou.net>, Bin Liu <b-liu@ti.com>, Philipp Zabel
+ <p.zabel@pengutronix.de>,  Maximilian Luz <luzmaximilian@gmail.com>, Hans
+ de Goede <hansg@kernel.org>, Ilpo =?ISO-8859-1?Q?J=E4rvinen?=	
+ <ilpo.jarvinen@linux.intel.com>, Krzysztof Kozlowski <krzk@kernel.org>, 
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: brgl@kernel.org, linux-kernel@vger.kernel.org, netdev@vger.kernel.org, 
+	linux-arm-msm@vger.kernel.org, linux-sound@vger.kernel.org, 
+	driver-core@lists.linux.dev, devicetree@vger.kernel.org, 
+	linuxppc-dev@lists.ozlabs.org, linux-i2c@vger.kernel.org,
+ iommu@lists.linux.dev, 	linux-pm@vger.kernel.org, imx@lists.linux.dev, 
+	linux-arm-kernel@lists.infradead.org, intel-xe@lists.freedesktop.org, 
+	dri-devel@lists.freedesktop.org, linux-usb@vger.kernel.org, 
+	linux-mips@vger.kernel.org, platform-driver-x86@vger.kernel.org, 
+	mfd@lists.linux.dev
+Date: Mon, 06 Jul 2026 16:39:00 +0200
+In-Reply-To: <20260706-pdev-fwnode-ref-v3-2-1ff028e33779@oss.qualcomm.com>
+References: <20260706-pdev-fwnode-ref-v3-0-1ff028e33779@oss.qualcomm.com>
+	 <20260706-pdev-fwnode-ref-v3-2-1ff028e33779@oss.qualcomm.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -100,93 +105,110 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <261b1be5b8dc526b83d73e8281e682a73536ea28.1773155031.git.chleroy@kernel.org>
- <CAHC9VhTyOuuPs1uovodM9M_8zZeJnVXs9xrWSdPhZcjXUb=mvA@mail.gmail.com>
- <fce0a701-ee58-4cb2-b34b-8aec26aaab5d@linux.ibm.com> <09e72f42-e180-4e2b-b379-92b755792a2c@linux.ibm.com>
- <CAHC9VhTzuO=RFtrUUuZyieVdkrM5H4ZCb1=PoL-oEEgiw38azg@mail.gmail.com>
- <ea6e629f-dac7-45dd-bb18-5cd6361fe6c4@linux.ibm.com> <9c53ae3f-ccfd-4e8f-ac4f-0038e9b97a7e@linux.ibm.com>
- <b1d6e9a5-34ce-42ca-906a-d4237e18be25@kernel.org> <50507bb3-4229-4815-90e8-c01eaad058fc@linux.ibm.com>
- <ba00c7a8-b4d5-4d80-859b-d75e9c91ebdb@kernel.org> <203f6e6d-2ce8-4e47-99a6-f4af745e0aaa@linux.ibm.com>
- <CAHC9VhQvoK4uYP0NBnd4FGbXCQkDka4nHqdz9kAn2bGnm4qVHQ@mail.gmail.com>
- <CAABTaaCQCBuR9Ny6zBHNK=gy3Cd0WGj-f9qgzwuyjWD_i=v_dQ@mail.gmail.com>
- <CAABTaaC_vQTM8B0wLqfHuv-S9JDzXeuDeLd0Sh3M21pO+=Zg2Q@mail.gmail.com> <8a568842-0a62-41d1-8e7b-cf2bcce6a71e@linux.ibm.com>
-In-Reply-To: <8a568842-0a62-41d1-8e7b-cf2bcce6a71e@linux.ibm.com>
-From: Paul Moore <paul@paul-moore.com>
-Date: Mon, 6 Jul 2026 10:05:56 -0400
-X-Gm-Features: AVVi8Ccaf9TSI6FAvWCNR8aEHftBAWQ-1JzBHLz6yYEAqkujo32UH3vUkDXPGLk
-Message-ID: <CAHC9VhQAfOcZ=viJ-XmU4=NUowC-sZabukK5c+6HahUUBFw3jw@mail.gmail.com>
-Subject: Re: [PATCH v3] powerpc/audit: Convert powerpc to AUDIT_ARCH_COMPAT_GENERIC
-To: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
-Cc: Ricardo Robaina <rrobaina@redhat.com>, "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, 
-	Madhavan Srinivasan <maddy@linux.ibm.com>, Harsh Prateek Bora <harshpb@linux.ibm.com>, 
-	Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Eric Paris <eparis@redhat.com>, 
-	linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
-	audit@vger.kernel.org, Thomas Weissschuh <thomas.weissschuh@linutronix.de>, 
-	=?UTF-8?Q?C=C3=A9dric_Le_Goater?= <clg@kaod.org>, ritesh.list@gmail.com
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+X-MBO-RS-ID: dd8ce0f1dac3e9f612a
+X-MBO-RS-META: 1q71yutefcf1nyjzwoom4gu47fi8rss3
 
-On Mon, Jul 6, 2026 at 4:29=E2=80=AFAM Venkat Rao Bagalkote
-<venkat88@linux.ibm.com> wrote:
-> On 03/07/26 4:19 am, Ricardo Robaina wrote:
-> > On Thu, Jul 2, 2026 at 3:19=E2=80=AFPM Ricardo Robaina <rrobaina@redhat=
-.com> wrote:
-> >> On Thu, Jul 2, 2026 at 10:28=E2=80=AFAM Paul Moore <paul@paul-moore.co=
-m> wrote:
-> >>> On Thu, Jul 2, 2026 at 8:50=E2=80=AFAM Venkat Rao Bagalkote
-> >>> <venkat88@linux.ibm.com> wrote:
+Hi Bartosz,
 
-...
+On Mon, 2026-07-06 at 14:44 +0200, Bartosz Golaszewski wrote:
+> Encapsulate the reference counting logic for OF nodes assigned to
+> platform devices created with platform_device_alloc() in a helper
+> function. Make the kerneldoc state that this is the proper interface for
+> assigning OF nodes to dynamically allocated platform devices. This will
+> allow us to switch to counting the references of the device's firmware
+> nodes, not only the OF nodes.
+>=20
+> Reviewed-by: Manuel Ebner <manuelebner@mailbox.org>
+> Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+> Signed-off-by: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
+> ---
+> =C2=A0drivers/base/platform.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
+=C2=A0 | 18 ++++++++++++++++++
+> =C2=A0include/linux/platform_device.h |=C2=A0 4 ++++
+> =C2=A02 files changed, 22 insertions(+)
+>=20
+> diff --git a/drivers/base/platform.c b/drivers/base/platform.c
+> index fb9120b0bcfe0e7dd9dfc0d29b91e0ad40a01440..3188d5aba5f90622f821c6950=
+49cacda030204fb
+> 100644
+> --- a/drivers/base/platform.c
+> +++ b/drivers/base/platform.c
+> @@ -693,6 +693,24 @@ int platform_device_add_data(struct platform_device =
+*pdev, const
+> void *data,
+> =C2=A0}
+> =C2=A0EXPORT_SYMBOL_GPL(platform_device_add_data);
+> =C2=A0
+> +/**
+> + * platform_device_set_of_node - assign an OF node to device
+> + * @pdev: platform device to add the node for
+> + * @np: new device node
+> + *
+> + * Assign an OF node to this platform device. Internally keep track of t=
+he
+> + * reference count. Devices created with platform_device_alloc() must us=
+e this
+> + * function instead of assigning the node manually.
 
-> Thanks for the RPM's Ricardo.
->
-> I installed the missing dependencies (netcat, iptables, ip6tables) and
-> rebuilt the kernel with arp_tables available as a module. I also
-> installed Socket::Netlink using:
->
->      cpanm --mirror https://cpan.metacpan.org --mirror-only Socket::Netli=
-nk
->
-> After these changes, I reran audit-testsuite and all tests are now passin=
-g:
->
->      Files=3D24, Tests=3D279
->
->      Result: PASS
->
-> amcast_joinpart/test ................. ok
-> backlog_wait_time_actual_reset/test .. ok
-> bpf/test ............................. ok
-> exec_execve/test ..................... ok
-> exec_name/test ....................... ok
-> fanotify/test ........................ ok
-> field_compare/test ................... ok
-> file_create/test ..................... ok
-> file_delete/test ..................... ok
-> file_permission/test ................. ok
-> file_rename/test ..................... ok
-> filter_exclude/test .................. ok
-> filter_exit/test ..................... ok
-> filter_saddr_fam/test ................ ok
-> filter_sessionid/test ................ ok
-> io_uring/test ........................ ok
-> login_tty/test ....................... ok
-> lost_reset/test ...................... ok
-> netfilter_pkt/test ................... ok
-> signal/test .......................... ok
-> syscalls_file/test ................... ok
-> syscall_module/test .................. ok
-> time_change/test ..................... ok
-> user_msg/test ........................ ok
->
->
-> Paul/Christophe/Maddy,
->
-> Hope we are good now. Please let me know, if anything else needs to be do=
-ne.
+I did some more pondering about this patch and concluded the right place
+for a warning would be the lines been read right before or after assigning
+a node manually.=20
+I think this would be in platform_device_alloc() (as I suggested in v2).
 
-That's great, thank you for verifying all of it works as expected!
+BUT my knowledge in C isn't sound. So if it's good as is keep it. If it isn=
+'t
+add or move the remark.
 
---=20
-paul-moore.com
+Either way Thanks and
+ Reviewed-by Manuel Ebner.
+
+---
+Note:
+I removed Mark Brown <broonie@opensource.wolfsonmicro.com> from recipients =
+because:
+=E2=80=9CRCPT TO <broonie@opensource.wolfsonmicro.com> failed:
+<broonie@opensource.wolfsonmicro.com>: Recipient address rejected: Domain n=
+ot found=E2=80=9D.
+
+
+> + */
+> +void platform_device_set_of_node(struct platform_device *pdev,
+> +				 struct device_node *np)
+> +{
+> +	of_node_put(pdev->dev.of_node);
+> +	pdev->dev.of_node =3D of_node_get(np);
+> +	pdev->dev.fwnode =3D of_fwnode_handle(np);
+> +}
+> +EXPORT_SYMBOL_GPL(platform_device_set_of_node);
+> +
+> =C2=A0/**
+> =C2=A0 * platform_device_add - add a platform device to device hierarchy
+> =C2=A0 * @pdev: platform device we're adding
+> diff --git a/include/linux/platform_device.h b/include/linux/platform_dev=
+ice.h
+> index 8c566f09d04efe420d85ffa046f92c44c6d08526..e9f7baceeb4c8269dbc0143c4=
+d8fc9d73ba024ca
+> 100644
+> --- a/include/linux/platform_device.h
+> +++ b/include/linux/platform_device.h
+> @@ -19,6 +19,8 @@
+> =C2=A0struct irq_affinity;
+> =C2=A0struct mfd_cell;
+> =C2=A0struct property_entry;
+> +struct platform_device_id;
+> +struct device_node;
+> =C2=A0
+> =C2=A0struct platform_device {
+> =C2=A0	const char	*name;
+> @@ -262,6 +264,8 @@ extern int platform_device_add_resources(struct platf=
+orm_device
+> *pdev,
+> =C2=A0					 unsigned int num);
+> =C2=A0extern int platform_device_add_data(struct platform_device *pdev,
+> =C2=A0				=C2=A0=C2=A0=C2=A0 const void *data, size_t size);
+> +void platform_device_set_of_node(struct platform_device *pdev,
+> +				 struct device_node *np);
+> =C2=A0extern int platform_device_add(struct platform_device *pdev);
+> =C2=A0extern void platform_device_del(struct platform_device *pdev);
+> =C2=A0extern void platform_device_put(struct platform_device *pdev);
 
