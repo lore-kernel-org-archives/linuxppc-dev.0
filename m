@@ -1,100 +1,82 @@
-Return-Path: <linuxppc-dev+bounces-23628-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23629-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0C71CC43458
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Jul 2026 12:47:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6CBBCC43458
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Jul 2026 12:57:30 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gv3xb1CY6z3cZ8;
-	Mon, 06 Jul 2026 22:45:55 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=205.220.168.131
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783341955;
-	cv=none; b=HsBmkx/lB2slD4CU8H2ks55CoGhSgPwgCdTAyr/en90QEczmxRJ2SZxdCZnF1pQiBk0qbfZRIPM6UmqnbvpgfVON+BIKJQZ//DIohgF4K0ILP0gWtje5YI5czJtNpZGcRGBwYCRqOyq8GErUNBmqbJhiMNf6HTxNYCVOXJ4qdi/YIm//jxkuiq2+BW/SlWm3GEurTPuLAK6J3QQUJOnZuXJAHaQwPp3pbDRJ66eyX3mzWiXshSJIkmu0ySoPHPuvFumxoyBhAhcSIVaepmB618oOGaxXBCNIxgfDZD5H+5jfXAd1Dj7QnNGwcY81OLCbjrk6Di6RlZkaG7ue/zd3jA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gv4Bx1GJrz3bby;
+	Mon, 06 Jul 2026 22:57:29 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::535"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783332461;
+	cv=none; b=R/BAGdoHqZ2jMmGc0fXvmBTBkgVJUCzvvQrLcWdk8ra7/ijJuYwtrbwrsNBTYUShXgRKmB2JjHfKck7WaNDr7BHTf/8wVftoRL2+s+zwOk+nX9o+BB1DVoIsNwN7KZiXwy7ZJB5f6o3d4Y9cjzkdE/BSuNviPX2IIfFcuLIuZAiHglu4ghSFAiDhFT5tMyvoElv0oKyndHcNGVblEbS15qgAa1WoduRwRhq+eWJe81cRrDX5rmf6YxlEtnavqu/bdYoBZ+Rt/stNhjAMMkTRcinR090j5t4N+4ShDsbPElDwbtmDuBDypWspkPLvONmVI3hIzyJ+PN/xZgIBqxJgmA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1783341955; c=relaxed/relaxed;
-	bh=j94N3D67YZmp+yB/bJ2N7wl2Db8ez4ZkEgubeH9mxnM=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=DVdwrOwC4nrLyA/u2boOy9rFm2f76/z2joaSwT5kR0t88sSZncpgOS86+5HpfUZdfn+vNdHEkH/se6VXgDyAxqaBYnwimtCR/TQYzVU+E/qypFSE16iKB7XlWBEM9uUKDUTFGdYvx2gesfaOyrJ06a2gURRhUsuAc6hO/AKHvneD2sBFZjJniArWH/oIQ/R7e4mP1vByNUoUuCTK7PpiMbHTQlybP/z8TIhQDbXk3NgNWAmxclQ3f85ZRSVC34LDdcKAFKHjhANwOXzKQ38ManyjSBLH8ppEMnrF3jiIDo7UWLGGj6Z1aoZHROnx90aDPAF3bLS5dj1hGdBCXHXt0A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=mJEEF2hq; dkim=pass (2048-bit key; unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=iHRXRVTa; dkim-atps=neutral; spf=pass (client-ip=205.220.168.131; helo=mx0a-0031df01.pphosted.com; envelope-from=bartosz.golaszewski@oss.qualcomm.com; receiver=lists.ozlabs.org) smtp.mailfrom=oss.qualcomm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+	t=1783332461; c=relaxed/relaxed;
+	bh=XV8hLM1BVaZzJ2YbfALYkq3xi+MgnRUgQHg6QJiWrc4=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=bR/vn9idx2UOvwTovp03hB1C8pn4PseN76b7XXgu7RHb1kykdxweEjv80LYRJdt+SpGyZ3cYekXt+TDzdQhSp1GWr6lZP06cfEkZAjQT+JNAlQGv4WGiUTh7BgZlUQ1hphRgerZncumMc7h/utqO+6DxB4IvxuCvcTjkuTkGsKEaZ0DPgZPSgvZ3eoaYy6vA7CHBOglilotgQPHMBzHujtbxV/2ncKeBF+FYnPJTmn4XadC7ug8UQBgKrNNhsQ6NbHORHA2eRXhdtKJ4Nx51SWSkf0ICQVUkz+t/xfzPELo6uLfO8mrr58SxpZtPSbmKjU25yZiDMn2myLbcL+/oAA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=Iz/DDVJc; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::535; helo=mail-ed1-x535.google.com; envelope-from=mclapinski@google.com; receiver=lists.ozlabs.org) smtp.mailfrom=google.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=mJEEF2hq;
-	dkim=pass (2048-bit key; unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=iHRXRVTa;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=Iz/DDVJc;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=oss.qualcomm.com (client-ip=205.220.168.131; helo=mx0a-0031df01.pphosted.com; envelope-from=bartosz.golaszewski@oss.qualcomm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2a00:1450:4864:20::535; helo=mail-ed1-x535.google.com; envelope-from=mclapinski@google.com; receiver=lists.ozlabs.org)
+Received: from mail-ed1-x535.google.com (mail-ed1-x535.google.com [IPv6:2a00:1450:4864:20::535])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gv3xZ3mCrz3brB
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 Jul 2026 22:45:54 +1000 (AEST)
-Received: from pps.filterd (m0279864.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 666AxH0U174785
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 6 Jul 2026 12:45:52 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	j94N3D67YZmp+yB/bJ2N7wl2Db8ez4ZkEgubeH9mxnM=; b=mJEEF2hqlR/uOjVJ
-	VGxfq6X8Coeflz9gG17PG5AS1d8bsHMFXhdZWsQVpoBGNxPvBhyMKeuA+dyOCDVQ
-	f1hfsjqCoXOdNFPJoAu72h5EhTA2RJe8aHAuVR3do6hcY/6XuWdPi5v4ABh+SBK/
-	rcNeX0qyntCP4cdXULNVaYmo+GOzB4IXw/vS1gy2FdSZK/epGthEs0eICwD0JDHC
-	qLwA7MiAX+whloAu+BOq3pVZA9mRrwwWNHrvcFQktC3WPAB1dKapRcEh1XLp4aGO
-	t0DPDKiFYVlnUQvHVG/TurGAk+efJV3NTROGxUtnqQUlu+PHgMshaUYjPMuJ3IBZ
-	RMPGMA==
-Received: from mail-qk1-f197.google.com (mail-qk1-f197.google.com [209.85.222.197])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4f87rxs9cs-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 Jul 2026 12:45:52 +0000 (GMT)
-Received: by mail-qk1-f197.google.com with SMTP id af79cd13be357-92e695a3b28so387915785a.1
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 Jul 2026 05:45:52 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gv0Qz0PMxz2xpn
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 Jul 2026 20:07:38 +1000 (AEST)
+Received: by mail-ed1-x535.google.com with SMTP id 4fb4d7f45d1cf-698411099d6so53529a12.0
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 Jul 2026 03:07:38 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1783341951; x=1783946751; darn=lists.ozlabs.org;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=j94N3D67YZmp+yB/bJ2N7wl2Db8ez4ZkEgubeH9mxnM=;
-        b=iHRXRVTai82sJk2InltnuS3B601u5WFfbv4f45dJaifWxT0yR5tf+2+MC2+X84/Bgb
-         2J6b+WPHOjE4/ikAnkGDX7hzAVMcGleCwqijR1IU1uPGkMnZ4xzgXAAOjkqMjN1prZR6
-         gFTDx35f0YJTU66WV2IU1dWmWPhozUJFfvRthXV7yosS6pH0kvdPCXO1obpYPx4uKN6Y
-         R84Q4To7YR82WcuMF+wSrnx0/E1Rbne7gk06i/zowSBu5X6PIF8N6vhO5KXmT/lMhrsR
-         P+FII2TVG7Nxbts6Rpqe5FSr/v8dk+Wxm6wC0FGfS8bivfORyQlRzbKTBedQ6Q7AVRPL
-         ysuQ==
+        d=google.com; s=20251104; t=1783332450; x=1783937250; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=XV8hLM1BVaZzJ2YbfALYkq3xi+MgnRUgQHg6QJiWrc4=;
+        b=Iz/DDVJcy9pp1xHJFCGDY1uU3jvIDMq0J+vYz/NQtKXcDjLrcnLbAHFCDSIBI9m7eE
+         VQ8LjmyfOqxyXu66pB7ocBiIIPryRaC0PIKKbyjzpFN68OO4RMNsSQ/iD+8jM0+RyVYT
+         7eQSriniesO8g94Rp9DIG4aFAxfq3jFhjMtAmXAdyvRHpmUUsaE2/UMVLAFb4jTvAzBu
+         bhdlHBsMpApabAGNRE6FJeLwOk15qZ41Xmuk0aXW4H66N/1GDco9xv9LutkOGk934EWf
+         sLGDNp6w+N25k9UCHGyBULlTxOsAXSCUqvUlZ8Ua4vuiUMwdfSZCHPkXMz1/aRB64T7I
+         AwCw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1783341951; x=1783946751;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:x-gm-gg:x-gm-message-state:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=j94N3D67YZmp+yB/bJ2N7wl2Db8ez4ZkEgubeH9mxnM=;
-        b=GiKruK0GZ3XXzHY14t2jyhM0HnjQwnbtFT5K8THjE3imfNWS1514DF7MMPToAr2ZRI
-         5K4DyNXZpUEHoVYd5mQuYjELr4wZDmBEVzEJDm4wKwhfTh6TWh52vDedp/P42/hcH7yR
-         4DYPCsNmY6VM1AsvL4omXqwQhoAALRZ4IJVATCso/4KyCNPg3/Pbtk4zdf2d8Hgjn0Y8
-         R5CHbRIjGJ6N5ySrOhJMoMbcFH4khd5Kd/86AZ+xPzp2NtZLfJxD3/23RacFJ2fP1/Hr
-         b6w0cOhKMitXaZKx2qOiRwz4ZNCkqKmYsCi46w0yp5115ESTG5ZdocvHs8sO7K+eBnDN
-         kD0g==
-X-Forwarded-Encrypted: i=1; AHgh+RoOzVJvjRDf5QZl20VvRZeCF884lkzX5pbCQmgDR3923GOQfyipVfQndAr8zbzOVqSA6qaGFx0EF+kGhw4=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YybJXutn/v9Pr7I+vIQlFCfmrJERG4avN0PXIqJf2HmpF5MkD6O
-	hqrwIPYO44QZvC+n6Zg3aoYHWtiKEJVSpWKm6jzZtVD1GcxYxSkzqIGHGfPSH16wWp39bGrUnCE
-	2lCFLYkEJ5mZQ+qd3KP7eKfEq4l8XzmRLW1ijTmpiwGDWN/wEEZQ9Fyhpbbjdu0PrIceL
-X-Gm-Gg: AfdE7clu9W0tVd7nft7MaFdW2sISB05dMfuj1vwOU2mfE8eeFS3S/Doap4EsHzXqD9J
-	bMWA/B3DQwkMxbk7ksBqig585DGQ00KR15qxdGg7uvKIS0mZWLT6GnoL13qs63wgkGeALZzMj/E
-	BKw9Di2nkA4vudfN3OD1sOfxo+1th8AV/z5DEg2uZEdjqFPlfI1he6oMg9gsSSMkPmTtVOtptsm
-	6wkPEiAM3GkMMWs3lF1gGBnaLVLp3PRsQqOdOa8xr7gBGob3RnEY8XpHjm5K5JBXk9sQ6kvNyaQ
-	LES/3tT+er59Le5JfzE+a1GKvWZ3T0XfSBQ9P5TKsJWoWXvwp5n4hU3uEKOCVaki3enMEms4mCI
-	9bY8sHfuy+0/lxYDDu2VymYWaWXCr4AY4uPiQZ3oi
-X-Received: by 2002:a05:620a:459f:b0:92e:5b63:224e with SMTP id af79cd13be357-92e8b5049abmr1749182985a.22.1783341951090;
-        Mon, 06 Jul 2026 05:45:51 -0700 (PDT)
-X-Received: by 2002:a05:620a:459f:b0:92e:5b63:224e with SMTP id af79cd13be357-92e8b5049abmr1749171985a.22.1783341950261;
-        Mon, 06 Jul 2026 05:45:50 -0700 (PDT)
-Received: from brgl-qcom.local ([2a01:cb1d:dc:7e00:86f0:c42b:ef4c:d3bb])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-47aa0a55be4sm22126539f8f.31.2026.07.06.05.45.47
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 06 Jul 2026 05:45:49 -0700 (PDT)
-From: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
-Date: Mon, 06 Jul 2026 14:44:32 +0200
-Subject: [PATCH v3 20/20] driver core: platform: count references to all
- kinds of firmware nodes
+        d=1e100.net; s=20251104; t=1783332450; x=1783937250;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=XV8hLM1BVaZzJ2YbfALYkq3xi+MgnRUgQHg6QJiWrc4=;
+        b=fr/1OU0DNnv5NG7Mh9YaE2PmGsM/6hvDacGXNYNO+q04UJ42ay6jl0Ou8nZ2xVeICZ
+         XicpLrd2YPuH5avk0USQgWevRFyp2aWxybrRfR571fUxC4RNy6O4zmyv7kPafSUwRX0c
+         3dKxOuqwAZTEAaixCP5VaAuVmyt/6Vy+/fbNk9rR/hPsLMZfywy+uX1Na7HK9DkwjKF9
+         5IY0985Fx949SM5o6aRmphnGe183KQLP1ckOij11VeaEBRK43e5fZlccCcNXCWjJ98Wo
+         WoLVeNz/LrMiQyYrWikoKlzhZ5R5dWcZwPPZflALQlzqmS1VuEJBzbW0Q7YXY4JC/YDd
+         N4jA==
+X-Forwarded-Encrypted: i=1; AHgh+Ronq8jB6BWbFGFM1IiDOQpH5fIi+oOIpRIr/aRn8+5bTCgm25Uv0IYZZoqZ+u9uJx0YVltiPv9mHWevV7Y=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yw7y2Ls8xFUr8HNoEYTqIT8x120qPoMfOfSyQl42ix2uiARdtzG
+	CSKCquIkGyDXlKjwV1h+x6BOxGmR+G4sp9nBZBRrXQOxCkoI3yROGtFxmjYOogkx42BZ4rSen9P
+	t/DiIrXlLz9o=
+X-Gm-Gg: AfdE7cmD47jadWw6YqRr7xc9aAe77YdL0Eov5fcQTLiSgiithstmd6lOc21He9dqPAn
+	lgOO2tQCxQuVjhdOOp5mi2+iQKudJcmxyOiBU04nWJ8sdNU5lW+5aQUdrgaO169B6xXBv9JDEGH
+	AA7W9QHgfpESHfpzX8RtIfAJde2J5DmVTXmSHKAX+mqItMmb/S7H+m6rV73VvBmXZtLAa66KyAZ
+	39ECqx4dzxiAFbux7S7yCu1uabD4czJ4LnMwtkzCd37bF6JapvHFuRH2fcQOB55Tz8jIITPkZ78
+	pwZgMPF88NtYgW5gWKy0DSEbqvSg6Wyr7fjgP4E/IjB9daoZ3s057Gs42W/BEOBs2RoPIJjP356
+	WVbegTs73+vNND56zScMR83MRTgcUivzSVCqGGVhIlxluRngsz1aXLb9S15udkfuHAkJPH6EuDd
+	nNX+795fxsWsEylpeva+Up/DYnMfTdNNiiT+f/9qgYpXCQaAEdOCKg0oKynOMbIfB6z6uvAcyZX
+	SoECimEaqxZMpUGQeSL
+X-Received: by 2002:aa7:d9d2:0:b0:698:59af:fb08 with SMTP id 4fb4d7f45d1cf-69a19ca26d1mr52807a12.4.1783332449904;
+        Mon, 06 Jul 2026 03:07:29 -0700 (PDT)
+Received: from ?IPV6:2a00:79e0:2890:d:9f2c:a127:989c:b6af? ([2a00:79e0:2890:d:9f2c:a127:989c:b6af])
+        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-c12b62c552esm710227466b.49.2026.07.06.03.07.28
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 06 Jul 2026 03:07:29 -0700 (PDT)
+Message-ID: <b4b200da-f510-4fe2-95ac-c63e4467c4bd@google.com>
+Date: Mon, 6 Jul 2026 12:07:27 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -108,168 +90,146 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v4 01/19] mm/hugetlb: Fix boot panic with CONFIG_DEBUG_VM
+ and HVO bootmem pages
+To: Muchun Song <songmuchun@bytedance.com>, Oscar Salvador
+ <osalvador@suse.de>, David Hildenbrand <david@kernel.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>
+Cc: Muchun Song <muchun.song@linux.dev>, Mike Rapoport <rppt@kernel.org>,
+ Lorenzo Stoakes <ljs@kernel.org>, "Liam R . Howlett" <liam@infradead.org>,
+ Vlastimil Babka <vbabka@kernel.org>, linux-mm@kvack.org,
+ linux-kernel@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>,
+ Christophe Leroy <chleroy@kernel.org>, Ritesh Harjani
+ <ritesh.list@gmail.com>, "Aneesh Kumar K . V" <aneesh.kumar@linux.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, Mike Kravetz <mike.kravetz@oracle.com>
+References: <20260612035903.2468601-1-songmuchun@bytedance.com>
+ <20260612035903.2468601-2-songmuchun@bytedance.com>
+Content-Language: en-US
+From: =?UTF-8?B?TWljaGHFgiBDxYJhcGnFhHNraQ==?= <mclapinski@google.com>
+In-Reply-To: <20260612035903.2468601-2-songmuchun@bytedance.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260706-pdev-fwnode-ref-v3-20-1ff028e33779@oss.qualcomm.com>
-References: <20260706-pdev-fwnode-ref-v3-0-1ff028e33779@oss.qualcomm.com>
-In-Reply-To: <20260706-pdev-fwnode-ref-v3-0-1ff028e33779@oss.qualcomm.com>
-To: Lee Jones <lee@kernel.org>,
-        Mark Brown <broonie@opensource.wolfsonmicro.com>,
-        Thierry Reding <thierry.reding@avionic-design.de>,
-        Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>,
-        Andrew Lunn <andrew+netdev@lunn.ch>,
-        "David S. Miller" <davem@davemloft.net>,
-        Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>,
-        Paolo Abeni <pabeni@redhat.com>,
-        Srinivas Kandagatla <srini@kernel.org>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Vinod Koul <vkoul@kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>,
-        Danilo Krummrich <dakr@kernel.org>, Rob Herring <robh@kernel.org>,
-        Saravana Kannan <saravanak@kernel.org>,
-        Madhavan Srinivasan <maddy@linux.ibm.com>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        Nicholas Piggin <npiggin@gmail.com>,
-        "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-        Andi Shyti <andi.shyti@kernel.org>,
-        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-        Joerg Roedel <joro@8bytes.org>, Will Deacon <will@kernel.org>,
-        Robin Murphy <robin.murphy@arm.com>, Doug Berger <opendmb@gmail.com>,
-        Florian Fainelli <florian.fainelli@broadcom.com>,
-        Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>,
-        Ulf Hansson <ulfh@kernel.org>, Frank Li <Frank.Li@nxp.com>,
-        Sascha Hauer <s.hauer@pengutronix.de>,
-        Pengutronix Kernel Team <kernel@pengutronix.de>,
-        Fabio Estevam <festevam@gmail.com>,
-        Matthew Brost <matthew.brost@intel.com>,
-        =?utf-8?q?Thomas_Hellstr=C3=B6m?= <thomas.hellstrom@linux.intel.com>,
-        Rodrigo Vivi <rodrigo.vivi@intel.com>,
-        David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
-        Peter Chen <peter.chen@kernel.org>,
-        Paul Cercueil <paul@crapouillou.net>, Bin Liu <b-liu@ti.com>,
-        Philipp Zabel <p.zabel@pengutronix.de>,
-        Maximilian Luz <luzmaximilian@gmail.com>,
-        Hans de Goede <hansg@kernel.org>,
-        =?utf-8?q?Ilpo_J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>,
-        Krzysztof Kozlowski <krzk@kernel.org>,
-        Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: brgl@kernel.org, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-        linux-arm-msm@vger.kernel.org, linux-sound@vger.kernel.org,
-        driver-core@lists.linux.dev, devicetree@vger.kernel.org,
-        linuxppc-dev@lists.ozlabs.org, linux-i2c@vger.kernel.org,
-        iommu@lists.linux.dev, linux-pm@vger.kernel.org, imx@lists.linux.dev,
-        linux-arm-kernel@lists.infradead.org, intel-xe@lists.freedesktop.org,
-        dri-devel@lists.freedesktop.org, linux-usb@vger.kernel.org,
-        linux-mips@vger.kernel.org, platform-driver-x86@vger.kernel.org,
-        mfd@lists.linux.dev,
-        Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
-X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=openpgp-sha256; l=2537;
- i=bartosz.golaszewski@oss.qualcomm.com; h=from:subject:message-id;
- bh=IqF/4dKgB1628r62VJTRc6pv/7HE6yY73nomq/D91IU=;
- b=owEBbQKS/ZANAwAKAQWdLsv/NoTDAcsmYgBqS6M9ruJ8yyUk+I6pdpFWbcAtYm5CgsYvefKU+
- TywqoMuS8KJAjMEAAEKAB0WIQSR5RMt5bVGHXuiZfwFnS7L/zaEwwUCakujPQAKCRAFnS7L/zaE
- w0+BD/9zjT3fKJr7/zYP0sHpUApNtRCsyLsJzRKuAlcO+cogBO21GRQk1DGikSTFqOqALVvaQ2g
- 83j83HjHg+bMyaUlGN/FEHSMVHmKvXmesanFWRUyj5q/cQcFMH8POK0Xe3edFHZZx4BBkdJLCiU
- YBgV2p9qKU7Yx9ujTc0nbFflTLCPc+KLCa6XMeNIL7NcRgHVvMgBJocHY4ppEVSl3w0N1MqzNLN
- MJ2jEc+08OGTNE6VqBsWKGpcVcsy0c/flgXequGSLwF2lbMvrEVBeckaXblcohUFBgsZTwHIilr
- DuAyyAxwT3CWTsisqCJ/uzziDpBphBHYSMVHgzJR0EvF/dg0gFk2JrYTFDjipwiMhwshuY4pMG6
- brBELDRVNzWmoJxvrqtCNEs2g6/282jmP5bq8VSGXsiFh0Tlh1WMQesFTI3Dru/rc0SNeU4rkul
- wq2awNwyKdDtNJtZDmRz22Vrcbh76dcF1Halbc2omaKC8QdnXDZFTtncn03dXnNqBcF2/RucoRD
- PgoRvdtJOI/EakLR/ayb7hAHHB2aey6mLr7a280QfJRvxTxQ9lcDY4ZxG2oeQyo5EJpmBhQCPl8
- BmnHyLd2X+djvXjF8tGCWMjxCty1aDjcqXp8ApTdwR04CWKI/ZYVFf+bcapravEbsUypfWAAx2W
- 0i3DMYG/6NOmHjA==
-X-Developer-Key: i=bartosz.golaszewski@oss.qualcomm.com; a=openpgp;
- fpr=169DEB6C0BC3C46013D2C79F11A72EA01471D772
-X-Proofpoint-ORIG-GUID: m0wLoFSsPMi_NLApmXbbJ41C4YmXXi23
-X-Authority-Analysis: v=2.4 cv=Hv1G3UTS c=1 sm=1 tr=0 ts=6a4ba380 cx=c_pps
- a=50t2pK5VMbmlHzFWWp8p/g==:117 a=xqWC_Br6kY4A:10 a=IkcTkHD0fZMA:10
- a=RAioF0-LDSMA:10 a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=u7WPNUs3qKkmUXheDGA7:22 a=DJpcGTmdVt4CTyJn9g5Z:22 a=QyXUC8HyAAAA:8
- a=EUspDBNiAAAA:8 a=2sGp0kyKjRk1obZUzdUA:9 a=QEXdDO2ut3YA:10
- a=IoWCM6iH3mJn3m4BftBB:22
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNzA2MDEyOSBTYWx0ZWRfX0AMlYuEDKdkL
- ++37PNkdgh2lyYVjle6xvUwrKDgB/wttMkE2TBtaS9n03riYidieXL45FfdxD3msKOzmqWejFPe
- soF26Ghou9OFj5NqyItDD2GLDFNuMRs=
-X-Proofpoint-GUID: m0wLoFSsPMi_NLApmXbbJ41C4YmXXi23
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzA2MDEyOSBTYWx0ZWRfXwNF8SRBrr5cZ
- SdEnNHsLck/uPKhhGK3htDKghWozol74rsQ9A3YNL4ldRPjz14/GRkgVuyPGx8/YXFWN1gKZWT+
- dpA6We1KI4K/09zTq74GCQfUqgFdSeRFIHNijDodcwEQ4fvx4LJAD5FJsJzbgXsL+GjAeomlpPq
- pJx1KOktQeapV1CPql6TlUZWSpg0BkKD3n1/O5SNO1S/f1gQYyefVcGZHWCLpVAScdGAQCi7RIr
- vXABBqtxXkjE23oCz7P4AGyLzATqvpY7wPJBP2q8exbpzs6A5xVlx5aXyaSNYBKKVsyM7x0P20a
- +iufuF3J07bhnM57CgRcSGOqrPPBFcOCOVXhRhBoIMGax66pmM4K8tVxaa4BBf/2LfoUQdQu3ga
- gWsxe4rR9kH96Avs9zVZpfIeytFiZ9Ro6OVS9TrogTDfjJZsGi9X5OoUXE67Xu5ROsEkJYv94V7
- 6buADT/5+gcOlueCyfw==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-07-06_01,2026-07-06_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- impostorscore=0 suspectscore=0 malwarescore=0 adultscore=0 priorityscore=1501
- spamscore=0 bulkscore=0 clxscore=1015 lowpriorityscore=0 phishscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607060129
 
-When using platform_device_register_full(), we currently only increase
-the reference count of the OF node associated with a platform device. We
-symmetrically decrease it in platform_device_release(). With all users in
-tree now converted to using provided platform device helpers for
-assigning OF and firmware nodes, we can now switch to counting references
-of all kinds of firmware nodes.
+On 6/12/26 5:58 AM, Muchun Song wrote:
+> Commit 622026e87c40 ("mm/hugetlb: remove fake head pages") switched
+> HVO to reuse per-zone shared tail pages from zone->vmemmap_tails[].
+> 
+> Those shared tail pages were initialized in hugetlb_vmemmap_init(), but
+> bootmem HugeTLB folios are prepared earlier from gather_bootmem_prealloc().
+> With hugetlb_free_vmemmap=on, prep_and_add_bootmem_folios() can access
+> pageblock flags on bootmem HugeTLB pages whose mirrored tail struct pages
+> already point to the shared tail page. On CONFIG_DEBUG_VM kernels,
+> get_pfnblock_bitmap_bitidx() then dereferences the still-uninitialized
+> shared tail page and can panic during boot.
+> 
+> Initialize zone->vmemmap_tails[] from gather_bootmem_prealloc(), before
+> bootmem HugeTLB folios are processed, and drop the later initialization
+> from hugetlb_vmemmap_init().
+> 
+> This bug only affects CONFIG_DEBUG_VM kernels, where the relevant
+> assertion is evaluated.
+> 
+> Fixes: 622026e87c40 ("mm/hugetlb: remove fake head pages")
+> Signed-off-by: Muchun Song <songmuchun@bytedance.com>
+> Acked-by: Oscar Salvador <osalvador@suse.de>
+> ---
+>   mm/hugetlb.c         | 25 +++++++++++++++++++++++++
+>   mm/hugetlb_vmemmap.c | 17 -----------------
+>   mm/sparse-vmemmap.c  |  2 +-
+>   3 files changed, 26 insertions(+), 18 deletions(-)
+> 
+> diff --git a/mm/hugetlb.c b/mm/hugetlb.c
+> index 571212b80835..cd55524c7e30 100644
+> --- a/mm/hugetlb.c
+> +++ b/mm/hugetlb.c
+> @@ -3365,6 +3365,31 @@ static void __init gather_bootmem_prealloc(void)
+>   		.max_threads	= num_node_state(N_MEMORY),
+>   		.numa_aware	= true,
+>   	};
+> +#ifdef CONFIG_HUGETLB_PAGE_OPTIMIZE_VMEMMAP
+> +	struct zone *zone;
+> +
+> +	for_each_zone(zone) {
+> +		for (int i = 0; i < NR_VMEMMAP_TAILS; i++) {
+> +			struct page *tail, *p;
+> +			unsigned int order;
+> +
+> +			tail = zone->vmemmap_tails[i];
+> +			if (!tail)
+> +				continue;
+> +
+> +			order = i + VMEMMAP_TAIL_MIN_ORDER;
+> +			p = page_to_virt(tail);
+> +			/*
+> +			 * prep_and_add_bootmem_folios() can access pageblock
+> +			 * flags on bootmem HugeTLB pages, so initialize the
+> +			 * shared tail struct pages here before bootmem folios
+> +			 * start using them.
+> +			 */
+> +			for (int j = 0; j < PAGE_SIZE / sizeof(struct page); j++)
+> +				init_compound_tail(p + j, NULL, order, zone);
+> +		}
+> +	}
+> +#endif
 
-Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Signed-off-by: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
----
- drivers/base/platform.c | 15 +++++----------
- 1 file changed, 5 insertions(+), 10 deletions(-)
+I think it would be better if this was located in mm/hugetlb_vmemmap.c 
+as a separate function.
 
-diff --git a/drivers/base/platform.c b/drivers/base/platform.c
-index 9357942d0c79b032645035879b2bed3d53305b9f..a71015f1d915340aa01ebfae67196d4d7ccecba8 100644
---- a/drivers/base/platform.c
-+++ b/drivers/base/platform.c
-@@ -599,7 +599,7 @@ static void platform_device_release(struct device *dev)
- 	struct platform_object *pa = container_of(dev, struct platform_object,
- 						  pdev.dev);
- 
--	of_node_put(pa->pdev.dev.of_node);
-+	fwnode_handle_put(pa->pdev.dev.fwnode);
- 	kfree(pa->pdev.dev.platform_data);
- 	kfree(pa->pdev.mfd_cell);
- 	kfree(pa->pdev.resource);
-@@ -712,9 +712,7 @@ EXPORT_SYMBOL_GPL(platform_device_add_data);
- void platform_device_set_of_node(struct platform_device *pdev,
- 				 struct device_node *np)
- {
--	of_node_put(pdev->dev.of_node);
--	pdev->dev.of_node = of_node_get(np);
--	pdev->dev.fwnode = of_fwnode_handle(np);
-+	platform_device_set_fwnode(pdev, of_fwnode_handle(np));
- }
- EXPORT_SYMBOL_GPL(platform_device_set_of_node);
- 
-@@ -730,10 +728,8 @@ EXPORT_SYMBOL_GPL(platform_device_set_of_node);
- void platform_device_set_fwnode(struct platform_device *pdev,
- 				struct fwnode_handle *fwnode)
- {
--	if (is_of_node(fwnode))
--		platform_device_set_of_node(pdev, to_of_node(fwnode));
--	else
--		pdev->dev.fwnode = fwnode;
-+	fwnode_handle_put(pdev->dev.fwnode);
-+	device_set_node(&pdev->dev, fwnode_handle_get(fwnode));
- }
- EXPORT_SYMBOL_GPL(platform_device_set_fwnode);
- 
-@@ -928,8 +924,7 @@ struct platform_device *platform_device_register_full(const struct platform_devi
- 		return ERR_PTR(-ENOMEM);
- 
- 	pdev->dev.parent = pdevinfo->parent;
--	pdev->dev.fwnode = pdevinfo->fwnode;
--	pdev->dev.of_node = of_node_get(to_of_node(pdev->dev.fwnode));
-+	device_set_node(&pdev->dev, fwnode_handle_get(pdevinfo->fwnode));
- 	dev_assign_of_node_reused(&pdev->dev, pdevinfo->of_node_reused);
- 
- 	if (pdevinfo->dma_mask) {
+>   
+>   	padata_do_multithreaded(&job);
+>   }
+> diff --git a/mm/hugetlb_vmemmap.c b/mm/hugetlb_vmemmap.c
+> index 133b46dfb09f..c713c0d2593a 100644
+> --- a/mm/hugetlb_vmemmap.c
+> +++ b/mm/hugetlb_vmemmap.c
+> @@ -870,27 +870,10 @@ static const struct ctl_table hugetlb_vmemmap_sysctls[] = {
+>   static int __init hugetlb_vmemmap_init(void)
+>   {
+>   	const struct hstate *h;
+> -	struct zone *zone;
+>   
+>   	/* HUGETLB_VMEMMAP_RESERVE_SIZE should cover all used struct pages */
+>   	BUILD_BUG_ON(__NR_USED_SUBPAGE > HUGETLB_VMEMMAP_RESERVE_PAGES);
+>   
+> -	for_each_zone(zone) {
+> -		for (int i = 0; i < NR_VMEMMAP_TAILS; i++) {
+> -			struct page *tail, *p;
+> -			unsigned int order;
+> -
+> -			tail = zone->vmemmap_tails[i];
+> -			if (!tail)
+> -				continue;
+> -
+> -			order = i + VMEMMAP_TAIL_MIN_ORDER;
+> -			p = page_to_virt(tail);
+> -			for (int j = 0; j < PAGE_SIZE / sizeof(struct page); j++)
+> -				init_compound_tail(p + j, NULL, order, zone);
+> -		}
+> -	}
+> -
+>   	for_each_hstate(h) {
+>   		if (hugetlb_vmemmap_optimizable(h)) {
+>   			register_sysctl_init("vm", hugetlb_vmemmap_sysctls);
+> diff --git a/mm/sparse-vmemmap.c b/mm/sparse-vmemmap.c
+> index 99e2be39671b..bb23fb3077a3 100644
+> --- a/mm/sparse-vmemmap.c
+> +++ b/mm/sparse-vmemmap.c
+> @@ -342,7 +342,7 @@ static __meminit struct page *vmemmap_get_tail(unsigned int order, struct zone *
+>   	 *
+>   	 * Any initialization done here will be overwritten by memmap_init().
+>   	 *
+> -	 * hugetlb_vmemmap_init() will take care of initialization after
+> +	 * gather_bootmem_prealloc() will take care of initialization after
+>   	 * memmap_init().
+>   	 */
+>   
 
--- 
-2.47.3
+It gets the job done.
+
+Tested-by: Michal Clapinski <mclapinski@google.com>
+Reviewed-by: Michal Clapinski <mclapinski@google.com>
 
 
