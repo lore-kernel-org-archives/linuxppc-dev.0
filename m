@@ -1,117 +1,103 @@
-Return-Path: <linuxppc-dev+bounces-23640-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23641-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E41E1C43602
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Jul 2026 15:50:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 56E6DC43602
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Jul 2026 16:38:49 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gv835736gz3bby;
-	Tue, 07 Jul 2026 01:50:57 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=198.175.65.10
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783353057;
-	cv=none; b=avR9pzdw2nYb5+MrFqLIaQkDvQMCVww2hSROLZvyFRMDB/giJOIlcM0Nvz0NlpCx3x+QOsaFk3MzTv04eV8qz6a0TdJiTQ8LR/EzlicDBA6HS9n0kyuK7ek0KnqPOO/GIJeDH3eCX9+v2A4J+F3mbb+9Qg/tP4lpCrr/oCQsA4RrAUwkgdqmkaosyPDhzU2k8wRH55OXVM19UjTO03acGWRe0ooBc0pweiYnNRna2TKIKPxjPpIqy6zVZB1vMHYDOCCCJ0uJzCWv58/f6RgzqvxssrCapwdPEVlO2ZF+UL6mWJVkgcx8qUttMq1oWkvat3zzRplY2Gyrxu3IYEosbQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gv96J0GLYz3bps;
+	Tue, 07 Jul 2026 02:38:48 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::635"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783355927;
+	cv=none; b=K7IwoSfDndU9YNqYMMNCOmFTqT76wf+YlPOvyjUk7uKY2UFoL2D2Fbnb30OL11BurjRApEGPuLtRlaRie8wy7gSvowyaeKi8cDc3crppL3f5p+gE8+IuYhTHwT5GFcFMPTpsrOwihb5fz8nxDgSZSImSKrKx/duQIIjhuMyn30WbKWw2F6yiLAz5HBs8Rp6Y71Qbts/DVqJ6jLZYiyW626m0zehiVt2yBJKZVADDg6mp9Lw88EIZCnVS78Dk6TOu4DdmeVFtOJqi1eIZpbiBH8DbNZQFQSQfhv4p1iKIwGr807SrMg5ZltqiLzcAA+vPaRZRL4oqjhh/KQIo3kbD/g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1783353057; c=relaxed/relaxed;
-	bh=SH7QsUXzWQhVc/gsbztQ+L5dR82PdPpik3gv5uuonZg=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=KqKSB8/zArKwnudLHwmt6uDEwtLk+Za8xgagqSguK3syZBWH4KJRO5n3tIwhs2myXeTn/yXM41Fyqu8x20FVwx7HDwWF8P7xfP+OcHG1ySudeppYqLWhpMI+IjKmLR2PGe5dciVlzbWSzvus6stTTEW6KP6ajmAadMSXbRROiLeYZq0Qaegen4zxHwuGCPG1z5zias3Z5JWW5AEyPvvnZhyV9UGUF83c4XydvKquX/2e/ncncqZ/FN143qN4nawY7i2al7d8g8QssymhC9t8mxXD0MoWkCyI+cyzvydcJci5B4If/1xMP5ST6zHH8ZlMeTCYO3/kW6C7KvKuvOXFqg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=hP3UGnaO; dkim-atps=neutral; spf=pass (client-ip=198.175.65.10; helo=mgamail.intel.com; envelope-from=andriy.shevchenko@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+	t=1783355927; c=relaxed/relaxed;
+	bh=q3YBRTaja8Io8T+OBzHFe+6+gYpexbpRi1HdwVacSuQ=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=iXO8/9NWo3oJ2kdE6si2kZTwHh87Yyt6fkHq+4/5HtYigqbz1OM1IP2/p364bPHB+wWA8R2tXfj9T97HH56XrEQPv4Rzamh+I0+Nl81lvxfLPJVRqVZB5B7cNLbe1GaaGdYWrEdP0lDG4HKNITfSAY3RE1A0TwioCugbqrahD8dpSCf/3quBCLJCdKJlCwR/VEphFWe/7IzY7+pvHsz+cfgH4+MlLpFSPuhQDShKJawrvwYLp6RSL6bKI2tGiPqUAY57lQjRPOcJKP9XTfkc8yGsqVzvFQ6CtqiO+t5mK6d9nT+AzPVfe8Z+FNX3F9A4Gy7e8kD6QRzkxb4rKuAYYg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=myCqSuKh; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::635; helo=mail-pl1-x635.google.com; envelope-from=ekffu200098@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=hP3UGnaO;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=myCqSuKh;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.intel.com (client-ip=198.175.65.10; helo=mgamail.intel.com; envelope-from=andriy.shevchenko@linux.intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.10])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::635; helo=mail-pl1-x635.google.com; envelope-from=ekffu200098@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pl1-x635.google.com (mail-pl1-x635.google.com [IPv6:2607:f8b0:4864:20::635])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gv8316nr5z2yVZ
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 07 Jul 2026 01:50:51 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1783353055; x=1814889055;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:content-transfer-encoding:in-reply-to;
-  bh=of6d9n1ZVp2VvNBWbeQxrIvJaxz8Dqo4F/lZHKvIDzs=;
-  b=hP3UGnaOwDaXrkKikQz5v+ASr2ZW6cbSPmX1XhtMpfaXVUSxnjvonFmd
-   +1UMTPmPW83nqlMEG12CzL9xt+fkSPca9bn7mBn0pKcIPaSdNpInSJzB5
-   p9BnueBp7C58xDkMzxUgy81oSSF7ajya8oKz1VAp5hZuafUJUNR/2WH7Z
-   tXr1uemQzgCPY+EcjNMu62rICgaY3pWEBLGXVe2Ak3d7nUQmlvpwdoqhj
-   M1gQMVKmOHh56cdqw0MzHja52H06ljJVJoKZmedNKMaXmgXpKAns06Jl7
-   L7quVXFOoDHCjekxLwLyQE/IYl/Cpj1iW1UQjqyjvNMSKeQCsfSO95rab
-   A==;
-X-CSE-ConnectionGUID: Zj7VUQoySRWLaR1GPI4Z1w==
-X-CSE-MsgGUID: iC8E1jMpQc+TGFIAMi3vRQ==
-X-IronPort-AV: E=McAfee;i="6800,10657,11838"; a="101408867"
-X-IronPort-AV: E=Sophos;i="6.25,149,1779174000"; 
-   d="scan'208";a="101408867"
-Received: from orviesa002.jf.intel.com ([10.64.159.142])
-  by orvoesa102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 06 Jul 2026 08:50:32 -0700
-X-CSE-ConnectionGUID: NvB5N+KWQv+u1kUJ01a6bg==
-X-CSE-MsgGUID: ST8IrUj4Qs29+PTwG4IXGQ==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.25,149,1779174000"; 
-   d="scan'208";a="283836189"
-Received: from vpanait-mobl.ger.corp.intel.com (HELO localhost) ([10.245.244.48])
-  by orviesa002-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 06 Jul 2026 08:50:18 -0700
-Date: Mon, 6 Jul 2026 18:49:55 +0300
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-To: Manuel Ebner <manuelebner@mailbox.org>, Mark Brown <broonie@kernel.org>
-Cc: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>,
-	Lee Jones <lee@kernel.org>,
-	Thierry Reding <thierry.reding@avionic-design.de>,
-	Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>,
-	Andrew Lunn <andrew+netdev@lunn.ch>,
-	"David S. Miller" <davem@davemloft.net>,
-	Eric Dumazet <edumazet@google.com>,
-	Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
-	Srinivas Kandagatla <srini@kernel.org>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Vinod Koul <vkoul@kernel.org>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Danilo Krummrich <dakr@kernel.org>, Rob Herring <robh@kernel.org>,
-	Saravana Kannan <saravanak@kernel.org>,
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gv96G2fZHz3bby
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 07 Jul 2026 02:38:45 +1000 (AEST)
+Received: by mail-pl1-x635.google.com with SMTP id d9443c01a7336-2cacb8416a1so26395015ad.1
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 Jul 2026 09:38:45 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1783355923; x=1783960723; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=q3YBRTaja8Io8T+OBzHFe+6+gYpexbpRi1HdwVacSuQ=;
+        b=myCqSuKhQ6u5NeKnJvTpxIa1ccPo1GX8hS+4iX7GfcOrIc28QbU2YM+E698496dARA
+         7+TUMfS02pSyTKZxdWFfWBVahBTfrLGKVG2h9dcMnHPXH15HHdlSr1V4Rb2i9ZPlwq3w
+         6i2S9Gy8DwGg19U1HhlJMllHJXV1tuDmM2e0htNyzgmRdt3GLx+tQZr5pkfxvdhY704U
+         YtfdSmL/JWeWmAukZ3zd5DLIlHHRp4w2iZqzFTd+4Q0XW3OCeyBXB024SFV23GHRanCl
+         1lbuuRvaYmRBbB7gDn9foqPRPhUybX4WYyher3yqjXRUKKuZvNgNQYOkiagZoGceN0lQ
+         gvig==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1783355923; x=1783960723;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=q3YBRTaja8Io8T+OBzHFe+6+gYpexbpRi1HdwVacSuQ=;
+        b=dLWqqUIoxGxM76pO1RLIWQGHjDkDPY+i1XtYCaa9raYxE5+Ibut3OAIVqTaLqJQ+U5
+         fhCbzyoyO0dEFJSW4XHW8c7TJEjLRu1OFAXqsm9pMSGIg295h4rZsYDEBEYVnvvcxgmt
+         7PFmLquVOghm/w7CiK0o+C6jF2kZXXpkOPfgHVLoxyq5B62+DJZsopedor5mY0E9me1W
+         Yn1brZAhtTokS9ktTJmFSVWvtQRtkxIPJwbFtgyiBVNUb87TeUSEidH5lJTAltP8Nsbm
+         kH3c271YzQW1Vf/b7kSpKGVfQmm2jXgWocFvm65H452TQvT14oHmxbVMpdkzVqOFNMze
+         7KEA==
+X-Forwarded-Encrypted: i=1; AHgh+RoCG/jOk8Tyd0MbWIojLzquBxTfqnrY2qH93iHgTQs4CDrGH0SQ1vgbCj5DjkPdTgLpKzpzLPT8r1rSLDI=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yw1VBj6wwitdlujiyiHHK3lONCfK2Csd2gfH7OHGIELOXVu+Gzd
+	DzT2ZZOtGv31sKQ3WZcKjTWT5vStQTEkhmdUwMeQkkQgLHFJ2JgqblDz
+X-Gm-Gg: AfdE7cl+cPgyF1AiUzE1a8XTekvDIvRZ4qTO8+Yhe6kM4iPVnpFEVxW2OMejaunGWTq
+	Bv4Uj3JHd05vCnUAkBFvZviPdF1sBm7WIPEDxBJruaOjlIk3xtKIWxNDv8Ilb9INhiFZzPxVUhD
+	Xs0lbRWMMsUnqD0AnwguVrWRyW4PY7dhQLRquOfVgRDvRBWYlH7ftMsmUdNqhROr0+xznTQu5GV
+	DN/6asVhRpqJ7+wM8HYg5mnsUd/eLy2JwNFLUEz0ASG+DVicM2YzNi7UmicdxKeYY1iwwYVXQDR
+	CStGszzxiZkVM6qZ3fNMahBUJHV2125UgN/fYbUef6kcAfqtk6vD9ydrF0cF7ZXzFbbn+OOLgwL
+	nFN5Y9Gp+jnnA8FWUFhd2shOhn75HOo9qLog+ZbdEIwUs56KZcr74VNnq+TQn4Eg22q0fJxRqol
+	akqiG10vQ=
+X-Received: by 2002:a17:902:daca:b0:2bf:27b2:4b80 with SMTP id d9443c01a7336-2ccbe729635mr13347365ad.14.1783355922667;
+        Mon, 06 Jul 2026 09:38:42 -0700 (PDT)
+Received: from ubuntu.. ([110.9.142.4])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2cad7893a8dsm53103305ad.73.2026.07.06.09.38.37
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 06 Jul 2026 09:38:42 -0700 (PDT)
+From: Sang-Heon Jeon <ekffu200098@gmail.com>
+To: rppt@kernel.org,
+	Ard Biesheuvel <ardb@kernel.org>,
+	Borislav Petkov <bp@alien8.de>,
+	Chris Zankel <chris@zankel.net>,
+	Dave Hansen <dave.hansen@linux.intel.com>,
+	Ingo Molnar <mingo@redhat.com>,
+	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
 	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Max Filippov <jcmvbkbc@gmail.com>,
 	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
+	Rich Felker <dalias@libc.org>,
+	Thomas Gleixner <tglx@kernel.org>,
+	Yoshinori Sato <ysato@users.sourceforge.jp>
+Cc: linux-mm@kvack.org,
+	Sang-Heon Jeon <ekffu200098@gmail.com>,
 	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	Andi Shyti <andi.shyti@kernel.org>, Joerg Roedel <joro@8bytes.org>,
-	Will Deacon <will@kernel.org>, Robin Murphy <robin.murphy@arm.com>,
-	Doug Berger <opendmb@gmail.com>,
-	Florian Fainelli <florian.fainelli@broadcom.com>,
-	Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>,
-	Ulf Hansson <ulfh@kernel.org>, Frank Li <Frank.Li@nxp.com>,
-	Sascha Hauer <s.hauer@pengutronix.de>,
-	Pengutronix Kernel Team <kernel@pengutronix.de>,
-	Fabio Estevam <festevam@gmail.com>,
-	Matthew Brost <matthew.brost@intel.com>,
-	Thomas =?iso-8859-1?Q?Hellstr=F6m?= <thomas.hellstrom@linux.intel.com>,
-	Rodrigo Vivi <rodrigo.vivi@intel.com>,
-	David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
-	Peter Chen <peter.chen@kernel.org>,
-	Paul Cercueil <paul@crapouillou.net>, Bin Liu <b-liu@ti.com>,
-	Philipp Zabel <p.zabel@pengutronix.de>,
-	Maximilian Luz <luzmaximilian@gmail.com>,
-	Hans de Goede <hansg@kernel.org>,
-	Ilpo =?iso-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@linux.intel.com>,
-	Krzysztof Kozlowski <krzk@kernel.org>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>, brgl@kernel.org,
-	linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-	linux-arm-msm@vger.kernel.org, linux-sound@vger.kernel.org,
-	driver-core@lists.linux.dev, devicetree@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org, linux-i2c@vger.kernel.org,
-	iommu@lists.linux.dev, linux-pm@vger.kernel.org,
-	imx@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
-	intel-xe@lists.freedesktop.org, dri-devel@lists.freedesktop.org,
-	linux-usb@vger.kernel.org, linux-mips@vger.kernel.org,
-	platform-driver-x86@vger.kernel.org, mfd@lists.linux.dev
-Subject: Re: [PATCH v3 02/20] driver core: platform: provide
- platform_device_set_of_node()
-Message-ID: <akvOo2EeERLYPh72@ashevche-desk.local>
-References: <20260706-pdev-fwnode-ref-v3-0-1ff028e33779@oss.qualcomm.com>
- <20260706-pdev-fwnode-ref-v3-2-1ff028e33779@oss.qualcomm.com>
- <fbc50f89e0c3bb148656a3b8d96974f591576dec.camel@mailbox.org>
+	"H. Peter Anvin" <hpa@zytor.com>,
+	Ilias Apalodimas <ilias.apalodimas@linaro.org>,
+	linux-efi@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-sh@vger.kernel.org,
+	Nicholas Piggin <npiggin@gmail.com>,
+	x86@kernel.org
+Subject: [PATCH v2 0/5] treewide: remove unreachable memblock_reserve() return value checks in early boot
+Date: Tue,  7 Jul 2026 01:37:48 +0900
+Message-ID: <20260706163753.193875-1-ekffu200098@gmail.com>
+X-Mailer: git-send-email 2.43.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -125,26 +111,52 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <fbc50f89e0c3bb148656a3b8d96974f591576dec.camel@mailbox.org>
-Organization: Intel Finland Oy - BIC 0357606-4 - c/o Alberga Business Park, 6
- krs, Bertel Jungin Aukio 5, 02600 Espoo
 
-On Mon, Jul 06, 2026 at 04:39:00PM +0200, Manuel Ebner wrote:
-> On Mon, 2026-07-06 at 14:44 +0200, Bartosz Golaszewski wrote:
+memblock_reserve() can only return an error after memblock_allow_resize()
+has been called. Before that it either succeeds or panics, never returning
+an error.
 
-> I removed Mark Brown <broonie@opensource.wolfsonmicro.com> from recipients because:
-> “RCPT TO <broonie@opensource.wolfsonmicro.com> failed:
-> <broonie@opensource.wolfsonmicro.com>: Recipient address rejected: Domain not found”.
+Before memblock_allow_resize() is called, the return value checks of
+memblock_reserve() are unreachable and can be removed.
 
-Perhaps he needs to send a patch to update .mailmap?
-Cc'ed to Mark.
+All the call sites are in different trees, so I split the change into one
+patch per arch/subsystem. The patches are independent and can be applied
+separately.
+
+---
+Changes from v1 [1]
+- add reviewed-by tag
+- rebased onto latest memblock for-next
+
+[1] https://lore.kernel.org/all/20260616182959.2429774-1-ekffu200098@gmail.com/
+---
+Hello Mike,
+
+Like the previous memblock cleanup series, could you review and take this patch series to the memblock tree?
+
+Thank you for taking valuable time.
+
+Best Regards,
+Sang-Heon Jeon
+---
+
+Sang-Heon Jeon (5):
+  x86/setup: remove unreachable memblock_reserve() return value check
+  sh: remove unreachable memblock_reserve() return value check
+  powerpc/fadump: remove unreachable memblock_reserve() return value
+    checks
+  xtensa: remove unreachable memblock_reserve() return value checks
+  Revert "tpm: do not ignore memblock_reserve return value"
+
+ arch/powerpc/kernel/fadump.c   | 14 +++-----------
+ arch/sh/kernel/machine_kexec.c |  7 +------
+ arch/x86/kernel/setup.c        |  7 ++-----
+ arch/xtensa/kernel/setup.c     | 13 +++++++------
+ drivers/firmware/efi/tpm.c     |  7 +------
+ 5 files changed, 14 insertions(+), 34 deletions(-)
 
 -- 
-With Best Regards,
-Andy Shevchenko
-
+2.43.0
 
 
