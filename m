@@ -1,124 +1,54 @@
-Return-Path: <linuxppc-dev+bounces-23701-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23702-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 816A0C43458
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jul 2026 11:42:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D1C89C44500
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jul 2026 13:04:08 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gvfTq1m5vz2xWY;
-	Tue, 07 Jul 2026 21:42:23 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.140.110.172
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783424543;
-	cv=none; b=SPJQs9+g8FjKL/JOWIOzyq7OzhRB1SpatOnMy58YCY0eC49orI8QPt/Nn4odh+QEaKBcbDbrxSmRP6dlaNcj7HP8L7CtN/GLN+5mwemrcEZYxHbArpNcOxmawrxnmUcRqgYkOeozB0wJPZA8/k3htm2wrPW7f3GGmARuIevhmycM9pZl5McGflgoZqouiKJS6PwX7929dXaxXP63YaoyJu/vx0bP9OyzyC7AYJWvxjKlTESAiUFbNZZ+DcVbKlvGf0wxBTeLWUDs9M5BtnEWR51mz9Xrf9oybstVYfEFMUJG6zabX5r9nt7otNzeAmnfoit5NSbG2nqZQaop0hCuQw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gvhJ70C6Vz2xWY;
+	Tue, 07 Jul 2026 23:04:07 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=210.118.77.11
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783429446;
+	cv=none; b=UoU1vD0sU/Uni9QumPZ+5blGQoifxYI2/9lXVCbRfSFQWYI63rlwoK7pPw27gsDsGDRPGvaipSTDt0ccQS9egB+AKjYnqqhxZs/6vL8UQC24ki+7JW2aC6STR6o54TqV/JS71tZ3mTTfaTRTWmIxgRKGtjnHiCrWeKi1tl0tMFnKCeFsFqzxILqOIIiCGlGYsINb9E3WFny1FvzPkOIVjqIw7VQ2ZOaShk1jCQ0bilWXNU3NiAdGC/46BBdT73dbMtRL6+DcJ4DQsgSLnvqSFO7y5128Es5mT9wapCHRgYhxpyUTzTZrhVK+tf5laBjW55NUZrcjrw6i3nWuD/mSdg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1783424543; c=relaxed/relaxed;
-	bh=vLgY48wjnxI6KTkbs3yoMb3mqAR6cMMCjHviW4AsdM4=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Lw61VE7Y6H4qi6WzaypfKtRe7BDmJsuxR5fEOlcqkX+yKgMo+e8PknSGYXgd7+TbxHbNBrWAbHfUphh3HJ2Z8vE3tif8Z7qLm+Z92npmFupeXrN94GrvWRTTo9Ub8RGVKvZnhSZ4HANQG7V2WTFkVopbuQ59CQNfdgLccZDNCiuYf7Nlnoxlk2b5bi/FGqOza7SUR/oC3iYBuYRw26X56VRQCtRobmDyWhwuVA8TUDNxE7kV3zjgLIOcIT2WRe/ncKMoTcx6WJP+k/QHs4HCU8rX5Fmf/hRlQAc1rZADZyS8ZKtGFcQSipNKBAhID3XnRdjENkUQ/6Ol/B2RM1VYqw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=g8lQFDxh; dkim-atps=neutral; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=liviu.dudau@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
+	t=1783429446; c=relaxed/relaxed;
+	bh=1pXyGCmuZ2dd2pCX0ADJkgnLvZuWQnMbV/mJUc5jL2g=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:From:In-Reply-To:
+	 Content-Type:References; b=GN8In9jWwd7MLGF4YvegYhNqgrh6UQggev/zew4pwcmBO8pfUPRCXexJQS6MhaVPdwoud2MZky8jd4aGwcrTjxCiqqBiLvo5/eVQ8Ln3JiVgWbWAkC4kR0S8b5Ple0DyIwrccVmbOhZ/VWauNy2BPSNY+gqwzNGKL5pyT+nuJZKdiIvc/TNGk0QxFJoPq5bsPRcJ631BfyUf4MPEWX8TPo1WN8A0h6BxAnPriS3R3OOP9z04WMU1181FuYB5G+bGv/xobub2+MeUysLPgcbUVur+iHZ0yskFlN9zhfL6XgsRyGLKLLjRhIf6k38nYIHYhhRKjfwHE7I9bq0MTk8wLQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=samsung.com; dkim=pass (1024-bit key; unprotected) header.d=samsung.com header.i=@samsung.com header.a=rsa-sha256 header.s=mail20170921 header.b=bIpgAugu; dkim-atps=neutral; spf=pass (client-ip=210.118.77.11; helo=mailout1.w1.samsung.com; envelope-from=m.szyprowski@samsung.com; receiver=lists.ozlabs.org) smtp.mailfrom=samsung.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=samsung.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=g8lQFDxh;
+	dkim=pass (1024-bit key; unprotected) header.d=samsung.com header.i=@samsung.com header.a=rsa-sha256 header.s=mail20170921 header.b=bIpgAugu;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=liviu.dudau@arm.com; receiver=lists.ozlabs.org)
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gvfTp1pqxz2xF8
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 07 Jul 2026 21:42:22 +1000 (AEST)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id A29EC2680
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Jul 2026 04:41:46 -0700 (PDT)
-Received: from [192.168.0.1] (usa-sjc-imap-foss1.foss.arm.com [10.121.207.14])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id C36DD3FAF5
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Jul 2026 04:41:50 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1783424511; bh=AXimq/rtIFwP4aD04kh/5vfPSxje93mi8aUhDJB2eB0=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=g8lQFDxhkRHx+21rjYlAZffhhuBRTsPEAbatD1kNtwItaNR63YFBy9uXxBlhJ/n34
-	 C81xPyObYByb+G2DVjJczng8bTHilK/V44VoZXAn/ypWgMyI+W9Rq2DOeM+6Vz1miq
-	 Ni2AMgwrjN8nh5xFNKmQKcl2zxkvXd2X2j/PFaqA=
-Date: Tue, 7 Jul 2026 12:39:54 +0100
-From: Liviu Dudau <liviu.dudau@arm.com>
-To: Mukesh Ojha <mukesh.ojha@oss.qualcomm.com>
-Cc: Bjorn Andersson <andersson@kernel.org>,
-	Konrad Dybcio <konradybcio@kernel.org>,
-	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-	Maxime Ripard <mripard@kernel.org>,
-	Thomas Zimmermann <tzimmermann@suse.de>,
-	David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
-	Joel Stanley <joel@jms.id.au>,
-	Andrew Jeffery <andrew@codeconstruct.com.au>,
-	Paul Cercueil <paul@crapouillou.net>,
-	Anitha Chrisanthus <anitha.chrisanthus@intel.com>,
-	Paul Kocialkowski <paulk@sys-base.io>,
-	Linus Walleij <linusw@kernel.org>, Chen-Yu Tsai <wens@kernel.org>,
-	Jernej Skrabec <jernej.skrabec@gmail.com>,
-	Samuel Holland <samuel@sholland.org>,
-	Alexey Brodkin <abrodkin@synopsys.com>,
-	Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
-	Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>,
-	Michal Simek <michal.simek@amd.com>,
-	Daniel Scally <dan.scally@ideasonboard.com>,
-	Jacopo Mondi <jacopo.mondi@ideasonboard.com>,
-	Mauro Carvalho Chehab <mchehab@kernel.org>,
-	Eddie James <eajames@linux.ibm.com>,
-	Tiffany Lin <tiffany.lin@mediatek.com>,
-	Andrew-CT Chen <andrew-ct.chen@mediatek.com>,
-	Yunfei Dong <yunfei.dong@mediatek.com>,
-	Minghsiu Tsai <minghsiu.tsai@mediatek.com>,
-	Houlong Wei <houlong.wei@mediatek.com>,
-	Matthias Brugger <matthias.bgg@gmail.com>,
-	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
-	Joseph Liu <kwliu@nuvoton.com>, Marvin Lin <kflin@nuvoton.com>,
-	Dmitry Osipenko <dmitry.osipenko@collabora.com>,
-	Krzysztof Kozlowski <krzk@kernel.org>,
-	Thierry Reding <thierry.reding@kernel.org>,
-	Jonathan Hunter <jonathanh@nvidia.com>,
-	Srinivas Kandagatla <srini@kernel.org>,
-	Arnd Bergmann <arnd@arndb.de>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Ge Gordon <gordon.ge@bst.ai>,
-	Adrian Hunter <adrian.hunter@intel.com>,
-	Ulf Hansson <ulfh@kernel.org>, Rob Herring <robh@kernel.org>,
-	Saravana Kannan <saravanak@kernel.org>,
-	Mathieu Poirier <mathieu.poirier@linaro.org>,
-	Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>,
-	Shengjiu Wang <shengjiu.wang@gmail.com>,
-	Xiubo Li <Xiubo.Lee@gmail.com>, Liam Girdwood <lgirdwood@gmail.com>,
-	Mark Brown <broonie@kernel.org>, Frank Li <Frank.Li@nxp.com>,
-	Sascha Hauer <s.hauer@pengutronix.de>,
-	Peter Ujfalusi <peter.ujfalusi@linux.intel.com>,
-	Bard Liao <yung-chuan.liao@linux.intel.com>,
-	Daniel Baluta <daniel.baluta@nxp.com>,
-	Orson Zhai <orsonzhai@gmail.com>,
-	Baolin Wang <baolin.wang@linux.alibaba.com>,
-	Peter Chen <peter.chen@cixtech.com>,
-	Fugang Duan <fugang.duan@cixtech.com>,
-	Ekansh Gupta <ekansh.gupta@oss.qualcomm.com>,
-	BST Linux Kernel Upstream Group <bst-upstream@bstai.top>,
-	Fabio Estevam <festevam@gmail.com>,
-	Nicolin Chen <nicoleotsuka@gmail.com>,
-	Pengutronix Kernel Team <kernel@pengutronix.de>,
-	Kai Vehmanen <kai.vehmanen@linux.intel.com>,
-	Pierre-Louis Bossart <pierre-louis.bossart@linux.dev>,
-	Vijendar Mukunda <Vijendar.Mukunda@amd.com>,
-	Chunyan Zhang <zhang.lyra@gmail.com>,
-	CIX Linux Kernel Upstream Group <cix-kernel-upstream@cixtech.com>,
-	linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org,
-	dri-devel@lists.freedesktop.org, linux-aspeed@lists.ozlabs.org,
-	linux-arm-kernel@lists.infradead.org, linux-mips@vger.kernel.org,
-	linux-sunxi@lists.linux.dev, linux-media@vger.kernel.org,
-	openbmc@lists.ozlabs.org, linux-mediatek@lists.infradead.org,
-	kernel@collabora.com, linux-tegra@vger.kernel.org,
-	linux-mmc@vger.kernel.org, devicetree@vger.kernel.org,
-	linux-remoteproc@vger.kernel.org, linux-staging@lists.linux.dev,
-	linux-sound@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-	imx@lists.linux.dev, sound-open-firmware@alsa-project.org
-Subject: Re: [PATCH 00/42] of: reserved_mem: Introduce devres helpers and
- convert drivers
-Message-ID: <akzliqtjZVwNw594@e142607>
-References: <20260703193855.110619-1-mukesh.ojha@oss.qualcomm.com>
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=samsung.com (client-ip=210.118.77.11; helo=mailout1.w1.samsung.com; envelope-from=m.szyprowski@samsung.com; receiver=lists.ozlabs.org)
+Received: from mailout1.w1.samsung.com (mailout1.w1.samsung.com [210.118.77.11])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gvhJ34wYgz2xF8
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 07 Jul 2026 23:04:01 +1000 (AEST)
+Received: from eucas1p2.samsung.com (unknown [182.198.249.207])
+	by mailout1.w1.samsung.com (KnoxPortal) with ESMTP id 20260707130350euoutp01816b7aba68f35cc361a12757e4960321~AA55SXF0N2589025890euoutp01R;
+	Tue,  7 Jul 2026 13:03:50 +0000 (GMT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mailout1.w1.samsung.com 20260707130350euoutp01816b7aba68f35cc361a12757e4960321~AA55SXF0N2589025890euoutp01R
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
+	s=mail20170921; t=1783429431;
+	bh=1pXyGCmuZ2dd2pCX0ADJkgnLvZuWQnMbV/mJUc5jL2g=;
+	h=Date:Subject:To:Cc:From:In-Reply-To:References:From;
+	b=bIpgAugumnJ+vFbRlkBo8FzRtO/g5MYRDHE2BlHryQsTPFMC5fInDzKCOAgZ1npra
+	 WjvJ/rWNe/t/bQYYXvdlEuuxIM77d/dc9M35H15wIneXXtBw3nINopT0vdG4B55jJi
+	 2Rm+c3z4Adg15mIXdYkxRRDiDG8vmD3c75cZpyvY=
+Received: from eusmtip1.samsung.com (unknown [203.254.199.221]) by
+	eucas1p1.samsung.com (KnoxPortal) with ESMTPA id
+	20260707130350eucas1p1721c804c0be9f8bcca8c74b90c602459~AA55DsDSM2891728917eucas1p1P;
+	Tue,  7 Jul 2026 13:03:50 +0000 (GMT)
+Received: from [106.210.134.192] (unknown [106.210.134.192]) by
+	eusmtip1.samsung.com (KnoxPortal) with ESMTPA id
+	20260707130349eusmtip16fa04cbe7458b13574cd93f920780ed5~AA53jcBbZ1173511735eusmtip1K;
+	Tue,  7 Jul 2026 13:03:49 +0000 (GMT)
+Message-ID: <fc804746-4fb8-4ea9-997f-a4cae9ba8c14@samsung.com>
+Date: Tue, 7 Jul 2026 15:03:48 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -132,139 +62,105 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
+User-Agent: Betterbird (Windows)
+Subject: Re: [PATCH v7 00/22] dma-mapping: Track shared DMA state through
+ direct, pool and swiotlb paths
+To: "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, iommu@lists.linux.dev,
+	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+	linux-coco@lists.linux.dev
+Cc: Robin Murphy <robin.murphy@arm.com>, Will Deacon <will@kernel.org>, Marc
+	Zyngier <maz@kernel.org>, Steven Price <steven.price@arm.com>, Suzuki K
+	Poulose <Suzuki.Poulose@arm.com>, Catalin Marinas <catalin.marinas@arm.com>,
+	Jiri Pirko <jiri@resnulli.us>, Jason Gunthorpe <jgg@ziepe.ca>, Mostafa Saleh
+	<smostafa@google.com>, Petr Tesarik <ptesarik@suse.com>, Alexey
+	Kardashevskiy <aik@amd.com>, Dan Williams <dan.j.williams@intel.com>, Xu
+	Yilun <yilun.xu@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
+	linux-s390@vger.kernel.org, Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, Alexander Gordeev
+	<agordeev@linux.ibm.com>, Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
+	Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>,
+	Christian Borntraeger <borntraeger@linux.ibm.com>, Sven Schnelle
+	<svens@linux.ibm.com>, x86@kernel.org
+Content-Language: en-US
+From: Marek Szyprowski <m.szyprowski@samsung.com>
+In-Reply-To: <yq5av7argr65.fsf@kernel.org>
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20260703193855.110619-1-mukesh.ojha@oss.qualcomm.com>
+X-CMS-MailID: 20260707130350eucas1p1721c804c0be9f8bcca8c74b90c602459
+X-Msg-Generator: CA
+Content-Type: text/plain; charset="utf-8"
+X-RootMTR: 20260707080628eucas1p13fa8a57e60ef5dd3ec651e19e42af0a1
+X-EPHeader: CA
+X-CMS-RootMailID: 20260707080628eucas1p13fa8a57e60ef5dd3ec651e19e42af0a1
+References: <20260701054926.825925-1-aneesh.kumar@kernel.org>
+	<CGME20260707080628eucas1p13fa8a57e60ef5dd3ec651e19e42af0a1@eucas1p1.samsung.com>
+	<yq5av7argr65.fsf@kernel.org>
 
-On Sat, Jul 04, 2026 at 01:08:13AM +0530, Mukesh Ojha wrote:
-> Drivers using of_reserved_mem_device_init() and its variants must
-> manually call of_reserved_mem_device_release() in their remove and
-> error-unwind paths. This is repetitive boilerplate that is easy to
-> get wrong, and several drivers have open-coded the teardown
-> inconsistently or skipped it entirely, leading to dangling reserved
-> memory references.
-> 
-> This series introduces devres-managed wrappers —
-> devm_of_reserved_mem_device_init(), devm_of_reserved_mem_device_init_by_idx(),
-> and devm_of_reserved_mem_device_init_by_name() — that tie the reserved
-> memory region lifetime to the device, releasing it automatically on
-> unbind. The remaining 40 patches convert drivers across the drm, media,
-> ASoC, remoteproc, firmware, mmc, memory and misc subsystems to use these
-> helpers, yielding a net reduction of ~90 lines of boilerplate.
-> 
-> This series depends on  https://lore.kernel.org/lkml/20260703164457.4040457-1-mukesh.ojha@oss.qualcomm.com/
-> 
-> Konrad Dybcio (1):
->   of: reserved_mem: Introduce devres-managed initialization functions
-> 
-> Mukesh Ojha (41):
->   of: reserved_mem: Add devm_of_reserved_mem_device_init_by_name()
->   firmware: qcom: scm: Use devm_of_reserved_mem_device_init()
->   remoteproc: da8xx: Use devm_of_reserved_mem_device_init()
->   remoteproc: keystone: Use devm_of_reserved_mem_device_init()
->   media: synopsys: hdmirx: Use devm_of_reserved_mem_device_init()
->   remoteproc: omap: Use devm_of_reserved_mem_device_init()
->   drm: logicvc: Use devm_of_reserved_mem_device_init()
->   drm: hdlcd: Use devm_of_reserved_mem_device_init()
->   drm: pl111: Use devm_of_reserved_mem_device_init()
->   remoteproc: mtk_scp: Use devm_of_reserved_mem_device_init()
->   media: aspeed: Use devm_of_reserved_mem_device_init()
->   media: nuvoton: npcm-video: Use devm_of_reserved_mem_device_init()
->   memory: tegra210-emc: Use devm_of_reserved_mem_device_init_by_name()
->   drm: komeda: Use devm_of_reserved_mem_device_init()
->   drm: malidp: Use devm_of_reserved_mem_device_init()
+On 07.07.2026 10:06, Aneesh Kumar K.V wrote:
+> "Aneesh Kumar K.V (Arm)" <aneesh.kumar@kernel.org> writes:
+>
+>> This series tracks confidential-computing shared DMA state through the
+>> dma-direct, dma-pool, and swiotlb paths so that encrypted and decrypted
+>> DMA buffers are handled consistently.
+>>
+>> Today, the direct DMA path mostly relies on force_dma_unencrypted() for
+>> shared/decrypted buffer handling. This series consolidates the
+>> force_dma_unencrypted() checks in the top-level functions and ensures
+>> that the remaining DMA interfaces use DMA attributes to make the correct
+>> decisions.
+>>
+>> The series separates mapping and allocation state:
+>> - DMA_ATTR_CC_SHARED describes the DMA address attribute requested for a
+>>   mapping. It tells the DMA mapping path that the DMA address must target
+>>   shared/decrypted memory.
+>> - __DMA_ATTR_ALLOC_CC_SHARED is an internal DMA-mapping attribute used only
+>>   by allocation paths after the DMA core decides that the backing pages
+>>   must be allocated as shared/decrypted memory.
+>>
+>> The series:
+>> - moves swiotlb-backed allocations out of __dma_direct_alloc_pages(),
+>> - uses __DMA_ATTR_ALLOC_CC_SHARED through the dma-direct alloc/free paths
+>> - teaches the atomic DMA pools to track encrypted versus decrypted
+>>   state
+>> - tracks swiotlb pool encryption state and enforces strict pool
+>>   selection
+>> - centralizes encrypted/decrypted pgprot handling in dma_pgprot() using
+>>   DMA attributes
+>> - passes DMA attributes down to dma_capable() so capability checks can
+>>   validate whether the selected DMA address encoding matches
+>>   DMA_ATTR_CC_SHARED
+>> - makes dma_direct_map_phys() choose the DMA address encoding from
+>>   DMA_ATTR_CC_SHARED and fall back to swiotlb when a shared DMA request
+>>   cannot use the direct mapping, which lets arm64 and x86 CCA guests stop
+>>   relying on SWIOTLB_FORCE for DMA mappings
+>> - use the selected swiotlb pool state to derive the returned DMA
+>>   address
+>> - reports CC_ATTR_GUEST_MEM_ENCRYPT for arm64 Realms, powerpc secure
+>>   guests, and s390 protected virtualization guests.
+>>
+>> Dependency:
+>> This series depends on the pKVM changes posted at:
+>> https://lore.kernel.org/all/20260603110522.3331819-1-smostafa@google.com
+>>
+>> Please merge this series only after the pKVM changes above are merged.
+>> Otherwise pKVM will be broken.
+>>
+> A rebased tree on top of the dependent pKVM changes can be found at:
+> https://gitlab.arm.com/linux-arm/linux-cca/-/tree/scratch/pkvm/testing?ref_type=heads
+>
+> The patches had minor conflicts. I am not sure how we want to get this
+> merged.
+>
+> Should we ask the pKVM maintainers for a topic branch, and then I can
+> repost the updated series on top of that?
+I'm fine with merging on top of the topic branch and I assume that this
+patchset is mature enough to give it a try in linux-next, but first I
+would like to get a review or at least acks from others with good CC
+knowledge or experience.
 
-For the hdlcd, komeda and malidp drivers:
-
-Reviewed-by: Liviu Dudau <liviu.dudau@arm.com>
-
-Best regards,
-Liviu
-
->   drm: ingenic: Use devm_of_reserved_mem_device_init()
->   drm: kmb: Use devm_of_reserved_mem_device_init()
->   drm: sun4i: Use devm_of_reserved_mem_device_init()
->   drm: xlnx: zynqmp_dpsub: Use devm_of_reserved_mem_device_init()
->   media: arm: mali-c55: Use devm_of_reserved_mem_device_init()
->   media: mediatek: vpu: Use devm_of_reserved_mem_device_init()
->   mmc: sdhci-of-bst: Use devm_of_reserved_mem_device_init_by_idx()
->   remoteproc: ti_k3: Use devm_of_reserved_mem_device_init()
->   ASoC: mediatek: mt8192: Use devm_of_reserved_mem_device_init()
->   ASoC: mediatek: mt8196: Use devm_of_reserved_mem_device_init()
->   ASoC: mediatek: mt8183: Use devm_of_reserved_mem_device_init()
->   ASoC: mediatek: mt8189: Use devm_of_reserved_mem_device_init()
->   ASoC: SOF: imx: Use devm_of_reserved_mem_device_init_by_name()
->   staging: media: cedrus: Use devm_of_reserved_mem_device_init()
->   ASoC: cix-ipbloq: Use devm_of_reserved_mem_device_init()
->   drm: aspeed: Use devm_of_reserved_mem_device_init()
->   drm: arcpgu: Use devm_of_reserved_mem_device_init()
->   ASoC: mediatek: mt8173: Use devm_of_reserved_mem_device_init()
->   ASoC: mediatek: mt8186: Use devm_of_reserved_mem_device_init()
->   ASoC: mediatek: mt8188: Use devm_of_reserved_mem_device_init()
->   ASoC: mediatek: mt8195: Use devm_of_reserved_mem_device_init()
->   ASoC: SOF: mediatek: mt8186: Use devm_of_reserved_mem_device_init()
->   ASoC: SOF: mediatek: mt8195: Use devm_of_reserved_mem_device_init()
->   misc: fastrpc: Use devm_of_reserved_mem_device_init()
->   ASoC: fsl: imx-rpmsg: Use devm_of_reserved_mem_device_init_by_idx()
->   ASoC: sprd: Use devm_of_reserved_mem_device_init()
-> 
->  drivers/firmware/qcom/qcom_scm.c              | 22 +++------
->  .../gpu/drm/arm/display/komeda/komeda_dev.c   |  4 +-
->  drivers/gpu/drm/arm/hdlcd_drv.c               |  6 +--
->  drivers/gpu/drm/arm/malidp_drv.c              |  4 +-
->  drivers/gpu/drm/aspeed/aspeed_gfx_drv.c       |  2 +-
->  drivers/gpu/drm/ingenic/ingenic-drm-drv.c     | 13 +-----
->  drivers/gpu/drm/kmb/kmb_drv.c                 | 12 +----
->  drivers/gpu/drm/logicvc/logicvc_drm.c         | 21 ++++-----
->  drivers/gpu/drm/pl111/pl111_drv.c             |  4 +-
->  drivers/gpu/drm/sun4i/sun4i_drv.c             |  4 +-
->  drivers/gpu/drm/tiny/arcpgu.c                 |  2 +-
->  drivers/gpu/drm/xlnx/zynqmp_dpsub.c           |  4 +-
->  .../platform/arm/mali-c55/mali-c55-core.c     | 12 ++---
->  drivers/media/platform/aspeed/aspeed-video.c  | 12 ++---
->  drivers/media/platform/mediatek/vpu/mtk_vpu.c |  3 +-
->  drivers/media/platform/nuvoton/npcm-video.c   |  9 +---
->  .../platform/synopsys/hdmirx/snps_hdmirx.c    | 16 +------
->  drivers/memory/tegra/tegra210-emc-core.c      | 21 ++++-----
->  drivers/misc/fastrpc.c                        |  2 +-
->  drivers/mmc/host/sdhci-of-bst.c               |  7 +--
->  drivers/of/of_reserved_mem.c                  | 41 +++++++++++++++++
->  drivers/remoteproc/da8xx_remoteproc.c         | 10 +---
->  drivers/remoteproc/keystone_remoteproc.c      | 16 +------
->  drivers/remoteproc/mtk_scp.c                  |  3 +-
->  drivers/remoteproc/omap_remoteproc.c          | 13 +-----
->  drivers/remoteproc/ti_k3_common.c             | 13 +-----
->  drivers/remoteproc/ti_k3_common.h             |  1 -
->  .../staging/media/sunxi/cedrus/cedrus_hw.c    |  6 +--
->  include/linux/of_reserved_mem.h               | 46 +++++++++++++++++++
->  sound/hda/controllers/cix-ipbloq.c            |  2 +-
->  sound/soc/fsl/imx-rpmsg.c                     |  2 +-
->  sound/soc/mediatek/mt8173/mt8173-afe-pcm.c    |  2 +-
->  sound/soc/mediatek/mt8183/mt8183-afe-pcm.c    | 13 +-----
->  sound/soc/mediatek/mt8186/mt8186-afe-pcm.c    |  2 +-
->  sound/soc/mediatek/mt8188/mt8188-afe-pcm.c    |  2 +-
->  sound/soc/mediatek/mt8189/mt8189-afe-pcm.c    | 16 +------
->  sound/soc/mediatek/mt8192/mt8192-afe-pcm.c    | 11 +----
->  sound/soc/mediatek/mt8195/mt8195-afe-pcm.c    |  2 +-
->  sound/soc/mediatek/mt8196/mt8196-afe-pcm.c    | 14 +-----
->  sound/soc/sof/imx/imx-common.c                |  9 ++--
->  sound/soc/sof/mediatek/mt8186/mt8186.c        |  2 +-
->  sound/soc/sof/mediatek/mt8195/mt8195.c        |  2 +-
->  sound/soc/sprd/sprd-pcm-dma.c                 |  3 +-
->  43 files changed, 162 insertions(+), 249 deletions(-)
-> 
-> -- 
-> 2.53.0
-> 
-
+Best regards
 -- 
-====================
-| I would like to |
-| fix the world,  |
-| but they're not |
-| giving me the   |
- \ source code!  /
-  ---------------
-    ¯\_(ツ)_/¯
+Marek Szyprowski, PhD
+Samsung R&D Institute Poland
+
 
