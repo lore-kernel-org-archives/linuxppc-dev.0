@@ -1,51 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-23738-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23739-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 86CD5C43458
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jul 2026 19:07:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7BE3FC43458
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jul 2026 19:07:15 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gvrLP5nSHz3c4D;
-	Wed, 08 Jul 2026 05:06:37 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783451197;
-	cv=none; b=D0uN3fXFnLiliuuH2D0Tv3PRS0hjvKGsM9RW9XC7OZuzhRrHbX6fU1dcYp6yIMbAfDRpOnRTaTwGwjBAxD72GpASB58DJ1pPro32sLWd46f3VgH7PtqPs7DuVB26NjlCI5if/ceNZDf/zqXJNLg/AipodrOl+58h3CHgNyCyklZnJhw7S3FHlwYMMZsytBlj9do9z3CxBePift76gFUadujrwOyJI6CrzjeLFaMnnt43OgAeO1vXNCADH2+Ump7cmjez3ZK6iezhZdoURSP/iDTE1f3U8Y1+y/eMsVhFWPLeath47npQ0OtB4FuK/5zTQQJWVAPmmVt3dTwnSbiztg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gvrLT6mrCz3brv;
+	Wed, 08 Jul 2026 05:06:41 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783451201;
+	cv=none; b=k2H8GFAIKzF65uEiN02WApGiNSCilQHm39uiM62xTfBtm9ln/A3c0M3xWmuCTA1rNJaKUYsVIsLMoR1x77JH9GTd2l/fWUSST01uX1NvAufg3xQ/KTCHN4a6VHY8Gyb9pVudiVjqD9oPbctBtNaYkUhYtFEHOW0fJD6K1E2BT4aCmjJfpuC1tjW33ocvXy+oj9NdQ1YzdKFAO+B/4ANoHVDJa3bGp8BLxdHMaDB2MzvNXPrlH681xQhKFMI2qO/1fW1NASbC52gJB5zN7XpOj7dyJlwubjWRc1M05NblXcxiLVWYVXNerlD/HowIN8sH2Pt2/G18xnP1HJMBNb80Sw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1783451197; c=relaxed/relaxed;
-	bh=Ko42Ry29jFPoMyPQLdlxYhg8S/68hEmUYQPkE8hHtRo=;
+	t=1783451201; c=relaxed/relaxed;
+	bh=bOhoOM4hOcQqUzsvXhQz1H8YtW+B68Wkj0kvWsv9ysw=;
 	h=Date:Message-ID:From:To:Cc:Subject:References:MIME-Version:
-	 Content-Type; b=De116JhlQafl1NHmBLqQwIGkbHRPkxm/VDakL9se5+tVYvEgx+VOI+OpUHBuSkgZXykhdBZhxt9niGPO4a+TfaR6Pq16F0dVE9H1mG71XT2gBPqxq1yzvCt+GytU1AvKrR16EV5HR1kX/RSktOip5NtG8fBNuwrd7KkB/wBwYE4AzorDNDpq0PSF6LJIsqSpsoqGxoJ295bhnSBmUvAMvnFa+DAvpSOB+fojkEQ6O7SxnYw6tTyZBw9y4o2jwho8jDcgbiB05TabfDyIeHu2TlcJSde1URG8XqSTCKrlK2VxyV93rzdsdEVFTlIqpuFPCBiS98uJZTFknN2M9ea24w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=d68e/zkh; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=tglx@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 Content-Type; b=TKThgUk0ZhZBQWkew07ubSY4qJyjKTYPLcO0BAdbNY8/9ITTkzuUqzIAHKMdIgL+MhUFOQivcA6RXBwi+E3ysIlwtF/oTfAZ9utgl8lHFx7oEftesYfLipjkMO3E/xiGFDSLKzG3KZ1bEUOY+NtNPCGsiH2xBuF3MD4fJvac8xTKPKdX9AZmMBG9DRiNa23r3aR6oRN9xrH9ZJcko3KbS67kgm78JtCHhM9FHAZMOpMyCbi3Pohv58nBaDCKPTV5HT1uSUxI3w6Dtxu2tqA8OZhQYKa7jZfSinPmLFs9J2SkxuBvuylpEajHvxA/8Fs8saibeq/rk56GRNOWhoXK5g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=h91mvxoS; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=tglx@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=d68e/zkh;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=h91mvxoS;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=tglx@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=tglx@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gvrLP04f9z3c47
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Jul 2026 05:06:36 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gvrLT0VmZz3brt
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Jul 2026 05:06:41 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id E30E0601EC;
-	Tue,  7 Jul 2026 19:06:34 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id C91BA1F000E9;
-	Tue,  7 Jul 2026 19:06:33 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id D33BD43592;
+	Tue,  7 Jul 2026 19:06:38 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E87121F00A3A;
+	Tue,  7 Jul 2026 19:06:37 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1783451194;
-	bh=Ko42Ry29jFPoMyPQLdlxYhg8S/68hEmUYQPkE8hHtRo=;
+	s=k20260515; t=1783451198;
+	bh=bOhoOM4hOcQqUzsvXhQz1H8YtW+B68Wkj0kvWsv9ysw=;
 	h=Date:From:To:Cc:Subject:References;
-	b=d68e/zkh5oU9ziZmyD8/j0zm+dms5mzI3QpxXDgS3beo+n+Xnv/2HSq+wH632V3sd
-	 8uTzG42LNfaK05lc2KYYdDujQ1J4Cgu9HUzFOHwcGxBUM8uoXWnE/1r5BSASo70M2/
-	 BeZM/CiOfzvrrk1xZNqIUAM6oN02Mkik+/OqqvpTFPpbyHqBCzcd+u7xOyvYG2DB/V
-	 bFMusVe8fZm0EviIlm2Cdc6bEcEu9PSgqO6pG/h8ekgyn42NUtvGGWIO67Mdyq29CY
-	 XsTesNZZfW6pwplIhbQXruHpmuALvlix8sPBSkJLCO72NF5LTVJjzfgWsBEq/Yvuwu
-	 cgcjZWz5+d1VQ==
-Date: Tue, 07 Jul 2026 21:06:32 +0200
-Message-ID: <20260707190254.132654198@kernel.org>
+	b=h91mvxoSmiGeQM8FkyaGYFZNxd9/IUcToDeSMIPvZRCL7a8UMwB0b0QBesp5xIbLU
+	 i7PsT94Sw2onA3+UmpAOBRZfRcPLnTsutjo1QPB6poAvdbvPFcNvVkGP1hB6jDLYDb
+	 RKWnZ0yte8HArLwcv9oJe3tjBUUeDOAyh5mMWkxYWu67e92T5hj3A/OUFslD9ZYdOb
+	 CoRjmiJVDNi/JotogxyAKQWnRnlRYa4L0e21jTcDihICBULLgdAZvlp5GRhmagJ2DT
+	 +Aa9ucQxYNr6w3TZVbEH8jmFMex+6xgUViSmWosj6uNAuMiuHhylsKUcB2NMwZIOYT
+	 B1ISbmvWG+Pgw==
+Date: Tue, 07 Jul 2026 21:06:36 +0200
+Message-ID: <20260707190254.181086755@kernel.org>
 User-Agent: quilt/0.69
 From: Thomas Gleixner <tglx@kernel.org>
 To: LKML <linux-kernel@vger.kernel.org>
@@ -100,7 +100,7 @@ Cc: Peter Zijlstra <peterz@infradead.org>,
  =?UTF-8?q?Michal=20Such=C3=A1nek?= <msuchanek@suse.de>,
  Jonathan Corbet <corbet@lwn.net>,
  linux-doc@vger.kernel.org
-Subject: [patch 09/18] entry: Remove syscall_enter_from_user_mode()
+Subject: [patch 10/18] entry: Use syscall number instead of rereading it
 References: <20260707181957.433213175@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -117,139 +117,46 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 
-All architecture use either:
-
-    nr = enter_from_user_mode_randomize_stack(regs, nr);
-
-or
-
-    enter_from_user_mode_randomize_stack(regs);
-    nr = syscall_enter_from_user_mode_work(regs, nr);
-
-Remove the now unused function.
+rseq_syscall_enter_work() is invoked before the syscall number can be
+modified. So there is no point in rereading it from pt_regs.
 
 Signed-off-by: Thomas Gleixner <tglx@kernel.org>
 ---
- Documentation/core-api/entry.rst |   17 +++++++++-------
- include/linux/entry-common.h     |   40 +++------------------------------------
- include/linux/irq-entry-common.h |    6 ++---
- 3 files changed, 17 insertions(+), 46 deletions(-)
+ include/linux/entry-common.h |    9 +++++----
+ 1 file changed, 5 insertions(+), 4 deletions(-)
 
---- a/Documentation/core-api/entry.rst
-+++ b/Documentation/core-api/entry.rst
-@@ -68,7 +68,7 @@ low-level C code must not be instrumente
-   noinstr void syscall(struct pt_regs *regs, int nr)
-   {
- 	arch_syscall_enter(regs);
--	nr = syscall_enter_from_user_mode(regs, nr);
-+	nr = syscall_enter_from_user_mode_randomize_stack(regs, nr);
- 
- 	instrumentation_begin();
- 	if (!invoke_syscall(regs, nr) && nr != -1)
-@@ -78,12 +78,14 @@ low-level C code must not be instrumente
- 	syscall_exit_to_user_mode(regs);
-   }
- 
--syscall_enter_from_user_mode() first invokes enter_from_user_mode() which
--establishes state in the following order:
-+syscall_enter_from_user_mode_randomize_stack() first invokes
-+enter_from_user_mode_randomize_stack() which establishes state in the
-+following order:
- 
-   * Lockdep
-   * RCU / Context tracking
-   * Tracing
-+  * Apply stack randomization
- 
- and then invokes the various entry work functions like ptrace, seccomp, audit,
- syscall tracing, etc. After all that is done, the instrumentable invoke_syscall
-@@ -99,10 +101,11 @@ that it invokes exit_to_user_mode() whic
-   * RCU / Context tracking
-   * Lockdep
- 
--syscall_enter_from_user_mode() and syscall_exit_to_user_mode() are also
--available as fine grained subfunctions in cases where the architecture code
--has to do extra work between the various steps. In such cases it has to
--ensure that enter_from_user_mode() is called first on entry and
-+syscall_enter_from_user_mode_randomize_stack() and
-+syscall_exit_to_user_mode() are also available as fine grained subfunctions
-+in cases where the architecture code has to do extra work between the
-+various steps. In such cases it has to ensure that
-+enter_from_user_mode_randomize_stack() is called first on entry and
- exit_to_user_mode() is called last on exit.
- 
- Do not nest syscalls. Nested syscalls will cause RCU and/or context tracking
 --- a/include/linux/entry-common.h
 +++ b/include/linux/entry-common.h
-@@ -19,7 +19,7 @@
- #endif
+@@ -70,9 +70,10 @@ static inline void syscall_enter_audit(s
+ 	}
+ }
  
- /*
-- * SYSCALL_WORK flags handled in syscall_enter_from_user_mode()
-+ * SYSCALL_WORK flags handled in syscall_enter_from_user_mode_work()
-  */
- #define SYSCALL_WORK_ENTER	(SYSCALL_WORK_SECCOMP |			\
- 				 SYSCALL_WORK_SYSCALL_TRACEPOINT |	\
-@@ -205,42 +205,10 @@ do {									\
- 	_ret;								\
- })
- 
--/**
-- * syscall_enter_from_user_mode - Establish state and check and handle work
-- *				  before invoking a syscall
-- * @regs:	Pointer to currents pt_regs
-- * @syscall:	The syscall number
-- *
-- * Invoked from architecture specific syscall entry code with interrupts
-- * disabled. The calling code has to be non-instrumentable. When the
-- * function returns all state is correct, interrupts are enabled and the
-- * subsequent functions can be instrumented.
-- *
-- * This is the combination of enter_from_user_mode() and
-- * syscall_enter_from_user_mode_work() to be used when there is no
-- * architecture specific work to be done between the two.
-- *
-- * Returns: The original or a modified syscall number. See
-- * syscall_enter_from_user_mode_work() for further explanation.
-- */
--static __always_inline long syscall_enter_from_user_mode(struct pt_regs *regs, long syscall)
--{
--	long ret;
--
--	enter_from_user_mode(regs);
--
--	instrumentation_begin();
--	local_irq_enable();
--	ret = syscall_enter_from_user_mode_work(regs, syscall);
--	instrumentation_end();
--
--	return ret;
--}
--
- /*
-- * If SYSCALL_EMU is set, then the only reason to report is when
-- * SINGLESTEP is set (i.e. PTRACE_SYSEMU_SINGLESTEP).  This syscall
-- * instruction has been already reported in syscall_enter_from_user_mode().
-+ * If SYSCALL_EMU is set, then the only reason to report is when SINGLESTEP is
-+ * set (i.e. PTRACE_SYSEMU_SINGLESTEP).  This syscall instruction has been
-+ * already reported in syscall_enter_from_user_mode_work().
-  */
- static __always_inline bool report_single_step(unsigned long work)
+-static __always_inline long syscall_trace_enter(struct pt_regs *regs, unsigned long work)
++static __always_inline long syscall_trace_enter(struct pt_regs *regs, unsigned long work,
++						long syscall)
  {
---- a/include/linux/irq-entry-common.h
-+++ b/include/linux/irq-entry-common.h
-@@ -49,9 +49,9 @@
-  * Defaults to an empty implementation. Can be replaced by architecture
-  * specific code.
-  *
-- * Invoked from syscall_enter_from_user_mode() in the non-instrumentable
-- * section. Use __always_inline so the compiler cannot push it out of line
-- * and make it instrumentable.
-+ * Invoked from enter_from_user_mode_syscall_and_randomize_stack() in the
-+ * non-instrumentable section. Use __always_inline so the compiler cannot push
-+ * it out of line and make it instrumentable.
-  */
- static __always_inline void arch_enter_from_user_mode(struct pt_regs *regs);
+-	long syscall, ret = 0;
++	long ret = 0;
  
+ 	/*
+ 	 * Handle Syscall User Dispatch.  This must comes first, since
+@@ -90,7 +91,7 @@ static __always_inline long syscall_trac
+ 	 * through hrtimer_interrupt().
+ 	 */
+ 	if (work & SYSCALL_WORK_SYSCALL_RSEQ_SLICE)
+-		rseq_syscall_enter_work(syscall_get_nr(current, regs));
++		rseq_syscall_enter_work(syscall);
+ 
+ 	/* Handle ptrace */
+ 	if (work & (SYSCALL_WORK_SYSCALL_TRACE | SYSCALL_WORK_SYSCALL_EMU)) {
+@@ -145,7 +146,7 @@ static __always_inline long syscall_ente
+ 	unsigned long work = READ_ONCE(current_thread_info()->syscall_work);
+ 
+ 	if (work & SYSCALL_WORK_ENTER)
+-		syscall = syscall_trace_enter(regs, work);
++		syscall = syscall_trace_enter(regs, work, syscall);
+ 
+ 	return syscall;
+ }
 
 
