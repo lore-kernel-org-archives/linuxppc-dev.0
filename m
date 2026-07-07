@@ -1,117 +1,78 @@
-Return-Path: <linuxppc-dev+bounces-23718-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23719-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 949EFC43458
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jul 2026 16:06:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9C852C43602
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jul 2026 16:09:09 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gvmL869XQz2xnp;
-	Wed, 08 Jul 2026 02:06:08 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=198.175.65.21
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783440368;
-	cv=none; b=lXVKabseZ1hwEFY1ztxX6dNA/np5GO35zk81TFj8Nhh3w7D35NBr2Lfrgf5mVz1jTHPwAQ+OdReyFL46WFNVEBm1O0LdbPeDTq9phz/vMkAVbRQYJOS6tcw9150h9yO6eB6w4UpWkZqCcUFBJIQFbf3FFq690GRyyn4D+/Wxp9DdLkjjb9m8swNi7lpFAKtAoNYhVGBv457ReWEoR6xQ4jwi8P/CRhQTDuK+V22Vkj2FNQ1TGCMHo69nwKmaZ44FIj0fmEh9Jzc7lYpKB0vCG66DTzdOaCETsu9ygNtbRrt9m7tnDCBBGMOJoOdcqWM2J4RNRqlqE2zDXVCnvOdOlg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gvmPc2RW4z2xnp;
+	Wed, 08 Jul 2026 02:09:08 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:a60:0:28:0:1:25:1"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783440548;
+	cv=none; b=GZrIg3AtyEx35zdUHRyVIw15//miyr0siduF7rRHvdbyPdF2flK4FycK1YuQfYTvRPVfU+koV3FYmkus9qzUHurX9l/A2cA5eEoxj2pJSSiKgvBSKvq6NJsCPUog+1muJIKmVAqMhTpREymq2PMoS2/4yOukbIrJKU7MoyRIYoY2QrB4owagKtu4CYe6zy7qhq6WZZfDBhuhQFKNibnLllZaREzgArIqav4QvBDDFVu4L8djFJzo0ziP+bXsIxd8NqE4Eu0M101GQrjcT8/+s/ZWSeY3pys0IwE/QWbL/QJpTvITxooiezSAdckhDlY4MjfGQZbyip9d+E5D/MeMOw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1783440368; c=relaxed/relaxed;
-	bh=aGlDCXQ5MGjg6+AxGfBTr92LJUIYDoCCvNYiR2Nz9DA=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=b35OZlHboMIFlJn+a6N2gUoZ+Sh5KmWAUg8oGAfOsvkfpRC1SkBzK5XbtHyOgznrdVckdyipTGEF6L0jMKKXS7MD01sG4IhnuGRk0qeZF6jD47tHx0q1cNbPDbNGChsmRCN2EmEW+YG3A7OhLCcXuvn869S948OATtBo+dKIJu9kIjcwBlhzBJFMmT1rwmLBo2ZZ/fE7Zc8SCe97PAQTxIG4Ze+S+2soysM3+UlCa/unt/GU/igkbGNNq7iCDyXMx+n6LIRd5cilKEpuHnCV0WkDvedYmkJOTwf3b6cmoVojbJAmA0rw7OUAMSDWIMhUhBFm93oE5k5SuIiRWn6/FQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=Xa26qhgY; dkim-atps=neutral; spf=pass (client-ip=198.175.65.21; helo=mgamail.intel.com; envelope-from=andriy.shevchenko@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=Xa26qhgY;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.intel.com (client-ip=198.175.65.21; helo=mgamail.intel.com; envelope-from=andriy.shevchenko@linux.intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.21])
+	t=1783440548; c=relaxed/relaxed;
+	bh=U56NC3mNT7lbjK7Ig0U8DtYWnF2cWtCDdN0TNK2mjnE=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
+	 MIME-Version:Content-Type; b=oGEuLuT7VO4tilzO6tyfi6BJLy8t2vheIAcr/yHaOjVbvnSJ4n5592+OhBYv6HcqZDoDNyLsWPS2Dr1D4qiS5u3iqpxyuHFg3exwdZcAwSFr8EFDFbKooTAEGAoO2sGknxYreBtAGHHbRsI73dknVax4LrLST9UvQWYxPPKoiLfzJ0vd0n45DpcHmLsuCvrpgHrJSAHoQ9QqggS6Rn8CyMUXI7ZfVKzaApW95X/6rcv3zs65RDb7dSNW7BOX3VqLf3xU1mFOHcg9kwknds3F4xGfu3JHCbkGH6ahgENLv0AkmoI/I7XUwG8plyQ1aQ0SJxV9b+qkqnGf8sdUMhxMeQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass (client-ip=2001:a60:0:28:0:1:25:1; helo=mail-out.m-online.net; envelope-from=whitebox@nefkom.net; receiver=lists.ozlabs.org) smtp.mailfrom=nefkom.net
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nefkom.net (client-ip=2001:a60:0:28:0:1:25:1; helo=mail-out.m-online.net; envelope-from=whitebox@nefkom.net; receiver=lists.ozlabs.org)
+Received: from mail-out.m-online.net (mail-out.m-online.net [IPv6:2001:a60:0:28:0:1:25:1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gvmL46Xxcz2xKh
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Jul 2026 02:06:02 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1783440365; x=1814976365;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=WGu1H7KZ2YHXBPQTafzG2nNs51jULw2SwYV9eRAWAxk=;
-  b=Xa26qhgY2x3dlOGH2BxcJnaUM1M26XGKA/ipCPvDb8WQCXJL71xVh88A
-   NBcybESdVbSHUKD77bzax5pDqsm/G+K/EYIjeJ3IaNPXrGDZBB+Yqciw/
-   XaCRNG9O/PcTLjSFFM/Yi8Kxva2HX9D1c7tw0Nr1UG3dXxSSEiHLyHzNN
-   Tm7PJILObUp5iktj/lcki5i3/5UeRFGv+FUwbIpTpuRhHVG7NWC6YB1f3
-   dVOwAPWfQ//8nAI0Uol57Fnr0Sxb8gZ7Eubg95CpoYqBTuCZwKCbr6X53
-   yVTDkk7dGidRVHYyruT84B0I9CxvotqRqWwKisPw1uAUsmnOGHT9UC3/f
-   w==;
-X-CSE-ConnectionGUID: mHWjQVLzTdqqkBo3UCnEwQ==
-X-CSE-MsgGUID: nTBvZYKIS6qHEJ35oMkpqA==
-X-IronPort-AV: E=McAfee;i="6800,10657,11840"; a="83952089"
-X-IronPort-AV: E=Sophos;i="6.25,153,1779174000"; 
-   d="scan'208";a="83952089"
-Received: from orviesa007.jf.intel.com ([10.64.159.147])
-  by orvoesa113.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 07 Jul 2026 09:05:47 -0700
-X-CSE-ConnectionGUID: tBOk0B/0SG6kjtraoD2mfg==
-X-CSE-MsgGUID: bDNaWP1RQpiCsfz4/eJ9hQ==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.25,153,1779174000"; 
-   d="scan'208";a="254117548"
-Received: from slindbla-desk.ger.corp.intel.com (HELO localhost) ([10.245.245.36])
-  by orviesa007-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 07 Jul 2026 09:05:33 -0700
-Date: Tue, 7 Jul 2026 19:05:29 +0300
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-To: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
-Cc: Lee Jones <lee@kernel.org>,
-	Mark Brown <broonie@opensource.wolfsonmicro.com>,
-	Thierry Reding <thierry.reding@avionic-design.de>,
-	Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>,
-	Andrew Lunn <andrew+netdev@lunn.ch>,
-	"David S. Miller" <davem@davemloft.net>,
-	Eric Dumazet <edumazet@google.com>,
-	Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
-	Srinivas Kandagatla <srini@kernel.org>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Vinod Koul <vkoul@kernel.org>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Danilo Krummrich <dakr@kernel.org>, Rob Herring <robh@kernel.org>,
-	Saravana Kannan <saravanak@kernel.org>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	Andi Shyti <andi.shyti@kernel.org>, Joerg Roedel <joro@8bytes.org>,
-	Will Deacon <will@kernel.org>, Robin Murphy <robin.murphy@arm.com>,
-	Doug Berger <opendmb@gmail.com>,
-	Florian Fainelli <florian.fainelli@broadcom.com>,
-	Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>,
-	Ulf Hansson <ulfh@kernel.org>, Frank Li <Frank.Li@nxp.com>,
-	Sascha Hauer <s.hauer@pengutronix.de>,
-	Pengutronix Kernel Team <kernel@pengutronix.de>,
-	Fabio Estevam <festevam@gmail.com>,
-	Matthew Brost <matthew.brost@intel.com>,
-	Thomas =?iso-8859-1?Q?Hellstr=F6m?= <thomas.hellstrom@linux.intel.com>,
-	Rodrigo Vivi <rodrigo.vivi@intel.com>,
-	David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
-	Peter Chen <peter.chen@kernel.org>,
-	Paul Cercueil <paul@crapouillou.net>, Bin Liu <b-liu@ti.com>,
-	Philipp Zabel <p.zabel@pengutronix.de>,
-	Maximilian Luz <luzmaximilian@gmail.com>,
-	Hans de Goede <hansg@kernel.org>,
-	Ilpo =?iso-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@linux.intel.com>,
-	Krzysztof Kozlowski <krzk@kernel.org>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>, brgl@kernel.org,
-	linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-	linux-arm-msm@vger.kernel.org, linux-sound@vger.kernel.org,
-	driver-core@lists.linux.dev, devicetree@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org, linux-i2c@vger.kernel.org,
-	iommu@lists.linux.dev, linux-pm@vger.kernel.org,
-	imx@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
-	intel-xe@lists.freedesktop.org, dri-devel@lists.freedesktop.org,
-	linux-usb@vger.kernel.org, linux-mips@vger.kernel.org,
-	platform-driver-x86@vger.kernel.org, mfd@lists.linux.dev,
-	Manuel Ebner <manuelebner@mailbox.org>
-Subject: Re: [PATCH v3 05/20] driver core: update kerneldoc for
- platform_device_alloc()
-Message-ID: <ak0jyUbNonSRiP_g@ashevche-desk.local>
-References: <20260706-pdev-fwnode-ref-v3-0-1ff028e33779@oss.qualcomm.com>
- <20260706-pdev-fwnode-ref-v3-5-1ff028e33779@oss.qualcomm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gvmPb0nnkz2xKh
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Jul 2026 02:09:05 +1000 (AEST)
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+	by mail-out.m-online.net (Postfix) with ESMTP id 4gvmPS2rXJz1sGfL;
+	Tue,  7 Jul 2026 18:09:00 +0200 (CEST)
+Received: from frontend04.mail.m-online.net (unknown [192.168.6.183])
+	by mail-out.m-online.net (Postfix) with ESMTP id 4gvmPC6BSXz1sGXG;
+	Tue,  7 Jul 2026 18:08:47 +0200 (CEST)
+Received: from localhost (dynscan4.mnet-online.de [192.168.6.88])
+	by mail.m-online.net (Postfix) with ESMTP id 4gvmPC2J8Dz1qqlR;
+	Tue,  7 Jul 2026 18:08:47 +0200 (CEST)
+X-Virus-Scanned: amavis at mnet-online.de
+Received: from mail.mnet-online.de ([192.168.6.182])
+ by localhost (dynscan4.mail.m-online.net [192.168.6.88]) (amavis, port 10024)
+ with ESMTP id jsNNAtYIPpak; Tue,  7 Jul 2026 18:08:43 +0200 (CEST)
+X-Auth-Info: j+uDViKe2COeGWpviY372vOshaFOepNoNIfiRp/Dn0r/1U7FrM6TTd+bOiD5m4vw
+Received: from igel.home (aftr-62-216-202-200.dynamic.mnet-online.de [62.216.202.200])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mail.mnet-online.de (Postfix) with ESMTPSA;
+	Tue,  7 Jul 2026 18:08:43 +0200 (CEST)
+Received: by igel.home (Postfix, from userid 1000)
+	id D87002C0AF2; Tue, 07 Jul 2026 18:08:42 +0200 (CEST)
+From: Andreas Schwab <schwab@linux-m68k.org>
+To: Shrikanth Hegde <sshegde@linux.ibm.com>
+Cc: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,  "Mukesh Kumar
+ Chaurasiya (IBM)" <mkchauras@gmail.com>,  maddy@linux.ibm.com,
+  mpe@ellerman.id.au,  npiggin@gmail.com,  ryabinin.a.a@gmail.com,
+  glider@google.com,  andreyknvl@gmail.com,  dvyukov@google.com,
+  vincenzo.frascino@arm.com,  oleg@redhat.com,  kees@kernel.org,
+  luto@amacapital.net,  wad@chromium.org,  mchauras@linux.ibm.com,
+  thuth@redhat.com,  ruanjinjie@huawei.com,  akpm@linux-foundation.org,
+  macro@orcam.me.uk,  ldv@strace.io,  charlie@rivosinc.com,  deller@gmx.de,
+  kevin.brodsky@arm.com,  ritesh.list@gmail.com,  yeoreum.yun@arm.com,
+  agordeev@linux.ibm.com,  segher@kernel.crashing.org,
+  mark.rutland@arm.com,  ryan.roberts@arm.com,  pmladek@suse.com,
+  feng.tang@linux.alibaba.com,  peterz@infradead.org,
+  kan.liang@linux.intel.com,  linuxppc-dev@lists.ozlabs.org,
+  linux-kernel@vger.kernel.org,  kasan-dev@googlegroups.com
+Subject: Re: [PATCH v5 0/8] Generic IRQ entry/exit support for powerpc
+In-Reply-To: <18acdffe-a06b-4bfa-bbf6-e38274700b04@linux.ibm.com>
+References: <20260427122742.210074-1-mkchauras@gmail.com>
+	<87wlvazrdy.fsf@igel.home>
+	<1693b268-ee26-4764-871a-5a067ae96080@kernel.org>
+	<877bn9vfd4.fsf@igel.home>
+	<18acdffe-a06b-4bfa-bbf6-e38274700b04@linux.ibm.com>
+Date: Tue, 07 Jul 2026 18:08:42 +0200
+Message-ID: <87a4s2u6id.fsf@igel.home>
+User-Agent: Gnus/5.13 (Gnus v5.13)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -125,27 +86,17 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260706-pdev-fwnode-ref-v3-5-1ff028e33779@oss.qualcomm.com>
-Organization: Intel Finland Oy - BIC 0357606-4 - c/o Alberga Business Park, 6
- krs, Bertel Jungin Aukio 5, 02600 Espoo
+Content-Type: text/plain
 
-On Mon, Jul 06, 2026 at 02:44:17PM +0200, Bartosz Golaszewski wrote:
-> Users of platform_device_alloc() + platform_device_add() must not modify
-> certain fields of the dynamically created platform device object. Update
-> the kernel doc to say which fields are affected and which functions to
-> use.
+On Jul 07 2026, Shrikanth Hegde wrote:
 
-Consider using __private checker attribute for them as well. It will make
-sparse scream.
+> Can you try "powersave=off" commandline to disable idlestate and
+> see if it boots?
 
-> Suggested-by: Manuel Ebner <manuelebner@mailbox.org>
-> Signed-off-by: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
+Yes, that allows it to boot normally.
 
 -- 
-With Best Regards,
-Andy Shevchenko
-
-
+Andreas Schwab, schwab@linux-m68k.org
+GPG Key fingerprint = 7578 EB47 D4E5 4D69 2510  2552 DF73 E780 A9DA AEC1
+"And now for something completely different."
 
