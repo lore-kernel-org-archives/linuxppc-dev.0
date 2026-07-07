@@ -1,41 +1,40 @@
-Return-Path: <linuxppc-dev+bounces-23709-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23710-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 441A6C43458
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jul 2026 14:54:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B25B5C43602
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jul 2026 14:54:16 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gvkkt6XQmz2xWY;
-	Wed, 08 Jul 2026 00:53:58 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gvklC1x7lz2xWY;
+	Wed, 08 Jul 2026 00:54:15 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=185.233.101.22
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783433497;
-	cv=none; b=bxXoNAqIrmJS5lG9oOj2LpAWt0PHozO12Y6Nb4DVR88XstCCUiHDECOSszo/jS4WqGGiU4WYj9Wfrdio9hk7KyKJfsOtmEbmRsHlL5+zA4wyiMqZAqf4YtJuBXpy7sM+SHNgB29yKhKCQhhIdLUDY6iqRogslHzCthFZivAguUjdFzGerN76kpZmrwaRDZzfyKrXgzM5iCGDkO7GLRiHeC7iV7tW0eEylAOPe3hSqe+4/qLiLDkmC23eCh81yOL/CQm8BUDmQQ0kpjPVhF6oVVDzS775OWQ7drGteELxXnlFjJh+dNFn5ecL3i9XiHtbwDDNNcCAwrD8PnCl3BqyoA==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783433670;
+	cv=none; b=isjz51/Nt+0hMy5UlE9Srs1di5gYLmThDeGRMbmq334+UsIOz0eWSXLbvw7FT8JMkgUXbsn/WnTRlVILug4ltAdgLqrjXPM0nOk/OnXVoo7XtLi5NhSYuSjlV5phYnX/wHz4Y5G+GYOpjgGaYDWabeQ4NoSxdV23dpQZsJ9QKwbgzcRNM8Ytr8SfaAWnWNyvbeDo2t6OMKQ7hHuMpsdyLHy4dkDg8MT7Mb40OvNLjROSv1ZEIv3JjMa6RKvCDZWqOznwGUxWHoZp9rgvUu7VGDvf8BGszKDVQaQfZ+37I8q/JaZTiuPtFGnA3AGkOx5AOBVfj+Iqq1P5umVi+T4zcA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1783433497; c=relaxed/relaxed;
-	bh=20E1hLMMPXhHS8pnWfbMyHG7K9cQcKn2dO/QA3nMBBw=;
+	t=1783433670; c=relaxed/relaxed;
+	bh=qCciVIAgFYNh8iiCE6A1FVMN5+3AnpIFscEXkkxF9ew=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Vd8BO6s1XetHL+bao8+A21BBtZqveuueb1L/dzwym7toIG32ixE57ae6da/JT0YMkW8iFslacE+KC8Pe8htSYEIotP3G9r3Hqrufz/TatBq4C0e/IRhNSCNbIRcbu57swZKLasb1DjXeTroXnuhc2+pPvZWmvNRrETcH66xpeKahKxup6YSbWOh5lSzeufxOp5cm8zxgiT+dNWzZ3VNRSloaaxjEiJF7mw6YDXPH9bZ1BiL0pXVy4nLUzrCuhrpmbRoChxGIg874OIPQmVJIGX8xUZLB08R6giP0Ff0QYJmqqmR8fhiOMBrDgiUo5qDolNWDKwwNqERtbFw475GUQQ==
+	 Content-Type:Content-Disposition:In-Reply-To; b=ephjhREpJDI2kS54b33WJYcsz++A4R3GoEjZNPmuVFS1gn7mBqdmz0WaP4ewDi+F0/42X+8H6u7eM8N0Bsx+AGUsg/Z3LOwFtHJoWH0+GFrts+Ic5O3Ri9gHG0StxC1UKlICafXhRLG7WTExScG9YNOAgbI5QRE27PvkbPTl678bcRB3I84Zd8J+ywtHjVpSbQJh4radDypUwIgmq75pKXlxfvEsZNouKR9RiT8Or07pmfvO91nWj6H5aXvcSbnJujVt7XSP0pD+ddAVTFUe42h0Z/S3srnOhVUCIHVb4mgm8220yyztx40evy5UutcQPmWWjq8P5Pje7Sto1xAXlw==
 ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=sys-base.io; spf=pass (client-ip=185.233.101.22; helo=leonov.paulk.fr; envelope-from=paulk@sys-base.io; receiver=lists.ozlabs.org) smtp.mailfrom=sys-base.io
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=sys-base.io
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=sys-base.io (client-ip=185.233.101.22; helo=leonov.paulk.fr; envelope-from=paulk@sys-base.io; receiver=lists.ozlabs.org)
-X-Greylist: delayed 311 seconds by postgrey-1.37 at boromir; Wed, 08 Jul 2026 00:11:35 AEST
 Received: from leonov.paulk.fr (leonov.paulk.fr [185.233.101.22])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gvjnz0LPCz2xpn;
-	Wed, 08 Jul 2026 00:11:34 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gvjsK5M2gz2xKh;
+	Wed, 08 Jul 2026 00:14:29 +1000 (AEST)
 Received: from laika.paulk.fr (12.234.24.109.rev.sfr.net [109.24.234.12])
-	by leonov.paulk.fr (Postfix) with ESMTPS id 8929D3700300;
-	Tue,  7 Jul 2026 14:11:10 +0000 (UTC)
+	by leonov.paulk.fr (Postfix) with ESMTPS id 9D2A0370032B;
+	Tue,  7 Jul 2026 14:05:38 +0000 (UTC)
 Received: by laika.paulk.fr (Postfix, from userid 65534)
-	id E5BF4AE5EC4; Tue,  7 Jul 2026 14:11:05 +0000 (UTC)
+	id BB948AE5ECC; Tue,  7 Jul 2026 14:05:31 +0000 (UTC)
 Received: from shepard (unknown [192.168.1.1])
-	by laika.paulk.fr (Postfix) with ESMTPSA id 6816EAE5EBF;
-	Tue,  7 Jul 2026 14:10:55 +0000 (UTC)
-Date: Tue, 7 Jul 2026 16:10:52 +0200
+	by laika.paulk.fr (Postfix) with ESMTPSA id B6432AE5EB6;
+	Tue,  7 Jul 2026 14:05:21 +0000 (UTC)
+Date: Tue, 7 Jul 2026 16:05:19 +0200
 From: Paul Kocialkowski <paulk@sys-base.io>
 To: Mukesh Ojha <mukesh.ojha@oss.qualcomm.com>
 Cc: Bjorn Andersson <andersson@kernel.org>,
@@ -112,11 +111,11 @@ Cc: Bjorn Andersson <andersson@kernel.org>,
 	linux-remoteproc@vger.kernel.org, linux-staging@lists.linux.dev,
 	linux-sound@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
 	imx@lists.linux.dev, sound-open-firmware@alsa-project.org
-Subject: Re: [PATCH 08/42] drm: logicvc: Use
+Subject: Re: [PATCH 30/42] staging: media: cedrus: Use
  devm_of_reserved_mem_device_init()
-Message-ID: <ak0I7AbfFITG1nyi@shepard>
+Message-ID: <ak0HnzMzGT_WZ9u1@shepard>
 References: <20260703193855.110619-1-mukesh.ojha@oss.qualcomm.com>
- <20260703193855.110619-9-mukesh.ojha@oss.qualcomm.com>
+ <20260703193855.110619-31-mukesh.ojha@oss.qualcomm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -131,11 +130,11 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="ThTwSIZV2a2cCNSQ"
+	protocol="application/pgp-signature"; boundary="L/gXhcj/KYS6Adou"
 Content-Disposition: inline
-In-Reply-To: <20260703193855.110619-9-mukesh.ojha@oss.qualcomm.com>
+In-Reply-To: <20260703193855.110619-31-mukesh.ojha@oss.qualcomm.com>
 
---ThTwSIZV2a2cCNSQ
+--L/gXhcj/KYS6Adou
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
@@ -143,128 +142,57 @@ Content-Transfer-Encoding: quoted-printable
 Hi Mukesh,
 
 On Sat 04 Jul 26, 01:08, Mukesh Ojha wrote:
-> Switch to devm_of_reserved_mem_device_init() so the reserved memory
-> region is released automatically on probe failure or device unbind.
-> Replace all error paths that jumped to error_reserved_mem: with
-> error_early: since the manual cleanup label is no longer needed, and
-> remove the explicit of_reserved_mem_device_release() call in the remove
-> function.
->=20
+> Use the devres-managed devm_of_reserved_mem_device_init() instead of
+> the manual of_reserved_mem_device_init()/of_reserved_mem_device_release()
+> pair, letting the device resource manager handle cleanup automatically.
+
+Thanks for your work!
+
 > Signed-off-by: Mukesh Ojha <mukesh.ojha@oss.qualcomm.com>
+> ---
+>  drivers/staging/media/sunxi/cedrus/cedrus_hw.c | 6 +-----
+>  1 file changed, 1 insertion(+), 5 deletions(-)
+>=20
+> diff --git a/drivers/staging/media/sunxi/cedrus/cedrus_hw.c b/drivers/sta=
+ging/media/sunxi/cedrus/cedrus_hw.c
+> index 444fb53878d1..7b5aa94064a1 100644
+> --- a/drivers/staging/media/sunxi/cedrus/cedrus_hw.c
+> +++ b/drivers/staging/media/sunxi/cedrus/cedrus_hw.c
+> @@ -266,7 +266,7 @@ int cedrus_hw_probe(struct cedrus_dev *dev)
+>  		return ret;
+>  	}
+> =20
+> -	ret =3D of_reserved_mem_device_init(dev->dev);
+> +	ret =3D devm_of_reserved_mem_device_init(dev->dev);
+>  	if (ret && ret !=3D -ENODEV) {
+>  		dev_err(dev->dev, "Failed to reserve memory\n");
+> =20
+> @@ -341,8 +341,6 @@ int cedrus_hw_probe(struct cedrus_dev *dev)
+>  err_sram:
+>  	sunxi_sram_release(dev->dev);
+>  err_mem:
 
-Looks good to me, thanks!
+Could you also remove this label and switch the goto user to a regular
+return ret?
 
-Reviewed-by: Paul Kocialkowski <paulk@sys-base.io>
-Acked-by: Paul Kocialkowski <paulk@sys-base.io>
+Thanks!
 
 All the best,
 
 Paul
 
-> ---
->  drivers/gpu/drm/logicvc/logicvc_drm.c | 21 ++++++++-------------
->  1 file changed, 8 insertions(+), 13 deletions(-)
->=20
-> diff --git a/drivers/gpu/drm/logicvc/logicvc_drm.c b/drivers/gpu/drm/logi=
-cvc/logicvc_drm.c
-> index bbebf4fc7f51..d6dbe52ff0a9 100644
-> --- a/drivers/gpu/drm/logicvc/logicvc_drm.c
-> +++ b/drivers/gpu/drm/logicvc/logicvc_drm.c
-> @@ -306,7 +306,7 @@ static int logicvc_drm_probe(struct platform_device *=
-pdev)
->  	int irq;
->  	int ret;
-> =20
-> -	ret =3D of_reserved_mem_device_init(dev);
-> +	ret =3D devm_of_reserved_mem_device_init(dev);
->  	if (ret && ret !=3D -ENODEV) {
->  		dev_err(dev, "Failed to init memory region\n");
->  		goto error_early;
-> @@ -327,14 +327,14 @@ static int logicvc_drm_probe(struct platform_device=
- *pdev)
->  		ret =3D of_address_to_resource(of_node, 0, &res);
->  		if (ret) {
->  			dev_err(dev, "Failed to get resource from address\n");
-> -			goto error_reserved_mem;
-> +			goto error_early;
->  		}
-> =20
->  		base =3D devm_ioremap_resource(dev, &res);
->  		if (IS_ERR(base)) {
->  			dev_err(dev, "Failed to map I/O base\n");
->  			ret =3D PTR_ERR(base);
-> -			goto error_reserved_mem;
-> +			goto error_early;
->  		}
-> =20
->  		logicvc_drm_regmap_config.max_register =3D resource_size(&res) -
-> @@ -345,21 +345,21 @@ static int logicvc_drm_probe(struct platform_device=
- *pdev)
->  		if (IS_ERR(regmap)) {
->  			dev_err(dev, "Failed to create regmap for I/O\n");
->  			ret =3D PTR_ERR(regmap);
-> -			goto error_reserved_mem;
-> +			goto error_early;
->  		}
->  	}
-> =20
->  	irq =3D platform_get_irq(pdev, 0);
->  	if (irq < 0) {
->  		ret =3D -ENODEV;
-> -		goto error_reserved_mem;
-> +		goto error_early;
->  	}
-> =20
->  	logicvc =3D devm_drm_dev_alloc(dev, &logicvc_drm_driver,
->  				     struct logicvc_drm, drm_dev);
->  	if (IS_ERR(logicvc)) {
->  		ret =3D PTR_ERR(logicvc);
-> -		goto error_reserved_mem;
-> +		goto error_early;
->  	}
-> =20
->  	platform_set_drvdata(pdev, logicvc);
-> @@ -371,7 +371,7 @@ static int logicvc_drm_probe(struct platform_device *=
-pdev)
->  	caps =3D logicvc_drm_caps_match(logicvc);
->  	if (!caps) {
->  		ret =3D -EINVAL;
-> -		goto error_reserved_mem;
-> +		goto error_early;
->  	}
-> =20
->  	logicvc->caps =3D caps;
-> @@ -382,7 +382,7 @@ static int logicvc_drm_probe(struct platform_device *=
-pdev)
->  	ret =3D logicvc_clocks_prepare(logicvc);
->  	if (ret) {
->  		drm_err(drm_dev, "Failed to prepare clocks\n");
-> -		goto error_reserved_mem;
-> +		goto error_early;
->  	}
-> =20
->  	ret =3D devm_request_irq(dev, irq, logicvc_drm_irq_handler, 0,
-> @@ -450,9 +450,6 @@ static int logicvc_drm_probe(struct platform_device *=
-pdev)
->  error_clocks:
->  	logicvc_clocks_unprepare(logicvc);
-> =20
-> -error_reserved_mem:
-> -	of_reserved_mem_device_release(dev);
+> -	of_reserved_mem_device_release(dev->dev);
 > -
->  error_early:
 >  	return ret;
 >  }
-> @@ -469,8 +466,6 @@ static void logicvc_drm_remove(struct platform_device=
- *pdev)
->  	logicvc_mode_fini(logicvc);
 > =20
->  	logicvc_clocks_unprepare(logicvc);
+> @@ -353,6 +351,4 @@ void cedrus_hw_remove(struct cedrus_dev *dev)
+>  		cedrus_hw_suspend(dev->dev);
+> =20
+>  	sunxi_sram_release(dev->dev);
 > -
-> -	of_reserved_mem_device_release(dev);
+> -	of_reserved_mem_device_release(dev->dev);
 >  }
-> =20
->  static void logicvc_drm_shutdown(struct platform_device *pdev)
 > --=20
 > 2.53.0
 >=20
@@ -277,25 +205,25 @@ Free software developer - https://www.paulk.fr/
 
 Expert in multimedia, graphics and embedded hardware support with Linux.
 
---ThTwSIZV2a2cCNSQ
+--L/gXhcj/KYS6Adou
 Content-Type: application/pgp-signature; name=signature.asc
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAEBCgAdFiEEAbcMXZQMtj1fphLChP3B6o/ulQwFAmpNCOwACgkQhP3B6o/u
-lQyaPQ//f4pAYoEPe2VkBx5ziaC0VkGALJ8pMaCBZzEG6pnd2z1UBPK8Y2xJLlQP
-5bkyAxCQjpN0fwzwtB+kdA0jp2iokJqDThaLYoql9R0Qvj2DyOy7x+SwRqbRzdyJ
-npZtxXLCuF9oXL4YlUHBVPkgL9WsGf2cMpqkXAI/iPd0K+9zBfxT48xlRnuslCQF
-gwlVwkghlca2EFVG0f4q4HVkGRcFkAM9pYpKZD4B4iS89SwzHmJo44SZWV0CsWfe
-ysY5SERP+XL8EbiVlQxCWyqo9Yb//Ikc/EuIWFPMzPW7hp4ZTzjzYaRtVdWEM3Or
-GQ8uFNoXZfWHzfBpHk1Ewfdr7JBtXM0vPIh650GS2SCdGaCS0Ud2UUv7QZdSluel
-uGrsM82ZQ6ts4V8ct1O/dWG7TwYnc8BaFADG90JdKck+zb3fRnQ07aTNrF/bRDU1
-gcnN0yfM/zPIZAc7GA+4Stzok5c+bj2Sb849b5S5g6LNETsScU+WPK5pvEjjWq9E
-zsLawR41dclgUWujmQqflY1sbvVA3YsAADIxWAAsT1WDULfQ/c70/2rMIvNATzBN
-VxbCWSZtk77xMlu6aje7HIbEQa9PGm52xeqNOqfwv/t5kGZxU1fqyAULXAfSYQ2R
-jkjMhoWPkeb15z5Be0yQY0auFkEuIORZboIqn49NxQW0LVu7byA=
-=tX4X
+iQIzBAEBCgAdFiEEAbcMXZQMtj1fphLChP3B6o/ulQwFAmpNB58ACgkQhP3B6o/u
+lQyTjg//fLyoug7RFssI1dop/066e79975deN6blykU3a96LxKKn7ru6j0LCnfu4
+VTSFjvO7qjkf2yQeXqxnQWvrXBT/JiPMb/nPvBW0MGDi1M1+4kT7238LR5fuNLU0
+eBAuY181rHDg+ftoXP7Rzj0XZlZ/dck0119WsWFEUk9gP0Q8BlgTs7QTUu3k2E+E
+VUftOitNophkc0JUvgUi5wKODfIgzgp/nj9ZnCsjF9QSDjcr3Wjn2qwvdS4hG43H
+m8QkFdiim8NX6PKzgqcjLNOUEXjjphI6+onlAT3qREs2ThXycXu0m5/+r+5IP6AT
+OeVpkJQ9zrx91+tL94Yi4iXPERdq1zcnpUsiE1YhOnlB/KfCAXX3WeS6ZjLfF5aW
+7/5j2Bd/rTlqCSH25ek2EQKZj476WJUgYplyAGFpLb/3iXyV89VpkdIk2VEc7ynK
+V99TGimHONG+iiDOl/z3pn+MX5RzXeMWhmevSrfiTJzsG5Kb+mOKr86er3oTehf0
+g8NOS3ITmO5IGHbfJSUx236uPw58QMEWKmKyZ/Sx7nDhhhskPBSgCJSvSPn0cbz9
+cXejK2y8wLRj1RaSjCGUdM9ZoZPlNDoyqDrWZDxI2tzgXFYDbcuFEHM19GIDPTTY
+2iujg05WmAKMP0jVtjzc7NoSbdBmeZG2atzsSP6M76kSPNdEJvI=
+=0n6x
 -----END PGP SIGNATURE-----
 
---ThTwSIZV2a2cCNSQ--
+--L/gXhcj/KYS6Adou--
 
