@@ -1,91 +1,120 @@
-Return-Path: <linuxppc-dev+bounces-23725-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23726-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 27FA7C43458
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jul 2026 17:24:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C06E7C44501
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jul 2026 18:13:53 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gvp4r5SXHz2xKh;
-	Wed, 08 Jul 2026 03:24:44 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::634"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783445084;
-	cv=none; b=T9SO1fk/WSkC9j6jCLhqgFrkUMd0GKd/MS+/8OQxLnfgjDQeq/pR67buOPnoz/6qLV3KTh0lkCac8/8X5Q7Q2rl0uoxh/K5aSJX+Ni+iaMA82Ifn+weUlsrr7xi5V729erPDxCoUEW8vE1v/0Cg8wcigJJ54sqn/HhGdDvHLhtJ3OS6SxemuPRA/sMiUvT4fXtCOmWZorY0HrdlS5hZmMkIfr1bri8qD93W1Baq/edVilmH6XW1Tl4avY0rhpyHI7C0QOrikH6AIBqI+9WGUzFmjmh8SS3neiK33W9lTB+SK+yCGEif34rsCxMxJXrZPzhF8oTQr7Nml2ovxhW0AGg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gvq9T5Mgfz2yMm;
+	Wed, 08 Jul 2026 04:13:49 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=185.119.170.32
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783448029;
+	cv=none; b=I9VS80yl2N1xLzjJc8bFWHbtlvDUWrmsBrmr7G/rSETWTUcyERCPPaW3v4heN59puIBTvwlE00UHSd/OnXXHZMGs9QTOKA2p/hJr/rSH7ngD3JxyCzDQLPB1mrjmwnlSPkl7BSw4ZLoMK3Wg3p1BCz2gWKMFd5osT+ZkTp83x16xqa1rYWgMBCtfjdHqMMmr2JuibzyA+cUN5wQjNX2E2wkJe44rnXwVf77ZoP0ZZoz3fvO3zAbyWjOaxgb98PAHtzPVwmTFt4ctdbuEe04DG2Gb5ZqLMho58Vqy7GXmDXWZoh89/Wqk0lDk3zz+gMfQ+Uqe+aUa1Kr2NzG5UhqxdA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1783445084; c=relaxed/relaxed;
-	bh=QVbkKIpVgqIdeBkCJKcg7TksfPhMWq9fBiNA2uIiNXc=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=eULosVL+rZZR+DY7UtpT4Qk+ivgAFajCa1GPN0cuajpD1NtlN1+hHpLGAiC2juf5mPOOxdlNEDnFKKkLP7/CZSen37oOZIBCXbD+at/uahNokyCbyvtWWw/KSGL1GtEtjQaz93VWBt+g6hglcWXINmx3pX9bHC+oo34UzT+eDp2wXLDRD9GkggfeS57Ai3NtfHAZiMGd2sP61ooKJzoM4M5IrKkG+M6J68dNZEkg4VZc5nncjxMSuu/2TsEETKpAN14q1t6yCFWrkKEiYmPhBPodvkgXa0tnRycrHwVCeEZegWUKzP/Ddvo2sYVX7qLLiUKC9hT/C7keAF4hWJzUdQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=EAFZK6uw; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::634; helo=mail-pl1-x634.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1783448029; c=relaxed/relaxed;
+	bh=kNdgV6dE37fi1AWMEoHcLd1JawMZipROu/aTEW/qPRY=;
+	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=YjDuDGsGB4Pw3KG3ZRADhDNd2O32GTC1kjIQYwwU+txomKZgcon3aaIxClbObsigOCDeBDwrRnc4itb6pdFfMlYUEDb3v4SDee61/7qTn4eeYMsz2WwavC8yMyP5TdQo3+iNMxnqlVEg3cIOK8KuO+kCfEkchmqigTP/HBy+PyKGnfzqQnbY2uLlhNbqrsp2ZJhvLrJR/yZ9pR4IgplTFVO366R73HWMwCTaxALvsQgRi3eRLa9EioY4b2S2TtgDw1biDVXLxmaFLhJQSmSuzLL9TxDw2lgltnyf3rAPAQ+zmmcPePLD8W0FeSIqDsc0CTEA0/Ii94EAxRJycwmeOw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=crapouillou.net; dkim=pass (1024-bit key; unprotected) header.d=crapouillou.net header.i=@crapouillou.net header.a=rsa-sha256 header.s=mail header.b=taLqIYWA; dkim-atps=neutral; spf=pass (client-ip=185.119.170.32; helo=aposti.net; envelope-from=paul@crapouillou.net; receiver=lists.ozlabs.org) smtp.mailfrom=crapouillou.net
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=crapouillou.net
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=EAFZK6uw;
+	dkim=pass (1024-bit key; unprotected) header.d=crapouillou.net header.i=@crapouillou.net header.a=rsa-sha256 header.s=mail header.b=taLqIYWA;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::634; helo=mail-pl1-x634.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pl1-x634.google.com (mail-pl1-x634.google.com [IPv6:2607:f8b0:4864:20::634])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=crapouillou.net (client-ip=185.119.170.32; helo=aposti.net; envelope-from=paul@crapouillou.net; receiver=lists.ozlabs.org)
+X-Greylist: delayed 402 seconds by postgrey-1.37 at boromir; Wed, 08 Jul 2026 04:13:47 AEST
+Received: from aposti.net (aposti.net [185.119.170.32])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gvp4q46H3z2xC3
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Jul 2026 03:24:42 +1000 (AEST)
-Received: by mail-pl1-x634.google.com with SMTP id d9443c01a7336-2c7cfa17fedso52560655ad.3
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 07 Jul 2026 10:24:42 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1783445080; x=1784049880; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=QVbkKIpVgqIdeBkCJKcg7TksfPhMWq9fBiNA2uIiNXc=;
-        b=EAFZK6uwmK5CZqqCeehxBjP0JpNBTFSkE6ul866JEzY0NlY2AA8Hf0lk4q/ExNBNuB
-         kSf/9FNdkX39YoPfuKYTDiOTNLvrEQ9wZBBtKRULnq+isUZcO6XOQ4ip9k1l0/AtfWB8
-         1RuJ4oTo1QRRkf6GWUVAmVCCVrsAPTTvudTXVIEZHQEb+bKdrvUw9QPIcOoRZKI+3sMo
-         6tHu0AAcibLSI+wYV1kaEaZQ1T+dAvtBu8m6Iun6gCO90M5Yk4Z8WERg2ElLjJ35qB7c
-         9O1o4+e3LcoQakVB3EIzdquD1SLhwkFaeTdWQiYaMxPJ1+8l4CSOw176zDLxntCBzovt
-         oPSQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1783445080; x=1784049880;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=QVbkKIpVgqIdeBkCJKcg7TksfPhMWq9fBiNA2uIiNXc=;
-        b=L/+breCMdH8tyhUumSG8VhZBM89aKZfFDn26iq7wXHbq01X5sqIVNtTrtk8yoGXd2B
-         UQinlofXnpTmgpn7bdvbMRbxsmyLNixWCagD5sRXx/f9uSfCNlWk8V+LY2LXFHxKLF/z
-         6pPPvJVxmsC73O3TWCBwpwIdfuQf7cn5ircAu511RYrtTgmBc/m4ImWbqC2TfNAf1cwg
-         FeZmcL8Rta0r9OwZM12NzDmvXUHHqnDOtUU2UFWYVrMri2JxR1SBltUnwcOLjRfKeids
-         8VkJ4iBIsgvEkcmhdrCf/hg5VLHn8B8RCXKTjVqCaxIiLuZMgEmQDPJ32k9uDzLDElZc
-         kwJw==
-X-Forwarded-Encrypted: i=1; AHgh+RqljoIVKGw/zAA4xRsf2jBz1dB3S3grfik8qrzk6IX87adU6TduG9N4Zhpj/Aj4dS5Er58yQs/B39qzQ/c=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YzmFpFE/PX0R6Pjom3ET+rmQSw1pN/2r1UE4YS5Yr1QPoBwtk0o
-	w6sPQwQ7q6eHcp1ngS9ek+oOm113rde0kPsiQjlqBgNDCCtbj/90gN3D
-X-Gm-Gg: AfdE7cmBC1hxvTtcqS4d7OWHqUGgVIYwLHOlTDpDZ0f7hkRxH4RdQ6k5uXNwMXUpLNn
-	bZEQNgxgRq22WE+5Ripp0iCYshze98GkijGoLva9i4xQjaiQ03Au+waHKI7Xq1Pk70sVmaT4T26
-	9j37GdO3ocTzyKEF+LPpk215bUug7FIH6gMutFSU+0kGFM6XsgGW3DgGsEGJhOU2QuN3Dg2MlBw
-	trWBO7w8QjddNxYbemlGj9kojmT13mdVDiOUTl6FhZeEpHRhAgTok0RropLkFXoozGYumq3F469
-	8D5b97Z35JYcC963x9clOOsaGvdTXwjcZFgDBgRSxcgbA/56tDz0UCgw2S4XppZigRO+0TPrGqt
-	QZyjsvU/Q+ObFusETiG9Z0kaHK7i5lJCxj1wqwEQeKCYGzN68tA0vNwMsnYY78USaugaYxW03I8
-	bE39Nqm1Wic9E46RK61Bb4KRr5mI93dPTZRGaCJU6YNX32Qc1pBKi24nGQtrMScaDNxQ==
-X-Received: by 2002:a05:6a21:50f:b0:3bf:c126:baf7 with SMTP id adf61e73a8af0-3c08ef51a7fmr7588434637.47.1783445079945;
-        Tue, 07 Jul 2026 10:24:39 -0700 (PDT)
-Received: from li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com.com ([106.51.160.236])
-        by smtp.gmail.com with ESMTPSA id a92af1059eb24-13b659c8665sm10569833c88.10.2026.07.07.10.24.35
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 07 Jul 2026 10:24:39 -0700 (PDT)
-From: "Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com>
-To: maddy@linux.ibm.com,
-	mpe@ellerman.id.au,
-	npiggin@gmail.com,
-	chleroy@kernel.org,
-	sshegde@linux.ibm.com,
-	mchauras@linux.ibm.com,
-	mkchauras@gmail.com,
-	ruanjinjie@huawei.com,
-	thuth@redhat.com,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org
-Cc: Andreas Schwab <schwab@linux-m68k.org>
-Subject: [PATCH] powerpc/970: fix nap return address corruption on async interrupt exit
-Date: Tue,  7 Jul 2026 22:54:30 +0530
-Message-ID: <20260707172430.790040-1-mkchauras@gmail.com>
-X-Mailer: git-send-email 2.55.0
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gvq9R52ZWz2xKh;
+	Wed, 08 Jul 2026 04:13:47 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=crapouillou.net;
+	s=mail; t=1783447618;
+	bh=jSZnB0sLqjEJbBoqe7AZJRMFNCZugWpISC+yCdraaOk=;
+	h=Subject:From:To:Cc:Date:In-Reply-To:References:From;
+	b=taLqIYWARPanxMePLjn0T7clMcda7af2pvmrr0dQzpeuwc0nctWzpeP7MFrEdwHD3
+	 wFNI1Cev/uBH+lstwttbgnjYpRUlRSvuTptlXHNnBzTOSCT1/sAyy72NlnTqVPq0M/
+	 E7dkR8V01XIjaryuVKTvkbf8yDy1RmuISroVos5g=
+Message-ID: <f46dfcfe04c5f8270b2ea1a947ddc0a0eeda7dbc.camel@crapouillou.net>
+Subject: Re: [PATCH 17/42] drm: ingenic: Use
+ devm_of_reserved_mem_device_init()
+From: Paul Cercueil <paul@crapouillou.net>
+To: Mukesh Ojha <mukesh.ojha@oss.qualcomm.com>, Bjorn Andersson	
+ <andersson@kernel.org>, Konrad Dybcio <konradybcio@kernel.org>, Liviu Dudau
+	 <liviu.dudau@arm.com>, Maarten Lankhorst
+ <maarten.lankhorst@linux.intel.com>,  Maxime Ripard <mripard@kernel.org>,
+ Thomas Zimmermann <tzimmermann@suse.de>, David Airlie <airlied@gmail.com>, 
+ Simona Vetter <simona@ffwll.ch>, Joel Stanley <joel@jms.id.au>, Andrew
+ Jeffery <andrew@codeconstruct.com.au>,  Anitha Chrisanthus
+ <anitha.chrisanthus@intel.com>, Paul Kocialkowski <paulk@sys-base.io>,
+ Linus Walleij	 <linusw@kernel.org>, Chen-Yu Tsai <wens@kernel.org>, Jernej
+ Skrabec	 <jernej.skrabec@gmail.com>, Samuel Holland <samuel@sholland.org>,
+ Alexey Brodkin <abrodkin@synopsys.com>, Laurent Pinchart
+ <laurent.pinchart@ideasonboard.com>, Tomi Valkeinen
+ <tomi.valkeinen@ideasonboard.com>, Michal Simek <michal.simek@amd.com>,
+ Daniel Scally	 <dan.scally@ideasonboard.com>, Jacopo Mondi
+ <jacopo.mondi@ideasonboard.com>,  Mauro Carvalho Chehab	
+ <mchehab@kernel.org>, Eddie James <eajames@linux.ibm.com>, Tiffany Lin	
+ <tiffany.lin@mediatek.com>, Andrew-CT Chen <andrew-ct.chen@mediatek.com>, 
+ Yunfei Dong <yunfei.dong@mediatek.com>, Minghsiu Tsai
+ <minghsiu.tsai@mediatek.com>, Houlong Wei	 <houlong.wei@mediatek.com>,
+ Matthias Brugger <matthias.bgg@gmail.com>,  AngeloGioacchino Del Regno
+ <angelogioacchino.delregno@collabora.com>, Joseph Liu <kwliu@nuvoton.com>,
+ Marvin Lin <kflin@nuvoton.com>,  Dmitry Osipenko
+ <dmitry.osipenko@collabora.com>, Krzysztof Kozlowski <krzk@kernel.org>,
+ Thierry Reding	 <thierry.reding@kernel.org>, Jonathan Hunter
+ <jonathanh@nvidia.com>,  Srinivas Kandagatla	 <srini@kernel.org>, Arnd
+ Bergmann <arnd@arndb.de>, Greg Kroah-Hartman	 <gregkh@linuxfoundation.org>,
+ Ge Gordon <gordon.ge@bst.ai>, Adrian Hunter	 <adrian.hunter@intel.com>, Ulf
+ Hansson <ulfh@kernel.org>, Rob Herring	 <robh@kernel.org>, Saravana Kannan
+ <saravanak@kernel.org>, Mathieu Poirier	 <mathieu.poirier@linaro.org>,
+ Jaroslav Kysela <perex@perex.cz>, Takashi Iwai	 <tiwai@suse.com>, Shengjiu
+ Wang <shengjiu.wang@gmail.com>, Xiubo Li	 <Xiubo.Lee@gmail.com>, Liam
+ Girdwood <lgirdwood@gmail.com>, Mark Brown	 <broonie@kernel.org>, Frank Li
+ <Frank.Li@nxp.com>, Sascha Hauer	 <s.hauer@pengutronix.de>, Peter Ujfalusi
+ <peter.ujfalusi@linux.intel.com>,  Bard Liao
+ <yung-chuan.liao@linux.intel.com>, Daniel Baluta <daniel.baluta@nxp.com>,
+ Orson Zhai	 <orsonzhai@gmail.com>, Baolin Wang
+ <baolin.wang@linux.alibaba.com>, Peter Chen	 <peter.chen@cixtech.com>,
+ Fugang Duan <fugang.duan@cixtech.com>
+Cc: Ekansh Gupta <ekansh.gupta@oss.qualcomm.com>, BST Linux Kernel Upstream
+ Group <bst-upstream@bstai.top>, Fabio Estevam <festevam@gmail.com>, Nicolin
+ Chen <nicoleotsuka@gmail.com>,  Pengutronix Kernel Team	
+ <kernel@pengutronix.de>, Kai Vehmanen <kai.vehmanen@linux.intel.com>, 
+ Pierre-Louis Bossart <pierre-louis.bossart@linux.dev>, Vijendar Mukunda
+ <Vijendar.Mukunda@amd.com>, Chunyan Zhang	 <zhang.lyra@gmail.com>, CIX
+ Linux Kernel Upstream Group	 <cix-kernel-upstream@cixtech.com>,
+ linux-arm-msm@vger.kernel.org, 	linux-kernel@vger.kernel.org,
+ dri-devel@lists.freedesktop.org, 	linux-aspeed@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org, 	linux-mips@vger.kernel.org,
+ linux-sunxi@lists.linux.dev, 	linux-media@vger.kernel.org,
+ openbmc@lists.ozlabs.org, 	linux-mediatek@lists.infradead.org,
+ kernel@collabora.com, 	linux-tegra@vger.kernel.org,
+ linux-mmc@vger.kernel.org, 	devicetree@vger.kernel.org,
+ linux-remoteproc@vger.kernel.org, 	linux-staging@lists.linux.dev,
+ linux-sound@vger.kernel.org, 	linuxppc-dev@lists.ozlabs.org,
+ imx@lists.linux.dev, 	sound-open-firmware@alsa-project.org
+Date: Tue, 07 Jul 2026 20:06:50 +0200
+In-Reply-To: <20260703193855.110619-18-mukesh.ojha@oss.qualcomm.com>
+References: <20260703193855.110619-1-mukesh.ojha@oss.qualcomm.com>
+	 <20260703193855.110619-18-mukesh.ojha@oss.qualcomm.com>
+Autocrypt: addr=paul@crapouillou.net; prefer-encrypt=mutual;
+ keydata=mQENBF0KhcEBCADkfmrzdTOp/gFOMQX0QwKE2WgeCJiHPWkpEuPH81/HB2dpjPZNW03ZM
+ LQfECbbaEkdbN4YnPfXgcc1uBe5mwOAPV1MBlaZcEt4M67iYQwSNrP7maPS3IaQJ18ES8JJ5Uf5Uz
+ FZaUawgH+oipYGW+v31cX6L3k+dGsPRM0Pyo0sQt52fsopNPZ9iag0iY7dGNuKenaEqkYNjwEgTtN
+ z8dt6s3hMpHIKZFL3OhAGi88wF/21isv0zkF4J0wlf9gYUTEEY3Eulx80PTVqGIcHZzfavlWIdzhe
+ +rxHTDGVwseR2Y1WjgFGQ2F+vXetAB8NEeygXee+i9nY5qt9c07m8mzjABEBAAG0JFBhdWwgQ2VyY
+ 3VlaWwgPHBhdWxAY3JhcG91aWxsb3UubmV0PokBTgQTAQoAOBYhBNdHYd8OeCBwpMuVxnPua9InSr
+ 1BBQJdCoXBAhsDBQsJCAcCBhUKCQgLAgQWAgMBAh4BAheAAAoJEHPua9InSr1BgvIH/0kLyrI3V0f
+ 33a6D3BJwc1grbygPVYGuC5l5eMnAI+rDmLR19E2yvibRpgUc87NmPEQPpbbtAZt8On/2WZoE5OIP
+ dlId/AHNpdgAtGXo0ZX4LGeVPjxjdkbrKVHxbcdcnY+zzaFglpbVSvp76pxqgVg8PgxkAAeeJV+ET
+ 4t0823Gz2HzCL/6JZhvKAEtHVulOWoBh368SYdolp1TSfORWmHzvQiCCCA+j0cMkYVGzIQzEQhX7U
+ rf9N/nhU5/SGLFEi9DcBfXoGzhyQyLXflhJtKm3XGB1K/pPulbKaPcKAl6rIDWPuFpHkSbmZ9r4KF
+ lBwgAhlGy6nqP7O3u7q23hRU=
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -99,103 +128,64 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
 
-On PowerMac G5 (PPC970, CONFIG_PPC_970_NAP) the system panics shortly
-after boot with symptoms including instruction fetch faults, kernel data
-access faults, and stack corruption, predominantly on SMP and always
-somewhere inside softirq processing.
+Hi,
 
-The PPC970 idle path works by setting _TLF_NAPPING in the current
-thread's local flags before entering the MSR_POW nap loop.  When any
-async interrupt wakes the CPU, nap_adjust_return() is expected to detect
-_TLF_NAPPING, clear it, and rewrite regs->NIP to power4_idle_nap_return
-so that the interrupt returns cleanly to the caller of power4_idle_nap()
-rather than back into the nap spin loop.
+Le samedi 04 juillet 2026 =C3=A0 01:08 +0530, Mukesh Ojha a =C3=A9crit=C2=
+=A0:
+> Replace the hand-rolled devm wrapper (ingenic_drm_release_rmem +
+> devm_add_action_or_reset) with the standard
+> devm_of_reserved_mem_device_init(), letting the device resource
+> manager handle cleanup automatically.
+>=20
+> Signed-off-by: Mukesh Ojha <mukesh.ojha@oss.qualcomm.com>
 
-DEFINE_INTERRUPT_HANDLER_ASYNC generates the following sequence:
+Reviewed-by: Paul Cercueil <paul@crapouillou.net>
 
-    irq_enter_rcu();
-    ____func(regs);           /* timer_interrupt / do_IRQ body */
-    irq_exit_rcu();           /* softirqs run here, irqs re-enabled */
-    arch_interrupt_async_exit_prepare(regs); /* nap_adjust_return was here */
-    irqentry_exit(regs, state);
+Cheers,
+-Paul
 
-irq_exit_rcu() calls invoke_softirq() -> do_softirq_own_stack(), which
-runs softirqs with hardware interrupts re-enabled.  A nested async
-interrupt can therefore arrive while _TLF_NAPPING is still set.  That
-nested interrupt reaches nap_adjust_return() in its own
-arch_interrupt_async_exit_prepare() call, finds _TLF_NAPPING set, and
-redirects *its own* regs->NIP to power4_idle_nap_return.  Returning via
-that blr with an unrelated LR on the softirq stack jumps to a garbage
-address, causing the observed crashes.
-
-The comment that previously lived in arch_interrupt_async_exit_prepare()
-even described this exact hazard ("must come before irq_exit()"), but
-nap_adjust_return() was placed after irq_exit_rcu() in the macro, so
-the protection was never effective.
-
-Fix this by calling nap_adjust_return() inside DEFINE_INTERRUPT_HANDLER_ASYNC
-immediately before irq_exit_rcu(), ensuring _TLF_NAPPING is cleared and
-regs->NIP is adjusted before any code that can re-enable interrupts or
-invoke softirqs runs.  Move the explanatory comment into
-nap_adjust_return() itself and remove it from arch_interrupt_async_exit_prepare().
-
-Fixes: bee25f97ad24 ("powerpc: Enable GENERIC_ENTRY feature")
-Closes: https://lore.kernel.org/all/87wlvazrdy.fsf@igel.home/
-Reported-by: Andreas Schwab <schwab@linux-m68k.org>
-Signed-off-by: Mukesh Kumar Chaurasiya (IBM) <mkchauras@gmail.com>
----
- arch/powerpc/include/asm/entry-common.h | 15 +++++++--------
- arch/powerpc/include/asm/interrupt.h    |  1 +
- 2 files changed, 8 insertions(+), 8 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/entry-common.h b/arch/powerpc/include/asm/entry-common.h
-index fc636c42e89a..c5adb5006361 100644
---- a/arch/powerpc/include/asm/entry-common.h
-+++ b/arch/powerpc/include/asm/entry-common.h
-@@ -66,6 +66,13 @@ static inline void srr_regs_clobbered(void)
- static inline void nap_adjust_return(struct pt_regs *regs)
- {
- #ifdef CONFIG_PPC_970_NAP
-+	/*
-+	 * Adjust the nap return address before irq_exit_rcu(). irq_exit_rcu()
-+	 * may invoke softirqs with interrupts re-enabled, allowing a nested
-+	 * async interrupt to arrive. If _TLF_NAPPING is still set at that
-+	 * point, the nested interrupt would erroneously redirect its own
-+	 * return address to power4_idle_nap_return, corrupting the stack.
-+	 */
- 	if (unlikely(test_thread_local_flags(_TLF_NAPPING))) {
- 		/* Can avoid a test-and-clear because NMIs do not call this */
- 		clear_thread_local_flags(_TLF_NAPPING);
-@@ -286,14 +293,6 @@ static inline void arch_interrupt_async_enter_prepare(struct pt_regs *regs)
- 
- static inline void arch_interrupt_async_exit_prepare(struct pt_regs *regs)
- {
--	/*
--	 * Adjust at exit so the main handler sees the true NIA. This must
--	 * come before irq_exit() because irq_exit can enable interrupts, and
--	 * if another interrupt is taken before nap_adjust_return has run
--	 * here, then that interrupt would return directly to idle nap return.
--	 */
--	nap_adjust_return(regs);
--
- 	arch_interrupt_exit_prepare(regs);
- }
- 
-diff --git a/arch/powerpc/include/asm/interrupt.h b/arch/powerpc/include/asm/interrupt.h
-index fb42a664ae54..1b45a49e9bed 100644
---- a/arch/powerpc/include/asm/interrupt.h
-+++ b/arch/powerpc/include/asm/interrupt.h
-@@ -246,6 +246,7 @@ interrupt_handler void func(struct pt_regs *regs)			\
- 	instrumentation_begin();					\
- 	irq_enter_rcu();						\
- 	____##func (regs);						\
-+	nap_adjust_return(regs);					\
- 	irq_exit_rcu();							\
- 	instrumentation_end();						\
- 	arch_interrupt_async_exit_prepare(regs);			\
--- 
-2.55.0
-
+> ---
+> =C2=A0drivers/gpu/drm/ingenic/ingenic-drm-drv.c | 13 +------------
+> =C2=A01 file changed, 1 insertion(+), 12 deletions(-)
+>=20
+> diff --git a/drivers/gpu/drm/ingenic/ingenic-drm-drv.c
+> b/drivers/gpu/drm/ingenic/ingenic-drm-drv.c
+> index 7e569af22391..990c3b4625fa 100644
+> --- a/drivers/gpu/drm/ingenic/ingenic-drm-drv.c
+> +++ b/drivers/gpu/drm/ingenic/ingenic-drm-drv.c
+> @@ -1060,11 +1060,6 @@ static void ingenic_drm_unbind_all(void *d)
+> =C2=A0	component_unbind_all(priv->dev, &priv->drm);
+> =C2=A0}
+> =C2=A0
+> -static void __maybe_unused ingenic_drm_release_rmem(void *d)
+> -{
+> -	of_reserved_mem_device_release(d);
+> -}
+> -
+> =C2=A0static void ingenic_drm_configure_hwdesc(struct ingenic_drm *priv,
+> =C2=A0					 unsigned int hwdesc,
+> =C2=A0					 unsigned int next_hwdesc,
+> u32 id)
+> @@ -1127,16 +1122,10 @@ static int ingenic_drm_bind(struct device
+> *dev, bool has_components)
+> =C2=A0	}
+> =C2=A0
+> =C2=A0	if (IS_ENABLED(CONFIG_OF_RESERVED_MEM)) {
+> -		ret =3D of_reserved_mem_device_init(dev);
+> +		ret =3D devm_of_reserved_mem_device_init(dev);
+> =C2=A0
+> =C2=A0		if (ret && ret !=3D -ENODEV)
+> =C2=A0			dev_warn(dev, "Failed to get reserved
+> memory: %d\n", ret);
+> -
+> -		if (!ret) {
+> -			ret =3D devm_add_action_or_reset(dev,
+> ingenic_drm_release_rmem, dev);
+> -			if (ret)
+> -				return ret;
+> -		}
+> =C2=A0	}
+> =C2=A0
+> =C2=A0	priv =3D devm_drm_dev_alloc(dev, &ingenic_drm_driver_data,
 
