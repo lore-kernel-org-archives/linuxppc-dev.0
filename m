@@ -1,95 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-23674-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23675-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 09801C43458
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jul 2026 06:37:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 875FEC43458
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jul 2026 06:47:32 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gvWkJ5KMQz3brc;
-	Tue, 07 Jul 2026 16:37:44 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::632"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783406264;
-	cv=none; b=I/5NzMC1oOP5pxZIUcEQFa6ZCj0ZHRl2PdIKhfXzAgHailufAF8YXM9QLJIzbi9YEPN+QMv4e6zwASuLWOC7D6DE5LzUehJwseZZpwkQP9AYvO/opO/9JQtTPfdNrQeQ00jBG1TAakUBM6lz4eZT8AYrnm8CWtIgb80FOEUNubfr63HD+IJzDH/HSxe5lyyK1UiGJsVLvQ1GVJa6xCGEdvUgc+qh+qV5aQIAAPUK9+AOZa7zIzOD5eUQ+XhfvLagp5cKsdqtJclrh795tQYZgCOSRwOeIDfN9pEY9hhCrkfG9/H/S10KM5Q6TM5udWoNNipUOHAiBNfATFFsxrRhow==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gvWxb1r5yz3brm;
+	Tue, 07 Jul 2026 16:47:31 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783406851;
+	cv=none; b=OCv+hou8Tr9UqvLRiJzHgHhgRSyVML0Nxm2S5MO8HrygZYrb79tBYfS97/A4mDKVwJM5O5jm1vKLLZJfsSH9Qf/ble+j6xKLKeNk2khLVUNSmBlCbWGfJek909UJHZFvZ+zWX3ULEo0fg5gSEZEZObtAAst45C9egfeeLbVGsJ5y0GWZRhpw5tJpGlhiGmKaXDS3BGKy+Y4NzpFvALrfmtYH+aWnUppxvU+xQg3nUJP6gKGlRhLkI+Z7zZbnNwvexq8UfUL0YcKB6yx+cuuxb/hynj5a1u0hvpsiOVxdZ0qaBj5ibfw7bFFbtOj3x0etrNGExxdV9/p71FdgQ0NyFQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1783406264; c=relaxed/relaxed;
-	bh=kOQ8rJdnaLlYyfsujfvhTomKPZ31Ydzu6crJCE3qtlM=;
-	h=From:To:Subject:Date:Message-ID:MIME-Version:Content-Type; b=OPdaFUv5TQ2+tIGcJ9iKG76V/T3YxRSsdg9dJYVImvPFUQ1i/Toz9UKApIZURWvsSuFrKWiHFmymxcimQuCIf67QcLaVc1aa6J4gNDH1JGjDP0+8Gv1DOFd/3y/CGKq8yeEaRysOYtpRaXo5IRnnzt6ytYoyhuemjf3WBEAPPjV4FuXeJgw2tpBWAk6wz1ofnMf0uY3tOS8JNfCrxBVSy80hycCafI+Uh8eibCjAhAacVOK2RTJ/AcUccnxroMz30scjK8yAeeWCqizTkSi8q6W0wLk8riqNl9Kq5Oro07RUraoDKiInFd7waqq5aLjJq2Gmb3kbf4N5aSZV6jFmrg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=MJdmuWKu; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::632; helo=mail-pl1-x632.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1783406851; c=relaxed/relaxed;
+	bh=QfWl/d0f8dPQpjfKqXxdLHZHiKJFU2JtiZPZuJYImRU=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=NdivE3p00hrEpDMOBBU2yP4/xDOhxPo/ORawg6Ef7wD+oYQufag2tc4F3ILeEStpEPGxHINNqO5XMBZ866ymhX+37aDWWGxdhL8H7DHOp9MeeFWfCS1JsFV++UgOew55CsOL/j2JXExHslRyMdApJuIYzzIyqctd7usCBRq3AE++94cwWfw/gd7MUvB0ZE9gJyciTVjZdrwgibZTF+cF5fG/yktb3SO/dBq6eVSSg6WjemZ/JFvkkXgM0zC4aDfui3lFjSOrhfyVA4g/MmMyJ/y7Sfh6wCzA92bcduMgUtwn4BSU1fljT90q+pe/YfcT0bXubAutyBEP5PUQzM3iUw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=NxHa7d02; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=rathc@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=MJdmuWKu;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=NxHa7d02;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::632; helo=mail-pl1-x632.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pl1-x632.google.com (mail-pl1-x632.google.com [IPv6:2607:f8b0:4864:20::632])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=rathc@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gvWkH4bqCz3brN
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 07 Jul 2026 16:37:42 +1000 (AEST)
-Received: by mail-pl1-x632.google.com with SMTP id d9443c01a7336-2cca24023edso24459805ad.1
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 Jul 2026 23:37:42 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1783406260; x=1784011060; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:to
-         :from:from:to:cc:subject:date:message-id:reply-to;
-        bh=kOQ8rJdnaLlYyfsujfvhTomKPZ31Ydzu6crJCE3qtlM=;
-        b=MJdmuWKuFvwTJd2GY7TLYzLZoPOktMEdk2RuUArQ8xkvWO6YOL60ZxUdHsX8tIdtCc
-         9YfPCHnDtOnGJNDRumeRuIJPvPGskMpwuAzJxk7FoHqyclCB4uNithoBFJs6okxjE280
-         8f9Yqys7+PlYKOKdMWWpMewxlcdMjGE5IZZ8G8PHBOHNXg3G4Gv4lNRUdxnYpqc3G+Fp
-         zI/XHqiYuLfC+7Ia8/XsECbxvBzGw0YoBQtFGadZvrYikgF92MDrwz5VwoCyVeTmgd7+
-         qyZbP2Erq9Zsix2v3/5hQyyXbJUJ+ps5WgdW1fAVugBatE5KrMcbNSVouUjA95+wnmP+
-         Mv0g==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1783406260; x=1784011060;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:to
-         :from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=kOQ8rJdnaLlYyfsujfvhTomKPZ31Ydzu6crJCE3qtlM=;
-        b=NBL7yLIQj/4xPomX0GKwyt3tY5XNYggRfD3IwkhRf9uxVXn7KsrbZz4ls8pGJoxMZM
-         Z6XPrq1Jb+vD8hjOczQGMNul0xNjkHDQd3sqQtRzrfTBbEVejEzH3bTlcedJaUZGlNDw
-         PJeGDXOfAVea9T4jZzXnIUe6zWxr+WrfQpwe34scG7pdFVdxexK77S+VScLOegncga5P
-         MG0TXboFc+G+ntXIRe43M4J8XE0ZC5kBT/y6lTOGvNWfFTXPahJgHnbcLPbX5ksWoq6F
-         xaeGpOlWYRgE/j8TnsJIDbNe8V1TFIlgs7sNCf6oj83hi+MU3eAPbd3kmOOp7KZp1Fdf
-         42Vw==
-X-Forwarded-Encrypted: i=1; AHgh+RpdPkin12/i2kOxQ2tEKY9UjQ0c5c0Yz/CkykQp4o9n9EPhcP4ECGni4+FleNV/0ERbZMPZ+tPFd5kDZjM=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YyfDASFHl2QlOM/sMhwSEEiqGU59vyNYJjEKwfEFb/RfV/8HuyK
-	zMvCKTdbvTilTt4kDJeMUd8mWqe69JV86l35e8ZkF385MfQe28Bvm6Xr
-X-Gm-Gg: AfdE7clAQivjgai3eRRz0SRBmX1uiLq69I3eo7PJetPkJt1mFHgJDzna0+H0LMtcg8n
-	HmTzyGHhJsHplSMMZLSR7KhBzPQzckd1BPR6JS2pzqyu842G/cDKukv6Ermq219EnIW9Z5p4WxC
-	GeYGb+pWLgHbEgqNkdoE1vnjFbZT5yXzwvvh79DL5N0Y3Afe08LrGydCk/d2JLIASGxk4KWWUMR
-	35WHitqUGLXsTR3CIvOTDxSsF/yo1mZRA+GqYbsbxE0Ac2oTV+EoXNmgcTO0aH5JDeg3tmeAakn
-	2TqwjOmJIzM1/+Bs9rx2V6Ul4VYCiv3k0UhIcg4DSZ6jOJVG9rdJ/82WlsTu48bLzFF1b58RYnE
-	IiLGMALFows4JHhfcFRyPM6UACpMwQdS2E7eNAW4FC62SN8hIQC59edY2fc9yzagc6bou4zJ4ol
-	RDZpfBAGzdnPccg/SlviOBpzH9GUrLAPWYkTDgeG9F/p7vBu5Fwxifo0pLM+itpdyWNwvAJvK7J
-	Q0A
-X-Received: by 2002:a05:6a21:8886:b0:3c0:9c18:d5af with SMTP id adf61e73a8af0-3c09c18d774mr1685920637.76.1783406260383;
-        Mon, 06 Jul 2026 23:37:40 -0700 (PDT)
-Received: from li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com.com ([106.51.160.236])
-        by smtp.gmail.com with ESMTPSA id a92af1059eb24-13b659d8da9sm6719733c88.14.2026.07.06.23.37.34
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 06 Jul 2026 23:37:40 -0700 (PDT)
-From: "Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com>
-To: oleg@redhat.com,
-	maddy@linux.ibm.com,
-	mpe@ellerman.id.au,
-	npiggin@gmail.com,
-	chleroy@kernel.org,
-	msuchanek@suse.de,
-	sshegde@linux.ibm.com,
-	mkchauras@gmail.com,
-	mchauras@linux.ibm.com,
-	thuth@redhat.com,
-	segher@kernel.crashing.org,
-	kees@kernel.org,
-	ryan.roberts@arm.com,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH V4] powerpc/syscall: Fix syscall skip handling for seccomp and ptrace
-Date: Tue,  7 Jul 2026 12:07:29 +0530
-Message-ID: <20260707063729.387129-1-mkchauras@gmail.com>
-X-Mailer: git-send-email 2.55.0
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gvWxY3VSTz3brc
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 07 Jul 2026 16:47:29 +1000 (AEST)
+Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6674IK3X2286263;
+	Tue, 7 Jul 2026 06:47:23 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=QfWl/d
+	0f8dPQpjfKqXxdLHZHiKJFU2JtiZPZuJYImRU=; b=NxHa7d0248RT/hkopc3IbJ
+	cxSTUYnDcf3lygyRBhU8lVwXCyRQvP9CLI5hjroFU3MbIi1RTSgn0QH2s5Qisks/
+	c6fw5sPuIF7AerCLWIX8cXH0BgE1SmBGIeqNJbFhnN/KPKmfyGdX9t+QwbcGBvWD
+	qm1ep6NxYr7GVVFDvPoZAov2Jfy5eipQojx2W9KVpo6QSXO0MO5M3HaF/W5Kj8la
+	n/Bq7Qjic/4UFmeocQzxKTYaBG+WYVFB4zC2ll41VV/dkAh+as7bpiJNRtSLCUvM
+	oLw21JlTZ6kRt/yzUcOi2llDGNef5s5h0QkBxDeMzfOURALaaQIWGS/ISEmr64vA
+	==
+Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4f6sw4nhr1-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 07 Jul 2026 06:47:22 +0000 (GMT)
+Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma12.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 6676Yanf006911;
+	Tue, 7 Jul 2026 06:47:21 GMT
+Received: from smtprelay03.dal12v.mail.ibm.com ([172.16.1.5])
+	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 4f7cgq1jf8-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 07 Jul 2026 06:47:21 +0000 (GMT)
+Received: from smtpav04.dal12v.mail.ibm.com (smtpav04.dal12v.mail.ibm.com [10.241.53.103])
+	by smtprelay03.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6676lKKR25297540
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Tue, 7 Jul 2026 06:47:21 GMT
+Received: from smtpav04.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id E28C358056;
+	Tue,  7 Jul 2026 06:47:20 +0000 (GMT)
+Received: from smtpav04.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id CFCB758052;
+	Tue,  7 Jul 2026 06:47:17 +0000 (GMT)
+Received: from [9.39.26.222] (unknown [9.39.26.222])
+	by smtpav04.dal12v.mail.ibm.com (Postfix) with ESMTP;
+	Tue,  7 Jul 2026 06:47:17 +0000 (GMT)
+Message-ID: <1fcb4ab1-5f5e-43a7-9c65-943c795ae98c@linux.ibm.com>
+Date: Tue, 7 Jul 2026 12:17:00 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -103,182 +81,156 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+User-Agent: Mozilla Thunderbird
+Subject: Re: [kvm-unit-tests RFC PATCH 2/6] configure: Make arch_libdir a
+ first-class entity
+To: Thomas Huth <thuth@redhat.com>
+Cc: npiggin@gmail.com, harshpb@linux.ibm.com, lvivier@redhat.com,
+        linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org,
+        andrew.jones@linux.dev, sbhat@linux.ibm.com
+References: <20260602064806.3101025-1-rathc@linux.ibm.com>
+ <20260602064806.3101025-3-rathc@linux.ibm.com>
+ <7d9e6365-1b2d-4b18-8fb5-d8048fddb7f0@redhat.com>
+ <efbbe11b-9e02-4878-b61a-f804b491ab4c@linux.ibm.com>
+ <6e29ac41-383a-416c-bca4-c3d4349beda0@redhat.com>
+Content-Language: en-US
+From: Chinmay Rath <rathc@linux.ibm.com>
+In-Reply-To: <6e29ac41-383a-416c-bca4-c3d4349beda0@redhat.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-GUID: _LgnrYqp8q8NaXhnyP0FVgU0swqOXjo2
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzA3MDA1OCBTYWx0ZWRfX6qDtlfrjR8W7
+ l0X04lYcTuSUAP5F8pqhIlOARQbdNoGzQ2fqYDpqILF9d589Zq5ee3tA4aEdiqq7+co3e4fshg0
+ IP7kSNEhV2X+E6fwO1Uqbo46HPrnhyUUmzx4SDqyRi+qYIGkcJ4tySQHK5D0v3cOoIo5yMCNRaM
+ 8Gpn79SfT2E2KMoQlN1fF++CZ+SC9RkbH9iT0v474qZdNmMqEIpD69YNYeVf4c1ObtZvF0TMaoH
+ nIMd223Zj25X6JCV74fZxlYo7UcrVaadJ9TFLiXa++jfGlGCa3922K3dMrPM400CTBfrU2In3pN
+ XLwKqqR7gqSjKEWUudM2ZRklo8ir1DF9h+lAFs59vk2y1zvd3s0XLi4vKQU2vo/q6GD728GZfgT
+ yOCu9gWdpYhCPPC5SyJTZUtPZS910KJJ//EpspKZgHHbNtpqPKqkseP2/70rI3RUB1w7r5EkbQj
+ Q6d6nz4VM+pYkEZkWZw==
+X-Proofpoint-ORIG-GUID: T1DX8Yard4CYeDrBuqzzVFW4RCYVVNZB
+X-Authority-Analysis: v=2.4 cv=FqQ1OWrq c=1 sm=1 tr=0 ts=6a4ca0fb cx=c_pps
+ a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17
+ a=IkcTkHD0fZMA:10 a=RAioF0-LDSMA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=U7nrCbtTmkRpXpFmAIza:22 a=pGLkceISAAAA:8
+ a=VnNF1IyMAAAA:8 a=uIRw34n5qooko5-z2rUA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+X-Proofpoint-Spam-Info: AW1haW4tMjYwNzA3MDA1OCBTYWx0ZWRfX4araACPv+3eS
+ yy4Fj9DpnWebzqZi+xllifX3SpXQdoy484DAM+eKEP7z/gW7aUvD87r3R84v71PO8P2e8i6P7Mn
+ babm9Y/DKQ5YLqtp9SvA7o4dgv7DRgk=
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-07-07_01,2026-07-06_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ adultscore=0 impostorscore=0 clxscore=1015 malwarescore=0 lowpriorityscore=0
+ priorityscore=1501 bulkscore=0 suspectscore=0 spamscore=0 phishscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607070058
 
-After enabling GENERIC_ENTRY on PowerPC, syscall_enter_from_user_mode()
-returns -1 as a sentinel to signal that seccomp or ptrace has intercepted
-the syscall and already set a return value via syscall_set_return_value().
-system_call_exception() was not handling this sentinel, and since -1UL
-is >= NR_syscalls, the code fell into the out-of-range path and returned
--ENOSYS, overwriting the errno already placed in regs->gpr[3].
 
-The naive fix of checking r0 == -1L before the NR_syscalls bounds check
-is ambiguous: a user legitimately calling syscall(-1) also produces r0 ==
--1L, and a tracer intercepting such a call would have its injected return
-value silently discarded.
+On 7/6/26 16:06, Thomas Huth wrote:
+> On 03/07/2026 08.46, Chinmay Rath wrote:
+>>
+>> On 6/10/26 17:00, Thomas Huth wrote:
+>>> On 02/06/2026 08.48, Chinmay Rath wrote:
+>>>> From: Nicholas Piggin <npiggin@gmail.com>
+>>>>
+>>>> arch_libdir was brought in to improve the heuristic determination of
+>>>> the lib/ directory based on arch and testdir names, but it did not
+>>>> entirely clean that mess up.
+>>>>
+>>>> Remove the arch_libdir->arch->testdir heuristic and just require
+>>>> everybody sets arch_libdir correctly. Fail if the lib/arch or
+>>>> lib/arch/asm directories can not be found.
+>>>>
+>>>> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+>>>> Signed-off-by: Chinmay Rath <rathc@linux.ibm.com>
+>>>> ---
+>>>>   Makefile  |  2 +-
+>>>>   configure | 20 ++++++++++++--------
+>>>>   2 files changed, 13 insertions(+), 9 deletions(-)
+>>>
+>>> FYI, this patch seems to trigger yet another issue with Clang (I 
+>>> used v21):
+>>>
+>>> clang -no-integrated-as -std=gnu99 -ffreestanding -O2 -msoft-float 
+>>> -mno- altivec  -I /root/kvm-unit-tests/lib -I 
+>>> /root/kvm-unit-tests/lib/libfdt -I lib -Wa,-mregnames -fverbose-asm 
+>>> -S -o lib/powerpc/asm-offsets.s lib/ powerpc/asm-offsets.c
+>>> lib/powerpc/asm-offsets.c:10:10: error: 'asm/smp.h' file not found 
+>>> with <angled> include; use
+>>>       "quotes" instead
+>>>    10 | #include <asm/smp.h>
+>>>       |          ^~~~~~~~~~~
+>>>       |          "asm/smp.h"
+>>> In file included from lib/powerpc/asm-offsets.c:10:
+>>> lib/powerpc/asm/smp.h:5:10: fatal error: 'asm/processor.h' file not 
+>>> found
+>>>     5 | #include <asm/processor.h>
+>>>       |          ^~~~~~~~~~~~~~~~~
+>>> 2 errors generated.
+>>>
+>>> Could you please have a look?
+>>
+>> Hi Thomas, back from traveling and looked into this.
+>> I am using Clang v21 as well :
+>> # clang --version
+>> clang version 21.1.8 (Fedora 21.1.8-4.fc43)
+>> Target: ppc64le-redhat-linux-gnu
+>> Thread model: posix
+>> InstalledDir: /usr/bin
+>> Configuration file: /etc/clang/ppc64le-redhat-linux-gnu-clang.cfg
+>>
+>> I see the above file, asm-offsets.s being generated properly without 
+>> any error during the make process (used the extra flags for make that 
+>> I have mentioned in my other reply).
+>> Snippet from make :
+>> cat powerpc/boot_rom.bin.tmp >> powerpc/boot_rom.bin
+>> rm -f powerpc/boot_rom.bin.tmp
+>> clang -no-integrated-as -Wa,-mpower10 -std=gnu99 -ffreestanding -O2 
+>> -msoft- float -mno-altivec  -I /root/chins/git/kvm-unit-tests/lib -I 
+>> /root/chins/ git/kvm-unit-tests/lib/libfdt -I lib -Wa,-mregnames 
+>> -fverbose-asm -S -o lib/ powerpc/asm-offsets.s 
+>> /root/chins/git/kvm-unit-tests/lib/powerpc/asm-offsets.c
+>> (set -e; echo "#ifndef __ASM_OFFSETS_H__"; echo "#define 
+>> __ASM_OFFSETS_H__"; echo "/*"; echo " * Generated file. DO NOT 
+>> MODIFY."; echo " *"; echo " */"; echo ""; sed -ne 
+>>  's:^[[:space:]]*\.ascii[[:space:]]*"\(.*\)".*:\1:; /^->/ 
+>> {s:->#\(.*\):/* \1 */:; s:^->\([^ ]*\) [\$#]*\([-0-9]*\) 
+>> \(.*\):#define \1 \2 /* \3 */:; s:^->\([^ ]*\) [\$#]*\([^ ]*\) 
+>> \(.*\):#define \1 \2 /* \3 */:; s:->::; p;}' 
+>> lib/powerpc/asm-offsets.s; echo ""; echo "#endif" ) > lib/ 
+>> powerpc/asm-offsets.h
+>> cp -f lib/powerpc/asm-offsets.h lib/generated/
+>> clang -no-integrated-as -Wa,-mpower10 -std=gnu99 -ffreestanding -O2 
+>> -msoft- float -mno-altivec  -I /root/chins/git/kvm-unit-tests/lib -I 
+>> /root/chins/ git/kvm-unit-tests/lib/libfdt -I lib -Wa,-mregnames -g 
+>> -MMD -MP -MF powerpc/.selftest.d -fno-strict-aliasing -fno-common 
+>> -Wall -Wwrite-strings - Wempty-body -Wuninitialized 
+>> -Wignored-qualifiers -Wno-missing-braces -Werror 
+>> -fomit-frame-pointer  -fno-stack-protector   -Wno-frame-address 
+>>  -fno-pic    -Wunused-but-set-parameter -Wno-override-init 
+>>  -Wmissing-prototypes - Wstrict-prototypes -mlittle-endian   -c -o 
+>> powerpc/selftest.o /root/chins/ git/kvm-unit-tests/powerpc/selftest.c
+>>
+>> Infact, if I just execute that single command independently to build 
+>> asm- offsets.s, it works as well.
+>
+> Ok, I finally got access to a POWER system again and tried to 
+> reproduce the issue, but I also cannot reproduce it anymore. No clue 
+> how I managed to get into that situation, but looks like it was rather 
+> due to a messed up build tree than due to your patch. So sorry for the 
+> trouble, and please go ahead and simply ignore my objection here.
 
-Fix this properly by introducing regs->entry_flags, a kernel-internal
-field in struct pt_regs (consuming one slot of the existing __pt_regs_pad
-so the ABI is preserved), with SYSCALL_ENTRY_RET_SET as an out-of-band
-flag. syscall_set_return_value() sets this flag whenever seccomp or ptrace
-injects a return value. system_call_exception() zeros entry_flags before
-calling syscall_enter_from_user_mode(), then checks and clears the flag
-afterwards: if set, it returns regs->gpr[3] directly regardless of what
-syscall number the user originally requested.
+Not a problem Thomas. Thanks for taking the time to look this up again. 
+Will post the next iteration asap.
 
-This handles all seccomp actions correctly:
+Regards,
+Chinmay
 
-  - SECCOMP_RET_ERRNO, SECCOMP_RET_TRACE (no tracer), SECCOMP_RET_USER_NOTIF:
-    all call syscall_set_return_value(), flag is set, injected value returned.
-  - SECCOMP_RET_TRAP, SECCOMP_RET_KILL: call syscall_rollback() and deliver
-    a signal; flag is not set, but the process is dying so the return value
-    is irrelevant.
-
-The fix covers both ppc32 and ppc64 with no #ifdefs.
-
-Fixes: bee25f97ad24 ("powerpc: Enable GENERIC_ENTRY feature")
-Reported-by: Michal Suchánek <msuchanek@suse.de>
-Closes: https://lore.kernel.org/all/ajpp-_XnbF3UTM_E@kunlun.suse.cz/
-Tested-by: Michal Suchánek <msuchanek@suse.de>
-Reviewed-by: Michal Suchánek <msuchanek@suse.de>
-Signed-off-by: Mukesh Kumar Chaurasiya (IBM) <mkchauras@gmail.com>
----
- arch/powerpc/include/asm/ptrace.h      | 22 +++++++++++++++++++++-
- arch/powerpc/include/asm/syscall.h     |  6 ++++++
- arch/powerpc/include/uapi/asm/ptrace.h |  6 ++++--
- arch/powerpc/kernel/ptrace/ptrace.c    |  2 ++
- arch/powerpc/kernel/syscall.c          | 18 ++++++++++++++++++
- 5 files changed, 51 insertions(+), 3 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/ptrace.h b/arch/powerpc/include/asm/ptrace.h
-index fdeb97421785..1a53d5cfa8db 100644
---- a/arch/powerpc/include/asm/ptrace.h
-+++ b/arch/powerpc/include/asm/ptrace.h
-@@ -54,8 +54,9 @@ struct pt_regs
- 			};
- 			unsigned long result;
- 			unsigned long exit_flags;
-+			unsigned long entry_flags;
- 			/* Maintain 16 byte interrupt stack alignment */
--			unsigned long __pt_regs_pad[3];
-+			unsigned long __pt_regs_pad[2];
- 		};
- 	};
- #if defined(CONFIG_PPC64) || defined(CONFIG_PPC_KUAP)
-@@ -233,6 +234,25 @@ static inline unsigned long frame_pointer(struct pt_regs *regs)
- #define current_pt_regs() \
- 	((struct pt_regs *)((unsigned long)task_stack_page(current) + THREAD_SIZE) - 1)
- 
-+/*
-+ * SYSCALL_ENTRY_RET_SET: seccomp or ptrace called syscall_set_return_value()
-+ * and wants the syscall skipped; regs->gpr[3] already holds the return value.
-+ */
-+#define SYSCALL_ENTRY_RET_SET	BIT(0)
-+
-+static inline void set_syscall_entry_ret(struct pt_regs *regs)
-+{
-+	regs->entry_flags |= SYSCALL_ENTRY_RET_SET;
-+}
-+
-+static inline bool test_and_clear_syscall_entry_ret(struct pt_regs *regs)
-+{
-+	bool set = !!(regs->entry_flags & SYSCALL_ENTRY_RET_SET);
-+
-+	regs->entry_flags &= ~SYSCALL_ENTRY_RET_SET;
-+	return set;
-+}
-+
- /*
-  * The 4 low bits (0xf) are available as flags to overload the trap word,
-  * because interrupt vectors have minimum alignment of 0x10. TRAP_FLAGS_MASK
-diff --git a/arch/powerpc/include/asm/syscall.h b/arch/powerpc/include/asm/syscall.h
-index 834fcc4f7b54..9ae79326abe3 100644
---- a/arch/powerpc/include/asm/syscall.h
-+++ b/arch/powerpc/include/asm/syscall.h
-@@ -98,6 +98,12 @@ static inline void syscall_set_return_value(struct task_struct *task,
- 			regs->gpr[3] = val;
- 		}
- 	}
-+	/*
-+	 * Mark that a return value has been explicitly set by seccomp or
-+	 * ptrace so that system_call_exception() can skip the syscall
-+	 * unconditionally, even when the user requested syscall(-1).
-+	 */
-+	set_syscall_entry_ret(regs);
- }
- 
- static inline void syscall_get_arguments(struct task_struct *task,
-diff --git a/arch/powerpc/include/uapi/asm/ptrace.h b/arch/powerpc/include/uapi/asm/ptrace.h
-index a393b7f2760a..2f2a43414fe6 100644
---- a/arch/powerpc/include/uapi/asm/ptrace.h
-+++ b/arch/powerpc/include/uapi/asm/ptrace.h
-@@ -56,7 +56,8 @@ struct pt_regs
- 	unsigned long dsisr;		/* on 4xx/Book-E used for ESR */
- 	unsigned long result;		/* Result of a system call */
- 	unsigned long exit_flags;	/* System call exit flags */
--	unsigned long __pt_regs_pad[3];	/* Maintain 16 byte interrupt stack alignment */
-+	unsigned long entry_flags;	/* System call entry flags */
-+	unsigned long __pt_regs_pad[2];	/* Maintain 16 byte interrupt stack alignment */
- };
- 
- #endif /* __ASSEMBLER__ */
-@@ -117,7 +118,8 @@ struct pt_regs
- #define PT_DSISR 42
- #define PT_RESULT 43
- #define PT_EXIT_FLAGS 44
--#define PT_PAD 47 /* 3 times */
-+#define PT_ENTRY_FLAGS 45
-+#define PT_PAD 46 /* 2 times */
- #define PT_DSCR 48
- #define PT_REGS_COUNT 48
- 
-diff --git a/arch/powerpc/kernel/ptrace/ptrace.c b/arch/powerpc/kernel/ptrace/ptrace.c
-index 316d4f5ead8e..440d00690cf2 100644
---- a/arch/powerpc/kernel/ptrace/ptrace.c
-+++ b/arch/powerpc/kernel/ptrace/ptrace.c
-@@ -235,6 +235,8 @@ void __init pt_regs_check(void)
- 		     offsetof(struct user_pt_regs, dsisr));
- 	BUILD_BUG_ON(offsetof(struct pt_regs, result) !=
- 		     offsetof(struct user_pt_regs, result));
-+	BUILD_BUG_ON(offsetof(struct pt_regs, entry_flags) !=
-+		     offsetof(struct user_pt_regs, entry_flags));
- 
- 	BUILD_BUG_ON(sizeof(struct user_pt_regs) > sizeof(struct pt_regs));
- 
-diff --git a/arch/powerpc/kernel/syscall.c b/arch/powerpc/kernel/syscall.c
-index a9da2af6efa8..a43d3a9428cc 100644
---- a/arch/powerpc/kernel/syscall.c
-+++ b/arch/powerpc/kernel/syscall.c
-@@ -19,9 +19,27 @@ notrace long system_call_exception(struct pt_regs *regs, unsigned long r0)
- 	long ret;
- 	syscall_fn f;
- 
-+	/*
-+	 * Zero entry_flags before syscall_enter_from_user_mode() so that
-+	 * syscall_set_return_value() can set SYSCALL_ENTRY_RET_SET as an
-+	 * unambiguous out-of-band signal.  The field is not initialised by
-+	 * the entry assembly.
-+	 */
-+	regs->entry_flags = 0;
- 	add_random_kstack_offset();
- 	r0 = syscall_enter_from_user_mode(regs, r0);
- 
-+	/*
-+	 * Seccomp or ptrace may have set a return value and requested that
-+	 * the syscall be skipped. syscall_set_return_value() sets
-+	 * SYSCALL_ENTRY_RET_SET in regs->entry_flags as an
-+	 * unambiguous out-of-band signal. This avoids the ambiguity of
-+	 * using r0 == -1 as the skip sentinel when the user themselves
-+	 * called syscall(-1).
-+	 */
-+	if (unlikely(test_and_clear_syscall_entry_ret(regs)))
-+		return syscall_get_error(current, regs);
-+
- 	if (unlikely(r0 >= NR_syscalls)) {
- 		if (unlikely(trap_is_unsupported_scv(regs))) {
- 			/* Unsupported scv vector */
--- 
-2.55.0
-
+>
+>  Thanks,
+>   Thomas
+>
+>
 
