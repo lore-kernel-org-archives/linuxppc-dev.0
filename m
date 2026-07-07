@@ -1,85 +1,96 @@
-Return-Path: <linuxppc-dev+bounces-23671-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23672-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9D196C43458
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jul 2026 05:38:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2A877C43458
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jul 2026 06:05:37 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gvVPf4g0tz3bsX;
-	Tue, 07 Jul 2026 15:38:14 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::632"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783402694;
-	cv=none; b=hhhyVs80BZ/+9P9QTKmz8Zto0IbcXeLvxHxUU4eHNu/wgYZlJOyaICos7ahj7RAeJNluHY7j23O82gfFFtEZKocS2MBQBNfKr5tyIruxD9Og5tnvlSr/lAafmLwNFC1vYN6j/M7x3bukH8/aNcp5E7s2/WnPDWU7cIJ5tvqvhvhDg9TsQQxmR2GXwSazkv8/r3k5uDlXyGrcgPsO8D6cBEyl564QfCfkuQ9pTo+H60paIlFUxUrTcW07LXGRFRJCbw/YtvxLZ/fBc4So+akAynJ2lww3QZvf0+jrk5qqHFGn53TlU88q6TQo1nP7VOTzoDkmJff96JT7Kkpqw32ztA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gvW1C3KTvz3brc;
+	Tue, 07 Jul 2026 16:05:35 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1032"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783404335;
+	cv=none; b=UrKHeTeRfQLAiMupb2mb8uhdaTjyYSD5kBXcXqT5j3rVPrOIWf7BXQyrCc0vI2OsoGOt0v82Cl/TvJMCltE5HZrGnwpwTeH6fHf7MDzKY1U69Ssb9MZVjCXxzEq19OL0goM43iRZY040eMM9b2QRwo9SnU3AlAexVOjHSsJU/5X/0QPcVLWYfVDHU7p8pPZ3zeKmXrRUIihmwTyIpvRfypn2kYQ+JLPxypls0UsSMh4Rv/I28mM4BsHw/kDedxa/zeXxX7KPv/OvkS1iahWTUD0QD4W6WTbt4h5PC2zGGIvlarMGkk+5l+hDeTFBvAHLKuJczvgQHVzeWTRPd+OWnA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1783402694; c=relaxed/relaxed;
-	bh=p1z6ysEkvPhwh7JemQocAndVR5dhrdQsHU5bo95fecw=;
+	t=1783404335; c=relaxed/relaxed;
+	bh=5hSf98TXXtynOTZ3bnvTSQp9m+FQuepCzRJQYwBNiY0=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=DhZusTaOZ/0xdIgHt2dAyGTxcJfcs6qG5Ay9+CpEQPf01ySIt/ZcDvMbnIti343IoTn/BJLdiXuke5a/qFh/tRhg66FM9RE0hRQeD+tSMhLxVPhA0SNDCudesPIZ1qmy41t/qCYCx7rsoKbUXdyCDYm2xO25DoP3fAelwFP3W/2eg+SZ7HFtMgJV+s9et2kFgsjp69lGZhUwfiQ/lGYZhsZc5+EQE9mwozXSLFz3JtojSWdpOfMpi+waWHKcDmjubaCatLOJwJU5YQA+oIKMK5yuZgiZIntnjAnFNlH7GIA16H5ZNtoIVjs+1nKyMhiXcddLhbu/6mqxcp7igH8k9A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=E+NZsFI7; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::632; helo=mail-pl1-x632.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	 Content-Type:Content-Disposition:In-Reply-To; b=lVKowj1xr22bDUrK5S8IRzY8A0G8/gaUC0f8u4DiEOiRgqOSsO5+/OUK/v0/GqaS8wXPl6s+rSkblnkDvih6ZqFv6BiC2k9fVpD+SsZLgKU7+YmpDZI+ZYYQdvjLRCRgQw3YmyA2wtU9H8PE1unn5QAE4pay0YIoXkDsBUK4dzWbVl04iFmp+fJm5uDYWKySSx7dK0dmRVVpm0gDlQmYEC1J0jcC64iQNbm8SQFUd3/q/2nPoLoYiUz1jdmQSkP9jYXzSZ9mTL5cu78Og9Sup/vtmHLIobmL+S2Tju7pB5Pi5m0d0qyN233AZ79LN83bBIsTwnbQzS3dV5O+2GcGqg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=KjE4Cavn; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1032; helo=mail-pj1-x1032.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=E+NZsFI7;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=KjE4Cavn;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::632; helo=mail-pl1-x632.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pl1-x632.google.com (mail-pl1-x632.google.com [IPv6:2607:f8b0:4864:20::632])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1032; helo=mail-pj1-x1032.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pj1-x1032.google.com (mail-pj1-x1032.google.com [IPv6:2607:f8b0:4864:20::1032])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gvVPc3bMCz3brx
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 07 Jul 2026 15:38:11 +1000 (AEST)
-Received: by mail-pl1-x632.google.com with SMTP id d9443c01a7336-2ca64c3ce5fso41306575ad.3
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 Jul 2026 22:38:11 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gvW1B3rq8z3brN
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 07 Jul 2026 16:05:33 +1000 (AEST)
+Received: by mail-pj1-x1032.google.com with SMTP id 98e67ed59e1d1-384930ca5e2so2529918a91.3
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 Jul 2026 23:05:33 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1783402688; x=1784007488; darn=lists.ozlabs.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=p1z6ysEkvPhwh7JemQocAndVR5dhrdQsHU5bo95fecw=;
-        b=E+NZsFI7tl7LaSQoWLaCK3yWUu4uo/b2nbtLZvF8NfjyD3ljnTexLG5TujEB4Kx4ss
-         Jesy8hnmeq2Xk9mnknvDdt+7uHgvYiD4kq2pBQo8b7djuKOM3IEYUn5f1WkrxsmXeK1R
-         Gn2Y8er6khZRVpXpH+UPZuIIb9rleHbXpif1hf4DhjDEWY4VCuZaJ0vfbBJif3H+zB6V
-         C77kfBhncdFz4jw/3N2PNyFhcMxZroxvKi4UT34WJoUi6JmhXuahferlxC7045U1M40d
-         2y+f+dFXtr3ib11x7ximIgYNg/IAUg6/8jjFV1paM3Z/m5SXZLJCI1kLxoX9Z8k5/1er
-         Hfrg==
+        d=gmail.com; s=20251104; t=1783404331; x=1784009131; darn=lists.ozlabs.org;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:message-id:subject:cc:to:from:date:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=5hSf98TXXtynOTZ3bnvTSQp9m+FQuepCzRJQYwBNiY0=;
+        b=KjE4CavnlSLDbZLKXsVWLMeE/8yPJGLikkZQbUVPlcD6iPKQU9+tdxWtriUhJx+p8x
+         eSoYGt8XtgeRJruYpQAiBxfNeuEbJ05FTCqib0uS/221b2Flp41hvPcHaQMZj1T9BNvj
+         5N1mWoDSDjHZINCChSfzDQaxc/tCoLCkiXCC7ovwC5kU65+IqcqAfi4cTOkaHX60UQMr
+         y3FSRgV30MjKz/E6/t/e5V+Kqcf7639mTZbPRXzDRp7TTOZC21LvNaYg7pulT0tAh7nm
+         bm88x0q0pYWUVO2L4G9XCVqG0U9NB7LKQS6A09XsMpdGc9gJ7l31dapIptc+oPThJq0l
+         ZW7Q==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1783402688; x=1784007488;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=p1z6ysEkvPhwh7JemQocAndVR5dhrdQsHU5bo95fecw=;
-        b=dnBTaAejZx6e+WYR5jg3uMnrDi+zMCSC0Dnjbc7gF4zdfUVTwpXLIo5ZjohxrDuVGS
-         WLSl74dQMwu3+UUAra/AbHtdoC+xh2+80zhdTwtPHxbqVKoPrCKHo4e6G1dKQaiZjUSE
-         06NdY6f9Fco/RA6wMkqRraHNNsKc9x9n6r9bU0czzYreFyilsJQsJv4f4z+9F8TQYt8p
-         q3yp3DcMhGSPcfKbD281B/Sz3Q17Fr2PxBJ8q3VFteWRoMgEUFnZvvfmAdWPtc0Xh/Oz
-         /hqSg1wZhapTmMaedSyWRIxAE7M4Uswe/7NJtqcUvqNP65060+nx61h+e9N1f5lotV7/
-         zxzA==
-X-Gm-Message-State: AOJu0Ywvp+EF7y+3ffaMElWl20CkbmJuuC5Ajcu4yO5hMRUnCdmeqVzU
-	zAPhhUpOY5GAkx5W9OtEdYfO3ZlyAewB1JtwyBnZmh9je/EHfUtbJyWy
-X-Gm-Gg: AfdE7cntjLVxUn4zC+e2h/1wWgS7cM5Gt1YphzgN+t9KZJnh3mP1VTplFfPUEMTZJ7L
-	/uGtnAHjHpPH7yGgfnN09ky1Yygyc4TR6U38Hc6WmZ5+fO+rO/Fc5JujiWqLJrIp3bRZlEf7EHs
-	y6rqRFt667jnnjEGi94V9N9U3juJWapFs+IrnWskIO1wOQjv6csHVTuOackwS7VKsdpaYOKdV/P
-	cwIZh0+dJ85f4R5zIn7CA85QJxV2w626loMMvgKx9o9QYzcd87DjgYSHVF8p4Erbg7F1nhI/pe5
-	/EjRTmDlS1oLHN0D6ampNmcwS78UgVGnahZ/1EyOYyLk2dqc1Dzimbre9Y+Y31v1v13meTAXd0w
-	gHlorMGdoloBBYPhwRZ0m6K0q0/lPeB7wMkFBMP/YdOG6d46+xVxXwa/lu0mmhDY/1DmCp0HQWk
-	38B7WNwBipT8Ng6CA4PRDqyWznIBO8h1vDP3aBBXrYvqaeay0LIRpB/v6KxEQW
-X-Received: by 2002:a17:903:2b06:b0:2ca:9ab:e723 with SMTP id d9443c01a7336-2ccbf046ca6mr37209635ad.33.1783402688361;
-        Mon, 06 Jul 2026 22:38:08 -0700 (PDT)
+        d=1e100.net; s=20251104; t=1783404331; x=1784009131;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:message-id:subject:cc:to:from:date:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=5hSf98TXXtynOTZ3bnvTSQp9m+FQuepCzRJQYwBNiY0=;
+        b=RiR8Iaf3G5SjkZFM8WmP3ArRSWY9p6XR/e6mEZfUINIBBDMKno5Hlz0g1wAd10N8rV
+         W5E1iUpifhWdavTkTCThSljkncJ97tGKg01z8fEdJ0Uy5gdWlgbBP5QNH00mlPcLttcx
+         jKWkYM3pDwlk5WmtPDyPnwfYMZ4ZQXpu8inbkGviRqByPbuOMPGN14Er48QE0Kqulas1
+         NQUnD3wOhOgccGrYjviUhjy0EHGRLrEsvMOK5MXbCMDklN9tbc/N/lvOwLZh8DAFDVpT
+         1AZ2ty2/6GCPMiUp5p+DgcELaw/EcJH5y9VxuKy1/AwIPCxpgdIWpD+DfoWGZcmAf6hO
+         /ZeQ==
+X-Forwarded-Encrypted: i=1; AHgh+RqrXbQwRyvzYKJo7hi9rIMkhhjF/yAPK6Zegq39MEPGf3NDoVIQM6pBFqVVpIJeNUbyGcnDiHItH5Ph6Bo=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YyrDnZ9ly+4+Lw7/55UtHuUkABxsGhvb4Gfn4ewO3AFy85ZI6ey
+	UnraVPlrDdVHYGC9PF0Ig//KhJgb3GUUiG1DErRckBbj47vT+eRrRYXn
+X-Gm-Gg: AfdE7cltcRpqg77NXgxx+fVtTXWl5CgTqp8KJT8EjycI6GA+rPQsqM4lavXKXGPF2BP
+	KzA921wQeO7e/sgpI/tfa0bAmAKH5d4hq8zTib9tP+KhS34F5rbsAs0tUhsrQ63ahJMiddUqZD9
+	RbW5vydgWGSogp9zpHelptKRhsUFR9NequyBHEfqywjT65MLQxD9QLnyNTr+eMc8kkHkTkyixUG
+	niBQhoE8L916a5PV1m5/cBSvvnVV/aoVN+QDewB/nhIvJfh4SxDITRdcQYlphKcZKiJjv966uv0
+	OofAFMYJKm2Jw69sHV+WlLt4MoF3qFjh0gxH7dezPW0EJ2PWNF3mPAV4QzmeerKvZxZL0LkdMb8
+	Ut6in0ND8BuG8ZltBEew8ZqRtQLbNHopDpUPzE2lA7jpB2nIajSbTb7aFII1b21S+Lkl6eeinrL
+	lBZ+9edcSO3rXx+0V7BXEABSC/IBvWC0Q2XbMeqvTRAoTKxh2r9+M6Vbv6AuY2MpFR3qYJ4fo=
+X-Received: by 2002:a17:90b:3c86:b0:36a:5d1f:7b6 with SMTP id 98e67ed59e1d1-3875528aca4mr3406240a91.2.1783404331134;
+        Mon, 06 Jul 2026 23:05:31 -0700 (PDT)
 Received: from li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com ([106.51.160.236])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2ccc9bf74cbsm5219135ad.18.2026.07.06.22.38.04
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-387d12fcd8esm475448a91.3.2026.07.06.23.05.20
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 06 Jul 2026 22:38:08 -0700 (PDT)
-Date: Tue, 7 Jul 2026 11:08:02 +0530
+        Mon, 06 Jul 2026 23:05:30 -0700 (PDT)
+Date: Tue, 7 Jul 2026 11:35:17 +0530
 From: Mukesh Kumar Chaurasiya <mkchauras@gmail.com>
-To: Nikhil Kumar Singh <nikhilks@linux.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
-	maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com, chleroy@kernel.org, 
-	adityag@linux.ibm.com, mahesh@linux.ibm.com
-Subject: Re: [PATCH v2] powerpc/64s: Clarify copy_and_flush() cache sync loop
- comment
-Message-ID: <akyQQAiLHI3sVmTz@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
-References: <20260701182756.273019-1-nikhilks@linux.ibm.com>
- <20260706082708.43918-1-nikhilks@linux.ibm.com>
+To: Andreas Schwab <schwab@linux-m68k.org>
+Cc: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, 
+	maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com, ryabinin.a.a@gmail.com, 
+	glider@google.com, andreyknvl@gmail.com, dvyukov@google.com, 
+	vincenzo.frascino@arm.com, oleg@redhat.com, kees@kernel.org, luto@amacapital.net, 
+	wad@chromium.org, mchauras@linux.ibm.com, sshegde@linux.ibm.com, thuth@redhat.com, 
+	ruanjinjie@huawei.com, akpm@linux-foundation.org, macro@orcam.me.uk, ldv@strace.io, 
+	charlie@rivosinc.com, deller@gmx.de, kevin.brodsky@arm.com, ritesh.list@gmail.com, 
+	yeoreum.yun@arm.com, agordeev@linux.ibm.com, segher@kernel.crashing.org, 
+	mark.rutland@arm.com, ryan.roberts@arm.com, pmladek@suse.com, 
+	feng.tang@linux.alibaba.com, peterz@infradead.org, linuxppc-dev@lists.ozlabs.org, 
+	linux-kernel@vger.kernel.org, kasan-dev@googlegroups.com
+Subject: Re: [PATCH v5 0/8] Generic IRQ entry/exit support for powerpc
+Message-ID: <akyWi0a69Az59X5Z@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
+References: <20260427122742.210074-1-mkchauras@gmail.com>
+ <87wlvazrdy.fsf@igel.home>
+ <1693b268-ee26-4764-871a-5a067ae96080@kernel.org>
+ <87wlv9tiyy.fsf@igel.home>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -93,65 +104,68 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20260706082708.43918-1-nikhilks@linux.ibm.com>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <87wlv9tiyy.fsf@igel.home>
 
-On Mon, Jul 06, 2026 at 01:57:08PM +0530, Nikhil Kumar Singh wrote:
-> The value loaded into r0 in copy_and_flush() represents the number of
-> 8-byte words processed between cache synchronization operations.
+On Sun, Jul 05, 2026 at 08:00:21PM +0200, Andreas Schwab wrote:
+> Most of the time it prints nothing, and when it prints something it is
+> mostly scrolled out.
 > 
-> The existing comment refers to cache line size, which can make it appear
-> that the value is a cache line size in bytes rather than a loop count.
-> Clarify the comment to explain that the loop processes 8 words (64 bytes)
-> per cache synchronization iteration, and that increasing the value would
-> skip cache maintenance for intermediate cache lines.
 > 
-> This is a comment-only change with no functional impact.
+> .handle_softirqs+0xcc/0x264
+> .do_softirq_own_stack+0x30/0x38
+> .__irq_exit_rcu++0x7c/0x120
+> .timer_interrupt+90x1ß9/0x2c4
+> decrementer_common_virt+9x214/0x22ß
 > 
-> Signed-off-by: Nikhil Kumar Singh <nikhilks@linux.ibm.com>
-> ---
->  arch/powerpc/kernel/head_64.S | 20 ++++++++++++--------
->  1 file changed, 12 insertions(+), 8 deletions(-)
-> 
-> diff --git a/arch/powerpc/kernel/head_64.S b/arch/powerpc/kernel/head_64.S
-> index 63432a33ec49..a54f6f979173 100644
-> --- a/arch/powerpc/kernel/head_64.S
-> +++ b/arch/powerpc/kernel/head_64.S
-> @@ -713,14 +713,18 @@ p_end: .8byte _end - copy_to_here
->  _GLOBAL(copy_and_flush)
->  	addi	r5,r5,-8
->  	addi	r6,r6,-8
-> -4:	li	r0,8			/* Use the smallest common	*/
-> -					/* denominator cache line	*/
-> -					/* size.  This results in	*/
-> -					/* extra cache line flushes	*/
-> -					/* but operation is correct.	*/
-> -					/* Can't get cache line size	*/
-> -					/* from NACA as it is being	*/
-> -					/* moved too.			*/
-> +4:	li	r0,8			/* r0 is the number of 8-byte words	*/
-> +					/* to copy per cache sync iteration.	*/
-> +					/* 8 words * 8 bytes = 64 bytes. 64B is	*/
-> +					/* the current default cache line size.	*/
-> +					/* This is a loop count, not a byte	*/
-> +					/* count. Increasing it may skip	*/
-> +					/* dcbst/icbi for lines in between and	*/
-> +					/* leave stale instructions in icache.	*/
-> +					/* This results in extra cache line	*/
-> +					/* flushes but operation is correct.	*/
-> +					/* Can't get cache line size from NACA	*/
-> +					/* as it is being moved too.		*/
-The comment looks fine. But the alignement of the comment is still
-different from earlier. Keep the alignment same as earlier, it looks a
-little nicer.
+> -- 
+> Andreas Schwab, schwab@linux-m68k.org
+> GPG Key fingerprint = 7578 EB47 D4E5 4D69 2510  2552 DF73 E780 A9DA AEC1
+> "And now for something completely different."
+
+Hey,
+
+Thanks for reporting this. I don't have a powermacG5 to test this.
+Can you try out the below diff and check whether this fixes the issue?
+Please note this is not a proper fix, I just want to understand the issue
+so that i can make a proper fix.
 
 Regards,
 Mukesh
->  
->  	mtctr	r0			/* put # words/line in ctr	*/
->  3:	addi	r6,r6,8			/* copy a cache line		*/
-> -- 
-> 2.43.5
-> 
+
+
+diff --git a/arch/powerpc/include/asm/entry-common.h b/arch/powerpc/include/asm/entry-common.h
+index fc636c42e89a..b6373bae4524 100644
+--- a/arch/powerpc/include/asm/entry-common.h
++++ b/arch/powerpc/include/asm/entry-common.h
+@@ -286,14 +286,6 @@ static inline void arch_interrupt_async_enter_prepare(struct pt_regs *regs)
+ 
+ static inline void arch_interrupt_async_exit_prepare(struct pt_regs *regs)
+ {
+-       /*
+-        * Adjust at exit so the main handler sees the true NIA. This must
+-        * come before irq_exit() because irq_exit can enable interrupts, and
+-        * if another interrupt is taken before nap_adjust_return has run
+-        * here, then that interrupt would return directly to idle nap return.
+-        */
+-       nap_adjust_return(regs);
+-
+        arch_interrupt_exit_prepare(regs);
+ }
+ 
+diff --git a/arch/powerpc/include/asm/interrupt.h b/arch/powerpc/include/asm/interrupt.h
+index fb42a664ae54..1b45a49e9bed 100644
+--- a/arch/powerpc/include/asm/interrupt.h
++++ b/arch/powerpc/include/asm/interrupt.h
+@@ -246,6 +246,7 @@ interrupt_handler void func(struct pt_regs *regs)                   \
+        instrumentation_begin();                                        \
+        irq_enter_rcu();                                                \
+        ____##func (regs);                                              \
++       nap_adjust_return(regs);                                        \
+        irq_exit_rcu();                                                 \
+        instrumentation_end();                                          \
+        arch_interrupt_async_exit_prepare(regs);                        \
+
 
