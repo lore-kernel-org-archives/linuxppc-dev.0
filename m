@@ -1,54 +1,93 @@
-Return-Path: <linuxppc-dev+bounces-23702-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23703-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D1C89C44500
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jul 2026 13:04:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0C1ACC44500
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jul 2026 13:24:27 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gvhJ70C6Vz2xWY;
-	Tue, 07 Jul 2026 23:04:07 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=210.118.77.11
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783429446;
-	cv=none; b=UoU1vD0sU/Uni9QumPZ+5blGQoifxYI2/9lXVCbRfSFQWYI63rlwoK7pPw27gsDsGDRPGvaipSTDt0ccQS9egB+AKjYnqqhxZs/6vL8UQC24ki+7JW2aC6STR6o54TqV/JS71tZ3mTTfaTRTWmIxgRKGtjnHiCrWeKi1tl0tMFnKCeFsFqzxILqOIIiCGlGYsINb9E3WFny1FvzPkOIVjqIw7VQ2ZOaShk1jCQ0bilWXNU3NiAdGC/46BBdT73dbMtRL6+DcJ4DQsgSLnvqSFO7y5128Es5mT9wapCHRgYhxpyUTzTZrhVK+tf5laBjW55NUZrcjrw6i3nWuD/mSdg==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1783429446; c=relaxed/relaxed;
-	bh=1pXyGCmuZ2dd2pCX0ADJkgnLvZuWQnMbV/mJUc5jL2g=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:From:In-Reply-To:
-	 Content-Type:References; b=GN8In9jWwd7MLGF4YvegYhNqgrh6UQggev/zew4pwcmBO8pfUPRCXexJQS6MhaVPdwoud2MZky8jd4aGwcrTjxCiqqBiLvo5/eVQ8Ln3JiVgWbWAkC4kR0S8b5Ple0DyIwrccVmbOhZ/VWauNy2BPSNY+gqwzNGKL5pyT+nuJZKdiIvc/TNGk0QxFJoPq5bsPRcJ631BfyUf4MPEWX8TPo1WN8A0h6BxAnPriS3R3OOP9z04WMU1181FuYB5G+bGv/xobub2+MeUysLPgcbUVur+iHZ0yskFlN9zhfL6XgsRyGLKLLjRhIf6k38nYIHYhhRKjfwHE7I9bq0MTk8wLQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=samsung.com; dkim=pass (1024-bit key; unprotected) header.d=samsung.com header.i=@samsung.com header.a=rsa-sha256 header.s=mail20170921 header.b=bIpgAugu; dkim-atps=neutral; spf=pass (client-ip=210.118.77.11; helo=mailout1.w1.samsung.com; envelope-from=m.szyprowski@samsung.com; receiver=lists.ozlabs.org) smtp.mailfrom=samsung.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=samsung.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gvhlZ3XS3z2xWY;
+	Tue, 07 Jul 2026 23:24:26 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::b135" arc.chain=google.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783430666;
+	cv=pass; b=eWNUSRCSc0zo6358C24MtkkvuGyNYAhViRS5R9vkZ2KWw4lcxaZZw5sPgipumyUHvQ1uki3sVQF6tdIwvU0fMXATMhpI33ZnIbR74WQw/Zq5HFzo0kd98OB2f2S0xL0CESqxeq/AngH4uTMsq6Df9jEnFOANU3FxtdljBZP1MAYblOZQEnWuiUR33fRWS0BYXGR4EJswzppmBBxdCA/7/fNDH9EJ0ZWsHSx5xUa1GpKnyn3yoMdvV1on7Sxwnj7HuBdeGWrwulumq8HsLHyMORAzklPr1LFvu/BYwNb+ko+S1OoUDZWH5WOoOaWxupc2FY98TOfzFerxmTXvP5tulw==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1783430666; c=relaxed/relaxed;
+	bh=9b8BbHxhkf1CoCrJjN2FxRZeuKaAhw6KBsFbbBlQaHQ=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=kfNwIjyd43tQpYwMQAVANuc+K460dphev5nym0od6KmySFepbAuqGG+D53fERh/0YpWDnBAjYK0R560kj8IK5oyXidnm9Per24JYu2VP4+7zJGmH2vyLLt3iUDJgtNomKCvfMqInj42/YObX/oJxGZ7Rg60MboVcDFenSmDyNYKk8qTdu4slEbMpE+THZ+WyqhIiYWHFzxyQLqsOsyntOS3fSal7A3b/eLFreIbYOgPrx9xe0L9naH4+Zi8AB94ROYRdSR5jGiv8v0TuLz84kfma7KwVFH213OiiTDzutEyYF8t28jVTAhT8W0PgpRE9N3knUHr/TPk6T+2V7eRJ7A==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=b5INa23w; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::b135; helo=mail-yx1-xb135.google.com; envelope-from=ekffu200098@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=samsung.com header.i=@samsung.com header.a=rsa-sha256 header.s=mail20170921 header.b=bIpgAugu;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=b5INa23w;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=samsung.com (client-ip=210.118.77.11; helo=mailout1.w1.samsung.com; envelope-from=m.szyprowski@samsung.com; receiver=lists.ozlabs.org)
-Received: from mailout1.w1.samsung.com (mailout1.w1.samsung.com [210.118.77.11])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::b135; helo=mail-yx1-xb135.google.com; envelope-from=ekffu200098@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-yx1-xb135.google.com (mail-yx1-xb135.google.com [IPv6:2607:f8b0:4864:20::b135])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gvhJ34wYgz2xF8
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 07 Jul 2026 23:04:01 +1000 (AEST)
-Received: from eucas1p2.samsung.com (unknown [182.198.249.207])
-	by mailout1.w1.samsung.com (KnoxPortal) with ESMTP id 20260707130350euoutp01816b7aba68f35cc361a12757e4960321~AA55SXF0N2589025890euoutp01R;
-	Tue,  7 Jul 2026 13:03:50 +0000 (GMT)
-DKIM-Filter: OpenDKIM Filter v2.11.0 mailout1.w1.samsung.com 20260707130350euoutp01816b7aba68f35cc361a12757e4960321~AA55SXF0N2589025890euoutp01R
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
-	s=mail20170921; t=1783429431;
-	bh=1pXyGCmuZ2dd2pCX0ADJkgnLvZuWQnMbV/mJUc5jL2g=;
-	h=Date:Subject:To:Cc:From:In-Reply-To:References:From;
-	b=bIpgAugumnJ+vFbRlkBo8FzRtO/g5MYRDHE2BlHryQsTPFMC5fInDzKCOAgZ1npra
-	 WjvJ/rWNe/t/bQYYXvdlEuuxIM77d/dc9M35H15wIneXXtBw3nINopT0vdG4B55jJi
-	 2Rm+c3z4Adg15mIXdYkxRRDiDG8vmD3c75cZpyvY=
-Received: from eusmtip1.samsung.com (unknown [203.254.199.221]) by
-	eucas1p1.samsung.com (KnoxPortal) with ESMTPA id
-	20260707130350eucas1p1721c804c0be9f8bcca8c74b90c602459~AA55DsDSM2891728917eucas1p1P;
-	Tue,  7 Jul 2026 13:03:50 +0000 (GMT)
-Received: from [106.210.134.192] (unknown [106.210.134.192]) by
-	eusmtip1.samsung.com (KnoxPortal) with ESMTPA id
-	20260707130349eusmtip16fa04cbe7458b13574cd93f920780ed5~AA53jcBbZ1173511735eusmtip1K;
-	Tue,  7 Jul 2026 13:03:49 +0000 (GMT)
-Message-ID: <fc804746-4fb8-4ea9-997f-a4cae9ba8c14@samsung.com>
-Date: Tue, 7 Jul 2026 15:03:48 +0200
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gvhlX6Dmrz2xF8
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 07 Jul 2026 23:24:24 +1000 (AEST)
+Received: by mail-yx1-xb135.google.com with SMTP id 956f58d0204a3-664c6304683so4052758d50.2
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 07 Jul 2026 06:24:24 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1783430661; cv=none;
+        d=google.com; s=arc-20260327;
+        b=sDuKoEa9CH0AgIhjqnKHF2xX4XsqUDUuyI3hl2chk0oN/q+lhRbx1y0VNwJDsn0CIK
+         9FLBUh2gh5VZftTK0kItdFgixhj078BY61Ak8tfG4C/MLsRuWO9zQ1jArZxMey0ux3pA
+         hm5lriMul6qPxM4DgEzW/H8QpZcWAhmO/jTuACHI+RxNKK4BpT3q80H3Gqqj6pZW97B0
+         HmxNIqTOg2qS/3pAG6iZlcQetBFGQmS4SFItp7otJyOAwm7LwS9GhdV0qWoukDaFxVm8
+         oNXgmL8I7SpX178NZ7N1qcHkbQkMmNb8jRRpiZW3PcDirqYY22zK7upBtTPpNFx1JHT8
+         TGwg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=9b8BbHxhkf1CoCrJjN2FxRZeuKaAhw6KBsFbbBlQaHQ=;
+        fh=E0aX/UjUUeaOCUwrO78cK7IA35kmoJX7bdrK//ksSM0=;
+        b=RfENlsfMuhC+MNokmQhWa9JdeQh+bpzEaCkm5x54kFndKNO8Wo1/XQgd3Q7xRHDQLM
+         mwyyH24yXCd2RBqAonuj6nXWzcO+UHK4IqIYnzxQXuAvkkhnCa9fOcGjv6+4gguAndrK
+         pwg1SIodqU0WnpIUowG5WwKitn/RbvDsTpxrKxD286xTAcrSfznKD10FeT2xq77a4VSL
+         O84NTO2wkBFphq+0rLmLHVZAs7zN73mXikZ7dNP7cHTVaA+OtoV5kZOv5OjBQxx4zvTg
+         O8B7vJv+vTk7AfT7UkLZlCqT5CIXyhsR9dFaOKtncJ/NwSR+Ab5kkBQVZz3UNPbTwfj6
+         zofg==;
+        darn=lists.ozlabs.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1783430661; x=1784035461; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=9b8BbHxhkf1CoCrJjN2FxRZeuKaAhw6KBsFbbBlQaHQ=;
+        b=b5INa23w377DsaNREeUVOptjqO+Auw+YCY72ND3D5SdyyHX5GTVx3d4q5VrqhUXAtJ
+         RyDa0NW5zmVjAEKqfRpi7VmtLXNCG9XSuLeYNY75QTWQ3N8JC/Rpbqyl1RgbtIVQBFxa
+         JuCm3qSeRMcHHjm5A0qzEzGEPen+weNYpzCeT+F0NGJWEqC6LvDWcNI3jhinsA4UZ0uG
+         U8m8MHAY1pxLfAHRBLUJmybUY9P7RHW72zn0iWCayPsXCcTzD+TiDSO3twbCV4osndD7
+         QkknHIV5mLWb2yHG52m14aZ58Ndk+VkPCWOuk/geB15YIvcEARUtK/IGdCmywebPCUZI
+         p+Vw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1783430661; x=1784035461;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=9b8BbHxhkf1CoCrJjN2FxRZeuKaAhw6KBsFbbBlQaHQ=;
+        b=TugZUtvG4KYUtifdnjGlZy3jrHSrgBYanyBKOrZYx+3N6d6tynOlPmEuVuZAp3XYhx
+         1mNYn8CLVDjYGl/IGsqqUl3Yl80Q5sLEP+nwqt7szUjP7dpg02zFj8wX23VdP4/NR8tW
+         guroicMzQV7GX0TGKdYmxPp8rNJnPpGQBGIA9QiNWwBSDv7Vy+IJh6EwgHqlUbM9+njX
+         TiYJKpxJ/sji1Icw+Be4TU3TqHpEMLLI5X2yYlgDPU++AEKFHmw2AIBKasqufmXNCULx
+         k+bUFLN/2Tp8ue9fE3tzXXOVOqkYhYlaX+bwHBcKKIkIzisMpRa2e/ozIS6gUhhBxtK1
+         yoPA==
+X-Forwarded-Encrypted: i=1; AHgh+Rqqs6+qOmRPTQD5KMAKcCtaXoQtLkZV6HeADeqw/k9ZgLhUeAvhLC8icifWydEcQmCHEdZnjGQk50mKdRk=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yw0ng0GwzxhDCwY9rcf8Re7j4LQaU1ve4FAmmL/a8dB956A6j8m
+	07aYUi0BdEz6Mk936QWtOxZ9Syuq/V31Wgxdw4MQwk6LMaGj1qje9pclC2Wkk6UnZ77ev/hTkEZ
+	YZ49Q7zChWQKVRsBcqqf8ycP5KVCQwLM=
+X-Gm-Gg: AfdE7cldAxIJCkPv6L6MH5I3NG7YeTE2hOie+drhITUlZTxF0rkuFy6B+4iqCGTRob8
+	xeXkdKoyzYityAh8ydmsY6tQh79z1vLl3hFDVJF6XuXqKvxnrpqGKskMrtLn8ivoCAu9ZVWGmui
+	MqqiBYvAoV7XXLrzOhwe/LSkL13WvwLdKyjrcMg8I5iysFBs22ENKcEuAgOThzwdzf5809H6gN2
+	kpYcvQSkBMvJOIYmp928jzETl951vGPfDrdPmdDnBsVjK6VyEkmrTuerfDZpgvAqy6mmw==
+X-Received: by 2002:a53:adcf:0:b0:667:8b90:2ecd with SMTP id
+ 956f58d0204a3-6678b9053c4mr1264848d50.108.1783430661475; Tue, 07 Jul 2026
+ 06:24:21 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -62,105 +101,69 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Betterbird (Windows)
-Subject: Re: [PATCH v7 00/22] dma-mapping: Track shared DMA state through
- direct, pool and swiotlb paths
-To: "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, iommu@lists.linux.dev,
-	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-	linux-coco@lists.linux.dev
-Cc: Robin Murphy <robin.murphy@arm.com>, Will Deacon <will@kernel.org>, Marc
-	Zyngier <maz@kernel.org>, Steven Price <steven.price@arm.com>, Suzuki K
-	Poulose <Suzuki.Poulose@arm.com>, Catalin Marinas <catalin.marinas@arm.com>,
-	Jiri Pirko <jiri@resnulli.us>, Jason Gunthorpe <jgg@ziepe.ca>, Mostafa Saleh
-	<smostafa@google.com>, Petr Tesarik <ptesarik@suse.com>, Alexey
-	Kardashevskiy <aik@amd.com>, Dan Williams <dan.j.williams@intel.com>, Xu
-	Yilun <yilun.xu@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
-	linux-s390@vger.kernel.org, Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, Alexander Gordeev
-	<agordeev@linux.ibm.com>, Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
-	Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>,
-	Christian Borntraeger <borntraeger@linux.ibm.com>, Sven Schnelle
-	<svens@linux.ibm.com>, x86@kernel.org
-Content-Language: en-US
-From: Marek Szyprowski <m.szyprowski@samsung.com>
-In-Reply-To: <yq5av7argr65.fsf@kernel.org>
-Content-Transfer-Encoding: 8bit
-X-CMS-MailID: 20260707130350eucas1p1721c804c0be9f8bcca8c74b90c602459
-X-Msg-Generator: CA
-Content-Type: text/plain; charset="utf-8"
-X-RootMTR: 20260707080628eucas1p13fa8a57e60ef5dd3ec651e19e42af0a1
-X-EPHeader: CA
-X-CMS-RootMailID: 20260707080628eucas1p13fa8a57e60ef5dd3ec651e19e42af0a1
-References: <20260701054926.825925-1-aneesh.kumar@kernel.org>
-	<CGME20260707080628eucas1p13fa8a57e60ef5dd3ec651e19e42af0a1@eucas1p1.samsung.com>
-	<yq5av7argr65.fsf@kernel.org>
+References: <20260706163753.193875-1-ekffu200098@gmail.com> <akyZ5DhIV_Grn1Kc@kernel.org>
+In-Reply-To: <akyZ5DhIV_Grn1Kc@kernel.org>
+From: Sang-Heon Jeon <ekffu200098@gmail.com>
+Date: Tue, 7 Jul 2026 22:24:09 +0900
+X-Gm-Features: AVVi8CdmNSJCGxYOGWnK5wJL_8NTvAWhpJlXJNdpTu_SgODQvmfDBt7ZZCk7fE4
+Message-ID: <CABFDxME7ig1SQDB39TUeUXoAOA2jSRhg6h-bm0kUHrHzGYeE-A@mail.gmail.com>
+Subject: Re: [PATCH v2 0/5] treewide: remove unreachable memblock_reserve()
+ return value checks in early boot
+To: Mike Rapoport <rppt@kernel.org>
+Cc: Ard Biesheuvel <ardb@kernel.org>, Borislav Petkov <bp@alien8.de>, Chris Zankel <chris@zankel.net>, 
+	Dave Hansen <dave.hansen@linux.intel.com>, Ingo Molnar <mingo@redhat.com>, 
+	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, Madhavan Srinivasan <maddy@linux.ibm.com>, 
+	Max Filippov <jcmvbkbc@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>, Rich Felker <dalias@libc.org>, 
+	Thomas Gleixner <tglx@kernel.org>, Yoshinori Sato <ysato@users.sourceforge.jp>, linux-mm@kvack.org, 
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, "H. Peter Anvin" <hpa@zytor.com>, 
+	Ilias Apalodimas <ilias.apalodimas@linaro.org>, linux-efi@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
+	linux-sh@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>, x86@kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On 07.07.2026 10:06, Aneesh Kumar K.V wrote:
-> "Aneesh Kumar K.V (Arm)" <aneesh.kumar@kernel.org> writes:
->
->> This series tracks confidential-computing shared DMA state through the
->> dma-direct, dma-pool, and swiotlb paths so that encrypted and decrypted
->> DMA buffers are handled consistently.
->>
->> Today, the direct DMA path mostly relies on force_dma_unencrypted() for
->> shared/decrypted buffer handling. This series consolidates the
->> force_dma_unencrypted() checks in the top-level functions and ensures
->> that the remaining DMA interfaces use DMA attributes to make the correct
->> decisions.
->>
->> The series separates mapping and allocation state:
->> - DMA_ATTR_CC_SHARED describes the DMA address attribute requested for a
->>   mapping. It tells the DMA mapping path that the DMA address must target
->>   shared/decrypted memory.
->> - __DMA_ATTR_ALLOC_CC_SHARED is an internal DMA-mapping attribute used only
->>   by allocation paths after the DMA core decides that the backing pages
->>   must be allocated as shared/decrypted memory.
->>
->> The series:
->> - moves swiotlb-backed allocations out of __dma_direct_alloc_pages(),
->> - uses __DMA_ATTR_ALLOC_CC_SHARED through the dma-direct alloc/free paths
->> - teaches the atomic DMA pools to track encrypted versus decrypted
->>   state
->> - tracks swiotlb pool encryption state and enforces strict pool
->>   selection
->> - centralizes encrypted/decrypted pgprot handling in dma_pgprot() using
->>   DMA attributes
->> - passes DMA attributes down to dma_capable() so capability checks can
->>   validate whether the selected DMA address encoding matches
->>   DMA_ATTR_CC_SHARED
->> - makes dma_direct_map_phys() choose the DMA address encoding from
->>   DMA_ATTR_CC_SHARED and fall back to swiotlb when a shared DMA request
->>   cannot use the direct mapping, which lets arm64 and x86 CCA guests stop
->>   relying on SWIOTLB_FORCE for DMA mappings
->> - use the selected swiotlb pool state to derive the returned DMA
->>   address
->> - reports CC_ATTR_GUEST_MEM_ENCRYPT for arm64 Realms, powerpc secure
->>   guests, and s390 protected virtualization guests.
->>
->> Dependency:
->> This series depends on the pKVM changes posted at:
->> https://lore.kernel.org/all/20260603110522.3331819-1-smostafa@google.com
->>
->> Please merge this series only after the pKVM changes above are merged.
->> Otherwise pKVM will be broken.
->>
-> A rebased tree on top of the dependent pKVM changes can be found at:
-> https://gitlab.arm.com/linux-arm/linux-cca/-/tree/scratch/pkvm/testing?ref_type=heads
->
-> The patches had minor conflicts. I am not sure how we want to get this
-> merged.
->
-> Should we ask the pKVM maintainers for a topic branch, and then I can
-> repost the updated series on top of that?
-I'm fine with merging on top of the topic branch and I assume that this
-patchset is mature enough to give it a try in linux-next, but first I
-would like to get a review or at least acks from others with good CC
-knowledge or experience.
+Hi Mike,
 
-Best regards
--- 
-Marek Szyprowski, PhD
-Samsung R&D Institute Poland
+On Tue, Jul 7, 2026 at 3:17=E2=80=AFPM Mike Rapoport <rppt@kernel.org> wrot=
+e:
+>
+> Hi Sang-Heon,
+>
+> On Tue, Jul 07, 2026 at 01:37:48AM +0900, Sang-Heon Jeon wrote:
+> > memblock_reserve() can only return an error after memblock_allow_resize=
+()
+> > has been called. Before that it either succeeds or panics, never return=
+ing
+> > an error.
+> >
+> > Before memblock_allow_resize() is called, the return value checks of
+> > memblock_reserve() are unreachable and can be removed.
+>
+> I'd rather keep these checks.
+>
+> Removing them relies on internal details of memblock_reserve() implementa=
+tion
+> and the existing event sequence. If the code would move around relying on
+> panic in memblock_reserve() may not be correct.
+>
+> And the few bytes and cycles the change saves do not worth the churn.
 
+Makes sense to me.
+
+But most early boot callers of memblock_reserve() don't check the
+return value, so I thought we already rely on its internal behavior
+anyway. So the few remaining checks just looked a bit inconsistent to
+me.
+
+Would you still prefer to keep these checks? If so, I'm fine with
+dropping this patch series. It's not a big deal :)
+
+Thank you for taking the time to review this series.
+
+> --
+> Sincerely yours,
+> Mike.
+
+Best Regards,
+Sang-Heon Jeon
 
