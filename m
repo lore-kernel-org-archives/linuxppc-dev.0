@@ -1,74 +1,101 @@
-Return-Path: <linuxppc-dev+bounces-23676-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23677-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 82298C43458
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jul 2026 07:07:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9B22AC43458
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jul 2026 07:11:57 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gvXNG6qv7z3brx;
-	Tue, 07 Jul 2026 17:07:10 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783408030;
-	cv=none; b=OBOFNfzHVsWw/OVxhTYtK6OF0/W5MW8lukxsxZLUme6LYeLyuvPWawsICRbpgga34IPHf+DGGheKQ/DlHtupJKs/Ch1ujb6mbB++oXMOSGxQZxWF+TXpOt2aqjRc1UXxAv3UYgcDNG16RXHHqp5Boit61pq6cV/VQJNvLvW6Bz0z5i3ZoGMczpX5//Z6SahbaRIFWVVyMue7LWqdKnGLBFy0boUlkRqK6itVMbPGMXSFPjsErAbZk3VkAP2WDSqr+59WWFh8SIOVgMZNQ36xvBSBDwPyJbofxHc2o+z06Ui/kUFoAHR2gM4YivPl87rK+iunuDUGQsbHzeJv+QZVLw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gvXTm19Gvz3brt;
+	Tue, 07 Jul 2026 17:11:56 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::62f"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783408316;
+	cv=none; b=gmPkxc6Lw4N3EkhtT1KwkBI+SYpW+Bvx9Vkayr7DrMw9hzWr4ojNvNXprKKSgr53j5cyfNMmBUjpGzNtdE+82UDPqgf4giGocFbI6g6RuIRmxnOa/D0eZILhKLFa84IICFN2O/8oyG7T+Muu5HbWg9WCqdOYyd3lgsR0dx8x8AaoW5CKKf8pbraxf2YHWYUXPMQbj8GuzhwxsZwS6OIq3uLNiOdZNsuvtirnGau1btCGcN/gtQuAJcVhHXGZu2GT+iTlRcvZWSnw1EdWwKICdLT4wD1E78fiTQphFg6PpjYsntm9Z08UUNJVJbKcuFLMLgl3qknOqeJ8SgXPn+GyVA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1783408030; c=relaxed/relaxed;
-	bh=D0alyHRNn3bHlBUPf8UEhU1ORKl+yRMFH5glIFoQBY4=;
-	h=Content-Type:Message-ID:Date:MIME-Version:Subject:To:References:
-	 Cc:From:In-Reply-To; b=SR1WhuKJ88FjeyxYJgY2Q6slARC3TV7ifegEG5IipK40duaKmCaxNN4IEqcr/yUbFT0p7FFwIIoF9h3zvH2AKacHuq7zE2619M+Stvra4ysAgvV7hbNVwfwvNzRrQwbkC+TOTYpUWb03ssIGl76zVvNM+bjfC3ostXeo8IsqeG/mfBTexi0tvaK1v5MxYCITsz5DXj+4lzWZ/1J9pWnaHhcMODjAMzF249SX5LuGB8WeVJ+ajeRtUvyvPGz7TLil4IMnuB5WmSt4DIlJFgKRYLNJHoj7TXLfElPWg1rPnftYiSFoZ+hkAcAfm/EUKSdtoZdMa+agc3zgaq8hl7+4vg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=kRJkxBzp; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=nikhilks@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1783408316; c=relaxed/relaxed;
+	bh=uKV78wv3WbZUmoFpUcsGcDjAxX6ML3nr/lm0iF69y48=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=kZV/UPyywjxfd7fpy4MqET4JDWGHXUD8t0mFcuNnAHtXaoZIvjy/7xp7z+VNSMu/t6rHg42CxY8DsXcUJesvMRFp+TsTeKLRoVyEEfNC8yMmdxABF+ZD/vVd5iaxJ3iSG0/OutD4LD6pPJtMr51qsMShurbpOTqr2SHdY7CGuwDTQCuBMXza7OoHh7D/VbxfxeK6GC0YqBnqTxNjm6IUdd+kGIgIopQOFPxbuOy6L6bG4lDZqSs/8LzberxclwznJmS9ZavB10x5sVa2RVBZvtZvj3U8IN03dNrj2C45BW5JOoSPeyulGEGBNqybNxhLe7jlj+ohQm0R3+kwat7UEg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=WRNFYBYE; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::62f; helo=mail-pl1-x62f.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=kRJkxBzp;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=WRNFYBYE;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=nikhilks@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::62f; helo=mail-pl1-x62f.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pl1-x62f.google.com (mail-pl1-x62f.google.com [IPv6:2607:f8b0:4864:20::62f])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gvXNF6BhPz2yR5
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 07 Jul 2026 17:07:09 +1000 (AEST)
-Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6674InRV1631340
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 7 Jul 2026 07:07:07 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-type:date:from:in-reply-to:message-id:mime-version
-	:references:subject:to; s=pp1; bh=D0alyHRNn3bHlBUPf8UEhU1ORKl+yR
-	MFH5glIFoQBY4=; b=kRJkxBzpSLlYEBjbNNsbNAXy9i5kk/tRN/zQ/3qJqSiMD1
-	50zf6BMzcHsyfXKI736eJemg9iuPOHlZ7UQ8q8ym/2pCDaNQmALfHMJlendO0fF3
-	r5rILHpSw7N8qJMcbMJw6/Oe6NoQoP8vdt2UMV6gJOZzszrlZQx1dpqDAI1PiDXN
-	Zh44i0Y8FOc9d4Nlqz67euWphaG9JIz/ZFryT+uh8gMTDhKAJN22Ft2fSc8Wqnrm
-	TfG5NuULXYeZc+As9n/lMjF5fF2pTliM6Qf7+Y8FDWHGVvG7Ta9Vk1iEwCNbv6Xc
-	AdiAO3+JL7+SCBgH1LQv1sZuBw7fP0NBBd12BA0w==
-Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4f6stsp2qa-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 07 Jul 2026 07:07:06 +0000 (GMT)
-Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma21.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 66774aCD010981
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 7 Jul 2026 07:07:06 GMT
-Received: from smtprelay01.fra02v.mail.ibm.com ([9.218.2.227])
-	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4f7dgk1f03-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 07 Jul 2026 07:07:06 +0000 (GMT)
-Received: from smtpav06.fra02v.mail.ibm.com (smtpav06.fra02v.mail.ibm.com [10.20.54.105])
-	by smtprelay01.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6677721p48562528
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 7 Jul 2026 07:07:02 GMT
-Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 1348F20049;
-	Tue,  7 Jul 2026 07:07:02 +0000 (GMT)
-Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 82D1B2004D;
-	Tue,  7 Jul 2026 07:07:00 +0000 (GMT)
-Received: from [9.67.174.189] (unknown [9.67.174.189])
-	by smtpav06.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Tue,  7 Jul 2026 07:07:00 +0000 (GMT)
-Content-Type: multipart/alternative;
- boundary="------------DDvA9Bl9Fi0k0055kNDkeYN2"
-Message-ID: <1be96e32-ac9c-4160-9f2b-23eb29c22893@linux.ibm.com>
-Date: Tue, 7 Jul 2026 12:36:58 +0530
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gvXTk4wRSz2yR5
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 07 Jul 2026 17:11:54 +1000 (AEST)
+Received: by mail-pl1-x62f.google.com with SMTP id d9443c01a7336-2cacb8416a1so31925265ad.1
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 07 Jul 2026 00:11:54 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1783408311; x=1784013111; darn=lists.ozlabs.org;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :content-type:mime-version:references:message-id:subject:cc:to:from
+         :date:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=uKV78wv3WbZUmoFpUcsGcDjAxX6ML3nr/lm0iF69y48=;
+        b=WRNFYBYEiRNfgPtB0KLHM7+qTIMdlOsx0HGiEBdThmJxIkAnn/Xxj5l5J79MnduP5q
+         YPxnad459qH9ZBlSVTVj3sG09Hh97Upx/Beevyilrq0XYmXh3/V3X++p/cTB+jkMvfXo
+         lL//l8Gh7KZWTeSPySQb37nEEsgNf/8AvtUKpnP+vACH6QogLR4oODNJSidVUQwvRGhk
+         wrkN51NvP222uwFVpTN1oI6GMhbgn7zjTa0BLnDswbGWUwzrqHWqrsN6kcjqAvpyAfqE
+         2d6tZW6w9AIAD8r1f+Rw3W0XSYFpIa8wC6Xyl9pLTE8ID1EAfS7abPcdi3oQVt6nDrBt
+         ptVQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1783408311; x=1784013111;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :content-type:mime-version:references:message-id:subject:cc:to:from
+         :date:x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to:content-type;
+        bh=uKV78wv3WbZUmoFpUcsGcDjAxX6ML3nr/lm0iF69y48=;
+        b=qCQCI3EQ8M5siJEfPjFc3EnvuUJa5Hf2E4koGBJALXvB49rkPaqMPLZZkw5TQ/o4P+
+         hd7FU7q5DtF0KIRXXpASDsGCX380u9oNHc5dXyJ03ZNd3ovAo6pIU8Gx9MGmcHn9uJom
+         IOkZH9wzC3Q8ncK1BiSCF30/VRPE2N7m1gxlNQX8PmpJ6npF1ZKjdKQQdezhOEU8Vg4S
+         HD9nZy88mNTUmJC1jxykBneBbp3my+K/yHBsfROgd8SJweSPitGAIN7GvCH3ZFKEopcz
+         /PT40kUcR+1AE0gZ4P/j0LXzpyMvTJ7OYhmJTpX5xrL1XruzgsstQWA+OCja8xB9ycAX
+         flXg==
+X-Forwarded-Encrypted: i=1; AHgh+Rru5fcOpWdBsmJXjTzs0tOFGNATHa+9wD/nYqZRK9a5XlEKcyQmFUxndmKopgjWe0cTSKsPXaX6ijx8QWo=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YwJ5yHnGFTyjLS2Q0LC8dnHkhJadLiWlQqyNNuAq0qzbXweXFRs
+	dH3b7ZQ3rs94h7fUrd0mEyS0jP9sGHdW54G41H4cNX0YgGSyXNC58dH1
+X-Gm-Gg: AfdE7clUM/vzTIDfmJbHzCBS6nsTGfLfFA2nyfQ1DNXAiImXSYGtG0TKX0RlG2akL3Y
+	Rj5wf/ecF1oqXFxPnem4WsOcivnGVKJ5iLyqH/++u3aHqTSI/RKFRMh0OsuAe6AKg3lSllPJmqz
+	R/erzvClM1pM6o1UvAEe5VZ39LbmfMnZGEjYuz697JTIak50RncJRkH8wXQCTHHizrG2hGsCpDD
+	QaBJOOes8xGtpN5CTeyJhpii5llKzub8rWkt6LBTTMMLv/NxQp2a9qWs+B0tkwyTf0fd6ZsYre2
+	VsH+LB1Q026eTZX+IuajlsUDrwtDHci+ikl2cw3/PPl1BeHfCkUBzfY51CAcNRjD34mkQTb7Mtr
+	OM+sWWwHbGKm7hFuBOGNP61rlQuIr0NDAabDYX2NrNPxnews+fR9bk2svtKzr/KDDpxGOPulpgx
+	NeUM7PVqHUfLJkzz2D2okmB5BA6O5T8N7/sLZTIa2+mAm6I0DTpuiSnasTeN/NFWFbbcQe0BY=
+X-Received: by 2002:a17:903:4683:b0:2ca:be8:62d with SMTP id d9443c01a7336-2ccbf085003mr50131725ad.32.1783408311212;
+        Tue, 07 Jul 2026 00:11:51 -0700 (PDT)
+Received: from li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com ([106.51.160.236])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2ccc9bf74cbsm6556115ad.18.2026.07.07.00.11.39
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 07 Jul 2026 00:11:50 -0700 (PDT)
+Date: Tue, 7 Jul 2026 12:41:37 +0530
+From: Mukesh Kumar Chaurasiya <mkchauras@gmail.com>
+To: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
+Cc: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com, 
+	chleroy@kernel.org, peterz@infradead.org, jpoimboe@kernel.org, jbaron@akamai.com, 
+	aliceryhl@google.com, rostedt@goodmis.org, ardb@kernel.org, ojeda@kernel.org, 
+	boqun@kernel.org, gary@garyguo.net, bjorn3_gh@protonmail.com, lossin@kernel.org, 
+	a.hindborg@kernel.org, tmgross@umich.edu, dakr@kernel.org, nathan@kernel.org, 
+	nick.desaulniers+lkml@gmail.com, morbo@google.com, justinstitt@google.com, 
+	daniel.almeida@collabora.com, acourbot@nvidia.com, fujita.tomonori@gmail.com, 
+	gregkh@linuxfoundation.org, prafulrai522@gmail.com, tamird@kernel.org, kees@kernel.org, 
+	lyude@redhat.com, airlied@gmail.com, linuxppc-dev@lists.ozlabs.org, 
+	linux-kernel@vger.kernel.org, rust-for-linux@vger.kernel.org, llvm@lists.linux.dev
+Subject: Re: [PATCH V16 4/7] rust/powerpc: Set min rustc version for powerpc
+Message-ID: <akyiZBPCaZOOyTw6@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
+References: <20260520064630.1785283-1-mkchauras@gmail.com>
+ <20260520064630.1785283-5-mkchauras@gmail.com>
+ <CANiq72nPOMkZXpMpwTLFg4xjFfmyf_O_x2FN_nrNBsxeNu178Q@mail.gmail.com>
+ <ahVb4k-2rC4EYZF9@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
+ <aj4gAdy2siBxONpo@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
+ <CANiq72=EVsTFkQK3LWrT2Gs5UKKViemGkv1WuitY6NOEtvcsNg@mail.gmail.com>
+ <akH6yuDH9ZwXVoVA@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
+ <CANiq72mj1P9QykK6vbPK37hZkMLwd7RcgVWEcxxuE=9OL+4bAg@mail.gmail.com>
+ <akNXvfSfue7_3tyd@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -82,189 +109,58 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2] powerpc/powernv: Cache OPAL check_token() results
-To: linuxppc-dev@lists.ozlabs.org, Shivang Upadhyay <shivangu@linux.ibm.com>
-References: <20260626123534.396456-1-shivangu@linux.ibm.com>
-Content-Language: en-US
-Cc: Sourabh Jain <sourabhjain@linux.ibm.com>
-From: Nikhil Kumar Singh <nikhilks@linux.ibm.com>
-In-Reply-To: <20260626123534.396456-1-shivangu@linux.ibm.com>
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: m0EsXGsPXBAP6s7ZabdvAx4CrZsfyWeW
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNzA3MDA2NCBTYWx0ZWRfX/oAkgMv2zQpm
- Ed0jvNMJ8bCgnNG3ZsqhgO3pH7evoDcZ7ZlvnHnSKVMWioD43Q7QJaicmuv8FBJjd5VsVo3d1SF
- 5PEB6iycUAEs1o4w+uZuquT4QTSO/7U=
-X-Authority-Analysis: v=2.4 cv=DKW/JSNb c=1 sm=1 tr=0 ts=6a4ca59a cx=c_pps
- a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
- a=RAioF0-LDSMA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=RzCfie-kr_QcCd8fBx8p:22 a=r77TgQKjGQsHNAKrUKIA:9 a=6jT34AcC9rcdydElSecA:9
- a=QEXdDO2ut3YA:10 a=VnNF1IyMAAAA:8 a=KdL_Wlk17mrYi_Q3vSQA:9
- a=p6pgkoT_UOwxKcN3:21 a=_W_S_7VecoQA:10
-X-Proofpoint-GUID: m0EsXGsPXBAP6s7ZabdvAx4CrZsfyWeW
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzA3MDA2NCBTYWx0ZWRfX2+gOJ0dZ63xK
- 0uHXhf1wMi64Md/0/JBPv415M4Ap2rqFkrNhsK7pausKRGcFce2edz7wee3XI3WpxbJTacWrmvu
- a/gVXSTM+d1nLEEvHOXxGD0MRGR2g1s35M7YDEZm+7X0ZmH8LRvZSRCKKRZhTvx35mAbzPmrc1m
- 8uhN6wZ9iUDiMIJt8cvtQ3421y2yLSPRntvYkz+UaKRT7PhvWluzBuKNaeQrL4M/ZhOYjT766Ga
- 9hWxE5n141EJISxPpG1vx7EWGqL4Xmq3aCVIC1Cjh2+fGckashayfclB7xTYYNFTHtCxUbeXQde
- 7SfbTIzl2AS13O3Td2yACJRmwTwq2nUx+KDZkUCjr5yYj8XVmzX00S1UH/C/5vgypBAM0dLbF1G
- NgY7n8IHo4mvtjd8pyYVufP1GBRx75wVruloSsPWR+JRic8QlocVxLJPQAi/IxnvCZy5P9tVjDH
- MJmw4QlNGa9S/6tEj1Q==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-07-07_01,2026-07-06_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- spamscore=0 bulkscore=0 clxscore=1015 phishscore=0 impostorscore=0
- priorityscore=1501 adultscore=0 lowpriorityscore=0 suspectscore=0
- malwarescore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2606150000
- definitions=main-2607070064
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <akNXvfSfue7_3tyd@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
 
-This is a multi-part message in MIME format.
---------------DDvA9Bl9Fi0k0055kNDkeYN2
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+On Tue, Jun 30, 2026 at 11:15:03AM +0530, Mukesh Kumar Chaurasiya wrote:
+> On Mon, Jun 29, 2026 at 11:11:44AM +0200, Miguel Ojeda wrote:
+> > On Mon, Jun 29, 2026 at 6:57 AM Mukesh Kumar Chaurasiya
+> > <mkchauras@gmail.com> wrote:
+> > >
+> > > Sure i'll bisect. Meanwhile i would still like to get this upstream.
+> > 
+> > It is very early on the cycle -- I would suggest bisecting first.
+> > 
+> > But it is up to ppc, of course.
+> > 
+> > Cheers,
+> > Miguel
+Hey Miguel,
 
+I was able to bisect this. This got fixed in 1.87 with
+#![feature(asm_experimental_arch)].
 
-On 26/06/26 18:05, Shivang Upadhyay wrote:
-> diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
-> index 1946dbdc9fa1..1e9cb5271ee7 100644
-> --- a/arch/powerpc/platforms/powernv/opal.c
-> +++ b/arch/powerpc/platforms/powernv/opal.c
-> @@ -1125,6 +1125,36 @@ EXPORT_SYMBOL_GPL(opal_flash_read);
->   EXPORT_SYMBOL_GPL(opal_flash_write);
->   EXPORT_SYMBOL_GPL(opal_flash_erase);
->   EXPORT_SYMBOL_GPL(opal_prd_msg);
-> +
-> +/**
-> + * opal_check_token - Check if an OPAL call token is supported
-> + * @token: OPAL token number to check
-> + *
-> + * Returns 1 if supported, 0 if not.
-> + */
-> +int64_t opal_check_token(uint64_t token)
-> +{
-> +	static u8 token_cache[OPAL_LAST];
-> +	enum {
-> +		SUPP_UNKNOWN = 0,
-> +		PRESENT,
-> +		ABSENT
-> +	};
-> +
-> +	if (token > OPAL_LAST)
-> +		return 0;
-> +
-> +	if (token_cache[token] == SUPP_UNKNOWN) {
+1st commit that contributed towards this is
+e4f539ea17a3 ("Bump to version 1.87.0")
 
-Hi Shivang,
-Thanks for the v2 patch. This is a great optimization and definitely 
-helps reduce unnecessary overhead. I have one small suggestion.
+This caused another issue to come up while building
 
-You can wrap the if (token_cache[token] == SUPP_UNKNOWN) check, as well 
-as the if (token > OPAL_LAST) check above it, with unlikely(), since 
-this function is in the hot path. Out-of-bounds tokens are very rare, 
-and after the cache is populated, the SUPP_UNKNOWN condition is expected 
-to be false in almost all cases. Wrapping these checks with unlikely() 
-will help the compiler optimize branch prediction.
+```
+error: extern blocks must be unsafe
+  --> /home/mkchauras/.local/rustc-src/lib/rustlib/src/rust/library/core/src/../../stdarch/crates/core_arch/src/powerpc/vsx.rs:38:1
+   |
+38 | / extern "C" {
+39 | |     #[link_name = "llvm.ppc.altivec.vperm"]
+40 | |     fn vperm(
+41 | |         a: vector_signed_int,
+...  |
+44 | |     ) -> vector_signed_int;
+45 | | }
+   | |_^
+```
 
-Thanks,
-~ Nikhil
+Which is fixed by 
+a78d1b092c9c ("Update stdarch")
 
-> +		/* Do the actual opal_call here */
-> +		if (opal_check_token_call(token)) {
-> +			token_cache[token] = PRESENT;
-> +		} else {
-> +			token_cache[token] = ABSENT;
-> +		}
-> +	}
-> +
-> +	return (token_cache[token] == PRESENT);
-> +}
->   EXPORT_SYMBOL_GPL(opal_check_token);
->   
->   /* Convert a region of vmalloc memory to an opal sg list */
---------------DDvA9Bl9Fi0k0055kNDkeYN2
-Content-Type: text/html; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Both these commits went in 1.87.0 and fixed the build.
 
-<!DOCTYPE html>
-<html>
-  <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-  </head>
-  <body>
-    <br>
-    <div class="moz-cite-prefix">On 26/06/26 18:05, Shivang Upadhyay
-      wrote:<span style="white-space: pre-wrap">
-</span></div>
-    <blockquote type="cite"
-      cite="mid:20260626123534.396456-1-shivangu@linux.ibm.com">
-      <pre wrap="" class="moz-quote-pre">diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
-index 1946dbdc9fa1..1e9cb5271ee7 100644
---- a/arch/powerpc/platforms/powernv/opal.c
-+++ b/arch/powerpc/platforms/powernv/opal.c
-@@ -1125,6 +1125,36 @@ EXPORT_SYMBOL_GPL(opal_flash_read);
- EXPORT_SYMBOL_GPL(opal_flash_write);
- EXPORT_SYMBOL_GPL(opal_flash_erase);
- EXPORT_SYMBOL_GPL(opal_prd_msg);
-+
-+/**
-+ * opal_check_token - Check if an OPAL call token is supported
-+ * @token: OPAL token number to check
-+ *
-+ * Returns 1 if supported, 0 if not.
-+ */
-+int64_t opal_check_token(uint64_t token)
-+{
-+	static u8 token_cache[OPAL_LAST];
-+	enum {
-+		SUPP_UNKNOWN = 0,
-+		PRESENT,
-+		ABSENT
-+	};
-+
-+	if (token &gt; OPAL_LAST)
-+		return 0;
-+
-+	if (token_cache[token] == SUPP_UNKNOWN) {</pre>
-    </blockquote>
-    <br>
-    <p>Hi Shivang,<br>
-      Thanks for the v2 patch. This is a great optimization and
-      definitely helps reduce unnecessary overhead. I have one small
-      suggestion.<br>
-      <br>
-      You can wrap the if (token_cache[token] == SUPP_UNKNOWN) check, as
-      well as the if (token &gt; OPAL_LAST) check above it, with
-      unlikely(), since this function is in the hot path. Out-of-bounds
-      tokens are very rare, and after the cache is populated, the
-      SUPP_UNKNOWN condition is expected to be false in almost all
-      cases. Wrapping these checks with unlikely() will help the
-      compiler optimize branch prediction.<br>
-      <br>
-      Thanks,<br>
-      ~ Nikhil</p>
-    <blockquote type="cite"
-      cite="mid:20260626123534.396456-1-shivangu@linux.ibm.com">
-      <pre wrap="" class="moz-quote-pre">
-+		/* Do the actual opal_call here */
-+		if (opal_check_token_call(token)) {
-+			token_cache[token] = PRESENT;
-+		} else {
-+			token_cache[token] = ABSENT;
-+		}
-+	}
-+
-+	return (token_cache[token] == PRESENT);
-+}
- EXPORT_SYMBOL_GPL(opal_check_token);
- 
- /* Convert a region of vmalloc memory to an opal sg list */
-</pre>
-    </blockquote>
-  </body>
-</html>
+Regards,
+Mukesh
 
---------------DDvA9Bl9Fi0k0055kNDkeYN2--
-
+> Sure, I'll bisect it first.
+> 
+> Regards,
+> Mukesh
 
