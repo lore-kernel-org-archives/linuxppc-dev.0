@@ -1,120 +1,88 @@
-Return-Path: <linuxppc-dev+bounces-23726-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23727-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C06E7C44501
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jul 2026 18:13:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 079A7C43602
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jul 2026 18:36:02 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gvq9T5Mgfz2yMm;
-	Wed, 08 Jul 2026 04:13:49 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=185.119.170.32
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783448029;
-	cv=none; b=I9VS80yl2N1xLzjJc8bFWHbtlvDUWrmsBrmr7G/rSETWTUcyERCPPaW3v4heN59puIBTvwlE00UHSd/OnXXHZMGs9QTOKA2p/hJr/rSH7ngD3JxyCzDQLPB1mrjmwnlSPkl7BSw4ZLoMK3Wg3p1BCz2gWKMFd5osT+ZkTp83x16xqa1rYWgMBCtfjdHqMMmr2JuibzyA+cUN5wQjNX2E2wkJe44rnXwVf77ZoP0ZZoz3fvO3zAbyWjOaxgb98PAHtzPVwmTFt4ctdbuEe04DG2Gb5ZqLMho58Vqy7GXmDXWZoh89/Wqk0lDk3zz+gMfQ+Uqe+aUa1Kr2NzG5UhqxdA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gvqg42r2Fz2xnp;
+	Wed, 08 Jul 2026 04:36:00 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a01:4f9:3051:3f93::2"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783449360;
+	cv=none; b=ngYetyOeCP/3vqExOfSWk7dPBUt8VoRTocs9UjXmX9V7Aj+ryc4D6blee3rLbGoeaKCcWOi8r9asqYYD6hxmYbKud4MbBPMq+RIjkd3Xm2mr4ux4vcbAcXMoGfw2ckQkBvRgMuvDWQBLX1wGpOqi5Pw7MONyex5PXOHYI0WhkCRaQpjRdD1gEkZIyMEbz7zn3qPY0cYEomvpnZmrXRyv24FM2qwijKIdWHHV+wOYLD6h/J1aHz8c8nimd5BHooxx4fm2WMWPAvVHnD52VLRIBiwWEJtCZrBpCwN3ZGfa2mNtvSkHuAw1yvG9sZGb2a/FffhFrCwZX9kI4WYm/lEvLQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1783448029; c=relaxed/relaxed;
-	bh=kNdgV6dE37fi1AWMEoHcLd1JawMZipROu/aTEW/qPRY=;
-	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=YjDuDGsGB4Pw3KG3ZRADhDNd2O32GTC1kjIQYwwU+txomKZgcon3aaIxClbObsigOCDeBDwrRnc4itb6pdFfMlYUEDb3v4SDee61/7qTn4eeYMsz2WwavC8yMyP5TdQo3+iNMxnqlVEg3cIOK8KuO+kCfEkchmqigTP/HBy+PyKGnfzqQnbY2uLlhNbqrsp2ZJhvLrJR/yZ9pR4IgplTFVO366R73HWMwCTaxALvsQgRi3eRLa9EioY4b2S2TtgDw1biDVXLxmaFLhJQSmSuzLL9TxDw2lgltnyf3rAPAQ+zmmcPePLD8W0FeSIqDsc0CTEA0/Ii94EAxRJycwmeOw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=crapouillou.net; dkim=pass (1024-bit key; unprotected) header.d=crapouillou.net header.i=@crapouillou.net header.a=rsa-sha256 header.s=mail header.b=taLqIYWA; dkim-atps=neutral; spf=pass (client-ip=185.119.170.32; helo=aposti.net; envelope-from=paul@crapouillou.net; receiver=lists.ozlabs.org) smtp.mailfrom=crapouillou.net
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=crapouillou.net
+	t=1783449360; c=relaxed/relaxed;
+	bh=xPqvH8m6sJZ8BPRjXX6PHX56Y4vsxNsv4zKIvUARo/Q=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=nw3CAbq7uqZU5ZYPTJf2Eb76JoeYMYII1Fz6N77xMRJCR60biR4lxrINdDkTpPdWGqzyaDEBktQcLerbjC5N0iw6ZbpFwrUSN3w6BOuC4HaghMUZOFVuQ+Xmtqq1AkzugToSelY2XxmK5nYibrEJKHYeccxHLBnrhlf2NpYkd/6TOBRAz4nM0J9rSS5A450g822SBhWQ6Rx+LhDR5YYM550/pbu9MOUYnZdDXkIYj/HLsgVL3CIRxFKrMnESNMLOoYwQzt83Yg0SoHXE6msQJnPHydb45LH3NhP94BKmqAEYOuyAtYUFHF1SyyhtW+jiSqzURQJIS9d/8PaiSKlY5Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=alien8.de; dkim=fail (4096-bit key; unprotected) header.d=alien8.de header.i=@alien8.de header.a=rsa-sha256 header.s=alien8 header.b=gTc6FoWa reason="signature verification failed"; dkim-atps=neutral; spf=pass (client-ip=2a01:4f9:3051:3f93::2; helo=mail.alien8.de; envelope-from=bp@alien8.de; receiver=lists.ozlabs.org) smtp.mailfrom=alien8.de
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=alien8.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=crapouillou.net header.i=@crapouillou.net header.a=rsa-sha256 header.s=mail header.b=taLqIYWA;
+	dkim=fail reason="signature verification failed" (4096-bit key; unprotected) header.d=alien8.de header.i=@alien8.de header.a=rsa-sha256 header.s=alien8 header.b=gTc6FoWa;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=crapouillou.net (client-ip=185.119.170.32; helo=aposti.net; envelope-from=paul@crapouillou.net; receiver=lists.ozlabs.org)
-X-Greylist: delayed 402 seconds by postgrey-1.37 at boromir; Wed, 08 Jul 2026 04:13:47 AEST
-Received: from aposti.net (aposti.net [185.119.170.32])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=alien8.de (client-ip=2a01:4f9:3051:3f93::2; helo=mail.alien8.de; envelope-from=bp@alien8.de; receiver=lists.ozlabs.org)
+X-Greylist: delayed 9142 seconds by postgrey-1.37 at boromir; Wed, 08 Jul 2026 04:35:59 AEST
+Received: from mail.alien8.de (mail.alien8.de [IPv6:2a01:4f9:3051:3f93::2])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gvq9R52ZWz2xKh;
-	Wed, 08 Jul 2026 04:13:47 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=crapouillou.net;
-	s=mail; t=1783447618;
-	bh=jSZnB0sLqjEJbBoqe7AZJRMFNCZugWpISC+yCdraaOk=;
-	h=Subject:From:To:Cc:Date:In-Reply-To:References:From;
-	b=taLqIYWARPanxMePLjn0T7clMcda7af2pvmrr0dQzpeuwc0nctWzpeP7MFrEdwHD3
-	 wFNI1Cev/uBH+lstwttbgnjYpRUlRSvuTptlXHNnBzTOSCT1/sAyy72NlnTqVPq0M/
-	 E7dkR8V01XIjaryuVKTvkbf8yDy1RmuISroVos5g=
-Message-ID: <f46dfcfe04c5f8270b2ea1a947ddc0a0eeda7dbc.camel@crapouillou.net>
-Subject: Re: [PATCH 17/42] drm: ingenic: Use
- devm_of_reserved_mem_device_init()
-From: Paul Cercueil <paul@crapouillou.net>
-To: Mukesh Ojha <mukesh.ojha@oss.qualcomm.com>, Bjorn Andersson	
- <andersson@kernel.org>, Konrad Dybcio <konradybcio@kernel.org>, Liviu Dudau
-	 <liviu.dudau@arm.com>, Maarten Lankhorst
- <maarten.lankhorst@linux.intel.com>,  Maxime Ripard <mripard@kernel.org>,
- Thomas Zimmermann <tzimmermann@suse.de>, David Airlie <airlied@gmail.com>, 
- Simona Vetter <simona@ffwll.ch>, Joel Stanley <joel@jms.id.au>, Andrew
- Jeffery <andrew@codeconstruct.com.au>,  Anitha Chrisanthus
- <anitha.chrisanthus@intel.com>, Paul Kocialkowski <paulk@sys-base.io>,
- Linus Walleij	 <linusw@kernel.org>, Chen-Yu Tsai <wens@kernel.org>, Jernej
- Skrabec	 <jernej.skrabec@gmail.com>, Samuel Holland <samuel@sholland.org>,
- Alexey Brodkin <abrodkin@synopsys.com>, Laurent Pinchart
- <laurent.pinchart@ideasonboard.com>, Tomi Valkeinen
- <tomi.valkeinen@ideasonboard.com>, Michal Simek <michal.simek@amd.com>,
- Daniel Scally	 <dan.scally@ideasonboard.com>, Jacopo Mondi
- <jacopo.mondi@ideasonboard.com>,  Mauro Carvalho Chehab	
- <mchehab@kernel.org>, Eddie James <eajames@linux.ibm.com>, Tiffany Lin	
- <tiffany.lin@mediatek.com>, Andrew-CT Chen <andrew-ct.chen@mediatek.com>, 
- Yunfei Dong <yunfei.dong@mediatek.com>, Minghsiu Tsai
- <minghsiu.tsai@mediatek.com>, Houlong Wei	 <houlong.wei@mediatek.com>,
- Matthias Brugger <matthias.bgg@gmail.com>,  AngeloGioacchino Del Regno
- <angelogioacchino.delregno@collabora.com>, Joseph Liu <kwliu@nuvoton.com>,
- Marvin Lin <kflin@nuvoton.com>,  Dmitry Osipenko
- <dmitry.osipenko@collabora.com>, Krzysztof Kozlowski <krzk@kernel.org>,
- Thierry Reding	 <thierry.reding@kernel.org>, Jonathan Hunter
- <jonathanh@nvidia.com>,  Srinivas Kandagatla	 <srini@kernel.org>, Arnd
- Bergmann <arnd@arndb.de>, Greg Kroah-Hartman	 <gregkh@linuxfoundation.org>,
- Ge Gordon <gordon.ge@bst.ai>, Adrian Hunter	 <adrian.hunter@intel.com>, Ulf
- Hansson <ulfh@kernel.org>, Rob Herring	 <robh@kernel.org>, Saravana Kannan
- <saravanak@kernel.org>, Mathieu Poirier	 <mathieu.poirier@linaro.org>,
- Jaroslav Kysela <perex@perex.cz>, Takashi Iwai	 <tiwai@suse.com>, Shengjiu
- Wang <shengjiu.wang@gmail.com>, Xiubo Li	 <Xiubo.Lee@gmail.com>, Liam
- Girdwood <lgirdwood@gmail.com>, Mark Brown	 <broonie@kernel.org>, Frank Li
- <Frank.Li@nxp.com>, Sascha Hauer	 <s.hauer@pengutronix.de>, Peter Ujfalusi
- <peter.ujfalusi@linux.intel.com>,  Bard Liao
- <yung-chuan.liao@linux.intel.com>, Daniel Baluta <daniel.baluta@nxp.com>,
- Orson Zhai	 <orsonzhai@gmail.com>, Baolin Wang
- <baolin.wang@linux.alibaba.com>, Peter Chen	 <peter.chen@cixtech.com>,
- Fugang Duan <fugang.duan@cixtech.com>
-Cc: Ekansh Gupta <ekansh.gupta@oss.qualcomm.com>, BST Linux Kernel Upstream
- Group <bst-upstream@bstai.top>, Fabio Estevam <festevam@gmail.com>, Nicolin
- Chen <nicoleotsuka@gmail.com>,  Pengutronix Kernel Team	
- <kernel@pengutronix.de>, Kai Vehmanen <kai.vehmanen@linux.intel.com>, 
- Pierre-Louis Bossart <pierre-louis.bossart@linux.dev>, Vijendar Mukunda
- <Vijendar.Mukunda@amd.com>, Chunyan Zhang	 <zhang.lyra@gmail.com>, CIX
- Linux Kernel Upstream Group	 <cix-kernel-upstream@cixtech.com>,
- linux-arm-msm@vger.kernel.org, 	linux-kernel@vger.kernel.org,
- dri-devel@lists.freedesktop.org, 	linux-aspeed@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org, 	linux-mips@vger.kernel.org,
- linux-sunxi@lists.linux.dev, 	linux-media@vger.kernel.org,
- openbmc@lists.ozlabs.org, 	linux-mediatek@lists.infradead.org,
- kernel@collabora.com, 	linux-tegra@vger.kernel.org,
- linux-mmc@vger.kernel.org, 	devicetree@vger.kernel.org,
- linux-remoteproc@vger.kernel.org, 	linux-staging@lists.linux.dev,
- linux-sound@vger.kernel.org, 	linuxppc-dev@lists.ozlabs.org,
- imx@lists.linux.dev, 	sound-open-firmware@alsa-project.org
-Date: Tue, 07 Jul 2026 20:06:50 +0200
-In-Reply-To: <20260703193855.110619-18-mukesh.ojha@oss.qualcomm.com>
-References: <20260703193855.110619-1-mukesh.ojha@oss.qualcomm.com>
-	 <20260703193855.110619-18-mukesh.ojha@oss.qualcomm.com>
-Autocrypt: addr=paul@crapouillou.net; prefer-encrypt=mutual;
- keydata=mQENBF0KhcEBCADkfmrzdTOp/gFOMQX0QwKE2WgeCJiHPWkpEuPH81/HB2dpjPZNW03ZM
- LQfECbbaEkdbN4YnPfXgcc1uBe5mwOAPV1MBlaZcEt4M67iYQwSNrP7maPS3IaQJ18ES8JJ5Uf5Uz
- FZaUawgH+oipYGW+v31cX6L3k+dGsPRM0Pyo0sQt52fsopNPZ9iag0iY7dGNuKenaEqkYNjwEgTtN
- z8dt6s3hMpHIKZFL3OhAGi88wF/21isv0zkF4J0wlf9gYUTEEY3Eulx80PTVqGIcHZzfavlWIdzhe
- +rxHTDGVwseR2Y1WjgFGQ2F+vXetAB8NEeygXee+i9nY5qt9c07m8mzjABEBAAG0JFBhdWwgQ2VyY
- 3VlaWwgPHBhdWxAY3JhcG91aWxsb3UubmV0PokBTgQTAQoAOBYhBNdHYd8OeCBwpMuVxnPua9InSr
- 1BBQJdCoXBAhsDBQsJCAcCBhUKCQgLAgQWAgMBAh4BAheAAAoJEHPua9InSr1BgvIH/0kLyrI3V0f
- 33a6D3BJwc1grbygPVYGuC5l5eMnAI+rDmLR19E2yvibRpgUc87NmPEQPpbbtAZt8On/2WZoE5OIP
- dlId/AHNpdgAtGXo0ZX4LGeVPjxjdkbrKVHxbcdcnY+zzaFglpbVSvp76pxqgVg8PgxkAAeeJV+ET
- 4t0823Gz2HzCL/6JZhvKAEtHVulOWoBh368SYdolp1TSfORWmHzvQiCCCA+j0cMkYVGzIQzEQhX7U
- rf9N/nhU5/SGLFEi9DcBfXoGzhyQyLXflhJtKm3XGB1K/pPulbKaPcKAl6rIDWPuFpHkSbmZ9r4KF
- lBwgAhlGy6nqP7O3u7q23hRU=
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gvqg32G4bz2xWY
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Jul 2026 04:35:58 +1000 (AEST)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+	by mail.alien8.de (SuperMail on ZX Spectrum 128k) with ESMTP id C575B40E0140;
+	Tue,  7 Jul 2026 18:35:53 +0000 (UTC)
+X-Virus-Scanned: Debian amavisd-new at mail.alien8.de
+Authentication-Results: mail.alien8.de (amavisd-new); dkim=fail (4096-bit key)
+	reason="fail (body has been altered)" header.d=alien8.de
+Received: from mail.alien8.de ([127.0.0.1])
+	by localhost (mail.alien8.de [127.0.0.1]) (amavisd-new, port 10026)
+	with ESMTP id YwzEzrF91RIy; Tue,  7 Jul 2026 18:35:44 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=alien8.de; s=alien8;
+	t=1783449343; bh=ua4u1LuUlezN8j6xu2WIJg9JtcJ7b4ThrEAFlNhjKjo=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=gTc6FoWaXOvHrcV7b24WqFshXfsrcHIgdZ87MOaPfogiTPw5w20YhQgy/iwJWZUKh
+	 7yTEG9SSMwC7UT6G4waoaf4D71z4dRJdOy2a1WowEV5tYoCmuSwYdL7ssMglGvQyy7
+	 8ALdrILLDVaX9LtEELvuDM1B1cCxDVsztC9DMAI483AzO7/84fyH7mZswHc+VVyM0M
+	 qgfJ5ZNRxGiNzZmhkLm5Bz6I1ivFExeO6Q4+073FfymSMDZy1lK59poyzR9o8v+DNs
+	 sc+r0HZLDcVk5/joZ8DLmKToROIqCn5umWnhW0+/OJG7aNstYug+GexLfXnGggWEcg
+	 JRoV3XZ6r1+kHRoXFxnJA+09g5McuH6DvyuQbK6Yu26eWilxO+fIImgnJDLpoXBfZ6
+	 DFWUzpXId+BxhGag8reTRp7vgLsROnQqym6A2s6ed5lmCZG8k7KejZ0xrQhjXpiJqC
+	 m9YgG31jwT4MBqaxZoBM6seQMMHWR236PM/rHbyz8R3BDO7nKediqpFlJ2BJH/4M2t
+	 AzYN5ZLOnGNYcyFFnfOOKroAHnspB9gmLU3/Op5NCJ9Z1hd4Z1q8ldCmsA6F0fl+Zm
+	 2TuhXQ1T5kVT5y3xXFTE1skK/c/beFypQjmfNPX0eXJKqTOP0//9mTx5hZ+Ler4pxN
+	 3BHds+4jjjrob0FIDCu9VWw0=
+Received: from stx.tnic (unknown [IPv6:2600:1700:38ca:c00::42])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange ECDHE (P-256) server-signature ECDSA (P-256) server-digest SHA256)
+	(No client certificate requested)
+	by mail.alien8.de (SuperMail on ZX Spectrum 128k) with ESMTPSA id C725A40E00DC;
+	Tue,  7 Jul 2026 18:35:20 +0000 (UTC)
+Date: Tue, 7 Jul 2026 11:35:17 -0700
+From: Borislav Petkov <bp@alien8.de>
+To: Breno Leitao <leitao@debian.org>
+Cc: Tony Luck <tony.luck@intel.com>, Thomas Gleixner <tglx@kernel.org>,
+	Ingo Molnar <mingo@redhat.com>,
+	Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
+	"H. Peter Anvin" <hpa@zytor.com>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Hanjun Guo <guohanjun@huawei.com>,
+	Mauro Carvalho Chehab <mchehab@kernel.org>,
+	Shuai Xue <xueshuai@linux.alibaba.com>, Len Brown <lenb@kernel.org>,
+	Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
+	Oliver O'Halloran <oohall@gmail.com>,
+	Bjorn Helgaas <bhelgaas@google.com>,
+	Breno Leitao <leitao@kernel.org>, linux-kernel@vger.kernel.org,
+	linux-edac@vger.kernel.org, linux-acpi@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org,
+	kernel-team@meta.com
+Subject: Re: [PATCH RFC] RAS: hwerr_tracking: move recoverable hardware error
+ tracking out of vmcoreinfo
+Message-ID: <20260707183517.GCak1G5TKyF1ggs8WW@fat_crate.local>
+References: <20260707-hwerr-ras-v1-1-4aea4a79d085@debian.org>
+ <20260707160247.GBak0jJwNxVHlvzijD@fat_crate.local>
+ <ak0sGAX_NWMyeofC@gmail.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -128,64 +96,45 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <ak0sGAX_NWMyeofC@gmail.com>
+Content-Transfer-Encoding: quoted-printable
 
-Hi,
+On Tue, Jul 07, 2026 at 09:53:34AM -0700, Breno Leitao wrote:
+> The current vmcoreinfo implementation defaults to enabled, so I wanted =
+to
+> preserve that behavior to avoid silently removing symbols that existing
+> tools may depend on. Would you prefer a different default?
 
-Le samedi 04 juillet 2026 =C3=A0 01:08 +0530, Mukesh Ojha a =C3=A9crit=C2=
-=A0:
-> Replace the hand-rolled devm wrapper (ingenic_drm_release_rmem +
-> devm_add_action_or_reset) with the standard
-> devm_of_reserved_mem_device_init(), letting the device resource
-> manager handle cleanup automatically.
->=20
-> Signed-off-by: Mukesh Ojha <mukesh.ojha@oss.qualcomm.com>
+You do know Linus' stance on enabling things by default which are not
+ubiquitous, right?
 
-Reviewed-by: Paul Cercueil <paul@crapouillou.net>
+Logging hw errors in vmcore is really necessary to be enabled everywhere?
 
-Cheers,
--Paul
+> I agree the sysfs exposure duplicates existing infrastructure, points
+> taken. However, tracking fatal hardware errors provides value at crash
+> analysis time=E2=80=94it lets us quickly determine whether a fatal hard=
+ware
+> error occurred during the kernel's lifetime, which is useful for
+> root-cause attribution.
 
-> ---
-> =C2=A0drivers/gpu/drm/ingenic/ingenic-drm-drv.c | 13 +------------
-> =C2=A01 file changed, 1 insertion(+), 12 deletions(-)
->=20
-> diff --git a/drivers/gpu/drm/ingenic/ingenic-drm-drv.c
-> b/drivers/gpu/drm/ingenic/ingenic-drm-drv.c
-> index 7e569af22391..990c3b4625fa 100644
-> --- a/drivers/gpu/drm/ingenic/ingenic-drm-drv.c
-> +++ b/drivers/gpu/drm/ingenic/ingenic-drm-drv.c
-> @@ -1060,11 +1060,6 @@ static void ingenic_drm_unbind_all(void *d)
-> =C2=A0	component_unbind_all(priv->dev, &priv->drm);
-> =C2=A0}
-> =C2=A0
-> -static void __maybe_unused ingenic_drm_release_rmem(void *d)
-> -{
-> -	of_reserved_mem_device_release(d);
-> -}
-> -
-> =C2=A0static void ingenic_drm_configure_hwdesc(struct ingenic_drm *priv,
-> =C2=A0					 unsigned int hwdesc,
-> =C2=A0					 unsigned int next_hwdesc,
-> u32 id)
-> @@ -1127,16 +1122,10 @@ static int ingenic_drm_bind(struct device
-> *dev, bool has_components)
-> =C2=A0	}
-> =C2=A0
-> =C2=A0	if (IS_ENABLED(CONFIG_OF_RESERVED_MEM)) {
-> -		ret =3D of_reserved_mem_device_init(dev);
-> +		ret =3D devm_of_reserved_mem_device_init(dev);
-> =C2=A0
-> =C2=A0		if (ret && ret !=3D -ENODEV)
-> =C2=A0			dev_warn(dev, "Failed to get reserved
-> memory: %d\n", ret);
-> -
-> -		if (!ret) {
-> -			ret =3D devm_add_action_or_reset(dev,
-> ingenic_drm_release_rmem, dev);
-> -			if (ret)
-> -				return ret;
-> -		}
-> =C2=A0	}
-> =C2=A0
-> =C2=A0	priv =3D devm_drm_dev_alloc(dev, &ingenic_drm_driver_data,
+Yes, that's why you put it in vmcore. You can't read sysfs if you encount=
+er
+a fatal hw error.
+
+> For this, would you like to keep it in vmcore info (as of today), or
+> move to RAS subsystem?
+
+You mean, would I like to pay attention to more patches than now?
+
+Not really - I can barely manage as it is.
+
+:-)
+
+--=20
+Regards/Gruss,
+    Boris.
+
+https://people.kernel.org/tglx/notes-about-netiquette
 
