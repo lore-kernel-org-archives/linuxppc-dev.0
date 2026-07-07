@@ -1,109 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-23747-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23748-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6672AC44501
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jul 2026 19:08:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E7303C43602
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jul 2026 22:29:39 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gvrM76HSSz3cLd;
-	Wed, 08 Jul 2026 05:07:15 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783451235;
-	cv=none; b=fDR2fxZwJ59eXmXRMfy+V+s2PzENP6/Vbm0JlvCd5Qh64OFi5Y+x1xj9O75TEtuP6a3bKaKJSGlHmSGU0BpY3rYuAxaNiVi4G5RKsF7jEr+XaoIlyLx7zBG8SDm/xlfCNekc3bXLn5BoBCtCXhh4r8JpJ1wV7dXAYWiDqnkYVaP4jxY24oqcIxcSUwZ0DG5iTZl0acXoiXJLrbcKw3jiHl8LZN+9sZZUI9iXeLufe7IwDZaupugJGVwuA9uAyQynKvrDZgpUc2aCjto7AVeW2aXK5kNk1h0e1JX/dAxts/uMOnWQSf2LO/tN4fQQRekGsfL9fGtFvLJAQY7rvoXMrg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gvwrf115mz2xnp;
+	Wed, 08 Jul 2026 08:29:38 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783463378;
+	cv=none; b=fGOrlG2CVlbfF+inCbGvIhulSwRb9AnSdXXu1I4hsKME6fcODvV3PVmLUcA/uGJHCzVvf3YczUzpBhS7Kn+B0WSO5+btrjcTojQX0OyEGw7uOAGaTdvkOMkhNXOsB9rVotnDRWbk+vPG1+VCBY5zJdlppZBDrF+MylvH11NIVObbMO80WVimLU0ocKqxCLW9JgYINDw34wrFRLUVpzXh3pHSlNe+actwciJNLrm7sxcUj5e2npJXF9/0r+o0jeTGxiAMAxCcqzrN298npOnjxjwT00T462vUE3U64rB32wEcMs2n00OkcMwzOZLd628RFwdggSBnO37QjnuLgdmEdw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1783451235; c=relaxed/relaxed;
-	bh=ujg63nFpNppD6hh8ErFLF1J5JX2ZfpeEoGN6ZrinWc0=;
-	h=Date:Message-ID:From:To:Cc:Subject:References:MIME-Version:
-	 Content-Type; b=DUH/4pFEttGolX/uLnizMNyzODZBlihRL7pMHOh6R8zgwI+hbYDzpSWTSXIxI3RCModO1cudsitg0tsw/GUiyFP9hzxz3q4cpMrYFMRYwfnh9ziEo8FWcl9DZJYSwR67weBhMMjS5Uhwap4r7psQcwxlQlABC+3h2xdFuVkKpHcFk2O1pWUkheznH9vKsCEyNzLqw/dSCeMtD+dsBuckOquHX5bP9EbmyFfj0ymplbp1ci0we1Ub1i48h09aOHlQZIKU2LDsepZfxGRBedbR3YowgDqsK1TfzYS5mO1MAdzDm+0Hm12YHwZNH9+dF6u9AZ7RiTNG6tl81T5BsI3IZQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=AHEhZEMB; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=tglx@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1783463378; c=relaxed/relaxed;
+	bh=AZhsVbg+pGpdN+LoqPtk1yF43RbR2KSyGy50RUBXUK4=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=PW+U5UkbV2nIDXX9kzHGS23qUpmbxvHK1bUWObrEmoRdHzie46hxAjXQnc1eBrC01guPYSDZBGjutBl/SRq2rgL9i+AluKf2X9BKtm7ZkBXM9dl8iX1a/u2QjpJ8MxJlS4HgrG+vKAsbq5N3CZAripElRWDBQxP4RLxNhhZ2PVC+D9/8ORH373di/SZq+nYzbEsv40gWxqij4EVc2oDWFEdZVC1QIvo8kVBtDjNKXB+rkCZZ70Sf7ZaN8nolYkit4raaD9pw+M8jWDJKH3GBBkppIKCizD51RygsD7rNzSMoUWu4SJoHSNahkJ++Kz9Bm2+sutPDviKaVLPX3qjldw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Or+9ysIy; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=AHEhZEMB;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Or+9ysIy;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=tglx@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gvrM66CNRz3bsf
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Jul 2026 05:07:14 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gvwrd0hQhz2xHK
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Jul 2026 08:29:36 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id B1DC26138D;
-	Tue,  7 Jul 2026 19:07:12 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 959C01F00A3E;
-	Tue,  7 Jul 2026 19:07:11 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 578A540139;
+	Tue,  7 Jul 2026 22:29:30 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4A18A1F00A3D;
+	Tue,  7 Jul 2026 22:29:29 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1783451232;
-	bh=ujg63nFpNppD6hh8ErFLF1J5JX2ZfpeEoGN6ZrinWc0=;
-	h=Date:From:To:Cc:Subject:References;
-	b=AHEhZEMBYzBtdLcDTyhlS45Q7S7ZwTjKIqiJzRbhD5/XAbHDISjmwksUK82ZNX4eN
-	 v/56KPMLh+ap7XlsQOg/BTaFcC0r6cCqimRsKEEjnM7HqpHCJ0wTkRT4YpPRqksdHy
-	 hbur5BBOkf2MqLhVXO+OEJPygToMV0GfcDHqGyXAo5xm9el2SAov1vxRwDLsZ9mDTO
-	 8DMadvH3j+KUyVnLd3M9IfC7bg8qqqSHv1wejHUyEH+mIuHPWHU4dWWsyjmGqtk7PJ
-	 8vvvohEhLbaJuT/nrhqQWxuMcj0mhqi8CGIjfadl6DsadWHk3iOaJCLltrwK6NFjAk
-	 oac7QSSvNoGEw==
-Date: Tue, 07 Jul 2026 21:07:09 +0200
-Message-ID: <20260707190254.603111179@kernel.org>
-User-Agent: quilt/0.69
-From: Thomas Gleixner <tglx@kernel.org>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Peter Zijlstra <peterz@infradead.org>,
- =?UTF-8?q?Michal=20Such=C3=A1nek?= <msuchanek@suse.de>,
- Jonathan Corbet <corbet@lwn.net>,
- Arnd Bergmann <arnd@arndb.de>,
- Mark Rutland <mark.rutland@arm.com>,
- Huacai Chen <chenhuacai@kernel.org>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Shrikanth Hegde <sshegde@linux.ibm.com>,
- Paul Walmsley <pjw@kernel.org>,
- Palmer Dabbelt <palmer@dabbelt.com>,
- Sven Schnelle <svens@linux.ibm.com>,
- linux-doc@vger.kernel.org,
- loongarch@lists.linux.dev,
- linuxppc-dev@lists.ozlabs.org,
- linux-riscv@lists.infradead.org,
- linux-s390@vger.kernel.org,
- Kees Cook <kees@kernel.org>,
- x86@kernel.org,
- Jinjie Ruan <ruanjinjie@huawei.com>,
- Andy Lutomirski <luto@kernel.org>,
- Oleg Nesterov <oleg@redhat.com>,
- Richard Henderson <richard.henderson@linaro.org>,
- Russell King <linux@armlinux.org.uk>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Guo Ren <guoren@kernel.org>,
- Geert Uytterhoeven <geert@linux-m68k.org>,
- Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
- Helge Deller <deller@gmx.de>,
- Yoshinori Sato <ysato@users.sourceforge.jp>,
- Richard Weinberger <richard@nod.at>,
- Chris Zankel <chris@zankel.net>,
- linux-arm-kernel@lists.infradead.org,
- linux-alpha@vger.kernel.org,
- linux-csky@vger.kernel.org,
- linux-m68k@lists.linux-m68k.org,
- linux-mips@vger.kernel.org,
- linux-parisc@vger.kernel.org,
- linux-sh@vger.kernel.org,
- linux-um@lists.infradead.org,
- Vineet Gupta <vgupta@kernel.org>,
- Will Deacon <will@kernel.org>,
- Brian Cain <bcain@kernel.org>,
- Michal Simek <monstr@monstr.eu>,
- Dinh Nguyen <dinguyen@kernel.org>,
- "David S. Miller" <davem@davemloft.net>,
- Andreas Larsson <andreas@gaisler.com>,
- linux-snps-arc@lists.infradead.org,
- linux-hexagon@vger.kernel.org,
- linux-openrisc@vger.kernel.org,
- sparclinux@vger.kernel.org,
- linux-arch@vger.kernel.org
-Subject: [patch 18/18] entry,
- treewide: Make syscall_enter_from_user_mode[_work]() indicate syscall
- execution
-References: <20260707181957.433213175@kernel.org>
+	s=k20260515; t=1783463370;
+	bh=AZhsVbg+pGpdN+LoqPtk1yF43RbR2KSyGy50RUBXUK4=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To;
+	b=Or+9ysIydRJTTAmJSj0I5DWOTDMV8z+insajMqA+tXpscLj8XffwtjCWQIOwgLF9b
+	 kOBeHKlD397Jl1ihy9/LI+iHpVxPQ37I1vs+0VKKVH9XilyZKQZyUePhWmYjma+wJQ
+	 nyVUHvIeuyYNnUN49Gob8cVX12KgQGrpDMpyZAiBRatmbwJMjlmQrFonqul660gX7L
+	 W5Xc2cFsm7/za20peyS8gc3mrd+x6ouFura0Tf9D780Fxo1Wf5211n/xAg49jFLVB7
+	 TtZkO2/iHKVbuMRdxnuloQgH2k1In8d0QKwO+OAIP4SqakzoKN6y98ncnoYPQsT3lp
+	 iKTqXb0M/Zo/w==
+Message-ID: <98d65de7-e5aa-4197-85bd-219eab01e572@kernel.org>
+Date: Wed, 8 Jul 2026 00:29:26 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -117,315 +59,72 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+User-Agent: Mozilla Thunderbird
+Subject: Re: test_bitmap fails on ppc/ppc64 on kernels v7.1.3, v7.2-rc2
+To: Erhard Furtner <erhard_f@mailbox.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Cc: linux-kernel@vger.kernel.org
+References: <ca3547ae-8b79-43a2-a758-23ec980bfd9a@mailbox.org>
+Content-Language: fr-FR
+From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+In-Reply-To: <ca3547ae-8b79-43a2-a758-23ec980bfd9a@mailbox.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 
-From: Michal Suchánek <msuchanek@suse.de>
+Hi,
 
-The return values of syscall_enter_from_user_mode[_work]() are
-non-intuitive. Both functions return the syscall number which should be
-invoked by the architecture specific syscall entry code. The returned
-number can be:
+Le 06/07/2026 à 21:27, Erhard Furtner a écrit :
+> Greetings!
+> 
+> I don't get this on my x86_64 machines, but on ppc32 (PowerMac G4 DP) 
+> and on ppc64 (Talos II, POWER9) running Gentoo Linux. This dmesg snippet 
+> is from the G4:
+> 
+> Total memory = 2048MB; using 4096kB for hash table
+> Activating Kernel Userspace Access Protection
+> Activating Kernel Userspace Execution Prevention
+> Linux version 7.2.0-rc2-PMacG4 (root@T1000) (gcc (Gentoo 15.3.0 p8) 
+> 15.3.0, GNU ld (Gentoo 2.46.0 p1) 2.46.0) #1 SMP PREEMPT Mon Jul  6 
+> 20:22:47 CEST 2026
+> 
+> [...]
+> 
+> test_bitmap: loaded.
+> test_bitmap: [lib/test_bitmap.c:397] bitmaps contents differ: expected 
+> "1,3-4,9", got "1,3-4,9,65-71,73-79,81-87,89-95,97-99"
+> test_bitmap: parselist('0-2047:128/256'):    912
+> test_bitmap: scnprintf("%*pbl", '0-32767'):    5977
+> test_bitmap: test_bitmap_read_perf:        1191082
+> test_bitmap: test_bitmap_write_perf:        1270153
+> test_bitmap: failed 1 out of 208655 tests
 
-  - the unmodified syscall number which was handed in by the caller
+On QEMU (pmac32_defconfig) I get:
 
-  - a modified syscall number (ptrace, seccomp, trace/probe/bpf)
+test_bitmap: loaded.
+test_bitmap: parselist('0-2047:128/256'):	2200
+test_bitmap: scnprintf("%*pbl", '0-32767'):	26440
+test_bitmap: test_bitmap_read_perf:		1819760
+test_bitmap: test_bitmap_write_perf:		18189840
+test_bitmap: all 208655 tests passed
 
-That has an additional twist. If the return value is -1L then the caller is
-not allowed to modify the return value as that indicates that the modifying
-entity requests to abort the syscall and set the return value already. That
-can obviously not be differentiated from a syscall which handed in -1 as
-syscall number.
+On QEMU with your confirm I get:
 
-The established way to deal with that is:
+[    1.162486] test_bitmap: loaded.
+[    1.177069] test_bitmap: [lib/test_bitmap.c:397] bitmaps contents 
+differ: expected "1,3-4,9", got "1,3-4,9,65-71,73-79,81-87,89-95,97-99"
+[    1.180599] test_bitmap: parselist('0-2047:128/256'):	2920
+[    1.190105] test_bitmap: scnprintf("%*pbl", '0-32767'):	65560
+[    1.427378] test_bitmap: test_bitmap_read_perf:		9546321
+[    1.438769] test_bitmap: test_bitmap_write_perf:		9344481
+[    1.457679] test_bitmap: failed 1 out of 208655 tests
 
-    set_return_value(regs, -ENOSYS);
-    nr = syscall_enter_from_user_mode(regs, nr);
-    if ((unsigned)nr < SYSCALLNR_MAX)
-    	handle_syscall(regs, nr);
-    else if (nr != -1)
-    	set_return_value(regs, -ENOSYS);
+So there is something with your config
 
-The latter is obviously redundant, but that's just a leftover of the
-historical evolution of this code. S390 has some special requirements here,
-which can be avoided when the return value is not ambiguous.
-
-Now that the functions which modify the syscall number and want to abort
-are converted to indicate that with a boolean return value, it's obvious to
-hand this through to the callers.
-
-Rework syscall_enter_from_user_mode[_work]) so they take a pointer to the
-syscall number and return a boolean, which indicates whether the syscall
-should be handled or not.
-
-That's not only more intuitive, it also results in slightly denser
-executable code on x86 at least, but perf results are neutral and within
-the noise.
-
-[ tglx: Adopted it to the changes in the generic entry code, fixed up the
-  	32-bit fallout and rewrote change log ]
-
-Signed-off-by: Michal Suchánek <msuchanek@suse.de>
-Signed-off-by: Thomas Gleixner <tglx@kernel.org>
-Cc: Jonathan Corbet <corbet@lwn.net>
-Cc: Arnd Bergmann <arnd@arndb.de>
-Cc: Mark Rutland <mark.rutland@arm.com>
-Cc: Huacai Chen <chenhuacai@kernel.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Shrikanth Hegde <sshegde@linux.ibm.com>
-Cc: Paul Walmsley <pjw@kernel.org>
-Cc: Palmer Dabbelt <palmer@dabbelt.com>
-Cc: Sven Schnelle <svens@linux.ibm.com>
-Cc: linux-doc@vger.kernel.org
-Cc: loongarch@lists.linux.dev
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: linux-riscv@lists.infradead.org
-Cc: linux-s390@vger.kernel.org
----
- Documentation/core-api/entry.rst |   18 +++++++++++-------
- arch/loongarch/kernel/syscall.c  |   14 +++++++-------
- arch/powerpc/kernel/syscall.c    |    3 ++-
- arch/riscv/kernel/traps.c        |   11 +++++------
- arch/s390/kernel/syscall.c       |    7 +++++--
- arch/x86/entry/syscall_32.c      |   25 ++++++++++++-------------
- arch/x86/entry/syscall_64.c      |   12 ++++++------
- include/linux/entry-common.h     |   12 +++++-------
- 8 files changed, 53 insertions(+), 49 deletions(-)
-
---- a/Documentation/core-api/entry.rst
-+++ b/Documentation/core-api/entry.rst
-@@ -68,16 +68,20 @@ low-level C code must not be instrumente
-   noinstr void syscall(struct pt_regs *regs, int nr)
-   {
- 	arch_syscall_enter(regs);
--	nr = syscall_enter_from_user_mode_randomize_stack(regs, nr);
--
--	instrumentation_begin();
--	if (!invoke_syscall(regs, nr) && nr != -1)
--	 	result_reg(regs) = __sys_ni_syscall(regs);
--	instrumentation_end();
--
-+	result_reg(regs) = -ENOSYS;
-+	if (syscall_enter_from_user_mode_randomize_stack(regs, &nr)) {
-+		instrumentation_begin();
-+		if (!invoke_syscall(regs, nr))
-+			result_reg(regs) = __sys_ni_syscall(regs);
-+		instrumentation_end();
-+	}
- 	syscall_exit_to_user_mode(regs);
-   }
- 
-+It is required that either the low level assembly code or the syscall
-+function sets the result register to -ENOSYS before invoking the generic
-+code.
-+
- syscall_enter_from_user_mode_randomize_stack() first invokes
- enter_from_user_mode_randomize_stack() which establishes state in the
- following order:
---- a/arch/loongarch/kernel/syscall.c
-+++ b/arch/loongarch/kernel/syscall.c
-@@ -57,8 +57,8 @@ typedef long (*sys_call_fn)(unsigned lon
- 
- void noinstr __no_stack_protector do_syscall(struct pt_regs *regs)
- {
--	unsigned long nr;
- 	sys_call_fn syscall_fn;
-+	unsigned long nr;
- 
- 	nr = regs->regs[11];
- 	/* Set for syscall restarting */
-@@ -69,12 +69,12 @@ void noinstr __no_stack_protector do_sys
- 	regs->orig_a0 = regs->regs[4];
- 	regs->regs[4] = -ENOSYS;
- 
--	nr = syscall_enter_from_user_mode_randomize_stack(regs, nr);
--
--	if (nr < NR_syscalls) {
--		syscall_fn = sys_call_table[array_index_nospec(nr, NR_syscalls)];
--		regs->regs[4] = syscall_fn(regs->orig_a0, regs->regs[5], regs->regs[6],
--					   regs->regs[7], regs->regs[8], regs->regs[9]);
-+	if (likely(syscall_enter_from_user_mode_randomize_stack(regs, &nr))) {
-+		if (nr < NR_syscalls) {
-+			syscall_fn = sys_call_table[array_index_nospec(nr, NR_syscalls)];
-+			regs->regs[4] = syscall_fn(regs->orig_a0, regs->regs[5], regs->regs[6],
-+						   regs->regs[7], regs->regs[8], regs->regs[9]);
-+		}
- 	}
- 
- 	syscall_exit_to_user_mode(regs);
---- a/arch/powerpc/kernel/syscall.c
-+++ b/arch/powerpc/kernel/syscall.c
-@@ -18,7 +18,8 @@ notrace long system_call_exception(struc
- 	long ret;
- 	syscall_fn f;
- 
--	r0 = syscall_enter_from_user_mode_randomize_stack(regs, r0);
-+	if (unlikely(!syscall_enter_from_user_mode_randomize_stack(regs, &r0))
-+		return syscall_get_error(current, regs);
- 
- 	if (unlikely(r0 >= NR_syscalls)) {
- 		if (unlikely(trap_is_unsupported_scv(regs))) {
---- a/arch/riscv/kernel/traps.c
-+++ b/arch/riscv/kernel/traps.c
-@@ -332,13 +332,12 @@ void do_trap_ecall_u(struct pt_regs *reg
- 
- 		riscv_v_vstate_discard(regs);
- 
--		syscall = syscall_enter_from_user_mode_randomize_stack(regs, syscall);
--
--		if (syscall >= 0 && syscall < NR_syscalls) {
--			syscall = array_index_nospec(syscall, NR_syscalls);
--			syscall_handler(regs, syscall);
-+		if (syscall_enter_from_user_mode_randomize_stack(regs, &syscall)) {
-+			if (syscall >= 0 && syscall < NR_syscalls) {
-+				syscall = array_index_nospec(syscall, NR_syscalls);
-+				syscall_handler(regs, syscall);
-+			}
- 		}
--
- 		syscall_exit_to_user_mode(regs);
- 	} else {
- 		irqentry_state_t state = irqentry_nmi_enter(regs);
---- a/arch/s390/kernel/syscall.c
-+++ b/arch/s390/kernel/syscall.c
-@@ -96,6 +96,7 @@ SYSCALL_DEFINE0(ni_syscall)
- void noinstr __do_syscall(struct pt_regs *regs, int per_trap)
- {
- 	unsigned long nr;
-+	bool permit;
- 
- 	enter_from_user_mode_randomize_stack(regs);
- 
-@@ -121,7 +122,9 @@ void noinstr __do_syscall(struct pt_regs
- 		regs->psw.addr = current->restart_block.arch_data;
- 		current->restart_block.arch_data = 1;
- 	}
--	nr = syscall_enter_from_user_mode_work(regs, nr);
-+
-+	permit = syscall_enter_from_user_mode_work(regs, &nr);
-+
- 	/*
- 	 * In the s390 ptrace ABI, both the syscall number and the return value
- 	 * use gpr2. However, userspace puts the syscall number either in the
-@@ -129,7 +132,7 @@ void noinstr __do_syscall(struct pt_regs
- 	 * work, the ptrace code sets PIF_SYSCALL_RET_SET, which is checked here
- 	 * and if set, the syscall will be skipped.
- 	 */
--	if (unlikely(test_and_clear_pt_regs_flag(regs, PIF_SYSCALL_RET_SET)))
-+	if (unlikely(test_and_clear_pt_regs_flag(regs, PIF_SYSCALL_RET_SET) || !permit))
- 		goto out;
- 	regs->gprs[2] = -ENOSYS;
- 	if (likely(nr < NR_syscalls)) {
---- a/arch/x86/entry/syscall_32.c
-+++ b/arch/x86/entry/syscall_32.c
-@@ -161,8 +161,9 @@ static __always_inline bool int80_is_ext
- 	nr = syscall_32_enter(regs);
- 
- 	local_irq_enable();
--	nr = syscall_enter_from_user_mode_work(regs, nr);
--	do_syscall_32_irqs_on(regs, nr);
-+
-+	if (likely(syscall_enter_from_user_mode_work(regs, &nr)))
-+		do_syscall_32_irqs_on(regs, nr);
- 
- 	instrumentation_end();
- 	syscall_exit_to_user_mode(regs);
-@@ -223,8 +224,8 @@ DEFINE_FREDENTRY_RAW(int80_emulation)
- 	nr = syscall_32_enter(regs);
- 
- 	local_irq_enable();
--	nr = syscall_enter_from_user_mode_work(regs, nr);
--	do_syscall_32_irqs_on(regs, nr);
-+	if (likely(syscall_enter_from_user_mode_work(regs, &nr)))
-+		do_syscall_32_irqs_on(regs, nr);
- 
- 	instrumentation_end();
- 	syscall_exit_to_user_mode(regs);
-@@ -243,13 +244,13 @@ DEFINE_FREDENTRY_RAW(int80_emulation)
- 	 * orig_ax, the int return value truncates it. This matches
- 	 * the semantics of syscall_get_nr().
- 	 */
--	nr = syscall_enter_from_user_mode_randomize_stack(regs, nr);
--
--	instrumentation_begin();
-+	if (likely(syscall_enter_from_user_mode_randomize_stack(regs, &nr))) {
-+		instrumentation_begin();
- 
--	do_syscall_32_irqs_on(regs, nr);
-+		do_syscall_32_irqs_on(regs, nr);
- 
--	instrumentation_end();
-+		instrumentation_end();
-+	}
- 	syscall_exit_to_user_mode(regs);
- }
- #endif /* !CONFIG_IA32_EMULATION */
-@@ -286,10 +287,8 @@ static noinstr bool __do_fast_syscall_32
- 		return false;
- 	}
- 
--	nr = syscall_enter_from_user_mode_work(regs, nr);
--
--	/* Now this is just like a normal syscall. */
--	do_syscall_32_irqs_on(regs, nr);
-+	if (likely(syscall_enter_from_user_mode_work(regs, &nr)))
-+		do_syscall_32_irqs_on(regs, nr);
- 
- 	instrumentation_end();
- 	syscall_exit_to_user_mode(regs);
---- a/arch/x86/entry/syscall_64.c
-+++ b/arch/x86/entry/syscall_64.c
-@@ -78,14 +78,14 @@ static __always_inline void do_syscall_x
- /* Returns true to return using SYSRET, or false to use IRET */
- __visible noinstr bool do_syscall_64(struct pt_regs *regs, long nr)
- {
--	nr = syscall_enter_from_user_mode_randomize_stack(regs, nr);
-+	if (likely(syscall_enter_from_user_mode_randomize_stack(regs, &nr))) {
-+		instrumentation_begin();
- 
--	instrumentation_begin();
-+		if (!do_syscall_x64(regs, nr))
-+			do_syscall_x32(regs, nr);
- 
--	if (!do_syscall_x64(regs, nr))
--		do_syscall_x32(regs, nr);
--
--	instrumentation_end();
-+		instrumentation_end();
-+	}
- 	syscall_exit_to_user_mode(regs);
- 
- 	/*
---- a/include/linux/entry-common.h
-+++ b/include/linux/entry-common.h
-@@ -71,7 +71,7 @@ static inline void syscall_enter_audit(s
- 	}
- }
- 
--static __always_inline bool syscall_trace_enter(struct pt_regs *regs, unsigned long work,
-+static __always_inline long syscall_trace_enter(struct pt_regs *regs, unsigned long work,
- 						long *syscall)
- {
- 	/*
-@@ -141,16 +141,14 @@ static __always_inline bool syscall_trac
-  *     ptrace_report_syscall_permit_entry(), __seccomp_permit_syscall(), trace_sys_enter()
-  *  2) Invocation of audit_syscall_entry()
-  */
--static __always_inline long syscall_enter_from_user_mode_work(struct pt_regs *regs, long syscall)
-+static __always_inline bool syscall_enter_from_user_mode_work(struct pt_regs *regs, long *syscall)
- {
- 	unsigned long work = READ_ONCE(current_thread_info()->syscall_work);
- 
--	if (work & SYSCALL_WORK_ENTER) {
--		if (!syscall_trace_enter(regs, work, &syscall))
--			return -1L;
--	}
-+	if (unlikely(work & SYSCALL_WORK_ENTER))
-+		return syscall_trace_enter(regs, work, syscall);
- 
--	return syscall;
-+	return true;
- }
- 
- /**
+> 
+> 
+> Full dmesg available at request. Kernel .config attached.
+> 
+> Regards,
+> Erhard
 
 
