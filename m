@@ -1,79 +1,79 @@
-Return-Path: <linuxppc-dev+bounces-23808-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23809-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 64C76C43458
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jul 2026 10:51:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C5A8EC43458
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jul 2026 10:52:06 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gwFKB0kl4z3090;
-	Wed, 08 Jul 2026 20:51:58 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gwFKF4J1jz2xpn;
+	Wed, 08 Jul 2026 20:52:01 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783507918;
-	cv=none; b=Fr1R0JICO/qKQ3JbHCUeVaaoj4ok+R9mbiofCv1ao8cB0LkXhRDr/e7mvR90IsuEMId6CcQvSkZq5w5MV8OHZbXTPYXfpbS0sYxTTotwRPzLF+PIhuE9ogUY3nlughlyAY84KSUBhNJ4/ZfsmR1uwahsXKVBOxI12opQrW/Uk85zj/ZVkWjQe75uuaME2ZmVk58q8qSInuXCncGDVhdU9rykYP+w/AdcU3j76IFaQ7j3oEdNyakcZpMV7fJM7M7qj6tZbbZKbT831Kc2uOB4SjTBF2gwmeXypirir3bVNVsjJtagS+f0fCF7v2x8i66zdupeGIzm6hu4NVAAn52eDA==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783507921;
+	cv=none; b=oRQqzT62YVApjTu+UQNzQJTFYCc9ZSFfzo2QoFhAo8L2fVVyl72AgO4a8xNIWzEvi1D0d5FVibuVIpZ35G/KNfohwSTgKK7Stj88KMzR0s5xTnGIIR5u3LVUt0qPJUm2U7lcwZDmjMmJHTCQ5rE/Vc3GOKLUzJZWGpa3dQ+mMGUl5bd0f3yGzF6o2lnjCQ56/9PDJIt3ZoPaiCV6XBohiIIAHPmjsW13xeitCRFljaVlinvuE4Ep/M/PFdVvT/bpHSeKKSGDAMCgKlYQDFCcqQHI32qA3YQr5C8l8cx0qVNjqf/vpCawxeG3wLlE+10SPm2jKN5a3LvUb4YMqcs1hQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1783507918; c=relaxed/relaxed;
-	bh=VJ0o9BWZuiVhLFqHcXPNQfgzeljcIMxrMvOXk5DL/fU=;
+	t=1783507921; c=relaxed/relaxed;
+	bh=dFy2K/Ylk9EZq5dXQZUGrgqCeqMdkBJhgs8qqL1CvgE=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=dLA+bX9u/wLtC8EQLaQjkMnzx40vYEhMFf0eL43Q/aEaLhzJmpyit1lLYhW/0pfwo4OkLzRGVCJ/m85uf6uAXHXw8MSVgR7Th3uyIHEXV+cGkKq0hz8csAkImZMf3HhfqOF2og28NoFSlhHbEJJ/57NKflxr6eY+7jneRgOvPcLlCKQuHdo6EyropEgsQeV0arWUxdKmJzCKRLmq25fGeUpBYKDkQHpxVz6pQNrEVm9/1ArQ70sm44KQdeMIOKPq8e0JKmYw1d8EwPEuAoSAUSJbMDMiGCf05wtgtIznnhNDbxn9aUlk9fsuQJsitKZnJQ3i2iaUqzp88p6NJXjYNA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Wk03EqP5; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=rathc@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	 MIME-Version; b=m9J7He3XYsDg07XQNOXhgnrcze0BtrlormAOVsA3VewQdHxPdsL1oh2wo95l5yzXLua5BUJTcprCExxMSqgRz2AUGZpll74+eddCykvXPbI39dFPCnfU9uaTI4Yr07A42d5qlqyzsbsqIRGao1RNA1302xb9zeowXv7NtIvt/5YlxMcNaIRMmKoPPeD0P8L7IrH5S2BKMjx/4Lq7OddLBTmwGRX98D46t9RpRbBKiOTPMtiU+pABcR0ZnjOT0LRxmBehjoHCyVZaZU96meKmJaOpOqJKmvZXQV/lIMjHODlidvjI7l+e0H8tTg1H8AtHsmv32aKFxiJ08guE7ucV3Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=AgQjKPuD; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=rathc@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Wk03EqP5;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=AgQjKPuD;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=rathc@linux.ibm.com; receiver=lists.ozlabs.org)
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gwFK86MZQz2xWY
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Jul 2026 20:51:56 +1000 (AEST)
-Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6688IRas3243892;
-	Wed, 8 Jul 2026 10:51:53 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gwFKD6fPbz2xWY
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Jul 2026 20:52:00 +1000 (AEST)
+Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6688IKBK2501587;
+	Wed, 8 Jul 2026 10:51:57 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
 	:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=pp1; bh=VJ0o9BWZuiVhLFqHc
-	XPNQfgzeljcIMxrMvOXk5DL/fU=; b=Wk03EqP5gQhweFCJAcZdxNPozPT83BtaU
-	iCDZ4xiEFw6NFkXu8HD3B4an5MU8FUmN2gsr+3wwVz2mjvH7aQUEzqUIV6ulaLmO
-	vKsVUfYJbMDphAzKP4e65m4SGBqODVx3MKZrIv5I1KYT4bUoO3MfXkT7kkjdJCi6
-	RznW0U8Eu65ngSbi361jBGxHNyMrpBLB4zXXKt7uTR6bBjoPmpLpXr5AU87o78Zu
-	28SQpPY/c0dHlmOAV6a+cM6PJ/svfTGkiy6ox0l3q/8KQHLcubXPYUTz9GZI2+rU
-	Xpp/9L55D8yx0yzx8dMYx7kAa5Gu7qUdrOc6Kj9LK1EuREz3alIeQ==
-Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4f6suquqhq-1
+	:mime-version:references:subject:to; s=pp1; bh=dFy2K/Ylk9EZq5dXQ
+	ZUGrgqCeqMdkBJhgs8qqL1CvgE=; b=AgQjKPuDwoxtKbTBphr50kjhpHv/KWvMP
+	ziUH6AmpTK371eWP7uqO91AiAvzb5A7JJ5+mbvxHuAGSZqGGuzLMOxcCSPKyMpbk
+	Waog2G1evq/rLjDW/6cNPOe1xCYxjppeYMl3vr4oOAkQT/vaxduJeYwbLxWr937I
+	wZqPnYXkyuw4lxkvCJepN2GczwWj8GmzW+pj8OyEXaU7MiSKUSlEq3/UoBzOJWbi
+	6s0PuNXBCLvTcT7VslXGuOJRDowje0SmDwgeXAxUzms/V2QdsB8tD8QEr0qA+H8m
+	BOgOJdNhUmLPI1PvzMlaeU5y9nZEeyjGi6gnkVmTPVjrCiukmaBQA==
+Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4f6sw4v060-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 08 Jul 2026 10:51:52 +0000 (GMT)
-Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma11.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 668AnvpY029739;
-	Wed, 8 Jul 2026 10:51:51 GMT
-Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
-	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4f7f6y7ahk-1
+	Wed, 08 Jul 2026 10:51:56 +0000 (GMT)
+Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma22.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 668AndlK011258;
+	Wed, 8 Jul 2026 10:51:55 GMT
+Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
+	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4f7cvw7t8x-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 08 Jul 2026 10:51:51 +0000 (GMT)
+	Wed, 08 Jul 2026 10:51:55 +0000 (GMT)
 Received: from smtpav04.fra02v.mail.ibm.com (smtpav04.fra02v.mail.ibm.com [10.20.54.103])
-	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 668ApllM28705302
+	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 668AppYH51052880
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 8 Jul 2026 10:51:47 GMT
+	Wed, 8 Jul 2026 10:51:51 GMT
 Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 60FAD20040;
-	Wed,  8 Jul 2026 10:51:47 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 2036D2004B;
+	Wed,  8 Jul 2026 10:51:51 +0000 (GMT)
 Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id B24492004B;
-	Wed,  8 Jul 2026 10:51:43 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 010D620043;
+	Wed,  8 Jul 2026 10:51:48 +0000 (GMT)
 Received: from li-18a0a34c-33fc-11b2-a85c-d9f1631c5692.ibm.com (unknown [9.39.26.49])
 	by smtpav04.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Wed,  8 Jul 2026 10:51:43 +0000 (GMT)
+	Wed,  8 Jul 2026 10:51:47 +0000 (GMT)
 From: Chinmay Rath <rathc@linux.ibm.com>
 To: thuth@redhat.com
 Cc: npiggin@gmail.com, harshpb@linux.ibm.com, lvivier@redhat.com,
         linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org,
         andrew.jones@linux.dev, sbhat@linux.ibm.com,
         Chinmay Rath <rathc@linux.ibm.com>
-Subject: [kvm-unit-tests PATCH 1/6] powerpc: add pmu tests
-Date: Wed,  8 Jul 2026 16:21:17 +0530
-Message-ID: <20260708105122.1177210-2-rathc@linux.ibm.com>
+Subject: [kvm-unit-tests PATCH 2/6] configure: Make arch_libdir a first-class entity
+Date: Wed,  8 Jul 2026 16:21:18 +0530
+Message-ID: <20260708105122.1177210-3-rathc@linux.ibm.com>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20260708105122.1177210-1-rathc@linux.ibm.com>
 References: <20260708105122.1177210-1-rathc@linux.ibm.com>
@@ -93,776 +93,134 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
 X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNzA4MDEwNSBTYWx0ZWRfX3SoWdHYx2+kL
- HMSVQSOJFKRE/0EiOsCvLPOD8xmTUvDeETWQ/B8xQpvLnKYIDADJ7M1wRhnWbiddRnWavMgwnwS
- ZtugkdoldjZTAq63OdlWPd1xbf3sFsM=
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzA4MDEwNSBTYWx0ZWRfX/tSvWLsm8ISp
- iCwk7NVZW0nPAn/Y2ygwpUwv4s031ypWWtHC3NjEkuW1Rejs27jl6b1vKXnGnClrSzL6EmbJObP
- LyajwJrJVjiHZBBldGxIz0cxCSqHH9k2k+G0URiFJ0QScB5uuC5Ro02ZMrx5A2Ghq8zp8Po0TnL
- sr2sCUDTk5oq0rrsPz+zSTH1QupYo8xBlTk9jmrSze8mFZKFmOFOI6DBeb4h9xf8PbNCfCF/n4u
- rH9pMS4PJGXEdyjcYhCc83IDdaek757G0fS9JTXlWN0/nShIJT4B8rkRuFCdp0bAEcBuH2G83Q2
- /pbdayKMhiHIlRAgYiIRaeatqPjLJC1oshsDXQTLyjFBf/j/MK5bHX0DFSttARHHeAhDe/l7Sax
- YwVPi6GbFeiTc664MI6pxy81Zg/MOsElXb1GK5Wg+F13Q/A6jyVGnOq63h3d+P0i4v78dbLU8U8
- uT4J8btB9DBrj1g3m3w==
-X-Proofpoint-GUID: jfWwg_4UpRYbWCmPzFmt1FzhSOmlh6aU
-X-Authority-Analysis: v=2.4 cv=Oot/DS/t c=1 sm=1 tr=0 ts=6a4e2bc9 cx=c_pps
- a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
+X-Proofpoint-GUID: ocbAyFv0NfBIyjuVGm7dmvNT2bgZYCCW
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzA4MDEwNSBTYWx0ZWRfX3Oi4J89+1XnI
+ +Mdt0K2lVT5r0wRJdUOWB1Y92ohmyZItdXwD/HzILuZutfYPlMg+J28BeqjR7dY1Yf2aetq5Rid
+ Sc0HJ/pSDhQvo/KWjI7e3W4a8TDYjIPXervf65VTwETeXvxIfVBuqS9k4hohygZs4PMgrqiw9cI
+ c8V1ZDw5yxwMbb1t5uyDytXPCuZ9+DFAP8V8FbI6dDLPOE0E1FUUtkALnFe4x4hZnO1q72DPJ/T
+ P5kSeZLatU4e9ffYtPV1c3mlubqyKSYXyqit8zVIK8MHHDp/gdoSPX4xxQ5ZaKGsapYAu5VagzP
+ oGkosl8pr91KKSme9HBNoHcc6vGexW41TCBYg0+66cGPIf+GSLdRy01M5BlsKxrI7f3Oq+CpzwS
+ Tgjo5y+uqeq86ptLALi9dQ32CSc3RcVgsHNoDC8CltRKYhh/2EKDuMAK9uGFJNYgim1GvrksLe4
+ HQdIwtY+uUtN8pHpYyA==
+X-Proofpoint-ORIG-GUID: cleThC47aVcKO8lkbS5hJiMfGzsknu6c
+X-Authority-Analysis: v=2.4 cv=FqQ1OWrq c=1 sm=1 tr=0 ts=6a4e2bcc cx=c_pps
+ a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
  a=RAioF0-LDSMA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=uAbxVGIbfxUO_5tXvNgY:22 a=pGLkceISAAAA:8 a=VnNF1IyMAAAA:8
- a=Sis57A-BupVIILBV42sA:9
-X-Proofpoint-ORIG-GUID: tRxRKnHJ_-ehmIOy_vf34oix5ha-wQ-e
+ a=U7nrCbtTmkRpXpFmAIza:22 a=pGLkceISAAAA:8 a=VnNF1IyMAAAA:8
+ a=TgLM54nR-fRGc_TkKysA:9
+X-Proofpoint-Spam-Info: AW1haW4tMjYwNzA4MDEwNSBTYWx0ZWRfX2qnhtqn7pXkG
+ b2hKH/l5kR39ft5to38p/V/VYD6P9EN57CudrgVamIbkID/+GJLuqDD6V7hZHK7ddcPnVIFFCul
+ GdtMLjq6r7m3z6uu9vBYbRdGivtAsrs=
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.134,FMLib:17.12.100.49
  definitions=2026-07-08_01,2026-07-06_02,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- bulkscore=0 lowpriorityscore=0 clxscore=1015 impostorscore=0 phishscore=0
- malwarescore=0 suspectscore=0 spamscore=0 adultscore=0 priorityscore=1501
+ adultscore=0 impostorscore=0 clxscore=1015 malwarescore=0 lowpriorityscore=0
+ priorityscore=1501 bulkscore=0 suspectscore=0 spamscore=0 phishscore=0
  classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
  reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607080105
 
 From: Nicholas Piggin <npiggin@gmail.com>
 
-Add some initial PMU testing.
+arch_libdir was brought in to improve the heuristic determination of
+the lib/ directory based on arch and testdir names, but it did not
+entirely clean that mess up.
 
-- PMC5/6 tests
-- PMAE / PMI test
-- BHRB basic tests
+Remove the arch_libdir->arch->testdir heuristic and just require
+everybody sets arch_libdir correctly. Fail if the lib/arch or
+lib/arch/asm directories can not be found.
 
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+Reviewed-by: Andrew Jones <andrew.jones@linux.dev>
 Signed-off-by: Chinmay Rath <rathc@linux.ibm.com>
 ---
- lib/powerpc/asm/processor.h |   2 +
- lib/powerpc/asm/reg.h       |   9 +
- lib/powerpc/asm/setup.h     |   1 +
- lib/powerpc/setup.c         |  20 ++
- powerpc/Makefile.common     |   3 +-
- powerpc/pmu.c               | 567 ++++++++++++++++++++++++++++++++++++
- powerpc/unittests.cfg       |   3 +
- 7 files changed, 604 insertions(+), 1 deletion(-)
- create mode 100644 powerpc/pmu.c
+ Makefile  |  2 +-
+ configure | 20 ++++++++++++--------
+ 2 files changed, 13 insertions(+), 9 deletions(-)
 
-diff --git a/lib/powerpc/asm/processor.h b/lib/powerpc/asm/processor.h
-index 153126fe..08506438 100644
---- a/lib/powerpc/asm/processor.h
-+++ b/lib/powerpc/asm/processor.h
-@@ -17,6 +17,8 @@ extern bool cpu_has_hv;
- extern bool cpu_has_power_mce;
- extern bool cpu_has_siar;
- extern bool cpu_has_heai;
-+extern bool cpu_has_bhrb;
-+extern bool cpu_has_p10_bhrb;
- extern bool cpu_has_radix;
- extern bool cpu_has_prefix;
- extern bool cpu_has_sc_lev;
-diff --git a/lib/powerpc/asm/reg.h b/lib/powerpc/asm/reg.h
-index 69ef21ad..602fba1b 100644
---- a/lib/powerpc/asm/reg.h
-+++ b/lib/powerpc/asm/reg.h
-@@ -40,10 +40,19 @@
- #define SPR_LPIDR	0x13f
- #define SPR_HEIR	0x153
- #define SPR_PTCR	0x1d0
-+#define SPR_MMCRA	0x312
-+#define   MMCRA_BHRBRD		UL(0x0000002000000000)
-+#define   MMCRA_IFM_MASK	UL(0x00000000c0000000)
-+#define SPR_PMC5	0x317
-+#define SPR_PMC6	0x318
- #define SPR_MMCR0	0x31b
- #define   MMCR0_FC		UL(0x80000000)
-+#define   MMCR0_FCP		UL(0x20000000)
- #define   MMCR0_PMAE		UL(0x04000000)
-+#define   MMCR0_BHRBA		UL(0x00200000)
-+#define   MMCR0_FCPC		UL(0x00001000)
- #define   MMCR0_PMAO		UL(0x00000080)
-+#define   MMCR0_FC56		UL(0x00000010)
- #define SPR_SIAR	0x31c
+diff --git a/Makefile b/Makefile
+index 42ef5826..8e002043 100644
+--- a/Makefile
++++ b/Makefile
+@@ -12,7 +12,7 @@ vpath %.s $(SRCDIR)
+ vpath %.S $(SRCDIR)
  
- /* Machine State Register definitions: */
-diff --git a/lib/powerpc/asm/setup.h b/lib/powerpc/asm/setup.h
-index 9ca318ce..8f0b58ed 100644
---- a/lib/powerpc/asm/setup.h
-+++ b/lib/powerpc/asm/setup.h
-@@ -10,6 +10,7 @@
- #define NR_CPUS			8	/* arbitrarily set for now */
+ libdirs-get = $(shell [ -d "lib/$(1)" ] && echo "lib/$(1) lib/$(1)/asm")
+-ARCH_LIBDIRS := $(call libdirs-get,$(ARCH_LIBDIR)) $(call libdirs-get,$(TEST_DIR))
++ARCH_LIBDIRS := $(call libdirs-get,$(ARCH_LIBDIR))
+ OBJDIRS := $(ARCH_LIBDIRS)
  
- extern uint64_t tb_hz;
-+extern uint64_t cpu_hz;
+ DESTDIR := $(PREFIX)/share/kvm-unit-tests/
+diff --git a/configure b/configure
+index 6d549d1e..aeb5570c 100755
+--- a/configure
++++ b/configure
+@@ -274,7 +274,6 @@ fi
+ arch_name=$arch
+ [ "$arch" = "aarch64" ] && arch="arm64"
+ [ "$arch_name" = "arm64" ] && arch_name="aarch64"
+-arch_libdir=$arch
  
- #define NR_MEM_REGIONS		8
- #define MR_F_PRIMARY		(1U << 0)
-diff --git a/lib/powerpc/setup.c b/lib/powerpc/setup.c
-index c1f0f9ad..ef4ebdbc 100644
---- a/lib/powerpc/setup.c
-+++ b/lib/powerpc/setup.c
-@@ -33,6 +33,7 @@ u32 initrd_size;
- u32 cpu_to_hwid[NR_CPUS] = { [0 ... NR_CPUS-1] = (~0U) };
- int nr_cpus_present;
- uint64_t tb_hz;
-+uint64_t cpu_hz;
+ if [ "$arch" = "riscv" ]; then
+     echo "riscv32 or riscv64 must be specified"
+@@ -373,8 +372,10 @@ fi
  
- struct mem_region mem_regions[NR_MEM_REGIONS];
- phys_addr_t __physical_start, __physical_end;
-@@ -42,6 +43,7 @@ struct cpu_set_params {
- 	unsigned icache_bytes;
- 	unsigned dcache_bytes;
- 	uint64_t tb_hz;
-+	uint64_t cpu_hz;
- };
+ if [ "$arch" = "i386" ] || [ "$arch" = "x86_64" ]; then
+     testdir=x86
++    arch_libdir=x86
+ elif [ "$arch" = "arm" ] || [ "$arch" = "arm64" ]; then
+     testdir=arm
++    arch_libdir=$arch
+     if [ "$target" = "qemu" ]; then
+         : "${uart_early_addr:=0x9000000}"
+     elif [ "$target" = "kvmtool" ]; then
+@@ -385,6 +386,7 @@ elif [ "$arch" = "arm" ] || [ "$arch" = "arm64" ]; then
+     fi
+ elif [ "$arch" = "ppc64" ]; then
+     testdir=powerpc
++    arch_libdir=ppc64
+     firmware="$testdir/boot_rom.bin"
+     if [ "$endian" != "little" ] && [ "$endian" != "big" ]; then
+         echo "You must provide endianness (big or little)!"
+@@ -400,6 +402,7 @@ elif [ "$arch" = "riscv32" ] || [ "$arch" = "riscv64" ]; then
+     fi
+ elif [ "$arch" = "s390x" ]; then
+     testdir=s390x
++    arch_libdir=s390x
+ else
+     echo "arch $arch is not supported!"
+     arch=
+@@ -409,6 +412,10 @@ if [ ! -d "$srcdir/$testdir" ]; then
+     echo "$srcdir/$testdir does not exist!"
+     exit 1
+ fi
++if [ ! -d "$srcdir/lib/$arch_libdir" ]; then
++    echo "$srcdir/lib/$arch_libdir does not exist!"
++    exit 1
++fi
  
- static void cpu_set(int fdtnode, u64 regval, void *info)
-@@ -95,6 +97,19 @@ static void cpu_set(int fdtnode, u64 regval, void *info)
- 		data = (u32 *)prop->data;
- 		params->tb_hz = fdt32_to_cpu(*data);
- 
-+		prop = fdt_get_property(dt_fdt(), fdtnode,
-+					"ibm,extended-clock-frequency", NULL);
-+		if (prop) {
-+			u64 *data64 = (u64 *)prop->data;
-+			params->cpu_hz = fdt64_to_cpu(*data64);
-+		} else {
-+			prop = fdt_get_property(dt_fdt(), fdtnode,
-+						"clock-frequency", NULL);
-+			assert(prop != NULL);
-+			data = (u32 *)prop->data;
-+			params->cpu_hz = fdt32_to_cpu(*data);
-+		}
-+
- 		read_common_info = true;
- 	}
- }
-@@ -103,6 +118,8 @@ bool cpu_has_hv;
- bool cpu_has_power_mce; /* POWER CPU machine checks */
- bool cpu_has_siar;
- bool cpu_has_heai;
-+bool cpu_has_bhrb;
-+bool cpu_has_p10_bhrb;
- bool cpu_has_radix;
- bool cpu_has_prefix;
- bool cpu_has_sc_lev; /* sc interrupt has LEV field in SRR1 */
-@@ -119,12 +136,14 @@ static void cpu_init_params(void)
- 	__icache_bytes = params.icache_bytes;
- 	__dcache_bytes = params.dcache_bytes;
- 	tb_hz = params.tb_hz;
-+	cpu_hz = params.cpu_hz;
- 
- 	switch (mfspr(SPR_PVR) & PVR_VERSION_MASK) {
- 	case PVR_VER_POWER10:
- 		cpu_has_prefix = true;
- 		cpu_has_sc_lev = true;
- 		cpu_has_pause_short = true;
-+		cpu_has_p10_bhrb = true;
- 	case PVR_VER_POWER9:
- 		cpu_has_radix = true;
- 	case PVR_VER_POWER8E:
-@@ -133,6 +152,7 @@ static void cpu_init_params(void)
- 		cpu_has_power_mce = true;
- 		cpu_has_heai = true;
- 		cpu_has_siar = true;
-+		cpu_has_bhrb = true;
- 		break;
- 	default:
- 		break;
-diff --git a/powerpc/Makefile.common b/powerpc/Makefile.common
-index db4a34f2..3b357982 100644
---- a/powerpc/Makefile.common
-+++ b/powerpc/Makefile.common
-@@ -18,7 +18,8 @@ tests-common = \
- 	$(TEST_DIR)/sprs.elf \
- 	$(TEST_DIR)/timebase.elf \
- 	$(TEST_DIR)/interrupts.elf \
--	$(TEST_DIR)/mmu.elf
-+	$(TEST_DIR)/mmu.elf \
-+	$(TEST_DIR)/pmu.elf
- 
- tests-all = $(tests-common) $(tests)
- all: directories $(TEST_DIR)/boot_rom.bin $(tests-all)
-diff --git a/powerpc/pmu.c b/powerpc/pmu.c
-new file mode 100644
-index 00000000..402ce569
---- /dev/null
-+++ b/powerpc/pmu.c
-@@ -0,0 +1,567 @@
-+// SPDX-License-Identifier: GPL-2.0-only
-+/*
-+ * Test PMU
-+ *
-+ * Copyright 2024 Nicholas Piggin, IBM Corp.
-+ */
-+#include <libcflat.h>
-+#include <util.h>
-+#include <migrate.h>
-+#include <alloc.h>
-+#include <asm/setup.h>
-+#include <asm/handlers.h>
-+#include <asm/hcall.h>
-+#include <asm/processor.h>
-+#include <asm/time.h>
-+#include <asm/barrier.h>
-+#include <asm/mmu.h>
-+#include <asm/smp.h>
-+#include "alloc_phys.h"
-+#include "vmalloc.h"
-+
-+static volatile bool got_interrupt;
-+static volatile struct pt_regs recorded_regs;
-+static volatile unsigned long recorded_mmcr0;
-+
-+static void illegal_handler(struct pt_regs *regs, void *data)
-+{
-+	got_interrupt = true;
-+	regs_advance_insn(regs);
-+}
-+
-+static void fault_handler(struct pt_regs *regs, void *data)
-+{
-+	got_interrupt = true;
-+	regs_advance_insn(regs);
-+}
-+
-+static void sc_handler(struct pt_regs *regs, void *data)
-+{
-+	got_interrupt = true;
-+}
-+
-+static void reset_mmcr0(void)
-+{
-+	mtspr(SPR_MMCR0, mfspr(SPR_MMCR0) | (MMCR0_FC | MMCR0_FC56));
-+	mtspr(SPR_MMCR0, mfspr(SPR_MMCR0) & ~(MMCR0_PMAE | MMCR0_PMAO));
-+}
-+
-+static __attribute__((__noinline__)) unsigned long pmc5_count_nr_insns(unsigned long nr)
-+{
-+	reset_mmcr0();
-+	mtspr(SPR_PMC5, 0);
-+	mtspr(SPR_MMCR0, mfspr(SPR_MMCR0) & ~(MMCR0_FC | MMCR0_FC56));
-+	asm volatile("mtctr %0 ; 1: bdnz 1b" :: "r"(nr) : "ctr");
-+	mtspr(SPR_MMCR0, mfspr(SPR_MMCR0) | (MMCR0_FC | MMCR0_FC56));
-+
-+	return mfspr(SPR_PMC5);
-+}
-+
-+static void test_pmc5(void)
-+{
-+	unsigned long pmc5;
-+	unsigned long mmcr;
-+
-+	reset_mmcr0();
-+	mmcr = mfspr(SPR_MMCR0);
-+	mtspr(SPR_PMC5, 0);
-+	mtspr(SPR_MMCR0, mmcr & ~(MMCR0_FC | MMCR0_FC56));
-+	asm volatile(".rep 20 ; nop ; .endr" ::: "memory");
-+	mtspr(SPR_MMCR0, mmcr);
-+	pmc5 = mfspr(SPR_PMC5);
-+
-+	report_kfail(true, pmc5 == 21, "PMC5 counts instructions exactly %ld", pmc5);
-+}
-+
-+static void test_pmc5_with_branch(void)
-+{
-+	unsigned long pmc5;
-+	unsigned long mmcr;
-+
-+	reset_mmcr0();
-+	mmcr = mfspr(SPR_MMCR0);
-+	mtspr(SPR_PMC5, 0);
-+	mtspr(SPR_MMCR0, mmcr & ~(MMCR0_FC | MMCR0_FC56));
-+	asm volatile(".rep 20 ; b $+4 ; .endr" ::: "memory");
-+	mtspr(SPR_MMCR0, mmcr);
-+	pmc5 = mfspr(SPR_PMC5);
-+
-+	/* TCG and POWER9 do not count instructions around faults correctly */
-+	report_kfail(true, pmc5 == 21, "PMC5 counts instructions with branch %ld", pmc5);
-+}
-+
-+static void test_pmc5_with_cond_branch(void)
-+{
-+	unsigned long pmc5;
-+	unsigned long mmcr;
-+
-+	reset_mmcr0();
-+	mmcr = mfspr(SPR_MMCR0);
-+	mtspr(SPR_PMC5, 0);
-+	mtspr(SPR_MMCR0, mmcr & ~(MMCR0_FC | MMCR0_FC56));
-+	asm volatile(".rep 10 ; nop ; .endr ; cmpdi %0,1 ; beq 1f ; .rep 10 ; nop ; .endr ; 1:" :  : "r"(0) : "memory", "cr0");
-+	mtspr(SPR_MMCR0, mmcr);
-+	pmc5 = mfspr(SPR_PMC5);
-+
-+	/* TCG and POWER9 do not count instructions around faults correctly */
-+	report_kfail(true, pmc5 == 24,
-+		     "PMC5 counts instructions wth conditional branch %ld", pmc5);
-+}
-+
-+static void test_pmc5_with_ill(void)
-+{
-+	unsigned long pmc5_1, pmc5_2;
-+
-+	handle_exception(0x700, &illegal_handler, NULL);
-+	handle_exception(0xe40, &illegal_handler, NULL);
-+
-+	reset_mmcr0();
-+	mtspr(SPR_PMC5, 0);
-+	mtspr(SPR_MMCR0, mfspr(SPR_MMCR0) & ~(MMCR0_FC | MMCR0_FC56));
-+	asm volatile(".long 0x0" ::: "memory");
-+	mtspr(SPR_MMCR0, mfspr(SPR_MMCR0) | (MMCR0_FC | MMCR0_FC56));
-+	assert(got_interrupt);
-+	got_interrupt = false;
-+	pmc5_1 = mfspr(SPR_PMC5);
-+
-+	reset_mmcr0();
-+	mtspr(SPR_PMC5, 0);
-+	mtspr(SPR_MMCR0, mfspr(SPR_MMCR0) & ~(MMCR0_FC | MMCR0_FC56));
-+	asm volatile(".rep 10 ; nop ; .endr ; .long 0x0 ; .rep 10 ; nop ; .endr " ::: "memory");
-+	mtspr(SPR_MMCR0, mfspr(SPR_MMCR0) | (MMCR0_FC | MMCR0_FC56));
-+	assert(got_interrupt);
-+	got_interrupt = false;
-+	pmc5_2 = mfspr(SPR_PMC5);
-+
-+	/* TCG and POWER9 do not count instructions around faults correctly */
-+	report_kfail(true, pmc5_1 + 20 == pmc5_2,
-+		     "PMC5 counts instructions with illegal instruction");
-+
-+	handle_exception(0x700, NULL, NULL);
-+	handle_exception(0xe40, NULL, NULL);
-+}
-+
-+static void test_pmc5_with_fault(void)
-+{
-+	unsigned long pmc5_1, pmc5_2;
-+	unsigned long tmp;
-+
-+	setup_vm();
-+
-+	handle_exception(0x300, &fault_handler, NULL);
-+	handle_exception(0x380, &fault_handler, NULL);
-+
-+	reset_mmcr0();
-+	mtspr(SPR_PMC5, 0);
-+	mtspr(SPR_MMCR0, mfspr(SPR_MMCR0) & ~(MMCR0_FC | MMCR0_FC56));
-+	asm volatile("ld %0,0(%1)" : "=r"(tmp) : "r"(NULL) : "memory");
-+	mtspr(SPR_MMCR0, mfspr(SPR_MMCR0) | (MMCR0_FC | MMCR0_FC56));
-+	assert(got_interrupt);
-+	got_interrupt = false;
-+	pmc5_1 = mfspr(SPR_PMC5);
-+
-+	reset_mmcr0();
-+	mtspr(SPR_PMC5, 0);
-+	mtspr(SPR_MMCR0, mfspr(SPR_MMCR0) & ~(MMCR0_FC | MMCR0_FC56));
-+	asm volatile(".rep 10 ; nop ; .endr ; ld %0,0(%1) ; .rep 10 ; nop ; .endr " : "=r"(tmp) : "r"(NULL) : "memory");
-+	mtspr(SPR_MMCR0, mfspr(SPR_MMCR0) | (MMCR0_FC | MMCR0_FC56));
-+	assert(got_interrupt);
-+	got_interrupt = false;
-+	pmc5_2 = mfspr(SPR_PMC5);
-+
-+	/* TCG and POWER9 do not count instructions around faults correctly */
-+	report_kfail(true, pmc5_1 + 20 == pmc5_2, "PMC5 counts instructions with fault");
-+
-+	handle_exception(0x300, NULL, NULL);
-+	handle_exception(0x380, NULL, NULL);
-+}
-+
-+static void test_pmc5_with_sc(void)
-+{
-+	unsigned long pmc5_1, pmc5_2;
-+
-+	handle_exception(0xc00, &sc_handler, NULL);
-+
-+	reset_mmcr0();
-+	mtspr(SPR_PMC5, 0);
-+	mtspr(SPR_MMCR0, mfspr(SPR_MMCR0) & ~(MMCR0_FC | MMCR0_FC56));
-+	asm volatile("sc 0" ::: "memory");
-+	mtspr(SPR_MMCR0, mfspr(SPR_MMCR0) | (MMCR0_FC | MMCR0_FC56));
-+	assert(got_interrupt);
-+	got_interrupt = false;
-+	pmc5_1 = mfspr(SPR_PMC5);
-+
-+	reset_mmcr0();
-+	mtspr(SPR_PMC5, 0);
-+	mtspr(SPR_MMCR0, mfspr(SPR_MMCR0) & ~(MMCR0_FC | MMCR0_FC56));
-+	asm volatile(".rep 10 ; nop ; .endr ; sc 0 ; .rep 10 ; nop ; .endr" ::: "memory");
-+	mtspr(SPR_MMCR0, mfspr(SPR_MMCR0) | (MMCR0_FC | MMCR0_FC56));
-+	assert(got_interrupt);
-+	got_interrupt = false;
-+	pmc5_2 = mfspr(SPR_PMC5);
-+
-+	/* TCG does not count instructions around syscalls correctly */
-+	report_kfail(host_is_tcg, pmc5_1 + 20 == pmc5_2,
-+		     "PMC5 counts instructions with syscall");
-+
-+	handle_exception(0xc00, NULL, NULL);
-+}
-+
-+extern char next_insn[];
-+
-+static void test_pmc5_with_rfid(void)
-+{
-+	unsigned long pmc5;
-+	unsigned long mmcr;
-+
-+	mtspr(SPR_SRR0, (unsigned long)next_insn);
-+	mtspr(SPR_SRR1, mfmsr());
-+	reset_mmcr0();
-+	mmcr = mfspr(SPR_MMCR0);
-+	mtspr(SPR_PMC5, 0);
-+	mtspr(SPR_MMCR0, mmcr & ~(MMCR0_FC | MMCR0_FC56));
-+	asm volatile("rfid ; trap ; .global next_insn ; next_insn: " ::: "memory");
-+	mtspr(SPR_MMCR0, mmcr);
-+	pmc5 = mfspr(SPR_PMC5);
-+
-+	/* TCG does not count instructions around syscalls correctly */
-+	report_kfail(host_is_tcg, pmc5 == 2,
-+		     "PMC5 counts instructions with rfid %ld", pmc5);
-+}
-+
-+static void test_pmc5_with_ldat(void)
-+{
-+	unsigned long pmc5_1, pmc5_2;
-+	register unsigned long r4 asm("r4");
-+	register unsigned long r5 asm("r5");
-+	register unsigned long r6 asm("r6");
-+	uint64_t val;
-+
-+	reset_mmcr0();
-+	mtspr(SPR_PMC5, 0);
-+	mtspr(SPR_MMCR0, mfspr(SPR_MMCR0) & ~(MMCR0_FC | MMCR0_FC56));
-+	asm volatile(".rep 20 ; nop ; .endr" ::: "memory");
-+	mtspr(SPR_MMCR0, mfspr(SPR_MMCR0) | (MMCR0_FC | MMCR0_FC56));
-+	pmc5_1 = mfspr(SPR_PMC5);
-+
-+	val = 0xdeadbeef;
-+	r4 = 0;
-+	r5 = 0xdeadbeef;
-+	r6 = 100;
-+	reset_mmcr0();
-+	mtspr(SPR_PMC5, 0);
-+	mtspr(SPR_MMCR0, mfspr(SPR_MMCR0) & ~(MMCR0_FC | MMCR0_FC56));
-+	asm volatile(".rep 10 ; nop ; .endr ; "
-+		     "ldat %0,%3,0x10 ; "
-+		     ".rep 10 ; nop ; .endr"
-+		     : "=r"(r4), "+r"(r5), "+r"(r6)
-+		     : "r"(&val)
-+		     : "memory");
-+	mtspr(SPR_MMCR0, mfspr(SPR_MMCR0) | (MMCR0_FC | MMCR0_FC56));
-+	pmc5_2 = mfspr(SPR_PMC5);
-+	assert(r4 == 0xdeadbeef);
-+	assert(val == 0xdeadbeef);
-+
-+	/* TCG does not count instructions around syscalls correctly */
-+	report_kfail(host_is_tcg, pmc5_1 != pmc5_2 + 1,
-+		     "PMC5 counts instructions with ldat");
-+}
-+
-+static void test_pmc56(void)
-+{
-+	unsigned long tmp;
-+
-+	report_prefix_push("pmc56");
-+
-+	reset_mmcr0();
-+	mtspr(SPR_PMC5, 0);
-+	mtspr(SPR_PMC6, 0);
-+	report(mfspr(SPR_PMC5) == 0, "PMC5 zeroed");
-+	report(mfspr(SPR_PMC6) == 0, "PMC6 zeroed");
-+	mtspr(SPR_MMCR0, mfspr(SPR_MMCR0) & ~MMCR0_FC);
-+	msleep(100);
-+	report(mfspr(SPR_PMC5) == 0, "PMC5 frozen");
-+	report(mfspr(SPR_PMC6) == 0, "PMC6 frozen");
-+	mtspr(SPR_MMCR0, mfspr(SPR_MMCR0) & ~MMCR0_FC56);
-+	mdelay(100);
-+	mtspr(SPR_MMCR0, mfspr(SPR_MMCR0) | (MMCR0_FC | MMCR0_FC56));
-+	report(mfspr(SPR_PMC5) != 0, "PMC5 counting");
-+	report(mfspr(SPR_PMC6) != 0, "PMC6 counting");
-+
-+	/* Dynamic frequency scaling could cause to be out, so don't fail. */
-+	tmp = mfspr(SPR_PMC6);
-+	report(true, "PMC6 ratio to reported clock frequency is %ld%%",
-+	       tmp * 1000 / cpu_hz);
-+
-+	tmp = pmc5_count_nr_insns(100);
-+	tmp = pmc5_count_nr_insns(1000) - tmp;
-+	report(tmp == 900, "PMC5 counts instructions precisely %ld", tmp);
-+
-+	test_pmc5();
-+	test_pmc5_with_branch();
-+	test_pmc5_with_cond_branch();
-+	test_pmc5_with_ill();
-+	test_pmc5_with_fault();
-+	test_pmc5_with_sc();
-+	test_pmc5_with_rfid();
-+	test_pmc5_with_ldat();
-+
-+	report_prefix_pop();
-+}
-+
-+static void dec_ignore_handler(struct pt_regs *regs, void *data)
-+{
-+	mtspr(SPR_DEC, 0x7fffffff);
-+}
-+
-+static void pmi_handler(struct pt_regs *regs, void *data)
-+{
-+	got_interrupt = true;
-+	memcpy((void *)&recorded_regs, regs, sizeof(struct pt_regs));
-+	recorded_mmcr0 = mfspr(SPR_MMCR0);
-+	if (mfspr(SPR_MMCR0) & MMCR0_PMAO) {
-+		/* This may cause infinite interrupts, so clear it. */
-+		mtspr(SPR_MMCR0, mfspr(SPR_MMCR0) & ~MMCR0_PMAO);
-+	}
-+}
-+
-+static void test_pmi(void)
-+{
-+	report_prefix_push("pmi");
-+	handle_exception(0x900, &dec_ignore_handler, NULL);
-+	handle_exception(0xf00, &pmi_handler, NULL);
-+	reset_mmcr0();
-+	mtspr(SPR_MMCR0, mfspr(SPR_MMCR0) | MMCR0_PMAO);
-+	mtmsr(mfmsr() | MSR_EE);
-+	mtmsr(mfmsr() & ~MSR_EE);
-+	report(got_interrupt, "PMAO caused interrupt");
-+	got_interrupt = false;
-+	handle_exception(0xf00, NULL, NULL);
-+	handle_exception(0x900, NULL, NULL);
-+	report_prefix_pop();
-+}
-+
-+static void clrbhrb(void)
-+{
-+	asm volatile("clrbhrb" ::: "memory");
-+}
-+
-+static inline unsigned long mfbhrbe(int nr)
-+{
-+	unsigned long e;
-+
-+	asm volatile("mfbhrbe %0,%1" : "=r"(e) : "i"(nr) : "memory");
-+
-+	return e;
-+}
-+
-+extern unsigned char dummy_branch_1[];
-+extern unsigned char dummy_branch_2[];
-+
-+static __attribute__((__noinline__)) void bhrb_dummy(int i)
-+{
-+	asm volatile(
-+	"	cmpdi %0,1	\n\t"
-+	"	beq 1f		\n\t"
-+	".global dummy_branch_1	\n\t"
-+	"dummy_branch_1:	\n\t"
-+	"	b 2f		\n\t"
-+	"1:	trap		\n\t"
-+	".global dummy_branch_2	\n\t"
-+	"dummy_branch_2:	\n\t"
-+	"2:	bne 3f		\n\t"
-+	"	trap		\n\t"
-+	"3:	nop		\n\t"
-+	: : "r"(i));
-+}
-+
-+#define NR_BHRBE 16
-+static unsigned long bhrbe[NR_BHRBE];
-+static int nr_bhrbe;
-+
-+static void run_and_load_bhrb(void)
-+{
-+	int i;
-+
-+	mtspr(SPR_MMCR0, mfspr(SPR_MMCR0) & ~MMCR0_PMAE);
-+	clrbhrb();
-+	mtspr(SPR_MMCR0, mfspr(SPR_MMCR0) | MMCR0_BHRBA);
-+	mtspr(SPR_MMCR0, mfspr(SPR_MMCR0) & ~(MMCR0_FC | MMCR0_FCP | MMCR0_FCPC));
-+	mtspr(SPR_MMCRA, mfspr(SPR_MMCRA) & ~(MMCRA_BHRBRD | MMCRA_IFM_MASK));
-+
-+	if (cpu_has_p10_bhrb) {
-+		mtspr(SPR_MMCR0, mfspr(SPR_MMCR0) | MMCR0_PMAE);
-+		asm volatile("isync" ::: "memory");
-+		enter_usermode();
-+		bhrb_dummy(0);
-+		exit_usermode();
-+		mtspr(SPR_MMCR0, mfspr(SPR_MMCR0) & ~MMCR0_PMAE);
-+		asm volatile("isync" ::: "memory");
-+	} else {
-+		mtspr(SPR_MMCR0, mfspr(SPR_MMCR0) | MMCR0_PMAE);
-+		asm volatile("isync" ::: "memory");
-+		mtmsr(mfmsr());
-+		asm volatile(".rept 100 ; nop ; .endr");
-+		bhrb_dummy(0);
-+		mtspr(SPR_MMCR0, mfspr(SPR_MMCR0) & ~MMCR0_PMAE);
-+		asm volatile("isync" ::: "memory");
-+	}
-+
-+	bhrbe[0] = mfbhrbe(0);
-+	bhrbe[1] = mfbhrbe(1);
-+	bhrbe[2] = mfbhrbe(2);
-+	bhrbe[3] = mfbhrbe(3);
-+	bhrbe[4] = mfbhrbe(4);
-+	bhrbe[5] = mfbhrbe(5);
-+	bhrbe[6] = mfbhrbe(6);
-+	bhrbe[7] = mfbhrbe(7);
-+	bhrbe[8] = mfbhrbe(8);
-+	bhrbe[9] = mfbhrbe(9);
-+	bhrbe[10] = mfbhrbe(10);
-+	bhrbe[11] = mfbhrbe(11);
-+	bhrbe[12] = mfbhrbe(12);
-+	bhrbe[13] = mfbhrbe(13);
-+	bhrbe[14] = mfbhrbe(14);
-+	bhrbe[15] = mfbhrbe(15);
-+
-+	for (i = 0; i < NR_BHRBE; i++) {
-+		bhrbe[i] &= ~0x1UL; /* remove prediction bit */
-+		if (!bhrbe[i])
-+			break;
-+	}
-+	nr_bhrbe = i;
-+}
-+
-+static void test_bhrb(void)
-+{
-+	int i;
-+
-+	if (cpu_has_p10_bhrb && !vm_available())
-+		return;
-+
-+	report_prefix_push("bhrb");
-+
-+	/* TCG doesn't impelment BHRB yet */
-+	handle_exception(0x700, &illegal_handler, NULL);
-+	handle_exception(0xe40, &illegal_handler, NULL);
-+	clrbhrb();
-+	handle_exception(0x700, NULL, NULL);
-+	handle_exception(0xe40, NULL, NULL);
-+	if (got_interrupt) {
-+		got_interrupt = false;
-+		report_skip("BHRB support missing");
-+		report_prefix_pop();
-+		return;
-+	}
-+
-+	if (vm_available()) {
-+		handle_exception(0x900, &dec_ignore_handler, NULL);
-+		setup_vm();
-+	}
-+	reset_mmcr0();
-+	clrbhrb();
-+	if (cpu_has_p10_bhrb) {
-+		enter_usermode();
-+		bhrb_dummy(0);
-+		exit_usermode();
-+	} else {
-+		bhrb_dummy(0);
-+	}
-+	report(mfbhrbe(0) == 0, "BHRB is frozen");
-+
-+	/*
-+	 * BHRB may be cleared at any time (e.g., by OS or hypervisor)
-+	 * so this test could be occasionally incorrect. Try several
-+	 * times before giving up...
-+	 */
-+
-+	if (cpu_has_p10_bhrb) {
-+		/*
-+		 * BHRB should have 8 entries:
-+		 * 1. enter_usermode blr
-+		 * 2. enter_usermode blr target
-+		 * 3. bl dummy
-+		 * 4. dummy unconditional
-+		 * 5. dummy conditional
-+		 * 6. dummy blr
-+		 * 7. dummy blr target
-+		 * 8. exit_usermode bl
-+		 *
-+		 * POWER10 often gives 4 entries, if other threads are
-+		 * running on the core, it seems to struggle.
-+		 */
-+		for (i = 0; i < 200; i++) {
-+			run_and_load_bhrb();
-+			if (nr_bhrbe == 8)
-+				break;
-+			if (i > 100 && nr_bhrbe == 4)
-+				break;
-+		}
-+		report(nr_bhrbe, "BHRB has been written");
-+		report_kfail(!host_is_tcg, nr_bhrbe == 8,
-+			     "BHRB has written 8 entries");
-+		if (nr_bhrbe == 8) {
-+			report(bhrbe[4] == (unsigned long)dummy_branch_1,
-+					"correct unconditional branch address");
-+			report(bhrbe[3] == (unsigned long)dummy_branch_2,
-+					"correct conditional branch address");
-+		} else if (nr_bhrbe == 4) {
-+			/* POWER10 workaround */
-+			report(nr_bhrbe == 4, "BHRB has written 4 entries");
-+			report(bhrbe[3] == (unsigned long)dummy_branch_2,
-+					"correct conditional branch address");
-+		}
-+	} else {
-+		/*
-+		 * BHRB should have 6 entries:
-+		 * 1. bl dummy
-+		 * 2. dummy unconditional
-+		 * 3. dummy conditional
-+		 * 4. dummy blr
-+		 * 5. dummy blr target
-+		 * 6. Final b loop before disabled.
-+		 *
-+		 * POWER9 often gives 4 entries, if other threads are
-+		 * running on the core, it seems to struggle.
-+		 */
-+		for (i = 0; i < 200; i++) {
-+			run_and_load_bhrb();
-+			if (nr_bhrbe == 6)
-+				break;
-+			if (i > 100 && nr_bhrbe == 4)
-+				break;
-+		}
-+		report(nr_bhrbe, "BHRB has been written");
-+		report_kfail(!host_is_tcg, nr_bhrbe == 6,
-+			     "BHRB has written 6 entries");
-+		if (nr_bhrbe == 6) {
-+			report(bhrbe[4] == (unsigned long)dummy_branch_1,
-+					"correct unconditional branch address");
-+			report(bhrbe[3] == (unsigned long)dummy_branch_2,
-+					"correct conditional branch address");
-+		} else if (nr_bhrbe == 4) {
-+			/* POWER9 workaround */
-+			report(nr_bhrbe == 4, "BHRB has written 4 entries");
-+			report(bhrbe[3] == (unsigned long)dummy_branch_2,
-+					"correct conditional branch address");
-+		}
-+	}
-+
-+	handle_exception(0x900, NULL, NULL);
-+
-+	report_prefix_pop();
-+}
-+
-+int main(int argc, char **argv)
-+{
-+	report_prefix_push("pmu");
-+
-+	test_pmc56();
-+	test_pmi();
-+	if (cpu_has_bhrb)
-+		test_bhrb();
-+
-+	report_prefix_pop();
-+
-+	return report_summary();
-+}
-diff --git a/powerpc/unittests.cfg b/powerpc/unittests.cfg
-index 2dd32edf..60c73086 100644
---- a/powerpc/unittests.cfg
-+++ b/powerpc/unittests.cfg
-@@ -75,6 +75,9 @@ file = interrupts.elf
- file = mmu.elf
- smp = 2
- 
-+[pmu]
-+file = pmu.elf
-+
- [smp]
- file = smp.elf
- smp = 2
+ if [ "$efi" = "y" ] && [ -f "$srcdir/$testdir/efi/run" ]; then
+     ln -fs "$srcdir/$testdir/efi/run" $testdir-run
+@@ -471,15 +478,12 @@ fi
+ # link lib/asm for the architecture
+ rm -f lib/asm
+ asm="asm-generic"
+-if [ -d "$srcdir/lib/$arch/asm" ]; then
+-	asm="$srcdir/lib/$arch/asm"
+-	mkdir -p "lib/$arch"
+-elif [ -d "$srcdir/lib/$arch_libdir/asm" ]; then
++if [ -d "$srcdir/lib/$arch_libdir/asm" ]; then
+ 	asm="$srcdir/lib/$arch_libdir/asm"
+ 	mkdir -p "lib/$arch_libdir"
+-elif [ -d "$srcdir/lib/$testdir/asm" ]; then
+-	asm="$srcdir/lib/$testdir/asm"
+-	mkdir -p "lib/$testdir"
++else
++	echo "$srcdir/lib/$arch_libdir/asm does not exist"
++	exit 1
+ fi
+ ln -sf "$asm" lib/asm
+ mkdir -p lib/generated lib/libfdt
 -- 
 2.53.0
 
