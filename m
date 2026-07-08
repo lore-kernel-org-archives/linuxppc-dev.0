@@ -1,118 +1,70 @@
-Return-Path: <linuxppc-dev+bounces-23836-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23837-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B77EBC43602
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jul 2026 16:04:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3BBE2C43458
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jul 2026 16:40:37 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gwNGK0hcqz2xpn;
-	Thu, 09 Jul 2026 02:04:57 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=170.10.129.124
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783526697;
-	cv=none; b=W+Uhwbhj08T8E5DBUIPjw91gAfR4AwLUOJQD3D+dkQaOhf9cgCHr66dgn80DxEKXhgL9fUfKw+iPcE0Q3ZX+nqLRaEcZZn3UvbnVZ+3j33nAozadTSU3mmrVpipexr6LZ9bXoip8K3lp86VzXLu4ydf52Klnac9+c64MtYrSWUZE8BktiVblewPDq00IPe+nnpMZw/PnZ1PvD6jq+7osjqEgw5A6TGytx3wgmSuPKvRBDHFuDpMcr2yM3d2wTl71aJafWRdiNfTYmFnKF8Ukh8PSkOgcLxQy8w5ZNJJbS+QgCm/uQD9I1Q1niXRYO+GyQPJyKY9M/pMGNJkRbUJLTw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gwP3R5btKz306N;
+	Thu, 09 Jul 2026 02:40:35 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::44a"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783528835;
+	cv=none; b=ldbY2HtAg+gtfqg9OwN5oYfdt+Y0J+2OU2nQ/+IqN8Z+mE6Cm0f+fkasOUMbCmDeAQbUuAA6npMy02PBFgWDuD7thWKK3euo70F0HXt2t2bgjlksmjxl32samSb0aADIcvXueBpoPLSYJkW7O59rZx5nTgt7v11uFf6lFXiHHU54KRErF/fLsOQYDnzma1e5OP5YJhv10bYI1/BJfAREd6Orl/334ivxqMumujYYg+fRW4K9Lvh5FUYv+5c2DjQcjgGgfud5ZfJE1vEZAFnifxuLRyeIApXrRp2eEu8t9DiMU78Lz2nouSLpcqk1ToYg5UNrI1mLqC7m7kSDGydaMw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1783526697; c=relaxed/relaxed;
-	bh=8P/ciXzD2S1KvjG8yWg06YK1HrAoM9H+3p3KtWGqU68=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 In-Reply-To:Content-Type:Content-Disposition; b=NZvEuz1QK2GF0DmzPp0NwtRKSpp8fgTGHYu3mD0uB2VX2NT3zb7kAdc7D52OAVldfdq+j7GLouJ2XHYZKcv5+w8GP87DF1Cf7G6iy2VG77Pi6YtMWI+q4vg3jpJNSW30HQrRfiYN9+BQXp08bAvCd/sXARnmzqZFbLTZMVsCe31Oax3EkDbxXl3rKBSPIsHLajJKU1qHQf9yOxsvej+ouEuJRPa6hDLU9gW4Nauu4YWsYDoHFeduy49Om7NJFN5upYLGxDx1OFypWBna26I0wXBjr/FbAOKIR1vtW8C5VRzCUdUfhm2+twMEfp73HGa0EaxyDwHZ+E0It+o8bxr7Ug==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=QNMa0SoA; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=QNMa0SoA; dkim-atps=neutral; spf=pass (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=oleg@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
+	t=1783528835; c=relaxed/relaxed;
+	bh=zFGoN9qGAHVZ4QAdcm49XPHorQEUZRxj5glJ1u7VDTg=;
+	h=Date:In-Reply-To:Mime-Version:References:Message-ID:Subject:From:
+	 To:Cc:Content-Type; b=jZDjtHWGk8hHl8ma12qSPRNwdANDwMgufLt2NEdcvoMnLEgiTkipJKlgIWMxMsxTuaZYuqENENX8P7YkIBiVCETvL3quluay0N6YGCBX05EYGZUoP32/jHJt0s16P+9gmLtrMFdT6uvQyAWJr7CIenOPinTf0mnl3wyGP6ri0OMxWbdC9NEJOdYufNWWbzrgowIENwDQo7duNVovkxSDrt2MOzYeGpqYtybCad5Puoj3iP1rCibgv2Whdj5H1+TueHWs0cKU6eDMie+kub4UGvE/DjZ4Z2J1y1Px2lvHFnpVohs2pWHXbyjKDv0SgqPwCONJEBgCg36KOvYtGH1ang==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=URuzFUbQ; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::44a; helo=mail-pf1-x44a.google.com; envelope-from=3f31oagykda46so1xqu22uzs.q20zw18b33q-rs9zw676.2dzop6.25u@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=flex--seanjc.bounces.google.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=QNMa0SoA;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=QNMa0SoA;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=URuzFUbQ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=oleg@redhat.com; receiver=lists.ozlabs.org)
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--seanjc.bounces.google.com (client-ip=2607:f8b0:4864:20::44a; helo=mail-pf1-x44a.google.com; envelope-from=3f31oagykda46so1xqu22uzs.q20zw18b33q-rs9zw676.2dzop6.25u@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org)
+Received: from mail-pf1-x44a.google.com (mail-pf1-x44a.google.com [IPv6:2607:f8b0:4864:20::44a])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gwNGH6gZdz2xWY
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 09 Jul 2026 02:04:54 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1783526691;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=8P/ciXzD2S1KvjG8yWg06YK1HrAoM9H+3p3KtWGqU68=;
-	b=QNMa0SoAELWiVVl3X90v5WRokCF/4GsdTQObb6Xg/n1czmrdrMhu7/X6LZP1UwzVYO1vGv
-	IL+dTSPmBCZiLBepdiypguJcyWQ/nEsF+STwfSLFZBklRB+WkOjcaE6xTU4Nx4DNoqGEo1
-	HAuoRNRyp36Ys1/7JkHokwurJaaLdA4=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1783526691;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=8P/ciXzD2S1KvjG8yWg06YK1HrAoM9H+3p3KtWGqU68=;
-	b=QNMa0SoAELWiVVl3X90v5WRokCF/4GsdTQObb6Xg/n1czmrdrMhu7/X6LZP1UwzVYO1vGv
-	IL+dTSPmBCZiLBepdiypguJcyWQ/nEsF+STwfSLFZBklRB+WkOjcaE6xTU4Nx4DNoqGEo1
-	HAuoRNRyp36Ys1/7JkHokwurJaaLdA4=
-Received: from mx-prod-mc-06.mail-002.prod.us-west-2.aws.redhat.com
- (ec2-35-165-154-97.us-west-2.compute.amazonaws.com [35.165.154.97]) by
- relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
- cipher=TLS_AES_256_GCM_SHA384) id us-mta-595-fn1pYKmRPGGlbjH-rSP4QA-1; Wed,
- 08 Jul 2026 12:04:48 -0400
-X-MC-Unique: fn1pYKmRPGGlbjH-rSP4QA-1
-X-Mimecast-MFC-AGG-ID: fn1pYKmRPGGlbjH-rSP4QA_1783526682
-Received: from mx-prod-int-03.mail-002.prod.us-west-2.aws.redhat.com (mx-prod-int-03.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.12])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mx-prod-mc-06.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id 0E37718009D8;
-	Wed,  8 Jul 2026 16:04:40 +0000 (UTC)
-Received: from fedora (unknown [10.44.33.83])
-	by mx-prod-int-03.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with SMTP id 1D1D21956040;
-	Wed,  8 Jul 2026 16:04:21 +0000 (UTC)
-Received: by fedora (nbSMTP-1.00) for uid 1000
-	oleg@redhat.com; Wed,  8 Jul 2026 18:04:39 +0200 (CEST)
-Date: Wed, 8 Jul 2026 18:04:19 +0200
-From: Oleg Nesterov <oleg@redhat.com>
-To: Thomas Gleixner <tglx@kernel.org>
-Cc: Jinjie Ruan <ruanjinjie@huawei.com>,
-	LKML <linux-kernel@vger.kernel.org>,
-	Peter Zijlstra <peterz@infradead.org>,
-	Mark Rutland <mark.rutland@arm.com>, Kees Cook <kees@kernel.org>,
-	Andy Lutomirski <luto@kernel.org>,
-	Richard Henderson <richard.henderson@linaro.org>,
-	Russell King <linux@armlinux.org.uk>,
-	Catalin Marinas <catalin.marinas@arm.com>,
-	Guo Ren <guoren@kernel.org>,
-	Geert Uytterhoeven <geert@linux-m68k.org>,
-	Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
-	Helge Deller <deller@gmx.de>,
-	Yoshinori Sato <ysato@users.sourceforge.jp>,
-	Richard Weinberger <richard@nod.at>,
-	Chris Zankel <chris@zankel.net>,
-	linux-arm-kernel@lists.infradead.org, linux-alpha@vger.kernel.org,
-	linux-csky@vger.kernel.org, linux-m68k@lists.linux-m68k.org,
-	linux-mips@vger.kernel.org, linux-parisc@vger.kernel.org,
-	linux-sh@vger.kernel.org, linux-um@lists.infradead.org,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Shrikanth Hegde <sshegde@linux.ibm.com>,
-	linuxppc-dev@lists.ozlabs.org, Huacai Chen <chenhuacai@kernel.org>,
-	loongarch@lists.linux.dev, Paul Walmsley <pjw@kernel.org>,
-	Palmer Dabbelt <palmer@dabbelt.com>,
-	linux-riscv@lists.infradead.org,
-	Sven Schnelle <svens@linux.ibm.com>, linux-s390@vger.kernel.org,
-	x86@kernel.org, Arnd Bergmann <arnd@arndb.de>,
-	Vineet Gupta <vgupta@kernel.org>, Will Deacon <will@kernel.org>,
-	Brian Cain <bcain@kernel.org>, Michal Simek <monstr@monstr.eu>,
-	Dinh Nguyen <dinguyen@kernel.org>,
-	"David S. Miller" <davem@davemloft.net>,
-	Andreas Larsson <andreas@gaisler.com>,
-	linux-snps-arc@lists.infradead.org, linux-hexagon@vger.kernel.org,
-	linux-openrisc@vger.kernel.org, sparclinux@vger.kernel.org,
-	linux-arch@vger.kernel.org,
-	Michal =?iso-8859-1?Q?Such=E1nek?= <msuchanek@suse.de>,
-	Jonathan Corbet <corbet@lwn.net>, linux-doc@vger.kernel.org
-Subject: Re: [patch 11/18] seccomp, treewide: Rename and convert
- __secure_computing() to return boolean
-Message-ID: <ak51A77h1YRIl5tz@redhat.com>
-References: <20260707181957.433213175@kernel.org>
- <20260707190254.230735780@kernel.org>
- <2e6ed364-ce8f-4b4b-8675-acd07f140f4f@huawei.com>
- <871pddsuzl.ffs@fw13>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gwP3Q2rgjz2y7r
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 09 Jul 2026 02:40:33 +1000 (AEST)
+Received: by mail-pf1-x44a.google.com with SMTP id d2e1a72fcca58-84842381150so1349705b3a.3
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Jul 2026 09:40:33 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20251104; t=1783528831; x=1784133631; darn=lists.ozlabs.org;
+        h=content-type:cc:to:from:subject:message-id:references:mime-version
+         :in-reply-to:date:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=zFGoN9qGAHVZ4QAdcm49XPHorQEUZRxj5glJ1u7VDTg=;
+        b=URuzFUbQ5Cmn+JGj85YGTmm69rYKICEJx5DNQLdWJ3itXrHxxgFjCJvn+iYieqUMEd
+         +qhb2Jzlt4t5vez/o9w7RAQcVW9Skw88qtWVdTZ1Zo6ku2TGHoBuYz9IURu78CMeBC/U
+         fVkb3RlJMBrr6OYtbva+g8J7QFOYdPFxnrhxFn871LzE6bOs43FB6/YizPoVmSrtgTzQ
+         2VbVGgAWKgUk0nlcFGN7hAlzRERP86b7/FqQxgV7MsQOQ49seVzoH6PjlwKa5WrWAseA
+         U0KoWtnpWe+4ArZwVTgtyZEo+6iQK49GXeLWwGIoZFnx4WeaDXsQivU1IFqP8IrPrDUV
+         9Cmw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1783528831; x=1784133631;
+        h=content-type:cc:to:from:subject:message-id:references:mime-version
+         :in-reply-to:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=zFGoN9qGAHVZ4QAdcm49XPHorQEUZRxj5glJ1u7VDTg=;
+        b=WyqIkfHnqUx9hO6iga+TbKqCJbDK2K7qSnBI0fz5rtE7ntfdEZlVTPH3GYSgrBE5iQ
+         0EiA2GvFmkQS5NXs3pZclcvQxTe7U3Cz5pDFyXBH4cTQZ9Bzti9PbWZdEKEx5qmIEgxN
+         ZovXsq7ka0HZJ+3zB45VX7gNBYqwCfBJS1zrAcABLt97TWtG6WK/epcnitOp7eme9tQS
+         D/atgYnWanSlzcOxSoYMXOt8bl/QNJkpoily1GOf9TPK0LljjrdLJGt3NygmQbXazUfw
+         j9pTALnBSdbvwLQBdrLOiNgGET3b1bPHKuqboPemvSrX+nYN/b4bYnO3ypQvz1ROlQAg
+         8Dug==
+X-Forwarded-Encrypted: i=1; AHgh+Rq2VJNIIibgc7e6PdyrH46JGUJbTifcVdo/Rjr09kVY2A+ocHKoymPs2jUBVGbA/yVZzEbghpiurl9Dr6Q=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YxccPFo1th05WE8PfLa+M631rNZ0ce8OoVs7wJk9Rk2zkS22RsY
+	Lx924OxoItGNOiYtxbG49LP5Z2o43aDfFuj97nmEmMCRkrjO4xzf5O2Xa86WmIgrsiKGph/QAYv
+	YoSIzrw==
+X-Received: from pfbmy25-n1.prod.google.com ([2002:a05:6a00:6d59:10b0:847:9499:46c])
+ (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a05:6a00:9487:b0:848:4b27:36a3
+ with SMTP id d2e1a72fcca58-8484b274223mr1645594b3a.72.1783528831076; Wed, 08
+ Jul 2026 09:40:31 -0700 (PDT)
+Date: Wed, 8 Jul 2026 09:40:30 -0700
+In-Reply-To: <1782119051448443.14545.seg@mailgw.kylinos.cn>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -125,34 +77,86 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-In-Reply-To: <871pddsuzl.ffs@fw13>
-X-Scanned-By: MIMEDefang 3.0 on 10.30.177.12
-X-Mimecast-MFC-PROC-ID: fkd0lPVth0BPYNexLfc-HxbDN7CKP3-jBPaWxNbfFzk_1783526682
-X-Mimecast-Originator: redhat.com
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Mime-Version: 1.0
+References: <1782119051448443.14545.seg@mailgw.kylinos.cn>
+Message-ID: <ak59frQUBl9Gs3Qn@google.com>
+Subject: Re: [PATCH] KVM: Nullify irqfd->producer when add_producer() fails
+From: Sean Christopherson <seanjc@google.com>
+To: leixiang <leixiang@kylinos.cn>
+Cc: stable@vger.kernel.org, Madhavan Srinivasan <maddy@linux.ibm.com>, 
+	Nicholas Piggin <npiggin@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>, 
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, Paolo Bonzini <pbonzini@redhat.com>, 
+	Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, 
+	Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org, 
+	"H. Peter Anvin" <hpa@zytor.com>, Paul Mackerras <paulus@ozlabs.org>, 
+	Suresh Warrier <warrier@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org, 
+	kvm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
 
-On 07/08, Thomas Gleixner wrote:
->
-> On Wed, Jul 08 2026 at 09:43, Jinjie Ruan wrote:
-> >
-> > The return value of __seccomp_filter is checked in the wrong way, check
-> > -1 should be replaced with check false, maybe:
-> >
-> > -               if (__seccomp_filter(this_syscall, true))
-> > -                       return -1;
-> > +               if (!__seccomp_filter(this_syscall, true))
-> > +                       return false;
+On Mon, Jun 22, 2026, leixiang wrote:
+> The x86 and powerpc add_producer() callbacks set irqfd->producer before the
+> fallible setup and never clear it on error.  The bypass manager doesn't
+> register a producer whose add_producer() failed -- producer->eventfd is
+> left NULL, so the later unregister early-returns and del_producer() is
+> never called -- so nothing ever drops the pointer.
+> 
+> For VFIO PCI the producer is embedded in struct vfio_pci_irq_ctx and freed
+> when the vector is disabled, after which a routing update dereferences the
+> dangling pointer via kvm_arch_update_irqfd_routing().
+> 
+> Nullify irqfd->producer on the error paths.
+> 
+> Fixes: 77e1b8332d1d ("KVM: x86: Decouple device assignment from IRQ bypass")
+> Fixes: c57875f5f9be ("KVM: PPC: Book3S HV: Enable IRQ bypass")
+> Cc: stable@vger.kernel.org
+> Signed-off-by: leixiang <leixiang@kylinos.cn>
 
-Or simply
+Please post the PPC patch as a separate patch.  x86 and PPC are separate maintainer
+domains and the backports will likely need to go to different LTS kernels.
 
-	return __seccomp_filter(this_syscall, true);
+I'll grab/extract the x86 change from here (and I'll massage the changelog as
+appropriate).
 
-and remove "return true" below ?
+> ---
+>  arch/powerpc/kvm/book3s_hv.c | 4 +++-
+>  arch/x86/kvm/irq.c           | 4 +++-
+>  2 files changed, 6 insertions(+), 2 deletions(-)
+> 
+> diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
+> index 61dbeea317f3..14919b76fb32 100644
+> --- a/arch/powerpc/kvm/book3s_hv.c
+> +++ b/arch/powerpc/kvm/book3s_hv.c
+> @@ -6114,9 +6114,11 @@ static int kvmppc_irq_bypass_add_producer_hv(struct irq_bypass_consumer *cons,
+>  	irqfd->producer = prod;
+> 
+>  	ret = kvmppc_set_passthru_irq(irqfd->kvm, prod->irq, irqfd->gsi);
+> -	if (ret)
+> +	if (ret) {
+>  		pr_info("kvmppc_set_passthru_irq (irq %d, gsi %d) fails: %d\n",
+>  			prod->irq, irqfd->gsi, ret);
+> +		irqfd->producer = NULL;
+> +	}
 
-Either way, I personally like this change, I was always confused by these -1's.
+Unlike x86, AFAICT there's no need to set irqfd->producer before configuring
+the passthru/bypass stuff.  So I think that fix could be this?
 
-Acked-by: Oleg Nesterov <oleg@redhat.com>
-
+diff --git arch/powerpc/kvm/book3s_hv.c arch/powerpc/kvm/book3s_hv.c
+index 61dbeea317f3..ff7b25629125 100644
+--- arch/powerpc/kvm/book3s_hv.c
++++ arch/powerpc/kvm/book3s_hv.c
+@@ -6111,12 +6111,12 @@ static int kvmppc_irq_bypass_add_producer_hv(struct irq_bypass_consumer *cons,
+        struct kvm_kernel_irqfd *irqfd =
+                container_of(cons, struct kvm_kernel_irqfd, consumer);
+ 
+-       irqfd->producer = prod;
+-
+        ret = kvmppc_set_passthru_irq(irqfd->kvm, prod->irq, irqfd->gsi);
+        if (ret)
+                pr_info("kvmppc_set_passthru_irq (irq %d, gsi %d) fails: %d\n",
+                        prod->irq, irqfd->gsi, ret);
++       else
++               irqfd->producer = prod;
+ 
+        return ret;
+ }
 
