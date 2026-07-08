@@ -1,76 +1,77 @@
-Return-Path: <linuxppc-dev+bounces-23787-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23788-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E13AAC43458
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jul 2026 08:26:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 821D2C43458
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jul 2026 08:26:30 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gwB544L17z30BJ;
-	Wed, 08 Jul 2026 18:26:16 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::52f"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783499176;
-	cv=none; b=fPmu4lIANMg8W6WQESUbS5BhK02TDv+uwYa7+Sqxerpykz35X8BT2wYF8U0Atz1UV02OIootLBCfpVliJHGNtgYH41oyxcJpl1woBg6Ngzm6+YCimUzlVwusCtja2B0ZLEjT5kp3yw47J8zUDr064U2LJiq7CWlMRS/icZ/LktK5Gt3CQAjfA/lebtmbE1sLd13BrzrhA+lzc+ZjHeT0pcOGGmF5wiMqOJ7zKBAQnHGhj1Nh+bk25VmxraTWtCOJxhwUyGTkNOTYRp/p02Zak+yIpJM6gsqT0vSFLC3cVDfSSAqzu4VmZP2Z2/tqWR3S4wC4Gk540y5ZEqti0UE0/g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gwB5K1z6Wz308k;
+	Wed, 08 Jul 2026 18:26:29 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::529"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783499189;
+	cv=none; b=bBRToCpysnjnHLcLHe3/+S34tSb2nUp7vkPjzFVk31bGaF5EeGpbDdRUjnEXxb2wnEsIQqsfFQ52GSMr6MupbteE1oOZAZKeDaVbEbF3bSeKGJpdhuKgMQsZyrL88R8QCtfjGKkUtq7LEyQQ7TyFHpVCLfT6PQzgDO4b4VhHaLUiP4hKHu2VlrKHoKXl7EtL7/fmXekPYw6FJ0xBDascio6qALAJMxjz4p1hqVy9+MmJGy98SauLDQ5J/CTJCiGOE/xGLV0wKbhAL9sj2zLFIeZjjiM5KWiVzpFajziPPazQ89mlXUSiqUZROoPitw2Xl3OWT2AwoD/q3V7gjCxQMw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1783499176; c=relaxed/relaxed;
-	bh=pXAgQLPERGwooEzHznzvpg6SzocRRloWRn0CUVpxEzA=;
+	t=1783499189; c=relaxed/relaxed;
+	bh=R0yp5asYUErIc5N6oB8ZeLiWd9F6L/qUlus8Ea2ATCY=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=WLLFcJPeivuMoWmbfA6eL49JDOpgmXX+/hna2oWURnzBMsmcw6XhghLNfisJHrlk5sawj54tWadwagCVlS1kLWwufPorNu8F7frj05+xovdjWYNqWKlLFPDImrf9G8jlQYSt3dS0dBn/JVEY1pq4d1vUCj9Ne2ADqiU7mUM+DcCZ0Q3qZPRNSuseJ+kqVALPmMDg3jVk3uB/Cri+qmaCkRS6FAMqegvt9UdA72SP3EG9CxdMdDUImgh7H52vAHnYpXe10OXOtrWA9uaFwn7k0o8S0SgdwKia8N7FBeTflDPbI3QXnhj+WSx10l9CQbYUVnEx2ZLmJ4GMoB0k9sqdNg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=hVBSzzLB; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::52f; helo=mail-pg1-x52f.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	 MIME-Version:Content-Type; b=B9XInQqh6NcJmDSM1c9gRVnRc8gUmK60jnF6N97XFqXnduYcC9rBvfl8cwKBJ7ZDmppva87GV20+EwPkMQkNUvOelUEpg9I8+60F+daBxFJcK9bQRpnxFBNh/BLzp6pNF8mvZ3VjmHBUelsmpxK+3+NKrg7LMijqtIdMHWzqSkGTSpRBLdfYLcBd4QR096FkZqNS7XFXrpRIJV1MxVm8nQ6cx3HwsP91plG7Bvch+xhBatsFNJVLr3RFRb/6NHM2xHznEorhSz//Fi4aL41J9hGs2Gqfpt3vq/Qr6LptwOQju0sWRc5ttqX3xd1WMNdYENmfC/v8G3qD3Bc/M1R2JA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=OSD4q34X; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::529; helo=mail-pg1-x529.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=hVBSzzLB;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=OSD4q34X;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::52f; helo=mail-pg1-x52f.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pg1-x52f.google.com (mail-pg1-x52f.google.com [IPv6:2607:f8b0:4864:20::52f])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::529; helo=mail-pg1-x529.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pg1-x529.google.com (mail-pg1-x529.google.com [IPv6:2607:f8b0:4864:20::529])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gwB536jDxz30BH
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Jul 2026 18:26:15 +1000 (AEST)
-Received: by mail-pg1-x52f.google.com with SMTP id 41be03b00d2f7-c88a4d79ba5so226479a12.2
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Jul 2026 01:26:15 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gwB5J4NhTz307v
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Jul 2026 18:26:28 +1000 (AEST)
+Received: by mail-pg1-x529.google.com with SMTP id 41be03b00d2f7-c85b73ffb52so225681a12.3
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Jul 2026 01:26:28 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1783499174; x=1784103974; darn=lists.ozlabs.org;
+        d=gmail.com; s=20251104; t=1783499186; x=1784103986; darn=lists.ozlabs.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=pXAgQLPERGwooEzHznzvpg6SzocRRloWRn0CUVpxEzA=;
-        b=hVBSzzLBqm0tG+6uXpgXzCW6z07BdTiTI7Cp2sEyi6boEon2VpQZw5g26TR6oThkX0
-         h7jVGOMIDV4F9369cUaSYWLRRbl08B8L/9Hp5js3OOUlAafhnuz6OeSWhXazOvBy2Pfc
-         mPK+gJMF8D3SqystxJ7Gb1S6H9mxlKUYv1b8+UhjFD4+3vE4zRTXDbu25MSbZc+pb9xs
-         TgQ0HtiuFAY5Qj9PtcvqPJuCI0mzpsy6Qtwojak1JKWtGu73T0pe9/Q63GhXB0yHQ2B/
-         hu/EV0FiZ2R9mH7Gx5/X7BsQQzZsTN6TabuGYhJgx/u270WXB6jbvbaM1RYwaTIkdVBe
-         Eg8w==
+        bh=R0yp5asYUErIc5N6oB8ZeLiWd9F6L/qUlus8Ea2ATCY=;
+        b=OSD4q34XLg6j+GhCAEFU6BSLCtlwMTBAKfrYCPKRy+OB/m5uWohJk41YbujDL60gi6
+         hlvGns4XVdAp9hQ0L7wwPoyyr4KbqtEZ51RmSXc3Vl7mAgeqmkksKfdgp3A+7NGy43Cz
+         mcCKwa8PE4LUe5ccVTFZNn2O6LuJ0eaYrGIbLDxHoMbJVAHzpFEnGGeM4LAfIhMBmEXI
+         X6Th816KmRaY1sSVJI1j76dBlNZ8KW/EKQVo1aw+EQMTfXm1wGYtsZDoa0xIlhmBqlYs
+         8rijJiyYOtz617iLgiCKN9tm4KKv3fx3oVLH/kKFlFQNYikEiHD2+7V1gF/HcaOKNmBy
+         Xp+A==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1783499174; x=1784103974;
+        d=1e100.net; s=20251104; t=1783499186; x=1784103986;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to;
-        bh=pXAgQLPERGwooEzHznzvpg6SzocRRloWRn0CUVpxEzA=;
-        b=UD43d7H0b5Xn48LtUOAkqaUPJwh2hKz+FZ0tDW+KZYf1ecIXQiHs/QVdhqqKKWcb4o
-         HLo+uESX8wJBFqm9QOYehCcK8HYf6lyqtltV/zyLyC/dkOACSh/9gQVDuMItahY7p/Cz
-         6kfxE2bDcptCsMzDr/ORAJITLljxTa1QAGRRhr7jgyhsp6gQBUWvqb3Y/Y/L2rwXCXBX
-         Tjy7OAUhiao5xm00su/4ffJ1y7gkZ0f6FvMBloLe57cAnQHclMgzlL4oJnp2JOXf/UhW
-         7njLiBSjW/YSkRPuvkI4cDznWgf9xmARyUfbPkG6FlPT+pg3JJk6csZzzqlJYaCEcXaz
-         a2bQ==
-X-Forwarded-Encrypted: i=1; AHgh+Roe5Rx528+ThgEbX2TKzoVM9XYym89uJIoxLo/EbhRpZrKENlYGPM2JVLSrVfKJNVw6jG5/CIV73M2uZJE=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YzPnh1CYdmzV8sNiBfpp6DB7vmk2BIGQ3QinAjccR1g27a/tP8V
-	kd2GLi6DVOwez+mj100eKZnIUao1WDgSn6vwgKMxdkSb1kvSKelFmOWh
-X-Gm-Gg: AfdE7cmM+3nRB+Awa0GTQMTCtUBNMzl2NsOiB+pp2HpFA27lCgjhe4YMpQYyaBAJFPN
-	tInKSKUBDH6bM18nMnVClLTW/86ZGlOblqErrHMgzNKVOIrUpwYx6usaUqc5FOjZzTN3AiZCFOX
-	9qOEmoJEgLgrQmq8z1Osc6Z9D4UgSqcrfpJ9GqZEuHaT4UVoadvVpPCX5OUX8r+OdhkhOwqJy65
-	gt1pIAAbUX9+MTOb3MOy5Do0t7gEqUOC3Cr2kR7XMP0RwR2nEtGGZ5EeioMxdMUhrn0+LmhBjbp
-	KbenSv4rtD4HfthnLpwBhMWg1OfY5175Vp3GjlRKNWnikROXZLuZMd0AAKbZbClTLVIj6sJgCrb
-	YUIn/fsQD+2CQRR9MR3Ko6n+hS52GijoY1CvPSfna0T0pGtH1f6PAk5haEDZ/ng1vwgXbfUTPip
-	UOgGoxMbTPcHHEepyz/rNkI67WwSUwzucxxeIPjv5CbjXdjJmhN/MhZmOSJ1AxW+qqUA==
-X-Received: by 2002:a05:6a21:9148:b0:3b3:f46:1eea with SMTP id adf61e73a8af0-3c0bcbe9c3fmr1852518637.7.1783499173930;
-        Wed, 08 Jul 2026 01:26:13 -0700 (PDT)
+        bh=R0yp5asYUErIc5N6oB8ZeLiWd9F6L/qUlus8Ea2ATCY=;
+        b=gUq2RiBRyvvHVUn+06bHcRDCBkfKpon8Msrq7OKcZFa60dDF2+gckRodjUBEA/yOJ9
+         k1MIgSEoTElK3ajcsXs/KQgBk516QPvbG9DBmzYqLX/u+b6te0rqOfdz5o+6Tjp9i77u
+         xjbDqhJrxu5OA04kVFW7ZHTvsQMZFT7CniEYCzwZDKsER6rTDr/Af4LMFJntCE4ulZGR
+         SeU43js8CuGmMQHqcAV8j7IyIrrMlDznGRN9RxQddXRKxImPw5OuNHqKu1C6JD8RQpHp
+         DSa6MIQajQEV/JSG0GrErbIsKkZ8xmX+fn0TT0cpN+3f949izBU09GKN3O4EX/onufvG
+         ZJ0w==
+X-Forwarded-Encrypted: i=1; AHgh+Rq/JgrMWWRdDJ59c6xe1snbVLlYksu+4dLiKO3A8OZ8IkQRvQt+F+G3RFYGVM8hLrHArfQnLCqIb2eW0Os=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yxobjwu62lK7sfByWylrH8m2cFzXgl7bS5OyQV88FOsDmiqGYfY
+	T+qdDtWa29Z/DyG2ejhktIEyl9ADGSxS/KEZikqJ5n+lBVP4NHbKlFN0
+X-Gm-Gg: AfdE7clhWo6C4BByI7Q6A0SO8+j28P5ZHLxCR0H+/SyO2LQW4CD1KE/x9WddAC+AXaJ
+	uHfygEez4jWNYFBuSiw5gN7jqOkosf7cdM5R23rPGtovu5dvH0AHdZmEdjMg6VCJbPX5B0hytuP
+	p+F+mIS7Q8EWl1rXTWAbYyqvHpLfY1FjxaQbrXIbw+uf71McX3Abd1w01k/p4lgKXN9dW+rP+Me
+	G5lWNrdtT+5pLVqXYwIWj/LVdtEyF0JajWtE3sTII0iZvQ3UpPGM4LLXRNUQAMeGICD4/12WJky
+	781hVCqcILM0M/8RxpM0T6GPcOS0uSclEgH8NuZwvp6nNoNwfmEDx3meNVCCU38Eoc+b4e1F0Pd
+	ceaA3rfSiLCqUg0vqYRjz7vn9mWlNS3MwhUC2T9LEog1eXf+NGZmwNq07BQ18osrlN3MY3UI5Mt
+	dwe8BSzGhKvT2CKuH1aDYAAe/BCmyhSPrg/L//oo4zwbHdXHi+ixPie7o+YQ+/rd5wQFFilJHLv
+	YzL
+X-Received: by 2002:a05:6a20:d499:b0:3c0:9c19:659b with SMTP id adf61e73a8af0-3c0bd1cbb60mr1995199637.67.1783499186505;
+        Wed, 08 Jul 2026 01:26:26 -0700 (PDT)
 Received: from li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com.com ([106.51.160.236])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-3117462f5c7sm19975117eec.0.2026.07.08.01.26.01
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-3117462f5c7sm19975117eec.0.2026.07.08.01.26.14
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 08 Jul 2026 01:26:13 -0700 (PDT)
+        Wed, 08 Jul 2026 01:26:26 -0700 (PDT)
 From: "Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com>
 To: maddy@linux.ibm.com,
 	mpe@ellerman.id.au,
@@ -113,9 +114,9 @@ To: maddy@linux.ibm.com,
 	rust-for-linux@vger.kernel.org,
 	llvm@lists.linux.dev
 Cc: Link Mauve <linkmauve@linkmauve.fr>
-Subject: [PATCH V17 5/7] rust: Make __udivdi3() and __umoddi3() panic
-Date: Wed,  8 Jul 2026 13:54:52 +0530
-Message-ID: <20260708082454.1254320-6-mkchauras@gmail.com>
+Subject: [PATCH V17 6/7] rust: Add PowerPC support
+Date: Wed,  8 Jul 2026 13:54:53 +0530
+Message-ID: <20260708082454.1254320-7-mkchauras@gmail.com>
 X-Mailer: git-send-email 2.55.0
 In-Reply-To: <20260708082454.1254320-1-mkchauras@gmail.com>
 References: <20260708082454.1254320-1-mkchauras@gmail.com>
@@ -137,52 +138,76 @@ Content-Transfer-Encoding: 8bit
 
 From: Link Mauve <linkmauve@linkmauve.fr>
 
-The core crate currently depends on these two functions for i64/u64/
-i128/u128/core::time::Duration formatting, but we shouldn’t use that in
-the kernel so let’s panic if they are ever called.
+For now only Big Endian 32-bit PowerPC is supported, as that is the only
+hardware I have.  This has been tested on the Nintendo Wii so far, but I
+plan on also using it on the GameCube, Wii U and Apple G4.
 
-This doesn’t yet fix drm_panic_qr.rs, which also uses __udivdi3 when
-CONFIG_CC_OPTIMIZE_FOR_SIZE=y, but at least makes the rest of the kernel
-build on PPC32.
+These changes aren’t the only ones required to get the kernel to compile
+and link on PowerPC, libcore will also have to be changed to not use
+integer division to format u64, u128 and core::time::Duration, otherwise
+__udivdi3() and __umoddi3() will have to be added.  I have tested this
+change by replacing the three implementations with unimplemented!() and
+it linked just fine.
 
 Signed-off-by: Link Mauve <linkmauve@linkmauve.fr>
+Link: https://github.com/Rust-for-Linux/linux/issues/105
+Link: https://github.com/linuxppc/issues/issues/451
+Acked-by: Gary Guo <gary@garyguo.net>
+Link: https://github.com/rust-lang/compiler-team/issues/986
 Signed-off-by: Mukesh Kumar Chaurasiya (IBM) <mkchauras@gmail.com>
 ---
- rust/Makefile             | 4 ++++
- rust/compiler_builtins.rs | 6 ++++++
- 2 files changed, 10 insertions(+)
+ arch/powerpc/Kconfig  | 1 +
+ arch/powerpc/Makefile | 2 ++
+ rust/Makefile         | 4 +++-
+ 3 files changed, 6 insertions(+), 1 deletion(-)
 
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index f7ce5fff81f0..badd7c99b87f 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -285,6 +285,7 @@ config PPC
+ 	select HAVE_REGS_AND_STACK_ACCESS_API
+ 	select HAVE_RELIABLE_STACKTRACE
+ 	select HAVE_RSEQ
++	select HAVE_RUST			if PPC32
+ 	select HAVE_SAMPLE_FTRACE_DIRECT	if HAVE_DYNAMIC_FTRACE_WITH_DIRECT_CALLS
+ 	select HAVE_SAMPLE_FTRACE_DIRECT_MULTI	if HAVE_DYNAMIC_FTRACE_WITH_DIRECT_CALLS
+ 	select HAVE_SETUP_PER_CPU_AREA		if PPC64
+diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
+index a58b1029592c..589613eaa5dc 100644
+--- a/arch/powerpc/Makefile
++++ b/arch/powerpc/Makefile
+@@ -61,6 +61,8 @@ else
+ KBUILD_LDFLAGS_MODULE += $(objtree)/arch/powerpc/lib/crtsavres.o
+ endif
+ 
++KBUILD_RUSTFLAGS 	+= --target=powerpc-unknown-linux-gnu
++
+ ifdef CONFIG_CPU_LITTLE_ENDIAN
+ KBUILD_CPPFLAGS	+= -mlittle-endian
+ KBUILD_LDFLAGS	+= -EL
 diff --git a/rust/Makefile b/rust/Makefile
-index 17b2f329c13d..7aa8fcad4c43 100644
+index 7aa8fcad4c43..61e7dc496fe4 100644
 --- a/rust/Makefile
 +++ b/rust/Makefile
-@@ -677,6 +677,10 @@ ifneq ($(or $(CONFIG_ARM64),$(and $(CONFIG_RISCV),$(CONFIG_64BIT))),)
- 		__ashrti3 \
- 		__ashlti3 __lshrti3
- endif
-+ifdef CONFIG_PPC32
-+	redirect-intrinsics += \
-+		__udivdi3 __umoddi3
-+endif
+@@ -448,7 +448,8 @@ bindgen_skip_c_flags := -mno-fp-ret-in-387 -mpreferred-stack-boundary=% \
+ 	-fstrict-flex-arrays=% -fmin-function-alignment=% \
+ 	-fzero-init-padding-bits=% -mno-fdpic \
+ 	-fdiagnostics-show-context -fdiagnostics-show-context=% \
+-	--param=% --param asan-% -fno-isolate-erroneous-paths-dereference
++	--param=% --param asan-% -fno-isolate-erroneous-paths-dereference \
++	-ffixed-r2 -mmultiple -mno-readonly-in-sdata
  
- ifdef CONFIG_MODVERSIONS
- cmd_gendwarfksyms = $(if $(skip_gendwarfksyms),, \
-diff --git a/rust/compiler_builtins.rs b/rust/compiler_builtins.rs
-index dd16c1dc899c..fc6b54636dd5 100644
---- a/rust/compiler_builtins.rs
-+++ b/rust/compiler_builtins.rs
-@@ -97,5 +97,11 @@ pub extern "C" fn $ident() {
-     __aeabi_uldivmod,
- });
+ # Derived from `scripts/Makefile.clang`.
+ BINDGEN_TARGET_x86	:= x86_64-linux-gnu
+@@ -458,6 +459,7 @@ BINDGEN_TARGET_loongarch	:= loongarch64-linux-gnusf
+ BINDGEN_TARGET_s390	:= s390x-linux-gnu
+ # This is only for i386 UM builds, which need the 32-bit target not -m32
+ BINDGEN_TARGET_i386	:= i386-linux-gnu
++BINDGEN_TARGET_powerpc	:= powerpc-linux-gnu
+ BINDGEN_TARGET_um	:= $(BINDGEN_TARGET_$(SUBARCH))
+ BINDGEN_TARGET		:= $(BINDGEN_TARGET_$(SRCARCH))
  
-+#[cfg(target_arch = "powerpc")]
-+define_panicking_intrinsics!("`u64` division/modulo should not be used", {
-+    __udivdi3,
-+    __umoddi3,
-+});
-+
- // NOTE: if you are adding a new intrinsic here, you should also add it to
- // `redirect-intrinsics` in `rust/Makefile`.
 -- 
 2.55.0
 
