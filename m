@@ -1,45 +1,45 @@
-Return-Path: <linuxppc-dev+bounces-23819-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23820-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 510C7C43458
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jul 2026 13:49:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B8819C43458
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jul 2026 13:55:46 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gwKFx4H8bz2xll;
-	Wed, 08 Jul 2026 23:49:25 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=95.215.58.170
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783518565;
-	cv=none; b=OB9pv5wj3UFCJOwdL0o4yf84Dr3XRNtHptzHTE7e+F1b7W3dEnw/RknE3JC8KCgWlSf5o7YGEr2yQNrX5wwLZQrqu2zq1OvOliqbY/3nOWGTPeSxSmyaQrS4yFp1/JllPT4CzXy1rK4wec7MSQ6a2aVcEjF0FIBcZw0KmM5VDwZ0RET4go9dyNIRPLO5ac12Cut4s+iu5zeD2aozpzLC3btYX61uNaUTm/De4b2uNzssTe/acm5pii4/f4D6OGqueQiP2//zBrz4EAHy19wAl1qI+uHrRxLMueHip7aS/EQCyHBXXDpYGzuJ/cwifGCbyi/T2K3+Zwg5rlGH99pF4A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gwKPF1RN1z2xpn;
+	Wed, 08 Jul 2026 23:55:45 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=95.215.58.171
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783518945;
+	cv=none; b=dv8KS/QpM/kEGQRYrwsbtflOFMqbpzkCpw51ysjZF6AbQ3Ab3Onzm+58YdfQwMIolJv67Stc2PoY0a3YGhDx6cajOso+ydaejmnUt1xQuRkM8YgoI82wjDRSAkglvV56hy1rqF0RYWkn2q8dk+BIPY5PuY92PoVR5Y8Zi41QQSFkF7NikV+QMO/pO2UF2qYJnIEK+xVkn84DHzCQsWCQSRO+F/WQH0SJkWpu3Z+CE1AxGsU2gu4wATyyP4/mZBvtOZRYr/Xnr9OAfeQghH82hCxBG6kH7Qy8sOLlP0ke42f0SrCA7Xs1VOt7ekDHt+cNn7u4LTog1k22AocGISRLBA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1783518565; c=relaxed/relaxed;
-	bh=TEGzzoFWcnNWGGmasKpR7vNO3wPHNttV6bHdoJJUeuk=;
+	t=1783518945; c=relaxed/relaxed;
+	bh=DumeYOm4RAsOVh0uQBPFbd4lfQ35Js58LdeDgME4iC8=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=ba7L2cT5jtAsmtj37Fsc6CPjb03MO4caYD2Un7x6wsoNaT9RqDz0/nlwe5bat/LALqv6dNCY+qgLbPhZ7HIvTkyd/wnuJjFv4eXwSLYBPzh7doSXcydl8UX0Lq83vaqfUiJlMeq71ZtzBgZWbLUgqP35iNU8XBmdSNGGVUkH8xuZolqhv6Az9I5ZPsvaC0CXE277dvP/xF214oFYp2OcRlDUje4FNxzmnuQ99kP3EdR+GS6AiPVFjeOxTWvWL9RXrlIMeGh808zSFlItf0IuKeMs9bePyAMHn/WHhdhaAcOMkBwjUs5YhwHJpZfesgzOBcuqG+T6Z6wZqi7998aB4w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=mXbZxdXN; dkim-atps=neutral; spf=pass (client-ip=95.215.58.170; helo=out-170.mta1.migadu.com; envelope-from=usama.arif@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
+	 MIME-Version; b=UTMMhnT6H5AL7r+pk3qtXSbbC73sXetTc5daUVdUeho57MMqamE8DezyHeapfbfL9C5hPbQp54TGlmHmNoVF7AUsVCOl846bPmUq9TUyuU6aF1tvBO/JMWgI9TMwQPuwAFzH16YhKP7ZWPtQ5T18L2MGALqRQxTJCc1wvji/YXS3vmRjsbaxXTdw2rHSmLcVx+zuzs9pAkR5kzp5U1WO/uwqC7jF8fN0gsB0DP2OckKUbRoJlgoHnnWboriNRBGHKPKhGYr14EG2xEci8DqAR234PXplCeV3G+JZt1MZgmmE2EnM7A4mAK/6RTB9/nkevNB1GR41XN+tuAOqr6rOoQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=ApkfZAPe; dkim-atps=neutral; spf=pass (client-ip=95.215.58.171; helo=out-171.mta1.migadu.com; envelope-from=usama.arif@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=mXbZxdXN;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=ApkfZAPe;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=95.215.58.170; helo=out-170.mta1.migadu.com; envelope-from=usama.arif@linux.dev; receiver=lists.ozlabs.org)
-Received: from out-170.mta1.migadu.com (out-170.mta1.migadu.com [95.215.58.170])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=95.215.58.171; helo=out-171.mta1.migadu.com; envelope-from=usama.arif@linux.dev; receiver=lists.ozlabs.org)
+Received: from out-171.mta1.migadu.com (out-171.mta1.migadu.com [95.215.58.171])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gwKFs4c0zz2xWY
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Jul 2026 23:49:20 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gwKPD1GtFz2xll
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Jul 2026 23:55:43 +1000 (AEST)
 X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
-	t=1783518539;
+	t=1783518924;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=TEGzzoFWcnNWGGmasKpR7vNO3wPHNttV6bHdoJJUeuk=;
-	b=mXbZxdXNK8zwfiH+BaVAX/a14LKht5ZVC+Wv7EwJmNmgfH7LWboOjRCpvZuv44yqZ92n+L
-	HTpOJmwORQJdus2K/nxg2k5sHDV24WBE1jpcCO3Xmgfz/8evz+Zw4qadzjqXk+l1Ie5Dkb
-	HqYuO1oM26W/bUjStsW0rqIMNmJO8nA=
+	bh=DumeYOm4RAsOVh0uQBPFbd4lfQ35Js58LdeDgME4iC8=;
+	b=ApkfZAPexPaSLNtsfl42DBx1qyChc5EO2KpX8eeuck2SebANu8tOXOMCQ1T+/zOIgmk5bY
+	4ee5xmFvzYgajiV3YeMtkSbdFKoo1DTlJed8IyOX2toProdSQ1KS5WwncTjvJLWvf3O0wz
+	lP4gXygReDf/aARZ4m/KTneai1EYZ3A=
 From: Usama Arif <usama.arif@linux.dev>
 To: Sayali Patil <sayalip@linux.ibm.com>
 Cc: Usama Arif <usama.arif@linux.dev>,
@@ -59,10 +59,10 @@ Cc: Usama Arif <usama.arif@linux.dev>,
 	linuxppc-dev@lists.ozlabs.org,
 	Miaohe Lin <linmiaohe@huawei.com>,
 	Venkat Rao Bagalkote <venkat88@linux.ibm.com>
-Subject: Re: [PATCH v3 1/3] selftests/mm: handle EINVAL when configuring gigantic hugepages
-Date: Wed,  8 Jul 2026 06:48:50 -0700
-Message-ID: <20260708134851.4153021-1-usama.arif@linux.dev>
-In-Reply-To: <2e3b585cbb30b2fc495dcd49d75de6f6da61861c.1783446924.git.sayalip@linux.ibm.com>
+Subject: Re: [PATCH v3 2/3] selftests/mm: fix ksm NUMA merge test for systems with memoryless NUMA nodes
+Date: Wed,  8 Jul 2026 06:55:02 -0700
+Message-ID: <20260708135503.180169-1-usama.arif@linux.dev>
+In-Reply-To: <78a3b0e3fb94004c0710872c5bab6f7381b7d63c.1783446924.git.sayalip@linux.ibm.com>
 References: 
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -80,59 +80,81 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Migadu-Flow: FLOW_OUT
 
-On Wed,  8 Jul 2026 12:29:05 +0530 Sayali Patil <sayalip@linux.ibm.com> wrote:
+On Wed,  8 Jul 2026 12:29:06 +0530 Sayali Patil <sayalip@linux.ibm.com> wrote:
 
-> Some MM selftests attempt to configure the amount of
-> HugeTLB pages of different sizes by writing to nr_hugepages.
+> The KSM NUMA merge test allocates identical pages on different NUMA
+> nodes and verifies KSM behavior with merge_across_nodes enabled and
+> disabled.
 > 
-> PowerPC hash MMU pSeries systems advertise gigantic hugepage sizes
-> but do not support runtime allocation of such pages, writes
-> to the corresponding nr_hugepages file fail with -EINVAL.
-> This causes the test to bail out even though the failure is due
-> to a platform limitation rather than the
-> functionality being tested.
+> On systems with memoryless NUMA nodes, for example:
+>  #numactl  -H
+>       available: 2 nodes (0,4)
+>       .....
+>       node 0 cpus: 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+>       node 0 size: 14825 MB
+>       node 0 free: 1382 MB
+>       node 4 cpus:
+>       node 4 size: 0 MB
+>       node 4 free: 0 MB
 > 
-> Ignore -EINVAL when configuring nr_hugepages so that tests continue to
-> run on systems where gigantic hugepage allocation is unsupported.
+> the test may attempt to allocate memory on a node without memory,
+> causing numa_alloc_onnode() to fail and resulting in a spurious test
+> failure.
+> 
+> The test currently checks numa_num_configured_nodes() to determine
+> whether sufficient NUMA nodes are available. However, configured nodes
+> do not necessarily have memory.
+> 
+> Reuse the existing get_first_mem_node() and get_next_mem_node()
+> helpers to locate NUMA nodes that actually contain memory, and skip
+> the test when fewer than two such nodes are available.
 > 
 > Before patch:
->    -------------------------
->    running ./hugetlb-madvise
->    -------------------------
->    TAP version 13
->    1..1
->      [INFO] detected hugetlb page size: 16777216 KiB
->      [INFO] detected hugetlb page size: 16384 KiB
->     ok 1 MADV_DONTNEED and MADV_REMOVE on hugetlb
->     Totals: pass:1 fail:0 xfail:0 xpass:0 skip:0 error:0
->     Bail out! /sys/kernel/mm/hugepages/hugepages-16777216kB/nr_hugepages
->     write(0) failed: Invalid argument
->     Totals: pass:0 fail:0 xfail:0 xpass:0 skip:0 error:0
->     [FAIL]
+>        ---------------------------
+> 	running ./ksm_tests -N -m 1
+>        ---------------------------
+>         mbind: Invalid argument
+>         ok 1 KSM NUMA merging
+> 	Totals: pass:1 fail:0 xfail:0 xpass:0 skip:0 error:0
+>         [PASS]
+>        ok 1 ksm_tests -N -m 1
+>        ---------------------------
+>         running ./ksm_tests -N -m 0
+>        ---------------------------
+>         mbind: Invalid argument
+>         not ok 1 KSM NUMA merging
+> 	Totals: pass:0 fail:1 xfail:0 xpass:0 skip:0 error:0
+>         [FAIL]
+>        not ok 2 ksm_tests -N -m 0 # exit=1
 > 
 > After patch:
->    -------------------------
->    running ./hugetlb-madvise
->    -------------------------
->    TAP version 13
->    1..1
->     [INFO] detected hugetlb page size: 16777216 KiB
->     [INFO] detected hugetlb page size: 16384 KiB
->    ok 1 MADV_DONTNEED and MADV_REMOVE on hugetlb
->    Totals: pass:1 fail:0 xfail:0 xpass:0 skip:0 error:0
->    [PASS]
+>        ---------------------------
+>         running ./ksm_tests -N -m 1
+>        ---------------------------
+>         At least 2 NUMA nodes with memory must be available
+> 	ok 1
+> 	SKIP KSM NUMA merging
+> 	Totals: pass:0 fail:0 xfail:0 xpass:0 skip:1 error:0
+>         [PASS]
+>         ok 1 ksm_tests -N -m 1
+>        ---------------------------
+>         running ./ksm_tests -N -m 0
+>        ---------------------------
+>         At least 2 NUMA nodes with memory must be available
+> 	ok 1
+> 	SKIP KSM NUMA merging
+> 	Totals: pass:0 fail:0 xfail:0 xpass:0 skip:1 error:0
+>         [PASS]
+>         ok 2 ksm_tests -N -m 0
 > 
-> Fixes: 27477b28b74f ("selftests/mm: hugepage_settings: add APIs to get and set nr_hugepages")
+> Fixes: e3820ab252dd ("selftest/vm: fix ksm selftest to run with different NUMA topologies")
 > Co-developed-by: David Hildenbrand (Arm) <david@kernel.org>
 > Signed-off-by: David Hildenbrand (Arm) <david@kernel.org>
 > Signed-off-by: Sayali Patil <sayalip@linux.ibm.com>
 > ---
->  .../testing/selftests/mm/hugepage_settings.c  |  2 +-
->  tools/testing/selftests/mm/vm_util.c          | 26 ++++++++++++++++---
->  tools/testing/selftests/mm/vm_util.h          |  1 +
->  3 files changed, 24 insertions(+), 5 deletions(-)
+>  tools/testing/selftests/mm/ksm_tests.c | 16 +++++++++-------
+>  1 file changed, 9 insertions(+), 7 deletions(-)
 > 
 
-Acked-by: Usama Arif <usama.arif@linux.dev>
- 
+Acked-by: Usama Arif <usama.arif@linux.dev> 
 
