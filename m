@@ -1,73 +1,120 @@
-Return-Path: <linuxppc-dev+bounces-23814-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23815-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 29B63C43458
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jul 2026 10:52:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 24C4DC43458
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jul 2026 11:12:25 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gwFKt4mcVz308k;
-	Wed, 08 Jul 2026 20:52:34 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=198.175.65.19
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783507954;
-	cv=none; b=WnKhMtxGSjVspXjBrJNaX8WRqkm4Hdk7xncMXHAVWTv0Fs999SVYDCiZZPBr/Al3ReirLo/z0wFrrah1oMWSSdxB9N4IHFXO36IYis65qUIw9hGzAn5KvYGMztwikPxp59Ez+HAkYWeuTQQJpy6nQghFFIgR+Ne6r1iYgGohkxBsrClCiHHJ48P4uoD4uVIXL3n2i7IvihN64DehA38bMiQ6bodjOBit0ACzX3DTOiqXbmyg2OpDOS8xoL2WdYPrxk6peATuwBf+3432JH8EG6roW7IrpeVHZw20xVYITR/FVNBYefuDVy8i0WTyNGvVmvxf/ai54VDnvVQLJw3HgQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gwFml54tDz2xll;
+	Wed, 08 Jul 2026 21:12:23 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=198.175.65.21
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783509143;
+	cv=none; b=Yl9xi+7w0f80t5RRF17y9RDqbyrLdoEAkNZO5yud05IpDCzjUIXNDZie3jiZU2jQ3lB8UVwkZm59AtJNZ7klzyFXMXb/CXa5cfeddSxSomUynsZFWN72QyseIIv9DHAZZUbME3Xo3D4ThabQnGC2YlvZlShi0q1pFRnRQd+H7ZfwnlGdyTo/s9VnjnjfllxbD9GbQtlTM5jD9U2x0qkJIO7FInUzLDTfq9IcTCCu/LQEN+T0wBYZ87QGrw494BBJrr7LU80VdHmCl7NXKdDky3R4zpWPbKTI4GnCnEO+W69EIl/vYu7amdXJ4+5oLhWc9Kcdcj8W/JsHncKoHtvBiw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1783507954; c=relaxed/relaxed;
-	bh=ojVZ4fwVtemMKlQ/Io+Qr09sI1H02IM4kIN49L9f5Lw=;
+	t=1783509143; c=relaxed/relaxed;
+	bh=vAhl7o4J3vODU2LRR+hV2bo/t7qA1v3c3Vzoku+2FPY=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Kb3yGOnL+cIarDrIZukYy1PW0+Ik8TCFDINgm98YOqGtzWjW7eA9k4vb/hQks3GSpCqadM4NP+IwS538vPNgaSqOA0qdrSnW8k63/aJp9fKYHGP/F5dPZDsc/eG3R6vdbnDOWKaRZ7p7gP91vM/0BHgqAX1JPG90cEwoa07poe5XQTw4F//uYgFekNg0PxXcJB5+Lg1che+u1S8bPBvXW031EOzEwn30c2JpqQhcZodK9Z/Sje5sI05mvWnLKm+bNl4qSSdyDrbbXXB2Llt7yMwRrS73sdZ5Yp7JtNCG4IclT2/o38QaEpRJLcVvQvS3L2lVWn+/pvd7TrrqoRkOdg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=SaNjhlur; dkim-atps=neutral; spf=pass (client-ip=198.175.65.19; helo=mgamail.intel.com; envelope-from=andriy.shevchenko@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
+	 Content-Type:Content-Disposition:In-Reply-To; b=mhzCF2Wh40mdQTan4wVi8krSegVcX9SAhzxETtx4kqMuUYBI2l09F4+Ix/Lq7gwKQYNm9fYP8dW7TyfEutXo9/J3gbs7LVH5f28gzjWCaX4y4Yw+IG2A+TaPHmVoCkwuXAvwCiUKFPBesGALsvNymzkCXwLoi87T9zQl5b81lvw+jm1+fpQLDdpuud2Gb//gB0gKdi+0KBFuIElj3yTCjegVVROiTZYTd35M4U9jubvLTPoQktoA+q7S3aZd5hSMef77BLSOXNHVsYO3aGa0dprXtZUyPfo3E3H+vdNJgickFr7fHdRoDWFIu3ivcAJH4avi0nZoK9lqtvPQIMRsNA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=Lsm8heHq; dkim-atps=neutral; spf=pass (client-ip=198.175.65.21; helo=mgamail.intel.com; envelope-from=andriy.shevchenko@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=SaNjhlur;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=Lsm8heHq;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.intel.com (client-ip=198.175.65.19; helo=mgamail.intel.com; envelope-from=andriy.shevchenko@linux.intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.19])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.intel.com (client-ip=198.175.65.21; helo=mgamail.intel.com; envelope-from=andriy.shevchenko@linux.intel.com; receiver=lists.ozlabs.org)
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.21])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gwFKq0pBlz308j
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Jul 2026 20:52:29 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gwFmh2SnLz2xWY
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Jul 2026 21:12:18 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1783507952; x=1815043952;
+  t=1783509141; x=1815045141;
   h=date:from:to:cc:subject:message-id:references:
-   mime-version:content-transfer-encoding:in-reply-to;
-  bh=CyxJPLdFVSeuZ2RxzJTcc+hcmMlhX4OBVi0W+0ZwW10=;
-  b=SaNjhlurp9rofcnqEXSUCqK/fN/XuMGU9WF1ujgQEMnndZvTeROAjgnX
-   fAex2BaXozglXh43/+OhuS0kaJsTtENWqRKtBkjbxlGYeowAIvjDeZfbU
-   KzuluPW5kFTaKVxsu1JBqVbunpx5UBqDrf05CaVSCNQo+b695DpAPqDEy
-   553wwSb7bUKzsjlVsSaJ2WNEWg2GHcWd9MWxi2SZ62KS7nnxSkZRsg2cr
-   6A3JhVoN9s+Wk8Lke7+rPe26Hi+rs+jCK9gSotB+tczLNRrq6WGTHCpt3
-   aQMkqfXs0VvqreJkt5UtVToCR2XY2FRI0WYO2ewpZssJwiZeH++e7LPEp
-   Q==;
-X-CSE-ConnectionGUID: vWz+qmVcR5eXenxR13xgag==
-X-CSE-MsgGUID: iaKkklpZQuyL5u8sWlvlFQ==
-X-IronPort-AV: E=McAfee;i="6800,10657,11840"; a="84140617"
+   mime-version:in-reply-to;
+  bh=dXbZA1E6z2cbPpn5lXVwUbC3y8RJZe9PuV/6K4qA1zI=;
+  b=Lsm8heHqlqGJ7nxHKpprYWjJHhPc08ubhvmn/xc4XwiPgXIABwQFNgAf
+   bo6VqbF5MnEUSfy3kf3/NDGmWabAzmh6nV57dpZ14aiarpPeW5im0Shhe
+   rTNANGPjMW1k50L6U10Mr4v+8EWirLdwiyCZ7539iYFO+IZ1PMWxhiGm5
+   6nIimK7AoB5lZf1XjuG8aPDUF+AKCNTJMWHo71cAf5d6tZAJhNJJNJKvS
+   TAXfm0Hl9+oMIKYAw2lKy0d3YFiyMBEwxtQavUOhOlGZ3k3nKK8yDFGXi
+   QIHUWyziQMfDpYKG44zplt3aH8nqNvZVCTVQlxkEClG21HqvMQd0cu+io
+   w==;
+X-CSE-ConnectionGUID: +crmqg03T1iulikk07MpHQ==
+X-CSE-MsgGUID: 9OD28uYJSEOagVk7ZK8u9g==
+X-IronPort-AV: E=McAfee;i="6800,10657,11840"; a="84025178"
 X-IronPort-AV: E=Sophos;i="6.25,153,1779174000"; 
-   d="scan'208";a="84140617"
-Received: from orviesa005.jf.intel.com ([10.64.159.145])
-  by orvoesa111.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Jul 2026 03:52:26 -0700
-X-CSE-ConnectionGUID: g8YZV/AdS4WqXLiUz+5jSQ==
-X-CSE-MsgGUID: Eie5xIutQQaxUySqp2ky5A==
+   d="scan'208";a="84025178"
+Received: from orviesa006.jf.intel.com ([10.64.159.146])
+  by orvoesa113.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Jul 2026 04:12:14 -0700
+X-CSE-ConnectionGUID: xnTXU7N2RFKFpJyFUzPznA==
+X-CSE-MsgGUID: WXa6o+4tR/u+kKLX2b+3mA==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.25,153,1779174000"; 
-   d="scan'208";a="258561997"
+   d="scan'208";a="252523743"
 Received: from klitkey1-mobl1.ger.corp.intel.com (HELO localhost) ([10.245.245.100])
-  by orviesa005-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Jul 2026 03:52:25 -0700
-Date: Wed, 8 Jul 2026 13:52:22 +0300
+  by orviesa006-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Jul 2026 04:12:00 -0700
+Date: Wed, 8 Jul 2026 14:11:58 +0300
 From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-To: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-Cc: Erhard Furtner <erhard_f@mailbox.org>,
-	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
-	linux-kernel@vger.kernel.org
-Subject: Re: test_bitmap fails on ppc/ppc64 on kernels v7.1.3, v7.2-rc2
-Message-ID: <ak4r5uL8BX74H9ta@ashevche-desk.local>
-References: <ca3547ae-8b79-43a2-a758-23ec980bfd9a@mailbox.org>
- <98d65de7-e5aa-4197-85bd-219eab01e572@kernel.org>
- <b9b762d0-cfe1-4fdb-b668-b6ef4afb0059@mailbox.org>
- <ak3_sGAnFxbmxfe8@ashevche-desk.local>
- <5430b52d-a072-41ea-ab56-9bb2f6f88849@kernel.org>
+To: Bartosz Golaszewski <brgl@kernel.org>
+Cc: Lee Jones <lee@kernel.org>,
+	Mark Brown <broonie@opensource.wolfsonmicro.com>,
+	Thierry Reding <thierry.reding@avionic-design.de>,
+	Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>,
+	Andrew Lunn <andrew+netdev@lunn.ch>,
+	"David S. Miller" <davem@davemloft.net>,
+	Eric Dumazet <edumazet@google.com>,
+	Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
+	Srinivas Kandagatla <srini@kernel.org>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Vinod Koul <vkoul@kernel.org>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Danilo Krummrich <dakr@kernel.org>, Rob Herring <robh@kernel.org>,
+	Saravana Kannan <saravanak@kernel.org>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	Andi Shyti <andi.shyti@kernel.org>, Joerg Roedel <joro@8bytes.org>,
+	Will Deacon <will@kernel.org>, Robin Murphy <robin.murphy@arm.com>,
+	Doug Berger <opendmb@gmail.com>,
+	Florian Fainelli <florian.fainelli@broadcom.com>,
+	Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>,
+	Ulf Hansson <ulfh@kernel.org>, Frank Li <Frank.Li@nxp.com>,
+	Sascha Hauer <s.hauer@pengutronix.de>,
+	Pengutronix Kernel Team <kernel@pengutronix.de>,
+	Fabio Estevam <festevam@gmail.com>,
+	Matthew Brost <matthew.brost@intel.com>,
+	Thomas =?iso-8859-1?Q?Hellstr=F6m?= <thomas.hellstrom@linux.intel.com>,
+	Rodrigo Vivi <rodrigo.vivi@intel.com>,
+	David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
+	Peter Chen <peter.chen@kernel.org>,
+	Paul Cercueil <paul@crapouillou.net>, Bin Liu <b-liu@ti.com>,
+	Philipp Zabel <p.zabel@pengutronix.de>,
+	Maximilian Luz <luzmaximilian@gmail.com>,
+	Hans de Goede <hansg@kernel.org>,
+	Ilpo =?iso-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@linux.intel.com>,
+	Krzysztof Kozlowski <krzk@kernel.org>,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+	linux-arm-msm@vger.kernel.org, linux-sound@vger.kernel.org,
+	driver-core@lists.linux.dev, devicetree@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org, linux-i2c@vger.kernel.org,
+	iommu@lists.linux.dev, linux-pm@vger.kernel.org,
+	imx@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
+	intel-xe@lists.freedesktop.org, dri-devel@lists.freedesktop.org,
+	linux-usb@vger.kernel.org, linux-mips@vger.kernel.org,
+	platform-driver-x86@vger.kernel.org, mfd@lists.linux.dev,
+	Manuel Ebner <manuelebner@mailbox.org>,
+	Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
+Subject: Re: [PATCH v3 05/20] driver core: update kerneldoc for
+ platform_device_alloc()
+Message-ID: <ak4wfuYxO2serrQt@ashevche-desk.local>
+References: <20260706-pdev-fwnode-ref-v3-0-1ff028e33779@oss.qualcomm.com>
+ <20260706-pdev-fwnode-ref-v3-5-1ff028e33779@oss.qualcomm.com>
+ <ak0jyUbNonSRiP_g@ashevche-desk.local>
+ <CAMRc=Md7-XMBKpdPuZ4=epfTn6F-PXKJBZNPGuz5xbVy58BHsg@mail.gmail.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -81,48 +128,28 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <5430b52d-a072-41ea-ab56-9bb2f6f88849@kernel.org>
+In-Reply-To: <CAMRc=Md7-XMBKpdPuZ4=epfTn6F-PXKJBZNPGuz5xbVy58BHsg@mail.gmail.com>
 Organization: Intel Finland Oy - BIC 0357606-4 - c/o Alberga Business Park, 6
  krs, Bertel Jungin Aukio 5, 02600 Espoo
 
-On Wed, Jul 08, 2026 at 09:51:34AM +0200, Christophe Leroy (CS GROUP) wrote:
-> Le 08/07/2026 à 09:43, Andy Shevchenko a écrit :
-> > On Wed, Jul 08, 2026 at 01:25:01AM +0200, Erhard Furtner wrote:
-
-...
-
-> > Oh, this is nice. So, there are two (more?) options I see to mitigate
-> > the issue:
-> > - carefully copy the garbage from the stack to the expected values
-> >    (effectively merge the whatever is on stack with the expected value)
-> > - allocate buffers on heap
-> > 
-> > The latter seems the easiest and right thing to do (since we can't really
-> > predict if the stack pattern is the same or bitmap APIs scatters the bits
-> > just on top of the respective set or clear ones over that pattern).
-> > 
-> > I will send a patch, thanks for the report and analysis!
+On Wed, Jul 08, 2026 at 12:42:58AM -0700, Bartosz Golaszewski wrote:
+> On Tue, 7 Jul 2026 18:05:29 +0200, Andy Shevchenko
+> <andriy.shevchenko@linux.intel.com> said:
+> > On Mon, Jul 06, 2026 at 02:44:17PM +0200, Bartosz Golaszewski wrote:
+> >> Users of platform_device_alloc() + platform_device_add() must not modify
+> >> certain fields of the dynamically created platform device object. Update
+> >> the kernel doc to say which fields are affected and which functions to
+> >> use.
+> >
+> > Consider using __private checker attribute for them as well. It will make
+> > sparse scream.
 > 
-> The following change fixes the issue for me:
+> Sure but let's leave it for another series.
 
-Indeed, I missed that and before seeing this message I also realised that this
-is the probably best fix. Can you submit it as a formal patch, please?
-
-> diff --git a/lib/test_bitmap.c b/lib/test_bitmap.c
-> index 69813c10e6c0b..448c3eb48a4a8 100644
-> --- a/lib/test_bitmap.c
-> +++ b/lib/test_bitmap.c
-> @@ -392,6 +392,7 @@ static void __init test_bitmap_sg(void)
-> 
->  	/* Scatter/gather relationship */
->  	bitmap_zero(bmap_tmp, 100);
-> +	bitmap_zero(bmap_res, 100);
->  	bitmap_gather(bmap_tmp, bmap_scatter, sg_mask, nbits);
->  	bitmap_scatter(bmap_res, bmap_tmp, sg_mask, nbits);
->  	expect_eq_bitmap(bmap_scatter, bmap_res, 100);
+Sure, just a side note comment that you know that we have some facilities for
+that type of problems.
 
 -- 
 With Best Regards,
