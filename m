@@ -1,53 +1,81 @@
-Return-Path: <linuxppc-dev+bounces-23751-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23752-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 56C17C43602
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jul 2026 01:44:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 807C6C43458
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jul 2026 01:59:10 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gw1924wSpz2yft;
-	Wed, 08 Jul 2026 11:44:06 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=113.46.200.222
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783475046;
-	cv=none; b=Z0Z4A8CS7VkcuvbSqz35eGKnzefxHI5EaktwsmOOOcPEXpR0KubfP+QLoKk/p8PMl61dNewxbw/jz3kDQjmf5wNt2ERs5AVVIkwrE65tsI/dR8W+EpmNYJ2hRdpjOn8jgVPJ9iEmv1oMZd0o3+mCZx7wFpnZnOWJtFmGgOt7OSBumt9akKFesrkgfuKZM80q4xd6poz/Yjn0i/QdFNxJQXMISTUsrD8ybyoKe+H1Sy26InMGjGlrErJ0czmF6KG9MAehbgG0GrNdqj6BNob+xwFrS6h341HicLzRGSlmnK7YittEyBN2Xm3PmFTqPUNtzVH2aZ8+NplbXglKaOXaPw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gw1VN6kFzz2yft;
+	Wed, 08 Jul 2026 11:59:08 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783475948;
+	cv=none; b=cB3TBZNd47CBkOqyEwtEYj8ghvapoQzEmFX0JzUgC02L+8hCn0WE4QbSpDzOk5fy6LlDuzwhrRt3e+VxV2dp85Wn0T4J6wfW/ZNmkZf9E3hXg90kPnLkE5k2Gxpzmi9wZP6Th9EoAuzk33uH+jGX+Pjujz/cpRjRIRHPR0X14ZExs54zNpShD7dM5sfkqw10wjeg7gto//Z1ybGOupYsTlgigK2tScrmI9mGNgDGHq0zskL7YcTuMzqLsVvpkduMr21vHm0xTuNVhsx3hcjQbC9kAxZ/CuGo+t6lHeINHuRmK+BTttA1obAcw6epg9a9YEzwpFeGuw/p3x03QFdwcw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1783475046; c=relaxed/relaxed;
-	bh=PdZvJupbHpc2hOYnTOWKrk/la+Cgt9ShW3j2lWe0WJs=;
-	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
-	 In-Reply-To:Content-Type; b=abDn8fgedLw2TYPjTuVq0K1ItyzCtRyZovF37obvLJosxZh83ixPcjTfFyMbmY5bwp7PPft80U3y4UJT/h4tZt25w2Q1OkoKaT4DX0ATOctAz1sX3EkXOi3D+GsYHvovuXYlQgeIse3cpfOmJUFtNV/Jaj5H5sgFPhTWYuQo0EJY9ZOElbEnJGFh7VV/FcZ4wGWO9O+jYe+GcB4Jp80O5z0dxp4xX0AXBuFfR/I0QkpFZ4S9Qhe0uPlmyZuhTlAYpnprgm38VBgrwWZwrB4FdLNRJ0+m2/7v5FcI+UlaX3BRju+DkHhAQjbP5d6/pCABeEkSHZh1iAqGEsvNwAMbxQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=5hA9y/nb; dkim-atps=neutral; spf=pass (client-ip=113.46.200.222; helo=canpmsgout07.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
+	t=1783475948; c=relaxed/relaxed;
+	bh=ukZp8O9c5u9nOWy80cEGVhcN83ILXR7TwnILsB+k1Ko=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=IGlcnH/QX4Z+25rSU37hLZVgiiGtNBRahO9Ag1w/WJ70TEZACbyYPg3b17M1fzkzBiQBgRxgytna+N6gngfzP062/CJl6SuBSM+Mv+Kf4Iby00ohcpHBZrYtmxJToOUbFjDdC79JM9xpt7nD1To1bkxRQDiklT9Jx7/ggKmA4zb6cgox0ypM5fijBD2TAiOdKSGFNasOX/eEgW9YbvHXymZE9M2+Wf1TYnxfWpsz97GtRicoGNrps+DRkL0UlXqWydVE0hq/4bBYyVsgjsvCq2iBf5Wk8N9FpDdPbfBbVQ0Bg3X2yrkCsbM7nUF36pPNXrcGwP40HZBfe9QIUmOW5w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=oSxMqQtZ; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=vaibhav@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=5hA9y/nb;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=oSxMqQtZ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=113.46.200.222; helo=canpmsgout07.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org)
-Received: from canpmsgout07.his.huawei.com (canpmsgout07.his.huawei.com [113.46.200.222])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=vaibhav@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gw19024KZz2xm3
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Jul 2026 11:44:01 +1000 (AEST)
-dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
-	c=relaxed/relaxed; q=dns/txt;
-	h=From;
-	bh=PdZvJupbHpc2hOYnTOWKrk/la+Cgt9ShW3j2lWe0WJs=;
-	b=5hA9y/nbJT2Rdg9agSG6EdreDMBgYhixnmJvdWlfr8XidFnsSzCZu1Z1RT4/0VWszYj3O4mq/
-	EgOdnVoPIUBGLqZev43itv9gO4V5NDlaHCFpwiBMuwwoePes9JuQ/NhfwH1VMdkJPUaHTUdzc7M
-	av1A0vhQhzopjwvWZCaC8Vk=
-Received: from mail.maildlp.com (unknown [172.19.163.214])
-	by canpmsgout07.his.huawei.com (SkyGuard) with ESMTPS id 4gw0y549jNzLlTw;
-	Wed,  8 Jul 2026 09:34:37 +0800 (CST)
-Received: from dggpemf500011.china.huawei.com (unknown [7.185.36.131])
-	by mail.maildlp.com (Postfix) with ESMTPS id 665034057C;
-	Wed,  8 Jul 2026 09:43:51 +0800 (CST)
-Received: from [10.67.109.254] (10.67.109.254) by
- dggpemf500011.china.huawei.com (7.185.36.131) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1544.11; Wed, 8 Jul 2026 09:43:48 +0800
-Message-ID: <2e6ed364-ce8f-4b4b-8675-acd07f140f4f@huawei.com>
-Date: Wed, 8 Jul 2026 09:43:46 +0800
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gw1VM637rz2xm3
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Jul 2026 11:59:06 +1000 (AEST)
+Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 667MnCsU164878;
+	Wed, 8 Jul 2026 01:58:52 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:date:from:message-id:mime-version
+	:subject:to; s=pp1; bh=ukZp8O9c5u9nOWy80cEGVhcN83ILXR7TwnILsB+k1
+	Ko=; b=oSxMqQtZU+kujV3j7DXa+Gc8fqiBB9rGApYzdwS90G0rfiS8+0jiYRky3
+	ar7KGwM3qMuqEV6R6G0/cdfsuNWjWrrX84pRww/7tb8YJLEBCSi8+6FiJk2wjlEa
+	YvETtxBax3Dc0NC0e8w93IU7tGNDJEb0iRSYGfE2D8YOiDgfmvZUotgA42HOIZh6
+	1LySUEsaThI4eFM+HUMaSesSA24wsdxc25xzxfnTvR8CGyZJO7AnpG/xKgpM4fG2
+	VV7Cj2fU+ZSC4ffppsGlElDCPpV+XTY3psjJWJOfVQsrRgjOhLy6OFtnxEPIknrV
+	Yisjl2xYKU4XhZN+ydLFJwjfkL0mw==
+Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4f6ststjas-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 08 Jul 2026 01:58:51 +0000 (GMT)
+Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma11.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 6681nbEu024083;
+	Wed, 8 Jul 2026 01:58:51 GMT
+Received: from smtprelay05.dal12v.mail.ibm.com ([172.16.1.7])
+	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4f7f6y55qr-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 08 Jul 2026 01:58:51 +0000 (GMT)
+Received: from smtpav02.wdc07v.mail.ibm.com (smtpav02.wdc07v.mail.ibm.com [10.39.53.229])
+	by smtprelay05.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6681woi825559594
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Wed, 8 Jul 2026 01:58:50 GMT
+Received: from smtpav02.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id DB8CE5805B;
+	Wed,  8 Jul 2026 01:58:49 +0000 (GMT)
+Received: from smtpav02.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 556A158059;
+	Wed,  8 Jul 2026 01:58:46 +0000 (GMT)
+Received: from vaibhav?linux.ibm.com (unknown [9.43.110.190])
+	by smtpav02.wdc07v.mail.ibm.com (Postfix) with SMTP;
+	Wed,  8 Jul 2026 01:58:45 +0000 (GMT)
+Received: by vaibhav@linux.ibm.com (sSMTP sendmail emulation); Wed, 08 Jul 2026 07:28:13 +0530
+From: Vaibhav Jain <vaibhav@linux.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org,
+        kvm-ppc@vger.kernel.org
+Cc: Vaibhav Jain <vaibhav@linux.ibm.com>,
+        Madhavan Srinivasan <maddy@linux.ibm.com>,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        Anushree Mathur <anushree.mathur@linux.ibm.com>
+Subject: [PATCH 1/2] powerpc/pseries: Ensure vpa,slb_shadow & dtl are unregistered during crash
+Date: Wed,  8 Jul 2026 07:28:00 +0530
+Message-ID: <20260708015802.274271-1-vaibhav@linux.ibm.com>
+X-Mailer: git-send-email 2.55.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -61,267 +89,88 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [patch 11/18] seccomp, treewide: Rename and convert
- __secure_computing() to return boolean
-To: Thomas Gleixner <tglx@kernel.org>, LKML <linux-kernel@vger.kernel.org>
-CC: Peter Zijlstra <peterz@infradead.org>, Mark Rutland
-	<mark.rutland@arm.com>, Kees Cook <kees@kernel.org>, Andy Lutomirski
-	<luto@kernel.org>, Oleg Nesterov <oleg@redhat.com>, Richard Henderson
-	<richard.henderson@linaro.org>, Russell King <linux@armlinux.org.uk>, Catalin
- Marinas <catalin.marinas@arm.com>, Guo Ren <guoren@kernel.org>, Geert
- Uytterhoeven <geert@linux-m68k.org>, Thomas Bogendoerfer
-	<tsbogend@alpha.franken.de>, Helge Deller <deller@gmx.de>, Yoshinori Sato
-	<ysato@users.sourceforge.jp>, Richard Weinberger <richard@nod.at>, Chris
- Zankel <chris@zankel.net>, <linux-arm-kernel@lists.infradead.org>,
-	<linux-alpha@vger.kernel.org>, <linux-csky@vger.kernel.org>,
-	<linux-m68k@lists.linux-m68k.org>, <linux-mips@vger.kernel.org>,
-	<linux-parisc@vger.kernel.org>, <linux-sh@vger.kernel.org>,
-	<linux-um@lists.infradead.org>, Michael Ellerman <mpe@ellerman.id.au>,
-	Shrikanth Hegde <sshegde@linux.ibm.com>, <linuxppc-dev@lists.ozlabs.org>,
-	Huacai Chen <chenhuacai@kernel.org>, <loongarch@lists.linux.dev>, Paul
- Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
-	<linux-riscv@lists.infradead.org>, Sven Schnelle <svens@linux.ibm.com>,
-	<linux-s390@vger.kernel.org>, <x86@kernel.org>, Arnd Bergmann
-	<arnd@arndb.de>, Vineet Gupta <vgupta@kernel.org>, Will Deacon
-	<will@kernel.org>, Brian Cain <bcain@kernel.org>, Michal Simek
-	<monstr@monstr.eu>, Dinh Nguyen <dinguyen@kernel.org>, "David S. Miller"
-	<davem@davemloft.net>, Andreas Larsson <andreas@gaisler.com>,
-	<linux-snps-arc@lists.infradead.org>, <linux-hexagon@vger.kernel.org>,
-	<linux-openrisc@vger.kernel.org>, <sparclinux@vger.kernel.org>,
-	<linux-arch@vger.kernel.org>, =?UTF-8?Q?Michal_Such=C3=A1nek?=
-	<msuchanek@suse.de>, Jonathan Corbet <corbet@lwn.net>,
-	<linux-doc@vger.kernel.org>
-References: <20260707181957.433213175@kernel.org>
- <20260707190254.230735780@kernel.org>
-From: Jinjie Ruan <ruanjinjie@huawei.com>
-In-Reply-To: <20260707190254.230735780@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-X-Originating-IP: [10.67.109.254]
-X-ClientProxiedBy: kwepems200001.china.huawei.com (7.221.188.67) To
- dggpemf500011.china.huawei.com (7.185.36.131)
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: pFXrABif-9Q53CpbG03yvDdr_vrZt_Kw
+X-Proofpoint-Spam-Info: AW1haW4tMjYwNzA4MDAxNSBTYWx0ZWRfX8fxMZRpAHQTM
+ rJdG3Tk8LpqPq8Gmqy0aYu7hKZM+cyMRp5b7EnQu/aYLXp5EB+rMfUekPEtHX9sxsPw6Lz2Cq1r
+ fgQxTRvj6bDY+wK1uBN1oeNubp2m1LE=
+X-Authority-Analysis: v=2.4 cv=DKW/JSNb c=1 sm=1 tr=0 ts=6a4daedb cx=c_pps
+ a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
+ a=RAioF0-LDSMA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
+ a=RzCfie-kr_QcCd8fBx8p:22 a=VnNF1IyMAAAA:8 a=Z8IfMt24Ap6u_xdwUf8A:9
+X-Proofpoint-GUID: pFXrABif-9Q53CpbG03yvDdr_vrZt_Kw
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzA4MDAxNSBTYWx0ZWRfX7+8VPUgGzaoQ
+ WiIV6ERzTw1uZ4vyWUKov/bpm4fGx81JfuSzbgvnvM3mykH+wrAAcKzwbaoj0fbYRQ2tHBeDf5W
+ uLZdyMD3rp2Hm8JK6bKcTsuCWEnUYEPPNswUMmLCwKTXmmG4Gf6V+7XybRxWK0J3u0pDfIdepyK
+ zn08uOY6MMunhcPvyVGz9NzCL2ttPoxiWCvRaVUgBtbCu4rqnyOS8+WQNYMsAuzkSC/5NzK8XRa
+ 73d6LxbhWIMrH8o95YryWbmlDUeLAbPQWBJSveDpA/Mh1wk6NMhRn0KTvd/mPlO3/C/+FMVzx3m
+ svsM8vmkW49QB8ddmg3/+/++uKV6JrWcd9dh0qswEzihu+WprBRrxpeSvrqjfhZ6dwg/zExNx/z
+ Mayb2jJB4QxKIHOSymg72osTxqoix1zHt2lz4GrJzP5pphjDAsn4bfJq5O0vCUyZU82kraE3+wH
+ fMubMQx1i08UWXmwckA==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-07-07_06,2026-07-06_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ spamscore=0 bulkscore=0 clxscore=1015 phishscore=0 impostorscore=0
+ priorityscore=1501 adultscore=0 lowpriorityscore=0 suspectscore=0
+ malwarescore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2606150000
+ definitions=main-2607080015
 
+Currently pseries_kexec_cpu_down() skips unregistering vpa, slb_shadow and
+dtl areas during a crash and kexec shutdown path. It was done to avoid
+doing an HCALL while crashing. However recently Anushree reported that
+during kernel crash while the kdump kernel was coming up, Hypervisor
+reported invalid values for 'vpa.yield_count' while it dispatching L2-KVM
+Guest vcpus. The error manifested as debug build Hypervisor assert
+triggering to indicate possible VPA corruption.
 
+Looking at the kexec cpu offline path it was discovered that during crash
+kernel doesn't unregister the VPA/SLB-Shadow/DTL area with
+Hypervisor. Instead it re-allocates and re-registers these areas
+for cpus during boot. During kexec boot the previously allocated areas
+can get overwritten with new content without hypervisor knowledge. This
+creates a small window where while kexec kernel boots and the L2-VCPUs are
+being dispatched, Hypervisor may try to read/write to a wrong memory area
+which previously belonged to older VPA.
 
-On 7/8/2026 3:06 AM, Thomas Gleixner wrote:
-> From: Jinjie Ruan <ruanjinjie@huawei.com>
-> 
-> The return value of __secure_computing() currently uses 0 to indicate
-> that a system call should be allowed, and -1 to indicate that it should
-> be blocked/killed. This 0/-1 pattern is non-intuitive for a security
-> check function and makes the control flow at the call sites less readable.
-> 
-> Furthermore, any potential future changes to these return values would
-> require a high-risk, error-prone audit of all its users across different
-> architectures.
-> 
-> Sanitize this logic by converting the return type of __secure_computing()
-> to a proper boolean, where 'true' explicitly means 'allow' and 'false'
-> means 'fail/deny'.
-> 
-> Update all the two dozen or so call sites across the tree to align with
-> this new boolean semantic. No functional changes are intended, as the
-> callers still return -1 to the lower-level assembly entry code upon
-> seccomp denial.
-> 
-> Rename the function to __seccomp_permit_syscall() so that the purpose is
-> entirely clear.
-> 
-> [ tglx: Rename the function ]
-> 
-> Suggested-by: Thomas Gleixner <tglx@kernel.org>
-> Suggested-by: Mark Rutland <mark.rutland@arm.com>
-> Signed-off-by: Jinjie Ruan <ruanjinjie@huawei.com>
-> Signed-off-by: Thomas Gleixner <tglx@kernel.org>
-> Cc: Kees Cook <kees@kernel.org>
-> Cc: Andy Lutomirski <luto@kernel.org>
-> Cc: Oleg Nesterov <oleg@redhat.com>
-> Cc: Richard Henderson <richard.henderson@linaro.org>
-> Cc: Russell King <linux@armlinux.org.uk>
-> Cc: Catalin Marinas <catalin.marinas@arm.com>
-> Cc: Guo Ren <guoren@kernel.org>
-> Cc: Geert Uytterhoeven <geert@linux-m68k.org>
-> Cc: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
-> Cc: Helge Deller <deller@gmx.de>
-> Cc: Yoshinori Sato <ysato@users.sourceforge.jp>
-> Cc: Richard Weinberger <richard@nod.at>
-> Cc: Chris Zankel <chris@zankel.net>
-> Cc: linux-arm-kernel@lists.infradead.org
-> Cc: linux-alpha@vger.kernel.org
-> Cc: linux-csky@vger.kernel.org
-> Cc: linux-m68k@lists.linux-m68k.org
-> Cc: linux-mips@vger.kernel.org
-> Cc: linux-parisc@vger.kernel.org
-> Cc: linux-sh@vger.kernel.org
-> Cc: linux-um@lists.infradead.org
-> ---
->  arch/alpha/kernel/ptrace.c            |    2 -
->  arch/arm/kernel/ptrace.c              |    2 -
->  arch/arm64/kernel/ptrace.c            |    2 -
->  arch/csky/kernel/ptrace.c             |    2 -
->  arch/m68k/kernel/ptrace.c             |    2 -
->  arch/mips/kernel/ptrace.c             |    2 -
->  arch/parisc/kernel/ptrace.c           |    2 -
->  arch/sh/kernel/ptrace_32.c            |    2 -
->  arch/um/kernel/skas/syscall.c         |    2 -
->  arch/x86/entry/vsyscall/vsyscall_64.c |   14 ++++++-------
->  arch/xtensa/kernel/ptrace.c           |    3 --
->  include/linux/entry-common.h          |    9 +++-----
->  include/linux/seccomp.h               |   12 +++++------
->  kernel/seccomp.c                      |   35 +++++++++++++++++-----------------
->  14 files changed, 45 insertions(+), 46 deletions(-)
+Fix this possible race and memory corruption by updating
+pseries_kexec_cpu_down() to also unregister vpa,slb_shadow & dtl areas
+during a kernel crash.
 
-As Ada pointed out, the description of secure_computing in arch/Kconfig
-need to be updated, a possible suggestion:
+Signed-off-by: Vaibhav Jain <vaibhav@linux.ibm.com>
+Tested-by: Anushree Mathur <anushree.mathur@linux.ibm.com>
+---
+ arch/powerpc/platforms/pseries/kexec.c | 13 ++++++++-----
+ 1 file changed, 8 insertions(+), 5 deletions(-)
 
---- a/arch/Kconfig
-+++ b/arch/Kconfig
-@@ -636,8 +636,8 @@ config HAVE_ARCH_SECCOMP_FILTER
-          - syscall_rollback()
-          - syscall_set_return_value()
-          - SIGSYS siginfo_t support
--         - secure_computing is called from a ptrace_event()-safe context
--         - secure_computing return value is checked and a return value
-of -1
-+         - seccomp_permits_syscall is called from a ptrace_event()-safe
-context
-+         - seccomp_permits_syscall return value is checked and if false
-
-
-Link:
-https://lore.kernel.org/all/b8f3b5cd-8d8a-4396-ba0c-011a83234dd9@arm.com/
-
-> --- a/arch/alpha/kernel/ptrace.c
-> +++ b/arch/alpha/kernel/ptrace.c
-> @@ -387,7 +387,7 @@ asmlinkage unsigned long syscall_trace_e
->  	 * If this fails, seccomp may already have set up the return value
->  	 * (e.g. SECCOMP_RET_ERRNO / TRACE).
->  	 */
-> -	if (secure_computing() == -1) {
-> +	if (!seccomp_permit_syscall()) {
->  		if (regs->r19 == 0 && regs->r0 == (unsigned long)-1)
->  			syscall_set_return_value(current, regs, -ENOSYS, 0);
->  		syscall_set_nr(current, regs, -1);
-
-[...]
-
-> -static int __seccomp_filter(int this_syscall, const bool recheck_after_trace)
-> +static bool __seccomp_filter(int this_syscall, const bool recheck_after_trace)
->  {
->  	u32 filter_ret, action;
->  	struct seccomp_data sd;
-> @@ -1294,7 +1295,7 @@ static int __seccomp_filter(int this_sys
->  	case SECCOMP_RET_TRACE:
->  		/* We've been put in this state by the ptracer already. */
->  		if (recheck_after_trace)
-> -			return 0;
-> +			return true;
->  
->  		/* ENOSYS these calls if there is no tracer attached. */
->  		if (!ptrace_event_enabled(current, PTRACE_EVENT_SECCOMP)) {
-> @@ -1330,19 +1331,19 @@ static int __seccomp_filter(int this_sys
->  		 * a skip would have already been reported.
->  		 */
->  		if (__seccomp_filter(this_syscall, true))
-> -			return -1;
-> +			return false;
-
-The return value of __seccomp_filter is checked in the wrong way, check
--1 should be replaced with check false, maybe:
-
--               if (__seccomp_filter(this_syscall, true))
--                       return -1;
-+               if (!__seccomp_filter(this_syscall, true))
-+                       return false;
-
-otherwise,
-
-LGTM
-Reviewed-by: Jinjie Ruan <ruanjinjie@huawei.com>
-
->  
-> -		return 0;
-> +		return true;
->  
->  	case SECCOMP_RET_USER_NOTIF:
->  		if (seccomp_do_user_notification(this_syscall, match, &sd))
->  			goto skip;
->  
-> -		return 0;
-> +		return true;
->  
->  	case SECCOMP_RET_LOG:
->  		seccomp_log(this_syscall, 0, action, true);
-> -		return 0;
-> +		return true;
->  
->  	case SECCOMP_RET_ALLOW:
->  		/*
-> @@ -1350,7 +1351,7 @@ static int __seccomp_filter(int this_sys
->  		 * this action since SECCOMP_RET_ALLOW is the starting
->  		 * state in seccomp_run_filters().
->  		 */
-> -		return 0;
-> +		return true;
->  
->  	case SECCOMP_RET_KILL_THREAD:
->  	case SECCOMP_RET_KILL_PROCESS:
-> @@ -1367,46 +1368,46 @@ static int __seccomp_filter(int this_sys
->  		} else {
->  			do_exit(SIGSYS);
->  		}
-> -		return -1; /* skip the syscall go directly to signal handling */
-> +		return false; /* skip the syscall go directly to signal handling */
->  	}
->  
->  	unreachable();
->  
->  skip:
->  	seccomp_log(this_syscall, 0, action, match ? match->log : false);
-> -	return -1;
-> +	return false;
->  }
->  #else
-> -static int __seccomp_filter(int this_syscall, const bool recheck_after_trace)
-> +static bool __seccomp_filter(int this_syscall, const bool recheck_after_trace)
->  {
->  	BUG();
->  
-> -	return -1;
-> +	return false;
->  }
->  #endif
->  
-> -int __secure_computing(void)
-> +bool __seccomp_permit_syscall(void)
->  {
->  	int mode = current->seccomp.mode;
->  	int this_syscall;
->  
->  	if (IS_ENABLED(CONFIG_CHECKPOINT_RESTORE) &&
->  	    unlikely(current->ptrace & PT_SUSPEND_SECCOMP))
-> -		return 0;
-> +		return true;
->  
->  	this_syscall = syscall_get_nr(current, current_pt_regs());
->  
->  	switch (mode) {
->  	case SECCOMP_MODE_STRICT:
->  		__secure_computing_strict(this_syscall);  /* may call do_exit */
-> -		return 0;
-> +		return true;
->  	case SECCOMP_MODE_FILTER:
->  		return __seccomp_filter(this_syscall, false);
->  	/* Surviving SECCOMP_RET_KILL_* must be proactively impossible. */
->  	case SECCOMP_MODE_DEAD:
->  		WARN_ON_ONCE(1);
->  		do_exit(SIGKILL);
-> -		return -1;
-> +		return false;
->  	default:
->  		BUG();
->  	}
-> 
+diff --git a/arch/powerpc/platforms/pseries/kexec.c b/arch/powerpc/platforms/pseries/kexec.c
+index 431be156ca9b..29f7c97ff193 100644
+--- a/arch/powerpc/platforms/pseries/kexec.c
++++ b/arch/powerpc/platforms/pseries/kexec.c
+@@ -20,12 +20,15 @@
+ void pseries_kexec_cpu_down(int crash_shutdown, int secondary)
+ {
+ 	/*
+-	 * Don't risk a hypervisor call if we're crashing
+-	 * XXX: Why? The hypervisor is not crashing. It might be better
+-	 * to at least attempt unregister to avoid the hypervisor stepping
+-	 * on our memory.
++	 * Ensure vpa/slb_shadow/dtl cleanup even while we are crashing.
++	 * Why? The hypervisor is not crashing so at least attempt unregister to
++	 * avoid the hypervisor stepping on our memory. If hypervisor or kexec
++	 * kernel steps on the old memory allocated to these areas before the
++	 * new kexec-kernel happens to allocate and register new areas,
++	 * the hypervisor will see invalid content which may cause
++	 * unexpected behavior.
+ 	 */
+-	if (firmware_has_feature(FW_FEATURE_SPLPAR) && !crash_shutdown) {
++	if (firmware_has_feature(FW_FEATURE_SPLPAR)) {
+ 		int ret;
+ 		int cpu = smp_processor_id();
+ 		int hwcpu = hard_smp_processor_id();
+-- 
+2.55.0
 
 
