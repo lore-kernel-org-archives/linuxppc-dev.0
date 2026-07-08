@@ -1,81 +1,76 @@
-Return-Path: <linuxppc-dev+bounces-23816-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23817-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AE96AC43458
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jul 2026 11:27:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A9647C43458
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jul 2026 11:36:36 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gwG5z1fP3z2xpn;
-	Wed, 08 Jul 2026 21:27:19 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783510039;
-	cv=none; b=Oo67HkhIgwtosr1MLEVn21x6t9N09KbtCA/tlTgoEHSOHSa02PYWRey/6P8uAF/1DuHfUr/soHR50CEqW9Ktl53UF6XNTPmuvN9fUhQqfOB1ZKlfuLdFCZfBsXqjW0K/Bd03ur1pD27NRcCFQEO6mZK5GHd7QDgERF3fvAp3RxskT8OFvL9EZnOCNRF89GXRIp8u3RpjqHCb1kR8PX75WS5tBTTbIosCxDvUNGIv5gDBnG48hh9Q9mF/pUTJfIZunk2iz3CRD4AkaSvu0e3qQYT1Mm4xg/JgbRJMQSdNhYAuIHy0KgH2Jsf2qR5Uveg5rpYKWcz1Df6CVw9sZP7OiA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gwGJg2bCRz2xll;
+	Wed, 08 Jul 2026 21:36:35 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.140.110.172
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783510595;
+	cv=none; b=NGa0IMg3HOg/zJHeDN258e/+9MrrQ1b2hKznTD+oCWL6gTDeIZAlz+97Sw8Ow7ZGmH0Pa1LKDqD6j2E5GEVe8cIaav5bBopK3OIiAIoKZnZEtcTl1nXRLZYVN+xYwQjy/U4cMZgOkMUlO1ni6FtsY66q5/adTbVt6VcivCHwcx3giq/L/rpS2xZNGQQEbCSXDM5SAh5zYIQe/4gfY8q4n5fBHxe6BWA2CCO+OGh6ckSZapUm6TqaGeriuRqiY03/3/P8ktbxfkFDnfl3O1sWX8HyKsLkcP/LwfGkCo2PBWJBG/fdT7O8OCbgTcB4NGbZRaWc0XciDIFdCjEW9r0IHQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1783510039; c=relaxed/relaxed;
-	bh=US75nTdN+etYaSgVnzN+8fi/sOmQj+pjgKNLA3JEgVo=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=bUh5km1T9rtWyXctaCGYLy3Ep4WZqHvXuJqRy1FP0jzPjs6m13WRrpWVIhPfTDF2xJSIcvU4zceXlkxujS4MSTaV2jc9syaTQhqK2o289e4EDfnu9WUAa6afAY/krVErPMac1rkldHTuZZCpoqzVU5ir3C5+ZRqbpqi44YNYyXLleG0SoJnTtXzikRIPqakdjKAZdhwhiacuIzzLZLL/uHNe3sbEGUQgeb3+LIltmSg9K6e9bVtUFknaz+xLlZXL82NMWg2d4dUoGLcfYL2ZNOKdP5aFkbChNNIVaNoI1mpuv5hhGpqwhrRmqdT96ian/UVS5T72ArtMDM6g+lvsdw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=bNf8SA7O; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=tshah@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1783510595; c=relaxed/relaxed;
+	bh=wvVAlEJVuGFLkU8Sx+0lCwd7KQJAZlMmHPeMITO1ozY=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=eX2BrdQv3uoAHqC6i6YioeN5WF5SoV7dvX08PlAO+nWROGqbN35gh7YFPsjW/vIpEqPpiU7DHTZoM/B263WpKr/5S5JHfIys1zeOFLz3oAL3Ves9QOqtaq80910Q6U4PcSAaBmoTI9x0q8AqW4QRSJdL/feX1vmJuz7usVE7auTe2gB94decZka13kgyPZf0wjJhr5jEt6xlBmmAQdLUghVwwz1J/rtTu+pMMG94+fJhsGwVmpokj6Uf+oXXaaTYh3giyV480vGGoLHeAGW6B0F7q0RcMcy/7j/aORNG3q4LinKzx+vLxX1cLf7sr4MPE/6Ml20lxw3vzlFQEUzQvA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=BDUtEDVy; dkim-atps=neutral; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=catalin.marinas@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=bNf8SA7O;
+	dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=BDUtEDVy;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=tshah@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gwG5x6qGHz2xll
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Jul 2026 21:27:17 +1000 (AEST)
-Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6688IorC3244626;
-	Wed, 8 Jul 2026 11:27:14 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:message-id:mime-version
-	:subject:to; s=pp1; bh=US75nTdN+etYaSgVnzN+8fi/sOmQj+pjgKNLA3JEg
-	Vo=; b=bNf8SA7OXDRTHGeuIBAv2eFmwVAGNwxiBuvR0LIi7nLn1PCAroFd0Vnsu
-	j4N63aM9koAQvZaJlP6kGApOQJIT2OceU8cgx7WdVGUPMUzIWAKk3miTwQFBuCmT
-	QHX1e7s9Rqb2bGpW1anzysXtHAcTrsI+jhavMcLR3RnmmLsHE8A5jzGPKw9NTtVY
-	yajftLb88Yu8+gm5bqqSYWhTQdqJRZ3eM+sGO+DMDFimZQTbSFEErbLtKVb3dLIN
-	KUnzhPHAtvoViW5gZDcxO33x86DRW10wkdRhU8vG4BTHnrxpY52ngiU3/e+WtIDT
-	KlzXeTJLPLEACU7rEaFpXcFo/p48g==
-Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4f6suquubm-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 08 Jul 2026 11:27:13 +0000 (GMT)
-Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma13.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 668BJfxw022367;
-	Wed, 8 Jul 2026 11:27:12 GMT
-Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
-	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4f7eqg7hwp-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 08 Jul 2026 11:27:12 +0000 (GMT)
-Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com [10.20.54.104])
-	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 668BR8M523265652
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 8 Jul 2026 11:27:08 GMT
-Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id C40022004D;
-	Wed,  8 Jul 2026 11:27:08 +0000 (GMT)
-Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 81AC820043;
-	Wed,  8 Jul 2026 11:27:03 +0000 (GMT)
-Received: from li-4c4c4544-0047-4210-804e-b5c04f423534.ibm.com.com (unknown [9.39.26.136])
-	by smtpav05.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Wed,  8 Jul 2026 11:27:03 +0000 (GMT)
-From: Tanushree Shah <tshah@linux.ibm.com>
-To: acme@kernel.org, jolsa@kernel.org, adrian.hunter@intel.com,
-        vmolnaro@redhat.com, mpetlan@redhat.com, tmricht@linux.ibm.com,
-        maddy@linux.ibm.com, irogers@google.com, namhyung@kernel.org
-Cc: linux-perf-users@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-        atrajeev@linux.ibm.com, hbathini@linux.ibm.com, Tejas.Manhas1@ibm.com,
-        Tanushree.Shah@ibm.com, Shivani.Nittor@ibm.com,
-        Tanushree Shah <tshah@linux.ibm.com>
-Subject: [PATCH v4] perf dso: Fix kallsyms DSO detection with fallback logic
-Date: Wed,  8 Jul 2026 16:56:08 +0530
-Message-ID: <20260708112607.548304-2-tshah@linux.ibm.com>
-X-Mailer: git-send-email 2.54.0
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=catalin.marinas@arm.com; receiver=lists.ozlabs.org)
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gwGJc1hP5z2xWY
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Jul 2026 21:36:30 +1000 (AEST)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 00BCE1E5E;
+	Wed,  8 Jul 2026 04:35:53 -0700 (PDT)
+Received: from arm.com (usa-sjc-mx-foss1.foss.arm.com [172.31.20.19])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 7E39E3F85F;
+	Wed,  8 Jul 2026 04:35:53 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
+	t=1783510557; bh=skF61y21KgPsVGfJvwoIpH8oYC/C836tWg/Zi0aByAc=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=BDUtEDVyOjE2X987uSwyfq3z9RD7lBFkhkdA5EBvVEUJF3xFy0wXNZao/bpBtdGJT
+	 bzEIyGgplNZ8FteGaCdPd8M9i1hu4qN4jloW+AkzdgaaYEgqMwYQieSh7ECTVL08I/
+	 ukOcYIu1QhMGKdh1zDxGves8zlEW6X1jwQ6tkJ14=
+Date: Wed, 8 Jul 2026 12:35:51 +0100
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: "Aneesh Kumar K.V (Arm)" <aneesh.kumar@kernel.org>
+Cc: iommu@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
+	linux-kernel@vger.kernel.org, linux-coco@lists.linux.dev,
+	Robin Murphy <robin.murphy@arm.com>,
+	Marek Szyprowski <m.szyprowski@samsung.com>,
+	Will Deacon <will@kernel.org>, Marc Zyngier <maz@kernel.org>,
+	Steven Price <steven.price@arm.com>,
+	Suzuki K Poulose <Suzuki.Poulose@arm.com>,
+	Jiri Pirko <jiri@resnulli.us>, Jason Gunthorpe <jgg@ziepe.ca>,
+	Mostafa Saleh <smostafa@google.com>,
+	Petr Tesarik <ptesarik@suse.com>,
+	Alexey Kardashevskiy <aik@amd.com>,
+	Dan Williams <dan.j.williams@intel.com>,
+	Xu Yilun <yilun.xu@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
+	linux-s390@vger.kernel.org,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	Alexander Gordeev <agordeev@linux.ibm.com>,
+	Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
+	Heiko Carstens <hca@linux.ibm.com>,
+	Vasily Gorbik <gor@linux.ibm.com>,
+	Christian Borntraeger <borntraeger@linux.ibm.com>,
+	Sven Schnelle <svens@linux.ibm.com>, x86@kernel.org,
+	Jiri Pirko <jiri@nvidia.com>, Michael Kelley <mhklinux@outlook.com>
+Subject: Re: [PATCH v7 16/22] dma-direct: make dma_direct_map_phys() honor
+ DMA_ATTR_CC_SHARED
+Message-ID: <ak42F240d-53QeFN@arm.com>
+References: <20260701054926.825925-1-aneesh.kumar@kernel.org>
+ <20260701054926.825925-17-aneesh.kumar@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -89,160 +84,78 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNzA4MDExMCBTYWx0ZWRfX1Ltt8d7T1xEp
- wML/LdDD+fsP+VCqupM4tgcX1SL4QX84k2E8dAboQGXUMMtmk5p9XW/tgVMz/LdGJHtoJwbafik
- fdg7L48xFBGBPld7s+rvxro2O0vXlQg=
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzA4MDExMCBTYWx0ZWRfX9YIxbzpfCPIK
- 5uryo3fMSLp4vcPveWp6KqremUE+DxyJ4AVvjykl8OGOxDjyD9HwKRnknMtAimijxLJKb9Yo+q3
- zJSuh6BSyGX5yVBFmQNQoSSN4sefmZ52ly3NY9ff5fYvXDBrT25WYD3dchuI4Cl/0yIOZZisl3T
- uus/8okm82E+BU6aMTwvJsYgH11rslFee3kUGFs8TKJ3eLuFtNgvbOXt3O4dYSlnHqzHgK+4gcy
- 0Q0iihofTlL/4L589JMcyUQK6ooi9XiJO0uU1yoHYCXdt73g94tWKHV55PodMdzHKRng7Tr+PiA
- 1hnG25pYwxfeBf+jI0KyQI/prxkEvFf1LUUZZeyJWE6brGU20MBoFP/MrAgdoN1C1y9cDUxjS/O
- e0Teqt1T+N6uYMYKqpmN2gh9Fk0wZTiphybq2Qf1JFQUTmgrsANIgteoD/kuwen/JtQGZG3ZJbN
- tsWR+yoyuli1Ss1E24Q==
-X-Proofpoint-GUID: BwwCzI8LaqaWSt9_CyklYFvBYU7aG7v7
-X-Authority-Analysis: v=2.4 cv=Oot/DS/t c=1 sm=1 tr=0 ts=6a4e3412 cx=c_pps
- a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
- a=RAioF0-LDSMA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=uAbxVGIbfxUO_5tXvNgY:22 a=VwQbUJbxAAAA:8 a=VnNF1IyMAAAA:8
- a=4ZgrmD5STv3GE8aCXdIA:9
-X-Proofpoint-ORIG-GUID: vgyh-Kprz1pFnwzXW4hvy_kore_AjmYD
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-07-08_01,2026-07-06_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- bulkscore=0 lowpriorityscore=0 clxscore=1015 impostorscore=0 phishscore=0
- malwarescore=0 suspectscore=0 spamscore=0 adultscore=0 priorityscore=1501
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607080110
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260701054926.825925-17-aneesh.kumar@kernel.org>
 
-The current kallsyms detection in dso__is_kallsyms() uses the
-dso_binary_type enum which fixes the issue of kallsyms being cached in
-the build-id cache for out-of-tree modules.
+On Wed, Jul 01, 2026 at 11:19:20AM +0530, Aneesh Kumar K.V (Arm) wrote:
+> diff --git a/arch/arm64/mm/init.c b/arch/arm64/mm/init.c
+> index 97987f850a33..acf67c7064db 100644
+> --- a/arch/arm64/mm/init.c
+> +++ b/arch/arm64/mm/init.c
+> @@ -338,10 +338,8 @@ void __init arch_mm_preinit(void)
+>  	unsigned int flags = SWIOTLB_VERBOSE;
+>  	bool swiotlb = max_pfn > PFN_DOWN(arm64_dma_phys_limit);
+>  
+> -	if (is_realm_world()) {
+> +	if (is_realm_world())
+>  		swiotlb = true;
+> -		flags |= SWIOTLB_FORCE;
+> -	}
 
-However, during build-id injection in perf record/inject, dso_binary_type
-has not been explicitly set yet,so dso__binary_type() returns
-DSO_BINARY_TYPE__NOT_FOUND instead of DSO_BINARY_TYPE__KALLSYMS for the
-kernel DSO. The current check then fails to identify it as kallsyms,
-causing build-id symlinks to not be created in ~/.debug/.build-id/ and
-perf archive to fail with "Cannot stat" errors.
+For this part:
 
-Steps to reproduce the issue:
-1. rm -rf ~/.debug/.build-id
-2. perf record sleep 1
-3. perf archive
+Reviewed-by: Catalin Marinas <catalin.marinas@arm.com>
 
-Fix by falling back to matching long_name against the known kallsyms
-strings explicitly when binary_type is not yet set
-(== DSO_BINARY_TYPE__NOT_FOUND). Use strcmp() for exact matching of
-fixed names and strict validation for guest kallsyms with embedded PID
-to prevent path traversal attacks.
+> diff --git a/kernel/dma/direct.h b/kernel/dma/direct.h
+> index e05dc7649366..f3fc28f352ba 100644
+> --- a/kernel/dma/direct.h
+> +++ b/kernel/dma/direct.h
+> @@ -88,37 +88,40 @@ static inline dma_addr_t dma_direct_map_phys(struct device *dev,
+>  {
+>  	dma_addr_t dma_addr;
+>  
+> +	/*
+> +	 * For a device requiring unencrypted DMA, MMIO memory is treated
+> +	 * as shared by default.
+> +	 */
+> +	if (force_dma_unencrypted(dev) && (attrs & DMA_ATTR_MMIO))
+> +		attrs |= DMA_ATTR_CC_SHARED;
+> +
+>  	if (is_swiotlb_force_bounce(dev)) {
+> -		if (!(attrs & DMA_ATTR_CC_SHARED)) {
+> -			if (attrs & (DMA_ATTR_MMIO | DMA_ATTR_REQUIRE_COHERENT))
+> -				return DMA_MAPPING_ERROR;
+> +		if (attrs & (DMA_ATTR_MMIO | DMA_ATTR_REQUIRE_COHERENT))
+> +			return DMA_MAPPING_ERROR;
+>  
+> -			return swiotlb_map(dev, phys, size, dir, attrs);
+> -		}
+> -	} else if (attrs & DMA_ATTR_CC_SHARED) {
+> -		return DMA_MAPPING_ERROR;
+> +		return swiotlb_map(dev, phys, size, dir, attrs);
+>  	}
+>  
+> -	if (attrs & DMA_ATTR_MMIO) {
+> -		dma_addr = phys;
+> -		if (unlikely(!dma_capable(dev, dma_addr, size, false, attrs)))
+> -			goto err_overflow;
+> -	} else if (attrs & DMA_ATTR_CC_SHARED) {
+> +	if (attrs & DMA_ATTR_CC_SHARED)
+>  		dma_addr = phys_to_dma_unencrypted(dev, phys);
+> +	else
+> +		dma_addr = phys_to_dma_encrypted(dev, phys);
 
-Fixes: ebf0b332732d ("perf dso: fix dso__is_kallsyms() check")
-Signed-off-by: Tanushree Shah <tshah@linux.ibm.com>
----
-v3 -> v4: Replace direct dso field access with dso__kernel() and
-          dso__long_name()
-v2 -> v3: Replace strncmp() prefix matching with strcmp() for fixed
-          kallsyms names and add is_guest_kallsyms_pid_name() to
-          strictly validate guest kallsyms with PID format, preventing
-          path traversal attacks.
+For AMD/SME, on host with memory encryption we now end up setting the C
+bit for DMA_ATTR_MMIO. This is fine for RAM but not sure whether
+some other MMIO bus understands this attribute. Maybe we should stick to
+something like __phys_to_dma() for the !CC_SHARED && MMIO path. Or,
+since this is not universally defined, just use the old dma_addr = phys
+if MMIO and ignore any unlikely DMA offsets.
 
-v1 -> v2: Rename DSO__NAME_GUEST_KALLSYMS to DSO__PREFIX_GUEST_KALLSYMS
-          to reflect that it is a prefix, not a full name.
+In the other case, for an arm CCA guest, if the MMIO is shared we end up
+setting the shared attribute but that's fine, it's only an IPA address.
 
-v1: https://lore.kernel.org/all/20260410071225.708005-2-tshah@linux.ibm.com/
-
- tools/perf/util/dso.h | 57 ++++++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 56 insertions(+), 1 deletion(-)
-
-diff --git a/tools/perf/util/dso.h b/tools/perf/util/dso.h
-index ede691e9a249..c6103d3e3f6f 100644
---- a/tools/perf/util/dso.h
-+++ b/tools/perf/util/dso.h
-@@ -9,6 +9,7 @@
- #include <stdbool.h>
- #include <stdio.h>
- #include <linux/bitops.h>
-+#include <string.h>
- #include "build-id.h"
- #include "debuginfo.h"
- #include "mutex.h"
-@@ -20,6 +21,40 @@ struct perf_env;
- 
- #define DSO__NAME_KALLSYMS	"[kernel.kallsyms]"
- #define DSO__NAME_KCORE		"[kernel.kcore]"
-+#define DSO__NAME_GUEST_KALLSYMS		"[guest.kernel.kallsyms]"
-+#define DSO__NAME_GUEST_KALLSYMS_PID_PREFIX	"[guest.kernel.kallsyms."
-+
-+/*
-+ * Validate names of the form "[guest.kernel.kallsyms.<pid>]", where
-+ * <pid> is the PID of the guest VM and varies per guest, so it
-+ * cannot be matched with strcmp() against a fixed string.
-+ *
-+ * Every character after the fixed prefix must be a decimal digit,
-+ * with ']' immediately terminating the digit run and nothing
-+ * following it. This rules out '/', "..", or any other character
-+ * being smuggled into the name.
-+ */
-+static inline bool is_guest_kallsyms_pid_name(const char *name)
-+{
-+	const size_t prefix_len = sizeof(DSO__NAME_GUEST_KALLSYMS_PID_PREFIX) - 1;
-+	size_t digits;
-+
-+	if (strncmp(name, DSO__NAME_GUEST_KALLSYMS_PID_PREFIX, prefix_len) != 0)
-+		return false;
-+
-+	digits = strspn(name + prefix_len, "0123456789");
-+	if (digits == 0)
-+		return false;
-+
-+	/* ']' must terminate the digit run, with nothing trailing it */
-+	if (name[prefix_len + digits] != ']')
-+		return false;
-+
-+	if (name[prefix_len + digits + 1] != '\0')
-+		return false;
-+
-+	return true;
-+}
- 
- /**
-  * enum dso_binary_type - The kind of DSO generally associated with a memory
-@@ -914,8 +949,28 @@ static inline bool dso__is_kcore(const struct dso *dso)
- static inline bool dso__is_kallsyms(const struct dso *dso)
- {
- 	enum dso_binary_type bt = dso__binary_type(dso);
-+	const char *name;
-+
-+	if (bt == DSO_BINARY_TYPE__KALLSYMS || bt == DSO_BINARY_TYPE__GUEST_KALLSYMS)
-+		return true;
-+
-+	if (bt != DSO_BINARY_TYPE__NOT_FOUND)
-+		return false;
-+
-+	if (!dso__kernel(dso))
-+		return false;
-+
-+	name = dso__long_name(dso);
-+	if (!name)
-+		return false;
-+
-+	if (!strcmp(name, DSO__NAME_KALLSYMS))
-+		return true;
-+
-+	if (!strcmp(name, DSO__NAME_GUEST_KALLSYMS))
-+		return true;
- 
--	return bt == DSO_BINARY_TYPE__KALLSYMS || bt == DSO_BINARY_TYPE__GUEST_KALLSYMS;
-+	return is_guest_kallsyms_pid_name(name);
- }
- 
- bool dso__is_object_file(const struct dso *dso);
 -- 
-2.47.3
-
+Catalin
 
