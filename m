@@ -1,45 +1,69 @@
-Return-Path: <linuxppc-dev+bounces-23818-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23819-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D3EC0C44501
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jul 2026 12:12:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 510C7C43458
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jul 2026 13:49:27 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gwH6G2lsMz2xll;
-	Wed, 08 Jul 2026 22:12:38 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.140.110.172
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783512758;
-	cv=none; b=C2zPt6KkMAluu2SOTPZLpPUfWSyNtJSkgsWzRAYWmqJbEWTLoBnM2L6raapZsMSOLvOlbU7jbQGYKBbZ2XOjLYZ1zwwHZca5EBzP1tzzIRjVMDDuT35EkVlmZvtrDfLIqiWFdUHTnpknf7Gw0/aNphbdTV2E8Bbep+WHuBifZ9vr8xSU24QF0+p93Js0WHvQTxoXhrKqFETBz27XH9QviomQ3OeGDPKnzDgBmUB5AOTf3thU9fF1/r1T7h/YxV21EQT2Mj0HlKMVsYxafLopjOjFrv3PWiAkePR0vyeUbd2Jt8xAOXen9J0UuB328v1yuxrmJB4XTrNWevqmNfrbTA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gwKFx4H8bz2xll;
+	Wed, 08 Jul 2026 23:49:25 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=95.215.58.170
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783518565;
+	cv=none; b=OB9pv5wj3UFCJOwdL0o4yf84Dr3XRNtHptzHTE7e+F1b7W3dEnw/RknE3JC8KCgWlSf5o7YGEr2yQNrX5wwLZQrqu2zq1OvOliqbY/3nOWGTPeSxSmyaQrS4yFp1/JllPT4CzXy1rK4wec7MSQ6a2aVcEjF0FIBcZw0KmM5VDwZ0RET4go9dyNIRPLO5ac12Cut4s+iu5zeD2aozpzLC3btYX61uNaUTm/De4b2uNzssTe/acm5pii4/f4D6OGqueQiP2//zBrz4EAHy19wAl1qI+uHrRxLMueHip7aS/EQCyHBXXDpYGzuJ/cwifGCbyi/T2K3+Zwg5rlGH99pF4A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1783512758; c=relaxed/relaxed;
-	bh=V2AT9xr1vEyQ54p+OXNl/EXreb4EIkVz492WmIMeztY=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=Z3TvEw+1lqJ+eGFgLdCWtAtl4dhotpW17Q/CY7FlfMD89oPjWkUgSEoGvB2Lvmu7TrHsWQ2t+nimiPB3xmv8zqC+lufxVT9Ht6GkyeINtpiyil7RBkCKaUr5sYhdcoISSQst1KJUBuYeIP/+0ezZS2kSlg7qj7XeIlE/JfE1t7/rmrNK8531q20Z7JATwhGsRu5PnVqXiMXjsX6ord1P34vqoyojCShgMn+leqm34zoQrmO6LP5fuy80obyuMkrLMayA92/tXOHewfuoU5ccaT77YfdTnLu7piwCs/PnDXU0H4L0TjbbZOvq0VibGCNh2ijiW9+xcJNwqG426fdeCw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=VYLThK6n; dkim-atps=neutral; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=suzuki.poulose@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
+	t=1783518565; c=relaxed/relaxed;
+	bh=TEGzzoFWcnNWGGmasKpR7vNO3wPHNttV6bHdoJJUeuk=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=ba7L2cT5jtAsmtj37Fsc6CPjb03MO4caYD2Un7x6wsoNaT9RqDz0/nlwe5bat/LALqv6dNCY+qgLbPhZ7HIvTkyd/wnuJjFv4eXwSLYBPzh7doSXcydl8UX0Lq83vaqfUiJlMeq71ZtzBgZWbLUgqP35iNU8XBmdSNGGVUkH8xuZolqhv6Az9I5ZPsvaC0CXE277dvP/xF214oFYp2OcRlDUje4FNxzmnuQ99kP3EdR+GS6AiPVFjeOxTWvWL9RXrlIMeGh808zSFlItf0IuKeMs9bePyAMHn/WHhdhaAcOMkBwjUs5YhwHJpZfesgzOBcuqG+T6Z6wZqi7998aB4w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=mXbZxdXN; dkim-atps=neutral; spf=pass (client-ip=95.215.58.170; helo=out-170.mta1.migadu.com; envelope-from=usama.arif@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=VYLThK6n;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=mXbZxdXN;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=suzuki.poulose@arm.com; receiver=lists.ozlabs.org)
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gwH6F0jnqz2xKh
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Jul 2026 22:12:36 +1000 (AEST)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 8995215A1;
-	Wed,  8 Jul 2026 05:12:00 -0700 (PDT)
-Received: from [10.1.37.27] (Suzukis-MBP.cambridge.arm.com [10.1.37.27])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id B81CF3F7B4;
-	Wed,  8 Jul 2026 05:11:59 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1783512724; bh=8/7zvmWxegXEn2qwWzbLy+la1fhDjUolmn1c+tkuiCo=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=VYLThK6nv7poE0WxqyAkkUzVattkhpNXgz0FB5kUhD63AtBVZyrisuMmv5M0CoESI
-	 L6c2zVVqqGetqMAqNotIZPSb5x7ZJI/M+DkEmmj/SyrIe71mPHqJUlt3Lr8T1+qgXX
-	 3+YkEUZClQkuG47VW0GuZxUiJRDmk0w4H31JziKU=
-Message-ID: <79a41669-72f0-4068-9f38-62fb586d9180@arm.com>
-Date: Wed, 8 Jul 2026 13:11:57 +0100
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=95.215.58.170; helo=out-170.mta1.migadu.com; envelope-from=usama.arif@linux.dev; receiver=lists.ozlabs.org)
+Received: from out-170.mta1.migadu.com (out-170.mta1.migadu.com [95.215.58.170])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gwKFs4c0zz2xWY
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Jul 2026 23:49:20 +1000 (AEST)
+X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
+	t=1783518539;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=TEGzzoFWcnNWGGmasKpR7vNO3wPHNttV6bHdoJJUeuk=;
+	b=mXbZxdXNK8zwfiH+BaVAX/a14LKht5ZVC+Wv7EwJmNmgfH7LWboOjRCpvZuv44yqZ92n+L
+	HTpOJmwORQJdus2K/nxg2k5sHDV24WBE1jpcCO3Xmgfz/8evz+Zw4qadzjqXk+l1Ie5Dkb
+	HqYuO1oM26W/bUjStsW0rqIMNmJO8nA=
+From: Usama Arif <usama.arif@linux.dev>
+To: Sayali Patil <sayalip@linux.ibm.com>
+Cc: Usama Arif <usama.arif@linux.dev>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Shuah Khan <shuah@kernel.org>,
+	linux-mm@kvack.org,
+	linux-kernel@vger.kernel.org,
+	linux-kselftest@vger.kernel.org,
+	Ritesh Harjani <ritesh.list@gmail.com>,
+	David Hildenbrand <david@kernel.org>,
+	Zi Yan <ziy@nvidia.com>,
+	Michal Hocko <mhocko@kernel.org>,
+	Oscar Salvador <osalvador@suse.de>,
+	Lorenzo Stoakes <lorenzo.stoakes@oracle.com>,
+	Dev Jain <dev.jain@arm.com>,
+	Liam.Howlett@oracle.com,
+	linuxppc-dev@lists.ozlabs.org,
+	Miaohe Lin <linmiaohe@huawei.com>,
+	Venkat Rao Bagalkote <venkat88@linux.ibm.com>
+Subject: Re: [PATCH v3 1/3] selftests/mm: handle EINVAL when configuring gigantic hugepages
+Date: Wed,  8 Jul 2026 06:48:50 -0700
+Message-ID: <20260708134851.4153021-1-usama.arif@linux.dev>
+In-Reply-To: <2e3b585cbb30b2fc495dcd49d75de6f6da61861c.1783446924.git.sayalip@linux.ibm.com>
+References: 
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -53,85 +77,62 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v7 16/22] dma-direct: make dma_direct_map_phys() honor
- DMA_ATTR_CC_SHARED
-Content-Language: en-GB
-To: "Aneesh Kumar K.V (Arm)" <aneesh.kumar@kernel.org>,
- iommu@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
- linux-kernel@vger.kernel.org, linux-coco@lists.linux.dev
-Cc: Robin Murphy <robin.murphy@arm.com>,
- Marek Szyprowski <m.szyprowski@samsung.com>, Will Deacon <will@kernel.org>,
- Marc Zyngier <maz@kernel.org>, Steven Price <steven.price@arm.com>,
- Catalin Marinas <catalin.marinas@arm.com>, Jiri Pirko <jiri@resnulli.us>,
- Jason Gunthorpe <jgg@ziepe.ca>, Mostafa Saleh <smostafa@google.com>,
- Petr Tesarik <ptesarik@suse.com>, Alexey Kardashevskiy <aik@amd.com>,
- Dan Williams <dan.j.williams@intel.com>, Xu Yilun
- <yilun.xu@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org, Madhavan Srinivasan <maddy@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
- "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
- Alexander Gordeev <agordeev@linux.ibm.com>,
- Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
- Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>,
- Christian Borntraeger <borntraeger@linux.ibm.com>,
- Sven Schnelle <svens@linux.ibm.com>, x86@kernel.org,
- Jiri Pirko <jiri@nvidia.com>, Michael Kelley <mhklinux@outlook.com>
-References: <20260701054926.825925-1-aneesh.kumar@kernel.org>
- <20260701054926.825925-17-aneesh.kumar@kernel.org>
-From: Suzuki K Poulose <suzuki.poulose@arm.com>
-In-Reply-To: <20260701054926.825925-17-aneesh.kumar@kernel.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
+X-Migadu-Flow: FLOW_OUT
 
-On 01/07/2026 06:49, Aneesh Kumar K.V (Arm) wrote:
-> Teach dma_direct_map_phys() to select the DMA address encoding based on
-> DMA_ATTR_CC_SHARED.
+On Wed,  8 Jul 2026 12:29:05 +0530 Sayali Patil <sayalip@linux.ibm.com> wrote:
+
+> Some MM selftests attempt to configure the amount of
+> HugeTLB pages of different sizes by writing to nr_hugepages.
 > 
-> Use phys_to_dma_unencrypted() for decrypted mappings and
-> phys_to_dma_encrypted() otherwise. If a device requires unencrypted DMA
-> but the source physical address is still encrypted, force the mapping
-> through swiotlb so the DMA address and backing memory attributes remain
-> consistent.
+> PowerPC hash MMU pSeries systems advertise gigantic hugepage sizes
+> but do not support runtime allocation of such pages, writes
+> to the corresponding nr_hugepages file fail with -EINVAL.
+> This causes the test to bail out even though the failure is due
+> to a platform limitation rather than the
+> functionality being tested.
 > 
-> Update the arm64, x86, s390 and powerpc secure-guest setup to not use
-> swiotlb force option
+> Ignore -EINVAL when configuring nr_hugepages so that tests continue to
+> run on systems where gigantic hugepage allocation is unsupported.
 > 
-> Tested-by: Jiri Pirko <jiri@nvidia.com>
-> Tested-by: Michael Kelley <mhklinux@outlook.com>
-> Tested-by: Mostafa Saleh <smostafa@google.com>
-> Signed-off-by: Aneesh Kumar K.V (Arm) <aneesh.kumar@kernel.org>
+> Before patch:
+>    -------------------------
+>    running ./hugetlb-madvise
+>    -------------------------
+>    TAP version 13
+>    1..1
+>      [INFO] detected hugetlb page size: 16777216 KiB
+>      [INFO] detected hugetlb page size: 16384 KiB
+>     ok 1 MADV_DONTNEED and MADV_REMOVE on hugetlb
+>     Totals: pass:1 fail:0 xfail:0 xpass:0 skip:0 error:0
+>     Bail out! /sys/kernel/mm/hugepages/hugepages-16777216kB/nr_hugepages
+>     write(0) failed: Invalid argument
+>     Totals: pass:0 fail:0 xfail:0 xpass:0 skip:0 error:0
+>     [FAIL]
+> 
+> After patch:
+>    -------------------------
+>    running ./hugetlb-madvise
+>    -------------------------
+>    TAP version 13
+>    1..1
+>     [INFO] detected hugetlb page size: 16777216 KiB
+>     [INFO] detected hugetlb page size: 16384 KiB
+>    ok 1 MADV_DONTNEED and MADV_REMOVE on hugetlb
+>    Totals: pass:1 fail:0 xfail:0 xpass:0 skip:0 error:0
+>    [PASS]
+> 
+> Fixes: 27477b28b74f ("selftests/mm: hugepage_settings: add APIs to get and set nr_hugepages")
+> Co-developed-by: David Hildenbrand (Arm) <david@kernel.org>
+> Signed-off-by: David Hildenbrand (Arm) <david@kernel.org>
+> Signed-off-by: Sayali Patil <sayalip@linux.ibm.com>
 > ---
-> Changes from v3:
-> * Handle DMA_ATTR_MMIO
-> ---
->   arch/arm64/mm/init.c                 |  4 +--
->   arch/powerpc/platforms/pseries/svm.c |  2 +-
->   arch/s390/mm/init.c                  |  2 +-
->   arch/x86/kernel/pci-dma.c            |  4 +--
->   kernel/dma/direct.c                  |  4 ++-
->   kernel/dma/direct.h                  | 45 +++++++++++++++-------------
->   6 files changed, 31 insertions(+), 30 deletions(-)
+>  .../testing/selftests/mm/hugepage_settings.c  |  2 +-
+>  tools/testing/selftests/mm/vm_util.c          | 26 ++++++++++++++++---
+>  tools/testing/selftests/mm/vm_util.h          |  1 +
+>  3 files changed, 24 insertions(+), 5 deletions(-)
 > 
-> diff --git a/arch/arm64/mm/init.c b/arch/arm64/mm/init.c
-> index 97987f850a33..acf67c7064db 100644
-> --- a/arch/arm64/mm/init.c
-> +++ b/arch/arm64/mm/init.c
-> @@ -338,10 +338,8 @@ void __init arch_mm_preinit(void)
->   	unsigned int flags = SWIOTLB_VERBOSE;
->   	bool swiotlb = max_pfn > PFN_DOWN(arm64_dma_phys_limit);
->   
-> -	if (is_realm_world()) {
-> +	if (is_realm_world())
->   		swiotlb = true;
-> -		flags |= SWIOTLB_FORCE;
-> -	}
->   
->   	if (IS_ENABLED(CONFIG_DMA_BOUNCE_UNALIGNED_KMALLOC) && !swiotlb) {
->   		/*
 
-
-For arm64 CCA bits:
-
-Reviewed-by: Suzuki K Poulose <suzuki.poulose@arm.com>
+Acked-by: Usama Arif <usama.arif@linux.dev>
+ 
 
