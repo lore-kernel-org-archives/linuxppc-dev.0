@@ -1,160 +1,115 @@
-Return-Path: <linuxppc-dev+bounces-23833-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23834-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1BCB1C43602
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jul 2026 15:46:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C1F35C43458
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jul 2026 15:47:12 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gwMrf1zzkz2xpn;
-	Thu, 09 Jul 2026 01:46:10 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::433"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783525570;
-	cv=none; b=Vol776rqUtZtseuEpV9W/Ye28GCMZVojWYrzi7g+DPAPXQxWuXu6OUP/6TnB1IId8Vi915IBAsAHD4fvdv92c6tOwiL3Du0iDZ3PpJxOZWJBeEFyNfzbnW2zVDSp2U7HQM8epx0QIaTUzqSgA96lOtnrSvQaYrFca9NY3ehW5DKfqxhIPeMAqB7CjKf/uOZQYNPys5k6VFBnoHf8w7LY+Om3z5PkgStRBUswHoQUkj9wiYX1oRjqq56alwv0RNiJEeRlseWtgUgd582kqonCOUxSAHmaiUeUcz+BZAPvAiKbB6OyrYdWCLqMN9X5wBQJB0FZDOeJ6JRAIbXANQPgDg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gwMsq1tsWz3054;
+	Thu, 09 Jul 2026 01:47:11 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=170.10.133.124
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783525631;
+	cv=none; b=C9WoLWrRPQW+iW7ojjiMCs39uznQ1gVJUflRBfno+jfiROK+OCjsheFYwTr0GPkv4X9R8kxYcx37BPqTFIY5TjkRsgKW5Vy15V0e/fD8tkHovRG+jA3c5GFbtOIb5wf7TxmfMio2WDkK1butUD2yrcQUGMRkDBgkhs1oyCGR0hS3OI3l0t0XQiDbRjdGuhVkmdsf+4eiuGiHwcgNuPJSUfrndAt8XpRJ9qaHSbHTIPyQH4Bk01WfkS92USSAkcBaOkznIdjttuOg8sijcb/nt/bCeSae0Cp3JgMzkd+yMwnwsL1OhHTrJkCMv4jBplJx0x6c9E66DFu6cdBmzqxGGQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1783525570; c=relaxed/relaxed;
-	bh=DFzX8ayLrWD5LLPflyw5iQn6+h660qomUnmCAVS4si0=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=GLlfitrTwS36eR8e+gzQt51avFzvygHsSgX9AHTef6tXHf+/oU0DSKJ94eaVkowL5PikSMTbTO1s0pd6LJUsi6NsUUZ23cx1iywqs/qM2Xl6zvcNX3EF2HuRzdsME8F+jRmYrHshq06r6lOaMOcYZv6aQ2hvp+Hy8yOnFpdw4GRjgTdKH7F7p9elEkQDTT6a9+4o8Rm1Z7+BTa1f4/RDD430jr1XY8vhFBNmjUx8owg0L+ZWZIUV4tapeEtrgcgaVwdV485N1RojEt5+APqV/f1+nGkqxlu47OQYJRMkHULiO2Wyqrd4TFFUUuF7gw2xwxyKY0NZKlI90Lmi+f1EXw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com; dkim=pass (2048-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=google header.b=Qx8sAeqo; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::433; helo=mail-wr1-x433.google.com; envelope-from=petr.pavlu@suse.com; receiver=lists.ozlabs.org) smtp.mailfrom=suse.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com
+	t=1783525631; c=relaxed/relaxed;
+	bh=Va2IGzeVOAPTHMa4DaH+yWHwp2fTjUY5mobPTHVuW/k=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 In-Reply-To:Content-Type:Content-Disposition; b=VoOf1DuVPmd1ETKOOivvRLek3dEpImZPIXIuiEvSZ07KOW6fc4CDmtQMzyTEEHt3zJNjJ6twEgm1bDMKL6dEyQOfvMPacjnsudKgo7nbMOLX+GWVe73MAc4uw5mTxUD+l020rTthLEAtE3JB/wu4Bq4uzybHYa2zohUOPJnJZBlu0hHnb3jqpNg2LnrYXYiyZmXWJH0q19yOpB0E8E8ko6uELP9GVAyaFrKUxCMHRvu4SKDZidEHmzZISwWPe/2Inw6vJZWzPkMKllRYPj4aqs6/+W1CWBFq1spiPqUB7WgGzpW1Rfbw+ubX07vUxrkYu5jh18sTJiYIBJJxKZPDwQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=EliLonLi; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Jgok/1kN; dkim-atps=neutral; spf=pass (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=oleg@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=google header.b=Qx8sAeqo;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=EliLonLi;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Jgok/1kN;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.com (client-ip=2a00:1450:4864:20::433; helo=mail-wr1-x433.google.com; envelope-from=petr.pavlu@suse.com; receiver=lists.ozlabs.org)
-Received: from mail-wr1-x433.google.com (mail-wr1-x433.google.com [IPv6:2a00:1450:4864:20::433])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=oleg@redhat.com; receiver=lists.ozlabs.org)
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gwMrd1M3pz30BH
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 09 Jul 2026 01:46:08 +1000 (AEST)
-Received: by mail-wr1-x433.google.com with SMTP id ffacd0b85a97d-474560436c3so804050f8f.0
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Jul 2026 08:46:08 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=suse.com; s=google; t=1783525566; x=1784130366; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=DFzX8ayLrWD5LLPflyw5iQn6+h660qomUnmCAVS4si0=;
-        b=Qx8sAeqoqHku9yeKhfkMSSe9ykHh1Z86PSpo1VfElptt2rvl3Fpe41GfuDtCCAZjNF
-         4z9qZzJHLY2LHK4p0U4F2lTt092hAjZLdxo5px5lQxQd1TzTAwfTdnk9Knew2dTbDN5U
-         co8Cc5hFoQTWzXIsLcx05h+VQEwr8Ned6Syu077cllMpkSmv6EHvsN5APL0nxz9Vo9DJ
-         M9lpY9TSzfXdKwnmvbzAK8rze8A3ETeQP2M0utX5Jjp+VpCod2ay0OoVA8wWf+kejBeu
-         tNYzRZMhXqVSorMaCkzxaMpLGUs83y+w7odBYYowa2GzYIEVNWuzD2AjQkZAr3fbKtFS
-         bOsQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1783525566; x=1784130366;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=DFzX8ayLrWD5LLPflyw5iQn6+h660qomUnmCAVS4si0=;
-        b=dL5nAQEF0r6oqqBtwzDKlgJf1DgZDXVKh3JKe16L0J6eu6nFeTAdDqW1YdEW2u32CV
-         9Y6C0l78WlGZOXjgMj4ARl3puyBcXXJYtsphcJtLnozLzNs+r+GmaSgzQFwo8uVYH1P1
-         kBHTFaCNYtbzts12MRP0zAfNJbpW2DQlkLhDCcarAo4X4BgCXuPCtPV0haRp4WGWsOiY
-         SBHjF1JrPF9EKnOECw6GasR9bZrfxlnvrJLviwwOQFg3CgMqRSG7IKYfis2epnLFXUHH
-         ZFPr/tLv2jJN/igCE1JJzISu4m2xUc9Sz8T75Hsr0KIzayYZGO3/HiqXs1U4T/9gv07Y
-         pueA==
-X-Forwarded-Encrypted: i=1; AHgh+RqKKED0NnAEnYr0yZC+J+/L03diis/aUJoEKxgpLtQzYLJwCD+XsnloNb/zE0uV9mFSHWHT5zRAIPL96yI=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YyvE00YjbxqYxVeY6y6UoL2gVLG7MlkWUVmYrEc8E4OUIgMMkMZ
-	qY8iwfx43kZDCQ3P6QNqx9EaeRy1sHIRI/6q8VTgVrWTQJ6uozpW28j/wo3r686MwBA=
-X-Gm-Gg: AfdE7clGFSNCiWDF7lyxcAuGJ8gQFzOS1WW1hlbmNWPBu244S7KU+9N/5wPz17xZ7QF
-	Eik6R9w4REGg5Z31J2vyiEMMvvtyBiQzCqpFN/DaWNZP0CsGv49djoLp2fbmzsbPX2JTupkPiw/
-	8z/lOBBt2JJGx3ExIJp0jrvn7cjyo3rWAzi+fB9qY05Kcl9yDJDqv1d/CHKGWSAwSzs4CgXcwEj
-	EUU762rrJQNw5Wp8NCyl5O/Fpg0d+KFwpT9dd5XuqED2uMDhe84lbjHJ6C973hf4i3SHl/mCLSB
-	JoC3e3k4hVfhHqIbjEvZf6C758ptnwzxHCTOBxc4ZGk7GNFl+dIYhzt6XYzoho43DbZaY+78PrW
-	+np/Mi+EGaGU0PZHd80eBlaXfDwEcLvQHNpfFEe1GIWt60i489lqkPC18ycBnEEcLl5Qyv8xFUK
-	CyaGT1GeGn5Z9a6oWZcNMF1HnF01mTIg==
-X-Received: by 2002:a05:6000:26d0:b0:473:673e:3836 with SMTP id ffacd0b85a97d-47df078bb73mr3861713f8f.28.1783525565920;
-        Wed, 08 Jul 2026 08:46:05 -0700 (PDT)
-Received: from zovi.suse.cz (nat2.prg.suse.com. [195.250.132.146])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-47a9e4d780csm44806847f8f.11.2026.07.08.08.46.03
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 08 Jul 2026 08:46:05 -0700 (PDT)
-From: Petr Pavlu <petr.pavlu@suse.com>
-To: Tony Luck <tony.luck@intel.com>,
-	Borislav Petkov <bp@alien8.de>,
-	Thomas Gleixner <tglx@kernel.org>,
-	Ingo Molnar <mingo@redhat.com>,
-	Dave Hansen <dave.hansen@linux.intel.com>,
-	x86@kernel.org,
-	"H. Peter Anvin" <hpa@zytor.com>,
-	Philipp Reisner <philipp.reisner@linbit.com>,
-	Lars Ellenberg <lars.ellenberg@linbit.com>,
-	=?UTF-8?q?Christoph=20B=C3=B6hmwalder?= <christoph.boehmwalder@linbit.com>,
-	Jens Axboe <axboe@kernel.dk>,
-	Johan Hovold <johan@kernel.org>,
-	Alex Elder <elder@kernel.org>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Michal Januszewski <spock@gentoo.org>,
-	Helge Deller <deller@gmx.de>,
-	Alexander Viro <viro@zeniv.linux.org.uk>,
-	Christian Brauner <brauner@kernel.org>,
-	Jan Kara <jack@suse.cz>,
-	Trond Myklebust <trondmy@kernel.org>,
-	Anna Schumaker <anna@kernel.org>,
-	Chuck Lever <cel@kernel.org>,
-	Jeff Layton <jlayton@kernel.org>,
-	NeilBrown <neil@brown.name>,
-	Olga Kornievskaia <okorniev@redhat.com>,
-	Dai Ngo <Dai.Ngo@oracle.com>,
-	Tom Talpey <tom@talpey.com>,
-	Mark Fasheh <mark@fasheh.com>,
-	Joel Becker <jlbec@evilplan.org>,
-	Joseph Qi <joseph.qi@linux.alibaba.com>,
-	Tejun Heo <tj@kernel.org>,
-	Johannes Weiner <hannes@cmpxchg.org>,
-	=?UTF-8?q?Michal=20Koutn=C3=BD?= <mkoutny@suse.com>,
-	Luis Chamberlain <mcgrof@kernel.org>,
-	Petr Pavlu <petr.pavlu@suse.com>,
-	Daniel Gomez <da.gomez@kernel.org>,
-	Sami Tolvanen <samitolvanen@google.com>,
-	Aaron Tomlin <atomlin@atomlin.com>,
-	Pavel Machek <pavel@kernel.org>,
-	Len Brown <lenb@kernel.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Danilo Krummrich <dakr@kernel.org>,
-	Nikolay Aleksandrov <razor@blackwall.org>,
-	Ido Schimmel <idosch@nvidia.com>,
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gwMsp2PcCz2xWY
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 09 Jul 2026 01:47:08 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1783525625;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=Va2IGzeVOAPTHMa4DaH+yWHwp2fTjUY5mobPTHVuW/k=;
+	b=EliLonLi0CvCsvigYT1KAuERnzawv2ue5HbWxawTRTsHJXk1inZ2VneQOTCZ12+DJWxRpT
+	rfUuL5h0ALiJD9/2erXQrZT+Dxi45hClkO6ChS5EZ5X1VG0xklvnu7cg8RUL/NkDB8Ja0c
+	Vxk+TYR+HtfXtAbDW2lwpVocyj7Q5+0=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1783525626;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=Va2IGzeVOAPTHMa4DaH+yWHwp2fTjUY5mobPTHVuW/k=;
+	b=Jgok/1kNx/7Q2ra9BNYtEN+8Gp01LOs9cTcI0608q08hTSSpaNDJVG4ZfD5Db80OF1LSzw
+	yKlGdpDrbW73VVu99HfmW6v08m8ObdPpJBteYsi42nYQ6xL7AvKaLAjb+fN3L2rifvKZ43
+	rTxWNQ0HXWt4Z1OpIl2v8y/0NgoIx+E=
+Received: from mx-prod-mc-01.mail-002.prod.us-west-2.aws.redhat.com
+ (ec2-54-186-198-63.us-west-2.compute.amazonaws.com [54.186.198.63]) by
+ relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
+ cipher=TLS_AES_256_GCM_SHA384) id us-mta-660-M2lrH6tYOsC5ufvFITf8jA-1; Wed,
+ 08 Jul 2026 11:46:57 -0400
+X-MC-Unique: M2lrH6tYOsC5ufvFITf8jA-1
+X-Mimecast-MFC-AGG-ID: M2lrH6tYOsC5ufvFITf8jA_1783525612
+Received: from mx-prod-int-10.mail-002.prod.us-west-2.aws.redhat.com (mx-prod-int-10.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.95])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mx-prod-mc-01.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id 391341956060;
+	Wed,  8 Jul 2026 15:46:48 +0000 (UTC)
+Received: from fedora (unknown [10.44.33.83])
+	by mx-prod-int-10.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with SMTP id 668DD31D2;
+	Wed,  8 Jul 2026 15:46:27 +0000 (UTC)
+Received: by fedora (nbSMTP-1.00) for uid 1000
+	oleg@redhat.com; Wed,  8 Jul 2026 17:46:47 +0200 (CEST)
+Date: Wed, 8 Jul 2026 17:46:24 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Thomas Gleixner <tglx@kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+	Peter Zijlstra <peterz@infradead.org>,
+	Arnd Bergmann <arnd@arndb.de>,
+	Richard Henderson <richard.henderson@linaro.org>,
+	Vineet Gupta <vgupta@kernel.org>,
+	Russell King <linux@armlinux.org.uk>,
+	Catalin Marinas <catalin.marinas@arm.com>,
+	Will Deacon <will@kernel.org>, Guo Ren <guoren@kernel.org>,
+	Brian Cain <bcain@kernel.org>,
+	Geert Uytterhoeven <geert@linux-m68k.org>,
+	Michal Simek <monstr@monstr.eu>,
+	Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+	Dinh Nguyen <dinguyen@kernel.org>, Helge Deller <deller@gmx.de>,
+	Yoshinori Sato <ysato@users.sourceforge.jp>,
 	"David S. Miller" <davem@davemloft.net>,
-	Eric Dumazet <edumazet@google.com>,
-	Jakub Kicinski <kuba@kernel.org>,
-	Paolo Abeni <pabeni@redhat.com>,
-	Simon Horman <horms@kernel.org>,
-	David Howells <dhowells@redhat.com>,
-	Jarkko Sakkinen <jarkko@kernel.org>,
-	Paul Moore <paul@paul-moore.com>,
-	James Morris <jmorris@namei.org>,
-	"Serge E. Hallyn" <serge@hallyn.com>,
-	Kentaro Takeda <takedakn@nttdata.co.jp>,
-	Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Cc: linux-edac@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	drbd-dev@lists.linux.dev,
-	linux-block@vger.kernel.org,
-	greybus-dev@lists.linaro.org,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-acpi@vger.kernel.org,
-	linux-fbdev@vger.kernel.org,
-	dri-devel@lists.freedesktop.org,
-	linux-fsdevel@vger.kernel.org,
-	linux-nfs@vger.kernel.org,
-	ocfs2-devel@lists.linux.dev,
-	cgroups@vger.kernel.org,
-	linux-modules@vger.kernel.org,
-	linux-pm@vger.kernel.org,
-	driver-core@lists.linux.dev,
-	bridge@lists.linux.dev,
-	netdev@vger.kernel.org,
-	keyrings@vger.kernel.org,
-	linux-security-module@vger.kernel.org
-Subject: [PATCH 2/2] module: Bring includes in linux/kmod.h up to date
-Date: Wed,  8 Jul 2026 17:44:30 +0200
-Message-ID: <20260708154510.6794-3-petr.pavlu@suse.com>
-X-Mailer: git-send-email 2.54.0
-In-Reply-To: <20260708154510.6794-1-petr.pavlu@suse.com>
-References: <20260708154510.6794-1-petr.pavlu@suse.com>
+	Andreas Larsson <andreas@gaisler.com>,
+	Chris Zankel <chris@zankel.net>, linux-alpha@vger.kernel.org,
+	linux-snps-arc@lists.infradead.org,
+	linux-arm-kernel@lists.infradead.org, linux-csky@vger.kernel.org,
+	linux-hexagon@vger.kernel.org, linux-m68k@lists.linux-m68k.org,
+	linux-mips@vger.kernel.org, linux-openrisc@vger.kernel.org,
+	linux-parisc@vger.kernel.org, linux-sh@vger.kernel.org,
+	sparclinux@vger.kernel.org, linux-um@lists.infradead.org,
+	linux-arch@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>,
+	Shrikanth Hegde <sshegde@linux.ibm.com>,
+	linuxppc-dev@lists.ozlabs.org, Kees Cook <kees@kernel.org>,
+	Huacai Chen <chenhuacai@kernel.org>, loongarch@lists.linux.dev,
+	Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
+	linux-riscv@lists.infradead.org,
+	Sven Schnelle <svens@linux.ibm.com>, linux-s390@vger.kernel.org,
+	x86@kernel.org, Mark Rutland <mark.rutland@arm.com>,
+	Jinjie Ruan <ruanjinjie@huawei.com>,
+	Andy Lutomirski <luto@kernel.org>,
+	Richard Weinberger <richard@nod.at>,
+	Michal =?iso-8859-1?Q?Such=E1nek?= <msuchanek@suse.de>,
+	Jonathan Corbet <corbet@lwn.net>, linux-doc@vger.kernel.org
+Subject: Re: [patch 12/18] ptrace, treewide: Rename
+ ptrace_report_syscall_entry() to ptrace_report_syscall_permit_entry()
+Message-ID: <ak5w0KB_x2P4G3rd@redhat.com>
+References: <20260707181957.433213175@kernel.org>
+ <20260707190254.280015701@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -168,49 +123,22 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+In-Reply-To: <20260707190254.280015701@kernel.org>
+X-Scanned-By: MIMEDefang 3.6 on 10.30.177.95
+X-Mimecast-MFC-PROC-ID: 90tpRaHZFtum5SYqvmemJSMOg9FI5Iclsj1SmMstyVM_1783525612
+X-Mimecast-Originator: redhat.com
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Including linux/kmod.h alone results in 1.5 MB of preprocessed output, even
-though it provides only a few functions and macros.
+On 07/07, Thomas Gleixner wrote:
+>
+> The return value of that function is boolean and tells the caller whether
+> to permit the syscall processing or not.
+>
+> Rename the function so the purpose is clear and make the return type bool.
 
-The header currently depends on:
+Just in case,
 
-* __printf() -> linux/compiler_attributes.h,
-* ENOSYS -> linux/errno.h,
-* bool -> linux/types.h.
-
-Include only these files, reducing the preprocessed output to 10 kB.
-
-Signed-off-by: Petr Pavlu <petr.pavlu@suse.com>
----
- include/linux/kmod.h | 12 ++----------
- 1 file changed, 2 insertions(+), 10 deletions(-)
-
-diff --git a/include/linux/kmod.h b/include/linux/kmod.h
-index 9a07c3215389..b9474a62a568 100644
---- a/include/linux/kmod.h
-+++ b/include/linux/kmod.h
-@@ -2,17 +2,9 @@
- #ifndef __LINUX_KMOD_H__
- #define __LINUX_KMOD_H__
- 
--/*
-- *	include/linux/kmod.h
-- */
--
--#include <linux/umh.h>
--#include <linux/gfp.h>
--#include <linux/stddef.h>
-+#include <linux/compiler_attributes.h>
- #include <linux/errno.h>
--#include <linux/compiler.h>
--#include <linux/workqueue.h>
--#include <linux/sysctl.h>
-+#include <linux/types.h>
- 
- #ifdef CONFIG_MODULES
- /* modprobe exit status on success, -ve on error.  Return value
--- 
-2.54.0
+Acked-by: Oleg Nesterov <oleg@redhat.com>
 
 
