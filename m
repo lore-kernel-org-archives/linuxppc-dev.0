@@ -1,82 +1,156 @@
-Return-Path: <linuxppc-dev+bounces-23830-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23831-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6F1BBC43458
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jul 2026 15:34:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0F789C44501
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jul 2026 15:46:09 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gwMZd15s6z2xpn;
-	Thu, 09 Jul 2026 01:34:01 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1034"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783524841;
-	cv=none; b=htv634stMJFBhjtPh4af5yYMX9xBgpUuL2QLxJWtxhwNPKJqiQssSyzECDsyN+EBXuyH36pGMJVDTVVCrjRYVfB7Wh+cmVfJCSyzj3wvTj2SgfWCNODE7V7DHjNJUm23OYY2YOlMS1q76j7ZPMdYvP/vtMsvZNMnilWZUkTQzKgpk6A0UlN0ZkJoXhQ05HSuVsPmKwUepo9YG7l2UmjkYLeQIegLnB5NheUyGO3Z2wuQQc4Fi/LiLiS1ry5JM+4Mc1n2Q1I34bLnc2/OoI7HEySuLVx7m1wVeh8ZnptNcoqDmoWSl0O/IMZFDFOrQHjy04/vt31ws6V//EP+vrO4iA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gwMrb39YLz2y7r;
+	Thu, 09 Jul 2026 01:46:07 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::434"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783525567;
+	cv=none; b=Mi9G2G8cUX0uPpdih7135CEnhwReffOiiCAysBBGfMQ6c8EriWWUWE3QpUcN73QfIaphLqTHd3/Zp1usp7F3HBYe1kKLCD0zijRMcUI0/uz3GyW0odOFrbiXGUTIk7su3j1G4F3u3jkW/RuV01A4XVmeTZF1ERI8G9TsPhbmWDtnYWV1/3Uj5npDw7GwK8hZ6xUkn94Za1tPSj9KPao27id4sx0NCHUUsbmXIWRbJrsz9XJ2ly8Ck/+BeaJ55j8yEvGc5jEKGgR6uruKDws7NhZaQ83CNtwRlucTdC3wcDCUFAUXKe6KWy2fCmOr19qGZGrU+D7oR6JfJ6sH8S1Qkg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1783524841; c=relaxed/relaxed;
-	bh=XDL9stQ6rVAcSA7/i4i+07LdgRqlKw4+pd+ABKQXEmc=;
-	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References; b=NPlNOZBlyp3buq4kt25jkfITXCMgo7v12A6FwpHu4e+IrYsjvlSv/luev1ITSKcMBALKgwKJXaRG6ZoSAPLcTnShpHIre587Bflk3ujbI90PxjyIDX7oJw3dqDxFLtcty1N7NKv3VsrqKr3lDTGrngjFOPki7ush+J3unW+Ksqd/olsjMX13uV8A5GJM6Hm8NXZ9z6pgzXnKOQPuOoDFOHGABWiK3ZjbcegoVTE0CGoOW+1ESiW7LTKVPme8y/MIOhXe6YgqSWHF4eaFAN2wo+Mpo3xAfd0wLVyY/+wJ+F3x59JHnzLbjm2OOfM1KR+bzio0pCkbegRQ7BtLu6/QRw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=Mpd0XPNx; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1034; helo=mail-pj1-x1034.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1783525567; c=relaxed/relaxed;
+	bh=f/mdlbu7kxNAYQt2PwbA0grJPU5KW1EejarCbBPlRO8=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=j/iwN09Ku6A3zT/dRciZWCd53FCqjNGCkQjLfOCsxFomMTPiROy8QdlhlwJwlX3bwtNtTg2+GEyOH9SQA0Rr92yW1/Qr+nHOm9wZb54N5nTGlb8ThX4yw3q2+76MwFUe7MiGFS3gu3vyEfbpV4tCaMeNa+ckXaoP7H9YNl4hAMMQutrwQdKBV8UBUuUJ6Rfh0Y6eoTdQKWemBaaN4u9kORMrMocdyZ4ehLjePX1sYOBUomShhSR4/vHQz/fJUVSp+oUl0tOlLHzKUiz0ADBywsNmJGisz2303LbkFlRNNI6joaztkdev6ccVozzmlCiaPelGXLrgNNHyOHxLUxLzCA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com; dkim=pass (2048-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=google header.b=g9O0k/xH; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::434; helo=mail-wr1-x434.google.com; envelope-from=petr.pavlu@suse.com; receiver=lists.ozlabs.org) smtp.mailfrom=suse.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=Mpd0XPNx;
+	dkim=pass (2048-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=google header.b=g9O0k/xH;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1034; helo=mail-pj1-x1034.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pj1-x1034.google.com (mail-pj1-x1034.google.com [IPv6:2607:f8b0:4864:20::1034])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.com (client-ip=2a00:1450:4864:20::434; helo=mail-wr1-x434.google.com; envelope-from=petr.pavlu@suse.com; receiver=lists.ozlabs.org)
+Received: from mail-wr1-x434.google.com (mail-wr1-x434.google.com [IPv6:2a00:1450:4864:20::434])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gwMZc0SH8z2xll
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 09 Jul 2026 01:33:59 +1000 (AEST)
-Received: by mail-pj1-x1034.google.com with SMTP id 98e67ed59e1d1-381018b9375so927899a91.0
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Jul 2026 08:33:59 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gwMrY3vgnz2xWY
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 09 Jul 2026 01:46:04 +1000 (AEST)
+Received: by mail-wr1-x434.google.com with SMTP id ffacd0b85a97d-47dedd17e12so75412f8f.2
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Jul 2026 08:46:04 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1783524837; x=1784129637; darn=lists.ozlabs.org;
-        h=references:message-id:date:in-reply-to:subject:cc:to:from:from:to
-         :cc:subject:date:message-id:reply-to:content-type;
-        bh=XDL9stQ6rVAcSA7/i4i+07LdgRqlKw4+pd+ABKQXEmc=;
-        b=Mpd0XPNxqrhnCP1tYekUBzHYLnvNvSlKic/Q93vgRr3ZFUv2BKfVuw0ZgYIpcesyRf
-         i8aUJ3hMys5CSjJSbeQP/Y0uRZiK75RSZm+94If6syzjDMOsVbC9uCeueW3kpPJBADif
-         4zz3uO8zYlSwg2Paq1cQxltIzp28EiItdwqD820XTTh0yJ3eblyIcSnXir/eR49jttkQ
-         gknWUJgphkzWUDuVYUEmcyIydFNwZ8ac1FvzOtHzLb8Fi2d/TY2AWYHNQJJtmhda7T1e
-         f01RNqFKszA2Nkrq7PA6zV5zwR/Q5iOTAcr/cwZ4VY3ZQbup6JtBhiHU+ZlSob89VVfX
-         Chkg==
+        d=suse.com; s=google; t=1783525561; x=1784130361; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=f/mdlbu7kxNAYQt2PwbA0grJPU5KW1EejarCbBPlRO8=;
+        b=g9O0k/xHditGfell4XPLiP/QsA61TMkXPA7G4GhWG/AVTDxFLrq6CL3kilD2hR6RxG
+         IR/myII0C13LDkkDn4nGOd+MOuYUGe9aSeqrnNVx2fKZhdV5JLzu2CiwuvnbM/QH5kcO
+         YbmSCt9QQB00BMukRtaUyrrPgl+OGVLdqlR/WwBBLSktGC8CpuWNKu29Nn0BDdlzes9W
+         O7vw6EZQSX8HHQevBiIl7ZmVCw0rogev3NabTsWBeZrp2y5DCy5wx7YHOY+gV+4/JSbI
+         U4kLLKuDLL0lsw1NgzxHbrrHDK+QDHJGyHKSqsS8LPA3hdyLR+Ai1rkApcPbGGfKNht3
+         auXg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1783524837; x=1784129637;
-        h=references:message-id:date:in-reply-to:subject:cc:to:from:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=XDL9stQ6rVAcSA7/i4i+07LdgRqlKw4+pd+ABKQXEmc=;
-        b=DrqIFMlsF7GlDNZEdpTSpgeXdKuDu95IEyOTqPh70TgRQ/ebAEkgvZnXSO2supQU+y
-         fjnXNLrX1Yytazc3a1GVHYmMHwJwJHwSLAKIptPm/w5DJ5XtnialTw6pD7YybrNl1UqL
-         p2qI6AKnkXB7cO/rhes0lDLZO9B1kG4VVyzhW5aDvC563aHNs1uxC54wm5QLiCwq1KXq
-         fEsaaZxr0h6KCuFNd+F4gwrZUoym1ndArSJzZHburhazOiomKTX8h46FAOFXj4g8NHXe
-         w06SEGMiDn9BVQsY7BwOcAJpthh9hitLtK8BPY9KCnMrBg3qwS1qNFiVS6pkam5ck3m3
-         21cg==
-X-Forwarded-Encrypted: i=1; AHgh+Rra3yfB731GDnyN3Ou9ZqGY4g31M96MGYVjcRvTNoUbDTqZ3iMZ5Bdr08QiHfvuASEkaf9kiG0gg7xliaI=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yzut8Ms0QdnADNz9RkfEZRloNGMK+N06e09GdVhlEXZx+mUd2oz
-	vM1nEIXnq8I5QcWk90s01j1neuoAVpkkeVdaA4RhNdX72k53eCDFIeKb
-X-Gm-Gg: AfdE7ck5pvyTh+zv6PQNRf5GUHPGmUXFwh9ABPNXxvDL/PMueRjmWXh+KE43MGdH+3z
-	o4it2qaI48iLfaAIlTxa0nFu+2MBoIyoucSz87xqw+AXi9mLx3ToKjW9Cb9G7HSDaNFD2s4V6bD
-	VG12jxirSemticDpimw8oc1mCgj91gk7li+4U4dZVFZT0/OCGeTntMr1XkLGi90duAtga+1TeF6
-	V6ShOV3AmSM7ujOSwUo0LXhIK23TxrknUCm23v2M3fAE8/xVTOlBKlnbxCzYJjHGuOkkiJPU6iU
-	Tfy6ngK/CnyC92PfhRf0Vr6ePdZTmAeyh04hxEFqETLljpbKV/JECIFR+TVMSDtj7HDzkBs7liE
-	kcQnAXhly8EZrX6xdZYr9FeauuAObIKtaUECsm2EENeTq7swjoZhMUM5cGT0VqrKZKCO9PCCyWn
-	eoznZXzF5B2Oo=
-X-Received: by 2002:a05:6a20:158e:b0:3bf:ee42:195 with SMTP id adf61e73a8af0-3c0bc90146amr3718965637.11.1783524837094;
-        Wed, 08 Jul 2026 08:33:57 -0700 (PDT)
-Received: from pve-server ([49.205.216.49])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-31174a8f521sm20950984eec.22.2026.07.08.08.33.53
+        d=1e100.net; s=20251104; t=1783525561; x=1784130361;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=f/mdlbu7kxNAYQt2PwbA0grJPU5KW1EejarCbBPlRO8=;
+        b=O2+zoTzGHSSgxdWGBV4hjQ2KywzqoduAMTxi1X1WypYQwYU1La/TdpFhI0enaP2iWt
+         CnU/hJCNVccSLh3tB1NJFKDuHR0vZDHpgYTqOyfXbZN5TP6I9uGgIAVcFuC+6nPueNzw
+         1W1Xfgm2Uasq8qSkVbgMqv3mZbDKy29+3xix3YN877z4vICb/qapkHXekpWS3ALjkx5k
+         FHpTDpmNEgyKk8uNEVDNrsXw52F1mBMu6iM2AU+O3slMUZcT0hkOnA3+FzhAyUccekaq
+         rqgtwdvz22q6ZUHISJpeAeWltSlov+MBA/cRpFnulS2YTzcrsRdAyuyNQjXfFEhTxBio
+         vnwA==
+X-Forwarded-Encrypted: i=1; AHgh+RpkEFFhdXfLrEVLyaQVMhvDNm2Vny/8QLQDMDN2zpE4/2yxw1JbLYCOYQqk/1LQkPNw/WhhC1g6hgMPefI=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YyrVlDAeyTHOyK2t9apqE/s9vieMVcvyPzTbYgBGXpffPPJlL4g
+	wMnSv4pUcV8LszgkenKNfpg+sEN/waeUd/xcq0Hc6JyDyR2fFDpbif3RCRaTr5je76Q=
+X-Gm-Gg: AfdE7clrn75dlnipQd6xnWDBMDRh0vwk/QvXDsUb3FOxiu/n/48M3zH+0df4m5wj2Zv
+	h99Qi0jKh1yP9YfyURalc6cokd0CXKGEEiDGADZxyTRfTOKu3tK+OUc1utZIpsv30HWxYS9UhHN
+	lxsH6BLhX6oFTAN+knxhcEl2tNrQ5lba8oawFt25adhVVyyGSUCAkr5ZES4TcSziO5t+tqUlA79
+	AElN5kYkaG+vadFf+y5ohNMT6HFDG26n5LNhmoUR6kwhm3VMv3W3fcKpOH9qlu0zYA071Kv/z/h
+	udac1BkdOIC0Xy8dSF0WThE74evnw3hb7fq7RF5cywW/UUz8C3DP01cvJJ4Am8zLM9mnh65LevN
+	Ed1tl+eTxOKBWOEf5SS2Qy+YJH5PP4X0vlhAUikCF657AihZSMbf/C6g3wQze4Sq7oJDrWAQzka
+	OTo5GrTS042WExrYs7SxItYZ4vJtWrlB1Z0swPSDoZ
+X-Received: by 2002:a05:6000:4304:b0:46d:55a5:8ec5 with SMTP id ffacd0b85a97d-47df078bbffmr3378920f8f.33.1783525561596;
+        Wed, 08 Jul 2026 08:46:01 -0700 (PDT)
+Received: from zovi.suse.cz (nat2.prg.suse.com. [195.250.132.146])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-47a9e4d780csm44806847f8f.11.2026.07.08.08.45.59
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 08 Jul 2026 08:33:56 -0700 (PDT)
-From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-To: Shivaprasad G Bhat <sbhat@linux.ibm.com>, maddy@linux.ibm.com, linuxppc-dev@lists.ozlabs.org
-Cc: mpe@ellerman.id.au, npiggin@gmail.com, chleroy@kernel.org, sbhat@linux.ibm.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] powerpc/eeh: Fix recursive locking on devices without EEH sensitive driver
-In-Reply-To: <177725885065.13410.12259326756082237538.stgit@linux.ibm.com>
-Date: Wed, 08 Jul 2026 20:36:55 +0530
-Message-ID: <h5m9wmeo.ritesh.list@gmail.com>
-References: <177725885065.13410.12259326756082237538.stgit@linux.ibm.com>
+        Wed, 08 Jul 2026 08:46:01 -0700 (PDT)
+From: Petr Pavlu <petr.pavlu@suse.com>
+To: Tony Luck <tony.luck@intel.com>,
+	Borislav Petkov <bp@alien8.de>,
+	Thomas Gleixner <tglx@kernel.org>,
+	Ingo Molnar <mingo@redhat.com>,
+	Dave Hansen <dave.hansen@linux.intel.com>,
+	x86@kernel.org,
+	"H. Peter Anvin" <hpa@zytor.com>,
+	Philipp Reisner <philipp.reisner@linbit.com>,
+	Lars Ellenberg <lars.ellenberg@linbit.com>,
+	=?UTF-8?q?Christoph=20B=C3=B6hmwalder?= <christoph.boehmwalder@linbit.com>,
+	Jens Axboe <axboe@kernel.dk>,
+	Johan Hovold <johan@kernel.org>,
+	Alex Elder <elder@kernel.org>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Michal Januszewski <spock@gentoo.org>,
+	Helge Deller <deller@gmx.de>,
+	Alexander Viro <viro@zeniv.linux.org.uk>,
+	Christian Brauner <brauner@kernel.org>,
+	Jan Kara <jack@suse.cz>,
+	Trond Myklebust <trondmy@kernel.org>,
+	Anna Schumaker <anna@kernel.org>,
+	Chuck Lever <cel@kernel.org>,
+	Jeff Layton <jlayton@kernel.org>,
+	NeilBrown <neil@brown.name>,
+	Olga Kornievskaia <okorniev@redhat.com>,
+	Dai Ngo <Dai.Ngo@oracle.com>,
+	Tom Talpey <tom@talpey.com>,
+	Mark Fasheh <mark@fasheh.com>,
+	Joel Becker <jlbec@evilplan.org>,
+	Joseph Qi <joseph.qi@linux.alibaba.com>,
+	Tejun Heo <tj@kernel.org>,
+	Johannes Weiner <hannes@cmpxchg.org>,
+	=?UTF-8?q?Michal=20Koutn=C3=BD?= <mkoutny@suse.com>,
+	Luis Chamberlain <mcgrof@kernel.org>,
+	Petr Pavlu <petr.pavlu@suse.com>,
+	Daniel Gomez <da.gomez@kernel.org>,
+	Sami Tolvanen <samitolvanen@google.com>,
+	Aaron Tomlin <atomlin@atomlin.com>,
+	Pavel Machek <pavel@kernel.org>,
+	Len Brown <lenb@kernel.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Danilo Krummrich <dakr@kernel.org>,
+	Nikolay Aleksandrov <razor@blackwall.org>,
+	Ido Schimmel <idosch@nvidia.com>,
+	"David S. Miller" <davem@davemloft.net>,
+	Eric Dumazet <edumazet@google.com>,
+	Jakub Kicinski <kuba@kernel.org>,
+	Paolo Abeni <pabeni@redhat.com>,
+	Simon Horman <horms@kernel.org>,
+	David Howells <dhowells@redhat.com>,
+	Jarkko Sakkinen <jarkko@kernel.org>,
+	Paul Moore <paul@paul-moore.com>,
+	James Morris <jmorris@namei.org>,
+	"Serge E. Hallyn" <serge@hallyn.com>,
+	Kentaro Takeda <takedakn@nttdata.co.jp>,
+	Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+Cc: linux-edac@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	drbd-dev@lists.linux.dev,
+	linux-block@vger.kernel.org,
+	greybus-dev@lists.linaro.org,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-acpi@vger.kernel.org,
+	linux-fbdev@vger.kernel.org,
+	dri-devel@lists.freedesktop.org,
+	linux-fsdevel@vger.kernel.org,
+	linux-nfs@vger.kernel.org,
+	ocfs2-devel@lists.linux.dev,
+	cgroups@vger.kernel.org,
+	linux-modules@vger.kernel.org,
+	linux-pm@vger.kernel.org,
+	driver-core@lists.linux.dev,
+	bridge@lists.linux.dev,
+	netdev@vger.kernel.org,
+	keyrings@vger.kernel.org,
+	linux-security-module@vger.kernel.org
+Subject: [PATCH 0/2] Bring includes in linux/kmod.h up to date
+Date: Wed,  8 Jul 2026 17:44:28 +0200
+Message-ID: <20260708154510.6794-1-petr.pavlu@suse.com>
+X-Mailer: git-send-email 2.54.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -89,95 +163,58 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 
-Shivaprasad G Bhat <sbhat@linux.ibm.com> writes:
+The usermode helper declarations were previously provided by linux/kmod.h
+but commit c1f3fa2a4fde ("kmod: split off umh headers into its own file")
+moved them to linux/umh.h in 2017. Add explicit includes of linux/umh.h to
+files that use usermode helpers and remove linux/kmod.h where it is no
+longer needed.
 
-hey, sorry looks like this fall through the cracks.
+Then clean up linux/kmod.h so that it includes only the headers that it
+actually requires, importantly removing the compat linux/umh.h include.
 
-> The commit 1010b4c012b0 ("powerpc/eeh: Make EEH driver device hotplug
-> safe") refactored the EEH code such that the pci_rescan_remove_lock is
-> held at the beginning of eeh_handle_normal_event() and the
-> eeh_reset_device() is called with that lock being held. Looks like the
-> commit missed to remove the existing lock/unlock inside eeh_rmv_device()
-> which is no longer necessary. This is causing the eehd to hang on the
-> lock which it actually holds when that code path is taken.
->
-> [<0>] 0xc00000011c78f870
-> [<0>] __switch_to+0xfc/0x1a0
-> [<0>] pci_lock_rescan_remove+0x30/0x44
-> [<0>] eeh_rmv_device+0x290/0x2e0
-> [<0>] eeh_pe_dev_traverse+0x80/0x130
-> [<0>] eeh_reset_device+0xcc/0x23c
-> [<0>] eeh_handle_normal_event+0x830/0xa80
-> [<0>] eeh_event_handler+0xf8/0x190
-> [<0>] kthread+0x194/0x1b0
-> [<0>] start_kernel_thread+0x14/0x18
->
+Apologies for the wide distribution.
 
-yup. I see eeh_handle_normal_event(), already holds this lock,
-pci_lock_rescan_remove().
+This cleanup is motivated by trying to reduce the preprocessed size of
+linux/module.h, which includes linux/kmod.h. The linux/module.h header is
+included by every *.mod.c file to provide `struct module` and other related
+definitions, so it should avoid pulling in unnecessary dependencies. Note
+that this series doesn't immediately improve the situation, since most of
+the files included by linux/kmod.h are, for now, also included by
+linux/module.h through other paths.
 
-And eeh_rmv_device() only ever gets called from
+Petr Pavlu (2):
+  umh, treewide: Explicitly include linux/umh.h where needed
+  module: Bring includes in linux/kmod.h up to date
 
-eeh_handle_normal_event()
-  eeh_reset_device()
-    eeh_pe_dev_traverse(pe, eeh_rmv_device,...)
-
-OR
-
-eeh_handle_normal_event()),
-    eeh_pe_dev_traverse(pe, eeh_rmv_device,...)
-
-In both the paths, eeh_handle_normal_event() holds this lock. Although I
-am not an expert in eeh area - but looking at the relevant code paths,
-the race looks real and this patch fixes that. So feel free to add: 
-
-Reviewed-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-
-
-I wonder whether clang context analyzer [1] could catch this. This is a
-good candidate to try that out.
-
-[1]: https://lore.kernel.org/lkml/20251219154418.3592607-1-elver@google.com/
+ arch/x86/kernel/cpu/mce/dev-mcelog.c |  2 +-
+ drivers/block/drbd/drbd_nl.c         |  1 +
+ drivers/greybus/svc_watchdog.c       |  1 +
+ drivers/macintosh/windfarm_core.c    |  1 +
+ drivers/pnp/pnpbios/core.c           |  2 +-
+ drivers/video/fbdev/uvesafb.c        |  1 +
+ fs/coredump.c                        |  2 +-
+ fs/nfs/cache_lib.c                   |  2 +-
+ fs/nfsd/nfs4layouts.c                |  2 +-
+ fs/nfsd/nfs4recover.c                |  1 +
+ fs/ocfs2/stackglue.c                 |  1 +
+ include/linux/kmod.h                 | 12 ++----------
+ kernel/cgroup/cgroup-v1.c            |  1 +
+ kernel/module/kmod.c                 |  1 +
+ kernel/power/process.c               |  2 +-
+ kernel/reboot.c                      |  2 +-
+ kernel/umh.c                         |  2 +-
+ lib/kobject_uevent.c                 |  2 +-
+ net/bridge/br_stp_if.c               |  2 +-
+ security/keys/request_key.c          |  2 +-
+ security/tomoyo/common.h             |  2 +-
+ 21 files changed, 22 insertions(+), 22 deletions(-)
 
 
-> The issue is seen for cases where the errors are detected on the PHB
-> directly AND|OR for devices where the driver error_detected() returns
-> PCI_ERS_RESULT_NEED_RESET, and driver being not EEH sensitive(i.e no
-> error handlers like slot_reset(), resume() etc defined).
->
+base-commit: dc59e4fea9d83f03bad6bddf3fa2e52491777482
+-- 
+2.54.0
 
-I am just wondering how did we catch this issue and whether we have some
-ways to test eeh scenarios. Although the patch looks good to me.
-
-
-> Fixes: 1010b4c012b0 ("powerpc/eeh: Make EEH driver device hotplug safe")
-
-Cc: stable@vger.kernel.org 
-
-Let's add the above tag so that this also goes to stable trees.  Since
-it's been sometime since this was last posted - maybe we should rebase
-and resend this with the above tag.
-
--ritesh
-
-> Signed-off-by: Shivaprasad G Bhat <sbhat@linux.ibm.com>
-> ---
->  arch/powerpc/kernel/eeh_driver.c |    2 --
->  1 file changed, 2 deletions(-)
->
-> diff --git a/arch/powerpc/kernel/eeh_driver.c b/arch/powerpc/kernel/eeh_driver.c
-> index 028f69158532..d64cce17a4e0 100644
-> --- a/arch/powerpc/kernel/eeh_driver.c
-> +++ b/arch/powerpc/kernel/eeh_driver.c
-> @@ -533,9 +533,7 @@ static void eeh_rmv_device(struct eeh_dev *edev, void *userdata)
->  		if (rmv_data)
->  			list_add(&edev->rmv_entry, &rmv_data->removed_vf_list);
->  	} else {
-> -		pci_lock_rescan_remove();
->  		pci_stop_and_remove_bus_device(dev);
-> -		pci_unlock_rescan_remove();
->  	}
->  }
->  
 
