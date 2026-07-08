@@ -1,82 +1,87 @@
-Return-Path: <linuxppc-dev+bounces-23827-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23828-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0FAB4C43458
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jul 2026 14:34:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B03D2C44501
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jul 2026 15:09:25 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gwLG340fZz3bwk;
-	Thu, 09 Jul 2026 00:34:35 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783521275;
-	cv=none; b=kiwgOKjB55hKnMSVp81sfstBjBSXaUkVQi4q1PwblAdkfgHPGCC2fDG/omWKU7A6DAUyB/y1/1zMBJEjb9SgH75d09rEMlNfyRzLDn0bq+Bmq5wKT6T0rMkCpQiEWx0pWBw+gkmFP5MDdolldzrC3pM/JKcebXR3nMpsabY7/CPzANJsVJwaFjvsUVxcwDG0vxLqEjugh6uzJNk+UO0c3xFzmxz1U7Nz70yHsR7MUvjBuLf0G6ApKn22Ylut/FFZ4YuhhpaNyO9SXBM6dRBzuzFk5XzNEjrTeJvpPQUcrJA2tm8/Rf9gpYwKoiPWkzfw4tAFkCPsLA0oCw7v+BPM0g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gwM2D2QGgz2xpn;
+	Thu, 09 Jul 2026 01:09:24 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783523364;
+	cv=none; b=Tk4N4bfbmc5H/YoeHRW2qprWQU/VMFDJIjsMk+9DeIMg3TsC+fFLySoNcbglEUCgVMd7+QQJeRGmf/mWFs8IpvNts2X5IawmbboZBvCCaEB9rtaYSz5lQuZu1ApJgRfl4w6sQ5QC8JggzfVYpK3m7qq8Anq/wwT/i7IORMZXBEG7bMixgKuIDVxylhxKqg9XVPQdW19vopufyT/iMRTiFHGByid8nmOhgC0nIP+LEsEWzvrGTNapDBLG3oVnwQjWebdw8CFUS5S2wgpKXGPst46pArka/1aama+b1Bq9Au9Lg0uf2rgNCoP2kNSGtfAyvi8FQ29M7XVmU7Fmz0JalA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1783521275; c=relaxed/relaxed;
-	bh=XB34Xdn5iqtQB9PeJvhCld93eLuEO+a1k24nWxHqs0Y=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=TqY0lloo6n9N1F4cMdEPkTEWzesfAgEcgYZOfnIQs8h7Uzj/8jz+SMgqoOFPiM3Y67RawcT0FvxxBLHIimFs3foa0Xqlq9zJIX8Ul1MmFjiIT8sdAXDMKLQ2155kJYI0LuETuXRpe7L8b93Cw6JxVBCj5OKfMgaa0k+37aKkmjW+YX1C6s8r4s1VZFy+vQXtSbzyzNkqPBGKTluCX+Na7i4mlPL/WWPIKf2nU/En0N7gZP0yS4CcPH1PboOqN8DKkl4lX3IR3j3u2UA9qMWNeNVKQU4d+PRR2YDaA3/wARZ5PlpoPTNknH/3XkoW+4u65gmlqOA2SvlprMDB/3aWNQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=n4YHT3mT; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1783523364; c=relaxed/relaxed;
+	bh=wn/P+Gm3OCkFQ+7GJs+RVSAKPOX9EEcvT9NnSy5NxSA=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
+	 MIME-Version:Content-Type; b=C+qw5qNyM2sGcHlbzV7e7WVi9a3omFo9K1oU7WcYqR3VQi7Oa2j4OZXU6IkR3zWqFdsQmH8fIfufgzEQ5A17ABQM2YubWwB8FvL62Zkr4Fh97yo6Q56P9t3iAErdlCyjnfY0R8M7KIlpbrx8IqgzM7c9F3u6RFgwqufClB/vWE4aSbvIRnFm8dsEuXOLE30Wx4+qLjj3N88i2k6hYAlSePhb5UDKnIHTpnKdnDib/YTVBeYnvUhqxq8ntMBjK7IjhohMjCvCZZhpfQFkkoUUQOkA+SeNB+X5/BdWIY/DO/B5A8q9ors0IjLUAHis9S4o4hLTdo55BSLdA2H/wGH6jg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=duiLudFV; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=aneesh.kumar@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=n4YHT3mT;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=duiLudFV;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=aneesh.kumar@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gwLG265YXz2xpn
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 09 Jul 2026 00:34:34 +1000 (AEST)
-Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 668CIRhx3748310;
-	Wed, 8 Jul 2026 14:34:29 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=pp1; bh=XB34Xdn5iqtQB9PeJ
-	vhCld93eLuEO+a1k24nWxHqs0Y=; b=n4YHT3mTB6kiwfjOmvajYjlc7RMwTCzAe
-	xTJjNzciUh1nbMJ7BMBYmVOQ2MoiKt8/JsAocnXVfcH49o3wR/qqeWzOYWNJM5vy
-	F9l2zd0hQOPPMHrmaKgfY3RamBdp5jZ+4aAVMzFmIggRzWZZDwM1QiVet3ykrwGM
-	qx6UaQJvtPf1+1oXsRMWIe163opF79PE5i5SnIJlgbOIDFzNHQKD6UbBcPisCH5C
-	ZZdAvpaJsJvh6gD+TvyIM6lZ2p6o6YsV4RD/8Tn0Am5Nrp9jq7+HKyEKG9zShIvr
-	GW++fcVnpztionjI8YFBOEl0iI7Upv6cmHd9RTj9ksP7RaQMpT2CA==
-Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4f6suqvjt8-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 08 Jul 2026 14:34:28 +0000 (GMT)
-Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma11.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 668EJasW023455;
-	Wed, 8 Jul 2026 14:34:27 GMT
-Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
-	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4f7f6y83v0-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 08 Jul 2026 14:34:27 +0000 (GMT)
-Received: from smtpav04.fra02v.mail.ibm.com (smtpav04.fra02v.mail.ibm.com [10.20.54.103])
-	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 668EYNlI25952888
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 8 Jul 2026 14:34:23 GMT
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id C025B20043;
-	Wed,  8 Jul 2026 14:34:23 +0000 (GMT)
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id AE72D20040;
-	Wed,  8 Jul 2026 14:34:20 +0000 (GMT)
-Received: from li-4f5ba44c-27d4-11b2-a85c-a08f5b49eada.bl1-in.ibm.com (unknown [9.123.14.142])
-	by smtpav04.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Wed,  8 Jul 2026 14:34:20 +0000 (GMT)
-From: Sourabh Jain <sourabhjain@linux.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, maddy@linux.ibm.com, mpe@ellerman.id.au
-Cc: npiggin@gmail.com, chleroy@kernel.org, ritesh.list@gmail.com,
-        shivangu@linux.ibm.com, hbathini@linux.ibm.com, mahesh@linux.ibm.com,
-        adityag@linux.ibm.com, venkat88@linux.ibm.com,
-        Sourabh Jain <sourabhjain@linux.ibm.com>
-Subject: [PATCH v2 4/4] powerpc/kdump: add support for high crashkernel reservation
-Date: Wed,  8 Jul 2026 20:03:57 +0530
-Message-ID: <20260708143357.673251-5-sourabhjain@linux.ibm.com>
-X-Mailer: git-send-email 2.52.0
-In-Reply-To: <20260708143357.673251-1-sourabhjain@linux.ibm.com>
-References: <20260708143357.673251-1-sourabhjain@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gwM2B5dyFz2xll
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 09 Jul 2026 01:09:22 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id E59476001D;
+	Wed,  8 Jul 2026 15:09:19 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id CF6EC1F00A3A;
+	Wed,  8 Jul 2026 15:09:08 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1783523359;
+	bh=wn/P+Gm3OCkFQ+7GJs+RVSAKPOX9EEcvT9NnSy5NxSA=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date;
+	b=duiLudFVLeL3G/NPJkeMVZRUX3Un092z5jKJpfKTnO8neikVecyIet9W5yX1f7N3L
+	 N30FCWXE636kQaVba6y875r6A92xlvt3rFwIioTlhAYvRe//MWhTEzSiWTKpdxQ7bC
+	 p/6uB0lHuurI0YmHmTW9nKtWq4Pnk27mmoNKyo9MzwT0aGoo8BAtA2bTEhKgFguV7X
+	 lWPpbo+vSx6VDUn1AsA4EK4/LYf18sUEPE3QNQW2ooxE57bXLbK2gox2Yp0MHsw7/q
+	 lDehH0I1is4t3Gv2zNLePQLDLL3AqGZGDsvcvoyulnB4Kz8qjcUvusH1pBWfs5ull2
+	 0KQ5oOZsnESkg==
+X-Mailer: emacs 30.2 (via feedmail 11-beta-1 I)
+From: Aneesh Kumar K.V <aneesh.kumar@kernel.org>
+To: Catalin Marinas <catalin.marinas@arm.com>
+Cc: iommu@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
+	linux-kernel@vger.kernel.org, linux-coco@lists.linux.dev,
+	Robin Murphy <robin.murphy@arm.com>,
+	Marek Szyprowski <m.szyprowski@samsung.com>,
+	Will Deacon <will@kernel.org>, Marc Zyngier <maz@kernel.org>,
+	Steven Price <steven.price@arm.com>,
+	Suzuki K Poulose <Suzuki.Poulose@arm.com>,
+	Jiri Pirko <jiri@resnulli.us>,
+	Jason Gunthorpe <jgg@ziepe.ca>,
+	Mostafa Saleh <smostafa@google.com>,
+	Petr Tesarik <ptesarik@suse.com>,
+	Alexey Kardashevskiy <aik@amd.com>,
+	Dan Williams <dan.j.williams@intel.com>,
+	Xu Yilun <yilun.xu@linux.intel.com>,
+	linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	Alexander Gordeev <agordeev@linux.ibm.com>,
+	Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
+	Heiko Carstens <hca@linux.ibm.com>,
+	Vasily Gorbik <gor@linux.ibm.com>,
+	Christian Borntraeger <borntraeger@linux.ibm.com>,
+	Sven Schnelle <svens@linux.ibm.com>, x86@kernel.org,
+	Jiri Pirko <jiri@nvidia.com>,
+	Michael Kelley <mhklinux@outlook.com>
+Subject: Re: [PATCH v7 16/22] dma-direct: make dma_direct_map_phys() honor
+ DMA_ATTR_CC_SHARED
+In-Reply-To: <ak42F240d-53QeFN@arm.com>
+References: <20260701054926.825925-1-aneesh.kumar@kernel.org>
+ <20260701054926.825925-17-aneesh.kumar@kernel.org>
+ <ak42F240d-53QeFN@arm.com>
+Date: Wed, 08 Jul 2026 20:39:04 +0530
+Message-ID: <yq5ase5th627.fsf@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -90,215 +95,511 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNzA4MDE0MCBTYWx0ZWRfX/d6+mTBGe+H7
- V7dKK0/IPgfIgN+fu2mDK16B+dhR0NuFUPTT68ItrnhXqvnzo5au3RF9Eu6OacW488+ncompt4R
- 62qnaKOXQTFIH7V0L1KQ0r9w3LtGPjk=
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzA4MDE0MCBTYWx0ZWRfX/OC34SRBpADO
- Foj+rK9DqJaMvGn3tL0p/TtBOmomjTTgukWLgwkkgmgUsqq2mjYbTVw1NsCMWVYi7SLAYYv/v0q
- IiS0JPZyaL5yoU7ysuV8ee465b43X59SShWdHagyq1WjigNVaoTorR9sm8nfXuPf0JCcswiN63g
- oNiSh3qcuycjjetZy+RFJlcr0hnhWCAYpvFtbJzGQD8T7Nh1zHmUaAEUuGOd5FpruQ22bOZYUfQ
- ZnQCyBjXj+rLiJAzRO8xyQuIHAEJGWz33nfpYGZm68YYFECQnJAoRaEOUfsW63vwXIvupJU/iBh
- BFwgbHUJ7jfZetrIrjQfVd+Ektmm8ZVi3qgvCqPVvbxoky9QXQV2ODjhr/A7sdiERxJ1+zjXiJ1
- IxpFBibDtUBZ1t8XPwVt8rw+OvsKr9ROMXw2JX1UH5LdKspIoGPiuRO3rtMRdEBFeTCIpqT0VIw
- pmngz0RziG4GEDq115Q==
-X-Proofpoint-GUID: tTMRUBMU-aYWuEvQXtE5ZjFtkvyqnW1E
-X-Authority-Analysis: v=2.4 cv=Oot/DS/t c=1 sm=1 tr=0 ts=6a4e5ff4 cx=c_pps
- a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
- a=RAioF0-LDSMA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=uAbxVGIbfxUO_5tXvNgY:22 a=VnNF1IyMAAAA:8 a=xxU2pcodL4BFR_vyWlEA:9
- a=O8hF6Hzn-FEA:10
-X-Proofpoint-ORIG-GUID: zvMA0bYzcqjr9NhLn1lj7rJqVkVsveZs
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-07-08_02,2026-07-08_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- bulkscore=0 lowpriorityscore=0 clxscore=1015 impostorscore=0 phishscore=0
- malwarescore=0 suspectscore=0 spamscore=0 adultscore=0 priorityscore=1501
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607080140
+Content-Type: text/plain
 
-With this changes included crashkernel=xxM,high will be supported on
-powerpc. This allow user to allocated crashkernel memory on higer memory
-region and keeping the low memory allocation minimal.
+Catalin Marinas <catalin.marinas@arm.com> writes:
 
-The low memory reservation is by default set to 64 MB and it is reserved
-below RTAS_INSTANTIATE_MAX (1G) to make sure rtas instantiation work
-properly.
+> On Wed, Jul 01, 2026 at 11:19:20AM +0530, Aneesh Kumar K.V (Arm) wrote:
+>> diff --git a/arch/arm64/mm/init.c b/arch/arm64/mm/init.c
+>> index 97987f850a33..acf67c7064db 100644
+>> --- a/arch/arm64/mm/init.c
+>> +++ b/arch/arm64/mm/init.c
+>> @@ -338,10 +338,8 @@ void __init arch_mm_preinit(void)
+>>  	unsigned int flags = SWIOTLB_VERBOSE;
+>>  	bool swiotlb = max_pfn > PFN_DOWN(arm64_dma_phys_limit);
+>>  
+>> -	if (is_realm_world()) {
+>> +	if (is_realm_world())
+>>  		swiotlb = true;
+>> -		flags |= SWIOTLB_FORCE;
+>> -	}
+>
+> For this part:
+>
+> Reviewed-by: Catalin Marinas <catalin.marinas@arm.com>
+>
+>> diff --git a/kernel/dma/direct.h b/kernel/dma/direct.h
+>> index e05dc7649366..f3fc28f352ba 100644
+>> --- a/kernel/dma/direct.h
+>> +++ b/kernel/dma/direct.h
+>> @@ -88,37 +88,40 @@ static inline dma_addr_t dma_direct_map_phys(struct device *dev,
+>>  {
+>>  	dma_addr_t dma_addr;
+>>  
+>> +	/*
+>> +	 * For a device requiring unencrypted DMA, MMIO memory is treated
+>> +	 * as shared by default.
+>> +	 */
+>> +	if (force_dma_unencrypted(dev) && (attrs & DMA_ATTR_MMIO))
+>> +		attrs |= DMA_ATTR_CC_SHARED;
+>> +
+>>  	if (is_swiotlb_force_bounce(dev)) {
+>> -		if (!(attrs & DMA_ATTR_CC_SHARED)) {
+>> -			if (attrs & (DMA_ATTR_MMIO | DMA_ATTR_REQUIRE_COHERENT))
+>> -				return DMA_MAPPING_ERROR;
+>> +		if (attrs & (DMA_ATTR_MMIO | DMA_ATTR_REQUIRE_COHERENT))
+>> +			return DMA_MAPPING_ERROR;
+>>  
+>> -			return swiotlb_map(dev, phys, size, dir, attrs);
+>> -		}
+>> -	} else if (attrs & DMA_ATTR_CC_SHARED) {
+>> -		return DMA_MAPPING_ERROR;
+>> +		return swiotlb_map(dev, phys, size, dir, attrs);
+>>  	}
+>>  
+>> -	if (attrs & DMA_ATTR_MMIO) {
+>> -		dma_addr = phys;
+>> -		if (unlikely(!dma_capable(dev, dma_addr, size, false, attrs)))
+>> -			goto err_overflow;
+>> -	} else if (attrs & DMA_ATTR_CC_SHARED) {
+>> +	if (attrs & DMA_ATTR_CC_SHARED)
+>>  		dma_addr = phys_to_dma_unencrypted(dev, phys);
+>> +	else
+>> +		dma_addr = phys_to_dma_encrypted(dev, phys);
+>
+> For AMD/SME, on host with memory encryption we now end up setting the C
+> bit for DMA_ATTR_MMIO. This is fine for RAM but not sure whether
+> some other MMIO bus understands this attribute. Maybe we should stick to
+> something like __phys_to_dma() for the !CC_SHARED && MMIO path. Or,
+> since this is not universally defined, just use the old dma_addr = phys
+> if MMIO and ignore any unlikely DMA offsets.
+>
+> In the other case, for an arm CCA guest, if the MMIO is shared we end up
+> setting the shared attribute but that's fine, it's only an IPA address.
+>
 
-powerpc uses generic crashkernel parser and reserve functions and they
-are capable of handling high crashkernel reservtion so
-arch_reserve_crashkernel() is updated call generic crashkernel praser
-and reserve function with resptive options to make
-crashkernel=XXM,high prase and make crashkernel memory get reserved on
-higher memory regions.
+P2PDMA with CoCo is currently not supported, as discussed here:
 
-Note: High crashkernel is supported only on PPC 64-bit systems when
-64-bit RTAS is instantiated and Radix MMU is enabled; otherwise, the
-crashkernel reservation falls back to the default, even if the kernel
-command includes crashkernel=XXM,high.
+https://lore.kernel.org/all/20260521175420.GA7702@ziepe.ca
+https://lore.kernel.org/all/20260522132240.GD7702@ziepe.ca
 
-Signed-off-by: Sourabh Jain <sourabhjain@linux.ibm.com>
----
- arch/powerpc/include/asm/crash_reserve.h |  6 ++++
- arch/powerpc/include/asm/kexec.h         |  1 +
- arch/powerpc/include/asm/rtas.h          |  9 +++++
- arch/powerpc/kexec/core.c                | 45 +++++++++++++++++-------
- 4 files changed, 49 insertions(+), 12 deletions(-)
+Since I do not have much experience with P2PDMA, I have prepared a patch
+that Leon Romanovsky <leonro@nvidia.com> has kindly agreed to review to
+ensure it is correct. I have attached it below.
 
-diff --git a/arch/powerpc/include/asm/crash_reserve.h b/arch/powerpc/include/asm/crash_reserve.h
-index d1b570ddbf98..4f2096984736 100644
---- a/arch/powerpc/include/asm/crash_reserve.h
-+++ b/arch/powerpc/include/asm/crash_reserve.h
-@@ -2,6 +2,8 @@
- #ifndef _ASM_POWERPC_CRASH_RESERVE_H
- #define _ASM_POWERPC_CRASH_RESERVE_H
- 
-+#include <asm/rtas.h>
-+
- /* crash kernel regions are Page size agliged */
- #define CRASH_ALIGN             PAGE_SIZE
- 
-@@ -12,5 +14,9 @@ static inline bool arch_add_crash_res_to_iomem(void)
- }
- #define arch_add_crash_res_to_iomem arch_add_crash_res_to_iomem
- #endif
-+#define DEFAULT_CRASH_KERNEL_LOW_SIZE SZ_64M
-+
-+#define CRASH_ADDR_LOW_MAX	RTAS_INSTANTIATE_MAX
-+#define CRASH_ADDR_HIGH_MAX	memblock_end_of_DRAM()
- 
- #endif /* _ASM_POWERPC_CRASH_RESERVE_H */
-diff --git a/arch/powerpc/include/asm/kexec.h b/arch/powerpc/include/asm/kexec.h
-index e02710d6a2e1..9e676bd3bf03 100644
---- a/arch/powerpc/include/asm/kexec.h
-+++ b/arch/powerpc/include/asm/kexec.h
-@@ -118,6 +118,7 @@ int setup_new_fdt_ppc64(const struct kimage *image, void *fdt, struct crash_mem
- int __init overlaps_crashkernel(unsigned long start, unsigned long size);
- extern void arch_reserve_crashkernel(void);
- extern void kdump_cma_reserve(void);
-+unsigned long long __init get_crash_base(unsigned long long crash_base);
- #else
- static inline void arch_reserve_crashkernel(void) {}
- static inline int overlaps_crashkernel(unsigned long start, unsigned long size) { return 0; }
-diff --git a/arch/powerpc/include/asm/rtas.h b/arch/powerpc/include/asm/rtas.h
-index aaa4c3bc1d61..d290437d8131 100644
---- a/arch/powerpc/include/asm/rtas.h
-+++ b/arch/powerpc/include/asm/rtas.h
-@@ -561,6 +561,14 @@ static inline int page_is_rtas_user_buf(unsigned long pfn)
- 	return 0;
- }
- 
-+static inline bool is_rtas_high_crashkernel_capable(void)
-+{
-+	if (rtas_64)
-+		return true;
-+
-+	return false;
-+}
-+
- /* Not the best place to put pSeries_coalesce_init, will be fixed when we
-  * move some of the rtas suspend-me stuff to pseries */
- void pSeries_coalesce_init(void);
-@@ -569,6 +577,7 @@ void rtas_initialize(void);
- static inline int page_is_rtas_user_buf(unsigned long pfn) { return 0;}
- static inline void pSeries_coalesce_init(void) { }
- static inline void rtas_initialize(void) { }
-+static inline bool is_rtas_high_crashkernel_capable(void) { return true; }
- #endif
- 
- #ifdef CONFIG_HV_PERF_CTRS
-diff --git a/arch/powerpc/kexec/core.c b/arch/powerpc/kexec/core.c
-index dc44f11be353..81fc437377c8 100644
---- a/arch/powerpc/kexec/core.c
-+++ b/arch/powerpc/kexec/core.c
-@@ -15,6 +15,7 @@
- #include <linux/irq.h>
- #include <linux/ftrace.h>
- 
-+#include <asm/rtas.h>
- #include <asm/kdump.h>
- #include <asm/machdep.h>
- #include <asm/pgalloc.h>
-@@ -64,7 +65,7 @@ void machine_kexec(struct kimage *image)
- 
- static unsigned long long crashk_cma_size;
- 
--static unsigned long long __init get_crash_base(unsigned long long crash_base)
-+unsigned long long __init get_crash_base(unsigned long long crash_base)
+The conclusion is that P2P is not currently supported, so we get this
+series merged first and handle P2PDMA support as a follow-up outside
+this series.
+
+commit f39bcb603c5cc4cfa738597715828ac45f01f142
+Author: Aneesh Kumar K.V (Arm) <aneesh.kumar@kernel.org>
+Date:   Fri May 22 10:10:35 2026 +0530
+
+    PCI/P2PDMA: Carry host bridge DMA attrs through map and unmap
+    
+    P2PDMA host bridge mappings currently pass DMA_ATTR_MMIO and rely on
+    dma-direct to add DMA_ATTR_CC_SHARED for devices that require unencrypted
+    DMA. That puts P2PDMA-specific confidential-computing policy in the generic
+    dma-direct MMIO mapping path and does not preserve the selected attributes
+    through all unmap paths.
+    
+    Add DMA mapping flags to struct p2pdma_provider for host bridge mappings
+    and use those flags in the block, dma-buf and HMM mapping paths. Store the
+    attributes selected at map time where the unmap side no longer has provider
+    context, so that the unmap path uses the same attributes that were used for
+    mapping.
+
+diff --git a/block/blk-mq-dma.c b/block/blk-mq-dma.c
+index bfdb9ed70741..fafc6d6b8522 100644
+--- a/block/blk-mq-dma.c
++++ b/block/blk-mq-dma.c
+@@ -87,10 +87,11 @@ static bool blk_dma_map_bus(struct blk_dma_iter *iter, struct phys_vec *vec)
+ static bool blk_dma_map_direct(struct request *req, struct device *dma_dev,
+ 		struct blk_dma_iter *iter, struct phys_vec *vec)
  {
+-	unsigned int attrs = 0;
++	unsigned long attrs = 0;
  
- #ifndef CONFIG_NONSTATIC_KERNEL
-@@ -104,35 +105,55 @@ static unsigned long long __init get_crash_base(unsigned long long crash_base)
- #endif
- }
+ 	if (iter->p2pdma.map == PCI_P2PDMA_MAP_THRU_HOST_BRIDGE)
+-		attrs |= DMA_ATTR_MMIO;
++		attrs |= iter->p2pdma.mem->dma_mapping_flags;
++	iter->attrs = attrs;
  
-+static bool high_crashkernel_supported(void)
-+{
-+#if defined(CONFIG_PPC64) && (defined(CONFIG_PPC_PSERIES) || defined(CONFIG_PPC_POWERNV))
-+	if (early_radix_enabled() && is_rtas_high_crashkernel_capable())
-+		return true;
-+#endif
-+	return false;
-+}
-+
- void __init arch_reserve_crashkernel(void)
+ 	iter->addr = dma_map_phys(dma_dev, vec->paddr, vec->len,
+ 			rq_dma_dir(req), attrs);
+@@ -107,7 +108,7 @@ static bool blk_rq_dma_map_iova(struct request *req, struct device *dma_dev,
+ 		struct phys_vec *vec)
  {
--	unsigned long long crash_size, crash_base, crash_end;
-+	unsigned long long crash_size, crash_base, crash_end, low_size = 0;
- 	unsigned long long kernel_start, kernel_size;
- 	unsigned long long total_mem_sz;
-+	bool high = false;
- 	int ret;
+ 	enum dma_data_direction dir = rq_dma_dir(req);
+-	unsigned int attrs = 0;
++	unsigned long attrs = 0;
+ 	size_t mapped = 0;
+ 	int error;
  
- 	total_mem_sz = memory_limit ? memory_limit : memblock_phys_mem_size();
+@@ -115,7 +116,8 @@ static bool blk_rq_dma_map_iova(struct request *req, struct device *dma_dev,
+ 	iter->len = dma_iova_size(state);
  
- 	/* use common parsing */
- 	ret = parse_crashkernel(boot_command_line, total_mem_sz, &crash_size,
--				&crash_base, NULL, &crashk_cma_size, NULL);
-+				&crash_base, &low_size, &crashk_cma_size, &high);
+ 	if (iter->p2pdma.map == PCI_P2PDMA_MAP_THRU_HOST_BRIDGE)
+-		attrs |= DMA_ATTR_MMIO;
++		attrs |= iter->p2pdma.mem->dma_mapping_flags;
++	iter->attrs = attrs;
  
- 	if (ret)
- 		return;
+ 	do {
+ 		error = dma_iova_link(dma_dev, state, vec->paddr, mapped,
+@@ -168,6 +170,7 @@ static bool blk_dma_map_iter_start(struct request *req, struct device *dma_dev,
+ 	struct phys_vec vec;
  
--	crash_base = get_crash_base(crash_base);
--	crash_end = crash_base + crash_size - 1;
-+	if (high && !high_crashkernel_supported()) {
-+		high = false;
-+		low_size = 0;
-+		pr_warn("High crashkernel unsupported, using standard reservation");
-+	}
+ 	memset(&iter->p2pdma, 0, sizeof(iter->p2pdma));
++	iter->attrs = 0;
+ 	iter->status = BLK_STS_OK;
+ 	iter->p2pdma.map = PCI_P2PDMA_MAP_NONE;
  
--	kernel_start = __pa(_stext);
--	kernel_size = _end - _stext;
-+	if (high) {
-+		crash_base = 0;
-+	} else {
-+		crash_base = get_crash_base(crash_base);
-+		crash_end = crash_base + crash_size - 1;
+diff --git a/drivers/dma-buf/dma-buf-mapping.c b/drivers/dma-buf/dma-buf-mapping.c
+index 794acff2546a..e6d4ee8acd19 100644
+--- a/drivers/dma-buf/dma-buf-mapping.c
++++ b/drivers/dma-buf/dma-buf-mapping.c
+@@ -59,11 +59,13 @@ static unsigned int calc_sg_nents(struct dma_iova_state *state,
+  * @sgt:    Scatter-gather table
+  * @state:  DMA IOVA state relevant in IOMMU-based DMA
+  * @size:   Total size of DMA transfer
++ * @attrs:  DMA attributes used for host bridge mappings
+  */
+ struct dma_buf_dma {
+ 	struct sg_table sgt;
+ 	struct dma_iova_state *state;
+ 	size_t size;
++	unsigned long attrs;
+ };
  
--	/* The crash region must not overlap the current kernel */
--	if ((kernel_start + kernel_size > crash_base) && (kernel_start <= crash_end)) {
--		pr_warn("Crash kernel can not overlap current kernel\n");
--		return;
-+		kernel_start = __pa(_stext);
-+		kernel_size = _end - _stext;
-+
-+		/* The crash region must not overlap the current kernel */
-+		if ((kernel_start + kernel_size > crash_base) && (kernel_start <= crash_end)) {
-+			pr_warn("Crash kernel can not overlap current kernel\n");
-+			return;
-+		}
+ /**
+@@ -119,6 +121,7 @@ struct sg_table *dma_buf_phys_vec_to_sgt(struct dma_buf_attachment *attach,
+ 		 */
+ 		break;
+ 	case PCI_P2PDMA_MAP_THRU_HOST_BRIDGE:
++		dma->attrs = provider->dma_mapping_flags;
+ 		dma->state = kzalloc_obj(*dma->state);
+ 		if (!dma->state) {
+ 			ret = -ENOMEM;
+@@ -147,7 +150,7 @@ struct sg_table *dma_buf_phys_vec_to_sgt(struct dma_buf_attachment *attach,
+ 			ret = dma_iova_link(attach->dev, dma->state,
+ 					    phys_vec[i].paddr, 0,
+ 					    phys_vec[i].len, dir,
+-					    DMA_ATTR_MMIO);
++					    dma->attrs);
+ 			if (ret)
+ 				goto err_unmap_dma;
+ 
+@@ -155,7 +158,7 @@ struct sg_table *dma_buf_phys_vec_to_sgt(struct dma_buf_attachment *attach,
+ 		} else {
+ 			addr = dma_map_phys(attach->dev, phys_vec[i].paddr,
+ 					    phys_vec[i].len, dir,
+-					    DMA_ATTR_MMIO);
++					    dma->attrs);
+ 			ret = dma_mapping_error(attach->dev, addr);
+ 			if (ret)
+ 				goto err_unmap_dma;
+@@ -195,11 +198,11 @@ struct sg_table *dma_buf_phys_vec_to_sgt(struct dma_buf_attachment *attach,
+ 		; /* Do nothing */
+ 	} else if (dma_use_iova(dma->state)) {
+ 		dma_iova_destroy(attach->dev, dma->state, mapped_len, dir,
+-				 DMA_ATTR_MMIO);
++				 dma->attrs);
+ 	} else {
+ 		for_each_sgtable_dma_sg(&dma->sgt, sgl, i)
+ 			dma_unmap_phys(attach->dev, sg_dma_address(sgl),
+-				       sg_dma_len(sgl), dir, DMA_ATTR_MMIO);
++				       sg_dma_len(sgl), dir, dma->attrs);
+ 	}
+ 	sg_free_table(&dma->sgt);
+ err_free_state:
+@@ -231,13 +234,13 @@ void dma_buf_free_sgt(struct dma_buf_attachment *attach, struct sg_table *sgt,
+ 		; /* Do nothing */
+ 	} else if (dma_use_iova(dma->state)) {
+ 		dma_iova_destroy(attach->dev, dma->state, dma->size, dir,
+-				 DMA_ATTR_MMIO);
++				 dma->attrs);
+ 	} else {
+ 		struct scatterlist *sgl;
+ 
+ 		for_each_sgtable_dma_sg(sgt, sgl, i)
+ 			dma_unmap_phys(attach->dev, sg_dma_address(sgl),
+-				       sg_dma_len(sgl), dir, DMA_ATTR_MMIO);
++				       sg_dma_len(sgl), dir, dma->attrs);
  	}
  
--	reserve_crashkernel_generic(crash_size, crash_base, 0, false);
-+	reserve_crashkernel_generic(crash_size, crash_base, low_size, high);
+ 	sg_free_table(sgt);
+diff --git a/drivers/nvme/host/pci.c b/drivers/nvme/host/pci.c
+index 69932d640b53..8f05f53b78fd 100644
+--- a/drivers/nvme/host/pci.c
++++ b/drivers/nvme/host/pci.c
+@@ -436,6 +436,7 @@ struct nvme_iod {
+ 
+ 	size_t total_len;
+ 	struct dma_iova_state dma_state;
++	unsigned long dma_attrs;
+ 	void *descriptors[NVME_MAX_NR_DESCRIPTORS];
+ 	struct nvme_dma_vec *dma_vecs;
+ 	unsigned int nr_dma_vecs;
+@@ -443,6 +444,7 @@ struct nvme_iod {
+ 	dma_addr_t meta_dma;
+ 	size_t meta_total_len;
+ 	struct dma_iova_state meta_dma_state;
++	unsigned long meta_dma_attrs;
+ 	struct nvme_sgl_desc *meta_descriptor;
+ };
+ 
+@@ -859,7 +861,7 @@ static void nvme_free_descriptors(struct request *req)
+ 	}
  }
  
- void __init kdump_cma_reserve(void)
--- 
-2.52.0
+-static void nvme_free_prps(struct request *req, unsigned int attrs)
++static void nvme_free_prps(struct request *req, unsigned long attrs)
+ {
+ 	struct nvme_iod *iod = blk_mq_rq_to_pdu(req);
+ 	struct nvme_queue *nvmeq = req->mq_hctx->driver_data;
+@@ -872,7 +874,7 @@ static void nvme_free_prps(struct request *req, unsigned int attrs)
+ }
+ 
+ static void nvme_free_sgls(struct request *req, struct nvme_sgl_desc *sge,
+-		struct nvme_sgl_desc *sg_list, unsigned int attrs)
++		struct nvme_sgl_desc *sg_list, unsigned long attrs)
+ {
+ 	struct nvme_queue *nvmeq = req->mq_hctx->driver_data;
+ 	enum dma_data_direction dir = rq_dma_dir(req);
+@@ -899,7 +901,7 @@ static void nvme_unmap_metadata(struct request *req)
+ 	struct nvme_iod *iod = blk_mq_rq_to_pdu(req);
+ 	struct device *dma_dev = nvmeq->dev->dev;
+ 	struct nvme_sgl_desc *sge = iod->meta_descriptor;
+-	unsigned int attrs = 0;
++	unsigned long attrs = 0;
+ 
+ 	if (iod->flags & IOD_SINGLE_META_SEGMENT) {
+ 		dma_unmap_page(dma_dev, iod->meta_dma,
+@@ -912,11 +914,11 @@ static void nvme_unmap_metadata(struct request *req)
+ 		map = PCI_P2PDMA_MAP_BUS_ADDR;
+ 	else if (iod->flags & IOD_META_MMIO) {
+ 		map = PCI_P2PDMA_MAP_THRU_HOST_BRIDGE;
+-		attrs |= DMA_ATTR_MMIO;
++		attrs = iod->meta_dma_attrs;
+ 	}
+ 
+ 	if (!blk_rq_dma_unmap(req, dma_dev, &iod->meta_dma_state,
+-			      iod->meta_total_len, map)) {
++			      iod->meta_total_len, map, attrs)) {
+ 		if (nvme_pci_cmd_use_meta_sgl(&iod->cmd))
+ 			nvme_free_sgls(req, sge, &sge[1], attrs);
+ 		else
+@@ -935,7 +937,7 @@ static void nvme_unmap_data(struct request *req)
+ 	struct nvme_iod *iod = blk_mq_rq_to_pdu(req);
+ 	struct nvme_queue *nvmeq = req->mq_hctx->driver_data;
+ 	struct device *dma_dev = nvmeq->dev->dev;
+-	unsigned int attrs = 0;
++	unsigned long attrs = 0;
+ 
+ 	if (iod->flags & IOD_SINGLE_SEGMENT) {
+ 		static_assert(offsetof(union nvme_data_ptr, prp1) ==
+@@ -949,11 +951,11 @@ static void nvme_unmap_data(struct request *req)
+ 		map = PCI_P2PDMA_MAP_BUS_ADDR;
+ 	else if (iod->flags & IOD_DATA_MMIO) {
+ 		map = PCI_P2PDMA_MAP_THRU_HOST_BRIDGE;
+-		attrs |= DMA_ATTR_MMIO;
++		attrs = iod->dma_attrs;
+ 	}
+ 
+ 	if (!blk_rq_dma_unmap(req, dma_dev, &iod->dma_state, iod->total_len,
+-			      map)) {
++			      map, attrs)) {
+ 		if (nvme_pci_cmd_use_sgl(&iod->cmd))
+ 			nvme_free_sgls(req, &iod->cmd.common.dptr.sgl,
+ 			               iod->descriptors[0], attrs);
+@@ -1270,6 +1272,7 @@ static blk_status_t nvme_map_data(struct request *req)
+ 		break;
+ 	case PCI_P2PDMA_MAP_THRU_HOST_BRIDGE:
+ 		iod->flags |= IOD_DATA_MMIO;
++		iod->dma_attrs = iter.attrs;
+ 		break;
+ 	case PCI_P2PDMA_MAP_NONE:
+ 		break;
+@@ -1305,6 +1308,7 @@ static blk_status_t nvme_pci_setup_meta_iter(struct request *req)
+ 		break;
+ 	case PCI_P2PDMA_MAP_THRU_HOST_BRIDGE:
+ 		iod->flags |= IOD_META_MMIO;
++		iod->meta_dma_attrs = iter.attrs;
+ 		break;
+ 	case PCI_P2PDMA_MAP_NONE:
+ 		break;
+@@ -1405,6 +1409,8 @@ static blk_status_t nvme_prep_rq(struct request *req)
+ 	iod->nr_descriptors = 0;
+ 	iod->total_len = 0;
+ 	iod->meta_total_len = 0;
++	iod->dma_attrs = 0;
++	iod->meta_dma_attrs = 0;
+ 	iod->nr_dma_vecs = 0;
+ 
+ 	ret = nvme_setup_cmd(req->q->queuedata, req);
+diff --git a/drivers/pci/p2pdma.c b/drivers/pci/p2pdma.c
+index b2d5266f8653..35ab3f8b53a8 100644
+--- a/drivers/pci/p2pdma.c
++++ b/drivers/pci/p2pdma.c
+@@ -285,6 +285,11 @@ int pcim_p2pdma_init(struct pci_dev *pdev)
+ 			continue;
+ 
+ 		p2p->mem[i].owner = &pdev->dev;
++
++		p2p->mem[i].dma_mapping_flags = DMA_ATTR_MMIO;
++		if (force_dma_unencrypted(dev))
++			p2p->mem[i].dma_mapping_flags |= DMA_ATTR_CC_SHARED;
++
+ 		p2p->mem[i].bus_offset =
+ 			pci_bus_address(pdev, i) - pci_resource_start(pdev, i);
+ 	}
+diff --git a/include/linux/blk-mq-dma.h b/include/linux/blk-mq-dma.h
+index 214c181ff2c9..fab72c0f8053 100644
+--- a/include/linux/blk-mq-dma.h
++++ b/include/linux/blk-mq-dma.h
+@@ -16,6 +16,7 @@ struct blk_dma_iter {
+ 	/* Output address range for this iteration */
+ 	dma_addr_t			addr;
+ 	u32				len;
++	unsigned long			attrs;
+ 	struct pci_p2pdma_map_state	p2pdma;
+ 
+ 	/* Status code. Only valid when blk_rq_dma_map_iter_* returned false */
+@@ -49,23 +50,19 @@ static inline bool blk_rq_dma_map_coalesce(struct dma_iova_state *state)
+  * @state:	DMA IOVA state
+  * @mapped_len: number of bytes to unmap
+  * @map:	peer-to-peer mapping type
++ * @attrs:	DMA attributes used for the mapping
+  *
+  * Returns %false if the callers need to manually unmap every DMA segment
+  * mapped using @iter or %true if no work is left to be done.
+  */
+ static inline bool blk_rq_dma_unmap(struct request *req, struct device *dma_dev,
+ 		struct dma_iova_state *state, size_t mapped_len,
+-		enum pci_p2pdma_map_type map)
++		enum pci_p2pdma_map_type map, unsigned long attrs)
+ {
+ 	if (map == PCI_P2PDMA_MAP_BUS_ADDR)
+ 		return true;
+ 
+ 	if (dma_use_iova(state)) {
+-		unsigned int attrs = 0;
+-
+-		if (map == PCI_P2PDMA_MAP_THRU_HOST_BRIDGE)
+-			attrs |= DMA_ATTR_MMIO;
+-
+ 		dma_iova_destroy(dma_dev, state, mapped_len, rq_dma_dir(req),
+ 				 attrs);
+ 		return true;
+diff --git a/include/linux/hmm-dma.h b/include/linux/hmm-dma.h
+index f58b9fc71999..d9f967ed7ce1 100644
+--- a/include/linux/hmm-dma.h
++++ b/include/linux/hmm-dma.h
+@@ -14,12 +14,14 @@ struct pci_p2pdma_map_state;
+  * @state: DMA IOVA state
+  * @pfns: array of PFNs
+  * @dma_list: array of DMA addresses
++ * @dma_attrs: array of DMA attributes
+  * @dma_entry_size: size of each DMA entry in the array
+  */
+ struct hmm_dma_map {
+ 	struct dma_iova_state state;
+ 	unsigned long *pfn_list;
+ 	dma_addr_t *dma_list;
++	unsigned long *dma_attrs;
+ 	size_t dma_entry_size;
+ };
+ 
+diff --git a/include/linux/pci-p2pdma.h b/include/linux/pci-p2pdma.h
+index 873de20a2247..402dc5e5d62b 100644
+--- a/include/linux/pci-p2pdma.h
++++ b/include/linux/pci-p2pdma.h
+@@ -21,10 +21,12 @@ struct scatterlist;
+  *
+  * A p2pdma provider is a range of MMIO address space available to the CPU.
+  * @owner: Device to which this provider belongs.
++ * @dma_mapping_flags: DMA attributes to use for host bridge mappings.
+  * @bus_offset: Bus offset for p2p communication.
+  */
+ struct p2pdma_provider {
+ 	struct device *owner;
++	unsigned long dma_mapping_flags;
+ 	u64 bus_offset;
+ };
+ 
+diff --git a/mm/hmm.c b/mm/hmm.c
+index c72c9ddfdb2f..a871d8cb7dd9 100644
+--- a/mm/hmm.c
++++ b/mm/hmm.c
+@@ -720,6 +720,11 @@ int hmm_dma_map_alloc(struct device *dev, struct hmm_dma_map *map,
+ 	if (!map->pfn_list)
+ 		return -ENOMEM;
+ 
++	map->dma_attrs = kvcalloc(nr_entries, sizeof(*map->dma_attrs),
++				  GFP_KERNEL | __GFP_NOWARN);
++	if (!map->dma_attrs)
++		goto err_attrs;
++
+ 	use_iova = dma_iova_try_alloc(dev, &map->state, 0,
+ 			nr_entries * PAGE_SIZE);
+ 	if (!use_iova && dma_need_unmap(dev)) {
+@@ -731,6 +736,8 @@ int hmm_dma_map_alloc(struct device *dev, struct hmm_dma_map *map,
+ 	return 0;
+ 
+ err_dma:
++	kvfree(map->dma_attrs);
++err_attrs:
+ 	kvfree(map->pfn_list);
+ 	return -ENOMEM;
+ }
+@@ -749,6 +756,7 @@ void hmm_dma_map_free(struct device *dev, struct hmm_dma_map *map)
+ 		dma_iova_free(dev, &map->state);
+ 	kvfree(map->pfn_list);
+ 	kvfree(map->dma_list);
++	kvfree(map->dma_attrs);
+ }
+ EXPORT_SYMBOL_GPL(hmm_dma_map_free);
+ 
+@@ -811,11 +819,12 @@ dma_addr_t hmm_dma_map_pfn(struct device *dev, struct hmm_dma_map *map,
+ 	case PCI_P2PDMA_MAP_NONE:
+ 		break;
+ 	case PCI_P2PDMA_MAP_THRU_HOST_BRIDGE:
+-		attrs |= DMA_ATTR_MMIO;
++		attrs |= p2pdma_state->mem->dma_mapping_flags;
+ 		pfns[idx] |= HMM_PFN_P2PDMA;
+ 		break;
+ 	case PCI_P2PDMA_MAP_BUS_ADDR:
+ 		pfns[idx] |= HMM_PFN_P2PDMA_BUS | HMM_PFN_DMA_MAPPED;
++		map->dma_attrs[idx] = 0;
+ 		return pci_p2pdma_bus_addr_map(p2pdma_state->mem, paddr);
+ 	default:
+ 		return DMA_MAPPING_ERROR;
+@@ -848,10 +857,12 @@ dma_addr_t hmm_dma_map_pfn(struct device *dev, struct hmm_dma_map *map,
+ 		if (dma_need_unmap(dev))
+ 			dma_addrs[idx] = dma_addr;
+ 	}
++	map->dma_attrs[idx] = attrs;
+ 	pfns[idx] |= HMM_PFN_DMA_MAPPED;
+ 	return dma_addr;
+ error:
+ 	pfns[idx] &= ~HMM_PFN_P2PDMA;
++	map->dma_attrs[idx] = 0;
+ 	return DMA_MAPPING_ERROR;
+ 
+ }
+@@ -871,14 +882,11 @@ bool hmm_dma_unmap_pfn(struct device *dev, struct hmm_dma_map *map, size_t idx)
+ 	struct dma_iova_state *state = &map->state;
+ 	dma_addr_t *dma_addrs = map->dma_list;
+ 	unsigned long *pfns = map->pfn_list;
+-	unsigned long attrs = DMA_ATTR_REQUIRE_COHERENT;
++	unsigned long attrs = DMA_ATTR_REQUIRE_COHERENT | map->dma_attrs[idx];
+ 
+ 	if ((pfns[idx] & valid_dma) != valid_dma)
+ 		return false;
+ 
+-	if (pfns[idx] & HMM_PFN_P2PDMA)
+-		attrs |= DMA_ATTR_MMIO;
+-
+ 	if (pfns[idx] & HMM_PFN_P2PDMA_BUS)
+ 		; /* no need to unmap bus address P2P mappings */
+ 	else if (dma_use_iova(state))
+@@ -890,6 +898,7 @@ bool hmm_dma_unmap_pfn(struct device *dev, struct hmm_dma_map *map, size_t idx)
+ 
+ 	pfns[idx] &=
+ 		~(HMM_PFN_DMA_MAPPED | HMM_PFN_P2PDMA | HMM_PFN_P2PDMA_BUS);
++	map->dma_attrs[idx] = 0;
+ 	return true;
+ }
+ EXPORT_SYMBOL_GPL(hmm_dma_unmap_pfn);
 
 
