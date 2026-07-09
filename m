@@ -1,53 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-23890-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23891-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3C1E0C43458
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2026 03:46:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9A321C44503
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2026 05:19:22 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gwgqh1Fvzz3c4P;
-	Thu, 09 Jul 2026 13:46:24 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=113.46.200.218
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783568784;
-	cv=none; b=DpRMvI6WwXAxQqcyGeiXh2AR+SEzOpO8vmuZ57nSWKsc0XtpFuMv+yOt3VHflWQJ2outseUsnoHuyZLk9r84vRa0JI0+yIL+wQ0sEwBVTn5jUi8lCdVrFQrk1IBny6+nWmh+ary7rqKODWYGFSbsxD1dm68nHb9H/KEtbmTniqWaN+QqMsW/AHoUg4F7D3NgZsy2w4JyyytET3w1aUD3K9QZRnZfi6fG6xyLnuFrrpyrPOzcXANJ8M92bQveD3wksu+gnocwEufmvbe6e3pPHKmkcLdWgp7TzbEtN4Qr/khS5N1xHR9/6n5ClV2dWTVvA6zitR1OM0ygl4oqX3Kd5w==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gwjtx2HzKz3c9q;
+	Thu, 09 Jul 2026 15:19:21 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783574361;
+	cv=none; b=PWjXqZJOuhmeV3LrqrmxP7hKaYqiVmSzDQ9vu3fyAKHbhIPTk7qmrfRIeNbbBq6Qs8JkVDrmM5fJUTQkiQdbDBJYo06ygyYTaXWOISHTwrkrLsTwp1rjfYNGTqkqZu0s+3U/13T2eFNHKWzaA2HMy/AIMflg4O2lgj4Wl/4Ex5b0bp66RaLCHkOSzZALsYlaV4S1QZ/OSEpTDYnTT/DXn0RATYqKLqFVrx1PMJ8v++sSx3dvXJxqtNHDRc9Jy1BvUzRaefHKE9RhunVjwSCORatZ5nLM6N4Id7qvkvmaTxaEg4ejrTN7QRGl/lPrdshw5g5+Hul9H/ooEeMJVDlD3A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1783568784; c=relaxed/relaxed;
-	bh=S12kfcpDi3n+0LKTkd0ZeOMuD4be+hwO7l/dC6hKERM=;
-	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
-	 In-Reply-To:Content-Type; b=OKcK7kvNGa/OA8Tk02UVnLOAv1X6n/D9L/AdkoxLkc6q/Ki/33V29/2Czxr0nvq5zynpinktz/1Lkq2DOrBCI+Ca6O6jnKKwOj7oNIbfJQCGO2HqbzbU//YPQyEq6hBCkSwLfhHPrjUhWo9NJJeQmG17xhM1975g+PJHIBsA+K0PdvAPUHD+Kq79lL/+3dsDUe02A03tJBGWcwPkWhivEGzHghSAADpCHFDslazr/N8qgZUMzB87qIkkN/1RWvuMDvMzJQUolqtLWrvnLFXiWheYp8xc5kiMGOIWXv3lNFSNgCvIv25mvd5Toi2juSH1CZIsOximDCddt88vRUbK/Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=r6RtRSgk; dkim-atps=neutral; spf=pass (client-ip=113.46.200.218; helo=canpmsgout03.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
+	t=1783574361; c=relaxed/relaxed;
+	bh=9q5uYXvkIacgb7S2FdyDVdQgon79PVVuDsN+BNjDKOA=;
+	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
+	 In-Reply-To:Content-Type; b=hIipDgORUwHNnwcPg9cK9/WdL1SwLAqhMsxpzYDXVkMWH06peGXyC4QQL5IM4osKc3yYdwWfOTcIry9tTQrlUsgciEXBNz90E2fde9i8/LZ+RJALlSKSJ0b2Qmh74WD45hHsw5Sl+slDcFkWEuKawt/UEJipfucdlxSKFMCiryCVcrRVxIRYHO9EUuXVqBKg7p7C4aJKIdFJFwigHKKtN+d160DCwXcMycyso4qauQewyEh84lzhbYOJs1O/cAMYgu4C0ymvOAnrFvawdYnSOuiE1sGoSQ/kx4KSN98GUQ1BZ5nP4HYaYBl0SoxSgWmSRbwBIjAuYu31Xfzbn2rIZA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=tKDbPA9P; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=r6RtRSgk;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=tKDbPA9P;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=113.46.200.218; helo=canpmsgout03.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org)
-Received: from canpmsgout03.his.huawei.com (canpmsgout03.his.huawei.com [113.46.200.218])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gwgqc5sq6z3c4D
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 09 Jul 2026 13:46:18 +1000 (AEST)
-dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
-	c=relaxed/relaxed; q=dns/txt;
-	h=From;
-	bh=S12kfcpDi3n+0LKTkd0ZeOMuD4be+hwO7l/dC6hKERM=;
-	b=r6RtRSgklJXTYPLKflO27pyxFSmmCAshlJ9sm0FshpvKL/UlLPYd2FfTNtINKHoCzuTfShLyS
-	LkOmzr7xxMEHmA7sCPUPICbnen8w5KxUkRZCWYkkaVaxSOG+7qe1F0UiIFaRZ9FEqLiKzBUVzBQ
-	oR/081TML0omCrg301p3De4=
-Received: from mail.maildlp.com (unknown [172.19.163.0])
-	by canpmsgout03.his.huawei.com (SkyGuard) with ESMTPS id 4gwgdP686WzpSvs;
-	Thu,  9 Jul 2026 11:37:29 +0800 (CST)
-Received: from dggpemf500011.china.huawei.com (unknown [7.185.36.131])
-	by mail.maildlp.com (Postfix) with ESMTPS id 6702240561;
-	Thu,  9 Jul 2026 11:46:11 +0800 (CST)
-Received: from [10.67.109.254] (10.67.109.254) by
- dggpemf500011.china.huawei.com (7.185.36.131) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1544.11; Thu, 9 Jul 2026 11:46:08 +0800
-Message-ID: <5fb7a6bc-2a4b-4e91-b12d-2a1b0d3de88a@huawei.com>
-Date: Thu, 9 Jul 2026 11:46:07 +0800
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gwjtw1q5Cz3byl
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 09 Jul 2026 15:19:19 +1000 (AEST)
+Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 668NImlG4076768;
+	Thu, 9 Jul 2026 05:18:57 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=
+	content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=9q5uYX
+	vkIacgb7S2FdyDVdQgon79PVVuDsN+BNjDKOA=; b=tKDbPA9P2U6u6DDv21bmon
+	Lnd6W6go3fr1v43sF7Ea3zE4hblE0+oXZtkqllkSZB0dlFWZOV0p6oUolvD2lZLI
+	9G0M8/sNw4q73JfXKpIQlKSjLBXdNmW1esqN4Ss8sIDUbuLSBlpqiiOdHDIEQs0z
+	RnQTZeUFwG6KgfHazJAwZxVVL+oe8NlUXncWS72nCwgNqwgW2pXWomCK/5flxhLk
+	1I2vvVpqCU1uWo1d34Vd9IMxMVDs51XGeMxy+j8h1oiCcOmNkMw6+lRzwmGKPzKX
+	KO8+qAbNUBqxJM1TCS1fT79wfrH0d8cf8ddYQqnLvKmsXi0ZlhELzQylMiiLFMcA
+	==
+Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4f6rke0gsj-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 09 Jul 2026 05:18:57 +0000 (GMT)
+Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma12.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 66954d2a031077;
+	Thu, 9 Jul 2026 05:18:56 GMT
+Received: from smtprelay05.dal12v.mail.ibm.com ([172.16.1.7])
+	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 4f7cgqbw0u-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 09 Jul 2026 05:18:56 +0000 (GMT)
+Received: from smtpav02.dal12v.mail.ibm.com (smtpav02.dal12v.mail.ibm.com [10.241.53.101])
+	by smtprelay05.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6695ItAR15008430
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Thu, 9 Jul 2026 05:18:55 GMT
+Received: from smtpav02.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id CBF7B5805C;
+	Thu,  9 Jul 2026 05:18:55 +0000 (GMT)
+Received: from smtpav02.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id F1B3B58051;
+	Thu,  9 Jul 2026 05:18:53 +0000 (GMT)
+Received: from [9.43.70.67] (unknown [9.43.70.67])
+	by smtpav02.dal12v.mail.ibm.com (Postfix) with ESMTP;
+	Thu,  9 Jul 2026 05:18:53 +0000 (GMT)
+Message-ID: <6c191068-22c4-4aaf-9feb-7782fa3ce40b@linux.ibm.com>
+Date: Thu, 9 Jul 2026 10:48:52 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -62,187 +82,67 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [patch 03/18] entry: Provide
- [syscall_]enter_from_user_mode_randomize_stack()
-To: Thomas Gleixner <tglx@kernel.org>, LKML <linux-kernel@vger.kernel.org>
-CC: Peter Zijlstra <peterz@infradead.org>, Michael Ellerman
-	<mpe@ellerman.id.au>, Shrikanth Hegde <sshegde@linux.ibm.com>,
-	<linuxppc-dev@lists.ozlabs.org>, Kees Cook <kees@kernel.org>, Huacai Chen
-	<chenhuacai@kernel.org>, <loongarch@lists.linux.dev>, Paul Walmsley
-	<pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
-	<linux-riscv@lists.infradead.org>, Sven Schnelle <svens@linux.ibm.com>,
-	<linux-s390@vger.kernel.org>, <x86@kernel.org>, Mark Rutland
-	<mark.rutland@arm.com>, Andy Lutomirski <luto@kernel.org>, Oleg Nesterov
-	<oleg@redhat.com>, Richard Henderson <richard.henderson@linaro.org>, Russell
- King <linux@armlinux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>, Guo
- Ren <guoren@kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Thomas
- Bogendoerfer <tsbogend@alpha.franken.de>, Helge Deller <deller@gmx.de>,
-	Yoshinori Sato <ysato@users.sourceforge.jp>, Richard Weinberger
-	<richard@nod.at>, Chris Zankel <chris@zankel.net>,
-	<linux-arm-kernel@lists.infradead.org>, <linux-alpha@vger.kernel.org>,
-	<linux-csky@vger.kernel.org>, <linux-m68k@lists.linux-m68k.org>,
-	<linux-mips@vger.kernel.org>, <linux-parisc@vger.kernel.org>,
-	<linux-sh@vger.kernel.org>, <linux-um@lists.infradead.org>, Arnd Bergmann
-	<arnd@arndb.de>, Vineet Gupta <vgupta@kernel.org>, Will Deacon
-	<will@kernel.org>, Brian Cain <bcain@kernel.org>, Michal Simek
-	<monstr@monstr.eu>, Dinh Nguyen <dinguyen@kernel.org>, "David S. Miller"
-	<davem@davemloft.net>, Andreas Larsson <andreas@gaisler.com>,
-	<linux-snps-arc@lists.infradead.org>, <linux-hexagon@vger.kernel.org>,
-	<linux-openrisc@vger.kernel.org>, <sparclinux@vger.kernel.org>,
-	<linux-arch@vger.kernel.org>, =?UTF-8?Q?Michal_Such=C3=A1nek?=
-	<msuchanek@suse.de>, Jonathan Corbet <corbet@lwn.net>,
-	<linux-doc@vger.kernel.org>
-References: <20260707181957.433213175@kernel.org>
- <20260707190253.816918647@kernel.org>
-From: Jinjie Ruan <ruanjinjie@huawei.com>
-In-Reply-To: <20260707190253.816918647@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-X-Originating-IP: [10.67.109.254]
-X-ClientProxiedBy: kwepems100002.china.huawei.com (7.221.188.206) To
- dggpemf500011.china.huawei.com (7.185.36.131)
+Subject: Re: [PATCH] MAINTAINERS: Demote myself to reviewer
+To: Michael Ellerman <mpe@ellerman.id.au>,
+        "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
+        linuxppc-dev@lists.ozlabs.org,
+        "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+References: <87y0hspx0u.fsf@mpe.ellerman.id.au>
+ <7bpasqtq.ritesh.list@gmail.com>
+ <2847c36f-aba7-4458-8767-7617e13058bf@ellerman.id.au>
+Content-Language: en-US
+From: Madhavan Srinivasan <maddy@linux.ibm.com>
+In-Reply-To: <2847c36f-aba7-4458-8767-7617e13058bf@ellerman.id.au>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Authority-Analysis: v=2.4 cv=M7J97Sws c=1 sm=1 tr=0 ts=6a4f2f41 cx=c_pps
+ a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17
+ a=IkcTkHD0fZMA:10 a=RAioF0-LDSMA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=V8glGbnc2Ofi9Qvn3v5h:22 a=VnNF1IyMAAAA:8
+ a=M0VemPwJcwODWTKMbVMA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzA5MDA0NyBTYWx0ZWRfX1NHi9Dd68DpN
+ YlEDs9nyiPM6k6DaiSpmv14pT3GM8L3Bwpkj/DIld0tXm0iGrfA/YCiutZqDPtrcCllA3Sn1shZ
+ vstLb8U0CdfqJZavZdu08JOjhgyIVoWfhgJOa7BjGbXmD5c11VI3zCfIP8BwY8Cvv0jkIou6J2y
+ 6cFdRfKvzk/n/qmfv6ra6RvJN3JtJN29BbpAfY1e989Y+K9EPoMb69wp5/YOEx3oBtlefmFP6aQ
+ efGWr1/9fn3FCcJk5P9e3XOJVGTKwLIIFrsYB2XZUVewK1PZtmmS3kHbB5ar4d1HS9N/wHI9oSx
+ +EqdYAYItUBoo0EvOgKsTodRC3V1ySrcZfApoZBDaRCDbUnobigc22xVQbQ5InRMoXpSifXGExO
+ n67av0UcnU51kHFV97+OkSJMpXoSZwvnoOccNZUHU2qrwuvHT2qd4L5/F0HHVcG9kJCoQ8uG757
+ clxKluJlvJbXMZdZTKw==
+X-Proofpoint-Spam-Info: AW1haW4tMjYwNzA5MDA0NyBTYWx0ZWRfXz1D/rAWMwvIX
+ tmJ/5e9lAcJbtcYx+ZPwfsD4BvkxZKkpqrP9Cx+L1d9OWZ/39IYm73fLtzuVP0e9X6aXu1LpCEW
+ oSkuqZLqa8wDNluNcXpomoM6q7uLOh8=
+X-Proofpoint-GUID: IKXnAkEc-j56bf_yD76SxXuO14TldPJg
+X-Proofpoint-ORIG-GUID: oDI1QnyuCuqGLkdKsd_t9Pc-KXbnG4Fa
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-07-08_05,2026-07-08_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ suspectscore=0 lowpriorityscore=0 malwarescore=0 clxscore=1015 adultscore=0
+ priorityscore=1501 bulkscore=0 spamscore=0 impostorscore=0 phishscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607090047
 
 
+On 6/24/26 12:48 PM, Michael Ellerman wrote:
+> On 11/5/26 11:00 am, Ritesh Harjani (IBM) wrote:
+>> Michael Ellerman <mpe@ellerman.id.au> writes:
+>>>   LINUX FOR POWERPC (32-BIT AND 64-BIT)
+>>>   M:    Madhavan Srinivasan <maddy@linux.ibm.com>
+>>> -M:    Michael Ellerman <mpe@ellerman.id.au>
+>>
+>> Thanks for more than a decade of maintainership of Linux on PowerPC tree
+>> :)
+>
+> Thanks Ritesh.
+>
+> Maddy can you pick this one up please :)
 
-On 7/8/2026 3:06 AM, Thomas Gleixner wrote:
-> Randomizing the syscall stack can only happen after state is established
-> via enter_from_user_mode() or syscall_enter_from_user_mode(). The earlier
-> it happens the better.
-> 
-> Provide two new macros to consolidate that:
-> 
->   - enter_from_user_mode_randomize_stack()
-> 	enter_from_user_mode();
-> 	add_random_kstack_offset_irqsoff();
-> 
->   - syscall_enter_from_user_mode_randomize_stack()
-> 	enter_from_user_mode_randomize_stack();
-> 	syscall_enter_from_user_mode_work();
->     
-> to reduce boiler plate code.
-> 
-> Those are macros and not inline functions as the latter would limit the
-> stack randomization scope to the inline function itself.
-> 
-> Signed-off-by: Thomas Gleixner <tglx@kernel.org>
-> ---
->  include/linux/entry-common.h |   56 +++++++++++++++++++++++++++++++++++++++++++
->  1 file changed, 56 insertions(+)
-> 
-> --- a/include/linux/entry-common.h
-> +++ b/include/linux/entry-common.h
-> @@ -6,6 +6,7 @@
->  #include <linux/irq-entry-common.h>
->  #include <linux/livepatch.h>
->  #include <linux/ptrace.h>
-> +#include <linux/randomize_kstack.h>
->  #include <linux/resume_user_mode.h>
->  #include <linux/seccomp.h>
->  #include <linux/sched.h>
-> @@ -150,6 +151,61 @@ static __always_inline long syscall_ente
->  }
->  
->  /**
-> + * enter_from_user_mode_randomize_stack - Establish state and add stack randomization
-> + *					  before invoking syscall_enter_from_user_mode_work()
-> + * @regs:	Pointer to currents pt_regs
-> + *
-> + * Invoked from architecture specific syscall entry code with interrupts
-> + * disabled. The calling code has to be non-instrumentable. When the function
-> + * returns all state is correct, interrupts are still disabled and the
-> + * subsequent functions can be instrumented.
-> + *
-> + * Implemented as a macro so that the stack randomization is effective
-> + * throughout the function in which it is invoked. An inline would only make it
-> + * effective in the scope of the inline function.
-> + */
-> +#define enter_from_user_mode_randomize_stack(regs)			\
-> +do {									\
-> +	enter_from_user_mode(regs);					\
-> +	instrumentation_begin();					\
-> +	add_random_kstack_offset_irqsoff();				\
-> +	instrumentation_end();						\
-> +} while (0)
+Sure will do
+Maddy
 
 
-Perhaps this new function can also be reused when the ARM64 is switched
-to the generic entry as the irq also disabled now.
-
---- a/arch/arm64/kernel/entry-common.c
-+++ b/arch/arm64/kernel/entry-common.c
-@@ -64,7 +64,7 @@ static void noinstr arm64_exit_to_kernel_mode(struct
-pt_regs *regs,
-
- static __always_inline void arm64_syscall_enter_from_user_mode(struct
-pt_regs *regs)
- {
--       enter_from_user_mode(regs);
-+       enter_from_user_mode_randomize_stack(regs);
-        mte_disable_tco_entry(current);
-        sme_enter_from_user_mode();
- }
-diff --git a/arch/arm64/kernel/syscall.c b/arch/arm64/kernel/syscall.c
-index e0a98fac3b85..42ac02573b66 100644
---- a/arch/arm64/kernel/syscall.c
-+++ b/arch/arm64/kernel/syscall.c
-@@ -6,7 +6,6 @@
- #include <linux/errno.h>
- #include <linux/nospec.h>
- #include <linux/ptrace.h>
--#include <linux/randomize_kstack.h>
- #include <linux/syscalls.h>
-
- #include <asm/debug-monitors.h>
-@@ -42,8 +41,6 @@ static void invoke_syscall(struct pt_regs *regs,
-unsigned int scno,
- {
-        long ret;
-
--       add_random_kstack_offset();
--
-        if (likely(scno < sc_nr)) {
-                syscall_fn_t syscall_fn;
-                syscall_fn = syscall_table[array_index_nospec(scno, sc_nr)];
-
-
-> +
-> +/**
-> + * syscall_enter_from_user_mode_randomize_stack - Establish state and check and handle work
-> + *						  before invoking a syscall
-> + * @regs:	Pointer to currents pt_regs
-> + * @syscall:	The syscall number
-> + *
-> + * Invoked from architecture specific syscall entry code with interrupts
-> + * disabled. The calling code has to be non-instrumentable. When the
-> + * function returns all state is correct, interrupts are enabled and the
-> + * subsequent functions can be instrumented.
-> + *
-> + * This is the combination of enter_from_user_mode_randomize_stack() and
-> + * syscall_enter_from_user_mode_work() to be used when there is no
-> + * architecture specific work to be done between the two.
-> + *
-> + * Returns: The original or a modified syscall number. See
-> + * syscall_enter_from_user_mode_work() for further explanation.
-> + *
-> + * Implemented as a macro to make stack randomization effective in the calling
-> + * scope.
-> + */
-> +#define syscall_enter_from_user_mode_randomize_stack(regs, syscall)	\
-> +({									\
-> +	enter_from_user_mode_randomize_stack(regs);			\
-> +									\
-> +	instrumentation_begin();					\
-> +	local_irq_enable();						\
-> +	long _ret = syscall_enter_from_user_mode_work(regs, syscall);	\
-> +	instrumentation_end();						\
-> +									\
-> +	_ret;								\
-> +})
-> +
-> +/**
->   * syscall_enter_from_user_mode - Establish state and check and handle work
->   *				  before invoking a syscall
->   * @regs:	Pointer to currents pt_regs
-> 
-
+>
+> cheers
 
