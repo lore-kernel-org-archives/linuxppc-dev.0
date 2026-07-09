@@ -1,82 +1,87 @@
-Return-Path: <linuxppc-dev+bounces-23948-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23949-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 50A75C43458
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2026 16:56:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DC988C44501
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2026 17:04:05 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gx1MG5sxMz3c8C;
-	Fri, 10 Jul 2026 02:56:26 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::530"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783616186;
-	cv=none; b=VtsuIeEQzMzf957lf2i2YVmkUlGDh8dzyzYKd1C1ad8cn1UT/tzAh2EpdkVdEySPoV+srPMBfK0k+5pXAJu5wfofLxl6+OOhM+snv9fWC/EHr+aNzwMAcFMz9V/vhIervh1hOwk5fbHAE/qAFJ3kS76nPE6sYXbGfwI7eyFTLipz47ocllVwLnRQpckkILpWd2En5IuELcz5wEpIosrKSAwnY53wqCKBPHu2dMXLjphCRJechqPfhTOb3OVff802oEFeiigrSmN9DKok3R7I0glnN+nlnBDIisCgBTc+JDxjrO8th0reOA3/J6J3G4SrbQ25iKx888My4Il5mxAnUA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gx1X44FK4z3c2Z;
+	Fri, 10 Jul 2026 03:04:04 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=80.86.107.70
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783616644;
+	cv=none; b=nsvfFjVPgSlVkGlXvTWTWUDWECKK5yKbXU1C2kEHe3JcAuDdVzCRhgIWHCsYR9NokB+3vy2E3i7fiRcwbKAr589cRQG2wmIWoOgx+c0Lp/VxSEZ3zAazB/VJgiArn5aeRd3Rpy3jmokSpGnBDNaBPoaYqb+TNe2rjY4eGiSlOnA2KxLo48tlxtU1i5qlKWODP8ZWIwTIGl13JL3/ncsnJpfqmChIW6L70yI3eHd0/NHaZRnUxuyZ4d5/RVtKu7HE0hZHjqLzKVyJY6g6Xcwgss2k1gYoht+hRD/nuCTpkVYWpLZI84u5yuikqXeYEdQddV2PzVN6skN3brV+BNWayg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1783616186; c=relaxed/relaxed;
-	bh=LxRJKp6D1ptC4y5YnQZ3DSiE42VBKKscZdC4o85YzcU=;
-	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References; b=fUHp2oiZUfItgT//1v1T/KfscSw9yqrXmIvHGIMbvjrXgMwnX8QF+JbcYe7jOiEco5T5dzIL2AlOZtLRnWQ7y2PjPgN53cZlmMKWYDlZt3DJggsHuMmPmqMnOTaalRZFF3CeA4fzRRaEGKwhrJLKiY9yJgDcerD4iDd2iTWNc3y3A8em+oK1vK1Hs/ME7ng7V3llh4ad9HnOGMgkRzw7o6mqzYwPQDGn/L6ujuhYdv/fsR7jWiBtA6U3U+7k9s/VxRkGKkjfTZZ/gH9ZR+7KqBwVHh+aL2PXXbLtaaBD8ySfhbxw5E9JzuzrhUP+kdyptPoHMTCF6B3zkpYkE02Uxw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=AZ6xM0Ne; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::530; helo=mail-pg1-x530.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1783616644; c=relaxed/relaxed;
+	bh=QeTQcmCkS021HmkZ3w/J1fE+WH2x3hk465jNzOmdiww=;
+	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=mkEA3Y7DYu+zz313d5Oq6sm5JUmwg7UJh+9k3lilIdD+alS3253b4FUHOCpCWhjj/4KNXl1KRBlsMD4PlpcP5Jwpmg3NbbPJ+Jlpw+ex5e3WUFh+jGgQb7pkGaQ+4Jh03QqTzKTVzmlU5QE6OC0S1dTy2n28WcqTu1PFrfEgUFxEcFOwgaYW5xr1r3O0PfHeaPx0WmnH1RJ/MWWFv3aooJsX8Tq7w1l+nlQjSHZembSt8sbUlXUiLsjKJchYD/GY0l5wo+q1nMA7SEMequV/8ZPMIUdgSR52RYHPlq2jbAiNCT3nXYIm0IohXp3DrxXpL08Y7TunbnItyE9VHtASJA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=rendec.net; dkim=pass (2048-bit key; unprotected) header.d=rendec.net header.i=@rendec.net header.a=rsa-sha256 header.s=default header.b=HOQdvRC4; dkim-atps=neutral; spf=pass (client-ip=80.86.107.70; helo=mail.mindbit.ro; envelope-from=radu@rendec.net; receiver=lists.ozlabs.org) smtp.mailfrom=rendec.net
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=rendec.net
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=AZ6xM0Ne;
+	dkim=pass (2048-bit key; unprotected) header.d=rendec.net header.i=@rendec.net header.a=rsa-sha256 header.s=default header.b=HOQdvRC4;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::530; helo=mail-pg1-x530.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pg1-x530.google.com (mail-pg1-x530.google.com [IPv6:2607:f8b0:4864:20::530])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=rendec.net (client-ip=80.86.107.70; helo=mail.mindbit.ro; envelope-from=radu@rendec.net; receiver=lists.ozlabs.org)
+Received: from mail.mindbit.ro (xs1.mindbit.ro [80.86.107.70])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gx1MF12Vwz3c2P
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Jul 2026 02:56:24 +1000 (AEST)
-Received: by mail-pg1-x530.google.com with SMTP id 41be03b00d2f7-c99eaa1f020so33181a12.2
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 09 Jul 2026 09:56:24 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1783616182; x=1784220982; darn=lists.ozlabs.org;
-        h=references:message-id:date:in-reply-to:subject:cc:to:from:from:to
-         :cc:subject:date:message-id:reply-to:content-type;
-        bh=LxRJKp6D1ptC4y5YnQZ3DSiE42VBKKscZdC4o85YzcU=;
-        b=AZ6xM0Nea4gHmk8DvB/HVy2Ss1G9A2ReG1MsKcY8xqqdRN8zBE1+elx8LN/JcjJtad
-         bSDDJRMXN4RqjjCNb4bpB5xjVfFCcZUb+hZ+uOTZY50oJqH6b+SjsezJzdRnAIa8ASGE
-         OM5D2SE37lUXJTD9y5vLf4ML6+J+tXzBTN2BzoXQJyoYOnIAoshveXZSLvpuQGZSger9
-         ySpj20+9Qn5nQxFQ6F0Iw1CQTUC7+m/f4nGqLnrzBI91pKLxYeiFue13ca1Eku+62Tgt
-         iug5vfLiKj7XJV9NmpNWK1Urcqyt8yBP80xSKw4yjy9hedtU4EyW+7PT0t31HPqk4Fse
-         g6RA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1783616182; x=1784220982;
-        h=references:message-id:date:in-reply-to:subject:cc:to:from:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=LxRJKp6D1ptC4y5YnQZ3DSiE42VBKKscZdC4o85YzcU=;
-        b=lI4YTtFK4KVFjLmKnsk7Y/8zdhuASMHflbnL7YGOHyVewO574ROImcIWjOhXIxuldy
-         3y75k+VnMGIS4eGpJmcq3yH/ge6FGnfdLzviVBscV3EM4dBK5at+Hr9AsP8ky6Fvnq+D
-         QbV8gf+O+HhozXmVFXMYKzAipTeeEdE6XGerKgWdFp62gCB0YVrRz0EKfTfsDcQLwx71
-         h6Afg911VvXnwtvGVyuBvM2o6oB5wmD6eTL8zMrt1pZcFJBnh2xHo6Gv4FLiYqQ+xO3U
-         KqKC4OUUiyKZOdBmdl8X8ayvqdgy9wHoWKSyyY5hEL7LALbVlGxGa8DAQreT0e1uifZa
-         zN8g==
-X-Forwarded-Encrypted: i=1; AHgh+Rpsh3vp7ruRrYwMVugSmnFMPv8Im82udXefhAjcGCCfvLnfg23Q/R/1vDxYcgETJEBA5+t6cN6+ZebWxPQ=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YzKxGZwds1DU826UDszfSW4QPJJaHe1I0kcZhXrT4rE86KyHXjG
-	XqVOvzfID7ZyXyzMpwdkEaYeIGLeMPygbOW+G8Sh6iFTjgfw8GHRs9Tu
-X-Gm-Gg: AfdE7cmuaMyWuzQr6KsHDIsfwBSktMHsrUg1YPASvKs6ZBdS71fV+MCceExngG/Q4BY
-	QFPoynCxfEYYB7TpG36o8G6iy46LjSF+hNHz8Nue8O149IbIAo0xP6BtS9iQ/AAnESrIE15+SBY
-	MIzr8jDlNR0r9t11Kzl/Nn6L9Phlf0AZ3EMDr8Lys748OCQZsitoqcnTxnRfsEkxLQDW84qJtKH
-	g9v9E5Jzhvm6U5HRtUIcKJUA5PaUjKJrDBm71hgrlZ/MCtOxo9xRo+LnTf+PEAFEr/h5XlUUjLy
-	Lb37l09XbWri1YW0TtFfvaGe7PC1eKNj1wQaZJJtqRmzJ5MLrv4qgFelVopmj2GCML0Zo6Y/dau
-	DFtbaCAMmBlEBcAVkPwsq0hMSduQHvQp1UDW1NWxaAFQxTVGpaAScFZ/nVqgtuq51HZT2u11ahd
-	6OCHVB33qSgTE=
-X-Received: by 2002:a05:6a21:512:b0:39c:126c:93b5 with SMTP id adf61e73a8af0-3c0bcfea433mr9860874637.21.1783616181907;
-        Thu, 09 Jul 2026 09:56:21 -0700 (PDT)
-Received: from pve-server ([49.205.216.49])
-        by smtp.gmail.com with ESMTPSA id a92af1059eb24-13b658a99afsm32344548c88.0.2026.07.09.09.56.16
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 09 Jul 2026 09:56:21 -0700 (PDT)
-From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-To: Sourabh Jain <sourabhjain@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org, maddy@linux.ibm.com, mpe@ellerman.id.au
-Cc: npiggin@gmail.com, chleroy@kernel.org, shivangu@linux.ibm.com, hbathini@linux.ibm.com, mahesh@linux.ibm.com, adityag@linux.ibm.com, venkat88@linux.ibm.com, sourabhjain@linux.ibm.com, stable@vger.kernel.org, Mahesh Kumar G <mahe657@linux.ibm.com>
-Subject: Re: [PATCH 1/1] powerpc/crash: stop watchdogs before booting kdump kernel
-In-Reply-To: <20260603070217.483696-2-sourabhjain@linux.ibm.com>
-Date: Thu, 09 Jul 2026 22:01:02 +0530
-Message-ID: <4ii8w2ex.ritesh.list@gmail.com>
-References: <20260603070217.483696-1-sourabhjain@linux.ibm.com> <20260603070217.483696-2-sourabhjain@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gx1X31m3gz2xdb
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Jul 2026 03:04:01 +1000 (AEST)
+Received: from bat.kanata.rendec.net (unknown [24.114.110.115])
+	by mail.mindbit.ro (Postfix) with ESMTPSA id 635A0C3444;
+	Thu,  9 Jul 2026 20:03:34 +0300 (EEST)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mail.mindbit.ro 635A0C3444
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=rendec.net;
+	s=default; t=1783616636;
+	bh=QeTQcmCkS021HmkZ3w/J1fE+WH2x3hk465jNzOmdiww=;
+	h=Subject:From:To:Cc:Date:In-Reply-To:References:From;
+	b=HOQdvRC4cpDjWxoO4q76o7VJpxbZjQlbfuUOsiqDAUaPuPJStaRmbiQcxJQ980Eps
+	 MKFq/GOxxZLqgfu23csRihSSRUSW/5gctxpZAo1uinpu1GDEqcDEuIex/Mzbgh47ta
+	 cCEipZ2fxijuCgu82+Hv9gPEgIpv+01gj1FsjVkBe0BVe8PsJncm6hNS4/ilHElftk
+	 flFvwyBgIEh76z+XJg23ownBxmO2Sv8OyobBemr1+LB6/Q+hd+F4qDL8I9pInHlerr
+	 toXkuZm1JvzkIIQQaZAtM1eVcf+e7dYfEcqZsxsJx1eEuphZ7eWQNXng18btEVDbYR
+	 zQBb+9iNgz9Dg==
+Message-ID: <390d4e005e22d64734167b656f393518682e0613.camel@rendec.net>
+Subject: Re: [patch 12/18] ptrace, treewide: Rename
+ ptrace_report_syscall_entry() to ptrace_report_syscall_permit_entry()
+From: Radu Rendec <radu@rendec.net>
+To: Thomas Gleixner <tglx@kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, Arnd Bergmann <arnd@arndb.de>, 
+ Oleg Nesterov <oleg@redhat.com>, Richard Henderson
+ <richard.henderson@linaro.org>, Vineet Gupta	 <vgupta@kernel.org>, Russell
+ King <linux@armlinux.org.uk>, Catalin Marinas	 <catalin.marinas@arm.com>,
+ Will Deacon <will@kernel.org>, Guo Ren	 <guoren@kernel.org>, Brian Cain
+ <bcain@kernel.org>, Geert Uytterhoeven	 <geert@linux-m68k.org>, Michal
+ Simek <monstr@monstr.eu>, Thomas Bogendoerfer	 <tsbogend@alpha.franken.de>,
+ Dinh Nguyen <dinguyen@kernel.org>, Helge Deller	 <deller@gmx.de>, Yoshinori
+ Sato <ysato@users.sourceforge.jp>, "David S. Miller"	
+ <davem@davemloft.net>, Andreas Larsson <andreas@gaisler.com>, Chris Zankel	
+ <chris@zankel.net>, linux-alpha@vger.kernel.org, 
+	linux-snps-arc@lists.infradead.org, linux-arm-kernel@lists.infradead.org, 
+	linux-csky@vger.kernel.org, linux-hexagon@vger.kernel.org, 
+	linux-m68k@lists.linux-m68k.org, linux-mips@vger.kernel.org, 
+	linux-openrisc@vger.kernel.org, linux-parisc@vger.kernel.org, 
+	linux-sh@vger.kernel.org, sparclinux@vger.kernel.org, 
+	linux-um@lists.infradead.org, linux-arch@vger.kernel.org, Michael Ellerman	
+ <mpe@ellerman.id.au>, Shrikanth Hegde <sshegde@linux.ibm.com>, 
+	linuxppc-dev@lists.ozlabs.org, Kees Cook <kees@kernel.org>, Huacai Chen	
+ <chenhuacai@kernel.org>, loongarch@lists.linux.dev, Paul Walmsley
+ <pjw@kernel.org>,  Palmer Dabbelt <palmer@dabbelt.com>,
+ linux-riscv@lists.infradead.org, Sven Schnelle <svens@linux.ibm.com>, 
+	linux-s390@vger.kernel.org, x86@kernel.org, Mark Rutland
+ <mark.rutland@arm.com>,  Jinjie Ruan <ruanjinjie@huawei.com>, Andy
+ Lutomirski <luto@kernel.org>, Richard Weinberger <richard@nod.at>,  Michal
+ =?ISO-8859-1?Q?Such=E1nek?=	 <msuchanek@suse.de>, Jonathan Corbet
+ <corbet@lwn.net>, 	linux-doc@vger.kernel.org
+Date: Thu, 09 Jul 2026 13:03:28 -0400
+In-Reply-To: <20260707190254.280015701@kernel.org>
+References: <20260707181957.433213175@kernel.org>
+	 <20260707190254.280015701@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+User-Agent: Evolution 3.58.3 (3.58.3-1.fc43) 
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -89,164 +94,442 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
+MIME-Version: 1.0
 
-Sourabh Jain <sourabhjain@linux.ibm.com> writes:
-
-> On pseries LPAR systems, watchdog timers configured from userspace
-> can remain active after a kernel panic. During panic triggered crash
-> dump capture, the crashing kernel jumps directly to the kdump kernel
-> without shutting down userspace services. As a result, active
-> watchdogs are not stopped before entering the kdump kernel.
->
-> If dump capture takes longer than the watchdog timeout, PHYP resets
-> the LPAR before dump collection completes, resulting in dump capture
-> failure.
->
-> Fix this by issuing the H_WATCHDOG hcall on the crash shutdown path
-> to stop all active watchdogs before booting the kdump kernel.
->
-
-Nice catch!
-
-> Fixes: 69472ffa6575 ("watchdog/pseries-wdt: initial support for H_WATCHDOG-based watchdog timers")
-> Reported-by: Mahesh Kumar G <mahe657@linux.ibm.com>
-> Signed-off-by: Sourabh Jain <sourabhjain@linux.ibm.com>
+On Tue, 2026-07-07 at 21:06 +0200, Thomas Gleixner wrote:
+> The return value of that function is boolean and tells the caller whether
+> to permit the syscall processing or not.
+>=20
+> Rename the function so the purpose is clear and make the return type bool=
+.
+>=20
+> Signed-off-by: Thomas Gleixner <tglx@kernel.org>
+> Cc: Arnd Bergmann <arnd@arndb.de>
+> Cc: Oleg Nesterov <oleg@redhat.com>
+> Cc: Richard Henderson <richard.henderson@linaro.org>
+> Cc: Vineet Gupta <vgupta@kernel.org>
+> Cc: Russell King <linux@armlinux.org.uk>
+> Cc: Catalin Marinas <catalin.marinas@arm.com>
+> Cc: Will Deacon <will@kernel.org>
+> Cc: Guo Ren <guoren@kernel.org>
+> Cc: Brian Cain <bcain@kernel.org>
+> Cc: Geert Uytterhoeven <geert@linux-m68k.org>
+> Cc: Michal Simek <monstr@monstr.eu>
+> Cc: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
+> Cc: Dinh Nguyen <dinguyen@kernel.org>
+> Cc: Helge Deller <deller@gmx.de>
+> Cc: Yoshinori Sato <ysato@users.sourceforge.jp>
+> Cc: "David S. Miller" <davem@davemloft.net>
+> Cc: Andreas Larsson <andreas@gaisler.com>
+> Cc: Chris Zankel <chris@zankel.net>
+> Cc: linux-alpha@vger.kernel.org
+> Cc: linux-snps-arc@lists.infradead.org
+> Cc: linux-arm-kernel@lists.infradead.org
+> Cc: linux-csky@vger.kernel.org
+> Cc: linux-hexagon@vger.kernel.org
+> Cc: linux-m68k@lists.linux-m68k.org
+> Cc: linux-mips@vger.kernel.org
+> Cc: linux-openrisc@vger.kernel.org
+> Cc: linux-parisc@vger.kernel.org
+> Cc: linux-sh@vger.kernel.org
+> Cc: sparclinux@vger.kernel.org
+> Cc: linux-um@lists.infradead.org
+> Cc: linux-arch@vger.kernel.org
 > ---
->  arch/powerpc/kexec/crash.c | 25 +++++++++++++++++++++++++
->  1 file changed, 25 insertions(+)
->
-> diff --git a/arch/powerpc/kexec/crash.c b/arch/powerpc/kexec/crash.c
-> index e6539f213b3d..5651523e3a70 100644
-> --- a/arch/powerpc/kexec/crash.c
-> +++ b/arch/powerpc/kexec/crash.c
-> @@ -28,6 +28,7 @@
->  #include <asm/interrupt.h>
->  #include <asm/kexec_ranges.h>
->  #include <asm/crashdump-ppc64.h>
-> +#include <asm/hvcall.h>
->  
+> =C2=A0arch/alpha/kernel/ptrace.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 |=C2=A0=C2=
+=A0=C2=A0 2 +-
+> =C2=A0arch/arc/kernel/ptrace.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 =
+|=C2=A0=C2=A0=C2=A0 2 +-
+> =C2=A0arch/arm/kernel/ptrace.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 =
+|=C2=A0=C2=A0=C2=A0 2 +-
+> =C2=A0arch/arm64/kernel/ptrace.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 |=C2=A0=C2=
+=A0=C2=A0 2 +-
+> =C2=A0arch/csky/kernel/ptrace.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 |=C2=
+=A0=C2=A0=C2=A0 2 +-
+> =C2=A0arch/hexagon/kernel/traps.c=C2=A0=C2=A0=C2=A0=C2=A0 |=C2=A0=C2=A0=
+=C2=A0 2 +-
+> =C2=A0arch/m68k/kernel/ptrace.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 |=C2=
+=A0=C2=A0=C2=A0 2 +-
+> =C2=A0arch/microblaze/kernel/ptrace.c |=C2=A0=C2=A0=C2=A0 2 +-
+> =C2=A0arch/mips/kernel/ptrace.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 |=C2=
+=A0=C2=A0=C2=A0 2 +-
+> =C2=A0arch/nios2/kernel/ptrace.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 |=C2=A0=C2=
+=A0=C2=A0 2 +-
+> =C2=A0arch/openrisc/kernel/ptrace.c=C2=A0=C2=A0 |=C2=A0=C2=A0=C2=A0 2 +-
+> =C2=A0arch/parisc/kernel/ptrace.c=C2=A0=C2=A0=C2=A0=C2=A0 |=C2=A0=C2=A0 1=
+0 ++++------
+> =C2=A0arch/sh/kernel/ptrace_32.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 |=C2=A0=C2=
+=A0=C2=A0 2 +-
+> =C2=A0arch/sparc/kernel/ptrace_32.c=C2=A0=C2=A0 |=C2=A0=C2=A0=C2=A0 2 +-
+> =C2=A0arch/sparc/kernel/ptrace_64.c=C2=A0=C2=A0 |=C2=A0=C2=A0=C2=A0 2 +-
+> =C2=A0arch/um/kernel/ptrace.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
+=C2=A0 |=C2=A0=C2=A0=C2=A0 2 +-
+> =C2=A0arch/xtensa/kernel/ptrace.c=C2=A0=C2=A0=C2=A0=C2=A0 |=C2=A0=C2=A0=
+=C2=A0 2 +-
+> =C2=A0include/asm-generic/syscall.h=C2=A0=C2=A0 |=C2=A0=C2=A0=C2=A0 4 ++-=
+-
+> =C2=A0include/linux/entry-common.h=C2=A0=C2=A0=C2=A0 |=C2=A0=C2=A0 25 +++=
++++++++++-------------
+> =C2=A0include/linux/ptrace.h=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0 |=C2=A0=C2=A0 13 ++++++-------
+> =C2=A020 files changed, 40 insertions(+), 44 deletions(-)
+>=20
+> --- a/arch/alpha/kernel/ptrace.c
+> +++ b/arch/alpha/kernel/ptrace.c
+> @@ -375,7 +375,7 @@ asmlinkage unsigned long syscall_trace_e
+> =C2=A0	struct pt_regs *regs =3D current_pt_regs();
+> =C2=A0
+> =C2=A0	if (test_thread_flag(TIF_SYSCALL_TRACE) &&
+> -		ptrace_report_syscall_entry(regs)) {
+> +		!ptrace_report_syscall_permit_entry(regs)) {
+> =C2=A0		syscall_set_nr(current, regs, -1);
+> =C2=A0		if (regs->r19 =3D=3D 0 && regs->r0 =3D=3D (unsigned long)-1)
+> =C2=A0			syscall_set_return_value(current, regs, -ENOSYS, 0);
+> --- a/arch/arc/kernel/ptrace.c
+> +++ b/arch/arc/kernel/ptrace.c
+> @@ -342,7 +342,7 @@ long arch_ptrace(struct task_struct *chi
+> =C2=A0asmlinkage int syscall_trace_enter(struct pt_regs *regs)
+> =C2=A0{
+> =C2=A0	if (test_thread_flag(TIF_SYSCALL_TRACE))
+> -		if (ptrace_report_syscall_entry(regs))
+> +		if (!ptrace_report_syscall_permit_entry(regs))
+> =C2=A0			return ULONG_MAX;
+> =C2=A0
+> =C2=A0#ifdef CONFIG_HAVE_SYSCALL_TRACEPOINTS
+> --- a/arch/arm/kernel/ptrace.c
+> +++ b/arch/arm/kernel/ptrace.c
+> @@ -840,7 +840,7 @@ static void report_syscall(struct pt_reg
+> =C2=A0
+> =C2=A0	if (dir =3D=3D PTRACE_SYSCALL_EXIT)
+> =C2=A0		ptrace_report_syscall_exit(regs, 0);
+> -	else if (ptrace_report_syscall_entry(regs))
+> +	else if (!ptrace_report_syscall_permit_entry(regs))
+> =C2=A0		current_thread_info()->abi_syscall =3D -1;
+> =C2=A0
+> =C2=A0	regs->ARM_ip =3D ip;
+> --- a/arch/arm64/kernel/ptrace.c
+> +++ b/arch/arm64/kernel/ptrace.c
+> @@ -2379,7 +2379,7 @@ static int report_syscall_entry(struct p
+> =C2=A0	int regno, ret;
+> =C2=A0
+> =C2=A0	saved_reg =3D ptrace_save_reg(regs, PTRACE_SYSCALL_ENTER, &regno);
+> -	ret =3D ptrace_report_syscall_entry(regs);
+> +	ret =3D !ptrace_report_syscall_permit_entry(regs);
+> =C2=A0	if (ret)
+> =C2=A0		forget_syscall(regs);
+> =C2=A0	regs->regs[regno] =3D saved_reg;
+> --- a/arch/csky/kernel/ptrace.c
+> +++ b/arch/csky/kernel/ptrace.c
+> @@ -320,7 +320,7 @@ long arch_ptrace(struct task_struct *chi
+> =C2=A0asmlinkage int syscall_trace_enter(struct pt_regs *regs)
+> =C2=A0{
+> =C2=A0	if (test_thread_flag(TIF_SYSCALL_TRACE))
+> -		if (ptrace_report_syscall_entry(regs))
+> +		if (!ptrace_report_syscall_permit_entry(regs))
+> =C2=A0			return -1;
+> =C2=A0
+> =C2=A0	if (!seccomp_permit_syscall())
+> --- a/arch/hexagon/kernel/traps.c
+> +++ b/arch/hexagon/kernel/traps.c
+> @@ -345,7 +345,7 @@ void do_trap0(struct pt_regs *regs)
+> =C2=A0
+> =C2=A0		/* allow strace to catch syscall args=C2=A0 */
+> =C2=A0		if (unlikely(test_thread_flag(TIF_SYSCALL_TRACE) &&
+> -			ptrace_report_syscall_entry(regs)))
+> +			!ptrace_report_syscall_permit_entry(regs)))
+> =C2=A0			return;=C2=A0 /*=C2=A0 return -ENOSYS somewhere?=C2=A0 */
+> =C2=A0
+> =C2=A0		/* Interrupts should be re-enabled for syscall processing */
+> --- a/arch/m68k/kernel/ptrace.c
+> +++ b/arch/m68k/kernel/ptrace.c
+> @@ -279,7 +279,7 @@ asmlinkage int syscall_trace_enter(void)
+> =C2=A0	int ret =3D 0;
+> =C2=A0
+> =C2=A0	if (test_thread_flag(TIF_SYSCALL_TRACE))
+> -		ret =3D ptrace_report_syscall_entry(task_pt_regs(current));
+> +		ret =3D !ptrace_report_syscall_permit_entry(task_pt_regs(current));
+> =C2=A0
+> =C2=A0	if (!seccomp_permit_syscall())
+> =C2=A0		return -1;
+> --- a/arch/microblaze/kernel/ptrace.c
+> +++ b/arch/microblaze/kernel/ptrace.c
+> @@ -139,7 +139,7 @@ asmlinkage unsigned long do_syscall_trac
+> =C2=A0	secure_computing_strict(regs->r12);
+> =C2=A0
+> =C2=A0	if (test_thread_flag(TIF_SYSCALL_TRACE) &&
+> -	=C2=A0=C2=A0=C2=A0 ptrace_report_syscall_entry(regs))
+> +	=C2=A0=C2=A0=C2=A0 !ptrace_report_syscall_permit_entry(regs))
+> =C2=A0		/*
+> =C2=A0		 * Tracing decided this syscall should not happen.
+> =C2=A0		 * We'll return a bogus call number to get an ENOSYS
+> --- a/arch/mips/kernel/ptrace.c
+> +++ b/arch/mips/kernel/ptrace.c
+> @@ -1324,7 +1324,7 @@ asmlinkage long syscall_trace_enter(stru
+> =C2=A0	user_exit();
+> =C2=A0
+> =C2=A0	if (test_thread_flag(TIF_SYSCALL_TRACE)) {
+> -		if (ptrace_report_syscall_entry(regs))
+> +		if (!ptrace_report_syscall_permit_entry(regs))
+> =C2=A0			return -1;
+> =C2=A0	}
+> =C2=A0
+> --- a/arch/nios2/kernel/ptrace.c
+> +++ b/arch/nios2/kernel/ptrace.c
+> @@ -133,7 +133,7 @@ asmlinkage int do_syscall_trace_enter(vo
+> =C2=A0	int ret =3D 0;
+> =C2=A0
+> =C2=A0	if (test_thread_flag(TIF_SYSCALL_TRACE))
+> -		ret =3D ptrace_report_syscall_entry(task_pt_regs(current));
+> +		ret =3D !ptrace_report_syscall_permit_entry(task_pt_regs(current));
+> =C2=A0
+> =C2=A0	return ret;
+> =C2=A0}
+> --- a/arch/openrisc/kernel/ptrace.c
+> +++ b/arch/openrisc/kernel/ptrace.c
+> @@ -293,7 +293,7 @@ asmlinkage long do_syscall_trace_enter(s
+> =C2=A0	long ret =3D 0;
+> =C2=A0
+> =C2=A0	if (test_thread_flag(TIF_SYSCALL_TRACE) &&
+> -	=C2=A0=C2=A0=C2=A0 ptrace_report_syscall_entry(regs))
+> +	=C2=A0=C2=A0=C2=A0 !ptrace_report_syscall_permit_entry(regs))
+> =C2=A0		/*
+> =C2=A0		 * Tracing decided this syscall should not happen.
+> =C2=A0		 * We'll return a bogus call number to get an ENOSYS
+> --- a/arch/parisc/kernel/ptrace.c
+> +++ b/arch/parisc/kernel/ptrace.c
+> @@ -326,7 +326,7 @@ long compat_arch_ptrace(struct task_stru
+> =C2=A0long do_syscall_trace_enter(struct pt_regs *regs)
+> =C2=A0{
+> =C2=A0	if (test_thread_flag(TIF_SYSCALL_TRACE)) {
+> -		int rc =3D ptrace_report_syscall_entry(regs);
+> +		bool permit =3D ptrace_report_syscall_permit_entry(regs);
+> =C2=A0
+> =C2=A0		/*
+> =C2=A0		 * As tracesys_next does not set %r28 to -ENOSYS
+> @@ -334,12 +334,10 @@ long do_syscall_trace_enter(struct pt_re
+> =C2=A0		 */
+> =C2=A0		regs->gr[28] =3D -ENOSYS;
+> =C2=A0
+> -		if (rc) {
+> +		if (!permit) {
+> =C2=A0			/*
+> -			 * A nonzero return code from
+> -			 * ptrace_report_syscall_entry() tells us
+> -			 * to prevent the syscall execution.=C2=A0 Skip
+> -			 * the syscall call and the syscall restart handling.
+> +			 * Skip the syscall call and the syscall restart
+> +			 * handling.
+> =C2=A0			 *
+> =C2=A0			 * Note that the tracer may also just change
+> =C2=A0			 * regs->gr[20] to an invalid syscall number,
+> --- a/arch/sh/kernel/ptrace_32.c
+> +++ b/arch/sh/kernel/ptrace_32.c
+> @@ -455,7 +455,7 @@ long arch_ptrace(struct task_struct *chi
+> =C2=A0asmlinkage long do_syscall_trace_enter(struct pt_regs *regs)
+> =C2=A0{
+> =C2=A0	if (test_thread_flag(TIF_SYSCALL_TRACE) &&
+> -	=C2=A0=C2=A0=C2=A0 ptrace_report_syscall_entry(regs)) {
+> +	=C2=A0=C2=A0=C2=A0 !ptrace_report_syscall_permit_entry(regs)) {
+> =C2=A0		regs->regs[0] =3D -ENOSYS;
+> =C2=A0		return -1;
+> =C2=A0	}
+> --- a/arch/sparc/kernel/ptrace_32.c
+> +++ b/arch/sparc/kernel/ptrace_32.c
+> @@ -441,7 +441,7 @@ asmlinkage int syscall_trace(struct pt_r
+> =C2=A0		if (syscall_exit_p)
+> =C2=A0			ptrace_report_syscall_exit(regs, 0);
+> =C2=A0		else
+> -			ret =3D ptrace_report_syscall_entry(regs);
+> +			ret =3D !ptrace_report_syscall_permit_entry(regs);
+> =C2=A0	}
+> =C2=A0
+> =C2=A0	return ret;
+> --- a/arch/sparc/kernel/ptrace_64.c
+> +++ b/arch/sparc/kernel/ptrace_64.c
+> @@ -1093,7 +1093,7 @@ asmlinkage int syscall_trace_enter(struc
+> =C2=A0		user_exit();
+> =C2=A0
+> =C2=A0	if (test_thread_flag(TIF_SYSCALL_TRACE))
+> -		ret =3D ptrace_report_syscall_entry(regs);
+> +		ret =3D !ptrace_report_syscall_permit_entry(regs);
+> =C2=A0
+> =C2=A0	if (unlikely(test_thread_flag(TIF_SYSCALL_TRACEPOINT)))
+> =C2=A0		trace_sys_enter(regs, regs->u_regs[UREG_G1]);
+> --- a/arch/um/kernel/ptrace.c
+> +++ b/arch/um/kernel/ptrace.c
+> @@ -135,7 +135,7 @@ int syscall_trace_enter(struct pt_regs *
+> =C2=A0	if (!test_thread_flag(TIF_SYSCALL_TRACE))
+> =C2=A0		return 0;
+> =C2=A0
+> -	return ptrace_report_syscall_entry(regs);
+> +	return !ptrace_report_syscall_permit_entry(regs);
+> =C2=A0}
+> =C2=A0
+> =C2=A0void syscall_trace_leave(struct pt_regs *regs)
+> --- a/arch/xtensa/kernel/ptrace.c
+> +++ b/arch/xtensa/kernel/ptrace.c
+> @@ -547,7 +547,7 @@ int do_syscall_trace_enter(struct pt_reg
+> =C2=A0		regs->areg[2] =3D -ENOSYS;
+> =C2=A0
+> =C2=A0	if (test_thread_flag(TIF_SYSCALL_TRACE) &&
+> -	=C2=A0=C2=A0=C2=A0 ptrace_report_syscall_entry(regs)) {
+> +	=C2=A0=C2=A0=C2=A0 !ptrace_report_syscall_permit_entry(regs)) {
+> =C2=A0		regs->areg[2] =3D -ENOSYS;
+> =C2=A0		regs->syscall =3D NO_SYSCALL;
+> =C2=A0		return 0;
+> --- a/include/asm-generic/syscall.h
+> +++ b/include/asm-generic/syscall.h
+> @@ -58,8 +58,8 @@ void syscall_set_nr(struct task_struct *
+> =C2=A0 *
+> =C2=A0 * It's only valid to call this when @task is stopped for system
+> =C2=A0 * call exit tracing (due to %SYSCALL_WORK_SYSCALL_TRACE or
+> - * %SYSCALL_WORK_SYSCALL_AUDIT), after ptrace_report_syscall_entry()
+> - * returned nonzero to prevent the system call from taking place.
+> + * %SYSCALL_WORK_SYSCALL_AUDIT), after ptrace_report_syscall_permit_entr=
+y()
+> + * returned False to prevent the system call from taking place.
+> =C2=A0 *
+> =C2=A0 * This rolls back the register state in @regs so it's as if the
+> =C2=A0 * system call instruction was a no-op.=C2=A0 The registers contain=
+ing
+> --- a/include/linux/entry-common.h
+> +++ b/include/linux/entry-common.h
+> @@ -38,21 +38,22 @@
+> =C2=A0				 SYSCALL_WORK_SYSCALL_EXIT_TRAP)
+> =C2=A0
+> =C2=A0/**
+> - * arch_ptrace_report_syscall_entry - Architecture specific ptrace_repor=
+t_syscall_entry() wrapper
+> + * arch_ptrace_report_syscall_permit_entry - Architecture specific wrapp=
+er for
+> + *					=C2=A0=C2=A0=C2=A0=C2=A0 ptrace_report_syscall_permit_entry()
+> =C2=A0 * @regs: Pointer to the register state at syscall entry
+> =C2=A0 *
+> - * Invoked from syscall_trace_enter() to wrap ptrace_report_syscall_entr=
+y().
+> + * Invoked from syscall_trace_enter() to wrap ptrace_report_syscall_perm=
+it_entry().
+> =C2=A0 *
+> - * This allows architecture specific ptrace_report_syscall_entry()
+> + * This allows architecture specific ptrace_report_syscall_permit_entry(=
+)
+> =C2=A0 * implementations. If not defined by the architecture this falls b=
+ack to
+> - * to ptrace_report_syscall_entry().
+> + * to ptrace_report_syscall_permit_entry().
+> =C2=A0 */
+> -static __always_inline int arch_ptrace_report_syscall_entry(struct pt_re=
+gs *regs);
+> +static __always_inline bool arch_ptrace_report_syscall_permit_entry(stru=
+ct pt_regs *regs);
+> =C2=A0
+> -#ifndef arch_ptrace_report_syscall_entry
+> -static __always_inline int arch_ptrace_report_syscall_entry(struct pt_re=
+gs *regs)
+> +#ifndef arch_ptrace_report_syscall_permit_entry
+> +static __always_inline bool arch_ptrace_report_syscall_permit_entry(stru=
+ct pt_regs *regs)
+> =C2=A0{
+> -	return ptrace_report_syscall_entry(regs);
+> +	return ptrace_report_syscall_permit_entry(regs);
+> =C2=A0}
+> =C2=A0#endif
+> =C2=A0
+> @@ -73,8 +74,6 @@ static inline void syscall_enter_audit(s
+> =C2=A0static __always_inline long syscall_trace_enter(struct pt_regs *reg=
+s, unsigned long work,
+> =C2=A0						long syscall)
+> =C2=A0{
+> -	long ret =3D 0;
+> -
+> =C2=A0	/*
+> =C2=A0	 * Handle Syscall User Dispatch.=C2=A0 This must comes first, sinc=
+e
+> =C2=A0	 * the ABI here can be something that doesn't make sense for
+> @@ -95,8 +94,8 @@ static __always_inline long syscall_trac
+> =C2=A0
+> =C2=A0	/* Handle ptrace */
+> =C2=A0	if (work & (SYSCALL_WORK_SYSCALL_TRACE | SYSCALL_WORK_SYSCALL_EMU)=
+) {
+> -		ret =3D arch_ptrace_report_syscall_entry(regs);
+> -		if (ret || (work & SYSCALL_WORK_SYSCALL_EMU))
+> +		if (!arch_ptrace_report_syscall_permit_entry(regs) ||
+> +		=C2=A0=C2=A0=C2=A0 (work & SYSCALL_WORK_SYSCALL_EMU))
+> =C2=A0			return -1L;
+> =C2=A0	}
+> =C2=A0
+> @@ -137,7 +136,7 @@ static __always_inline long syscall_trac
+> =C2=A0 * It handles the following work items:
+> =C2=A0 *
+> =C2=A0 *=C2=A0 1) syscall_work flag dependent invocations of
+> - *=C2=A0=C2=A0=C2=A0=C2=A0 ptrace_report_syscall_entry(), __seccomp_perm=
+it_syscall(), trace_sys_enter()
+> + *=C2=A0=C2=A0=C2=A0=C2=A0 ptrace_report_syscall_permit_entry(), __secco=
+mp_permit_syscall(), trace_sys_enter()
+> =C2=A0 *=C2=A0 2) Invocation of audit_syscall_entry()
+> =C2=A0 */
+> =C2=A0static __always_inline long syscall_enter_from_user_mode_work(struc=
+t pt_regs *regs, long syscall)
+> --- a/include/linux/ptrace.h
+> +++ b/include/linux/ptrace.h
+> @@ -405,13 +405,13 @@ extern void sigaction_compat_abi(struct
+> =C2=A0/*
+> =C2=A0 * ptrace report for syscall entry and exit looks identical.
+> =C2=A0 */
+> -static inline int ptrace_report_syscall(unsigned long message)
+> +static inline bool ptrace_report_syscall(unsigned long message)
+> =C2=A0{
+> =C2=A0	int ptrace =3D current->ptrace;
+> =C2=A0	int signr;
+> =C2=A0
+> =C2=A0	if (!(ptrace & PT_PTRACED))
+> -		return 0;
+> +		return true;
+> =C2=A0
+> =C2=A0	signr =3D ptrace_notify(SIGTRAP | ((ptrace & PT_TRACESYSGOOD) ? 0x=
+80 : 0),
+> =C2=A0			=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 message);
+> @@ -424,11 +424,11 @@ static inline int ptrace_report_syscall(
+> =C2=A0	if (signr)
+> =C2=A0		send_sig(signr, current, 1);
+> =C2=A0
+> -	return fatal_signal_pending(current);
+> +	return !fatal_signal_pending(current);
+> =C2=A0}
+> =C2=A0
+> =C2=A0/**
+> - * ptrace_report_syscall_entry - task is about to attempt a system call
+> + * ptrace_report_syscall_permit_entry - task is about to attempt a syste=
+m call
+> =C2=A0 * @regs:		user register state of current task
+> =C2=A0 *
+> =C2=A0 * This will be called if %SYSCALL_WORK_SYSCALL_TRACE or
+> @@ -438,7 +438,7 @@ static inline int ptrace_report_syscall(
+> =C2=A0 * call number and arguments to be tried.=C2=A0 It is safe to block=
+ here,
+> =C2=A0 * preventing the system call from beginning.
+> =C2=A0 *
+> - * Returns zero normally, or nonzero if the calling arch code should abo=
+rt
+> + * Returns True normally, or False if the calling architecture code shou=
+ld abort
+> =C2=A0 * the system call.=C2=A0 That must prevent normal entry so no syst=
+em call is
+> =C2=A0 * made.=C2=A0 If @task ever returns to user mode after this, its r=
+egister state
+> =C2=A0 * is unspecified, but should be something harmless like an %ENOSYS=
+ error
+> @@ -447,8 +447,7 @@ static inline int ptrace_report_syscall(
+> =C2=A0 *
+> =C2=A0 * Called without locks, just after entering kernel mode.
+> =C2=A0 */
+> -static inline __must_check int ptrace_report_syscall_entry(
+> -	struct pt_regs *regs)
+> +static inline __must_check bool ptrace_report_syscall_permit_entry(struc=
+t pt_regs *regs)
+> =C2=A0{
+> =C2=A0	return ptrace_report_syscall(PTRACE_EVENTMSG_SYSCALL_ENTRY);
+> =C2=A0}
 
-would be nice, if we could avoid papr specific header into common crash.c
-
->  /*
->   * The primary CPU waits a while for all secondary CPUs to enter. This is to
-> @@ -352,6 +353,28 @@ int crash_shutdown_unregister(crash_shutdown_t handler)
->  }
->  EXPORT_SYMBOL(crash_shutdown_unregister);
->  
-> +/**
-> + * stop_watchdogs - Stop active watchdogs before entering kdump kernel
-> + * On pseries LPAR systems, watchdogs configured from userspace remain
-> + * active after a kernel panic because userspace services are not shut
-> + * down on the kdump crash path. If a watchdog expires while the kdump
-> + * kernel is collecting the dump, PHYP resets the LPAR and dump capture
-> + * fails
-> + *
-> + *   0x200UL : watchdog stop operation
-> + *   -1      : watchdog number, disable all watchdogs
-> + */
-> +static void stop_watchdogs(void)
-> +{
-> +	if (firmware_has_feature(FW_FEATURE_LPAR)) {
-> +		int rc;
-
-ditto.
-Also I guess this could be FW_FEATURE_WATCHDOG
-
-> +
-> +		rc = plpar_hcall_norets_notrace(H_WATCHDOG, 0x200UL, -1);
-
-- 0x200 is hardcoded.
-- -1 is hardcoded.
-- I think it's return value is long.
-
-> +		if (rc != H_SUCCESS && rc != H_NOOP)
-> +			pr_warn("crash: failed to stop watchdogs\n");
-
-Let's print rc as well.
-
-> +	}
-> +}
-> +
-
-Looking at the code, we already have a mechanism to register a crash
-shutdown handler which anyways is getting called from
-default_machine_crash_shutdown(). So, I think we could use this generic
-crash handler register mechanism and keep the wdt specific calls within
-pseries/setup.c file...
-
-...How about something like this? 
-
-diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
-index 50b26ed8432d..4e557694d724 100644
---- a/arch/powerpc/platforms/pseries/setup.c
-+++ b/arch/powerpc/platforms/pseries/setup.c
-@@ -59,6 +59,7 @@
- #include <asm/xics.h>
- #include <asm/xive.h>
- #include <asm/papr-sysparm.h>
-+#include <asm/papr-watchdog.h>
- #include <asm/ppc-pci.h>
- #include <asm/i8259.h>
- #include <asm/udbg.h>
-@@ -185,14 +186,42 @@ static void __init fwnmi_init(void)
- #endif
- }
-
-<...>
-
-+static void pseries_crash_stop_watchdogs(void)
-+{
-+       long rc;
-+
-+       rc = plpar_hcall_norets_notrace(H_WATCHDOG, PSERIES_WDTF_OP_STOP,
-+                                       PSERIES_WDT_NUM_ALL);
-+       if (rc != H_SUCCESS && rc != H_NOOP)
-+               pr_warn("Could not stop watchdogs before kdump rc=%ld\n", rc);
-+}
-+
- /*
-  * Affix a device for the first timer to the platform bus if
-  * we have firmware support for the H_WATCHDOG hypercall.
-  */
- static __init int pseries_wdt_init(void)
- {
--       if (firmware_has_feature(FW_FEATURE_WATCHDOG))
--               platform_device_register_simple("pseries-wdt", 0, NULL, 0);
-+       if (!firmware_has_feature(FW_FEATURE_WATCHDOG))
-+               return 0;
-+
-+       platform_device_register_simple("pseries-wdt", 0, NULL, 0);
-+
-+       if (crash_shutdown_register(pseries_crash_stop_watchdogs))
-+               pr_warn("Could not register watchdog crash shutdown handler\n");
-+
-        return 0;
- }
- machine_subsys_initcall(pseries, pseries_wdt_init);
-
-
-Note that I added papr-watchdog.h header file in above. I am guessing we
-can move some definitions from drivers/watchdog/pseries-wdt.c to
-arch/powerpc/include/asm/papr-watchdog.h in a separate patch before this
-change.
-
-I think you get the idea. Can you try this way and let me know if this works?
-
--ritesh
-
->  void default_machine_crash_shutdown(struct pt_regs *regs)
->  {
->  	volatile unsigned int i;
-> @@ -360,6 +383,8 @@ void default_machine_crash_shutdown(struct pt_regs *regs)
->  	if (TRAP(regs) == INTERRUPT_SYSTEM_RESET)
->  		is_via_system_reset = 1;
->  
-> +	stop_watchdogs();
-> +
->  	if (IS_ENABLED(CONFIG_SMP))
->  		crash_smp_send_stop();
->  	else
-> -- 
-> 2.52.0
+Reviewed-by: Radu Rendec <radu@rendec.net>
 
