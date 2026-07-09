@@ -1,106 +1,53 @@
-Return-Path: <linuxppc-dev+bounces-23880-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23881-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 177A5C44501
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2026 02:28:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id ACD93C44501
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2026 02:34:38 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gwf6246sTz3cFD;
-	Thu, 09 Jul 2026 12:28:42 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c10c::1" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783564122;
-	cv=pass; b=emysuamuMke8aX6ENvMMyXYqgq3p7NZyCS193FIYOwDgkVobgw30tAFDkXiETIotf6h10n/hIXscNUsw/dLO62u0WPIczyopULIm8fuEaTOJgkHr+j3dWTHG6iMedLpDxh8utylCTa3WdwT1y2Wz7pWirZc6REdVtinqp7W0SaEkxS5kSowrHIFp2Cu3tGX8lJOiKBWw6JUoSWRyxwTO2vmv2Kc4YVMVId+T9aKb3dzRaXg8NheroUT8v6X8gDQwLTdxUVHsPnIPlfDYO3nH4malspF3HQsqAM4PcMFKZg6f6Xl0y6qy5kiE1s1xVXxW85AY2a8JaUgzJ0NM7gLzBA==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1783564122; c=relaxed/relaxed;
-	bh=628hE3qKJtKmhgz1J5dqnmQSJXhpojgwSEt0XJFiwHk=;
-	h=Content-Type:Date:Message-Id:Subject:Cc:To:From:References:
-	 In-Reply-To:MIME-Version; b=nWRtsON47UoMOwYQeMVwUnyJ2GAawzl8huJcsYyhXvRuJ/ckqcIzBk+wnUV2Lw5L6KwcR/5/Ut3hgF5leDZWxWB1b+bXPihpa0I/0nXVcI4/AQNSdXHtJ389GWPzXqC9lboq4wlrcSfbptZL8yc5YzBg+WTpb6whF632iLyNQyTNjB2TG22JnmtPLv5zq91Kt47Rg9XTEgLk1Ikv7gnO9SY2LoT5wqBifHEOr8DpLLY+q+hrJURM5fqbJMubo/VhOBGSq47T7SspEHOFbhnHiYePAljXehYcDFF0MgROAsE3gv+7eoQ2m/d4uL3HhzM45FST9ikcOWslCByk0KJFqg==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=bz5IKidz; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c10c::1; helo=sa9pr02cu001.outbound.protection.outlook.com; envelope-from=ziy@nvidia.com; receiver=lists.ozlabs.org) smtp.mailfrom=nvidia.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gwfDs2kTJz3by8;
+	Thu, 09 Jul 2026 12:34:37 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=113.46.200.225
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783564477;
+	cv=none; b=XTjtZQgkLqGmt7H1GeKzjTSKvCmljL7P+q/Nqfr5rhk9DCPya7NoBb8/ibzpLMnktF8B9RtWuwt88cAikp89/xsgYVRooqDXwC91xipIwhZyNdZrDOmE9U5BJBJXPkKXybbc3J822DAZn3ijAxoLIo4VbR9XrFBbAaqDi55KUmn0HCTCrbX5BvF+5XT4eZeiGa6SZZYjWM7Iqkmiprv6GGkI3fccqwmLPA/pHOWviFZsNVzn/dAzqChP4Ky9h4hhp008ItmERuvPXjnDaPsiGYqF4ze1Z2uEXJbUS41LXFoGf716rlD7XpMqA0siFB8nHP+NR1uTebfWVVLCA4Hkog==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1783564477; c=relaxed/relaxed;
+	bh=Y5gPTQlvZ5+PltKfyd7jsM9jOpB/L3Mods25ly3hUmU=;
+	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
+	 In-Reply-To:Content-Type; b=ODsBi/zH3Vq9oPTXUDVv/ym200FsIa1AY1Nd8VBa/92DVzGwQ/ZK0N1CeJwxzw1/5SRi1Y6QBiWQjalPRs0RQ+FtPUoO5rBkyzFxvYLbTicqv5syUYzZmoybDUIcrgU5NvkE3MR9Qi5uRt+GnO7B17LfEDVm07jYPcy3jLY9Pnr1DrvU+sTVIXux+AsEYx34f4CsPvlUNXIb9dEuYlG5OaLF3PauroS+hNlgPbQzNUAsTuErXKK8WflqXtwjuMMqsjP5FSIEycNq/qbe1dZdj9lWalfZbteSWeotxhgRwGhv0x9dzm2YM5nOGiO6EjloPEIiduzdkKUfvHvkLnQUwg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=wLN4PuTD; dkim-atps=neutral; spf=pass (client-ip=113.46.200.225; helo=canpmsgout10.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=bz5IKidz;
+	dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=wLN4PuTD;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nvidia.com (client-ip=2a01:111:f403:c10c::1; helo=sa9pr02cu001.outbound.protection.outlook.com; envelope-from=ziy@nvidia.com; receiver=lists.ozlabs.org)
-Received: from SA9PR02CU001.outbound.protection.outlook.com (mail-southcentralusazlp170130001.outbound.protection.outlook.com [IPv6:2a01:111:f403:c10c::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=113.46.200.225; helo=canpmsgout10.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org)
+Received: from canpmsgout10.his.huawei.com (canpmsgout10.his.huawei.com [113.46.200.225])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gwf611nxSz3cF1
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 09 Jul 2026 12:28:40 +1000 (AEST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=bOJJj7rmx60PJSWTNzmJhpej3sKFS5Wz0lJyPQb5rMSve7PCKTFTIEQRyzvrxznC2DbuldrKOnvAKU9jqmPxJWQntoKhXg07xNTS5g9vCvdt+IgIYPJqK3AiSmLbbOyBkkn6b8zt53Ft5+JJpdycLFNpgJiPe/UOPFKv3kMMAXjhP9r+o7zcJFDtQoYFwKpKr6ZDaeScx/TEUs2nnAUUWEgoVp672imEF+mPjXx5I/8tYGeAr1IMtPhWiUn2x89iY6ggjMo1B351Xkxs1t9FJuUH5Hpjg21G0jIWKkIAyn48n9kCDMCGHalzg3ZWOtRMzb4YCaooM7vGRNBq1UcszQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=628hE3qKJtKmhgz1J5dqnmQSJXhpojgwSEt0XJFiwHk=;
- b=sZ826dWvoJR0CQ61f3y+brnuYXkfl04ZcglwMw+BPJmSZTUXxsjb5KcakHxBlOed2S0bYLpG6GoZv19gn0CUFc8vdaWxjyynM229HQOu4ejImMFB69UXvhsxuPH8ZPA8lI8EA5C/udW+KtxkWVQdL/iyZCA2TqyJumPa+fF5rKqsovCiF+rVvN3HBm2R2Eh3mzVThdA+EGJs9mzQRXPukCuyOZIb6R9Yu9+MExQUbhncldCXh0F35bVZTtNq3jXR1sD/+4bAPzE3m1agCEBGkpuuZz4rk640FTvxEXLpGBISN73kYHU157Us2EiDYZGz4q/Q3w2PFPgbL914OQDcJw==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
- dkim=pass header.d=nvidia.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
- s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=628hE3qKJtKmhgz1J5dqnmQSJXhpojgwSEt0XJFiwHk=;
- b=bz5IKidz0aU0mhB4xRGwF2vFDP73iMiXQqknrJ5piQ94nra9oZVGFVmgDe6LIAxnbohuh5HRTYE7Nb+sgJjBiU11MeikVvzjdlL7gLMg9FB0voeTqK2vX0EWDvU4yK8XINW2Jcme270SiUwpeTTBjJeVR5I8HQOI6beO+PCgz7QLFyngV63D6DqDjxNBNCsLbSVkoDkvXpDOA9khZOgGBmvxDCZH4TCPrJ2qRBHGlV/SfOiIftDwBLNpnTBNvEWKH3osMg8sqSjD59eUOJ546U6ZafLqbMDSUgdR8iT7u5ANT8ENEFWf78eWB65Tg1Cf+6Ou3uIZQjOx4iYueE2Mvg==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=nvidia.com;
-Received: from IA0PR12MB8374.namprd12.prod.outlook.com (2603:10b6:208:40e::7)
- by CH3PR12MB8185.namprd12.prod.outlook.com (2603:10b6:610:123::17) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.181.11; Thu, 9 Jul
- 2026 02:28:07 +0000
-Received: from IA0PR12MB8374.namprd12.prod.outlook.com
- ([fe80::d85f:4c87:ae84:3f16]) by IA0PR12MB8374.namprd12.prod.outlook.com
- ([fe80::d85f:4c87:ae84:3f16%5]) with mapi id 15.21.0181.014; Thu, 9 Jul 2026
- 02:28:07 +0000
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset=UTF-8
-Date: Wed, 08 Jul 2026 22:28:00 -0400
-Message-Id: <DJTOP760MDDG.2KUSKD8WVVKJ5@nvidia.com>
-Subject: Re: [PATCH 13/13] mm/mremap: convert mremap code to use vma_flags_t
-Cc: <akpm@linux-foundation.org>, <tsbogend@alpha.franken.de>,
- <maddy@linux.ibm.com>, <mpe@ellerman.id.au>,
- <maarten.lankhorst@linux.intel.com>, <mripard@kernel.org>,
- <tzimmermann@suse.de>, <airlied@gmail.com>, <simona@ffwll.ch>,
- <l.stach@pengutronix.de>, <inki.dae@samsung.com>, <sw0312.kim@samsung.com>,
- <kyungmin.park@samsung.com>, <krzk@kernel.org>, <peter.griffin@linaro.org>,
- <jani.nikula@linux.intel.com>, <joonas.lahtinen@linux.intel.com>,
- <rodrigo.vivi@intel.com>, <tursulin@ursulin.net>,
- <robin.clark@oss.qualcomm.com>, <lumag@kernel.org>, <lyude@redhat.com>,
- <dakr@kernel.org>, <tomi.valkeinen@ideasonboard.com>, <hjc@rock-chips.com>,
- <heiko@sntech.de>, <andy.yan@rock-chips.com>, <thierry.reding@kernel.org>,
- <mperttunen@nvidia.com>, <jonathanh@nvidia.com>, <kraxel@redhat.com>,
- <dmitry.osipenko@collabora.com>, <zack.rusin@broadcom.com>,
- <matthew.brost@intel.com>, <thomas.hellstrom@linux.intel.com>,
- <oleksandr_andrushchenko@epam.com>, <deller@gmx.de>, <bcrl@kvack.org>,
- <viro@zeniv.linux.org.uk>, <brauner@kernel.org>, <muchun.song@linux.dev>,
- <osalvador@suse.de>, <david@kernel.org>, <baolin.wang@linux.alibaba.com>,
- <liam@infradead.org>, <npache@redhat.com>, <ryan.roberts@arm.com>,
- <dev.jain@arm.com>, <baohua@kernel.org>, <hughd@google.com>,
- <vbabka@kernel.org>, <rppt@kernel.org>, <surenb@google.com>,
- <mhocko@suse.com>, <jannh@google.com>, <pfalcato@suse.de>,
- <kees@kernel.org>, <perex@perex.cz>, <tiwai@suse.com>,
- <linux-mips@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
- <linuxppc-dev@lists.ozlabs.org>, <dri-devel@lists.freedesktop.org>,
- <etnaviv@lists.freedesktop.org>, <linux-arm-kernel@lists.infradead.org>,
- <linux-samsung-soc@vger.kernel.org>, <intel-gfx@lists.freedesktop.org>,
- <linux-arm-msm@vger.kernel.org>, <freedreno@lists.freedesktop.org>,
- <nouveau@lists.freedesktop.org>, <linux-rockchip@lists.infradead.org>,
- <linux-tegra@vger.kernel.org>, <virtualization@lists.linux.dev>,
- <intel-xe@lists.freedesktop.org>, <xen-devel@lists.xenproject.org>,
- <linux-fbdev@vger.kernel.org>, <linux-aio@kvack.org>,
- <linux-fsdevel@vger.kernel.org>, <linux-mm@kvack.org>,
- <linux-sound@vger.kernel.org>
-To: "Lorenzo Stoakes" <ljs@kernel.org>, "Lance Yang" <lance.yang@linux.dev>
-From: "Zi Yan" <ziy@nvidia.com>
-X-Mailer: aerc 0.21.0
-References: <380f761d35a3faa4370f8b3f92e3d4af3d4c7110.1782760670.git.ljs@kernel.org> <20260702134947.25189-1-lance.yang@linux.dev> <akaJx8Zt8kazlrjq@lucifer>
-In-Reply-To: <akaJx8Zt8kazlrjq@lucifer>
-X-ClientProxiedBy: DS7P220CA0110.NAMP220.PROD.OUTLOOK.COM
- (2603:10b6:8:25d::12) To IA0PR12MB8374.namprd12.prod.outlook.com
- (2603:10b6:208:40e::7)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gwfDp5wmxz303B
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 09 Jul 2026 12:34:32 +1000 (AEST)
+dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
+	c=relaxed/relaxed; q=dns/txt;
+	h=From;
+	bh=Y5gPTQlvZ5+PltKfyd7jsM9jOpB/L3Mods25ly3hUmU=;
+	b=wLN4PuTDh2Bs3oUFfNRxSZSE7gCwmqjYG039d/qXSq1UpIOaCLhb2iezcdm336V58TY0kTXy4
+	szfWi9o5up7AY22Girs57z0q9Oi7TCvcfhRpAuei9Dgq6Q3rv8QoRLbJRWC1d+UazJf8zIhojgL
+	pcWHZ91jG23KLVROOKeLeOw=
+Received: from mail.maildlp.com (unknown [172.19.163.15])
+	by canpmsgout10.his.huawei.com (SkyGuard) with ESMTPS id 4gwf2174NCz1K96m;
+	Thu,  9 Jul 2026 10:25:13 +0800 (CST)
+Received: from dggpemf500011.china.huawei.com (unknown [7.185.36.131])
+	by mail.maildlp.com (Postfix) with ESMTPS id 387FB40586;
+	Thu,  9 Jul 2026 10:34:27 +0800 (CST)
+Received: from [10.67.109.254] (10.67.109.254) by
+ dggpemf500011.china.huawei.com (7.185.36.131) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.1544.11; Thu, 9 Jul 2026 10:34:24 +0800
+Message-ID: <3fdebd1c-f7ea-4b49-808d-8dec99e68623@huawei.com>
+Date: Thu, 9 Jul 2026 10:34:22 +0800
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -114,107 +61,149 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: IA0PR12MB8374:EE_|CH3PR12MB8185:EE_
-X-MS-Office365-Filtering-Correlation-Id: d08dc437-8440-482d-c719-08dedd61b611
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|23010399003|1800799024|376014|366016|7416014|11063799006|18002099003|22082099003|4143699003|56012099006;
-X-Microsoft-Antispam-Message-Info:
-	Z/tjc06LNUj/ulqvzkhbzEoBDPqp8rufyAQcTElPkkRlF0B8T5Lbv7NMmcJr2fLtFbSsJgLgtFQE7voqnqaki+sE2P+d6Zq2TFmjE3fxJChyNDeTmhCtDvTiZO/XKngfNniy6jwmycUEa9vLkF/v2tAPyDLh4KOe8cIEtY8vtgAgmXR1KyNJPJW6VdDsUdKzYzL3I9N8Bgwyf2BDWdf+/jn3SJxXVHol2dODQXVmawEDDxxYe96QGbU8mg1IlAcDPVqgvY1CTNKIwHqWXo3HmmWXSRLC0lN2jN6ij11QBSyuVAY95RX+XdDCdiLHzjRN2nUcFafDKEwUJXECHDVv1pFmO+mPI2ZeDGU4uOG2KYqabOpq0AZ9U02WcOV+U5RXGj/0o58kNOZjIZXq8fjCkZno1LUGZ6pSljvH5R5tf+KUa5bZzEfGxC8fqYD4G4sHmVG2ZTvIDgG8RQNuqN5pIDhbPgMDHHgQn8uVdJYhWdGmCTbKhWOOB+jIlOYBfDORJ3fvm3BXCRyJ+MUAz7yvTyXwBlTV+Czo/rvFJC5g+vcpCcbEUWiElMspJ2ZW1nBbO8EFIAa9cdCLclSyU2JwoTl9+jG54SN7IHjyF3ozn47MSbc135KTOEkZcoJ+kUIaiOnk6eDkiLfNe8mpH1guZ6PqDK6XGo3FvG6Io0XdOcc=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:IA0PR12MB8374.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(23010399003)(1800799024)(376014)(366016)(7416014)(11063799006)(18002099003)(22082099003)(4143699003)(56012099006);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?utf-8?B?b0drdVdBNTVMRW1PY2NGdUlvZm5yTDUvUlNxNm5CRXJhcG5NTHBVQVgvZDZi?=
- =?utf-8?B?S2hVcjdVcWJxZ2swZUZjSC9ITUkrczBKTjlWVlJ5aWVWRStvcWVvNU92b3dJ?=
- =?utf-8?B?YmlQNm1CQ28rNitYUzB1TUMrZFJCanluTVhwTGJEa1F4SldlMlQvL0hVNXNN?=
- =?utf-8?B?RnROemo0ZmdrL25FcUtHbWRsaGNLUzBvYjI4WThVRUVqVkIxeEtjVGZjVU9L?=
- =?utf-8?B?UzNRTUh5a3BUZjFFcnM0WU5Eaklzb3RwT3E0Y1JSZFEvdDRtWi9XOGJ5L2ph?=
- =?utf-8?B?RUJLc0hLREpIMCtZS0Y4eUN5VmJZUk5OZVZWOW93anpkbTBwUzVCek5icDNr?=
- =?utf-8?B?bE1GZEhhcEdtYlk4OFlwWFlobU9ZMFVBNW5hWWtkemRBb201UXN6ekQreW5o?=
- =?utf-8?B?b01oSGphdWJIOU91OGNFZFM3aTVxOWRPOXl5OGxDVUFBdmV4Zkpqak1KV1c0?=
- =?utf-8?B?T3JDWGtZV0p4aSt2Z0pxT2ZYQ2V2eGtTVlJwOW5YNGJ4dUpudGhxM1hhRkFr?=
- =?utf-8?B?ZXd2cTRpNnJmVWZTSGk2Ylg0QTlJS2pwbEx5YTJIcjBxVjNHbThZWVFMTENK?=
- =?utf-8?B?elh2Nk40WFBucHgzd01vNWl1MlRvTHpueEFQZEdVVjdGYnBqNG5lZWRQNTdT?=
- =?utf-8?B?YjVzMWgvNmw4bGpIVUUySjE0NHVzUzd0NVloT3loRDYzVWdsNEJ2ZTJBV242?=
- =?utf-8?B?K3pJZ2d2cHVHZ296RDBXMHdycFgxZEpFV3ZveW93YXlQZ08vNUlnRm05Sjd3?=
- =?utf-8?B?dm5EOUx2NTZQVEJ1WHAzZnF5cUhCTEkzUk9XNk0yek9VUGhlR0ZzWFNOYzNJ?=
- =?utf-8?B?NnpKckl1WTF5emJNT29rZDRXU1pJemFuVGRRWUJBRXZEYXNESUIrbVRRalhq?=
- =?utf-8?B?TVV5MUJzR1ArUWJoQ05FUm5CeHhGRHJLVEU0Z2lOMkxrQmNiQnQzNGZxN1hw?=
- =?utf-8?B?Y1BmcHU1MWdZMkcvY1ErMGtFWVMvWnBnTThGd2I3emdLOFZYSm1oSHhUS2R2?=
- =?utf-8?B?eVpNOFp3NC9EQ1hDRStsMnZLSmdObktmQjVFNGo4NzNZYysvYTYvcHlUenFG?=
- =?utf-8?B?WFJlaVFnbDMrNnN1OEdYYjE1YzczTzVXdUJ1K3BESk90K1FURFlVU0xZMU1Z?=
- =?utf-8?B?RGJWRUlVTFZMZy9vbExnRW5DcVREZytCTDZoMVNFaTNvYSs5Mm5DeUdNSzdL?=
- =?utf-8?B?N0NyWVZpaHNLdGlLYysvWk41MDZ3YXdUOHE1SUczODVNeXIrMis1Vjh0QzA0?=
- =?utf-8?B?Y1lBakpkZ0ZHR3pJRjlTQWJKWFhTcHJwdUJKS3JhZnZiMU5oUVpnZERjM2VR?=
- =?utf-8?B?bmgxSFlnMTVaSzVyYnIyYWVKUzR1Y01hSUtyTTFNUmxZTUJwcmV0ZmhxYXFV?=
- =?utf-8?B?Vjl4aXI3L0FDOTFkZUVQL25oUUFyZ3RmRlBPdkR3MUpPditUenZhS1hxSWlr?=
- =?utf-8?B?SGVFSlhrb0xCU3NsZ0JVVmlPekxKbFdzaXd0MWx1SDM2VHhYcDBQdlNBWjRE?=
- =?utf-8?B?QjcrYnY4R0dlQklVMFllNEVPVjFoOFh0WEdnT09yajZiOTcrQkYvSGhWcXdz?=
- =?utf-8?B?bDBXVlpXU1R6dlBEbm1JNnRXUWdLWEQwQ0lRUDB3L0QxZWtxOXFxNHVmb2ZK?=
- =?utf-8?B?VHV6dUh1d0hpbFVVY1lyT1gvVHBmZ1h0NUJreWJjTjZjWHlqbFNQTW96M2Zm?=
- =?utf-8?B?YjI1TVZrYmhFRkRuSU9oY1lKK0lmcU8xQ3E2UDJrZmMwbTlWVFhCVE9WUkdN?=
- =?utf-8?B?a3VKaW0zUWc0eXdoWDh0Q3dhekxVMUt2Vkl4MUNRUGlmNDNsTVJDVytwRktW?=
- =?utf-8?B?c3VpRlQ1b0hyTitNRmpsSTBYWS9WVzN3ZkFBQ1RvRWE1SXh6dWhPdGxWNjFN?=
- =?utf-8?B?bVdvQnFVSVhxbTRSVy8yckJ3aW9SWlFtRGUzaHAvR3dYd1ZTUjdQTGJRUzFN?=
- =?utf-8?B?TmtYeFRRSWNhTytJNGhpclVLcitvcnJOd0VwLzQ5dlBOYURLYm1wVEFVTDJh?=
- =?utf-8?B?WWhETDBzRzJXcEwydmVaWWF4VDVTMGtDbGY3RlpnUGRabHdRMmNmTDVrbFFC?=
- =?utf-8?B?L3VibzBteDdUNmNkZXdWUlQ5ZHFXMm9XWTl0NHVCY0VBaGRkdEpLcmdlaVl6?=
- =?utf-8?B?d21mKzM1M3FMM3VPcHdMbnBYUFFsbGhXWGVuRDA4MHlqV3BHZStzWkJjUjdI?=
- =?utf-8?B?Q3dwbCtuNHcvaWpmWVV4eE1IQmFGeHpQUytIWkxyMFRNK3VLVkJSZTNOam9J?=
- =?utf-8?B?c3BEWXpUQnNyb1dTVFVWR200RUNLL2hXTXd6Y0VVY05VNlFxclpqVG8wa21J?=
- =?utf-8?Q?o/F5FtLy/Vhx3E1ynX?=
-X-OriginatorOrg: Nvidia.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: d08dc437-8440-482d-c719-08dedd61b611
-X-MS-Exchange-CrossTenant-AuthSource: IA0PR12MB8374.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 09 Jul 2026 02:28:07.1996
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: HwvHZWQC9MdnD6g3v08vrOQ4XTKGoKoqxeyCnkhEi4z4/RE9HfeCt5vBm/x1LNgj
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: CH3PR12MB8185
+User-Agent: Mozilla Thunderbird
+Subject: Re: [patch 03/18] entry: Provide
+ [syscall_]enter_from_user_mode_randomize_stack()
+To: Thomas Gleixner <tglx@kernel.org>, LKML <linux-kernel@vger.kernel.org>
+CC: Peter Zijlstra <peterz@infradead.org>, Michael Ellerman
+	<mpe@ellerman.id.au>, Shrikanth Hegde <sshegde@linux.ibm.com>,
+	<linuxppc-dev@lists.ozlabs.org>, Kees Cook <kees@kernel.org>, Huacai Chen
+	<chenhuacai@kernel.org>, <loongarch@lists.linux.dev>, Paul Walmsley
+	<pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
+	<linux-riscv@lists.infradead.org>, Sven Schnelle <svens@linux.ibm.com>,
+	<linux-s390@vger.kernel.org>, <x86@kernel.org>, Mark Rutland
+	<mark.rutland@arm.com>, Andy Lutomirski <luto@kernel.org>, Oleg Nesterov
+	<oleg@redhat.com>, Richard Henderson <richard.henderson@linaro.org>, Russell
+ King <linux@armlinux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>, Guo
+ Ren <guoren@kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Thomas
+ Bogendoerfer <tsbogend@alpha.franken.de>, Helge Deller <deller@gmx.de>,
+	Yoshinori Sato <ysato@users.sourceforge.jp>, Richard Weinberger
+	<richard@nod.at>, Chris Zankel <chris@zankel.net>,
+	<linux-arm-kernel@lists.infradead.org>, <linux-alpha@vger.kernel.org>,
+	<linux-csky@vger.kernel.org>, <linux-m68k@lists.linux-m68k.org>,
+	<linux-mips@vger.kernel.org>, <linux-parisc@vger.kernel.org>,
+	<linux-sh@vger.kernel.org>, <linux-um@lists.infradead.org>, Arnd Bergmann
+	<arnd@arndb.de>, Vineet Gupta <vgupta@kernel.org>, Will Deacon
+	<will@kernel.org>, Brian Cain <bcain@kernel.org>, Michal Simek
+	<monstr@monstr.eu>, Dinh Nguyen <dinguyen@kernel.org>, "David S. Miller"
+	<davem@davemloft.net>, Andreas Larsson <andreas@gaisler.com>,
+	<linux-snps-arc@lists.infradead.org>, <linux-hexagon@vger.kernel.org>,
+	<linux-openrisc@vger.kernel.org>, <sparclinux@vger.kernel.org>,
+	<linux-arch@vger.kernel.org>, =?UTF-8?Q?Michal_Such=C3=A1nek?=
+	<msuchanek@suse.de>, Jonathan Corbet <corbet@lwn.net>,
+	<linux-doc@vger.kernel.org>
+References: <20260707181957.433213175@kernel.org>
+ <20260707190253.816918647@kernel.org>
+From: Jinjie Ruan <ruanjinjie@huawei.com>
+In-Reply-To: <20260707190253.816918647@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+X-Originating-IP: [10.67.109.254]
+X-ClientProxiedBy: kwepems500002.china.huawei.com (7.221.188.17) To
+ dggpemf500011.china.huawei.com (7.185.36.131)
 
-On Thu Jul 2, 2026 at 12:07 PM EDT, Lorenzo Stoakes wrote:
-> On Thu, Jul 02, 2026 at 09:49:47PM +0800, Lance Yang wrote:
->>
->> On Mon, Jun 29, 2026 at 08:25:36PM +0100, Lorenzo Stoakes wrote:
->> >Replace use of the legacy vm_flags_t flags with vma_flags_t values
->> >throughout the mremap logic.
->> >
->> >Additionally update comments to reflect the changes to be consistent.
->> >
->> >No functional change intended.
->> >
->> >Signed-off-by: Lorenzo Stoakes <ljs@kernel.org>
->> >---
->>
->> The vm_flags_set() cases below spell out vma_start_write(), but the
->> vm_flags_clear() cases don't?
->
-> Yep as I said elsewhere, implicitly taking the lock is terrible and me do=
-ing
-> this is completely on purpose to get rid of that :)
->
-> But I haven't been clear enough clearly, so I should put the argument as =
-to why
-> that's ok in the commit message.
->
-> Will do so on respin.
 
-How about also add a comment to vma_clear*() telling us a lock is not
-needed and why like you explained a lock is needed for vma_set*()?
-This asymmetry could confuse people.=20
 
-This patch looks good to me.
+On 7/8/2026 3:06 AM, Thomas Gleixner wrote:
+> Randomizing the syscall stack can only happen after state is established
+> via enter_from_user_mode() or syscall_enter_from_user_mode(). The earlier
+> it happens the better.
+> 
+> Provide two new macros to consolidate that:
+> 
+>   - enter_from_user_mode_randomize_stack()
+> 	enter_from_user_mode();
+> 	add_random_kstack_offset_irqsoff();
+> 
+>   - syscall_enter_from_user_mode_randomize_stack()
+> 	enter_from_user_mode_randomize_stack();
+> 	syscall_enter_from_user_mode_work();
+>     
+> to reduce boiler plate code.
+> 
+> Those are macros and not inline functions as the latter would limit the
+> stack randomization scope to the inline function itself.
+> 
+> Signed-off-by: Thomas Gleixner <tglx@kernel.org>
+> ---
+>  include/linux/entry-common.h |   56 +++++++++++++++++++++++++++++++++++++++++++
+>  1 file changed, 56 insertions(+)
+> 
+> --- a/include/linux/entry-common.h
+> +++ b/include/linux/entry-common.h
+> @@ -6,6 +6,7 @@
+>  #include <linux/irq-entry-common.h>
+>  #include <linux/livepatch.h>
+>  #include <linux/ptrace.h>
+> +#include <linux/randomize_kstack.h>
+>  #include <linux/resume_user_mode.h>
+>  #include <linux/seccomp.h>
+>  #include <linux/sched.h>
+> @@ -150,6 +151,61 @@ static __always_inline long syscall_ente
+>  }
+>  
+>  /**
+> + * enter_from_user_mode_randomize_stack - Establish state and add stack randomization
+> + *					  before invoking syscall_enter_from_user_mode_work()
+> + * @regs:	Pointer to currents pt_regs
+> + *
+> + * Invoked from architecture specific syscall entry code with interrupts
+> + * disabled. The calling code has to be non-instrumentable. When the function
+> + * returns all state is correct, interrupts are still disabled and the
+> + * subsequent functions can be instrumented.
+> + *
+> + * Implemented as a macro so that the stack randomization is effective
+> + * throughout the function in which it is invoked. An inline would only make it
+> + * effective in the scope of the inline function.
+> + */
+> +#define enter_from_user_mode_randomize_stack(regs)			\
+> +do {									\
+> +	enter_from_user_mode(regs);					\
+> +	instrumentation_begin();					\
+> +	add_random_kstack_offset_irqsoff();				\
+> +	instrumentation_end();						\
+> +} while (0)
+> +
+> +/**
+> + * syscall_enter_from_user_mode_randomize_stack - Establish state and check and handle work
+> + *						  before invoking a syscall
+> + * @regs:	Pointer to currents pt_regs
+> + * @syscall:	The syscall number
+> + *
+> + * Invoked from architecture specific syscall entry code with interrupts
+> + * disabled. The calling code has to be non-instrumentable. When the
+> + * function returns all state is correct, interrupts are enabled and the
+> + * subsequent functions can be instrumented.
+> + *
+> + * This is the combination of enter_from_user_mode_randomize_stack() and
+> + * syscall_enter_from_user_mode_work() to be used when there is no
+> + * architecture specific work to be done between the two.
+> + *
+> + * Returns: The original or a modified syscall number. See
+> + * syscall_enter_from_user_mode_work() for further explanation.
+> + *
+> + * Implemented as a macro to make stack randomization effective in the calling
+> + * scope.
+> + */
+> +#define syscall_enter_from_user_mode_randomize_stack(regs, syscall)	\
+> +({									\
+> +	enter_from_user_mode_randomize_stack(regs);			\
+> +									\
+> +	instrumentation_begin();					\
+> +	local_irq_enable();						\
+> +	long _ret = syscall_enter_from_user_mode_work(regs, syscall);	\
+> +	instrumentation_end();						\
+> +									\
+> +	_ret;								\
+> +})
 
-Reviewed-by: Zi Yan <ziy@nvidia.com>
+Reviewed-by: Jinjie Ruan <ruanjinjie@huawei.com>
 
---=20
-Best Regards,
-Yan, Zi
+> +
+> +/**
+>   * syscall_enter_from_user_mode - Establish state and check and handle work
+>   *				  before invoking a syscall
+>   * @regs:	Pointer to currents pt_regs
+> 
 
 
