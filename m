@@ -1,53 +1,96 @@
-Return-Path: <linuxppc-dev+bounces-23900-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23901-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1598CC43458
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2026 06:37:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7C1DAC44501
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2026 06:46:24 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gwlct2FmCz3c9k;
-	Thu, 09 Jul 2026 16:37:18 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=113.46.200.221
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783579038;
-	cv=none; b=Gom5+GeYpiiJb5nbYCc1JMb8IohjRiZ3rXHnYkkGNX85J8HhHQoo7P+TV36qMf3JsxYtqFCI+Fgg7J/rCnXRqm9uJa6IIuJ4467QdmEW5mTqa1tZOEoi/gKLyjW4oD2Am6iS71XYavzCbTLVbwF1g1UUyRUkfwxubGQIZ69/llPTbFNlnZMvgBUL7ZfEE0iPH1v8BRF5xa/3ZW56rD9A4p2CVX7QlcleBedebFvPzuQZn+V4KAHoqFKIvO++GHfpRQs0DvANYR3E3Fmx8dK6fHPk7JZP/fxa6Fi5FJblgHwzZHfBVZtdwoSnS4IWgPGAUelnpUP1ERfHi+Ne2sEuKw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gwlqM12T1z3c9k;
+	Thu, 09 Jul 2026 16:46:23 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=170.10.129.124
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783579583;
+	cv=none; b=K/9JklJ1eImkwzzStJ3Ht8tQAQSI1a4B0HtbjfLoJM1HkqwJ5BQJ/4EWajTPpApRHyGPvZUdc/ZqrcZCLATSqbOeJuLWBJp1oFN2/P/RqewagFdFHW6StrqFEvD9FWubcBCq2jlLa6Ku4SLLxa0jKEBv/SkKjvTo4UR8PQ6i0V9bwdMM8DtSaQZ/sOyWH7lpjC8JL6nEtoP9X7REgijx6e45ITr+hOnJ/ceuDcsLm23vCofycwqbTDRnLb5YHZb6+rXEom2q6e7B3KQXJNV6nz5ZAHiWK1FJosauo6QKwuK6tq6fKo2Dg/ArYzU6reEEK4rALE+8LaVfnPCp3N3faw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1783579038; c=relaxed/relaxed;
-	bh=nx9uTIIpEYlLKn/TlkCDaDRFao/mdFBZNp54PrQsjPw=;
-	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
-	 In-Reply-To:Content-Type; b=FrRGQoYrHPggK2rauFGP8fCvgGHI/H8I1Ys3c+oz5vGt7x3E03jGkyFfvZAXP60J5S+8j4P0r5X2lqXxvRBQ53oE9WyqGlW25y1TLcFkp5O4TitXY38cfnrjY9lue30hCYxGVpNt+dYVM01kPE5h2RfhXiRqtgQvk/myHY6PrM+58/qbrtfmDuRBrF2BVf9XdLgCK3USmc5eLZwjTpAHHE6oYLLz4Jvdf591dgmVMCy1D81ttxOtvyQcMDH0bubbIf/6yxEAVFNuaaHBs8tjKu+Dhm5vf7OnIU9cvwoPWgkppZJqAvyOcDJFyBdX82rR9Q6MIa60tdKcWW1x5r7oaw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=ktnvhwnt; dkim-atps=neutral; spf=pass (client-ip=113.46.200.221; helo=canpmsgout06.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
+	t=1783579583; c=relaxed/relaxed;
+	bh=PijaR+i+qGvmTzV/7mms0G50C4ct+YrEuCBRWkaZdrk=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=TJB5UNHSzgoSk8pkQ+nU4NvJZ4TzNMx6nq3dLaupATz33FkHyPvTQRmvIFypk1E3CFSSdO/t5QvH8IUiap9lsskwnJvn0MUJp5m0tEDw1aXQAHVi1mbIO+XlW4HsFpU+M8LYX+926xjmWmz9sqBJUWi/Wqu/wIg2EEZFpafnrClKLs5wm/wHErWxUqPCl5B3xQVVBE/WTmqTaqZKy+Aq3mXneCCOF8/ljRyBbQbev6BXSUrB9leFtR+cbzFJMkV5PH1FDf05jTnzPwB1G4QsbqY9yFWjUz4f8E9GIf+DYCyaecjDKuCHVXdnYdeKHTxrdYPQPVy/Bz6rmTqIHbVk2g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=O+WaQfXm; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=O+WaQfXm; dkim-atps=neutral; spf=pass (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=thuth@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=ktnvhwnt;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=O+WaQfXm;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=O+WaQfXm;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=113.46.200.221; helo=canpmsgout06.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org)
-Received: from canpmsgout06.his.huawei.com (canpmsgout06.his.huawei.com [113.46.200.221])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=thuth@redhat.com; receiver=lists.ozlabs.org)
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gwlcs1lRgz3byZ
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 09 Jul 2026 16:37:16 +1000 (AEST)
-dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
-	c=relaxed/relaxed; q=dns/txt;
-	h=From;
-	bh=nx9uTIIpEYlLKn/TlkCDaDRFao/mdFBZNp54PrQsjPw=;
-	b=ktnvhwntGgaRfWEAoNl4nP/eMAv3WF40w6U+rHuISN9Agz4HcuqKVmp7oYolkH1rs7mUNfj74
-	gCHhpWuGxUwoXRpbuDGJzqHbbuU4k1jP4vTX4mO+NAfGMKawslgm9u9z/t6vpBkLBD6GuiT0hg5
-	ivGaNCxTDm241yTFRway9Ns=
-Received: from mail.maildlp.com (unknown [172.19.162.197])
-	by canpmsgout06.his.huawei.com (SkyGuard) with ESMTPS id 4gwlQ654XpzRhRh;
-	Thu,  9 Jul 2026 14:27:58 +0800 (CST)
-Received: from dggpemf500011.china.huawei.com (unknown [7.185.36.131])
-	by mail.maildlp.com (Postfix) with ESMTPS id ED73340579;
-	Thu,  9 Jul 2026 14:37:11 +0800 (CST)
-Received: from [10.67.109.254] (10.67.109.254) by
- dggpemf500011.china.huawei.com (7.185.36.131) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1544.11; Thu, 9 Jul 2026 14:37:07 +0800
-Message-ID: <21875fb4-434b-480d-b68b-e2ffd5fff5ae@huawei.com>
-Date: Thu, 9 Jul 2026 14:37:05 +0800
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gwlqK6Xy2z3c0H
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 09 Jul 2026 16:46:20 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1783579577;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=PijaR+i+qGvmTzV/7mms0G50C4ct+YrEuCBRWkaZdrk=;
+	b=O+WaQfXmLjNJNblxDvbqWYhCmyTmPNIKSH785DQseu3lybQSJItVHb/UCKdLunTU4eF3yG
+	WMtz6qm1kq2J4l4XmxK+0hvtLHuHpRHpE8GDd9t112n8o3UTgv3pgpbWSRAJZjsgCTxa/4
+	c8hS6hgMPBG51MCzpk/G4opuCK/5roY=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1783579577;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=PijaR+i+qGvmTzV/7mms0G50C4ct+YrEuCBRWkaZdrk=;
+	b=O+WaQfXmLjNJNblxDvbqWYhCmyTmPNIKSH785DQseu3lybQSJItVHb/UCKdLunTU4eF3yG
+	WMtz6qm1kq2J4l4XmxK+0hvtLHuHpRHpE8GDd9t112n8o3UTgv3pgpbWSRAJZjsgCTxa/4
+	c8hS6hgMPBG51MCzpk/G4opuCK/5roY=
+Received: from mail-wr1-f70.google.com (mail-wr1-f70.google.com
+ [209.85.221.70]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-593-pflArkrcN-C7I1oRfLoGIw-1; Thu, 09 Jul 2026 02:46:15 -0400
+X-MC-Unique: pflArkrcN-C7I1oRfLoGIw-1
+X-Mimecast-MFC-AGG-ID: pflArkrcN-C7I1oRfLoGIw_1783579575
+Received: by mail-wr1-f70.google.com with SMTP id ffacd0b85a97d-47127ee7e07so1308600f8f.2
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Jul 2026 23:46:15 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1783579575; x=1784184375;
+        h=content-transfer-encoding:content-type:in-reply-to:autocrypt
+         :content-language:from:references:cc:to:subject:user-agent
+         :mime-version:date:message-id:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to:content-type;
+        bh=PijaR+i+qGvmTzV/7mms0G50C4ct+YrEuCBRWkaZdrk=;
+        b=tENeXxBFEpJfx8hMmP+tXhxAsIpHBqQ6IVrkpzNpsS3WtQk6zAHX1GxeHUWsgB5to8
+         33EDIypmlX3Jx55DbiGShVgl4jyYL9C8DBetWNlZuwO9dYTHfk/FQ71sFhwrBbech1DE
+         HeZf6xO71WJ8goVfPbSpDiAkRJ2gpS6gW2/gT9SobmzGcJrUmDM7e4+dj3jVGQMdic1F
+         7A1fbmyCs6uqX/aeDme9KxXcyzj0L/R6f4KcJWcUY8McP6LRSLy/odc0/v16gKea2kZh
+         cpqM4+ABCYoa/JECKX9YPLoMtOMHyIImmjjMuLC/R91xYA/iyiY8gEGT9yGZ7IaSRqw1
+         yj8w==
+X-Forwarded-Encrypted: i=1; AHgh+RrrUlLtu5U+5jhngPIKXf5+Rx6vZ6dqG8JthxkBW8WZgdzYZqDb/ns3qkvz9I48weraL2Mk1EhA5PT299I=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YzeCm80jrzeLpiFWf6rka+cgoS4ltQ/4ZijWrmqB5OjzRiJHZ1/
+	sopiAYEUTBWFnkTnj6JCpIE+6uS1MixoUxDT7/6yyUKIjuxyhKR+euJFfIL6zgl/sucHui6Xrjw
+	dTbapULqBp8XZkZqeQWktPO15Oas/Twe6Yg1FANdIsPrJXStsWxLu1xWLexBnXOtPUOs=
+X-Gm-Gg: AfdE7cmX3n67J4lWc6M2RhY8XXoMtOGJR0PjHdu6nr+pwe/bfUi6yRI9a9GraQg9tmQ
+	aY11Y8GyL2RlmI0ZGN18qQx00ktEzdrsXB21yzbLc/UmXD+Q2NjhbO62j9tUWCiJCrWwsx7gOpN
+	5AAPIfgMi1XQnD/PcV+Y/I8aDUz5yjoWNCJzxbr16+N3fpNMnSlyOEjMiNUkBh+jVYmLNTpcddo
+	R3nrhUlTb//yd771ES1j4RJCKNfeDz6n4dfJWUNVaHXW6HfuNGHzXQQQYzS/oraESdPTRETKNFe
+	mN+CjcDEVvXVpd4Icy/nfHnyrwJGMbFVAjNzRyBlXYIlghRMymJjkIsSs+eNBJjslaNEOLqUbXp
+	eZTn7zDzc
+X-Received: by 2002:a05:6000:4b09:b0:47d:e813:4f6d with SMTP id ffacd0b85a97d-47df07a83e4mr5864627f8f.1.1783579574737;
+        Wed, 08 Jul 2026 23:46:14 -0700 (PDT)
+X-Received: by 2002:a05:6000:4b09:b0:47d:e813:4f6d with SMTP id ffacd0b85a97d-47df07a83e4mr5864589f8f.1.1783579574340;
+        Wed, 08 Jul 2026 23:46:14 -0700 (PDT)
+Received: from [192.168.0.9] ([47.64.114.244])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-47aa0f2186bsm47603396f8f.36.2026.07.08.23.46.12
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 08 Jul 2026 23:46:13 -0700 (PDT)
+Message-ID: <bd10e435-de06-4b67-962c-b520a43a8280@redhat.com>
+Date: Thu, 9 Jul 2026 08:46:12 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -62,129 +105,191 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v16 18/18] arm64: vdso: Expose sigreturn address on vdso
- to the kernel
-To: =?UTF-8?Q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
-CC: <oleg@redhat.com>, <richard.henderson@linaro.org>, <mattst88@gmail.com>,
-	<linmag7@gmail.com>, <linux@armlinux.org.uk>, <catalin.marinas@arm.com>,
-	<will@kernel.org>, <kees@kernel.org>, <guoren@kernel.org>,
-	<chenhuacai@kernel.org>, <kernel@xen0n.name>, <geert@linux-m68k.org>,
-	<tsbogend@alpha.franken.de>, <James.Bottomley@hansenpartnership.com>,
-	<deller@gmx.de>, <maddy@linux.ibm.com>, <mpe@ellerman.id.au>,
-	<npiggin@gmail.com>, <chleroy@kernel.org>, <pjw@kernel.org>,
-	<palmer@dabbelt.com>, <aou@eecs.berkeley.edu>, <alex@ghiti.fr>,
-	<hca@linux.ibm.com>, <gor@linux.ibm.com>, <agordeev@linux.ibm.com>,
-	<borntraeger@linux.ibm.com>, <svens@linux.ibm.com>,
-	<ysato@users.sourceforge.jp>, <dalias@libc.org>,
-	<glaubitz@physik.fu-berlin.de>, <richard@nod.at>,
-	<anton.ivanov@cambridgegreys.com>, <johannes@sipsolutions.net>,
-	<luto@kernel.org>, <tglx@kernel.org>, <mingo@redhat.com>, <bp@alien8.de>,
-	<dave.hansen@linux.intel.com>, <hpa@zytor.com>, <chris@zankel.net>,
-	<jcmvbkbc@gmail.com>, <peterz@infradead.org>, <wad@chromium.org>,
-	<thuth@redhat.com>, <mark.rutland@arm.com>, <ada.coupriediaz@arm.com>,
-	<kevin.brodsky@arm.com>, <linusw@kernel.org>, <yeoreum.yun@arm.com>,
-	<song@kernel.org>, <james.morse@arm.com>, <anshuman.khandual@arm.com>,
-	<broonie@kernel.org>, <liqiang01@kylinos.cn>, <pengcan@kylinos.cn>,
-	<ryan.roberts@arm.com>, <yangtiezhu@loongson.cn>, <sshegde@linux.ibm.com>,
-	<mchauras@linux.ibm.com>, <austin.kim@lge.com>, <jchrist@linux.ibm.com>,
-	<arnd@arndb.de>, <sohil.mehta@intel.com>, <andrew.cooper3@citrix.com>,
-	<jgross@suse.com>, <kas@kernel.org>, <x86@kernel.org>,
-	<linux-alpha@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-	<linux-arm-kernel@lists.infradead.org>, <linux-mm@kvack.org>,
-	<linux-csky@vger.kernel.org>, <loongarch@lists.linux.dev>,
-	<linux-m68k@lists.linux-m68k.org>, <linux-mips@vger.kernel.org>,
-	<linux-parisc@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
-	<linux-riscv@lists.infradead.org>, <linux-s390@vger.kernel.org>,
-	<linux-sh@vger.kernel.org>, <linux-um@lists.infradead.org>
-References: <20260629130616.642022-1-ruanjinjie@huawei.com>
- <20260629130616.642022-19-ruanjinjie@huawei.com>
- <20260630172619-6c78c2e2-c2d3-44be-88e6-6c82de12baf4@linutronix.de>
-From: Jinjie Ruan <ruanjinjie@huawei.com>
-In-Reply-To: <20260630172619-6c78c2e2-c2d3-44be-88e6-6c82de12baf4@linutronix.de>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-X-Originating-IP: [10.67.109.254]
-X-ClientProxiedBy: kwepems100002.china.huawei.com (7.221.188.206) To
- dggpemf500011.china.huawei.com (7.185.36.131)
+Subject: Re: [kvm-unit-tests PATCH 4/6] powerpc: gitlab CI update
+To: Chinmay Rath <rathc@linux.ibm.com>
+Cc: npiggin@gmail.com, harshpb@linux.ibm.com, lvivier@redhat.com,
+ linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, andrew.jones@linux.dev,
+ sbhat@linux.ibm.com
+References: <20260708105122.1177210-1-rathc@linux.ibm.com>
+ <20260708105122.1177210-5-rathc@linux.ibm.com>
+From: Thomas Huth <thuth@redhat.com>
+Autocrypt: addr=thuth@redhat.com; keydata=
+ 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
+In-Reply-To: <20260708105122.1177210-5-rathc@linux.ibm.com>
+X-Mimecast-Spam-Score: 0
+X-Mimecast-MFC-PROC-ID: -Bw36mWzGS0Hf6lCTEg6ZJoZUaakoTVnm5ATDIco9p0_1783579575
+X-Mimecast-Originator: redhat.com
+Content-Language: en-US
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-
-
-On 6/30/2026 11:32 PM, Thomas Weißschuh wrote:
-> On Mon, Jun 29, 2026 at 09:06:16PM +0800, Jinjie Ruan wrote:
->> Syscall User Dispatch (SUD) requires the signal trampoline code to not be
->> intercepted. This is necessary to support returning with a locked selector
->> while avoiding infinite recursion back into the signal handler.
->>
->> Implement arch_syscall_is_vdso_sigreturn() for arm64 to support this
->> exclusion mechanism. For native 64-bit tasks, it checks whether the current
->> PC matches the 'svc #0' instruction inside the vDSO sigreturn trampoline.
->>
->> 	SYM_CODE_START(__kernel_rt_sigreturn)
->> 	        mov     x8, #__NR_rt_sigreturn
->> 	        svc     #0
->> 	SYM_CODE_END(__kernel_rt_sigreturn)
->>
->> For COMPAT tasks, it verifies if the instruction falls within
->> the architecture's 'sigpage' range, allowing the kernel to safely bypass
->> dispatching syscalls originating from these areas back to userspace.
->>
->> Suggested-by: Kevin Brodsky <kevin.brodsky@arm.com>
->> Suggested-by: kemal <kmal@cock.li>
->> Signed-off-by: Jinjie Ruan <ruanjinjie@huawei.com>
->> ---
->>  arch/arm64/include/asm/elf.h |  1 +
->>  arch/arm64/kernel/vdso.c     | 16 ++++++++++++++++
->>  2 files changed, 17 insertions(+)
->>
->> diff --git a/arch/arm64/include/asm/elf.h b/arch/arm64/include/asm/elf.h
->> index d2779d604c7b..f43d4dea916a 100644
->> --- a/arch/arm64/include/asm/elf.h
->> +++ b/arch/arm64/include/asm/elf.h
->> @@ -185,6 +185,7 @@ do {									\
->>  struct linux_binprm;
->>  extern int arch_setup_additional_pages(struct linux_binprm *bprm,
->>  				       int uses_interp);
->> +extern bool arch_syscall_is_vdso_sigreturn(struct pt_regs *regs);
+On 08/07/2026 12.51, Chinmay Rath wrote:
+> From: Nicholas Piggin <npiggin@gmail.com>
 > 
-> A header for that?
-
-Sure, it need a cleanup, as currently, there is no syscall_user_dispatch
-header file related to the architecture.
-
+> Adds a few additional tests that are known to work in CI.
 > 
->>  /* 1GB of VA */
->>  #ifdef CONFIG_COMPAT
->> diff --git a/arch/arm64/kernel/vdso.c b/arch/arm64/kernel/vdso.c
->> index 592dd8668de4..5a0314a3c26e 100644
->> --- a/arch/arm64/kernel/vdso.c
->> +++ b/arch/arm64/kernel/vdso.c
->> @@ -343,3 +343,19 @@ int arch_setup_additional_pages(struct linux_binprm *bprm, int uses_interp)
->>  
->>  	return ret;
->>  }
->> +
->> +bool arch_syscall_is_vdso_sigreturn(struct pt_regs *regs)
->> +{
->> +	unsigned long sigtramp;
->> +
->> +#ifdef CONFIG_COMPAT
->> +	if (is_compat_task()) {
->> +		unsigned long sigpage = (unsigned long)current->mm->context.sigpage;
->> +
->> +		return regs->pc >= sigpage && regs->pc < (sigpage + PAGE_SIZE);
->> +	}
->> +#endif
->> +	sigtramp = (unsigned long)VDSO_SYMBOL(current->mm->context.vdso, sigtramp);
->> +
->> +	return regs->pc == (sigtramp + 8);
+> To control overhead, ppc64be is used to test 64k page size, ppc64le is
+> used to test 4k page size.
 > 
-> Instead of hardcoding 'sigtramp + 8' you could add a new label to the 'svc #0'
-> instruction and use that with VDSO_SYMBOL().
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> Signed-off-by: Chinmay Rath <rathc@linux.ibm.com>
+> ---
+>   .gitlab-ci.yml        | 19 ++++++++++++++-----
+>   powerpc/unittests.cfg |  9 ++++++++-
+>   2 files changed, 22 insertions(+), 6 deletions(-)
+> 
+> diff --git a/.gitlab-ci.yml b/.gitlab-ci.yml
+> index ab1be5f4..b28d1eb5 100644
+> --- a/.gitlab-ci.yml
+> +++ b/.gitlab-ci.yml
+> @@ -190,18 +190,21 @@ build-ppc64be:
+>    - dnf install -y qemu-system-ppc gcc-powerpc64-linux-gnu nmap-ncat
+>    - mkdir build
+>    - cd build
+> - - ../configure --arch=ppc64 --endian=big --cross-prefix=powerpc64-linux-gnu-
+> + - ../configure --arch=ppc64 --endian=big --page-size=64k --cross-prefix=powerpc64-linux-gnu-
+>    - make -j2
+> - - ACCEL=tcg ./run_tests.sh
+> + - ACCEL=tcg MAX_SMP=8 ./run_tests.sh
+>         atomics
+> +      atomics-migration
+>         emulator
+>         interrupts
+>         mmu
+> +      pmu
+>         rtas-get-time-of-day
+>         rtas-get-time-of-day-base
+>         rtas-set-time-of-day
+>         selftest-migration
+>         selftest-migration-skip
+> +      selftest-migration-ci
+>         selftest-setup
+>         sieve
+>         smp
+> @@ -209,10 +212,12 @@ build-ppc64be:
+>         spapr_hcall
+>         spapr_vpa
+>         sprs
+> +      sprs-migration
+>         timebase
+>         timebase-icount
+>         | tee results.txt
+> - - if grep -q FAIL results.txt ; then exit 1 ; fi
+> + - grep -q PASS results.txt && ! grep -q FAIL results.txt
+> +
 
-It seems that the modification of __kernel_rt_sigreturn() is not recommended
+Remove the superfluous empty line, please. We don't do this in other spots 
+between the jobs in this file, so let's stay consistent here, too.
 
-> 
-> 
-> Thomas
+>   
+>   build-ppc64le:
+>    extends: .intree_template
+> @@ -220,16 +225,19 @@ build-ppc64le:
+>    - dnf install -y qemu-system-ppc gcc-powerpc64-linux-gnu nmap-ncat
+>    - ./configure --arch=ppc64 --endian=little --cross-prefix=powerpc64-linux-gnu-
+>    - make -j2
+> - - ACCEL=tcg ./run_tests.sh
+> + - ACCEL=tcg MAX_SMP=8 ./run_tests.sh
+>         atomics
+> +      atomics-migration
+>         emulator
+>         interrupts
+>         mmu
+> +      pmu
+>         rtas-get-time-of-day
+>         rtas-get-time-of-day-base
+>         rtas-set-time-of-day
+>         selftest-migration
+>         selftest-migration-skip
+> +      selftest-migration-ci
+>         selftest-setup
+>         sieve
+>         smp
+> @@ -237,10 +245,11 @@ build-ppc64le:
+>         spapr_hcall
+>         spapr_vpa
+>         sprs
+> +      sprs-migration
+>         timebase
+>         timebase-icount
+>         | tee results.txt
+> - - if grep -q FAIL results.txt ; then exit 1 ; fi
+> + - grep -q PASS results.txt && ! grep -q FAIL results.txt
+>   
+>   build-riscv32:
+>    extends: .outoftree_template
+> diff --git a/powerpc/unittests.cfg b/powerpc/unittests.cfg
+> index 60c73086..62630ead 100644
+> --- a/powerpc/unittests.cfg
+> +++ b/powerpc/unittests.cfg
+> @@ -24,6 +24,14 @@ file = selftest-migration.elf
+>   machine = pseries
+>   groups = selftest migration
+>   
+> +# make a kvm-only version for CI for now
+> +# TCG accel support with Qemu and distro release used in gitlab CI needs to checked.
+> +[selftest-migration-ci]
+> +file = selftest-migration.elf
+> +machine = pseries
+> +groups = nodefault selftest migration
+> +accel = kvm
+
+This does not make sense (or I don't understand it) - gitlab-CI currently 
+only runs with TCG for the ppc64 jobs, so adding a separate test for this 
+with "accel = kvm" just adds a job there that will always be skipped. What 
+should this be good for?
+
+>   [selftest-migration-skip]
+>   file = selftest-migration.elf
+>   machine = pseries
+> @@ -94,7 +102,6 @@ accel = tcg,thread=single
+>   
+>   [atomics]
+>   file = atomics.elf
+> -smp = 2
+Why are you removing the smp = 2 here? As far as I can see, the atomics test 
+uses multiple CPUs, so this looks wrong?
+
+  Thomas
 
 
