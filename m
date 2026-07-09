@@ -1,82 +1,89 @@
-Return-Path: <linuxppc-dev+bounces-23905-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23906-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4C559C43458
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2026 07:04:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D528AC44503
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2026 07:17:41 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gwmDf6gffz3byj;
-	Thu, 09 Jul 2026 17:04:50 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::52d"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783580690;
-	cv=none; b=Gn17DifSBvFPUBpwc8xeMmTw9Juv22u+QxO7gBLcnJdvVsuX18/2P55kZ1Ed8O1n3G4oolSoZA6U5LKfpO/L6ezB3hUhWEWrUSrumkpzym1qjyETkBktQKP5hYhh56tQ4n0tJuT9eYJEAlmDviZt0o9rKKYZqf9OXMNBCIEqp4QezLZqIKfTn3cIZ/px8GGK+tdAgWhKeaW1XFpJf+NXDZkAlVs81ry47UAV5wzsguDITVRYKFcZEURMnGToRKY3FlSnm/W97iUA7w5E5fXawmrbqGybEfhYgoA8BWuQEouj53YgwL8odEGYpdlRcNpzGiZOEJRS6quUtFD/kJMCdg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gwmWS3bwgz3c9k;
+	Thu, 09 Jul 2026 17:17:40 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=193.142.43.55
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783581460;
+	cv=none; b=M9qtFTMm1uHXr3w0CyN+ObLyZOo8ERAwfGlThExpWS6xQmacBegmkhiidTTF2ZyfSMVHntNklKDUJ1TNNYLSmSYJcAysnc/uuXYoSYEPWn0fvnGUgvZUITBdHtJjPWdwL1WjdstIunXnDAGuxH9CpVJ/DrAjc4Vh95k7Ipa2bB6kcSCsnaDAksrF9Rf3YyApOvSeZNeF+nRyK+wZlUVnLBfM4cOGn763GKhEffrc8BY0Kv3CihdHQt7d4KUhNJUeihKHao7gIhWJRmjvb1nicckIap4aIYHU07SZUt8l0/OI+i6zioxAasgVQuSUUzaa467k2FQELeeuasbCpKpP6w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1783580690; c=relaxed/relaxed;
-	bh=RojLPltz8DwvvSu0nWycaSfVOIfQRK6RQOm7qxh34pM=;
-	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References; b=j8cdSEb//Avz0aNo+5ld97i9lgBLdcVqIIX6qutDLMn3vEecd11/lO4S+HQvYnqS01dfIKHPhMQ3ObB4fgZTDOsHKhJZOFKJZ84NmlCLvmpRgJzsGamp3ey06McEA1uVfD8nfei8cYt8k0rsxD9dzgWLGmp4Hi/XFFUtKeQ9IX3gi8xW53vHFuYIHErd2af3ApQGle0ahPekZZKbGVeNnuFyvrg7KaKP9TI/vtKymqt76SJEWBFt0S+/ST3+02PNfm/DPcpQ9gUGTgrp29T3GykV7FG0clpf6OEPRCrWD+52K1745VMFaJoTfBAIhrRF6MzPphQAPn8VGYYCihxtqA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=ecFuXsXn; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::52d; helo=mail-pg1-x52d.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1783581460; c=relaxed/relaxed;
+	bh=F9SKBxLhUcVP1yEBFgHPNey4vuoMv6f7r4rXayVZwUY=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=AU+LC2K6VwMGt6nJbZSAgX2ZIIJcKqnWksPEkbv3LDHCQOPP3KgVfRGlytta6tzkkPJXMRy8rWRzrZfrAr9izBpEfeKhGbU/SL9OS1h90PiIrPGg8YDLlNXae1k1sS/TNlbQvGqnmHIHJYGjiuibLwzLDoUM9ELcFhFKX3RP1t75vc6t5zwuHZ9cSsowqGffavR9sY/dKkKaq8ajOcmtGBapkQ3bh9EuCs71gyDEmuXn2kkPBzwCwkkAgachgAfzs7wDj4qbIaZSHNov4gf/XtJUwXHyRGNMJ/iDoCK2iywBuXJ+JQaQJzgf+bFO24RdqoslGoHwGVZHi/e8S32SpQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=PtIuOfMn; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=kRB50jqQ; dkim-atps=neutral; spf=pass (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=ecFuXsXn;
+	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=PtIuOfMn;
+	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=kRB50jqQ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::52d; helo=mail-pg1-x52d.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pg1-x52d.google.com (mail-pg1-x52d.google.com [IPv6:2607:f8b0:4864:20::52d])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org)
+Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gwmDd5PVdz3byh
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 09 Jul 2026 17:04:49 +1000 (AEST)
-Received: by mail-pg1-x52d.google.com with SMTP id 41be03b00d2f7-ca7c1176317so840908a12.1
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 09 Jul 2026 00:04:49 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1783580687; x=1784185487; darn=lists.ozlabs.org;
-        h=references:message-id:date:in-reply-to:subject:cc:to:from:from:to
-         :cc:subject:date:message-id:reply-to:content-type;
-        bh=RojLPltz8DwvvSu0nWycaSfVOIfQRK6RQOm7qxh34pM=;
-        b=ecFuXsXnfos3UVN555rjhaedOmgiV97xXzVQwDNdRZ2xOoBCbor9CzLJYQSjjskPfV
-         LqE/Qoi1VRwLu41Y0TRsutdzdwyqVjm809soD9EQJUN4Bxt+W/p0522ubSOioLkhBGBr
-         UTICZXNOMhK0k7Aw5veAZp2F7H1hiGqiwqb5wuDG1L5CsNgGtDCIOxsth7eTS6JvgNeP
-         v8MAdBzTLvR2c+JErR8MFVR6W/AMAhmMn1owJfslZIPn4n+7lfkXzqkGDNORxFkQQHNi
-         HcATYTF2jfPgyEgAUuFK6Td93x9mtQDV34q0EoyrjnSKVyECZfwctZWjrFx1QLtL+nmo
-         gh4g==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1783580687; x=1784185487;
-        h=references:message-id:date:in-reply-to:subject:cc:to:from:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=RojLPltz8DwvvSu0nWycaSfVOIfQRK6RQOm7qxh34pM=;
-        b=OjIMGLN3WLEiUMCHCqlgS2zW4fVvp0jK5JeYda7qWY/QVXj/e9cab61n4mMXS/dBvt
-         SAV4CeOs1oNop583CCKiF6pSHgoG2ifqsHU0mz/2wjrir9vJT8jU1pxT+duNCvKqzYX/
-         smTY6SoF0TT+WiPt+Ehn/A7eCC8GabTA04McxDLcMm1fuvoNez/R+iA80Bd9dPRpEpv3
-         dp35ajDWqmu9qgm/Xfd44NsyTcgpYNDw82Pun21d4dvNzjrMEb1NZxMNiOd9oMkTr0Ux
-         QSqOxUox5Jc2/L0v7fo8ypNpCqnHyU2I7wzOlkPwJIf72B9FPKu4w/LPLALjI6D3XVNV
-         87iQ==
-X-Forwarded-Encrypted: i=1; AHgh+RopKPiw8qJD9mggWkKBLSvignE6L1/kVEOczJseuypW5f4apOCq0xWZEdxQ+6nDV512GS7dAb8UmBXNbwI=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YwFc0OIXIYqf4qZlQiCixIF6pijXQVJxFV2GLZtpVb107er2MQX
-	eyDOaB5IBBjZd5UhmIugmYQwS6vMbdKcjEYaSR2dN0bMFLFGmA6mHKBk
-X-Gm-Gg: AfdE7cnnQqAb2oapBdFxOtnIE1sJTipOlYbqBkrWau+zmIMiQl9EAUrAgjVOpHEtCiV
-	QcICdyYk0Lz6tqmlSFHucrLMAYl6BFZ8LbpycjKRcBdyUB3QABwIG96PnNVasSECwLgdxmgO9E3
-	KjOlqtTgdNhEpabOXdDGA3CjScILijHKDbmbEFaO7eSdkvDGNH6k44aq23nzEwppbZ4jAziMnxZ
-	Oe0eAKSVzvCDHgUOjARjDe26ICCpPFNVimt/2gJJyvMNU4vSxuZIV4p69S2kDgwwbiZzfU038Ph
-	kDbGPxunxRpJWxhOkXagT9KKkqYEPiXPLsDCYmAmvpH5h2hrtr7HDnQZTOkVh6S/mjSoHPl1DB2
-	hu2IAQdnbiyvGETUElyivH/soukPIEUK3GtzkmyP1i2D22vQxJ/1wAMOHOUyJ+yYlh3HvsAHNsS
-	iKIZJE5k4Nfq8=
-X-Received: by 2002:a05:6a20:d529:b0:3b4:85db:1bed with SMTP id adf61e73a8af0-3c0bcbc5c42mr6970115637.45.1783580687320;
-        Thu, 09 Jul 2026 00:04:47 -0700 (PDT)
-Received: from pve-server ([49.205.216.49])
-        by smtp.gmail.com with ESMTPSA id a92af1059eb24-13b6596681fsm31951861c88.8.2026.07.09.00.04.43
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 09 Jul 2026 00:04:46 -0700 (PDT)
-From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-To: Salman Farooq <salman.farooq3310@gmail.com>, maddy@linux.ibm.com
-Cc: npiggin@gmail.com, mpe@ellerman.id.au, chleroy@kernel.org, linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, linux-kernel@vger.kernel.org, Salman Farooq <salman.farooq3310@gmail.com>
-Subject: Re: [PATCH] KVM: PPC: Book3S HV: Fix comment typos
-In-Reply-To: <20260702030344.2211462-1-salman.farooq3310@gmail.com>
-Date: Thu, 09 Jul 2026 12:31:04 +0530
-Message-ID: <8q7kwssv.ritesh.list@gmail.com>
-References: <20260702030344.2211462-1-salman.farooq3310@gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gwmWQ6fzDz3c2P
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 09 Jul 2026 17:17:38 +1000 (AEST)
+Date: Thu, 9 Jul 2026 09:17:33 +0200
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
+	s=2020; t=1783581454;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=F9SKBxLhUcVP1yEBFgHPNey4vuoMv6f7r4rXayVZwUY=;
+	b=PtIuOfMnH+4L6RK5zWDYM9QxZ7qFIDDANU9HKLo3euM2pysXCVMwAa7n0WM9qlO40a3voh
+	DuJIKMU8fzWSzXZ9l491Z4XBQ0KTIpmeIuhHSzlg0CK5YvnKbZ7s/RIGLP21o2M9L0o7Rj
+	zSwnXdwJoMA72KBAhb8rJmxHHKXCqXO6C0wmhoPJoAi3VMyrmMFTka6l8meEuom7fPLR+m
+	ZKJ+2UBpVHoAgJDHaBFHf2d85mBPBBieEtIIpIP4KHv9WbVlPQOC6fsZp4ZIgta2kndNxF
+	O5hotz+4KOFHBJCxuyk1T/BLRhXpjFxIvYbJmL/KCdibPRgi80mtnrAOWqSnIw==
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
+	s=2020e; t=1783581454;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=F9SKBxLhUcVP1yEBFgHPNey4vuoMv6f7r4rXayVZwUY=;
+	b=kRB50jqQviKOML8rg86X/o/Q3HTiZaVrhqXPi05nX1mZw5SlYEe6ldifyk1fa0K1jn//2f
+	uWSs1Y9MUuicx9Bg==
+From: Thomas =?utf-8?Q?Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
+To: Jinjie Ruan <ruanjinjie@huawei.com>
+Cc: oleg@redhat.com, richard.henderson@linaro.org, mattst88@gmail.com, 
+	linmag7@gmail.com, linux@armlinux.org.uk, catalin.marinas@arm.com, will@kernel.org, 
+	kees@kernel.org, guoren@kernel.org, chenhuacai@kernel.org, kernel@xen0n.name, 
+	geert@linux-m68k.org, tsbogend@alpha.franken.de, James.Bottomley@hansenpartnership.com, 
+	deller@gmx.de, maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com, 
+	chleroy@kernel.org, pjw@kernel.org, palmer@dabbelt.com, aou@eecs.berkeley.edu, 
+	alex@ghiti.fr, hca@linux.ibm.com, gor@linux.ibm.com, agordeev@linux.ibm.com, 
+	borntraeger@linux.ibm.com, svens@linux.ibm.com, ysato@users.sourceforge.jp, dalias@libc.org, 
+	glaubitz@physik.fu-berlin.de, richard@nod.at, anton.ivanov@cambridgegreys.com, 
+	johannes@sipsolutions.net, luto@kernel.org, tglx@kernel.org, mingo@redhat.com, bp@alien8.de, 
+	dave.hansen@linux.intel.com, hpa@zytor.com, chris@zankel.net, jcmvbkbc@gmail.com, 
+	peterz@infradead.org, wad@chromium.org, thuth@redhat.com, mark.rutland@arm.com, 
+	ada.coupriediaz@arm.com, kevin.brodsky@arm.com, linusw@kernel.org, yeoreum.yun@arm.com, 
+	song@kernel.org, james.morse@arm.com, anshuman.khandual@arm.com, 
+	broonie@kernel.org, liqiang01@kylinos.cn, pengcan@kylinos.cn, ryan.roberts@arm.com, 
+	yangtiezhu@loongson.cn, sshegde@linux.ibm.com, mchauras@linux.ibm.com, 
+	austin.kim@lge.com, jchrist@linux.ibm.com, arnd@arndb.de, sohil.mehta@intel.com, 
+	andrew.cooper3@citrix.com, jgross@suse.com, kas@kernel.org, x86@kernel.org, 
+	linux-alpha@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	linux-arm-kernel@lists.infradead.org, linux-mm@kvack.org, linux-csky@vger.kernel.org, 
+	loongarch@lists.linux.dev, linux-m68k@lists.linux-m68k.org, linux-mips@vger.kernel.org, 
+	linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org, 
+	linux-s390@vger.kernel.org, linux-sh@vger.kernel.org, linux-um@lists.infradead.org
+Subject: Re: [PATCH v16 18/18] arm64: vdso: Expose sigreturn address on vdso
+ to the kernel
+Message-ID: <20260709090525-b1e5ae06-1fb4-454e-919c-6503dcf3d073@linutronix.de>
+References: <20260629130616.642022-1-ruanjinjie@huawei.com>
+ <20260629130616.642022-19-ruanjinjie@huawei.com>
+ <20260630172619-6c78c2e2-c2d3-44be-88e6-6c82de12baf4@linutronix.de>
+ <21875fb4-434b-480d-b68b-e2ffd5fff5ae@huawei.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -89,47 +96,53 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <21875fb4-434b-480d-b68b-e2ffd5fff5ae@huawei.com>
 
-Salman Farooq <salman.farooq3310@gmail.com> writes:
+On Thu, Jul 09, 2026 at 02:37:05PM +0800, Jinjie Ruan wrote:
+> On 6/30/2026 11:32 PM, Thomas Weißschuh wrote:
+> > On Mon, Jun 29, 2026 at 09:06:16PM +0800, Jinjie Ruan wrote:
+(..)
 
-> Fix two instances of a misspelled word in comments.
->
+> >> diff --git a/arch/arm64/kernel/vdso.c b/arch/arm64/kernel/vdso.c
+> >> index 592dd8668de4..5a0314a3c26e 100644
+> >> --- a/arch/arm64/kernel/vdso.c
+> >> +++ b/arch/arm64/kernel/vdso.c
+> >> @@ -343,3 +343,19 @@ int arch_setup_additional_pages(struct linux_binprm *bprm, int uses_interp)
+> >>  
+> >>  	return ret;
+> >>  }
+> >> +
+> >> +bool arch_syscall_is_vdso_sigreturn(struct pt_regs *regs)
+> >> +{
+> >> +	unsigned long sigtramp;
+> >> +
+> >> +#ifdef CONFIG_COMPAT
+> >> +	if (is_compat_task()) {
+> >> +		unsigned long sigpage = (unsigned long)current->mm->context.sigpage;
+> >> +
+> >> +		return regs->pc >= sigpage && regs->pc < (sigpage + PAGE_SIZE);
+> >> +	}
+> >> +#endif
+> >> +	sigtramp = (unsigned long)VDSO_SYMBOL(current->mm->context.vdso, sigtramp);
+> >> +
+> >> +	return regs->pc == (sigtramp + 8);
+> > 
+> > Instead of hardcoding 'sigtramp + 8' you could add a new label to the 'svc #0'
+> > instruction and use that with VDSO_SYMBOL().
+> 
+> It seems that the modification of __kernel_rt_sigreturn() is not recommended
 
-Not sure what this will really get us and what is our maintainer take on
-such spelling mistake fixes. I definitely hope we won't churn out a lot
-of patches just to fix simple spell mistakes.
-But FWIW, the change looks good to me, so:
+For the changes to the object code of the function this is obvious and
+well explained in the comments.
 
-Reviewed-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+Such a label however would not change the object code of the function.
+In fact it would not change any bit whatsoever in the final vDSO,
+save for a new build ID.
 
 
-> Signed-off-by: Salman Farooq <salman.farooq3310@gmail.com>
-> ---
->  arch/powerpc/kvm/book3s_hv_uvmem.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
->
-> diff --git a/arch/powerpc/kvm/book3s_hv_uvmem.c b/arch/powerpc/kvm/book3s_hv_uvmem.c
-> index 5fbb95d90e99..6ac8364a7639 100644
-> --- a/arch/powerpc/kvm/book3s_hv_uvmem.c
-> +++ b/arch/powerpc/kvm/book3s_hv_uvmem.c
-> @@ -163,7 +163,7 @@ static DEFINE_SPINLOCK(kvmppc_uvmem_bitmap_lock);
->   *  All its GFNs are moved to Normal-GFNs.
->   *
->   *  UV_TERMINATE transitions the secure-VM back to normal-VM. All
-> - *  the secure-GFN and shared-GFNs are tranistioned to normal-GFN
-> + *  the secure-GFN and shared-GFNs are transitioned to normal-GFN
->   *  Note: The contents of the normal-GFN is undefined at this point.
->   *
->   * GFN state implementation:
-> @@ -1010,7 +1010,7 @@ static vm_fault_t kvmppc_uvmem_migrate_to_ram(struct vm_fault *vmf)
->  /*
->   * Release the device PFN back to the pool
->   *
-> - * Gets called when secure GFN tranistions from a secure-PFN
-> + * Gets called when secure GFN transitions from a secure-PFN
->   * to a normal PFN during H_SVM_PAGE_OUT.
->   * Gets called with kvm->arch.uvmem_lock held.
->   */
-> -- 
-> 2.55.0
+Thomas
 
