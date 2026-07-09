@@ -1,87 +1,79 @@
-Return-Path: <linuxppc-dev+bounces-23949-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23950-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DC988C44501
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2026 17:04:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 32DEBC43458
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2026 17:31:43 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gx1X44FK4z3c2Z;
-	Fri, 10 Jul 2026 03:04:04 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=80.86.107.70
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783616644;
-	cv=none; b=nsvfFjVPgSlVkGlXvTWTWUDWECKK5yKbXU1C2kEHe3JcAuDdVzCRhgIWHCsYR9NokB+3vy2E3i7fiRcwbKAr589cRQG2wmIWoOgx+c0Lp/VxSEZ3zAazB/VJgiArn5aeRd3Rpy3jmokSpGnBDNaBPoaYqb+TNe2rjY4eGiSlOnA2KxLo48tlxtU1i5qlKWODP8ZWIwTIGl13JL3/ncsnJpfqmChIW6L70yI3eHd0/NHaZRnUxuyZ4d5/RVtKu7HE0hZHjqLzKVyJY6g6Xcwgss2k1gYoht+hRD/nuCTpkVYWpLZI84u5yuikqXeYEdQddV2PzVN6skN3brV+BNWayg==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1783616644; c=relaxed/relaxed;
-	bh=QeTQcmCkS021HmkZ3w/J1fE+WH2x3hk465jNzOmdiww=;
-	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=mkEA3Y7DYu+zz313d5Oq6sm5JUmwg7UJh+9k3lilIdD+alS3253b4FUHOCpCWhjj/4KNXl1KRBlsMD4PlpcP5Jwpmg3NbbPJ+Jlpw+ex5e3WUFh+jGgQb7pkGaQ+4Jh03QqTzKTVzmlU5QE6OC0S1dTy2n28WcqTu1PFrfEgUFxEcFOwgaYW5xr1r3O0PfHeaPx0WmnH1RJ/MWWFv3aooJsX8Tq7w1l+nlQjSHZembSt8sbUlXUiLsjKJchYD/GY0l5wo+q1nMA7SEMequV/8ZPMIUdgSR52RYHPlq2jbAiNCT3nXYIm0IohXp3DrxXpL08Y7TunbnItyE9VHtASJA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=rendec.net; dkim=pass (2048-bit key; unprotected) header.d=rendec.net header.i=@rendec.net header.a=rsa-sha256 header.s=default header.b=HOQdvRC4; dkim-atps=neutral; spf=pass (client-ip=80.86.107.70; helo=mail.mindbit.ro; envelope-from=radu@rendec.net; receiver=lists.ozlabs.org) smtp.mailfrom=rendec.net
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=rendec.net
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gx27x5rNZz2yf9;
+	Fri, 10 Jul 2026 03:31:41 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c105::5" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783618301;
+	cv=pass; b=GGy718Pc2ZE7jiRKP4kTVB3f0OSGn4NZmIKTmHWwJd73QfcoBVKs7vtDK5r0z0hQYIy2tDRHhAnUPxCCwCxCRrFgAnhk0vkEzqKMIXnSZxgSQAXLcPV9YXK6YoXbbX528Y7d4tg1eWI4pZGR/0+TyFss13qyDsyTbhOP9j2Wx+AV0gucEysY44Lqg6b4rkjT20gb+JgB4bcOOKBCVFW6CUvGr4G/JQXmZB+6EwN3BJQQoNtPB3R7DO1i/69OscsGqWp20Cacf0ap1Y+0YrIAqVJpwxZJXDnr2tERgaaGA1xAE2+nG+VVu/pZsyQif7Z2eaSkYjTw2yRlw9c5OullSA==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1783618301; c=relaxed/relaxed;
+	bh=7zuEJkHBRCC99KhxsqHG4ENFAbvlvtYI8/11p3ZJ+7A=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:Content-Type:
+	 Content-Disposition:In-Reply-To:MIME-Version; b=bWn8Vo6qw/6aHXRo6o3a+5DJVbrV/bysquveSiPXR8FIdLOesLQ/9mc0AguGc8X5F5DvqobesnML8qR7uShJzKtokp3AvhRPXZglS4j2jfZNy4crN/5aDwRplquTghYZY9zblnRa3Uk16q0kqGvEIuXrqqxM4cuxzce4D6Sl5OFo3nN2iXwl0V329QYJXCkAcbXSyaP1ar5ggRaVzMD4e/g85PMFMEzp0EdTXetU/Pw/ooTlPvg5p7IpEVC6wbNZHm4/E1S7a/Utce66rRTgaqhs55NmEEfsdRZt8xM4Emnp2GlZt+kE1Nh32t+wmLU+cjQOPmRIINb855AXDpiyZQ==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=myo6plNq; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c105::5; helo=ch5pr02cu005.outbound.protection.outlook.com; envelope-from=ynorov@nvidia.com; receiver=lists.ozlabs.org) smtp.mailfrom=nvidia.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=rendec.net header.i=@rendec.net header.a=rsa-sha256 header.s=default header.b=HOQdvRC4;
+	dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=myo6plNq;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=rendec.net (client-ip=80.86.107.70; helo=mail.mindbit.ro; envelope-from=radu@rendec.net; receiver=lists.ozlabs.org)
-Received: from mail.mindbit.ro (xs1.mindbit.ro [80.86.107.70])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nvidia.com (client-ip=2a01:111:f403:c105::5; helo=ch5pr02cu005.outbound.protection.outlook.com; envelope-from=ynorov@nvidia.com; receiver=lists.ozlabs.org)
+Received: from CH5PR02CU005.outbound.protection.outlook.com (mail-northcentralusazlp170120005.outbound.protection.outlook.com [IPv6:2a01:111:f403:c105::5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gx1X31m3gz2xdb
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Jul 2026 03:04:01 +1000 (AEST)
-Received: from bat.kanata.rendec.net (unknown [24.114.110.115])
-	by mail.mindbit.ro (Postfix) with ESMTPSA id 635A0C3444;
-	Thu,  9 Jul 2026 20:03:34 +0300 (EEST)
-DKIM-Filter: OpenDKIM Filter v2.11.0 mail.mindbit.ro 635A0C3444
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=rendec.net;
-	s=default; t=1783616636;
-	bh=QeTQcmCkS021HmkZ3w/J1fE+WH2x3hk465jNzOmdiww=;
-	h=Subject:From:To:Cc:Date:In-Reply-To:References:From;
-	b=HOQdvRC4cpDjWxoO4q76o7VJpxbZjQlbfuUOsiqDAUaPuPJStaRmbiQcxJQ980Eps
-	 MKFq/GOxxZLqgfu23csRihSSRUSW/5gctxpZAo1uinpu1GDEqcDEuIex/Mzbgh47ta
-	 cCEipZ2fxijuCgu82+Hv9gPEgIpv+01gj1FsjVkBe0BVe8PsJncm6hNS4/ilHElftk
-	 flFvwyBgIEh76z+XJg23ownBxmO2Sv8OyobBemr1+LB6/Q+hd+F4qDL8I9pInHlerr
-	 toXkuZm1JvzkIIQQaZAtM1eVcf+e7dYfEcqZsxsJx1eEuphZ7eWQNXng18btEVDbYR
-	 zQBb+9iNgz9Dg==
-Message-ID: <390d4e005e22d64734167b656f393518682e0613.camel@rendec.net>
-Subject: Re: [patch 12/18] ptrace, treewide: Rename
- ptrace_report_syscall_entry() to ptrace_report_syscall_permit_entry()
-From: Radu Rendec <radu@rendec.net>
-To: Thomas Gleixner <tglx@kernel.org>, LKML <linux-kernel@vger.kernel.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, Arnd Bergmann <arnd@arndb.de>, 
- Oleg Nesterov <oleg@redhat.com>, Richard Henderson
- <richard.henderson@linaro.org>, Vineet Gupta	 <vgupta@kernel.org>, Russell
- King <linux@armlinux.org.uk>, Catalin Marinas	 <catalin.marinas@arm.com>,
- Will Deacon <will@kernel.org>, Guo Ren	 <guoren@kernel.org>, Brian Cain
- <bcain@kernel.org>, Geert Uytterhoeven	 <geert@linux-m68k.org>, Michal
- Simek <monstr@monstr.eu>, Thomas Bogendoerfer	 <tsbogend@alpha.franken.de>,
- Dinh Nguyen <dinguyen@kernel.org>, Helge Deller	 <deller@gmx.de>, Yoshinori
- Sato <ysato@users.sourceforge.jp>, "David S. Miller"	
- <davem@davemloft.net>, Andreas Larsson <andreas@gaisler.com>, Chris Zankel	
- <chris@zankel.net>, linux-alpha@vger.kernel.org, 
-	linux-snps-arc@lists.infradead.org, linux-arm-kernel@lists.infradead.org, 
-	linux-csky@vger.kernel.org, linux-hexagon@vger.kernel.org, 
-	linux-m68k@lists.linux-m68k.org, linux-mips@vger.kernel.org, 
-	linux-openrisc@vger.kernel.org, linux-parisc@vger.kernel.org, 
-	linux-sh@vger.kernel.org, sparclinux@vger.kernel.org, 
-	linux-um@lists.infradead.org, linux-arch@vger.kernel.org, Michael Ellerman	
- <mpe@ellerman.id.au>, Shrikanth Hegde <sshegde@linux.ibm.com>, 
-	linuxppc-dev@lists.ozlabs.org, Kees Cook <kees@kernel.org>, Huacai Chen	
- <chenhuacai@kernel.org>, loongarch@lists.linux.dev, Paul Walmsley
- <pjw@kernel.org>,  Palmer Dabbelt <palmer@dabbelt.com>,
- linux-riscv@lists.infradead.org, Sven Schnelle <svens@linux.ibm.com>, 
-	linux-s390@vger.kernel.org, x86@kernel.org, Mark Rutland
- <mark.rutland@arm.com>,  Jinjie Ruan <ruanjinjie@huawei.com>, Andy
- Lutomirski <luto@kernel.org>, Richard Weinberger <richard@nod.at>,  Michal
- =?ISO-8859-1?Q?Such=E1nek?=	 <msuchanek@suse.de>, Jonathan Corbet
- <corbet@lwn.net>, 	linux-doc@vger.kernel.org
-Date: Thu, 09 Jul 2026 13:03:28 -0400
-In-Reply-To: <20260707190254.280015701@kernel.org>
-References: <20260707181957.433213175@kernel.org>
-	 <20260707190254.280015701@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.58.3 (3.58.3-1.fc43) 
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gx27v5lnrz2ydq
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Jul 2026 03:31:38 +1000 (AEST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=N/P2ej6IMSKY1PGpAxjl4kmrlJ6s9VRGBEHqDWLU26kl6thm12q0HO17NjodvkZAQskKauBaoNQeeDVkcKvBdIwvpj9R+P60fKyMoCvERXxKcH8ygibCcWRoTmGTViR3W6HmtSk5rTRXbDmZpZrAivevtOLZGkdBXSAbdpYRLNCM8nQDrlMcxNqY54CVNLo7a7D6C7udctBU3QR9yjLjTFbO0Iswpr3sZnjx3COtsFbEK4hgX3BycSEizX5dFiIYqNNRi+j6WWkA4lrtZjbC+WAQMNx10ktWwliKaZHcr5xHxwflYdDCm2BzC1GEWb3RL06s/JCUYPOrZaftBgtpIw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=7zuEJkHBRCC99KhxsqHG4ENFAbvlvtYI8/11p3ZJ+7A=;
+ b=MfQ4hbALeiK3Mhqv2sU45htJCb+W+t/36UbU7MFAnD3M2FYcmA2GRHfO5V21nUknTASCDoZ7WikpcZ2fvHI2I8YQGB8Y80EL5Ibhv6mT0pqEZk8qbSmLW/K/YtizfEf3wz31zIRPY/8DFYUIjS4a817YDjM1cVg4teHAT/WW5yPfSDQmiu9vqw8jAKoilNeujv0OLt+BhidqoYV5+zbpgf4x/1vX2Krom5GrqFfsf4g8eiMPUqoFBKIlRxDPswkH+bQW0mGNNK+M5QNZ3wk5VgFgFi9IdhgU6nh0Ph4MR75M4bXty9MHhtJoss1XMDRz0i/yS8EP975wE/ImK6mUeg==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
+ dkim=pass header.d=nvidia.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=7zuEJkHBRCC99KhxsqHG4ENFAbvlvtYI8/11p3ZJ+7A=;
+ b=myo6plNqSmd7ZFadOdAijXK9LBDmrrXFBFYa1W57LUOj1BVGGs/WL2iEFSHa/tfuGsRdnJdcBMt8Y/M8i/8KsqgDqVGamWsnGV6RYlhSHJcJFCLh96uoGbi6q8F0sqpzfexwmLR1R4EEOw96Nn8xNiMptaV21K7czcbXxoBTddIZj5gJ30jS1HQl1LUayaFZEMEmenqNseosfjTLu/nXX3aLw9RTZpws3tmZ4guX6FTNgE4zMjIMrk6CJgeAN/mkYQCG8vuhEscDVF2IQEwBy+W8UcZr7BQ9Kp+bB78Ym2+w7uARXtSvu8u7oS2HuFYs4yEg3Tp3JOE/cmESxB5eaA==
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=nvidia.com;
+Received: from LV3PR12MB9356.namprd12.prod.outlook.com (2603:10b6:408:20c::21)
+ by CY1PR12MB9700.namprd12.prod.outlook.com (2603:10b6:930:108::14) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.181.16; Thu, 9 Jul
+ 2026 17:31:09 +0000
+Received: from LV3PR12MB9356.namprd12.prod.outlook.com
+ ([fe80::1c36:31b4:c420:6286]) by LV3PR12MB9356.namprd12.prod.outlook.com
+ ([fe80::1c36:31b4:c420:6286%5]) with mapi id 15.21.0181.014; Thu, 9 Jul 2026
+ 17:31:09 +0000
+Date: Thu, 9 Jul 2026 13:31:06 -0400
+From: Yury Norov <ynorov@nvidia.com>
+To: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+	Yury Norov <yury.norov@gmail.com>,
+	Rasmus Villemoes <linux@rasmusvillemoes.dk>,
+	Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+	Erhard Furtner <erhard_f@mailbox.org>
+Subject: Re: [PATCH] bitmap: Properly initialise destination bitmap for
+ scatter & gather test
+Message-ID: <ak_ayOBErDQR5HH0@yury>
+References: <67d1838732b85b1f715cc3ada5bb38dcfcf9db55.1783593992.git.chleroy@kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <67d1838732b85b1f715cc3ada5bb38dcfcf9db55.1783593992.git.chleroy@kernel.org>
+X-ClientProxiedBy: SJ0PR03CA0254.namprd03.prod.outlook.com
+ (2603:10b6:a03:3a0::19) To LV3PR12MB9356.namprd12.prod.outlook.com
+ (2603:10b6:408:20c::21)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -95,441 +87,103 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: LV3PR12MB9356:EE_|CY1PR12MB9700:EE_
+X-MS-Office365-Filtering-Correlation-Id: ec874a27-35c9-4bd8-d0e0-08dedddfdd2e
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|23010399003|376014|1800799024|366016|6133799003|56012099006|11063799006|22082099003|18002099003;
+X-Microsoft-Antispam-Message-Info:
+	tx+lVfjf/YFRWhsq1wWidhm7b8xU+vwf+U0MC2qcmhjrQoAeur6I09ekhCXrXD2bMdOZ4xM6gQccnrvjrmLbxCl8qlo6sWX6/B8JuZwwXhSyuz3jHVqpqGdfnPYfc984FPC3faxXmmbuSASYrU3sTz9++NO6oyjAIU7luFUOK4w3CB4w72rsMcaFqoIqguUcKMEYv+I6neIx6n1RQTYixflXzYtSBkD/BYK9YzaWD9o3xIBCovOlCQfCtLa859/ZceJqszbNbiYLkfoBRiEm5xA9MgP88gqaOC1R5fAKipzKuo84n77INJlJ0Kr0qabqbUsMjxktTB6VMcjoz0mh0nXSHKb46+lVwn5IQlSIYQHMoCk1lQPm82L7FbNYRlcKhsN9h37ARVAiGkP9nbOSecP3VBJQAe/Zy27IDS/W8vNw8jXl0ODmghDOBlJBaZuEYVxWYL8bf5y9tr2QQvVgct8DVHPQMoDCNqzfDEJptWc1M6xSO3j598xq6Hze8SNV2+65L5YDboKI52qSqBvw9/XgXCYROCHtjssd/6jEcxCaabYQsp0pxF7rWirabir8ISkGBhjyTzLRZ9GCeAd0Jwj/pSkzKL7Hru4bU8EAdId+YdpoAdFr0H18yqjkc+bKYjRz0mYrHZMm5Q//g24+BHEqaXOM05cXHtlUjq/antc=
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:LV3PR12MB9356.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(23010399003)(376014)(1800799024)(366016)(6133799003)(56012099006)(11063799006)(22082099003)(18002099003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?us-ascii?Q?wKalUwWHIX0hPdx0l/JJXOvIKCIAuSuElAjSBofG7fFv/vtqs1jUAaRc5WwU?=
+ =?us-ascii?Q?AbWOdZFFYT6RpLHvxwto+GRQQCncg9d/BgOB8FKtscUYjGxfIiyPQv4Bl3lW?=
+ =?us-ascii?Q?p5WJ566onS690PFZAsoQkRHpFnFaZNIyQiAwIU0M0nJXk5BEn0yUPeYOXwCO?=
+ =?us-ascii?Q?aNaPiJ3CZwcvmn79oUcIjPHEF9PuO6tZnksIYuZ+7K2vbNre4STdmodlnH+G?=
+ =?us-ascii?Q?24Wv5kb4QfheX4B+UxNnT019aGK1HuArc1OGhwCw2qw2kECXfKlU7QIboRF6?=
+ =?us-ascii?Q?m5B8PaAgIWWd/n2OTudne61ltm671rUKzE+wuQjm+XM1FNBjpz8jUBoLMuuw?=
+ =?us-ascii?Q?2kgydeUy1dC74nhVXDXrX0LCZtxJHqBSVGshjmO8BslsAm2Mp2IlNh9wkCVW?=
+ =?us-ascii?Q?AZ+LTG3+yZtTM8TO9ihT+niWWkKJ3uSuKEjCIXxDpEDUfzoDbAMcRMHdHEOR?=
+ =?us-ascii?Q?SDipAq/dEQJKSXn8lAT337SGpI0UwECAkvTjg30yhKARNlUnkDz7UFbqSCe2?=
+ =?us-ascii?Q?LgTUvaEGf6aKsj8Y+dntLBzF7DxLxZKQ9glW/m4UIE24n33u+rufriYE3e57?=
+ =?us-ascii?Q?XSMge6DzpDUB3QfYpu5imxmvXaMg9fT1QCvjxa+UCnkAR+YmjraZfqJUNfV1?=
+ =?us-ascii?Q?EN+qO7pR1w5EIPzkhNvv1XfWP8X5czG5u6fNiTn7S6a2JheopYrmhcQc42to?=
+ =?us-ascii?Q?VwF12DxpFX26TmO75+QW5Taq+Ek68Hv8jadfSq+LlDlP0kR7r12/1LiKCRGQ?=
+ =?us-ascii?Q?LcT/cqcMQNw+tGMmyTUHWiUYESEJXcr/acMvh5oTTXqSToINXs+VNqPFU0Hz?=
+ =?us-ascii?Q?NLn4/3qkXrZs9VMjnsc7yqrpJP76R9V3Mx4gQ+aQocYktbuJBy4WjdR2H7xG?=
+ =?us-ascii?Q?96+KYn/ctaR9Ku3eOgufo36zVxeaz3KJvS+bQ4RN2Nybl6D5d+T/Cxr301t4?=
+ =?us-ascii?Q?MtDWwBw1ryjuQb8BFwSmxqLEUZvN2d2WxHdbCREgndpvNpKdj4CEQUKvLIgj?=
+ =?us-ascii?Q?HN+lY5X2r326E9pWYDLYm54dDhl2UG27FcGHYnpvanT5ooCxoDTr1qHD53F1?=
+ =?us-ascii?Q?sHzRi0nOLYiess45KdZmxqCLpbyd12/jb5WTxDQ/ws+VJs1JO++2Ic4LHQD2?=
+ =?us-ascii?Q?PzuX9Qj2P9x4TkFvZLXwhAoZW03/ZExvTH2brW/AYO1EWNzp+DmcQTLN3gvr?=
+ =?us-ascii?Q?e5jGfJErfrkxR0SWyxeCLatxI6bTxhQNQkfwBFH1uXg13CPEwfVvcYqHkRXs?=
+ =?us-ascii?Q?EYZBX25+QVzSZVmhSd43P6lEkX3cua6R4J4p2KtU0SdR1UoTofdLc+zT798n?=
+ =?us-ascii?Q?UhEo6CJG86XL5N9dYfMO+d19a5h+BzZ6ytx9NCS2zBQRoJMA/oQwrdW6Qhl5?=
+ =?us-ascii?Q?XR74+pnhxHOxzkOiSRYi6zj0cIuwxx/DVyXipVR8J4RAVQjLz8TZjWfrwkjx?=
+ =?us-ascii?Q?UW8KM81Ey1UDuXstFtXsNc5EGht42M+fTJmBw7dnyI1g6OfThYtQwfV2ACL8?=
+ =?us-ascii?Q?PDc177l1Fqz6lvhF8dwQC0X4Lipt2A63fOLTZTsZhxjqfuvCKiaUS5T7oGd5?=
+ =?us-ascii?Q?ffZHzQdHNoxuawJLB8GAq2Li0YhdFqbdEL+vme/pHyNsyT1EmiZrwApvC8oJ?=
+ =?us-ascii?Q?w/7q8oYU0jrrj8A/zy0BYYix8wxSa20GFQKGxz+RWMxFgvbF9EDrtM4JFihi?=
+ =?us-ascii?Q?7lPMonf9/zAi4DzkWap6YWHCOvBIDY0XB7Gw1IYNuSd8pBqM2tsPJbAf5bBk?=
+ =?us-ascii?Q?+8YrjzBy0A=3D=3D?=
+X-OriginatorOrg: Nvidia.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: ec874a27-35c9-4bd8-d0e0-08dedddfdd2e
+X-MS-Exchange-CrossTenant-AuthSource: LV3PR12MB9356.namprd12.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 09 Jul 2026 17:31:09.3119
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: GDtgbDPAYN+Saj/TnYD6webtBKq2msm4lbPr0WsKaBE9oG4V6fRFAw43UBvRGHB6pLHRk2IFS7OYl0qasrvboQ==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: CY1PR12MB9700
 
-On Tue, 2026-07-07 at 21:06 +0200, Thomas Gleixner wrote:
-> The return value of that function is boolean and tells the caller whether
-> to permit the syscall processing or not.
->=20
-> Rename the function so the purpose is clear and make the return type bool=
-.
->=20
-> Signed-off-by: Thomas Gleixner <tglx@kernel.org>
-> Cc: Arnd Bergmann <arnd@arndb.de>
-> Cc: Oleg Nesterov <oleg@redhat.com>
-> Cc: Richard Henderson <richard.henderson@linaro.org>
-> Cc: Vineet Gupta <vgupta@kernel.org>
-> Cc: Russell King <linux@armlinux.org.uk>
-> Cc: Catalin Marinas <catalin.marinas@arm.com>
-> Cc: Will Deacon <will@kernel.org>
-> Cc: Guo Ren <guoren@kernel.org>
-> Cc: Brian Cain <bcain@kernel.org>
-> Cc: Geert Uytterhoeven <geert@linux-m68k.org>
-> Cc: Michal Simek <monstr@monstr.eu>
-> Cc: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
-> Cc: Dinh Nguyen <dinguyen@kernel.org>
-> Cc: Helge Deller <deller@gmx.de>
-> Cc: Yoshinori Sato <ysato@users.sourceforge.jp>
-> Cc: "David S. Miller" <davem@davemloft.net>
-> Cc: Andreas Larsson <andreas@gaisler.com>
-> Cc: Chris Zankel <chris@zankel.net>
-> Cc: linux-alpha@vger.kernel.org
-> Cc: linux-snps-arc@lists.infradead.org
-> Cc: linux-arm-kernel@lists.infradead.org
-> Cc: linux-csky@vger.kernel.org
-> Cc: linux-hexagon@vger.kernel.org
-> Cc: linux-m68k@lists.linux-m68k.org
-> Cc: linux-mips@vger.kernel.org
-> Cc: linux-openrisc@vger.kernel.org
-> Cc: linux-parisc@vger.kernel.org
-> Cc: linux-sh@vger.kernel.org
-> Cc: sparclinux@vger.kernel.org
-> Cc: linux-um@lists.infradead.org
-> Cc: linux-arch@vger.kernel.org
+On Thu, Jul 09, 2026 at 01:40:06PM +0200, Christophe Leroy (CS GROUP) wrote:
+> Erhard reports failure of bitmap tests on powerpc:
+> 
+>   test_bitmap: loaded.
+>   test_bitmap: [lib/test_bitmap.c:397] bitmaps contents differ: expected "1,3-4,9", got "1,3-4,9,65-71,73-79,81-87,89-95,97-99"
+>   test_bitmap: parselist('0-2047:128/256'):    912
+>   test_bitmap: scnprintf("%*pbl", '0-32767'):    5977
+>   test_bitmap: test_bitmap_read_perf:        1191082
+>   test_bitmap: test_bitmap_write_perf:        1270153
+>   test_bitmap: failed 1 out of 208655 tests
+> 
+> The happens mainly when CONFIG_INIT_STACK_ALL_PATTERN is set.
+> 
+> Commit 6b5a4b687367 ("bitmap: Add test for out-of-boundary
+> modifications for scatter & gather") extended the test to
+> out-of-boundary bits, but those bits where left uninitialised.
+> 
+> Properly initialise the entire result bitmap before the test.
+> 
+> Reported-by: Erhard Furtner <erhard_f@mailbox.org>
+> Closes: https://lore.kernel.org/all/ca3547ae-8b79-43a2-a758-23ec980bfd9a@mailbox.org
+> Fixes: 6b5a4b687367 ("bitmap: Add test for out-of-boundary modifications for scatter & gather")
+> Signed-off-by: Christophe Leroy (CS GROUP) <chleroy@kernel.org>
+
+Applied, thanks!
+
 > ---
-> =C2=A0arch/alpha/kernel/ptrace.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 |=C2=A0=C2=
-=A0=C2=A0 2 +-
-> =C2=A0arch/arc/kernel/ptrace.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 =
-|=C2=A0=C2=A0=C2=A0 2 +-
-> =C2=A0arch/arm/kernel/ptrace.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 =
-|=C2=A0=C2=A0=C2=A0 2 +-
-> =C2=A0arch/arm64/kernel/ptrace.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 |=C2=A0=C2=
-=A0=C2=A0 2 +-
-> =C2=A0arch/csky/kernel/ptrace.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 |=C2=
-=A0=C2=A0=C2=A0 2 +-
-> =C2=A0arch/hexagon/kernel/traps.c=C2=A0=C2=A0=C2=A0=C2=A0 |=C2=A0=C2=A0=
-=C2=A0 2 +-
-> =C2=A0arch/m68k/kernel/ptrace.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 |=C2=
-=A0=C2=A0=C2=A0 2 +-
-> =C2=A0arch/microblaze/kernel/ptrace.c |=C2=A0=C2=A0=C2=A0 2 +-
-> =C2=A0arch/mips/kernel/ptrace.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 |=C2=
-=A0=C2=A0=C2=A0 2 +-
-> =C2=A0arch/nios2/kernel/ptrace.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 |=C2=A0=C2=
-=A0=C2=A0 2 +-
-> =C2=A0arch/openrisc/kernel/ptrace.c=C2=A0=C2=A0 |=C2=A0=C2=A0=C2=A0 2 +-
-> =C2=A0arch/parisc/kernel/ptrace.c=C2=A0=C2=A0=C2=A0=C2=A0 |=C2=A0=C2=A0 1=
-0 ++++------
-> =C2=A0arch/sh/kernel/ptrace_32.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 |=C2=A0=C2=
-=A0=C2=A0 2 +-
-> =C2=A0arch/sparc/kernel/ptrace_32.c=C2=A0=C2=A0 |=C2=A0=C2=A0=C2=A0 2 +-
-> =C2=A0arch/sparc/kernel/ptrace_64.c=C2=A0=C2=A0 |=C2=A0=C2=A0=C2=A0 2 +-
-> =C2=A0arch/um/kernel/ptrace.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0 |=C2=A0=C2=A0=C2=A0 2 +-
-> =C2=A0arch/xtensa/kernel/ptrace.c=C2=A0=C2=A0=C2=A0=C2=A0 |=C2=A0=C2=A0=
-=C2=A0 2 +-
-> =C2=A0include/asm-generic/syscall.h=C2=A0=C2=A0 |=C2=A0=C2=A0=C2=A0 4 ++-=
--
-> =C2=A0include/linux/entry-common.h=C2=A0=C2=A0=C2=A0 |=C2=A0=C2=A0 25 +++=
-+++++++++-------------
-> =C2=A0include/linux/ptrace.h=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0 |=C2=A0=C2=A0 13 ++++++-------
-> =C2=A020 files changed, 40 insertions(+), 44 deletions(-)
->=20
-> --- a/arch/alpha/kernel/ptrace.c
-> +++ b/arch/alpha/kernel/ptrace.c
-> @@ -375,7 +375,7 @@ asmlinkage unsigned long syscall_trace_e
-> =C2=A0	struct pt_regs *regs =3D current_pt_regs();
-> =C2=A0
-> =C2=A0	if (test_thread_flag(TIF_SYSCALL_TRACE) &&
-> -		ptrace_report_syscall_entry(regs)) {
-> +		!ptrace_report_syscall_permit_entry(regs)) {
-> =C2=A0		syscall_set_nr(current, regs, -1);
-> =C2=A0		if (regs->r19 =3D=3D 0 && regs->r0 =3D=3D (unsigned long)-1)
-> =C2=A0			syscall_set_return_value(current, regs, -ENOSYS, 0);
-> --- a/arch/arc/kernel/ptrace.c
-> +++ b/arch/arc/kernel/ptrace.c
-> @@ -342,7 +342,7 @@ long arch_ptrace(struct task_struct *chi
-> =C2=A0asmlinkage int syscall_trace_enter(struct pt_regs *regs)
-> =C2=A0{
-> =C2=A0	if (test_thread_flag(TIF_SYSCALL_TRACE))
-> -		if (ptrace_report_syscall_entry(regs))
-> +		if (!ptrace_report_syscall_permit_entry(regs))
-> =C2=A0			return ULONG_MAX;
-> =C2=A0
-> =C2=A0#ifdef CONFIG_HAVE_SYSCALL_TRACEPOINTS
-> --- a/arch/arm/kernel/ptrace.c
-> +++ b/arch/arm/kernel/ptrace.c
-> @@ -840,7 +840,7 @@ static void report_syscall(struct pt_reg
-> =C2=A0
-> =C2=A0	if (dir =3D=3D PTRACE_SYSCALL_EXIT)
-> =C2=A0		ptrace_report_syscall_exit(regs, 0);
-> -	else if (ptrace_report_syscall_entry(regs))
-> +	else if (!ptrace_report_syscall_permit_entry(regs))
-> =C2=A0		current_thread_info()->abi_syscall =3D -1;
-> =C2=A0
-> =C2=A0	regs->ARM_ip =3D ip;
-> --- a/arch/arm64/kernel/ptrace.c
-> +++ b/arch/arm64/kernel/ptrace.c
-> @@ -2379,7 +2379,7 @@ static int report_syscall_entry(struct p
-> =C2=A0	int regno, ret;
-> =C2=A0
-> =C2=A0	saved_reg =3D ptrace_save_reg(regs, PTRACE_SYSCALL_ENTER, &regno);
-> -	ret =3D ptrace_report_syscall_entry(regs);
-> +	ret =3D !ptrace_report_syscall_permit_entry(regs);
-> =C2=A0	if (ret)
-> =C2=A0		forget_syscall(regs);
-> =C2=A0	regs->regs[regno] =3D saved_reg;
-> --- a/arch/csky/kernel/ptrace.c
-> +++ b/arch/csky/kernel/ptrace.c
-> @@ -320,7 +320,7 @@ long arch_ptrace(struct task_struct *chi
-> =C2=A0asmlinkage int syscall_trace_enter(struct pt_regs *regs)
-> =C2=A0{
-> =C2=A0	if (test_thread_flag(TIF_SYSCALL_TRACE))
-> -		if (ptrace_report_syscall_entry(regs))
-> +		if (!ptrace_report_syscall_permit_entry(regs))
-> =C2=A0			return -1;
-> =C2=A0
-> =C2=A0	if (!seccomp_permit_syscall())
-> --- a/arch/hexagon/kernel/traps.c
-> +++ b/arch/hexagon/kernel/traps.c
-> @@ -345,7 +345,7 @@ void do_trap0(struct pt_regs *regs)
-> =C2=A0
-> =C2=A0		/* allow strace to catch syscall args=C2=A0 */
-> =C2=A0		if (unlikely(test_thread_flag(TIF_SYSCALL_TRACE) &&
-> -			ptrace_report_syscall_entry(regs)))
-> +			!ptrace_report_syscall_permit_entry(regs)))
-> =C2=A0			return;=C2=A0 /*=C2=A0 return -ENOSYS somewhere?=C2=A0 */
-> =C2=A0
-> =C2=A0		/* Interrupts should be re-enabled for syscall processing */
-> --- a/arch/m68k/kernel/ptrace.c
-> +++ b/arch/m68k/kernel/ptrace.c
-> @@ -279,7 +279,7 @@ asmlinkage int syscall_trace_enter(void)
-> =C2=A0	int ret =3D 0;
-> =C2=A0
-> =C2=A0	if (test_thread_flag(TIF_SYSCALL_TRACE))
-> -		ret =3D ptrace_report_syscall_entry(task_pt_regs(current));
-> +		ret =3D !ptrace_report_syscall_permit_entry(task_pt_regs(current));
-> =C2=A0
-> =C2=A0	if (!seccomp_permit_syscall())
-> =C2=A0		return -1;
-> --- a/arch/microblaze/kernel/ptrace.c
-> +++ b/arch/microblaze/kernel/ptrace.c
-> @@ -139,7 +139,7 @@ asmlinkage unsigned long do_syscall_trac
-> =C2=A0	secure_computing_strict(regs->r12);
-> =C2=A0
-> =C2=A0	if (test_thread_flag(TIF_SYSCALL_TRACE) &&
-> -	=C2=A0=C2=A0=C2=A0 ptrace_report_syscall_entry(regs))
-> +	=C2=A0=C2=A0=C2=A0 !ptrace_report_syscall_permit_entry(regs))
-> =C2=A0		/*
-> =C2=A0		 * Tracing decided this syscall should not happen.
-> =C2=A0		 * We'll return a bogus call number to get an ENOSYS
-> --- a/arch/mips/kernel/ptrace.c
-> +++ b/arch/mips/kernel/ptrace.c
-> @@ -1324,7 +1324,7 @@ asmlinkage long syscall_trace_enter(stru
-> =C2=A0	user_exit();
-> =C2=A0
-> =C2=A0	if (test_thread_flag(TIF_SYSCALL_TRACE)) {
-> -		if (ptrace_report_syscall_entry(regs))
-> +		if (!ptrace_report_syscall_permit_entry(regs))
-> =C2=A0			return -1;
-> =C2=A0	}
-> =C2=A0
-> --- a/arch/nios2/kernel/ptrace.c
-> +++ b/arch/nios2/kernel/ptrace.c
-> @@ -133,7 +133,7 @@ asmlinkage int do_syscall_trace_enter(vo
-> =C2=A0	int ret =3D 0;
-> =C2=A0
-> =C2=A0	if (test_thread_flag(TIF_SYSCALL_TRACE))
-> -		ret =3D ptrace_report_syscall_entry(task_pt_regs(current));
-> +		ret =3D !ptrace_report_syscall_permit_entry(task_pt_regs(current));
-> =C2=A0
-> =C2=A0	return ret;
-> =C2=A0}
-> --- a/arch/openrisc/kernel/ptrace.c
-> +++ b/arch/openrisc/kernel/ptrace.c
-> @@ -293,7 +293,7 @@ asmlinkage long do_syscall_trace_enter(s
-> =C2=A0	long ret =3D 0;
-> =C2=A0
-> =C2=A0	if (test_thread_flag(TIF_SYSCALL_TRACE) &&
-> -	=C2=A0=C2=A0=C2=A0 ptrace_report_syscall_entry(regs))
-> +	=C2=A0=C2=A0=C2=A0 !ptrace_report_syscall_permit_entry(regs))
-> =C2=A0		/*
-> =C2=A0		 * Tracing decided this syscall should not happen.
-> =C2=A0		 * We'll return a bogus call number to get an ENOSYS
-> --- a/arch/parisc/kernel/ptrace.c
-> +++ b/arch/parisc/kernel/ptrace.c
-> @@ -326,7 +326,7 @@ long compat_arch_ptrace(struct task_stru
-> =C2=A0long do_syscall_trace_enter(struct pt_regs *regs)
-> =C2=A0{
-> =C2=A0	if (test_thread_flag(TIF_SYSCALL_TRACE)) {
-> -		int rc =3D ptrace_report_syscall_entry(regs);
-> +		bool permit =3D ptrace_report_syscall_permit_entry(regs);
-> =C2=A0
-> =C2=A0		/*
-> =C2=A0		 * As tracesys_next does not set %r28 to -ENOSYS
-> @@ -334,12 +334,10 @@ long do_syscall_trace_enter(struct pt_re
-> =C2=A0		 */
-> =C2=A0		regs->gr[28] =3D -ENOSYS;
-> =C2=A0
-> -		if (rc) {
-> +		if (!permit) {
-> =C2=A0			/*
-> -			 * A nonzero return code from
-> -			 * ptrace_report_syscall_entry() tells us
-> -			 * to prevent the syscall execution.=C2=A0 Skip
-> -			 * the syscall call and the syscall restart handling.
-> +			 * Skip the syscall call and the syscall restart
-> +			 * handling.
-> =C2=A0			 *
-> =C2=A0			 * Note that the tracer may also just change
-> =C2=A0			 * regs->gr[20] to an invalid syscall number,
-> --- a/arch/sh/kernel/ptrace_32.c
-> +++ b/arch/sh/kernel/ptrace_32.c
-> @@ -455,7 +455,7 @@ long arch_ptrace(struct task_struct *chi
-> =C2=A0asmlinkage long do_syscall_trace_enter(struct pt_regs *regs)
-> =C2=A0{
-> =C2=A0	if (test_thread_flag(TIF_SYSCALL_TRACE) &&
-> -	=C2=A0=C2=A0=C2=A0 ptrace_report_syscall_entry(regs)) {
-> +	=C2=A0=C2=A0=C2=A0 !ptrace_report_syscall_permit_entry(regs)) {
-> =C2=A0		regs->regs[0] =3D -ENOSYS;
-> =C2=A0		return -1;
-> =C2=A0	}
-> --- a/arch/sparc/kernel/ptrace_32.c
-> +++ b/arch/sparc/kernel/ptrace_32.c
-> @@ -441,7 +441,7 @@ asmlinkage int syscall_trace(struct pt_r
-> =C2=A0		if (syscall_exit_p)
-> =C2=A0			ptrace_report_syscall_exit(regs, 0);
-> =C2=A0		else
-> -			ret =3D ptrace_report_syscall_entry(regs);
-> +			ret =3D !ptrace_report_syscall_permit_entry(regs);
-> =C2=A0	}
-> =C2=A0
-> =C2=A0	return ret;
-> --- a/arch/sparc/kernel/ptrace_64.c
-> +++ b/arch/sparc/kernel/ptrace_64.c
-> @@ -1093,7 +1093,7 @@ asmlinkage int syscall_trace_enter(struc
-> =C2=A0		user_exit();
-> =C2=A0
-> =C2=A0	if (test_thread_flag(TIF_SYSCALL_TRACE))
-> -		ret =3D ptrace_report_syscall_entry(regs);
-> +		ret =3D !ptrace_report_syscall_permit_entry(regs);
-> =C2=A0
-> =C2=A0	if (unlikely(test_thread_flag(TIF_SYSCALL_TRACEPOINT)))
-> =C2=A0		trace_sys_enter(regs, regs->u_regs[UREG_G1]);
-> --- a/arch/um/kernel/ptrace.c
-> +++ b/arch/um/kernel/ptrace.c
-> @@ -135,7 +135,7 @@ int syscall_trace_enter(struct pt_regs *
-> =C2=A0	if (!test_thread_flag(TIF_SYSCALL_TRACE))
-> =C2=A0		return 0;
-> =C2=A0
-> -	return ptrace_report_syscall_entry(regs);
-> +	return !ptrace_report_syscall_permit_entry(regs);
-> =C2=A0}
-> =C2=A0
-> =C2=A0void syscall_trace_leave(struct pt_regs *regs)
-> --- a/arch/xtensa/kernel/ptrace.c
-> +++ b/arch/xtensa/kernel/ptrace.c
-> @@ -547,7 +547,7 @@ int do_syscall_trace_enter(struct pt_reg
-> =C2=A0		regs->areg[2] =3D -ENOSYS;
-> =C2=A0
-> =C2=A0	if (test_thread_flag(TIF_SYSCALL_TRACE) &&
-> -	=C2=A0=C2=A0=C2=A0 ptrace_report_syscall_entry(regs)) {
-> +	=C2=A0=C2=A0=C2=A0 !ptrace_report_syscall_permit_entry(regs)) {
-> =C2=A0		regs->areg[2] =3D -ENOSYS;
-> =C2=A0		regs->syscall =3D NO_SYSCALL;
-> =C2=A0		return 0;
-> --- a/include/asm-generic/syscall.h
-> +++ b/include/asm-generic/syscall.h
-> @@ -58,8 +58,8 @@ void syscall_set_nr(struct task_struct *
-> =C2=A0 *
-> =C2=A0 * It's only valid to call this when @task is stopped for system
-> =C2=A0 * call exit tracing (due to %SYSCALL_WORK_SYSCALL_TRACE or
-> - * %SYSCALL_WORK_SYSCALL_AUDIT), after ptrace_report_syscall_entry()
-> - * returned nonzero to prevent the system call from taking place.
-> + * %SYSCALL_WORK_SYSCALL_AUDIT), after ptrace_report_syscall_permit_entr=
-y()
-> + * returned False to prevent the system call from taking place.
-> =C2=A0 *
-> =C2=A0 * This rolls back the register state in @regs so it's as if the
-> =C2=A0 * system call instruction was a no-op.=C2=A0 The registers contain=
-ing
-> --- a/include/linux/entry-common.h
-> +++ b/include/linux/entry-common.h
-> @@ -38,21 +38,22 @@
-> =C2=A0				 SYSCALL_WORK_SYSCALL_EXIT_TRAP)
-> =C2=A0
-> =C2=A0/**
-> - * arch_ptrace_report_syscall_entry - Architecture specific ptrace_repor=
-t_syscall_entry() wrapper
-> + * arch_ptrace_report_syscall_permit_entry - Architecture specific wrapp=
-er for
-> + *					=C2=A0=C2=A0=C2=A0=C2=A0 ptrace_report_syscall_permit_entry()
-> =C2=A0 * @regs: Pointer to the register state at syscall entry
-> =C2=A0 *
-> - * Invoked from syscall_trace_enter() to wrap ptrace_report_syscall_entr=
-y().
-> + * Invoked from syscall_trace_enter() to wrap ptrace_report_syscall_perm=
-it_entry().
-> =C2=A0 *
-> - * This allows architecture specific ptrace_report_syscall_entry()
-> + * This allows architecture specific ptrace_report_syscall_permit_entry(=
-)
-> =C2=A0 * implementations. If not defined by the architecture this falls b=
-ack to
-> - * to ptrace_report_syscall_entry().
-> + * to ptrace_report_syscall_permit_entry().
-> =C2=A0 */
-> -static __always_inline int arch_ptrace_report_syscall_entry(struct pt_re=
-gs *regs);
-> +static __always_inline bool arch_ptrace_report_syscall_permit_entry(stru=
-ct pt_regs *regs);
-> =C2=A0
-> -#ifndef arch_ptrace_report_syscall_entry
-> -static __always_inline int arch_ptrace_report_syscall_entry(struct pt_re=
-gs *regs)
-> +#ifndef arch_ptrace_report_syscall_permit_entry
-> +static __always_inline bool arch_ptrace_report_syscall_permit_entry(stru=
-ct pt_regs *regs)
-> =C2=A0{
-> -	return ptrace_report_syscall_entry(regs);
-> +	return ptrace_report_syscall_permit_entry(regs);
-> =C2=A0}
-> =C2=A0#endif
-> =C2=A0
-> @@ -73,8 +74,6 @@ static inline void syscall_enter_audit(s
-> =C2=A0static __always_inline long syscall_trace_enter(struct pt_regs *reg=
-s, unsigned long work,
-> =C2=A0						long syscall)
-> =C2=A0{
-> -	long ret =3D 0;
-> -
-> =C2=A0	/*
-> =C2=A0	 * Handle Syscall User Dispatch.=C2=A0 This must comes first, sinc=
-e
-> =C2=A0	 * the ABI here can be something that doesn't make sense for
-> @@ -95,8 +94,8 @@ static __always_inline long syscall_trac
-> =C2=A0
-> =C2=A0	/* Handle ptrace */
-> =C2=A0	if (work & (SYSCALL_WORK_SYSCALL_TRACE | SYSCALL_WORK_SYSCALL_EMU)=
-) {
-> -		ret =3D arch_ptrace_report_syscall_entry(regs);
-> -		if (ret || (work & SYSCALL_WORK_SYSCALL_EMU))
-> +		if (!arch_ptrace_report_syscall_permit_entry(regs) ||
-> +		=C2=A0=C2=A0=C2=A0 (work & SYSCALL_WORK_SYSCALL_EMU))
-> =C2=A0			return -1L;
-> =C2=A0	}
-> =C2=A0
-> @@ -137,7 +136,7 @@ static __always_inline long syscall_trac
-> =C2=A0 * It handles the following work items:
-> =C2=A0 *
-> =C2=A0 *=C2=A0 1) syscall_work flag dependent invocations of
-> - *=C2=A0=C2=A0=C2=A0=C2=A0 ptrace_report_syscall_entry(), __seccomp_perm=
-it_syscall(), trace_sys_enter()
-> + *=C2=A0=C2=A0=C2=A0=C2=A0 ptrace_report_syscall_permit_entry(), __secco=
-mp_permit_syscall(), trace_sys_enter()
-> =C2=A0 *=C2=A0 2) Invocation of audit_syscall_entry()
-> =C2=A0 */
-> =C2=A0static __always_inline long syscall_enter_from_user_mode_work(struc=
-t pt_regs *regs, long syscall)
-> --- a/include/linux/ptrace.h
-> +++ b/include/linux/ptrace.h
-> @@ -405,13 +405,13 @@ extern void sigaction_compat_abi(struct
-> =C2=A0/*
-> =C2=A0 * ptrace report for syscall entry and exit looks identical.
-> =C2=A0 */
-> -static inline int ptrace_report_syscall(unsigned long message)
-> +static inline bool ptrace_report_syscall(unsigned long message)
-> =C2=A0{
-> =C2=A0	int ptrace =3D current->ptrace;
-> =C2=A0	int signr;
-> =C2=A0
-> =C2=A0	if (!(ptrace & PT_PTRACED))
-> -		return 0;
-> +		return true;
-> =C2=A0
-> =C2=A0	signr =3D ptrace_notify(SIGTRAP | ((ptrace & PT_TRACESYSGOOD) ? 0x=
-80 : 0),
-> =C2=A0			=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 message);
-> @@ -424,11 +424,11 @@ static inline int ptrace_report_syscall(
-> =C2=A0	if (signr)
-> =C2=A0		send_sig(signr, current, 1);
-> =C2=A0
-> -	return fatal_signal_pending(current);
-> +	return !fatal_signal_pending(current);
-> =C2=A0}
-> =C2=A0
-> =C2=A0/**
-> - * ptrace_report_syscall_entry - task is about to attempt a system call
-> + * ptrace_report_syscall_permit_entry - task is about to attempt a syste=
-m call
-> =C2=A0 * @regs:		user register state of current task
-> =C2=A0 *
-> =C2=A0 * This will be called if %SYSCALL_WORK_SYSCALL_TRACE or
-> @@ -438,7 +438,7 @@ static inline int ptrace_report_syscall(
-> =C2=A0 * call number and arguments to be tried.=C2=A0 It is safe to block=
- here,
-> =C2=A0 * preventing the system call from beginning.
-> =C2=A0 *
-> - * Returns zero normally, or nonzero if the calling arch code should abo=
-rt
-> + * Returns True normally, or False if the calling architecture code shou=
-ld abort
-> =C2=A0 * the system call.=C2=A0 That must prevent normal entry so no syst=
-em call is
-> =C2=A0 * made.=C2=A0 If @task ever returns to user mode after this, its r=
-egister state
-> =C2=A0 * is unspecified, but should be something harmless like an %ENOSYS=
- error
-> @@ -447,8 +447,7 @@ static inline int ptrace_report_syscall(
-> =C2=A0 *
-> =C2=A0 * Called without locks, just after entering kernel mode.
-> =C2=A0 */
-> -static inline __must_check int ptrace_report_syscall_entry(
-> -	struct pt_regs *regs)
-> +static inline __must_check bool ptrace_report_syscall_permit_entry(struc=
-t pt_regs *regs)
-> =C2=A0{
-> =C2=A0	return ptrace_report_syscall(PTRACE_EVENTMSG_SYSCALL_ENTRY);
-> =C2=A0}
-
-Reviewed-by: Radu Rendec <radu@rendec.net>
+>  lib/test_bitmap.c | 1 +
+>  1 file changed, 1 insertion(+)
+> 
+> diff --git a/lib/test_bitmap.c b/lib/test_bitmap.c
+> index 69813c10e6c0..448c3eb48a4a 100644
+> --- a/lib/test_bitmap.c
+> +++ b/lib/test_bitmap.c
+> @@ -392,6 +392,7 @@ static void __init test_bitmap_sg(void)
+>  
+>  	/* Scatter/gather relationship */
+>  	bitmap_zero(bmap_tmp, 100);
+> +	bitmap_zero(bmap_res, 100);
+>  	bitmap_gather(bmap_tmp, bmap_scatter, sg_mask, nbits);
+>  	bitmap_scatter(bmap_res, bmap_tmp, sg_mask, nbits);
+>  	expect_eq_bitmap(bmap_scatter, bmap_res, 100);
+> -- 
+> 2.54.0
 
