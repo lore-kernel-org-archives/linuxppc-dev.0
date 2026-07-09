@@ -1,69 +1,82 @@
-Return-Path: <linuxppc-dev+bounces-23908-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23909-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 70E79C43458
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2026 07:28:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B5AB0C43458
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2026 07:29:48 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gwmlT18y0z3c9w;
-	Thu, 09 Jul 2026 17:28:05 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=113.46.200.219
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783582085;
-	cv=none; b=esL5eCn1k5pMJozF/RqCwKLNyEqj0FZrhvm0MozQ5WbxNOl2wjeBcJt3yRIR4EJ7BmI5/Z6cSNdBH1AX6BBiCgXNG5v0PwRxk03KrYXdGu1+8bd2LqLHee40abZPdbuFQQRUH0UyftDvzLdirLheC3cZWoftEZVxfaQ8qCiBmGdyqMpQqXr+Q0RgtUdjnz94m440o77URnEsPgZWWS1aRJQgVSYhu1tHX8bGt8O/YOJaZuTbD416JQLW0g+6FkCB3Wva8Megwx4mlZZ8w4GE+qLQWnm7si2o10GfOibDSvxCgJD8+PX/GR+ltoSbe/ScCNeXYZck91XTOWETGupQOQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gwmnR31pbz3c2Z;
+	Thu, 09 Jul 2026 17:29:47 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783582187;
+	cv=none; b=jL6BsGWfwVzS+3O98a0HLNk2AjWdGxpuv0A7X2uXTmHBOQZsnSWblOmJ0gIKFYG0T1dj0VfNxKwRMnMhRoFcy/nXmBZMH0dFFdgOuPsSSia/0wnhXIyjB0K9bl6fYit5uswlOeMfXR2CJk9B9abGo1bxtDRbLv1Lm8m9WjQzXlarboxZqj9q7DnWKD41HZKOLU2q6f8InrUX68DCvjbb42vyYh2nxE3x1B4PvcAge6cerg0mUrTWuFj4eOoejeKMv7Ca46nnhgXDjCqFslGq5yLVCZa3SB39niFK4u2tsgQNNcCK77UuC2EIOCuARu7xVhMTCPpKbrRs4IOWBClryw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1783582085; c=relaxed/relaxed;
-	bh=+d8+hXbp8vZoFm5ME6uj8LWk7bRuSPPZwP0vsJH0Xoc=;
-	h=From:To:Subject:Date:Message-ID:MIME-Version:Content-Type; b=i/hNUZPZbZ/J+KrZRkPICJVJqU0PYpa48VwLioS0VD8OPRMPX6pBjRTD/BMesaDeIInQJKM82fK6imoKZcVaeA7BXpPBpO0hELU2/sQ7QfOASz6/3s+u0z9A49834z8KM10tKXIkcdchPoLGRpfCzlRg9mWVZgY4wilCs429BirNkpTTUA9RKk/HzC6OCe4FGsFvucooK6G+AaxsFXP/G1J6RW/Vloon7hlX/EOpZVZa4DxSOCT+jHMbUCmcWhI44HgeEZdih00bF2omdJCSMEpsnqwqRCg4aUQQY+orJqrTa86s6akUNHOOwLFENthfjk8an5JeTqYPE9FNd6o+6g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=m5+EHwbd; dkim-atps=neutral; spf=pass (client-ip=113.46.200.219; helo=canpmsgout04.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
+	t=1783582187; c=relaxed/relaxed;
+	bh=HoYSB070AE9GmBZBYCXfouvHrOoukyLXb8f3rE2iJ6c=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=Do/Q5yvq93x7boQZH2Sk1uCI7hOj/sNjYNZpIz05msxqE3NElwY5yakoma6BV60UQpZxjAxIlRCANG/hpu3bnnS12uHXEM2hFAC76EAesOeJSoktTndebaH4IoYkFPdLEiMcQn/0nHmCN7ZdQaePtw57RzmMHZ2TKXi+qnaVZyHCTZvsjQV11qPnpBBwugWVUHyHiGiGx9tMhOhenz5oVFRaCHIu13WpofjDZJvKH0lNeWPMGfpyOZ2f9Pc2xztV6v4B1HJH9TTh7ImLSjojDKj4fOhPrUJJJZhaN08W14WH5FUgTWhF5E9unnmfNasJn4zSc6q7V79n11nUwcph0Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=PN/uzDZY; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=m5+EHwbd;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=PN/uzDZY;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=113.46.200.219; helo=canpmsgout04.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org)
-Received: from canpmsgout04.his.huawei.com (canpmsgout04.his.huawei.com [113.46.200.219])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gwmlQ3Z8tz3c9k
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 09 Jul 2026 17:27:59 +1000 (AEST)
-dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
-	c=relaxed/relaxed; q=dns/txt;
-	h=From;
-	bh=+d8+hXbp8vZoFm5ME6uj8LWk7bRuSPPZwP0vsJH0Xoc=;
-	b=m5+EHwbdqX4zMx4HWe3w4vFomb7O6mvMNVQ4OW6SQl7xhblwN3y1cSjYkfCctkvX3B9vPfkzv
-	EKkzZYLkWAmKN+eCt0bQy9mYL0Np6EP0Usfh7tRd6ELvNyP9gDfyWdZK1Hpei8NTdoaTTig58r/
-	PddtkWbymG7ljm2zZIA+aCA=
-Received: from mail.maildlp.com (unknown [172.19.163.0])
-	by canpmsgout04.his.huawei.com (SkyGuard) with ESMTPS id 4gwmXZ2J8yz1prKZ;
-	Thu,  9 Jul 2026 15:18:38 +0800 (CST)
-Received: from dggpemf500011.china.huawei.com (unknown [7.185.36.131])
-	by mail.maildlp.com (Postfix) with ESMTPS id E098640537;
-	Thu,  9 Jul 2026 15:27:54 +0800 (CST)
-Received: from huawei.com (10.90.53.73) by dggpemf500011.china.huawei.com
- (7.185.36.131) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.11; Thu, 9 Jul
- 2026 15:27:53 +0800
-From: Jinjie Ruan <ruanjinjie@huawei.com>
-To: <chenhuacai@kernel.org>, <kernel@xen0n.name>, <maddy@linux.ibm.com>,
-	<mpe@ellerman.id.au>, <npiggin@gmail.com>, <chleroy@kernel.org>,
-	<pjw@kernel.org>, <palmer@dabbelt.com>, <aou@eecs.berkeley.edu>,
-	<alex@ghiti.fr>, <hca@linux.ibm.com>, <gor@linux.ibm.com>,
-	<agordeev@linux.ibm.com>, <borntraeger@linux.ibm.com>, <svens@linux.ibm.com>,
-	<tglx@kernel.org>, <mingo@redhat.com>, <bp@alien8.de>,
-	<dave.hansen@linux.intel.com>, <hpa@zytor.com>, <nathan@kernel.org>,
-	<kees@kernel.org>, <xur@google.com>, <peterz@infradead.org>,
-	<gourry@gourry.net>, <lukas.bulwahn@redhat.com>, <ryan.roberts@arm.com>,
-	<ruanjinjie@huawei.com>, <yangtiezhu@loongson.cn>, <sshegde@linux.ibm.com>,
-	<mchauras@linux.ibm.com>, <austin.kim@lge.com>, <arnd@arndb.de>,
-	<jchrist@linux.ibm.com>, <x86@kernel.org>, <linux-kernel@vger.kernel.org>,
-	<loongarch@lists.linux.dev>, <linuxppc-dev@lists.ozlabs.org>,
-	<linux-riscv@lists.infradead.org>, <linux-s390@vger.kernel.org>
-Subject: [PATCH] syscall_user_dispatch: Introduce ARCH_SUPPORTS_SYSCALL_USER_DISPATCH
-Date: Thu, 9 Jul 2026 15:28:03 +0800
-Message-ID: <20260709072803.3843948-1-ruanjinjie@huawei.com>
-X-Mailer: git-send-email 2.34.1
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gwmnQ3hqHz3byF
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 09 Jul 2026 17:29:46 +1000 (AEST)
+Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6696ITfC480079;
+	Thu, 9 Jul 2026 07:29:35 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-type:date:from:in-reply-to:message-id:mime-version
+	:references:subject:to; s=pp1; bh=HoYSB070AE9GmBZBYCXfouvHrOouky
+	LXb8f3rE2iJ6c=; b=PN/uzDZY7qxh/JvA6k8BG4MYe8LnrtzFp/GzO2frLIQmGd
+	XD0PDBWDDr1BtM0jjhynJUW8+Uc6S6xWv++cqez5+ddA47VOXPAU9ztwtpDINOmU
+	IntKO//CmudyF8jt6sPfjb0Z47skRkhxxYwYvm1gY4ekDdnkX453KaDFNWTmmMqO
+	Plcb81Hkp4P/i36L67UsCfyiaNwu6LW016gKsJd6juTgkmB0Ed907gN/f67nDQrt
+	FaRBYptxAh2AH+eU4LPouzwKEjP6skw0iaVVk5L1d8HmBt1ntNW5KCMcnbQe9/XS
+	sHZbiGLHep+cBnpAL23NofLNzYV3qDc1E7pQFL4A==
+Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4f6stt0udh-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 09 Jul 2026 07:29:35 +0000 (GMT)
+Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma22.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 6697Janp022900;
+	Thu, 9 Jul 2026 07:29:34 GMT
+Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
+	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4f7cvwc8gt-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 09 Jul 2026 07:29:34 +0000 (GMT)
+Received: from smtpav04.fra02v.mail.ibm.com (smtpav04.fra02v.mail.ibm.com [10.20.54.103])
+	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6697TWTt37552474
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Thu, 9 Jul 2026 07:29:32 GMT
+Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 41E8A2004B;
+	Thu,  9 Jul 2026 07:29:32 +0000 (GMT)
+Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 963A320043;
+	Thu,  9 Jul 2026 07:29:30 +0000 (GMT)
+Received: from fedora (unknown [9.5.7.39])
+	by smtpav04.fra02v.mail.ibm.com (Postfix) with ESMTPS;
+	Thu,  9 Jul 2026 07:29:30 +0000 (GMT)
+Date: Thu, 9 Jul 2026 12:59:53 +0530
+From: Amit Machhiwal <amachhiw@linux.ibm.com>
+To: Salman Farooq <salman.farooq3310@gmail.com>
+Cc: maddy@linux.ibm.com, npiggin@gmail.com, mpe@ellerman.id.au,
+        chleroy@kernel.org, linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] KVM: PPC: Book3S HV: Fix comment typos
+Message-ID: <20260709125357.49cafeb6-1b-amachhiw@linux.ibm.com>
+Mail-Followup-To: Salman Farooq <salman.farooq3310@gmail.com>, 
+	maddy@linux.ibm.com, npiggin@gmail.com, mpe@ellerman.id.au, chleroy@kernel.org, 
+	linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20260702030344.2211462-1-salman.farooq3310@gmail.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -77,124 +90,88 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-X-Originating-IP: [10.90.53.73]
-X-ClientProxiedBy: kwepems500002.china.huawei.com (7.221.188.17) To
- dggpemf500011.china.huawei.com (7.185.36.131)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260702030344.2211462-1-salman.farooq3310@gmail.com>
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-ORIG-GUID: agTyseDtzM4VzIDF_xHjur58XB-rvhZ-
+X-Proofpoint-Spam-Info: AW1haW4tMjYwNzA5MDA2OCBTYWx0ZWRfXzVTDsAv6+Wpz
+ 5U4esU6dYKjK43ZjPZ85VIGha06hrmd+IOpBQZC8OWBv122ctlFxtpDbqF1cFiS92lu6jxw90CC
+ FsPKy/DDDS26t1sTlBhDhG/kFmE2pz8=
+X-Authority-Analysis: v=2.4 cv=DKW/JSNb c=1 sm=1 tr=0 ts=6a4f4ddf cx=c_pps
+ a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
+ a=kj9zAlcOel0A:10 a=RAioF0-LDSMA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=RzCfie-kr_QcCd8fBx8p:22 a=VwQbUJbxAAAA:8
+ a=VnNF1IyMAAAA:8 a=pGLkceISAAAA:8 a=5qU1I9XWuyLpgvKMgcEA:9 a=CjuIK1q_8ugA:10
+X-Proofpoint-GUID: TVsYKKcaJihrubqFZQvtHdbeKVs5z7oK
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzA5MDA2OCBTYWx0ZWRfX+5yfAz0k32TM
+ J+zkqPXn8DXJMGc22XlrE8vrngG0GU2dO8cLBxqyfkJ9UDbwGrFzp37QARDLnbTj6punWaqqUBw
+ y57kYuK17D0CpsXWowG6f2QNOeJNM4Vw99cdPAXA0SB41UaL8nPg1LzZpp3DUhC7E9uL1G/mjIt
+ xc+CgN47DUNVSHfpMjk6VsM6haguTtGqhDcX1KRScrhy6wxIpNRp+ohYVXrqpxU2E7K5EFEotER
+ Ub8A06gso/8BTAZO2X238+J+552t/5bA2I0dENSRszcPj/7oJoTYF0Xgvro4wDPdERHlbUWpyU7
+ Vpr45GkoPb22lYps7trhfKjWIcR3mJ4rYc2X9rfNEEI/ichCgVTG8uE6YSHM9EzsEsucHC24Dad
+ zcEgRSzOq3jLNwLLK6BERwCw1YTen8PPFiaOhiiZLtoZ70hbiMjXqLD3hKCb920JPNFi71IBv08
+ oLoLjXVkoL87DGVCAwQ==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-07-09_01,2026-07-08_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ spamscore=0 bulkscore=0 clxscore=1015 phishscore=0 impostorscore=0
+ priorityscore=1501 adultscore=0 lowpriorityscore=0 suspectscore=0
+ malwarescore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2606150000
+ definitions=main-2607090068
 
-Currently, only x86 genuinely implements and supports Syscall User
-Dispatch (SUD). Multiple architectures provide a stub
-arch_syscall_is_vdso_sigreturn() returning 'false' simply to satisfy
-GENERIC_ENTRY compilation, which creates a false impression of feature
-support.
+On 2026/07/02 08:03 AM, Salman Farooq wrote:
+> Fix two instances of a misspelled word in comments.
+> 
+> Signed-off-by: Salman Farooq <salman.farooq3310@gmail.com>
+> ---
+>  arch/powerpc/kvm/book3s_hv_uvmem.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
 
-Introduce ARCH_SUPPORTS_SYSCALL_USER_DISPATCH to decouple this mechanism
-from GENERIC_ENTRY. Select it exclusively on x86 and remove the redundant
-stub functions from other architectures.
+I agree with Ritesh on the amount of churn such misspell fixes may
+cause.
 
-Link: https://lore.kernel.org/linux-arm-kernel/akZgV0Y4YAmB43_g@J2N7QTR9R3.cambridge.arm.com/
-Cc: Thomas Gleixner <tglx@kernel.org>
-Cc: Mark Rutland <mark.rutland@arm.com>
-Cc: Ada Couprie Diaz <ada.coupriediaz@arm.com>
-Cc: Thomas Weißschuh <thomas.weissschuh@linutronix.de>
-Suggested-by: Mark Rutland <mark.rutland@arm.com>
-Signed-off-by: Jinjie Ruan <ruanjinjie@huawei.com>
----
- arch/Kconfig                         | 1 +
- arch/loongarch/include/asm/syscall.h | 6 ------
- arch/powerpc/include/asm/syscall.h   | 5 -----
- arch/riscv/include/asm/syscall.h     | 5 -----
- arch/s390/include/asm/syscall.h      | 5 -----
- arch/x86/Kconfig                     | 1 +
- 6 files changed, 2 insertions(+), 21 deletions(-)
+Regardless, since this patch has no functional or code change, you may
+want to add a 'trivial' suffix to the patch title, e.g.:
 
-diff --git a/arch/Kconfig b/arch/Kconfig
-index 0c01521c2f3f..393d0fb75eac 100644
---- a/arch/Kconfig
-+++ b/arch/Kconfig
-@@ -116,6 +116,7 @@ config GENERIC_ENTRY
- 
- config SYSCALL_USER_DISPATCH
- 	bool "Syscall User Dispatch"
-+	depends on ARCH_SUPPORTS_SYSCALL_USER_DISPATCH
- 	depends on GENERIC_ENTRY
- 	default y
- 	help
-diff --git a/arch/loongarch/include/asm/syscall.h b/arch/loongarch/include/asm/syscall.h
-index df8ea223c77b..d9275010f548 100644
---- a/arch/loongarch/include/asm/syscall.h
-+++ b/arch/loongarch/include/asm/syscall.h
-@@ -84,10 +84,4 @@ static inline int syscall_get_arch(struct task_struct *task)
- 	return AUDIT_ARCH_LOONGARCH64;
- #endif
- }
--
--static inline bool arch_syscall_is_vdso_sigreturn(struct pt_regs *regs)
--{
--	return false;
--}
--
- #endif	/* __ASM_LOONGARCH_SYSCALL_H */
-diff --git a/arch/powerpc/include/asm/syscall.h b/arch/powerpc/include/asm/syscall.h
-index 834fcc4f7b54..4b3c52ed6e9d 100644
---- a/arch/powerpc/include/asm/syscall.h
-+++ b/arch/powerpc/include/asm/syscall.h
-@@ -139,9 +139,4 @@ static inline int syscall_get_arch(struct task_struct *task)
- 	else
- 		return AUDIT_ARCH_PPC64;
- }
--
--static inline bool arch_syscall_is_vdso_sigreturn(struct pt_regs *regs)
--{
--	return false;
--}
- #endif	/* _ASM_SYSCALL_H */
-diff --git a/arch/riscv/include/asm/syscall.h b/arch/riscv/include/asm/syscall.h
-index 8067e666a4ca..987c9a78806f 100644
---- a/arch/riscv/include/asm/syscall.h
-+++ b/arch/riscv/include/asm/syscall.h
-@@ -112,11 +112,6 @@ static inline void syscall_handler(struct pt_regs *regs, ulong syscall)
- 	regs->a0 = fn(regs);
- }
- 
--static inline bool arch_syscall_is_vdso_sigreturn(struct pt_regs *regs)
--{
--	return false;
--}
--
- asmlinkage long sys_riscv_flush_icache(uintptr_t, uintptr_t, uintptr_t);
- 
- asmlinkage long sys_riscv_hwprobe(struct riscv_hwprobe *, size_t, size_t,
-diff --git a/arch/s390/include/asm/syscall.h b/arch/s390/include/asm/syscall.h
-index 4271e4169f45..5f310caad1fc 100644
---- a/arch/s390/include/asm/syscall.h
-+++ b/arch/s390/include/asm/syscall.h
-@@ -89,11 +89,6 @@ static inline int syscall_get_arch(struct task_struct *task)
- 	return AUDIT_ARCH_S390X;
- }
- 
--static inline bool arch_syscall_is_vdso_sigreturn(struct pt_regs *regs)
--{
--	return false;
--}
--
- #define SYSCALL_FMT_0
- #define SYSCALL_FMT_1 , "0" (r2)
- #define SYSCALL_FMT_2 , "d" (r3) SYSCALL_FMT_1
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index bdad90f210e4..f3f8ad107eeb 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -335,6 +335,7 @@ config X86
- 	select SCHED_SMT			if SMP
- 	select ARCH_SUPPORTS_SCHED_CLUSTER	if SMP
- 	select ARCH_SUPPORTS_SCHED_MC		if SMP
-+	select ARCH_SUPPORTS_SYSCALL_USER_DISPATCH
- 	select HAVE_SINGLE_FTRACE_DIRECT_OPS	if X86_64 && DYNAMIC_FTRACE_WITH_DIRECT_CALLS
- 
- config INSTRUCTION_DECODER
--- 
-2.34.1
+  KVM: PPC: Book3S HV: trivial: Fix comment typos
 
+This convention is used to indicate non-functional changes, making it
+easier for maintainers to apply without worrying about regressions. See
+[1] and [2] for precedent.
+
+[1] https://git.kernel.org/powerpc/c/d2827e5e2e0f0941a651f4b1ca5e9b778c4b5293
+[2] https://lore.kernel.org/all/87fr3vvfvq.fsf@vajain21.in.ibm.com/
+
+~Amit
+
+> 
+> diff --git a/arch/powerpc/kvm/book3s_hv_uvmem.c b/arch/powerpc/kvm/book3s_hv_uvmem.c
+> index 5fbb95d90e99..6ac8364a7639 100644
+> --- a/arch/powerpc/kvm/book3s_hv_uvmem.c
+> +++ b/arch/powerpc/kvm/book3s_hv_uvmem.c
+> @@ -163,7 +163,7 @@ static DEFINE_SPINLOCK(kvmppc_uvmem_bitmap_lock);
+>   *  All its GFNs are moved to Normal-GFNs.
+>   *
+>   *  UV_TERMINATE transitions the secure-VM back to normal-VM. All
+> - *  the secure-GFN and shared-GFNs are tranistioned to normal-GFN
+> + *  the secure-GFN and shared-GFNs are transitioned to normal-GFN
+>   *  Note: The contents of the normal-GFN is undefined at this point.
+>   *
+>   * GFN state implementation:
+> @@ -1010,7 +1010,7 @@ static vm_fault_t kvmppc_uvmem_migrate_to_ram(struct vm_fault *vmf)
+>  /*
+>   * Release the device PFN back to the pool
+>   *
+> - * Gets called when secure GFN tranistions from a secure-PFN
+> + * Gets called when secure GFN transitions from a secure-PFN
+>   * to a normal PFN during H_SVM_PAGE_OUT.
+>   * Gets called with kvm->arch.uvmem_lock held.
+>   */
+> -- 
+> 2.55.0
+> 
 
