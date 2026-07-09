@@ -1,100 +1,53 @@
-Return-Path: <linuxppc-dev+bounces-23876-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23877-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6B9D0C43458
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2026 02:03:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 926B4C43458
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2026 02:04:03 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gwdYF555zz3cX6;
-	Thu, 09 Jul 2026 12:03:45 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c007::2" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783562625;
-	cv=pass; b=hXcJ3+Ms8mtBAf+jXmyzUVF9Jj7hgOhDPuCAXQ8e9o7croNfuAejpewhgBbiAgoqGzV95mUN6o2e1xREn6F82z1MI7ma/6nRme/PS7rGIq1utNTIz8Cb99Bogbvm41squrgZHlQw/JyEUVSXF9hgxLb5MDgjlQHAt9lmh9vRdpiqOMwD6VjAOZM6vNO9dkW8OaEfxHStVqYgfedZJvkzhyOatnsxYPrALhd85v+e+XmcnBeKAyl+YtD4jqnIM939AsYb+d0whhjrXiWFj/C5FUWOE6UccS+ZsaUug/xlXNvnPtt7lg8KcE2F/+ALXb5NvkUpr9Fmvp9HX+qQzdy15A==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1783562625; c=relaxed/relaxed;
-	bh=srchqatlx5qMcQox/Ma29ZACWMBoLLiqzu/saDd1LxA=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=aKy33CrHMajxrb9WZFl6ErT9F+h5gPLqr7QZ1x3A1WFkI21P6c/oRcpKpsMW791mYmOQYg8AwDpJHQb+aZIM3RBX7ThMYgb2UsqXD/06n2FX0/7esbg5s0wJiGrFio1s94FP0mOQc0nmT3V9Sp0H12kP4L1/bYxvWaNBjNodnVNSXu07MVyFsaSxwAKDi7tIBdjAfBjNEa1blFh4IW4kZTJnDLUPQBIiXhSDlH1VLSK/9eyN5HxFPd776CRBQEEGWNM/stC3NMkA9/Skcc+RWn7fxhdDjt+jJF1q/IS00lJ9ToujlcjKVQ/5PK0eU2fWxnPai8UmZfboDnV+iQ2Vkg==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=lywOzOmN; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c007::2; helo=mw6pr02cu001.outbound.protection.outlook.com; envelope-from=ynorov@nvidia.com; receiver=lists.ozlabs.org) smtp.mailfrom=nvidia.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gwdYZ2L0zz3cZh;
+	Thu, 09 Jul 2026 12:04:02 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=113.46.200.226
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783562642;
+	cv=none; b=GCG4kKw0AYib/lork74Oc7GV0ZzlSLCpih58Uz+vxIZNcxTyvDwcSSzEdftNrzcGFxeXwLubQC9i6PNfhBZ3SvEmNJZ2K2b+WO0QqK5fCX0u0wm7hUeMVtjEsTJo+wNVwOHBkdgeIozHZyha04HEy3OzdMbKIgXtVgECntaRJbaFFdYTRTQhSso3W6l0QI8WoByHuAXDULCA27g3R7pYlHfV3Zkh6i1vGhdFxpOaEw4OdL8LYA25xi4LWqmzWtGcDdAUv7U81Legfx7hYZ6qV7QVMJtztSpjkfR2qei6YPSS0oF1WK9nSM9ZKVZJGtFbT79VGdC3xdboizNOFf1xEQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1783562642; c=relaxed/relaxed;
+	bh=SbMumxZtxbvkP/ieepXLg1JhrafzB20Wq2MZPkH/Sw0=;
+	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
+	 In-Reply-To:Content-Type; b=A3ul9MkhZw5d63V4tKBd07Uz51AE2ZVJgl07yUo/387p/+ipSydlucs2lEMs0WakEvEoE6Ciey+uqs8MOw3Y//BJbQR1FJuty8dDJmzyWjBHG+qWQirohnh7DM3BoZ3j3L6M94YXB9f8dnwrL9lFp2TnUT9F6Ktdsg+MEvIo6GrsETkwvqSSOkXdg1Pf4wgAtdqzUXbO8ia8o+w6hdRZ0geoCGJ+SvHcez/FXoFHiaTQI+7NvM53IOdNzB8jppSK9QeJlgYjpo2vInIXYMqDQvGqi6fSyZwpKByh43rs7kzA7Xllym5jV1qJkiOawoabsfMVR+7zl7dX4HzqugUEdg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=AWDuAsAD; dkim-atps=neutral; spf=pass (client-ip=113.46.200.226; helo=canpmsgout11.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=lywOzOmN;
+	dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=AWDuAsAD;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nvidia.com (client-ip=2a01:111:f403:c007::2; helo=mw6pr02cu001.outbound.protection.outlook.com; envelope-from=ynorov@nvidia.com; receiver=lists.ozlabs.org)
-Received: from MW6PR02CU001.outbound.protection.outlook.com (mail-westus2azlp170120002.outbound.protection.outlook.com [IPv6:2a01:111:f403:c007::2])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=113.46.200.226; helo=canpmsgout11.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org)
+Received: from canpmsgout11.his.huawei.com (canpmsgout11.his.huawei.com [113.46.200.226])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gwdYD628Fz3cP3
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 09 Jul 2026 12:03:44 +1000 (AEST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=yP0gBc+f5IhFZTUhPEyHHHOvmlIHIlztusP92N8eXVxuJ6rzYehLAIl1vFdlYf7XQ8VAOuxtDCTvh4umuYdd7ALorihc4V4X1CtG9GuSZp46EPFNZZR45Bfmcn3yCrEtl3XMvlqsH3nKqTa0ZCplBtYiTchiJnFC5eVbNQ5l88Q5AxUYYpP7h81wuhyA+RRUGxeIXblZyvqdTyUBliv2fUT3jKh6ESN/hksOCzsSBACfJZynk/lpFgN8kx5ZFFhdOa9qaoduPFwPLBKogJPeDzXVEfrB3ggyNhl3EQUmw58ONu/26QEmmgtO+/DvkK0THlgWN7hJvWZ2rafoLAiv8w==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=srchqatlx5qMcQox/Ma29ZACWMBoLLiqzu/saDd1LxA=;
- b=e6/B8ygdcjHba3S7DsIHKPqDt9oRaCv7+w7MSdv7EB4ftqaZ8P74BgXMRv+qAhHiOguFJvV7y06aSfTnJYwWKBKXna8Ca6Hw0FuslWErWOGy6Gbl/YNet5bkL0cspVP287wkzenGjNh1mhVo/rOa/1nyeceE7gRp3pzFb50+XUrrHA73a0YCBBPqia426x847tngKxOCnJyTIiLJ/QR4HFACZKvLQv5X0qHlK84VyUDUdry6knFXzRnVx12q9kCzuTGaiJTv0mXF6Fi5O7XOoMuLnZyNV5pFN2NY6tmD2ZXLiZCp+jRNAOxvjcak8IAi4O8+U1U5wlNtOEp2y597pg==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
- dkim=pass header.d=nvidia.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
- s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=srchqatlx5qMcQox/Ma29ZACWMBoLLiqzu/saDd1LxA=;
- b=lywOzOmNiDImAdZL3qjq7SyeW+kNjfX/SV4NAusHEdf7sIiS3pd3HsyPrU/zu65uU+/Lk7gZQRRMVa9566iEnDoXq4CfXCxa3Yir8r4hLuJqtwibLGJveHZP90zW7y44JBhKRnME3byqjIgipl5WNBbOBzcDgim8/V6zwLArFl2CpTACuMCIpI/2mI3C6dZCIOtD7ZD19MFF5VjMpKDbjWhyWW9rto115k6nqFSuqLyZLlWBl3NukEc7juUU98SXTQovngCrMG2xHdJeRgIRvLJouLK8PjyJqg4QtcNOqM6fhD5sYBnz26dG3NqWFIUqZoTA1LD9STuENzEn9n7lsQ==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=nvidia.com;
-Received: from LV3PR12MB9356.namprd12.prod.outlook.com (2603:10b6:408:20c::21)
- by DS4PR12MB9818.namprd12.prod.outlook.com (2603:10b6:8:2a9::9) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.181.10; Thu, 9 Jul
- 2026 02:03:30 +0000
-Received: from LV3PR12MB9356.namprd12.prod.outlook.com
- ([fe80::1c36:31b4:c420:6286]) by LV3PR12MB9356.namprd12.prod.outlook.com
- ([fe80::1c36:31b4:c420:6286%5]) with mapi id 15.21.0181.014; Thu, 9 Jul 2026
- 02:03:30 +0000
-From: Yury Norov <ynorov@nvidia.com>
-To: Russell King <linux@armlinux.org.uk>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	"David S. Miller" <davem@davemloft.net>,
-	"Matthew Wilcox (Oracle)" <willy@infradead.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Andrzej Hajda <andrzej.hajda@intel.com>,
-	Danilo Krummrich <dakr@kernel.org>,
-	Douglas Anderson <dianders@chromium.org>,
-	Herbert Xu <herbert@gondor.apana.org.au>,
-	Jason Gunthorpe <jgg@ziepe.ca>,
-	John Allen <john.allen@amd.com>,
-	Kees Cook <kees@kernel.org>,
-	Leon Romanovsky <leon@kernel.org>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Marek Szyprowski <m.szyprowski@samsung.com>,
-	Mauro Carvalho Chehab <mchehab@kernel.org>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Rasmus Villemoes <linux@rasmusvillemoes.dk>,
-	Tom Lendacky <thomas.lendacky@amd.com>,
-	Yury Norov <yury.norov@gmail.com>,
-	linux-arm-kernel@lists.infradead.org,
-	linux-crypto@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	linux-media@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org
-Cc: Yury Norov <ynorov@nvidia.com>,
-	sunyi <279644543@qq.com>
-Subject: [PATCH 5/5] bitmap: Return size when no zero area is found
-Date: Wed,  8 Jul 2026 22:03:11 -0400
-Message-ID: <20260709020312.133977-6-ynorov@nvidia.com>
-X-Mailer: git-send-email 2.53.0
-In-Reply-To: <20260709020312.133977-1-ynorov@nvidia.com>
-References: <20260709020312.133977-1-ynorov@nvidia.com>
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-ClientProxiedBy: BY3PR03CA0027.namprd03.prod.outlook.com
- (2603:10b6:a03:39a::32) To LV3PR12MB9356.namprd12.prod.outlook.com
- (2603:10b6:408:20c::21)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gwdYW60Bxz3cZg
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 09 Jul 2026 12:03:57 +1000 (AEST)
+dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
+	c=relaxed/relaxed; q=dns/txt;
+	h=From;
+	bh=SbMumxZtxbvkP/ieepXLg1JhrafzB20Wq2MZPkH/Sw0=;
+	b=AWDuAsADSwEvEL71EYfZ0NigOV6Nm/EE0o+eCaP1xQFlxhq8DY4cyFSYwdUDcA872iUYRmCcL
+	fgkqFmw2f6REMuKThf5T1j9G/cENjZayXtYg+Tp2Kdo8RhfXnSpSgOVUD3wzxl53MN4FlPjvW4S
+	5jTBmgoFDxvMSl13ULhIb7E=
+Received: from mail.maildlp.com (unknown [172.19.163.15])
+	by canpmsgout11.his.huawei.com (SkyGuard) with ESMTPS id 4gwdLg6g1HzKmWh;
+	Thu,  9 Jul 2026 09:54:35 +0800 (CST)
+Received: from dggpemf500011.china.huawei.com (unknown [7.185.36.131])
+	by mail.maildlp.com (Postfix) with ESMTPS id D94DC40578;
+	Thu,  9 Jul 2026 10:03:52 +0800 (CST)
+Received: from [10.67.109.254] (10.67.109.254) by
+ dggpemf500011.china.huawei.com (7.185.36.131) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.1544.11; Thu, 9 Jul 2026 10:03:50 +0800
+Message-ID: <cb27984f-bb8e-4deb-90f2-c3c9965b3017@huawei.com>
+Date: Thu, 9 Jul 2026 10:03:49 +0800
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -108,119 +61,117 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: LV3PR12MB9356:EE_|DS4PR12MB9818:EE_
-X-MS-Office365-Filtering-Correlation-Id: 72be6ac1-bdc8-44bb-6773-08dedd5e45ee
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|1800799024|366016|7416014|376014|23010399003|921020|18002099003|22082099003|11063799006|56012099006;
-X-Microsoft-Antispam-Message-Info:
-	LsOcIeqqiHyhkbV6lSaxWcaUb34rVbNWLZj+xInMg8gryLxVP+k31mg8W5MukFFsndKc2f+HECqFOPTOSJHDRzHiYKJ53X8DSy8x/0OGmZyScBCUaD8n/oO9GpR2ngVGLQgyEC7ILfuXRwcvJo6TElOX6bXajdM6dFd7YIBcx1NaUeq41Yx9JN//Z9kxMf/BUWRu3Uu1DbaN+we9ImfkBcI9kusxMKGcHMaWu/2J9MgDN7mhotxIUOd0i+WBu9OnYYWl7r+caB5zL9SSqUL6UVq02wkJq+XLV9b1XT4PVrUdyA+RwJnnRQVx6tOiSFkPicqn89zMjSLvUAaUKHuehtha/IvnE5nPnPT8P1qmO0sFdACyhM2ORrsz8k8AFJkjFH+PGmTVjVtDsmq2IYjG7TKotPZBVG1Y6Prs7EU1l1YkaNEnxpQN93nf0td+cyUjvU6ms+W3Mv/oVGRJsbawY1rBDy2HAnUcQnQSRIVvnmSJze9CcLY/RNjdzpDa9e1sPiUDBzQGuRJsuGs4PD2dudZVOPStL5KcCRZiVsPhTTqqR/okButTeLlhTyyTc6Vf7fyqPcLf9D7/1JeOPt5KpgfT0sGlTWecW8eP0Zf5SxtaoQ8QnZeJZO75zfRGPURPzFEiC1ezDq22pR/J7ZFiBrIlvlAMf/qDlSGmUpQ84d2CH1EcpRwJZl2szFlH8MD5vdQQ1nngYtCUw+AuwCNUBg==
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:LV3PR12MB9356.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(366016)(7416014)(376014)(23010399003)(921020)(18002099003)(22082099003)(11063799006)(56012099006);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?iyP59F4yoSaCY2+Rcioid0EthMdmBF84TUfhB3i/qzjO7NcRwg/azatsprY/?=
- =?us-ascii?Q?vxDtJ83JyCj8A0uqbCf482ZJqArjX59f6tl0JLfTZpk+tbge2xIQL0qVVHD8?=
- =?us-ascii?Q?WTF3TFOWcDkHOe3OzVtWGIJiQAhr9KoU4Mthw2aPwuK6qzMJfDjFoUsvPoc5?=
- =?us-ascii?Q?9Cy3PFyv7GM7XfRjOTjqQmu6b6xhlAi+TMzjF4uLM0K0Dh36kEiv+ZU20wSf?=
- =?us-ascii?Q?WYssjTrrp1OLID3zGaVEIHQSUHGh+8r65Up70fcF7mN7+m/w6I83rmMYJHmd?=
- =?us-ascii?Q?MMGMJR87qPh/y6RMmxEf0Czp6hdOsA/u6m2eK2/McBSSwvG1kz65M9/zDAId?=
- =?us-ascii?Q?ep9toZgrl4AMo+bWNGyl2vyzvuuL4HzMddOG2ZrkWZgeyPIT8/FAVH9w4CVq?=
- =?us-ascii?Q?j5GkySFSNHGzH8I8dD/qy/w6xQthftf57rk0TO2y/wchmMSAoThnH5BvNilI?=
- =?us-ascii?Q?RPK8rHKsJpglHP1wgEtOfKWAQP5jbvnYdBPuzKQIJERP/+c39w0YN+GvHOVq?=
- =?us-ascii?Q?y6p3JDSQLyKhJR7Gni+xixFV2XtawSr8V0PN5/rzJrOfNTowlgjtZo2GJbqv?=
- =?us-ascii?Q?smxeFTPZGor4fjL6wn9DiMmO+Bii/sBH2FiC+6pt5XeevWAMnnh7r8E1oDa3?=
- =?us-ascii?Q?RLo7ObDDD0DKDEI5jkMpVenBmeuHo8RgdVWTIHojL824xGkfTJzysY1JKWGL?=
- =?us-ascii?Q?TGoL3yaQBKJWx54zdpjlVegzcsiXDRGpxVS1gKHCPLOC8GAIamMQtIdNVdcF?=
- =?us-ascii?Q?THIZ8ygL4SKeXYJ8X2e/5KoGhXr03fTdaOfAImk7P59pkooT/PmRHS+/bC7W?=
- =?us-ascii?Q?s3y+QKPbu96UlgQkjXq0m9eAR00cMH/85bqw8NXp4kw9D2MIw39RgOHEJTnc?=
- =?us-ascii?Q?PEtZov3cdn1NCaFKB7vfm6FupOqgbN25eA8e9vMClmH+mrqSvmFH8rRV5Pzn?=
- =?us-ascii?Q?yOHSVOBHn9yZPDikElynHi9HpiIIZFJZY502/lxDVUh2BP5vsW+lQNR/H1pU?=
- =?us-ascii?Q?wuNe78d+blNA2bz51RTGDU5FaTkSZ+gHVn5I56kkQ95qMJkIM7gcEa9Cj0PP?=
- =?us-ascii?Q?jDnU/a01iRvHD+iLogqdaCQXFHirLM4oK1LT+GDzDUU7C4QOcB8vVlVz1a/R?=
- =?us-ascii?Q?G38JCJG/ca5cCZU/QAvzV2PgQw8Pg2DaBwaBA9GARY4ZannHOt5bGK5ilii2?=
- =?us-ascii?Q?neURdnYQ8u94+vwPtsTCgNn3hEKxQ7St/S50b8dMnrSqHx34H8r9UUdRwEWz?=
- =?us-ascii?Q?AYDGr7b9yS4kBypx+x7wwUtCswcAlk4EvZ5RjJvI+PSEBEWxDo3ffO0CiH9M?=
- =?us-ascii?Q?ONeaTriKt9UEwgxRiHUWpoQTa/BMVQfY57gMonoyHTHqDfJDZzUdVRIsQfKk?=
- =?us-ascii?Q?guKAbOganx1nK6/QdcGQDg5PFpR2ozWsD0kyPH9jt5jH5/5jaw46w0YrHDCN?=
- =?us-ascii?Q?20Fl9oJls6is69lU8M6H8iZIzzpDgsn0VTfCetL0qOxrFR/a6Kp4Lb9eE9H0?=
- =?us-ascii?Q?MtG/hWNSnJy8Dn1DIb2IYlGNKhpp1WIB+C1EVPfJFhyItFanfRRkT898QpvH?=
- =?us-ascii?Q?TKKP2g0jXJBFPKsdN3yqubrSMsdV6plF+lG7eczrD4Na3aAWnVHqzWL5DxO/?=
- =?us-ascii?Q?0WK4WHbxH1lHGjaCTmcexd9nieauCmoHf41G+r3DgvclD/Sl/57/DwgtlOsj?=
- =?us-ascii?Q?M7Neq7UH7ifN2xWv3ycSp3zmGtJXEd6wgOY0sr81GfTLsHNJskjpCVR5ghZO?=
- =?us-ascii?Q?+ofS/i9Y2Q=3D=3D?=
-X-OriginatorOrg: Nvidia.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 72be6ac1-bdc8-44bb-6773-08dedd5e45ee
-X-MS-Exchange-CrossTenant-AuthSource: LV3PR12MB9356.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 09 Jul 2026 02:03:30.3829
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: WQVqMSjjnq+3AgrsBQKXSLDKZyBhf89flAUk6vVYbqipua3eP0gJOKJAEU6P3ScS2JeWAiYQIO/S8cr1vL5JGA==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: DS4PR12MB9818
+User-Agent: Mozilla Thunderbird
+Subject: Re: [patch 16/18] x86/entry: Get rid of the sys_ni_syscall()
+ indirection
+To: Thomas Gleixner <tglx@kernel.org>, LKML <linux-kernel@vger.kernel.org>
+CC: Peter Zijlstra <peterz@infradead.org>, Michael Ellerman
+	<mpe@ellerman.id.au>, Shrikanth Hegde <sshegde@linux.ibm.com>,
+	<linuxppc-dev@lists.ozlabs.org>, Kees Cook <kees@kernel.org>, Huacai Chen
+	<chenhuacai@kernel.org>, <loongarch@lists.linux.dev>, Paul Walmsley
+	<pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
+	<linux-riscv@lists.infradead.org>, Sven Schnelle <svens@linux.ibm.com>,
+	<linux-s390@vger.kernel.org>, <x86@kernel.org>, Mark Rutland
+	<mark.rutland@arm.com>, Andy Lutomirski <luto@kernel.org>, Oleg Nesterov
+	<oleg@redhat.com>, Richard Henderson <richard.henderson@linaro.org>, Russell
+ King <linux@armlinux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>, Guo
+ Ren <guoren@kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Thomas
+ Bogendoerfer <tsbogend@alpha.franken.de>, Helge Deller <deller@gmx.de>,
+	Yoshinori Sato <ysato@users.sourceforge.jp>, Richard Weinberger
+	<richard@nod.at>, Chris Zankel <chris@zankel.net>,
+	<linux-arm-kernel@lists.infradead.org>, <linux-alpha@vger.kernel.org>,
+	<linux-csky@vger.kernel.org>, <linux-m68k@lists.linux-m68k.org>,
+	<linux-mips@vger.kernel.org>, <linux-parisc@vger.kernel.org>,
+	<linux-sh@vger.kernel.org>, <linux-um@lists.infradead.org>, Arnd Bergmann
+	<arnd@arndb.de>, Vineet Gupta <vgupta@kernel.org>, Will Deacon
+	<will@kernel.org>, Brian Cain <bcain@kernel.org>, Michal Simek
+	<monstr@monstr.eu>, Dinh Nguyen <dinguyen@kernel.org>, "David S. Miller"
+	<davem@davemloft.net>, Andreas Larsson <andreas@gaisler.com>,
+	<linux-snps-arc@lists.infradead.org>, <linux-hexagon@vger.kernel.org>,
+	<linux-openrisc@vger.kernel.org>, <sparclinux@vger.kernel.org>,
+	<linux-arch@vger.kernel.org>, =?UTF-8?Q?Michal_Such=C3=A1nek?=
+	<msuchanek@suse.de>, Jonathan Corbet <corbet@lwn.net>,
+	<linux-doc@vger.kernel.org>
+References: <20260707181957.433213175@kernel.org>
+ <20260707190254.493733289@kernel.org>
+From: Jinjie Ruan <ruanjinjie@huawei.com>
+In-Reply-To: <20260707190254.493733289@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+X-Originating-IP: [10.67.109.254]
+X-ClientProxiedBy: kwepems100001.china.huawei.com (7.221.188.238) To
+ dggpemf500011.china.huawei.com (7.185.36.131)
 
-Return the bitmap size, rather than size + 1, when
-bitmap_find_next_zero_area_off() cannot find a suitable area. This
-matches the conventional find_bit() failure sentinel and still lets
-callers detect failure with an out-of-range check.
 
-Document the public failure contract as a value greater than or equal
-to the bitmap size, without requiring callers to depend on the exact
-sentinel.
 
-Signed-off-by: Yury Norov <ynorov@nvidia.com>
----
- include/linux/bitmap.h |  3 +++
- lib/bitmap.c           | 10 ++++------
- 2 files changed, 7 insertions(+), 6 deletions(-)
+On 7/8/2026 3:07 AM, Thomas Gleixner wrote:
+> Invoking sys_ni_syscall() from a code path, which already knows that the
+> syscall number is invalid just to assign -ENOSYS to regs->ax is a pointless
+> exercise. It's even redundant as the low level entry code already has set
+> regs->ax to -ENOSYS on entry.
 
-diff --git a/include/linux/bitmap.h b/include/linux/bitmap.h
-index 8854acf77869..33f175a30304 100644
---- a/include/linux/bitmap.h
-+++ b/include/linux/bitmap.h
-@@ -209,6 +209,9 @@ unsigned long bitmap_find_next_zero_area_off(unsigned long *map,
-  * The @align_mask should be one less than a power of 2; the effect is that
-  * the bit offset of all zero areas this function finds is multiples of that
-  * power of 2. A @align_mask of 0 means no alignment is required.
-+ *
-+ * Return: The bit offset of the found area or a value >= @size
-+ * if no area is found.
-  */
- static __always_inline
- unsigned long bitmap_find_next_zero_area(unsigned long *map,
-diff --git a/lib/bitmap.c b/lib/bitmap.c
-index b464d843f4eb..ed685127a107 100644
---- a/lib/bitmap.c
-+++ b/lib/bitmap.c
-@@ -424,6 +424,9 @@ EXPORT_SYMBOL(__bitmap_clear);
-  * The @align_mask should be one less than a power of 2; the effect is that
-  * the bit offset of all zero areas this function finds plus @align_offset
-  * is multiple of that power of 2.
-+ *
-+ * Return: The bit offset of the found area or a value greater than or equal
-+ * to @size if no area is found.
-  */
- unsigned long bitmap_find_next_zero_area_off(unsigned long *map,
- 					     unsigned long size,
-@@ -448,12 +451,7 @@ unsigned long bitmap_find_next_zero_area_off(unsigned long *map,
- 		start = i;
- 	}
- 
--	/*
--	 * Here, returning size + 1 is to maintain consistency
--	 * with the old version, where the return value is always
--	 * greater than size when no zero areas are found.
--	 */
--	return size + 1;
-+	return size;
- }
- EXPORT_SYMBOL(bitmap_find_next_zero_area_off);
- 
--- 
-2.53.0
+Makes sense, the all reltaed entry has already initialized
+regs->ax to -ENOSYS.
+
+This makes the code very concise.
+
+LGTM
+Reviewed-by: Jinjie Ruan <ruanjinjie@huawei.com>
+
+> 
+> Remove the extra conditionals and the function calls.
+> 
+> Signed-off-by: Thomas Gleixner <tglx@kernel.org>
+> ---
+>  arch/x86/entry/syscall_32.c |    2 --
+>  arch/x86/entry/syscall_64.c |   10 +++-------
+>  2 files changed, 3 insertions(+), 9 deletions(-)
+> 
+> --- a/arch/x86/entry/syscall_32.c
+> +++ b/arch/x86/entry/syscall_32.c
+> @@ -81,8 +81,6 @@ static __always_inline void do_syscall_3
+>  	if (likely(unr < IA32_NR_syscalls)) {
+>  		unr = array_index_nospec(unr, IA32_NR_syscalls);
+>  		regs->ax = ia32_sys_call(regs, unr);
+> -	} else if (nr != -1) {
+> -		regs->ax = __ia32_sys_ni_syscall(regs);
+>  	}
+>  }
+>  
+> --- a/arch/x86/entry/syscall_64.c
+> +++ b/arch/x86/entry/syscall_64.c
+> @@ -68,7 +68,7 @@ static __always_inline bool do_syscall_x
+>  	return false;
+>  }
+>  
+> -static __always_inline bool do_syscall_x32(struct pt_regs *regs, int nr)
+> +static __always_inline void do_syscall_x32(struct pt_regs *regs, int nr)
+>  {
+>  	/*
+>  	 * Adjust the starting offset of the table, and convert numbers
+> @@ -80,9 +80,7 @@ static __always_inline bool do_syscall_x
+>  	if (IS_ENABLED(CONFIG_X86_X32_ABI) && likely(xnr < X32_NR_syscalls)) {
+>  		xnr = array_index_nospec(xnr, X32_NR_syscalls);
+>  		regs->ax = x32_sys_call(regs, xnr);
+> -		return true;
+>  	}
+> -	return false;
+>  }
+>  
+>  /* Returns true to return using SYSRET, or false to use IRET */
+> @@ -92,10 +90,8 @@ static __always_inline bool do_syscall_x
+>  
+>  	instrumentation_begin();
+>  
+> -	if (!do_syscall_x64(regs, nr) && !do_syscall_x32(regs, nr) && nr != -1) {
+> -		/* Invalid system call, but still a system call. */
+> -		regs->ax = __x64_sys_ni_syscall(regs);
+> -	}
+> +	if (!do_syscall_x64(regs, nr))
+> +		do_syscall_x32(regs, nr);
+>  
+>  	instrumentation_end();
+>  	syscall_exit_to_user_mode(regs);
+> 
 
 
