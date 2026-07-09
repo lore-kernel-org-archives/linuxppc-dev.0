@@ -1,68 +1,83 @@
-Return-Path: <linuxppc-dev+bounces-23919-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23920-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 01674C43458
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2026 08:50:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 574C8C43458
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2026 08:51:29 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gwpZ03mDmz3c6n;
-	Thu, 09 Jul 2026 18:50:00 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=209.85.214.169
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783587000;
-	cv=none; b=P+rXdJDbG7ls7Z+1Y8WpqWw9VyyrralFkmfdvpRExFsTQpOy4geew32OlFzd2H+wikLBKppi6joKXeCJPJ1ljYMWbHl5BTj5anG3zQFiSZFwGF/M9epg6/KguI/VuLZ8Mc+cQ2axFU2825KW7bcVXU0fGM4I4gL684dqAR0kPiaym+oZ0rPhguQf0PW6t9n6rlob3bT1D0YXW1ZSsBPijOHUkjJM4pxRjJPWCRUQU0b7fITBes2n65SHLZTyckmZzd5hPa4qYPNv9xhEY6I8ktZuuBwft/k0dvqzaZMuP23q0L3PlzvIYa9+EfVC0c4dj8VA2ZieTUdlpR/nGifVMQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gwpbh07L3z3c9w;
+	Thu, 09 Jul 2026 18:51:28 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::531"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783587087;
+	cv=none; b=QcPbjZmcyF6G1ChckfOgjEBgetG+uHvHKy9zek6Doy5Jtf1nmF1dExnZ+pi25QUmK3P+0KZTQxKcDB+WzsdgPlNrp4iJx4RCrhXNdR0hVG3nUU3ChoNR7XPjZoDJmT1HlC0YJqvGaVx5mRk+Wrx2q7CxhyrQK8Fw+F3TnKdXPXQJqahcSG75U6Lex60zDacLAqO0HiIYe4mNs/EA8kQ13y9yC2mX+0rW/M2O1ktYcVUEz8gPREGMZl7CRaxruxvf+j40SfI8MkxqV+PHZOb3OqA5uRo+aLEpaoNCH43UlZTxZ6XeKfuiIQc4jYAapDxbnvqxrhqsLuvokQaSmfaR1Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1783587000; c=relaxed/relaxed;
-	bh=O3mkBNkViagFAJs3obyg41kBlrTMtmvpPUP/R2gZOPo=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=MwG6xgsTRknpkjE+BCY09lEfi1T3mbq174scE1fTK6tVAQqGtDoBDLE2QS8gvnN+3NnUWkHDHnlRwM4ZmiWUlQFjOAsWAw+vqbxEw9mncd3aly0RBqXeoR/Q9/pddYmqHXiY+xUo/mZCk9YdHyKrsATxL23fQmfbIMJs7vkwjkJgCla6mnVBJTYYA4Zdd/q51cEvn/9qzvQ1fwNJRcQt8n+Gz7HHXL6fh1+g6IuEotwUCzfxpLqY9zFTww9iMZaLQ0UJ58dldmgoxqh3/Wfb5mt6YO5ho18Ygqt2plBnh+wTA7DdyPye3pCGxtGWt0DTkvv7NwdQOiJ99ydBoK3VXg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass (client-ip=209.85.214.169; helo=mail-pl1-f169.google.com; envelope-from=geert.uytterhoeven@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.214.169; helo=mail-pl1-f169.google.com; envelope-from=geert.uytterhoeven@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pl1-f169.google.com (mail-pl1-f169.google.com [209.85.214.169])
+	t=1783587087; c=relaxed/relaxed;
+	bh=CNp1e35ro3cQgZeEMYQvoxd6PA+bCrB79PJw0+bppNk=;
+	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References; b=P66JE5qMacUdu9qEi8e59YQzk1XO5tnSNeOTE/qOv5Cb8FwHXyDcfZoR+LiEqsyhPDp+QQ+w0VukSL7IUDM+/7RVTTxYOGDvSeE7las0seeA+aqNVhY0Qsginx4Ez9tGDMd1Yn/xnOkJbrAZ4oxCgu+q4+DxsIlPSqWQRy5L13TMs+UOjPuF9alqodpfuQhhfUQEzC6j2sn1W9wtdyFTvGSKprU++cKZWPXiJ+Pu0Yi8lSu/2WGJtFC/OVpYmn/7RhGlk3YX3vThRhhkSm5i5VsejiKZ2deKcVKFE7EcON8a/87LGr4IDW/qZ1P0VpNTT47oG+AX0wcWCR6TapUZtg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=XT8Nvw+j; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::531; helo=mail-pg1-x531.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=XT8Nvw+j;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::531; helo=mail-pg1-x531.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pg1-x531.google.com (mail-pg1-x531.google.com [IPv6:2607:f8b0:4864:20::531])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gwpYz1XhTz3cH9
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 09 Jul 2026 18:49:58 +1000 (AEST)
-Received: by mail-pl1-f169.google.com with SMTP id d9443c01a7336-2cae1a3a744so12395415ad.3
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 09 Jul 2026 01:49:58 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gwpbg0f44z3c6n
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 09 Jul 2026 18:51:26 +1000 (AEST)
+Received: by mail-pg1-x531.google.com with SMTP id 41be03b00d2f7-c89636920a3so802829a12.1
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 09 Jul 2026 01:51:26 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1783587085; x=1784191885; darn=lists.ozlabs.org;
+        h=references:message-id:date:in-reply-to:subject:cc:to:from:from:to
+         :cc:subject:date:message-id:reply-to:content-type;
+        bh=CNp1e35ro3cQgZeEMYQvoxd6PA+bCrB79PJw0+bppNk=;
+        b=XT8Nvw+jdAj3moolMKXrI3QTLYoLOeFyU7QOh4sts/8f6qReTfqfTJhZ7zQyAOXd5J
+         hoAB98D5McGt5UyJi0nWbtNQc+gyd/Ak3yhXJ3MAgln5pP/PMQ0wxHpwDh69fC0M5GOd
+         hOg7EDY5cJjiAv53d08BD7pwBeMHkiM3CPV3ztJS1M2Q6yTpm2pjmdslmtYX1hj/gqJ/
+         +eK7eLLolXEVww0HQDqSGyr9UTiS+UAOMhUFva4sRTueK5iHhgIyfh+hLrME0D3IOstd
+         y45wbbGgm9+8YgNKinj3kFfwwof6jXrByLOcrYm4lFYeg4uKxRLePTYCOJpB3ZJJUN5N
+         haZw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1783586996; x=1784191796;
-        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
-         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to:content-type;
-        bh=O3mkBNkViagFAJs3obyg41kBlrTMtmvpPUP/R2gZOPo=;
-        b=YqjuMYBBSAG/CZ1ufFHP6rkmpeb20C7+hQ2oSHxnjh1ofkK0F2HxyzoHJuGhKr2Btg
-         +g52bDuKLuVk6HDwcRJpz3/Ncwuq/bzZmS/WFnx5cClQGTKEyX4YflFCD90Ch58V2YRB
-         6Nyp1D9ZtSOmiCCFc+I1TfylpAb9vXqmk5p3sjRnvYaWb87ssCYwB/oeI76cO8pqVcmz
-         Mdax4klqWxIanV2zxx2D6Vz2/tqrdVfmuoYBXY7YJAZCe7tzizrM/I88LDmY9TO+fmIi
-         U3aH2qr8iFwQ2JrgmL//aPApk1wKRyy1+m7FUn8JrpIs7yamlYi/kIaObLXynyczmBLP
-         TTjA==
-X-Forwarded-Encrypted: i=1; AHgh+RoyHMg8a4Jn2DHDASjDowylGaJuLk58ZdUyk45Psvn4UymKGVa7dRQB63t/qR9C+ohPccmoDk7C4F4fYTI=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yyu1EslYXWvQ0U325iukRU9XC/AxPKYtlyY//541xh+QU/SRnIF
-	SeRJp0VmqD2WVKU8XIepcr6EKyYc8QxXl+wLmzkauCLw7br1ZSSgywc8suwdhcNEZOo=
-X-Gm-Gg: AfdE7ckJ+uXEkFbBl380tpk8InKBcr6UvVCkNQgcIeIqGX8QguCPZkTuvi2mOOXE9LP
-	NfwQnWDAN72fDz/h+etIMtdZoPoSFIdtK1lOGKcjBqPC1z9Gus0u+Wc2pizSIiWLcA+7MJus+nu
-	gXFHhxtr8E7+vmoBHmExmX5i1su/QfznmILlN8gWd43hFhkoexdqt050W+xNsdfk5RNrVh4qY6q
-	t0lhPprBnSm3eBJoJmRE8mrrfMmY/in82hc8KDgKsf3OM1bL1b7JNgWxMrUfDZz0ReY7J6GuG/h
-	qEHRaGHP/Od56qiV6aZklalbIlIXLQVxYQsB0Kk+LL3/+MNzwI+/iWmLhvGYZW0jXOT8FJ4b6cX
-	YWcob+rIJkq/poBjXfJXWjpsPmhWs/LAGroWF7B/OYBkGbSCsvh/eDWNF/kFTxrGZPteZpgvyIo
-	JBB6J2HC5cvx1l77s/jOFRkSUJW0iFbOg1edIgI0SblKTNSvaRO9NGNQ==
-X-Received: by 2002:a17:902:e5c5:b0:2cc:9a86:9c42 with SMTP id d9443c01a7336-2ccea47e1b2mr55735875ad.45.1783586995670;
-        Thu, 09 Jul 2026 01:49:55 -0700 (PDT)
-Received: from mail-pg1-f181.google.com (mail-pg1-f181.google.com. [209.85.215.181])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2ccc9d1eea1sm40692125ad.46.2026.07.09.01.49.55
-        for <linuxppc-dev@lists.ozlabs.org>
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 09 Jul 2026 01:49:55 -0700 (PDT)
-Received: by mail-pg1-f181.google.com with SMTP id 41be03b00d2f7-c999f162c9aso932136a12.3
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 09 Jul 2026 01:49:55 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AHgh+RribYxVrX0n/VvlEXzqRd5tYEKXPJ8htpnskp5hAYXaKW2h1yJq7Q/Cg/T7wJtux4rfhl7zcNLtf53OWp8=@lists.ozlabs.org
-X-Received: by 2002:a05:6102:6895:b0:738:9dd5:9b03 with SMTP id
- ada2fe7eead31-744e03a337dmr3306957137.20.1783586528282; Thu, 09 Jul 2026
- 01:42:08 -0700 (PDT)
+        d=1e100.net; s=20251104; t=1783587085; x=1784191885;
+        h=references:message-id:date:in-reply-to:subject:cc:to:from:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=CNp1e35ro3cQgZeEMYQvoxd6PA+bCrB79PJw0+bppNk=;
+        b=jy8uCz3I7Z3t/WG7NYdruXFELImGzN31HiCM6HpfhBwNjIUf4yDlim12c1nlk9Us3u
+         6o+Qt83TiZYcWn+o6w5rNn6jb4nS9ijeoEfwIzXp7Etln6WjwmxbPbH/4Klr8E85bsZd
+         qEKjUYSXWlCH5lEUOUtV8pFvh5XgnE+V7f0lNEUe9ChOGa8yOSq31eBUBe0/XRFvnz+W
+         GF5T9vFs5w5Ym8i1MhdbFBZ6hCFizqSQRFN1SxH4vxw5W76Cr5WCBphvR/euBvG+UIx3
+         CExBzBAQqGx2V2XMBr+7dAMPBCyMOO60h+dI64FpAuGzv0C8hEdrbmfY60v07a/cMVlw
+         ppCQ==
+X-Forwarded-Encrypted: i=1; AHgh+RpWuixdYqNq8FG0mdtLcx37BWB8cCOG9s7oSj83RawaWO9zkbJb0+No9viGUbv/cbYTPWO+W8zpLD3N+n0=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YyUNlWYC46gGa9e2xLAdK4TVY6lGKkNR7rjGRL2Q0WOruKMKn1u
+	GTvgLg++M6pcv0wNfWmPApLhAru5P9gKPpFQHgl2zMX/xfkTegP5pWmRUdZ/zbt9
+X-Gm-Gg: AfdE7cmoNe07T6aZUdGMOaOHT61BFC9Td5F1/PSu3TyYcWteLn2heEYy/on+UMAkJ/o
+	fynZGRfsqOMwYSLlOIlrBe0uowiHJgOKnGnc/LXmh6hMmVFi5dBpNTI8fDXK1a65Gh4kpAFuvtS
+	9Y0LAvTmse/wqbiOlpaJ3EDwRyiKU8hJKbm/9USxmCI3TWEWGR7tSl+8e6MMya9qQ0VhI8Wf9Ig
+	WhrKXqgixqt67u5VTwWwcO8L3yBYysb9jvKx3XIITTR1l67/ReHZf2o7l4GfEs1wa/FL28mtoWA
+	VeZ5mSEoDzyJK0ssLlgRjahNeYcZ4wTkMlbhgX+oWDiPR7iyofrPqEWZ1ps6kwjfuAb87cTUVK8
+	3nZv92Xq1/wCaI00cI6cVVo7KOJNIA3vOxA6AugR0hh51vIpFynv9VgQlT6YSIMftEm2Kie/9zA
+	LKJsKYNiCJ+JY=
+X-Received: by 2002:a05:6a20:3d0b:b0:3bf:7ab7:98a4 with SMTP id adf61e73a8af0-3c0bc95bad7mr8044555637.27.1783587084985;
+        Thu, 09 Jul 2026 01:51:24 -0700 (PDT)
+Received: from pve-server ([49.205.216.49])
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-311a6115e61sm5516616eec.22.2026.07.09.01.51.21
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 09 Jul 2026 01:51:24 -0700 (PDT)
+From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+To: David Woodhouse <dwmw2@infradead.org>, Paolo Bonzini <pbonzini@redhat.com>
+Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, Madhavan Srinivasan <maddy@linux.ibm.com>, Nicholas Piggin <npiggin@gmail.com>, Michael
+ Ellerman <mpe@ellerman.id.au>, "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] KVM: Use vma_lookup() in kvm_host_page_size()
+In-Reply-To: <71775f561c4b7fb23b7af0725c6ce232a4b27b20.camel@infradead.org>
+Date: Thu, 09 Jul 2026 14:16:36 +0530
+Message-ID: <7bn4wnwz.ritesh.list@gmail.com>
+References: <71775f561c4b7fb23b7af0725c6ce232a4b27b20.camel@infradead.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -75,60 +90,51 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-References: <20260707181957.433213175@kernel.org> <20260707190254.280015701@kernel.org>
-In-Reply-To: <20260707190254.280015701@kernel.org>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Thu, 9 Jul 2026 10:41:56 +0200
-X-Gmail-Original-Message-ID: <CAMuHMdWe1D0CZrav5h6EhDDbeJzgJcHvT89jrs6109Bdj-pdTw@mail.gmail.com>
-X-Gm-Features: AUfX_mw8w2Kp5VuAYozzfDNS6gDbdKhQdYzfXsv-G72F3LS58UBytbGwOmplITc
-Message-ID: <CAMuHMdWe1D0CZrav5h6EhDDbeJzgJcHvT89jrs6109Bdj-pdTw@mail.gmail.com>
-Subject: Re: [patch 12/18] ptrace, treewide: Rename ptrace_report_syscall_entry()
- to ptrace_report_syscall_permit_entry()
-To: Thomas Gleixner <tglx@kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, 
-	Arnd Bergmann <arnd@arndb.de>, Oleg Nesterov <oleg@redhat.com>, 
-	Richard Henderson <richard.henderson@linaro.org>, Vineet Gupta <vgupta@kernel.org>, 
-	Russell King <linux@armlinux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>, 
-	Will Deacon <will@kernel.org>, Guo Ren <guoren@kernel.org>, Brian Cain <bcain@kernel.org>, 
-	Michal Simek <monstr@monstr.eu>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, 
-	Dinh Nguyen <dinguyen@kernel.org>, Helge Deller <deller@gmx.de>, 
-	Yoshinori Sato <ysato@users.sourceforge.jp>, "David S. Miller" <davem@davemloft.net>, 
-	Andreas Larsson <andreas@gaisler.com>, Chris Zankel <chris@zankel.net>, linux-alpha@vger.kernel.org, 
-	linux-snps-arc@lists.infradead.org, linux-arm-kernel@lists.infradead.org, 
-	linux-csky@vger.kernel.org, linux-hexagon@vger.kernel.org, 
-	linux-m68k@lists.linux-m68k.org, linux-mips@vger.kernel.org, 
-	linux-openrisc@vger.kernel.org, linux-parisc@vger.kernel.org, 
-	linux-sh@vger.kernel.org, sparclinux@vger.kernel.org, 
-	linux-um@lists.infradead.org, linux-arch@vger.kernel.org, 
-	Michael Ellerman <mpe@ellerman.id.au>, Shrikanth Hegde <sshegde@linux.ibm.com>, 
-	linuxppc-dev@lists.ozlabs.org, Kees Cook <kees@kernel.org>, 
-	Huacai Chen <chenhuacai@kernel.org>, loongarch@lists.linux.dev, 
-	Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, linux-riscv@lists.infradead.org, 
-	Sven Schnelle <svens@linux.ibm.com>, linux-s390@vger.kernel.org, x86@kernel.org, 
-	Mark Rutland <mark.rutland@arm.com>, Jinjie Ruan <ruanjinjie@huawei.com>, 
-	Andy Lutomirski <luto@kernel.org>, Richard Weinberger <richard@nod.at>, =?UTF-8?Q?Michal_Such=C3=A1nek?= <msuchanek@suse.de>, 
-	Jonathan Corbet <corbet@lwn.net>, linux-doc@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
 
-On Tue, 7 Jul 2026 at 21:06, Thomas Gleixner <tglx@kernel.org> wrote:
-> The return value of that function is boolean and tells the caller whether
-> to permit the syscall processing or not.
+David Woodhouse <dwmw2@infradead.org> writes:
+
+> From: David Woodhouse <dwmw@amazon.co.uk>
 >
-> Rename the function so the purpose is clear and make the return type bool.
+> kvm_host_page_size() uses find_vma() to determine the host page size
+> backing a guest page. find_vma() returns the next VMA when the address
+> falls in an unmapped hole, which means an unmapped address inherits the
+> page size of a completely unrelated VMA at a higher address. This is
+> never a meaningful result.
+>
+> Replace find_vma() with vma_lookup() so that a hole address returns
+> NULL, causing the function to return PAGE_SIZE (the safe default)
+> rather than an unrelated VMA's page size.
+>
 
->  arch/m68k/kernel/ptrace.c       |    2 +-
+That's exactly right.
 
-Acked-by: Geert Uytterhoeven <geert@linux-m68k.org> # m68k
+> This is currently only cosmetic, as the only caller is in PPC book3s
+> support (kvmppc_xive_native_set_queue_config()) and subsequently returns
+> failure if !gfn_to_page() anyway.
+>
 
-Gr{oetje,eeting}s,
+Yup. The change make sense to me. Feel free to add:
+Reviewed-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
 
-                        Geert
 
--- 
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+> Signed-off-by: David Woodhouse <dwmw@amazon.co.uk>
+> ---
+>  virt/kvm/kvm_main.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+> index 89489996fbc1..d33761123459 100644
+> --- a/virt/kvm/kvm_main.c
+> +++ b/virt/kvm/kvm_main.c
+> @@ -2693,7 +2693,7 @@ unsigned long kvm_host_page_size(struct kvm_vcpu *vcpu, gfn_t gfn)
+>  		return PAGE_SIZE;
+>  
+>  	mmap_read_lock(current->mm);
+> -	vma = find_vma(current->mm, addr);
+> +	vma = vma_lookup(current->mm, addr);
+>  	if (!vma)
+>  		goto out;
+>  
+> -- 
+> 2.43.0
 
