@@ -1,92 +1,80 @@
-Return-Path: <linuxppc-dev+bounces-23924-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23925-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 71F00C43458
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2026 09:39:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B0BFEC43458
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2026 09:49:57 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gwqg80xfvz3c2V;
-	Thu, 09 Jul 2026 19:39:32 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783589972;
-	cv=none; b=gCGwXj2vqfKef+gbRal33ESwfDOGVWUSdv5yA9W2LiMJgxy+z10f8cfaehKobqPiQOsHqt/uLGAdKVXtgxl4QfNUxAC/UCqWD4mV+JhYETsSfoAIxtqTsuyRUtOPsDOAUssPp+CX0jPthy93wGJ5L9E5/aG6MZ1NdCRkwiENygHcFi911tD8F7XMRn7umxH0RoZ9WH4a90WNoivFiMdzfowNHSMS/W0LQzXGcokB7a2Lfuf3p8MBVauYT3DaCTlyE8Fk13rffMwV6v4jKrA1g3QVmV4d00dqYmSBpjoZbgPd+dBcMsqh1VaEIRqYeO71yIZP0QjWbIZsYVlTOxyJhA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gwqv81ztKz3c6f;
+	Thu, 09 Jul 2026 19:49:56 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::331"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783590596;
+	cv=none; b=PVhOSvzJ9CuKwDUk81RclC4wSeUqWFQQ0RMaZ8dMiQsrAtoIACcuyPMCfUNXuf/0VFG7nLjHxCAKei3agl7Wn4d8V39umykE2Q1rqZI/vGh76Hsit8YlX73ykYjoBUKcKgetUnWDOVWslKL9ykis8Ve190Toi+nZPhQN/JFtfueQVCiTjqmn/NI36ob6veRoLMxCBDsjNwCVt6mGn6+AlA8qov5NG3GHrxVnURX2fVwITUCPKjUYK5WlwvWK/N5mbQSJRZ+gHFTXPNyztpQqcP5KN1hcol+RC93uhN2LEZdz0PE80LVhgSw9VOcY4nbfhQN489MTRxVNrBPFuFmC3g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1783589972; c=relaxed/relaxed;
-	bh=M05QQu2AhxhlfwVGw0snPzMy6XvSIYRk6m4W88pP9io=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=lqGmaxFZHnU5BjHnEv76aroeh7v7qsLdfNebuGiZAPimeKYKv4G7V/4bf/fEpCRNKiOzV5PH4HRbjl4L694q8sFX1YsQsVfCEVimiLHPb2lLeeOq9gfSuFGbqveKWw72Kot1+WMH0y+k/CAeJNHzeENQhORQJk0w8nZRmecDu8DyhMakGBCaXoz4gc3aAiRK+yOyb3A+1KVI2vvEKko+ZAtiC1VuPmYZNrVtYXGhlVMeeb1mxI0ZtNqPcEmta5+YnY78REoPDquA8DPcjbPmPnUwx0JDyA+t/3QuQ28ip8U73gSdWoCQXnK4J+zL7wTHneRThDPajCOgEMLc6ljhWQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=eIRongIA; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1783590596; c=relaxed/relaxed;
+	bh=MXemn+RWgfgniHXL+Z+iccp115cwF5wMpUS4nNjdkFs=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=BgsGPbBYJonFgapA0YWEcdaOrxLda7XOSJOd+AxDYH6OKtdUC73bw6+qbjU1B/KHPJSBlk/JfD308Dw3uY6RZx2ZX84ayipXSK879O1o7H4LCs6ZKbI6sveAmbqW7OkCz15DH+MIIhVVSw2ozIj3uCZIjf5sIDikin3MMDKIN1tz8YLPB4DIFg9nf8ZKYMGWRE1DcMMrjTepBpghFbPJE/di+NpVoIKs6XNIqULM/qIPGOt/bGn+CcMeOSpcKFSvBYv+ug04E+1DbBM8MVt7td5ggS/DKOKfAHfGu+cn0/Y+kxKMDHqKVA2U54Bi5ovcMcCBAdsI2cr0AAdFevAIBA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com; dkim=pass (2048-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=google header.b=AQSNaikr; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::331; helo=mail-wm1-x331.google.com; envelope-from=petr.pavlu@suse.com; receiver=lists.ozlabs.org) smtp.mailfrom=suse.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=eIRongIA;
+	dkim=pass (2048-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=google header.b=AQSNaikr;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.com (client-ip=2a00:1450:4864:20::331; helo=mail-wm1-x331.google.com; envelope-from=petr.pavlu@suse.com; receiver=lists.ozlabs.org)
+Received: from mail-wm1-x331.google.com (mail-wm1-x331.google.com [IPv6:2a00:1450:4864:20::331])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gwqg66NP4z3c2P
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 09 Jul 2026 19:39:29 +1000 (AEST)
-Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6696IWr21897392;
-	Thu, 9 Jul 2026 09:39:17 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=M05QQu
-	2AhxhlfwVGw0snPzMy6XvSIYRk6m4W88pP9io=; b=eIRongIAq53MmskZdIMHqN
-	VE37M89HblCDzG+p6Ccgmmmed6tnA8+VCmvn+X0nean+8csGmJcftc1tJzT29Yzq
-	6Z4y/I1aQnvWbIxaC2NHaixr+wKOaRrf1thIqBMg8Q69MRKKwYvVcT6Va9GjWId6
-	NmDqI24kOfkBKP8+BI9WHwhyUCeaN3whHV+6AJG6afkWTITqge4Q4mVE88UB1fO9
-	bUMnqbf9ZLPiLAEHZZL48xnoUz9jhknBEOP0pZiSiNGAUgrpyuT4DDGKC1RRK/KD
-	JcotwNWYjvyHfqHFPHcN6lFJEqEOij9EIhjaM+aHYgz7L6NRSV0vPPs9vPqlYHEw
-	==
-Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4f6sur0rfp-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 09 Jul 2026 09:39:16 +0000 (GMT)
-Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma21.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 6699YfLV020115;
-	Thu, 9 Jul 2026 09:39:15 GMT
-Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
-	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4f7dgkch4j-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 09 Jul 2026 09:39:15 +0000 (GMT)
-Received: from smtpav06.fra02v.mail.ibm.com (smtpav06.fra02v.mail.ibm.com [10.20.54.105])
-	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6699dD3S52953366
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 9 Jul 2026 09:39:13 GMT
-Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 09E302004F;
-	Thu,  9 Jul 2026 09:39:13 +0000 (GMT)
-Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 817442004B;
-	Thu,  9 Jul 2026 09:39:10 +0000 (GMT)
-Received: from fedora (unknown [9.5.7.39])
-	by smtpav06.fra02v.mail.ibm.com (Postfix) with ESMTPS;
-	Thu,  9 Jul 2026 09:39:10 +0000 (GMT)
-Date: Thu, 9 Jul 2026 15:09:33 +0530
-From: Amit Machhiwal <amachhiw@linux.ibm.com>
-To: leixiang <leixiang@kylinos.cn>
-Cc: seanjc@google.com, pbonzini@redhat.com, stable@vger.kernel.org,
-        Madhavan Srinivasan <maddy@linux.ibm.com>,
-        Nicholas Piggin <npiggin@gmail.com>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-        Suresh Warrier <warrier@linux.vnet.ibm.com>,
-        Paul Mackerras <paulus@ozlabs.org>, linuxppc-dev@lists.ozlabs.org,
-        kvm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] KVM: PPC: Book3S HV: Set irqfd->producer only on success
-Message-ID: <20260709150215.e5b5af63-43-amachhiw@linux.ibm.com>
-Mail-Followup-To: leixiang <leixiang@kylinos.cn>, seanjc@google.com, 
-	pbonzini@redhat.com, stable@vger.kernel.org, 
-	Madhavan Srinivasan <maddy@linux.ibm.com>, Nicholas Piggin <npiggin@gmail.com>, 
-	Michael Ellerman <mpe@ellerman.id.au>, "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, 
-	Suresh Warrier <warrier@linux.vnet.ibm.com>, Paul Mackerras <paulus@ozlabs.org>, 
-	linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <ak59frQUBl9Gs3Qn@google.com>
- <20260709055755.31297-1-leixiang@kylinos.cn>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gwqv55ynjz3byF
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 09 Jul 2026 19:49:52 +1000 (AEST)
+Received: by mail-wm1-x331.google.com with SMTP id 5b1f17b1804b1-493b61b52b6so15647595e9.1
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 09 Jul 2026 02:49:52 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=suse.com; s=google; t=1783590589; x=1784195389; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=MXemn+RWgfgniHXL+Z+iccp115cwF5wMpUS4nNjdkFs=;
+        b=AQSNaikrJyO4zSnuBPGXZ26hULN2JEexrr+C0owTkWNeF/cRH+4pgxyZDBR0sTp1Gl
+         YzQA4lvmxme8RJX4kOSFYTySGSBNCsWXjoUlgqyFOu3T07JJLQgjUVkipXyq3xVi2bPa
+         nMhjWInkFlVYPDZVl5BXpRL0aDCU2La2yyDOMA5m1GjjeCh8IsCUktYpC1g5wdDyZRnD
+         rqVPPwyDjH8qEXPlTy436AHmt22WrEsrotJG93JbP1Ho4szTuJvooqfjxf/AzYt1jZul
+         /pymrMvgFaCmURxS4v5F9PI2HYUbifo1Jh2kgN/RGQwS1AaqZxRw+CyINAnsTsvWNrzX
+         R9uA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1783590589; x=1784195389;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=MXemn+RWgfgniHXL+Z+iccp115cwF5wMpUS4nNjdkFs=;
+        b=H1/NSVcHGfi8Y/JCwfE0aXIFZeQa9n9/Vs9mBrBS9P5WxHoUvGEpv/CgmKQ/SOZ9+7
+         CeH0ZENcNB6MyYAXtMjPIXDLmornbuh6f9397NcoohwBO18inTfUo0QsGrVXcNJCEw5v
+         ZQyKTXtc3UbSeSXKkCHcyQhp0/nFcj04puAP66yLIAyYbuQ3nXSP/HhDqzVQyqI0s4YJ
+         xWnLhKNUEwuxf3TcpulQtqLAbPoQyzajCYKK6IX5ekS3eLfSFVFnzABozyCtPPFY+maJ
+         ZtpWMFf11w87njOtwer/xkD9qVRm0Tjp/9N3/NbSlRtJ0Pir+CqufD3FAgDIP5EdP0gT
+         ZYAw==
+X-Forwarded-Encrypted: i=1; AHgh+Rp8fycR/EQw7at/1QRBvmAKBnbWGV63qKxLgKB2UQBMo4/Fk+I2kr7Xo4H+EaPGIjgBWQhIIYRq2Bidgkw=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yzyav0ZskrSlROaRQ9P8Nx/9JVOsGgyjNhCkm1moKHPfiTZteJw
+	H92LNmewK8uGHwVUgFLDp1O3gwIeqq10tbxnlXb8ZYBURtnmjdBRipVP26Rm6s8RHAw=
+X-Gm-Gg: AfdE7cldBxacbbbCe7xxjP85UWTBoWRepW89ZDF5SnRRhWBJzrcca/fjWh0KQGK0OZn
+	Oa3O3IKzTquM3H6h+6kTzCFUBTAvygTLQwBErposYdrwu/EAxU9umYWr7p5Gs5r+rrZZKLFK0Bh
+	1//IE7RMrlRcDZJZ5xGooPFXSLGET9ZDpIdj9Cir7bLeRxHJqKAHYeepNPfs2jXbmLkYL6fdy2o
+	eycmWc7SVJv45egtF8eHi87Tg5MXIlfK61mhf4Wa7x7A8rtJiBO24fIMOT5WVZ3SVlSDaG+uQP+
+	PeHaohRSWraS8V8AInhH1RGZpzM4PN8BlgLzQ8sxX+4gQWWBRGMPfJr+oPaTU0ZTT2VuleU/z26
+	o/DKWgioP/52teIU65X96/0UDyZilpE+Cd1wiOXkLHe9y2t9ChvFRdP/7et5E7cNICSQ9O4GAbt
+	wx5OTdr0tRBTzDY1FoheEOVGRCJAZRuQbcYA==
+X-Received: by 2002:a05:600c:c1d7:20b0:490:9782:3eb8 with SMTP id 5b1f17b1804b1-493e68c3535mr47652155e9.25.1783590588957;
+        Thu, 09 Jul 2026 02:49:48 -0700 (PDT)
+Received: from [192.168.42.79] (nat2.prg.suse.com. [195.250.132.146])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-493eb6d53absm47837275e9.6.2026.07.09.02.49.46
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 09 Jul 2026 02:49:48 -0700 (PDT)
+Message-ID: <3e2ae6e8-41ad-45f0-a885-131a5711c276@suse.com>
+Date: Thu, 9 Jul 2026 11:49:45 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -100,97 +88,86 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 1/2] umh, treewide: Explicitly include linux/umh.h where
+ needed
+To: =?UTF-8?Q?Michal_Koutn=C3=BD?= <mkoutny@suse.com>
+Cc: Tony Luck <tony.luck@intel.com>, Borislav Petkov <bp@alien8.de>,
+ Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>,
+ Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
+ "H. Peter Anvin" <hpa@zytor.com>,
+ Philipp Reisner <philipp.reisner@linbit.com>,
+ Lars Ellenberg <lars.ellenberg@linbit.com>,
+ =?UTF-8?Q?Christoph_B=C3=B6hmwalder?= <christoph.boehmwalder@linbit.com>,
+ Jens Axboe <axboe@kernel.dk>, Johan Hovold <johan@kernel.org>,
+ Alex Elder <elder@kernel.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ "Rafael J. Wysocki" <rafael@kernel.org>,
+ Michal Januszewski <spock@gentoo.org>, Helge Deller <deller@gmx.de>,
+ Alexander Viro <viro@zeniv.linux.org.uk>,
+ Christian Brauner <brauner@kernel.org>, Jan Kara <jack@suse.cz>,
+ Trond Myklebust <trondmy@kernel.org>, Anna Schumaker <anna@kernel.org>,
+ Chuck Lever <cel@kernel.org>, Jeff Layton <jlayton@kernel.org>,
+ NeilBrown <neil@brown.name>, Olga Kornievskaia <okorniev@redhat.com>,
+ Dai Ngo <Dai.Ngo@oracle.com>, Tom Talpey <tom@talpey.com>,
+ Mark Fasheh <mark@fasheh.com>, Joel Becker <jlbec@evilplan.org>,
+ Joseph Qi <joseph.qi@linux.alibaba.com>, Tejun Heo <tj@kernel.org>,
+ Johannes Weiner <hannes@cmpxchg.org>, Luis Chamberlain <mcgrof@kernel.org>,
+ Daniel Gomez <da.gomez@kernel.org>, Sami Tolvanen <samitolvanen@google.com>,
+ Aaron Tomlin <atomlin@atomlin.com>, Pavel Machek <pavel@kernel.org>,
+ Len Brown <lenb@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
+ Danilo Krummrich <dakr@kernel.org>, Nikolay Aleksandrov
+ <razor@blackwall.org>, Ido Schimmel <idosch@nvidia.com>,
+ "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>,
+ Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
+ Simon Horman <horms@kernel.org>, David Howells <dhowells@redhat.com>,
+ Jarkko Sakkinen <jarkko@kernel.org>, Paul Moore <paul@paul-moore.com>,
+ James Morris <jmorris@namei.org>, "Serge E. Hallyn" <serge@hallyn.com>,
+ Kentaro Takeda <takedakn@nttdata.co.jp>,
+ Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
+ linux-edac@vger.kernel.org, linux-kernel@vger.kernel.org,
+ drbd-dev@lists.linux.dev, linux-block@vger.kernel.org,
+ greybus-dev@lists.linaro.org, linuxppc-dev@lists.ozlabs.org,
+ linux-acpi@vger.kernel.org, linux-fbdev@vger.kernel.org,
+ dri-devel@lists.freedesktop.org, linux-fsdevel@vger.kernel.org,
+ linux-nfs@vger.kernel.org, ocfs2-devel@lists.linux.dev,
+ cgroups@vger.kernel.org, linux-modules@vger.kernel.org,
+ linux-pm@vger.kernel.org, driver-core@lists.linux.dev,
+ bridge@lists.linux.dev, netdev@vger.kernel.org, keyrings@vger.kernel.org,
+ linux-security-module@vger.kernel.org
+References: <20260708154510.6794-1-petr.pavlu@suse.com>
+ <20260708154510.6794-2-petr.pavlu@suse.com>
+ <ak6STbqZd-Q-c56v@localhost.localdomain>
+Content-Language: en-US
+From: Petr Pavlu <petr.pavlu@suse.com>
+In-Reply-To: <ak6STbqZd-Q-c56v@localhost.localdomain>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20260709055755.31297-1-leixiang@kylinos.cn>
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNzA5MDA4OSBTYWx0ZWRfX0J8Kx25YbE25
- gEKF/7pooXdZT5w2Ana836uEphAVHc51zuQyuiCckgLkullwvVqhD27s5+O3jxr7yjsLJ1qEWto
- M/TFd5KcrnU6ZCNi6yjlkXo/uY2KLdo=
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzA5MDA4OSBTYWx0ZWRfX/tF6QwN3C+Hu
- ELnzvTFlZW8BmZAF6YGV1s97Nt8NYWU12kEb39Q9ZeR6FCKPMw2XJINZ14fht5Xkv1+9oiLe7zN
- RXNuCfQ+1XidblYy5gwGTZVwGIydiMcPu/HW3uWcHiMdP0svvYUk9WmtCy82fRCJAliLMuNCS98
- nxkk5ZNwf1/OpwollX5I3+eFdtYGKyUDzZtukCUpTZ7xxYU8G82Fpwq6j6aZIjkYpAbVxaA5zKT
- u6L/CZ/1aourPoRhz8Qd5Jt4WOYJRhBdLIR/fGzFKuzv/n4fXMDedCznPte2bzqcX5YlYAQjBru
- NOpqgLVbKMact4TdZaBOrq4ZyAOeLd2rjWz8qEI8MAh0iR+GUqjP0WDVzYYQIaCxagYHh75ZEu/
- UXDi37wkNFQBEv6yKJIkm/ODzINhu63c7ICiZuBB9kuZ0pg6IxgMyYKqtIvoOM5myqRCf2iu7OC
- NIklSjUVC1BR1Z1HvQA==
-X-Proofpoint-GUID: ZJlaxRQCVLZf1W0xgI-7SUYf5knbDxjI
-X-Authority-Analysis: v=2.4 cv=Oot/DS/t c=1 sm=1 tr=0 ts=6a4f6c44 cx=c_pps
- a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
- a=IkcTkHD0fZMA:10 a=RAioF0-LDSMA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=uAbxVGIbfxUO_5tXvNgY:22 a=1XWaLZrsAAAA:8
- a=VwQbUJbxAAAA:8 a=VnNF1IyMAAAA:8 a=aQTDHXOw4a3q5qQiMUEA:9 a=3ZKOabzyN94A:10
- a=QEXdDO2ut3YA:10
-X-Proofpoint-ORIG-GUID: 3PrTwKRV1brcDspQTSDzvnlPTg6EvwHR
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-07-09_01,2026-07-08_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- bulkscore=0 lowpriorityscore=0 clxscore=1011 impostorscore=0 phishscore=0
- malwarescore=0 suspectscore=0 spamscore=0 adultscore=0 priorityscore=1501
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607090089
 
-On 2026/07/09 01:57 PM, leixiang wrote:
-> Set irqfd->producer only after kvmppc_set_passthru_irq() succeeds to
-> avoid leaving a dangling pointer on failure. The bypass manager does
-> not register a failed producer, so the pointer is never cleared.
+On 7/8/26 8:13 PM, Michal Koutný wrote:
+> Hi Petr.
 > 
-> Fixes: c57875f5f9be ("KVM: PPC: Book3S HV: Enable IRQ bypass")
-> Suggested-by: Sean Christopherson <seanjc@google.com>
-> Cc: stable@vger.kernel.org
-> Signed-off-by: leixiang <leixiang@kylinos.cn>
-> ---
->  arch/powerpc/kvm/book3s_hv.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
+> On Wed, Jul 08, 2026 at 05:44:29PM +0200, Petr Pavlu <petr.pavlu@suse.com> wrote:
+>> diff --git a/kernel/cgroup/cgroup-v1.c b/kernel/cgroup/cgroup-v1.c
+>> index a4337c9b5287..60eb994c32ae 100644
+>> --- a/kernel/cgroup/cgroup-v1.c
+>> +++ b/kernel/cgroup/cgroup-v1.c
+>> @@ -16,6 +16,7 @@
+>>  #include <linux/pid_namespace.h>
+>>  #include <linux/cgroupstats.h>
+>>  #include <linux/fs_parser.h>
+>> +#include <linux/umh.h>
+>>  
+>>  #include <trace/events/cgroup.h>
 > 
-> diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-> index 61dbeea317f3..ff7b25629125 100644
-> --- a/arch/powerpc/kvm/book3s_hv.c
-> +++ b/arch/powerpc/kvm/book3s_hv.c
-> @@ -6111,12 +6111,12 @@ static int kvmppc_irq_bypass_add_producer_hv(struct irq_bypass_consumer *cons,
->  	struct kvm_kernel_irqfd *irqfd =
->  		container_of(cons, struct kvm_kernel_irqfd, consumer);
->  
-> -	irqfd->producer = prod;
-> -
->  	ret = kvmppc_set_passthru_irq(irqfd->kvm, prod->irq, irqfd->gsi);
->  	if (ret)
->  		pr_info("kvmppc_set_passthru_irq (irq %d, gsi %d) fails: %d\n",
->  			prod->irq, irqfd->gsi, ret);
-> +	else
-> +		irqfd->producer = prod;
+> There is kmod.h in here too but it's unnecessary, no module lazy loading
+> in this code.
 
-cons->add_producer is invoked by __connect() in virt/lib/irqbypass.c,
-which itself is called from either irq_bypass_register_consumer() or
-irq_bypass_register_producer(). __connect() only records the pairing —
-setting cons->producer and prod->consumer — if add_producer returns 0.
+You're right. I'll remove the kmod.h include from
+kernel/cgroup/cgroup-v1.c. I went through all the files again and it
+seems this was the only place I missed.
 
-  static int __connect(struct irq_bypass_producer *prod,
-  		     struct irq_bypass_consumer *cons)
-  {
-  	[...]
-  
-  	if (!ret) {
-  		prod->consumer = cons;
-  		cons->producer = prod;
-  	}
-
-On failure, no pairing is recorded, so __disconnect() is never called,
-and del_producer is never invoked to clear irqfd->producer. The old
-unconditional assignment indeed left a dangling pointer on any
-kvmppc_set_passthru_irq() failure.
-
-Reviewed-by: Amit Machhiwal <amachhiw@linux.ibm.com>
-
-~Amit
-
->  
->  	return ret;
->  }
-> -- 
-> 2.45.0
+-- 
+Thanks,
+Petr
 
