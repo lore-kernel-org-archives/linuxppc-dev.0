@@ -1,53 +1,53 @@
-Return-Path: <linuxppc-dev+bounces-23877-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23878-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 926B4C43458
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2026 02:04:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 34B25C44503
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2026 02:13:22 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gwdYZ2L0zz3cZh;
-	Thu, 09 Jul 2026 12:04:02 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=113.46.200.226
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783562642;
-	cv=none; b=GCG4kKw0AYib/lork74Oc7GV0ZzlSLCpih58Uz+vxIZNcxTyvDwcSSzEdftNrzcGFxeXwLubQC9i6PNfhBZ3SvEmNJZ2K2b+WO0QqK5fCX0u0wm7hUeMVtjEsTJo+wNVwOHBkdgeIozHZyha04HEy3OzdMbKIgXtVgECntaRJbaFFdYTRTQhSso3W6l0QI8WoByHuAXDULCA27g3R7pYlHfV3Zkh6i1vGhdFxpOaEw4OdL8LYA25xi4LWqmzWtGcDdAUv7U81Legfx7hYZ6qV7QVMJtztSpjkfR2qei6YPSS0oF1WK9nSM9ZKVZJGtFbT79VGdC3xdboizNOFf1xEQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gwdmJ5z4yz3cF1;
+	Thu, 09 Jul 2026 12:13:20 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=113.46.200.225
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783563200;
+	cv=none; b=CLpzpzANb4UJEpl847KKnul+Dr0DWZCiPaWdeFwYnYzgiki0Idw48407pecb+anVG/WRBdhfey/XkVBfLL8CaiPgYDcXhBA7ECxnhIBNds2HAYxFrvoV+1ebOvNKfNBwN+tjq84znQto3JnrUi8cPRagm9uMl9SJj+/k9JvGjj86E5QpCT2ZZ6XEFZGSZCsUu7TtSzR3O5EcOs+mDYGm8GFBcUOa1CaTXgwANoQMPBjvjMsj6if2kAtt+BzcwBEWt1HLgfCqv/cGYAiVlitO/gCDo/b714QT6e/zogoYkw7IDEBb4HPUplVOPUxdmA+/PY9BFm3eKdXpzXL71J+cnw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1783562642; c=relaxed/relaxed;
-	bh=SbMumxZtxbvkP/ieepXLg1JhrafzB20Wq2MZPkH/Sw0=;
+	t=1783563200; c=relaxed/relaxed;
+	bh=EIzhkxswirYpNGm9CWwkdDS2HF3tntCDkdxaAlmwFV4=;
 	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
-	 In-Reply-To:Content-Type; b=A3ul9MkhZw5d63V4tKBd07Uz51AE2ZVJgl07yUo/387p/+ipSydlucs2lEMs0WakEvEoE6Ciey+uqs8MOw3Y//BJbQR1FJuty8dDJmzyWjBHG+qWQirohnh7DM3BoZ3j3L6M94YXB9f8dnwrL9lFp2TnUT9F6Ktdsg+MEvIo6GrsETkwvqSSOkXdg1Pf4wgAtdqzUXbO8ia8o+w6hdRZ0geoCGJ+SvHcez/FXoFHiaTQI+7NvM53IOdNzB8jppSK9QeJlgYjpo2vInIXYMqDQvGqi6fSyZwpKByh43rs7kzA7Xllym5jV1qJkiOawoabsfMVR+7zl7dX4HzqugUEdg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=AWDuAsAD; dkim-atps=neutral; spf=pass (client-ip=113.46.200.226; helo=canpmsgout11.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
+	 In-Reply-To:Content-Type; b=KW3eJzW4bCJpkKWVf3c+NXu4hYVVS0767xWBpB9NnX6D+/uwVbiKXoTCujYk1gZk3buYEecuCMjYZuQEAy6kFjqd6OV0ZqestkS0l+6RkrEqtFSgBlOVuaOr3MzsJpNWvSSmcgLh0NtgvBsRwPxY9Y7UBAPnVtqXtZbSXdo7kfK3+CV8UuKXI5CXPeLNPXs4RULX/Ax7O/sVB9Z+ajaUUy71URZ3FZmQ6Nip/njvdarKHjyPf+gjzU/u9tDdV/HOZ9C1wwFrR/as63+eOuBIL/Pn1Ys3QkScm7+8pe5aShRTgrV0FCQR6Ts0/shPa7souR8nRPmchXfK+/pskww37Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=2rmhw3tA; dkim-atps=neutral; spf=pass (client-ip=113.46.200.225; helo=canpmsgout10.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=AWDuAsAD;
+	dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=2rmhw3tA;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=113.46.200.226; helo=canpmsgout11.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org)
-Received: from canpmsgout11.his.huawei.com (canpmsgout11.his.huawei.com [113.46.200.226])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=113.46.200.225; helo=canpmsgout10.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org)
+Received: from canpmsgout10.his.huawei.com (canpmsgout10.his.huawei.com [113.46.200.225])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gwdYW60Bxz3cZg
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 09 Jul 2026 12:03:57 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gwdmH5Lm0z3cDt
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 09 Jul 2026 12:13:19 +1000 (AEST)
 dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
 	c=relaxed/relaxed; q=dns/txt;
 	h=From;
-	bh=SbMumxZtxbvkP/ieepXLg1JhrafzB20Wq2MZPkH/Sw0=;
-	b=AWDuAsADSwEvEL71EYfZ0NigOV6Nm/EE0o+eCaP1xQFlxhq8DY4cyFSYwdUDcA872iUYRmCcL
-	fgkqFmw2f6REMuKThf5T1j9G/cENjZayXtYg+Tp2Kdo8RhfXnSpSgOVUD3wzxl53MN4FlPjvW4S
-	5jTBmgoFDxvMSl13ULhIb7E=
+	bh=EIzhkxswirYpNGm9CWwkdDS2HF3tntCDkdxaAlmwFV4=;
+	b=2rmhw3tAjKXtz09O7hvY7cAlY/1Yd/KOqZ+ZN+0RclN3O1JQ97bO9iM01OI1tNyjUBfVBZ+JE
+	tsopHd70NpH1/LAqiYYENqjY7FRDJ+e6LjhHTLPLPPp1WxyG71HEpSeN/TNuJ3k9DIYW/ZQQXNg
+	+wXo3TuMW926WHIty2rH81A=
 Received: from mail.maildlp.com (unknown [172.19.163.15])
-	by canpmsgout11.his.huawei.com (SkyGuard) with ESMTPS id 4gwdLg6g1HzKmWh;
-	Thu,  9 Jul 2026 09:54:35 +0800 (CST)
+	by canpmsgout10.his.huawei.com (SkyGuard) with ESMTPS id 4gwdYY6NQGz1K97H;
+	Thu,  9 Jul 2026 10:04:01 +0800 (CST)
 Received: from dggpemf500011.china.huawei.com (unknown [7.185.36.131])
-	by mail.maildlp.com (Postfix) with ESMTPS id D94DC40578;
-	Thu,  9 Jul 2026 10:03:52 +0800 (CST)
+	by mail.maildlp.com (Postfix) with ESMTPS id 1EDDC40578;
+	Thu,  9 Jul 2026 10:13:15 +0800 (CST)
 Received: from [10.67.109.254] (10.67.109.254) by
  dggpemf500011.china.huawei.com (7.185.36.131) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1544.11; Thu, 9 Jul 2026 10:03:50 +0800
-Message-ID: <cb27984f-bb8e-4deb-90f2-c3c9965b3017@huawei.com>
-Date: Thu, 9 Jul 2026 10:03:49 +0800
+ 15.2.1544.11; Thu, 9 Jul 2026 10:13:12 +0800
+Message-ID: <289cf9a8-aa46-4dac-b370-07a35c6c7c7e@huawei.com>
+Date: Thu, 9 Jul 2026 10:13:11 +0800
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -62,12 +62,12 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [patch 16/18] x86/entry: Get rid of the sys_ni_syscall()
- indirection
+Subject: Re: [patch 02/18] randomize_kstack: Provide
+ add_random_kstack_offset_irqsoff()
 To: Thomas Gleixner <tglx@kernel.org>, LKML <linux-kernel@vger.kernel.org>
-CC: Peter Zijlstra <peterz@infradead.org>, Michael Ellerman
-	<mpe@ellerman.id.au>, Shrikanth Hegde <sshegde@linux.ibm.com>,
-	<linuxppc-dev@lists.ozlabs.org>, Kees Cook <kees@kernel.org>, Huacai Chen
+CC: Peter Zijlstra <peterz@infradead.org>, Kees Cook <kees@kernel.org>,
+	Michael Ellerman <mpe@ellerman.id.au>, Shrikanth Hegde
+	<sshegde@linux.ibm.com>, <linuxppc-dev@lists.ozlabs.org>, Huacai Chen
 	<chenhuacai@kernel.org>, <loongarch@lists.linux.dev>, Paul Walmsley
 	<pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
 	<linux-riscv@lists.infradead.org>, Sven Schnelle <svens@linux.ibm.com>,
@@ -93,9 +93,9 @@ CC: Peter Zijlstra <peterz@infradead.org>, Michael Ellerman
 	<msuchanek@suse.de>, Jonathan Corbet <corbet@lwn.net>,
 	<linux-doc@vger.kernel.org>
 References: <20260707181957.433213175@kernel.org>
- <20260707190254.493733289@kernel.org>
+ <20260707190253.768842729@kernel.org>
 From: Jinjie Ruan <ruanjinjie@huawei.com>
-In-Reply-To: <20260707190254.493733289@kernel.org>
+In-Reply-To: <20260707190253.768842729@kernel.org>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
 X-Originating-IP: [10.67.109.254]
@@ -104,74 +104,52 @@ X-ClientProxiedBy: kwepems100001.china.huawei.com (7.221.188.238) To
 
 
 
-On 7/8/2026 3:07 AM, Thomas Gleixner wrote:
-> Invoking sys_ni_syscall() from a code path, which already knows that the
-> syscall number is invalid just to assign -ENOSYS to regs->ax is a pointless
-> exercise. It's even redundant as the low level entry code already has set
-> regs->ax to -ENOSYS on entry.
-
-Makes sense, the all reltaed entry has already initialized
-regs->ax to -ENOSYS.
-
-This makes the code very concise.
-
-LGTM
-Reviewed-by: Jinjie Ruan <ruanjinjie@huawei.com>
-
+On 7/8/2026 3:06 AM, Thomas Gleixner wrote:
+> add_random_kstack_offset() uses get/put_cpu_var() which is pointless
+> overhead when it is invoked from low level entry code with interrupts
+> disabled.
 > 
-> Remove the extra conditionals and the function calls.
+> Provide a irqsoff() variant, which avoids that.
 > 
 > Signed-off-by: Thomas Gleixner <tglx@kernel.org>
+> Cc: Kees Cook <kees@kernel.org>
 > ---
->  arch/x86/entry/syscall_32.c |    2 --
->  arch/x86/entry/syscall_64.c |   10 +++-------
->  2 files changed, 3 insertions(+), 9 deletions(-)
+>  include/linux/randomize_kstack.h |   19 +++++++++++++++++++
+>  1 file changed, 19 insertions(+)
 > 
-> --- a/arch/x86/entry/syscall_32.c
-> +++ b/arch/x86/entry/syscall_32.c
-> @@ -81,8 +81,6 @@ static __always_inline void do_syscall_3
->  	if (likely(unr < IA32_NR_syscalls)) {
->  		unr = array_index_nospec(unr, IA32_NR_syscalls);
->  		regs->ax = ia32_sys_call(regs, unr);
-> -	} else if (nr != -1) {
-> -		regs->ax = __ia32_sys_ni_syscall(regs);
->  	}
->  }
+> --- a/include/linux/randomize_kstack.h
+> +++ b/include/linux/randomize_kstack.h
+> @@ -77,8 +77,27 @@ static __always_inline u32 get_kstack_of
+>  	}								\
+>  } while (0)
 >  
-> --- a/arch/x86/entry/syscall_64.c
-> +++ b/arch/x86/entry/syscall_64.c
-> @@ -68,7 +68,7 @@ static __always_inline bool do_syscall_x
->  	return false;
->  }
+> +/**
+> + * add_random_kstack_offset_irqsoff - Increase stack utilization by a random offset.
+> + *
+> + * This should be used in the syscall entry path after user registers have been
+> + * stored to the stack. Interrupts must be still disabled.
+> + */
+> +#define add_random_kstack_offset_irqsoff()					\
+> +do {										\
+> +	lockdep_assert_irqs_disabled();						\
+> +	if (static_branch_maybe(CONFIG_RANDOMIZE_KSTACK_OFFSET_DEFAULT,		\
+> +				&randomize_kstack_offset)) {			\
+> +		u32 offset = prandom_u32_state(raw_cpu_ptr(&kstack_rnd_state));	\
+> +		u8 *ptr = __kstack_alloca(KSTACK_OFFSET_MAX(offset));		\
+> +		/* Keep allocation even after "ptr" loses scope. */		\
+> +		asm volatile("" :: "r"(ptr) : "memory");			\
+> +	}									\
+> +} while (0)
+
+Or can we avoid these repetitions and reuse the same code?
+
+> +
+>  #else /* CONFIG_RANDOMIZE_KSTACK_OFFSET */
+>  #define add_random_kstack_offset()		do { } while (0)
+> +#define add_random_kstack_offset_irqsoff()	do { } while (0)
+>  #endif /* CONFIG_RANDOMIZE_KSTACK_OFFSET */
 >  
-> -static __always_inline bool do_syscall_x32(struct pt_regs *regs, int nr)
-> +static __always_inline void do_syscall_x32(struct pt_regs *regs, int nr)
->  {
->  	/*
->  	 * Adjust the starting offset of the table, and convert numbers
-> @@ -80,9 +80,7 @@ static __always_inline bool do_syscall_x
->  	if (IS_ENABLED(CONFIG_X86_X32_ABI) && likely(xnr < X32_NR_syscalls)) {
->  		xnr = array_index_nospec(xnr, X32_NR_syscalls);
->  		regs->ax = x32_sys_call(regs, xnr);
-> -		return true;
->  	}
-> -	return false;
->  }
->  
->  /* Returns true to return using SYSRET, or false to use IRET */
-> @@ -92,10 +90,8 @@ static __always_inline bool do_syscall_x
->  
->  	instrumentation_begin();
->  
-> -	if (!do_syscall_x64(regs, nr) && !do_syscall_x32(regs, nr) && nr != -1) {
-> -		/* Invalid system call, but still a system call. */
-> -		regs->ax = __x64_sys_ni_syscall(regs);
-> -	}
-> +	if (!do_syscall_x64(regs, nr))
-> +		do_syscall_x32(regs, nr);
->  
->  	instrumentation_end();
->  	syscall_exit_to_user_mode(regs);
+>  #endif
 > 
 
 
