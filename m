@@ -1,94 +1,53 @@
-Return-Path: <linuxppc-dev+bounces-23912-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23913-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 06F8CC44501
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2026 07:43:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DB619C43458
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2026 07:59:38 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gwn5M15ybz3c9q;
-	Thu, 09 Jul 2026 17:43:35 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::32f"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783583015;
-	cv=none; b=WAtbo6pqFxF+Jyj3cVlhxyH4kMxrgO62azHeMwE8ckuXDyc5hHEmvWv5rOYN7nKpk9nJTg6Blx+EoWirnS74vuh3o/93djOiEcRx/nKmGPi+1FuiG6MJXJHP7oMRDjDVy7O5u7T+iAcXLeXBBcPhmrhzay1Qzs/oErDJCtP+yIJkHb1lGE/sFvOZjC64bYSzbNRLFidPOwn2KlKzAn5ZFowBLfqG2TTrD5a5QHvC/YIBcxL0XTQDOhjdzHm6dWcSBX4tkpE0+v6gzBVTg+z/yXUeHpxQv+4AzoqTMJVM5fg6eakdIuxTikjuZELSRPOv0k/8syb7OnVCF4KI7khRqA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gwnRs0Qdqz3c9k;
+	Thu, 09 Jul 2026 17:59:37 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=113.46.200.217
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783583976;
+	cv=none; b=b6+x4ltSd3Ck9oFL0Mq9G/PM8THMZFB/znxF2GhptcqfAPDRqQpS9NgAFIh4w9W4sX73o/dq5MBHZgcU5f3K7ded/K+Auhpq/jGks72ZTDwqkdmZZgu9HTZdVRcNm16ZATZ0fE4Uos8kOknnDG2kHf1R5H/BIB445IMrDtqI0W8/OEGT7iXyKoD0g2eUkdNV8dYsQoB2+jIWJZ+8tny5RDa2ePoaix7avJkwgbgjQPSdXUNFHFws70ynLC4ZRfh5TvoSwahod83EAAIaIxAZKoEELCtwRqUv6dkmpUczbG2qvKxJUm+8jf5ZhNP0VunvMMlBJ7m3ijz/e+cSyKcnmA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1783583015; c=relaxed/relaxed;
-	bh=N7eUSdR0DyIiI153j39Qwy65OXz9wuC4shQvA/Svox8=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=SfKB3gP1V014pNBuJFVrMhFGVOI27gNJBxa/GkTO6a6pJT1mtr+UnCl3hcVp1mrPTDxz340O9QQtMJqsO8KhKnwE5aE4uG31nv4JwmRs3x3bKT/kVPzJfobJ1SqSCD6X9SbErWnB2U0KGH50oraemr5XIh1sMWAem3M2gGNEum9jZq6lawlDXY6O1mWc7PV1frAc7AKcweQ13Ohv0E/pCYg0A26YRxMRn6IKgquTGdod8IPI2DQHvNeFDToi5tfQDzOvIv9udVNwCtwLsNs5WTaUOcoeEM5FxX5OF2BQq67NnITGDjYRnFwmwolrBwXev31Pd9TAH8bTSK2P21V+JA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=VmcTPxFq; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::32f; helo=mail-wm1-x32f.google.com; envelope-from=salman.farooq3310@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1783583976; c=relaxed/relaxed;
+	bh=amF18KHfc8NodmLlIFl9+tYxitLhQeTXu6ioMRTAIhg=;
+	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
+	 In-Reply-To:Content-Type; b=X98ie7FCjhZaAUZ2A6lxcnkDbON0RYBUDh+/mwN/w6++sAJ5lcW7VJ3T7BA3uceD3Sl8T9WS1ndljvPm4Fah30HIq3i6MiN1544VqDWdGrTiESB8sa8vmaKpxY4tP0T4a8xFa+v8iwYM2D3/ZTmrBJBJzfIZGNGp7X4z4ONSOKndJPSAiID216xPOwVCNTP5t/glhBS/4dEuHL7nh8Wfq04d15FCJa+2HP6WEs45yndqMjn+RGHEn3t77dy+sj8yNz9648+UZWQN9NMmPdCKu/qsTcUo6SZMvKdH7yBY3zZsf3yTQiihHy7zKuz4GWHwpTy8Six6OlYSWrIG3s01Bg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=DwmhEa4J; dkim-atps=neutral; spf=pass (client-ip=113.46.200.217; helo=canpmsgout02.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=VmcTPxFq;
+	dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=DwmhEa4J;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::32f; helo=mail-wm1-x32f.google.com; envelope-from=salman.farooq3310@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-wm1-x32f.google.com (mail-wm1-x32f.google.com [IPv6:2a00:1450:4864:20::32f])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=113.46.200.217; helo=canpmsgout02.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org)
+Received: from canpmsgout02.his.huawei.com (canpmsgout02.his.huawei.com [113.46.200.217])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gwn5K5nXQz3c9k
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 09 Jul 2026 17:43:33 +1000 (AEST)
-Received: by mail-wm1-x32f.google.com with SMTP id 5b1f17b1804b1-493d1e8aa46so11737415e9.0
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 09 Jul 2026 00:43:33 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1783583010; x=1784187810; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=N7eUSdR0DyIiI153j39Qwy65OXz9wuC4shQvA/Svox8=;
-        b=VmcTPxFqQdLEv6jhCwemSUQxw/Sp8miCCGIQMfuDpiuuRjzJxwFQ0ybqERUyFHrr3w
-         jl+mpNxU6JYNpKnTEtlyYJhKH1vf3XB2d0jKgFlHEPUMjsvRPk1hJNiScRSN4iOj2XgQ
-         9Qlqc/bJUg92J5JM+KZOzJgb0dqIbZJlmtN/QldZxJwcGjnELEzy7R7fHyc8U0gOneY8
-         GcZO23mrVZBgW1tdKgCmr5NDYF8q2g5qTwhvwHyAxTOTQSCHnAwOYX/f/akUELuE9WuI
-         EgqzXbdkrrFbuGeEsE0uYI0ZvqoziRA2oGh09eNj82OBPqNt9wq8xritoiwc0R2CrRq/
-         hnkA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1783583010; x=1784187810;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=N7eUSdR0DyIiI153j39Qwy65OXz9wuC4shQvA/Svox8=;
-        b=QC2Jyb0iLjDhDHeBFuIfpWkVjeepCV2kNBdNwderCvIT07l3vlimWL5aP7wP10BdxE
-         QbL1KSOoh+8VljN9ASFWwvplW5dUBkSlSBK33073EO4P8X16qQ9UKPHpjqLTeuL/BwYT
-         8VXBED8CaLFqK3BrSdLj2HfC4nIS8vcQpLgoayKNwfLRf1UPRXQTuY+FxJvlbqslwtVv
-         8FjuCvA5vrTcVOyQTDVCTYt5tHm4DbXrCgUpp33rPJwb6/6qRvnP/TzH0h2k0N0WNpVY
-         qunXEEg25HJm7aQZdzXMdYYh1MDfwsjQwth4mr0pVYx4U3p8JUg0xkEMIMGSnZ8e9Ve3
-         vAlA==
-X-Forwarded-Encrypted: i=1; AHgh+RrY+OjeHTpaitOzIKk07a+POZY9H2qiBs4BR44IhTabuh14q7S1Oy22F45RYUWF1j+VghaWdd53b5LG0Ko=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YxNwiDG91h0jioguxaznaz/69sFQaHWiRFHat9DD29hjADkAo8k
-	HMClCxk/ITXXpXKhIaHDPHoJewiTkPEcmrVn4xVRZMFNH/33Q2qlouZd
-X-Gm-Gg: AfdE7cmlABlF8w4L1qIWTFJ/c081pMfuPDRZthRJabr/G69DxUl9XUJgMkbuHh2yh0a
-	9ocNFMlJ1E3/auyC58pu0z29N3bh6bTSrc3xyB/iHMfGlWfbJOu/QtVuPlHiqg81CpuC7MQml5I
-	hEcxyuz/l6Oi/lZbQRTNjTVHtGckozwp3Db+QD4sjonlqaeNUK/bFGXEJiJ9idK2CVEzBuKArIZ
-	tyGYys/Nl4vTsV3owgMcgbO2Rcw23JoZiYRVOLefkQDduo+Q8TXEt0hc3Ru45ecUa4L9cG1SMfp
-	0W6DQjEcxyrAPnMMkfEbL5TR/8sJNHdCILO3ji+3qeqMwV2X/y/7qCpw3ILr7Wsw3fElOWA0WtP
-	w+RXCZatc6j3YhyiB3n0GWjcOt1AlykVbR+Ggr+DnRj1saHLUSkUZvA+cCKupN6uwlgc+HcXNvw
-	i62IpSQzh49FwkK0UUMIlAmII1q2W3N8826A1pftScQ9YzpSHv1HabQBFlu5LWNDcXCW3+AFex5
-	kbwxxCM2B4zEx8OJ3bEvNGDm7rZ5i6IgsleRQJn+CBGOyLKg1Y5uc6FyyanehDG4W3iwXq+uojh
-	TjBFukBlvoFj4/lG1kxdi4OR8MBU
-X-Received: by 2002:a05:600c:83c6:b0:493:c42e:5be0 with SMTP id 5b1f17b1804b1-493e6853dbfmr61124025e9.0.1783583009667;
-        Thu, 09 Jul 2026 00:43:29 -0700 (PDT)
-Received: from z16 ([2400:adc5:134:ba00:f774:65ea:79e2:617b])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-493eb6ff6casm50109985e9.5.2026.07.09.00.43.26
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 09 Jul 2026 00:43:29 -0700 (PDT)
-From: Salman Farooq <salman.farooq3310@gmail.com>
-To: amachhiw@linux.ibm.com
-Cc: chleroy@kernel.org,
-	kvm@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org,
-	maddy@linux.ibm.com,
-	mpe@ellerman.id.au,
-	npiggin@gmail.com,
-	salman.farooq3310@gmail.com
-Subject: Re: [PATCH] KVM: PPC: Book3S HV: Fix comment typos
-Date: Thu,  9 Jul 2026 12:43:23 +0500
-Message-ID: <20260709074323.77322-1-salman.farooq3310@gmail.com>
-X-Mailer: git-send-email 2.55.0
-In-Reply-To: <20260709125357.49cafeb6-1b-amachhiw@linux.ibm.com>
-References: <20260709125357.49cafeb6-1b-amachhiw@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gwnRp4Cl1z3c05
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 09 Jul 2026 17:59:32 +1000 (AEST)
+dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
+	c=relaxed/relaxed; q=dns/txt;
+	h=From;
+	bh=amF18KHfc8NodmLlIFl9+tYxitLhQeTXu6ioMRTAIhg=;
+	b=DwmhEa4JsZH1zyt75IBFUEkYJMYW+ez6g3GqbaAAdGlvMivx7XQMpEbeY+BIMBJbg82eFYJRv
+	A6w879pWEbnndkDFcInfs1Lz7SgEszZcAusSMg9XCYhmUtHeZlgmbQA/qxsMc6wVD2uKd7y78Pu
+	9gaY7eN4pgIJHOHwJ3k/0pg=
+Received: from mail.maildlp.com (unknown [172.19.163.0])
+	by canpmsgout02.his.huawei.com (SkyGuard) with ESMTPS id 4gwnF96JgNzcb0T;
+	Thu,  9 Jul 2026 15:50:21 +0800 (CST)
+Received: from dggpemf500011.china.huawei.com (unknown [7.185.36.131])
+	by mail.maildlp.com (Postfix) with ESMTPS id C128A40537;
+	Thu,  9 Jul 2026 15:59:26 +0800 (CST)
+Received: from [10.67.109.254] (10.67.109.254) by
+ dggpemf500011.china.huawei.com (7.185.36.131) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.1544.11; Thu, 9 Jul 2026 15:59:22 +0800
+Message-ID: <dfc05f53-6cef-4da2-83c1-6e765ec419fe@huawei.com>
+Date: Thu, 9 Jul 2026 15:59:21 +0800
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -102,18 +61,88 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] syscall_user_dispatch: Introduce
+ ARCH_SUPPORTS_SYSCALL_USER_DISPATCH
+To: =?UTF-8?Q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
+CC: <chenhuacai@kernel.org>, <kernel@xen0n.name>, <maddy@linux.ibm.com>,
+	<mpe@ellerman.id.au>, <npiggin@gmail.com>, <chleroy@kernel.org>,
+	<pjw@kernel.org>, <palmer@dabbelt.com>, <aou@eecs.berkeley.edu>,
+	<alex@ghiti.fr>, <hca@linux.ibm.com>, <gor@linux.ibm.com>,
+	<agordeev@linux.ibm.com>, <borntraeger@linux.ibm.com>, <svens@linux.ibm.com>,
+	<tglx@kernel.org>, <mingo@redhat.com>, <bp@alien8.de>,
+	<dave.hansen@linux.intel.com>, <hpa@zytor.com>, <nathan@kernel.org>,
+	<kees@kernel.org>, <xur@google.com>, <peterz@infradead.org>,
+	<gourry@gourry.net>, <lukas.bulwahn@redhat.com>, <ryan.roberts@arm.com>,
+	<yangtiezhu@loongson.cn>, <sshegde@linux.ibm.com>, <mchauras@linux.ibm.com>,
+	<austin.kim@lge.com>, <arnd@arndb.de>, <jchrist@linux.ibm.com>,
+	<x86@kernel.org>, <linux-kernel@vger.kernel.org>,
+	<loongarch@lists.linux.dev>, <linuxppc-dev@lists.ozlabs.org>,
+	<linux-riscv@lists.infradead.org>, <linux-s390@vger.kernel.org>
+References: <20260709072803.3843948-1-ruanjinjie@huawei.com>
+ <20260709093404-0b19988f-8d19-4fae-86d8-396aa747307d@linutronix.de>
+From: Jinjie Ruan <ruanjinjie@huawei.com>
+In-Reply-To: <20260709093404-0b19988f-8d19-4fae-86d8-396aa747307d@linutronix.de>
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 8bit
+X-Originating-IP: [10.67.109.254]
+X-ClientProxiedBy: kwepems500002.china.huawei.com (7.221.188.17) To
+ dggpemf500011.china.huawei.com (7.185.36.131)
 
-Amit Machhiwal <amachhiw@linux.ibm.com> writes:
 
-> Regardless, since this patch has no functional or code change, you may
-> want to add a 'trivial' suffix to the patch title, e.g.:
->
->   KVM: PPC: Book3S HV: trivial: Fix comment typos
 
-Thanks for pointing that out, and for the very useful references.
-I wasn't aware of this convention. I will follow it and read up on
-other conventions for future patches.
+On 7/9/2026 3:36 PM, Thomas Weißschuh wrote:
+> On Thu, Jul 09, 2026 at 03:28:03PM +0800, Jinjie Ruan wrote:
+>> Currently, only x86 genuinely implements and supports Syscall User
+>> Dispatch (SUD). Multiple architectures provide a stub
+>> arch_syscall_is_vdso_sigreturn() returning 'false' simply to satisfy
+>> GENERIC_ENTRY compilation, which creates a false impression of feature
+>> support.
+>>
+>> Introduce ARCH_SUPPORTS_SYSCALL_USER_DISPATCH to decouple this mechanism
+>> from GENERIC_ENTRY. Select it exclusively on x86 and remove the redundant
+>> stub functions from other architectures.
+> 
+> Nice, this confused me before.
+> 
+>> Link: https://lore.kernel.org/linux-arm-kernel/akZgV0Y4YAmB43_g@J2N7QTR9R3.cambridge.arm.com/
+>> Cc: Thomas Gleixner <tglx@kernel.org>
+>> Cc: Mark Rutland <mark.rutland@arm.com>
+>> Cc: Ada Couprie Diaz <ada.coupriediaz@arm.com>
+>> Cc: Thomas Weißschuh <thomas.weissschuh@linutronix.de>
+>> Suggested-by: Mark Rutland <mark.rutland@arm.com>
+>> Signed-off-by: Jinjie Ruan <ruanjinjie@huawei.com>
+>> ---
+>>  arch/Kconfig                         | 1 +
+>>  arch/loongarch/include/asm/syscall.h | 6 ------
+>>  arch/powerpc/include/asm/syscall.h   | 5 -----
+>>  arch/riscv/include/asm/syscall.h     | 5 -----
+>>  arch/s390/include/asm/syscall.h      | 5 -----
+>>  arch/x86/Kconfig                     | 1 +
+>>  6 files changed, 2 insertions(+), 21 deletions(-)
+>>
+>> diff --git a/arch/Kconfig b/arch/Kconfig
+>> index 0c01521c2f3f..393d0fb75eac 100644
+>> --- a/arch/Kconfig
+>> +++ b/arch/Kconfig
+>> @@ -116,6 +116,7 @@ config GENERIC_ENTRY
+>>  
+>>  config SYSCALL_USER_DISPATCH
+>>  	bool "Syscall User Dispatch"
+>> +	depends on ARCH_SUPPORTS_SYSCALL_USER_DISPATCH
+> 
+> ARCH_SUPPORTS_SYSCALL_USER_DISPATCH is not declared as a config option,
+> so the 'select' will not do anything. Needs this:
+> 
+> config ARCH_SUPPORTS_SYSCALL_USER_DISPATCH
+> 	bool
 
-Salman
+Yes, this is missing here.
+> 
+>>  	depends on GENERIC_ENTRY
+>>  	default y
+>>  	help
+> 
+> (...)
+
 
