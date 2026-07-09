@@ -1,78 +1,78 @@
-Return-Path: <linuxppc-dev+bounces-23966-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23967-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 33554C43458
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2026 19:36:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BE939C44506
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2026 19:43:40 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gx4wJ36p4z2xJT;
-	Fri, 10 Jul 2026 05:36:48 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::102f"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783625808;
-	cv=none; b=RX39Z2asganJeowdsryZPu9YjIGq/XvD9ds9Lro+0FB4EEAqnKKrlSBvdLmzX7EYlghFsUk6dPn4btPuLWVG31YgdhZE7QXRTTOuKkZ+teZ89RLpZ+/4VXNghT9HjWFOEMJFDjXrOsDajtk7dFwvjGobB9ekSXWLv59MLAD3JHAmWD8q9h8MRFZ72+ZHkLkm4+H0W5jt8kWKNg+ot0HMmgVH66JHKkz3edDcwNWO5a4THrB58JTJna+vovJoVsE+DRoBpVXqrOHm4jw5mZpJ8utX6dWi/EtRsfyQyXJLqTQtd3mzsxRMJSgF5YPcgBD/A6nMwStMkeKAA5ELr87Pyg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gx54C1kfYz2xJT;
+	Fri, 10 Jul 2026 05:43:39 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::534"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783626219;
+	cv=none; b=jd9miI0xQOVMHiDvZ2VthFZLEfRPfLw//EBgbzkgouRzuqqNYxBrIm7i0nVzCj1Zie5n7IFSCasUzFUXwnfLbq2R+yLVMMnkFA6pqs+PFkWOUoxTbEYHgebOK+FsiUBFu6C8RlPGh6wvP6vAE1bIRC3xEInLypUF6pU5rQqILfTpvQo6q8fo63JfNYuat43xEFjWXO9yKNZrhY4pu50HclgWmRiCqDl1cAqcHbKl+lRWuTgtx8/0G4sBhAEkypNnsImxu6UZk2qx/dEjLAoAqL5v94xWtC1O2k/LgVksmkoO39Wd8SDFypfuk2kvgr/k8Y5wTxEatP6Ogovs+cL/Cw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1783625808; c=relaxed/relaxed;
-	bh=9elVVpqR9aiL0byPjRlVnER0ZdQgMR4U6A5Xm6QA3+4=;
+	t=1783626219; c=relaxed/relaxed;
+	bh=vcViCEZV9Tm/crNMdaH3VAbncnTvlz/mpQaPDKjBGxQ=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=clS2JhSr2jkXr5ufkFfFtwEq0ct8nuUf1h0uc+RWk1gp4AESorcPfPIke7UQiyEU2AdDezN9k9a9svqZ1dgbpDxp9MCv2Afi6jl+etbaacQNXpYHKLGzg3UGG3aLv+aTC+FAD2yDiQNt2vkoCdTcvCIadKzgHuUP3gsKjGpDH7LW/Oa9kSGDKXSFVt7k1R1+oNhl4L/2xJ4/liUSsdG6EEWJ0qYXLYoup5V3mF5MNJXzaBqFXyxBXliuJGRfOOGi3mMXw9GqgfFqWKzDkLsb65z0un6Ibinqvp5zDxO/6E4Fdag+Fgo6+Q96tRjeocI2YIwTaJdCB1wPUoS3SDpycw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=YAHUHo6B; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::102f; helo=mail-pj1-x102f.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	 Content-Type:Content-Disposition:In-Reply-To; b=Xw9CgGiraQlAnQyQy3Vv2w3SIFXgHzuhEyPIlxISzOerCZu6OmKMCevkFEMokVzz4oTppsXvlz0oK1uA+Ouvy/BTSmDzuggy8ihSd1hE9QuhuTI3VS7jDQxgQYmw9i4Dz5Elnd/JG5TWYFN1cHo36bQSsbhq3VVsnNcfSxg8NZBanBHq5y1hfp0ftr7kywwOnIRZaxHUshJ3z4sGqzdoBuDo35Vx+ddXdICBPD88rmwqOwGsBZzEWUcI8YfeGL5pUcg86/WVKd2w0/0Ls3g+t9h7/aWplqHZST66zJGmE16Kx1fuvq9OvdvnwMMi623TvcgcHxizU6WE+KyfrlCY5Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=C2i4VcJB; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::534; helo=mail-pg1-x534.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=YAHUHo6B;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=C2i4VcJB;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::102f; helo=mail-pj1-x102f.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pj1-x102f.google.com (mail-pj1-x102f.google.com [IPv6:2607:f8b0:4864:20::102f])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::534; helo=mail-pg1-x534.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pg1-x534.google.com (mail-pg1-x534.google.com [IPv6:2607:f8b0:4864:20::534])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gx4wG4Yrmz2xBb
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Jul 2026 05:36:46 +1000 (AEST)
-Received: by mail-pj1-x102f.google.com with SMTP id 98e67ed59e1d1-382ef647e20so318608a91.1
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 09 Jul 2026 12:36:46 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gx54B3HrCz2xBb
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Jul 2026 05:43:37 +1000 (AEST)
+Received: by mail-pg1-x534.google.com with SMTP id 41be03b00d2f7-c96bfabc8d4so116911a12.3
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 09 Jul 2026 12:43:37 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1783625804; x=1784230604; darn=lists.ozlabs.org;
+        d=gmail.com; s=20251104; t=1783626215; x=1784231015; darn=lists.ozlabs.org;
         h=in-reply-to:content-disposition:content-type:mime-version
          :references:message-id:subject:cc:to:from:date:from:to:cc:subject
          :date:message-id:reply-to:content-type;
-        bh=9elVVpqR9aiL0byPjRlVnER0ZdQgMR4U6A5Xm6QA3+4=;
-        b=YAHUHo6BfqDc1s0QBNdu0MF8OpnKR7rpYYLoTONHslEkR4de4Q2Mnkn77STe4ihJeT
-         JoguS1DeBFyWCeZKwrYerBDTwZkbQsfYyENbDw7ROHs0h3iq5LqLTwVOBMdhdd/UJqSm
-         oBmKXXGdivXQ/riZICs1d6NfB+owUDN5X97IAGS7ekGcJMtz96w9eVmpBBwqQVrRKHvx
-         Bq+iyrrw9IRmD2CFwPEKEdjJidk6EUt3KJH1J/gR8GcDykm7wKlzbmAkfXiuMB731xCf
-         BbGJxTfnLKhs/LulLH/WSyuTxggECOdZeCxrLD4Gcx09+EbMv7tBzxeQ7aWUh5siYTUy
-         00xA==
+        bh=vcViCEZV9Tm/crNMdaH3VAbncnTvlz/mpQaPDKjBGxQ=;
+        b=C2i4VcJBnAgIETdUXkbLxG7e/+wuLDgXUE7VDz+ZVfQCsScV/wOSLjL1RdjC/sWgxu
+         GsBDULNNkN2CF9dI1CFEMtSnbym1L2i9p53HK+G6OdrdLNx1AzgqnIsS63t+Bz4RqkiQ
+         LZ5FD2w7443TdAygQb2OOycL6ivKlD4TkL2jJVN1Ruyi/txPoNiZ2kkOOl+oScR//HO7
+         yRP+NVBfoNlSX03IxVv8jmH4oVul4Yp5XiVFzhkmfceZuY7cMR7IQqjB4PGqjsvP8FRl
+         nhdKJj+Jzuxc2O2+HgDkRa0PMCoCUUJ5dDuTcVoTYCZcoHtoJ7Euuox8sg8cHc5olrdz
+         BUxg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1783625804; x=1784230604;
+        d=1e100.net; s=20251104; t=1783626215; x=1784231015;
         h=in-reply-to:content-disposition:content-type:mime-version
          :references:message-id:subject:cc:to:from:date:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=9elVVpqR9aiL0byPjRlVnER0ZdQgMR4U6A5Xm6QA3+4=;
-        b=BDggteRNoJ/1b+9K7928wRjXRxU4a7I2jG+DGXIHUXSSnT4rhX5vCJ6e+OsOBCWrKk
-         a+4cRL/F0B5gMEQOvGG3mV/a++Jm01UCvaculBGKEPjJEaXqvY7OSYsZcxPCb1ahKM1Z
-         XeNRw+tfi19wLXmxAW6xanh2CJKa4O2s53oNtCStg/ffT4lVDcr71N8OW9PjtOf/qHo5
-         fn5Sqw4Im/M8lv+WTz0g7lij8mRcDKSukyCawHCi0y44S1qyvQYoyP393ykrT7cZmWFQ
-         sMfuoKXyqh2VabobdCq82vYAappfnGMWhP2SpQpbtr+x5SWXFWDw70hqpndok8v1ZbUs
-         djeQ==
-X-Forwarded-Encrypted: i=1; AHgh+RronaNXpoTM58ZRXtNO18TL0Fj8dnro5VwQMoZOQqigkzVJXFlfJSpp0N0NfDsjepuQ+BBawhEkKvxIGlo=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YxCwmyWEUo+kx9P22aBFwS4KVFPOP2ep3Dj6OYjFXbEAcGsbmgo
-	iY7o+H4rXi2MgKl1wDkvq15SVf04ZATd9oDj6cZwYPHTQvghPC84on8j
-X-Gm-Gg: AfdE7cnF594XGiQM+IguhS0De3Z2i7VhdY/8AJIbcoB7fbZ5Yw/yybLhy0YSyuCOYOl
-	qJZ/rftDoo4pzm+lPG+k1Hgt41samm5xWD4QPG/lKCZTpXcCcS7E6n1NfKs6vuZLkqAeDVuZSHi
-	AozK0q8baNV9lLEElqAh0/c66Jx/VPlCcNzw6fSHeMm6FYdQtO5jpDAQjS2r4/nXapHcxT2a9ic
-	QFlcTNoElOtU2k1oYmoz+QmB2z5WokNmTwjiYI0qWQLILbci1b041kKvSISFrGnh12Q3t6sevpH
-	1bk8sJx9C5CWvlg4iFzGfAL2xchM8U4PP7Xd6HFM0HAKDuJwJwG25qCTZ+LsY6HtAUwtgFBYw5Q
-	slyJdQfqBY9Fxnvhbv9mSOgMuSDoL4RnC7qWDaGjclrZm8xV+kOgFHpOSLYcFq93DGIFFRwTLQq
-	q4CBHU4iWofRqCtp69p+aWRB/e6BjRTeJYupMB1zhmarvCrYb1Bp46CA0fIY7a
-X-Received: by 2002:a05:6a20:430b:b0:3bf:bfe6:ab6e with SMTP id adf61e73a8af0-3c0bcf49b4emr10854965637.6.1783625803970;
-        Thu, 09 Jul 2026 12:36:43 -0700 (PDT)
+        bh=vcViCEZV9Tm/crNMdaH3VAbncnTvlz/mpQaPDKjBGxQ=;
+        b=Ho3v7vq7Z7kGyw+0IvkFGFVTjO9zBQLyPaya+KXsKCes42f9rA2r4Ra4hGp9k1id4t
+         BLUCgYQbS9qn2E/jlzE4BExfi90qxiiGsWOuuNNlp5p0oghzTjYgTSwhDrrUG6Xsbouh
+         uJQ7LZgPGUc765U92iJ0gYunXyLE0tMz4klxqbrXg4tZww3rYX39Ki1IpOgsEqVb1olg
+         95QvRFUBKUzOWlASyg7BmVq+XtbgO9XSHLwfHbwBO61ONglaXIhV6BVjn8g5mk7eSZ/C
+         jaZ/0q+zOVG19/hQR+Blv5Av48jNMWqdmgivLlsBcYvbGpdhKoBEGGH+H9963Fsjy530
+         9Y8Q==
+X-Forwarded-Encrypted: i=1; AHgh+RpKhPc1VXCphLaAmikAzFXa3W7RLrMP3Qro1wd7Ej8NGeqfajWl2RiGzyN+521CkIlD6hmb4p/OTd7miTo=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YzSmzuwlwRyGe3W9efgNgNwSX82M449W8gU70N+HfvNixnyy2vY
+	PmOEgPqhih2Ev4F3uw/Bg0/bHOVeGZ1+xTUKu5qHX12cCqkq2bEJ1Nek
+X-Gm-Gg: AfdE7ckNfcUIiHX9E2mqtqUNbfNKfloF0XeeCiyZRg0E8TAcdNQlDLsTmy42OFcTkgo
+	BnUb7dyxsa+Huk8SvwQuIVArR3rOy7SnJ+xiIqjm0N6D0YYA63FRwiUVjWXuNd8rgdX6Ss07uJv
+	Ha7uQdC/FM8y422EmtWcsKT2VKsv2szOd3rvnFVMK5WKedmaZyCsIlv3cSPw64wjXtm8ySVGZ6v
+	9U/aHS+Yz0MPkcxjQyiAUqPwKFLUUNYWkVuSvgO9FcELtbv93flqYy0bKSNSFo/Q7BuJxccpqLz
+	3oq2B2pi5YR4bES116GfU9+LdwQZC8XE5oqZyT3j6fAoZQRcEhCQ9GKUFdHz81vozaxC5npVxTJ
+	yRUkxi5u0sOWjjOkOPjVGTNjA6kxPrcfrm1GkXIM3Ay/ya86oSTZPaXJZaVYBq7DKrnpVX7pltQ
+	TmlAPB74jLjJ2WPxplzWzfvMxvKRzk6KWk7cCztu3QlO8czCbCoOWlIhvHRPB9
+X-Received: by 2002:a05:6a21:6daa:b0:3c0:9c1a:8949 with SMTP id adf61e73a8af0-3c0bd287dd3mr11145411637.65.1783626215188;
+        Thu, 09 Jul 2026 12:43:35 -0700 (PDT)
 Received: from li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com ([106.51.160.236])
-        by smtp.gmail.com with ESMTPSA id a92af1059eb24-13b658a99afsm33007037c88.0.2026.07.09.12.36.26
+        by smtp.gmail.com with ESMTPSA id a92af1059eb24-13b6593c9a1sm39667491c88.2.2026.07.09.12.43.18
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 09 Jul 2026 12:36:42 -0700 (PDT)
-Date: Fri, 10 Jul 2026 01:06:23 +0530
+        Thu, 09 Jul 2026 12:43:34 -0700 (PDT)
+Date: Fri, 10 Jul 2026 01:13:15 +0530
 From: Mukesh Kumar Chaurasiya <mkchauras@gmail.com>
 To: Thomas Gleixner <tglx@kernel.org>
 Cc: LKML <linux-kernel@vger.kernel.org>, 
@@ -97,11 +97,10 @@ Cc: LKML <linux-kernel@vger.kernel.org>,
 	linux-snps-arc@lists.infradead.org, linux-hexagon@vger.kernel.org, linux-openrisc@vger.kernel.org, 
 	sparclinux@vger.kernel.org, linux-arch@vger.kernel.org, 
 	Michal =?utf-8?B?U3VjaMOhbmVr?= <msuchanek@suse.de>, Jonathan Corbet <corbet@lwn.net>, linux-doc@vger.kernel.org
-Subject: Re: [patch 14/18] entry: Make return type of syscall_trace_enter()
- bool
-Message-ID: <ak_4LT2HMSi88bA6@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
+Subject: Re: [patch 15/18] x86/entry: Make syscall functions static
+Message-ID: <ak_5y-p4DPztR-CH@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
 References: <20260707181957.433213175@kernel.org>
- <20260707190254.392010241@kernel.org>
+ <20260707190254.438361565@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -117,95 +116,79 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20260707190254.392010241@kernel.org>
+In-Reply-To: <20260707190254.438361565@kernel.org>
 
-On Tue, Jul 07, 2026 at 09:06:53PM +0200, Thomas Gleixner wrote:
-> This prepares for changing the return types of
-> syscall_enter_from_user_mode[_work]() to bool, which in turn separates the
-> decision of invoking the syscall from the syscall number, which might have
-> been changed in the call by ptrace, seccomp, tracing.
+On Tue, Jul 07, 2026 at 09:06:57PM +0200, Thomas Gleixner wrote:
+> They are only used in the respective source files. No point in exposing
+> them.
 > 
 > Signed-off-by: Thomas Gleixner <tglx@kernel.org>
 > ---
->  include/linux/entry-common.h |   28 +++++++++++++++-------------
->  1 file changed, 15 insertions(+), 13 deletions(-)
+>  arch/x86/entry/syscall_32.c    |    2 +-
+>  arch/x86/entry/syscall_64.c    |   10 ++++++----
+>  arch/x86/include/asm/syscall.h |    8 --------
+>  3 files changed, 7 insertions(+), 13 deletions(-)
 > 
-> --- a/include/linux/entry-common.h
-> +++ b/include/linux/entry-common.h
-> @@ -71,8 +71,8 @@ static inline void syscall_enter_audit(s
->  	}
->  }
+> --- a/arch/x86/entry/syscall_32.c
+> +++ b/arch/x86/entry/syscall_32.c
+> @@ -41,7 +41,7 @@ const sys_call_ptr_t sys_call_table[] =
+>  #endif
 >  
-> -static __always_inline long syscall_trace_enter(struct pt_regs *regs, unsigned long work,
-> -						long syscall)
-> +static __always_inline bool syscall_trace_enter(struct pt_regs *regs, unsigned long work,
-> +						long *syscall)
+>  #define __SYSCALL(nr, sym) case nr: return __ia32_##sym(regs);
+> -long ia32_sys_call(const struct pt_regs *regs, unsigned int nr)
+> +static noinline long ia32_sys_call(const struct pt_regs *regs, unsigned int nr)
 >  {
->  	/*
->  	 * Handle Syscall User Dispatch.  This must comes first, since
-> @@ -81,7 +81,7 @@ static __always_inline long syscall_trac
->  	 */
->  	if (work & SYSCALL_WORK_SYSCALL_USER_DISPATCH) {
->  		if (syscall_user_dispatch(regs))
-> -			return -1L;
-> +			return false;
->  	}
+>  	switch (nr) {
+>  	#include <asm/syscalls_32.h>
+> --- a/arch/x86/entry/syscall_64.c
+> +++ b/arch/x86/entry/syscall_64.c
+> @@ -32,7 +32,7 @@ const sys_call_ptr_t sys_call_table[] =
+>  #undef  __SYSCALL
 >  
->  	/*
-> @@ -90,32 +90,32 @@ static __always_inline long syscall_trac
->  	 * through hrtimer_interrupt().
->  	 */
->  	if (work & SYSCALL_WORK_SYSCALL_RSEQ_SLICE)
-> -		rseq_syscall_enter_work(syscall);
-> +		rseq_syscall_enter_work(*syscall);
->  
->  	/* Handle ptrace */
->  	if (work & (SYSCALL_WORK_SYSCALL_TRACE | SYSCALL_WORK_SYSCALL_EMU)) {
->  		if (!arch_ptrace_report_syscall_permit_entry(regs) ||
->  		    (work & SYSCALL_WORK_SYSCALL_EMU))
-> -			return -1L;
-> +			return false;
->  	}
->  
->  	/* Do seccomp after ptrace, to catch any tracer changes. */
->  	if (work & SYSCALL_WORK_SECCOMP) {
->  		if (!__seccomp_permit_syscall())
-> -			return -1L;
-> +			return false;
->  	}
->  
->  	/* Either of the above might have changed the syscall number */
-> -	syscall = syscall_get_nr(current, regs);
-> +	*syscall = syscall_get_nr(current, regs);
->  
->  	if (unlikely(work & SYSCALL_WORK_SYSCALL_TRACEPOINT)) {
-> -		if (!trace_syscall_enter(regs, &syscall))
-> -			return -1L;
-> +		if (!trace_syscall_enter(regs, syscall))
-> +			return false;
->  	}
->  
-> -	syscall_enter_audit(regs, syscall);
-> +	syscall_enter_audit(regs, *syscall);
->  
-> -	return syscall;
-> +	return true;
->  }
->  
->  /**
-> @@ -145,8 +145,10 @@ static __always_inline long syscall_ente
+>  #define __SYSCALL(nr, sym) case nr: return __x64_##sym(regs);
+> -long x64_sys_call(const struct pt_regs *regs, unsigned int nr)
+> +static noinline long x64_sys_call(const struct pt_regs *regs, unsigned int nr)
 >  {
->  	unsigned long work = READ_ONCE(current_thread_info()->syscall_work);
->  
-> -	if (work & SYSCALL_WORK_ENTER)
-> -		syscall = syscall_trace_enter(regs, work, syscall);
-> +	if (work & SYSCALL_WORK_ENTER) {
-> +		if (!syscall_trace_enter(regs, work, &syscall))
-> +			return -1L;
-> +	}
->  
->  	return syscall;
+>  	switch (nr) {
+>  	#include <asm/syscalls_64.h>
+> @@ -40,15 +40,17 @@ long x64_sys_call(const struct pt_regs *
+>  	}
 >  }
+>  
+> -#ifdef CONFIG_X86_X32_ABI
+> -long x32_sys_call(const struct pt_regs *regs, unsigned int nr)
+> +static noinline long x32_sys_call(const struct pt_regs *regs, unsigned int nr)
+>  {
+> +#ifdef CONFIG_X86_X32_ABI
+>  	switch (nr) {
+>  	#include <asm/syscalls_x32.h>
+>  	default: return __x64_sys_ni_syscall(regs);
+>  	}
+> -}
+> +#else
+> +	return -ENOSYS;
+>  #endif
+> +}
+>  
+>  static __always_inline bool do_syscall_x64(struct pt_regs *regs, int nr)
+>  {
+> --- a/arch/x86/include/asm/syscall.h
+> +++ b/arch/x86/include/asm/syscall.h
+> @@ -21,14 +21,6 @@ typedef long (*sys_call_ptr_t)(const str
+>  extern const sys_call_ptr_t sys_call_table[];
+>  
+>  /*
+> - * These may not exist, but still put the prototypes in so we
+> - * can use IS_ENABLED().
+> - */
+> -extern long ia32_sys_call(const struct pt_regs *, unsigned int nr);
+> -extern long x32_sys_call(const struct pt_regs *, unsigned int nr);
+> -extern long x64_sys_call(const struct pt_regs *, unsigned int nr);
+> -
+> -/*
+>   * Only the low 32 bits of orig_ax are meaningful, so we return int.
+>   * This importantly ignores the high bits on 64-bit, so comparisons
+>   * sign-extend the low 32 bits.
 > 
 Reviewed-by: Mukesh Kumar Chaurasiya (IBM) <mkchauras@gmail.com>
 
