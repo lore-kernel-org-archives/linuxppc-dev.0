@@ -1,70 +1,70 @@
-Return-Path: <linuxppc-dev+bounces-23973-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23974-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E55DFC43458
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2026 22:23:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2CD01C43458
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2026 22:23:47 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gx8cg2WsRz2xnp;
-	Fri, 10 Jul 2026 08:23:31 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gx8cx5MLYz2xd2;
+	Fri, 10 Jul 2026 08:23:45 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=192.198.163.17
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783635811;
-	cv=none; b=Hsb3unkSA7MCb0OLfOze+n0jEAOetFEh5EX6WX1NKPA1OuVWn+lo/6AfehnR0C94PPxjaolIeVlV/rq7foy9Iv2hiLTXv4c5GKcXtPnAPh1wrf4EfBYmCJDbG1uE8KX/fxM4iCcD8deXbadmv0lW4+O6HDr1S8p6fLcoPC+zofcSzwSn5L2yV0Hs0TUWaIzO+ywv8shy4lVqElrUTitXQjxgVZAZWDr+SThN3piupxzJTeDyLbsXtgCF2iPtOV+OTzu9U+1ZT9OQvPIq82dw4zcNIRJBtZC6kOkDyL7wm+q4fF5MaPx9quvLej/jwQGQ0rM/vmIIgb1V1isNn6z8pA==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783635825;
+	cv=none; b=QnCGQhVz13f1HsGnvOwZVcGcvD+U6NwarziDEFcf9oxQ/yIORtAWJa6soLVDC1oysA+xjVYuG5FjICpOoG7xVsvAqgCZY3UTlvhWebSfvP0L9LDt+cR3EzsY7ussUzEu9jRKwlE9/7YIcB3xI9HAm9+BD0wwCko7Xres0RRdjFnUG2R04V3vPIf85v5fVMa3U4dLfedh1HTKB4T+7QV0s3Jl4S8YfWcJCPXCzmTDkSVzdUAE4zUabnGSmI68dnRPCHhowFEud2dfrKbIJGdrx5p+mlMJspHP+fXRLhox2fWzDIZCmK+T61e+JVVmAr4yEkGqhGjbAdAkEfUvauWPqg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1783635811; c=relaxed/relaxed;
-	bh=DgoLeZ0/25+A0/8D/NxLiDPJvKV6h8IrJAxWnjH2sT4=;
+	t=1783635825; c=relaxed/relaxed;
+	bh=M3QGI9Cy3gOh0HYp5AMEyBquo0oaivvp3piF8xcXRiU=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=ooO1jaow2BGUQHnoOpYbhv85f099lvCYXPLRwBfuSjqe3lk/R5hvkApggapLIU0ZCFd9O+w9+GhZk5xe2z1RdTFOPAdzlhFqGwyV+oOmD4jw/BvU9nEYyVXS6TTU7U4LHhWmvWEY8zDjjO+I67DLxnbEavMASbnt7eRc8yedjfkO1gLP5YyulcO3ndjYNs4aECohvlOG/cmdH777r11ifN19qfTTCLtFloJU4aP0pytYVf1sYk4rofv8VU4g+EgqQ/ugAN7hzNXZwFDvHH6bg8hRkP6KW5/xVYE5fEgCn1A1bXljVEGwFlGWVc0vNNnYf4UP7EhZe9Rbqnl9gnQJXg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=gJiv51/f; dkim-atps=neutral; spf=pass (client-ip=192.198.163.17; helo=mgamail.intel.com; envelope-from=pawan.kumar.gupta@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
+	 Content-Type:Content-Disposition:In-Reply-To; b=O8dgk+qIVQDCJorHYtix08moj01x0UboWWz6S4zxI5DzYb7yX55sbgipcpPuC3MiWB3Cu8kwdZ2fNfERkeQ+nO8P4QOV9m/RkNDtxbj3XJQVi14fX6F9UNdwappJzeJjPwgYN0HaT/8r/h+MwSz2hp+J/hM/o1OUwcCPeC9E5fIV90XRm8Tj3XwW+dSGM1HgdTMew9SpH+xlE277ZEC4jwDZ/DDdu7GQlOGBEImuHOqcmsmwrGON1SQXVmwm83UifVjSURcHInnlKOqiZbHCYHSY8O3LGNAUUilHyxDhNFF5jZgTLCsh9pvabRLgIe0c2oIaOdzAYFqeZXXxdSpW1w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=O43DTodd; dkim-atps=neutral; spf=pass (client-ip=192.198.163.17; helo=mgamail.intel.com; envelope-from=pawan.kumar.gupta@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=gJiv51/f;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=O43DTodd;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.intel.com (client-ip=192.198.163.17; helo=mgamail.intel.com; envelope-from=pawan.kumar.gupta@linux.intel.com; receiver=lists.ozlabs.org)
 Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gx8cd5K78z2xmV
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Jul 2026 08:23:29 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gx8cw3r9wz2xKh
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Jul 2026 08:23:44 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1783635810; x=1815171810;
+  t=1783635825; x=1815171825;
   h=date:from:to:cc:subject:message-id:references:
    mime-version:in-reply-to;
-  bh=gxx6q3PaUXThy7077PBdEcj1YAhyEf5rMxD7v3MrfBU=;
-  b=gJiv51/fvROrzJOFJqsqQ3f+uV0aGlrgPQtMy/2xsm+2bhV4U40yFf7/
-   1fEobFgHvUCwfbJswwPdQxX6ARg6woDys8EnWFciOqAH3fJHrIKLfEe4q
-   uWiV4Gj0jrQFB9MTLKvtN/56gyIMI5ItgPRaU0k4Mzn1yLTgw26p7+luq
-   8HveFN9rvf5q+hldPatkSSI1Gt2v/Btfncv7s7VS/kLp+CnVximqi5aw8
-   XkIj6OUctqG+tbd7LVvqdLP58r98WzF5FWTmMWAhzKJ7ORhPUAp6Ba5df
-   Q/iXxtrcrWoprVpfO2IynDVGA5pHqJ4dh0EZnqEwShoxP564WNxC6KCSV
-   A==;
-X-CSE-ConnectionGUID: 0mIV3WHSSOCAtspG9oIlBw==
-X-CSE-MsgGUID: XYsL1ruNRXG8V7CJ32Jh6w==
-X-IronPort-AV: E=McAfee;i="6800,10657,11841"; a="84213679"
+  bh=o9QsQvV5bOfdZ787dz3GccH2FgWOjAQEWUsXGkVTDt0=;
+  b=O43DTodd3tWUXrfd1Mb3Ekjo1KpXP55Wr2upbS2+Bq3aF4rvdby7Bnm4
+   5hO2QTcjrReipcjE6oITBxFdUSrnuGtjqoiknrd6FrGTBsoIqQEdXg960
+   XRfT5UJ1haCHg75axOyH4C4wGxy+972az3lcILEJ4i6P2HsvGeWPV+Hb0
+   Hsi2/XYJtbmjg1uE3gDI2Jjon+ndXWIgiwn64+efdKSn7qiG6koNMZWQj
+   E4PGlAr6Y7pGRuzOXbBi3RgOxPbPDh/619fl+2IB7g65a/ZmfPFXKcrXL
+   fH3Xs/5DnW0WmfHCjM87ctVCHWcReY+j9qZt9sDi381P1bIKfSlcIKUCJ
+   Q==;
+X-CSE-ConnectionGUID: kMVOgcDjQ4+/vInvmJ4Okg==
+X-CSE-MsgGUID: eSadHqrqT3WuJDh8CVgP/A==
+X-IronPort-AV: E=McAfee;i="6800,10657,11841"; a="84213718"
 X-IronPort-AV: E=Sophos;i="6.25,154,1779174000"; 
-   d="scan'208";a="84213679"
+   d="scan'208";a="84213718"
 Received: from fmviesa009.fm.intel.com ([10.60.135.149])
-  by fmvoesa111.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 09 Jul 2026 15:23:26 -0700
-X-CSE-ConnectionGUID: quniZ9VdSxak3XEDt5pNeA==
-X-CSE-MsgGUID: 8t1vTq8uS3mfFzTFwhmBFA==
+  by fmvoesa111.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 09 Jul 2026 15:23:41 -0700
+X-CSE-ConnectionGUID: 8yAkQQi9TOGQ4irokUh1yQ==
+X-CSE-MsgGUID: R3xk19nmS4eqH6LTS/9lTg==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.25,154,1779174000"; 
-   d="scan'208";a="248335410"
+   d="scan'208";a="248335555"
 Received: from guptapa-desk.jf.intel.com (HELO desk) ([10.165.239.46])
-  by fmviesa009-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 09 Jul 2026 15:23:26 -0700
-Date: Thu, 9 Jul 2026 15:23:25 -0700
+  by fmviesa009-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 09 Jul 2026 15:23:41 -0700
+Date: Thu, 9 Jul 2026 15:23:41 -0700
 From: Pawan Gupta <pawan.kumar.gupta@linux.intel.com>
 To: stable@vger.kernel.org, 
 	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Sasha Levin <sashal@kernel.org>
 Cc: bpf@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
 	loongarch@lists.linux.dev, linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org, 
 	x86@kernel.org, Alexei Starovoitov <ast@kernel.org>, 
-	Daniel Borkmann <daniel@iogearbox.net>, Dave Hansen <dave.hansen@linux.intel.com>
-Subject: [PATCH 7.1.y 2/6] x86/bugs: Enable IBPB flush on BPF JIT allocation
-Message-ID: <20260709-cbpf-jit-spray-hardening-7-1-y-v1-2-5ac5a2d6797f@linux.intel.com>
+	Daniel Borkmann <daniel@iogearbox.net>
+Subject: [PATCH 7.1.y 3/6] bpf: Restrict JIT predictor flush to cBPF
+Message-ID: <20260709-cbpf-jit-spray-hardening-7-1-y-v1-3-5ac5a2d6797f@linux.intel.com>
 X-Mailer: b4 0.16-dev
 References: <20260709-cbpf-jit-spray-hardening-7-1-y-v1-0-5ac5a2d6797f@linux.intel.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
@@ -84,138 +84,237 @@ Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 In-Reply-To: <20260709-cbpf-jit-spray-hardening-7-1-y-v1-0-5ac5a2d6797f@linux.intel.com>
 
-commit a3af84b0fa00ead01fcd0e28b5d773ff25990a0d upstream.
+commit 0bb99f2cfaae6822d734d69722de30af823efdf3 upstream.
 
-Enable hardening against JIT spraying when Spectre-v2 mitigations are in
-use. Specifically, issue an IBPB flush on BPF JIT memory reuse. Skip
-enabling the IBPB flush if the BPF dispatcher is already using a retpoline
-sequence.
+Currently predictor flush on memory reuse is done for all BPF JIT
+allocations, but only cBPF programs can be loaded by an unprivileged user.
+eBPF is privileged by default, and flushing predictors for all CPUs on
+every eBPF reuse penalizes the common case for no security benefit.
 
-This hardening applies only when BPF-JIT is in use. Guard the enabling
-under CONFIG_BPF_JIT so that bugs.c still builds with CONFIG_BPF_JIT=n.
+eBPF allocations can be frequent on busy systems, only flush predictors
+for cBPF programs. Trampoline and dispatcher allocations also skip the
+flush as they are eBPF-only.
 
 Signed-off-by: Pawan Gupta <pawan.kumar.gupta@linux.intel.com>
 Acked-by: Daniel Borkmann <daniel@iogearbox.net>
-Acked-by: Dave Hansen <dave.hansen@linux.intel.com>
 Signed-off-by: Daniel Borkmann <daniel@iogearbox.net>
 ---
- arch/x86/include/asm/nospec-branch.h |  4 +++
- arch/x86/kernel/cpu/bugs.c           | 50 ++++++++++++++++++++++++++++++++----
- 2 files changed, 49 insertions(+), 5 deletions(-)
+ arch/arm64/net/bpf_jit_comp.c   |  4 ++--
+ arch/loongarch/net/bpf_jit.c    |  5 +++--
+ arch/powerpc/net/bpf_jit_comp.c |  4 ++--
+ arch/riscv/net/bpf_jit_comp64.c |  2 +-
+ arch/riscv/net/bpf_jit_core.c   |  3 ++-
+ arch/x86/net/bpf_jit_comp.c     |  5 +++--
+ include/linux/filter.h          |  5 +++--
+ kernel/bpf/core.c               | 13 ++++++++-----
+ kernel/bpf/dispatcher.c         |  2 +-
+ 9 files changed, 25 insertions(+), 18 deletions(-)
 
-diff --git a/arch/x86/include/asm/nospec-branch.h b/arch/x86/include/asm/nospec-branch.h
-index 4f4b5e8a1574..b68892e6d58c 100644
---- a/arch/x86/include/asm/nospec-branch.h
-+++ b/arch/x86/include/asm/nospec-branch.h
-@@ -388,6 +388,10 @@ extern void srso_alias_return_thunk(void);
- extern void entry_untrain_ret(void);
- extern void write_ibpb(void);
+diff --git a/arch/arm64/net/bpf_jit_comp.c b/arch/arm64/net/bpf_jit_comp.c
+index 0816c40fc7af..9491c987e50c 100644
+--- a/arch/arm64/net/bpf_jit_comp.c
++++ b/arch/arm64/net/bpf_jit_comp.c
+@@ -2094,7 +2094,7 @@ struct bpf_prog *bpf_int_jit_compile(struct bpf_verifier_env *env, struct bpf_pr
+ 	image_size = extable_offset + extable_size;
+ 	ro_header = bpf_jit_binary_pack_alloc(image_size, &ro_image_ptr,
+ 					      sizeof(u64), &header, &image_ptr,
+-					      jit_fill_hole);
++					      jit_fill_hole, was_classic);
+ 	if (!ro_header)
+ 		goto out_off;
  
-+#ifdef CONFIG_BPF_JIT
-+extern void bpf_arch_ibpb(void);
-+#endif
-+
- #ifdef CONFIG_X86_64
- extern void clear_bhb_loop(void);
- #endif
-diff --git a/arch/x86/kernel/cpu/bugs.c b/arch/x86/kernel/cpu/bugs.c
-index 83f51cab0b1e..d9af230c0512 100644
---- a/arch/x86/kernel/cpu/bugs.c
-+++ b/arch/x86/kernel/cpu/bugs.c
-@@ -16,6 +16,7 @@
- #include <linux/sched/smt.h>
- #include <linux/pgtable.h>
- #include <linux/bpf.h>
-+#include <linux/filter.h>
- #include <linux/kvm_types.h>
+@@ -2782,7 +2782,7 @@ int arch_bpf_trampoline_size(const struct btf_func_model *m, u32 flags,
  
- #include <asm/spec-ctrl.h>
-@@ -1651,8 +1652,21 @@ static inline const char *spectre_v2_module_string(void)
+ void *arch_alloc_bpf_trampoline(unsigned int size)
  {
- 	return spectre_v2_bad_module ? " - vulnerable module loaded" : "";
- }
-+
-+/*
-+ * The "retpoline sequence" is the "call;mov;ret" sequence that
-+ * replaces normal indirect branch instructions. Differentiate
-+ * *the* retpoline sequence from the LFENCE-prefixed indirect
-+ * branches that simply use the retpoline infrastructure.
-+ */
-+static inline bool retpoline_seq_enabled(void)
-+{
-+	return boot_cpu_has(X86_FEATURE_RETPOLINE) && !boot_cpu_has(X86_FEATURE_RETPOLINE_LFENCE);
-+}
-+
- #else
- static inline const char *spectre_v2_module_string(void) { return ""; }
-+static inline bool retpoline_seq_enabled(void) { return false; }
- #endif
- 
- #define SPECTRE_V2_LFENCE_MSG "WARNING: LFENCE mitigation is not recommended for this CPU, data leaks possible!\n"
-@@ -2095,8 +2109,7 @@ static void __init bhi_apply_mitigation(void)
- 		return;
- 
- 	/* Retpoline mitigates against BHI unless the CPU has RRSBA behavior */
--	if (boot_cpu_has(X86_FEATURE_RETPOLINE) &&
--	    !boot_cpu_has(X86_FEATURE_RETPOLINE_LFENCE)) {
-+	if (retpoline_seq_enabled()) {
- 		spec_ctrl_disable_kernel_rrsba();
- 		if (rrsba_disabled)
- 			return;
-@@ -2238,6 +2251,27 @@ static void __init spectre_v2_update_mitigation(void)
- 		pr_info("%s\n", spectre_v2_strings[spectre_v2_enabled]);
+-	return bpf_prog_pack_alloc(size, jit_fill_hole);
++	return bpf_prog_pack_alloc(size, jit_fill_hole, false);
  }
  
-+#ifdef CONFIG_BPF_JIT
-+static void __bpf_arch_ibpb(void *unused)
-+{
-+	write_ibpb();
-+}
-+
-+void bpf_arch_ibpb(void)
-+{
-+	on_each_cpu(__bpf_arch_ibpb, NULL, 1);
-+}
-+
-+static bool __init cpu_wants_ibpb_bpf(void)
-+{
-+	/* A genuine retpoline already neutralizes ring0 indirect predictions */
-+	if (retpoline_seq_enabled())
-+		return false;
-+
-+	return boot_cpu_has(X86_FEATURE_IBPB);
-+}
-+#endif
-+
- static void __init spectre_v2_apply_mitigation(void)
+ void arch_free_bpf_trampoline(void *image, unsigned int size)
+diff --git a/arch/loongarch/net/bpf_jit.c b/arch/loongarch/net/bpf_jit.c
+index 24913dc7f4e8..e14a8aa47fc8 100644
+--- a/arch/loongarch/net/bpf_jit.c
++++ b/arch/loongarch/net/bpf_jit.c
+@@ -1762,7 +1762,7 @@ static int invoke_bpf(struct jit_ctx *ctx, struct bpf_tramp_links *tl,
+ 
+ void *arch_alloc_bpf_trampoline(unsigned int size)
  {
- 	if (spectre_v2_enabled == SPECTRE_V2_EIBRS && unprivileged_ebpf_enabled())
-@@ -2314,6 +2348,14 @@ static void __init spectre_v2_apply_mitigation(void)
- 		setup_force_cpu_cap(X86_FEATURE_USE_IBRS_FW);
- 		pr_info("Enabling Restricted Speculation for firmware calls\n");
- 	}
-+
-+#ifdef CONFIG_BPF_JIT
-+	if (cpu_wants_ibpb_bpf()) {
-+		static_call_update(bpf_arch_pred_flush, bpf_arch_ibpb);
-+		static_branch_enable(&bpf_pred_flush_enabled);
-+		pr_info("Enabling IBPB for BPF\n");
-+	}
-+#endif
+-	return bpf_prog_pack_alloc(size, jit_fill_hole);
++	return bpf_prog_pack_alloc(size, jit_fill_hole, false);
  }
  
- static void update_stibp_msr(void * __unused)
-@@ -3490,9 +3532,7 @@ static const char *spectre_bhi_state(void)
- 		return "; BHI: BHI_DIS_S";
- 	else if (boot_cpu_has(X86_FEATURE_CLEAR_BHB_LOOP))
- 		return "; BHI: SW loop, KVM: SW loop";
--	else if (boot_cpu_has(X86_FEATURE_RETPOLINE) &&
--		 !boot_cpu_has(X86_FEATURE_RETPOLINE_LFENCE) &&
--		 rrsba_disabled)
-+	else if (retpoline_seq_enabled() && rrsba_disabled)
- 		return "; BHI: Retpoline";
- 	else if (boot_cpu_has(X86_FEATURE_CLEAR_BHB_VMEXIT))
- 		return "; BHI: Vulnerable, KVM: SW loop";
+ void arch_free_bpf_trampoline(void *image, unsigned int size)
+@@ -2228,7 +2228,8 @@ struct bpf_prog *bpf_int_jit_compile(struct bpf_verifier_env *env, struct bpf_pr
+ 	image_size = prog_size + extable_size;
+ 	/* Now we know the size of the structure to make */
+ 	ro_header = bpf_jit_binary_pack_alloc(image_size, &ro_image_ptr, sizeof(u32),
+-					      &header, &image_ptr, jit_fill_hole);
++					      &header, &image_ptr, jit_fill_hole,
++					      bpf_prog_was_classic(prog));
+ 	if (!ro_header)
+ 		goto out_offset;
+ 
+diff --git a/arch/powerpc/net/bpf_jit_comp.c b/arch/powerpc/net/bpf_jit_comp.c
+index 53ab97ad6074..73ff8a64bb7f 100644
+--- a/arch/powerpc/net/bpf_jit_comp.c
++++ b/arch/powerpc/net/bpf_jit_comp.c
+@@ -295,7 +295,7 @@ struct bpf_prog *bpf_int_jit_compile(struct bpf_verifier_env *env, struct bpf_pr
+ 	alloclen = proglen + FUNCTION_DESCR_SIZE + fixup_len + extable_len;
+ 
+ 	fhdr = bpf_jit_binary_pack_alloc(alloclen, &fimage, 4, &hdr, &image,
+-					      bpf_jit_fill_ill_insns);
++					 bpf_jit_fill_ill_insns, bpf_prog_was_classic(fp));
+ 	if (!fhdr)
+ 		goto out_err;
+ 
+@@ -583,7 +583,7 @@ bool bpf_jit_inlines_helper_call(s32 imm)
+ 
+ void *arch_alloc_bpf_trampoline(unsigned int size)
+ {
+-	return bpf_prog_pack_alloc(size, bpf_jit_fill_ill_insns);
++	return bpf_prog_pack_alloc(size, bpf_jit_fill_ill_insns, false);
+ }
+ 
+ void arch_free_bpf_trampoline(void *image, unsigned int size)
+diff --git a/arch/riscv/net/bpf_jit_comp64.c b/arch/riscv/net/bpf_jit_comp64.c
+index 2f1109dbf105..404a98a0fc90 100644
+--- a/arch/riscv/net/bpf_jit_comp64.c
++++ b/arch/riscv/net/bpf_jit_comp64.c
+@@ -1321,7 +1321,7 @@ int arch_bpf_trampoline_size(const struct btf_func_model *m, u32 flags,
+ 
+ void *arch_alloc_bpf_trampoline(unsigned int size)
+ {
+-	return bpf_prog_pack_alloc(size, bpf_fill_ill_insns);
++	return bpf_prog_pack_alloc(size, bpf_fill_ill_insns, false);
+ }
+ 
+ void arch_free_bpf_trampoline(void *image, unsigned int size)
+diff --git a/arch/riscv/net/bpf_jit_core.c b/arch/riscv/net/bpf_jit_core.c
+index 4365d07aaf54..ce3bd3762e08 100644
+--- a/arch/riscv/net/bpf_jit_core.c
++++ b/arch/riscv/net/bpf_jit_core.c
+@@ -109,7 +109,8 @@ struct bpf_prog *bpf_int_jit_compile(struct bpf_verifier_env *env, struct bpf_pr
+ 				bpf_jit_binary_pack_alloc(prog_size + extable_size,
+ 							  &jit_data->ro_image, sizeof(u32),
+ 							  &jit_data->header, &jit_data->image,
+-							  bpf_fill_ill_insns);
++							  bpf_fill_ill_insns,
++							  bpf_prog_was_classic(prog));
+ 			if (!jit_data->ro_header)
+ 				goto out_offset;
+ 
+diff --git a/arch/x86/net/bpf_jit_comp.c b/arch/x86/net/bpf_jit_comp.c
+index ea9e707e8abf..ef8b112fd7b6 100644
+--- a/arch/x86/net/bpf_jit_comp.c
++++ b/arch/x86/net/bpf_jit_comp.c
+@@ -3520,7 +3520,7 @@ static int __arch_prepare_bpf_trampoline(struct bpf_tramp_image *im, void *rw_im
+ 
+ void *arch_alloc_bpf_trampoline(unsigned int size)
+ {
+-	return bpf_prog_pack_alloc(size, jit_fill_hole);
++	return bpf_prog_pack_alloc(size, jit_fill_hole, false);
+ }
+ 
+ void arch_free_bpf_trampoline(void *image, unsigned int size)
+@@ -3831,7 +3831,8 @@ struct bpf_prog *bpf_int_jit_compile(struct bpf_verifier_env *env, struct bpf_pr
+ 			/* allocate module memory for x86 insns and extable */
+ 			header = bpf_jit_binary_pack_alloc(roundup(proglen, align) + extable_size,
+ 							   &image, align, &rw_header, &rw_image,
+-							   jit_fill_hole);
++							   jit_fill_hole,
++							   bpf_prog_was_classic(prog));
+ 			if (!header)
+ 				goto out_addrs;
+ 			prog->aux->extable = (void *) image + roundup(proglen, align);
+diff --git a/include/linux/filter.h b/include/linux/filter.h
+index 2a7e6cbbbe1d..ea654453e43a 100644
+--- a/include/linux/filter.h
++++ b/include/linux/filter.h
+@@ -1315,7 +1315,7 @@ void bpf_jit_free(struct bpf_prog *fp);
+ struct bpf_binary_header *
+ bpf_jit_binary_pack_hdr(const struct bpf_prog *fp);
+ 
+-void *bpf_prog_pack_alloc(u32 size, bpf_jit_fill_hole_t bpf_fill_ill_insns);
++void *bpf_prog_pack_alloc(u32 size, bpf_jit_fill_hole_t bpf_fill_ill_insns, bool was_classic);
+ void bpf_prog_pack_free(void *ptr, u32 size);
+ 
+ static inline bool bpf_prog_kallsyms_verify_off(const struct bpf_prog *fp)
+@@ -1329,7 +1329,8 @@ bpf_jit_binary_pack_alloc(unsigned int proglen, u8 **ro_image,
+ 			  unsigned int alignment,
+ 			  struct bpf_binary_header **rw_hdr,
+ 			  u8 **rw_image,
+-			  bpf_jit_fill_hole_t bpf_fill_ill_insns);
++			  bpf_jit_fill_hole_t bpf_fill_ill_insns,
++			  bool was_classic);
+ int bpf_jit_binary_pack_finalize(struct bpf_binary_header *ro_header,
+ 				 struct bpf_binary_header *rw_header);
+ void bpf_jit_binary_pack_free(struct bpf_binary_header *ro_header,
+diff --git a/kernel/bpf/core.c b/kernel/bpf/core.c
+index f49b9b23f95e..1b7e74e63bd4 100644
+--- a/kernel/bpf/core.c
++++ b/kernel/bpf/core.c
+@@ -942,7 +942,7 @@ static struct bpf_prog_pack *alloc_new_pack(bpf_jit_fill_hole_t bpf_fill_ill_ins
+ 	return NULL;
+ }
+ 
+-void *bpf_prog_pack_alloc(u32 size, bpf_jit_fill_hole_t bpf_fill_ill_insns)
++void *bpf_prog_pack_alloc(u32 size, bpf_jit_fill_hole_t bpf_fill_ill_insns, bool was_classic)
+ {
+ 	unsigned int nbits = BPF_PROG_SIZE_TO_NBITS(size);
+ 	struct bpf_prog_pack *pack;
+@@ -957,7 +957,7 @@ void *bpf_prog_pack_alloc(u32 size, bpf_jit_fill_hole_t bpf_fill_ill_insns)
+ 		 * safe because cBPF programs (the unprivileged attack surface)
+ 		 * are bounded well below a pack size.
+ 		 */
+-		if (static_branch_unlikely(&bpf_pred_flush_enabled))
++		if (was_classic && static_branch_unlikely(&bpf_pred_flush_enabled))
+ 			pr_warn_once("BPF: Predictors not flushed for allocations greater than BPF_PROG_PACK_SIZE\n");
+ 		size = round_up(size, PAGE_SIZE);
+ 		ptr = bpf_jit_alloc_exec(size);
+@@ -989,7 +989,9 @@ void *bpf_prog_pack_alloc(u32 size, bpf_jit_fill_hole_t bpf_fill_ill_insns)
+ 	pos = 0;
+ 
+ found_free_area:
+-	static_call_cond(bpf_arch_pred_flush)();
++	/* Flush only for cBPF as it may contain a crafted gadget */
++	if (static_branch_unlikely(&bpf_pred_flush_enabled) && was_classic)
++		static_call_cond(bpf_arch_pred_flush)();
+ 	bitmap_set(pack->bitmap, pos, nbits);
+ 	ptr = (void *)(pack->ptr) + (pos << BPF_PROG_CHUNK_SHIFT);
+ 
+@@ -1149,7 +1151,8 @@ bpf_jit_binary_pack_alloc(unsigned int proglen, u8 **image_ptr,
+ 			  unsigned int alignment,
+ 			  struct bpf_binary_header **rw_header,
+ 			  u8 **rw_image,
+-			  bpf_jit_fill_hole_t bpf_fill_ill_insns)
++			  bpf_jit_fill_hole_t bpf_fill_ill_insns,
++			  bool was_classic)
+ {
+ 	struct bpf_binary_header *ro_header;
+ 	u32 size, hole, start;
+@@ -1162,7 +1165,7 @@ bpf_jit_binary_pack_alloc(unsigned int proglen, u8 **image_ptr,
+ 
+ 	if (bpf_jit_charge_modmem(size))
+ 		return NULL;
+-	ro_header = bpf_prog_pack_alloc(size, bpf_fill_ill_insns);
++	ro_header = bpf_prog_pack_alloc(size, bpf_fill_ill_insns, was_classic);
+ 	if (!ro_header) {
+ 		bpf_jit_uncharge_modmem(size);
+ 		return NULL;
+diff --git a/kernel/bpf/dispatcher.c b/kernel/bpf/dispatcher.c
+index b77db7413f8c..ea2d60dc1fee 100644
+--- a/kernel/bpf/dispatcher.c
++++ b/kernel/bpf/dispatcher.c
+@@ -145,7 +145,7 @@ void bpf_dispatcher_change_prog(struct bpf_dispatcher *d, struct bpf_prog *from,
+ 
+ 	mutex_lock(&d->mutex);
+ 	if (!d->image) {
+-		d->image = bpf_prog_pack_alloc(PAGE_SIZE, bpf_jit_fill_hole_with_zero);
++		d->image = bpf_prog_pack_alloc(PAGE_SIZE, bpf_jit_fill_hole_with_zero, false);
+ 		if (!d->image)
+ 			goto out;
+ 		d->rw_image = bpf_jit_alloc_exec(PAGE_SIZE);
 
 -- 
 2.43.0
