@@ -1,56 +1,95 @@
-Return-Path: <linuxppc-dev+bounces-24012-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24013-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5BDEEC44501
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Jul 2026 13:17:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B0437C44501
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Jul 2026 13:58:33 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gxXRz5mCnz2ySg;
-	Fri, 10 Jul 2026 23:17:19 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783689439;
-	cv=none; b=DU8X53XZlG4lQwu+Jhjx0kc/Qqbnk6NxCOePE3M2TiLaUAg+Ctt3vRv9B5aqAMzeQFPHUVhl5oGz/ZkDQ7nQwsxe8z9MH3wohLPJM090UzcYEEXbTQe/q8+qqbLMCuj8ny8WZO3IwDL9uZ/ncGr6+UMdZnZBjDD6KQdvMiFqfu4voh5O7zPhmyEkD7+TRcZk7vl89LCG5QX5yKJm/tTEZhsY/A/qA7pAdGs3P5uICAc/JeiJOGXLtXRbilv6Pg6Jw28HzmnueNC5EtP8mq02ezfSRSugFB8yfSvWolrz5cYpn3Mgke65LQnsFhOPsRtT5/L5VqhgD86E45UYrMKdsQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1783689439; c=relaxed/relaxed;
-	bh=+nYP7CjrY+3szsPUQrIDMb/Ipdkfpw3EQZSw4BDdjPI=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=ke5pwgnn5xaH5NoFGlZja6bYfU7KaYWZ10Rq9wqgb4DlrLbC5X2A3uGCn45Q1iz5L2SpJZ8aZOSlHjEt9oQqE+TpDdkBg+oI/lJxAwY4GIRD8ULqSDjVVACJS22XHNE59LNAROdKFQxNXJuIHw52OsJPeLqkHfSBMsq2WWZMoZIDyTd+LKI5709tT0UtNRSd5s48Nh5T1in3AUxCcfkQvSeyeTU4dcyQbCmGRdaXV4KFlWa3oFtqRAqwsWYczjDsXKw609DOeaDBC9/LVMVt1sNPVMyRCdAtmE00rZTeNExOih5D61zYxgrX9lZCcwPYqsA5SR30GkpWhMdBa3cb0Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linuxfoundation.org; dkim=pass (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=s+zq6Z+6; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=gregkh@linuxfoundation.org; receiver=lists.ozlabs.org) smtp.mailfrom=linuxfoundation.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linuxfoundation.org
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=s+zq6Z+6;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linuxfoundation.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=gregkh@linuxfoundation.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gxYMW42JCz2yS4;
+	Fri, 10 Jul 2026 23:58:31 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c205::1" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783691911;
+	cv=pass; b=hRimIC22jYY8WGwTvptnaPW0dqjIUC/xtW/0gusTe7eRht+0vFADrxFtIL1fEM6GNMhK+lTVSDMW3IJEQb0HuYGJBqZQlSRGt0eIOQ+/lKpfN4aPwZiCG9ws6o6ncywQyJ9NFi9SwlhbSNv0iYMycOEKHLoyFDFXWlNJTgaI2YbnDXMUGOp2m2/YGdDxez9eDRbgozvcJbP92xJSYYQJp3ZiEacOZYpkO0zMX2ty6j/boLF+1AyMQ4HxXFz/9ej0ku9jvChYD916JUQkFiCJQzekN0ypsJPzKAGK9Xw7BxyfZSHl74PoOiO/obzJsT+P8umR7gb/pxXukz+bfxg+Kg==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1783691911; c=relaxed/relaxed;
+	bh=dNuOHlrDEIkjKR9dIyVx0dXJKses962YAhpOz5OyCDA=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:Content-Type:
+	 Content-Disposition:In-Reply-To:MIME-Version; b=g6IYWVnTdOHRKinaJvalfQtsrE1KSvpEkl+rxF6bEDFRLj52cK4ZLk3oSvbbQFJhjmRDNuGLt0sIj6ZdyiXZaI0reWX5VQgzNxocs3hdNc8Y0066s6UG0HFOtxlhcefImgb2duir3kKg1wJft/68ynWMksMUpdLonz1vplv1JDSIywKHFZTCbT+6g+qd48UNUQHgHKGccCDgy35dDH1bmT4y8D/Vwj/x6wsQBCew6n4y72FY/LEZjP0BfPlw5HeEWRv5WfdJf668hr6bncPAdwk/xwEPWBi+aqsV5PDyVysZobslZtkPSZdcrOygmRMjdmwdiu7YFxBEU7maaiQb6Q==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=atomlin.com; spf=pass (client-ip=2a01:111:f403:c205::1; helo=lo3p265cu004.outbound.protection.outlook.com; envelope-from=atomlin@atomlin.com; receiver=lists.ozlabs.org) smtp.mailfrom=atomlin.com
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=atomlin.com
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=atomlin.com (client-ip=2a01:111:f403:c205::1; helo=lo3p265cu004.outbound.protection.outlook.com; envelope-from=atomlin@atomlin.com; receiver=lists.ozlabs.org)
+Received: from LO3P265CU004.outbound.protection.outlook.com (mail-uksouthazlp170100001.outbound.protection.outlook.com [IPv6:2a01:111:f403:c205::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gxXRy6t5Nz2y8F
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Jul 2026 23:17:18 +1000 (AEST)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id A253240505;
-	Fri, 10 Jul 2026 13:17:16 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 113021F000E9;
-	Fri, 10 Jul 2026 13:17:15 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linuxfoundation.org;
-	s=korg; t=1783689436;
-	bh=+nYP7CjrY+3szsPUQrIDMb/Ipdkfpw3EQZSw4BDdjPI=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=s+zq6Z+6eDayTaTZYGcUY57FltFrnTQlmULaKgC8lbPOHD4naiUWoG9CFoVzlsREq
-	 35WSWNzTcwcs5u+PqqFMUQn31PUhP8aIwz6ud8R0rKrpE5ZN84+c+6mEj404KbGdgM
-	 PgL1yHeSbLsvEJCxA0mZwnIEcKj+w4hip03Z1g7Y=
-Date: Fri, 10 Jul 2026 15:17:12 +0200
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To: Guangshuo Li <lgs201920130244@gmail.com>
-Cc: Kees Cook <kees@kernel.org>, Duoming Zhou <duoming@zju.edu.cn>,
-	Li Yang <leoyang.li@nxp.com>, Anatolij Gustschin <agust@denx.de>,
-	linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] usb: phy: fsl-usb: clear fsl_otg_dev after freeing it
-Message-ID: <2026071054-cranial-manor-b4b6@gregkh>
-References: <20260708064549.719147-1-lgs201920130244@gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gxYMV3hs1z2xlt
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Jul 2026 23:58:29 +1000 (AEST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=d/UKidZW2yROLKPKhG9FiE0erou4BUfd55Lpt15BZFxg3TnBGnPR22WFAO/P5qeCVZTzla5KVq7FF2+sjL6f/eVU9L8aCA+A9v13lM7J79ByPmXSV1PYBna1DtAaik2hyvjy4laCdRgbioUBXLC4Bsu2FYtS2jE/miouPSlyxPK+PWGvq/gh5oAy2LFEA/OyCKON1T89HSNizgicj4ayd1GVsKNL29AbgMGn+1pZmeJZWElXC7d3/pe/6Caasr/n9gIAbTycOxszYbJr8ToI/OPQ+pXCdVJAgoMz6QcAAWjkwqgACnT6Jgx7VIaRM0WWyH5Es/f/W462mD6eVXlvmw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001; h=From:Date:Subject:Message-ID:MIME-Version;
+ bh=dNuOHlrDEIkjKR9dIyVx0dXJKses962YAhpOz5OyCDA=;
+ b=lphhwxzK+2YMMezx9gCXFikFc8fh60GNYaqcn/uEgPvULionwet/ks1XZC7WgoRlikuNW5mSEDb4KmGWpSwzIhMuODYrOIi6Xi3xBIfHxr4SdkXkiG5rN2rTw+K6NcA4NrXKAs4GCMeLI7tFU5m5cHu9uTxcYHS8WL0PcIEUUk0FkC8GQb+iqBYIqDjRoozdWdRSwDKF4ZwfA+s4scYNhGqfrTHkg41Ilg7LyYc8436wws/Pbl5yXn/QJafbHF6quEKi4CKj7OfdOKQWPXIq1gtW4Wy9LHOU5pUKhMsGhMSTui32I02vQ9zI7XwIroAjHT4OCrtT7okIPgJZm1C8Tg==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=atomlin.com; dmarc=pass action=none header.from=atomlin.com;
+ dkim=pass header.d=atomlin.com; arc=none
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=atomlin.com;
+Received: from CWLP123MB6607.GBRP123.PROD.OUTLOOK.COM (2603:10a6:400:183::5)
+ by LO0P123MB6878.GBRP123.PROD.OUTLOOK.COM (2603:10a6:600:30b::9) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.181.17; Fri, 10 Jul
+ 2026 13:57:59 +0000
+Received: from CWLP123MB6607.GBRP123.PROD.OUTLOOK.COM
+ ([fe80::cec4:77ab:262e:d230]) by CWLP123MB6607.GBRP123.PROD.OUTLOOK.COM
+ ([fe80::cec4:77ab:262e:d230%4]) with mapi id 15.21.0181.014; Fri, 10 Jul 2026
+ 13:57:59 +0000
+Date: Fri, 10 Jul 2026 09:57:55 -0400
+From: Aaron Tomlin <atomlin@atomlin.com>
+To: Petr Pavlu <petr.pavlu@suse.com>
+Cc: Tony Luck <tony.luck@intel.com>, Borislav Petkov <bp@alien8.de>, 
+	Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>, 
+	Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org, "H. Peter Anvin" <hpa@zytor.com>, 
+	Philipp Reisner <philipp.reisner@linbit.com>, Lars Ellenberg <lars.ellenberg@linbit.com>, 
+	Christoph =?utf-8?Q?B=C3=B6hmwalder?= <christoph.boehmwalder@linbit.com>, Jens Axboe <axboe@kernel.dk>, Johan Hovold <johan@kernel.org>, 
+	Alex Elder <elder@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
+	"Rafael J. Wysocki" <rafael@kernel.org>, Michal Januszewski <spock@gentoo.org>, 
+	Helge Deller <deller@gmx.de>, Alexander Viro <viro@zeniv.linux.org.uk>, 
+	Christian Brauner <brauner@kernel.org>, Jan Kara <jack@suse.cz>, Trond Myklebust <trondmy@kernel.org>, 
+	Anna Schumaker <anna@kernel.org>, Chuck Lever <cel@kernel.org>, Jeff Layton <jlayton@kernel.org>, 
+	NeilBrown <neil@brown.name>, Olga Kornievskaia <okorniev@redhat.com>, 
+	Dai Ngo <Dai.Ngo@oracle.com>, Tom Talpey <tom@talpey.com>, Mark Fasheh <mark@fasheh.com>, 
+	Joel Becker <jlbec@evilplan.org>, Joseph Qi <joseph.qi@linux.alibaba.com>, 
+	Tejun Heo <tj@kernel.org>, Johannes Weiner <hannes@cmpxchg.org>, 
+	Michal =?utf-8?Q?Koutn=C3=BD?= <mkoutny@suse.com>, Luis Chamberlain <mcgrof@kernel.org>, 
+	Daniel Gomez <da.gomez@kernel.org>, Sami Tolvanen <samitolvanen@google.com>, 
+	Pavel Machek <pavel@kernel.org>, Len Brown <lenb@kernel.org>, 
+	Andrew Morton <akpm@linux-foundation.org>, Danilo Krummrich <dakr@kernel.org>, 
+	Nikolay Aleksandrov <razor@blackwall.org>, Ido Schimmel <idosch@nvidia.com>, 
+	"David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, 
+	Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, Simon Horman <horms@kernel.org>, 
+	David Howells <dhowells@redhat.com>, Jarkko Sakkinen <jarkko@kernel.org>, 
+	Paul Moore <paul@paul-moore.com>, James Morris <jmorris@namei.org>, 
+	"Serge E. Hallyn" <serge@hallyn.com>, Kentaro Takeda <takedakn@nttdata.co.jp>, 
+	Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>, linux-edac@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	drbd-dev@lists.linux.dev, linux-block@vger.kernel.org, greybus-dev@lists.linaro.org, 
+	linuxppc-dev@lists.ozlabs.org, linux-acpi@vger.kernel.org, linux-fbdev@vger.kernel.org, 
+	dri-devel@lists.freedesktop.org, linux-fsdevel@vger.kernel.org, linux-nfs@vger.kernel.org, 
+	ocfs2-devel@lists.linux.dev, cgroups@vger.kernel.org, linux-modules@vger.kernel.org, 
+	linux-pm@vger.kernel.org, driver-core@lists.linux.dev, bridge@lists.linux.dev, 
+	netdev@vger.kernel.org, keyrings@vger.kernel.org, linux-security-module@vger.kernel.org
+Subject: Re: [PATCH 2/2] module: Bring includes in linux/kmod.h up to date
+Message-ID: <xihlbspozbgwhez2byjatscslutapi3j4rjhpzxebtn2wjmk5a@qf62xs6lyd6q>
+References: <20260708154510.6794-1-petr.pavlu@suse.com>
+ <20260708154510.6794-3-petr.pavlu@suse.com>
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20260708154510.6794-3-petr.pavlu@suse.com>
+X-ClientProxiedBy: MN2PR07CA0020.namprd07.prod.outlook.com
+ (2603:10b6:208:1a0::30) To CWLP123MB6607.GBRP123.PROD.OUTLOOK.COM
+ (2603:10a6:400:183::5)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -64,49 +103,118 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260708064549.719147-1-lgs201920130244@gmail.com>
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: CWLP123MB6607:EE_|LO0P123MB6878:EE_
+X-MS-Office365-Filtering-Correlation-Id: 8889c9a4-a311-464f-0f29-08dede8b401e
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|7416014|376014|1800799024|23010399003|366016|56012099006|4143699003|6133799003|3023799007|18002099003|22082099003;
+X-Microsoft-Antispam-Message-Info:
+	mnyvn741YVrPSaa0hwDbGrVtBRz+LIw95ja24e6zj7PbDMuYmcaDImgwK2HHFUGJbbEcU/o/lI/aj1VwebZpFhYjn4UNBPq0Wo0aBJiBiHe3jP82n7XKJZaaOP7aQSDCZkIHBBQoRitq/qc/ChGsRVhQZlLuO2WYFbdcf8mxHWu7lyFgatYFUByozN4BGDpucV3Z22SM6P1zRo1UfSTaESZ0Ck2YBy/WwQwcv7s6DVvTKZAUA4umAJCvnwKcMsWOIgi08wNl8E1PsoN2/mL8YDyYDnpKFa6J8iHkbsvfPLYe2jW/d9HrRHB6z62o53M9QTUxNAUefCfoiuWv9y1twRBkQvwlbble7/lJ+bawqZzE8wkMXVxr8aNr3u9oKAx0C9bxaVT8M6uKiA2rFfEScIE1kEubJz/zDxRHlnnN1Z2P+YER/lissTD9b+xKmRg/Sf8q5f8gDV5IQbo1LzG2awcxOlVf/+PlVTFLkqNRWBCpyhv8+9ohJ1AO+/UjiNB3LydrS89QDbi2A/4WcsSDaUxIIBrD5FuHSS2xZ90O6OvPaDYDeRdk4jD2z7K0DIogiyfS9zQitJX/zxK9aOCKHnmB+56lZ73lkP6/8l4ePv2jmJZnAppaQ4FxeFV4zYMyj/IYVUm0ykOl7VLAcDafxE8hRLZtvkgf9+Z4/XhYakQ=
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:CWLP123MB6607.GBRP123.PROD.OUTLOOK.COM;PTR:;CAT:NONE;SFS:(13230040)(7416014)(376014)(1800799024)(23010399003)(366016)(56012099006)(4143699003)(6133799003)(3023799007)(18002099003)(22082099003);DIR:OUT;SFP:1102;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?utf-8?B?ZjM4c0FxdHRFbVA2ZVNRdS80bFp5SDQxY3RQYjlGbTB1dDBzUG5zdEhFU2xK?=
+ =?utf-8?B?KzFiM2M3a0QvNHptNUlwYzdNVWZIcWs4dlFteHVzSWczWWduUWNUejBmdEZm?=
+ =?utf-8?B?aVNBdG1BcWpnd215UjYrb2J4TEc0cFFndzJVdURzdHJWV252bjNPdkh6Nnkx?=
+ =?utf-8?B?ODVCN2pHanhmMzVKeXhMM3YyYXhZdExWQzJzdWl0YnhxcERtbUMvaFdvZm5x?=
+ =?utf-8?B?aG0xdmk1cGRwNlNTRzJTajFMU1NzcityMERFQWJDL0NZdDhla09yaERpVlNq?=
+ =?utf-8?B?UjhKbE1DdVdJZS9zMmZXMGQyNjkwK2dhZ2luUU13Z0J3eWowTUhEeTRqcFRq?=
+ =?utf-8?B?elBCS0pTWlhvQWI5K3g0ckRHZU1CQkp0TGx6bk8yNUpWZmRIczB1b2hqYVQr?=
+ =?utf-8?B?WkR5VnB4M2R2MGNwaFo5NkdlQUhVQXd5ZWEvYjVxc1l1dU9hUkcvZ29SOWpK?=
+ =?utf-8?B?c0JrS0E1ZW1BVkNWNjdZYkZHNHljWW9lR3VHWENzcHY1empXbXNPb3ZwOG5I?=
+ =?utf-8?B?aHRiN3JXQTNTQWNnZk1LS0N2RGVNOWMxOHhXWGRsUkxhK3REUG54M21lR0Jr?=
+ =?utf-8?B?WjRra2JCeEVZRzhJNFlteExCZ0lacys2MUNXc0lDUnZ2cVVVT0JiMUpqWXJ2?=
+ =?utf-8?B?VExGdTFVNHM2azlSek5WczR0SDdOVlZseGhmYmlJQmZ1M2plMFExeHhVRG4v?=
+ =?utf-8?B?bytaWFdiSjdWL1dIbGpTNEkxL3FwWjRVdDRXZTBGNFlZNTUyNzJjSXFBNWlk?=
+ =?utf-8?B?a3RvQS9GYTV2T0tzZ3h5RGZDcFplb0NHeXExOVl4M2IybkNVSktIbXJCMmM2?=
+ =?utf-8?B?eU4vWDZrR29CcFlnZVdCd0tRV2J2TzBoeHBqbmtvTWdwZ3RndUl1ZUJ6Tk1q?=
+ =?utf-8?B?ajVVRDIyRHNGTEJ5c3hsQ0N6aEdlaTk0VDZUZDBLeExBVDk3UTlzcmpHdVQr?=
+ =?utf-8?B?cUhmdlNiTlhHUGRSUW96S1pGazVTbjBseTVCY0tqY1ViRjVkNEd6USs1WGUv?=
+ =?utf-8?B?emhDcW5PTitrNGFCK3N4SG1vNXpCR2dwY212SVJYK3VjaTZEZUM5UzVUcjYv?=
+ =?utf-8?B?TXp6bVRoU3BSdWVzaC8rQU95Nndubnd5eFUxQnFyb0JraWZxbTRkVWtLNmpL?=
+ =?utf-8?B?VWRqMnhRRkRsVlJ5VWREeUNZWmFRbnFBMEk2VW9rSmpNem1hWisyTVplREIv?=
+ =?utf-8?B?akFQbEhzVmt5ZjN5VC9wQThQV29uV1pqYlE4dVh5bE85SnRhQmRHbS9wMzdL?=
+ =?utf-8?B?c1NzM1E4UU9iQWlaWUNGSkZUWWVwZDhTMmw2VWcxWjZOZmx5UnBmM3BGb2NW?=
+ =?utf-8?B?ejRXR2FGVlFMR0lzQ3NOUFJCZUVlMmhIOGJweE5oSkhBRGx3b2ZOSXdnVnU5?=
+ =?utf-8?B?ZEFPckdDcTJqNitIYkVjQTZ6VG90WGNUOGlNS3d3MGsrRktMd2V0Vk1qN0Fz?=
+ =?utf-8?B?enovZGxLWWhYdEZMcCswcEtEODZHeWIzZFVPeE9qcWEraUpqR1U4TVd5Q3JE?=
+ =?utf-8?B?OGJJUWdDaldocGhIb21FMURjQ2w4dUZYZ21RNmQzMkNWQkVJR0x2anF3RFJt?=
+ =?utf-8?B?YVVlV01DaFpUVnBIZXA4SGZhdVVBbnFnVEtieWNQRERwZExPNzZpT1ZNQUFO?=
+ =?utf-8?B?dFlyMEh4MEJKTjIzb2NreFFOMTB5MjVQSkpkYUdLekpLc0owbHJPN3RmaW5P?=
+ =?utf-8?B?Y2poRGNsbmlWVGJwN3IxUXlZM3o3UDFQQVVIWkdVNitsZDJIaWlTWGliU3RB?=
+ =?utf-8?B?VTZnbzNRK3IxMnM0ejFJMEwyM0F2TlhHRTVrOWJpUit5VWF4R2VSQmNMd0t0?=
+ =?utf-8?B?Vm9LNStCbTRiYU9xMkdNYVMwR3dCcWx4QnhKMmorcDRYb2xSbkhpUFkxZldC?=
+ =?utf-8?B?WEZmMTUxV1pNdHE5cTFUcFkveklZOW1CM1JWSHdFWGpxVUp3OFpvZ0pYVG4v?=
+ =?utf-8?B?eWpkK20rb1BOUEZHUFdIUjJucHZ0cjQwNHZIMHRJaEZPbUlzRXE4OHV4STN3?=
+ =?utf-8?B?a24zTWlLYnR5QzMyL3FnaWdpVWVmZldHNStkWjNkaUVHaWNidVNNM2tVK1Nx?=
+ =?utf-8?B?cHVJMkNYbE5zOElrY24rSy92V1VlWTh3S2lVTWE5S1ZQQU50SzJmbVdsaThK?=
+ =?utf-8?B?Q096SWdvQlRSNHMvZWpBSncyM2ZnUk1UU3BJNFZDY01kS00wOS9hNncxWHZH?=
+ =?utf-8?B?amtYNmRidWJwVkNNangwdWNXWUxxUitDSjVwM3RaWHBOVkt5S2VHWUQ4cDU3?=
+ =?utf-8?B?OGZ6OHhHRVFzaWE0dmdPMkZWNlZsN2ZFQklMcFhCRmdWc0pqM3djSjNPSEh6?=
+ =?utf-8?B?eGpaS05KTWFBZ2xBZ2xuU3VWWHVyaVpteWI2UXByMW5EYlVXZ01LUT09?=
+X-OriginatorOrg: atomlin.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 8889c9a4-a311-464f-0f29-08dede8b401e
+X-MS-Exchange-CrossTenant-AuthSource: CWLP123MB6607.GBRP123.PROD.OUTLOOK.COM
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 10 Jul 2026 13:57:59.3246
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: e6a32402-7d7b-4830-9a2b-76945bbbcb57
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: hDwfhxFpj9eN2nNEFrA5KAidckTs70TyYQaw5oNwhBSjWpXN0ngpfIvW4gAKhWaf72JIUvICyafxXZ+msFt7yQ==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: LO0P123MB6878
 
-On Wed, Jul 08, 2026 at 02:45:49PM +0800, Guangshuo Li wrote:
-> fsl_otg_dev is a file-scoped singleton pointer and is used by
-> fsl_otg_conf() to decide whether the OTG device has already been
-> initialized.
+On Wed, Jul 08, 2026 at 05:44:30PM +0200, Petr Pavlu wrote:
+> Including linux/kmod.h alone results in 1.5 MB of preprocessed output, even
+> though it provides only a few functions and macros.
 > 
-> fsl_otg_remove() frees fsl_otg_dev but leaves the global pointer
-> unchanged. A later bind can therefore see a non-NULL dangling pointer,
-> skip initialization, and continue using freed memory through the global
-> fsl_otg_dev pointer.
+> The header currently depends on:
 > 
-> Clear fsl_otg_dev after freeing it so that a later probe does not treat a
-> dangling pointer as an initialized device.
+> * __printf() -> linux/compiler_attributes.h,
+> * ENOSYS -> linux/errno.h,
+> * bool -> linux/types.h.
 > 
-> Fixes: 0807c500a1a6 ("USB: add Freescale USB OTG Transceiver driver")
-> Signed-off-by: Guangshuo Li <lgs201920130244@gmail.com>
+> Include only these files, reducing the preprocessed output to 10 kB.
+> 
+> Signed-off-by: Petr Pavlu <petr.pavlu@suse.com>
 > ---
->  drivers/usb/phy/phy-fsl-usb.c | 1 +
->  1 file changed, 1 insertion(+)
+>  include/linux/kmod.h | 12 ++----------
+>  1 file changed, 2 insertions(+), 10 deletions(-)
 > 
-> diff --git a/drivers/usb/phy/phy-fsl-usb.c b/drivers/usb/phy/phy-fsl-usb.c
-> index 35d79f11b03d..0b5e937633f4 100644
-> --- a/drivers/usb/phy/phy-fsl-usb.c
-> +++ b/drivers/usb/phy/phy-fsl-usb.c
-> @@ -997,6 +997,7 @@ static void fsl_otg_remove(struct platform_device *pdev)
->  	fsl_otg_uninit_timers();
->  	kfree(fsl_otg_dev->phy.otg);
->  	kfree(fsl_otg_dev);
-> +	fsl_otg_dev = NULL;
+> diff --git a/include/linux/kmod.h b/include/linux/kmod.h
+> index 9a07c3215389..b9474a62a568 100644
+> --- a/include/linux/kmod.h
+> +++ b/include/linux/kmod.h
+> @@ -2,17 +2,9 @@
+>  #ifndef __LINUX_KMOD_H__
+>  #define __LINUX_KMOD_H__
 >  
->  	if (pdata->exit)
->  		pdata->exit(pdev);
+> -/*
+> - *	include/linux/kmod.h
+> - */
+> -
+> -#include <linux/umh.h>
+> -#include <linux/gfp.h>
+> -#include <linux/stddef.h>
+> +#include <linux/compiler_attributes.h>
+>  #include <linux/errno.h>
+> -#include <linux/compiler.h>
+> -#include <linux/workqueue.h>
+> -#include <linux/sysctl.h>
+> +#include <linux/types.h>
+>  
+>  #ifdef CONFIG_MODULES
+>  /* modprobe exit status on success, -ve on error.  Return value
 > -- 
-> 2.43.0
-> 
+> 2.54.0
 > 
 
-For all of these patches, you have to document that you use an LLM.
-Please resend them all with that information.
+LGTM. Thank you.
 
-thanks,
-greg k-h
+Reviewed-by: Aaron Tomlin <atomlin@atomlin.com>
+-- 
+Aaron Tomlin
 
