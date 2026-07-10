@@ -1,52 +1,82 @@
-Return-Path: <linuxppc-dev+bounces-23983-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23984-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 274E3C43458
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Jul 2026 02:51:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2697EC43458
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Jul 2026 03:05:15 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gxGYs49jrz2xSb;
-	Fri, 10 Jul 2026 12:51:29 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=115.124.30.132
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783651889;
-	cv=none; b=OrEr996la7d1butQOU1LffPxCwRHSFe2Ljk9uo8WN7oxU6ubM1hpW1W3hn+uDbaOvw/qftGnjYyG9eaXS1vGDm2Ul/0yLV9As5iqb0FD6f1LtM/IRyrb6YiSOBm72M/nUWPv0zRWz6PvtT53evtOcBf0KBTVi4qIPTUpW/qqniMb5p4lkP4TF49EWn+XhCx4qSv3iDhl67kgaVUWnVfdlX8jrgnvwt5XnoOdr+hzXZJoJeZGgsuXIerMPs1RRLOzN+sO8dTjWeyLz6kNJigsNvQcZvm048MD9mZheQTVGXVfGJknSVqnEZqvorH2Qz2P1p0jIxgkA3UZ6IJoDHgJTQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gxGsj3gJPz2yQH;
+	Fri, 10 Jul 2026 13:05:13 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::62a"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783652713;
+	cv=none; b=I5b6B8cZV+RKxExDT5ME2fhdl214uaNgMt01g092ti7hBpYXsk8RoEHbVY4iYCgbxLuKrlJKdGAa9rl/WMhN72pb3A0HUAiT08fVSQflJkwCkkLxSfGG7dKig7jZE6uLaVWaiFFy5zY38Gp46mJ7VB1No+MlzwAz98CJDi4o21j4bHv9uEGoqfHC9Gkx4XebPYH9OPHOeTLxmzbVw3wwbcYl33MlbP6OQ1qblc6SbMx3ehruS0QJU1DckvROUX9xaxeao+sMzMcKxK8AkZEZPprDWiU1cyOWSahJ/JjuGoSEr8EDL/vllaOFVnvSea79wWff38YUmkvNNuTfh0F2lw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1783651889; c=relaxed/relaxed;
-	bh=lUrJGNdkgOLm/MDj00ePOaZ/7kLX0+V9Jpn17brXOZc=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=ar4EKhkUE9R4LTRKIWBcCkzr1rKoEwsiQhYhpsxwSQaJg1vbA0lJStJdT+aj9hd6BXlDh1tUF71N01TkHhe3EAF/ShWm+4iCGZtbHrab9HPG1+WTScr1rnU+M4S0UhdHyXqPmC2C2EhS/lmE0O0IU/cm+R7hnhu0R/vwvop/6AiJ7FFeqfBRtSZpc7dPlXxYIGV0VlLYbJ7O9mbQT6yNumlIZQLsSD9k0LdT1WMh7rJqJdxGqtTAHEiSMgWFLrf8cyiBIKBXIEJ4zNJDF82cshdEEU6fNDWWTQpszg4VMaZLuwld2JxKgKQvbajAvPi7mhpyksJRYHcJ0Rk7ywcHRA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.alibaba.com; dkim=pass (1024-bit key; unprotected) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.a=rsa-sha256 header.s=default header.b=A75GOVQo; dkim-atps=neutral; spf=pass (client-ip=115.124.30.132; helo=out30-132.freemail.mail.aliyun.com; envelope-from=feng.tang@linux.alibaba.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.alibaba.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.alibaba.com
+	t=1783652713; c=relaxed/relaxed;
+	bh=Ls6mtryWrPtP9kkrpMW1MJuaLa4TZQxyCDcydaBlnHw=;
+	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References; b=dQr88Tg21Y58jCTuu8inN1uxlXWQDjHn9ryt8iWL8DY9MsZIMYqTsNSP52V6aIi5VEbzjug/Sbkv3giTMic+LVSB0+qHfhnouLnnegxHh35GWZS1sB4PXlOuA2lBEJ6E46a7LZ+e5EtEn1f5xUDjJraetZ/dOkphZh5iB2smGCgCqFLRx6GNkBVlf5x1ounJHNBYB70XjWdq3ThoWekGmU1tnOlZI/t7Nob7H8k+IwTXungyQ44uXs2v5FCYj2A5XdlEgM0zabD1Cb1WWC/CuODHNa5W6qa6RzLgKFw/gbR+k0ZEInbGK6AaBXD9OGAG+Xi9qIJu/shVkKeuavD0Jw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=PSr3co5E; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::62a; helo=mail-pl1-x62a.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.a=rsa-sha256 header.s=default header.b=A75GOVQo;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=PSr3co5E;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.alibaba.com (client-ip=115.124.30.132; helo=out30-132.freemail.mail.aliyun.com; envelope-from=feng.tang@linux.alibaba.com; receiver=lists.ozlabs.org)
-Received: from out30-132.freemail.mail.aliyun.com (out30-132.freemail.mail.aliyun.com [115.124.30.132])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::62a; helo=mail-pl1-x62a.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pl1-x62a.google.com (mail-pl1-x62a.google.com [IPv6:2607:f8b0:4864:20::62a])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gxGYp44FQz2xJT
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Jul 2026 12:51:24 +1000 (AEST)
-DKIM-Signature:v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=linux.alibaba.com; s=default;
-	t=1783651880; h=Date:From:To:Subject:Message-ID:MIME-Version:Content-Type;
-	bh=lUrJGNdkgOLm/MDj00ePOaZ/7kLX0+V9Jpn17brXOZc=;
-	b=A75GOVQosJfXyS3dC6qtuCujURYJO8863iVeWvr6/VRhDD+nGfzaArUbZn4ufkjhXqOoI8PaGACJa8rdQb00G5haiE7EP4TwXzzW9Ui55Hu9zq8onwYXFx6eX3Nu5Lq5EgRsCZ+CX05vEimH1JLbGpAZcz911ANeR9WhpCIrM7g=
-X-Alimail-AntiSpam:AC=PASS;BC=-1|-1;BR=01201311R131e4;CH=green;DM=||false|;DS=||;FP=0|-1|-1|-1|0|-1|-1|-1;HT=maildocker-contentspam033037033178;MF=feng.tang@linux.alibaba.com;NM=1;PH=DS;RN=6;SR=0;TI=SMTPD_---0X6mEdSu_1783651878;
-Received: from localhost(mailfrom:feng.tang@linux.alibaba.com fp:SMTPD_---0X6mEdSu_1783651878 cluster:ay36)
-          by smtp.aliyun-inc.com;
-          Fri, 10 Jul 2026 10:51:18 +0800
-Date: Fri, 10 Jul 2026 10:51:17 +0800
-From: Feng Tang <feng.tang@linux.alibaba.com>
-To: kernel test robot <lkp@intel.com>, linuxppc-dev@lists.ozlabs.org
-Cc: oe-kbuild-all@lists.linux.dev, linux-kernel@vger.kernel.org,
-	Marek Szyprowski <m.szyprowski@samsung.com>
-Subject: Re: ld.lld: error: relocation R_PPC_ADDR16_LO cannot be used against
- symbol 'init_task'; recompile with -fPIC
-Message-ID: <alBeJUafPKhx8RMS@U-2FWC9VHC-2323.local>
-References: <202607100652.WPUlEAfx-lkp@intel.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gxGsg3qtZz2xSb
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Jul 2026 13:05:10 +1000 (AEST)
+Received: by mail-pl1-x62a.google.com with SMTP id d9443c01a7336-2c9bd2f8bf7so21301625ad.1
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 09 Jul 2026 20:05:10 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1783652709; x=1784257509; darn=lists.ozlabs.org;
+        h=references:message-id:date:in-reply-to:subject:cc:to:from:from:to
+         :cc:subject:date:message-id:reply-to:content-type;
+        bh=Ls6mtryWrPtP9kkrpMW1MJuaLa4TZQxyCDcydaBlnHw=;
+        b=PSr3co5EKWwBHGAHZ4shtBTFhCPaacpTXGFxkyvmBBzPKRR/yGaEW54f6bH4j9KLAx
+         rSxXzld3i91ihjWygc08tst9uQdIp11TXJHcxdn6v5H5+nb0ch/mG6f7vALmuAtPZKtX
+         mv7pKzxw6jwASv20/OSN+AErNYT8nbXty2D+joT0Z/SCSEDNIHKOGDIzONQwS1Z/AfIL
+         fn+sexgaMVgBB8vD8N2mQnCouLO082EVELdXh2a3K4wfnV6+byikxeWCMg/87NtDsRDg
+         ZG3OzNIsR1rEKfjLYLdWjsGWSX6TZyUt33rknL5ajCwQYmWuZIsqiX5nSRr5f8XS8YMm
+         lg/g==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1783652709; x=1784257509;
+        h=references:message-id:date:in-reply-to:subject:cc:to:from:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=Ls6mtryWrPtP9kkrpMW1MJuaLa4TZQxyCDcydaBlnHw=;
+        b=jNFu29uBqw16P6a7fsMvXfHjSbuxYVy4e2zI6SFlOtcb6QFDBNfu7jOpwUow0pEXyd
+         PhTYtxZosdShHwnqhOI2Gb/SXHWVQJ9rvhQTbfydAKrovjhM4sHQewaI/2VoMnRBurO8
+         IaFTh8ph4sF5Thk3m/+wSFiP6Nd+st9H49fSBuwsqSJW5GXdkyriF0aAbTWNdjypsDow
+         IuiDbpVa15R5jQQLLzQmJ5sVH86I7rA8uBc8fVrJ06S8unuXz60lcoUOIiu2RfG6UYll
+         eeRx5C0Z0Ej4dSdVmFBxc97yeo+RRgqnkf/E97GOaqH/erfdg3A85+ruor6PkeNkUMUM
+         JSnA==
+X-Forwarded-Encrypted: i=1; AHgh+RqFGejpN0wfe9OoU9Utc3yKFPgsLkqBEeNbN8t/KvLdyEl6/8TVVxpujZhDDt0ztu0sr8vtR364pAWUP6s=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YzCCZBOATmL4XJhFpCaIf9x5YH44BYPoZ1PfNoXPQFoFurc7aRA
+	lTwCDGnpWXfpE4q2nCYscULqnKHnxprrCfLSUlNk4mCaiBChcWlm2/fA
+X-Gm-Gg: AfdE7cmGoYwSt0IxtEQpptKYWwdHy6XGo7x7I1LdO8TXnwc2owZTUCFvlaOVdoQ38jm
+	ZCvxYsoGqV+XcovwVaZHP0wisJFt+2UMhBGyPP4lTNqZ5JLiA7gr7tfimLgM4EacuNmFNNCpl4i
+	ML4tlgECFRRqxl/TxYHgnw7bhK13SdQh6Ty3hih20aUFpRrWyjunOoknyIny5Rm+IfldLn4JxLM
+	1gEHSqSwhQDO3icoivffh80eBW3180KNp2Rg51wE83GwXwyuULkp6wH8vOr79yOPd8mTX3f8nsw
+	kdr3O/0s9+cXPVfYmjqWK5NsobxyOmGSH5HmFX7V6kU4ozCdiSqf72Yw8O3B0BnJjSGPvqVx/Fq
+	YnesQVcasTAGUJUUJIgNtFKyhHtFaPwczuWczhzr3YThGLULl3uJV6gQDI9OOqqVA6QESYFsj2Q
+	e0quh82oxcldk=
+X-Received: by 2002:a17:902:d511:b0:2ca:d4f:adab with SMTP id d9443c01a7336-2ce8292cb2cmr17305665ad.19.1783652708677;
+        Thu, 09 Jul 2026 20:05:08 -0700 (PDT)
+Received: from pve-server ([49.205.216.49])
+        by smtp.gmail.com with ESMTPSA id a92af1059eb24-13b659d8da9sm59620733c88.14.2026.07.09.20.05.03
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 09 Jul 2026 20:05:07 -0700 (PDT)
+From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+To: Sourabh Jain <sourabhjain@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org, maddy@linux.ibm.com, mpe@ellerman.id.au
+Cc: npiggin@gmail.com, chleroy@kernel.org, shivangu@linux.ibm.com, hbathini@linux.ibm.com, mahesh@linux.ibm.com, adityag@linux.ibm.com, venkat88@linux.ibm.com, Sourabh Jain <sourabhjain@linux.ibm.com>
+Subject: Re: [PATCH v2 1/4] powerpc/mmu: do MMU type discovery before crashkernel reservation
+In-Reply-To: <20260708143357.673251-2-sourabhjain@linux.ibm.com>
+Date: Fri, 10 Jul 2026 08:14:51 +0530
+Message-ID: <1pdbwokc.ritesh.list@gmail.com>
+References: <20260708143357.673251-1-sourabhjain@linux.ibm.com> <20260708143357.673251-2-sourabhjain@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -59,55 +89,59 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <202607100652.WPUlEAfx-lkp@intel.com>
-
-Thanks for the report!
-
-Add Powerpc list.
-
-On Fri, Jul 10, 2026 at 06:18:50AM +0800, kernel test robot wrote:
-> tree:   https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git master
-> head:   0e35b9b6ec0ffcc5e23cbdec09f5c622ad532b53
-> commit: d5cae2261b86913e602452ce4a07e6aefc0f603b dma-contiguous: simplify numa cma area handling
-> date:   6 weeks ago
-> config: powerpc-randconfig-r133-20260709 (https://download.01.org/0day-ci/archive/20260710/202607100652.WPUlEAfx-lkp@intel.com/config)
-> compiler: clang version 21.1.8 (https://github.com/llvm/llvm-project 2078da43e25a4623cab2d0d60decddf709aaea28)
-> sparse: v0.6.5-rc1
-> reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20260710/202607100652.WPUlEAfx-lkp@intel.com/reproduce)
 
 
-> All errors (new ones prefixed by >>):
-> 
-> >> ld.lld: error: relocation R_PPC_ADDR16_LO cannot be used against symbol 'init_task'; recompile with -fPIC
->    >>> defined in vmlinux.a(init/init_task.o)
->    >>> referenced by head_44x.S:101 (arch/powerpc/kernel/head_44x.S:101)
->    >>>               arch/powerpc/kernel/head_44x.o:(.head.text+0x42) in archive vmlinux.a
-> --
-> >> ld.lld: error: relocation R_PPC_ADDR16_HI cannot be used against symbol 'init_thread_union'; recompile with -fPIC
->    >>> defined in ./arch/powerpc/kernel/vmlinux.lds:133
->    >>> referenced by head_44x.S:108 (arch/powerpc/kernel/head_44x.S:108)
->    >>>               arch/powerpc/kernel/head_44x.o:(.head.text+0x4e) in archive vmlinux.a
+Minor nits
 
-I checked the patch and couldn't find obvious clue between the patch and
-the error.
+Sourabh Jain <sourabhjain@linux.ibm.com> writes:
 
-commit d5cae2261b8691 only changes kernel/dma/contiguous.c, which is under
-CONFIG_DMA_CMA per kernel/dma/Makefile. In your config above, CONFIG_DMA_CMA
-is not even set, so the contigous.c should not be compiled. Could you help
-to double check? thanks!
+> Crashkernel reservation on high memory depends on the MMU type, so
+> finalize the MMU type before calling arch_reserve_crashkernel().
+>
+> With the changes introduced here, early_radix_enabled() becomes usable
+> and will be used in arch_reserve_crashkernel() in the upcoming patch.
+>
+> early_radix_enabled() depends on cur_cpu_spec->mmu_features to find
+> out if the radix MMU is enabled. The radix MMU bit in mmu_features is
+> discovered from the FDT and kernel configs. To make sure the MMU type is
+> finalized before arch_reserve_crashkernel() is called, the function that
+> scans the FDT and sets mmu_features, along with some bits from
+> mmu_early_type_finalize(), has been moved above
+> arch_reserve_crashkernel().
+>
 
-- Feng
+Can you also add a short description of why can't we move
+arch_reserve_crashkernel() to a later point instead of breaking
+mmu_early_init_devtree() and moving the xx_type_finalize() part above?
 
-> Kconfig warnings: (for reference only)
->    WARNING: unmet direct dependencies detected for HOTPLUG_CPU
->    Depends on [n]: SMP [=y] && (PPC_PSERIES [=n] || PPC_PMAC [=n] || PPC_POWERNV [=n] || FSL_SOC_BOOKE [=n])
->    Selected by [y]:
->    - PM_SLEEP_SMP [=y] && SMP [=y] && (ARCH_SUSPEND_POSSIBLE [=y] || ARCH_HIBERNATION_POSSIBLE [=y]) && PM_SLEEP [=y]
-> 
-> --
-> 0-DAY CI Kernel Test Service
-> https://github.com/intel/lkp-tests/wiki
+If I am not wrong, it is since move_device_tree() checks whether the FDT
+overlaps the crash kernel reservation. So arch_reserve_crashkernel()
+must be called before move_device_tree().
+
+
+> Signed-off-by: Sourabh Jain <sourabhjain@linux.ibm.com>
+> ---
+>  arch/powerpc/include/asm/book3s/64/mmu.h |  1 +
+>  arch/powerpc/include/asm/mmu.h           |  1 +
+>  arch/powerpc/kernel/prom.c               | 28 +++++++++++++-----------
+>  arch/powerpc/mm/init_64.c                | 27 ++++++++++++++---------
+>  4 files changed, 34 insertions(+), 23 deletions(-)
+>
+> diff --git a/arch/powerpc/include/asm/book3s/64/mmu.h b/arch/powerpc/include/asm/book3s/64/mmu.h
+> index 48631365b48c..7a3b2ff02041 100644
+> --- a/arch/powerpc/include/asm/book3s/64/mmu.h
+> +++ b/arch/powerpc/include/asm/book3s/64/mmu.h
+> @@ -208,6 +208,7 @@ extern int mmu_vmemmap_psize;
+>  
+>  /* MMU initialization */
+>  void mmu_early_init_devtree(void);
+> +void mmu_early_type_finalize(void);
+
+can you rename this as mmu_early_init_type().
+
+Otherwise the change looks good to me. With the above 2 addressed, feel
+free to add:
+
+Reviewed-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+
 
