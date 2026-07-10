@@ -1,59 +1,57 @@
-Return-Path: <linuxppc-dev+bounces-23993-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23994-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DD7D9C43458
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Jul 2026 06:14:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0DAFCC44501
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Jul 2026 06:14:51 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gxM4N4GJyz2yRF;
-	Fri, 10 Jul 2026 16:14:44 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=193.142.43.55
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783664084;
-	cv=none; b=NI1JVVdbC0ju/34Mf3LoV1BAuI+rycvHMUSdex0bs1ssTtDzUodIJ1sQVWdmMru5NfBUxkxXwP5hCui08VIadngAn/HmrAij+tc38XqH3fExOSAOxrbi//fmKb7kG3CPcIHraOow8pwXntWNlQ4MXVZE67gS9BS2ID5tJYy1VYmoTym3ydOHZNDuTC5t6aRwOphVMHqe8eF+/7lOw4iRqso8taaAD8B7IOBEAQnaSA9df0ODTTbeIpWsmNJ/eaDIGj+rcNM0WqSz8X/m6JqxHiDaFM9Jba39AEXsSfjBDfVsxe0GAnylgVqdSn+OauMi45SJQcMf+BeWJ2KJAgP4nw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gxM4S0vVPz30Cj;
+	Fri, 10 Jul 2026 16:14:48 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a0a:51c0:0:12e:550::1"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783664088;
+	cv=none; b=nd8H2AGj+1KPw+w3ZzAS+uDGxVJ7N1aIx1iHc6saEJL75v0QORwBF4Zln4WOllCBTtRnuCwtQal/OyPT+YLTdtPyb+EBuNCqwOxAlbFW067cL7wO+KijiNuP9BiD60iTnfpXpn9ScDJ8a2pBpMZkbsItWVzJGIeen2g739nTrkVi1ydqNQ8H6k5pPBXM9wNJx2KurWFieUumqfbGhYydHwsuVcj1+zoqTkHs/Wrm3LTjf6U8WJ6SIDIVh4leot3RtZFcqZT0xyYyisAnNHMCHye3YJPwt9c+8k4Zma2c2nRIqL5n1VauqqUmEY12jN9r8jC2hHuD5Dns6v4Sz+CawQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1783664084; c=relaxed/relaxed;
-	bh=RN/LYB8s7inQyOqwKkBwjrqheVSXAS70Mvy85PvkZ7c=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=UjfqJDTKdqmzWM7H4xIbTOfpmWYeSauor3Tlbc9QLHc6+SIhOTRn5UU3v7cQKv1phAAnfYkRg1oHQbWX+Vjzfz6IbtdXoWxOU5lrDvQ+7eQP9zQ1u/xMPI8eoUAOJWYW15cbAQfSpDnoKJaLeCvP73fNm+YHTudRPCBHdWfLkNEjXyl8s+z5zf/UciQx8Fd3qeejnDZWGluM1UxSldoTFAriAVKUK9noGgC50Gs9p1sca0PyBqIrxA6+i21YyPsNy8CaOdgosfAOfvSFo2d2kxskUs2QWwM/8zE3r34dGydIl24g8/N6QORgxtq8RRQ5DqZx9c2RKfmfhXXzjx45PA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=hSY6xBRO; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=pw/urJLd; dkim-atps=neutral; spf=pass (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
+	t=1783664088; c=relaxed/relaxed;
+	bh=lu3+SDN8lxoNjl2dBZxs25rh4Ilkvavn8U5ButRQBxI=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=Rc1uwAPpxR+nq11jm4pUdiLxRPNE1DdN7hSALz87QMGd7xGkNdf8ABMlEmFGMwDA5/MwZ9tXNxJARVYABEcNy1gMOpWMQEgqfeF5vhnqcW8pWn3vcciR8CixW4UHOParzKH5KiFNsfGQ30WIRB1hay+gYwe6HK95QV7VFMGFmyfvrCrUSXvO0J3UIiv5izsBKL7svBvdNSH7QQbb8euS78ARbVVX9sjukpGqGipqzVUc3uYAzCr/M7pXsIFrCbIdJ5eJaVC1SJ5MJIO7mg4ee8+zl/JreKlzF9iPNssRuy9+f6/4G2bk9AYitZveSKR/LqWR2+c5Hm8J4e3hCSlfYg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=KpuEUrN9; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=1VbPjfbs; dkim-atps=neutral; spf=pass (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=hSY6xBRO;
-	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=pw/urJLd;
+	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=KpuEUrN9;
+	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=1VbPjfbs;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org)
-Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org)
+Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gxM4M1fKlz2yQH
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Jul 2026 16:14:43 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gxM4R38T5z2yQH
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Jul 2026 16:14:47 +1000 (AEST)
 From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020; t=1783664079;
+	s=2020; t=1783664078;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=RN/LYB8s7inQyOqwKkBwjrqheVSXAS70Mvy85PvkZ7c=;
-	b=hSY6xBROOGZLc7Ot4/Ifox5KUAiSbn9/3X1/XRpcTKOS5/75jDiejzgfYk9ZhrgWWIlB1g
-	2LpB9CQ53bZeSSuGrfC/Bwe7Y1SoeF315ou3TN7yQzgwy4CXgD0tZwtn+ddC3EPiLzN/Tg
-	DG+p+QCVbuil3Z/pVGbThyJ+8F9riEodl+GzVXI/gMxblEd6kIsD15woL3OJ2x2OjiEZVh
-	s2GsUyXqvLHJo8MRPPRjyIIrESnQlcT44dfzKkJMXUxa9ra1d1EWAUv2pC6IaXML8B6trm
-	LspqYy1905YCypvCKf/MfUCrOPCekXOMFyZIYUrUD9WzImyPti4SUuaVuJ/Ayg==
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=lu3+SDN8lxoNjl2dBZxs25rh4Ilkvavn8U5ButRQBxI=;
+	b=KpuEUrN91J7zN1EKzYrkTOTOu73IwH60lkqscXRrvKNkI2ksZW+OISQb8KXHAjoit58ZsL
+	xvzORuG1v8SxkGUHBeVboXSLaEMKesbWYRjmHtpaI6rPyMRYxj1omm6fQ/S1j/m+TgQqiA
+	V8tJ+T0GW06NLkyC5kV4rPPBaTIssoubWYKbyETEdpvIg+ixz8b2+7FE9j45VunuiYgGVB
+	R23y/nnb/nnH8oWTgTJJzIHQONukM3QYOUdHeLXcdHvCYEln5eIvMOAdOTusPuuwWY2odP
+	ECeKnG7qkrI/YfsRYNFbGyj9MVtI1qMCE9i9eoT7SL8TYvT1iXxQBK+DZ8yfhg==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020e; t=1783664079;
+	s=2020e; t=1783664078;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=RN/LYB8s7inQyOqwKkBwjrqheVSXAS70Mvy85PvkZ7c=;
-	b=pw/urJLdpO9rlB+A2IG0iyRFR64M82qzep1iKyRRaJM8/36rRSQFa7xYZX366LKjCUbuYM
-	cNC9seoYG5292sAA==
-Date: Fri, 10 Jul 2026 08:14:28 +0200
-Subject: [PATCH 2/2] powerpc/vdso: Generate build IDs
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=lu3+SDN8lxoNjl2dBZxs25rh4Ilkvavn8U5ButRQBxI=;
+	b=1VbPjfbsrpCVIK2bqdJYdzdiYRWuKWt69Ys5BHg/U1GEqPlouOIAXA3dwyVZQ036S1fzxU
+	+bYvr3/FkoJmxcAg==
+Subject: [PATCH 0/2] powerpc/vdso: Debugging improvements
+Date: Fri, 10 Jul 2026 08:14:26 +0200
+Message-Id: <20260710-powerpc-vdso-install-v1-0-3015af1aa354@linutronix.de>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -69,46 +67,44 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20260710-powerpc-vdso-install-v1-2-3015af1aa354@linutronix.de>
-References: <20260710-powerpc-vdso-install-v1-0-3015af1aa354@linutronix.de>
-In-Reply-To: <20260710-powerpc-vdso-install-v1-0-3015af1aa354@linutronix.de>
+X-B4-Tracking: v=1; b=H4sIAAAAAAAC/x3MQQqAIBBA0avErBtIk4yuEi2kxhoIFScqiO6et
+ HyL/x8QykwCQ/VAppOFYyhQdQXz5sJKyEsx6EZ3Tat6TPGinGY8F4nIQQ6379gba0zrrVXaQ0l
+ TJs/3vx2n9/0AMFhMoWYAAAA=
+X-Change-ID: 20260318-powerpc-vdso-install-847443f7712f
 To: Madhavan Srinivasan <maddy@linux.ibm.com>, 
  Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
  "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
  =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>, 
  =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1783664073; l=1069;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1783664073; l=718;
  i=thomas.weissschuh@linutronix.de; s=20240209; h=from:subject:message-id;
- bh=6TxI15G459SU7/L04+mOiUiV4SbyQEX3EFcN0Hu9P6I=;
- b=lyBlnm6wkkBbZDeU0ztAP67JWFa+yuNLGYAzwQYCMKkyuJYxc2CWPketnt4CWuJzcZhr+OXLG
- afHGboBRMFcC3DLUONmjQ2h/tV+eH8ZyzDNZhgWcFlOKr44crmoBLle
+ bh=8wfO4lBwrayFhUsQ4KAf6/honB/+vmhedTvDLIGPJ1Y=;
+ b=m9DRLcxv9oiRuW3kcgiyHCPBGUb8urnfAmuWlQaAnhvid8Q/czHzA2bfSyUJOfgttuK27Ksbs
+ h0nDKD+4+ukCQHtTYApeXAEu4DjXBkAsGBkZKmb3omLyRbvdv8CQrfX
 X-Developer-Key: i=thomas.weissschuh@linutronix.de; a=ed25519;
  pk=pfvxvpFUDJV2h2nY0FidLUml22uGLSjByFbM6aqQQws=
 
-The build ID can be used to correlate a vDSO mapped into a process with
-its debugging information.
+Make it possible to package the vDSO debug information and correlate it
+with the vDSO mapped into processes.
 
-Signed-off-by: Thomas Weißschuh <thomas.weissschuh@linutronix.de>
+Also see https://lore.kernel.org/lkml/20260708-vdso-sysfs-v1-1-fcd93385006d@linutronix.de/
+
+Signed-off-by: Thomas Weißschuh <linux@weissschuh.net>
 ---
+Thomas Weißschuh (2):
+      powerpc/vdso: Add support for vDSO installation
+      powerpc/vdso: Generate build IDs
+
+ arch/powerpc/Makefile             | 3 +++
  arch/powerpc/kernel/vdso/Makefile | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ 2 files changed, 4 insertions(+), 1 deletion(-)
+---
+base-commit: e891777067dc42e033906c23c0bd048b09202f49
+change-id: 20260318-powerpc-vdso-install-847443f7712f
 
-diff --git a/arch/powerpc/kernel/vdso/Makefile b/arch/powerpc/kernel/vdso/Makefile
-index 368759f81708..18ef3057dfd0 100644
---- a/arch/powerpc/kernel/vdso/Makefile
-+++ b/arch/powerpc/kernel/vdso/Makefile
-@@ -45,7 +45,7 @@ ccflags-y += $(call cc-option, -fno-stack-protector)
- ccflags-y += -DDISABLE_BRANCH_PROFILING
- ccflags-y += -ffreestanding -fasynchronous-unwind-tables
- ccflags-remove-y := $(CC_FLAGS_FTRACE)
--ldflags-y := -Wl,--hash-style=both -nostdlib -shared -z noexecstack $(CLANG_FLAGS)
-+ldflags-y := -Wl,--hash-style=both -Wl,--build-id=sha1 -nostdlib -shared -z noexecstack $(CLANG_FLAGS)
- ldflags-$(CONFIG_LD_IS_LLD) += $(call cc-option,--ld-path=$(LD),-fuse-ld=lld)
- ldflags-$(CONFIG_LD_ORPHAN_WARN) += -Wl,--orphan-handling=$(CONFIG_LD_ORPHAN_WARN_LEVEL)
- 
-
--- 
-2.55.0
+Best regards,
+--  
+Thomas Weißschuh <thomas.weissschuh@linutronix.de>
 
 
