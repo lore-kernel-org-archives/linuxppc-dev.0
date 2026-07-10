@@ -1,82 +1,126 @@
-Return-Path: <linuxppc-dev+bounces-24005-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24006-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8486FC43458
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Jul 2026 10:50:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 187A3C43458
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Jul 2026 11:01:09 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gxTBS6x9fz2yS4;
-	Fri, 10 Jul 2026 20:50:24 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783680624;
-	cv=none; b=HcjZ0GDm2GlZ/qK845pH8oZjm3JksDKawuOhyCBrmZERTxdZkrJNL0YDDaThA+HqTY6HdXIWogtwFQ2gXzBKosjW+ogycgg/46GshNYNOsMNZDHvOWLBLexRy+6pMUyNlqndhmIfloXPPa2MWsSHlnV/HAUsjfy8/92ErP5BKdbammRELgkeO1ech/JgGOrqBNsFFzphu4wNr9L9VHnVecEXX2N0sva88XtF69h2QRu9q6lKQYGX3+U5IpoNdYWGgZEp7JSL1slI7S/KoGgIM/mCMBMkTeTkI/34pDEv+yPJ0NfYNUaQ2avBiiNPdPMjIvzmjlK3tGsn4kNVTG/pRQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gxTQq2vJwz2yS4;
+	Fri, 10 Jul 2026 21:01:07 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a07:de40:b251:101:10:150:64:1"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783681267;
+	cv=none; b=gKckxYSICYo4ESCJWl4vWxBfgNADrZOsrt5yGvvI9sIisIiy8k1NgJP4NehjHNxLzRtroE1vmJp6CExhqyKlIPNu/Q//N8u0BCTmsozuTYzsy9LwamQnSZ/K+/k4LlDd9wrYn/BtR7Kura3r5Fza9BTVHtvXHiwIuQzg6s8Byl7xNw8msuRFHv4Z6BzX9vsNdEJ5qdO6UixOpo7BLXHvdUD3f1KycSWCCFI1I40KkNr9O9FmWkS4GtWuzsmh14MdAl2Wodv2w4q75t1of2iXyVhIL4J3Uys3gv1i14pbUKGKB6TVva+x6ACTVlsPT7HgngXYPJUZKTrAQMwaoptNZQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1783680624; c=relaxed/relaxed;
-	bh=hfTO3wFu/T6iZFaBLNDZLHaW6Mq653VUZn4uoRS7Zj4=;
+	t=1783681267; c=relaxed/relaxed;
+	bh=UYsS2vBan7uQzdgEWEddgopbLcVe02BSX1ZYLs9ZgnU=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=lMJpN3OOHMjyRx7uSffblOTQn1PmGGhtyvGALHo2MiGNdqrIDH5Eh+AyvMCt9h0+USrzBNjIZoqepcWdaU26DHcoNqbenKh/GcoeekGz8I4jJcmHC/3F9mYsucNCjx+X7o/5ot+jYa3dwkh3qr2S4Huha6PYsvW5NztkptzpByiuu8q38Y6I3WvG9TBXN6EgzMUwwQUhJ5E37jpuGRTpvpPCQm8Qyf/67L6vPrA6pQEkccL/rDDbd1iaINarH/BueEp/s2tPV7S6uvhJLvZhOIHXbvL8T1VS64z/5FyGWeqkZ9Bs3NREX1g0hwqS/gIJUYnyS6YhQvrPkD0o3chyjA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=nYLQ+9PR; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=will@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	 Content-Type:Content-Disposition:In-Reply-To; b=QiwFDAtqoNIFlsPF8GoO5EnVc7ivx3wvaD9X5f8b4+/H6ptkYYmHiuueEy6YY9RLs9C4/svq2tw6+kqqwsOe1kFbHgRhOGtS/327Xecm9eir3W8Ib7oebyGGCJnGz+qepyBVF6TAHFQfqGAVXqV6t4bE7PpmeXntFLrYBmibqC2EHsPIldCfzbHU6T69rVsTyIU/DJYtXSHX7I9RdQpcApOKGS3fJliSkSAqLp5WlyRoIZ/CT9ouHZ5I0cXwNOLHQ3RWhUjjgVxIJ7jaCuZp9z1uQIBcxxznXqVWsxhNqqxTIRffGpUVdzDnTPhkaFUAtCwPNKXpYcdUsczQjNzY9Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de; dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=O6RrK+c+; dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=ZOMjVeZg; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=O6RrK+c+; dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=ZOMjVeZg; dkim-atps=neutral; spf=pass (client-ip=2a07:de40:b251:101:10:150:64:1; helo=smtp-out1.suse.de; envelope-from=msuchanek@suse.de; receiver=lists.ozlabs.org) smtp.mailfrom=suse.de
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=nYLQ+9PR;
+	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=O6RrK+c+;
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=ZOMjVeZg;
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=O6RrK+c+;
+	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=ZOMjVeZg;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=will@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=2a07:de40:b251:101:10:150:64:1; helo=smtp-out1.suse.de; envelope-from=msuchanek@suse.de; receiver=lists.ozlabs.org)
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [IPv6:2a07:de40:b251:101:10:150:64:1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gxTBR6j5hz2yRF
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Jul 2026 20:50:23 +1000 (AEST)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id C6DCD40813;
-	Fri, 10 Jul 2026 10:50:21 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5D4B11F000E9;
-	Fri, 10 Jul 2026 10:50:16 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1783680621;
-	bh=hfTO3wFu/T6iZFaBLNDZLHaW6Mq653VUZn4uoRS7Zj4=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=nYLQ+9PRsu6pTYa7XveNy4Y0cihb6Lvyb2okOddtnzEDFyhKZMoEp28hrsnAuSs1/
-	 mZWLZmRgr8X2MEZjnVFnbhGNKuv/d+Kl4OD/zcri16TTTzcUSRPgbwYMsnlmQYVZ2Q
-	 fSNn40vQEBtYdfiI8057+h/qZPp0qDO1qn8JAF++X66Q6YwXY6qHMbRN4akzlqykrG
-	 X1sftYbJurNQTvVGQJCWWm50cIkILsstPYP8QSi2lEZ21NAzI0sqPbfqxqtElSQcNS
-	 pnRxs8cUNLPGyy81RO4cJUiFw3EmrJ5RSS3AlI20Gr4GlHC1U07tf55AuvCMff4Rs3
-	 VIJHcPWynLx/A==
-Date: Fri, 10 Jul 2026 11:50:12 +0100
-From: Will Deacon <will@kernel.org>
-To: Marek Szyprowski <m.szyprowski@samsung.com>
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, iommu@lists.linux.dev,
-	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-	linux-coco@lists.linux.dev, Robin Murphy <robin.murphy@arm.com>,
-	Marc Zyngier <maz@kernel.org>, Steven Price <steven.price@arm.com>,
-	Suzuki K Poulose <Suzuki.Poulose@arm.com>,
-	Catalin Marinas <catalin.marinas@arm.com>,
-	Jiri Pirko <jiri@resnulli.us>, Jason Gunthorpe <jgg@ziepe.ca>,
-	Mostafa Saleh <smostafa@google.com>,
-	Petr Tesarik <ptesarik@suse.com>,
-	Alexey Kardashevskiy <aik@amd.com>,
-	Dan Williams <dan.j.williams@intel.com>,
-	Xu Yilun <yilun.xu@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
-	linux-s390@vger.kernel.org,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gxTQp2sbxz2yRF
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Jul 2026 21:01:06 +1000 (AEST)
+Received: from kunlun.suse.cz (unknown [IPv6:2a07:de40:b306:2000::2])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out1.suse.de (Postfix) with ESMTPS id 8391876715;
+	Fri, 10 Jul 2026 11:01:03 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1783681263; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=UYsS2vBan7uQzdgEWEddgopbLcVe02BSX1ZYLs9ZgnU=;
+	b=O6RrK+c+yEUCBz7JS8C/n3uvL2/ffj5axWsd+OY7/CEczrcwTTxEsLs/dGrk0viRn5MzUe
+	GtnTNGDpvD2O3TvWKyCZYWhXnzThvycDzjVezp2doDQRDuZWsQfOU+4cVOIOZhNJKRbxfw
+	fx3PQHPrPfFlb6kdRd1H2jQ1bqYybjk=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1783681263;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=UYsS2vBan7uQzdgEWEddgopbLcVe02BSX1ZYLs9ZgnU=;
+	b=ZOMjVeZgmcYQW+gxCYgmXBRA3lul7pjSYwltV7OQTpYYU1+O+3dJHoeOdjPx+vWowECub2
+	kiZTkZ3pFRD1rDAw==
+Authentication-Results: smtp-out1.suse.de;
+	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=O6RrK+c+;
+	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=ZOMjVeZg
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1783681263; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=UYsS2vBan7uQzdgEWEddgopbLcVe02BSX1ZYLs9ZgnU=;
+	b=O6RrK+c+yEUCBz7JS8C/n3uvL2/ffj5axWsd+OY7/CEczrcwTTxEsLs/dGrk0viRn5MzUe
+	GtnTNGDpvD2O3TvWKyCZYWhXnzThvycDzjVezp2doDQRDuZWsQfOU+4cVOIOZhNJKRbxfw
+	fx3PQHPrPfFlb6kdRd1H2jQ1bqYybjk=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1783681263;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=UYsS2vBan7uQzdgEWEddgopbLcVe02BSX1ZYLs9ZgnU=;
+	b=ZOMjVeZgmcYQW+gxCYgmXBRA3lul7pjSYwltV7OQTpYYU1+O+3dJHoeOdjPx+vWowECub2
+	kiZTkZ3pFRD1rDAw==
+Date: Fri, 10 Jul 2026 13:01:02 +0200
+From: Michal =?iso-8859-1?Q?Such=E1nek?= <msuchanek@suse.de>
+To: Thomas Gleixner <tglx@kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+	Peter Zijlstra <peterz@infradead.org>,
 	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	Alexander Gordeev <agordeev@linux.ibm.com>,
-	Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
-	Heiko Carstens <hca@linux.ibm.com>,
-	Vasily Gorbik <gor@linux.ibm.com>,
-	Christian Borntraeger <borntraeger@linux.ibm.com>,
-	Sven Schnelle <svens@linux.ibm.com>, x86@kernel.org
-Subject: Re: [PATCH v7 00/22] dma-mapping: Track shared DMA state through
- direct, pool and swiotlb paths
-Message-ID: <alDOZAK_reXPQJsN@willie-the-truck>
-References: <20260701054926.825925-1-aneesh.kumar@kernel.org>
- <CGME20260707080628eucas1p13fa8a57e60ef5dd3ec651e19e42af0a1@eucas1p1.samsung.com>
- <yq5av7argr65.fsf@kernel.org>
- <fc804746-4fb8-4ea9-997f-a4cae9ba8c14@samsung.com>
+	Shrikanth Hegde <sshegde@linux.ibm.com>,
+	linuxppc-dev@lists.ozlabs.org, Kees Cook <kees@kernel.org>,
+	Huacai Chen <chenhuacai@kernel.org>, loongarch@lists.linux.dev,
+	Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
+	linux-riscv@lists.infradead.org,
+	Sven Schnelle <svens@linux.ibm.com>, linux-s390@vger.kernel.org,
+	x86@kernel.org, Mark Rutland <mark.rutland@arm.com>,
+	Jinjie Ruan <ruanjinjie@huawei.com>,
+	Andy Lutomirski <luto@kernel.org>, Oleg Nesterov <oleg@redhat.com>,
+	Richard Henderson <richard.henderson@linaro.org>,
+	Russell King <linux@armlinux.org.uk>,
+	Catalin Marinas <catalin.marinas@arm.com>,
+	Guo Ren <guoren@kernel.org>,
+	Geert Uytterhoeven <geert@linux-m68k.org>,
+	Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+	Helge Deller <deller@gmx.de>,
+	Yoshinori Sato <ysato@users.sourceforge.jp>,
+	Richard Weinberger <richard@nod.at>,
+	Chris Zankel <chris@zankel.net>,
+	linux-arm-kernel@lists.infradead.org, linux-alpha@vger.kernel.org,
+	linux-csky@vger.kernel.org, linux-m68k@lists.linux-m68k.org,
+	linux-mips@vger.kernel.org, linux-parisc@vger.kernel.org,
+	linux-sh@vger.kernel.org, linux-um@lists.infradead.org,
+	Arnd Bergmann <arnd@arndb.de>, Vineet Gupta <vgupta@kernel.org>,
+	Will Deacon <will@kernel.org>, Brian Cain <bcain@kernel.org>,
+	Michal Simek <monstr@monstr.eu>, Dinh Nguyen <dinguyen@kernel.org>,
+	"David S. Miller" <davem@davemloft.net>,
+	Andreas Larsson <andreas@gaisler.com>,
+	linux-snps-arc@lists.infradead.org, linux-hexagon@vger.kernel.org,
+	linux-openrisc@vger.kernel.org, sparclinux@vger.kernel.org,
+	linux-arch@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>,
+	linux-doc@vger.kernel.org
+Subject: Re: [patch 13/18] entry: Make trace_syscall_enter() return type bool
+Message-ID: <alDQ7isUKJFl8Va4@kunlun.suse.cz>
+References: <20260707181957.433213175@kernel.org>
+ <20260707190254.338083894@kernel.org>
+ <ak5ySpil83TNWxeq@kunlun.suse.cz>
+ <87se5tqkyp.ffs@fw13>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -90,59 +134,216 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <fc804746-4fb8-4ea9-997f-a4cae9ba8c14@samsung.com>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <87se5tqkyp.ffs@fw13>
+X-Rspamd-Action: add header
+X-Rspamd-Server: rspamd2.dmz-prg2.suse.org
+X-Spamd-Result: default: False [15.15 / 50.00];
+	SPAM_FLAG(5.00)[];
+	NEURAL_SPAM_LONG(3.50)[1.000];
+	BAYES_HAM(-3.00)[100.00%];
+	NEURAL_SPAM_SHORT(2.96)[0.988];
+	HFILTER_HOSTNAME_UNKNOWN(2.50)[];
+	RDNS_NONE(2.00)[];
+	ONCE_RECEIVED(1.20)[];
+	HFILTER_HELO_IP_A(1.00)[kunlun.suse.cz];
+	HFILTER_HELO_NORES_A_OR_MX(0.30)[kunlun.suse.cz];
+	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	MIME_GOOD(-0.10)[text/plain];
+	MX_GOOD(-0.01)[];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	ARC_NA(0.00)[];
+	FUZZY_RATELIMITED(0.00)[rspamd.com];
+	MIME_TRACE(0.00)[0:+];
+	FREEMAIL_ENVRCPT(0.00)[gmx.de];
+	FREEMAIL_CC(0.00)[vger.kernel.org,infradead.org,ellerman.id.au,linux.ibm.com,lists.ozlabs.org,kernel.org,lists.linux.dev,dabbelt.com,lists.infradead.org,arm.com,huawei.com,redhat.com,linaro.org,armlinux.org.uk,linux-m68k.org,alpha.franken.de,gmx.de,users.sourceforge.jp,nod.at,zankel.net,lists.linux-m68k.org,arndb.de,monstr.eu,davemloft.net,gaisler.com,lwn.net];
+	DNSWL_BLOCKED(0.00)[2a07:de40:b306:2000::2:from];
+	FROM_EQ_ENVFROM(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	TO_DN_SOME(0.00)[];
+	RCPT_COUNT_GT_50(0.00)[52];
+	MISSING_XM_UA(0.00)[];
+	RCVD_COUNT_ZERO(0.00)[0];
+	DKIM_TRACE(0.00)[suse.de:+];
+	R_RATELIMIT(0.00)[to_ip_from(RLs1yuyu6ywojxyk8y3ncu5g39)];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:dkim]
+X-Spamd-Bar: +++++++++++++++
+X-Rspamd-Queue-Id: 8391876715
+X-Spam: Yes
 
-On Tue, Jul 07, 2026 at 03:03:48PM +0200, Marek Szyprowski wrote:
-> On 07.07.2026 10:06, Aneesh Kumar K.V wrote:
-> > "Aneesh Kumar K.V (Arm)" <aneesh.kumar@kernel.org> writes:
+On Wed, Jul 08, 2026 at 10:34:38PM +0200, Thomas Gleixner wrote:
+> On Wed, Jul 08 2026 at 17:52, Michal Suchánek wrote:
+> > On Tue, Jul 07, 2026 at 09:06:48PM +0200, Thomas Gleixner wrote:
+> >> In preparation of converting the return value of
+> >> syscall_enter_from_user_mode[_work]() bool, rework trace_syscall_enter() to
+> >> 
+> >>  - update the syscall number via a pointer argument
+> >> 
+> >>  - Return True if the syscall number is != -1, False otherwise
 > >
-> >> This series tracks confidential-computing shared DMA state through the
-> >> dma-direct, dma-pool, and swiotlb paths so that encrypted and decrypted
-> >> DMA buffers are handled consistently.
-> >>
-> >> Today, the direct DMA path mostly relies on force_dma_unencrypted() for
-> >> shared/decrypted buffer handling. This series consolidates the
-> >> force_dma_unencrypted() checks in the top-level functions and ensures
-> >> that the remaining DMA interfaces use DMA attributes to make the correct
-> >> decisions.
-> >>
-> >> The series separates mapping and allocation state:
-> >> - DMA_ATTR_CC_SHARED describes the DMA address attribute requested for a
-> >>   mapping. It tells the DMA mapping path that the DMA address must target
-> >>   shared/decrypted memory.
-> >> - __DMA_ATTR_ALLOC_CC_SHARED is an internal DMA-mapping attribute used only
-> >>   by allocation paths after the DMA core decides that the backing pages
-> >>   must be allocated as shared/decrypted memory.
-> >>
-> >> The series:
-> >> - moves swiotlb-backed allocations out of __dma_direct_alloc_pages(),
-> >> - uses __DMA_ATTR_ALLOC_CC_SHARED through the dma-direct alloc/free paths
-> >> - teaches the atomic DMA pools to track encrypted versus decrypted
-> >>   state
-> >> - tracks swiotlb pool encryption state and enforces strict pool
-> >>   selection
-> >> - centralizes encrypted/decrypted pgprot handling in dma_pgprot() using
-> >>   DMA attributes
-> >> - passes DMA attributes down to dma_capable() so capability checks can
-> >>   validate whether the selected DMA address encoding matches
-> >>   DMA_ATTR_CC_SHARED
-> >> - makes dma_direct_map_phys() choose the DMA address encoding from
-> >>   DMA_ATTR_CC_SHARED and fall back to swiotlb when a shared DMA request
-> >>   cannot use the direct mapping, which lets arm64 and x86 CCA guests stop
-> >>   relying on SWIOTLB_FORCE for DMA mappings
-> >> - use the selected swiotlb pool state to derive the returned DMA
-> >>   address
-> >> - reports CC_ATTR_GUEST_MEM_ENCRYPT for arm64 Realms, powerpc secure
-> >>   guests, and s390 protected virtualization guests.
-> >>
-> >> Dependency:
-> >> This series depends on the pKVM changes posted at:
-> >> https://lore.kernel.org/all/20260603110522.3331819-1-smostafa@google.com
+> > This does not achieve the goal of the initial RFC: To detangle the
+> > return value of syscall_enter_from_user_mode from the syscall number.
+> 
+> As I explained to you before: Your RFC broke the implicit assumption of
+> tracing, which is way worse than having this oddity.
 
-FYI, I'll probably take the second patch there as a fix, then I can put
-the other two on a topic branch in the arm64 tree.
+It would be so nice to make the assumptions about the entry API explicit
+so that platforms can agree on the semantics.
 
-Will
+> 
+> > This still conflates them, making it impossible to tell if the syscall
+> > was rejected or syscall number was -1 to start with. Now also obfuscated
+> > by performing the check deeper inside the common code.
+> 
+> That's where it belongs. It's a problem to solve within the given
+> semantics of trace_syscall_enter() and not a problem to be worked around
+> at the call sites if you want to have consolidated semantics.
+> 
+> >> The only difference is that this also returns False, when the syscall
+> >> number was already -1 to begin with, but there is not much which can be
+> >> done about that. As the architecture has to preset the return value to
+> >> -ENOSYS anyway, that results in the correct return value for such an
+> >> invalid syscall.
+> >
+> > That's not possible to do for architectures where the syscall number and
+> > the syscall return value are in the same register.
+> >
+> > You suggested that it is possible to not write the return value into an
+> > actual register but use an additional field for that, and have the exit
+> > code write the register.
+> >
+> > However, that's not what is documented, nor what is currently done.
+> 
+> Just because S390 screwed up their ABI and then on top of that failed to
+> do what _every_ other architecture in the kernel does, i.e. having a
+> result storage which is preset to -ENOSYS does not mean that S390 did
+> the right thing just because it was not documented. Kernel documentation
+> is known to be incomplete and I fixed it up in the last patch as you
+> might have noticed.
+> 
+> Just for the record. Presetting the return value to -ENOSYS has been
+> practice for three decades. I couldn't be bothered to do a full search
+
+No, it isn't practice anymore for decades.
+
+The moment ppc and s390 support was merged they do not preset the
+syscall return value to -ENOSYS, for obvious reason.
+
+That is how the undocumented, implicit, 'as implemented' API goes. It
+silently changes as the implementation evolves.
+
+> in the history trees to figure out the exact point, but as of 2.1.9,
+> which was released in Nov. 1996, this is definitely the case.
+> 
+> So don't tell me that because S390 missed the train when it was
+> added to mainline in 2007 (, i.e. 11 years _after_ this "undocumented" rule was
+> established that now 20 years later the world has to revolve around S390
+> and your personal idea of "clear and intelligible":
+
+Don't tell me you missed the train on what the actual API of syscall
+entry is.
+
+> 
+> > While this is an improvement in some respects the goal to have clear and
+> > intelligible API around the generic entry is not acheived.
+> 
+> I'm honestly not sure whether I should laugh or cry.
+> 
+> You are completely missing the point:
+> 
+>   1) The set in stone rule is that if the entry code returns -1L as the
+>      syscall number then the architecture code has to skip the syscall
+>      invocation _and_ is not supposed to change the return value.
+
+Which stone?
+
+Pics or it did not happen.
+
+> 
+>   2) There is no guarantee and never has been that any of the involved
+>      mechanisms (ptrace, seccomp, tracing) will change the return value
+>      when it sets the syscall number to -1L.
+
+For ptrace to correctly emulate a syscall it needs to set the syscall nr
+to an invalid value on entry, and the desired result if the syscall on
+exit AFAICT.
+
+Relying on platfrom quirk to assume that the return valu is set to
+ENOSYS is insufficient.
+
+I doubt many platfroms have an ABI that dictates that the register that
+has the syscal nr is set to -1 on exit from syscal. Then even if the
+-ENOSYS is preset by the kernel the syscall nr needs to be poked back on
+exit for the emulation to be correct.
+
+> 
+>      Quite the contrary there has been a long time (30 years at least)
+>      expectation that the return value has been preset to -ENOSYS.
+
+That is your opinion, not the fact. Multiple platforms do not work like
+that.
+
+> 
+>   3) It's trivial as demonstrated to make ptrace and seccomp more
+>      comprehensible but that does not invalidate #2
+> 
+>   4) Due to the historical integration of tracing (+probes/BPF) there is
+>      an implicit assumption that the return code is preset to -ENOSYS.
+>      See #2
+
+False again
+
+> 
+>   5) There is an obvious ambiguity between the initial syscall number
+>      being -1 and the change of syscall number to -1 in the case of
+>      tracing, but that's not unique to tracing:
+> 
+>      If e.g. seccomp() observes the handed in syscall number to be -1
+>      and tells in the return code to skip the syscall, then it can
+>      rightfully assume that the return code will be -ENOSYS and has no
+>      obligation to set it explicitly. See #2
+
+False again
+
+> 
+> Q: Is it perfect?
+> A: No
+> 
+> Q: Can it be made perfect?
+> A: No, because you can't change history and established practice.
+> 
+> Just for illustration. Changing the logic in trace_syscall_enter() to:
+> 
+> --- a/kernel/entry/syscall-common.c
+> +++ b/kernel/entry/syscall-common.c
+> @@ -9,13 +9,15 @@
+>  
+>  bool trace_syscall_enter(struct pt_regs *regs, long *syscall)
+>  {
+> +	long orig_syscall = *syscall;
+> +
+>  	trace_sys_enter(regs, *syscall);
+>  	/*
+>  	 * Probes or BPF hooks in the tracepoint may have changed the
+>  	 * system call number. Reread it.
+>  	 */
+>  	*syscall = syscall_get_nr(current, regs);
+> -	return *syscall != -1L;
+> +	return *syscall == orig_syscall || *syscall != -1L;
+>  }
+>  
+>  void trace_syscall_exit(struct pt_regs *regs, long ret)
+> 
+> does not make #2 magically go away. It's still the same problem whether
+> you like it or not.
+
+However, reading the syscall number from pt_regs only after
+syscall_enter_from_user_mode exits does.
+
+Thanks
+
+Michal
 
