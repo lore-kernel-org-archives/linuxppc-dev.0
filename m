@@ -1,130 +1,117 @@
-Return-Path: <linuxppc-dev+bounces-24015-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24016-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1CA39C43458
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Jul 2026 15:20:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6D396C43458
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Jul 2026 16:19:57 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gxb9k1jGcz2yXj;
-	Sat, 11 Jul 2026 01:20:10 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=195.135.223.130
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783696810;
-	cv=none; b=CkFmF8khKZkqGsZNGEqCEUpeLv+iE5Jev4nbdM9l9fWxR06yo3ViBovGWgBN2Byd+mTibVsQahSyT8cm9Hu7vKKdav9mU5zsl4QQdWaenJ3E1mELrKRyhPzRXE0K7oh52b8rNMDHEA2of0oXSLFZfHASyD28rW3zs+22r6tPvkvbMFIZTPw6Bio+oYC4qWjey5SnDJcNr9SzvskGm3gTj7EbI5TLqaXMeqhsEMVhdOYnTK3yyoQM/JrvXf0q1UVAots5OEM5uDx0pRDaDDsYPv6KvTLdNxS24DSyZUmZNmovjXH/JjgReO9HRQXuJedfEadypWyaABahtjtcAGzqNg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gxcVg5X4sz2xlt;
+	Sat, 11 Jul 2026 02:19:55 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::f36"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783700395;
+	cv=none; b=Zwu1P0gQA4q9YfsPcQoXPBBdOI7TXqCar9JcohU68qPXD09ZflgDA5AUKi8y6COf2yl8CtMxjiKSh7kUSNtK/zuL0Lx+PfoJJ/0irme/VImSlP4fJsHI38HSNQjnpYK0LqLYf3OdWp6IbRYqHKE0MfEtG7f0rigaPM8EnMfUhkacuX+FVVUDDtdNkAuDjizytBctDXka3cyum43NMsApX+a4UWvyify+cMKiqY86U1D6J4oAWx+082n9GzaGvEqumvnhDedVwPCYcJreZHrz+Hlp7aEHkeafKsAc9eIFZJ9Mgp1fo1HEAoT6ZXJvU1Y2DT3HPN4r/ac41RXOP08u7w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1783696810; c=relaxed/relaxed;
-	bh=PZQD0gbHT/+/4nEi6V44a4a6X/c8Qb54PXXTiWjk/u8=;
+	t=1783700395; c=relaxed/relaxed;
+	bh=wu7pGf03sdcW+GKZ7Iww7/tPEwPDkL98YpGrOpuCsUc=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=E76Q8yhpFFmKZfC3UMnF+1kTeudR1lZHIIQivxoSGxTADzSgGdYdpz3zWn1HY3xF3eYN6f6Yrt5wL4bkjlZrgwoh6WIdW4fRhdGwXwtDyrdsdT7mfiaTkYGLjY16QlosKOkeuRF2hG7c8Sh9nSYKM5X8CAx6qwoMnESDgY1XMyJlQTI45X+ZtlqDRQdFOODUwXkPzlM7KI2pyfaOp4O0iLrJYxZ6ADe2vWqQuTXYPsAkyz/0HWA2iP9NtrVvM6oBlUlIDwsd6FLPo18pfC0oZDkZJZJ+3Dkod+5iBYfTdcH9aix+0MbdAC2njGdov9pDEwnX81EGC27Oll4343CGoA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de; dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=rRfHvU7h; dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=pk/+bbw3; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=PEvxjgpH; dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=p4USxO4M; dkim-atps=neutral; spf=pass (client-ip=195.135.223.130; helo=smtp-out1.suse.de; envelope-from=msuchanek@suse.de; receiver=lists.ozlabs.org) smtp.mailfrom=suse.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de
+	 Content-Type:Content-Disposition:In-Reply-To; b=niKP5hJCE9DsN2yYfiHt6heLeLJ7ifXHkaWA5WrlHyMMMs8Jh/coxQ+6ijOzslTq1FAqk6XuHoJamOPb9WsU2H3HAMjloujuYf5OaWZc/ZojormKcltaG1NoTxtqWO8vPuNmCWq9CA0ZGjjoFgmkmfVlAeqWcvQl8hy2aXmfLQjGQ/T36QnE9ON1LhfrD0X9ail5ZxnvXWeWnrQAVxxvC2ljNf2BhXDDRTLJ7cOMmlGyRJ9UgH3428NRPMYUbCX6j0gFWcOWrT3TSDVxllnE0i+zXc00Mbf6fdr27RJ5C6ek5l5gRmuC0RbCGHVs5iIhNmmlCbxVnuYT2uUa2Frfaw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ziepe.ca; dkim=pass (2048-bit key; secure) header.d=ziepe.ca header.i=@ziepe.ca header.a=rsa-sha256 header.s=google header.b=nbbKrYVc; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::f36; helo=mail-qv1-xf36.google.com; envelope-from=jgg@ziepe.ca; receiver=lists.ozlabs.org) smtp.mailfrom=ziepe.ca
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ziepe.ca
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=rRfHvU7h;
-	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=pk/+bbw3;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=PEvxjgpH;
-	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=p4USxO4M;
+	dkim=pass (2048-bit key; secure) header.d=ziepe.ca header.i=@ziepe.ca header.a=rsa-sha256 header.s=google header.b=nbbKrYVc;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=195.135.223.130; helo=smtp-out1.suse.de; envelope-from=msuchanek@suse.de; receiver=lists.ozlabs.org)
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=ziepe.ca (client-ip=2607:f8b0:4864:20::f36; helo=mail-qv1-xf36.google.com; envelope-from=jgg@ziepe.ca; receiver=lists.ozlabs.org)
+Received: from mail-qv1-xf36.google.com (mail-qv1-xf36.google.com [IPv6:2607:f8b0:4864:20::f36])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gxb9j053Pz2ySg
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Jul 2026 01:20:08 +1000 (AEST)
-Received: from kunlun.suse.cz (unknown [IPv6:2a07:de40:b306:2000::2])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id B43DE76801;
-	Fri, 10 Jul 2026 15:20:04 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1783696805; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=PZQD0gbHT/+/4nEi6V44a4a6X/c8Qb54PXXTiWjk/u8=;
-	b=rRfHvU7hwvxSxH/yhWy3u/UmnKewb4V/Z4b30wYyACRHS2pvvGsK3hzGOrADXnhSphQb6B
-	TJO7bjd1/2FVOhXCYNiRGDpELYNIfYY2dwQ6Y49rIZ1WBugDexsBsCaHyF140dt8k3TjmV
-	UWP5O1yIlbcNFepPxleuBxi0o0QQDRg=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1783696805;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=PZQD0gbHT/+/4nEi6V44a4a6X/c8Qb54PXXTiWjk/u8=;
-	b=pk/+bbw3K3lpKh/bJanZxO9C8hJb0ZZOIjqryyeda12Q6eGbOK0xFb2lDAgDT0IE8bAo9T
-	Y31J/JbRgJZSmhDA==
-Authentication-Results: smtp-out1.suse.de;
-	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=PEvxjgpH;
-	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=p4USxO4M
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1783696804; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=PZQD0gbHT/+/4nEi6V44a4a6X/c8Qb54PXXTiWjk/u8=;
-	b=PEvxjgpHDkYAsWHBvOJnCwi8Aqh7iUKS6UnrUW8IsLNixt7v9VdTF6VpKe/6vGC/h1xgM2
-	uQXypgGxDhZQFurqRWyXGrIHbe4ykOmc1FofcTQPuLdfVOHR9PXQBW7Js2xqnQRuLq0aZj
-	LLSWX+cwuBo/Mg5E6/LeKOba5LZ7xYM=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1783696804;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=PZQD0gbHT/+/4nEi6V44a4a6X/c8Qb54PXXTiWjk/u8=;
-	b=p4USxO4MP+4N45GZtMpBPez/DEQVEMysX4p56b8ql7l7r16Ar/kLpYHwhTAobjb9FOy99M
-	EDSZAKc2nxg1qgBA==
-Date: Fri, 10 Jul 2026 17:20:03 +0200
-From: Michal =?iso-8859-1?Q?Such=E1nek?= <msuchanek@suse.de>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: Thomas Gleixner <tglx@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
-	Peter Zijlstra <peterz@infradead.org>,
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gxcVd19j9z2xC3
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Jul 2026 02:19:52 +1000 (AEST)
+Received: by mail-qv1-xf36.google.com with SMTP id 6a1803df08f44-8eeb4508f29so8876346d6.0
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Jul 2026 09:19:51 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=ziepe.ca; s=google; t=1783700388; x=1784305188; darn=lists.ozlabs.org;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=wu7pGf03sdcW+GKZ7Iww7/tPEwPDkL98YpGrOpuCsUc=;
+        b=nbbKrYVc7wbwzBXVJv2Fc+8o2rPdjWFz+zgo2SFXOgq0qJj01WWfFOVgokzTYn6OO7
+         IzMPJ3nX+EbfX+axGn7DwDSz+Udx0olfIDqk+aSuaENhlzeLcSh7WQUryvMeTxG2x9EL
+         lGqggHrNPtOjdts2+KuTT+IdPvp0YV6/OsqU9vd9UT+rOr52lE9WvIxcfyWEjOH899Ch
+         4L6h1boysGyxdbl0DL5S1HBlwuZd66AiBCTTt9kwJtsrnhjl6Zgt2xAMDJjM+LPNN9aE
+         AeAiygYfzRPg8lGRLp6uGroIbseJfK5670ktDl1f2Ok6iL+x5KcFX6qrgXu1jr79tuTP
+         YNhQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1783700388; x=1784305188;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=wu7pGf03sdcW+GKZ7Iww7/tPEwPDkL98YpGrOpuCsUc=;
+        b=mbq7XV+8NzMgW3RD0ihLlz2DMXN+DrMeavbh47ocwVEZtLOc8fR2Xj3xxx+k5HNysi
+         gGXRVs2YkTOOJkyvp/aDR9fxazqVg/pm6BZS6arXevufi0urM5v7z25NpeptGamJPTWz
+         dCEuCb0LinPZbvuMR7gqSj+w98wkjYaNG7gRR+CGxEvFyT1fAIDVC8n3iB7g083Cq2rE
+         FU32rZh5/JwsjwFbKoeTy7y9klo4qCO7IP36z6p28UOvIo6HIpFVXGO9CwqVxr8XqdQG
+         b9K3ct5WlGLcieB8IryXRBrD87ns/zfEz9vlZ63bLDZoKxz9n8FFCzxuy7NBIo7lCV3l
+         C2Vg==
+X-Forwarded-Encrypted: i=1; AHgh+RpL4TK0oskfpPV3OHmXXTQ3soa5fAtFnhtS1uOZsexCtrKeUAnm2ycRFsdaViTDKrRf3YsN0c4f9/ZILHs=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YwOQPDUs0+zv616V1UZ9ajrunQcDdSRMrzXGjhi+lITFaJxfh1U
+	tmy9Gxjt4FNY5ZpoE1SjzMAkfjaYV/zwOGryfExj/VB3LNmneLNnCc9ZN5nZUeRg9E4=
+X-Gm-Gg: AfdE7cnx2E3G9YKXgN1eeFgybjTmKXofsnJYo/Hs3eLIxTILWjERlbTlgY5OiCj6mXd
+	ZrIqw+op6ZMiLTgT5qqknmCz7qF4k0T+Qky1we4uwNSG59l2sbUjIYUjbnPT18GKUvOrep+FAbo
+	Sf82r0RwTYnOU7nfwmavoBmsmDUEVn8qWBKudq5PpOsPzBG62Xd+dc3xEb8ISvHvacCNNtG0/Og
+	ubkvq0lpmmHn8jUOmA/t9sj3CvBze5mJo680il9v8apNw/2fZDVUc8vEhjUvs4DDLxHCB5Vx9Y3
+	6SpQ3p/cnz9R/GevINZ1Yikdx9yatKgeqmYWYHO3jbtHgL/Y4zC/1HMvmiFTYpCIytERPIDsoKb
+	MF/ohiwTgP46u6xc16YsyEaAp2IS+oRuZNOSIresd6CkqYjLk8nffRIWRFjwj
+X-Received: by 2002:ad4:5743:0:b0:8f4:870f:72bc with SMTP id 6a1803df08f44-8fec3cf5d44mr142091486d6.51.1783700387612;
+        Fri, 10 Jul 2026 09:19:47 -0700 (PDT)
+Received: from ziepe.ca ([159.2.72.92])
+        by smtp.gmail.com with ESMTPSA id 6a1803df08f44-8ffd56bf455sm44263206d6.13.2026.07.10.09.19.46
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 10 Jul 2026 09:19:46 -0700 (PDT)
+Received: from jgg by wakko with local (Exim 4.97)
+	(envelope-from <jgg@ziepe.ca>)
+	id 1wiDx3-00000007We8-41pt;
+	Fri, 10 Jul 2026 13:19:45 -0300
+Date: Fri, 10 Jul 2026 13:19:45 -0300
+From: Jason Gunthorpe <jgg@ziepe.ca>
+To: "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>
+Cc: Catalin Marinas <catalin.marinas@arm.com>, iommu@lists.linux.dev,
+	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+	linux-coco@lists.linux.dev, Robin Murphy <robin.murphy@arm.com>,
+	Marek Szyprowski <m.szyprowski@samsung.com>,
+	Will Deacon <will@kernel.org>, Marc Zyngier <maz@kernel.org>,
+	Steven Price <steven.price@arm.com>,
+	Suzuki K Poulose <Suzuki.Poulose@arm.com>,
+	Jiri Pirko <jiri@resnulli.us>, Mostafa Saleh <smostafa@google.com>,
+	Petr Tesarik <ptesarik@suse.com>,
+	Alexey Kardashevskiy <aik@amd.com>,
+	Dan Williams <dan.j.williams@intel.com>,
+	Xu Yilun <yilun.xu@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
+	linux-s390@vger.kernel.org,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
 	Michael Ellerman <mpe@ellerman.id.au>,
-	Shrikanth Hegde <sshegde@linux.ibm.com>,
-	linuxppc-dev@lists.ozlabs.org, Kees Cook <kees@kernel.org>,
-	Huacai Chen <chenhuacai@kernel.org>, loongarch@lists.linux.dev,
-	Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
-	linux-riscv@lists.infradead.org,
-	Sven Schnelle <svens@linux.ibm.com>, linux-s390@vger.kernel.org,
-	x86@kernel.org, Mark Rutland <mark.rutland@arm.com>,
-	Jinjie Ruan <ruanjinjie@huawei.com>,
-	Andy Lutomirski <luto@kernel.org>,
-	Richard Henderson <richard.henderson@linaro.org>,
-	Russell King <linux@armlinux.org.uk>,
-	Catalin Marinas <catalin.marinas@arm.com>,
-	Guo Ren <guoren@kernel.org>,
-	Geert Uytterhoeven <geert@linux-m68k.org>,
-	Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
-	Helge Deller <deller@gmx.de>,
-	Yoshinori Sato <ysato@users.sourceforge.jp>,
-	Richard Weinberger <richard@nod.at>,
-	Chris Zankel <chris@zankel.net>,
-	linux-arm-kernel@lists.infradead.org, linux-alpha@vger.kernel.org,
-	linux-csky@vger.kernel.org, linux-m68k@lists.linux-m68k.org,
-	linux-mips@vger.kernel.org, linux-parisc@vger.kernel.org,
-	linux-sh@vger.kernel.org, linux-um@lists.infradead.org,
-	Arnd Bergmann <arnd@arndb.de>, Vineet Gupta <vgupta@kernel.org>,
-	Will Deacon <will@kernel.org>, Brian Cain <bcain@kernel.org>,
-	Michal Simek <monstr@monstr.eu>, Dinh Nguyen <dinguyen@kernel.org>,
-	"David S. Miller" <davem@davemloft.net>,
-	Andreas Larsson <andreas@gaisler.com>,
-	linux-snps-arc@lists.infradead.org, linux-hexagon@vger.kernel.org,
-	linux-openrisc@vger.kernel.org, sparclinux@vger.kernel.org,
-	linux-arch@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>,
-	linux-doc@vger.kernel.org
-Subject: Re: [patch 13/18] entry: Make trace_syscall_enter() return type bool
-Message-ID: <alENozSQmA3nU86B@kunlun.suse.cz>
-References: <20260707181957.433213175@kernel.org>
- <20260707190254.338083894@kernel.org>
- <ak5ySpil83TNWxeq@kunlun.suse.cz>
- <87se5tqkyp.ffs@fw13>
- <alDQ7isUKJFl8Va4@kunlun.suse.cz>
- <alDaOw8t-e3rxIPm@redhat.com>
- <alDmTcgzMlKiio9H@kunlun.suse.cz>
- <alDrGBMdTuoLcVyy@redhat.com>
+	Nicholas Piggin <npiggin@gmail.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	Alexander Gordeev <agordeev@linux.ibm.com>,
+	Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
+	Heiko Carstens <hca@linux.ibm.com>,
+	Vasily Gorbik <gor@linux.ibm.com>,
+	Christian Borntraeger <borntraeger@linux.ibm.com>,
+	Sven Schnelle <svens@linux.ibm.com>, x86@kernel.org,
+	Jiri Pirko <jiri@nvidia.com>, Michael Kelley <mhklinux@outlook.com>
+Subject: Re: [PATCH v7 16/22] dma-direct: make dma_direct_map_phys() honor
+ DMA_ATTR_CC_SHARED
+Message-ID: <20260710161945.GO118978@ziepe.ca>
+References: <20260701054926.825925-1-aneesh.kumar@kernel.org>
+ <20260701054926.825925-17-aneesh.kumar@kernel.org>
+ <ak42F240d-53QeFN@arm.com>
+ <yq5apl0xgy89.fsf@kernel.org>
+ <ak-CT3oanlDfgTy4@arm.com>
+ <20260709181336.GM118978@ziepe.ca>
+ <yq5ajyr3h106.fsf@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -138,97 +125,65 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <alDrGBMdTuoLcVyy@redhat.com>
-X-Rspamd-Action: add header
-X-Rspamd-Server: rspamd2.dmz-prg2.suse.org
-X-Spamd-Result: default: False [15.15 / 50.00];
-	SPAM_FLAG(5.00)[];
-	NEURAL_SPAM_LONG(3.50)[1.000];
-	BAYES_HAM(-3.00)[100.00%];
-	NEURAL_SPAM_SHORT(2.96)[0.987];
-	HFILTER_HOSTNAME_UNKNOWN(2.50)[];
-	RDNS_NONE(2.00)[];
-	ONCE_RECEIVED(1.20)[];
-	HFILTER_HELO_IP_A(1.00)[kunlun.suse.cz];
-	HFILTER_HELO_NORES_A_OR_MX(0.30)[kunlun.suse.cz];
-	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	MIME_GOOD(-0.10)[text/plain];
-	MX_GOOD(-0.01)[];
-	FUZZY_RATELIMITED(0.00)[rspamd.com];
-	ARC_NA(0.00)[];
-	RBL_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b306:2000::2:from];
-	MIME_TRACE(0.00)[0:+];
-	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	FREEMAIL_ENVRCPT(0.00)[gmx.de];
-	TO_DN_SOME(0.00)[];
-	RCPT_COUNT_GT_50(0.00)[52];
-	FROM_EQ_ENVFROM(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	RCVD_COUNT_ZERO(0.00)[0];
-	R_RATELIMIT(0.00)[to_ip_from(RLrpyf51xp5ujasy9bitsaikab)];
-	MISSING_XM_UA(0.00)[];
-	FREEMAIL_CC(0.00)[kernel.org,vger.kernel.org,infradead.org,ellerman.id.au,linux.ibm.com,lists.ozlabs.org,lists.linux.dev,dabbelt.com,lists.infradead.org,arm.com,huawei.com,linaro.org,armlinux.org.uk,linux-m68k.org,alpha.franken.de,gmx.de,users.sourceforge.jp,nod.at,zankel.net,lists.linux-m68k.org,arndb.de,monstr.eu,davemloft.net,gaisler.com,lwn.net];
-	DKIM_TRACE(0.00)[suse.de:+];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[kunlun.suse.cz:helo,kunlun.suse.cz:mid,suse.de:dkim]
-X-Spamd-Bar: +++++++++++++++
-X-Rspamd-Queue-Id: B43DE76801
-X-Spam: Yes
+In-Reply-To: <yq5ajyr3h106.fsf@kernel.org>
 
-On Fri, Jul 10, 2026 at 02:52:40PM +0200, Oleg Nesterov wrote:
-> On 07/10, Michal Suchánek wrote:
+On Fri, Jul 10, 2026 at 10:52:49AM +0530, Aneesh Kumar K.V wrote:
+> >> > 	/*
+> >> > 	 * For host memory encryption and device requiring unencrypted DMA,
+> >> > 	 * MMIO memory is treated as shared by default.
+> >> > 	 */
+> >> > 	if (attrs & DMA_ATTR_MMIO) {
+> >> > 		if (cc_platform_has(CC_ATTR_HOST_MEM_ENCRYPT) || force_dma_unencrypted(dev))
+> >> > 			attrs |= DMA_ATTR_CC_SHARED;
+> >> > 	}
+> >> 
+> >> Yes, I think it does the trick, preserves the current semantics for AMD.
+> >> I guess you could use a single 'if' for all checks (up to you).
 > >
-> > On Fri, Jul 10, 2026 at 01:40:43PM +0200, Oleg Nesterov wrote:
-> > >
-> > > I can only say that ptrace users do want to skip the syscall and set the
-> > > return value on entry.
-> > >
-> > > See
-> > > 	[PATCH v5 1/2] ptrace: add PTRACE_SET_SYSCALL_INFO syscall skipping support
-> > > 	https://lore.kernel.org/all/20260709100949.94345-2-renzo@cs.unibo.it/
-> > >
-> > > The changelog explains that currently this doesn't work because
-> > > among the arches which define HAVE_ARCH_TRACEHOOK (at least) arch/mips is
-> > > broken in this regard.
+> > Please don't change it, MMIO P2P is broken on CC systems today and it
+> > should stay broken. Passing DMA_ATTR_MMIO with DMA_ATTR_CC_SHARED is
+> > an error that we need to correct in the drivers not make work in the
+> > core code.
 > >
-> > Or it could be documented that setting the return value has to be done
-> > in the exit trace, and that would than work on any architecture AFAICT.
 > 
-> Well, ptrace users know the problem. And this what they have to do
-> currently.
-> 
-> > With ppc and s390 using the same register for the syscall number and
-> > syscall return value it's very much impossible to poke the return value
-> > on entry into a register using the generic register access function. As
-> > of now there is no place to store the value ot of the return value
-> > outside of the registers, either.
-> 
-> I know nothing about ppc and s390. Can't comment right now.
-> 
-> > And the current PTRACE_SET_SYSCALL_INFO indeed sets the syscall nr and
-> > arguments on entry and the syscall return value on exit, that
-> > disctincion is implemented.
-> >
-> > Not sure how the patchset you point out is relevant, it only adds
-> > changes in the exit case.
-> 
-> No. It allows to skip-and-set-retval on PTRACE_EVENT_SECCOMP.
+> But the above changes are intended to handle HOST_MEM_ENCRYPT. In v7, we
+> had the following diff:
 
-And if it was hooked correctly to seccomp indicating to seccomp that the
-syscall needs to be skipped it could work but it is not, and will fail
-on ppc.
+To follow how the rest of the decrypted/encrypted stuff works the MMIO
+has to be flaged with CC_SHARED for HOST_MEM_ENCRYPT too, just like
+the PTEs.
 
-Thanks
+> @@ -88,37 +88,40 @@ static inline dma_addr_t dma_direct_map_phys(struct device *dev,
+>  {
+>  	dma_addr_t dma_addr;
+>  
+> +	/*
+> +	 * For a device requiring unencrypted DMA, MMIO memory is treated
+> +	 * as shared by default.
+> +	 */
+> +	if (force_dma_unencrypted(dev) && (attrs & DMA_ATTR_MMIO))
+> +		attrs |= DMA_ATTR_CC_SHARED;
 
-Michal
+force_dma_unencrypted() says nothing about the properties of the
+address passed in, this was nonsense :\
 
-> 
-> But ENTRY -> EXIT transition is not yet allowed due to the problems
-> above.
-> 
-> Oleg.
-> 
+> As we discussed [1], that can come in a later patch. In the meantime, adding
+> the HOST_MEM_ENCRYPT check preserves the previous behavior for SME.
+
+It never worked. When we added ATTR_MMIO it started to have a chance
+to work but prior to that it was always broken anyhow. I don't see
+there is much merit in preserving the narrow window when we
+inadvertantly had a half working ATTR_MMIO.
+
+But if you really want to it should be
+cc_platform_has(CC_ATTR_HOST_MEM_ENCRYPT) *only* and get rid of the wrong
+force_dma_unencrypted().
+
+But IMHO, I'd rather this series treat ATTR_MMIO as private MMIO and
+ATTR_MMIO|CC_SHARED as shared MMIO and that's the right and correct
+thing for the DMA API.
+
+Jason
 
