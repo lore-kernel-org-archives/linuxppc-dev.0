@@ -1,84 +1,80 @@
-Return-Path: <linuxppc-dev+bounces-23996-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23997-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8EDBDC43458
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Jul 2026 07:06:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 76DF9C43458
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Jul 2026 07:09:12 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gxNCh1d34z2yS4;
-	Fri, 10 Jul 2026 17:06:08 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::62a"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783667168;
-	cv=none; b=HGTLYuzNHJeR+hpLu4DX1dXMTWJ2f6zYcY0w6+YE6Q+4kjM+AC9JD+Xar95iNi9/qerluer+hjGWLCZvLf/qDu+xWnhQxk0bP0FMzVIXlOx4nhykD1hOUpN+hQX+SGB56kvFU7KbQYG69VPGD/2075qlw6wjW5KLh15PSBDMqBD+yH5RtbihPjULZAvPlwUTcLkhV98lEmuiqkkYTCWh+KSGPbQ5AO294VB0yYeO0F0RLy5EVRfRfZjRjQ+8VQdmia5DC19xaTGneCPgCi5AFmRWbNAU2a/psLhzcur2W9UlJzRKjWj8ZcN/sp28m14ykfdHmrn4zIga3gHEWKky8g==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1783667168; c=relaxed/relaxed;
-	bh=4bUcgckp4TyyQf6oi3rC9wiyM95zx1Fb72hB2fAsHaE=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=IfZ19dUTeMS27zaOhNHjN4hdJhGdU7TUqyZH78tQQnFTYcMK6t/ttlHDtKLrMImEUaKFtQy8OoPs333S7NgAb7dRQxZmzUNMKoQ8l5y8i5IZJ7yenJ221dO6twpUoZsUv7kSVAlPO5Dg/UbNlyiqaWkazIy7aRqRTzzdmifGaKq/ytSvuQPWPoFxS5btKlLh7dVa2WkNELFHpaSOmwgri4zDK3fo+BijKoh+Hd5X+jruvCp/ypg1pXECo4nNWMCvHrWdqjKEBiMgwfdl1pUTEQBBO1WWvGOcdPz2XwHASOd7hM1tf4vQAfxNQ2AM7UMr2T7QiGfPyNtFf4iDJsQcaQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=EHOQq9Rf; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::62a; helo=mail-pl1-x62a.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gxNHB6vsmz2yS4;
+	Fri, 10 Jul 2026 17:09:10 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c202::7" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783667350;
+	cv=pass; b=XCT5nRnTGK4QAI0FHVAV9sNrJjDZ5pnHXOCDAzU+SvdU1XBjFf3LM+CMXoOUiw5sx0GjUHZtjoZA4lN9wfBpWT2OFnmP9xugNUxrJCiQHzT3vH/iugMuq8/73XPdGkawNj9+mK1q10zIfCExhRypEBD/o73A0ZEjKT3pJHtOGAkPD391Yihh42gezYWYkHTNJhn+Rlbua05Ic7yMMs/BicdRYOnBjGyYqIUXqIkrCPOk/8dI89kWDa2jkAsnvrWveNpbR9OfXmc278UvJC1EoVu+66OL67HpzwQ/JGqPmpW8PzTkn1/o6ArPW9l3v1bNMY1Q20WtkJrMmRyq+Zlz3Q==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1783667350; c=relaxed/relaxed;
+	bh=fXz2KLNXCGaTtaWQqa4S9A5s/g+I7F5MKHvGmyxCPFc=;
+	h=From:To:Subject:Date:Message-ID:Content-Type:MIME-Version; b=FlmSEqjhErqJJCNfkHkrcHOKQkkKlSYYbsBf+nPTfP5L+iFpDLIYkGLZaepkFSpXSLhKPkYSeQguDtz6Hg8I7HWo7VvEPIkQKBf2PY7x8VRte+lp0tSDH8yqTDEn9XtfjrNIKAiKopv9LSE1MAimjSX1Vi8TEAW1kFpmC0g8aYqR099f1O9rpl1FHNvykJM7BR2qDoEdto0VYTZkS0aju7Dov2upiE1a2CFPbTx5vxiA21yGv6mgFyt+jbuaDH24q//HXWG/44PwKcyFcWQQfH2Q9GILCpp44ppYVrFAoXQu866V2k4QTXsIyKAwQxpA3zCTsmmMsAI0ryP1hx4z8Q==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=oss.nxp.com; dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=DkxdcaSB; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c202::7; helo=gvxpr05cu001.outbound.protection.outlook.com; envelope-from=chancel.liu@oss.nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=oss.nxp.com
+Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=oss.nxp.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=EHOQq9Rf;
+	dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=DkxdcaSB;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::62a; helo=mail-pl1-x62a.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pl1-x62a.google.com (mail-pl1-x62a.google.com [IPv6:2607:f8b0:4864:20::62a])
+Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=oss.nxp.com (client-ip=2a01:111:f403:c202::7; helo=gvxpr05cu001.outbound.protection.outlook.com; envelope-from=chancel.liu@oss.nxp.com; receiver=lists.ozlabs.org)
+Received: from GVXPR05CU001.outbound.protection.outlook.com (mail-swedencentralazlp170130007.outbound.protection.outlook.com [IPv6:2a01:111:f403:c202::7])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gxNCd2msbz2xSb
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Jul 2026 17:06:04 +1000 (AEST)
-Received: by mail-pl1-x62a.google.com with SMTP id d9443c01a7336-2cca24023edso6909415ad.1
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Jul 2026 00:06:04 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1783667161; x=1784271961; darn=lists.ozlabs.org;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=4bUcgckp4TyyQf6oi3rC9wiyM95zx1Fb72hB2fAsHaE=;
-        b=EHOQq9RfX92sa/g25KESnU39Ur377lmHsogttgbtIbidQ6caqTAH4fnQRhFd5R0ihH
-         I2dRosSfh1IwFuYELBUwfb7gFJbOaMaqIdmNZcSg3nJxP8mb4Q95uLh23Ap5G60abzxh
-         9sivHr8V69lkoCW+GE8k1fOAwXz/oG1V27jyhcdSHmF2jafjfKZMOC4Fpw5ScG6mTdFq
-         JdC5AlS20nJqc/i55Y1lCu4vJqHGQZhORJVnh3VaSgxIFAr2pLsyLvBNEezt+0eInSFE
-         RpV5O+cxoFF0mMif2pahfasi/GQsx/DVO6/cgOlp403h14DHDaxDv03Vi+L4CScH0r8U
-         oqmQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1783667161; x=1784271961;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=4bUcgckp4TyyQf6oi3rC9wiyM95zx1Fb72hB2fAsHaE=;
-        b=kNr3hU8miQNSYcLtcLRjdRzvdNn1UIbZfhHCdxp6V24ikrhCAXr+kz8CXsIfsYnrxD
-         qB/yrqoHdnHD7OTtdgzepUAtgzmJ4IZHda5iz1TZs9oDA9kkCbEW4nqHO1RdWsyp25LS
-         FUR7I3cynH56iIKBUCHROZSYB5YKsnyFUZwvUWUOTy/AZmZNgNvneU2PJa6c6RGEibl3
-         FLYAkrICv71n08UHIxecHMbFTTWWWoIPHErzj0PaRGDBaqe/bMR0fJ4A0Y9D4USe59H8
-         jjAUkFMwibyAAZLqDvu/C8iV3OIaTr0KDVbHjANedqKkPvkmtLJfeVnawXLl+xddkO0v
-         dK5A==
-X-Gm-Message-State: AOJu0YxO+mwvW2D0cCPadPeOa9xIt+l3Qtci/1dU62Yzzbvlzol8vJWF
-	BviPnrVyHP+uJ1jXuribIIJRIyurmVNLdk9ylQ2S7S9SHllbESgs5bQ7
-X-Gm-Gg: AfdE7cnBnb2PM+IB45kkEn5uGV/zYUQWEuJPDIOwsRb89EZpDrpfZjzydK38SmEG/wO
-	8umTfSMo+xrERfYa4YbzpIpFGbW0H59Hof0DUUMqh2SItsjCWJISZWjYs5qfaSXJWYo8hLs3Jwc
-	8lJBua6wg6qVvrj+R1/0mHfRuc+bcA8Xw22HPEvwAxw5sKdWEHKmIpZgEEOrezu08yxS6FcPccN
-	4U+xY+gGlgGwLCVdTXWeDES2saSFb8tt+ETpr8o8dl/XPonUdYiREx6awcSguQpO4hG4gJI/PDq
-	EM8C9Lf7RizYKDAYt4gOKOsmDpEi9hEdNfq02M0RPFeqKWZLssUSAOjK6n9jIw4SfgNbgPo2f6m
-	n/B39rFdYqf0quD87ZPmWi3v0yMMcLfCH0WGtjAmb+vGr1j0BUXUnSc7XWaZe5uoRswbnUUYjiY
-	y8+fqaall11jTIYL+Sj4p/vJVRveQXXBbdHyNRy9UzXNygpx26sY5UB23SBpUG
-X-Received: by 2002:a17:902:e950:b0:2c9:9a2e:dab0 with SMTP id d9443c01a7336-2ccea37e996mr104888635ad.3.1783667161138;
-        Fri, 10 Jul 2026 00:06:01 -0700 (PDT)
-Received: from li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com ([106.51.160.236])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2ccc9c1fdb5sm54838675ad.33.2026.07.10.00.05.58
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 10 Jul 2026 00:06:00 -0700 (PDT)
-Date: Fri, 10 Jul 2026 12:35:56 +0530
-From: Mukesh Kumar Chaurasiya <mkchauras@gmail.com>
-To: Sourabh Jain <sourabhjain@linux.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, 
-	Madhavan Srinivasan <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: powerpc/kexec_file: print configured kernel command line
-Message-ID: <alCZmAgklrVsN3Fr@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
-References: <20250725124438.327593-1-sourabhjain@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gxNH96gX6z2xlt
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Jul 2026 17:09:09 +1000 (AEST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=L4KzD+w5Gi7+zQkzAvjg+3t6XBqpcf3yG5IDQmUagfI6nhXTZuPzzHLTwSkHPqyDgkpTNQRz6m/d5IULC6JZqHUjk6UWa4sVtj0Vi2Zytqv1YfhRQmvvn5kyO18ddD3K3VESM+uzsf7l77MyeKq/zCm+lHkIQNzxkXvbr4pbdYn+DkdJ8CeMQ/gLDvwwF4Hkmv5OJNEdC1ymdOf9l9urrTLkpcFFZQynw+FmRh7vkpJ6xozLB1VAeSJWaZSR4K6293HQoJph+UFsAguG1J1zpDRdrAc4kEOqAsbB7XSuN9Fy7U0bJRfL0HLSwSKbJQFQiZCcHgANzAmvIcvfEdUWrQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=fXz2KLNXCGaTtaWQqa4S9A5s/g+I7F5MKHvGmyxCPFc=;
+ b=Ms4GYfOfzlC1nkstAleOCCSFyjQvfHFe0Z2hL/6eoFzss62qAs0KTMy+LRkvsyHJysc14pU+NdBVFNrnXwWWwXbNtIGcxXPJINsckcWAdZO/vNICsjAJ1moufa/kc495Krp7uT+g1gdvQZqrjdOfHhPkZivLBAW/50lICUcLYAoG88N0k4FMEX6qx1pLt4tafp9osMFSAIX6wIpoVTrau9thRBckbD9G3wAsQsvqUe+zUlkjqCm5g5v5jE5gRW5kPB7klBfPAjqOZr9+pkR8CmOR4Jx0Mgbwp+oLJuOyMNlTKKNYNp3ukhRFY9xMBWNn4waGAL1fPCvewRxMBYoFxg==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=oss.nxp.com; dmarc=pass action=none header.from=oss.nxp.com;
+ dkim=pass header.d=oss.nxp.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=NXP1.onmicrosoft.com;
+ s=selector1-NXP1-onmicrosoft-com;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=fXz2KLNXCGaTtaWQqa4S9A5s/g+I7F5MKHvGmyxCPFc=;
+ b=DkxdcaSBTfULdCEZeNPzH9uos/hqWE6bes9Zh5RoqLPNJlhtDgU/CYKcZi5dC3CfdhubYYWi6HV9u4t/ofJX0Ieoq9/1AKlE4zugdi+7N6+nf+wU5NeY9xJDWnpj88hVOLricfffzv2uM/prtWevPRPmcu85i6oC7IUv5jYE4KmcT9L8TNU+UUtGRiE16lXYB5BgvhJQdODDc1EFIvXCuRMyhjv/mnYGtqsNSkXUsxap/0smnvzCswXEKSMIqvCbY3J88JYGUZlj9PgFS6z51c0pU9vm+nyH4hDsieA01rEo3pwIl3lQIMvHNhT8uAe8eTJfunP/bCgQdVGTxBXxnQ==
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=oss.nxp.com;
+Received: from GVXPR04MB10021.eurprd04.prod.outlook.com
+ (2603:10a6:150:112::20) by GV1PR04MB10199.eurprd04.prod.outlook.com
+ (2603:10a6:150:1a8::10) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.181.17; Fri, 10 Jul
+ 2026 07:08:42 +0000
+Received: from GVXPR04MB10021.eurprd04.prod.outlook.com
+ ([fe80::d247:853:3e16:1994]) by GVXPR04MB10021.eurprd04.prod.outlook.com
+ ([fe80::d247:853:3e16:1994%5]) with mapi id 15.21.0181.014; Fri, 10 Jul 2026
+ 07:08:42 +0000
+From: Chancel Liu <chancel.liu@oss.nxp.com>
+To: shengjiu.wang@gmail.com,
+	Xiubo.Lee@gmail.com,
+	festevam@gmail.com,
+	nicoleotsuka@gmail.com,
+	lgirdwood@gmail.com,
+	broonie@kernel.org,
+	perex@perex.cz,
+	tiwai@suse.com,
+	linux-kernel@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-sound@vger.kernel.org
+Subject: [PATCH v2] ASoC: fsl_sai: Fix spurious BCLK on resume by clearing BYP
+Date: Fri, 10 Jul 2026 16:08:35 +0900
+Message-ID: <20260710070835.3749817-1-chancel.liu@oss.nxp.com>
+X-Mailer: git-send-email 2.50.1
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-ClientProxiedBy: SEWP216CA0040.KORP216.PROD.OUTLOOK.COM
+ (2603:1096:101:2b5::12) To GVXPR04MB10021.eurprd04.prod.outlook.com
+ (2603:10a6:150:112::20)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -92,82 +88,138 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20250725124438.327593-1-sourabhjain@linux.ibm.com>
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: GVXPR04MB10021:EE_|GV1PR04MB10199:EE_
+X-MS-Office365-Filtering-Correlation-Id: 46f5c565-7272-4680-3a36-08dede5212eb
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|376014|7416014|23010399003|19092799006|366016|1800799024|921020|6133799003|5023799004|56012099006|11063799006|18002099003|3023799007;
+X-Microsoft-Antispam-Message-Info:
+	IaUR+LhVIsQaOvRqBkXew9pkoOewUwZWTtTCoYPGgESGGrSyqWKwhSnnLeSCpaTVzv8vbwXedLNtbDKpgW91YDZQ5GXrJ7spYf09UOHIGDU2og9rP/3DHb1ZUAUUgqhDvngIJFWQ0VP17d40//bGMMQTWtCH8HTEYgwXV+SG3y+GZUiUXgoCPmP/UJyT0F7Hg1/Kz6alT/yH8JE4epBejsbCyPXcJbDwK6mFtyxc6dAx+xV1KmIK3q6STkyWBFltPHJwqhzbO7vcEteOCWl64KfCpbSFPVjfa7rXd+9BqcCIKgmHHzMHmefACBnUyk/fxYx+yp76IWbInkvrJFsVe75qpN2pa/eee9SmV/gmrYdiKFV1lmBxvlMAqRpC17e7zqTyLeIs0j5sgYS85LP6FunGazughrmkEG8VQeNqqslKd4zF4NtOdepqebujqW0mBm9EGTid4VekXD0jb7KFc0g5J0538Y4zFBmiFyKhALu8AKPK/+QVWMREtm3aB4wJSUS6l696oy5MC4FqPzswkFQK/vrrKqTBoakqtu0juRYlM3XLWD0b5iu6ouOBljP0whL1TlbzDqng6NcN3pPw1Ztu9Xk5F3e+CLdJQ6tlThY6Gwm8k3OlbRugrwFABIgwZAp+wFVSU1QBzectFwqdO08cXr1InI5G0+Ul8TPoa2ypz/5t3v6v7RHglVpWfKSm80RHHCEQNMocIfE6TOjcDA==
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:GVXPR04MB10021.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(376014)(7416014)(23010399003)(19092799006)(366016)(1800799024)(921020)(6133799003)(5023799004)(56012099006)(11063799006)(18002099003)(3023799007);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?us-ascii?Q?Y9+63qtdu2ZW+A4gCSM68z1eJBkaje5IkxPOPEjBOCbVfXdh8ziBQQIvId/I?=
+ =?us-ascii?Q?mXMEbFMlN/GU0XcCgb6S0ENOhXcDaK1LeWL8wDYM9ProaWloWBGZmqJjBpdI?=
+ =?us-ascii?Q?OdZbbUPA0VPHQG7KbJUwFnCs8qSrX7m2InveCwALsZl+K72JGDq9JCu7hfU/?=
+ =?us-ascii?Q?bWnisDlYUucA3Ts1cmlftVdtbmjp/97ftq+QK7PBWKCOe2D5rcb50/EARwNx?=
+ =?us-ascii?Q?GYFWqEmAf/erMbCSSbQ7AHsIr3SIh0O5D3IRLBtaX9sOpUjq5iQTP5Dsyn8M?=
+ =?us-ascii?Q?kbvR4id/lZ+UWoZSg33JUDtGeTjCpiqXeMUsJMDNaDBqauv/VA5bPd4R0h+e?=
+ =?us-ascii?Q?5hLf2SN8ubfe6DZVlrL4EjpmzeBLy7T/ew8dm/ZSnI+s43TiCi5HROh6aYzv?=
+ =?us-ascii?Q?uSVZlpzMBaZAlaVZdbr87NazO4wp9PeiSMil1EFemUFilL9d1xvZAWJkXdo+?=
+ =?us-ascii?Q?GezSSAwT8OQcnD4BgDEi3EGPL0F+TfHhIz4/847YjD6+xmyhly5MyiNou4xX?=
+ =?us-ascii?Q?l9MMZk3XuWXH9bmkPE7cYpkF9KbG+P6Fb97sb/NC6SjlK4Nm+QXpghQkgPNJ?=
+ =?us-ascii?Q?7JqT0bvuYg5FiWVcOWX5lVloTywpGlWwT1XI6gzu5xgptKgjuiHdOSfrvZWH?=
+ =?us-ascii?Q?yj4CVjexxvIvUaYXM2DpDHabvMimgvKmBVs+OKUt8VpLSf7AGbZ83SZbw4MM?=
+ =?us-ascii?Q?MTMbEF4uP5MtltUrRTTLJEYD3fB+YRE9tuaAZfzkLQb54uvCTg2Hm7FPRkv9?=
+ =?us-ascii?Q?sP+0rI2PSdd9pTFwJ8ZBQ9i6SZlp605kYeTvPlwj1ab23DVEfDr9QDoqQFBt?=
+ =?us-ascii?Q?s1IazgT6TNTc/X54IL4nMs6AvfzWo8vTySMwnoBnXz5GopyLerVlfzu9TGjC?=
+ =?us-ascii?Q?NkmylMUmFtuVoMeFxf1wqiPPPghVAI1T1C4CBmmU1eEXbmA0kh9Oc3nWwHrt?=
+ =?us-ascii?Q?aHSJD7aIZ5AuNfZ3HTNcQE38Jx+2X1XBoIvVDia1IG+iGF6unfILLQBlChTt?=
+ =?us-ascii?Q?OyAoI9vgAuIvGVXMrfODdENOA6hVI14NBMADanY6PPG9L4ucgoLFRRjDMzVl?=
+ =?us-ascii?Q?nIomUnIqpvT+nzLKxFw2H36SjT410DtDhICfI23ovHoK/xKMLkiA7ChNVWXx?=
+ =?us-ascii?Q?py22J8vvxQxlTyl/M2f5IVUCY2eb4+ishAMeJ/BxTHXxcyH4AphzxXFbDtKm?=
+ =?us-ascii?Q?wJKWLBYBrTM9dOJeTzOQqG02Fih+BSoJ77Dp1m9s+dxMNPKzyRuPimph2Ghx?=
+ =?us-ascii?Q?gTo+j+/rwGmBdRbXS5IJuLK0mD56zt6iNoQPajcdvby+IsSPlaOuCgKCJIf4?=
+ =?us-ascii?Q?UF19cvsNa8e2Ic5b205K3LrZ/zAGjD2HyLOGiJlXdQR9ygVaJUBiVkTeJC25?=
+ =?us-ascii?Q?PtZvO7RKt6vlV+bNXUKCOjIWuHcubC8Nst0GpgMhQ2QolgtN/Bga6MSGRaJ6?=
+ =?us-ascii?Q?JK0GrCUxp9wq9F05dkOzsNes8HWFyXNOpDw06z24qWMMdxGAgNpnXiP1++40?=
+ =?us-ascii?Q?LSUWSRXeYuZ/4T3Io/XJ+1yXznnAtvZJ5PoykG9y6lkEIVBgZ41KmWZYLC0l?=
+ =?us-ascii?Q?jN9HhZ9psyuH1qu2hQxoZoX8t0KzD49b6R1qRuQiH0geT/ykqE3seaTzTXMW?=
+ =?us-ascii?Q?ZOF0ju8KEluLXJt3boVH+6BtEsbm+J5gn+CH42kjdA5Z6rwx/AGYJUG25VN8?=
+ =?us-ascii?Q?ICooxILFXKj5rb3vreLU5odSz+UD+2Lcr542TpSSUsUfoD1fdypSY3YA+Jnq?=
+ =?us-ascii?Q?01J1IHZWWfo9ehIKfmMph60hKRNEh3CkGsZTqS2J7Augb0MA9YkC?=
+X-OriginatorOrg: oss.nxp.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 46f5c565-7272-4680-3a36-08dede5212eb
+X-MS-Exchange-CrossTenant-AuthSource: GVXPR04MB10021.eurprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 10 Jul 2026 07:08:42.1199
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: 2XxtiVTvb1/rk/qrWC/U5PQ973Wjb/Q7G9beV8J2PaEcTY0B3dx0wSZfD7eN7O6fKZaD5bh6qvvjBokJAHhZFCchx8k1F83encSwkBC9GI23QtZYQJTNiA3JHLJGtdqj
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: GV1PR04MB10199
 
-On Fri, Jul 25, 2025 at 06:14:38PM +0530, Sourabh Jain wrote:
-> Kexec with the -d option prints extra logs about the kexec/kdump kernel
-> that help debug kexec and kdump. For example, it shows what kexec
-> segments are loaded, their locations, and sizes.
-> 
-> One key piece of information still missing is the kernel command line
-> configured for the kexec/kdump kernel.
-> 
-> With this patch included, the kernel will print the kernel command line
-> configured for the kexec/kdump kernel as shown below:
-> 
-> kexec --initrd=./initrd ./kernel -lspd --command-line="test1 test2"
-> 
-> Loaded elf core header at 0x22e30000, bufsz=0x2000 memsz=0x80000
-> kexec_elf: Command line: elfcorehdr=0x22e30000 test1 test2   <--- New
-> kexec_elf: Loaded initrd at 0x22eb0000
-> 
-> Cc: Madhavan Srinivasan <maddy@linux.ibm.com>
-> Cc: Michael Ellerman <mpe@ellerman.id.au>
-> Signed-off-by: Sourabh Jain <sourabhjain@linux.ibm.com>
-> ---
->  arch/powerpc/kexec/elf_64.c | 2 ++
->  1 file changed, 2 insertions(+)
-> 
-> diff --git a/arch/powerpc/kexec/elf_64.c b/arch/powerpc/kexec/elf_64.c
-> index 5d6d616404cf..db0af790c784 100644
-> --- a/arch/powerpc/kexec/elf_64.c
-> +++ b/arch/powerpc/kexec/elf_64.c
-> @@ -90,6 +90,8 @@ static void *elf64_load(struct kimage *image, char *kernel_buf,
->  		cmdline = modified_cmdline;
->  	}
->  
-> +	kexec_dprintk("Command line: %s", cmdline ? cmdline : "");
-> +
->  	if (initrd != NULL) {
->  		kbuf.buffer = initrd;
->  		kbuf.bufsz = kbuf.memsz = initrd_len;
-> -- 
-> 2.50.1
-> 
-> 
-Tested this on P11 LPAR.
+From: Chancel Liu <chancel.liu@nxp.com>
 
-[  485.755942] kexec_file: kernel: 00000000cb90aae7 kernel_size: 0x1d1531d0
-[  485.762870] kexec_elf: Loaded the kernel at 0x80000000
-[  485.762930] kexec_elf: Loaded purgatory at 0x9fff0000
-[  485.762944] Loaded the backup region at 0x84160000
-[  485.763088] crash_core: Crash PT_LOAD ELF header. phdr=00000000364832a7 vaddr=0xc000000000000000, paddr=0x0, sz=0x10000 e_phnum=178 p_offset=0x0
-[  485.763095] crash_core: Crash PT_LOAD ELF header. phdr=000000009122d5f0 vaddr=0xc000000000010000, paddr=0x10000, sz=0x7fff0000 e_phnum=179 p_offset=0x10000
-[  485.763099] crash_core: Crash PT_LOAD ELF header. phdr=000000007ead431b vaddr=0xc0000000a0000000, paddr=0xa0000000, sz=0xb10000000 e_phnum=180 p_offset=0xa0000000
-[  485.763103] crash_core: Crash PT_LOAD ELF header. phdr=0000000001ee8e6f vaddr=0xc000000bb0000000, paddr=0xbb0000000, sz=0x5d0000000 e_phnum=181 p_offset=0xbb0000000
-[  485.763108] crash_core: Crash PT_LOAD ELF header. phdr=000000004566b315 vaddr=0xc000001180000000, paddr=0x1180000000, sz=0x1d20000000 e_phnum=182 p_offset=0x1180000000
-[  485.763112] crash_core: Crash PT_LOAD ELF header. phdr=00000000a9df7c03 vaddr=0xc000002ea0000000, paddr=0x2ea0000000, sz=0x1d10000000 e_phnum=183 p_offset=0x2ea0000000
-[  485.763116] crash_core: Crash PT_LOAD ELF header. phdr=0000000077ee5d4c vaddr=0xc000004bb0000000, paddr=0x4bb0000000, sz=0x1d10000000 e_phnum=184 p_offset=0x4bb0000000
-[  485.763119] crash_core: Crash PT_LOAD ELF header. phdr=000000000ea82932 vaddr=0xc0000068c0000000, paddr=0x68c0000000, sz=0x1740000000 e_phnum=185 p_offset=0x68c0000000
-[  485.763124] Backup region offset updated to 0x84160000
-[  485.763130] Loaded elf core header at 0x84170000, bufsz=0x3000 memsz=0x80000
-[  485.763134] No dm-crypt keys
-[  485.763139] kexec_elf: Command line: elfcorehdr=0x84170000 BOOT_IMAGE=(ieee1275//vdevice/v-scsi@30000065/disk@8100000000000000,gpt2)/vmlinuz-6.19.7-200.fc43.ppc64le root=/dev/mapper/fedora-root ro rd.lvm.lv=fedora/root crashkernel=512M@2G test1 test2
-[  485.763145] kexec_elf: Loaded initrd at 0x841f0000
-[  485.763678] Memory node path: /memory@0
-[  485.795492] kexec_elf: Loaded device tree at 0x9ffd0000
-[  486.417820] kexec_file: nr_segments = 6
-[  486.417839] kexec_file: segment[0]: buf=0x00000000ac04377b bufsz=0x3f74bc4 mem=0x80000000 memsz=0x4160000
-[  486.424367] kexec_file: segment[1]: buf=0x00000000b22938ec bufsz=0x310 mem=0x9fff0000 memsz=0x10000
-[  486.424403] kexec_file: segment[2]: buf=0x0000000043b34bd4 bufsz=0x10000 mem=0x84160000 memsz=0x10000
-[  486.424417] kexec_file: segment[3]: buf=0x00000000421e955d bufsz=0x3000 mem=0x84170000 memsz=0x80000
-[  486.424450] kexec_file: segment[4]: buf=0x000000009a7ce2c9 bufsz=0x4ed96f8 mem=0x841f0000 memsz=0x4ee0000
-[  486.432514] kexec_file: segment[5]: buf=0x0000000023a3b280 bufsz=0x1553b mem=0x9ffd0000 memsz=0x20000
-[  486.432558] kexec_file: kexec_file_load: type:1, start:0x9fff0000 head:0x4 flags:0xa
+When the BCLK divider ratio is 1:1, fsl_sai_set_bclk() enables bypass
+mode by setting BYP, but never clears the bit. The BYP=1 value remains
+in the regcache, and is restored by regcache_sync() on the next runtime
+resume.
 
+Since BYP=1 combined with BCD=1 immediately outputs the ungated MCLK
+as BCLK without waiting for BCE/TE/RE to be enabled, the clock is
+driven prematurely before the stream is fully configured, causing
+noise on some codecs.
 
-Tested-by: Mukesh Kumar Chaurasiya (IBM) <mkchauras@gmail.com>
-Reviewed-by: Mukesh Kumar Chaurasiya (IBM) <mkchauras@gmail.com>
+Fix this by clearing BYP and BCI in fsl_sai_hw_free() taking into
+account sync mode and the opposite stream's state, so that the regcache
+holds BYP=0 before runtime suspend and regcache_sync() on resume will
+not restore bypass mode prematurely.
+
+Fixes: a50b7926d015 ("ASoC: fsl_sai: implement 1:1 bclk:mclk ratio support")
+Cc: stable@vger.kernel.org
+Signed-off-by: Chancel Liu <chancel.liu@nxp.com>
+---
+Changes in v2:
+- Move BYP/BCI clearing from fsl_sai_config_disable() (trigger path)
+  to fsl_sai_hw_free() to avoid breaking pause/suspend-resume cycles
+  where hw_params() is not called again on unpause/resume.
+
+ sound/soc/fsl/fsl_sai.c | 29 +++++++++++++++++++++++++----
+ 1 file changed, 25 insertions(+), 4 deletions(-)
+
+diff --git a/sound/soc/fsl/fsl_sai.c b/sound/soc/fsl/fsl_sai.c
+index 9661602b53c5..d232c8f53061 100644
+--- a/sound/soc/fsl/fsl_sai.c
++++ b/sound/soc/fsl/fsl_sai.c
+@@ -808,6 +808,8 @@ static int fsl_sai_hw_free(struct snd_pcm_substream *substream,
+ 	struct fsl_sai *sai = snd_soc_dai_get_drvdata(cpu_dai);
+ 	bool tx = substream->stream == SNDRV_PCM_STREAM_PLAYBACK;
+ 	unsigned int ofs = sai->soc_data->reg_offset;
++	int adir = tx ? RX : TX;
++	int dir  = tx ? TX : RX;
+
+ 	/* Clear xMR to avoid channel swap with mclk_with_tere enabled case */
+ 	regmap_write(sai->regmap, FSL_SAI_xMR(tx), 0);
+@@ -815,10 +817,29 @@ static int fsl_sai_hw_free(struct snd_pcm_substream *substream,
+ 	regmap_update_bits(sai->regmap, FSL_SAI_xCR3(tx, ofs),
+ 			   FSL_SAI_CR3_TRCE_MASK, 0);
+
+-	if (!sai->is_consumer_mode[tx] &&
+-	    sai->mclk_streams & BIT(substream->stream)) {
+-		clk_disable_unprepare(sai->mclk_clk[sai->mclk_id[tx]]);
+-		sai->mclk_streams &= ~BIT(substream->stream);
++	if (!sai->is_consumer_mode[tx]) {
++		bool adir_active = !!(sai->mclk_streams & BIT(!substream->stream));
++		/*
++		 * If opposite stream provides clocks for synchronous mode and
++		 * it is inactive, Clear BYP and BCI
++		 */
++		if (fsl_sai_dir_is_synced(sai, adir) && !adir_active)
++			regmap_update_bits(sai->regmap, FSL_SAI_xCR2(!tx, ofs),
++					   FSL_SAI_CR2_BCI | FSL_SAI_CR2_BYP, 0);
++		/*
++		 * Clear BYP and BCI of current stream if either of:
++		 * 1. current stream doesn't provide clocks for synchronous mode
++		 * 2. current stream provides clocks for synchronous mode but no
++		 *    more stream is active.
++		 */
++		if (!fsl_sai_dir_is_synced(sai, dir) || !adir_active)
++			regmap_update_bits(sai->regmap, FSL_SAI_xCR2(tx, ofs),
++					   FSL_SAI_CR2_BCI | FSL_SAI_CR2_BYP, 0);
++
++		if (sai->mclk_streams & BIT(substream->stream)) {
++			clk_disable_unprepare(sai->mclk_clk[sai->mclk_id[tx]]);
++			sai->mclk_streams &= ~BIT(substream->stream);
++		}
+ 	}
+
+ 	return 0;
+--
+2.50.1
+
 
