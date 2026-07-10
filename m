@@ -1,73 +1,70 @@
-Return-Path: <linuxppc-dev+bounces-24029-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24030-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C57D3C44501
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Jul 2026 20:01:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B9BC4C43458
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Jul 2026 20:35:56 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gxjQ83TB3z2yS4;
-	Sat, 11 Jul 2026 06:01:20 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783713680;
-	cv=none; b=h5IjgWo3J/spiJ+KvXGi+H59vGhNaoNh9vpzoZF9z3uBtO07b3L6G9NFFDGWtkAKuHbpi26O6anZl6qphRcaYmMoNMb4iCkmwNmyJ3PDginGidonQqWGll1VtRtxz1Qo3AQjHPxHTG4yFoE9bAK5ApA+7f6/DTnpikx2ICNtoDeP5xrn/D8FuiH5jTyt1AJQmrLtIcB5LdxcMwRk7OdIZrcMIlT9SH6qvvOC/HqPh0tz9dV7rl0+Mz4n5Qcv7uWOZ1v6Be8Xwg0Q3K0qQ+M0JpKsVmGjz++E35IOdYZV1n3YCVgXd9l1CXLYeP6D7BtWO/btk/iJN8WL7npQN6P3Vg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gxkB245xzz2yS4;
+	Sat, 11 Jul 2026 06:35:54 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783715754;
+	cv=none; b=JgEoJAiNIMn5HhVWnKMwS2Z9RczRVSCcDmGBRur2XYkHSYN9tCnUlQFl/KEoMmmgW8TT+W6z+g0/LvhDAd57UcHhNcV2iXGcyVAuDgLc8BxodT22FtlBdPlt9jw5FMMBYMlder8IhnLSW5638N7PYsPWV2+Q82XOxzghdjzQSG3feuu5nJoi03ei6Gdo8ToYURzpzqBAF0p950OTIFKLAo9iSLPBcLFhmtaA8a7wVccn4RSDu5tnb3ly8iwikKQtlRUn0Dj3kUJ58DsCXonozMj8wfGVibb3lI/XM9uEMmf2Xi4lmOyr5dFg7CpA2J26ljx/eqAQurm7Y/Thdzyl8g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1783713680; c=relaxed/relaxed;
-	bh=9NfLme4ZebC9GhFyt0D2VgczM9vtdumRFQjtnehESjA=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=XN624905zuJ0XlsfbUdLG+2ZCQcQWExSg+T61JLO3fgAGoQ+Mxvd6PGUONOuzbGKBCcyO3kv8EGwIaj5xpV+jwUkWRzQTwI3xPVKJBO1NhhB6lc+86Zp1MVdOLbPGF6azGDxDtvK+fFlkJ+ZPGiK2Vsnm8oxm37MA5iViGM6FTvJ3+Wyr0832ARfwyJZZbbTjMurNlwPnSlXqo4nIflz0RbPC0WV5fZIUhrBY0xHAugM2BVYcB/S1gyksN6ZoO2ktLGhKqiS7r7t8fr0yMgxGhjp/mkXowSZ2vjAQvVX1Wavmcj7KXxVFCztAgje1pkaqB3HZR/ptCGzujJE17xWPA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=k1AqqEIr; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=gbatra@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1783715754; c=relaxed/relaxed;
+	bh=HeTUxy/TjLlBcQhUPrCj068Skd26U8xRhPY9J+8AKso=;
+	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type:
+	 Content-Disposition:In-Reply-To; b=NuNxRrkpNCsxrONYYpNZVdiuvKavHuiQwhj0zlShZYW5u3T+ZwQQ770RvoFj03SC3086qrPM7VzjtUVYFD65X+WECd4CdaoPVgEflKy6SyzlS8me3m+iNt8WOsIGD8cGmw5UBEjhnOfKIccYoTnvNTBG0E31gmXAOLif83bMxwbE5f5R3qiyi6n6B4uvENta17Tv99LEf6ZJCvd6/3TqYN5tl5TIbHFy3A/LwT2+laQ21S7AMuGUPTWhuA8oODN76CYYvxIDtg4agw7FzkR7+uPc/t9pePXCkPPvDAnolC2uRzXiGcviYdAnU9nYx11caCHL+d3/E60OHrtqnBnBuA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=EIUJZeVB; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=helgaas@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=k1AqqEIr;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=EIUJZeVB;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=gbatra@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=helgaas@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gxjQ73NXrz2xdb
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Jul 2026 06:01:19 +1000 (AEST)
-Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66AHINck1086005
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Jul 2026 20:01:16 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=9NfLme
-	4ZebC9GhFyt0D2VgczM9vtdumRFQjtnehESjA=; b=k1AqqEIrPLIBmTMV7wp24V
-	tPD8RTyAbgGWQfHDRCBzUS2ADS2Rp4ZZfOq/DZg4ZQckzBLd67bYEQluwb++2pmD
-	tk/IINW8OttZeFYuSRoLGh6a144U2I4spnwFRebLMvhy/Mv/n1SfIEU+9KopzL7r
-	6zshqTy5Ul0+G7nyxNCOg4ateJrKEpzqe90dQ33J3/7e31NTwihwC/2/Bq2SHfrA
-	opmAV+WsPtXHR70j0y6TLrRjNCwS5Mb3zkcEHYObXt1qUJSXuN16zI3IsID/XBaZ
-	jBSHl1SwtnQ+xYsoRqdERbzHc20j7HiwYW8c3YjDjY+JtNShxBVrR6ZapkvI1lOQ
-	==
-Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4f6rke8pux-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 10 Jul 2026 20:01:15 +0000 (GMT)
-Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma12.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 66AJna1q022211;
-	Fri, 10 Jul 2026 20:01:15 GMT
-Received: from smtprelay03.dal12v.mail.ibm.com ([172.16.1.5])
-	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 4f7cgqkw3j-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 10 Jul 2026 20:01:14 +0000 (GMT)
-Received: from smtpav04.dal12v.mail.ibm.com (smtpav04.dal12v.mail.ibm.com [10.241.53.103])
-	by smtprelay03.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 66AK1DAw26346204
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 10 Jul 2026 20:01:13 GMT
-Received: from smtpav04.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id C094D5805E;
-	Fri, 10 Jul 2026 20:01:13 +0000 (GMT)
-Received: from smtpav04.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 1A26E58056;
-	Fri, 10 Jul 2026 20:01:13 +0000 (GMT)
-Received: from [9.67.161.147] (unknown [9.67.161.147])
-	by smtpav04.dal12v.mail.ibm.com (Postfix) with ESMTP;
-	Fri, 10 Jul 2026 20:01:12 +0000 (GMT)
-Message-ID: <f16a019d-f464-4c17-b98f-c21e7c215af9@linux.ibm.com>
-Date: Fri, 10 Jul 2026 15:01:12 -0500
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gxkB13cLFz2xlw
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Jul 2026 06:35:53 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with ESMTP id 8880B4192E;
+	Fri, 10 Jul 2026 20:35:51 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3F0D01F000E9;
+	Fri, 10 Jul 2026 20:35:51 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1783715751;
+	bh=HeTUxy/TjLlBcQhUPrCj068Skd26U8xRhPY9J+8AKso=;
+	h=Date:From:To:Cc:Subject:In-Reply-To;
+	b=EIUJZeVBfo+vl1lUNoSPNryYCSm3D9wqwOcYCOL5kOTtE3l25HyXvqF3gA7TQ+J4L
+	 yKIn4iUuRGfqfaqNTmussxPbjcnazrVXNvJFZ65fkkFpRQ/ud92t5F10vB3132TSW/
+	 opsDxyV3bP4HLIrYft7FgiHF0AzD8IAwqW1LzEUhEIMJikfXjeeH6SiCDfZgRzSvss
+	 9Sn3QB+UtLzlBYhrD8ymYlG1jjlxr2UAV3KG9T8qVog0y4NY98IH4Zzt/T/3/NIpxG
+	 C8jbYEkACVgeTzo1PMi/ukCwYdi3rryu/U6ROLfvqan9CdTDJ4rBU73hAkaBSCuPRs
+	 3L6E9q3T2OzdA==
+Date: Fri, 10 Jul 2026 15:35:50 -0500
+From: Bjorn Helgaas <helgaas@kernel.org>
+To: Breno Leitao <leitao@debian.org>
+Cc: Tony Luck <tony.luck@intel.com>, Borislav Petkov <bp@alien8.de>,
+	Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>,
+	Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
+	"H. Peter Anvin" <hpa@zytor.com>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Hanjun Guo <guohanjun@huawei.com>,
+	Mauro Carvalho Chehab <mchehab@kernel.org>,
+	Shuai Xue <xueshuai@linux.alibaba.com>, Len Brown <lenb@kernel.org>,
+	Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
+	Oliver O'Halloran <oohall@gmail.com>,
+	Bjorn Helgaas <bhelgaas@google.com>,
+	Breno Leitao <leitao@kernel.org>, linux-kernel@vger.kernel.org,
+	linux-edac@vger.kernel.org, linux-acpi@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org,
+	kernel-team@meta.com
+Subject: Re: [PATCH RFC] RAS: hwerr_tracking: move recoverable hardware error
+ tracking out of vmcoreinfo
+Message-ID: <20260710203550.GA994216@bhelgaas>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -81,382 +78,290 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3] powerpc/pseries/iommu: Add TCEs for 16GB pages when
- RAM is pre-mapped
-To: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>, maddy@linux.ibm.com
-Cc: linuxppc-dev@lists.ozlabs.org, sbhat@linux.ibm.com, vaibhav@linux.ibm.com,
-        donettom@linux.ibm.com, harshpb@linux.ibm.com
-References: <20260515155143.39050-1-gbatra@linux.ibm.com>
- <ik6qvw6j.ritesh.list@gmail.com>
-Content-Language: en-US
-From: Gaurav Batra <gbatra@linux.ibm.com>
-In-Reply-To: <ik6qvw6j.ritesh.list@gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Authority-Analysis: v=2.4 cv=M7J97Sws c=1 sm=1 tr=0 ts=6a514f8c cx=c_pps
- a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17
- a=IkcTkHD0fZMA:10 a=RAioF0-LDSMA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=V8glGbnc2Ofi9Qvn3v5h:22 a=VnNF1IyMAAAA:8
- a=F1Zjttk1BedhBYLBhgEA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzEwMDE5OSBTYWx0ZWRfX5eN+GUas09ED
- uGORw5onm+qdr+iqQOk2QU/fBMysES9BeysHVB2TasCNll61DB9/OUcYd6m1hgB0vUtARAWvvDh
- Z98QwXV01tVD4+DicSZIAeTRie8TttkMaz/IkYgpavqQ9H8xT8MRA8rzBZ/uDC6zDKcy1QnIKwC
- /wPx3DgeMXfDR2Hz3JB4i39Xngv1JAgaFFvINWBS+HIeq/EUxozoUHRzrGTQooHfCy0ailXl60W
- ZMhsSe2FBejQ8v5U/LbK0ShdtXlB9UwhWtdg7PAfXDzzsARRJ9CIeEq+Sx09BT6vaRVwemdA11B
- 1njRZK33B4QSVAUzy1CxqPTq7bY91Hzh3PjDvxXNwcZ/ja+lhl/jGtldtTsI6E4m7BZKhtdt5de
- KY1F/2k/7pYnkW43ePVqaVa7/EvHmukEcSu2UQOf1R6VUfU60A+2qAUHD/+rlvWIU7vGY/zwond
- SZkEWnYmkTd8b/XD6dw==
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNzEwMDE5OSBTYWx0ZWRfXyTGmglZeQJYy
- 16Emd00gcuHJpfocsGi2/aqm5ilLrj+QTxYeMX4O3fhN07TJmhnagAfvfAuewMQcaE4gw1FKu9t
- DFo7yij++fvFeP7snYbeexafCe8VqMk=
-X-Proofpoint-GUID: cbVXjaSKpDJ5rHsTyy6VV8k3rWTVP5iW
-X-Proofpoint-ORIG-GUID: XbqH_jD8uz9Gm_tXRPSTEbirZ9AfVa9t
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-07-10_05,2026-07-10_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- suspectscore=0 lowpriorityscore=0 malwarescore=0 clxscore=1015 adultscore=0
- priorityscore=1501 bulkscore=0 spamscore=0 impostorscore=0 phishscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607100199
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260707-hwerr-ras-v1-1-4aea4a79d085@debian.org>
 
+On Tue, Jul 07, 2026 at 07:02:34AM -0700, Breno Leitao wrote:
+> The recoverable hardware error tracking (hwerr_log_error_type() and the
+> hwerr_data[] counters) was added under vmcoreinfo, but it uses none of the
+> vmcoreinfo note machinery: hwerr_data[] is a plain global array that crash
+> tools read from the vmcore by symbol, like any other global.  Functionally
+> it is RAS code, fed only by the hardware error paths (x86 MCE, APEI GHES
+> and PCIe AER).
+> 
+> I wanted to expand it, and Baoquan suggested moving it away from vmcore
+> info, which makes sense. [1]
+> 
+> Move the implementation to drivers/ras/hwerr_tracking.c and the
+> declaration (with its no-op stub) to <linux/ras.h>.  Give it a dedicated
+> CONFIG_RAS_HWERR (bool, under RAS, default y) rather than riding
+> CONFIG_VMCORE_INFO, so it is a first-class RAS feature that can be turned
+> off on its own.  The producers now reach hwerr_log_error_type() through
+> <linux/ras.h>: x86 MCE and APEI GHES already include it, so drop their
+> <linux/vmcore_info.h> include; PCIe AER switches its include from
+> <linux/vmcore_info.h> to <linux/ras.h>.
+> 
+> enum hwerr_error_type stays in <uapi/linux/vmcore.h> as it has been part
+> of the UAPI since the feature shipped; <linux/ras.h> includes it from
+> there.
+> 
+> hwerr_data[] keeps its name and layout, so existing crash/drgn recipes
+> keep working.  The config gate moves from CONFIG_VMCORE_INFO to
+> CONFIG_RAS_HWERR (default y).
+> 
+> Link: https://lore.kernel.org/all/aYvi4Y_HNqk_u1-v@fedora/ [1]
+> Signed-off-by: Breno Leitao <leitao@debian.org>
+> ---
+> Once we move it outside of vmcore info, I am planning to add new
+> features that are in the limbo now, given they don't belong to vmcore
+> info, such as:
+> 
+> Track fatal hardware errors
+> 	https://lore.kernel.org/all/20260617-hwerr-v1-0-ff131cd6203c@debian.org/
+> 
+> Expose hardware error recovery statistics via sysfs
+> 	https://lore.kernel.org/all/20260202-vmcoreinfo_sysfs-v2-0-8f3b5308b894@debian.org/
+> ---
+>  MAINTAINERS                    |  7 +++++++
+>  arch/x86/kernel/cpu/mce/core.c |  1 -
+>  drivers/acpi/apei/ghes.c       |  1 -
+>  drivers/pci/pcie/aer.c         |  2 +-
 
-On 7/8/26 1:21 AM, Ritesh Harjani (IBM) wrote:
-> Thanks for the changes. Added minor comments and queries.
->
-> Gaurav Batra <gbatra@linux.ibm.com> writes:
->
->> In powerPC, if Dynamic DMA Window is big enough, RAM is pre-mapped. To
->> determine the size of RAM, a PAPR+ property "ibm,lrdr-capacity" is used.
->> This OF property dictates what is the max size of RAM an LPAR can have,
->> including DR added memory.
->>
->> In PowerPC, 16GB pages can be allocated at machine level and then
-> This will be mostly for Hash MMU correct? Which will be P9 then?
-> Is this also possible in case of P10?
-> Can this 16GB pages be added via HMC? How can one test this?
+Acked-by: Bjorn Helgaas <bhelgaas@google.com> # drivers/pci
 
-Huge pages needs to be allocate at CEC level and then CEC rebooted.
-
-After that, you can assign these huge pages to an LPAR. The LPAR needs 
-to be in
-
-hash MMU mode. Both P9 and P10 are supported.
-
->
->> assigned to LPARs. These 16GB pages are added to LPAR memory at the time
->> of boot. The address range for these 16GB pages is above MAX RAM an LPAR
->> can have (ibm,lrdr-capacity). In the current implementation, these 16GB
->> pages are being excluded from pre-mapped TCEs. A driver can have DMA
->> buffers allocated from 16GB pages. This results in platform to raise an
->> EEH when DMA is attempted on buffers in 16GB memory range.
->>
->> commit 6aa989ab2bd0 ("powerpc/pseries/iommu: memory notifier incorrectly
->> adds TCEs for pmemory")
->>
->> Prior to the above patch, memblock_end_of_DRAM() was being used to
->> determine the MAX memory of an LPAR. This included 16GB pages as well.
->> The issue with using memblock_end_of_DRAM() is that when pmemory is
->> converted to RAM via daxctl command, the DDW engine will incorrectly try
->> to add TCEs for pmemory as well.
->>
->> Below is the address distribution of RAM, 16GB pages and pmemory for an
->> LPAR with max memory of 256GB, memory allocated 64GB, 2 16GB pages and
->> assigned pmemory of 8GB.
->>
->> RANGE                                 SIZE  STATE REMOVABLE     BLOCK
->> 0x0000000000000000-0x0000000fffffffff  64G online       yes     0-255
->> 0x0000004000000000-0x00000047ffffffff  32G online       yes 1024-1151
->>
->> cat /sys/bus/nd/devices/region0/resource
->> 0x40100000000
->> cat /sys/bus/nd/devices/region0/size
->> 8589934592
->>
-> cat /proc/iomem should show the output for pmemory as well correct?
-
-Well, it depends. If pmemory is just assigned to the LPAR, it will not 
-show in /proc/iomem.
-
-This is how is it in my LPAR
-
-cat /sys/bus/nd/devices/region0/resource
-0x40100000000
-
-(0) root @ ltcd41-lp10: /root
-# cat /sys/bus/nd/devices/region0/size
-17179869184
-
-# cat /proc/iomem
-00000000-7ffffffff : System RAM
-40000000000-40001ffffff : pci@80000002900c002
-   40000000000-40001ffffff : c002:01:00.0
-     40000000000-40001ffffff : mlx5_core
-40080000000-400feffffff : pci@800000020000012
-   40080000000-40087ffffff : 0012:01:00.1
-     40080000000-40087ffffff : mlx5_core
-   40088000000-4008fffffff : 0012:01:00.0
-     40088000000-4008fffffff : mlx5_core
-   40090000000-400900fffff : 0012:01:00.1
-   40090100000-400901fffff : 0012:01:00.0
-44000000000-47fffffffff : pci@800000020000012
-
-So, pmemory is assigned by not shown in /proc/iomem.
-
-Now, if I use daxctl to convert this pmemory into regular memory it will 
-show in /proc/iomem
-
-# cat /proc/iomem
-00000000-7ffffffff : System RAM
-40000000000-40001ffffff : pci@80000002900c002
-   40000000000-40001ffffff : c002:01:00.0
-     40000000000-40001ffffff : mlx5_core
-40080000000-400feffffff : pci@800000020000012
-   40080000000-40087ffffff : 0012:01:00.1
-     40080000000-40087ffffff : mlx5_core
-   40088000000-4008fffffff : 0012:01:00.0
-     40088000000-4008fffffff : mlx5_core
-   40090000000-400900fffff : 0012:01:00.1
-   40090100000-400901fffff : 0012:01:00.0
-40100000000-401009fffff : namespace0.0 <----------
-40100a00000-402ffffffff : dax0.0 <--------
-44000000000-47fffffffff : pci@800000020000012
-
-
->
->> The approach to fix this problem is to revert back the code changes
->> introduced by the above patch and to stash away the MAX memory of an
->> LPAR, including 16GB pages, at the LPAR boot time. This value is then
->> used whenever TCEs are needed to be pre-mapped - enable_DDW() or,
->> iommu_mem_notifier()
->>
-> Was this hit in an internal testing? Is it possible to have a test
-> around this please?
-
-This was hit in one of the environments by Sypre system test. They had 2 
-16GB pages created in CEC
-
-and they assigned all the resources to just one LPAR. They were not 
-aware of this configuration.
-
-I don't have access to that LPAP any more, but, I am sure this can be 
-recreated in the lab.
-
->
-> @Venkat, did we test this specific case with and w/o this patch as well?
-> Reason for my asks is - since we will be backporting this patch to older
-> stable kernels, it will be good to ensure this has been properly tested
-> and if possible we should even have a unit test to ensure this
-> doesn't break in future.
->
->> Fixes: 6aa989ab2bd0 ("powerpc/pseries/iommu: memory notifier incorrectly adds TCEs for pmemory")
-> This patch was made in v6.15. Since we want this to be backported, I
-> would suggested add a CC stable tag as well.
-Will do in my next iteration of the patch
->
->> Signed-off-by: Gaurav Batra <gbatra@linux.ibm.com>
->> ---
->>
->> Change log:
->>
->> V2 -> V3
->>
->> 1. Harsh: Remove R-b tags from the change log
->>
->>     Response: Incorporated changes
->>
->> 2. Harsh: Change WARN_ON() to WARN_ONCE()
->>
->>     Response: Incorporated changes
->>
->> 3. Harsh: Fix indendation
->>
->>     Response: Incorporated changes
->>
->> 4. Harsh: Replace comment with a log if limit < arg->nr_pages ?
->>
->>     Response: Doesn't seems to be needed since the WARN_ONCE() will log this
->>     scenario. I removed the comment instead.
->>
->> V1 -> V2
->>
->> 1. Harsh: Not only start_pfn, but end_pfn also needs to be within allowed
->>     range, which may require clamping arg->nr_pages if crossing the limits.
->>
->>     Response: Incorporated changes.
->>
->>   arch/powerpc/platforms/pseries/iommu.c | 58 ++++++++++++++++++--------
->>   1 file changed, 41 insertions(+), 17 deletions(-)
->>
->> diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
->> index 3e1f915fe4f6..7bbe070006fa 100644
->> --- a/arch/powerpc/platforms/pseries/iommu.c
->> +++ b/arch/powerpc/platforms/pseries/iommu.c
->> @@ -69,6 +69,8 @@ static struct iommu_table *iommu_pseries_alloc_table(int node)
->>   	return tbl;
->>   }
->>   
->> +static phys_addr_t pseries_ddw_max_ram;
->> +
-> Since this is only set once during init and read afterwards.. Maybe we
-> should change this to __ro_after_init?
-Will do
->>   #ifdef CONFIG_IOMMU_API
->>   static struct iommu_table_group_ops spapr_tce_table_group_ops;
->>   #endif
->> @@ -1285,13 +1287,17 @@ static LIST_HEAD(failed_ddw_pdn_list);
->>   
->>   static phys_addr_t ddw_memory_hotplug_max(void)
-> After this change, this function only gets called from __init function.
-> So let's mark it as __init.
-Will do
->
->>   {
->> -	resource_size_t max_addr;
->> +	resource_size_t max_addr = memory_hotplug_max();
->> +	struct device_node *memory;
->>   
->> -#if defined(CONFIG_NUMA) && defined(CONFIG_MEMORY_HOTPLUG)
->> -	max_addr = hot_add_drconf_memory_max();
->> -#else
->> -	max_addr = memblock_end_of_DRAM();
->> -#endif
->> +	for_each_node_by_type(memory, "memory") {
->> +		struct resource res;
->> +
->> +		if (of_address_to_resource(memory, 0, &res))
->> +			continue;
->> +
->> +		max_addr = max_t(resource_size_t, max_addr, res.end + 1);
->> +	}
->>   
->>   	return max_addr;
->>   }
->> @@ -1446,7 +1452,7 @@ static struct property *ddw_property_create(const char *propname, u32 liobn, u64
->>   static bool enable_ddw(struct pci_dev *dev, struct device_node *pdn, u64 dma_mask)
->>   {
->>   	int len = 0, ret;
->> -	int max_ram_len = order_base_2(ddw_memory_hotplug_max());
->> +	int max_ram_len = order_base_2(pseries_ddw_max_ram);
->>   	struct ddw_query_response query;
->>   	struct ddw_create_response create;
->>   	int page_shift;
->> @@ -1668,7 +1674,7 @@ static bool enable_ddw(struct pci_dev *dev, struct device_node *pdn, u64 dma_mas
->>   
->>   	if (direct_mapping) {
-> Outside of this patch, but I see a case where:
->
-> - pmem is present and if ddw_sz is larger than MAX_PHYSMEM_BITS, in that
-> case we use the direct mapping (enable_ddw()).
-> So IMO - that path looks a bit buggy, because we say our ddw_sz is large enough
-> even with vpmem but we only create TCE entries for system ram and not for
-> vPMEM. So say when there is a DMA to the vpmem devdax region, then we
-> won't find any TCE entries and that may cause EEH too right?
-
-In this scenario, bus_dma_limit will be set to max_ram (not including 
-vpmem). Any buffers in the
-
-devdax region will get dynamic mapping from the 2GB default window.
-
->
->
->>   		/* DDW maps the whole partition, so enable direct DMA mapping */
->> -		ret = walk_system_ram_range(0, ddw_memory_hotplug_max() >> PAGE_SHIFT,
->> +		ret = walk_system_ram_range(0, pseries_ddw_max_ram >> PAGE_SHIFT,
->>   					    win64->value, tce_setrange_multi_pSeriesLP_walk);
->>   		if (ret) {
->>   			dev_info(&dev->dev, "failed to map DMA window for %pOF: %d\n",
->> @@ -2419,23 +2425,35 @@ static int iommu_mem_notifier(struct notifier_block *nb, unsigned long action,
->>   {
->>   	struct dma_win *window;
->>   	struct memory_notify *arg = data;
->> +	unsigned long limit = arg->nr_pages;
->> +	unsigned long max_ram_pages = pseries_ddw_max_ram >> PAGE_SHIFT;
->>   	int ret = 0;
->>   
->>   	/* This notifier can get called when onlining persistent memory as well.
->>   	 * TCEs are not pre-mapped for persistent memory. Persistent memory will
->> -	 * always be above ddw_memory_hotplug_max()
->> +	 * always be above pseries_ddw_max_ram
->>   	 */
->> +	if (arg->start_pfn >= max_ram_pages)
->> +		return NOTIFY_OK;
-> This case is when we have pmem converted to system ram correct?
-right
->
->> +
->> +	/* RAM is being DLPAR'ed. The range should never exceed max ram.
->> +	 * Just in case, clamp the range and throw a warning.
->> +	 */
->> +	if (arg->start_pfn + limit > max_ram_pages) {
->> +		limit = max_ram_pages - arg->start_pfn;
->> +		WARN_ONCE(1, "Limiting Page Range %lx - %lx to Max Mem Pages: %lx\n",
->> +					arg->start_pfn, arg->start_pfn + arg->nr_pages,
->> +					max_ram_pages);
->> +	}
-> when would this condition hit if at all? Have we seen this happening in
-> past anytime?
-
-I don't think we will have this condition hit at all. notifier handler 
-will be called during DLPAR of RAM
-
-or, vpmem getting converted to dax. So, there is no way this will cross 
-the RAM/vpmem boundary in the same
-
-invocation of iommu_mem_notifier()
-
->>   
->>   	switch (action) {
->>   	case MEM_GOING_ONLINE:
->>   		spin_lock(&dma_win_list_lock);
->>   		list_for_each_entry(window, &dma_win_list, list) {
->> -			if (window->direct && (arg->start_pfn << PAGE_SHIFT) <
->> -				ddw_memory_hotplug_max()) {
->> +			if (window->direct) {
->>   				ret |= tce_setrange_multi_pSeriesLP(arg->start_pfn,
->> -						arg->nr_pages, window->prop);
->> +						limit, window->prop);
->>   			}
->> -			/* XXX log error */
->>   		}
->>   		spin_unlock(&dma_win_list_lock);
->>   		break;
->> @@ -2443,12 +2461,10 @@ static int iommu_mem_notifier(struct notifier_block *nb, unsigned long action,
->>   	case MEM_OFFLINE:
->>   		spin_lock(&dma_win_list_lock);
->>   		list_for_each_entry(window, &dma_win_list, list) {
->> -			if (window->direct && (arg->start_pfn << PAGE_SHIFT) <
->> -				ddw_memory_hotplug_max()) {
->> +			if (window->direct) {
->>   				ret |= tce_clearrange_multi_pSeriesLP(arg->start_pfn,
->> -						arg->nr_pages, window->prop);
->> +						limit, window->prop);
->>   			}
->> -			/* XXX log error */
->>   		}
->>   		spin_unlock(&dma_win_list_lock);
->>   		break;
->> @@ -2532,6 +2548,14 @@ void __init iommu_init_early_pSeries(void)
->>   	register_memory_notifier(&iommu_mem_nb);
->>   
->>   	set_pci_dma_ops(&dma_iommu_ops);
->> +
->> +	/* During init determine the max memory an LPAR can have and set it. This
->> +	 * will be used for pre-mapping RAM in DDW. memblock_end_of_DRAM() can
->> +	 * change during the running of LPAR - daxctl can add pmemory as
->> +	 * "system-ram". This memory range should not be pre-mapped in DDW since
->> +	 * the address of pmemory can be much higher than the DDW size.
->> +	 */
->> +	pseries_ddw_max_ram = ddw_memory_hotplug_max();
->>   }
->>   
->>   static int __init disable_multitce(char *str)
->>
->> base-commit: 6d35786de28116ecf78797a62b84e6bf3c45aa5a
->> -- 
->> 2.39.3
-> -ritesh
+>  drivers/ras/Kconfig            | 12 ++++++++++++
+>  drivers/ras/Makefile           |  1 +
+>  drivers/ras/hwerr_tracking.c   | 35 +++++++++++++++++++++++++++++++++++
+>  include/linux/ras.h            |  7 +++++++
+>  include/linux/vmcore_info.h    |  7 -------
+>  kernel/vmcore_info.c           | 21 ---------------------
+>  10 files changed, 63 insertions(+), 31 deletions(-)
+> 
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index 1705eb823dd00..356a51032e4b0 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -22539,6 +22539,13 @@ L:	linux-edac@vger.kernel.org
+>  S:	Maintained
+>  F:	drivers/ras/amd/fmpm.c
+>  
+> +RAS RECOVERABLE HARDWARE ERROR TRACKING
+> +M:	Breno Leitao <leitao@kernel.org>
+> +L:	linux-edac@vger.kernel.org
+> +S:	Maintained
+> +F:	Documentation/driver-api/hw-recoverable-errors.rst
+> +F:	drivers/ras/hwerr_tracking.c
+> +
+>  RASPBERRY PI PISP BACK END
+>  M:	Jacopo Mondi <jacopo.mondi@ideasonboard.com>
+>  R:	Raspberry Pi Kernel Maintenance <kernel-list@raspberrypi.com>
+> diff --git a/arch/x86/kernel/cpu/mce/core.c b/arch/x86/kernel/cpu/mce/core.c
+> index 9bba1e2f03af7..58f1d7a601883 100644
+> --- a/arch/x86/kernel/cpu/mce/core.c
+> +++ b/arch/x86/kernel/cpu/mce/core.c
+> @@ -45,7 +45,6 @@
+>  #include <linux/task_work.h>
+>  #include <linux/hardirq.h>
+>  #include <linux/kexec.h>
+> -#include <linux/vmcore_info.h>
+>  
+>  #include <asm/fred.h>
+>  #include <asm/cpu_device_id.h>
+> diff --git a/drivers/acpi/apei/ghes.c b/drivers/acpi/apei/ghes.c
+> index 3236a3ce79d6b..4b6666bc19c77 100644
+> --- a/drivers/acpi/apei/ghes.c
+> +++ b/drivers/acpi/apei/ghes.c
+> @@ -45,7 +45,6 @@
+>  #include <linux/uuid.h>
+>  #include <linux/ras.h>
+>  #include <linux/task_work.h>
+> -#include <linux/vmcore_info.h>
+>  
+>  #include <acpi/actbl1.h>
+>  #include <acpi/ghes.h>
+> diff --git a/drivers/pci/pcie/aer.c b/drivers/pci/pcie/aer.c
+> index c4fd9c0b2a548..00cdca26a5114 100644
+> --- a/drivers/pci/pcie/aer.c
+> +++ b/drivers/pci/pcie/aer.c
+> @@ -30,7 +30,7 @@
+>  #include <linux/kfifo.h>
+>  #include <linux/ratelimit.h>
+>  #include <linux/slab.h>
+> -#include <linux/vmcore_info.h>
+> +#include <linux/ras.h>
+>  #include <acpi/apei.h>
+>  #include <acpi/ghes.h>
+>  #include <ras/ras_event.h>
+> diff --git a/drivers/ras/Kconfig b/drivers/ras/Kconfig
+> index fc4f4bb94a4c6..241642679c1f1 100644
+> --- a/drivers/ras/Kconfig
+> +++ b/drivers/ras/Kconfig
+> @@ -34,6 +34,18 @@ if RAS
+>  source "arch/x86/ras/Kconfig"
+>  source "drivers/ras/amd/atl/Kconfig"
+>  
+> +config RAS_HWERR
+> +	bool "Track hardware errors for crash analysis"
+> +	default y
+> +	help
+> +	  Record the count and timestamp of the most recent recoverable
+> +	  hardware error for each source (CPU, memory, PCI, CXL, ...).  The
+> +	  data is written at runtime and read post-mortem from a vmcore by
+> +	  tools such as crash or drgn, to correlate recoverable errors with a
+> +	  later panic.
+> +
+> +	  If unsure, say Y.
+> +
+>  config RAS_FMPM
+>  	tristate "FRU Memory Poison Manager"
+>  	default m
+> diff --git a/drivers/ras/Makefile b/drivers/ras/Makefile
+> index 11f95d59d3972..4217bee75d910 100644
+> --- a/drivers/ras/Makefile
+> +++ b/drivers/ras/Makefile
+> @@ -1,5 +1,6 @@
+>  # SPDX-License-Identifier: GPL-2.0-only
+>  obj-$(CONFIG_RAS)	+= ras.o
+> +obj-$(CONFIG_RAS_HWERR)	+= hwerr_tracking.o
+>  obj-$(CONFIG_DEBUG_FS)	+= debugfs.o
+>  obj-$(CONFIG_RAS_CEC)	+= cec.o
+>  
+> diff --git a/drivers/ras/hwerr_tracking.c b/drivers/ras/hwerr_tracking.c
+> new file mode 100644
+> index 0000000000000..847c01fb24d55
+> --- /dev/null
+> +++ b/drivers/ras/hwerr_tracking.c
+> @@ -0,0 +1,35 @@
+> +// SPDX-License-Identifier: GPL-2.0-only
+> +/*
+> + * Track recoverable hardware errors (visible to the OS but not fatal) so that
+> + * crash tools like crash/drgn can read the count and timestamp of the last
+> + * occurrence from a vmcore and correlate them with a subsequent panic.
+> + *
+> + * Copyright (c) 2026 Meta Platforms, Inc. and affiliates
+> + * Copyright (c) 2026 Breno Leitao <leitao@kernel.org>
+> + */
+> +
+> +#include <linux/atomic.h>
+> +#include <linux/export.h>
+> +#include <linux/ras.h>
+> +#include <linux/timekeeping.h>
+> +
+> +struct hwerr_info {
+> +	atomic_t count;
+> +	time64_t timestamp;
+> +};
+> +
+> +/*
+> + * Keep hwerr_data[] at global scope so it stays accessible from the vmcore
+> + * (via crash/drgn) even when Link Time Optimization (LTO) is enabled.
+> + */
+> +struct hwerr_info hwerr_data[HWERR_RECOV_MAX];
+> +
+> +void hwerr_log_error_type(enum hwerr_error_type src)
+> +{
+> +	if (src < 0 || src >= HWERR_RECOV_MAX)
+> +		return;
+> +
+> +	atomic_inc(&hwerr_data[src].count);
+> +	WRITE_ONCE(hwerr_data[src].timestamp, ktime_get_real_seconds());
+> +}
+> +EXPORT_SYMBOL_GPL(hwerr_log_error_type);
+> diff --git a/include/linux/ras.h b/include/linux/ras.h
+> index 468941bfe855f..1019183c00342 100644
+> --- a/include/linux/ras.h
+> +++ b/include/linux/ras.h
+> @@ -5,6 +5,7 @@
+>  #include <asm/errno.h>
+>  #include <linux/uuid.h>
+>  #include <linux/cper.h>
+> +#include <uapi/linux/vmcore.h>
+>  
+>  #ifdef CONFIG_DEBUG_FS
+>  int ras_userspace_consumers(void);
+> @@ -35,6 +36,12 @@ static inline void
+>  log_arm_hw_error(struct cper_sec_proc_arm *err, const u8 sev) { return; }
+>  #endif
+>  
+> +#ifdef CONFIG_RAS_HWERR
+> +void hwerr_log_error_type(enum hwerr_error_type src);
+> +#else
+> +static inline void hwerr_log_error_type(enum hwerr_error_type src) { }
+> +#endif
+> +
+>  struct atl_err {
+>  	u64 addr;
+>  	u64 ipid;
+> diff --git a/include/linux/vmcore_info.h b/include/linux/vmcore_info.h
+> index e71518caacdfc..fb6f29b7202e3 100644
+> --- a/include/linux/vmcore_info.h
+> +++ b/include/linux/vmcore_info.h
+> @@ -5,7 +5,6 @@
+>  #include <linux/linkage.h>
+>  #include <linux/elfcore.h>
+>  #include <linux/elf.h>
+> -#include <uapi/linux/vmcore.h>
+>  
+>  #define CRASH_CORE_NOTE_HEAD_BYTES ALIGN(sizeof(struct elf_note), 4)
+>  #define CRASH_CORE_NOTE_NAME_BYTES ALIGN(sizeof(NN_PRSTATUS), 4)
+> @@ -79,10 +78,4 @@ Elf_Word *append_elf_note(Elf_Word *buf, char *name, unsigned int type,
+>  			  void *data, size_t data_len);
+>  void final_note(Elf_Word *buf);
+>  
+> -#ifdef CONFIG_VMCORE_INFO
+> -void hwerr_log_error_type(enum hwerr_error_type src);
+> -#else
+> -static inline void hwerr_log_error_type(enum hwerr_error_type src) {};
+> -#endif
+> -
+>  #endif /* LINUX_VMCORE_INFO_H */
+> diff --git a/kernel/vmcore_info.c b/kernel/vmcore_info.c
+> index 8614430ca212a..5c288796bdbf5 100644
+> --- a/kernel/vmcore_info.c
+> +++ b/kernel/vmcore_info.c
+> @@ -29,17 +29,6 @@ u32 *vmcoreinfo_note;
+>  /* trusted vmcoreinfo, e.g. we can make a copy in the crash memory */
+>  static unsigned char *vmcoreinfo_data_safecopy;
+>  
+> -struct hwerr_info {
+> -	atomic_t count;
+> -	time64_t timestamp;
+> -};
+> -
+> -/*
+> - * The hwerr_data[] array is declared with global scope so that it remains
+> - * accessible to vmcoreinfo even when Link Time Optimization (LTO) is enabled.
+> - */
+> -struct hwerr_info hwerr_data[HWERR_RECOV_MAX];
+> -
+>  Elf_Word *append_elf_note(Elf_Word *buf, char *name, unsigned int type,
+>  			  void *data, size_t data_len)
+>  {
+> @@ -127,16 +116,6 @@ phys_addr_t __weak paddr_vmcoreinfo_note(void)
+>  }
+>  EXPORT_SYMBOL(paddr_vmcoreinfo_note);
+>  
+> -void hwerr_log_error_type(enum hwerr_error_type src)
+> -{
+> -	if (src < 0 || src >= HWERR_RECOV_MAX)
+> -		return;
+> -
+> -	atomic_inc(&hwerr_data[src].count);
+> -	WRITE_ONCE(hwerr_data[src].timestamp, ktime_get_real_seconds());
+> -}
+> -EXPORT_SYMBOL_GPL(hwerr_log_error_type);
+> -
+>  static int __init crash_save_vmcoreinfo_init(void)
+>  {
+>  	int order;
+> 
+> ---
+> base-commit: 3d5670d672ae08b8c534b7beed6f57c8b44e7b43
+> change-id: 20260629-hwerr-ras-e26664926c58
+> 
+> Best regards,
+> --  
+> Breno Leitao <leitao@debian.org>
+> 
 
