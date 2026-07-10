@@ -1,63 +1,63 @@
-Return-Path: <linuxppc-dev+bounces-23980-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23981-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0F188C43458
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Jul 2026 00:31:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B7539C43458
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Jul 2026 00:41:24 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gxCSC0gmrz2yYd;
-	Fri, 10 Jul 2026 10:31:23 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=124.126.103.232
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783601821;
-	cv=none; b=YwSVyMzc+Pn8Nki7Tvvkt3OhBXuFivdK85vmh5D2qwqZ4SAcWkUm673tuA/Hl9kmzhvkmognIxddhSMkDNOYrUfFtvqIrENh6ah8sTwggUlrBpxZXJDSukTraKKzwSGNlOa+DQGngvK24LZrx4p1fx4YqA7r4m9wvZpD+H+wB+8yyrGW5VA6RJiU3jSP4tnap8Lj9QVxraKhZ/GsC3SM69thJS3bDiLXdDKAFf63NjnjCTdh+BEoJW6T58ulCPnyEeWRiMfP9DqdfSt1NZivR9yudzGouCUoliuuQkDZAO6djzX1R2a/sHdZIGI3I8QfUchQjaDRzllEtl/wzdN9wA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gxCgk6tLXz2yYd;
+	Fri, 10 Jul 2026 10:41:22 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783644082;
+	cv=none; b=d/xNXb/CFUw+v+vS/UIoHzm3Ke/M5ew8R/D5hiPhbGA0MX/+qj4uQ5XzxcBEDBuQfuNnD3Bxy5C0kqErwNjEViFUxUUc6A1IvtAvs9zF2BbElL9Mic5MrpFKtm8PJYDbgUokwBIEpjg2bgzyi+HyFrNLcgp72/1YxXjf+gLhMBYLYCJg4B2BSSAH73AdpibeFzba3Lzqk9Ta+fIONGu2tv7q75JotcHrf8AX/H7j/3YweoupXwusOYBOTES+vjATFja3GUxMzpyvGePZ90lahIujcPdwsYFH3Fqywecy+NkLLFK7sytj28qNXNu1XEY9h2nTSmNQ9/3eKO7eIJiYRA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1783601821; c=relaxed/relaxed;
-	bh=I+Dwerjt9JTfPsh4DxUO05Z7/ESTBj3/frGUVAmciPg=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=kj+CVT3kWYtD2YXrVE1v0HkmSsG0HHgfUxrdw/JRCBe2qBxChlUbP8aAnvlGUJOQRXJJw6KcJcsd8WWqSQ6XJcGLvGLchCo2m97Aep4WVDwG5p5dYUlIYbs2BMaQ1noXoPNp8Ank7QLvPxgN+/LEov8xxAITOaFl4EARs6mA0Ln1P3RK0XSs7bLvQmafp9o3s6EooPP++jifRskoW7w78zm3tEMUhpcLxcdUz6dSKKP5fjjyWDi54cGlh7TbHSEyQMWzeQEh1VcZYF0+6SpvPPZA3H7uju/dRfeluG/GHOc83FQBPF7DrC1OIULHlkjo8mCyGC6wcjhWda0KeC0CKA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=kylinos.cn; spf=pass (client-ip=124.126.103.232; helo=mailgw.kylinos.cn; envelope-from=yanlonglong@kylinos.cn; receiver=lists.ozlabs.org) smtp.mailfrom=kylinos.cn
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=kylinos.cn
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kylinos.cn (client-ip=124.126.103.232; helo=mailgw.kylinos.cn; envelope-from=yanlonglong@kylinos.cn; receiver=lists.ozlabs.org)
-X-Greylist: delayed 367 seconds by postgrey-1.37 at boromir; Thu, 09 Jul 2026 22:56:58 AEST
-Received: from mailgw.kylinos.cn (mailgw.kylinos.cn [124.126.103.232])
+	t=1783644082; c=relaxed/relaxed;
+	bh=5VzLkHlF85viHKbnz0EyQRjrR1wmiefUtKtHMcklHCM=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
+	 MIME-Version:Content-Type; b=TRlHttqUg+Ru+lS20UQnUAvFZDOq5hMr+g374ex3JfgTY0fYkYkjVRCIRYNO8HMCuc5QNqPx9PBPxsPQH6X2vEgK/ZaQn1Gd8OZXPdmVzHXFAL/rjfXFijsowDpIZ6lPlfuN7lRKVq1WQnVl06NyrkaIiX65UHQLAYzPV5QJRZPR90HVOSH107a6j1m9j1Oqbs+JJHNVZ/19o19ZdPN6c6dNcndmBMxhvTmF1tTXWCivG3A3s5HXgZQfe9Pp+R02+GX8/I5Vp6vMMUJQM/kbvshIulNOhG2HkNLO/3crgZRtU+4T2zILtUcjVM75rlcxUdi2HL8ADazncXFi7Kipww==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=FGwPTUFx; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=namhyung@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=FGwPTUFx;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=namhyung@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gww2y4kc9z3c9k
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 09 Jul 2026 22:56:57 +1000 (AEST)
-X-UUID: a55d5b6c7b9411f1aa26b74ffac11d73-20260709
-X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.3.12,REQID:5de5cda1-7cfb-4b74-8811-b5056a8f3c30,IP:0,U
-	RL:0,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,BULK:0,RULE:Release_Ham,ACTION:
-	release,TS:0
-X-CID-META: VersionHash:e7bac3a,CLOUDID:3df98d8a7e353cf3344612617964cdc6,BulkI
-	D:nil,BulkQuantity:0,Recheck:0,SF:102|850|865|898,TC:nil,Content:0|15|50,E
-	DM:-3,IP:nil,URL:0,File:nil,RT:nil,Bulk:nil,QS:nil,BEC:nil,COL:0,OSI:0,OSA
-	:0,AV:0,LES:1,SPR:NO,DKR:0,DKP:0,BRR:0,BRE:0,ARC:0
-X-CID-BVR: 2,SSN|SDN
-X-CID-BAS: 2,SSN|SDN,0,_
-X-CID-FACTOR: TF_CID_SPAM_SNR
-X-CID-RHF: D41D8CD98F00B204E9800998ECF8427E
-X-UUID: a55d5b6c7b9411f1aa26b74ffac11d73-20260709
-X-User: yanlonglong@kylinos.cn
-Received: from localhost.localdomain [(10.44.16.150)] by mailgw.kylinos.cn
-	(envelope-from <yanlonglong@kylinos.cn>)
-	(Generic MTA with TLSv1.3 TLS_AES_256_GCM_SHA384 256/256)
-	with ESMTP id 2011261336; Thu, 09 Jul 2026 20:49:38 +0800
-From: longlong yan <yanlonglong@kylinos.cn>
-To: maddy@linux.ibm.com,
-	mpe@ellerman.id.au
-Cc: npiggin@gmail.com,
-	chleroy@kernel.org,
-	ganeshgr@linux.ibm.com,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-kselftest@vger.kernel.org,
-	longlong yan <yanlonglong@kylinos.cn>
-Subject: [PATCH] selftests/powerpc: Check mmap return value in inject-ra-err
-Date: Thu,  9 Jul 2026 20:49:18 +0800
-Message-ID: <20260709124919.616-1-yanlonglong@kylinos.cn>
-X-Mailer: git-send-email 2.47.1.windows.2
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gxCgj6kfLz2xJT
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Jul 2026 10:41:21 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with ESMTP id 32CD641327;
+	Fri, 10 Jul 2026 00:41:19 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id AF5AE1F00A3A;
+	Fri, 10 Jul 2026 00:41:18 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1783644079;
+	bh=5VzLkHlF85viHKbnz0EyQRjrR1wmiefUtKtHMcklHCM=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Date;
+	b=FGwPTUFxKfWwmvUsZH2I2nekEUiKCIKVpeVSpfNyMtvvaZ0n+ZmBFg8oZjnnMTwdD
+	 KfPmxnmSuRU/Oo6qnsumCfsoPlHArCyYvpXNm+fOCMHydnw8FKF5CywBAEJEW/omKa
+	 f0JO9/lzD5U2awuLdlt4Z+/IpX9iYbsGOA35dHxrJx8gH9loyv8J21Bn1TyWC46oBC
+	 pr9YSrpnkQENJAtu6Rvq7JS9zdg6ugYjgrlOt6isGMMg1Ft6e1YLLIRV1FT6mFj4nl
+	 lhX8/ZN5ed8am98F7Ok4K/lZ0/oe1ka2MipL7hdQdL7X+CDmRXrHXiJRQ34n9nCrqD
+	 bXByme0aqt/hw==
+From: Namhyung Kim <namhyung@kernel.org>
+To: acme@kernel.org, jolsa@kernel.org, adrian.hunter@intel.com, 
+ vmolnaro@redhat.com, mpetlan@redhat.com, tmricht@linux.ibm.com, 
+ maddy@linux.ibm.com, irogers@google.com, 
+ Tanushree Shah <tshah@linux.ibm.com>
+Cc: linux-perf-users@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
+ atrajeev@linux.ibm.com, hbathini@linux.ibm.com, Tejas.Manhas1@ibm.com, 
+ Tanushree.Shah@ibm.com, Shivani.Nittor@ibm.com
+In-Reply-To: <20260708112607.548304-2-tshah@linux.ibm.com>
+References: <20260708112607.548304-2-tshah@linux.ibm.com>
+Subject: Re: [PATCH v4] perf dso: Fix kallsyms DSO detection with fallback
+ logic
+Message-Id: <178364407868.1457655.7985344242070155598.b4-ty@kernel.org>
+Date: Thu, 09 Jul 2026 17:41:18 -0700
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -71,32 +71,27 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-Mailer: b4 0.15-dev-c04d2
 
-mmap() in test_ra_error() is not checked for MAP_FAILED. On failure,
-the subsequent write *paste_addr = 1 dereferences an invalid pointer
-and segfaults. Add a FAIL_IF() check, consistent with the rest of the
-function.
+On Wed, 08 Jul 2026 16:56:08 +0530, Tanushree Shah wrote:
+> The current kallsyms detection in dso__is_kallsyms() uses the
+> dso_binary_type enum which fixes the issue of kallsyms being cached in
+> the build-id cache for out-of-tree modules.
+> 
+> However, during build-id injection in perf record/inject, dso_binary_type
+> has not been explicitly set yet,so dso__binary_type() returns
+> DSO_BINARY_TYPE__NOT_FOUND instead of DSO_BINARY_TYPE__KALLSYMS for the
+> kernel DSO. The current check then fails to identify it as kallsyms,
+> causing build-id symlinks to not be created in ~/.debug/.build-id/ and
+> perf archive to fail with "Cannot stat" errors.
+> 
+> [...]
+Applied to perf-tools-next, thanks!
 
-Fixes: 0f4ef8a3bf78 ("selftests/powerpc: Add test for real address error handling")
-Signed-off-by: longlong yan <yanlonglong@kylinos.cn>
----
- tools/testing/selftests/powerpc/mce/inject-ra-err.c | 1 +
- 1 file changed, 1 insertion(+)
+Best regards,
+Namhyung
 
-diff --git a/tools/testing/selftests/powerpc/mce/inject-ra-err.c b/tools/testing/selftests/powerpc/mce/inject-ra-err.c
-index 94323c34d9a6..0622fd814114 100644
---- a/tools/testing/selftests/powerpc/mce/inject-ra-err.c
-+++ b/tools/testing/selftests/powerpc/mce/inject-ra-err.c
-@@ -47,6 +47,7 @@ static int test_ra_error(void)
- 	FAIL_IF(sigaction(SIGBUS, &act, NULL) != 0);
- 
- 	paste_addr = mmap(NULL, 4096, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0ULL);
-+	FAIL_IF(paste_addr == MAP_FAILED);
- 
- 	/* The following assignment triggers exception */
- 	mb();
--- 
-2.43.0
 
 
