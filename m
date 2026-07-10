@@ -1,71 +1,89 @@
-Return-Path: <linuxppc-dev+bounces-24018-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24019-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2746EC43458
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Jul 2026 17:47:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CCB85C43458
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Jul 2026 19:10:11 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gxfRw0DlYz2yS4;
-	Sat, 11 Jul 2026 03:47:40 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=192.198.163.11
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783705659;
-	cv=none; b=fVFPFgcuKj0N9ljyMsnimrhVb0fOtI2Vz0CCl5VGRtIgZmsYyNZO+o+UUSaNNcq/FzTsH4ofWZBkIyAxp2Gj+oAedMSZ/9h613N+SqSjMYq1e4TnUjePIQwzBYi8e0gcl+3P7OP9BZCOr5VV6wIsug4X130h8R1PCUsTBJV1NKJ2NzzxV2rTFAT8XBxKQ4AFkMJ2QWul5xp3vkYW5GxC49IYmTdT02RhBjRp8RK7nf19L1HZLSyaoWGeRLvkaG/Qp+HNkvaohTm9XsSiVrOj1Ky/ZNlr3+j4QG9RYecQLZqxp10IW5gISaCf192+itLTT4fsiEm641eEqRP0R6kh9g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gxhH55hRDz2yS4;
+	Sat, 11 Jul 2026 05:10:09 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783710609;
+	cv=none; b=KckEse7mEshRBuu5s2soxSTKOEuXf9WKig43pE4Dgy8jtwLprqxFbE9cOpKsgEzQtNhAfIiXlaX0SN5BWyZNe5lENiIIQ1arj7F70n9Cd42jTWmb/x3ot7sRVJ2S6XVfr5+HTA+l4Z4eBfSZiCpQ92HA3R80J8a1y9znFULkK19QydMS0K/ZFpCqiDkgM8agNQSHMkllQOyCq71oECaUONgGWLQTUhcczV2ASxMCjKnWVohS3v/6pFkGolMxVKx4ExRJqoP8wfVZKtNXjdm8a6yZy9yF5QulpU/UAc69lK4T77dr6Of1Bm1KawsvqNMIBNQfGPnObXS8Zk8ta9Wr4g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1783705659; c=relaxed/relaxed;
-	bh=7/LEs8BWu8lQfJmnwA6peWFrpxzDrqJ124232Rq+4es=;
-	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type; b=HBVN1BeRFB41LfJ+jLKkp3bKio6QtvYdzlCH3hikWzj4OVw06rvHKI8OqTYOOXStU/6TD95sWpAjAEQUg3I6CedMjZGDvHCg1sIlDXxF2fWPcgtETnstzADpgfyVaTsL+NdX9Pd1+QS0mcmVZaLEbwRgu953TiNyUKRSYP6CgoRBeBSqceixAXXpa/69WNzvqvG2cAbByHkHpLRaiJYKVfZlNExBAmpwZWacDXSC26S9AQkR6QoeMDCaw+FlZSsPSBMPYKjfKjjovz2+6bdWJlZbYeddH1WbZJQiZ3pJRzuQ36AeBq77XTXuuP0fezAl7fP8FcBIB8jUONOiWsLxXA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=CCJSRngq; dkim-atps=neutral; spf=pass (client-ip=192.198.163.11; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=intel.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com
+	t=1783710609; c=relaxed/relaxed;
+	bh=W80wLEkD9W1pRB495wpgnQIxmPS8lDwtXqHw1IqIoXA=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
+	 MIME-Version:Content-Type; b=dZLcMM02/6Wu4H1I3/+Af6+fZV3kwVW2DsyHFeggWLd8alphG4F0MPTOwddXPxEE5F2YnV5fyuELYYecGrHxKcIighxN5x4Xnyk1r4CjH4EYJnoeP51eb2hpXKqzv5CmS310OPBCmx17R9sE0R3Fm1ju4ksEr4OT8ZXuIHkkBgoRvpz6z+QAHddCXFlfC5QWeMClQ8fWp+jrtDM4NqSgY/a/P/OJnE/KOLGy7enFAQTP4YeRjRXofE0hUyQ6LswIx1sf8ZfB+py1dc6Pnt+msrHk7imFN5dVYk4Lgt2wUNmiNxqWm1ofFshaj0JhKdZuHK5uDtZA+jJuI5UbvJH1VQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=gJVAQDeZ; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=aneesh.kumar@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=CCJSRngq;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=gJVAQDeZ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=192.198.163.11; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.11])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=aneesh.kumar@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gxfRr1s6bz2xdb
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Jul 2026 03:47:34 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1783705657; x=1815241657;
-  h=date:from:to:cc:subject:message-id:mime-version;
-  bh=AOGO+lL5I6IhIskXeEb34ah22LlgCjBp8tsSQwwqGlI=;
-  b=CCJSRngqdhm8GXF7xbRTy2Lh9H+BUFXMd/4i/aAEtkrkE+d1jYVUGeB1
-   cN7lwh0wrDfVai0fCxRDoSibb1aQSBOoBD5Y+4IOB7xdYuSQnJWscUaTd
-   5paN/4M01UbKyBhEdEFuXm4h4zSTZnfhPa0trRmCGd6eyxF0bQMbJ4fWq
-   MDOa0HLHK4xEDMP53chg17opRtEwNQZxVGXmp9oTMUX0PcrP8zi2hzzd3
-   V41LRJgMvoNGyC1zZ+CQs1pbJJD7q8ZvBXVIh6YJ3NKnp1wiQ9Ds5Ww7H
-   JNzk2N8d6f0NDIrp31q6El2idrr0kru/LQG4GF6U9xJD2Vy5MKmXZQRs7
-   Q==;
-X-CSE-ConnectionGUID: 0cE79LRWQ5CVJ3lUEsYoZA==
-X-CSE-MsgGUID: uxVekDCTQpWQ94kf4SXG0A==
-X-IronPort-AV: E=McAfee;i="6800,10657,11841"; a="95011752"
-X-IronPort-AV: E=Sophos;i="6.25,154,1779174000"; 
-   d="scan'208";a="95011752"
-Received: from fmviesa003.fm.intel.com ([10.60.135.143])
-  by fmvoesa105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 10 Jul 2026 10:47:31 -0700
-X-CSE-ConnectionGUID: 2HRRpqBxTiuebTeRusk5og==
-X-CSE-MsgGUID: Nx+nLDi1SIyl27LmJ6IRMg==
-X-ExtLoop1: 1
-Received: from lkp-server02.sh.intel.com (HELO ea128546eb3d) ([10.239.97.151])
-  by fmviesa003.fm.intel.com with ESMTP; 10 Jul 2026 10:47:29 -0700
-Received: from kbuild by ea128546eb3d with local (Exim 4.98.2)
-	(envelope-from <lkp@intel.com>)
-	id 1wiFJu-00000000JC9-30Fb;
-	Fri, 10 Jul 2026 17:47:26 +0000
-Date: Sat, 11 Jul 2026 01:46:54 +0800
-From: kernel test robot <lkp@intel.com>
-To: "Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com>
-Cc: oe-kbuild-all@lists.linux.dev, linuxppc-dev@lists.ozlabs.org,
- Madhavan Srinivasan <maddy@linux.ibm.com>,
- "Michal =?utf-8?Q?Such=C3=A1nek"?= <msuchanek@suse.de>
-Subject: [powerpc:fixes-test 12/12]
- arch/powerpc/include/asm/ptrace.h:241:33: error: implicit declaration of
- function 'BIT'
-Message-ID: <202607110141.nUx3NKwu-lkp@intel.com>
-User-Agent: s-nail v14.9.25
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gxhH36v7Bz2xlw
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Jul 2026 05:10:07 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with ESMTP id E3CE143643;
+	Fri, 10 Jul 2026 19:10:04 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id A666D1F000E9;
+	Fri, 10 Jul 2026 19:09:53 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1783710604;
+	bh=W80wLEkD9W1pRB495wpgnQIxmPS8lDwtXqHw1IqIoXA=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date;
+	b=gJVAQDeZh09mlIwH9aS39ydQbMv9ATCa+q6RzlotJlYDVCb0X489XGl54CievRuGV
+	 bGeu8Trnzs9LKTmlXX1pDvL33HGewl6FHGfOjc0OpTWhcguWUb6nrHVON5SwxxlXxh
+	 iJTpwsEFNo+/Gm+kYK5XFRHKL4VnmI2nxMSvTZO7jYF/1Rr/f9TiJImRsDON2mAQ0g
+	 19pArOpGrtzlKcjk3UrEhjHcRxKRE7bBMnW84vRE1rhb/QkRefEY9u0Iubp2HtQgxb
+	 ZzlSURdXD0kwVECjToI+lZg14zJMWTnVf7oLvDTrLlhMJEAMH6DYqS738Ii5K0QjYJ
+	 coYrGCnVbQA5Q==
+X-Mailer: emacs 30.2 (via feedmail 11-beta-1 I)
+From: Aneesh Kumar K.V <aneesh.kumar@kernel.org>
+To: Jason Gunthorpe <jgg@ziepe.ca>
+Cc: Catalin Marinas <catalin.marinas@arm.com>, iommu@lists.linux.dev,
+	linux-arm-kernel@lists.infradead.org,
+	linux-kernel@vger.kernel.org, linux-coco@lists.linux.dev,
+	Robin Murphy <robin.murphy@arm.com>,
+	Marek Szyprowski <m.szyprowski@samsung.com>,
+	Will Deacon <will@kernel.org>, Marc Zyngier <maz@kernel.org>,
+	Steven Price <steven.price@arm.com>,
+	Suzuki K Poulose <Suzuki.Poulose@arm.com>,
+	Jiri Pirko <jiri@resnulli.us>,
+	Mostafa Saleh <smostafa@google.com>,
+	Petr Tesarik <ptesarik@suse.com>,
+	Alexey Kardashevskiy <aik@amd.com>,
+	Dan Williams <dan.j.williams@intel.com>,
+	Xu Yilun <yilun.xu@linux.intel.com>,
+	linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	Alexander Gordeev <agordeev@linux.ibm.com>,
+	Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
+	Heiko Carstens <hca@linux.ibm.com>,
+	Vasily Gorbik <gor@linux.ibm.com>,
+	Christian Borntraeger <borntraeger@linux.ibm.com>,
+	Sven Schnelle <svens@linux.ibm.com>, x86@kernel.org,
+	Jiri Pirko <jiri@nvidia.com>,
+	Michael Kelley <mhklinux@outlook.com>
+Subject: Re: [PATCH v7 16/22] dma-direct: make dma_direct_map_phys() honor
+ DMA_ATTR_CC_SHARED
+In-Reply-To: <20260710161945.GO118978@ziepe.ca>
+References: <20260701054926.825925-1-aneesh.kumar@kernel.org>
+ <20260701054926.825925-17-aneesh.kumar@kernel.org>
+ <ak42F240d-53QeFN@arm.com> <yq5apl0xgy89.fsf@kernel.org>
+ <ak-CT3oanlDfgTy4@arm.com> <20260709181336.GM118978@ziepe.ca>
+ <yq5ajyr3h106.fsf@kernel.org> <20260710161945.GO118978@ziepe.ca>
+Date: Sat, 11 Jul 2026 00:39:49 +0530
+Message-ID: <yq5atsq6hdaa.fsf@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -79,57 +97,88 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain
 
-tree:   https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git fixes-test
-head:   afc2830892a128a13a65f677271a0a48aeb61b5e
-commit: afc2830892a128a13a65f677271a0a48aeb61b5e [12/12] powerpc/syscall: Fix syscall skip handling for seccomp and ptrace
-config: powerpc-allnoconfig (https://download.01.org/0day-ci/archive/20260711/202607110141.nUx3NKwu-lkp@intel.com/config)
-compiler: powerpc-linux-gcc (GCC) 16.1.0
-reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20260711/202607110141.nUx3NKwu-lkp@intel.com/reproduce)
+Jason Gunthorpe <jgg@ziepe.ca> writes:
 
-If you fix the issue in a separate patch/commit (i.e. not just a new version of
-the same patch/commit), kindly add following tags
-| Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202607110141.nUx3NKwu-lkp@intel.com/
+> On Fri, Jul 10, 2026 at 10:52:49AM +0530, Aneesh Kumar K.V wrote:
+>> >> > 	/*
+>> >> > 	 * For host memory encryption and device requiring unencrypted DMA,
+>> >> > 	 * MMIO memory is treated as shared by default.
+>> >> > 	 */
+>> >> > 	if (attrs & DMA_ATTR_MMIO) {
+>> >> > 		if (cc_platform_has(CC_ATTR_HOST_MEM_ENCRYPT) || force_dma_unencrypted(dev))
+>> >> > 			attrs |= DMA_ATTR_CC_SHARED;
+>> >> > 	}
+>> >> 
+>> >> Yes, I think it does the trick, preserves the current semantics for AMD.
+>> >> I guess you could use a single 'if' for all checks (up to you).
+>> >
+>> > Please don't change it, MMIO P2P is broken on CC systems today and it
+>> > should stay broken. Passing DMA_ATTR_MMIO with DMA_ATTR_CC_SHARED is
+>> > an error that we need to correct in the drivers not make work in the
+>> > core code.
+>> >
+>> 
+>> But the above changes are intended to handle HOST_MEM_ENCRYPT. In v7, we
+>> had the following diff:
+>
+> To follow how the rest of the decrypted/encrypted stuff works the MMIO
+> has to be flaged with CC_SHARED for HOST_MEM_ENCRYPT too, just like
+> the PTEs.
+>
+>> @@ -88,37 +88,40 @@ static inline dma_addr_t dma_direct_map_phys(struct device *dev,
+>>  {
+>>  	dma_addr_t dma_addr;
+>>  
+>> +	/*
+>> +	 * For a device requiring unencrypted DMA, MMIO memory is treated
+>> +	 * as shared by default.
+>> +	 */
+>> +	if (force_dma_unencrypted(dev) && (attrs & DMA_ATTR_MMIO))
+>> +		attrs |= DMA_ATTR_CC_SHARED;
+>
+> force_dma_unencrypted() says nothing about the properties of the
+> address passed in, this was nonsense :\
+>
+>> As we discussed [1], that can come in a later patch. In the meantime, adding
+>> the HOST_MEM_ENCRYPT check preserves the previous behavior for SME.
+>
+> It never worked. When we added ATTR_MMIO it started to have a chance
+> to work but prior to that it was always broken anyhow. I don't see
+> there is much merit in preserving the narrow window when we
+> inadvertantly had a half working ATTR_MMIO.
+>
+> But if you really want to it should be
+> cc_platform_has(CC_ATTR_HOST_MEM_ENCRYPT) *only* and get rid of the wrong
+> force_dma_unencrypted().
+>
 
-All errors (new ones prefixed by >>):
+Ok, I will update the changes to so we preserve the previous behaviour
+for SME?
 
-   In file included from arch/powerpc/include/asm/user.h:5,
-                    from include/linux/user.h:1,
-                    from include/linux/elfcore.h:5,
-                    from include/linux/vmcore_info.h:6,
-                    from include/linux/kexec.h:18,
-                    from include/linux/crash_dump.h:5,
-                    from drivers/of/fdt.c:11:
-   arch/powerpc/include/asm/ptrace.h: In function 'set_syscall_entry_ret':
->> arch/powerpc/include/asm/ptrace.h:241:33: error: implicit declaration of function 'BIT' [-Wimplicit-function-declaration]
-     241 | #define SYSCALL_ENTRY_RET_SET   BIT(0)
-         |                                 ^~~
-   arch/powerpc/include/asm/ptrace.h:245:30: note: in expansion of macro 'SYSCALL_ENTRY_RET_SET'
-     245 |         regs->entry_flags |= SYSCALL_ENTRY_RET_SET;
-         |                              ^~~~~~~~~~~~~~~~~~~~~
+	if (attrs & DMA_ATTR_MMIO) {
+		/*
+		 * For host memory encryption treat MMIO memory as shared
+		 */
+		if (cc_platform_has(CC_ATTR_HOST_MEM_ENCRYPT))
+			attrs |= DMA_ATTR_CC_SHARED;
+	}
+
+Do let me know if you feel strongly that the above change should not be
+included and that the SME P2P case should instead be handled in a future
+patch.
 
 
-vim +/BIT +241 arch/powerpc/include/asm/ptrace.h
+>
+> But IMHO, I'd rather this series treat ATTR_MMIO as private MMIO and
+> ATTR_MMIO|CC_SHARED as shared MMIO and that's the right and correct
+> thing for the DMA API.
+>
 
-   228	
-   229	#define force_successful_syscall_return()   \
-   230		do { \
-   231			set_thread_flag(TIF_NOERROR); \
-   232		} while(0)
-   233	
-   234	#define current_pt_regs() \
-   235		((struct pt_regs *)((unsigned long)task_stack_page(current) + THREAD_SIZE) - 1)
-   236	
-   237	/*
-   238	 * SYSCALL_ENTRY_RET_SET: seccomp or ptrace called syscall_set_return_value()
-   239	 * and wants the syscall skipped; regs->gpr[3] already holds the return value.
-   240	 */
- > 241	#define SYSCALL_ENTRY_RET_SET	BIT(0)
-   242	
+If you think the rest of the series is ready for upstream, could you
+please ack it so it can be picked up for the next merge window? I'll
+repost v8, rebased on top of the pKVM topic branch.
 
---
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+-aneesh
 
