@@ -1,70 +1,74 @@
-Return-Path: <linuxppc-dev+bounces-24030-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24031-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B9BC4C43458
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Jul 2026 20:35:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 510F9C43458
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Jul 2026 20:54:51 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gxkB245xzz2yS4;
-	Sat, 11 Jul 2026 06:35:54 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783715754;
-	cv=none; b=JgEoJAiNIMn5HhVWnKMwS2Z9RczRVSCcDmGBRur2XYkHSYN9tCnUlQFl/KEoMmmgW8TT+W6z+g0/LvhDAd57UcHhNcV2iXGcyVAuDgLc8BxodT22FtlBdPlt9jw5FMMBYMlder8IhnLSW5638N7PYsPWV2+Q82XOxzghdjzQSG3feuu5nJoi03ei6Gdo8ToYURzpzqBAF0p950OTIFKLAo9iSLPBcLFhmtaA8a7wVccn4RSDu5tnb3ly8iwikKQtlRUn0Dj3kUJ58DsCXonozMj8wfGVibb3lI/XM9uEMmf2Xi4lmOyr5dFg7CpA2J26ljx/eqAQurm7Y/Thdzyl8g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gxkbs45X8z2yS4;
+	Sat, 11 Jul 2026 06:54:49 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=198.175.65.13
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783716889;
+	cv=none; b=V7KvBKRJMscT+BMfIQTgNAQtOzohsuY7DQ9fqCEF47lQYez7q8QuFQBBGgXsdq3UrDo/96QfWgO56i0u13sadHnfXQu83xJNV1j8NevwDLfU2Vt7j/k5VxCVbDtx8QjW/Hm0h5qF59oC6CUEXfe+aMyAgpL6eYYk0jM7T5Dx565/bIU3BwX6Umg2K6k6j0zO3N+gEx9+KyWcSMhOF7IU6zF6Y2pwAqJYWq1DDmUr3+BwXwRIzRAZxa/dWnluxh2Sv0JFSU0p7fUC1MkQRdyxYUR/0YDY5tjBWNKn8kVNTqLrPwPh/Got2LFAhqwSRCZJBOVC9Mi4EOVHujuXDDOBcQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1783715754; c=relaxed/relaxed;
-	bh=HeTUxy/TjLlBcQhUPrCj068Skd26U8xRhPY9J+8AKso=;
-	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type:
-	 Content-Disposition:In-Reply-To; b=NuNxRrkpNCsxrONYYpNZVdiuvKavHuiQwhj0zlShZYW5u3T+ZwQQ770RvoFj03SC3086qrPM7VzjtUVYFD65X+WECd4CdaoPVgEflKy6SyzlS8me3m+iNt8WOsIGD8cGmw5UBEjhnOfKIccYoTnvNTBG0E31gmXAOLif83bMxwbE5f5R3qiyi6n6B4uvENta17Tv99LEf6ZJCvd6/3TqYN5tl5TIbHFy3A/LwT2+laQ21S7AMuGUPTWhuA8oODN76CYYvxIDtg4agw7FzkR7+uPc/t9pePXCkPPvDAnolC2uRzXiGcviYdAnU9nYx11caCHL+d3/E60OHrtqnBnBuA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=EIUJZeVB; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=helgaas@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1783716889; c=relaxed/relaxed;
+	bh=L3z/ny8fLKJCZiDaz49pc52iFYzbXA5ZLH+VRVsHhLc=;
+	h=Date:From:To:Cc:Subject:Message-ID; b=OJ/49oW2Gl8Z+1AjLwf7HCFpNfKyejxioibHL5AsJ/VycuHgY4gq7n2Sx6Aos/JI8Kf9iXOXIupEvBxPM2EHmfLSwm7UlzgJXil6oOJl1BPznWP9xilVq93KURDWQ6ot8M5crp74vDGhNziv5uOUwOnbkFIIOaXZgZ66/CVJ151M2Dw28X+ciApACqEe6VWScYrFqpgNapn7COdsgNdQLymVICQlXZJ0phqxJLXntIZdcfLPkFBqY864+K3vO4sCxRd/IPKMZCwYvGLg10hgGSPo4Insx44n4IABGGlRr5mDCgtv2UtV7n/vp063A3vPJtX4LqTcN+JMU3ydD/TSSQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=eGLV3/0Z; dkim-atps=neutral; spf=pass (client-ip=198.175.65.13; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=intel.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=EIUJZeVB;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=eGLV3/0Z;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=helgaas@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=198.175.65.13; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org)
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.13])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gxkB13cLFz2xlw
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Jul 2026 06:35:53 +1000 (AEST)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 8880B4192E;
-	Fri, 10 Jul 2026 20:35:51 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3F0D01F000E9;
-	Fri, 10 Jul 2026 20:35:51 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1783715751;
-	bh=HeTUxy/TjLlBcQhUPrCj068Skd26U8xRhPY9J+8AKso=;
-	h=Date:From:To:Cc:Subject:In-Reply-To;
-	b=EIUJZeVBfo+vl1lUNoSPNryYCSm3D9wqwOcYCOL5kOTtE3l25HyXvqF3gA7TQ+J4L
-	 yKIn4iUuRGfqfaqNTmussxPbjcnazrVXNvJFZ65fkkFpRQ/ud92t5F10vB3132TSW/
-	 opsDxyV3bP4HLIrYft7FgiHF0AzD8IAwqW1LzEUhEIMJikfXjeeH6SiCDfZgRzSvss
-	 9Sn3QB+UtLzlBYhrD8ymYlG1jjlxr2UAV3KG9T8qVog0y4NY98IH4Zzt/T/3/NIpxG
-	 C8jbYEkACVgeTzo1PMi/ukCwYdi3rryu/U6ROLfvqan9CdTDJ4rBU73hAkaBSCuPRs
-	 3L6E9q3T2OzdA==
-Date: Fri, 10 Jul 2026 15:35:50 -0500
-From: Bjorn Helgaas <helgaas@kernel.org>
-To: Breno Leitao <leitao@debian.org>
-Cc: Tony Luck <tony.luck@intel.com>, Borislav Petkov <bp@alien8.de>,
-	Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>,
-	Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
-	"H. Peter Anvin" <hpa@zytor.com>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Hanjun Guo <guohanjun@huawei.com>,
-	Mauro Carvalho Chehab <mchehab@kernel.org>,
-	Shuai Xue <xueshuai@linux.alibaba.com>, Len Brown <lenb@kernel.org>,
-	Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
-	Oliver O'Halloran <oohall@gmail.com>,
-	Bjorn Helgaas <bhelgaas@google.com>,
-	Breno Leitao <leitao@kernel.org>, linux-kernel@vger.kernel.org,
-	linux-edac@vger.kernel.org, linux-acpi@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org,
-	kernel-team@meta.com
-Subject: Re: [PATCH RFC] RAS: hwerr_tracking: move recoverable hardware error
- tracking out of vmcoreinfo
-Message-ID: <20260710203550.GA994216@bhelgaas>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gxkbp2SCjz2xlw
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Jul 2026 06:54:43 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1783716887; x=1815252887;
+  h=date:from:to:cc:subject:message-id;
+  bh=ufgvTNGe+I32fwGgBejQFwRiEAFRtix7NiO4PxttKUs=;
+  b=eGLV3/0ZxV8DBAiXcSxHmBdYlfWmjX2e7S96DSIKmoP+P1hw8M4GjlfP
+   kR1KpIQosSwIBGlJ0SS6OrMHKt70/rgjaNBvDKqVXvgAmThH7M4nf6+Vu
+   CMnYvwt/7P4TutOkkeLL1n9iX0EBnLzU5YT9t2BXBxOKAb57ra47jJqPo
+   GtY52cxdg6TkBnE29twuE0fEz8I6IvfVgNXFfF8Epr2uRhBdrGTitAU54
+   mSSRD8kh7PhYbUYQ4pjA0N8G0eJ4a6oJ6y0HTWOI9qP5JGuD7WXeqbiFI
+   RrYfUHIs1Ya8urMSackSAr8aG/HRCMLDzLXDwTNeJLKrLcT2IxgYQxx72
+   g==;
+X-CSE-ConnectionGUID: SbiX9aa0QzOp/l5XsAzx0A==
+X-CSE-MsgGUID: qMoNtkd/QIqWQHAsBmuy6g==
+X-IronPort-AV: E=McAfee;i="6800,10657,11841"; a="95571471"
+X-IronPort-AV: E=Sophos;i="6.25,154,1779174000"; 
+   d="scan'208";a="95571471"
+Received: from fmviesa005.fm.intel.com ([10.60.135.145])
+  by orvoesa105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 10 Jul 2026 13:54:40 -0700
+X-CSE-ConnectionGUID: 0Wdr5OXlQRysnOkanXlE2A==
+X-CSE-MsgGUID: k5CIbPDvSryOV2l3ORUYKQ==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.25,154,1779174000"; 
+   d="scan'208";a="259873774"
+Received: from lkp-server02.sh.intel.com (HELO ea128546eb3d) ([10.239.97.151])
+  by fmviesa005.fm.intel.com with ESMTP; 10 Jul 2026 13:54:37 -0700
+Received: from kbuild by ea128546eb3d with local (Exim 4.98.2)
+	(envelope-from <lkp@intel.com>)
+	id 1wiIF0-00000000JNZ-1szm;
+	Fri, 10 Jul 2026 20:54:34 +0000
+Date: Sat, 11 Jul 2026 04:54:17 +0800
+From: kernel test robot <lkp@intel.com>
+To: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+Cc: llvm@lists.linux.dev, oe-kbuild-all@lists.linux.dev,
+ linuxppc-dev@lists.ozlabs.org,
+ Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Shrikanth Hegde <sshegde@linux.ibm.com>
+Subject: [powerpc:fixes-test 10/12] kernel/sched/core.c:7449:1:
+ error: type specifier missing, defaults to 'int'; ISO C99 and later do not
+ support implicit int
+Message-ID: <202607110422.frjmJOf8-lkp@intel.com>
+User-Agent: s-nail v14.9.25
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -77,291 +81,92 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260707-hwerr-ras-v1-1-4aea4a79d085@debian.org>
 
-On Tue, Jul 07, 2026 at 07:02:34AM -0700, Breno Leitao wrote:
-> The recoverable hardware error tracking (hwerr_log_error_type() and the
-> hwerr_data[] counters) was added under vmcoreinfo, but it uses none of the
-> vmcoreinfo note machinery: hwerr_data[] is a plain global array that crash
-> tools read from the vmcore by symbol, like any other global.  Functionally
-> it is RAS code, fed only by the hardware error paths (x86 MCE, APEI GHES
-> and PCIe AER).
-> 
-> I wanted to expand it, and Baoquan suggested moving it away from vmcore
-> info, which makes sense. [1]
-> 
-> Move the implementation to drivers/ras/hwerr_tracking.c and the
-> declaration (with its no-op stub) to <linux/ras.h>.  Give it a dedicated
-> CONFIG_RAS_HWERR (bool, under RAS, default y) rather than riding
-> CONFIG_VMCORE_INFO, so it is a first-class RAS feature that can be turned
-> off on its own.  The producers now reach hwerr_log_error_type() through
-> <linux/ras.h>: x86 MCE and APEI GHES already include it, so drop their
-> <linux/vmcore_info.h> include; PCIe AER switches its include from
-> <linux/vmcore_info.h> to <linux/ras.h>.
-> 
-> enum hwerr_error_type stays in <uapi/linux/vmcore.h> as it has been part
-> of the UAPI since the feature shipped; <linux/ras.h> includes it from
-> there.
-> 
-> hwerr_data[] keeps its name and layout, so existing crash/drgn recipes
-> keep working.  The config gate moves from CONFIG_VMCORE_INFO to
-> CONFIG_RAS_HWERR (default y).
-> 
-> Link: https://lore.kernel.org/all/aYvi4Y_HNqk_u1-v@fedora/ [1]
-> Signed-off-by: Breno Leitao <leitao@debian.org>
-> ---
-> Once we move it outside of vmcore info, I am planning to add new
-> features that are in the limbo now, given they don't belong to vmcore
-> info, such as:
-> 
-> Track fatal hardware errors
-> 	https://lore.kernel.org/all/20260617-hwerr-v1-0-ff131cd6203c@debian.org/
-> 
-> Expose hardware error recovery statistics via sysfs
-> 	https://lore.kernel.org/all/20260202-vmcoreinfo_sysfs-v2-0-8f3b5308b894@debian.org/
-> ---
->  MAINTAINERS                    |  7 +++++++
->  arch/x86/kernel/cpu/mce/core.c |  1 -
->  drivers/acpi/apei/ghes.c       |  1 -
->  drivers/pci/pcie/aer.c         |  2 +-
+tree:   https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git fixes-test
+head:   afc2830892a128a13a65f677271a0a48aeb61b5e
+commit: 4747e17fe063720a30b1c0075bae3e8f8acd26f4 [10/12] powerpc/32: Use HAVE_PREEMPT_DYNAMIC_CALL instead of HAVE_PREEMPT_DYNAMIC_KEY
+config: powerpc-randconfig-002-20260711 (https://download.01.org/0day-ci/archive/20260711/202607110422.frjmJOf8-lkp@intel.com/config)
+compiler: clang version 17.0.6 (https://github.com/llvm/llvm-project 6009708b4367171ccdbf4b5905cb6a803753fe18)
+reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20260711/202607110422.frjmJOf8-lkp@intel.com/reproduce)
 
-Acked-by: Bjorn Helgaas <bhelgaas@google.com> # drivers/pci
+If you fix the issue in a separate patch/commit (i.e. not just a new version of
+the same patch/commit), kindly add following tags
+| Reported-by: kernel test robot <lkp@intel.com>
+| Closes: https://lore.kernel.org/oe-kbuild-all/202607110422.frjmJOf8-lkp@intel.com/
 
->  drivers/ras/Kconfig            | 12 ++++++++++++
->  drivers/ras/Makefile           |  1 +
->  drivers/ras/hwerr_tracking.c   | 35 +++++++++++++++++++++++++++++++++++
->  include/linux/ras.h            |  7 +++++++
->  include/linux/vmcore_info.h    |  7 -------
->  kernel/vmcore_info.c           | 21 ---------------------
->  10 files changed, 63 insertions(+), 31 deletions(-)
-> 
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index 1705eb823dd00..356a51032e4b0 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -22539,6 +22539,13 @@ L:	linux-edac@vger.kernel.org
->  S:	Maintained
->  F:	drivers/ras/amd/fmpm.c
->  
-> +RAS RECOVERABLE HARDWARE ERROR TRACKING
-> +M:	Breno Leitao <leitao@kernel.org>
-> +L:	linux-edac@vger.kernel.org
-> +S:	Maintained
-> +F:	Documentation/driver-api/hw-recoverable-errors.rst
-> +F:	drivers/ras/hwerr_tracking.c
-> +
->  RASPBERRY PI PISP BACK END
->  M:	Jacopo Mondi <jacopo.mondi@ideasonboard.com>
->  R:	Raspberry Pi Kernel Maintenance <kernel-list@raspberrypi.com>
-> diff --git a/arch/x86/kernel/cpu/mce/core.c b/arch/x86/kernel/cpu/mce/core.c
-> index 9bba1e2f03af7..58f1d7a601883 100644
-> --- a/arch/x86/kernel/cpu/mce/core.c
-> +++ b/arch/x86/kernel/cpu/mce/core.c
-> @@ -45,7 +45,6 @@
->  #include <linux/task_work.h>
->  #include <linux/hardirq.h>
->  #include <linux/kexec.h>
-> -#include <linux/vmcore_info.h>
->  
->  #include <asm/fred.h>
->  #include <asm/cpu_device_id.h>
-> diff --git a/drivers/acpi/apei/ghes.c b/drivers/acpi/apei/ghes.c
-> index 3236a3ce79d6b..4b6666bc19c77 100644
-> --- a/drivers/acpi/apei/ghes.c
-> +++ b/drivers/acpi/apei/ghes.c
-> @@ -45,7 +45,6 @@
->  #include <linux/uuid.h>
->  #include <linux/ras.h>
->  #include <linux/task_work.h>
-> -#include <linux/vmcore_info.h>
->  
->  #include <acpi/actbl1.h>
->  #include <acpi/ghes.h>
-> diff --git a/drivers/pci/pcie/aer.c b/drivers/pci/pcie/aer.c
-> index c4fd9c0b2a548..00cdca26a5114 100644
-> --- a/drivers/pci/pcie/aer.c
-> +++ b/drivers/pci/pcie/aer.c
-> @@ -30,7 +30,7 @@
->  #include <linux/kfifo.h>
->  #include <linux/ratelimit.h>
->  #include <linux/slab.h>
-> -#include <linux/vmcore_info.h>
-> +#include <linux/ras.h>
->  #include <acpi/apei.h>
->  #include <acpi/ghes.h>
->  #include <ras/ras_event.h>
-> diff --git a/drivers/ras/Kconfig b/drivers/ras/Kconfig
-> index fc4f4bb94a4c6..241642679c1f1 100644
-> --- a/drivers/ras/Kconfig
-> +++ b/drivers/ras/Kconfig
-> @@ -34,6 +34,18 @@ if RAS
->  source "arch/x86/ras/Kconfig"
->  source "drivers/ras/amd/atl/Kconfig"
->  
-> +config RAS_HWERR
-> +	bool "Track hardware errors for crash analysis"
-> +	default y
-> +	help
-> +	  Record the count and timestamp of the most recent recoverable
-> +	  hardware error for each source (CPU, memory, PCI, CXL, ...).  The
-> +	  data is written at runtime and read post-mortem from a vmcore by
-> +	  tools such as crash or drgn, to correlate recoverable errors with a
-> +	  later panic.
-> +
-> +	  If unsure, say Y.
-> +
->  config RAS_FMPM
->  	tristate "FRU Memory Poison Manager"
->  	default m
-> diff --git a/drivers/ras/Makefile b/drivers/ras/Makefile
-> index 11f95d59d3972..4217bee75d910 100644
-> --- a/drivers/ras/Makefile
-> +++ b/drivers/ras/Makefile
-> @@ -1,5 +1,6 @@
->  # SPDX-License-Identifier: GPL-2.0-only
->  obj-$(CONFIG_RAS)	+= ras.o
-> +obj-$(CONFIG_RAS_HWERR)	+= hwerr_tracking.o
->  obj-$(CONFIG_DEBUG_FS)	+= debugfs.o
->  obj-$(CONFIG_RAS_CEC)	+= cec.o
->  
-> diff --git a/drivers/ras/hwerr_tracking.c b/drivers/ras/hwerr_tracking.c
-> new file mode 100644
-> index 0000000000000..847c01fb24d55
-> --- /dev/null
-> +++ b/drivers/ras/hwerr_tracking.c
-> @@ -0,0 +1,35 @@
-> +// SPDX-License-Identifier: GPL-2.0-only
-> +/*
-> + * Track recoverable hardware errors (visible to the OS but not fatal) so that
-> + * crash tools like crash/drgn can read the count and timestamp of the last
-> + * occurrence from a vmcore and correlate them with a subsequent panic.
-> + *
-> + * Copyright (c) 2026 Meta Platforms, Inc. and affiliates
-> + * Copyright (c) 2026 Breno Leitao <leitao@kernel.org>
-> + */
-> +
-> +#include <linux/atomic.h>
-> +#include <linux/export.h>
-> +#include <linux/ras.h>
-> +#include <linux/timekeeping.h>
-> +
-> +struct hwerr_info {
-> +	atomic_t count;
-> +	time64_t timestamp;
-> +};
-> +
-> +/*
-> + * Keep hwerr_data[] at global scope so it stays accessible from the vmcore
-> + * (via crash/drgn) even when Link Time Optimization (LTO) is enabled.
-> + */
-> +struct hwerr_info hwerr_data[HWERR_RECOV_MAX];
-> +
-> +void hwerr_log_error_type(enum hwerr_error_type src)
-> +{
-> +	if (src < 0 || src >= HWERR_RECOV_MAX)
-> +		return;
-> +
-> +	atomic_inc(&hwerr_data[src].count);
-> +	WRITE_ONCE(hwerr_data[src].timestamp, ktime_get_real_seconds());
-> +}
-> +EXPORT_SYMBOL_GPL(hwerr_log_error_type);
-> diff --git a/include/linux/ras.h b/include/linux/ras.h
-> index 468941bfe855f..1019183c00342 100644
-> --- a/include/linux/ras.h
-> +++ b/include/linux/ras.h
-> @@ -5,6 +5,7 @@
->  #include <asm/errno.h>
->  #include <linux/uuid.h>
->  #include <linux/cper.h>
-> +#include <uapi/linux/vmcore.h>
->  
->  #ifdef CONFIG_DEBUG_FS
->  int ras_userspace_consumers(void);
-> @@ -35,6 +36,12 @@ static inline void
->  log_arm_hw_error(struct cper_sec_proc_arm *err, const u8 sev) { return; }
->  #endif
->  
-> +#ifdef CONFIG_RAS_HWERR
-> +void hwerr_log_error_type(enum hwerr_error_type src);
-> +#else
-> +static inline void hwerr_log_error_type(enum hwerr_error_type src) { }
-> +#endif
-> +
->  struct atl_err {
->  	u64 addr;
->  	u64 ipid;
-> diff --git a/include/linux/vmcore_info.h b/include/linux/vmcore_info.h
-> index e71518caacdfc..fb6f29b7202e3 100644
-> --- a/include/linux/vmcore_info.h
-> +++ b/include/linux/vmcore_info.h
-> @@ -5,7 +5,6 @@
->  #include <linux/linkage.h>
->  #include <linux/elfcore.h>
->  #include <linux/elf.h>
-> -#include <uapi/linux/vmcore.h>
->  
->  #define CRASH_CORE_NOTE_HEAD_BYTES ALIGN(sizeof(struct elf_note), 4)
->  #define CRASH_CORE_NOTE_NAME_BYTES ALIGN(sizeof(NN_PRSTATUS), 4)
-> @@ -79,10 +78,4 @@ Elf_Word *append_elf_note(Elf_Word *buf, char *name, unsigned int type,
->  			  void *data, size_t data_len);
->  void final_note(Elf_Word *buf);
->  
-> -#ifdef CONFIG_VMCORE_INFO
-> -void hwerr_log_error_type(enum hwerr_error_type src);
-> -#else
-> -static inline void hwerr_log_error_type(enum hwerr_error_type src) {};
-> -#endif
-> -
->  #endif /* LINUX_VMCORE_INFO_H */
-> diff --git a/kernel/vmcore_info.c b/kernel/vmcore_info.c
-> index 8614430ca212a..5c288796bdbf5 100644
-> --- a/kernel/vmcore_info.c
-> +++ b/kernel/vmcore_info.c
-> @@ -29,17 +29,6 @@ u32 *vmcoreinfo_note;
->  /* trusted vmcoreinfo, e.g. we can make a copy in the crash memory */
->  static unsigned char *vmcoreinfo_data_safecopy;
->  
-> -struct hwerr_info {
-> -	atomic_t count;
-> -	time64_t timestamp;
-> -};
-> -
-> -/*
-> - * The hwerr_data[] array is declared with global scope so that it remains
-> - * accessible to vmcoreinfo even when Link Time Optimization (LTO) is enabled.
-> - */
-> -struct hwerr_info hwerr_data[HWERR_RECOV_MAX];
-> -
->  Elf_Word *append_elf_note(Elf_Word *buf, char *name, unsigned int type,
->  			  void *data, size_t data_len)
->  {
-> @@ -127,16 +116,6 @@ phys_addr_t __weak paddr_vmcoreinfo_note(void)
->  }
->  EXPORT_SYMBOL(paddr_vmcoreinfo_note);
->  
-> -void hwerr_log_error_type(enum hwerr_error_type src)
-> -{
-> -	if (src < 0 || src >= HWERR_RECOV_MAX)
-> -		return;
-> -
-> -	atomic_inc(&hwerr_data[src].count);
-> -	WRITE_ONCE(hwerr_data[src].timestamp, ktime_get_real_seconds());
-> -}
-> -EXPORT_SYMBOL_GPL(hwerr_log_error_type);
-> -
->  static int __init crash_save_vmcoreinfo_init(void)
->  {
->  	int order;
-> 
-> ---
-> base-commit: 3d5670d672ae08b8c534b7beed6f57c8b44e7b43
-> change-id: 20260629-hwerr-ras-e26664926c58
-> 
-> Best regards,
-> --  
-> Breno Leitao <leitao@debian.org>
-> 
+All errors (new ones prefixed by >>):
+
+>> kernel/sched/core.c:7449:1: error: type specifier missing, defaults to 'int'; ISO C99 and later do not support implicit int [-Wimplicit-int]
+    7449 | EXPORT_STATIC_CALL_TRAMP(preempt_schedule);
+         | ^
+   include/linux/static_call.h:223:2: note: expanded from macro 'EXPORT_STATIC_CALL_TRAMP'
+     223 |         ARCH_ADD_TRAMP_KEY(name)
+         |         ^
+>> kernel/sched/core.c:7449:26: error: a parameter list without types is only allowed in a function definition
+    7449 | EXPORT_STATIC_CALL_TRAMP(preempt_schedule);
+         |                          ^
+   kernel/sched/core.c:7522:1: error: type specifier missing, defaults to 'int'; ISO C99 and later do not support implicit int [-Wimplicit-int]
+    7522 | EXPORT_STATIC_CALL_TRAMP(preempt_schedule_notrace);
+         | ^
+   include/linux/static_call.h:223:2: note: expanded from macro 'EXPORT_STATIC_CALL_TRAMP'
+     223 |         ARCH_ADD_TRAMP_KEY(name)
+         |         ^
+   kernel/sched/core.c:7522:26: error: a parameter list without types is only allowed in a function definition
+    7522 | EXPORT_STATIC_CALL_TRAMP(preempt_schedule_notrace);
+         |                          ^
+   kernel/sched/core.c:7769:1: error: type specifier missing, defaults to 'int'; ISO C99 and later do not support implicit int [-Wimplicit-int]
+    7769 | EXPORT_STATIC_CALL_TRAMP(cond_resched);
+         | ^
+   include/linux/static_call.h:223:2: note: expanded from macro 'EXPORT_STATIC_CALL_TRAMP'
+     223 |         ARCH_ADD_TRAMP_KEY(name)
+         |         ^
+   kernel/sched/core.c:7769:26: error: a parameter list without types is only allowed in a function definition
+    7769 | EXPORT_STATIC_CALL_TRAMP(cond_resched);
+         |                          ^
+   kernel/sched/core.c:7774:1: error: type specifier missing, defaults to 'int'; ISO C99 and later do not support implicit int [-Wimplicit-int]
+    7774 | EXPORT_STATIC_CALL_TRAMP(might_resched);
+         | ^
+   include/linux/static_call.h:223:2: note: expanded from macro 'EXPORT_STATIC_CALL_TRAMP'
+     223 |         ARCH_ADD_TRAMP_KEY(name)
+         |         ^
+   kernel/sched/core.c:7774:26: error: a parameter list without types is only allowed in a function definition
+    7774 | EXPORT_STATIC_CALL_TRAMP(might_resched);
+         |                          ^
+   8 errors generated.
+
+
+vim +/int +7449 kernel/sched/core.c
+
+009f60e2763568 Oleg Nesterov          2014-10-05  7441  
+2c9a98d3bc8087 Peter Zijlstra (Intel  2021-01-18  7442) #ifdef CONFIG_PREEMPT_DYNAMIC
+b7ebb758568b60 Ingo Molnar            2025-05-28  7443  # ifdef CONFIG_HAVE_PREEMPT_DYNAMIC_CALL
+8a69fe0be143b0 Mark Rutland           2022-02-14  7444  #  ifndef preempt_schedule_dynamic_enabled
+8a69fe0be143b0 Mark Rutland           2022-02-14  7445  #   define preempt_schedule_dynamic_enabled	preempt_schedule
+8a69fe0be143b0 Mark Rutland           2022-02-14  7446  #   define preempt_schedule_dynamic_disabled	NULL
+8a69fe0be143b0 Mark Rutland           2022-02-14  7447  #  endif
+8a69fe0be143b0 Mark Rutland           2022-02-14  7448  DEFINE_STATIC_CALL(preempt_schedule, preempt_schedule_dynamic_enabled);
+ef72661e28c64a Peter Zijlstra         2021-01-25 @7449  EXPORT_STATIC_CALL_TRAMP(preempt_schedule);
+99cf983cc8bca4 Mark Rutland           2022-02-14  7450  # elif defined(CONFIG_HAVE_PREEMPT_DYNAMIC_KEY)
+99cf983cc8bca4 Mark Rutland           2022-02-14  7451  static DEFINE_STATIC_KEY_TRUE(sk_dynamic_preempt_schedule);
+99cf983cc8bca4 Mark Rutland           2022-02-14  7452  void __sched notrace dynamic_preempt_schedule(void)
+99cf983cc8bca4 Mark Rutland           2022-02-14  7453  {
+99cf983cc8bca4 Mark Rutland           2022-02-14  7454  	if (!static_branch_unlikely(&sk_dynamic_preempt_schedule))
+99cf983cc8bca4 Mark Rutland           2022-02-14  7455  		return;
+99cf983cc8bca4 Mark Rutland           2022-02-14  7456  	preempt_schedule();
+99cf983cc8bca4 Mark Rutland           2022-02-14  7457  }
+99cf983cc8bca4 Mark Rutland           2022-02-14  7458  NOKPROBE_SYMBOL(dynamic_preempt_schedule);
+99cf983cc8bca4 Mark Rutland           2022-02-14  7459  EXPORT_SYMBOL(dynamic_preempt_schedule);
+99cf983cc8bca4 Mark Rutland           2022-02-14  7460  # endif
+b7ebb758568b60 Ingo Molnar            2025-05-28  7461  #endif /* CONFIG_PREEMPT_DYNAMIC */
+2c9a98d3bc8087 Peter Zijlstra (Intel  2021-01-18  7462) 
+
+:::::: The code at line 7449 was first introduced by commit
+:::::: ef72661e28c64ad610f89acc2832ec67b27ba438 sched: Harden PREEMPT_DYNAMIC
+
+:::::: TO: Peter Zijlstra <peterz@infradead.org>
+:::::: CC: Ingo Molnar <mingo@kernel.org>
+
+--
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
 
