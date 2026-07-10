@@ -1,74 +1,69 @@
-Return-Path: <linuxppc-dev+bounces-24031-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24032-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 510F9C43458
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Jul 2026 20:54:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0AE67C43458
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Jul 2026 21:03:40 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gxkbs45X8z2yS4;
-	Sat, 11 Jul 2026 06:54:49 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=198.175.65.13
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783716889;
-	cv=none; b=V7KvBKRJMscT+BMfIQTgNAQtOzohsuY7DQ9fqCEF47lQYez7q8QuFQBBGgXsdq3UrDo/96QfWgO56i0u13sadHnfXQu83xJNV1j8NevwDLfU2Vt7j/k5VxCVbDtx8QjW/Hm0h5qF59oC6CUEXfe+aMyAgpL6eYYk0jM7T5Dx565/bIU3BwX6Umg2K6k6j0zO3N+gEx9+KyWcSMhOF7IU6zF6Y2pwAqJYWq1DDmUr3+BwXwRIzRAZxa/dWnluxh2Sv0JFSU0p7fUC1MkQRdyxYUR/0YDY5tjBWNKn8kVNTqLrPwPh/Got2LFAhqwSRCZJBOVC9Mi4EOVHujuXDDOBcQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gxkp31kbKz2ySg;
+	Sat, 11 Jul 2026 07:03:39 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783717419;
+	cv=none; b=agOxT2LK5hB2vQFswCsCcfzAkf9aZw2ZYtRJ+32e/JC2zQVszB84Xsz4juxg4GJrzNkPivni2pBU2WYkKjQZBvxTBN/PYW4E5rvzt02i75m9oOdDR8HzeUS2xzVuBXlS3bavEWr2yQdsJJMzJ5ZDFAUBc60yUGwBRV+kIu69o+6F9hVyedxv5BdpuDAhTelyxKM/YhT58GuOgGU3chJhXGSasxdb1IpnD91MXqGO1YZm5IgDqomTKwi4FeAzitT1t7+T2wG5U2Pp/WYj6F+xC5ywx+NoVVxUeyOoRLJVyFcSiuVzO/DjJ3rJNoQ7mDEc0f54O5Zr7xZz9UI6OJ2wCw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1783716889; c=relaxed/relaxed;
-	bh=L3z/ny8fLKJCZiDaz49pc52iFYzbXA5ZLH+VRVsHhLc=;
-	h=Date:From:To:Cc:Subject:Message-ID; b=OJ/49oW2Gl8Z+1AjLwf7HCFpNfKyejxioibHL5AsJ/VycuHgY4gq7n2Sx6Aos/JI8Kf9iXOXIupEvBxPM2EHmfLSwm7UlzgJXil6oOJl1BPznWP9xilVq93KURDWQ6ot8M5crp74vDGhNziv5uOUwOnbkFIIOaXZgZ66/CVJ151M2Dw28X+ciApACqEe6VWScYrFqpgNapn7COdsgNdQLymVICQlXZJ0phqxJLXntIZdcfLPkFBqY864+K3vO4sCxRd/IPKMZCwYvGLg10hgGSPo4Insx44n4IABGGlRr5mDCgtv2UtV7n/vp063A3vPJtX4LqTcN+JMU3ydD/TSSQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=eGLV3/0Z; dkim-atps=neutral; spf=pass (client-ip=198.175.65.13; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=intel.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com
+	t=1783717419; c=relaxed/relaxed;
+	bh=A6ZivBYGr8LA2bUO7cgwXGSWiepiPbzSVpCEbDDI1mc=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=j3ONrsLhW/u8omn2fUp15GNdyzth5Ei1dTAtLSOJiMcrWgg+LYPCvAicAIn0h33HAg4PHNv/uBJG7DnjfFOdzzaOW4VtWG6byPQCILDEhvimu5FGniLQfn3j0ht/5gmDKbrm8PKK+TRAO8Bhbxqc4K5i9oe8JKEgCAGsJIgVnylYXI0vS3DuqdQlop3v9DS8wt6eOOq9L3V+Qpk+qnvHytMzjXPNoTnavsBxnB9LsemT2EDJwVC004p8XelAgue51cSdlB2ZTWf0g7/iW5f8n8i4jCI9xwaMGqvoIspaJb3Zkj0RGoq/kDU5iNl9GPGMMe9PqPCoCNEkDXbdBaeK+A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=TbNNNPck; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=sashal@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=eGLV3/0Z;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=TbNNNPck;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=198.175.65.13; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.13])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=sashal@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gxkbp2SCjz2xlw
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Jul 2026 06:54:43 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1783716887; x=1815252887;
-  h=date:from:to:cc:subject:message-id;
-  bh=ufgvTNGe+I32fwGgBejQFwRiEAFRtix7NiO4PxttKUs=;
-  b=eGLV3/0ZxV8DBAiXcSxHmBdYlfWmjX2e7S96DSIKmoP+P1hw8M4GjlfP
-   kR1KpIQosSwIBGlJ0SS6OrMHKt70/rgjaNBvDKqVXvgAmThH7M4nf6+Vu
-   CMnYvwt/7P4TutOkkeLL1n9iX0EBnLzU5YT9t2BXBxOKAb57ra47jJqPo
-   GtY52cxdg6TkBnE29twuE0fEz8I6IvfVgNXFfF8Epr2uRhBdrGTitAU54
-   mSSRD8kh7PhYbUYQ4pjA0N8G0eJ4a6oJ6y0HTWOI9qP5JGuD7WXeqbiFI
-   RrYfUHIs1Ya8urMSackSAr8aG/HRCMLDzLXDwTNeJLKrLcT2IxgYQxx72
-   g==;
-X-CSE-ConnectionGUID: SbiX9aa0QzOp/l5XsAzx0A==
-X-CSE-MsgGUID: qMoNtkd/QIqWQHAsBmuy6g==
-X-IronPort-AV: E=McAfee;i="6800,10657,11841"; a="95571471"
-X-IronPort-AV: E=Sophos;i="6.25,154,1779174000"; 
-   d="scan'208";a="95571471"
-Received: from fmviesa005.fm.intel.com ([10.60.135.145])
-  by orvoesa105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 10 Jul 2026 13:54:40 -0700
-X-CSE-ConnectionGUID: 0Wdr5OXlQRysnOkanXlE2A==
-X-CSE-MsgGUID: k5CIbPDvSryOV2l3ORUYKQ==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.25,154,1779174000"; 
-   d="scan'208";a="259873774"
-Received: from lkp-server02.sh.intel.com (HELO ea128546eb3d) ([10.239.97.151])
-  by fmviesa005.fm.intel.com with ESMTP; 10 Jul 2026 13:54:37 -0700
-Received: from kbuild by ea128546eb3d with local (Exim 4.98.2)
-	(envelope-from <lkp@intel.com>)
-	id 1wiIF0-00000000JNZ-1szm;
-	Fri, 10 Jul 2026 20:54:34 +0000
-Date: Sat, 11 Jul 2026 04:54:17 +0800
-From: kernel test robot <lkp@intel.com>
-To: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-Cc: llvm@lists.linux.dev, oe-kbuild-all@lists.linux.dev,
- linuxppc-dev@lists.ozlabs.org,
- Madhavan Srinivasan <maddy@linux.ibm.com>,
- Shrikanth Hegde <sshegde@linux.ibm.com>
-Subject: [powerpc:fixes-test 10/12] kernel/sched/core.c:7449:1:
- error: type specifier missing, defaults to 'int'; ISO C99 and later do not
- support implicit int
-Message-ID: <202607110422.frjmJOf8-lkp@intel.com>
-User-Agent: s-nail v14.9.25
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gxkp22Drqz2xlw
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Jul 2026 07:03:38 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with ESMTP id 0E25F43F07;
+	Fri, 10 Jul 2026 21:03:35 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id A05B61F00A3D;
+	Fri, 10 Jul 2026 21:03:33 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1783717414;
+	bh=A6ZivBYGr8LA2bUO7cgwXGSWiepiPbzSVpCEbDDI1mc=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References;
+	b=TbNNNPckQrdYDAlUSL/va76XXbFFV/M71lQjXSYpZT/R5DWVOE9hLvDwyepCkV+zw
+	 ew9ZsWbwWN3d2JL3oWsBOBLyE83y4owtF0+Eyss+Ai0jBE88hI7KMHwNyYgVLs0tgc
+	 R5LE4B1uMRLduiGro3EUze2g8wiC5dBhPdAjQ/NM73CB5K0KQKdHKAEfsrl78RVPG6
+	 c1ric7fIVn82IzCB6bfwmTx6BFo+538W0J9wxsGDn5F9e+dvjbVsL8qBKk44CWUlaE
+	 c3IW3rfAYZ38PYZ6FJ2XJCt7tcoLdN+QSeg5ptN2Cn+4OZp0QKT8LywmIqJJEXlp6z
+	 8TOdPmDMZ7dHw==
+From: Sasha Levin <sashal@kernel.org>
+To: stable@vger.kernel.org,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Sasha Levin <sashal@kernel.org>,
+	bpf@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	loongarch@lists.linux.dev,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-riscv@lists.infradead.org,
+	x86@kernel.org,
+	Alexei Starovoitov <ast@kernel.org>,
+	Daniel Borkmann <daniel@iogearbox.net>,
+	Dave Hansen <dave.hansen@linux.intel.com>,
+	Pawan Gupta <pawan.kumar.gupta@linux.intel.com>
+Subject: Re: [PATCH 7.1.y 0/6] cBPF JIT spray hardening
+Date: Fri, 10 Jul 2026 17:03:07 -0400
+Message-ID: <20260710163023.agent5-0011@kernel.org>
+X-Mailer: git-send-email 2.53.0
+In-Reply-To: <20260709-cbpf-jit-spray-hardening-7-1-y-v1-0-5ac5a2d6797f@linux.intel.com>
+References: <20260709-cbpf-jit-spray-hardening-7-1-y-v1-0-5ac5a2d6797f@linux.intel.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -81,92 +76,20 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 
-tree:   https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git fixes-test
-head:   afc2830892a128a13a65f677271a0a48aeb61b5e
-commit: 4747e17fe063720a30b1c0075bae3e8f8acd26f4 [10/12] powerpc/32: Use HAVE_PREEMPT_DYNAMIC_CALL instead of HAVE_PREEMPT_DYNAMIC_KEY
-config: powerpc-randconfig-002-20260711 (https://download.01.org/0day-ci/archive/20260711/202607110422.frjmJOf8-lkp@intel.com/config)
-compiler: clang version 17.0.6 (https://github.com/llvm/llvm-project 6009708b4367171ccdbf4b5905cb6a803753fe18)
-reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20260711/202607110422.frjmJOf8-lkp@intel.com/reproduce)
+On Thu, Jul 09, 2026 at 03:22:54PM -0700, Pawan Gupta wrote:
+> These backports harden BPF JIT against spectre-v2 class of attacks. Without
+> a predictor flush, execution of new BPF program may use stale prediction
+> left behind by the freed one.
+>
+> To avoid this, issue an IBPB flush on all CPUs on JIT program allocation.
+> The flush is conditional to spectre-v2 mitigation applied.
 
-If you fix the issue in a separate patch/commit (i.e. not just a new version of
-the same patch/commit), kindly add following tags
-| Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202607110422.frjmJOf8-lkp@intel.com/
+Queued the series for 7.1, thanks.
 
-All errors (new ones prefixed by >>):
-
->> kernel/sched/core.c:7449:1: error: type specifier missing, defaults to 'int'; ISO C99 and later do not support implicit int [-Wimplicit-int]
-    7449 | EXPORT_STATIC_CALL_TRAMP(preempt_schedule);
-         | ^
-   include/linux/static_call.h:223:2: note: expanded from macro 'EXPORT_STATIC_CALL_TRAMP'
-     223 |         ARCH_ADD_TRAMP_KEY(name)
-         |         ^
->> kernel/sched/core.c:7449:26: error: a parameter list without types is only allowed in a function definition
-    7449 | EXPORT_STATIC_CALL_TRAMP(preempt_schedule);
-         |                          ^
-   kernel/sched/core.c:7522:1: error: type specifier missing, defaults to 'int'; ISO C99 and later do not support implicit int [-Wimplicit-int]
-    7522 | EXPORT_STATIC_CALL_TRAMP(preempt_schedule_notrace);
-         | ^
-   include/linux/static_call.h:223:2: note: expanded from macro 'EXPORT_STATIC_CALL_TRAMP'
-     223 |         ARCH_ADD_TRAMP_KEY(name)
-         |         ^
-   kernel/sched/core.c:7522:26: error: a parameter list without types is only allowed in a function definition
-    7522 | EXPORT_STATIC_CALL_TRAMP(preempt_schedule_notrace);
-         |                          ^
-   kernel/sched/core.c:7769:1: error: type specifier missing, defaults to 'int'; ISO C99 and later do not support implicit int [-Wimplicit-int]
-    7769 | EXPORT_STATIC_CALL_TRAMP(cond_resched);
-         | ^
-   include/linux/static_call.h:223:2: note: expanded from macro 'EXPORT_STATIC_CALL_TRAMP'
-     223 |         ARCH_ADD_TRAMP_KEY(name)
-         |         ^
-   kernel/sched/core.c:7769:26: error: a parameter list without types is only allowed in a function definition
-    7769 | EXPORT_STATIC_CALL_TRAMP(cond_resched);
-         |                          ^
-   kernel/sched/core.c:7774:1: error: type specifier missing, defaults to 'int'; ISO C99 and later do not support implicit int [-Wimplicit-int]
-    7774 | EXPORT_STATIC_CALL_TRAMP(might_resched);
-         | ^
-   include/linux/static_call.h:223:2: note: expanded from macro 'EXPORT_STATIC_CALL_TRAMP'
-     223 |         ARCH_ADD_TRAMP_KEY(name)
-         |         ^
-   kernel/sched/core.c:7774:26: error: a parameter list without types is only allowed in a function definition
-    7774 | EXPORT_STATIC_CALL_TRAMP(might_resched);
-         |                          ^
-   8 errors generated.
-
-
-vim +/int +7449 kernel/sched/core.c
-
-009f60e2763568 Oleg Nesterov          2014-10-05  7441  
-2c9a98d3bc8087 Peter Zijlstra (Intel  2021-01-18  7442) #ifdef CONFIG_PREEMPT_DYNAMIC
-b7ebb758568b60 Ingo Molnar            2025-05-28  7443  # ifdef CONFIG_HAVE_PREEMPT_DYNAMIC_CALL
-8a69fe0be143b0 Mark Rutland           2022-02-14  7444  #  ifndef preempt_schedule_dynamic_enabled
-8a69fe0be143b0 Mark Rutland           2022-02-14  7445  #   define preempt_schedule_dynamic_enabled	preempt_schedule
-8a69fe0be143b0 Mark Rutland           2022-02-14  7446  #   define preempt_schedule_dynamic_disabled	NULL
-8a69fe0be143b0 Mark Rutland           2022-02-14  7447  #  endif
-8a69fe0be143b0 Mark Rutland           2022-02-14  7448  DEFINE_STATIC_CALL(preempt_schedule, preempt_schedule_dynamic_enabled);
-ef72661e28c64a Peter Zijlstra         2021-01-25 @7449  EXPORT_STATIC_CALL_TRAMP(preempt_schedule);
-99cf983cc8bca4 Mark Rutland           2022-02-14  7450  # elif defined(CONFIG_HAVE_PREEMPT_DYNAMIC_KEY)
-99cf983cc8bca4 Mark Rutland           2022-02-14  7451  static DEFINE_STATIC_KEY_TRUE(sk_dynamic_preempt_schedule);
-99cf983cc8bca4 Mark Rutland           2022-02-14  7452  void __sched notrace dynamic_preempt_schedule(void)
-99cf983cc8bca4 Mark Rutland           2022-02-14  7453  {
-99cf983cc8bca4 Mark Rutland           2022-02-14  7454  	if (!static_branch_unlikely(&sk_dynamic_preempt_schedule))
-99cf983cc8bca4 Mark Rutland           2022-02-14  7455  		return;
-99cf983cc8bca4 Mark Rutland           2022-02-14  7456  	preempt_schedule();
-99cf983cc8bca4 Mark Rutland           2022-02-14  7457  }
-99cf983cc8bca4 Mark Rutland           2022-02-14  7458  NOKPROBE_SYMBOL(dynamic_preempt_schedule);
-99cf983cc8bca4 Mark Rutland           2022-02-14  7459  EXPORT_SYMBOL(dynamic_preempt_schedule);
-99cf983cc8bca4 Mark Rutland           2022-02-14  7460  # endif
-b7ebb758568b60 Ingo Molnar            2025-05-28  7461  #endif /* CONFIG_PREEMPT_DYNAMIC */
-2c9a98d3bc8087 Peter Zijlstra (Intel  2021-01-18  7462) 
-
-:::::: The code at line 7449 was first introduced by commit
-:::::: ef72661e28c64ad610f89acc2832ec67b27ba438 sched: Harden PREEMPT_DYNAMIC
-
-:::::: TO: Peter Zijlstra <peterz@infradead.org>
-:::::: CC: Ingo Molnar <mingo@kernel.org>
-
---
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+-- 
+Thanks,
+Sasha
 
