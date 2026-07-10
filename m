@@ -1,63 +1,63 @@
-Return-Path: <linuxppc-dev+bounces-23981-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-23982-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B7539C43458
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Jul 2026 00:41:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3F6E7C44501
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Jul 2026 01:53:28 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gxCgk6tLXz2yYd;
-	Fri, 10 Jul 2026 10:41:22 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783644082;
-	cv=none; b=d/xNXb/CFUw+v+vS/UIoHzm3Ke/M5ew8R/D5hiPhbGA0MX/+qj4uQ5XzxcBEDBuQfuNnD3Bxy5C0kqErwNjEViFUxUUc6A1IvtAvs9zF2BbElL9Mic5MrpFKtm8PJYDbgUokwBIEpjg2bgzyi+HyFrNLcgp72/1YxXjf+gLhMBYLYCJg4B2BSSAH73AdpibeFzba3Lzqk9Ta+fIONGu2tv7q75JotcHrf8AX/H7j/3YweoupXwusOYBOTES+vjATFja3GUxMzpyvGePZ90lahIujcPdwsYFH3Fqywecy+NkLLFK7sytj28qNXNu1XEY9h2nTSmNQ9/3eKO7eIJiYRA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gxFGt4BHYz2yXj;
+	Fri, 10 Jul 2026 11:53:26 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783648406;
+	cv=none; b=IJ7snkQ+O/iXkXBRpGk8CB1V34XaVIuLvHoicnMqDlDvuz0ZukInbYR1oRtvWH3Qx5xhlU1L8Y/9VHkHzu1ebYGRLhGJUV+cuMgFNd3XF3hDF7R/XCW/X17ZPtQ+pZs0RcKwodVPESxTt7GTQ3X27ZQixgLUSeWuKFjzvM8gQl/KKtYBYuwWiK9HB1lazAxfFO0U9Nqg91tIgmY2m3A4Tcjzr0ERLdxzKtsPlcQkP4y5M5dF1w0WMpvSnSeIgWNC+pi/eo38yjPb7RI+twpVzrZ/bvCa0IR4mzuAyRDz2PX38eis3es+JUKsjQ7tkp6kzyYo+NMNVdMDjFis7PG4Ww==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1783644082; c=relaxed/relaxed;
-	bh=5VzLkHlF85viHKbnz0EyQRjrR1wmiefUtKtHMcklHCM=;
-	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=TRlHttqUg+Ru+lS20UQnUAvFZDOq5hMr+g374ex3JfgTY0fYkYkjVRCIRYNO8HMCuc5QNqPx9PBPxsPQH6X2vEgK/ZaQn1Gd8OZXPdmVzHXFAL/rjfXFijsowDpIZ6lPlfuN7lRKVq1WQnVl06NyrkaIiX65UHQLAYzPV5QJRZPR90HVOSH107a6j1m9j1Oqbs+JJHNVZ/19o19ZdPN6c6dNcndmBMxhvTmF1tTXWCivG3A3s5HXgZQfe9Pp+R02+GX8/I5Vp6vMMUJQM/kbvshIulNOhG2HkNLO/3crgZRtU+4T2zILtUcjVM75rlcxUdi2HL8ADazncXFi7Kipww==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=FGwPTUFx; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=namhyung@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1783648406; c=relaxed/relaxed;
+	bh=V5WePhdn0vM41AQZAytpqz+CRuhLkoEsVRrLRpGTVLs=;
+	h=Date:From:To:Cc:Subject:Message-Id:In-Reply-To:References:
+	 Mime-Version:Content-Type; b=dq/XeB/zLbD0ZlU8mPt3jdQLweVxPDOMc7F9IfkMz5KqIH7fOLX2JoNAxfWu98FJRWZV1VrXcGv/NYOMWBNlsJWPq3hvmZcFScFSuzlD9WMMChp247TYJLxMAq1+hyB8S/RMbBTtmQagMrzY16NO7yVYXKfFqwIpb24/t2X+24bqSZyjjcILwd7iyz7n40B0NTaVsQdCtC19pU2/SV9qSa6R5X+S/kW3fE+vgEkSa3kvJSQjE3wGpvtDtEuZUN9MlgBj1O9Mfjdgsw/+A+I/pqcuy6nftonEzL/tkox8GPedXAVG26QCivAZeHnJTuUK2XIB7vV87OSGh5uHXjf4Vw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org; dkim=pass (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=korg header.b=1b02jHio; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=akpm@linux-foundation.org; receiver=lists.ozlabs.org) smtp.mailfrom=linux-foundation.org
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=FGwPTUFx;
+	dkim=pass (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=korg header.b=1b02jHio;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=namhyung@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux-foundation.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=akpm@linux-foundation.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gxCgj6kfLz2xJT
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Jul 2026 10:41:21 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gxFGr38YVz2yS4
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Jul 2026 11:53:23 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 32CD641327;
-	Fri, 10 Jul 2026 00:41:19 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id AF5AE1F00A3A;
-	Fri, 10 Jul 2026 00:41:18 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1783644079;
-	bh=5VzLkHlF85viHKbnz0EyQRjrR1wmiefUtKtHMcklHCM=;
-	h=From:To:Cc:In-Reply-To:References:Subject:Date;
-	b=FGwPTUFxKfWwmvUsZH2I2nekEUiKCIKVpeVSpfNyMtvvaZ0n+ZmBFg8oZjnnMTwdD
-	 KfPmxnmSuRU/Oo6qnsumCfsoPlHArCyYvpXNm+fOCMHydnw8FKF5CywBAEJEW/omKa
-	 f0JO9/lzD5U2awuLdlt4Z+/IpX9iYbsGOA35dHxrJx8gH9loyv8J21Bn1TyWC46oBC
-	 pr9YSrpnkQENJAtu6Rvq7JS9zdg6ugYjgrlOt6isGMMg1Ft6e1YLLIRV1FT6mFj4nl
-	 lhX8/ZN5ed8am98F7Ok4K/lZ0/oe1ka2MipL7hdQdL7X+CDmRXrHXiJRQ34n9nCrqD
-	 bXByme0aqt/hw==
-From: Namhyung Kim <namhyung@kernel.org>
-To: acme@kernel.org, jolsa@kernel.org, adrian.hunter@intel.com, 
- vmolnaro@redhat.com, mpetlan@redhat.com, tmricht@linux.ibm.com, 
- maddy@linux.ibm.com, irogers@google.com, 
- Tanushree Shah <tshah@linux.ibm.com>
-Cc: linux-perf-users@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
- atrajeev@linux.ibm.com, hbathini@linux.ibm.com, Tejas.Manhas1@ibm.com, 
- Tanushree.Shah@ibm.com, Shivani.Nittor@ibm.com
-In-Reply-To: <20260708112607.548304-2-tshah@linux.ibm.com>
-References: <20260708112607.548304-2-tshah@linux.ibm.com>
-Subject: Re: [PATCH v4] perf dso: Fix kallsyms DSO detection with fallback
- logic
-Message-Id: <178364407868.1457655.7985344242070155598.b4-ty@kernel.org>
-Date: Thu, 09 Jul 2026 17:41:18 -0700
+	by tor.source.kernel.org (Postfix) with ESMTP id 0D0C36001A;
+	Fri, 10 Jul 2026 01:53:21 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3E9CB1F000E9;
+	Fri, 10 Jul 2026 01:53:20 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+	d=linux-foundation.org; s=korg; t=1783648400;
+	bh=V5WePhdn0vM41AQZAytpqz+CRuhLkoEsVRrLRpGTVLs=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:References;
+	b=1b02jHioGv7QDp+jI0I5SMN7EUOkmf64ry1tpnm7kjslq1G5+6Gz1TDKTYLrC6j4T
+	 MeIbQIL5Z5sRxDPbsmux03xqN4aybxaWzK47JWq6JiSmGh/7JvD3n1GSm48O6Duzfm
+	 LAjyMiPqsIXOMpgUMlUhHRz4Dux9GpLIgLuMYxHg=
+Date: Thu, 9 Jul 2026 18:53:19 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Sayali Patil <sayalip@linux.ibm.com>
+Cc: Shuah Khan <shuah@kernel.org>, linux-mm@kvack.org,
+ linux-kernel@vger.kernel.org, linux-kselftest@vger.kernel.org, Ritesh
+ Harjani <ritesh.list@gmail.com>, David Hildenbrand <david@kernel.org>, Zi
+ Yan <ziy@nvidia.com>, Michal Hocko <mhocko@kernel.org>, Oscar Salvador
+ <osalvador@suse.de>, Lorenzo Stoakes <lorenzo.stoakes@oracle.com>, Dev Jain
+ <dev.jain@arm.com>, Liam.Howlett@oracle.com, linuxppc-dev@lists.ozlabs.org,
+ Miaohe Lin <linmiaohe@huawei.com>, Venkat Rao Bagalkote
+ <venkat88@linux.ibm.com>
+Subject: Re: [PATCH v3 0/3] selftests/mm: avoid false failures in hugetlb
+ and KSM tests
+Message-Id: <20260709185319.cbf0c39dd47ee3853d212b7b@linux-foundation.org>
+In-Reply-To: <cover.1783446924.git.sayalip@linux.ibm.com>
+References: <cover.1783446924.git.sayalip@linux.ibm.com>
+X-Mailer: Sylpheed 3.8.0beta1 (GTK+ 2.24.33; x86_64-pc-linux-gnu)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -70,28 +70,16 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Mailer: b4 0.15-dev-c04d2
 
-On Wed, 08 Jul 2026 16:56:08 +0530, Tanushree Shah wrote:
-> The current kallsyms detection in dso__is_kallsyms() uses the
-> dso_binary_type enum which fixes the issue of kallsyms being cached in
-> the build-id cache for out-of-tree modules.
-> 
-> However, during build-id injection in perf record/inject, dso_binary_type
-> has not been explicitly set yet,so dso__binary_type() returns
-> DSO_BINARY_TYPE__NOT_FOUND instead of DSO_BINARY_TYPE__KALLSYMS for the
-> kernel DSO. The current check then fails to identify it as kallsyms,
-> causing build-id symlinks to not be created in ~/.debug/.build-id/ and
-> perf archive to fail with "Cannot stat" errors.
-> 
-> [...]
-Applied to perf-tools-next, thanks!
+On Wed,  8 Jul 2026 12:29:04 +0530 Sayali Patil <sayalip@linux.ibm.com> wrote:
 
-Best regards,
-Namhyung
+> This series fixes issues in the hugetlb and KSM MM selftest categories
+> that can report failures when the prerequisites for the tests are not
+> satisfied.
 
-
+Thanks.  AI review asked one question:
+	https://sashiko.dev/#/patchset/cover.1783446924.git.sayalip@linux.ibm.com
 
