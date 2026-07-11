@@ -1,53 +1,53 @@
-Return-Path: <linuxppc-dev+bounces-24062-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24063-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8CA14C43458
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 11 Jul 2026 18:48:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4DA2DC43458
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 11 Jul 2026 18:49:16 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gyHm622SSz3bqs;
-	Sun, 12 Jul 2026 04:48:54 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783795734;
-	cv=none; b=M2tx6K75PRvWoPe0LqJWD/Z2pLhG1Huh55vL85bn9URn4KYpSQJFGIHme2Ufgc6VwGnXxYWk5mnbXuFnJsj5bkiG636+pcgrhLvVCjdyYEVR7E9hL8oLMnH+8gcZ8ZIUL9wRU4f9DK9KOB5bA4awKTQTeWnvJBGbEkEoXY10Und4cqmICKkSAsjsg1/09ANyQhWtHyHDDbSf7Qd6w/CU9OU9rnShXTictpvMIzAWs3w04Kf1XmgPKtfTVIr5gdFJ0Q2TknGz9jYh9XUiCu82nRdgbS/Evg98xNoU3iF3luSSbM6J8es+pK6sFZMwOdLz0Hbt/LwWFWwJ0VNd4k+16w==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gyHmV659Dz2ylj;
+	Sun, 12 Jul 2026 04:49:14 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783795754;
+	cv=none; b=btywNhk7F1Qc5B+SU9p5hl5DxTnnjqyVZdxbIeOiRgR/Y6gaksx7tAUo73pOpCvUwjACfiZUwrrZ3B36ZGrtTbCdeuiCo28RoTwLfF7JmafsJin2eGpN9qW4ZhXnuDsYdEXbW/jQK3KDDNhtE4nRL+8bd4otG2U9g7twq0an124jffTTcNp+w7yCN96d0STZYelZs0aSTZgZOjwZa8LsvcFN3uCQUYmADiHK1c31ersdbm2YG+MYZDhzofQOXVLlZFBH5GjBSpCTrhDE6q5+ssir+dhATQez1q1366AFecHQ6XtC+2JHJzhUvyvpE8zLBAlNmtdsah0yE+83ONr7Sg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1783795734; c=relaxed/relaxed;
-	bh=xUC24CQFaY5LbYrAu8Wt8s4S5Jfizo903DYj6Alr2hU=;
+	t=1783795754; c=relaxed/relaxed;
+	bh=PQeVSJrFNGuAKYRqlJkf6JopIzp3qlHM9CyXIq3KHK4=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=dKK8LHczIHc64OJmFQZUexC2olmOApFhZNWlz7gHt79gWQTUX5hWF1wg2+TvpgCLE9sqaKrrYW/OCqfAfiDZSP65IaHAoXafKj7WGRvJ5kyXzX0N+gRq/mKKoaP7rr9ni915gxHvxU3H3s9AlE6D7gatBpwxgc0Oh3wagvhBWA2o+Bi7FynWcIfE/AoMIg90DhkEV51x76dHZxeyHJjnv/Sfh0G5pcxu3DsDHTPImpvN6kdd/oGI+kvWS5tSSTwmtQEGvNrdvMc3WcFYLZG343DYs3m+KBARcotb961g1D8zMUEf8IL3c+MOQX7uXVNNUwSqeaFDKuLRJ5noS8LZqg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=T2G/K9FQ; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:To:Cc; b=a7hVk8isaQo7/tSZqvyyo8QW+S+eLyI8WWpagEl4T1FUISp02TwY7UA/n063aBD/2JhE4CA2wFioqHDHhcjObOF6gSeAGNrRGNpB+ExBbrmJdw+zRuzB/YMvK41YcmQ0GDLwTK7XjH8OxmJrlAxvhLwsVCxowtvDI4G7iA0AamE88FazXCHO6ZEY8QGoAypa+I8qx1fYqF4vvdLEJFX75nCIt2FsW0ZTDS/ccXSGAQVWdvcAGHyIomE0pqZtwC2GTwC4UI602Bi6jF4WIZahQBIh+oEKcDu6SU1XsSHlUPUQuVoWFOh5L/fv/Ypt848XDPFE8zqM8sw0Fz8vu3dpCQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=A3lQ/qzw; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=T2G/K9FQ;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=A3lQ/qzw;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gyHm53QfSz3bp7
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 12 Jul 2026 04:48:53 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gyHmV0jh1z2yPR
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 12 Jul 2026 04:49:14 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 4537960052;
+	by tor.source.kernel.org (Postfix) with ESMTP id 2A56F60052;
+	Sat, 11 Jul 2026 18:49:12 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7572D1F000E9;
 	Sat, 11 Jul 2026 18:48:51 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9008E1F00A3A;
-	Sat, 11 Jul 2026 18:48:30 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1783795731;
-	bh=xUC24CQFaY5LbYrAu8Wt8s4S5Jfizo903DYj6Alr2hU=;
+	s=k20260515; t=1783795751;
+	bh=PQeVSJrFNGuAKYRqlJkf6JopIzp3qlHM9CyXIq3KHK4=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=T2G/K9FQZYBazUrgB2p6/rvfCKhk9yVPWpSxduMlumEpHCAb8GIbHDFOcJ29GZ34U
-	 FXoVtM0TahqpG2/h+I35MFGUy4UrraSO9nANAAN+M49Y3tgJA4m0CYLj+ru8taIP0e
-	 7EwnqOpFEKL4iXCg5QZZwK5koK5H5QEVreRGd5cREPAjXQl/m6ADMh2C7JiS0ReU18
-	 sLcJRzfxdd1qFQvsCzgzdlU8pnCRI6OHlZ/0t0TJhZtZlO6HOaThVpZM8GMKxdOOxO
-	 D08lfnlYbZAwAhOcCcewMb1kpDKqfnnPKEY1kl5rBn0b7BUgoqExRSpaXAvWTzltve
-	 YRk/0mVL7ztfw==
+	b=A3lQ/qzw9J0Mef36BzMgXFxCB7dkGxinxIIAW9JQmfMzrEgdVXCZbMvez44EZPEeX
+	 gzXNhanDpKBvr0GU1vbuTRlAVgICQASw38QvYjbrawwYLjk41zoY+o6bs5EJQXWA4B
+	 N8ZheKvFfC7ObvlfJNb/UgFOGLScihFKvVLmqfFpAtRomluF+G9vwP3+ja7py9qw8f
+	 K4SpVyb7Rs9cJFxpYgZkzgj3ThMgqYWZtLE4yV783JlpDDz2j3hz/q139ORq9vViT5
+	 +PH6eC4zBsvX0nSUubBGLLM+1N8LdIbC9v3OR05k+HOezHB2d7wpLQkmt7rZqu2Bfi
+	 X2DIl7kAZDv+A==
 From: Lorenzo Stoakes <ljs@kernel.org>
-Date: Sat, 11 Jul 2026 19:45:06 +0100
-Subject: [PATCH v2 09/13] mm/vma: update create_init_stack_vma() to use
- vma_flags_t
+Date: Sat, 11 Jul 2026 19:45:07 +0100
+Subject: [PATCH v2 10/13] mm/vma: convert miscellaneous uses of VMA flags
+ in core mm
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -63,7 +63,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260711-b4-vma-flags-mm-v2-9-0fa2357d5431@kernel.org>
+Message-Id: <20260711-b4-vma-flags-mm-v2-10-0fa2357d5431@kernel.org>
 References: <20260711-b4-vma-flags-mm-v2-0-0fa2357d5431@kernel.org>
 In-Reply-To: <20260711-b4-vma-flags-mm-v2-0-0fa2357d5431@kernel.org>
 To: Andrew Morton <akpm@linux-foundation.org>, 
@@ -135,131 +135,191 @@ Cc: Lorenzo Stoakes <ljs@kernel.org>, linux-mm@kvack.org,
  intel-xe@lists.freedesktop.org, xen-devel@lists.xenproject.org, 
  linux-fbdev@vger.kernel.org, linux-sound@vger.kernel.org
 X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=openpgp-sha256; l=4313; i=ljs@kernel.org;
- h=from:subject:message-id; bh=9FQuWO1YsUxULowpltE39pKMqBbYRFh58BoyoKhWb3A=;
- b=kA0DAAoWz53NioHifxQByyZiAGpSjzqg8y14Kh5MvFuw4iTsl7kJvl53Dij+JdajKdpzjYsNp
- oh1BAAWCgAdFiEE5/QXv1IUVp6J0E9Gz53NioHifxQFAmpSjzoACgkQz53NioHifxQcIwD/VYCq
- 8XVlwzBqdiLqx84JrVaGvSVASgylLrKcnFTCHu8BANPzzRn5WflkqRuMXJ46TwzQqPTztlhZtDp
- EX8lo8YsM
+X-Developer-Signature: v=1; a=openpgp-sha256; l=6231; i=ljs@kernel.org;
+ h=from:subject:message-id; bh=2Eukk7/bboJXcRN4Serqm42H9hjt4k2BF/S8ckNM3q8=;
+ b=owGbwMvMwCV2fu7ZrsZH9SKMp9WSGLKC+q1YA9XOTHweaCw7b1K84KM/l+4VzJwymz/yypnOw
+ EgXoUUrO0pZGMS4GGTFFFmefxHfHyQSNq/zgr8bzBxWJpAhDFycAjARtxOMDJfd9Z1WrGFzkSqR
+ k3zENmPW9uv9Jq2mlyfbPCqdYyDftZfhD/8EKYZXMltEpvpf7zFQMVFoW/Ccy10ubMFc/7tFUrK
+ OTAA=
 X-Developer-Key: i=ljs@kernel.org; a=openpgp;
  fpr=E7F417BF5214569E89D04F46CF9DCD8A81E27F14
 
-Replace use of the legacy vm_flags_t flags with vma_flags_t values in
-create_init_stack_vma().
-
-As part of this change we add VMA_STACK_EARLY and VMA_STACK_INCOMPLETE
-vma_flags_t defines, and slightly rework create_init_stack_vma() for
-clarity.
+Update various uses of legacy flags in vma.c and mmap.c to the new
+vma_flags_t type, updating comments alongside them to be consistent.
 
 No functional change intended.
 
 Reviewed-by: Zi Yan <ziy@nvidia.com>
-Reviewed-by: Lance Yang <lance.yang@linux.dev>
 Signed-off-by: Lorenzo Stoakes <ljs@kernel.org>
 ---
- include/linux/mm.h              |  4 ++++
- mm/vma_exec.c                   | 18 +++++++++++-------
- tools/testing/vma/include/dup.h |  4 ++++
- 3 files changed, 19 insertions(+), 7 deletions(-)
+ mm/mmap.c | 39 +++++++++++++++++++++------------------
+ mm/vma.c  | 13 ++++++++-----
+ 2 files changed, 29 insertions(+), 23 deletions(-)
 
-diff --git a/include/linux/mm.h b/include/linux/mm.h
-index 1209db1a4b92..550fb92957d1 100644
---- a/include/linux/mm.h
-+++ b/include/linux/mm.h
-@@ -442,8 +442,10 @@ enum {
- #define VM_STACK	INIT_VM_FLAG(STACK)
- #ifdef CONFIG_STACK_GROWSUP
- #define VM_STACK_EARLY	INIT_VM_FLAG(STACK_EARLY)
-+#define VMA_STACK_EARLY mk_vma_flags(VMA_STACK_EARLY_BIT)
- #else
- #define VM_STACK_EARLY	VM_NONE
-+#define VMA_STACK_EARLY EMPTY_VMA_FLAGS
- #endif
- #ifdef CONFIG_ARCH_HAS_PKEYS
- #define VM_PKEY_SHIFT ((__force int)VMA_HIGH_ARCH_0_BIT)
-@@ -544,6 +546,8 @@ enum {
+diff --git a/mm/mmap.c b/mm/mmap.c
+index 2076c70e7700..4bf26b0f1e6e 100644
+--- a/mm/mmap.c
++++ b/mm/mmap.c
+@@ -557,8 +557,8 @@ unsigned long do_mmap(struct file *file, unsigned long addr,
+ 	}
  
- /* Bits set in the VMA until the stack is in its final location */
- #define VM_STACK_INCOMPLETE_SETUP (VM_RAND_READ | VM_SEQ_READ | VM_STACK_EARLY)
-+#define VMA_STACK_INCOMPLETE_SETUP append_vma_flags(		\
-+	VMA_STACK_EARLY, VMA_RAND_READ_BIT, VMA_SEQ_READ_BIT)
- 
- #define TASK_EXEC_BIT ((current->personality & READ_IMPLIES_EXEC) ? \
- 		       VMA_EXEC_BIT : VMA_READ_BIT)
-diff --git a/mm/vma_exec.c b/mm/vma_exec.c
-index a3c6b05c65fe..7af1260689b9 100644
---- a/mm/vma_exec.c
-+++ b/mm/vma_exec.c
-@@ -112,15 +112,17 @@ int relocate_vma_down(struct vm_area_struct *vma, unsigned long shift)
- int create_init_stack_vma(struct mm_struct *mm, struct vm_area_struct **vmap,
- 			  unsigned long *top_mem_p)
- {
--	unsigned long flags = VM_STACK_FLAGS | VM_STACK_INCOMPLETE_SETUP;
-+	vma_flags_t flags = VMA_STACK_INCOMPLETE_SETUP;
-+	struct vm_area_struct *vma;
- 	int err;
--	struct vm_area_struct *vma = vm_area_alloc(mm);
- 
-+	/* VMA_STACK_FLAGS and VMA_STACK_INCOMPLETE_SETUP must not overlap. */
-+	VM_WARN_ON_ONCE(vma_flags_test_any_mask(&flags, VMA_STACK_FLAGS));
-+
-+	vma = vm_area_alloc(mm);
- 	if (!vma)
- 		return -ENOMEM;
- 
--	vma_set_anonymous(vma);
--
- 	if (mmap_write_lock_killable(mm)) {
- 		err = -EINTR;
- 		goto err_free;
-@@ -134,18 +136,20 @@ int create_init_stack_vma(struct mm_struct *mm, struct vm_area_struct **vmap,
- 	if (err)
- 		goto err_ksm;
- 
-+	vma_flags_set_mask(&flags, VMA_STACK_FLAGS);
-+	vma_set_anonymous(vma);
-+
  	/*
- 	 * Place the stack at the largest stack address the architecture
- 	 * supports. Later, we'll move this to an appropriate place. We don't
- 	 * use STACK_TOP because that can depend on attributes which aren't
- 	 * configured yet.
+-	 * Set 'VM_NORESERVE' if we should not account for the
+-	 * memory use of this mapping.
++	 * Set VMA_NORESERVE_BIT if we should not account for the memory use
++	 * of this mapping.
  	 */
--	VM_WARN_ON_ONCE(VM_STACK_FLAGS & VM_STACK_INCOMPLETE_SETUP);
- 	vma->vm_end = STACK_TOP_MAX;
- 	vma->vm_start = vma->vm_end - PAGE_SIZE;
+ 	if (flags & MAP_NORESERVE) {
+ 		/* We honor MAP_NORESERVE if allowed to overcommit */
+@@ -985,7 +985,7 @@ struct vm_area_struct *find_extend_vma_locked(struct mm_struct *mm, unsigned lon
+ 		return NULL;
+ 	if (expand_stack_locked(prev, addr))
+ 		return NULL;
+-	if (prev->vm_flags & VM_LOCKED)
++	if (vma_test(prev, VMA_LOCKED_BIT))
+ 		populate_vma_page_range(prev, addr, prev->vm_end, NULL);
+ 	return prev;
+ }
+@@ -1009,7 +1009,7 @@ struct vm_area_struct *find_extend_vma_locked(struct mm_struct *mm, unsigned lon
+ 	start = vma->vm_start;
+ 	if (expand_stack_locked(vma, addr))
+ 		return NULL;
+-	if (vma->vm_flags & VM_LOCKED)
++	if (vma_test(vma, VMA_LOCKED_BIT))
+ 		populate_vma_page_range(vma, addr, start, NULL);
+ 	return vma;
+ }
+@@ -1134,18 +1134,18 @@ SYSCALL_DEFINE5(remap_file_pages, unsigned long, start, unsigned long, size,
+ 	 */
+ 	vma = vma_lookup(mm, start);
+ 
+-	if (!vma || !(vma->vm_flags & VM_SHARED)) {
++	if (!vma || !vma_test(vma, VMA_SHARED_BIT)) {
+ 		mmap_read_unlock(mm);
+ 		return -EINVAL;
+ 	}
+ 
+-	prot |= vma->vm_flags & VM_READ ? PROT_READ : 0;
+-	prot |= vma->vm_flags & VM_WRITE ? PROT_WRITE : 0;
+-	prot |= vma->vm_flags & VM_EXEC ? PROT_EXEC : 0;
++	prot |= vma_test(vma, VMA_READ_BIT) ? PROT_READ : 0;
++	prot |= vma_test(vma, VMA_WRITE_BIT) ? PROT_WRITE : 0;
++	prot |= vma_test(vma, VMA_EXEC_BIT) ? PROT_EXEC : 0;
+ 
+ 	flags &= MAP_NONBLOCK;
+ 	flags |= MAP_SHARED | MAP_FIXED | MAP_POPULATE;
+-	if (vma->vm_flags & VM_LOCKED)
++	if (vma_test(vma, VMA_LOCKED_BIT))
+ 		flags |= MAP_LOCKED;
+ 
+ 	/* Save vm_flags used to calculate prot and flags, and recheck later. */
+@@ -1271,7 +1271,7 @@ unsigned long tear_down_vmas(struct mm_struct *mm, struct vma_iterator *vmi,
+ 	mmap_assert_write_locked(mm);
+ 	vma_iter_set(vmi, vma->vm_end);
+ 	do {
+-		if (vma->vm_flags & VM_ACCOUNT)
++		if (vma_test(vma, VMA_ACCOUNT_BIT))
+ 			nr_accounted += vma_pages(vma);
+ 		vma_mark_detached(vma);
+ 		remove_vma(vma);
+@@ -1420,7 +1420,7 @@ static int special_mapping_split(struct vm_area_struct *vma, unsigned long addr)
+ {
+ 	/*
+ 	 * Forbid splitting special mappings - kernel has expectations over
+-	 * the number of pages in mapping. Together with VM_DONTEXPAND
++	 * the number of pages in mapping. Together with VMA_DONTEXPAND_BIT
+ 	 * the size of vma should stay the same over the special mapping's
+ 	 * lifetime.
+ 	 */
+@@ -1692,7 +1692,7 @@ bool mmap_read_lock_maybe_expand(struct mm_struct *mm,
+ 		return true;
+ 	}
+ 
+-	if (!(new_vma->vm_flags & VM_GROWSDOWN))
++	if (!vma_test(new_vma, VMA_GROWSDOWN_BIT))
+ 		return false;
+ 
+ 	mmap_write_lock(mm);
+@@ -1742,7 +1742,7 @@ __latent_entropy int dup_mmap(struct mm_struct *mm, struct mm_struct *oldmm)
+ 		retval = vma_start_write_killable(mpnt);
+ 		if (retval < 0)
+ 			goto loop_out;
+-		if (mpnt->vm_flags & VM_DONTCOPY) {
++		if (vma_test(mpnt, VMA_DONTCOPY_BIT)) {
+ 			retval = vma_iter_clear_gfp(&vmi, mpnt->vm_start,
+ 						    mpnt->vm_end, GFP_KERNEL);
+ 			if (retval)
+@@ -1752,7 +1752,7 @@ __latent_entropy int dup_mmap(struct mm_struct *mm, struct mm_struct *oldmm)
+ 			continue;
+ 		}
+ 		charge = 0;
+-		if (mpnt->vm_flags & VM_ACCOUNT) {
++		if (vma_test(mpnt, VMA_ACCOUNT_BIT)) {
+ 			unsigned long len = vma_pages(mpnt);
+ 
+ 			if (security_vm_enough_memory_mm(oldmm, len)) /* sic */
+@@ -1770,16 +1770,19 @@ __latent_entropy int dup_mmap(struct mm_struct *mm, struct mm_struct *oldmm)
+ 		retval = dup_userfaultfd(tmp, &uf);
+ 		if (retval)
+ 			goto fail_nomem_anon_vma_fork;
+-		if (tmp->vm_flags & VM_WIPEONFORK) {
++
++		if (vma_test(tmp, VMA_WIPEONFORK_BIT)) {
+ 			/*
+-			 * VM_WIPEONFORK gets a clean slate in the child.
++			 * VMA_WIPEONFORK_BIT gets a clean slate in the child.
+ 			 * Don't prepare anon_vma until fault since we don't
+ 			 * copy page for current vma.
+ 			 */
+ 			tmp->anon_vma = NULL;
+ 		} else if (anon_vma_fork(tmp, mpnt))
+ 			goto fail_nomem_anon_vma_fork;
+-		vm_flags_clear(tmp, VM_LOCKED_MASK);
++
++		vma_start_write(tmp);
++		vma_clear_flags_mask(tmp, VMA_LOCKED_MASK);
+ 		/*
+ 		 * Copy/update hugetlb private vma information.
+ 		 */
+@@ -1812,7 +1815,7 @@ __latent_entropy int dup_mmap(struct mm_struct *mm, struct mm_struct *oldmm)
+ 			i_mmap_unlock_write(mapping);
+ 		}
+ 
+-		if (!(tmp->vm_flags & VM_WIPEONFORK))
++		if (!vma_test(tmp, VMA_WIPEONFORK_BIT))
+ 			retval = copy_page_range(tmp, mpnt);
+ 
+ 		if (retval) {
+diff --git a/mm/vma.c b/mm/vma.c
+index e0ad895098a9..b5bc3eec961c 100644
+--- a/mm/vma.c
++++ b/mm/vma.c
+@@ -3419,17 +3419,20 @@ struct vm_area_struct *__install_special_mapping(
+ 	vm_flags_t vm_flags, void *priv,
+ 	const struct vm_operations_struct *ops)
+ {
+-	int ret;
++	vma_flags_t vma_flags = legacy_to_vma_flags(vm_flags);
+ 	struct vm_area_struct *vma;
++	int ret;
+ 
+ 	vma = vm_area_alloc(mm);
+-	if (unlikely(vma == NULL))
++	if (unlikely(!vma))
+ 		return ERR_PTR(-ENOMEM);
+ 
+-	vm_flags |= vma_flags_to_legacy(mm->def_vma_flags) | VM_DONTEXPAND;
++	vma_flags_set_mask(&vma_flags, mm->def_vma_flags);
++	vma_flags_set(&vma_flags, VMA_DONTEXPAND_BIT);
  	if (pgtable_supports_soft_dirty())
--		flags |= VM_SOFTDIRTY;
--	vm_flags_init(vma, flags);
-+		vma_flags_set(&flags, VMA_SOFTDIRTY_BIT);
-+	vma->flags = flags;
+-		vm_flags |= VM_SOFTDIRTY;
+-	vm_flags_init(vma, vm_flags & ~VM_LOCKED_MASK);
++		vma_flags_set(&vma_flags, VMA_SOFTDIRTY_BIT);
++	vma_flags_clear_mask(&vma_flags, VMA_LOCKED_MASK);
++	vma->flags = vma_flags;
  	vma->vm_page_prot = vma_get_page_prot(vma);
  
- 	err = insert_vm_struct(mm, vma);
-diff --git a/tools/testing/vma/include/dup.h b/tools/testing/vma/include/dup.h
-index 57c80924813d..64f38a83613e 100644
---- a/tools/testing/vma/include/dup.h
-+++ b/tools/testing/vma/include/dup.h
-@@ -245,8 +245,10 @@ enum {
- #define VM_STACK	INIT_VM_FLAG(STACK)
- #ifdef CONFIG_STACK_GROWSUP
- #define VM_STACK_EARLY	INIT_VM_FLAG(STACK_EARLY)
-+#define VMA_STACK_EARLY mk_vma_flags(VMA_STACK_EARLY_BIT)
- #else
- #define VM_STACK_EARLY	VM_NONE
-+#define VMA_STACK_EARLY EMPTY_VMA_FLAGS
- #endif
- #ifdef CONFIG_ARCH_HAS_PKEYS
- #define VM_PKEY_SHIFT ((__force int)VMA_HIGH_ARCH_0_BIT)
-@@ -315,6 +317,8 @@ enum {
- 
- /* Bits set in the VMA until the stack is in its final location */
- #define VM_STACK_INCOMPLETE_SETUP (VM_RAND_READ | VM_SEQ_READ | VM_STACK_EARLY)
-+#define VMA_STACK_INCOMPLETE_SETUP append_vma_flags(		\
-+	VMA_STACK_EARLY, VMA_RAND_READ_BIT, VMA_SEQ_READ_BIT)
- 
- #define TASK_EXEC_BIT ((current->personality & READ_IMPLIES_EXEC) ? \
- 		       VM_EXEC_BIT : VM_READ_BIT)
+ 	vma->vm_ops = ops;
 
 -- 
 2.55.0
