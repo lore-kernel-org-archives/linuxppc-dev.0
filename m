@@ -1,51 +1,93 @@
-Return-Path: <linuxppc-dev+bounces-24042-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24043-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DE275C43458
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 11 Jul 2026 07:40:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E6D88C43458
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 11 Jul 2026 12:29:36 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gy0xJ1PL2z2y8F;
-	Sat, 11 Jul 2026 17:40:52 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783755652;
-	cv=none; b=L6iMp9VX1/afr6W9NtIp+A9XTMHnsfnN/3NPAmjU56avWgAR1dW+318mxD/yJlFA3hAX9I8DtMHCVNASRsvprFW07aV9QhCPq/Gct3v3/R8gkO8oUUIl/meaua+M3KNpA+MhsLdjTPZSooHhbT+R93WXIQ3u6d89miYTezN/d+vYAHeJlK6Sf+cgyfwpNp4L0iaA5RlSVHEie5aSfluSaBcVLF0QM7dhnP2AfRYvI+UR24FVXE8den/rccgSW+GBP4XkoL4i8omkBiACjzvna0JOg6Lq1RWxXWcqcbGfwOjH0/UiyDj1IwxR3MWAIxSXhyRpXwJb3Kx4lEonY4elnQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1783755652; c=relaxed/relaxed;
-	bh=2/7VqtZM9eXOWcQYQomZRp6vg3C7ps+yJ24JkWv1U8U=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=ehY9+DmLTwo+Dwo1mM08VK7rayD1XgIlMBqphHT5GLzvCdSF5NxXhBvqavPHQ42PLrbyYyp2E5nmIzF3/BzpnCm1CjJDI5JSliCAKHqEujsKydldQdP3X1AKz8CTC81xuo2dqGoR0Bmb3ZgyIVwcXJ5PQW3kn7NeLamap2vcqzMlHZV3HacOW/zBO3E7tkYo2x8gHw9J/IdEGFXCvBeN8DrJgYUbV0N3hdTwBBr8u4bx33c3CsmRGcKbYkj94pvI3pyfWVPJnjT37kb5AEv21UXO+mtcYWInjbLDI1K3HXGSPf049MuPy9zJepgVh/iCETrW1HZMCTGfFW8TSDtD1A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=iWyKi7ml; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gy7LR0WPgz2y8F;
+	Sat, 11 Jul 2026 22:29:35 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a00:1450:4864:20::534" arc.chain=google.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783772974;
+	cv=pass; b=kfPKU9Bzz4nvTUi1XpfRPSVunnIjZTphmBfSK84xkIt0zhk6QtP1TDeKtkJVVHUcNQlqWffs/nPjaeXHrSXoIlZgCn0DYZoaukuu+IkOM80759bZypv1u7CRIdiKpE1SN+RBkFFh4mOm3oy1VBviEBMAZt4mQ77ovEg6zQRHZdzjzCXi41Jmhic/qHbCze4Zaaw1yRPvWgiE4SpAnGPLKy14pVZtazpO5rRkLisERAGixg4O2gM/FEaZX6PACKfd87XsyvPDgfVzJMvEKsE2r1Sc9tQcDJueyCKNp4N7ST02R+nVX0LcZIvr8LKWKDpaJ9oS4AArSKRp/A9HVAL8vQ==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1783772974; c=relaxed/relaxed;
+	bh=83oOaaTreHaoFIhiDoHcddDWSjKDujW9xu9zE75la/o=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=oov4j98gI42dL5x/ExKAkekmr7YbWT1ogfv8IcHbsNYZhTgXBSYgEWjpnK0fOI5P9bN1YncvY8ya7WUxzrNFhvWVonU7fqAtk762SKRy8rHC5sjL9D5+YUZkWIji93pL8gCjyC33oWnQzLskQOnWCS1FcwZYeLgtrR7lPkUXAYe2bz5kkDK4fgjWXm/ksNFOCiF85XOaJxNi2FkahRqGX+a03xqCDl9u9P+97t+/Dbd6cbRLCZqecgAUavm8CgQHkQT5059xRUdJyfNl28ORr57XXO4d9cbSLKuPPLnlPM4C4dZ/xPyztovFhK/RhyMEEGtlOTYgNEkUC+5ter2FLQ==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=C+f63BuP; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::534; helo=mail-ed1-x534.google.com; envelope-from=linmag7@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=iWyKi7ml;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=C+f63BuP;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::534; helo=mail-ed1-x534.google.com; envelope-from=linmag7@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-ed1-x534.google.com (mail-ed1-x534.google.com [IPv6:2a00:1450:4864:20::534])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gy0xG3RNcz2xq0
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Jul 2026 17:40:50 +1000 (AEST)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id EB8A7404CE;
-	Sat, 11 Jul 2026 07:40:47 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0D4E11F00A3A;
-	Sat, 11 Jul 2026 07:40:45 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1783755647;
-	bh=2/7VqtZM9eXOWcQYQomZRp6vg3C7ps+yJ24JkWv1U8U=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=iWyKi7mlmzdH/fxBmzalDY+4IY7DH0rkpEbogtp+wUSLLsjqypUVPoT+cJcCtTTCG
-	 G3L/bXhEjSKF7UC5II+hDmw42eHkdn9S3cU9hIh+6JOHQqDc3CP5qkdLHyDFU+bmiw
-	 6pnsLhe9Qz07Xt5ADxS+l9XRSRzZhWwkG5CgP0077tuMu18rgiFwENjtA0RafQ5H3/
-	 HVNlSmAv9C4apryPSEP82kB7WVbg3PIXqmjlO2as0hY4YO2Zus/pYr/YzMNBaoifo9
-	 fa2IS+6pSsIdQEBgeztVglFGYcP/7ZCjCvagH/zWaKAys3lenLOyH/ex5MGOyEAMO/
-	 A78D26wvAn4TA==
-Message-ID: <621a46b3-74a3-4a1f-b81f-f50ea18a541e@kernel.org>
-Date: Sat, 11 Jul 2026 09:40:42 +0200
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gy7LP4mmhz2xJT
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Jul 2026 22:29:32 +1000 (AEST)
+Received: by mail-ed1-x534.google.com with SMTP id 4fb4d7f45d1cf-698a9f11776so2817333a12.1
+        for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Jul 2026 05:29:32 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1783772964; cv=none;
+        d=google.com; s=arc-20260327;
+        b=q/dhpoAfDutc6pa8M3IXmGAD7nyi9t19n5nKr6iaOVPslm5yHDuBH+gANxacgIefxH
+         KL3NU/KiAb9bmu4KkZgbNLstQgt0mb/L95r6jpLwlaD8I21Vess3FUkNNlF04DsiQZ0C
+         7EJj75fSRE2Sum0jcl6Y0lZw2FkJwSbm3wgY8IefGjtZfm+TUf/D0fQumjjjUcxG5ec9
+         sxrILao6MTBieTWkzEO8WfnJsZ+oXAXl2w0fZbum/icno9WGG79ViJHQx/mmAhoecRCx
+         1cCeLBJ5862z1GLa/ODZI7t8OumsdMaXdBVPCU/er4kAGfnrqblJREu/N2mihGowETLK
+         GQeg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:dkim-signature;
+        bh=83oOaaTreHaoFIhiDoHcddDWSjKDujW9xu9zE75la/o=;
+        fh=ttMl75uNkEmmCCAXves0kQHGvyc73RzZy8EGFHVLZe8=;
+        b=JirsugDSUBZRDcjsN0yJbks8Qyq7xzQdZYHix4iQrh9Xxvo6eB/11bxEZrF1b93WQV
+         E2OBuPUJrNqKc24aDwa0RaLF3ss9sqcJip69wlw5EArPGBKXV2rF2GkpEBafWH8ZXuLa
+         /KtMzwq3iPNCteeuJZ8m6P9btJo5xmcYZemX6pbSKkdy7Oj/EVnVLQ1vhtixXTjEjxbM
+         T0t59Vb1CpnBYbx9b1Kf/iZmFIim6Ba6B7F03/Z2r5OuLapAzlI4auQs5QnTMms+gnPZ
+         5kicUgaT+GOHCgtXKjIqrFeCOwrttaIVNjygUJe9pnwVSZWDXA+gx4V6t6Zzwqx7Anmz
+         NpJQ==;
+        darn=lists.ozlabs.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1783772964; x=1784377764; darn=lists.ozlabs.org;
+        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
+         :references:mime-version:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=83oOaaTreHaoFIhiDoHcddDWSjKDujW9xu9zE75la/o=;
+        b=C+f63BuPKINcUHcb1TpQ5Vhntvo7E7vy593Kvm/TTlqaJG6M/IZrUHHDKB3vv8pMKh
+         tfxVbO28QK/M4dw1ajQnJedClAscqQTiR8CnfJt53je5drpL9LfRNsO4Dx4afR2Hzm8i
+         PBRV/ngtJvSMnZxNXOPa73qcI6TSgQb4GYabmpzSS7k4VDC8m54eR6OWDIyY48VXzcZn
+         u5HnL8x3TCohnlUab6N2dsae0pvnPAT6iPcQ4Fp8NVh6U15nuxvn7A6ZUt8k2dA8r+av
+         sJLerUVOLhTOCZIddOZQZnSi14584cJg0K7sDtzGx5DqEFyYp8Y6U6xoc2ZFHg1OjwpS
+         oT1A==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1783772964; x=1784377764;
+        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
+         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to:content-type;
+        bh=83oOaaTreHaoFIhiDoHcddDWSjKDujW9xu9zE75la/o=;
+        b=WfsdDf2ualwyrshqmavE704buf4fwAO+oOldgJvXfC9jGIdIETo8fFzvBUeG66H1Qh
+         Xj1j72mG153h1X31JvRSiSZjLH5aHt9pHuzvxYgwHGpdCNMI0Zs4PlO5SiOETKQgrNiH
+         iys78io4EU9Ok7iof9eQLYYumM5V2VljejP61oEd33MNF8Uutr0NsEAlMp/MdzBHPh5G
+         kd1kTuoN4/TfoW7l+QFizb+K9Ttl5hZpPuzqjBhUC5rU4ww0A/lbld7YmdHOPzMOmUdF
+         tEHbk42hpde3JxYdCN4miumIMRqd2JpqdLj0w24eFkTzUYhToaJlBkMHMP2YJax7Mcnj
+         +UDg==
+X-Forwarded-Encrypted: i=1; AHgh+RqITeKTzZft0SC7l/+0m4oGzOQcnTak7g+khaoZUGYbIfTsKKYyAVBIkBjkOZE1vIhbj9RCUqQN9TYhbPM=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YySy9pwwQYbKmKp+4dUZU4pqS/vV0DxD3woz7g3KQQoQ0yW5mkh
+	C2q5S8QIfx04j7PA+u12dT7cgc1i6j1mgGCs1CNGoGKYVoQI46dDhAH9wxaMekDpZdIim76RL1y
+	odPC1rgwr8UD8RRiJ1uFoZ7oqf+O0O8c=
+X-Gm-Gg: AfdE7cnwQBLT/73fuMwytKNBwh5eBaTGzuU7jQ7f6ICoY8/rmsWVNz23ltv2kxzatpr
+	gb2RgqxT98YwQ4s+S4AIltgRBz78zsxUDqZRxLwf+phv1wnV9GIj9oZWzNcmTZy9JrB3kHPrucO
+	ea1FN6QYz7ORq3T5WhT6MphallhoJu4UT6mkoyDaoDfUZKcyEZGyb4nHXurbUyPS/5xSqKoLANU
+	UyA5QY+a/w2xPXyEuLD0+ZxKGOUWQO888utNcgLn3I1NsLfqVhnlCaLdj4ITW+7uvzaS70Qlyjw
+	/Yxik0e12vXJoGw8xw8RXJ7HRBLF7BOBzA92NzKkVPMv+gWNhut5eDg5FQtgmME=
+X-Received: by 2002:a05:6402:3512:b0:699:728e:48b9 with SMTP id
+ 4fb4d7f45d1cf-69c5edb9cb3mr1210325a12.0.1783772963919; Sat, 11 Jul 2026
+ 05:29:23 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -59,151 +101,83 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [powerpc:fixes-test 10/12] include/linux/static_call.h:223:9:
- warning: data definition has no type or storage class
-To: kernel test robot <lkp@intel.com>,
- Madhavan Srinivasan <maddy@linux.ibm.com>
-Cc: oe-kbuild-all@lists.linux.dev, linuxppc-dev@lists.ozlabs.org,
- Shrikanth Hegde <sshegde@linux.ibm.com>, Josh Poimboeuf <jpoimboe@redhat.com>
-References: <202607110847.u4TL0RJC-lkp@intel.com>
-Content-Language: fr-FR
-From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-In-Reply-To: <202607110847.u4TL0RJC-lkp@intel.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+References: <20260707181957.433213175@kernel.org>
+In-Reply-To: <20260707181957.433213175@kernel.org>
+From: Magnus Lindholm <linmag7@gmail.com>
+Date: Sat, 11 Jul 2026 14:29:12 +0200
+X-Gm-Features: AUfX_mzOlRB8ana7x7qPQc4frMU9J060tNH0Z2GPCNvL1LYqDKQBjM-XzHbrvno
+Message-ID: <CA+=Fv5RpgQ-UeGAT+VcLufte2gAp0H=J5GqZEFR_SuQsmnzy=A@mail.gmail.com>
+Subject: Re: [patch 00/18] entry: Consolidate and rework syscall entry handling
+To: Thomas Gleixner <tglx@kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, 
+	Michael Ellerman <mpe@ellerman.id.au>, Shrikanth Hegde <sshegde@linux.ibm.com>, 
+	linuxppc-dev@lists.ozlabs.org, Kees Cook <kees@kernel.org>, 
+	Huacai Chen <chenhuacai@kernel.org>, loongarch@lists.linux.dev, 
+	Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, linux-riscv@lists.infradead.org, 
+	Sven Schnelle <svens@linux.ibm.com>, linux-s390@vger.kernel.org, x86@kernel.org, 
+	Mark Rutland <mark.rutland@arm.com>, Jinjie Ruan <ruanjinjie@huawei.com>, 
+	Andy Lutomirski <luto@kernel.org>, Oleg Nesterov <oleg@redhat.com>, 
+	Richard Henderson <richard.henderson@linaro.org>, Russell King <linux@armlinux.org.uk>, 
+	Catalin Marinas <catalin.marinas@arm.com>, Guo Ren <guoren@kernel.org>, 
+	Geert Uytterhoeven <geert@linux-m68k.org>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, 
+	Helge Deller <deller@gmx.de>, Yoshinori Sato <ysato@users.sourceforge.jp>, 
+	Richard Weinberger <richard@nod.at>, Chris Zankel <chris@zankel.net>, linux-arm-kernel@lists.infradead.org, 
+	linux-alpha@vger.kernel.org, linux-csky@vger.kernel.org, 
+	linux-m68k@lists.linux-m68k.org, linux-mips@vger.kernel.org, 
+	linux-parisc@vger.kernel.org, linux-sh@vger.kernel.org, 
+	linux-um@lists.infradead.org, Arnd Bergmann <arnd@arndb.de>, 
+	Vineet Gupta <vgupta@kernel.org>, Will Deacon <will@kernel.org>, Brian Cain <bcain@kernel.org>, 
+	Michal Simek <monstr@monstr.eu>, Dinh Nguyen <dinguyen@kernel.org>, 
+	"David S. Miller" <davem@davemloft.net>, Andreas Larsson <andreas@gaisler.com>, 
+	linux-snps-arc@lists.infradead.org, linux-hexagon@vger.kernel.org, 
+	linux-openrisc@vger.kernel.org, sparclinux@vger.kernel.org, 
+	linux-arch@vger.kernel.org, =?UTF-8?Q?Michal_Such=C3=A1nek?= <msuchanek@suse.de>, 
+	Jonathan Corbet <corbet@lwn.net>, linux-doc@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+
+>
+> With that all architectures using the generic syscall entry code follow the
+> same scheme, apply stack randomization at the correct and earliest possible
+> place and skip syscall processing depending on the boolean return value of
+> syscall_enter_from_user_mode[_work]().
+>
+> There should be no functional changes, at least there are none intended.
+>
+> The resulting text size for the syscall entry code on x8664 is slightly
+> smaller than before these changes.
+>
+> Testing syscall heavy workloads and micro benchmarks shows a small
+> performance gain for the general rework, but the last patch, which changes
+> the logic to be more understandable has no measurable impact in either
+> direction.
+>
+> The series applies on Linus tree and is also available from git:
+>
+>         git://git.kernel.org/pub/scm/linux/kernel/git/tglx/devel.git entry-rework-v1
+>
 
 
+Hi Thomas,
 
-Le 11/07/2026 à 03:52, kernel test robot a écrit :
-> tree:   https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git fixes-test
-> head:   afc2830892a128a13a65f677271a0a48aeb61b5e
-> commit: 4747e17fe063720a30b1c0075bae3e8f8acd26f4 [10/12] powerpc/32: Use HAVE_PREEMPT_DYNAMIC_CALL instead of HAVE_PREEMPT_DYNAMIC_KEY
-> config: powerpc-randconfig-001-20260711 (https://download.01.org/0day-ci/archive/20260711/202607110847.u4TL0RJC-lkp@intel.com/config)
-> compiler: powerpc-linux-gcc (GCC) 11.5.0
-> reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20260711/202607110847.u4TL0RJC-lkp@intel.com/reproduce)
-> 
-> If you fix the issue in a separate patch/commit (i.e. not just a new version of
-> the same patch/commit), kindly add following tags
-> | Reported-by: kernel test robot <lkp@intel.com>
-> | Closes: https://lore.kernel.org/oe-kbuild-all/202607110847.u4TL0RJC-lkp@intel.com/
-> 
-> All warnings (new ones prefixed by >>):
-> 
->     In file included from include/linux/tracepoint.h:22,
->                      from include/trace/syscall.h:5,
->                      from include/linux/syscalls.h:95,
->                      from include/linux/syscalls_api.h:1,
->                      from kernel/sched/core.c:16:
->>> include/linux/static_call.h:223:9: warning: data definition has no type or storage class
->       223 |         ARCH_ADD_TRAMP_KEY(name)
+Thanks for the series.
 
-Looks like powerpc is missing ARCH_ADD_TRAMP() macro, introduced by 
-commit 73f44fe19d35 ("static_call: Allow module use without exposing 
-static_call_key") for x86. I missed it when adding inline static calls 
-with commit f50b45626e05 ("powerpc/static_call: Implement inline static 
-calls").
+I have an Alpha GENERIC_ENTRY series posted and planned for the next
+merge window:
 
-I will have to fix that before we can activate HAVE_PREEMPT_DYNAMIC_CALL.
+https://lore.kernel.org/linux-alpha/20260706170019.2941459-1-linmag7@gmail.com/T/#t
 
-Christophe
+Only its final patch intersects with this work.
 
+That patch removes Alpha's architecture-specific syscall_trace_enter()
+and syscall_trace_leave() implementations, so the Alpha changes in
+patches 11 and 12 will disappear once the GENERIC_ENTRY conversion is
+applied.
 
->           |         ^~~~~~~~~~~~~~~~~~
->     kernel/sched/core.c:7449:1: note: in expansion of macro 'EXPORT_STATIC_CALL_TRAMP'
->      7449 | EXPORT_STATIC_CALL_TRAMP(preempt_schedule);
->           | ^~~~~~~~~~~~~~~~~~~~~~~~
->     include/linux/static_call.h:223:9: error: type defaults to 'int' in declaration of 'ARCH_ADD_TRAMP_KEY' [-Werror=implicit-int]
->       223 |         ARCH_ADD_TRAMP_KEY(name)
->           |         ^~~~~~~~~~~~~~~~~~
->     kernel/sched/core.c:7449:1: note: in expansion of macro 'EXPORT_STATIC_CALL_TRAMP'
->      7449 | EXPORT_STATIC_CALL_TRAMP(preempt_schedule);
->           | ^~~~~~~~~~~~~~~~~~~~~~~~
->>> kernel/sched/core.c:7449:1: warning: parameter names (without types) in function declaration
->     In file included from include/linux/tracepoint.h:22,
->                      from include/trace/syscall.h:5,
->                      from include/linux/syscalls.h:95,
->                      from include/linux/syscalls_api.h:1,
->                      from kernel/sched/core.c:16:
->>> include/linux/static_call.h:223:9: warning: data definition has no type or storage class
->       223 |         ARCH_ADD_TRAMP_KEY(name)
->           |         ^~~~~~~~~~~~~~~~~~
->     kernel/sched/core.c:7522:1: note: in expansion of macro 'EXPORT_STATIC_CALL_TRAMP'
->      7522 | EXPORT_STATIC_CALL_TRAMP(preempt_schedule_notrace);
->           | ^~~~~~~~~~~~~~~~~~~~~~~~
->     include/linux/static_call.h:223:9: error: type defaults to 'int' in declaration of 'ARCH_ADD_TRAMP_KEY' [-Werror=implicit-int]
->       223 |         ARCH_ADD_TRAMP_KEY(name)
->           |         ^~~~~~~~~~~~~~~~~~
->     kernel/sched/core.c:7522:1: note: in expansion of macro 'EXPORT_STATIC_CALL_TRAMP'
->      7522 | EXPORT_STATIC_CALL_TRAMP(preempt_schedule_notrace);
->           | ^~~~~~~~~~~~~~~~~~~~~~~~
->     kernel/sched/core.c:7522:1: warning: parameter names (without types) in function declaration
->     In file included from include/linux/tracepoint.h:22,
->                      from include/trace/syscall.h:5,
->                      from include/linux/syscalls.h:95,
->                      from include/linux/syscalls_api.h:1,
->                      from kernel/sched/core.c:16:
->>> include/linux/static_call.h:223:9: warning: data definition has no type or storage class
->       223 |         ARCH_ADD_TRAMP_KEY(name)
->           |         ^~~~~~~~~~~~~~~~~~
->     kernel/sched/core.c:7769:1: note: in expansion of macro 'EXPORT_STATIC_CALL_TRAMP'
->      7769 | EXPORT_STATIC_CALL_TRAMP(cond_resched);
->           | ^~~~~~~~~~~~~~~~~~~~~~~~
->     include/linux/static_call.h:223:9: error: type defaults to 'int' in declaration of 'ARCH_ADD_TRAMP_KEY' [-Werror=implicit-int]
->       223 |         ARCH_ADD_TRAMP_KEY(name)
->           |         ^~~~~~~~~~~~~~~~~~
->     kernel/sched/core.c:7769:1: note: in expansion of macro 'EXPORT_STATIC_CALL_TRAMP'
->      7769 | EXPORT_STATIC_CALL_TRAMP(cond_resched);
->           | ^~~~~~~~~~~~~~~~~~~~~~~~
->     kernel/sched/core.c:7769:1: warning: parameter names (without types) in function declaration
->     In file included from include/linux/tracepoint.h:22,
->                      from include/trace/syscall.h:5,
->                      from include/linux/syscalls.h:95,
->                      from include/linux/syscalls_api.h:1,
->                      from kernel/sched/core.c:16:
->>> include/linux/static_call.h:223:9: warning: data definition has no type or storage class
->       223 |         ARCH_ADD_TRAMP_KEY(name)
->           |         ^~~~~~~~~~~~~~~~~~
->     kernel/sched/core.c:7774:1: note: in expansion of macro 'EXPORT_STATIC_CALL_TRAMP'
->      7774 | EXPORT_STATIC_CALL_TRAMP(might_resched);
->           | ^~~~~~~~~~~~~~~~~~~~~~~~
->     include/linux/static_call.h:223:9: error: type defaults to 'int' in declaration of 'ARCH_ADD_TRAMP_KEY' [-Werror=implicit-int]
->       223 |         ARCH_ADD_TRAMP_KEY(name)
->           |         ^~~~~~~~~~~~~~~~~~
->     kernel/sched/core.c:7774:1: note: in expansion of macro 'EXPORT_STATIC_CALL_TRAMP'
->      7774 | EXPORT_STATIC_CALL_TRAMP(might_resched);
->           | ^~~~~~~~~~~~~~~~~~~~~~~~
->     kernel/sched/core.c:7774:1: warning: parameter names (without types) in function declaration
->     cc1: some warnings being treated as errors
-> 
-> 
-> vim +223 include/linux/static_call.h
-> 
-> 9183c3f9ed710a8 Josh Poimboeuf 2020-08-18  212
-> 9183c3f9ed710a8 Josh Poimboeuf 2020-08-18  213  #define EXPORT_STATIC_CALL(name)					\
-> 9183c3f9ed710a8 Josh Poimboeuf 2020-08-18  214  	EXPORT_SYMBOL(STATIC_CALL_KEY(name));				\
-> 9183c3f9ed710a8 Josh Poimboeuf 2020-08-18  215  	EXPORT_SYMBOL(STATIC_CALL_TRAMP(name))
-> 9183c3f9ed710a8 Josh Poimboeuf 2020-08-18  216  #define EXPORT_STATIC_CALL_GPL(name)					\
-> 9183c3f9ed710a8 Josh Poimboeuf 2020-08-18  217  	EXPORT_SYMBOL_GPL(STATIC_CALL_KEY(name));			\
-> 9183c3f9ed710a8 Josh Poimboeuf 2020-08-18  218  	EXPORT_SYMBOL_GPL(STATIC_CALL_TRAMP(name))
-> 9183c3f9ed710a8 Josh Poimboeuf 2020-08-18  219
-> 73f44fe19d35963 Josh Poimboeuf 2021-01-27  220  /* Leave the key unexported, so modules can't change static call targets: */
-> 73f44fe19d35963 Josh Poimboeuf 2021-01-27  221  #define EXPORT_STATIC_CALL_TRAMP(name)					\
-> 73f44fe19d35963 Josh Poimboeuf 2021-01-27  222  	EXPORT_SYMBOL(STATIC_CALL_TRAMP(name));				\
-> 73f44fe19d35963 Josh Poimboeuf 2021-01-27 @223  	ARCH_ADD_TRAMP_KEY(name)
-> 73f44fe19d35963 Josh Poimboeuf 2021-01-27  224  #define EXPORT_STATIC_CALL_TRAMP_GPL(name)				\
-> 73f44fe19d35963 Josh Poimboeuf 2021-01-27  225  	EXPORT_SYMBOL_GPL(STATIC_CALL_TRAMP(name));			\
-> 73f44fe19d35963 Josh Poimboeuf 2021-01-27  226  	ARCH_ADD_TRAMP_KEY(name)
-> 73f44fe19d35963 Josh Poimboeuf 2021-01-27  227
-> 
-> :::::: The code at line 223 was first introduced by commit
-> :::::: 73f44fe19d359635a607e8e8daa0da4001c1cfc2 static_call: Allow module use without exposing static_call_key
-> 
-> :::::: TO: Josh Poimboeuf <jpoimboe@redhat.com>
-> :::::: CC: Ingo Molnar <mingo@kernel.org>
-> 
-> --
-> 0-DAY CI Kernel Test Service
-> https://github.com/intel/lkp-tests/wiki
+It also currently uses syscall_enter_from_user_mode(), so I will need to
+rebase it onto the new entry interface introduced by this series. I
+expect the integration to be confined to the final GENERIC_ENTRY patch.
 
+The Alpha-specific changes in patches 11 and 12 look correct to me.
+
+Acked-by: Magnus Lindholm <linmag7@gmail.com>
 
