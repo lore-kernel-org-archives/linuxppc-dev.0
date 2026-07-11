@@ -1,69 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-24037-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24038-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D201CC43458
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 11 Jul 2026 02:22:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6C76EC43458
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 11 Jul 2026 03:14:08 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gxstN6C0Vz2yH4;
-	Sat, 11 Jul 2026 12:22:52 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=192.198.163.16
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783736572;
-	cv=none; b=jORjmtymgzAu4xeDacsc5lPoxRZpv8Njwm0AG/THTvuPjI6wyMZyZO032U7guEwGnZnjeyTnY5Pp3bFrSPTvWRLD5NaM8BoP2b2OPPYMEkjLCdf3bmCSu0i4uQjcT8Muxl1pRlhVSccUy5FbGItUkZj5HPj77WJLxfKDy8B265xi9WjDCfPhIAbVChlenx3nFr6fUa8TLedtWEbp9X54unCYNGs/BNqgFoPmUAwefWq7rM0KYwZeZYR2j8UhmTrcHUxyq0lCjGtmHCRfPpjyBolBm4/yLacJ35rFnTxa8C1YmtDeQph//juzeyxWCY4GEqIsS95dWbhiAXlG3GUtiQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gxv1V3GhMz2yH4;
+	Sat, 11 Jul 2026 13:14:06 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=198.175.65.20
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783739646;
+	cv=none; b=WHlJkqqyBg7H6jhBLnABzT+T0CtlHWapT32iIDpp/x5ZZYeAAXuIs83hHWUYFwwu61ByOV2lw9rfCgpncxNCZE5afN0dVIZulBw1hbR/Ps+ampQr+odp39MuBSvKfxXu36ks1UQZxjLGU4X1B3+agBPJDHuX5Nf2OVljmRlwOmQJZSvqYJEUMUlJHMBy4ZsANjPY1vb8zi3dHMlka6v2to465Fe0dNGimXv6PlZQus+NjWFStyC2OZ3CvpNYzA87N1GlJPfNczmzV0ayIuEwT8IPNXp1j7ZtFYvq3xFE/XNur+sNeiG6qofrY78mA8hs9IPcF87s9QhpdFSVPqHovg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1783736572; c=relaxed/relaxed;
-	bh=RMyLEaQ6fN7+3tjj7cctLmSFee4JakMlc4IP1Zl+azQ=;
-	h=Date:From:To:Cc:Subject:Message-ID; b=VV+B+G2B+Xr55Pn10emymQrkwTc25jfs+6x5IP19HmBsH9tdtcU24+Ok3T3b/1J1UAi04Pp+I90omDcjb3fyff2H1Fzw3AmjOUTjXMsKA15zN+jaN4AVB06T8Fg4IJCGAyzoXgnmkiWvJXk2Oj0GDui00+L7v3fTo9qIcxAvxNIbvmIJoY797d6Q0+qGD8GYAJmhscw2oJiDimY9PoRIoZtJSLgWj6dz7kuK+otk2DSVQaDO3rpd5u+EFsxgqDQY4cUZ53wpwUfgR9E14/ZG9lDLqhNyviu/oJ3cgE9rxPsJSiRWrHytCP8N2r2rEyVE/uXfkh8lhrpDwJYzSleS1g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=Wvt9zQhK; dkim-atps=neutral; spf=pass (client-ip=192.198.163.16; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=intel.com
+	t=1783739646; c=relaxed/relaxed;
+	bh=S4hvzXbxEvbZmam6qhSMtpL6NUaCOInsQQvKsP07Wps=;
+	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type; b=cJc+QQxmGqNP3hK2JFn80HXgEmT0DZ1PTbkB5+uIlcqFXYzXq6rbdM2dngGh54oCoIYTgYlTwzIS+IRwZ0p/NgAKguixze2xHsjXBB8SvlRS2d/KdW6003teifn6/aCHeu5iWvooM6sZ+IH9a4NjhwAzbPwLi/B2Gh+CtRHFr2+IQUFGQcTNlem/ns9nZr+oQt/m51+IaORbVkssG/om1SyCTfBxGj7xYQK0AaYj+LnlsqpOY1QV+L4cxv5zFWy07+ufe47fn+dNsVSradyWxVyacd/0vfyqd7vXhns50+k0oGqBq3LqIANMLzCRf9o8+pnURU5B07aajx+ygpCUkg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=P1ecD6GO; dkim-atps=neutral; spf=pass (client-ip=198.175.65.20; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=intel.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=Wvt9zQhK;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=P1ecD6GO;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=192.198.163.16; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.16])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=198.175.65.20; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org)
+X-Greylist: delayed 66 seconds by postgrey-1.37 at boromir; Sat, 11 Jul 2026 13:14:02 AEST
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.20])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gxstK6Pjvz2y7Y
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Jul 2026 12:22:47 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gxv1Q35xRz2y7Y
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Jul 2026 13:14:01 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1783736570; x=1815272570;
-  h=date:from:to:cc:subject:message-id;
-  bh=VK3IcAc8oxI9nIYhpuvuoaw5qB4IVwZwoyG21u3nZFw=;
-  b=Wvt9zQhKQO4ker8aith9Sk2egJcoEjFCUqob1TAdBHwT2RU6nv8MGbwx
-   aymQ7qV60rnUMZou1qP0FCAdO8UAere3b6Em5B+2RVQzTwSpB8daJh7FW
-   vOJw876sAgSal5LRvay1bXrS4QIawZrP+NoFZSQdJkfshEfUVBhfFvTqb
-   pcJGwC7Djy2EFY/CzLeJghuVhBMY8PQ5UK5fuGw8hDDRGoyR/GoaLVoYg
-   qCcylVPWFjMQok122nnLwXDv5/+Wa1LiSAw0QhPlthw0rhaRO4uUVELnR
-   4ULEaXlk2peNqtspdHYPzAAxtOuTbEizSftI8LamoOvju4+LOc3r6yoZz
-   w==;
-X-CSE-ConnectionGUID: gKs973MAR7G8VuJpfEAU7g==
-X-CSE-MsgGUID: GZDbm8ChQEygzz82yb81/g==
-X-IronPort-AV: E=McAfee;i="6800,10657,11841"; a="71957721"
+  t=1783739643; x=1815275643;
+  h=date:from:to:cc:subject:message-id:mime-version;
+  bh=4JbO2OMYTZoSGibXGDIBwRzxXPtxvD4HSeT5+HlZ1Bo=;
+  b=P1ecD6GOryN5e1CBhFQS8JLgA0X1iCgX9GlWYVFWnDIvnqMUpuI6WObb
+   Wh+Ni3s+HooJ9+o3h9EaSgRRgUx7YaFXCRwH4JEWBIC3V4GTpwsP9Hp0x
+   rNh7v81usQ26s/uLMkuucTxKS3GnK9g/4Veez2Ul3Wxpc/pfDOYWWnaKg
+   uec1t9zjx6CS/VrR+FiQzl6PvPE2P27L9uXeqKEqfajEtFBq2SPfna4Vp
+   qaTIbKGaf5SRYhUIWhpUnZgUODIeRD9i6DHZBcyjpL4ELW5A+qmZr8NGs
+   hkxPxJR47UyBbF1fPj6cpyLtVI5N4rifslNfL47CI5PnhMrYyA7MKRg9z
+   A==;
+X-CSE-ConnectionGUID: U9i0YjtnTk6B9ibstshBeQ==
+X-CSE-MsgGUID: YgFobjCiRwis+sGo8dx74w==
+X-IronPort-AV: E=McAfee;i="6800,10657,11841"; a="84216924"
 X-IronPort-AV: E=Sophos;i="6.25,154,1779174000"; 
-   d="scan'208";a="71957721"
-Received: from orviesa004.jf.intel.com ([10.64.159.144])
-  by fmvoesa110.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 10 Jul 2026 19:22:44 -0700
-X-CSE-ConnectionGUID: 7IoYhTeaQdGXPdkF+Pa59Q==
-X-CSE-MsgGUID: q4mfPUtJRwmF6IsSUkXIwg==
+   d="scan'208";a="84216924"
+Received: from fmviesa008.fm.intel.com ([10.60.135.148])
+  by orvoesa112.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 10 Jul 2026 20:12:27 -0700
+X-CSE-ConnectionGUID: O6NIMTBpTcm/PbVUoNyuLg==
+X-CSE-MsgGUID: J5+KOHQGSEaTcv/LyJm3eg==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.25,154,1779174000"; 
-   d="scan'208";a="258912367"
+   d="scan'208";a="252409674"
 Received: from lkp-server02.sh.intel.com (HELO ea128546eb3d) ([10.239.97.151])
-  by orviesa004.jf.intel.com with ESMTP; 10 Jul 2026 19:22:42 -0700
+  by fmviesa008.fm.intel.com with ESMTP; 10 Jul 2026 20:12:25 -0700
 Received: from kbuild by ea128546eb3d with local (Exim 4.98.2)
 	(envelope-from <lkp@intel.com>)
-	id 1wiNMV-00000000JeG-3Ooz;
-	Sat, 11 Jul 2026 02:22:39 +0000
-Date: Sat, 11 Jul 2026 10:22:15 +0800
+	id 1wiO8c-00000000Jge-3oIY;
+	Sat, 11 Jul 2026 03:12:22 +0000
+Date: Sat, 11 Jul 2026 11:12:13 +0800
 From: kernel test robot <lkp@intel.com>
-To: Madhavan Srinivasan <maddy@linux.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: [powerpc:fixes-test] BUILD REGRESSION
- afc2830892a128a13a65f677271a0a48aeb61b5e
-Message-ID: <202607111002.IHTkbYML-lkp@intel.com>
+To: "Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com>
+Cc: oe-kbuild-all@lists.linux.dev, linuxppc-dev@lists.ozlabs.org,
+ Madhavan Srinivasan <maddy@linux.ibm.com>,
+ "Michal =?utf-8?Q?Such=C3=A1nek"?= <msuchanek@suse.de>
+Subject: [powerpc:fixes-test 12/12]
+ arch/powerpc/include/asm/ptrace.h:245:23: error: call to undeclared function
+ 'BIT'; ISO C99 and later do not support implicit function declarations
+Message-ID: <202607111027.VbonWf7Z-lkp@intel.com>
 User-Agent: s-nail v14.9.25
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -77,248 +81,142 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git fixes-test
-branch HEAD: afc2830892a128a13a65f677271a0a48aeb61b5e  powerpc/syscall: Fix syscall skip handling for seccomp and ptrace
+tree:   https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git fixes-test
+head:   afc2830892a128a13a65f677271a0a48aeb61b5e
+commit: afc2830892a128a13a65f677271a0a48aeb61b5e [12/12] powerpc/syscall: Fix syscall skip handling for seccomp and ptrace
+config: powerpc-randconfig-r112-20260711 (https://download.01.org/0day-ci/archive/20260711/202607111027.VbonWf7Z-lkp@intel.com/config)
+compiler: clang version 20.1.8 (https://github.com/llvm/llvm-project 87f0227cb60147a26a1eeb4fb06e3b505e9c7261)
+sparse: v0.6.5-rc1
+reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20260711/202607111027.VbonWf7Z-lkp@intel.com/reproduce)
 
-Error/Warning (recently discovered and may have been fixed):
+If you fix the issue in a separate patch/commit (i.e. not just a new version of
+the same patch/commit), kindly add following tags
+| Reported-by: kernel test robot <lkp@intel.com>
+| Closes: https://lore.kernel.org/oe-kbuild-all/202607111027.VbonWf7Z-lkp@intel.com/
 
-    https://lore.kernel.org/oe-kbuild-all/202607110141.nUx3NKwu-lkp@intel.com
-    https://lore.kernel.org/oe-kbuild-all/202607110422.frjmJOf8-lkp@intel.com
-    https://lore.kernel.org/oe-kbuild-all/202607110847.u4TL0RJC-lkp@intel.com
+All errors (new ones prefixed by >>):
 
-    arch/powerpc/include/asm/ptrace.h:241:31: error: implicit declaration of function 'BIT' [-Werror=implicit-function-declaration]
-    arch/powerpc/include/asm/ptrace.h:241:33: error: implicit declaration of function 'BIT' [-Werror=implicit-function-declaration]
-    arch/powerpc/include/asm/ptrace.h:241:33: error: implicit declaration of function 'BIT' [-Wimplicit-function-declaration]
-    include/linux/static_call.h:223:9: warning: data definition has no type or storage class
-    kernel/sched/core.c:7449:1: error: type specifier missing, defaults to 'int'; ISO C99 and later do not support implicit int [-Wimplicit-int]
-    kernel/sched/core.c:7449:1: warning: parameter names (without types) in function declaration
-    kernel/sched/core.c:7449:26: error: a parameter list without types is only allowed in a function definition
-    kernel/sched/core.c:7453:1: error: type specifier missing, defaults to 'int'; ISO C99 and later do not support implicit int [-Wimplicit-int]
-    kernel/sched/core.c:7453:26: error: a parameter list without types is only allowed in a function definition
-    kernel/sched/core.c:7455:1: error: type specifier missing, defaults to 'int'; ISO C99 and later do not support implicit int [-Wimplicit-int]
-    kernel/sched/core.c:7455:26: error: a parameter list without types is only allowed in a function definition
+   In file included from drivers/of/fdt.c:11:
+   In file included from include/linux/crash_dump.h:5:
+   In file included from include/linux/kexec.h:18:
+   In file included from include/linux/vmcore_info.h:6:
+   In file included from include/linux/elfcore.h:5:
+   In file included from include/linux/user.h:1:
+   In file included from arch/powerpc/include/asm/user.h:5:
+>> arch/powerpc/include/asm/ptrace.h:245:23: error: call to undeclared function 'BIT'; ISO C99 and later do not support implicit function declarations [-Wimplicit-function-declaration]
+     245 |         regs->entry_flags |= SYSCALL_ENTRY_RET_SET;
+         |                              ^
+   arch/powerpc/include/asm/ptrace.h:241:31: note: expanded from macro 'SYSCALL_ENTRY_RET_SET'
+     241 | #define SYSCALL_ENTRY_RET_SET   BIT(0)
+         |                                 ^
+   arch/powerpc/include/asm/ptrace.h:250:36: error: call to undeclared function 'BIT'; ISO C99 and later do not support implicit function declarations [-Wimplicit-function-declaration]
+     250 |         bool set = !!(regs->entry_flags & SYSCALL_ENTRY_RET_SET);
+         |                                           ^
+   arch/powerpc/include/asm/ptrace.h:241:31: note: expanded from macro 'SYSCALL_ENTRY_RET_SET'
+     241 | #define SYSCALL_ENTRY_RET_SET   BIT(0)
+         |                                 ^
+   In file included from drivers/of/fdt.c:11:
+   In file included from include/linux/crash_dump.h:5:
+   In file included from include/linux/kexec.h:18:
+   In file included from include/linux/vmcore_info.h:6:
+   In file included from include/linux/elfcore.h:9:
+   include/linux/signal.h:98:11: warning: array index 3 is past the end of the array (that has type 'unsigned long[2]') [-Warray-bounds]
+      98 |                 return (set->sig[3] | set->sig[2] |
+         |                         ^        ~
+   arch/powerpc/include/uapi/asm/signal.h:18:2: note: array 'sig' declared here
+      18 |         unsigned long sig[_NSIG_WORDS];
+         |         ^
+   In file included from drivers/of/fdt.c:11:
+   In file included from include/linux/crash_dump.h:5:
+   In file included from include/linux/kexec.h:18:
+   In file included from include/linux/vmcore_info.h:6:
+   In file included from include/linux/elfcore.h:9:
+   include/linux/signal.h:98:25: warning: array index 2 is past the end of the array (that has type 'unsigned long[2]') [-Warray-bounds]
+      98 |                 return (set->sig[3] | set->sig[2] |
+         |                                       ^        ~
+   arch/powerpc/include/uapi/asm/signal.h:18:2: note: array 'sig' declared here
+      18 |         unsigned long sig[_NSIG_WORDS];
+         |         ^
+   In file included from drivers/of/fdt.c:11:
+   In file included from include/linux/crash_dump.h:5:
+   In file included from include/linux/kexec.h:18:
+   In file included from include/linux/vmcore_info.h:6:
+   In file included from include/linux/elfcore.h:9:
+   include/linux/signal.h:114:11: warning: array index 3 is past the end of the array (that has type 'const unsigned long[2]') [-Warray-bounds]
+     114 |                 return  (set1->sig[3] == set2->sig[3]) &&
+         |                          ^         ~
+   arch/powerpc/include/uapi/asm/signal.h:18:2: note: array 'sig' declared here
+      18 |         unsigned long sig[_NSIG_WORDS];
+         |         ^
+   In file included from drivers/of/fdt.c:11:
+   In file included from include/linux/crash_dump.h:5:
+   In file included from include/linux/kexec.h:18:
+   In file included from include/linux/vmcore_info.h:6:
+   In file included from include/linux/elfcore.h:9:
+   include/linux/signal.h:114:27: warning: array index 3 is past the end of the array (that has type 'const unsigned long[2]') [-Warray-bounds]
+     114 |                 return  (set1->sig[3] == set2->sig[3]) &&
+         |                                          ^         ~
+   arch/powerpc/include/uapi/asm/signal.h:18:2: note: array 'sig' declared here
+      18 |         unsigned long sig[_NSIG_WORDS];
+         |         ^
+   In file included from drivers/of/fdt.c:11:
+   In file included from include/linux/crash_dump.h:5:
+   In file included from include/linux/kexec.h:18:
+   In file included from include/linux/vmcore_info.h:6:
+   In file included from include/linux/elfcore.h:9:
+   include/linux/signal.h:115:5: warning: array index 2 is past the end of the array (that has type 'const unsigned long[2]') [-Warray-bounds]
+     115 |                         (set1->sig[2] == set2->sig[2]) &&
+         |                          ^         ~
+   arch/powerpc/include/uapi/asm/signal.h:18:2: note: array 'sig' declared here
+      18 |         unsigned long sig[_NSIG_WORDS];
+         |         ^
+   In file included from drivers/of/fdt.c:11:
+   In file included from include/linux/crash_dump.h:5:
+   In file included from include/linux/kexec.h:18:
+   In file included from include/linux/vmcore_info.h:6:
+   In file included from include/linux/elfcore.h:9:
+   include/linux/signal.h:115:21: warning: array index 2 is past the end of the array (that has type 'const unsigned long[2]') [-Warray-bounds]
+     115 |                         (set1->sig[2] == set2->sig[2]) &&
+         |                                          ^         ~
+   arch/powerpc/include/uapi/asm/signal.h:18:2: note: array 'sig' declared here
+      18 |         unsigned long sig[_NSIG_WORDS];
+         |         ^
+   In file included from drivers/of/fdt.c:11:
+   In file included from include/linux/crash_dump.h:5:
+   In file included from include/linux/kexec.h:18:
+   In file included from include/linux/vmcore_info.h:6:
+   In file included from include/linux/elfcore.h:9:
+   include/linux/signal.h:157:1: warning: array index 3 is past the end of the array (that has type 'const unsigned long[2]') [-Warray-bounds]
+     157 | _SIG_SET_BINOP(sigorsets, _sig_or)
+         | ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   include/linux/signal.h:138:8: note: expanded from macro '_SIG_SET_BINOP'
+     138 |                 a3 = a->sig[3]; a2 = a->sig[2];                         \
+         |                      ^      ~
+   arch/powerpc/include/uapi/asm/signal.h:18:2: note: array 'sig' declared here
+      18 |         unsigned long sig[_NSIG_WORDS];
+         |         ^
+   In file included from drivers/of/fdt.c:11:
+   In file included from include/linux/crash_dump.h:5:
+   In file included from include/linux/kexec.h:18:
+   In file included from include/linux/vmcore_info.h:6:
+   In file included from include/linux/elfcore.h:9:
+   include/linux/signal.h:157:1: warning: array index 2 is past the end of the array (that has type 'const unsigned long[2]') [-Warray-bounds]
+     157 | _SIG_SET_BINOP(sigorsets, _sig_or)
+         | ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   include/linux/signal.h:138:24: note: expanded from macro '_SIG_SET_BINOP'
 
-Error/Warning ids grouped by kconfigs:
 
-recent_errors
-|-- powerpc-allnoconfig
-|   `-- arch-powerpc-include-asm-ptrace.h:error:implicit-declaration-of-function-BIT
-|-- powerpc-randconfig-001
-|   `-- arch-powerpc-include-asm-ptrace.h:error:implicit-declaration-of-function-BIT
-|-- powerpc-randconfig-001-20260711
-|   |-- arch-powerpc-include-asm-ptrace.h:error:implicit-declaration-of-function-BIT
-|   |-- include-linux-static_call.h:warning:data-definition-has-no-type-or-storage-class
-|   `-- kernel-sched-core.c:warning:parameter-names-(without-types)-in-function-declaration
-|-- powerpc-randconfig-002
-|   `-- arch-powerpc-include-asm-ptrace.h:error:implicit-declaration-of-function-BIT
-|-- powerpc-randconfig-002-20260711
-|   |-- kernel-sched-core.c:error:a-parameter-list-without-types-is-only-allowed-in-a-function-definition
-|   `-- kernel-sched-core.c:error:type-specifier-missing-defaults-to-int-ISO-C99-and-later-do-not-support-implicit-int
-|-- powerpc-randconfig-r071-20260711
-|   |-- kernel-sched-core.c:error:a-parameter-list-without-types-is-only-allowed-in-a-function-definition
-|   `-- kernel-sched-core.c:error:type-specifier-missing-defaults-to-int-ISO-C99-and-later-do-not-support-implicit-int
-|-- powerpc-randconfig-r112-20260711
-|   |-- kernel-sched-core.c:error:a-parameter-list-without-types-is-only-allowed-in-a-function-definition
-|   `-- kernel-sched-core.c:error:type-specifier-missing-defaults-to-int-ISO-C99-and-later-do-not-support-implicit-int
-`-- powerpc-randconfig-r113-20260711
-    `-- arch-powerpc-include-asm-ptrace.h:error:implicit-declaration-of-function-BIT
+vim +/BIT +245 arch/powerpc/include/asm/ptrace.h
 
-elapsed time: 723m
-
-configs tested: 189
-configs skipped: 191
-
-tested configs:
-alpha                             allnoconfig    gcc-16.1.0
-alpha                            allyesconfig    gcc-16.1.0
-alpha                               defconfig    gcc-16.1.0
-arc                              allmodconfig    clang-23
-arc                               allnoconfig    gcc-16.1.0
-arc                              allyesconfig    clang-23
-arc                                 defconfig    gcc-16.1.0
-arc                   randconfig-001-20260711    gcc-13.4.0
-arc                   randconfig-002-20260711    gcc-13.4.0
-arm                               allnoconfig    gcc-16.1.0
-arm                              allyesconfig    clang-23
-arm                                 defconfig    gcc-16.1.0
-arm                           omap1_defconfig    gcc-16.1.0
-arm                   randconfig-001-20260711    gcc-13.4.0
-arm                   randconfig-002-20260711    gcc-13.4.0
-arm                   randconfig-003-20260711    gcc-13.4.0
-arm                   randconfig-004-20260711    gcc-13.4.0
-arm                        vexpress_defconfig    gcc-16.1.0
-arm64                            allmodconfig    clang-23
-arm64                             allnoconfig    gcc-16.1.0
-arm64                               defconfig    gcc-16.1.0
-arm64                 randconfig-001-20260711    gcc-16.1.0
-arm64                 randconfig-002-20260711    gcc-16.1.0
-arm64                 randconfig-003-20260711    gcc-16.1.0
-arm64                 randconfig-004-20260711    gcc-16.1.0
-csky                             allmodconfig    gcc-16.1.0
-csky                              allnoconfig    gcc-16.1.0
-csky                                defconfig    gcc-16.1.0
-csky                  randconfig-001-20260711    gcc-16.1.0
-csky                  randconfig-002-20260711    gcc-16.1.0
-hexagon                          allmodconfig    gcc-16.1.0
-hexagon                           allnoconfig    gcc-16.1.0
-hexagon                             defconfig    gcc-16.1.0
-hexagon               randconfig-001-20260711    gcc-16.1.0
-hexagon               randconfig-002-20260711    gcc-16.1.0
-i386                             allmodconfig    clang-22
-i386                              allnoconfig    gcc-16.1.0
-i386                             allyesconfig    clang-22
-i386        buildonly-randconfig-001-20260711    gcc-14
-i386        buildonly-randconfig-002-20260711    gcc-14
-i386        buildonly-randconfig-003-20260711    gcc-14
-i386        buildonly-randconfig-004-20260711    gcc-14
-i386        buildonly-randconfig-005-20260711    gcc-14
-i386        buildonly-randconfig-006-20260711    gcc-14
-i386                                defconfig    gcc-16.1.0
-i386                  randconfig-001-20260711    clang-22
-i386                  randconfig-002-20260711    clang-22
-i386                  randconfig-003-20260711    clang-22
-i386                  randconfig-004-20260711    clang-22
-i386                  randconfig-005-20260711    clang-22
-i386                  randconfig-006-20260711    clang-22
-i386                  randconfig-007-20260711    clang-22
-i386                  randconfig-011-20260711    gcc-13
-i386                  randconfig-012-20260711    gcc-13
-i386                  randconfig-013-20260711    gcc-13
-i386                  randconfig-014-20260711    gcc-13
-i386                  randconfig-015-20260711    gcc-13
-i386                  randconfig-016-20260711    gcc-13
-i386                  randconfig-017-20260711    gcc-13
-loongarch                        allmodconfig    clang-23
-loongarch                         allnoconfig    gcc-16.1.0
-loongarch                           defconfig    clang-23
-loongarch             randconfig-001-20260711    gcc-16.1.0
-loongarch             randconfig-002-20260711    gcc-16.1.0
-m68k                             allmodconfig    gcc-16.1.0
-m68k                              allnoconfig    gcc-16.1.0
-m68k                             allyesconfig    clang-23
-m68k                                defconfig    clang-23
-microblaze                        allnoconfig    gcc-16.1.0
-microblaze                       allyesconfig    gcc-16.1.0
-microblaze                          defconfig    clang-23
-mips                             allmodconfig    gcc-16.1.0
-mips                              allnoconfig    gcc-16.1.0
-mips                             allyesconfig    gcc-16.1.0
-mips                malta_qemu_32r6_defconfig    gcc-16.1.0
-nios2                            allmodconfig    clang-20
-nios2                             allnoconfig    clang-23
-nios2                               defconfig    clang-23
-nios2                 randconfig-001-20260711    gcc-16.1.0
-nios2                 randconfig-002-20260711    gcc-16.1.0
-openrisc                         allmodconfig    clang-20
-openrisc                          allnoconfig    clang-23
-openrisc                            defconfig    gcc-16.1.0
-parisc                           allmodconfig    gcc-16.1.0
-parisc                            allnoconfig    clang-23
-parisc                           allyesconfig    clang-17
-parisc                              defconfig    gcc-16.1.0
-parisc                         randconfig-001    clang-17
-parisc                         randconfig-001    gcc-10.5.0
-parisc                randconfig-001-20260711    clang-17
-parisc                randconfig-001-20260711    gcc-10.5.0
-parisc                         randconfig-002    clang-17
-parisc                         randconfig-002    gcc-10.5.0
-parisc                randconfig-002-20260711    clang-17
-parisc                randconfig-002-20260711    gcc-10.5.0
-parisc64                            defconfig    clang-23
-powerpc                          allmodconfig    gcc-16.1.0
-powerpc                           allnoconfig    clang-23
-powerpc                           allnoconfig    gcc-16.1.0
-powerpc                        randconfig-001    clang-17
-powerpc                        randconfig-001    gcc-10.5.0
-powerpc               randconfig-001-20260711    clang-17
-powerpc               randconfig-001-20260711    gcc-10.5.0
-powerpc               randconfig-001-20260711    gcc-11.5.0
-powerpc                        randconfig-002    clang-17
-powerpc                        randconfig-002    gcc-10.5.0
-powerpc               randconfig-002-20260711    clang-17
-powerpc64                      randconfig-001    clang-17
-powerpc64             randconfig-001-20260711    clang-17
-powerpc64             randconfig-001-20260711    gcc-10.5.0
-powerpc64                      randconfig-002    clang-17
-powerpc64                      randconfig-002    gcc-10.5.0
-powerpc64             randconfig-002-20260711    clang-17
-powerpc64             randconfig-002-20260711    gcc-10.5.0
-powerpc64             randconfig-002-20260711    gcc-11.5.0
-riscv                            allmodconfig    clang-23
-riscv                             allnoconfig    clang-23
-riscv                            allyesconfig    clang-23
-riscv                               defconfig    gcc-16.1.0
-riscv                 randconfig-001-20260711    gcc-8.5.0
-riscv                 randconfig-002-20260711    gcc-8.5.0
-s390                             allmodconfig    clang-17
-s390                              allnoconfig    clang-23
-s390                             allyesconfig    gcc-16.1.0
-s390                                defconfig    gcc-16.1.0
-s390                  randconfig-001-20260711    gcc-8.5.0
-s390                  randconfig-002-20260711    gcc-8.5.0
-sh                               allmodconfig    gcc-16.1.0
-sh                                allnoconfig    clang-23
-sh                               allyesconfig    clang-17
-sh                                  defconfig    gcc-14
-sh                    randconfig-001-20260711    gcc-8.5.0
-sh                    randconfig-002-20260711    gcc-8.5.0
-sparc                             allnoconfig    clang-23
-sparc                               defconfig    gcc-16.1.0
-sparc                 randconfig-001-20260711    gcc-16.1.0
-sparc                 randconfig-002-20260711    gcc-16.1.0
-sparc64                          allmodconfig    clang-20
-sparc64                             defconfig    gcc-14
-sparc64               randconfig-001-20260711    gcc-16.1.0
-sparc64               randconfig-002-20260711    gcc-16.1.0
-um                               allmodconfig    clang-17
-um                                allnoconfig    clang-23
-um                               allyesconfig    gcc-16.1.0
-um                                  defconfig    gcc-14
-um                             i386_defconfig    gcc-14
-um                    randconfig-001-20260711    gcc-16.1.0
-um                    randconfig-002-20260711    gcc-16.1.0
-um                           x86_64_defconfig    gcc-14
-x86_64                           allmodconfig    clang-22
-x86_64                            allnoconfig    clang-23
-x86_64                           allyesconfig    clang-22
-x86_64      buildonly-randconfig-001-20260711    gcc-14
-x86_64      buildonly-randconfig-002-20260711    gcc-14
-x86_64      buildonly-randconfig-003-20260711    gcc-14
-x86_64      buildonly-randconfig-004-20260711    gcc-14
-x86_64      buildonly-randconfig-005-20260711    gcc-14
-x86_64      buildonly-randconfig-006-20260711    gcc-14
-x86_64                              defconfig    gcc-14
-x86_64                                  kexec    clang-22
-x86_64                randconfig-001-20260711    gcc-14
-x86_64                randconfig-002-20260711    gcc-14
-x86_64                randconfig-003-20260711    gcc-14
-x86_64                randconfig-004-20260711    gcc-14
-x86_64                randconfig-005-20260711    gcc-14
-x86_64                randconfig-006-20260711    gcc-14
-x86_64                randconfig-011-20260711    gcc-14
-x86_64                randconfig-012-20260711    gcc-14
-x86_64                randconfig-013-20260711    gcc-14
-x86_64                randconfig-014-20260711    gcc-14
-x86_64                randconfig-015-20260711    gcc-14
-x86_64                randconfig-016-20260711    gcc-14
-x86_64                randconfig-071-20260711    gcc-14
-x86_64                randconfig-072-20260711    gcc-14
-x86_64                randconfig-073-20260711    gcc-14
-x86_64                randconfig-074-20260711    gcc-14
-x86_64                randconfig-075-20260711    gcc-14
-x86_64                randconfig-076-20260711    gcc-14
-x86_64                               rhel-9.4    clang-22
-x86_64                           rhel-9.4-bpf    gcc-14
-x86_64                          rhel-9.4-func    clang-22
-x86_64                    rhel-9.4-kselftests    clang-22
-x86_64                         rhel-9.4-kunit    gcc-14
-x86_64                           rhel-9.4-ltp    gcc-14
-x86_64                          rhel-9.4-rust    clang-22
-xtensa                            allnoconfig    clang-23
-xtensa                           allyesconfig    clang-20
-xtensa                randconfig-001-20260711    gcc-16.1.0
-xtensa                randconfig-002-20260711    gcc-16.1.0
+   242	
+   243	static inline void set_syscall_entry_ret(struct pt_regs *regs)
+   244	{
+ > 245		regs->entry_flags |= SYSCALL_ENTRY_RET_SET;
+   246	}
+   247	
 
 --
 0-DAY CI Kernel Test Service
