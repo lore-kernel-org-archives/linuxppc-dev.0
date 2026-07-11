@@ -1,93 +1,95 @@
-Return-Path: <linuxppc-dev+bounces-24043-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24044-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E6D88C43458
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 11 Jul 2026 12:29:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 06530C43458
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 11 Jul 2026 12:57:03 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gy7LR0WPgz2y8F;
-	Sat, 11 Jul 2026 22:29:35 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a00:1450:4864:20::534" arc.chain=google.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783772974;
-	cv=pass; b=kfPKU9Bzz4nvTUi1XpfRPSVunnIjZTphmBfSK84xkIt0zhk6QtP1TDeKtkJVVHUcNQlqWffs/nPjaeXHrSXoIlZgCn0DYZoaukuu+IkOM80759bZypv1u7CRIdiKpE1SN+RBkFFh4mOm3oy1VBviEBMAZt4mQ77ovEg6zQRHZdzjzCXi41Jmhic/qHbCze4Zaaw1yRPvWgiE4SpAnGPLKy14pVZtazpO5rRkLisERAGixg4O2gM/FEaZX6PACKfd87XsyvPDgfVzJMvEKsE2r1Sc9tQcDJueyCKNp4N7ST02R+nVX0LcZIvr8LKWKDpaJ9oS4AArSKRp/A9HVAL8vQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gy7y63F8vz2y8F;
+	Sat, 11 Jul 2026 22:57:02 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::1034" arc.chain=google.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783774622;
+	cv=pass; b=VJQ77jwGC+amLjU+EZapvWGpuiQItut+uU/1NicbjQEjEFwGGv8kOVKI/PlQvigkzogbwxwnhrQw+cZHb++1BpjS/MYZWB1IIi1k2UuhJRSWc0aSlKjCXFSxcQokoPewSSl0PID9aLg0GZ9jvcWQWXQZFyKTWOJFhzjOj9I6Cxbp7SL/Tb7/CHVh6XrIZc1nhMhVUzdLPvcSxtnhgpLbkCxxqGBQ4JJFWzoqNqSuSEeAHOE8Tz57lzhUg7anyQREKyvQim5fQ/zvdSUsgiJ+fDprZ60kv6DvPLpa8m+rptLmlm5NdTWf7oppp+b/6VR4P2SYQdvuKja5K1m8frXeHA==
 ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1783772974; c=relaxed/relaxed;
-	bh=83oOaaTreHaoFIhiDoHcddDWSjKDujW9xu9zE75la/o=;
+	t=1783774622; c=relaxed/relaxed;
+	bh=j6tjRunywnAeib7tZl4T028gbRZoamS1yIZMH8Mrn+c=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=oov4j98gI42dL5x/ExKAkekmr7YbWT1ogfv8IcHbsNYZhTgXBSYgEWjpnK0fOI5P9bN1YncvY8ya7WUxzrNFhvWVonU7fqAtk762SKRy8rHC5sjL9D5+YUZkWIji93pL8gCjyC33oWnQzLskQOnWCS1FcwZYeLgtrR7lPkUXAYe2bz5kkDK4fgjWXm/ksNFOCiF85XOaJxNi2FkahRqGX+a03xqCDl9u9P+97t+/Dbd6cbRLCZqecgAUavm8CgQHkQT5059xRUdJyfNl28ORr57XXO4d9cbSLKuPPLnlPM4C4dZ/xPyztovFhK/RhyMEEGtlOTYgNEkUC+5ter2FLQ==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=C+f63BuP; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::534; helo=mail-ed1-x534.google.com; envelope-from=linmag7@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	 To:Cc:Content-Type; b=D+jvvMJq7bxm7MbEFLqMuZzT2msIjrx7kiq/DWU+uhuLqj04ZkMrjw/ZEj6mB0ydVkmZAnPP7uefHxE8Sj2r8nqXTiVxHrWtKAyrLlR9YIiRp83Rx6rPOigZ6lg+DzRsRcGpo0kJvUCcbqK5fuHb5Cs3mTJvjMpcoGlQbb0/IMRjEYc/dwd8XnSbcGbaUS07Th7futNcmQ9j6vJzyuMecqEJXMvViDms7zg89b0uCZwTjnwaZ6w8hk/3hefUx25rp3bbQE1XZ8eQQlV/D8FnuD/o5UgDb2zw7JQ/I4ZIwL6kF092Wo1v4VOtz0JaOZbFSS92ZBK78Mdh59aEijgETA==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=K/fX9eFx; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1034; helo=mail-pj1-x1034.google.com; envelope-from=miguel.ojeda.sandonis@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=C+f63BuP;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=K/fX9eFx;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::534; helo=mail-ed1-x534.google.com; envelope-from=linmag7@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-ed1-x534.google.com (mail-ed1-x534.google.com [IPv6:2a00:1450:4864:20::534])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1034; helo=mail-pj1-x1034.google.com; envelope-from=miguel.ojeda.sandonis@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pj1-x1034.google.com (mail-pj1-x1034.google.com [IPv6:2607:f8b0:4864:20::1034])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gy7LP4mmhz2xJT
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Jul 2026 22:29:32 +1000 (AEST)
-Received: by mail-ed1-x534.google.com with SMTP id 4fb4d7f45d1cf-698a9f11776so2817333a12.1
-        for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Jul 2026 05:29:32 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1783772964; cv=none;
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gy7y56gXFz2xJT
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Jul 2026 22:57:01 +1000 (AEST)
+Received: by mail-pj1-x1034.google.com with SMTP id 98e67ed59e1d1-38cfcb507a3so168383a91.0
+        for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Jul 2026 05:57:01 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1783774614; cv=none;
         d=google.com; s=arc-20260327;
-        b=q/dhpoAfDutc6pa8M3IXmGAD7nyi9t19n5nKr6iaOVPslm5yHDuBH+gANxacgIefxH
-         KL3NU/KiAb9bmu4KkZgbNLstQgt0mb/L95r6jpLwlaD8I21Vess3FUkNNlF04DsiQZ0C
-         7EJj75fSRE2Sum0jcl6Y0lZw2FkJwSbm3wgY8IefGjtZfm+TUf/D0fQumjjjUcxG5ec9
-         sxrILao6MTBieTWkzEO8WfnJsZ+oXAXl2w0fZbum/icno9WGG79ViJHQx/mmAhoecRCx
-         1cCeLBJ5862z1GLa/ODZI7t8OumsdMaXdBVPCU/er4kAGfnrqblJREu/N2mihGowETLK
-         GQeg==
+        b=LXaGzS4SCnZveNs8TroQ5ZwPfsjOTTpvfcGI5GO0CQhOix/mxgpmYmXO0/P6kqjPea
+         U9co9D87BfLEXHmMCFoQxYP586J6rvW/nOLYi5rb+74zZRe+mIbZbNcxdBYlmxdy+KEh
+         71qr0kC2RQSPTmVBVOs/yPxXEERp4ST+qSY+XbMKsYAEwmHHcwtP93EBLReqvfG13urK
+         NM0NLqXFu1Ni7UJuOjCVdfbvvWm0i0AbZgWFgdbZkXHG3jhSqJBmpEJSyUcjQcAw4pbB
+         IOfPTKKjvjq3y7rfKjLI4kHEJhfUeosLqJM7Ks3xDHKHOSUTVNxcD1JasgSGIKxOoAod
+         Otpw==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:dkim-signature;
-        bh=83oOaaTreHaoFIhiDoHcddDWSjKDujW9xu9zE75la/o=;
-        fh=ttMl75uNkEmmCCAXves0kQHGvyc73RzZy8EGFHVLZe8=;
-        b=JirsugDSUBZRDcjsN0yJbks8Qyq7xzQdZYHix4iQrh9Xxvo6eB/11bxEZrF1b93WQV
-         E2OBuPUJrNqKc24aDwa0RaLF3ss9sqcJip69wlw5EArPGBKXV2rF2GkpEBafWH8ZXuLa
-         /KtMzwq3iPNCteeuJZ8m6P9btJo5xmcYZemX6pbSKkdy7Oj/EVnVLQ1vhtixXTjEjxbM
-         T0t59Vb1CpnBYbx9b1Kf/iZmFIim6Ba6B7F03/Z2r5OuLapAzlI4auQs5QnTMms+gnPZ
-         5kicUgaT+GOHCgtXKjIqrFeCOwrttaIVNjygUJe9pnwVSZWDXA+gx4V6t6Zzwqx7Anmz
-         NpJQ==;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=j6tjRunywnAeib7tZl4T028gbRZoamS1yIZMH8Mrn+c=;
+        fh=iOP7o3nhasDbQ5wxH64y6YTwZW+Wt9ATkeR3dMEyoM0=;
+        b=mJoM5q6JziczgVxw2OVwBlFTQBBejRRy1MUf24VwZv6Ct/u4p+KA6aTJ5EKtA9PjSK
+         JTQxF+L2TRZ5KpMBzk/XOzifNtk6guqvuMWRHPLe51J57Hnj+UWJrkzSW4daVejTzDYe
+         8xDub/t9PDVm5D8mZRLuLj/YU+dSLP/GSXBlgVqEMNWg4r+p2qox9q9oQSHjWRe31dMA
+         LSpj9SrPOGcLjoounWkV83cFgmYdRLvO9dTXc0eiKfRU2X2o1gvHXwCEumZV0AeLFpDX
+         n0JI0BJI6U7hmjbEjCXj62a53XfQxpE7jxN+JyTJyxmAFjBZ8zWFdZgPjM5frHMDNbzZ
+         xIzw==;
         darn=lists.ozlabs.org
 ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1783772964; x=1784377764; darn=lists.ozlabs.org;
-        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
-         :references:mime-version:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=83oOaaTreHaoFIhiDoHcddDWSjKDujW9xu9zE75la/o=;
-        b=C+f63BuPKINcUHcb1TpQ5Vhntvo7E7vy593Kvm/TTlqaJG6M/IZrUHHDKB3vv8pMKh
-         tfxVbO28QK/M4dw1ajQnJedClAscqQTiR8CnfJt53je5drpL9LfRNsO4Dx4afR2Hzm8i
-         PBRV/ngtJvSMnZxNXOPa73qcI6TSgQb4GYabmpzSS7k4VDC8m54eR6OWDIyY48VXzcZn
-         u5HnL8x3TCohnlUab6N2dsae0pvnPAT6iPcQ4Fp8NVh6U15nuxvn7A6ZUt8k2dA8r+av
-         sJLerUVOLhTOCZIddOZQZnSi14584cJg0K7sDtzGx5DqEFyYp8Y6U6xoc2ZFHg1OjwpS
-         oT1A==
+        d=gmail.com; s=20251104; t=1783774614; x=1784379414; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=j6tjRunywnAeib7tZl4T028gbRZoamS1yIZMH8Mrn+c=;
+        b=K/fX9eFxai7gaDQBK2664iLyu2dTnU7ZXtf7xOjD7OXHjVj+SiaXqlx7OllqBem29X
+         Sge65FowPU5E+aXcNFeIy4EXZ/u6BYXjlHxS+ei+7H8yj+Kb81hSkaNjCKxRPqWbdF1d
+         elY7SqgEByX4wobkKz66nVCbO1GmuFz5ID2SKLkbV/LsJu3KDwru33NvFqi5HMWcE78N
+         LCqqLDiKiP/iirGnbCa3/TppWgdjDkwx7xRDM5ZQI9wU7FmApVsS+CBn/9iaCBdgSy8B
+         5WVOXPJyHD3MPjTlUGKLJTAw/ER22+L7HWPH3bEIuoJeNobHugMCqWJiUnqg+36ITMGS
+         yEig==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1783772964; x=1784377764;
-        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
-         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to:content-type;
-        bh=83oOaaTreHaoFIhiDoHcddDWSjKDujW9xu9zE75la/o=;
-        b=WfsdDf2ualwyrshqmavE704buf4fwAO+oOldgJvXfC9jGIdIETo8fFzvBUeG66H1Qh
-         Xj1j72mG153h1X31JvRSiSZjLH5aHt9pHuzvxYgwHGpdCNMI0Zs4PlO5SiOETKQgrNiH
-         iys78io4EU9Ok7iof9eQLYYumM5V2VljejP61oEd33MNF8Uutr0NsEAlMp/MdzBHPh5G
-         kd1kTuoN4/TfoW7l+QFizb+K9Ttl5hZpPuzqjBhUC5rU4ww0A/lbld7YmdHOPzMOmUdF
-         tEHbk42hpde3JxYdCN4miumIMRqd2JpqdLj0w24eFkTzUYhToaJlBkMHMP2YJax7Mcnj
-         +UDg==
-X-Forwarded-Encrypted: i=1; AHgh+RqITeKTzZft0SC7l/+0m4oGzOQcnTak7g+khaoZUGYbIfTsKKYyAVBIkBjkOZE1vIhbj9RCUqQN9TYhbPM=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YySy9pwwQYbKmKp+4dUZU4pqS/vV0DxD3woz7g3KQQoQ0yW5mkh
-	C2q5S8QIfx04j7PA+u12dT7cgc1i6j1mgGCs1CNGoGKYVoQI46dDhAH9wxaMekDpZdIim76RL1y
-	odPC1rgwr8UD8RRiJ1uFoZ7oqf+O0O8c=
-X-Gm-Gg: AfdE7cnwQBLT/73fuMwytKNBwh5eBaTGzuU7jQ7f6ICoY8/rmsWVNz23ltv2kxzatpr
-	gb2RgqxT98YwQ4s+S4AIltgRBz78zsxUDqZRxLwf+phv1wnV9GIj9oZWzNcmTZy9JrB3kHPrucO
-	ea1FN6QYz7ORq3T5WhT6MphallhoJu4UT6mkoyDaoDfUZKcyEZGyb4nHXurbUyPS/5xSqKoLANU
-	UyA5QY+a/w2xPXyEuLD0+ZxKGOUWQO888utNcgLn3I1NsLfqVhnlCaLdj4ITW+7uvzaS70Qlyjw
-	/Yxik0e12vXJoGw8xw8RXJ7HRBLF7BOBzA92NzKkVPMv+gWNhut5eDg5FQtgmME=
-X-Received: by 2002:a05:6402:3512:b0:699:728e:48b9 with SMTP id
- 4fb4d7f45d1cf-69c5edb9cb3mr1210325a12.0.1783772963919; Sat, 11 Jul 2026
- 05:29:23 -0700 (PDT)
+        d=1e100.net; s=20251104; t=1783774614; x=1784379414;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=j6tjRunywnAeib7tZl4T028gbRZoamS1yIZMH8Mrn+c=;
+        b=Iu3SQ+OuIdNGZPmQrMe7EZgETzzrr+UGvBEz5ZRYBiBQczMWp/ja7Ltta4Q3P+7bDK
+         hAkDnGbazHtbn7jJasp/xYSRBM3tRZNhRT35XX33Gtk0yULn5MbVh2kEYxG+rOxbj35q
+         N46JreAoUQOZ6Y6UJMQRkzrBhxYihK7nnZyuHwypGqJQRXdb77lppvCdyRjrsAAubgRK
+         uCNgz0SOU3ECJnLfvFPxez6AfGZgOzCVmHWc8dEFQfgP8lAcdxw2YBoFZYam89x/VJ0z
+         VQG7uZzMmmIlkpLcwYeL5ntdwTqC4vmzcSYCXqVkKUYqhRKrI7f9ZlpunrsFMYR9RzYG
+         Q20A==
+X-Forwarded-Encrypted: i=1; AHgh+RpvdW6yGTxe+NzBMn/kq2uyd+3rb+cpHQf58OOVwZ/74Uf8oprv3Gnhwe9G0Yx9oT/pyV2RhwVZy7lRJ30=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yy3RFR7YfuuKezSKowTX+SSufalSvt5h7K/sa8Fzws88AZNkDva
+	7AA9mczZVbu1tr+AWd1MIG7fbZUKwTjAKjh1Kh4Izu0qNr1IimgwBwyGIeMZZr5B6rV5wCAIwQm
+	RE6pAjaJRiAofQilx0sy3uTPJtgOLdpQ=
+X-Gm-Gg: AfdE7clU1uqWWk/QAg5vVB8vrJ8R3r2d3ubhqyxgB92OcqwzEU3Zk8fHayy81BoH8tt
+	8TjyMHszRrdVzkJ+rMG+GW3EO14IydbF2DUORhy80KajeWHyvyWAOMCzTmdefUiiX/Fn1v6EdS/
+	Zud+2kyJqH2LYIL+p1xWvxmEUayJmGROAI7QWqxlECl95Z9xhLkGBYiaqzv75m+CZxi+K0NrNno
+	XvsUx+RucImZgggvlwGyEAgCTovQlCUV2DXQS1yXuFiKGzje5n066pESSWzeLG21cFTIZbLjqxo
+	gdW6qKdYfWVbpNrzcJJf1cCCBK2Nmv57urWqy436KHaGcNiiKP73Y65cJd3QqAPj/Z5rIUfp9ug
+	cQIcrjUMbyt3V
+X-Received: by 2002:a17:90a:dfc4:b0:37f:ea8e:ab79 with SMTP id
+ 98e67ed59e1d1-38dc78226dbmr2320021a91.2.1783774614151; Sat, 11 Jul 2026
+ 05:56:54 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -101,83 +103,71 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20260707181957.433213175@kernel.org>
-In-Reply-To: <20260707181957.433213175@kernel.org>
-From: Magnus Lindholm <linmag7@gmail.com>
-Date: Sat, 11 Jul 2026 14:29:12 +0200
-X-Gm-Features: AUfX_mzOlRB8ana7x7qPQc4frMU9J060tNH0Z2GPCNvL1LYqDKQBjM-XzHbrvno
-Message-ID: <CA+=Fv5RpgQ-UeGAT+VcLufte2gAp0H=J5GqZEFR_SuQsmnzy=A@mail.gmail.com>
-Subject: Re: [patch 00/18] entry: Consolidate and rework syscall entry handling
-To: Thomas Gleixner <tglx@kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, 
-	Michael Ellerman <mpe@ellerman.id.au>, Shrikanth Hegde <sshegde@linux.ibm.com>, 
-	linuxppc-dev@lists.ozlabs.org, Kees Cook <kees@kernel.org>, 
-	Huacai Chen <chenhuacai@kernel.org>, loongarch@lists.linux.dev, 
-	Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, linux-riscv@lists.infradead.org, 
-	Sven Schnelle <svens@linux.ibm.com>, linux-s390@vger.kernel.org, x86@kernel.org, 
-	Mark Rutland <mark.rutland@arm.com>, Jinjie Ruan <ruanjinjie@huawei.com>, 
-	Andy Lutomirski <luto@kernel.org>, Oleg Nesterov <oleg@redhat.com>, 
-	Richard Henderson <richard.henderson@linaro.org>, Russell King <linux@armlinux.org.uk>, 
-	Catalin Marinas <catalin.marinas@arm.com>, Guo Ren <guoren@kernel.org>, 
-	Geert Uytterhoeven <geert@linux-m68k.org>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, 
-	Helge Deller <deller@gmx.de>, Yoshinori Sato <ysato@users.sourceforge.jp>, 
-	Richard Weinberger <richard@nod.at>, Chris Zankel <chris@zankel.net>, linux-arm-kernel@lists.infradead.org, 
-	linux-alpha@vger.kernel.org, linux-csky@vger.kernel.org, 
-	linux-m68k@lists.linux-m68k.org, linux-mips@vger.kernel.org, 
-	linux-parisc@vger.kernel.org, linux-sh@vger.kernel.org, 
-	linux-um@lists.infradead.org, Arnd Bergmann <arnd@arndb.de>, 
-	Vineet Gupta <vgupta@kernel.org>, Will Deacon <will@kernel.org>, Brian Cain <bcain@kernel.org>, 
-	Michal Simek <monstr@monstr.eu>, Dinh Nguyen <dinguyen@kernel.org>, 
-	"David S. Miller" <davem@davemloft.net>, Andreas Larsson <andreas@gaisler.com>, 
-	linux-snps-arc@lists.infradead.org, linux-hexagon@vger.kernel.org, 
-	linux-openrisc@vger.kernel.org, sparclinux@vger.kernel.org, 
-	linux-arch@vger.kernel.org, =?UTF-8?Q?Michal_Such=C3=A1nek?= <msuchanek@suse.de>, 
-	Jonathan Corbet <corbet@lwn.net>, linux-doc@vger.kernel.org
+References: <20260708082454.1254320-1-mkchauras@gmail.com> <20260708082454.1254320-3-mkchauras@gmail.com>
+In-Reply-To: <20260708082454.1254320-3-mkchauras@gmail.com>
+From: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
+Date: Sat, 11 Jul 2026 14:56:40 +0200
+X-Gm-Features: AUfX_myT4Cl9iDVoRO-w6Sfw5_PJOQ6oQg6JiFlTfoXu1j8VbTkYVMyuZ_7giAk
+Message-ID: <CANiq72nw6SM21M3y=xXd81kT+bPbctnpPVi4QGL4K2XUS6bUzg@mail.gmail.com>
+Subject: Re: [PATCH V17 2/7] dma-resv: Fix undefined symbol when
+ CONFIG_DMA_SHARED_BUFFER is disabled
+To: "Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com>, Andreas Hindborg <a.hindborg@kernel.org>
+Cc: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com, 
+	chleroy@kernel.org, peterz@infradead.org, jpoimboe@kernel.org, 
+	jbaron@akamai.com, aliceryhl@google.com, rostedt@goodmis.org, ardb@kernel.org, 
+	ojeda@kernel.org, boqun@kernel.org, gary@garyguo.net, 
+	bjorn3_gh@protonmail.com, lossin@kernel.org, tmgross@umich.edu, 
+	dakr@kernel.org, daniel.almeida@collabora.com, tamird@kernel.org, 
+	acourbot@nvidia.com, work@onurozkan.dev, nathan@kernel.org, 
+	ndesaulniers@google.com, morbo@google.com, justinstitt@google.com, 
+	fujita.tomonori@gmail.com, joelagnelf@nvidia.com, gregkh@linuxfoundation.org, 
+	prafulrai522@gmail.com, nsc@kernel.org, japo@linux.ibm.com, 
+	lina+kernel@asahilina.net, j@jannau.net, airlied@gmail.com, 
+	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
+	rust-for-linux@vger.kernel.org, llvm@lists.linux.dev, 
+	=?UTF-8?Q?Christian_K=C3=B6nig?= <christian.koenig@amd.com>
 Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
+On Wed, Jul 8, 2026 at 10:25=E2=80=AFAM Mukesh Kumar Chaurasiya (IBM)
+<mkchauras@gmail.com> wrote:
 >
-> With that all architectures using the generic syscall entry code follow the
-> same scheme, apply stack randomization at the correct and earliest possible
-> place and skip syscall processing depending on the boolean return value of
-> syscall_enter_from_user_mode[_work]().
+> When building with LLVM=3D1 for architectures like powerpc where
+> CONFIG_DMA_SHARED_BUFFER is not enabled, the build fails with:
 >
-> There should be no functional changes, at least there are none intended.
+>   ld.lld: error: undefined symbol: dma_resv_reset_max_fences
+>   >>> referenced by helpers.c
+>   >>>               rust/helpers/helpers.o:(rust_helper_dma_resv_unlock)
 >
-> The resulting text size for the syscall entry code on x8664 is slightly
-> smaller than before these changes.
+> The issue occurs because:
+> 1. CONFIG_DEBUG_MUTEXES=3Dy is enabled
+> 2. CONFIG_DMA_SHARED_BUFFER is not enabled
+> 3. dma_resv_reset_max_fences() is declared in the header when
+>    CONFIG_DEBUG_MUTEXES is set
+> 4. But the function is only compiled in drivers/dma-buf/dma-resv.c,
+>    which is only built when CONFIG_DMA_SHARED_BUFFER is enabled
+> 5. Rust helpers call dma_resv_unlock() which calls
+>    dma_resv_reset_max_fences(), causing an undefined symbol
 >
-> Testing syscall heavy workloads and micro benchmarks shows a small
-> performance gain for the general rework, but the last patch, which changes
-> the logic to be more understandable has no measurable impact in either
-> direction.
+> Fix this by compiling `dma-resv.c` file only when CONFIG_DMA_SHARED_BUFFE=
+R
+> is enabled.
 >
-> The series applies on Linus tree and is also available from git:
->
->         git://git.kernel.org/pub/scm/linux/kernel/git/tglx/devel.git entry-rework-v1
->
+> Fixes: 9b836641d3bf ("rust: helpers: Add bindings/wrappers for dma_resv_l=
+ock")
+> Reviewed-by: Christian K=C3=B6nig <christian.koenig@amd.com>
+> Reviewed-by: Gary Guo <gary@garyguo.net>
+> Signed-off-by: Mukesh Kumar Chaurasiya (IBM) <mkchauras@gmail.com>
 
+Andreas sent a similar one to:
 
-Hi Thomas,
+  https://lore.kernel.org/rust-for-linux/20260708-dma-shared-buffer-config-=
+v1-1-8c1571000855@kernel.org/
 
-Thanks for the series.
+This is earlier, but please see his approach & Sashiko's note.
 
-I have an Alpha GENERIC_ENTRY series posted and planned for the next
-merge window:
+Backlinking here for reference.
 
-https://lore.kernel.org/linux-alpha/20260706170019.2941459-1-linmag7@gmail.com/T/#t
-
-Only its final patch intersects with this work.
-
-That patch removes Alpha's architecture-specific syscall_trace_enter()
-and syscall_trace_leave() implementations, so the Alpha changes in
-patches 11 and 12 will disappear once the GENERIC_ENTRY conversion is
-applied.
-
-It also currently uses syscall_enter_from_user_mode(), so I will need to
-rebase it onto the new entry interface introduced by this series. I
-expect the integration to be confined to the final GENERIC_ENTRY patch.
-
-The Alpha-specific changes in patches 11 and 12 look correct to me.
-
-Acked-by: Magnus Lindholm <linmag7@gmail.com>
+Cheers,
+Miguel
 
