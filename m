@@ -1,95 +1,60 @@
-Return-Path: <linuxppc-dev+bounces-24044-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24045-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 06530C43458
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 11 Jul 2026 12:57:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 717E3C43458
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 11 Jul 2026 13:10:40 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gy7y63F8vz2y8F;
-	Sat, 11 Jul 2026 22:57:02 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::1034" arc.chain=google.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783774622;
-	cv=pass; b=VJQ77jwGC+amLjU+EZapvWGpuiQItut+uU/1NicbjQEjEFwGGv8kOVKI/PlQvigkzogbwxwnhrQw+cZHb++1BpjS/MYZWB1IIi1k2UuhJRSWc0aSlKjCXFSxcQokoPewSSl0PID9aLg0GZ9jvcWQWXQZFyKTWOJFhzjOj9I6Cxbp7SL/Tb7/CHVh6XrIZc1nhMhVUzdLPvcSxtnhgpLbkCxxqGBQ4JJFWzoqNqSuSEeAHOE8Tz57lzhUg7anyQREKyvQim5fQ/zvdSUsgiJ+fDprZ60kv6DvPLpa8m+rptLmlm5NdTWf7oppp+b/6VR4P2SYQdvuKja5K1m8frXeHA==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1783774622; c=relaxed/relaxed;
-	bh=j6tjRunywnAeib7tZl4T028gbRZoamS1yIZMH8Mrn+c=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=D+jvvMJq7bxm7MbEFLqMuZzT2msIjrx7kiq/DWU+uhuLqj04ZkMrjw/ZEj6mB0ydVkmZAnPP7uefHxE8Sj2r8nqXTiVxHrWtKAyrLlR9YIiRp83Rx6rPOigZ6lg+DzRsRcGpo0kJvUCcbqK5fuHb5Cs3mTJvjMpcoGlQbb0/IMRjEYc/dwd8XnSbcGbaUS07Th7futNcmQ9j6vJzyuMecqEJXMvViDms7zg89b0uCZwTjnwaZ6w8hk/3hefUx25rp3bbQE1XZ8eQQlV/D8FnuD/o5UgDb2zw7JQ/I4ZIwL6kF092Wo1v4VOtz0JaOZbFSS92ZBK78Mdh59aEijgETA==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=K/fX9eFx; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1034; helo=mail-pj1-x1034.google.com; envelope-from=miguel.ojeda.sandonis@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gy8Fp5sFnz2y8F;
+	Sat, 11 Jul 2026 23:10:38 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=91.218.175.181
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783775438;
+	cv=none; b=DC870Bt/VKb4YqGJ9M8zqjeTDVWX1QCG5mig4bGuPmtJVBGAw0LF+HkvJmzRlnSr4xatfT9dQxo2kKrkv3aLup5SxseMqw9DnLp6d/5zAL0eoWKAEV8jtC4PTxw/wSp/q14uKHIRlJDWnUjRQn/qej+8BtqXZf3I4rXhXe1eBIr4pz2J6MK85yDw7idOaiiFamYHykE5SAkcjwgHONnhCIZLPER/z6wmP3vO41JXK6Y3+vEuR5oDSt11qIXxIbxalkumYIFqIa3ma+qYhBMzdlBdjWaCBJcUr0BTHJ5/JWu/+Yitlwj30GuiHt0VXIsDDJ1e+3ZqiGo8aPe76Zfw/w==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1783775438; c=relaxed/relaxed;
+	bh=jVKKrioraKSDfaDaMgjgygxPfYcIZrSPy52HWbulI0s=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=I2g0wZr5rOg3vPqWxu72mfVfz8TNwxptahcVWHXZPArBiD7hJMEGnOrUIV1vNUbvbqrqbs8paVwFJLL1bRCTbg/jk15as+Svz3FTE9Q+2PnY07WTL5mZetqwUurP9hsMU2Zbqo/oFKlwBo8ZEUKyKtkxy7qrJPzVKsrFLncjkj3+uklGf4os6YYej2an8/JUGoRGKv4kUR8JAJ+UCTYI9ux52q8LwOu+e3IdnX0k75FaWrdDTutvepD023VwfoOigPiPRMt4lQZtgCAdoFwIdBttsaQ4dRmpEmHZPG7sy4xiK0BIIF168hfLAxoE6H2Mrt+XbsbsX4+XaCNoP8HC3Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=RbbaB3m1; dkim-atps=neutral; spf=pass (client-ip=91.218.175.181; helo=out-181.mta0.migadu.com; envelope-from=thorsten.blum@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=K/fX9eFx;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=RbbaB3m1;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1034; helo=mail-pj1-x1034.google.com; envelope-from=miguel.ojeda.sandonis@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pj1-x1034.google.com (mail-pj1-x1034.google.com [IPv6:2607:f8b0:4864:20::1034])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=91.218.175.181; helo=out-181.mta0.migadu.com; envelope-from=thorsten.blum@linux.dev; receiver=lists.ozlabs.org)
+Received: from out-181.mta0.migadu.com (out-181.mta0.migadu.com [91.218.175.181])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gy7y56gXFz2xJT
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Jul 2026 22:57:01 +1000 (AEST)
-Received: by mail-pj1-x1034.google.com with SMTP id 98e67ed59e1d1-38cfcb507a3so168383a91.0
-        for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Jul 2026 05:57:01 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1783774614; cv=none;
-        d=google.com; s=arc-20260327;
-        b=LXaGzS4SCnZveNs8TroQ5ZwPfsjOTTpvfcGI5GO0CQhOix/mxgpmYmXO0/P6kqjPea
-         U9co9D87BfLEXHmMCFoQxYP586J6rvW/nOLYi5rb+74zZRe+mIbZbNcxdBYlmxdy+KEh
-         71qr0kC2RQSPTmVBVOs/yPxXEERp4ST+qSY+XbMKsYAEwmHHcwtP93EBLReqvfG13urK
-         NM0NLqXFu1Ni7UJuOjCVdfbvvWm0i0AbZgWFgdbZkXHG3jhSqJBmpEJSyUcjQcAw4pbB
-         IOfPTKKjvjq3y7rfKjLI4kHEJhfUeosLqJM7Ks3xDHKHOSUTVNxcD1JasgSGIKxOoAod
-         Otpw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=j6tjRunywnAeib7tZl4T028gbRZoamS1yIZMH8Mrn+c=;
-        fh=iOP7o3nhasDbQ5wxH64y6YTwZW+Wt9ATkeR3dMEyoM0=;
-        b=mJoM5q6JziczgVxw2OVwBlFTQBBejRRy1MUf24VwZv6Ct/u4p+KA6aTJ5EKtA9PjSK
-         JTQxF+L2TRZ5KpMBzk/XOzifNtk6guqvuMWRHPLe51J57Hnj+UWJrkzSW4daVejTzDYe
-         8xDub/t9PDVm5D8mZRLuLj/YU+dSLP/GSXBlgVqEMNWg4r+p2qox9q9oQSHjWRe31dMA
-         LSpj9SrPOGcLjoounWkV83cFgmYdRLvO9dTXc0eiKfRU2X2o1gvHXwCEumZV0AeLFpDX
-         n0JI0BJI6U7hmjbEjCXj62a53XfQxpE7jxN+JyTJyxmAFjBZ8zWFdZgPjM5frHMDNbzZ
-         xIzw==;
-        darn=lists.ozlabs.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1783774614; x=1784379414; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=j6tjRunywnAeib7tZl4T028gbRZoamS1yIZMH8Mrn+c=;
-        b=K/fX9eFxai7gaDQBK2664iLyu2dTnU7ZXtf7xOjD7OXHjVj+SiaXqlx7OllqBem29X
-         Sge65FowPU5E+aXcNFeIy4EXZ/u6BYXjlHxS+ei+7H8yj+Kb81hSkaNjCKxRPqWbdF1d
-         elY7SqgEByX4wobkKz66nVCbO1GmuFz5ID2SKLkbV/LsJu3KDwru33NvFqi5HMWcE78N
-         LCqqLDiKiP/iirGnbCa3/TppWgdjDkwx7xRDM5ZQI9wU7FmApVsS+CBn/9iaCBdgSy8B
-         5WVOXPJyHD3MPjTlUGKLJTAw/ER22+L7HWPH3bEIuoJeNobHugMCqWJiUnqg+36ITMGS
-         yEig==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1783774614; x=1784379414;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=j6tjRunywnAeib7tZl4T028gbRZoamS1yIZMH8Mrn+c=;
-        b=Iu3SQ+OuIdNGZPmQrMe7EZgETzzrr+UGvBEz5ZRYBiBQczMWp/ja7Ltta4Q3P+7bDK
-         hAkDnGbazHtbn7jJasp/xYSRBM3tRZNhRT35XX33Gtk0yULn5MbVh2kEYxG+rOxbj35q
-         N46JreAoUQOZ6Y6UJMQRkzrBhxYihK7nnZyuHwypGqJQRXdb77lppvCdyRjrsAAubgRK
-         uCNgz0SOU3ECJnLfvFPxez6AfGZgOzCVmHWc8dEFQfgP8lAcdxw2YBoFZYam89x/VJ0z
-         VQG7uZzMmmIlkpLcwYeL5ntdwTqC4vmzcSYCXqVkKUYqhRKrI7f9ZlpunrsFMYR9RzYG
-         Q20A==
-X-Forwarded-Encrypted: i=1; AHgh+RpvdW6yGTxe+NzBMn/kq2uyd+3rb+cpHQf58OOVwZ/74Uf8oprv3Gnhwe9G0Yx9oT/pyV2RhwVZy7lRJ30=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yy3RFR7YfuuKezSKowTX+SSufalSvt5h7K/sa8Fzws88AZNkDva
-	7AA9mczZVbu1tr+AWd1MIG7fbZUKwTjAKjh1Kh4Izu0qNr1IimgwBwyGIeMZZr5B6rV5wCAIwQm
-	RE6pAjaJRiAofQilx0sy3uTPJtgOLdpQ=
-X-Gm-Gg: AfdE7clU1uqWWk/QAg5vVB8vrJ8R3r2d3ubhqyxgB92OcqwzEU3Zk8fHayy81BoH8tt
-	8TjyMHszRrdVzkJ+rMG+GW3EO14IydbF2DUORhy80KajeWHyvyWAOMCzTmdefUiiX/Fn1v6EdS/
-	Zud+2kyJqH2LYIL+p1xWvxmEUayJmGROAI7QWqxlECl95Z9xhLkGBYiaqzv75m+CZxi+K0NrNno
-	XvsUx+RucImZgggvlwGyEAgCTovQlCUV2DXQS1yXuFiKGzje5n066pESSWzeLG21cFTIZbLjqxo
-	gdW6qKdYfWVbpNrzcJJf1cCCBK2Nmv57urWqy436KHaGcNiiKP73Y65cJd3QqAPj/Z5rIUfp9ug
-	cQIcrjUMbyt3V
-X-Received: by 2002:a17:90a:dfc4:b0:37f:ea8e:ab79 with SMTP id
- 98e67ed59e1d1-38dc78226dbmr2320021a91.2.1783774614151; Sat, 11 Jul 2026
- 05:56:54 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gy8Fk4rTKz2xJT
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Jul 2026 23:10:32 +1000 (AEST)
+X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
+	t=1783775407;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=jVKKrioraKSDfaDaMgjgygxPfYcIZrSPy52HWbulI0s=;
+	b=RbbaB3m1jmWIHpVQU8CXskIyhsYL8TST/LJW5qIUR/c8Q9+GQ5LlnzAjTyvhSfWFsmLPPY
+	KNXKhe9V2US9IvqZpHRIix5ggRhzIHLnRrIm6spY+XISGTzmgpgEGiobqS0ANxVu6SXc7m
+	4DTqx0JoJ7LLN5NM1Ahh49NGFtPcMgo=
+From: Thorsten Blum <thorsten.blum@linux.dev>
+To: Geoff Levand <geoff@infradead.org>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+	Paul Mackerras <paulus@ozlabs.org>,
+	MOKUNO Masakazu <mokuno@sm.sony.co.jp>
+Cc: Thorsten Blum <thorsten.blum@linux.dev>,
+	stable@vger.kernel.org,
+	Geoff Levand <geoffrey.levand@am.sony.com>,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH] powerpc/ps3: Fix map failure path in dma_ioc0_map_pages()
+Date: Sat, 11 Jul 2026 15:09:32 +0200
+Message-ID: <20260711130931.740719-3-thorsten.blum@linux.dev>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -103,71 +68,35 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20260708082454.1254320-1-mkchauras@gmail.com> <20260708082454.1254320-3-mkchauras@gmail.com>
-In-Reply-To: <20260708082454.1254320-3-mkchauras@gmail.com>
-From: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
-Date: Sat, 11 Jul 2026 14:56:40 +0200
-X-Gm-Features: AUfX_myT4Cl9iDVoRO-w6Sfw5_PJOQ6oQg6JiFlTfoXu1j8VbTkYVMyuZ_7giAk
-Message-ID: <CANiq72nw6SM21M3y=xXd81kT+bPbctnpPVi4QGL4K2XUS6bUzg@mail.gmail.com>
-Subject: Re: [PATCH V17 2/7] dma-resv: Fix undefined symbol when
- CONFIG_DMA_SHARED_BUFFER is disabled
-To: "Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com>, Andreas Hindborg <a.hindborg@kernel.org>
-Cc: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com, 
-	chleroy@kernel.org, peterz@infradead.org, jpoimboe@kernel.org, 
-	jbaron@akamai.com, aliceryhl@google.com, rostedt@goodmis.org, ardb@kernel.org, 
-	ojeda@kernel.org, boqun@kernel.org, gary@garyguo.net, 
-	bjorn3_gh@protonmail.com, lossin@kernel.org, tmgross@umich.edu, 
-	dakr@kernel.org, daniel.almeida@collabora.com, tamird@kernel.org, 
-	acourbot@nvidia.com, work@onurozkan.dev, nathan@kernel.org, 
-	ndesaulniers@google.com, morbo@google.com, justinstitt@google.com, 
-	fujita.tomonori@gmail.com, joelagnelf@nvidia.com, gregkh@linuxfoundation.org, 
-	prafulrai522@gmail.com, nsc@kernel.org, japo@linux.ibm.com, 
-	lina+kernel@asahilina.net, j@jannau.net, airlied@gmail.com, 
-	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
-	rust-for-linux@vger.kernel.org, llvm@lists.linux.dev, 
-	=?UTF-8?Q?Christian_K=C3=B6nig?= <christian.koenig@amd.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1027; i=thorsten.blum@linux.dev; h=from:subject; bh=T0GD5bivugp2d8VVA9aIzmp/hDHu9TKTk9CZkdcMi6c=; b=owGbwMvMwCUWt7pQ4caZUj3G02pJDFlBDt03bZckXWqR2jHbYLG3lfO5YM07odfPTZ93c/ttl x+vjT3DOkpZGMS4GGTFFFkezPoxw7e0pnKTScROmDmsTCBDGLg4BWAiUTsYGU7srE9y4566cu+/ sJ3uPGFrHc7ODP5SX8z0fdlamTesH2UZGVb5vemyEagxmt6vdMaq0LVq2flgmz+aL7QCg1qZZ5R 9ZgIA
+X-Developer-Key: i=thorsten.blum@linux.dev; a=openpgp; fpr=1D60735E8AEF3BE473B69D84733678FD8DFEEAD4
+Content-Transfer-Encoding: 8bit
+X-Migadu-Flow: FLOW_OUT
 
-On Wed, Jul 8, 2026 at 10:25=E2=80=AFAM Mukesh Kumar Chaurasiya (IBM)
-<mkchauras@gmail.com> wrote:
->
-> When building with LLVM=3D1 for architectures like powerpc where
-> CONFIG_DMA_SHARED_BUFFER is not enabled, the build fails with:
->
->   ld.lld: error: undefined symbol: dma_resv_reset_max_fences
->   >>> referenced by helpers.c
->   >>>               rust/helpers/helpers.o:(rust_helper_dma_resv_unlock)
->
-> The issue occurs because:
-> 1. CONFIG_DEBUG_MUTEXES=3Dy is enabled
-> 2. CONFIG_DMA_SHARED_BUFFER is not enabled
-> 3. dma_resv_reset_max_fences() is declared in the header when
->    CONFIG_DEBUG_MUTEXES is set
-> 4. But the function is only compiled in drivers/dma-buf/dma-resv.c,
->    which is only built when CONFIG_DMA_SHARED_BUFFER is enabled
-> 5. Rust helpers call dma_resv_unlock() which calls
->    dma_resv_reset_max_fences(), causing an undefined symbol
->
-> Fix this by compiling `dma-resv.c` file only when CONFIG_DMA_SHARED_BUFFE=
-R
-> is enabled.
->
-> Fixes: 9b836641d3bf ("rust: helpers: Add bindings/wrappers for dma_resv_l=
-ock")
-> Reviewed-by: Christian K=C3=B6nig <christian.koenig@amd.com>
-> Reviewed-by: Gary Guo <gary@garyguo.net>
-> Signed-off-by: Mukesh Kumar Chaurasiya (IBM) <mkchauras@gmail.com>
+If lv1_put_iopte() fails in dma_ioc0_map_pages(), the error path
+decrements iopage but keeps using the failed mapping's offset. As a
+result, it repeatedly tries to invalidate the failed IOPTE slot and
+leaves the already installed IOPTEs valid.
 
-Andreas sent a similar one to:
+Recompute offset and invalidate the installed IOPTEs instead.
 
-  https://lore.kernel.org/rust-for-linux/20260708-dma-shared-buffer-config-=
-v1-1-8c1571000855@kernel.org/
+Fixes: 6bb5cf102541 ("[POWERPC] PS3: System-bus rework")
+Cc: stable@vger.kernel.org
+Signed-off-by: Thorsten Blum <thorsten.blum@linux.dev>
+---
+ arch/powerpc/platforms/ps3/mm.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-This is earlier, but please see his approach & Sashiko's note.
-
-Backlinking here for reference.
-
-Cheers,
-Miguel
+diff --git a/arch/powerpc/platforms/ps3/mm.c b/arch/powerpc/platforms/ps3/mm.c
+index 20fc5b68faee..315a32fd75b1 100644
+--- a/arch/powerpc/platforms/ps3/mm.c
++++ b/arch/powerpc/platforms/ps3/mm.c
+@@ -615,6 +615,7 @@ static int dma_ioc0_map_pages(struct ps3_dma_region *r, unsigned long phys_addr,
+ 
+ fail_map:
+ 	for (iopage--; 0 <= iopage; iopage--) {
++		offset = (1 << r->page_size) * iopage;
+ 		lv1_put_iopte(0,
+ 			      c->bus_addr + offset,
+ 			      c->lpar_addr + offset,
 
