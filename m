@@ -1,51 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-24073-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-24074-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8CFB0C43458
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 12 Jul 2026 21:25:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4E81DC44501
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 12 Jul 2026 21:25:33 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gyzBC1fZDz2yll;
-	Mon, 13 Jul 2026 07:25:23 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gyzBJ0XM0z2y7W;
+	Mon, 13 Jul 2026 07:25:28 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783891523;
-	cv=none; b=Mk2qjcyuu4vwznJv1BNw1893aF/psoi+Ypn6f0vTIrM3KcowJ2gH82OGXNSGY5ik27lI6iZKUffrrW3tlim0j7kvU5IsahlNgIsB8JgMNtu53hWgQ9fALiQXw0KQpClqF79Gg4ARqNF7dIW9plzPpu378/fFv0vu46iktd9aVDcA8HD97xahIh8CBVA+F0HRwXdiuR5PUxIIuKLig/+W24Qkg9FTpGIeOyUQNnEYDAakcRrfoYHBXq5o3ILPU5ng/8pPaB/UnIjHYl6Q3DpqhNhOnmt49Cp+Y10nJxMgWnY6W/laH8jPILb+czVBNgwfTLU5mAto7IZTlZnwPXaXsg==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783891528;
+	cv=none; b=f80z97T2KKxGGEzjlqqa9BdZJ09H33B5p9B9H4wv+2QiEAWJX8ObNQXJmZc5QPgTlfjoEHdaHHKKMSthEEYRVVgJUL3USm1pNwDjQeg6f6VX+kSAZouHnHG4lB5Tdwnjj1zKakvCdwwtvv57k6qSyws+cxokJYXxoQqeiKbEUbOYLBnkeLI0cEU+EK7P8UXVLsfsvgIkLTELg3Tvqx74K1APXDFMNtWG7cCBWQl5Np385P+BAOv5kCcXtrz+Krv2JpiwjMLDgyoftQzTCQCKbb19w/4OAzo4T2euFiwHKgeaiEdQaeyTTk9GI1zAIbivhrgGJERt0S1dC2bdVSLYJA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1783891523; c=relaxed/relaxed;
-	bh=rQWZ8aJgOncbggueFnURmOMnwueR0POClkrjreehrRg=;
+	t=1783891528; c=relaxed/relaxed;
+	bh=2JItWlUO0RtFZwJ9AedXkVw8o5YILdxQ5hx8qr2Nb5s=;
 	h=Date:Message-ID:From:To:Cc:Subject:References:MIME-Version:
-	 Content-Type; b=MYKPl8QvLiw878D8IYj+wicjdffWq20vv6/smBLT/9AhOSk42rYZaqh3JS+pqWhen7Ux/Z1zzeAhsYLH0kKrS3TtHvejDNS6uX7mnFM0KIPVB8QaCaoUHEvA8K123WHlHwvrzKmSIkekKDp0fJs3K0m4ZrTr9zXIcgkCGiynO+Xwq6d7g9dvz//fwdzczlOIGsDobYW69tWX4lUbrWQj7HVVpKLS2iD4ZOtN5vv4z41lgP3vHSCz4GMBeZlmhFTZyKbbQAzaO40X645VA+GI2HLF4LUrieMagWoA6KEOKH9PRzvhJDd4327NAt8DXuOug1Ws0gOLvRup2COZkdj2eQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=MeR46zuk; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=tglx@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 Content-Type; b=WDFW0xgNWQBpsBresOv2EMu+0ZrPOwpcS7ihUAM6q0DQWCbvz5EIyVmv8MDWtoq9But9KBufQEYWDrP9JkxwOLwCgAa2MYjlYvib5a3zy5C7gvogurKS556PmXsyrBEa733nXN2GVc51LiRO3JledFqZXAnkhEjk1RZOfHGqmHJ/DlF914Rs3DeQCP1Q4B3CW4EPCaOI1lVXSD1QAJW8k3Tg3ZrbPLExN9eCTx7wv5fckdoR9JUu8eaIYF9G3Tx5hf8M2Nh1O3+jKFSYKMhc0hFc5mcIit7F45aHzy1zOW5gARGJ2z6ci/1DnLOSmHxe0KRb7hZgxSasF0UR/kTTQA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=mzeCuuT0; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=tglx@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=MeR46zuk;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=mzeCuuT0;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=tglx@kernel.org; receiver=lists.ozlabs.org)
 Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gyzBB6zl8z2xyj
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Jul 2026 07:25:22 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gyzBH5n6kz2xyj
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Jul 2026 07:25:27 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 0E77F600AE;
-	Sun, 12 Jul 2026 21:25:21 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 18F6D1F000E9;
-	Sun, 12 Jul 2026 21:25:19 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id E837F600FC;
+	Sun, 12 Jul 2026 21:25:25 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0BF891F000E9;
+	Sun, 12 Jul 2026 21:25:24 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1783891520;
-	bh=rQWZ8aJgOncbggueFnURmOMnwueR0POClkrjreehrRg=;
+	s=k20260515; t=1783891525;
+	bh=2JItWlUO0RtFZwJ9AedXkVw8o5YILdxQ5hx8qr2Nb5s=;
 	h=Date:From:To:Cc:Subject:References;
-	b=MeR46zuk5udFu+6sitLOWkIvT2D1oWkOX3LZL64wi0Wue7pZZoj92eYrZyCHwL6re
-	 LtNulxNY9Xfv0bKY212BxpjPh6OQuqFHmkUTpzE0rrlt4QxqdZebZE1KDm4nZUEhMp
-	 ZsMDsH3MWEuTn7puKH/TLmpD43nwClU5g498mnR/jpAbyFSVn7gqOikHCa1XfLi/OZ
-	 AxtODzhSPI53UIID1Fh9XQID2bGnMTk5jyR9XlEl7In4QJRq8W/lVDvsymIMGYh57F
-	 hQWVHq+yBg4dJ6sMKRBey0cUbgn5O4cPuwCH4e7tb62pq2ioZJr+suHGx6CzXWo5pw
-	 5bSB+97HCh1VA==
-Date: Sun, 12 Jul 2026 23:25:17 +0200
-Message-ID: <20260712141346.576865340@kernel.org>
+	b=mzeCuuT0JQcjq0ffdG1mMOXvwVg7uBygi4ikhxj2XYUNlmMfzmfn3U2nH5Q/s2tYT
+	 hE6So6oMIRH9zZo8P+kLDM1SHxS9ep4XeX4OI3bWj66SvgdPaw44aKEwaw1MYINh0H
+	 4zCSmz9lTSmItEjpfX/V5TRcJOf34STaoyRjMoXNl0u96NUZtWitt5VWhcdZN+gCWy
+	 1VFaBHkKtdt0C3blUBtUpl6PbzJYJ53qjO+yF+0U6mYoA2Nbt0/kmPWWjLEgxJP/cY
+	 oOTjW6RijF7rhFsJnEwV9x1TsJubt24VulGi6dqcPQSyG1yrH+hb9EUlxjDaCvPx9L
+	 hy+Ix8nbOcXZQ==
+Date: Sun, 12 Jul 2026 23:25:22 +0200
+Message-ID: <20260712141346.639115923@kernel.org>
 User-Agent: quilt/0.69
 From: Thomas Gleixner <tglx@kernel.org>
 To: LKML <linux-kernel@vger.kernel.org>
@@ -67,7 +67,7 @@ Cc: =?UTF-8?q?Michal=20Such=C3=A1nek?= <msuchanek@suse.de>,
  "Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com>,
  Jonathan Corbet <corbet@lwn.net>,
  Radu Rendec <radu@rendec.net>
-Subject: [patch 1/4] entry: Rework syscall_audit_enter()
+Subject: [patch 2/4] entry: Rework trace_syscall_enter()
 References: <20260712134433.549076055@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -84,67 +84,69 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 
-Move it out of line and let it reread the syscall number on it's own. That
-makes the low level entry code denser and allows to move the reread to the
-call site of syscall_trace_enter() once the tracer is fixed up.
+Reread the syscall number from pt_regs and stop returning the eventually
+modified syscall number.
+
+That moves the reread to the end of the syscall_trace_enter() and prepares
+for moving it to the call site.
+
+No functional change.
 
 Signed-off-by: Thomas Gleixner <tglx@kernel.org>
 ---
- include/linux/entry-common.h  |   14 +++-----------
- kernel/entry/syscall-common.c |   10 ++++++++++
- 2 files changed, 13 insertions(+), 11 deletions(-)
+ include/linux/entry-common.h  |   10 ++++------
+ kernel/entry/syscall-common.c |    9 ++-------
+ 2 files changed, 6 insertions(+), 13 deletions(-)
 
 --- a/include/linux/entry-common.h
 +++ b/include/linux/entry-common.h
-@@ -60,16 +60,7 @@ static __always_inline bool arch_ptrace_
- 
- long trace_syscall_enter(struct pt_regs *regs, long syscall);
- void trace_syscall_exit(struct pt_regs *regs, long ret);
--
--static inline void syscall_enter_audit(struct pt_regs *regs, long syscall)
--{
--	if (unlikely(audit_context())) {
--		unsigned long args[6];
--
--		syscall_get_arguments(current, regs, args);
--		audit_syscall_entry(syscall, args[0], args[1], args[2], args[3]);
--	}
--}
-+void syscall_enter_audit(struct pt_regs *regs);
- 
- static __always_inline long syscall_trace_enter(struct pt_regs *regs, unsigned long work,
- 						long syscall)
-@@ -111,7 +102,8 @@ static __always_inline long syscall_trac
- 	if (unlikely(work & SYSCALL_WORK_SYSCALL_TRACEPOINT))
- 		syscall = trace_syscall_enter(regs, syscall);
- 
--	syscall_enter_audit(regs, syscall);
-+	if (unlikely(audit_context()))
-+		syscall_enter_audit(regs);
- 
- 	return syscall;
+@@ -58,7 +58,7 @@ static __always_inline bool arch_ptrace_
  }
+ #endif
+ 
+-long trace_syscall_enter(struct pt_regs *regs, long syscall);
++void trace_syscall_enter(struct pt_regs *regs);
+ void trace_syscall_exit(struct pt_regs *regs, long ret);
+ void syscall_enter_audit(struct pt_regs *regs);
+ 
+@@ -96,16 +96,14 @@ static __always_inline long syscall_trac
+ 			return -1L;
+ 	}
+ 
+-	/* Either of the above might have changed the syscall number */
+-	syscall = syscall_get_nr(current, regs);
+-
+ 	if (unlikely(work & SYSCALL_WORK_SYSCALL_TRACEPOINT))
+-		syscall = trace_syscall_enter(regs, syscall);
++		trace_syscall_enter(regs);
+ 
+ 	if (unlikely(audit_context()))
+ 		syscall_enter_audit(regs);
+ 
+-	return syscall;
++	/* Either of the above might have changed the syscall number */
++	return syscall_get_nr(current, regs);
+ }
+ 
+ /**
 --- a/kernel/entry/syscall-common.c
 +++ b/kernel/entry/syscall-common.c
-@@ -1,5 +1,6 @@
- // SPDX-License-Identifier: GPL-2.0
+@@ -8,14 +8,9 @@
  
-+#include <linux/audit.h>
- #include <linux/entry-common.h>
+ /* Out of line to prevent tracepoint code duplication */
  
- #define CREATE_TRACE_POINTS
-@@ -21,3 +22,12 @@ void trace_syscall_exit(struct pt_regs *
+-long trace_syscall_enter(struct pt_regs *regs, long syscall)
++void trace_syscall_enter(struct pt_regs *regs)
  {
- 	trace_sys_exit(regs, ret);
+-	trace_sys_enter(regs, syscall);
+-	/*
+-	 * Probes or BPF hooks in the tracepoint may have changed the
+-	 * system call number. Reread it.
+-	 */
+-	return syscall_get_nr(current, regs);
++	trace_sys_enter(regs, syscall_get_nr(current, regs));
  }
-+
-+void syscall_enter_audit(struct pt_regs *regs)
-+{
-+	long syscall = syscall_get_nr(current, regs);
-+	unsigned long args[6];
-+
-+	syscall_get_arguments(current, regs, args);
-+	__audit_syscall_entry(syscall, args[0], args[1], args[2], args[3]);
-+}
+ 
+ void trace_syscall_exit(struct pt_regs *regs, long ret)
 
 
